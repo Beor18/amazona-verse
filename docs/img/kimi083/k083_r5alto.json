@@ -1,0 +1,113 @@
+{
+ "etiqueta": "r5alto",
+ "pantalla": "escritorio 1600x900@1 cpuX1",
+ "calidad": "alto",
+ "chromeAjenosAlInicio": 10,
+ "head": "desconocido",
+ "medicion": {
+  "v18": true,
+  "calidad": {
+   "nivel": "alto",
+   "sombras": 2048,
+   "sombraRadio": 30,
+   "sombraTerreno": true,
+   "post": 2,
+   "normalesSuelo": true,
+   "dosEscalas": true,
+   "texMax": 0,
+   "flora": 1,
+   "floraDist": 1,
+   "pasto": 1,
+   "sombraFlora": true,
+   "agua": 2,
+   "particulas": 1,
+   "manual": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "objetivo": 55
+  },
+  "test": {
+   "passed": 23,
+   "total": 23,
+   "fallos": []
+  },
+  "sitio": {
+   "x": 176,
+   "z": 175
+  },
+  "asentado": true,
+  "base": {
+   "fpsMed": 140.8,
+   "fpsP10": 86.2,
+   "peorMs": 279,
+   "n": 621,
+   "callsMed": 167,
+   "trisMed": 1047416,
+   "callsMax": 208,
+   "trisMax": 1143215,
+   "ult": {
+    "calls": 166,
+    "tris": 1046216,
+    "geo": 252,
+    "tex": 182,
+    "prog": 96
+   },
+   "heap": 824
+  },
+  "iniciado": true,
+  "duelo": {
+   "fpsMed": 144.9,
+   "fpsP10": 112.4,
+   "peorMs": 18,
+   "n": 1687,
+   "callsMed": 135,
+   "trisMed": 879757,
+   "callsMax": 168,
+   "trisMax": 1046216,
+   "ult": {
+    "calls": 136,
+    "tris": 867732,
+    "geo": 273,
+    "tex": 184,
+    "prog": 96
+   },
+   "heap": 813
+  },
+  "estadoLucha": {
+   "fase": "lucha",
+   "pl1": 5,
+   "pl2": 5,
+   "usos1": 14,
+   "usos2": 6,
+   "golpes": 0,
+   "balas": 0
+  },
+  "duelo2stats": {
+   "calls": 136,
+   "tris": 868309,
+   "geo": 274,
+   "tex": 184,
+   "prog": 96
+  },
+  "salido": true,
+  "despues": {
+   "fpsMed": 142.9,
+   "fpsP10": 116.3,
+   "peorMs": 12,
+   "n": 560,
+   "callsMed": 182,
+   "trisMed": 1080169,
+   "callsMax": 182,
+   "trisMax": 1080169,
+   "ult": {
+    "calls": 182,
+    "tris": 1080169,
+    "geo": 276,
+    "tex": 184,
+    "prog": 96
+   },
+   "heap": 818
+  },
+  "j2creado": true
+ },
+ "erroresConsola": []
+}

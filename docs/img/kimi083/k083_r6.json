@@ -1,0 +1,113 @@
+{
+ "etiqueta": "r6",
+ "pantalla": "escritorio 1600x900@1 cpuX1",
+ "calidad": "medio",
+ "chromeAjenosAlInicio": 10,
+ "head": "desconocido",
+ "medicion": {
+  "v18": true,
+  "calidad": {
+   "nivel": "medio",
+   "sombras": 1024,
+   "sombraRadio": 22,
+   "sombraTerreno": false,
+   "post": 1,
+   "normalesSuelo": true,
+   "dosEscalas": false,
+   "texMax": 1024,
+   "flora": 0.8,
+   "floraDist": 0.8,
+   "pasto": 0.6,
+   "sombraFlora": true,
+   "agua": 1,
+   "particulas": 0.7,
+   "manual": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "objetivo": 55
+  },
+  "test": {
+   "passed": 23,
+   "total": 23,
+   "fallos": []
+  },
+  "sitio": {
+   "x": 176,
+   "z": 175
+  },
+  "asentado": true,
+  "base": {
+   "fpsMed": 140.8,
+   "fpsP10": 69.4,
+   "peorMs": 201,
+   "n": 553,
+   "callsMed": 141,
+   "trisMed": 495727,
+   "callsMax": 156,
+   "trisMax": 510724,
+   "ult": {
+    "calls": 140,
+    "tris": 496530,
+    "geo": 200,
+    "tex": 184,
+    "prog": 86
+   },
+   "heap": 1076
+  },
+  "iniciado": true,
+  "duelo": {
+   "fpsMed": 144.9,
+   "fpsP10": 119,
+   "peorMs": 23,
+   "n": 2145,
+   "callsMed": 142,
+   "trisMed": 502776,
+   "callsMax": 155,
+   "trisMax": 539865,
+   "ult": {
+    "calls": 142,
+    "tris": 499830,
+    "geo": 211,
+    "tex": 184,
+    "prog": 86
+   },
+   "heap": 795
+  },
+  "estadoLucha": {
+   "fase": "lucha",
+   "pl1": 5,
+   "pl2": 4,
+   "usos1": 18,
+   "usos2": 5,
+   "golpes": 1,
+   "balas": 1
+  },
+  "duelo2stats": {
+   "calls": 142,
+   "tris": 495770,
+   "geo": 211,
+   "tex": 184,
+   "prog": 86
+  },
+  "salido": true,
+  "despues": {
+   "fpsMed": 144.9,
+   "fpsP10": 113.6,
+   "peorMs": 13,
+   "n": 555,
+   "callsMed": 166,
+   "trisMed": 642246,
+   "callsMax": 166,
+   "trisMax": 642246,
+   "ult": {
+    "calls": 166,
+    "tris": 642246,
+    "geo": 254,
+    "tex": 184,
+    "prog": 88
+   },
+   "heap": 809
+  },
+  "j2creado": true
+ },
+ "erroresConsola": []
+}
