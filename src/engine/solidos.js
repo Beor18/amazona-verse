@@ -521,7 +521,7 @@ AVE.module('solidos', function (G) {
   // la cuerda del puente colgante. Su malla ya sigue la comba de la cuerda, así que sostiene como una rama.
   function cuerdaPuente(x, z, y) {
     for (const p of G.terreno.plataformas || []) {
-      if (p.tipo !== 'puente' || (p.when && !p.when())) continue;
+      if (p.tipo !== 'puente' || (p.when && !p.when() && !p.cuerdas)) continue; // cuerdas: el piso no sostiene pero las sogas siguen (puente roto de la V18.1)
       const ux = p.bx - p.ax, uz = p.bz - p.az, L2 = ux * ux + uz * uz || 1, t = ((x - p.ax) * ux + (z - p.az) * uz) / L2;
       if (t < 0 || t > 1) continue;
       const d = Math.hypot(x - (p.ax + ux * t), z - (p.az + uz * t)), cub = p.ay + (p.by - p.ay) * t - p.comba * 4 * t * (1 - t);

@@ -39,6 +39,7 @@ window.AVV18Reparar = function (G) {
     P.piso = pl;
     const previo = pl.when;
     pl.when = () => reparado() && (!previo || previo());
+    pl.cuerdas = true; // roto, faltan tablas del centro pero las barandas de soga siguen: posarse en ellas es «cuerda» (solidos.cuerdaPuente)
     const ux = pl.bx - pl.ax, uz = pl.bz - pl.az, L = Math.hypot(ux, uz) || 1;
     P.eje = { ax: pl.ax, az: pl.az, ay: pl.ay, by: pl.by, ux: ux / L, uz: uz / L, L, ancho: pl.ancho, comba: pl.comba };
     return pl;
@@ -603,7 +604,7 @@ window.AVV18Reparar = function (G) {
       const piedra1 = materiales.find(R => R.tipo === 'piedra'), fibra1 = materiales.find(R => R.tipo === 'fibra');
       piedra1.it.use(); fibra1.it.use();
       check('Recoger suma al inventario de siempre: piedra → S.inv.piedra, fibra → S.inv.madera, con aviso corto',
-        inv('piedra') === 1 && inv('madera') === 1 && !piedra1.g.visible && !fibra1.it.visible() && toasts.some(t => t === '+1 piedra') && toasts.some(t => /^\+1 fibra/.test(t)) && toasts.every(t => t.length < 40),
+        inv('piedra') === 1 && inv('madera') === 1 && !piedra1.g.visible && !fibra1.it.visible() && toasts.some(t => t === '+1 piedra') && toasts.some(t => /^\+1 fibra/.test(t)) && toasts.filter(t => /^\+1/.test(t)).every(t => t.length < 40),
         'madera ' + inv('madera') + ', piedra ' + inv('piedra') + ' · ' + toasts.join(' | '));
       check('Recoger otra vez no suma', !recogerMaterial(piedra1) && !recogerMaterial(fibra1) && inv('piedra') === 1 && inv('madera') === 1);
       V.recargar(); aplicar();
