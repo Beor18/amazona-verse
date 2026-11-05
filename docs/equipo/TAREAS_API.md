@@ -5,6 +5,7 @@
 > 2. **Saldo:** escribe en tu fila el saldo real de API que queda.
 > 3. **BM137 · templo del tepuy en el iPad de Kelvin:** texturas estiradas y bloques planos (captura `docs/img/kelvin_ipad_5nov/ipad1.jpg`). Revisa UV y textura del ligero/_hd de ese templo en Blender y corrígelo sin subir el presupuesto de memoria; capturas antes/después. Kimi 1 mira la parte de render (KIMI-060): avisad en vuestras filas para no pisaros.
 > 4. **BM138 · puente colgante roto de verdad** para la V18.1 (fila BM138). Las poses de vuelo de las cotorras las hace Kimi 2 (ya tiene su horneador, b6f8f0b7): no las repitas.
+> **Saldo real (Kelvin, 5-nov ~12:20 UTC): 27,24 $.** BM136–BM139 suman como mucho 20 $; quedan ~7 $ de reserva para BM140 (si la coordinadora avisa) o para repetir algo que falle.
 > 5. **BM139** · los _hd pendientes de BM134 (fila BM139). Kelvin recargó 20 $ (5-nov): trabaja sin parar en este orden con los topes de cada fila.
 > Si el saldo no da para 3 o 4, deja la fila en «sin crédito» y la coordinadora las pasa a Kimi.
 >
