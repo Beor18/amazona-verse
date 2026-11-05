@@ -1,0 +1,155 @@
+{
+ "etiqueta": "r6-despues",
+ "pantalla": "pc 1600x900@1 cpuX1",
+ "head": "desconocido",
+ "fotos": {
+  "base": {
+   "fase": "lucha",
+   "aviso": 0,
+   "flash": 0,
+   "calls": 117,
+   "tris": 521670,
+   "nVis": true,
+   "oVis": true,
+   "nCount": 14,
+   "nPos": [
+    166.6,
+    7.5,
+    127.7
+   ],
+   "centro": [
+    167.3,
+    126.1
+   ],
+   "ndc": [
+    -0.13,
+    0.05,
+    0.982
+   ],
+   "altura": 1.6,
+   "pxColor": [
+    106,
+    116,
+    147
+   ],
+   "matTipo": "MeshBasicMaterial",
+   "matColor": "ffffff"
+  },
+  "aviso": {
+   "fase": "lucha",
+   "aviso": 0.97,
+   "flash": 0,
+   "calls": 220,
+   "tris": 1223405,
+   "nVis": true,
+   "oVis": true,
+   "nCount": 14,
+   "nPos": [
+    167.3,
+    7.5,
+    127.5
+   ],
+   "centro": [
+    167.3,
+    126.1
+   ],
+   "ndc": [
+    -0.08,
+    0.04,
+    0.981
+   ],
+   "altura": 1.6,
+   "pxColor": [
+    190,
+    196,
+    206
+   ],
+   "matTipo": "MeshBasicMaterial",
+   "matColor": "ffffff"
+  },
+  "rayo": {
+   "fase": "lucha",
+   "aviso": 0.62,
+   "flash": 0.27,
+   "calls": 89,
+   "tris": 390730,
+   "nVis": true,
+   "oVis": true,
+   "nCount": 14,
+   "nPos": [
+    167.4,
+    7.5,
+    127.6
+   ],
+   "centro": [
+    167.3,
+    126.1
+   ],
+   "ndc": [
+    -0.08,
+    0.04,
+    0.981
+   ],
+   "altura": 1.6,
+   "pxColor": [
+    220,
+    218,
+    207
+   ],
+   "matTipo": "MeshBasicMaterial",
+   "matColor": "ffffff"
+  },
+  "rojo": {
+   "fase": "lucha",
+   "aviso": 0.32,
+   "flash": 0,
+   "calls": 89,
+   "tris": 403334,
+   "nVis": true,
+   "oVis": true,
+   "nCount": 14,
+   "nPos": [
+    167.4,
+    7.5,
+    127.6
+   ],
+   "centro": [
+    167.3,
+    126.1
+   ],
+   "ndc": [
+    -0.08,
+    0.04,
+    0.981
+   ],
+   "altura": 1.6,
+   "pxColor": [
+    217,
+    64,
+    77
+   ],
+   "matTipo": "MeshBasicMaterial",
+   "matColor": "ff2020"
+  }
+ },
+ "medicion": {
+  "v18": true,
+  "asentado": true,
+  "amenaza": {
+   "passed": 20,
+   "total": 20,
+   "fallos": []
+  },
+  "inicio": true,
+  "statsLucha": {
+   "calls": 110,
+   "tris": 456948
+  },
+  "fpsLucha": {
+   "fps": 73.9,
+   "peorMs": 163
+  },
+  "heapLucha": 872
+ },
+ "erroresConsola": []
+}

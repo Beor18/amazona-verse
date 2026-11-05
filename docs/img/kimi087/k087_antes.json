@@ -1,0 +1,123 @@
+{
+ "etiqueta": "r1_antes-antes",
+ "pantalla": "pc 1600x900@1 cpuX1",
+ "head": "desconocido",
+ "fotos": {
+  "base": {
+   "fase": "lucha",
+   "aviso": -0.01,
+   "flash": 0,
+   "calls": 116,
+   "tris": 544003,
+   "nVis": true,
+   "oVis": true,
+   "nCount": 14,
+   "nPos": [
+    166.6,
+    7.5,
+    127.6
+   ],
+   "centro": [
+    167.3,
+    126.1
+   ],
+   "ndc": [
+    -0.12,
+    0.05,
+    0.982
+   ],
+   "altura": 1.6,
+   "pxColor": [
+    102,
+    111,
+    128
+   ],
+   "matTipo": "MeshBasicMaterial",
+   "matColor": "2b3140"
+  },
+  "aviso": {
+   "fase": "lucha",
+   "aviso": 0.97,
+   "flash": 0,
+   "calls": 218,
+   "tris": 1221111,
+   "nVis": true,
+   "oVis": true,
+   "nCount": 14,
+   "nPos": [
+    167.5,
+    7.5,
+    127.6
+   ],
+   "centro": [
+    167.3,
+    126.1
+   ],
+   "ndc": [
+    -0.07,
+    0.04,
+    0.981
+   ],
+   "altura": 1.6,
+   "pxColor": [
+    190,
+    192,
+    195
+   ],
+   "matTipo": "MeshBasicMaterial",
+   "matColor": "8b93a8"
+  },
+  "rayo": {
+   "fase": "lucha",
+   "aviso": 0.62,
+   "flash": 0.27,
+   "calls": 90,
+   "tris": 402618,
+   "nVis": true,
+   "oVis": true,
+   "nCount": 14,
+   "nPos": [
+    167.6,
+    7.5,
+    127.6
+   ],
+   "centro": [
+    167.3,
+    126.1
+   ],
+   "ndc": [
+    -0.07,
+    0.03,
+    0.981
+   ],
+   "altura": 1.6,
+   "pxColor": [
+    222,
+    218,
+    199
+   ],
+   "matTipo": "MeshBasicMaterial",
+   "matColor": "fff3b0"
+  }
+ },
+ "medicion": {
+  "v18": true,
+  "asentado": true,
+  "amenaza": {
+   "passed": 20,
+   "total": 20,
+   "fallos": []
+  },
+  "inicio": true,
+  "statsLucha": {
+   "calls": 115,
+   "tris": 461215
+  },
+  "fpsLucha": {
+   "fps": 67.9,
+   "peorMs": 207
+  },
+  "heapLucha": 910
+ },
+ "erroresConsola": []
+}

@@ -56,13 +56,25 @@ window.AVV18Amenaza = function (G) {
 
   // ---------- Escena: niebla + ojos (2 InstancedMesh) ----------
   const NB = (G.renderer.nivel && G.renderer.nivel() === 'bajo') || G.renderer.REDUCED ? 9 : 14;
-  const matNiebla = new THREE.MeshBasicMaterial({ color: '#2b3140', transparent: true, opacity: 0.72, depthWrite: false });
+  // KIMI-087 (pulido visual, sin tocar la lógica): el tono va por instanceColor por bola y el borde es suave
+  // con un degradado radial pintado en runtime (0 assets nuevos, ~16 KB en GPU).
+  const matNiebla = new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.72, depthWrite: false });
+  matNiebla.map = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const g = c.getContext('2d'), rg = g.createRadialGradient(32, 32, 2, 32, 32, 31);
+    rg.addColorStop(0, 'rgba(255,255,255,0.95)');
+    rg.addColorStop(0.45, 'rgba(255,255,255,0.62)');
+    rg.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = rg; g.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(c);
+  })();
   const niebla = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 7), matNiebla, NB);
   const ojos = new THREE.InstancedMesh(new THREE.SphereGeometry(0.32, 10, 8), new THREE.MeshBasicMaterial({ color: '#ffd84a' }), 2);
-  for (const m of [niebla, ojos]) { m.frustumCulled = false; m.castShadow = m.receiveShadow = false; m.visible = false; scene.add(m); }
+  for (const m of [niebla, ojos]) { m.frustumCulled = false; m.userData.sinCulling = true; m.castShadow = m.receiveShadow = false; m.visible = false; scene.add(m); }
   niebla.name = 'v18_sombra'; ojos.name = 'v18_sombra_ojos'; niebla.renderOrder = 4;
-  const PUFF = Array.from({ length: NB }, (_, i) => ({ a: i / NB * Math.PI * 2, r: 1.2 + (i % 3) * 0.8, y: ((i * 37) % 10) / 10 * 1.6 - 0.6, s: 1.3 + ((i * 53) % 10) / 10 * 1.1 }));
-  const _o = new THREE.Object3D(), colBase = new THREE.Color('#2b3140'), colAviso = new THREE.Color('#8b93a8'), colRayo = new THREE.Color('#fff3b0');
+  const PUFF = Array.from({ length: NB }, (_, i) => ({ a: i / NB * Math.PI * 2, r: 1.2 + (i % 3) * 0.8, y: ((i * 37) % 10) / 10 * 1.6 - 0.6, s: 1.3 + ((i * 53) % 10) / 10 * 1.1, l: 0.62 + ((i * 29) % 10) / 10 * 0.58 }));
+  const _o = new THREE.Object3D(), _c = new THREE.Color(), _c2 = new THREE.Color();
+  const colBase = new THREE.Color('#2e3552'), colAviso = new THREE.Color('#8fa0d0'), colRayo = new THREE.Color('#fff3b0'), colHaz = new THREE.Color('#fffbe6');
 
   // ---------- Estado ----------
   const A = { fase: 'nada', t: 0, pos: { x: centro.x, y: altura(centro.x, centro.z) + ALTO, z: centro.z }, ancla: 0, giro: 0, patron: 0,
@@ -252,20 +264,35 @@ window.AVV18Amenaza = function (G) {
   }
   // ---------- Paso ----------
   function dibujar(dt) {
+    if (!ojos.material.transparent) { // ojos al frente de la niebla: se leen sobre la nube, sin calls extra
+      ojos.material.transparent = true; ojos.material.depthWrite = false; ojos.renderOrder = 5;
+    }
     const p = A.pos, now = performance.now() / 1000, avisa = A.avisoT > 0;
     A.flash = Math.max(0, A.flash - dt);
-    matNiebla.color.copy(A.flash > 0 ? colRayo : avisa ? colAviso : colBase);
     const k = A.escala * (avisa ? 1 + 0.12 * Math.sin(now * 30) : 1);
+    // Rayo al acertar: un haz blanco-amarillo zigzaguea cruzando la nube y el resto se apaga (contraste)
+    const rayo = A.flash > 0;
+    const seg = rayo ? Math.floor(now * 22) : 0; // parpadeo de la descarga
+    _c.copy(rayo ? colRayo : avisa ? colAviso : colBase);
     PUFF.forEach((f, i) => {
       const a = f.a + now * (0.5 + (i % 3) * 0.2);
-      _o.position.set(p.x + Math.cos(a) * f.r * k, p.y + f.y * k + Math.sin(now * 1.3 + i) * 0.2, p.z + Math.sin(a) * f.r * k);
-      _o.scale.setScalar(f.s * k); _o.updateMatrix(); niebla.setMatrixAt(i, _o.matrix);
+      let x = p.x + Math.cos(a) * f.r * k, y = p.y + f.y * k + Math.sin(now * 1.3 + i) * 0.2, z = p.z + Math.sin(a) * f.r * k, s = f.s * k;
+      _c2.copy(_c).multiplyScalar(f.l);
+      if (rayo) { // descarga: toda la nube destella con trémolo por bola (zigzag de brillo, sin calls extra)
+        _c2.copy(colHaz).lerp(colRayo, ((i + seg) % 3) * 0.4).multiplyScalar(0.85 + ((i * 11 + seg) % 3) * 0.15);
+        y += ((i * 7 + seg) % 3 - 1) * 0.3; x += ((i * 5 + seg) % 3 - 1) * 0.15;
+        s *= 1.06;
+      }
+      _o.position.set(x, y, z); _o.scale.setScalar(s); _o.updateMatrix();
+      niebla.setMatrixAt(i, _o.matrix); niebla.setColorAt(i, _c2);
     });
     niebla.instanceMatrix.needsUpdate = true;
+    if (niebla.instanceColor) niebla.instanceColor.needsUpdate = true;
     const dx = S.pos.x - p.x, dz = S.pos.z - p.z, dn = Math.hypot(dx, dz) || 1, fx0 = dx / dn, fz0 = dz / dn; // los ojos miran a la jugadora
+    const ek = (A.fase === 'disuelve' ? Math.max(0.01, 1 - A.t) : (A.j && A.j.mareo > 0 ? 1.25 : 1)) * (avisa ? 1.12 : 1) * (rayo ? 0.85 : 1);
     [-1, 1].forEach((s, i) => {
-      _o.position.set(p.x + fx0 * 1.9 * k - fz0 * 0.55 * s, p.y + 0.3, p.z + fz0 * 1.9 * k + fx0 * 0.55 * s);
-      _o.scale.setScalar(A.fase === 'disuelve' ? Math.max(0.01, 1 - A.t) : (A.j && A.j.mareo > 0 ? 1.25 : 1)); _o.updateMatrix(); ojos.setMatrixAt(i, _o.matrix);
+      _o.position.set(p.x + fx0 * 2.6 * k - fz0 * 0.62 * s, p.y + 0.35 + 0.3 * k, p.z + fz0 * 2.6 * k + fx0 * 0.62 * s);
+      _o.scale.setScalar(ek); _o.updateMatrix(); ojos.setMatrixAt(i, _o.matrix);
     });
     ojos.instanceMatrix.needsUpdate = true;
   }
