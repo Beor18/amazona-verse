@@ -2,17 +2,24 @@
 
 Estados: NO INICIADO, EN DESARROLLO, DEMOSTRABLE, VERIFICADO, BLOQUEADO, FUERA DE ALCANCE. VERIFICADO exige prueba reproducible; DEMOSTRABLE exige juego ejecutable. Día 1 = 5-nov-2026.
 
+**Estado a 5-nov (noche).** Publicado: main 0c3d4dcc (sitio 75d87eb3), demo en https://amazona-verse.vercel.app/juego/?v18=1 y guía en `docs/equipo/GUIA_DEMO_V18_1.md`. Pruebas de la demo en la build publicada: v18Test 6/6, Descubrir 21/21, Combate 32/32, Reparar 27/27, Ciclo 22/22, Amenaza 21/21, Nuevas 14/14, Duelo2 23/23, Fx 17/17, idiomaTest 31/31; las 12 baterías obligatorias en verde. Video real: el ciclo en computadora (1 min 16 s, 1280×720), grabado cuadro a cuadro en la nube sin GPU; está en la carpeta de trabajo de la coordinadora (`keep/v18_ciclo_escritorio_1280x720.mp4`), no en el repo. Se grabó antes del arreglo del puente a pie (QA-172). Reporte de la semana: `docs/equipo/REPORTE_SEMANAL_V18_1_S1.md`.
+
 | Función | Frente | Estado | Rama/commit | Demo/video real | Prueba | Próxima fecha | Bloqueo |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Progreso compartido y bandera `?v18=1` | D | VERIFICADO | main · df205906 (+ `otorgado()` en D14) | `?v18=1` | `AV.v18Test()` 6/6 | — | — |
-| Poderes (2 especies) | A | VERIFICADO | main · 43edae65 | `?v18=1`, duelo de la explanada | `AV.v18CombateTest()` 32/32; en el ciclo el duelo usa el Escudo de plumas de la especie elegida (`AV.v18CicloTest()`) | — | Efectos finales: KIMI (G.v18fx) |
-| Combate IA | A | VERIFICADO | main · 43edae65; aviso «¡Bloqueado!» que se quedaba fijo, corregido en D14 | `?v18=1`, hablar con la Campeona | `AV.v18CombateTest()` 32/32; `AV.v18CicloTest()` (gana el duelo jugando, el aviso se borra solo) | — | — |
-| Desbloqueo persistente | C | VERIFICADO | main · d7168e28 | `?v18=1`, cotorra que canta al oeste de Villa Raíz | `AV.v18DescubrirTest()` 21/21; tarjeta con los poderes reales (D14) | — | — |
-| Reparación persistente | B | VERIFICADO | main · 70fba288 | `?v18=1`, cabecera del puente colgante | `AV.v18RepararTest()` 17/17 | — | — |
-| Recompensa conectada | A/B/D | VERIFICADO | main · c9146761 | `?v18=1`: ganar → bandera verde al puente → reparar → pista del reto extra | `AV.v18CicloTest()` 22/22: ciclo entero, recarga, sin pago doble, 0 errores | D14 (18-nov) | — |
-| Ciclo dentro del mapa | A/B/C/D | DEMOSTRABLE | main · c9146761 | `?v18=1` (falta video real en móvil) | `AV.v18CicloTest()` 22/22 | D21 (25-nov) | Falta grabarlo en iPhone/iPad y la ronda con Kelvin |
-| Demo completa | D | NO INICIADO | — | — | — | D30 (4-dic) | — |
-| PvP local (opcional) | A/D | NO INICIADO | — | — | — | Evaluar D21 | — |
+| Progreso compartido y bandera `?v18=1` | D | VERIFICADO | main · df205906 (+ `otorgado()` en D14); QA-164 (clave propia de la bandera) 81eeea0e; QA-161 a716bbb5 | `?v18=1` | `AV.v18Test()` 6/6 en la build publicada | D21 (25-nov) | QA-165 abierto en lo publicado: con un jugador nuevo la especie del perfil no queda elegible. El arreglo (`progreso.js`, v18Test 7/7) está solo en el commit local 002ae6ad, sin subir |
+| Poderes (2 especies) | A | VERIFICADO | main · 43edae65; corrección de Kelvin 1e70823a (Grito del Yunque y Escudo de plumas); efectos 856286bf y 9d776596 | `?v18=1`, duelo de la explanada; video en computadora | `AV.v18CombateTest()` 32/32; `AV.v18FxTest()` 17/17 | — | — |
+| 4 cotorras y poderes nuevos (`nuevas.js`) | A/C | VERIFICADO | main · aaf79783; contra la Sombra 17bf8038; avisos en cola 53e2b470; prueba ef99e48c | `?v18=1`: llegan con los hitos del ciclo (primer duelo, puente, Sombra, duelo con otra cotorra) | `AV.v18NuevasTest()` 14/14 | D21 (25-nov) | Retratos de las cotorras nuevas: BM152 (Mac) en cola |
+| Combate IA | A | VERIFICADO | main · 43edae65; HUD sin solapes en escritorio y móvil c5aa3804 (QA-170/171) | `?v18=1`, hablar con la Campeona; video en computadora | `AV.v18CombateTest()` 32/32; `AV.v18CicloTest()` 22/22 | D21 (25-nov) | Abiertos QA-173 (la tecla G también inclina la cámara: decisión de controles) y QA-174 (troncos dentro del círculo del duelo) |
+| Desbloqueo persistente | C | VERIFICADO | main · d7168e28; 2c4887de | `?v18=1`, cotorra que canta al oeste de Villa Raíz | `AV.v18DescubrirTest()` 21/21 | — | — |
+| Reparación persistente | B | VERIFICADO | main · 70fba288; pago 0b217427; puente a pie 0c3d4dcc (QA-172) | `?v18=1`, cabecera del puente colgante; el video es anterior al cruce a pie | `AV.v18RepararTest()` 27/27 (cruce a pie ida y vuelta con la física, sin volar) | D21 (25-nov) | Falta video del cruce a pie |
+| Piedra y fibra recogibles (sin pelear) | B | VERIFICADO | main · fc8bd383 (modelos BM148) | `?v18=1`, junto al puente y en el camino desde Villa Raíz | `AV.v18RepararTest()` 27/27; `AV.idiomaTest()` 31/31 | — | — |
+| Sombra de Tormenta (`amenaza.js`) | A/D | VERIFICADO | main · 519608c5, b2ad8348, cf3c2bba, ae551d24 (QA-166 a 169), 17bf8038; se ve en cámara eab1f18a (QA-170, Kimi 3) | `?v18=1`: sale sobre el río solo con el puente reparado | `AV.v18AmenazaTest()` 21/21 | D21 (25-nov) | — |
+| Recompensa conectada | A/B/D | VERIFICADO | main · c9146761 | `?v18=1`: ganar → bandera verde al puente → reparar → pista del reto extra | `AV.v18CicloTest()` 22/22: ciclo entero, recarga, sin pago doble, 0 errores | — | — |
+| Ciclo dentro del mapa | A/B/C/D | DEMOSTRABLE | main · c9146761 … 0c3d4dcc | `?v18=1`; video real en computadora (1 min 16 s) | `AV.v18CicloTest()` 22/22 | D21 (25-nov) | Falta video en iPhone/iPad real y la prueba con Kelvin |
+| Duelo de 2 jugadores (PvP local, opcional) | A/D | VERIFICADO (prototipo, solo computadora) | main · 33e8d838; prueba def5e287 | `?v18=1`, centro del círculo de la explanada | `AV.v18Duelo2Test()` 23/23 | Evaluar D21 | Sin video. No es puerta de D30 |
+| Demo completa | D | DEMOSTRABLE | main · 0c3d4dcc, sitio 75d87eb3; guía 9e1ca679 | https://amazona-verse.vercel.app/juego/?v18=1 | 10 pruebas V18 en verde + 12 obligatorias | D30 (4-dic) | Falta video en iPhone/iPad real y la ronda pequeña con niños con permiso parental |
 | PvP online (posterior) | D | FUERA DE ALCANCE | — | — | — | Roadmap | — |
 
 **D14 (frente D, 5-nov):** `src/game/v18/ciclo.js` conecta los módulos sin sistema de eventos nuevo: aviso de victoria con el uso de los materiales, bandera verde del minimapa hacia el puente, y tras repararlo la pista del segundo objetivo opcional (decisión 8): buscar la cotorra de Dominica si aún no la tienes, o ganar a la Campeona con la otra cotorra (se cumple una vez, sin premio nuevo). La prueba integral `AV.v18CicloTest()` recorre el ciclo entero con progreso limpio.
+
+**Nota de BUGS (5-nov):** QA-165 no está en `BUGS.md` de main: su fila y su arreglo están en el commit local 002ae6ad, sin subir. El id QA-170 está repetido (HUD del duelo y Sombra invisible).
