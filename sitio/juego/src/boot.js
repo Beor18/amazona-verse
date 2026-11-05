@@ -72,6 +72,19 @@
     // Pantalla de carga (src/ui/carga.js): entre «Empezar» y el control del jugador espera, por tandas, al mundo, la zona de
     // inicio, las texturas y los programas (tope 20 s). Se pide ya: tiene que estar antes de que el jugador entre.
     const cargarCarga = aDemanda('src/ui/carga.js', 'AVCarga');
+    // QA-159: mientras esa pantalla (perezosa) no ha corrido, el mundo queda tapado aunque carga.js tarde en evaluarse
+    // (el hilo se come el fetch/parseo del mundo y el script llega tarde): sin esto, una llegada tardía metía el motivo
+    // de pausa 'carga' con el mundo ya jugable y congelaba la partida a medias unos segundos (maestroTest vía creador
+    // 25/26 intermitente). carga.js quita la bandera al destapar (fase 'dibujo' o cierre) o al descartar la corrida;
+    // este tope de seguridad destapa si el script no llega nunca; ?carga=0 no instala nada.
+    if (!/[?&]carga=0\b/.test(location.search) && G.ui && G.ui.worldHidden && !G.ui.worldHidden.precarga) {
+      G.cargaPendiente = true;
+      const previo = G.ui.worldHidden;
+      const wh = () => G.cargaPendiente || previo();
+      wh.precarga = true;
+      G.ui.worldHidden = wh;
+      setTimeout(() => { G.cargaPendiente = false; }, 30000);
+    }
     cargarCarga().then(c => { AV.carga = c; }, () => {});
     AV.cargaEsperar = ms => cargarCarga().then(c => c.esperar(ms), () => null);
     AV.cargaTest = o => cargarCarga().then(c => c.test(o));

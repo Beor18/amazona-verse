@@ -103,7 +103,7 @@
         // El taller se descubre al despertar y su aviso («Lugares descubiertos 1/32») tapa esta llamada. Se repite cuando ese aviso se va.
         setTimeout(() => { if (G.S.step === 0 && !G.S.complete) G.ui.toast(llama, 5000); }, 3400);
       };
-      function alTeclear(e) { if (e.repeat || ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return; e.preventDefault(); e.stopPropagation(); terminar(true); }
+      function alTeclear(e) { if (e.repeat || ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return; if (G.pausa && G.pausa.activa && G.pausa.activa()) return; e.preventDefault(); e.stopPropagation(); terminar(true); }
       if (!G.quiet) {
         addEventListener('keydown', alTeclear, true);
         btn = document.createElement('button'); btn.type = 'button'; btn.id = 'c1-saltar'; btn.className = 'btn ghost'; btn.textContent = 'Saltar intro'; // «Saltar» a secas es el botón de saltar (Jump)

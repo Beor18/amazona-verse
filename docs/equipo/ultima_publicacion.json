@@ -1,14 +1,14 @@
 {
- "codigo": "ebfcde20ff0100472bb7ee3fed02251cf7353f44",
+ "codigo": "80a973e432a8cef306ecadd66c730cfa699b8b74",
  "sitio": null,
- "fecha": "2026-11-05T03:17:31Z",
+ "fecha": "2026-11-05T07:44:24Z",
  "nota": "13 baterías en verde en la Mac con GPU real",
  "pruebas": {
   "estado": "pasa",
-  "inicio": "2026-11-04T23:06:05-04:00",
-  "duracion_s": 677.9,
+  "inicio": "2026-11-05T03:32:56-04:00",
+  "duracion_s": 680.7,
   "chrome": "Chrome/157.0.8103.39",
-  "huella_build": "978beb265550eeb21dc630803059ea45fdaad7cfe17e8eab981af689ac2c9ca3",
+  "huella_build": "ab0aa145e3ba8dedef0573a9d80dd455d97107b9e022576f5fb9cfbdcd70e09c",
   "requeridas_ok": 12,
   "requeridas": 12
  },
@@ -201,7 +201,7 @@
   },
   "streamingTest": {
    "requerida": false,
-   "passed": 22,
+   "passed": 21,
    "total": 24,
    "ok": false
   },
@@ -231,9 +231,9 @@
   },
   "camaraTest": {
    "requerida": false,
-   "passed": 14,
+   "passed": 13,
    "total": 14,
-   "ok": true
+   "ok": false
   },
   "accesibilidadTest": {
    "requerida": false,
@@ -285,9 +285,9 @@
   },
   "ciudadVivaTest": {
    "requerida": false,
-   "passed": 19,
+   "passed": 20,
    "total": 20,
-   "ok": false
+   "ok": true
   },
   "wowTest": {
    "requerida": false,
@@ -345,9 +345,9 @@
   },
   "banqueteTest": {
    "requerida": false,
-   "passed": 43,
+   "passed": 44,
    "total": 44,
-   "ok": false
+   "ok": true
   },
   "minimapaTest": {
    "requerida": false,
@@ -453,9 +453,9 @@
   },
   "ambienteTest": {
    "requerida": false,
-   "passed": 25,
+   "passed": 24,
    "total": 25,
-   "ok": true
+   "ok": false
   },
   "lugaresTest": {
    "requerida": false,
@@ -505,16 +505,16 @@
    "total": 46,
    "ok": true
   },
-  "crecidaTest": {
-   "requerida": false,
-   "passed": 8,
-   "total": 8,
-   "ok": true
-  },
   "rarezaTest": {
    "requerida": false,
    "passed": 21,
    "total": 21,
+   "ok": true
+  },
+  "crecidaTest": {
+   "requerida": false,
+   "passed": 8,
+   "total": 8,
    "ok": true
   },
   "gagsTest": {
@@ -591,14 +591,14 @@
   },
   "playtestAutoTest": {
    "requerida": false,
-   "passed": 42,
-   "total": 45,
+   "passed": 45,
+   "total": 48,
    "ok": false
   },
   "playtestCap1Test": {
    "requerida": false,
-   "passed": 2,
-   "total": 3,
+   "passed": 5,
+   "total": 6,
    "ok": false
   },
   "playtestCap2Test": {
@@ -638,28 +638,28 @@
   "muestras_error": []
  },
  "carga_inicial_mb": 20.02,
- "heap_mb": 179.9,
+ "heap_mb": 194.1,
  "fallas": [],
  "avisos": [
   "AV.guineoTest (extra, no obligatoria) no pasa: 13/14",
   "AV.bohiosTest (extra, no obligatoria) no pasa: 26/27",
-  "AV.streamingTest (extra, no obligatoria) no pasa: 22/24",
+  "AV.streamingTest (extra, no obligatoria) no pasa: 21/24",
   "AV.floraTest (extra, no obligatoria) no pasa: 18/19",
+  "AV.camaraTest (extra, no obligatoria) no pasa: 13/14",
   "AV.retosTest (extra, no obligatoria) no pasa: 114/115",
   "AV.bandadaTest (extra, no obligatoria) no pasa: 15/17",
   "AV.comunidadesTest (extra, no obligatoria) no pasa: 18/19",
-  "AV.ciudadVivaTest (extra, no obligatoria) no pasa: 19/20",
-  "AV.banqueteTest (extra, no obligatoria) no pasa: 43/44",
   "AV.minimapaTest (extra, no obligatoria) no pasa: 34/37",
   "AV.idiomaTest (extra, no obligatoria) no pasa: 20/31",
+  "AV.ambienteTest (extra, no obligatoria) no pasa: 24/25",
   "AV.ep3e2eTest (extra, no obligatoria) no pasa: 42/43",
   "AV.temporadaRealEnTest (extra, no obligatoria) no pasa: 9/10",
-  "AV.playtestAutoTest (extra, no obligatoria) no pasa: 42/45",
-  "AV.playtestCap1Test (extra, no obligatoria) no pasa: 2/3",
+  "AV.playtestAutoTest (extra, no obligatoria) no pasa: 45/48",
+  "AV.playtestCap1Test (extra, no obligatoria) no pasa: 5/6",
   "AV.playtestCap2Test (extra, no obligatoria) no pasa: 8/9",
   "AV.playtestCap6Test (extra, no obligatoria) no pasa: 6/7",
-  "presupuesto: 179.9 MB de heap a ~9 s (límite 120)",
-  "presupuesto: 202 draw calls en la vista de arranque (límite 150)",
-  "presupuesto: 303.6 MB de texturas en la vista de arranque (límite 300)"
+  "presupuesto: 194.1 MB de heap a ~9 s (límite 120)",
+  "presupuesto: 200 draw calls en la vista de arranque (límite 150)",
+  "presupuesto: 644.9 MB de texturas en la vista de arranque (límite 300)"
  ]
 }
