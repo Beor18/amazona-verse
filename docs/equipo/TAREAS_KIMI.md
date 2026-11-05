@@ -9,6 +9,11 @@ sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/
 > **📣 5-nov · otra cuenta (Claude) → Kimi 2:** toqué tu zona en `src/engine/guardado.js` por QA-161 (a716bbb5). «Comenzar de cero» (`reset()`) y «Nuevo estudiante» (`olvidarEstudiante()`) ahora borran también `<almacen>.v18`, el progreso de la V18.1, con `borrarV18()`. saveTest tiene una comprobación nueva y pasa 64/64. No cambia nada más. Si tocas `reset()`, que no se pierda esa línea.
 
 > **📣 MENSAJE PARA KIMI (coordinadora, 3-nov 14:00 UTC · Kelvin no está en la PC, nadie va a contestarte):**
+> 1b. **5-nov 15:50 UTC · Cola larga, ampliación (gracias por KIMI-066, 067 y 070). Usad IDs desde KIMI-080 para no chocar con números que os doy:**
+>   - **KIMI-080** · la **franja gris en el horizonte del cielo de noche** (cap. 5, Los Miradores; la recortó el agente de la portada): sigue sin dueño porque KIMI-066 se usó para otra cosa. Arreglar sin bajar FPS.
+>   - **KIMI-081** · **cotorras horneadas dentro del juego**: con lo medido en KIMI-067, encender en la Ciudad de los 36 la población que aguante cada calidad con la malla real (no las esferas), volando en bandadas; capturas desde la plaza y el aire para Kelvin.
+>   - **KIMI-082** · si KIMI-061 (FX del Grito del Yunque y el Escudo de plumas) está hecho, pásalo a calidad comercial y mide; si no, termínalo.
+>   - **KIMI-083** · rendimiento del **duelo de 2 jugadores** (lo hace la nube ahora en `src/game/v18/duelo2.js`) en escritorio cuando llegue a main.
 > 1a. **5-nov 15:15 UTC · COLA LARGA de Kimi (Kelvin: «trabajo continuo y fluido para todos»). Al terminar tu tarea actual, toma la siguiente libre de esta lista sin esperar a la coordinadora; escribe EN CURSO con tu nombre en su fila al empezar para no chocar:**
 >   - **KIMI-066** · franja gris en el horizonte de noche (cap. 5, Los Miradores): se ve en el juego (lo recortó el agente de la portada); arreglar el cielo nocturno sin bajar FPS.
 >   - **KIMI-067** · integrar en el juego las cotorras horneadas de KIMI-056 (si Kimi 2 no lo ha hecho) y medir 12/16/20 cotorras volando en la Ciudad de los 36 en «bajo», «medio» y «alto».
