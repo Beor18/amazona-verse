@@ -1,0 +1,12 @@
+entrada: ok
+perfil: 390x844 dpr 3 cpu x4 (iPhone emulado, GPU real)
+ciudad: {"ok":true,"esperaS":2,"conSolido":"60/60","aves":12}
+bajo: n=12 aireMed=8 bandoMed=5 (bandada forzada) · FPS med 20 / p10 18 / min 18 · 86 calls · 217 k tris · dpr 1 sombras false · heap 148 MB · geo 141 tex 123
+  captura k067_r1_bajo.jpg
+medio: n=16 aireMed=8 bandoMed=5 · FPS med 13 / p10 6 / min 1 · 153 calls · 380 k tris · dpr 1 sombras true · heap 139 MB · geo 173 tex 142
+  captura k067_r1_medio.jpg
+alto: n=20 aireMed=8 bandoMed=5 · FPS med 16 / p10 14 / min 13 · 148 calls · 785 k tris · dpr 1 sombras true · heap 133 MB · geo 174 tex 142
+  captura k067_r1_alto.jpg
+ciudadVivaTest: 21/21
+errores consola: []
+veredicto: OK → docs/img/kimi067/k067_r1.json
