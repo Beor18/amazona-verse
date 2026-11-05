@@ -334,3 +334,9 @@ Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar
 - **A:** A1 a provisional, A2 a provisional, A3 b (Iguaca, Abuela y Papá: diferencias de expresión, vestuario, accesorios y retratos; misma especie; Vittata intacta), A4 c (Mara y Vela solo voces y luces), A5 a, A6 a provisional, A7 b (revisar pretrei y tucumana con referencias, sin quitar lo actual), A8 a (ropero de 15 trajes aparcado), **A9 pendiente: Kelvin quiere capturas de BM133 y BM134**. Dirección de arte: toon vibrante y colorido de aventura moderna, sin copiar a nadie.
 - **Prioridades:** 1 estabilidad (iPhone, iPad, Android), 2 diversión, 3 la temporada coherente, 4 mundo vivo también en «bajo», 5 piloto familiar y escolar.
 
+## 5-nov-2026 · Kelvin: Directiva V18.1 «El mundo que cambia contigo» (`docs/DIRECTIVA_V18_1.txt`)
+- Reemplaza las prioridades de producto de V17. Ciclo a demostrar en 30 días: descubrir una cotorra → desbloquear su poder → duelo contra una IA → recompensa → reparar una estructura del mundo que persiste.
+- **VALIDACIÓN MÓVIL ACTUAL — APROBADA POR EL FUNDADOR** (iPhone, 60 FPS, mín. 45, sin trancarse): no bloquea V18.1 ni se repite como auditoría general; solo regresión de lo nuevo.
+- Provisionales y reversibles: nombre «Batalla de Bandadas»; ataques básicos golpe de ala, semilla y grito; primero 1v1 contra IA; PvP local solo si llega (días 21–30) con dos personas reales; PvP online fuera. La matriz de 36 poderes y los enemigos nuevos necesitan su aprobación antes de producirse. Minijuegos por capítulo: después del ciclo.
+- Implementación: rama `main` única (CLAUDE.md) con bandera `?v18=1` en lugar de ramas por frente; contratos en `docs/equipo/V18_CONTRATOS.md`, tablero en `docs/equipo/V18_TABLERO.md`.
+
