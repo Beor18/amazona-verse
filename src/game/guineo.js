@@ -291,8 +291,14 @@ window.AVGuineo = function (G) {
     })
     .catch(e => { console.warn('AVE guineo:', e && e.message || e); });
 
-  G.on('render', (dt, t) => { U.uTime.value = t; if (activo) actualizar(false); }, 23);
-  G.on('calidad', () => { if (activo) { aplicarCalidad(); actualizar(true); } });
+  let recalidad = false;
+  G.on('render', (dt, t) => {
+    U.uTime.value = t;
+    if (!activo) return;
+    if (recalidad) { recalidad = false; aplicarCalidad(); actualizar(true); }
+    else actualizar(false);
+  }, 23);
+  G.on('calidad', () => { if (activo) recalidad = true; });
 
   function stats() {
     const n = mallas.map(m => m.visible ? m.count : 0);

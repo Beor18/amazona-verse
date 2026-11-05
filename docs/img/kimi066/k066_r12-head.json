@@ -1,0 +1,29 @@
+{
+  "modulos": {
+    "guineoTest": "13/14 ROJO [\"Calidad baja: menos matas, ninguna con racimo y menos distancia\"]",
+    "banqueteTest": "43/44 ROJO [\"La partida de la historia (G.S) queda intacta (el Banquete no escribe en ella)\"]",
+    "rioVivoTest": "29/29 OK"
+  },
+  "deferral": {
+    "huertoInfo": "huerto en 169,197 matas 3",
+    "evMs": 670,
+    "evMsVuelta": 23,
+    "guineo": {
+      "igualEnVentana": false,
+      "convergidoBajo": false,
+      "statsMedio": "{\"huertos\":4,\"matas\":13,\"visibles\":3,\"porVariante\":[3,0,0],\"mallasVisibles\":1,\"tris\":5280}",
+      "bajo": "{\"huertos\":4,\"matas\":13,\"visibles\":3,\"porVariante\":[0,3,0],\"mallasVisibles\":1,\"tris\":2568}"
+    },
+    "rio": {
+      "pecesMedio0": 4,
+      "igualEnVentana": false,
+      "bajo": 2,
+      "medioVuelta": 4
+    },
+    "banquete": {
+      "perchasEnVentana": 52,
+      "perchasDespues": 0
+    }
+  },
+  "errores": 0
+}

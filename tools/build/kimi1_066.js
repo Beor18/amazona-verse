@@ -63,6 +63,12 @@ class CDP {
   bombear(s) { return new Promise(r => setTimeout(r, s * 1000)); }
 }
 async function ev(cdp, ses, exp, t, aw) { const r = await cdp.call('Runtime.evaluate', { expression: exp, returnByValue: true, awaitPromise: aw !== false }, ses, (t || 30) * 1000); if (r.exceptionDetails) throw new Error('JS: ' + JSON.stringify(r.exceptionDetails.exception && r.exceptionDetails.exception.description || r.exceptionDetails.text).slice(0, 300)); return r.result ? r.result.value : undefined; }
+// KIMI-066 v2: todas las llamadas CDP con timeout (bajo contención el browser se starving y una llamada
+// sin timeout cuelga el proceso entero sin salida, familia QA-111) + reloj global que aborta con diagnóstico.
+const GLOBAL = setTimeout(async () => {
+  console.error('FALLO: reloj global 480 s (browser starving bajo contención). Reintentar en un hueco.');
+  try { process.exit(2); } catch (e) {}
+}, 480000);
 async function lanzarChrome() {
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi1-k066-'));
   const args = ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + perf,
@@ -87,24 +93,35 @@ function matarChrome(chrome, perf) {
 }
 (async () => {
   const { srv, puerto } = await servir();
-  const { chrome, perf, wsPath } = await lanzarChrome();
+  const { chrome, perf, puerto: puertoDbg, wsPath } = await lanzarChrome();
   try {
-    const ws = new WebSocket('ws://127.0.0.1:' + puerto + wsPath);
-    const cdp = new CDP(ws); await cdp.listo();
-    const tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
-    const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
-    for (const m of ['Page.enable', 'Runtime.enable', 'Log.enable']) await cdp.call(m, {}, ses);
-    await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: MOVIL }, ses);
-    await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
-    await cdp.call('Emulation.setUserAgentOverride', { userAgent: UA }, ses);
-    await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_JS }, ses);
-    await cdp.call('Page.navigate', { url: 'http://127.0.0.1:' + puerto + '/index.html?calidad=medio' }, ses);
-    let clicado = false;
-    for (let i = 0; i < 150 && !clicado; i++) { await cdp.bombear(0.5); try { clicado = !!(await ev(cdp, ses, '(() => { const b = document.querySelector(\'[data-modo="aventura"]\'); if (!b) return false; b.click(); return true; })()', 5, false)); } catch (e) {} }
-    if (!clicado) throw new Error('no apareció la tarjeta Aventura');
-    let jugable = false;
-    for (let i = 0; i < 240 && !jugable; i++) { await cdp.bombear(0.5); try { jugable = !!(await ev(cdp, ses, '(() => { const G = window.AV && AV.G; if (!G || !G.ui || G.ui.worldHidden()) return false; const st = (() => { try { return G.renderer.stats(); } catch (e) { return null; } })(); return st && st.calls > 5; })()', 5, false)); } catch (e) {} }
-    if (!jugable) throw new Error('el mundo no se hizo jugable');
+    const ws = new WebSocket('ws://127.0.0.1:' + puertoDbg + wsPath);
+    const cdp = new CDP(ws);
+    await Promise.race([cdp.listo(), new Promise((_, rej) => setTimeout(() => rej(new Error('ws DevTools no abrió en 60 s (chrome caído o starving)')), 60000))]);
+    const callT = (m, p, s, t) => cdp.call(m, p, s, t || 45);
+    const tid = (await callT('Target.createTarget', { url: 'about:blank' }, undefined, 90)).targetId;
+    const ses = (await callT('Target.attachToTarget', { targetId: tid, flatten: true }, undefined, 90)).sessionId;
+    for (const m of ['Page.enable', 'Runtime.enable', 'Log.enable']) await callT(m, {}, ses, 120);
+    await callT('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: MOVIL }, ses, 120);
+    await callT('Emulation.setCPUThrottlingRate', { rate: CPU }, ses, 120);
+    await callT('Emulation.setUserAgentOverride', { userAgent: UA }, ses, 120);
+    await callT('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_JS }, ses, 120);
+    async function entrar() {
+      await callT('Page.navigate', { url: 'http://127.0.0.1:' + puerto + '/index.html?calidad=medio' }, ses, 60);
+      let clicado = false;
+      for (let i = 0; i < 150 && !clicado; i++) { await cdp.bombear(0.5); try { clicado = !!(await ev(cdp, ses, '(() => { const b = document.querySelector(\'[data-modo="aventura"]\'); if (!b) return false; b.click(); return true; })()', 5, false)); } catch (e) {} }
+      if (!clicado) throw new Error('no apareció la tarjeta Aventura');
+      let jugable = false;
+      for (let i = 0; i < 240 && !jugable; i++) { await cdp.bombear(0.5); try { jugable = !!(await ev(cdp, ses, '(() => { const G = window.AV && AV.G; if (!G || !G.ui || G.ui.worldHidden()) return false; const st = (() => { try { return G.renderer.stats(); } catch (e) { return null; } })(); return st && st.calls > 5; })()', 5, false)); } catch (e) {} }
+      if (!jugable) throw new Error('el mundo no se hizo jugable');
+    }
+    try { await entrar(); }
+    catch (e1) {
+      console.error('intento 1 falló (' + e1.message + '): recarga y reintento');
+      try { await callT('Page.reload', { ignoreCache: true }, ses, 60); } catch (e) {}
+      await entrar();
+    }
+    clearTimeout(GLOBAL);
     await cdp.bombear(4);
     // 1) pruebas de módulo (cubren los caminos síncronos de calidad, que se conservan)
     const mod = {};
@@ -167,6 +184,8 @@ function matarChrome(chrome, perf) {
   } finally {
     matarChrome(chrome, perf);
     srv.close();
-    process.exit(0);
   }
+  // salida SIN process.exit dentro del finally: si el cuerpo lanzó, la propagación llega al .catch de abajo
+  // (process.exit(0) en un finally se tragaba el error y salía en silencio con exit 0).
+  process.exit(0);
 })().catch(e => { console.error('FALLO:', e.message); process.exit(1); });

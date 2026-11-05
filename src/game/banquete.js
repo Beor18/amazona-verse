@@ -180,7 +180,8 @@ window.AVBanquete = function (G) {
     return mundo.lista.length;
   }
   const preparado = (G.vegetacion && G.vegetacion.listo ? G.vegetacion.listo : Promise.resolve()).then(() => { if (!B.listo) poblar(); }, () => { if (!B.listo) poblar(); });
-  G.on('calidad', C => { if (B.listo && arbolesPara(C.nivel) !== B.nivel) poblar(); });
+  let recalidad = false;
+  G.on('calidad', C => { if (B.listo && arbolesPara(C.nivel) !== B.nivel) recalidad = true; });
 
   // ---------- HUD: lo que lleva Vittata ----------
   let chip = null;
@@ -277,6 +278,7 @@ window.AVBanquete = function (G) {
   G.interaccion.add(itAccion);
 
   G.on('update', (dt, busy) => {
+    if (recalidad) { recalidad = false; if (arbolesPara(nivel()) !== B.nivel) poblar(); }
     if (!B.listo || enRetos()) { itAccion.fr = null; itAccion.r = ALCANCE; return; }
     // Regeneración
     for (const fr of mundo.lista) if (!fr.activo && fr.regen && S.clock >= fr.regen) { fr.activo = true; fr.pop = 1; fr.regen = 0; }

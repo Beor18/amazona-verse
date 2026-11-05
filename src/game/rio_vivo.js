@@ -287,9 +287,10 @@ window.AVRioVivo = function (G) {
       if (!F.avisado) { F.avisado = true; try { G.ui.toast(L('Visor: quédate cerca del pez para observarlo.', 'Viewer: stay near a fish to watch it.'), 2600); } catch (err) { /* sin HUD */ } }
     }
   }
-  G.on('update', (dt, busy) => { if (!F.prueba) paso(dt, busy); }, 86);
+  let recalidad = false;
+  G.on('update', (dt, busy) => { if (recalidad) { recalidad = false; poblar(); } if (!F.prueba) paso(dt, busy); }, 86);
   G.on('apply', () => { vistos(); F.obs = {}; });
-  G.on('calidad', () => poblar());
+  G.on('calidad', () => { recalidad = true; });
   const contar = () => { const c = {}; for (const b of bancos) c[b.id] = (c[b.id] || 0) + 1; return c; };
   const estado = () => ({ bancos: bancos.length, porEspecie: contar(), porBanco: bancos[0] ? bancos[0].peces.length : 0, visor: F.visorOn, mirando: F.mirando, vistos: vistos().slice(),
     draw: Object.values(mallas).filter(m => m.visible).length });
