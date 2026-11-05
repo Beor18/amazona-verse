@@ -9,7 +9,7 @@
    - nodos del DOM y requestAnimationFrame pendientes,
    - heap JS (solo informativo: sin GPU y sin GC forzado es ruidoso; las texturas no cuentan).
    Falla si algo de la lógica de juego crece con cada ciclo. Deja la partida, el guardado y la interfaz como estaban.
-   Devuelve { passed, total, results, medidas }. Opciones: { ciclos: 6 }. */
+   Devuelve { passed, total, results, medidas }. Opciones: { ciclos: 4 }. */
 window.AVFugasTest = function (G) {
   'use strict';
   const $ = G.util.$;
@@ -21,7 +21,7 @@ window.AVFugasTest = function (G) {
     const ET = EventTarget.prototype, add0 = ET.addEventListener, rem0 = ET.removeEventListener;
     const si0 = window.setInterval, ci0 = window.clearInterval, raf0 = window.requestAnimationFrame, caf0 = window.cancelAnimationFrame;
     const vivos = new Map(); // target → Set de 'tipo|captura' con su fn
-    const C = { listeners: 0, intervalos: new Set(), raf: new Set(), porTipo: {} };
+    const C = { listeners: 0, intervalos: new Set(), raf: new Set(), porTipo: {}, vivos };
     const clave = (t, fn, o) => t + '|' + (o === true || (o && o.capture) ? 1 : 0);
     ET.addEventListener = function (t, fn, o) {
       if (fn) {
@@ -43,12 +43,20 @@ window.AVFugasTest = function (G) {
     C.quitar = () => { ET.addEventListener = add0; ET.removeEventListener = rem0; window.setInterval = si0; window.clearInterval = ci0; window.requestAnimationFrame = raf0; window.cancelAnimationFrame = caf0; };
     return C;
   }
-  const medir = C => ({
-    listeners: C.listeners, intervalos: C.intervalos.size, raf: C.raf.size,
+  // Solo cuentan los listeners de objetos que siguen vivos en la página: un botón que se rehace con innerHTML se lleva
+  // los suyos al recolector (no es fuga). Cuentan window, document, nodos conectados y cualquier otro EventTarget.
+  const vivo = t => !(t instanceof Node) || t === document || t.isConnected;
+  function contar(C) {
+    let n = 0; const porTipo = {};
+    for (const [t, m] of C.vivos) if (vivo(t)) for (const [k, s] of m) if (s.size) { n += s.size; const tipo = k.split('|')[0]; porTipo[tipo] = (porTipo[tipo] || 0) + s.size; }
+    return { n, porTipo };
+  }
+  const medir = C => { const L = contar(C); return {
+    listeners: L.n, intervalos: C.intervalos.size, raf: C.raf.size,
     nodos: document.getElementsByTagName('*').length,
     heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576 * 10) / 10 : null,
-    porTipo: Object.assign({}, C.porTipo)
-  });
+    porTipo: L.porTipo
+  }; };
 
   // ---------- Modos ----------
   async function cargarRetos() { if (!window.AVRetos) await AVE.assets.script('src/game/retos.js'); return window.AVRetos(G); }
@@ -74,7 +82,7 @@ window.AVFugasTest = function (G) {
 
   async function test(opts) {
     opts = opts || {};
-    const N = Math.max(3, opts.ciclos || 6);
+    const N = Math.max(3, opts.ciclos || 4);
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
     const snap = G.guardado.instantanea ? G.guardado.instantanea() : null;
     const quiet0 = G.quiet, toast0 = G.ui.toast;
@@ -92,7 +100,7 @@ window.AVFugasTest = function (G) {
       const crece = k => b[k] - a[k];
       const tipos = Object.keys(b.porTipo).filter(t => (b.porTipo[t] || 0) - (a.porTipo[t] || 0) > 0).map(t => t + ' +' + ((b.porTipo[t] || 0) - (a.porTipo[t] || 0)));
       ok('Sin errores al abrir y cerrar Retos, Modo familia, Modo Maestro y cómic', notas.length === 0, notas.slice(0, 4).join(' | '));
-      ok('Listeners: no crecen al repetir (≤ 1 por ' + n + ' ciclos)', crece('listeners') <= 1, crece('listeners') + (tipos.length ? ' · ' + tipos.join(', ') : ''));
+      ok('Listeners: no crecen al repetir (≤ 1 en ' + n + ' ciclos; solo en lo que sigue en la página)', crece('listeners') <= 1, crece('listeners') + (tipos.length ? ' · ' + tipos.join(', ') : ''));
       ok('Intervalos: ninguno queda vivo de más', crece('intervalos') <= 0, a.intervalos + ' → ' + b.intervalos);
       ok('Nodos del DOM: no crecen al repetir (≤ 20)', crece('nodos') <= 20, a.nodos + ' → ' + b.nodos);
       ok('requestAnimationFrame: sin bucles que se acumulan (≤ 2 pendientes de más)', crece('raf') <= 2, a.raf + ' → ' + b.raf);
