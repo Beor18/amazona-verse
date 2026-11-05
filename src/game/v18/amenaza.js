@@ -82,7 +82,10 @@ window.AVV18Amenaza = function (G) {
   const dispersa = () => !!(V && V.mundo(ID) === 'dispersa');
   const especie = () => (V && V.seleccionada && V.seleccionada()) || (S.profile && ((S.profile.look && S.profile.look.species) || S.profile.species)) || 'vittata';
   function nuevoJugador(sp) {
-    return H.luchador({ id: 'jugador', nombre: TXT.tu, especie: sp || especie(), pos: S.pos, plumas: PLUMAS, plumasMax: PLUMAS, mira: () => S.facing });
+    const j = H.luchador({ id: 'jugador', nombre: TXT.tu, especie: sp || especie(), pos: S.pos, plumas: PLUMAS, plumasMax: PLUMAS, mira: () => S.facing });
+    // A la Sombra solo le hacen algo el Grito y el Escudo: con las cotorras nuevas (Quiebro, Lluvia, Ojo, Ala fuerte) se usa el Grito
+    if (j.poder !== 'escudo_plumas' && j.poder !== 'grito_yunque') j.poder = 'grito_yunque';
+    return j;
   }
   const sombra = { id: 'sombra', pos: A.pos }; // «otro» para el motor de habilidades
   function anclaLejos() {
@@ -397,6 +400,7 @@ window.AVV18Amenaza = function (G) {
       // ----- Arausiaca: se gana con el escudo a tiempo -----
       iniciar({ especie: 'arausiaca', forzar: true });
       check('Con arausiaca su poder es el Escudo de plumas', A.fase === 'lucha' && A.j.poder === 'escudo_plumas');
+      check('Con una cotorra nueva (agilis, Quiebro) contra la Sombra se usa el Grito: se le puede ganar', nuevoJugador('agilis').poder === 'grito_yunque' && nuevoJugador('arausiaca').poder === 'escudo_plumas');
       A.cadaT = 10; ponerJugadora(5, true); A.j.energia = 100; A.j.cd = {}; usarPoder(); correr(3);
       check('Escudo a destiempo (sin ráfaga): no cuenta', A.aciertos === 0, 'aciertos ' + A.aciertos);
       for (let k = 0; k < 3 && A.fase === 'lucha'; k++) {
