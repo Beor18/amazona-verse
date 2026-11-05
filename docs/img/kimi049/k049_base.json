@@ -1,0 +1,143 @@
+{
+ "aros": {
+  "aros": [
+   {
+    "anillo": 0,
+    "rInt": 57,
+    "rExt": 78,
+    "visible": true,
+    "opacidad": 0.35
+   },
+   {
+    "anillo": -0.2,
+    "rInt": 60,
+    "rExt": 105,
+    "visible": true,
+    "opacidad": 0.22
+   },
+   {
+    "anillo": 0,
+    "rInt": 42.75,
+    "rExt": 58.5,
+    "visible": true,
+    "opacidad": 0.35
+   },
+   {
+    "anillo": -0.2,
+    "rInt": 45,
+    "rExt": 78.75,
+    "visible": true,
+    "opacidad": 0.22
+   },
+   {
+    "anillo": 0,
+    "rInt": 38,
+    "rExt": 52,
+    "visible": true,
+    "opacidad": 0.35
+   },
+   {
+    "anillo": -0.2,
+    "rInt": 40,
+    "rExt": 70,
+    "visible": true,
+    "opacidad": 0.22
+   }
+  ],
+  "islas": [
+   {
+    "x": -330,
+    "z": 430,
+    "r": 60
+   },
+   {
+    "x": 40,
+    "z": 520,
+    "r": 45
+   },
+   {
+    "x": 380,
+    "z": 420,
+    "r": 40
+   }
+  ]
+ },
+ "islaB_rasante_cerca": {
+  "pos": [
+   40,
+   3,
+   258
+  ],
+  "terrenoH": -9,
+  "calls": 1,
+  "tris": "0M",
+  "hora": null
+ },
+ "islaB_rasante_costa": {
+  "pos": [
+   40,
+   3.5,
+   252
+  ],
+  "terrenoH": -9,
+  "calls": 1,
+  "tris": "0M",
+  "hora": null
+ },
+ "islaB_aerea": {
+  "pos": [
+   40,
+   42.18,
+   258
+  ],
+  "terrenoH": -9,
+  "calls": 1,
+  "tris": "0M",
+  "hora": null
+ },
+ "islaC_rasante": {
+  "pos": [
+   235,
+   3.5,
+   250
+  ],
+  "terrenoH": -9,
+  "calls": 1,
+  "tris": "0M",
+  "hora": null
+ },
+ "islaA_rasante": {
+  "pos": [
+   -228,
+   3.5,
+   252
+  ],
+  "terrenoH": -9,
+  "calls": 1,
+  "tris": "0M",
+  "hora": null
+ },
+ "ctrl_bahia_villa": {
+  "pos": [
+   150,
+   8,
+   222
+  ],
+  "terrenoH": -0.77,
+  "calls": 1,
+  "tris": "0M",
+  "hora": null
+ },
+ "ctrl_playa_este": {
+  "pos": [
+   60,
+   8,
+   242
+  ],
+  "terrenoH": -7.47,
+  "calls": 1,
+  "tris": "0M",
+  "hora": null
+ },
+ "fps": 144
+}

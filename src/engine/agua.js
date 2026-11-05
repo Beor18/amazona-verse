@@ -99,7 +99,14 @@ AVE.module('agua', function (G) {
     uEstilo: { value: C.agua > 0 ? 1 : 0 }, // 26-C: espuma en bandas de borde duro y destellos del sol (medio y alto)
     uTormenta: { value: 0 }, // 1 mientras se juega «¡Escapa de la tormenta!»: un solo cuerpo de agua
     uBio: { value: [new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4(), new THREE.Vector4()] }, // BM21: x, z, intensidad (0 apagado) de 4 toques de la caleta
+    uIslas: { value: [new THREE.Vector4(0, 0, -1e4, 0), new THREE.Vector4(0, 0, -1e4, 0), new THREE.Vector4(0, 0, -1e4, 0)] }, // KIMI-049: islotes decorativos (x, z, r; r muy negativo = apagado)
   };
+  // KIMI-049: los islotes decorativos viven fuera del heightmap (terreno.js los dibuja como lomas);
+  // su espuma y bajío se pintan aquí sobre la superficie real del mar, no como aros planos aparte.
+  {
+    const lista = (MAPA && W.islas && W.islas.lista) || [];
+    for (let i = 0; i < 3 && i < lista.length; i++) U.uIslas.value[i].set(lista[i].x, lista[i].z, lista[i].r, 0);
+  }
   const COMMON_FRAG = `
     uniform float uTime, uTormenta; uniform sampler2D tNormal, tAltura; uniform vec4 uHInfo; uniform vec2 uHDec, uHN;
     uniform vec3 uSolDir, uSolCol, uCielo, uHorizonte, uHemiSuelo, uHemiCielo; uniform float uEstilo;
@@ -185,7 +192,7 @@ AVE.module('agua', function (G) {
       #include <fog_vertex>
     }`;
   const MAR_FRAG = COMMON_FRAG + `
-    uniform vec3 uSomero, uHondo, uLaguna; uniform vec4 uBio[4];
+    uniform vec3 uSomero, uHondo, uLaguna; uniform vec4 uBio[4]; uniform vec4 uIslas[3];
     varying vec3 vW; varying float vOla;
     #include <fog_pars_fragment>
     void main() {
@@ -244,6 +251,23 @@ AVE.module('agua', function (G) {
       // Casi opaca: si el fondo se viera, la arena y la caída del arrecife volverían a ser un corte
       float aMar = max(mix(0.95, 0.99, nB), espuma * 0.95) * smoothstep(-0.05, 0.55, profReal);
       a = mix(a, aMar, uTormenta);
+      // KIMI-049: bajío y espuma de los islotes decorativos del sur (fuera del heightmap), sobre la
+      // superficie real del mar (con olas). El aro plano que llevaban las lomas (terreno.js) quedaba
+      // rasante/aplastado y «colgaba» la isla: parecía flotar sobre su propia espuma.
+      float dIsla = 1e5;
+      for (int i = 0; i < 3; i++) dIsla = min(dIsla, length(xz - uIslas[i].xy) - uIslas[i].z);
+      if (dIsla < 30.0) {
+        float somero = 1.0 - smoothstep(-2.0, 26.0, dIsla);
+        col = mix(col, saturar(uLaguna, 1.3) * (uHemiCielo * 0.55 + uSolCol * max(dot(N, uSolDir), 0.0) * 0.35 + 0.1), somero * 0.4);
+        a = mix(a, 0.84, somero * 0.55);
+        float nzI = vnoise(xz * 1.3 + uTime * 0.22);
+        float bandI = sin(dIsla * 1.9 - uTime * 1.2 + nzI * 3.5) * 0.5 + 0.5;
+        float espI = (1.0 - smoothstep(0.0, 1.6, dIsla)) * 0.85;
+        espI = max(espI, (1.0 - smoothstep(0.6, 7.5, dIsla)) * smoothstep(0.55, 0.85, bandI + nzI * 0.3));
+        espI = clamp(espI, 0.0, 1.0) * mix(1.0, 0.5, lejos);
+        col = mix(col, uHemiCielo * 0.85 + uSolCol * 0.35, espI * 0.85);
+        a = max(a, espI * 0.9);
+      }
       // BM21: tinte emisivo azul-verde de la caleta alrededor de cada toque (6 m), sin luces
       float bio = 0.0;
       for (int i = 0; i < 4; i++) if (uBio[i].z > 0.0) bio += uBio[i].z * (1.0 - smoothstep(1.0, 6.0, length(xz - uBio[i].xy)));

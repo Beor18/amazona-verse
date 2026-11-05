@@ -881,11 +881,9 @@ AVE.module('terreno', function (G) {
     }
     geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
     const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true }));
-    const aro = new THREE.Mesh(new THREE.RingGeometry(I.r * 0.95, I.r * 1.3, 32), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.35, depthWrite: false }));
-    aro.rotation.x = -Math.PI / 2; aro.position.y = 0.5 / 0.45; m.add(aro); // la loma se aplasta (scale.y 0.45): el aro queda ~0,5 m sobre el mar
-    // BM95: bajío turquesa alrededor de la orilla (aguas poco profundas)
-    const bajo = new THREE.Mesh(new THREE.RingGeometry(I.r * 1.0, I.r * 1.75, 32), new THREE.MeshBasicMaterial({ color: '#7fd6c8', transparent: true, opacity: 0.22, depthWrite: false }));
-    bajo.rotation.x = -Math.PI / 2; bajo.position.y = 0.3 / 0.45; m.add(bajo);
+    // KIMI-049: el aro de espuma y el bajío turquesa de los islotes se pintan en el shader del mar
+    // (agua.js, uniform uIslas), sobre la superficie real con olas. Los aros planos de aquí se veían
+    // rasante/aplastados y «colgaban» la isla: parecía flotar sobre su propia espuma.
     return m;
   };
   const islandCones = islas.map((I, k) => {
