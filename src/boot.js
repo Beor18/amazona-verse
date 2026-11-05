@@ -116,6 +116,8 @@
     // Decisión 14 (Kelvin 5-nov): «Duelo de 2 jugadores» en la misma computadora, en tiempo real (src/game/v18/duelo2.js). En táctil no se carga.
     const duelo218 = aDemanda('src/game/v18/duelo2.js', 'AVV18Duelo2'), cargarV18Duelo2 = () => Promise.all([cargarCombate(), cargarV18Fx()]).then(duelo218); AV.v18Duelo2Test = o => cargarV18Duelo2().then(d => d.test(o));
     if (v18On && !(window.matchMedia && matchMedia('(pointer: coarse)').matches)) alPrimerGesto(cargarV18Duelo2);
+    // V18.1 · cuatro cotorras más que llegan con los hitos (Quiebro, Ala fuerte, Lluvia de semillas, Ojo del cenote; Kelvin 5-nov)
+    const nuevas18 = aDemanda('src/game/v18/nuevas.js', 'AVV18Nuevas'), cargarV18Nuevas = () => Promise.all([cargarCombate(), cargarV18Amenaza()]).then(nuevas18); AV.v18NuevasTest = o => cargarV18Nuevas().then(n => n.test(o)); if (v18On) alPrimerGesto(cargarV18Nuevas);
     const cargarSorpresas = aDemanda('src/game/sorpresas.js', 'AVSorpresas'); AV.sorpresasTest = o => cargarSorpresas().then(s => s.test(o)); alPrimerGesto(cargarSorpresas); // CG-45, sin tocar ciudad_viva.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
     if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)

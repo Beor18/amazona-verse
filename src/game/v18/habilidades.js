@@ -91,6 +91,53 @@ window.AVV18Habilidades = function (G) {
       return { ok: true };
     } });
 
+  // ---------- Los 4 siguientes (Kelvin 5-nov, docs/equipo/V18_MATRIZ_36.md #4, #6, #17, #29) ----------
+  // Cada uno cambia cómo se juega, con ventaja y debilidad, y solo reutiliza efectos que ya existen (kb, inv, lanzar, fx).
+  // Quiebro (agilis, ALAS): esquiva rápida de lado; 0,6 s sin que te den (menos el grito). Ventaja: la más ágil. Debilidad: no hace daño.
+  registrar({ id: 'quiebro', nombre: 'Quiebro', especies: ['agilis'], tecnica: 'alas', coste: 25, cooldown: 4, fx: 'feathers', dura: 0.6, vel: 13,
+    efecto(ctx) {
+      const { yo, otro } = ctx, d = mira(yo, otro); yo.lado = -(yo.lado || 1);
+      yo.kb = yo.kb || { x: 0, z: 0, t: 0 }; yo.kb.x = -d.z * yo.lado * this.vel; yo.kb.z = d.x * yo.lado * this.vel; yo.kb.t = 0.28;
+      yo.inv = Math.max(yo.inv || 0, this.dura); yo.alasT = 0.4;
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, dura: this.dura });
+      return { ok: true };
+    } });
+  // Lluvia de semillas (barbadensis, PICO): tres semillas en abanico. Ventaja: difícil de esquivar. Debilidad: cada una empuja poco
+  // y, tras la primera que acierta, la rival queda un momento sin recibir más (inv del golpe): da 1 pluma, casi seguro.
+  registrar({ id: 'lluvia_semillas', nombre: 'Lluvia de semillas', especies: ['barbadensis'], tecnica: 'pico', coste: 40, cooldown: 6, fx: 'leaves', alcance: 16, abre: 0.32,
+    efecto(ctx) {
+      const { yo, otro } = ctx, d = mira(yo, otro), a0 = Math.atan2(d.z, d.x);
+      for (const k of [-1, 0, 1]) {
+        const a = a0 + k * this.abre, ax = Math.cos(a), az = Math.sin(a);
+        ctx.lanzar({ de: yo, x: yo.pos.x + ax * 0.8, y: yo.pos.y + 0.9, z: yo.pos.z + az * 0.8, vx: ax * 15, vy: (otro.pos.y - yo.pos.y) / Math.max(0.3, dist(yo, otro) / 15), vz: az * 15,
+          vida: this.alcance / 15, radio: 0.9, golpe: { plumas: 1, empuje: 2.5, mareo: 0.35 } });
+      }
+      ctx.fx('leaves', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: d.x, y: 0, z: d.z } });
+      return { ok: true };
+    } });
+  // Ojo del cenote (xantholora, OJOS): marca a la rival 4 s: no puede esquivar ni quiebros, y tus semillas la siguen un poco.
+  // Ventaja: puntería. Debilidad: no hace daño por sí solo y cuesta energía que no te queda para disparar.
+  registrar({ id: 'ojo_cenote', nombre: 'Ojo del cenote', especies: ['xantholora'], tecnica: 'ojos', coste: 30, cooldown: 9, fx: 'gold', dura: 4,
+    efecto(ctx) {
+      const { yo, otro } = ctx;
+      otro.marcada = this.dura; yo.cara = 'fight';
+      ctx.fx('gold', otro.pos.x, otro.pos.y + 1.4, otro.pos.z); ctx.sonar('ring', 2);
+      ctx.poder({ id: this.id, de: yo.id, a: otro.id, dura: this.dura });
+      return { ok: true };
+    } });
+  // Ala fuerte (farinosa, ALAS): golpe cargado de cerca que ROMPE el escudo de plumas (el golpe básico se para contra él),
+  // empuja lejos y marea más. Ventaja: el único que atraviesa un escudo. Debilidad: muy corto (2,6 m) y espera larga.
+  registrar({ id: 'ala_fuerte', nombre: 'Ala fuerte', especies: ['farinosa'], tecnica: 'alas', coste: 35, cooldown: 7, fx: 'feathers', alcance: 2.6,
+    efecto(ctx) {
+      const { yo, otro } = ctx; yo.alasT = 0.5;
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('aleteo');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z } });
+      if (dist(yo, otro) > this.alcance) return { ok: true, acierto: false };
+      return { ok: true, acierto: ctx.golpear(otro, { plumas: 1, empuje: 15, mareo: 1.2, rompeEscudo: true, dir: dirA(yo, otro) }) };
+    } });
+
   // ---------- Luchadores ----------
   function luchador(o) {
     const sp = o.especie || 'vittata';
@@ -122,6 +169,7 @@ window.AVV18Habilidades = function (G) {
   const ESCUDO_DEF = { reduceEmpuje: 0.4, reduceMareo: 0.35 };
   function recibir(de, blanco, g) {
     let n = g.plumas || 0, empuje = g.empuje || 0, mareo = g.mareo || 0, parcial = false;
+    if (blanco.escudo > 0 && g.rompeEscudo) { blanco.escudo = 0; blanco.alasT = 0; blanco.escudoRoto = true; } // Ala fuerte: rompe el escudo (también en el duelo de 2)
     const escudo = blanco.escudo > 0;
     if (escudo) {
       blanco.escudo = 0; blanco.alasT = 0;
@@ -141,7 +189,7 @@ window.AVV18Habilidades = function (G) {
     f.energia = Math.min(f.energiaMax, f.energia + RECARGA * dt);
     for (const k in f.cd) f.cd[k] = Math.max(0, f.cd[k] - dt);
     f.mareo = Math.max(0, f.mareo - dt); f.inv = Math.max(0, f.inv - dt); f.escudo = Math.max(0, f.escudo - dt);
-    f.picoT = Math.max(0, (f.picoT || 0) - dt); f.alasT = Math.max(0, (f.alasT || 0) - dt);
+    f.picoT = Math.max(0, (f.picoT || 0) - dt); f.marcada = Math.max(0, (f.marcada || 0) - dt); f.alasT = Math.max(0, (f.alasT || 0) - dt);
     if (!f.picoT && f.cara === 'fight') f.cara = null;
   }
   G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, recibir, paso, dist, dirA, mira };
