@@ -1546,7 +1546,7 @@ AVE.module('streaming', function (G) {
       programarLejosGlobal();
     }
     function quitarZona(Z) {
-      if (Z.fundir) { for (const g of Z.fundir.geos) g.dispose(); Z.fundir = null; }
+      if (Z.fundir) { for (const g of Z.fundir.geos.concat(Z.fundir.tex)) g.dispose(); Z.fundir = null; }
       if (!Z.malla) return;
       for (const m of [Z.malla].concat(Z.mallaExtra || [])) { scene.remove(m); m.geometry.dispose(); if (m.userData.matTex) soltarMaterial(m.material); }
       Z.malla = null; Z.mallaExtra = [];
