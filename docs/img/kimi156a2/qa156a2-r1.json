@@ -1,0 +1,10 @@
+{
+ "etiqueta": "r1",
+ "cuando": "2026-11-04T22:46:18.628Z",
+ "punto": {
+  "x": 74.7,
+  "z": -155.3
+ },
+ "frames": 450,
+ "error": "JS: \"TypeError: SOL.techoCuerpo is not a function\\n    at <anonymous>:23:22\""
+}
