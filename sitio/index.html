@@ -147,17 +147,12 @@
 <section class="hero" id="inicio" aria-labelledby="hero-title">
   <div class="wrap hero-grid">
     <div class="hero-copy">
-      <div class="hero-chips">
-        <span class="chip" data-icon="star"><span data-l="es">Gratis</span><span data-l="en">Free</span></span>
-        <span class="chip" data-icon="laptop"><span data-l="es">En el navegador</span><span data-l="en">In the browser</span></span>
-        <span class="chip" data-icon="globe"><span data-l="es">Todas las edades</span><span data-l="en">All ages</span></span>
-      </div>
       <h1 id="hero-title">
         <span data-l="es"><span class="gold">Vuela</span>, explora y salva tu isla con Vittata</span>
         <span data-l="en"><span class="gold">Fly</span>, explore and save your island with Vittata</span>
       </h1>
-      <p class="hero-lead" data-l="es">Una aventura 3D gratis que se abre en el navegador: vuela con Vittata, la cotorra puertorriqueña, por el bosque de Puerto Rico, construye, encuentra a los 36 guardianes y salva tu isla. Seis capítulos y minijuegos. Hecho en Puerto Rico.</p>
-      <p class="hero-lead" data-l="en">A free 3D adventure that opens in your browser: fly with Vittata, the Puerto Rican parrot, through Puerto Rico&rsquo;s forest, build, find the 36 guardians and save your island. Six chapters and minigames. Made in Puerto Rico.</p>
+      <p class="hero-lead" data-l="es">Aventura 3D gratis en el navegador, con la cotorra puertorriqueña. Seis capítulos y minijuegos.</p>
+      <p class="hero-lead" data-l="en">A free 3D adventure in your browser, starring the Puerto Rican parrot. Six chapters and minigames.</p>
       <div class="hero-actions">
         <a class="btn" href="juego/" data-icon="play"><span data-l="es">Jugar gratis</span><span data-l="en">Play free</span></a>
         <a class="btn ghost" href="#capitulos" data-icon="arrow"><span data-l="es">Ver los capítulos</span><span data-l="en">See the chapters</span></a>
@@ -189,12 +184,15 @@
   <div class="wrap">
     <ul class="facts-list">
       <li><span class="ic" data-icon="star"></span><strong><span data-l="es">Gratis y sin instalar</span><span data-l="en">Free, nothing to install</span></strong><span class="t"><span data-l="es">Abre el enlace y juega</span><span data-l="en">Open the link and play</span></span></li>
-      <li><span class="ic" data-icon="book"></span><strong><span data-l="es">Una aventura de verdad</span><span data-l="en">A real adventure</span></strong><span class="t"><span data-l="es">Vuela por la naturaleza de Puerto Rico</span><span data-l="en">Fly through Puerto Rico&rsquo;s nature</span></span></li>
       <li><span class="ic" data-icon="globe"></span><strong><span data-l="es">Español e inglés</span><span data-l="en">Spanish and English</span></strong><span class="t"><span data-l="es">Cambia cuando quieras</span><span data-l="en">Switch any time</span></span></li>
-      <li><span class="ic" data-icon="wing"></span><strong><span data-l="es">Para todas las edades</span><span data-l="en">For all ages</span></strong><span class="t"><span data-l="es">Familias, escuelas y curiosos</span><span data-l="en">Families, schools and the curious</span></span></li>
-      <li><span class="ic" data-icon="shield"></span><strong><span data-l="es">Sin anuncios ni chat</span><span data-l="en">No ads, no chat</span></strong><span class="t"><span data-l="es">Ni cajas sorpresa ni datos personales</span><span data-l="en">No loot boxes, no personal data</span></span></li>
-      <li><span class="ic"><img src="assets/img/bandera-pr.svg" width="27" height="18" alt=""></span><strong><span data-l="es">Hecho en Puerto Rico</span><span data-l="en">Made in Puerto Rico</span></strong><span class="t"><span data-l="es">Con la cotorra puertorriqueña de protagonista</span><span data-l="en">Starring the Puerto Rican parrot</span></span></li>
+      <li><span class="ic" data-icon="wing"></span><strong><span data-l="es">Para niños y jóvenes</span><span data-l="en">For kids and young people</span></strong><span class="t"><span data-l="es">De todas las edades</span><span data-l="en">Of all ages</span></span></li>
+      <li><span class="ic"><img src="assets/img/bandera-pr.svg" width="27" height="18" alt=""></span><strong><span data-l="es">Hecho en Puerto Rico</span><span data-l="en">Made in Puerto Rico</span></strong><span class="t"><span data-l="es">Desde 2012</span><span data-l="en">Since 2012</span></span></li>
     </ul>
+    <style>/* 4 datos (antes 6): la franja se reparte en 4 columnas, o 2 en pantallas medianas y móvil; la bandera, sobre blanco */
+      @media (min-width: 761px) { .facts-list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+      @media (max-width: 760px) { .facts-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      .facts-list li:nth-child(4) .ic { background: #fff; padding: 9px 7px; }
+    </style>
   </div>
 </section>
 
@@ -204,21 +202,21 @@
     <div class="section-head">
       <span class="eyebrow"><span data-l="es">Temporada 1 · 6 capítulos jugables</span><span data-l="en">Season 1 · 6 playable chapters</span></span>
       <h2 class="h2" id="h-capitulos"><span data-l="es">La aventura de Vittata, capítulo a capítulo</span><span data-l="en">Vittata’s adventure, chapter by chapter</span></h2>
-      <p class="lead" data-l="es">Vittata es la inventora de Villa Raíz. Cuando las tormentas llegan una tras otra, ella y sus amigos tienen que observar, decidir con evidencia y construir juntos. Empieza por el 1 o salta al que quieras.</p>
-      <p class="lead" data-l="en">Vittata is the inventor of Villa Raíz. When storms arrive one after another, she and her friends must observe, decide with evidence and build together. Start with 1 or jump to any chapter.</p>
+      <p class="lead" data-l="es">Un solo mundo, de Villa Raíz a la Ciudad de los 36. Empieza por el 1 o salta al que quieras.</p>
+      <p class="lead" data-l="en">One world, from Villa Raíz to the City of the 36. Start with 1 or jump to any chapter.</p>
     </div>
     <ol class="caps">
       <li class="cap">
-        <img src="assets/img/capitulo-1.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 1: Vittata en su taller del bosque, con el bohío y la máquina voladora detrás." data-en-alt="Chapter 1: Vittata at her forest workshop, with the bohío hut and the flying machine behind her.">
+        <img src="assets/img/capitulo-1.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 1: Vittata vuela sobre Villa Raíz, con la playa, el muelle, los flamboyanes y el río; al fondo, El Yunque y las ruinas del tepuy." data-en-alt="Chapter 1: Vittata flies over Villa Raíz, with the beach, the pier, the flamboyant trees and the river; behind her, El Yunque and the ruins on the tepui.">
         <div class="cap-body">
           <span class="num"><span data-l="es">Capítulo 1</span><span data-l="en">Chapter 1</span></span>
           <h3><span data-l="es">El día que el cielo se rompió</span><span data-l="en">The Day the Sky Broke</span></h3>
-          <p><span data-l="es">Una tormenta, un refugio y tu primera decisión con evidencia. Nada, vuela y escucha.</span><span data-l="en">A storm, a shelter and your first evidence-based decision. Swim, fly and listen.</span></p>
+          <p><span data-l="es">El cielo se rompe: vuela, bucea y busca un refugio para todos.</span><span data-l="en">The sky breaks: fly, dive and find a shelter for everyone.</span></p>
           <a class="btn sm leaf" href="juego/?pack=cap1" data-icon="play"><span data-l="es">Jugar</span><span data-l="en">Play</span></a>
         </div>
       </li>
       <li class="cap">
-        <img src="assets/img/capitulo-2.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 2: Vittata en Villa Raíz, al pie de las colinas donde se decide dónde construir." data-en-alt="Chapter 2: Vittata in Villa Raíz, at the foot of the hills where you decide where to build.">
+        <img src="assets/img/capitulo-2.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 2: Vittata vuela sobre el Caney del Meandro, un río en curvas entre el bosque, con bohíos y los lugares donde se puede construir." data-en-alt="Chapter 2: Vittata flies over the Meander Caney, a winding river through the forest, with bohío huts and the spots where you can build.">
         <div class="cap-body">
           <span class="num"><span data-l="es">Capítulo 2</span><span data-l="en">Chapter 2</span></span>
           <h3><span data-l="es">Un lugar para todos</span><span data-l="en">A Place for Everyone</span></h3>
@@ -227,7 +225,7 @@
         </div>
       </li>
       <li class="cap">
-        <img src="assets/img/capitulo-3.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 3: Vittata en la orilla de la bahía, junto a la canoa lista para zarpar." data-en-alt="Chapter 3: Vittata on the bay shore, next to the canoe ready to set sail.">
+        <img src="assets/img/capitulo-3.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 3: Vittata vuela junto a la cascada de La Mina; abajo, las canoas del Puerto de La Mina y una torre de piedra." data-en-alt="Chapter 3: Vittata flies beside the La Mina waterfall; below, the canoes of La Mina Harbor and a stone tower.">
         <div class="cap-body">
           <span class="num"><span data-l="es">Capítulo 3</span><span data-l="en">Chapter 3</span></span>
           <h3><span data-l="es">Más allá de la bahía</span><span data-l="en">Beyond the Bay</span></h3>
@@ -236,16 +234,16 @@
         </div>
       </li>
       <li class="cap">
-        <img src="assets/img/capitulo-4.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 4: Vittata junto al río, con la familia y las marcas para decidir cómo cruzar." data-en-alt="Chapter 4: Vittata by the river, with her family and the markers for deciding how to cross.">
+        <img src="assets/img/capitulo-4.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 4: Vittata vuela sobre el río al este de Villa Raíz, que baja entre el bosque hasta el mar." data-en-alt="Chapter 4: Vittata flies over the river east of Villa Raíz as it runs through the forest down to the sea.">
         <div class="cap-body">
           <span class="num"><span data-l="es">Capítulo 4</span><span data-l="en">Chapter 4</span></span>
           <h3><span data-l="es">El precio del progreso</span><span data-l="en">The Price of Progress</span></h3>
-          <p><span data-l="es">Observa la orilla, escucha todas las voces y decide con una maqueta qué se construye.</span><span data-l="en">Observe the shore, hear every voice and decide with a model what gets built.</span></p>
+          <p><span data-l="es">Un río, dos orillas y una decisión: ¿qué se construye?</span><span data-l="en">One river, two shores and a choice: what gets built?</span></p>
           <a class="btn sm leaf" href="juego/?pack=ep4" data-icon="play"><span data-l="es">Jugar</span><span data-l="en">Play</span></a>
         </div>
       </li>
       <li class="cap">
-        <img src="assets/img/capitulo-5.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 5: Vittata entre las ruinas, con la torre vieja y la colina detrás." data-en-alt="Chapter 5: Vittata among the ruins, with the old tower and the hill behind her.">
+        <img src="assets/img/capitulo-5.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 5: de noche, Vittata vuela sobre Los Miradores, con ruinas de piedra, faroles encendidos, cucubanos y el mar oscuro detrás." data-en-alt="Chapter 5: at night, Vittata flies over The Lookouts, with stone ruins, glowing lanterns, click beetles and the dark sea behind.">
         <div class="cap-body">
           <span class="num"><span data-l="es">Capítulo 5</span><span data-l="en">Chapter 5</span></span>
           <h3><span data-l="es">Las voces olvidadas</span><span data-l="en">The Forgotten Voices</span></h3>
@@ -254,11 +252,11 @@
         </div>
       </li>
       <li class="cap">
-        <img src="assets/img/capitulo-6.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 6: Vittata en el lugar del pacto, con el toldo y la mesa del encuentro." data-en-alt="Chapter 6: Vittata at the meeting place for the pact, with the shade canopy and the meeting table.">
+        <img src="assets/img/capitulo-6.jpg" width="720" height="450" loading="lazy" decoding="async" alt="Capítulo 6: Vittata vuela junto al tepuy, con las torres de la Ciudad de los 36 en la cima, el bosque abajo y el mar al fondo." data-en-alt="Chapter 6: Vittata flies beside the tepui, with the towers of the City of the 36 on top, the forest below and the sea behind.">
         <div class="cap-body">
           <span class="num"><span data-l="es">Capítulo 6</span><span data-l="en">Chapter 6</span></span>
           <h3><span data-l="es">El pacto de los 36</span><span data-l="en">The Pact of the 36</span></h3>
-          <p><span data-l="es">Cada quien con lo suyo: nadie levanta una obra solo. Escucha, acuerda y siéntate en el círculo.</span><span data-l="en">Each one with their own: no one raises a work alone. Listen, agree and sit in the circle.</span></p>
+          <p><span data-l="es">Nadie levanta una obra solo: acuerda y siéntate en el círculo.</span><span data-l="en">No one builds alone: agree and sit in the circle.</span></p>
           <a class="btn sm leaf" href="juego/?pack=ep6" data-icon="play"><span data-l="es">Jugar</span><span data-l="en">Play</span></a>
         </div>
       </li>
@@ -270,12 +268,8 @@
     <div class="story-grid">
       <div class="story-copy">
         <span class="eyebrow"><span data-l="es">La historia</span><span data-l="en">The story</span></span>
-        <h2 class="h2" id="h-historia"><span data-l="es">El día que el cielo se rompió</span><span data-l="en">The Day the Sky Broke</span></h2>
-        <p class="lead" data-l="es">Vittata es la inventora de Villa Raíz. Un día su máquina se descontrola, una onda cruza el cielo y las tormentas empiezan a llegar una tras otra. Iguaca necesita un techo para su familia hoy.</p>
-        <p class="lead" data-l="en">Vittata is the inventor of Villa Raíz. One day her machine spins out of control, a shockwave crosses the sky, and storms start arriving one after another. Iguaca needs a roof for her family today.</p>
-        <p class="muted" data-l="es">No hay villanos. Los errores enseñan y siempre tienen salida. Para una cotorra, un árbol partido es un nido perdido: proteger el hogar es proteger la especie.</p>
-        <p class="muted" data-l="en">There are no villains. Mistakes teach, and there is always a way out. For a parrot, a broken tree is a lost nest: protecting the home means protecting the species.</p>
-        <p class="question"><small><span data-l="es">La pregunta del capítulo</span><span data-l="en">The chapter's question</span></small><span data-l="es">¿Salvar lo que construiste, o usar lo que sabes para ayudar?</span><span data-l="en">Save what you built, or use what you know to help?</span></p>
+        <p class="lead" data-l="es">Vittata es la inventora de Villa Raíz. Su máquina se descontrola, una onda cruza el cielo y llegan las tormentas.</p>
+        <p class="lead" data-l="en">Vittata is the inventor of Villa Raíz. Her machine spins out of control, a shockwave crosses the sky and the storms arrive.</p>
       <figure class="loop-fig">
         <div class="screen loop" data-solo-escritorio data-video="historia">
           <img src="assets/video/historia.jpg" width="1280" height="720" loading="lazy"
@@ -293,8 +287,8 @@
           <div>
             <span class="name-tab">Vittata</span>
             <blockquote><p data-l="es">«¡Lo sabía! ¡Solo era ajustar el equilibrio!»</p><p data-l="en">“I knew it! It just needed better balance!”</p></blockquote>
-            <p class="role" data-l="es">Inventora rápida, segura y con humor. En este capítulo aprende a pedir ayuda.</p>
-            <p class="role" data-l="en">A quick, confident inventor with a sense of humor. In this chapter she learns to ask for help.</p>
+            <p class="role" data-l="es">Inventora rápida, segura y con humor.</p>
+            <p class="role" data-l="en">A quick, confident inventor with a sense of humor.</p>
           </div>
         </article>
         <article class="talk iguaca">
@@ -318,32 +312,11 @@
       </div>
     </div>
 
-    <ol class="missions" aria-label="Las tres misiones del capítulo 1" data-en-aria-label="The three missions of Chapter 1">
-      <li>
-        <h3><span data-l="es">Lo que queda</span><span data-l="en">What's Left</span></h3>
-        <p data-l="es">Entre los restos del taller, Vittata recoge madera, piedra y metal. «Lo que otros ven como restos, yo lo veo como posibilidades.»</p>
-        <p data-l="en">Among the ruins of her workshop, Vittata gathers wood, stone and metal. “What others see as scraps, I see as possibilities.”</p>
-        <span class="skill" data-icon="dive"><span data-l="es">Nadar y bucear</span><span data-l="en">Swim and dive</span></span>
-      </li>
-      <li>
-        <h3><span data-l="es">Tierra firme</span><span data-l="en">Solid Ground</span></h3>
-        <p data-l="es">Dos terrenos: el río y la colina. Iguaca lee las marcas del agua. El estudiante decide dónde va el refugio.</p>
-        <p data-l="en">Two sites: the river and the hill. Iguaca reads the water marks. The student decides where the shelter goes.</p>
-        <span class="skill" data-icon="wing"><span data-l="es">Volar y observar</span><span data-l="en">Fly and observe</span></span>
-      </li>
-      <li>
-        <h3><span data-l="es">La señal</span><span data-l="en">The Signal</span></h3>
-        <p data-l="es">Con el coro de los coquíes, Vittata repara el transmisor y descubre que no están solos.</p>
-        <p data-l="en">With a chorus of coquí frogs, Vittata repairs the transmitter and finds out they are not alone.</p>
-        <span class="skill" data-icon="music"><span data-l="es">Escuchar y hablar</span><span data-l="en">Listen and speak</span></span>
-      </li>
-    </ol>
-
     <figure class="world">
       <img src="assets/img/mundo-900.jpg" srcset="assets/img/mundo-900.jpg 900w, assets/img/mundo-1600.jpg 1600w" sizes="(min-width: 1240px) 1180px, 100vw" width="1600" height="900" loading="lazy"
            alt="Vista aérea de la isla del juego: montañas, un río que baja en curvas, bosque espeso y playa."
            data-en-alt="Aerial view of the game island: mountains, a winding river, dense forest and a beach.">
-      <figcaption><span data-l="es">La isla del capítulo 1: cumbre con niebla, río, bosque y costa. Cada lugar enseña algo del bosque real.</span><span data-l="en">The Chapter 1 island: a misty peak, a river, forest and coast. Every place teaches something about the real forest.</span></figcaption>
+      <figcaption><span data-l="es">La isla del juego: El Yunque, ríos, bosque y costa.</span><span data-l="en">The game island: El Yunque, rivers, forest and coast.</span></figcaption>
     </figure>
         </div>
       </details>
@@ -408,8 +381,8 @@
         <span class="chip"><span data-l="es">Ya en el juego: «Mi nido»</span><span data-l="en">In the game now: “My nest”</span></span>
       </div>
       <h2 class="h2" id="h-criadero"><span data-l="es">Tu cotorra crece con lo que aprendes</span><span data-l="en">Your parrot grows with what you learn</span></h2>
-      <p class="lead" data-l="es">Huevo, bebé, juvenil, adulta. Cada estudiante cuida su cotorrita, y esta crece con lo que aprende y explora en el juego: fichas del Diario, misiones y preguntas.</p>
-      <p class="lead" data-l="en">Egg, baby, juvenile, adult. Each student cares for a little parrot that grows with what they learn and explore in the game: Journal cards, missions and questions.</p>
+      <p class="lead" data-l="es">Huevo, bebé, juvenil, adulta: tu cotorrita crece con lo que exploras en el juego.</p>
+      <p class="lead" data-l="en">Egg, baby, juvenile, adult: your little parrot grows with what you explore in the game.</p>
       <ul class="ns-promises">
         <li data-icon="check"><span data-l="es">El cuidado es cariño, nunca castigo: la cotorrita nunca enferma ni muere.</span><span data-l="en">Care is about love, never punishment: the little parrot never gets sick or dies.</span></li>
         <li data-icon="check"><span data-l="es">Las cápsulas especiales se ganan jugando y aprendiendo.</span><span data-l="en">Special capsules are earned by playing and learning.</span></li>
@@ -470,31 +443,6 @@
     </div>
         </div>
       </details>
-      <details>
-        <summary data-icon="laptop"><span data-l="es">Tecnología: abre un enlace y a jugar</span><span data-l="en">Technology: open a link and play</span></summary>
-        <div class="more-body"><div class="tech-grid">
-    <figure class="laptop">
-      <div class="lid"><img src="assets/img/portada-juego.jpg" width="800" height="600" loading="lazy"
-           alt="Portada del juego en el navegador: el logo de Amazona Verse, el capítulo 1 y el botón Jugar, con Vittata a la derecha."
-           data-en-alt="The game's title screen in the browser: the Amazona Verse logo, Chapter 1 and the Play button, with Vittata on the right."></div>
-      <div class="base" aria-hidden="true"></div>
-      <figcaption><span data-l="es">Portada real del prototipo, en el navegador.</span><span data-l="en">The prototype's real title screen, in the browser.</span></figcaption>
-    </figure>
-    <div>
-      <span class="eyebrow"><span data-l="es">Tecnología</span><span data-l="en">Technology</span></span>
-      <h2 class="h2" id="h-tecnologia"><span data-l="es">Abre un enlace y a jugar</span><span data-l="en">Open a link and play</span></h2>
-      <p class="lead" data-l="es">Corre en el navegador, sin instalar. Pensado para Chromebooks; pruebas en dispositivos reales en curso.</p>
-      <p class="lead" data-l="en">Runs in the browser, nothing to install. Designed for Chromebooks; testing on real devices is underway.</p>
-      <dl class="specs">
-        <div><dt data-icon="laptop"><span class="sr-only"><span data-l="es">Dispositivos</span><span data-l="en">Devices</span></span></dt><dd><b><span data-l="es">Navegador con WebGL2</span><span data-l="en">A browser with WebGL2</span></b><span data-l="es">Sin tiendas de apps ni permisos de instalación.</span><span data-l="en">No app stores and no install permissions.</span></dd></div>
-        <div><dt data-icon="keyboard"><span class="sr-only"><span data-l="es">Controles</span><span data-l="en">Controls</span></span></dt><dd><b><span data-l="es">Teclado, ratón o pantalla táctil</span><span data-l="en">Keyboard, mouse or touchscreen</span></b><span data-l="es">Botones grandes, de 48 píxeles como mínimo.</span><span data-l="en">Large buttons, at least 48 pixels.</span></dd></div>
-        <div><dt data-icon="lock"><span class="sr-only"><span data-l="es">Privacidad</span><span data-l="en">Privacy</span></span></dt><dd><b><span data-l="es">Sin cuentas ni datos personales</span><span data-l="en">No accounts, no personal data</span></b><span data-l="es">El progreso se guarda en el dispositivo. Sin anuncios ni rastreo.</span><span data-l="en">Progress stays on the device. No ads and no tracking.</span></dd></div>
-        <div><dt data-icon="sparkle"><span class="sr-only"><span data-l="es">Rendimiento</span><span data-l="en">Performance</span></span></dt><dd><b><span data-l="es">Ligero por diseño</span><span data-l="en">Light by design</span></b><span data-l="es">WebAssembly solo donde aporta.</span><span data-l="en">WebAssembly only where it helps.</span></dd></div>
-        <div><dt data-icon="hand"><span class="sr-only"><span data-l="es">Accesibilidad</span><span data-l="en">Accessibility</span></span></dt><dd><b><span data-l="es">Hecho para leerse fácil</span><span data-l="en">Built to be easy to read</span></b><span data-l="es">Letra Atkinson Hyperlegible y respeto por el movimiento reducido.</span><span data-l="en">Atkinson Hyperlegible type and support for reduced motion.</span></dd></div>
-      </dl>
-    </div>
-        </div></div>
-      </details>
     </div>
   </div>
 </section>
@@ -503,9 +451,9 @@
 <section class="section" id="minijuegos" aria-labelledby="h-retos">
   <div class="wrap">
     <span class="eyebrow"><span data-l="es">Minijuegos y récords</span><span data-l="en">Minigames and records</span></span>
-    <h2 class="h2" id="h-retos"><span data-l="es">Una partida rápida, otra más y a superar tu récord</span><span data-l="en">One quick round, then another, and beat your record</span></h2>
-    <p class="lead" data-l="es">Partidas de un minuto en el mismo bosque: vuelo entre troncos, una tormenta que te persigue, un banquete de frutas, carreras y el río en canoa. Fáciles de entender, difíciles de soltar.</p>
-    <p class="lead" data-l="en">One-minute rounds in the same forest: flight between the trunks, a storm on your tail, a fruit feast, races and a canoe down the river. Easy to pick up, hard to put down.</p>
+    <h2 class="h2" id="h-retos"><span data-l="es">Partidas rápidas para superar tu récord</span><span data-l="en">Quick rounds to beat your record</span></h2>
+    <p class="lead" data-l="es">Un minuto en el mismo bosque: fáciles de entender, difíciles de soltar.</p>
+    <p class="lead" data-l="en">One minute in the same forest: easy to pick up, hard to put down.</p>
     <div class="mj-grid">
       <article class="mj-ficha">
         <div class="screen loop">
@@ -541,7 +489,7 @@
                data-en-alt="Vittata glides with a boost over El Yunque, with the race position, time and checkpoints at the top.">
         </div>
         <h3 class="h3"><span data-l="es">Carrera en El Yunque</span><span data-l="en">Race in El Yunque</span></h3>
-        <p><span data-l="es">Pasa por los puntos de control, aprovecha los impulsos y llega primero. También contra tu fantasma.</span><span data-l="en">Fly through the checkpoints, grab the boosts and finish first. You can also race your ghost.</span></p>
+        <p><span data-l="es">Puntos de control, impulsos y tu fantasma. Llega primero.</span><span data-l="en">Checkpoints, boosts and your ghost. Finish first.</span></p>
       </article>
       <article class="mj-ficha">
         <div class="screen loop">
@@ -550,39 +498,16 @@
                data-en-alt="River Rush: Vittata rides a canoe down the river, with fruit bunches to collect and the mountain behind.">
         </div>
         <h3 class="h3">River Rush <span class="mj-tag"><span data-l="es">Nuevo</span><span data-l="en">New</span></span></h3>
-        <p><span data-l="es">Baja el río en canoa, esquiva troncos y rocas y recoge todo lo que puedas. También contrarreloj hasta el mar.</span><span data-l="en">Ride a canoe down the river, dodge logs and rocks and collect all you can. Also a time trial to the sea.</span></p>
-      </article>
-      <!-- tren oculto hasta nuevo aviso
-      <article class="mj-ficha">
-        <div class="screen loop">
-          <img src="assets/img/minijuego-tren.jpg" width="800" height="446" loading="lazy"
-               alt="El tren de Vittata: un tren de carga recorre la vía junto a la costa, con la entrega de cada caja a su estación."
-               data-en-alt="Vittata&rsquo;s Train: a freight train runs along the track by the coast, delivering each box to its station.">
-        </div>
-        <h3 class="h3"><span data-l="es">El tren de Vittata</span><span data-l="en">Vittata&rsquo;s Train</span> <span class="mj-tag"><span data-l="es">Nuevo</span><span data-l="en">New</span></span></h3>
-        <p><span data-l="es">Acelera, frena en las curvas, elige vía y lleva cada carga a su estación a tiempo, como el tren que rodeaba Puerto Rico.</span><span data-l="en">Speed up, brake in the curves, pick a track and bring each load to its station on time, like the train that once circled Puerto Rico.</span></p>
-      </article>
-      -->
-      <article class="mj-ficha" hidden style="display:none"><!-- 31-oct: Maze fuera del menú y congelado por Kelvin -->
-        <div class="screen loop">
-          <img src="assets/img/minijuego-maze.jpg" width="800" height="450" loading="lazy"
-               alt="Amazona Maze: Vittata recorre un laberinto de setos junto al mar, con frutas por recoger y guardianes amables."
-               data-en-alt="Amazona Maze: Vittata walks a hedge maze by the sea, with fruit to collect and friendly guardians.">
-        </div>
-        <h3 class="h3">Amazona Maze <span class="mj-tag"><span data-l="es">Nuevo</span><span data-l="en">New</span></span></h3>
-        <p><span data-l="es">Recoge frutas en un laberinto del bosque y que no te encuentren los guardianes.</span><span data-l="en">Gather fruit in a forest maze and don&rsquo;t let the guardians find you.</span></p>
+        <p><span data-l="es">Baja el río en canoa, esquiva troncos y rocas y recoge todo lo que puedas.</span><span data-l="en">Ride a canoe down the river, dodge logs and rocks and collect all you can.</span></p>
       </article>
     </div>
-    <p style="margin-top:24px" data-l="es">También: <b>contrarreloj del río</b> y <b>Save the Parrot</b>, el rescate de un pichón.</p>
-    <p style="margin-top:24px" data-l="en">Also: <b>river time trial</b> and <b>Save the Parrot</b>, a chick rescue.</p>
-    <p style="margin-top:16px"><a class="btn leaf" href="juego/" data-icon="play"><span data-l="es">Jugar a los minijuegos</span><span data-l="en">Play the minigames</span></a></p>
     <div class="mj-compartir">
       <img src="assets/og-retos.jpg" width="1200" height="630" loading="lazy"
            alt="Tarjeta para compartir: «Minijuegos con Vittata», con capturas de Flight, Carrera, ¡Banquete! y la tormenta."
            data-en-alt="Share card: “Minijuegos con Vittata” (minigames with Vittata), with screenshots of Flight, Race, Feast! and the storm.">
       <div>
         <h3 class="h3"><span data-l="es">Reta a alguien</span><span data-l="en">Challenge someone</span></h3>
-        <p><span data-l="es">Comparte los minijuegos con tu familia, tu clase o tus amistades. Se abren en el navegador, sin instalar nada.</span><span data-l="en">Share the minigames with your family, your class or your friends. They open in the browser, nothing to install.</span></p>
+        <p><span data-l="es">Comparte los minijuegos con tu familia o tus amistades.</span><span data-l="en">Share the minigames with your family or friends.</span></p>
         <p class="mj-acciones"><button class="btn sm paperish" type="button" id="mj-share" data-icon="copy"><span data-l="es">Compartir</span><span data-l="en">Share</span></button> <span class="mj-estado" role="status" aria-live="polite"></span></p>
       </div>
     </div>
@@ -621,10 +546,6 @@
     <!-- Kelvin 5-nov (17 / L3): enlace al ranking oculto hasta la revisión legal.
     <p style="margin-top:28px"><a class="btn" href="ranking.html" data-icon="arrow"><span data-l="es">Ver los top récords</span><span data-l="en">See the top records</span></a></p>
     -->
-    <ul class="ns-promises" style="margin-top:28px">
-      <li data-icon="check"><span data-l="es"><b>Récords de la casa:</b> el juego guarda tus mejores marcas en «Mis récords», en este dispositivo, para que intentes superarte.</span><span data-l="en"><b>House records:</b> the game keeps your best marks in “My records”, on this device, so you can try to beat yourself.</span></li>
-      <li data-icon="check"><span data-l="es"><b>Cómic para compartir:</b> tus momentos y tus récords se vuelven viñetas con humor que puedes compartir.</span><span data-l="en"><b>A comic to share:</b> your moments and records become funny panels you can share.</span></li>
-    </ul>
     <p style="margin-top:24px"><a class="btn leaf" href="juego/" data-icon="play"><span data-l="es">Jugar ahora</span><span data-l="en">Play now</span></a></p>
   </div>
 </section>
@@ -636,8 +557,8 @@
       <div>
         <span class="eyebrow"><span data-l="es">Conservación</span><span data-l="en">Conservation</span></span>
         <h2 class="h2" id="h-conservacion"><span data-l="es">La cotorra de Vittata existe de verdad y está en peligro</span><span data-l="en">Vittata’s parrot is real and it is endangered</span></h2>
-        <p class="lead" data-l="es">La cotorra puertorriqueña (<i>Amazona vittata</i>) es el único loro nativo de Estados Unidos y vive solo en Puerto Rico. Dos aviarios, en El Yunque y Río Abajo, crían y liberan cotorras para que vuelva a llenar el bosque.</p>
-        <p class="lead" data-l="en">The Puerto Rican parrot (<i>Amazona vittata</i>) is the only parrot native to the United States and lives only in Puerto Rico. Two aviaries, in El Yunque and Río Abajo, raise and release parrots so it can fill the forest again.</p>
+        <p class="lead" data-l="es">La cotorra puertorriqueña (<i>Amazona vittata</i>) vive solo en Puerto Rico. Los aviarios de El Yunque y Río Abajo la crían y la liberan.</p>
+        <p class="lead" data-l="en">The Puerto Rican parrot (<i>Amazona vittata</i>) lives only in Puerto Rico. The aviaries in El Yunque and Río Abajo raise and release it.</p>
         <div class="cta-row">
           <a class="btn leaf" href="cotorra.html" data-icon="arrow"><span data-l="es">Conoce a la cotorra y cómo ayudar</span><span data-l="en">Meet the parrot and how to help</span></a>
         </div>
@@ -666,8 +587,8 @@
     <div class="section-head">
       <span class="eyebrow"><span data-l="es">Para escuelas y familias</span><span data-l="en">For schools and families</span></span>
       <h2 class="h2" id="h-escuelas"><span data-l="es">Una clase de 45 minutos, lista para usar</span><span data-l="en">A ready-to-teach 45-minute lesson</span></h2>
-      <p class="lead" data-l="es">Cada capítulo trae objetivos de ciencias alineados a los estándares de Puerto Rico (DEPR 2022) y NGSS, un Modo Maestro con guía, rúbrica y actividades sin pantalla, y reportes sin datos personales. Las escuelas empiezan con un piloto gratis.</p>
-      <p class="lead" data-l="en">Each chapter comes with science goals aligned to Puerto Rico (DEPR 2022) and NGSS standards, a Teacher Mode with a guide, rubric and screen-free activities, and reports without personal data. Schools start with a free pilot.</p>
+      <p class="lead" data-l="es">Modo Maestro con guía y rúbrica, alineado a DEPR 2022 y NGSS, sin datos personales. Piloto gratis para escuelas.</p>
+      <p class="lead" data-l="en">Teacher Mode with a guide and rubric, aligned to DEPR 2022 and NGSS, with no personal data. Free pilot for schools.</p>
     </div>
     <div class="cta-row">
       <a class="btn" href="escuelas.html" data-icon="arrow"><span data-l="es">Ver la guía para maestros y el piloto gratis</span><span data-l="en">See the teacher guide and the free pilot</span></a>

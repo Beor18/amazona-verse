@@ -28,7 +28,8 @@ window.AVV18Combate = function (G) {
     retar: 'Retar a la Campeona de la Explanada', tu: 'Tú', rival: 'Campeona de la Explanada',
     ala: 'Ala', semilla: 'Semilla', poder: 'Poder', otra: 'Otra vez', salir: 'Salir', energia: 'Energía',
     aviso: 'Ala: Acción · Semilla: Impulso · Poder: mantén Impulso o G',
-    ya: '¡Ya!', gana: '¡Ganaste 2 maderas y 1 piedra para el puente!', ganaOtra: '¡Ganaste otra vez! Los materiales de este duelo ya te los llevaste.',
+    ya: '¡Ya!', gana: '¡Ganaste 2 maderas y 1 piedra! Con eso se repara el puente colgante: sigue la bandera verde del mapa.',
+    ganaGuarda: '¡Ganaste 2 maderas y 1 piedra! El puente ya está reparado: guárdalas para lo que venga.', ganaOtra: '¡Ganaste otra vez! Los materiales de este duelo ya te los llevaste.',
     pierde: '¡Uy, te mareaste! Sacude las plumas y prueba otra vez.', lejos: 'Te alejaste: el duelo queda para luego.',
     bloquea: '¡Bloqueado!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!',
     ganaste: '¡Ganaste!', perdiste: '¡Casi!', bienvenida: 'Duelo de entrenamiento: quítale sus 5 plumas.'
@@ -335,8 +336,16 @@ window.AVV18Combate = function (G) {
     return hud;
   }
   function pulso(k) { if (!hud) return; const e = hud.q(k); e.classList.add('pulso'); setTimeout(() => e.classList.remove('pulso'), 300); }
-  let centroT = 0;
-  function flotante(t, s) { if (!hud) return; hud.q('centro').textContent = t; centroT = s || 0.8; }
+  // Aviso del centro del HUD («¡Bloqueado!», «¡Interrumpida!»…). Frente A (5-nov): tras un golpe al escudo se quedaba
+  // puesto; solo se borraba desde paso() y en fase de lucha o fin. Ahora también lo borra un reloj real y se limpia al
+  // salir o reiniciar: nunca se queda fijo en pantalla.
+  let centroT = 0, centroTO = 0;
+  function flotante(t, s) {
+    if (!hud) return;
+    const el = hud.q('centro'); el.textContent = t; centroT = t ? (s || 0.8) : 0;
+    clearTimeout(centroTO);
+    if (t) centroTO = setTimeout(() => { if (hud && el.textContent === t && C.fase !== 'cuenta') { el.textContent = ''; centroT = 0; } }, (centroT + 0.5) * 1000);
+  }
   function pintar() {
     if (!hud || !C.j) return;
     const pl = (k, f) => Array.from(hud.q(k).children).forEach((i, n) => i.classList.toggle('fuera', n >= f.plumas));
@@ -389,7 +398,9 @@ window.AVV18Combate = function (G) {
     if (gano) {
       const nueva = !!(G.v18 && G.v18.otorgar && G.v18.otorgar('combate_1', 'victoria_duelo', 1)); // marca idempotente: esta victoria ya pagó
       if (nueva) pagar();
-      txt = nueva ? TXT.gana : TXT.ganaOtra; C.premio = nueva;
+      // el aviso dice para qué sirven: el puente (frente B), si todavía está roto; la guía al puente la pone ciclo.js
+      const puenteListo = !!(G.v18 && G.v18.mundo && G.v18.mundo('puente_villa') === 'reparado');
+      txt = nueva ? (puenteListo ? TXT.ganaGuarda : TXT.gana) : TXT.ganaOtra; C.premio = nueva;
       sonar('unlock'); fx('gold', C.r.pos.x, C.r.pos.y + 1.2, C.r.pos.z);
     } else { txt = TXT.pierde; C.premio = false; sonar('wrong'); }
     if (G.ui && G.ui.toast) G.ui.toast(txt, 3200);
@@ -405,7 +416,7 @@ window.AVV18Combate = function (G) {
   function salir(motivo) {
     if (C.fase === 'nada') return false;
     C.fase = 'nada'; quitarBalas(); C.timers.length = 0; soltar();
-    if (hud) hud.el.hidden = true;
+    if (hud) { flotante(''); hud.el.hidden = true; }
     rivalPos.x = sitio.x + 4; rivalPos.z = sitio.z; rivalPos.y = ALTURA(rivalPos);
     if (C.r) { C.r.mareo = 0; C.r.finMareo = 0; C.r.lift.t = C.r.lift.dura = 0; }
     if (motivo && G.ui && G.ui.toast) G.ui.toast(motivo, 2600);

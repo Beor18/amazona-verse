@@ -98,15 +98,16 @@
     const v18On = (() => { try { return /[?&]v18=1\b/.test(location.search) || localStorage.getItem('amazonaverse.v18') === '1'; } catch (e) { return false; } })();
     G.V18 = v18On;
     const cargarV18 = aDemanda('src/game/v18/progreso.js', 'AVV18Progreso'); AV.v18Test = o => cargarV18().then(v => v.test(o));
+    const cargarV18Fx = aDemanda('src/game/v18/fx_poderes.js', 'AVV18Fx'); AV.v18FxTest = o => cargarV18Fx().then(v => v.test(o)); if (v18On) alPrimerGesto(cargarV18Fx); // KIMI-061: FX de los poderes (G.v18fx)
     if (v18On) alPrimerGesto(cargarV18);
-    { // V18.1 frente A (D7): habilidades por especie + duelo de entrenamiento contra una cotorra IA (src/game/v18/combate.js)
-      const hab = aDemanda('src/game/v18/habilidades.js', 'AVV18Habilidades'), comb = aDemanda('src/game/v18/combate.js', 'AVV18Combate');
-      const cargarCombate = () => cargarV18().then(hab).then(comb);
-      AV.v18CombateTest = o => cargarCombate().then(c => c.test(o));
-      if (v18On) alPrimerGesto(cargarCombate);
-    }
+    // V18.1 frente A (D7): habilidades por especie + duelo de entrenamiento contra una cotorra IA (src/game/v18/combate.js)
+    const hab18 = aDemanda('src/game/v18/habilidades.js', 'AVV18Habilidades'), comb18 = aDemanda('src/game/v18/combate.js', 'AVV18Combate');
+    const cargarCombate = () => cargarV18().then(hab18).then(comb18);
+    AV.v18CombateTest = o => cargarCombate().then(c => c.test(o));
+    if (v18On) alPrimerGesto(cargarCombate);
     const descubrir18 = aDemanda('src/game/v18/descubrir.js', 'AVV18Descubrir'), cargarV18Descubrir = () => cargarV18().then(descubrir18); AV.v18DescubrirTest = o => cargarV18Descubrir().then(d => d.test(o)); if (v18On) alPrimerGesto(cargarV18Descubrir); // frente C: descubrir, desbloquear y elegir la cotorra de Dominica
     const reparar18 = aDemanda('src/game/v18/reparar.js', 'AVV18Reparar'), cargarV18Reparar = () => cargarV18().then(reparar18); AV.v18RepararTest = o => cargarV18Reparar().then(r => r.test(o)); if (v18On) alPrimerGesto(cargarV18Reparar); // frente B: puente colgante roto → reparado
+    const ciclo18 = aDemanda('src/game/v18/ciclo.js', 'AVV18Ciclo'), cargarV18Ciclo = () => Promise.all([cargarCombate(), cargarV18Descubrir(), cargarV18Reparar()]).then(ciclo18); AV.v18CicloTest = o => cargarV18Ciclo().then(c => c.test(o)); if (v18On) alPrimerGesto(cargarV18Ciclo); // frente D (D14): duelo → materiales → puente → pista del reto extra
     const cargarSorpresas = aDemanda('src/game/sorpresas.js', 'AVSorpresas'); AV.sorpresasTest = o => cargarSorpresas().then(s => s.test(o)); alPrimerGesto(cargarSorpresas); // CG-45, sin tocar ciudad_viva.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
     if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)
