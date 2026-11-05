@@ -48,14 +48,17 @@
       const bushMeshes = {};
       for (const b of BUSHES) {
         const g = new THREE.Group(), y = H(b.x, b.z);
+        g.name = 'm3:arbusto';
         const leaf = new THREE.MeshLambertMaterial({ color: '#3f8f3a' });
         for (const [dx, dy, dz, s] of [[0, 0.5, 0, 0.75], [0.45, 0.35, 0.2, 0.5], [-0.4, 0.38, -0.15, 0.55]]) {
-          const m = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 0), leaf); m.position.set(dx, dy, dz); g.add(m);
+          const m = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 0), leaf); m.name = 'm3:arbusto:hoja'; m.position.set(dx, dy, dz); g.add(m);
         }
         const glow = new THREE.Mesh(new THREE.SphereGeometry(1.15, 16, 12), new THREE.MeshBasicMaterial({ color: '#c8ff7a', transparent: true, opacity: 0.22, depthWrite: false }));
+        glow.name = 'm3:arbusto:brillo';
         glow.position.y = 0.5; glow.visible = false; g.add(glow);
         // Coquí del coro (hito 28): la ranita de objetosHistoria() en mundo.js, sentada sobre el arbusto y mirando hacia afuera
         const frog = G.c.objetos ? G.c.objetos.coqui() : new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), new THREE.MeshLambertMaterial({ color: '#c98a3a' }));
+        if (!G.c.objetos) frog.name = 'm3:coqui';
         frog.position.set(0.25, 0.98, 0.45); frog.rotation.y = Math.atan2(0.25, 0.45); if (G.c.objetos) frog.scale.setScalar(1.35); frog.visible = false; g.add(frog);
         g.position.set(b.x, y, b.z); scene.add(g);
         bushMeshes[b.id] = { g, glow, frog };

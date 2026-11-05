@@ -276,6 +276,7 @@
         fin(nombre) {
           const g = new THREE.Group(), porMat = new Map();
           for (const [geo, m, M] of partes) { if (!porMat.has(m)) porMat.set(m, []); porMat.get(m).push([geo, M]); }
+          let i = 0;
           for (const [m, lista] of porMat) {
             let n = 0;
             const piezas = lista.map(([geo, M]) => { const p = (geo.index ? geo.toNonIndexed() : geo.clone()); p.applyMatrix4(M); n += p.attributes.position.count; return p; });
@@ -285,7 +286,7 @@
             const bg = new THREE.BufferGeometry();
             bg.setAttribute('position', new THREE.BufferAttribute(pos, 3)); bg.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
             bg.computeBoundingSphere();
-            const mesh = new THREE.Mesh(bg, m); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh);
+            const mesh = new THREE.Mesh(bg, m); mesh.name = (nombre || 'piezas') + ':p' + (i++); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh);
           }
           if (nombre) g.name = nombre;
           return g;
@@ -319,7 +320,7 @@
         .add(new THREE.TorusGeometry(r, r * 0.16, 4, 18), MAT.laton())
         .add(caja(r * 0.1, r * 0.82, r * 0.06, r * 0.02), mat('#b8321e', 10), [r * 0.22, r * 0.28, r * 0.05], [0, 0, -0.62])
         .add(new THREE.CylinderGeometry(r * 0.12, r * 0.12, r * 0.1, 8), MAT.laton(), [0, 0, r * 0.05], [PI / 2, 0, 0]);
-      g.add(cara, p.fin());
+      g.add(cara, p.fin('indicador_marco'));
       return g;
     }
 
@@ -380,7 +381,7 @@
       // luces: verde y ámbar encendidas, la de abajo fundida (dañada)
       const luces = [['#46d866', 0.55], ['#ffab1f', 0.46], ['#4a2a22', 0.37]].map(([c, y]) => {
         const m = new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 6), linMat(new THREE.MeshBasicMaterial({ color: c })));
-        m.position.set(0.14, y, 0.405); g.add(m); return m;
+        m.name = 'maquina:luz'; m.position.set(0.14, y, 0.405); g.add(m); return m;
       });
       g.userData.luces = luces;
       return sombras(g);
@@ -421,14 +422,15 @@
       // dial (su esfera se ilumina al encender) y piloto
       const dial = indicador(0.105); dial.position.set(0, 0.34, zF + 0.002); g.add(dial);
       const luz = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 8), new THREE.MeshBasicMaterial({ color: '#4a4a4a' }));
+      luz.name = 'transmisor:piloto';
       luz.position.set(0, HC + RY - 0.12, zF - 0.01); g.add(luz);
-      const bisel = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.014, 4, 14), MAT.laton()); bisel.position.copy(luz.position); bisel.position.z += 0.01; g.add(bisel);
+      const bisel = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.014, 4, 14), MAT.laton()); bisel.name = 'transmisor:bisel'; bisel.position.copy(luz.position); bisel.position.z += 0.01; g.add(bisel);
       // antena telescópica: tres tramos de metal y una bolita en la punta
       const ant = new THREE.Group(); ant.name = 'antena'; ant.position.set(xA, yTop + 0.05, -0.06);
       const pa = Piezas();
       [[0.022, 0.42, 0.21], [0.016, 0.42, 0.62], [0.011, 0.4, 1.02]].forEach(([r, l, y]) => pa.add(new THREE.CylinderGeometry(r, r, l, 6), mat('#a9afb2', 36, '#5a5e60'), [0, y, 0]).add(new THREE.CylinderGeometry(r * 1.4, r * 1.4, 0.03, 6), MAT.hierro(), [0, y - l / 2 + 0.015, 0]));
       pa.add(new THREE.SphereGeometry(0.03, 8, 6), mat('#a9afb2', 36, '#5a5e60'), [0, 1.23, 0]);
-      ant.add(pa.fin());
+      ant.add(pa.fin('antena'));
       g.add(ant);
       g.userData = { antena: ant, luz, dial: dial.getObjectByName('esfera').material };
       return sombras(g);
@@ -507,7 +509,7 @@
         ojo.add(b8, pupila, c.clone().addScaledVector(dir, 0.021).toArray(), [-0.25, s * 0.54, 0], [0.013, 0.0075, 0.006]);
         ojo.add(b6, brillo, c.clone().addScaledVector(dir, 0.023).add(new THREE.Vector3(0, 0.007, 0)).toArray(), 0, 0.0045);
       }
-      g.add(ojo.fin());
+      g.add(ojo.fin('coqui_ojo'));
       return sombras(g);
     }
 

@@ -232,6 +232,7 @@
       // ---------- Marcadores temporales ----------
       function marcador(o) {
         const g = new THREE.Group();
+        g.name = 'edu:marcador';
         const glow = new THREE.Sprite(linMat(new THREE.SpriteMaterial({ map: brillo(), color: o.color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })));
         glow.scale.setScalar(o.brillo || 3.2); glow.position.y = o.altoIcono || 1.8; g.add(glow);
         const ico = new THREE.Sprite(linMat(new THREE.SpriteMaterial({ map: icono(o.icono, o.color), transparent: true, depthWrite: false })));
@@ -239,6 +240,7 @@
         let anillo = null;
         if (o.anillo !== false) {
           anillo = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.25, 40), linMat(new THREE.MeshBasicMaterial({ color: o.color, transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending })));
+          anillo.name = 'edu:marcador:anillo';
           anillo.rotation.x = -Math.PI / 2; anillo.position.y = 0.06; g.add(anillo);
         }
         g.position.set(o.x, o.y, o.z); g.visible = false; scene.add(g);
@@ -259,11 +261,15 @@
       // Perchas: rama provisional (disco) + aro brillante + ícono + nombre de la capa
       const perchaVis = PERCHAS.map((p, i) => {
         const g = new THREE.Group();
+        g.name = 'edu:percha';
         const disco = new THREE.Mesh(new THREE.CylinderGeometry(p.r, p.r * 0.8, 0.22, 24), linMat(new THREE.MeshLambertMaterial({ color: i === 0 ? '#7a5634' : '#8a6a3a' })));
+        disco.name = 'edu:percha:disco';
         disco.position.y = -0.11; g.add(disco);
         const hojas = new THREE.Mesh(new THREE.TorusGeometry(p.r * 0.95, 0.16, 6, 18), linMat(new THREE.MeshLambertMaterial({ color: '#3f8f3a' })));
+        hojas.name = 'edu:percha:hojas';
         hojas.rotation.x = Math.PI / 2; g.add(hojas);
         const aro = new THREE.Mesh(new THREE.TorusGeometry(p.r + 0.12, 0.06, 6, 40), linMat(new THREE.MeshBasicMaterial({ color: '#ffe680', transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending })));
+        aro.name = 'edu:percha:aro';
         aro.rotation.x = Math.PI / 2; aro.position.y = 0.05; g.add(aro);
         const m = marcador({ x: 0, y: 0, z: 0, icono: 'hoja', color: '#3f9f5a', altoIcono: 2.2, anillo: false, brillo: 2.6 });
         scene.remove(m.g); m.g.visible = true; g.add(m.g);
@@ -281,9 +287,10 @@
       const mkPoza = marcador({ x: L.poza.x, y: aguaPoza(), z: L.poza.z, icono: 'vapor', color: '#5aa9d6', altoIcono: 2.2, brillo: 4 });
       // Nube de la cumbre
       const nube = new THREE.Group();
+      nube.name = 'edu:nube';
       const nubeMat = linMat(new THREE.MeshLambertMaterial({ color: '#ffffff', emissive: '#6b7f8c', transparent: true, opacity: 0.92 }));
       for (const [x, y, z, r] of [[0, 0, 0, 2.6], [2.4, -0.4, 0.6, 2], [-2.3, -0.3, -0.4, 2.1], [0.8, 1.2, -0.8, 1.8], [-0.9, 0.9, 1.1, 1.7], [1.6, 0.2, -2, 1.6], [-1.4, -0.6, 2.1, 1.5]]) {
-        const s = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), nubeMat); s.position.set(x, y, z); nube.add(s);
+        const s = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), nubeMat); s.name = 'edu:nube:puff'; s.position.set(x, y, z); nube.add(s);
       }
       const nubeGlow = new THREE.Sprite(linMat(new THREE.SpriteMaterial({ map: brillo(), color: '#cfeaff', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })));
       nubeGlow.scale.setScalar(13); nube.add(nubeGlow);
@@ -291,20 +298,25 @@
       // Vapor (voluta) y gota
       function cuerpoBrillante(color, r, suave) {
         const g = new THREE.Group();
+        g.name = 'edu:brillo';
         const core = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), linMat(new THREE.MeshBasicMaterial({ color, transparent: !!suave, opacity: suave ? 0.45 : 1, depthWrite: !suave })));
+        core.name = 'edu:brillo:core';
         g.add(core);
         const gl = new THREE.Sprite(linMat(new THREE.SpriteMaterial({ map: brillo(), color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })));
         gl.scale.setScalar(r * (suave ? 10 : 7)); g.add(gl);
         // El vapor es una nubecita: tres esferas translúcidas alrededor del centro
         if (suave) for (const [x, y, z, k] of [[0.45, 0.1, 0.1, 0.7], [-0.4, 0.2, -0.15, 0.65], [0.05, 0.45, -0.3, 0.55]]) {
-          const m = new THREE.Mesh(new THREE.SphereGeometry(r * k, 12, 8), core.material); m.position.set(x * r * 2, y * r * 2, z * r * 2); g.add(m);
+          const m = new THREE.Mesh(new THREE.SphereGeometry(r * k, 12, 8), core.material); m.name = 'edu:brillo:puff'; m.position.set(x * r * 2, y * r * 2, z * r * 2); g.add(m);
         }
         g.visible = false; scene.add(g);
         return g;
       }
       const voluta = cuerpoBrillante('#f2fbff', 0.55, true);
+      voluta.name = 'edu:voluta';
       const gota = cuerpoBrillante('#4fb6ff', 0.42);
+      gota.name = 'edu:gota';
       const punta = new THREE.Mesh(new THREE.ConeGeometry(0.29, 0.6, 14), linMat(new THREE.MeshBasicMaterial({ color: '#4fb6ff' })));
+      punta.name = 'edu:gota:punta';
       punta.position.y = 0.48; gota.add(punta);
       // Bocanadas de vapor: sprites suaves que suben, crecen y se desvanecen (estela de la voluta y de la poza)
       const PUFFS = Array.from({ length: 24 }, () => {
@@ -333,10 +345,13 @@
       // El ícono flota sobre el agua para ver desde la superficie dónde bucear; la gota brilla en el fondo
       const mkGotaPoza = marcador({ x: L.gota.x, y: yGotaFondo, z: L.gota.z, icono: 'gota', color: '#3d8fb0', altoIcono: Math.max(1, aguaPoza() - yGotaFondo + 1.1), anillo: false, brillo: 2.4 });
       const roca = new THREE.Group();
+      roca.name = 'edu:roca';
       const yRoca = H(L.roca.x, L.roca.z), altoRoca = Math.max(2.2, aguaPoza() - yRoca + 1.4);
       const rocaM = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 0), linMat(new THREE.MeshPhongMaterial({ color: '#8f8a80', flatShading: true, shininess: 8 })));
+      rocaM.name = 'edu:roca:piedra';
       rocaM.scale.set(1.1, altoRoca / 2, 1.0); rocaM.position.y = altoRoca / 2 - 0.2; roca.add(rocaM);
       const marca = new THREE.Mesh(new THREE.CylinderGeometry(1.02, 1.02, 0.16, 16, 1, true), linMat(new THREE.MeshBasicMaterial({ color: '#2d5f7a', side: THREE.DoubleSide })));
+      marca.name = 'edu:roca:marca';
       marca.position.y = Math.min(altoRoca - 0.4, aguaPoza() - yRoca + 0.7); roca.add(marca);
       roca.position.set(L.roca.x, yRoca, L.roca.z); roca.visible = false; scene.add(roca);
       const mkRoca = marcador({ x: L.roca.x, y: yRoca + altoRoca, z: L.roca.z, icono: 'roca', color: '#7a6a52', altoIcono: 0.8, anillo: false, brillo: 2.4 });

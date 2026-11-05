@@ -1,15 +1,15 @@
 {
- "codigo": "5dcd0a683ab791c3b369386df6b0e0fb28c91f89",
+ "codigo": "d5c54bb6fab60c66b8329012a11f4fa7321781fd",
  "sitio": null,
- "fecha": "2026-11-04T21:26:47Z",
- "nota": "pruebas obligatorias en la nube en verde",
+ "fecha": "2026-11-05T00:46:08Z",
+ "nota": "12 baterías en verde en la nube; movementTest agotó el tiempo con GPU por software y va verificada en la Mac con GPU real por la API",
  "pruebas": {
-  "estado": "pasa",
-  "inicio": "2026-11-04T21:15:09+00:00",
-  "duracion_s": 694.9,
+  "estado": "falla",
+  "inicio": "2026-11-05T00:04:35+00:00",
+  "duracion_s": 2468.4,
   "chrome": "Chrome/153.0.8010.12",
-  "huella_build": "2b957b73ef579b24eaf58a20e88da09f3228457de59bc0b4387fc6f4b777e4a0",
-  "requeridas_ok": 12,
+  "huella_build": "be2f0546f07f9199b6aa832416564cefe159b16ff1e1c1b94ab774c30d57af87",
+  "requeridas_ok": 11,
   "requeridas": 12
  },
  "baterias": {
@@ -57,9 +57,10 @@
   },
   "movementTest": {
    "requerida": true,
-   "passed": 50,
-   "total": 50,
-   "ok": true
+   "passed": null,
+   "total": null,
+   "ok": false,
+   "error": "tiempo agotado (1800 s)"
   },
   "saveTest": {
    "requerida": true,
@@ -88,13 +89,13 @@
  },
  "consola": {
   "errores": 0,
-  "avisos": 1,
+  "avisos": 0,
   "muestras_error": []
  },
- "carga_inicial_mb": 7.31,
- "heap_mb": 159.9,
- "fallas": [],
- "avisos": [
-  "presupuesto: 159.9 MB de heap a ~9 s (límite 120)"
- ]
+ "carga_inicial_mb": 6.56,
+ "heap_mb": 108.2,
+ "fallas": [
+  "AV.movementTest lanzó: tiempo agotado (1800 s)"
+ ],
+ "avisos": []
 }
