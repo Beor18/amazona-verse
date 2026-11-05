@@ -1,0 +1,30 @@
+{
+ "cargo": {
+  "marana": true,
+  "ms": 1102
+ },
+ "estado1": {
+  "apertura": 0.999,
+  "ojos": 2,
+  "ojosVis": true,
+  "rastroVis": true,
+  "calidad": "alto"
+ },
+ "coste": {
+  "con": 120,
+  "sin": 118,
+  "delta": 2,
+  "fps": 0,
+  "tris": 117516219,
+  "calidad": "alto"
+ },
+ "apagado": {
+  "bajoApagado": true,
+  "lejosApagado": true
+ },
+ "maranaTest": {
+  "passed": 9,
+  "total": 9
+ },
+ "errores": 0
+}
