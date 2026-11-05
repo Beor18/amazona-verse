@@ -5,6 +5,10 @@
 # 5-nov 11:00 (otra cuenta, Kelvin pide que la Mac siga): BM147 y BM148 al final de la tanda
 # 5-nov 16:40: tanda nueva
 # 5-nov tarde (otra cuenta): demo de hoy
+# 5-nov noche (otra cuenta): copia al día; minigolf y 2 cotorras nuevas
+BM153
+BM155
+BM156
 BM152
 BM153
 BM154
