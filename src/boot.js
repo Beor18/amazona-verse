@@ -99,6 +99,7 @@
     G.V18 = v18On;
     const cargarV18 = aDemanda('src/game/v18/progreso.js', 'AVV18Progreso'); AV.v18Test = o => cargarV18().then(v => v.test(o));
     if (v18On) alPrimerGesto(cargarV18);
+    const reparar18 = aDemanda('src/game/v18/reparar.js', 'AVV18Reparar'), cargarV18Reparar = () => cargarV18().then(reparar18); AV.v18RepararTest = o => cargarV18Reparar().then(r => r.test(o)); if (v18On) alPrimerGesto(cargarV18Reparar); // frente B: puente colgante roto → reparado
     const cargarSorpresas = aDemanda('src/game/sorpresas.js', 'AVSorpresas'); AV.sorpresasTest = o => cargarSorpresas().then(s => s.test(o)); alPrimerGesto(cargarSorpresas); // CG-45, sin tocar ciudad_viva.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
     if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)
