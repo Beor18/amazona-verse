@@ -114,6 +114,29 @@ window.AVV18Habilidades = function (G) {
     const r = l.h.efecto(c) || { ok: true };
     return Object.assign({ ok: true, id }, r);
   }
+  // Recibir un golpe: la regla común de todos los duelos (contra la IA en combate.js, de 2 jugadores en duelo2.js).
+  // El Escudo de plumas para un golpe normal del todo y reduce el grito sin anularlo; en los dos casos se gasta.
+  // Sin escudo, la invulnerabilidad breve tras perder una pluma ignora lo que no venga con «forzar».
+  // Cambia plumas, mareo, inv y kb de `blanco`; los efectos, avisos y eventos los pone quien llama.
+  // Devuelve { r: 'bloqueado' | 'inmune' | 'ok', n (plumas quitadas), empuje, mareo, parcial, dir, escudo (había escudo) }.
+  const ESCUDO_DEF = { reduceEmpuje: 0.4, reduceMareo: 0.35 };
+  function recibir(de, blanco, g) {
+    let n = g.plumas || 0, empuje = g.empuje || 0, mareo = g.mareo || 0, parcial = false;
+    const escudo = blanco.escudo > 0;
+    if (escudo) {
+      blanco.escudo = 0; blanco.alasT = 0;
+      if (!g.interrumpe) return { r: 'bloqueado', n: 0, empuje: 0, mareo: 0, parcial: false, escudo };
+      const E = get('escudo_plumas') || ESCUDO_DEF;
+      n = 0; empuje *= E.reduceEmpuje; mareo *= E.reduceMareo; parcial = true;
+    }
+    if (blanco.inv > 0 && !g.forzar) return { r: 'inmune', n: 0, empuje: 0, mareo: 0, parcial, escudo };
+    const dir = g.dir || dirA(de, blanco);
+    blanco.plumas = Math.max(0, blanco.plumas - n);
+    blanco.mareo = Math.max(blanco.mareo, mareo);
+    if (n > 0) blanco.inv = mareo + 0.25;
+    if (blanco.kb) { blanco.kb.x = dir.x * empuje; blanco.kb.z = dir.z * empuje; blanco.kb.t = 0.3; }
+    return { r: 'ok', n, empuje, mareo, parcial, dir, escudo };
+  }
   function paso(f, dt) {
     f.energia = Math.min(f.energiaMax, f.energia + RECARGA * dt);
     for (const k in f.cd) f.cd[k] = Math.max(0, f.cd[k] - dt);
@@ -121,6 +144,6 @@ window.AVV18Habilidades = function (G) {
     f.picoT = Math.max(0, (f.picoT || 0) - dt); f.alasT = Math.max(0, (f.alasT || 0) - dt);
     if (!f.picoT && f.cara === 'fight') f.cara = null;
   }
-  G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, paso, dist, dirA, mira };
+  G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, recibir, paso, dist, dirA, mira };
   return G.v18hab;
 };

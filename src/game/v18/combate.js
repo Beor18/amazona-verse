@@ -107,29 +107,23 @@ window.AVV18Combate = function (G) {
   }
 
   // ---------- Contexto para las habilidades ----------
-  const ESC = H.get('escudo_plumas') || { reduceEmpuje: 0.4, reduceMareo: 0.35 };
   function golpear(de, blanco, g) {
     if (C.fase !== 'lucha' || !blanco) return false;
-    let n = g.plumas || 0, empuje = g.empuje || 0, mareo = g.mareo || 0, parcial = false;
-    if (blanco.escudo > 0) {
+    const rc = H.recibir(de, blanco, g); // regla común (habilidades.js): escudo, invulnerabilidad, plumas, mareo, empujón
+    if (rc.escudo) {
       // Escudo de plumas: un golpe normal se para del todo; el grito se reduce, no se anula. En los dos casos se dispersa.
       C.stats.bloqueos++;
       quitarEscudo(blanco);
-      if (!g.interrumpe) {
+      if (rc.r === 'bloqueado') {
         fx('feathers', blanco.pos.x, blanco.pos.y + 1, blanco.pos.z); sonar('land');
         if (blanco.ia) flotante(TXT.bloquea);
         emitir({ tipo: 'hit', de: de.id, a: blanco.id, valor: 0, bloqueado: true });
         return false;
       }
-      n = 0; empuje *= ESC.reduceEmpuje; mareo *= ESC.reduceMareo; parcial = true;
       if (blanco.ia || !de.ia) flotante(TXT.reduce, 1.2);
     }
-    if (blanco.inv > 0 && !g.forzar) return false;
-    const dir = g.dir || H.dirA(de, blanco);
-    blanco.plumas = Math.max(0, blanco.plumas - n);
-    blanco.mareo = Math.max(blanco.mareo, mareo);
-    if (n > 0) blanco.inv = mareo + 0.25;
-    blanco.kb.x = dir.x * empuje; blanco.kb.z = dir.z * empuje; blanco.kb.t = 0.3;
+    if (rc.r !== 'ok') return false;
+    const n = rc.n, empuje = rc.empuje, mareo = rc.mareo, parcial = rc.parcial;
     if (g.interrumpe) interrumpir(blanco, mareo, parcial);
     if (blanco.lift && empuje > 0) { blanco.lift.alto = n > 0 ? 0.45 : 0.25; blanco.lift.t = 0; blanco.lift.dura = 0.32; C.stats.reacciones++; } // saltito de sorpresa
     fx('feathers', blanco.pos.x, blanco.pos.y + 1, blanco.pos.z);
