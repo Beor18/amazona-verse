@@ -2,7 +2,8 @@
    Cotorras viven alrededor de 9 lugares del mapa real. Cada lugar tiene un hábitat y cada hábitat sus especies, con la lógica
    geográfica de docs/equipo/MUNDO_VIVO_ECOLOGIA.md (HAB y DEF abajo; pack.residentes.colonias lo cambia). Nada al azar entre las 34:
    - la plaza de Villa Raíz es de las cotorras puertorriqueñas (vittata) y nada más;
-   - la Ciudad de los 36 tiene el bosque nublado de las Antillas (con vittata); solo en el cap. 6 y después del pacto (PactRenewed,
+   - la Ciudad de los 36 tiene el bosque nublado de las Antillas (con vittata) y, por cada capítulo terminado, llega una familia más
+     (Kelvin 5-nov, LLEGAN abajo); en el cap. 6 y después del pacto (PactRenewed,
      o el cap. 6 terminado en el registro de temporada) es la colonia mezclada de las 36 vivas, porque los guardianes llegaron;
    - las extintas (martinicana, violacea) nunca están en un hábitat: no salen vivas en el mundo.
    Entre las 9 colonias están las 34 especies vivas, así que el Álbum de las 36 se puede llenar en el cap. 1.
@@ -81,10 +82,30 @@ window.AVResidentes = function (G, B) {
       hab: HAB[c.hab] ? c.hab : 'casa', pacto: !!c.pacto, fijas: c.fijas || [], aves: [], P: null }));
     return R.cols;
   }
+  // Kelvin 5-nov: en la Ciudad de los 36 las especies llegan por capítulo. Antes del pacto viven las 5 del bosque nublado y, por
+  // cada capítulo terminado (registro de temporada), llega una familia de los dones (src/game/dones.js): cap. 1 Isleñas,
+  // 2 Montañeras, 3 Del norte, 4 Cordilleranas, 5 Del gran río, 6 Del bosque del sur (con el pacto, las 34 vivas).
+  const LLEGAN = {
+    1: ['vittata', 'ventralis', 'leucocephala', 'agilis', 'collaria', 'barbadensis'],
+    2: ['imperialis', 'arausiaca', 'guildingii', 'versicolor'],
+    3: ['finschi', 'oratrix', 'tresmariae', 'viridigenalis', 'xantholora', 'albifrons'],
+    4: ['auropalliata', 'guatemalae', 'autumnalis', 'lilacina', 'mercenarius'],
+    5: ['diadema', 'kawalli', 'festiva', 'dufresniana', 'ochrocephala', 'amazonica', 'farinosa'],
+    6: ['rhodocorytha', 'vinacea', 'brasiliensis', 'pretrei', 'tucumana', 'aestiva'],
+  };
+  function llegadas() {
+    let t = R.terminadosPrueba;
+    if (!t) { try { const T = window.AVTemporada, d = T && T.leer(); t = (d && d.terminados) || {}; } catch (e) { t = {}; } }
+    const out = []; for (const n of Object.keys(LLEGAN)) if (t[n]) out.push(...LLEGAN[n]);
+    return out;
+  }
   const vivas = () => { const E = window.AV_ESPECIES; return (E && E.especies ? E.especies.map(e => e.id) : []).filter(id => G.album && G.album.colores(id)); };
   const habitatDe = col => (col.pacto && pacto() ? 'pacto' : col.hab);
   function poolHab(h) { const v = vivas(), sp = HAB[h] && HAB[h].sp; return sp ? sp.filter(id => v.includes(id)) : v; }
-  const poolDe = col => poolHab(habitatDe(col));
+  const poolDe = col => {
+    if (col.pacto && !pacto()) { const v = vivas(), extra = llegadas().filter(id => v.includes(id)); if (extra.length) return [...new Set(poolHab(col.hab).concat(extra))]; }
+    return poolHab(habitatDe(col));
+  };
   // Especies del lugar más cercano a (x, z): lo usa la bandada para viajar con las especies del hábitat (sin colonias: vittata)
   function especiesEn(x, z) {
     let mejor = null, d0 = 1e9;
@@ -104,7 +125,7 @@ window.AVResidentes = function (G, B) {
     return out;
   }
   function elegirEspecies(col, n) {
-    const mixta = habitatDe(col) === 'pacto', usadas = new Set();
+    const mixta = habitatDe(col) === 'pacto' || (col.pacto && llegadas().length > 0), usadas = new Set();
     if (mixta) for (const c of R.cols || []) if (c !== col) for (const a of c.aves) usadas.add(a.sp);
     return elegirDe(poolDe(col), n, col.fijas, mixta, mixta ? usadas : null);
   }
@@ -408,7 +429,7 @@ window.AVResidentes = function (G, B) {
   const giroHacia = (a, p) => angDif(a.yaw + a.gir, Math.atan2(p.x - a.x, p.z - a.z));
   G.residentes = { N, VIS_N, HAB, colonias, aves, paso, reiniciar, forzar, giroHacia, alCalidad, reducido, saludo, visitar, especiesEn, poolDe, habitatDe, pacto,
     poblar: (col, n) => activar(col, n), visita: () => R.vis,
-    prueba: on => { R.prueba = !!on; if (!on) R.pactoPrueba = null; }, pactoPrueba: v => { R.pactoPrueba = v; },
+    prueba: on => { R.prueba = !!on; if (!on) { R.pactoPrueba = null; R.terminadosPrueba = null; } }, pactoPrueba: v => { R.pactoPrueba = v; }, terminadosPrueba: t => { R.terminadosPrueba = t || null; }, llegadas,
     olvidar: () => { R.acum = {}; R.verT = 0; }, estado: () => ({ aves: aves().length, colonias: colonias().filter(c => c.aves.length).map(c => c.id), visita: R.vis ? R.vis.de.id + '→' + R.vis.a.id + ' ' + R.vis.fase : null }) };
   return G.residentes;
 };
