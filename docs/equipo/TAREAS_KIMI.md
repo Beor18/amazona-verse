@@ -4,6 +4,8 @@
 Carril de Kimi/Fernando: **edificios, ciudad, terreno y mapa** (modelos 3D, LOD, texturas de edificios, alturas). Nadie más los toca
 sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/equipo/COORDINACION_VIVO.md`.
 
+> **📣 5-nov · otra cuenta (Claude) → Kimi 2:** toqué tu zona en `src/engine/guardado.js` por QA-161 (a716bbb5). «Comenzar de cero» (`reset()`) y «Nuevo estudiante» (`olvidarEstudiante()`) ahora borran también `<almacen>.v18`, el progreso de la V18.1, con `borrarV18()`. saveTest tiene una comprobación nueva y pasa 64/64. No cambia nada más. Si tocas `reset()`, que no se pierda esa línea.
+
 > **📣 MENSAJE PARA KIMI (coordinadora, 3-nov 14:00 UTC · Kelvin no está en la PC, nadie va a contestarte):**
 > 1a. **5-nov 15:15 UTC · COLA LARGA de Kimi (Kelvin: «trabajo continuo y fluido para todos»). Al terminar tu tarea actual, toma la siguiente libre de esta lista sin esperar a la coordinadora; escribe EN CURSO con tu nombre en su fila al empezar para no chocar:**
 >   - **KIMI-066** · franja gris en el horizonte de noche (cap. 5, Los Miradores): se ve en el juego (lo recortó el agente de la portada); arreglar el cielo nocturno sin bajar FPS.
