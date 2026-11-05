@@ -10,7 +10,7 @@
      por encima de lo más alto del camino y, en cada paso, la altura nunca queda por debajo del tope sólido de ese punto ni del terreno.
    - Rendimiento (Kelvin: lag en móvil e iPad): sin mallas nuevas. Se dibujan en las dos mallas instanciadas de la bandada
      (G.bandada.EXTRA, prioridad 87.5, como comunidades.js): 0 draw calls extra si esas mallas ya se ven, 2 como mucho.
-     Cuántas: bajo 6 (mínima visible: el iPhone arranca en «bajo», QA-110/0l), medio 10, alto 16. Se actualizan cada cuadro a menos de 45 m de la
+     Cuántas: bajo 12, medio 16, alto 20 (Kelvin 5-nov: más vida; antes 6/10/16). Se actualizan cada cuadro a menos de 45 m de la
      cámara, cada 3 cuadros hasta 100 m y cada 6 más lejos; a más de 170 m del centro de la ciudad se apagan (sin trabajo ni dibujo).
    - Nada en las baterías (G.quiet) ni antes de crear el personaje. Prueba: AV.ciudadVivaTest(). */
 window.AVCiudadViva = function (G) {
@@ -18,7 +18,7 @@ window.AVCiudadViva = function (G) {
   if (G.ciudadViva) return G.ciudadViva;
   const S = G.S, POI = 'kelvin_ruinas_yunque';
   const H = (x, z) => G.terreno.height(x, z);
-  const N = { bajo: 6, medio: 10, alto: 16 };
+  const N = { bajo: 12, medio: 16, alto: 20 }; // Kelvin 5-nov: «no veo nadie vivo… debe ser más» (antes 6/10/16). Tope: MAXN de la bandada (20 + 26 + 20)
   const ACTIVA = 170, HIST = 20, LOD = [[45, 1], [100, 3], [Infinity, 6]], ESC = 1.35, VER_R = 8;
   const SP_DEF = ['vittata', 'imperialis', 'arausiaca', 'guildingii', 'versicolor']; // = residentes.js HAB.nublado
   const rnd = (a, b) => a + Math.random() * (b - a);
@@ -342,7 +342,7 @@ window.AVCiudadViva = function (G) {
       const P = perchas();
       check('Hay tejados y balcones donde posarse', P.alto.length >= 6 && P.alto.filter(p => p.tipo === 'tejado').length >= 3,
         P.alto.length + ' altas (' + P.alto.filter(p => p.tipo === 'tejado').length + ' tejados, ' + P.alto.filter(p => p.tipo === 'balcon').length + ' balcones) · ' + P.suelo.length + ' en la plaza');
-      check('Aparecen residentes en la ciudad (alto: 16)', R.aves.length === N.alto && R.aves.every(a => Math.hypot(a.x - s.x, a.z - s.z) < s.r + 10), R.aves.length + ' aves');
+      check('Aparecen residentes en la ciudad (alto: 20)', R.aves.length === N.alto && R.aves.every(a => Math.hypot(a.x - s.x, a.z - s.z) < s.r + 10), R.aves.length + ' aves');
       const sp = pool();
       check('Son de las especies de la colonia de la ciudad (ninguna extinta)', R.aves.every(a => sp.includes(a.sp)) && R.aves.every(a => a.sp !== 'martinicana' && a.sp !== 'violacea'), [...new Set(R.aves.map(a => a.sp))].join(','));
       // un día entero de rutinas, comprobando cada paso que nadie esté dentro de un edificio ni bajo el suelo
@@ -373,7 +373,7 @@ window.AVCiudadViva = function (G) {
       // calidad: menos en medio y en bajo
       const cuenta = c => { Rd.calidad.nivel = c; G.emit('calidad', Rd.calidad); return R.aves.length; };
       const nm = cuenta('medio'), nb = cuenta('bajo'), na = cuenta('alto');
-      check('Menos cotorras con menos calidad: bajo 6, medio 10, alto 16', nb === 6 && nm === 10 && na === 16, 'bajo ' + nb + ' · medio ' + nm + ' · alto ' + na);
+      check('Menos cotorras con menos calidad: bajo 12, medio 16, alto 20', nb === 12 && nm === 16 && na === 20, 'bajo ' + nb + ' · medio ' + nm + ' · alto ' + na);
       // actualización por distancia: de cerca cada cuadro, lejos cada 6
       const ritmo = () => { R.stats.pasos = 0; R.stats.cuadros = 0; for (let i = 0; i < 60; i++) paso(1 / 60); return R.stats.pasos / Math.max(1, R.stats.cuadros) / R.aves.length; };
       G.camara.place(true);

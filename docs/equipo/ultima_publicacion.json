@@ -1,15 +1,15 @@
 {
- "codigo": "d5c54bb6fab60c66b8329012a11f4fa7321781fd",
+ "codigo": "4d87f95e9904c9d60cffdf6882c11b4609076be7",
  "sitio": null,
- "fecha": "2026-11-05T00:46:08Z",
- "nota": "12 baterías en verde en la nube; movementTest agotó el tiempo con GPU por software y va verificada en la Mac con GPU real por la API",
+ "fecha": "2026-11-05T02:42:11Z",
+ "nota": "pruebas obligatorias en la nube en verde",
  "pruebas": {
-  "estado": "falla",
-  "inicio": "2026-11-05T00:04:35+00:00",
-  "duracion_s": 2468.4,
+  "estado": "pasa",
+  "inicio": "2026-11-05T02:27:21+00:00",
+  "duracion_s": 884.3,
   "chrome": "Chrome/153.0.8010.12",
-  "huella_build": "be2f0546f07f9199b6aa832416564cefe159b16ff1e1c1b94ab774c30d57af87",
-  "requeridas_ok": 11,
+  "huella_build": "38e4cb0bc422846dc5e3b7576078e3b1b568509d482b39197f25e16cdb66a41d",
+  "requeridas_ok": 12,
   "requeridas": 12
  },
  "baterias": {
@@ -57,10 +57,9 @@
   },
   "movementTest": {
    "requerida": true,
-   "passed": null,
-   "total": null,
-   "ok": false,
-   "error": "tiempo agotado (1800 s)"
+   "passed": 51,
+   "total": 51,
+   "ok": true
   },
   "saveTest": {
    "requerida": true,
@@ -89,13 +88,11 @@
  },
  "consola": {
   "errores": 0,
-  "avisos": 0,
+  "avisos": 1,
   "muestras_error": []
  },
- "carga_inicial_mb": 6.56,
- "heap_mb": 108.2,
- "fallas": [
-  "AV.movementTest lanzó: tiempo agotado (1800 s)"
- ],
+ "carga_inicial_mb": 6.57,
+ "heap_mb": 106.7,
+ "fallas": [],
  "avisos": []
 }
