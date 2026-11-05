@@ -151,6 +151,8 @@ const PROBAR_JS = `(async () => {
     nListosM1: Object.keys(listosM1).length, nListosM2: listosM2.length,
     nuevos: nuevos.slice(0, 50),
     zonasM2: m2.zonas,
+    m1: { t: m1.t, heap: m1.heap, recursos: m1.recursos, zonas: m1.zonas },
+    m2: { t: m2.t, heap: m2.heap, recursos: m2.recursos, zonas: m2.zonas },
     snaps: snaps.length,
     ultimas3: [m1, m2, seC].map(s => ({ t: s.t, heap: s.heap, n: s.recursos.length, kb: kb(s) })),
   });

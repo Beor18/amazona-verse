@@ -1,0 +1,878 @@
+{
+ "etiqueta": "r12",
+ "cuando": "2026-11-05T09:39:45.691Z",
+ "cpu": 4,
+ "rondas": 4,
+ "movil": {
+  "ancho": 375,
+  "alto": 812,
+  "dpr": 3,
+  "gpu": "PC real (ANGLE/D3D11)"
+ },
+ "corridas": [
+  {
+   "errorTest": null,
+   "sinFugas": [
+    {
+     "ok": false,
+     "extra": "KB 666628→666628 · materiales 34→34 · modelos 147→147 · heap 1000.1→1081.9 MB (gc) · three geo 332→345, tex 170→170"
+    }
+   ],
+   "passed": 23,
+   "total": 24,
+   "hitos": [
+    "inicio",
+    "wrapper puesto",
+    "test devuelto 23/24"
+   ],
+   "heapM1": 1000.1,
+   "heapM2": 1081.9,
+   "kbM1": 9591,
+   "kbM2": 9591,
+   "nListosM1": 147,
+   "nListosM2": 147,
+   "nuevos": [],
+   "zonasM2": [
+    {
+     "id": "villa",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 21,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "lomas",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 235,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "colina",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 108,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_ruinas_yunque",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 228,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 30,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_oeste",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 244,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_lomas",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 194,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este_2",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 88,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_mina",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 237,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_meandros",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 158,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_ruinas_yunque_2",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 326,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_colina",
+     "nivel": 2,
+     "ciudad": true,
+     "hd": true,
+     "d": 66,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_mina_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 156,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este_3",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 94,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_oeste_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 328,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_yunque",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 248,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_meandros_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 285,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    }
+   ],
+   "snaps": 11,
+   "ultimas3": [
+    {
+     "t": 105190,
+     "heap": 1000.1,
+     "n": 147,
+     "kb": 9591
+    },
+    {
+     "t": 150155,
+     "heap": 1081.9,
+     "n": 147,
+     "kb": 9591
+    },
+    {
+     "t": 163997,
+     "heap": 889.5,
+     "n": 171,
+     "kb": 11571
+    }
+   ]
+  },
+  {
+   "errorTest": null,
+   "sinFugas": [
+    {
+     "ok": true,
+     "extra": "KB 666628→666628 · materiales 34→34 · modelos 147→147 · heap 999.8→1000 MB (gc) · three geo 344→345, tex 170→170"
+    }
+   ],
+   "passed": 24,
+   "total": 24,
+   "hitos": [
+    "inicio",
+    "wrapper puesto",
+    "test devuelto 24/24"
+   ],
+   "heapM1": 999.8,
+   "heapM2": 1000,
+   "kbM1": 9591,
+   "kbM2": 9591,
+   "nListosM1": 147,
+   "nListosM2": 147,
+   "nuevos": [],
+   "zonasM2": [
+    {
+     "id": "villa",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 21,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "lomas",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 235,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "colina",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 108,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_ruinas_yunque",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 228,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 30,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_oeste",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 244,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_lomas",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 194,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este_2",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 88,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_mina",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 237,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_meandros",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 158,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_ruinas_yunque_2",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 326,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_colina",
+     "nivel": 2,
+     "ciudad": true,
+     "hd": true,
+     "d": 66,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_mina_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 156,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este_3",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 94,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_oeste_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 328,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_yunque",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 248,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_meandros_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 285,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    }
+   ],
+   "snaps": 11,
+   "ultimas3": [
+    {
+     "t": 103689,
+     "heap": 999.8,
+     "n": 147,
+     "kb": 9591
+    },
+    {
+     "t": 142092,
+     "heap": 1000,
+     "n": 147,
+     "kb": 9591
+    },
+    {
+     "t": 152198,
+     "heap": 885.9,
+     "n": 171,
+     "kb": 11571
+    }
+   ]
+  },
+  {
+   "errorTest": null,
+   "sinFugas": [
+    {
+     "ok": false,
+     "extra": "KB 666628→666628 · materiales 34→34 · modelos 147→147 · heap 1000→1081.8 MB (gc) · three geo 332→333, tex 170→170"
+    }
+   ],
+   "passed": 23,
+   "total": 24,
+   "hitos": [
+    "inicio",
+    "wrapper puesto",
+    "test devuelto 23/24"
+   ],
+   "heapM1": 1000,
+   "heapM2": 1081.7,
+   "kbM1": 9591,
+   "kbM2": 9591,
+   "nListosM1": 147,
+   "nListosM2": 147,
+   "nuevos": [],
+   "zonasM2": [
+    {
+     "id": "villa",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 21,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "lomas",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 235,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "colina",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 108,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_ruinas_yunque",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 228,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 30,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_oeste",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 244,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_lomas",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 194,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este_2",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 88,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_mina",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 237,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_meandros",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 158,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_ruinas_yunque_2",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 326,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_colina",
+     "nivel": 2,
+     "ciudad": true,
+     "hd": true,
+     "d": 66,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_mina_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 156,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este_3",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 94,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_oeste_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 328,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_yunque",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 248,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_meandros_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 285,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    }
+   ],
+   "snaps": 11,
+   "ultimas3": [
+    {
+     "t": 101545,
+     "heap": 1000,
+     "n": 147,
+     "kb": 9591
+    },
+    {
+     "t": 133859,
+     "heap": 1081.7,
+     "n": 147,
+     "kb": 9591
+    },
+    {
+     "t": 142349,
+     "heap": 914.2,
+     "n": 171,
+     "kb": 11571
+    }
+   ]
+  },
+  {
+   "errorTest": null,
+   "sinFugas": [
+    {
+     "ok": true,
+     "extra": "KB 666609→666609 · materiales 34→34 · modelos 147→147 · heap 1000.1→1000.3 MB (gc) · three geo 335→335, tex 170→170"
+    }
+   ],
+   "passed": 24,
+   "total": 24,
+   "hitos": [
+    "inicio",
+    "wrapper puesto",
+    "test devuelto 24/24"
+   ],
+   "heapM1": 1000,
+   "heapM2": 1000.2,
+   "kbM1": 9585,
+   "kbM2": 9585,
+   "nListosM1": 147,
+   "nListosM2": 147,
+   "nuevos": [],
+   "zonasM2": [
+    {
+     "id": "villa",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 21,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "lomas",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 235,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "colina",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 108,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_ruinas_yunque",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 228,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 30,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_oeste",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 244,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_lomas",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 194,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este_2",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 88,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_mina",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 237,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_meandros",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 158,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_ruinas_yunque_2",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 326,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_colina",
+     "nivel": 2,
+     "ciudad": true,
+     "hd": true,
+     "d": 66,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_mina_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 156,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este_3",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 94,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_oeste_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 328,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_yunque",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 248,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_meandros_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 285,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    }
+   ],
+   "snaps": 11,
+   "ultimas3": [
+    {
+     "t": 103717,
+     "heap": 1000,
+     "n": 147,
+     "kb": 9585
+    },
+    {
+     "t": 141900,
+     "heap": 1000.2,
+     "n": 147,
+     "kb": 9585
+    },
+    {
+     "t": 152378,
+     "heap": 888.1,
+     "n": 171,
+     "kb": 11565
+    }
+   ]
+  }
+ ]
+}
