@@ -377,3 +377,6 @@ Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar
 
 ## 5-nov-2026 · Amazona Mini Golf: La Ruta de las Semillas (Kelvin)
 Propuesta aprobada para prototipo, complementaria a V18.1 (no la retrasa). Directiva: `docs/DIRECTIVA_MINIGOLF_V18_1.md`. Se juega dentro de ciudades existentes; semilla gigante → nido; un poder por hoyo (primero el Grito del Yunque); récord local, sin ranking ni monedas. Primera misión: **un hoyo** completo en móvil y computadora, detrás de bandera, antes de pensar en seis.
+
+## 5-nov-2026 · Minigolf: troncos, premios y nombres propios (Kelvin)
+Los 2 árboles existentes se quedan como obstáculos del hoyo de Villa Raíz (sin tapar el nido ni atrapar la semilla). Premios una sola vez por logro: 3 fibras al completar el hoyo por primera vez y 2 maderas con el primer oro; repetir solo mejora el récord. Marea, Nudo, Eco y Brote se quedan en español también en inglés cuando son nombres propios; su uso como palabra común se traduce.
