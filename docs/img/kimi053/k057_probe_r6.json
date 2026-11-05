@@ -1,0 +1,125 @@
+{
+  "nivel0": "medio",
+  "ses0": {
+    "on": false,
+    "repite": false,
+    "pend": false,
+    "activo": true
+  },
+  "t_veg": 4,
+  "stats_veg": {
+    "fundido": 0.75,
+    "total": 11544,
+    "mallas": 21,
+    "instanciasVisibles": 290,
+    "impostores": 1272,
+    "pasto": 15,
+    "colliders": 134,
+    "arboles": 7307,
+    "bosque": 5372,
+    "tepuy": 307,
+    "copasCima": 0,
+    "ses": {
+      "on": false,
+      "repite": false,
+      "pend": false,
+      "activo": true
+    },
+    "dLod": 44.532752990722656,
+    "arbolesLod": 83,
+    "arbolesMalla": 83,
+    "trisArboles": 118246,
+    "topeTris": 120000,
+    "dArbol": 31.827367782592773,
+    "dSombra": 0,
+    "sombraR": 0,
+    "tope": 600
+  },
+  "t_flip": 21,
+  "nivel1": "bajo",
+  "ses_tras_flip": {
+    "on": false,
+    "repite": false,
+    "pend": true,
+    "activo": true
+  },
+  "post_flip": {
+    "n": 1,
+    "p50": 580,
+    "p95": 580,
+    "peor": 580,
+    "n200": 1
+  },
+  "stats_post": {
+    "fundido": 0.75,
+    "total": 11544,
+    "mallas": 20,
+    "instanciasVisibles": 133,
+    "impostores": 1370,
+    "pasto": 2,
+    "colliders": 134,
+    "arboles": 7307,
+    "bosque": 5372,
+    "tepuy": 307,
+    "copasCima": 0,
+    "ses": {
+      "on": false,
+      "repite": false,
+      "pend": false,
+      "activo": true
+    },
+    "dLod": 25.506999015808105,
+    "arbolesLod": 0,
+    "arbolesMalla": 39,
+    "trisArboles": 58612,
+    "topeTris": 60000,
+    "dArbol": 25.506999015808105,
+    "dSombra": 0,
+    "sombraR": 0,
+    "tope": 300
+  },
+  "ses_post": {
+    "on": false,
+    "repite": false,
+    "pend": false,
+    "activo": true
+  },
+  "renderRuns_post": 64,
+  "t_flip2": 17,
+  "stats_final": {
+    "fundido": 0.75,
+    "total": 11544,
+    "mallas": 21,
+    "instanciasVisibles": 290,
+    "impostores": 1272,
+    "pasto": 15,
+    "colliders": 134,
+    "arboles": 7307,
+    "bosque": 5372,
+    "tepuy": 307,
+    "copasCima": 0,
+    "ses": {
+      "on": false,
+      "repite": false,
+      "pend": false,
+      "activo": true
+    },
+    "dLod": 44.532752990722656,
+    "arbolesLod": 83,
+    "arbolesMalla": 83,
+    "trisArboles": 118246,
+    "topeTris": 120000,
+    "dArbol": 31.827367782592773,
+    "dSombra": 0,
+    "sombraR": 0,
+    "tope": 600
+  },
+  "ses_final": {
+    "on": false,
+    "repite": false,
+    "pend": false,
+    "activo": true
+  },
+  "nivel2": "medio",
+  "etiqueta": "r6"
+}
