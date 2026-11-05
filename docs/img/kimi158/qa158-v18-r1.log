@@ -1,0 +1,31 @@
+· intro: sin botón
+· entrada ok — arranque: {"calidad":"bajo","dpr":1,"calls":60,"fps":28}
+· quieto 20s: calidad=bajo dpr=undefined — última: {"t":20.2,"pos":[-8,10,-2],"heap":123,"total":171,"geo":85,"tex":122,"calls":60,"ktris":229,"calidad":"bajo","fps":35,"kbGeo":43125,"cerca":47,"hd":0,"lejos":63,"zonas":5}
+· v1 → ciudad_puerta: 4 muestras — última heap=139MB geo=169 tex=122 calls=53 ktris=178
+· v1 → ciudad_centro: 4 muestras — última heap=116MB geo=213 tex=122 calls=53 ktris=191
+· v1 → bahia_norte: 6 muestras — última heap=140MB geo=228 tex=120 calls=68 ktris=528
+· v1 → villa_norte: 4 muestras — última heap=111MB geo=229 tex=120 calls=66 ktris=522
+· v1 → villa_spawn: 5 muestras — última heap=138MB geo=327 tex=122 calls=56 ktris=239
+· retenido tras v1 (gc): heap=116MB total=121MB geo=327 tex=122 calls=56
+· v2 → ciudad_puerta: 4 muestras — última heap=119MB geo=327 tex=122 calls=52 ktris=178
+· v2 → ciudad_centro: 4 muestras — última heap=113MB geo=310 tex=122 calls=48 ktris=187
+· v2 → bahia_norte: 6 muestras — última heap=126MB geo=244 tex=120 calls=70 ktris=529
+· v2 → villa_norte: 4 muestras — última heap=131MB geo=244 tex=120 calls=66 ktris=523
+· v2 → villa_spawn: 5 muestras — última heap=131MB geo=327 tex=122 calls=56 ktris=238
+· retenido tras v2 (gc): heap=115MB total=120MB geo=327 tex=122 calls=56
+· v3 → ciudad_puerta: 4 muestras — última heap=121MB geo=313 tex=122 calls=73 ktris=218
+· v3 → ciudad_centro: 4 muestras — última heap=117MB geo=314 tex=122 calls=55 ktris=191
+· v3 → bahia_norte: 6 muestras — última heap=119MB geo=249 tex=120 calls=69 ktris=529
+· v3 → villa_norte: 4 muestras — última heap=121MB geo=249 tex=120 calls=66 ktris=521
+· v3 → villa_spawn: 5 muestras — última heap=130MB geo=332 tex=122 calls=56 ktris=241
+· retenido tras v3 (gc): heap=115MB total=120MB geo=332 tex=122 calls=56
+· v4 → ciudad_puerta: 4 muestras — última heap=121MB geo=315 tex=122 calls=66 ktris=181
+· v4 → ciudad_centro: 4 muestras — última heap=114MB geo=315 tex=122 calls=49 ktris=190
+· v4 → bahia_norte: 6 muestras — última heap=129MB geo=249 tex=120 calls=68 ktris=529
+· v4 → villa_norte: 4 muestras — última heap=119MB geo=249 tex=120 calls=77 ktris=527
+· v4 → villa_spawn: 5 muestras — última heap=140MB geo=332 tex=122 calls=56 ktris=241
+· retenido tras v4 (gc): heap=115MB total=120MB geo=332 tex=122 calls=56
+· final: heap=115MB geo=undefined tex=undefined calls=56 ktris=241 zonasCerca=17 ctx={"perdidas":0,"restauradas":0,"errores":[]}
+  escena top: edificiosZona:global 17MB/2 · edificiosZona:kelvin_ruinas_yunque 7MB/2 · edificiosZonaSombra:kelvin_aldea_colina 3MB/1 · edificiosZonaSombra:kelvin_aldea_rio_este_2 3MB/1 · edificiosZonaSombra:kelvin_ruinas_yunque 3MB/1 · edificiosZona:kelvin_aldea_rio_este_2 2MB/2 · edificiosZona:kelvin_ruinas_yunque_2 2MB/2 · (sin nombre) 1MB/97
+  recursos listos+refs top: templo_grande_e:lejos 1MB×1 · templo_grande_f:lejos 1MB×1 · complejo_ruinas:cerca 1MB×2 · bohio_redondo:cerca 0MB×5 · bohio_redondo:lejos 0MB×5 · toldo_pequeno:cerca 0MB×12 · toldo_pequeno:lejos 0MB×14 · casa_plataforma:lejos 0MB×4
+· resultado en C:\Users\kelvi\amazonaversegame2\docs\img\kimi158\qa158-v18-r1.json

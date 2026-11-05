@@ -22,6 +22,7 @@ const ETIQUETA = (() => { const i = process.argv.indexOf('--etiqueta'); return i
 const CPU = parseFloat((() => { const i = process.argv.indexOf('--cpu'); return i > 0 ? process.argv[i + 1] : '4'; })(), 10);
 const VUELTAS = parseInt((() => { const i = process.argv.indexOf('--vueltas'); return i > 0 ? process.argv[i + 1] : '2'; })(), 10);
 const QUIETO_S = parseInt((() => { const i = process.argv.indexOf('--quieto'); return i > 0 ? process.argv[i + 1] : '30'; })(), 10);
+const V18 = process.argv.includes('--v18'); // bandera ?v18=1 (demo V18.1)
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi158');
 fs.mkdirSync(SALIDA, { recursive: true });
 // Circuito cap1 (anclas usadas por las herramientas kimi1/kimi2/kimi3, zonas conocidas)
@@ -234,7 +235,7 @@ async function lanzarChromeUnaVez() {
 }
 
 (async () => {
-  const res = { etiqueta: ETIQUETA, cpu: CPU, vueltas: VUELTAS, circuito: CIRCUITO, curva: [], fases: {} };
+  const res = { etiqueta: ETIQUETA, cpu: CPU, vueltas: VUELTAS, v18: V18, circuito: CIRCUITO, curva: [], fases: {} };
   const { srv, puerto } = await servir();
   const { chrome, perf, puerto: puertoDev, wsPath } = await lanzarChrome();
   const mataArbol = () => { try { execSync('taskkill /PID ' + chrome.pid + ' /T /F', { stdio: 'ignore' }); } catch (e) { try { chrome.kill(); } catch (e2) {} } };
@@ -254,7 +255,7 @@ async function lanzarChromeUnaVez() {
   const origen = `http://127.0.0.1:${puerto}`;
   // la semilla y los ganchos van ANTES de navegar: el juego lee el guardado en el arranque
   await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS + '\n' + GANCHOS_JS }, ses);
-  await cdp.call('Page.navigate', { url: `${origen}/index.html` }, ses);
+  await cdp.call('Page.navigate', { url: `${origen}/index.html${V18 ? '?v18=1' : ''}` }, ses);
   // portada → tarjeta Aventura (la partida sembrada entra sin creador)
   let clicado = false;
   for (let i = 0; i < 150 && !clicado; i++) {
