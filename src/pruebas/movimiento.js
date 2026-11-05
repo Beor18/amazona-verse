@@ -342,11 +342,21 @@ window.AVMovimientoTest = function (G) {
       const SO = G.solidos, ACT = G.mundo && G.mundo.activos;
       if (SO && SO.activo && ACT && Object.keys(ACT).length) {
         SO.terminar();
+        // Trazas del check «Posarse» (BUG-QA81): la última traza de aterrizaje animado / gestoTras se guarda aquí y
+        // solo se adjunta al metric si el check falla (ver abajo). Columnas aterrizaje:
+        // [n, fly, gr, y, gy, sp, mv, land, fase, posado, que, posa.aire, posa.t, posa.n, posa.landN, posa.red]
+        const trazaPosa = {};
         // empieza ya en el aire (sin pasar por el suelo: junto a una estaca quedaría metida en ella y la red de seguridad de fisica.js la sacaría)
         // conAnim: cada cuadro también anima a Vittata (sync3D), para ver el gesto de aterrizar o de posarse
-        const aterrizarEn = (x, z, y, conAnim) => { K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false; M.vx = M.vz = 0; M.dashT = 0; M.swimming = false; S.pos.x = x; S.pos.z = z; S.pos.y = y; S.vy = 0; M.wasAir = true; M.flying = true; M.grounded = false; F.land(); let n = 0; while (M.flying && n++ < 900) { if (conAnim) animV(1); else frame(); } SO.terminar(); return { cuadros: n, volando: !!M.flying, posado: M.posado || '', que: SO.que(S.pos.x, S.pos.z, S.pos.y + 0.01) || '', altoSobreTerreno: r2(S.pos.y - H(S.pos.x, S.pos.z)) }; };
+        const aterrizarEn = (x, z, y, conAnim) => { K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false; M.vx = M.vz = 0; M.dashT = 0; M.swimming = false; S.pos.x = x; S.pos.z = z; S.pos.y = y; S.vy = 0; M.wasAir = true; M.flying = true; M.grounded = false; F.land(); let n = 0; const tr = conAnim ? [] : null;
+          while (M.flying && n++ < 900) {
+            if (conAnim) { const mv = G.renderer.update(DT); G.actores.sync3D(DT, mv, false); const ps = G.actores.posa; if (tr.length < 140) tr.push([n, M.flying ? 1 : 0, M.grounded ? 1 : 0, r2(S.pos.y), r2(M.groundY), r2(M.speed || 0), mv ? 1 : 0, r2(M.land || 0), M.fase || '', M.posado || '', (SO.que(S.pos.x, S.pos.z, S.pos.y + 0.01) || ''), ps.aire ? 1 : 0, r2(ps.t), ps.n, ps.landN, ps.red || 0]); }
+            else frame();
+          }
+          SO.terminar(); if (tr) trazaPosa.atr = tr; return { cuadros: n, volando: !!M.flying, posado: M.posado || '', que: SO.que(S.pos.x, S.pos.z, S.pos.y + 0.01) || '', altoSobreTerreno: r2(S.pos.y - H(S.pos.x, S.pos.z)) }; };
         // Tras aterrizar con animación: ¿hubo gesto de posarse (cuántos, dónde, peso máximo) o asentarse general?
-        const gestoTras = n0 => { let g = 0, se = 0, alas = false; for (let i = 0; i < 40; i++) { animV(1); g = Math.max(g, P3 ? P3.posarG || 0 : 0); se = Math.max(se, P3 ? P3.landSettle || 0 : 0); alas = alas || (P3 && P3.wingMode === 'posar'); } const ps = G.actores.posa; return { gestos: ps.n - n0, tipo: ps.tipo, peso: r2(g), alasEquilibrio: alas, asentarGeneral: r2(se), red: ps.red || 0 }; };
+        // Columnas gesto: [i, mv, sp, land, fase, posado, posa.aire, posa.t, posa.n, posa.landN, posa.red, posarG]
+        const gestoTras = n0 => { let g = 0, se = 0, alas = false; const tr = []; for (let i = 0; i < 40; i++) { const mv = G.renderer.update(DT); G.actores.sync3D(DT, mv, false); const ps = G.actores.posa; if (i < 8 || i % 4 === 0) tr.push([i, mv ? 1 : 0, r2(M.speed || 0), r2(M.land || 0), M.fase || '', M.posado || '', ps.aire ? 1 : 0, r2(ps.t), ps.n, ps.landN, ps.red || 0, P3 ? r2(P3.posarG || 0) : 0]); g = Math.max(g, P3 ? P3.posarG || 0 : 0); se = Math.max(se, P3 ? P3.landSettle || 0 : 0); alas = alas || (P3 && P3.wingMode === 'posar'); } const ps = G.actores.posa; trazaPosa.gesto = tr; return { gestos: ps.n - n0, tipo: ps.tipo, peso: r2(g), alasEquilibrio: alas, asentarGeneral: r2(se), red: ps.red || 0 }; };
         const altoCerca = (x, z, r) => { let b = null; for (let dz = -r; dz <= r; dz += 0.3) for (let dx = -r; dx <= r; dx += 0.3) { const t = SO.altoEn(x + dx, z + dz, 1e4); if (t > -Infinity && (!b || t > b.t)) b = { x: x + dx, z: z + dz, t }; } return b; };
         // alto del cuerpo que usa fisica.js ahora: agachada bajo un alero o un toldo, el que le queda (no se mete por agacharse)
         const cuerpo = () => Math.min(SO.SO.cuerpo, (M.alto || SO.SO.cuerpo) - 0.01);
@@ -404,7 +414,7 @@ window.AVMovimientoTest = function (G) {
           if (rama) {
             aterrizarEn(rama.x, rama.z, rama.g + 2);
             const ys = frame(null, 60).map(o => o.y);
-            met.rama = { arbol: arbol.m, distancia: r2(arbol.d), alto: r2(S.pos.y - H(S.pos.x, S.pos.z)), posado: M.posado };
+            met.rama = { arbol: arbol.m, distancia: r2(arbol.d), x: r2(rama.x), z: r2(rama.z), g: r2(rama.g), hg: r2(rama.hg), alto: r2(S.pos.y - H(S.pos.x, S.pos.z)), posado: M.posado };
             check('Se posa en una rama (pose de posarse, patas agarrando)', M.posado === 'fino' && S.pos.y - H(S.pos.x, S.pos.z) > 1.2 && Math.max(...ys) - Math.min(...ys) < 0.02, JSON.stringify(met.rama));
             // Gesto de posarse: otra vez a la rama, ahora animando cada cuadro. En la rama, el gesto propio (agarra, se mece con las
             // alas arriba) y no el asentarse general; en el suelo llano, al revés.
@@ -412,13 +422,17 @@ window.AVMovimientoTest = function (G) {
               let n0 = G.actores.posa.n;
               const atrRama = aterrizarEn(rama.x, rama.z, rama.g + 2, true);
               const enRama = gestoTras(n0), posadoRama = M.posado;
+              const trRama = { aterrizar: trazaPosa.atr, gesto: trazaPosa.gesto };
               reset(L.x, L.z); n0 = G.actores.posa.n;
               const atrSuelo = aterrizarEn(L.x, L.z, S.pos.y + 3.5, true);
               const enSuelo = gestoTras(n0);
+              const trSuelo = { aterrizar: trazaPosa.atr, gesto: trazaPosa.gesto };
               met.posarse = { rama: enRama, posado: posadoRama, suelo: enSuelo, aterrizarRama: atrRama, aterrizarSuelo: atrSuelo, hist: (G.actores.posa.hist || []).slice(-10) };
+              const okPosarse = posadoRama === 'fino' && enRama.gestos === 1 && !!enRama.tipo && enRama.peso > 0.5 && enRama.alasEquilibrio && enRama.asentarGeneral === 0
+                && enSuelo.gestos === 0 && enSuelo.peso === 0 && enSuelo.asentarGeneral > 0.3;
+              if (!okPosarse) met.posarse.traza = { rama: trRama, suelo: trSuelo }; // solo en rojo: traza por cuadro (BUG-QA81)
               check('Posarse: en una rama usa el gesto de posarse (no el aterrizaje general); en el suelo llano, el general',
-                posadoRama === 'fino' && enRama.gestos === 1 && !!enRama.tipo && enRama.peso > 0.5 && enRama.alasEquilibrio && enRama.asentarGeneral === 0
-                && enSuelo.gestos === 0 && enSuelo.peso === 0 && enSuelo.asentarGeneral > 0.3, JSON.stringify(met.posarse));
+                okPosarse, JSON.stringify(met.posarse));
             }
           } else check('Se posa en una rama', false, 'sin rama entre 1,5 y 8 m en los 10 árboles más cercanos');
         }

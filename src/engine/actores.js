@@ -221,7 +221,12 @@ AVE.module('actores', function (G) {
       const alto = S.pos.y - MOVE.groundY, fh = F.TUNING.flareHeight, ate = fase === 'aterrizaje';
       const pre = ate ? suave((fh + LAND.pre - alto) / LAND.pre) : 0, fl = ate ? suave((fh - alto) / LAND.flare) : 0;
       const alc = ate ? suave(LAND.alcance - alto) : 0;
-      if (aterr.vol && !MOVE.flying && MOVE.grounded && !snap) { aterr.t = 0; posa.landN = posa.n; } // acaba de posarse volando: empieza la ventana de la red de apoyo
+      // acaba de posarse (volando o cayendo): empieza la ventana de la red de apoyo. La señal de física
+      // MOVE.land (aplastón, squashTime) cubre el aterrizaje que se resuelve dentro de un solo step y sync3D
+      // no llegó a ver ningún cuadro aéreo (visto en movementTest «Posarse» bajo contención, BUG-QA81: con
+      // posa.aire y aterr.vol stale ni la vía 'aire' ni la red evalúan y el gesto de posarse no dispara).
+      const aplaston = MOVE.land > 0 && MOVE.land >= F.TUNING.squashTime - dt * 1.5;
+      if ((aterr.vol || aplaston) && !MOVE.flying && MOVE.grounded && !snap) { aterr.t = 0; posa.landN = posa.n; }
       aterr.vol = MOVE.flying; aterr.t = snap ? 9 : aterr.t + dt;
       // Posarse: al tocar una percha (viniendo del aire, volando o saltando) empieza el gesto; mientras dura, no hay asentarse general
       const enSuelo = MOVE.grounded && !MOVE.swimming;
