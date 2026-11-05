@@ -17,7 +17,7 @@
    por regiones de 24 m en 40 m alrededor del jugador, y se descargan al alejarse (~0,5–1 MB).
    Detrás del creador el presupuesto sube a 18 ms para acabar antes de «Empezar».
    Un Mesh con userData.sinSolido no se rasteriza. API: listo, activo, suelo, bloquea, techo, libre, fino, percha, cubre, agregar(obj),
-   stats(). */
+   recortar(x0, z0, x1, z1, dentro, yCorte) (QA-172: quita lo que hay sobre yCorte en unas celdas), stats(). */
 AVE.module('solidos', function (G) {
   'use strict';
   const S = G.S, R = G.renderer, scene = R.scene;
@@ -198,7 +198,40 @@ AVE.module('solidos', function (G) {
     sucios.clear();
     rellenas += J.nuevos.length;
     rellenoJob = null;
+    aplicarRecortes(); // un relleno no vuelve a tapar un recorte
     return true;
+  }
+  // QA-172: recortes del mapa estático. En las celdas cuyo centro cumple dentro(x, z) (dentro de la caja x0..x1, z0..z1) se quita
+  // todo lo que queda por encima de yCorte: los tramos que empiezan más arriba desaparecen y los que lo cruzan se cortan ahí (cara
+  // plana). Sirve para un detalle del modelo que no se puede cruzar y no se debe tocar en el .glb (la riostra diagonal de cada
+  // cabecera del puente colgante, que corta el paso a la altura de la cabeza). Queda registrado: se vuelve a aplicar si algo se
+  // rasteriza o se rellena después en esas celdas. Devuelve las celdas tocadas.
+  const recortes = [];
+  function recorteUno(R) {
+    let n = 0;
+    const ix0 = Math.floor(R.x0 / CELL), ix1 = Math.floor(R.x1 / CELL), iz0 = Math.floor(R.z0 / CELL), iz1 = Math.floor(R.z1 / CELL), yc = cm(R.yCorte);
+    for (let ix = ix0; ix <= ix1; ix++) for (let iz = iz0; iz <= iz1; iz++) {
+      if (!R.dentro((ix + 0.5) * CELL, (iz + 0.5) * CELL)) continue;
+      const bx = Math.floor(ix / B), bz = Math.floor(iz / B), b = blocks.get(key(bx, bz)); if (!b) continue;
+      const c = (ix - bx * B) + (iz - bz * B) * B, nAnt = b.n[c];
+      let m = 0, cambio = false;
+      for (let s2 = 0; s2 < nAnt; s2++) {
+        const i = c * NS + s2;
+        if (b.lo[i] >= yc) { cambio = true; continue; }
+        const j = c * NS + m++;
+        b.lo[j] = b.lo[i]; b.gx[j] = b.gx[i]; b.gz[j] = b.gz[i];
+        if (b.hi[i] > yc) { b.hi[j] = yc; b.gx[j] = 0; b.gz[j] = 0; cambio = true; } else b.hi[j] = b.hi[i];
+      }
+      if (cambio) { b.n[c] = m; if (!m) celdas--; n++; }
+    }
+    return n;
+  }
+  function aplicarRecortes() { let n = 0; for (const R of recortes) n += recorteUno(R); if (n) version++; return n; }
+  function recortar(x0, z0, x1, z1, dentro, yCorte) {
+    const R = { x0: Math.min(x0, x1), z0: Math.min(z0, z1), x1: Math.max(x0, x1), z1: Math.max(z0, z1), dentro: dentro || (() => true), yCorte };
+    recortes.push(R);
+    const n = recorteUno(R); if (n) version++;
+    return n;
   }
   let rellenas = 0, version = 0; // version sube cada vez que termina una pieza (fisica renueva su caché de colliders)
   // KIMI-035: quita el trabajo de la cola y devuelve su matriz al pool si era de región (pendReg al día)
@@ -209,7 +242,7 @@ AVE.module('solidos', function (G) {
       if (n <= 1) pendReg.delete(J.region); else pendReg.set(J.region, n - 1);
       if (poolM.length < 256) poolM.push(J.m);
     }
-    if (Q === cola && !cola.length) { destino = blocks; rellenarInicio(); }
+    if (Q === cola && !cola.length) { destino = blocks; aplicarRecortes(); rellenarInicio(); }
   }
   function trabajar(msMax, soloEstatico) {
     const t0 = performance.now();
@@ -779,6 +812,6 @@ AVE.module('solidos', function (G) {
     const kb = n => Math.round(n * B * B * (1 + NS * 6) / 1024);
     return { bloques: blocks.size, bloquesFlora: flora.size, triangulos, rellenas, pendientes: cola.length + colaFlora.length, regiones: regiones.size, kb: kb(blocks.size), kbFlora: kb(flora.size) };
   }
-  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, agregarPartes, terminar, stats, altoEn,
+  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, agregarPartes, terminar, stats, altoEn, recortar,
     cerrarVanos, panelAbierto, panelInstancia, vanos: vanosHechos };
 });

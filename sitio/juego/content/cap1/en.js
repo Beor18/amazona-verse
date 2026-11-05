@@ -856,7 +856,7 @@ window.AV_EN = {
  "+1 madera del puente ({}/{})": "+1 bridge wood ({}/{})",
  "Faltan materiales: 2 maderas y 1 piedra (tienes {} y {}). Gana el duelo de la explanada o junta madera y piedra por el bosque.": "Missing materials: 2 pieces of wood and 1 stone (you have {} and {}). Win the duel on the clearing or gather wood and stone in the forest.",
  "El puente ya está reparado. ¡Prueba la corriente del centro!": "The bridge is already fixed. Try the air current in the middle!",
- "¡Puente reparado! Vuela al centro del puente: ¡hay una corriente que te sube!": "Bridge fixed! Fly to the middle of the bridge: an air current lifts you up!",
+ "¡Puente reparado! Crúzalo a pie o vuela al centro: ¡hay una corriente que te sube!": "Bridge fixed! Walk across or fly to the middle: an air current lifts you up!",
  "Vuela aquí, en el centro del puente: la corriente te sube.": "Fly here, in the middle of the bridge: the current lifts you up.",
  "¡Corriente del puente! Sube y planea lejos.": "Bridge current! Rise up and glide far.",
  "Repite el canto de los 3 coquíes escondidos": "Repeat the song of the 3 hidden coquís",
