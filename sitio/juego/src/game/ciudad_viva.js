@@ -382,7 +382,11 @@ window.AVCiudadViva = function (G) {
       cam.set(s.x + 150, cam.y + 60, s.z + 150); const rLejos = ritmo(); cam.copy(c0);
       check('Lejos de la cámara se actualizan menos', rLejos < rCerca * 0.5 && rLejos <= 0.34, 'pasos por ave y cuadro: cerca ' + rCerca.toFixed(2) + ' · lejos ' + rLejos.toFixed(2));
       // draw calls y triángulos en la ciudad: sin cotorras, antes (solo los residentes de residentes.js) y después (+ la ciudad viva)
-      const sc = Rd.scene, info = Rd.renderer.info, hijos = sc.children.length;
+      // Asentar antes del recuento: las bandas :lod/:sombra de la flora se crean perezosas en cuadros reales
+      // (KIMI-035/110-mem), así que sin esta pausa el nº de hijos de la escena varía por la flora, no por las cotorras.
+      if (ST && ST.terminar) { await ST.terminar().catch(() => {}); await dormir(3000); if (ST && ST.terminar) await ST.terminar().catch(() => {}); }
+      const floraLazy = o => /^flora:/.test(o.name || '');
+      const sc = Rd.scene, info = Rd.renderer.info, hijos = sc.children.filter(o => !floraLazy(o)).length;
       const medir = () => { G.camara.place(true); Rd.renderer.render(sc, Rd.camera); return { c: info.render.calls, t: info.render.triangles }; };
       if (B.terminar) B.terminar();
       T.teleport(s.x + 22, s.z + 22); T.tick(0.05);
@@ -400,8 +404,9 @@ window.AVCiudadViva = function (G) {
         medidas.push(cal + ': sin cotorras ' + sin.c + ' calls/' + sin.t + ' tris · antes (' + (res ? res.aves.length : 0) + ' residentes) ' + antes.c + '/' + antes.t +
           ' · después (+' + R.aves.length + ' de la ciudad viva) ' + despues.c + '/' + despues.t + ' (+' + (despues.c - antes.c) + ' calls, +' + (despues.t - antes.t) + ' tris)');
       }
+      if (ST && ST.terminar) { await ST.terminar().catch(() => {}); await dormir(3000); if (ST && ST.terminar) await ST.terminar().catch(() => {}); } // mismo estado asentado (y sin bandas de flora perezosas a medias) que al capturar «hijos»
       check('Antes y después en la ciudad: 2 draw calls extra o menos', okDC, medidas.join(' || '));
-      check('No se crea ninguna malla nueva', sc.children.length === hijos && B.meshes.every(m => m.isInstancedMesh && !m.castShadow));
+      check('No se crea ninguna malla nueva', sc.children.filter(o => !floraLazy(o)).length === hijos && B.meshes.every(m => m.isInstancedMesh && !m.castShadow));
       check('Caben en las mallas de la bandada', B.MAXN >= 20 + 26 + N.alto, 'MAXN ' + B.MAXN);
       // fuera de rango: apagadas
       R.prueba = true; T.teleport(s.x + 260, s.z + 260); T.tick(0.05); paso(0.05);
