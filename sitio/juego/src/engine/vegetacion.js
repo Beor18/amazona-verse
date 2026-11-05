@@ -823,7 +823,23 @@ AVE.module('vegetacion', function (G) {
     const turned = Math.abs(camDir.x - ult.rx) + Math.abs(camDir.z - ult.ry);
     ult.frames++;
     if (!force && moved < 1.5 && turned < 0.05 && ult.frames < 30 && ult.nivel === C.nivel) return;
-    ult.x = cam.position.x; ult.y = cam.position.y; ult.z = cam.position.z; ult.rx = camDir.x; ult.ry = camDir.z; ult.frames = 0; ult.nivel = C.nivel;
+    vegPendiente = false; sesion.on = false; sesion.repite = false; // KIMI-057: la pasada síncrona invalida la sesión diferida del flip
+    ultDeCam();
+    const ctx = prepPasada();
+    for (const m in grupos) pasoGrupoPasada(ctx, m);
+    finPasada(ctx);
+  }
+  // KIMI-057 (QA-53): la pasada de visibilidad se parte en tres — preparación común (cámara,
+  // frustum y topes de distancia), un paso por grupo de modelos y un cierre (impostores +
+  // estadísticas). La pasada síncrona de arriba (usada por floraTest y la API pública) los
+  // ejecuta seguidos; el gancho 'calidad' los reparte en varios cuadros con presupuesto de
+  // tiempo vía rehacerEnPasos(), en vez de bloquear ~0,4 s dentro del propio evento.
+  function ultDeCam() {
+    ult.x = R.camera.position.x; ult.y = R.camera.position.y; ult.z = R.camera.position.z;
+    ult.rx = camDir.x; ult.ry = camDir.z; ult.frames = 0; ult.nivel = C.nivel;
+  }
+  function prepPasada() {
+    const cam = R.camera;
     cam.updateMatrixWorld();
     pv.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
     frustum.setFromProjectionMatrix(pv);
@@ -835,8 +851,12 @@ AVE.module('vegetacion', function (G) {
     // BM31: la malla simplificada cubre de maxArb a lodMax y el impostor solo empieza en lodMax - banda (≥ 120 m en alto/medio).
     const lodMax = TOPE_ARBOLES[C.nivel] > 0 && C.nivel !== 'bajo' && !FL.sinLod ? Math.max(maxArb, topeArbol(cx, cz, DIST.lod * C.floraDist, TOPE_ARBOLES[C.nivel] * 3, (TOPE_TRIS[C.nivel] || Infinity) * 0.5, 1 / LOD_PASO)) : maxArb;
     ULT.dLod = lodMax;
-    let ni = 0, nMalla = 0, nLod = 0, trisMalla = 0, dSombra = 0;
-    for (const m in grupos) {
+    return { cx, cz, sombraR, maxArb, lodMax, impMax, ni: 0, nMalla: 0, nLod: 0, trisMalla: 0, dSombra: 0 };
+  }
+  function pasoGrupoPasada(ctx, m) {
+    const cx = ctx.cx, cz = ctx.cz, sombraR = ctx.sombraR, maxArb = ctx.maxArb, lodMax = ctx.lodMax, impMax = ctx.impMax;
+    let ni = ctx.ni, nMalla = ctx.nMalla, nLod = ctx.nLod, trisMalla = ctx.trisMalla, dSombra = ctx.dSombra;
+    { // cuerpo de la pasada para este grupo (era el cuerpo del «for (const m in grupos)»)
       const g = grupos[m], P = porModelo[m], maxD = g.cat === 'arbol' ? maxArb : distancias(g.cat);
       const lejosMax = g.cat === 'arbol' && IMP.mesh ? impMax : maxD;
       const finMalla = g.cat === 'arbol' ? lodMax : maxD; // hasta aquí hay malla (completa o simplificada); luego, impostor
@@ -894,11 +914,14 @@ AVE.module('vegetacion', function (G) {
         IMP.mat.uniforms.uFade.value.set(finMalla - banda, finMalla);
       }
     }
+    ctx.ni = ni; ctx.nMalla = nMalla; ctx.nLod = nLod; ctx.trisMalla = trisMalla; ctx.dSombra = dSombra;
+  }
+  function finPasada(ctx) {
     if (IMP.mesh) {
-      IMP.mesh.geometry.instanceCount = ni; IMP.mesh.visible = ni > 0;
+      IMP.mesh.geometry.instanceCount = ctx.ni; IMP.mesh.visible = ctx.ni > 0;
       IMP.aP.needsUpdate = IMP.aT.needsUpdate = IMP.aC.needsUpdate = true;
     }
-    Object.assign(ULT, { arbolesLod: nLod, arbolesMalla: nMalla, trisArboles: trisMalla, topeTris: TOPE_TRIS[C.nivel] || 0, dArbol: maxArb, dSombra, sombraR, tope: TOPE_ARBOLES[C.nivel] || 0 });
+    Object.assign(ULT, { arbolesLod: ctx.nLod, arbolesMalla: ctx.nMalla, trisArboles: ctx.trisMalla, topeTris: TOPE_TRIS[C.nivel] || 0, dArbol: ctx.maxArb, dSombra: ctx.dSombra, sombraR: ctx.sombraR, tope: TOPE_ARBOLES[C.nivel] || 0 });
   }
   // F1.3 (AW2): distancia hasta la que van en malla los árboles para que no pasen de TOPE_ARBOLES[nivel] ni de TOPE_TRIS[nivel]
   // en pantalla (los más cercanos; el resto pasa al impostor con el mismo fundido). Si caben todos, la distancia de la calidad.
@@ -1003,16 +1026,46 @@ AVE.module('vegetacion', function (G) {
     if (t - rafagaT > 0.25) { rafagaT = t; const v = cl && cl.viento ? cl.viento(S.pos.x, S.pos.z, -1e4) : null; rafagaObj = v ? Math.min(1, Math.hypot(v.x, v.z) / 2.2) : 0; }
     RAFAGA.value += (rafagaObj - RAFAGA.value) * Math.min(1, (dt || 0) * 0.8);
   }
+  // KIMI-057 (QA-53): el gancho 'calidad' ya no reconstruye la flora de golpe dentro del evento
+  // (~0,4 s de hilo a CPU ×4): solo marca la reconstrucción y rehacerEnPasos() la ejecuta en los
+  // cuadros siguientes, unos grupos por tanda con presupuesto de ~6 ms. Un flip que llega a mitad
+  // de sesión la reinicia con los valores nuevos (sesion.repite); la pasada síncrona de
+  // actualizar() la cancela (ella ya deja todo reconstruido).
+  const sesion = { on: false, repite: false, ctx: null, claves: null, i: 0 };
+  let vegPendiente = false;
+  function rehacerEnPasos() {
+    const t0 = performance.now();
+    while (true) {
+      if (!sesion.on) {
+        R.camera.getWorldDirection(camDir);
+        ultDeCam();
+        sesion.ctx = prepPasada();
+        sesion.claves = Object.keys(grupos);
+        sesion.i = 0;
+        sesion.on = true;
+      }
+      while (sesion.i < sesion.claves.length) {
+        pasoGrupoPasada(sesion.ctx, sesion.claves[sesion.i]); sesion.i++;
+        if (performance.now() - t0 > 6) return; // presupuesto de cuadro: se reanuda en el siguiente
+      }
+      finPasada(sesion.ctx);
+      sesion.on = false;
+      actualizarPasto(true); // el pasto se reconstruye entero al cerrar los árboles
+      if (!sesion.repite) return;
+      sesion.repite = false;
+      if (performance.now() - t0 > 24) { vegPendiente = true; return; } // el reinicio queda para el siguiente cuadro
+    }
+  }
   G.on('render', (dt, t) => {
     U.uTime.value = t;
     actualizarRafaga(dt, t);
     if (!activo) return;
     actualizarFundido();
-    actualizar(false);
-    actualizarPasto(false);
+    if (vegPendiente || sesion.on || sesion.repite) { vegPendiente = false; rehacerEnPasos(); }
+    else { actualizar(false); actualizarPasto(false); }
   }, 22);
   G.on('update', () => { if (activo) actualizarColliders(false); }, 60);
-  G.on('calidad', () => { if (activo) { actualizar(true); actualizarPasto(true); } });
+  G.on('calidad', () => { if (!activo) return; if (sesion.on) sesion.repite = true; else vegPendiente = true; });
   // Contexto WebGL recuperado: three vuelve a subir mallas, instancias y texturas desde sus arreglos; el atlas no tiene copia
   // en la CPU y se repinta aquí (el renderer emite 'contexto' antes de precalentar y de volver a dibujar)
   G.on('contexto', ok => { if (ok && IMP.pintar) try { IMP.pintar(); } catch (e) { console.warn('AVE impostores:', e && e.message || e); } });
@@ -1040,7 +1093,7 @@ AVE.module('vegetacion', function (G) {
     for (const m in grupos) for (const p of grupos[m].prims) for (const im of [p.cerca, p.lejos]) if (im && im.visible) { out.mallas++; out.instanciasVisibles += im.count; }
     let arboles = 0;
     for (const m of ARBOLES) if (porModelo[m]) arboles += porModelo[m].n;
-    return Object.assign(out, { arboles, bosque: bosquePos.length / 2, tepuy: tepuyPos.length / 2, copasCima: copasCima.length }, ULT);
+    return Object.assign(out, { arboles, bosque: bosquePos.length / 2, tepuy: tepuyPos.length / 2, copasCima: copasCima.length, ses: { on: sesion.on, repite: sesion.repite, pend: vegPendiente, activo } }, ULT);
   }
 
   // ---------- floraTest (AW2): bosque lleno, tope por calidad, sombras, colisión y triángulos por vista ----------
