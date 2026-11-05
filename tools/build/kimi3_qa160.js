@@ -89,7 +89,19 @@ const PROBAR_JS = `(async () => {
     const zonas = [];
     for (const id in ST.zonas) { const Z = ST.zonas[id];
       zonas.push({ id, nivel: Z.nivel, ciudad: !!Z.ciudad, hd: !!Z.hd, d: Math.round(Z.d || 0), bajarPide: Z.bajarPide ? 1 : 0, hdBajar: Z.hdBajar ? 1 : 0, pre: Z.pre ? Object.keys(Z.pre) : [] }); }
-    return { t: Math.round(performance.now()), heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576 * 10) / 10 : NaN, recursos, zonas };
+    // Censo de geometrías de la ESCENA por nombre de malla (fusiones/lotes: la retención roja es +N geo GPU
+    // fuera de kbGeometria: qa160-r12 three geo 332→345 con recursos/listos idénticos). Suma de bytes de atributos.
+    const censo = {};
+    try {
+      G.renderer.scene.traverse(o => {
+        if (!o.geometry) return;
+        const nom = o.name || 'sinNombre';
+        const e = censo[nom] = censo[nom] || { n: 0, kb: 0 };
+        e.n++; e.kb += Math.round(bGeo(o.geometry) / 1024);
+      });
+    } catch (e) {}
+    const info = G.renderer.info && G.renderer.info.memory ? { geo: G.renderer.info.memory.geometries, tex: G.renderer.info.memory.textures } : null;
+    return { t: Math.round(performance.now()), heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576 * 10) / 10 : NaN, recursos, zonas, censo, info };
   };
   window.__qa160 = [];
   const origStats = ST.stats;
@@ -144,17 +156,26 @@ const PROBAR_JS = `(async () => {
     .map(r => ({ n: r.n, t: r.t, refs: r.refs, mb: r.mb, soltarEn: r.soltarEn, fijo: r.fijo, dueños: dueños[r.n + ':' + r.t] || [] }))
     .sort((a, b) => b.mb - a.mb);
   const kb = s => { let b = 0; for (const r of s.recursos) if (r.e === 'listo') b += r.mb; return b; };
+  // diff de censo de escena m1→m2: qué mallas de fusión/lote NUEVAS quedaron vivas (nombre → Δn/Δkb)
+  const nuevasGeo = [];
+  { const c1 = m1.censo || {}, c2 = m2.censo || {};
+    for (const nom in c2) {
+      const a = c1[nom] || { n: 0, kb: 0 };
+      if (c2[nom].n > a.n || c2[nom].kb > a.kb) nuevasGeo.push({ nom, dn: c2[nom].n - a.n, dkb: c2[nom].kb - a.kb, n2: c2[nom].n, kb2: c2[nom].kb });
+    }
+    nuevasGeo.sort((a, b) => b.dkb - a.dkb); }
   return JSON.stringify({
     errorTest, sinFugas, passed: resTest && resTest.passed, total: resTest && resTest.total,
     hitos: window.__qa160p,
     heapM1: m1.heap, heapM2: m2.heap, kbM1: kb(m1), kbM2: kb(m2),
     nListosM1: Object.keys(listosM1).length, nListosM2: listosM2.length,
-    nuevos: nuevos.slice(0, 50),
+    nuevos: nuevos.slice(0, 50), nuevasGeo: nuevasGeo.slice(0, 60),
+    infoM1: m1.info, infoM2: m2.info,
     zonasM2: m2.zonas,
     m1: { t: m1.t, heap: m1.heap, recursos: m1.recursos, zonas: m1.zonas },
     m2: { t: m2.t, heap: m2.heap, recursos: m2.recursos, zonas: m2.zonas },
     snaps: snaps.length,
-    ultimas3: [m1, m2, seC].map(s => ({ t: s.t, heap: s.heap, n: s.recursos.length, kb: kb(s) })),
+    ultimas3: [m1, m2, seC].map(s => ({ t: s.t, heap: s.heap, n: s.recursos.length, kb: kb(s), info: s.info })),
   });
 })()`;
 
@@ -290,6 +311,10 @@ function limpiarHuerfanos() {
           console.log('  · NUEVOS listos en m2 (top MB):');
           for (const x of r.nuevos.slice(0, 15)) console.log(`      ${x.n}:${x.t} r${x.refs} ${x.mb}KB soltarEn=${x.soltarEn} dueños=[${(x.dueños || []).join('|')}]`);
         } else console.log('  · sin recursos nuevos en m2');
+        if (r.nuevasGeo && r.nuevasGeo.length) {
+          console.log('  · GEOMETRÍAS NUEVAS en escena m2 (top KB):');
+          for (const x of r.nuevasGeo.slice(0, 15)) console.log(`      ${x.nom} Δn=${x.dn} Δkb=${x.dkb} (n=${x.n2} kb=${x.kb2})`);
+        } else console.log('  · sin geometrías nuevas en escena m2');
       }
       try { await cdp.call('Target.closeTarget', { targetId: tid }, undefined, 10); } catch (e) { /* ya cerrado */ }
     } catch (e) {
