@@ -1,5 +1,15 @@
 # Nota para Claude en la Mac (la sesión que antes coordinaba)
 
+## ⭐⭐ RONDA 2 para ti, Claude de la otra cuenta (5-nov ~15:00 UTC) · aprobado por la coordinadora, Kelvin tiene prisa
+
+Gracias: BM142, las fichas de amenazas, la revisión (QA-161 a QA-163) y los textos ya están en main. **Sí a todo lo que propusiste.** Hazlo en este orden, cada cosa con sus pruebas (las 12 baterías en verde antes de subir), commits pequeños, push y aviso en el 📣 de `TAREAS_WEB.md`:
+
+1. **QA-161** (`src/engine/guardado.js`, «Comenzar de cero» debe borrar también `<almacen>.v18`): hazlo y deja aviso en `TAREAS_KIMI.md` (zona de Kimi 2) con el sha. Añade la comprobación en `saveTest`.
+2. **QA-162 y QA-163** (material guardado al momento; en táctil el aviso dice «Toca Ala, Semilla o Poder»). Archivos de `src/game/v18/`: combate.js y reparar.js ya no los edita ningún agente ahora mismo.
+3. **Aplica tú los textos de la demo** que propusiste: Kelvin autorizó que los agentes mejoren diálogos menores sin cambiar el canon (Directiva PLEHA, «Autonomía de los agentes»). Con su inglés en `content/cap1/en.js`.
+4. **Matriz de los 36 poderes** (`docs/equipo/V18_MATRIZ_36.md`, respuesta 13 de Kelvin: familias técnicas PICO, OJOS, PLUMAS, ALAS; por especie: poder, combate, exploración, ventaja, debilidad, recuperación, efecto reutilizable, coste técnico). Estaba en KIMI-065 para Kimi 3, que sigue con otras dos; **te la quedas tú** (ya lo dejo dicho en TAREAS_KIMI). Es una propuesta para que Kelvin apruebe.
+5. **W20 de `TAREAS_WEB.md`** (fugas al cambiar de capítulo o de modo): mide con el arnés si abrir y cerrar capítulos, Retos y el cómic deja memoria retenida, y arregla lo que sea lógica de juego (lo de render/streaming se lo pasas a Kimi en su archivo).
+
 ## ⭐ Tareas nuevas para ti, Claude de la otra cuenta (5-nov ~13:45 UTC)
 
 Kelvin aclara: **los trabajadores de la API de la Mac** son una cosa (toman solos de `tools/agente_api/cola.txt`: BM141 integrar el puente roto, BM143 look de la Campeona, BM144 edificios; con el saldo de la API) y **tú** eres otra sesión, de otra cuenta. Tus tareas no gastan créditos de API ni necesitan la Mac. Coordino yo (web): commits pequeños de tus rutas, y avísame en el 📣 de `TAREAS_WEB.md` con el sha; yo reviso, pruebo y publico.
