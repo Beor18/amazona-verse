@@ -1,0 +1,63 @@
+{
+ "etiqueta": "despues",
+ "pantalla": "escritorio 1600x900 cpuX1 GPU real",
+ "v18": true,
+ "base": {
+  "fpsPorSeg": [
+   144,
+   144,
+   142,
+   144,
+   142,
+   144
+  ],
+  "fpsMed": 143,
+  "fpsMin": 142,
+  "peorMs": 18,
+  "p95Ms": 9,
+  "stats": [
+   {
+    "calls": 134,
+    "tris": 796735,
+    "fpsMedidor": 144
+   },
+   {
+    "calls": 134,
+    "tris": 795235,
+    "fpsMedidor": 144
+   },
+   {
+    "calls": 134,
+    "tris": 796735,
+    "fpsMedidor": 140
+   },
+   {
+    "calls": 134,
+    "tris": 796735,
+    "fpsMedidor": 144
+   },
+   {
+    "calls": 134,
+    "tris": 796737,
+    "fpsMedidor": 144
+   },
+   {
+    "calls": 134,
+    "tris": 796737,
+    "fpsMedidor": 144
+   }
+  ],
+  "heapMB": 1165
+ },
+ "duelo2Test": {
+  "passed": 23,
+  "total": 23,
+  "fallos": []
+ },
+ "combateTest": {
+  "passed": 36,
+  "total": 36,
+  "fallos": []
+ },
+ "erroresConsola": []
+}

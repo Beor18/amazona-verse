@@ -108,9 +108,35 @@ window.AVV18Combate = function (G) {
   const sitio = buscarSitio();
 
   // ---------- Escena: círculo de la explanada, semillas ----------
-  const marca = new THREE.Mesh(new THREE.RingGeometry(ARENA_R - 0.25, ARENA_R, 64),
-    new THREE.MeshBasicMaterial({ color: '#ffd27a', transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide }));
+  // Anillo pintado en el suelo (textura canvas en runtime, 0 assets): banda de oro de borde suave con filete toon
+  // oscuro y puntadas cremas, más un tinte cálido tenue dentro de la arena.
+  const texArena = (() => {
+    const S = 512, c = S / 2, cv = document.createElement('canvas'); cv.width = cv.height = S;
+    const g = cv.getContext('2d');
+    const rOut = c - 4, rIn = rOut * (ARENA_R - 0.7) / (ARENA_R + 0.12), rMed = (rIn + rOut) / 2;
+    const tinte = g.createRadialGradient(c, c, 0, c, c, rIn);
+    tinte.addColorStop(0, 'rgba(255,214,140,0.07)'); tinte.addColorStop(0.85, 'rgba(255,214,140,0.05)'); tinte.addColorStop(1, 'rgba(255,214,140,0)');
+    g.fillStyle = tinte; g.fillRect(0, 0, S, S);
+    g.strokeStyle = 'rgba(255,210,122,0.35)'; g.lineWidth = rOut - rIn + 10;
+    g.beginPath(); g.arc(c, c, rMed, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(255,210,122,0.95)'; g.lineWidth = rOut - rIn - 6;
+    g.beginPath(); g.arc(c, c, rMed, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(138,90,32,0.85)'; g.lineWidth = 3;
+    g.beginPath(); g.arc(c, c, rOut - 4, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.arc(c, c, rIn + 4, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(255,243,214,0.9)'; g.lineWidth = 4; g.lineCap = 'round';
+    for (let i = 0; i < 48; i++) {
+      const a = i / 48 * Math.PI * 2;
+      g.beginPath(); g.arc(c, c, rMed, a + 0.02, a + Math.PI * 2 / 48 * 0.45); g.stroke();
+    }
+    const t = new THREE.CanvasTexture(cv);
+    t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; // decal: los mipas lavarían el alpha a rasante
+    return t;
+  })();
+  const marca = new THREE.Mesh(new THREE.RingGeometry(ARENA_R - 0.7, ARENA_R + 0.12, 96),
+    new THREE.MeshBasicMaterial({ map: texArena, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
   marca.rotation.x = -Math.PI / 2; marca.position.set(sitio.x, sitio.y + 0.06, sitio.z); marca.renderOrder = 3; marca.name = 'v18_arena';
+  marca.frustumCulled = false; // decal autogestionado: fuera del cullPequenos
   scene.add(marca);
   const geoSemilla = new THREE.SphereGeometry(0.16, 10, 8), matSemilla = new THREE.MeshStandardMaterial({ color: '#8a5a2b', roughness: 0.8, emissive: '#3a2410' });
 

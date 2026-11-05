@@ -456,16 +456,57 @@ window.AVV18Duelo2 = function (G) {
 
   // ---------- En el mundo: el sitio del duelo de 2 jugadores, en el centro del círculo de la explanada ----------
   function disponible() { return !!G.V18 && !tactil(); }
-  const marca = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.5, 48, 1, 0, Math.PI), new THREE.MeshBasicMaterial({ color: '#ffd27a', transparent: true, opacity: 0.7, depthWrite: false, side: THREE.DoubleSide }));
-  const marca2 = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.5, 48, 1, Math.PI, Math.PI), new THREE.MeshBasicMaterial({ color: '#7fd3ff', transparent: true, opacity: 0.7, depthWrite: false, side: THREE.DoubleSide }));
-  const marcas = new THREE.Group(); marcas.add(marca, marca2); marcas.name = 'v18_duelo2_sitio';
+  // Marca pintada en el suelo (un solo plano; textura canvas en runtime, 0 assets): halo cálido suave,
+  // guía tenue, dos medias lunas entrelazadas (oro = Jugador 1 al oeste, azul = Jugador 2 al este) y dos plumas cruzadas.
+  const texSitio = (() => {
+    const S = 256, c = S / 2, cv = document.createElement('canvas'); cv.width = cv.height = S;
+    const g = cv.getContext('2d');
+    const halo = g.createRadialGradient(c, c, 4, c, c, c - 2);
+    halo.addColorStop(0, 'rgba(255,236,190,0.22)'); halo.addColorStop(0.55, 'rgba(255,236,190,0.08)'); halo.addColorStop(1, 'rgba(255,236,190,0)');
+    g.fillStyle = halo; g.fillRect(0, 0, S, S);
+    g.strokeStyle = 'rgba(255,243,214,0.38)'; g.lineWidth = 5;
+    g.beginPath(); g.arc(c, c, 100, 0, Math.PI * 2); g.stroke();
+    const media = (a0, rgb) => { // media luna con borde suave: halo ancho tenue + núcleo
+      g.lineCap = 'butt';
+      g.strokeStyle = 'rgba(' + rgb + ',0.35)'; g.lineWidth = 28;
+      g.beginPath(); g.arc(c, c, 100, a0 - 0.07, a0 + Math.PI + 0.07); g.stroke();
+      g.strokeStyle = 'rgba(' + rgb + ',1)'; g.lineWidth = 14;
+      g.beginPath(); g.arc(c, c, 100, a0, a0 + Math.PI); g.stroke();
+    };
+    media(Math.PI / 2, '255,210,122'); // oeste: Jugador 1 (oro)
+    media(-Math.PI / 2, '127,211,255'); // este: Jugador 2 (azul)
+    const pluma = (x, y, ang, rgb) => {
+      g.save(); g.translate(x, y); g.rotate(ang);
+      g.fillStyle = 'rgba(' + rgb + ',0.95)';
+      g.beginPath(); g.moveTo(0, -30);
+      g.quadraticCurveTo(9, -8, 2, 26); g.quadraticCurveTo(0, 30, -2, 26); g.quadraticCurveTo(-9, -8, 0, -30);
+      g.fill();
+      g.strokeStyle = 'rgba(90,55,20,0.75)'; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(0, -27); g.lineTo(0, 27); g.stroke();
+      g.lineWidth = 1.4;
+      for (const d of [[-16, 11], [-6, 13], [4, 11], [13, 7]]) {
+        g.beginPath(); g.moveTo(0, d[0]); g.quadraticCurveTo(d[1] * 0.6, d[0] - 3, d[1], d[0] - 7); g.stroke();
+        g.beginPath(); g.moveTo(0, d[0]); g.quadraticCurveTo(-d[1] * 0.6, d[0] - 3, -d[1], d[0] - 7); g.stroke();
+      }
+      g.restore();
+    };
+    pluma(c - 5, c + 3, -0.5, '255,210,122');
+    pluma(c + 5, c + 3, 0.5, '127,211,255');
+    const t = new THREE.CanvasTexture(cv);
+    t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; // decal: los mipas lavarían el alpha a rasante
+    return t;
+  })();
+  const marcas = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.6),
+    new THREE.MeshBasicMaterial({ map: texSitio, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
   marcas.rotation.x = -Math.PI / 2; marcas.position.set(sitio.x, sitio.y + 0.07, sitio.z); marcas.renderOrder = 3;
+  marcas.name = 'v18_duelo2_sitio'; marcas.frustumCulled = false; // decal autogestionado: fuera del cullPequenos
   scene.add(marcas);
   const it = G.interaccion.add({ id: 'v18_duelo2', x: sitio.x, z: sitio.z, r: 2.2,
     visible: () => disponible() && D.fase === 'nada' && Cb.estado().fase === 'nada', label: () => TXT.opcion, use: () => abrirTarjeta() });
   G.on('update', (dt, busy) => {
     marcas.position.set(sitio.x, sitio.y + 0.07, sitio.z); it.x = sitio.x; it.z = sitio.z; // sigue a la explanada si se recoloca
     marcas.visible = disponible() && D.fase === 'nada' && Math.hypot(S.pos.x - sitio.x, S.pos.z - sitio.z) < 90;
+    if (marcas.visible) marcas.material.opacity = 0.9 + Math.sin(performance.now() / 1000 * 2.2) * 0.1; // respira suave
     if (D.fase === 'nada') return;
     const c = Cb.estado(); if (c.ch && c.ch.root) c.ch.root.visible = false; // la Campeona se aparta mientras juegan dos
     if (busy) return;
