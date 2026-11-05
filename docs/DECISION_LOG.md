@@ -347,3 +347,9 @@ Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar
 - **Operación:** 16 A la Mac gasta solo los créditos que tiene (BM134 y capturas); sin recargas; informar el saldo. 17 A ocultar `web/ranking.html` hasta la revisión legal (conservar el código). 18 A publicar correcciones verificadas; lo nuevo de V18.1 desactivado para el público hasta su aprobación (`?v18=1` es solo vista de prueba, no protección); las 12 pruebas son el mínimo: añadir pruebas de combate, poderes, guardados y construcción.
 - **Consultar solo** por canon, gasto nuevo, privacidad o seguridad, algo irreversible o un bloqueo que cambie el alcance.
 
+
+## 5-nov-2026 · Kelvin: Directiva de privacidad infantil (complemento de V18.1)
+- Siguen desactivados: ranking público online, envío de récords con identificadores persistentes, chat, cuentas infantiles (no implementar), analítica de comportamiento, publicidad personalizada y PvP online público. El código del ranking se conserva inactivo y sin exposición.
+- Auditoría real de datos y documentos obligatorios (aviso para padres, conservación, seguridad, mapa de datos) y expediente para un abogado de COPPA: `docs/legal/` (5-nov). No se declara cumplimiento legal por una revisión automatizada; datos sin confirmar marcados PENDIENTE.
+- Aprobado un prototipo de ranking de clase local (sin servidor, puntuaciones introducidas a mano por un adulto en su aparato, alias, borrable); no debe retrasar la V18.1.
+- El multijugador futuro se diseña con partidas privadas, sin chat libre, mínimos identificadores y retención limitada; un código de partida no sustituye el consentimiento parental cuando se requiera.
