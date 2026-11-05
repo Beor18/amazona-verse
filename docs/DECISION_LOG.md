@@ -371,3 +371,6 @@ Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar
 - **Progresión:** las especies se descubren y se desbloquean poco a poco. Las 36 no se dan desde el inicio.
 - **Prioridad:** primero completar y probar la Sombra de Tormenta con Vittata y *arausiaca*; después las otras amenazas y los 4 poderes.
 - **Entregas:** nada de documentos en lugar de pruebas jugables. Se entregan código integrado, video real, pruebas y commit.
+
+## 5-nov-2026 · Supabase en etapa de pruebas (Kelvin)
+«Estamos en etapa de pruebas, no quites nada de Supabase, que quizás dañamos algo que Fernando haya configurado.» Nadie del equipo borra ni cambia nada en Supabase. El borrado de `amazona.records` que recomienda el análisis preliminar COPPA (`docs/legal/ANALISIS_PRELIMINAR_COPPA_5NOV.md`) queda para antes del lanzamiento público, coordinado con Fernando.

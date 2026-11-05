@@ -20,7 +20,7 @@
 
 | Tarea | Quién | Estado |
 |---|---|---|
-| Borrar `amazona.records` con el procedimiento del punto 3 | Kelvin / Fernando (acceso a Supabase); es irreversible | pendiente de Kelvin |
+| Borrar `amazona.records` con el procedimiento del punto 3 | Fernando, coordinado con Kelvin | **en espera (Kelvin, 5-nov): «estamos en etapa de pruebas, no quites nada de Supabase»**; se hace antes del lanzamiento público |
 | Apagar Vercel Web Analytics y Speed Insights del dominio del juego | Kelvin / Fernando (panel de Vercel) | pendiente de Kelvin |
 | Acuerdos de tratamiento de datos de Vercel y Supabase, con la región de cada uno | Kelvin | pendiente de Kelvin |
 | Aviso con la sección de operaciones internas y la política de retención, enlazado en la portada y en el juego | Borrador: equipo. Publicación: Kelvin | borrador en curso |
