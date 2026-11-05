@@ -19,7 +19,7 @@ window.AVV18Amenaza = function (G) {
   if (G.v18amenaza) return G.v18amenaza;
   const S = G.S, H = G.v18hab, V = G.v18, scene = G.renderer.scene;
   const ID = 'sombra_tormenta', ACIERTOS = 3, PLUMAS = 5, PREMIO = { madera: 1, piedra: 1 };
-  const R_EMPIEZA = 16, R_SALE = 34, R_RAFAGA = 9, R_VIENTO = 11, ALTO = 2.6; // a la altura de la cabeza: se ve en cámara y el grito la alcanza
+  const R_EMPIEZA = 16, R_SALE = 34, R_RAFAGA = 9, R_VIENTO = 11, ALTO = 5.5; // sobre el agua o el suelo: por encima de las matas, a la altura de vuelo
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const PATRONES = [
     { id: 'lenta', aviso: 1.1, cada: 6.5, rafagas: 1, giro: 0 },
@@ -38,15 +38,15 @@ window.AVV18Amenaza = function (G) {
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
   const toast = (t, ms) => { try { if (!G.quiet) G.ui.toast(t, ms || 2400); } catch (e) { /* sin interfaz */ } };
   const fx = (k, x, y, z, n) => { try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
-  const altura = (x, z) => G.terreno.height(x, z);
+  const altura = (x, z) => { const h = G.terreno.height(x, z); try { const w = G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) : -Infinity; return Math.max(h, w); } catch (e) { return h; } };
   const emitir = ev => { try { G.emit('v18amenaza', ev); } catch (e) { /* sin oyentes */ } };
 
   // ---------- Sitio: sobre el camino del lado de Villa Raíz, antes del puente ----------
   function buscarSitio() {
     const R = G.v18Reparar, E = R && R.P && R.P.eje;
-    if (E) {
-      const x = E.ax - E.ux * 20, z = E.az - E.uz * 20; // 20 m antes de la cabecera, hacia la villa
-      return { x, z };
+    if (E) { // sobre el río, al lado del puente: cielo abierto, se ve y se pelea volando
+      const mx = E.ax + E.ux * E.L * 0.5, mz = E.az + E.uz * E.L * 0.5;
+      return { x: mx - E.uz * 14, z: mz + E.ux * 14 };
     }
     const c = G.v18combate && G.v18combate.sitio; const pl = G.terreno.places || {}, v = pl.villa || pl.plaza || { x: S.pos.x, z: S.pos.z };
     return c ? { x: c.x - 18, z: c.z + 10 } : { x: v.x + 10, z: v.z + 20 };
