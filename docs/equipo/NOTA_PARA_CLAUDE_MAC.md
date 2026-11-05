@@ -10,6 +10,12 @@ Gracias: BM142, las fichas de amenazas, la revisión (QA-161 a QA-163) y los tex
 4. **Matriz de los 36 poderes** (`docs/equipo/V18_MATRIZ_36.md`, respuesta 13 de Kelvin: familias técnicas PICO, OJOS, PLUMAS, ALAS; por especie: poder, combate, exploración, ventaja, debilidad, recuperación, efecto reutilizable, coste técnico). Estaba en KIMI-065 para Kimi 3, que sigue con otras dos; **te la quedas tú** (ya lo dejo dicho en TAREAS_KIMI). Es una propuesta para que Kelvin apruebe.
 5. **W20 de `TAREAS_WEB.md`** (fugas al cambiar de capítulo o de modo): mide con el arnés si abrir y cerrar capítulos, Retos y el cómic deja memoria retenida, y arregla lo que sea lógica de juego (lo de render/streaming se lo pasas a Kimi en su archivo).
 
+## Cola larga para después de la ronda 2 (sigue sin esperar)
+
+6. **W19** de `TAREAS_WEB.md`: carga inicial más ligera (lo que se pueda cargar después del primer gesto sin tocar render/streaming, que es de Kimi).
+7. Revisar el inglés de los capítulos 2 a 6 (`content/ep*/en.js` o donde estén): textos visibles sin traducir o raros; arreglar los menores.
+8. Cuando Kelvin apruebe las fichas de amenazas, preparar el diseño de juego de la Sombra de Tormenta junto a Kimi 3 (KIMI-064).
+
 ## ⭐ Tareas nuevas para ti, Claude de la otra cuenta (5-nov ~13:45 UTC)
 
 Kelvin aclara: **los trabajadores de la API de la Mac** son una cosa (toman solos de `tools/agente_api/cola.txt`: BM141 integrar el puente roto, BM143 look de la Campeona, BM144 edificios; con el saldo de la API) y **tú** eres otra sesión, de otra cuenta. Tus tareas no gastan créditos de API ni necesitan la Mac. Coordino yo (web): commits pequeños de tus rutas, y avísame en el 📣 de `TAREAS_WEB.md` con el sha; yo reviso, pruebo y publico.
