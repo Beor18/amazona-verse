@@ -1,0 +1,143 @@
+{
+ "etiqueta": "ipad-noche-r1",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "head": "desconocido",
+ "vuelo": {
+  "n": 3,
+  "ctxPerdidos": 0,
+  "fpsP50": 15,
+  "fpsP10": 14,
+  "fpsMin": 14,
+  "ktrisMax": 403,
+  "ktrisMed": 385,
+  "callsMax": 133,
+  "callsMed": 120,
+  "heapMax": 149,
+  "heapFin": 149,
+  "muestras": [
+   {
+    "t": 0,
+    "heap": 135,
+    "calls": 119,
+    "ktris": 371,
+    "fps": 14,
+    "calidad": "medio",
+    "pos": [
+     -8,
+     -2
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 1,
+    "heap": 139,
+    "calls": 108,
+    "ktris": 381,
+    "fps": 15,
+    "calidad": "medio",
+    "pos": [
+     2,
+     11
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 2,
+    "heap": 149,
+    "calls": 133,
+    "ktris": 403,
+    "fps": 26,
+    "calidad": "medio",
+    "pos": [
+     13,
+     24
+    ],
+    "hacia": "villa"
+   }
+  ]
+ },
+ "tomas": {
+  "villa": {
+   "pos": [
+    -8,
+    17.22,
+    -2.5
+   ],
+   "med": {
+    "calls": 114,
+    "triangulos": 396541,
+    "texturasMB": 154.9,
+    "geometrias": 219,
+    "heapMB": 124,
+    "fps": 43
+   },
+   "medErr": null
+  },
+  "plaza": {
+   "pos": [
+    145.5,
+    13.05,
+    178.5
+   ],
+   "med": {
+    "calls": 147,
+    "triangulos": 476039,
+    "texturasMB": 154.9,
+    "geometrias": 280,
+    "heapMB": 123,
+    "fps": 23
+   },
+   "medErr": null
+  },
+  "ciudad_aerea": {
+   "pos": [
+    -33,
+    126.87,
+    -136
+   ],
+   "med": {
+    "calls": 160,
+    "triangulos": 394813,
+    "texturasMB": 153.6,
+    "geometrias": 296,
+    "heapMB": 146,
+    "fps": 43
+   },
+   "medErr": null
+  },
+  "ciudad_puerta": {
+   "pos": [
+    11.7,
+    87.65,
+    -115.2
+   ],
+   "med": {
+    "calls": 138,
+    "triangulos": 306714,
+    "texturasMB": 153.6,
+    "geometrias": 304,
+    "heapMB": 129,
+    "fps": 37
+   },
+   "medErr": null
+  }
+ },
+ "noche": {
+  "pos": [
+   -33,
+   126.87,
+   -136
+  ],
+  "med": {
+   "calls": 161,
+   "triangulos": 394669,
+   "texturasMB": 153.6,
+   "geometrias": 305,
+   "heapMB": 132,
+   "fps": 43
+  },
+  "medErr": null
+ },
+ "erroresConsola": 0
+}

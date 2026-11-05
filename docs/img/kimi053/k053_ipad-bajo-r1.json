@@ -1,0 +1,884 @@
+{
+ "etiqueta": "ipad-bajo-r1",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "bajo",
+ "head": "desconocido",
+ "vuelo": {
+  "n": 60,
+  "ctxPerdidos": 0,
+  "fpsP50": 28,
+  "fpsP10": 12,
+  "fpsMin": 4,
+  "ktrisMax": 349,
+  "ktrisMed": 252,
+  "callsMax": 123,
+  "callsMed": 74,
+  "heapMax": 150,
+  "heapFin": 117,
+  "muestras": [
+   {
+    "t": 0,
+    "heap": 117,
+    "calls": 50,
+    "ktris": 217,
+    "fps": 4,
+    "calidad": "bajo",
+    "pos": [
+     -8,
+     -2
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 1,
+    "heap": 114,
+    "calls": 123,
+    "ktris": 277,
+    "fps": 6,
+    "calidad": "bajo",
+    "pos": [
+     0,
+     8
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 2,
+    "heap": 139,
+    "calls": 67,
+    "ktris": 244,
+    "fps": 26,
+    "calidad": "bajo",
+    "pos": [
+     10,
+     21
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 3,
+    "heap": 144,
+    "calls": 64,
+    "ktris": 261,
+    "fps": 27,
+    "calidad": "bajo",
+    "pos": [
+     20,
+     35
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 4,
+    "heap": 118,
+    "calls": 61,
+    "ktris": 257,
+    "fps": 29,
+    "calidad": "bajo",
+    "pos": [
+     31,
+     48
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 5,
+    "heap": 109,
+    "calls": 64,
+    "ktris": 259,
+    "fps": 29,
+    "calidad": "bajo",
+    "pos": [
+     41,
+     62
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 6,
+    "heap": 133,
+    "calls": 66,
+    "ktris": 278,
+    "fps": 30,
+    "calidad": "bajo",
+    "pos": [
+     52,
+     75
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 7,
+    "heap": 126,
+    "calls": 79,
+    "ktris": 291,
+    "fps": 28,
+    "calidad": "bajo",
+    "pos": [
+     62,
+     88
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 8,
+    "heap": 119,
+    "calls": 68,
+    "ktris": 285,
+    "fps": 28,
+    "calidad": "bajo",
+    "pos": [
+     72,
+     102
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 9,
+    "heap": 111,
+    "calls": 67,
+    "ktris": 284,
+    "fps": 29,
+    "calidad": "bajo",
+    "pos": [
+     83,
+     115
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 10,
+    "heap": 137,
+    "calls": 68,
+    "ktris": 314,
+    "fps": 29,
+    "calidad": "bajo",
+    "pos": [
+     93,
+     129
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 11,
+    "heap": 130,
+    "calls": 69,
+    "ktris": 342,
+    "fps": 31,
+    "calidad": "bajo",
+    "pos": [
+     103,
+     142
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 12,
+    "heap": 124,
+    "calls": 68,
+    "ktris": 347,
+    "fps": 34,
+    "calidad": "bajo",
+    "pos": [
+     114,
+     156
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 13,
+    "heap": 119,
+    "calls": 69,
+    "ktris": 315,
+    "fps": 32,
+    "calidad": "bajo",
+    "pos": [
+     124,
+     169
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 14,
+    "heap": 139,
+    "calls": 65,
+    "ktris": 248,
+    "fps": 23,
+    "calidad": "bajo",
+    "pos": [
+     134,
+     183
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 15,
+    "heap": 127,
+    "calls": 116,
+    "ktris": 335,
+    "fps": 28,
+    "calidad": "bajo",
+    "pos": [
+     135,
+     183
+    ],
+    "hacia": "lomas"
+   },
+   {
+    "t": 16,
+    "heap": 121,
+    "calls": 87,
+    "ktris": 168,
+    "fps": 29,
+    "calidad": "bajo",
+    "pos": [
+     125,
+     168
+    ],
+    "hacia": "lomas"
+   },
+   {
+    "t": 17,
+    "heap": 113,
+    "calls": 88,
+    "ktris": 170,
+    "fps": 29,
+    "calidad": "bajo",
+    "pos": [
+     115,
+     155
+    ],
+    "hacia": "lomas"
+   },
+   {
+    "t": 18,
+    "heap": 139,
+    "calls": 72,
+    "ktris": 162,
+    "fps": 31,
+    "calidad": "bajo",
+    "pos": [
+     106,
+     141
+    ],
+    "hacia": "lomas"
+   },
+   {
+    "t": 19,
+    "heap": 131,
+    "calls": 65,
+    "ktris": 165,
+    "fps": 31,
+    "calidad": "bajo",
+    "pos": [
+     96,
+     127
+    ],
+    "hacia": "lomas"
+   },
+   {
+    "t": 20,
+    "heap": 123,
+    "calls": 70,
+    "ktris": 206,
+    "fps": 31,
+    "calidad": "bajo",
+    "pos": [
+     87,
+     113
+    ],
+    "hacia": "lomas"
+   },
+   {
+    "t": 21,
+    "heap": 117,
+    "calls": 62,
+    "ktris": 228,
+    "fps": 32,
+    "calidad": "bajo",
+    "pos": [
+     78,
+     98
+    ],
+    "hacia": "lomas"
+   },
+   {
+    "t": 22,
+    "heap": 116,
+    "calls": 66,
+    "ktris": 218,
+    "fps": 32,
+    "calidad": "bajo",
+    "pos": [
+     69,
+     84
+    ],
+    "hacia": "lomas"
+   },
+   {
+    "t": 23,
+    "heap": 142,
+    "calls": 59,
+    "ktris": 184,
+    "fps": 32,
+    "calidad": "bajo",
+    "pos": [
+     59,
+     70
+    ],
+    "hacia": "lomas"
+   },
+   {
+    "t": 24,
+    "heap": 134,
+    "calls": 70,
+    "ktris": 215,
+    "fps": 29,
+    "calidad": "bajo",
+    "pos": [
+     52,
+     59
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 25,
+    "heap": 132,
+    "calls": 79,
+    "ktris": 237,
+    "fps": 32,
+    "calidad": "bajo",
+    "pos": [
+     46,
+     44
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 26,
+    "heap": 124,
+    "calls": 89,
+    "ktris": 262,
+    "fps": 31,
+    "calidad": "bajo",
+    "pos": [
+     39,
+     28
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 27,
+    "heap": 118,
+    "calls": 90,
+    "ktris": 281,
+    "fps": 32,
+    "calidad": "bajo",
+    "pos": [
+     32,
+     12
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 28,
+    "heap": 142,
+    "calls": 72,
+    "ktris": 267,
+    "fps": 30,
+    "calidad": "bajo",
+    "pos": [
+     25,
+     -3
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 29,
+    "heap": 134,
+    "calls": 88,
+    "ktris": 288,
+    "fps": 32,
+    "calidad": "bajo",
+    "pos": [
+     18,
+     -19
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 30,
+    "heap": 128,
+    "calls": 87,
+    "ktris": 266,
+    "fps": 28,
+    "calidad": "bajo",
+    "pos": [
+     12,
+     -34
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 31,
+    "heap": 120,
+    "calls": 96,
+    "ktris": 274,
+    "fps": 31,
+    "calidad": "bajo",
+    "pos": [
+     5,
+     -50
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 32,
+    "heap": 144,
+    "calls": 102,
+    "ktris": 310,
+    "fps": 32,
+    "calidad": "bajo",
+    "pos": [
+     -2,
+     -65
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 33,
+    "heap": 137,
+    "calls": 100,
+    "ktris": 316,
+    "fps": 27,
+    "calidad": "bajo",
+    "pos": [
+     -9,
+     -81
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 34,
+    "heap": 126,
+    "calls": 115,
+    "ktris": 349,
+    "fps": 27,
+    "calidad": "bajo",
+    "pos": [
+     -16,
+     -97
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 35,
+    "heap": 118,
+    "calls": 71,
+    "ktris": 268,
+    "fps": 29,
+    "calidad": "bajo",
+    "pos": [
+     -23,
+     -112
+    ],
+    "hacia": "ciudad"
+   },
+   {
+    "t": 36,
+    "heap": 139,
+    "calls": 80,
+    "ktris": 190,
+    "fps": 28,
+    "calidad": "bajo",
+    "pos": [
+     -20,
+     -109
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 37,
+    "heap": 128,
+    "calls": 60,
+    "ktris": 222,
+    "fps": 28,
+    "calidad": "bajo",
+    "pos": [
+     -12,
+     -94
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 38,
+    "heap": 117,
+    "calls": 50,
+    "ktris": 184,
+    "fps": 28,
+    "calidad": "bajo",
+    "pos": [
+     -4,
+     -79
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 39,
+    "heap": 142,
+    "calls": 59,
+    "ktris": 196,
+    "fps": 30,
+    "calidad": "bajo",
+    "pos": [
+     4,
+     -64
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 40,
+    "heap": 140,
+    "calls": 66,
+    "ktris": 203,
+    "fps": 30,
+    "calidad": "bajo",
+    "pos": [
+     12,
+     -49
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 41,
+    "heap": 128,
+    "calls": 53,
+    "ktris": 204,
+    "fps": 28,
+    "calidad": "bajo",
+    "pos": [
+     21,
+     -34
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 42,
+    "heap": 150,
+    "calls": 56,
+    "ktris": 209,
+    "fps": 30,
+    "calidad": "bajo",
+    "pos": [
+     29,
+     -19
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 43,
+    "heap": 126,
+    "calls": 54,
+    "ktris": 211,
+    "fps": 8,
+    "calidad": "bajo",
+    "pos": [
+     35,
+     -8
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 44,
+    "heap": 134,
+    "calls": 61,
+    "ktris": 229,
+    "fps": 12,
+    "calidad": "bajo",
+    "pos": [
+     43,
+     7
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 45,
+    "heap": 146,
+    "calls": 70,
+    "ktris": 254,
+    "fps": 15,
+    "calidad": "bajo",
+    "pos": [
+     51,
+     21
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 46,
+    "heap": 124,
+    "calls": 70,
+    "ktris": 249,
+    "fps": 12,
+    "calidad": "bajo",
+    "pos": [
+     61,
+     37
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 47,
+    "heap": 133,
+    "calls": 70,
+    "ktris": 280,
+    "fps": 12,
+    "calidad": "bajo",
+    "pos": [
+     69,
+     52
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 48,
+    "heap": 143,
+    "calls": 63,
+    "ktris": 259,
+    "fps": 15,
+    "calidad": "bajo",
+    "pos": [
+     77,
+     67
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 49,
+    "heap": 126,
+    "calls": 59,
+    "ktris": 270,
+    "fps": 21,
+    "calidad": "bajo",
+    "pos": [
+     85,
+     82
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 50,
+    "heap": 141,
+    "calls": 60,
+    "ktris": 262,
+    "fps": 21,
+    "calidad": "bajo",
+    "pos": [
+     93,
+     97
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 51,
+    "heap": 126,
+    "calls": 66,
+    "ktris": 274,
+    "fps": 21,
+    "calidad": "bajo",
+    "pos": [
+     101,
+     112
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 52,
+    "heap": 118,
+    "calls": 70,
+    "ktris": 280,
+    "fps": 21,
+    "calidad": "bajo",
+    "pos": [
+     109,
+     127
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 53,
+    "heap": 134,
+    "calls": 69,
+    "ktris": 301,
+    "fps": 21,
+    "calidad": "bajo",
+    "pos": [
+     117,
+     142
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 54,
+    "heap": 117,
+    "calls": 69,
+    "ktris": 308,
+    "fps": 20,
+    "calidad": "bajo",
+    "pos": [
+     125,
+     157
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 55,
+    "heap": 130,
+    "calls": 55,
+    "ktris": 216,
+    "fps": 16,
+    "calidad": "bajo",
+    "pos": [
+     133,
+     172
+    ],
+    "hacia": "villa"
+   },
+   {
+    "t": 56,
+    "heap": 141,
+    "calls": 89,
+    "ktris": 232,
+    "fps": 12,
+    "calidad": "bajo",
+    "pos": [
+     139,
+     183
+    ],
+    "hacia": "plaza"
+   },
+   {
+    "t": 57,
+    "heap": 120,
+    "calls": 93,
+    "ktris": 333,
+    "fps": 15,
+    "calidad": "bajo",
+    "pos": [
+     132,
+     173
+    ],
+    "hacia": "lomas"
+   },
+   {
+    "t": 58,
+    "heap": 136,
+    "calls": 90,
+    "ktris": 172,
+    "fps": 22,
+    "calidad": "bajo",
+    "pos": [
+     122,
+     159
+    ],
+    "hacia": "lomas"
+   },
+   {
+    "t": 59,
+    "heap": 117,
+    "calls": 88,
+    "ktris": 165,
+    "fps": 15,
+    "calidad": "bajo",
+    "pos": [
+     113,
+     143
+    ],
+    "hacia": "lomas"
+   }
+  ]
+ },
+ "tomas": {
+  "villa": {
+   "pos": [
+    -8,
+    17.22,
+    -2.5
+   ],
+   "med": {
+    "calls": 61,
+    "triangulos": 242026,
+    "texturasMB": 154.8,
+    "geometrias": 325,
+    "heapMB": 145,
+    "fps": 33
+   },
+   "medErr": null
+  },
+  "plaza": {
+   "pos": [
+    145.5,
+    13.05,
+    178.5
+   ],
+   "med": {
+    "calls": 103,
+    "triangulos": 330873,
+    "texturasMB": 154.8,
+    "geometrias": 309,
+    "heapMB": 127,
+    "fps": 30
+   },
+   "medErr": null
+  },
+  "ciudad_aerea": {
+   "pos": [
+    -33,
+    126.87,
+    -136
+   ],
+   "med": {
+    "calls": 115,
+    "triangulos": 266027,
+    "texturasMB": 153.5,
+    "geometrias": 321,
+    "heapMB": 133,
+    "fps": 30
+   },
+   "medErr": null
+  },
+  "ciudad_puerta": {
+   "pos": [
+    11.7,
+    87.64,
+    -115.3
+   ],
+   "med": {
+    "calls": 86,
+    "triangulos": 188074,
+    "texturasMB": 153.5,
+    "geometrias": 314,
+    "heapMB": 140,
+    "fps": 31
+   },
+   "medErr": null
+  }
+ },
+ "noche": {
+  "pos": [
+   11.7,
+   87.65,
+   -115.2
+  ],
+  "med": {
+   "calls": 88,
+   "triangulos": 187900,
+   "texturasMB": 153.5,
+   "geometrias": 316,
+   "heapMB": 134,
+   "fps": 35
+  },
+  "medErr": null
+ },
+ "erroresConsola": 0
+}
