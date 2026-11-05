@@ -100,7 +100,7 @@ const PROBAR_JS = `(async () => {
         e.n++; e.kb += Math.round(bGeo(o.geometry) / 1024);
       });
     } catch (e) {}
-    const info = G.renderer.info && G.renderer.info.memory ? { geo: G.renderer.info.memory.geometries, tex: G.renderer.info.memory.textures } : null;
+    const info = G.renderer.renderer && G.renderer.renderer.info && G.renderer.renderer.info.memory ? { geo: G.renderer.renderer.info.memory.geometries, tex: G.renderer.renderer.info.memory.textures } : null;
     return { t: Math.round(performance.now()), heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576 * 10) / 10 : NaN, recursos, zonas, censo, info };
   };
   window.__qa160 = [];
