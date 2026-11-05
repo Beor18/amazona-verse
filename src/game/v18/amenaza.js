@@ -19,7 +19,7 @@ window.AVV18Amenaza = function (G) {
   if (G.v18amenaza) return G.v18amenaza;
   const S = G.S, H = G.v18hab, V = G.v18, scene = G.renderer.scene;
   const ID = 'sombra_tormenta', ACIERTOS = 3, PLUMAS = 5, PREMIO = { madera: 1, piedra: 1 };
-  const R_EMPIEZA = 16, R_SALE = 34, R_RAFAGA = 9, R_VIENTO = 11, ALTO = 4.2;
+  const R_EMPIEZA = 16, R_SALE = 34, R_RAFAGA = 9, R_VIENTO = 11, ALTO = 2.6; // a la altura de la cabeza: se ve en cámara y el grito la alcanza
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const PATRONES = [
     { id: 'lenta', aviso: 1.1, cada: 6.5, rafagas: 1, giro: 0 },
@@ -56,13 +56,13 @@ window.AVV18Amenaza = function (G) {
 
   // ---------- Escena: niebla + ojos (2 InstancedMesh) ----------
   const NB = (G.renderer.nivel && G.renderer.nivel() === 'bajo') || G.renderer.REDUCED ? 9 : 14;
-  const matNiebla = new THREE.MeshBasicMaterial({ color: '#3d4452', transparent: true, opacity: 0.62, depthWrite: false });
+  const matNiebla = new THREE.MeshBasicMaterial({ color: '#2b3140', transparent: true, opacity: 0.72, depthWrite: false });
   const niebla = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 10, 7), matNiebla, NB);
   const ojos = new THREE.InstancedMesh(new THREE.SphereGeometry(0.32, 10, 8), new THREE.MeshBasicMaterial({ color: '#ffd84a' }), 2);
   for (const m of [niebla, ojos]) { m.frustumCulled = false; m.castShadow = m.receiveShadow = false; m.visible = false; scene.add(m); }
   niebla.name = 'v18_sombra'; ojos.name = 'v18_sombra_ojos'; niebla.renderOrder = 4;
   const PUFF = Array.from({ length: NB }, (_, i) => ({ a: i / NB * Math.PI * 2, r: 1.2 + (i % 3) * 0.8, y: ((i * 37) % 10) / 10 * 1.6 - 0.6, s: 1.3 + ((i * 53) % 10) / 10 * 1.1 }));
-  const _o = new THREE.Object3D(), colBase = new THREE.Color('#3d4452'), colAviso = new THREE.Color('#8b93a8'), colRayo = new THREE.Color('#fff3b0');
+  const _o = new THREE.Object3D(), colBase = new THREE.Color('#2b3140'), colAviso = new THREE.Color('#8b93a8'), colRayo = new THREE.Color('#fff3b0');
 
   // ---------- Estado ----------
   const A = { fase: 'nada', t: 0, pos: { x: centro.x, y: altura(centro.x, centro.z) + ALTO, z: centro.z }, ancla: 0, giro: 0, patron: 0,
@@ -240,6 +240,14 @@ window.AVV18Amenaza = function (G) {
     b.classList.toggle('no', !H.listo(A.j, A.j.poder).ok);
   }
 
+  // Solo con el mundo libre: ni la apertura del capítulo (pantalla negra #c1-fade), ni diálogo, tarjeta, cómic, panel final o creador
+  function libre() {
+    const $ = id => document.getElementById(id), oculto = id => !$(id) || $(id).hidden;
+    try {
+      if ($('c1-fade') || (G.dialogo && G.dialogo.open && G.dialogo.open()) || G.ui.cardOpen || (G.ui.busy && G.ui.busy())) return false;
+      return oculto('end') && oculto('comic') && oculto('creator');
+    } catch (e) { return false; }
+  }
   // ---------- Paso ----------
   function dibujar(dt) {
     const p = A.pos, now = performance.now() / 1000, avisa = A.avisoT > 0;
@@ -272,9 +280,9 @@ window.AVV18Amenaza = function (G) {
     for (let i = timers.length - 1; i >= 0; i--) { timers[i].t -= dt; if (timers[i].t <= 0) { const f = timers[i].fn; timers.splice(i, 1); f(); } }
     if (centroT > 0 && (centroT -= dt) <= 0 && hud) hud.q('centro').textContent = '';
     if (A.fase === 'disuelve') {
-      A.t += dt; A.escala = 1 + A.t * 1.6; matNiebla.opacity = Math.max(0, 0.62 * (1 - A.t / 1.4));
+      A.t += dt; A.escala = 1 + A.t * 1.6; matNiebla.opacity = Math.max(0, 0.72 * (1 - A.t / 1.4));
       dibujar(dt);
-      if (A.t > 1.4) { A.fase = 'nada'; niebla.visible = ojos.visible = false; matNiebla.opacity = 0.62; A.escala = 1; }
+      if (A.t > 1.4) { A.fase = 'nada'; niebla.visible = ojos.visible = false; matNiebla.opacity = 0.72; A.escala = 1; }
       return;
     }
     const d = Math.hypot(S.pos.x - A.pos.x, S.pos.z - A.pos.z);
@@ -282,7 +290,7 @@ window.AVV18Amenaza = function (G) {
       const cerca = !dispersa() && Math.hypot(S.pos.x - centro.x, S.pos.z - centro.z) < 60;
       niebla.visible = ojos.visible = cerca;
       if (cerca) { mover(dt); dibujar(dt); }
-      if (!A.manual && cerca && Math.hypot(S.pos.x - centro.x, S.pos.z - centro.z) < R_EMPIEZA && !(G.ui.busy && G.ui.busy())) iniciar();
+      if (!A.manual && cerca && Math.hypot(S.pos.x - centro.x, S.pos.z - centro.z) < R_EMPIEZA && libre()) iniciar();
       return;
     }
     // lucha
@@ -332,6 +340,7 @@ window.AVV18Amenaza = function (G) {
       // ----- Vittata -----
       S.pos.x = centro.x + 5; S.pos.z = centro.z; S.pos.y = altura(S.pos.x, S.pos.z);
       check('Aparece cerca del camino y se ve (niebla y ojos: 2 draw calls)', (correr(0.2), niebla.visible && ojos.visible && niebla.count <= 14));
+      check('No empieza sola durante la apertura del capítulo (pantalla negra)', (() => { const f = document.createElement('div'); f.id = 'c1-fade'; document.body.appendChild(f); const r = libre(); f.remove(); return r === false; })());
       check('Empieza con Vittata, dice «¡Este cielo es mío!» y muestra 3 nubes', iniciar({ especie: 'vittata' }) && A.fase === 'lucha' && toasts.includes(TXT.empieza) && !hud.el.hidden && A.j.poder === 'grito_yunque');
       correr(0.5); ponerJugadora(5, false); A.j.energia = 100; A.j.cd = {};
       const r0 = usarPoder(); correr(0.6);
