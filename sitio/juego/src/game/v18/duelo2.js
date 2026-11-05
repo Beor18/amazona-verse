@@ -136,7 +136,10 @@ window.AVV18Duelo2 = function (G) {
     if (e.key === 'Escape' && D.fase !== 'nada') { e.stopImmediatePropagation(); e.preventDefault(); salir(); return; }
     const mv = MOVER2[e.code] || MOVER2[e.key], ac = ACC2[e.code];
     if (!mv && !ac) {
-      if (!e.repeat && (e.key || '').toLowerCase() === 'g' && D.fase === 'lucha') usar(D.j1, poderDe(D.j1)); // poder directo del J1
+      if ((e.key || '').toLowerCase() === 'g') { // poder directo del J1; QA-173: consumida, no inclina la cámara
+        e.stopImmediatePropagation();
+        if (!e.repeat && D.fase === 'lucha') usar(D.j1, poderDe(D.j1));
+      }
       return;
     }
     e.stopImmediatePropagation(); e.preventDefault(); entradaJ2.teclas++;

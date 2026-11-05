@@ -205,10 +205,15 @@ window.AVV18Amenaza = function (G) {
   let enganchado = false, modo0 = null, pl3d = null, upd0 = null;
   const modo = { activo: () => A.fase === 'lucha', accion: () => usarPoder(), aviso: () => guia(), get verbo() { return TXT.poder; } };
   const guia = () => TACTIL ? TXT.guiaT : (A.j && A.j.poder === 'escudo_plumas' ? TXT.guiaA : TXT.guiaV);
-  function tecla(e) { if (!e.repeat && A.fase === 'lucha' && (e.key || '').toLowerCase() === 'g' && !(e.target && /INPUT|TEXTAREA/.test(e.target.nodeName))) usarPoder(); }
+  // QA-173: en fase de captura y consumida: la G del poder no inclina la cámara mientras dura el encuentro
+  function tecla(e) {
+    if ((e.key || '').toLowerCase() !== 'g' || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
+    e.stopImmediatePropagation();
+    if (!e.repeat && A.fase === 'lucha') usarPoder();
+  }
   function enganchar() {
     if (enganchado) return; enganchado = true;
-    modo0 = G.interaccion.modo; G.interaccion.modo = modo; addEventListener('keydown', tecla);
+    modo0 = G.interaccion.modo; G.interaccion.modo = modo; addEventListener('keydown', tecla, true); if (G.input && G.input.keys) G.input.keys.delete('g');
     const ch = G.actores && G.actores.player3D;
     if (ch && !pl3d) {
       pl3d = ch; upd0 = ch.update;
@@ -223,7 +228,7 @@ window.AVV18Amenaza = function (G) {
     if (hud) hud.el.hidden = true;
     if (!enganchado) return; enganchado = false;
     if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
-    removeEventListener('keydown', tecla);
+    removeEventListener('keydown', tecla, true);
     if (pl3d) { delete pl3d.update; if (pl3d.update !== upd0) pl3d.update = upd0; pl3d = upd0 = null; }
     document.body.classList.remove('v18-amenaza-on');
   }
