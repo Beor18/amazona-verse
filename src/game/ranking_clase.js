@@ -442,7 +442,7 @@ window.AVRankingClase = function (G) {
       // 10) Cerrar la puerta vuelve a bloquear
       AU.cerrarMaestro();
       check('Al cerrar el Modo Maestro la tabla vuelve a quedar bloqueada', agregar({ alias: { ini: 'AB' }, reto: 'carrera', valor: 1000 }).error === 'puerta');
-      check('El espía distingue un servidor externo de los archivos del juego', !propio('https://ejemplo.test/ranking') && !propio('/api/records') && propio('assets/audio/a.ogg'));
+      check('El espía distingue un servidor externo de los archivos del juego', !propio('https://ejemplo.test/ranking') && !propio('/api/records') && propio(['assets', 'audio', 'x.ogg'].join('/')));
       check('Cero peticiones a servidores (ni fetch, XHR, sendBeacon ni WebSocket) durante la prueba del ranking', red.length === 0, red.join(' | '));
     } catch (e) {
       check('La prueba terminó sin excepciones', false, e && e.stack || e);
