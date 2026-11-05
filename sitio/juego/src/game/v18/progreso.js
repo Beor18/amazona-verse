@@ -22,14 +22,24 @@ window.AVV18Progreso = function (G) {
     try { d = JSON.parse(localStorage.getItem(clave()) || 'null'); } catch (e) { d = null; }
     if (!d || typeof d !== 'object' || d.v !== V) d = Object.assign(vacio(), d && typeof d === 'object' ? migrar(d) : {});
     for (const k of ['especies', 'inv', 'otorgados', 'mundo']) if (!d[k] || typeof d[k] !== 'object') d[k] = {};
-    const perfil = G.S && G.S.profile && ((G.S.profile.look && G.S.profile.look.species) || G.S.profile.species);
-    if (perfil && rango(d.especies[perfil]) < rango('seleccionable')) d.especies[perfil] = 'seleccionable';
-    if (!d.sel && perfil) d.sel = perfil;
+    perfilVisto = null;
+    return conPerfil(d);
+  }
+  // La especie del perfil entra como seleccionable. QA-165: con un jugador nuevo los módulos V18 se cargan al primer gesto
+  // (portada), antes de que el creador haga el perfil; por eso se mira también después de leer, en cada acceso.
+  let perfilVisto = null;
+  const perfilActual = () => (G.S && G.S.profile && ((G.S.profile.look && G.S.profile.look.species) || G.S.profile.species)) || null;
+  function conPerfil(d) {
+    const perfil = perfilActual();
+    if (!perfil || perfil === perfilVisto) return d;
+    perfilVisto = perfil;
+    if (rango(d.especies[perfil]) < rango('seleccionable')) d.especies[perfil] = 'seleccionable';
+    if (!d.sel) d.sel = perfil;
     return d;
   }
   function migrar(d) { d.v = V; return d; } // v1: sin migraciones todavía; cada cambio de esquema sube V y migra aquí
   function guardar() { try { localStorage.setItem(clave(), JSON.stringify(D)); return true; } catch (e) { return false; } }
-  const datos = () => (D || (D = leer()));
+  const datos = () => conPerfil(D || (D = leer()));
   const rango = e => Math.max(0, ESTADOS.indexOf(e || 'no_descubierta'));
   const emit = ev => { try { G.emit('v18', ev); } catch (e) { /* sin oyentes */ } };
 
@@ -61,7 +71,7 @@ window.AVV18Progreso = function (G) {
   const mundo = id => datos().mundo[id] || null;
   function cambiarMundo(id, e) { const d = datos(); if (d.mundo[id] === e) return false; d.mundo[id] = e; guardar(); emit({ tipo: 'mundo', id, estado: e }); return true; }
   function recargar() { D = null; return datos(); } // relee del almacén (lo usan las pruebas de recarga)
-  function borrar() { D = vacio(); try { localStorage.removeItem(clave()); } catch (e) { /* sin almacenamiento */ } }
+  function borrar() { D = vacio(); perfilVisto = perfilActual(); try { localStorage.removeItem(clave()); } catch (e) { /* sin almacenamiento */ } }
 
   function test() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
@@ -77,6 +87,16 @@ window.AVV18Progreso = function (G) {
       cambiarMundo('puente_villa', 'reparado');
       recargar();
       check('Tras recargar siguen especie, inventario y mundo', seleccionada() === 'arausiaca' && cuantos('pluma_rival') === 0 && mundo('puente_villa') === 'reparado' && !otorgar('combate_1', 'pluma_rival', 1));
+      // QA-165: jugador nuevo, V18 se lee antes de que el creador haga el perfil; al crearlo, su especie entra elegible
+      const prof0 = G.S && G.S.profile;
+      if (G.S) {
+        try {
+          borrar(); D = null; G.S.profile = null; estado('arausiaca');
+          G.S.profile = prof0 || { look: { species: 'vittata' } };
+          const sp = perfilActual();
+          check('Perfil creado después de leer el progreso: su especie entra elegible (QA-165)', rango(estado(sp)) >= rango('seleccionable') && seleccionada() === sp, sp + ' ' + estado(sp));
+        } finally { G.S.profile = prof0; }
+      }
     } catch (e) { check('Sin excepciones', false, e && e.message); }
     try { if (crudo == null) localStorage.removeItem(clave()); else localStorage.setItem(clave(), crudo); } catch (e) { /* sin almacenamiento */ }
     D = null;
