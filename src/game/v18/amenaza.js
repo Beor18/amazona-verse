@@ -239,16 +239,17 @@ window.AVV18Amenaza = function (G) {
   function montarHud() {
     if (hud) return hud;
     const st = document.createElement('style'); st.id = 'v18-amenaza-css';
-    st.textContent = '#v18-amenaza{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:0;right:0;margin-inline:auto;width:min(340px,calc(100vw - 32px));z-index:40;' +
+    st.textContent = '#v18-amenaza{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(340px,calc(100vw - 32px));z-index:40;' +
       'font-family:inherit;color:#fff;background:rgba(28,32,44,.78);border-radius:16px;padding:8px 12px;text-align:center;pointer-events:none}' +
       '#v18-amenaza .va-n{font-weight:700;font-size:15px}#v18-amenaza .va-f{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:4px;font-size:14px}' +
       '#v18-amenaza i{display:inline-block;width:12px;height:12px;border-radius:50%;margin:0 2px;background:#ffd84a}#v18-amenaza i.off{background:rgba(255,255,255,.22)}' +
       '#v18-amenaza .va-c{min-height:20px;font-weight:700;color:#ffe28a}#v18-amenaza button{pointer-events:auto;font:inherit;font-size:15px;font-weight:700;min-height:44px;' +
       'padding:6px 18px;border-radius:22px;border:0;background:#fff3d6;color:#3b2a14;margin-top:6px}#v18-amenaza button.no{opacity:.45}' +
       'body.v18-amenaza-on #quest{visibility:hidden}' +
-      // Juego en familia (5-nov): en el teléfono el panel tapaba los contadores de madera y piedra (#inv, arriba a la derecha):
-      // baja bajo ellos. El aviso (#toast) queda por encima del panel si coinciden.
-      '@media (max-width:760px){#v18-amenaza{top:calc(env(safe-area-inset-top,0px) + 62px)}}body.v18-amenaza-on #toast{z-index:41}';
+      // Juego en familia (5-nov): en el escritorio va bajo el aviso (#toast), como el duelo; en el teléfono tapaba los contadores de madera y piedra (#inv, arriba a la derecha):
+      // el objetivo (ya oculto) deja de ocupar su fila, los contadores suben arriba y el panel va debajo. El aviso (#toast) queda
+      // por encima del panel si coinciden.
+      '@media (max-width:760px){body.v18-amenaza-on #quest{display:none}#v18-amenaza{top:calc(env(safe-area-inset-top,0px) + 64px)}}body.v18-amenaza-on #toast{z-index:41}';
     document.head.appendChild(st);
     const el = document.createElement('div'); el.id = 'v18-amenaza'; el.hidden = true;
     el.innerHTML = '<div class="va-n">' + TXT.nombre + ' <span data-k="nubes"></span></div>' +
