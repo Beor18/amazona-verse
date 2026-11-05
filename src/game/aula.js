@@ -179,7 +179,7 @@ AVE.module('aula', function (G) {
     // solo evita que un niño entre por accidente o por curiosidad.
     let hold = 0;
     const abrirReto = () => { hold = 0; link.classList.remove('manteniendo'); nuevoReto(); link.hidden = true; form.hidden = false; form.querySelector('input').focus(); };
-    const empezar = e => { if (e.type === 'keydown' && (e.repeat || (e.key !== 'Enter' && e.key !== ' '))) return; if (e.type === 'keydown') e.preventDefault(); clearTimeout(hold); link.classList.add('manteniendo'); hold = setTimeout(abrirReto, HOLD_MS); };
+    const empezar = e => { if (e.type === 'keydown' && (e.repeat || (e.key !== 'Enter' && e.key !== ' '))) return; if (e.type === 'keydown') e.preventDefault(); clearTimeout(hold); link.classList.add('manteniendo'); hold = setTimeout(abrirReto, HOLD_MS); rankingClase().catch(() => {}); };
     const soltar = () => { clearTimeout(hold); hold = 0; link.classList.remove('manteniendo'); };
     link.addEventListener('pointerdown', empezar); link.addEventListener('keydown', empezar);
     for (const ev of ['pointerup', 'pointerleave', 'pointercancel', 'keyup', 'blur']) link.addEventListener(ev, soltar);
@@ -626,8 +626,25 @@ AVE.module('aula', function (G) {
     bb.onclick = () => { si.hidden = false; si.focus(); };
     si.onclick = () => { borrarProgreso(); si.hidden = true; estado(m('borrado')); };
   }
+  // Ranking de clase local (src/game/ranking_clase.js, Directiva de privacidad infantil 5-nov): pestaña propia que se carga
+  // al abrir el Modo Maestro (no va en la descarga inicial). Sin red: solo localStorage del aparato del adulto.
+  let ranking = null;
+  function rankingClase() {
+    return ranking || (ranking = AVE.assets.script('src/game/ranking_clase.js').then(() => window.AVRankingClase(G), e => { ranking = null; throw e; }));
+  }
+  // Si el módulo llega con el panel ya abierto, solo se añade su botón (repintar movería al maestro de lo que está haciendo)
+  function chipRanking() {
+    const fila = maestroAbierto() && panel.querySelector('.maestro-tabs'), ex = extras.find(x => x.id === 'ranking');
+    if (!fila || !ex || $('m-tab-ranking')) return;
+    const b = document.createElement('button');
+    b.className = 'chip'; b.type = 'button'; b.id = 'm-tab-ranking'; b.dataset.tab = 'ranking'; b.textContent = t(ex.titulo);
+    b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', 'false'); b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-controls', 'm-panel');
+    b.onclick = () => { tab = 'ranking'; pintarMaestro(); const nb = $('m-tab-ranking'); if (nb) nb.focus(); };
+    fila.appendChild(b);
+  }
   function abrirMaestro() {
     if (!panel) montarMaestro();
+    if (!extras.some(x => x.id === 'ranking')) rankingClase().then(chipRanking, () => {});
     focoPrevio = document.activeElement;
     G.pausa && G.pausa.set('maestro', true); // antes de cerrar el menú: la pausa no se suelta en el cambio
     try { if (menu && menu.matches(':popover-open')) menu.hidePopover(); } catch (e) { /* sin popover */ }
@@ -656,7 +673,7 @@ AVE.module('aula', function (G) {
     ficha, fichas: fichasPublicadas, verificada, publicable, publicada, desbloquear, tieneFicha, enlazar, via, pendientes,
     pregunta, preguntaPublicable, hacerPregunta, serie, enCurso: () => enCurso, mezclar,
     partida, registrar, reporteCSV, reporteJSON, nombreArchivo, descargar, copiar, borrarProgreso, nuevoEstudiante, PRIVACIDAD,
-    abrirMaestro, cerrarMaestro, maestroAbierto, nuevoReto, reto: () => retoSuma, pestana, pestanas: () => TABS.concat(extras.map(x => x.id)),
+    abrirMaestro, cerrarMaestro, maestroAbierto, rankingClase, nuevoReto, reto: () => retoSuma, pestana, pestanas: () => TABS.concat(extras.map(x => x.id)),
     get partidas() { return data.partidas; }, recargar() { data = cargar(); Object.assign(aj, data.ajustes); data.ajustes = aj; syncPausa(); },
   };
 });
