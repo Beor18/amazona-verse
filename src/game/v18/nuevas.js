@@ -30,7 +30,7 @@ window.AVV18Nuevas = function (G) {
     for (const h of HITOS) {
       if (!h.cuando() || rango(V.estado(h.id)) >= rango('seleccionable')) continue;
       V.descubrir(h.id); V.desbloquear(h.id); nuevas.push(h.id);
-      if (avisar) toast(h.txt + ' ' + TXT.elige);
+      if (avisar) { const t = h.txt + ' ' + TXT.elige, k = nuevas.length - 1; if (k) setTimeout(() => toast(t), k * 5400); else toast(t); } // en cola: no se pisan
     }
     return nuevas;
   }
@@ -39,9 +39,9 @@ window.AVV18Nuevas = function (G) {
     if (!ev || ev.tipo !== 'win' || ev.de !== 'jugador') return;
     const C = G.v18combate && G.v18combate.estado(), sp = C && C.j && C.j.especie;
     if (sp && sp !== 'vittata') V.otorgar('combate_otra', 'victoria_otra', 1);
-    setTimeout(() => revisar(true), 0); // combate marca su victoria justo después de avisar
+    setTimeout(() => revisar(true), 3600); // después del aviso de victoria (antes lo tapaba al instante)
   });
-  G.on('v18', ev => { if (ev && (ev.tipo === 'mundo' || ev.tipo === 'recompensa')) setTimeout(() => revisar(true), 0); });
+  G.on('v18', ev => { if (ev && (ev.tipo === 'mundo' || ev.tipo === 'recompensa')) setTimeout(() => revisar(true), 4200); }); // tras «¡Puente reparado!» y el premio de la Sombra
   G.on('apply', () => setTimeout(() => revisar(false), 0), 97);
   setTimeout(() => revisar(false), 0);
 

@@ -414,8 +414,9 @@ window.AVV18Duelo2 = function (G) {
   function pasoBalas(dt) {
     for (let i = D.balas.length - 1; i >= 0; i--) {
       const b = D.balas[i], p = b.m.position;
-      b.t += dt; p.x += b.vx * dt; p.y += b.vy * dt; p.z += b.vz * dt;
       const bl = b.de === D.j1 ? D.j2 : D.j1;
+      if (bl.marcada > 0) { const hx = bl.pos.x - p.x, hz = bl.pos.z - p.z, hn = Math.hypot(hx, hz) || 1, v = Math.hypot(b.vx, b.vz), k = Math.min(1, dt * 6); b.vx += (hx / hn * v - b.vx) * k; b.vz += (hz / hn * v - b.vz) * k; } // Ojo del cenote, como en combate.js
+      b.t += dt; p.x += b.vx * dt; p.y += b.vy * dt; p.z += b.vz * dt;
       const dx = p.x - bl.pos.x, dy = p.y - (bl.pos.y + 0.9), dz = p.z - bl.pos.z;
       let fin = b.t >= b.vida || p.y < G.terreno.height(p.x, p.z) - 0.1;
       if (!fin && dx * dx + dy * dy + dz * dz < b.radio * b.radio) { golpear(b.de, bl, Object.assign({ dir: { x: b.vx / 16, z: b.vz / 16 } }, b.golpe)); fin = true; }
