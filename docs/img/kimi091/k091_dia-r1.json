@@ -1,0 +1,319 @@
+{
+ "etiqueta": "dia-r1",
+ "atardecer": "0",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "head": "desconocido",
+ "tomas": {
+  "puerta_oeste": {
+   "pos": [
+    11.3,
+    91.44,
+    -115.3
+   ],
+   "med": {
+    "calls": 142,
+    "triangulos": 301670,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 46,
+   "rayos": [
+    {
+     "px": [
+      470,
+      192
+     ],
+     "d": 4,
+     "obj": "edificiosInst:plataforma_piedra:cerca:KB3D_floorM",
+     "mat": "KB3D_floorM#ffffff",
+     "inst": 0
+    },
+    {
+     "px": [
+      580,
+      202
+     ],
+     "d": 3.9,
+     "obj": "edificiosInst:plataforma_piedra:cerca:KB3D_floorM",
+     "mat": "KB3D_floorM#ffffff",
+     "inst": 0
+    },
+    {
+     "px": [
+      725,
+      262
+     ],
+     "d": 4,
+     "obj": "edificiosInst:plataforma_piedra:cerca:KB3D_floorM",
+     "mat": "KB3D_floorM#ffffff",
+     "inst": 0
+    },
+    {
+     "px": [
+      385,
+      272
+     ],
+     "d": 4,
+     "obj": "edificiosInst:plataforma_piedra:cerca:KB3D_floorM",
+     "mat": "KB3D_floorM#ffffff",
+     "inst": 0
+    },
+    {
+     "px": [
+      210,
+      282
+     ],
+     "d": 4.2,
+     "obj": "edificiosInst:plataforma_piedra:cerca:KB3D_floorM",
+     "mat": "KB3D_floorM#ffffff",
+     "inst": 0
+    },
+    {
+     "px": [
+      655,
+      292
+     ],
+     "d": 4,
+     "obj": "edificiosInst:plataforma_piedra:cerca:KB3D_floorM",
+     "mat": "KB3D_floorM#ffffff",
+     "inst": 0
+    }
+   ],
+   "detErr": null
+  },
+  "aerea": {
+   "pos": [
+    -33,
+    126.87,
+    -136
+   ],
+   "med": {
+    "calls": 160,
+    "triangulos": 394597,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 1260,
+   "rayos": [
+    {
+     "px": [
+      150,
+      177
+     ],
+     "d": 1268.6,
+     "obj": "cielo",
+     "mat": "ShaderMaterial",
+     "inst": null
+    },
+    {
+     "px": [
+      440,
+      177
+     ],
+     "d": 1268.8,
+     "obj": "cielo",
+     "mat": "ShaderMaterial",
+     "inst": null
+    },
+    {
+     "px": [
+      460,
+      177
+     ],
+     "d": 1269.8,
+     "obj": "cielo",
+     "mat": "ShaderMaterial",
+     "inst": null
+    },
+    {
+     "px": [
+      550,
+      177
+     ],
+     "d": 1270.8,
+     "obj": "cielo",
+     "mat": "ShaderMaterial",
+     "inst": null
+    },
+    {
+     "px": [
+      620,
+      177
+     ],
+     "d": 1268.2,
+     "obj": "cielo",
+     "mat": "ShaderMaterial",
+     "inst": null
+    },
+    {
+     "px": [
+      165,
+      182
+     ],
+     "d": 1268.2,
+     "obj": "cielo",
+     "mat": "ShaderMaterial",
+     "inst": null
+    }
+   ],
+   "detErr": null
+  },
+  "callejon": {
+   "pos": [
+    2.6,
+    98.79,
+    -119.6
+   ],
+   "med": {
+    "calls": 157,
+    "triangulos": 320123,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 1028,
+   "rayos": [
+    {
+     "px": [
+      150,
+      177
+     ],
+     "d": 6,
+     "obj": "edificiosInst:ruina_mirador:cerca:KB3D_wallL",
+     "mat": "KB3D_wallL#ffffff",
+     "inst": 1
+    },
+    {
+     "px": [
+      200,
+      177
+     ],
+     "d": 6.1,
+     "obj": "edificiosInst:ruina_mirador:cerca:KB3D_wallL",
+     "mat": "KB3D_wallL#ffffff",
+     "inst": 1
+    },
+    {
+     "px": [
+      220,
+      177
+     ],
+     "d": 6.2,
+     "obj": "edificiosInst:ruina_mirador:cerca:KB3D_wallL",
+     "mat": "KB3D_wallL#ffffff",
+     "inst": 1
+    },
+    {
+     "px": [
+      280,
+      177
+     ],
+     "d": 3,
+     "obj": "(sin nombre)",
+     "mat": "MeshBasicMaterial#f2a03d",
+     "inst": null
+    },
+    {
+     "px": [
+      310,
+      177
+     ],
+     "d": 3,
+     "obj": "(sin nombre)",
+     "mat": "MeshBasicMaterial#f2a03d",
+     "inst": null
+    },
+    {
+     "px": [
+      355,
+      177
+     ],
+     "d": 3.1,
+     "obj": "(sin nombre)",
+     "mat": "MeshBasicMaterial#f2a03d",
+     "inst": null
+    }
+   ],
+   "detErr": null
+  },
+  "plaza_sur": {
+   "pos": [
+    -4,
+    115.86,
+    -132
+   ],
+   "med": {
+    "calls": 189,
+    "triangulos": 492021,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 1073,
+   "rayos": [
+    {
+     "px": [
+      580,
+      177
+     ],
+     "d": 1269.9,
+     "obj": "cielo",
+     "mat": "ShaderMaterial",
+     "inst": null
+    },
+    {
+     "px": [
+      200,
+      227
+     ],
+     "d": 1067.8,
+     "obj": "mar",
+     "mat": "ShaderMaterial",
+     "inst": null
+    },
+    {
+     "px": [
+      105,
+      232
+     ],
+     "d": 1049.9,
+     "obj": "mar",
+     "mat": "ShaderMaterial",
+     "inst": null
+    },
+    {
+     "px": [
+      610,
+      242
+     ],
+     "d": 960.4,
+     "obj": "mar",
+     "mat": "ShaderMaterial",
+     "inst": null
+    },
+    {
+     "px": [
+      495,
+      247
+     ],
+     "d": 917.2,
+     "obj": "mar",
+     "mat": "ShaderMaterial",
+     "inst": null
+    },
+    {
+     "px": [
+      630,
+      272
+     ],
+     "d": 802.9,
+     "obj": "mar",
+     "mat": "ShaderMaterial",
+     "inst": null
+    }
+   ],
+   "detErr": null
+  }
+ },
+ "ambiente": "{\"atardecer\":{\"activo\":false,\"k\":0,\"deseado\":false,\"forzado\":false,\"luciernagas\":false,\"solY\":0.7470519127640759},\"k\":0}",
+ "erroresConsola": 0
+}

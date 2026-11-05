@@ -1,0 +1,96 @@
+{
+ "etiqueta": "r7",
+ "atardecer": "1",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "head": "desconocido",
+ "tomas": {},
+ "ambiente": "{\"hora\":18.75,\"atardecer\":{\"activo\":true,\"k\":1,\"deseado\":true,\"forzado\":true,\"hora\":18.75,\"luciernagas\":false,\"solY\":0.1600000000000001},\"k\":1}",
+ "erroresConsola": 0,
+ "rayosDirigidos": [
+  {
+   "ndc": [
+    -0.122,
+    0.712
+   ],
+   "d": 5.2,
+   "obj": "edificiosInst:muro_templo:cerca:AV_Restaurado_Base",
+   "mat": "AV_Restaurado_Base#ffffff",
+   "pto": [
+    11.9,
+    104.2,
+    -116.9
+   ]
+  },
+  {
+   "ndc": [
+    -0.15,
+    0.73
+   ],
+   "d": 5.2,
+   "obj": "edificiosInst:muro_templo:cerca:AV_Restaurado_Base",
+   "mat": "AV_Restaurado_Base#ffffff",
+   "pto": [
+    11.9,
+    104.3,
+    -116.9
+   ]
+  },
+  {
+   "ndc": [
+    -0.09,
+    0.69
+   ],
+   "d": 20.2,
+   "obj": "edificiosInst:templo_grande_e:cerca:AV_Restaurado_Piedra",
+   "mat": "AV_Restaurado_Piedra#ffffff",
+   "pto": [
+    -2.4,
+    103,
+    -121.1
+   ]
+  },
+  {
+   "ndc": [
+    -0.19,
+    0.77
+   ],
+   "d": 5.2,
+   "obj": "edificiosInst:muro_templo:cerca:AV_Restaurado_Base",
+   "mat": "AV_Restaurado_Base#ffffff",
+   "pto": [
+    11.9,
+    104.4,
+    -116.8
+   ]
+  },
+  {
+   "ndc": [
+    -0.06,
+    0.75
+   ],
+   "d": 20.1,
+   "obj": "edificiosInst:templo_grande_e:cerca:AV_Restaurado_Piedra",
+   "mat": "AV_Restaurado_Piedra#ffffff",
+   "pto": [
+    -2.3,
+    103.6,
+    -121.3
+   ]
+  },
+  {
+   "ndc": [
+    0,
+    0.85
+   ],
+   "d": 19.9,
+   "obj": "edificiosInst:templo_grande_e:cerca:AV_Restaurado_Piedra",
+   "mat": "AV_Restaurado_Piedra#ffffff",
+   "pto": [
+    -2.1,
+    104.5,
+    -121.7
+   ]
+  }
+ ]
+}

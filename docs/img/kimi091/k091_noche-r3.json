@@ -1,0 +1,214 @@
+{
+ "etiqueta": "noche-r3",
+ "atardecer": "1",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "head": "desconocido",
+ "tomas": {
+  "puerta_oeste": {
+   "pos": [
+    11.3,
+    91.44,
+    -115.3
+   ],
+   "med": {
+    "calls": 143,
+    "triangulos": 301670,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 5,
+   "rayos": [
+    {
+     "px": [
+      253,
+      651
+     ],
+     "d": 4.7,
+     "obj": "edificiosInst:plataforma_piedra:cerca:KB3D_floorM",
+     "mat": "KB3D_floorM#ffffff",
+     "inst": 0
+    },
+    {
+     "px": [
+      249,
+      663
+     ],
+     "d": 4.7,
+     "obj": "edificiosInst:plataforma_piedra:cerca:KB3D_floorM",
+     "mat": "KB3D_floorM#ffffff",
+     "inst": 0
+    }
+   ],
+   "detErr": null
+  },
+  "aerea": {
+   "pos": [
+    -33,
+    126.87,
+    -136
+   ],
+   "med": {
+    "calls": 161,
+    "triangulos": 394223,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 1,
+   "rayos": [
+    {
+     "px": [
+      113,
+      691
+     ],
+     "d": 44,
+     "obj": "edificiosInst:ruina_torre:cerca:AV_Restaurado_Base",
+     "mat": "AV_Restaurado_Base#ffffff",
+     "inst": 2
+    }
+   ],
+   "detErr": null
+  },
+  "callejon": {
+   "pos": [
+    2.6,
+    98.79,
+    -119.6
+   ],
+   "med": {
+    "calls": 158,
+    "triangulos": 320123,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 0,
+   "rayos": [],
+   "detErr": null
+  },
+  "plaza_sur": {
+   "pos": [
+    -4,
+    115.86,
+    -132
+   ],
+   "med": {
+    "calls": 190,
+    "triangulos": 492021,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 3,
+   "rayos": [
+    {
+     "px": [
+      105,
+      227
+     ],
+     "d": 1088.1,
+     "obj": "mar",
+     "mat": "ShaderMaterial",
+     "inst": null
+    },
+    {
+     "px": [
+      193,
+      391
+     ],
+     "d": 353.6,
+     "obj": "terreno:terreno_ne",
+     "mat": "MeshPhongMaterial#ffffff",
+     "inst": null
+    }
+   ],
+   "detErr": null
+  }
+ },
+ "ambiente": "{\"hora\":18.75,\"atardecer\":{\"activo\":true,\"k\":1,\"deseado\":true,\"forzado\":true,\"hora\":18.75,\"luciernagas\":false,\"solY\":0.1600000000000001},\"k\":1}",
+ "erroresConsola": 0,
+ "rayosDirigidos": [
+  {
+   "ndc": [
+    -0.122,
+    0.712
+   ],
+   "d": 0.1,
+   "obj": "personaje/Rig/Vittata/Vittata_2",
+   "mat": "cuerpo#ffffff",
+   "pto": [
+    2.7,
+    100.1,
+    -119.5
+   ]
+  },
+  {
+   "ndc": [
+    -0.16,
+    0.7
+   ],
+   "d": 0.1,
+   "obj": "personaje/Rig/Vittata/Vittata_2",
+   "mat": "cuerpo#ffffff",
+   "pto": [
+    2.7,
+    100.1,
+    -119.5
+   ]
+  },
+  {
+   "ndc": [
+    -0.08,
+    0.72
+   ],
+   "d": 0.1,
+   "obj": "personaje/Rig/Vittata/Vittata_2",
+   "mat": "cuerpo#ffffff",
+   "pto": [
+    2.7,
+    100.1,
+    -119.5
+   ]
+  },
+  {
+   "ndc": [
+    -0.122,
+    0.76
+   ],
+   "d": 0.1,
+   "obj": "personaje/Rig/Vittata/Vittata_2",
+   "mat": "cuerpo#ffffff",
+   "pto": [
+    2.7,
+    100.1,
+    -119.5
+   ]
+  },
+  {
+   "ndc": [
+    -0.122,
+    0.66
+   ],
+   "d": 0.1,
+   "obj": "personaje/Rig/Vittata/Vittata_2",
+   "mat": "cuerpo#ffffff",
+   "pto": [
+    2.7,
+    100.1,
+    -119.5
+   ]
+  },
+  {
+   "ndc": [
+    -0.2,
+    0.75
+   ],
+   "d": 0.1,
+   "obj": "personaje/Rig/Vittata/Vittata_2",
+   "mat": "cuerpo#ffffff",
+   "pto": [
+    2.7,
+    100.1,
+    -119.5
+   ]
+  }
+ ]
+}
