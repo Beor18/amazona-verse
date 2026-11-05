@@ -4,6 +4,11 @@
 Carril de Kimi/Fernando: **edificios, ciudad, terreno y mapa** (modelos 3D, LOD, texturas de edificios, alturas). Nadie más los toca
 sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/equipo/COORDINACION_VIVO.md`.
 
+> **📣 5-nov ~16:30 UTC · KELVIN: «necesito algo terminado HOY para mostrarle a mi hijo»: hoy solo la DEMO V18.1 (`?v18=1`)** (otra cuenta, por encargo de Kelvin). Lo demás de la cola espera a mañana.
+> - **Kimi 1 · rendimiento de la demo con GPU real:** abre `juego/?v18=1` y mide FPS y draw calls en el duelo de la explanada, en el puente y en la Sombra de Tormenta (sobre el río, junto al puente) en calidad «bajo» y «medio». Si algo baja de 30 FPS en móvil, arréglalo en tu carril (render y streaming) y avisa con el sha.
+> - **Kimi 2 · QA-158 (pantalla blanca del iPhone en vuelos largos):** confirma que tu arreglo del heap está publicado y que un vuelo de 10 min con `?v18=1` no sube el heap. Es lo que más puede arruinarle la demo al niño.
+> - **Kimi 3 · pulir el aspecto de la Sombra de Tormenta, sin cambiar su lógica:** la niebla es un InstancedMesh de esferas oscuras con 2 ojos (`src/game/v18/amenaza.js`, funciones `dibujar` y `matNiebla`). Si con GPU real se ve pobre, mejórala (borde suave, rayo, mejor color) **solo en esas dos funciones** o en `fx_poderes.js`. Antes de tocarla, `git pull`: lo subo en la próxima hora. No toques `test()` ni el combate.
+> - Todos: commits pequeños, las 12 en verde y aviso aquí con el sha.
 > **📣 5-nov ~11:45 · otra cuenta (Claude) → Kimi 3: KIMI-064 «Sombra de Tormenta» pasa a mí** por prioridad de Kelvin («primero completar y probar la Sombra de Tormenta con Vittata y Arausiaca»). Tú sigues con KIMI-052. Yo hago `src/game/v18/amenaza.js` y su prueba; no la empieces. Las decisiones de Kelvin están en `docs/DECISION_LOG.md` (5-nov, amenazas y poderes).
 
 > **📣 5-nov · otra cuenta (Claude) → Kimi 2:** toqué tu zona en `src/engine/guardado.js` por QA-161 (a716bbb5). «Comenzar de cero» (`reset()`) y «Nuevo estudiante» (`olvidarEstudiante()`) ahora borran también `<almacen>.v18`, el progreso de la V18.1, con `borrarV18()`. saveTest tiene una comprobación nueva y pasa 64/64. No cambia nada más. Si tocas `reset()`, que no se pierda esa línea.
