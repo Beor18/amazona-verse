@@ -418,7 +418,8 @@ window.AVV18Duelo2 = function (G) {
     for (let i = D.balas.length - 1; i >= 0; i--) {
       const b = D.balas[i], p = b.m.position;
       const bl = b.de === D.j1 ? D.j2 : D.j1;
-      if (bl.marcada > 0) { const hx = bl.pos.x - p.x, hz = bl.pos.z - p.z, hn = Math.hypot(hx, hz) || 1, v = Math.hypot(b.vx, b.vz), k = Math.min(1, dt * 6); b.vx += (hx / hn * v - b.vx) * k; b.vz += (hz / hn * v - b.vz) * k; } // Ojo del cenote, como en combate.js
+      if (bl.marcada > 0) { const hx = bl.pos.x - p.x, hz = bl.pos.z - p.z, hn = Math.hypot(hx, hz) || 1, v = Math.hypot(b.vx, b.vz), k = Math.min(1, dt * 6); b.vx += (hx / hn * v - b.vx) * k; b.vz += (hz / hn * v - b.vz) * k;
+        b.vy += (((bl.pos.y + 0.9) - p.y) / Math.max(0.15, hn / (v || 1)) - b.vy) * k; } // Ojo del cenote, como en combate.js (también en altura)
       b.t += dt; p.x += b.vx * dt; p.y += b.vy * dt; p.z += b.vz * dt;
       const dx = p.x - bl.pos.x, dy = p.y - (bl.pos.y + 0.9), dz = p.z - bl.pos.z;
       let fin = b.t >= b.vida || p.y < G.terreno.height(p.x, p.z) - 0.1;
@@ -463,6 +464,7 @@ window.AVV18Duelo2 = function (G) {
   const it = G.interaccion.add({ id: 'v18_duelo2', x: sitio.x, z: sitio.z, r: 2.2,
     visible: () => disponible() && D.fase === 'nada' && Cb.estado().fase === 'nada', label: () => TXT.opcion, use: () => abrirTarjeta() });
   G.on('update', (dt, busy) => {
+    marcas.position.set(sitio.x, sitio.y + 0.07, sitio.z); it.x = sitio.x; it.z = sitio.z; // sigue a la explanada si se recoloca
     marcas.visible = disponible() && D.fase === 'nada' && Math.hypot(S.pos.x - sitio.x, S.pos.z - sitio.z) < 90;
     if (D.fase === 'nada') return;
     const c = Cb.estado(); if (c.ch && c.ch.root) c.ch.root.visible = false; // la Campeona se aparta mientras juegan dos

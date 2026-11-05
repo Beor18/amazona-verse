@@ -290,6 +290,7 @@ window.AVV18Combate = function (G) {
   function tecla(e) {
     if (!enganchado || (e.key || '').toLowerCase() !== 'g' || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
     e.stopImmediatePropagation();
+    if (G.pausa && G.pausa.activa && G.pausa.activa()) return; // con la pausa abierta no se juega
     if (!e.repeat && C.fase === 'lucha') usar(C.j, C.j.poder);
   }
   // Pico y alas de la protagonista: se ponen justo antes de que el modelo se anime (envoltura de player3D.update mientras dura
@@ -605,7 +606,7 @@ window.AVV18Combate = function (G) {
   const pedirSitio = () => { recolocar = true; };
   Promise.resolve(G.vegetacion && G.vegetacion.listo).then(pedirSitio, pedirSitio);
   Promise.resolve(G.mundo && G.mundo.listo).then(pedirSitio, () => {});
-  G.on('update', () => { if (recolocar && C.fase === 'nada') moverSitio(); }, 69);
+  G.on('update', () => { if (recolocar && C.fase === 'nada' && !(G.v18duelo2 && G.v18duelo2.estado().fase !== 'nada')) moverSitio(); }, 69); // no se recoloca en mitad de un duelo de 2
   crearRival();
 
   // ---------- Prueba ----------
