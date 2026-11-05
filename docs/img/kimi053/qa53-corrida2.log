@@ -1,0 +1,19 @@
+  · PC ocupada (node 2 · chrome 32) — esperando hueco (0 min)
+  · PC ocupada (node 1 · chrome 32) — esperando hueco (0 min)
+  · PC ocupada (node 1 · chrome 32) — esperando hueco (1 min)
+  · PC ocupada (node 1 · chrome 32) — esperando hueco (1 min)
+  · PC ocupada (node 1 · chrome 32) — esperando hueco (1 min)
+  · PC ocupada (node 1 · chrome 32) — esperando hueco (1 min)
+  · PC ocupada (node 1 · chrome 32) — esperando hueco (2 min)
+  · PC ocupada (node 1 · chrome 32) — esperando hueco (2 min)
+  · PC ocupada (node 1 · chrome 32) — esperando hueco (2 min)
+  · PC ocupada (node 1 · chrome 32) — esperando hueco (2 min)
+  · PC ocupada (node 1 · chrome 32) — esperando hueco (3 min)
+  · PC ocupada (node 1 · chrome 32) — esperando hueco (3 min)
+  · AVISO: sin hueco en el límite de espera — se mide igual (techo si sigue la contención)
+  · ronda 1: reveal p50 188 p95 1389 peor 8445 ms · asentado 6.816s · medio 0.001s · tormenta peor 24875 ms p95 2556 (>200: 19) · control 64 calls 100% px fade ausente · pend 254>242>241>165>88>53>17>11>3>0
+  · ronda 2: reveal p50 153 p95 465 peor 3785 ms · asentado 32.287s · medio 0s · tormenta peor 3320 ms p95 1681 (>200: 10) · control 66 calls 100% px fade ausente · pend 224>83>11>7>0>0>0>0>0>0
+RESULTADO 2 válidas pedidas · 2 intentadas · GPU: ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)
+  reveal: peor 8445 ms · tormenta sombras: peor 24875 ms (rondas: 24875, 3320)
+  top tormenta: 24875ms@78.9s, 2556ms@75.9s, 2375ms@107.8s, 2299ms@68.1s, 2132ms@72.5s, 1014ms@105s · marcas pend: 254>242>241>165>88>53>17>11>3>0
+  top tormenta: 24847ms@48.1s, 3320ms@82.9s, 1910ms@88.2s, 1743ms@46.2s, 1681ms@86.4s, 1590ms@75.4s · marcas pend: 224>83>11>7>0>0>0>0>0>0

@@ -110,8 +110,8 @@ const PREPARAR_JS = `(async () => { const sleep = ms => new Promise(r => setTime
     s.click(); if (!await espera(() => cr.hidden, 8000)) return 'Empezar no cerró el creador'; }
   const S = window.AV && window.AV.state; if (!S || !S.profile || !S.profile.created) return 'sin perfil creado tras entrar';
   if (window.AV.cargaEsperar) await window.AV.cargaEsperar(20000);
-  const visible = await espera(() => { try { return !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()); } catch (e) { return false; } }, 15000);
-  if (!visible) return 'mundo no visible en 15 s (carga atascada o PC contencionada)';
+  const visible = await espera(() => { try { return !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()); } catch (e) { return false; } }, 30000);
+  if (!visible) return 'mundo no visible en 30 s (carga atascada o PC contencionada)';
   // QA-111: la entrada sembrada es intermitente — a veces ST.arrancar() se atasca y mundoListo NO llega
   // (decenas de recursos congelados en cola) o el hilo se queda bloqueado. El arnés de baterías reintenta
   // con recarga; este flujo, también (el node recarga y reentra ante este RESCATE o ante un timeout).
