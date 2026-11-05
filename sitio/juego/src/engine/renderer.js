@@ -207,7 +207,7 @@ AVE.module('renderer', function (G) {
         '  c = mix(c, uHorizonte * 0.92, smoothstep(0.0, -0.25, h));',  // bajo el horizonte: el color del mar lejano
         // halo ancho, halo cerrado y disco
         '  c += uSolCol * (pow(s, 6.0) * 0.22 + pow(s, 48.0) * 0.45 + pow(s, 300.0) * 0.5) * smoothstep(-0.1, 0.1, h);',
-        '  c = mix(c, uSolCol * 3.2, smoothstep(0.9991, 0.9996, s));',
+        '  c = mix(c, uSolCol * 3.2, smoothstep(0.9988, 0.9997, s));', // KIMI-060: borde suave (era un disco de borde duro que en iPad leía como falla)
         '  gl_FragColor = vec4(c, 1.0);',
         '  #include <tonemapping_fragment>',
         '  #include <encodings_fragment>',
