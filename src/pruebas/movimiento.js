@@ -192,7 +192,11 @@ window.AVMovimientoTest = function (G) {
       check('Despegue: V sube y se queda volando', M.flying && alto > 1.5, met.despegueM + ' m');
       r = frame(null, 120);
       met.cernidoDeriva = r2(Math.abs(r[r.length - 1].y - r[0].y));
-      met.cernido = { y0: r2(r[0].y), y1: r2(r[r.length - 1].y), techoVuelo: r2(M.techoVuelo || 0), groundY: r2(M.groundY), perchY: M.perchY > -1e8 ? r2(M.perchY) : null, vy1: r2(S.vy), landing: !!M.landing };
+      met.cernido = { y0: r2(r[0].y), y1: r2(r[r.length - 1].y), techoVuelo: r2(M.techoVuelo || 0), groundY: r2(M.groundY), perchY: M.perchY > -1e8 ? r2(M.perchY) : null, vy1: r2(S.vy), landing: !!M.landing, fly1: !!M.flying, take1: r2(M.takeoff || 0) };
+      // BM135/Cernido: en el fallo intermitente (deriva ~5 m solo bajo contención) la réplica en caliente no siempre reproduce;
+      // el volcado por cuadro del fallo REAL discrimina entre want sostenido (landing/dive/viento: vy rampa) y salto de
+      // posición (clamp/recolocación: vy≈0 y Δy en 1 cuadro). Solo se guarda cuando el check cae (nada en el camino feliz).
+      if (!(M.flying && met.cernidoDeriva < 0.3)) met.cernidoTr = r.map((o, i) => [i, r2(o.y), r2(o.vy), o.fly ? 1 : 0, o.gr ? 1 : 0, r2(o.g)]);
       check('Cernido: sin tocar nada se queda en el sitio (no cae)', M.flying && met.cernidoDeriva < 0.3, met.cernidoDeriva + ' m en 2 s | ' + JSON.stringify(met.cernido));
       // sube hasta 20 m sobre el suelo (o 5 s): crucero y giro por encima de las copas, lejos del suelo y del agua
       { let nn = 0; while (S.pos.y - M.groundY < 20 && nn++ < 300) frame(() => I.jumpHeld = true); } I.jumpHeld = false;

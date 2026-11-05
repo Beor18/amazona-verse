@@ -154,7 +154,7 @@ const TRAZA_JS = `(async () => { const sleep = ms => new Promise(r => setTimeout
     let res;
     try { res = await AV.movementTest(); } catch (e) { return JSON.stringify({ real: true, error: 'movementTest: ' + (e && e.message || e) }); }
     const cer = (res.results || []).find(r => /Cernido/.test(r.name || '')) || null;
-    const out = { real: true, passed: res.passed, total: res.total, cernido: cer, met: (res.metricas || {}).cernido || null, deriva: (res.metricas || {}).cernidoDeriva };
+    const out = { real: true, passed: res.passed, total: res.total, mal: (res.results || []).filter(r => !r.ok).map(r => (r.name || '').slice(0, 90)), cernido: cer, met: (res.metricas || {}).cernido || null, deriva: (res.metricas || {}).cernidoDeriva };
     if (cer && !cer.ok) out.replica = await replica(); // traza en caliente tras el fallo real
     return JSON.stringify(out);
   }
