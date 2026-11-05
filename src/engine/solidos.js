@@ -369,7 +369,7 @@ AVE.module('solidos', function (G) {
       const rx = cx + dx, rz = cz + dz, k = rx + ',' + rz; if (regiones.has(k)) continue;
       // valor = coordenadas empaquetadas (mismo esquema que key): el descarga ya no parte strings por cuadro
       regiones.set(k, (rx + 32768) * 65536 + (rz + 32768));
-      for (const it of porRegion.get(k) || SIN_ITEMS) { if (it.mat) mInst.fromArray(it.mat); else mInst.fromArray(it.P.mat, it.i * 16); for (const g of it.geos) encolar(g, mInst, it.m, k); }
+      for (const it of porRegion.get(k) || SIN_ITEMS) { if (!it.mat && it.P.pos[it.i * 4 + 3] === 0) continue; if (it.mat) mInst.fromArray(it.mat); else mInst.fromArray(it.P.mat, it.i * 16); for (const g of it.geos) encolar(g, mInst, it.m, k); } // escala 0: quitada (vegetacion.despejar)
     }
     // Lejos (más de regionR + 2 regiones): se descarga la flora de esa región (vuelve a hacerse al acercarse)
     const lejos = (SO.regionR + SO.regionM * 2) / SO.regionM;
@@ -394,6 +394,15 @@ AVE.module('solidos', function (G) {
       for (const bk of regionBloques.get(k) || SIN_ITEMS) { const b = flora.get(bk); if (!b) continue; b.duenos.delete(k); if (!b.duenos.size) flora.delete(bk); }
       regionBloques.delete(k);
     }
+  }
+  // V18.1: G.vegetacion.despejar quitó instancias en marcha: se olvida toda la flora rasterizada (y su cola) y floraCerca la
+  // vuelve a hacer alrededor del jugador, ya sin las quitadas. Solo lo llama despejar (sin él, nada cambia).
+  function rehacerFlora() {
+    for (const J of colaFlora) if (J.region && poolM.length < 256) poolM.push(J.m);
+    colaFlora.length = 0; pendReg.clear(); regiones.clear(); regionBloques.clear(); flora.clear();
+    if (destino === flora) { destino = blocks; regionActual = null; }
+    version++;
+    floraCerca();
   }
   // ¿La región de (x, z) ya está hecha? (para ignorar el collider a mano de un árbol solo cuando su sólido existe)
   const regionHecha = (x, z) => regiones.has(Math.floor(x / SO.regionM) + ',' + Math.floor(z / SO.regionM));
@@ -812,6 +821,6 @@ AVE.module('solidos', function (G) {
     const kb = n => Math.round(n * B * B * (1 + NS * 6) / 1024);
     return { bloques: blocks.size, bloquesFlora: flora.size, triangulos, rellenas, pendientes: cola.length + colaFlora.length, regiones: regiones.size, kb: kb(blocks.size), kbFlora: kb(flora.size) };
   }
-  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, agregarPartes, terminar, stats, altoEn, recortar,
+  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, agregarPartes, terminar, stats, altoEn, recortar, rehacerFlora,
     cerrarVanos, panelAbierto, panelInstancia, vanos: vanosHechos };
 });
