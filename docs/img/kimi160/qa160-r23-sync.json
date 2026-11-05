@@ -1,0 +1,4516 @@
+{
+ "etiqueta": "r23-sync",
+ "cuando": "2026-11-05T14:14:28.465Z",
+ "cpu": 4,
+ "rondas": 2,
+ "movil": {
+  "ancho": 375,
+  "alto": 812,
+  "dpr": 3,
+  "gpu": "PC real (ANGLE/D3D11)"
+ },
+ "corridas": [
+  {
+   "errorTest": null,
+   "sinFugas": [
+    {
+     "ok": true,
+     "extra": "KB 44838→41747 · materiales 21→20 · modelos 121→103 · heap 1155.9→1177.5 MB (sin gc: no se exige) · three geo 373→378, tex 140→148"
+    }
+   ],
+   "passed": 19,
+   "total": 24,
+   "hitos": [
+    "inicio",
+    "modo POST: sin wrapper (test a velocidad de arnés)",
+    "sync: batería QA en streamingTest, arrancando el nuestro en solapa",
+    "test devuelto 19/24"
+   ],
+   "heapM1": 1192.9,
+   "heapM2": 1198.9,
+   "kbM1": 3358,
+   "kbM2": 3465,
+   "nListosM1": 89,
+   "nListosM2": 96,
+   "nuevos": [
+    {
+     "n": "monumento_f",
+     "t": "hd",
+     "refs": 1,
+     "mb": 30,
+     "soltarEn": 0,
+     "fijo": false,
+     "dueños": [
+      "kelvin_aldea_colina(hd)"
+     ]
+    },
+    {
+     "n": "torre_vigia_b",
+     "t": "hd",
+     "refs": 2,
+     "mb": 20,
+     "soltarEn": 0,
+     "fijo": false,
+     "dueños": [
+      "kelvin_aldea_rio_este(hd)",
+      "kelvin_aldea_rio_este_3(hd)"
+     ]
+    },
+    {
+     "n": "casa_plataforma",
+     "t": "hd",
+     "refs": 2,
+     "mb": 19,
+     "soltarEn": 0,
+     "fijo": false,
+     "dueños": [
+      "villa(hd)",
+      "kelvin_aldea_meandros(hd)"
+     ]
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "t": "hd",
+     "refs": 2,
+     "mb": 19,
+     "soltarEn": 0,
+     "fijo": false,
+     "dueños": [
+      "kelvin_aldea_rio_este(hd)",
+      "kelvin_aldea_colina(hd)"
+     ]
+    },
+    {
+     "n": "casa_paja_a",
+     "t": "hd",
+     "refs": 2,
+     "mb": 18,
+     "soltarEn": 0,
+     "fijo": false,
+     "dueños": [
+      "kelvin_aldea_rio_este(hd)",
+      "kelvin_aldea_meandros(hd)"
+     ]
+    },
+    {
+     "n": "losa_piedra",
+     "t": "hd",
+     "refs": 3,
+     "mb": 1,
+     "soltarEn": 0,
+     "fijo": false,
+     "dueños": [
+      "kelvin_ruinas_yunque(hd)",
+      "kelvin_ruinas_yunque_2(hd)",
+      "kelvin_aldea_colina(hd)"
+     ]
+    },
+    {
+     "n": "plataforma_piedra",
+     "t": "cerca",
+     "refs": 1,
+     "mb": 0,
+     "soltarEn": 0,
+     "fijo": false,
+     "dueños": [
+      "kelvin_ruinas_yunque(ciudad)"
+     ]
+    }
+   ],
+   "nuevasGeo": [
+    {
+     "nom": "edificiosInst:monumento_f:hd:AV_HD_Savage",
+     "dn": 1,
+     "dkb": 1796,
+     "n2": 1,
+     "kb2": 1796
+    },
+    {
+     "nom": "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+     "dn": 1,
+     "dkb": 824,
+     "n2": 1,
+     "kb2": 824
+    },
+    {
+     "nom": "edificiosZonaHD:villa:AV_HD_Savage",
+     "dn": 1,
+     "dkb": 824,
+     "n2": 1,
+     "kb2": 824
+    },
+    {
+     "nom": "edificiosInst:torre_vigia_b:hd:AV_HD_Savage",
+     "dn": 1,
+     "dkb": 607,
+     "n2": 1,
+     "kb2": 607
+    },
+    {
+     "nom": "edificiosInst:muralla_atalaya_b:hd:AV_HD_Savage",
+     "dn": 1,
+     "dkb": 377,
+     "n2": 1,
+     "kb2": 377
+    },
+    {
+     "nom": "edificiosInst:casa_paja_a:hd:AV_HD_Savage",
+     "dn": 1,
+     "dkb": 353,
+     "n2": 1,
+     "kb2": 353
+    },
+    {
+     "nom": "ambiente-particulas",
+     "dn": 1,
+     "dkb": 14,
+     "n2": 1,
+     "kb2": 14
+    },
+    {
+     "nom": "edificiosInst:plataforma_piedra:cerca:KB3D_floorM",
+     "dn": 1,
+     "dkb": 1,
+     "n2": 1,
+     "kb2": 1
+    },
+    {
+     "nom": "edificiosInst:losa_piedra:hd:FloorMd_KB3D_floorM_Diffuse",
+     "dn": 1,
+     "dkb": 1,
+     "n2": 1,
+     "kb2": 1
+    }
+   ],
+   "retenidos": [
+    {
+     "n": "complejo_ruinas",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 301,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_colina(n1)"
+     ]
+    },
+    {
+     "n": "complejo_ruinas",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 301,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_colina(ciudad)"
+     ]
+    },
+    {
+     "n": "templo_grande_d",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 300,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(n1)"
+     ]
+    },
+    {
+     "n": "templo_grande_d",
+     "t": "cerca",
+     "refs": 1,
+     "mb": 300,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(ciudad)"
+     ]
+    },
+    {
+     "n": "templo_mediano_g",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 292,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque_2(n1)"
+     ]
+    },
+    {
+     "n": "templo_mediano_f",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 278,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque_2(n1)"
+     ]
+    },
+    {
+     "n": "bohio_redondo",
+     "t": "lejos",
+     "refs": 5,
+     "mb": 132,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n1)",
+      "kelvin_aldea_rio_oeste(n1)",
+      "kelvin_aldea_rio_este_2(n1)",
+      "kelvin_aldea_mina(n1)",
+      "kelvin_aldea_meandros(n1)"
+     ]
+    },
+    {
+     "n": "templo_mediano",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 104,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque_2(n1)"
+     ]
+    },
+    {
+     "n": "templo_mediano_h",
+     "t": "cerca",
+     "refs": 3,
+     "mb": 46,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque(ciudad)",
+      "kelvin_aldea_rio_este_2(ciudad)",
+      "kelvin_ruinas_yunque_2(ciudad)"
+     ]
+    },
+    {
+     "n": "templo_mediano_h",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 46,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque(n1)",
+      "kelvin_aldea_rio_este_2(n1)",
+      "kelvin_ruinas_yunque_2(n1)"
+     ]
+    },
+    {
+     "n": "toldo_pequeno",
+     "t": "lejos",
+     "refs": 14,
+     "mb": 45,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque(n1)",
+      "kelvin_aldea_rio_este(n1)",
+      "kelvin_aldea_rio_oeste(n1)",
+      "kelvin_aldea_lomas(n1)",
+      "kelvin_aldea_rio_este_2(n1)",
+      "kelvin_aldea_mina(n1)",
+      "kelvin_aldea_meandros(n1)",
+      "kelvin_ruinas_yunque_2(n1)",
+      "kelvin_aldea_colina(n1)",
+      "kelvin_aldea_mina_2(n1)",
+      "kelvin_aldea_rio_este_3(n1)",
+      "kelvin_aldea_rio_oeste_2(n1)",
+      "kelvin_aldea_yunque(n1)",
+      "kelvin_aldea_meandros_2(n1)"
+     ]
+    },
+    {
+     "n": "ruina_torre",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 33,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque(ciudad)",
+      "kelvin_aldea_rio_este_2(ciudad)"
+     ]
+    },
+    {
+     "n": "ruina_torre",
+     "t": "lejos",
+     "refs": 2,
+     "mb": 33,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque(n1)",
+      "kelvin_aldea_rio_este_2(n1)"
+     ]
+    },
+    {
+     "n": "cercado_redondo",
+     "t": "lejos",
+     "refs": 2,
+     "mb": 33,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(n1)",
+      "kelvin_aldea_yunque(n1)"
+     ]
+    },
+    {
+     "n": "cercado_redondo",
+     "t": "cerca",
+     "refs": 1,
+     "mb": 33,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(ciudad)"
+     ]
+    },
+    {
+     "n": "portal_puas",
+     "t": "lejos",
+     "refs": 2,
+     "mb": 30,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n1)",
+      "kelvin_aldea_rio_este_3(n1)"
+     ]
+    },
+    {
+     "n": "portal_puas",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 30,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n2)",
+      "kelvin_aldea_rio_este_3(n2)"
+     ]
+    },
+    {
+     "n": "caney_largo",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 30,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(n1)"
+     ]
+    },
+    {
+     "n": "caney_largo",
+     "t": "cerca",
+     "refs": 1,
+     "mb": 30,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(ciudad)"
+     ]
+    },
+    {
+     "n": "monumento_f",
+     "t": "lejos",
+     "refs": 2,
+     "mb": 30,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_colina(n1)",
+      "kelvin_aldea_mina_2(n1)"
+     ]
+    },
+    {
+     "n": "monumento_f",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 30,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_colina(ciudad)"
+     ]
+    },
+    {
+     "n": "monumento_f",
+     "t": "hd",
+     "refs": 1,
+     "mb": 30,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_colina(hd)"
+     ]
+    },
+    {
+     "n": "monumento_b",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 27,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_oeste(n1)"
+     ]
+    },
+    {
+     "n": "monumento_d",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 27,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(n1)"
+     ]
+    },
+    {
+     "n": "monumento_d",
+     "t": "cerca",
+     "refs": 1,
+     "mb": 27,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(ciudad)"
+     ]
+    },
+    {
+     "n": "monumento_g",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 25,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n1)"
+     ]
+    },
+    {
+     "n": "monumento_g",
+     "t": "cerca",
+     "refs": 1,
+     "mb": 25,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n2)"
+     ]
+    },
+    {
+     "n": "monumento_c",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 25,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_meandros(n1)"
+     ]
+    },
+    {
+     "n": "monumento_e",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 25,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_3(n1)"
+     ]
+    },
+    {
+     "n": "torre_vigia",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 23,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n1)",
+      "kelvin_aldea_lomas(n1)",
+      "kelvin_aldea_yunque(n1)"
+     ]
+    },
+    {
+     "n": "torre_vigia",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 23,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n2)",
+      "kelvin_aldea_lomas(n2)"
+     ]
+    },
+    {
+     "n": "casa_paja_b",
+     "t": "lejos",
+     "refs": 2,
+     "mb": 23,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(n1)",
+      "kelvin_aldea_mina(n1)"
+     ]
+    },
+    {
+     "n": "casa_paja_b",
+     "t": "cerca",
+     "refs": 1,
+     "mb": 23,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(ciudad)"
+     ]
+    },
+    {
+     "n": "torre_vigia_b",
+     "t": "lejos",
+     "refs": 4,
+     "mb": 20,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n1)",
+      "kelvin_aldea_mina_2(n1)",
+      "kelvin_aldea_rio_este_3(n1)",
+      "kelvin_aldea_yunque(n1)"
+     ]
+    },
+    {
+     "n": "torre_vigia_b",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 20,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n2)",
+      "kelvin_aldea_rio_este_3(n2)"
+     ]
+    },
+    {
+     "n": "torre_vigia_b",
+     "t": "hd",
+     "refs": 2,
+     "mb": 20,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(hd)",
+      "kelvin_aldea_rio_este_3(hd)"
+     ]
+    },
+    {
+     "n": "puente_madera",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 20,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n1)",
+      "kelvin_aldea_rio_este_3(n1)",
+      "kelvin_aldea_meandros_2(n1)"
+     ]
+    },
+    {
+     "n": "puente_madera",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 20,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n2)",
+      "kelvin_aldea_rio_este_3(n2)"
+     ]
+    },
+    {
+     "n": "casa_plataforma",
+     "t": "lejos",
+     "refs": 4,
+     "mb": 19,
+     "soltarEn": 0,
+     "dueños": [
+      "villa(n1)",
+      "kelvin_aldea_meandros(n1)",
+      "kelvin_aldea_mina_2(n1)",
+      "kelvin_aldea_yunque(n1)"
+     ]
+    },
+    {
+     "n": "casa_plataforma",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 19,
+     "soltarEn": 0,
+     "dueños": [
+      "villa(n2)",
+      "kelvin_aldea_meandros(n2)"
+     ]
+    },
+    {
+     "n": "casa_plataforma",
+     "t": "hd",
+     "refs": 2,
+     "mb": 19,
+     "soltarEn": 0,
+     "dueños": [
+      "villa(hd)",
+      "kelvin_aldea_meandros(hd)"
+     ]
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "t": "lejos",
+     "refs": 5,
+     "mb": 19,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n1)",
+      "kelvin_aldea_rio_oeste(n1)",
+      "kelvin_aldea_colina(n1)",
+      "kelvin_aldea_mina_2(n1)",
+      "kelvin_aldea_yunque(n1)"
+     ]
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "t": "cerca",
+     "refs": 3,
+     "mb": 19,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n2)",
+      "kelvin_aldea_colina(ciudad)"
+     ]
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "t": "hd",
+     "refs": 2,
+     "mb": 19,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(hd)",
+      "kelvin_aldea_colina(hd)"
+     ]
+    },
+    {
+     "n": "casa_paja_a",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 18,
+     "soltarEn": 0,
+     "dueños": [
+      "lomas(n1)",
+      "kelvin_aldea_rio_este(n1)",
+      "kelvin_aldea_meandros(n1)"
+     ]
+    },
+    {
+     "n": "casa_paja_a",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 18,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n2)",
+      "kelvin_aldea_meandros(n2)"
+     ]
+    },
+    {
+     "n": "casa_paja_a",
+     "t": "hd",
+     "refs": 2,
+     "mb": 18,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(hd)",
+      "kelvin_aldea_meandros(hd)"
+     ]
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 18,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n1)",
+      "kelvin_aldea_rio_este_3(n1)",
+      "kelvin_aldea_yunque(n1)"
+     ]
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 18,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n2)",
+      "kelvin_aldea_rio_este_3(n2)"
+     ]
+    },
+    {
+     "n": "portal_madera_a",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 15,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_3(n1)"
+     ]
+    },
+    {
+     "n": "portal_madera_b",
+     "t": "lejos",
+     "refs": 2,
+     "mb": 14,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_lomas(n1)",
+      "kelvin_aldea_rio_este_3(n1)"
+     ]
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 13,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(n1)",
+      "kelvin_aldea_mina(n1)",
+      "kelvin_aldea_meandros(n1)"
+     ]
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 13,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_2(ciudad)",
+      "kelvin_aldea_meandros(n2)"
+     ]
+    },
+    {
+     "n": "monumento_a",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 13,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_mina(n1)",
+      "kelvin_aldea_mina_2(n1)",
+      "kelvin_aldea_meandros_2(n1)"
+     ]
+    },
+    {
+     "n": "portal_madera_c",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 13,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este_3(n1)"
+     ]
+    },
+    {
+     "n": "corral",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 11,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_meandros(n1)"
+     ]
+    },
+    {
+     "n": "mirador_escalonado",
+     "t": "lejos",
+     "refs": 4,
+     "mb": 8,
+     "soltarEn": 0,
+     "dueños": [
+      "colina(n1)",
+      "kelvin_aldea_meandros(n1)",
+      "kelvin_aldea_colina(n1)",
+      "kelvin_aldea_rio_este_3(n1)"
+     ]
+    },
+    {
+     "n": "mirador_escalonado",
+     "t": "cerca",
+     "refs": 5,
+     "mb": 8,
+     "soltarEn": 0,
+     "dueños": [
+      "colina(n2)",
+      "kelvin_aldea_meandros(n2)",
+      "kelvin_aldea_colina(ciudad)",
+      "kelvin_aldea_rio_este_3(n2)"
+     ]
+    },
+    {
+     "n": "carpa_a",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 8,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_oeste(n1)",
+      "kelvin_aldea_lomas(n1)",
+      "kelvin_aldea_meandros_2(n1)"
+     ]
+    },
+    {
+     "n": "muro_roca",
+     "t": "lejos",
+     "refs": 2,
+     "mb": 8,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_oeste(n1)",
+      "kelvin_aldea_lomas(n1)"
+     ]
+    },
+    {
+     "n": "carpa_d",
+     "t": "lejos",
+     "refs": 2,
+     "mb": 8,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_lomas(n1)",
+      "kelvin_aldea_meandros_2(n1)"
+     ]
+    },
+    {
+     "n": "campamento_c",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 7,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n1)",
+      "kelvin_aldea_rio_este_3(n1)",
+      "kelvin_aldea_rio_oeste_2(n1)"
+     ]
+    },
+    {
+     "n": "campamento_c",
+     "t": "cerca",
+     "refs": 2,
+     "mb": 7,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n2)",
+      "kelvin_aldea_rio_este_3(n2)"
+     ]
+    },
+    {
+     "n": "carpa_e",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 7,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_oeste(n1)",
+      "kelvin_aldea_lomas(n1)",
+      "kelvin_aldea_colina(n1)"
+     ]
+    },
+    {
+     "n": "carpa_e",
+     "t": "cerca",
+     "refs": 3,
+     "mb": 7,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_lomas(n2)",
+      "kelvin_aldea_colina(ciudad)"
+     ]
+    },
+    {
+     "n": "carpa_c",
+     "t": "lejos",
+     "refs": 2,
+     "mb": 7,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_lomas(n1)",
+      "kelvin_aldea_meandros_2(n1)"
+     ]
+    },
+    {
+     "n": "carpa_f",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 7,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_lomas(n1)"
+     ]
+    },
+    {
+     "n": "campamento_f",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 7,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_oeste_2(n1)"
+     ]
+    },
+    {
+     "n": "campamento_a",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 7,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_oeste_2(n1)"
+     ]
+    },
+    {
+     "n": "empalizada",
+     "t": "lejos",
+     "refs": 4,
+     "mb": 6,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n1)",
+      "kelvin_aldea_rio_oeste(n1)",
+      "kelvin_aldea_mina(n1)",
+      "kelvin_aldea_mina_2(n1)"
+     ]
+    },
+    {
+     "n": "empalizada",
+     "t": "cerca",
+     "refs": 1,
+     "mb": 6,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_este(n2)"
+     ]
+    },
+    {
+     "n": "carpa_b",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 6,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_oeste(n1)",
+      "kelvin_aldea_lomas(n1)",
+      "kelvin_aldea_meandros_2(n1)"
+     ]
+    },
+    {
+     "n": "tienda_pequena",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 6,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_oeste(n1)"
+     ]
+    },
+    {
+     "n": "carpa_g",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 6,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_lomas(n1)"
+     ]
+    },
+    {
+     "n": "canoa",
+     "t": "lejos",
+     "refs": 6,
+     "mb": 3,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_aldea_rio_oeste(n1)",
+      "kelvin_aldea_mina(n1)",
+      "kelvin_aldea_meandros(n1)",
+      "kelvin_aldea_mina_2(n1)",
+      "kelvin_aldea_rio_oeste_2(n1)",
+      "kelvin_aldea_yunque(n1)"
+     ]
+    },
+    {
+     "n": "losa_piedra",
+     "t": "cerca",
+     "refs": 4,
+     "mb": 1,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque(ciudad)",
+      "kelvin_ruinas_yunque_2(ciudad)",
+      "kelvin_aldea_colina(ciudad)"
+     ]
+    },
+    {
+     "n": "losa_piedra",
+     "t": "lejos",
+     "refs": 3,
+     "mb": 1,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque(n1)",
+      "kelvin_ruinas_yunque_2(n1)",
+      "kelvin_aldea_colina(n1)"
+     ]
+    },
+    {
+     "n": "losa_piedra",
+     "t": "hd",
+     "refs": 3,
+     "mb": 1,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque(hd)",
+      "kelvin_ruinas_yunque_2(hd)",
+      "kelvin_aldea_colina(hd)"
+     ]
+    },
+    {
+     "n": "plataforma_piedra",
+     "t": "cerca",
+     "refs": 1,
+     "mb": 0,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque(ciudad)"
+     ]
+    },
+    {
+     "n": "plataforma_piedra",
+     "t": "lejos",
+     "refs": 1,
+     "mb": 0,
+     "soltarEn": 0,
+     "dueños": [
+      "kelvin_ruinas_yunque(n1)"
+     ]
+    }
+   ],
+   "infoM1": {
+    "geo": 377,
+    "tex": 149
+   },
+   "infoM2": {
+    "geo": 381,
+    "tex": 164
+   },
+   "zonasM2": [
+    {
+     "id": "villa",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 167,
+     "bajarPide": 1,
+     "hdBajar": 1,
+     "pre": []
+    },
+    {
+     "id": "lomas",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 93,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "colina",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 30,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_ruinas_yunque",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 150,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 64,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_oeste",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 102,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_lomas",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 48,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este_2",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 103,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_mina",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 197,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_meandros",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 53,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_ruinas_yunque_2",
+     "nivel": 1,
+     "ciudad": true,
+     "hd": true,
+     "d": 223,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_colina",
+     "nivel": 2,
+     "ciudad": true,
+     "hd": true,
+     "d": 0,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_mina_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 130,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_este_3",
+     "nivel": 2,
+     "ciudad": false,
+     "hd": true,
+     "d": 24,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_rio_oeste_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 196,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_yunque",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 156,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    },
+    {
+     "id": "kelvin_aldea_meandros_2",
+     "nivel": 1,
+     "ciudad": false,
+     "hd": false,
+     "d": 172,
+     "bajarPide": 0,
+     "hdBajar": 0,
+     "pre": []
+    }
+   ],
+   "m1": {
+    "t": 712221,
+    "heap": 1192.9,
+    "recursos": [
+     {
+      "n": "bohio_redondo",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 4,
+      "fijo": true,
+      "soltarEn": 0,
+      "mb": 132
+     },
+     {
+      "n": "bohio_redondo",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 5,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 132
+     },
+     {
+      "n": "bohio_redondo",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 132
+     },
+     {
+      "n": "toldo_pequeno",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 7,
+      "fijo": true,
+      "soltarEn": 0,
+      "mb": 45
+     },
+     {
+      "n": "toldo_pequeno",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 14,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 45
+     },
+     {
+      "n": "casa_plataforma",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 4,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "casa_plataforma",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "casa_plataforma",
+      "t": "hd",
+      "e": "bajando",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "casa_paja_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "casa_paja_a",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "casa_paja_a",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "mirador_escalonado",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 4,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "mirador_escalonado",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "mirador_escalonado",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "plataforma_piedra",
+      "t": "cerca",
+      "e": "bajando",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "plataforma_piedra",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "plataforma_piedra",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "muro_templo",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "muro_templo",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "muro_templo",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_e",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_e",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_e",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_f",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_f",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_mediano_h",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 46
+     },
+     {
+      "n": "templo_mediano_h",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 46
+     },
+     {
+      "n": "templo_mediano_h",
+      "t": "hd",
+      "e": "cola",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 46
+     },
+     {
+      "n": "ruina_torre_b",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_b",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_e",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_e",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_e",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_c",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_c",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_c",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "ruina_torre",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "ruina_torre",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "ruina_mirador",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_mirador",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_mirador",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_pilar",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_pilar",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_pilar",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_altar",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_altar",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_altar",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_portal",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_portal",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_portal",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_f",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_f",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_a",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_a",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "losa_piedra",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 4,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 1
+     },
+     {
+      "n": "losa_piedra",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 1
+     },
+     {
+      "n": "losa_piedra",
+      "t": "hd",
+      "e": "cola",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 1
+     },
+     {
+      "n": "monumento_g",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 25
+     },
+     {
+      "n": "monumento_g",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 25
+     },
+     {
+      "n": "torre_vigia_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 4,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "torre_vigia_b",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "torre_vigia_b",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "torre_vigia",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "torre_vigia",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "torre_vigia",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "muralla_atalaya_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 5,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "muralla_atalaya_b",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "muralla_atalaya_b",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "muralla_atalaya_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "muralla_atalaya_a",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "muralla_atalaya_a",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "empalizada",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 4,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "empalizada",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "empalizada",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "portal_puas",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "portal_puas",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "portal_puas",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "puente_madera",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "puente_madera",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "puente_madera",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "campamento_c",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "campamento_c",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "canoa",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 6,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 3
+     },
+     {
+      "n": "carpa_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "carpa_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "carpa_e",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_e",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_e",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "monumento_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 27
+     },
+     {
+      "n": "tienda_pequena",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "muro_roca",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "carpa_c",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_d",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "carpa_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_g",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "portal_madera_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 14
+     },
+     {
+      "n": "templo_grande_d",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 300
+     },
+     {
+      "n": "templo_grande_d",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 300
+     },
+     {
+      "n": "templo_grande_d",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 300
+     },
+     {
+      "n": "monumento_d",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 27
+     },
+     {
+      "n": "monumento_d",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 27
+     },
+     {
+      "n": "caney_largo",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "caney_largo",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "caney_largo",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "cercado_redondo",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "cercado_redondo",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "cercado_redondo",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "bohio_puntiagudo",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "bohio_puntiagudo",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "bohio_puntiagudo",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "casa_paja_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "casa_paja_b",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "casa_paja_b",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "monumento_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "monumento_c",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 25
+     },
+     {
+      "n": "corral",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 11
+     },
+     {
+      "n": "bloque_piedra",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "bloque_piedra",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "bloque_piedra",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_mediano_g",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 292
+     },
+     {
+      "n": "templo_mediano_g",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 292
+     },
+     {
+      "n": "templo_mediano_g",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 292
+     },
+     {
+      "n": "templo_mediano_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 278
+     },
+     {
+      "n": "templo_mediano_f",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 278
+     },
+     {
+      "n": "templo_mediano_f",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 278
+     },
+     {
+      "n": "templo_mediano",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 104
+     },
+     {
+      "n": "templo_mediano",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 104
+     },
+     {
+      "n": "templo_mediano",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 104
+     },
+     {
+      "n": "complejo_ruinas",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 301
+     },
+     {
+      "n": "complejo_ruinas",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 301
+     },
+     {
+      "n": "complejo_ruinas",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 301
+     },
+     {
+      "n": "monumento_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "monumento_f",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "monumento_f",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "monumento_e",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 25
+     },
+     {
+      "n": "portal_madera_c",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "portal_madera_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 15
+     },
+     {
+      "n": "campamento_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "campamento_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     }
+    ],
+    "zonas": [
+     {
+      "id": "villa",
+      "nivel": 2,
+      "ciudad": false,
+      "hd": true,
+      "d": 21,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "lomas",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 235,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "colina",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 108,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_ruinas_yunque",
+      "nivel": 1,
+      "ciudad": true,
+      "hd": true,
+      "d": 228,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_rio_este",
+      "nivel": 2,
+      "ciudad": false,
+      "hd": true,
+      "d": 30,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_rio_oeste",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 244,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_lomas",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 194,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_rio_este_2",
+      "nivel": 1,
+      "ciudad": true,
+      "hd": true,
+      "d": 88,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_mina",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 237,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_meandros",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 158,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_ruinas_yunque_2",
+      "nivel": 1,
+      "ciudad": true,
+      "hd": true,
+      "d": 326,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_colina",
+      "nivel": 2,
+      "ciudad": true,
+      "hd": true,
+      "d": 66,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_mina_2",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 156,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_rio_este_3",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 94,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_rio_oeste_2",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 328,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_yunque",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 248,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_meandros_2",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 285,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     }
+    ]
+   },
+   "m2": {
+    "t": 713862,
+    "heap": 1198.9,
+    "recursos": [
+     {
+      "n": "bohio_redondo",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 5,
+      "fijo": true,
+      "soltarEn": 0,
+      "mb": 132
+     },
+     {
+      "n": "bohio_redondo",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 5,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 132
+     },
+     {
+      "n": "bohio_redondo",
+      "t": "hd",
+      "e": "cola",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 132
+     },
+     {
+      "n": "toldo_pequeno",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 10,
+      "fijo": true,
+      "soltarEn": 0,
+      "mb": 45
+     },
+     {
+      "n": "toldo_pequeno",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 14,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 45
+     },
+     {
+      "n": "casa_plataforma",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 4,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "casa_plataforma",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "casa_plataforma",
+      "t": "hd",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "casa_paja_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "casa_paja_a",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "casa_paja_a",
+      "t": "hd",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "mirador_escalonado",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 4,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "mirador_escalonado",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 5,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "mirador_escalonado",
+      "t": "hd",
+      "e": "cola",
+      "refs": 4,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "plataforma_piedra",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "plataforma_piedra",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "plataforma_piedra",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "muro_templo",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "muro_templo",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "muro_templo",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_e",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_e",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_e",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_f",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_f",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_mediano_h",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 46
+     },
+     {
+      "n": "templo_mediano_h",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 46
+     },
+     {
+      "n": "templo_mediano_h",
+      "t": "hd",
+      "e": "cola",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 46
+     },
+     {
+      "n": "ruina_torre_b",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_b",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_e",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_e",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_e",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_c",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_c",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_c",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "ruina_torre",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "ruina_torre",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "ruina_mirador",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_mirador",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_mirador",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_pilar",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_pilar",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_pilar",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_altar",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_altar",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_altar",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_portal",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_portal",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_portal",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_f",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "ruina_torre_f",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_a",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_grande_a",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "losa_piedra",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 4,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 1
+     },
+     {
+      "n": "losa_piedra",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 1
+     },
+     {
+      "n": "losa_piedra",
+      "t": "hd",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 1
+     },
+     {
+      "n": "monumento_g",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 25
+     },
+     {
+      "n": "monumento_g",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 25
+     },
+     {
+      "n": "torre_vigia_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 4,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "torre_vigia_b",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "torre_vigia_b",
+      "t": "hd",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "torre_vigia",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "torre_vigia",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "torre_vigia",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "muralla_atalaya_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 5,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "muralla_atalaya_b",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "muralla_atalaya_b",
+      "t": "hd",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 19
+     },
+     {
+      "n": "muralla_atalaya_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "muralla_atalaya_a",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "muralla_atalaya_a",
+      "t": "hd",
+      "e": "bajando",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 18
+     },
+     {
+      "n": "empalizada",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 4,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "empalizada",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "empalizada",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "portal_puas",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "portal_puas",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "portal_puas",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "puente_madera",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "puente_madera",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "puente_madera",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 20
+     },
+     {
+      "n": "campamento_c",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "campamento_c",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "canoa",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 6,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 3
+     },
+     {
+      "n": "canoa",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 3
+     },
+     {
+      "n": "canoa",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 3
+     },
+     {
+      "n": "carpa_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "carpa_a",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "carpa_a",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "carpa_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "carpa_b",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "carpa_b",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "carpa_e",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_e",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_e",
+      "t": "hd",
+      "e": "bajando",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "monumento_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 27
+     },
+     {
+      "n": "tienda_pequena",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "muro_roca",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "muro_roca",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "carpa_c",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_c",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_c",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_d",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "carpa_d",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "carpa_d",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 8
+     },
+     {
+      "n": "carpa_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_f",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_f",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "carpa_g",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "carpa_g",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 6
+     },
+     {
+      "n": "portal_madera_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 14
+     },
+     {
+      "n": "portal_madera_b",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 14
+     },
+     {
+      "n": "portal_madera_b",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 14
+     },
+     {
+      "n": "templo_grande_d",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 300
+     },
+     {
+      "n": "templo_grande_d",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 300
+     },
+     {
+      "n": "templo_grande_d",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 300
+     },
+     {
+      "n": "monumento_d",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 27
+     },
+     {
+      "n": "monumento_d",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 27
+     },
+     {
+      "n": "caney_largo",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "caney_largo",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "caney_largo",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "cercado_redondo",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "cercado_redondo",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "cercado_redondo",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 33
+     },
+     {
+      "n": "bohio_puntiagudo",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "bohio_puntiagudo",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "bohio_puntiagudo",
+      "t": "hd",
+      "e": "cola",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "casa_paja_b",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "casa_paja_b",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "casa_paja_b",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 23
+     },
+     {
+      "n": "monumento_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 3,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "monumento_c",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 25
+     },
+     {
+      "n": "monumento_c",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 25
+     },
+     {
+      "n": "monumento_c",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 25
+     },
+     {
+      "n": "corral",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 11
+     },
+     {
+      "n": "corral",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 11
+     },
+     {
+      "n": "bloque_piedra",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "bloque_piedra",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "bloque_piedra",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 0
+     },
+     {
+      "n": "templo_mediano_g",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 292
+     },
+     {
+      "n": "templo_mediano_g",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 292
+     },
+     {
+      "n": "templo_mediano_g",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 292
+     },
+     {
+      "n": "templo_mediano_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 278
+     },
+     {
+      "n": "templo_mediano_f",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 278
+     },
+     {
+      "n": "templo_mediano_f",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 278
+     },
+     {
+      "n": "templo_mediano",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 104
+     },
+     {
+      "n": "templo_mediano",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 104
+     },
+     {
+      "n": "templo_mediano",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 104
+     },
+     {
+      "n": "complejo_ruinas",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 301
+     },
+     {
+      "n": "complejo_ruinas",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 301
+     },
+     {
+      "n": "complejo_ruinas",
+      "t": "hd",
+      "e": "bajando",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 301
+     },
+     {
+      "n": "monumento_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "monumento_f",
+      "t": "cerca",
+      "e": "listo",
+      "refs": 2,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "monumento_f",
+      "t": "hd",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 30
+     },
+     {
+      "n": "monumento_e",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 25
+     },
+     {
+      "n": "monumento_e",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 25
+     },
+     {
+      "n": "portal_madera_c",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "portal_madera_c",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "portal_madera_c",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 13
+     },
+     {
+      "n": "portal_madera_a",
+      "t": "cerca",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 15
+     },
+     {
+      "n": "portal_madera_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 15
+     },
+     {
+      "n": "portal_madera_a",
+      "t": "hd",
+      "e": "cola",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 15
+     },
+     {
+      "n": "campamento_f",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     },
+     {
+      "n": "campamento_a",
+      "t": "lejos",
+      "e": "listo",
+      "refs": 1,
+      "fijo": false,
+      "soltarEn": 0,
+      "mb": 7
+     }
+    ],
+    "zonas": [
+     {
+      "id": "villa",
+      "nivel": 2,
+      "ciudad": false,
+      "hd": true,
+      "d": 167,
+      "bajarPide": 1,
+      "hdBajar": 1,
+      "pre": []
+     },
+     {
+      "id": "lomas",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 93,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "colina",
+      "nivel": 2,
+      "ciudad": false,
+      "hd": true,
+      "d": 30,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_ruinas_yunque",
+      "nivel": 1,
+      "ciudad": true,
+      "hd": true,
+      "d": 150,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_rio_este",
+      "nivel": 2,
+      "ciudad": false,
+      "hd": true,
+      "d": 64,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_rio_oeste",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 102,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_lomas",
+      "nivel": 2,
+      "ciudad": false,
+      "hd": true,
+      "d": 48,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_rio_este_2",
+      "nivel": 1,
+      "ciudad": true,
+      "hd": true,
+      "d": 103,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_mina",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 197,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_meandros",
+      "nivel": 2,
+      "ciudad": false,
+      "hd": true,
+      "d": 53,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_ruinas_yunque_2",
+      "nivel": 1,
+      "ciudad": true,
+      "hd": true,
+      "d": 223,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_colina",
+      "nivel": 2,
+      "ciudad": true,
+      "hd": true,
+      "d": 0,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_mina_2",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 130,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_rio_este_3",
+      "nivel": 2,
+      "ciudad": false,
+      "hd": true,
+      "d": 24,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_rio_oeste_2",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 196,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_yunque",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 156,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     },
+     {
+      "id": "kelvin_aldea_meandros_2",
+      "nivel": 1,
+      "ciudad": false,
+      "hd": false,
+      "d": 172,
+      "bajarPide": 0,
+      "hdBajar": 0,
+      "pre": []
+     }
+    ]
+   },
+   "snaps": 2,
+   "ultimas3": [
+    {
+     "t": 712221,
+     "heap": 1192.9,
+     "n": 147,
+     "kb": 3358,
+     "info": {
+      "geo": 377,
+      "tex": 149
+     }
+    },
+    {
+     "t": 713862,
+     "heap": 1198.9,
+     "n": 171,
+     "kb": 3465,
+     "info": {
+      "geo": 381,
+      "tex": 164
+     }
+    },
+    {
+     "t": 713862,
+     "heap": 1198.9,
+     "n": 171,
+     "kb": 3465,
+     "info": {
+      "geo": 381,
+      "tex": 164
+     }
+    }
+   ]
+  }
+ ]
+}

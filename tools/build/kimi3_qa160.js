@@ -26,10 +26,12 @@ const POST = process.argv.includes('--post'); // post-mortem: NO envolver ST.sta
 // y CIERRA la ventana de la carrera que produce la firma: el arnés sin envolver da ~3/4 rojas y el probe envuelto 4/4 verdes);
 // correr el test REAL sin tocarlo y volcar TODO el estado final (recursos+refs, zonas+pre, censo de escena, info, dueños).
 const TRAZAR = process.argv.includes('--trazar'); // tracer entrada/salida (solo depuración de cuelgues; perturba el timing)
-const SYNC = process.argv.includes('--sync'); // esperar a que la batería QA concurrente llegue a su propio AV.streamingTest()
-// (el panel #avqa-panel .avqa-msg pone 'AV.streamingTest()…' justo antes) y arrancar el nuestro EN SOLAPA: dos
-// streamingTest simultáneos en las mismas secciones = la ventana m1→m2 de la carrera QA-160 abierta de forma
-// determinista en vez de estadística (r21-qa: la firma +7 aparecía en m1 y la roja dependía de que cayera en m1→m2).
+const SYNC = (() => { const i = process.argv.indexOf('--sync'); return i > 0 ? (process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : 'streamingTest') : null; })();
+// --sync [<texto>]: esperar a que la batería QA concurrente llegue a su propia fase de pruebas (el panel
+// #avqa-panel .avqa-msg pone 'AV.<prueba>()…' justo antes) y arrancar el nuestro EN SOLAPA. OJO: sync contra
+// 'streamingTest' NO es representativo — dos streamingTest comparten el estado global de ST (soltarTodo del
+// inicio, el truco CFG.dibujo=1) y se pisan (r23: KB 44 MB, 19/24). El solape representativo es contra otra
+// batería con teleports (p. ej. --sync missionTest): carga de streaming real sin pisar el test.
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi160');
 fs.mkdirSync(SALIDA, { recursive: true });
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
@@ -148,15 +150,15 @@ const PROBAR_JS = `(async () => {
     trazar(G.renderer, 'render'); trazar(G.renderer, 'update'); trazar(G.camara, 'place');
   } catch (e) { marca('trazar err ' + e); }` : ''}
   let resTest = null, errorTest = null;
-  ${SYNC ? `// --sync: solapar nuestro streamingTest con el de la batería QA (misma sección, mismo instante)
+  ${SYNC ? `// --sync: solapar nuestro streamingTest con la fase '${SYNC}' de la batería QA (misma ventana de teleports)
   await (async () => { const t0 = performance.now();
     while (performance.now() - t0 < 720000) {
       try { const el = document.querySelector('#avqa-panel .avqa-msg');
-        if (el && /streamingTest/.test(el.textContent || '')) return;
+        if (el && (el.textContent || '').indexOf('${SYNC}') >= 0) return;
       } catch (e) {}
       await new Promise(r => setTimeout(r, 150));
     } })();
-  window.__qa160p.push('sync: batería QA en streamingTest, arrancando el nuestro en solapa');` : ''}
+  window.__qa160p.push('sync: batería QA en fase ${SYNC}, arrancando el nuestro en solapa');` : ''}
   try { resTest = await AV.streamingTest(); } catch (e) { errorTest = String(e && e.message || e); }
   window.__qa160p.push('test devuelto ' + (resTest ? resTest.passed + '/' + resTest.total : 'null') + (errorTest ? ' err:' + errorTest : ''));
   try { ST.stats = origStats; } catch (e) {}
@@ -346,7 +348,7 @@ function limpiarHuerfanos() {
         } catch (e) { /* la página ocupada */ }
       }, 25000);
       let r;
-      try { r = JSON.parse(await evaluar(cdp, ses, PROBAR_JS, 900, true)); }
+      try { r = JSON.parse(await evaluar(cdp, ses, PROBAR_JS, SYNC ? 1800 : 900, true)); }
       finally { clearInterval(progreso); }
       res.corridas.push(r);
       // escribir incremental: si el wrapper de la PC mata la corrida (timeout), no se pierden las corridas hechas
