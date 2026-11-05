@@ -10,7 +10,7 @@ window.AVVecinos = function (G) {
   const S = G.S, M = G.fisica.MOVE, scene = G.renderer.scene;
   const H = (x, z) => G.terreno.height(x, z);
   const SITIOS = [{ id: 'villa', x: 125, z: 140 }, { id: 'ciudad', x: 11, z: -76 }];
-  const TOPE = { bajo: 2, medio: 6, alto: 12 };
+  const TOPE = { bajo: 4, medio: 8, alto: 12 }; // Kelvin 5-nov: más vida (antes 2/6/12)
   const ESPECIE = ['coqui', 'lagartijo', 'mariposa'];
   const CLAVE_V = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.vecinos';
   const VISTOS = { coqui: false, lagartijo: false, mariposa: false };
@@ -121,11 +121,11 @@ window.AVVecinos = function (G) {
     const guard = { quiet: G.quiet, x: S.pos.x, y: S.pos.y, z: S.pos.z, hora: S.hora, nivel: G.renderer.calidad && G.renderer.calidad.nivel };
     let crudoV = null; try { crudoV = localStorage.getItem(CLAVE_V); } catch (e) { /* */ }
     try {
-      ok('Tope: baja 2 (mínima visible), media 6, alta 12', TOPE.bajo === 2 && TOPE.medio === 6 && TOPE.alto === 12);
+      ok('Tope: baja 4, media 8, alta 12 (Kelvin 5-nov: más vida)', TOPE.bajo === 4 && TOPE.medio === 8 && TOPE.alto === 12);
       forzar = { nivel: 'bajo' }; sembrar();
-      ok('En calidad baja hay 2 (mínima visible)', aves.length === 2 && malla.count === 2, String(aves.length));
+      ok('En calidad baja hay 4', aves.length === 4 && malla.count === 4, String(aves.length));
       forzar = { nivel: 'medio' }; sembrar(); pintar();
-      ok('En calidad media hay 6, entre Villa Raíz y la ciudad', aves.length === 6 && aves.some(a => a.sitio === 'villa') && aves.some(a => a.sitio === 'ciudad'), aves.map(a => a.sitio + ':' + a.especie).join(','));
+      ok('En calidad media hay 8, entre Villa Raíz y la ciudad', aves.length === 8 && aves.some(a => a.sitio === 'villa') && aves.some(a => a.sitio === 'ciudad'), aves.map(a => a.sitio + ':' + a.especie).join(','));
       ok('Ninguno atraviesa el suelo', aves.every(a => a.y >= H(a.x, a.z) - 0.02), aves.map(a => (a.y - H(a.x, a.z)).toFixed(2)).join(','));
       S.pos.x = 125; S.pos.z = 140; S.hora = 20; G.quiet = false; M.speed = 2; M.grounded = true; M.flying = false;
       const antes = aves.find(a => a.especie === 'coqui');
