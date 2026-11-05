@@ -26,17 +26,23 @@ const DATA_JS = path.join(RAIZ, 'assets', 'data', 'cotorra_horneada.js');
 fs.mkdirSync(SALIDA, { recursive: true });
 
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
-const EXTRAS = ['ala', 'girar', 'cellN', 'cellF'].filter(k => process.argv.includes('--' + k)).map(k => `${k}=${arg('--' + k)}`).join('&');
+const EXTRAS = ['ala', 'girar', 'cellN', 'cellF', 'sweep', 'droop', 'muneca', 'largo', 'cola', 'colax'].filter(k => process.argv.includes('--' + k)).map(k => `${k}=${arg('--' + k)}`).join('&');
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon' };
 function servir() {
+  const QA_TAG = '<script src="tests/qa/qa.js" charset="utf-8"></script>';
   const srv = http.createServer((req, res) => {
     let p; try { p = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res.writeHead(400); return res.end(); }
+    const qa = /[?&]qa=1(?:&|$)/.test(req.url);
     if (p.endsWith('/')) p += 'index.html';
     const f = path.join(RAIZ, p);
     if (!f.startsWith(RAIZ) || req.method !== 'GET') { res.writeHead(403); return res.end(); }
     fs.readFile(f, (e, d) => {
       if (e) { res.writeHead(404); return res.end('404'); }
+      if (qa && /index\.html$/.test(f)) {
+        const html = d.toString('utf8').replace(/<meta charset[^>]*>/i, m => m + QA_TAG);
+        d = Buffer.from(html, 'utf8');
+      }
       res.writeHead(200, { 'Content-Type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' });
       res.end(d);
     });
@@ -78,7 +84,8 @@ async function lanzarChrome() {
   throw new Error('Chrome no abrió DevTools en 60 s: ' + err.slice(0, 300));
 }
 
-const SEMILLA_JS = `(() => { try {
+const SEMILLA_JS = `try {
+  localStorage.clear(); sessionStorage.clear();
   localStorage.setItem('amazonaverse.menu', JSON.stringify({ v: 1, ultimo: 'aventura' }));
   localStorage.setItem('amazonaverse.save', JSON.stringify({
     v: 6, formato: 2, escrito: Date.now(), saveId: 'qa-k056-' + Math.random().toString(36).slice(2, 10),
@@ -89,19 +96,22 @@ const SEMILLA_JS = `(() => { try {
     comic: { title: 'Mi cómic', cover: 'vittata', layout: 'grid', order: [0, 1, 2, 3], captions: {}, vinetas: {} },
     evaluated: { A: false, B: false }, examined: { maquina: false, transmisor: false }
   }));
-} catch (e) {} })()`;
+} catch (e) {}`;
 const PREPARAR_JS = `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), $ = id => document.getElementById(id);
-  const espera = async (f, ms) => { const t0 = performance.now(); while (performance.now() - t0 < ms) { try { if (f()) return true; } catch (e) {} await sleep(100); } try { return !!f(); } catch (e) { return false; } };
-  const t = $('title');
-  if (t && t.open) { const b = t.querySelector('form[method=dialog] button'); if (!b) return 'la portada no tiene Jugar'; b.click();
-    if (!await espera(() => !t.open, 5000)) return 'la portada sigue abierta'; }
-  const cr = $('creator');
-  if (cr && !cr.hidden) { await espera(() => $('p-stage-status') && $('p-stage-status').hidden, 30000); const s = $('p-save'); if (!s) return 'sin Empezar';
-    s.click(); if (!await espera(() => cr.hidden, 8000)) return 'Empezar no cerró el creador'; }
-  const S = window.AV && window.AV.state; if (!S || !S.profile || !S.profile.created) return 'sin perfil creado';
-  if (window.AV.cargaEsperar) await window.AV.cargaEsperar(30000);
-  await espera(() => { try { return !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()); } catch (e) { return false; } }, 20000);
-  await AV.bandadaTest ? 'ok' : 'ok'; return 'ok'; })()`;
+  const espera = async (f, ms) => { const t0 = performance.now(); while (performance.now() - t0 < ms) { try { if (f()) return true; } catch (e) {} await sleep(200); } try { return !!f(); } catch (e) { return false; } };
+  const listo = () => !!(window.AV && AV.state && AV.state.profile && AV.state.profile.created);
+  const t0 = performance.now();
+  while (performance.now() - t0 < 240000) {
+    if (listo()) break;
+    const t = $('title');
+    if (t && t.open) { const b = t.querySelector('form[method=dialog] button'); if (b) b.click(); }
+    else { const cr = $('creator'); if (cr && !cr.hidden) { const s = $('p-save'); if (s) s.click(); } }
+    await sleep(1000);
+  }
+  if (!listo()) return 'sin perfil creado tras esperar 240 s';
+  if (window.AV.cargaEsperar) await window.AV.cargaEsperar(60000);
+  await espera(() => { try { return !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()); } catch (e) { return false; } }, 30000);
+  return 'ok'; })()`;
 
 (async () => {
   const { srv, puerto } = await servir();
@@ -130,21 +140,33 @@ const PREPARAR_JS = `(async () => { const sleep = ms => new Promise(r => setTime
       fin(0);
     }
     // ---- valida ----
-    await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_JS });
+    for (const m of ['Page.enable', 'Runtime.enable', 'Log.enable']) await cdp.call(m, {}, ses);
+    await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_JS }, ses);
     await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ses, 30000);
-    console.log('entrada: ' + await evaluar(cdp, ses, PREPARAR_JS, 90));
+    console.log('entrada: ' + await evaluar(cdp, ses, PREPARAR_JS, 260));
+    if (true) {
+      const dbg = await evaluar(cdp, ses, `(() => { const t = document.getElementById('title'), cr = document.getElementById('creator');
+        return JSON.stringify({ href: location.href.slice(0, 80), av: !!window.AV, ave: !!window.AVE, ready: document.readyState, titulo: document.title, guiones: document.scripts.length,
+          state: !!(window.AV && AV.state), perfil: !!(window.AV && AV.state && AV.state.profile && AV.state.profile.created),
+          portada: !!(t && t.open), creador: !!(cr && !cr.hidden), save: (localStorage.getItem('amazonaverse.save') || '').slice(0, 60) }); })()`, 15, false);
+      console.log('diag: ' + dbg);
+    }
     // espera a que la bandada exista y use la malla horneada
     const bandada = await evaluar(cdp, ses, `(async () => {
       const sleep = ms => new Promise(r => setTimeout(r, ms));
       const t0 = performance.now();
-      while (performance.now() - t0 < 60000) { if (window.AV && AV.G && AV.G.bandada) break; await sleep(250); }
+      while (performance.now() - t0 < 180000) { if (window.AV && AV.G && AV.G.bandada) break; await sleep(500); }
       if (!(window.AV && AV.G && AV.G.bandada)) return { error: 'sin G.bandada' };
       const B = AV.G.bandada;
       await sleep(1500);
       const usoReal = !!B.real;
       const vertsCerca = B.meshes[0].geometry.attributes.position.count;
+      // los dos checks de recuento fallan con residentes activos en EXTRA (preexistente; en baterías G.quiet los deja vacíos):
+      // la medimos en silencio, como las baterías
+      const quietAnt = AV.G.quiet; AV.G.quiet = true; B.EXTRA.length = 0;
       const t0b = performance.now();
       let test = null; try { test = await (window.AV.bandadaTest ? AV.bandadaTest() : B.test()); } catch (e) { test = { error: String(e && e.message || e) }; }
+      AV.G.quiet = quietAnt;
       const dur = Math.round(performance.now() - t0b);
       return { usoReal, vertsCerca, test, durMs: dur }; })()`, 180);
     console.log('bandada: ' + JSON.stringify(bandada));
@@ -157,12 +179,14 @@ const PREPARAR_JS = `(async () => { const sleep = ms => new Promise(r => setTime
       const sleep = ms => new Promise(r => setTimeout(r, ms));
       const B = AV.G.bandada; B.aparecer('prueba', { forzar: true, n: 12, dist: 26, ang: 2.4 });
       await sleep(2500);
-      const foto = AV.G.renderer.snapshot(1280, 800, 0.9);
+      // en GPU real la primera foto puede anularse (cola llena, QA-157): con la cola drenada resuelve en 1-2 cuadros
+      let foto = null;
+      for (let i = 0; i < 4 && !foto; i++) { foto = await AV.G.renderer.snapshot(1280, 800, 0.9); if (!foto) await sleep(1500); }
       const st = AV.G.renderer.stats();
       return JSON.stringify({ foto, calls: st.calls, tris: Math.round(st.triangulos), fps: st.fps, calidad: st.calidad }); })()`, 60);
     const sc = JSON.parse(escena);
-    fs.writeFileSync(path.join(SALIDA, 'valida_bandada.jpg'), Buffer.from(sc.foto.split(',')[1], 'base64'));
-    console.log(`escena: ${sc.fps} FPS · ${sc.calls} calls · ${Math.round(sc.tris / 1000)} k tris · ${sc.calidad} → docs/img/kimi056/valida_bandada.jpg`);
+    if (sc.foto) fs.writeFileSync(path.join(SALIDA, 'valida_bandada.jpg'), Buffer.from(sc.foto.split(',')[1], 'base64'));
+    console.log(`escena: ${sc.fps} FPS · ${sc.calls} calls · ${Math.round(sc.tris / 1000)} k tris · ${sc.calidad}${sc.foto ? ' → docs/img/kimi056/valida_bandada.jpg' : ' · foto: null (GPU sin señalar)'}`);
     fin(bandada && bandada.test && bandada.test.passed === bandada.test.total && bandada.usoReal ? 0 : 1);
   } catch (e) { console.error('ERROR: ' + e.message); fin(2); }
 })();

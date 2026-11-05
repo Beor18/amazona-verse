@@ -5,9 +5,11 @@
    (G.on('canto') → pedir('canto', { en: 1 })). Si Vittata se acerca (menos de 30 m), la bandada
    la acompaña unos 18 s dando vueltas a su alrededor y luego se va. Nunca en las baterías (G.quiet) ni antes de crear el personaje.
    - Se carga al pedirlo (boot.js la trae tras 'listo'): no suma a la descarga inicial. window.AVBandada(G) → { pedir, estado, test }.
-   - Rendimiento: una sola malla instanciada por nivel de detalle (dos draw calls en total): cotorra de ~110 triángulos de cerca
-     y de ~24 a más de 55 m; el aleteo va en el vertex shader. Respeta la calidad automática de renderer.js: bajo = 6 (QA-110: el
-     iPhone arranca en bajo y el mundo no debe quedar vacío; nunca más de 6, ni la de 20 de M3), medio = 12, alto = 20; se reajusta sola con G.on('calidad'). Sin sombras y sin tocar el terreno ni el mundo.
+   - Rendimiento: una sola malla instanciada por nivel de detalle (dos draw calls en total): la cotorra real horneada
+     desde vittata_base_lod1.glb (KIMI-056, assets/data/cotorra_horneada.js; ~1,8 k tris de cerca y ~0,3 k a más de 55 m;
+     sin el dato, esferas de ~110 tris como antes). El aleteo va en el vertex shader. Respeta la calidad automática de
+     renderer.js: bajo = 6 (QA-110: el iPhone arranca en bajo y el mundo no debe quedar vacío; nunca más de 6, ni la de
+     20 de M3), medio = 12, alto = 20; se reajusta sola con G.on('calidad'). Sin sombras y sin tocar el terreno ni el mundo.
    - Color: el verde del cuerpo y el color de la cabeza de la piel de cada especie (G.album.colores: tabla medida sobre
      assets/textures/pieles, sin descargar ninguna textura); ≤ 6 especies vivas por bandada (las extintas nunca vuelan aquí), y
      siempre del hábitat de su ruta (residentes.js especiesEn; docs/equipo/MUNDO_VIVO_ECOLOGIA.md): sobre Villa Raíz, puertorriqueñas.
@@ -98,6 +100,60 @@ window.AVBandada = function (G) {
   }
   const cerca = instanciada(malla(true)), lejos = instanciada(malla(false));
   scene.add(cerca); scene.add(lejos);
+
+  // ---------- KIMI-056 · cotorra de verdad: malla horneada desde vittata_base_lod1.glb (assets/data/cotorra_horneada.js) ----------
+  // Mismos InstancedMesh y tinte por especie; el shader funde la pose plegada del modelo con la de vuelo
+  // desplegada (alas barridas hacia atrás) y aletea en el hombro. Si el dato no carga, se queda la esferas de siempre.
+  const uPivAla = { value: new THREE.Vector3(0.089, 0, 0.065) }, uPivCuello = { value: new THREE.Vector3(0, 0.045, 0.206) };
+  const matReal = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+  matReal.onBeforeCompile = sh => {
+    sh.uniforms.uT = uT; sh.uniforms.uPivotAla = uPivAla; sh.uniforms.uPivotCuello = uPivCuello;
+    sh.vertexShader = 'uniform float uT;\nuniform vec3 uPivotAla;\nuniform vec3 uPivotCuello;\nattribute float iFase;\nattribute vec4 iPose;\nattribute vec3 iAcento;\nattribute float aParte;\nattribute vec3 aPleg;\n' + sh.vertexShader
+      .replace('#include <color_vertex>', `#include <color_vertex>
+  if (aParte > 0.5 && aParte < 1.5 && iPose.w > 0.01) vColor.xyz = mix(vColor.xyz, color.xyz * iAcento, iPose.w * 0.9);
+  if (aParte > 1.5 && aParte < 2.5) vColor.xyz = vec3(0.62, 0.58, 0.48);`)
+      .replace('#include <begin_vertex>', `vec3 transformed = vec3(position);
+  if (aParte > 2.5 && aParte < 3.5) {
+    float sx = sign(position.x), des = iPose.x, fl = sin(uT * 13.0 + iFase);
+    vec3 base = mix(aPleg, position, des);
+    float ang = sx * fl * 0.6 * des;
+    vec3 piv = vec3(sx * uPivotAla.x, uPivotAla.y, uPivotAla.z);
+    vec3 q = base - piv; float c = cos(ang), s = sin(ang);
+    transformed = vec3(q.x * c - q.y * s, q.x * s + q.y * c, q.z) + piv;
+  }
+  if (aParte > 0.5 && aParte < 2.5) {
+    vec3 q = transformed - uPivotCuello;
+    float cy = cos(iPose.z), sy = sin(iPose.z), cp = cos(iPose.y), sp = sin(iPose.y);
+    q = vec3(cy * q.x + sy * q.z, q.y, -sy * q.x + cy * q.z);
+    q = vec3(q.x, cp * q.y - sp * q.z, sp * q.y + cp * q.z);
+    transformed = q + uPivotCuello;
+  }`);
+  };
+  function geoHorneada(d) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(d.pos, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(d.nor, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(d.col, 3));
+    g.setAttribute('aPleg', new THREE.Float32BufferAttribute(d.pleg, 3));
+    g.setAttribute('aParte', new THREE.Float32BufferAttribute(d.par, 1));
+    g.setIndex(d.idx);
+    return g;
+  }
+  function usarMallaReal(D) {
+    for (const [im, d] of [[cerca, D.near], [lejos, D.far]]) {
+      const geo = geoHorneada(d);
+      geo.setAttribute('iFase', new THREE.InstancedBufferAttribute(new Float32Array(MAXN), 1));
+      geo.setAttribute('iPose', new THREE.InstancedBufferAttribute(new Float32Array(MAXN * 4), 4));
+      geo.setAttribute('iAcento', new THREE.InstancedBufferAttribute(new Float32Array(MAXN * 3).fill(1), 3));
+      im.geometry.dispose(); im.geometry = geo; im.material = matReal;
+    }
+    uPivAla.value.set(D.ala[0], D.ala[1], D.ala[2]);
+    uPivCuello.value.set(D.cuello[0], D.cuello[1], D.cuello[2]);
+    G.bandada.real = true;
+  }
+  if (window.AVE && AVE.assets) AVE.assets.script('assets/data/cotorra_horneada.js')
+    .then(() => { if (window.AV_COTORRA_HORNEADA && window.AV_COTORRA_HORNEADA.near) usarMallaReal(window.AV_COTORRA_HORNEADA); })
+    .catch(e => console.warn('bandada real: ' + (e && e.message)));
 
   // ---------- Especies y colores (G.album.colores: tabla medida sobre las pieles; solo especies vivas) ----------
   let colores = []; // [{ id: especie, c: THREE.Color lineal (cuerpo), a: THREE.Color lineal (cabeza), cob }]
