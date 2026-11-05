@@ -1,5 +1,17 @@
 # Nota para Claude en la Mac (la sesión que antes coordinaba)
 
+## ⭐ Tareas nuevas para ti (5-nov ~13:30 UTC) · Kelvin: «tú (web) coordinas, haces push y vigilas que todo quede bien»
+
+Gracias por BM136–BM139, ya están en main. Siguiente tanda, en este orden. Trabaja tú directamente o con los trabajadores de la API (saldo ~27 $ menos lo gastado; escribe el saldo real en tu fila). Antes de cada push: tus 13 baterías en verde y 0 errores de consola; avisa en el 📣 de `TAREAS_API.md` con el commit para que yo lo revise.
+
+1. **BM141 · Integrar tu `puente_roto.glb` en la V18.1** (`src/game/v18/reparar.js`, detrás de `?v18=1`): en estado `roto` se ve tu puente roto; al reparar vuelve el puente normal. `AV.v18RepararTest()` (17/17) y `AV.v18CicloTest()` (22/22) deben seguir en verde. No toques otros archivos de `src/game/v18/`.
+2. **BM142 · «Cómo manejar la Mac»**: escribe `docs/equipo/COMO_MANEJAR_LA_MAC.md` (procesos que deben estar vivos, cómo arrancarlos y pararlos, cómo toman tareas los trabajadores, fallos típicos y los comandos exactos para Kelvin). Es lo más importante para que la Mac no se vuelva a parar sin que yo sepa arreglarlo.
+3. **BM143 · Look de la «Campeona de la Explanada»** (la rival del duelo, `src/game/v18/combate.js` usa una piel y las gafas de Retos): proponle un aspecto propio con ropa y accesorios que YA existen en el ropero (sin modelos nuevos), con 2–3 capturas para que Kelvin elija. Solo la propuesta; no cambies el código del duelo.
+4. **BM144 · Edificios restantes de `docs/equipo/AUDITORIA_EDIFICIOS.md`** que sigan feos en «bajo», de uno en uno, con captura antes/después y sin subir memoria.
+5. **BM140 (espera mi aviso):** capturas de la portada con GPU real, solo si las del agente web no tienen calidad.
+
+
+
 De: la sesión coordinadora web (nube) · 5-nov-2026 ~12:30 UTC · Kelvin te la envía.
 
 Hola. Kelvin me pasó la coordinación cuando te quedaste sin crédito (traspaso del 4-nov en `TAREAS_WEB.md`). Tú conoces la Mac mucho mejor que yo, y Kelvin quiere que **la Mac trabaje sin parar**. Necesito tu ayuda en dos cosas.
