@@ -1,0 +1,290 @@
+{
+ "nota": "BM150: tomas del hero con el juego actual (V18.1 con ?v18=1), sin HUD.",
+ "version": "h2",
+ "salida": {
+  "ancho": 1920,
+  "alto": 1080,
+  "ss": 2,
+  "calidad": 0.92
+ },
+ "margen": [
+  0.5,
+  0.7
+ ],
+ "base": {
+  "paso": 3,
+  "aprendiz": true,
+  "nombre": "Nube Azul"
+ },
+ "ropas": {
+  "base": {},
+  "exploradora": {
+   "feet": {
+    "id": "botas",
+    "color": "#3d8fb0",
+    "style": "aventura"
+   },
+   "neck": {
+    "id": "panuelo",
+    "color": "#f2a03d"
+   },
+   "eyes": {
+    "id": "gafas",
+    "color": "#5a3a22"
+   }
+  },
+  "pava": {
+   "head": {
+    "id": "pava",
+    "color": "#d6403a"
+   }
+  },
+  "boricua": {
+   "head": {
+    "id": "pava",
+    "color": "#d6403a"
+   },
+   "torso": {
+    "id": "camisa",
+    "color": "#f4f4f0",
+    "style": "guayabera"
+   },
+   "hand": {
+    "id": "mano",
+    "color": "#d6403a",
+    "style": "maracas"
+   }
+  },
+  "bandera": {
+   "head": {
+    "id": "gorra",
+    "color": "#d6403a",
+    "style": "pr"
+   },
+   "torso": {
+    "id": "camisa",
+    "color": "#f4f4f0",
+    "style": "guayabera"
+   }
+  },
+  "deportiva": {
+   "head": {
+    "id": "gorra",
+    "color": "#d6403a",
+    "style": "pr"
+   },
+   "torso": {
+    "id": "camisa",
+    "color": "#d6403a",
+    "style": "deportiva"
+   },
+   "eyes": {
+    "id": "lentes",
+    "color": "#c9a227",
+    "style": "sol"
+   }
+  }
+ },
+ "tomas": [
+  {
+   "id": "h2_yunque",
+   "dur": 6.0,
+   "preroll": 0.5,
+   "hud": false,
+   "estado": {
+    "en": {
+     "poi": "mirador",
+     "dx": 2.5,
+     "dz": 0.5
+    },
+    "ropa": "base",
+    "aprendiz": false,
+    "rumbo": 90
+   },
+   "camara": {
+    "tipo": "dron",
+    "puntos": [
+     {
+      "jugador0": true,
+      "frente": 2.5,
+      "lado": -6,
+      "dy": 1.4
+     },
+     {
+      "jugador0": true,
+      "frente": 5,
+      "lado": -10,
+      "dy": 11
+     },
+     {
+      "jugador0": true,
+      "frente": 7,
+      "lado": -15,
+      "dy": 28
+     }
+    ],
+    "fov": [
+     50,
+     58
+    ],
+    "curva": "inOut",
+    "miraAlto": 0.6,
+    "suaveMira": 0.15
+   },
+   "acciones": [
+    {
+     "t": -0.5,
+     "a": "caminar",
+     "rumbo": 92,
+     "correr": true
+    },
+    {
+     "t": 0.15,
+     "a": "saltar"
+    },
+    {
+     "t": 0.3,
+     "a": "vuelo",
+     "dur": 7.0,
+     "curva": "lineal",
+     "puntos": [
+      [
+       26,
+       174
+      ],
+      [
+       45,
+       181
+      ],
+      [
+       72,
+       189
+      ],
+      [
+       104,
+       197
+      ]
+     ],
+     "sobreSuelo": 19
+    }
+   ]
+  },
+  {
+   "id": "h2_ciudad",
+   "dur": 7.0,
+   "preroll": 0.6,
+   "hud": false,
+   "estado": {
+    "pos": [
+     -33.9,
+     -190
+    ],
+    "mirarA": [
+     -33.9,
+     -100
+    ],
+    "ropa": "exploradora",
+    "volando": true,
+    "altura": 30,
+    "aprendiz": false
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 9,
+    "lado": 3.5,
+    "alto": 6,
+    "adelante": 6,
+    "miraAlto": -6.0,
+    "fov": 58,
+    "suave": 0.15,
+    "suaveGiro": 0.6
+   },
+   "acciones": [
+    {
+     "t": -1.0,
+     "a": "vuelo",
+     "dur": 9.0,
+     "curva": "lineal",
+     "puntos": [
+      [
+       -33.9,
+       -175
+      ],
+      [
+       -33.9,
+       -158
+      ],
+      [
+       -33.9,
+       -140
+      ],
+      [
+       -33.9,
+       -120
+      ]
+     ],
+     "sobreSuelo": 30
+    }
+   ]
+  },
+  {
+   "id": "h2_puente",
+   "dur": 6.0,
+   "preroll": 0.6,
+   "hud": false,
+   "estado": {
+    "pos": [
+     137,
+     152
+    ],
+    "mirarA": [
+     158,
+     136.5
+    ],
+    "ropa": "exploradora",
+    "volando": true,
+    "altura": 9,
+    "aprendiz": false,
+    "js": "G.v18.cambiarMundo('puente_villa','reparado'); return 1;"
+   },
+   "camara": {
+    "tipo": "seguimiento",
+    "dist": 7,
+    "lado": 3.5,
+    "alto": 2.5,
+    "adelante": 5,
+    "miraAlto": -0.5,
+    "fov": 58,
+    "suave": 0.15,
+    "suaveGiro": 0.6
+   },
+   "acciones": [
+    {
+     "t": -1.0,
+     "a": "vuelo",
+     "dur": 8.0,
+     "curva": "lineal",
+     "puntos": [
+      [
+       150,
+       143
+      ],
+      [
+       158,
+       136.5
+      ],
+      [
+       168,
+       129
+      ],
+      [
+       180,
+       120
+      ]
+     ],
+     "sobreSuelo": 8
+    }
+   ]
+  }
+ ]
+}
