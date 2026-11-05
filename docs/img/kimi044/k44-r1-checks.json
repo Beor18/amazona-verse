@@ -1,0 +1,34 @@
+{
+  "calidad": "bajo",
+  "dpr": 3,
+  "solidos": {
+    "activo": true,
+    "version": 1090
+  },
+  "sitio": {
+    "x": -4,
+    "z": -131,
+    "r": 49,
+    "ins": 60
+  },
+  "conSolido": "60/60",
+  "perchas": {
+    "alto": 171,
+    "tejados": 44,
+    "balcones": 127,
+    "copas": 0,
+    "suelo": 12,
+    "farol": 0
+  },
+  "aves": 12,
+  "vecinos": {
+    "n": 4,
+    "visible": true,
+    "tope": 4
+  },
+  "heapMB": 123,
+  "texMB": 122.8,
+  "geo": 133,
+  "tex": 122,
+  "prog": 58
+}

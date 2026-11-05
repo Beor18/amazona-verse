@@ -1,0 +1,352 @@
+{
+  "movil": {
+    "ancho": 390,
+    "alto": 844,
+    "dpr": 3,
+    "cpu": 4,
+    "gpu": "real (RX 5700 XT)",
+    "calidad": "bajo natural (UA iPhone)"
+  },
+  "checks": {
+    "calidad": "bajo",
+    "dpr": 3,
+    "solidos": {
+      "activo": true,
+      "version": 1090
+    },
+    "sitio": {
+      "x": -4,
+      "z": -131,
+      "r": 49,
+      "ins": 60
+    },
+    "conSolido": "60/60",
+    "perchas": {
+      "alto": 171,
+      "tejados": 44,
+      "balcones": 127,
+      "copas": 0,
+      "suelo": 12,
+      "farol": 0
+    },
+    "aves": 12,
+    "vecinos": {
+      "n": 4,
+      "visible": true,
+      "tope": 4
+    },
+    "heapMB": 123,
+    "texMB": 122.8,
+    "geo": 133,
+    "tex": 122,
+    "prog": 58
+  },
+  "tomas": [
+    {
+      "n": 428,
+      "p50": 21,
+      "p95": 35,
+      "peor": 2695,
+      "fps": 50,
+      "calls": 87,
+      "tris": 201708,
+      "heapMB": 168,
+      "texMB": 122.8,
+      "calidad": "bajo",
+      "ciudadViva": {
+        "aves": 12,
+        "pasos": {
+          "pasos": 4772,
+          "cuadros": 534
+        }
+      },
+      "vecinos": {
+        "n": 4,
+        "visible": true,
+        "tope": 4
+      },
+      "ctxPerdidas": 0,
+      "pos": [
+        12,
+        88,
+        -116
+      ],
+      "top": [
+        {
+          "d": 2695,
+          "t": 36.6
+        },
+        {
+          "d": 132,
+          "t": 36.4
+        },
+        {
+          "d": 70,
+          "t": 35.8
+        },
+        {
+          "d": 42,
+          "t": 36
+        }
+      ],
+      "escena": "plaza ON-a"
+    },
+    {
+      "n": 657,
+      "p50": 21,
+      "p95": 28,
+      "peor": 42,
+      "fps": 56,
+      "calls": 83,
+      "tris": 196390,
+      "heapMB": 168,
+      "texMB": 122.8,
+      "calidad": "bajo",
+      "ciudadViva": {
+        "aves": 0,
+        "pasos": {
+          "pasos": 4847,
+          "cuadros": 542
+        }
+      },
+      "vecinos": {
+        "n": 0,
+        "visible": false,
+        "tope": 4
+      },
+      "ctxPerdidas": 0,
+      "pos": [
+        12,
+        88,
+        -116
+      ],
+      "top": [
+        {
+          "d": 42,
+          "t": 51
+        },
+        {
+          "d": 35,
+          "t": 52.6
+        },
+        {
+          "d": 35,
+          "t": 53
+        },
+        {
+          "d": 35,
+          "t": 57.9
+        }
+      ],
+      "escena": "plaza SIN (quiet)"
+    },
+    {
+      "n": 626,
+      "p50": 21,
+      "p95": 28,
+      "peor": 42,
+      "fps": 53,
+      "calls": 82,
+      "tris": 210274,
+      "heapMB": 178,
+      "texMB": 121.6,
+      "calidad": "bajo",
+      "ciudadViva": {
+        "aves": 12,
+        "pasos": {
+          "pasos": 13049,
+          "cuadros": 1427
+        }
+      },
+      "vecinos": {
+        "n": 4,
+        "visible": true,
+        "tope": 4
+      },
+      "ctxPerdidas": 0,
+      "pos": [
+        -33,
+        123,
+        -136
+      ],
+      "top": [
+        {
+          "d": 42,
+          "t": 74.9
+        },
+        {
+          "d": 35,
+          "t": 69.9
+        },
+        {
+          "d": 35,
+          "t": 72.9
+        },
+        {
+          "d": 35,
+          "t": 73.7
+        }
+      ],
+      "escena": "aire ON"
+    },
+    {
+      "n": 696,
+      "p50": 14,
+      "p95": 28,
+      "peor": 35,
+      "fps": 59,
+      "calls": 78,
+      "tris": 204822,
+      "heapMB": 183,
+      "texMB": 121.6,
+      "calidad": "bajo",
+      "ciudadViva": {
+        "aves": 0,
+        "pasos": {
+          "pasos": 13124,
+          "cuadros": 1435
+        }
+      },
+      "vecinos": {
+        "n": 0,
+        "visible": false,
+        "tope": 4
+      },
+      "ctxPerdidas": 0,
+      "pos": [
+        -33,
+        123,
+        -136
+      ],
+      "top": [
+        {
+          "d": 35,
+          "t": 85.9
+        },
+        {
+          "d": 35,
+          "t": 92.9
+        },
+        {
+          "d": 35,
+          "t": 93.9
+        },
+        {
+          "d": 28,
+          "t": 83.5
+        }
+      ],
+      "escena": "aire SIN (quiet)"
+    },
+    {
+      "n": 624,
+      "p50": 21,
+      "p95": 28,
+      "peor": 42,
+      "fps": 54,
+      "calls": 73,
+      "tris": 294657,
+      "heapMB": 142,
+      "texMB": 120.2,
+      "calidad": "bajo",
+      "ciudadViva": {
+        "aves": 0,
+        "pasos": {
+          "pasos": 13131,
+          "cuadros": 1436
+        }
+      },
+      "vecinos": {
+        "n": 4,
+        "visible": true,
+        "tope": 4
+      },
+      "ctxPerdidas": 0,
+      "pos": [
+        125,
+        5,
+        140
+      ],
+      "top": [
+        {
+          "d": 42,
+          "t": 103.3
+        },
+        {
+          "d": 35,
+          "t": 103.7
+        },
+        {
+          "d": 35,
+          "t": 104.3
+        },
+        {
+          "d": 35,
+          "t": 106.2
+        }
+      ],
+      "escena": "villa ON"
+    },
+    {
+      "n": 687,
+      "p50": 14,
+      "p95": 21,
+      "peor": 35,
+      "fps": 57,
+      "calls": 68,
+      "tris": 290671,
+      "heapMB": 123,
+      "texMB": 120.2,
+      "calidad": "bajo",
+      "ciudadViva": {
+        "aves": 0,
+        "pasos": {
+          "pasos": 13131,
+          "cuadros": 1436
+        }
+      },
+      "vecinos": {
+        "n": 0,
+        "visible": false,
+        "tope": 4
+      },
+      "ctxPerdidas": 0,
+      "pos": [
+        125,
+        5,
+        140
+      ],
+      "top": [
+        {
+          "d": 35,
+          "t": 123.3
+        },
+        {
+          "d": 28,
+          "t": 117.3
+        },
+        {
+          "d": 28,
+          "t": 117.3
+        },
+        {
+          "d": 28,
+          "t": 118
+        }
+      ],
+      "escena": "villa SIN (quiet)"
+    }
+  ],
+  "prueba": {
+    "passed": 19,
+    "total": 20,
+    "fallos": [
+      "No se crea ninguna malla nueva :: "
+    ]
+  },
+  "errores": {
+    "errores": [],
+    "ctxPerdidas": 0,
+    "ctxRestauradas": 0
+  }
+}
