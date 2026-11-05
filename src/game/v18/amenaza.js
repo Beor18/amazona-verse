@@ -30,7 +30,7 @@ window.AVV18Amenaza = function (G) {
     nombre: 'Sombra de Tormenta', empieza: '¡Este cielo es mío!', fin: 'Bueno… el sol también tiene derecho.',
     gana: '¡La Sombra de Tormenta se fue! Ganaste 1 madera y 1 piedra.', ganaOtra: '¡Se fue otra vez! Ya te llevaste sus materiales.',
     acierto: '¡Le diste!', rebota: '¡La ráfaga rebotó en tu escudo!', falla: 'Apunta al centro de la nube.',
-    pierde: '¡Uy, te mareaste! Sacude las plumas y prueba otra vez.', lejos: 'Te alejaste: la Sombra de Tormenta se queda esperando.',
+    pierde: '¡Uy, te mareaste! Prueba otra vez, o aléjate volando para dejarla.', lejos: 'Te alejaste: la Sombra de Tormenta se queda esperando.',
     cuidado: '¡Cuidado, va a soplar!', atraviesa: 'Eso la atraviesa. ¡Usa tu poder!',
     guiaV: 'Grito: apunta a la nube (Acción o G)', guiaA: 'Escudo: ábrelo cuando sople (Acción o G)', guiaT: 'Toca Poder',
     poder: 'Poder', tu: 'Tú'
@@ -108,6 +108,8 @@ window.AVV18Amenaza = function (G) {
   }
 
   // ---------- Aciertos, ráfagas y fin ----------
+  // La siguiente ráfaga espera a que el poder vuelva a estar listo (con el Escudo, 7 s de espera, si no era imposible)
+  const trasPoder = s => Math.max(s, ((A.j && A.j.cd && A.j.cd[A.j.poder]) || 0) + 0.3);
   function acertar(como) {
     if (A.fase !== 'lucha') return false;
     A.aciertos++; A.flash = 0.35; A.ultimo = como;
@@ -116,7 +118,7 @@ window.AVV18Amenaza = function (G) {
     if (A.aciertos >= ACIERTOS) { terminar(true); return true; }
     // Se mueve y cambia de patrón: nunca es un blanco quieto
     A.ancla = anclaLejos(); A.patron = (A.patron + 1) % PATRONES.length;
-    A.cadaT = PATRONES[A.patron].cada * 0.8; A.avisoT = 0; A.pendientes = 0;
+    A.cadaT = trasPoder(PATRONES[A.patron].cada * 0.8); A.avisoT = 0; A.pendientes = 0;
     flotante((como === 'escudo' ? TXT.rebota : TXT.acierto) + ' ' + A.aciertos + '/' + ACIERTOS);
     return true;
   }
@@ -138,7 +140,7 @@ window.AVV18Amenaza = function (G) {
     return 'golpe';
   }
   function perder() {
-    toast(TXT.pierde, 2800); emitir({ tipo: 'pierde' });
+    toast(TXT.pierde, 3600); emitir({ tipo: 'pierde' });
     A.aciertos = 0; A.patron = 0; A.j = nuevoJugador(A.j && A.j.especie); A.j.mareo = 1.2; A.cadaT = 3; A.avisoT = 0; A.pendientes = 0;
     pintar();
   }
@@ -287,7 +289,7 @@ window.AVV18Amenaza = function (G) {
     }
     const d = Math.hypot(S.pos.x - A.pos.x, S.pos.z - A.pos.z);
     if (A.fase === 'nada') {
-      const cerca = !dispersa() && Math.hypot(S.pos.x - centro.x, S.pos.z - centro.z) < 60;
+      const cerca = !dispersa() && (A.forzarSale || (V && V.mundo('puente_villa') === 'reparado')) && Math.hypot(S.pos.x - centro.x, S.pos.z - centro.z) < 60;
       niebla.visible = ojos.visible = cerca;
       if (cerca) { mover(dt); dibujar(dt); }
       if (!A.manual && cerca && Math.hypot(S.pos.x - centro.x, S.pos.z - centro.z) < R_EMPIEZA && libre()) iniciar();
@@ -302,16 +304,16 @@ window.AVV18Amenaza = function (G) {
     if (A.avisoT > 0) {
       if ((A.avisoT -= dt) <= 0) {
         rafaga(); if (A.fase !== 'lucha') return;
-        if (--A.pendientes > 0) A.avisoT = 0.55; else A.cadaT = P.cada;
+        if (--A.pendientes > 0) A.avisoT = 0.55; else A.cadaT = trasPoder(P.cada);
       }
     } else if ((A.cadaT -= dt) <= 0) {
-      A.avisoT = P.aviso; A.pendientes = P.rafagas;
+      A.avisoT = P.aviso; A.pendientes = A.j.poder === 'escudo_plumas' ? 1 : P.rafagas; // con el escudo, una ráfaga cada vez
       if (!A.avisoDicho) { A.avisoDicho = true; flotante(TXT.cuidado); }
     }
     if (d > R_SALE) { salir(TXT.lejos); return; }
     dibujar(dt); pintar();
   }
-  G.on('update', (dt, busy) => { if (A.manual) return; if (busy && A.fase !== 'lucha') return; paso(Math.min(dt, 0.1)); }, 72);
+  G.on('update', (dt, busy) => { if (A.manual) return; if (busy && A.fase === 'lucha') return; paso(Math.min(dt, 0.1)); }, 72);
   G.on('apply', () => { if (A.fase === 'lucha') salir(); }, 48);
 
   // =====================================================================================================================
@@ -337,6 +339,8 @@ window.AVV18Amenaza = function (G) {
     const esperarRafaga = () => { for (let i = 0; i < 400 && A.avisoT <= 0; i++) paso(1 / 30); return A.avisoT > 0; };
     try {
       V.borrar(); V.recargar();
+      check('Con el puente sin reparar no sale (no tapa la reparación)', (S.pos.x = centro.x + 5, S.pos.z = centro.z, S.pos.y = altura(S.pos.x, S.pos.z), correr(0.2), !niebla.visible && A.fase === 'nada'));
+      A.forzarSale = true;
       // ----- Vittata -----
       S.pos.x = centro.x + 5; S.pos.z = centro.z; S.pos.y = altura(S.pos.x, S.pos.z);
       check('Aparece cerca del camino y se ve (niebla y ojos: 2 draw calls)', (correr(0.2), niebla.visible && ojos.visible && niebla.count <= 14));
@@ -383,7 +387,7 @@ window.AVV18Amenaza = function (G) {
       check('Táctil: el aviso dice «Toca Poder» y hay botón en pantalla', !!hud.q('poder') && (TACTIL ? guia() === TXT.guiaT : guia() !== TXT.guiaT));
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }
     if (A.fase === 'lucha') salir();
-    A.fase = 'nada'; A.manual = false; niebla.visible = ojos.visible = false; timers.length = 0;
+    A.fase = 'nada'; A.manual = false; A.forzarSale = false; niebla.visible = ojos.visible = false; timers.length = 0;
     evTest = null;
     G.ui.toast = toast0; G.quiet = quiet0;
     S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; if (fac0 && S.facing) { S.facing.x = fac0.x; S.facing.z = fac0.z; }
@@ -397,6 +401,9 @@ window.AVV18Amenaza = function (G) {
   G.v18amenaza = { ID, iniciar, salir, usarPoder, usarBasico, paso, estado: () => A, get centro() { return centro; }, test,
     recolocar() { centro = buscarSitio(); A.pos.x = centro.x; A.pos.z = centro.z; } };
   // el puente se encuentra cuando el mundo está listo: recoloca entonces (una vez)
-  setTimeout(() => { if (A.fase === 'nada' && G.v18Reparar && G.v18Reparar.P && G.v18Reparar.P.eje) G.v18amenaza.recolocar(); }, 4000);
+  (function esperarPuente(n) { // reintenta hasta que el puente exista (en móviles lentos tarda más de 4 s)
+    if (G.v18Reparar && G.v18Reparar.P && G.v18Reparar.P.eje) { if (A.fase === 'nada') G.v18amenaza.recolocar(); return; }
+    if (n < 120) setTimeout(() => esperarPuente(n + 1), 1000);
+  })(0);
   return G.v18amenaza;
 };

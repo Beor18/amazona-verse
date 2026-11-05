@@ -1767,6 +1767,7 @@ window.AV_EN = {
  "¡Ganaste una pluma de rival!": "You won a rival feather!",
  "¡Ganaste otra vez! La pluma de rival ya la tienes.": "You won again! You already have the rival feather.",
  "¡Uy, te mareaste! Sacude las plumas y prueba otra vez.": "Oops, you got dizzy! Shake your feathers and try again.",
+ "¡Uy, te mareaste! Prueba otra vez, o aléjate volando para dejarla.": "Oops, you got dizzy! Try again, or fly away to leave it.",
  "Te alejaste: el duelo queda para luego.": "You flew off: the duel can wait.",
  "¡Esquivó!": "Dodged!",
  "¡Ganaste!": "You won!",
