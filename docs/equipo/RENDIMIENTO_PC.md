@@ -653,3 +653,33 @@ p50 del flip 14–28 ms, fps 20–38 en contención; 0 errores de consola en las
 Evidencia: `docs/img/kimi053/qa53v_k054-r{1..r5}.json` (+capturas `qa53v_k054-*_flip1.jpg`).
 Palabra siguiente de la fila: corte perezoso de `encoger` (look.js) para repartir el re-subido en
 ~40 cuadros y la medición limpia del flip con la PC libre.
+
+## KIMI-055 · QA-53 (resto): corte perezoso de `encoger` en look.js (5-nov · Kimi 1)
+
+Qué había antes: el gancho `calidad` de look.js llamaba a `barrer`/`recortar`, que recortaban TODAS
+las texturas de la escena dentro del mismo evento (`encoger`: un lienzo + `drawImage` por textura,
+además de la ráfaga de re-subidas que recoge el drenado de KIMI-054).
+
+Qué cambió (`src/game/look.js`): con `diferirRec` activo solo durante el evento `calidad`, `encoger`
+apunta `{textura, tope}` en una cola en vez de recortar; `pasarColaRec()` (en el gancho `render`,
+mismo prioridad 90) ejecuta los recortes con tope de ~3 ms por cuadro (mínimo 1). `aplicar`/`quitar`
+invalidan la cola (`recGen`) para no pisar un recorte más reciente. El re-subido a la GPU sale de
+la cola del drenado (KIMI-054) de forma escalonada.
+
+Medido (`kimi1_qa53v.js --etiqueta k055-r1`, mismo perfil; PC con Kimi 2 y Kimi 3 activos): POST
+flip medio→bajo `evMs` 393 ms (BASE 419) frente a 415/431 de las corridas con `encoger` síncrono
+(r3/r4) — o sea, el bloqueo del evento (~0,4 s) NO era de `encoger`: es la reconstrucción de
+vegetación (`actualizar(true)` + `actualizarPasto(true)` en su gancho `calidad`). Métricas de
+cuadros POST: p50 21 / p95 56 / peor 1549 ms / n200=1 (r4: 28/63/1715/1) — dentro del ruido de
+contención. Conclusión honesta: sin mejora medible en esta escena; el cambio queda como higiene
+(consistente con KIMI-054: el trabajo pesado no corre dentro del evento) y la palabra real del flip
+es diferir la reconstrucción de vegetación (carriles `vegetacion.js`, Kimi 1). Verificación del
+enganche de la cola: probe `tools/build/kimi1_k055probe.js` (cuenta lienzos creados dentro/fuera del
+evento) — la primera corrida quedó ahogada por contención; queda para la re-medición limpia.
+
+Verificación en la PC (página sembrada, GPU real, CPU ×4): selfTest 103/103 · movementTest aislado
+52/52 (0 errores de consola). En corrida acumulada con contención: movementTest 46/52 (Vittata
+clavada a 37,9 m en el spawn: flake de entrada/streaming QA-111) y comicTest 62/67 (banda
+documentada 61–67 de estado acumulado: «Mis escenas»/gags) — mismas familias de HEAD, no atribuibles
+a look.js (no toca dibujo, física ni streaming). 0 errores de consola en todas las corridas.
+Evidencia: `docs/img/kimi053/qa53v_k055-r1.json` (+capturas).
