@@ -284,9 +284,19 @@ AVE.module('renderer', function (G) {
   // clave del precalentado de las familias con luz: al cambiar, vuelven a estar pendientes y se re-enlazan por
   // tandas fuera del dibujo real, en vez de compilarlas de golpe dentro del primer cuadro (tirón del adaptativo).
   let genLuz = 0, sombraOn = null;
+  // QA-53 (variantes por sombras): familias con luz cuya variante CONTRARIA (sombras on/off) ya se
+  // enlazó en reposo. Al conmutar de verdad, estas claves pasan a calorHecho: el conmutador del
+  // adaptativo encuentra el programa en la caché de three y no re-enlaza nada.
+  const calorOtra = new Set();
+  // ?otra=0 apaga el precalentado de la variante contraria (línea base A/B de QA-53)
+  const OTRA_OFF = /[?&]otra=0(?:&|$)/.test(location.search);
   function aplicarSombras(C) {
     const on = C.sombras > 0;
-    if (sombraOn !== null && sombraOn !== on) genLuz++;
+    if (sombraOn !== null && sombraOn !== on) {
+      genLuz++;
+      for (const k of calorOtra) calorHecho.add(k);
+      calorOtra.clear();
+    }
     sombraOn = on;
     sun.castShadow = on;
     if (!on) return;
@@ -576,7 +586,7 @@ AVE.module('renderer', function (G) {
       o.visible = true;
       if (o.isInstancedMesh && o.count === 0) o.count = 1;
     });
-    try { renderer.setRenderTarget(rt); renderer.render(scene, camera); if (post.composer) post.composer.render(); }
+    try { sinCuenta(() => { renderer.setRenderTarget(rt); renderer.render(scene, camera); if (post.composer) post.composer.render(); }); }
     catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     renderer.setRenderTarget(null);
     if (!capa31) camera.layers.disable(31);
@@ -600,7 +610,7 @@ AVE.module('renderer', function (G) {
     if (c && c.v === m.version && c.g === genCalor && c.l === genLuz && c.tm === tm && c.f === f && c.b === b) return c;
     let k = '';
     try { k = f ? m.customProgramCacheKey() : ''; } catch (e) { k = ''; }
-    c = { v: m.version, g: genCalor, l: genLuz, tm, f, b, k: genCalor + '|' + tm + '|' + k, ids: {} };
+    c = { v: m.version, g: genCalor, l: genLuz, tm, f, b, k: genCalor + '|' + tm + '|' + k, ids: {}, idsO: {} };
     claveCache.set(m, c);
     return c;
   }
@@ -611,9 +621,21 @@ AVE.module('renderer', function (G) {
   function rasgos(o) { return (o.isSkinnedMesh ? 's' : '') + (o.isInstancedMesh ? 'i' : '') + (o.morphTargetInfluences ? 'm' : ''); }
   function matsDe(o) { return Array.isArray(o.material) ? o.material : [o.material]; }
   function conLuz(m) { return !!(m.isMeshLambertMaterial || m.isMeshToonMaterial || m.isMeshPhongMaterial || m.isMeshStandardMaterial || m.isShadowMaterial || (m.isShaderMaterial && m.lights === true)); }
+  // gen explícito: la variante contraria precalentada en reposo se enlaza con el genLuz QUE TENDRÁ
+  // cuando las sombras conmuten (genLuz+1); al conmutar, su clave coincide con la del lado nuevo.
+  function idCalorGen(o, m, gen) {
+    const c = cacheDe(m);
+    return c.k + (conLuz(m) ? '|L' + gen : '') + '|' + rasgos(o);
+  }
   function idCalor(o, m) {
     const c = cacheDe(m), r = (o.isSkinnedMesh ? 1 : 0) + (o.isInstancedMesh ? 2 : 0) + (o.morphTargetInfluences ? 4 : 0);
-    return c.ids[r] || (c.ids[r] = c.k + (conLuz(m) ? '|L' + genLuz : '') + '|' + rasgos(o));
+    return c.ids[r] || (c.ids[r] = idCalorGen(o, m, genLuz));
+  }
+  // Clave de la variante contraria (genLuz+1), cacheada por material×rasgos como idCalor: cacheDe
+  // invalida la entrada cuando cambia genLuz, así que idsO siempre refleja el genLuz vigente +1.
+  function idCalorOtra(o, m) {
+    const c = cacheDe(m), r = (o.isSkinnedMesh ? 1 : 0) + (o.isInstancedMesh ? 2 : 0) + (o.morphTargetInfluences ? 4 : 0);
+    return c.idsO[r] || (c.idsO[r] = idCalorGen(o, m, genLuz + 1));
   }
   function objPendiente(o) {
     const m = o.material;
@@ -654,6 +676,15 @@ AVE.module('renderer', function (G) {
       if (!capa31) camera.layers.disable(31);
     }
   }
+  // Los renders del precalentado son a 32×32 fuera de pantalla y no deben contarse como draw calls
+  // de la escena: se dibuja con el render crudo (sin el contador de `cuenta` y sin la cadena de
+  // wrappers que otros montan sobre renderer.render, p. ej. el contar() de streamingTest).
+  function sinCuenta(fn) {
+    const w = renderer.render;
+    renderer.render = renderCrudo;
+    try { fn(); }
+    finally { renderer.render = w; }
+  }
   // Dibuja solo este objeto (32×32, con las luces y las sombras de verdad) para enlazar su programa.
   function warmUno(o) {
     const objs = dibujables();
@@ -665,7 +696,7 @@ AVE.module('renderer', function (G) {
     if (o.isInstancedMesh && o.count === 0) o.count = 1;
     if (!rtCalor) rtCalor = new THREE.WebGLRenderTarget(32, 32);
     try {
-      conCapa31(() => { renderer.setRenderTarget(rtCalor); renderer.render(scene, camera); });
+      sinCuenta(() => conCapa31(() => { renderer.setRenderTarget(rtCalor); renderer.render(scene, camera); }));
     } catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     finally {
       for (const [obj, vis, fc, n] of guard) { obj.visible = vis; obj.frustumCulled = fc; if (n != null) obj.count = n; }
@@ -682,7 +713,7 @@ AVE.module('renderer', function (G) {
     // instante para que sus dos programas también queden enlazados y no haya tirón al subir a alto.
     const R = post.rayos, r0 = R && R.enabled, u0 = R && post.grade.uniforms.uRayos.value;
     if (R) { R.enabled = true; post.grade.uniforms.uRayos.value = 0.02; }
-    try { post.composer.render(); }
+    try { sinCuenta(() => post.composer.render()); }
     catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     finally { for (const [obj, vis] of guard) obj.visible = vis; if (R) { R.enabled = r0; post.grade.uniforms.uRayos.value = u0; } }
   }
@@ -709,6 +740,49 @@ AVE.module('renderer', function (G) {
     // si no, el primer dibujo de verdad —el cuadro de «Empezar»— compilaría bloom/gradación allí.
     if (post.composer && !postCalor && n < maxN) { warmPost(); postCalor = true; n++; }
     if (!post.composer) postCalor = false;
+    // QA-53 (resto): con el lado actual al día (o sobrando presupuesto de la tanda) se enlaza la
+    // variante CONTRARIA de sombras (USE_SHADOWMAP on/off) de las familias con luz. Así, cuando el
+    // adaptativo conmuta las sombras, three ya tiene el programa en la caché de cada material y
+    // aplicarSombras lo da por hecho sin re-enlaces: el «tranco» se paga aquí, en reposo.
+    if (otraAlcanzable() && n < maxN) n += warmOtraPresupuesto(maxN - n, ms - (performance.now() - t0));
+    return n;
+  }
+  // QA-53 (resto): la variante contraria de sombras solo se precalienta si es alcanzable. iPhone
+  // (techo 'bajo', QA-107): las sombras nunca se encienden ahí, la variante contraria no es
+  // alcanzable y no se precalienta (ni se paga su memoria de programa).
+  function otraAlcanzable() {
+    if (OTRA_OFF) return false; // ?otra=0: línea base A/B del precalentado de la variante contraria
+    if (sun.castShadow) return true; // apagar siempre es posible (bajada de emergencia)
+    return calidad.nivel !== 'bajo' || !PERFIL.techo; // encender: solo si algo puede subir la calidad
+  }
+  function objPendienteOtra(o) {
+    const m = o.material;
+    if (!Array.isArray(m)) return !!m && conLuz(m) && !calorOtra.has(idCalorOtra(o, m));
+    for (let i = 0; i < m.length; i++) if (m[i] && conLuz(m[i]) && !calorOtra.has(idCalorOtra(o, m[i]))) return true;
+    return false;
+  }
+  function siguienteCalorOtra() {
+    for (const o of dibujables()) if (objPendienteOtra(o)) return o;
+    return null;
+  }
+  function warmOtraUno(o) {
+    const on = sun.castShadow;
+    try { sun.castShadow = !on; warmUno(o); } // compila/enlaza la variante contraria (queda en la caché de three)
+    finally { sun.castShadow = on; }
+    for (const m of matsDe(o)) if (m && conLuz(m)) calorOtra.add(idCalorOtra(o, m));
+  }
+  function warmOtraPresupuesto(maxN, ms) {
+    const t0 = performance.now();
+    const vistos = new Set();
+    let n = 0;
+    for (const o of dibujables()) {
+      if (n >= maxN || performance.now() - t0 > ms) break;
+      const claves = [];
+      for (const m of matsDe(o)) { if (m) { const k = idCalorOtra(o, m); if (!calorOtra.has(k)) claves.push(k); } }
+      if (!claves.length || claves.every(k => vistos.has(k))) continue;
+      warmOtraUno(o); n++;
+      for (const k of claves) vistos.add(k);
+    }
     return n;
   }
   // Pantalla de carga (src/ui/carga.js): cuánto falta del precalentado y subida de texturas por tandas. Solo lee el estado de
@@ -837,7 +911,7 @@ AVE.module('renderer', function (G) {
   function perderContexto() {
     const ya = CTX.perdido;
     CTX.perdido = true;
-    rtCalor = null; postCalor = false; genCalor++; calorHecho.clear();
+    rtCalor = null; postCalor = false; genCalor++; calorHecho.clear(); calorOtra.clear();
     if (!ya) { CTX.perdidas++; if (G.pausa) G.pausa.set('contexto', true); G.emit('contexto', false); }
     avisoContexto('perdido');
     clearTimeout(CTX.timer);
@@ -997,6 +1071,13 @@ AVE.module('renderer', function (G) {
       calentarPresupuesto(muchos ? 6 : 2, muchos ? 12 : 6);
       warmMs = performance.now() - w0;
       fpsM.warm = Math.max(fpsM.warm, 2000);
+    } else if (puedeCalentar && ((post.composer && !postCalor) || siguienteCalorOtra())) {
+      // Lado actual al día: todo el presupuesto del cuadro sobra para el post (edge: una última
+      // tanda de familias exactamente llena el tope y lo dejaba sin enlazar nunca) y para la
+      // variante contraria de sombras en reposo (QA-53).
+      const w0 = performance.now();
+      calentarPresupuesto(2, 6);
+      warmMs = performance.now() - w0;
     }
     // QA-53 (post-reveal): las texturas que look.js sustituye al cambiar de calidad (y las de lo que
     // entra en escena) se subían dentro del primer dibujo que las usa. Se suben unas pocas por cuadro,
@@ -1042,6 +1123,8 @@ AVE.module('renderer', function (G) {
     // ese cuadro, pero de 2 en 2 para no inflar el cuadro de «Empezar».
     const oculto = G.ui.worldHidden && G.ui.worldHidden();
     if (oculto && puedeCalentar) {
+      // Con el mundo oculto el presupuesto es mayor; cuando el lado actual está al día, la variante
+      // contraria de sombras se enlaza aquí a mayor ritmo (detrás del creador/carga no se nota).
       if (calentarPresupuesto(8, 12) > 0) fpsM.warm = Math.max(fpsM.warm, 2000);
     } else if (!oculto) render(dt, moving);
     requestAnimationFrame(frame);
@@ -1388,7 +1471,7 @@ AVE.module('renderer', function (G) {
 
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, leerLienzo: fotoLeer, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
-    _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; } },
+    _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; }, get otra() { return calorOtra.size; } },
     fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, esperas: FOTOS.esperas, caidas: FOTOS.caidas, errPBO: FOTOS.errPBO, cola: FOTOS.cola.length }),
     precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas, marcaGPU },
     contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest, calidadTest, equipo: PERFIL };

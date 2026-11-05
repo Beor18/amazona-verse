@@ -1,0 +1,144 @@
+{
+ "cuando": "2026-11-05T07:13:55.233Z",
+ "maquina": "PC Windows · Chrome headless GPU real · 375×812 dpr 3 · CPU ×4",
+ "escenarios": {
+  "base": {
+   "asentado": {
+    "nivel": "medio",
+    "sombras": true,
+    "progs": 108,
+    "tex": 144,
+    "geo": 117,
+    "prec": {
+     "hechos": 41,
+     "otra": 0
+    },
+    "pend": 0
+   },
+   "flip1": {
+    "a": "medio→bajo",
+    "fps": 51.1,
+    "p50": 14,
+    "p95": 42,
+    "peor": 160,
+    "n200": 0,
+    "n500": 0
+   },
+   "trasFlip1": {
+    "nivel": "bajo",
+    "sombras": false,
+    "progs": 113,
+    "tex": 164,
+    "geo": 117,
+    "prec": {
+     "hechos": 57,
+     "otra": 0
+    },
+    "pend": 0
+   },
+   "asentadoBajo": {
+    "nivel": "bajo",
+    "sombras": false,
+    "progs": 111,
+    "tex": 140,
+    "geo": 114,
+    "prec": {
+     "hechos": 57,
+     "otra": 0
+    },
+    "pend": 0
+   },
+   "flip2": {
+    "a": "bajo→medio",
+    "fps": 35.7,
+    "p50": 21,
+    "p95": 49,
+    "peor": 451,
+    "n200": 1,
+    "n500": 0
+   },
+   "trasFlip2": {
+    "nivel": "medio",
+    "sombras": true,
+    "progs": 116,
+    "tex": 165,
+    "geo": 124,
+    "prec": {
+     "hechos": 74,
+     "otra": 0
+    },
+    "pend": 0
+   }
+  },
+  "post": {
+   "asentado": {
+    "nivel": "medio",
+    "sombras": true,
+    "progs": 117,
+    "tex": 144,
+    "geo": 119,
+    "prec": {
+     "hechos": 41,
+     "otra": 5
+    },
+    "pend": 0
+   },
+   "flip1": {
+    "a": "medio→bajo",
+    "fps": 56.9,
+    "p50": 14,
+    "p95": 42,
+    "peor": 243,
+    "n200": 1,
+    "n500": 0
+   },
+   "trasFlip1": {
+    "nivel": "bajo",
+    "sombras": false,
+    "progs": 117,
+    "tex": 126,
+    "geo": 116,
+    "prec": {
+     "hechos": 63,
+     "otra": 0
+    },
+    "pend": 0
+   },
+   "asentadoBajo": {
+    "nivel": "bajo",
+    "sombras": false,
+    "progs": 117,
+    "tex": 126,
+    "geo": 116,
+    "prec": {
+     "hechos": 63,
+     "otra": 0
+    },
+    "pend": 0
+   },
+   "flip2": {
+    "a": "bajo→medio",
+    "fps": 26.8,
+    "p50": 28,
+    "p95": 97,
+    "peor": 417,
+    "n200": 1,
+    "n500": 0
+   },
+   "trasFlip2": {
+    "nivel": "medio",
+    "sombras": true,
+    "progs": 129,
+    "tex": 163,
+    "geo": 122,
+    "prec": {
+     "hechos": 80,
+     "otra": 16
+    },
+    "pend": 0
+   }
+  }
+ },
+ "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "errores": []
+}
