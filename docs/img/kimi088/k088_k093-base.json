@@ -1,0 +1,344 @@
+{
+ "etiqueta": "k093-base",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "v18": true,
+ "secs": 14,
+ "contencion": "PC libre al medir (0 chrome/node ajenos)",
+ "escenarios": {
+  "medio": {
+   "quieto": {
+    "fpsPorSeg": [
+     3,
+     8,
+     3,
+     19,
+     21,
+     22,
+     21,
+     22,
+     22,
+     23,
+     23
+    ],
+    "fpsMed": 17,
+    "fpsMin": 3,
+    "peorMs": 3222,
+    "p95Ms": 118,
+    "stats": [
+     {
+      "calls": 94,
+      "tris": 419603,
+      "fpsMedidor": 6,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 121,
+      "tris": 474841,
+      "fpsMedidor": 10,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 123,
+      "tris": 462630,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 110,
+      "tris": 448698,
+      "fpsMedidor": 20,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 110,
+      "tris": 448698,
+      "fpsMedidor": 20,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 110,
+      "tris": 448698,
+      "fpsMedidor": 21,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 110,
+      "tris": 448698,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 110,
+      "tris": 448698,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 110,
+      "tris": 448698,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 110,
+      "tris": 448698,
+      "fpsMedidor": 23,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 144
+   },
+   "sombra": {
+    "fpsPorSeg": [
+     21,
+     23,
+     26,
+     28,
+     27,
+     28,
+     28,
+     29,
+     26,
+     28,
+     29,
+     28,
+     29,
+     29,
+     30
+    ],
+    "fpsMed": 27,
+    "fpsMin": 21,
+    "peorMs": 95,
+    "p95Ms": 52,
+    "stats": [
+     {
+      "calls": 120,
+      "tris": 459318,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 122,
+      "tris": 462128,
+      "fpsMedidor": 23,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 122,
+      "tris": 462465,
+      "fpsMedidor": 26,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 125,
+      "tris": 465753,
+      "fpsMedidor": 29,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 125,
+      "tris": 465753,
+      "fpsMedidor": 25,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 125,
+      "tris": 465753,
+      "fpsMedidor": 29,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 126,
+      "tris": 466713,
+      "fpsMedidor": 28,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 125,
+      "tris": 465753,
+      "fpsMedidor": 29,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 129,
+      "tris": 467831,
+      "fpsMedidor": 27,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 146,
+      "tris": 569379,
+      "fpsMedidor": 28,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 145,
+      "tris": 568306,
+      "fpsMedidor": 28,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 146,
+      "tris": 569266,
+      "fpsMedidor": 28,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 145,
+      "tris": 568306,
+      "fpsMedidor": 29,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 145,
+      "tris": 568306,
+      "fpsMedidor": 29,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 150
+   },
+   "sombraSinNiebla": {
+    "fpsPorSeg": [
+     20,
+     15,
+     19,
+     18,
+     20,
+     20,
+     20,
+     20,
+     20,
+     18,
+     15,
+     18,
+     22,
+     24
+    ],
+    "fpsMed": 19,
+    "fpsMin": 15,
+    "peorMs": 118,
+    "p95Ms": 77,
+    "stats": [
+     {
+      "calls": 118,
+      "tris": 452947,
+      "fpsMedidor": 21,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 93,
+      "tris": 447019,
+      "fpsMedidor": 16,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 109,
+      "tris": 507072,
+      "fpsMedidor": 19,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 124,
+      "tris": 536653,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 121,
+      "tris": 528803,
+      "fpsMedidor": 20,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 132,
+      "tris": 532547,
+      "fpsMedidor": 20,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 126,
+      "tris": 541825,
+      "fpsMedidor": 21,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 130,
+      "tris": 542549,
+      "fpsMedidor": 21,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 124,
+      "tris": 535364,
+      "fpsMedidor": 20,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 132,
+      "tris": 472879,
+      "fpsMedidor": 17,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 130,
+      "tris": 469597,
+      "fpsMedidor": 16,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 130,
+      "tris": 469219,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 131,
+      "tris": 479309,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 131
+   }
+  }
+ },
+ "erroresConsola": []
+}

@@ -55,7 +55,11 @@ window.AVV18Amenaza = function (G) {
   const ANCLAS = a => [0, 1, 2, 3].map(i => ({ x: centro.x + Math.cos(a + i * Math.PI / 2) * 6, z: centro.z + Math.sin(a + i * Math.PI / 2) * 6 }));
 
   // ---------- Escena: niebla + ojos (2 InstancedMesh) ----------
-  const NB = (G.renderer.nivel && G.renderer.nivel() === 'bajo') || G.renderer.REDUCED ? 9 : 14;
+  // KIMI-094 (era KIMI-093 en mi rama; ese ID lo tomó Kimi 1 para QA-106 en el mismo rebase): la nube
+  // completa (14) costaba ~5 fps en «medio» a CPU ×4 (pedido de Kimi 1, KIMI-088/PEDIDOS);
+  // «medio» dibuja la misma densidad que «bajo» (9) y «alto» (escritorio) conserva la nube entera.
+  const NIVEL0 = G.renderer.nivel && G.renderer.nivel();
+  const NB = G.renderer.REDUCED || NIVEL0 === 'bajo' || NIVEL0 === 'medio' ? 9 : 14;
   // KIMI-087 (pulido visual, sin tocar la lógica): el tono va por instanceColor por bola y el borde es suave
   // con un degradado radial pintado en runtime (0 assets nuevos, ~16 KB en GPU).
   const matNiebla = new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.72, depthWrite: false });

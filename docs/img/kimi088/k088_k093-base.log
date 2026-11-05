@@ -1,0 +1,31 @@
+[19:21:53] lanzando Chrome y entrando al juego (v18=1)...
+[19:21:55] juego listo, entrando...
+[19:21:58] …latido
+[19:22:03] …latido
+[19:22:08] …latido
+[19:22:13] …latido
+[19:22:13] entrada ok, preparando módulos v18...
+[19:22:16] prep ok
+[19:22:16] calidad medio (=medio)
+[19:22:16] esperando asentado...
+[19:22:18] …latido
+[19:22:19] asentado
+[19:22:19] midiendo medio/quieto...
+[19:22:23] …latido
+[19:22:28] …latido
+[19:22:33] …latido
+[19:22:37] [medio/quieto] fpsPorSeg=[3,8,3,19,21,22,21,22,22,23,23] fpsMed=17 min=3 peorMs=3222 calls=111 tris=449796
+[19:22:38] …latido
+[19:22:38] midiendo medio/sombra...
+[19:22:43] …latido
+[19:22:48] …latido
+[19:22:53] …latido
+[19:22:55] [medio/sombra] fpsPorSeg=[21,23,26,28,27,28,28,29,26,28,29,28,29,29,30] fpsMed=27 min=21 peorMs=95 calls=132 tris=501788
+[19:22:56] midiendo medio/sombraSinNiebla...
+[19:22:58] …latido
+[19:23:03] …latido
+[19:23:08] …latido
+[19:23:12] [medio/sombraSinNiebla] fpsPorSeg=[20,15,19,18,20,20,20,20,20,18,15,18,22,24] fpsMed=19 min=15 peorMs=118 calls=123 tris=501214
+[19:23:13] …latido
+[19:23:13] errores de consola: []
+[19:23:13] evidencia: C:\Users\kelvi\amazonaversegame3\docs\img\kimi088\k088_k093-base.json
