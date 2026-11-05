@@ -3,7 +3,9 @@
    - Especies: las de la colonia «ciudad36» de residentes.js (bosque nublado de las Antillas; tras el pacto, las 36 vivas).
      Nada de canon nuevo: son cotorras de las especies que ya existen, sin nombres ni personajes.
    - De día: vuelan de torre en torre, conversan (2 o 3 en el mismo tejado, mirándose), buscan comida en la plaza en grupo,
-     arreglan (picotean el borde de un tejado y bajan a por una ramita a la plaza) y juegan (dos se persiguen alrededor de una torre).
+     arreglan (picotean el borde de un tejado y bajan a por una ramita a la plaza), juegan (dos se persiguen alrededor de una torre) y
+     cruzan el cielo en bandada: 3 a 6 ruedan juntas en un círculo lento y elevado sobre la ciudad (por encima de lo más alto del
+     anillo, con margen muestreado) unos 16-30 s y luego se dispersan a posarse (KIMI-056: «que se vean volando», no solo 30 %).
    - De noche (S.hora de 19:00 a 5:30, o un capítulo de noche): vuelan a dormir a las perchas más altas, en parejas, con la cabeza
      metida; si el capítulo tiene faroles en la ciudad (AV_EP5.ruinas con sus luces), una o dos se quedan despiertas junto al farol.
    - No atraviesan edificios ni el suelo: las perchas son superficies con el cielo libre encima (G.solidos.altoEn), el vuelo sube
@@ -124,7 +126,7 @@ window.AVCiudadViva = function (G) {
     const off = ocupar(p, null);
     return { i, sp, slot: off[2], k: piel(sp), x: p.x + off[0], y: p.y, z: p.z + off[1], yaw: rnd(0, 6.28), est: 'posada', accion: 'mira', t: 0, dur: rnd(3, 8),
       perch: p, ala: 0, cab: 0, gir: 0, giroObj: 0, pitch: -0.4, roll: 0, fase: rnd(0, 6.28), esc: ESC * rnd(0.92, 1.06), prox: rnd(0.5, 2),
-      acum: 0, cada: 1, grupo: null, viajes: 0, vx: 0, vy: 0, vz: 0, lejos: false };
+      acum: 0, cada: 1, grupo: null, bando: null, bAng: 0, bR: 0, viajes: 0, vx: 0, vy: 0, vz: 0, lejos: false };
   }
   // Varias en la misma percha: cada una en su sitio (a 0,55 m o más, sin montarse) y siempre sobre la superficie de la percha
   function ocupar(p, a) {
@@ -157,7 +159,7 @@ window.AVCiudadViva = function (G) {
     a.est = 'vuela'; a.ox = a.x; a.oy = a.y; a.oz = a.z; a.tx = tx; a.tz = tz; a.perch = p; a.prog = 0; a.alLlegar = alLlegar || '';
     a.dVuelo = Math.max(3, Math.hypot(tx - a.x, tz - a.z));
     a.yc = Math.max(a.oy, p.y, topeCamino(a.x, a.z, tx, tz)) + 1.5 + Math.min(4, a.dVuelo * 0.12); // por encima de todo el camino
-    a.ala = 1; a.cab = 0; a.gir = 0; a.accion = '';
+    a.ala = 1; a.cab = 0; a.gir = 0; a.accion = ''; a.roll = 0;
   }
   function posar(a) {
     const p = a.perch;
@@ -167,25 +169,38 @@ window.AVCiudadViva = function (G) {
     if (a.accion === 'duerme' || a.accion === 'vela') a.dur = 1e9;
   }
   const libres = a => R.aves.filter(b => b !== a && b.est === 'posada' && !b.grupo && b.t > 2 && b.accion !== 'duerme');
-  // Rutinas de día: volar a otra torre, conversar, comer en la plaza en grupo, arreglar, jugar
+  // Rutinas de día: volar a otra torre, conversar, comer en la plaza en grupo, arreglar, jugar, cruzar el cielo en bandada
   function decidir(a) {
     const P = perchas(), A = P.alto, Sx = P.suelo, r = Math.random();
     if (a.grupo) salirGrupo(a);
     if (a.accion === 'arregla' && a.viajes > 0 && Sx.length) { a.viajes--; a.casa = a.perch; return volarA(a, azar(Sx), 'recoge'); }
     if (a.accion === 'recoge' && a.casa) { const c = a.casa; a.casa = null; return volarA(a, c, 'arregla'); }
     const otra = l => { const o = l.filter(p => p !== a.perch); return azar(o.length ? o : l); };
-    if (r < 0.3 && A.length) return volarA(a, otra(A), '');
-    if (r < 0.48 && A.length) { // conversar: 1 o 2 la acompañan al mismo tejado
+    if (r < 0.26 && A.length) return volarA(a, otra(A), '');
+    if (r < 0.44 && A.length) { // conversar: 1 o 2 la acompañan al mismo tejado
       const p = otra(A), compas = libres(a).slice(0, 1 + Math.floor(Math.random() * 2)), g = { p, aves: [a].concat(compas), habla: 0, t: 0 };
       for (const b of g.aves) { b.grupo = g; volarA(b, p, 'charla'); }
       return;
     }
-    if (r < 0.64 && Sx.length) { // a buscar comida a la plaza: una va y 1 o 2 la siguen
+    if (r < 0.58 && Sx.length) { // a buscar comida a la plaza: una va y 1 o 2 la siguen
       const p = otra(Sx); volarA(a, p, 'come');
       for (const b of libres(a).slice(0, 1 + Math.floor(Math.random() * 2))) volarA(b, azar(Sx), 'come');
       return;
     }
-    if (r < 0.78 && A.length) { a.viajes = 1 + Math.floor(Math.random() * 2); return volarA(a, otra(A), 'arregla'); }
+    if (r < 0.70 && A.length) { a.viajes = 1 + Math.floor(Math.random() * 2); return volarA(a, otra(A), 'arregla'); }
+    if (r < 0.82) { // cruzar el cielo en bandada: 3-6 ruedan juntas sobre la ciudad y luego se dispersan (una bandada a la vez)
+      const compas = libres(a).slice(0, 2 + Math.floor(Math.random() * 3));
+      if (compas.length >= 2 && !R.aves.some(c => c.bando)) {
+        const s = sitio();
+        const b = { cx: s.x + rnd(-8, 8), cz: s.z + rnd(-8, 8), r: rnd(13, 24), w: (Math.random() < 0.5 ? 1 : -1) * rnd(0.28, 0.42),
+          fin: R.t + rnd(16, 30), aves: [a].concat(compas) };
+        let m = -Infinity; // lo más alto del anillo (muestreado): la bandada vuela por encima de eso + margen
+        for (let i = 0; i < 12; i++) { const aa = i * 0.5236; m = Math.max(m, topeCamino(b.cx + Math.cos(aa) * b.r, b.cz + Math.sin(aa) * b.r, b.cx + Math.cos(aa + 0.6) * b.r, b.cz + Math.sin(aa + 0.6) * b.r)); }
+        b.y0 = m + rnd(3.5, 6.5);
+        for (const c of b.aves) { if (c.grupo) salirGrupo(c); c.bando = b; c.bAng = Math.atan2(c.z - b.cz, c.x - b.cx); c.bR = Math.max(4, Math.hypot(c.x - b.cx, c.z - b.cz)); c.est = 'bandada'; c.accion = ''; c.t = 0; c.ala = 1; }
+        return;
+      }
+    }
     if (r < 0.9 && !reducido() && A.length) { // jugar: dos se persiguen alrededor de una torre
       const b = libres(a)[0], p = azar(A.filter(q => q.tipo === 'tejado').length ? A.filter(q => q.tipo === 'tejado') : A);
       if (b) { const g = { p, ang: rnd(0, 6.28), t: 0, dur: rnd(6, 10), aves: [a, b] }; for (const c of g.aves) { c.est = 'juega'; c.juego = g; c.t = 0; c.ala = 1; c.accion = ''; } a.lider = true; b.lider = false; return; }
@@ -193,10 +208,12 @@ window.AVCiudadViva = function (G) {
     a.t = 0; a.dur = rnd(3, 7);
   }
   function salirGrupo(a) { const g = a.grupo; a.grupo = null; if (g) g.aves = g.aves.filter(b => b !== a); }
+  function salirBando(a) { const b = a.bando; a.bando = null; a.roll = 0; if (b) b.aves = b.aves.filter(c => c !== a); }
   // De noche: a dormir en las perchas más altas, en parejas; junto a un farol, una o dos despiertas
   function dormir(a) {
     const P = perchas();
     if (a.grupo) salirGrupo(a);
+    if (a.bando) salirBando(a);
     if (P.farol.length && a.i < Math.min(2, P.farol.length)) return volarA(a, P.farol[a.i], 'vela');
     const A = P.alto.slice().sort((p, q) => q.y - p.y), k = Math.max(1, Math.ceil(R.aves.length / 2));
     const p = A.length ? A[Math.floor(a.i / 2) % Math.min(A.length, k)] : (P.suelo[0] || a.perch);
@@ -251,6 +268,26 @@ window.AVCiudadViva = function (G) {
       a.y = Math.max(a.y, tope(a.x, a.z) + (u > 0.97 ? 0 : 0.25)); // nunca dentro de un edificio ni bajo el suelo
       a.ala = 1;
       if (u >= 1) posar(a);
+    } else if (a.est === 'bandada') {
+      const b = a.bando;
+      if (!b) { a.est = 'posada'; a.t = 0; a.dur = rnd(2, 5); }
+      else if (n || R.t > b.fin || b.aves.length < 2) { // se dispersan: de noche a dormir; de día cada una a una percha
+        salirBando(a);
+        if (n) return dormir(a);
+        const L2 = perchas(), A2 = L2.alto.length ? L2.alto : L2.suelo;
+        if (A2.length) return volarA(a, azar(A2), '');
+        a.est = 'posada'; a.t = 0; a.dur = rnd(2, 6);
+      } else {
+        a.bAng += b.w * dt;
+        a.bR += (b.r - a.bR) * Math.min(1, dt * 0.7); // espiral de entrada al anillo desde donde estaba
+        const tx = b.cx + Math.cos(a.bAng) * a.bR, tz = b.cz + Math.sin(a.bAng) * a.bR;
+        const ty = b.y0 + Math.sin(R.t * 0.8 + a.fase) * 1.4;
+        const k = 1 - Math.exp(-dt * 2.6);
+        a.x += (tx - a.x) * k; a.z += (tz - a.z) * k; a.y += (ty - a.y) * Math.min(1, dt * 1.6);
+        a.y = Math.max(a.y, tope(a.x, a.z) + 1.1); // nunca bajo lo que haya justo debajo
+        a.ala = 1; a.cab = 0;
+        a.roll = 0.4 * (b.w > 0 ? 1 : -1) + Math.sin(R.t * 1.7 + a.fase) * 0.1; // se inclinan hacia el centro del círculo
+      }
     } else if (a.est === 'juega') {
       const g = a.juego, p = g.p; g.t += a.lider ? dt : 0;
       const ang = g.ang + g.t * 1.8 - (a.lider ? 0 : 0.6), rr = 3.5 + Math.sin(g.t * 0.8) * 1.2;
@@ -358,6 +395,7 @@ window.AVCiudadViva = function (G) {
       for (let i = 0; i < 1800; i++) { paso(0.05, 'todo'); revisar(); }
       check('Vuelan de torre en torre', !!vistos.vuela);
       check('Rutinas de día: conversan, buscan comida, arreglan y juegan', vistos.charla && vistos.come && (vistos.arregla || vistos.recoge) && (vistos.juega || reducido()), Object.keys(vistos).join(','));
+      check('De día cruzan el cielo de la ciudad en bandada', !!vistos.bandada, Object.keys(vistos).join(','));
       check('Nadie atraviesa el suelo', malSuelo === 0, malSuelo + ' ' + peor);
       check('Nadie atraviesa un edificio', malEdif === 0, malEdif + ' ' + peor);
       // de noche: a dormir en las perchas altas
@@ -385,8 +423,11 @@ window.AVCiudadViva = function (G) {
       // Asentar antes del recuento: las bandas :lod/:sombra de la flora se crean perezosas en cuadros reales
       // (KIMI-035/110-mem), así que sin esta pausa el nº de hijos de la escena varía por la flora, no por las cotorras.
       if (ST && ST.terminar) { await ST.terminar().catch(() => {}); await dormir(3000); if (ST && ST.terminar) await ST.terminar().catch(() => {}); }
-      const floraLazy = o => /^flora:/.test(o.name || '');
-      const sc = Rd.scene, info = Rd.renderer.info, hijos = sc.children.filter(o => !floraLazy(o)).length;
+      // El mundo sigue vivo durante la prueba: el streaming funde/suelta lotes y zonas (^edificios*) y los fx de agua crean
+      // mallas anónimas transitorias (se autoclean); ninguna es de las cotorras. Se excluyen del recuento (mismo criterio
+      // que las bandas perezosas ^flora: de KIMI-044); este check vigila que la ciudad viva no cree mallas nuevas.
+      const floraLazy = o => /^flora:/.test(o.name || ''), churn = o => /^edificios/.test(o.name || '') || !(o.name || '');
+      const sc = Rd.scene, info = Rd.renderer.info, hijos = sc.children.filter(o => !floraLazy(o) && !churn(o)).length;
       const medir = () => { G.camara.place(true); Rd.renderer.render(sc, Rd.camera); return { c: info.render.calls, t: info.render.triangles }; };
       if (B.terminar) B.terminar();
       T.teleport(s.x + 22, s.z + 22); T.tick(0.05);
@@ -406,7 +447,7 @@ window.AVCiudadViva = function (G) {
       }
       if (ST && ST.terminar) { await ST.terminar().catch(() => {}); await dormir(3000); if (ST && ST.terminar) await ST.terminar().catch(() => {}); } // mismo estado asentado (y sin bandas de flora perezosas a medias) que al capturar «hijos»
       check('Antes y después en la ciudad: 2 draw calls extra o menos', okDC, medidas.join(' || '));
-      check('No se crea ninguna malla nueva', sc.children.filter(o => !floraLazy(o)).length === hijos && B.meshes.every(m => m.isInstancedMesh && !m.castShadow));
+      check('No se crea ninguna malla nueva', sc.children.filter(o => !floraLazy(o) && !churn(o)).length === hijos && B.meshes.every(m => m.isInstancedMesh && !m.castShadow));
       check('Caben en las mallas de la bandada', B.MAXN >= 20 + 26 + N.alto, 'MAXN ' + B.MAXN);
       // fuera de rango: apagadas
       R.prueba = true; T.teleport(s.x + 260, s.z + 260); T.tick(0.05); paso(0.05);

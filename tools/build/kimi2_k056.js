@@ -7,8 +7,12 @@
      - assets/data/cotorra_horneada.js (datos estáticos: window.AV_COTORRA_HORNEADA)
    Fase --valida: entra al juego con partida sembrada, espera la bandada, corre AV.bandadaTest(),
    fuerza una salida, captura el plano y los stats, y verifica que bandada.js haya cogido la malla horneada.
+   Fase --ciudad (KIMI-056, «que se vean volando»): a la Ciudad de los 36 con sólidos; mide con simulación
+   forzada la fracción del tiempo con cotorras en el aire y cuántas bandadas cruzan el cielo (antes ~30 %);
+   verifica la dispersión nocturna; espera una bandada real y captura el cielo de la ciudad; corre
+   AV.ciudadVivaTest() como regresión.
 
-   Uso: node tools/build/kimi2_k056.js [--hornea] [--valida] [--ala R] [--girar R] [--cellN m] [--cellF m] [--puerto N]
+   Uso: node tools/build/kimi2_k056.js [--hornea] [--valida] [--ciudad] [--ala R] [--girar R] [--cellN m] [--cellF m] [--puerto N]
 */
 'use strict';
 const http = require('http');
@@ -20,7 +24,8 @@ const { spawn, spawnSync } = require('child_process');
 const AQUI = __dirname;
 const RAIZ = path.resolve(AQUI, '..', '..');
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const HORNEA = !process.argv.includes('--valida');
+const HORNEA = !process.argv.includes('--valida') && !process.argv.includes('--ciudad');
+const CIUDAD = process.argv.includes('--ciudad');
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi056');
 const DATA_JS = path.join(RAIZ, 'assets', 'data', 'cotorra_horneada.js');
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -86,6 +91,8 @@ async function lanzarChrome() {
 
 const SEMILLA_JS = `try {
   localStorage.clear(); sessionStorage.clear();
+  window.__errs = []; window.addEventListener('error', e => __errs.push(String(e.message || e.error).slice(0, 200)));
+  window.addEventListener('unhandledrejection', e => __errs.push('rechazo: ' + String(e.reason && e.reason.message || e.reason).slice(0, 200)));
   localStorage.setItem('amazonaverse.menu', JSON.stringify({ v: 1, ultimo: 'aventura' }));
   localStorage.setItem('amazonaverse.save', JSON.stringify({
     v: 6, formato: 2, escrito: Date.now(), saveId: 'qa-k056-' + Math.random().toString(36).slice(2, 10),
@@ -150,6 +157,124 @@ const PREPARAR_JS = `(async () => { const sleep = ms => new Promise(r => setTime
           state: !!(window.AV && AV.state), perfil: !!(window.AV && AV.state && AV.state.profile && AV.state.profile.created),
           portada: !!(t && t.open), creador: !!(cr && !cr.hidden), save: (localStorage.getItem('amazonaverse.save') || '').slice(0, 60) }); })()`, 15, false);
       console.log('diag: ' + dbg);
+    }
+    if (CIUDAD) {
+      console.log('ciudad: midiendo el vuelo en bandada (KIMI-056, «que se vean volando»)…');
+      const m = JSON.parse(await evaluar(cdp, ses, `(async () => {
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+        const G = AV.G;
+        if (!G.ciudadViva) { // la ciudad viva carga tras el primer gesto: lo simulamos y esperamos
+          try { window.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+                window.dispatchEvent(new KeyboardEvent('keydown', { key: 'e', bubbles: true })); } catch (e) {}
+          const tg = performance.now();
+          while (performance.now() - tg < 90000) { if (G.ciudadViva) break; await sleep(400); }
+        }
+        const CV = G.ciudadViva;
+        if (!CV) return JSON.stringify({ error: 'sin G.ciudadViva' });
+        const T = G.pruebas, s = CV.sitio();
+        if (!s) return JSON.stringify({ error: 'sin sitio' });
+        const H = (x, z) => G.terreno.height(x, z);
+        // el centro de la ciudad es zona de redirección de teleport (KIMI-013): se usa el ancla buena de k44, fuera de los muros
+        T.teleport(12, -114.8); T.tick(0.1);
+        if (Math.hypot(G.S.pos.x - 12, G.S.pos.z + 114.8) > 8) { G.S.pos.x = 12; G.S.pos.z = -114.8; G.S.pos.y = H(12, -114.8) + 0.1; }
+        const ancla = { x: G.S.pos.x, z: G.S.pos.z };
+        const ST = G.mundo && G.mundo.streaming;
+        if (ST && ST.alrededor) ST.alrededor(s.x, s.z).catch(() => {});
+        const conSolido = () => { const so = G.solidos; return so && so.activo ? s.ins.filter(i => so.altoEn(i.pos[0], i.pos[2], 1e4) > H(i.pos[0], i.pos[2]) + 0.3).length : 0; };
+        const t0 = performance.now();
+        while (performance.now() - t0 < 150000 && conSolido() < s.ins.length * 0.5) { await sleep(2500); if (G.solidos.terminar) G.solidos.terminar(); }
+        if (G.solidos.terminar) G.solidos.terminar();
+        const esperaS = Math.round((performance.now() - t0) / 1000);
+        // (a) 120 s simulados de día (0,05 s × 2400 pasos forzados): fracción en el aire y bandadas que cruzan el cielo
+        CV.prueba(true); CV.hora(12); CV.pausa(true);
+        if (!CV.aves().length) CV.paso(0.05, 'todo');
+        const total = CV.aves().length;
+        let airSum = 0, mues = 0, maxBando = 0, enBando = 0;
+        const bandos = new Set(), est = {};
+        for (let i = 0; i < 2400; i++) {
+          CV.paso(0.05, 'todo');
+          if (i % 10 === 0) {
+            const av = CV.aves();
+            airSum += av.filter(a => a.est !== 'posada').length; mues++;
+            const nb = av.filter(a => a.bando).length;
+            enBando += nb;
+            if (nb > maxBando) maxBando = nb;
+            for (const a of av) if (a.bando) bandos.add(a.bando);
+            for (const a of av) est[a.est] = (est[a.est] || 0) + 1;
+          }
+        }
+        const fraccionAire = airSum / Math.max(1, mues * total);
+        const fraccionBando = enBando / Math.max(1, mues * total);
+        // (b) de noche la bandada se dispersa a dormir
+        CV.hora(22);
+        for (let i = 0; i < 900; i++) CV.paso(0.05, 'todo');
+        const duermen = CV.aves().filter(a => a.est === 'posada' && (a.accion === 'duerme' || a.accion === 'vela')).length;
+        const enAireNoche = CV.aves().filter(a => a.est !== 'posada').length;
+        CV.hora(12);
+        for (let i = 0; i < 200; i++) CV.paso(0.05, 'todo');
+        const despiertas = CV.aves().filter(a => a.accion !== 'duerme' && a.accion !== 'vela').length;
+        CV.pausa(false);
+        // (c) tiempo real: ¿sale una bandada de verdad gobernada por los updates del juego?
+        // si en 60 s no ha salido, se fuerza con unos pasos simulados (la bandada luego vive y se mueve en tiempo real)
+        const t1 = performance.now();
+        let hay = false;
+        while (performance.now() - t1 < 60000) { if (CV.aves().some(a => a.bando)) { hay = true; break; } await sleep(400); }
+        if (!hay && CV.aves().length) {
+          for (let i = 0; i < 4000 && !hay; i++) { CV.paso(0.05, 'todo'); if (CV.aves().some(a => a.bando)) hay = true; }
+        }
+        const st = G.renderer.stats();
+        return JSON.stringify({ total, fraccionAire: +fraccionAire.toFixed(3), fraccionBando: +fraccionBando.toFixed(3), bandadas: bandos.size,
+          maxBando, duermen, enAireNoche, despiertas, bandadaReal: hay, esperaS, conSolido: conSolido() + '/' + s.ins.length,
+          estados: est, stats: { pasos: CV.stats().pasos, cuadros: CV.stats().cuadros }, calls: st.calls, tris: Math.round(st.triangulos), fps: st.fps });
+      })()`, 420));
+      console.log('ciudad: ' + JSON.stringify(m));
+      fs.writeFileSync(path.join(SALIDA, 'k056-ciudad.json'), JSON.stringify(m, null, 1));
+      const capturar = async nombre => {
+        const foto = await evaluar(cdp, ses, `(async () => {
+          let f = null;
+          for (let i = 0; i < 3 && !f; i++) { f = await AV.G.renderer.snapshot(1280, 800, 0.9); if (!f) await new Promise(r => setTimeout(r, 1200)); }
+          return f; })()`, 30);
+        if (foto) { fs.writeFileSync(path.join(SALIDA, nombre), Buffer.from(foto.split(',')[1], 'base64')); console.log('  captura ' + nombre); }
+      };
+      if (m.bandadaReal) {
+        // encuadre probado en v2: Vittata volando sobre el centro de la ciudad a +17 m; el anillo de la bandada (r 13-24 m
+        // alrededor del centro) cruza el encuadre en alguna de las 4 tomas rápidas. Posición directa (el teleport redirige
+        // dentro de la ciudad) y capturas seguidas: la bandada se mueve y en una de ellas entra en cuadro.
+        await evaluar(cdp, ses, `(() => { const G = AV.G, s = G.ciudadViva.sitio();
+          G.fisica.MOVE.flying = true; G.S.vy = 0;
+          G.S.pos.x = s.x + 6; G.S.pos.z = s.z + 16;
+          G.S.pos.y = AV.debug.height(s.x, s.z) + 17;
+          AV.debug.camYaw(0.8); G.camara.inclina = -0.22; return 'ok'; })()`, 30, false);
+        for (let k = 0; k < 4; k++) {
+          await cdp.bombear(1.1);
+          await capturar('bando_aire_' + (k + 1) + '.jpg');
+        }
+      }
+      // gancho: atribuir cualquier malla añadida o quitada de la escena DURANTE la prueba (el check «No se crea ninguna malla nueva»)
+      await evaluar(cdp, ses, `(() => { const sc = AV.G.renderer.scene; window.__adds = []; window.__rems = [];
+        const oa = sc.add.bind(sc), or_ = sc.remove.bind(sc);
+        sc.add = function () { for (let i = 0; i < arguments.length; i++) { const x = arguments[i];
+          window.__adds.push((x.name || x.type) + ' @ ' + String(new Error().stack).split('\\n').slice(2, 4).join(' <- ').slice(0, 220)); }
+          return oa.apply(sc, arguments); };
+        sc.remove = function () { for (let i = 0; i < arguments.length; i++) { const x = arguments[i];
+          window.__rems.push((x.name || x.type) + ' @ ' + String(new Error().stack).split('\\n').slice(2, 4).join(' <- ').slice(0, 220)); }
+          return or_.apply(sc, arguments); };
+        return 'ok'; })()`, 20, false);
+      const cvTest = JSON.parse(await evaluar(cdp, ses, `(async () => { const r = await AV.ciudadVivaTest({ espera: 150 }); return JSON.stringify({ passed: r.passed, total: r.total, fallos: r.results.filter(x => !x.ok).map(x => x.name + ' :: ' + String(x.extra).slice(0, 200)) }); })()`, 900));
+      console.log('ciudadVivaTest: ' + cvTest.passed + '/' + cvTest.total + (cvTest.fallos.length ? ' · FALLOS: ' + cvTest.fallos.join(' | ') : ''));
+      const dump = async exp => { // con reintentos: la página puede tardar en quedar libre tras la prueba
+        for (let i = 0; i < 4; i++) {
+          try { return JSON.parse(await evaluar(cdp, ses, exp, 25)); } catch (e) { await cdp.bombear(2.5); }
+        }
+        return [];
+      };
+      const adds = await dump('JSON.stringify(window.__adds || [])');
+      const rems = await dump('JSON.stringify(window.__rems || [])');
+      if (adds.length) console.log('scene.add durante la prueba (' + adds.length + '):\n  ' + adds.join('\n  '));
+      if (rems.length) console.log('scene.remove durante la prueba (' + rems.length + '):\n  ' + rems.join('\n  '));
+      const errs = await dump('JSON.stringify((window.__errs || []).slice(0, 8))');
+      console.log('errores consola: ' + JSON.stringify(errs));
+      fin(m && !m.error && cvTest.passed === cvTest.total && errs.length === 0 ? 0 : 1);
     }
     // espera a que la bandada exista y use la malla horneada
     const bandada = await evaluar(cdp, ses, `(async () => {

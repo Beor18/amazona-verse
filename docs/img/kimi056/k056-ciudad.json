@@ -1,0 +1,26 @@
+{
+ "total": 20,
+ "fraccionAire": 0.487,
+ "fraccionBando": 0.138,
+ "bandadas": 4,
+ "maxBando": 5,
+ "duermen": 20,
+ "enAireNoche": 0,
+ "despiertas": 20,
+ "bandadaReal": true,
+ "esperaS": 0,
+ "conSolido": "60/60",
+ "estados": {
+  "posada": 2462,
+  "vuela": 1212,
+  "bandada": 662,
+  "juega": 464
+ },
+ "stats": {
+  "pasos": 77066,
+  "cuadros": 5506
+ },
+ "calls": 143,
+ "tris": 1076336,
+ "fps": 24
+}
