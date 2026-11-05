@@ -90,6 +90,7 @@
     AV.cargaTest = o => cargarCarga().then(c => c.test(o));
     const movimiento = aDemanda('src/pruebas/movimiento.js', 'AVMovimientoTest'), controles = aDemanda('src/pruebas/controles.js', 'AVControlesTest');
     AV.movementTest = o => movimiento().then(m => m.test(o));
+    const fugas = aDemanda('src/pruebas/fugas.js', 'AVFugasTest'); AV.fugasTest = o => fugas().then(m => m.test(o)); // W20: abrir y cerrar modos no deja basura
     if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
     if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); alPrimerGesto(fauna); } // src/game/fauna.js
     const cargarVecinos = aDemanda('src/game/vecinos.js', 'AVVecinos'); AV.vecinosTest = o => cargarVecinos().then(v => v.test(o)); alPrimerGesto(cargarVecinos); // CG-44
