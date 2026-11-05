@@ -353,3 +353,6 @@ Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar
 - Auditoría real de datos y documentos obligatorios (aviso para padres, conservación, seguridad, mapa de datos) y expediente para un abogado de COPPA: `docs/legal/` (5-nov). No se declara cumplimiento legal por una revisión automatizada; datos sin confirmar marcados PENDIENTE.
 - Aprobado un prototipo de ranking de clase local (sin servidor, puntuaciones introducidas a mano por un adulto en su aparato, alias, borrable); no debe retrasar la V18.1.
 - El multijugador futuro se diseña con partidas privadas, sin chat libre, mínimos identificadores y retención limitada; un código de partida no sustituye el consentimiento parental cuando se requiera.
+
+## 5-nov-2026 · Kelvin: recarga de 20 $ para la API de la Mac
+- Kelvin recargó 20 $ («vamos a darle trabajo sin parar»). Cola de la Mac: BM136 (capturas «bajo» de A9), BM137 (templo del tepuy en el iPad), BM138 (puente roto de verdad para la V18.1), BM139 (_hd pendientes de BM134). Topes por tarea en su fila; sin más recargas sin su aprobación.
