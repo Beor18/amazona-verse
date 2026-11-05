@@ -1,0 +1,379 @@
+{
+ "etiqueta": "r1",
+ "vista": {
+  "x": -63,
+  "z": -146,
+  "yaw": 3.141592653589793
+ },
+ "cpu": 1,
+ "head": "desconocido",
+ "medicion": {
+  "pantalla": "1600x900@1",
+  "cam": {
+   "x": -63,
+   "y": 94.5,
+   "z": -153.9,
+   "yaw": 3.14,
+   "pos": {
+    "x": -63,
+    "y": 93.9,
+    "z": -146
+   }
+  },
+  "stats": {
+   "calls": 142,
+   "tris": 2010052
+  },
+  "base": [
+   {
+    "cieloArriba": [
+     1,
+     51,
+     2
+    ],
+    "franja": [
+     138,
+     137,
+     143
+    ],
+    "debajo": [
+     34,
+     30,
+     19
+    ],
+    "lumaArriba": 36.8,
+    "lumaFranja": 137.6,
+    "lumaDebajo": 30.1,
+    "exceso": 124.2,
+    "fila": 304
+   },
+   {
+    "cieloArriba": [
+     32,
+     42,
+     85
+    ],
+    "franja": [
+     255,
+     255,
+     212
+    ],
+    "debajo": [
+     74,
+     65,
+     45
+    ],
+    "lumaArriba": 43,
+    "lumaFranja": 251.9,
+    "lumaDebajo": 65.5,
+    "exceso": 168.8,
+    "fila": 250
+   },
+   {
+    "cieloArriba": [
+     140,
+     142,
+     151
+    ],
+    "franja": [
+     155,
+     150,
+     142
+    ],
+    "debajo": [
+     31,
+     92,
+     18
+    ],
+    "lumaArriba": 142.2,
+    "lumaFranja": 150.5,
+    "lumaDebajo": 73.7,
+    "exceso": 112.3,
+    "fila": 532
+   }
+  ],
+  "sinNiebla": [
+   {
+    "cieloArriba": [
+     1,
+     51,
+     2
+    ],
+    "franja": [
+     138,
+     137,
+     143
+    ],
+    "debajo": [
+     34,
+     30,
+     19
+    ],
+    "lumaArriba": 36.8,
+    "lumaFranja": 137.6,
+    "lumaDebajo": 30.1,
+    "exceso": 124.2,
+    "fila": 304
+   },
+   {
+    "cieloArriba": [
+     32,
+     42,
+     85
+    ],
+    "franja": [
+     255,
+     255,
+     212
+    ],
+    "debajo": [
+     74,
+     65,
+     45
+    ],
+    "lumaArriba": 43,
+    "lumaFranja": 251.9,
+    "lumaDebajo": 65.5,
+    "exceso": 168.8,
+    "fila": 250
+   },
+   {
+    "cieloArriba": [
+     140,
+     142,
+     151
+    ],
+    "franja": [
+     155,
+     150,
+     142
+    ],
+    "debajo": [
+     31,
+     92,
+     18
+    ],
+    "lumaArriba": 142.2,
+    "lumaFranja": 150.5,
+    "lumaDebajo": 73.7,
+    "exceso": 112.3,
+    "fila": 532
+   }
+  ],
+  "skyHorizOff": [
+   {
+    "cieloArriba": [
+     18,
+     60,
+     6
+    ],
+    "franja": [
+     138,
+     135,
+     126
+    ],
+    "debajo": [
+     23,
+     22,
+     11
+    ],
+    "lumaArriba": 47.2,
+    "lumaFranja": 135,
+    "lumaDebajo": 21.4,
+    "exceso": 120.7,
+    "fila": 294
+   },
+   {
+    "cieloArriba": [
+     24,
+     28,
+     58
+    ],
+    "franja": [
+     255,
+     255,
+     208
+    ],
+    "debajo": [
+     74,
+     65,
+     45
+    ],
+    "lumaArriba": 29.3,
+    "lumaFranja": 251.6,
+    "lumaDebajo": 65.5,
+    "exceso": 172.5,
+    "fila": 250
+   },
+   {
+    "cieloArriba": [
+     139,
+     140,
+     147
+    ],
+    "franja": [
+     155,
+     150,
+     142
+    ],
+    "debajo": [
+     31,
+     92,
+     18
+    ],
+    "lumaArriba": 140.3,
+    "lumaFranja": 150.5,
+    "lumaDebajo": 73.7,
+    "exceso": 112.3,
+    "fila": 532
+   }
+  ],
+  "sinMar": [
+   {
+    "cieloArriba": [
+     1,
+     51,
+     2
+    ],
+    "franja": [
+     138,
+     137,
+     143
+    ],
+    "debajo": [
+     34,
+     30,
+     19
+    ],
+    "lumaArriba": 36.8,
+    "lumaFranja": 137.6,
+    "lumaDebajo": 30.1,
+    "exceso": 124.2,
+    "fila": 304
+   },
+   {
+    "cieloArriba": [
+     32,
+     42,
+     85
+    ],
+    "franja": [
+     255,
+     255,
+     212
+    ],
+    "debajo": [
+     74,
+     65,
+     45
+    ],
+    "lumaArriba": 43,
+    "lumaFranja": 251.9,
+    "lumaDebajo": 65.5,
+    "exceso": 168.8,
+    "fila": 250
+   },
+   {
+    "cieloArriba": [
+     140,
+     142,
+     151
+    ],
+    "franja": [
+     155,
+     150,
+     142
+    ],
+    "debajo": [
+     31,
+     92,
+     18
+    ],
+    "lumaArriba": 142.2,
+    "lumaFranja": 150.5,
+    "lumaDebajo": 73.7,
+    "exceso": 112.3,
+    "fila": 532
+   }
+  ],
+  "sinNubes": [
+   {
+    "cieloArriba": [
+     1,
+     51,
+     2
+    ],
+    "franja": [
+     138,
+     137,
+     143
+    ],
+    "debajo": [
+     34,
+     30,
+     19
+    ],
+    "lumaArriba": 36.8,
+    "lumaFranja": 137.6,
+    "lumaDebajo": 30.1,
+    "exceso": 124.2,
+    "fila": 304
+   },
+   {
+    "cieloArriba": [
+     32,
+     42,
+     85
+    ],
+    "franja": [
+     255,
+     248,
+     198
+    ],
+    "debajo": [
+     74,
+     65,
+     45
+    ],
+    "lumaArriba": 43,
+    "lumaFranja": 245.9,
+    "lumaDebajo": 65.5,
+    "exceso": 162.8,
+    "fila": 250
+   },
+   {
+    "cieloArriba": [
+     104,
+     121,
+     166
+    ],
+    "franja": [
+     155,
+     150,
+     142
+    ],
+    "debajo": [
+     31,
+     92,
+     18
+    ],
+    "lumaArriba": 120.6,
+    "lumaFranja": 150.5,
+    "lumaDebajo": 73.7,
+    "exceso": 112.3,
+    "fila": 532
+   }
+  ],
+  "uniformes": {
+   "uCenit": "#01020d",
+   "uHorizonte": "#0e1842",
+   "uSolCol": "#8c9bd1",
+   "niebla": "#070c21 near=-60 far=900"
+  },
+  "stats2": {
+   "calls": 142,
+   "tris": 2010052
+  }
+ },
+ "erroresConsola": []
+}
