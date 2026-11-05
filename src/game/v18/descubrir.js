@@ -38,6 +38,7 @@ window.AVV18Descubrir = function (G) {
     nota: 'Cambia tu poder en el duelo. Tú sigues siendo tú.',
     listo: 'Listo', poder: 'Poder', boton: 'Mis cotorras', elegida: 'Para el duelo:'
   };
+  const RETRATOS = new Set(['agilis', 'arausiaca', 'barbadensis', 'farinosa', 'xantholora']); // BM152 (Mac): retratos con el personaje del juego
   const NOMBRES = { vittata: 'Cotorra puertorriqueña', arausiaca: 'Cotorra de Dominica' };
   const PODERES = { islenas: 'Grito del Yunque', montaneras: 'Escudo de plumas' }; // respaldo si el motor de habilidades (habilidades.js) aún no cargó
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 3600); } catch (e) { /* sin interfaz */ } };
@@ -255,7 +256,7 @@ window.AVV18Descubrir = function (G) {
   }
   function abrirSeleccion() {
     const ids = seleccionables(), sel = V.seleccionada();
-    const botones = ids.map(id => `<button class="btn${id === sel ? '' : ' ghost'}" type="button" data-v18sp="${esc(id)}" aria-pressed="${id === sel}">${esc(nombre(id))}<small style="display:block;opacity:.8">${esc(TXT.poder)}: ${esc(poder(id))}</small></button>`).join('');
+    const botones = ids.map(id => `<button class="btn${id === sel ? '' : ' ghost'}" type="button" data-v18sp="${esc(id)}" aria-pressed="${id === sel}">${RETRATOS.has(id) ? `<img src="assets/retratos/v18/${esc(id)}.png" alt="" width="64" height="64" style="display:block;margin:0 auto 4px">` : ''}${esc(nombre(id))}<small style="display:block;opacity:.8">${esc(TXT.poder)}: ${esc(poder(id))}</small></button>`).join('');
     G.ui.showCard(`<div class="v18-elegir"><h2>${esc(TXT.titulo)}</h2><p>${esc(TXT.nota)}</p><div class="row">${botones}</div><div class="row"><button class="btn" id="v18-elegir-ok" type="button">${esc(TXT.listo)}</button></div></div>`);
     const card = G.ui.$('card');
     card.querySelectorAll('[data-v18sp]').forEach(b => { b.onclick = () => elegir(b.getAttribute('data-v18sp')); });
