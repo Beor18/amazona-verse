@@ -22,6 +22,9 @@ const ETIQUETA = (() => { const i = process.argv.indexOf('--etiqueta'); return i
 const CPU = parseFloat((() => { const i = process.argv.indexOf('--cpu'); return i > 0 ? process.argv[i + 1] : '4'; })(), 10);
 const RONDAS = parseInt((() => { const i = process.argv.indexOf('--rondas'); return i > 0 ? process.argv[i + 1] : '4'; })(), 10);
 const FRESCO = process.argv.includes('--fresco'); // misma historia que el arnés oficial: sin asentado previo extra
+const POST = process.argv.includes('--post'); // post-mortem: NO envolver ST.stats (el censo en cada stats perturba el timing
+// y CIERRA la ventana de la carrera que produce la firma: el arnés sin envolver da ~3/4 rojas y el probe envuelto 4/4 verdes);
+// correr el test REAL sin tocarlo y volcar TODO el estado final (recursos+refs, zonas+pre, censo de escena, info, dueños).
 const TRAZAR = process.argv.includes('--trazar'); // tracer entrada/salida (solo depuración de cuelgues; perturba el timing)
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi160');
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -105,8 +108,10 @@ const PROBAR_JS = `(async () => {
   };
   window.__qa160 = [];
   const origStats = ST.stats;
-  ST.stats = function () { try { window.__qa160.push(snap()); } catch (e) {} return origStats.apply(this, arguments); };
-  window.__qa160p.push('wrapper puesto');
+  ${POST ? `window.__qa160p.push('modo POST: sin wrapper (test a velocidad de arnés)');
+  // un solo snap barato ahora (para m1) y el volcado completo se hace fuera` :
+  `ST.stats = function () { try { window.__qa160.push(snap()); } catch (e) {} return origStats.apply(this, arguments); };
+  window.__qa160p.push('wrapper puesto');`}
   // trazador de funciones (opcional: perturba el timing, solo para depurar cuelgues)
   ${TRAZAR ? `const marca = m => { const p = window.__qa160p; if (p.length > 60) p.splice(0, 20); p.push(m); };
   const trazar = (obj, nom) => {
@@ -131,12 +136,23 @@ const PROBAR_JS = `(async () => {
   try { resTest = await AV.streamingTest(); } catch (e) { errorTest = String(e && e.message || e); }
   window.__qa160p.push('test devuelto ' + (resTest ? resTest.passed + '/' + resTest.total : 'null') + (errorTest ? ' err:' + errorTest : ''));
   try { ST.stats = origStats; } catch (e) {}
+  let m1, m2, seC;
+  if (${POST}) {
+    // post-mortem: el test corrió sin wrapper (condiciones de arnés). m1 = estado al terminar; m2 = ~1,5 s de
+    // juego después (revisar/liberarVencidos sueltan lo de gracia): lo que PERMANEZCA retenido con refs>0 es el leak.
+    m1 = snap();
+    await new Promise(r => setTimeout(r, 1500));
+    m2 = snap(); seC = m2;
+    window.__qa160.push(m1, m2);
+  }
   const snaps = window.__qa160 || [];
   const sinFugas = resTest && resTest.results ? resTest.results.filter(c => /Sin fugas/.test(c.name)).map(c => ({ ok: c.ok, extra: c.extra })) : null;
-  if (snaps.length < 3) return JSON.stringify({ error: 'pocas capturas: ' + snaps.length, errorTest, sinFugas, passed: resTest && resTest.passed, total: resTest && resTest.total });
-  // OJO: tras la sección de fugas (foto m1/m2) el test sigue y llama ST.stats() una vez más en la ciudad aérea
-  // (seC). Las dos últimas capturas serían m2 y seC: m1/m2 de «Sin fugas» son snaps[-3] y snaps[-2].
-  const m1 = snaps[snaps.length - 3], m2 = snaps[snaps.length - 2], seC = snaps[snaps.length - 1];
+  if (snaps.length < 2) return JSON.stringify({ error: 'pocas capturas: ' + snaps.length, errorTest, sinFugas, passed: resTest && resTest.passed, total: resTest && resTest.total });
+  if (!${POST}) {
+    // OJO: tras la sección de fugas (foto m1/m2) el test sigue y llama ST.stats() una vez más en la ciudad aérea
+    // (seC). Las dos últimas capturas serían m2 y seC: m1/m2 de «Sin fugas» son snaps[-3] y snaps[-2].
+    m1 = snaps[snaps.length - 3]; m2 = snaps[snaps.length - 2]; seC = snaps[snaps.length - 1];
+  }
   // dueños estructurales en m2 (las zonas vivas se leen ahora; nivel/ciudad/hd/pre congelados en el snap)
   const dueños = {};
   for (const z of m2.zonas) {
@@ -155,6 +171,10 @@ const PROBAR_JS = `(async () => {
   const nuevos = listosM2.filter(r => !listosM1[r.n + ':' + r.t])
     .map(r => ({ n: r.n, t: r.t, refs: r.refs, mb: r.mb, soltarEn: r.soltarEn, fijo: r.fijo, dueños: dueños[r.n + ':' + r.t] || [] }))
     .sort((a, b) => b.mb - a.mb);
+  // POST: también dueños de TODOS los listos con refs>0 (el leak puede estar en recursos que ya estaban listos en m1)
+  const retenidos = ${POST} ? listosM2.filter(r => r.refs > 0 && !r.fijo)
+    .map(r => ({ n: r.n, t: r.t, refs: r.refs, mb: r.mb, soltarEn: r.soltarEn, dueños: dueños[r.n + ':' + r.t] || [] }))
+    .sort((a, b) => b.mb - a.mb).slice(0, 80) : [];
   const kb = s => { let b = 0; for (const r of s.recursos) if (r.e === 'listo') b += r.mb; return b; };
   // diff de censo de escena m1→m2: qué mallas de fusión/lote NUEVAS quedaron vivas (nombre → Δn/Δkb)
   const nuevasGeo = [];
@@ -169,7 +189,7 @@ const PROBAR_JS = `(async () => {
     hitos: window.__qa160p,
     heapM1: m1.heap, heapM2: m2.heap, kbM1: kb(m1), kbM2: kb(m2),
     nListosM1: Object.keys(listosM1).length, nListosM2: listosM2.length,
-    nuevos: nuevos.slice(0, 50), nuevasGeo: nuevasGeo.slice(0, 60),
+    nuevos: nuevos.slice(0, 50), nuevasGeo: nuevasGeo.slice(0, 60), retenidos,
     infoM1: m1.info, infoM2: m2.info,
     zonasM2: m2.zonas,
     m1: { t: m1.t, heap: m1.heap, recursos: m1.recursos, zonas: m1.zonas },
@@ -252,6 +272,7 @@ function limpiarHuerfanos() {
   const { srv, puerto } = await servir();
   const origen = `http://127.0.0.1:${puerto}`;
   const res = { etiqueta: ETIQUETA, cuando: new Date().toISOString(), cpu: CPU, rondas: RONDAS, movil: { ancho: 375, alto: 812, dpr: 3, gpu: 'PC real (ANGLE/D3D11)' }, corridas: [] };
+  const out = path.join(SALIDA, `qa160-${ETIQUETA}.json`); // hoisted: la escritura incremental lo usa dentro del bucle
   for (let ronda = 0; ronda < RONDAS; ronda++) {
     const { chrome, perf, puerto: puertoDev, wsPath } = await lanzarChrome();
     const ws = new WebSocket(`ws://127.0.0.1:${puertoDev}${wsPath}`);
@@ -302,6 +323,8 @@ function limpiarHuerfanos() {
       try { r = JSON.parse(await evaluar(cdp, ses, PROBAR_JS, 900, true)); }
       finally { clearInterval(progreso); }
       res.corridas.push(r);
+      // escribir incremental: si el wrapper de la PC mata la corrida (timeout), no se pierden las corridas hechas
+      try { fs.writeFileSync(out, JSON.stringify(res, null, 1)); } catch (e) {}
       if (r.error) console.log('  · ERROR: ' + r.error + (r.errorTest ? ' · test: ' + r.errorTest : ''));
       else {
         const sf = (r.sinFugas || [])[0];
@@ -315,6 +338,11 @@ function limpiarHuerfanos() {
           console.log('  · GEOMETRÍAS NUEVAS en escena m2 (top KB):');
           for (const x of r.nuevasGeo.slice(0, 15)) console.log(`      ${x.nom} Δn=${x.dn} Δkb=${x.dkb} (n=${x.n2} kb=${x.kb2})`);
         } else console.log('  · sin geometrías nuevas en escena m2');
+        if (r.retenidos && r.retenidos.length) {
+          const sinDueno = r.retenidos.filter(x => !x.dueños.length);
+          console.log(`  · RETENIDOS listos refs>0: ${r.retenidos.length} (sin dueño estructural: ${sinDueno.length}) — top MB:`);
+          for (const x of r.retenidos.slice(0, 20)) console.log(`      ${x.n}:${x.t} r${x.refs} ${x.mb}KB soltarEn=${x.soltarEn} dueños=[${(x.dueños || []).join('|')}]`);
+        }
       }
       try { await cdp.call('Target.closeTarget', { targetId: tid }, undefined, 10); } catch (e) { /* ya cerrado */ }
     } catch (e) {
@@ -326,7 +354,6 @@ function limpiarHuerfanos() {
   }
   srv.close();
   limpiarHuerfanos(); // Chrome 156: el navegador queda detached tras chrome.kill(); no dejar zombis que roben GPU
-  const out = path.join(SALIDA, `qa160-${ETIQUETA}.json`);
   fs.writeFileSync(out, JSON.stringify(res, null, 1));
   console.log('· evidencia: ' + out);
   const rojas = res.corridas.filter(c => c.sinFugas && c.sinFugas.length && !c.sinFugas[0].ok).length;
