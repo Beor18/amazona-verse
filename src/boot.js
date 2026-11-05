@@ -93,6 +93,12 @@
     if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
     if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); alPrimerGesto(fauna); } // src/game/fauna.js
     const cargarVecinos = aDemanda('src/game/vecinos.js', 'AVVecinos'); AV.vecinosTest = o => cargarVecinos().then(v => v.test(o)); alPrimerGesto(cargarVecinos); // CG-44
+    // V18.1 «El mundo que cambia contigo» (Kelvin 5-nov): solo con la bandera (?v18=1 o localStorage amazonaverse.v18 = '1').
+    // Sin ella no se carga nada nuevo y la versión estable queda igual. Contrato: docs/equipo/V18_CONTRATOS.md.
+    const v18On = (() => { try { return /[?&]v18=1\b/.test(location.search) || localStorage.getItem('amazonaverse.v18') === '1'; } catch (e) { return false; } })();
+    G.V18 = v18On;
+    const cargarV18 = aDemanda('src/game/v18/progreso.js', 'AVV18Progreso'); AV.v18Test = o => cargarV18().then(v => v.test(o));
+    if (v18On) alPrimerGesto(cargarV18);
     const cargarSorpresas = aDemanda('src/game/sorpresas.js', 'AVSorpresas'); AV.sorpresasTest = o => cargarSorpresas().then(s => s.test(o)); alPrimerGesto(cargarSorpresas); // CG-45, sin tocar ciudad_viva.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
     if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)

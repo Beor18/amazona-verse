@@ -1,0 +1,75 @@
+AMAZONA VERSE — DIRECTIVA MAESTRA V18.1
+EL MUNDO QUE CAMBIA CONTIGO | EJECUCIÓN Y RESULTADOS VISIBLES
+(Kelvin, 5-nov-2026. Copia guardada por la coordinadora web. Contratos: docs/equipo/V18_CONTRATOS.md; tablero: docs/equipo/V18_TABLERO.md)
+
+Destinatario: Claude, coordinador de desarrollo de Amazona Verse
+Propósito: ejecución inmediata de una experiencia jugable integrada, con cuatro frentes de trabajo coordinados y evidencia verificable cada semana.
+Horizonte objetivo: 30 días desde la aceptación del plan de ejecución, sujeto a dependencias técnicas reales.
+Prioridad: jugabilidad y retención, preservando lo construido.
+Estado de referencia: según el reporte «Amazona Verse — Cómo cerramos el juego», los seis capítulos son jugables; el fundador ya probó la versión actual en móvil y confirma que corre perfectamente. Esta prueba del estado actual se considera completada. No volver a presentarla como un bloqueo pendiente. Las funciones nuevas sí requieren pruebas de regresión.
+
+0. ORDEN EJECUTIVA — LEER PRIMERO
+La V18.1 reemplaza las prioridades de producto de V17 y ajusta V18, sin anular correcciones técnicas válidas ni alterar la historia aprobada.
+No entregar otro plan largo sin código jugable. El primer hito debe ser visible a más tardar el día 7: una demostración real, no una simulación ni un video conceptual.
+Propuesta de valor: Descubre una cotorra → desbloquea su poder → supera un desafío → gana una recompensa → transforma un mundo que recuerda lo que hiciste.
+El objetivo no es sumar funciones desconectadas. Es lograr que una nueva especie cambie lo que el jugador puede hacer y que exista una razón concreta para volver.
+Definición de éxito: un jugador completa ese ciclo en una zona del mapa existente, sin comandos de desarrollador, y su progreso persiste después de salir y regresar. La experiencia debe ser divertida antes de expandirla a 36 habilidades, muchos modos o multijugador online.
+
+1. ESTADO DE PARTIDA Y REUTILIZACIÓN OBLIGATORIA
+- Seis capítulos jugables; conservarlos completos y sus decisiones narrativas.
+- Los minijuegos existen en el menú Retos. Integrar uno por capítulo puede planificarse sin eliminarlos del menú, pero no es prioridad del ciclo V18.1.
+- Existen sistemas de vuelo, colección, huevos/criadero, desafíos y actividades de construcción dentro de la historia.
+- Existen 36 especies; no confundir tener 36 especies con tener 36 poderes funcionales.
+- «Batalla de Bandadas», PvP y enemigos que atacan cotorras no están implementados; no etiquetarlos como terminados.
+- VALIDACIÓN MÓVIL ACTUAL — APROBADA POR EL FUNDADOR. No pedir repetir las mismas pruebas como condición para iniciar V18.1.
+Proteger sin excepción: los seis capítulos, misiones, diálogos, guardados y final de temporada; vittata.glb, su rig e identidad visual; las 36 especies (34 + A. martinicana y A. violacea históricas, con tratamiento taxonómico prudente); el mapa, Ciudad de los 36, Villa Mangle, personajes y canon; vuelo, retos, criadero, cómic, personalización, música, colección y construcción; controles móviles y rendimiento logrado.
+Prohibido rehacer desde cero un sistema útil solo por conveniencia del agente. Primero inventariar componentes reutilizables y enlazar archivos/funciones concretos.
+
+2. ALCANCE EXACTO DEL DEMO V18.1
+1. Encuentro: el jugador encuentra una cotorra en una zona existente, con pista clara e interacción interesante.
+2. Desbloqueo: reto breve que desbloquea la especie; se diferencian descubierta, desbloqueada y seleccionada.
+3. Poder: habilidad nueva, visualmente clara y con efecto real sobre la mecánica.
+4. Combate PvE: contra una cotorra rival IA; ataque, defensa/evasión, daño o estado de impacto, victoria y derrota.
+5. Recompensa: recurso, pieza o capacidad definida; no una pantalla de puntos desconectada.
+6. Transformación: la recompensa repara, construye o mejora una estructura ya presente; cambio visible y, si procede, atajo, acceso o utilidad.
+7. Persistencia: tras recargar, especie, recompensa consumida y transformación siguen correctas.
+8. Repetición: pista clara de un segundo objetivo opcional.
+Alcance mínimo: 2 especies con habilidades distintas (una se descubre/desbloquea en el ciclo); 1 rival IA; 1 zona existente; 1 estructura reparable/construible persistente; 1 recompensa de combate consumida en construcción; 1 pista para volver o segundo reto; 1 motor de habilidades configurable por especie, ampliable a 36.
+NO entra en 30 días: PvP por internet, matchmaking, cuentas, chat, servidores; los 36 poderes; todos contra todos, guilds, captura del fruto a la vez; editor tipo Roblox, economías, monetización o contenido público de menores; rehacer capítulos, modelos o rediseñar la Ciudad de los 36.
+PvP local 1v1: objetivo secundario días 21–30 solo si el PvE está estable y hay dos entradas humanas reales; nunca llamar «PvP» a una pelea contra bot.
+
+3. LOS CUATRO FRENTES EN PARALELO
+Asignar recursos reales (Nube/web, Mac, Kimi 1–3/PC) según capacidad, acceso y presupuesto. No gastar créditos de API sin estimación y autorización.
+FRENTE A — COMBATE Y PODERES. D7: dos cotorras con habilidades diferenciadas y enfrentamiento básico contra IA. D14: controles, impactos, defensa/evasión, victoria/derrota y recompensa conectable. D21–30: integrado en el mapa y pulido; PvP local solo si no compromete. Matriz preliminar de 36 especies (identidad, hábitat, poder, uso en combate y exploración, ventaja, debilidad, costo técnico) sin implementarlas ni declararlas aprobadas. Golpe de ala, fruta/semilla y grito como ataques básicos comunes; no sustituyen poderes exclusivos. Priorizar poderes que alteren decisiones: movilidad, defensa, control del terreno, acceso, interacción o apoyo.
+FRENTE B — CREATOR, REPARACIÓN Y PERSISTENCIA. D7: objeto existente reparable o colocable con guardado. D14: estructura vinculada a una recompensa y restaurada tras recarga. D21–30: integración con combate y exploración, consecuencia visible y útil. Reutilizar construcción de capítulos; no construir un editor completo; no duplicar inventarios ni persistencia.
+FRENTE C — DESCUBRIMIENTO, COLECCIÓN Y EXPERIENCIA. D7: descubrimiento y desbloqueo persistente de una especie. D14: selección y acceso al poder. D21–30: secuencia guiada con pista, hallazgo, reto, recompensa y motivo para regresar. Estados no_descubierta, descubierta, desbloqueada, seleccionable, seleccionada. Respetar guardados existentes con migración/versionado; no bloquear cotorras ya disponibles en partidas antiguas.
+FRENTE D — INTEGRACIÓN, CALIDAD Y DEMOS. D2: mapa de dependencias, contratos y responsables. D7: tablero de demos y pruebas de integración. D14: recompensas, colección y construcción conectadas. D21–30: demo integrada en entorno de pruebas accesible al fundador, sin afectar la versión estable. No otra auditoría móvil general; sí regresión de cada mecánica nueva en móvil y computadora.
+
+4. ARQUITECTURA MÍNIMA
+Contrato compartido para speciesId y estado de colección; abilityId, parámetros, cooldown, energía, animación/efecto y resultado; eventos de combate (hit, damage, win, loss, rewardGranted); recompensas e inventario sin duplicados; worldChangeId y persistencia; esquema/versionado de guardados. Ramas por frente, integración frecuente, revisión, pruebas automáticas. No permitir que cada frente implemente su propio progreso. Versión demostrable = código ejecutable con URL o instrucciones, rama, commit, prueba y captura/video auténtico; no maquetas.
+
+5. CRONOGRAMA
+D1–2: tabla existe/reutilizar/falta/riesgo; asignación de frentes; ramas y contratos; tickets con estimación; presupuesto y riesgos; acceso al entorno de demos. No repetir la auditoría V17.
+D7: poder activable y rival IA que reacciona; descubrimiento/desbloqueo persistente; construcción/reparación con guardado. Al menos una demo jugable por frente; si falla, causa, responsable, commit y solución.
+D14: desbloqueo permite seleccionar y usar poder; combate otorga recompensa real; recompensa permite construcción persistente; recarga sin pérdida ni duplicación.
+D21: integrado en zona existente, sin consola ni cheats; regresión de capítulos y móvil sobre lo nuevo; prueba con el fundador.
+D30: demo accesible y estable; persistencia completa; ronda pequeña de pruebas observadas con autorización parental; informe de qué divierte, qué confunde y qué hace repetir; decisión de ampliar poderes, mejorar el ciclo o priorizar PvP local.
+Fechas sujetas a la evaluación técnica de D2; si no son viables, calendario alternativo con dependencias y evidencia.
+
+6. TABLERO DE RESULTADOS
+Tabla visible: Función, Frente, Estado, Rama/commit, Demo/video real, Prueba, Próxima fecha, Bloqueo. Estados: NO INICIADO, EN DESARROLLO, DEMOSTRABLE, VERIFICADO, BLOQUEADO, FUERA DE ALCANCE. Reporte diario de máximo 8 líneas; reporte semanal con demo, video auténtico, commits, pruebas, fallos y siguiente objetivo. No publicar en producción sin autorización del fundador.
+
+7. CHECKLIST FINAL
+Versión estable y seis capítulos accesibles; el fundador entra a la demo sin instrucciones técnicas; encuentra una especie en zona existente; la desbloquea jugando; poder con efecto mecánico real; dos cotorras diferenciadas; la IA combate, reacciona, gana o pierde; recompensa no duplicable; repara/construye una estructura visible con consecuencia útil; al recargar todo se mantiene; controles en móvil y computadora sin degradar; sin errores críticos ni corrupción de guardados; pista o desafío para volver; URL, commits, evidencia y pruebas. PvP local no es puerta D30; PvP online no es parte de V18.1.
+
+8. DISEÑO DE BATALLAS: DECISIONES PROVISIONALES
+Batalla de Bandadas como nombre provisional sujeto a aprobación visual. Combate apto para niños, sin sangre ni muertes gráficas; golpe de ala, fruta/semilla y grito como ataques básicos. Poderes diferenciados: prototipo con dos especies; la matriz de 36 requiere aprobación antes de producción masiva. Primera modalidad: 1v1 contra IA; PvP local después. No todos contra todos, guilds ni captura del fruto en paralelo. La Maraña y criaturas enemigas: conservar lo aprobado; no inventar enemigos ni alterar canon para la demo; proponer fichas separadas. Minijuegos por capítulo: conservar en Retos. Ciudad de los 36: no aumentar población por defecto; respetar el rendimiento y presentar cambios visuales para aprobación. No pedir nueve respuestas antes de iniciar; solo escalar lo que impida la siguiente demo; alternativas reversibles y provisionales.
+
+9. PRUEBA DE DIVERSIÓN Y RETENCIÓN
+Observar en ronda pequeña con permiso parental: comprende qué hacer en 60 s; usa un poder en 3–5 min; entiende por qué ganó; reconoce qué cambió en el mundo; quiere probar otra especie sin sugerencia; quiere volver al día siguiente (intención, no retención). Sin datos personales de menores ni telemetría sin revisión legal. La educación es capa opcional; el núcleo es diversión.
+
+10. LO QUE SIGUE: V19 ampliar habilidades, encuentros, rivales, exploración y progresión; V20 PvP local robusto y pruebas de PvP online privado; V21 multijugador online, construcción cooperativa y eventos, solo si V18.1 demuestra diversión.
+
+11. PRIMERA RESPUESTA: confirmación de estado; reutilización; cuatro frentes; primeros 7 días; riesgos y costes; primera demo; máximo tres decisiones imprescindibles. Empezar a producir código y demos.
+
+CRITERIO FINAL DEL FUNDADOR: «No me interesa cuánto trabajaron los agentes. Quiero abrir Amazona Verse, jugar algo nuevo, divertirme y comprobar que mi progreso cambia el mundo. Enséñenme eso cada semana.»
