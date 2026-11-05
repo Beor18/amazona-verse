@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>KIMI-056 · horneado de la cotorra</title>
+<style>html,body{margin:0;background:#223}canvas{display:block}</style>
+</head>
+<body>
+<script src="/assets/vendor/three/build/three.min.js"></script>
+<script src="/assets/vendor/three/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+// KIMI-056 · visor + horneador de vittata_base_lod1.glb → datos estáticos para la bandada.
+// No toca el modelo: solo lo lee. Parámetros por URL para iterar sin editar:
+//   ?ala=RAD      rotación de las alas al hornear (desplegar; 0 = dejar como está)
+//   ?girar=RAD    rotación Y previa (orientación del pico)
+//   ?cellN=0.045  tamaño de celda del decimado cerca  · ?cellF=0.10 lejos
+//   ?largo=0.8    longitud final del ave en metros
+window.__k056 = null;
+window.addEventListener('error', e => { if (!window.__k056) window.__k056 = { error: 'onerror: ' + e.message + ' @' + (e.filename || '') + ':' + e.lineno }; });
+window.addEventListener('unhandledrejection', e => { if (!window.__k056) window.__k056 = { error: 'rejection: ' + (e.reason && e.reason.message || e.reason) + ' :: ' + (e.reason && e.reason.stack || '').slice(0, 500) }; });
+const P = new URLSearchParams(location.search);
+const F = (n, d) => P.has(n) ? parseFloat(P.get(n)) : d;
+
+function hornear() {
+  return new Promise((res, rej) => {
+    new THREE.GLTFLoader().load('/assets/models/vittata_base_lod1.glb', gltf => {
+      let nodo = null;
+      gltf.scene.traverse(o => { if (o.isMesh && o.material && o.material.name === 'Parrot_Feathers') nodo = o; });
+      if (!nodo) { let nv = 0; gltf.scene.traverse(o => { if (o.isMesh && o.geometry && o.geometry.attributes.position && o.geometry.attributes.position.count > nv) { nv = o.geometry.attributes.position.count; nodo = o; } }); }
+      if (!nodo) return rej(new Error('no está la malla de la cotorra'));
+      nodo.updateWorldMatrix(true, false);
+      const M = nodo.matrixWorld;
+      const src = nodo.geometry.index ? nodo.geometry.toNonIndexed() : nodo.geometry;
+      const sp = src.attributes.position;
+      const v = new THREE.Vector3();
+      const pos = new Float32Array(sp.count * 3);
+      for (let i = 0; i < sp.count; i++) { v.fromBufferAttribute(sp, i).applyMatrix4(M); pos[i * 3] = v.x; pos[i * 3 + 1] = v.y; pos[i * 3 + 2] = v.z; }
+
+      // caja y orientación
+      const bb = new THREE.Box3(); for (let i = 0; i < sp.count; i++) bb.expandByPoint(new THREE.Vector3(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]));
+      const gi = F('girar', 0);
+      if (gi) { const c = Math.cos(gi), s = Math.sin(gi); for (let i = 0; i < sp.count; i++) { const x = pos[i * 3], z = pos[i * 3 + 2]; pos[i * 3] = x * c + z * s; pos[i * 3 + 2] = -x * s + z * c; } bb.makeEmpty(); for (let i = 0; i < sp.count; i++) bb.expandByPoint(new THREE.Vector3(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2])); }
+
+      // umbrales de región (fracciones de la caja)
+      const xAla = Math.max(Math.abs(bb.min.x), Math.abs(bb.max.x)) * 0.30;   // |x| mayor = ala
+      const zCabeza = bb.max.z - (bb.max.z - bb.min.z) * 0.28;                 // delante = cabeza
+      const zPico = bb.max.z - (bb.max.z - bb.min.z) * 0.06;                   // lo más delante = pico
+      const zCola = bb.min.z + (bb.max.z - bb.min.z) * 0.22;                   // detrás = cola
+      const yCuello = bb.min.y + (bb.max.y - bb.min.y) * 0.55;                 // la cabeza también es alta
+
+      // clase por vértice: 0 cuerpo, 1 cabeza, 2 pico, 3 ala, 4 cola
+      const par = new Uint8Array(sp.count);
+      for (let i = 0; i < sp.count; i++) {
+        const x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2];
+        if (Math.abs(x) > xAla) par[i] = 3;
+        else if (z < zCola) par[i] = 4;
+        else if (z > zPico) par[i] = 2;
+        else if (z > zCabeza && y > yCuello) par[i] = 1;
+      }
+
+      // pivote del ala: anillo de raíz (|x| ≈ xAla) por lado
+      const piv = { x: xAla, y: 0, z: 0 }; { let n = 0, sy = 0, sz = 0; for (let i = 0; i < sp.count; i++) if (par[i] === 3 && Math.abs(Math.abs(pos[i * 3]) - xAla) < xAla * 0.35) { n++; sy += pos[i * 3 + 1]; sz += pos[i * 3 + 2]; } if (n) { piv.y = sy / n; piv.z = sz / n; } }
+
+      // desplegar alas (rotación alrededor del eje Z que pasa por el pivote del hombro)
+      const ala = F('ala', 0);
+      if (ala) {
+        for (let i = 0; i < sp.count; i++) {
+          if (par[i] !== 3) continue;
+          const sx = pos[i * 3] >= 0 ? 1 : -1, px = sx * piv.x, a2 = ala * sx; // cada lado sube con el giro de su signo
+          const qx = pos[i * 3] - px, qy = pos[i * 3 + 1] - piv.y;
+          const c = Math.cos(a2), s = Math.sin(a2);
+          pos[i * 3] = px + qx * c - qy * s; pos[i * 3 + 1] = piv.y + qx * s + qy * c;
+        }
+      }
+
+      // pivote del cuello: punto de giro cabeza (base de la cabeza)
+      const pivC = { x: (bb.min.x + bb.max.x) / 2, y: yCuello, z: zCabeza };
+
+      // normalizar: largo total = ?largo, centrada en el origen
+      bb.makeEmpty(); for (let i = 0; i < sp.count; i++) bb.expandByPoint(new THREE.Vector3(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2]));
+      const largo0 = bb.max.z - bb.min.z, esc = F('largo', 0.8) / largo0;
+      const cx = (bb.min.x + bb.max.x) / 2, cy = (bb.min.y + bb.max.y) / 2, cz = (bb.min.z + bb.max.z) / 2;
+      for (let i = 0; i < sp.count; i++) { pos[i * 3] = (pos[i * 3] - cx) * esc; pos[i * 3 + 1] = (pos[i * 3 + 1] - cy) * esc + 0.02; pos[i * 3 + 2] = (pos[i * 3 + 2] - cz) * esc; }
+      const E = v => Math.round(v * 1000) / 1000;
+      const out = {
+        ala: [0, 0, 0], cuello: [0, 0, 0], // se rellenan tras normalizar
+        largo: F('largo', 0.8),
+        analisis: {
+          verts: sp.count, tris: sp.count / 3, xAla: Math.round(xAla * 100) / 100,
+          porClase: [0, 1, 2, 3, 4].map(c => par.filter(p => p === c).length),
+          cajaClase: [0, 1, 2, 3, 4].map(cl => {
+            const m = [1e9, 1e9, 1e9], M = [-1e9, -1e9, -1e9];
+            for (let i = 0; i < sp.count; i++) if (par[i] === cl) for (let k = 0; k < 3; k++) { const v = pos[i * 3 + k]; if (v < m[k]) m[k] = v; if (v > M[k]) M[k] = v; }
+            return { min: m.map(n => Math.round(n * 100) / 100), max: M.map(n => Math.round(n * 100) / 100) };
+          }),
+          bbox: { min: bb.min.toArray().map(n => Math.round(n * 100) / 100), max: bb.max.toArray().map(n => Math.round(n * 100) / 100) }
+        }
+      };
+      out.ala = [E((piv.x - cx) * esc), E((piv.y - cy) * esc + 0.02), E((piv.z - cz) * esc)];
+      out.cuello = [E((pivC.x - cx) * esc), E((pivC.y - cy) * esc + 0.02), E((pivC.z - cz) * esc)];
+
+      // decimado por celdas: devuelve geometría indexada con position/normal/color/aParte
+      function decimar(cell) {
+        const cen = new Map();
+        for (let i = 0; i < sp.count; i++) {
+          const k = Math.floor(pos[i * 3] / cell) + ',' + Math.floor(pos[i * 3 + 1] / cell) + ',' + Math.floor(pos[i * 3 + 2] / cell);
+          let c = cen.get(k); if (!c) { c = { n: 0, x: 0, y: 0, z: 0, p: [0, 0, 0, 0, 0] }; cen.set(k, c); }
+          c.n++; c.x += pos[i * 3]; c.y += pos[i * 3 + 1]; c.z += pos[i * 3 + 2]; c.p[par[i]]++;
+        }
+        const claves = [...cen.keys()];
+        claves.forEach((k, i) => { const c = cen.get(k); c.idx = i; c.par = c.p.indexOf(Math.max(...c.p)); });
+        // asignar id de vértice por celda
+        const key = i => Math.floor(pos[i * 3] / cell) + ',' + Math.floor(pos[i * 3 + 1] / cell) + ',' + Math.floor(pos[i * 3 + 2] / cell);
+        const tri = [];
+        for (let t = 0; t < sp.count; t += 3) {
+          const a = cen.get(key(t)), b = cen.get(key(t + 1)), c2 = cen.get(key(t + 2));
+          if (a === b || b === c2 || a === c2) continue; // triángulo degenerado
+          tri.push(a.idx, b.idx, c2.idx);
+        }
+        const nv = claves.length, P = new Float32Array(nv * 3), PA = new Uint8Array(nv), C = new Float32Array(nv * 3);
+        claves.forEach((k, i) => { const c = cen.get(k); P[i * 3] = c.x / c.n; P[i * 3 + 1] = c.y / c.n; P[i * 3 + 2] = c.z / c.n; PA[i] = c.par; });
+        for (let i = 0; i < nv; i++) { const k = PA[i] === 3 ? 0.88 : PA[i] === 4 ? 0.72 : PA[i] === 1 ? 1.06 : 1.0; C[i * 3] = k; C[i * 3 + 1] = k; C[i * 3 + 2] = k; }
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.BufferAttribute(P, 3));
+        g.setAttribute('color', new THREE.BufferAttribute(C, 3));
+        g.setAttribute('aParte', new THREE.BufferAttribute(PA, 1));
+        g.setIndex(tri);
+        g.computeVertexNormals();
+        return g;
+      }
+      out.near = decimar(F('cellN', 0.045));
+      out.far = decimar(F('cellF', 0.11));
+      out.analisis.near = { verts: out.near.attributes.position.count, tris: out.near.index.count / 3 };
+      out.analisis.far = { verts: out.far.attributes.position.count, tris: out.far.index.count / 3 };
+      res(out);
+    }, undefined, e => rej(new Error('GLB: ' + (e && e.message || e))));
+  });
+}
+
+// vista: renderer aparte con las geometrías horneadas y el shader de la bandada (mismo código)
+async function pintar(out) {
+  const W = 1500, H = 900;
+  const rd = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  rd.setSize(W, H); document.body.appendChild(rd.domElement);
+  const escena = new THREE.Scene(); escena.background = new THREE.Color(0x2a3440);
+  escena.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.0));
+  const dir = new THREE.DirectionalLight(0xffffff, 0.8); dir.position.set(2, 4, 3); escena.add(dir);
+
+  const uT = { value: 0 }, uReal = { value: 1 }, uPivotAla = { value: new THREE.Vector3(...out.ala) }, uPivotCuello = { value: new THREE.Vector3(...out.cuello) };
+  const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+  mat.onBeforeCompile = sh => {
+    sh.uniforms.uT = uT; sh.uniforms.uReal = uReal; sh.uniforms.uPivotAla = uPivotAla; sh.uniforms.uPivotCuello = uPivotCuello;
+    sh.vertexShader = 'uniform float uT;\nuniform float uReal;\nuniform vec3 uPivotAla;\nuniform vec3 uPivotCuello;\nattribute float iFase;\nattribute vec4 iPose;\nattribute vec3 iAcento;\nattribute float aParte;\n' + sh.vertexShader
+      .replace('#include <color_vertex>', `#include <color_vertex>
+  if (aParte > 1.5 && aParte < 2.5) vColor.xyz = vec3(0.62, 0.58, 0.48);
+  if (aParte > 0.5 && aParte < 1.5 && iPose.w > 0.01) vColor.xyz = mix(vColor.xyz, color.xyz * iAcento, uReal > 0.5 ? iPose.w * 0.9 : smoothstep(0.275 - 0.15 * iPose.w, 0.295 - 0.15 * iPose.w, position.z + (position.y - 0.07) * 0.5 * (1.0 - iPose.w)));`)
+      .replace('#include <begin_vertex>', `vec3 transformed = vec3(position);
+  if (aParte > 2.5 && aParte < 3.5) {
+    if (uReal > 0.5) {
+      float sx = sign(position.x), ang = sx * (sin(uT * 13.0 + iFase) * 0.9 * iPose.x - 1.25 * (1.0 - iPose.x));
+      vec3 piv = vec3(sx * uPivotAla.x, uPivotAla.y, uPivotAla.z);
+      vec3 q = transformed - piv; float c = cos(ang), s = sin(ang);
+      transformed = vec3(q.x * c - q.y * s, q.x * s + q.y * c, q.z) + piv;
+    } else {
+      float ax = abs(position.x), sx = sign(position.x), w = max(ax - 0.056, 0.0), s = sin(uT * 13.0 + iFase);
+      vec3 abierta = vec3(position.x - sx * (1.0 - cos(s * 0.5)) * ax * 0.6, position.y + s * ax * 1.1, position.z);
+      vec3 plegada = vec3(sx * (0.06 + w * 0.08), position.y + 0.025 + w * 0.04, position.z * 0.5 - 0.02 - w * 0.85);
+      transformed = mix(plegada, abierta, iPose.x);
+    }
+  }
+  if (aParte > 0.5 && aParte < 2.5) {
+    vec3 q = transformed - (uReal > 0.5 ? uPivotCuello : vec3(0.0, 0.03, 0.12));
+    float cy = cos(iPose.z), sy = sin(iPose.z), cp = cos(iPose.y), sp = sin(iPose.y);
+    q = vec3(cy * q.x + sy * q.z, q.y, -sy * q.x + cy * q.z);
+    q = vec3(q.x, cp * q.y - sp * q.z, sp * q.y + cp * q.z);
+    transformed = q + (uReal > 0.5 ? uPivotCuello : vec3(0.0, 0.03, 0.12));
+  }`);
+  };
+  function instanciada(geo, n) {
+    const im = new THREE.InstancedMesh(geo, mat, n);
+    im.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(n * 3).fill(1), 3);
+    geo.setAttribute('iFase', new THREE.InstancedBufferAttribute(new Float32Array(n), 1));
+    geo.setAttribute('iPose', new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4));
+    geo.setAttribute('iAcento', new THREE.InstancedBufferAttribute(new Float32Array(n * 3).fill(1), 3));
+    return im;
+  }
+  // 6 aves de muestra con poses distintas (vuelo, plegada, cabeceo)
+  const poses = [[1, 0, 0, 1], [1, 0.4, 0, 1], [0.15, 0, 0, 0.8], [0, 0.5, 0.8, 1], [1, 0, 0, 0], [0, 0, 0, 0]];
+  const colores = [[0.10, 0.45, 0.08], [0.35, 0.5, 0.1], [0.1, 0.45, 0.08], [0.55, 0.2, 0.15], [0.1, 0.45, 0.08], [0.1, 0.45, 0.08]];
+  const acentos = [[0.9, 0.15, 0.1], [0.9, 0.7, 0.1], [0.1, 0.3, 0.9], [0.9, 0.15, 0.1], [0.1, 0.3, 0.9], [0.9, 0.15, 0.1]];
+  for (const [gi, geo] of [out.near, out.far].entries()) {
+    const im = instanciada(geo, poses.length);
+    const d = new THREE.Object3D();
+    poses.forEach((p, i) => {
+      d.position.set((i - 2.5) * 0.75, gi ? -0.9 : 0.6, 0); d.rotation.set(0, Math.PI, 0); d.scale.setScalar(1); d.updateMatrix();
+      im.setMatrixAt(i, d.matrix);
+      im.instanceColor.setXYZ(i, ...colores[i]);
+      geo.attributes.iPose.setXYZW(i, ...p);
+      geo.attributes.iAcento.setXYZ(i, ...acentos[i]);
+      geo.attributes.iFase.setX(i, i);
+    });
+    im.count = poses.length; im.frustumCulled = false;
+    escena.add(im);
+  }
+  const cam = new THREE.PerspectiveCamera(40, W / H, 0.01, 100); cam.position.set(0, 0.35, 4.6); cam.lookAt(0, 0, 0);
+  rd.render(escena, cam);
+  await new Promise(r => setTimeout(r, 300));
+  const foto = rd.domElement.toDataURL('image/jpeg', 0.85);
+
+  // diagnóstico: un ave sola, colores por región, 3 ortográficas (lado, cenital, frente)
+  const diag = {};
+  {
+    const PAL = [[0.23, 0.6, 0.27], [0.9, 0.2, 0.2], [1, 0.85, 0.2], [0.2, 0.4, 0.9], [1, 0.55, 0.1]]; // cuerpo, cabeza, pico, ala, cola
+    const geo = out.near, colA = geo.attributes.color, copia = colA.array.slice();
+    for (let i = 0; i < colA.count; i++) { const p = geo.attributes.aParte.array[i]; colA.array[i * 3] = PAL[p][0]; colA.array[i * 3 + 1] = PAL[p][1]; colA.array[i * 3 + 2] = PAL[p][2]; }
+    colA.needsUpdate = true;
+    const bas = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
+    const m = new THREE.Mesh(geo, bas);
+    const esc2 = new THREE.Scene(); esc2.background = new THREE.Color(0x222831); esc2.add(m);
+    const R = 0.75, mk = (x, y, z) => { const c = new THREE.OrthographicCamera(-R, R, R, -R, 0.01, 50); c.position.set(x, y, z); c.lookAt(0, 0, 0); return c; };
+    rd.setSize(600, 600);
+    rd.render(esc2, mk(5, 0, 0)); diag.lado = rd.domElement.toDataURL('image/jpeg', 0.88);   // perfil: z horizontal, y vertical
+    rd.render(esc2, mk(0, 5, 0)); diag.cenital = rd.domElement.toDataURL('image/jpeg', 0.88); // planta: x horizontal, z vertical
+    rd.render(esc2, mk(0, 0.35, 5)); diag.frente = rd.domElement.toDataURL('image/jpeg', 0.88); // frente: x, y
+    for (let i = 0; i < copia.length; i++) colA.array[i] = copia[i];
+    rd.setSize(W, H);
+  }
+  return { foto, diag };
+}
+
+(async () => {
+  try {
+    const out = await hornear();
+    const pintado = await pintar(out);
+    out.foto = pintado.foto; out.diag = pintado.diag;
+    // geometrías a datos planos
+    const plano = g => ({
+      pos: Array.from(g.attributes.position.array).map(n => Math.round(n * 1000) / 1000),
+      nor: Array.from(g.attributes.normal.array).map(n => Math.round(n * 1000) / 1000),
+      col: Array.from(g.attributes.color.array).map(n => Math.round(n * 1000) / 1000),
+      par: Array.from(g.attributes.aParte.array),
+      idx: Array.from(g.index.array)
+    });
+    window.__k056 = { analisis: out.analisis, ala: out.ala, cuello: out.cuello, largo: out.largo, foto: out.foto, diag: out.diag, near: plano(out.near), far: plano(out.far) };
+  } catch (e) { window.__k056 = { error: String(e && e.message || e) }; }
+})();
+</script>
+</body>
+</html>
