@@ -3,6 +3,10 @@
 # 5-nov 12:15 (coordinadora web): Kelvin recargó 20 $; primero BM136 a BM139
 # 5-nov 13:30: siguiente tanda (BM142 la hace Claude en la Mac en persona)
 # 5-nov 11:00 (otra cuenta, Kelvin pide que la Mac siga): BM147 y BM148 al final de la tanda
+# 5-nov 16:40: tanda nueva
+BM149
+BM150
+BM151
 BM141
 BM143
 BM144
