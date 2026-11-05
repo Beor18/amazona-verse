@@ -46,6 +46,7 @@ AVE.module('renderer', function (G) {
     return a[Math.min(a.length - 1, Math.floor(0.95 * a.length))];
   }
   function adaptDPR(raw) {
+    if (dyn.pin) return;                                     // QA-176 (lookTest): la prueba fija el DPR; la resolución dinámica no lo mueve a mitad
     if (!(raw > 0 && raw < 100)) return;                     // pestaña oculta o pausa larga: no cuenta
     dyn.ms += (raw - dyn.ms) * 0.05; dyn.t += raw; dyn.lock = Math.max(0, dyn.lock - raw);
     dyn.v[dyn.i] = raw; dyn.i = (dyn.i + 1) % dyn.v.length; dyn.n = Math.min(dyn.v.length, dyn.n + 1);
@@ -1478,6 +1479,7 @@ AVE.module('renderer', function (G) {
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, leerLienzo: fotoLeer, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
     _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; }, get otra() { return calorOtra.size; } },
+    _dyn: dyn, // QA-176: las pruebas de imagen (lookTest) lo usan para fijar la resolución dinámica; el juego no lo toca
     fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, esperas: FOTOS.esperas, caidas: FOTOS.caidas, errPBO: FOTOS.errPBO, cola: FOTOS.cola.length }),
     precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas, marcaGPU },
     contexto: { get perdido() { return CTX.perdido; }, get perdidas() { return CTX.perdidas; }, get restauradas() { return CTX.restauradas; } }, contextTest, calidadTest, equipo: PERFIL };
