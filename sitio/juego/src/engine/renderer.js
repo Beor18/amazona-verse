@@ -507,7 +507,7 @@ AVE.module('renderer', function (G) {
     const max = DIST_PEQ[calidad.nivel] || 100, cp = cam.position;
     for (const o of scene.children) {
       let c = cullCache.get(o);
-      if (o.isLight || PROPIOS.test(o.name || '') || o.userData.sinCulling) {
+      if (o.isLight || PROPIOS.test(o.name || '') || o.userData.sinCulling || o.frustumCulled === false) {
         if (c && c.lejos) { c.lejos = false; for (const m of c.meshes) m.layers.set(0); }
         continue;
       }

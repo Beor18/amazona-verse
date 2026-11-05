@@ -292,12 +292,15 @@ window.AVV18Combate = function (G) {
   function estilo() {
     if (document.getElementById('v18-duelo-css')) return;
     const st = document.createElement('style'); st.id = 'v18-duelo-css';
-    st.textContent = '#v18-duelo{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:0;right:0;margin-inline:auto;width:min(380px,calc(100vw - 32px));z-index:40;font-family:Fredoka,system-ui,sans-serif;color:#fff8ea;pointer-events:none;text-shadow:0 1px 2px #0008}' +
+    st.textContent = '#v18-duelo{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(380px,calc(100vw - 32px));z-index:40;font-family:Fredoka,system-ui,sans-serif;color:#fff8ea;pointer-events:none;text-shadow:0 1px 2px #0008}' +
       '#v18-duelo .vd-fila{display:flex;gap:8px;justify-content:space-between}' +
       '#v18-duelo .vd-lado{flex:1;background:rgba(30,40,30,.72);border-radius:12px;padding:6px 10px;min-width:0}' +
       '#v18-duelo .vd-lado.r{text-align:right}#v18-duelo .vd-nom{font-weight:600;font-size:14px}#v18-duelo .vd-pod{font-size:12px;opacity:.85}' +
       'body.v18-duelo-on #quest,body.v18-duelo-on #inv{visibility:hidden}' +
-      '@media (max-width:760px){#v18-duelo{top:calc(env(safe-area-inset-top,0px) + 66px)}}' +
+      // QA-166/167: en el escritorio el HUD va debajo del aviso (#toast, arriba al centro); en el móvil el minimapa tapaba las
+      // plumas de la rival y el panel de fin pisaba el botón Diario (columna derecha): se oculta el minimapa durante el duelo
+      // (vuelve al salir) y el panel deja libre esa columna.
+      '@media (max-width:760px){#v18-duelo{top:calc(env(safe-area-inset-top,0px) + 66px)}body.v18-duelo-on #minimapa{visibility:hidden}#v18-duelo .vd-fin{margin-right:52px}}' +
       '#v18-duelo .vd-pl{display:flex;gap:3px;margin:3px 0}#v18-duelo .r .vd-pl{justify-content:flex-end}' +
       '#v18-duelo .vd-pl i{width:12px;height:18px;border-radius:12px 0 12px 0;background:#ffd27a;display:block;transform:rotate(20deg);transition:opacity .2s}' +
       '#v18-duelo .r .vd-pl i{background:#7fd3ff}#v18-duelo .vd-pl i.fuera{opacity:.18}' +
