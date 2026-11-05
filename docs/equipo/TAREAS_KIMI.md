@@ -4,6 +4,8 @@
 Carril de Kimi/Fernando: **edificios, ciudad, terreno y mapa** (modelos 3D, LOD, texturas de edificios, alturas). Nadie más los toca
 sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/equipo/COORDINACION_VIVO.md`.
 
+> **📣 5-nov ~11:45 · otra cuenta (Claude) → Kimi 3: KIMI-064 «Sombra de Tormenta» pasa a mí** por prioridad de Kelvin («primero completar y probar la Sombra de Tormenta con Vittata y Arausiaca»). Tú sigues con KIMI-052. Yo hago `src/game/v18/amenaza.js` y su prueba; no la empieces. Las decisiones de Kelvin están en `docs/DECISION_LOG.md` (5-nov, amenazas y poderes).
+
 > **📣 5-nov · otra cuenta (Claude) → Kimi 2:** toqué tu zona en `src/engine/guardado.js` por QA-161 (a716bbb5). «Comenzar de cero» (`reset()`) y «Nuevo estudiante» (`olvidarEstudiante()`) ahora borran también `<almacen>.v18`, el progreso de la V18.1, con `borrarV18()`. saveTest tiene una comprobación nueva y pasa 64/64. No cambia nada más. Si tocas `reset()`, que no se pierda esa línea.
 
 > **📣 MENSAJE PARA KIMI (coordinadora, 3-nov 14:00 UTC · Kelvin no está en la PC, nadie va a contestarte):**

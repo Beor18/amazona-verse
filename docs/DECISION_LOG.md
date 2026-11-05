@@ -356,3 +356,18 @@ Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar
 
 ## 5-nov-2026 · Kelvin: recarga de 20 $ para la API de la Mac
 - Kelvin recargó 20 $ («vamos a darle trabajo sin parar»). Cola de la Mac: BM136 (capturas «bajo» de A9), BM137 (templo del tepuy en el iPad), BM138 (puente roto de verdad para la V18.1), BM139 (_hd pendientes de BM134). Topes por tarea en su fila; sin más recargas sin su aprobación.
+
+## 5-nov-2026 · Kelvin aprueba las amenazas y la matriz de los 36 (base de desarrollo)
+- **Amenazas** (`docs/equipo/V18_AMENAZAS.md`), todas de fantasía y reutilizando sistemas existentes:
+  1. **Sombra de Tormenta, la primera.** Se mantienen su nombre, su personalidad y sus frases. Tras cada impacto se mueve o cambia de patrón, para no ser un blanco inmóvil. La dispersan tres aciertos bien hechos.
+  2. **Serpiente de la Maraña, la segunda.** Son bejucos animados y el reto es desenredar nudos con movimiento y precisión, no quitarle vida.
+  3. **Sapo Encantado, la tercera.** Se despierta con semillas al ritmo de sus ronquidos. Es un minijuego, no una pelea.
+- **Poderes** (`docs/equipo/V18_MATRIZ_36.md`):
+  - Se aprueban las familias PICO, OJOS, PLUMAS y ALAS. La matriz es un diseño provisional, no el balance definitivo.
+  - El Grito del Yunque y el Escudo de plumas siguen siendo la referencia.
+  - Los siguientes son Quiebro, Lluvia de semillas, Ojo del cenote y Ala fuerte. Ala fuerte necesita una función especial clara, distinta del golpe básico.
+  - Cada poder: cambia la forma de jugar, tiene ventaja y debilidad, usa animaciones y efectos que ya existen, sirve en combate y, si toca, en exploración, y rinde bien en móvil.
+- **Mara y Vela** siguen dentro de las 36. En la temporada 1 son consejeras y no se pueden elegir; sus poderes se guardan para una expansión.
+- **Progresión:** las especies se descubren y se desbloquean poco a poco. Las 36 no se dan desde el inicio.
+- **Prioridad:** primero completar y probar la Sombra de Tormenta con Vittata y *arausiaca*; después las otras amenazas y los 4 poderes.
+- **Entregas:** nada de documentos en lugar de pruebas jugables. Se entregan código integrado, video real, pruebas y commit.
