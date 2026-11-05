@@ -30,7 +30,7 @@
   const base = location.pathname.replace(/tools\/video\/[^/]*$/, '');
   const aviso = async (obj) => { try { await fetch(base + '__save?name=' + encodeURIComponent(`pitch-${ver}-estado.json`), { method: 'POST', body: JSON.stringify(obj) }); } catch (e) { /* sin servidor */ } };
   try {
-    marco.src = base + 'index.html?captura=' + Date.now() + (q.get('pack') ? '&pack=' + encodeURIComponent(q.get('pack')) : '');
+    marco.src = base + 'index.html?captura=' + Date.now() + (q.get('pack') ? '&pack=' + encodeURIComponent(q.get('pack')) : '') + (q.get('extra') ? '&' + q.get('extra') : '');
     await new Promise(r => marco.addEventListener('load', r, { once: true }));
     const w = marco.contentWindow;
     estado.textContent = 'Esperando al juego…';

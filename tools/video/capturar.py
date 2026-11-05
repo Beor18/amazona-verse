@@ -26,6 +26,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.parse
 import urllib.request
 
 JUEGO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -145,6 +146,7 @@ def main():
     ap.add_argument('--ver', required=True, help='versión de la captura (letras, números y _), p. ej. v1')
     ap.add_argument('--guion', default='tools/video/guiones/pitch.json', help='guion de captura, relativo a Juego/')
     ap.add_argument('--solo', help='ids de toma separados por coma')
+    ap.add_argument('--extra', help='parámetros extra de la URL del juego, p. ej. v18=1&calidad=medio')
     ap.add_argument('--previa', action='store_true', help='solo 3 cuadros por toma (inicio, mitad y final)')
     ap.add_argument('--ss', type=int, help='supermuestreo (1 o 2; por defecto el del guion o 2)')
     ap.add_argument('--sin-graficos', action='store_true', help='no regenerar títulos ni logo')
@@ -212,6 +214,8 @@ def pasada(a, mov, pack, graficos):
         q += '&graficos=0'
     if a.solo:
         q += f'&solo={a.solo}'
+    if a.extra:
+        q += '&extra=' + urllib.parse.quote(a.extra)
     if a.previa:
         q += '&previa=1'
     if a.ss:

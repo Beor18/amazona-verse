@@ -19,13 +19,14 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
 import montaje  # noqa: E402  (faststart, rutas y Blender)
 
-WEB = os.path.expanduser('~/AmazonaVerse/Web/assets/video')
+WEB = os.path.expanduser(os.environ.get('AV_WEB_VIDEO', '~/AmazonaVerse/Web/assets/video'))
 FPS = 30
 MAX_MB = 4.0
 # id: lista de (toma, desde_s, hasta_s) en segundos de la captura (incluido el margen); 'fundido' = cierre del loop;
 # 'ver' = versión de los cuadros (si no, la de --ver)
 LOOPS = {
-    'hero': {'ver': 'v1', 'tramos': [('gancho_vuelo_mirador', 0.2, 5.8), ('mundo_dron_dosel', 0.4, 4.0)], 'fundido': 0.6},
+    # BM150: el juego actual (tools/build/bm150_video.py, guion hero2.json): El Yunque desde el mirador, la Ciudad de los 36 y el puente (V18.1)
+    'hero': {'ver': 'h2', 'tramos': [('h2_yunque', 0.5, 6.7), ('h2_ciudad', 0.7, 7.5), ('h2_puente', 0.6, 6.6)], 'fundido': 0.6, 'poster': 9.0, 'kb': 1500, 'kbw': 1100},
     # La inventora en su taller y, volando, se para en la punta del techo (Villa Raíz y los edificios de Kelvin al fondo)
     'historia': {'tramos': [('mundo_taller_idea', 0.3, 4.5), ('web_techo_taller', 0.9, 5.6)], 'fundido': 0.5, 'poster': 7.6},
     # Se posa en la percha del dosel (misión de la gota) y sube con el vapor hasta la nube
@@ -106,7 +107,7 @@ def en_blender(argv):
         for ext, fmt, codec in () if a.solo_poster else (('mp4', 'MPEG4', 'H264'), ('webm', 'WEBM', 'WEBM')):
             ff.format, ff.codec = fmt, codec
             ff.constant_rate_factor = 'NONE'
-            kb = 2800 if ext == 'mp4' else 2300   # VP9 rinde más por bit y se pasa del objetivo: se le pide menos
+            kb = L.get('kb', 2800 if ext == 'mp4' else 2300) if ext == 'mp4' else L.get('kbw', 2300)   # VP9 rinde más por bit y se pasa del objetivo: se le pide menos
             ff.video_bitrate, ff.maxrate, ff.minrate, ff.buffersize = kb, int(kb * 1.25), 0, kb * 8
             ff.gopsize = FPS
             ff.ffmpeg_preset = 'GOOD'
