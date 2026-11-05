@@ -215,6 +215,28 @@ const VENTANA_JS = cal => `(async () => {
       let foto = null;
       for (let i = 0; i < 4 && !foto; i++) { foto = await evaluar(cdp, ses, `(async () => { let f = null; for (let i = 0; i < 3 && !f; i++) { f = await AV.G.renderer.snapshot(1280, 800, 0.9); if (!f) await new Promise(r => setTimeout(r, 1200)); } return f; })()`, 40); }
       if (foto) { fs.writeFileSync(path.join(SALIDA, `k067_${ETIQ}_${cal}.jpg`), Buffer.from(foto.split(',')[1], 'base64')); console.log(`  captura k067_${ETIQ}_${cal}.jpg`); }
+      // KIMI-081: captura desde la plaza (a pie, entre los edificios) para Kelvin; luego se restaura el encuadre aéreo
+      let fotoPlaza = null;
+      for (let i = 0; i < 4 && !fotoPlaza; i++) {
+        fotoPlaza = await evaluar(cdp, ses, `(async () => {
+          const G = AV.G, s = G.ciudadViva.sitio(), H = (x, z) => G.terreno.height(x, z);
+          const CAM = G.camara.CAM, d0 = CAM.dist, df0 = CAM.distFly;
+          CAM.dist = 22; CAM.distFly = 22; // la cámara móvil sigue a Vittata a 7,5 m: para ver la plaza hace falta alejarla
+          G.fisica.MOVE.flying = false; G.S.vy = 0;
+          G.S.pos.x = s.x + 4; G.S.pos.z = s.z + 15; G.S.pos.y = H(G.S.pos.x, G.S.pos.z) + 0.1;
+          if (AV.debug && AV.debug.camYaw) AV.debug.camYaw(0.6);
+          G.camara.inclina = 0.12;
+          await new Promise(r => setTimeout(r, 2500));
+          let f = null; for (let i = 0; i < 3 && !f; i++) { f = await G.renderer.snapshot(1280, 800, 0.9); if (!f) await new Promise(r => setTimeout(r, 1200)); }
+          CAM.dist = d0; CAM.distFly = df0;
+          return f; })()`, 40);
+      }
+      if (fotoPlaza) { fs.writeFileSync(path.join(SALIDA, `k067_${ETIQ}_${cal}_plaza.jpg`), Buffer.from(fotoPlaza.split(',')[1], 'base64')); console.log(`  captura k067_${ETIQ}_${cal}_plaza.jpg`); }
+      await evaluar(cdp, ses, `(async () => { const G = AV.G, s = G.ciudadViva.sitio(), H = (x, z) => G.terreno.height(x, z);
+        G.fisica.MOVE.flying = true; G.S.vy = 0;
+        G.S.pos.x = s.x + 6; G.S.pos.z = s.z + 16; G.S.pos.y = H(s.x, s.z) + 14;
+        if (AV.debug && AV.debug.camYaw) AV.debug.camYaw(0.8); G.camara.inclina = -0.2;
+        return 1; })()`, 20);
     }
     const cvTest = JSON.parse(await evaluar(cdp, ses, `(async () => { const r = await AV.ciudadVivaTest({ espera: 150 }); return JSON.stringify({ passed: r.passed, total: r.total, fallos: r.results.filter(x => !x.ok).map(x => x.name + ' :: ' + String(x.extra).slice(0, 160)) }); })()`, 900));
     resultado.ciudadVivaTest = cvTest;
