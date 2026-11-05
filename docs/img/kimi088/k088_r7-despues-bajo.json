@@ -1,0 +1,116 @@
+{
+ "etiqueta": "r7-despues-bajo",
+ "head": "desconocido",
+ "resultado": {
+  "calidad": "bajo",
+  "v18": true,
+  "escenarios": {
+   "fx": {
+    "sitio": [
+     176,
+     175
+    ],
+    "distOrigen": 248,
+    "escudo": {
+     "ok": true,
+     "clave": "k88",
+     "dur": 30,
+     "n": 14
+    },
+    "onda": {
+     "ok": true,
+     "n": 2,
+     "alcance": 10
+    },
+    "plumas": {
+     "dif": 9708,
+     "capas": [
+      1
+     ],
+     "count": [
+      64
+     ],
+     "dibuja": 1,
+     "enCuadro": true,
+     "distOrigenCam": 248
+    },
+    "anillos": {
+     "dif": 3230,
+     "capas": [
+      1
+     ],
+     "count": [
+      12
+     ],
+     "dibuja": 1,
+     "enCuadro": true,
+     "distOrigenCam": 248
+    }
+   },
+   "bandada": {
+    "aparecio": true,
+    "estado": {
+     "estado": "acompana",
+     "motivo": "tarde",
+     "n": 5,
+     "pasadas": 1
+    },
+    "sitio": [
+     162,
+     165
+    ],
+    "distOrigen": 231,
+    "wp": [
+     168,
+     8.5,
+     170
+    ],
+    "dif": 3668,
+    "capas": [
+     1,
+     1
+    ],
+    "count": [
+     5,
+     0
+    ],
+    "dibuja": 1,
+    "enCuadro": true,
+    "distOrigenCam": 231
+   },
+   "vecinos": {
+    "estado": {
+     "n": 4,
+     "visible": true,
+     "tope": 4
+    },
+    "n": 4,
+    "pos": [
+     129,
+     140
+    ],
+    "terreno": 2.8,
+    "distOrigen": 190,
+    "dif": 0,
+    "capas": [
+     1
+    ],
+    "count": [
+     4
+    ],
+    "dibuja": 1,
+    "enCuadro": true,
+    "distOrigenCam": 192
+   }
+  },
+  "modulos": {
+   "v18fx": true,
+   "bandada": true,
+   "vecinos": true
+  },
+  "erroresConsola": [],
+  "heapMB": 154,
+  "calls": 102,
+  "tris": 348112
+ }
+}
