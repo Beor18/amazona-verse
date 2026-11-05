@@ -34,6 +34,13 @@ PON_JS = r'''(async () => {
   G.camara.place(true); await cuadros(120);
   for (let i = 0; i < 40; i++) { const b = [...document.querySelectorAll('button')].find(b => /Saltar intro/i.test(b.textContent) && b.offsetParent); if (!b) break; b.click(); await new Promise(r => setTimeout(r, 500)); }
   const f2 = document.getElementById('c1-fade'); if (f2) f2.remove(); await cuadros(30);
+  // BM136: la intro se vuelve a abrir al cargar el mundo; se salta de verdad (cancelar el diálogo libre y la apertura; sin teclas, que activarían el juego) y se quita todo lo que quede
+  for (let i = 0; i < 6; i++) {
+    try { G.dialogo.cancelarLibre(); } catch (e) {}
+    if (G.c && G.c.apertura && G.c.apertura.fin) G.c.apertura.fin();
+    ['c1-fade', 'c1-ruptura', 'c1-saltar'].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); });
+    await cuadros(20);
+  }
   return 'ok ' + Math.round(x) + ',' + Math.round(z) + ' ' + (c ? 'col' : 'fijo');
 })()'''
 
@@ -42,6 +49,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--raiz', required=True)
     ap.add_argument('--vistas', default='plaza,aire')
+    ap.add_argument('--calidades', default='alto,bajo')
     a = ap.parse_args()
     P = json.load(open(os.path.join(AQUI, 'config.json')))['pruebas']
     srv = avtest.Servidor(os.path.abspath(a.raiz), 0, None)
@@ -49,7 +57,7 @@ def main():
     ws = avtest.WS('ws://127.0.0.1:%d%s' % (chrome.puerto, chrome.ws_path))
     try:
         cdp = avtest.CDP(ws, lambda m: None)
-        for cal in ('alto', 'bajo'):
+        for cal in a.calidades.split(','):
             for vista in a.vistas.split(','):
                 for tarde in (False, True):
                     tid = cdp.call('Target.createTarget', {'url': 'about:blank'})['targetId']
