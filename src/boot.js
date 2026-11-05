@@ -98,6 +98,7 @@
     const v18On = (() => { try { return /[?&]v18=1\b/.test(location.search) || localStorage.getItem('amazonaverse.v18') === '1'; } catch (e) { return false; } })();
     G.V18 = v18On;
     const cargarV18 = aDemanda('src/game/v18/progreso.js', 'AVV18Progreso'); AV.v18Test = o => cargarV18().then(v => v.test(o));
+    const cargarV18Fx = aDemanda('src/game/v18/fx_poderes.js', 'AVV18Fx'); AV.v18FxTest = o => cargarV18Fx().then(v => v.test(o)); if (v18On) alPrimerGesto(cargarV18Fx); // KIMI-061: FX de los poderes (G.v18fx)
     if (v18On) alPrimerGesto(cargarV18);
     { // V18.1 frente A (D7): habilidades por especie + duelo de entrenamiento contra una cotorra IA (src/game/v18/combate.js)
       const hab = aDemanda('src/game/v18/habilidades.js', 'AVV18Habilidades'), comb = aDemanda('src/game/v18/combate.js', 'AVV18Combate');
