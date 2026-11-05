@@ -79,7 +79,7 @@ AVE.module('input', function (G) {
   let conTab = false;
   addEventListener('keydown', e => { if (e.key === 'Tab') conTab = true; }, true);
   addEventListener('pointerdown', () => { conTab = false; }, true);
-  const botonDelHud = b => !conTab && !b.closest('#pause, #card, #dialog, #creator, #comic, #end') && !!b.closest('#sys, #acts, #emotes, .guia-hud');
+  const botonDelHud = b => !conTab && !b.closest('#pause, #card, #dialog, #creator, #comic, #end') && !!b.closest('#sys, #acts, #emotes, .guia-hud, #minimapa');
   addEventListener('keydown', e => {
     if (capturando) return; // la sección Teclas está esperando una tecla
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;

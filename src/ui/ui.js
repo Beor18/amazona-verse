@@ -57,7 +57,7 @@
   const pause = $('pause');
   if (pause && pause.showPopover) {
     const isOpen = el => { try { return el.matches(':popover-open'); } catch (e) { return false; } };
-    const somethingOpen = () => ['dialog', 'card', 'creator', 'comic', 'end'].some(id => $(id) && !$(id).hidden) ||
+    const somethingOpen = () => ['dialog', 'card', 'creator', 'comic', 'end', 'mapa-grande'].some(id => $(id) && !$(id).hidden) ||
       ($('title') && $('title').open) || !!$('t-cancel');
     let atDown = null; // estado ANTES de que el juego procese la tecla (Esc también cierra tarjetas)
     addEventListener('keydown', e => {
