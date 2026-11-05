@@ -1,0 +1,71 @@
+[21:51:21] lanzando Chrome y entrando al juego (v18=1, puente reparado)...
+[21:51:26] …latido
+[21:51:27] juego listo, entrando...
+[21:51:31] …latido
+[21:51:36] …latido
+[21:51:41] …latido
+[21:51:46] …latido
+[21:51:49] entrada ok, preparando modulos v18...
+[21:51:51] …latido
+[21:51:52] prep ok
+[21:51:53] calidad bajo (=bajo)
+[21:51:56] midiendo bajo/base...
+[21:51:56] …latido
+[21:52:01] …latido
+[21:52:06] …latido
+[21:52:08] [bajo/base] fpsPorSeg=[19,20,20,20,21,21] fpsMed=20 min=19 peorMs=81 calls=96 tris=528696 logrado=undefined saltos=undefined
+[21:52:09] midiendo bajo/cruce...
+[21:52:11] …latido
+[21:52:16] …latido
+[21:52:21] …latido
+[21:52:26] …latido
+[21:52:31] …latido
+[21:52:36] …latido
+[21:52:38] [bajo/cruce] fpsPorSeg=[16,17,18,15,14,15,18,16,15,15,17,18,15,16,20,23,26,25,27,28,28,24,25,25,31,25] fpsMed=20 min=14 peorMs=127 calls=91 tris=408918 logrado=true saltos=15
+[21:52:39] midiendo bajo/sombra...
+[21:52:41] …latido
+[21:52:46] …latido
+[21:52:51] …latido
+[21:52:56] …latido
+[21:52:57] [bajo/sombra] fpsPorSeg=[17,16,17,18,17,17,19,19,18,18,19,18,18,17] fpsMed=18 min=16 peorMs=126 calls=93 tris=376993 logrado=undefined saltos=undefined
+[21:52:57] calidad medio (=medio)
+[21:53:00] midiendo medio/base...
+[21:53:01] …latido
+[21:53:06] …latido
+[21:53:11] …latido
+[21:53:12] [medio/base] fpsPorSeg=[4,6,9,14,17,14,13] fpsMed=11 min=4 peorMs=367 calls=143 tris=730865 logrado=undefined saltos=undefined
+[21:53:13] midiendo medio/cruce...
+[21:53:16] …latido
+[21:53:21] …latido
+[21:53:26] …latido
+[21:53:31] …latido
+[21:53:36] …latido
+[21:53:41] …latido
+[21:53:42] [medio/cruce] fpsPorSeg=[12,14,15,13,14,14,18,14,13,16,13,16,13,11,15,15,14,19,18,18,17,16,15,18,18,16] fpsMed=15 min=11 peorMs=182 calls=133 tris=577258 logrado=true saltos=12
+[21:53:42] midiendo medio/sombra...
+[21:53:46] …latido
+[21:53:51] …latido
+[21:53:56] …latido
+[21:54:01] [medio/sombra] fpsPorSeg=[13,13,13,12,13,14,14,14,13,13,13,14,12,12] fpsMed=13 min=12 peorMs=162 calls=133 tris=544819 logrado=undefined saltos=undefined
+[21:54:01] …latido
+[21:54:02] calidad alto (=alto)
+[21:54:05] midiendo alto/base...
+[21:54:06] …latido
+[21:54:11] …latido
+[21:54:16] [alto/base] fpsPorSeg=[6,9,11,11,9,7,13] fpsMed=9 min=6 peorMs=402 calls=140 tris=967589 logrado=undefined saltos=undefined
+[21:54:16] midiendo alto/cruce...
+[21:54:16] …latido
+[21:54:21] …latido
+[21:54:26] …latido
+[21:54:31] …latido
+[21:54:36] …latido
+[21:54:41] …latido
+[21:54:44] [alto/cruce] fpsPorSeg=[12,12,14,10,12,13,14,13,11,13,11,13,12,12,13,13,14,13,11,13,12,15,15,14] fpsMed=13 min=10 peorMs=185 calls=128 tris=1010941 logrado=true saltos=12
+[21:54:45] midiendo alto/sombra...
+[21:54:46] …latido
+[21:54:51] …latido
+[21:54:57] …latido
+[21:55:02] …latido
+[21:55:04] [alto/sombra] fpsPorSeg=[11,11,11,9,11,11,12,12,11,12,11,11,11,11] fpsMed=11 min=9 peorMs=167 calls=123 tris=957790 logrado=undefined saltos=undefined
+[21:55:04] errores de consola: []
+[21:55:06] evidencia: C:\Users\kelvi\amazonaversegame2\docs\img\kimi110\k110_r1.json
