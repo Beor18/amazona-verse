@@ -99,6 +99,12 @@
     G.V18 = v18On;
     const cargarV18 = aDemanda('src/game/v18/progreso.js', 'AVV18Progreso'); AV.v18Test = o => cargarV18().then(v => v.test(o));
     if (v18On) alPrimerGesto(cargarV18);
+    { // V18.1 frente A (D7): habilidades por especie + duelo de entrenamiento contra una cotorra IA (src/game/v18/combate.js)
+      const hab = aDemanda('src/game/v18/habilidades.js', 'AVV18Habilidades'), comb = aDemanda('src/game/v18/combate.js', 'AVV18Combate');
+      const cargarCombate = () => cargarV18().then(hab).then(comb);
+      AV.v18CombateTest = o => cargarCombate().then(c => c.test(o));
+      if (v18On) alPrimerGesto(cargarCombate);
+    }
     const reparar18 = aDemanda('src/game/v18/reparar.js', 'AVV18Reparar'), cargarV18Reparar = () => cargarV18().then(reparar18); AV.v18RepararTest = o => cargarV18Reparar().then(r => r.test(o)); if (v18On) alPrimerGesto(cargarV18Reparar); // frente B: puente colgante roto → reparado
     const cargarSorpresas = aDemanda('src/game/sorpresas.js', 'AVSorpresas'); AV.sorpresasTest = o => cargarSorpresas().then(s => s.test(o)); alPrimerGesto(cargarSorpresas); // CG-45, sin tocar ciudad_viva.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js

@@ -1760,5 +1760,22 @@ window.AV_EN = {
  "En la página": "On the page",
  "Tienes {} de {} escenas. Las que faltan aparecen al jugar.": "You have {} of {} scenes. The rest appear as you play.",
  "Tus {} escenas están en la página.": "Your {} scenes are on the page.",
- "En la página caben {} escenas: quita una primero.": "{} scenes fit on the page: remove one first."
+ "En la página caben {} escenas: quita una primero.": "{} scenes fit on the page: remove one first.",
+ "Retar a la cotorra de entrenamiento": "Challenge the training parrot",
+ "Tú": "You",
+ "Entrenadora": "Trainer",
+ "Ala": "Wing",
+ "Poder": "Power",
+ "Grito": "Shout",
+ "Ala: Acción · Semilla: Impulso · Poder: mantén Impulso · Grito: G": "Wing: Action · Seed: Dash · Power: hold Dash · Shout: G",
+ "¡Ganaste una pluma de rival!": "You won a rival feather!",
+ "¡Ganaste otra vez! La pluma de rival ya la tienes.": "You won again! You already have the rival feather.",
+ "¡Uy, te mareaste! Sacude las plumas y prueba otra vez.": "Oops, you got dizzy! Shake your feathers and try again.",
+ "Te alejaste: el duelo queda para luego.": "You flew off: the duel can wait.",
+ "¡Esquivó!": "Dodged!",
+ "¡Ganaste!": "You won!",
+ "Duelo de entrenamiento: quítale sus 5 plumas.": "Training duel: take her 5 feathers.",
+ "Ráfaga doble": "Double Gust",
+ "Columna de nube": "Cloud Column",
+ "Golpe de ala": "Wing Strike"
 };
