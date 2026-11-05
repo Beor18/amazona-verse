@@ -228,7 +228,21 @@ AVE.module('actores', function (G) {
       posa.t = snap ? 9 : posa.t + dt;
       if (enSuelo && posa.aire && !snap) {
         const tipo = tipoPosada(F, MOVE, false);
+        (posa.hist || (posa.hist = [])).push({ via: 'aire', t: Math.round(posa.t * 100) / 100, tipo: tipo || '', posado: MOVE.posado || '', que: (G.solidos && G.solidos.que) ? (G.solidos.que(S.pos.x, S.pos.z, S.pos.y + 0.01) || '') : '', gy: Math.round(MOVE.groundY * 100) / 100, hy: Math.round(H(S.pos.x, S.pos.z) * 100) / 100, y: Math.round(S.pos.y * 100) / 100, fly: MOVE.flying ? 1 : 0 });
+        if (posa.hist.length > 10) posa.hist.shift();
         if (tipo) { posa.t = dt; posa.tipo = tipo; posa.fuerza = aterr.t <= dt * 1.5 ? 1 : POSAR.salto; posa.n++; }
+      } else if (enSuelo && !snap && posa.t >= POSAR.dur && aterr.t <= 0.12 && !moving) {
+        // Red de apoyo: el cuadro exacto del contacto puede evaluar sin tipo (consulta de sólidos a mitad de rasterizar,
+        // o un place(snap) ese cuadro — visto en movementTest «Posarse» con GPU real, intermitente). Recién posada
+        // volando (aterr.t pequeño; en aterrizajes saltando aterr.t vale 9) se concede esta ventana corta: el mismo
+        // gesto con 1-3 cuadros de margen imperceptibles. Queda apagada en cuanto el gesto está en curso, hay
+        // movimiento o pasaron >0,12 s desde el contacto.
+        const tipo = tipoPosada(F, MOVE, false);
+        if (tipo) {
+          (posa.hist || (posa.hist = [])).push({ via: 'red', t: Math.round(posa.t * 100) / 100, tipo, posado: MOVE.posado || '', que: (G.solidos && G.solidos.que) ? (G.solidos.que(S.pos.x, S.pos.z, S.pos.y + 0.01) || '') : '', gy: Math.round(MOVE.groundY * 100) / 100, hy: Math.round(H(S.pos.x, S.pos.z) * 100) / 100, y: Math.round(S.pos.y * 100) / 100, fly: MOVE.flying ? 1 : 0 });
+          if (posa.hist.length > 10) posa.hist.shift();
+          posa.t = dt; posa.tipo = tipo; posa.fuerza = 1; posa.n++; posa.red = (posa.red || 0) + 1;
+        }
       }
       posa.aire = !MOVE.grounded && !MOVE.swimming;
       const posando = enSuelo && posa.t < POSAR.dur && !moving;

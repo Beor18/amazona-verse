@@ -192,7 +192,8 @@ window.AVMovimientoTest = function (G) {
       check('Despegue: V sube y se queda volando', M.flying && alto > 1.5, met.despegueM + ' m');
       r = frame(null, 120);
       met.cernidoDeriva = r2(Math.abs(r[r.length - 1].y - r[0].y));
-      check('Cernido: sin tocar nada se queda en el sitio (no cae)', M.flying && met.cernidoDeriva < 0.3, met.cernidoDeriva + ' m en 2 s');
+      met.cernido = { y0: r2(r[0].y), y1: r2(r[r.length - 1].y), techoVuelo: r2(M.techoVuelo || 0), groundY: r2(M.groundY), perchY: M.perchY > -1e8 ? r2(M.perchY) : null, vy1: r2(S.vy), landing: !!M.landing };
+      check('Cernido: sin tocar nada se queda en el sitio (no cae)', M.flying && met.cernidoDeriva < 0.3, met.cernidoDeriva + ' m en 2 s | ' + JSON.stringify(met.cernido));
       // sube hasta 20 m sobre el suelo (o 5 s): crucero y giro por encima de las copas, lejos del suelo y del agua
       { let nn = 0; while (S.pos.y - M.groundY < 20 && nn++ < 300) frame(() => I.jumpHeld = true); } I.jumpHeld = false;
       met.subirMs = r2(T.climbV);
@@ -343,9 +344,9 @@ window.AVMovimientoTest = function (G) {
         SO.terminar();
         // empieza ya en el aire (sin pasar por el suelo: junto a una estaca quedaría metida en ella y la red de seguridad de fisica.js la sacaría)
         // conAnim: cada cuadro también anima a Vittata (sync3D), para ver el gesto de aterrizar o de posarse
-        const aterrizarEn = (x, z, y, conAnim) => { K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false; M.vx = M.vz = 0; M.dashT = 0; M.swimming = false; S.pos.x = x; S.pos.z = z; S.pos.y = y; S.vy = 0; M.wasAir = true; M.flying = true; M.grounded = false; F.land(); let n = 0; while (M.flying && n++ < 900) { if (conAnim) animV(1); else frame(); } SO.terminar(); };
+        const aterrizarEn = (x, z, y, conAnim) => { K.clear(); I.stick.x = I.stick.y = 0; I.jumpHeld = false; M.vx = M.vz = 0; M.dashT = 0; M.swimming = false; S.pos.x = x; S.pos.z = z; S.pos.y = y; S.vy = 0; M.wasAir = true; M.flying = true; M.grounded = false; F.land(); let n = 0; while (M.flying && n++ < 900) { if (conAnim) animV(1); else frame(); } SO.terminar(); return { cuadros: n, volando: !!M.flying, posado: M.posado || '', que: SO.que(S.pos.x, S.pos.z, S.pos.y + 0.01) || '', altoSobreTerreno: r2(S.pos.y - H(S.pos.x, S.pos.z)) }; };
         // Tras aterrizar con animación: ¿hubo gesto de posarse (cuántos, dónde, peso máximo) o asentarse general?
-        const gestoTras = n0 => { let g = 0, se = 0, alas = false; for (let i = 0; i < 40; i++) { animV(1); g = Math.max(g, P3 ? P3.posarG || 0 : 0); se = Math.max(se, P3 ? P3.landSettle || 0 : 0); alas = alas || (P3 && P3.wingMode === 'posar'); } const ps = G.actores.posa; return { gestos: ps.n - n0, tipo: ps.tipo, peso: r2(g), alasEquilibrio: alas, asentarGeneral: r2(se) }; };
+        const gestoTras = n0 => { let g = 0, se = 0, alas = false; for (let i = 0; i < 40; i++) { animV(1); g = Math.max(g, P3 ? P3.posarG || 0 : 0); se = Math.max(se, P3 ? P3.landSettle || 0 : 0); alas = alas || (P3 && P3.wingMode === 'posar'); } const ps = G.actores.posa; return { gestos: ps.n - n0, tipo: ps.tipo, peso: r2(g), alasEquilibrio: alas, asentarGeneral: r2(se), red: ps.red || 0 }; };
         const altoCerca = (x, z, r) => { let b = null; for (let dz = -r; dz <= r; dz += 0.3) for (let dx = -r; dx <= r; dx += 0.3) { const t = SO.altoEn(x + dx, z + dz, 1e4); if (t > -Infinity && (!b || t > b.t)) b = { x: x + dx, z: z + dz, t }; } return b; };
         // alto del cuerpo que usa fisica.js ahora: agachada bajo un alero o un toldo, el que le queda (no se mete por agacharse)
         const cuerpo = () => Math.min(SO.SO.cuerpo, (M.alto || SO.SO.cuerpo) - 0.01);
@@ -409,12 +410,12 @@ window.AVMovimientoTest = function (G) {
             // alas arriba) y no el asentarse general; en el suelo llano, al revés.
             if (P3 && G.actores.posa) {
               let n0 = G.actores.posa.n;
-              aterrizarEn(rama.x, rama.z, rama.g + 2, true);
+              const atrRama = aterrizarEn(rama.x, rama.z, rama.g + 2, true);
               const enRama = gestoTras(n0), posadoRama = M.posado;
               reset(L.x, L.z); n0 = G.actores.posa.n;
-              aterrizarEn(L.x, L.z, S.pos.y + 3.5, true);
+              const atrSuelo = aterrizarEn(L.x, L.z, S.pos.y + 3.5, true);
               const enSuelo = gestoTras(n0);
-              met.posarse = { rama: enRama, posado: posadoRama, suelo: enSuelo };
+              met.posarse = { rama: enRama, posado: posadoRama, suelo: enSuelo, aterrizarRama: atrRama, aterrizarSuelo: atrSuelo, hist: (G.actores.posa.hist || []).slice(-10) };
               check('Posarse: en una rama usa el gesto de posarse (no el aterrizaje general); en el suelo llano, el general',
                 posadoRama === 'fino' && enRama.gestos === 1 && !!enRama.tipo && enRama.peso > 0.5 && enRama.alasEquilibrio && enRama.asentarGeneral === 0
                 && enSuelo.gestos === 0 && enSuelo.peso === 0 && enSuelo.asentarGeneral > 0.3, JSON.stringify(met.posarse));
