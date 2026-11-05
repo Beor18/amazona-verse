@@ -1,0 +1,62 @@
+{
+ "etiqueta": "r2pc",
+ "pantalla": "pc 1600x900@1 cpuX1",
+ "calidad": "medio",
+ "head": "desconocido",
+ "fx": {
+  "v18": true,
+  "test": {
+   "passed": 17,
+   "total": 17,
+   "fallos": []
+  },
+  "asentado": true,
+  "base": {
+   "fps": 108.3,
+   "peorMs": 22
+  },
+  "statsBase": {
+   "calls": 100,
+   "tris": 427131
+  },
+  "onda": {
+   "ok": true,
+   "n": 3,
+   "alcance": 10
+  },
+  "gritoEn": {
+   "anillos": 3,
+   "escudos": 0,
+   "llamadas": 1,
+   "nivel": "medio"
+  },
+  "escudo": {
+   "ok": true,
+   "clave": "yo",
+   "dur": 8,
+   "n": 32
+  },
+  "statsFx": {
+   "calls": 100,
+   "tris": 427131
+  },
+  "conFx": {
+   "fps": 122.4,
+   "peorMs": 23
+  },
+  "dispersar": {
+   "ok": true
+  },
+  "statsFin": {
+   "calls": 99,
+   "tris": 427067
+  },
+  "estadoFin": {
+   "anillos": 0,
+   "escudos": 0,
+   "llamadas": 0,
+   "nivel": "medio"
+  }
+ },
+ "erroresConsola": 0
+}

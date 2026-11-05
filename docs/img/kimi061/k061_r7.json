@@ -1,0 +1,147 @@
+{
+ "etiqueta": "r7",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "calidad": "bajo",
+ "head": "desconocido",
+ "diagGrito": {
+  "anillos": [
+   {
+    "i": 0,
+    "mundo": [
+     0.47,
+     11.92,
+     -2.5
+    ],
+    "px": [
+     1545,
+     460
+    ]
+   },
+   {
+    "i": 1,
+    "mundo": [
+     -0.83,
+     11.92,
+     -2.5
+    ],
+    "px": [
+     1247,
+     431
+    ]
+   }
+  ],
+  "vittataPx": [
+   195,
+   408
+  ],
+  "camara": {
+   "x": -5.5,
+   "y": 13.9,
+   "z": 4.3
+  }
+ },
+ "diagEscudo": {
+  "plumaPx": [
+   [
+    206,
+    384,
+    0.974
+   ],
+   [
+    251,
+    381,
+    0.973
+   ],
+   [
+    289,
+    380,
+    0.972
+   ],
+   [
+    312,
+    388,
+    0.97
+   ],
+   [
+    314,
+    410,
+    0.969
+   ],
+   [
+    289,
+    441,
+    0.967
+   ]
+  ],
+  "vittataPx": [
+   195,
+   408,
+   0.97
+  ],
+  "spos": {
+   "x": -8,
+   "y": 9.78,
+   "z": -2.5
+  },
+  "nivel": "bajo",
+  "escudos": 1,
+  "plumasVis": true,
+  "plumasEnEscena": true
+ },
+ "fx": {
+  "v18": true,
+  "test": {
+   "passed": 17,
+   "total": 17,
+   "fallos": []
+  },
+  "asentado": true,
+  "base": {
+   "fps": 37.4,
+   "peorMs": 34
+  },
+  "statsBase": {
+   "calls": 61,
+   "tris": 229241
+  },
+  "onda": {
+   "ok": true,
+   "n": 2,
+   "alcance": 10
+  },
+  "gritoEn": {
+   "anillos": 2,
+   "escudos": 0,
+   "llamadas": 1,
+   "nivel": "bajo"
+  },
+  "escudo": {
+   "ok": true,
+   "clave": "yo",
+   "dur": 8,
+   "n": 14
+  },
+  "statsFx": {
+   "calls": 61,
+   "tris": 229241
+  },
+  "conFx": {
+   "fps": 38.2,
+   "peorMs": 34
+  },
+  "dispersar": {
+   "ok": true
+  },
+  "statsFin": {
+   "calls": 61,
+   "tris": 229241
+  },
+  "estadoFin": {
+   "anillos": 0,
+   "escudos": 0,
+   "llamadas": 0,
+   "nivel": "bajo"
+  }
+ },
+ "erroresConsola": 0
+}

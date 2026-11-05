@@ -1,0 +1,67 @@
+{
+ "etiqueta": "r1",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "calidad": "bajo",
+ "head": "desconocido",
+ "fx": {
+  "v18": true,
+  "test": {
+   "passed": 9,
+   "total": 14,
+   "fallos": [
+    "escudo() crea el escudo de Vittata con plumas visibles :: 14 plumas",
+    "Al acabar el tiempo el escudo se dispersa solo :: ",
+    "Tras la dispersión el escudo desaparece del todo :: ",
+    "Con ambos activos hay 2 draw calls :: 1",
+    "Sin excepciones y todo se apaga al final :: {\"anillos\":0,\"escudos\":2,\"llamadas\":1,\"nivel\":\"bajo\"}"
+   ]
+  },
+  "base": {
+   "fps": 13.1,
+   "peorMs": 125
+  },
+  "statsBase": {
+   "calls": 0,
+   "tris": 0
+  },
+  "onda": {
+   "ok": true,
+   "n": 2,
+   "alcance": 10
+  },
+  "gritoEn": {
+   "anillos": 2,
+   "escudos": 2,
+   "llamadas": 2,
+   "nivel": "bajo"
+  },
+  "escudo": {
+   "ok": true,
+   "clave": "yo",
+   "dur": 8,
+   "n": 14
+  },
+  "statsFx": {
+   "calls": 0,
+   "tris": 0
+  },
+  "conFx": {
+   "fps": 1.5,
+   "peorMs": 1403
+  },
+  "dispersar": {
+   "ok": true
+  },
+  "statsFin": {
+   "calls": 41,
+   "tris": 139091
+  },
+  "estadoFin": {
+   "anillos": 2,
+   "escudos": 2,
+   "llamadas": 2,
+   "nivel": "bajo"
+  }
+ },
+ "erroresConsola": 0
+}

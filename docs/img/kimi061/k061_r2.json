@@ -1,0 +1,62 @@
+{
+ "etiqueta": "r2",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "calidad": "bajo",
+ "head": "desconocido",
+ "fx": {
+  "v18": true,
+  "test": {
+   "passed": 17,
+   "total": 17,
+   "fallos": []
+  },
+  "asentado": true,
+  "base": {
+   "fps": 22.6,
+   "peorMs": 75
+  },
+  "statsBase": {
+   "calls": 60,
+   "tris": 229241
+  },
+  "onda": {
+   "ok": true,
+   "n": 2,
+   "alcance": 10
+  },
+  "gritoEn": {
+   "anillos": 2,
+   "escudos": 0,
+   "llamadas": 1,
+   "nivel": "bajo"
+  },
+  "escudo": {
+   "ok": true,
+   "clave": "yo",
+   "dur": 8,
+   "n": 14
+  },
+  "statsFx": {
+   "calls": 60,
+   "tris": 229241
+  },
+  "conFx": {
+   "fps": 24.5,
+   "peorMs": 129
+  },
+  "dispersar": {
+   "ok": true
+  },
+  "statsFin": {
+   "calls": 60,
+   "tris": 229241
+  },
+  "estadoFin": {
+   "anillos": 0,
+   "escudos": 0,
+   "llamadas": 0,
+   "nivel": "bajo"
+  }
+ },
+ "erroresConsola": 0
+}
