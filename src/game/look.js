@@ -472,7 +472,8 @@ window.AVLook = function (G) {
     console.error = function () { errores.push([].map.call(arguments, String).join(' ').slice(0, 160)); return ce.apply(console, arguments); };
     const cuadro = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     // QA-78: con la Mac cargada la fauna, los peces y la bandada entran entre medidas; se espera a 3 cuadros seguidos con los mismos draw calls (tope 10 s)
-    const asentar = async () => { const t0 = performance.now(); let ult = -1, n = 0; while (n < 3 && performance.now() - t0 < 10000) { await cuadro(); const c = R.stats().calls; n = c === ult ? n + 1 : 1; ult = c; } };
+    // KIMI-103: y a que el precalentado haya enlazado todas las familias —al aplicar un look todas quedan pendientes y ocultarPendientes las quita del dibujo, así que una foto antes del drenado sale con la escena incompleta y el croma miente.
+    const asentar = async () => { const t0 = performance.now(); let ult = -1, n = 0; while (n < 3 && performance.now() - t0 < 10000) { await cuadro(); const c = R.stats().calls, p = R.precarga ? R.precarga.programas() : 0; n = (c === ult && p <= 0) ? n + 1 : 1; ult = c; } };
     const foto = () => {
       R.drawScene(R.camera); R.renderer.setRenderTarget(null);
       const gl = R.renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, px = new Uint8Array(w * h * 4);
