@@ -401,10 +401,14 @@ AVE.module('guardado', function (G) {
     mo.observe(t, { attributes: true, attributeFilter: ['open'] });
   }
   // «Comenzar de cero» (elección explícita): borra la partida y su cómic; lo ilegible que hubiera se aparta antes
+  // Progreso de la V18.1 (src/game/v18/progreso.js, `<almacen>.v18`): es parte de la partida, se borra con ella (QA-161)
+  const claveV18 = () => (G.v18 && G.v18.clave) ? G.v18.clave() : STORE + '.v18';
+  function borrarV18(be) { be.del(claveV18()); }
   function reset(skipCreator) {
     replace(freshState());
     rescatarIlegibles(almacen, SAVE_KEY);
     for (const s of ['', '.tmp', '.prev']) almacen.del(SAVE_KEY + s);
+    borrarV18(almacen);
     REAL.mem.json = null; REAL.ultimo = null; saveDebounce = 0;
     applyWorld();
     if (!skipCreator) G.creador.open(true);
@@ -412,6 +416,7 @@ AVE.module('guardado', function (G) {
   // Equipo compartido (aula.js): nada del niño anterior queda en este almacén, ni en la copia de los satélites
   function olvidarEstudiante() {
     for (const s of ['', '.tmp', '.prev']) almacen.del(SAVE_KEY + s);
+    borrarV18(almacen);
     for (const base of [SAVE_KEY].concat(Object.values(satelitesDef()))) for (const c of copiasIlegibles(almacen, base)) almacen.del(c.clave);
     REAL.mem.json = null; REAL.ultimo = null; saveDebounce = 0;
   }
@@ -649,11 +654,13 @@ AVE.module('guardado', function (G) {
       // 7b. Nuevo estudiante: la partida y todas sus copias se borran (también la de los satélites)
       const almReal = almacen, NE = almacenFalso();
       for (const s of ['', '.tmp', '.prev', '.unreadable', '.unreadable.20260101T000000001', '.unreadable.20260102T000000002']) NE.set(SAVE_KEY + s, '{"x":1}');
-      NE.set(sat.criadero + '.unreadable', '{}'); NE.set(sat.criadero + '.unreadable.20260101T000000001', '{}');
+      NE.set(claveV18(), '{"v":1}'); NE.set(sat.criadero + '.unreadable', '{}'); NE.set(sat.criadero + '.unreadable.20260101T000000001', '{}');
       almacen = NE; REAL.mem.json = '{"x":1}';
       olvidarEstudiante(); // el mismo manejador del gancho, sin avisar a los demás módulos (borrarían sus datos reales)
       almacen = almReal;
-      check('Nuevo estudiante: se borran la partida, .tmp, .prev, todas las copias de rescate (también las de los satélites) y la memoria', NE.mapa.size === 0 && REAL.mem.json === null, NE.mapa.size + ' claves quedan');
+      check('Nuevo estudiante: se borran la partida, .tmp, .prev, todas las copias de rescate (también las de los satélites) el progreso V18.1 y la memoria', NE.mapa.size === 0 && REAL.mem.json === null, NE.mapa.size + ' claves quedan');
+      const RZ = almacenFalso(); RZ.set(claveV18(), '{"v":1}'); RZ.set(SAVE_KEY + '.otra', '{}'); borrarV18(RZ);
+      check('Comenzar de cero borra también el progreso de la V18.1 (QA-161) y nada más', RZ.get(claveV18()) == null && RZ.get(SAVE_KEY + '.otra') === '{}');
       // 7c. Arranque con una partida de una versión futura (o dañada): no se borra nada, se empieza una nueva y se avisa con suavidad
       const AR = almacenFalso(), futuraRaw = JSON.stringify(Object.assign(JSON.parse(serialize(false, almacenFalso())), { v: SAVE_VERSION + 1 }));
       AR.set(SAVE_KEY, futuraRaw); AR.set(SAVE_KEY + '.prev', '{"v":1}');
