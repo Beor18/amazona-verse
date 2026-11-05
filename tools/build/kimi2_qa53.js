@@ -9,20 +9,45 @@
    midiendo los cuadros siguientes. Control visual: draw calls + píxeles no negros leídos EN el cuadro del
    render (leer el buffer presentado daba negro siempre) + captura CDP qa53_rN_control.png + capa #c1-fade.
    Salida: consola + docs/img/kimi053/qa53.json.
-   Uso: node tools/build/kimi2_qa53.js [--rondas 2]
+   Uso: node tools/build/kimi2_qa53.js [--rondas 2] [--intentos 4] [--esperaPcMin 12]
+   --intentos: rondas máx. hasta juntar las --rondas válidas (entradas flake QA-11 o contención no las tiran).
+   --esperaPcMin: al arrancar espera un hueco sin otras sesiones del bucle (node/chrome pesados); si no hay
+   hueco en ese plazo, mide igual y lo deja marcado en contencionAlInicio del JSON.
 */
 'use strict';
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
 
 const AQUI = __dirname;
 const RAIZ = path.resolve(AQUI, '..', '..');
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const ANCHO = 375, ALTO = 812, DPR = 3, CPU = 4;
 const RONDAS = +(arg('--rondas', '2'));
+const INTENTOS = +(arg('--intentos', String(RONDAS + 2))); // tope de rondas hasta juntar RONDAS válidas
+const ESPERA_PC_MIN = +(arg('--esperaPcMin', '12')); // espera máx. de un hueco sin otras sesiones (bucle)
+
+// Hueco entre turnos del bucle: si otra sesión (Kimi 1/3) tiene node/chrome pesados en la PC, las medidas
+// salen techo y la propia herramienta las marca NO válidas. Esperamos: solo nuestro node (≤1) y pocos chrome
+// (los del navegador ocioso de Kelvin no pesan; una sesión midiendo suele tener >10).
+function conteo(proceso) {
+  const r = spawnSync('tasklist', ['/FI', `IMAGENAME eq ${proceso}`, '/FO', 'CSV', '/NH'], { encoding: 'utf8' });
+  return (r.stdout || '').split('\n').filter(l => l.toLowerCase().includes(proceso.toLowerCase())).length;
+}
+async function esperarHueco(res) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < ESPERA_PC_MIN * 60000) {
+    const nodos = conteo('node.exe'), chromes = conteo('chrome.exe');
+    res.contencionAlInicio = { node: nodos, chrome: chromes };
+    if (nodos <= 1 && chromes <= 8) return true;
+    console.log(`  · PC ocupada (node ${nodos} · chrome ${chromes}) — esperando hueco (${Math.round((Date.now() - t0) / 60000)} min)`);
+    await new Promise(r => setTimeout(r, 15000));
+  }
+  console.log('  · AVISO: sin hueco en el límite de espera — se mide igual (techo si sigue la contención)');
+  return false;
+}
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi053');
 fs.mkdirSync(SALIDA, { recursive: true });
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
@@ -179,12 +204,14 @@ async function lanzarChrome() {
 (async () => {
   const { srv, puerto } = await servir();
   const origen = `http://127.0.0.1:${puerto}`;
-  const res = { movil: { ancho: ANCHO, alto: ALTO, dpr: DPR, cpu: CPU }, gpu: null, rondas: [] };
+  const res = { movil: { ancho: ANCHO, alto: ALTO, dpr: DPR, cpu: CPU }, gpu: null, rondas: [], pedidas: RONDAS, intentos: INTENTOS };
+  await esperarHueco(res);
   const chromeL = await lanzarChrome();
   const ws = new WebSocket(`ws://127.0.0.1:${chromeL.puerto}${chromeL.wsPath}`);
   const cdp = new CDP(ws); await cdp.listo();
   try {
-    for (let ronda = 1; ronda <= RONDAS; ronda++) {
+    let validas = 0;
+    for (let ronda = 1; ronda <= INTENTOS && validas < RONDAS; ronda++) {
       let tid = null, ses = null;
       const nuevaPagina = async () => {
         if (tid) { try { await cdp.call('Target.closeTarget', { targetId: tid }, undefined, 10000); } catch (e) {} await cdp.bombear(0.5); }
@@ -231,6 +258,7 @@ async function lanzarChrome() {
         continue;
       }
       const valida = tormenta.control.calls > 0 && tormenta.control.pixNoNegros > 0;
+      if (valida) validas++;
       res.rondas.push({ reveal, tormenta, valida });
       console.log(`  · ronda ${ronda}${valida ? '' : ' ⚠ NO VÁLIDA (mundo sin dibujar)'}: reveal p50 ${reveal.p50} p95 ${reveal.p95} peor ${reveal.peor} ms · asentado ${tormenta.asentadoMs / 1000}s · medio ${tormenta.medioMs / 1000}s · tormenta peor ${tormenta.tormenta.peor} ms p95 ${tormenta.tormenta.p95} (>200: ${tormenta.tormenta.mas200}) · control ${tormenta.control.calls} calls ${tormenta.control.pixNoNegros}% px fade ${tormenta.control.fade} · pend ${tormenta.tormenta.marcas.map(m => m.pend).join('>')}`);
       try { await cdp.call('Target.closeTarget', { targetId: tid }, ses); } catch (e) {}
@@ -243,10 +271,11 @@ async function lanzarChrome() {
     srv.close();
   }
   fs.writeFileSync(path.join(SALIDA, 'qa53.json'), JSON.stringify(res, null, 1));
-  const validas = res.rondas.filter(r => r.valida).length;
-  if (validas < res.rondas.length) console.log(`  ⚠ ${res.rondas.length - validas}/${res.rondas.length} rondas NO válidas: este qa53.json no sirve como validación (reintentar con la PC libre)`);
-  const peores = res.rondas.map(r => r.tormenta.tormenta ? r.tormenta.tormenta.peor : NaN).filter(x => !isNaN(x)), peorReveal = Math.max(...res.rondas.map(r => r.reveal.peor));
-  console.log(`RESULTADO ${RONDAS} rondas · GPU: ${res.gpu}`);
+  const validasN = res.rondas.filter(r => r.valida).length;
+  if (validasN < RONDAS) console.log(`  ⚠ solo ${validasN}/${RONDAS} rondas válidas pedidas: este qa53.json no sirve como validación (reintentar con la PC libre)`);
+  const peores = res.rondas.map(r => r.tormenta && r.tormenta.tormenta ? r.tormenta.tormenta.peor : NaN).filter(x => !isNaN(x)),
+        peorReveal = Math.max(...res.rondas.map(r => r.reveal ? r.reveal.peor : NaN).filter(x => !isNaN(x)));
+  console.log(`RESULTADO ${RONDAS} válidas pedidas · ${res.rondas.length} intentadas · GPU: ${res.gpu}`);
   console.log(`  reveal: peor ${peorReveal} ms · tormenta sombras: peor ${peores.length ? Math.max(...peores) : 'n/d'} ms (rondas: ${peores.join(', ') || 'ninguna válida'})`);
-  for (const r of res.rondas) console.log('  top tormenta:', r.tormenta.tormenta ? r.tormenta.tormenta.top.map(x => x.d + 'ms@' + x.t + 's').join(', ') + ' · marcas pend: ' + r.tormenta.tormenta.marcas.map(m => m.pend).join('>') : '(abortada: ' + (r.tormenta.error || 'sin datos') + ')');
+  for (const r of res.rondas) console.log('  top tormenta:', r.tormenta && r.tormenta.tormenta ? r.tormenta.tormenta.top.map(x => x.d + 'ms@' + x.t + 's').join(', ') + ' · marcas pend: ' + r.tormenta.tormenta.marcas.map(m => m.pend).join('>') : '(sin datos: ' + ((r.tormenta && r.tormenta.error) || r.error || 'n/d') + ')');
 })().catch(e => { console.error('FALLO:', e.message); process.exit(1); });
