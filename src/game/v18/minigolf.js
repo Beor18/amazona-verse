@@ -1,0 +1,682 @@
+/* Juego · V18.1 · Amazona Mini Golf, «La Ruta de las Semillas» · prototipo de UN hoyo (directiva de Kelvin del 5-nov,
+   docs/DIRECTIVA_MINIGOLF_V18_1.md). Opcional y repetible: nunca bloquea la historia. Sin monedas, tienda ni ranking.
+   - Dónde: hoyo 1 de iniciación en Villa Raíz (sección 3B). El sitio se busca en datos fijos del mapa (terreno, agua, colisiones
+     que no son de flora y todas las instancias de árboles, rocas y troncos de vegetacion.js, como combate.js tras QA-174): un
+     rectángulo de 18 × 7 m, seco, sin edificios, lejos de la plaza, de los senderos y de la explanada del duelo. En Villa Raíz
+     casi no hay claros sin árboles (medido: 3 sitios libres en 70 m, junto al Terreno A o encima del camino al muelle), así
+     que se admiten hasta 2 árboles o rocas dentro: se quedan como obstáculos que chocan (círculos), nunca en la salida, el
+     nido ni los huecos. No se toca nada del mundo: solo se añaden unas piezas propias (una draw call para los troncos).
+   - Cómo se ve: semilla gigante con su franja (rueda de verdad), nido de ramitas con banderín, borde y 2 troncos bajos
+     (InstancedMesh, flatShading), una alfombra de salida (zona de activación) y una línea de puntos corta para apuntar.
+   - Cómo se juega: Acción junto a la semilla abre el hoyo. Mientras se juega, Vittata no camina: se queda detrás de la semilla
+     y la cámara de siempre mira hacia donde apuntas.
+       Computadora: ← → (o A D) o arrastrar con el ratón: apuntar · mantener Espacio (o el botón Golpear): fuerza; soltar: golpe
+                    · E / Acción: un toque carga, otro golpea · G: Grito del Yunque · R: reiniciar · Esc: salir.
+       Táctil: arrastrar o ◀ ▶ para apuntar · mantener Golpear y soltar · Grito · Reiniciar · Salir (botones grandes).
+   - Física 2D propia sobre el suelo (paso fijo de 1/120 s: no depende de los FPS): roce, pendiente suave del terreno, rebotes
+     círculo-segmento con el borde y los troncos, límite de velocidad, reposo, embudo del nido (entra si va despacio).
+     Si sale del área (o cae al agua) vuelve a su último sitio y suma 1 golpe.
+   - Grito del Yunque (el poder de Vittata, G.v18hab, sin sistema nuevo): con la semilla rodando, una vez por hoyo; la onda sale
+     hacia donde apuntas y, si alcanza la semilla, la empuja en esa dirección (empuje extra y corregir la trayectoria).
+   - Puntuación: golpes, par 3, récord local y medalla (oro = par o mejor, plata = par + 1, bronce = completar). Se guarda en el
+     progreso V18 (G.v18.mundo('minigolf_villa') = { mejor, medalla }); «Comenzar de cero» lo borra (guardado.js borrarV18).
+   Solo con la bandera V18. Prueba: AV.v18MinigolfTest(). */
+window.AVV18Minigolf = function (G) {
+  'use strict';
+  if (G.v18minigolf) return G.v18minigolf;
+  const S = G.S, V = G.v18, HAB = G.v18hab, F = G.fisica, M = F.MOVE, scene = G.renderer.scene;
+  const ID = 'minigolf_villa', PAR = 3;
+  // Medidas del hoyo (metros, ejes locales: u a lo largo, de la salida al nido; v de lado)
+  const L = 18, HW = 3.5, R = 0.36, TRONCO = 0.2, MARGEN = 0.8;
+  const TEE = { u: -L / 2 + 1.8, v: 0 }, NIDO = { u: L / 2 - 2.2, v: 0 }, NIDO_R = 0.62;
+  const TRONCOS = [{ u: -2.5, v0: -HW, v1: 0.3 }, { u: 2.0, v0: -0.3, v1: HW }]; // dejan un hueco a cada lado: zigzag o rebote
+  // Puntos que tienen que quedar libres (salida, nido, huecos y el camino de iniciación entre ellos)
+  const CLAVES = [TEE, NIDO, { u: -2.5, v: 1.9 }, { u: 2.0, v: -1.9 }, { u: -1.2, v: 2.0 }, { u: 0.8, v: -2.0 }, { u: 3.8, v: -2.0 }, { u: -5, v: 0.8 }, { u: 5.3, v: -1 }];
+  // Física
+  const PASO = 1 / 120, VMIN = 1.5, VMAX = 13, ROCE_A = 1.4, ROCE_B = 0.55, PEND = 0.6, REBOTE = 0.62, ROCE_PARED = 0.9,
+    REPOSO = 0.12, CAIDA = 3.2, EMBUDO = 3.5, T_MAX = 25, PERIODO = 1.3, GIRO = 1.1;
+  const TXT = {
+    label: 'Jugar al minigolf', invita: 'Minigolf de Villa Raíz: lleva la semilla gigante hasta el nido. Pulsa Acción junto a ella.',
+    empieza: '¡Hoyo 1, par 3! Lleva la semilla gigante al nido con los menos golpes.',
+    guia: '← → o arrastra: apuntar · Mantén Espacio: fuerza · G: Grito · R: reiniciar · Esc: salir',
+    guiaT: 'Arrastra o usa ◀ ▶ para apuntar · Mantén Golpear y suelta',
+    fuera: '¡La semilla se salió! Vuelve a su sitio (+1 golpe).', gritoYa: 'El Grito del Yunque ya se usó en este hoyo.',
+    gritoQuieta: 'El Grito empuja la semilla mientras rueda.', grito: '¡Grito del Yunque!', otra: 'Otra vez', seguir: 'Seguir explorando',
+    sale: '¡Hasta luego! El minigolf te espera en Villa Raíz.', hoyo: 'Hoyo 1 · Villa Raíz', par: 'Par 3', golpe: 'Golpear', soltar: 'Soltar',
+    poder: 'Grito', reiniciar: 'Reiniciar', salir: 'Salir', fuerza: 'Fuerza', izq: 'Apuntar a la izquierda', der: 'Apuntar a la derecha',
+    nuevo: '¡Nuevo récord!', sinRecord: 'Récord: —', usado: 'Grito usado',
+    oro: 'Medalla de oro', plata: 'Medalla de plata', bronce: 'Medalla de bronce'
+  };
+  const golpesTxt = n => 'Golpes: ' + n, recordTxt = n => 'Récord: ' + n, nidoTxt = n => n === 1 ? '¡Al nido en 1 golpe!' : '¡Al nido en ' + n + ' golpes!';
+  const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  const toast = (t, ms) => { try { G.ui.toast(t, ms || 2400); } catch (e) { /* sin interfaz */ } };
+  const fx = (k, x, y, z, n) => { try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
+  const emitir = ev => { try { G.emit('v18minigolf', ev); } catch (e) { /* sin oyentes */ } };
+  const H = (x, z) => G.terreno.height(x, z);
+  const agua = (x, z) => { try { return G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) : -Infinity; } catch (e) { return -Infinity; } };
+
+  // ---------- Sitio ----------
+  // Solo datos fijos (como combate.js tras QA-174): sale igual en cada carga. Dos zonas abiertas y bastante planas de Villa Raíz
+  // medidas en el mapa (la orilla seca al sureste de la plaza y el llano al este, camino del Terreno A); se prueban ±8 m y doce
+  // giros alrededor de cada una y gana la de menos árboles dentro (≤ 2), luego la más plana y la más cercana a su ancla.
+  const GIROS = Array.from({ length: 12 }, (_, i) => i * Math.PI / 12), ANCLAS = [{ x: 184, z: 204, a: GIROS }, { x: 185, z: 157, a: GIROS }];
+  const FIJOS = new Set(['edificio', 'estructura', 'taller']);
+  function flora(cx, cz, Rr) {
+    const VG = G.vegetacion, P = VG && VG.instancias, inf = VG && VG.info, out = [];
+    if (!P || !inf) return out;
+    for (const m in P) {
+      const I = inf[m], PM = P[m], roca = /roca|piedra|tronco_caido/.test(m); if (!I || !PM || (!roca && !(I.tronco >= 0.08))) continue;
+      for (let i = 0; i < PM.n; i++) {
+        const x = PM.pos[i * 4], z = PM.pos[i * 4 + 2], sc = PM.pos[i * 4 + 3];
+        if (Math.abs(x - cx) < Rr && Math.abs(z - cz) < Rr) out.push({ x, z, r: roca ? Math.max(0.5, (I.ancho || 1) * 0.5 * sc) : Math.max(0.2, I.tronco * sc) });
+      }
+    }
+    return out;
+  }
+  function marco(cx, cz, a) {
+    const ux = Math.cos(a), uz = Math.sin(a);
+    return { x: cx, z: cz, a, ux, uz, vx: -uz, vz: ux };
+  }
+  const aMundo = (K, u, v) => ({ x: K.x + K.ux * u + K.vx * v, z: K.z + K.uz * u + K.vz * v });
+  const aLocal = (K, x, z) => { const dx = x - K.x, dz = z - K.z; return { u: dx * K.ux + dz * K.uz, v: dx * K.vx + dz * K.vz }; };
+  function evaluar(K, lista, cols, evitar, tope) {
+    for (const e of evitar) if (Math.hypot(K.x - e.x, K.z - e.z) < e.r + L / 2) return null;
+    for (const c of cols) { const q = aLocal(K, c.x, c.z), r = (c.r || Math.hypot(c.hx || 1, c.hz || 1)) + MARGEN; if (Math.abs(q.u) < L / 2 + r && Math.abs(q.v) < HW + r) return null; }
+    // Árboles o rocas dentro: se quedan como obstáculos del hoyo (no se toca el bosque), pero nunca en la salida, el nido o
+    // los huecos de los troncos; lo barato primero
+    const arboles = [];
+    for (const o of lista) {
+      const q = aLocal(K, o.x, o.z); if (Math.abs(q.u) >= L / 2 + o.r || Math.abs(q.v) >= HW + o.r) continue;
+      if (arboles.length >= tope || CLAVES.some(c => Math.hypot(q.u - c.u, q.v - c.v) < 1.7 + o.r)) return null;
+      arboles.push(o);
+    }
+    const troncos = arboles.length;
+    let mn = Infinity, mx = -Infinity;
+    for (let u = -L / 2 - MARGEN; u <= L / 2 + MARGEN + 1e-6; u += 0.5) for (let v = -HW - MARGEN; v <= HW + MARGEN + 1e-6; v += 0.5) {
+      const p = aMundo(K, u, v), h = H(p.x, p.z);
+      if (agua(p.x, p.z) > h - 0.3) return null; // ni gota de agua dentro (ni en el margen)
+      mn = Math.min(mn, h); mx = Math.max(mx, h);
+    }
+    return { troncos, arboles, rango: mx - mn };
+  }
+  // Solo para la prueba (diagnóstico): rejilla amplia alrededor de la plaza, sitios sin troncos ni agua
+  function explorar(radio, paso) {
+    const pl = G.terreno.places || {}, v0 = pl.villa || { x: S.pos.x, z: S.pos.z }, out = [];
+    const lista = flora(v0.x, v0.z, radio + L), cols = (F.colliders || []).filter(k => k && FIJOS.has(k.kind) && k.x != null && k.z != null);
+    const evitar = [{ x: v0.x, z: v0.z, r: 4 }]; if (G.v18combate && G.v18combate.sitio) evitar.push({ x: G.v18combate.sitio.x, z: G.v18combate.sitio.z, r: 14 });
+    for (let dx = -radio; dx <= radio; dx += paso) for (let dz = -radio; dz <= radio; dz += paso) {
+      if (Math.hypot(dx, dz) > radio) continue;
+      for (const a of GIROS) { const K = marco(v0.x + dx, v0.z + dz, a), e = evaluar(K, lista, cols, evitar, 0); if (e && e.rango < 2.6) out.push([K.x, K.z, +a.toFixed(2), +e.rango.toFixed(2)]); }
+    }
+    return out.sort((p, q) => p[3] - q[3]);
+  }
+  function buscarSitio() {
+    const pl = G.terreno.places || {}, villa = pl.villa || pl.plaza || null;
+    const c = G.v18combate && G.v18combate.sitio, evitar = [];
+    if (villa) evitar.push({ x: villa.x, z: villa.z, r: 4 });
+    if (c) evitar.push({ x: c.x, z: c.z, r: 12 + 2 });
+    let mejor = null;
+    const anclas = villa && Math.hypot(villa.x - 150, villa.z - 170) < 30 ? ANCLAS : [{ x: (villa || S.pos).x + 24, z: (villa || S.pos).z + 20, a: [0, 0.52, 1.05] }];
+    for (const A of anclas) {
+      const lista = flora(A.x, A.z, L / 2 + HW + 18);
+      const cols = (F.colliders || []).filter(k => k && FIJOS.has(k.kind) && k.x != null && k.z != null && Math.hypot(k.x - A.x, k.z - A.z) < L + 12);
+      for (let dx = -8; dx <= 8; dx += 1) for (let dz = -8; dz <= 8; dz += 1) for (const a of A.a) {
+        const K = marco(A.x + dx, A.z + dz, a), e = evaluar(K, lista, cols, evitar, mejor ? Math.min(2, mejor.troncos) : 2); if (!e || e.rango > 2.6) continue;
+        const p = e.troncos * 30 + e.rango * 10 + Math.hypot(dx, dz) * 0.3;
+        if (!mejor || p < mejor.p) mejor = { K, p, troncos: e.troncos, arboles: e.arboles, rango: e.rango };
+      }
+      if (mejor && mejor.troncos === 0) break; // la primera zona limpia gana (la orilla, más cerca de la plaza)
+    }
+    if (!mejor) { const A = anclas[0]; mejor = { K: marco(A.x, A.z, A.a[0]), troncos: -1, arboles: [], rango: -1 }; }
+    // La salida queda en el extremo más cercano a la plaza
+    let K = mejor.K;
+    if (villa) { const a = aMundo(K, -L / 2, 0), b = aMundo(K, L / 2, 0); if (Math.hypot(b.x - villa.x, b.z - villa.z) < Math.hypot(a.x - villa.x, a.z - villa.z)) K = marco(K.x, K.z, K.a + Math.PI); }
+    return Object.assign(K, { troncos: mejor.troncos, arboles: mejor.arboles.map(o => ({ x: o.x, z: o.z, r: o.r })), rango: mejor.rango });
+  }
+
+  // ---------- Escena ----------
+  const matMadera = new THREE.MeshStandardMaterial({ color: '#7a5230', roughness: 0.95, metalness: 0, flatShading: true });
+  const geoTronco = new THREE.CylinderGeometry(TRONCO, TRONCO, 1, 7);
+  const troncos = new THREE.InstancedMesh(geoTronco, matMadera, 40);
+  const nido = new THREE.Group(); nido.name = 'v18_golf_nido';
+  {
+    const aro = new THREE.Mesh(new THREE.TorusGeometry(NIDO_R + 0.12, 0.2, 6, 18), new THREE.MeshStandardMaterial({ color: '#9a7443', roughness: 1, flatShading: true }));
+    aro.rotation.x = Math.PI / 2; nido.add(aro);
+    const fondo = new THREE.Mesh(new THREE.CircleGeometry(NIDO_R + 0.02, 18), new THREE.MeshStandardMaterial({ color: '#3b2a17', roughness: 1 }));
+    fondo.rotation.x = -Math.PI / 2; fondo.position.y = 0.03; nido.add(fondo);
+    const palo = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.2, 6), matMadera); palo.position.set(NIDO_R + 0.3, 1.1, 0); nido.add(palo);
+    const ban = new THREE.Shape(); ban.moveTo(0, 0); ban.lineTo(0.75, -0.22); ban.lineTo(0, -0.45);
+    const banderin = new THREE.Mesh(new THREE.ShapeGeometry(ban), new THREE.MeshStandardMaterial({ color: '#f2a03d', roughness: 0.8, side: THREE.DoubleSide, flatShading: true }));
+    banderin.position.set(NIDO_R + 0.32, 2.15, 0); nido.add(banderin); nido.userData.banderin = banderin;
+  }
+  const semilla = new THREE.Group(); semilla.name = 'v18_golf_semilla';
+  {
+    const cuerpo = new THREE.Mesh(new THREE.SphereGeometry(R, 18, 14), new THREE.MeshStandardMaterial({ color: '#c98f45', roughness: 0.7, flatShading: true }));
+    const franja = new THREE.Mesh(new THREE.TorusGeometry(R * 0.98, 0.045, 6, 22), new THREE.MeshStandardMaterial({ color: '#6b4220', roughness: 0.8 }));
+    semilla.add(cuerpo, franja);
+  }
+  const salida = new THREE.Mesh(new THREE.RingGeometry(1.0, 1.25, 40), new THREE.MeshBasicMaterial({ color: '#ffd27a', transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide }));
+  salida.rotation.x = -Math.PI / 2; salida.renderOrder = 3; salida.name = 'v18_golf_salida';
+  const N_PUNTOS = 8, puntos = new THREE.InstancedMesh(new THREE.SphereGeometry(0.07, 6, 4), new THREE.MeshBasicMaterial({ color: '#fff6dc', transparent: true, opacity: 0.85, depthWrite: false }), N_PUNTOS);
+  puntos.name = 'v18_golf_mira';
+  troncos.name = 'v18_golf_troncos';
+  for (const m of [troncos, nido, semilla, salida, puntos]) { m.frustumCulled = false; m.visible = false; scene.add(m); }
+  troncos.castShadow = false; puntos.renderOrder = 4;
+  const _o = new THREE.Object3D(), _q = new THREE.Quaternion(), _ax = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0), _d = new THREE.Vector3();
+
+  // Segmentos de colisión (mundo) y piezas de tronco que los dibujan
+  let K = null, SEGS = [], OBST = [], P_NIDO = null, P_TEE = null, P_ENTRADA = null;
+  function montar(k) {
+    K = k; SEGS = []; OBST = (K.arboles || []).slice(); troncos.count = 40;
+    const seg = (u0, v0, u1, v1) => { const a = aMundo(K, u0, v0), b = aMundo(K, u1, v1); SEGS.push({ ax: a.x, az: a.z, bx: b.x, bz: b.z, r: TRONCO }); };
+    seg(-L / 2, -HW, L / 2, -HW); seg(-L / 2, HW, L / 2, HW); seg(-L / 2, -HW, -L / 2, HW); seg(L / 2, -HW, L / 2, HW);
+    for (const t of TRONCOS) seg(t.u, t.v0, t.u, t.v1);
+    let n = 0;
+    for (const s of SEGS) {
+      const len = Math.hypot(s.bx - s.ax, s.bz - s.az), piezas = Math.max(1, Math.ceil(len / 3));
+      for (let i = 0; i < piezas && n < troncos.count; i++) {
+        const x0 = s.ax + (s.bx - s.ax) * i / piezas, z0 = s.az + (s.bz - s.az) * i / piezas, x1 = s.ax + (s.bx - s.ax) * (i + 1) / piezas, z1 = s.az + (s.bz - s.az) * (i + 1) / piezas;
+        const y0 = H(x0, z0) + TRONCO * 0.75, y1 = H(x1, z1) + TRONCO * 0.75;
+        _d.set(x1 - x0, y1 - y0, z1 - z0); const l = _d.length() + TRONCO * 0.6; _d.normalize();
+        _o.position.set((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); _o.quaternion.setFromUnitVectors(_y, _d); _o.scale.set(1, l, 1); _o.updateMatrix();
+        troncos.setMatrixAt(n++, _o.matrix);
+      }
+    }
+    troncos.count = n; troncos.instanceMatrix.needsUpdate = true;
+    P_NIDO = aMundo(K, NIDO.u, NIDO.v); P_TEE = aMundo(K, TEE.u, TEE.v); P_ENTRADA = aMundo(K, -L / 2 - 1.3, 0);
+    nido.position.set(P_NIDO.x, H(P_NIDO.x, P_NIDO.z) + 0.02, P_NIDO.z); nido.rotation.y = -K.a;
+    salida.position.set(P_TEE.x, H(P_TEE.x, P_TEE.z) + 0.06, P_TEE.z);
+    if (it) { it.x = P_TEE.x; it.z = P_TEE.z; }
+    if (A.fase === 'nada') ponerSemilla(P_TEE.x, P_TEE.z);
+  }
+
+  // ---------- Estado ----------
+  const A = { fase: 'nada', golpes: 0, carga: 0, cargaT: 0, cargando: false, grito: false, giro: 0, manual: false, acc: 0, t: 0, nidoT: 0, timers: [],
+    rebotes: 0, fueras: 0, ultimo: null, invitado: false, resultado: null };
+  const B = { x: 0, y: 0, z: 0, vx: 0, vz: 0, mov: false, t: 0 };
+  const pos = { x: 0, y: 0, z: 0 }; // la semilla como blanco del Grito (habilidades.js lee .pos)
+  function ponerSemilla(x, z) { B.x = x; B.z = z; B.vx = B.vz = 0; B.mov = false; B.t = 0; B.y = H(x, z) + R * 0.95; semilla.position.set(B.x, B.y, B.z); }
+  const record = () => { const r = V && V.mundo(ID); return r && typeof r === 'object' && r.mejor > 0 ? r : null; };
+  const medalla = n => n <= PAR ? 'oro' : n === PAR + 1 ? 'plata' : 'bronce';
+  const RANGO_M = { oro: 3, plata: 2, bronce: 1 };
+  // Hacia dónde se apunta: hacia donde mira la cámara de siempre (arrastrar ya la gira)
+  const dir = () => { const y = G.camara.yaw; return { x: -Math.sin(y), z: -Math.cos(y) }; };
+  function apuntarA(x, z) { const dx = x - B.x, dz = z - B.z; G.camara.yaw = Math.atan2(-dx, -dz); }
+  function otroActivo() {
+    for (const o of [G.v18combate, G.v18amenaza, G.v18serpiente, G.v18sapo, G.v18duelo2]) {
+      try { const f = o && o.estado && o.estado().fase; if (f && f !== 'nada' && f !== 'disuelve' && f !== 'deshace' && f !== 'despierta') return true; } catch (e) { /* */ }
+    }
+    return false;
+  }
+  function libre() {
+    const $ = id => document.getElementById(id), oculto = id => !$(id) || $(id).hidden;
+    try {
+      if ($('c1-fade') || (G.dialogo && G.dialogo.open && G.dialogo.open()) || G.ui.cardOpen || (G.ui.busy && G.ui.busy())) return false;
+      return oculto('end') && oculto('comic') && oculto('creator');
+    } catch (e) { return false; }
+  }
+
+  // ---------- Partida ----------
+  let f = null; // luchador del Grito (habilidades.js): energía y espera propias del hoyo
+  function iniciar(o) {
+    o = o || {};
+    if (A.fase !== 'nada' || !K) return false;
+    if (!o.forzar && (!libre() || otroActivo())) return false;
+    if (M.flying) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } }
+    A.fase = 'apuntar'; empezarHoyo();
+    enganchar(); montarHud(); hud.el.hidden = false; pintar(true);
+    toast(TXT.empieza, 3000); emitir({ tipo: 'empieza' });
+    return true;
+  }
+  function empezarHoyo() {
+    Object.assign(A, { golpes: 0, carga: 0, cargaT: 0, cargando: false, grito: false, acc: 0, nidoT: 0, rebotes: 0, fueras: 0, resultado: null });
+    A.timers.length = 0; A.fase = 'apuntar';
+    ponerSemilla(P_TEE.x, P_TEE.z); A.ultimo = { x: B.x, z: B.z }; semilla.scale.setScalar(1);
+    f = HAB ? HAB.luchador({ id: 'golf', especie: 'vittata', poder: 'grito_yunque', pos: S.pos, mira: dir }) : null;
+    apuntarA(P_NIDO.x, P_NIDO.z); seguir(0, true);
+    try { G.camara.place(true); } catch (e) { /* cámara */ }
+    if (hud) { hud.q('fin').hidden = true; hud.q('bot').hidden = false; }
+  }
+  function reiniciar() { if (A.fase === 'nada') return false; empezarHoyo(); pintar(true); emitir({ tipo: 'reinicia' }); return true; }
+  function salir(motivo) {
+    if (A.fase === 'nada') return false;
+    A.fase = 'nada'; A.cargando = false; A.timers.length = 0; soltar();
+    if (hud) hud.el.hidden = true;
+    ponerSemilla(P_TEE.x, P_TEE.z); semilla.scale.setScalar(1); puntos.visible = false;
+    S.pos.x = P_ENTRADA.x; S.pos.z = P_ENTRADA.z; S.pos.y = H(S.pos.x, S.pos.z) + 0.05; S.vy = 0; M.vx = M.vz = 0;
+    if (motivo) toast(motivo, 2600);
+    emitir({ tipo: 'sale' });
+    return true;
+  }
+  function empezarCarga() {
+    if (A.fase !== 'apuntar' || A.cargando) return false;
+    A.cargando = true; A.cargaT = 0; A.carga = 0; return true;
+  }
+  function soltarCarga() {
+    if (!A.cargando) return false;
+    A.cargando = false; return tirar(Math.max(0.06, A.carga));
+  }
+  // Golpe: p de 0 a 1 (la fuerza), hacia donde se apunta
+  function tirar(p) {
+    if (A.fase !== 'apuntar') return false;
+    const d = dir(), v0 = VMIN + (VMAX - VMIN) * Math.max(0, Math.min(1, p));
+    A.ultimo = { x: B.x, z: B.z };
+    B.vx = d.x * v0; B.vz = d.z * v0; B.mov = true; B.t = 0;
+    A.golpes++; A.fase = 'rueda'; A.carga = 0;
+    sonar('dash'); fx('dust', B.x, B.y - R * 0.6, B.z, 6);
+    emitir({ tipo: 'golpe', n: A.golpes, p }); pintar();
+    return true;
+  }
+  function grito() {
+    if (A.fase !== 'rueda') { if (A.fase === 'apuntar') toast(TXT.gritoQuieta, 1800); return { ok: false, motivo: 'quieta' }; }
+    if (A.grito) { toast(TXT.gritoYa, 1800); return { ok: false, motivo: 'usado' }; }
+    if (!HAB || !f) return { ok: false, motivo: 'sin poderes' };
+    pos.x = B.x; pos.y = B.y; pos.z = B.z;
+    const blanco = { id: 'semilla', pos };
+    const r = HAB.usar(f, 'grito_yunque', {
+      otro: blanco, golpear: (b, g) => empujar(g), despues: (s, fn) => A.timers.push({ t: s, fn }),
+      onda: (o, d, al) => { try { if (G.v18fx && G.v18fx.onda) G.v18fx.onda(o, { x: d.x, y: 0, z: d.z }, al); } catch (e) { /* efecto */ } },
+      poder: ev => { try { G.emit('v18poder', ev); } catch (e) { /* sin oyentes */ } }, sonar, fx: (k, x, y, z) => fx(k, x, y, z)
+    });
+    if (!r.ok) return r;
+    A.grito = true; toast(TXT.grito, 1200); emitir({ tipo: 'grito' }); pintar();
+    return r;
+  }
+  // La onda alcanza la semilla: la lleva hacia donde apuntas (empuje extra y corrige la trayectoria), sin pasar del límite
+  function empujar(g) {
+    if (A.fase !== 'rueda') return false;
+    const d = g && g.dir ? g.dir : dir(), sp = Math.hypot(B.vx, B.vz), v = Math.min(VMAX, sp * 0.45 + (g && g.empuje ? g.empuje : 15) * 0.45);
+    B.vx = d.x * v; B.vz = d.z * v; B.mov = true; B.t = Math.min(B.t, T_MAX - 6);
+    fx('feathers', B.x, B.y + 0.3, B.z, 6); emitir({ tipo: 'empuje', v });
+    return true;
+  }
+  function fuera() {
+    A.fueras++; A.golpes++;
+    ponerSemilla(A.ultimo.x, A.ultimo.z); A.fase = 'apuntar';
+    toast(TXT.fuera, 2200); sonar('wrong'); emitir({ tipo: 'fuera', n: A.golpes }); pintar();
+  }
+  function alNido() {
+    B.mov = false; B.vx = B.vz = 0; A.fase = 'nido'; A.nidoT = 0; A.cargando = false;
+    const n = A.golpes, med = medalla(n), r0 = record(), nuevo = !r0 || n < r0.mejor;
+    if (nuevo && V) V.cambiarMundo(ID, { mejor: n, medalla: med });
+    const r = record() || { mejor: n, medalla: med };
+    A.resultado = { golpes: n, medalla: med, nuevo, mejor: r.mejor };
+    const y = H(P_NIDO.x, P_NIDO.z);
+    fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 14); fx('feathers', P_NIDO.x, y + 0.8, P_NIDO.z, 10); sonar('unlock');
+    toast(nidoTxt(n), 3200);
+    if (hud) {
+      hud.q('fin1').textContent = nidoTxt(n); hud.q('fin2').textContent = TXT[med]; hud.q('fin2').dataset.m = med;
+      hud.q('fin3').textContent = nuevo ? TXT.nuevo : recordTxt(r.mejor);
+      hud.q('fin').hidden = false; hud.q('bot').hidden = true;
+    }
+    emitir({ tipo: 'nido', golpes: n, medalla: med, nuevo });
+    pintar(true);
+  }
+
+  // ---------- Física (paso fijo) ----------
+  function sub(h) {
+    for (let i = A.timers.length - 1; i >= 0; i--) { const t = A.timers[i]; t.t -= h; if (t.t <= 0) { A.timers.splice(i, 1); pos.x = B.x; pos.y = B.y; pos.z = B.z; t.fn(); } }
+    if (!B.mov) return;
+    B.t += h;
+    // pendiente del terreno (suave: la semilla rueda cuesta abajo, pero el roce la para)
+    const gx = (H(B.x + 0.3, B.z) - H(B.x - 0.3, B.z)) / 0.6, gz = (H(B.x, B.z + 0.3) - H(B.x, B.z - 0.3)) / 0.6;
+    B.vx -= 9.8 * PEND * gx * h; B.vz -= 9.8 * PEND * gz * h;
+    // embudo del nido: cerca y despacio, se va hacia el centro
+    const nx = P_NIDO.x - B.x, nz = P_NIDO.z - B.z, dn = Math.hypot(nx, nz);
+    let sp = Math.hypot(B.vx, B.vz);
+    if (dn < NIDO_R * 1.9 && dn > 1e-3 && sp < CAIDA * 1.4) { B.vx += nx / dn * EMBUDO * h; B.vz += nz / dn * EMBUDO * h; }
+    // roce
+    sp = Math.hypot(B.vx, B.vz);
+    if (sp > 0) { const k = Math.max(0, sp - (ROCE_A + ROCE_B * sp) * h) / sp; B.vx *= k; B.vz *= k; sp *= k; }
+    if (sp > VMAX) { B.vx *= VMAX / sp; B.vz *= VMAX / sp; sp = VMAX; }
+    const x0 = B.x, z0 = B.z;
+    B.x += B.vx * h; B.z += B.vz * h;
+    // choques círculo-segmento (borde y troncos): saca la semilla y rebota
+    for (const s of SEGS) {
+      const ex = s.bx - s.ax, ez = s.bz - s.az, l2 = ex * ex + ez * ez || 1;
+      const t = Math.max(0, Math.min(1, ((B.x - s.ax) * ex + (B.z - s.az) * ez) / l2));
+      const cx = s.ax + ex * t, cz = s.az + ez * t; let dx = B.x - cx, dz = B.z - cz, d = Math.hypot(dx, dz);
+      const lim = R + s.r; if (d >= lim) continue;
+      if (d < 1e-6) { dx = x0 - cx; dz = z0 - cz; d = Math.hypot(dx, dz) || 1; }
+      const ux = dx / d, uz = dz / d;
+      B.x = cx + ux * lim; B.z = cz + uz * lim;
+      const vn = B.vx * ux + B.vz * uz;
+      if (vn < 0) {
+        const tx = B.vx - vn * ux, tz = B.vz - vn * uz;
+        B.vx = tx * ROCE_PARED - vn * REBOTE * ux; B.vz = tz * ROCE_PARED - vn * REBOTE * uz;
+        if (-vn > 1) { A.rebotes++; sonar('tick'); emitir({ tipo: 'rebote' }); }
+      }
+    }
+    // árboles o rocas del sitio que quedan dentro (círculos)
+    for (const o of OBST) {
+      let dx = B.x - o.x, dz = B.z - o.z, d = Math.hypot(dx, dz); const lim = R + o.r; if (d >= lim) continue;
+      if (d < 1e-6) { dx = x0 - o.x; dz = z0 - o.z; d = Math.hypot(dx, dz) || 1; }
+      const ux = dx / d, uz = dz / d; B.x = o.x + ux * lim; B.z = o.z + uz * lim;
+      const vn = B.vx * ux + B.vz * uz;
+      if (vn < 0) { const tx = B.vx - vn * ux, tz = B.vz - vn * uz; B.vx = tx * ROCE_PARED - vn * REBOTE * ux; B.vz = tz * ROCE_PARED - vn * REBOTE * uz; if (-vn > 1) { A.rebotes++; sonar('tick'); } }
+    }
+    B.y = H(B.x, B.z) + R * 0.95;
+    // rodar de verdad (gira sobre el eje perpendicular al avance)
+    const mx = B.x - x0, mz = B.z - z0, md = Math.hypot(mx, mz);
+    if (md > 1e-5) { _ax.set(mz / md, 0, -mx / md); _q.setFromAxisAngle(_ax, md / R); semilla.quaternion.premultiply(_q); }
+    // fuera del área o al agua: vuelve a su sitio con 1 golpe más
+    const q = aLocal(K, B.x, B.z);
+    if (Math.abs(q.u) > L / 2 + 0.4 || Math.abs(q.v) > HW + 0.4 || agua(B.x, B.z) > B.y - R) { fuera(); return; }
+    // al nido
+    const dn2 = Math.hypot(P_NIDO.x - B.x, P_NIDO.z - B.z), sp2 = Math.hypot(B.vx, B.vz);
+    if (dn2 < NIDO_R * 0.75 && sp2 < CAIDA) { alNido(); return; }
+    // reposo (o tope de tiempo: nunca se queda rodando para siempre)
+    if ((sp2 < REPOSO) || B.t > T_MAX) {
+      B.vx = B.vz = 0; B.mov = false;
+      if (A.fase === 'rueda') { A.fase = 'apuntar'; emitir({ tipo: 'reposo', x: B.x, z: B.z }); pintar(); }
+    }
+  }
+
+  // Vittata detrás de la semilla, mirando hacia donde apunta (la cámara de siempre la sigue)
+  // (ancla propia: lo que la física haya movido a la jugadora en este cuadro, p. ej. con el joystick oculto, no se acumula)
+  const ancla = { x: 0, z: 0 };
+  function seguir(dt, snap) {
+    const d = dir(), atras = A.fase === 'rueda' ? 2.2 : 1.3;
+    const tx = B.x - d.x * atras, tz = B.z - d.z * atras, k = snap ? 1 : 1 - Math.exp(-6 * dt);
+    ancla.x += (tx - ancla.x) * k; ancla.z += (tz - ancla.z) * k;
+    S.pos.x = ancla.x; S.pos.z = ancla.z; S.pos.y = H(S.pos.x, S.pos.z) + 0.05;
+    S.vy = 0; M.vx = M.vz = 0; M.dashT = 0; S.facing = { x: d.x, z: d.z };
+    if (M.flying) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } } // el gesto de deslizar arriba (volar) no saca del hoyo
+  }
+
+  function dibujarMira() {
+    const ver = A.fase === 'apuntar';
+    puntos.visible = ver; if (!ver) return;
+    const d = dir(), largo = 1.2 + (A.cargando ? A.carga : 0.3) * 5;
+    for (let i = 0; i < N_PUNTOS; i++) {
+      const s = R + 0.3 + largo * (i + 1) / N_PUNTOS, x = B.x + d.x * s, z = B.z + d.z * s;
+      _o.position.set(x, H(x, z) + 0.12, z); _o.quaternion.identity(); _o.scale.setScalar(A.cargando ? 1.25 : 1); _o.updateMatrix(); puntos.setMatrixAt(i, _o.matrix);
+    }
+    puntos.instanceMatrix.needsUpdate = true;
+  }
+
+  function paso(dt) {
+    if (!K) return;
+    const lejos = Math.hypot(S.pos.x - K.x, S.pos.z - K.z) > 90;
+    troncos.visible = nido.visible = semilla.visible = !lejos || A.fase !== 'nada';
+    salida.visible = A.fase === 'nada' && !lejos;
+    nido.userData.banderin.rotation.y = Math.sin(performance.now() / 600) * 0.25;
+    if (A.fase === 'nada') {
+      puntos.visible = false;
+      if (!A.invitado && !A.manual && Math.hypot(S.pos.x - P_TEE.x, S.pos.z - P_TEE.z) < 10 && it.visible()) { A.invitado = true; toast(TXT.invita, 3600); }
+      return;
+    }
+    if (A.giro) { G.camara.yaw += A.giro * GIRO * dt; if (G.camara.manual) try { G.camara.manual(); } catch (e) { /* */ } }
+    if (A.cargando) { A.cargaT += dt; const k = (A.cargaT / PERIODO) % 2; A.carga = k <= 1 ? k : 2 - k; }
+    if (A.fase === 'rueda' || A.timers.length) {
+      A.acc += Math.min(dt, 0.25);
+      while (A.acc >= PASO) { A.acc -= PASO; sub(PASO); if (A.fase !== 'rueda' && !A.timers.length) { A.acc = 0; break; } }
+    } else A.acc = 0;
+    if (f && HAB) HAB.paso(f, dt);
+    if (A.fase === 'nido') { A.nidoT += dt; const k = Math.min(1, A.nidoT / 0.5); semilla.position.set(P_NIDO.x, H(P_NIDO.x, P_NIDO.z) + R * 0.95 - k * R * 0.9, P_NIDO.z); semilla.scale.setScalar(1 - 0.25 * k); }
+    else semilla.position.set(B.x, B.y, B.z);
+    seguir(dt, false);
+    dibujarMira();
+    if (hud && !hud.el.hidden) pintar();
+  }
+
+  // ---------- Entrada ----------
+  const modo = {
+    activo: () => A.fase !== 'nada',
+    accion: () => { if (A.fase === 'nido') salir(TXT.sale); else if (A.cargando) soltarCarga(); else empezarCarga(); },
+    aviso: () => (TACTIL ? TXT.guiaT : TXT.guia),
+    get verbo() { return A.fase === 'nido' ? TXT.seguir : A.cargando ? TXT.soltar : TXT.golpe; }
+  };
+  const TRAGAR = new Set(['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's', ' ', 'g', 'r', 'escape', 'e', 'enter', 'f', 'v', 'x', 'c', '1', '2', '3', '4', '5', '6', '7']);
+  const pausa = () => !!(G.pausa && G.pausa.activa && G.pausa.activa());
+  let enganchado = false, modo0 = null, girosTecla = { izq: false, der: false };
+  const giroTeclas = () => { A.giro = (girosTecla.izq ? 1 : 0) - (girosTecla.der ? 1 : 0); };
+  function teclaAbajo(e) {
+    if (!enganchado || pausa() || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
+    const k = (e.key || '').toLowerCase(); if (!TRAGAR.has(k)) return;
+    e.stopImmediatePropagation(); e.preventDefault();
+    if (k === 'arrowleft' || k === 'a') { girosTecla.izq = true; giroTeclas(); }
+    else if (k === 'arrowright' || k === 'd') { girosTecla.der = true; giroTeclas(); }
+    if (e.repeat) return;
+    if (k === ' ') empezarCarga();
+    else if (k === 'e' || k === 'enter') modo.accion();
+    else if (k === 'g') grito();
+    else if (k === 'r') reiniciar();
+    else if (k === 'escape') salir(TXT.sale);
+  }
+  // keyup no se traga: input.js suelta lo que tuviera apretado de antes de empezar
+  function teclaArriba(e) {
+    if (!enganchado) return;
+    const k = (e.key || '').toLowerCase();
+    if (k === 'arrowleft' || k === 'a') { girosTecla.izq = false; giroTeclas(); }
+    else if (k === 'arrowright' || k === 'd') { girosTecla.der = false; giroTeclas(); }
+    else if (k === ' ') soltarCarga();
+  }
+  function enganchar() {
+    if (enganchado) return; enganchado = true;
+    modo0 = G.interaccion.modo; G.interaccion.modo = modo;
+    addEventListener('keydown', teclaAbajo, true); addEventListener('keyup', teclaArriba, true);
+    const keys = G.input && G.input.keys; if (keys) for (const k of ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'c', 'q', 'r', 'g']) keys.delete(k);
+    document.body.classList.add('v18-golf-on');
+  }
+  function soltar() {
+    if (!enganchado) return; enganchado = false;
+    if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
+    removeEventListener('keydown', teclaAbajo, true); removeEventListener('keyup', teclaArriba, true);
+    girosTecla = { izq: false, der: false }; A.giro = 0; A.cargando = false;
+    document.body.classList.remove('v18-golf-on');
+  }
+
+  // ---------- HUD ----------
+  let hud = null;
+  function estilo() {
+    if (document.getElementById('v18-golf-css')) return;
+    const st = document.createElement('style'); st.id = 'v18-golf-css';
+    st.textContent = '#v18-golf{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);margin-inline:auto;width:min(520px,calc(100vw - 32px));z-index:40;' +
+      'font-family:Fredoka,system-ui,sans-serif;color:#fff8ea;text-shadow:0 1px 2px #0008;pointer-events:none}' +
+      'body.v18-golf-on #acts,body.v18-golf-on #stick,body.v18-golf-on #quest,body.v18-golf-on #inv{visibility:hidden}' +
+      '#v18-golf .vg-caja{background:rgba(30,40,30,.78);border-radius:16px;padding:8px 12px}' +
+      '#v18-golf .vg-info{display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:space-between;font-size:15px;font-weight:600}' +
+      '#v18-golf .vg-barra{height:10px;border-radius:5px;background:#0006;overflow:hidden;margin:6px 0 2px}#v18-golf .vg-barra b{display:block;height:100%;width:0;background:linear-gradient(90deg,#8fe08a,#ffd27a,#ff9a5a)}' +
+      '#v18-golf .vg-et{font-size:11px;opacity:.8}' +
+      '#v18-golf .vg-bot{display:grid;grid-template-columns:1fr 2fr 1fr;gap:8px;margin-top:8px}#v18-golf .vg-bot2{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}' +
+      '#v18-golf button{pointer-events:auto;font:inherit;font-size:16px;font-weight:600;min-height:52px;padding:6px 10px;border-radius:26px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 6px #0005;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}' +
+      '#v18-golf button.vg-golpe{background:#ffd27a;font-size:18px}#v18-golf button.cd{opacity:.45}#v18-golf button.on{outline:3px solid #8fe08a}' +
+      '#v18-golf .vg-fin{text-align:center}#v18-golf .vg-fin p{margin:2px 0;font-size:18px;font-weight:600}#v18-golf .vg-fin .vg-m{font-size:22px}' +
+      '#v18-golf .vg-m[data-m="oro"]{color:#ffd84a}#v18-golf .vg-m[data-m="plata"]{color:#dfe7ee}#v18-golf .vg-m[data-m="bronce"]{color:#e0a36a}' +
+      '#v18-golf .vg-fin .vg-bot2{grid-template-columns:1fr 1fr}' +
+      '@media (min-width:761px) and (pointer:fine){#v18-golf{bottom:16px}}';
+    document.head.appendChild(st);
+  }
+  function montarHud() {
+    if (hud) return hud;
+    estilo();
+    const el = document.createElement('div'); el.id = 'v18-golf'; el.hidden = true;
+    el.innerHTML = `<div class="vg-caja"><div class="vg-info"><span>${TXT.hoyo}</span><span>${TXT.par}</span><span data-k="golpes"></span><span data-k="record"></span></div>` +
+      `<div class="vg-barra"><b data-k="barra"></b></div><div class="vg-et">${TXT.fuerza}</div>` +
+      `<div data-k="bot"><div class="vg-bot"><button data-a="izq" aria-label="${TXT.izq}">◀</button><button class="vg-golpe" data-a="golpe">${TXT.golpe}</button><button data-a="der" aria-label="${TXT.der}">▶</button></div>` +
+      `<div class="vg-bot2"><button data-a="grito" data-k="bgrito">${TXT.poder}</button><button data-a="reiniciar">${TXT.reiniciar}</button><button data-a="salir">${TXT.salir}</button></div></div>` +
+      `<div class="vg-fin" data-k="fin" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><p data-k="fin3"></p>` +
+      `<div class="vg-bot2"><button data-a="otra">${TXT.otra}</button><button data-a="seguir">${TXT.seguir}</button></div></div></div>`;
+    const boton = e => e.target.closest && e.target.closest('button[data-a]');
+    el.addEventListener('pointerdown', e => {
+      const b = boton(e); if (!b) return;
+      e.preventDefault(); e.stopPropagation();
+      try { b.setPointerCapture(e.pointerId); } catch (er) { /* sin captura */ }
+      const a = b.dataset.a; b.classList.add('on');
+      if (a === 'izq') A.giro = 1; else if (a === 'der') A.giro = -1;
+      else if (a === 'golpe') empezarCarga(); else if (a === 'grito') grito(); else if (a === 'reiniciar') reiniciar();
+      else if (a === 'salir' || a === 'seguir') salir(TXT.sale); else if (a === 'otra') reiniciar();
+    });
+    const suelta = e => {
+      const b = boton(e); if (!b) return; b.classList.remove('on');
+      const a = b.dataset.a;
+      if (a === 'izq' || a === 'der') giroTeclas();
+      else if (a === 'golpe') { if (e.type === 'pointercancel') A.cargando = false; else soltarCarga(); }
+    };
+    for (const t of ['pointerup', 'pointercancel']) el.addEventListener(t, suelta);
+    el.addEventListener('contextmenu', e => e.preventDefault());
+    document.body.appendChild(el);
+    hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
+    return hud;
+  }
+  const texto = (k, t) => { const e = hud.q(k); if (e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } }; // una vez: el traductor no pelea
+  function pintar() {
+    if (!hud) return;
+    texto('golpes', golpesTxt(A.golpes));
+    const r = record(); texto('record', r ? recordTxt(r.mejor) : TXT.sinRecord);
+    hud.q('barra').style.width = Math.round(100 * (A.cargando ? A.carga : 0)) + '%';
+    const bg = hud.q('bgrito'); bg.classList.toggle('cd', A.grito || A.fase !== 'rueda');
+    const t = A.grito ? TXT.usado : TXT.poder; if (bg.dataset.t !== t) { bg.dataset.t = t; bg.textContent = t; }
+    const bgol = hud.el.querySelector('[data-a="golpe"]'); bgol.classList.toggle('cd', A.fase !== 'apuntar');
+  }
+
+  // ---------- En el mundo ----------
+  const it = G.interaccion.add({ id: 'v18_minigolf', x: 0, z: 0, r: 3.4, visible: () => A.fase === 'nada' && !!K && libre() && !otroActivo(),
+    label: () => TXT.label, use: () => iniciar({}) });
+  montar(buscarSitio());
+  G.on('update', (dt, busy) => { if (A.manual || (busy && A.fase !== 'nada')) return; paso(Math.min(dt, 0.25)); }, 75);
+  G.on('apply', () => { if (A.fase !== 'nada') salir(); }, 51);
+  // El sitio definitivo, cuando ya están la vegetación, el mundo y la explanada del duelo (antes no hay troncos que esquivar)
+  let recolocar = false;
+  const pedirSitio = () => { recolocar = true; };
+  Promise.resolve(G.vegetacion && G.vegetacion.listo).then(pedirSitio, pedirSitio);
+  Promise.resolve(G.mundo && G.mundo.listo).then(pedirSitio, () => {});
+  setTimeout(pedirSitio, 5000);
+  G.on('update', () => { if (recolocar && A.fase === 'nada') { recolocar = false; const n = buscarSitio(); if (!K || n.x !== K.x || n.z !== K.z || n.a !== K.a) montar(n); else Object.assign(K, { troncos: n.troncos, rango: n.rango }); } }, 76);
+
+  // =====================================================================================================================
+  async function test() {
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    let crudo = null; try { crudo = localStorage.getItem(V.clave()); } catch (e) { /* */ }
+    const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M.flying, yaw0 = G.camara.yaw;
+    const toasts = [], toast0 = G.ui.toast; G.ui.toast = t => { toasts.push(String(t)); };
+    const susp = G.guardado && G.guardado.suspender; if (susp) susp(true);
+    if (A.fase !== 'nada') salir();
+    A.manual = true;
+    const correr = (s, dt) => { dt = dt || 1 / 60; for (let t = 0; t < s; t += dt) paso(dt); };
+    const hastaQuieta = (s, dt) => { dt = dt || 1 / 60; for (let t = 0; t < (s || 30) && A.fase === 'rueda'; t += dt) paso(dt); };
+    const enLocal = () => aLocal(K, B.x, B.z);
+    const colocar = (u, v) => { const p = aMundo(K, u, v); ponerSemilla(p.x, p.z); A.fase = 'apuntar'; seguir(0, true); };
+    const apuntaLocal = (u, v) => { const p = aMundo(K, u, v); apuntarA(p.x, p.z); };
+    // fuerza para recorrer d metros en llano (roce a + b·v): d(v0) = v0/b − a/b² · ln(1 + b·v0/a)
+    const recorre = v0 => v0 / ROCE_B - ROCE_A / (ROCE_B * ROCE_B) * Math.log(1 + ROCE_B * v0 / ROCE_A);
+    const fuerzaPara = d => { let lo = 0, hi = 1; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (recorre(VMIN + (VMAX - VMIN) * m) < d) lo = m; else hi = m; } return (lo + hi) / 2; };
+    const tecla = (tipo, key) => { const ev = new KeyboardEvent(tipo, { key, bubbles: true, cancelable: true }); document.body.dispatchEvent(ev); return ev; };
+    try {
+      V.borrar(); V.recargar();
+      // 0. Bandera y sitio
+      if (recolocar) { recolocar = false; montar(buscarSitio()); }
+      const k2 = buscarSitio(), bajo = (() => { let m = 0; for (let u = -L / 2; u <= L / 2; u += 1) for (let v = -HW; v <= HW; v += 1) { const p = aMundo(K, u, v); if (agua(p.x, p.z) > H(p.x, p.z) - 0.3) m++; } return m; })();
+      const pl = G.terreno.places || {}, villa = pl.villa || { x: 0, z: 0 };
+      check('Solo con la bandera V18; sitio en Villa Raíz: seco, sin edificios, a lo sumo 2 árboles dentro (son obstáculos que chocan) y estable entre búsquedas',
+        G.V18 !== false && bajo === 0 && K.troncos >= 0 && K.troncos <= 2 && OBST.length === K.troncos && k2.x === K.x && k2.z === K.z && Math.hypot(K.x - villa.x, K.z - villa.z) < 70,
+        JSON.stringify({ centro: [K.x, K.z], giro: +K.a.toFixed(3), salida: [+P_TEE.x.toFixed(1), +P_TEE.z.toFixed(1)], nido: [+P_NIDO.x.toFixed(1), +P_NIDO.z.toFixed(1)], troncos: K.troncos, agua: bajo, estable: k2.x === K.x && k2.z === K.z && k2.a === K.a, desnivel: +(K.rango || 0).toFixed(2), aPlaza: +Math.hypot(K.x - villa.x, K.z - villa.z).toFixed(1), combate: G.v18combate && G.v18combate.sitio ? [G.v18combate.sitio.x, G.v18combate.sitio.z] : null, arboles: OBST.map(o => [+o.x.toFixed(1), +o.z.toFixed(1), +o.r.toFixed(2)]), libres: K.troncos < 0 ? (() => { const t0 = performance.now(), l = explorar(70, 3); return { n: l.length, ms: Math.round(performance.now() - t0), mejores: l.slice(0, 30) }; })() : null }));
+      S.pos.x = P_ENTRADA.x; S.pos.z = P_ENTRADA.z; S.pos.y = H(S.pos.x, S.pos.z);
+      correr(0.05);
+      check('Zona de activación, semilla gigante y nido se ven al llegar; «Jugar al minigolf» en Acción', salida.visible && semilla.visible && nido.visible && troncos.visible && troncos.count >= 8 &&
+        it.visible() === (libre() && !otroActivo()) && it.label() === TXT.label && Math.hypot(it.x - P_TEE.x, it.z - P_TEE.z) < 0.01, JSON.stringify({ troncos: troncos.count, libre: libre(), otro: otroActivo(), dialogo: !!(G.dialogo && G.dialogo.open && G.dialogo.open()), tarjeta: !!G.ui.cardOpen, ocupado: !!(G.ui.busy && G.ui.busy()), fade: !!document.getElementById('c1-fade'), capas: ['end', 'comic', 'creator'].filter(i => document.getElementById(i) && !document.getElementById(i).hidden) }));
+      const forzar = !libre() || otroActivo(); // la prueba puede correr con un diálogo del capítulo abierto: entonces se fuerza (y se dice)
+      check('No se abre durante la apertura del capítulo (ni con otra actividad V18 en marcha)', (() => { const fd = document.createElement('div'); fd.id = 'c1-fade'; document.body.appendChild(fd); const r = !it.visible() && iniciar({}) === false; fd.remove(); return r && A.fase === 'nada'; })());
+      // 1. Empezar
+      check('Empezar: hoyo 1 par 3, 0 golpes, semilla en la salida, HUD y controles del hoyo', iniciar({ forzar }) && A.fase === 'apuntar' && A.golpes === 0 && toasts.includes(TXT.empieza) &&
+        G.interaccion.modo === modo && hud && !hud.el.hidden && document.body.classList.contains('v18-golf-on') && Math.hypot(B.x - P_TEE.x, B.z - P_TEE.z) < 0.01, forzar ? 'forzado (había un diálogo o tarjeta abiertos)' : '');
+      const ev = tecla('keydown', 'w'); const tieneW = !!(G.input && G.input.keys && G.input.keys.has('w')); tecla('keyup', 'w');
+      const sx = S.pos.x; correr(0.3);
+      check('Mientras se juega, Vittata no camina: las teclas de mover no llegan al juego y se queda tras la semilla', !tieneW && ev.defaultPrevented && Math.abs(S.pos.x - sx) < 0.05 &&
+        Math.hypot(S.pos.x - (B.x - dir().x * 1.3), S.pos.z - (B.z - dir().z * 1.3)) < 0.05);
+      const d0 = dir(), haciaNido = Math.atan2(P_NIDO.z - B.z, P_NIDO.x - B.x);
+      check('Al empezar apunta hacia el nido (la cámara de siempre mira por ahí)', Math.abs(Math.atan2(d0.z, d0.x) - haciaNido) < 0.01);
+      const y0 = G.camara.yaw; A.giro = 1; correr(0.5); A.giro = 0;
+      check('← → giran la puntería (y la cámara)', Math.abs(G.camara.yaw - y0 - GIRO * 0.5) < 0.05, (G.camara.yaw - y0).toFixed(3));
+      // 2. Apuntar, fuerza y golpe
+      colocar(TEE.u, TEE.v); apuntaLocal(TEE.u + 4, -1.2);
+      empezarCarga(); correr(PERIODO * 0.5); const c1 = A.carga; let cMax = c1;
+      for (let t = 0; t < PERIODO * 1.1; t += 1 / 60) { paso(1 / 60); cMax = Math.max(cMax, A.carga); }
+      const c2 = A.carga;
+      check('Mantener carga la fuerza, que sube y baja (fácil de medir)', c1 > 0.4 && c1 < 0.6 && cMax > 0.95 && c2 < cMax - 0.3 && A.cargando, c1.toFixed(2) + ' → ' + cMax.toFixed(2) + ' → ' + c2.toFixed(2));
+      A.cargando = false; A.carga = 0;
+      const ini = enLocal(); tirar(0.35); const enRueda = A.fase === 'rueda'; hastaQuieta();
+      const fin = enLocal();
+      check('Golpear mueve la semilla hacia donde apuntas y se para sola (1 golpe)', enRueda && A.fase === 'apuntar' && A.golpes === 1 && fin.u - ini.u > 2 && !B.mov, JSON.stringify({ du: +(fin.u - ini.u).toFixed(2), dv: +(fin.v - ini.v).toFixed(2) }));
+      // 3. Choques
+      colocar(-5, 0); apuntaLocal(-5, 5); const reb0 = A.rebotes; let vmax = 0, volvio = false;
+      tirar(0.7); for (let t = 0; t < 20 && A.fase === 'rueda'; t += 1 / 60) { paso(1 / 60); const q = enLocal(); vmax = Math.max(vmax, q.v); if (q.v < vmax - 0.5) volvio = true; }
+      check('Rebota en el borde y no lo atraviesa', A.rebotes > reb0 && volvio && vmax < HW - TRONCO - R + 0.02 && A.fase === 'apuntar', JSON.stringify({ vmax: +vmax.toFixed(2), rebotes: A.rebotes - reb0 }));
+      colocar(-5, -2); apuntaLocal(5, -2); let umax = -99;
+      tirar(1); for (let t = 0; t < 20 && A.fase === 'rueda'; t += 1 / 60) { paso(1 / 60); umax = Math.max(umax, enLocal().u); }
+      check('A toda fuerza contra un tronco tampoco lo atraviesa: rebota', umax < TRONCOS[0].u - TRONCO - R + 0.02 && enLocal().u < umax - 0.5, JSON.stringify({ umax: +umax.toFixed(2), tronco: TRONCOS[0].u }));
+      const g0 = A.golpes;
+      check('El contador suma un golpe por tiro', g0 === 3 && hud.q('golpes').textContent === golpesTxt(3), hud.q('golpes').textContent);
+      // 4. Fuera del área: vuelve a su sitio con 1 golpe más
+      colocar(0, 1.5); const ult = { x: B.x, z: B.z }; apuntaLocal(0, 9); tirar(0.4);
+      { const p = aMundo(K, 0, HW + 1.5); B.x = p.x; B.z = p.z; } correr(0.1);
+      check('Si sale del área vuelve a su último sitio y suma 1 golpe', A.fase === 'apuntar' && A.golpes === g0 + 2 && Math.hypot(B.x - ult.x, B.z - ult.z) < 0.01 && toasts.includes(TXT.fuera), A.golpes);
+      // 5. Independiente de los FPS
+      const mismo = dt => { colocar(TEE.u, 0.5); apuntaLocal(TEE.u + 5, 2.0); tirar(0.5); hastaQuieta(30, dt); return enLocal(); };
+      const a30 = mismo(1 / 30), a144 = mismo(1 / 144);
+      check('El mismo golpe acaba en el mismo sitio a 30 y a 144 FPS', Math.hypot(a30.u - a144.u, a30.v - a144.v) < 0.1, JSON.stringify({ a30: [+a30.u.toFixed(2), +a30.v.toFixed(2)], a144: [+a144.u.toFixed(2), +a144.v.toFixed(2)] }));
+      // 6. Grito del Yunque: con la semilla rodando, una vez por hoyo
+      reiniciar();
+      check('Reiniciar: 0 golpes, semilla en la salida y el Grito disponible', A.golpes === 0 && A.fase === 'apuntar' && !A.grito && Math.hypot(B.x - P_TEE.x, B.z - P_TEE.z) < 0.01);
+      check('Con la semilla quieta el Grito no sale', grito().motivo === 'quieta' && !A.grito);
+      colocar(TEE.u, 0); apuntaLocal(TEE.u + 5, 0); tirar(0.15); correr(0.4);
+      const sp0 = Math.hypot(B.vx, B.vz), poderes = []; const oy = e => { if (!oy.mudo) poderes.push(e); }; G.on('v18poder', oy);
+      apuntaLocal(enLocal().u + 4, enLocal().v + 1.2); const dG = dir(); seguir(0, true);
+      const rg = grito(); correr(0.3); oy.mudo = true;
+      const sp1 = Math.hypot(B.vx, B.vz), al = (B.vx * dG.x + B.vz * dG.z) / (sp1 || 1);
+      check('Grito del Yunque (el poder de Vittata): empuja la semilla hacia donde apuntas', rg.ok && A.grito && sp1 > sp0 + 2 && al > 0.95 && poderes.some(e => e.id === 'grito_yunque'),
+        JSON.stringify({ antes: +sp0.toFixed(2), despues: +sp1.toFixed(2), alineado: +al.toFixed(3) }));
+      const rg2 = grito();
+      check('Solo un Grito por hoyo', !rg2.ok && rg2.motivo === 'usado' && hud.q('bgrito').textContent === TXT.usado);
+      hastaQuieta();
+      // 7. Completar el hoyo: con un plan sencillo entra en pocos golpes (el nido registra la llegada)
+      reiniciar(); toasts.length = 0;
+      const RUTA = [{ u: -1.2, v: 2.0 }, { u: 0.8, v: -2.0 }, { u: 3.8, v: -2.0 }, NIDO];
+      let iw = 0, n = 0;
+      while (A.fase === 'apuntar' && n < 12) {
+        const q = enLocal();
+        while (iw < RUTA.length - 1 && (Math.hypot(q.u - RUTA[iw].u, q.v - RUTA[iw].v) < 1.0 || q.u > RUTA[iw].u + 0.5)) iw++;
+        const w = RUTA[iw], d = Math.hypot(w.u - q.u, w.v - q.v);
+        apuntaLocal(w.u, w.v); seguir(0, true); tirar(fuerzaPara(iw === RUTA.length - 1 ? d + 0.4 : d)); hastaQuieta(); n++;
+      }
+      check('El hoyo se completa: la semilla entra en el nido (en pocos golpes)', A.fase === 'nido' && A.resultado && A.resultado.golpes === A.golpes && A.golpes <= 7 && toasts.includes(nidoTxt(A.golpes)),
+        JSON.stringify({ fase: A.fase, golpes: A.golpes, ruta: iw }));
+      const res1 = A.resultado;
+      check('Victoria: golpes, medalla y récord en pantalla; se guarda en el progreso local', res1 && res1.nuevo && record() && record().mejor === res1.golpes && record().medalla === medalla(res1.golpes) &&
+        !hud.q('fin').hidden && hud.q('fin2').textContent === TXT[res1.medalla] && hud.q('fin3').textContent === TXT.nuevo && (V.recargar(), record() && record().mejor === res1.golpes),
+        JSON.stringify({ r: record() }));
+      check('Medallas: oro = par o mejor, plata = par + 1, bronce = completar', medalla(2) === 'oro' && medalla(PAR) === 'oro' && medalla(PAR + 1) === 'plata' && medalla(PAR + 3) === 'bronce' && RANGO_M.oro > RANGO_M.plata);
+      // Un resultado peor no pisa el récord; uno mejor, sí
+      reiniciar(); colocar(NIDO.u - 3, 0.3); A.golpes = res1.golpes + 2; apuntaLocal(NIDO.u, NIDO.v); tirar(fuerzaPara(3.3)); hastaQuieta();
+      const peor = A.fase === 'nido' && !A.resultado.nuevo && record().mejor === res1.golpes && hud.q('fin3').textContent === recordTxt(res1.golpes);
+      reiniciar(); colocar(NIDO.u - 3, -0.3); apuntaLocal(NIDO.u, NIDO.v); tirar(fuerzaPara(3.3)); hastaQuieta();
+      check('Un resultado peor no pisa el récord; uno mejor sí (y su medalla)', peor && A.fase === 'nido' && A.resultado.nuevo && record().mejor === 1 && record().medalla === 'oro', JSON.stringify(record()));
+      // Rápido sobre el nido no entra (tiene que llegar despacio)
+      reiniciar(); colocar(NIDO.u - 4, 0); apuntaLocal(NIDO.u, NIDO.v); tirar(1); let pasa = false;
+      for (let t = 0; t < 0.6 && A.fase === 'rueda'; t += 1 / 60) { paso(1 / 60); if (enLocal().u > NIDO.u + NIDO_R) pasa = true; }
+      check('A toda velocidad la semilla pasa por encima del nido (hay que medir la fuerza)', pasa);
+      hastaQuieta();
+      // 8. Salir devuelve el control
+      salir();
+      tecla('keydown', 'a'); const conA = !!(G.input && G.input.keys && G.input.keys.has('a')); tecla('keyup', 'a');
+      check('Salir devuelve el control: Acción, teclas, botones del juego; el HUD se va y la semilla vuelve a la salida', A.fase === 'nada' && G.interaccion.modo !== modo && conA && hud.el.hidden &&
+        !document.body.classList.contains('v18-golf-on') && Math.hypot(B.x - P_TEE.x, B.z - P_TEE.z) < 0.01 && Math.hypot(S.pos.x - P_ENTRADA.x, S.pos.z - P_ENTRADA.z) < 0.01);
+      check('Opcional: no da monedas, ni tienda, ni ranking; el récord solo vive en este aparato', !('monedas' in A) && !document.querySelector('#v18-golf [data-k="ranking"]'));
+      // 9. «Comenzar de cero» borra el récord (vive en el progreso V18)
+      V.borrar(); V.recargar();
+      check('«Comenzar de cero» (borra el progreso V18) también borra el récord del minigolf', record() === null);
+    } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
+    try { if (A.fase !== 'nada') salir(); } catch (e) { /* ya fuera */ }
+    A.manual = false; A.invitado = true; puntos.visible = false;
+    G.ui.toast = toast0;
+    S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.facing = fac0; M.flying = fly0; M.vx = M.vz = 0; G.camara.yaw = yaw0;
+    try { G.camara.place(true); } catch (e) { /* cámara */ }
+    try { if (crudo == null) localStorage.removeItem(V.clave()); else localStorage.setItem(V.clave(), crudo); } catch (e) { /* */ }
+    V.recargar(); if (susp) susp(false);
+    return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
+  }
+  G.v18minigolf = { ID, PAR, iniciar, salir, reiniciar, tirar, grito, empezarCarga, soltarCarga, paso, medalla, record, estado: () => A, semilla: () => B, get sitio() { return K; }, test };
+  return G.v18minigolf;
+};
