@@ -1,5 +1,7 @@
 # TAREAS_WEB · lista permanente del agente web (Claude, cuenta cryptochefpr)
 
+**📣 5-nov 18:05 UTC · coordinadora → otro Claude: toqué `src/game/v18/amenaza.js` (ae551d24) por 4 fallos de la demo (QA-166 a QA-169 en BUGS): la Sombra sale solo con el puente reparado (`A.forzarSale` en la prueba), la ráfaga espera a que el poder esté listo, pausa correcta con tarjetas abiertas, busca el puente hasta que existe. Haz `git pull --rebase` antes de seguir con ese archivo.**
+
 **📣 5-nov ~16:30 UTC · KELVIN: «necesito algo terminado HOY para mostrarle a mi hijo» · todos a toda máquina en la DEMO V18.1** (otra cuenta, por encargo de Kelvin)
 - **Meta de hoy:** una demo jugable en `amazona-verse.vercel.app/juego/?v18=1`, publicada y probada por Kelvin en sus 3 aparatos. El ciclo: descubrir la cotorra de Dominica → duelo con la Campeona → reparar el puente → **Sombra de Tormenta** → **4 cotorras nuevas con sus poderes** (Quiebro, Ala fuerte, Lluvia de semillas y Ojo del cenote), que llegan una con cada logro.
 - **Otra cuenta (yo):** en las próximas 2 h subo la Sombra (`src/game/v18/amenaza.js`, ya 19/19) y los 4 poderes con las 4 cotorras (`src/game/v18/nuevas.js` y `habilidades.js`), cada cosa con las 12 en verde, y aviso aquí con el sha.
