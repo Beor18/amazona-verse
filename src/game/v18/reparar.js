@@ -199,7 +199,7 @@ window.AVV18Reparar = function (G) {
     const c = centro();
     if (c) { try { G.fx.recoger(c.x, c.y + 0.5, c.z, 'feathers', 26); G.fx.burst(c.x, c.y + 0.5, c.z, 'stars', 18); } catch (e) { /* sin fx */ } }
     try { G.camara.shake(0.08, 0.3); } catch (e) { /* sin cámara */ }
-    toast('¡Puente reparado! Crúzalo a pie o vuela al centro: ¡hay una corriente que te sube!', 4500);
+    toast('¡Puente reparado! Vuela al centro del puente: ¡hay una corriente que te sube!', 4500);
     return true;
   }
   let itReparar = null;

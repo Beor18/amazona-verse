@@ -29,7 +29,7 @@ La barra verde es la **energía**: se llena sola. Si te alejas mucho del círcul
 
 **e) Reparar el puente colgante.** En la cabecera del puente, del lado de Villa Raíz, pulsa Acción: «Reparar el puente: 2 maderas + 1 piedra». **Sin pelear** también se puede. Recoge las **2 maderas del puente** en la orilla, y las **piedras** y **fibras** que hay junto al puente y en el camino desde Villa Raíz. **La fibra cuenta como madera.** Mientras el puente está roto, una Maraña vigila el hueco. Si caes al río, sales nadando, sin daño.
 
-**f) La corriente del puente.** Con el puente reparado, ya se cruza a pie. Si **vuelas al centro del puente**, una corriente te sube muy alto para planear lejos.
+**f) La corriente del puente.** Con el puente reparado, **vuela al centro del puente**: por ahora a pie no se sube bien desde la orilla. Allí, una corriente te sube muy alto para planear lejos.
 
 **g) La Sombra de Tormenta.** Aparece **solo después de reparar el puente**. Es un nubarrón con ojos amarillos sobre el río, al lado del puente. Al acercarte empieza sola («¡Este cielo es mío!»). Cuando brilla, va a soplar: su ráfaga te quita 1 pluma si estás cerca. Hay que darle **3 veces**. El golpe de ala y la semilla la atraviesan: solo vale el poder (**Acción**, **G** o el botón de la pantalla).
 - **Con Vittata (Grito del Yunque):** mírala de frente, acércate y grita hacia el centro de la nube.
