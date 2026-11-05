@@ -20,13 +20,15 @@ window.AVMarana = function (G) {
   }));
   const geo = new THREE.SphereGeometry(0.45, 8, 6);
   const mat = new THREE.MeshBasicMaterial({ color: 0x8a8f86 });
-  const malla = new THREE.InstancedMesh(geo, mat, rastros.length);
+  // KIMI-070: cabecera para rastros dinámicos (la V18.1 invoca uno junto al puente roto); los 5 de siempre + 3 de margen
+  const CAP = RASTROS.length + 3;
+  const malla = new THREE.InstancedMesh(geo, mat, CAP);
   malla.name = 'marana'; malla.frustumCulled = false; malla.castShadow = false; malla.count = 0; malla.visible = false;
   G.renderer.scene.add(malla);
   // KIMI-063 · los ojos: esferas achatadas aditivas; la apertura las escala de 0 (cerrado) a su talla
   const ojoGeo = new THREE.SphereGeometry(0.12, 8, 6);
   const ojoMat = new THREE.MeshBasicMaterial({ color: 0xb9f57e, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
-  const ojos = new THREE.InstancedMesh(ojoGeo, ojoMat, rastros.length * 2);
+  const ojos = new THREE.InstancedMesh(ojoGeo, ojoMat, CAP * 2);
   ojos.name = 'marana:ojos'; ojos.frustumCulled = false; ojos.castShadow = false; ojos.count = 0; ojos.visible = false;
   G.renderer.scene.add(ojos);
   const dummy = new THREE.Object3D();
@@ -46,7 +48,7 @@ window.AVMarana = function (G) {
   function pintar() {
     let n = 0;
     for (const r of rastros) {
-      if (r.limpio) continue;
+      if (r.limpio || n >= CAP) continue;
       r.y = H(r.x, r.z) + 0.6;
       dummy.position.set(r.x, r.y, r.z); dummy.rotation.set(0, 0, 0); dummy.scale.set(1.4, 0.55, 1.1); dummy.updateMatrix();
       malla.setMatrixAt(n++, dummy.matrix);
@@ -61,7 +63,7 @@ window.AVMarana = function (G) {
     const reducido = !!(G.renderer && G.renderer.REDUCED);
     let n = 0;
     for (const r of rastros) {
-      if (r.limpio) continue;
+      if (r.limpio || n >= CAP) continue;
       r.y = H(r.x, r.z) + 0.6;
       const d = Math.hypot(S.pos.x - r.x, S.pos.z - r.z);
       // enredaderas: balanceo lento + respiración; con «Reducir movimiento» queda casi quieto
@@ -82,7 +84,7 @@ window.AVMarana = function (G) {
     // ojos: se abren a <26 m y miran al jugador; la voz suena una vez por despertar
     let k = 0;
     for (const r of rastros) {
-      if (r.limpio) continue;
+      if (r.limpio || k + 2 > CAP * 2) continue;
       const d = Math.hypot(S.pos.x - r.x, S.pos.z - r.z);
       const objetivo = d < 26 ? 1 : 0;
       r.apertura += (objetivo - r.apertura) * Math.min(1, dt * 2.5);
@@ -110,7 +112,7 @@ window.AVMarana = function (G) {
     ojos.count = k; ojos.instanceMatrix.needsUpdate = true; ojos.visible = k > 0;
   }
   function limpiar(r) {
-    if (!r || r.limpio) return false;
+    if (!r || r.limpio || r.inliminable) return false; // inliminable: misterio de la V18.1 (KIMI-070), la bandada no lo toca
     r.limpio = true;
     const linea = 'Limpiaste un rastro de la Maraña. Es un cuento de la bandada, no un dato de la isla.';
     notas.push(linea);
@@ -137,8 +139,34 @@ window.AVMarana = function (G) {
       const r = rastros[i];
       const d = Math.hypot(S.pos.x - r.x, S.pos.z - r.z);
       if (!r.visto && d < 18) { r.visto = true; if (G.ui) G.ui.toast(en() ? 'A gray trail hides in the leaves. It is a flock story.' : 'Hay un rastro gris entre las hojas. Es la Maraña, un cuento.', 2400); }
-      if (!r.limpio && d < 4) limpiar(r);
+      if (!r.limpio && !r.inliminable && d < 4) limpiar(r);
     }
+  }
+  // KIMI-070 · rastros dinámicos invocados desde fuera (la V18.1 pone uno junto al puente roto como misterio).
+  // inliminable: la bandada no lo limpia ni entra en el diario; visto: sin aviso de «descubrimiento».
+  function aparecer(cfg) {
+    if (!cfg || !cfg.id) return null;
+    const previo = rastros.find(x => x.id === cfg.id);
+    if (previo) {
+      previo.limpio = false;
+      if (cfg.x != null) previo.x = cfg.x;
+      if (cfg.z != null) previo.z = cfg.z;
+      pintar();
+      return previo;
+    }
+    if (rastros.filter(x => !x.limpio).length >= CAP) return null; // sin cabecera (con CAP = 5+3 no ocurre)
+    const r = { id: cfg.id, x: cfg.x, z: cfg.z, y: 0, limpio: false, visto: cfg.visto !== false,
+      inliminable: !!cfg.inliminable, apertura: 0, despierto: false, vozEn: -1e9, brillo: 0, fase: (rastros.length * 2.39) % 6.283 };
+    rastros.push(r); pintar();
+    return r;
+  }
+  // solo los dinámicos (inliminables) se pueden retirar: los 5 de siempre viven hasta que la bandada los limpia
+  function retirar(id) {
+    const i = rastros.findIndex(x => x.id === id && x.inliminable);
+    if (i < 0) return false;
+    rastros.splice(i, 1);
+    pintar();
+    return true;
   }
   G.on('update', dt => paso(dt));
   function test() {
@@ -188,6 +216,15 @@ window.AVMarana = function (G) {
       S.pos.x = r2.x + 6; S.pos.z = r2.z; G.quiet = true; paso(0.1);
       const quietOk = malla.visible === false && ojos.visible === false;
       ok('Los ojos se cierran lejos o en silencio', lejosOk && quietOk);
+      // KIMI-070 · rastros dinámicos (la V18.1 invoca uno junto al puente roto): aparecen, no se limpian y se retiran
+      G.quiet = false; M.flying = true;
+      const rd = aparecer({ id: 'test_v18', x: 0, z: -40, inliminable: true, visto: true });
+      ok('Un rastro dinámico aparece y entra en la lista', !!rd && rastros.indexOf(rd) >= 0 && rd.inliminable === true && rd.visto === true, rd && rd.id);
+      S.pos.x = rd.x; S.pos.z = rd.z; S.pos.y = H(rd.x, rd.z) + 2;
+      for (let i = 0; i < 10; i++) paso(0.1);
+      ok('El inliminable no se limpia pasando por encima de la bandada', !rd.limpio && limpiar(rd) === false && notas.every(n => !/puente/i.test(n)));
+      ok('Se dibuja junto a los demás (misma malla instanciada)', malla.visible === true && malla.count >= 1);
+      ok('Retirar lo quita del todo', retirar('test_v18') === true && rastros.indexOf(rd) < 0 && retirar('loma') === false);
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     G.quiet = q; M.flying = fly; S.pos.x = px; S.pos.z = pz;
     try { if (crudo == null) localStorage.removeItem(CLAVE); else localStorage.setItem(CLAVE, crudo); } catch (e) { /* */ }
@@ -200,6 +237,6 @@ window.AVMarana = function (G) {
     pintar();
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
-  G.marana = { test, rastros, limpiar, notas, pintar, paso, malla, ojos };
+  G.marana = { test, rastros, limpiar, notas, pintar, paso, malla, ojos, aparecer, retirar };
   return G.marana;
 };

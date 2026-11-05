@@ -1,0 +1,77 @@
+{
+ "etiqueta": "r6",
+ "pantalla": "pc 1600x900@1 cpuX1",
+ "calidad": "medio",
+ "head": "desconocido",
+ "medicion": {
+  "v18": true,
+  "asentado": true,
+  "misterio": {
+   "passed": 7,
+   "total": 7,
+   "fallos": []
+  },
+  "marana": {
+   "passed": 13,
+   "total": 13,
+   "fallos": []
+  },
+  "rastro": {
+   "x": 166.92,
+   "z": 141.25,
+   "inliminable": true
+  },
+  "cerca": {
+   "calls": 156,
+   "tris": 674267
+  },
+  "ojos": {
+   "visibles": true,
+   "n": 2,
+   "apertura": 0.95
+  },
+  "px": {
+   "ojos": [
+    [
+     801,
+     489
+    ],
+    [
+     841,
+     473
+    ]
+   ],
+   "vittata": [
+    800,
+    522
+   ]
+  },
+  "fpsCerca": {
+   "fps": 51.8,
+   "peorMs": 42
+  },
+  "fpsSin": {
+   "fps": 70,
+   "peorMs": 30
+  },
+  "statsSin": {
+   "calls": 154,
+   "tris": 672864
+  },
+  "fpsCon": {
+   "fps": 74.5,
+   "peorMs": 42
+  },
+  "statsCon": {
+   "calls": 154,
+   "tris": 672864
+  },
+  "ojosCon": {
+   "visibles": true,
+   "n": 2
+  },
+  "retirada": true,
+  "heap": 765
+ },
+ "erroresConsola": []
+}
