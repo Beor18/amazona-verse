@@ -20,7 +20,7 @@
      fundidoEn(x, y, z) hace la misma cuenta en JS (floraTest). Con la cámara a < 1,8 m de una copa también se funde (BM43).
    Datos del pack: mundo.flora { kit: { base, b64 }, viento: { dir: [x, z], fuerza }, distancias: { arbol, impostor, planta, roca } }.
    API: G.vegetacion.listo (promesa), stats(), instancias, especies, atlas (render target de los impostores; se repinta si se
-   pierde el contexto WebGL). */
+   pierde el contexto WebGL), despejar(x0, z0, x1, z1, dentro) (solo V18.1: quita las instancias de una zona en marcha). */
 AVE.module('vegetacion', function (G) {
   'use strict';
   const T = G.terreno, MAPA = T.mapa, R = G.renderer, scene = R.scene, S = G.S;
@@ -991,6 +991,50 @@ AVE.module('vegetacion', function (G) {
     }
   }
 
+  // ---------- Despejar (V18.1, QA-174/QA-172): quitar en marcha instancias de una zona ----------
+  // despejar(x0, z0, x1, z1, dentro) quita las instancias con el pie dentro de la caja y dentro(x, z, modelo, info, escala) cierto:
+  // salen de sus celdas (ni malla, ni impostor, ni sombra, ni collider), su mancha se apaga, su posición pasa a un sitio
+  // lejano con escala 0 (los que leen instancias —cámara, minimapa, juice— ya no la ven) y los sólidos de flora se rehacen.
+  // Solo lo llama la demo V18.1 (?v18=1); sin llamarlo no cambia nada. Devuelve cuántas quitó.
+  const LEJOS_DESPEJE = 1e6;
+  function despejar(x0, z0, x1, z1, dentro) {
+    if (!activo) return 0;
+    const c0x = Math.max(0, Math.floor((Math.min(x0, x1) - X0) / CELL)), c1x = Math.min(NCX - 1, Math.floor((Math.max(x0, x1) - X0) / CELL));
+    const c0z = Math.max(0, Math.floor((Math.min(z0, z1) - Z0) / CELL)), c1z = Math.min(NCZ - 1, Math.floor((Math.max(z0, z1) - Z0) / CELL));
+    const quitados = new Map();
+    let n = 0;
+    for (const m in porModelo) {
+      const P = porModelo[m];
+      for (let iz = c0z; iz <= c1z; iz++) for (let ix = c0x; ix <= c1x; ix++) {
+        const k = ix + iz * NCX, l = P.celdas.get(k); if (!l) continue;
+        const queda = l.filter(i => {
+          const x = P.pos[i * 4], z = P.pos[i * 4 + 2], s = P.pos[i * 4 + 3];
+          if (x < Math.min(x0, x1) || x > Math.max(x0, x1) || z < Math.min(z0, z1) || z > Math.max(z0, z1) || !dentro(x, z, m, info[m], s)) return true;
+          P.pos[i * 4] = P.pos[i * 4 + 2] = LEJOS_DESPEJE; P.pos[i * 4 + 3] = 0;
+          const o = i * 16; for (let j = 0; j < 16; j++) P.mat[o + j] = 0;
+          P.mat[o + 12] = LEJOS_DESPEJE; P.mat[o + 13] = -1000; P.mat[o + 14] = LEJOS_DESPEJE; P.mat[o + 15] = 1;
+          (quitados.get(m) || quitados.set(m, new Set()).get(m)).add(i); n++;
+          return false;
+        });
+        if (queda.length !== l.length) { if (queda.length) P.celdas.set(k, queda); else P.celdas.delete(k); }
+      }
+    }
+    if (!n) return 0;
+    // manchas: mismo orden que crearManchas (modelos de ARBOLES con info, instancia a instancia)
+    if (manchas) {
+      let off = 0; const cero = new THREE.Matrix4().makeScale(0, 0, 0);
+      for (const m of ARBOLES) {
+        const P = porModelo[m]; if (!P || !info[m]) continue;
+        const q = quitados.get(m); if (q) for (const i of q) if (off + i < manchas.count) manchas.setMatrixAt(off + i, cero);
+        off += P.n;
+      }
+      manchas.instanceMatrix.needsUpdate = true;
+    }
+    actualizar(true); actualizarColliders(true);
+    try { if (G.solidos && G.solidos.rehacerFlora) G.solidos.rehacerFlora(); } catch (e) { /* sin sólidos */ }
+    return n;
+  }
+
   // ---------- Arranque: espera la malla del terreno (alturas exactas) y carga el kit ----------
   const necesarios = new Set(['pasto', 'hojarasca']);
   for (const esp of FD.especies || []) if (MODELOS[esp]) for (const k of MODELOS[esp].kit) necesarios.add(k);
@@ -1274,5 +1318,5 @@ AVE.module('vegetacion', function (G) {
     }
     return result();
   }
-  return { listo, stats, test, libre, get instancias() { return porModelo; }, get atlas() { return IMP.rt; }, info, rafaga: RAFAGA, fundido: FUNDIDO, fundir: actualizarFundido, fundidoEn, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); } };
+  return { listo, stats, test, libre, get instancias() { return porModelo; }, get atlas() { return IMP.rt; }, info, rafaga: RAFAGA, fundido: FUNDIDO, fundir: actualizarFundido, fundidoEn, actualizar: () => { actualizar(true); actualizarPasto(true); actualizarColliders(true); }, despejar };
 });

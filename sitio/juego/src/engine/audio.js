@@ -21,8 +21,10 @@ AVE.module('audio', function (G) {
   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && typeof v === 'object') Object.assign(vol, v); } catch (e) { /* sin almacenamiento */ }
   function apply() { if (!ctx) return; master.gain.value = vol.muted ? 0 : vol.master; sfxBus.gain.value = vol.sfx; voiceBus.gain.value = vol.voice; }
   // El navegador solo deja sonar después de un gesto del jugador
+  function gestoConfiable() { try { return !navigator.userActivation || navigator.userActivation.hasBeenActive; } catch (e) { return true; } }
   function ensure() {
-    if (ctx) { if (ctx.state === 'suspended') ctx.resume().catch(() => {}); return ctx; }
+    if (ctx) { if (ctx.state === 'suspended' && gestoConfiable()) ctx.resume().catch(() => {}); return ctx; }
+    if (!gestoConfiable()) return null; // sin activación de usuario: no crear (el navegador avisaría y quedaría suspendido)
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
     try { ctx = new AC(); } catch (e) { return null; }
     master = ctx.createGain(); master.connect(ctx.destination);

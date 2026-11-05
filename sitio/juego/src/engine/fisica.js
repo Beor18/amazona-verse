@@ -280,6 +280,8 @@ AVE.module('fisica', function (G) {
     ATS.t = 0; ATS.salida = null; MOVE.atasco = 0; MOVE.desatascos = (MOVE.desatascos || 0) + 1;
     G.emit('desatasco', { x: o.x, y: o.y, z: o.z, como: o.como });
   }
+  // Cancela la salida en curso (para quien recoloca a Vittata a mano, como la baranda del puente de la V18.1); sin llamarla nada cambia
+  function soltarAtasco() { ATS.t = 0; ATS.salida = null; MOVE.atasco = 0; }
   // Empuja hacia o a T.salirV; true al llegar
   function empujar(o, dt) {
     const dx = o.x - S.pos.x, dy = o.y - S.pos.y, dz = o.z - S.pos.z, d = Math.hypot(dx, dy, dz), paso = Math.min(d, T.salirV * dt);
@@ -624,7 +626,7 @@ AVE.module('fisica', function (G) {
       }
     }
   }
-  return { MOVE, TUNING: T, colliders, alturas, perchas, addPercha, removePercha, suelo, pushOut, removeColliders,
+  return { MOVE, TUNING: T, colliders, alturas, perchas, addPercha, removePercha, suelo, pushOut, removeColliders, soltarAtasco,
     tryJump, releaseJump, startFlying, land, toggleFly, endFlight, tryDash, step, slopeAt,
     techoVuelo: (x, z) => techoVuelo(x, z, suelo(x, z, S.pos.y)),
     SPEED, RUN_SPEED, DASH_SPEED, FLY_SPEED, FLY_CEIL, SWIM_SPEED, SWIM_DEPTH };

@@ -28,7 +28,7 @@ window.AVV18Combate = function (G) {
   const TXT = {
     retar: 'Retar a la Campeona de la Explanada', tu: 'Tú', rival: 'Campeona de la Explanada',
     ala: 'Ala', semilla: 'Semilla', poder: 'Poder', otra: 'Otra vez', salir: 'Salir', energia: 'Energía',
-    aviso: 'Ala: Acción · Semilla: Impulso · Poder: mantén Impulso o G', avisoTactil: 'Toca Ala, Semilla o Poder',
+    aviso: 'Ala: E · Semilla: F · Poder: G', avisoTactil: 'Ala: Acción · Semilla: Impulso · Poder: mantén Impulso',
     ya: '¡Ya!', gana: '¡Ganaste 2 maderas y 1 piedra! Con eso se repara el puente colgante: sigue la bandera verde del mapa.',
     ganaGuarda: '¡Ganaste 2 maderas y 1 piedra! El puente ya está reparado: guárdalas para lo que venga.', ganaOtra: '¡Ganaste otra vez! Los materiales ya te los llevaste; busca más por el bosque.',
     pierde: '¡Uy, te mareaste! Sacude las plumas y prueba otra vez.', lejos: 'Te alejaste: el duelo queda para luego.',
@@ -80,17 +80,20 @@ window.AVV18Combate = function (G) {
     return mx - mn;
   }
   // Rejilla cada 3 m en ±18 m del punto preferido (al este de la plaza, como pidió Kelvin): plano (≤ 1,6 m), seco, sin
-  // edificios; gana uno sin troncos si lo hay y, si no, el más plano y cercano (como antes). En el mapa actual no hay ningún
-  // hueco seco y plano sin árboles a menos de 90 m de la plaza (medido): los 3 candidatos tienen 27–30 troncos y elegir
-  // «el de menos» no cambia nada a la vista. Despejar el círculo es decisión de Kelvin (ver BUGS QA-174).
+  // edificios; gana el más plano y cercano. En el mapa no hay ningún hueco seco y plano sin árboles a menos de 90 m de la
+  // plaza (medido), así que la vegetación ya no cuenta para elegir: el círculo se despeja (despejarSitio, abajo).
   // Solo lo grande y fijo del mapa (edificios, estructuras, taller): los objetos sueltos, bancos, estacas y vecinos entran
-  // con el streaming o se mueven, y hacían que el sitio dependiera del momento de la carga
+  // con el streaming o se mueven, y hacían que el sitio dependiera del momento de la carga. Las estructuras propias del mapa
+  // (mapa.estructuras: el refugio) cuentan desde el principio aunque su collider llegue después: (176,175) y (179,172) salían
+  // en las cargas en que el refugio aún no tenía collider.
   const FIJOS = new Set(['edificio', 'estructura', 'taller']);
   function candidatos() {
     const pl = G.terreno.places || {}, v = pl.villa || pl.plaza || { x: S.pos.x, z: S.pos.z };
     const pref = pl.villa ? { x: v.x + 26, z: v.z + 5 } : { x: v.x + 10, z: v.z }, A = 18, R = A + ARENA_R + 6;
-    const lista = flora(pref.x, pref.z, A + 14 + LIBRE_R + 4);
-    const cols = (F.colliders || []).filter(c => c && FIJOS.has(c.kind) && c.x != null && c.z != null && Math.abs(c.x - pref.x) < R + (c.r || 1) && Math.abs(c.z - pref.z) < R + (c.r || 1));
+    const lista = [];
+    const cerca = c => c && c.x != null && c.z != null && Math.abs(c.x - pref.x) < R + (c.r || 1) && Math.abs(c.z - pref.z) < R + (c.r || 1);
+    const cols = (F.colliders || []).filter(c => c && FIJOS.has(c.kind) && cerca(c))
+      .concat(((G.terreno.mapa && G.terreno.mapa.estructuras) || []).filter(e => e && e.pos && !e.mundo).map(e => ({ x: e.pos[0], z: e.pos[2], r: 5 })).filter(cerca));
     const out = [];
     for (let dx = -A; dx <= A; dx += 3) for (let dz = -A; dz <= A; dz += 3) {
       const x = pref.x + dx, z = pref.z + dz, d = plano(x, z, cols); if (!isFinite(d) || d > 1.6) continue;
@@ -101,16 +104,57 @@ window.AVV18Combate = function (G) {
   }
   function buscarSitio() {
     const { pref, out } = candidatos(); let mejor = null;
-    for (const c of out) if (!mejor || (c.peso === 0) > (mejor.peso === 0) || ((c.peso === 0) === (mejor.peso === 0) && c.p < mejor.p)) mejor = c;
+    for (const c of out) if (!mejor || c.p < mejor.p) mejor = c;
     if (!mejor) mejor = { x: pref.x, z: pref.z };
     return { x: mejor.x, z: mejor.z, y: G.terreno.height(mejor.x, mejor.z) };
   }
   const sitio = buscarSitio();
+  // QA-174: el círculo despejado (solo existe con la V18.1). Se quitan del bosque, en marcha, las instancias de flora con el pie
+  // en el círculo (+1 m), los árboles cuya copa entra más de 2 m en él (al llegar volando se aterrizaba en sus ramas a 10-12 m)
+  // y los que tapan la cámara del duelo (pasillo al oeste del punto de salida, x − 4 … x − 18). El resto del bosque no cambia.
+  const despeje = { clave: '', n: 0 };
+  const enDespeje = (x, z, inf, sc) => {
+    const copa = inf && inf.ancho ? 0.4 * inf.ancho * (sc || 1) : 0, d = Math.hypot(x - sitio.x, z - sitio.z);
+    return d < ARENA_R + 1 || d - copa < ARENA_R - 2 || (x < sitio.x - 4 && x > sitio.x - 18 && Math.abs(z - sitio.z) - copa < 2.5);
+  };
+  function despejarSitio() {
+    const V = G.vegetacion, k = sitio.x + ',' + sitio.z;
+    if (!V || !V.despejar || !V.instancias || despeje.clave === k) return 0;
+    const n = V.despejar(sitio.x - ARENA_R - 22, sitio.z - ARENA_R - 8, sitio.x + ARENA_R + 8, sitio.z + ARENA_R + 8, (x, z, m, inf, sc) => enDespeje(x, z, inf, sc));
+    if (V.instancias && Object.keys(V.instancias).length) { despeje.clave = k; despeje.n += n; }
+    return n;
+  }
 
   // ---------- Escena: círculo de la explanada, semillas ----------
-  const marca = new THREE.Mesh(new THREE.RingGeometry(ARENA_R - 0.25, ARENA_R, 64),
-    new THREE.MeshBasicMaterial({ color: '#ffd27a', transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide }));
+  // Anillo pintado en el suelo (textura canvas en runtime, 0 assets): banda de oro de borde suave con filete toon
+  // oscuro y puntadas cremas, más un tinte cálido tenue dentro de la arena.
+  const texArena = (() => {
+    const S = 512, c = S / 2, cv = document.createElement('canvas'); cv.width = cv.height = S;
+    const g = cv.getContext('2d');
+    const rOut = c - 4, rIn = rOut * (ARENA_R - 0.7) / (ARENA_R + 0.12), rMed = (rIn + rOut) / 2;
+    const tinte = g.createRadialGradient(c, c, 0, c, c, rIn);
+    tinte.addColorStop(0, 'rgba(255,214,140,0.07)'); tinte.addColorStop(0.85, 'rgba(255,214,140,0.05)'); tinte.addColorStop(1, 'rgba(255,214,140,0)');
+    g.fillStyle = tinte; g.fillRect(0, 0, S, S);
+    g.strokeStyle = 'rgba(255,210,122,0.35)'; g.lineWidth = rOut - rIn + 10;
+    g.beginPath(); g.arc(c, c, rMed, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(255,210,122,0.95)'; g.lineWidth = rOut - rIn - 6;
+    g.beginPath(); g.arc(c, c, rMed, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(138,90,32,0.85)'; g.lineWidth = 3;
+    g.beginPath(); g.arc(c, c, rOut - 4, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.arc(c, c, rIn + 4, 0, Math.PI * 2); g.stroke();
+    g.strokeStyle = 'rgba(255,243,214,0.9)'; g.lineWidth = 4; g.lineCap = 'round';
+    for (let i = 0; i < 48; i++) {
+      const a = i / 48 * Math.PI * 2;
+      g.beginPath(); g.arc(c, c, rMed, a + 0.02, a + Math.PI * 2 / 48 * 0.45); g.stroke();
+    }
+    const t = new THREE.CanvasTexture(cv);
+    t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; // decal: los mipas lavarían el alpha a rasante
+    return t;
+  })();
+  const marca = new THREE.Mesh(new THREE.RingGeometry(ARENA_R - 0.7, ARENA_R + 0.12, 96),
+    new THREE.MeshBasicMaterial({ map: texArena, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
   marca.rotation.x = -Math.PI / 2; marca.position.set(sitio.x, sitio.y + 0.06, sitio.z); marca.renderOrder = 3; marca.name = 'v18_arena';
+  marca.frustumCulled = false; // decal autogestionado: fuera del cullPequenos
   scene.add(marca);
   const geoSemilla = new THREE.SphereGeometry(0.16, 10, 8), matSemilla = new THREE.MeshStandardMaterial({ color: '#8a5a2b', roughness: 0.8, emissive: '#3a2410' });
 
@@ -276,7 +320,11 @@ window.AVV18Combate = function (G) {
   function quitarBalas() { for (const b of C.balas) scene.remove(b.m); C.balas.length = 0; quitarOndas(); if (C.j) quitarEscudo(C.j, true); if (C.r) quitarEscudo(C.r, true); }
 
   // ---------- Entrada del jugador ----------
-  const modo = { activo: () => C.fase === 'lucha' || C.fase === 'cuenta' || C.fase === 'fin', accion: () => { if (C.fase === 'fin') otraVez(); else usar(C.j, 'golpe_ala'); },
+  // Juego en familia (5-nov): machacando Acción, el último golpe reiniciaba el duelo sin ver el resultado. Tras terminar,
+  // «Otra vez» (Acción, el botón grande o el del panel) no responde durante FIN_PAUSA ms.
+  const FIN_PAUSA = 1200, finListo = () => performance.now() - (C.finT || 0) >= FIN_PAUSA;
+  const otraVezSiListo = () => (finListo() ? otraVez() : false);
+  const modo = { activo: () => C.fase === 'lucha' || C.fase === 'cuenta' || C.fase === 'fin', accion: () => { if (C.fase === 'fin') otraVezSiListo(); else usar(C.j, 'golpe_ala'); },
     aviso: () => C.fase === 'fin' ? TXT.otra : (TACTIL ? TXT.avisoTactil : TXT.aviso), get verbo() { return C.fase === 'fin' ? TXT.otra : TXT.ala; } };
   let modo0 = null, sostener0 = null, sost = 0, enganchado = false;
   function sostenerDuelo(on) {
@@ -356,13 +404,20 @@ window.AVV18Combate = function (G) {
       '#v18-duelo .vd-bot{display:flex;gap:6px;justify-content:center;margin-top:6px;flex-wrap:wrap}' +
       '#v18-duelo button{pointer-events:auto;font:inherit;font-size:15px;font-weight:600;min-height:44px;padding:6px 14px;border-radius:22px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 6px #0005;cursor:pointer}' +
       '#v18-duelo button.cd{opacity:.5}#v18-duelo .vd-fin{text-align:center;background:rgba(30,40,30,.82);border-radius:14px;padding:10px;margin-top:8px}' +
-      '#v18-duelo .vd-fin p{margin:0 0 8px;font-size:18px;font-weight:600}';
+      '#v18-duelo .vd-fin p{margin:0 0 8px;font-size:18px;font-weight:600}' +
+      // Juego en familia (5-nov), táctil: panel + fila Ala/Semilla/Escudo ocupaban ~60 % del alto y el Escudo caía sobre el
+      // Diario. En táctil ya están los botones grandes (Acción = ala, Impulso = semilla, mantener Impulso = poder): fuera la
+      // fila repetida y el panel se compacta; el aviso (#toast) queda por encima del panel si coinciden.
+      '#v18-duelo.tactil .vd-bot{display:none}#v18-duelo.tactil .vd-lado{padding:4px 8px}#v18-duelo.tactil .vd-et{display:none}' +
+      '#v18-duelo.tactil .vd-en{margin-top:3px}#v18-duelo.tactil .vd-centro{font-size:32px;margin-top:2px}' +
+      '#v18-duelo.tactil .vd-fin{padding:8px;margin-top:4px}#v18-duelo.tactil .vd-fin p{font-size:15px;margin-bottom:6px}' +
+      'body.v18-duelo-on #toast{z-index:41}';
     document.head.appendChild(st);
   }
   function montarHud() {
     if (hud) return hud;
     estilo();
-    const el = document.createElement('div'); el.id = 'v18-duelo'; el.hidden = true;
+    const el = document.createElement('div'); el.id = 'v18-duelo'; el.hidden = true; el.classList.toggle('tactil', TACTIL);
     const plumas = () => Array.from({ length: PLUMAS }, () => '<i></i>').join('');
     el.innerHTML = `<div class="vd-fila"><div class="vd-lado j"><div class="vd-nom">${TXT.tu}</div><div class="vd-pod" data-k="pj"></div><div class="vd-pl" data-k="plj">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-j"><b></b></div></div>` +
       `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div></div></div>` +
@@ -373,7 +428,7 @@ window.AVV18Combate = function (G) {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
       const a = b.dataset.a;
-      if (a === 'otra') otraVez(); else if (a === 'salir') salir(); else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
+      if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
     });
     document.body.appendChild(el);
     hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
@@ -433,7 +488,7 @@ window.AVV18Combate = function (G) {
   }
   function terminar(res) {
     if (C.fase !== 'lucha') return;
-    C.fase = 'fin'; C.resultado = res; quitarBalas(); C.timers.length = 0;
+    C.fase = 'fin'; C.resultado = res; C.finT = performance.now(); quitarBalas(); C.timers.length = 0;
     const gano = res === 'win';
     emitir({ tipo: res, de: gano ? 'jugador' : 'rival', a: gano ? 'rival' : 'jugador', valor: gano ? C.j.plumas : C.r.plumas });
     let txt;
@@ -470,7 +525,7 @@ window.AVV18Combate = function (G) {
   // ---------- IA de la rival ----------
   function pasoIA(dt) {
     const r = C.r, j = C.j;
-    if (r.mareo > 0) return;
+    if (r.mareo > 0 || r.deslumbrada > 0) return; // deslumbrada por el Abanico de colores: 1 s sin hacer nada
     const d = H.dirA(r, j), dist = d.d;
     r.golpeT -= dt; r.tiroT -= dt; r.esquivaT -= dt; r.poderT -= dt; r.pensar -= dt;
     // Defensa: una semilla del jugador que viene cerca → escudo (si es arausiaca y lo tiene) o un quiebro de lado
@@ -486,6 +541,8 @@ window.AVV18Combate = function (G) {
     if (r.poderT <= 0 && H.listo(r, r.poder).ok) {
       if (r.poder === 'escudo_plumas' && r.escudo <= 0 && dist < 2.8 && azar() < 0.3) { r.poderT = 3; usar(r, 'escudo_plumas'); return; }
       if (r.poder === 'grito_yunque' && dist > 2 && dist < 6 && azar() < 0.3) { r.poderT = 4; usar(r, 'grito_yunque'); return; }
+      if (r.poder === 'abanico_colores' && dist < 7 && azar() < 0.3) { r.poderT = 4; usar(r, 'abanico_colores'); return; }
+      if (r.poder === 'semilla_rio' && dist > 4 && dist < 14 && azar() < 0.3) { r.poderT = 4; usar(r, 'semilla_rio'); return; }
     }
     if (dist < 2.3 && r.golpeT <= 0) { r.golpeT = 1.15; usar(r, 'golpe_ala'); return; }
     if (dist > 6 && dist < 16 && r.tiroT <= 0 && r.energia > 40) { r.tiroT = 2.4; usar(r, 'semilla'); return; }
@@ -537,12 +594,14 @@ window.AVV18Combate = function (G) {
     for (let i = C.balas.length - 1; i >= 0; i--) {
       const b = C.balas[i], p = b.m.position;
       const blanco = b.de === C.j ? C.r : C.j;
-      if (blanco.marcada > 0) { const hx = blanco.pos.x - p.x, hz = blanco.pos.z - p.z, hn = Math.hypot(hx, hz) || 1, v = Math.hypot(b.vx, b.vz), k = Math.min(1, dt * 6);
+      if (blanco.marcada > 0 && !b.falla) { const hx = blanco.pos.x - p.x, hz = blanco.pos.z - p.z, hn = Math.hypot(hx, hz) || 1, v = Math.hypot(b.vx, b.vz), k = Math.min(1, dt * 6);
         b.vx += (hx / hn * v - b.vx) * k; b.vz += (hz / hn * v - b.vz) * k;
         b.vy += (((blanco.pos.y + 0.9) - p.y) / Math.max(0.15, hn / (v || 1)) - b.vy) * k; } // Ojo del cenote: la semilla busca a la marcada (también en altura: en la explanada en cuesta se iba por debajo)
+      if (b.arco) { if (!b.arcoT) { b.arcoT = 1; b.vy = b.arco.vy; } b.vy -= b.arco.g * dt; } // Semilla de río: sale en arco y cae
       b.t += dt; p.x += b.vx * dt; p.y += b.vy * dt; p.z += b.vz * dt;
-      const dx = p.x - blanco.pos.x, dy = p.y - (blanco.pos.y + 0.9), dz = p.z - blanco.pos.z;
-      let fin = b.t >= b.vida || p.y < G.terreno.height(p.x, p.z) - 0.1;
+      const dx = p.x - blanco.pos.x, dy = p.y - (blanco.pos.y + 0.9), dz = p.z - blanco.pos.z, suelo = G.terreno.height(p.x, p.z);
+      if (b.arco && b.botes > 0 && p.y < suelo && b.t < b.vida) { p.y = suelo; b.vy = Math.abs(b.vy) * b.arco.rebote; b.botes--; b.boto = (b.boto || 0) + 1; fx('leaves', p.x, suelo + 0.1, p.z); } // ...y bota dos veces
+      let fin = b.t >= b.vida || p.y < suelo - 0.1;
       if (!fin && dx * dx + dy * dy + dz * dz < b.radio * b.radio) {
         golpear(b.de, blanco, Object.assign({ dir: { x: b.vx / 16, z: b.vz / 16 } }, b.golpe)); fin = true;
       }
@@ -597,8 +656,8 @@ window.AVV18Combate = function (G) {
   let recolocar = false;
   function moverSitio() {
     recolocar = false;
-    const n = buscarSitio(); if (n.x === sitio.x && n.z === sitio.z) return false;
-    Object.assign(sitio, n); marca.position.set(sitio.x, sitio.y + 0.06, sitio.z);
+    const n = buscarSitio(); if (n.x === sitio.x && n.z === sitio.z) { despejarSitio(); return false; }
+    Object.assign(sitio, n); despejarSitio(); marca.position.set(sitio.x, sitio.y + 0.06, sitio.z);
     rivalPos.x = sitio.x + 4; rivalPos.z = sitio.z; rivalPos.y = ALTURA(rivalPos); it.x = rivalPos.x; it.z = rivalPos.z;
     if (C.ch) C.ch.root.position.set(rivalPos.x, rivalPos.y, rivalPos.z);
     return true;
@@ -646,7 +705,22 @@ window.AVV18Combate = function (G) {
         S.pos.x = sitio.x + 400; S.pos.z = sitio.z + 300; refresca(); const b = buscarSitio();
         S.pos.x = px; S.pos.z = pz; refresca();
         const yo = cands.find(c => c.x === sitio.x && c.z === sitio.z), libres = cands.filter(c => !c.peso);
-        check('QA-174: la explanada es plana, seca y sin edificios; si hay un sitio sin troncos, es ese', !!yo && (libres.length ? !aqui.length : cands.every(c => c.p >= yo.p)),
+        despejarSitio();
+        const dentro = flora(sitio.x, sitio.z, 40).filter(o => Math.hypot(o.x - sitio.x, o.z - sitio.z) < ARENA_R + 0.5);
+        // y sin sólidos de flora: ni troncos a la altura del cuerpo ni ramas encima (se aterrizaba en copas a 10-12 m)
+        let duros = 0, puntos = 0;
+        const SOL = G.solidos, p0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z };
+        if (SOL && SOL.terminar) {
+          try { S.pos.x = sitio.x; S.pos.z = sitio.z; SOL.terminar(); } finally { Object.assign(S.pos, p0); }
+          for (let ox = -11; ox <= 11; ox += 1.5) for (let oz = -11; oz <= 11; oz += 1.5) {
+            if (Math.hypot(ox, oz) > 11) continue;
+            const x = sitio.x + ox, z = sitio.z + oz, h = G.terreno.height(x, z); puntos++;
+            if (SOL.penetra(x, z, h + 0.05) || SOL.altoEn(x, z, h + 30) > h + 1) duros++;
+          }
+        }
+        check('QA-174: el círculo está despejado (ni troncos, ni rocas, ni ramas encima; quitados en marcha solo con la V18.1)', despeje.clave === sitio.x + ',' + sitio.z && despeje.n > 0 && !dentro.length && puntos > 100 && !duros,
+          'quitadas ' + despeje.n + ' instancias · troncos dentro: ' + dentro.length + ' · puntos con sólido: ' + duros + '/' + puntos + ' · antes, en el pasillo de la cámara: ' + aqui.length);
+        check('QA-174: la explanada es plana, seca, sin edificios y la mejor de la rejilla', !!yo && cands.every(c => c.p >= yo.p),
           JSON.stringify({ sitio: [sitio.x, sitio.z], troncos: aqui.length, peso: aqui.peso, pesoMax: Math.max(0, ...cands.map(c => c.peso)), candidatos: cands.length, libres: libres.length, pref: (() => { const q = candidatos().pref, h = G.terreno.height(q.x, q.z); let mn = h, mx = h, ag = 0; for (let a = 0; a < 16; a++) for (const r of [4, 8, ARENA_R]) { const px = q.x + Math.cos(a / 16 * 6.2832) * r, pz = q.z + Math.sin(a / 16 * 6.2832) * r, hh = G.terreno.height(px, pz); mn = Math.min(mn, hh); mx = Math.max(mx, hh); if (G.agua.levelAt(px, pz) > hh - 0.3) ag++; } return [q.x, q.z, Math.round((mx - mn) * 100) / 100, ag]; })(), flora40m: cerca.length }));
         check('QA-174: el sitio sale igual esté donde esté la jugadora (estable entre cargas)', a.x === sitio.x && a.z === sitio.z && b.x === sitio.x && b.z === sitio.z,
           JSON.stringify({ sitio: [sitio.x, sitio.z], cerca: [a.x, a.z], lejos: [b.x, b.z] }));
@@ -743,6 +817,8 @@ window.AVV18Combate = function (G) {
         JSON.stringify({ fase: C.fase, m: S.inv.madera - m0, p: S.inv.piedra - p0, t: toasts }));
       check('Al terminar, Acción dice «Otra vez»', modo.verbo === TXT.otra && !hud.q('fin').hidden);
       modo.accion();
+      check('Machacar Acción justo al terminar no reinicia: se ve el resultado', C.fase === 'fin' && C.resultado === 'win');
+      C.finT -= FIN_PAUSA; modo.accion();
       check('«Otra vez» reinicia el duelo con 5 plumas', C.fase === 'cuenta' && C.r.plumas === PLUMAS && C.j.plumas === PLUMAS);
       C.fase = 'lucha'; C.r.plumas = 1; quieta(1.2); C.r.escudo = 0; usar(C.j, 'golpe_ala');
       check('Ganar otra vez no da los materiales de nuevo', C.resultado === 'win' && S.inv.madera === m0 + 2 && S.inv.piedra === p0 + 1 && toasts.includes(TXT.ganaOtra), S.inv.madera - m0);

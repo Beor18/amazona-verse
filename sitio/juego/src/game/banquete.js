@@ -193,6 +193,9 @@ window.AVBanquete = function (G) {
       '#bq-chip.ver{opacity:1}#bq-chip i{display:inline-block;width:12px;height:14px;border-radius:50% 50% 55% 55%;background:radial-gradient(circle at 35% 30%,#c86aa0,#5a1434)}' +
       '#bq-chip.late{animation:bq-late .5s ease-out}@keyframes bq-late{0%{transform:translateX(-50%) scale(1)}40%{transform:translateX(-50%) scale(1.18)}100%{transform:translateX(-50%) scale(1)}}' +
       'body.retos-on #bq-chip{display:none}' +
+      // Juego en familia (5-nov): el chip ocupaba el mismo hueco que el aviso (#toast, arriba al centro) y tapaba avisos, el
+      // progreso de los retos y el marcador de los duelos. Se aparta mientras haya un aviso a la vista o un duelo o la Sombra.
+      'body:has(#toast:not([hidden])) #bq-chip,body.v18-duelo-on #bq-chip,body.v18-amenaza-on #bq-chip,body.v18-golf-on #bq-chip{visibility:hidden;opacity:0}' +
       '#card .bq-dato{max-width:520px}#card .bq-dato .bq-fuente{font-size:.85em;opacity:.85;margin:6px 0 10px}#card .bq-dato a{color:inherit}' +
       '@media (prefers-reduced-motion:reduce){#bq-chip.late{animation:none}}';
     document.head.appendChild(st);

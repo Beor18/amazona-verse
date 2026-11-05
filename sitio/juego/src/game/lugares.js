@@ -146,7 +146,7 @@ AVE.module('lugares', function (G) {
     if (tR > 0 && (tR -= dt) <= 0) ocultarRotulo();
     if (!cola.length) return;
     espera = Math.max(0, espera - dt);
-    if (espera > 0 || G.quiet || G.ui.busy()) return;
+    if (espera > 0 || G.quiet || G.ui.busy() || /\bv18-(duelo|amenaza)-on\b/.test(document.body.className)) return; // en un duelo V18 espera a que acabe
     const t = $('toast');
     const d = cola[0];
     if (!d.asentamiento && t && !t.hidden && t.querySelector('button')) return; // el aviso de construcción trae un botón: no se pisa

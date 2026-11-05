@@ -30,6 +30,8 @@ window.AVV18Duelo2 = function (G) {
     elige: '¿Con qué cotorra juega el Jugador 2?',
     teclas1: 'Jugador 1: W A S D mover · E ala · F semilla (mantener: poder) · G poder',
     teclas2: 'Jugador 2: flechas mover · . ala · , semilla (mantener: poder) · - poder · Enter saltito',
+    // Las mismas teclas con <kbd> (juego en familia, 5-nov: «. , -» sueltos no se leían). Cada texto es su propio nodo (en.js).
+    jugador1: 'Jugador 1:', jugador2: 'Jugador 2:', mover: 'mover', ala: 'ala', semillaMant: 'semilla (mantener: poder)', poder: 'poder', saltito: 'saltito',
     mando: 'Con un mando conectado, juega el Jugador 2: X ala · B semilla · Y poder · A saltito',
     aviso: 'Duelo de 2 jugadores · Esc para salir', gana1: '¡Gana el Jugador 1!', gana2: '¡Gana el Jugador 2!',
     bloquea: '¡Bloqueado!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!'
@@ -115,7 +117,9 @@ window.AVV18Duelo2 = function (G) {
   const poderDe = f => f.poder;
 
   // ---------- Entrada del Jugador 1: la de siempre (Acción, Impulso y G), tomada mientras dura el duelo ----------
-  const modo = { activo: () => D.fase !== 'nada', accion: () => { if (D.fase === 'fin') otraVez(); else usar(D.j1, 'golpe_ala'); },
+  // Tras terminar, «Otra vez» espera FIN_PAUSA ms: machacar el ala no reinicia sin ver quién ganó (como en combate.js)
+  const FIN_PAUSA = 1200, otraVezSiListo = () => (performance.now() - (D.finT || 0) >= FIN_PAUSA ? otraVez() : false);
+  const modo = { activo: () => D.fase !== 'nada', accion: () => { if (D.fase === 'fin') otraVezSiListo(); else usar(D.j1, 'golpe_ala'); },
     aviso: () => D.fase === 'fin' ? TXT.otra : TXT.aviso, get verbo() { return D.fase === 'fin' ? TXT.otra : 'Ala'; } };
   let sost1 = 0, sost2 = 0, modo0 = null, sostener0 = null, enganchado = false, fly0 = null, start0 = null;
   function sostener1(on) {
@@ -146,7 +150,7 @@ window.AVV18Duelo2 = function (G) {
     if (mv) { t2[mv] = true; return; }
     if (ac === 'correr') { t2.correr = true; return; }
     if (e.repeat) return;
-    if (D.fase === 'fin' && ac === 'ala') { otraVez(); return; }
+    if (D.fase === 'fin' && ac === 'ala') { otraVezSiListo(); return; }
     if (ac === 'ala') usar(D.j2, 'golpe_ala');
     else if (ac === 'poder') usar(D.j2, poderDe(D.j2));
     else if (ac === 'semilla') sost2 = performance.now();
@@ -183,7 +187,7 @@ window.AVV18Duelo2 = function (G) {
       if (nuevo(0)) saltar2();
       if (nuevo(1)) pad.sostB = performance.now();
       if (!btn(1) && pad.b[1] && pad.sostB) { const ms = performance.now() - pad.sostB; pad.sostB = 0; usar(D.j2, ms >= 450 ? poderDe(D.j2) : 'semilla'); }
-    } else if (D.fase === 'fin' && (nuevo(0) || nuevo(2))) otraVez();
+    } else if (D.fase === 'fin' && (nuevo(0) || nuevo(2))) otraVezSiListo();
     for (let i = 0; i < gp.buttons.length; i++) pad.b[i] = btn(i);
     return { x, y, correr: Math.hypot(x, y) > 0.92 || btn(5) };
   }
@@ -283,7 +287,8 @@ window.AVV18Duelo2 = function (G) {
         '#v18-duelo2 .vd-centro{text-align:center;font-size:44px;font-weight:700;margin-top:6px}' +
         '#v18-duelo2 .vd-fin{text-align:center;background:rgba(30,40,30,.82);border-radius:14px;padding:10px;margin-top:8px}#v18-duelo2 .vd-fin p{margin:0 0 8px;font-size:20px;font-weight:600}' +
         '#v18-duelo2 button{pointer-events:auto;font:inherit;font-size:15px;font-weight:600;min-height:44px;padding:6px 14px;border-radius:22px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 6px #0005;cursor:pointer}' +
-        '.v18-d2 .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.v18-d2 .d2-teclas{font-size:14px;line-height:1.4;margin:8px 0}';
+        '.v18-d2 .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.v18-d2 .d2-teclas{font-size:14px;line-height:1.4;margin:8px 0}' +
+        '.v18-d2 .d2-fila{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:4px 0}.v18-d2 .d2-k{white-space:nowrap}.v18-d2 .d2-k kbd{margin-right:2px}';
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-duelo2'; el.hidden = true;
@@ -295,7 +300,7 @@ window.AVV18Duelo2 = function (G) {
     el.addEventListener('pointerdown', e => {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
-      if (b.dataset.a === 'otra') otraVez(); else salir();
+      if (b.dataset.a === 'otra') otraVezSiListo(); else salir();
     });
     document.body.appendChild(el);
     hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
@@ -314,12 +319,15 @@ window.AVV18Duelo2 = function (G) {
   }
 
   // ---------- Tarjeta: elegir la cotorra del Jugador 2 y ver las teclas ----------
+  const filaTeclas = (quien, lista) => `<div class="d2-fila"><b>${esc(quien)}</b> ` +
+    lista.map(([k, t]) => `<span class="d2-k"><kbd>${esc(k)}</kbd> ${esc(t)}</span>`).join(' ') + '</div>';
   function abrirTarjeta() {
     if (!disponible()) return false;
     crearJ2();
     const bot = ESPECIES.map(e => `<button class="btn${e.id === D.esp2 ? '' : ' ghost'}" type="button" data-d2sp="${e.id}" aria-pressed="${e.id === D.esp2}">${esc(e.nombre)}<small style="display:block;opacity:.8">${esc((H.get(H.poderDe(e.id)) || {}).nombre || '')}</small></button>`).join('');
     G.ui.showCard(`<div class="v18-d2"><h2>${esc(TXT.titulo)}</h2><p>${esc(TXT.nota)}</p><p><b>${esc(TXT.elige)}</b></p><div class="row">${bot}</div>` +
-      `<div class="d2-teclas"><div>${esc(TXT.teclas1)}</div><div>${esc(TXT.teclas2)}</div><div class="note">${esc(TXT.mando)}</div></div>` +
+      `<div class="d2-teclas">${filaTeclas(TXT.jugador1, [['W A S D', TXT.mover], ['E', TXT.ala], ['F', TXT.semillaMant], ['G', TXT.poder]])}` +
+      `${filaTeclas(TXT.jugador2, [['← ↑ ↓ →', TXT.mover], ['.', TXT.ala], [',', TXT.semillaMant], ['-', TXT.poder], ['Enter', TXT.saltito]])}<div class="note">${esc(TXT.mando)}</div></div>` +
       `<div class="row"><button class="btn" id="v18-d2-ok" type="button">${esc(TXT.jugar)}</button><button class="btn ghost" id="v18-d2-no" type="button">${esc(TXT.cancelar)}</button></div></div>`);
     const card = G.ui.$('card');
     card.querySelectorAll('[data-d2sp]').forEach(b => { b.onclick = () => {
@@ -356,7 +364,7 @@ window.AVV18Duelo2 = function (G) {
   }
   function terminar(quien) {
     if (D.fase !== 'lucha') return;
-    D.fase = 'fin'; D.resultado = quien; quitarBalas(); D.timers.length = 0;
+    D.fase = 'fin'; D.resultado = quien; D.finT = performance.now(); quitarBalas(); D.timers.length = 0;
     const perd = quien === 'j1' ? D.j2 : D.j1; perd.finMareo = 2.2; perd.mareo = Math.max(perd.mareo, 2.2);
     const txt = quien === 'j1' ? TXT.gana1 : TXT.gana2;
     emitir({ tipo: 'fin', de: quien, a: perd.id, valor: (quien === 'j1' ? D.j1 : D.j2).plumas });
@@ -456,16 +464,57 @@ window.AVV18Duelo2 = function (G) {
 
   // ---------- En el mundo: el sitio del duelo de 2 jugadores, en el centro del círculo de la explanada ----------
   function disponible() { return !!G.V18 && !tactil(); }
-  const marca = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.5, 48, 1, 0, Math.PI), new THREE.MeshBasicMaterial({ color: '#ffd27a', transparent: true, opacity: 0.7, depthWrite: false, side: THREE.DoubleSide }));
-  const marca2 = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.5, 48, 1, Math.PI, Math.PI), new THREE.MeshBasicMaterial({ color: '#7fd3ff', transparent: true, opacity: 0.7, depthWrite: false, side: THREE.DoubleSide }));
-  const marcas = new THREE.Group(); marcas.add(marca, marca2); marcas.name = 'v18_duelo2_sitio';
+  // Marca pintada en el suelo (un solo plano; textura canvas en runtime, 0 assets): halo cálido suave,
+  // guía tenue, dos medias lunas entrelazadas (oro = Jugador 1 al oeste, azul = Jugador 2 al este) y dos plumas cruzadas.
+  const texSitio = (() => {
+    const S = 256, c = S / 2, cv = document.createElement('canvas'); cv.width = cv.height = S;
+    const g = cv.getContext('2d');
+    const halo = g.createRadialGradient(c, c, 4, c, c, c - 2);
+    halo.addColorStop(0, 'rgba(255,236,190,0.22)'); halo.addColorStop(0.55, 'rgba(255,236,190,0.08)'); halo.addColorStop(1, 'rgba(255,236,190,0)');
+    g.fillStyle = halo; g.fillRect(0, 0, S, S);
+    g.strokeStyle = 'rgba(255,243,214,0.38)'; g.lineWidth = 5;
+    g.beginPath(); g.arc(c, c, 100, 0, Math.PI * 2); g.stroke();
+    const media = (a0, rgb) => { // media luna con borde suave: halo ancho tenue + núcleo
+      g.lineCap = 'butt';
+      g.strokeStyle = 'rgba(' + rgb + ',0.35)'; g.lineWidth = 28;
+      g.beginPath(); g.arc(c, c, 100, a0 - 0.07, a0 + Math.PI + 0.07); g.stroke();
+      g.strokeStyle = 'rgba(' + rgb + ',1)'; g.lineWidth = 14;
+      g.beginPath(); g.arc(c, c, 100, a0, a0 + Math.PI); g.stroke();
+    };
+    media(Math.PI / 2, '255,210,122'); // oeste: Jugador 1 (oro)
+    media(-Math.PI / 2, '127,211,255'); // este: Jugador 2 (azul)
+    const pluma = (x, y, ang, rgb) => {
+      g.save(); g.translate(x, y); g.rotate(ang);
+      g.fillStyle = 'rgba(' + rgb + ',0.95)';
+      g.beginPath(); g.moveTo(0, -30);
+      g.quadraticCurveTo(9, -8, 2, 26); g.quadraticCurveTo(0, 30, -2, 26); g.quadraticCurveTo(-9, -8, 0, -30);
+      g.fill();
+      g.strokeStyle = 'rgba(90,55,20,0.75)'; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(0, -27); g.lineTo(0, 27); g.stroke();
+      g.lineWidth = 1.4;
+      for (const d of [[-16, 11], [-6, 13], [4, 11], [13, 7]]) {
+        g.beginPath(); g.moveTo(0, d[0]); g.quadraticCurveTo(d[1] * 0.6, d[0] - 3, d[1], d[0] - 7); g.stroke();
+        g.beginPath(); g.moveTo(0, d[0]); g.quadraticCurveTo(-d[1] * 0.6, d[0] - 3, -d[1], d[0] - 7); g.stroke();
+      }
+      g.restore();
+    };
+    pluma(c - 5, c + 3, -0.5, '255,210,122');
+    pluma(c + 5, c + 3, 0.5, '127,211,255');
+    const t = new THREE.CanvasTexture(cv);
+    t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; // decal: los mipas lavarían el alpha a rasante
+    return t;
+  })();
+  const marcas = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.6),
+    new THREE.MeshBasicMaterial({ map: texSitio, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
   marcas.rotation.x = -Math.PI / 2; marcas.position.set(sitio.x, sitio.y + 0.07, sitio.z); marcas.renderOrder = 3;
+  marcas.name = 'v18_duelo2_sitio'; marcas.frustumCulled = false; // decal autogestionado: fuera del cullPequenos
   scene.add(marcas);
   const it = G.interaccion.add({ id: 'v18_duelo2', x: sitio.x, z: sitio.z, r: 2.2,
     visible: () => disponible() && D.fase === 'nada' && Cb.estado().fase === 'nada', label: () => TXT.opcion, use: () => abrirTarjeta() });
   G.on('update', (dt, busy) => {
     marcas.position.set(sitio.x, sitio.y + 0.07, sitio.z); it.x = sitio.x; it.z = sitio.z; // sigue a la explanada si se recoloca
     marcas.visible = disponible() && D.fase === 'nada' && Math.hypot(S.pos.x - sitio.x, S.pos.z - sitio.z) < 90;
+    if (marcas.visible) marcas.material.opacity = 0.9 + Math.sin(performance.now() / 1000 * 2.2) * 0.1; // respira suave
     if (D.fase === 'nada') return;
     const c = Cb.estado(); if (c.ch && c.ch.root) c.ch.root.visible = false; // la Campeona se aparta mientras juegan dos
     if (busy) return;
@@ -555,6 +604,8 @@ window.AVV18Duelo2 = function (G) {
       check('Sin plumas el Jugador 2: gana el Jugador 1', D.fase === 'fin' && D.resultado === 'j1' && D.j2.finMareo > 0 && hud.q('finTxt').textContent === TXT.gana1 && !hud.q('fin').hidden);
       check('Al terminar, Acción (o el ala del J2) dice «Otra vez»', modo.verbo === TXT.otra);
       modo.accion();
+      check('Machacar Acción justo al terminar no reinicia: se ve quién ganó', D.fase === 'fin' && D.resultado === 'j1');
+      D.finT -= FIN_PAUSA; modo.accion();
       check('«Otra vez» reinicia con 5 plumas cada una', D.fase === 'cuenta' && D.j1.plumas === PLUMAS && D.j2.plumas === PLUMAS);
       D.fase = 'lucha'; limpio(); cerca(1.5); D.j1.plumas = 1; tecla('keydown', '.', 'Period'); tecla('keyup', '.', 'Period');
       check('Sin plumas el Jugador 1: gana el Jugador 2', D.fase === 'fin' && D.resultado === 'j2' && hud.q('finTxt').textContent === TXT.gana2);

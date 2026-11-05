@@ -15,7 +15,7 @@ window.AVV18Ciclo = function (G) {
   'use strict';
   if (G.v18ciclo) return G.v18ciclo;
   const V = G.v18, S = G.S;
-  const PUENTE = 'puente_villa', DOMINICA = 'arausiaca', PISTA_S = 3.5, R_VOLVER = 22;
+  const PUENTE = 'puente_villa', DOMINICA = 'arausiaca', PISTA_S = 5, R_VOLVER = 22;
   const TXT = {
     pistaDominica: 'Dicen que en el bosque canta una cotorra de otra isla. Encuéntrala, síguela y prueba su poder en el duelo: la bandera verde del mapa te lleva.',
     pistaOtra: 'Reto extra: gana otra vez a la Campeona, ahora con esta cotorra: {}. Cámbiala en Mis cotorras; con otro poder el duelo se juega distinto.',
@@ -101,7 +101,7 @@ window.AVV18Ciclo = function (G) {
     if (!ev) return;
     // primera victoria que paga: si el puente sigue roto, la bandera verde va a su cabecera
     if (ev.tipo === 'recompensa' && ev.rewardKey === 'combate_1' && !reparado()) guiar('puente', puntoPuente());
-    if (ev.tipo === 'mundo' && ev.id === PUENTE && ev.estado === 'reparado') { soltarGuia('puente'); E.pistaT = PISTA_S; }
+    if (ev.tipo === 'mundo' && ev.id === PUENTE && ev.estado === 'reparado') { soltarGuia('puente'); E.pistaT = PISTA_S; E.pistaSesion = true; } // la pista sale una vez, después del «¡Puente reparado!» (4,5 s), no encima
     if (ev.tipo === 'especie' && ev.id === DOMINICA && tieneDominica()) soltarGuia('dominica');
   });
   G.on('v18combate', ev => { if (ev && ev.tipo === 'win') alGanar(); });
@@ -213,11 +213,12 @@ window.AVV18Ciclo = function (G) {
       ir({ x: sitio.x - 30, z: sitio.z }); Cb.paso(0.05);
       check('6 · Al alejarse, el duelo se cierra solo', C.fase === 'nada');
       ir(pp); cuadros(2);
-      toasts.length = 0;
+      toasts.length = 0; E.pistaSesion = false; // como en una partida real: el recordatorio de «volver al puente» está armado
       const rep = usarIt('v18_reparar_puente');
       check('6 · Reparar el puente gasta exactamente 2 maderas y 1 piedra', rep && R.estado() === 'reparado' && S.inv.madera === 0 && S.inv.piedra === 0 && R.P.piso.when() === true, 'madera ' + S.inv.madera + ', piedra ' + S.inv.piedra);
       check('6 · Al reparar se quita la guía del puente', guia.para !== 'puente' && (!G.minimapa || !destinoMapa()));
-      toasts.length = 0;
+      toasts.length = 0; paso(0.1);
+      check('6 · Recién reparado, el «Reto extra» no pisa al aviso «¡Puente reparado!»', !toasts.some(t => /Reto extra/.test(t)) && E.pistaT > 4, toasts.join(' | '));
       for (let t = 0; t < PISTA_S + 0.5; t += 0.1) paso(0.1);
       const pista = E.ultimaPista;
       check('7 · Pista del segundo objetivo opcional (reto extra con la otra cotorra) y bandera a la explanada',

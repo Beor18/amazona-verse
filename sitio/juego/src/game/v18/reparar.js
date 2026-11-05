@@ -39,6 +39,7 @@ window.AVV18Reparar = function (G) {
     P.piso = pl;
     const previo = pl.when;
     pl.when = () => reparado() && (!previo || previo());
+    pl.cuerdas = true; // roto, faltan tablas del centro pero las barandas de soga siguen: posarse en ellas es «cuerda» (solidos.cuerdaPuente)
     const ux = pl.bx - pl.ax, uz = pl.bz - pl.az, L = Math.hypot(ux, uz) || 1;
     P.eje = { ax: pl.ax, az: pl.az, ay: pl.ay, by: pl.by, ux: ux / L, uz: uz / L, L, ancho: pl.ancho, comba: pl.comba };
     return pl;
@@ -89,7 +90,9 @@ window.AVV18Reparar = function (G) {
   // [s0, y0, s1, y1] de cada rampa (s relativo a la cabecera: A con s, B con L + s) y su ancho.
   // Cada cabecera lleva dos: la de la orilla al estribo y otra casi llana del estribo al tablero (entre los dos hay un hueco de
   // ~0,5 m con el suelo a 11,5: sin ella, al volver, la cara del estribo vuelve a ser un escalón de 0,45 m).
-  const RAMPAS = { a: [[-6.0, 8.8, -3.6, 11.97], [-3.6, 11.97, -0.3, 11.72]], b: [[6.0, 11.13, 3.3, 11.97], [3.3, 11.97, 0.3, 11.72]], ancho: 2.6 };
+  // La primera de A empieza en s = -7 (y 8,0); la primera de cada cabecera es más ancha (3,6 m): andando recto desde la orilla sin venir justo por el eje, entre
+  // s = -5 y -4 se quedaba en el suelo de la loma, 1 m por debajo de la rampa, y chocaba con la cara del estribo (juego de niño).
+  const RAMPAS = { a: [[-7.0, 8.0, -3.6, 11.97, 3.6], [-3.6, 11.97, -0.3, 11.72]], b: [[6.0, 11.13, 3.3, 11.97, 3.6], [3.3, 11.97, 0.3, 11.72]], ancho: 2.6 };
   // Bandas de sólido que se recortan junto a cada cabecera (s de A; en B, L - s), hasta |lado| ≤ 0,85-1 m (los postes quedan):
   // la riostra (sobre el tablero + 0,08) y el hueco entre el tablero y el estribo, donde las sogas del anclaje cruzan a 12,8-13,5
   // (sobre lo alto del estribo, 12,0).
@@ -100,9 +103,9 @@ window.AVV18Reparar = function (G) {
     const E = P.eje;
     if (!cabeceras.rampas.length) {
       const enS = (sv, y) => { const p = punto(sv / E.L); return [p.x, y, p.z]; };
-      const tramos = RAMPAS.a.concat(RAMPAS.b.map(([s0, y0, s1, y1]) => [E.L + s0, y0, E.L + s1, y1]));
-      for (const [sa, ya, sb, yb] of tramos) {
-        const pl = T.addPlatform({ tipo: 'rampa', a: enS(sa, ya), b: enS(sb, yb), ancho: RAMPAS.ancho, id: 'puente_rampa' });
+      const tramos = RAMPAS.a.concat(RAMPAS.b.map(([s0, y0, s1, y1, w]) => [E.L + s0, y0, E.L + s1, y1, w]));
+      for (const [sa, ya, sb, yb, w] of tramos) {
+        const pl = T.addPlatform({ tipo: 'rampa', a: enS(sa, ya), b: enS(sb, yb), ancho: w || RAMPAS.ancho, id: 'puente_rampa' });
         pl.when = reparado;
         cabeceras.rampas.push(pl);
       }
@@ -284,10 +287,64 @@ window.AVV18Reparar = function (G) {
     RODEO.lado = -RODEO.lado;
     return false;
   }
+  // Baranda (demo V18.1, juego de niño en el móvil): las sogas y barandas del puente son sólidos finos donde se puede quedar
+  // posada (saltando junto al borde, la ayuda para posarse la sube encima) y desde ahí el joystick no la sacaba: cada paso le
+  // metía el cuerpo en la soga de al lado. Posada en lo alto de una baranda del puente o de las sogas de las cabeceras
+  // (a más de 0,3 m sobre el tablero del eje y a más de 0,5 m de él), pedir moverse (o saltar) la pasa de un paso al aire libre
+  // sobre el tablero, a 0,25 m del eje, y cae encima. Volando no cambia nada; quieta, puede seguir posada.
+  const BARANDA = { lat: 0.25, veces: 0 };
+  function bajarBaranda(dt, M) {
+    const F = G.fisica, E = P.eje, SOL = G.solidos && G.solidos.activo ? G.solidos : null;
+    if (!F || !M || !SOL || M.flying || M.swimming || !(pideMover() || (G.input && G.input.jumpHeld))) return false;
+    const dx = S.pos.x - E.ax, dz = S.pos.z - E.az, sv = dx * E.ux + dz * E.uz, lat = -dx * E.uz + dz * E.ux;
+    if (sv < -3.6 || sv > E.L + 3.6 || Math.abs(lat) < 0.5 || Math.abs(lat) > 2.2) return false;
+    const c = punto(sv / E.L), base = F.suelo(c.x, c.z, S.pos.y);
+    // encima de algo (o metida en ello: la red de desatasco la sostiene arriba) y más de 0,3 m sobre el tablero del eje
+    if (!(base > -1e9) || S.pos.y - base < 0.3 || S.pos.y - F.suelo(S.pos.x, S.pos.z, S.pos.y) > 0.2) return false;
+    // de un paso (medio metro de lado, no se nota) al aire libre sobre el tablero, lejos de la soga: desde ahí cae encima.
+    // Si ese aire o el tablero de debajo no están libres, no se la mueve.
+    const sg = Math.sign(lat), nx = c.x - E.uz * sg * BARANDA.lat, nz = c.z + E.ux * sg * BARANDA.lat;
+    if (SOL.penetra(nx, nz, S.pos.y) || SOL.penetra(nx, nz, base)) return false;
+    S.pos.x = nx; S.pos.z = nz;
+    M.vx = M.vz = 0; M.grounded = false; S.vy = Math.min(S.vy, 0);
+    if (F.soltarAtasco) F.soltarAtasco(); // que la red de desatasco no la vuelva a subir a la soga
+    BARANDA.veces++;
+    return true;
+  }
+  // Entrada recta (juego de niño): con W sola o el joystick hacia delante, desde la orilla se iba recto contra el estribo, un poste o
+  // una soga del anclaje si no venía justo por el eje (había que corregir con W+D). Caminando hacia el puente (lo pedido apunta
+  // al tablero, a menos de ~50°) en los últimos 9 m de cada orilla y sobre el tablero, se la acerca al eje de lado
+  // (2,2 m/s como mucho, nunca metiéndola más en un sólido). Volando, nadando o alejándose del puente no hace nada.
+  const EMBUDO = { orilla: 9, lat: 3, v: 2.2, veces: 0 };
+  function pedido() {
+    const k = G.input && G.input.keys, st = (G.input && G.input.stick) || { x: 0, y: 0 };
+    let ix = st.x || 0, iz = st.y || 0;
+    if (k) { if (k.has('w') || k.has('arrowup')) iz -= 1; if (k.has('s') || k.has('arrowdown')) iz += 1; if (k.has('a') || k.has('arrowleft')) ix -= 1; if (k.has('d') || k.has('arrowright')) ix += 1; }
+    const yaw = G.camara.yaw, fx = -Math.sin(yaw), fz = -Math.cos(yaw), rx = Math.cos(yaw), rz = -Math.sin(yaw);
+    const mx = rx * ix - fx * iz, mz = rz * ix - fz * iz, l = Math.hypot(mx, mz);
+    return l > 0.12 ? { x: mx / l, z: mz / l } : null;
+  }
+  function encauzar(dt, M) {
+    const SOL = G.solidos && G.solidos.activo ? G.solidos : null, E = P.eje;
+    if (!M || M.flying || M.swimming || !M.grounded) return false;
+    const w = pedido(); if (!w) return false;
+    const dx = S.pos.x - E.ax, dz = S.pos.z - E.az, sv = dx * E.ux + dz * E.uz, lat = -dx * E.uz + dz * E.ux;
+    // en las orillas, solo yendo hacia el puente; sobre el tablero, en los dos sentidos y solo lejos del centro (|lado| > 0,25 m):
+    // con la cámara un poco torcida, se iba pegada a la baranda y se quedaba trabada en una péndola (s ≈ 6 y 18,5)
+    const al = w.x * E.ux + w.z * E.uz, sobre = sv >= 1 && sv <= E.L - 1;
+    const hacia = sobre ? Math.sign(al) : sv > -EMBUDO.orilla && sv < 1 ? 1 : sv > E.L - 1 && sv < E.L + EMBUDO.orilla ? -1 : 0;
+    if (!hacia || Math.abs(lat) > EMBUDO.lat || Math.abs(lat) < (sobre ? 0.25 : 0.04)) return false;
+    if (al * hacia < 0.64) return false;
+    const sg = Math.sign(lat), d = Math.min(Math.abs(lat), EMBUDO.v * dt), nx = S.pos.x + E.uz * sg * d, nz = S.pos.z - E.ux * sg * d;
+    if (SOL && SOL.penetra(nx, nz, S.pos.y) > SOL.penetra(S.pos.x, S.pos.z, S.pos.y)) return false;
+    S.pos.x = nx; S.pos.z = nz; EMBUDO.veces++;
+    return true;
+  }
   function paso(dt) {
     if (!P.eje || !reparado()) return;
-    rodeo(dt, G.fisica && G.fisica.MOVE);
-    const c = centro(), M = G.fisica && G.fisica.MOVE, d = Math.hypot(S.pos.x - c.x, S.pos.z - c.z);
+    const M = G.fisica && G.fisica.MOVE;
+    if (!bajarBaranda(dt, M) && !encauzar(dt, M)) rodeo(dt, M);
+    const c = centro(), d = Math.hypot(S.pos.x - c.x, S.pos.z - c.z);
     if (d < 60 && (CORR.fxT -= dt) <= 0) { CORR.fxT = 0.45; try { G.fx.burst(c.x + (Math.random() - 0.5) * 3, c.y + 1 + Math.random() * 6, c.z + (Math.random() - 0.5) * 3, 'leaves', 2); } catch (e) { /* sin fx */ } }
     if (!M || d > CORR.r) return;
     if (!M.flying) {
@@ -301,10 +358,28 @@ window.AVV18Reparar = function (G) {
     if (!CORR.avisada) { CORR.avisada = true; sonar('viento'); toast('¡Corriente del puente! Sube y planea lejos.'); }
   }
 
+  // Árboles en el paso de las cabeceras (QA-172, juego de niño): un tabonuco 7 m detrás de la cabecera A, en el eje, frenaba a quien
+  // llega andando recto desde Villa Raíz, y en la cabecera B una palma joven crece entre el tablero y el estribo. Con el puente
+  // reparado se quitan del bosque, en marcha (G.vegetacion.despejar, solo con la V18.1), los que tienen el pie en el pasillo del
+  // eje (±2 m) de 12 m detrás de A hasta el tablero y del tablero hasta 12 m detrás de B. El resto del bosque no cambia.
+  const PASO_LIBRE = { a: -12, b: 12, lat: 2, hecho: false, n: 0 };
+  function despejarPaso() {
+    const V = G.vegetacion, E = P.eje;
+    if (PASO_LIBRE.hecho || !E || !reparado() || !V || !V.despejar || !V.instancias || !Object.keys(V.instancias).length) return 0;
+    PASO_LIBRE.hecho = true;
+    const enPaso = (x, z) => {
+      const dx = x - E.ax, dz = z - E.az, sv = dx * E.ux + dz * E.uz, lat = Math.abs(-dx * E.uz + dz * E.ux);
+      return lat < PASO_LIBRE.lat && ((sv > PASO_LIBRE.a && sv < 0.5) || (sv > E.L - 0.5 && sv < E.L + PASO_LIBRE.b));
+    };
+    const q = [punto(PASO_LIBRE.a / E.L, -3), punto(PASO_LIBRE.a / E.L, 3), punto((E.L + PASO_LIBRE.b) / E.L, -3), punto((E.L + PASO_LIBRE.b) / E.L, 3)];
+    PASO_LIBRE.n = V.despejar(Math.min(...q.map(o => o.x)), Math.min(...q.map(o => o.z)), Math.max(...q.map(o => o.x)), Math.max(...q.map(o => o.z)), enPaso);
+    return PASO_LIBRE.n;
+  }
+
   // ---------- Aplicar el estado guardado ----------
   function aplicar() {
     if (!buscarPiso()) return false;
-    ponerInteraccion(); ponerMaderas(); ponerMateriales(); ponerCabeceras(); sincronizar();
+    ponerInteraccion(); ponerMaderas(); ponerMateriales(); ponerCabeceras(); despejarPaso(); sincronizar();
     pintar();
     return true;
   }
@@ -314,6 +389,7 @@ window.AVV18Reparar = function (G) {
     if (++intentos < 120) setTimeout(esperar, 500);
   }
   Promise.resolve(G.mundo && G.mundo.listo).then(esperar, esperar);
+  Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => { if (P.eje) despejarPaso(); }, () => {});
   G.on('apply', () => setTimeout(aplicar, 0), 95);
   G.on('v18', ev => { if (ev && ev.tipo === 'mundo' && ev.id === ID) aplicar(); else if (ev && ev.tipo === 'recompensa') sincronizar(); });
   G.on('update', (dt, busy) => { if (!busy) paso(dt); }, 46);
@@ -361,6 +437,69 @@ window.AVV18Reparar = function (G) {
   }
   const textoCruce = r => (r.ok ? 'llega' : 'no llega') + ' en ' + r.pasos + ' pasos de 0,05 s · s=' + r.s.toFixed(1) + ' · y mín ' + r.minY.toFixed(2) +
     (r.nado ? ' · nadó' : '') + (r.volo ? ' · voló' : '') + (r.rescates ? ' · rescates ' + r.rescates : '') + (r.ok ? '' : ' · ' + r.traza.slice(-6).join(' '));
+
+  // Como un niño con W sola: sale de (desde, lado) con la cámara fija mirando al otro lado con un error de `giro` rad, sin
+  // corregir nada, y camina con G.fisica.step y el paso de este módulo hasta pasar `hasta`. Devuelve lo mismo que cruzarAPie.
+  async function andarRecto(desde, lado, hasta, giro, maxPasos) {
+    const F = G.fisica, M = F.MOVE, E = P.eje, SOL = G.solidos, keys = G.input.keys, sgn = Math.sign(hasta - desde) || 1;
+    const guard = { x: S.pos.x, y: S.pos.y, z: S.pos.z, vy: S.vy, flying: M.flying, swimming: M.swimming, grounded: M.grounded, vx: M.vx, vz: M.vz, yaw: G.camara.yaw, w: keys.has('w') };
+    const r = { ok: false, pasos: 0, nado: false, volo: false, rescates: 0, minY: Infinity, s: desde, traza: [] };
+    try {
+      const p0 = punto(desde / E.L, lado);
+      S.pos.x = p0.x; S.pos.z = p0.z; S.vy = 0;
+      try { if (SOL && SOL.terminar) SOL.terminar(); } catch (e) { /* sin sólidos */ }
+      S.pos.y = F.suelo(p0.x, p0.z, T.height(p0.x, p0.z) + 0.5);
+      M.flying = false; M.swimming = false; M.grounded = true; M.vx = M.vz = 0;
+      G.camara.yaw = Math.atan2(-E.ux * sgn, -E.uz * sgn) + (giro || 0);
+      const d0 = M.desatascos || 0;
+      keys.add('w');
+      for (let k = 0; k < (maxPasos || 900); k++) {
+        const dx = S.pos.x - E.ax, dz = S.pos.z - E.az, sv = dx * E.ux + dz * E.uz;
+        r.s = sv;
+        if ((hasta - sv) * sgn < 0) { r.ok = true; break; }
+        F.step(0.05, false); paso(0.05);
+        r.pasos = k + 1;
+        if (M.swimming) r.nado = true;
+        if (M.flying) r.volo = true;
+        r.minY = Math.min(r.minY, S.pos.y);
+        if (k % 20 === 0) r.traza.push(sv.toFixed(1) + '/' + (-dx * E.uz + dz * E.ux).toFixed(1) + '/' + S.pos.y.toFixed(2));
+      }
+      r.rescates = (M.desatascos || 0) - d0;
+    } finally {
+      if (!guard.w) keys.delete('w');
+      Object.assign(S.pos, { x: guard.x, y: guard.y, z: guard.z }); S.vy = guard.vy;
+      Object.assign(M, { flying: guard.flying, swimming: guard.swimming, grounded: guard.grounded, vx: guard.vx, vz: guard.vz });
+      G.camara.yaw = guard.yaw;
+    }
+    r.ok = r.ok && !r.nado && !r.volo && !r.rescates;
+    return r;
+  }
+  // Posada encima de una baranda del tablero (a `s` m de A, del lado `sg`): con el joystick hacia delante 2 s, ¿baja al tablero y avanza?
+  function bajaDeBaranda(sv, sg) {
+    const F = G.fisica, M = F.MOVE, E = P.eje, st = G.input.stick;
+    const guard = { x: S.pos.x, y: S.pos.y, z: S.pos.z, vy: S.vy, flying: M.flying, swimming: M.swimming, grounded: M.grounded, vx: M.vx, vz: M.vz, yaw: G.camara.yaw, sx: st.x, sy: st.y };
+    const r = { encima: false, baja: false, avanza: 0, y0: 0, y1: 0, deck: 0 };
+    try {
+      const c = punto(sv / E.L), deck = F.suelo(c.x, c.z, deckY(sv / E.L) + 0.3);
+      let mejor = null;
+      for (let l = 0.6; l <= 1.3; l += 0.05) { const q = punto(sv / E.L, sg * l), y = F.suelo(q.x, q.z, deck + 2.2); if (y > deck + 0.3 && (!mejor || y < mejor.y)) mejor = { q, y }; }
+      if (!mejor) return r;
+      Object.assign(S.pos, { x: mejor.q.x, y: mejor.y, z: mejor.q.z }); S.vy = 0;
+      M.flying = false; M.swimming = false; M.grounded = true; M.vx = M.vz = 0;
+      F.step(0.05, false);
+      r.deck = deck; r.y0 = S.pos.y; r.encima = S.pos.y > deck + 0.3;
+      G.camara.yaw = Math.atan2(-E.ux, -E.uz); st.x = 0; st.y = -0.9;
+      for (let k = 0; k < 40; k++) { F.step(0.05, false); paso(0.05); }
+      const dx = S.pos.x - E.ax, dz = S.pos.z - E.az, s1 = dx * E.ux + dz * E.uz, c1 = punto(s1 / E.L);
+      r.y1 = S.pos.y; r.deck = F.suelo(c1.x, c1.z, S.pos.y); r.baja = S.pos.y < r.deck + 0.25; r.avanza = s1 - sv;
+    } finally {
+      st.x = guard.sx; st.y = guard.sy;
+      Object.assign(S.pos, { x: guard.x, y: guard.y, z: guard.z }); S.vy = guard.vy;
+      Object.assign(M, { flying: guard.flying, swimming: guard.swimming, grounded: guard.grounded, vx: guard.vx, vz: guard.vz });
+      G.camara.yaw = guard.yaw;
+    }
+    return r;
+  }
 
   // ---------- Prueba ----------
   async function test() {
@@ -423,6 +562,20 @@ window.AVV18Reparar = function (G) {
       check('Utilidad: caminando desde la cabecera de Villa Raíz se llega a la otra orilla (sin volar, nadar ni rescate)', ida.ok, textoCruce(ida));
       const vuelta = await cruzarAPie(P.eje.L + 6.5, -5);
       check('Utilidad: y caminando de vuelta se llega a la orilla de Villa Raíz', vuelta.ok, textoCruce(vuelta));
+      // Juego de niño: W sola, sin venir por el eje y con la cámara algo torcida, desde las dos cabeceras
+      const rectos = [];
+      for (const [lado, giro] of [[0.9, 0.15], [-0.9, -0.15], [1.5, 0], [0, -0.25]]) {
+        rectos.push(['A', lado, giro, await andarRecto(-8, lado, P.eje.L + 2, giro)]);
+        rectos.push(['B', lado, giro, await andarRecto(P.eje.L + 8, lado, -2, giro)]);
+      }
+      const malos = rectos.filter(x => !x[3].ok);
+      check('Juego de niño: con W sola (sin venir por el eje y la cámara hasta 14° torcida) se cruza desde las dos cabeceras', !malos.length,
+        rectos.length - malos.length + '/' + rectos.length + (malos.length ? ' · ' + malos.map(x => x[0] + ' lado ' + x[1] + ' giro ' + x[2] + ': ' + textoCruce(x[3])).join(' | ') : ''));
+      const quitadoPaso = (() => { const V = G.vegetacion, E = P.eje; let n = 0; if (!V || !V.instancias) return -1; for (const m in V.instancias) { const PM = V.instancias[m]; for (let i = 0; i < PM.n; i++) { const dx = PM.pos[i * 4] - E.ax, dz = PM.pos[i * 4 + 2] - E.az, sv = dx * E.ux + dz * E.uz, lat = Math.abs(-dx * E.uz + dz * E.ux); if (lat < PASO_LIBRE.lat && ((sv > PASO_LIBRE.a && sv < 0.5) || (sv > E.L - 0.5 && sv < E.L + PASO_LIBRE.b))) n++; } } return n; })();
+      check('Reparado: ningún árbol en el paso de las cabeceras (el de la cabecera B y el del eje detrás de A, quitados solo con la V18.1)', PASO_LIBRE.hecho && PASO_LIBRE.n > 0 && quitadoPaso === 0, 'quitados ' + PASO_LIBRE.n + ' · quedan ' + quitadoPaso);
+      const bar = [bajaDeBaranda(6, 1), bajaDeBaranda(15, -1)];
+      check('Posada en una baranda del puente, el joystick hacia delante la baja al tablero y sigue', bar.every(b => b.encima && b.baja && b.avanza > 2),
+        bar.map(b => 'encima ' + b.encima + ' y ' + b.y0.toFixed(2) + '→' + b.y1.toFixed(2) + ' (tablero al final ' + b.deck.toFixed(2) + ') avanza ' + b.avanza.toFixed(1)).join(' | '));
       // corriente: volando en el centro sube
       const M = G.fisica.MOVE, guard = { x: S.pos.x, y: S.pos.y, z: S.pos.z, flying: M.flying, vy: S.vy };
       S.pos.x = c.x; S.pos.z = c.z; S.pos.y = c.y + 3; M.flying = true; S.vy = 0;
@@ -451,7 +604,7 @@ window.AVV18Reparar = function (G) {
       const piedra1 = materiales.find(R => R.tipo === 'piedra'), fibra1 = materiales.find(R => R.tipo === 'fibra');
       piedra1.it.use(); fibra1.it.use();
       check('Recoger suma al inventario de siempre: piedra → S.inv.piedra, fibra → S.inv.madera, con aviso corto',
-        inv('piedra') === 1 && inv('madera') === 1 && !piedra1.g.visible && !fibra1.it.visible() && toasts.some(t => t === '+1 piedra') && toasts.some(t => /^\+1 fibra/.test(t)) && toasts.every(t => t.length < 40),
+        inv('piedra') === 1 && inv('madera') === 1 && !piedra1.g.visible && !fibra1.it.visible() && toasts.some(t => t === '+1 piedra') && toasts.some(t => /^\+1 fibra/.test(t)) && toasts.filter(t => /^\+1/.test(t)).every(t => t.length < 40),
         'madera ' + inv('madera') + ', piedra ' + inv('piedra') + ' · ' + toasts.join(' | '));
       check('Recoger otra vez no suma', !recogerMaterial(piedra1) && !recogerMaterial(fibra1) && inv('piedra') === 1 && inv('madera') === 1);
       V.recargar(); aplicar();
@@ -472,6 +625,6 @@ window.AVV18Reparar = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18Reparar = { ID, COSTE, estado, reparar, faltan, enCorriente, aplicar, maderas, materiales, recogerMaterial, P, cabeceras, cruzarAPie, test };
+  G.v18Reparar = { ID, COSTE, estado, reparar, faltan, enCorriente, aplicar, maderas, materiales, recogerMaterial, P, cabeceras, cruzarAPie, andarRecto, bajaDeBaranda, PASO_LIBRE, BARANDA, EMBUDO, paso, test };
   return G.v18Reparar;
 };

@@ -19,8 +19,14 @@ window.AVHumor = function (G) {
   };
   const sonar = () => { try { if (G.audio && G.audio.play) G.audio.play('humor'); } catch (e) { /* sin audio */ } };
   const gesto = n => { try { if (G.actores && G.actores.playEmote) G.actores.playEmote(n); } catch (e) { /* sin gesto */ } };
+  // Juego en familia (5-nov): en un duelo, frente a la Sombra o siguiendo a la cotorra, un «Bostezo…» o «¡Ja, ja!» tapaba el
+  // aviso que importa. Ahí no hay humor físico (solo se anota, para que no se repita al salir).
+  const fase = m => { try { const e = m && m.estado && m.estado(); return !!(e && e.fase && e.fase !== 'nada'); } catch (er) { return false; } };
+  const enApuro = () => fase(G.v18combate) || fase(G.v18duelo2) || fase(G.v18amenaza) || !!(G.v18descubrir && G.v18descubrir.R && G.v18descubrir.R.activo);
   function hacer(id) {
-    ultimo = id; sonar();
+    ultimo = id;
+    if (enApuro()) return null;
+    sonar();
     if (id === 'estornudo') { gesto('molestia'); if (G.fx) G.fx.burst(S.pos.x, S.pos.y + 0.5, S.pos.z, 'leaves', 10); }
     else if (id === 'mareo') gesto('molestia');
     else if (id === 'resbalon') { if (G.fx && G.fx.polvo) G.fx.polvo(S.pos.x, S.pos.y, S.pos.z, 0.6); }
@@ -67,6 +73,9 @@ window.AVHumor = function (G) {
       quieta = 28; M.grounded = true; M.flying = false; M.speed = 0; M.swimming = false;
       paso(0.05, true);
       ok('Quieta un rato, se duerme', ultimo === 'siesta', ultimo + ' ' + quieta.toFixed(2));
+      const cb0 = G.v18combate, t0 = G.ui.toast; let avisos = 0;
+      G.v18combate = { estado: () => ({ fase: 'lucha' }) }; G.ui.toast = () => { avisos++; };
+      try { ok('En pleno duelo no hay avisos de humor', hacer('risa') === null && avisos === 0, avisos); } finally { G.ui.toast = t0; if (cb0) G.v18combate = cb0; else delete G.v18combate; }
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     G.quiet = q; quieta = 0; loops = 0; siestas = siestasAntes;
     try { if (crudoH == null) localStorage.removeItem(CLAVE_H); else localStorage.setItem(CLAVE_H, crudoH); } catch (e) { /* */ }

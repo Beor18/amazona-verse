@@ -138,6 +138,34 @@ window.AVV18Habilidades = function (G) {
       return { ok: true, acierto: ctx.golpear(otro, { plumas: 1, empuje: 15, mareo: 1.2, rompeEscudo: true, dir: dirA(yo, otro) }) };
     } });
 
+  // ---------- Dos más (Kelvin 5-nov, V18_MATRIZ_36.md #9 y #24): llegan al deshacer la Serpiente y al despertar al Sapo ----------
+  // Abanico de colores (guildingii, PLUMAS): abre la cola y deslumbra a la rival 1 s (no puede atacar) y su siguiente tiro
+  // (semillas, en los 5 s siguientes) sale torcido y falla. Ventaja: corta combos. Debilidad: no empuja ni quita plumas; alcance 8 m.
+  registrar({ id: 'abanico_colores', nombre: 'Abanico de colores', especies: ['guildingii'], tecnica: 'plumas', coste: 30, cooldown: 9, fx: 'stars',
+    alcance: 8, deslumbra: 1, fallaDura: 5,
+    efecto(ctx) {
+      const { yo, otro } = ctx; yo.alasT = 0.6; yo.cara = 'fight';
+      ctx.fx('stars', yo.pos.x, yo.pos.y + 1.1, yo.pos.z); ctx.sonar('unlock');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, alcance: this.alcance });
+      if (dist(yo, otro) > this.alcance) return { ok: true, acierto: false };
+      otro.deslumbrada = Math.max(otro.deslumbrada || 0, this.deslumbra); otro.falla = this.fallaDura;
+      ctx.fx('stars', otro.pos.x, otro.pos.y + 1.5, otro.pos.z);
+      return { ok: true, acierto: true };
+    } });
+  // Semilla de río (diadema, PICO): semilla lenta (9 m/s) que sale en arco y bota en el suelo dos veces antes de acabarse.
+  // Ventaja: difícil de esquivar (llega por abajo y a destiempo). Debilidad: lenta. Quien mueve las semillas aplica `arco`
+  // (combate.js); donde no se aplica, vuela como una semilla lenta normal.
+  registrar({ id: 'semilla_rio', nombre: 'Semilla de río', especies: ['diadema'], tecnica: 'pico', coste: 30, cooldown: 8, fx: 'leaves', vel: 9, vida: 2.6,
+    efecto(ctx) {
+      const { yo, otro } = ctx, d = dirA(yo, otro);
+      if (yo.mira && !yo.ia) { const f = yo.mira(); if (f && f.x * d.x + f.z * d.z < 0.35) { const n = Math.hypot(f.x, f.z) || 1; d.x = f.x / n; d.z = f.z / n; } } // puntería amable, como la semilla
+      ctx.lanzar({ de: yo, x: yo.pos.x + d.x * 0.8, y: yo.pos.y + 0.9, z: yo.pos.z + d.z * 0.8, vx: d.x * this.vel, vy: 0, vz: d.z * this.vel,
+        vida: this.vida, radio: 1.1, arco: { vy: 3, g: 12, rebote: 0.75 }, botes: 2, golpe: { plumas: 1, empuje: 4, mareo: 0.5 } });
+      ctx.fx('leaves', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: d.x, y: 0, z: d.z } });
+      return { ok: true };
+    } });
+
   // ---------- Luchadores ----------
   function luchador(o) {
     const sp = o.especie || 'vittata';
@@ -148,6 +176,7 @@ window.AVV18Habilidades = function (G) {
   function listo(f, id) {
     const h = get(id); if (!h) return { ok: false, motivo: 'no existe' };
     if (f.mareo > 0) return { ok: false, motivo: 'mareo' };
+    if (f.deslumbrada > 0) return { ok: false, motivo: 'deslumbrada' }; // Abanico de colores
     if ((f.cd[id] || 0) > 0) return { ok: false, motivo: 'espera' };
     if (f.energia < h.coste) return { ok: false, motivo: 'energia' };
     if (!h.basico && f.poder !== id) return { ok: false, motivo: 'no es suyo' };
@@ -158,7 +187,12 @@ window.AVV18Habilidades = function (G) {
     const l = listo(f, id); if (!l.ok) return l;
     f.energia -= l.h.coste; f.cd[id] = l.h.cooldown;
     const c = Object.assign({ yo: f, onda: nada, escudo: nada, poder: nada, despues: (s, fn) => fn(), fx: nada, sonar: nada, lanzar: nada }, ctx);
+    // Abanico de colores: el siguiente tiro de la deslumbrada sale torcido (todas las semillas de ese uso) y no da
+    let torcido = 0;
+    if (f.falla > 0) { const l0 = c.lanzar, lado = Math.random() < 0.5 ? -1 : 1; c.lanzar = b => { const a = lado * 0.6, ca = Math.cos(a), sa = Math.sin(a), vx = b.vx;
+      b.vx = vx * ca - b.vz * sa; b.vz = vx * sa + b.vz * ca; b.vy = (b.vy || 0) + 2.5; b.falla = true; torcido++; return l0(b); }; }
     const r = l.h.efecto(c) || { ok: true };
+    if (torcido) f.falla = 0;
     return Object.assign({ ok: true, id }, r);
   }
   // Recibir un golpe: la regla común de todos los duelos (contra la IA en combate.js, de 2 jugadores en duelo2.js).
@@ -190,6 +224,7 @@ window.AVV18Habilidades = function (G) {
     for (const k in f.cd) f.cd[k] = Math.max(0, f.cd[k] - dt);
     f.mareo = Math.max(0, f.mareo - dt); f.inv = Math.max(0, f.inv - dt); f.escudo = Math.max(0, f.escudo - dt);
     f.picoT = Math.max(0, (f.picoT || 0) - dt); f.marcada = Math.max(0, (f.marcada || 0) - dt); f.alasT = Math.max(0, (f.alasT || 0) - dt);
+    f.deslumbrada = Math.max(0, (f.deslumbrada || 0) - dt); f.falla = Math.max(0, (f.falla || 0) - dt);
     if (!f.picoT && f.cara === 'fight') f.cara = null;
   }
   G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, recibir, paso, dist, dirA, mira };

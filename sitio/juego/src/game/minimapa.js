@@ -514,8 +514,11 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       const kd = key => window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
       kd('m'); const conM = abierto; kd('m'); const sinM = !abierto;
       check('La tecla M abre y cierra el mapa grande', conM && sinM);
-      kd('m'); kd('Escape');
+      kd('m'); kd('Escape'); window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', bubbles: true, cancelable: true }));
+      const elP = doc.getElementById('pause'), pOn = () => { try { return !!elP && elP.matches(':popover-open'); } catch (e) { return false; } }, pausaAbierta = pOn();
+      if (pausaAbierta) try { elP.hidePopover(); } catch (e) { /* sin popover */ }
       check('Esc cierra el mapa grande', !abierto && !G.pausa.motivos.has('mapa'));
+      check('Esc con el mapa abierto no abre también la Pausa', !pausaAbierta);
       elC.querySelector('.mm-btn').click(); const porClic = abierto; elG.querySelector('.mg-cerrar').click();
       check('El toque en el minimapa abre y «Cerrar» cierra', porClic && !abierto);
       // Destino por toque: fijar y quitar

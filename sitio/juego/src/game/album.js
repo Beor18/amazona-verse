@@ -63,6 +63,12 @@ AVE.module('album', function (G) {
   const visto = id => Array.isArray(S.album) && S.album.includes(id);
   function cuenta() { const v = Array.isArray(S.album) ? S.album : []; const n = vivas().filter(e => v.includes(e.id)).length; return { n, m: vivas().length }; }
 
+  // Juego en familia (5-nov): en mitad de un duelo o frente a la Sombra (V18) el aviso tapaba el marcador; espera a que acabe.
+  const enDuelo = () => !!document.body && /\bv18-(duelo|amenaza)-on\b/.test(document.body.className);
+  let diferido = null;
+  const avisar = (html, ms) => { if (enDuelo()) { diferido = [html, ms]; return; } G.ui.toastHTML(html, ms); };
+  G.on('update', () => { if (diferido && !enDuelo() && !G.quiet) { const d = diferido; diferido = null; try { G.ui.toastHTML(d[0], d[1]); } catch (err) { /* sin HUD */ } } }, 86);
+
   // Ver una especie de cerca: la primera vez abre su tarjeta, avisa y guarda. Devuelve true si es nueva.
   function ver(id, fuente) {
     if (!id || !esViva(id) || !activo()) return false;
@@ -71,7 +77,7 @@ AVE.module('album', function (G) {
     const e = vivas().find(x => x.id === id), c = cuenta();
     G.emit('album', { id, fuente: fuente || '' });
     if (!G.quiet) {
-      try { G.ui.toastHTML(`<b data-no-tr>${esc(L('Álbum de las 36', 'Album of the 36'))} · ${esc(L('¡Nueva cotorra!', 'New parrot!'))}</b> <span data-no-tr>${esc(nombre(e, enIngles() ? 'en' : 'es'))} (${c.n}/${c.m})</span>`, 3600); } catch (err) { /* sin HUD */ }
+      try { avisar(`<b data-no-tr>${esc(L('Álbum de las 36', 'Album of the 36'))} · ${esc(L('¡Nueva cotorra!', 'New parrot!'))}</b> <span data-no-tr>${esc(nombre(e, enIngles() ? 'en' : 'es'))} (${c.n}/${c.m})</span>`, 3600); } catch (err) { /* sin HUD */ }
       try { G.audio.play('descubrir'); } catch (err) { /* sin audio */ }
       try { G.guardado.autosave(); } catch (err) { /* sin guardado */ }
     }

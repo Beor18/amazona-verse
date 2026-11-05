@@ -472,14 +472,25 @@ window.AVLook = function (G) {
     console.error = function () { errores.push([].map.call(arguments, String).join(' ').slice(0, 160)); return ce.apply(console, arguments); };
     const cuadro = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     // QA-78: con la Mac cargada la fauna, los peces y la bandada entran entre medidas; se espera a 3 cuadros seguidos con los mismos draw calls (tope 10 s)
-    const asentar = async () => { const t0 = performance.now(); let ult = -1, n = 0; while (n < 3 && performance.now() - t0 < 10000) { await cuadro(); const c = R.stats().calls; n = c === ult ? n + 1 : 1; ult = c; } };
+    // KIMI-103: y a que el precalentado haya enlazado todas las familias —al aplicar un look todas quedan pendientes y ocultarPendientes las quita del dibujo, así que una foto antes del drenado sale con la escena incompleta y el croma miente.
+    const asentar = async () => { const t0 = performance.now(); let ult = -1, n = 0; while (n < 3 && performance.now() - t0 < 10000) { await cuadro(); const c = R.stats().calls, p = R.precarga ? R.precarga.programas() : 0; n = (c === ult && p <= 0 && !colaRec.length) ? n + 1 : 1; ult = c; } };
     const foto = () => {
       R.drawScene(R.camera); R.renderer.setRenderTarget(null);
       const gl = R.renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, px = new Uint8Array(w * h * 4);
       gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
       let croma = 0, n = 0, quemado = 0;
       for (let i = 0; i < px.length; i += 16) { const r = px[i], g = px[i + 1], b = px[i + 2], mx = Math.max(r, g, b); croma += mx - Math.min(r, g, b); if (mx >= 252 && Math.min(r, g, b) >= 236) quemado++; n++; }
-      return { croma: croma / n, quemado: quemado / n }; // croma medio (0–255) y fracción de píxeles casi blancos (quemados)
+      return { croma: croma / n, quemado: quemado / n, w, h, px }; // QA-176: se conservan píxeles y tamaño para la comparación diferencial
+    };
+    // QA-176: comparación diferencial sobre la escena congelada. El croma absoluto de la vista sembrada varía
+    // entre corridas (evolución del mundo, DPR, calidad adaptativa), así que el umbral antiguo (c1 > c0*1.03) era
+    // imposible de fijar: lo que debe cumplirse es que el look CAMBIE la imagen respecto a fábrica, y que al quitar
+    // vuelva. Misma retícula de muestreo que foto() (1 de cada 4 píxeles); un píxel «distinto» suma >12 por canal.
+    const delta = (A, B) => {
+      if (!A || !B || A.w !== B.w || A.h !== B.h) return null;
+      let distintos = 0, n = 0, suma = 0;
+      for (let i = 0; i < A.px.length; i += 16) { const d = Math.abs(A.px[i] - B.px[i]) + Math.abs(A.px[i + 1] - B.px[i + 1]) + Math.abs(A.px[i + 2] - B.px[i + 2]); suma += d; if (d > 12) distintos++; n++; }
+      return { distintos: distintos / n, medio: suma / n / 3 };
     };
     const firma = () => {
       const u = R.sky && R.sky.material.uniforms, fog = R.scene.fog;
@@ -492,6 +503,12 @@ window.AVLook = function (G) {
     };
     const quieta = G.pausa; if (quieta) quieta.set('prueba-look', true);
     if (G.clima && G.clima.fijar) G.clima.fijar('sol', { inmediato: true }); // sin transición de clima a mitad de la prueba
+    // QA-176: la comparación de imágenes es diferencial sobre la escena congelada, así que nada puede moverla a mitad:
+    // calidad adaptativa y resolución dinámica fijas, y el haz guía quieto en un instante (late con el reloj real aun
+    // en pausa —mismo truco que contextTest, QA-30— y en la vista sembrada cruza el encuadre).
+    const calManual0 = R.calidad.manual; R.calidad.manual = true;
+    const pinDPR0 = R._dyn && R._dyn.pin; if (R._dyn) R._dyn.pin = true;
+    const guia0 = G.fx && G.fx.guide; if (guia0) G.fx.guide = tg => guia0(tg, 0);
     try {
       if (actual) quitar();
       await cuadro(); await asentar();
@@ -508,11 +525,12 @@ window.AVLook = function (G) {
       for (const n of NOMBRES) {
         const t0 = performance.now(); aplicar(n); const tApl = performance.now() - t0;
         await cuadro(); await cuadro(); await asentar();
-        const f1 = foto(), c1 = f1.croma, m1 = medir(), L = LOOKS[n];
+        const f1 = foto(), c1 = f1.croma, m1 = medir(), L = LOOKS[n], d1 = delta(f0, f1);
         check(`Look «${n}»: se aplica (chunk, exposición, sol, cielo, niebla y clave de programas)`, actual === n && SC.tonemapping_fragment !== ORIG.tone && R.renderer.toneMappingExposure === L.exposicion &&
           R.sun.intensity === L.luces.solInt && (!R.sky || hex(R.sky.material.uniforms.uCenit.value) === hex(lin(L.cielo.cenit))) && (!R.ATMOS || R.scene.fog.far === L.niebla.fin) &&
           new THREE.MeshBasicMaterial().customProgramCacheKey().endsWith('|look:' + n), Math.round(tApl) + ' ms en aplicar');
-        check(`Look «${n}»: la imagen tiene más color que la de fábrica`, c1 > c0 * 1.03, 'croma medio ' + c0.toFixed(1) + ' → ' + c1.toFixed(1));
+        check(`Look «${n}»: la imagen cambia respecto a fábrica (QA-176: diferencial de píxeles sobre la escena congelada)`, !!d1 && d1.distintos >= 0.04 && d1.medio >= 1,
+          d1 ? (d1.distintos * 100).toFixed(1) + ' % píxeles distintos · Δ medio ' + d1.medio.toFixed(1) + ' · croma ' + c0.toFixed(1) + ' → ' + c1.toFixed(1) : 'cambió el tamaño del lienzo (' + f0.w + '×' + f0.h + ' → ' + f1.w + '×' + f1.h + ')');
         check(`Look «${n}»: el chip de la pausa lo marca`, !!sec && sec.querySelector(`button[data-look="${n}"]`).getAttribute('aria-pressed') === 'true');
         { const pg = R.post && R.post.grade && R.post.grade.uniforms;
           check(`Look «${n}»: sustituye la gradación de fábrica en vez de sumarse (CustomToneMapping = ACES puro; uSat/uCon del composer = 1; viñeta intacta)`,
@@ -542,9 +560,10 @@ window.AVLook = function (G) {
         check(`Look «${n}»: mismo número de draw calls que de fábrica (±10 % o 8: la fauna, los peces, las partículas y la bandada van y vienen entre medidas)`, Math.abs(m1.calls - m0.calls) <= Math.max(8, m0.calls * 0.1), m0.calls + ' → ' + m1.calls + ' · ' + m0.triangulos + ' → ' + m1.triangulos + ' triángulos · programas ' + m0.programas + ' → ' + m1.programas);
       }
       quitar(); await cuadro(); await cuadro(); await asentar();
-      const F1 = firma(), c2 = foto().croma, m2 = medir();
+      const F1 = firma(), f2 = foto(), c2 = f2.croma, m2 = medir(), d2 = delta(f0, f2);
       check('Al quitar el look todo vuelve a fábrica (chunks, exposición, luces, cielo, niebla, saturación del suelo, claves)', F0 === F1, F0 === F1 ? '' : 'difiere');
-      check('Al quitar el look la imagen vuelve a la de fábrica', Math.abs(c2 - c0) < Math.max(1.5, c0 * 0.04), 'croma ' + c0.toFixed(1) + ' → ' + c2.toFixed(1));
+      check('Al quitar el look la imagen vuelve a la de fábrica (QA-176: diferencial; texturas y escena ya restauradas)', !!d2 && d2.distintos <= 0.08 && Math.abs(c2 - c0) < Math.max(2, c0 * 0.05),
+        d2 ? (d2.distintos * 100).toFixed(1) + ' % píxeles distintos · croma ' + c0.toFixed(1) + ' → ' + c2.toFixed(1) : 'cambió el tamaño del lienzo (' + f0.w + '×' + f0.h + ' → ' + f2.w + '×' + f2.h + ')');
       check('Al quitar el look las texturas vuelven a su tamaño (no quedan reducidas; si otros módulos cargan texturas durante la prueba, el total puede crecer)', m2.texturasGrandes >= m0.texturasGrandes && m2.texturasMB > m0.texturasMB - 0.5, m0.texturasMB + ' → ' + m2.texturasMB + ' MB');
       { let rim = 0, colores = 0, obc = 0; R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
           if (m.defines && m.defines.AV_RIM) rim++;
@@ -560,6 +579,7 @@ window.AVLook = function (G) {
       console.error = ce;
       if (antes) aplicar(antes);
       if (G.clima && G.clima.fijar) G.clima.fijar(null);
+      R.calidad.manual = calManual0; if (R._dyn) R._dyn.pin = pinDPR0; if (guia0) G.fx.guide = guia0; // QA-176
       if (quieta) quieta.set('prueba-look', false);
     }
     return result();
