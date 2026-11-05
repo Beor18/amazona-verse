@@ -48,7 +48,7 @@ REP="$OUT/reporte-test.md"
 set +e
 for INTENTO in 1 2 3; do
   rm -f "$REP"
-  timeout -k 30 7400 "$AV_PYTHON" tools/build/avtest.py "$OUT" --config "$CFG"
+  timeout -k 30 7400 "$AV_PYTHON" tools/build/avtest.py "$OUT" --config "$CFG" ${AV_PARALELO:+--paralelo $AV_PARALELO}
   RC=$?
   # Sin reporte = la página no respondió (sin GPU el primer cuadro a veces bloquea >10 s): se reintenta
   [ -f "$REP" ] && break
