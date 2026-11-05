@@ -52,6 +52,7 @@ window.AVV18Progreso = function (G) {
     d.otorgados[rewardKey] = true; d.inv[itemId] = (d.inv[itemId] || 0) + (n || 1); guardar();
     emit({ tipo: 'recompensa', rewardKey, itemId, n: n || 1 }); return true;
   }
+  const otorgado = rewardKey => !!datos().otorgados[rewardKey]; // solo lectura: ¿esa recompensa ya se dio?
   const cuantos = itemId => datos().inv[itemId] || 0;
   function gastar(itemId, n) {
     const d = datos(); n = n || 1; if ((d.inv[itemId] || 0) < n) return false;
@@ -83,6 +84,6 @@ window.AVV18Progreso = function (G) {
   }
 
   G.on('apply', () => { D = null; }, 30);
-  G.v18 = { ESTADOS, clave, estado, descubrir, desbloquear, seleccionar, seleccionada, otorgar, cuantos, gastar, mundo, cambiarMundo, recargar, borrar, test };
+  G.v18 = { ESTADOS, clave, estado, descubrir, desbloquear, seleccionar, seleccionada, otorgar, otorgado, cuantos, gastar, mundo, cambiarMundo, recargar, borrar, test };
   return G.v18;
 };

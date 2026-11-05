@@ -1803,5 +1803,10 @@ window.AV_EN = {
  "Cotorra de Dominica": "Dominica parrot",
  "Para el duelo: {} ({})": "For the duel: {} ({})",
  "Listo": "Done",
- "Cotorra puertorriqueña": "Puerto Rican parrot"
+ "Cotorra puertorriqueña": "Puerto Rican parrot",
+ "¡Ganaste 2 maderas y 1 piedra! Con eso se repara el puente colgante: sigue la bandera verde del mapa.": "You won 2 pieces of wood and 1 stone! That's what fixes the hanging bridge: follow the green flag on the map.",
+ "¡Ganaste 2 maderas y 1 piedra! El puente ya está reparado: guárdalas para lo que venga.": "You won 2 pieces of wood and 1 stone! The bridge is already fixed: keep them for whatever comes next.",
+ "Dicen que en el bosque canta una cotorra de otra isla. Encuéntrala, síguela y prueba su poder en el duelo: la bandera verde del mapa te lleva.": "They say a parrot from another island sings in the forest. Find her, follow her and try her power in the duel: the green flag on the map will take you there.",
+ "Reto extra: gana otra vez a la Campeona, ahora con esta cotorra: {}. Cámbiala en Mis cotorras; con otro poder el duelo se juega distinto.": "Extra challenge: beat the Champion again, this time with this parrot: {}. Switch in My parrots; with another power the duel plays differently.",
+ "¡Reto extra cumplido! Le ganaste a la Campeona con dos cotorras distintas.": "Extra challenge complete! You beat the Champion with two different parrots."
 };
