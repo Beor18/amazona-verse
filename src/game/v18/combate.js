@@ -41,26 +41,67 @@ window.AVV18Combate = function (G) {
   const emitir = ev => { try { G.emit('v18combate', ev); } catch (e) { /* sin oyentes */ } };
 
   // ---------- Sitio: la explanada más plana y libre cerca del este de la plaza ----------
-  function plano(x, z) {
+  // QA-174: antes miraba los colliders de árbol y los sólidos de flora, que solo existen a 40 m de la jugadora: según dónde
+  // cargara la partida, el sitio cambiaba y podía caer con troncos dentro. Ahora mira solo datos fijos del mapa (terreno, agua,
+  // colliders que no son de flora y todas las instancias de árboles, rocas y troncos caídos de vegetacion.js), así que sale
+  // igual en cada carga; prefiere un sitio sin troncos en el círculo ni en el pasillo de la cámara (x − 5 … x − 14).
+  // El bosque no se toca. Se recalcula cuando la vegetación y el mundo terminan de cargar (antes de eso aún no hay troncos).
+  const LIBRE_R = ARENA_R + 0.5;
+  function flora(cx, cz, R) {
+    const V = G.vegetacion, P = V && V.instancias, inf = V && V.info, out = [];
+    if (!P || !inf) return out;
+    for (const m in P) {
+      const I = inf[m], PM = P[m], roca = /roca|piedra|tronco_caido/.test(m); if (!I || !PM || (!roca && !(I.tronco >= 0.08))) continue;
+      for (let i = 0; i < PM.n; i++) {
+        const x = PM.pos[i * 4], z = PM.pos[i * 4 + 2], sc = PM.pos[i * 4 + 3];
+        if (Math.abs(x - cx) < R && Math.abs(z - cz) < R) out.push({ x, z, r: roca ? Math.max(0.5, (I.ancho || 1) * 0.5 * sc) : Math.max(0.2, I.tronco * sc), m });
+      }
+    }
+    return out;
+  }
+  // Troncos (o rocas) dentro del círculo o del pasillo de la cámara de un sitio; peso: 3 dentro del círculo, 1 en el pasillo
+  function estorbos(x, z, lista) {
+    const out = []; out.peso = 0;
+    for (const o of lista) {
+      if (Math.hypot(o.x - x, o.z - z) < LIBRE_R + o.r) { out.push(o); out.peso += 3; continue; }
+      const t = Math.max(-14, Math.min(-5, o.x - x)); // pasillo de la cámara al oeste del punto de salida
+      if (Math.hypot(o.x - (x + t), o.z - z) < 2 + o.r) { out.push(o); out.peso += 1; }
+    }
+    return out;
+  }
+  function plano(x, z, cols) {
     const h0 = G.terreno.height(x, z); let mn = h0, mx = h0;
     for (let a = 0; a < 16; a++) for (const r of [4, 8, ARENA_R]) {
       const px = x + Math.cos(a / 16 * 6.2832) * r, pz = z + Math.sin(a / 16 * 6.2832) * r, h = G.terreno.height(px, pz);
       mn = Math.min(mn, h); mx = Math.max(mx, h);
       if (G.agua && G.agua.levelAt && G.agua.levelAt(px, pz) > h - 0.3) return Infinity;
-      if (r < ARENA_R && G.solidos && G.solidos.activo && G.solidos.altoEn(px, pz, h + 6) > h + 0.5) return Infinity;
-      for (const c of (F.colliders || [])) if (c && c.x != null && c.z != null && Math.hypot(px - c.x, pz - c.z) < (c.r || 1) + 0.6) return Infinity;
+      for (const c of cols) if (Math.hypot(px - c.x, pz - c.z) < (c.r || 1) + 0.6) return Infinity;
     }
     return mx - mn;
   }
-  function buscarSitio() {
+  // Rejilla cada 3 m en ±18 m del punto preferido (al este de la plaza, como pidió Kelvin): plano (≤ 1,6 m), seco, sin
+  // edificios; gana uno sin troncos si lo hay y, si no, el más plano y cercano (como antes). En el mapa actual no hay ningún
+  // hueco seco y plano sin árboles a menos de 90 m de la plaza (medido): los 3 candidatos tienen 27–30 troncos y elegir
+  // «el de menos» no cambia nada a la vista. Despejar el círculo es decisión de Kelvin (ver BUGS QA-174).
+  // Solo lo grande y fijo del mapa (edificios, estructuras, taller): los objetos sueltos, bancos, estacas y vecinos entran
+  // con el streaming o se mueven, y hacían que el sitio dependiera del momento de la carga
+  const FIJOS = new Set(['edificio', 'estructura', 'taller']);
+  function candidatos() {
     const pl = G.terreno.places || {}, v = pl.villa || pl.plaza || { x: S.pos.x, z: S.pos.z };
-    const pref = pl.villa ? { x: v.x + 26, z: v.z + 5 } : { x: v.x + 10, z: v.z };
-    let mejor = null;
-    for (let dx = -18; dx <= 18; dx += 3) for (let dz = -18; dz <= 18; dz += 3) {
-      const x = pref.x + dx, z = pref.z + dz, d = plano(x, z); if (!isFinite(d) || d > 1.6) continue;
-      const puntos = d * 20 + Math.hypot(dx, dz);
-      if (!mejor || puntos < mejor.p) mejor = { x, z, p: puntos };
+    const pref = pl.villa ? { x: v.x + 26, z: v.z + 5 } : { x: v.x + 10, z: v.z }, A = 18, R = A + ARENA_R + 6;
+    const lista = flora(pref.x, pref.z, A + 14 + LIBRE_R + 4);
+    const cols = (F.colliders || []).filter(c => c && FIJOS.has(c.kind) && c.x != null && c.z != null && Math.abs(c.x - pref.x) < R + (c.r || 1) && Math.abs(c.z - pref.z) < R + (c.r || 1));
+    const out = [];
+    for (let dx = -A; dx <= A; dx += 3) for (let dz = -A; dz <= A; dz += 3) {
+      const x = pref.x + dx, z = pref.z + dz, d = plano(x, z, cols); if (!isFinite(d) || d > 1.6) continue;
+      const e = estorbos(x, z, lista);
+      out.push({ x, z, peso: e.peso, n: e.length, p: d * 20 + Math.hypot(dx, dz) });
     }
+    return { pref, out };
+  }
+  function buscarSitio() {
+    const { pref, out } = candidatos(); let mejor = null;
+    for (const c of out) if (!mejor || (c.peso === 0) > (mejor.peso === 0) || ((c.peso === 0) === (mejor.peso === 0) && c.p < mejor.p)) mejor = c;
     if (!mejor) mejor = { x: pref.x, z: pref.z };
     return { x: mejor.x, z: mejor.z, y: G.terreno.height(mejor.x, mejor.z) };
   }
@@ -244,9 +285,12 @@ window.AVV18Combate = function (G) {
     const ms = performance.now() - sost; sost = 0;
     usar(C.j, ms >= 450 ? C.j.poder : 'semilla');
   }
+  // QA-173: la G del poder se queda en el duelo (fase de captura, antes que input.js): no llega a G.input.keys y la cámara
+  // no se inclina (camara.js usa T/G para mirar arriba/abajo). Fuera del duelo este oyente no existe y G hace lo de siempre.
   function tecla(e) {
-    if (e.repeat || !enganchado || C.fase !== 'lucha') return;
-    if ((e.key || '').toLowerCase() === 'g' && !(e.target && /INPUT|TEXTAREA/.test(e.target.nodeName))) usar(C.j, C.j.poder);
+    if (!enganchado || (e.key || '').toLowerCase() !== 'g' || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
+    e.stopImmediatePropagation();
+    if (!e.repeat && C.fase === 'lucha') usar(C.j, C.j.poder);
   }
   // Pico y alas de la protagonista: se ponen justo antes de que el modelo se anime (envoltura de player3D.update mientras dura
   // el duelo; actores.js escribe mouth/wingMode cada cuadro y aquí solo se sobrescriben cuando el poder lo pide)
@@ -276,14 +320,14 @@ window.AVV18Combate = function (G) {
     if (enganchado) return; enganchado = true;
     modo0 = G.interaccion.modo; G.interaccion.modo = modo;
     if (G.dones) { sostener0 = G.dones.sostener; G.dones.sostener = sostenerDuelo; }
-    addEventListener('keydown', tecla); envolverJugador();
+    addEventListener('keydown', tecla, true); if (G.input && G.input.keys) G.input.keys.delete('g'); envolverJugador();
     document.body.classList.add('v18-duelo-on');
   }
   function soltar() {
     if (!enganchado) return; enganchado = false;
     if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
     if (G.dones && G.dones.sostener === sostenerDuelo) G.dones.sostener = sostener0;
-    removeEventListener('keydown', tecla); sost = 0; soltarJugador();
+    removeEventListener('keydown', tecla, true); sost = 0; soltarJugador();
     document.body.classList.remove('v18-duelo-on');
   }
 
@@ -493,7 +537,8 @@ window.AVV18Combate = function (G) {
       const b = C.balas[i], p = b.m.position;
       const blanco = b.de === C.j ? C.r : C.j;
       if (blanco.marcada > 0) { const hx = blanco.pos.x - p.x, hz = blanco.pos.z - p.z, hn = Math.hypot(hx, hz) || 1, v = Math.hypot(b.vx, b.vz), k = Math.min(1, dt * 6);
-        b.vx += (hx / hn * v - b.vx) * k; b.vz += (hz / hn * v - b.vz) * k; } // Ojo del cenote: la semilla busca a la marcada
+        b.vx += (hx / hn * v - b.vx) * k; b.vz += (hz / hn * v - b.vz) * k;
+        b.vy += (((blanco.pos.y + 0.9) - p.y) / Math.max(0.15, hn / (v || 1)) - b.vy) * k; } // Ojo del cenote: la semilla busca a la marcada (también en altura: en la explanada en cuesta se iba por debajo)
       b.t += dt; p.x += b.vx * dt; p.y += b.vy * dt; p.z += b.vz * dt;
       const dx = p.x - blanco.pos.x, dy = p.y - (blanco.pos.y + 0.9), dz = p.z - blanco.pos.z;
       let fin = b.t >= b.vida || p.y < G.terreno.height(p.x, p.z) - 0.1;
@@ -547,6 +592,20 @@ window.AVV18Combate = function (G) {
     paso(Math.min(dt, 0.1));
   }, 70);
   G.on('apply', () => { if (C.fase !== 'nada') salir(); }, 47);
+  // QA-174: cuando ya están la vegetación y el mundo, el sitio definitivo (fijo entre cargas); si hay un duelo abierto, al acabar
+  let recolocar = false;
+  function moverSitio() {
+    recolocar = false;
+    const n = buscarSitio(); if (n.x === sitio.x && n.z === sitio.z) return false;
+    Object.assign(sitio, n); marca.position.set(sitio.x, sitio.y + 0.06, sitio.z);
+    rivalPos.x = sitio.x + 4; rivalPos.z = sitio.z; rivalPos.y = ALTURA(rivalPos); it.x = rivalPos.x; it.z = rivalPos.z;
+    if (C.ch) C.ch.root.position.set(rivalPos.x, rivalPos.y, rivalPos.z);
+    return true;
+  }
+  const pedirSitio = () => { recolocar = true; };
+  Promise.resolve(G.vegetacion && G.vegetacion.listo).then(pedirSitio, pedirSitio);
+  Promise.resolve(G.mundo && G.mundo.listo).then(pedirSitio, () => {});
+  G.on('update', () => { if (recolocar && C.fase === 'nada') moverSitio(); }, 69);
   crearRival();
 
   // ---------- Prueba ----------
@@ -576,6 +635,21 @@ window.AVV18Combate = function (G) {
 
       // 2. La rival en el mundo; el jugador usa el poder de su especie elegida
       await crearRival();
+      // QA-174: sitio fijo entre cargas (no depende de dónde esté la jugadora) y sin troncos en el círculo ni tras la cámara
+      {
+        if (recolocar) moverSitio();
+        const V = G.vegetacion, refresca = () => { try { if (V && V.actualizar) V.actualizar(); } catch (e) { /* flora */ } };
+        const cerca = flora(sitio.x, sitio.z, 40), aqui = estorbos(sitio.x, sitio.z, cerca), cands = candidatos().out;
+        const px = S.pos.x, pz = S.pos.z;
+        S.pos.x = sitio.x - 5; S.pos.z = sitio.z; refresca(); const a = buscarSitio();
+        S.pos.x = sitio.x + 400; S.pos.z = sitio.z + 300; refresca(); const b = buscarSitio();
+        S.pos.x = px; S.pos.z = pz; refresca();
+        const yo = cands.find(c => c.x === sitio.x && c.z === sitio.z), libres = cands.filter(c => !c.peso);
+        check('QA-174: la explanada es plana, seca y sin edificios; si hay un sitio sin troncos, es ese', !!yo && (libres.length ? !aqui.length : cands.every(c => c.p >= yo.p)),
+          JSON.stringify({ sitio: [sitio.x, sitio.z], troncos: aqui.length, peso: aqui.peso, pesoMax: Math.max(0, ...cands.map(c => c.peso)), candidatos: cands.length, libres: libres.length, pref: (() => { const q = candidatos().pref, h = G.terreno.height(q.x, q.z); let mn = h, mx = h, ag = 0; for (let a = 0; a < 16; a++) for (const r of [4, 8, ARENA_R]) { const px = q.x + Math.cos(a / 16 * 6.2832) * r, pz = q.z + Math.sin(a / 16 * 6.2832) * r, hh = G.terreno.height(px, pz); mn = Math.min(mn, hh); mx = Math.max(mx, hh); if (G.agua.levelAt(px, pz) > hh - 0.3) ag++; } return [q.x, q.z, Math.round((mx - mn) * 100) / 100, ag]; })(), flora40m: cerca.length }));
+        check('QA-174: el sitio sale igual esté donde esté la jugadora (estable entre cargas)', a.x === sitio.x && a.z === sitio.z && b.x === sitio.x && b.z === sitio.z,
+          JSON.stringify({ sitio: [sitio.x, sitio.z], cerca: [a.x, a.z], lejos: [b.x, b.z] }));
+      }
       check('La rival es una cotorra con otra piel en la explanada', !!C.ch && C.r.especie !== especieJugador() && C.ch.root.parent === scene, C.r.especie);
       check('Hablar con la Campeona de la Explanada abre el duelo', it.visible() && it.label() === TXT.retar);
       iniciar({ sinCuenta: true, especie: 'vittata' });
@@ -583,6 +657,21 @@ window.AVV18Combate = function (G) {
       check('El duelo toma Acción e Impulso y muestra el HUD con 5 plumas por lado, energía aparte y sin botón de grito',
         G.interaccion.modo === modo && G.dones.sostener === sostenerDuelo && hud && !hud.el.hidden && hud.q('plj').children.length === 5 && hud.q('plr').children.length === 5 &&
         !!hud.q('en-j') && !hud.el.querySelector('[data-a="grito"]'));
+      // QA-173: en el duelo la G lanza el poder y no llega a input.js (no inclina la cámara)
+      {
+        const tk = (tipo, rep) => document.body.dispatchEvent(new KeyboardEvent(tipo, { key: 'g', code: 'KeyG', repeat: !!rep, bubbles: true, cancelable: true }));
+        quieta(4); cara(1); C.r.escudo = 0; C.j.cd.grito_yunque = 0; C.j.energia = 100; podEv.length = 0;
+        const inc0 = G.camara.inclina;
+        tk('keydown'); tk('keydown', true);
+        const tieneG = !!(G.input && G.input.keys && G.input.keys.has('g'));
+        try { G.camara.follow(0.1); G.camara.follow(0.1); } catch (e) { /* cámara */ }
+        const inc1 = G.camara.inclina; tk('keyup');
+        check('QA-173: en el duelo G lanza el poder y no inclina la cámara', podEv.some(e => e.id === 'grito_yunque') && !tieneG && Math.abs(inc1 - inc0) < 1e-6,
+          JSON.stringify({ poder: podEv.length, tieneG, inc0, inc1 }));
+        while (C.timers.length) C.timers.shift().fn(); // la onda de este grito llega ya, no en mitad de las comprobaciones de abajo
+        C.j.cd.grito_yunque = 0; C.j.energia = 100; C.r.mareo = 0; C.r.interrumpida = 0; C.r.kb.t = 0; C.j.picoT = 0; podEv.length = 0; evs.length = 0; C.stats.ondas = 0; C.stats.interrupciones = 0;
+        for (const b of C.balas.splice(0)) { try { scene.remove(b.m); } catch (e) { /* bala */ } }
+      }
 
       // 3. Grito del Yunque: empuja, interrumpe, sin quitar plumas; hay que apuntar; recuperación
       quieta(4); cara(1); C.r.escudo = 0; evs.length = 0; podEv.length = 0;
@@ -669,6 +758,11 @@ window.AVV18Combate = function (G) {
       salir();
       check('Al salir se devuelven Acción, Impulso y el modelo de Vittata', G.interaccion.modo !== modo && G.dones.sostener !== sostenerDuelo && hud.el.hidden && !pl3d &&
         !(G.actores && G.actores.player3D && Object.prototype.hasOwnProperty.call(G.actores.player3D, 'update')) && !scene.getObjectByName('v18_escudo') && !scene.getObjectByName('v18_onda'));
+      {
+        const tk = tipo => document.body.dispatchEvent(new KeyboardEvent(tipo, { key: 'g', code: 'KeyG', bubbles: true, cancelable: true }));
+        tk('keydown'); const conG = !!(G.input && G.input.keys && G.input.keys.has('g')); tk('keyup');
+        check('QA-173: fuera del duelo G vuelve a llegar a la cámara', conG && !G.input.keys.has('g'), String(conG));
+      }
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
     try { salir(); } catch (e) { /* ya fuera */ }
     G.ui.toast = toast0;
