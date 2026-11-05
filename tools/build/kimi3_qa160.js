@@ -26,19 +26,34 @@ const POST = process.argv.includes('--post'); // post-mortem: NO envolver ST.sta
 // y CIERRA la ventana de la carrera que produce la firma: el arnés sin envolver da ~3/4 rojas y el probe envuelto 4/4 verdes);
 // correr el test REAL sin tocarlo y volcar TODO el estado final (recursos+refs, zonas+pre, censo de escena, info, dueños).
 const TRAZAR = process.argv.includes('--trazar'); // tracer entrada/salida (solo depuración de cuelgues; perturba el timing)
+const SYNC = process.argv.includes('--sync'); // esperar a que la batería QA concurrente llegue a su propio AV.streamingTest()
+// (el panel #avqa-panel .avqa-msg pone 'AV.streamingTest()…' justo antes) y arrancar el nuestro EN SOLAPA: dos
+// streamingTest simultáneos en las mismas secciones = la ventana m1→m2 de la carrera QA-160 abierta de forma
+// determinista en vez de estadística (r21-qa: la firma +7 aparecía en m1 y la roja dependía de que cayera en m1→m2).
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi160');
 fs.mkdirSync(SALIDA, { recursive: true });
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon' };
 function servir() {
+  // KIMI-052 vuelta 5: MISMA inyección que kimi2_empezar.js — con ?qa=1, tests/qa/qa.js se carga al principio
+  // de <head> y ARRANCA SOLO la batería QA completa (rendimiento + memoria + todas las AV.*Test + cold boot) 1,5 s
+  // después del load. El arnés llama a AV.streamingTest() con esa batería corriendo concurrente en la página:
+  // sin esta inyección el probe corre el test en página limpia (baseline 666 MB, m2 plano siempre = 4/4 verdes);
+  // con ella se reproduce el estado real del arnés (baseline ~729 MB, la carrera QA-160).
+  const QA_TAG = '<script src="tests/qa/qa.js" charset="utf-8"></script>';
   const srv = http.createServer((req, res) => {
     let p; try { p = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res.writeHead(400); return res.end(); }
+    const qa = /[?&]qa=1(?:&|$)/.test(req.url);
     if (p.endsWith('/')) p += 'index.html';
     const f = path.join(RAIZ, p);
     if (!f.startsWith(RAIZ) || req.method !== 'GET') { res.writeHead(403); return res.end(); }
     fs.readFile(f, (e, d) => {
       if (e) { res.writeHead(404); return res.end('404'); }
+      if (qa && /index\.html$/.test(f)) {
+        const html = d.toString('utf8').replace(/<meta charset[^>]*>/i, m => m + QA_TAG);
+        d = Buffer.from(html, 'utf8');
+      }
       res.writeHead(200, { 'Content-Type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' });
       res.end(d);
     });
@@ -133,6 +148,15 @@ const PROBAR_JS = `(async () => {
     trazar(G.renderer, 'render'); trazar(G.renderer, 'update'); trazar(G.camara, 'place');
   } catch (e) { marca('trazar err ' + e); }` : ''}
   let resTest = null, errorTest = null;
+  ${SYNC ? `// --sync: solapar nuestro streamingTest con el de la batería QA (misma sección, mismo instante)
+  await (async () => { const t0 = performance.now();
+    while (performance.now() - t0 < 720000) {
+      try { const el = document.querySelector('#avqa-panel .avqa-msg');
+        if (el && /streamingTest/.test(el.textContent || '')) return;
+      } catch (e) {}
+      await new Promise(r => setTimeout(r, 150));
+    } })();
+  window.__qa160p.push('sync: batería QA en streamingTest, arrancando el nuestro en solapa');` : ''}
   try { resTest = await AV.streamingTest(); } catch (e) { errorTest = String(e && e.message || e); }
   window.__qa160p.push('test devuelto ' + (resTest ? resTest.passed + '/' + resTest.total : 'null') + (errorTest ? ' err:' + errorTest : ''));
   try { ST.stats = origStats; } catch (e) {}
@@ -236,7 +260,9 @@ async function lanzarChromeUnaVez() {
     '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run', '--no-default-browser-check', '--disable-extensions',
     '--mute-audio', '--disable-sync', '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
     '--disable-backgrounding-occluded-windows', '--disable-component-update', '--enable-precise-memory-info',
-    '--enable-logging=stderr', '--v=0', '--js-flags=--expose-gc',
+    // KIMI-052 vuelta 5: ALINEADO con el spawn de kimi2_empezar.js — los flags '--enable-logging=stderr --v=0
+    // --js-flags=--expose-gc' frenan el hilo (logging por stderr) y mantenían CERRADA la ventana de la carrera:
+    // el arnés sin ellas da ~3/4 rojas y el probe con ellas 4/4 verdes. Mismo flag set = mismo timing.
     '--window-size=500,900', 'about:blank'];
   const chrome = spawn(CHROME, args, { stdio: ['ignore', 'pipe', 'pipe'] });
   let err = '';
