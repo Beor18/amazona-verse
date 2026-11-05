@@ -1,14 +1,13 @@
 # Nota para Claude en la Mac (la sesión que antes coordinaba)
 
-## ⭐ Tareas nuevas para ti (5-nov ~13:30 UTC) · Kelvin: «tú (web) coordinas, haces push y vigilas que todo quede bien»
+## ⭐ Tareas nuevas para ti, Claude de la otra cuenta (5-nov ~13:45 UTC)
 
-Gracias por BM136–BM139, ya están en main. Siguiente tanda, en este orden. Trabaja tú directamente o con los trabajadores de la API (saldo ~27 $ menos lo gastado; escribe el saldo real en tu fila). Antes de cada push: tus 13 baterías en verde y 0 errores de consola; avisa en el 📣 de `TAREAS_API.md` con el commit para que yo lo revise.
+Kelvin aclara: **los trabajadores de la API de la Mac** son una cosa (toman solos de `tools/agente_api/cola.txt`: BM141 integrar el puente roto, BM143 look de la Campeona, BM144 edificios; con el saldo de la API) y **tú** eres otra sesión, de otra cuenta. Tus tareas no gastan créditos de API ni necesitan la Mac. Coordino yo (web): commits pequeños de tus rutas, y avísame en el 📣 de `TAREAS_WEB.md` con el sha; yo reviso, pruebo y publico.
 
-1. **BM141 · Integrar tu `puente_roto.glb` en la V18.1** (`src/game/v18/reparar.js`, detrás de `?v18=1`): en estado `roto` se ve tu puente roto; al reparar vuelve el puente normal. `AV.v18RepararTest()` (17/17) y `AV.v18CicloTest()` (22/22) deben seguir en verde. No toques otros archivos de `src/game/v18/`.
-2. **BM142 · «Cómo manejar la Mac»**: escribe `docs/equipo/COMO_MANEJAR_LA_MAC.md` (procesos que deben estar vivos, cómo arrancarlos y pararlos, cómo toman tareas los trabajadores, fallos típicos y los comandos exactos para Kelvin). Es lo más importante para que la Mac no se vuelva a parar sin que yo sepa arreglarlo.
-3. **BM143 · Look de la «Campeona de la Explanada»** (la rival del duelo, `src/game/v18/combate.js` usa una piel y las gafas de Retos): proponle un aspecto propio con ropa y accesorios que YA existen en el ropero (sin modelos nuevos), con 2–3 capturas para que Kelvin elija. Solo la propuesta; no cambies el código del duelo.
-4. **BM144 · Edificios restantes de `docs/equipo/AUDITORIA_EDIFICIOS.md`** que sigan feos en «bajo», de uno en uno, con captura antes/después y sin subir memoria.
-5. **BM140 (espera mi aviso):** capturas de la portada con GPU real, solo si las del agente web no tienen calidad.
+1. **BM142 · `docs/equipo/COMO_MANEJAR_LA_MAC.md`** (lo más importante, solo lo sabes tú): qué procesos deben estar vivos en la Mac (trabajadores, subidor, publicador), cómo se arrancan, paran y revisan; cómo toman tareas (qué leen de `cola.txt` y de `TAREAS_API.md`, qué estado los hace «libres»); fallos típicos (disco, `index.lock`, ramas `api-<máquina>`, memoria, subidor apagado) y los comandos exactos que Kelvin pega en `~/AmazonaVerse/juego_api`.
+2. **Fichas de las 3 amenazas de fantasía** (respuesta 10 de Kelvin, `docs/DECISION_LOG.md` 5-nov): `docs/equipo/V18_AMENAZAS.md` con Serpiente de la Maraña, Sapo Encantado y Sombra de Tormenta: aspecto (con recursos que ya existen), comportamiento, cómo se le gana, dónde sale, y que son fantasía (no hechos de animales reales). Kimi 3 programa la Sombra de Tormenta (KIMI-064): no la programes tú, solo la ficha de las tres para que Kelvin apruebe.
+3. **Revisión de código de la V18.1** (`src/game/v18/*.js`, ya en main): busca bugs reales (guardado, duplicar recompensas, controles en móvil, avisos que se quedan pegados, textos sin inglés en `content/cap1/en.js`) y apúntalos en `docs/equipo/BUGS.md` con archivo:línea; arregla solo lo trivial y sin tocar archivos que estén editando otros (combate.js, descubrir.js, reparar.js los tocan los agentes: propónlo en BUGS).
+4. **Textos de la demo para Kelvin:** revisa que los avisos de la V18.1 suenen a niños de Puerto Rico, cortos y alegres; propone cambios en una lista (no los apliques sin decirme).
 
 
 
