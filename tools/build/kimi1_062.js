@@ -25,8 +25,10 @@ const AQUI = __dirname;
 const RAIZ = path.resolve(AQUI, '..', '..');
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const ANCHO = 390, ALTO = 844, DPR = 3, CPU = 4;
-const SECS = +(arg('--secs', '90'));
+const SECS = +(arg('--secs', '150'));
 const ETIQUETA = arg('--etiqueta', 'r1');
+const RAIZ_SRV = arg('--raiz', ''); // servir otro árbol (p. ej. archive de la línea base e0dfc12)
+const SIN_GIT = process.argv.includes('--sin-git');
 const BASE_NUBE = 'e0dfc12'; // línea base de la medición de la nube (6,58 MB)
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi062');
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -38,11 +40,12 @@ function servir() {
     let p; try { p = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res.writeHead(400); return res.end(); }
     const qa = /[?&]qa=1(?:&|$)/.test(req.url);
     if (p.endsWith('/')) p += 'index.html';
-    const f = path.join(RAIZ, p);
-    if (!f.startsWith(RAIZ) || req.method !== 'GET') { res.writeHead(403); return res.end(); }
+    const raizSrv = RAIZ_SRV || RAIZ;
+    const f = path.join(raizSrv, p);
+    if (!f.startsWith(raizSrv) || req.method !== 'GET') { res.writeHead(403); return res.end(); }
     fs.readFile(f, (e, d) => {
       if (e) { res.writeHead(404); return res.end('404'); }
-      if (qa && /index\.html$/.test(f)) d = Buffer.from(d.toString('utf8').replace(/<meta charset[^>]*>/i, m => m + '<script src="tests/qa/qa.js" charset="utf-8"></script>'), 'utf8');
+      if (qa && /index\.html$/.test(f) && fs.existsSync(path.join(raizSrv, 'tests', 'qa', 'qa.js'))) d = Buffer.from(d.toString('utf8').replace(/<meta charset[^>]*>/i, m => m + '<script src="tests/qa/qa.js" charset="utf-8"></script>'), 'utf8');
       res.writeHead(200, { 'Content-Type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' });
       res.end(d);
     });
@@ -82,9 +85,11 @@ const MUESTRA_JS = `(() => { const m = performance.memory || {};
   try { listo = !!(window.AV && AV.G && AV.G.mundo && AV.G.mundo.listo); } catch (e) {}
   try { const st = AV.G.renderer.stats(); calls = st.calls; tris = st.triangulos; fps = st.fps; calidad = st.calidad; } catch (e) {}
   try { v18 = !!(AV.G && AV.G.v18fx); } catch (e) {}
-  let fade = null;
-  try { const f = document.querySelector('#c1-fade'); if (f) fade = getComputedStyle(f).opacity; } catch (e) {}
-  return { listo, calls, tris, fps, calidad, v18, fade,
+  // reveal real de la pantalla de carga: #carga cerrada (hidden o carga-sale) o AV.carga.ultima con motivo
+  let revelado = false, motivo = null, msCarga = null;
+  try { const el = document.querySelector('#carga'); if (el) revelado = el.hidden || el.classList.contains('carga-sale'); } catch (e) {}
+  try { const u = AV.carga && AV.carga.ultima; if (u && u.motivo) { motivo = u.motivo; msCarga = u.ms; revelado = revelado || true; } } catch (e) {}
+  return { listo, calls, tris, fps, calidad, v18, revelado, motivo, msCarga,
     heap: m.usedJSHeapSize || 0, t: Math.round(performance.now()) }; })()`;
 
 function lanzarChrome() {
@@ -126,7 +131,7 @@ function fechaAlta(rel) {
 }
 
 (async () => {
-  const head = execSync('git rev-parse --short HEAD', { cwd: RAIZ, encoding: 'utf8' }).trim();
+  const head = arg('--head-label', '') || execSync('git rev-parse --short HEAD', { cwd: RAIZ, encoding: 'utf8' }).trim();
   const { srv, puerto } = await servir();
   const origen = `http://127.0.0.1:${puerto}`;
   const res = { etiqueta: ETIQUETA, pantalla: 'movil 390x844@3 cpuX4', ua: 'iPhone (bajo natural)',
@@ -157,19 +162,31 @@ function fechaAlta(rel) {
     t0 = Date.now();
     await cdp.call('Page.navigate', { url: origen + '/index.html?qa=1&cap=1' }, ses);
 
-    let tListo = null, tVisible = null, visibleRacha = 0;
+    let tReveal = null, motivoCarga = null, msCarga = null, ultimoTap = 0, nTaps = 0;
+    const TAP_JS = `(() => {
+      const vis = el => { if (!el) return false; const r = el.getBoundingClientRect(); const s = getComputedStyle(el);
+        return r.width > 4 && r.height > 4 && s.visibility !== 'hidden' && s.display !== 'none'; };
+      const btns = [...document.querySelectorAll('button, [role="button"], a')].filter(vis);
+      const b = btns.find(x => /aventura|empezar la historia|jugar/i.test((x.textContent || '')));
+      if (b) { b.click(); return 'tap:' + (b.textContent || '').trim().slice(0, 30); }
+      // intro del cap. 1: cualquier tecla salta (QA-159)
+      try { window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); } catch (e) {}
+      return 'tecla'; })()`;
     const limite = Date.now() + SECS * 1000;
     while (Date.now() < limite) {
-      await cdp.bombear(0.5);
+      await cdp.bombear(0.4);
       const ms = Date.now() - t0;
       let m = null;
       try { m = await ev(cdp, ses, MUESTRA_JS, 8, false); } catch (e) {}
       if (m) {
         m.s = Math.round(ms / 100) / 10;
         res.muestras.push(m);
-        if (m.listo && tListo === null) tListo = ms;
-        if (m.calls > 20) { if (++visibleRacha >= 2 && tVisible === null) tVisible = ms; } else visibleRacha = 0;
-        if (tListo !== null && ms > tListo + 12000) break; // 12 s post-listo basta
+        if (tReveal === null && m.revelado) { tReveal = ms; motivoCarga = m.motivo; msCarga = m.msCarga; }
+        else if (tReveal === null && ms - ultimoTap > 6000 && nTaps < 12) {
+          ultimoTap = ms; nTaps++;
+          try { const r = await ev(cdp, ses, TAP_JS, 6, false); res.taps = res.taps || []; res.taps.push({ s: Math.round(ms / 100) / 10, r }); } catch (e) {}
+        }
+        if (tReveal !== null && ms > tReveal + 15000) break; // 15 s post-reveal basta
       }
     }
     try {
@@ -188,15 +205,15 @@ function fechaAlta(rel) {
     const topDe = (lista, n) => lista.slice().sort((a, b) => b.b - a.b).slice(0, n)
       .map(r => ({ mb: Math.round(r.b / 1048576 * 1000) / 1000, t: Math.round(r.msFin / 100) / 10, tipo: tipoDe(r.u), u: r.u.replace(origen, '') }));
 
-    const tReveal = tVisible !== null ? tVisible : (tListo !== null ? tListo : SECS * 1000);
+    const tRevealFin = tReveal !== null ? tReveal : SECS * 1000;
     res.red = {
       bytesTotalMB: Math.round(bytesTotal / 1048576 * 100) / 100,
       nRecursos: recs.filter(r => r.msFin !== null).length,
-      tListoMs: tListo, tVisibleMs: tVisible,
-      hastaListo: tListo !== null ? suma(ventanaHasta(tListo)) : null,
-      hastaRevealMas5: suma(ventanaHasta(tReveal + 5000)),
+      tRevealMs: tReveal, motivoCarga, msCargaJuego: msCarga,
+      hastaReveal: suma(ventanaHasta(tRevealFin)),
+      hastaRevealMas5: suma(ventanaHasta(tRevealFin + 5000)),
       total: suma(recs.filter(r => r.msFin !== null)),
-      topEnReveal: topDe(ventanaHasta(tReveal + 5000), 20),
+      topEnReveal: topDe(ventanaHasta(tRevealFin + 5000), 20),
       topTotal: topDe(recs.filter(r => r.msFin !== null), 15),
       v18Urls: recs.filter(r => /\/v18\//.test(r.u)).map(r => r.u.replace(origen, '')),
     };
@@ -204,9 +221,9 @@ function fechaAlta(rel) {
     res.asserts.calidadBaja = (res.muestras.find(m => m.calidad) || {}).calidad || null;
 
     // atribución: qué recursos de la ventana de carga se añadieron después de BASE_NUBE
-    const enVentana = ventanaHasta(tReveal + 5000).filter(r => r.b > 20000);
+    const enVentana = ventanaHasta(tRevealFin + 5000).filter(r => r.b > 20000);
     const altas = {};
-    for (const r of enVentana) {
+    if (!SIN_GIT && !RAIZ_SRV) for (const r of enVentana) {
       const rel = decodeURIComponent(r.u.replace(origen, '').split('?')[0]).replace(/^\//, '');
       const alta = fechaAlta(rel);
       if (alta) {
@@ -220,8 +237,8 @@ function fechaAlta(rel) {
 
     const f = path.join(SALIDA, `k062_${ETIQUETA}.json`);
     fs.writeFileSync(f, JSON.stringify(res, null, 1));
-    console.log(`[k062] HEAD ${head} · calidad ${res.asserts.calidadBaja} · listo ${tListo === null ? 'NO' : (tListo / 1000).toFixed(1) + ' s'} · visible ${tVisible === null ? 'NO' : (tVisible / 1000).toFixed(1) + ' s'}`);
-    console.log(`[k062] hasta listo:      ${JSON.stringify(res.red.hastaListo)}`);
+    console.log(`[k062] HEAD ${head} · calidad ${res.asserts.calidadBaja} · reveal ${tReveal === null ? 'NO' : (tReveal / 1000).toFixed(1) + ' s'} (${motivoCarga || '?'}${msCarga ? ' ' + msCarga + ' ms' : ''})`);
+    console.log(`[k062] hasta reveal:      ${JSON.stringify(res.red.hastaReveal)}`);
     console.log(`[k062] hasta reveal+5 s: ${JSON.stringify(res.red.hastaRevealMas5)}`);
     console.log(`[k062] total corrida:    ${JSON.stringify(res.red.total)} (${res.red.bytesTotalMB} MB en ${res.red.nRecursos} recursos)`);
     console.log(`[k062] assert sin bandera (0 URLs /v18/): ${res.asserts.sinBanderaNadaDeV18} · v18fx cargado: ${(res.muestras.find(m => m.v18) || {}).v18}`);
