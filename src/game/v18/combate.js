@@ -23,16 +23,17 @@ window.AVV18Combate = function (G) {
   if (G.v18combate) return G.v18combate;
   const H = G.v18hab, S = G.S, F = G.fisica, M = F.MOVE, scene = G.renderer.scene;
   const ALTURA = h => G.terreno.height(h.x, h.z);
+  const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches); // QA-163: sin tecla G en táctil
   const ARENA_R = 12, SALIDA_R = 24, PLUMAS = 5;
   const TXT = {
     retar: 'Retar a la Campeona de la Explanada', tu: 'Tú', rival: 'Campeona de la Explanada',
     ala: 'Ala', semilla: 'Semilla', poder: 'Poder', otra: 'Otra vez', salir: 'Salir', energia: 'Energía',
-    aviso: 'Ala: Acción · Semilla: Impulso · Poder: mantén Impulso o G',
+    aviso: 'Ala: Acción · Semilla: Impulso · Poder: mantén Impulso o G', avisoTactil: 'Toca Ala, Semilla o Poder',
     ya: '¡Ya!', gana: '¡Ganaste 2 maderas y 1 piedra! Con eso se repara el puente colgante: sigue la bandera verde del mapa.',
-    ganaGuarda: '¡Ganaste 2 maderas y 1 piedra! El puente ya está reparado: guárdalas para lo que venga.', ganaOtra: '¡Ganaste otra vez! Los materiales de este duelo ya te los llevaste.',
+    ganaGuarda: '¡Ganaste 2 maderas y 1 piedra! El puente ya está reparado: guárdalas para lo que venga.', ganaOtra: '¡Ganaste otra vez! Los materiales ya te los llevaste; busca más por el bosque.',
     pierde: '¡Uy, te mareaste! Sacude las plumas y prueba otra vez.', lejos: 'Te alejaste: el duelo queda para luego.',
     bloquea: '¡Bloqueado!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!',
-    ganaste: '¡Ganaste!', perdiste: '¡Casi!', bienvenida: 'Duelo de entrenamiento: quítale sus 5 plumas.'
+    ganaste: '¡Ganaste!', perdiste: '¡Casi!', bienvenida: '¡A jugar! Quítale sus 5 plumas a la Campeona.'
   };
   // Generador con semilla: la IA decide igual en cada prueba
   let semilla = 1;
@@ -240,7 +241,7 @@ window.AVV18Combate = function (G) {
 
   // ---------- Entrada del jugador ----------
   const modo = { activo: () => C.fase === 'lucha' || C.fase === 'cuenta' || C.fase === 'fin', accion: () => { if (C.fase === 'fin') otraVez(); else usar(C.j, 'golpe_ala'); },
-    aviso: () => C.fase === 'fin' ? TXT.otra : TXT.aviso, get verbo() { return C.fase === 'fin' ? TXT.otra : TXT.ala; } };
+    aviso: () => C.fase === 'fin' ? TXT.otra : (TACTIL ? TXT.avisoTactil : TXT.aviso), get verbo() { return C.fase === 'fin' ? TXT.otra : TXT.ala; } };
   let modo0 = null, sostener0 = null, sost = 0, enganchado = false;
   function sostenerDuelo(on) {
     if (on) { sost = performance.now(); return; }
@@ -410,7 +411,7 @@ window.AVV18Combate = function (G) {
     if (!S.inv) S.inv = {};
     for (const k in PREMIO) S.inv[k] = (S.inv[k] || 0) + PREMIO[k];
     try { if (G.objetos && G.objetos.renderInv) G.objetos.renderInv(); } catch (e) { /* HUD */ }
-    try { if (G.guardado && G.guardado.autosave) G.guardado.autosave(); } catch (e) { /* guardado */ }
+    try { if (G.guardado && G.guardado.save) G.guardado.save(true); else if (G.guardado && G.guardado.autosave) G.guardado.autosave(); } catch (e) { /* guardado */ } // QA-162: al momento
   }
   function otraVez() { return iniciar({}); }
   function salir(motivo) {

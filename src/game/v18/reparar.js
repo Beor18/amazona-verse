@@ -22,7 +22,7 @@ window.AVV18Reparar = function (G) {
   const inv = k => (S.inv && S.inv[k]) || 0;
   const tiene = c => (G.objetos && G.objetos.has ? G.objetos.has(c) : Object.keys(c).every(k => inv(k) >= c[k]));
   const pagar = c => { if (G.objetos && G.objetos.pay) G.objetos.pay(c); else for (const k in c) S.inv[k] -= c[k]; };
-  const refrescarInv = () => { try { G.objetos.renderInv(); } catch (e) { /* sin HUD */ } try { G.guardado.autosave(); } catch (e) { /* sin guardado */ } };
+  const refrescarInv = () => { try { G.objetos.renderInv(); } catch (e) { /* sin HUD */ } try { if (G.guardado.save) G.guardado.save(true); else G.guardado.autosave(); } catch (e) { /* sin guardado */ } }; // QA-162: al momento, junto a la marca de G.v18
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 3200); } catch (e) { /* sin interfaz */ } };
   const sonar = n => { try { G.audio.play(n); } catch (e) { /* sin audio */ } };
   const estado = () => V.mundo(ID) || 'roto';
@@ -111,7 +111,7 @@ window.AVV18Reparar = function (G) {
   // ---------- Reparar (interacción en la cabecera del lado de Villa Raíz) ----------
   // qué falta: { madera, piedra } (0 si no falta)
   function faltan() { return { madera: Math.max(0, COSTE.madera - inv('madera')), piedra: Math.max(0, COSTE.piedra - inv('piedra')) }; }
-  const textoFalta = () => 'Para reparar el puente necesitas 2 maderas y 1 piedra (tienes ' + inv('madera') + ' y ' + inv('piedra') + '). Gana el duelo de la explanada o junta madera y piedra por el bosque.';
+  const textoFalta = () => 'Faltan materiales: 2 maderas y 1 piedra (tienes ' + inv('madera') + ' y ' + inv('piedra') + '). Gana el duelo de la explanada o junta madera y piedra por el bosque.';
   function reparar() {
     if (reparado()) { toast('El puente ya está reparado. ¡Prueba la corriente del centro!'); return false; }
     if (!tiene(COSTE)) { sonar('wrong'); toast(textoFalta(), 5000); return false; }
@@ -124,7 +124,7 @@ window.AVV18Reparar = function (G) {
     const c = centro();
     if (c) { try { G.fx.recoger(c.x, c.y + 0.5, c.z, 'feathers', 26); G.fx.burst(c.x, c.y + 0.5, c.z, 'stars', 18); } catch (e) { /* sin fx */ } }
     try { G.camara.shake(0.08, 0.3); } catch (e) { /* sin cámara */ }
-    toast('¡Puente reparado! Ya se cruza a pie, y en el centro sube una corriente de aire.', 4500);
+    toast('¡Puente reparado! Crúzalo a pie o vuela al centro: ¡hay una corriente que te sube!', 4500);
     return true;
   }
   let itReparar = null;
