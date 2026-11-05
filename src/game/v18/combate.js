@@ -28,7 +28,7 @@ window.AVV18Combate = function (G) {
   const TXT = {
     retar: 'Retar a la Campeona de la Explanada', tu: 'Tú', rival: 'Campeona de la Explanada',
     ala: 'Ala', semilla: 'Semilla', poder: 'Poder', otra: 'Otra vez', salir: 'Salir', energia: 'Energía',
-    aviso: 'Ala: Acción · Semilla: Impulso · Poder: mantén Impulso o G', avisoTactil: 'Toca Ala, Semilla o Poder',
+    aviso: 'Ala: E · Semilla: F · Poder: G', avisoTactil: 'Ala: Acción · Semilla: Impulso · Poder: mantén Impulso',
     ya: '¡Ya!', gana: '¡Ganaste 2 maderas y 1 piedra! Con eso se repara el puente colgante: sigue la bandera verde del mapa.',
     ganaGuarda: '¡Ganaste 2 maderas y 1 piedra! El puente ya está reparado: guárdalas para lo que venga.', ganaOtra: '¡Ganaste otra vez! Los materiales ya te los llevaste; busca más por el bosque.',
     pierde: '¡Uy, te mareaste! Sacude las plumas y prueba otra vez.', lejos: 'Te alejaste: el duelo queda para luego.',
@@ -302,7 +302,11 @@ window.AVV18Combate = function (G) {
   function quitarBalas() { for (const b of C.balas) scene.remove(b.m); C.balas.length = 0; quitarOndas(); if (C.j) quitarEscudo(C.j, true); if (C.r) quitarEscudo(C.r, true); }
 
   // ---------- Entrada del jugador ----------
-  const modo = { activo: () => C.fase === 'lucha' || C.fase === 'cuenta' || C.fase === 'fin', accion: () => { if (C.fase === 'fin') otraVez(); else usar(C.j, 'golpe_ala'); },
+  // Juego en familia (5-nov): machacando Acción, el último golpe reiniciaba el duelo sin ver el resultado. Tras terminar,
+  // «Otra vez» (Acción, el botón grande o el del panel) no responde durante FIN_PAUSA ms.
+  const FIN_PAUSA = 1200, finListo = () => performance.now() - (C.finT || 0) >= FIN_PAUSA;
+  const otraVezSiListo = () => (finListo() ? otraVez() : false);
+  const modo = { activo: () => C.fase === 'lucha' || C.fase === 'cuenta' || C.fase === 'fin', accion: () => { if (C.fase === 'fin') otraVezSiListo(); else usar(C.j, 'golpe_ala'); },
     aviso: () => C.fase === 'fin' ? TXT.otra : (TACTIL ? TXT.avisoTactil : TXT.aviso), get verbo() { return C.fase === 'fin' ? TXT.otra : TXT.ala; } };
   let modo0 = null, sostener0 = null, sost = 0, enganchado = false;
   function sostenerDuelo(on) {
@@ -382,13 +386,20 @@ window.AVV18Combate = function (G) {
       '#v18-duelo .vd-bot{display:flex;gap:6px;justify-content:center;margin-top:6px;flex-wrap:wrap}' +
       '#v18-duelo button{pointer-events:auto;font:inherit;font-size:15px;font-weight:600;min-height:44px;padding:6px 14px;border-radius:22px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 6px #0005;cursor:pointer}' +
       '#v18-duelo button.cd{opacity:.5}#v18-duelo .vd-fin{text-align:center;background:rgba(30,40,30,.82);border-radius:14px;padding:10px;margin-top:8px}' +
-      '#v18-duelo .vd-fin p{margin:0 0 8px;font-size:18px;font-weight:600}';
+      '#v18-duelo .vd-fin p{margin:0 0 8px;font-size:18px;font-weight:600}' +
+      // Juego en familia (5-nov), táctil: panel + fila Ala/Semilla/Escudo ocupaban ~60 % del alto y el Escudo caía sobre el
+      // Diario. En táctil ya están los botones grandes (Acción = ala, Impulso = semilla, mantener Impulso = poder): fuera la
+      // fila repetida y el panel se compacta; el aviso (#toast) queda por encima del panel si coinciden.
+      '#v18-duelo.tactil .vd-bot{display:none}#v18-duelo.tactil .vd-lado{padding:4px 8px}#v18-duelo.tactil .vd-et{display:none}' +
+      '#v18-duelo.tactil .vd-en{margin-top:3px}#v18-duelo.tactil .vd-centro{font-size:32px;margin-top:2px}' +
+      '#v18-duelo.tactil .vd-fin{padding:8px;margin-top:4px}#v18-duelo.tactil .vd-fin p{font-size:15px;margin-bottom:6px}' +
+      'body.v18-duelo-on #toast{z-index:41}';
     document.head.appendChild(st);
   }
   function montarHud() {
     if (hud) return hud;
     estilo();
-    const el = document.createElement('div'); el.id = 'v18-duelo'; el.hidden = true;
+    const el = document.createElement('div'); el.id = 'v18-duelo'; el.hidden = true; el.classList.toggle('tactil', TACTIL);
     const plumas = () => Array.from({ length: PLUMAS }, () => '<i></i>').join('');
     el.innerHTML = `<div class="vd-fila"><div class="vd-lado j"><div class="vd-nom">${TXT.tu}</div><div class="vd-pod" data-k="pj"></div><div class="vd-pl" data-k="plj">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-j"><b></b></div></div>` +
       `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div></div></div>` +
@@ -399,7 +410,7 @@ window.AVV18Combate = function (G) {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
       const a = b.dataset.a;
-      if (a === 'otra') otraVez(); else if (a === 'salir') salir(); else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
+      if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
     });
     document.body.appendChild(el);
     hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
@@ -459,7 +470,7 @@ window.AVV18Combate = function (G) {
   }
   function terminar(res) {
     if (C.fase !== 'lucha') return;
-    C.fase = 'fin'; C.resultado = res; quitarBalas(); C.timers.length = 0;
+    C.fase = 'fin'; C.resultado = res; C.finT = performance.now(); quitarBalas(); C.timers.length = 0;
     const gano = res === 'win';
     emitir({ tipo: res, de: gano ? 'jugador' : 'rival', a: gano ? 'rival' : 'jugador', valor: gano ? C.j.plumas : C.r.plumas });
     let txt;
@@ -773,6 +784,8 @@ window.AVV18Combate = function (G) {
         JSON.stringify({ fase: C.fase, m: S.inv.madera - m0, p: S.inv.piedra - p0, t: toasts }));
       check('Al terminar, Acción dice «Otra vez»', modo.verbo === TXT.otra && !hud.q('fin').hidden);
       modo.accion();
+      check('Machacar Acción justo al terminar no reinicia: se ve el resultado', C.fase === 'fin' && C.resultado === 'win');
+      C.finT -= FIN_PAUSA; modo.accion();
       check('«Otra vez» reinicia el duelo con 5 plumas', C.fase === 'cuenta' && C.r.plumas === PLUMAS && C.j.plumas === PLUMAS);
       C.fase = 'lucha'; C.r.plumas = 1; quieta(1.2); C.r.escudo = 0; usar(C.j, 'golpe_ala');
       check('Ganar otra vez no da los materiales de nuevo', C.resultado === 'win' && S.inv.madera === m0 + 2 && S.inv.piedra === p0 + 1 && toasts.includes(TXT.ganaOtra), S.inv.madera - m0);

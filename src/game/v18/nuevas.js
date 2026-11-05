@@ -19,24 +19,24 @@ window.AVV18Nuevas = function (G) {
   const HITOS = [
     { id: 'agilis', cuando: () => V.cuantos('victoria_duelo') > 0,
       txt: '¡Una amazona de pico negro vio tu duelo y quiere volar contigo! Su poder: Quiebro.' },
-    { id: 'farinosa', cuando: () => V.mundo('puente_villa') === 'reparado',
+    { id: 'farinosa', m: true, cuando: () => V.mundo('puente_villa') === 'reparado',
       txt: '¡Un loro corona azul cruzó tu puente y se une a tu bandada! Su poder: Ala fuerte.' },
     { id: 'barbadensis', cuando: () => V.mundo('sombra_tormenta') === 'dispersa',
       txt: '¡Con el cielo despejado llegó una cotorra cabeciamarilla! Su poder: Lluvia de semillas.' },
-    { id: 'xantholora', cuando: () => V.cuantos('victoria_otra') > 0,
+    { id: 'xantholora', m: true, cuando: () => V.cuantos('victoria_otra') > 0,
       txt: '¡Un loro yucateco vio cómo ganabas con otra cotorra! Su poder: Ojo del cenote.' },
-    { id: 'guildingii', cuando: () => V.mundo('serpiente_marana') === 'deshecha',
+    { id: 'guildingii', m: true, cuando: () => V.mundo('serpiente_marana') === 'deshecha',
       txt: '¡Sin la Maraña, un loro de San Vicente vino a lucir sus colores! Su poder: Abanico de colores.' },
-    { id: 'diadema', cuando: () => V.mundo('sapo_encantado') === 'despierto',
+    { id: 'diadema', m: true, cuando: () => V.mundo('sapo_encantado') === 'despierto',
       txt: '¡El Sapo despertó y un loro diadema vino a ver qué pasaba! Su poder: Semilla de río.' }
   ];
-  const TXT = { elige: 'Elígela en Pausa → Mis cotorras.' };
+  const TXT = { elige: 'Elígela en Pausa → Mis cotorras.', eligeM: 'Elígelo en Pausa → Mis cotorras.' }; // m: el aviso habla de «un loro»
   function revisar(avisar) {
     const nuevas = [];
     for (const h of HITOS) {
       if (!h.cuando() || rango(V.estado(h.id)) >= rango('seleccionable')) continue;
       V.descubrir(h.id); V.desbloquear(h.id); nuevas.push(h.id);
-      if (avisar) { const t = h.txt + ' ' + TXT.elige, k = nuevas.length - 1; if (k) setTimeout(() => toast(t), k * 5400); else toast(t); } // en cola: no se pisan
+      if (avisar) { const t = h.txt + ' ' + (h.m ? TXT.eligeM : TXT.elige), k = nuevas.length - 1; if (k) setTimeout(() => toast(t), k * 5400); else toast(t); } // en cola: no se pisan
     }
     return nuevas;
   }

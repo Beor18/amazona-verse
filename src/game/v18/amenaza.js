@@ -245,7 +245,10 @@ window.AVV18Amenaza = function (G) {
       '#v18-amenaza i{display:inline-block;width:12px;height:12px;border-radius:50%;margin:0 2px;background:#ffd84a}#v18-amenaza i.off{background:rgba(255,255,255,.22)}' +
       '#v18-amenaza .va-c{min-height:20px;font-weight:700;color:#ffe28a}#v18-amenaza button{pointer-events:auto;font:inherit;font-size:15px;font-weight:700;min-height:44px;' +
       'padding:6px 18px;border-radius:22px;border:0;background:#fff3d6;color:#3b2a14;margin-top:6px}#v18-amenaza button.no{opacity:.45}' +
-      'body.v18-amenaza-on #quest{visibility:hidden}';
+      'body.v18-amenaza-on #quest{visibility:hidden}' +
+      // Juego en familia (5-nov): en el teléfono el panel tapaba los contadores de madera y piedra (#inv, arriba a la derecha):
+      // baja bajo ellos. El aviso (#toast) queda por encima del panel si coinciden.
+      '@media (max-width:760px){#v18-amenaza{top:calc(env(safe-area-inset-top,0px) + 62px)}}body.v18-amenaza-on #toast{z-index:41}';
     document.head.appendChild(st);
     const el = document.createElement('div'); el.id = 'v18-amenaza'; el.hidden = true;
     el.innerHTML = '<div class="va-n">' + TXT.nombre + ' <span data-k="nubes"></span></div>' +
