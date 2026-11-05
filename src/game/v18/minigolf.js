@@ -592,8 +592,8 @@ window.AVV18Minigolf = function (G) {
       if (recolocar) { recolocar = false; montar(buscarSitio()); }
       const k2 = buscarSitio(), bajo = (() => { let m = 0; for (let u = -L / 2; u <= L / 2; u += 1) for (let v = -HW; v <= HW; v += 1) { const p = aMundo(K, u, v); if (agua(p.x, p.z) > H(p.x, p.z) - 0.3) m++; } return m; })();
       const pl = G.terreno.places || {}, villa = pl.villa || { x: 0, z: 0 };
-      check('Solo con la bandera V18; sitio en Villa Raíz: seco, sin edificios, a lo sumo 2 árboles dentro (son obstáculos que chocan) y estable entre búsquedas',
-        G.V18 !== false && bajo === 0 && K.troncos >= 0 && K.troncos <= 2 && OBST.length === K.troncos && k2.x === K.x && k2.z === K.z && Math.hypot(K.x - villa.x, K.z - villa.z) < 70,
+      check('Sitio en Villa Raíz: seco, sin edificios, a lo sumo 2 árboles dentro (son obstáculos que chocan) y estable entre búsquedas',
+        bajo === 0 && K.troncos >= 0 && K.troncos <= 2 && OBST.length === K.troncos && k2.x === K.x && k2.z === K.z && Math.hypot(K.x - villa.x, K.z - villa.z) < 70,
         JSON.stringify({ centro: [K.x, K.z], giro: +K.a.toFixed(3), salida: [+P_TEE.x.toFixed(1), +P_TEE.z.toFixed(1)], nido: [+P_NIDO.x.toFixed(1), +P_NIDO.z.toFixed(1)], troncos: K.troncos, agua: bajo, estable: k2.x === K.x && k2.z === K.z && k2.a === K.a, desnivel: +(K.rango || 0).toFixed(2), aPlaza: +Math.hypot(K.x - villa.x, K.z - villa.z).toFixed(1), combate: G.v18combate && G.v18combate.sitio ? [G.v18combate.sitio.x, G.v18combate.sitio.z] : null, arboles: OBST.map(o => [+o.x.toFixed(1), +o.z.toFixed(1), +o.r.toFixed(2)]), libres: K.troncos < 0 ? (() => { const t0 = performance.now(), l = explorar(70, 3); return { n: l.length, ms: Math.round(performance.now() - t0), mejores: l.slice(0, 30) }; })() : null }));
       S.pos.x = P_ENTRADA.x; S.pos.z = P_ENTRADA.z; S.pos.y = H(S.pos.x, S.pos.z);
       correr(0.05);
