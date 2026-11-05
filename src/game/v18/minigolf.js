@@ -676,7 +676,7 @@ window.AVV18Minigolf = function (G) {
       reiniciar(); colocar(NIDO.u - 3, -0.3); apuntaLocal(NIDO.u, NIDO.v); tirar(fuerzaPara(3.3)); hastaQuieta();
       check('Un resultado peor no pisa el récord; uno mejor sí (y su medalla)', peor && A.fase === 'nido' && A.resultado.nuevo && record().mejor === 1 && record().medalla === 'oro', JSON.stringify(record()));
       check('Premios una vez: 3 fibras (madera) al primer hoyo y 2 maderas al primer oro; 5 en total', mad() === 5 && V.otorgado('minigolf_villa_completo') && V.otorgado('minigolf_villa_oro') &&
-        toasts.includes(TXT.premio1) && toasts.includes(TXT.premioOro), 'madera +' + mad());
+        res1.premios.includes('minigolf_villa_completo') && A.resultado.premios.length === (res1.medalla === 'oro' ? 0 : 1), 'madera +' + mad());
       reiniciar(); colocar(NIDO.u - 3, 0); apuntaLocal(NIDO.u, NIDO.v); tirar(fuerzaPara(3.3)); hastaQuieta();
       const m1 = mad(); G.guardado.save && G.guardado.save(true); V.recargar();
       check('Repetir el hoyo (otro oro) no da más materiales, y sigue así tras guardar y recargar', A.fase === 'nido' && A.resultado.premios.length === 0 && m1 === 5 &&
