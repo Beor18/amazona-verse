@@ -1,0 +1,2016 @@
+{
+ "etiqueta": "r3",
+ "inicio": "2026-11-05T15:41:29.838Z",
+ "vistas": {
+  "cumbre": {
+   "N": {
+    "info": {
+     "pos": [
+      -32,
+      97.94,
+      -150
+     ],
+     "yaw": 0,
+     "calls": 88,
+     "ktris": 2769,
+     "fps": 40,
+     "cielo": {
+      "uCenit": "#01020d",
+      "uHorizonte": "#0e1842",
+      "uSolCol": "#8c9bd1",
+      "uSolDir": [
+       -0.63,
+       0.35,
+       0.7
+      ]
+     },
+     "niebla": {
+      "near": -60,
+      "far": 900,
+      "color": "#070c21"
+     },
+     "farCam": 1600,
+     "cieloEscala": 1280,
+     "hora": 21,
+     "permiso": null
+    },
+    "analisis": {
+     "nGrupos": 1,
+     "bandas": [
+      {
+       "ini": 30,
+       "fin": 36,
+       "alto": 7,
+       "media": [
+        68,
+        81,
+        77
+       ]
+      }
+     ],
+     "perfil": [
+      "0:71,79,96",
+      "20:61,75,77",
+      "40:60,74,75",
+      "60:71,85,84",
+      "80:61,79,69",
+      "100:46,64,46",
+      "120:55,73,62",
+      "140:46,60,39",
+      "160:43,60,39",
+      "180:52,68,46",
+      "200:48,62,43",
+      "220:54,65,48",
+      "240:62,78,58",
+      "260:51,66,44",
+      "280:48,62,40",
+      "300:51,67,43",
+      "320:45,62,39",
+      "340:44,62,43",
+      "360:41,64,37",
+      "380:42,67,37",
+      "400:39,62,36",
+      "420:49,71,40",
+      "440:56,72,45",
+      "460:58,73,46",
+      "480:56,69,44",
+      "500:59,71,46",
+      "520:59,68,46",
+      "540:55,64,42",
+      "560:54,60,40",
+      "580:53,60,40",
+      "600:52,62,38",
+      "620:49,59,35",
+      "640:49,60,35",
+      "660:51,62,36",
+      "680:52,61,36",
+      "700:57,64,38",
+      "720:59,65,38",
+      "740:134,133,108",
+      "760:135,139,114",
+      "780:131,135,114",
+      "800:137,139,116",
+      "820:138,134,111",
+      "840:131,128,104",
+      "860:130,127,104",
+      "880:95,87,52"
+     ]
+    },
+    "rayos": [
+     {
+      "px": 400,
+      "py": 0,
+      "hits": [
+       {
+        "n": "cielo",
+        "d": 1273,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 0,
+      "hits": [
+       {
+        "n": "flora:palma_sierra:hoja:lod",
+        "d": 87,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:palma_sierra:hoja:lod",
+        "d": 87,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1275,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 400,
+      "py": 33,
+      "hits": [
+       {
+        "n": "cielo",
+        "d": 1274,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 33,
+      "hits": [
+       {
+        "n": "flora:palma_sierra:hoja:lod",
+        "d": 85,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:palma_sierra:hoja:lod",
+        "d": 86,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:palma_sierra:hoja:lod",
+        "d": 87,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:palma_sierra:hoja:lod",
+        "d": 87,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 1200,
+      "py": 33,
+      "hits": [
+       {
+        "n": "cielo",
+        "d": 1274,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 66,
+      "hits": [
+       {
+        "n": "flora:arbol_enano:hoja:lod",
+        "d": 80,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:arbol_enano:hoja:lod",
+        "d": 81,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:arbol_enano:hoja:lod",
+        "d": 82,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:arbol_enano:hoja:lod",
+        "d": 82,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     }
+    ]
+   },
+   "E": {
+    "info": {
+     "pos": [
+      -32,
+      97.94,
+      -150
+     ],
+     "yaw": 1.571,
+     "calls": 129,
+     "ktris": 1225,
+     "fps": 7,
+     "cielo": {
+      "uCenit": "#01020d",
+      "uHorizonte": "#0e1842",
+      "uSolCol": "#8c9bd1",
+      "uSolDir": [
+       -0.63,
+       0.35,
+       0.7
+      ]
+     },
+     "niebla": {
+      "near": -60,
+      "far": 900,
+      "color": "#070c21"
+     },
+     "farCam": 1600,
+     "cieloEscala": 1280,
+     "hora": 21,
+     "permiso": null
+    },
+    "analisis": {
+     "nGrupos": 5,
+     "bandas": [
+      {
+       "ini": 124,
+       "fin": 130,
+       "alto": 7,
+       "media": [
+        47,
+        57,
+        58
+       ]
+      },
+      {
+       "ini": 606,
+       "fin": 638,
+       "alto": 33,
+       "media": [
+        40,
+        44,
+        32
+       ]
+      }
+     ],
+     "perfil": [
+      "0:72,84,114",
+      "20:60,74,98",
+      "40:57,71,94",
+      "60:68,82,106",
+      "80:65,81,102",
+      "100:51,64,73",
+      "120:66,82,96",
+      "140:43,57,62",
+      "160:39,55,62",
+      "180:51,66,73",
+      "200:41,59,62",
+      "220:34,55,55",
+      "240:38,62,59",
+      "260:32,52,47",
+      "280:35,56,45",
+      "300:36,53,46",
+      "320:32,52,36",
+      "340:30,52,32",
+      "360:30,54,27",
+      "380:32,51,28",
+      "400:33,50,24",
+      "420:33,52,25",
+      "440:35,51,29",
+      "460:36,47,30",
+      "480:37,52,29",
+      "500:39,52,29",
+      "520:46,57,32",
+      "540:42,50,31",
+      "560:43,52,32",
+      "580:42,47,32",
+      "600:40,46,31",
+      "620:41,45,33",
+      "640:36,40,28",
+      "660:37,39,27",
+      "680:36,38,27",
+      "700:34,36,22",
+      "720:43,45,27",
+      "740:127,123,103",
+      "760:128,128,108",
+      "780:124,125,108",
+      "800:127,127,109",
+      "820:132,127,106",
+      "840:126,121,100",
+      "860:130,126,104",
+      "880:96,88,53"
+     ]
+    },
+    "rayos": [
+     {
+      "px": 400,
+      "py": 94,
+      "hits": [
+       {
+        "n": "flora:palma_sierra:hoja",
+        "d": 18,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:palma_sierra:hoja",
+        "d": 19,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1273,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 94,
+      "hits": [
+       {
+        "n": "cielo",
+        "d": 1277,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 400,
+      "py": 127,
+      "hits": [
+       {
+        "n": "flora:palma_sierra:hoja",
+        "d": 15,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosInst:templo_grande:cerca:AV_Restaurado_Tallado",
+        "d": 40,
+        "mat": "AV_Restaurado_Tallado",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosInst:templo_grande:cerca:AV_Restaurado_Tallado",
+        "d": 44,
+        "mat": "AV_Restaurado_Tallado",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosInst:templo_mediano_h:cerca:AV_Restaurado_Bloques",
+        "d": 49,
+        "mat": "AV_Restaurado_Bloques",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 127,
+      "hits": [
+       {
+        "n": "flora:palma_sierra:hoja",
+        "d": 18,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:palma_sierra:hoja",
+        "d": 18,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1275,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       },
+       {
+        "n": "mar",
+        "d": 1585,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       }
+      ]
+     },
+     {
+      "px": 1200,
+      "py": 127,
+      "hits": [
+       {
+        "n": "cielo",
+        "d": 1271,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       },
+       {
+        "n": "fondoMarino",
+        "d": 1769,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 160,
+      "hits": [
+       {
+        "n": "mar",
+        "d": 1023,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       },
+       {
+        "n": "fondoMarino",
+        "d": 1035,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1274,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     }
+    ]
+   },
+   "S": {
+    "info": {
+     "pos": [
+      -32,
+      97.94,
+      -150
+     ],
+     "yaw": 3.142,
+     "calls": 239,
+     "ktris": 1468,
+     "fps": 55,
+     "cielo": {
+      "uCenit": "#01020d",
+      "uHorizonte": "#0e1842",
+      "uSolCol": "#8c9bd1",
+      "uSolDir": [
+       -0.63,
+       0.35,
+       0.7
+      ]
+     },
+     "niebla": {
+      "near": -60,
+      "far": 900,
+      "color": "#070c21"
+     },
+     "farCam": 1600,
+     "cieloEscala": 1280,
+     "hora": 21,
+     "permiso": null
+    },
+    "analisis": {
+     "nGrupos": 4,
+     "bandas": [],
+     "perfil": [
+      "0:77,85,98",
+      "20:67,81,92",
+      "40:59,73,79",
+      "60:74,90,97",
+      "80:72,90,94",
+      "100:60,76,83",
+      "120:61,82,92",
+      "140:43,61,55",
+      "160:43,59,41",
+      "180:61,73,61",
+      "200:48,62,46",
+      "220:47,60,31",
+      "240:53,70,38",
+      "260:46,63,27",
+      "280:52,71,33",
+      "300:40,59,27",
+      "320:44,64,31",
+      "340:46,63,32",
+      "360:39,50,28",
+      "380:43,50,27",
+      "400:41,49,27",
+      "420:43,56,30",
+      "440:57,63,43",
+      "460:74,76,59",
+      "480:74,84,59",
+      "500:75,86,58",
+      "520:70,82,52",
+      "540:67,81,48",
+      "560:57,69,41",
+      "580:48,59,35",
+      "600:45,56,31",
+      "620:36,52,24",
+      "640:31,48,21",
+      "660:24,41,15",
+      "680:22,37,14",
+      "700:23,34,12",
+      "720:31,42,16",
+      "740:117,122,93",
+      "760:118,129,100",
+      "780:114,126,100",
+      "800:121,128,103",
+      "820:124,124,100",
+      "840:119,118,95",
+      "860:124,123,100",
+      "880:89,83,49"
+     ]
+    },
+    "rayos": [
+     {
+      "px": 800,
+      "py": 200,
+      "hits": [
+       {
+        "n": "ep5-noche-luces",
+        "d": 38,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": 5
+       },
+       {
+        "n": "flora:manchas",
+        "d": 47,
+        "mat": "MeshBasicMaterial",
+        "fog": true,
+        "ro": 1
+       },
+       {
+        "n": "letrero_compa",
+        "d": 198,
+        "mat": "SpriteMaterial",
+        "fog": true,
+        "ro": 10
+       },
+       {
+        "n": "mar",
+        "d": 710,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 400,
+      "hits": [
+       {
+        "n": "Sprite",
+        "d": 11,
+        "mat": "SpriteMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "terreno:terreno_so",
+        "d": 18,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "letrero_compa",
+        "d": 189,
+        "mat": "SpriteMaterial",
+        "fog": true,
+        "ro": 10
+       },
+       {
+        "n": "edificiosZona:kelvin_aldea_meandros:lejos",
+        "d": 232,
+        "mat": "AV_Lejos",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     }
+    ]
+   },
+   "O": {
+    "info": {
+     "pos": [
+      -32,
+      97.94,
+      -150
+     ],
+     "yaw": -1.571,
+     "calls": 174,
+     "ktris": 1306,
+     "fps": 82,
+     "cielo": {
+      "uCenit": "#01020d",
+      "uHorizonte": "#0e1842",
+      "uSolCol": "#8c9bd1",
+      "uSolDir": [
+       -0.63,
+       0.35,
+       0.7
+      ]
+     },
+     "niebla": {
+      "near": -60,
+      "far": 900,
+      "color": "#070c21"
+     },
+     "farCam": 1600,
+     "cieloEscala": 1280,
+     "hora": 21,
+     "permiso": null
+    },
+    "analisis": {
+     "nGrupos": 1,
+     "bandas": [
+      {
+       "ini": 0,
+       "fin": 8,
+       "alto": 9,
+       "media": [
+        79,
+        80,
+        71
+       ]
+      }
+     ],
+     "perfil": [
+      "0:78,81,70",
+      "20:73,73,55",
+      "40:75,77,56",
+      "60:89,90,69",
+      "80:92,93,70",
+      "100:82,83,62",
+      "120:90,95,77",
+      "140:70,72,52",
+      "160:68,69,51",
+      "180:74,78,57",
+      "200:69,70,50",
+      "220:79,79,59",
+      "240:97,98,73",
+      "260:88,88,62",
+      "280:86,90,62",
+      "300:89,93,68",
+      "320:98,99,80",
+      "340:77,84,60",
+      "360:64,74,48",
+      "380:49,59,38",
+      "400:36,49,27",
+      "420:30,45,20",
+      "440:30,42,20",
+      "460:39,45,28",
+      "480:44,53,33",
+      "500:44,51,32",
+      "520:46,51,33",
+      "540:44,50,31",
+      "560:40,47,27",
+      "580:37,46,25",
+      "600:38,50,24",
+      "620:36,52,22",
+      "640:40,56,24",
+      "660:43,60,26",
+      "680:42,62,25",
+      "700:48,67,27",
+      "720:54,70,30",
+      "740:123,130,96",
+      "760:127,138,105",
+      "780:127,138,108",
+      "800:130,139,109",
+      "820:131,137,103",
+      "840:126,131,99",
+      "860:130,136,103",
+      "880:96,97,51"
+     ]
+    },
+    "rayos": [
+     {
+      "px": 400,
+      "py": -30,
+      "hits": [
+       {
+        "n": "edificiosZonaHD:kelvin_ruinas_yunque:AV_HD_Ancient",
+        "d": 22,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHDGlobal:AV_HD_Ancient",
+        "d": 22,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 22,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 22,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": -30,
+      "hits": [
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 25,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHD:kelvin_ruinas_yunque:AV_HD_Ancient",
+        "d": 25,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHDGlobal:AV_HD_Ancient",
+        "d": 25,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 25,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 400,
+      "py": 4,
+      "hits": [
+       {
+        "n": "edificiosZonaHD:kelvin_ruinas_yunque:AV_HD_Ancient",
+        "d": 22,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHDGlobal:AV_HD_Ancient",
+        "d": 22,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 22,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHD:kelvin_ruinas_yunque:AV_HD_Ancient",
+        "d": 22,
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 4,
+      "hits": [
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 25,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 25,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHD:kelvin_ruinas_yunque:AV_HD_Ancient",
+        "d": 25,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHDGlobal:AV_HD_Ancient",
+        "d": 25,
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 1200,
+      "py": 4,
+      "hits": [
+       {
+        "n": "edificiosZonaHD:kelvin_ruinas_yunque:AV_HD_Ancient",
+        "d": 37,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHDGlobal:AV_HD_Ancient",
+        "d": 37,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 37,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 37,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 38,
+      "hits": [
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 25,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 25,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHD:kelvin_ruinas_yunque:AV_HD_Ancient",
+        "d": 25,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHDGlobal:AV_HD_Ancient",
+        "d": 25,
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "miradores": {
+   "N": {
+    "info": {
+     "pos": [
+      -32,
+      97.94,
+      -150
+     ],
+     "yaw": 0,
+     "calls": 122,
+     "ktris": 1171,
+     "fps": 70,
+     "cielo": {
+      "uCenit": "#01020d",
+      "uHorizonte": "#0e1842",
+      "uSolCol": "#8c9bd1",
+      "uSolDir": [
+       -0.63,
+       0.35,
+       0.7
+      ]
+     },
+     "niebla": {
+      "near": -60,
+      "far": 900,
+      "color": "#070c21"
+     },
+     "farCam": 1600,
+     "cieloEscala": 1280,
+     "hora": 21,
+     "permiso": null
+    },
+    "analisis": {
+     "nGrupos": 1,
+     "bandas": [],
+     "perfil": [
+      "0:14,23,57",
+      "20:10,22,50",
+      "40:7,20,50",
+      "60:21,35,65",
+      "80:27,40,65",
+      "100:25,36,60",
+      "120:36,51,78",
+      "140:7,27,55",
+      "160:9,33,55",
+      "180:17,38,70",
+      "200:8,27,64",
+      "220:8,29,65",
+      "240:17,44,74",
+      "260:11,38,74",
+      "280:23,50,83",
+      "300:41,65,86",
+      "320:48,66,94",
+      "340:50,72,89",
+      "360:49,73,82",
+      "380:54,78,84",
+      "400:58,78,78",
+      "420:53,75,74",
+      "440:44,69,64",
+      "460:43,66,66",
+      "480:40,60,59",
+      "500:37,53,47",
+      "520:38,54,48",
+      "540:41,57,43",
+      "560:37,54,41",
+      "580:40,55,43",
+      "600:37,52,38",
+      "620:35,48,30",
+      "640:30,42,20",
+      "660:28,38,17",
+      "680:31,38,21",
+      "700:39,43,22",
+      "720:45,45,25",
+      "740:128,121,100",
+      "760:135,132,111",
+      "780:134,132,113",
+      "800:136,133,113",
+      "820:135,128,107",
+      "840:135,128,106",
+      "860:136,129,107",
+      "880:104,91,58"
+     ]
+    },
+    "rayos": [
+     {
+      "px": 800,
+      "py": 200,
+      "hits": [
+       {
+        "n": "Sprite",
+        "d": 2,
+        "mat": "SpriteMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "terreno:terreno_so",
+        "d": 70,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "mar",
+        "d": 1245,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       },
+       {
+        "n": "fondoMarino",
+        "d": 1260,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 400,
+      "hits": [
+       {
+        "n": "Vittata_2",
+        "d": 2,
+        "mat": "cuerpo",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "Vittata_1",
+        "d": 2,
+        "mat": "Material.001",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "Sprite",
+        "d": 2,
+        "mat": "SpriteMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "Vittata_1",
+        "d": 3,
+        "mat": "Material.001",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     }
+    ]
+   },
+   "NO": {
+    "info": {
+     "pos": [
+      -32,
+      97.94,
+      -150
+     ],
+     "yaw": -0.785,
+     "calls": 121,
+     "ktris": 1171,
+     "fps": 73,
+     "cielo": {
+      "uCenit": "#01020d",
+      "uHorizonte": "#0e1842",
+      "uSolCol": "#8c9bd1",
+      "uSolDir": [
+       -0.63,
+       0.35,
+       0.7
+      ]
+     },
+     "niebla": {
+      "near": -60,
+      "far": 900,
+      "color": "#070c21"
+     },
+     "farCam": 1600,
+     "cieloEscala": 1280,
+     "hora": 21,
+     "permiso": null
+    },
+    "analisis": {
+     "nGrupos": 2,
+     "bandas": [],
+     "perfil": [
+      "0:13,22,58",
+      "20:12,22,51",
+      "40:7,19,51",
+      "60:21,35,65",
+      "80:27,40,66",
+      "100:26,37,60",
+      "120:36,51,79",
+      "140:7,23,60",
+      "160:6,23,61",
+      "180:16,34,73",
+      "200:8,27,65",
+      "220:9,29,66",
+      "240:19,45,74",
+      "260:17,38,69",
+      "280:26,46,74",
+      "300:42,58,84",
+      "320:46,62,86",
+      "340:49,66,85",
+      "360:53,71,84",
+      "380:61,80,94",
+      "400:63,80,83",
+      "420:53,72,72",
+      "440:47,66,69",
+      "460:50,67,66",
+      "480:46,62,61",
+      "500:41,57,50",
+      "520:38,55,47",
+      "540:41,57,44",
+      "560:46,62,48",
+      "580:41,56,44",
+      "600:42,58,43",
+      "620:41,54,35",
+      "640:35,49,27",
+      "660:32,43,23",
+      "680:32,41,21",
+      "700:35,41,19",
+      "720:44,47,24",
+      "740:130,125,103",
+      "760:132,132,110",
+      "780:132,135,114",
+      "800:136,136,116",
+      "820:140,132,111",
+      "840:140,131,110",
+      "860:144,135,115",
+      "880:111,96,63"
+     ]
+    },
+    "rayos": [
+     {
+      "px": 800,
+      "py": 200,
+      "hits": [
+       {
+        "n": "Vittata_2",
+        "d": 0,
+        "mat": "cuerpo",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "Sprite",
+        "d": 1,
+        "mat": "SpriteMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "Vittata_2",
+        "d": 1,
+        "mat": "cuerpo",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1275,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 400,
+      "hits": [
+       {
+        "n": "Vittata_2",
+        "d": 0,
+        "mat": "cuerpo",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "Sprite",
+        "d": 1,
+        "mat": "SpriteMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "Vittata_2",
+        "d": 1,
+        "mat": "cuerpo",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "terreno:terreno_so",
+        "d": 71,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     }
+    ]
+   },
+   "NE": {
+    "info": {
+     "pos": [
+      -32,
+      97.94,
+      -150
+     ],
+     "yaw": 0.785,
+     "calls": 127,
+     "ktris": 1170,
+     "fps": 76,
+     "cielo": {
+      "uCenit": "#01020d",
+      "uHorizonte": "#0e1842",
+      "uSolCol": "#8c9bd1",
+      "uSolDir": [
+       -0.63,
+       0.35,
+       0.7
+      ]
+     },
+     "niebla": {
+      "near": -60,
+      "far": 900,
+      "color": "#070c21"
+     },
+     "farCam": 1600,
+     "cieloEscala": 1280,
+     "hora": 21,
+     "permiso": null
+    },
+    "analisis": {
+     "nGrupos": 0,
+     "bandas": [],
+     "perfil": [
+      "0:12,32,39",
+      "20:11,31,36",
+      "40:9,30,37",
+      "60:23,43,52",
+      "80:30,50,52",
+      "100:28,48,44",
+      "120:39,61,62",
+      "140:10,38,35",
+      "160:10,40,33",
+      "180:20,50,44",
+      "200:11,41,32",
+      "220:12,43,30",
+      "240:19,56,37",
+      "260:15,50,30",
+      "280:16,52,28",
+      "300:18,56,24",
+      "320:17,54,25",
+      "340:17,54,22",
+      "360:17,55,16",
+      "380:17,56,12",
+      "400:17,52,12",
+      "420:14,49,11",
+      "440:11,46,9",
+      "460:11,45,11",
+      "480:12,44,14",
+      "500:12,42,12",
+      "520:13,41,13",
+      "540:10,38,11",
+      "560:11,36,12",
+      "580:12,37,13",
+      "600:14,39,12",
+      "620:14,38,10",
+      "640:13,36,8",
+      "660:12,35,8",
+      "680:10,31,5",
+      "700:17,36,8",
+      "720:33,47,18",
+      "740:119,124,94",
+      "760:125,132,104",
+      "780:120,128,104",
+      "800:128,133,108",
+      "820:134,133,106",
+      "840:128,127,101",
+      "860:133,130,106",
+      "880:98,91,54"
+     ]
+    },
+    "rayos": [
+     {
+      "px": 800,
+      "py": 200,
+      "hits": [
+       {
+        "n": "mar",
+        "d": 842,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       },
+       {
+        "n": "fondoMarino",
+        "d": 852,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1273,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 400,
+      "hits": [
+       {
+        "n": "Vittata_2",
+        "d": 4,
+        "mat": "cuerpo",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "Sprite",
+        "d": 4,
+        "mat": "SpriteMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "Vittata_1",
+        "d": 5,
+        "mat": "Material.001",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "terreno:terreno_so",
+        "d": 100,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "aire": {
+   "N": {
+    "info": {
+     "pos": [
+      -32,
+      97.94,
+      -150
+     ],
+     "yaw": 0,
+     "calls": 127,
+     "ktris": 1168,
+     "fps": 77,
+     "cielo": {
+      "uCenit": "#01020d",
+      "uHorizonte": "#0e1842",
+      "uSolCol": "#8c9bd1",
+      "uSolDir": [
+       -0.63,
+       0.35,
+       0.7
+      ]
+     },
+     "niebla": {
+      "near": -60,
+      "far": 900,
+      "color": "#070c21"
+     },
+     "farCam": 1600,
+     "cieloEscala": 1280,
+     "hora": 21,
+     "permiso": null
+    },
+    "analisis": {
+     "nGrupos": 4,
+     "bandas": [
+      {
+       "ini": 30,
+       "fin": 36,
+       "alto": 7,
+       "media": [
+        35,
+        46,
+        41
+       ]
+      },
+      {
+       "ini": 74,
+       "fin": 88,
+       "alto": 15,
+       "media": [
+        49,
+        60,
+        53
+       ]
+      },
+      {
+       "ini": 94,
+       "fin": 100,
+       "alto": 7,
+       "media": [
+        49,
+        60,
+        52
+       ]
+      }
+     ],
+     "perfil": [
+      "0:26,36,41",
+      "20:24,37,38",
+      "40:26,40,38",
+      "60:47,62,53",
+      "80:57,67,60",
+      "100:51,63,53",
+      "120:65,82,66",
+      "140:39,57,35",
+      "160:39,58,32",
+      "180:50,68,42",
+      "200:37,51,30",
+      "220:35,48,28",
+      "240:48,68,40",
+      "260:50,67,36",
+      "280:52,70,40",
+      "300:56,74,39",
+      "320:60,76,42",
+      "340:65,77,47",
+      "360:69,79,47",
+      "380:64,69,43",
+      "400:58,61,38",
+      "420:60,61,40",
+      "440:67,67,45",
+      "460:67,70,47",
+      "480:68,74,49",
+      "500:63,69,47",
+      "520:66,71,47",
+      "540:66,73,48",
+      "560:67,70,47",
+      "580:59,61,41",
+      "600:59,62,42",
+      "620:60,66,46",
+      "640:64,71,51",
+      "660:68,72,53",
+      "680:67,69,52",
+      "700:67,71,52",
+      "720:81,81,62",
+      "740:147,142,121",
+      "760:148,148,128",
+      "780:144,145,128",
+      "800:158,156,135",
+      "820:159,150,128",
+      "840:151,144,120",
+      "860:155,147,124",
+      "880:121,107,72"
+     ]
+    },
+    "rayos": [
+     {
+      "px": 400,
+      "py": 0,
+      "hits": [
+       {
+        "n": "terreno:terreno_so",
+        "d": 100,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "mar",
+        "d": 360,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       },
+       {
+        "n": "fondoMarino",
+        "d": 363,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1273,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 0,
+      "hits": [
+       {
+        "n": "terreno:terreno_so",
+        "d": 73,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "mar",
+        "d": 329,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       },
+       {
+        "n": "fondoMarino",
+        "d": 333,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1273,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 400,
+      "py": 33,
+      "hits": [
+       {
+        "n": "terreno:terreno_so",
+        "d": 100,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "mar",
+        "d": 332,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       },
+       {
+        "n": "fondoMarino",
+        "d": 335,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1273,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 33,
+      "hits": [
+       {
+        "n": "flora:palma_sierra:corteza:lod",
+        "d": 69,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:palma_sierra:corteza:lod",
+        "d": 69,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:manchas",
+        "d": 69,
+        "mat": "MeshBasicMaterial",
+        "fog": true,
+        "ro": 1
+       },
+       {
+        "n": "terreno:terreno_so",
+        "d": 70,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 1200,
+      "py": 33,
+      "hits": [
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 27,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHD:kelvin_ruinas_yunque:AV_HD_Ancient",
+        "d": 27,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZonaHDGlobal:AV_HD_Ancient",
+        "d": 27,
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "edificiosZona:kelvin_ruinas_yunque:lejosTex",
+        "d": 27,
+        "mat": "AV_HD_Ancient",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 66,
+      "hits": [
+       {
+        "n": "terreno:terreno_so",
+        "d": 68,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "mar",
+        "d": 280,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       },
+       {
+        "n": "fondoMarino",
+        "d": 283,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1275,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     }
+    ]
+   },
+   "O": {
+    "info": {
+     "pos": [
+      -32,
+      97.94,
+      -150
+     ],
+     "yaw": -1.571,
+     "calls": 130,
+     "ktris": 1179,
+     "fps": 76,
+     "cielo": {
+      "uCenit": "#01020d",
+      "uHorizonte": "#0e1842",
+      "uSolCol": "#8c9bd1",
+      "uSolDir": [
+       -0.63,
+       0.35,
+       0.7
+      ]
+     },
+     "niebla": {
+      "near": -60,
+      "far": 900,
+      "color": "#070c21"
+     },
+     "farCam": 1600,
+     "cieloEscala": 1280,
+     "hora": 21,
+     "permiso": null
+    },
+    "analisis": {
+     "nGrupos": 2,
+     "bandas": [
+      {
+       "ini": 886,
+       "fin": 894,
+       "alto": 9,
+       "media": [
+        57,
+        55,
+        44
+       ]
+      }
+     ],
+     "perfil": [
+      "0:27,42,20",
+      "20:26,39,22",
+      "40:27,40,23",
+      "60:44,58,40",
+      "80:49,62,44",
+      "100:45,59,39",
+      "120:57,74,55",
+      "140:49,61,38",
+      "160:52,62,39",
+      "180:62,69,46",
+      "200:57,60,41",
+      "220:59,62,44",
+      "240:67,76,55",
+      "260:65,67,45",
+      "280:61,68,46",
+      "300:60,64,42",
+      "320:61,67,43",
+      "340:57,63,41",
+      "360:63,74,48",
+      "380:65,74,51",
+      "400:65,74,51",
+      "420:63,72,47",
+      "440:62,72,43",
+      "460:63,71,45",
+      "480:66,74,49",
+      "500:72,73,53",
+      "520:69,68,52",
+      "540:64,65,49",
+      "560:70,72,55",
+      "580:81,81,62",
+      "600:87,87,68",
+      "620:68,68,51",
+      "640:57,63,44",
+      "660:53,59,42",
+      "680:53,61,42",
+      "700:55,60,40",
+      "720:72,72,51",
+      "740:144,137,114",
+      "760:148,146,124",
+      "780:144,143,125",
+      "800:150,147,127",
+      "820:153,144,123",
+      "840:150,141,121",
+      "860:158,149,129",
+      "880:124,109,77"
+     ]
+    },
+    "rayos": [
+     {
+      "px": 400,
+      "py": 856,
+      "hits": [
+       {
+        "n": "flora:palma_sierra:hoja",
+        "d": 11,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:palma_sierra:hoja",
+        "d": 13,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:helecho_arboreo:hoja",
+        "d": 16,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "terreno:terreno_so",
+        "d": 40,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 856,
+      "hits": [
+       {
+        "n": "terreno:terreno_so",
+        "d": 16,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "mar",
+        "d": 113,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       },
+       {
+        "n": "fondoMarino",
+        "d": 114,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1276,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 400,
+      "py": 890,
+      "hits": [
+       {
+        "n": "flora:palma_sierra:hoja",
+        "d": 11,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:palma_sierra:hoja",
+        "d": 12,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:palma_sierra:hoja",
+        "d": 13,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "terreno:terreno_so",
+        "d": 40,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 890,
+      "hits": [
+       {
+        "n": "terreno:terreno_so",
+        "d": 16,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "mar",
+        "d": 113,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       },
+       {
+        "n": "fondoMarino",
+        "d": 114,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1279,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     },
+     {
+      "px": 1200,
+      "py": 890,
+      "hits": [
+       {
+        "n": "flora:palma_sierra:hoja",
+        "d": 13,
+        "mat": "MeshLambertMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "flora:manchas",
+        "d": 18,
+        "mat": "MeshBasicMaterial",
+        "fog": true,
+        "ro": 1
+       },
+       {
+        "n": "terreno:terreno_so",
+        "d": 18,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "mar",
+        "d": 123,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       }
+      ]
+     },
+     {
+      "px": 800,
+      "py": 924,
+      "hits": [
+       {
+        "n": "terreno:terreno_so",
+        "d": 16,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "mar",
+        "d": 113,
+        "mat": "ShaderMaterial",
+        "fog": true,
+        "ro": 2
+       },
+       {
+        "n": "fondoMarino",
+        "d": 114,
+        "mat": "MeshPhongMaterial",
+        "fog": true,
+        "ro": 0
+       },
+       {
+        "n": "cielo",
+        "d": 1278,
+        "mat": "ShaderMaterial",
+        "fog": false,
+        "ro": -100
+       }
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "erroresConsola": [],
+ "entrada": "ok: portada → creador → Empezar (Rayo Alegre) → carga 16949 ms (listo)",
+ "fin": "2026-11-05T15:42:33.589Z"
+}
