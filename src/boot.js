@@ -105,6 +105,7 @@
       AV.v18CombateTest = o => cargarCombate().then(c => c.test(o));
       if (v18On) alPrimerGesto(cargarCombate);
     }
+    const descubrir18 = aDemanda('src/game/v18/descubrir.js', 'AVV18Descubrir'), cargarV18Descubrir = () => cargarV18().then(descubrir18); AV.v18DescubrirTest = o => cargarV18Descubrir().then(d => d.test(o)); if (v18On) alPrimerGesto(cargarV18Descubrir); // frente C: descubrir, desbloquear y elegir la cotorra de Dominica
     const reparar18 = aDemanda('src/game/v18/reparar.js', 'AVV18Reparar'), cargarV18Reparar = () => cargarV18().then(reparar18); AV.v18RepararTest = o => cargarV18Reparar().then(r => r.test(o)); if (v18On) alPrimerGesto(cargarV18Reparar); // frente B: puente colgante roto → reparado
     const cargarSorpresas = aDemanda('src/game/sorpresas.js', 'AVSorpresas'); AV.sorpresasTest = o => cargarSorpresas().then(s => s.test(o)); alPrimerGesto(cargarSorpresas); // CG-45, sin tocar ciudad_viva.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
