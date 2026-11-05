@@ -1,0 +1,54 @@
+{
+ "etiqueta": "duelo2-pc",
+ "pantalla": "escritorio 1600x900@1 cpuX1",
+ "head": "desconocido",
+ "pruebas": {
+  "duelo2": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "alto",
+     "sombras": 2048,
+     "sombraRadio": 30,
+     "sombraTerreno": true,
+     "post": 2,
+     "normalesSuelo": true,
+     "dosEscalas": true,
+     "texMax": 0,
+     "flora": 1,
+     "floraDist": 1,
+     "pasto": 1,
+     "sombraFlora": true,
+     "agua": 2,
+     "particulas": 1,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 169.5,
+     "peorMs": 70,
+     "n": 411,
+     "callsMed": 95,
+     "trisMed": 799891,
+     "heap": 909
+    },
+    "duracionMs": 255,
+    "test": {
+     "passed": 23,
+     "total": 23,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 95,
+     "tris": 799857,
+     "geo": 119,
+     "tex": 173,
+     "prog": 72,
+     "heap": 924
+    }
+   }
+  }
+ }
+}

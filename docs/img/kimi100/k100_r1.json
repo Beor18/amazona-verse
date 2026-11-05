@@ -1,0 +1,338 @@
+{
+ "etiqueta": "r1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "pruebas": {
+  "fx": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 24.3,
+     "peorMs": 61,
+     "n": 70,
+     "callsMed": 61,
+     "trisMed": 232496,
+     "heap": 133
+    },
+    "duracionMs": 130,
+    "test": {
+     "passed": 17,
+     "total": 17,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 60,
+     "tris": 229241,
+     "geo": 85,
+     "tex": 122,
+     "prog": 43,
+     "heap": 136
+    }
+   }
+  },
+  "ciclo": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 31.7,
+     "peorMs": 42,
+     "n": 95,
+     "callsMed": 61,
+     "trisMed": 229255,
+     "heap": 139
+    },
+    "duracionMs": 3648,
+    "test": {
+     "passed": 22,
+     "total": 22,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 86,
+     "tris": 223140,
+     "geo": 155,
+     "tex": 130,
+     "prog": 58,
+     "heap": 121
+    }
+   }
+  },
+  "reparar": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 32.7,
+     "peorMs": 62,
+     "n": 93,
+     "callsMed": 61,
+     "trisMed": 229329,
+     "heap": 242
+    },
+    "duracionMs": 6263,
+    "test": {
+     "passed": 27,
+     "total": 27,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 61,
+     "tris": 229241,
+     "geo": 84,
+     "tex": 123,
+     "prog": 44,
+     "heap": 256
+    }
+   }
+  },
+  "amenaza": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 31.3,
+     "peorMs": 56,
+     "n": 90,
+     "callsMed": 61,
+     "trisMed": 229256,
+     "heap": 137
+    },
+    "duracionMs": 510,
+    "test": {
+     "passed": 21,
+     "total": 21,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 63,
+     "tris": 257509,
+     "geo": 86,
+     "tex": 125,
+     "prog": 46,
+     "heap": 126
+    }
+   }
+  },
+  "nuevas": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 29.9,
+     "peorMs": 64,
+     "n": 86,
+     "callsMed": 61,
+     "trisMed": 229242,
+     "heap": 122
+    },
+    "duracionMs": 757,
+    "test": {
+     "passed": 14,
+     "total": 14,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 63,
+     "tris": 257509,
+     "geo": 84,
+     "tex": 128,
+     "prog": 46,
+     "heap": 111
+    }
+   }
+  },
+  "duelo2": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 32.4,
+     "peorMs": 54,
+     "n": 93,
+     "callsMed": 61,
+     "trisMed": 229256,
+     "heap": 116
+    },
+    "duracionMs": 1001,
+    "test": {
+     "passed": 22,
+     "total": 23,
+     "fallos": [
+      "Cámara compartida: encuadra a las dos y se abre hasta un límite :: {\"dCerca\":\"9.8\",\"dLejos\":\"21.6\",\"x1\":\"-2.17\",\"x2\":\"2.19\"}"
+     ]
+    },
+    "contexto": {
+     "calls": 63,
+     "tris": 257509,
+     "geo": 84,
+     "tex": 127,
+     "prog": 46,
+     "heap": 114
+    }
+   }
+  },
+  "combate": {
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 22.3,
+     "peorMs": 141,
+     "n": 65,
+     "callsMed": 61,
+     "trisMed": 229948,
+     "heap": 106
+    },
+    "duracionMs": 822,
+    "test": {
+     "passed": 36,
+     "total": 36,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 61,
+     "tris": 234010,
+     "geo": 84,
+     "tex": 122,
+     "prog": 41,
+     "heap": 104
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "etiqueta": "post-fix",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "v18": true,
+ "head": "desconocido",
+ "mensajes": [],
+ "fases": {
+  "cargaLista": true,
+  "entrada": "ok",
+  "statsMundo": {
+   "calls": 61,
+   "tris": 229241
+  }
+ },
+ "avisos": [],
+ "errores": []
+}

@@ -1,0 +1,103 @@
+{
+ "etiqueta": "r1",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "v18": true,
+ "head": "desconocido",
+ "mensajes": [
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  }
+ ],
+ "fases": {
+  "cargaLista": true,
+  "entrada": "ok",
+  "statsMundo": {
+   "calls": 60,
+   "tris": 229177
+  }
+ },
+ "avisos": [
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  },
+  {
+   "fase": "gesto-v18",
+   "tipo": "log:warning",
+   "texto": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+   "url": "http://127.0.0.1:60371/src/game/musica.js"
+  }
+ ],
+ "errores": []
+}
