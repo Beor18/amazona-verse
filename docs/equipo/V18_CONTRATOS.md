@@ -4,7 +4,7 @@ Directiva: `docs/DIRECTIVA_V18_1.txt` (Kelvin, 5-nov). Ciclo a demostrar: **desc
 
 ## Reglas para todos los frentes
 
-- **Bandera:** todo lo de V18.1 se carga solo con `?v18=1` (o `localStorage['amazonaverse.v18'] = '1'`). Sin ella el juego estable queda igual. `G.V18` dice si está puesta. Los módulos nuevos van en `src/game/v18/` y se cargan desde `src/boot.js` con `aDemanda` y `alPrimerGesto`.
+- **Bandera:** todo lo de V18.1 se carga solo con `?v18=1` (o `localStorage['amazonaverse.v18on'] = '1'` (QA-164: distinta de la clave del progreso `<almacen>.v18`)). Sin ella el juego estable queda igual. `G.V18` dice si está puesta. Los módulos nuevos van en `src/game/v18/` y se cargan desde `src/boot.js` con `aDemanda` y `alPrimerGesto`.
 - **Rama:** `main` única, como manda `CLAUDE.md`. La bandera sustituye a las ramas por frente. Commits pequeños, de rutas concretas.
 - **Un solo progreso:** nadie crea su propio almacén. Todo pasa por `G.v18` (`src/game/v18/progreso.js`).
 - **Pruebas:** cada módulo trae `AV.<nombre>Test()`. Las 12 baterías en verde antes de cada push de código.
