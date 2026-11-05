@@ -1,0 +1,51 @@
+{
+ "etiqueta": "r2-anillos",
+ "pantalla": "pc 1600x900@1 cpuX1",
+ "calidad": "medio",
+ "contencion": "PC compartida (Kimi 3 en QA-160)",
+ "micro": {
+  "v18": true,
+  "test": {
+   "passed": 17,
+   "total": 17
+  },
+  "pasoMs": 0.026,
+  "ab": {
+   "sinFx": [
+    85.1,
+    92.2,
+    90.7,
+    86.8,
+    93,
+    105,
+    92.7,
+    102.2
+   ],
+   "conFx": [
+    69.1,
+    71.9,
+    71,
+    70.9,
+    78.9,
+    76.4,
+    81.7,
+    68.3
+   ],
+   "medSin": 93.5,
+   "medCon": 73.5
+  },
+  "pasoEstado": {
+   "anillos": 0,
+   "escudos": 0,
+   "llamadas": 0,
+   "nivel": "medio"
+  },
+  "estadoFin": {
+   "anillos": 0,
+   "escudos": 0,
+   "llamadas": 0,
+   "nivel": "medio"
+  }
+ },
+ "erroresConsola": 0
+}

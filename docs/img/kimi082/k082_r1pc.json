@@ -1,0 +1,51 @@
+{
+ "etiqueta": "r1pc",
+ "pantalla": "pc 1600x900@1 cpuX1",
+ "calidad": "medio",
+ "contencion": "PC compartida (Kimi 3 en QA-160)",
+ "micro": {
+  "v18": true,
+  "test": {
+   "passed": 17,
+   "total": 17
+  },
+  "pasoMs": 0.023,
+  "ab": {
+   "sinFx": [
+    87.1,
+    93.4,
+    82.4,
+    96.5,
+    102.3,
+    93.9,
+    97.7,
+    92.6
+   ],
+   "conFx": [
+    62,
+    57.5,
+    68.4,
+    79.4,
+    68,
+    71.7,
+    73.9,
+    74.8
+   ],
+   "medSin": 93.2,
+   "medCon": 69.5
+  },
+  "pasoEstado": {
+   "anillos": 0,
+   "escudos": 0,
+   "llamadas": 0,
+   "nivel": "medio"
+  },
+  "estadoFin": {
+   "anillos": 0,
+   "escudos": 0,
+   "llamadas": 0,
+   "nivel": "medio"
+  }
+ },
+ "erroresConsola": 0
+}

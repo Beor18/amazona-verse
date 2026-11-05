@@ -1,0 +1,51 @@
+{
+ "etiqueta": "r3-head-anillos",
+ "pantalla": "pc 1600x900@1 cpuX1",
+ "calidad": "medio",
+ "contencion": "PC compartida (Kimi 3 en QA-160)",
+ "micro": {
+  "v18": true,
+  "test": {
+   "passed": 17,
+   "total": 17
+  },
+  "pasoMs": 0.018,
+  "ab": {
+   "sinFx": [
+    98.2,
+    101.9,
+    96.7,
+    102.7,
+    102.5,
+    98.6,
+    95,
+    79.3
+   ],
+   "conFx": [
+    80,
+    77.8,
+    78.2,
+    86.1,
+    77.5,
+    86.8,
+    77.4,
+    78.3
+   ],
+   "medSin": 96.9,
+   "medCon": 80.3
+  },
+  "pasoEstado": {
+   "anillos": 0,
+   "escudos": 0,
+   "llamadas": 0,
+   "nivel": "medio"
+  },
+  "estadoFin": {
+   "anillos": 0,
+   "escudos": 0,
+   "llamadas": 0,
+   "nivel": "medio"
+  }
+ },
+ "erroresConsola": 0
+}

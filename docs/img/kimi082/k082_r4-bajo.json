@@ -1,0 +1,51 @@
+{
+ "etiqueta": "r4-bajo",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "calidad": "bajo",
+ "contencion": "PC compartida (Kimi 3 en QA-160)",
+ "micro": {
+  "v18": true,
+  "test": {
+   "passed": 17,
+   "total": 17
+  },
+  "pasoMs": 0.045,
+  "ab": {
+   "sinFx": [
+    14.7,
+    22,
+    20.5,
+    20.3,
+    22.2,
+    23,
+    23.4,
+    25.2
+   ],
+   "conFx": [
+    17.5,
+    21.2,
+    16.8,
+    19.5,
+    22.7,
+    25.2,
+    24.3,
+    22.1
+   ],
+   "medSin": 21.4,
+   "medCon": 21.2
+  },
+  "pasoEstado": {
+   "anillos": 0,
+   "escudos": 0,
+   "llamadas": 0,
+   "nivel": "bajo"
+  },
+  "estadoFin": {
+   "anillos": 0,
+   "escudos": 0,
+   "llamadas": 0,
+   "nivel": "bajo"
+  }
+ },
+ "erroresConsola": 0
+}

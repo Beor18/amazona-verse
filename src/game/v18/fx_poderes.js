@@ -5,10 +5,10 @@
      del pico hacia delante, se abren y se desvanecen a lo largo del alcance (empujar e interrumpir lo aplica combate.js).
    - Escudo de plumas (A. arausiaca, familia PLUMAS): escudo(actor, segundos) crea un círculo de plumas luminosas que gira
      alrededor de la cotorra; al acabar (o con dispersar(actor)) las plumas se dispersan y se apagan.
-   - Rendimiento: los anillos son UN InstancedMesh aditivo (1 draw call para todos) y las plumas OTRO InstancedMesh
-     de tarjetas con sprite propio (64×64, 1 textura pequeña generada en runtime; 1 draw call para todos los
-     escudos). En calidad 'bajo' 2 anillos y 14 plumas; coste por cuadro: unas pocas escrituras de matriz/color
-     (despreciable). Sin sombras ni luces dinámicas.
+   - Rendimiento: los anillos son UN InstancedMesh aditivo con textura de borde suave (1 draw call para todos)
+     y las plumas OTRO InstancedMesh de tarjetas con sprite propio (64×64, 1 textura pequeña generada en
+     runtime; 1 draw call para todos los escudos). En calidad 'bajo' 2 anillos y 14 plumas; coste por cuadro:
+     unas pocas escrituras de matriz/color (despreciable). Sin sombras ni luces dinámicas.
    - El frente A (combate.js) llama a esta API directamente; no se engancha a eventos (el evento 'v18poder' lo emite
      combate para la amenaza, KIMI-064). Prueba: AV.v18FxTest(). */
 window.AVV18Fx = function (G) {
@@ -20,8 +20,25 @@ window.AVV18Fx = function (G) {
 
   // ---------- Anillos del Grito del Yunque: un InstancedMesh aditivo para todos los anillos ----------
   const MAXR = 12;                       // hasta 4 gritos simultáneos (3 anillos cada uno)
+  // Textura de borde suave (128×128, canvas en runtime). RingGeometry (r128) usa uv = (pos/outerRadius+1)/2,
+  // así que con outerRadius = 1 la banda del anillo vive a distancia UV 0,4–0,5 del centro: el degradado la
+  // envuelve y ambos bordes (interno y externo) funden a transparente en vez de cortar en seco.
+  const TEX_ANILLO = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 128;
+    const x = c.getContext('2d');
+    const g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0, 'rgba(255,255,255,0)');
+    g.addColorStop(0.78, 'rgba(255,255,255,0)');
+    g.addColorStop(0.83, 'rgba(255,255,255,0.9)');
+    g.addColorStop(0.93, 'rgba(255,255,255,1)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+    const t = new THREE.CanvasTexture(c);
+    t.minFilter = THREE.LinearFilter; t.generateMipmaps = false;   // degradado suave: sin mipas necesarios
+    return t;
+  })();
   const ringGeo = new THREE.RingGeometry(0.8, 1, 40);
-  const ringMat = new THREE.MeshBasicMaterial({ color: '#ffcf5e', transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+  const ringMat = new THREE.MeshBasicMaterial({ color: '#ffcf5e', map: TEX_ANILLO, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
   const rings = new THREE.InstancedMesh(ringGeo, ringMat, MAXR);
   rings.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   rings.frustumCulled = false; rings.visible = false; rings.renderOrder = 6;
@@ -50,7 +67,8 @@ window.AVV18Fx = function (G) {
     _m.compose(_p, _q, _s);
     rings.setMatrixAt(i, _m);
     const fade = Math.pow(1 - p, 1.4);                        // se desvanece (aditivo: hacia negro)
-    rings.setColorAt(i, _c.setRGB(fade, fade, fade));
+    _c.setRGB(fade, fade * (0.95 - 0.33 * p), fade * (0.72 - 0.45 * p));   // de oro pálido a ámbar
+    rings.setColorAt(i, _c);
   }
 
   // ---------- Escudo de plumas: UN InstancedMesh de tarjetas de pluma (billboard) para todos los escudos ----------
@@ -59,20 +77,33 @@ window.AVV18Fx = function (G) {
   // en el iPad real de Kelvin sí se dibuja, KIMI-060). El InstancedMesh usa TRIANGLES, como los anillos y la flora.
   const MAXE = 2, PLUMAS = 32;           // hasta 2 escudos (Vittata + rival); 32 plumas por escudo
   const NP = MAXE * PLUMAS;
-  // Sprite propio (64×64, canvas en runtime): una pluma estilizada por tarjeta.
+  // Sprite propio (64×64, canvas en runtime): pluma estilizada por tarjeta — halo suave, vana con degradado
+  // (base cálida → punta verde-dorada), barbas finas y cañón curvo. Se tiñe por instancia con PLUMA_COLS.
   const TEX_PLUMA = (() => {
     const c = document.createElement('canvas'); c.width = c.height = 64;
     const x = c.getContext('2d');
-    const g = x.createRadialGradient(32, 30, 2, 32, 30, 30);
-    g.addColorStop(0, 'rgba(255,255,255,0.95)'); g.addColorStop(0.55, 'rgba(255,255,255,0.45)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    let g = x.createRadialGradient(32, 30, 2, 32, 30, 30);
+    g.addColorStop(0, 'rgba(255,255,255,0.5)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 64, 64);
+    x.save();
+    x.translate(32, 30); x.scale(1, 1.9);                     // elipse alta: encaja con la tarjeta 0,5×0,78
+    g = x.createRadialGradient(0, 0, 1, 0, 0, 14);
+    g.addColorStop(0, 'rgba(255,252,238,0.98)');
+    g.addColorStop(0.55, 'rgba(240,246,200,0.92)');
+    g.addColorStop(0.85, 'rgba(196,232,158,0.55)');
+    g.addColorStop(1, 'rgba(180,224,148,0)');
     x.fillStyle = g;
-    x.beginPath(); x.ellipse(32, 30, 13, 26, 0, 0, Math.PI * 2); x.fill();  // halo de la pluma
-    x.strokeStyle = 'rgba(255,255,255,0.85)'; x.lineWidth = 2.5;
-    x.beginPath(); x.moveTo(32, 56); x.quadraticCurveTo(29, 30, 32, 6); x.stroke(); // cañón
-    x.lineWidth = 1.4;
-    for (let i = 0; i < 5; i++) { const y = 14 + i * 8; x.beginPath(); x.moveTo(32, y); x.quadraticCurveTo(24, y + 3, 20, y + 8); x.stroke();
-      x.beginPath(); x.moveTo(32, y); x.quadraticCurveTo(40, y + 3, 44, y + 8); x.stroke(); } // barbas
-    const t = new THREE.CanvasTexture(c); return t;
+    x.beginPath(); x.arc(0, 0, 14, 0, Math.PI * 2); x.fill();
+    x.restore();
+    x.strokeStyle = 'rgba(255,255,255,0.5)'; x.lineWidth = 1;
+    for (let i = 0; i < 7; i++) { const y = 10 + i * 6.5;
+      x.beginPath(); x.moveTo(32, y + 4); x.quadraticCurveTo(26, y + 5, 21, y + 9); x.stroke();
+      x.beginPath(); x.moveTo(32, y + 4); x.quadraticCurveTo(38, y + 5, 43, y + 9); x.stroke(); } // barbas
+    x.strokeStyle = 'rgba(255,255,255,0.9)'; x.lineWidth = 2.2;
+    x.beginPath(); x.moveTo(32, 57); x.quadraticCurveTo(30, 30, 32, 5); x.stroke(); // cañón
+    const t = new THREE.CanvasTexture(c);
+    t.minFilter = THREE.LinearFilter; t.generateMipmaps = false;
+    return t;
   })();
   const plumaGeo = new THREE.PlaneGeometry(0.5, 0.78);
   const plumaMat = new THREE.MeshBasicMaterial({ map: TEX_PLUMA, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
@@ -83,6 +114,12 @@ window.AVV18Fx = function (G) {
   scene.add(plumas);
   const pPos = new Float32Array(NP * 3);   // espejo de posiciones (lo usan las pruebas y el diagnóstico)
   for (let i = 0; i < NP; i++) pPos[i * 3 + 1] = -1e4;
+  // Varianza determinista por tarjeta (escala y fase de parpadeo): misma pluma, mismo aspecto en cada cuadro.
+  const VAR_S = new Float32Array(NP), VAR_F = new Float32Array(NP);
+  for (let i = 0, s = 1234567; i < NP; i++) {
+    s = (s * 1103515245 + 12345) & 0x7fffffff; VAR_S[i] = 0.8 + (s % 1000) / 1000 * 0.28;
+    s = (s * 1103515245 + 12345) & 0x7fffffff; VAR_F[i] = (s % 628) / 100;
+  }
   const escudos = [];                    // {clave, actor, t0, dur, fase, ang, n, vel, slot}
   const _v = new THREE.Vector3(), _ejeZ = new THREE.Vector3(0, 0, 1), _roll = new THREE.Quaternion();
   // Posición del actor: Object3D (.position), punto {x,y,z}, luchador de combate.js (.pos {x,y,z} vivo) o Vittata (S.pos).
@@ -141,9 +178,11 @@ window.AVV18Fx = function (G) {
     }
     const respira = 1.12 + Math.sin(t * 2.2) * 0.06;
     for (let i = 0; i < n; i++) {
-      const a = e.ang + i * Math.PI * 2 / n;
-      _c.copy(PLUMA_COLS[i % PLUMA_COLS.length]);
-      ponerPluma(base + i, _v.x + Math.cos(a) * respira, _v.y + Math.sin(a * 2 + t * 3.1) * 0.16, _v.z + Math.sin(a) * respira, 0.85 * (1 + Math.sin(t * 3 + i) * 0.07), _c, a + t * 1.5);
+      const capa = i % 2;                                    // doble corona: la mitad interior gira en contra
+      const a = e.ang + t * 1.4 * (capa ? -1.5 : 1) + i * Math.PI * 2 / n;
+      const rad = respira * (capa ? 0.74 : 1);
+      _c.copy(PLUMA_COLS[i % PLUMA_COLS.length]).multiplyScalar(0.85 + Math.sin(t * 4.4 + VAR_F[base + i]) * 0.15);
+      ponerPluma(base + i, _v.x + Math.cos(a) * rad, _v.y + Math.sin(a * 2 + t * 3.1) * 0.16, _v.z + Math.sin(a) * rad, 0.85 * VAR_S[base + i] * (1 + Math.sin(t * 3 + i) * 0.07), _c, a + t * 1.5);
     }
     if (t >= e.dur) dispersar(e.clave);   // se acaba: se dispersa solo
   }
@@ -240,7 +279,7 @@ window.AVV18Fx = function (G) {
       check('Tras la dispersión el escudo desaparece del todo', estado().escudos === 0 && !plumas.visible);
       escudo(null, 10); escudo('rival', 10);
       check('Dos actores pueden tener escudo a la vez', estado().escudos === 2);
-      check('Los escudos juntos son 1 solo draw call (Points)', estado().llamadas === 1, estado().llamadas);
+      check('Los escudos juntos son 1 solo draw call (InstancedMesh)', estado().llamadas === 1, estado().llamadas);
       onda({ x: 0, y: 50, z: 0 }, { x: 1, y: 0, z: 0 }, 9);
       check('Grito + escudos juntos: 2 draw calls en total', estado().llamadas === 2, estado().llamadas);
       avanza(1.5);                                   // los anillos mueren
