@@ -45,8 +45,27 @@ window.AVV18Minigolf = function (G) {
     sale: '¡Hasta luego! El minigolf te espera en Villa Raíz.', hoyo: 'Hoyo 1 · Villa Raíz', par: 'Par 3', golpe: 'Golpear', soltar: 'Soltar',
     poder: 'Grito', reiniciar: 'Reiniciar', salir: 'Salir', fuerza: 'Fuerza', izq: 'Apuntar a la izquierda', der: 'Apuntar a la derecha',
     nuevo: '¡Nuevo récord!', sinRecord: 'Récord: —', usado: 'Grito usado',
-    oro: 'Medalla de oro', plata: 'Medalla de plata', bronce: 'Medalla de bronce'
+    oro: 'Medalla de oro', plata: 'Medalla de plata', bronce: 'Medalla de bronce',
+    premio1: '¡Primer hoyo completado! Ganaste 3 fibras (cuentan como madera).', premioOro: '¡Primera medalla de oro! Ganaste 2 maderas.'
   };
+  // Premios (Kelvin 5-nov), una sola vez por logro, al inventario de siempre: la fibra cuenta como madera (reparar.js, BM148)
+  const PREMIOS = [
+    { clave: 'minigolf_villa_completo', marca: 'minigolf_completo', madera: 3, txt: 'premio1', cuando: () => true },
+    { clave: 'minigolf_villa_oro', marca: 'minigolf_oro', madera: 2, txt: 'premioOro', cuando: med => med === 'oro' }
+  ];
+  function premiar(med) {
+    const dados = [];
+    for (const p of PREMIOS) {
+      if (!V || !p.cuando(med) || !V.otorgar(p.clave, p.marca, 1)) continue;
+      if (!S.inv) S.inv = {};
+      S.inv.madera = (S.inv.madera || 0) + p.madera; dados.push(p);
+    }
+    if (dados.length) {
+      try { G.objetos.renderInv(); } catch (e) { /* HUD */ }
+      try { if (G.guardado.save) G.guardado.save(true); else G.guardado.autosave(); } catch (e) { /* guardado */ } // QA-162
+    }
+    return dados;
+  }
   const golpesTxt = n => 'Golpes: ' + n, recordTxt = n => 'Récord: ' + n, nidoTxt = n => n === 1 ? '¡Al nido en 1 golpe!' : '¡Al nido en ' + n + ' golpes!';
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
@@ -301,10 +320,12 @@ window.AVV18Minigolf = function (G) {
     const n = A.golpes, med = medalla(n), r0 = record(), nuevo = !r0 || n < r0.mejor;
     if (nuevo && V) V.cambiarMundo(ID, { mejor: n, medalla: med });
     const r = record() || { mejor: n, medalla: med };
-    A.resultado = { golpes: n, medalla: med, nuevo, mejor: r.mejor };
+    const dados = premiar(med);
+    A.resultado = { golpes: n, medalla: med, nuevo, mejor: r.mejor, premios: dados.map(p => p.clave) };
     const y = H(P_NIDO.x, P_NIDO.z);
     fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 14); fx('feathers', P_NIDO.x, y + 0.8, P_NIDO.z, 10); sonar('unlock');
     toast(nidoTxt(n), 3200);
+    dados.forEach((p, i) => setTimeout(() => toast(TXT[p.txt], 3600), G.quiet ? 0 : 1600 * (i + 1)));
     if (hud) {
       hud.q('fin1').textContent = nidoTxt(n); hud.q('fin2').textContent = TXT[med]; hud.q('fin2').dataset.m = med;
       hud.q('fin3').textContent = nuevo ? TXT.nuevo : recordTxt(r.mejor);
@@ -550,7 +571,8 @@ window.AVV18Minigolf = function (G) {
   async function test() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     let crudo = null; try { crudo = localStorage.getItem(V.clave()); } catch (e) { /* */ }
-    const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M.flying, yaw0 = G.camara.yaw;
+    const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M.flying, yaw0 = G.camara.yaw, inv0 = Object.assign({}, S.inv || {});
+    const mad = () => (S.inv && S.inv.madera || 0) - (inv0.madera || 0);
     const toasts = [], toast0 = G.ui.toast; G.ui.toast = t => { toasts.push(String(t)); };
     const susp = G.guardado && G.guardado.suspender; if (susp) susp(true);
     if (A.fase !== 'nada') salir();
@@ -653,6 +675,20 @@ window.AVV18Minigolf = function (G) {
       const peor = A.fase === 'nido' && !A.resultado.nuevo && record().mejor === res1.golpes && hud.q('fin3').textContent === recordTxt(res1.golpes);
       reiniciar(); colocar(NIDO.u - 3, -0.3); apuntaLocal(NIDO.u, NIDO.v); tirar(fuerzaPara(3.3)); hastaQuieta();
       check('Un resultado peor no pisa el récord; uno mejor sí (y su medalla)', peor && A.fase === 'nido' && A.resultado.nuevo && record().mejor === 1 && record().medalla === 'oro', JSON.stringify(record()));
+      check('Premios una vez: 3 fibras (madera) al primer hoyo y 2 maderas al primer oro; 5 en total', mad() === 5 && V.otorgado('minigolf_villa_completo') && V.otorgado('minigolf_villa_oro') &&
+        toasts.includes(TXT.premio1) && toasts.includes(TXT.premioOro), 'madera +' + mad());
+      reiniciar(); colocar(NIDO.u - 3, 0); apuntaLocal(NIDO.u, NIDO.v); tirar(fuerzaPara(3.3)); hastaQuieta();
+      const m1 = mad(); G.guardado.save && G.guardado.save(true); V.recargar();
+      check('Repetir el hoyo (otro oro) no da más materiales, y sigue así tras guardar y recargar', A.fase === 'nido' && A.resultado.premios.length === 0 && m1 === 5 &&
+        V.otorgado('minigolf_villa_completo') && V.otorgado('minigolf_villa_oro') && !V.otorgar('minigolf_villa_oro', 'minigolf_oro', 1), 'madera +' + m1);
+      // Los 2 árboles del hoyo: no tapan el nido ni atrapan la semilla (pegada a cada uno, sale con un golpe)
+      const libresArb = OBST.map(o => {
+        const q = aLocal(K, o.x, o.z), dn = Math.hypot(q.u - NIDO.u, q.v - NIDO.v) - o.r - NIDO_R;
+        const du = q.u - (NIDO.u + TEE.u) / 2, lado = q.v >= 0 ? -1 : 1, pu = q.u - 0.05 * Math.sign(du || 1), pv = q.v + lado * (o.r + R + 0.05);
+        reiniciar(); colocar(pu, pv); const a0 = enLocal(); apuntaLocal(NIDO.u, NIDO.v); tirar(0.6); hastaQuieta(); const a1 = enLocal();
+        return { u: +q.u.toFixed(1), v: +q.v.toFixed(1), aNido: +dn.toFixed(2), sale: +Math.hypot(a1.u - a0.u, a1.v - a0.v).toFixed(2) };
+      });
+      check('Los árboles del hoyo no tapan el nido (≥ 1 m) ni atrapan la semilla (sale ≥ 1 m de un golpe)', libresArb.every(a => a.aNido >= 1 && a.sale >= 1), JSON.stringify(libresArb));
       // Rápido sobre el nido no entra (tiene que llegar despacio)
       reiniciar(); colocar(NIDO.u - 4, 0); apuntaLocal(NIDO.u, NIDO.v); tirar(1); let pasa = false;
       for (let t = 0; t < 0.6 && A.fase === 'rueda'; t += 1 / 60) { paso(1 / 60); if (enLocal().u > NIDO.u + NIDO_R) pasa = true; }
@@ -671,6 +707,7 @@ window.AVV18Minigolf = function (G) {
     try { if (A.fase !== 'nada') salir(); } catch (e) { /* ya fuera */ }
     A.manual = false; A.invitado = true; puntos.visible = false;
     G.ui.toast = toast0;
+    S.inv = inv0; try { G.objetos.renderInv(); } catch (e) { /* HUD */ }
     S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.facing = fac0; M.flying = fly0; M.vx = M.vz = 0; G.camara.yaw = yaw0;
     try { G.camara.place(true); } catch (e) { /* cámara */ }
     try { if (crudo == null) localStorage.removeItem(V.clave()); else localStorage.setItem(V.clave(), crudo); } catch (e) { /* */ }

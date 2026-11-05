@@ -1951,5 +1951,7 @@ window.AV_EN = {
  "Golpes: {}": "Strokes: {}",
  "Grito usado": "Shout used",
  "¡Al nido en 1 golpe!": "Into the nest in 1 stroke!",
- "¡Al nido en {} golpes!": "Into the nest in {} strokes!"
+ "¡Al nido en {} golpes!": "Into the nest in {} strokes!",
+ "¡Primer hoyo completado! Ganaste 3 fibras (cuentan como madera).": "First hole done! You earned 3 fibers (they count as wood).",
+ "¡Primera medalla de oro! Ganaste 2 maderas.": "First gold medal! You earned 2 wood."
 };
