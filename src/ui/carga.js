@@ -176,6 +176,7 @@ window.AVCarga = function (G) {
         // Se destapa el mundo: el cuadro siguiente es el primero de verdad (todo enlazado). Se mide cuánto tarda.
         ocultar = false;
         if (G.pausa) G.pausa.set('carga', false);
+        G.cargaPendiente = false; // la precubierta del boot: el mundo ya destapa (QA-159)
         const tR = performance.now();
         // El peor cuadro del primer segundo de juego (QA-53: < 500 ms)
         let tp = tR; const peor = () => { const n = performance.now(); C.cuadroRevelar = Math.max(C.cuadroRevelar, Math.round(n - tp)); tp = n; if (n - tR < 1000) requestAnimationFrame(peor); };
@@ -200,6 +201,7 @@ window.AVCarga = function (G) {
           C.tCargado = Math.round(now - t0);
           if (dib0 > 30) return cerrar('listo'); // el mundo ya se dibujó a pantalla completa antes (otra corrida): nada que pagar
           fase = 'dibujo'; d0 = nDibujos; ocultar = false;
+          G.cargaPendiente = false; // aquí tienen que fluir los cuadros de verdad para la fase 'dibujo' (precubierta del boot, QA-159)
         }
         if (fase === 'dibujo' && nDibujos - d0 >= 2) { fase = 'gpu'; tGPU = now; marca = RP && RP.marcaGPU ? RP.marcaGPU() : null; }
         if (fase === 'gpu' && (!marca || marca.listo() || now - tGPU > 2500)) { C.msGPU = Math.round(now - tGPU); return cerrar('listo'); }
@@ -225,8 +227,8 @@ window.AVCarga = function (G) {
   const enJuego = () => !!(G.S.profile && G.S.profile.created) && !(portada && portada.open) && !(creador && !creador.hidden);
   function vigilar() {
     if (estado.hecha || estado.activa || apagada || !enJuego()) return;
-    if (portada && MINI.has(portada.returnValue)) { estado.hecha = true; return; } // minijuego aparte: no necesita la zona de inicio
-    if (/[?&](mini|manga)=/.test(location.search)) { estado.hecha = true; return; }
+    if (portada && MINI.has(portada.returnValue)) { estado.hecha = true; G.cargaPendiente = false; return; } // minijuego aparte: no necesita la zona de inicio
+    if (/[?&](mini|manga)=/.test(location.search)) { estado.hecha = true; G.cargaPendiente = false; return; }
     correr();
   }
   if (portada) portada.addEventListener('close', vigilar);

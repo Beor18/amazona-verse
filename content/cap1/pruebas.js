@@ -964,7 +964,8 @@
       $('m-borrar').click(); $('m-borrar-si').click();
       check('Borrar el progreso de este dispositivo', AU.partidas.length === 0);
       $('maestro').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-      check('Esc cierra el Modo Maestro y el juego sigue', !AU.maestroAbierto() && !G.pausa.activa() && G.camara.juice.hitStop === 0);
+      check('Esc cierra el Modo Maestro y el juego sigue', !AU.maestroAbierto() && !G.pausa.activa() && G.camara.juice.hitStop === 0,
+        JSON.stringify({ abierto: AU.maestroAbierto(), motivos: [...G.pausa.motivos], hitStop: String(G.camara.juice.hitStop) }));
       // Nombre del personaje (decisión de Kelvin): «Iguaca». «Luma» recuerda a la empresa de electricidad, así que no puede verse ni leerse en ningún texto
       // del juego (los ids internos luma/LumaHelped, que guardan las partidas, no cuentan: solo se mira el texto)
       const npcLuma = (G.actores.npc('luma') || {}).def || {};
