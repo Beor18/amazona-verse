@@ -213,6 +213,17 @@ AVE.module('input', function (G) {
   addEventListener('pointermove', e => { if (e.pointerId === stickId) moveStick(e); }, true);
   addEventListener('pointerup', e => { if (e.pointerId === stickId) soltarPalo(); }, true);
   addEventListener('pointercancel', e => { if (e.pointerId === stickId) soltarPalo(); }, true);
+  // Kelvin 5-nov (iPhone, Safari): el joystick se quedó empujado sin el dedo. Safari a veces no manda pointerup ni pointercancel
+  // (el dedo pasa por su barra de abajo, una notificación, un gesto del sistema). Redes de seguridad: se suelta también al perder
+  // la captura del dedo, al perder el foco o esconderse la página, y cuando no queda ningún dedo en la pantalla (touchend sin toques).
+  // Sin dedos en la pantalla también se olvidan los dedos «fantasma» del lienzo (enLienzo): si no, el siguiente toque contaría
+  // como segundo dedo y no giraría la cámara ni haría latigazos.
+  stickEl.addEventListener('lostpointercapture', e => { if (e.pointerId === stickId) soltarPalo(); });
+  const sinDedos = () => { if (stickId != null) soltarPalo(); enLienzo.clear(); dragId = null; gesto = null; dosDedos = false; };
+  addEventListener('blur', sinDedos);
+  addEventListener('pagehide', sinDedos);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') sinDedos(); });
+  for (const t of ['touchend', 'touchcancel']) addEventListener(t, e => { if (e.touches && e.touches.length === 0) sinDedos(); }, { capture: true, passive: true });
   // Vibración corta al posarse y al recoger. En el escritorio no se llama: Chrome lo anota si no hubo un toque.
   function zumba(ms) {
     if (!vibrarPrueba && !(G.renderer && G.renderer.MOBILE)) return;
@@ -383,6 +394,16 @@ AVE.module('input', function (G) {
       ev('pointerup', { pointerId: 12, clientX: innerWidth - 30, clientY: y1 });
       ev('pointerup', { pointerId: 11, clientX: x + 52, clientY: y });
       ok('al soltar, el joystick vuelve a cero', stickId == null && stick.x === 0 && stick.y === 0);
+      // Kelvin 5-nov: Safari no siempre manda pointerup; el joystick no se queda empujado
+      const tomar = id => { ev('pointerdown', { pointerId: id, clientX: x, clientY: y }); ev('pointermove', { pointerId: id, clientX: x - 52, clientY: y - 30 }); return stickId === id && stick.x < 0; };
+      let tomado = tomar(21); stickEl.dispatchEvent(new PointerEvent('lostpointercapture', { pointerId: 21 }));
+      ok('sin pointerup: al perder la captura del dedo el joystick se suelta', tomado && stickId == null && stick.x === 0 && stick.y === 0 && knob.style.transform === '');
+      tomado = tomar(22); dispatchEvent(new Event('blur'));
+      ok('sin pointerup: al perder el foco la página el joystick se suelta', tomado && stickId == null && stick.x === 0);
+      tomado = tomar(23);
+      let te = null; try { te = new TouchEvent('touchend', { touches: [], bubbles: true }); } catch (err) { te = new Event('touchend', { bubbles: true }); te.touches = []; }
+      dispatchEvent(te);
+      ok('sin pointerup: si no queda ningún dedo en la pantalla el joystick se suelta', tomado && stickId == null && stick.x === 0);
       G.camara.yaw = yaw0;
       const xr = innerWidth - 90, yr = Math.round(innerHeight * 0.5);
       ev('pointerdown', { pointerId: 13, clientX: xr, clientY: yr });
