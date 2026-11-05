@@ -1,0 +1,148 @@
+{
+ "etiqueta": "noche-r6-singuia",
+ "atardecer": "1",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "head": "desconocido",
+ "tomas": {
+  "puerta_oeste": {
+   "pos": [
+    11.3,
+    91.44,
+    -115.3
+   ],
+   "med": {
+    "calls": 143,
+    "triangulos": 301742,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 0,
+   "rayos": [],
+   "detErr": null
+  },
+  "aerea": {
+   "pos": [
+    -33,
+    126.87,
+    -136
+   ],
+   "med": {
+    "calls": 161,
+    "triangulos": 394669,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 0,
+   "rayos": [],
+   "detErr": null
+  },
+  "callejon": {
+   "pos": [
+    2.6,
+    98.79,
+    -119.6
+   ],
+   "med": {
+    "calls": 158,
+    "triangulos": 320243,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 0,
+   "rayos": [],
+   "detErr": null
+  },
+  "plaza_sur": {
+   "pos": [
+    -4,
+    115.86,
+    -132
+   ],
+   "med": {
+    "calls": 190,
+    "triangulos": 492093,
+    "texturasMB": 154.9
+   },
+   "medErr": null,
+   "blancos": 0,
+   "rayos": [],
+   "detErr": null
+  }
+ },
+ "ambiente": "{\"hora\":18.75,\"atardecer\":{\"activo\":true,\"k\":1,\"deseado\":true,\"forzado\":true,\"hora\":18.75,\"luciernagas\":false,\"solY\":0.1600000000000001},\"k\":1}",
+ "erroresConsola": 0,
+ "apagaGuia": "guia ocultada: 1 mallas",
+ "rayosDirigidos": [
+  {
+   "ndc": [
+    -0.122,
+    0.712
+   ],
+   "d": 3.1,
+   "obj": "(sin nombre)",
+   "mat": "MeshBasicMaterial#f2a03d",
+   "pto": [
+    3.1,
+    101.7,
+    -119
+   ]
+  },
+  {
+   "ndc": [
+    -0.15,
+    0.73
+   ],
+   "d": 3.1,
+   "obj": "(sin nombre)",
+   "mat": "MeshBasicMaterial#f2a03d",
+   "pto": [
+    3.1,
+    101.7,
+    -119
+   ]
+  },
+  {
+   "ndc": [
+    -0.09,
+    0.69
+   ],
+   "d": 3.2,
+   "obj": "(sin nombre)",
+   "mat": "MeshBasicMaterial#f2a03d",
+   "pto": [
+    3,
+    101.6,
+    -119.1
+   ]
+  },
+  {
+   "ndc": [
+    -0.19,
+    0.77
+   ],
+   "d": 3.1,
+   "obj": "(sin nombre)",
+   "mat": "MeshBasicMaterial#f2a03d",
+   "pto": [
+    3,
+    101.7,
+    -118.9
+   ]
+  },
+  {
+   "ndc": [
+    -0.06,
+    0.75
+   ],
+   "d": 3.2,
+   "obj": "(sin nombre)",
+   "mat": "MeshBasicMaterial#f2a03d",
+   "pto": [
+    3,
+    101.7,
+    -119.1
+   ]
+  }
+ ]
+}
