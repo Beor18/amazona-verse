@@ -1,7 +1,7 @@
 #!/bin/bash
 # Amazona Verse · pruebas de una build en Chrome sin interfaz (dueño: Build/Release Engineer). Ver docs/equipo/BUILD.md.
 #
-#   tools/build/test.sh <carpeta> [--extra] [--solo-medir] [--puerto N] [--informe DIR]
+#   tools/build/test.sh <carpeta> [--extra] [--solo-medir] [--puerto N] [--informe DIR] [--paralelo N]
 #   tools/build/test.sh --limpiar      (cierra solo los Chrome avtest-chrome-* huérfanos, padre 1, con más de 30 min)
 #
 # <carpeta>: salida de build.sh (o una carpeta con index.html). Sirve la build en un puerto libre, abre un Chrome propio

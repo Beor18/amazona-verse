@@ -1,7 +1,7 @@
 """Amazona Verse · pruebas de una build en Chrome sin interfaz (dueño: Build/Release Engineer; lo llama tools/build/test.sh).
 
 Uso (siempre con el python de Blender y -I; nunca `python3`):
-  <python3.11> -I tools/build/avtest.py <carpeta> [--extra] [--puerto N] [--informe DIR]
+  <python3.11> -I tools/build/avtest.py <carpeta> [--extra] [--puerto N] [--informe DIR] [--paralelo N]
 
 - <carpeta> es la salida de build.sh (con site/ y manifiesto.json) o una carpeta con index.html.
 - Comprueba que site/ coincide con su manifiesto (lo probado es lo que se publica).
@@ -13,6 +13,8 @@ Uso (siempre con el python de Blender y -I; nunca `python3`):
 - Inyecta tests/qa/e2e.js (servido aparte en /__pruebas/, no es parte de la build) y corre las baterías de config.json.
 - Vigila consola, excepciones y red: ningún 404 (en una build marcada ave:sin-glb tampoco las sondas .glb) y ninguna
   petición a dominios fuera de la lista permitida.
+- --paralelo N (W21; por defecto 1 = en serie): reparte las baterías entre N Chrome a la vez (tope 2), cada uno con su
+  perfil y su portada → creador → Empezar, equilibradas por pruebas.duracion_estimada_s; junta resultados, red y consola.
 - Escribe reporte-test.{json,md} y capturas, y sale con 0 si pasa, 1 si falla y 2 si no pudo correr (Chrome, servidor).
 """
 import argparse
@@ -311,6 +313,7 @@ VISTA_JS = r'''new Promise(ok => requestAnimationFrame(() => requestAnimationFra
 })))'''
 # Topes orientativos: solo dan aviso, nunca hacen fallar la build (los topes que fallan los decide Kelvin)
 TOPE_DRAW_CALLS, TOPE_TEXTURAS_MB = 150, 300
+TOPE_CHROME = 2  # como mucho 2 Chrome a la vez (regla de Kelvin): --paralelo no pasa de aquí
 
 
 def medir(cdp, ses, estado, P):
@@ -445,6 +448,200 @@ def verificar_manifiesto(raiz, man):
     return faltan, sobran, distintos
 
 
+# ---------------------------------------------------------------- una instancia de Chrome (W21: --paralelo N abre hasta 2)
+def nuevo_estado():
+    return {'ses': None, 'reqs': {}, 'excepciones': [], 'consola': [], 'log': [], 'avisos_consola': 0, 'muestras_aviso': [], 'caida': False,
+            'fase': 'arranque', 'ultima_red': time.monotonic()}
+
+
+def oyente(estado):
+    """Anota en `estado` la consola, las excepciones y la red de la pestaña de una instancia."""
+    def al_evento(m):
+        if estado['ses'] and m.get('sessionId') not in (None, estado['ses']):
+            return
+        me, p = m.get('method'), m.get('params') or {}
+        if me and me.startswith('Network.'):
+            estado['ultima_red'] = time.monotonic()
+        if me == 'Runtime.exceptionThrown':
+            d = p.get('exceptionDetails') or {}
+            estado['excepciones'].append({'texto': ((d.get('exception') or {}).get('description') or d.get('text') or '')[:600],
+                                          'url': d.get('url', ''), 'linea': d.get('lineNumber')})
+        elif me == 'Runtime.consoleAPICalled':
+            texto = ' '.join(str(x.get('value', x.get('description', ''))) for x in p.get('args') or [])[:600]
+            if p.get('type') in ('error', 'assert'):
+                estado['consola'].append({'tipo': p['type'], 'texto': texto})
+            elif p.get('type') == 'warning':
+                estado['avisos_consola'] += 1
+                if len(estado['muestras_aviso']) < 8 and texto not in estado['muestras_aviso']:
+                    estado['muestras_aviso'].append(texto)
+        elif me == 'Log.entryAdded':
+            e = p.get('entry') or {}
+            if e.get('level') == 'error':
+                estado['log'].append({'texto': e.get('text', '')[:600], 'url': e.get('url', ''), 'fuente': e.get('source', '')})
+        elif me == 'Network.requestWillBeSent':
+            q = p.get('request') or {}
+            estado['reqs'].setdefault(p['requestId'], {}).update(url=q.get('url', ''), metodo=q.get('method'), tipo=p.get('type'), fase=estado['fase'])
+        elif me == 'Network.responseReceived':
+            estado['reqs'].setdefault(p['requestId'], {})['estado'] = (p.get('response') or {}).get('status')
+        elif me == 'Network.loadingFinished':
+            estado['reqs'].setdefault(p['requestId'], {}).update(bytes=int(p.get('encodedDataLength') or 0), fin=True)
+        elif me == 'Network.loadingFailed':
+            estado['reqs'].setdefault(p['requestId'], {}).update(fallo=p.get('errorText'), cancelado=p.get('canceled'), bloqueo=p.get('blockedReason'), fin=True)
+        elif me in ('Inspector.targetCrashed', 'Target.targetCrashed'):
+            estado['caida'] = True
+    return al_evento
+
+
+def repartir(nombres, n, dur, defecto):
+    """Reparte las baterías en n grupos de duración parecida (la más larga primero al grupo más corto). Dentro de cada grupo
+    se conserva el orden de la lista (el mismo orden relativo que en serie). Determinista: todas las instancias calculan lo mismo."""
+    grupos, carga = [[] for _ in range(n)], [0.0] * n
+    for nb in sorted(nombres, key=lambda x: (-float(dur.get(x, defecto)), nombres.index(x))):
+        i = min(range(n), key=lambda j: (carga[j], j))
+        grupos[i].append(nb)
+        carga[i] += float(dur.get(nb, defecto))
+    return [sorted(g, key=nombres.index) for g in grupos], carga
+
+
+def sesion(S, k):
+    """Instancia k de n: Chrome con perfil propio → portada → creador → Empezar → medidas → inyección → su parte de las baterías.
+    Con n = 1 hace exactamente lo de siempre (todas las baterías, misma salida). Deja todo en S['inst'][k]."""
+    a, P, n, informe = S['a'], S['P'], S['n'], S['informe']
+    pre = '' if n == 1 else '[%d] ' % (k + 1)
+    out = S['inst'][k]
+    estado = out['estado'] = nuevo_estado()
+    out.update(fallas=[], avisos=[], baterias={}, t0=time.monotonic())
+    falla, aviso = out['fallas'].append, out['avisos'].append
+
+    def decir(texto):
+        with S['candado']:
+            print(pre + texto, flush=True)
+    al_evento = oyente(estado)
+    sufijo = '' if k == 0 else '-%d' % (k + 1)
+    chrome = ws = None
+    try:
+        chrome = Chrome(P, set(P['puertos_prohibidos']), os.path.join(informe, 'chrome-test%s.log' % sufijo))
+        S['chromes'].append(chrome)
+        out['entorno'] = {'chrome': chrome.version, 'puerto_web': S['puerto'], 'puerto_devtools': chrome.puerto, 'perfil': chrome.perfil}
+        decir('· servidor %s · Chrome %s · DevTools 127.0.0.1:%d (perfil temporal propio)' % (S['origen'], chrome.version, chrome.puerto))
+        ws = WS('ws://127.0.0.1:%d%s' % (chrome.puerto, chrome.ws_path))
+        cdp = CDP(ws, al_evento)
+        tid = cdp.call('Target.createTarget', {'url': 'about:blank'})['targetId']
+        ses = estado['ses'] = cdp.call('Target.attachToTarget', {'targetId': tid, 'flatten': True})['sessionId']
+        for me, pa in (('Page.enable', {}), ('Runtime.enable', {}), ('Log.enable', {}), ('Network.enable', {}),
+                       ('Network.setCacheDisabled', {'cacheDisabled': True}), ('Emulation.setFocusEmulationEnabled', {'enabled': True})):
+            cdp.call(me, pa, ses)
+        cdp.call('Page.navigate', {'url': S['origen'] + '/index.html'}, ses)
+
+        # 2. Arranque
+        t0 = time.monotonic()
+        listo = False
+        while time.monotonic() - t0 < P['espera_listo_s'] and not estado['caida'] and not S['abortar'].is_set():
+            try:
+                listo = bool(evaluar(cdp, ses, '!!(%s)' % P['listo_js'], 10, promesa=False))
+            except (CDPError, JSError, TimeoutError):
+                listo = False
+            if listo:
+                break
+            cdp.bombear(0.5)
+        out['arranque_s'] = round(time.monotonic() - t0, 1)
+        if not listo:
+            falla('el juego no expuso window.AV con el personaje en %d s' % P['espera_listo_s'])
+        else:
+            f3d = evaluar(cdp, ses, '!!(window.AV.G.actores.failed3D)', 10, promesa=False)
+            if f3d:
+                falla('el modelo 3D de Vittata no cargó (actores.failed3D)')
+            decir('· juego listo en %.1f s' % out['arranque_s'])
+            cdp.bombear(1.5)
+            if P.get('preparar_js'):
+                try:
+                    out['preparacion'] = evaluar(cdp, ses, P['preparar_js'], 90, promesa=True)
+                except (CDPError, JSError, TimeoutError) as e:
+                    out['preparacion'] = 'error: %s' % e
+                if not str(out['preparacion']).startswith('ok'):
+                    falla('flujo de jugador nuevo: %s' % out['preparacion'])
+                decir('· preparación: %s' % out['preparacion'])
+                cdp.bombear(0.8)
+            # Medidas de la carga inicial (antes de las baterías): red quieta, heap y base64 residente
+            out['medidas'] = medir(cdp, ses, estado, P)
+            estado['fase'] = 'pruebas'
+            med = out['medidas']
+            decir('· medida la carga inicial: heap %s MB (%s MB tras GC) · base64 residente %s MB · vista de arranque: %s draw calls, %s MB de texturas' % (
+                med.get('heap_mb'), med.get('heap_gc_mb'), med.get('b64_residente_mb'), med.get('draw_calls'), med.get('texturas_mb')))
+            for x in ([] if a.solo_medir else S['inyectados']):
+                try:
+                    evaluar(cdp, ses, INYECTAR_JS % json.dumps(x['url']), 30, promesa=True)
+                except (CDPError, JSError, TimeoutError) as e:
+                    falla('no se pudo inyectar %s: %s' % (x['ruta'], e))
+            try:
+                png = cdp.call('Page.captureScreenshot', {'format': 'png'}, ses, 30)['data']
+                open(os.path.join(informe, 'captura-arranque%s.png' % sufijo), 'wb').write(base64.b64decode(png))
+            except (CDPError, TimeoutError):
+                aviso('no se pudo capturar la pantalla de arranque')
+            disponibles = evaluar(cdp, ses, "Object.keys(window.AV || {}).filter(k => /Test$/.test(k) && typeof window.AV[k] === 'function')", 10, promesa=False) or []
+            out['disponibles'] = disponibles
+            req = [] if a.solo_medir else list(P['baterias'])
+            extra = [b for b in disponibles if b not in req] if a.extra else []
+            todas = req + extra
+            if n > 1:
+                grupos, carga = repartir(todas, n, P.get('duracion_estimada_s') or {}, P.get('duracion_estimada_defecto_s', 30))
+                todas = grupos[k]
+                decir('· me tocan %d baterías (~%d s estimados): %s' % (len(todas), carga[k], ', '.join(todas)))
+            out['plan'] = todas
+            # 3. Baterías
+            for nombre in todas:
+                if time.monotonic() - S['t_ini'] > P['total_max_s'] or S['abortar'].is_set():
+                    out['baterias'][nombre] = {'existe': None, 'requerida': nombre in req, 'error': 'sin tiempo (límite total %d s)' % P['total_max_s']
+                                               if not S['abortar'].is_set() else 'no corrió: otra instancia de Chrome falló'}
+                    continue
+                if n == 1:
+                    print('· AV.%s() …' % nombre, end=' ', flush=True)
+                try:
+                    r = json.loads(evaluar(cdp, ses, BATERIA_JS % json.dumps(nombre), P['bateria_max_s']))
+                except TimeoutError:
+                    r = {'existe': True, 'error': 'tiempo agotado (%d s)' % P['bateria_max_s']}
+                except (CDPError, JSError) as e:
+                    r = {'existe': True, 'error': str(e)[:600]}
+                r['requerida'] = nombre in req
+                if n > 1:
+                    r['instancia'] = k + 1
+                out['baterias'][nombre] = r
+                if not r.get('existe'):
+                    res = 'no existe'
+                elif 'error' in r:
+                    res = 'ERROR: ' + r['error'].splitlines()[0][:160]
+                else:
+                    res = '%d/%d en %.1f s' % (r['passed'], r['total'], r['ms'] / 1000)
+                if n == 1:
+                    print(res, flush=True)
+                else:
+                    decir('· AV.%s() … %s' % (nombre, res))
+                cdp.bombear(0.3)
+            cdp.bombear(2.0)
+            try:
+                out['ave_errores'] = json.loads(evaluar(cdp, ses, 'JSON.stringify(window.__aveErrores || [])', 10, promesa=False) or '[]')
+            except (CDPError, JSError, TimeoutError):
+                out['ave_errores'] = None
+            try:
+                png = cdp.call('Page.captureScreenshot', {'format': 'png'}, ses, 30)['data']
+                open(os.path.join(informe, 'captura-final%s.png' % sufijo), 'wb').write(base64.b64decode(png))
+            except (CDPError, TimeoutError):
+                pass
+        try:
+            cdp.call('Browser.close', {}, None, 5)
+        except (CDPError, TimeoutError, Infra, OSError):
+            pass
+    except Infra as e:
+        raise Infra('%s%s · Chrome: %s · %s' % (pre, e, 'vivo' if chrome and chrome.proc.poll() is None else 'terminó (%s)' % (chrome.proc.returncode if chrome else '?'),
+                                               chrome.cola() if chrome else '')) from None
+    finally:
+        out['duracion_s'] = round(time.monotonic() - out['t0'], 1)
+        if ws:
+            ws.cerrar()
+        if chrome:
+            chrome.cerrar()
+
+
 # ---------------------------------------------------------------- principal
 def correr(a, cfg):
     P = cfg['pruebas']
@@ -512,156 +709,78 @@ def correr(a, cfg):
 
     H = cfg['hosts_permitidos']
     permitidos = set(H['scripts']) | set(H['estilos']) | set(H['fuentes']) | set(H.get('conexiones', []))
-    estado = {'ses': None, 'reqs': {}, 'excepciones': [], 'consola': [], 'log': [], 'avisos_consola': 0, 'muestras_aviso': [], 'caida': False,
-              'fase': 'arranque', 'ultima_red': time.monotonic()}
-
-    def al_evento(m):
-        if estado['ses'] and m.get('sessionId') not in (None, estado['ses']):
-            return
-        me, p = m.get('method'), m.get('params') or {}
-        if me and me.startswith('Network.'):
-            estado['ultima_red'] = time.monotonic()
-        if me == 'Runtime.exceptionThrown':
-            d = p.get('exceptionDetails') or {}
-            estado['excepciones'].append({'texto': ((d.get('exception') or {}).get('description') or d.get('text') or '')[:600],
-                                          'url': d.get('url', ''), 'linea': d.get('lineNumber')})
-        elif me == 'Runtime.consoleAPICalled':
-            texto = ' '.join(str(x.get('value', x.get('description', ''))) for x in p.get('args') or [])[:600]
-            if p.get('type') in ('error', 'assert'):
-                estado['consola'].append({'tipo': p['type'], 'texto': texto})
-            elif p.get('type') == 'warning':
-                estado['avisos_consola'] += 1
-                if len(estado['muestras_aviso']) < 8 and texto not in estado['muestras_aviso']:
-                    estado['muestras_aviso'].append(texto)
-        elif me == 'Log.entryAdded':
-            e = p.get('entry') or {}
-            if e.get('level') == 'error':
-                estado['log'].append({'texto': e.get('text', '')[:600], 'url': e.get('url', ''), 'fuente': e.get('source', '')})
-        elif me == 'Network.requestWillBeSent':
-            q = p.get('request') or {}
-            estado['reqs'].setdefault(p['requestId'], {}).update(url=q.get('url', ''), metodo=q.get('method'), tipo=p.get('type'), fase=estado['fase'])
-        elif me == 'Network.responseReceived':
-            estado['reqs'].setdefault(p['requestId'], {})['estado'] = (p.get('response') or {}).get('status')
-        elif me == 'Network.loadingFinished':
-            estado['reqs'].setdefault(p['requestId'], {}).update(bytes=int(p.get('encodedDataLength') or 0), fin=True)
-        elif me == 'Network.loadingFailed':
-            estado['reqs'].setdefault(p['requestId'], {}).update(fallo=p.get('errorText'), cancelado=p.get('canceled'), bloqueo=p.get('blockedReason'), fin=True)
-        elif me in ('Inspector.targetCrashed', 'Target.targetCrashed'):
-            estado['caida'] = True
+    # W21: --paralelo N reparte las baterías entre N instancias de Chrome (perfiles separados: sin localStorage compartido).
+    # Tope de 2 Chrome a la vez (regla de Kelvin): N se recorta a 2. Con 1 es el comportamiento de siempre.
+    pedido = max(1, getattr(a, 'paralelo', 1) or 1)
+    n = 1 if a.solo_medir else min(pedido, TOPE_CHROME, max(1, len(P['baterias'])))
+    if pedido > TOPE_CHROME:
+        aviso('--paralelo %d recortado a %d (tope de %d Chrome a la vez)' % (pedido, n, TOPE_CHROME))
+    R['paralelo'] = n
 
     t_ini = time.monotonic()
-    srv = chrome = ws = None
+    srv = None
+    S = {'a': a, 'P': P, 'n': n, 'informe': informe, 'inyectados': inyectados, 't_ini': t_ini, 'candado': threading.Lock(),
+         'abortar': threading.Event(), 'chromes': [], 'inst': [{} for _ in range(n)]}
     try:
         srv = Servidor(raiz, a.puerto or 0, extra_dir)
-        origen = 'http://127.0.0.1:%d' % srv.puerto
-        chrome = Chrome(P, set(P['puertos_prohibidos']), os.path.join(informe, 'chrome-test.log'))
-        R['entorno'] = {'chrome': chrome.version, 'puerto_web': srv.puerto, 'puerto_devtools': chrome.puerto, 'perfil': chrome.perfil}
-        print('· servidor %s · Chrome %s · DevTools 127.0.0.1:%d (perfil temporal propio)' % (origen, chrome.version, chrome.puerto), flush=True)
-        ws = WS('ws://127.0.0.1:%d%s' % (chrome.puerto, chrome.ws_path))
-        cdp = CDP(ws, al_evento)
-        tid = cdp.call('Target.createTarget', {'url': 'about:blank'})['targetId']
-        ses = estado['ses'] = cdp.call('Target.attachToTarget', {'targetId': tid, 'flatten': True})['sessionId']
-        for me, pa in (('Page.enable', {}), ('Runtime.enable', {}), ('Log.enable', {}), ('Network.enable', {}),
-                       ('Network.setCacheDisabled', {'cacheDisabled': True}), ('Emulation.setFocusEmulationEnabled', {'enabled': True})):
-            cdp.call(me, pa, ses)
-        cdp.call('Page.navigate', {'url': origen + '/index.html'}, ses)
-
-        # 2. Arranque
-        t0 = time.monotonic()
-        listo = False
-        while time.monotonic() - t0 < P['espera_listo_s'] and not estado['caida']:
-            try:
-                listo = bool(evaluar(cdp, ses, '!!(%s)' % P['listo_js'], 10, promesa=False))
-            except (CDPError, JSError, TimeoutError):
-                listo = False
-            if listo:
-                break
-            cdp.bombear(0.5)
-        R['arranque_s'] = round(time.monotonic() - t0, 1)
-        if not listo:
-            falla('el juego no expuso window.AV con el personaje en %d s' % P['espera_listo_s'])
+        S['puerto'], S['origen'] = srv.puerto, 'http://127.0.0.1:%d' % srv.puerto
+        if n == 1:
+            sesion(S, 0)
         else:
-            f3d = evaluar(cdp, ses, '!!(window.AV.G.actores.failed3D)', 10, promesa=False)
-            if f3d:
-                falla('el modelo 3D de Vittata no cargó (actores.failed3D)')
-            print('· juego listo en %.1f s' % R['arranque_s'], flush=True)
-            cdp.bombear(1.5)
-            if P.get('preparar_js'):
+            print('· modo paralelo: %d instancias de Chrome con perfil propio y el mismo servidor' % n, flush=True)
+            errores = [None] * n
+
+            def hilo(k):
                 try:
-                    R['preparacion'] = evaluar(cdp, ses, P['preparar_js'], 90, promesa=True)
-                except (CDPError, JSError, TimeoutError) as e:
-                    R['preparacion'] = 'error: %s' % e
-                if not str(R['preparacion']).startswith('ok'):
-                    falla('flujo de jugador nuevo: %s' % R['preparacion'])
-                print('· preparación: %s' % R['preparacion'], flush=True)
-                cdp.bombear(0.8)
-            # Medidas de la carga inicial (antes de las baterías): red quieta, heap y base64 residente
-            R['medidas'] = medir(cdp, ses, estado, P)
-            estado['fase'] = 'pruebas'
-            med = R['medidas']
-            print('· medida la carga inicial: heap %s MB (%s MB tras GC) · base64 residente %s MB · vista de arranque: %s draw calls, %s MB de texturas' % (
-                med.get('heap_mb'), med.get('heap_gc_mb'), med.get('b64_residente_mb'), med.get('draw_calls'), med.get('texturas_mb')), flush=True)
-            for x in ([] if a.solo_medir else inyectados):
-                try:
-                    evaluar(cdp, ses, INYECTAR_JS % json.dumps(x['url']), 30, promesa=True)
-                except (CDPError, JSError, TimeoutError) as e:
-                    falla('no se pudo inyectar %s: %s' % (x['ruta'], e))
-            try:
-                png = cdp.call('Page.captureScreenshot', {'format': 'png'}, ses, 30)['data']
-                open(os.path.join(informe, 'captura-arranque.png'), 'wb').write(base64.b64decode(png))
-            except (CDPError, TimeoutError):
-                aviso('no se pudo capturar la pantalla de arranque')
-            disponibles = evaluar(cdp, ses, "Object.keys(window.AV || {}).filter(k => /Test$/.test(k) && typeof window.AV[k] === 'function')", 10, promesa=False) or []
-            R['baterias_disponibles'] = disponibles
-            req = [] if a.solo_medir else list(P['baterias'])
-            extra = [b for b in disponibles if b not in req] if a.extra else []
-            R['baterias'] = {}
-            # 3. Baterías
-            for nombre in req + extra:
-                if time.monotonic() - t_ini > P['total_max_s']:
-                    R['baterias'][nombre] = {'existe': None, 'error': 'sin tiempo (límite total %d s)' % P['total_max_s'], 'requerida': nombre in req}
-                    continue
-                print('· AV.%s() …' % nombre, end=' ', flush=True)
-                try:
-                    r = json.loads(evaluar(cdp, ses, BATERIA_JS % json.dumps(nombre), P['bateria_max_s']))
-                except TimeoutError:
-                    r = {'existe': True, 'error': 'tiempo agotado (%d s)' % P['bateria_max_s']}
-                except (CDPError, JSError) as e:
-                    r = {'existe': True, 'error': str(e)[:600]}
-                r['requerida'] = nombre in req
-                R['baterias'][nombre] = r
-                if not r.get('existe'):
-                    print('no existe')
-                elif 'error' in r:
-                    print('ERROR: ' + r['error'].splitlines()[0][:160])
-                else:
-                    print('%d/%d en %.1f s' % (r['passed'], r['total'], r['ms'] / 1000))
-                cdp.bombear(0.3)
-            cdp.bombear(2.0)
-            try:
-                R['ave_errores'] = json.loads(evaluar(cdp, ses, 'JSON.stringify(window.__aveErrores || [])', 10, promesa=False) or '[]')
-            except (CDPError, JSError, TimeoutError):
-                R['ave_errores'] = None
-            try:
-                png = cdp.call('Page.captureScreenshot', {'format': 'png'}, ses, 30)['data']
-                open(os.path.join(informe, 'captura-final.png'), 'wb').write(base64.b64decode(png))
-            except (CDPError, TimeoutError):
-                pass
-        try:
-            cdp.call('Browser.close', {}, None, 5)
-        except (CDPError, TimeoutError, Infra, OSError):
-            pass
-    except Infra as e:
-        raise Infra('%s · Chrome: %s · %s' % (e, 'vivo' if chrome and chrome.proc.poll() is None else 'terminó (%s)' % (chrome.proc.returncode if chrome else '?'),
-                                             chrome.cola() if chrome else '')) from None
+                    sesion(S, k)
+                except BaseException as e:  # noqa: B036 · se reporta en el hilo principal
+                    errores[k] = e
+                    S['abortar'].set()
+            hilos = [threading.Thread(target=hilo, args=(k,), daemon=True) for k in range(n)]
+            for h in hilos:
+                h.start()
+            for h in hilos:
+                while h.is_alive():
+                    h.join(1.0)  # con tope: así SIGTERM/Ctrl-C llegan al hilo principal y el finally cierra los Chrome
+            for e in errores:
+                if e is not None:
+                    raise e if isinstance(e, Infra) else Infra('error inesperado en una instancia: %s: %s' % (type(e).__name__, e))
     finally:
-        if ws:
-            ws.cerrar()
-        if chrome:
-            chrome.cerrar()
+        for c in S['chromes']:
+            try:
+                c.cerrar()
+            except (OSError, ValueError, subprocess.SubprocessError):
+                pass
         if srv:
             srv.cerrar()
         shutil.rmtree(extra_dir, ignore_errors=True)
+
+    # Juntar las instancias: la 1 da la carga inicial y las medidas (como en serie); fallas, baterías, red y consola de todas
+    I = S['inst']
+    estados = [x['estado'] for x in I]
+    R['entorno'] = I[0].get('entorno') or {'puerto_web': S.get('puerto')}
+    for clave in ('arranque_s', 'preparacion', 'medidas', 'disponibles'):
+        if clave in I[0]:
+            R['baterias_disponibles' if clave == 'disponibles' else clave] = I[0][clave]
+    orden = list(P['baterias']) + [b for b in (I[0].get('disponibles') or []) if b not in P['baterias']]
+    juntas = {}
+    for x in I:
+        juntas.update(x['baterias'])
+    if I[0].get('plan') is not None or len(juntas):
+        R['baterias'] = {nb: juntas[nb] for nb in sorted(juntas, key=lambda b: orden.index(b) if b in orden else len(orden))}
+    eves = [x.get('ave_errores') for x in I if x.get('ave_errores') is not None]
+    R['ave_errores'] = sum(eves, []) if eves else None
+    for k, x in enumerate(I):
+        pre = '' if n == 1 else '[instancia %d] ' % (k + 1)
+        R['fallas'] += [pre + f for f in x.get('fallas', [])]
+        R['avisos'] += [pre + w for w in x.get('avisos', [])]
+    if n > 1:
+        R['instancias'] = [{'instancia': k + 1, 'entorno': x.get('entorno'), 'arranque_s': x.get('arranque_s'), 'preparacion': x.get('preparacion'),
+                            'baterias': x.get('plan'), 'duracion_s': x.get('duracion_s'),
+                            'baterias_s': round(sum((r.get('ms') or 0) for r in x['baterias'].values()) / 1000, 1)} for k, x in enumerate(I)]
+    estado = {'excepciones': sum((e['excepciones'] for e in estados), []), 'consola': sum((e['consola'] for e in estados), []),
+              'log': sum((e['log'] for e in estados), []), 'avisos_consola': sum(e['avisos_consola'] for e in estados),
+              'muestras_aviso': sum((e['muestras_aviso'] for e in estados), [])[:8], 'caida': any(e['caida'] for e in estados)}
 
     # 4. Veredicto
     for nombre, r in (R.get('baterias') or {}).items():
@@ -684,7 +803,7 @@ def correr(a, cfg):
     puerto = R.get('entorno', {}).get('puerto_web')
     locales, sondas, rotas, ext_ok, ext_mal, ext_fallo, n404 = 0, [], [], set(), set(), set(), 0
     ini = {'bytes': 0, 'peticiones': 0, 'por_tipo': {}, 'archivos': {}}
-    for q in estado['reqs'].values():
+    for k_inst, q in ((k, q) for k, e in enumerate(estados) for q in e['reqs'].values()):
         u = q.get('url', '')
         if not u or u.startswith(('data:', 'blob:', 'about:', 'chrome', 'devtools')):
             continue
@@ -693,7 +812,7 @@ def correr(a, cfg):
         n404 += (q.get('estado') == 404)
         local = sp.hostname == '127.0.0.1' and sp.port == puerto
         ruta = urllib.parse.unquote(sp.path).lstrip('/') or 'index.html' if local else u
-        if q.get('fase') == 'arranque' and not ruta.startswith(PRUEBAS_RUTA.strip('/')):
+        if k_inst == 0 and q.get('fase') == 'arranque' and not ruta.startswith(PRUEBAS_RUTA.strip('/')):
             # Cada archivo cuenta una vez (lo que baja un navegador con caché); las repeticiones van aparte
             ini['bytes_peticiones'] = ini.get('bytes_peticiones', 0) + q.get('bytes', 0)
             ini['peticiones'] += 1
@@ -788,6 +907,8 @@ def correr(a, cfg):
           ' · vista de arranque: %s draw calls, %s MB de texturas'
           % (ini['mb'], ini['archivos_n'], json.dumps(ini['por_tipo'], ensure_ascii=False), ini['mb_peticiones'], ini['peticiones'],
              med.get('heap_mb'), med.get('heap_gc_mb'), med.get('b64_residente_mb'), med.get('draw_calls'), med.get('texturas_mb')))
+    for x in R.get('instancias') or []:
+        print('  instancia %d: %s s en total, %s s de baterías · %s' % (x['instancia'], x['duracion_s'], x['baterias_s'], ', '.join(x['baterias'] or [])))
     for f in R['fallas']:
         print('  FALLA ' + f)
     for w in R['avisos']:
@@ -871,6 +992,8 @@ def main():
     ap.add_argument('--puerto', type=int, default=0, help='puerto del servidor web (por defecto, uno libre)')
     ap.add_argument('--informe', help='carpeta para reporte-test.* (por defecto, la de la build)')
     ap.add_argument('--solo-medir', action='store_true', help='solo el flujo de jugador nuevo y las medidas de carga y heap, sin baterías')
+    ap.add_argument('--paralelo', type=int, default=1, metavar='N', help='reparte las baterías en N instancias de Chrome a la vez '
+                    '(perfiles separados, equilibradas por duracion_estimada_s; tope 2). Por defecto 1: en serie, como siempre')
     ap.add_argument('--reintentos', type=int, default=1, help='reintentos si Chrome o el servidor fallan (no si fallan las pruebas)')
     a = ap.parse_args()
     signal.signal(signal.SIGTERM, lambda *x: sys.exit(2))
