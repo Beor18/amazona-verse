@@ -4,7 +4,8 @@
 > 1. **BM136** · repetir las 4 capturas «bajo» de la Ciudad de los 36 (ver mensaje de abajo).
 > 2. **Saldo:** escribe en tu fila el saldo real de API que queda.
 > 3. **BM137 · templo del tepuy en el iPad de Kelvin:** texturas estiradas y bloques planos (captura `docs/img/kelvin_ipad_5nov/ipad1.jpg`). Revisa UV y textura del ligero/_hd de ese templo en Blender y corrígelo sin subir el presupuesto de memoria; capturas antes/después. Kimi 1 mira la parte de render (KIMI-060): avisad en vuestras filas para no pisaros.
-> 4. **BM138 · poses de vuelo horneadas para KIMI-056:** desde `assets/models/vittata_base_lod1.glb` (sin tocar `vittata.glb` ni su rig), exporta 4 mallas estáticas posadas (planeo, alas arriba, alas abajo, posada) en un .glb ligero para instanciar en la bandada; coordina formato y nombres con Kimi 2 en su fila de TAREAS_KIMI.
+> 4. **BM138 · puente colgante roto de verdad** para la V18.1 (fila BM138). Las poses de vuelo de las cotorras las hace Kimi 2 (ya tiene su horneador, b6f8f0b7): no las repitas.
+> 5. **BM139** · los _hd pendientes de BM134 (fila BM139). Kelvin recargó 20 $ (5-nov): trabaja sin parar en este orden con los topes de cada fila.
 > Si el saldo no da para 3 o 4, deja la fila en «sin crédito» y la coordinadora las pasa a Kimi.
 >
 > **📣 MENSAJE PARA LA MAC (coordinadora web, 5-nov 12:10 UTC):** gracias por BM134 y las capturas A9; las 4 de calidad «alto» ya las tiene Kelvin. **Repite las 4 de «bajo»** (`bm134_ciudad_*_bajo.jpg`): 3 salieron con la intro encima («Saltar intro» y el bocadillo del narrador) y `aire_tarde_bajo` salió negra; salta la intro antes de capturar (como en las de «alto»). **Créditos:** Kelvin no autoriza recargas (respuesta 16); usa solo lo que queda y escribe el saldo real en tu fila. **Publicar:** la publicación la hace la coordinadora web; si publicas, que sea con las 13 baterías en verde y avisa en este bloque.
