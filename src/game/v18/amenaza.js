@@ -247,9 +247,9 @@ window.AVV18Amenaza = function (G) {
       'padding:6px 18px;border-radius:22px;border:0;background:#fff3d6;color:#3b2a14;margin-top:6px}#v18-amenaza button.no{opacity:.45}' +
       'body.v18-amenaza-on #quest{visibility:hidden}' +
       // Juego en familia (5-nov): en el escritorio va bajo el aviso (#toast), como el duelo; en el teléfono tapaba los contadores de madera y piedra (#inv, arriba a la derecha):
-      // el objetivo (ya oculto) deja de ocupar su fila, los contadores suben arriba y el panel va debajo. El aviso (#toast) queda
+      // el objetivo (ya oculto) deja de ocupar su fila, los contadores suben arriba y el panel va debajo (el minimapa se oculta, como en el duelo). El aviso (#toast) queda
       // por encima del panel si coinciden.
-      '@media (max-width:760px){body.v18-amenaza-on #quest{display:none}#v18-amenaza{top:calc(env(safe-area-inset-top,0px) + 64px)}}body.v18-amenaza-on #toast{z-index:41}';
+      '@media (max-width:760px){body.v18-amenaza-on #quest{display:none}body.v18-amenaza-on #minimapa{visibility:hidden}#v18-amenaza{top:calc(env(safe-area-inset-top,0px) + 64px)}}body.v18-amenaza-on #toast{z-index:41}';
     document.head.appendChild(st);
     const el = document.createElement('div'); el.id = 'v18-amenaza'; el.hidden = true;
     el.innerHTML = '<div class="va-n">' + TXT.nombre + ' <span data-k="nubes"></span></div>' +
