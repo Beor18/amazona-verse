@@ -19,8 +19,18 @@ AVE.module('pruebas', function (G) {
     const check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra || '' });
     return { out, check, result: () => ({ passed: out.filter(o => o.ok).length, total: out.length, results: out }) };
   }
-  // Guarda la partida del jugador antes de una prueba y la devuelve al final
-  function keepSave() { try { return localStorage.getItem(G.guardado.KEY); } catch (e) { return null; } }
+  // Guarda la partida del jugador antes de una prueba y la devuelve al final.
+  // QA-111: si el perfil ya está creado pero el autoguardado aún no escribió (debounce de 0,5 s de juego tras
+  // «Empezar», que con CPU ×4 se estira a segundos), se flushea ahora; sin esto keepSave() devolvía null, la
+  // prueba acababa con reset(true) (created=false) y restoreSave(null) reabría el creador con el mundo oculto.
+  function keepSave() {
+    try {
+      const k = localStorage.getItem(G.guardado.KEY);
+      if (k) return k;
+      if (G.S.profile && G.S.profile.created) { G.guardado.save(true); return localStorage.getItem(G.guardado.KEY); }
+    } catch (e) { /* sin almacenamiento */ }
+    return null;
+  }
   function restoreSave(keep) {
     try { if (keep) localStorage.setItem(G.guardado.KEY, keep); } catch (e) { /* sin almacenamiento */ }
     if (keep) G.guardado.load(true); else G.creador.open(true);

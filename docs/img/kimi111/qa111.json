@@ -1,0 +1,47 @@
+{
+  "tarea": "QA-111 · el creador reaparece tras «Empezar» (carrera test keep/restore con el autoguardado)",
+  "fecha": "2026-11-05 ~01:30-02:00 UTC",
+  "agente": "Kimi 2 · PC Windows · Chrome headless GPU real (RX 5700 XT) · iPhone 375x812 dpr 3 · CPU x4",
+  "herramienta": "tools/build/kimi2_qa111.js [--rondas N] [--cpu 4] [--selftest]",
+  "diagnostico": {
+    "cadena": [
+      "1) creador.js saveCharacter(): S.profile.created=true y G.guardado.autosave() programa la escritura con debounce de 0,5 s de JUEGO (guardado.js: saveDebounce consumido en el gancho 'update').",
+      "2) Con CPU x4 y la carga del mundo, la escritura real tarda segundos: ventana Empezar→save medida 17336 ms y 18540 ms en las 2 rondas (17-18,5 s de ventana de carrera).",
+      "3) Las baterías capturan su save de cabecera con T.keepSave() (src/pruebas/motor.js), que SOLO leía localStorage: si la batería arrancaba dentro de la ventana, keep=null.",
+      "4) selfTest termina con SV.reset(true) (created=false) y llama T.restoreSave(keep): con keep=null hace G.creador.open(true) (motor.js:26).",
+      "5) Estado final: #creator visible + created=false + ui.worldHidden()=true → renderer no dibuja el mundo (0 draw calls) y el eval de la batería siguiente no vuelve (timeout 900 s del arnés). El save del jugador se pierde (selfTest borra las claves al resetear)."
+    ],
+    "repro_brazo_mecanismo": {
+      "pre_fix": { "keep": null, "creadorAbierto": true, "created": false, "worldHidden": true },
+      "control_keep_real": { "creadorAbierto": false, "created": true }
+    }
+  },
+  "repro_extremo_a_extremo": {
+    "metodo": "flujo real portada→Jugar→creador→Empezar y AV.selfTest() en la MISMA tarea: el keepSave() interno de selfTest (content/cap1/pruebas.js:65, síncrono) captura con el autoguardado aún pendiente",
+    "pre_fix": {
+      "selfTest": "102/103",
+      "log": [
+        "keepSave -> NULL @7215",
+        "creador.open(false) created=true @7263 (pruebas.js:74)",
+        "restoreSave keep=NULL created=false @33736",
+        "creador.open(true) created=false @33736 (motor.js:26 ← restoreSave)"
+      ],
+      "estado_final": { "creadorVisible": true, "created": false, "worldHidden": true, "savePresente": false }
+    },
+    "post_fix": {
+      "selfTest": "103/103",
+      "log": [
+        "keepSave -> 2018B @8431 (el fix flusheó el autoguardado pendiente y capturó el save real)",
+        "restoreSave keep=2018B → load(true) → created=true, creador cerrado"
+      ],
+      "estado_final": { "creadorVisible": false, "created": true, "worldHidden": false, "savePresente": true }
+    }
+  },
+  "fix": {
+    "archivo": "src/pruebas/motor.js · keepSave()",
+    "cambio": "si localStorage no tiene save pero el perfil está creado, se flushea G.guardado.save(true) antes de capturar (captura el save vivo, no solo el almacenamiento). Con keep=null real (perfil no creado) el comportamiento es el de siempre.",
+    "juego_real": "sin cambios necesarios: el debounce de 0,5 s está cubierto en el juego real por pagehide/freeze/visibilitychange y por la pérdida de contexto WebGL (QA-158), que guardan de inmediato. El bug solo se manifestaba en el arnés de baterías."
+  },
+  "ventanas_medidas_ms": [17336, 18540],
+  "regresion": "node tools/build/kimi2_empezar.js --baterias --sin-semilla --solo selfTest (flujo real de creador; resultado en la fila BUG-QA81 de TAREAS_KIMI.md y en BUGS.md QA-111)"
+}
