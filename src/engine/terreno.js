@@ -675,24 +675,24 @@ AVE.module('terreno', function (G) {
     // quedante de KIMI-006). Un plano de arena con el mismo material del suelo continúa el fondo hasta el horizonte:
     // tapa el canto de la malla y da suelo al agua clara de los riscos. Va a y −1,2: por encima de los bancos someros
     // (la malla los sigue dando) y por debajo del oleaje. Mismo shader/programa que el terreno (0 texturas nuevas) y
-    // 2 triángulos por cuadrante; en cuadrantes para que el culling del frustum lo recorte mirando tierra adentro
-    // (un plano único englobaría siempre a la cámara en su esfera y sumaría 1 draw call en todas las vistas).
+    // 2 triángulos. KIMI-105 (QA-81): antes eran 16 cuadrantes de 1050 m para que el frustum los recortara mirando
+    // tierra adentro, pero el culling nunca llegó a 0 (2–8 cuadrantes, hasta 16 calls, caían en el frustum mirando al
+    // horizonte desde el tepuy) y sumaban 16 draw calls estables en la peor vista; un único plano siempre cuesta
+    // 1 call (32→2 tris, misma imagen: el raster es idéntico al de los cuadrantes).
     {
-      const LADO = 4200, N = 4, L = LADO / N;
-      for (let qx = 0; qx < N; qx++) for (let qz = 0; qz < N; qz++) {
-        const fgeo = new THREE.PlaneGeometry(L, L, 1, 1);
-        fgeo.rotateX(-Math.PI / 2);
-        const fn = fgeo.attributes.position.count;
-        const fsplat = new Float32Array(fn * 4);
-        for (let i = 0; i < fn; i++) fsplat[i * 4 + 3] = 1; // splat todo arena (w); el shader ya fuerza arena bajo el mar
-        fgeo.setAttribute('splat', new THREE.Float32BufferAttribute(fsplat, 4));
-        const fondo = new THREE.Mesh(fgeo, sueloMat);
-        fondo.name = 'fondoMarino';
-        fondo.position.set(-LADO / 2 + L * (qx + 0.5), -1.2, -LADO / 2 + L * (qz + 0.5));
-        fondo.receiveShadow = false; fondo.castShadow = false;
-        fondo.matrixAutoUpdate = false; fondo.updateMatrix();
-        scene.add(fondo);
-      }
+      const LADO = 4200;
+      const fgeo = new THREE.PlaneGeometry(LADO, LADO, 1, 1);
+      fgeo.rotateX(-Math.PI / 2);
+      const fn = fgeo.attributes.position.count;
+      const fsplat = new Float32Array(fn * 4);
+      for (let i = 0; i < fn; i++) fsplat[i * 4 + 3] = 1; // splat todo arena (w); el shader ya fuerza arena bajo el mar
+      fgeo.setAttribute('splat', new THREE.Float32BufferAttribute(fsplat, 4));
+      const fondo = new THREE.Mesh(fgeo, sueloMat);
+      fondo.name = 'fondoMarino';
+      fondo.position.set(0, -1.2, 0);
+      fondo.receiveShadow = false; fondo.castShadow = false;
+      fondo.matrixAutoUpdate = false; fondo.updateMatrix();
+      scene.add(fondo);
     }
     // F2.3 (AY2): plaza y suelo de los asentamientos. mundo.suelo.plazas(MAPA) → [{ x, z, r, f }]: discos donde el pasto pasa
     // a tierra (f = fuerza 0–1, con 4 m de borde suave y algo de ruido); la roca y la arena no cambian. Se pinta en el splat
