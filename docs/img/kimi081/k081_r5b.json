@@ -1,0 +1,145 @@
+{
+ "etiqueta": "r5b",
+ "perfil": {
+  "ancho": 390,
+  "alto": 844,
+  "dpr": 3,
+  "cpu": 4
+ },
+ "ventanas": {
+  "bajo": {
+   "cal": "bajo",
+   "n": 12,
+   "forzada": true,
+   "mallaReal": true,
+   "geoCerca": {
+    "tri": 1826,
+    "vert": 733,
+    "horneada": true,
+    "indexada": true
+   },
+   "geoLejos": {
+    "tri": 326,
+    "vert": 121,
+    "horneada": true,
+    "indexada": true
+   },
+   "dpr": 1,
+   "sombras": false,
+   "fpsMed": 31,
+   "fpsP10": 29,
+   "fpsMin": 29,
+   "aireMed": 9,
+   "bandoMed": 3,
+   "callsFin": 86,
+   "trisFin": 220,
+   "heapMB": 133,
+   "fpsRaw": [
+    29,
+    31
+   ]
+  },
+  "medio": {
+   "cal": "medio",
+   "n": 16,
+   "forzada": false,
+   "mallaReal": true,
+   "geoCerca": {
+    "tri": 1826,
+    "vert": 733,
+    "horneada": true,
+    "indexada": true
+   },
+   "geoLejos": {
+    "tri": 326,
+    "vert": 121,
+    "horneada": true,
+    "indexada": true
+   },
+   "dpr": 1,
+   "sombras": true,
+   "fpsMed": 11,
+   "fpsP10": 10,
+   "fpsMin": 10,
+   "aireMed": 9,
+   "bandoMed": 3,
+   "callsFin": 179,
+   "trisFin": 1245,
+   "heapMB": 307,
+   "fpsRaw": [
+    11,
+    10
+   ]
+  },
+  "alto": {
+   "cal": "alto",
+   "n": 20,
+   "forzada": false,
+   "mallaReal": true,
+   "geoCerca": {
+    "tri": 1826,
+    "vert": 733,
+    "horneada": true,
+    "indexada": true
+   },
+   "geoLejos": {
+    "tri": 326,
+    "vert": 121,
+    "horneada": true,
+    "indexada": true
+   },
+   "dpr": 1,
+   "sombras": true,
+   "fpsMed": 16,
+   "fpsP10": 14,
+   "fpsMin": 14,
+   "aireMed": 11,
+   "bandoMed": 3,
+   "callsFin": 195,
+   "trisFin": 4301,
+   "heapMB": 567,
+   "fpsRaw": [
+    14,
+    16
+   ]
+  }
+ },
+ "fotos": {
+  "bajo_plaza": {
+   "nombre": "k081_r5b_bajo_plaza.jpg",
+   "enCuadro": 0,
+   "bando": 3
+  },
+  "bajo_aire": {
+   "nombre": "k081_r5b_bajo_aire.jpg",
+   "enCuadro": 1,
+   "bando": 3
+  },
+  "medio_plaza": {
+   "nombre": "k081_r5b_medio_plaza.jpg",
+   "enCuadro": 0,
+   "bando": 3
+  },
+  "medio_aire": {
+   "nombre": "k081_r5b_medio_aire.jpg",
+   "enCuadro": 0,
+   "bando": 3
+  },
+  "alto_plaza": {
+   "nombre": "k081_r5b_alto_plaza.jpg",
+   "enCuadro": 0,
+   "bando": 3
+  },
+  "alto_aire": {
+   "nombre": "k081_r5b_alto_aire.jpg",
+   "enCuadro": 2,
+   "bando": 3
+  }
+ },
+ "ciudadVivaTest": {
+  "passed": 21,
+  "total": 21,
+  "fallos": []
+ },
+ "errs": []
+}
