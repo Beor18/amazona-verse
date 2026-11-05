@@ -1,0 +1,457 @@
+{
+ "etiqueta": "r1",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "head": "desconocido",
+ "tomas": {
+  "poza": {
+   "pos": [
+    196,
+    27.52,
+    118
+   ],
+   "stats": {
+    "fps": 23,
+    "calls": 143,
+    "triangulos": 561026,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "barrido": [
+    {
+     "obj": "terreno:terreno_ne|BufferGeometry|MeshPhongMaterial",
+     "n": 65,
+     "ej": {
+      "d": 172,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "flora:manchas|PlaneGeometry|MeshBasicMaterial",
+     "n": 29,
+     "ej": {
+      "d": 152,
+      "inst": 4912,
+      "col": "122616",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:tabonuco:hoja:lod|BufferGeometry|MeshLambertMaterial",
+     "n": 21,
+     "ej": {
+      "d": 43,
+      "inst": 15,
+      "col": "b6ebb7",
+      "map": true
+     }
+    },
+    {
+     "obj": "letrero_compa|BufferGeometry|SpriteMaterial",
+     "n": 16,
+     "ej": {
+      "d": 261,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:tabonuco:hoja|BufferGeometry|MeshLambertMaterial",
+     "n": 16,
+     "ej": {
+      "d": 32,
+      "inst": 3,
+      "col": "b6ebb7",
+      "map": true
+     }
+    },
+    {
+     "obj": "rio|BufferGeometry|ShaderMaterial",
+     "n": 15,
+     "ej": {
+      "d": 139,
+      "map": false
+     }
+    },
+    {
+     "obj": "|BufferGeometry|SpriteMaterial",
+     "n": 11,
+     "ej": {
+      "d": 11,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "terreno:terreno_se|BufferGeometry|MeshPhongMaterial",
+     "n": 6,
+     "ej": {
+      "d": 283,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "edificiosInst:monumento_g:lejos:AV_Lejos|BufferGeometry|MeshLambertMaterial",
+     "n": 3,
+     "ej": {
+      "d": 114,
+      "inst": 0,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "edificiosZona:kelvin_aldea_rio_este_3:lejos|BufferGeometry|MeshLambertMaterial",
+     "n": 2,
+     "ej": {
+      "d": 193,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "flora:tabonuco:corteza:lod|BufferGeometry|MeshPhongMaterial",
+     "n": 2,
+     "ej": {
+      "d": 45,
+      "inst": 7,
+      "col": "876e55",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:tabonuco:corteza|BufferGeometry|MeshPhongMaterial",
+     "n": 2,
+     "ej": {
+      "d": 38,
+      "inst": 0,
+      "col": "876e55",
+      "map": true
+     }
+    },
+    {
+     "obj": "edificiosInst:muralla_atalaya_a:cerca:KB3D_WoodPlanks|BufferGeometry|MeshPhongMaterial",
+     "n": 1,
+     "ej": {
+      "d": 89,
+      "inst": 1,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "<edu:marcador<edu:percha|BufferGeometry|SpriteMaterial",
+     "n": 1,
+     "ej": {
+      "d": 57,
+      "col": "0c581a",
+      "map": true
+     }
+    },
+    {
+     "obj": "Vittata_2<Vittata<Rig<personaje|BufferGeometry|MeshStandardMaterial",
+     "n": 1,
+     "ej": {
+      "d": 10,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:palma_sierra:hoja:lod|BufferGeometry|MeshLambertMaterial",
+     "n": 1,
+     "ej": {
+      "d": 42,
+      "inst": 1,
+      "col": "d4e9b7",
+      "map": true
+     }
+    }
+   ]
+  },
+  "poza_baja": {
+   "pos": [
+    190,
+    18.49,
+    104
+   ],
+   "stats": {
+    "fps": 34,
+    "calls": 134,
+    "triangulos": 570213,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   }
+  },
+  "tepuy_norte": {
+   "pos": [
+    40,
+    69.48,
+    10
+   ],
+   "stats": {
+    "fps": 38,
+    "calls": 145,
+    "triangulos": 400481,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "barrido": [
+    {
+     "obj": "terreno:terreno_so|BufferGeometry|MeshPhongMaterial",
+     "n": 58,
+     "ej": {
+      "d": 165,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "terreno:terreno_se|BufferGeometry|MeshPhongMaterial",
+     "n": 54,
+     "ej": {
+      "d": 122,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "flora:manchas|PlaneGeometry|MeshBasicMaterial",
+     "n": 21,
+     "ej": {
+      "d": 166,
+      "inst": 4773,
+      "col": "122616",
+      "map": true
+     }
+    },
+    {
+     "obj": "letrero_compa|BufferGeometry|SpriteMaterial",
+     "n": 19,
+     "ej": {
+      "d": 73,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "rio|BufferGeometry|ShaderMaterial",
+     "n": 13,
+     "ej": {
+      "d": 116,
+      "map": false
+     }
+    },
+    {
+     "obj": "|BufferGeometry|SpriteMaterial",
+     "n": 12,
+     "ej": {
+      "d": 11,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "|BufferGeometry|PointsMaterial",
+     "n": 4,
+     "ej": {
+      "d": 77,
+      "col": "9fc9de",
+      "map": false
+     }
+    },
+    {
+     "obj": "edificiosZona:kelvin_aldea_yunque:lejos|BufferGeometry|MeshLambertMaterial",
+     "n": 3,
+     "ej": {
+      "d": 135,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "edificiosInst:templo_mediano_h:cerca:AV_Restaurado_Base|BufferGeometry|MeshPhongMaterial",
+     "n": 2,
+     "ej": {
+      "d": 171,
+      "inst": 2,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "edificiosInst:monumento_a:cerca:KB3D_RoofThatched|BufferGeometry|MeshPhongMaterial",
+     "n": 2,
+     "ej": {
+      "d": 87,
+      "inst": 0,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:tronco_caido:corteza|BufferGeometry|MeshPhongMaterial",
+     "n": 1,
+     "ej": {
+      "d": 84,
+      "inst": 0,
+      "col": "876e55",
+      "map": true
+     }
+    },
+    {
+     "obj": "edificiosInst:monumento_a:cerca:KB3D_WoodPlanks|BufferGeometry|MeshPhongMaterial",
+     "n": 1,
+     "ej": {
+      "d": 86,
+      "inst": 0,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:palma_sierra:hoja:lod|BufferGeometry|MeshLambertMaterial",
+     "n": 1,
+     "ej": {
+      "d": 66,
+      "inst": 0,
+      "col": "d4e9b7",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:helecho_arboreo:hoja:lod|BufferGeometry|MeshLambertMaterial",
+     "n": 1,
+     "ej": {
+      "d": 70,
+      "inst": 0,
+      "col": "d0f7a5",
+      "map": true
+     }
+    }
+   ]
+  },
+  "sol": {
+   "pos": [
+    145.5,
+    63.07,
+    178.5
+   ],
+   "stats": {
+    "fps": 41,
+    "calls": 88,
+    "triangulos": 282427,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   }
+  },
+  "isla": {
+   "pos": [
+    0,
+    53,
+    -258
+   ],
+   "stats": {
+    "fps": 33,
+    "calls": 56,
+    "triangulos": 236148,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   }
+  }
+ },
+ "diag": {
+  "flora": {
+   "fundido": 0.75,
+   "total": 11544,
+   "mallas": 21,
+   "instanciasVisibles": 286,
+   "impostores": 1582,
+   "pasto": 15,
+   "colliders": 134,
+   "arboles": 7307,
+   "bosque": 5372,
+   "tepuy": 307,
+   "copasCima": 0,
+   "ses": {
+    "on": false,
+    "repite": false,
+    "pend": false,
+    "activo": true
+   },
+   "dLod": 45.131174087524414,
+   "arbolesLod": 86,
+   "arbolesMalla": 81,
+   "trisArboles": 119296,
+   "topeTris": 120000,
+   "dArbol": 31.761483192443848,
+   "dSombra": 0,
+   "sombraR": 0,
+   "tope": 600
+  },
+  "impostores": {
+   "visible": true,
+   "count": 1582,
+   "map": false,
+   "img": null,
+   "transparent": false,
+   "op": 1
+  },
+  "islas": null,
+  "solDir": {
+   "dir": [
+    -0.45,
+    0.75,
+    0.49
+   ],
+   "col": "#ffe6ab"
+  },
+  "camaraClaves": [
+   "yaw",
+   "inclina",
+   "inclinar",
+   "test",
+   "fovBonus",
+   "fovPicado",
+   "CAM",
+   "juice",
+   "vida",
+   "cortes",
+   "dCol",
+   "suaves",
+   "dist",
+   "place",
+   "follow",
+   "shake",
+   "hitStop",
+   "fov",
+   "fovExtra",
+   "draw",
+   "manual",
+   "descubrir",
+   "copaLibre",
+   "probarCopas",
+   "copasAhora",
+   "anchorY"
+  ],
+  "dpr": 1
+ },
+ "erroresConsola": 0
+}

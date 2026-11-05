@@ -1,0 +1,183 @@
+{
+ "etiqueta": "r3",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "head": "desconocido",
+ "tomas": {
+  "poza": {
+   "pos": [
+    196,
+    27.52,
+    118
+   ],
+   "stats": {
+    "fps": 38,
+    "calls": 143,
+    "triangulos": 561026,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   }
+  },
+  "poza_baja": {
+   "pos": [
+    190,
+    18.49,
+    104
+   ],
+   "stats": {
+    "fps": 37,
+    "calls": 129,
+    "triangulos": 573996,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   }
+  },
+  "tepuy_norte": {
+   "pos": [
+    40,
+    69.64,
+    10
+   ],
+   "stats": {
+    "fps": 32,
+    "calls": 145,
+    "triangulos": 403400,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   }
+  },
+  "sol": {
+   "pos": [
+    145.5,
+    63.06,
+    178.5
+   ],
+   "stats": {
+    "fps": 35,
+    "calls": 83,
+    "triangulos": 260000,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   }
+  },
+  "isla": {
+   "pos": [
+    -148.5,
+    52.32,
+    193.5
+   ],
+   "stats": {
+    "fps": 39,
+    "calls": 73,
+    "triangulos": 273220,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   }
+  }
+ },
+ "diag": {
+  "flora": {
+   "fundido": 0.75,
+   "total": 11544,
+   "mallas": 21,
+   "instanciasVisibles": 286,
+   "impostores": 1582,
+   "pasto": 15,
+   "colliders": 134,
+   "arboles": 7307,
+   "bosque": 5372,
+   "tepuy": 307,
+   "copasCima": 0,
+   "ses": {
+    "on": false,
+    "repite": false,
+    "pend": false,
+    "activo": true
+   },
+   "dLod": 45.131174087524414,
+   "arbolesLod": 86,
+   "arbolesMalla": 81,
+   "trisArboles": 119296,
+   "topeTris": 120000,
+   "dArbol": 31.761483192443848,
+   "dSombra": 0,
+   "sombraR": 0,
+   "tope": 600
+  },
+  "impostores": {
+   "visible": true,
+   "count": 1582,
+   "tAtlas": true
+  },
+  "islas": [
+   {
+    "x": -330,
+    "z": 430,
+    "r": 60
+   },
+   {
+    "x": 40,
+    "z": 520,
+    "r": 45
+   },
+   {
+    "x": 380,
+    "z": 420,
+    "r": 40
+   }
+  ],
+  "solDir": {
+   "dir": [
+    -0.45,
+    0.75,
+    0.49
+   ],
+   "col": "#ffe6ab"
+  },
+  "camaraClaves": [
+   "yaw",
+   "inclina",
+   "inclinar",
+   "test",
+   "fovBonus",
+   "fovPicado",
+   "CAM",
+   "juice",
+   "vida",
+   "cortes",
+   "dCol",
+   "suaves",
+   "dist",
+   "place",
+   "follow",
+   "shake",
+   "hitStop",
+   "fov",
+   "fovExtra",
+   "draw",
+   "manual",
+   "descubrir",
+   "copaLibre",
+   "probarCopas",
+   "copasAhora",
+   "anchorY"
+  ],
+  "dpr": 1
+ },
+ "erroresConsola": 0
+}

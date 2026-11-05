@@ -1,0 +1,1905 @@
+{
+ "etiqueta": "r2",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "head": "desconocido",
+ "tomas": {
+  "poza": {
+   "pos": [
+    196,
+    27.52,
+    118
+   ],
+   "stats": {
+    "fps": 40,
+    "calls": 142,
+    "triangulos": 560834,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "barrido": [
+    {
+     "obj": "terreno:terreno_ne|BufferGeometry|MeshPhongMaterial",
+     "n": 65,
+     "ej": {
+      "d": 172,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "flora:manchas|PlaneGeometry|MeshBasicMaterial",
+     "n": 29,
+     "ej": {
+      "d": 152,
+      "inst": 4912,
+      "col": "122616",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:tabonuco:hoja:lod|BufferGeometry|MeshLambertMaterial",
+     "n": 21,
+     "ej": {
+      "d": 43,
+      "inst": 15,
+      "col": "b6ebb7",
+      "map": true
+     }
+    },
+    {
+     "obj": "letrero_compa|BufferGeometry|SpriteMaterial",
+     "n": 16,
+     "ej": {
+      "d": 261,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:tabonuco:hoja|BufferGeometry|MeshLambertMaterial",
+     "n": 16,
+     "ej": {
+      "d": 32,
+      "inst": 3,
+      "col": "b6ebb7",
+      "map": true
+     }
+    },
+    {
+     "obj": "rio|BufferGeometry|ShaderMaterial",
+     "n": 15,
+     "ej": {
+      "d": 138,
+      "map": false
+     }
+    },
+    {
+     "obj": "|BufferGeometry|SpriteMaterial",
+     "n": 11,
+     "ej": {
+      "d": 11,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "terreno:terreno_se|BufferGeometry|MeshPhongMaterial",
+     "n": 6,
+     "ej": {
+      "d": 283,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "edificiosInst:monumento_g:lejos:AV_Lejos|BufferGeometry|MeshLambertMaterial",
+     "n": 3,
+     "ej": {
+      "d": 114,
+      "inst": 0,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "edificiosZona:kelvin_aldea_rio_este_3:lejos|BufferGeometry|MeshLambertMaterial",
+     "n": 2,
+     "ej": {
+      "d": 193,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "flora:tabonuco:corteza:lod|BufferGeometry|MeshPhongMaterial",
+     "n": 2,
+     "ej": {
+      "d": 45,
+      "inst": 7,
+      "col": "876e55",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:tabonuco:corteza|BufferGeometry|MeshPhongMaterial",
+     "n": 2,
+     "ej": {
+      "d": 38,
+      "inst": 0,
+      "col": "876e55",
+      "map": true
+     }
+    },
+    {
+     "obj": "edificiosInst:muralla_atalaya_a:cerca:KB3D_WoodPlanks|BufferGeometry|MeshPhongMaterial",
+     "n": 1,
+     "ej": {
+      "d": 89,
+      "inst": 1,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "<edu:marcador<edu:percha|BufferGeometry|SpriteMaterial",
+     "n": 1,
+     "ej": {
+      "d": 57,
+      "col": "0c581a",
+      "map": true
+     }
+    },
+    {
+     "obj": "Vittata_2<Vittata<Rig<personaje|BufferGeometry|MeshStandardMaterial",
+     "n": 1,
+     "ej": {
+      "d": 10,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:palma_sierra:hoja:lod|BufferGeometry|MeshLambertMaterial",
+     "n": 1,
+     "ej": {
+      "d": 42,
+      "inst": 1,
+      "col": "d4e9b7",
+      "map": true
+     }
+    }
+   ],
+   "picks": [
+    {
+     "fx": 0.37,
+     "fy": 0.356,
+     "hits": [
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 44.7,
+       "inst": 3,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 20.6
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 44.7,
+       "inst": 3,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 20.6
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 44.9,
+       "inst": 3,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 20.6
+      }
+     ]
+    },
+    {
+     "fx": 0.39,
+     "fy": 0.356,
+     "hits": [
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 43.9,
+       "inst": 15,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 20.8
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 44.5,
+       "inst": 15,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 20.6
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 44.6,
+       "inst": 3,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 20.6
+      }
+     ]
+    },
+    {
+     "fx": 0.41000000000000003,
+     "fy": 0.356,
+     "hits": [
+      {
+       "n": "",
+       "d": 9.7,
+       "geo": "ConeGeometry",
+       "mat": "MeshBasicMaterial",
+       "col": "f2a03d",
+       "map": false,
+       "y": 30.5
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 39.6,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 22
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 45.1,
+       "inst": 3,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 20.5
+      }
+     ]
+    },
+    {
+     "fx": 0.37,
+     "fy": 0.37,
+     "hits": [
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 38.9,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 21.7
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 42.4,
+       "inst": 3,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 20.7
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 43.5,
+       "inst": 15,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 20.3
+      }
+     ]
+    },
+    {
+     "fx": 0.39,
+     "fy": 0.37,
+     "hits": [
+      {
+       "n": "",
+       "d": 9.7,
+       "geo": "ConeGeometry",
+       "mat": "MeshBasicMaterial",
+       "col": "f2a03d",
+       "map": false,
+       "y": 30.4
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 38.5,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 21.8
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 38.7,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 21.7
+      }
+     ]
+    },
+    {
+     "fx": 0.41000000000000003,
+     "fy": 0.37,
+     "hits": [
+      {
+       "n": "",
+       "d": 9.6,
+       "geo": "ConeGeometry",
+       "mat": "MeshBasicMaterial",
+       "col": "f2a03d",
+       "map": false,
+       "y": 30.4
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 39.6,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 21.4
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 39.9,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 21.4
+      }
+     ]
+    },
+    {
+     "fx": 0.37,
+     "fy": 0.384,
+     "hits": [
+      {
+       "n": "",
+       "d": 9.7,
+       "geo": "ConeGeometry",
+       "mat": "MeshBasicMaterial",
+       "col": "f2a03d",
+       "map": false,
+       "y": 30.3
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 36.9,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 21.8
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 37.9,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 21.4
+      }
+     ]
+    },
+    {
+     "fx": 0.39,
+     "fy": 0.384,
+     "hits": [
+      {
+       "n": "",
+       "d": 9.7,
+       "geo": "ConeGeometry",
+       "mat": "MeshBasicMaterial",
+       "col": "f2a03d",
+       "map": false,
+       "y": 30.3
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 37.9,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 21.4
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 37.9,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 21.4
+      }
+     ]
+    },
+    {
+     "fx": 0.41000000000000003,
+     "fy": 0.384,
+     "hits": [
+      {
+       "n": "",
+       "d": 9.7,
+       "geo": "ConeGeometry",
+       "mat": "MeshBasicMaterial",
+       "col": "f2a03d",
+       "map": false,
+       "y": 30.3
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 37.9,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 21.4
+      },
+      {
+       "n": "flora:tabonuco:hoja:lod",
+       "d": 38.1,
+       "inst": 9,
+       "geo": "BufferGeometry",
+       "mat": "MeshLambertMaterial",
+       "col": "b6ebb7",
+       "map": true,
+       "y": 21.3
+      }
+     ]
+    }
+   ]
+  },
+  "poza_baja": {
+   "pos": [
+    190,
+    18.49,
+    104
+   ],
+   "stats": {
+    "fps": 45,
+    "calls": 128,
+    "triangulos": 573804,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   }
+  },
+  "tepuy_norte": {
+   "pos": [
+    40,
+    69.66,
+    10
+   ],
+   "stats": {
+    "fps": 42,
+    "calls": 145,
+    "triangulos": 402423,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "barrido": [
+    {
+     "obj": "terreno:terreno_so|BufferGeometry|MeshPhongMaterial",
+     "n": 58,
+     "ej": {
+      "d": 165,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "terreno:terreno_se|BufferGeometry|MeshPhongMaterial",
+     "n": 52,
+     "ej": {
+      "d": 122,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "flora:manchas|PlaneGeometry|MeshBasicMaterial",
+     "n": 22,
+     "ej": {
+      "d": 166,
+      "inst": 4773,
+      "col": "122616",
+      "map": true
+     }
+    },
+    {
+     "obj": "letrero_compa|BufferGeometry|SpriteMaterial",
+     "n": 19,
+     "ej": {
+      "d": 73,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "rio|BufferGeometry|ShaderMaterial",
+     "n": 13,
+     "ej": {
+      "d": 117,
+      "map": false
+     }
+    },
+    {
+     "obj": "|BufferGeometry|SpriteMaterial",
+     "n": 12,
+     "ej": {
+      "d": 11,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "|BufferGeometry|PointsMaterial",
+     "n": 5,
+     "ej": {
+      "d": 66,
+      "col": "9fc9de",
+      "map": false
+     }
+    },
+    {
+     "obj": "edificiosZona:kelvin_aldea_yunque:lejos|BufferGeometry|MeshLambertMaterial",
+     "n": 4,
+     "ej": {
+      "d": 135,
+      "col": "ffffff",
+      "map": false
+     }
+    },
+    {
+     "obj": "edificiosInst:templo_mediano_h:cerca:AV_Restaurado_Base|BufferGeometry|MeshPhongMaterial",
+     "n": 2,
+     "ej": {
+      "d": 171,
+      "inst": 2,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "edificiosInst:monumento_a:cerca:KB3D_RoofThatched|BufferGeometry|MeshPhongMaterial",
+     "n": 2,
+     "ej": {
+      "d": 88,
+      "inst": 0,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "edificiosInst:monumento_a:cerca:KB3D_WoodPlanks|BufferGeometry|MeshPhongMaterial",
+     "n": 1,
+     "ej": {
+      "d": 86,
+      "inst": 0,
+      "col": "ffffff",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:palma_sierra:hoja:lod|BufferGeometry|MeshLambertMaterial",
+     "n": 1,
+     "ej": {
+      "d": 66,
+      "inst": 0,
+      "col": "d4e9b7",
+      "map": true
+     }
+    },
+    {
+     "obj": "flora:helecho_arboreo:hoja:lod|BufferGeometry|MeshLambertMaterial",
+     "n": 1,
+     "ej": {
+      "d": 70,
+      "inst": 0,
+      "col": "d0f7a5",
+      "map": true
+     }
+    }
+   ]
+  },
+  "sol": {
+   "pos": [
+    145.5,
+    63.08,
+    178.5
+   ],
+   "stats": {
+    "fps": 45,
+    "calls": 88,
+    "triangulos": 282427,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "picks": [
+    {
+     "fx": 0.41,
+     "fy": 0.381,
+     "hits": [
+      {
+       "n": "",
+       "d": 9.2,
+       "geo": "ConeGeometry",
+       "mat": "MeshBasicMaterial",
+       "col": "f2a03d",
+       "map": false,
+       "y": 66.1
+      },
+      {
+       "n": "mar",
+       "d": 220.3,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 224.1,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      }
+     ]
+    },
+    {
+     "fx": 0.43,
+     "fy": 0.381,
+     "hits": [
+      {
+       "n": "",
+       "d": 9.1,
+       "geo": "ConeGeometry",
+       "mat": "MeshBasicMaterial",
+       "col": "f2a03d",
+       "map": false,
+       "y": 66.1
+      },
+      {
+       "n": "mar",
+       "d": 220.1,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 223.9,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      }
+     ]
+    },
+    {
+     "fx": 0.45,
+     "fy": 0.381,
+     "hits": [
+      {
+       "n": "",
+       "d": 9.2,
+       "geo": "ConeGeometry",
+       "mat": "MeshBasicMaterial",
+       "col": "f2a03d",
+       "map": false,
+       "y": 66.1
+      },
+      {
+       "n": "mar",
+       "d": 219.9,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 223.7,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      }
+     ]
+    },
+    {
+     "fx": 0.41,
+     "fy": 0.395,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 210.4,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 214.1,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1269.5,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -347.3
+      }
+     ]
+    },
+    {
+     "fx": 0.43,
+     "fy": 0.395,
+     "hits": [
+      {
+       "n": "",
+       "d": 9.2,
+       "geo": "ConeGeometry",
+       "mat": "MeshBasicMaterial",
+       "col": "f2a03d",
+       "map": false,
+       "y": 66
+      },
+      {
+       "n": "mar",
+       "d": 210.2,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 213.9,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      }
+     ]
+    },
+    {
+     "fx": 0.45,
+     "fy": 0.395,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 210.1,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 213.7,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1269.4,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -348
+      }
+     ]
+    },
+    {
+     "fx": 0.41,
+     "fy": 0.40900000000000003,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 201.4,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 204.9,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1270.5,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -366.3
+      }
+     ]
+    },
+    {
+     "fx": 0.43,
+     "fy": 0.40900000000000003,
+     "hits": [
+      {
+       "n": "",
+       "d": 9.3,
+       "geo": "ConeGeometry",
+       "mat": "MeshBasicMaterial",
+       "col": "f2a03d",
+       "map": false,
+       "y": 65.8
+      },
+      {
+       "n": "mar",
+       "d": 201.2,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 204.7,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      }
+     ]
+    },
+    {
+     "fx": 0.45,
+     "fy": 0.40900000000000003,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 201.1,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 204.5,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1270.4,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -367
+      }
+     ]
+    },
+    {
+     "fx": 0.135,
+     "fy": 0.289,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 329.8,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 335.5,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1273,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -197.4
+      }
+     ]
+    },
+    {
+     "fx": 0.155,
+     "fy": 0.289,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 328.5,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 334.2,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1272.6,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -198.3
+      }
+     ]
+    },
+    {
+     "fx": 0.175,
+     "fy": 0.289,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 327.3,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 333,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1272.4,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -199.2
+      }
+     ]
+    },
+    {
+     "fx": 0.135,
+     "fy": 0.303,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 309,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 314.4,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1271.7,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -214.9
+      }
+     ]
+    },
+    {
+     "fx": 0.155,
+     "fy": 0.303,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 307.8,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 313.2,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1271.2,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -215.9
+      }
+     ]
+    },
+    {
+     "fx": 0.175,
+     "fy": 0.303,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 306.7,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 312,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1271,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -216.9
+      }
+     ]
+    },
+    {
+     "fx": 0.135,
+     "fy": 0.317,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 290.7,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 295.7,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1270.6,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -232.6
+      }
+     ]
+    },
+    {
+     "fx": 0.155,
+     "fy": 0.317,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 289.6,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 294.6,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1270.1,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -233.7
+      }
+     ]
+    },
+    {
+     "fx": 0.175,
+     "fy": 0.317,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 288.5,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 293.5,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1269.9,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -234.7
+      }
+     ]
+    }
+   ]
+  },
+  "isla": {
+   "pos": [
+    -148.5,
+    52.34,
+    193.5
+   ],
+   "stats": {
+    "fps": 49,
+    "calls": 73,
+    "triangulos": 269432,
+    "calidad": "medio",
+    "dpr": 1,
+    "post": true,
+    "sombras": true,
+    "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+   },
+   "picks": [
+    {
+     "fx": 0.508,
+     "fy": 0.376,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 188.8,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 192.7,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1268.9,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -333.1
+      }
+     ]
+    },
+    {
+     "fx": 0.528,
+     "fy": 0.376,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 188.9,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 192.8,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1268.5,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -332.9
+      }
+     ]
+    },
+    {
+     "fx": 0.548,
+     "fy": 0.376,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 189,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 192.9,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1268.5,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -332.7
+      }
+     ]
+    },
+    {
+     "fx": 0.508,
+     "fy": 0.39,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 180.2,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 183.9,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1269.4,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -352
+      }
+     ]
+    },
+    {
+     "fx": 0.528,
+     "fy": 0.39,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 180.3,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 184,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1269.1,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -351.8
+      }
+     ]
+    },
+    {
+     "fx": 0.548,
+     "fy": 0.39,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 180.3,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 184.1,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1269.1,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -351.6
+      }
+     ]
+    },
+    {
+     "fx": 0.508,
+     "fy": 0.404,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 172.4,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 175.9,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1270.3,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -371
+      }
+     ]
+    },
+    {
+     "fx": 0.528,
+     "fy": 0.404,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 172.4,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 176,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1269.9,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -370.8
+      }
+     ]
+    },
+    {
+     "fx": 0.548,
+     "fy": 0.404,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 172.5,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 176,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1269.9,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -370.6
+      }
+     ]
+    },
+    {
+     "fx": 0.815,
+     "fy": 0.476,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 145.3,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 148.3,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1273.4,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -452.3
+      }
+     ]
+    },
+    {
+     "fx": 0.835,
+     "fy": 0.476,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 145.8,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 148.9,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1274.3,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -450.7
+      }
+     ]
+    },
+    {
+     "fx": 0.855,
+     "fy": 0.476,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 146.4,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 149.4,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1275.5,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -449.1
+      }
+     ]
+    },
+    {
+     "fx": 0.815,
+     "fy": 0.49,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 140.4,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 143.3,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1272.2,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -469.5
+      }
+     ]
+    },
+    {
+     "fx": 0.835,
+     "fy": 0.49,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 141,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 143.9,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1273.1,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -467.8
+      }
+     ]
+    },
+    {
+     "fx": 0.855,
+     "fy": 0.49,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 141.5,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 144.4,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1274.2,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -466.2
+      }
+     ]
+    },
+    {
+     "fx": 0.815,
+     "fy": 0.504,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 135.9,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 138.7,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1271.2,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -486.6
+      }
+     ]
+    },
+    {
+     "fx": 0.835,
+     "fy": 0.504,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 136.4,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 139.2,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1272.1,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -485
+      }
+     ]
+    },
+    {
+     "fx": 0.855,
+     "fy": 0.504,
+     "hits": [
+      {
+       "n": "mar",
+       "d": 136.9,
+       "geo": "BufferGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": 0
+      },
+      {
+       "n": "fondoMarino",
+       "d": 139.8,
+       "geo": "PlaneGeometry",
+       "mat": "MeshPhongMaterial",
+       "col": "ffffff",
+       "map": false,
+       "y": -1.2
+      },
+      {
+       "n": "cielo",
+       "d": 1273.3,
+       "geo": "SphereGeometry",
+       "mat": "ShaderMaterial",
+       "map": false,
+       "y": -483.3
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "diag": {
+  "flora": {
+   "fundido": 0.75,
+   "total": 11544,
+   "mallas": 21,
+   "instanciasVisibles": 290,
+   "impostores": 295,
+   "pasto": 15,
+   "colliders": 134,
+   "arboles": 7307,
+   "bosque": 5372,
+   "tepuy": 307,
+   "copasCima": 0,
+   "ses": {
+    "on": false,
+    "repite": false,
+    "pend": false,
+    "activo": true
+   },
+   "dLod": 44.532752990722656,
+   "arbolesLod": 83,
+   "arbolesMalla": 83,
+   "trisArboles": 118246,
+   "topeTris": 120000,
+   "dArbol": 31.827367782592773,
+   "dSombra": 0,
+   "sombraR": 0,
+   "tope": 600
+  },
+  "impostores": {
+   "visible": true,
+   "count": 295,
+   "tAtlas": true
+  },
+  "islas": [
+   {
+    "x": -330,
+    "z": 430,
+    "r": 60
+   },
+   {
+    "x": 40,
+    "z": 520,
+    "r": 45
+   },
+   {
+    "x": 380,
+    "z": 420,
+    "r": 40
+   }
+  ],
+  "solDir": {
+   "dir": [
+    -0.45,
+    0.75,
+    0.49
+   ],
+   "col": "#ffe6ab"
+  },
+  "camaraClaves": [
+   "yaw",
+   "inclina",
+   "inclinar",
+   "test",
+   "fovBonus",
+   "fovPicado",
+   "CAM",
+   "juice",
+   "vida",
+   "cortes",
+   "dCol",
+   "suaves",
+   "dist",
+   "place",
+   "follow",
+   "shake",
+   "hitStop",
+   "fov",
+   "fovExtra",
+   "draw",
+   "manual",
+   "descubrir",
+   "copaLibre",
+   "probarCopas",
+   "copasAhora",
+   "anchorY"
+  ],
+  "dpr": 1
+ },
+ "erroresConsola": 0
+}

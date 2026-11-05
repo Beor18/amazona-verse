@@ -101,15 +101,23 @@ AVE.module('fx', function (G) {
   function update(dt) {
     // Un 'render' sin dt (o NaN) dejaba las partículas en NaN y THREE avisaba «Computed radius is NaN» al dibujarlas (AJ2)
     dt = Number.isFinite(dt) && dt > 0 ? Math.min(dt, 0.1) : 0;
+    // KIMI-060: una partícula pegada a la cámara (la sigue al volar) se dibuja a 150+ px como un
+    // disco plano liso que lee como falla gráfica (iPad de Kelvin, 5-nov); a <3,5 m no aporta nada
+    // visual: se retira bajo tierra y sigue su fundido normal.
+    const cp = G.renderer.camera.position, CERCA2 = 3.5 * 3.5;
     for (let i = fx.length - 1; i >= 0; i--) {
       const f = fx[i]; f.t += dt; const k = f.t / f.life;
       if (f.anim) f.anim(f, Math.min(1, k));
       else if (f.vel) {
         const a = f.m.geometry.attributes.position, grav = f.grav != null ? f.grav : 14, drag = f.drag ? Math.exp(-f.drag * dt) : 1;
         f.vel.forEach((v, j) => {
+          if (v.c) { a.setXYZ(j, a.getX(j), -9999, a.getZ(j)); return; } // KIMI-060: retirada, no vuelve (p. ej. drops con y0)
           v[0] *= drag; v[2] *= drag; v[1] -= grav * dt;
           let y = Math.max(f.y0, a.getY(j) + v[1] * dt); if (f.ceil != null) y = Math.min(f.ceil, y);
-          a.setXYZ(j, a.getX(j) + v[0] * dt, y, a.getZ(j) + v[2] * dt);
+          const px = a.getX(j) + v[0] * dt, pz = a.getZ(j) + v[2] * dt;
+          const dxc = px - cp.x, dyc = y - cp.y, dzc = pz - cp.z;
+          if (dxc * dxc + dyc * dyc + dzc * dzc < CERCA2) { v.c = 1; y = -9999; }
+          a.setXYZ(j, px, y, pz);
         });
         a.needsUpdate = true;
       } else f.m.scale.setScalar(0.4 + k * f.size * 2);
