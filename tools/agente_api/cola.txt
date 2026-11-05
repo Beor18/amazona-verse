@@ -2,11 +2,14 @@
 # 4-nov 21:30 (coordinadora web): A9 de Kelvin, primero BM133 y BM134 con capturas de la Ciudad de los 36
 # 5-nov 12:15 (coordinadora web): Kelvin recargó 20 $; primero BM136 a BM139
 # 5-nov 13:30: siguiente tanda (BM142 la hace Claude en la Mac en persona)
+# 5-nov 11:00 (otra cuenta, Kelvin pide que la Mac siga): BM147 y BM148 al final de la tanda
 BM141
 BM143
 BM144
 BM145
 BM146
+BM147
+BM148
 BM136
 BM137
 BM138
