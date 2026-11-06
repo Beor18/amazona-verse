@@ -101,7 +101,7 @@
       fr = document.createElement('iframe');
       fr.style.cssText = 'position:fixed;left:-1200px;top:0;width:390px;height:844px;border:0;';
       document.body.appendChild(fr);
-      const url = new URL(location.href); url.search = '?pack=ep4&calidad=bajo' + (extra || ''); url.hash = '';
+      const url = new URL(location.href); url.search = '?pack=ep4&calidad=bajo' + (extra || '') + (/[?&]v18=1/.test(location.search) ? '&v18=1' : ''); url.hash = '';
       fr.src = url.href;
       W = await until(() => { const x = fr.contentWindow; return x && x.AV && x.AV.pack === 'ep4' && x.AV.G && (x.AV.G.actores.player3D || x.AV.G.actores.failed3D) && x; }, 240000);
       if (!W) return false;
