@@ -237,7 +237,7 @@ async function lanzarChrome() {
 function mataPorPerfil() {
   try {
     const ps = "Get-CimInstance Win32_Process -Filter \"Name='chrome.exe'\" | Where-Object { $_.CommandLine -like '*kimi2k110-*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }";
-    execSync('powershell -NoProfile -Command "' + ps + '"', { timeout: 30000, stdio: 'ignore' });
+    execSync("powershell -NoProfile -Command '" + ps + "'", { timeout: 30000, stdio: 'ignore' });
   } catch (e) { }
 }
 async function foto(cdp, ses, nombre) {
@@ -313,6 +313,7 @@ async function foto(cdp, ses, nombre) {
   } finally {
     clearInterval(watch);
     guardar(res);
+    try { execSync(`taskkill /F /T /PID ${chrome.pid}`, { timeout: 15000, stdio: 'ignore' }); } catch (e) { }
     try { chrome.kill(); } catch (e) { }
     await cdp.bombear(0.8);
     mataPorPerfil();

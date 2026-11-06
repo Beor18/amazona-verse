@@ -1,0 +1,25 @@
+[08:48:47] lanzando Chrome y entrando al juego (v18=1, puente reparado)...
+[08:48:50] juego listo, entrando...
+[08:48:52] …latido
+[08:48:57] …latido
+[08:49:02] …latido
+[08:49:05] entrada ok, preparando modulos v18...
+[08:49:07] …latido
+[08:49:08] prep ok
+[08:49:08] calidad bajo (=bajo)
+[08:49:11] midiendo bajo/base...
+[08:49:12] …latido
+[08:49:17] …latido
+[08:49:21] [bajo/base] fpsPorSeg=[35,34,36,36,37,37] fpsMed=36 min=34 peorMs=51 calls=95 tris=529923 logrado=undefined saltos=undefined
+[08:49:22] midiendo bajo/cruce...
+[08:49:22] …latido
+[08:49:27] …latido
+[08:49:28] [bajo/cruce] fpsPorSeg=[38,29,36,43] fpsMed=37 min=29 peorMs=55 calls=79 tris=418451 logrado=true saltos=0
+[08:49:28] midiendo bajo/sombra...
+[08:49:32] …latido
+[08:49:37] …latido
+[08:49:42] …latido
+[08:49:47] …latido
+[08:49:47] [bajo/sombra] fpsPorSeg=[37,37,28,24,28,30,27,29,30,30,29,29,30,31,27] fpsMed=30 min=24 peorMs=102 calls=90 tris=378938 logrado=undefined saltos=undefined
+[08:49:47] errores de consola: []
+[08:49:48] evidencia: C:\Users\kelvi\amazonaversegame2\docs\img\kimi110\k110_libre.json
