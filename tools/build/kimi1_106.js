@@ -104,6 +104,7 @@ const PRUEBAS = [
   { id: 'evolucion', nombre: 'v18EvolucionTest', fn: 'v18EvolucionTest', tope: 600, min: 1 },
   { id: 'sapo', nombre: 'v18SapoTest', fn: 'v18SapoTest', tope: 300, min: 1 },
   { id: 'serpiente', nombre: 'v18SerpienteTest', fn: 'v18SerpienteTest', tope: 300, min: 1 },
+  { id: 'puerto', nombre: 'v18PuertoTest', fn: 'v18PuertoTest', tope: 300, min: 1 }, // V18.3 «El puerto que volvió a vivir» (KIMI-130 corrida 2)
 ];
 function jsPrueba(p) {
   return `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), AV = window.AV, G = AV.G;
