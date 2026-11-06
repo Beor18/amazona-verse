@@ -114,6 +114,7 @@ window.AVV18Duelo2 = function (G) {
   function usar(f, id) {
     if (D.fase !== 'lucha' || !f) return { ok: false, motivo: 'fase' };
     const r = H.usar(f, id, ctxDe(f));
+    if (r.ok && !H.get(id).basico) f.ultPoder = id; // Imitación (oratrix): el registro del último poder de cada una
     if (r.ok) { D.stats[f === D.j1 ? 'usos1' : 'usos2']++; pintar(); }
     return r;
   }
