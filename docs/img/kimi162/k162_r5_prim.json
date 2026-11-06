@@ -1,0 +1,80 @@
+{
+ "etiqueta": "r5",
+ "modelo": "primitivas-bloqueo",
+ "pantalla": "escritorio 1600x900@1 cpuX1",
+ "head": "e7af4d07",
+ "escenarios": {
+  "maq_obra": {
+   "nota": "perforadora trabando la subida (estado Bloqueando)",
+   "datos": {
+    "maq": [
+     77.08,
+     -73.54
+    ],
+    "glb": false,
+    "okGLB": true,
+    "estado": "obra",
+    "mallasMaq": 40,
+    "visibles": {
+     "bloq": 0,
+     "reco": 0
+    },
+    "diag": {
+     "cargando": true,
+     "fallo": "máquina del puerto no disponible",
+     "pintada": "trabada"
+    },
+    "stats": {
+     "calls": 223,
+     "ktris": 631,
+     "fps": 144
+    },
+    "med": {
+     "calls": 223,
+     "triangulos": 631137,
+     "texturasMB": 636,
+     "geometrias": 270,
+     "heapMB": 833,
+     "fps": 144
+    },
+    "errores": []
+   }
+  },
+  "maq_reparado": {
+   "nota": "máquina reconvertida (estado Reconvertida: maceta, flores, farol)",
+   "datos": {
+    "maq": [
+     76.85,
+     -70.09
+    ],
+    "glb": false,
+    "okGLB": true,
+    "estado": "reparado",
+    "mallasMaq": 40,
+    "visibles": {
+     "bloq": 0,
+     "reco": 0
+    },
+    "diag": {
+     "cargando": true,
+     "fallo": "máquina del puerto no disponible",
+     "pintada": "flor"
+    },
+    "stats": {
+     "calls": 255,
+     "ktris": 686,
+     "fps": 144
+    },
+    "med": {
+     "calls": 255,
+     "triangulos": 685587,
+     "texturasMB": 636,
+     "geometrias": 296,
+     "heapMB": 854,
+     "fps": 144
+    },
+    "errores": []
+   }
+  }
+ }
+}

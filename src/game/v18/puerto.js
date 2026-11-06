@@ -124,7 +124,7 @@ window.AVV18Puerto = function (G) {
   const A = { pistas: new Set(), aciertos: 0, j: null, freno: 0, frenando: false, bocanadaT: BOCANADA_S, manual: false, forzar: false, avisado: false, llegada: false, descubriendo: false, guia: false, senalada: false, empuje: null };
   const listaMision = () => !!(G.V18 || A.forzar) && V.mundo('puente_villa') === 'reparado' && M.valido && (!G.zonas || !G.zonas.activa || G.zonas.dentro(SITIO.plaza.x, SITIO.plaza.z));
 
-  // ---------- Escena (primitivas; ningún asset nuevo) ----------
+  // ---------- Escena (primitivas de respaldo + modelo BM165 de la máquina, cargado en diferido) ----------
   const M = { valido: false, perfil: null, hecho: false, rampas: [], collider: null, despejado: false };
   const mats = {};
   const mat = (k, c, o) => mats[k] || (mats[k] = new THREE.MeshStandardMaterial(Object.assign({ color: new THREE.Color(c).convertSRGBToLinear(), roughness: 0.75, metalness: 0 }, o || {})));
@@ -134,7 +134,50 @@ window.AVV18Puerto = function (G) {
   const raiz = new THREE.Group(); raiz.name = 'v18-puerto'; raiz.visible = false; scene.add(raiz);
   const grupo = n => { const g = new THREE.Group(); g.name = n; raiz.add(g); return g; };
   let gObra, gEscalera, gMaq, gPistas = {}, gMats = {}, gRuta;
-  const maq = { cuerpo: null, engranaje: null, broca: null, luces: [], flor: null, pos: { x: 0, z: 0 }, giro: 0, pintada: null, mueve: null };
+  const maq = { cuerpo: null, engranaje: null, broca: null, luces: [], flor: null, pos: { x: 0, z: 0 }, giro: 0, pintada: null, mueve: null, glb: null, cargandoGLB: false, bloqGLB: null, recoGLB: null };
+  // BM165 (Mac, 6-nov): modelo propio de la perforadora (2,5 k tris; mismos dos estados que las primitivas:
+  // Bloqueando_* en obra y Reconvertida_* una vez reparado). Carga diferida como los personajes (npc.js): solo
+  // con la misión activa y el jugador cerca; si tarda o falla, se quedan las primitivas (mismo comportamiento).
+  // No se anota en ST.pedidos: ese contador es de los modelos de personaje (v18PuertoTest 6c pide exactamente 2).
+  const MMAQ = { modelo: 'assets/models/personajes/maquina_puerto.glb', script: 'assets/models/personajes/maquina_puerto_glb.js', b64: 'maquina_puerto' };
+  function cargarGLBMaq() {
+    if (maq.cargandoGLB || !G.assets || !G.assets.loadGLB) return;
+    maq.cargandoGLB = true;
+    const b64 = () => { const t = window.AV_PERSONAJES_B64; return t && Object.prototype.hasOwnProperty.call(t, MMAQ.b64) ? t[MMAQ.b64] : undefined; };
+    G.assets.loadGLB(MMAQ.modelo, { b64, script: MMAQ.script, base: '', error: 'máquina del puerto no disponible' })
+      .then(sc => { try { montarGLBMaq(sc); } catch (e) { maq.glbFallo = 'montar: ' + ((e && e.message) || e); } })
+      .catch(e => { maq.glbFallo = (e && e.message) || String(e); });
+  }
+  function montarGLBMaq(sc) {
+    if (!sc || !sc.scene || !gMaq || maq.glb) return;
+    const fuente = sc.scene;
+    const modelo = (fuente.children.length === 1 ? fuente.children[0] : fuente).clone(true);
+    modelo.name = 'v18-puerto-maquina-bm165';
+    maq.bloqGLB = []; maq.recoGLB = [];
+    const nodos = {};
+    modelo.traverse(o => {
+      if (o.name) nodos[o.name] = nodos[o.name] || o;
+      if (o.name && o.name.indexOf('Bloqueando') === 0) maq.bloqGLB.push(o);
+      else if (o.name && o.name.indexOf('Reconvertida') === 0) maq.recoGLB.push(o);
+      if (o.isMesh) { o.castShadow = false; o.receiveShadow = false; }
+    });
+    if (nodos.Engranaje) maq.engranaje = nodos.Engranaje; // gira igual que el grupo de primitivas (pasoMaquina)
+    if (nodos.Bloqueando_LuzAlarma && nodos.Bloqueando_LuzAlarma2) {
+      [nodos.Bloqueando_LuzAlarma, nodos.Bloqueando_LuzAlarma2].forEach((l, i) => {
+        if (!l.isMesh) return;
+        l.userData.c = l.material.color ? '#' + l.material.color.getHexString() : '#ff4a3a';
+        if (l.material.emissive) l.userData.e = l.material.emissive.getHex(); // para apagarla en 'apagada'/'flor'
+        maq.luces[i] = l;
+      });
+    }
+    // las primitivas salen de escena; maq.broca/maq.flor quedan como banderas que pintaMaquina (y el test) siguen leyendo
+    while (gMaq.children.length) gMaq.remove(gMaq.children[0]);
+    gMaq.add(modelo);
+    maq.glb = modelo;
+    maq.cargandoGLB = false;
+    maq.pintada = null; // fuerza el repintado de los grupos del modelo con el estado actual
+    pintarMaquina(reparado() ? 'flor' : rango(estado()) >= rango('desactivado') ? 'apagada' : 'trabada');
+  }
   function construir() {
     if (M.hecho) return;
     M.hecho = true;
@@ -282,7 +325,11 @@ window.AVV18Puerto = function (G) {
     mats.maqCuerpo.color.set(modo === 'flor' ? '#4f9a5a' : '#d9822b').convertSRGBToLinear();
     maq.broca.visible = modo !== 'flor';
     maq.flor.visible = modo === 'flor';
-    maq.luces.forEach(l => { l.material.color.set(modo === 'trabada' ? l.userData.c : modo === 'flor' ? '#7dff9a' : '#3a3a3a'); });
+    if (maq.bloqGLB) { for (const o of maq.bloqGLB) o.visible = modo !== 'flor'; for (const o of maq.recoGLB) o.visible = modo === 'flor'; maq.luces.forEach(l => { l.visible = modo === 'trabada'; }); }
+    maq.luces.forEach(l => {
+      l.material.color.set(modo === 'trabada' ? l.userData.c : modo === 'flor' ? '#7dff9a' : '#3a3a3a');
+      if (l.material.emissive) l.material.emissive.set(modo === 'trabada' && l.userData.e != null ? l.userData.e : modo === 'trabada' ? l.material.color.getHex() : 0x0d0d0d);
+    });
   }
   // los árboles del pasillo de la escalera (±1,6 m), solo con la escalera hecha (como el puente, G.vegetacion.despejar)
   function despejar() {
@@ -521,7 +568,7 @@ window.AVV18Puerto = function (G) {
     if (mode === 'trabada') {
       maq.engranaje.rotation.x += dt * (A.aciertos ? 1.5 + A.aciertos : 0.6) * (Math.sin(performance.now() / 160) > -0.3 ? 1 : -0.4);
       const parpadeo = Math.sin(performance.now() / 240) > 0; maq.luces[0].visible = parpadeo; maq.luces[1].visible = !parpadeo;
-    } else { maq.luces[0].visible = maq.luces[1].visible = true; }
+    } else if (!maq.bloqGLB) { maq.luces[0].visible = maq.luces[1].visible = true; } // con el modelo BM165 las luces de alarma van con su grupo (pintarMaquina)
     if (maq.sacude > 0) { maq.sacude -= dt; gMaq.position.x += Math.sin(performance.now() / 20) * 0.04; }
   }
   function ruta() {
@@ -539,6 +586,7 @@ window.AVV18Puerto = function (G) {
     const cerca = Math.hypot(S.pos.x - SITIO.plaza.x, S.pos.z - SITIO.plaza.z) < R_VISTA;
     if (raiz.visible !== cerca) raiz.visible = cerca;
     if (gMaq.visible !== (lista || reparado())) aplicar();
+    if (!maq.glb && !maq.cargandoGLB && (lista || reparado()) && cerca) cargarGLBMaq();
     if (!lista) { soltarModo(); pintarHud(false); return; }
     pasoMaquina(dt);
     const e = estado(), dM = Math.hypot(S.pos.x - maq.pos.x, S.pos.z - maq.pos.z), dP = Math.hypot(S.pos.x - SITIO.plaza.x, S.pos.z - SITIO.plaza.z);
@@ -821,7 +869,7 @@ window.AVV18Puerto = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18puerto = { ID, ESTADOS, estado, avanzar, aplicar, usarPoder, reparar, pagarXP, paso, SITIO, test, get perfil() { return M.perfil; }, get valido() { return M.valido; }, sesion: () => A,
+  G.v18puerto = { ID, ESTADOS, estado, avanzar, aplicar, usarPoder, reparar, pagarXP, paso, SITIO, test, get perfil() { return M.perfil; }, get valido() { return M.valido; }, get maq() { return maq; }, sesion: () => A,
     mapa: () => (listaMision() && estado() !== 'reparado' ? { x: MAQ.on.x, z: MAQ.on.z, nombre: TXT.titulo } : null) };
   return G.v18puerto;
 };
