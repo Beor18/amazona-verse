@@ -412,3 +412,5 @@ Texto: `docs/DIRECTIVA_V18_3_RESOLUCION.md` (sustituye a la V18.3 en lo que corr
 ## 6-nov-2026 · Emblema del pacto: propuesta B (Kelvin)
 Kelvin elige la **B · Semilla con alas** (`docs/img/emblema_propuestas/emblema_b.svg`): una semilla dorada que brota, sostenida por dos alas de 18 plumas cada una (36 piezas). La promesa va grabada en el reverso. Pendiente técnico: engrosar las plumas para que se lea a 32 px y ponerlo en el cap. 6 donde hoy sale el emblema.
 
+## 6-nov-2026 · V18 por defecto en el enlace principal (Kelvin)
+Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». Desde ahora **https://amazona-verse.vercel.app/juego/** carga toda la V18 (duelo, puente, Sombra, minigolf, poderes, niveles V18.2, misión del puerto V18.3, Chispa…) sin `?v18=1`. La **versión estable anterior** sigue disponible con **`?v18=0`** (o `localStorage['amazonaverse.v18on'] = '0'`); `?v18=1` y la clave `'1'` siguen encendiéndola. Cambio reversible en una línea de `src/boot.js` (`v18Bandera`).

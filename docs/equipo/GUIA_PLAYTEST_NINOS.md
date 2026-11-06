@@ -1,4 +1,4 @@
-# Guía para la prueba con niños (caps. 2 a 6 y demo `?v18=1`)
+# Guía para la prueba con niños (caps. 2 a 6 y demo V18)
 
 Para Kelvin, 6-nov (K4-07). Lo que buscamos es saber **si se divierten**, dónde se atascan y qué quieren repetir. No es un examen: si un niño no entiende algo, el fallo es del juego, no suyo. Esta prueba es el criterio C6 que les falta a los caps. 2 a 6 (`ESTADO_REAL.md`).
 
@@ -12,7 +12,7 @@ Para Kelvin, 6-nov (K4-07). Lo que buscamos es saber **si se divierten**, dónde
 - Si se aburre o se frustra, **cambia de capítulo o para**. Mejor 15 minutos felices que 40 forzados.
 
 ## 2. Recorrido y qué observar
-Enlaces: `https://amazona-verse.vercel.app/juego/?pack=ep2` (cambia el número para ep3 a ep6; también se entra desde la portada). La demo: `https://amazona-verse.vercel.app/juego/?v18=1` → **Aventura**. No hace falta hacerlo todo con cada niño: reparte capítulos entre ellos (por ejemplo, A hace 2 y 4; B hace 3 y 5; C hace 6 y la demo).
+Enlaces: `https://amazona-verse.vercel.app/juego/?pack=ep2` (cambia el número para ep3 a ep6; también se entra desde la portada). La demo V18 va en el enlace principal (ya no hace falta `?v18=1`): `https://amazona-verse.vercel.app/juego/` → **Aventura**. Para la versión sin V18: `https://amazona-verse.vercel.app/juego/?v18=0`. No hace falta hacerlo todo con cada niño: reparte capítulos entre ellos (por ejemplo, A hace 2 y 4; B hace 3 y 5; C hace 6 y la demo).
 
 **En todos:** ¿lee los avisos o los salta? ¿Encuentra el siguiente objetivo sin ayuda (minimapa, bandera verde)? ¿Se pierde la cámara? ¿Vuela por gusto, sin que se lo pidan? ¿Qué le hace reír o decir «¡mira!»?
 

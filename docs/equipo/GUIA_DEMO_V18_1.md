@@ -3,7 +3,7 @@
 «Vuela, explora y salva tu isla con Vittata». Esta demo es un ciclo corto: encuentras a una cotorra visitante, juegas un duelo, reparas un puente, espantas una nube y consigues cotorras nuevas.
 
 ## 1. Cómo entrar
-- Abre **https://amazona-verse.vercel.app/juego/?v18=1**. El final `?v18=1` es lo que activa la demo. Sin él, no aparece nada de esto.
+- Abre **https://amazona-verse.vercel.app/juego/**. Desde el 6-nov la demo va en el enlace principal: ya no hace falta `?v18=1`. Para jugar la versión estable anterior, sin nada de esto: **https://amazona-verse.vercel.app/juego/?v18=0**.
 - **En computadora:** con teclado. **En iPhone o iPad:** en Safari, con los botones de la pantalla.
 - En «¿Cómo quieres jugar?» elige **Aventura**. Todo pasa alrededor de **Villa Raíz**.
 - Controles básicos. Computadora: **WASD** para moverte, **Espacio** para saltar, **V** para volar, **E** = Acción, **F** = Impulso. Táctil: joystick, botones **Volar**, **Impulso** y **Acción**.
@@ -59,5 +59,5 @@ En el **centro del círculo** de la explanada hay un sitio «Duelo de 2 jugadore
 - **Jugador 2:** flechas mover · **.** ala · **,** semilla (mantener: poder) · tecla a la derecha del punto (**-** en teclado español, **/** en inglés) poder · Enter saltito · Mayús derecha correr. O teclado numérico: 1 ala, 2 semilla, 3 poder, 0 saltito. Con mando: X ala, B semilla, Y poder, A saltito.
 
 ## 5. Si algo se atasca
-- **Recarga la página** con el mismo enlace (`?v18=1`). El progreso se guarda al momento: la cotorra de Dominica, el puente, los materiales y las cotorras nuevas siguen ahí.
+- **Recarga la página** con el mismo enlace. El progreso se guarda al momento: la cotorra de Dominica, el puente, los materiales y las cotorras nuevas siguen ahí.
 - **Para empezar de cero:** Pausa → **Comenzar de cero** y confirmar. Ojo: borra toda la partida en ese aparato, también la de la demo.
