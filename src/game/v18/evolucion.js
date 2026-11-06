@@ -409,7 +409,7 @@ window.AVV18Evolucion = function (G) {
       oye = true;
 
       // 5. Etapas: ajustar() devuelve los números de cada etapa, sin nivel devuelve el mismo objeto, topes en todas
-      const gr = H.get('grito_yunque'), A = n => ajustar({ especie: 'vittata', nivel: n }, gr);
+      const gr = H.get('grito_yunque'), gr0 = gr, A = n => ajustar({ especie: 'vittata', nivel: n }, gr);
       const e1 = A(1), e10 = A(10), e20 = A(20), e25a = ajustar({ especie: 'vittata', nivel: 25, variante: 'amplificado' }, gr);
       check('Etapas: nv 1 = el grito de hoy (mismo objeto); nv 10 = 9 m ±42° 5,5 s; nv 20 = 11 m ±26° onda 22 m/s 6 s y desvía; nv 25 Amplificado = 9 m',
         e1 === gr && e10.alcance === 9 && e10.cono === 0.74 && e10.cooldown === 5.5 && e10.coste === 35 && e20.alcance === 11 && e20.cono === 0.9 && e20.vel === 22 && e20.cooldown === 6 && e20.coste === 40 && e20.desvia && !e10.desvia && e25a.alcance === 9,
@@ -521,7 +521,7 @@ window.AVV18Evolucion = function (G) {
       Cb.iniciar({ sinCuenta: true, especie: 'vittata', evoReal: true, semilla: 11 });
       correr(150, () => { const c = C(), d = H.dirA(c.j, c.r); cara(d.x, d.z); S.pos.x = Cb.sitio.x - 5; S.pos.z = Cb.sitio.z;
         if (H.listo(c.j, ALI).ok) { Cb.usar(c.j, ALI); spam.usos++; } else if (H.listo(c.j, 'grito_yunque').ok) { Cb.usar(c.j, 'grito_yunque'); spam.gritos++; } });
-      check('No gana sola: quien solo machaca Eco Protector y el grito pierde contra la Campeona (sin quitarle plumas)', C().resultado === 'loss' && C().r.plumas === 5 && spam.usos >= 2,
+      check('No gana sola: quien solo machaca Eco Protector y el grito pierde contra la Campeona (sin quitarle plumas)', C().resultado === 'loss' && C().r.plumas === 5 && spam.usos >= 1 && spam.gritos + spam.usos >= 2,
         JSON.stringify(Object.assign(spam, { res: C().resultado, plumasRival: C().r.plumas, dura: Math.round(C().tLucha) })));
       Cb.salir();
       // Sin alianza elegida: no hay botón y la H no hace nada (sigue libre para el juego)
@@ -545,31 +545,39 @@ window.AVV18Evolucion = function (G) {
           const bA = card.querySelector('[data-v18ali]'); if (bA) bA.click(); okM = okM && E().alianzaSel === null; G.ui.hideCard(); elegirAlianza(true); }
         check('Mis cotorras: nivel, barra de XP, etapas (bloqueadas con «Nivel 20») y la fila de alianza que se activa y desactiva', okM, txt.slice(0, 160)); }
 
-      // Equilibrio (informativo, con números): una jugadora automática con la misma estrategia en nv 1, 10 y 20 contra la Campeona
+      // Equilibrio (informativo, con números): dos jugadoras automáticas de ritmo humano (una acción cada 0,6 s como mucho), con la
+      // misma estrategia en nv 1, 10 y 20, contra la Campeona sin cambios. «cuerpo»: se pega y usa el ala; «distancia»: guarda la
+      // distancia del grito, grita y lanza semillas (el estilo donde la etapa más se nota).
       if (o.equilibrio !== false) {
-        const res = {};
-        for (const nivel of [1, 10, 20]) {
-          let g = 0, dur = 0, pl = 0; const N = o.n || 6;
+        const res = {}, N = o.n || 6;
+        for (const estilo of ['cuerpo', 'distancia']) for (const nivel of [1, 10, 20]) {
+          let g = 0, dur = 0, pl = 0, gr = 0, ac = 0;
           for (let k = 0; k < N; k++) {
             Cb.iniciar({ sinCuenta: true, especie: 'vittata', evo: { nivel }, semilla: 3 + k * 17 });
-            correr(120, () => {
-              const c = C(), j = c.j, r = c.r, d = H.dirA(j, r); cara(d.x, d.z);
-              const gH = H.listo(j, 'grito_yunque'), alcG = gH.h ? gH.h.alcance : 7;
-              const quiere = gH.ok && j.energia >= 35 ? Math.min(alcG - 1.5, 5) : 1.8, v = 5.5 * 0.05;
-              if (d.d > quiere + 0.3) { S.pos.x += d.x * v; S.pos.z += d.z * v; } else if (d.d < quiere - 0.6) { S.pos.x -= d.x * v; S.pos.z -= d.z * v; }
-              const ox = S.pos.x - Cb.sitio.x, oz = S.pos.z - Cb.sitio.z, od = Math.hypot(ox, oz); if (od > 11) { S.pos.x = Cb.sitio.x + ox / od * 11; S.pos.z = Cb.sitio.z + oz / od * 11; }
-              if (j.mareo > 0) return;
-              if (gH.ok && d.d < alcG && d.d > 2.4) Cb.usar(j, 'grito_yunque');
-              else if (d.d < 2.3 && H.listo(j, 'golpe_ala').ok) Cb.usar(j, 'golpe_ala');
-              else if (d.d > 4 && j.energia > 75 && H.listo(j, 'semilla').ok) Cb.usar(j, 'semilla');
+            let t = 0, prox = 0; const i0 = () => C().stats.intJ; let int0 = i0();
+            correr(150, () => {
+              t += 0.05; const c = C(), j = c.j, r = c.r, d = H.dirA(j, r); cara(d.x, d.z);
+              const gH = H.listo(j, 'grito_yunque'), alcG = gH.h ? gH.h.alcance : (ajustar(j, gr0) || gr0).alcance, v = 5.5 * 0.05;
+              const quiere = estilo === 'cuerpo' ? 1.8 : Math.max(4, Math.min(9, alcG - 1));
+              let mx = 0, mz = 0; if (d.d > quiere + 0.8) { mx = d.x; mz = d.z; } else if (d.d < quiere - 0.8) { mx = -d.x; mz = -d.z; }
+              const ox = S.pos.x - Cb.sitio.x, oz = S.pos.z - Cb.sitio.z, od = Math.hypot(ox, oz) || 1;
+              if (od > 9.5 && (mx * ox + mz * oz) > 0) { const tx = -oz / od, tz = ox / od, sg = (tx * d.x + tz * d.z) > 0 ? -1 : 1; mx = tx * sg; mz = tz * sg; } // en el borde, rodea
+              S.pos.x += mx * v; S.pos.z += mz * v;
+              const ox2 = S.pos.x - Cb.sitio.x, oz2 = S.pos.z - Cb.sitio.z, od2 = Math.hypot(ox2, oz2); if (od2 > 11) { S.pos.x = Cb.sitio.x + ox2 / od2 * 11; S.pos.z = Cb.sitio.z + oz2 / od2 * 11; }
+              if (j.mareo > 0 || t < prox) return;
+              let u = null;
+              if (gH.ok && d.d < alcG + 0.3 && d.d > 2.4) u = 'grito_yunque';
+              else if (d.d < 2.3 && H.listo(j, 'golpe_ala').ok) u = 'golpe_ala';
+              else if (estilo === 'distancia' && d.d > 3 && j.energia >= 50 && H.listo(j, 'semilla').ok) u = 'semilla';
+              if (u && Cb.usar(j, u).ok) { prox = t + 0.6; if (u === 'grito_yunque') gr++; }
             });
-            if (C().resultado === 'win') g++; dur += C().tLucha || 0; pl += 5 - C().r.plumas;
+            if (C().resultado === 'win') g++; dur += C().tLucha || 0; pl += 5 - C().r.plumas; ac += C().stats.intJ - int0;
           }
-          res[nivel] = { victorias: g + '/' + N, pct: Math.round(100 * g / N), dura: Math.round(dur / N), plumasQuitadas: Math.round(10 * pl / N) / 10 };
+          res[estilo + ' nv' + nivel] = { gana: g + '/' + N, pct: Math.round(100 * g / N), s: Math.round(dur / N), plumas: Math.round(10 * pl / N) / 10, gritos: Math.round(10 * gr / N) / 10, interrumpe: Math.round(10 * ac / N) / 10 };
         }
         Cb.salir();
-        check('Equilibrio (jugadora automática, misma estrategia, ' + (o.n || 6) + ' duelos por nivel): el nivel ayuda pero no decide (nv 20 − nv 1 ≤ 50 puntos)',
-          res[20].pct - res[1].pct <= 50, JSON.stringify(res));
+        const dif = e => res[e + ' nv20'].pct - res[e + ' nv1'].pct;
+        check('Equilibrio (2 estilos × 3 niveles × ' + N + ' duelos contra la Campeona): el nivel ayuda pero no decide (nv 20 − nv 1 ≤ 50 puntos)', dif('cuerpo') <= 50 && dif('distancia') <= 50, JSON.stringify(res));
       }
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
     mudo = false; oye = false; hoyFijo = null; quitarCarta();
