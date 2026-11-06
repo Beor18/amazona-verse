@@ -429,6 +429,51 @@ window.AVV18Habilidades = function (G) {
       return { ok: true, acierto: null, dir };
     } });
 
+  // ---------- Tres más (Kelvin 6-nov, KIMI-158, V18_MATRIZ_36.md #21, #35, #32): se consiguen descubriéndolas en el Álbum ----------
+  // Remolino (autumnalis, ALAS): gira 1,2 s en el sitio: deshace TODAS las semillas rivales que tenga cerca (desviar en
+  // círculo completo) y empuja a la rival si está pegada (≤3 m), sin quitar plumas. Ventaja: defensa activa que corta los
+  // tiros. Debilidad: quieta mientras gira (no se mueve; combate.js lo aplica) y sin daño. Espera 9 s (matriz).
+  registrar({ id: 'remolino', nombre: 'Remolino', especies: ['autumnalis'], tecnica: 'alas', coste: 30, cooldown: 9,
+    fx: 'leaves', dura: 1.2, alcance: 5.5, toca: 3, empuje: 12, mareo: 0.5,
+    efecto(ctx) {
+      const { yo, otro } = ctx;
+      yo.remolino = this.dura; yo.alasT = this.dura;
+      ctx.desviar({ x: yo.pos.x, y: yo.pos.y + 1, z: yo.pos.z }, { x: 1, z: 0 }, this.alcance, -2); // cono −2: a su alrededor, en cualquier dirección
+      if (dist(yo, otro) <= this.toca) { const d = dirA(yo, otro); ctx.golpear(otro, { plumas: 0, empuje: this.empuje, mareo: this.mareo, dir: { x: d.x, z: d.z }, forzar: true }); }
+      ctx.fx('leaves', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('aleteo');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, dura: this.dura });
+      return { ok: true };
+    } });
+  // Plumas de aliso (tucumana, PLUMAS): lanza una pluma (13 m/s); si acierta, se pega a la rival y le roba energía
+  // (7/s durante 3 s). Ventaja: agota a la rival (menos poderes). Debilidad: lenta y quita pocas plumas (ninguna: solo
+  // empujoncito y mareo leve). La regla del robo la aplica combate.js (pasoNuevos: descuenta `drena`). Espera 10 s (matriz).
+  registrar({ id: 'plumas_aliso', nombre: 'Plumas de aliso', especies: ['tucumana'], tecnica: 'plumas', coste: 30, cooldown: 10,
+    fx: 'feathers', vel: 13, alcance: 15, dura: 3, quita: 7,
+    efecto(ctx) {
+      const { yo, otro } = ctx, d = dirA(yo, otro);
+      let ax = d.x, az = d.z;
+      if (yo.mira && !yo.ia) { const f = yo.mira(); if (f && f.x * d.x + f.z * d.z < 0.35) { ax = f.x; az = f.z; } } // puntería amable, como la semilla
+      ctx.lanzar({ de: yo, x: yo.pos.x + ax * 0.8, y: yo.pos.y + 0.9, z: yo.pos.z + az * 0.8, vx: ax * this.vel, vy: (otro.pos.y - yo.pos.y) / Math.max(0.3, d.d / this.vel), vz: az * this.vel,
+        vida: this.alcance / this.vel, radio: 1.2, golpe: { plumas: 0, empuje: 2, mareo: 0.3 }, drena: this.dura });
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 1.1, yo.pos.z); ctx.sonar('aleteo');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: ax, y: 0, z: az } });
+      return { ok: true };
+    } });
+  // Semilla de piña (vinacea, PICO): semilla grande y lenta (10 m/s, en arco) que, al caer sin haber acertado, se abre en
+  // tres pequeñas en abanico. Ventaja: cubre zona y llega por arriba. Debilidad: lenta de lanzar y la grande es fácil de
+  // esquivar. La apertura la hace combate.js al acabar la bala (flag `pina`). Espera 10 s (matriz).
+  registrar({ id: 'semilla_pina', nombre: 'Semilla de piña', especies: ['vinacea'], tecnica: 'pico', coste: 30, cooldown: 10,
+    fx: 'leaves', vel: 10, vida: 1.15, gorda: 1.7, abre: 0.5, hijas: 3,
+    efecto(ctx) {
+      const { yo, otro } = ctx, d = dirA(yo, otro);
+      if (yo.mira && !yo.ia) { const f = yo.mira(); if (f && f.x * d.x + f.z * d.z < 0.35) { const n = Math.hypot(f.x, f.z) || 1; d.x = f.x / n; d.z = f.z / n; } } // puntería amable, como la Semilla de río
+      ctx.lanzar({ de: yo, x: yo.pos.x + d.x * 0.8, y: yo.pos.y + 0.9, z: yo.pos.z + d.z * 0.8, vx: d.x * this.vel, vy: 0, vz: d.z * this.vel,
+        vida: this.vida, radio: 1.6, gorda: this.gorda, arco: { vy: 2.5, g: 11 }, pina: this.hijas, golpe: { plumas: 1, empuje: 5, mareo: 0.6 } });
+      ctx.fx('leaves', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: d.x, y: 0, z: d.z } });
+      return { ok: true };
+    } });
+
   // ---------- Luchadores ----------
   function luchador(o) {
     const sp = o.especie || 'vittata';

@@ -26,9 +26,13 @@
      descubrir en el Álbum → cotorra de La Española (ventralis) · Eco de la Cordillera (PICO)
      descubrir en el Álbum → loro de lomo rojo (festiva) · A ras del agua (ALAS)
      descubrir en el Álbum → loro real amazónico (ochrocephala) · Canto real (PICO)
+   Tres más (KIMI-158, coste M, provisional igual: Álbum del Diario):
+     descubrir en el Álbum → loro de cachetes amarillos (autumnalis) · Remolino (ALAS)
+     descubrir en el Álbum → loro alisero (tucumana) · Plumas de aliso (PLUMAS)
+     descubrir en el Álbum → loro vináceo (vinacea) · Semilla de piña (PICO)
    Solo cambia el poder del duelo y de la amenaza: el personaje del jugador se queda igual. Mara y Vela (martinicana,
    violacea) son consejeras en la temporada 1 y no entran aquí. Solo con la bandera V18.
-   Prueba: AV.v18NuevasTest() (hitos, el desbloqueo por Álbum y los 21 poderes en el duelo). */
+   Prueba: AV.v18NuevasTest() (hitos, el desbloqueo por Álbum y los 24 poderes en el duelo). */
 window.AVV18Nuevas = function (G) {
   'use strict';
   if (G.v18nuevas) return G.v18nuevas;
@@ -65,7 +69,7 @@ window.AVV18Nuevas = function (G) {
       txt: '¡Un loro de Kawall te vio recoger todas las piedras y fibras y quiere volar contigo! Su poder: Ojo de selva.' }
   ];
   const TXT = { elige: 'Elígela en Pausa → Mis cotorras.', eligeM: 'Elígelo en Pausa → Mis cotorras.' }; // m: el aviso habla de «un loro»
-  // KIMI-149/148/156 (provisional, hasta que Kelvin decida el hito): estas 9 llegan al descubrir su tarjeta en el Álbum del Diario.
+  // KIMI-149/148/156/158 (provisional, hasta que Kelvin decida el hito): estas 12 llegan al descubrir su tarjeta en el Álbum del Diario.
   const ALBUM = [
     { id: 'brasiliensis', txt: '¡Descubriste al papagayo de cara roja en el Álbum! Su poder: Ojo de manglar.' },
     { id: 'auropalliata', txt: '¡Descubriste al loro de nuca amarilla en el Álbum! Su poder: Voz de volcán.' },
@@ -75,7 +79,10 @@ window.AVV18Nuevas = function (G) {
     { id: 'finschi', txt: '¡Descubriste al loro corona lila en el Álbum! Su poder: Ráfaga.' },
     { id: 'ventralis', f: true, txt: '¡Descubriste a la cotorra de La Española en el Álbum! Su poder: Eco de la Cordillera.' },
     { id: 'festiva', txt: '¡Descubriste al loro de lomo rojo en el Álbum! Su poder: A ras del agua.' },
-    { id: 'ochrocephala', txt: '¡Descubriste al loro real amazónico en el Álbum! Su poder: Canto real.' }
+    { id: 'ochrocephala', txt: '¡Descubriste al loro real amazónico en el Álbum! Su poder: Canto real.' },
+    { id: 'autumnalis', txt: '¡Descubriste al loro de cachetes amarillos en el Álbum! Su poder: Remolino.' },
+    { id: 'tucumana', txt: '¡Descubriste al loro alisero en el Álbum! Su poder: Plumas de aliso.' },
+    { id: 'vinacea', txt: '¡Descubriste al loro vináceo en el Álbum! Su poder: Semilla de piña.' }
   ];
   // La tarjeta acaba de abrirse (evento del Álbum): desbloqueo inmediato con aviso
   function albumLlega(id, avisar) {
@@ -194,6 +201,20 @@ window.AVV18Nuevas = function (G) {
       check('revisarAlbum no desbloquea las tarjetas de tanda C que aún no están abiertas en el Álbum',
         ['festiva', 'ochrocephala'].every(id => rango(V.estado(id)) < 1));
 
+      // KIMI-158: la tanda D (coste M) se consigue igual (Álbum del Diario, provisional)
+      const ALBUMD = ['autumnalis', 'tucumana', 'vinacea'];
+      check('Las de tanda D (Álbum, coste M) empiezan sin descubrir', ALBUMD.every(id => rango(V.estado(id)) < rango('descubierta')));
+      G.emit('album', { id: 'autumnalis', fuente: 'test' });
+      check('Descubrir su tarjeta en el Álbum deja elegible al loro de cachetes amarillos (Remolino), con aviso',
+        rango(V.estado('autumnalis')) >= rango('seleccionable') && toasts.some(t => /cachetes amarillos/.test(t) && /Remolino/.test(t) && /Mis cotorras/.test(t)));
+      G.emit('album', { id: 'autumnalis', fuente: 'test' });
+      check('El mismo descubrimiento no avisa dos veces (tanda D)', toasts.filter(t => /cachetes amarillos/.test(t)).length === 1);
+      check('Las 3 de tanda D tienen su poder propio', H.poderDe('autumnalis') === 'remolino' && H.poderDe('tucumana') === 'plumas_aliso' && H.poderDe('vinacea') === 'semilla_pina',
+        ALBUMD.map(H.poderDe).join(','));
+      revisarAlbum();
+      check('revisarAlbum no desbloquea las tarjetas de tanda D que aún no están abiertas en el Álbum',
+        ['tucumana', 'vinacea'].every(id => rango(V.estado(id)) < 1));
+
       // ---- Las 4 de coste M: cada una con su hito, desde una partida nueva ----
       V.borrar(); V.recargar(); toasts.length = 0;
       const M4 = ['leucocephala', 'albifrons', 'rhodocorytha', 'kawalli'], esta = id => rango(V.estado(id)) >= rango('seleccionable'), ninguna = l => l.every(id => rango(V.estado(id)) < 1);
@@ -226,7 +247,7 @@ window.AVV18Nuevas = function (G) {
       if (B && B.iniciar) {
         const C = B.estado(), corre = s => { for (let t = 0; t < s; t += 1 / 30) B.paso(1 / 30); };
         const quieta = dx => { C.r.pos.x = S.pos.x + dx; C.r.pos.z = S.pos.z; C.r.pos.y = G.terreno.height(C.r.pos.x, C.r.pos.z); /* la altura de donde se pone, no la de antes: la semilla apunta a esa altura */ C.r.pensar = 99; C.r.esquivaT = 99; C.r.poderT = 99; C.r.golpeT = 99; C.r.tiroT = 99; C.r.mov.t = 0; C.r.kb.t = 0; };
-        const listo = () => { C.j.cd = {}; C.j.energia = 100; C.j.mareo = 0; C.r.mareo = 0; C.r.inv = 0; C.r.escudo = 0; C.r.marcada = 0; };
+        const listo = () => { C.j.cd = {}; C.j.energia = 100; C.j.mareo = 0; C.r.mareo = 0; C.r.inv = 0; C.r.escudo = 0; C.r.marcada = 0; C.j.remolino = 0; C.r.remolino = 0; C.j.drena = 0; C.r.drena = 0; };
         S.facing = { x: 1, z: 0 };
         // Quiebro
         B.iniciar({ sinCuenta: true, especie: 'agilis' }); quieta(6); listo();
@@ -510,6 +531,50 @@ window.AVV18Nuevas = function (G) {
         let vioKbC2 = false;
         for (let k = 0; k < 12; k++) { B.paso(1 / 30); if (C.r.kb.t > 0) { vioKbC2 = true; break; } }
         check('...y si falla (rival a 11 m), no devuelve nada', rca2.ok && !vioKbC2 && C.j.energia < 14, 'energía ' + C.j.energia.toFixed(1));
+        B.salir();
+
+        // ---- Los 3 de tanda D (KIMI-158, Álbum, coste M) en el duelo, a paso fijo ----
+        // Remolino: deshace las semillas rivales que tenga cerca y empuja a la rival pegada, sin plumas; mientras giras no te mueves
+        B.iniciar({ sinCuenta: true, especie: 'autumnalis' }); quieta(7); listo(); S.facing = { x: 1, z: 0 };
+        C.r.cd = {}; C.r.energia = 100; C.r.mareo = 0; B.usar(C.r, 'semilla'); corre(0.25); // la semilla de la rival viene volando
+        const balasAntes = C.balas.length, pjRem = C.j.plumas;
+        const rrem = B.usar(C.j, 'remolino');
+        check('Remolino: deshace las semillas rivales que tenga cerca (ninguna te da)', rrem.ok && C.balas.length < balasAntes && C.j.plumas === pjRem && C.j.remolino > 1,
+          'balas ' + balasAntes + '→' + C.balas.length + ', remolino ' + (C.j.remolino || 0).toFixed(1));
+        listo(); quieta(2.2); listo(); C.r.kb.t = 0; C.r.kb.x = C.r.kb.z = 0; const prRem = C.r.plumas;
+        const rrem2 = B.usar(C.j, 'remolino');
+        check('...y empuja a la rival pegada (≤3 m) sin quitarle plumas', rrem2.ok && (C.r.kb.t > 0 || C.r.mareo > 0) && C.r.plumas === prRem);
+        const MOVE = G.fisica && G.fisica.MOVE; MOVE.vx = 5; MOVE.vz = 3; B.paso(1 / 30);
+        check('...mientras giras no te mueves (el Remolino te deja quieta)', MOVE.vx === 0 && MOVE.vz === 0);
+        corre(1.4); // se le pasa el remolino
+        B.salir();
+        // Plumas de aliso: la pluma que acierta se pega a la rival y le roba energía 3 s; sin quitar plumas
+        B.iniciar({ sinCuenta: true, especie: 'tucumana' }); quieta(7); listo(); S.facing = { x: 1, z: 0 };
+        const prA = C.r.plumas, ral = B.usar(C.j, 'plumas_aliso');
+        for (let k = 0; k < 60 && !(C.r.drena > 0); k++) B.paso(1 / 30); // espera a que la pluma vuele (7 m a 13 m/s ≈ 0,54 s)
+        const pego = C.r.drena > 0;
+        C.r.energia = 50; corre(0.5); const robada = C.r.energia; // con la pluma pegada roba 7/s (la recarga da +12/s)
+        C.r.drena = 0; C.r.energia = 50; corre(0.5); const control = C.r.energia;
+        check('Plumas de aliso: la pluma que acierta se pega y le roba energía 3 s (7/s), sin quitar plumas',
+          ral.ok && pego && C.r.plumas === prA && robada < control - 2 && robada < 54,
+          'robo: ' + robada.toFixed(1) + ' vs control ' + control.toFixed(1) + ', plumas ' + prA);
+        B.salir();
+        // Semilla de piña: sale grande y en arco; al caer sin acertar se abre en tres pequeñas; si acierta, quita 1 pluma
+        B.iniciar({ sinCuenta: true, especie: 'vinacea' }); quieta(9); listo(); S.facing = { x: 0, z: 1 }; // de espaldas a la rival: la piña cae sola
+        const rpi = B.usar(C.j, 'semilla_pina');
+        B.paso(1 / 30); // la escala la aplica pasoBalas: leerla tras un paso
+        const grande = C.balas[C.balas.length - 1], escalaG = grande ? grande.m.scale.x : 0;
+        let hijas = 0, tV = 0;
+        while (tV < 3 && C.balas.length > 0) { B.paso(1 / 30); tV += 1 / 30; if (!hijas && C.balas.length >= 3) hijas = C.balas.length; }
+        check('Semilla de piña: sale grande (×1,7) y, al caer sin acertar, se abre en tres pequeñas', rpi.ok && escalaG > 1.6 && hijas === 3,
+          'escala ' + escalaG.toFixed(2) + ', hijas ' + hijas);
+        S.facing = { x: 1, z: 0 }; B.salir();
+        B.iniciar({ sinCuenta: true, especie: 'vinacea' }); quieta(6); listo(); S.facing = { x: 1, z: 0 };
+        const ppi = C.r.plumas;
+        const rpi2 = B.usar(C.j, 'semilla_pina');
+        corre(1.5);
+        check('...y si la grande acierta a la rival, le quita 1 pluma (y no se abre)', rpi2.ok && C.r.plumas === ppi - 1 && C.balas.length === 0,
+          'plumas ' + ppi + '→' + C.r.plumas + ', balas ' + C.balas.length);
         B.salir();
       } else check('El duelo está cargado', false);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }

@@ -342,7 +342,7 @@ window.AVV18Combate = function (G) {
     fx('feathers', S.pos.x, S.pos.y + 1.3, S.pos.z);
   }
   // Ojo de selva: el siguiente ataque de la vista se anuncia y sale un momento después (las defensas no se retrasan)
-  const DEFENSAS = new Set(['escudo_plumas', 'quiebro', 'capa_palma', 'pluma_rebote', 'hojas_envuelven']);
+  const DEFENSAS = new Set(['escudo_plumas', 'quiebro', 'capa_palma', 'pluma_rebote', 'hojas_envuelven', 'remolino']);
   function usar(f, id) {
     if (C.fase !== 'lucha' || !f) return { ok: false, motivo: 'fase' };
     if (f.vista > 0 && !f.avisada && !DEFENSAS.has(id)) {
@@ -606,6 +606,9 @@ window.AVV18Combate = function (G) {
       if (r.poder === 'grito_yunque' && dist > 2 && dist < 6 && azar() < 0.3) { r.poderT = 4; usar(r, 'grito_yunque'); return; }
       if (r.poder === 'abanico_colores' && dist < 7 && azar() < 0.3) { r.poderT = 4; usar(r, 'abanico_colores'); return; }
       if (r.poder === 'semilla_rio' && dist > 4 && dist < 14 && azar() < 0.3) { r.poderT = 4; usar(r, 'semilla_rio'); return; }
+      if (r.poder === 'plumas_aliso' && dist > 3 && dist < 14 && azar() < 0.3) { r.poderT = 4; usar(r, 'plumas_aliso'); return; }
+      if (r.poder === 'semilla_pina' && dist > 3 && dist < 12 && azar() < 0.3) { r.poderT = 4; usar(r, 'semilla_pina'); return; }
+      if (r.poder === 'remolino' && dist < 3.2 && azar() < 0.3) { r.poderT = 4; usar(r, 'remolino'); return; }
     }
     if (dist < 2.3 && r.golpeT <= 0) { r.golpeT = 1.15; usar(r, 'golpe_ala'); return; }
     if (dist > 6 && dist < 16 && r.tiroT <= 0 && r.energia > 40) { r.tiroT = 2.4; usar(r, 'semilla'); return; }
@@ -615,7 +618,7 @@ window.AVV18Combate = function (G) {
     let vx = 0, vz = 0;
     if (r.kb.t > 0) { r.kb.t -= dt; vx += r.kb.x; vz += r.kb.z; r.kb.x *= 0.88; r.kb.z *= 0.88; }
     if (r.mov.t > 0) { r.mov.t -= dt; vx += r.mov.x; vz += r.mov.z; }
-    else if (r.mareo <= 0 && C.fase === 'lucha') {
+    else if (r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0)) {
       if (d.d > 2.0) { vx += d.x * 4.2; vz += d.z * 4.2; } // se acerca
       else { vx += -d.z * r.lado * 1.6; vz += d.x * r.lado * 1.6; } // rodea
     }
@@ -650,6 +653,7 @@ window.AVV18Combate = function (G) {
   }
   function pasoJugador(dt) {
     const j = C.j;
+    if (j.remolino > 0) { M.vx = 0; M.vz = 0; } // Remolino: quieta mientras gira
     if (j.kb.t > 0) { j.kb.t -= dt; S.pos.x += j.kb.x * dt; S.pos.z += j.kb.z * dt; j.kb.x *= 0.88; j.kb.z *= 0.88; }
     if (j.mareo > 0) { M.vx *= 0.8; M.vz *= 0.8; if (G.fx && G.fx.burst && azar() < dt * 6) fx('gold', S.pos.x, S.pos.y + 1.7, S.pos.z); }
   }
@@ -658,7 +662,7 @@ window.AVV18Combate = function (G) {
       const b = C.balas[i], p = b.m.position;
       const blanco = b.de === C.j ? C.r : C.j;
       const dt = b.de && b.de.lenta > 0 ? dt0 * (b.de.lentaK || ((H.get('mirada_piton') || {}).lento || 0.5)) : dt0; // Mirada del Pitón / Ojo de manglar (lentaK: ×0,4): las semillas de la rival frenadas van más lento (también las que ya volaban)
-      b.m.scale.setScalar(b.de && b.de.grande > 0 ? ((H.get('ojo_manglar') || {}).grande || 1.8) : 1); // Ojo de manglar: la semilla se dibuja grande mientras dura el efecto
+      b.m.scale.setScalar(b.de && b.de.grande > 0 ? ((H.get('ojo_manglar') || {}).grande || 1.8) : (b.gorda || 1)); // Ojo de manglar: la semilla se dibuja grande mientras dura el efecto; Semilla de piña: la grande nace gorda
       if (blanco.marcada > 0 && !b.falla) { const hx = blanco.pos.x - p.x, hz = blanco.pos.z - p.z, hn = Math.hypot(hx, hz) || 1, v = Math.hypot(b.vx, b.vz), k = Math.min(1, dt * 6 * (blanco.marcaK || 1));
         b.vx += (hx / hn * v - b.vx) * k; b.vz += (hz / hn * v - b.vz) * k;
         b.vy += (((blanco.pos.y + 0.9) - p.y) / Math.max(0.15, hn / (v || 1)) - b.vy) * k; } // Ojo del cenote: la semilla busca a la marcada (también en altura: en la explanada en cuesta se iba por debajo)
@@ -667,11 +671,24 @@ window.AVV18Combate = function (G) {
       const dx = p.x - blanco.pos.x, dy = p.y - (blanco.pos.y + 0.9), dz = p.z - blanco.pos.z, suelo = G.terreno.height(p.x, p.z);
       if (b.arco && b.botes > 0 && p.y < suelo && b.t < b.vida) { p.y = suelo; b.vy = Math.abs(b.vy) * b.arco.rebote; b.botes--; b.boto = (b.boto || 0) + 1; fx('leaves', p.x, suelo + 0.1, p.z); } // ...y bota dos veces
       let fin = b.t >= b.vida || p.y < suelo - 0.1;
+      let porGolpe = false;
       if (!fin && dx * dx + dy * dy + dz * dz < b.radio * b.radio) {
         if (devolver(b, blanco)) continue; // Capa de palma / Pluma rebote: la semilla vuelve a quien la tiró
-        golpear(b.de, blanco, Object.assign({ dir: { x: b.vx / 16, z: b.vz / 16 } }, b.golpe)); fin = true;
+        golpear(b.de, blanco, Object.assign({ dir: { x: b.vx / 16, z: b.vz / 16 } }, b.golpe));
+        if (b.drena) blanco.drena = Math.max(blanco.drena || 0, b.drena); // Plumas de aliso: la pluma se pega y roba energía
+        fin = true; porGolpe = true;
       }
-      if (fin) { scene.remove(b.m); C.balas.splice(i, 1); if (C.fase !== 'lucha') return; }
+      if (fin) {
+        if (b.pina && !porGolpe && C.fase === 'lucha') { // Semilla de piña: al caer (sin acertar) se abre en tres pequeñas
+          const P = b.m.position, a0 = Math.atan2(b.vz, b.vx), abre = (H.get('semilla_pina') || {}).abre || 0.5, sueloP = G.terreno.height(P.x, P.z);
+          for (let k = -1; k <= 1; k++) {
+            const a = a0 + k * abre;
+            lanzar({ de: b.de, x: P.x, y: Math.max(P.y, sueloP + 0.35), z: P.z, vx: Math.cos(a) * 13, vy: 1.6, vz: Math.sin(a) * 13,
+              vida: 0.8, radio: 0.9, golpe: { plumas: 1, empuje: 2.5, mareo: 0.4 } });
+          }
+        }
+        scene.remove(b.m); C.balas.splice(i, 1); if (C.fase !== 'lucha') return;
+      }
     }
   }
   // Capa de palma (solo por delante, hacia donde mira quien la lleva) y Pluma rebote (de cualquier lado): la semilla cambia de
@@ -692,17 +709,18 @@ window.AVV18Combate = function (G) {
     emitir({ tipo: 'hit', de: quien.id, a: f.id, valor: 0, devuelta: como });
     return true;
   }
-  // Los estados de los cuatro de coste M bajan con el tiempo de juego; mientras duran, un brillo de los efectos que ya existen
-  // (dorado sobre la rival vista, hojas, plumas). Sin azar(): no cambia las decisiones de la IA en las pruebas.
+  // Los estados de los poderes de coste M bajan con el tiempo de juego; mientras duran, un brillo de los efectos que ya
+  // existen (dorado sobre la rival vista, hojas, plumas). Sin azar(): no cambia las decisiones de la IA en las pruebas.
   function pasoNuevos(f, dt) {
     if (!f) return;
-    for (const k of ['capa', 'rebote', 'hojas', 'vista']) if (f[k] > 0) f[k] = Math.max(0, f[k] - dt);
-    if (!(f.vista > 0 || f.hojas > 0 || f.rebote > 0 || f.capa > 0)) { f.fxT = 0; return; }
+    for (const k of ['capa', 'rebote', 'hojas', 'vista', 'remolino', 'drena']) if (f[k] > 0) f[k] = Math.max(0, f[k] - dt);
+    if (f.drena > 0) f.energia = Math.max(0, f.energia - ((H.get('plumas_aliso') || {}).quita || 7) * dt); // Plumas de aliso: robo de energía
+    if (!(f.vista > 0 || f.hojas > 0 || f.rebote > 0 || f.capa > 0 || f.remolino > 0 || f.drena > 0)) { f.fxT = 0; return; }
     f.fxT = (f.fxT || 0) - dt; if (f.fxT > 0) return;
     f.fxT = 0.3; C.stats.brillos = (C.stats.brillos || 0) + 1;
     if (f.vista > 0) { fx('gold', f.pos.x, f.pos.y + 1.2, f.pos.z); fx('gold', f.pos.x, f.pos.y + 2.0, f.pos.z); }
-    if (f.hojas > 0 || f.capa > 0) fx('leaves', f.pos.x, f.pos.y + 0.9, f.pos.z);
-    if (f.rebote > 0) fx('feathers', f.pos.x, f.pos.y + 1.3, f.pos.z);
+    if (f.hojas > 0 || f.capa > 0 || f.remolino > 0) fx('leaves', f.pos.x, f.pos.y + 0.9, f.pos.z);
+    if (f.rebote > 0 || f.drena > 0) fx('feathers', f.pos.x, f.pos.y + 1.3, f.pos.z);
   }
   // Un paso del duelo (lo llama el bucle del juego; las pruebas lo llaman con dt fijo)
   function paso(dt) {
