@@ -2178,5 +2178,12 @@ window.AV_EN = {
  "¡Sacudida de plumas!": "Feather shake!",
  "Bostezo…": "Yawn…",
  "Se quedó dormida.": "She fell asleep.",
- "¡Ja, ja!": "Ha, ha!"
+ "¡Ja, ja!": "Ha, ha!",
+ "Isleñas": "Islanders",
+ "Montañeras": "Highlanders",
+ "Del norte": "Northern",
+ "Cordilleranas": "Andean",
+ "Del gran río": "Great river",
+ "Del bosque del sur": "Southern forest",
+ "Limpiaste un rastro de la Maraña. Es un cuento de la bandada, no un dato de la isla.": "You cleared a trail of the Tangle. It is a flock story, not a fact about the island."
 };
