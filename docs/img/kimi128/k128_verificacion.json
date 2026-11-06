@@ -1,0 +1,26 @@
+{
+  "tarea": "KIMI-128",
+  "fecha": "06-nov ~03:10 UTC (local 5-nov 23:10)",
+  "head": "eafcdab4",
+  "contencion": "PC compartida con Kimi 1 en KIMI-106 (~20 Chrome); los veredictos son de posicion/color, no de tiempos",
+  "qa107": {
+    "pack": "ep3", "mapa": "real", "herramienta": "tools/build/kimi2_qa107.js",
+    "hallazgo": "muelle tablado de la otra orilla en (155.5, 0.72, 206.5): tablon 1.8x0.16x8 cubre z 202.5..210.5; pilotes (cylinders) con terra -0.02..-0.12 en el extremo de la barra, 0.11..0.12 en la playa; nace en arena seca y llega a la barra de la orilla, igual que al corregir el 4-nov (634d345f)",
+    "veredicto": "Sigue arreglado en HEAD"
+  },
+  "qa108": {
+    "pack": "ep6", "mapa": "real", "herramienta": "tools/build/kimi2_qa108.js (modo --blanco + volcado)",
+    "instancias_empalizada_linea_aldea_mina_2": [
+      { "pos": [89.4, 9.58, -41.2], "terra": 6.98 },
+      { "pos": [89.7, 9.78, -34.5], "terra": 7.07 },
+      { "pos": [89.2, 9.88, -28.4], "terra": 7.23 },
+      { "pos": [92.4, 10.68, -47.3], "terra": 8.94, "nota": "la reubicada por QA-108 (era 89.43,-47.31): exactamente en la posicion del fix 790346cd, base enterrada ~1.5 m como sus vecinas, destino seco" }
+    ],
+    "cenital_blancos": "2989 px blancos en 41 grupos (rect 88,-52..97,-42) — TODOS los grupos con raycast impactan en rio/mar/terreno (espuma natural del agua a y=5 y del mar); 0 grupos sobre la cerca",
+    "veredicto": "Sigue arreglado en HEAD: la cerca ya no se lee blanca ni sumergida desde el campamento",
+    "nota_harness": "teleportar a (92.4,-47.3) directamente redirige a Vittata a (44,-62) — ZONAS[6] de ep6: La Mina quedo fuera del area jugable del capitulo (el pack ep6 omite /^kelvin_/ del descubrimiento); el streaming baja la zona a nivel 0 y las mallas de la empalizada quedan en count 0/ocultas. Artefacto del harness, no del juego: desde la posicion real del campamento (36,-50) la zona carga y la cerca esta colocada en seco. La comprobacion valida es la cenital + el volcado desde el campamento."
+  },
+  "nuevos_flotantes": "sin nuevos objetos flotantes/enterrados en las orillas revisadas de ep3/ep6 (volcados qa107/qa108 completos revisados; solo espuma del rio y pilotes de muelle dentro del diseno)",
+  "capturas": ["qa_tool_ep3_150_208.jpg", "qa_blanco_88_52_97_42.jpg", "qa_tool_ep6_36_50.jpg"],
+  "errores_consola": 0
+}
