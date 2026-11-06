@@ -62,13 +62,14 @@
     let atDown = null; // estado ANTES de que el juego procese la tecla (Esc también cierra tarjetas)
     addEventListener('keydown', e => {
       if (e.repeat || (e.target.closest && e.target.closest('input, select, textarea'))) return;
-      if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') atDown = { key: e.key, open: isOpen(pause), busy: somethingOpen() };
+      if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') atDown = { key: e.key, open: isOpen(pause), busy: somethingOpen(), ev: e };
     }, true);
     addEventListener('keyup', e => {
       const s = atDown; atDown = null;
       if (!s || s.key !== e.key) return;
       if (s.open) { if (e.key !== 'Escape' && isOpen(pause)) pause.hidePopover(); return; } // Esc ya lo cierra el navegador
-      if (!s.busy && !isOpen(pause)) pause.showPopover();
+      // Si un modo de juego se quedó la tecla (preventDefault en su keydown: Esc sale del minigolf o del duelo 2), no abre la Pausa
+      if (!s.busy && !s.ev.defaultPrevented && !isOpen(pause)) pause.showPopover();
     });
   }
 
