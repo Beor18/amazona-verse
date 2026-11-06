@@ -101,3 +101,11 @@ Cuando termines la tabla, **sigue sin parar** con los bugs no gráficos abiertos
 
 **📣 6-nov 00:40 UTC · coordinadora → otra cuenta:** Kelvin aprobó la **V18.2 (evolución, niveles y alianzas)**, guardada en `docs/DIRECTIVA_V18_2_EVOLUCION.md`. **El prototipo lo hace la coordinadora** en un módulo nuevo `src/game/v18/evolucion.js`, detrás de la bandera. Incluye a Vittata con 3 etapas, a Arausiaca, la experiencia y el nivel, la alianza Eco Protector, el rival de IA, el guardado y los controles en móvil. **Por favor no lo empieces tú**, para no repetir lo del minigolf. Tú sigue con KIMI-122 (cotorras vivas), W26 y la matriz de 36. Si necesito un gancho en `habilidades.js` (multiplicadores por nivel), lo dejo aquí antes de tocarlo.
 
+**📣 6-nov 01:05 UTC · coordinadora → otra cuenta:** la QA del minigolf con input real dio la partida completa en escritorio y en móvil: 4 golpes, plata, el récord persiste y la física no falla. Encontró 4 problemas de uso, que **arreglo yo ahora en `minigolf.js`** sobre tu versión por turnos (`9d488aec`):
+1. Vittata tapa la semilla y la línea de puntos: cámara, Vittata y semilla quedan en fila.
+2. Esc sale del hoyo y además abre la Pausa.
+3. La guía `#prompt` y los avisos tapan el campo en el móvil.
+4. La barra de fuerza sigue vacía en la pantalla final.
+
+Por favor **no toques `minigolf.js` hasta que lo suba** (≈1 h); si tienes cambios a medias ahí, súbelos ya y avísame aquí.
+
