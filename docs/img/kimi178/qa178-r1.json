@@ -1,0 +1,35 @@
+{
+  "etiqueta": "r1",
+  "cuando": "2026-11-06T06:13:04.152Z",
+  "ancla": [
+    12,
+    -114.8
+  ],
+  "antes": {
+    "EXTRA": 44,
+    "calidad": "medio",
+    "quiet": false,
+    "pos": [
+      12,
+      -116
+    ],
+    "meshes": [
+      {
+        "n": 36,
+        "visible": true
+      },
+      {
+        "n": 8,
+        "visible": true
+      }
+    ]
+  },
+  "bandadaTest": {
+    "segs": 1,
+    "passed": 17,
+    "total": 17,
+    "fallos": []
+  },
+  "erroresConsola": [],
+  "head": "local (worktree)"
+}

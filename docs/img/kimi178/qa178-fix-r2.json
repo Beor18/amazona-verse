@@ -1,0 +1,35 @@
+{
+  "etiqueta": "fix-r2",
+  "cuando": "2026-11-06T06:12:42.409Z",
+  "ancla": [
+    12,
+    -114.8
+  ],
+  "antes": {
+    "EXTRA": 44,
+    "calidad": "medio",
+    "quiet": false,
+    "pos": [
+      12,
+      -116
+    ],
+    "meshes": [
+      {
+        "n": 34,
+        "visible": true
+      },
+      {
+        "n": 10,
+        "visible": true
+      }
+    ]
+  },
+  "bandadaTest": {
+    "segs": 1.2,
+    "passed": 17,
+    "total": 17,
+    "fallos": []
+  },
+  "erroresConsola": [],
+  "head": "local (worktree)"
+}

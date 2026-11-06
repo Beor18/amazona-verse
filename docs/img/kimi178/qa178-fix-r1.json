@@ -1,0 +1,40 @@
+{
+  "etiqueta": "fix-r1",
+  "cuando": "2026-11-06T06:11:02.308Z",
+  "ancla": [
+    12,
+    -114.8
+  ],
+  "antes": {
+    "EXTRA": 66,
+    "calidad": "alto",
+    "quiet": false,
+    "pos": [
+      12,
+      -116
+    ],
+    "meshes": [
+      {
+        "n": 51,
+        "visible": true
+      },
+      {
+        "n": 15,
+        "visible": true
+      }
+    ]
+  },
+  "bandadaTest": {
+    "segs": 0.6,
+    "passed": 16,
+    "total": 17,
+    "fallos": [
+      {
+        "name": "Si la calidad baja a «bajo», se retira",
+        "extra": ""
+      }
+    ]
+  },
+  "erroresConsola": [],
+  "head": "local (worktree)"
+}

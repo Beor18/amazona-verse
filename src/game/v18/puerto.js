@@ -667,11 +667,18 @@ window.AVV18Puerto = function (G) {
       V.cambiarMundo('puente_villa', 'roto'); A.forzar = true; correr(0.3); await esperar(150);
       const nn = G.interaccion.nearest();
       check('2 · Sin la bandera, o antes de reparar el puente, no aparece nada (ni máquina, ni personajes, ni interacción)', sinBandera && !listaMision() && !gMaq.visible && N.activos().length === 0 && !(nn && /v18_puerto|v18npc/.test(nn.id)), nn && nn.id);
+      // QA-180 (triage KIMI-130, fixes test-side): el bloque del check 2 deja a Vittata en la plaza con la misión listada y la
+      // máquina a 3,9 m: la caja «qué pasó» (descubrir, :551) se abre aquí, se queda abierta entre checks y enmascara la llegada
+      // del 8 / adelanta el estado (8a/8b). Se cancela SIN pasarla (clear() no avanza de estado) y se rearma el aviso, que el
+      // check 2 armó en la plaza (dP≈0, sin toast) y sin esto el toast y la guía del 3b jamás disparan desde la villa (dP 257 > R_AVISO).
+      try { G.dialogo.clear(); } catch (e) { /* */ }
+      A.descubriendo = false; A.avisado = false; A.llegada = false;
       // 3 · lejos no se carga nada; aviso y bandera
       const villa = (T.mapa.lugares && T.mapa.lugares.villa) || { x: 125, z: 140 };
+      const pedidos0 = N.stats().pedidos.length, recursos0 = recursos().length; // QA-180: acumulativos en la sesión (el check 2 pidió ingeniera.glb estando en la plaza): se mide el delta de esta ventana
       ir(villa.x, villa.z); V.cambiarMundo('puente_villa', 'reparado'); correr(0.4); await esperar(300); correr(0.1);
-      check('3 · Carga diferida: lejos del puerto (> 150 m) no hay personajes ni se pidió su modelo', Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z) > 150 && N.activos().length === 0 && N.stats().pedidos.length === 0 && !recursos().length && !raiz.visible,
-        'dist ' + Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z).toFixed(0) + ' m · pedidos ' + N.stats().pedidos.length);
+      check('3 · Carga diferida: lejos del puerto (> 150 m) no hay personajes ni se pidió su modelo', Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z) > 150 && N.activos().length === 0 && N.stats().pedidos.length === pedidos0 && recursos().length === recursos0 && !raiz.visible,
+        'dist ' + Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z).toFixed(0) + ' m · Δpedidos ' + (N.stats().pedidos.length - pedidos0) + ' · Δrecursos ' + (recursos().length - recursos0));
       check('3b · Con el puente reparado: aviso «retumba una máquina» y bandera verde del minimapa en la plaza', toasts.includes(TXT.aviso) && (!G.minimapa || guia.puesta || (G.minimapa.marcadores && G.minimapa.marcadores().some(m => m.tipo === 'dest'))), toasts.slice(-2).join(' | '));
       { const pp = en(-25, 10); ir(pp.x, pp.z); correr(0.1); montarHud();
         check('3c · De paso por La Mina sin empezar la misión, el panel no tapa la línea de misión ni el minimapa del capítulo', hud.el.hidden && !document.body.classList.contains('v18-puerto-on'), Math.hypot(pp.x - maq.pos.x, pp.z - maq.pos.z).toFixed(0) + ' m de la máquina'); }
