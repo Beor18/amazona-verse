@@ -1,0 +1,135 @@
+{
+ "etiqueta": "r4t",
+ "pantalla": "escritorio 1600x900@1 cpuX1",
+ "head": "desconocido",
+ "cargas": {
+  "sinbandera": {
+   "calidad": "alto",
+   "transitorio": true,
+   "muestras": [
+    {
+     "t": 0,
+     "calls": 88
+    },
+    {
+     "t": 1007,
+     "calls": 88
+    },
+    {
+     "t": 2007,
+     "calls": 88
+    },
+    {
+     "t": 3014,
+     "calls": 88
+    },
+    {
+     "t": 4014,
+     "calls": 88
+    },
+    {
+     "t": 5016,
+     "calls": 88
+    },
+    {
+     "t": 6023,
+     "calls": 87
+    },
+    {
+     "t": 7029,
+     "calls": 87
+    },
+    {
+     "t": 8035,
+     "calls": 88
+    },
+    {
+     "t": 9035,
+     "calls": 88
+    },
+    {
+     "t": 10042,
+     "calls": 88
+    },
+    {
+     "t": 11052,
+     "calls": 88
+    },
+    {
+     "t": 12056,
+     "calls": 88
+    },
+    {
+     "t": 13056,
+     "calls": 88
+    },
+    {
+     "t": 14063,
+     "calls": 88
+    },
+    {
+     "t": 15064,
+     "calls": 88
+    },
+    {
+     "t": 16070,
+     "calls": 88
+    },
+    {
+     "t": 17070,
+     "calls": 87
+    },
+    {
+     "t": 18071,
+     "calls": 87
+    },
+    {
+     "t": 19078,
+     "calls": 88
+    },
+    {
+     "t": 20084,
+     "calls": 88
+    },
+    {
+     "t": 21090,
+     "calls": 88
+    },
+    {
+     "t": 22092,
+     "calls": 88
+    },
+    {
+     "t": 23097,
+     "calls": 88
+    },
+    {
+     "t": 24097,
+     "calls": 88
+    },
+    {
+     "t": 25099,
+     "calls": 88
+    },
+    {
+     "t": 26106,
+     "calls": 88
+    },
+    {
+     "t": 27111,
+     "calls": 88
+    },
+    {
+     "t": 28118,
+     "calls": 87
+    },
+    {
+     "t": 29125,
+     "calls": 87
+    }
+   ],
+   "final": 88
+  }
+ },
+ "error": "Cannot read properties of undefined (reading 'calls')"
+}

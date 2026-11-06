@@ -1,0 +1,501 @@
+{
+ "etiqueta": "r1",
+ "pantalla": "escritorio 1600x900@1",
+ "head": "desconocido",
+ "rondas": [
+  {
+   "muestras": [
+    {
+     "t": 0,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 2472,
+     "calls": 20,
+     "pend": null
+    },
+    {
+     "t": 3479,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 4503,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 5534,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 6542,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 7592,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 8597,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 10756,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 11856,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 12892,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 14373,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 15518,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 16535,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 17541,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 18544,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 19557,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 20569,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 21583,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 22587,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 23611,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 24617,
+     "calls": 0,
+     "pend": null
+    }
+   ],
+   "trasSalto": 0,
+   "ronda": 1,
+   "carga": "sinbandera"
+  },
+  {
+   "muestras": [
+    {
+     "t": 0,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 1766,
+     "calls": 20,
+     "pend": null
+    },
+    {
+     "t": 2785,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 3809,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 4840,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 5885,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 6914,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 7999,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 9071,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 10137,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 11417,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 12494,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 13537,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 14559,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 16423,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 17514,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 18528,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 19548,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 20556,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 21563,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 22563,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 23568,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 24582,
+     "calls": 0,
+     "pend": null
+    }
+   ],
+   "trasSalto": 0,
+   "ronda": 2,
+   "carga": "v18"
+  },
+  {
+   "muestras": [
+    {
+     "t": 0,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 1798,
+     "calls": 20,
+     "pend": null
+    },
+    {
+     "t": 2825,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 3860,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 4902,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 6148,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 7328,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 8364,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 9423,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 10462,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 11478,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 12478,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 13491,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 14502,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 15511,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 16513,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 17520,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 18539,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 19547,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 20561,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 21569,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 22576,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 23582,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 24596,
+     "calls": 0,
+     "pend": null
+    }
+   ],
+   "trasSalto": 0,
+   "ronda": 3,
+   "carga": "sinbandera2"
+  },
+  {
+   "muestras": [
+    {
+     "t": 0,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 1552,
+     "calls": 20,
+     "pend": null
+    },
+    {
+     "t": 2592,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 3622,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 4670,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 5743,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 6862,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 7943,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 8996,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 10013,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 11027,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 12038,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 13039,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 14042,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 15055,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 16068,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 17077,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 18078,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 19087,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 20090,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 21108,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 22108,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 23121,
+     "calls": 0,
+     "pend": null
+    },
+    {
+     "t": 24134,
+     "calls": 0,
+     "pend": null
+    }
+   ],
+   "trasSalto": 0,
+   "ronda": 4,
+   "carga": "v18b"
+  }
+ ],
+ "error": null
+}
