@@ -57,6 +57,15 @@ Fuentes: `K4_DECISIONES_ABIERTAS.md` (cruce de PENDIENTES, DECISIONES_LISTA, DEC
 | D5 | Recibos de KitBash3D y Archmodels; reglamento de la bandera para ropa y ventas; un host apto para niños |
 | D6 | Música: los MP3 de los dos temas aprobados y la verificación de su licencia comercial |
 
+## F. Nuevas (6-nov tarde)
+
+| # | Decisión | Recomendación (se aplica mientras no digas otra cosa) |
+|---|---|---|
+| F1 | **Personajes de la Mac para la V18.3** (`docs/img/bm166` a `bm169`): Tuerca, Maestro Moon (sin katana) y el Guardián del Primer Vuelo | Aprobados como están. Kimi los conecta con su actividad (KIMI-166 a 168). Chispa ya está en el juego con su carrera |
+| F2 | **Guardián del Primer Vuelo: especie A o B** (`docs/img/bm169/opcion_a_*` y `opcion_b_*`) | Opción A mientras no elijas; cambiarla es una línea |
+| F3 | **Contador «Avance» de la portada** (hoy dice 96 %: solo mezcla el cap. 1 y las tareas de la Mac) | A: que muestre el avance real de la temporada (74 %). 🔒 Es público: no se cambia sin tu sí |
+| F4 | **Los 3 poderes que faltan de la matriz** (33 de 36 funcionan): las 2 extintas (Mara y Vela, consejeras que no se eligen) y uno que pide decisión de diseño | Mara y Vela sin poder jugable, porque son consejeras (C10); el tercero se describe en `K4_MATRIZ_ESTADO.md` |
+
 ## E. Lo que el equipo hace mientras tanto (sin esperar)
 
 - **Kimi:**
