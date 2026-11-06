@@ -651,7 +651,8 @@ window.AVV18Minigolf = function (G) {
       // QA: la guía #prompt se veía a través del panel y la pista «Pulsa V para volar» seguía en el hoyo; la guía va en el panel
       'body.v18-golf-on #prompt,body.v18-golf-on #guia-pista,body.v18-golf-on #guia-panel{display:none!important}' +
       // En el móvil los avisos suben arriba durante el hoyo: abajo tapaban a Vittata y la semilla
-      '@media (max-width:760px){body.v18-golf-on #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto}body.v18-golf-on #minimapa{visibility:hidden}}' +
+      // (los bocadillos libres del capítulo también: en medio tapaban la mira; con uno abierto, el aviso baja bajo él, ui.css CG-4)
+      '@media (max-width:760px){body.v18-golf-on #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto}body.v18-golf-on #dialog{top:calc(env(safe-area-inset-top,0px) + 40px);bottom:auto}body.v18-golf-on #minimapa{visibility:hidden}}' +
       '@media (min-width:761px) and (pointer:fine){#v18-golf{bottom:16px}}';
     document.head.appendChild(st);
   }
