@@ -1,0 +1,37 @@
+{
+ "tarea": "KIMI-121",
+ "juego": "golf",
+ "etiqueta": "r3",
+ "pantalla": "1920x1080 dpr1 GPU real (RX 5700 XT), escritorio, CPU x1",
+ "entrada": "CDP Input.dispatchKeyEvent (input real)",
+ "v18": true,
+ "sitio": {
+  "cx": 178,
+  "cz": 205,
+  "ux": 1,
+  "uz": 0,
+  "vx": 0,
+  "vz": 1,
+  "a": 0,
+  "tee": {
+   "x": 170.8,
+   "z": 205
+  },
+  "nido": {
+   "x": 184.8,
+   "z": 205
+  }
+ },
+ "mime": "video/mp4;codecs=avc1.42E01E",
+ "recStarted": "2026-11-06T03:02:00.925Z",
+ "llego": true,
+ "golpes": 4,
+ "gritoUsado": true,
+ "hundido": true,
+ "video": {
+  "mime": "video/mp4;codecs=avc1.42E01E",
+  "bytes": 7051481,
+  "destino": "kimi121_golf_r3.mp4"
+ },
+ "erroresConsola": []
+}
