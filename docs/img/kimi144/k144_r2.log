@@ -1,0 +1,20 @@
+[09:54:08] lanzando Chrome y entrando al juego (cap1, sin bandera)...
+[09:54:13] …latido
+[09:54:14] juego listo, entrando...
+[09:54:18] …latido
+[09:54:23] …latido
+[09:54:28] …latido
+[09:54:33] …latido
+[09:54:37] prep ok
+[09:54:38] …latido
+[09:54:43] …latido
+[09:54:48] …latido
+[09:54:53] …latido
+[09:54:58] …latido
+[09:55:03] …latido
+[09:55:08] …latido
+[09:55:09] FATAL Error: CDP timeout Runtime.evaluate
+    at Timeout._onTimeout (C:\Users\kelvi\amazonaversegame2\tools\build\kimi2_k144.js:54:300)
+    at listOnTimeout (node:internal/timers:685:17)
+    at process.processTimers (node:internal/timers:618:7)
+[09:55:10] fin

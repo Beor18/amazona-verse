@@ -1,0 +1,454 @@
+{
+ "tarea": "KIMI-144",
+ "bug": "QA-181",
+ "etiqueta": "ab-base",
+ "antes": true,
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "v18": false,
+ "area": [
+  165,
+  131
+ ],
+ "secs": 12,
+ "head": 200,
+ "asentado": {
+  "trabajos": 0,
+  "descargando": 0,
+  "vistoST": 15
+ },
+ "medicion": {
+  "fpsPorSeg": [
+   14,
+   14,
+   16,
+   15,
+   16,
+   16,
+   16,
+   16,
+   16,
+   17,
+   16,
+   16
+  ],
+  "fpsMed": 16,
+  "fpsMin": 14,
+  "peorMs": 124,
+  "p95Ms": 90,
+  "stats": [
+   {
+    "calls": 59,
+    "tris": 271838,
+    "fpsMedidor": 13,
+    "dpr": 0.75
+   },
+   {
+    "calls": 59,
+    "tris": 271838,
+    "fpsMedidor": 15,
+    "dpr": 0.75
+   },
+   {
+    "calls": 58,
+    "tris": 271774,
+    "fpsMedidor": 15,
+    "dpr": 0.75
+   },
+   {
+    "calls": 58,
+    "tris": 271842,
+    "fpsMedidor": 15,
+    "dpr": 0.75
+   },
+   {
+    "calls": 58,
+    "tris": 271840,
+    "fpsMedidor": 16,
+    "dpr": 0.75
+   },
+   {
+    "calls": 58,
+    "tris": 271840,
+    "fpsMedidor": 16,
+    "dpr": 0.75
+   },
+   {
+    "calls": 58,
+    "tris": 271844,
+    "fpsMedidor": 16,
+    "dpr": 0.75
+   },
+   {
+    "calls": 57,
+    "tris": 271780,
+    "fpsMedidor": 17,
+    "dpr": 0.75
+   },
+   {
+    "calls": 58,
+    "tris": 271844,
+    "fpsMedidor": 16,
+    "dpr": 0.75
+   },
+   {
+    "calls": 58,
+    "tris": 271842,
+    "fpsMedidor": 16,
+    "dpr": 0.75
+   },
+   {
+    "calls": 58,
+    "tris": 271840,
+    "fpsMedidor": 16,
+    "dpr": 0.75
+   }
+  ],
+  "heapMB": 152,
+  "perfil": {
+   "totalMs": 14813,
+   "porModulo": [
+    {
+     "modulo": "three.js",
+     "selfMs": 4360,
+     "pct": 29.4
+    },
+    {
+     "modulo": "nativo",
+     "selfMs": 4198,
+     "pct": 28.3
+    },
+    {
+     "modulo": "anónima/sin-url",
+     "selfMs": 1455,
+     "pct": 9.8
+    },
+    {
+     "modulo": "renderer",
+     "selfMs": 1292,
+     "pct": 8.7
+    },
+    {
+     "modulo": "solidos",
+     "selfMs": 1240,
+     "pct": 8.4
+    },
+    {
+     "modulo": "game",
+     "selfMs": 550,
+     "pct": 3.7
+    },
+    {
+     "modulo": "terreno",
+     "selfMs": 331,
+     "pct": 2.2
+    },
+    {
+     "modulo": "fisica",
+     "selfMs": 331,
+     "pct": 2.2
+    },
+    {
+     "modulo": "streaming",
+     "selfMs": 330,
+     "pct": 2.2
+    },
+    {
+     "modulo": "engine/otro",
+     "selfMs": 246,
+     "pct": 1.7
+    },
+    {
+     "modulo": "minimapa",
+     "selfMs": 122,
+     "pct": 0.8
+    },
+    {
+     "modulo": "otro:personaje/character.js",
+     "selfMs": 99,
+     "pct": 0.7
+    },
+    {
+     "modulo": "guia_controles",
+     "selfMs": 71,
+     "pct": 0.5
+    },
+    {
+     "modulo": "content",
+     "selfMs": 51,
+     "pct": 0.3
+    },
+    {
+     "modulo": "agua",
+     "selfMs": 37,
+     "pct": 0.3
+    },
+    {
+     "modulo": "ui",
+     "selfMs": 33,
+     "pct": 0.2
+    },
+    {
+     "modulo": "vegetacion",
+     "selfMs": 29,
+     "pct": 0.2
+    },
+    {
+     "modulo": "juice",
+     "selfMs": 24,
+     "pct": 0.2
+    },
+    {
+     "modulo": "dialogo",
+     "selfMs": 15,
+     "pct": 0.1
+    }
+   ],
+   "topFunciones": [
+    {
+     "funcion": "nativo · (program)",
+     "selfMs": 4198,
+     "hits": 0
+    },
+    {
+     "funcion": "three.js · updateMatrixWorld",
+     "selfMs": 682,
+     "hits": 0
+    },
+    {
+     "funcion": "renderer · objPendiente",
+     "selfMs": 423,
+     "hits": 0
+    },
+    {
+     "funcion": "solidos · insert",
+     "selfMs": 403,
+     "hits": 0
+    },
+    {
+     "funcion": "anónima/sin-url · getClientRects",
+     "selfMs": 353,
+     "hits": 0
+    },
+    {
+     "funcion": "three.js · Pt",
+     "selfMs": 350,
+     "hits": 0
+    },
+    {
+     "funcion": "three.js · multiplyMatrices",
+     "selfMs": 341,
+     "hits": 0
+    },
+    {
+     "funcion": "terreno · triQuery",
+     "selfMs": 301,
+     "hits": 0
+    },
+    {
+     "funcion": "three.js · getProgramCacheKey",
+     "selfMs": 288,
+     "hits": 0
+    },
+    {
+     "funcion": "three.js · At",
+     "selfMs": 240,
+     "hits": 0
+    },
+    {
+     "funcion": "solidos · spans",
+     "selfMs": 237,
+     "hits": 0
+    },
+    {
+     "funcion": "streaming · cuadro",
+     "selfMs": 234,
+     "hits": 0
+    },
+    {
+     "funcion": "three.js · traverse",
+     "selfMs": 213,
+     "hits": 0
+    },
+    {
+     "funcion": "solidos · triSeguir",
+     "selfMs": 187,
+     "hits": 0
+    },
+    {
+     "funcion": "fisica · pushOut",
+     "selfMs": 176,
+     "hits": 0
+    },
+    {
+     "funcion": "solidos · trabajar",
+     "selfMs": 176,
+     "hits": 0
+    },
+    {
+     "funcion": "three.js · (anónima)",
+     "selfMs": 173,
+     "hits": 0
+    },
+    {
+     "funcion": "game · (anónima)",
+     "selfMs": 173,
+     "hits": 0
+    },
+    {
+     "funcion": "three.js · It",
+     "selfMs": 163,
+     "hits": 0
+    },
+    {
+     "funcion": "renderer · calentarPresupuesto",
+     "selfMs": 141,
+     "hits": 0
+    },
+    {
+     "funcion": "three.js · update",
+     "selfMs": 140,
+     "hits": 0
+    },
+    {
+     "funcion": "renderer · texturasDe",
+     "selfMs": 138,
+     "hits": 0
+    },
+    {
+     "funcion": "fisica · step",
+     "selfMs": 136,
+     "hits": 0
+    },
+    {
+     "funcion": "anónima/sin-url · now",
+     "selfMs": 130,
+     "hits": 0
+    },
+    {
+     "funcion": "three.js · renderBufferDirect",
+     "selfMs": 129,
+     "hits": 0
+    },
+    {
+     "funcion": "anónima/sin-url · bindBuffer",
+     "selfMs": 114,
+     "hits": 0
+    },
+    {
+     "funcion": "solidos · cubre",
+     "selfMs": 107,
+     "hits": 0
+    },
+    {
+     "funcion": "three.js · getParameters",
+     "selfMs": 105,
+     "hits": 0
+    },
+    {
+     "funcion": "engine/otro · G.emit",
+     "selfMs": 103,
+     "hits": 0
+    },
+    {
+     "funcion": "renderer · render",
+     "selfMs": 103,
+     "hits": 0
+    }
+   ]
+  },
+  "layout": {
+   "selfMs": 357,
+   "pct": 2.4,
+   "detalle": [
+    {
+     "funcion": "anónima/sin-url · getClientRects",
+     "selfMs": 353,
+     "hits": 0
+    },
+    {
+     "funcion": "anónima/sin-url · getBoundingClientRect",
+     "selfMs": 4,
+     "hits": 0
+    }
+   ]
+  },
+  "pilasLayout": {
+   "rutas": [
+    {
+     "hoja": "getClientRects",
+     "profundidad": 12,
+     "pila": [
+      "anónima/sin-url · (root)",
+      "renderer · frame:1118",
+      "renderer · update:1054",
+      "engine/otro · G.emit:78",
+      "guia_controles · (anónima):377",
+      "guia_controles · actualizar:335",
+      "guia_controles · pmTick:296",
+      "guia_controles · pmPaso:218",
+      "guia_controles · (anónima):220",
+      "guia_controles · pmPuede:209",
+      "guia_controles · (anónima):211",
+      "anónima/sin-url · getClientRects"
+     ]
+    },
+    {
+     "hoja": "getClientRects",
+     "profundidad": 13,
+     "pila": [
+      "anónima/sin-url · (root)",
+      "renderer · frame:1118",
+      "renderer · update:1054",
+      "engine/otro · G.emit:78",
+      "guia_controles · (anónima):377",
+      "guia_controles · actualizar:335",
+      "guia_controles · pmTick:296",
+      "guia_controles · pintarPm:284",
+      "guia_controles · pmPaso:218",
+      "guia_controles · (anónima):220",
+      "guia_controles · pmPuede:209",
+      "guia_controles · (anónima):211",
+      "anónima/sin-url · getClientRects"
+     ]
+    },
+    {
+     "hoja": "getClientRects",
+     "profundidad": 10,
+     "pila": [
+      "anónima/sin-url · (root)",
+      "renderer · frame:1118",
+      "renderer · update:1054",
+      "engine/otro · G.emit:78",
+      "guia_controles · (anónima):377",
+      "guia_controles · actualizar:335",
+      "guia_controles · pmTick:296",
+      "guia_controles · pintarPm:284",
+      "guia_controles · colocarPm:241",
+      "anónima/sin-url · getClientRects"
+     ]
+    },
+    {
+     "hoja": "getBoundingClientRect",
+     "profundidad": 8,
+     "pila": [
+      "anónima/sin-url · (root)",
+      "renderer · frame:1118",
+      "renderer · render:1067",
+      "engine/otro · G.emit:78",
+      "minimapa · (anónima):427",
+      "minimapa · tick:415",
+      "minimapa · colocar:269",
+      "anónima/sin-url · getBoundingClientRect"
+     ]
+    }
+   ],
+   "porPar": {
+    "guia_controles · (anónima):211 → getClientRects": 2,
+    "guia_controles · colocarPm:241 → getClientRects": 1,
+    "minimapa · colocar:269 → getBoundingClientRect": 1
+   }
+  }
+ },
+ "erroresConsola": []
+}

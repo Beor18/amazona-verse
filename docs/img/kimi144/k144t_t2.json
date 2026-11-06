@@ -1,0 +1,198 @@
+{
+ "tarea": "KIMI-144",
+ "etiqueta": "t2",
+ "verificacion": true,
+ "primerosMinutos": {
+  "passed": 11,
+  "total": 14,
+  "results": [
+   {
+    "name": "Al empezar la pista visual es moverse, sin ventana de texto",
+    "ok": true,
+    "extra": "mover"
+   },
+   {
+    "name": "Con la tecla de caminar la pista de moverse se apaga",
+    "ok": true,
+    "extra": "despegar"
+   },
+   {
+    "name": "Al despegar la pista pasa a posarse",
+    "ok": true,
+    "extra": "posar"
+   },
+   {
+    "name": "Al posarse la pista pasa al impulso",
+    "ok": true,
+    "extra": "impulso"
+   },
+   {
+    "name": "El impulso apaga su pista y queda el truco",
+    "ok": true,
+    "extra": "truco"
+   },
+   {
+    "name": "Con el truco hecho no queda pista",
+    "ok": true,
+    "extra": "truco"
+   },
+   {
+    "name": "Si pasan 20 s sin avanzar, la guía señala el objetivo",
+    "ok": true,
+    "extra": "21"
+   },
+   {
+    "name": "En táctil, mover el joystick apaga la pista de moverse",
+    "ok": true,
+    "extra": "despegar"
+   },
+   {
+    "name": "El anillo del impulso rodea el botón y la flecha queda fuera",
+    "ok": true,
+    "extra": "botón 68×68 anillo 72 flecha -34px"
+   },
+   {
+    "name": "En vertical la sombra del impulso queda a más de un píxel de Acción y de Saltar",
+    "ok": true,
+    "extra": "b-jump 15.6, b-act 6.0 sombra 0"
+   },
+   {
+    "name": "En horizontal la sombra del impulso queda a más de un píxel de Acción y de Saltar",
+    "ok": true,
+    "extra": "b-jump 13.9, b-act 6.0 sombra 2"
+   },
+   {
+    "name": "Si despegar no se puede, su contador no señala la misión",
+    "ok": false,
+    "extra": "t 24 paso despegar"
+   },
+   {
+    "name": "Sin el botón de volar, despegar no sigue activo y el anillo no cae sobre Impulso",
+    "ok": false,
+    "extra": "paso despegar t 19.05 left -400"
+   },
+   {
+    "name": "Al volver el botón de volar, despegar cuenta de nuevo sin el atasco",
+    "ok": false,
+    "extra": "t 19.1"
+   }
+  ]
+ },
+ "controles": {
+  "passed": 21,
+  "total": 22,
+  "results": [
+   {
+    "name": "Teclado: el panel de controles sale solo al empezar a jugar",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "El panel trae mover, volar, subir, bajar, dejar de volar, cámara y acción",
+    "ok": true,
+    "extra": "mover,volar,subir,bajar,aterrizar,camara,accion,don"
+   },
+   {
+    "name": "Dejar de volar va destacado",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "Las teclas son las del mapa (W A S D, V, X, E) y la cámara es con el ratón",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "Con las teclas cambiadas, el panel enseña las nuevas",
+    "ok": true,
+    "extra": "B"
+   },
+   {
+    "name": "Se cierra solo al moverse",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "Queda guardado que ya se vio",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "La pausa tiene «Ver la guía de controles» y lo abre",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "Icono de controles visible en teclado",
+    "ok": true,
+    "extra": "Controles"
+   },
+   {
+    "name": "Pulsar el icono muestra la leyenda (con dejar de volar destacado)",
+    "ok": true,
+    "extra": "mover,volar,subir,bajar,aterrizar,camara,accion,don"
+   },
+   {
+    "name": "Pulsarlo otra vez la cierra",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "El icono y su leyenda no tapan el objetivo, los recursos ni el Diario",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "Volando, junto al icono sale la tecla para dejar de volar",
+    "ok": true,
+    "extra": "X Dejar de volar"
+   },
+   {
+    "name": "Aterrizando o en el suelo, la pastilla se va",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "En el suelo sin despegar, pista «Pulsa V para volar»",
+    "ok": true,
+    "extra": "Pulsa V para volar"
+   },
+   {
+    "name": "Al volar la primera vez, pista «Mantén Espacio para subir»",
+    "ok": true,
+    "extra": "Mantén Espacio para subir y C para bajar"
+   },
+   {
+    "name": "Nadando sin bucear, pista «Mantén C para bucear»",
+    "ok": false,
+    "extra": "Mantén Espacio para subir y C para bajar"
+   },
+   {
+    "name": "Al bucear con C queda aprendido (no vuelve a salir)",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "Aviso de viento fuerte en el techo de vuelo",
+    "ok": true,
+    "extra": "¡Mucho viento allá arriba! Vittata no puede subir más."
+   },
+   {
+    "name": "Táctil: ni panel, ni icono, ni pastilla",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "Táctil: mostrar() no abre el panel",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "El modo vertical táctil no exige los casos de teclado",
+    "ok": true,
+    "extra": "3/3 · En vertical táctil los casos de teclado no se miden | Táctil: ni panel, ni icono, ni pastilla | Táctil: mostrar() no abre el panel"
+   }
+  ]
+ },
+ "erroresConsola": []
+}

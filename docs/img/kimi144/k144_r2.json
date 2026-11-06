@@ -1,0 +1,15 @@
+{
+ "tarea": "KIMI-144",
+ "bug": "QA-181",
+ "etiqueta": "r2",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "v18": false,
+ "area": [
+  165,
+  131
+ ],
+ "secs": 12,
+ "head": null,
+ "fatal": "Error: CDP timeout Runtime.evaluate\n    at Timeout._onTimeout (C:\\Users\\kelvi\\amazonaversegame2\\tools\\build\\kimi2_k144.js:54:300)\n    at listOnTimeout (node:internal/timers:685:17)\n    at process.processTimers (node:internal/timers:618:7)"
+}
