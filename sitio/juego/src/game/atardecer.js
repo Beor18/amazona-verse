@@ -8,7 +8,8 @@
 
    Cómo funciona (sin tocar renderer.js, clima.js ni look.js):
    - Un gancho de render con prioridad 95 (después del clima, que escribe en 'update' 45, y del look, que escribe en 'render' 90)
-     funde cada valor de luz y cielo hacia su versión de atardecer: uCenit, uHorizonte y uSolCol del cielo vivo, la luz
+     funde cada valor de luz y cielo hacia su versión de atardecer: uCenit, uHorizonte y uSolCol del cielo vivo, el
+   disco del cielo (uDiscoRad/uDiscoInt, KIMI-111), la luz
      hemisférica y el sol (color e intensidad), la niebla (color sRGB y lineal de R.niebla), el agua y la exposición, y baja el
      sol (sunDir se comparte con el cielo, las nubes, las sombras y los rayos).
    - Cada valor lleva su «base» de día: si otro módulo lo reescribe (el clima en una transición, el look cada 90 cuadros), el valor
@@ -38,7 +39,7 @@
       niebla: { col: new THREE.Color('#e9a878'), peso: 0.7 }, // sRGB: R.niebla.srgb; su lineal se deriva
       aguaSol: { col: lin('#ffa050'), peso: 0.85 },
     };
-    const ESC = { solInt: 0.72, hemiInt: 0.78, exposicion: 0.93, solAltura: 0.16 }; // × la base; solAltura: seno de la altura del sol al final
+    const ESC = { solInt: 0.72, hemiInt: 0.78, exposicion: 0.93, solAltura: 0.16, discoRad: 0.5, discoInt: 0.45 }; // × la base; solAltura: seno de la altura del sol al final; discoRad/discoInt: el disco del cielo (QA-106/KIMI-111) se encoge y atenúa como la luna del look de noche
 
     let forzado = null, k = 0, enMarcha = false, horaPuesta = false;
     const deseado = () => (forzado != null ? !!forzado : !G.quiet && !!S.chorus && !(S.missions && S.missions.m3) && !S.complete); // Kelvin: el día vuelve al terminar M3
@@ -54,7 +55,7 @@
       if (!obj || typeof obj[prop] !== 'number') return;
       ranuras.push({ tipo: 'num', obj, prop, esc, base: 0, ult: null });
     }
-    if (skyU) { color(skyU.uCenit, 'value', P.cenit, { lumRef: lum(skyU.uCenit.value) }); color(skyU.uHorizonte, 'value', P.horizonte, { lumRef: lum(skyU.uHorizonte.value) }); color(skyU.uSolCol, 'value', P.solCol, { lumRef: lum(skyU.uSolCol.value) }); }
+    if (skyU) { color(skyU.uCenit, 'value', P.cenit, { lumRef: lum(skyU.uCenit.value) }); color(skyU.uHorizonte, 'value', P.horizonte, { lumRef: lum(skyU.uHorizonte.value) }); color(skyU.uSolCol, 'value', P.solCol, { lumRef: lum(skyU.uSolCol.value) }); numero(skyU.uDiscoRad, 'value', ESC.discoRad); numero(skyU.uDiscoInt, 'value', ESC.discoInt); }
     color(R.hemi, 'color', P.hemiCielo); color(R.hemi, 'groundColor', P.hemiSuelo); color(R.sun, 'color', P.sol);
     numero(R.sun, 'intensity', ESC.solInt); numero(R.hemi, 'intensity', ESC.hemiInt); numero(R.renderer, 'toneMappingExposure', ESC.exposicion);
     if (R.niebla) { color(R.niebla, 'srgb', P.niebla, { lumRef: lum(R.niebla.srgb) }); color(R.niebla, 'lin', { col: P.niebla.col.clone().convertSRGBToLinear(), peso: P.niebla.peso }, { lumRef: lum(R.niebla.lin) }); }

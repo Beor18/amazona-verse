@@ -82,7 +82,9 @@ window.AVLook = function (G) {
       // niebla más lejos, edificios con tinte de luna (no gris plano) y borde de luna en paredes, troncos y rocas.
       noche: {
         exposicion: 0.72,
-        cielo: { cenit: '#0d1840', horizonte: '#43588c', sol: '#c4cdea' },
+        // QA-106/KIMI-111: el «sol» del cielo es la luna: disco más pequeño (0,5) y sin quemar (0,45 del ×3.2): el disco
+        // blanco entero sobre las ruinas leía como un parche en la pared a Kelvin (iPad).
+        cielo: { cenit: '#0d1840', horizonte: '#43588c', sol: '#c4cdea', disco: [0.5, 0.45] },
         niebla: { color: '#2f3f66', inicio: 60, fin: 900 },
         luces: { cielo: '#8299dc', suelo: '#28343f', hemi: 0.85, sol: '#c2d0ff', solInt: 1.0 },
         hoja: [0.66, 0.8, 0.98],                                                   // follaje de noche: verde frío, no el de mediodía
@@ -336,7 +338,7 @@ window.AVLook = function (G) {
     const p = W.cielo && W.cielo.permiso;
     if (p === 'noche' && L.noche) {
       const n = L.noche;
-      return { exposicion: n.exposicion, luces: n.luces, cielo: { cenit: n.cielo.cenit, horizonte: n.cielo.horizonte, sol: n.cielo.sol }, niebla: n.niebla };
+      return { exposicion: n.exposicion, luces: n.luces, cielo: { cenit: n.cielo.cenit, horizonte: n.cielo.horizonte, sol: n.cielo.sol, disco: n.cielo.disco }, niebla: n.niebla };
     }
     return L;
   }
@@ -355,6 +357,10 @@ window.AVLook = function (G) {
     if (sky) {
       if (L) { sky.uCenit.value.copy(lin(L.cielo.cenit)); sky.uHorizonte.value.copy(lin(L.cielo.horizonte)); sky.uSolCol.value.copy(lin(L.cielo.sol)); }
       else { sky.uCenit.value.copy(B.sky.cenit); sky.uHorizonte.value.copy(B.sky.horizonte); sky.uSolCol.value.copy(B.sky.sol); }
+      // QA-106/KIMI-111: de noche el disco es la luna (más pequeña y atenuada); de día, 1/1 (sol de siempre)
+      const d = L && L.cielo && L.cielo.disco;
+      sky.uDiscoRad.value = d ? d[0] : 1;
+      sky.uDiscoInt.value = d ? d[1] : 1;
     }
     if (fog) {
       if (L) { NB.srgb.set(L.niebla.color); NB.lin.copy(NB.srgb).convertSRGBToLinear(); if (R.ATMOS) { fog.near = -L.niebla.inicio; fog.far = L.niebla.fin; } }
@@ -644,6 +650,8 @@ window.AVLook = function (G) {
       check('En vivo el look de fábrica es vibrant_toon y el cielo es atmosférico', DEFECTO === 'vibrant_toon' && actual === 'vibrant_toon' && !!R.ATMOS && !!esp, 'look ' + (actual || 'fabrica'));
       check('En vivo la exposición, la niebla y el cenit son los del estándar de este capítulo', !!esp && R.renderer.toneMappingExposure === esp.exposicion && R.scene.fog && R.scene.fog.far === esp.niebla.fin && (!u || hex(u.uCenit.value) === hex(lin(esp.cielo.cenit))),
         'exposición ' + R.renderer.toneMappingExposure + ' · niebla ' + (R.scene.fog && R.scene.fog.far) + ' · cenit ' + (u ? hex(u.uCenit.value) : 'sin cielo'));
+      check('El disco del cielo es el de siempre de día y la luna pequeña y atenuada de noche (QA-106/KIMI-111)', !!u && (esp && esp.cielo.disco ? (u.uDiscoRad.value === esp.cielo.disco[0] && u.uDiscoInt.value === esp.cielo.disco[1]) : (u.uDiscoRad.value === 1 && u.uDiscoInt.value === 1)),
+        'rad ' + (u ? u.uDiscoRad.value : '-') + ' · int ' + (u ? u.uDiscoInt.value : '-'));
       // BM23: nada de vegetación ni de «pirámides» sobre el mar: ni conos de isla visibles con mapa, ni vértices del dosel bajo el nivel del mar
       if (G.terreno && G.terreno.mapa) {
         const conos = []; R.scene.traverse(o => { if (o.isMesh && o.visible && o.geometry && o.geometry.type === 'ConeGeometry' && o.geometry.parameters.radius >= 20) conos.push(o.position.toArray().map(Math.round).join(',')); });

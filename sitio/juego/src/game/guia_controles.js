@@ -313,9 +313,11 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   G.on('truco', () => { pmMarcar('truco'); pintarPm(true); });
 
   // ---------- Cada cuadro ----------
+  // Minigolf V18 (minigolf.js): tiene sus propios controles; ni el panel «Así se juega» ni las pistas de explorar salen encima
+  const enMinijuego = () => !!document.body && document.body.classList.contains('v18-golf-on');
   function enJuego() {
     const t = $('title'), c = $('creator'), co = $('comic'), en = $('end');
-    return !(t && t.open) && !(c && !c.hidden) && !(co && !co.hidden) && !(en && !en.hidden) && !G.ui.busy() && !(G.pausa && G.pausa.activa());
+    return !enMinijuego() && !(t && t.open) && !(c && !c.hidden) && !(co && !co.hidden) && !(en && !en.hidden) && !G.ui.busy() && !(G.pausa && G.pausa.activa());
   }
   function pidiendoMover() {
     const K = G.input.keys, st = G.input.stick;
@@ -347,7 +349,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if (panelAbierto) {
       panelT += dt;
       if (panelT > AJ.gracia && (pidiendoMover() || M.flying) && (panelMov += dt) > AJ.cierre) cerrar();
-      if (!jugando && G.ui.busy()) cerrar(); // empieza un diálogo o una tarjeta: el panel no estorba
+      if (!jugando && (G.ui.busy() || enMinijuego())) cerrar(); // empieza un diálogo, una tarjeta o el minigolf: el panel no estorba
     }
     // Pastilla de vuelo: la tecla para dejar de volar, mientras vuela
     const t = teclas(), quiere = M.flying && !M.landing && !tactil() ? t.aterrizar : '';

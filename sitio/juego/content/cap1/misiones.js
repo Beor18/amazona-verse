@@ -50,9 +50,20 @@
         const g = new THREE.Group(), y = H(b.x, b.z);
         g.name = 'm3:arbusto';
         const leaf = new THREE.MeshLambertMaterial({ color: '#3f8f3a' });
-        for (const [dx, dy, dz, s] of [[0, 0.5, 0, 0.75], [0.45, 0.35, 0.2, 0.5], [-0.4, 0.38, -0.15, 0.55]]) {
-          const m = new THREE.Mesh(new THREE.IcosahedronGeometry(s, 0), leaf); m.name = 'm3:arbusto:hoja'; m.position.set(dx, dy, dz); g.add(m);
+        // KIMI-106: las 3 hojas (mismo material) van horneadas en UNA malla: misma imagen, 1 draw call por arbusto en vez de 3
+        const hojas = new THREE.BufferGeometry();
+        { const P = [], N = [], U = [], M = new THREE.Matrix4(), E = new THREE.Vector3(), Q = new THREE.Quaternion(), S = new THREE.Vector3();
+          for (const [dx, dy, dz, s] of [[0, 0.5, 0, 0.75], [0.45, 0.35, 0.2, 0.5], [-0.4, 0.38, -0.15, 0.55]]) {
+            const h = new THREE.IcosahedronGeometry(s, 0);
+            M.compose(E.set(dx, dy, dz), Q, S.set(1, 1, 1)); h.applyMatrix4(M);
+            P.push(...h.attributes.position.array); N.push(...h.attributes.normal.array); U.push(...h.attributes.uv.array);
+            h.dispose();
+          }
+          hojas.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+          hojas.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3));
+          hojas.setAttribute('uv', new THREE.Float32BufferAttribute(U, 2));
         }
+        const hoja = new THREE.Mesh(hojas, leaf); hoja.name = 'm3:arbusto:hoja'; g.add(hoja);
         const glow = new THREE.Mesh(new THREE.SphereGeometry(1.15, 16, 12), new THREE.MeshBasicMaterial({ color: '#c8ff7a', transparent: true, opacity: 0.22, depthWrite: false }));
         glow.name = 'm3:arbusto:brillo';
         glow.position.y = 0.5; glow.visible = false; g.add(glow);
