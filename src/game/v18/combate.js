@@ -649,14 +649,15 @@ window.AVV18Combate = function (G) {
     if (C.fase === 'lucha' || C.fase === 'cuenta') r.yaw = Math.atan2(d.x, d.z);
     return Math.hypot(vx, vz);
   }
-  function dibujarRival(dt, vel) {
+  const giroPi = a => Math.atan2(Math.sin(a), Math.cos(a));
+  function dibujarRival(dt, vel, sinAnimar) {
     const ch = C.ch; if (!ch) return;
     const r = C.r, root = ch.root, now = performance.now() / 1000;
     root.visible = true;
     root.position.set(r.pos.x, r.pos.y, r.pos.z);
-    const giro = a => Math.atan2(Math.sin(a), Math.cos(a));
-    root.rotation.y += giro(r.yaw - root.rotation.y) * Math.min(1, dt * 8);
+    root.rotation.y += giroPi(r.yaw - root.rotation.y) * Math.min(1, dt * 8);
     root.rotation.z = r.mareo > 0 ? Math.sin(now * (r.finMareo > 0 ? 9 : 14)) * (r.finMareo > 0 ? 0.32 : 0.25) : root.rotation.z * 0.8; // tambaleo del mareo
+    if (sinAnimar) return; // CPU (móvil): colocada, pero sin animar el esqueleto este cuadro (ver dibujarQuieta)
     if (r.finMareo > 0 && azar() < dt * 5) fx('gold', r.pos.x, r.pos.y + 1.8, r.pos.z); // estrellitas del mareo final
     const enAire = r.lift.dura > 0;
     Object.assign(ch, { speed: vel, gait: vel > 5 ? 1 : 0, airborne: enAire, flying: enAire, legsDown: enAire ? 0.6 : 1, swimming: false, diving: false,
@@ -757,7 +758,7 @@ window.AVV18Combate = function (G) {
   }
   // Un paso del duelo (lo llama el bucle del juego; las pruebas lo llaman con dt fijo)
   function paso(dt) {
-    if (C.fase === 'nada') { if (C.ch) dibujarRival(dt, moverRivalQuieta(dt)); return; }
+    if (C.fase === 'nada') { if (C.ch) dibujarQuieta(dt, moverRivalQuieta(dt)); return; }
     if (apoyoT > 0) { apoyoT -= dt; if (apoyoT <= 0 && hud) hud.q('apoyo').hidden = true; }
     if (centroT > 0) { centroT -= dt; if (centroT <= 0 && hud && C.fase !== 'cuenta') hud.q('centro').textContent = ''; }
     if (C.fase === 'cuenta') {
@@ -782,7 +783,16 @@ window.AVV18Combate = function (G) {
       if (Math.hypot(S.pos.x - sitio.x, S.pos.z - sitio.z) > SALIDA_R) { salir(); return; }
     }
     pasoOndas(dt);
-    dibujarRival(dt, moverRival(dt));
+    dibujarRival(dt, moverRival(dt)); animaFresca = 1.5;
+  }
+  // CPU (móvil): mientras espera en la explanada, de lejos (> 60 m, el R_VIVO de npc.js) su esqueleto no se anima
+  // y a media distancia (> 30 m) se anima un cuadro de cada dos con el dt sumado; de cerca y en el duelo, siempre.
+  let animaPar = false, animaDt = 0, animaFresca = 1.5; // animaFresca: tras un duelo, 1,5 s más de animación para que asiente la pose
+  function dibujarQuieta(dt, vel) {
+    const d = Math.hypot(S.pos.x - C.r.pos.x, S.pos.z - C.r.pos.z);
+    if (animaFresca > 0) animaFresca -= dt;
+    if (animaFresca <= 0 && (d > 60 || (d > 30 && (animaPar = !animaPar)))) { animaDt = d > 60 ? 0 : animaDt + dt; dibujarRival(dt, vel, true); return; }
+    dibujarRival(dt + animaDt, vel); animaDt = 0;
   }
   function moverRivalQuieta(dt) {
     const r = C.r; r.pos.y = ALTURA(r.pos);
