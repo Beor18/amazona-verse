@@ -20,6 +20,13 @@ Kimi 4 trabaja desde la web, con acceso al repo y **sin GPU**. Lo que necesita t
 - **Si tocas código del juego**, explica en la fila cómo lo comprobaste. La coordinadora pasa las pruebas con navegador antes de publicar.
 - Registra cada tarea terminada en `docs/equipo/REGISTRO_TAREAS.md` (una línea).
 
+## Trabajo en paralelo (Kelvin, 6-nov)
+Kelvin quiere que Kimi web active **el máximo de agentes en paralelo que permita su plan**, además de los 3 Kimi de la PC (Kimi 1, 2 y 3, que hacen lo de GPU en `TAREAS_KIMI.md`).
+- **Una tarea K4 por agente.** Cada agente se pone un nombre: Kimi 4a, 4b, 4c…
+- **Para reclamar una tarea:** el agente la marca `EN CURSO - Kimi 4x - <hora UTC>` con commit y push **antes** de empezar. Si el push falla porque otro reclamó a la vez, hace `git pull --rebase`, mira la tabla y toma otra.
+- **Dos agentes nunca tocan el mismo archivo.** Cada tarea dice qué archivos usa; si dos tareas comparten un archivo, la segunda espera.
+- **Al terminar, cada agente toma la siguiente tarea `libre`.** Si no queda ninguna, escribe el 📣 de tanda terminada.
+
 ## Tareas
 
 | Id | Estado | Qué | Criterio de cierre |
@@ -31,5 +38,12 @@ Kimi 4 trabaja desde la web, con acceso al repo y **sin GPU**. Lo que necesita t
 | K4-05 | libre | **Revisión de código de `src/game/v18/`** (solo lectura, excepto los archivos ocupados): `progreso.js`, `reparar.js`, `amenaza.js`, `descubrir.js`, `ciclo.js`, `nuevas.js` y `duelo2.js`. Busca errores reales: variables sin definir, fugas de oyentes, guardados que pueden duplicar premios o textos sin inglés. | Hallazgos en `BUGS.md` con id nuevo (mira el último QA-1xx), archivo:línea y propuesta. No arregles en archivos ocupados. |
 | K4-06 | libre | **Textos para niños de 7 a 10 años en la V18.1.** Avisos y paneles de `src/game/v18/*.js` y sus traducciones en `content/cap1/en.js`. Marca lo largo, lo técnico o lo confuso (por ejemplo «Par 3» sin explicar). | Lista con propuesta de texto corto en `docs/equipo/K4_TEXTOS_V18.md`; la coordinadora decide qué aplicar. |
 | K4-07 | libre | **Guía para el playtest con niños** (permiso de los padres, sin datos personales): qué observar en cada capítulo y en la demo `?v18=1`, preguntas sencillas al final y una hoja para anotar sin nombres. Usa `docs/equipo/GUIA_DEMO_V18_1.md`. | `docs/equipo/GUIA_PLAYTEST_NINOS.md`, de 2 páginas como máximo. |
+| K4-08 | libre | **Decisiones pendientes de Kelvin en limpio.** `docs/equipo/PENDIENTES_KELVIN.md` y `DECISIONES_KELVIN_LISTA.md`, cruzados con `DECISION_LOG.md`: cuáles ya se decidieron y cuáles siguen abiertas. | `docs/equipo/K4_DECISIONES_ABIERTAS.md`: una tabla corta (id, pregunta en una frase, opciones, qué bloquea), ordenada por lo que más frena. |
+| K4-09 | libre | **Matriz de 36 poderes frente al código.** Por cada especie de `docs/equipo/V18_MATRIZ_36.md`: ¿su poder ya existe en `src/game/v18/habilidades.js` o `nuevas.js`? ¿Tiene prueba? ¿Cómo se consigue? Solo lectura. | `docs/equipo/K4_MATRIZ_ESTADO.md` con hecho / falta / prueba y el orden propuesto para los siguientes, por coste. |
+| K4-10 | libre | **Accesibilidad de la UI de la V18.** Contraste, tamaño de letra, botones táctiles ≥ 44 px y teclado: revisa el CSS dentro de `src/game/v18/*.js` frente a `src/game/accesibilidad.js`. Solo lectura. | `docs/equipo/K4_ACCESIBILIDAD_V18.md` con hallazgos (archivo:línea) y propuesta. |
+| K4-11 | libre | **Portada (`web/index.html`, `web/escuelas.html`, `web/retos.html`) frente a las reglas de Kelvin.** Busca «grados», «aprende ciencia», enlaces rotos, datos sin fuente y la bandera según `docs/BANDERA_PR_GUIA.md`. **No toques los créditos del equipo fundador.** | Arreglos pequeños, uno por commit, y lo dudoso en la fila. |
+| K4-12 | libre | **Coherencia de la historia.** Los diálogos y misiones de `content/ep2` a `content/ep6` frente a `docs/STORY_BIBLE.md`: nombres, edades, hechos y lugares que se contradigan. Solo lectura. | `docs/equipo/K4_CANON.md` con la contradicción, las dos citas y la propuesta. Decide Kelvin. |
+| K4-13 | libre | **Rendimiento del código (sin GPU).** En `src/game/v18/*.js`, busca lo que crea objetos en cada cuadro (`new THREE.Vector3` dentro de `update`/`paso`, arrays o closures por cuadro) y oyentes que no se quitan. Solo lectura. | Hallazgos en `BUGS.md` con id nuevo, archivo:línea y propuesta. No arregles en archivos ocupados. |
+| K4-14 | libre | **Las 13 especies con UICN distinto del catálogo** (`docs/equipo/ESPECIES_DISCREPANCIAS.md`). Busca el estado actual en la Lista Roja de la UICN y en BirdLife, con enlace y fecha. **No cambies `content/comun/especies.js`.** | `docs/equipo/K4_UICN.md`: especie, catálogo, UICN hoy, fuente y fecha. Decide Kelvin. |
 
 Cuando acabes todas, escribe al final de este archivo: «📣 Kimi 4 → coordinadora: tanda terminada», con la fecha. Así se te prepara la siguiente.
