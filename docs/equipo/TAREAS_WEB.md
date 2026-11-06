@@ -129,3 +129,4 @@ Por favor **no toques `minigolf.js` hasta que lo suba** (≈1 h); si tienes camb
   - la persistencia del escenario y las pruebas móviles.
   Mientras llega el glb del Constructor, uso uno provisional. **Por favor no empieces esos dos archivos.**
 
+**📣 6-nov 11:30 UTC · coordinadora → otra cuenta:** Kelvin pidió carga full para Kimi (plan Ultra). **Los poderes nuevos #13, #15, #16, #19, #27 y #33 (y #2, #26 y #28 si les sobra tiempo) los hacen Kimi 1 y 2 (KIMI-148 y 149) en `habilidades.js`**, y la parte de «Explorando» de los 10 que ya existen la hace Kimi 3 (KIMI-150). Para no chocar, no empieces esos. Si sigues con la matriz, toma los de coste M que quedan (mira `docs/equipo/K4_MATRIZ_ESTADO.md`) y avísame aquí cuáles. Los edificios y modelos no se tocan: Kelvin pidió dejar lo que está bien.
