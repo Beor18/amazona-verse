@@ -65,6 +65,7 @@ window.AVV18Misterio = function (G) {
         'eje ' + Math.round(mx) + ',' + Math.round(mz) + ' · rastro ' + (rastro && Math.round(rastro.x) + ',' + Math.round(rastro.z)));
       // la cara: ojos que se abren cerca y siguen; la voz es el sonido existente (lo cubre maranaTest)
       G.quiet = false; if (M) M.flying = false;
+      if (G.marana.probar) G.marana.probar(true); // en calidad baja la Maraña se apaga: la prueba mira la cara igual
       S.pos.x = rastro.x + 8; S.pos.z = rastro.z; S.pos.y = T.height(rastro.x, rastro.z) + 1.5;
       for (let i = 0; i < 16; i++) G.marana.paso(0.1);
       const abrio = G.marana.ojos.visible && G.marana.ojos.count >= 2 && rastro.apertura > 0.8;
@@ -93,6 +94,7 @@ window.AVV18Misterio = function (G) {
       check('Con el puente sin reparar vuelve a aparecer', !!rastro && roto());
       S.pos.x = px; S.pos.y = py; S.pos.z = pz;
     } catch (e) { check('Sin excepciones', false, e && e.stack); }
+    if (G.marana && G.marana.probar) G.marana.probar(false);
     G.quiet = q; if (M) M.flying = fly;
     S.pos.x = px; S.pos.y = py; S.pos.z = pz;
     try { if (crudo == null) { V.borrar(); } else localStorage.setItem(clave, crudo); } catch (e) { /* sin almacenamiento */ }

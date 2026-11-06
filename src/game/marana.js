@@ -37,6 +37,7 @@ window.AVMarana = function (G) {
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.marana';
   const limpios = [];
   let t = 0;
+  let probando = false; // las pruebas miran la cara también en calidad baja (la nube y los equipos lentos arrancan en «bajo»)
   function guardarLimpios() { try { localStorage.setItem(CLAVE, JSON.stringify({ v: 1, limpios })); } catch (e) { /* sin almacén */ } }
   try {
     const d = JSON.parse(localStorage.getItem(CLAVE) || 'null');
@@ -125,7 +126,7 @@ window.AVMarana = function (G) {
   }
   function paso(dt) {
     const bajo = G.renderer.calidad && G.renderer.calidad.nivel === 'bajo';
-    if (G.quiet || bajo) { malla.visible = false; ojos.visible = false; return; }
+    if (G.quiet || (bajo && !probando)) { malla.visible = false; ojos.visible = false; return; }
     let cerca = false;
     for (let i = 0; i < rastros.length; i++) {
       const r = rastros[i];
@@ -173,6 +174,7 @@ window.AVMarana = function (G) {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
     const q = G.quiet, fly = M.flying, px = S.pos.x, pz = S.pos.z;
     let crudo = null; try { crudo = localStorage.getItem(CLAVE); } catch (e) { /* */ }
+    probando = true;
     try {
       ok('Hay rastros escondidos y ninguno habla de una plaga', rastros.length >= 5 && notas.every(n => !/invasor|plaga|amenaza/i.test(n)));
       G.quiet = false; M.flying = true;
@@ -226,6 +228,7 @@ window.AVMarana = function (G) {
       ok('Se dibuja junto a los demás (misma malla instanciada)', malla.visible === true && malla.count >= 1);
       ok('Retirar lo quita del todo', retirar('test_v18') === true && rastros.indexOf(rd) < 0 && retirar('loma') === false);
     } catch (e) { ok('sin excepciones', false, e && e.message); }
+    probando = false;
     G.quiet = q; M.flying = fly; S.pos.x = px; S.pos.z = pz;
     try { if (crudo == null) localStorage.removeItem(CLAVE); else localStorage.setItem(CLAVE, crudo); } catch (e) { /* */ }
     limpios.length = 0;
@@ -237,6 +240,6 @@ window.AVMarana = function (G) {
     pintar();
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
-  G.marana = { test, rastros, limpiar, notas, pintar, paso, malla, ojos, aparecer, retirar };
+  G.marana = { test, probar: v => { probando = !!v; }, rastros, limpiar, notas, pintar, paso, malla, ojos, aparecer, retirar };
   return G.marana;
 };
