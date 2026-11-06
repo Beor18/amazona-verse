@@ -229,6 +229,7 @@ window.AVV18Evolucion = function (G) {
         '.v18-evo-f{display:block;font-size:12px;margin-top:3px}.v18-evo-bar{display:block;height:4px;border-radius:2px;background:#0003;overflow:hidden;margin:2px 6px}.v18-evo-bar b{display:block;height:100%;background:#e0a526}' +
         '.v18-evo-et{display:inline-block;font-size:10px;padding:1px 5px;border-radius:8px;background:#ffe39a;color:#3b2a14;margin:2px 1px}.v18-evo-et.no{background:#0002;color:inherit;opacity:.6}' +
         '.v18-evo-x{margin-top:8px;font-size:14px}.v18-evo-x .btn{min-height:44px}' +
+        '@media (min-width:761px){#v18-evo-carta{top:calc(env(safe-area-inset-top,0px) + 96px)}}' + // en la computadora el aviso (#toast, capa superior) ocupa el borde de arriba
         '@keyframes v18evo{from{transform:translateY(-16px) scale(.9);opacity:0}to{transform:none;opacity:1}}';
       document.head.appendChild(st);
     }
