@@ -1,0 +1,9 @@
+{
+ "tarea": "KIMI-162",
+ "etiqueta": "r2",
+ "estados": {},
+ "pruebas": {},
+ "capturas": [],
+ "consola": [],
+ "error": "Error: ERR el modelo de la máquina no cargó: {\"err\":[],\"mapa\":null,\"pos\":{\"x\":68,\"z\":-72.6},\"maq\":{\"cargando\":false,\"pintada\":\"trabada\",\"nodos\":false},\"manual\":\"OK\"}\n    at C:\\Users\\kelvi\\amazonaversegame\\tools\\build\\kimi1_162.js:209:40"
+}

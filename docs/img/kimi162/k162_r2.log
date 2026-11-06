@@ -1,0 +1,5 @@
+[17:30:38] chrome listo; servidor :63710
+[17:30:52] entrar: ok
+[17:31:41] ERROR Error: ERR el modelo de la máquina no cargó: {"err":[],"mapa":null,"pos":{"x":68,"z":-72.6},"maq":{"cargando":false,"pintada":"trabada","nodos":false},"manual":"OK"}
+    at C:\Users\kelvi\amazonaversegame\tools\build\kimi1_162.js:209:40
+[17:31:42] cerrado: error

@@ -1,0 +1,10 @@
+[17:32:37] chrome listo; servidor :63873
+[17:32:50] entrar: ok
+[17:33:03] estados: {"maquina":{"x":77.1,"z":-73.5},"modeloCargado":true,"recursosMaquina":[],"bloqueando":{"estado":"descubierto","stats":{"fps":144,"calls":197,"triangulos":943425,"calidad":"alto"},"modo":"descubierto"},"apagada":{"estado":"desactivado","stats":{"fps":144,"calls":191,"triangulos":942897,"calidad":"alto"},"modo":"desactivado"},"reconvertida":{"estado":"reparado","stats":{"fps":144,"calls":179,"triangulos":937979,"calidad":"alto"},"modo":"reparado"},"mallas":{"total":68,"visiblesReconvertida":53}}
+[17:33:05] captura k162_r3_bloqueando.jpg 152 KB
+[17:33:07] captura k162_r3_apagada.jpg 154 KB
+[17:33:10] captura k162_r3_reconvertida.jpg 154 KB
+[17:33:10] consola capturas: []
+[17:33:22] v18PuertoTest 42/43 fallos: 3b · Con el puente reparado: aviso «retumba una máquina» y bandera verde del minimapa en la plaza :: En Puerto de La Mina retumba una máquina… La bandera verde del mapa te lleva. | ¿Oyes ese canto? Una cotorra que no es de aquí canta en la copa de un árbol.
+[17:33:22] consola total: []
+[17:33:23] cerrado: ok
