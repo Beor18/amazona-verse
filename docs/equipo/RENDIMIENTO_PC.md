@@ -855,3 +855,47 @@ barato (objPendiente 2,6 % + calentarPresupuesto 1,1 % + texturasDe 1,0 %). El n
 debe recortar resolución (0,75) + post, el trabajo de vanos en reposo y calls/estado por cuadro;
 la puerta de entrada sigue siendo el escalón por fps sostenido (<25 durante ~8 s), propuesta
 completa en BUGS.md QA-181. El juego no se tocó (herramienta `tools/build/kimi1_132.js` + docs).
+
+## KIMI-136 · QA-181 paso 4 · Re-medición LIMPIA del Chromebook (06-nov)
+
+Repetición de KIMI-127 con la PC libre (0 node/0 chrome kimi; la `cb-r3` de KIMI-127
+compartía PC con otra sesión y sus cifras eran techo). Misma herramienta
+(`node tools/build/kimi1_127.js --etiqueta libre-r1`), mismo perfil: 1366×768 @ DPR 1,
+**CPU ×6**, calidad baja, GPU real RX 5700 XT, semilla por almacén de pack, sin `?qa=1`.
+HEAD f502ef8e (los 3 commits de juego encima de 43e17f56 validado son docs + 3 líneas de
+`aula.js` K4-01, nada de gráficos/render). **0 errores de consola en las 7 páginas.**
+
+| cap | carga lista/entrada (s) | fps med (mín ventana) | serie por segundo (asentado → asentido) | peor cuadro | calls | ktris | dpr |
+|---|---|---|---|---|---|---|---|
+| cap1 | 4,3 / 26,9 | **29 (28)** | 28-30 constante | 67 ms | 63 | 268 | **0,75** |
+| ep2 | 4,0 / 25,1 | **33 (24)** | 24-37 | 61 ms | 59 | 270 | **0,75** |
+| ep3 | 4,0 / 19,9 | **20 (2)** | 2-20 (7 s) → **31-34** | 2495 ms | 91 | 455 | **0,75** |
+| ep4 | 4,2 / 23,2 | **23 (3)** | 3-23 (6 s) → **28-32** | 2567 ms | 113 | 459 | **0,75** |
+| ep5 | 4,3 / 27,7 | **24 (2)** | 2-21 (6 s) → **30-33** | 1825 ms | 105 | 234 | **0,75** |
+| ep6 | 4,3 / 25,8 | **34 (31)** | 31-37 constante | 54 ms | 86 | 217 | **0,75** |
+
+**Lectura:** con la PC libre el Chromebook simulado **asienta 28-37 fps en las 6 villas**.
+Las medianas de ventana 20-24 de ep3/ep4/ep5 se las baja el **asentado post-entrada**: los
+primeros ~6-7 s a 2-20 fps con peores cuadros de 1,8-2,6 s son el streaming de la villa +
+los enlaces de programas (familia QA-53), y la cifra asentida son los últimos segundos de
+cada serie. **Escalón de KIMI-133 verificado: dpr=0,75 en el 100 % de las muestras de las
+6 villas** (la resolución dinámica baja sola en «bajo»). Las cifras techo de cb-r3
+(11-21 fps) eran de contención, no del juego.
+
+**Demo `?v18=1` (misma corrida):**
+
+| escenario | fps med (mín) | peor cuadro | calls med | ktris med | dpr |
+|---|---|---|---|---|---|
+| base explanada | 7 (2) — contaminada por el asentado del teleport (peor 7,6 s), inválida como cifra | — | 135 | 495 | 0,75 |
+| duelo (Campeona, FX) | **20 (16)** | 180 ms | 82-87 | 260 | 0,75 |
+| Sombra (poderes 0,9 s) | **14 (12)** | 137 ms | 79 | 248 | 0,75 |
+| puente colgante | **26 (25)** | 75 ms | 80 | 258 | 0,75 |
+
+La **Sombra es el escenario más flojo del Chromebook a ×6** (12-16 fps sostenidos): la
+pelea cuesta hilo propio (la niebla en «bajo» ya costaba 0 draw calls, KIMI-088/094 — es
+CPU, no raster). Para el nivel «escuela» (decisión de Kelvin, BUGS.md QA-181) la lectura
+limpia cambia el alcance: solo quedarían por recortar el **tramo de asentado** (~7 s
+post-entrada a <25 fps en ep3/ep4/ep5, familia QA-53: precarga de la villa o reparto de
+enlaces) y la **Sombra de la demo**; las villas asentidas ya cumplen ≥25 fps. El juego no
+se tocó (medición + docs). Evidencia: `docs/img/kimi127/k127_libre-r1.{json,log}` +
+`k127_libre-r1_<pack>_villa.jpg` ×6 + `k127_libre-r1_demo_*.jpg` ×4.
