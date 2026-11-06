@@ -545,6 +545,36 @@ window.AVV18Habilidades = function (G) {
       ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 1.0, z: yo.pos.z } });
       return { ok: true, acierto: null };
     } });
+  // Imitación (oratrix, PICO): repite el último poder que usó la rival, a media fuerza (plumas/empuje/mareo a la mitad,
+  // vuelos ×0,7 y algo más cortos, escudo a mitad de tiempo; no rompe escudos). Si la rival aún no ha usado ningún poder
+  // (o el último fue otra Imitación), no gasta energía ni espera. Ventaja: versátil, se adapta a la rival. Debilidad:
+  // depende por completo de lo que haya usado ella. Espera 12 s (matriz). El registro del último poder lo lleva combate.js
+  // (`otro.ultPoder`, se limpia al iniciar el duelo); en el duelo de 2 no hay registro y la copia devuelve «nada que imitar».
+  registrar({ id: 'imitacion', nombre: 'Imitación', especies: ['oratrix'], tecnica: 'pico', coste: 30, cooldown: 12,
+    fx: 'feathers',
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, copia = otro && otro.ultPoder;
+      const nada = () => { yo.energia = Math.min(yo.energiaMax, yo.energia + h.coste); yo.cd[h.id] = 0; return { ok: false, motivo: 'nada que imitar' }; };
+      if (!copia || copia === h.id) return nada();
+      const orig = get(copia); if (!orig || orig.basico) return nada(); // los básicos no se imitan
+      const escalaG = g => { if (!g) return g; const s = Object.assign({}, g);
+        if (s.plumas) s.plumas = Math.floor(s.plumas * 0.5); // una pluma copiada no llega a quitarse
+        if (s.empuje) s.empuje *= 0.5;
+        if (s.mareo) s.mareo *= 0.5;
+        delete s.rompeEscudo; return s; };
+      const c2 = Object.assign({}, ctx, {
+        golpear: (blanco, g) => ctx.golpear(blanco, escalaG(g)),
+        lanzar: b => ctx.lanzar(Object.assign({}, b, { vx: (b.vx || 0) * 0.7, vy: (b.vy || 0) * 0.7, vz: (b.vz || 0) * 0.7,
+          vida: b.vida ? b.vida * 0.8 : b.vida, golpe: escalaG(b.golpe), drena: b.drena ? b.drena * 0.5 : b.drena })),
+        escudo: (f, s) => ctx.escudo(f, s ? s * 0.5 : s),
+        poder: ev => ctx.poder(Object.assign({}, ev, { id: h.id, copia: orig.id }))
+      });
+      yo.cara = 'fight'; yo.picoT = 0.5; // abre el pico: está repitiendo el canto
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('aleteo');
+      const r = orig.efecto.call(orig, c2) || { ok: true };
+      if (yo.escudo > 0) yo.escudo *= 0.5; // el estado de escudo lo pone el propio efecto copiado: se media aquí
+      return { ok: true, copia: orig.id, acierto: r.acierto };
+    } });
 
   // ---------- Luchadores ----------
   function luchador(o) {

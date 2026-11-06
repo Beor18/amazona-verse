@@ -35,9 +35,11 @@
      descubrir en el Álbum → loro de cachetes amarillos (autumnalis) · Remolino (ALAS)
      descubrir en el Álbum → loro alisero (tucumana) · Plumas de aliso (PLUMAS)
      descubrir en el Álbum → loro vináceo (vinacea) · Semilla de piña (PICO)
+   Una más (KIMI-160, la única de coste A, provisional igual: Álbum del Diario):
+     descubrir en el Álbum → loro cabeza amarilla (oratrix) · Imitación (PICO)
    Solo cambia el poder del duelo y de la amenaza: el personaje del jugador se queda igual. Mara y Vela (martinicana,
    violacea) son consejeras en la temporada 1 y no entran aquí. Solo con la bandera V18.
-   Prueba: AV.v18NuevasTest() (hitos, el desbloqueo por Álbum y los 24 poderes en el duelo). */
+   Prueba: AV.v18NuevasTest() (hitos, el desbloqueo por Álbum y los 25 poderes en el duelo). */
 window.AVV18Nuevas = function (G) {
   'use strict';
   if (G.v18nuevas) return G.v18nuevas;
@@ -74,7 +76,7 @@ window.AVV18Nuevas = function (G) {
       txt: '¡Un loro de Kawall te vio recoger todas las piedras y fibras y quiere volar contigo! Su poder: Ojo de selva.' }
   ];
   const TXT = { elige: 'Elígela en Pausa → Mis cotorras.', eligeM: 'Elígelo en Pausa → Mis cotorras.' }; // m: el aviso habla de «un loro»
-  // KIMI-149/148/156/158/159 (provisional, hasta que Kelvin decida el hito): estas 16 llegan al descubrir su tarjeta en el Álbum del Diario.
+  // KIMI-149/148/156/158/159/160 (provisional, hasta que Kelvin decida el hito): estas 17 llegan al descubrir su tarjeta en el Álbum del Diario.
   const ALBUM = [
     { id: 'brasiliensis', txt: '¡Descubriste al papagayo de cara roja en el Álbum! Su poder: Ojo de manglar.' },
     { id: 'auropalliata', txt: '¡Descubriste al loro de nuca amarilla en el Álbum! Su poder: Voz de volcán.' },
@@ -91,7 +93,8 @@ window.AVV18Nuevas = function (G) {
     { id: 'imperialis', txt: '¡Descubriste al loro imperial en el Álbum! Su poder: Columna de nube.' },
     { id: 'lilacina', txt: '¡Descubriste al loro de lores rojas en el Álbum! Su poder: Plumas de manglar.' },
     { id: 'mercenarius', txt: '¡Descubriste al loro mercenario en el Álbum! Su poder: Vuelo de niebla.' },
-    { id: 'pretrei', txt: '¡Descubriste al loro de anteojos rojos en el Álbum! Su poder: Vuelta de pino.' }
+    { id: 'pretrei', txt: '¡Descubriste al loro de anteojos rojos en el Álbum! Su poder: Vuelta de pino.' },
+    { id: 'oratrix', txt: '¡Descubriste al loro cabeza amarilla en el Álbum! Su poder: Imitación.' }
   ];
   // La tarjeta acaba de abrirse (evento del Álbum): desbloqueo inmediato con aviso
   function albumLlega(id, avisar) {
@@ -236,6 +239,14 @@ window.AVV18Nuevas = function (G) {
       revisarAlbum();
       check('revisarAlbum no desbloquea las tarjetas de tanda E que aún no están abiertas en el Álbum',
         ['lilacina', 'mercenarius', 'pretrei'].every(id => rango(V.estado(id)) < 1));
+      // KIMI-160: la Imitación (oratrix, la única de coste A) se consigue igual (Álbum del Diario, provisional)
+      check('La de coste A (oratrix, Imitación) empieza sin descubrir', rango(V.estado('oratrix')) < rango('descubierta'));
+      G.emit('album', { id: 'oratrix', fuente: 'test' });
+      check('Descubrir su tarjeta en el Álbum deja elegible al loro cabeza amarilla (Imitación), con aviso',
+        rango(V.estado('oratrix')) >= rango('seleccionable') && toasts.some(t => /cabeza amarilla/.test(t) && /Imitación/.test(t) && /Mis cotorras/.test(t)));
+      G.emit('album', { id: 'oratrix', fuente: 'test' });
+      check('El mismo descubrimiento no avisa dos veces (Imitación)', toasts.filter(t => /cabeza amarilla/.test(t)).length === 1);
+      check('La de coste A tiene su poder propio', H.poderDe('oratrix') === 'imitacion', H.poderDe('oratrix'));
 
       // ---- Las 4 de coste M: cada una con su hito, desde una partida nueva ----
       V.borrar(); V.recargar(); toasts.length = 0;
@@ -666,6 +677,37 @@ window.AVV18Nuevas = function (G) {
         check('Vuelta de pino: salta hacia atrás (>2,4 m: fuera del golpe de ala) y queda mirando a la rival',
           rvp.ok && d1p > d0p + 2.4 && d1p > 4.5 && miraRival > 0.98,
           'dist ' + d0p.toFixed(1) + '→' + d1p.toFixed(1) + ' m, mira ' + miraRival.toFixed(3));
+        B.salir();
+        // Imitación (oratrix, coste A): copia el último poder NO básico que usó la rival, a media fuerza;
+        // si la rival aún no ha usado nada, no gasta energía ni espera
+        B.iniciar({ sinCuenta: true, especie: 'oratrix' }); quieta(6); listo(); S.facing = { x: 1, z: 0 }; C.r.mareo = 5;
+        const e0i = C.j.energia;
+        const rim0 = B.usar(C.j, 'imitacion');
+        check('Imitación sin nada que copiar: falla sin gastar energía ni espera',
+          !rim0.ok && rim0.motivo === 'nada que imitar' && C.j.energia === e0i && (C.j.cd.imitacion || 0) === 0,
+          'ok=' + rim0.ok + ', energía ' + e0i.toFixed(0) + '→' + C.j.energia.toFixed(0));
+        C.r.mareo = 0; C.r.pensar = 99; C.r.poderT = 99; C.r.esquivaT = 99; // la rival no actúa por su cuenta
+        const poderR0 = C.r.poder; // arausiaca: escudo_plumas (montaneras: grito_yunque)
+        const rur0 = B.usar(C.r, poderR0);
+        check('La rival usa su poder y queda registrado para la Imitación', rur0.ok && C.r.ultPoder === poderR0, poderR0);
+        listo(); C.j.cd = {}; C.j.energia = 100; C.r.mareo = 5; C.r.escudo = 0; C.j.escudo = 0;
+        const rim = B.usar(C.j, 'imitacion');
+        if (poderR0 === 'escudo_plumas') {
+          check('Imitación copia a MEDIA FUERZA: el escudo de la rival dura la mitad (2,5 → 1,25 s)',
+            rim.ok && rim.copia === 'escudo_plumas' && C.j.escudo > 1.0 && C.j.escudo <= 1.26,
+            'escudo copiado ' + (C.j.escudo || 0).toFixed(2) + ' s');
+          corre(1.4); // se le pasa el escudo copiado
+        } else {
+          C.r.mareo = 0; C.r.kb = { x: 0, z: 0, t: 0 };
+          let golpeCopia = 0;
+          for (let k = 0; k < 60 && !(C.r.mareo > 0); k++) { B.paso(1 / 30); golpeCopia = C.r.mareo; }
+          check('Imitación copia a MEDIA FUERZA: el grito de la rival marea la mitad (1,1 → 0,55 s)',
+            rim.ok && rim.copia === 'grito_yunque' && golpeCopia > 0.3 && golpeCopia <= 0.56,
+            'mareo copiado ' + golpeCopia.toFixed(2) + ' s');
+        }
+        C.r.mareo = 0; C.r.cd.semilla = 0; C.r.energia = 100;
+        B.usar(C.r, 'semilla'); // los básicos no se registran ni se imitan
+        check('Los básicos (semilla, golpe de ala) no se registran para la Imitación', C.r.ultPoder === poderR0);
         B.salir();
       } else check('El duelo está cargado', false);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }

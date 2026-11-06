@@ -354,6 +354,7 @@ window.AVV18Combate = function (G) {
       return { ok: true, id, avisada: true };
     }
     const r = H.usar(f, id, ctxDe(f));
+    if (r.ok && !r.avisada && !H.get(id).basico) f.ultPoder = id; // Imitación: cada una recuerda lo último que usó (lo lee la otra)
     if (r.ok && f.ia) { C.stats.ataques++; if (!H.get(id).basico) C.stats.poderes++; }
     if (r.ok) pintar();
     else if (!f.ia && r.motivo === 'energia') pulso('en-j');
@@ -538,6 +539,7 @@ window.AVV18Combate = function (G) {
     semilla = o.semilla || 7; espForzada = o.especie || null;
     quitarBalas(); C.trampas.length = 0; if (C.j && C.j.wob && pl3d && pl3d.root) { pl3d.root.rotation.z -= C.j.wob; C.j.wob = 0; }
     C.j = nuevoJugador(o); const ch = C.ch; C.r = nuevoRival(); C.ch = ch; C.tLucha = 0;
+    C.j.ultPoder = null; C.r.ultPoder = null; // Imitación: duelo nuevo, nada que copiar todavía
     if (C.ch && C.chEsp !== C.r.especie) { try { C.ch.applyLook({ species: C.r.especie, accessories: { eyes: { id: 'gafas', color: '#7fd3ff' } } }); C.chEsp = C.r.especie; } catch (e) { /* piel */ } }
     C.timers.length = 0; C.resultado = null; C.premio = false;
     C.stats = nuevasStats();
@@ -611,6 +613,7 @@ window.AVV18Combate = function (G) {
       if (r.poder === 'plumas_aliso' && dist > 3 && dist < 14 && azar() < 0.3) { r.poderT = 4; usar(r, 'plumas_aliso'); return; }
       if (r.poder === 'semilla_pina' && dist > 3 && dist < 12 && azar() < 0.3) { r.poderT = 4; usar(r, 'semilla_pina'); return; }
       if (r.poder === 'remolino' && dist < 3.2 && azar() < 0.3) { r.poderT = 4; usar(r, 'remolino'); return; }
+      if (r.poder === 'imitacion' && j.ultPoder && dist > 2 && azar() < 0.3) { r.poderT = 4; usar(r, 'imitacion'); return; }
     }
     if (dist < 2.3 && r.golpeT <= 0) { r.golpeT = 1.15; usar(r, 'golpe_ala'); return; }
     if (dist > 6 && dist < 16 && r.tiroT <= 0 && r.energia > 40) { r.tiroT = 2.4; usar(r, 'semilla'); return; }
