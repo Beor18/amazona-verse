@@ -241,13 +241,13 @@ window.AVV18Combate = function (G) {
   // Ondas del Grito del Yunque: con G.v18fx.onda si existe; si no, tres anillos que avanzan y se abren (una geometría compartida)
   const geoOnda = new THREE.RingGeometry(0.42, 0.6, 40);
   const ondas = [];
-  function onda(origen, dir, alcance) {
+  function onda(origen, dir, alcance, vel) {
     C.stats.ondas++;
     if (v18fx('onda')) { try { G.v18fx.onda(origen, { x: dir.x, y: 0, z: dir.z }, alcance); return; } catch (e) { /* cae al propio */ } }
     for (let i = 0; i < 3; i++) {
       const m = new THREE.Mesh(geoOnda, new THREE.MeshBasicMaterial({ color: '#dff4ff', transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
       m.position.set(origen.x, origen.y, origen.z); m.rotation.y = Math.atan2(dir.x, dir.z); m.renderOrder = 4; m.name = 'v18_onda';
-      scene.add(m); ondas.push({ m, t: -i * 0.09, vida: alcance / 16, o: origen, dir, alcance });
+      scene.add(m); ondas.push({ m, t: -i * 0.09, vida: alcance / (vel || 16), o: origen, dir, alcance }); // vel: más lenta con la Mirada del Pitón
     }
   }
   function pasoOndas(dt) {
@@ -590,11 +590,12 @@ window.AVV18Combate = function (G) {
     if (j.kb.t > 0) { j.kb.t -= dt; S.pos.x += j.kb.x * dt; S.pos.z += j.kb.z * dt; j.kb.x *= 0.88; j.kb.z *= 0.88; }
     if (j.mareo > 0) { M.vx *= 0.8; M.vz *= 0.8; if (G.fx && G.fx.burst && azar() < dt * 6) fx('gold', S.pos.x, S.pos.y + 1.7, S.pos.z); }
   }
-  function pasoBalas(dt) {
+  function pasoBalas(dt0) {
     for (let i = C.balas.length - 1; i >= 0; i--) {
       const b = C.balas[i], p = b.m.position;
       const blanco = b.de === C.j ? C.r : C.j;
-      if (blanco.marcada > 0 && !b.falla) { const hx = blanco.pos.x - p.x, hz = blanco.pos.z - p.z, hn = Math.hypot(hx, hz) || 1, v = Math.hypot(b.vx, b.vz), k = Math.min(1, dt * 6);
+      const dt = b.de && b.de.lenta > 0 ? dt0 * ((H.get('mirada_piton') || {}).lento || 0.5) : dt0; // Mirada del Pitón: las semillas de la rival frenada van a la mitad (también las que ya volaban)
+      if (blanco.marcada > 0 && !b.falla) { const hx = blanco.pos.x - p.x, hz = blanco.pos.z - p.z, hn = Math.hypot(hx, hz) || 1, v = Math.hypot(b.vx, b.vz), k = Math.min(1, dt * 6 * (blanco.marcaK || 1));
         b.vx += (hx / hn * v - b.vx) * k; b.vz += (hz / hn * v - b.vz) * k;
         b.vy += (((blanco.pos.y + 0.9) - p.y) / Math.max(0.15, hn / (v || 1)) - b.vy) * k; } // Ojo del cenote: la semilla busca a la marcada (también en altura: en la explanada en cuesta se iba por debajo)
       if (b.arco) { if (!b.arcoT) { b.arcoT = 1; b.vy = b.arco.vy; } b.vy -= b.arco.g * dt; } // Semilla de río: sale en arco y cae

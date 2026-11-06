@@ -64,9 +64,10 @@ window.AVV18Habilidades = function (G) {
     fx: 'onda', alcance: 7, cono: 0.82, vel: 16, empuje: 15, interrumpe: 1.1, pico: 0.7,
     efecto(ctx) {
       const { yo, otro } = ctx, h = this, dir = mira(yo, otro);
+      const vel = h.vel * (yo.lenta > 0 ? ((get('mirada_piton') || {}).lento || 0.5) : 1); // Mirada del Pitón: la onda va más lenta
       const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
       yo.picoT = h.pico; yo.cara = 'fight'; // abre el pico (hueso «pico» del rig, vía mouth) mientras grita
-      ctx.onda(origen, dir, h.alcance); ctx.sonar('dash'); ctx.sonar('ring', 3);
+      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
       ctx.poder({ id: h.id, de: yo.id, origen, direccion: { x: dir.x, y: 0, z: dir.z }, alcance: h.alcance });
       const alcanza = () => {
         const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
@@ -74,7 +75,7 @@ window.AVV18Habilidades = function (G) {
         return d < 1.2 || (dx * dir.x + dz * dir.z) / d >= h.cono;
       };
       const d0 = Math.hypot(otro.pos.x - origen.x, otro.pos.z - origen.z);
-      ctx.despues(Math.min(h.alcance, d0) / h.vel, () => {
+      ctx.despues(Math.min(h.alcance, d0) / vel, () => {
         if (!alcanza()) return;
         ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: h.interrumpe, interrumpe: true, sonido: true, dir: { x: dir.x, z: dir.z }, forzar: true });
       });
@@ -122,7 +123,7 @@ window.AVV18Habilidades = function (G) {
   registrar({ id: 'ojo_cenote', nombre: 'Ojo del cenote', especies: ['xantholora'], tecnica: 'ojos', coste: 30, cooldown: 9, fx: 'gold', dura: 4,
     efecto(ctx) {
       const { yo, otro } = ctx;
-      otro.marcada = this.dura; yo.cara = 'fight';
+      otro.marcada = this.dura; otro.marcaK = 1; yo.cara = 'fight'; // marcaK: fuerza con que la siguen las semillas (Ojo de sol: menos)
       ctx.fx('gold', otro.pos.x, otro.pos.y + 1.4, otro.pos.z); ctx.sonar('ring', 2);
       ctx.poder({ id: this.id, de: yo.id, a: otro.id, dura: this.dura });
       return { ok: true };
@@ -163,6 +164,29 @@ window.AVV18Habilidades = function (G) {
         vida: this.vida, radio: 1.1, arco: { vy: 3, g: 12, rebote: 0.75 }, botes: 2, golpe: { plumas: 1, empuje: 4, mareo: 0.5 } });
       ctx.fx('leaves', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('dash');
       ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: d.x, y: 0, z: d.z } });
+      return { ok: true };
+    } });
+
+  // ---------- Dos más (Kelvin 5-nov, V18_MATRIZ_36.md #10 y #5): llegan con el oro del minigolf y al ganar 3 duelos ----------
+  // Mirada del Pitón (versicolor, OJOS): 3 s en que las semillas y el grito de la rival van a la mitad de velocidad (también las
+  // que ya vuelan). Ventaja: defensa contra tiros, da tiempo a esquivar. Debilidad: nada contra golpes de ala ni hace daño.
+  // Quien mueve las semillas aplica `lenta` (combate.js); el grito lo frena aquí.
+  registrar({ id: 'mirada_piton', nombre: 'Mirada del Pitón', especies: ['versicolor'], tecnica: 'ojos', coste: 30, cooldown: 10, fx: 'ring', dura: 3, lento: 0.5,
+    efecto(ctx) {
+      const { yo, otro } = ctx;
+      otro.lenta = this.dura; yo.cara = 'fight';
+      ctx.fx('ring', otro.pos.x, otro.pos.y + 1.0, otro.pos.z); ctx.fx('bubbles', otro.pos.x, otro.pos.y + 1.4, otro.pos.z); ctx.sonar('ring', 1);
+      ctx.poder({ id: this.id, de: yo.id, a: otro.id, dura: this.dura });
+      return { ok: true };
+    } });
+  // Ojo de sol (collaria, OJOS): como el Ojo del cenote pero más largo y más suave: marca 5 s y tus semillas la siguen la mitad
+  // de fuerte (corrigen menos). Ventaja: dura más. Debilidad: si se aparta mucho, falla igual; no hace daño por sí solo.
+  registrar({ id: 'ojo_sol', nombre: 'Ojo de sol', especies: ['collaria'], tecnica: 'ojos', coste: 30, cooldown: 9, fx: 'gold', dura: 5, fuerza: 0.5,
+    efecto(ctx) {
+      const { yo, otro } = ctx;
+      otro.marcada = this.dura; otro.marcaK = this.fuerza; yo.cara = 'fight';
+      ctx.fx('gold', otro.pos.x, otro.pos.y + 1.4, otro.pos.z); ctx.fx('stars', otro.pos.x, otro.pos.y + 1.8, otro.pos.z); ctx.sonar('ring', 2);
+      ctx.poder({ id: this.id, de: yo.id, a: otro.id, dura: this.dura });
       return { ok: true };
     } });
 
@@ -224,7 +248,7 @@ window.AVV18Habilidades = function (G) {
     for (const k in f.cd) f.cd[k] = Math.max(0, f.cd[k] - dt);
     f.mareo = Math.max(0, f.mareo - dt); f.inv = Math.max(0, f.inv - dt); f.escudo = Math.max(0, f.escudo - dt);
     f.picoT = Math.max(0, (f.picoT || 0) - dt); f.marcada = Math.max(0, (f.marcada || 0) - dt); f.alasT = Math.max(0, (f.alasT || 0) - dt);
-    f.deslumbrada = Math.max(0, (f.deslumbrada || 0) - dt); f.falla = Math.max(0, (f.falla || 0) - dt);
+    f.deslumbrada = Math.max(0, (f.deslumbrada || 0) - dt); f.falla = Math.max(0, (f.falla || 0) - dt); f.lenta = Math.max(0, (f.lenta || 0) - dt);
     if (!f.picoT && f.cara === 'fight') f.cara = null;
   }
   G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, recibir, paso, dist, dirA, mira };

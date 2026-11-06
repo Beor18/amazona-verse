@@ -1,21 +1,25 @@
 /* Juego · V18.1 · nuevas cotorras para la bandada (Kelvin 5-nov: «las especies deben descubrirse y desbloquearse
-   progresivamente; no entregar las 36 desde el inicio»). Seis más, cada una con su poder de V18_MATRIZ_36.md:
+   progresivamente; no entregar las 36 desde el inicio»). Ocho más, cada una con su poder de V18_MATRIZ_36.md:
      ganar el primer duelo            → amazona de pico negro (agilis)        · Quiebro (ALAS)
      reparar el puente colgante       → loro corona azul (farinosa)           · Ala fuerte (ALAS)
      dispersar la Sombra de Tormenta  → cotorra cabeciamarilla (barbadensis)  · Lluvia de semillas (PICO)
      ganar el duelo con otra cotorra  → loro yucateco (xantholora)            · Ojo del cenote (OJOS)
      deshacer la Serpiente de la Maraña → loro de San Vicente (guildingii)    · Abanico de colores (PLUMAS)
      despertar al Sapo Encantado      → loro diadema (diadema)                · Semilla de río (PICO)
+     primera medalla de oro en el minigolf → loro de Santa Lucía (versicolor) · Mirada del Pitón (OJOS)
+     ganar 3 duelos en total          → amazona de pico amarillo (collaria)   · Ojo de sol (OJOS)
    Llegan solas al cumplir el hito (aviso y a «Mis cotorras»); en partidas viejas que ya lo cumplían, sin aviso.
    Solo cambia el poder del duelo y de la amenaza: el personaje del jugador se queda igual. Mara y Vela (martinicana,
    violacea) son consejeras en la temporada 1 y no entran aquí. Solo con la bandera V18.
-   Prueba: AV.v18NuevasTest() (hitos y los 6 poderes en el duelo). */
+   Prueba: AV.v18NuevasTest() (hitos y los 8 poderes en el duelo). */
 window.AVV18Nuevas = function (G) {
   'use strict';
   if (G.v18nuevas) return G.v18nuevas;
   const V = G.v18, H = G.v18hab, S = G.S;
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 5200); } catch (e) { /* sin interfaz */ } };
   const rango = e => Math.max(0, V.ESTADOS.indexOf(e || 'no_descubierta'));
+  // Duelos ganados contra la rival (no cuenta el de 2 jugadores). Partidas viejas con la primera victoria ya pagada empiezan en 1.
+  const duelosGanados = () => Number(V.mundo('duelos_ganados')) || (V.cuantos('victoria_duelo') > 0 ? 1 : 0);
   const HITOS = [
     { id: 'agilis', cuando: () => V.cuantos('victoria_duelo') > 0,
       txt: '¡Una amazona de pico negro vio tu duelo y quiere volar contigo! Su poder: Quiebro.' },
@@ -28,7 +32,11 @@ window.AVV18Nuevas = function (G) {
     { id: 'guildingii', m: true, cuando: () => V.mundo('serpiente_marana') === 'deshecha',
       txt: '¡Sin la Maraña, un loro de San Vicente vino a lucir sus colores! Su poder: Abanico de colores.' },
     { id: 'diadema', m: true, cuando: () => V.mundo('sapo_encantado') === 'despierto',
-      txt: '¡El Sapo despertó y un loro diadema vino a ver qué pasaba! Su poder: Semilla de río.' }
+      txt: '¡El Sapo despertó y un loro diadema vino a ver qué pasaba! Su poder: Semilla de río.' },
+    { id: 'versicolor', m: true, cuando: () => V.otorgado('minigolf_villa_oro') || ((V.mundo('minigolf_villa') || {}).medalla === 'oro'),
+      txt: '¡Un loro de Santa Lucía vio tu hoyo de oro y quiere volar contigo! Su poder: Mirada del Pitón.' },
+    { id: 'collaria', cuando: () => duelosGanados() >= 3,
+      txt: '¡Una amazona de pico amarillo vio tus 3 duelos ganados y se une a tu bandada! Su poder: Ojo de sol.' }
   ];
   const TXT = { elige: 'Elígela en Pausa → Mis cotorras.', eligeM: 'Elígelo en Pausa → Mis cotorras.' }; // m: el aviso habla de «un loro»
   function revisar(avisar) {
@@ -42,12 +50,14 @@ window.AVV18Nuevas = function (G) {
   }
   // Ganar el duelo con una cotorra que no es Vittata: su propia marca, idempotente
   G.on('v18combate', ev => {
-    if (!ev || ev.tipo !== 'win' || ev.de !== 'jugador') return;
+    if (!ev || ev.tipo !== 'win' || ev.de !== 'jugador' || ev.duelo) return;
+    V.cambiarMundo('duelos_ganados', duelosGanados() + 1); // el evento llega antes de que combate.js pague la primera
     const C = G.v18combate && G.v18combate.estado(), sp = C && C.j && C.j.especie;
     if (sp && sp !== 'vittata') V.otorgar('combate_otra', 'victoria_otra', 1);
     setTimeout(() => revisar(true), 3600); // después del aviso de victoria (antes lo tapaba al instante)
   });
   G.on('v18', ev => { if (ev && (ev.tipo === 'mundo' || ev.tipo === 'recompensa')) setTimeout(() => revisar(true), 4200); }); // tras «¡Puente reparado!» y el premio de la Sombra
+  G.on('v18minigolf', ev => { if (ev && ev.tipo === 'nido' && ev.medalla === 'oro') setTimeout(() => revisar(true), 5200); }); // tras el aviso del premio de oro
   G.on('apply', () => setTimeout(() => revisar(false), 0), 97);
   setTimeout(() => revisar(false), 0);
 
@@ -75,13 +85,26 @@ window.AVV18Nuevas = function (G) {
       check('Deshacer la Serpiente de la Maraña trae el loro de San Vicente (Abanico de colores), con aviso', rango(V.estado('guildingii')) >= rango('seleccionable') && toasts.some(t => /San Vicente/.test(t) && /Mis cotorras/.test(t)) && rango(V.estado('diadema')) < 1);
       V.cambiarMundo('sapo_encantado', 'despierto'); revisar(true);
       check('Despertar al Sapo Encantado trae el loro diadema (Semilla de río), con aviso', rango(V.estado('diadema')) >= rango('seleccionable') && toasts.some(t => /loro diadema/.test(t)));
+      check('...y las de Santa Lucía y pico amarillo aún no (oro del minigolf; 3 duelos ganados)', rango(V.estado('versicolor')) < 1 && rango(V.estado('collaria')) < 1 && duelosGanados() === 1, 'duelos ' + duelosGanados());
+      V.otorgar('minigolf_villa_oro', 'minigolf_oro', 1); revisar(true);
+      check('La primera medalla de oro del minigolf trae el loro de Santa Lucía (Mirada del Pitón), con aviso', rango(V.estado('versicolor')) >= rango('seleccionable') &&
+        toasts.some(t => /Santa Lucía/.test(t) && /Mirada del Pitón/.test(t) && /Mis cotorras/.test(t)) && rango(V.estado('collaria')) < 1);
+      const B0 = G.v18combate; G.v18combate = null; // el oyente de victorias no mira el duelo real
+      try {
+        G.emit('v18combate', { tipo: 'win', de: 'j1', duelo: 2 }); G.emit('v18combate', { tipo: 'win', de: 'jugador', duelo: 2 }); G.emit('v18combate', { tipo: 'loss', de: 'rival' });
+        const d1 = duelosGanados(); G.emit('v18combate', { tipo: 'win', de: 'jugador' }); revisar(true); const d2 = duelosGanados(), aun = rango(V.estado('collaria')) < 1;
+        G.emit('v18combate', { tipo: 'win', de: 'jugador' }); revisar(true);
+        check('Cada victoria contra la rival cuenta (no el duelo de 2 ni las derrotas); a los 3 duelos ganados llega la amazona de pico amarillo (Ojo de sol), con aviso',
+          d1 === 1 && d2 === 2 && aun && duelosGanados() === 3 && rango(V.estado('collaria')) >= rango('seleccionable') && toasts.some(t => /pico amarillo/.test(t) && /Ojo de sol/.test(t)),
+          'duelos ' + d1 + '→' + d2 + '→' + duelosGanados());
+      } finally { G.v18combate = B0; }
       check('Cada una tiene su poder propio', H.poderDe('agilis') === 'quiebro' && H.poderDe('farinosa') === 'ala_fuerte' && H.poderDe('barbadensis') === 'lluvia_semillas' && H.poderDe('xantholora') === 'ojo_cenote' &&
-        H.poderDe('guildingii') === 'abanico_colores' && H.poderDe('diadema') === 'semilla_rio',
+        H.poderDe('guildingii') === 'abanico_colores' && H.poderDe('diadema') === 'semilla_rio' && H.poderDe('versicolor') === 'mirada_piton' && H.poderDe('collaria') === 'ojo_sol',
         ids.map(H.poderDe).join(','));
       check('No avisa dos veces la misma', revisar(true).length === 0);
       check('Mara y Vela no se pueden elegir (consejeras en la temporada 1)', rango(V.estado('martinicana')) < 1 && rango(V.estado('violacea')) < 1);
 
-      // ---- Los 6 poderes en el duelo, a paso fijo ----
+      // ---- Los 8 poderes en el duelo, a paso fijo ----
       if (B && B.iniciar) {
         const C = B.estado(), corre = s => { for (let t = 0; t < s; t += 1 / 30) B.paso(1 / 30); };
         const quieta = dx => { C.r.pos.x = S.pos.x + dx; C.r.pos.z = S.pos.z; C.r.pos.y = G.terreno.height(C.r.pos.x, C.r.pos.z); /* la altura de donde se pone, no la de antes: la semilla apunta a esa altura */ C.r.pensar = 99; C.r.esquivaT = 99; C.r.poderT = 99; C.r.golpeT = 99; C.r.tiroT = 99; C.r.mov.t = 0; C.r.kb.t = 0; };
@@ -142,6 +165,35 @@ window.AVV18Nuevas = function (G) {
         S.facing = { x: 1, z: 0 }; C.j.cd = {}; C.j.energia = 100; C.r.inv = 0; quieta(9); const prr = C.r.plumas; B.usar(C.j, 'semilla_rio'); corre(2);
         check('...y si va hacia la rival, le da (1 pluma)', C.r.plumas === prr - 1, 'plumas ' + prr + '→' + C.r.plumas);
         B.salir();
+        // Mirada del Pitón: 3 s en que la semilla y el grito de la rival van a la mitad; el golpe de ala, igual
+        B.iniciar({ sinCuenta: true, especie: 'versicolor' }); quieta(8); listo();
+        const rm = B.usar(C.j, 'mirada_piton');
+        check('Mirada del Pitón: la rival queda 3 s frenada', rm.ok && C.r.lenta > 2.9 && C.r.lenta <= 3, 'lenta ' + (C.r.lenta || 0).toFixed(2));
+        const avance = () => { C.r.cd = {}; C.r.energia = 100; C.j.inv = 0; C.j.escudo = 0; quieta(8); B.usar(C.r, 'semilla'); const sb = C.balas[C.balas.length - 1]; if (!sb) return 0;
+          const x0 = sb.m.position.x, z0 = sb.m.position.z; for (let k = 0; k < 6; k++) B.paso(1 / 30); return Math.hypot(sb.m.position.x - x0, sb.m.position.z - z0); };
+        const aL = avance(); const lenta0 = C.r.lenta; C.r.lenta = 0; const aN = avance(); C.r.lenta = lenta0;
+        check('...su semilla avanza a la mitad (más tiempo para esquivar)', aN > 2.5 && aL > 0.3 * aN && aL < 0.65 * aN, 'en 0,2 s: ' + aL.toFixed(2) + ' m frenada, ' + aN.toFixed(2) + ' m normal');
+        const pl1 = C.j.plumas; corre(1.6); const daAun = C.j.plumas < pl1;
+        const gritoT = lenta => { C.r.poder = 'grito_yunque'; C.r.cd = {}; C.r.energia = 100; C.r.mareo = 0; C.r.lenta = lenta; quieta(5); C.timers.length = 0; const ok = B.usar(C.r, 'grito_yunque').ok; const t = ok && C.timers.length ? C.timers[C.timers.length - 1].t : -1; C.timers.length = 0; return t; };
+        const gL = gritoT(2), gN = gritoT(0);
+        check('...la semilla frenada aún da si no te apartas; el grito frenado tarda el doble en llegar', daAun && gN > 0 && Math.abs(gL - 2 * gN) < 0.02, 'da ' + daAun + ', grito ' + gN.toFixed(2) + ' s → ' + gL.toFixed(2) + ' s');
+        C.r.lenta = 3; C.r.cd = {}; C.r.energia = 100; C.j.inv = 0; C.j.escudo = 0; C.j.mareo = 0; quieta(1.5); const pa = C.j.plumas, ga = B.usar(C.r, 'golpe_ala');
+        check('...pero no frena los golpes de ala', ga.ok && ga.acierto && C.j.plumas === pa - 1, 'plumas ' + pa + '→' + C.j.plumas);
+        corre(3.2); check('...y a los 3 s se le pasa', !(C.r.lenta > 0));
+        B.salir();
+        // Ojo de sol: marca 5 s; las semillas la siguen a la mitad de fuerza que con el Ojo del cenote
+        B.iniciar({ sinCuenta: true, especie: 'collaria' }); quieta(8); listo();
+        const rs = B.usar(C.j, 'ojo_sol');
+        check('Ojo de sol: marca a la rival 5 s (más que el Ojo del cenote) y la sigue más suave', rs.ok && C.r.marcada > 4.5 && C.r.marcaK === 0.5, 'marcada ' + (C.r.marcada || 0).toFixed(2) + ', fuerza ' + C.r.marcaK);
+        const tuerce = (marca, K, vz) => { C.j.cd = {}; C.j.energia = 100; C.r.inv = 0; quieta(8); C.r.marcada = marca; C.r.marcaK = K; const p0 = C.r.plumas; B.usar(C.j, 'semilla');
+          const sb = C.balas[C.balas.length - 1]; C.r.mov.x = 0; C.r.mov.z = vz; C.r.mov.t = 0.6; let lat = 0; for (let k = 0; k < 7; k++) { B.paso(1 / 30); if (sb && C.balas.includes(sb)) lat = Math.abs(sb.vz); }
+          corre(1.0); return { lat, n: p0 - C.r.plumas }; };
+        const sol = tuerce(5, 0.5, 9), cen = tuerce(5, 1, 9), sin = tuerce(0, 1, 9);
+        check('...la semilla se tuerce hacia ella menos que con el Ojo del cenote (y sin marca, nada)', sin.lat < 0.05 && sol.lat > 0.3 * cen.lat && sol.lat < 0.8 * cen.lat,
+          'giro ' + sin.lat.toFixed(2) + ' / ' + sol.lat.toFixed(2) + ' / ' + cen.lat.toFixed(2) + ' m/s');
+        const solP = tuerce(5, 0.5, 3), sinP = tuerce(0, 1, 3);
+        check('...si se aparta un poco, la semilla la sigue y le da (sin la marca, falla)', solP.n === 1 && sinP.n === 0, 'con Ojo de sol ' + solP.n + ', sin marca ' + sinP.n);
+        S.facing = { x: 1, z: 0 }; B.salir();
       } else check('El duelo está cargado', false);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }
     try { if (B && B.estado().fase !== 'nada') B.salir(); } catch (e) { /* */ }
