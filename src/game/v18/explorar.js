@@ -215,8 +215,12 @@ window.AVV18Explorar = function (G) {
     const b = TACTIL && (btnT -= dt) <= 0 ? boton(G.V18) : null;
     if (b) {
       btnT = 0.1;
-      const ver = libre();
+      // QA-185 (móvil): encima del grupo de botones (#acts) y oculto cuando el HUD táctil está oculto (intro, diálogos, cómic); antes tapaba Impulso
+      const acts = document.getElementById('acts'), ra = acts && acts.getBoundingClientRect();
+      const hud = !!(ra && ra.height && getComputedStyle(acts).visibility !== 'hidden');
+      const ver = libre() && hud;
       if (b.hidden === ver) b.hidden = !ver;
+      if (ver) { const bo = Math.round(innerHeight - ra.top + 10) + 'px', de = Math.max(8, Math.round(innerWidth - ra.right)) + 'px'; if (b.style.bottom !== bo) b.style.bottom = bo; if (b.style.right !== de) b.style.right = de; }
       if (ver) { const nombre = (G.v18hab && G.v18hab.get(G.v18hab.poderDe(especie())) || {}).nombre || 'Poder'; if (b.textContent !== nombre) b.textContent = nombre; }
     }
   });

@@ -187,6 +187,9 @@ kbd {
 }
 .title-sub b { color: var(--gold); font-weight: 700; }
 .title-actions { margin: var(--sp-2) 0 0; }
+/* QA móvil: el enlace «← Página de inicio» medía 20 px de alto; zona de toque de 44 px sin mover el texto */
+.title-web { margin: 0; }
+.title-web a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--sp-3); }
 .title-actions .btn { animation: ring 2.4s ease-out 1s infinite; }
 .title-actions .btn:focus-visible { animation: none; }
 .title-hint { margin: 0; font-size: var(--fs-sm); color: #fff; background: rgba(20, 12, 60, 0.5); padding: var(--sp-1) var(--sp-3); border-radius: var(--r-pill); }
