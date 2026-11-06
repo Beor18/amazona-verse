@@ -354,6 +354,81 @@ window.AVV18Habilidades = function (G) {
       return { ok: true, acierto: null };
     } });
 
+  // ---------- Tres más (Kelvin 6-nov, KIMI-156, V18_MATRIZ_36.md #2, #26, #28): se consiguen descubriéndolas en el Álbum ----------
+  // Eco de la Cordillera (ventralis, PICO): grito corto (6 m) que, si acierta, rebota una vez en la rival y vuelve a los
+  // 0,6 s como segunda onda más débil (empuje e interrupción a la mitad): dos golpes en uno. Si la primera onda falla, no
+  // vuelve nada. Ventaja: dos empujes seguidos sin acercarse más. Debilidad: alcance corto y la segunda onda es leve.
+  // Espera 9 s (matriz). La reducción de la Mirada del Pitón aplica como al Grito.
+  registrar({ id: 'eco_cordillera', nombre: 'Eco de la Cordillera', especies: ['ventralis'], tecnica: 'pico', coste: 30, cooldown: 9,
+    fx: 'onda', alcance: 6, cono: 0.82, vel: 16, empuje: 12, interrumpe: 0.9, pico: 0.7,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, dir = mira(yo, otro);
+      const vel = h.vel * (yo.lenta > 0 ? ((get('mirada_piton') || {}).lento || 0.5) : 1); // Mirada del Pitón: la onda va más lenta
+      const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
+      yo.picoT = h.pico; yo.cara = 'fight';
+      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
+      ctx.poder({ id: h.id, de: yo.id, origen, direccion: { x: dir.x, y: 0, z: dir.z }, alcance: h.alcance });
+      const alcanza = () => {
+        const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
+        if (d > h.alcance + 0.6) return false;
+        return d < 1.2 || (dx * dir.x + dz * dir.z) / d >= h.cono;
+      };
+      const d0 = Math.hypot(otro.pos.x - origen.x, otro.pos.z - origen.z);
+      ctx.despues(Math.min(h.alcance, d0) / vel, () => {
+        if (!alcanza()) return;
+        ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: h.interrumpe, interrumpe: true, sonido: true, dir: { x: dir.x, z: dir.z }, forzar: true });
+        ctx.despues(0.6, () => { // el eco rebota en la rival y vuelve como segunda onda más débil
+          ctx.golpear(otro, { plumas: 0, empuje: h.empuje * 0.5, mareo: h.interrumpe * 0.5, interrumpe: true, sonido: true, dir: dirA(yo, otro), forzar: true });
+        });
+      });
+      return { ok: true, acierto: null, dir };
+    } });
+  // A ras del agua (festiva, ALAS): vuelo rasante muy rápido en línea recta hacia donde mira (~7 m en ~0,5 s); el choque se
+  // detecta mientras vuela y, si roza a la rival (≤2,2 m), la empuja lejos sin quitar plumas. Ventaja: la más rápida
+  // cruzando la explanada y entra y sale. Debilidad: solo en línea recta y, si falla el choque, solo te has desplazado.
+  // Espera 8 s (matriz).
+  registrar({ id: 'rasante', nombre: 'A ras del agua', especies: ['festiva'], tecnica: 'alas', coste: 30, cooldown: 8,
+    fx: 'feathers', vel: 28, dura: 0.55, toca: 2.2, empuje: 14, mareo: 0.6,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, d = mira(yo, otro);
+      yo.kb = yo.kb || { x: 0, z: 0, t: 0 }; yo.kb.x = d.x * h.vel; yo.kb.z = d.z * h.vel; yo.kb.t = h.dura;
+      yo.alasT = h.dura;
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: d.x, y: 0, z: d.z } });
+      let choco = false;
+      for (let k = 1; k <= 4; k++) ctx.despues(0.12 * k, () => { // el choque se detecta en cada punto del vuelo
+        if (choco || dist(yo, otro) > h.toca) return;
+        choco = true;
+        ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: h.mareo, dir: dirA(yo, otro), forzar: true });
+      });
+      return { ok: true, acierto: null };
+    } });
+  // Canto real (ochrocephala, PICO): grito de poca fuerza (empuje 8, interrupción leve) que, si la onda acierta, te
+  // devuelve 20 de energía: se paga solo al acertar y mantiene el ritmo de ataque. Ventaja: sostenible. Debilidad: la onda
+  // más floja de las de PICO. Espera 10 s (matriz). La reducción de la Mirada del Pitón aplica como al Grito.
+  registrar({ id: 'canto_real', nombre: 'Canto real', especies: ['ochrocephala'], tecnica: 'pico', coste: 30, cooldown: 10,
+    fx: 'onda', alcance: 7, cono: 0.82, vel: 16, empuje: 8, interrumpe: 0.6, pico: 0.7, devuelve: 20,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, dir = mira(yo, otro);
+      const vel = h.vel * (yo.lenta > 0 ? ((get('mirada_piton') || {}).lento || 0.5) : 1); // Mirada del Pitón: la onda va más lenta
+      const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
+      yo.picoT = h.pico; yo.cara = 'fight';
+      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
+      ctx.poder({ id: h.id, de: yo.id, origen, direccion: { x: dir.x, y: 0, z: dir.z }, alcance: h.alcance });
+      const alcanza = () => {
+        const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
+        if (d > h.alcance + 0.6) return false;
+        return d < 1.2 || (dx * dir.x + dz * dir.z) / d >= h.cono;
+      };
+      const d0 = Math.hypot(otro.pos.x - origen.x, otro.pos.z - origen.z);
+      ctx.despues(Math.min(h.alcance, d0) / vel, () => {
+        if (!alcanza()) return;
+        ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: h.interrumpe, interrumpe: true, sonido: true, dir: { x: dir.x, z: dir.z }, forzar: true });
+        yo.energia = Math.min(yo.energiaMax || ENERGIA_MAX, yo.energia + h.devuelve); // acierta: +20 de energía
+      });
+      return { ok: true, acierto: null, dir };
+    } });
+
   // ---------- Luchadores ----------
   function luchador(o) {
     const sp = o.especie || 'vittata';

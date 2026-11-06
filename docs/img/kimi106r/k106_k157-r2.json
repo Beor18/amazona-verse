@@ -1,0 +1,154 @@
+{
+ "etiqueta": "k156-r2",
+ "bandera": "v18=1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "pruebas": {
+  "fx": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 69,
+     "peorMs": 32,
+     "n": 195,
+     "callsMed": 55,
+     "trisMed": 229220,
+     "heap": 100
+    },
+    "duracionMs": 50,
+    "test": {
+     "passed": 17,
+     "total": 17,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 55,
+     "tris": 229229,
+     "geo": 77,
+     "tex": 123,
+     "prog": 44,
+     "heap": 101
+    }
+   }
+  },
+  "amenaza": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 66.2,
+     "peorMs": 24,
+     "n": 192,
+     "callsMed": 55,
+     "trisMed": 229218,
+     "heap": 119
+    },
+    "duracionMs": 551,
+    "test": {
+     "passed": 21,
+     "total": 21,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 57,
+     "tris": 257497,
+     "geo": 76,
+     "tex": 125,
+     "prog": 45,
+     "heap": 104
+    }
+   }
+  },
+  "combate": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 64.9,
+     "peorMs": 34,
+     "n": 184,
+     "callsMed": 55,
+     "trisMed": 229215,
+     "heap": 116
+    },
+    "duracionMs": 1459,
+    "test": {
+     "passed": 37,
+     "total": 38,
+     "fallos": [
+      "Con arausiaca: poder Escudo de plumas; la rival usa el Grito del Yunque :: "
+     ]
+    },
+    "contexto": {
+     "calls": 55,
+     "tris": 229229,
+     "geo": 77,
+     "tex": 123,
+     "prog": 44,
+     "heap": 104
+    }
+   }
+  }
+ }
+}

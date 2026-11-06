@@ -885,9 +885,10 @@ window.AVV18Combate = function (G) {
       correr(esc.dura + 0.3, () => { quieta(6); S.pos.x = sitio.x - 5; C.j.inv = 9; C.j.plumas = PLUMAS; });
       check('Escudo: caduca solo y se dispersa; nunca permanente (espera > duración)', C.r.escudo === 0 && !C.r.escudoFx && esc.cooldown > esc.dura);
 
-      // 5. Con arausiaca elegida, el jugador tiene el escudo; la rival (Isleña) el grito
+      // 5. Con arausiaca elegida, el jugador tiene el escudo; la rival (ventralis, Isleña) ya trae su poder de
+      // especie (Eco de la Cordillera, KIMI-156): antes heredaba el Grito de la familia
       iniciar({ sinCuenta: true, especie: 'arausiaca' });
-      check('Con arausiaca: poder Escudo de plumas; la rival usa el Grito del Yunque', C.j.poder === 'escudo_plumas' && C.r.poder === 'grito_yunque' && usar(C.j, 'escudo_plumas').ok && C.j.escudo > 0);
+      check('Con arausiaca: poder Escudo de plumas; la rival (ventralis) usa su poder: Eco de la Cordillera', C.j.poder === 'escudo_plumas' && C.r.poder === 'eco_cordillera' && usar(C.j, 'escudo_plumas').ok && C.j.escudo > 0);
 
       // 6. La IA se mueve, ataca, se defiende y reacciona a los impactos
       iniciar({ sinCuenta: true, especie: 'vittata' });
