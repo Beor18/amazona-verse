@@ -1017,27 +1017,36 @@ minigolf y ciudad.
 con la misma semilla y perfil (herramienta dedicada): puerto (plaza de La Mina, máquina), Chispa (carrera en
 Los Portales), minigolf (hoyo 1) y Ciudad de los 36 (vuelo rasante sobre la ciudad).
 
-### demo V18 en HEAD (6-nov ~20:15-20:18 UTC) <span id="k175-head">— bajo completo · medio cortado en puente (re-medición en curso)</span>
+### demo V18 en HEAD (6-nov ~21:45-22:00 UTC) <span id="k175-head">— VEREDICTO: «bajo» cumple ≥ 30 FPS en limpio; las cifras bajas de la primera corrida eran contención</span>
 
-Corrida `kimi1_127.js --iphone --calidad bajo|medio` (390×844 @ dpr 3, CPU ×4, GPU real RX 5700 XT).
-Ojo: la corrida se midió **con la PC compartida** (Kimi 1 volcaba evidencia k106 en 16:06-16:09 local y
-las dos sesiones comparten GPU): los fps pueden ir deprimidos por contención — la re-medición con PC libre
-está en curso en la misma vuelta. El escenario «base» se mide recién navegado: su peorMs (~5,5-5,7 s) es la
-ventana de asentado del streaming, no el estado asentado.
+Corridas `kimi1_127.js --iphone` (390×844 @ dpr 3, CPU ×4, GPU real RX 5700 XT). La primera corrida
+(k175-bajo/medio, 20:15 UTC) se midió **con 5 árboles de Chrome huérfanos** de sesiones cortadas
+(kimi1k106/kimi1k174/kimi3m171/kimi3s166/kimi2u, ~50 procesos robando GPU): duelo 25 / Sombra 16 /
+puente 26 en «bajo» — todos < 30. Tras matar los huérfanos (verificando node padre muerto; los de
+Kimi 1 en curso no se tocaron) y re-medir:
 
-| escenario | calidad | fps med | fps mín | peor ms | calls | ktris |
-|---|---|---|---|---|---|---|
-| cap1 spawn (asentado) | bajo | 29 | 6 | 2304 | 60 | 251 |
-| demo base (recién cargada) | bajo | 10 | 1 | 5725 | 112 | 465 |
-| demo duelo Campeana | bajo | 25 | 21 | 101 | 77 | 238 |
-| demo Sombra de Tormenta | bajo | 16 | 13 | 154 | 64 | 243 |
-| demo puente colgante | bajo | 26 | 14 | 150 | 71 | 239 |
-| cap1 spawn (asentado) | medio | 19 | 14 | 118 | 109 | 413 |
-| demo base (recién cargada) | medio | 6 | 1 | 5532 | 139 | 566 |
-| demo duelo Campeana | medio | 13 | 12 | 152 | 121 | 375 |
-| demo Sombra de Tormenta | medio | 12 | 7 | 214 | 99 | 381 |
-| demo puente colgante | medio | — | — | — | — | — (corrida cortada) |
+| escenario | calidad | fps med | fps mín | peor ms | calls | ktris | corrida |
+|---|---|---|---|---|---|---|---|
+| cap1 spawn (asentado) | bajo | 50 | 11 | 1872 | 61 | 251 | k175-bajo3 |
+| demo base (recién cargada) | bajo | 20 | 2 | 4065 | 104 | 542 | k175-bajo3 |
+| demo duelo Campeana | bajo | **47** | 28 | 89 | 81 | 240 | k175-bajo3 |
+| demo Sombra de Tormenta | bajo | **38** | 28 | 76 | 64 | 243 | k175-bajo3 |
+| demo puente colgante | bajo | **47** | 40 | 50 | 71 | 239 | k175-bajo3 |
+| cap1 spawn (asentado) | medio | 11 † | 8 | 252 | 108 | 413 | k175-medio2 |
+| demo base (recién cargada) | medio | 6 | 1 | 6788 | 139 | 676 | k175-medio2 |
+| demo duelo Campeana | medio | **32** | 24 | 111 | 117 | 376 | k175-medio2 |
+| demo Sombra de Tormenta | medio | **29** | 23 | 87 | 98 | 381 | k175-medio2 |
+| demo puente colgante | medio | **39** | 37 | 47 | 109 | 384 | k175-medio2 |
 
-Con estos números (si se confirman en limpio) **duelo 25 / Sombra 16 / puente 26 en «bajo» incumplirían el
-criterio de 30 FPS** frente a la base KIMI-165 (54/38/55) — a resolver en la re-medición: o es contención de
-la corrida, o hay que buscar la regresión entre 8a9803a0 y HEAD en el carril render/streaming.
+† cap1 de medio2 se midió antes de limpiar los huérfanos (contendido); sus escenarios de demo sí son limpios.
+
+**Veredicto «bajo»:** duelo 47 / Sombra 38 / puente 47 — **criterio de 30 FPS cumplido** (base paga la
+ventana de asentado: su peorMs de 4 s es el streaming inicial, no el estado asentado). En línea con la
+base KIMI-165 (54/38/55): sin regresión entre 8a9803a0 y HEAD. **«Medio»:** demo en el filo (32/29/39)
+con el cuello de hilo conocido a CPU ×4 con dpr 1,0 (KIMI-132/165; palancas «escuela» = decisión de
+Kelvin, QA-181). 0 errores de consola en las 3 corridas. Heap 118-160 MB, texturas 122,9 MB.
+
+**Conclusión metodológica:** las herramientas de medición de esta PC deben verificar que no haya
+árboles `Temp\kimi*` huérfanos antes de medir (firma: raíz chrome.exe sin node vivo); un solo árbol
+huérfano deprime los FPS a la mitad y da falsos < 30. Pendiente de KIMI-175: las 4 actividades nuevas
+(puerto, Chispa, minigolf, Ciudad de los 36) con herramienta dedicada en la próxima vuelta.

@@ -1,0 +1,46 @@
+[21:49:39] pack cap1: navegando...
+[21:49:44] …latido
+[21:49:49] …latido
+[21:49:54] …latido
+[21:49:59] …latido
+[21:50:04] …latido
+[21:50:09] pack cap1: listo en 6.533s, entrada en 29.121s; muestreo 12s en el spawn
+[21:50:09] …latido
+[21:50:14] …latido
+[21:50:19] …latido
+[21:50:24] …latido
+[21:50:29] …latido
+[21:50:34] …latido
+[21:50:39] …latido
+[21:50:44] …latido
+[21:50:48] pack cap1: fpsMed=24 min=18 peorMs=93 calls=60 ktris=251 medL=60 calls/0.25M errores=[]
+[21:50:48] demo: navegando con ?v18=1...
+[21:50:49] …latido
+[21:50:54] …latido
+[21:50:59] …latido
+[21:51:04] …latido
+[21:51:09] …latido
+[21:51:14] …latido
+[21:51:19] …latido
+[21:51:22] demo: midiendo base...
+[21:51:24] …latido
+[21:51:29] …latido
+[21:51:34] …latido
+[21:51:37] demo/base: fpsMed=7 min=0 peorMs=6604 calls=107 ktris=437
+[21:51:38] demo: midiendo duelo...
+[21:51:39] …latido
+[21:51:44] …latido
+[21:51:49] …latido
+[21:51:50] demo/duelo: fpsMed=18 min=15 peorMs=150 calls=77 ktris=239
+[21:51:51] demo: midiendo sombra...
+[21:51:54] …latido
+[21:51:59] …latido
+[21:52:04] …latido
+[21:52:05] demo/sombra: fpsMed=10 min=8 peorMs=196 calls=64 ktris=244
+[21:52:06] demo: midiendo puente...
+[21:52:09] …latido
+[21:52:14] …latido
+[21:52:19] …latido
+[21:52:20] demo/puente: fpsMed=19 min=15 peorMs=115 calls=71 ktris=239
+[21:52:21] demo: errores de consola: []
+[21:52:22] evidencia: C:\Users\kelvi\amazonaversegame2\docs\img\kimi127\k127_k175-bajo2.json
