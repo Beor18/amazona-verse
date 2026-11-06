@@ -966,3 +966,36 @@ mismos motivos y mismos nº de vanos por modelo que BASE (`docs/img/kimi137/k137
 (el motivo solo se sabe tras buscar; una lista de modelos sin puerta verificada por QA es lo
 seguro) o muestrear la planta con `cel` más gruesa (0,15→0,2 m sería ~½ de N y de muestras,
 pero estrecha la detección de puertas de 0,6 m: requiere movementTest + prueba física).
+
+## KIMI-165 · demo `?v18=1` en iPhone emulado, «bajo» y «medio» (6-nov · Kimi 1 — medición pedida el 5-nov para la demo del hijo de Kelvin)
+
+Herramienta: `tools/build/kimi1_127.js --iphone --calidad bajo|medio --etiqueta k165-*` (perfil nuevo:
+390×844 @ DPR 3, CPU ×4, touch + UA iOS — sin UA iPhone el perfil de texturas no es el real, KIMI-110).
+HEAD 8a9803a0, GPU real RX 5700 XT, PC libre (0 chrome/node ajenos), partida sembrada sin creador,
+progreso v18 fiel (vittata seleccionada), API pública de los escenarios (mismo contrato que KIMI-127/158).
+0 errores de consola en las 10 páginas. Evidencia: `docs/img/kimi165/k127_k165-{bajo,medio}.{json,log}` + 10 capturas.
+
+**Escenario · fps med (mín) · peor ms · p95 ms · draw calls · ktris — «bajo» (dpr efectivo 0,75, escalón KIMI-133 verificado en las muestras):**
+
+| escenario | fps med | fps mín | peor ms | p95 ms | calls | ktris |
+|---|---|---|---|---|---|---|
+| cap1 villa (regresión) | 52 | 2* | 1811* | — | 60 | 250 |
+| demo base explanada | 35 | 25 | 69 | 41 | 107 | 523 |
+| demo duelo Campeana | **54** | 45 | 69 | 26 | 74 | 237 |
+| demo Sombra de Tormenta | 38 | 29 | 54 | 35 | 64 | 243 |
+| demo puente colgante | **55** | 42 | 44 | 26 | 71 | 239 |
+
+\* el mín/peor de la villa es el asentado post-entrada (streaming + enlaces de programas, familia QA-53), no la sesión asentada.
+
+**«medio» forzado (dpr efectivo 1,0):** cap1 villa 34 · base 23 · duelo 32 · Sombra 22 · puente 23 fps med
+(peores 76–169 ms, calls 98–141, ktris 374–657, heap 128–157 MB). Todo el demo queda **< 30** en «medio» a CPU ×4.
+
+**Veredicto contra los criterios:** (a) «que nada baje de 30 en móvil» (petición 5-nov): **cumplido en «bajo»**
+(35–54 en los escenarios del demo; el perfil natural del iPhone es «bajo», KIMI-110/158); **incumplido en
+«medio» forzado** (22–32). (b) «≥45 FPS en iPhone bajo» (KIMI-069): duelo 54 ✓ y puente 55 ✓; Sombra 38 ✗ y
+base 35 ✗ (la Sombra cuesta hilo propio de pelea y área — atribuido en KIMI-140; la base paga la explanada
+con 107 calls / 523 k). En «medio» el cuello es el mismo de siempre a ×4: hilo (three.js+nativo ~60 %,
+KIMI-132) con 1,8× de píxeles por dpr 1,0; las palancas conocidas son las de la propuesta «escuela»
+(escalón <25 fps sostenido → resolución 0,75 + post off, KIMI-133/145/146) y son **decisión de Kelvin**.
+El juego no se tocó (medición solamente); el adaptativo en «medio» manual queda anulado por diseño
+(`?calidad=` fija manual), en juego real bajaría solo a «bajo».

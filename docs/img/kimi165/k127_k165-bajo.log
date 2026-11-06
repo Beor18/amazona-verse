@@ -1,0 +1,36 @@
+[18:31:42] pack cap1: navegando...
+[18:31:47] …latido
+[18:31:52] …latido
+[18:31:57] …latido
+[18:32:00] pack cap1: listo en 2.966s, entrada en 17.879s; muestreo 12s en el spawn
+[18:32:02] …latido
+[18:32:07] …latido
+[18:32:12] …latido
+[18:32:17] …latido
+[18:32:17] pack cap1: fpsMed=52 min=2 peorMs=1811 calls=61 ktris=251 medL=60 calls/0.25M errores=[]
+[18:32:17] demo: navegando con ?v18=1...
+[18:32:22] …latido
+[18:32:27] …latido
+[18:32:32] …latido
+[18:32:35] demo: midiendo base...
+[18:32:37] …latido
+[18:32:42] …latido
+[18:32:47] …latido
+[18:32:50] demo/base: fpsMed=35 min=25 peorMs=69 calls=107 ktris=523
+[18:32:51] demo: midiendo duelo...
+[18:32:52] …latido
+[18:32:57] …latido
+[18:33:02] …latido
+[18:33:02] demo/duelo: fpsMed=54 min=45 peorMs=69 calls=74 ktris=237
+[18:33:03] demo: midiendo sombra...
+[18:33:07] …latido
+[18:33:12] …latido
+[18:33:17] …latido
+[18:33:17] demo/sombra: fpsMed=38 min=29 peorMs=54 calls=64 ktris=243
+[18:33:17] demo: midiendo puente...
+[18:33:22] …latido
+[18:33:27] …latido
+[18:33:31] demo/puente: fpsMed=55 min=42 peorMs=44 calls=71 ktris=239
+[18:33:32] …latido
+[18:33:32] demo: errores de consola: []
+[18:33:32] evidencia: docs\img\kimi165\k127_k165-bajo.json
