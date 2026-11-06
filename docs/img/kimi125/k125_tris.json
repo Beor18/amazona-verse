@@ -1,0 +1,281 @@
+{
+ "generado": "KIMI-125 Kimi 2",
+ "edificios": {
+  "templo_grande": {
+   "ligeroReal": {
+    "tris": 2340,
+    "prims": 5,
+    "mats": 5,
+    "kb": 252.4
+   },
+   "kitDeclaraLigero": 2742,
+   "hdReal": {
+    "tris": 184792,
+    "prims": 11,
+    "mats": 9,
+    "kb": 9357.8
+   },
+   "kitDeclaraHD": 184792,
+   "hdEncendido": true,
+   "lejosReal": {
+    "tris": 8016,
+    "kb": 177.3
+   },
+   "kitDeclaraLejos": 8016,
+   "instancias": 2
+  },
+  "templo_grande_a": {
+   "ligeroReal": {
+    "tris": 884,
+    "prims": 5,
+    "mats": 5,
+    "kb": 98.8
+   },
+   "kitDeclaraLigero": 4662,
+   "hdReal": {
+    "tris": 89477,
+    "prims": 10,
+    "mats": 10,
+    "kb": 5650.1
+   },
+   "kitDeclaraHD": 89477,
+   "hdEncendido": true,
+   "lejosReal": {
+    "tris": 8456,
+    "kb": 496.5
+   },
+   "kitDeclaraLejos": 8456,
+   "instancias": 2
+  },
+  "templo_grande_d": {
+   "ligeroReal": {
+    "tris": 1612,
+    "prims": 5,
+    "mats": 5,
+    "kb": 175.6
+   },
+   "kitDeclaraLigero": 4665,
+   "hdReal": {
+    "tris": 212822,
+    "prims": 12,
+    "mats": 9,
+    "kb": 10284.9
+   },
+   "kitDeclaraHD": 212822,
+   "hdEncendido": true,
+   "lejosReal": {
+    "tris": 5278,
+    "kb": 301.8
+   },
+   "kitDeclaraLejos": 5278,
+   "instancias": 1
+  },
+  "templo_grande_e": {
+   "ligeroReal": {
+    "tris": 1740,
+    "prims": 5,
+    "mats": 5,
+    "kb": 189.1
+   },
+   "kitDeclaraLigero": 3772,
+   "hdReal": {
+    "tris": 128423,
+    "prims": 11,
+    "mats": 9,
+    "kb": 5979.3
+   },
+   "kitDeclaraHD": 128423,
+   "hdEncendido": true,
+   "lejosReal": {
+    "tris": 9434,
+    "kb": 562.5
+   },
+   "kitDeclaraLejos": 9434,
+   "instancias": 1
+  },
+  "templo_grande_f": {
+   "ligeroReal": {
+    "tris": 988,
+    "prims": 5,
+    "mats": 5,
+    "kb": 109.8
+   },
+   "kitDeclaraLigero": 4723,
+   "hdReal": {
+    "tris": 144286,
+    "prims": 11,
+    "mats": 8,
+    "kb": 6685.3
+   },
+   "kitDeclaraHD": 144286,
+   "hdEncendido": true,
+   "lejosReal": {
+    "tris": 9542,
+    "kb": 528.9
+   },
+   "kitDeclaraLejos": 9542,
+   "instancias": 1
+  },
+  "templo_mediano": {
+   "ligeroReal": {
+    "tris": 432,
+    "prims": 5,
+    "mats": 5,
+    "kb": 51.1
+   },
+   "kitDeclaraLigero": 3906,
+   "hdReal": {
+    "tris": 57875,
+    "prims": 11,
+    "mats": 8,
+    "kb": 2488.5
+   },
+   "kitDeclaraHD": 57875,
+   "hdEncendido": true,
+   "lejosReal": {
+    "tris": 5150,
+    "kb": 105.7
+   },
+   "kitDeclaraLejos": 5150,
+   "instancias": 1
+  },
+  "templo_mediano_f": {
+   "ligeroReal": {
+    "tris": 432,
+    "prims": 5,
+    "mats": 5,
+    "kb": 51.1
+   },
+   "kitDeclaraLigero": 4436,
+   "hdReal": {
+    "tris": 67090,
+    "prims": 11,
+    "mats": 8,
+    "kb": 3062.3
+   },
+   "kitDeclaraHD": 67090,
+   "hdEncendido": true,
+   "lejosReal": {
+    "tris": 5008,
+    "kb": 279.6
+   },
+   "kitDeclaraLejos": 5008,
+   "instancias": 1
+  },
+  "templo_mediano_g": {
+   "ligeroReal": {
+    "tris": 432,
+    "prims": 5,
+    "mats": 5,
+    "kb": 51.1
+   },
+   "kitDeclaraLigero": 3917,
+   "hdReal": {
+    "tris": 64495,
+    "prims": 11,
+    "mats": 8,
+    "kb": 3042.2
+   },
+   "kitDeclaraHD": 64495,
+   "hdEncendido": true,
+   "lejosReal": {
+    "tris": 5144,
+    "kb": 293.7
+   },
+   "kitDeclaraLejos": 5144,
+   "instancias": 1
+  },
+  "templo_mediano_h": {
+   "ligeroReal": {
+    "tris": 432,
+    "prims": 5,
+    "mats": 5,
+    "kb": 51.1
+   },
+   "kitDeclaraLigero": 3941,
+   "hdReal": {
+    "tris": 462218,
+    "prims": 13,
+    "mats": 10,
+    "kb": 15462.3
+   },
+   "kitDeclaraHD": 462218,
+   "hdEncendido": true,
+   "lejosReal": {
+    "tris": 8642,
+    "kb": 434.6
+   },
+   "kitDeclaraLejos": 8642,
+   "instancias": 3
+  },
+  "monumento_g": {
+   "ligeroReal": {
+    "tris": 2864,
+    "prims": 3,
+    "mats": 3,
+    "kb": 218.7
+   },
+   "kitDeclaraLigero": 2864,
+   "hdReal": {
+    "tris": 203558,
+    "prims": 1,
+    "mats": 1,
+    "kb": 6213.1
+   },
+   "kitDeclaraHD": 203558,
+   "hdEncendido": false,
+   "lejosReal": {
+    "tris": 570,
+    "kb": 23.7
+   },
+   "kitDeclaraLejos": 570,
+   "instancias": 1
+  },
+  "corral": {
+   "ligeroReal": {
+    "tris": 4017,
+    "prims": 3,
+    "mats": 3,
+    "kb": 246
+   },
+   "kitDeclaraLigero": 4017,
+   "hdReal": {
+    "tris": 253910,
+    "prims": 1,
+    "mats": 1,
+    "kb": 8081.4
+   },
+   "kitDeclaraHD": 253910,
+   "hdEncendido": false,
+   "lejosReal": {
+    "tris": 467,
+    "kb": 11.3
+   },
+   "kitDeclaraLejos": 467,
+   "instancias": 1
+  },
+  "complejo_ruinas": {
+   "ligeroReal": {
+    "tris": 15190,
+    "prims": 6,
+    "mats": 6,
+    "kb": 972.7
+   },
+   "kitDeclaraLigero": 15190,
+   "hdReal": {
+    "tris": 41179,
+    "prims": 1,
+    "mats": 1,
+    "kb": 751.6
+   },
+   "kitDeclaraHD": 400000,
+   "hdEncendido": true,
+   "lejosReal": {
+    "tris": 4440,
+    "kb": 302.9
+   },
+   "kitDeclaraLejos": 4440,
+   "instancias": 1
+  }
+ }
+}

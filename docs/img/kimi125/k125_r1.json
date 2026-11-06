@@ -1,0 +1,152 @@
+{
+ "etiqueta": "r1",
+ "pantalla": "1600x900@1 cpuX1",
+ "calidad": "medio",
+ "edificios": {
+  "templo_grande": {
+   "teleport": "ok {\"v\":[52,103.4,-101.3],\"d\":37.6}",
+   "stats": {
+    "calls": 180,
+    "tris": 1236171,
+    "fps": 144,
+    "heap": 902,
+    "tex": 173,
+    "geo": 275,
+    "prog": 70
+   }
+  },
+  "templo_grande_a": {
+   "teleport": "ok {\"v\":[59.7,111.7,-120.1],\"d\":48.5}",
+   "stats": {
+    "calls": 161,
+    "tris": 1231447,
+    "fps": 144,
+    "heap": 1180,
+    "tex": 172,
+    "geo": 266,
+    "prog": 70
+   }
+  },
+  "templo_grande_d": {
+   "teleport": "ok {\"v\":[199.5,63.8,16.4],\"d\":33.7}",
+   "stats": {
+    "calls": 146,
+    "tris": 1336774,
+    "fps": 144,
+    "heap": 1098,
+    "tex": 172,
+    "geo": 286,
+    "prog": 73
+   }
+  },
+  "templo_grande_e": {
+   "teleport": "ok {\"v\":[18.3,102.6,-124.2],\"d\":37.6}",
+   "stats": {
+    "calls": 156,
+    "tris": 1219050,
+    "fps": 144,
+    "heap": 1099,
+    "tex": 172,
+    "geo": 294,
+    "prog": 73
+   }
+  },
+  "templo_grande_f": {
+   "teleport": "ok {\"v\":[36.1,107.7,-113.6],\"d\":37.6}",
+   "stats": {
+    "calls": 165,
+    "tris": 1226055,
+    "fps": 144,
+    "heap": 1100,
+    "tex": 172,
+    "geo": 309,
+    "prog": 73
+   }
+  },
+  "templo_mediano": {
+   "teleport": "ok {\"v\":[-44.2,100.7,-120.3],\"d\":23.8}",
+   "stats": {
+    "calls": 127,
+    "tris": 1236232,
+    "fps": 144,
+    "heap": 1146,
+    "tex": 172,
+    "geo": 309,
+    "prog": 73
+   }
+  },
+  "templo_mediano_f": {
+   "teleport": "ok {\"v\":[-48.2,100.7,-106.2],\"d\":26.7}",
+   "stats": {
+    "calls": 112,
+    "tris": 1240763,
+    "fps": 144,
+    "heap": 1139,
+    "tex": 172,
+    "geo": 319,
+    "prog": 73
+   }
+  },
+  "templo_mediano_g": {
+   "teleport": "ok {\"v\":[-58,98.6,-116.9],\"d\":23.8}",
+   "stats": {
+    "calls": 85,
+    "tris": 1194285,
+    "fps": 142,
+    "heap": 1148,
+    "tex": 172,
+    "geo": 322,
+    "prog": 73
+   }
+  },
+  "templo_mediano_h": {
+   "teleport": "ok {\"v\":[31.8,89.7,-96.7],\"d\":23.8}",
+   "stats": {
+    "calls": 157,
+    "tris": 1230544,
+    "fps": 144,
+    "heap": 1167,
+    "tex": 173,
+    "geo": 322,
+    "prog": 73
+   }
+  },
+  "monumento_g": {
+   "teleport": "ok {\"v\":[123.2,17.9,86.5],\"d\":29.7}",
+   "stats": {
+    "calls": 118,
+    "tris": 814339,
+    "fps": 144,
+    "heap": 1205,
+    "tex": 173,
+    "geo": 387,
+    "prog": 75
+   }
+  },
+  "corral": {
+   "teleport": "ok {\"v\":[12.2,26.6,57.9],\"d\":23.8}",
+   "stats": {
+    "calls": 100,
+    "tris": 535369,
+    "fps": 144,
+    "heap": 1252,
+    "tex": 173,
+    "geo": 399,
+    "prog": 75
+   }
+  },
+  "complejo_ruinas": {
+   "teleport": "ok {\"v\":[16.5,46.4,212.2],\"d\":49.5}",
+   "stats": {
+    "calls": 108,
+    "tris": 905021,
+    "fps": 144,
+    "heap": 1222,
+    "tex": 173,
+    "geo": 406,
+    "prog": 75
+   }
+  }
+ },
+ "erroresConsola": 0
+}
