@@ -147,6 +147,298 @@
      "heap": 108
     }
    }
+  },
+  "duelo2": {
+   "esperadoMin": 22,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 14.7,
+     "peorMs": 141,
+     "n": 44,
+     "callsMed": 55,
+     "trisMed": 230355,
+     "heap": 125
+    },
+    "duracionMs": 1510,
+    "test": {
+     "passed": 23,
+     "total": 24,
+     "fallos": [
+      "Cámara compartida: encuadra a las dos y se abre hasta un límite :: {\"dCerca\":\"9.8\",\"dLejos\":\"21.6\",\"x1\":\"-2.19\",\"x2\":\"2.17\"}"
+     ]
+    },
+    "contexto": {
+     "calls": 57,
+     "tris": 258637,
+     "geo": 75,
+     "tex": 122,
+     "prog": 42,
+     "heap": 114
+    }
+   }
+  },
+  "misterio": {
+   "esperadoMin": 6,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 16.4,
+     "peorMs": 110,
+     "n": 49,
+     "callsMed": 55,
+     "trisMed": 230356,
+     "heap": 112
+    },
+    "duracionMs": 307,
+    "test": {
+     "passed": 6,
+     "total": 7,
+     "fallos": [
+      "Los ojos se abren cerca y siguen al jugador :: apertura 0.00 · ojos 0"
+     ]
+    },
+    "contexto": {
+     "calls": 55,
+     "tris": 230369,
+     "geo": 77,
+     "tex": 120,
+     "prog": 41,
+     "heap": 114
+    }
+   }
+  },
+  "minigolf": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 20.1,
+     "peorMs": 111,
+     "n": 57,
+     "callsMed": 55,
+     "trisMed": 230357,
+     "heap": 115
+    },
+    "duracionMs": 2292,
+    "test": {
+     "passed": 46,
+     "total": 46,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 55,
+     "tris": 230369,
+     "geo": 75,
+     "tex": 120,
+     "prog": 40,
+     "heap": 125
+    }
+   }
+  },
+  "evolucion": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 15.4,
+     "peorMs": 124,
+     "n": 45,
+     "callsMed": 55,
+     "trisMed": 230354,
+     "heap": 106
+    },
+    "duracionMs": 11693,
+    "test": {
+     "passed": 45,
+     "total": 45,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 60,
+     "tris": 292837,
+     "geo": 78,
+     "tex": 127,
+     "prog": 44,
+     "heap": 97
+    }
+   }
+  },
+  "sapo": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 14.1,
+     "peorMs": 132,
+     "n": 42,
+     "callsMed": 55,
+     "trisMed": 230354,
+     "heap": 144
+    },
+    "duracionMs": 320,
+    "test": {
+     "passed": 15,
+     "total": 15,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 55,
+     "tris": 230369,
+     "geo": 75,
+     "tex": 120,
+     "prog": 40,
+     "heap": 147
+    }
+   }
+  },
+  "serpiente": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 16.8,
+     "peorMs": 311,
+     "n": 33,
+     "callsMed": 55,
+     "trisMed": 230360,
+     "heap": 114
+    },
+    "duracionMs": 650,
+    "test": {
+     "passed": 13,
+     "total": 13,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 54,
+     "tris": 230305,
+     "geo": 76,
+     "tex": 120,
+     "prog": 39,
+     "heap": 118
+    }
+   }
   }
  }
 }
