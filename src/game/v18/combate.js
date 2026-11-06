@@ -1025,6 +1025,7 @@ window.AVV18Combate = function (G) {
         try { if (combT) combT.salir(); } catch (e) { /* ya fuera */ }
         window.matchMedia = mm;
         try { if (combT && combT.retirar) combT.retirar(); } catch (e) { /* ya fuera */ }
+        if (hud && hud.el && !hud.el.isConnected) document.body.appendChild(hud.el); // montarHud() de la instancia de prueba quitó este #v18-duelo
         G.v18combate = orig; // deja la instancia de siempre (TACTIL según el dispositivo real), la misma que tienen los demás módulos
       }
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
@@ -1049,6 +1050,7 @@ window.AVV18Combate = function (G) {
     retirada = true; const i = G.interaccion.list.indexOf(it); if (i >= 0) G.interaccion.list.splice(i, 1);
     scene.remove(marca); const quitar = ch => { if (ch && ch.root) scene.remove(ch.root); };
     quitar(C.ch); Promise.resolve(C.listo).then(quitar, () => {});
+    if (hud && hud.el) hud.el.remove();
   }
   G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, estado: () => C, mapa, test, retirar };
   return G.v18combate;
