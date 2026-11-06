@@ -55,7 +55,12 @@ window.AVV18Puerto = function (G) {
     obj: { obra: 'Acércate a la máquina del pie de la ladera.', pistas: 'Busca pistas alrededor de la máquina: {}/3', poder: 'Destraba el engranaje con tu poder: {}/3',
       investigado: 'Sostén el freno de la máquina con la Ingeniera.', materiales: 'Recupera las tablas y la cuerda: {}/4', repara: 'Repara la escalera con la Ingeniera, al pie de la ladera.' },
     titulo: 'El puerto que volvió a vivir', poder: 'Poder',
-    guia: '{}: mira al engranaje y pulsa Acción o G', guiaT: 'Toca Poder mirando al engranaje', guiaEscudo: 'Escudo de plumas: ábrelo cuando la máquina sople (Acción o G)'
+    guia: '{}: mira al engranaje y pulsa Acción o G', guiaT: 'Toca Poder mirando al engranaje', guiaEscudo: 'Escudo de plumas: ábrelo cuando la máquina sople (Acción o G)',
+    tue: {
+      nombre: 'Tuerca', hablar: 'Hablar con Tuerca',
+      operador: ['Mi perforadora hace escalones sola… cuando no se traga una tuerca.', 'Diseñé cada engranaje con estas manos. Si alguien la entiende, soy yo.'],
+      inventor: ['Toda máquina merece una segunda vida. La mía ahora riega flores.', 'La próxima obra la miramos primero, ¿vale? Incluso las mías.']
+    }
   };
   const con = (t, ...v) => { let i = 0; return t.replace(/\{\}/g, () => String(v[i++])); };
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
@@ -73,6 +78,7 @@ window.AVV18Puerto = function (G) {
   const P = {
     freno: en(0.75, -0.95), panel: en(2.9, 1.95), reparar: en(-0.6, 0),
     ingObra: en(-1.6, 2.6), ingFin: en(-1.4, -2.3), conObra: en(L + 2.4, -1.8), conFin: en(L + 0.9, 1.7),
+    tueObra: en(3.6, 2.0), tueFin: en(0.8, 4.6),
     pistas: { tuerca: en(1.0, 1.4), plano: en(-3.2, -2.0), aceite: en(3.6, -2.6) },
     mats: [['v18_puerto_tabla_1', 'tabla', en(-3.6, 3.2)], ['v18_puerto_tabla_2', 'tabla', en(5.0, -2.8)], ['v18_puerto_tabla_3', 'tabla', en(L + 1.8, 2.6)], ['v18_puerto_cuerda', 'cuerda', en(-1.2, -3.6)]]
   };
@@ -133,8 +139,22 @@ window.AVV18Puerto = function (G) {
   // todo cuelga de una raíz que se oculta lejos de La Mina (> R_VISTA): con el plano lejano a 1600 m, si no, se dibujaría desde toda la isla
   const raiz = new THREE.Group(); raiz.name = 'v18-puerto'; raiz.visible = false; scene.add(raiz);
   const grupo = n => { const g = new THREE.Group(); g.name = n; raiz.add(g); return g; };
-  let gObra, gEscalera, gMaq, gPistas = {}, gMats = {}, gRuta;
+  let gObra, gEscalera, gMaq, gTue, itTue = null, gPistas = {}, gMats = {}, gRuta;
   const maq = { cuerpo: null, engranaje: null, broca: null, luces: [], flor: null, pos: { x: 0, z: 0 }, giro: 0, pintada: null, mueve: null, glb: null, cargandoGLB: false, bloqGLB: null, recoGLB: null };
+  // BM166 (Mac, 6-nov): Tuerca, el inventor mono dueño de la perforadora. Carga diferida propia (igual que la
+  // máquina BM165), NO por npc.js: ese sistema tiene tope de 2 activos y esta misión ya coloca a Ingeniera y
+  // Constructor (v18PuertoTest 6c pide exactamente 2 pedidos de personaje). Las 2 apariencias se hacen con las
+  // mallas del propio .glb: operador (capucha y chaleco) e inventor reparador (delantal, llave y sin capucha).
+  const TUE = { modelo: 'assets/models/personajes/tuerca.glb', script: 'assets/models/personajes/tuerca_glb.js', b64: 'tuerca' };
+  const tue = { glb: null, cargandoGLB: false, glbFallo: null, raiz: null, nodos: {}, mixer: null, acciones: {}, anim: null, hablaT: 0, mueve: null };
+  const RETRATO_TUE = (() => {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#3b4250"/>' +
+      '<g fill="#ffd23a"><circle cx="32" cy="13" r="5"/><circle cx="48" cy="24" r="5"/><circle cx="43" cy="43" r="5"/><circle cx="21" cy="43" r="5"/><circle cx="16" cy="24" r="5"/></g>' +
+      '<circle cx="32" cy="32" r="16" fill="#c68a5c"/><circle cx="26.5" cy="30" r="1.8" fill="#2b2118"/><circle cx="37.5" cy="30" r="1.8" fill="#2b2118"/>' +
+      '<path d="M25 39q7 4 14 0" stroke="#2b2118" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
+      '<circle cx="32" cy="32" r="6" fill="#3b4250"/></svg>';
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  })();
   // BM165 (Mac, 6-nov): modelo propio de la perforadora (2,5 k tris; mismos dos estados que las primitivas:
   // Bloqueando_* en obra y Reconvertida_* una vez reparado). Carga diferida como los personajes (npc.js): solo
   // con la misión activa y el jugador cerca; si tarda o falla, se quedan las primitivas (mismo comportamiento).
@@ -177,6 +197,88 @@ window.AVV18Puerto = function (G) {
     maq.cargandoGLB = false;
     maq.pintada = null; // fuerza el repintado de los grupos del modelo con el estado actual
     pintarMaquina(reparado() ? 'flor' : rango(estado()) >= rango('desactivado') ? 'apagada' : 'trabada');
+  }
+  function cargarGLBTue() {
+    if (tue.cargandoGLB || !G.assets || !G.assets.loadGLB) return;
+    tue.cargandoGLB = true;
+    const b64 = () => { const t = window.AV_PERSONAJES_B64; return t && Object.prototype.hasOwnProperty.call(t, TUE.b64) ? t[TUE.b64] : undefined; };
+    G.assets.loadGLB(TUE.modelo, { b64, script: TUE.script, base: '', error: 'Tuerca no disponible' })
+      .then(sc => { try { montarGLBTue(sc); } catch (e) { tue.glbFallo = 'montar: ' + ((e && e.message) || e); } })
+      .catch(e => { tue.glbFallo = (e && e.message) || String(e); });
+  }
+  function montarGLBTue(sc) {
+    if (!sc || !sc.scene || !gTue || tue.glb) return;
+    const fuente = sc.scene;
+    const modelo = (fuente.children.length === 1 ? fuente.children[0] : fuente).clone(true); // conserva el nombre de la raíz ('Tuerca')
+    tue.nodos = {};
+    let sombra = false; try { sombra = !!(G.renderer.nivel && G.renderer.nivel() === 'alto'); } catch (e) { /* sin nivel */ }
+    modelo.traverse(o => {
+      if (o.name) tue.nodos[o.name] = tue.nodos[o.name] || o;
+      if (o.isMesh) { o.castShadow = sombra; o.receiveShadow = false; }
+    });
+    if (sc.animations && sc.animations.length) {
+      tue.mixer = new THREE.AnimationMixer(modelo);
+      for (const clip of sc.animations) tue.acciones[clip.name] = tue.mixer.clipAction(clip);
+    }
+    tue.raiz = new THREE.Group(); tue.raiz.name = 'v18-puerto-tuerca-raiz';
+    tue.raiz.add(modelo);
+    gTue.add(tue.raiz);
+    tue.glb = modelo; tue.cargandoGLB = false;
+    if (tue.mixer) tue.mixer.update(0.001);
+    vestirTue(); situarTue();
+  }
+  function vestirTue() {
+    if (!tue.glb) return;
+    const fin = reparado(), n = tue.nodos, poner = (nom, on) => { if (n[nom]) n[nom].visible = !!on; };
+    poner('Capuchon', !fin); poner('Chaleco', !fin); // operador: capucha puesta y chaleco
+    poner('Delantal', fin); poner('Llave', fin);     // inventor: delantal y llave, capucha bajada
+    poner('Gafas', true); poner('GuanteL', true); poner('GuanteR', true);
+    poner('Rodillera1', true); poner('Rodillera2', true);
+    animarTue(fin ? 'Reparar' : 'Idle');
+  }
+  function animarTue(nom) {
+    if (!tue.mixer) return;
+    const act = tue.acciones[nom];
+    if (!act || tue.anim === nom) return;
+    const prev = tue.anim && tue.acciones[tue.anim];
+    act.reset().setEffectiveWeight(1).play();
+    if (prev) prev.crossFadeTo(act, 0.3, false);
+    tue.anim = nom;
+  }
+  function situarTue() {
+    if (!tue.raiz) return;
+    const p = reparado() ? P.tueFin : P.tueObra;
+    tue.raiz.position.set(p.x, alto(p.x, p.z), p.z);
+    if (itTue) { itTue.x = p.x; itTue.z = p.z; }
+  }
+  function pasoTue(dt) {
+    if (!tue.raiz) return;
+    if (tue.mueve) {
+      tue.mueve.t = Math.min(1, tue.mueve.t + dt);
+      const k = tue.mueve.t * tue.mueve.t * (3 - 2 * tue.mueve.t), x = tue.mueve.de.x + (tue.mueve.a.x - tue.mueve.de.x) * k, z = tue.mueve.de.z + (tue.mueve.a.z - tue.mueve.de.z) * k;
+      tue.raiz.position.set(x, alto(x, z), z);
+      if (itTue) { itTue.x = x; itTue.z = z; }
+      if (tue.mueve.t >= 1) tue.mueve = null;
+    }
+    const px = tue.raiz.position.x, pz = tue.raiz.position.z, d = Math.hypot(S.pos.x - px, S.pos.z - pz);
+    const p = reparado() ? P.tueFin : P.tueObra, m = reparado() ? MAQ.off : MAQ.on;
+    const objetivo = d < 7 ? Math.atan2(S.pos.x - px, S.pos.z - pz) : Math.atan2(m.x - p.x, m.z - p.z);
+    let dif = objetivo - tue.raiz.rotation.y; while (dif > Math.PI) dif -= Math.PI * 2; while (dif < -Math.PI) dif += Math.PI * 2;
+    tue.raiz.rotation.y += dif * Math.min(1, dt * 4);
+    let bajo = false; try { bajo = !!(G.renderer.nivel && G.renderer.nivel() === 'bajo'); } catch (e) { /* sin nivel */ }
+    if (tue.mixer && !bajo && d < 60) tue.mixer.update(dt); // en «bajo» va a la pose del fotograma 0 (regla de npc.js)
+    if (tue.hablaT > 0 && (tue.hablaT -= dt) <= 0) vestirTue();
+  }
+  function hablarTuerca() {
+    if (!tue.glb) return false;
+    const fin = reparado();
+    A.tueCharlas = (A.tueCharlas || 0) + 1;
+    const banco = TXT.tue[fin ? 'inventor' : 'operador'];
+    const lineas = A.tueCharlas === 1 ? banco : [banco[A.tueCharlas % 2 ? 0 : 1]]; // la primera charla, entera; después de una en una
+    tue.hablaT = 1.5 + lineas.length * 2.5;
+    animarTue('Hablar');
+    try { G.dialogo.say(lineas.map(t => ({ who: TXT.tue.nombre, img: RETRATO_TUE, text: t })), () => vestirTue(), { caja: true }); } catch (e) { return false; }
+    return true;
   }
   function construir() {
     if (M.hecho) return;
@@ -227,6 +329,7 @@ window.AVV18Puerto = function (G) {
     }
     // 2 · la perforadora de Tuerca (primitivas; cuerpo, orugas, engranaje, broca, luces, palanca y panel)
     gMaq = grupo('v18-puerto-maquina');
+    gTue = grupo('v18-puerto-tuerca');
     const naranja = mat('maqCuerpo', '#d9822b', { roughness: 0.55, metalness: 0.2 }), oscuro = mat('oscuro', '#2d2f33', { roughness: 0.8 });
     maq.cuerpo = caja(2.2, 1.3, 1.8, naranja); maq.cuerpo.position.y = 1.05; gMaq.add(maq.cuerpo);
     for (const l of [-0.95, 0.95]) { const o = caja(2.4, 0.5, 0.35, oscuro); o.position.set(0, 0.25, l); gMaq.add(o); }
@@ -280,6 +383,10 @@ window.AVV18Puerto = function (G) {
     // 5 y 7 · el freno y la reparación
     G.interaccion.add({ id: 'v18_puerto_freno', x: P.freno.x, z: P.freno.z, r: 2.4, visible: () => listaMision() && estado() === 'investigado' && !A.frenando, label: () => TXT.freno, use: frenar });
     G.interaccion.add({ id: 'v18_puerto_reparar', x: P.reparar.x, z: P.reparar.z, r: 2.6, visible: () => listaMision() && estado() === 'desactivado', label: () => TXT.reparar, use: reparar });
+    // Tuerca (BM166): carga diferida propia como la máquina; su interacción solo con la misión activa o terminada
+    itTue = G.interaccion.add({ id: 'v18_puerto_tuerca', x: P.tueObra.x, z: P.tueObra.z, r: 2.6,
+      visible: () => (listaMision() || reparado()) && !!tue.glb,
+      label: () => TXT.tue.hablar, use: hablarTuerca });
     // personajes (npc.js): solo con la misión lista y cerca; la carga la decide npc.js
     N.colocar('ingeniera', { x: P.ingObra.x, z: P.ingObra.z, rotY: Math.atan2(MAQ.on.x - P.ingObra.x, MAQ.on.z - P.ingObra.z), aparece: listaMision, comenta: false });
     N.colocar('constructor', { x: P.conObra.x, z: P.conObra.z, rotY: Math.atan2(-U.x, -U.z), aparece: listaMision, comenta: false });
@@ -297,6 +404,8 @@ window.AVV18Puerto = function (G) {
     gObra.visible = lista && !fin;
     gEscalera.visible = fin; // la escalera es del mundo: con la misión hecha se queda aunque la bandera se apague
     gMaq.visible = lista || fin;
+    gTue.visible = lista || fin;
+    if (tue.glb) { vestirTue(); if (!tue.mueve) situarTue(); }
     const fuera = rango(e) >= rango('desactivado');
     if (!maq.mueve) { const p = fuera ? MAQ.off : MAQ.on; maq.pos.x = p.x; maq.pos.z = p.z; }
     pintarMaquina(fin ? 'flor' : fuera ? 'apagada' : 'trabada');
@@ -452,6 +561,8 @@ window.AVV18Puerto = function (G) {
     if (!avanzar('reparado')) return false;
     V.otorgar('puerto_mina', 'puerto_mina', 1);
     N.cambiarEstado('ingeniera', 'responsable'); N.cambiarEstado('constructor', 'reparador');
+    A.tueCharlas = 0;
+    if (tue.glb && !tue.mueve) tue.mueve = { de: { x: P.tueObra.x, z: P.tueObra.z }, a: { x: P.tueFin.x, z: P.tueFin.z }, t: 0 };
     aplicar();
     guardarJuego();
     sonar('unlock');
@@ -588,8 +699,10 @@ window.AVV18Puerto = function (G) {
     if (raiz.visible !== cerca) raiz.visible = cerca;
     if (gMaq.visible !== (lista || reparado())) aplicar();
     if (!maq.glb && !maq.cargandoGLB && (lista || reparado()) && cerca) cargarGLBMaq();
+    if (!tue.glb && !tue.cargandoGLB && (lista || reparado()) && cerca) cargarGLBTue();
     if (!lista) { soltarModo(); pintarHud(false); return; }
     pasoMaquina(dt);
+    if (tue.glb && (lista || reparado())) pasoTue(dt);
     const e = estado(), dM = Math.hypot(S.pos.x - maq.pos.x, S.pos.z - maq.pos.z), dP = Math.hypot(S.pos.x - SITIO.plaza.x, S.pos.z - SITIO.plaza.z);
     // aviso y bandera (una vez por sesión) mientras la misión no empezó
     if (e === 'obra' && !A.avisado && !busy) { A.avisado = true; if (dP > R_AVISO) { toast(TXT.aviso, 5200); ponerGuia(); } }
@@ -648,6 +761,7 @@ window.AVV18Puerto = function (G) {
       .concat(TXT.descubre, TXT.investigado, TXT.desactivado, TXT.llegada.map(x => x[1]), TXT.fin.map(x => x[1]));
     for (const k in TXT.pistas) t.push(TXT.pistas[k][0], TXT.pistas[k][1] + ' (1/3)');
     for (const d of N.defs()) { t.push(d.nombre.es); for (const e in d.porEstado) t.push(...(d.porEstado[e].dialogo || [])); }
+    t.push(TXT.tue.nombre, TXT.tue.hablar, ...TXT.tue.operador, ...TXT.tue.inventor);
     return t;
   };
   async function test(o) {
@@ -765,6 +879,16 @@ window.AVV18Puerto = function (G) {
       const abre = G.dialogo.open() && (G.dialogo.actual() || {}).who === 'La Ingeniera';
       cerrarCharlas(); correr(0.1);
       check('8b · Pasos 2 y 3: a 14 m de la máquina la Ingeniera cuenta qué pasó (caja) y con E se pasa → descubierto', abre && estado() === 'descubierto' && V.mundo(ID) === 'descubierto', estado());
+    // 8c/8d · Tuerca (BM166): carga diferida propia (no npc.js: su contador de pedidos sigue en 2), apariencia de operador y charla.
+    // Se hace con la misión ya en «descubierto»: junto a la máquina, en «obra» el paso 3 dispararía su caja y adelantaría el estado.
+    for (let i = 0; i < 80 && !tue.glb; i++) { await esperar(100); correr(0.05); }
+    check('8c · Tuerca está junto a su máquina: tuerca.glb con Idle/Hablar/Reparar, apariencia de operador (capucha y chaleco, sin delantal)',
+      !!tue.glb && ['Idle', 'Hablar', 'Reparar'].every(a => tue.acciones[a]) && tue.nodos.Tuerca && tue.nodos.Capuchon && tue.nodos.Capuchon.visible && tue.nodos.Chaleco.visible && !tue.nodos.Delantal.visible,
+      tue.glb ? 'raiz ' + !!tue.nodos.Tuerca + ' · cap ' + (tue.nodos.Capuchon && tue.nodos.Capuchon.visible) + ' · chal ' + (tue.nodos.Chaleco && tue.nodos.Chaleco.visible) + ' · delan ' + (tue.nodos.Delantal && tue.nodos.Delantal.visible) + ' · anims ' + Object.keys(tue.acciones).join('/') + ' · fallo ' + (tue.glbFallo || 'no') : 'sin glb: ' + (tue.glbFallo || 'cargando'));
+    ir(P.tueObra.x + 1.1, P.tueObra.z + 0.6, P.tueObra); correr(0.1);
+    const tueDice = hablarTuerca();
+    check('8d · Acción abre la charla de Tuerca (caja, 2 frases de operador)', tueDice && G.dialogo.open() && (G.dialogo.actual() || {}).who === 'Tuerca', (G.dialogo.actual() && G.dialogo.actual().who) || '');
+    try { G.dialogo.clear(); } catch (e) { /* */ }
       // 9 · paso 4: tres pistas con E
       const inv1 = JSON.stringify(S.inv || {});
       for (const k of ['plano', 'tuerca', 'aceite']) { const p = P.pistas[k]; ir(p.x + 0.4, p.z + 0.4); correr(0.05); cerrarCharlas(); pulsar('e'); }
@@ -821,6 +945,10 @@ window.AVV18Puerto = function (G) {
       const ci = N.instancia('constructor'), ii = N.instancia('ingeniera');
       check('14 · Paso 8: escalera con faroles y banderines, obra recogida, máquina verde con maceta y farol', gEscalera.visible && !gObra.visible && maq.flor.visible && !maq.broca.visible && maq.pintada === 'flor');
       check('14b · El Constructor pasa a reparador (sin chaleco, con mochila de herramientas y guantes) y la Ingeniera a responsable (chaqueta, insignia)', N.estado('constructor') === 'reparador' && N.estado('ingeniera') === 'responsable' && ci && ci.apariencia === 'reparador' && !ci.nodos.Chaleco.visible && ci.nodos.Mochila.visible && ci.nodos.GuanteL.visible && ci.nodos.GuanteR.visible && ci.nodos.Casco.visible && ii && ii.apariencia === 'responsable' && ii.nodos.Chaqueta.visible && ii.acc.insignia.visible);
+    for (let i = 0; i < 60 && tue.mueve; i++) { await esperar(100); correr(0.05); }
+    check('14d · Tuerca pasa a inventor reparador: delantal y llave, sin capucha, trabajando (Reparar) junto a su máquina reconvertida',
+      !!tue.glb && tue.nodos.Delantal.visible && tue.nodos.Llave.visible && !tue.nodos.Capuchon.visible && tue.anim === 'Reparar' && Math.hypot(tue.raiz.position.x - MAQ.off.x, tue.raiz.position.z - MAQ.off.z) < 3.5,
+      tue.glb ? 'anim ' + tue.anim + ' · d ' + Math.hypot(tue.raiz.position.x - MAQ.off.x, tue.raiz.position.z - MAQ.off.z).toFixed(1) : 'sin glb');
       const sube = subir(900);
       check('14c · La escalera se sube a pie de la plaza a la meseta, sin volar ni rescate de atasco', sube.ok && sube.y > -0.6, 's ' + sube.s.toFixed(1) + '/' + L.toFixed(1) + ' · Δy ' + sube.y.toFixed(2) + ' · rescates ' + sube.rescates + (sube.volo ? ' · voló' : ''));
       // 15 · paso 9: persiste tras guardar y recargar
@@ -859,6 +987,7 @@ window.AVV18Puerto = function (G) {
     // restaurar
     try { cerrarCharlas(); } catch (e) { /* */ }
     soltarModo(); A.manual = false; A.forzar = false; A.frenando = false; A.pistas.clear(); A.aciertos = 0; A.j = null; timers.length = 0;
+    A.tueCharlas = 0; tue.hablaT = 0;
     evTest = null; v18Test = null;
     G.ui.toast = toast0; G.quiet = quiet0;
     S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; if (fac0 && S.facing) { S.facing.x = fac0.x; S.facing.z = fac0.z; }
