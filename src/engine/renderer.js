@@ -185,13 +185,15 @@ AVE.module('renderer', function (G) {
     uHorizonte: { value: SKY.clone().convertSRGBToLinear() },
     uSolCol: { value: new THREE.Color(cielo.sol || '#fff2cf').convertSRGBToLinear() },
     uSolDir: { value: sunDir },
+    // QA-106/KIMI-111: tamaño e intensidad del disco (sol de día; luna con el look de noche). 1 = de siempre.
+    uDiscoRad: { value: 1 }, uDiscoInt: { value: 1 },
   };
   if (ATMOS) {
     sky = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 16), new THREE.ShaderMaterial({
       uniforms: skyU, side: THREE.BackSide, depthWrite: false, depthTest: false, fog: false,
       vertexShader: 'varying vec3 vDir;\nvoid main() { vDir = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }',
       fragmentShader: [
-        'uniform vec3 uCenit, uHorizonte, uSolCol, uSolDir; varying vec3 vDir;',
+        'uniform vec3 uCenit, uHorizonte, uSolCol, uSolDir; uniform float uDiscoRad, uDiscoInt; varying vec3 vDir;',
         'float ditherAV(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }',
         'void main() {',
         '  vec3 d = normalize(vDir);',
@@ -208,7 +210,10 @@ AVE.module('renderer', function (G) {
         '  c = mix(c, uHorizonte * 0.92, smoothstep(0.0, -0.25, h));',  // bajo el horizonte: el color del mar lejano
         // halo ancho, halo cerrado y disco
         '  c += uSolCol * (pow(s, 6.0) * 0.22 + pow(s, 48.0) * 0.45 + pow(s, 300.0) * 0.5) * smoothstep(-0.1, 0.1, h);',
-        '  c = mix(c, uSolCol * 3.2, smoothstep(0.9988, 0.9997, s));', // KIMI-060: borde suave (era un disco de borde duro que en iPad leía como falla)
+        // KIMI-060: borde suave (era un disco de borde duro que en iPad leía como falla). KIMI-111: uDiscoRad/uDiscoInt
+        // encogen y atenúan el disco de noche (la luna): el ×3.2 del sol blanqueaba la luna a parche blanco (QA-106).
+        '  float dA = 1.0 - (1.0 - 0.9988) * uDiscoRad, dB = min(1.0 - (1.0 - 0.9997) * uDiscoRad, 0.99995);',
+        '  c = mix(c, uSolCol * 3.2 * uDiscoInt, smoothstep(dA, dB, s));',
         '  gl_FragColor = vec4(c, 1.0);',
         '  #include <tonemapping_fragment>',
         '  #include <encodings_fragment>',

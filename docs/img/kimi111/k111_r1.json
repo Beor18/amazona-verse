@@ -1,0 +1,511 @@
+{
+ "etiqueta": "r1",
+ "atardecer": "1",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "estados": {
+  "base": {
+   "aplicado": {
+    "nombre": "base",
+    "restaurados": 22
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "max": 122,
+     "arg": [
+      388,
+      122,
+      174,
+      113,
+      64
+     ],
+     "centro": [
+      80,
+      55,
+      24
+     ]
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "max": 124,
+     "arg": [
+      388,
+      122,
+      176,
+      114,
+      65
+     ],
+     "centro": [
+      79,
+      55,
+      24
+     ]
+    }
+   }
+  },
+  "bloom0": {
+   "aplicado": {
+    "nombre": "bloom0",
+    "restaurados": 22,
+    "fuerza": 0.18
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "max": 122,
+     "arg": [
+      388,
+      122,
+      174,
+      113,
+      64
+     ],
+     "centro": [
+      80,
+      55,
+      24
+     ]
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "max": 124,
+     "arg": [
+      388,
+      122,
+      176,
+      114,
+      65
+     ],
+     "centro": [
+      79,
+      55,
+      24
+     ]
+    }
+   }
+  },
+  "bloomVuelve": {
+   "aplicado": {
+    "nombre": "bloomVuelve",
+    "restaurados": 22,
+    "fuerza": 0.18
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "max": 122,
+     "arg": [
+      388,
+      122,
+      174,
+      113,
+      64
+     ],
+     "centro": [
+      80,
+      55,
+      24
+     ]
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "max": 124,
+     "arg": [
+      388,
+      122,
+      176,
+      114,
+      65
+     ],
+     "centro": [
+      79,
+      55,
+      24
+     ]
+    }
+   }
+  },
+  "spec0": {
+   "aplicado": {
+    "nombre": "spec0",
+    "restaurados": 22,
+    "spec0": 22
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "max": 122,
+     "arg": [
+      388,
+      122,
+      174,
+      113,
+      64
+     ],
+     "centro": [
+      80,
+      55,
+      24
+     ]
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "max": 124,
+     "arg": [
+      388,
+      122,
+      176,
+      114,
+      65
+     ],
+     "centro": [
+      79,
+      55,
+      24
+     ]
+    }
+   }
+  },
+  "solBaja": {
+   "aplicado": {
+    "nombre": "solBaja",
+    "restaurados": 22,
+    "sol": 1.404
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "max": 122,
+     "arg": [
+      388,
+      122,
+      174,
+      113,
+      64
+     ],
+     "centro": [
+      80,
+      55,
+      24
+     ]
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "max": 124,
+     "arg": [
+      388,
+      122,
+      176,
+      114,
+      65
+     ],
+     "centro": [
+      79,
+      55,
+      24
+     ]
+    }
+   }
+  },
+  "solVuelve": {
+   "aplicado": {
+    "nombre": "solVuelve",
+    "restaurados": 22
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "max": 122,
+     "arg": [
+      388,
+      122,
+      174,
+      113,
+      64
+     ],
+     "centro": [
+      80,
+      55,
+      24
+     ]
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "max": 124,
+     "arg": [
+      388,
+      122,
+      176,
+      114,
+      65
+     ],
+     "centro": [
+      79,
+      55,
+      24
+     ]
+    }
+   }
+  },
+  "specVuelve": {
+   "aplicado": {
+    "nombre": "specVuelve",
+    "restaurados": 22
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "max": 122,
+     "arg": [
+      388,
+      122,
+      174,
+      113,
+      64
+     ],
+     "centro": [
+      80,
+      55,
+      24
+     ]
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "max": 124,
+     "arg": [
+      388,
+      122,
+      176,
+      114,
+      65
+     ],
+     "centro": [
+      79,
+      55,
+      24
+     ]
+    }
+   }
+  },
+  "emis0": {
+   "aplicado": {
+    "nombre": "emis0",
+    "restaurados": 22,
+    "emis0": 2
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "max": 122,
+     "arg": [
+      388,
+      122,
+      174,
+      113,
+      64
+     ],
+     "centro": [
+      80,
+      55,
+      24
+     ]
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "max": 124,
+     "arg": [
+      388,
+      122,
+      176,
+      114,
+      65
+     ],
+     "centro": [
+      79,
+      55,
+      24
+     ]
+    }
+   }
+  },
+  "guiasOff": {
+   "aplicado": {
+    "nombre": "guiasOff",
+    "restaurados": 22,
+    "guias": 1
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "max": 122,
+     "arg": [
+      388,
+      122,
+      174,
+      113,
+      64
+     ],
+     "centro": [
+      80,
+      55,
+      24
+     ]
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "max": 124,
+     "arg": [
+      388,
+      122,
+      176,
+      114,
+      65
+     ],
+     "centro": [
+      79,
+      55,
+      24
+     ]
+    }
+   }
+  },
+  "edifOff": {
+   "aplicado": {
+    "nombre": "edifOff",
+    "restaurados": 22,
+    "ocultos": 82,
+    "nombres": [
+     "edificiosInst:toldo_pequeno:cerca:KB3D_BarkNew",
+     "edificiosInst:toldo_pequeno:cerca:KB3D_TarpFabricDamaged",
+     "edificiosInst:plataforma_piedra:cerca:KB3D_floorM",
+     "edificiosInst:muro_templo:cerca:AV_Restaurado_Piedra",
+     "edificiosInst:muro_templo:cerca:AV_Restaurado_Tallado",
+     "edificiosInst:muro_templo:cerca:AV_Restaurado_Base"
+    ]
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "max": 122,
+     "arg": [
+      388,
+      122,
+      174,
+      113,
+      64
+     ],
+     "centro": [
+      80,
+      55,
+      24
+     ]
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "max": 124,
+     "arg": [
+      388,
+      122,
+      176,
+      114,
+      65
+     ],
+     "centro": [
+      79,
+      55,
+      24
+     ]
+    }
+   }
+  },
+  "edifOn": {
+   "aplicado": {
+    "nombre": "edifOn",
+    "restaurados": 22,
+    "mostrados": 252
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "max": 143,
+     "arg": [
+      388,
+      178,
+      167,
+      142,
+      80
+     ],
+     "centro": [
+      80,
+      55,
+      24
+     ]
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "max": 134,
+     "arg": [
+      388,
+      178,
+      166,
+      131,
+      73
+     ],
+     "centro": [
+      79,
+      55,
+      24
+     ]
+    }
+   }
+  }
+ },
+ "callejon": "ok {\"pos\":[7.887665269160529,98.78616232118692,-118.46182017111855],\"yaw\":0.8584387287005676,\"hora\":18.75,\"post\":true}",
+ "ambiente": "{\"hora\":18.75,\"k\":1}",
+ "erroresConsola": 0
+}

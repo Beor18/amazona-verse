@@ -207,6 +207,7 @@ AVE.module('fx', function (G) {
   const arrowGeo = new THREE.ConeGeometry(0.2, 0.55, 12); arrowGeo.rotateX(Math.PI / 2);
   const guideArrow = new THREE.Mesh(arrowGeo, new THREE.MeshBasicMaterial({ color: '#f2a03d' }));
   guideArrow.visible = false; scene.add(guideArrow);
+  const colNocheFlecha = new THREE.Color('#8f5210'), colTmp = new THREE.Color(); // QA-106/KIMI-111 (ver guide)
   // tg = { x, z, y? } o null. Modo relajado (src/game/accesibilidad.js): el haz brilla más y la flecha, más grande, se ve también de cerca
   function guide(tg, now) {
     guideBeam.visible = !!tg; guideArrow.visible = false;
@@ -215,7 +216,14 @@ AVE.module('fx', function (G) {
     // CG-54: daltonismo solo en esta pista (flecha azul en alambre, haz bermellón). El mundo y las cotorras no cambian.
     const dalton = !!(G.accesibilidad && G.accesibilidad.daltonismo && G.accesibilidad.daltonismo());
     const colFlecha = dalton ? 0x0072b2 : 0xf2a03d, colHaz = dalton ? 0xd55e00 : 0xfff1b0;
-    if (guideArrow.material.color.getHex() !== colFlecha) guideArrow.material.color.setHex(colFlecha);
+    // QA-106/KIMI-111: de noche la flecha naranja quemaba a «parche blanco brillante» sobre las paredes oscuras (la
+    // rodilla del tonemap desatura lo brillante). Se atenúa hacia ámbar con la noche (misma rampa que los faroles):
+    // conserva el naranja y la silueta de flecha. El haz, fino, se deja (se lee como haz).
+    const h = S.hora, noche = (G.quiet || h == null) ? 0 : h >= 19 || h < 5 ? 1 : h > 17.5 ? (h - 17.5) / 1.5 : 0;
+    if (noche > 0 && !dalton) {
+      colTmp.setHex(colFlecha).lerp(colNocheFlecha, noche * 0.6);
+      if (guideArrow.material.color.getHex() !== colTmp.getHex()) guideArrow.material.color.copy(colTmp);
+    } else if (guideArrow.material.color.getHex() !== colFlecha) guideArrow.material.color.setHex(colFlecha);
     if (guideBeam.material.color.getHex() !== colHaz) guideBeam.material.color.setHex(colHaz);
     guideArrow.material.wireframe = dalton;
     const gy = tg.y != null ? tg.y - 20 : G.terreno.height(tg.x, tg.z) + 20;
@@ -230,7 +238,7 @@ AVE.module('fx', function (G) {
     guideBeam.material.opacity = (0.16 + Math.sin(now * 3) * 0.06) * cerca * (relajado ? 1.8 : 1);
     const d = Math.hypot(tg.x - S.pos.x, tg.z - S.pos.z);
     if (d > (relajado ? 1.5 : 4)) {
-      guideArrow.visible = true; guideArrow.scale.setScalar(relajado ? 1.4 : 1);
+      guideArrow.visible = true; guideArrow.scale.setScalar((relajado ? 1.4 : 1) * (1 - noche * 0.15));
       guideArrow.position.set(S.pos.x + (tg.x - S.pos.x) / d * 0.9, S.pos.y + 2.75 + Math.sin(now * 4) * 0.06, S.pos.z + (tg.z - S.pos.z) / d * 0.9);
       guideArrow.lookAt(tg.x, tg.y != null ? tg.y : guideArrow.position.y, tg.z);
     }

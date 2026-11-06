@@ -1,0 +1,885 @@
+{
+ "etiqueta": "r2",
+ "atardecer": "1",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "estados": {
+  "base": {
+   "aplicado": {
+    "nombre": "base",
+    "restaurados": 22
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       55
+      ],
+      "centro": [
+       137,
+       82,
+       41
+      ]
+     },
+     "disco": {
+      "d": 7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_wallL",
+      "mat": "KB3D_wallL",
+      "px": [
+       368,
+       378
+      ],
+      "luma": 197,
+      "rgb": [
+       209,
+       195,
+       179
+      ]
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       56
+      ],
+      "centro": [
+       124,
+       75,
+       37
+      ]
+     },
+     "disco": {
+      "d": 7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_wallL",
+      "mat": "KB3D_wallL",
+      "px": [
+       368,
+       378
+      ],
+      "luma": 197,
+      "rgb": [
+       209,
+       195,
+       178
+      ]
+     }
+    }
+   }
+  },
+  "bloom0": {
+   "aplicado": {
+    "nombre": "bloom0",
+    "restaurados": 22,
+    "fuerza": 0.18
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       55
+      ],
+      "centro": [
+       137,
+       82,
+       41
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 210,
+      "rgb": [
+       232,
+       207,
+       178
+      ]
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       56
+      ],
+      "centro": [
+       124,
+       75,
+       37
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 210,
+      "rgb": [
+       233,
+       207,
+       177
+      ]
+     }
+    }
+   }
+  },
+  "bloomVuelve": {
+   "aplicado": {
+    "nombre": "bloomVuelve",
+    "restaurados": 22,
+    "fuerza": 0.18
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       55
+      ],
+      "centro": [
+       137,
+       82,
+       41
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 212,
+      "rgb": [
+       234,
+       209,
+       179
+      ]
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       56
+      ],
+      "centro": [
+       124,
+       75,
+       37
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 212,
+      "rgb": [
+       234,
+       209,
+       180
+      ]
+     }
+    }
+   }
+  },
+  "spec0": {
+   "aplicado": {
+    "nombre": "spec0",
+    "restaurados": 22,
+    "spec0": 22
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       55
+      ],
+      "centro": [
+       137,
+       82,
+       41
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 207,
+      "rgb": [
+       229,
+       203,
+       176
+      ]
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       56
+      ],
+      "centro": [
+       124,
+       75,
+       37
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 207,
+      "rgb": [
+       229,
+       203,
+       176
+      ]
+     }
+    }
+   }
+  },
+  "solBaja": {
+   "aplicado": {
+    "nombre": "solBaja",
+    "restaurados": 22,
+    "sol": 1.404
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 90,
+      "arg": [
+       400,
+       190,
+       131,
+       82,
+       46
+      ],
+      "centro": [
+       107,
+       65,
+       34
+      ]
+     },
+     "disco": {
+      "d": 8.4,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_pillarsM",
+      "mat": "KB3D_pillarsM",
+      "px": [
+       125,
+       483
+      ],
+      "luma": 225,
+      "rgb": [
+       228,
+       227,
+       200
+      ]
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 91,
+      "arg": [
+       400,
+       190,
+       131,
+       83,
+       47
+      ],
+      "centro": [
+       97,
+       59,
+       31
+      ]
+     },
+     "disco": {
+      "d": 8.4,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_pillarsM",
+      "mat": "KB3D_pillarsM",
+      "px": [
+       125,
+       483
+      ],
+      "luma": 219,
+      "rgb": [
+       224,
+       220,
+       192
+      ]
+     }
+    }
+   }
+  },
+  "solVuelve": {
+   "aplicado": {
+    "nombre": "solVuelve",
+    "restaurados": 22
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 106,
+      "arg": [
+       400,
+       190,
+       156,
+       97,
+       53
+      ],
+      "centro": [
+       130,
+       78,
+       39
+      ]
+     },
+     "disco": {
+      "d": 7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_wallL",
+      "mat": "KB3D_wallL",
+      "px": [
+       368,
+       378
+      ],
+      "luma": 198,
+      "rgb": [
+       211,
+       196,
+       179
+      ]
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 107,
+      "arg": [
+       400,
+       190,
+       156,
+       98,
+       53
+      ],
+      "centro": [
+       118,
+       71,
+       35
+      ]
+     },
+     "disco": {
+      "d": 7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_wallL",
+      "mat": "KB3D_wallL",
+      "px": [
+       368,
+       378
+      ],
+      "luma": 198,
+      "rgb": [
+       210,
+       196,
+       179
+      ]
+     }
+    }
+   }
+  },
+  "specVuelve": {
+   "aplicado": {
+    "nombre": "specVuelve",
+    "restaurados": 22
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 106,
+      "arg": [
+       400,
+       190,
+       156,
+       97,
+       53
+      ],
+      "centro": [
+       130,
+       78,
+       39
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 207,
+      "rgb": [
+       229,
+       203,
+       177
+      ]
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 107,
+      "arg": [
+       400,
+       190,
+       156,
+       98,
+       53
+      ],
+      "centro": [
+       118,
+       71,
+       35
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 206,
+      "rgb": [
+       228,
+       203,
+       177
+      ]
+     }
+    }
+   }
+  },
+  "emis0": {
+   "aplicado": {
+    "nombre": "emis0",
+    "restaurados": 22,
+    "emis0": 2
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       55
+      ],
+      "centro": [
+       137,
+       82,
+       41
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 212,
+      "rgb": [
+       234,
+       209,
+       179
+      ]
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       56
+      ],
+      "centro": [
+       124,
+       75,
+       37
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 212,
+      "rgb": [
+       234,
+       209,
+       179
+      ]
+     }
+    }
+   }
+  },
+  "guiasOff": {
+   "aplicado": {
+    "nombre": "guiasOff",
+    "restaurados": 22,
+    "guias": 1
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       55
+      ],
+      "centro": [
+       137,
+       82,
+       41
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 206,
+      "rgb": [
+       228,
+       203,
+       176
+      ]
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       56
+      ],
+      "centro": [
+       124,
+       75,
+       37
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 207,
+      "rgb": [
+       229,
+       203,
+       177
+      ]
+     }
+    }
+   }
+  },
+  "edifOff": {
+   "aplicado": {
+    "nombre": "edifOff",
+    "restaurados": 22,
+    "ocultos": 74,
+    "nombres": [
+     "edificiosInst:toldo_pequeno:cerca:KB3D_BarkNew",
+     "edificiosInst:toldo_pequeno:cerca:KB3D_TarpFabricDamaged",
+     "edificiosInst:plataforma_piedra:cerca:KB3D_floorM",
+     "edificiosInst:muro_templo:cerca:AV_Restaurado_Piedra",
+     "edificiosInst:muro_templo:cerca:AV_Restaurado_Tallado",
+     "edificiosInst:muro_templo:cerca:AV_Restaurado_Base"
+    ]
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       55
+      ],
+      "centro": [
+       137,
+       82,
+       41
+      ]
+     },
+     "disco": {
+      "d": 7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_wallL",
+      "mat": "KB3D_wallL",
+      "px": [
+       368,
+       378
+      ],
+      "luma": 197,
+      "rgb": [
+       209,
+       195,
+       179
+      ]
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       56
+      ],
+      "centro": [
+       124,
+       75,
+       37
+      ]
+     },
+     "disco": {
+      "d": 7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_wallL",
+      "mat": "KB3D_wallL",
+      "px": [
+       368,
+       378
+      ],
+      "luma": 197,
+      "rgb": [
+       209,
+       195,
+       178
+      ]
+     }
+    }
+   }
+  },
+  "edifOn": {
+   "aplicado": {
+    "nombre": "edifOn",
+    "restaurados": 22,
+    "mostrados": 252
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       55
+      ],
+      "centro": [
+       137,
+       82,
+       41
+      ]
+     },
+     "disco": {
+      "d": 8.6,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_pillarsM",
+      "mat": "KB3D_pillarsM",
+      "px": [
+       155,
+       513
+      ],
+      "luma": 208,
+      "rgb": [
+       214,
+       209,
+       183
+      ]
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 113,
+      "arg": [
+       400,
+       190,
+       164,
+       103,
+       56
+      ],
+      "centro": [
+       124,
+       75,
+       37
+      ]
+     },
+     "disco": {
+      "d": 4.7,
+      "obj": "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "mat": "KB3D_stoneM",
+      "px": [
+       452,
+       378
+      ],
+      "luma": 207,
+      "rgb": [
+       229,
+       203,
+       176
+      ]
+     }
+    }
+   }
+  }
+ },
+ "callejon": "ok {\"pos\":[2.6,98.79,-119.6],\"yaw\":0.8584387287005676,\"hora\":18.75,\"post\":true}",
+ "ambiente": "{\"hora\":18.75,\"k\":1}",
+ "erroresConsola": 0
+}

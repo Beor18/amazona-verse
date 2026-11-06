@@ -1,0 +1,143 @@
+{
+ "etiqueta": "r5hunt",
+ "atardecer": "1",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "estados": {
+  "hunt": {
+   "aplicado": {
+    "nombre": "hunt",
+    "restaurados": 22,
+    "hunt": {
+     "base": 195,
+     "culpables": []
+    }
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 195,
+      "arg": [
+       388,
+       190,
+       222,
+       194,
+       128
+      ],
+      "centro": [
+       220,
+       193,
+       127
+      ],
+      "ray": {
+       "d": 3.2,
+       "obj": "(sin nombre)",
+       "mat": "MeshBasicMaterial"
+      }
+     },
+     "disco": {
+      "px": [
+       351,
+       802
+      ],
+      "luma": 220,
+      "rgb": [
+       240,
+       218,
+       177
+      ],
+      "span": 63,
+      "ray": {
+       "d": 4.8,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     },
+     "discoBS": {
+      "px": [
+       469,
+       798
+      ],
+      "luma": 216,
+      "rgb": [
+       239,
+       213,
+       181
+      ],
+      "ray": {
+       "d": 4.9,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 194,
+      "arg": [
+       320,
+       130,
+       221,
+       193,
+       127
+      ],
+      "centro": [
+       221,
+       193,
+       127
+      ],
+      "ray": {
+       "d": 3.2,
+       "obj": "(sin nombre)",
+       "mat": "MeshBasicMaterial"
+      }
+     },
+     "disco": {
+      "px": [
+       351,
+       802
+      ],
+      "luma": 221,
+      "rgb": [
+       241,
+       219,
+       177
+      ],
+      "span": 64,
+      "ray": {
+       "d": 4.8,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     },
+     "discoBS": {
+      "px": [
+       469,
+       798
+      ],
+      "luma": 216,
+      "rgb": [
+       238,
+       213,
+       181
+      ],
+      "ray": {
+       "d": 4.9,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     }
+    }
+   }
+  }
+ },
+ "callejon": "ok {\"pos\":[2.6,98.79,-119.6],\"yaw\":0.8584387287005676,\"inclina\":0,\"hora\":18.75,\"post\":true}",
+ "ambiente": "{\"hora\":18.75,\"k\":1}",
+ "erroresConsola": 0
+}

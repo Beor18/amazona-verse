@@ -1,0 +1,280 @@
+{
+ "etiqueta": "dia1",
+ "atardecer": "0",
+ "pantalla": "820x1180@1.5 cpuX4 ipad-emulado",
+ "calidad": "medio",
+ "estados": {
+  "base": {
+   "aplicado": {
+    "nombre": "base",
+    "restaurados": 22
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 199,
+      "arg": [
+       372,
+       174,
+       225,
+       198,
+       134
+      ],
+      "centro": [
+       224,
+       197,
+       133
+      ],
+      "ray": {
+       "d": 3.2,
+       "obj": "(sin nombre)",
+       "mat": "MeshBasicMaterial"
+      }
+     },
+     "disco": {
+      "px": [
+       351,
+       802
+      ],
+      "luma": 234,
+      "rgb": [
+       241,
+       235,
+       197
+      ],
+      "span": 44,
+      "ray": {
+       "d": 4.8,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     },
+     "discoBS": {
+      "px": [
+       351,
+       802
+      ],
+      "luma": 234,
+      "rgb": [
+       241,
+       235,
+       197
+      ],
+      "ray": {
+       "d": 4.8,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 199,
+      "arg": [
+       320,
+       130,
+       224,
+       198,
+       133
+      ],
+      "centro": [
+       224,
+       198,
+       133
+      ],
+      "ray": {
+       "d": 3.1,
+       "obj": "(sin nombre)",
+       "mat": "MeshBasicMaterial"
+      }
+     },
+     "disco": {
+      "px": [
+       351,
+       802
+      ],
+      "luma": 234,
+      "rgb": [
+       241,
+       236,
+       197
+      ],
+      "span": 44,
+      "ray": {
+       "d": 4.8,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     },
+     "discoBS": {
+      "px": [
+       351,
+       802
+      ],
+      "luma": 234,
+      "rgb": [
+       241,
+       236,
+       197
+      ],
+      "ray": {
+       "d": 4.8,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     }
+    }
+   }
+  },
+  "flechaOff": {
+   "aplicado": {
+    "nombre": "flechaOff",
+    "restaurados": 22,
+    "flecha": false,
+    "basicF2a03d": [
+     {
+      "nombre": "(sin nombre)",
+      "geo": "ConeGeometry",
+      "pos": [
+       3,
+       101.6,
+       -118.8
+      ],
+      "visible": false
+     }
+    ]
+   },
+   "medida": {
+    "postActivo": true,
+    "bloomFuerza": 0.18,
+    "composer": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 199,
+      "arg": [
+       372,
+       174,
+       225,
+       198,
+       134
+      ],
+      "centro": [
+       224,
+       197,
+       133
+      ],
+      "ray": {
+       "d": 3.2,
+       "obj": "(sin nombre)",
+       "mat": "MeshBasicMaterial"
+      }
+     },
+     "disco": {
+      "px": [
+       351,
+       802
+      ],
+      "luma": 234,
+      "rgb": [
+       241,
+       236,
+       198
+      ],
+      "span": 43,
+      "ray": {
+       "d": 4.8,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     },
+     "discoBS": {
+      "px": [
+       351,
+       802
+      ],
+      "luma": 234,
+      "rgb": [
+       241,
+       236,
+       198
+      ],
+      "ray": {
+       "d": 4.8,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     }
+    },
+    "directo": {
+     "w": 820,
+     "h": 1180,
+     "ref": {
+      "max": 199,
+      "arg": [
+       320,
+       134,
+       224,
+       198,
+       133
+      ],
+      "centro": [
+       224,
+       198,
+       133
+      ],
+      "ray": {
+       "d": 3.3,
+       "obj": "(sin nombre)",
+       "mat": "MeshBasicMaterial"
+      }
+     },
+     "disco": {
+      "px": [
+       349,
+       804
+      ],
+      "luma": 234,
+      "rgb": [
+       241,
+       236,
+       195
+      ],
+      "span": 46,
+      "ray": {
+       "d": 4.9,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     },
+     "discoBS": {
+      "px": [
+       349,
+       804
+      ],
+      "luma": 234,
+      "rgb": [
+       241,
+       236,
+       195
+      ],
+      "ray": {
+       "d": 4.9,
+       "obj": "personaje/Rig/Vittata/Vittata_2",
+       "mat": "cuerpo"
+      }
+     }
+    }
+   }
+  }
+ },
+ "callejon": "ok {\"pos\":[2.6,98.79,-119.6],\"yaw\":0.8584387287005676,\"inclina\":0,\"post\":true}",
+ "ambiente": "{\"k\":0}",
+ "erroresConsola": 0
+}
