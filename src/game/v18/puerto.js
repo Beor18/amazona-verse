@@ -604,20 +604,24 @@ window.AVV18Puerto = function (G) {
     if (titAbierta) tit.open = false; if (cre) cre.hidden = true; try { G.pausa.sincronizar(); } catch (e) { /* sin pausa */ }
     let crudo = null; try { crudo = localStorage.getItem(V.clave()); } catch (e) { /* */ }
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing && { x: S.facing.x, z: S.facing.z }, inv0 = JSON.stringify(S.inv || {});
-    const misiones = () => JSON.stringify({ m: S.missions, s: S.step, e: S.events, c: S.collected, f: S.complete, fl: S.field, cap: S.captures, u: S.unlocked });
+    const misiones = () => ({ m: JSON.stringify(S.missions), s: S.step, f: S.complete, e: JSON.stringify(S.events), c: JSON.stringify(S.collected), fl: JSON.stringify(S.field), cap: JSON.stringify(S.captures), u: JSON.stringify(S.unlocked) });
+    const difMis = (a, b) => Object.keys(a).filter(k => a[k] !== b[k]).map(k => k + ': ' + String(a[k]).slice(0, 120) + ' → ' + String(b[k]).slice(0, 120));
     const mis0 = misiones(), quiet0 = G.quiet, susp = G.guardado.suspender, toast0 = G.ui.toast, toasts = [];
     const evs = []; evTest = evs;
     G.ui.toast = t => { toasts.push(String(t)); };
     if (susp) susp(true);
     A.manual = true;
     const F = G.fisica, MV = F.MOVE;
-    const correr = (s, h) => { h = h || 1 / 30; for (let t = 0; t < s; t += h) { paso(h, false); N.paso(h, false); } };
+    // lo que cambie en la partida del capítulo DENTRO de una acción de esta prueba (pasos de la misión y teclas): el juego sigue corriendo
+    // entre medias (la apertura del capítulo avanza sola), eso no cuenta
+    const cambios = [], vigilar = fn => { const a = misiones(), i0 = JSON.stringify(S.inv || {}); const r = fn(); const d = difMis(a, misiones()); if (JSON.stringify(S.inv || {}) !== i0) d.push('inv'); if (d.length) cambios.push(...d); return r; };
+    const correr = (s, h) => vigilar(() => { h = h || 1 / 30; for (let t = 0; t < s; t += h) { paso(h, false); N.paso(h, false); } });
     const ir = (x, z, mirar) => {
       S.pos.x = x; S.pos.z = z; S.pos.y = alto(x, z) + 0.02; S.vy = 0; MV.flying = false; MV.swimming = false; MV.grounded = true; MV.vx = MV.vz = 0;
       if (mirar && S.facing) { const dx = mirar.x - x, dz = mirar.z - z, d = Math.hypot(dx, dz) || 1; S.facing.x = dx / d; S.facing.z = dz / d; }
     };
     const tecla = (k, tipo) => window.dispatchEvent(new KeyboardEvent(tipo || 'keydown', { key: k, bubbles: true, cancelable: true }));
-    const pulsar = k => { tecla(k); tecla(k, 'keyup'); };
+    const pulsar = k => vigilar(() => { tecla(k); tecla(k, 'keyup'); });
     const cerrarCharlas = () => { for (let i = 0; i < 12 && G.dialogo.open(); i++) pulsar('e'); try { G.dialogo.cancelarLibre && G.dialogo.cancelarLibre(); } catch (e) { /* */ } };
     const recursos = () => (performance.getEntriesByType('resource') || []).map(r => r.name).filter(n => /models\/personajes\//.test(n));
     const geos = () => (G.renderer.renderer && G.renderer.renderer.info.memory.geometries) || 0;
@@ -769,7 +773,8 @@ window.AVV18Puerto = function (G) {
       localStorage.removeItem(V.clave()); G.emit('apply'); await esperar(60); correr(0.1);
       check('17 · «Comenzar de cero» lo borra: sin escalera, máquina otra vez atascada, personajes al principio', estado() === 'obra' && !gEscalera.visible && !M.rampas.some(p => p.when()) && N.estado('constructor') === 'supervisor' && N.estado('ingeniera') === 'aprendiz' && maq.pintada !== 'flor');
       // 18 · no toca las misiones del capítulo
-      check('18 · No toca las misiones del capítulo (estado de misiones, pasos, eventos e inventario iguales)', misiones() === mis0 && JSON.stringify(S.inv || {}) === inv0);
+      const dm = difMis(mis0, misiones());
+      check('18 · No toca las misiones del capítulo: ningún paso de la misión ni tecla cambió misiones, pasos, eventos ni inventario', !cambios.length, cambios.slice(0, 4).join(' | ') + (dm.length ? ' · (el capítulo avanzó solo durante la prueba: ' + dm.map(x => x.split(':')[0]).join(', ') + ')' : ''));
       // 19 · textos
       if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
       const D = window.AV_EN || {}, pats = Object.keys(D).filter(k => k.indexOf('{}') >= 0).map(k => new RegExp('^' + k.split('{}').map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('(.+?)') + '$'));
