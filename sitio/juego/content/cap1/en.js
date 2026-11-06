@@ -2118,6 +2118,8 @@ window.AV_EN = {
  "¡Un loro de Kawall te vio recoger todas las piedras y fibras y quiere volar contigo! Su poder: Ojo de selva. Elígelo en Pausa → Mis cotorras.": "A Kawall's amazon saw you gather all the stones and fibers and wants to fly with you! Its power: Jungle eye. Pick it in Pause → My parrots.",
  "El Ojo de sol no ve nada cercano que marcar.": "The Sun Eye sees nothing nearby to mark.",
  "Chispa": "Chispa",
+ "Entreno con Moon": "Training with Moon",
+ "Misión V18": "V18 mission",
  "Carrera con Chispa": "Race with Chispa",
  "Echar una carrera con Chispa": "Race Chispa",
  "¡Hola, plumitas! Soy Chispa, la más veloz de los Portales. ¿Una carrerita?": "Hey there, feathers! I'm Chispa, the fastest pup in the Gateways. Up for a little race?",
@@ -2149,5 +2151,18 @@ window.AV_EN = {
  "Descansa un momento y lo intentamos otra vez.": "Rest for a moment and we will try again.",
  "¡Nuevo récord: solo {} toques!": "New record: only {} hits!",
  "Te alejaste del claro: el entrenamiento con Moon queda para otro rato.": "You wandered off from the clearing: the training with Moon will have to wait.",
- "El entreno es en el suelo: baja a entrenar la esquiva de verdad.": "Training is on the ground: come down and train dodging for real."
+ "El entreno es en el suelo: baja a entrenar la esquiva de verdad.": "Training is on the ground: come down and train dodging for real.",
+ "Circuito del Primer Vuelo": "First Flight Circuit",
+ "Guardián del Primer Vuelo": "Guardian of the First Flight",
+ "Volar el circuito con el Guardián": "Fly the circuit with the Guardian",
+ "¿Nuevas alas por aquí? Yo soy el Guardián del Primer Vuelo: de mí aprendieron a volar hasta las nubes viejas.": "New wings around here? I am the Guardian of the First Flight: even the old clouds learned to fly from me.",
+ "Cinco columnas de viento marcadas con humo de colores. Pásalas en orden, vuelve a la salida y cronometramos tu vuelo. ¿Vamos?": "Five wind columns marked with colored smoke. Pass them in order, come back to the start, and we will time your flight. Shall we?",
+ "¿Otra vuelta? El viento ya te conoce. A ver si mejoras tu marca.": "Another lap? The wind knows you now. Let's see if you beat your mark.",
+ "¡Vuela por las 5 columnas en orden y vuelve a la salida!": "Fly through the 5 columns in order and back to the start!",
+ "Puerta {}/5": "Gate {}/5",
+ "¡A la meta!": "To the finish!",
+ "Siguiente puerta": "Next gate",
+ "¡Eso es! Cinco puertas y una vuelta entera. Tu primer vuelo ya tiene historia.": "That's it! Five gates and a whole lap. Your first flight already has a story.",
+ "El cielo se aprende volándolo. Vuelve cuando quieras a mejorar tu marca.": "The sky is learned by flying it. Come back anytime to beat your mark.",
+ "Te alejaste del circuito: el vuelo con el Guardián queda para otro rato.": "You wandered off from the circuit: the flight with the Guardian will have to wait."
 };

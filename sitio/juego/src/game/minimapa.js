@@ -32,7 +32,7 @@ window.AVMinimapa = function (G) {
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || (G.pack && G.pack.id) || 'amazonaverse') + '.minimapa';
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const H = (x, z) => G.terreno.height(x, z);
-  const COL = { obj: '#ffd23f', mision: '#ff7a30', parada: '#2f8fe0', reto: '#8e5be8', fruto: '#e8364a', lugar: '#ffffff', pueblo: '#f2b552', piedra: '#d8cfbd', dest: '#2fc15a', yo: '#ffffff', tinta: '#14202b', v18golf: '#35c46f', v18puerto: '#c9803a', v18rival: '#d4303a', v18chispa: '#ff8a1f', v18moon: '#b9a7ff' };
+  const COL = { obj: '#ffd23f', mision: '#ff7a30', parada: '#2f8fe0', reto: '#8e5be8', fruto: '#e8364a', lugar: '#ffffff', pueblo: '#f2b552', piedra: '#d8cfbd', dest: '#2fc15a', yo: '#ffffff', tinta: '#14202b', v18golf: '#35c46f', v18puerto: '#c9803a', v18rival: '#d4303a', v18chispa: '#ff8a1f', v18moon: '#b9a7ff', v18guardian: '#4fc3d8' };
 
   // ---------- Preferencia (solo este dispositivo; si no hay almacén, valores por defecto) ----------
   const pref = { ruta: true };
@@ -153,7 +153,7 @@ window.AVMinimapa = function (G) {
     if (!hayRetos()) for (const it of G.interaccion.list) {
       if (typeof it.x !== 'number' || (it.visible && !it.visible())) continue;
       if (rec.has(it.id) || /^(m|p|c)\d+$/.test(it.id)) continue;
-      if (/^v18_(minigolf|puerto)|^v18npc_chispa$|^v18npc_maestromoon$/.test(it.id)) continue; // KIMI-154/KIMI-166: los cubren los marcadores propios v18golf/v18puerto/v18chispa/v18moon (con nombre)
+      if (/^v18_(minigolf|puerto)|^v18npc_chispa$|^v18npc_maestromoon$|^v18npc_guardian$/.test(it.id)) continue; // KIMI-154/KIMI-166/KIMI-172: los cubren los marcadores propios v18golf/v18puerto/v18chispa/v18moon/v18guardian (con nombre)
       const tipo = /^parada_/.test(it.id) ? 'parada' : NO_MISION.test(it.id) ? null : 'mision', clave = Math.round(it.x) + ',' + Math.round(it.z);
       if (!tipo || vistos.has(clave)) continue;
       vistos.add(clave); out.push({ tipo, x: it.x, z: it.z, id: it.id });
@@ -174,6 +174,8 @@ window.AVMinimapa = function (G) {
       try { const c = G.v18chispa && G.v18chispa.mapa && G.v18chispa.mapa(); if (c) out.push({ tipo: 'v18chispa', x: c.x, z: c.z, nombre: c.nombre }); } catch (e) { /* sin módulo */ }
       // KIMI-166: el entrenamiento de esquiva con Maestro Moon (luna violeta en Moon; moon.js mapa())
       try { const m = G.v18moon && G.v18moon.mapa && G.v18moon.mapa(); if (m) out.push({ tipo: 'v18moon', x: m.x, z: m.z, nombre: m.nombre }); } catch (e) { /* sin módulo */ }
+      // KIMI-172: el Circuito del Primer Vuelo del Guardián (ala celeste en el Guardián; en circuito, en la puerta siguiente; guardian.js mapa())
+      try { const g = G.v18guardian && G.v18guardian.mapa && G.v18guardian.mapa(); if (g) out.push({ tipo: 'v18guardian', x: g.x, z: g.z, nombre: g.nombre }); } catch (e) { /* sin módulo */ }
       // KIMI-150: el Ojo de sol marca en el minimapa lo más cercano durante unos segundos (explorar.js; sin bandera no existe)
       try { const e = G.v18explorar && G.v18explorar.mapa && G.v18explorar.mapa(); if (e) out.push({ tipo: 'lugar', x: e.x, z: e.z, nombre: e.nombre }); } catch (e2) { /* sin módulo */ }
       // Vista de cumbre (Vista de cumbre #20): la jugadora «ve» a la rival del duelo mientras dura el poder (combate.js mapa())
@@ -235,7 +237,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
 #mapa-grande .mg-ley .l-mision{background:${COL.mision};border-radius:50%}#mapa-grande .mg-ley .l-parada{background:${COL.parada};border-radius:50%}
 #mapa-grande .mg-ley .l-reto{background:${COL.reto};transform:rotate(45deg) scale(.85)}#mapa-grande .mg-ley .l-fruto{background:${COL.fruto};border-radius:50%;width:9px;height:9px}
 #mapa-grande .mg-ley .l-lugar{background:#fff}#mapa-grande .mg-ley .l-pueblo{background:${COL.pueblo};clip-path:polygon(50% 0,100% 45%,100% 100%,0 100%,0 45%);border:0}#mapa-grande .mg-ley .l-obj{background:${COL.obj};border-radius:50%}#mapa-grande .mg-ley .l-dest{background:${COL.dest};border-radius:2px 50% 50% 2px}
-#mapa-grande .mg-ley .l-v18golf{background:${COL.v18golf};clip-path:polygon(18% 100%,18% 0,100% 26%,18% 52%);border:0}#mapa-grande .mg-ley .l-v18puerto{background:${COL.v18puerto};border-radius:50%}#mapa-grande .mg-ley .l-v18rival{background:${COL.v18rival};transform:rotate(45deg) scale(.85)}#mapa-grande .mg-ley .l-v18chispa{background:${COL.v18chispa};clip-path:polygon(60% 0,15% 58%,46% 58%,36% 100%,85% 38%,54% 38%);border:0}#mapa-grande .mg-ley .l-v18moon{background:${COL.v18moon};border-radius:50%}
+#mapa-grande .mg-ley .l-v18golf{background:${COL.v18golf};clip-path:polygon(18% 100%,18% 0,100% 26%,18% 52%);border:0}#mapa-grande .mg-ley .l-v18puerto{background:${COL.v18puerto};border-radius:50%}#mapa-grande .mg-ley .l-v18rival{background:${COL.v18rival};transform:rotate(45deg) scale(.85)}#mapa-grande .mg-ley .l-v18chispa{background:${COL.v18chispa};clip-path:polygon(60% 0,15% 58%,46% 58%,36% 100%,85% 38%,54% 38%);border:0}#mapa-grande .mg-ley .l-v18moon{background:${COL.v18moon};border-radius:50%}#mapa-grande .mg-ley .l-v18guardian{background:${COL.v18guardian};clip-path:polygon(50% 0,100% 100%,50% 74%,0 100%);border:0}
 @media (max-height:480px){#mapa-grande .mg-panel{--lado:calc(100dvh - 120px)}#mapa-grande .mg-ley{display:none}}
 :root.a11y-zurdo #mapa-grande .mg-head{flex-direction:row-reverse}:root.a11y-zurdo #mapa-grande h2{margin:0 4px 0 auto}
 :root.a11y-contraste #minimapa .mm-btn{background:#000;border-color:#fff;border-width:4px;box-shadow:none}
@@ -253,7 +255,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     '<button type="button" class="mg-ruta" aria-pressed="false">Ruta</button><button type="button" class="mg-quitar" hidden>Quitar destino</button><button type="button" class="mg-cerrar" aria-label="Cerrar el mapa (M)">Cerrar</button></div>' +
     '<canvas class="mg-c" width="400" height="400" aria-label="Mapa de la isla. Toca para fijar un destino"></canvas><p class="mg-info" aria-live="polite"></p>' +
     '<ul class="mg-ley"><li><i class="l-obj"></i>Objetivo</li><li><i class="l-mision"></i>Misión</li><li><i class="l-parada"></i>Parada</li><li><i class="l-reto"></i>Reto</li><li><i class="l-fruto"></i>Fruto</li><li><i class="l-lugar"></i>Lugar</li><li><i class="l-pueblo"></i>Asentamiento</li><li><i class="l-dest"></i>Destino</li>' +
-    '<li hidden class="li-v18"><i class="l-v18golf"></i>Minigolf</li><li hidden class="li-v18"><i class="l-v18puerto"></i>Misión V18</li><li hidden class="li-v18"><i class="l-v18rival"></i>Rival</li><li hidden class="li-v18"><i class="l-v18chispa"></i>Carrera con Chispa</li><li hidden class="li-v18"><i class="l-v18moon"></i>Entreno con Moon</li></ul></div>';
+    '<li hidden class="li-v18"><i class="l-v18golf"></i>Minigolf</li><li hidden class="li-v18"><i class="l-v18puerto"></i>Misión V18</li><li hidden class="li-v18"><i class="l-v18rival"></i>Rival</li><li hidden class="li-v18"><i class="l-v18chispa"></i>Carrera con Chispa</li><li hidden class="li-v18"><i class="l-v18moon"></i>Entreno con Moon</li><li hidden class="li-v18"><i class="l-v18guardian"></i>Circuito del Guardián</li></ul></div>';
   let elC, elG, cvC, cvG, ctxC, ctxG, txtD, txtDot, abierto = false, dprC = 0, dprG = 0, anchoC = -1, porColocar = true; // anchoC −1: sin medida del observador
   function montar() {
     if (!doc.getElementById(ESTILO_ID)) { const st = doc.createElement('style'); st.id = ESTILO_ID; st.textContent = ESTILO; doc.head.appendChild(st); }
@@ -333,6 +335,14 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       ctx.arc(r * 0.42, 0, r * 0.8, -1.294, 1.294, false); // mordisco interior
       ctx.closePath();
     }
+    else if (tipo === 'v18guardian') { // ala desplegada: el Circuito del Primer Vuelo (V18.3 fase 5, KIMI-172)
+      ctx.moveTo(-r, r * 0.55);
+      ctx.quadraticCurveTo(-r * 0.55, -r * 0.95, r * 0.15, -r * 0.75);
+      ctx.quadraticCurveTo(r * 0.75, -r * 0.55, r, r * 0.25);
+      ctx.quadraticCurveTo(r * 0.45, r * 0.45, r * 0.1, r * 0.95);
+      ctx.quadraticCurveTo(-r * 0.35, r * 0.75, -r, r * 0.55);
+      ctx.closePath();
+    }
     else if (tipo === 'v18rival') { // rival del duelo visto desde la cumbre: rombo rojo (Vista de cumbre #20)
       ctx.moveTo(0, -r * 1.05); ctx.lineTo(r * 1.05, 0); ctx.lineTo(0, r * 1.05); ctx.lineTo(-r * 1.05, 0); ctx.closePath();
     }
@@ -379,7 +389,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       ctx.lineWidth = 2.2 * gk; ctx.strokeStyle = de ? COL.dest : COL.obj; ctx.stroke(); ctx.restore();
     }
     // Marcadores en orden de importancia (los de arriba se dibujan al final)
-    const orden = ['fruto', 'pueblo', 'lugar', 'reto', 'parada', 'mision', 'v18golf', 'v18puerto', 'v18rival', 'v18chispa', 'v18moon', 'dest', 'obj'], inset = rM + 3 * k;
+    const orden = ['fruto', 'pueblo', 'lugar', 'reto', 'parada', 'mision', 'v18golf', 'v18puerto', 'v18rival', 'v18chispa', 'v18moon', 'v18guardian', 'dest', 'obj'], inset = rM + 3 * k;
     const dentro = (x, y) => x > inset * 0.4 && y > inset * 0.4 && x < w - inset * 0.4 && y < h - inset * 0.4;
     const bordes = [], rotulos = [];
     for (const tipo of orden) for (const m of ms) {
@@ -396,7 +406,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       const rr = tipo === 'fruto' ? rM * 0.62 : tipo === 'lugar' ? rM * 0.8 : tipo === 'pueblo' ? rM * (grande ? 0.95 : 0.8) : tipo === 'obj' ? rM * 1.15 : rM;
       marca(ctx, tipo, x, y, rr, gk, tipo === 'reto' && grande && m.n ? String(m.n) : GLIFO[tipo], m);
       const nomLugar = G.idioma ? G.idioma.tr(m.nombre) : m.nombre; // U1: nombre del lugar en el idioma elegido
-      if (grande && (tipo === 'lugar' || tipo === 'pueblo' || tipo === 'v18golf' || tipo === 'v18puerto' || tipo === 'v18chispa' || tipo === 'v18moon') && nomLugar) { // el nombre solo si no pisa otro ya escrito (los lugares de la Villa están muy juntos)
+      if (grande && (tipo === 'lugar' || tipo === 'pueblo' || tipo === 'v18golf' || tipo === 'v18puerto' || tipo === 'v18chispa' || tipo === 'v18moon' || tipo === 'v18guardian') && nomLugar) { // el nombre solo si no pisa otro ya escrito (los lugares de la Villa están muy juntos)
         const fs = Math.round(11 * fsk() * k); ctx.font = '700 ' + fs + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineWidth = 3.5 * k; ctx.lineJoin = 'round';
         const tw = ctx.measureText(nomLugar).width, lx = clamp(x, tw / 2 + 3 * k, w - tw / 2 - 3 * k), caja = [lx - tw / 2, y + rM, lx + tw / 2, y + rM + fs];
         if (!rotulos.some(c => caja[0] < c[2] && caja[2] > c[0] && caja[1] < c[3] && caja[3] > c[1])) {
@@ -564,9 +574,12 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       const moonBk = G.v18moon; G.v18moon = { mapa: () => ({ x: S.pos.x - 12, z: S.pos.z + 12, nombre: 'Entrenamiento con Moon' }) };
       msV = marcadores();
       check('KIMI-166: el entreno con Moon sale como marcador propio (luna) con nombre', msV.some(m => m.tipo === 'v18moon' && m.nombre === 'Entrenamiento con Moon') && typeof COL.v18moon === 'string');
-      G.V18 = false; G.v18minigolf = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18puerto = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18chispa = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18moon = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) };
-      check('Sin la bandera V18 los marcadores V18 no salen (la versión estable no cambia)', !marcadores().some(m => /^v18(golf|puerto|chispa|moon)/.test(m.tipo)));
-      G.V18 = v18bk; if (minBk === undefined) delete G.v18minigolf; else G.v18minigolf = minBk; if (pueBk === undefined) delete G.v18puerto; else G.v18puerto = pueBk; if (chiBk === undefined) delete G.v18chispa; else G.v18chispa = chiBk; if (moonBk === undefined) delete G.v18moon; else G.v18moon = moonBk;
+      const guardianBk = G.v18guardian; G.v18guardian = { mapa: () => ({ x: S.pos.x + 18, z: S.pos.z + 18, nombre: 'Circuito del Primer Vuelo' }) };
+      msV = marcadores();
+      check('KIMI-172: el Circuito del Guardián sale como marcador propio (ala) con nombre', msV.some(m => m.tipo === 'v18guardian' && m.nombre === 'Circuito del Primer Vuelo') && typeof COL.v18guardian === 'string');
+      G.V18 = false; G.v18minigolf = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18puerto = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18chispa = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18moon = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18guardian = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) };
+      check('Sin la bandera V18 los marcadores V18 no salen (la versión estable no cambia)', !marcadores().some(m => /^v18(golf|puerto|chispa|moon|guardian)/.test(m.tipo)));
+      G.V18 = v18bk; if (minBk === undefined) delete G.v18minigolf; else G.v18minigolf = minBk; if (pueBk === undefined) delete G.v18puerto; else G.v18puerto = pueBk; if (chiBk === undefined) delete G.v18chispa; else G.v18chispa = chiBk; if (moonBk === undefined) delete G.v18moon; else G.v18moon = moonBk; if (guardianBk === undefined) delete G.v18guardian; else G.v18guardian = guardianBk;
       tUlt = -1e9; tick(performance.now());
       check('Se dibuja con todos los tipos a la vez sin errores', !!ultimo && ultimo.marcas >= quiero.length);
       ext.reto = undefined; ext.frutos = undefined;

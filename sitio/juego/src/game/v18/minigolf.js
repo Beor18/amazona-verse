@@ -264,6 +264,20 @@ window.AVV18Minigolf = function (G) {
       return oculto('end') && oculto('comic') && oculto('creator');
     } catch (e) { return false; }
   }
+  // QA-189 (coordinadora 6-nov): la estación solo se ofrece en Villa Raíz (cap. 1). En los demás packs no hay hoyo que
+  // ofrecer: sin invitación, sin piezas, sin interacción, sin inicio (en ep4 el jugador nacía junto al hoyo y Acción
+  // abría «¿Cuántos juegan?» en vez de seguir la historia). La comprobación es dinámica (lee G.pack.id en cada uso).
+  const ofrecible = () => !!(G.pack && G.pack.id === 'cap1');
+  // Su interacción es la de menor prioridad: si cualquier otra interacción está al alcance (la de la historia, p. ej.
+  // «Hablar con Iguaca», u otra estación v18), el hoyo cede y no compite con ella: la historia manda.
+  function otraCerca() {
+    for (const o of G.interaccion.list) {
+      if (o === it) continue;
+      if (o.visible) { let v; try { v = o.visible(); } catch (e) { v = false; } if (!v) continue; }
+      if (Math.hypot(S.pos.x - o.x, S.pos.z - o.z) < o.r) return true;
+    }
+    return false;
+  }
 
   // ---------- Partida ----------
   let parVisto = false; // «par 3» se explica una vez por sesión
@@ -271,6 +285,7 @@ window.AVV18Minigolf = function (G) {
   function iniciar(o) {
     o = o || {};
     if (A.fase !== 'nada' || !K) return false;
+    if (!ofrecible()) return false; // QA-189: fuera de Villa Raíz el hoyo no se ofrece ni siquiera forzado
     if (!o.forzar && (!libre() || otroActivo())) return false;
     if (M.flying) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } }
     A.fase = 'apuntar'; A.njug = 1; A.eligiendo = true;
@@ -539,12 +554,13 @@ window.AVV18Minigolf = function (G) {
   function paso(dt) {
     if (!K) return;
     const lejos = Math.hypot(S.pos.x - K.x, S.pos.z - K.z) > 90;
-    troncos.visible = nido.visible = semilla.visible = !lejos || A.fase !== 'nada';
-    salida.visible = A.fase === 'nada' && !lejos;
+    const on = ofrecible(); // QA-189: fuera de Villa Raíz la estación no existe (ni piezas ni invitación)
+    troncos.visible = nido.visible = semilla.visible = on && (!lejos || A.fase !== 'nada');
+    salida.visible = on && A.fase === 'nada' && !lejos;
     nido.userData.banderin.rotation.y = Math.sin(performance.now() / 600) * 0.25;
     if (A.fase === 'nada') {
       puntos.visible = false;
-      if (!A.invitado && !A.manual && Math.hypot(S.pos.x - P_TEE.x, S.pos.z - P_TEE.z) < 10 && it.visible() && avisoLibre()) { A.invitado = true; toast(TXT.invita, 3600); }
+      if (on && !A.invitado && !A.manual && Math.hypot(S.pos.x - P_TEE.x, S.pos.z - P_TEE.z) < 10 && it.visible() && avisoLibre()) { A.invitado = true; toast(TXT.invita, 3600); }
       return;
     }
     if (A.giro) { G.camara.yaw += A.giro * GIRO * dt; if (G.camara.manual) try { G.camara.manual(); } catch (e) { /* */ } }
@@ -643,6 +659,7 @@ window.AVV18Minigolf = function (G) {
       '#v18-golf .vg-m[data-m="oro"]{color:#ffd84a}#v18-golf .vg-m[data-m="plata"]{color:#dfe7ee}#v18-golf .vg-m[data-m="bronce"]{color:#e0a36a}' +
       '#v18-golf .vg-fin .vg-bot2{grid-template-columns:1fr 1fr}' +
       '#v18-golf .vg-elige{text-align:center}#v18-golf .vg-elige p{margin:2px 0;font-size:18px;font-weight:600}#v18-golf .vg-elige .vg-et{font-size:13px}' +
+      '#v18-golf .vg-elige-salir{margin-top:8px}#v18-golf .vg-elige-salir button{min-height:44px;padding:4px 22px;border-radius:22px;font-size:15px;background:#e9e2d2}' +
       '#v18-golf .vg-bot4{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}#v18-golf .vg-bot4 button{min-height:60px;font-size:18px}' +
       '#v18-golf .vg-jugs{display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:center;font-size:14px;font-weight:600;margin-top:4px}#v18-golf .vg-jugs .on{text-decoration:underline}#v18-golf .vg-jugs .ya{opacity:.7}' +
       '#v18-golf .vg-tabla{margin:4px auto 2px;max-width:360px}#v18-golf .vg-fila{display:grid;grid-template-columns:2em 1fr auto 4.5em;gap:8px;align-items:center;font-size:17px;font-weight:600;text-align:left}' +
@@ -665,7 +682,8 @@ window.AVV18Minigolf = function (G) {
     el.innerHTML = `<div class="vg-caja"><div class="vg-info"><span>${TXT.hoyo}</span><span>${TXT.par}</span><span data-k="golpes"></span><span data-k="record"></span><span data-k="turno"></span></div><div class="vg-jugs" data-k="jugs" hidden></div>` +
       `<div class="vg-barra" data-k="barraW"><b data-k="barra"></b></div><div class="vg-et" data-k="fuerzaEt">${TXT.fuerza}</div>` +
       `<div class="vg-elige" data-k="elige" hidden><p>${TXT.elige}</p><div class="vg-et">${TXT.eligeSub}</div><div class="vg-bot4">` +
-      [1, 2, 3, 4].map(n => `<button data-a="j${n}">${TXT['j' + n]}</button>`).join('') + `</div></div>` +
+      [1, 2, 3, 4].map(n => `<button data-a="j${n}">${TXT['j' + n]}</button>`).join('') + `</div>` +
+      `<div class="vg-elige-salir"><button data-a="salir">${TXT.salir}</button></div></div>` +
       `<div data-k="bot"><div class="vg-bot"><button data-a="izq" aria-label="${TXT.izq}">◀</button><button class="vg-golpe" data-a="golpe">${TXT.golpe}</button><button data-a="der" aria-label="${TXT.der}">▶</button></div>` +
       `<div class="vg-bot2"><button data-a="grito" data-k="bgrito">${TXT.poder}</button><button data-a="reiniciar">${TXT.reiniciar}</button><button data-a="salir">${TXT.salir}</button></div><div class="vg-guia" data-k="guia">${TACTIL ? TXT.guiaT : TXT.guia}</div></div>` +
       `<div class="vg-fin" data-k="fin" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><div class="vg-tabla" data-k="tabla" hidden></div><p data-k="fin3"></p>` +
@@ -713,7 +731,7 @@ window.AVV18Minigolf = function (G) {
   }
 
   // ---------- En el mundo ----------
-  const it = G.interaccion.add({ id: 'v18_minigolf', x: 0, z: 0, r: 3.4, visible: () => A.fase === 'nada' && !!K && libre() && !otroActivo(),
+  const it = G.interaccion.add({ id: 'v18_minigolf', x: 0, z: 0, r: 3.4, visible: () => A.fase === 'nada' && !!K && ofrecible() && !otraCerca() && libre() && !otroActivo(),
     label: () => TXT.label, use: () => iniciar({}) });
   montar(buscarSitio());
   G.on('update', (dt, busy) => { if (A.manual || (busy && A.fase !== 'nada')) return; paso(Math.min(dt, 0.25)); }, 75);
@@ -758,9 +776,33 @@ window.AVV18Minigolf = function (G) {
       S.pos.x = P_ENTRADA.x; S.pos.z = P_ENTRADA.z; S.pos.y = H(S.pos.x, S.pos.z);
       correr(0.05);
       check('Zona de activación, semilla gigante y nido se ven al llegar; «Jugar al minigolf» en Acción', salida.visible && semilla.visible && nido.visible && troncos.visible && troncos.count >= 8 &&
-        it.visible() === (libre() && !otroActivo()) && it.label() === TXT.label && Math.hypot(it.x - P_TEE.x, it.z - P_TEE.z) < 0.01, JSON.stringify({ troncos: troncos.count, libre: libre(), otro: otroActivo(), dialogo: !!(G.dialogo && G.dialogo.open && G.dialogo.open()), tarjeta: !!G.ui.cardOpen, ocupado: !!(G.ui.busy && G.ui.busy()), fade: !!document.getElementById('c1-fade'), capas: ['end', 'comic', 'creator'].filter(i => document.getElementById(i) && !document.getElementById(i).hidden) }));
+        it.visible() === (ofrecible() && !otraCerca() && libre() && !otroActivo()) && it.label() === TXT.label && Math.hypot(it.x - P_TEE.x, it.z - P_TEE.z) < 0.01, JSON.stringify({ troncos: troncos.count, libre: libre(), otro: otroActivo(), dialogo: !!(G.dialogo && G.dialogo.open && G.dialogo.open()), tarjeta: !!G.ui.cardOpen, ocupado: !!(G.ui.busy && G.ui.busy()), fade: !!document.getElementById('c1-fade'), capas: ['end', 'comic', 'creator'].filter(i => document.getElementById(i) && !document.getElementById(i).hidden) }));
       const forzar = !libre() || otroActivo(); // la prueba puede correr con un diálogo del capítulo abierto: entonces se fuerza (y se dice)
       check('No se abre durante la apertura del capítulo (ni con otra actividad V18 en marcha)', (() => { const fd = document.createElement('div'); fd.id = 'c1-fade'; document.body.appendChild(fd); const r = !it.visible() && iniciar({}) === false; fd.remove(); return r && A.fase === 'nada'; })());
+      // QA-189 (coordinadora 6-nov): la estación solo se ofrece en Villa Raíz; fuera del cap. 1 no hay hoyo que ofrecer
+      {
+        const pack0 = G.pack.id; G.pack.id = 'ep4';
+        const inv0 = A.invitado; A.invitado = false; toasts.length = 0;
+        correr(0.1);
+        const fuera = { interaccion: it.visible(), salida: salida.visible, semilla: semilla.visible, nido: nido.visible, troncos: troncos.visible, mapa: G.v18minigolf.mapa(), invita: A.invitado || toasts.includes(TXT.invita), inicia: G.v18minigolf.iniciar({ forzar: true }) };
+        A.invitado = inv0; G.pack.id = pack0; toasts.length = 0;
+        check('QA-189: fuera de Villa Raíz no hay estación (sin interacción, piezas, marcador, invitación ni inicio; en ep4 se nacía junto al hoyo)',
+          !fuera.interaccion && !fuera.salida && !fuera.semilla && !fuera.nido && !fuera.troncos && fuera.mapa === null && !fuera.invita && fuera.inicia === false, JSON.stringify(fuera));
+        correr(0.05);
+        check('QA-189: al volver a Villa Raíz la estación se ofrece otra vez (piezas y «Jugar al minigolf»)',
+          salida.visible && semilla.visible && nido.visible && troncos.visible && it.visible() === (ofrecible() && !otraCerca() && libre() && !otroActivo()));
+      }
+      // QA-189: la historia manda; con otra interacción al alcance (la de la historia), la del hoyo cede
+      {
+        S.pos.x = P_TEE.x; S.pos.z = P_TEE.z; correr(0.02); // junto a la semilla: el hoyo es lo más cercano que hay
+        const antes = it.visible();
+        const fake = G.interaccion.add({ id: 'qa189_historia', x: S.pos.x + 1.5, z: S.pos.z, r: 2.5, label: () => 'Hablar con Iguaca', use: () => {} });
+        const cede = !it.visible() && G.interaccion.nearest().id === 'qa189_historia';
+        G.interaccion.list.splice(G.interaccion.list.indexOf(fake), 1);
+        check('QA-189: con una interacción de historia al alcance, la del hoyo cede (Acción ofrece la historia, no «Jugar al minigolf»)',
+          antes && cede && it.visible(), JSON.stringify({ antes, cede, otraCerca: otraCerca(), libre: libre(), otro: otroActivo() }));
+        S.pos.x = P_ENTRADA.x; S.pos.z = P_ENTRADA.z; correr(0.02);
+      }
       // 1. Empezar
       check('Empezar: hoyo 1 par 3 (se explica qué es el par la primera vez), 0 golpes, semilla en la salida, HUD y controles del hoyo', iniciar({ forzar }) && A.fase === 'apuntar' && A.golpes === 0 && (toasts.includes(TXT.empieza) || toasts.includes(TXT.empiezaPar)) &&
         G.interaccion.modo === modo && hud && !hud.el.hidden && document.body.classList.contains('v18-golf-on') && Math.hypot(B.x - P_TEE.x, B.z - P_TEE.z) < 0.01, forzar ? 'forzado (había un diálogo o tarjeta abiertos)' : '');
@@ -891,8 +933,11 @@ window.AVV18Minigolf = function (G) {
       toasts.length = 0; const mad0 = mad(), hex = i => '#' + semilla.userData.franja.material.color.getHexString() === COLORES[i];
       const espera = () => correr(ESPERA + 0.1), meter = () => { colocar(NIDO.u - 3, 0); apuntaLocal(NIDO.u, NIDO.v); tirar(fuerzaPara(3.3)); hastaQuieta(); };
       iniciar({ forzar });
-      check('Al empezar se elige cuántos juegan (4 botones grandes); por defecto 1 jugador', A.eligiendo && A.njug === 1 && !hud.q('elige').hidden && hud.q('bot').hidden &&
-        hud.el.querySelectorAll('[data-k="elige"] button').length === 4 && hud.q('jugs').hidden);
+      check('Al empezar se elige cuántos juegan (4 botones grandes y «Salir»); por defecto 1 jugador', A.eligiendo && A.njug === 1 && !hud.q('elige').hidden && hud.q('bot').hidden &&
+        hud.el.querySelectorAll('[data-k="elige"] button').length === 5 && hud.q('jugs').hidden);
+      { const bs = hud.el.querySelector('[data-k="elige"] [data-a="salir"]'); bs.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true })); bs.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true })); }
+      check('QA-189: «Salir» en el selector (táctil) abandona sin elegir jugadores: HUD fuera y control devuelto', A.fase === 'nada' && A.eligiendo === false && hud.el.hidden && !document.body.classList.contains('v18-golf-on'));
+      iniciar({ forzar });
       tecla('keydown', 'Enter');
       check('Enter = 1 jugador: la partida de siempre (controles, récord, sin turnos ni marcas)', !A.eligiendo && A.njug === 1 && J.length === 1 && !hud.q('bot').hidden && hud.q('elige').hidden &&
         hud.q('turno').textContent === '' && hud.q('record').textContent === TXT.sinRecord && hex(0) === false && !aroTurno.visible);
@@ -951,6 +996,6 @@ window.AVV18Minigolf = function (G) {
     V.recargar(); if (susp) susp(false);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
-  G.v18minigolf = { ID, PAR, iniciar, salir, reiniciar, tirar, grito, empezarCarga, soltarCarga, paso, medalla, record, elegir, clasificar, jugadores: () => J, estado: () => A, semilla: () => B, get sitio() { return K; }, mapa: () => (K && A.fase === 'nada' ? { x: P_ENTRADA.x, z: P_ENTRADA.z, nombre: TXT.nombre } : null), test };
+  G.v18minigolf = { ID, PAR, iniciar, salir, reiniciar, tirar, grito, empezarCarga, soltarCarga, paso, medalla, record, elegir, clasificar, jugadores: () => J, estado: () => A, semilla: () => B, get sitio() { return K; }, mapa: () => (K && ofrecible() && A.fase === 'nada' ? { x: P_ENTRADA.x, z: P_ENTRADA.z, nombre: TXT.nombre } : null), test };
   return G.v18minigolf;
 };

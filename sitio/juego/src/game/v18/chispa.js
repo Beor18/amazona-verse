@@ -109,7 +109,9 @@ window.AVV18Chispa = function (G) {
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(20,32,60,.78);border:2px solid #ff8a1f;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
         '#v18-chispa .vc-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-chispa .vc-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-chispa .vc-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd23f;text-shadow:0 2px 0 #b35a00}#v18-chispa .vc-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
-        '@media (max-width:760px){#v18-chispa{top:calc(env(safe-area-inset-top,0px) + 64px)}}';
+        // QA móvil: el panel (centrado, 300 px) tapaba el objetivo, el reloj, los contadores y medio minimapa. En el teléfono, como el duelo y la
+        // Sombra, el objetivo se oculta durante la carrera y el panel va a la izquierda, sin llegar al minimapa (que sigue: marca el banderín)
+        '@media (max-width:760px){body.v18-chispa-on #quest{display:none}#v18-chispa{top:calc(env(safe-area-inset-top,0px) + 64px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}}';
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-chispa'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
@@ -124,7 +126,7 @@ window.AVV18Chispa = function (G) {
   function pintarHud() {
     if (!hud) return;
     const on = A.fase === 'cuenta' || A.fase === 'carrera';
-    hud.el.hidden = !on; if (!on) return;
+    hud.el.hidden = !on; document.body.classList.toggle('v18-chispa-on', on); if (!on) return;
     const n = A.fase === 'cuenta' ? String(Math.max(1, Math.ceil(A.cuenta))) : A.t < 0.8 ? TXT.ya : '';
     hud.n.hidden = !n; pon('n', n);
     pon('p', A.sig >= RUTA.length - 1 ? TXT.meta : TXT.punto.replace('{}', A.sig + 1));

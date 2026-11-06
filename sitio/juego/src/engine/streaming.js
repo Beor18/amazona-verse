@@ -413,7 +413,20 @@ AVE.module('streaming', function (G) {
     }
     if (m.map && m.map.image) m.userData.avAtlasEsc.value = m.map.image.width / (HD.celdas * HD.celda);
   }
-  G.on('calidad', () => { for (const k in mats) if (/^AV_HD_/.test(k)) reducirAtlas(mats[k].mat); });
+  G.on('calidad', () => {
+    for (const k in mats) if (/^AV_HD_/.test(k)) {
+      const m = mats[k].mat;
+      // KIMI-177: el atlas pudo crearse en «bajo» sin normal (no se descargó, ~14 MB); al subir la calidad se pide y engancha.
+      if (!m.normalMap && nivelCal() !== 'bajo') {
+        const kit = /Ancient$/.test(k) ? 'ancient' : 'savage';
+        const nm = G.assets.tex(base + 'tex_hd/hd_' + kit + '_n.jpg');
+        nm.flipY = false;
+        m.normalMap = nm;
+        m.needsUpdate = true;
+      }
+      reducirAtlas(m);
+    }
+  });
   function material(src, fijo) {
     const k = src.name || src.uuid;
     let it = mats[k];
@@ -856,9 +869,16 @@ AVE.module('streaming', function (G) {
     function materialAtlas(kit) {
       const k = 'AV_HD_' + (kit === 'ancient' ? 'Ancient' : 'Savage');
       if (!mats[k]) {
-        const map = G.assets.tex(base + 'tex_hd/hd_' + kit + '.jpg'), normalMap = G.assets.tex(base + 'tex_hd/hd_' + kit + '_n.jpg');
+        const map = G.assets.tex(base + 'tex_hd/hd_' + kit + '.jpg');
         map.encoding = THREE.sRGBEncoding;
-        map.flipY = normalMap.flipY = false;
+        map.flipY = false;
+        // KIMI-177: en «bajo» la normal del atlas (JPEG de ~14 MB, las dos ~28 MB) no se descarga: a DPR 0,75 su relieve
+        // no se aprecia y era la mitad de la carga inicial real con GPU (los cuatro tex_hd son 36 MB y entran en el
+        // spawn con la fusión cercana de la ciudad). Mismo criterio que el kit ligero («el relieve va en el atlas, solo
+        // en alta», línea ~231). Si la calidad sube, el gancho 'calidad' de abajo la descarga y la engancha al mismo
+        // material (needsUpdate, sin refundir la zona).
+        const normalMap = nivelCal() === 'bajo' ? null : G.assets.tex(base + 'tex_hd/hd_' + kit + '_n.jpg');
+        if (normalMap) normalMap.flipY = false;
         mats[k] = { mat: crearMaterial({ name: k, map, normalMap, side: THREE.DoubleSide }, k), refs: 0, fijo: false };
       }
       return mats[k].mat;
