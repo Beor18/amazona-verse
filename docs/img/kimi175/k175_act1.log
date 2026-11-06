@@ -1,0 +1,78 @@
+[22:17:56] lanzando Chrome y entrando al juego (v18=1)...
+[22:18:00] juego listo, entrando...
+[22:18:01] …latido
+[22:18:06] …latido
+[22:18:11] …latido
+[22:18:16] …latido
+[22:18:17] entrada ok, preparando modulos v18...
+[22:18:20] prep ok
+[22:18:21] calidad bajo (=bajo)
+[22:18:21] …latido
+[22:18:24] midiendo bajo/base...
+[22:18:26] …latido
+[22:18:31] …latido
+[22:18:36] …latido
+[22:18:38] [bajo/base] fpsMed=43 min=29 peorMs=60 calls=105 tris=611450
+[22:18:39] midiendo bajo/puerto...
+[22:18:41] …latido
+[22:18:46] …latido
+[22:18:51] …latido
+[22:18:56] …latido
+[22:18:57] [bajo/puerto] fpsMed=28 min=18 peorMs=94 calls=61 tris=270726
+[22:18:58] midiendo bajo/chispa...
+[22:19:01] …latido
+[22:19:06] …latido
+[22:19:10] [bajo/chispa] fpsMed=25 min=21 peorMs=250 calls=85 tris=321875
+[22:19:11] midiendo bajo/golf...
+[22:19:11] …latido
+[22:19:16] …latido
+[22:19:21] …latido
+[22:19:26] …latido
+[22:19:31] …latido
+[22:19:36] …latido
+[22:19:41] …latido
+[22:19:44] [bajo/golf] fpsMed=55 min=41 peorMs=37 calls=57 tris=229021
+[22:19:45] midiendo bajo/ciudad...
+[22:19:46] …latido
+[22:19:51] …latido
+[22:19:56] …latido
+[22:20:01] …latido
+[22:20:06] …latido
+[22:20:10] [bajo/ciudad] fpsMed=46 min=34 peorMs=49 calls=54 tris=261297
+[22:20:11] calidad medio (=medio)
+[22:20:11] …latido
+[22:20:14] midiendo medio/base...
+[22:20:16] …latido
+[22:20:21] …latido
+[22:20:26] …latido
+[22:20:29] [medio/base] fpsMed=26 min=7 peorMs=995 calls=137 tris=619491
+[22:20:30] midiendo medio/puerto...
+[22:20:31] …latido
+[22:20:36] …latido
+[22:20:41] …latido
+[22:20:46] …latido
+[22:20:48] [medio/puerto] fpsMed=28 min=24 peorMs=57 calls=133 tris=435190
+[22:20:49] midiendo medio/chispa...
+[22:20:51] …latido
+[22:20:56] …latido
+[22:21:01] …latido
+[22:21:06] …latido
+[22:21:08] [medio/chispa] fpsMed=26 min=22 peorMs=64 calls=123 tris=482361
+[22:21:09] midiendo medio/golf...
+[22:21:11] …latido
+[22:21:16] …latido
+[22:21:21] …latido
+[22:21:26] …latido
+[22:21:31] …latido
+[22:21:36] …latido
+[22:21:41] …latido
+[22:21:42] [medio/golf] fpsMed=39 min=31 peorMs=56 calls=88 tris=343429
+[22:21:42] midiendo medio/ciudad...
+[22:21:46] …latido
+[22:21:51] …latido
+[22:21:56] …latido
+[22:22:01] …latido
+[22:22:07] …latido
+[22:22:08] [medio/ciudad] fpsMed=32 min=24 peorMs=68 calls=141 tris=430571
+[22:22:08] errores de consola: []
+[22:22:09] evidencia: C:\Users\kelvi\amazonaversegame2\docs\img\kimi175\k175_act1.json
