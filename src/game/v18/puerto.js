@@ -71,7 +71,7 @@ window.AVV18Puerto = function (G) {
   const alto = (x, z) => T.height(x, z);
   const MAQ = { on: en(2.7, 0), off: en(2.1, 3.4) };
   const P = {
-    freno: en(2.2, -1.75), panel: en(2.6, 1.9), reparar: en(-0.6, 0),
+    freno: en(0.75, -0.95), panel: en(2.9, 1.95), reparar: en(-0.6, 0),
     ingObra: en(-1.6, 2.6), ingFin: en(-1.4, -2.3), conObra: en(L + 2.4, -1.8), conFin: en(L + 0.9, 1.7),
     pistas: { tuerca: en(1.0, 1.4), plano: en(-3.2, -2.0), aceite: en(3.6, -2.6) },
     mats: [['v18_puerto_tabla_1', 'tabla', en(-3.6, 3.2)], ['v18_puerto_tabla_2', 'tabla', en(5.0, -2.8)], ['v18_puerto_tabla_3', 'tabla', en(L + 1.8, 2.6)], ['v18_puerto_cuerda', 'cuerda', en(-1.2, -3.6)]]
@@ -192,8 +192,11 @@ window.AVV18Puerto = function (G) {
     gMaq.add(maq.engranaje);
     maq.broca = new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.2, 10), metal); maq.broca.rotation.z = -Math.PI / 2; maq.broca.position.set(1.75, 0.75, 0); gMaq.add(maq.broca);
     for (const [x, c] of [[-0.6, '#ff4a3a'], [0.2, '#ffb02e']]) { const l = new THREE.Mesh(new THREE.SphereGeometry(0.13, 10, 8), new THREE.MeshBasicMaterial({ color: c })); l.position.set(x, 1.78, 0.75); l.userData.c = c; maq.luces.push(l); gMaq.add(l); }
-    const palanca = cil(0.05, 0.05, 0.9, 6, mat('rojo', '#c8322a')); palanca.position.set(-0.4, 1.4, -1.05); palanca.rotation.x = -0.4; gMaq.add(palanca);
-    const pomo = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), mats.rojo); pomo.position.set(-0.4, 1.82, -1.25); gMaq.add(pomo);
+    // el freno: palanca roja en la trasera (lado de la plaza), donde el jugador la sostiene
+    const palanca = cil(0.05, 0.05, 0.9, 6, mat('rojo', '#c8322a')); palanca.position.set(-1.25, 1.4, -0.55); palanca.rotation.z = 0.4; gMaq.add(palanca);
+    const pomo = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), mats.rojo); pomo.position.set(-1.43, 1.82, -0.55); gMaq.add(pomo);
+    // franjas de aviso amarillas y negras en el frente y la trasera
+    for (const x of [-1.11, 1.11]) for (let i = 0; i < 5; i++) { const f = caja(0.02, 0.16, 0.3, mat(i % 2 ? 'aviso1' : 'aviso0', i % 2 ? '#1f1f1f' : '#ffd23a')); f.position.set(x, 0.62, -0.6 + i * 0.3); gMaq.add(f); }
     const panel = caja(0.6, 0.45, 0.06, mat('panel', '#3a4652')); panel.position.set(0.3, 1.2, 0.93); gMaq.add(panel);
     // 8 · reconvertida: maceta con flores y farol encima
     maq.flor = new THREE.Group(); maq.flor.position.set(-0.3, 1.7, 0);
@@ -549,7 +552,7 @@ window.AVV18Puerto = function (G) {
     ruta();
     // encuentro con el engranaje (paso 4)
     if (enEncuentro() && dM < R_ENCUENTRO && !busy) { tomarModo(); H.paso(A.j, dt); } else soltarModo();
-    if (rango(e) < rango('desactivado') && dM < 20) { if ((A.bocanadaT -= dt) <= 0) { A.bocanadaT = BOCANADA_S; bocanada(); } }
+    if (rango(e) < rango('desactivado') && dM < 12) { if ((A.bocanadaT -= dt) <= 0) { A.bocanadaT = BOCANADA_S; bocanada(); } }
     if (A.empuje && A.empuje.t > 0) { S.pos.x += A.empuje.x * dt; S.pos.z += A.empuje.z * dt; A.empuje.t -= dt; }
     pasoFreno(dt);
     pintarHud(dP < R_HUD && !busy);
