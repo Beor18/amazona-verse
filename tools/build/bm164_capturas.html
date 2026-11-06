@@ -1,0 +1,18 @@
+<!doctype html><meta charset=utf-8><body style="margin:0;background:#9fb8c4">
+<script src="../../assets/vendor/three/build/three.min.js"></script>
+<script src="../../assets/vendor/three/examples/js/loaders/GLTFLoader.js"></script>
+<script src="../../assets/models/personajes/constructor_glb.js"></script>
+<script>
+const W=480,H=620,tiempos=[0.0,0.35,0.7];
+const b=atob(window.AV_PERSONAJES_B64.constructor),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);
+const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});r.setSize(W*3,H);document.body.appendChild(r.domElement);r.setScissorTest(true);
+new THREE.GLTFLoader().parse(u.buffer,'',g=>{
+ const sc=new THREE.Scene();sc.background=new THREE.Color(0x9fb8c4);sc.add(new THREE.HemisphereLight(0xffffff,0x556655,1.1));const l=new THREE.DirectionalLight(0xffffff,1);l.position.set(2,3,3);sc.add(l);
+ sc.add(g.scene);g.scene.rotation.y=-0.6;
+ const cam=new THREE.PerspectiveCamera(30,W/H,0.1,50);cam.position.set(0,0.9,4.2);cam.lookAt(0,0.8,0);
+ const m=new THREE.AnimationMixer(g.scene),cl=THREE.AnimationClip.findByName(g.animations,'Reparar');document.title=cl?('ok '+cl.duration):'NOANIM';
+ const a=m.clipAction(cl);a.play();
+ tiempos.forEach((t,i)=>{m.setTime(t);r.setViewport(i*W,0,W,H);r.setScissor(i*W,0,W,H);r.render(sc,cam)});
+ document.title+=' listo';
+});
+</script>
