@@ -1829,6 +1829,18 @@ window.AV_EN = {
  "Ojo de manglar": "Mangrove eye",
  "Voz de volcán": "Volcano voice",
  "Viento de islas": "Island wind",
+ "¡Descubriste al loro de cachetes azules en el Álbum! Su poder: Gota de lluvia. Elígelo en Pausa → Mis cotorras.": "You discovered the blue-cheeked amazon in the Album! Its power: Raindrop. Pick it in Pause → My parrots.",
+ "¡Descubriste al loro tamaulipeco en el Álbum! Su poder: Chillido de bandada. Elígelo en Pausa → Mis cotorras.": "You discovered the Tamaulipas amazon in the Album! Its power: Flock screech. Pick it in Pause → My parrots.",
+ "¡Descubriste al loro corona lila en el Álbum! Su poder: Ráfaga. Elígelo en Pausa → Mis cotorras.": "You discovered the lilac-crowned parrot in the Album! Its power: Gust. Pick it in Pause → My parrots.",
+ "Gota de lluvia": "Raindrop",
+ "Chillido de bandada": "Flock screech",
+ "Ráfaga": "Gust",
+ "¡Descubriste a la cotorra de La Española en el Álbum! Su poder: Eco de la Cordillera. Elígela en Pausa → Mis cotorras.": "You discovered the Hispaniolan amazon in the Album! Its power: Mountain echo. Pick it in Pause → My parrots.",
+ "¡Descubriste al loro de lomo rojo en el Álbum! Su poder: A ras del agua. Elígelo en Pausa → Mis cotorras.": "You discovered the festive amazon in the Album! Its power: Skimming flight. Pick it in Pause → My parrots.",
+ "¡Descubriste al loro real amazónico en el Álbum! Su poder: Canto real. Elígelo en Pausa → Mis cotorras.": "You discovered the yellow-crowned amazon in the Album! Its power: Royal song. Pick it in Pause → My parrots.",
+ "Eco de la Cordillera": "Mountain echo",
+ "A ras del agua": "Skimming flight",
+ "Canto real": "Royal song",
  "Serpiente de la Maraña": "Tangle Serpent",
  "Shhh… todo está mejor enredado.": "Shhh… everything is better tangled.",
  "Ya vendré a enredar otro día…": "I'll come back to tangle things another day…",
@@ -2078,5 +2090,6 @@ window.AV_EN = {
  "¡Un loro cubano vio tu primer hoyo de minigolf y quiere volar contigo! Su poder: Capa de palma. Elígelo en Pausa → Mis cotorras.": "A Cuban amazon saw your first mini-golf hole and wants to fly with you! Its power: Palm cape. Pick it in Pause → My parrots.",
  "¡Un loro frente blanca vio que ganaste sin perder ni una pluma! Su poder: Pluma rebote. Elígelo en Pausa → Mis cotorras.": "A white-fronted amazon saw you win without losing a single feather! Its power: Bounce feather. Pick it in Pause → My parrots.",
  "¡Con el puente arreglado y sin la Maraña, un loro de cejas rojas llegó al bosque! Su poder: Hojas que envuelven. Elígelo en Pausa → Mis cotorras.": "With the bridge fixed and the Tangle gone, a red-browed amazon came to the forest! Its power: Wrapping leaves. Pick it in Pause → My parrots.",
- "¡Un loro de Kawall te vio recoger todas las piedras y fibras y quiere volar contigo! Su poder: Ojo de selva. Elígelo en Pausa → Mis cotorras.": "A Kawall's amazon saw you gather all the stones and fibers and wants to fly with you! Its power: Jungle eye. Pick it in Pause → My parrots."
+ "¡Un loro de Kawall te vio recoger todas las piedras y fibras y quiere volar contigo! Su poder: Ojo de selva. Elígelo en Pausa → Mis cotorras.": "A Kawall's amazon saw you gather all the stones and fibers and wants to fly with you! Its power: Jungle eye. Pick it in Pause → My parrots.",
+ "El Ojo de sol no ve nada cercano que marcar.": "The Sun Eye sees nothing nearby to mark."
 };

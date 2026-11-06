@@ -546,14 +546,22 @@ window.AVV18Reparar = function (G) {
       // maderas en la orilla, recogidas con Acción: van a S.inv.madera, una sola vez
       ponerInv(0, 0);
       check('Hay 2 maderas del puente en la orilla', maderas.length === 2 && maderas.every(M => M.g.visible && M.it.visible()));
+      const qa162 = { n: 0, inm: 0 }, save0 = G.guardado && G.guardado.save;
+      if (save0) G.guardado.save = function (f) { qa162.n++; if (f === true) qa162.inm++; return save0.apply(this, arguments); };
       maderas.forEach(M => M.it.use());
+      if (save0) G.guardado.save = save0;
       check('Recoger la orilla da 1 madera de S.inv cada una, una sola vez', !recoger(maderas[0]) && inv('madera') === 2 && maderas.every(M => !M.g.visible && !M.it.visible()), 'madera ' + inv('madera'));
+      check('QA-162: recoger guarda la partida al momento (save inmediato, no solo autosave)', !save0 || (qa162.n >= 1 && qa162.inm >= 1), JSON.stringify(qa162));
       // una piedra del bosque y una madera de sobra (debe quedar)
       S.inv.piedra = 1; S.inv.madera += 1;
       toasts.length = 0;
+      qa162.n = 0; qa162.inm = 0;
+      if (save0) G.guardado.save = function (f) { qa162.n++; if (f === true) qa162.inm++; return save0.apply(this, arguments); };
       const ok = reparar();
+      if (save0) G.guardado.save = save0;
       check('Con materiales repara y descuenta exactamente 2 maderas y 1 piedra', ok && estado() === 'reparado' && inv('madera') === 1 && inv('piedra') === 0 && V.cuantos('pluma_rival') === 1,
         'madera ' + inv('madera') + ', piedra ' + inv('piedra') + ', pluma ' + V.cuantos('pluma_rival'));
+      check('QA-162: pagar la reparación guarda la partida al momento', !save0 || (qa162.n >= 1 && qa162.inm >= 1), JSON.stringify(qa162));
       check('Reparado: vuelve el tablero completo y el piso sostiene', igual(idx(), P.idx0) && P.piso.when() === true && !itReparar.visible() && toasts.some(t => /Puente reparado/.test(t)));
       const top = T.platformTop(P.piso, c.x, c.z);
       check('Utilidad: se cruza a pie (piso en el centro sobre el río)', top === top && Math.abs(top - c.y) < 0.2, 'top ' + top + ' / ' + c.y.toFixed(2));

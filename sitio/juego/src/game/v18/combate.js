@@ -885,9 +885,10 @@ window.AVV18Combate = function (G) {
       correr(esc.dura + 0.3, () => { quieta(6); S.pos.x = sitio.x - 5; C.j.inv = 9; C.j.plumas = PLUMAS; });
       check('Escudo: caduca solo y se dispersa; nunca permanente (espera > duración)', C.r.escudo === 0 && !C.r.escudoFx && esc.cooldown > esc.dura);
 
-      // 5. Con arausiaca elegida, el jugador tiene el escudo; la rival (Isleña) el grito
+      // 5. Con arausiaca elegida, el jugador tiene el escudo; la rival (ventralis, Isleña) ya trae su poder de
+      // especie (Eco de la Cordillera, KIMI-156): antes heredaba el Grito de la familia
       iniciar({ sinCuenta: true, especie: 'arausiaca' });
-      check('Con arausiaca: poder Escudo de plumas; la rival usa el Grito del Yunque', C.j.poder === 'escudo_plumas' && C.r.poder === 'grito_yunque' && usar(C.j, 'escudo_plumas').ok && C.j.escudo > 0);
+      check('Con arausiaca: poder Escudo de plumas; la rival (ventralis) usa su poder: Eco de la Cordillera', C.j.poder === 'escudo_plumas' && C.r.poder === 'eco_cordillera' && usar(C.j, 'escudo_plumas').ok && C.j.escudo > 0);
 
       // 6. La IA se mueve, ataca, se defiende y reacciona a los impactos
       iniciar({ sinCuenta: true, especie: 'vittata' });
@@ -909,10 +910,14 @@ window.AVV18Combate = function (G) {
       // 7. Victoria: 2 maderas y 1 piedra del inventario del juego, una sola vez
       P.borrar(); const m0 = S.inv.madera || 0, p0 = S.inv.piedra || 0;
       iniciar({ sinCuenta: true, especie: 'vittata' }); C.r.plumas = 1; quieta(1.2); C.r.escudo = 0; evs.length = 0; toasts.length = 0;
+      const qa162 = { n: 0, inm: 0 }, save0 = G.guardado && G.guardado.save;
+      if (save0) G.guardado.save = function (f) { qa162.n++; if (f === true) qa162.inm++; return save0.apply(this, arguments); };
       usar(C.j, 'golpe_ala');
+      if (save0) G.guardado.save = save0;
       check('Sin plumas, la rival se marea: victoria con 2 maderas y 1 piedra', C.fase === 'fin' && C.resultado === 'win' && S.inv.madera === m0 + 2 && S.inv.piedra === p0 + 1 &&
         evs.some(e => e.tipo === 'win') && toasts.includes(TXT.gana) && C.r.finMareo > 0 && P.cuantos('pluma_rival') === 0,
         JSON.stringify({ fase: C.fase, m: S.inv.madera - m0, p: S.inv.piedra - p0, t: toasts }));
+      check('QA-162: ganar el duelo guarda la partida al momento (save inmediato, no autosave)', !save0 || (qa162.n >= 1 && qa162.inm >= 1), JSON.stringify(qa162));
       check('Al terminar, Acción dice «Otra vez»', modo.verbo === TXT.otra && !hud.q('fin').hidden);
       modo.accion();
       check('Machacar Acción justo al terminar no reinicia: se ve el resultado', C.fase === 'fin' && C.resultado === 'win');
@@ -937,6 +942,27 @@ window.AVV18Combate = function (G) {
         const tk = tipo => document.body.dispatchEvent(new KeyboardEvent(tipo, { key: 'g', code: 'KeyG', bubbles: true, cancelable: true }));
         tk('keydown'); const conG = !!(G.input && G.input.keys && G.input.keys.has('g')); tk('keyup');
         check('QA-173: fuera del duelo G vuelve a llegar a la cámara', conG && !G.input.keys.has('g'), String(conG));
+      }
+      // QA-163: en táctil no hay tecla G: el aviso del duelo nombra los botones de pantalla. Se prueba con una instancia
+      // «de puntero grueso» del módulo (matchMedia stub) y al final se restaura la instancia de siempre.
+      {
+        const mm = window.matchMedia;
+        let combT = null;
+        try {
+          window.matchMedia = q => (/pointer:\s*coarse/.test(q)
+            ? { matches: true, media: q, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, onchange: null }
+            : mm(q));
+          delete G.v18combate;
+          combT = window.AVV18Combate(G);
+          combT.iniciar({ sinCuenta: true, especie: 'vittata' });
+          const avisoT = (G.interaccion.modo && G.interaccion.modo.aviso) ? G.interaccion.modo.aviso() : null;
+          check('QA-163: en táctil el aviso del duelo nombra los botones y no pide la tecla G',
+            avisoT === TXT.avisoTactil && avisoT !== TXT.aviso && !/\bG\b/.test(avisoT), avisoT);
+        } catch (e) { check('QA-163: en táctil el aviso del duelo nombra los botones y no pide la tecla G', false, e && e.message); }
+        try { if (combT) combT.salir(); } catch (e) { /* ya fuera */ }
+        window.matchMedia = mm;
+        delete G.v18combate;
+        window.AVV18Combate(G); // deja la instancia de siempre (TACTIL según el dispositivo real)
       }
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
     try { salir(); } catch (e) { /* ya fuera */ }
