@@ -1,0 +1,56 @@
+{
+ "etiqueta": "k168-r1",
+ "bandera": "v18=1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "pruebas": {
+  "puerto": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 42.9,
+     "peorMs": 37,
+     "n": 124,
+     "callsMed": 55,
+     "trisMed": 229215,
+     "heap": 126
+    },
+    "duracionMs": 12571,
+    "test": {
+     "passed": 42,
+     "total": 42,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 66,
+     "tris": 248179,
+     "geo": 318,
+     "tex": 132,
+     "prog": 72,
+     "heap": 129
+    }
+   }
+  }
+ }
+}
