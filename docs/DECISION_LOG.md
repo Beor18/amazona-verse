@@ -388,3 +388,6 @@ Confirma las 5 decisiones del 5-nov sobre la matriz (arriba). La propuesta de ev
 ## 6-nov-2026 · V18.2: evolución, niveles y alianzas (Kelvin y Nathanael)
 Aprobada para diseño y prototipo inicial, complementaria a la V18.1, que no se detiene. Las cotorras no cambian de especie; sin modelos nuevos por evolución. Los niveles van de 1 a 40, en 4 etapas. Los 6 elementos de fantasía enriquecen los 36 poderes, no los sustituyen. Habrá 6 alianzas especiales, empezando por Eco Protector (Vittata + Arausiaca). Sin compras ni azar. Prototipo: Vittata (3 etapas), Arausiaca, experiencia, Eco Protector, rival de IA, guardado y móvil. La identidad autóctona por regiones queda fuera, para una fase futura. Texto: `docs/DIRECTIVA_V18_2_EVOLUCION.md`. Prototipo: coordinadora.
 
+
+## 6-nov-2026 · V18.2: evolución, niveles y alianzas de poderes (Kelvin y Nathanael)
+Aprobada para diseño y prototipo inicial, complementaria a V18.1 (no la detiene). Directiva: `docs/DIRECTIVA_V18_2.md`. Las cotorras no cambian de especie ni hay modelos nuevos; niveles 1–40 en 4 etapas; elementos de fantasía que enriquecen (no sustituyen) los 36 poderes; 6 alianzas iniciales, la primera Vittata + Arausiaca = Eco Protector. Primer prototipo: Vittata con 3 etapas, Arausiaca, experiencia y subida de nivel, Eco Protector, rival IA, guardado, móvil y PC. Fuera: identidad autóctona por regiones.
