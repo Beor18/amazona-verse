@@ -1,0 +1,10 @@
+[12:00:20] chrome listo; servidor :56952
+[12:00:33] entrar: ok
+[12:00:39] marcadores: [{"tipo":"v18golf","x":167.7,"z":205,"nombre":"Minigolf de Villa Raíz"}] -> [{"tipo":"v18golf","x":167.7,"z":205,"nombre":"Minigolf de Villa Raíz"},{"tipo":"v18puerto","x":77.1,"z":-73.5,"nombre":"El puerto que volvió a vivir"}] · calls null · tris null
+[12:00:40] captura k154_r1_mapa_grande.jpg 108 KB
+[12:00:46] captura k154_r1_compacto_golf.jpg 133 KB
+[12:00:47] minimapaTest 41/41
+[12:00:56] v18MinigolfTest 46/46
+[12:00:59] v18PuertoTest 42/42
+[12:00:59] consola: []
+[12:01:00] cerrado: ok

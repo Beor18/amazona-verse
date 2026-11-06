@@ -1,0 +1,224 @@
+#!/usr/bin/env node
+/* Amazona Verse · Kimi 3 (PC Windows) — KIMI-154: marcadores del minigolf y la misión del puerto en el minimapa
+   (PRIORIDAD 1 de Kelvin 6-nov 11:45: «no veo el mini golf en ninguna versión»). Con ?v18=1 ni el minigolf ni la
+   misión del puerto salían localizables: la interacción del golf solo se ve a <55 m como «!» anónimo y la misión
+   del puerto no tiene marcador hasta que ya la descubres. Fix: dos marcadores propios en src/game/minimapa.js
+   (v18golf banderín / v18puerto engranaje, con nombre en el mapa grande y leyenda), alimentados por mapa() en
+   src/game/v18/minigolf.js y src/game/v18/puerto.js. Sin la bandera V18, nada cambia.
+   Esta herramienta: entra en cap. 1 (semilla, sin creador, ?v18=1), verifica disponibilidad antes/después de
+   reparar el puente, captura el mapa grande y el compacto junto al golf, y corre minimapaTest + v18MinigolfTest
+   + v18PuertoTest. Uso: node tools/build/kimi3_154.js --etiqueta r1 */
+'use strict';
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const { spawn, execSync } = require('child_process');
+
+const AQUI = __dirname;
+const RAIZ = path.resolve(AQUI, '..', '..');
+const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+
+function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
+const ETIQUETA = arg('--etiqueta', 'r1');
+const PF = { w: 1366, h: 768, dpr: 1 };
+const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi154'));
+fs.mkdirSync(SALIDA, { recursive: true });
+const LOGF = path.join(SALIDA, `k154_${ETIQUETA}.log`);
+fs.writeFileSync(LOGF, '');
+function log(msg) { try { fs.appendFileSync(LOGF, `[${new Date().toISOString().slice(11, 19)}] ${msg}\n`); } catch (e) { } }
+const res = { tarea: 'KIMI-154', etiqueta: ETIQUETA, v18: {}, pruebas: {}, capturas: [], consola: null };
+function guardar() { try { fs.writeFileSync(path.join(SALIDA, `k154_${ETIQUETA}.json`), JSON.stringify(res, null, 1)); } catch (e) { } }
+guardar();
+
+for (const d of fs.readdirSync(os.tmpdir())) {
+  if (!/^kimi3k154-/.test(d)) continue;
+  const p = path.join(os.tmpdir(), d);
+  try { const st = fs.statSync(p); if (Date.now() - st.mtimeMs > 3600e3) fs.rmSync(p, { recursive: true, force: true }); } catch (e) { }
+}
+
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon' };
+function servir() {
+  const srv = http.createServer((req, res2) => {
+    let p; try { p = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res2.writeHead(400); return res2.end(); }
+    if (p.endsWith('/')) p += 'index.html';
+    const f = path.join(RAIZ, p);
+    if (!f.startsWith(RAIZ) || req.method !== 'GET') { res2.writeHead(403); return res2.end(); }
+    fs.readFile(f, (e, d) => { if (e) { res2.writeHead(404); return res2.end('404'); } res2.writeHead(200, { 'Content-Type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' }); res2.end(d); });
+  });
+  return new Promise(r => srv.listen(0, '127.0.0.1', () => r({ srv, puerto: srv.address().port })));
+}
+class CDP {
+  constructor(ws) { this.ws = ws; this.id = 0; this.pend = new Map(); ws.onerror = e => { for (const [, p] of this.pend) p.re2(new Error('WebSocket: ' + (e.message || 'error'))); this.pend.clear(); }; ws.onmessage = m => { const d = JSON.parse(m.data); if (d.id && this.pend.has(d.id)) { const p = this.pend.get(d.id); this.pend.delete(d.id); d.error ? p.re2(new Error(d.error.message)) : p.re(d.result); } }; }
+  listo() { return new Promise(r => { this.ws.onopen = r; }); }
+  call(method, params, sessionId, timeoutMs) { const id = ++this.id; return new Promise((re, re2) => { this.pend.set(id, { re, re2 }); this.ws.send(JSON.stringify({ id, method, params: params || {}, sessionId })); if (timeoutMs) setTimeout(() => { if (this.pend.has(id)) { this.pend.delete(id); re2(new Error('CDP timeout ' + method)); } }, timeoutMs); }); }
+  bombear(s) { return new Promise(r => setTimeout(r, s * 1000)); }
+}
+async function evaluar(cdp, ses, exp, timeoutS, promesa) {
+  const r = await cdp.call('Runtime.evaluate', { expression: exp, awaitPromise: promesa !== false, returnByValue: true }, ses, (timeoutS || 30) * 1000);
+  if (r.exceptionDetails) { const d = r.exceptionDetails; throw new Error('JS@' + (d.lineNumber != null ? d.lineNumber + ':' + d.columnNumber : '?') + ': ' + JSON.stringify(d.exception && d.exception.description || d.text).slice(0, 900)); }
+  return r.result ? r.result.value : undefined;
+}
+
+const SEMILLA_SAVE_JS = `try {
+  localStorage.clear(); sessionStorage.clear();
+  window.__erroresConsola = [];
+  addEventListener('error', e => __erroresConsola.push(String(e.message || e)));
+  addEventListener('unhandledrejection', e => __erroresConsola.push('rechazo: ' + (e.reason && e.reason.message || e.reason)));
+  const cerr = console.error; console.error = function () { try { __erroresConsola.push([].map.call(arguments, String).join(' ').slice(0, 300)); } catch (e) {} return cerr.apply(this, arguments); };
+  localStorage.setItem('amazonaverse.menu', JSON.stringify({ v: 1, ultimo: 'aventura' }));
+  localStorage.setItem('amazonaverse.save', JSON.stringify({
+    v: 6, formato: 2, escrito: Date.now(), saveId: 'qa-kimi3k154-' + Math.random().toString(36).slice(2, 10),
+    profile: { created: true, name: 'Estrella de la Bahía', look: null },
+    pos: { x: -8, z: -2.5, y: 0 }, facing: { x: 0, z: 1 }, step: 0,
+    inv: {}, collected: [], complete: false, explorando: false, clock: 0,
+    events: [], captures: {}, missions: {}, field: [], unlocked: [], wear: {},
+    comic: { title: 'Mi cómic', cover: 'vittata', layout: 'grid', order: [0, 1, 2, 3], captions: {}, vinetas: {} },
+    evaluated: { A: false, B: false }, examined: { maquina: false, transmisor: false }
+  }));
+} catch (e) {}`;
+
+const ENTRAR_JS = `(async () => { try { return await (async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), $ = id => document.getElementById(id);
+  const espera = async (f, ms) => { const t0 = performance.now(); while (performance.now() - t0 < ms) { try { if (f()) return true; } catch (e) {} await sleep(100); } try { return !!f(); } catch (e) { return false; } };
+  const t = $('title');
+  if (t && t.open) { const b = t.querySelector('form[method=dialog] button'); if (!b) return 'la portada no tiene Jugar'; b.click();
+    if (!await espera(() => !t.open, 5000)) return 'la portada sigue abierta'; }
+  const S = window.AV && window.AV.state; if (!S || !S.profile || !S.profile.created) return 'sin perfil';
+  if (window.AV.cargaEsperar) await window.AV.cargaEsperar(30000);
+  await espera(() => { try { return !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden()); } catch (e) { return false; } }, 45000);
+  const b = document.getElementById('c1-saltar'); if (b) b.click();
+  await sleep(800);
+  const f = document.getElementById('c1-fade'); if (f) f.remove();
+  if (AV.G.ui && AV.G.ui.hideToast) AV.G.ui.hideToast();
+  const jugar = Array.from(document.querySelectorAll('button')).find(x => /a jugar/i.test(x.textContent || '')); if (jugar) jugar.click();
+  await sleep(300);
+  try { window.dispatchEvent(new PointerEvent('pointerdown')); } catch (e) {}
+  return 'ok'; })(); } catch (e) { return 'ERR ' + (e && e.stack || e); } })()`;
+
+// Disponibilidad de los marcadores antes/después de reparar el puente + leyenda + firma de pintar.
+const MARCADORES_JS = `(async () => { try { return await (async () => {
+  const G = AV.G, sleep = ms => new Promise(r => setTimeout(r, ms));
+  const espera = async (f, ms) => { const t0 = performance.now(); while (performance.now() - t0 < ms) { try { if (f()) return true; } catch (e) {} await sleep(120); } return false; };
+  if (!await espera(() => G.mundo && G.mundo.listo, 90000)) return 'ERR mundo no listo';
+  const ST = () => { try { const st = G.mundo && G.mundo.streaming && G.mundo.streaming.stats(); return st || null; } catch (e) { return null; } };
+  const asentar = async (msMax) => { const t0 = performance.now(); let q = 0; while (performance.now() - t0 < msMax) { const st = ST(); if (st && st.trabajos === 0 && st.descargando === 0) { if (++q >= 2) break; } else q = 0; await sleep(1000); } await sleep(1000); return ST(); };
+  await asentar(60000);
+  const out = { V18: !!G.V18 };
+  out.golfMapa = G.v18minigolf && G.v18minigolf.mapa ? G.v18minigolf.mapa() : 'sin-api';
+  out.puertoMapa = G.v18puerto && G.v18puerto.mapa ? G.v18puerto.mapa() : 'sin-api';
+  const ms1 = G.minimapa.marcadores().filter(m => /^v18/.test(m.tipo));
+  out.marcadoresAntes = ms1.map(m => ({ tipo: m.tipo, x: Math.round(m.x * 10) / 10, z: Math.round(m.z * 10) / 10, nombre: m.nombre }));
+  out.sinDuplicadoMision = !G.minimapa.marcadores().some(m => m.tipo === 'mision' && m.id === 'v18_minigolf');
+  out.leyendaV18 = Array.from(document.querySelectorAll('#mapa-grande .li-v18')).map(li => !li.hidden);
+  try { G.v18.cambiarMundo('puente_villa', 'reparado'); } catch (e) { out.errPuente = String(e); }
+  out.puertoMapaTras = G.v18puerto && G.v18puerto.mapa ? G.v18puerto.mapa() : 'sin-api';
+  const ms2 = G.minimapa.marcadores().filter(m => /^v18/.test(m.tipo));
+  out.marcadoresTras = ms2.map(m => ({ tipo: m.tipo, x: Math.round(m.x * 10) / 10, z: Math.round(m.z * 10) / 10, nombre: m.nombre }));
+  const stats = G.renderer && G.renderer.stats ? G.renderer.stats() : null;
+  out.stats = stats ? { fps: stats.fps, calls: stats.calls, triangulos: stats.triangulos, calidad: stats.calidad, dpr: stats.dpr } : null;
+  return out; })(); } catch (e) { return 'ERR ' + (e && e.stack || e); } })()`;
+
+async function lanzarChrome() {
+  const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi3k154-'));
+  const args = ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + perf,
+    '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run', '--no-default-browser-check', '--disable-extensions',
+    '--mute-audio', '--disable-sync', '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
+    '--disable-backgrounding-occluded-windows', '--disable-component-update', '--enable-precise-memory-info',
+    `--window-size=${PF.w},${PF.h}`, 'about:blank'];
+  const chrome = spawn(CHROME, args, { stdio: ['ignore', 'ignore', 'pipe'] });
+  let err = ''; chrome.stderr.on('data', d => { err += d; });
+  const puertoFile = path.join(perf, 'DevToolsActivePort');
+  for (let i = 0; i < 150; i++) {
+    if (fs.existsSync(puertoFile)) { const l = fs.readFileSync(puertoFile, 'utf8').split('\n'); if (l.length > 1 && l[1].trim()) return { chrome, perf, puerto: parseInt(l[0], 10), wsPath: l[1].trim() }; }
+    await new Promise(r => setTimeout(r, 200));
+  }
+  throw new Error('Chrome no abrió DevTools en 30 s: ' + err.slice(0, 300));
+}
+function mataPorPerfil() {
+  try {
+    const ps = "Get-CimInstance Win32_Process -Filter \\\"Name='chrome.exe'\\\" | Where-Object { $_.CommandLine -like '*kimi3k154-*' } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force -ErrorAction SilentlyContinue }";
+    execSync('powershell -NoProfile -Command "' + ps + '"', { timeout: 30000, stdio: 'ignore' });
+  } catch (e) { }
+}
+async function foto(cdp, ses, nombre) {
+  const r = await cdp.call('Page.captureScreenshot', { format: 'jpeg', quality: 72 }, ses, 30000);
+  const f = path.join(SALIDA, nombre);
+  fs.writeFileSync(f, Buffer.from(r.data, 'base64'));
+  res.capturas.push(nombre);
+  log('captura ' + nombre + ' ' + Math.round(fs.statSync(f).size / 1024) + ' KB');
+}
+
+(async () => {
+  const { srv, puerto } = await servir();
+  const origen = `http://127.0.0.1:${puerto}`;
+  const { chrome, perf, puerto: puertoDev, wsPath } = await lanzarChrome();
+  const ws = new WebSocket(`ws://127.0.0.1:${puertoDev}${wsPath}`);
+  const cdp = new CDP(ws); await cdp.listo();
+  log('chrome listo; servidor :' + puerto);
+  const watch = setInterval(() => { try { guardar(); } catch (e) { } }, 5000);
+  let cerrado = false;
+  const cierra = async (motivo) => {
+    if (cerrado) return; cerrado = true; clearInterval(watch);
+    try { mataPorPerfil(); } catch (e) { }
+    try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) { }
+    try { srv.close(); } catch (e) { }
+    log('cerrado: ' + motivo);
+  };
+  let ses = null;
+  const nuevaPagina = async (url) => {
+    const tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
+    ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
+    for (const m of ['Page.enable', 'Runtime.enable']) await cdp.call(m, {}, ses);
+    await cdp.call('Emulation.setDeviceMetricsOverride', { width: PF.w, height: PF.h, deviceScaleFactor: PF.dpr, mobile: false }, ses);
+    await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS }, ses);
+    await cdp.call('Page.navigate', { url }, ses);
+    await cdp.bombear(2.5);
+  };
+  try {
+    // 1) Entrada con ?v18=1: disponibilidad de marcadores + capturas
+    await nuevaPagina(`${origen}/index.html?pack=cap1&mapa=real&v18=1`);
+    const ent = await evaluar(cdp, ses, ENTRAR_JS, 120);
+    log('entrar: ' + ent);
+    if (String(ent) !== 'ok') throw new Error('entrada: ' + ent);
+    const mar = await evaluar(cdp, ses, MARCADORES_JS, 180);
+    if (typeof mar === 'string') throw new Error(mar);
+    res.v18 = mar; guardar();
+    log('marcadores: ' + JSON.stringify(mar.marcadoresAntes) + ' -> ' + JSON.stringify(mar.marcadoresTras) + ' · stats ' + JSON.stringify(mar.stats));
+    // mapa grande con ambos marcadores
+    await evaluar(cdp, ses, `(() => { AV.G.minimapa.abrir(); return true; })()`, 20, false);
+    await cdp.bombear(1.2);
+    await foto(cdp, ses, `k154_${ETIQUETA}_mapa_grande.jpg`);
+    await evaluar(cdp, ses, `(() => { AV.G.minimapa.cerrar(); return true; })()`, 20, false);
+    // compacto junto al golf
+    const golf = (mar.marcadoresTras.find(m => m.tipo === 'v18golf') || mar.marcadoresAntes.find(m => m.tipo === 'v18golf'));
+    if (golf) {
+      await evaluar(cdp, ses, `(() => { try { AV.teleport(${golf.x}, ${golf.z}); return 'ok'; } catch (e) { return 'ERR ' + e; } })()`, 30, false);
+      await cdp.bombear(6);
+      await foto(cdp, ses, `k154_${ETIQUETA}_compacto_golf.jpg`);
+    }
+    // minimapaTest en esta misma página
+    const mt = await evaluar(cdp, ses, `(async () => { const r = await AV.minimapaTest(); return { passed: r.passed, total: r.total, fallos: r.results.filter(x => !x.ok).map(x => x.name) }; })()`, 120);
+    res.pruebas.minimapaTest = mt; guardar();
+    log('minimapaTest ' + mt.passed + '/' + mt.total + (mt.fallos.length ? ' fallos: ' + mt.fallos.join(' | ') : ''));
+    // 2) Página fresca: las dos pruebas v18 del contrato
+    await nuevaPagina(`${origen}/index.html?pack=cap1&mapa=real&v18=1`);
+    const ent2 = await evaluar(cdp, ses, ENTRAR_JS, 120);
+    if (String(ent2) !== 'ok') throw new Error('entrada 2: ' + ent2);
+    const mg = await evaluar(cdp, ses, `(async () => { const r = await AV.v18MinigolfTest(); return { passed: r.passed, total: r.total, fallos: r.results.filter(x => !x.ok).map(x => x.name) }; })()`, 300);
+    res.pruebas.v18MinigolfTest = mg; guardar();
+    log('v18MinigolfTest ' + mg.passed + '/' + mg.total + (mg.fallos.length ? ' fallos: ' + mg.fallos.join(' | ') : ''));
+    const pt = await evaluar(cdp, ses, `(async () => { const r = await AV.v18PuertoTest(); return { passed: r.passed, total: r.total, fallos: r.results.filter(x => !x.ok).map(x => x.name) }; })()`, 300);
+    res.pruebas.v18PuertoTest = pt; guardar();
+    log('v18PuertoTest ' + pt.passed + '/' + pt.total + (pt.fallos.length ? ' fallos: ' + pt.fallos.join(' | ') : ''));
+    try { res.consola = await evaluar(cdp, ses, 'window.__erroresConsola || []', 20); guardar(); } catch (e) { }
+    log('consola: ' + JSON.stringify(res.consola));
+    await cierra('ok');
+    process.exit(0);
+  } catch (e) {
+    res.error = String(e && e.stack || e).slice(0, 800); guardar();
+    log('ERROR ' + res.error);
+    try { res.consola = ses ? await evaluar(cdp, ses, 'window.__erroresConsola || []', 20) : null; guardar(); } catch (e2) { }
+    await cierra('error');
+    process.exit(1);
+  }
+})();

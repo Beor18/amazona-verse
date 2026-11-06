@@ -1,0 +1,74 @@
+{
+ "tarea": "KIMI-154",
+ "etiqueta": "r2",
+ "v18": {
+  "V18": true,
+  "golfMapa": {
+   "x": 167.7,
+   "z": 205,
+   "nombre": "Minigolf de Villa Raíz"
+  },
+  "puertoMapa": null,
+  "marcadoresAntes": [
+   {
+    "tipo": "v18golf",
+    "x": 167.7,
+    "z": 205,
+    "nombre": "Minigolf de Villa Raíz"
+   }
+  ],
+  "sinDuplicadoMision": true,
+  "leyendaV18": [
+   true,
+   true
+  ],
+  "puertoMapaTras": {
+   "x": 77.08463471558349,
+   "z": -73.53763943381252,
+   "nombre": "El puerto que volvió a vivir"
+  },
+  "marcadoresTras": [
+   {
+    "tipo": "v18golf",
+    "x": 167.7,
+    "z": 205,
+    "nombre": "Minigolf de Villa Raíz"
+   },
+   {
+    "tipo": "v18puerto",
+    "x": 77.1,
+    "z": -73.5,
+    "nombre": "El puerto que volvió a vivir"
+   }
+  ],
+  "stats": {
+   "fps": 136,
+   "calls": 103,
+   "triangulos": 951807,
+   "calidad": "alto",
+   "dpr": 1
+  }
+ },
+ "pruebas": {
+  "minimapaTest": {
+   "passed": 41,
+   "total": 41,
+   "fallos": []
+  },
+  "v18MinigolfTest": {
+   "passed": 46,
+   "total": 46,
+   "fallos": []
+  },
+  "v18PuertoTest": {
+   "passed": 42,
+   "total": 42,
+   "fallos": []
+  }
+ },
+ "capturas": [
+  "k154_r2_mapa_grande.jpg",
+  "k154_r2_compacto_golf.jpg"
+ ],
+ "consola": []
+}
