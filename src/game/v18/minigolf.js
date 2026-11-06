@@ -203,7 +203,8 @@ window.AVV18Minigolf = function (G) {
   });
   const salida = new THREE.Mesh(new THREE.RingGeometry(1.0, 1.25, 40), new THREE.MeshBasicMaterial({ color: '#ffd27a', transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide }));
   salida.rotation.x = -Math.PI / 2; salida.renderOrder = 3; salida.name = 'v18_golf_salida';
-  const N_PUNTOS = 8, puntos = new THREE.InstancedMesh(new THREE.SphereGeometry(0.07, 6, 4), new THREE.MeshBasicMaterial({ color: '#fff6dc', transparent: true, opacity: 0.85, depthWrite: false }), N_PUNTOS);
+  // Mira: naranja vivo y algo más grande (QA con input real: crema sobre la arena no se distinguía)
+  const N_PUNTOS = 8, puntos = new THREE.InstancedMesh(new THREE.SphereGeometry(0.1, 8, 6), new THREE.MeshBasicMaterial({ color: '#ff6a2b', transparent: true, opacity: 0.95, depthWrite: false }), N_PUNTOS);
   puntos.name = 'v18_golf_mira';
   troncos.name = 'v18_golf_troncos';
   for (const m of [troncos, nido, semilla, salida, puntos, aroTurno, ...fantasmas]) { m.frustumCulled = false; m.visible = false; scene.add(m); }
