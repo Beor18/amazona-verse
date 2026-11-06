@@ -17,11 +17,12 @@ Directiva: `docs/DIRECTIVA_V18_1.txt` (Kelvin, 5-nov). Ciclo a demostrar: **desc
 | `speciesId` | id de `content/comun/especies.js` (`vittata`, `arausiaca`…) | todos |
 | Estado de especie | `no_descubierta` < `descubierta` < `desbloqueada` < `seleccionable` < `seleccionada` (una sola seleccionada). La especie del perfil entra como `seleccionable`: nada se bloquea en partidas viejas | C, vía `G.v18` |
 | `abilityId` | `{ id, especie(s), coste: energía, cooldown s, efecto: fn(ctx), anim/fx }`. Motor configurable por especie; reutiliza los dones de `src/game/dones.js` (Ráfaga doble, Columna de nube, Rasante de río, Plumas de hoja) | A |
-| Eventos de combate | `G.emit('v18combate', { tipo: 'hit' \| 'damage' \| 'win' \| 'loss', de, a, valor })` | A |
+| Eventos de combate | `G.emit('v18combate', { tipo: 'hit' \| 'damage' \| 'win' \| 'loss', de, a, valor })`; en `win`/`loss` del duelo contra la IA también `{ especie, dura, interrupciones, quitadas }` (V18.2, XP). El duelo de 2 añade `duelo: 2` | A |
 | Recompensa | `G.v18.otorgar(rewardKey, itemId, n)`: idempotente (la misma `rewardKey` nunca se da dos veces). `G.v18.cuantos(itemId)`, `G.v18.gastar(itemId, n)` | A otorga, B gasta |
 | `worldChangeId` | `G.v18.mundo(id)` / `G.v18.cambiarMundo(id, estado)`; estados por estructura (p. ej. `roto` → `reparado`) | B |
-| Guardado | `<almacen>.v18` = `{ v: 1, especies, inv, otorgados, mundo, sel }`. Cambios de esquema: subir `v` y migrar en `progreso.js` | D |
-| Eventos de progreso | `G.emit('v18', { tipo: 'especie' \| 'inv' \| 'mundo' \| 'recompensa', … })` | D |
+| Guardado | `<almacen>.v18` = `{ v: 2, especies, inv, otorgados, mundo, sel, evo }` (v2, V18.2: solo añade `evo`, que es de `evolucion.js`; un v1 migra sin perder nada). `G.v18.evo()`, `G.v18.cambiarEvo(fn)`, `G.v18.copia()`. Cambios de esquema: subir `v` y migrar en `progreso.js` | D |
+| Evolución (V18.2) | `G.v18evo`: `info(sp)` → `{ xp, nivel, variante }`, `paraDuelo(sp)`, `ajustar(f, h)` (versión de la etapa; sin `f.nivel` devuelve el mismo objeto), `dar(sp, n, fuente, o)` con topes diarios. Diseño: `docs/equipo/V18_2_DISENO.md` | evolución |
+| Eventos de progreso | `G.emit('v18', { tipo: 'especie' \| 'inv' \| 'mundo' \| 'recompensa' \| 'evo', … })` | D |
 
 ## Demo D7 (decidido por Kelvin el 5-nov, ver DECISION_LOG)
 
