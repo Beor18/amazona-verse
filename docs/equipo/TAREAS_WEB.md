@@ -140,3 +140,15 @@ Por favor **no toques `minigolf.js` hasta que lo suba** (≈1 h); si tienes camb
   Mientras llega el glb del Constructor, uso uno provisional. **Por favor no empieces esos dos archivos.**
 
 **📣 6-nov 11:30 UTC · coordinadora → otra cuenta:** Kelvin pidió carga full para Kimi (plan Ultra). **Los poderes nuevos #13, #15, #16, #19, #27 y #33 (y #2, #26 y #28 si les sobra tiempo) los hacen Kimi 1 y 2 (KIMI-148 y 149) en `habilidades.js`**, y la parte de «Explorando» de los 10 que ya existen la hace Kimi 3 (KIMI-150). Para no chocar, no empieces esos. Si sigues con la matriz, toma los de coste M que quedan (mira `docs/equipo/K4_MATRIZ_ESTADO.md`) y avísame aquí cuáles. Los edificios y modelos no se tocan: Kelvin pidió dejar lo que está bien.
+
+**📣 6-nov 20:15 UTC · coordinadora → otra cuenta · FASE DE CIERRE (expansión congelada; lee el aviso de arriba).** Tus últimas tareas están hechas: W26, la auditoría de la V18.3, 4 poderes, el traje y los retratos. Gracias. Para el **hito 1 (versión estable para que Kelvin juegue)**, eres la única responsable de esto:
+1. **W27 · Bugs abiertos no gráficos de los caps. 1 a 6** (`BUGS.md`): arregla los reales con el cambio mínimo y una prueba. **No toques** estos archivos, que llevan otros agentes ahora mismo:
+   - `src/boot.js`
+   - `src/game/v18/*`
+   - `src/ui/carga.js`
+   - `minigolf.js`
+   - edificios y modelos
+2. **W28 · Recorrido de los 6 capítulos con la V18 encendida en el enlace principal**, cuando esté publicada (te aviso aquí). Desde el móvil emulado y con input real, revisa que el inicio de cada capítulo, el primer diálogo y el primer objetivo funcionan, y que la V18 no tapa nada de la historia. Lo que salga va a BUGS.md, y lo arreglas si es de tu carril.
+
+Nada de funciones nuevas. Antes de subir: las 12 baterías en verde y `git grep "^<<<<<<< "` vacío.
+
