@@ -900,6 +900,35 @@ enlaces) y la **Sombra de la demo**; las villas asentidas ya cumplen ≥25 fps. 
 se tocó (medición + docs). Evidencia: `docs/img/kimi127/k127_libre-r1.{json,log}` +
 `k127_libre-r1_<pack>_villa.jpg` ×6 + `k127_libre-r1_demo_*.jpg` ×4.
 
+## KIMI-142 · QA-181 (quedante) · Tranco de entrada post-MACIZOS: re-medición y atribución (06-nov · Kimi 1)
+
+Re-corrida de ep3/ep4/ep5 con la metodología exacta de KIMI-136
+(`node tools/build/kimi1_127.js --packs ep3,ep4,ep5 --sin-demo --etiqueta k142-r2`) tras
+MACIZOS (d97f621c, −89 % del trabajo de vanos) + minimapa (9c42f46a) + merges BM161 de la Mac
+(solo GLBs de templos/kit.js). PC libre verificada (0 node ajenos en la ventana; el perfil
+ajeno kimi2q181b murió 16 min antes). GPU real RX 5700 XT, CPU ×6, **0 errores de consola
+en las 3 páginas.** Comparación de series por segundo contra `k127_libre-r1.json` (base):
+
+| pack | peor cuadro base → post | serie base | serie post | asentado base → post |
+|---|---|---|---|---|
+| ep3 | 2495 → **937 ms** (−62 %) | 16,20,20,14,17,11,**2**,31,32,34 | 15,14,21,26,8,5,29,35,**37,36,37** | 31-34 → **35-37** |
+| ep4 | 2567 → **1135 ms** (−56 %) | 16,19,23,15,**3**,29,28,30,32,32 | 12,12,14,17,15,9,**4**,21,23,22,24 | 28-32 → 21-24* |
+| ep5 | 1825 → **96 ms** (−95 %) | 14,21,21,12,**2**,30,30,33,30,32,31,32 | 18,18,19,19,19,20,19,20,19,21,21,21,19 | 30-33 → 19-22* |
+
+\* Las medianas estables de ep4/ep5 salieron menores que la base SIN explicación de código
+(mismas calls/tris — ep5 con 18 calls MENOS —; ep3 en la MISMA corrida mejoró a su mejor
+marca; los merges de la Mac no tocaron código por cuadro): atribuido a la varianza de la
+emulación ×6 en ventanas de 12 s. El veredicto contractual es la forma de la serie y el
+peor cuadro.
+
+**Conclusión:** el tranco de entrada lo cerró MACIZOS en ep5 (eliminado: plano desde el
+segundo 0), se redujo en ep3 y queda parcial en ep4, donde la serie muestra el contenido
+de la zona llegando tarde (ktris 329→713→560 mientras el fps cae 12→8→9→21): lo que resta
+es **llegada/fusión del streaming de la zona + enlaces de programas (familia QA-53), no
+vanos**. Palanca documentada en BUGS.md QA-181 (precarga/escalón de entrada en los primeros
+30 s, propuesta «escuela» — decisión de Kelvin). El juego no se tocó (medición + docs).
+Evidencia: `docs/img/kimi127/k127_k142-r2.{json,log}` + `k127_k142-r2_{ep3,ep4,ep5}_villa.jpg`.
+
 ## KIMI-138 · QA-181 (palanca vanos) · atribución del coste de la búsqueda de vanos y primera recorte (06-nov · Kimi 1; renumerada desde KIMI-137, ID duplicado con la fila QA-81 de Kimi 3 — los commits llevan el nombre viejo)
 
 KIMI-132 dejó medido que en el spawn de ep3 (Chromebook ×6, «bajo») `solidos.js` se come
