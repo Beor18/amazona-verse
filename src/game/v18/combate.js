@@ -329,10 +329,10 @@ window.AVV18Combate = function (G) {
     C.stats.desvios += n; return n;
   }
   // V18.2 Eco Protector: la segunda cotorra aporta su apoyo visual (retrato existente y aviso breve); sin modelo nuevo
-  let apoyoTO = 0;
+  let apoyoT = 0; // tiempo de juego (con la pausa se queda quieto)
   function apoyo(quien) {
     if (!hud) return; const el = hud.q('apoyo'); if (!el) return;
-    el.hidden = false; clearTimeout(apoyoTO); apoyoTO = setTimeout(() => { if (hud) hud.q('apoyo').hidden = true; }, 1200);
+    el.hidden = false; apoyoT = 1.2;
     fx('feathers', S.pos.x, S.pos.y + 1.3, S.pos.z);
   }
   function usar(f, id) {
@@ -526,7 +526,7 @@ window.AVV18Combate = function (G) {
     C.timers.length = 0; C.resultado = null; C.premio = false;
     C.stats = nuevasStats();
     colocar();
-    montarHud(); hud.el.hidden = false; hud.q('fin').hidden = true; hud.q('bot').hidden = false; hud.q('finXp').textContent = ''; hud.q('apoyo').hidden = true;
+    montarHud(); hud.el.hidden = false; hud.q('fin').hidden = true; hud.q('bot').hidden = false; hud.q('finXp').textContent = ''; hud.q('apoyo').hidden = true; apoyoT = 0;
     enganchar();
     if (o.sinCuenta) { C.fase = 'lucha'; flotante(''); }
     else { C.fase = 'cuenta'; C.cuenta = 3; flotante('3', 1); if (G.ui && G.ui.toast) G.ui.toast(TXT.bienvenida, 2600); }
@@ -661,6 +661,7 @@ window.AVV18Combate = function (G) {
   // Un paso del duelo (lo llama el bucle del juego; las pruebas lo llaman con dt fijo)
   function paso(dt) {
     if (C.fase === 'nada') { if (C.ch) dibujarRival(dt, moverRivalQuieta(dt)); return; }
+    if (apoyoT > 0) { apoyoT -= dt; if (apoyoT <= 0 && hud) hud.q('apoyo').hidden = true; }
     if (centroT > 0) { centroT -= dt; if (centroT <= 0 && hud && C.fase !== 'cuenta') hud.q('centro').textContent = ''; }
     if (C.fase === 'cuenta') {
       C.cuenta -= dt;

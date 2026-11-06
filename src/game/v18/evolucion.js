@@ -292,7 +292,8 @@ window.AVV18Evolucion = function (G) {
   G.on('v18combate', ev => {
     if (mudo || !ev || ev.duelo) return; // duelo de 2: 0 XP
     const sp = ev.especie || (G.v18combate && G.v18combate.estado().j && G.v18combate.estado().j.especie) || V.seleccionada() || perfil();
-    const n0 = info(sp).nivel;
+    const cj = G.v18combate && G.v18combate.estado && G.v18combate.estado().j; // nivel con el que empezó el duelo (los hitos de la victoria también suben)
+    const n0 = (cj && cj.especie === sp && cj.nivel) || info(sp).nivel;
     if (ev.tipo === 'win' && ev.de === 'jugador') {
       ultimo = { xp: 0, sube: 0 };
       ultimo.xp = dar(sp, XP.gana, 'duelo', { repetible: true, duelo: true, cuenta: 'victorias', mitadDesde: TOPE.mitadDesde });
