@@ -1,0 +1,583 @@
+{
+ "tarea": "QA-181 palanca minimap marca()",
+ "bug": "QA-181",
+ "etiqueta": "r3",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "secs": 10,
+ "headBase": true,
+ "rondas": {
+  "antes": {
+   "fuente": "HEAD (minimapa.js viejo)",
+   "micro": {
+    "msPorTick": 1.12,
+    "compactoVisible": true,
+    "sprites": [
+     -1,
+     -1
+    ],
+    "marcas": 40
+   },
+   "perfil": {
+    "totalMs": 12144,
+    "porModulo": [
+     {
+      "modulo": "anónima/sin-url",
+      "selfMs": 3058,
+      "pct": 25.2
+     },
+     {
+      "modulo": "nativo",
+      "selfMs": 2680,
+      "pct": 22.1
+     },
+     {
+      "modulo": "three.js",
+      "selfMs": 2670,
+      "pct": 22
+     },
+     {
+      "modulo": "renderer",
+      "selfMs": 929,
+      "pct": 7.6
+     },
+     {
+      "modulo": "solidos",
+      "selfMs": 761,
+      "pct": 6.3
+     },
+     {
+      "modulo": "terreno",
+      "selfMs": 585,
+      "pct": 4.8
+     },
+     {
+      "modulo": "game",
+      "selfMs": 546,
+      "pct": 4.5
+     },
+     {
+      "modulo": "streaming",
+      "selfMs": 308,
+      "pct": 2.5
+     },
+     {
+      "modulo": "fisica",
+      "selfMs": 182,
+      "pct": 1.5
+     },
+     {
+      "modulo": "engine/otro",
+      "selfMs": 178,
+      "pct": 1.5
+     },
+     {
+      "modulo": "vegetacion",
+      "selfMs": 82,
+      "pct": 0.7
+     },
+     {
+      "modulo": "minimapa",
+      "selfMs": 48,
+      "pct": 0.4
+     },
+     {
+      "modulo": "otro:personaje/character.js",
+      "selfMs": 43,
+      "pct": 0.4
+     },
+     {
+      "modulo": "agua",
+      "selfMs": 26,
+      "pct": 0.2
+     },
+     {
+      "modulo": "content",
+      "selfMs": 24,
+      "pct": 0.2
+     },
+     {
+      "modulo": "mundo",
+      "selfMs": 20,
+      "pct": 0.2
+     },
+     {
+      "modulo": "boot",
+      "selfMs": 3,
+      "pct": 0
+     },
+     {
+      "modulo": "ui",
+      "selfMs": 1,
+      "pct": 0
+     }
+    ],
+    "topFunciones": [
+     {
+      "funcion": "nativo · (program)",
+      "selfMs": 2680,
+      "pct": 22.1,
+      "hits": 0
+     },
+     {
+      "funcion": "anónima/sin-url · getProgramParameter",
+      "selfMs": 1487,
+      "pct": 12.2,
+      "hits": 0
+     },
+     {
+      "funcion": "anónima/sin-url · texImage2D",
+      "selfMs": 675,
+      "pct": 5.6,
+      "hits": 0
+     },
+     {
+      "funcion": "terreno · triQuery",
+      "selfMs": 557,
+      "pct": 4.6,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · updateMatrixWorld",
+      "selfMs": 355,
+      "pct": 2.9,
+      "hits": 0
+     },
+     {
+      "funcion": "renderer · texturasDe",
+      "selfMs": 347,
+      "pct": 2.9,
+      "hits": 0
+     },
+     {
+      "funcion": "anónima/sin-url · getClientRects",
+      "selfMs": 199,
+      "pct": 1.6,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · filtro",
+      "selfMs": 184,
+      "pct": 1.5,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · insert",
+      "selfMs": 153,
+      "pct": 1.3,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · multiplyMatrices",
+      "selfMs": 149,
+      "pct": 1.2,
+      "hits": 0
+     },
+     {
+      "funcion": "streaming · cuadro",
+      "selfMs": 144,
+      "pct": 1.2,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · Pt",
+      "selfMs": 139,
+      "pct": 1.1,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · traverse",
+      "selfMs": 133,
+      "pct": 1.1,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · (anónima)",
+      "selfMs": 123,
+      "pct": 1,
+      "hits": 0
+     },
+     {
+      "funcion": "game · (anónima)",
+      "selfMs": 122,
+      "pct": 1,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · getProgramCacheKey",
+      "selfMs": 109,
+      "pct": 0.9,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · It",
+      "selfMs": 104,
+      "pct": 0.9,
+      "hits": 0
+     },
+     {
+      "funcion": "fisica · pushOut",
+      "selfMs": 98,
+      "pct": 0.8,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · triSeguir",
+      "selfMs": 92,
+      "pct": 0.8,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · muestraVanos",
+      "selfMs": 92,
+      "pct": 0.8,
+      "hits": 0
+     },
+     {
+      "funcion": "game · texturasDe",
+      "selfMs": 89,
+      "pct": 0.7,
+      "hits": 0
+     },
+     {
+      "funcion": "anónima/sin-url · bufferSubData",
+      "selfMs": 89,
+      "pct": 0.7,
+      "hits": 0
+     },
+     {
+      "funcion": "renderer · objPendiente",
+      "selfMs": 80,
+      "pct": 0.7,
+      "hits": 0
+     },
+     {
+      "funcion": "renderer · texturasPendientes",
+      "selfMs": 75,
+      "pct": 0.6,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · update",
+      "selfMs": 71,
+      "pct": 0.6,
+      "hits": 0
+     }
+    ]
+   },
+   "caminar": {
+    "fpsPorSeg": [
+     3,
+     7,
+     8,
+     8,
+     7,
+     7,
+     11,
+     12,
+     13,
+     15
+    ],
+    "fpsMed": 9
+   },
+   "minimapaTest": {
+    "passed": 38,
+    "total": 38
+   },
+   "erroresConsola": []
+  },
+  "despues": {
+   "fuente": "worktree (sprites)",
+   "micro": {
+    "msPorTick": 2.12,
+    "compactoVisible": true,
+    "sprites": [
+     3,
+     4
+    ],
+    "marcas": 39
+   },
+   "perfil": {
+    "totalMs": 12348,
+    "porModulo": [
+     {
+      "modulo": "anónima/sin-url",
+      "selfMs": 2814,
+      "pct": 22.8
+     },
+     {
+      "modulo": "nativo",
+      "selfMs": 2786,
+      "pct": 22.6
+     },
+     {
+      "modulo": "three.js",
+      "selfMs": 2666,
+      "pct": 21.6
+     },
+     {
+      "modulo": "solidos",
+      "selfMs": 1026,
+      "pct": 8.3
+     },
+     {
+      "modulo": "renderer",
+      "selfMs": 851,
+      "pct": 6.9
+     },
+     {
+      "modulo": "game",
+      "selfMs": 658,
+      "pct": 5.3
+     },
+     {
+      "modulo": "terreno",
+      "selfMs": 589,
+      "pct": 4.8
+     },
+     {
+      "modulo": "streaming",
+      "selfMs": 280,
+      "pct": 2.3
+     },
+     {
+      "modulo": "fisica",
+      "selfMs": 249,
+      "pct": 2
+     },
+     {
+      "modulo": "engine/otro",
+      "selfMs": 145,
+      "pct": 1.2
+     },
+     {
+      "modulo": "vegetacion",
+      "selfMs": 84,
+      "pct": 0.7
+     },
+     {
+      "modulo": "otro:personaje/character.js",
+      "selfMs": 53,
+      "pct": 0.4
+     },
+     {
+      "modulo": "mundo",
+      "selfMs": 52,
+      "pct": 0.4
+     },
+     {
+      "modulo": "content",
+      "selfMs": 39,
+      "pct": 0.3
+     },
+     {
+      "modulo": "minimapa",
+      "selfMs": 31,
+      "pct": 0.2
+     },
+     {
+      "modulo": "agua",
+      "selfMs": 28,
+      "pct": 0.2
+     }
+    ],
+    "topFunciones": [
+     {
+      "funcion": "nativo · (program)",
+      "selfMs": 2786,
+      "pct": 22.6,
+      "hits": 0
+     },
+     {
+      "funcion": "anónima/sin-url · getProgramParameter",
+      "selfMs": 1420,
+      "pct": 11.5,
+      "hits": 0
+     },
+     {
+      "funcion": "terreno · triQuery",
+      "selfMs": 539,
+      "pct": 4.4,
+      "hits": 0
+     },
+     {
+      "funcion": "anónima/sin-url · texImage2D",
+      "selfMs": 508,
+      "pct": 4.1,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · updateMatrixWorld",
+      "selfMs": 343,
+      "pct": 2.8,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · insert",
+      "selfMs": 320,
+      "pct": 2.6,
+      "hits": 0
+     },
+     {
+      "funcion": "renderer · texturasDe",
+      "selfMs": 260,
+      "pct": 2.1,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · filtro",
+      "selfMs": 184,
+      "pct": 1.5,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · getProgramCacheKey",
+      "selfMs": 177,
+      "pct": 1.4,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · triSeguir",
+      "selfMs": 176,
+      "pct": 1.4,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · traverse",
+      "selfMs": 170,
+      "pct": 1.4,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · multiplyMatrices",
+      "selfMs": 170,
+      "pct": 1.4,
+      "hits": 0
+     },
+     {
+      "funcion": "game · (anónima)",
+      "selfMs": 159,
+      "pct": 1.3,
+      "hits": 0
+     },
+     {
+      "funcion": "anónima/sin-url · getClientRects",
+      "selfMs": 159,
+      "pct": 1.3,
+      "hits": 0
+     },
+     {
+      "funcion": "streaming · cuadro",
+      "selfMs": 144,
+      "pct": 1.2,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · Pt",
+      "selfMs": 140,
+      "pct": 1.1,
+      "hits": 0
+     },
+     {
+      "funcion": "fisica · pushOut",
+      "selfMs": 133,
+      "pct": 1.1,
+      "hits": 0
+     },
+     {
+      "funcion": "game · texturasDe",
+      "selfMs": 127,
+      "pct": 1,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · (anónima)",
+      "selfMs": 118,
+      "pct": 1,
+      "hits": 0
+     },
+     {
+      "funcion": "renderer · objPendiente",
+      "selfMs": 109,
+      "pct": 0.9,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · muestraVanos",
+      "selfMs": 101,
+      "pct": 0.8,
+      "hits": 0
+     },
+     {
+      "funcion": "fisica · step",
+      "selfMs": 101,
+      "pct": 0.8,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · It",
+      "selfMs": 92,
+      "pct": 0.7,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · update",
+      "selfMs": 88,
+      "pct": 0.7,
+      "hits": 0
+     },
+     {
+      "funcion": "renderer · calentarPresupuesto",
+      "selfMs": 84,
+      "pct": 0.7,
+      "hits": 0
+     }
+    ]
+   },
+   "caminar": {
+    "fpsPorSeg": [
+     5,
+     7,
+     12,
+     11,
+     12,
+     16,
+     17,
+     19,
+     20,
+     16
+    ],
+    "fpsMed": 14
+   },
+   "minimapaTest": {
+    "passed": 38,
+    "total": 38
+   },
+   "erroresConsola": []
+  }
+ },
+ "delta": {
+  "msPorTick": 1,
+  "pctMicro": 89.3,
+  "marcaSelf": {
+   "antes": {
+    "selfMs": 0,
+    "pct": 0
+   },
+   "despues": {
+    "selfMs": 0,
+    "pct": 0
+   }
+  },
+  "minimapaMod": {
+   "antes": {
+    "selfMs": 0,
+    "pct": 0
+   },
+   "despues": {
+    "selfMs": 0,
+    "pct": 0
+   }
+  }
+ }
+}
