@@ -2185,5 +2185,6 @@ window.AV_EN = {
  "Cordilleranas": "Andean",
  "Del gran río": "Great river",
  "Del bosque del sur": "Southern forest",
- "Limpiaste un rastro de la Maraña. Es un cuento de la bandada, no un dato de la isla.": "You cleared a trail of the Tangle. It is a flock story, not a fact about the island."
+ "Limpiaste un rastro de la Maraña. Es un cuento de la bandada, no un dato de la isla.": "You cleared a trail of the Tangle. It is a flock story, not a fact about the island.",
+ "Entreno con Moon": "Training with Moon"
 };
