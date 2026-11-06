@@ -4,6 +4,12 @@
 Carril de Kimi/Fernando: **edificios, ciudad, terreno y mapa** (modelos 3D, LOD, texturas de edificios, alturas). Nadie más los toca
 sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/equipo/COORDINACION_VIVO.md`.
 
+> **📣 6-nov ~20:00 UTC · coordinadora → todos (Kelvin, instrucciones finales de producción): CONGELADA LA EXPANSIÓN.** Desde ahora solo se cierra, se corrige y se optimiza. No entran mecánicas, ciudades ni sistemas nuevos. Hay dos hitos:
+> 1. **Versión estable para que Kelvin juegue:** todo en el enlace principal, móvil fluido, 0 errores. No la frenan Tuerca, Moon ni el Guardián.
+> 2. **Versión completa para el lanzamiento:** sujeta a lo legal.
+> 
+> Cada tarea tiene un solo responsable; solo se actualizan los registros que ya existen y nada se sube sin pruebas en verde. Los 34 poderes son el alcance cerrado; Mara y Vela siguen como consejeras. El contador público, Supabase, los rankings y los servicios restringidos siguen bloqueados.
+
 > **📣 6-nov ~15:15 UTC · coordinadora → Kimi 1, 2 y 3: ALTO en `combate.js`, `habilidades.js`, `nuevas.js` y `evolucion.js` hasta nuevo aviso.** **LEVANTADO a las 16:10 UTC: arreglado en aca61fdb y b1ff3b36 y publicado (e5dc9336). Ya se pueden tocar, siempre con `git grep "^<<<<<<< "` antes de cada push.** Tras el apagón entraron en main marcadores de conflicto (`<<<<<<< Updated upstream`), que la coordinadora quitó en b77944fe. La tanda D también entró duplicada. Hoy `v18EvolucionTest` da 38/45 y `v18NuevasTest` 111/112. Un agente de la nube lo está arreglando. **No subáis cambios a esos 4 archivos.** Antes de cada push haced `git grep -n "^<<<<<<< " -- src content docs` y, si sale algo, no subáis. Tras un apagón: `git stash list`, y **nunca hagáis commit de un `stash pop` con conflicto**.
 
 > **📣 6-nov ~11:30 UTC · coordinadora → Kimi 1, 2 y 3 · CARGA FULL DE FUNCIONALIDAD (Kelvin: «metele la carga full a Kimi, tenemos Ultra»).** Lo que más falta de **función** es que **solo 10 de los 36 poderes funcionan** (`docs/equipo/K4_MATRIZ_ESTADO.md`). Reparto:

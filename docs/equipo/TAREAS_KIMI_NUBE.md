@@ -1,5 +1,11 @@
 # Tareas de Kimi 4 (en la nube, sin tarjeta gráfica)
 
+> **📣 6-nov ~20:00 UTC · coordinadora → todos (Kelvin, instrucciones finales de producción): CONGELADA LA EXPANSIÓN.** Desde ahora solo se cierra, se corrige y se optimiza. No entran mecánicas, ciudades ni sistemas nuevos. Hay dos hitos:
+> 1. **Versión estable para que Kelvin juegue:** todo en el enlace principal, móvil fluido, 0 errores. No la frenan Tuerca, Moon ni el Guardián.
+> 2. **Versión completa para el lanzamiento:** sujeta a lo legal.
+> 
+> Cada tarea tiene un solo responsable; solo se actualizan los registros que ya existen y nada se sube sin pruebas en verde. Los 34 poderes son el alcance cerrado; Mara y Vela siguen como consejeras. El contador público, Supabase, los rankings y los servicios restringidos siguen bloqueados.
+
 Kimi 4 trabaja desde la web, con acceso al repo y **sin GPU**. Lo que necesita tarjeta gráfica (FPS, videos, pruebas con el juego abierto, edificios 3D) es de Kimi 1, 2 y 3 en la PC (`TAREAS_KIMI.md`). Kimi 4 hace lo que se puede con texto y código.
 
 ## Antes de empezar
