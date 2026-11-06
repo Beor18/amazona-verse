@@ -687,15 +687,15 @@ window.AVV18Puerto = function (G) {
       // 5 · antes de repararla, la ladera no se sube a pie
       const antesSube = subir(500);
       check('5 · Antes de la misión no se sube a pie (la máquina tapa el pie y la ladera pasa de 48°: hoy se vuela o se rodea)', !antesSube.ok, 's ' + antesSube.s.toFixed(1) + ' de ' + L.toFixed(1));
-      // 6 · cerca: dos personajes como mucho, modelo de la Ingeniera, Constructor provisional sin 404
+      // 6 · cerca: dos personajes como mucho, cada uno con su modelo (ingeniera.glb y constructor.glb), sin 404
       const cerca = en(-30, 25); ir(cerca.x, cerca.z); correr(0.2);
       for (let i = 0; i < 80 && !(N.instancia('ingeniera') && N.instancia('constructor')); i++) { await esperar(100); correr(0.05); }
       const ing = N.instancia('ingeniera'), cons = N.instancia('constructor');
       check('6 · A < 90 m aparecen la Ingeniera y el Constructor (2 como mucho)', ing && cons && N.activos().length <= N.MAX_ACTIVOS, N.activos().join(','));
-      check('6b · La Ingeniera es ingeniera.glb con Idle, Hablar y Reparar', ing && ['Idle', 'Hablar', 'Reparar'].every(a => ing.acciones[a]) && N.stats().pedidos.length === 1 && /ingeniera\.glb$/.test(N.stats().pedidos[0]), N.stats().pedidos.join(','));
-      check('6c · El Constructor es provisional (modelo de respaldo, casco y chaleco) y no se pidió ningún constructor.glb', cons && cons.provisional && cons.acc.casco && cons.acc.chaleco && !recursos().some(n => /constructor/.test(n)) && !N.stats().pedidos.some(n => /constructor/.test(n)));
+      check('6b · La Ingeniera es ingeniera.glb con Idle, Hablar y Reparar', ing && ['Idle', 'Hablar', 'Reparar'].every(a => ing.acciones[a]) && N.stats().pedidos.some(n => /ingeniera\.glb$/.test(n)), N.stats().pedidos.join(','));
+      check('6c · El Constructor es constructor.glb (no provisional) con Idle, Hablar y Señalar, y casco, chaleco, guantes y mochila son mallas del .glb', cons && !cons.provisional && ['Idle', 'Hablar', 'Señalar'].every(a => cons.acciones[a]) && ['Casco', 'Chaleco', 'GuanteL', 'GuanteR', 'Mochila'].every(n => cons.nodos[n] && cons.nodos[n].isMesh) && !Object.keys(cons.acc).length && N.stats().pedidos.length === 2 && N.stats().pedidos.some(n => /constructor\.glb$/.test(n)), N.stats().pedidos.join(','));
       const g0 = geos(); N.apariencia('constructor', 'reparador'); N.apariencia('ingeniera', 'responsable'); const g1 = geos(); N.apariencia('constructor', 'supervisor'); N.apariencia('ingeniera', 'aprendiz');
-      check('6d · Cambiar de apariencia no crea geometría (un modelo, varias apariencias)', g0 === g1 && geos() === g0 && cons.apariencia === 'supervisor' && !cons.nodos.Pelo.visible && cons.acc.casco.visible && cons.acc.chaleco.visible && ing.apariencia === 'aprendiz' && !ing.nodos.Chaqueta.visible,
+      check('6d · Cambiar de apariencia no crea geometría (un modelo, varias apariencias)', g0 === g1 && geos() === g0 && cons.apariencia === 'supervisor' && cons.nodos.Casco.visible && cons.nodos.Chaleco.visible && !cons.nodos.Mochila.visible && !cons.nodos.GuanteL.visible && ing.apariencia === 'aprendiz' && !ing.nodos.Chaqueta.visible,
         'geometrías ' + g0 + ' → ' + g1);
       check('7 · La máquina tapa la subida: collider puesto al pie de la ladera', G.fisica.colliders.indexOf(M.collider) >= 0 && M.collider.when() && Math.hypot(M.collider.x - SITIO.a.x, M.collider.z - SITIO.a.z) < 3.5);
       // 8 · pasos 1 y 3: llegar y descubrir (las charlas se pasan con E, como el jugador)
@@ -764,7 +764,7 @@ window.AVV18Puerto = function (G) {
       correr(0.2);
       const ci = N.instancia('constructor'), ii = N.instancia('ingeniera');
       check('14 · Paso 8: escalera con faroles y banderines, obra recogida, máquina verde con maceta y farol', gEscalera.visible && !gObra.visible && maq.flor.visible && !maq.broca.visible && maq.pintada === 'flor');
-      check('14b · El Constructor pasa a reparador (sin chaleco, franja verde) y la Ingeniera a responsable (chaqueta, insignia)', N.estado('constructor') === 'reparador' && N.estado('ingeniera') === 'responsable' && ci && ci.apariencia === 'reparador' && !ci.acc.chaleco.visible && ci.acc.franja.visible && ii && ii.apariencia === 'responsable' && ii.nodos.Chaqueta.visible && ii.acc.insignia.visible);
+      check('14b · El Constructor pasa a reparador (sin chaleco, con mochila de herramientas y guantes) y la Ingeniera a responsable (chaqueta, insignia)', N.estado('constructor') === 'reparador' && N.estado('ingeniera') === 'responsable' && ci && ci.apariencia === 'reparador' && !ci.nodos.Chaleco.visible && ci.nodos.Mochila.visible && ci.nodos.GuanteL.visible && ci.nodos.GuanteR.visible && ci.nodos.Casco.visible && ii && ii.apariencia === 'responsable' && ii.nodos.Chaqueta.visible && ii.acc.insignia.visible);
       const sube = subir(900);
       check('14c · La escalera se sube a pie de la plaza a la meseta, sin volar ni rescate de atasco', sube.ok && sube.y > -0.6, 's ' + sube.s.toFixed(1) + '/' + L.toFixed(1) + ' · Δy ' + sube.y.toFixed(2) + ' · rescates ' + sube.rescates + (sube.volo ? ' · voló' : ''));
       // 15 · paso 9: persiste tras guardar y recargar
