@@ -804,13 +804,15 @@ window.AVV18Combate = function (G) {
   // ---------- En el mundo: la rival espera en la explanada ----------
   const it = G.interaccion.add({ id: 'v18_rival', x: rivalPos.x, z: rivalPos.z, r: 3.2, visible: () => C.fase === 'nada' && !!C.ch,
     label: () => TXT.retar, use: () => iniciar({}) });
+  let retirada = false; // retirar(): una instancia de prueba (QA-163) deja el mundo sin rival, marca ni interacción duplicados
   G.on('update', (dt, busy) => {
+    if (retirada) return;
     it.x = rivalPos.x; it.z = rivalPos.z;
     marca.visible = Math.hypot(S.pos.x - sitio.x, S.pos.z - sitio.z) < 90;
     if (busy && C.fase !== 'nada') return;
     paso(Math.min(dt, 0.1));
   }, 70);
-  G.on('apply', () => { if (C.fase !== 'nada') salir(); }, 47);
+  G.on('apply', () => { if (!retirada && C.fase !== 'nada') salir(); }, 47);
   // QA-174: cuando ya están la vegetación y el mundo, el sitio definitivo (fijo entre cargas); si hay un duelo abierto, al acabar
   let recolocar = false;
   function moverSitio() {
@@ -824,7 +826,7 @@ window.AVV18Combate = function (G) {
   const pedirSitio = () => { recolocar = true; };
   Promise.resolve(G.vegetacion && G.vegetacion.listo).then(pedirSitio, pedirSitio);
   Promise.resolve(G.mundo && G.mundo.listo).then(pedirSitio, () => {});
-  G.on('update', () => { if (recolocar && C.fase === 'nada' && !(G.v18duelo2 && G.v18duelo2.estado().fase !== 'nada')) moverSitio(); }, 69); // no se recoloca en mitad de un duelo de 2
+  G.on('update', () => { if (!retirada && recolocar && C.fase === 'nada' && !(G.v18duelo2 && G.v18duelo2.estado().fase !== 'nada')) moverSitio(); }, 69); // no se recoloca en mitad de un duelo de 2
   crearRival();
 
   // ---------- Prueba ----------
@@ -1008,7 +1010,7 @@ window.AVV18Combate = function (G) {
       // «de puntero grueso» del módulo (matchMedia stub) y al final se restaura la instancia de siempre.
       {
         const mm = window.matchMedia;
-        let combT = null;
+        let combT = null; const orig = G.v18combate; // V18 por defecto: los módulos cargados al primer gesto guardan esta instancia
         try {
           window.matchMedia = q => (/pointer:\s*coarse/.test(q)
             ? { matches: true, media: q, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, onchange: null }
@@ -1022,8 +1024,8 @@ window.AVV18Combate = function (G) {
         } catch (e) { check('QA-163: en táctil el aviso del duelo nombra los botones y no pide la tecla G', false, e && e.message); }
         try { if (combT) combT.salir(); } catch (e) { /* ya fuera */ }
         window.matchMedia = mm;
-        delete G.v18combate;
-        window.AVV18Combate(G); // deja la instancia de siempre (TACTIL según el dispositivo real)
+        try { if (combT && combT.retirar) combT.retirar(); } catch (e) { /* ya fuera */ }
+        G.v18combate = orig; // deja la instancia de siempre (TACTIL según el dispositivo real), la misma que tienen los demás módulos
       }
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
     try { salir(); } catch (e) { /* ya fuera */ }
@@ -1041,6 +1043,13 @@ window.AVV18Combate = function (G) {
     if (!(C.j && C.j.vistacumbre > 0 && C.r && (C.fase === 'lucha' || C.fase === 'cuenta'))) return null;
     return { x: C.r.pos.x, z: C.r.pos.z, nombre: 'Rival' };
   }
-  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, estado: () => C, mapa, test };
+  // Solo para la instancia de prueba de QA-163: quita del mundo su rival, su marca y su interacción, y deja sus oyentes mudos
+  function retirar() {
+    try { salir(); } catch (e) { /* ya fuera */ }
+    retirada = true; const i = G.interaccion.list.indexOf(it); if (i >= 0) G.interaccion.list.splice(i, 1);
+    scene.remove(marca); const quitar = ch => { if (ch && ch.root) scene.remove(ch.root); };
+    quitar(C.ch); Promise.resolve(C.listo).then(quitar, () => {});
+  }
+  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, estado: () => C, mapa, test, retirar };
   return G.v18combate;
 };
