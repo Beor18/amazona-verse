@@ -585,9 +585,12 @@ AVE.module('solidos', function (G) {
     };
   }
   // Muestreo de la planta, por tandas. Tm es la rejilla de techo (antes T): no pisa el terreno.
+  // KIMI-137 (QA-181): interpolación incremental (la muestra avanza con sumas en vez de recomputar
+  // la baricéntrica por punto), celda con `| 0` (la rejilla tiene margen `pad`: el índice es positivo)
+  // y tope de presupuesto cada 128 muestras (performance.now() por muestra pesaba en el perfil).
   function muestraVanos(job, t0, ms) {
     const partes = job.partes, C = job.C, ox = job.ox, oz = job.oz, y0 = job.y0, nx = job.nx;
-    const Bp = job.Bp, Tm = job.Tm, techoV = job.techoV;
+    const Bp = job.Bp, Tm = job.Tm, techoV = job.techoV, b0 = VA.banda[0], b1 = VA.banda[1];
     while (job.pi < partes.length) {
       const p = partes[job.pi], pos = p.geo.attributes.position, I = p.geo.index;
       const nt = I ? I.count / 3 : pos.count / 3, k = kNorm(pos);
@@ -598,8 +601,8 @@ AVE.module('solidos', function (G) {
           vb.fromBufferAttribute(pos, I ? I.getX(t * 3 + 1) : t * 3 + 1).multiplyScalar(k);
           vc.fromBufferAttribute(pos, I ? I.getX(t * 3 + 2) : t * 3 + 2).multiplyScalar(k);
           const ymin = Math.min(va.y, vb.y, vc.y) - y0, ymax = Math.max(va.y, vb.y, vc.y) - y0;
-          if (ymax < VA.banda[0]) { job.ti++; continue; }
-          const paso = C * (ymin > VA.banda[1] ? 1.4 : 0.7);
+          if (ymax < b0) { job.ti++; continue; }
+          const paso = C * (ymin > b1 ? 1.4 : 0.7);
           job.nu = Math.max(1, Math.ceil(va.distanceTo(vb) / paso));
           job.nv = Math.max(1, Math.ceil(va.distanceTo(vc) / paso));
           job.vax = va.x; job.vay = va.y; job.vaz = va.z;
@@ -611,14 +614,18 @@ AVE.module('solidos', function (G) {
         const vax = job.vax, vay = job.vay, vaz = job.vaz, vbx = job.vbx, vby = job.vby, vbz = job.vbz, vcx = job.vcx, vcy = job.vcy, vcz = job.vcz;
         for (; job.i <= nu; job.i++) {
           const u = job.i / nu;
+          const ddx = (vcx - vax) / nv, ddy = (vcy - vay) / nv, ddz = (vcz - vaz) / nv;
+          let x = vax + (vbx - vax) * u + ddx * job.j;
+          let y = vay + (vby - vay) * u + ddy * job.j - y0;
+          let z = vaz + (vbz - vaz) * u + ddz * job.j;
           for (; job.j <= nv; job.j++) {
             const v = job.j / nv; if (u + v > 1.0001) break;
-            const y = vay + (vby - vay) * u + (vcy - vay) * v - y0;
-            if (y >= VA.banda[0]) {
-              const c = Math.floor((vax + (vbx - vax) * u + (vcx - vax) * v - ox) / C) + Math.floor((vaz + (vbz - vaz) * u + (vcz - vaz) * v - oz) / C) * nx;
-              if (y <= VA.banda[1]) Bp[c] = 1; else { Tm[c] = 1; if (y < techoV[c]) techoV[c] = y; }
+            if (y >= b0) {
+              const c = (((x - ox) / C) | 0) + (((z - oz) / C) | 0) * nx;
+              if (y <= b1) Bp[c] = 1; else { Tm[c] = 1; if (y < techoV[c]) techoV[c] = y; }
             }
-            if ((++job.pasos & 31) === 0 && performance.now() - t0 >= ms) { job.j++; return false; }
+            x += ddx; y += ddy; z += ddz;
+            if ((++job.pasos & 127) === 0 && performance.now() - t0 >= ms) { job.j++; return false; }
           }
           job.j = 0;
         }

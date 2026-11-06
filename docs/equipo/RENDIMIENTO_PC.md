@@ -899,3 +899,41 @@ post-entrada a <25 fps en ep3/ep4/ep5, familia QA-53: precarga de la villa o rep
 enlaces) y la **Sombra de la demo**; las villas asentidas ya cumplen ≥25 fps. El juego no
 se tocó (medición + docs). Evidencia: `docs/img/kimi127/k127_libre-r1.{json,log}` +
 `k127_libre-r1_<pack>_villa.jpg` ×6 + `k127_libre-r1_demo_*.jpg` ×4.
+
+## KIMI-137 · QA-181 (palanca vanos) · atribución del coste de la búsqueda de vanos y primera recorte (06-nov · Kimi 1)
+
+KIMI-132 dejó medido que en el spawn de ep3 (Chromebook ×6, «bajo») `solidos.js` se come
+~20 % del hilo (muestraVanos 5,94 % / filtro 3,06 % / triSeguir 2,56 % / block 2,25 % /
+insert 1,37 % / filtroVanos 1,27 %, ventana de 16,9 s, evidencia `docs/img/kimi132/k132_r1.json`).
+Antes de encender ninguna palanca falta saber si es coste «una vez por modelo» o «en reposo»
+y qué modelos lo generan. Sonda nueva `tools/build/kimi1_137.js` (mismo perfil y semilla que
+KIMI-127/132; vuelca `G.solidos.vanos` con ms/motivo/N por modelo y muestrea la ventana a 1/s):
+
+| pack | trabajos únicos | con puerta ('vanos') | sin puerta | ms vida total | crecimiento en ventana |
+|---|---|---|---|---|---|
+| ep3 | 39 | **3** | 36 (17 cerrado · 14 sin interior · 5 sin vanos) | 80,5 s (r1, 12 s) | 76,4 s (drena con el streaming ~40 s) |
+| cap1 | 52 | 7 | 45 | 48,0 s | 0 s (todo en la carga) |
+
+**Lectura:** (1) el **92 % del trabajo se tira en modelos macizos sin puerta**; (2) el coste
+es **de carga, no de reposo** — una vez por nombre de modelo (`cerrarVanos` recoloca paneles
+al recargar la zona sin re-buscar), pero drena durante ~40 s porque lo alimenta el streaming
+y compite con el hilo del asentado; (3) la fase cara es el **muestreo** (muestraVanos ≈ 2× la
+del filtro). El `ms` por modelo mide vida (tInicio→listo), no CPU: con presupuesto de
+2 ms/cuadro, varios trabajos creados al cargar completan ~30 s después con `ms` enormes —
+la CPU real la da el perfil KIMI-132 (~1,74 s de vanos por entrada en ep3 a ×6).
+
+**Palanca aplicada (este commit, `src/engine/solidos.js` `muestraVanos`, misma semántica):**
+interpolación incremental de la baricéntrica por triángulo (la muestra avanza con 3 sumas en
+vez de recomputar x/y/z por punto), índice de celda con `| 0` (la rejilla lleva margen `pad`:
+el índice es siempre positivo) y tope de presupuesto cada 128 muestras en vez de 32
+(`performance.now()` pesaba). **Revertido en la misma vuelta:** la «salida temprana del
+filtro si el radio menor no ve interior» es FALSA — `cercado_redondo` (cerco circular con
+entrada) pasó de 'sin vanos' a 'sin interior' con ella: el cierre morfológico de radio mayor
+tapa la entrada y el interior **aparece** con radios grandes (espacio libre no monótono;
+contraejemplo medido en vivo, antes de revertir). Equivalencia POST verificada con la sonda:
+mismos motivos y mismos nº de vanos por modelo que BASE (`docs/img/kimi137/k137_{r1,r3}.json`).
+
+**Queda (palancas mayores, con riesgo a decidir):** recortar el trabajo de los 36 macizos
+(el motivo solo se sabe tras buscar; una lista de modelos sin puerta verificada por QA es lo
+seguro) o muestrear la planta con `cel` más gruesa (0,15→0,2 m sería ~½ de N y de muestras,
+pero estrecha la detección de puertas de 0,6 m: requiere movementTest + prueba física).

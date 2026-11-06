@@ -1,0 +1,10 @@
+[08:02:52] pack ep3: navegando...
+[08:02:57] …latido
+[08:03:02] …latido
+[08:03:07] …latido
+[08:03:12] …latido
+[08:03:17] …latido
+[08:03:22] …latido
+[08:03:24] pack ep3: listo en 5.404s, entrada en 27.961s; asentado. Volcando vanos base...
+[08:03:27] …latido
+[08:03:32] pack ep3: vanos 39 trabajos / 18431 ms total (crecieron 16551 ms en la ventana de 6 s) | fps med=13 min=10 p95=152ms peor=334ms | calls=96 ktris=400 heap=98MB | top: mirador_escalonado:2773ms/cerrado/N8836 · monumento_f:2481ms/cerrado/N34587 · carpa_e:1673ms/sin interior/N4288 · cercado_redondo:1499ms/sin vanos/N13924 · losa_piedra:1411ms/cerrado/N7380 · monumento_d:1359ms/cerrado/N9752 · caney_largo:1107ms/vanos/N11628 · templo_grande_d:1095ms/cerrado/N29829 | errores=[]

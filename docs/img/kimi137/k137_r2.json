@@ -1,0 +1,669 @@
+{
+ "tarea": "KIMI-137",
+ "bug": "QA-181",
+ "etiqueta": "r2",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "packs": {
+  "ep3": {
+   "cargaListaS": 5.5,
+   "cargaEntradaS": 28.7,
+   "vanosTrabajos": 39,
+   "vanosMsTotal": 55857,
+   "vanosMsVentana": 0,
+   "vanosTop": [
+    {
+     "n": "complejo_ruinas",
+     "ms": 4504,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 4305,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 8836,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 4261,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 34587,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 3970,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 7380,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 3912,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 13924,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 3770,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4288,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 3600,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 3118,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 5355,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 2453,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 1719,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 61915,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 1567,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 57408,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 1553,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "sin vanos": 3,
+    "cerrado": 17,
+    "sin interior": 16,
+    "vanos": 3
+   },
+   "fpsMed": 23,
+   "fpsMin": 19,
+   "p95Ms": 59,
+   "peorMs": 82,
+   "statsBase": {
+    "vanosN": 39,
+    "vanosMs": 55857,
+    "stats": {
+     "bloques": 673,
+     "bloquesFlora": 981,
+     "triangulos": 444436,
+     "rellenas": 143,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 547,
+     "kbFlora": 797
+    }
+   },
+   "statsFin": {
+    "vanosN": 39,
+    "vanosMs": 55857,
+    "stats": {
+     "bloques": 673,
+     "bloquesFlora": 981,
+     "triangulos": 444436,
+     "rellenas": 143,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 547,
+     "kbFlora": 797
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 55857,
+     "stats": {
+      "bloques": 673,
+      "bloquesFlora": 981,
+      "triangulos": 444436,
+      "rellenas": 143,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 547,
+      "kbFlora": 797
+     }
+    }
+   ],
+   "calls": 91,
+   "ktris": 553,
+   "heapMB": 132,
+   "errores": []
+  },
+  "cap1": {
+   "cargaListaS": 6.3,
+   "cargaEntradaS": 27.8,
+   "vanosTrabajos": 51,
+   "vanosMsTotal": 40143,
+   "vanosMsVentana": 0,
+   "vanosTop": [
+    {
+     "n": "complejo_ruinas",
+     "ms": 4952,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 4635,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 13589,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 4503,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9870,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_a",
+     "ms": 2519,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 2308,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1890,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 1890,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 1824,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bloque_piedra",
+     "ms": 1578,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 6384,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 1558,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4288,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 1551,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 29829,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_g",
+     "ms": 1476,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5986,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 1357,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 34587,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "sin vanos": 5,
+    "cerrado": 20,
+    "sin interior": 24,
+    "vanos": 2
+   },
+   "fpsMed": 23,
+   "fpsMin": 20,
+   "p95Ms": 63,
+   "peorMs": 80,
+   "statsBase": {
+    "vanosN": 51,
+    "vanosMs": 40143,
+    "stats": {
+     "bloques": 2782,
+     "bloquesFlora": 1424,
+     "triangulos": 828483,
+     "rellenas": 602,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2260,
+     "kbFlora": 1157
+    }
+   },
+   "statsFin": {
+    "vanosN": 51,
+    "vanosMs": 40143,
+    "stats": {
+     "bloques": 2782,
+     "bloquesFlora": 1424,
+     "triangulos": 828483,
+     "rellenas": 602,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2260,
+     "kbFlora": 1157
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40143,
+     "stats": {
+      "bloques": 2782,
+      "bloquesFlora": 1424,
+      "triangulos": 828483,
+      "rellenas": 602,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2260,
+      "kbFlora": 1157
+     }
+    }
+   ],
+   "calls": 61,
+   "ktris": 268,
+   "heapMB": 148,
+   "errores": []
+  }
+ },
+ "ventanaS": 12,
+ "head": "desconocido"
+}

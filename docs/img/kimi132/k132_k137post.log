@@ -1,0 +1,14 @@
+[08:04:40] pack ep3: navegando...
+[08:04:45] …latido
+[08:04:50] …latido
+[08:04:55] …latido
+[08:05:00] …latido
+[08:05:05] …latido
+[08:05:08] pack ep3: listo en 5.38s, entrada en 28.028s; asentando y perfilando 15s
+[08:05:10] …latido
+[08:05:15] …latido
+[08:05:20] …latido
+[08:05:25] …latido
+[08:05:30] …latido
+[08:05:30] pack ep3: fpsMed=17 min=0 p95=141ms calls=91 ktris=553 heap=142MB | perfil 17045ms | top: three.js 32.34% · nativo 20.07% · solidos 12.4% · anónima/sin-url 11.23% · game 6.18% · renderer 5.91% | errores=[]
+[08:05:30] evidencia: C:\Users\kelvi\amazonaversegame\docs\img\kimi132\k132_k137post.json

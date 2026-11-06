@@ -1,0 +1,26 @@
+[07:47:52] pack ep3: navegando...
+[07:47:57] …latido
+[07:48:02] …latido
+[07:48:07] …latido
+[07:48:12] …latido
+[07:48:17] …latido
+[07:48:22] …latido
+[07:48:25] pack ep3: listo en 5.209s, entrada en 27.35s; asentado. Volcando vanos base...
+[07:48:27] …latido
+[07:48:32] …latido
+[07:48:37] …latido
+[07:48:40] pack ep3: vanos 39 trabajos / 80515 ms total (crecieron 76381 ms en la ventana de 12 s) | fps med=18 min=2 p95=142ms peor=2619ms | calls=91 ktris=553 heap=159MB | top: complejo_ruinas:4574ms/sin vanos/N118428 · mirador_escalonado:4464ms/cerrado/N8836 · monumento_f:4011ms/cerrado/N34587 · cercado_redondo:3090ms/sin vanos/N13924 · losa_piedra:2966ms/cerrado/N7380 · ruina_torre_c:2924ms/cerrado/N3600 · ruina_torre_e:2916ms/cerrado/N4356 · ruina_torre_b:2908ms/sin interior/N2025 | errores=[]
+[07:48:40] pack cap1: navegando...
+[07:48:42] …latido
+[07:48:47] …latido
+[07:48:52] …latido
+[07:48:57] …latido
+[07:49:02] …latido
+[07:49:07] …latido
+[07:49:12] …latido
+[07:49:17] …latido
+[07:49:21] pack cap1: listo en 5.573s, entrada en 27.015s; asentado. Volcando vanos base...
+[07:49:22] …latido
+[07:49:27] …latido
+[07:49:32] …latido
+[07:49:34] pack cap1: vanos 52 trabajos / 48037 ms total (crecieron 0 ms en la ventana de 12 s) | fps med=20 min=13 p95=79ms peor=171ms | calls=62 ktris=268 heap=140MB | top: complejo_ruinas:3941ms/sin vanos/N118428 · carpa_e:3753ms/sin interior/N4288 · losa_piedra:3355ms/cerrado/N7380 · templo_grande_a:3337ms/cerrado/N30820 · monumento_c:3077ms/sin vanos/N13200 · bohio_puntiagudo:3016ms/sin vanos/N5355 · templo_grande_f:2361ms/cerrado/N21021 · templo_grande_e:2295ms/cerrado/N44308 | errores=[]
