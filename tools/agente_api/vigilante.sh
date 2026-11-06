@@ -48,11 +48,13 @@ fi
 # 4. Trabajadores
 VIVOS=$(pgrep -f 'ejecutor.py --cola' | wc -l | tr -d ' ')
 if [ "$VIVOS" -lt "$MAX" ]; then
-  if ! security find-generic-password -a "$USER" -s amazonaverse-api -w > /dev/null 2>&1; then
-    log "no hay clave en el Llavero (amazonaverse-api): no arranco trabajadores"
+  CL=$(security find-generic-password -a "$USER" -s amazonaverse-api -w 2>/dev/null || true)
+  if [ "${#CL}" -lt 20 ]; then
+    log "la clave del Llavero (amazonaverse-api) falta o está vacía: no arranco trabajadores"
   else
-    AV_MAX="$MAX" tools/agente_api/lanzar.sh $((MAX - VIVOS)) >> "$LOGS/vigilante.log" 2>&1 < /dev/null
+    ANTHROPIC_API_KEY="$CL" AV_MAX="$MAX" tools/agente_api/lanzar.sh $((MAX - VIVOS)) >> "$LOGS/vigilante.log" 2>&1 < /dev/null
     log "trabajadores: había $VIVOS, arranqué hasta $MAX"
   fi
+  unset CL
 fi
 exit 0
