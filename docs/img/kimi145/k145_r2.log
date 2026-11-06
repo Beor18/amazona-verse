@@ -1,0 +1,27 @@
+[10:03:38] pack cap1: navegando...
+[10:03:43] …latido
+[10:03:48] …latido
+[10:03:53] …latido
+[10:03:58] …latido
+[10:04:03] …latido
+[10:04:06] pack cap1: listo en 4.711s, entrada en 27.542s; asentando y perfilando 12s
+[10:04:08] …latido
+[10:04:13] …latido
+[10:04:18] …latido
+[10:04:19] pack cap1: censo ERR prototipo Object3D no hallado
+[10:04:23] …latido
+[10:04:28] …latido
+[10:04:33] pack cap1: fpsMed=26 min=1 p95=50ms calls=62 ktris=268 heap=151MB | perfil 13950ms | top: three.js 32.73% · nativo 29% · anónima/sin-url 10.97% · renderer 9.66% · game 6.42% · streaming 3.07% | errores=[]
+[10:04:33] pack ep3: navegando...
+[10:04:33] …latido
+[10:04:38] …latido
+[10:04:43] …latido
+[10:04:48] …latido
+[10:04:52] pack ep3: listo en 3.993s, entrada en 19.305s; asentando y perfilando 12s
+[10:04:53] …latido
+[10:04:57] pack ep3: censo ERR prototipo Object3D no hallado
+[10:04:58] …latido
+[10:05:03] …latido
+[10:05:08] …latido
+[10:05:11] pack ep3: fpsMed=22 min=2 p95=114ms calls=91 ktris=553 heap=122MB | perfil 13420ms | top: three.js 33.78% · nativo 19.64% · anónima/sin-url 11.09% · solidos 10.34% · renderer 6.6% · streaming 6.23% | errores=[]
+[10:05:11] evidencia: C:\Users\kelvi\amazonaversegame\docs\img\kimi145\k145_r2.json

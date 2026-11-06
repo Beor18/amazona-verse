@@ -1,0 +1,18 @@
+{
+ "tarea": "KIMI-145",
+ "bug": "QA-181",
+ "etiqueta": "r1",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "packs": {
+  "cap1": {
+   "error": "Cannot set properties of undefined (setting 'censo')"
+  },
+  "ep3": {
+   "error": "Cannot set properties of undefined (setting 'censo')"
+  }
+ },
+ "ventanaPerfilS": 12,
+ "head": "desconocido",
+ "nota": "PC compartida con otra sesion Kimi durante la medicion: self-time % (throttling por proceso) valido; tiempos absolutos = techo"
+}

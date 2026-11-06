@@ -1,0 +1,33 @@
+[11:52:38] pack cap1: navegando...
+[11:52:43] …latido
+[11:52:48] …latido
+[11:52:53] …latido
+[11:52:58] …latido
+[11:53:03] …latido
+[11:53:07] pack cap1: listo en 6.303s, entrada en 29.314s; asentando y perfilando 12s
+[11:53:08] …latido
+[11:53:13] …latido
+[11:53:18] …latido
+[11:53:23] …latido
+[11:53:28] …latido
+[11:53:33] …latido
+[11:53:36] pack cap1: censo N=886 auto=614 mm/cuadro=1884
+[11:53:38] …latido
+[11:53:43] …latido
+[11:53:48] …latido
+[11:53:51] pack cap1: fpsMed=20 min=6 p95=67ms calls=62 ktris=268 heap=141MB | perfil 14393ms | top: three.js 35.09% · nativo 30.44% · renderer 10.79% · anónima/sin-url 7.88% · game 5.98% · streaming 2.77% | errores=[]
+[11:53:51] pack ep3: navegando...
+[11:53:53] …latido
+[11:53:58] …latido
+[11:54:03] …latido
+[11:54:08] …latido
+[11:54:13] …latido
+[11:54:17] pack ep3: listo en 5.661s, entrada en 26.107s; asentando y perfilando 12s
+[11:54:18] …latido
+[11:54:23] …latido
+[11:54:25] pack ep3: censo N=429 auto=342 mm/cuadro=2562
+[11:54:28] …latido
+[11:54:33] …latido
+[11:54:38] …latido
+[11:54:40] pack ep3: fpsMed=16 min=1 p95=145ms calls=91 ktris=553 heap=139MB | perfil 13906ms | top: three.js 34.63% · nativo 21.59% · solidos 11.93% · anónima/sin-url 9.34% · renderer 6.83% · streaming 5.15% | errores=[]
+[11:54:40] evidencia: C:\Users\kelvi\amazonaversegame\docs\img\kimi145\k145_r5post.json

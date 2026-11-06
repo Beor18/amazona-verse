@@ -1,0 +1,21 @@
+[10:01:31] pack cap1: navegando...
+[10:01:36] …latido
+[10:01:41] …latido
+[10:01:46] …latido
+[10:01:51] …latido
+[10:01:56] …latido
+[10:01:59] pack cap1: listo en 5.82s, entrada en 28.545s; asentando y perfilando 12s
+[10:02:01] …latido
+[10:02:06] …latido
+[10:02:11] …latido
+[10:02:12] pack cap1: ERROR Cannot set properties of undefined (setting 'censo')
+[10:02:12] pack ep3: navegando...
+[10:02:16] …latido
+[10:02:21] …latido
+[10:02:26] …latido
+[10:02:31] …latido
+[10:02:36] …latido
+[10:02:36] pack ep3: listo en 4.274s, entrada en 23.584s; asentando y perfilando 12s
+[10:02:41] …latido
+[10:02:41] pack ep3: ERROR Cannot set properties of undefined (setting 'censo')
+[10:02:41] evidencia: C:\Users\kelvi\amazonaversegame\docs\img\kimi145\k145_r1.json

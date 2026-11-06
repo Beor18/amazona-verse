@@ -136,6 +136,13 @@ AVE.module('renderer', function (G) {
   // ---------- Escena, cielo y niebla ----------
   const cielo = W.cielo || {};
   const scene = new THREE.Scene();
+  // KIMI-145 (QA-181): la transformación de la escena nunca cambia — con matrixAutoUpdate=true cada
+  // pasada de updateMatrixWorld() marcaba matrixWorldNeedsUpdate en la raíz y el flag de fuerza
+  // recomponía TODOS los matrixWorld del grafo (censo: ~3 pasadas/cuadro, 2 700 matrix/cuadro en cap1).
+  // autoUpdate=false: el motor actualiza la escena una vez por cuadro en drawScene() y las pasadas
+  // extra (post/warm/foto) reutilizan esas matrices en vez de re-traversar (three r128 respeta Scene.autoUpdate).
+  scene.matrixAutoUpdate = false;
+  scene.autoUpdate = false;
   const SKY = new THREE.Color(cielo.color || '#bfe1d6');
   const fogR = cielo.niebla || [55, 165];
   const ATMOS = !!cielo.cenit; // cielo con degradado, sol y niebla atmosférica (si no, el fondo plano de antes)
@@ -554,6 +561,7 @@ AVE.module('renderer', function (G) {
     cullPequenos(cam || camera);
     seguirSombra();
     if (sky) sky.position.copy((cam || camera).position);
+    scene.updateMatrixWorld(); // KIMI-145: Scene.autoUpdate=false; una sola pasada por cuadro (antes ~3 con re-composición total)
     // Lo que todavía no se enlazó no entra en este dibujo: si no, el cuadro de «Empezar» compila el resto de golpe.
     const guard = ocultarPendientes();
     try {
@@ -595,7 +603,7 @@ AVE.module('renderer', function (G) {
       o.visible = true;
       if (o.isInstancedMesh && o.count === 0) o.count = 1;
     });
-    try { sinCuenta(() => { renderer.setRenderTarget(rt); renderer.render(scene, camera); if (post.composer) post.composer.render(); }); }
+    try { sinCuenta(() => { scene.updateMatrixWorld(); renderer.setRenderTarget(rt); renderer.render(scene, camera); if (post.composer) post.composer.render(); }); }
     catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     renderer.setRenderTarget(null);
     if (!capa31) camera.layers.disable(31);
@@ -705,7 +713,7 @@ AVE.module('renderer', function (G) {
     if (o.isInstancedMesh && o.count === 0) o.count = 1;
     if (!rtCalor) rtCalor = new THREE.WebGLRenderTarget(32, 32);
     try {
-      sinCuenta(() => conCapa31(() => { renderer.setRenderTarget(rtCalor); renderer.render(scene, camera); }));
+      sinCuenta(() => conCapa31(() => { scene.updateMatrixWorld(); renderer.setRenderTarget(rtCalor); renderer.render(scene, camera); }));
     } catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     finally {
       for (const [obj, vis, fc, n] of guard) { obj.visible = vis; obj.frustumCulled = fc; if (n != null) obj.count = n; }
@@ -1309,6 +1317,7 @@ AVE.module('renderer', function (G) {
       G.camara.place(true);
       fogColorFor(false); seguirSombra();
       if (sky) sky.position.copy(camera.position);
+      scene.updateMatrixWorld(); // KIMI-145: fuera del cuadro (Scene.autoUpdate=false)
       renderer.render(scene, camera);
       fogColorFor(post.activo);
       const sw = canvas.width, sh = canvas.height, ar = w / h;
