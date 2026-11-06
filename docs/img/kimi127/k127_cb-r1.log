@@ -1,0 +1,90 @@
+[05:07:48] pack cap1: navegando...
+[05:07:53] …latido
+[05:07:58] …latido
+[05:08:03] …latido
+[05:08:08] …latido
+[05:08:13] …latido
+[05:08:18] …latido
+[05:08:23] …latido
+[05:08:28] …latido
+[05:08:33] …latido
+[05:08:38] …latido
+[05:08:43] …latido
+[05:08:48] …latido
+[05:08:53] …latido
+[05:08:58] …latido
+[05:09:03] …latido
+[05:09:08] …latido
+[05:09:13] …latido
+[05:09:18] …latido
+[05:09:23] …latido
+[05:09:28] …latido
+[05:09:33] …latido
+[05:09:38] …latido
+[05:09:43] …latido
+[05:09:48] …latido
+[05:09:53] …latido
+[05:09:58] …latido
+[05:10:03] …latido
+[05:10:08] …latido
+[05:10:13] …latido
+[05:10:18] …latido
+[05:10:19] pack cap1: ERROR el juego no arrancó
+[05:10:19] pack ep2: navegando...
+[05:10:23] …latido
+[05:10:28] …latido
+[05:10:33] …latido
+[05:10:38] …latido
+[05:10:43] …latido
+[05:10:48] …latido
+[05:10:49] pack ep2: listo en 8.709s, entrada en 30.482s; muestreo 12s en el spawn
+[05:10:49] pack ep2: ERROR JS@28:126: "TypeError: (intermediate value)(...) is not a function\n    at <anonymous>:29:127"
+[05:10:49] pack ep3: navegando...
+[05:10:53] …latido
+[05:10:58] …latido
+[05:11:03] …latido
+[05:11:08] …latido
+[05:11:13] …latido
+[05:11:18] …latido
+[05:11:21] pack ep3: listo en 10.14s, entrada en 31.58s; muestreo 12s en el spawn
+[05:11:23] pack ep3: ERROR JS@28:126: "TypeError: (intermediate value)(...) is not a function\n    at <anonymous>:29:127"
+[05:11:23] pack ep4: navegando...
+[05:11:23] …latido
+[05:11:28] …latido
+[05:11:33] …latido
+[05:11:38] …latido
+[05:11:43] …latido
+[05:11:48] …latido
+[05:11:53] …latido
+[05:11:54] pack ep4: listo en 9.402s, entrada en 31.57s; muestreo 12s en el spawn
+[05:11:57] pack ep4: ERROR JS@28:126: "TypeError: (intermediate value)(...) is not a function\n    at <anonymous>:29:127"
+[05:11:57] pack ep5: navegando...
+[05:11:58] …latido
+[05:12:03] …latido
+[05:12:08] …latido
+[05:12:13] …latido
+[05:12:18] …latido
+[05:12:23] …latido
+[05:12:25] pack ep5: listo en 4.502s, entrada en 27.725s; muestreo 12s en el spawn
+[05:12:25] pack ep5: ERROR JS@28:126: "TypeError: (intermediate value)(...) is not a function\n    at <anonymous>:29:127"
+[05:12:25] pack ep6: navegando...
+[05:12:28] …latido
+[05:12:33] …latido
+[05:12:38] …latido
+[05:12:43] …latido
+[05:12:48] …latido
+[05:12:53] pack ep6: listo en 5.018s, entrada en 27.932s; muestreo 12s en el spawn
+[05:12:53] pack ep6: ERROR JS@28:126: "TypeError: (intermediate value)(...) is not a function\n    at <anonymous>:29:127"
+[05:12:53] demo: navegando con ?v18=1...
+[05:12:53] …latido
+[05:12:58] …latido
+[05:13:03] …latido
+[05:13:08] …latido
+[05:13:13] …latido
+[05:13:18] …latido
+[05:13:23] …latido
+[05:13:28] …latido
+[05:13:33] …latido
+[05:13:38] …latido
+[05:13:43] …latido
+[05:13:48] …latido

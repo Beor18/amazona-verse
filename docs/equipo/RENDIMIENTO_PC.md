@@ -772,3 +772,58 @@ asienta ≥89 fps salvo transitorios aislados de streaming (mín. puntual 5 en b
 dentro del minigolf no llegó a dispararse en las ventanas de 8 s (el driver priorizaba tirar; su
 FX es el mismo ya medido con Δ0 en KIMI-061/082); Eco Protector se mide con 1 uso real por
 ventana (dura 2 s). El juego no se tocó (herramienta + docs solamente).
+
+## KIMI-127 · Chromebook escolar simulado (6-nov, hecha · Kimi 1)
+
+**Primera medición de Chromebook** (pendiente desde BUGS.md «Pendiente de verdad»: iPad/Chromebook/Android).
+Herramienta nueva `tools/build/kimi1_127.js`: Chrome headless 1366×768 @ DPR 1 (desktop, sin UA ni
+touch), **CPU ×6** (N4000/Celeron de escuela ≈ hilo muy lento), calidad **baja** manual, GPU real
+RX 5700 XT; partida sembrada sin creador en el almacén de cada pack (`amazonaverse.save` v6 cap1 /
+`<pack>.save` v1 ep2…ep6 — el save «lleno» de campos de otros packs rompe la validación de cap1:
+lo descubrió esta herramienta), SIN `?qa=1` (batería concurrente = contamina, KIMI-052). En cada
+villa: carga (s hasta `listo_js` / hasta entrada real), luego 12 s quietas en el spawn natural tras
+asentar el streaming, FPS por rAF + `renderer.stats()` 1/s + `look.medir()` + captura. La demo
+`?v18=1` usa el driver de escenarios por API pública de `kimi1_085` (base/duelo/Sombra/puente).
+Corrida `cb-r3` (06-nov ~05:22-05:30 UTC, **0 errores de consola** en las 7 páginas; PC compartida
+con otra sesión Kimi — números techo, veredictos válidos; re-medición libre:
+`node tools/build/kimi1_127.js --etiqueta libre`).
+
+**Las 6 villas, spawn natural (calidad baja):**
+
+| cap | carga lista/entrada (s) | fps med (mín) | peor cuadro | draw calls | tris | tex GPU | heap |
+|---|---|---|---|---|---|---|---|
+| cap1 | 4,7 / 27,6 | **19 (18)** | 112 ms | 62 | 0,27 M | 154,8 MB | ~132 MB |
+| ep2 | 5,9 / 27,9 | **21 (17)** | 99 ms | 58 | 0,27 M | 150,9 MB | ~146 MB |
+| ep3 | 5,7 / 27,5 | **12 (1)** | 2789 ms | 91 | 0,55 M | 160,2 MB | ~97 MB |
+| ep4 | 6,0 / 27,2 | **11 (2)** | 3042 ms | 112 | 0,56 M | 156,2 MB | ~111 MB |
+| ep5 | 6,3 / 29,9 | **20 (17)** | 87 ms | 102 | 0,24 M | 186,9 MB | ~159 MB |
+| ep6 | 5,9 / 27,9 | **21 (16)** | 134 ms | 86 | 0,22 M | 168,2 MB | ~153 MB |
+
+Ningún capítulo llega a 25 FPS de mediana a CPU ×6 (rango 11-21). Los mínimos 1-2 y los peores
+cuadros de ~3 s de ep3/ep4 son el **asentado post-entrada** (streaming de la villa + enlaces de
+programas, familia QA-53) cayendo dentro de la ventana de muestreo: esos episodios son también los
+de más triángulos (0,55-0,56 M) y más calls (91-112) en su spawn. Carga: boot rápido (4,7-6,3 s) y
+entrada ~27-30 s en todas.
+
+**La demo `?v18=1` (calidad baja, misma corrida):**
+
+| escenario | fps med (mín) | peor cuadro | p95 | calls med | ktris med | heap |
+|---|---|---|---|---|---|---|
+| base explanada | 8 (0) | 8559 ms | 188 ms | 128 | 493 | 163 MB |
+| duelo (Campeona, FX) | **17 (11)** | 198 ms | 97 ms | 85 | 260 | 178 MB |
+| Sombra (poderes 0,9 s) | **16 (14)** | 126 ms | 88 ms | 79 | 248 | 138 MB |
+| puente colgante | **20 (14)** | 138 ms | 80 ms | 80 | 258 | 126 MB |
+
+La «base» quedó contaminada por el asentado del propio teleport (peor 8,5 s = drenado/streaming,
+inválida como cifra); el comparativo válido es escenario-vs-escenario seguidos: duelo 17 / Sombra
+16 / puente 20 fps de mediana. Los contenidos V18 no añaden draw calls (85/79/80 frente a 62 del
+spawn de cap1: la cámara de la explanada/el río mira zonas abiertas).
+
+**Lectura:** la GPU va sobrada en un Chromebook (calls 58-128 y ≤0,56 M tris a 1366×768 — el
+presupuesto «escolar» de 150 calls se cumple en todas las vistas); **el cuello es el hilo principal
+a ×6**. Ojo: el adaptativo del juego reacciona a cuadros ≥200 ms sostenidos y a 19 FPS los cuadros
+son ~53 ms, así que el juego se queda en «bajo» para siempre sin escalar más (hueco del escalón de
+emergencia de QA-53-variantes). **Conclusión: hace falta la calidad «escuela»** — propuesta con
+palancas concretas y siguiente paso (perfil de CPU) en **BUGS.md QA-181**. Evidencia:
+`docs/img/kimi127/k127_cb-r3.{json,log}` + `k127_cb-r3_<pack>_villa.jpg` ×6 + `k127_cb-r3_demo_*.jpg` ×4.
+El juego no se tocó (herramienta + docs solamente).

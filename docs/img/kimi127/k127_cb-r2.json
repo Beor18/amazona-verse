@@ -1,0 +1,36 @@
+{
+ "tarea": "KIMI-127",
+ "etiqueta": "cb-r2",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "packs": [
+  "cap1",
+  "ep2",
+  "ep3",
+  "ep4",
+  "ep5",
+  "ep6"
+ ],
+ "demo": true,
+ "head": "desconocido",
+ "capas": {
+  "cap1": {
+   "error": "el juego no arrancó"
+  },
+  "ep2": {
+   "error": "JS@28:127: \"SyntaxError: Unexpected end of input\""
+  },
+  "ep3": {
+   "error": "JS@28:127: \"SyntaxError: Unexpected end of input\""
+  },
+  "ep4": {
+   "error": "JS@28:127: \"SyntaxError: Unexpected end of input\""
+  },
+  "ep5": {
+   "error": "JS@28:127: \"SyntaxError: Unexpected end of input\""
+  },
+  "ep6": {
+   "error": "JS@28:127: \"SyntaxError: Unexpected end of input\""
+  }
+ }
+}

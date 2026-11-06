@@ -1,0 +1,36 @@
+{
+ "tarea": "KIMI-127",
+ "etiqueta": "cb-r1",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "packs": [
+  "cap1",
+  "ep2",
+  "ep3",
+  "ep4",
+  "ep5",
+  "ep6"
+ ],
+ "demo": true,
+ "head": "desconocido",
+ "capas": {
+  "cap1": {
+   "error": "el juego no arrancó"
+  },
+  "ep2": {
+   "error": "JS@28:126: \"TypeError: (intermediate value)(...) is not a function\\n    at <anonymous>:29:127\""
+  },
+  "ep3": {
+   "error": "JS@28:126: \"TypeError: (intermediate value)(...) is not a function\\n    at <anonymous>:29:127\""
+  },
+  "ep4": {
+   "error": "JS@28:126: \"TypeError: (intermediate value)(...) is not a function\\n    at <anonymous>:29:127\""
+  },
+  "ep5": {
+   "error": "JS@28:126: \"TypeError: (intermediate value)(...) is not a function\\n    at <anonymous>:29:127\""
+  },
+  "ep6": {
+   "error": "JS@28:126: \"TypeError: (intermediate value)(...) is not a function\\n    at <anonymous>:29:127\""
+  }
+ }
+}
