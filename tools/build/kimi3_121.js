@@ -286,31 +286,39 @@ async function volarHasta(cdp, ses, tx, tz, tol2d, log) {
   return false;
 }
 
-// Pelea con la Sombra de Tormenta: apuntar la cámara al centro de la nube (A.pos) y G, hasta 3 aciertos.
+// Pelea con la Sombra de Tormenta. La nube está SOBRE EL RÍO, a ~14 m del eje del puente, y el diseño
+// dice «se pelea volando» (V18_AMENAZAS.md). El Grito solo alcanza 7,6 m (habilidades.js: alcance 7 + 0,6)
+// y va hacia donde mira la cámara (mira() = S.facing): hay que CERRAR VOLANDO hasta ≤7 m, encararla y G.
+// r6 falló así: se gritó desde el puente, a ~14 m, y ningún grito llegó (tope de tiempo a los 120 s).
+// Cadencia real: cooldown 5 s y 35 de energía (regen 12/s) ⇒ un grito efectivo cada ~5 s.
 async function lucharSombra(cdp, ses, res, log) {
   const t0 = Date.now(); let gritos = 0, ultAciertos = 0;
-  while (Date.now() - t0 < 120000) {
+  while (Date.now() - t0 < 180000) {
     const st = await estadoDemo(cdp, ses);
     if (!st.sombra) { await dormir(0.5); continue; }
     const A = st.sombra;
-    if (A.aciertos >= 3 || A.fase === 'ganada') { log(`Sombra dispersada (${A.aciertos} aciertos, ${gritos} gritos)`); return true; }
-    if (A.fase !== 'lucha') { // entrar en el radio de la pelea (R_EMPIEZA ≈ 16 m; la nube está a ~14 m del eje del puente)
-      if (A.d > 12) { log('Sombra a ' + A.d.toFixed(0) + ' m: acercando'); await cruzarConSaltos(cdp, ses, A.px, A.pz, 10, log); }
+    if (A.fase === 'disuelve' || A.aciertos >= 3) { log(`Sombra dispersada (${A.aciertos} aciertos, ${gritos} gritos)`); return true; }
+    if (A.fase !== 'lucha') { // entrar en el radio de la pelea (R_EMPIEZA = 16 m desde el centro, no desde la nube)
+      if (A.d > 13.5) {
+        if (!st.volando) await despegar(cdp, ses, log);
+        log('Sombra a ' + A.d.toFixed(0) + ' m: acercando en vuelo');
+        await volarHasta(cdp, ses, A.px, A.pz, 12.5, log);
+      }
       await dormir(0.6); continue;
     }
-    if (A.plumas === 0) { log('sin plumas; esperando reintento'); await dormir(2.5); continue; }
-    // Apuntar la cámara a la nube y gritar.
+    if (!st.volando) { await despegar(cdp, ses, log); await dormir(0.4); continue; }
+    if (A.d > 7.0) { await volarHasta(cdp, ses, A.px, A.pz, 6.4, log); continue; } // a tiro del Grito
     const deseada = Math.atan2(-(A.px - st.x), -(A.pz - st.z));
     const diff = envolver(deseada - st.yaw);
-    if (Math.abs(diff) > 0.05) {
+    if (Math.abs(diff) > 0.06) { // encararla: la onda va donde mira la cámara (cono ±35°)
       const t = diff > 0 ? 'q' : 'r';
       await tecla(cdp, ses, t, true); await dormir(Math.min(0.5, Math.abs(diff) / 1.9)); await tecla(cdp, ses, t, false);
       continue;
     }
     await tecla(cdp, ses, 'g', true); await dormir(0.1); await tecla(cdp, ses, 'g', false);
     gritos++;
-    if (A.aciertos > ultAciertos) { ultAciertos = A.aciertos; log(`acierto ${ultAciertos}/3`); }
-    await dormir(1.1); // cooldown del grito
+    if (A.aciertos > ultAciertos) { ultAciertos = A.aciertos; log(`acierto ${ultAciertos}/3 (a ${A.d.toFixed(1)} m)`); }
+    await dormir(1.4); // el cooldown real del Grito es 5 s; los G de más no disparan (espera), sin efecto
   }
   log('Sombra: tope de tiempo');
   return false;
@@ -386,7 +394,11 @@ async function demoFlow(cdp, ses, res, ext, log) {
   await cruzarConSaltos(cdp, ses, medio.x, medio.z, 1.6, log);
   log('buscando la pelea con la Sombra...');
   res.sombra = await lucharSombra(cdp, ses, res, log);
-  log('terminando el cruce a la cabecera B...');
+  // Tras la pelea se queda volando sobre el río: se cruza volando a la orilla B y se aterriza para cerrar a pie.
+  log('terminando el cruce: vuelo a la orilla B y cierre a pie...');
+  st = await estadoDemo(cdp, ses);
+  await volarHasta(cdp, ses, st.cabB.x, st.cabB.z, 4.5, log);
+  await aterrizar(cdp, ses, log);
   res.cruce = await cruzarConSaltos(cdp, ses, st.cabB.x, st.cabB.z, 2.4, log);
   st = await estadoDemo(cdp, ses);
   res.estadoFinal = { puente: st.puente, inv: st.inv, sombra: st.sombra };

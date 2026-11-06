@@ -1,0 +1,36 @@
+[04:54:07] lanzando Chrome 1920x1080 (GPU real) y entrando con ?v18=1...
+[04:54:08] juego listo, entrando...
+[04:54:18] esperando G.v18Reparar / G.v18amenaza...
+[04:54:21] puente roto; reparar en (168.1,145.8); maderas=2 piedras=2
+[04:54:21] materiales: {"maderas":[{"x":167.49721111754187,"z":148.7157878075805},{"x":172.31435896842288,"z":146.32865740838724}],"piedras":[{"x":167.62331197718947,"z":151.5242399672578},{"x":158.60384,"z":157.17440000000002}],"spawn":{"x":166.5,"z":151}}
+[04:54:21] MediaRecorder mime: video/mp4;codecs=avc1.42E01E
+[04:54:22] volando
+[04:54:24] aterrizada
+[04:54:24] caminar: llegado a 1.6 m de (167.5,148.7)
+[04:54:26] +1 madera (1m/0p)
+[04:54:26] volando
+[04:54:29] aterrizada
+[04:54:29] caminar: llegado a 1.3 m de (172.3,146.3)
+[04:54:30] +1 madera (2m/0p)
+[04:54:30] volando
+[04:54:34] vuelo: atascada a 5.0 m; subiendo
+[04:54:36] aterrizada
+[04:54:36] caminar: llegado a 0.4 m de (167.6,151.5)
+[04:54:41] +1 piedra (2m/1p)
+[04:54:42] volando
+[04:54:42] inventario: 2 maderas, 1 piedras
+[04:54:46] aterrizada
+[04:54:46] caminar: llegado a 1.2 m de (168.1,145.8)
+[04:54:47] ¡puente reparado! cruzando a pie...
+[04:54:51] cruce: llegado a 1.4 m (0 saltos)
+[04:54:51] buscando la pelea con la Sombra...
+[04:54:51] volando
+[04:55:04] acierto 1/3 (a 5.6 m)
+[04:55:20] acierto 2/3 (a 6.4 m)
+[04:55:26] Sombra dispersada (3 aciertos, 11 gritos)
+[04:55:26] terminando el cruce: vuelo a la orilla B y cierre a pie...
+[04:55:33] aterrizada
+[04:55:33] cruce: llegado a 1.2 m (0 saltos)
+[04:55:35] parando la grabación y volcando el vídeo...
+[04:55:35] vídeo: {"mime":"video/mp4;codecs=avc1.42E01E","bytes":15714434,"destino":"kimi121_demo_r9.mp4"}
+[04:55:36] evidencia en C:\Users\kelvi\amazonaversegame3\docs\img\kimi121

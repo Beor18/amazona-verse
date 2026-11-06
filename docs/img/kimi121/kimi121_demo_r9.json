@@ -1,0 +1,34 @@
+{
+ "tarea": "KIMI-121",
+ "juego": "demo",
+ "etiqueta": "r9",
+ "pantalla": "1920x1080 dpr1 GPU real (RX 5700 XT), escritorio, CPU x1",
+ "entrada": "CDP Input.dispatchKeyEvent (input real)",
+ "v18": true,
+ "mime": "video/mp4;codecs=avc1.42E01E",
+ "recStarted": "2026-11-06T04:54:21.754Z",
+ "puente": "reparado",
+ "sombra": true,
+ "cruce": true,
+ "estadoFinal": {
+  "puente": "reparado",
+  "inv": {
+   "madera": 1,
+   "piedra": 1
+  },
+  "sombra": {
+   "fase": "nada",
+   "aciertos": 3,
+   "plumas": 2,
+   "px": 165.14243015775295,
+   "pz": 120.52578526977183,
+   "d": 19.74163105127326
+  }
+ },
+ "video": {
+  "mime": "video/mp4;codecs=avc1.42E01E",
+  "bytes": 15714434,
+  "destino": "kimi121_demo_r9.mp4"
+ },
+ "erroresConsola": []
+}
