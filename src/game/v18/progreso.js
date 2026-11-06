@@ -3,7 +3,9 @@
    en un almacén propio. Contrato en docs/equipo/V18_CONTRATOS.md.
    - Solo existe con la bandera V18 (?v18=1, o localStorage `amazonaverse.v18` = '1'): la versión estable no cambia.
    - Almacén `<almacen>.v18` = { v: 1, especies: { <speciesId>: estado }, inv: { <itemId>: n }, otorgados: { <rewardKey>: true },
-     mundo: { <worldChangeId>: estado }, sel: <speciesId|null> }.
+     mundo: { <worldChangeId>: estado }, sel: <speciesId|null>, evo: { ... } }.
+   - v2 (V18.2, evolución): solo añade `evo` (niveles, XP y alianzas; dueño del formato: evolucion.js). Una partida v1 migra
+     sin perder nada; una build anterior que lea un v2 lo vuelve a marcar v1 y conserva `evo` intacto (Object.assign).
    - Estados de especie: no_descubierta < descubierta < desbloqueada < seleccionable < seleccionada (solo una seleccionada).
      Una especie ya disponible en partidas viejas (la del perfil) entra como seleccionable: nada se bloquea por migrar.
    - otorgar(rewardKey, itemId, n) es idempotente: la misma recompensa no se da dos veces (protección contra duplicados).
@@ -13,15 +15,15 @@ window.AVV18Progreso = function (G) {
   'use strict';
   if (G.v18) return G.v18;
   const ESTADOS = ['no_descubierta', 'descubierta', 'desbloqueada', 'seleccionable', 'seleccionada'];
-  const V = 1;
+  const V = 2;
   const clave = () => ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.v18';
-  const vacio = () => ({ v: V, especies: {}, inv: {}, otorgados: {}, mundo: {}, sel: null });
+  const vacio = () => ({ v: V, especies: {}, inv: {}, otorgados: {}, mundo: {}, sel: null, evo: {} });
   let D = null;
   function leer() {
     let d = null;
     try { d = JSON.parse(localStorage.getItem(clave()) || 'null'); } catch (e) { d = null; }
     if (!d || typeof d !== 'object' || d.v !== V) d = Object.assign(vacio(), d && typeof d === 'object' ? migrar(d) : {});
-    for (const k of ['especies', 'inv', 'otorgados', 'mundo']) if (!d[k] || typeof d[k] !== 'object') d[k] = {};
+    for (const k of ['especies', 'inv', 'otorgados', 'mundo', 'evo']) if (!d[k] || typeof d[k] !== 'object') d[k] = {};
     perfilVisto = null;
     return conPerfil(d);
   }
@@ -37,7 +39,8 @@ window.AVV18Progreso = function (G) {
     if (!d.sel) d.sel = perfil;
     return d;
   }
-  function migrar(d) { d.v = V; return d; } // v1: sin migraciones todavía; cada cambio de esquema sube V y migra aquí
+  // Cada cambio de esquema sube V y migra aquí. v1 → v2: solo se añade `evo` (vacío; evolucion.js pone los valores por defecto)
+  function migrar(d) { if (!d.evo || typeof d.evo !== 'object' || Array.isArray(d.evo)) d.evo = {}; d.v = V; return d; }
   function guardar() { try { localStorage.setItem(clave(), JSON.stringify(D)); return true; } catch (e) { return false; } }
   const datos = () => conPerfil(D || (D = leer()));
   const rango = e => Math.max(0, ESTADOS.indexOf(e || 'no_descubierta'));
@@ -70,6 +73,10 @@ window.AVV18Progreso = function (G) {
   }
   const mundo = id => datos().mundo[id] || null;
   function cambiarMundo(id, e) { const d = datos(); if (d.mundo[id] === e) return false; d.mundo[id] = e; guardar(); emit({ tipo: 'mundo', id, estado: e }); return true; }
+  // V18.2: datos de evolución (formato y saneado en evolucion.js). cambiarEvo(fn) muta, guarda y avisa.
+  const evo = () => datos().evo;
+  const copia = () => JSON.parse(JSON.stringify(datos())); // instantánea de solo lectura (hitos retroactivos, pruebas)
+  function cambiarEvo(fn) { const d = datos(); const r = fn(d.evo); guardar(); emit({ tipo: 'evo' }); return r; }
   function recargar() { D = null; return datos(); } // relee del almacén (lo usan las pruebas de recarga)
   function borrar() { D = vacio(); perfilVisto = perfilActual(); try { localStorage.removeItem(clave()); } catch (e) { /* sin almacenamiento */ } }
 
@@ -104,6 +111,6 @@ window.AVV18Progreso = function (G) {
   }
 
   G.on('apply', () => { D = null; }, 30);
-  G.v18 = { ESTADOS, clave, estado, descubrir, desbloquear, seleccionar, seleccionada, otorgar, otorgado, cuantos, gastar, mundo, cambiarMundo, recargar, borrar, test };
+  G.v18 = { ESTADOS, clave, estado, descubrir, desbloquear, seleccionar, seleccionada, otorgar, otorgado, cuantos, gastar, mundo, cambiarMundo, evo, cambiarEvo, copia, recargar, borrar, test };
   return G.v18;
 };

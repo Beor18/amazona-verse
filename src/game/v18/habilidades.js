@@ -9,7 +9,11 @@
                                 para UN golpe normal durante poco tiempo y, si es el grito, lo reduce sin anularlo. Luego se dispersan.
    - Energía 0–100 que se recarga sola (indicador aparte de las plumas); cada habilidad tiene su espera.
    - El motor no sabe de duelos: el efecto recibe ctx = { yo, otro, golpear(blanco, g), lanzar(p), despues(s, fn), fx(tipo, x, y, z),
-     sonar(nombre), onda(origen, dir, alcance), escudo(luchador, s), poder(ev) } y lo arma quien lo usa (combate.js).
+     sonar(nombre), onda(origen, dir, alcance), escudo(luchador, s), poder(ev), desviar(origen, dir, alcance, cono) } y lo arma
+     quien lo usa (combate.js).
+   - V18.2 (evolución): el motor consulta y no decide. Si el luchador trae `nivel` y existe G.v18evo, ver(f, h) pide a
+     evolucion.js la versión de la etapa (Object.create(h) con otros números); el efecto lee this.* y la usa sin copiar código.
+     Sin `nivel` (IA, duelo de 2, minigolf, amenazas) todo es idéntico. `f.alianza` habilita un poder de alianza (Eco Protector).
    Solo con la bandera V18. Lo prueba AV.v18CombateTest() (combate.js). */
 window.AVV18Habilidades = function (G) {
   'use strict';
@@ -68,6 +72,7 @@ window.AVV18Habilidades = function (G) {
       const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
       yo.picoT = h.pico; yo.cara = 'fight'; // abre el pico (hueso «pico» del rig, vía mouth) mientras grita
       ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
+      if (h.desvia) ctx.desviar(origen, dir, h.alcance, h.cono); // V18.2 Eco Dirigido: aparta las semillas rivales del cono
       ctx.poder({ id: h.id, de: yo.id, origen, direccion: { x: dir.x, y: 0, z: dir.z }, alcance: h.alcance });
       const alcanza = () => {
         const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
@@ -197,20 +202,22 @@ window.AVV18Habilidades = function (G) {
       plumas: 5, plumasMax: 5, energia: ENERGIA_MAX, energiaMax: ENERGIA_MAX, cd: {}, mareo: 0, inv: 0, escudo: 0, picoT: 0, alasT: 0, ia: false },
     o, { familia: familia(sp), poder: o.poder || poderDe(sp) });
   }
+  const ver = (f, h) => (h && f && f.nivel && G.v18evo && G.v18evo.ajustar) ? G.v18evo.ajustar(f, h) : h; // V18.2: números de la etapa
   function listo(f, id) {
-    const h = get(id); if (!h) return { ok: false, motivo: 'no existe' };
+    const h = ver(f, get(id)); if (!h) return { ok: false, motivo: 'no existe' };
     if (f.mareo > 0) return { ok: false, motivo: 'mareo' };
     if (f.deslumbrada > 0) return { ok: false, motivo: 'deslumbrada' }; // Abanico de colores
     if ((f.cd[id] || 0) > 0) return { ok: false, motivo: 'espera' };
     if (f.energia < h.coste) return { ok: false, motivo: 'energia' };
-    if (!h.basico && f.poder !== id) return { ok: false, motivo: 'no es suyo' };
+    if (!h.basico && f.poder !== id && f.alianza !== id) return { ok: false, motivo: 'no es suyo' };
+    if (h.puede && !h.puede(f)) return { ok: false, motivo: 'ahora no' }; // p. ej. Eco Protector con un escudo ya puesto
     return { ok: true, h };
   }
   const nada = () => {};
   function usar(f, id, ctx) {
     const l = listo(f, id); if (!l.ok) return l;
     f.energia -= l.h.coste; f.cd[id] = l.h.cooldown;
-    const c = Object.assign({ yo: f, onda: nada, escudo: nada, poder: nada, despues: (s, fn) => fn(), fx: nada, sonar: nada, lanzar: nada }, ctx);
+    const c = Object.assign({ yo: f, onda: nada, escudo: nada, poder: nada, despues: (s, fn) => fn(), fx: nada, sonar: nada, lanzar: nada, desviar: nada, apoyo: nada }, ctx);
     // Abanico de colores: el siguiente tiro de la deslumbrada sale torcido (todas las semillas de ese uso) y no da
     let torcido = 0;
     if (f.falla > 0) { const l0 = c.lanzar, lado = Math.random() < 0.5 ? -1 : 1; c.lanzar = b => { const a = lado * 0.6, ca = Math.cos(a), sa = Math.sin(a), vx = b.vx;
@@ -251,6 +258,6 @@ window.AVV18Habilidades = function (G) {
     f.deslumbrada = Math.max(0, (f.deslumbrada || 0) - dt); f.falla = Math.max(0, (f.falla || 0) - dt); f.lenta = Math.max(0, (f.lenta || 0) - dt);
     if (!f.picoT && f.cara === 'fight') f.cara = null;
   }
-  G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, recibir, paso, dist, dirA, mira };
+  G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, recibir, paso, dist, dirA, mira, ver };
   return G.v18hab;
 };

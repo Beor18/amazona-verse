@@ -17,6 +17,9 @@
      G.emit('v18poder', { id: 'grito_yunque' | 'escudo_plumas', de, origen, direccion, alcance }).
    - Recompensa: la primera victoria da 2 maderas y 1 piedra al inventario del juego (S.inv, el mismo del cap. 1);
      G.v18.otorgar('combate_1', 'victoria_duelo', 1) es solo la marca idempotente de que ya pagó. Repetir no da más.
+   - V18.2 (evolución, src/game/v18/evolucion.js): solo el jugador trae { nivel, variante, alianza } (G.v18evo.paraDuelo); la
+     Campeona no sube. Tecla H (solo en el duelo y con alianza elegida) o el botón .vd-ali: poder de alianza. El fin del duelo
+     añade { especie, dura, interrupciones, quitadas } al evento win/loss. Sin evolucion.js todo queda como antes.
    Solo con la bandera V18. Prueba: AV.v18CombateTest(). */
 window.AVV18Combate = function (G) {
   'use strict';
@@ -33,7 +36,7 @@ window.AVV18Combate = function (G) {
     ganaGuarda: '¡Ganaste 2 maderas y 1 piedra! El puente ya está reparado: guárdalas para lo que venga.', ganaOtra: '¡Ganaste otra vez! Los materiales ya te los llevaste; busca más por el bosque.',
     pierde: '¡Uy, te mareaste! Sacude las plumas y prueba otra vez.', lejos: 'Te alejaste: el duelo queda para luego.',
     bloquea: '¡Bloqueado!', rompe: '¡Escudo roto!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!',
-    ganaste: '¡Ganaste!', perdiste: '¡Casi!', bienvenida: '¡A jugar! Quítale sus 5 plumas a la Campeona.'
+    ganaste: '¡Ganaste!', perdiste: '¡Casi!', bienvenida: '¡A jugar! Quítale sus 5 plumas a la Campeona.', apoyo: '¡La cotorra de Dominica te cubre!'
   };
   // Generador con semilla: la IA decide igual en cada prueba
   let semilla = 1;
@@ -163,7 +166,7 @@ window.AVV18Combate = function (G) {
   const especieJugador = () => espForzada || (G.v18 && G.v18.seleccionada && G.v18.seleccionada()) ||
     (S.profile && ((S.profile.look && S.profile.look.species) || S.profile.species)) || 'vittata';
   const especieRival = sp => H.familia(sp) === 'montaneras' ? 'ventralis' : 'arausiaca';
-  const nuevasStats = () => ({ movida: 0, ataques: 0, esquivas: 0, poderes: 0, aciertosIA: 0, bloqueos: 0, interrupciones: 0, ondas: 0, escudos: 0, dispersiones: 0, poderesEv: 0, reacciones: 0 });
+  const nuevasStats = () => ({ movida: 0, ataques: 0, esquivas: 0, poderes: 0, aciertosIA: 0, bloqueos: 0, interrupciones: 0, ondas: 0, escudos: 0, dispersiones: 0, poderesEv: 0, reacciones: 0, intJ: 0, desvios: 0 });
   const C = { fase: 'nada', t: 0, cuenta: 0, j: null, r: null, balas: [], timers: [], resultado: null, ch: null, listo: null, stats: nuevasStats() };
   // Recompensa de la primera victoria: materiales del inventario del juego (S.inv), los mismos del cap. 1
   const PREMIO = { madera: 2, piedra: 1 };
@@ -174,9 +177,16 @@ window.AVV18Combate = function (G) {
       kb: { x: 0, z: 0, t: 0 }, mov: { x: 0, z: 0, t: 0 }, lift: { alto: 0, t: 0, dura: 0 }, yaw: -Math.PI / 2,
       pensar: 0.4, golpeT: 1, tiroT: 1.5, esquivaT: 0, poderT: 2.5, lado: 1, finMareo: 0 });
   }
-  function nuevoJugador() {
-    return H.luchador({ id: 'jugador', nombre: TXT.tu, especie: especieJugador(), pos: S.pos, plumas: PLUMAS, plumasMax: PLUMAS,
-      kb: { x: 0, z: 0, t: 0 }, finMareo: 0, mira: () => S.facing });
+  // V18.2: nivel, variante y alianza del jugador (solo él). Las pruebas que fuerzan especie van sin evolución salvo que la pidan.
+  function evoJugador(sp, o) {
+    if (o && o.evo !== undefined) return o.evo;
+    if (espForzada && !(o && o.evoReal)) return null;
+    try { return G.v18evo && G.v18evo.paraDuelo ? G.v18evo.paraDuelo(sp) : null; } catch (e) { return null; }
+  }
+  function nuevoJugador(o) {
+    const sp = especieJugador();
+    return H.luchador(Object.assign({ id: 'jugador', nombre: TXT.tu, especie: sp, pos: S.pos, plumas: PLUMAS, plumasMax: PLUMAS,
+      kb: { x: 0, z: 0, t: 0 }, finMareo: 0, mira: () => S.facing }, evoJugador(sp, o) || {}));
   }
   C.r = nuevoRival();
   function crearRival() {
@@ -203,6 +213,7 @@ window.AVV18Combate = function (G) {
       if (rc.r === 'bloqueado') {
         fx('feathers', blanco.pos.x, blanco.pos.y + 1, blanco.pos.z); sonar('land');
         if (blanco.ia) flotante(TXT.bloquea);
+        if (blanco.bonusBloqueo) blanco.energia = Math.min(blanco.energiaMax, blanco.energia + blanco.bonusBloqueo); // V18.2 Arausiaca nv 20
         emitir({ tipo: 'hit', de: de.id, a: blanco.id, valor: 0, bloqueado: true });
         return false;
       }
@@ -223,7 +234,7 @@ window.AVV18Combate = function (G) {
   }
   // Interrumpir: corta lo que hacía (acometida, pensar, carga del poder) durante el mareo corto del grito
   function interrumpir(f, s, parcial) {
-    C.stats.interrupciones++;
+    C.stats.interrupciones++; if (f.ia) C.stats.intJ++; // intJ: las del jugador a la Campeona (desafío de la alianza)
     f.interrumpida = s;
     if (f.ia) { f.mov.t = 0; f.pensar = Math.max(f.pensar, s); f.golpeT = Math.max(f.golpeT, s); if (!parcial) flotante(TXT.interrumpe); }
     else { sost = 0; M.dashT = 0; M.vx *= 0.3; M.vz *= 0.3; }
@@ -301,9 +312,28 @@ window.AVV18Combate = function (G) {
       lanzar: b => lanzar(b),
       despues: (s, fn) => C.timers.push({ t: s, fn }),
       onda, escudo,
+      desviar: (o, dir, alc, cono) => desviar(yo, o, dir, alc, cono), apoyo,
       poder: ev => { C.stats.poderesEv++; try { G.emit('v18poder', ev); } catch (e) { /* sin oyentes */ } },
       fx, sonar
     };
+  }
+  // V18.2 Eco Dirigido: las semillas de la otra dentro del cono del grito se deshacen en hojas (no las del que grita)
+  function desviar(yo, o, dir, alc, cono) {
+    let n = 0;
+    for (let i = C.balas.length - 1; i >= 0; i--) {
+      const b = C.balas[i], p = b.m.position; if (b.de === yo) continue;
+      const dx = p.x - o.x, dz = p.z - o.z, d = Math.hypot(dx, dz);
+      if (d > alc + 0.6 || (d > 1.2 && (dx * dir.x + dz * dir.z) / d < cono)) continue;
+      scene.remove(b.m); C.balas.splice(i, 1); fx('leaves', p.x, p.y, p.z); n++;
+    }
+    C.stats.desvios += n; return n;
+  }
+  // V18.2 Eco Protector: la segunda cotorra aporta su apoyo visual (retrato existente y aviso breve); sin modelo nuevo
+  let apoyoTO = 0;
+  function apoyo(quien) {
+    if (!hud) return; const el = hud.q('apoyo'); if (!el) return;
+    el.hidden = false; clearTimeout(apoyoTO); apoyoTO = setTimeout(() => { if (hud) hud.q('apoyo').hidden = true; }, 1200);
+    fx('feathers', S.pos.x, S.pos.y + 1.3, S.pos.z);
   }
   function usar(f, id) {
     if (C.fase !== 'lucha' || !f) return { ok: false, motivo: 'fase' };
@@ -335,11 +365,14 @@ window.AVV18Combate = function (G) {
   }
   // QA-173: la G del poder se queda en el duelo (fase de captura, antes que input.js): no llega a G.input.keys y la cámara
   // no se inclina (camara.js usa T/G para mirar arriba/abajo). Fuera del duelo este oyente no existe y G hace lo de siempre.
+  // V18.2: la H (poder de alianza) igual, pero solo si hay alianza elegida; si no, H sigue libre.
   function tecla(e) {
-    if (!enganchado || (e.key || '').toLowerCase() !== 'g' || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
+    const k = (e.key || '').toLowerCase();
+    if (!enganchado || (k !== 'g' && k !== 'h') || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
+    if (k === 'h' && !(C.j && C.j.alianza)) return;
     e.stopImmediatePropagation();
     if (G.pausa && G.pausa.activa && G.pausa.activa()) return; // con la pausa abierta no se juega
-    if (!e.repeat && C.fase === 'lucha') usar(C.j, C.j.poder);
+    if (!e.repeat && C.fase === 'lucha') usar(C.j, k === 'g' ? C.j.poder : C.j.alianza);
   }
   // Pico y alas de la protagonista: se ponen justo antes de que el modelo se anime (envoltura de player3D.update mientras dura
   // el duelo; actores.js escribe mouth/wingMode cada cuadro y aquí solo se sobrescriben cuando el poder lo pide)
@@ -411,7 +444,14 @@ window.AVV18Combate = function (G) {
       '#v18-duelo.tactil .vd-bot{display:none}#v18-duelo.tactil .vd-lado{padding:4px 8px}#v18-duelo.tactil .vd-et{display:none}' +
       '#v18-duelo.tactil .vd-en{margin-top:3px}#v18-duelo.tactil .vd-centro{font-size:32px;margin-top:2px}' +
       '#v18-duelo.tactil .vd-fin{padding:8px;margin-top:4px}#v18-duelo.tactil .vd-fin p{font-size:15px;margin-bottom:6px}' +
-      'body.v18-duelo-on #toast{z-index:41}';
+      'body.v18-duelo-on #toast{z-index:41}' +
+      // V18.2: nivel y XP del jugador, botón de la alianza (≥ 56 px en táctil, dentro del panel: no tapa Diario ni botones grandes)
+      '#v18-duelo .vd-nv{font-size:11px;opacity:.9;margin-top:1px}#v18-duelo .vd-xp{height:3px;border-radius:2px;background:#0006;overflow:hidden;margin:2px 0 1px}' +
+      '#v18-duelo .vd-xp b{display:block;height:100%;background:#ffd27a;width:0}#v18-duelo button.vd-ali{display:block;width:100%;margin-top:5px;padding:4px 8px;font-size:14px;background:#ffe39a}' +
+      '#v18-duelo button.vd-ali[hidden]{display:none}#v18-duelo.tactil button.vd-ali{min-height:56px;font-size:15px}' +
+      '#v18-duelo .vd-apoyo{display:flex;align-items:center;gap:6px;justify-content:center;margin-top:4px;font-weight:600;font-size:14px}' +
+      '#v18-duelo .vd-apoyo[hidden]{display:none}#v18-duelo .vd-apoyo img{width:40px;height:40px;border-radius:50%;background:#fff3;box-shadow:0 0 10px #9fe6ff}' +
+      '#v18-duelo .vd-finxp{font-size:15px!important;color:#ffe39a}#v18-duelo .vd-finxp:empty{display:none}';
     document.head.appendChild(st);
   }
   function montarHud() {
@@ -419,16 +459,16 @@ window.AVV18Combate = function (G) {
     estilo();
     const el = document.createElement('div'); el.id = 'v18-duelo'; el.hidden = true; el.classList.toggle('tactil', TACTIL);
     const plumas = () => Array.from({ length: PLUMAS }, () => '<i></i>').join('');
-    el.innerHTML = `<div class="vd-fila"><div class="vd-lado j"><div class="vd-nom">${TXT.tu}</div><div class="vd-pod" data-k="pj"></div><div class="vd-pl" data-k="plj">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-j"><b></b></div></div>` +
+    el.innerHTML = `<div class="vd-fila"><div class="vd-lado j"><div class="vd-nom">${TXT.tu}</div><div class="vd-pod" data-k="pj"></div><div class="vd-nv" data-k="nv" hidden><span data-k="nvN"></span> · <span data-k="nvE"></span></div><div class="vd-xp" data-k="xp" hidden><b></b></div><div class="vd-pl" data-k="plj">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-j"><b></b></div><button class="vd-ali" data-a="alianza" type="button" hidden></button></div>` +
       `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div></div></div>` +
-      `<div class="vd-centro" data-k="centro"></div>` +
+      `<div class="vd-centro" data-k="centro"></div><div class="vd-apoyo" data-k="apoyo" hidden><img src="assets/retratos/v18/arausiaca.png" alt=""><span>${TXT.apoyo}</span></div>` +
       `<div class="vd-bot" data-k="bot"><button data-a="golpe_ala">${TXT.ala}</button><button data-a="semilla">${TXT.semilla}</button><button data-a="poder">${TXT.poder}</button></div>` +
-      `<div class="vd-fin" data-k="fin" hidden><p data-k="finTxt"></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
+      `<div class="vd-fin" data-k="fin" hidden><p data-k="finTxt"></p><p class="vd-finxp" data-k="finXp"></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
     el.addEventListener('pointerdown', e => {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
       const a = b.dataset.a;
-      if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
+      if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (a === 'alianza') { if (C.j && C.j.alianza) usar(C.j, C.j.alianza); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
     });
     document.body.appendChild(el);
     hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
@@ -453,6 +493,13 @@ window.AVV18Combate = function (G) {
     hud.q('en-r').firstChild.style.width = Math.round(100 * C.r.energia / C.r.energiaMax) + '%';
     const texto = (k, t) => { const e = hud.q(k); if (e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } }; // una vez: el traductor no pelea
     texto('pj', (H.get(C.j.poder) || {}).nombre || ''); texto('pr', (H.get(C.r.poder) || {}).nombre || '');
+    // V18.2: «Nv 12 · Eco Amplificado», barra de XP y botón de la alianza (solo con evolución)
+    const L = C.j.nivel && G.v18evo && G.v18evo.lineaHud ? G.v18evo.lineaHud(C.j) : null;
+    hud.q('nv').hidden = hud.q('xp').hidden = !L;
+    if (L) { texto('nvN', L.nivel); texto('nvE', L.etapa); hud.q('xp').firstChild.style.width = Math.round(100 * L.frac) + '%'; }
+    const ali = hud.q('ali') || hud.el.querySelector('.vd-ali'), aliH = C.j.alianza && H.get(C.j.alianza);
+    ali.hidden = !aliH;
+    if (aliH) { if (ali.dataset.nom !== aliH.nombre) { ali.dataset.nom = aliH.nombre; ali.textContent = aliH.nombre; } ali.classList.toggle('cd', !H.listo(C.j, C.j.alianza).ok); }
     for (const b of hud.q('bot').children) {
       const id = b.dataset.a === 'poder' ? C.j.poder : b.dataset.a;
       b.classList.toggle('cd', !H.listo(C.j, id).ok);
@@ -474,12 +521,12 @@ window.AVV18Combate = function (G) {
     crearRival();
     semilla = o.semilla || 7; espForzada = o.especie || null;
     quitarBalas(); if (C.j && C.j.wob && pl3d && pl3d.root) { pl3d.root.rotation.z -= C.j.wob; C.j.wob = 0; }
-    C.j = nuevoJugador(); const ch = C.ch; C.r = nuevoRival(); C.ch = ch;
+    C.j = nuevoJugador(o); const ch = C.ch; C.r = nuevoRival(); C.ch = ch; C.tLucha = 0;
     if (C.ch && C.chEsp !== C.r.especie) { try { C.ch.applyLook({ species: C.r.especie, accessories: { eyes: { id: 'gafas', color: '#7fd3ff' } } }); C.chEsp = C.r.especie; } catch (e) { /* piel */ } }
     C.timers.length = 0; C.resultado = null; C.premio = false;
     C.stats = nuevasStats();
     colocar();
-    montarHud(); hud.el.hidden = false; hud.q('fin').hidden = true; hud.q('bot').hidden = false;
+    montarHud(); hud.el.hidden = false; hud.q('fin').hidden = true; hud.q('bot').hidden = false; hud.q('finXp').textContent = ''; hud.q('apoyo').hidden = true;
     enganchar();
     if (o.sinCuenta) { C.fase = 'lucha'; flotante(''); }
     else { C.fase = 'cuenta'; C.cuenta = 3; flotante('3', 1); if (G.ui && G.ui.toast) G.ui.toast(TXT.bienvenida, 2600); }
@@ -490,7 +537,8 @@ window.AVV18Combate = function (G) {
     if (C.fase !== 'lucha') return;
     C.fase = 'fin'; C.resultado = res; C.finT = performance.now(); quitarBalas(); C.timers.length = 0;
     const gano = res === 'win';
-    emitir({ tipo: res, de: gano ? 'jugador' : 'rival', a: gano ? 'rival' : 'jugador', valor: gano ? C.j.plumas : C.r.plumas });
+    emitir({ tipo: res, de: gano ? 'jugador' : 'rival', a: gano ? 'rival' : 'jugador', valor: gano ? C.j.plumas : C.r.plumas,
+      especie: C.j.especie, dura: Math.round((C.tLucha || 0) * 10) / 10, interrupciones: C.stats.intJ, quitadas: PLUMAS - C.r.plumas }); // V18.2: para la XP
     let txt;
     // La que se queda sin plumas se marea un rato, con estrellitas, y se sacude (nadie se hace daño)
     const perdedora = gano ? C.r : C.j; perdedora.finMareo = 2.2; perdedora.mareo = Math.max(perdedora.mareo, 2.2);
@@ -503,7 +551,8 @@ window.AVV18Combate = function (G) {
       sonar('unlock'); fx('gold', C.r.pos.x, C.r.pos.y + 1.2, C.r.pos.z);
     } else { txt = TXT.pierde; C.premio = false; sonar('wrong'); }
     if (G.ui && G.ui.toast) G.ui.toast(txt, 3200);
-    if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').hidden = false; hud.q('bot').hidden = true; flotante(gano ? TXT.ganaste : TXT.perdiste, 1.6); }
+    if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').hidden = false; hud.q('bot').hidden = true; flotante(gano ? TXT.ganaste : TXT.perdiste, 1.6);
+      try { hud.q('finXp').innerHTML = G.v18evo && G.v18evo.htmlFin ? G.v18evo.htmlFin() : ''; } catch (e) { /* sin evolución */ } }
   }
   function pagar() {
     if (!S.inv) S.inv = {};
@@ -620,6 +669,7 @@ window.AVV18Combate = function (G) {
       if (C.cuenta <= 0) { C.fase = 'lucha'; centroT = 0.7; }
     }
     if (C.fase === 'lucha') {
+      C.tLucha = (C.tLucha || 0) + dt;
       H.paso(C.j, dt); H.paso(C.r, dt);
       for (let i = C.timers.length - 1; i >= 0; i--) { const t = C.timers[i]; t.t -= dt; if (t.t <= 0) { C.timers.splice(i, 1); t.fn(); if (C.fase !== 'lucha') break; } }
       if (C.fase === 'lucha') pasoIA(dt);
