@@ -473,6 +473,78 @@ window.AVV18Habilidades = function (G) {
       ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: d.x, y: 0, z: d.z } });
       return { ok: true };
     } });
+  // ---------- Cuatro más (Kelvin 6-nov, KIMI-159, V18_MATRIZ_36.md #8, #22, #23, #34): se consiguen en el Álbum ----------
+  // Columna de nube (imperialis, ALAS): sube en vertical un momento y cae en picada encima de donde ESTÁ la rival: si
+  // cae encima, marea más que ningún otro golpe (1,4 s) con empuje leve y sin plumas. Como tarda en subir, la rival
+  // puede apartarse y esquivarla. Ventaja: el mayor mareo del juego. Debilidad: lenta en subir y nada de daño.
+  // Espera 11 s (matriz).
+  registrar({ id: 'columna_nube', nombre: 'Columna de nube', especies: ['imperialis'], tecnica: 'alas', coste: 30, cooldown: 11,
+    fx: 'feathers', sube: 0.7, alto: 3.2, toca: 1.9, empuje: 5, mareo: 1.4,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this;
+      yo.lift = { dura: h.sube * 2, t: 0, alto: h.alto }; // sube y cae: la malla sigue la curva del lift
+      yo.alasT = h.sube * 2;
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 1.2, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + h.alto, z: yo.pos.z } });
+      ctx.despues(h.sube, () => { // la picada cae sobre la posición actual de la rival: si se movió, falla
+        const d = dirA(yo, otro);
+        yo.pos.x = otro.pos.x - d.x * 0.7; yo.pos.z = otro.pos.z - d.z * 0.7; // aterriza junto a ella
+        ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z);
+        if (d.d <= h.toca) ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: h.mareo, dir: { x: d.x, z: d.z }, forzar: true });
+      });
+      return { ok: true, acierto: null };
+    } });
+  // Plumas de manglar (lilacina, PLUMAS): siembra 3 plumas en el suelo en línea hacia la rival: quien las pisa queda
+  // más lento 2,8 s (cada pluma se gasta en el primer pie que pisa). Ventaja: corta los acercamientos. Debilidad: hay
+  // que prepararlas y no hace daño. Espera 10 s (matriz). Las trampas las procesa quien arma el ctx (ctx.trampa).
+  registrar({ id: 'plumas_manglar', nombre: 'Plumas de manglar', especies: ['lilacina'], tecnica: 'plumas', coste: 30, cooldown: 10,
+    fx: 'feathers', dura: 14, paso: 2.0, n: 3, lenta: 2.8,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, d = dirA(yo, otro);
+      for (let k = 1; k <= h.n; k++) {
+        const x = yo.pos.x + d.x * h.paso * k, z = yo.pos.z + d.z * h.paso * k;
+        if (ctx.trampa) ctx.trampa(x, z, h.dura, yo);
+        ctx.fx('feathers', x, yo.pos.y + 0.4, z);
+      }
+      ctx.sonar('unlock');
+      ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z } });
+      return { ok: true };
+    } });
+  // Vuelo de niebla (mercenarius, ALAS): vuelo rasante muy rápido que ATRAVIESA a la rival: al pasar junto a ella le
+  // quita 1 pluma con empuje leve. Si falla el roce, queda detrás y cansada (mareo breve a sí misma). Ventaja: entra
+  // y sale y siempre quita 1 pluma al pasar. Debilidad: la línea es recta y fallar cuesta. Espera 10 s (matriz).
+  registrar({ id: 'vuelo_niebla', nombre: 'Vuelo de niebla', especies: ['mercenarius'], tecnica: 'alas', coste: 30, cooldown: 10,
+    fx: 'feathers', vel: 26, dura: 0.65, toca: 1.5, empuje: 6, mareo: 0.5, cansancio: 0.7,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, d = mira(yo, otro);
+      yo.kb = yo.kb || { x: 0, z: 0, t: 0 }; yo.kb.x = d.x * h.vel; yo.kb.z = d.z * h.vel; yo.kb.t = h.dura;
+      yo.alasT = h.dura;
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: d.x, y: 0, z: d.z } });
+      let rozo = false;
+      for (let k = 1; k <= 4; k++) ctx.despues(0.13 * k, () => { // el roce se comprueba en cada punto del vuelo
+        if (rozo || dist(yo, otro) > h.toca) return;
+        rozo = true;
+        ctx.golpear(otro, { plumas: 1, empuje: h.empuje, mareo: h.mareo, dir: dirA(yo, otro) });
+      });
+      ctx.despues(h.dura + 0.05, () => { if (!rozo) yo.mareo = Math.max(yo.mareo, h.cansancio); }); // falla: detrás y cansada
+      return { ok: true, acierto: null };
+    } });
+  // Vuelta de pino (pretrei, ALAS): vuelta en el aire hacia atrás (~3,5 m): esquiva por distancia (sin
+  // invulnerabilidad) y queda de frente mirando a la rival. Ventaja: corta cualquier ataque que llegue por delante y
+  // deja la posición para contraatacar. Debilidad: no hace daño y cuesta poco menos que nada de espacio. Espera 7 s.
+  registrar({ id: 'vuelta_pino', nombre: 'Vuelta de pino', especies: ['pretrei'], tecnica: 'alas', coste: 30, cooldown: 7,
+    fx: 'feathers', vel: 14, t: 0.28, alto: 1.4,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, d = dirA(yo, otro);
+      yo.kb = yo.kb || { x: 0, z: 0, t: 0 }; yo.kb.x = -d.x * h.vel; yo.kb.z = -d.z * h.vel; yo.kb.t = h.t; // la vuelta, hacia atrás
+      yo.lift = { dura: h.t * 2, t: 0, alto: h.alto };
+      yo.alasT = h.t * 2;
+      if (ctx.mirar) ctx.mirar(); // queda mirando a la rival, lista para el contraataque
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 1.1, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 1.0, z: yo.pos.z } });
+      return { ok: true, acierto: null };
+    } });
 
   // ---------- Luchadores ----------
   function luchador(o) {
@@ -536,6 +608,7 @@ window.AVV18Habilidades = function (G) {
     f.picoT = Math.max(0, (f.picoT || 0) - dt); f.marcada = Math.max(0, (f.marcada || 0) - dt); f.alasT = Math.max(0, (f.alasT || 0) - dt);
     f.deslumbrada = Math.max(0, (f.deslumbrada || 0) - dt); f.falla = Math.max(0, (f.falla || 0) - dt); f.lenta = Math.max(0, (f.lenta || 0) - dt);
     f.grande = Math.max(0, (f.grande || 0) - dt); if (!(f.lenta > 0)) f.lentaK = 0; // Ojo de manglar: el frenado y el tamaño duran lo mismo
+    f.pesada = Math.max(0, (f.pesada || 0) - dt); // Plumas de manglar: pisar una pluma va más lento
     if (!f.picoT && f.cara === 'fight') f.cara = null;
   }
   G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, recibir, paso, dist, dirA, mira, ver };

@@ -168,7 +168,7 @@ window.AVV18Combate = function (G) {
     (S.profile && ((S.profile.look && S.profile.look.species) || S.profile.species)) || 'vittata';
   const especieRival = sp => H.familia(sp) === 'montaneras' ? 'ventralis' : 'arausiaca';
   const nuevasStats = () => ({ movida: 0, ataques: 0, esquivas: 0, poderes: 0, aciertosIA: 0, bloqueos: 0, interrupciones: 0, ondas: 0, escudos: 0, dispersiones: 0, poderesEv: 0, reacciones: 0, intJ: 0, desvios: 0 });
-  const C = { fase: 'nada', t: 0, cuenta: 0, j: null, r: null, balas: [], timers: [], resultado: null, ch: null, listo: null, stats: nuevasStats() };
+  const C = { fase: 'nada', t: 0, cuenta: 0, j: null, r: null, balas: [], timers: [], trampas: [], resultado: null, ch: null, listo: null, stats: nuevasStats() };
   // Recompensa de la primera victoria: materiales del inventario del juego (S.inv), los mismos del cap. 1
   const PREMIO = { madera: 2, piedra: 1 };
   const rivalPos = { x: sitio.x + 4, y: sitio.y, z: sitio.z };
@@ -319,6 +319,8 @@ window.AVV18Combate = function (G) {
       despues: (s, fn) => C.timers.push({ t: s, fn }),
       onda, escudo,
       desviar: (o, dir, alc, cono) => desviar(yo, o, dir, alc, cono), apoyo,
+      trampa: (x, z, t, de) => C.trampas.push({ x, z, t, de: de || yo }), // Plumas de manglar
+      mirar: () => { const d = H.dirA(yo, otro); if (yo.mira) { const f = yo.mira(); if (f) { f.x = d.x; f.z = d.z; } } }, // Vuelta de pino
       poder: ev => { C.stats.poderesEv++; try { G.emit('v18poder', ev); } catch (e) { /* sin oyentes */ } },
       fx, sonar
     };
@@ -534,7 +536,7 @@ window.AVV18Combate = function (G) {
     o = o || {};
     crearRival();
     semilla = o.semilla || 7; espForzada = o.especie || null;
-    quitarBalas(); if (C.j && C.j.wob && pl3d && pl3d.root) { pl3d.root.rotation.z -= C.j.wob; C.j.wob = 0; }
+    quitarBalas(); C.trampas.length = 0; if (C.j && C.j.wob && pl3d && pl3d.root) { pl3d.root.rotation.z -= C.j.wob; C.j.wob = 0; }
     C.j = nuevoJugador(o); const ch = C.ch; C.r = nuevoRival(); C.ch = ch; C.tLucha = 0;
     if (C.ch && C.chEsp !== C.r.especie) { try { C.ch.applyLook({ species: C.r.especie, accessories: { eyes: { id: 'gafas', color: '#7fd3ff' } } }); C.chEsp = C.r.especie; } catch (e) { /* piel */ } }
     C.timers.length = 0; C.resultado = null; C.premio = false;
@@ -619,8 +621,9 @@ window.AVV18Combate = function (G) {
     if (r.kb.t > 0) { r.kb.t -= dt; vx += r.kb.x; vz += r.kb.z; r.kb.x *= 0.88; r.kb.z *= 0.88; }
     if (r.mov.t > 0) { r.mov.t -= dt; vx += r.mov.x; vz += r.mov.z; }
     else if (r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0)) {
-      if (d.d > 2.0) { vx += d.x * 4.2; vz += d.z * 4.2; } // se acerca
-      else { vx += -d.z * r.lado * 1.6; vz += d.x * r.lado * 1.6; } // rodea
+      const velK = r.pesada > 0 ? 0.45 : 1; // Plumas de manglar: pisar una pluma la deja más lenta
+      if (d.d > 2.0) { vx += d.x * 4.2 * velK; vz += d.z * 4.2 * velK; } // se acerca
+      else { vx += -d.z * r.lado * 1.6 * velK; vz += d.x * r.lado * 1.6 * velK; } // rodea
     }
     const x0 = r.pos.x, z0 = r.pos.z;
     r.pos.x += vx * dt; r.pos.z += vz * dt;
@@ -709,6 +712,23 @@ window.AVV18Combate = function (G) {
     emitir({ tipo: 'hit', de: quien.id, a: f.id, valor: 0, devuelta: como });
     return true;
   }
+  // Plumas de manglar: las plumas sembradas en el suelo esperan un pie (14 s); el primero que pisa (menos quien las
+  // plantó) queda más lento 2,8 s y la pluma se gasta. Sin azar(): no cambia las decisiones de la IA en las pruebas.
+  function pasoTrampas(dt) {
+    for (let i = C.trampas.length - 1; i >= 0; i--) {
+      const tr = C.trampas[i];
+      tr.t -= dt;
+      if (tr.t <= 0) { C.trampas.splice(i, 1); continue; }
+      for (const f of [C.j, C.r]) {
+        if (!f || f === tr.de || f.pesada > 0) continue; // una pluma basta; no se reaplica por cuadro
+        if (Math.hypot(f.pos.x - tr.x, f.pos.z - tr.z) > 0.95) continue;
+        f.pesada = (H.get('plumas_manglar') || {}).lenta || 2.8;
+        fx('feathers', tr.x, f.pos.y + 0.5, tr.z); sonar('ring', 2);
+        C.trampas.splice(i, 1);
+        break;
+      }
+    }
+  }
   // Los estados de los poderes de coste M bajan con el tiempo de juego; mientras duran, un brillo de los efectos que ya
   // existen (dorado sobre la rival vista, hojas, plumas). Sin azar(): no cambia las decisiones de la IA en las pruebas.
   function pasoNuevos(f, dt) {
@@ -735,7 +755,7 @@ window.AVV18Combate = function (G) {
     }
     if (C.fase === 'lucha') {
       C.tLucha = (C.tLucha || 0) + dt;
-      H.paso(C.j, dt); H.paso(C.r, dt); pasoNuevos(C.j, dt); pasoNuevos(C.r, dt);
+      H.paso(C.j, dt); H.paso(C.r, dt); pasoNuevos(C.j, dt); pasoNuevos(C.r, dt); pasoTrampas(dt);
       for (let i = C.timers.length - 1; i >= 0; i--) { const t = C.timers[i]; t.t -= dt; if (t.t <= 0) { C.timers.splice(i, 1); t.fn(); if (C.fase !== 'lucha') break; } }
       if (C.fase === 'lucha') pasoIA(dt);
       if (C.fase === 'lucha') pasoBalas(dt);

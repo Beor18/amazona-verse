@@ -26,6 +26,11 @@
      descubrir en el Álbum → cotorra de La Española (ventralis) · Eco de la Cordillera (PICO)
      descubrir en el Álbum → loro de lomo rojo (festiva) · A ras del agua (ALAS)
      descubrir en el Álbum → loro real amazónico (ochrocephala) · Canto real (PICO)
+   Cuatro más (KIMI-159, provisional igual: Álbum del Diario; las últimas de coste M sin dueño):
+     descubrir en el Álbum → loro imperial (imperialis) · Columna de nube (ALAS)
+     descubrir en el Álbum → loro de lores rojas (lilacina) · Plumas de manglar (PLUMAS)
+     descubrir en el Álbum → loro mercenario (mercenarius) · Vuelo de niebla (ALAS)
+     descubrir en el Álbum → loro de anteojos rojos (pretrei) · Vuelta de pino (ALAS)
    Tres más (KIMI-158, coste M, provisional igual: Álbum del Diario):
      descubrir en el Álbum → loro de cachetes amarillos (autumnalis) · Remolino (ALAS)
      descubrir en el Álbum → loro alisero (tucumana) · Plumas de aliso (PLUMAS)
@@ -69,7 +74,7 @@ window.AVV18Nuevas = function (G) {
       txt: '¡Un loro de Kawall te vio recoger todas las piedras y fibras y quiere volar contigo! Su poder: Ojo de selva.' }
   ];
   const TXT = { elige: 'Elígela en Pausa → Mis cotorras.', eligeM: 'Elígelo en Pausa → Mis cotorras.' }; // m: el aviso habla de «un loro»
-  // KIMI-149/148/156/158 (provisional, hasta que Kelvin decida el hito): estas 12 llegan al descubrir su tarjeta en el Álbum del Diario.
+  // KIMI-149/148/156/158/159 (provisional, hasta que Kelvin decida el hito): estas 16 llegan al descubrir su tarjeta en el Álbum del Diario.
   const ALBUM = [
     { id: 'brasiliensis', txt: '¡Descubriste al papagayo de cara roja en el Álbum! Su poder: Ojo de manglar.' },
     { id: 'auropalliata', txt: '¡Descubriste al loro de nuca amarilla en el Álbum! Su poder: Voz de volcán.' },
@@ -82,7 +87,11 @@ window.AVV18Nuevas = function (G) {
     { id: 'ochrocephala', txt: '¡Descubriste al loro real amazónico en el Álbum! Su poder: Canto real.' },
     { id: 'autumnalis', txt: '¡Descubriste al loro de cachetes amarillos en el Álbum! Su poder: Remolino.' },
     { id: 'tucumana', txt: '¡Descubriste al loro alisero en el Álbum! Su poder: Plumas de aliso.' },
-    { id: 'vinacea', txt: '¡Descubriste al loro vináceo en el Álbum! Su poder: Semilla de piña.' }
+    { id: 'vinacea', txt: '¡Descubriste al loro vináceo en el Álbum! Su poder: Semilla de piña.' },
+    { id: 'imperialis', txt: '¡Descubriste al loro imperial en el Álbum! Su poder: Columna de nube.' },
+    { id: 'lilacina', txt: '¡Descubriste al loro de lores rojas en el Álbum! Su poder: Plumas de manglar.' },
+    { id: 'mercenarius', txt: '¡Descubriste al loro mercenario en el Álbum! Su poder: Vuelo de niebla.' },
+    { id: 'pretrei', txt: '¡Descubriste al loro de anteojos rojos en el Álbum! Su poder: Vuelta de pino.' }
   ];
   // La tarjeta acaba de abrirse (evento del Álbum): desbloqueo inmediato con aviso
   function albumLlega(id, avisar) {
@@ -214,6 +223,19 @@ window.AVV18Nuevas = function (G) {
       revisarAlbum();
       check('revisarAlbum no desbloquea las tarjetas de tanda D que aún no están abiertas en el Álbum',
         ['tucumana', 'vinacea'].every(id => rango(V.estado(id)) < 1));
+      // KIMI-159: la tanda E (#8, #22, #23, #34, las últimas de coste M) se consigue igual (Álbum del Diario, provisional)
+      const ALBUME = ['imperialis', 'lilacina', 'mercenarius', 'pretrei'];
+      check('Las de tanda E (Álbum, coste M) empiezan sin descubrir', ALBUME.every(id => rango(V.estado(id)) < rango('descubierta')));
+      G.emit('album', { id: 'imperialis', fuente: 'test' });
+      check('Descubrir su tarjeta en el Álbum deja elegible al loro imperial (Columna de nube), con aviso',
+        rango(V.estado('imperialis')) >= rango('seleccionable') && toasts.some(t => /loro imperial/.test(t) && /Columna de nube/.test(t) && /Mis cotorras/.test(t)));
+      G.emit('album', { id: 'imperialis', fuente: 'test' });
+      check('El mismo descubrimiento no avisa dos veces (tanda E)', toasts.filter(t => /loro imperial/.test(t)).length === 1);
+      check('Las 4 de tanda E tienen su poder propio', H.poderDe('imperialis') === 'columna_nube' && H.poderDe('lilacina') === 'plumas_manglar' &&
+        H.poderDe('mercenarius') === 'vuelo_niebla' && H.poderDe('pretrei') === 'vuelta_pino', ALBUME.map(H.poderDe).join(','));
+      revisarAlbum();
+      check('revisarAlbum no desbloquea las tarjetas de tanda E que aún no están abiertas en el Álbum',
+        ['lilacina', 'mercenarius', 'pretrei'].every(id => rango(V.estado(id)) < 1));
 
       // ---- Las 4 de coste M: cada una con su hito, desde una partida nueva ----
       V.borrar(); V.recargar(); toasts.length = 0;
@@ -575,6 +597,75 @@ window.AVV18Nuevas = function (G) {
         corre(1.5);
         check('...y si la grande acierta a la rival, le quita 1 pluma (y no se abre)', rpi2.ok && C.r.plumas === ppi - 1 && C.balas.length === 0,
           'plumas ' + ppi + '→' + C.r.plumas + ', balas ' + C.balas.length);
+        B.salir();
+
+        // ---- Los 4 de tanda E (KIMI-159, Álbum, coste M) en el duelo, a paso fijo ----
+        // Columna de nube: sube 0,7 s y cae en picada donde está la rival: el mayor mareo (1,4 s), sin plumas
+        B.iniciar({ sinCuenta: true, especie: 'imperialis' }); quieta(6); listo(); S.facing = { x: 1, z: 0 }; C.r.mareo = 5; // quieta de verdad mientras mide
+        const pcol = C.r.plumas;
+        const rcol = B.usar(C.j, 'columna_nube');
+        corre(0.85);
+        const dCol = Math.hypot(C.r.pos.x - S.pos.x, C.r.pos.z - S.pos.z);
+        check('Columna de nube: cae en picada junto a la rival y la marea más (1,4 s) sin quitar plumas',
+          rcol.ok && C.r.mareo > 1.15 && C.r.plumas === pcol && dCol < 1.5,
+          'mareo ' + C.r.mareo.toFixed(2) + ', plumas ' + pcol + '→' + C.r.plumas + ', cae a ' + dCol.toFixed(2) + ' m');
+        C.j.cd = {}; C.j.energia = 100; C.j.mareo = 0; C.r.mareo = 0; C.r.inv = 0; quieta(6); C.r.mareo = 5; C.r.mov.x = 0; C.r.mov.z = 8; C.r.mov.t = 0.6; C.timers.length = 0;
+        const pcol2 = C.r.plumas, mareoAntes = C.r.mareo;
+        const rcol2 = B.usar(C.j, 'columna_nube');
+        for (let k = 0; k < 36; k++) B.paso(1 / 30);
+        check('...pero es lenta en subir: si la rival se aparta mientras sube, la picada no la alcanza',
+          rcol2.ok && C.r.plumas === pcol2 && C.r.mareo < mareoAntes - 0.5,
+          'plumas ' + pcol2 + '→' + C.r.plumas + ', mareo ' + mareoAntes.toFixed(1) + '→' + C.r.mareo.toFixed(1));
+        B.salir();
+        // Plumas de manglar: 3 plumas en el suelo; la que pisa una queda lenta (la pluma se gasta)
+        B.iniciar({ sinCuenta: true, especie: 'lilacina' }); quieta(6); listo(); S.facing = { x: 1, z: 0 };
+        const rpm = B.usar(C.j, 'plumas_manglar');
+        check('Plumas de manglar: siembra 3 plumas en el suelo', rpm.ok && C.trampas.length === 3);
+        C.r.pos.x = S.pos.x + 8; C.r.pos.z = S.pos.z; C.r.pos.y = G.terreno.height(C.r.pos.x, C.r.pos.z); C.r.pensar = 99; C.r.mov.t = 0;
+        C.trampas.push({ x: C.r.pos.x - 0.5, z: C.r.pos.z, t: 10, de: C.j }); // una pluma justo delante de ella
+        B.paso(1 / 30);
+        const peso = C.r.pesada, quedan = C.trampas.length;
+        C.r.pesada = 0; C.trampas.length = 0; const cxN = C.r.pos.x;
+        for (let k = 0; k < 45; k++) B.paso(1 / 30);
+        const avanzaNormal = cxN - C.r.pos.x;
+        C.r.pos.x = cxN; C.r.pos.y = G.terreno.height(C.r.pos.x, C.r.pos.z); C.r.pesada = 2.8;
+        for (let k = 0; k < 45; k++) B.paso(1 / 30);
+        const avanzaLenta = cxN - C.r.pos.x;
+        check('...la rival que pisa una queda lenta ~2,8 s (se gasta la pluma) y anda menos de la mitad',
+          peso > 2.5 && quedan === 3 && avanzaLenta > 0.5 && avanzaLenta < 0.5 * avanzaNormal,
+          'pesada ' + peso.toFixed(1) + ' s, pluma gastada (' + quedan + ' quedan), paso ' + avanzaLenta.toFixed(2) + ' m vs ' + avanzaNormal.toFixed(2) + ' m');
+        B.salir();
+        // Vuelo de niebla: atraviesa a la rival y al pasar le quita 1 pluma; si falla, queda detrás y cansada
+        B.iniciar({ sinCuenta: true, especie: 'mercenarius' }); quieta(6); listo(); S.facing = { x: 1, z: 0 }; C.r.mareo = 5;
+        C.j.kb = C.j.kb || { x: 0, z: 0, t: 0 }; C.j.kb.t = 0; C.j.kb.x = C.j.kb.z = 0;
+        const pvn = C.r.plumas, x0n = S.pos.x;
+        const rvn = B.usar(C.j, 'vuelo_niebla');
+        for (let k = 0; k < 25; k++) B.paso(1 / 30);
+        const cruceN = S.pos.x - x0n;
+        check('Vuelo de niebla: atraviesa a la rival (cruza ~6,5 m) y, al pasar junto a ella, le quita 1 pluma',
+          rvn.ok && cruceN > 5 && C.r.plumas === pvn - 1,
+          'cruce ' + cruceN.toFixed(1) + ' m, plumas ' + pvn + '→' + C.r.plumas);
+        C.j.cd = {}; C.j.energia = 100; C.j.mareo = 0; C.r.mareo = 0; C.r.inv = 0; quieta(6); C.r.mareo = 5; C.r.pos.z += 5; C.timers.length = 0;
+        C.j.kb.t = 0; C.j.kb.x = C.j.kb.z = 0;
+        const pvn2 = C.r.plumas;
+        const rvn2 = B.usar(C.j, 'vuelo_niebla');
+        let cansa = 0;
+        for (let k = 0; k < 25; k++) { B.paso(1 / 30); cansa = C.j.mareo; }
+        check('...y si falla el roce (rival fuera de la línea), no quita plumas y queda cansada',
+          rvn2.ok && C.r.plumas === pvn2 && cansa > 0.3,
+          'plumas ' + pvn2 + '→' + C.r.plumas + ', mareo propio ' + cansa.toFixed(2));
+        S.facing = { x: 1, z: 0 }; B.salir();
+        // Vuelta de pino: salta hacia atrás ~3,5 m (esquiva por distancia, sin invulnerabilidad) y queda mirando a la rival
+        B.iniciar({ sinCuenta: true, especie: 'pretrei' }); quieta(2.6); listo(); S.facing = { x: 1, z: 0 }; C.r.mareo = 5;
+        C.j.kb = C.j.kb || { x: 0, z: 0, t: 0 }; C.j.kb.t = 0; C.j.kb.x = C.j.kb.z = 0;
+        const d0p = Math.hypot(C.r.pos.x - S.pos.x, C.r.pos.z - S.pos.z);
+        const rvp = B.usar(C.j, 'vuelta_pino');
+        for (let k = 0; k < 14; k++) B.paso(1 / 30);
+        const d1p = Math.hypot(C.r.pos.x - S.pos.x, C.r.pos.z - S.pos.z);
+        const miraRival = (S.facing.x * (C.r.pos.x - S.pos.x) + S.facing.z * (C.r.pos.z - S.pos.z)) / Math.max(0.01, d1p);
+        check('Vuelta de pino: salta hacia atrás (>2,4 m: fuera del golpe de ala) y queda mirando a la rival',
+          rvp.ok && d1p > d0p + 2.4 && d1p > 4.5 && miraRival > 0.98,
+          'dist ' + d0p.toFixed(1) + '→' + d1p.toFixed(1) + ' m, mira ' + miraRival.toFixed(3));
         B.salir();
       } else check('El duelo está cargado', false);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }
