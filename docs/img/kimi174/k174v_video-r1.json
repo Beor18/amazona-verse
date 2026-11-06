@@ -1,0 +1,9 @@
+{
+ "etiqueta": "video-r1",
+ "tarea": "KIMI-174(c)",
+ "video": "k174_video-r1.mp4",
+ "segs": 32,
+ "pantalla": "1280x720 GPU real, MediaRecorder 1,6 Mbps",
+ "mime": "video/mp4;codecs=avc1.42E01E",
+ "fallo": "jugar: ERR fase tras iniciar: apuntar"
+}

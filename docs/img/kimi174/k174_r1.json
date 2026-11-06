@@ -1,0 +1,10 @@
+{
+ "etiqueta": "r1",
+ "tarea": "KIMI-174(b)",
+ "pantalla": "fisica sincrona (CPU), sin GPU dependence",
+ "partidas": 30,
+ "sigmaDeg": 3,
+ "fuerzaJitter": 0.1,
+ "bot": "ruta zigzag + aim gaussiano + fuerza x(1±jitter), 12% pifia corta, sin grito, tope propio 12 tiros",
+ "fallo": "\"[object Object]\" is not valid JSON"
+}

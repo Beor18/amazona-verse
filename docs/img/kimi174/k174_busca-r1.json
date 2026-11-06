@@ -1,0 +1,110 @@
+{
+ "etiqueta": "busca-r1",
+ "tarea": "KIMI-174(b)",
+ "pantalla": "fisica sincrona (CPU), sin GPU dependence",
+ "partidas": 30,
+ "sigmaDeg": 3,
+ "fuerzaJitter": 0.1,
+ "pifias": 0.12,
+ "ruta": "zigzag",
+ "bot": "ruta zigzag + aim gaussiano + fuerza x(1±jitter), pifia corta x0.12, sin grito, tope propio 12 tiros",
+ "ok": true,
+ "par": 3,
+ "minTirosHallado": 2,
+ "oroPosible": true,
+ "soluciones": [
+  {
+   "tiros": 2,
+   "seq": [
+    {
+     "f": 1,
+     "off": -44
+    },
+    {
+     "f": 0.89,
+     "off": -5
+    }
+   ],
+   "desde": {
+    "u": 1.6,
+    "v": -0.8
+   }
+  },
+  {
+   "tiros": 2,
+   "seq": [
+    {
+     "f": 1,
+     "off": -44
+    },
+    {
+     "f": 1,
+     "off": -5
+    }
+   ],
+   "desde": {
+    "u": 1.6,
+    "v": -0.8
+   }
+  },
+  {
+   "tiros": 2,
+   "seq": [
+    {
+     "f": 1,
+     "off": -44
+    },
+    {
+     "f": 0.12,
+     "off": -2
+    }
+   ],
+   "desde": {
+    "u": 1.6,
+    "v": -0.8
+   }
+  },
+  {
+   "tiros": 2,
+   "seq": [
+    {
+     "f": 1,
+     "off": -44
+    },
+    {
+     "f": 0.23,
+     "off": -2
+    }
+   ],
+   "desde": {
+    "u": 1.6,
+    "v": -0.8
+   }
+  },
+  {
+   "tiros": 2,
+   "seq": [
+    {
+     "f": 1,
+     "off": -44
+    },
+    {
+     "f": 0.34,
+     "off": -2
+    }
+   ],
+   "desde": {
+    "u": 1.6,
+    "v": -0.8
+   }
+  }
+ ],
+ "ms": 945,
+ "sitio": {
+  "x": 178,
+  "z": 205,
+  "a": 0,
+  "troncos": 2
+ },
+ "erroresConsola": []
+}

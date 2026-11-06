@@ -1,0 +1,7 @@
+[21:50:00] lanzando Chrome y entrando (v18=1)...
+[21:50:21] prep ok (ok golf=true)
+[21:50:21] simulando 30 partidas (sigma=0.6°, jitter=0.03)...
+[21:50:22] resumen: {"completas":0,"sinCompletar":30,"oro":0,"plata":0,"bronce":0,"oroPct":0,"golpesMed":12,"golpesMedCompletas":0,"fuerasTot":0,"fuerasMed":0,"rebotesMed":12,"sinProgresoMed":0,"minDMed":11.82,"rolloLargo":0,"histogramaGolpes":{"12":30}}
+[21:50:22] anomalías: []
+[21:50:22] errores de consola: []
+[21:50:23] evidencia: C:\Users\kelvi\amazonaversegame\docs\img\kimi174\k174_pro-r1.json
