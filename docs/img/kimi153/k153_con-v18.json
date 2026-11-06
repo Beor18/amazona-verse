@@ -1,0 +1,65 @@
+{
+  "maquina": {
+    "ancho": 1280,
+    "alto": 800,
+    "dpr": 1,
+    "cpu": 1,
+    "gpu": "real (ANGLE/D3D11)",
+    "banderaV18": true
+  },
+  "pruebas": {
+    "ep2": {
+      "passed": 82,
+      "total": 83,
+      "rojos": [
+        "ES · Al empezar habla Vittata (escena de inicio)"
+      ],
+      "erroresConsola": [],
+      "segundos": 84.1
+    },
+    "ep3": {
+      "passed": 42,
+      "total": 43,
+      "rojos": [
+        "EN · En inglés, ningún texto en español en pantalla en todo el recorrido :: Source: RAE, Diccionario de la lengua española (Spanish dictionary), “canoa”, sense 1a"
+      ],
+      "erroresConsola": [],
+      "segundos": 70.3
+    },
+    "ep4": {
+      "passed": 43,
+      "total": 43,
+      "rojos": [],
+      "erroresConsola": [],
+      "segundos": 46.3
+    },
+    "ep5": {
+      "passed": 41,
+      "total": 41,
+      "rojos": [],
+      "erroresConsola": [],
+      "segundos": 109.5
+    },
+    "ep6": {
+      "passed": 43,
+      "total": 43,
+      "rojos": [],
+      "erroresConsola": [],
+      "segundos": 106.1
+    },
+    "ep4guardado": {
+      "passed": 61,
+      "total": 61,
+      "rojos": [],
+      "erroresConsola": [],
+      "segundos": 98.8
+    },
+    "zonas56": {
+      "passed": 19,
+      "total": 19,
+      "rojos": [],
+      "erroresConsola": [],
+      "segundos": 21.4
+    }
+  }
+}

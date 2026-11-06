@@ -1,0 +1,4 @@
+· servidor http://127.0.0.1:61578 · Chrome DevTools 61579 · 1280×800 dpr 1 · CPU ×1 · GPU real · bandera v18=1
+· ep2: nueva página (http://127.0.0.1:61578/index.html?v18=1)…
+  · ep2: 83/83 · 66.7 s
+· informe en tools\build\salida\kimi2-k153-ep2v18\k153.json

@@ -1,0 +1,19 @@
+{
+  "maquina": {
+    "ancho": 1280,
+    "alto": 800,
+    "dpr": 1,
+    "cpu": 1,
+    "gpu": "real (ANGLE/D3D11)",
+    "banderaV18": true
+  },
+  "pruebas": {
+    "ep2": {
+      "passed": 83,
+      "total": 83,
+      "rojos": [],
+      "erroresConsola": [],
+      "segundos": 66.7
+    }
+  }
+}
