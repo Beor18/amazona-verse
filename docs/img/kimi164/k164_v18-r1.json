@@ -1,0 +1,202 @@
+{
+ "etiqueta": "k164-r1",
+ "bandera": "v18=1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "pruebas": {
+  "ciclo": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 79.4,
+     "peorMs": 21,
+     "n": 227,
+     "callsMed": 55,
+     "trisMed": 229215,
+     "heap": 126
+    },
+    "duracionMs": 2970,
+    "test": {
+     "passed": 22,
+     "total": 23,
+     "fallos": [
+      "4 · El duelo usa el poder de la especie elegida (Escudo de plumas); la rival grita :: arausiaca / escudo_plumas vs ventralis / eco_cordillera"
+     ]
+    },
+    "contexto": {
+     "calls": 65,
+     "tris": 219528,
+     "geo": 127,
+     "tex": 131,
+     "prog": 57,
+     "heap": 127
+    }
+   }
+  },
+  "nuevas": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 65.8,
+     "peorMs": 23,
+     "n": 191,
+     "callsMed": 55,
+     "trisMed": 229218,
+     "heap": 200
+    },
+    "duracionMs": 1377,
+    "test": {
+     "passed": 120,
+     "total": 120,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 57,
+     "tris": 257497,
+     "geo": 77,
+     "tex": 126,
+     "prog": 46,
+     "heap": 194
+    }
+   }
+  },
+  "evolucion": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 64.5,
+     "peorMs": 27,
+     "n": 184,
+     "callsMed": 55,
+     "trisMed": 229219,
+     "heap": 129
+    },
+    "duracionMs": 4717,
+    "test": {
+     "passed": 45,
+     "total": 45,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 59,
+     "tris": 291633,
+     "geo": 77,
+     "tex": 132,
+     "prog": 45,
+     "heap": 121
+    }
+   }
+  },
+  "puerto": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 44.8,
+     "peorMs": 40,
+     "n": 127,
+     "callsMed": 55,
+     "trisMed": 229216,
+     "heap": 123
+    },
+    "duracionMs": 10316,
+    "test": {
+     "passed": 42,
+     "total": 42,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 65,
+     "tris": 252186,
+     "geo": 314,
+     "tex": 132,
+     "prog": 72,
+     "heap": 160
+    }
+   }
+  }
+ }
+}
