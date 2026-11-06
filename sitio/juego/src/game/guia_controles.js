@@ -206,13 +206,43 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   const PM_ORDEN = ['mover', 'despegar', 'posar', 'impulso', 'truco'];
   const pmE = { hecho: {}, t: 0, volaba: false };
   let pmForzar = false;
+  // QA-181 (KIMI-142): leer aquí el layout (getClientRects) forzaba un reflow del HUD entero en cada
+  // refresco (~8 % del hilo a ×6 en Chromebook). La visibilidad de estos controles solo cambia por
+  // atributos (hidden/class/style), por hijos añadidos o borrados en #acts, por la raíz (tamaño de
+  // letra) o por el modo táctil/escritorio; se cachea y solo se re-mide cuando algo la pudo cambiar.
+  const hudVis = { sucio: true, tactil: false, blanco: {} };
+  function hudVisRevisar() {
+    let tactil = false; const blanco = {};
+    for (const n of document.querySelectorAll('#acts .btn, #stick')) {
+      const vis = !n.hidden && n.getClientRects().length > 0;
+      tactil = tactil || vis;
+      if (n.id) blanco[n.id] = { vis, w: vis ? n.getBoundingClientRect().width : 0 };
+    }
+    hudVis.tactil = tactil; hudVis.blanco = blanco; hudVis.sucio = false;
+  }
+  function hudVisSuciar() { hudVis.sucio = true; }
   function pmPuede(k) {
     if (k === 'truco') return true;
-    const tactil = [...document.querySelectorAll('#acts .btn, #stick')].some(n => !n.hidden && n.getClientRects().length);
-    if (!tactil) return true;
+    if (hudVis.sucio) hudVisRevisar();
+    if (!hudVis.tactil) return true;
     const el = document.getElementById(PM_BLANCO[k] || '');
-    return !!(el && !el.hidden && el.getClientRects().length && el.getBoundingClientRect().width >= 8);
+    if (!(el && !el.hidden)) return false;
+    const b = hudVis.blanco[el.id];
+    if (!b) return !!(el.getClientRects().length && el.getBoundingClientRect().width >= 8); // fuera del selector: a prueba de registro
+    return !!(b.vis && b.w >= 8);
   }
+  addEventListener('resize', hudVisSuciar);
+  addEventListener('orientationchange', hudVisSuciar);
+  if (mq && mq.addEventListener) mq.addEventListener('change', hudVisSuciar);
+  try {
+    const hudVisObs = new MutationObserver(hudVisSuciar);
+    const acts = document.getElementById('acts');
+    if (acts) hudVisObs.observe(acts, { subtree: true, childList: true, attributes: true, attributeFilter: ['hidden', 'class', 'style'] });
+    const stick = document.getElementById('stick');
+    if (stick) hudVisObs.observe(stick, { attributes: true, attributeFilter: ['hidden', 'class', 'style'] });
+    hudVisObs.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) document.fonts.ready.then(hudVisSuciar, () => { });
+  } catch (e) { }
   // pmPuede mira el layout (getClientRects): en móvil eso fuerza un reflow. Se recalcula como mucho cada 250 ms (o al forzar).
   const pmCache = { id: '', t: -1e9 };
   const pmPaso = (forzar) => {
@@ -252,45 +282,53 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       limpiarPmFijo();
       return;
     }
-    const otros = [...document.querySelectorAll('#acts .btn, #stick')].filter(n => n !== el && !n.hidden && n.getClientRects().length);
+    // Los rects de los vecinos no cambian durante el ajuste: se leen una sola vez (QA-181, KIMI-142:
+    // releerlos en cada vuelta del bucle forzaba hasta ~25 reflows por llamada).
+    const otros = [...document.querySelectorAll('#acts .btn, #stick')]
+      .filter(n => n !== el && !n.hidden && n.getClientRects().length)
+      .map(n => n.getBoundingClientRect());
     let borde = PM_BORDE, sombra = PM_SOMBRA, extra = 8;
-    const poner = () => {
-      const size = Math.ceil(Math.max(caja.width, caja.height) + borde * 2 + extra * 2);
-      pm.style.borderWidth = borde + 'px';
-      pm.style.setProperty('--pm-sombra', sombra + 'px');
-      pm.style.width = size + 'px'; pm.style.height = size + 'px';
-      pm.style.left = Math.round(caja.left + caja.width / 2 - size / 2) + 'px';
-      pm.style.top = Math.round(caja.top + caja.height / 2 - size / 2) + 'px';
-      pm.style.right = 'auto'; pm.style.bottom = 'auto';
+    // Rect del anillo sin leer layout: position fixed, box-sizing border-box, margen 0, así que el
+    // rect es exactamente left/top/width/height escritos por poner (mismos valores que antes).
+    const rectPm = size => {
+      const l = Math.round(caja.left + caja.width / 2 - size / 2), t = Math.round(caja.top + caja.height / 2 - size / 2);
+      return { left: l, top: t, right: l + size, bottom: t + size };
     };
-    const peor = () => {
-      const r = pm.getBoundingClientRect();
-      const inflada = { left: r.left - sombra, right: r.right + sombra, top: r.top - sombra, bottom: r.bottom + sombra };
+    const peor = size => {
+      const r = rectPm(size), inflada = { left: r.left - sombra, right: r.right + sombra, top: r.top - sombra, bottom: r.bottom + sombra };
       let m = Infinity;
-      otros.forEach(o => { const g = huecoPm(inflada, o.getBoundingClientRect()); if (g < m) m = g; });
+      for (const o of otros) { const g = huecoPm(inflada, o); if (g < m) m = g; }
       return m;
     };
-    poner();
+    const sizeDe = () => Math.ceil(Math.max(caja.width, caja.height) + borde * 2 + extra * 2);
     let guard = 0;
-    while (peor() < PM_AIRE && guard++ < 24) {
+    while (peor(sizeDe()) < PM_AIRE && guard++ < 24) {
       if (extra > 0) extra -= 2;
       else if (borde > PM_BORDE_MIN) borde -= 1;
       else if (sombra > 0) sombra -= 1;
       else break;
-      poner();
     }
+    const size = sizeDe();
+    pm.style.borderWidth = borde + 'px';
+    pm.style.setProperty('--pm-sombra', sombra + 'px');
+    pm.style.width = size + 'px'; pm.style.height = size + 'px';
+    pm.style.left = Math.round(caja.left + caja.width / 2 - size / 2) + 'px';
+    pm.style.top = Math.round(caja.top + caja.height / 2 - size / 2) + 'px';
+    pm.style.right = 'auto'; pm.style.bottom = 'auto';
   }
   let pmColocado = { id: null, t: -1e9 };
-  function pintarPm(forzar) {
+  function pintarPm(forzar, cambioHud) {
     const id = pmPaso(forzar);
     pm.hidden = !id;
     if (id) pm.dataset.paso = id;
     pm.classList.toggle('pm-atascado', !!id && pmE.t >= 20);
     const q = document.getElementById('quest');
     if (q) q.classList.toggle('pm-senala', !!id && pmE.t >= 20);
-    // colocar el anillo también mide el layout: solo al cambiar de paso o cada 500 ms (el botón no se mueve solo)
+    // colocar el anillo mide el layout: al cambiar de paso, al forzar, cuando algo pudo mover los
+    // botones (cambioHud: mutación/resize/modo captado antes de que pmPaso lo consuma) o de red de
+    // seguridad cada 2 s (p. ej. una fuente que llega tarde) — antes era cada 500 ms siempre.
     const ahora = performance.now();
-    if (id && (forzar || pmForzar || pmColocado.id !== id || ahora - pmColocado.t > 500)) { colocarPm(); pmColocado = { id, t: ahora }; }
+    if (id && (forzar || pmForzar || pmColocado.id !== id || cambioHud || ahora - pmColocado.t > 2000)) { colocarPm(); pmColocado = { id, t: ahora }; }
   }
   addEventListener('resize', () => { if (!pm.hidden) { colocarPm(); pmColocado.t = performance.now(); } });
   function pmTick(dt) {
@@ -304,11 +342,12 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if (M.flying) { pmMarcar('despegar'); pmE.volaba = true; }
     if (pmE.volaba && !M.flying && M.grounded) pmMarcar('posar');
     if ((M.dashT || 0) > 0 || (G.input.keys && G.input.keys.has('f'))) pmMarcar('impulso');
+    const cambioHud = hudVis.sucio; // pmPaso/pmPuede puede consumirlo antes de pintarPm
     const id = pmPaso();
     if (pmE.visto && id !== pmE.visto) pmE.t = 0;
     pmE.visto = id;
     if (id) pmE.t += dt || 0; else pmE.t = 0;
-    pintarPm();
+    pintarPm(false, cambioHud);
   }
   G.on('truco', () => { pmMarcar('truco'); pintarPm(true); });
 
@@ -418,6 +457,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       const acts = document.getElementById('acts'), dash = document.getElementById('b-dash');
       const disp = acts ? acts.style.display : '';
       if (acts) acts.style.display = 'grid';
+      hudVis.sucio = true; // la visibilidad se cachea (QA-181): esta prueba muta y consume en la misma tarea
       pmE.hecho = { mover: true, despegar: true, posar: true }; pmE.t = 0; pmE.volaba = true;
       M.flying = false; M.grounded = true; M.speed = 0; M.dashT = 0; st.x = st.y = 0;
       pmTick(0.05);
@@ -453,6 +493,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
           if (acts) { acts.style.gridTemplateColumns = ''; acts.style.gridTemplateRows = ''; acts.style.gap = '8px'; }
           if (jump) { if (sz0) jump.style.setProperty('--sz', sz0); else jump.style.removeProperty('--sz'); }
         }
+        hudVis.sucio = true; // tamaños cambiados: re-medir antes de colocar el anillo
         pmE.hecho = { mover: true, despegar: true, posar: true }; pmE.t = 0; pmTick(0.05);
       };
       ponerMandos('vertical');
@@ -465,6 +506,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
         h.huecos.map(x => x.id + ' ' + x.px.toFixed(1)).join(', ') + ' sombra ' + h.som);
       const fly = document.getElementById('b-fly');
       if (fly) fly.hidden = true;
+      hudVis.sucio = true;
       pmE.hecho = { mover: true, posar: true, impulso: true, truco: true }; pmE.t = 19; pmE.visto = 'despegar'; pmE.volaba = false;
       M.flying = false; M.grounded = true; M.speed = 0; M.dashT = 0; st.x = st.y = 0;
       pmTick(5);
@@ -477,6 +519,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       ok('Sin el botón de volar, despegar no sigue activo y el anillo no cae sobre Impulso', pm.dataset.paso === 'impulso' && !pm.hidden && pmE.t < 1 && huecoPm(rOff, dash.getBoundingClientRect()) < 0,
         'paso ' + pm.dataset.paso + ' t ' + pmE.t + ' left ' + Math.round(rOff.left));
       if (fly) fly.hidden = false;
+      hudVis.sucio = true;
       pmTick(0.05);
       ok('Al volver el botón de volar, despegar cuenta de nuevo sin el atasco', pm.dataset.paso === 'despegar' && pmE.t < 1 && !pm.classList.contains('pm-atascado'),
         't ' + pmE.t);
@@ -490,7 +533,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     G.quiet = guarda.quiet; st.x = guarda.sx; st.y = guarda.sy;
     tenia.forEach(k => K.add(k)); teclas0.forEach(k => { if (!tenia.includes(k)) K.delete(k); });
     const q = document.getElementById('quest'); if (q) q.classList.remove('pm-senala');
-    pmForzar = false; forzado = null; pmE.hecho = {}; pmE.t = 0; pmE.visto = ''; pintarPm();
+    pmForzar = false; forzado = null; pmE.hecho = {}; pmE.t = 0; pmE.visto = ''; hudVis.sucio = true; pintarPm();
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.primerosMinutosTest) AV.primerosMinutosTest = primerosMinutosTest; }, 0);
