@@ -149,16 +149,23 @@ window.AVV18Descubrir = function (G) {
     }
     colocar(dt);
   }
+  const giroPi = a => Math.atan2(Math.sin(a), Math.cos(a));
+  let animaPar = false, animaDt = 0, animaFresca = 1.5;
   function colocar(dt) {
     const ch = B.ch; if (!ch) return;
     const root = ch.root, vuela = !!B.vuelo;
     root.visible = true;
     root.position.set(B.pos.x, B.pos.y, B.pos.z);
-    const giro = a => Math.atan2(Math.sin(a), Math.cos(a));
-    if (!vuela) { const s = S(); if (s && s.pos && distXZ(s.pos, B.pos) < 40) B.yaw = Math.atan2(s.pos.x - B.pos.x, s.pos.z - B.pos.z); } // mira a Vittata
-    root.rotation.y += giro(B.yaw - root.rotation.y) * Math.min(1, (dt || 1) * 6);
+    const s = S(), dJ = s && s.pos ? distXZ(s.pos, B.pos) : 0;
+    if (!vuela && s && s.pos && dJ < 40) B.yaw = Math.atan2(s.pos.x - B.pos.x, s.pos.z - B.pos.z); // mira a Vittata
+    root.rotation.y += giroPi(B.yaw - root.rotation.y) * Math.min(1, (dt || 1) * 6);
     root.rotation.x += ((vuela ? 0.5 : 0) - root.rotation.x) * Math.min(1, (dt || 1) * 5);
     if (B.bocaT > 0) B.bocaT -= dt;
+    // CPU (móvil): posada y quieta (1,5 s después de volar, cantar o el reto), de lejos (> 60 m, el R_VIVO de npc.js) su
+    // esqueleto no se anima y a media distancia (> 30 m) se anima un cuadro de cada dos con el dt sumado; si no, siempre.
+    if (vuela || R.activo || B.bocaT > 0) animaFresca = 1.5; else if (dt) animaFresca -= dt;
+    if (dt && animaFresca <= 0 && (dJ > 60 || (dJ > 30 && (animaPar = !animaPar)))) { animaDt = dJ > 60 ? 0 : animaDt + dt; return; }
+    dt += animaDt; animaDt = 0;
     Object.assign(ch, { speed: vuela ? 9 : 0, gait: 0, airborne: vuela, flying: vuela, legsDown: vuela ? 0 : 1, swimming: false, diving: false,
       wingMode: vuela ? 'fly' : 'idle', expression: 'happy', mouth: B.bocaT > 0 ? 0.5 + 0.5 * Math.sin(B.bocaT * 30) : null, lookAt: null,
       emote: null, posado: vuela ? '' : 'fino', agachada: 0, groundY: B.pos.y, groundAt: null });
