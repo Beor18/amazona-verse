@@ -1,6 +1,6 @@
 /* Amazona Verse · V18.3 · personajes históricos del mundo abierto (datos de src/game/v18/npc.js; docs/equipo/V18_3_DISENO.md §1).
    Solo datos: el sistema (npc.js) no lleva ningún personaje dentro. La fase 5 (Tuerca, Chispa, Maestro Moon, Piloto Cotorra)
-   añade filas aquí sin tocar código.
+   añade filas aquí sin tocar código (Chispa: src/game/v18/chispa.js).
    Fila = { id, nombre {es,en}, rol, modelo (ruta literal del .glb, para que la build lo conserve), script (_glb.js), b64 (clave en
    window.AV_PERSONAJES_B64), respaldo (id de otra fila cuyo modelo se usa mientras falte el propio), provisional, alto (escala sobre
    la del .glb), retrato (ruta) o insignia ({ fondo, icono }) si aún no hay retrato, anim { idle, hablar, trabajar, senalar }
@@ -55,6 +55,22 @@ window.AV_NPC_V18 = [
     porEstado: {
       supervisor: { apariencia: 'supervisor', anim: 'hablar', dialogo: ['¿Las cotorras? Se mudan un ratito y ya. ¡Esta obra no se para!'] },
       reparador: { apariencia: 'reparador', anim: 'trabajar', dialogo: ['Construir rápido no es construir bien… Esta vez miré primero quién vive aquí.'] }
+    }
+  },
+  {
+    id: 'chispa', nombre: { es: 'Chispa', en: 'Chispa' }, rol: 'rival',
+    // BM167 (Mac, 6-nov): modelo propio (shiba piloto, 1,25 m, colores lisos, sin marcas); acciones del .glb: Idle, Correr y Celebrar
+    // (no trae «Hablar»: habla celebrando). Rival amistoso y cómico de la carrera de src/game/v18/chispa.js. Retrato: la captura de
+    // frente de BM167 (docs/img/bm167). Si Kelvin no da el visto bueno al .glb, basta cambiar `modelo/script/b64` por
+    // `respaldo: 'ingeniera', provisional: true` (sin tocar código).
+    modelo: 'assets/models/personajes/chispa.glb', script: 'assets/models/personajes/chispa_glb.js', b64: 'chispa',
+    alto: 1, retrato: 'assets/retratos/v18/chispa.jpg',
+    anim: { idle: 'Idle', hablar: 'Celebrar', correr: 'Correr', celebrar: 'Celebrar', senalar: 'Celebrar' },
+    apariencias: { piloto: { mallas: {}, colores: {}, accesorios: [] } },
+    estados: ['rival'],
+    transiciones: {},
+    porEstado: {
+      rival: { apariencia: 'piloto', anim: 'idle', dialogo: ['¡Hola, plumitas! Soy Chispa, la más veloz de los Portales. ¿Una carrerita?'] }
     }
   }
 ];

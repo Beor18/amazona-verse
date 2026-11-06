@@ -9,7 +9,8 @@
      al borde con una punta), misión «!» (naranja), parada o descubrimiento «?» (azul), Reto (rombo morado), fruto del Banquete (punto
      rojo), lugar descubierto (cuadrado blanco con su nombre en el grande), destino (verde, bandera). Cada tipo lleva forma y glifo
      distintos: no depende solo del color. Con la bandera V18 (KIMI-154): minigolf de Villa Raíz (banderín verde, con nombre en el
-     grande) y misión del puerto (engranaje cobre junto a la máquina, solo mientras toca: puente reparado y misión sin terminar).
+     grande) y misión del puerto (engranaje cobre junto a la máquina, solo mientras toca: puente reparado y misión sin terminar); carrera con
+     Chispa (rayo naranja, V18.3 fase 5; en carrera marca el banderín siguiente).
    - Ruta opcional: una línea discontinua hacia el destino (o, si no hay, hacia el objetivo). Se activa en el mapa grande («Ruta»);
      la preferencia se guarda en este dispositivo.
    - Datos: relieve con sombreado, agua (G.agua.levelAt) y flora (G.vegetacion.instancias) se precalculan UNA vez en un canvas de
@@ -31,7 +32,7 @@ window.AVMinimapa = function (G) {
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || (G.pack && G.pack.id) || 'amazonaverse') + '.minimapa';
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const H = (x, z) => G.terreno.height(x, z);
-  const COL = { obj: '#ffd23f', mision: '#ff7a30', parada: '#2f8fe0', reto: '#8e5be8', fruto: '#e8364a', lugar: '#ffffff', pueblo: '#f2b552', piedra: '#d8cfbd', dest: '#2fc15a', yo: '#ffffff', tinta: '#14202b', v18golf: '#35c46f', v18puerto: '#c9803a', v18rival: '#d4303a' };
+  const COL = { obj: '#ffd23f', mision: '#ff7a30', parada: '#2f8fe0', reto: '#8e5be8', fruto: '#e8364a', lugar: '#ffffff', pueblo: '#f2b552', piedra: '#d8cfbd', dest: '#2fc15a', yo: '#ffffff', tinta: '#14202b', v18golf: '#35c46f', v18puerto: '#c9803a', v18rival: '#d4303a', v18chispa: '#ff8a1f' };
 
   // ---------- Preferencia (solo este dispositivo; si no hay almacén, valores por defecto) ----------
   const pref = { ruta: true };
@@ -152,7 +153,7 @@ window.AVMinimapa = function (G) {
     if (!hayRetos()) for (const it of G.interaccion.list) {
       if (typeof it.x !== 'number' || (it.visible && !it.visible())) continue;
       if (rec.has(it.id) || /^(m|p|c)\d+$/.test(it.id)) continue;
-      if (/^v18_(minigolf|puerto)/.test(it.id)) continue; // KIMI-154: los cubren los marcadores propios v18golf/v18puerto (con nombre)
+      if (/^v18_(minigolf|puerto)|^v18npc_chispa$/.test(it.id)) continue; // KIMI-154: los cubren los marcadores propios v18golf/v18puerto/v18chispa (con nombre)
       const tipo = /^parada_/.test(it.id) ? 'parada' : NO_MISION.test(it.id) ? null : 'mision', clave = Math.round(it.x) + ',' + Math.round(it.z);
       if (!tipo || vistos.has(clave)) continue;
       vistos.add(clave); out.push({ tipo, x: it.x, z: it.z, id: it.id });
@@ -169,6 +170,8 @@ window.AVMinimapa = function (G) {
     if (G.V18) {
       try { const g = G.v18minigolf && G.v18minigolf.mapa && G.v18minigolf.mapa(); if (g) out.push({ tipo: 'v18golf', x: g.x, z: g.z, nombre: g.nombre }); } catch (e) { /* sin módulo */ }
       try { const p = G.v18puerto && G.v18puerto.mapa && G.v18puerto.mapa(); if (p) out.push({ tipo: 'v18puerto', x: p.x, z: p.z, nombre: p.nombre }); } catch (e) { /* sin módulo */ }
+      // V18.3 fase 5: la carrera con Chispa (rayo naranja en Chispa; en carrera, en el banderín siguiente; chispa.js mapa())
+      try { const c = G.v18chispa && G.v18chispa.mapa && G.v18chispa.mapa(); if (c) out.push({ tipo: 'v18chispa', x: c.x, z: c.z, nombre: c.nombre }); } catch (e) { /* sin módulo */ }
       // KIMI-150: el Ojo de sol marca en el minimapa lo más cercano durante unos segundos (explorar.js; sin bandera no existe)
       try { const e = G.v18explorar && G.v18explorar.mapa && G.v18explorar.mapa(); if (e) out.push({ tipo: 'lugar', x: e.x, z: e.z, nombre: e.nombre }); } catch (e2) { /* sin módulo */ }
       // Vista de cumbre (Vista de cumbre #20): la jugadora «ve» a la rival del duelo mientras dura el poder (combate.js mapa())
@@ -230,7 +233,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
 #mapa-grande .mg-ley .l-mision{background:${COL.mision};border-radius:50%}#mapa-grande .mg-ley .l-parada{background:${COL.parada};border-radius:50%}
 #mapa-grande .mg-ley .l-reto{background:${COL.reto};transform:rotate(45deg) scale(.85)}#mapa-grande .mg-ley .l-fruto{background:${COL.fruto};border-radius:50%;width:9px;height:9px}
 #mapa-grande .mg-ley .l-lugar{background:#fff}#mapa-grande .mg-ley .l-pueblo{background:${COL.pueblo};clip-path:polygon(50% 0,100% 45%,100% 100%,0 100%,0 45%);border:0}#mapa-grande .mg-ley .l-obj{background:${COL.obj};border-radius:50%}#mapa-grande .mg-ley .l-dest{background:${COL.dest};border-radius:2px 50% 50% 2px}
-#mapa-grande .mg-ley .l-v18golf{background:${COL.v18golf};clip-path:polygon(18% 100%,18% 0,100% 26%,18% 52%);border:0}#mapa-grande .mg-ley .l-v18puerto{background:${COL.v18puerto};border-radius:50%}#mapa-grande .mg-ley .l-v18rival{background:${COL.v18rival};transform:rotate(45deg) scale(.85)}
+#mapa-grande .mg-ley .l-v18golf{background:${COL.v18golf};clip-path:polygon(18% 100%,18% 0,100% 26%,18% 52%);border:0}#mapa-grande .mg-ley .l-v18puerto{background:${COL.v18puerto};border-radius:50%}#mapa-grande .mg-ley .l-v18rival{background:${COL.v18rival};transform:rotate(45deg) scale(.85)}#mapa-grande .mg-ley .l-v18chispa{background:${COL.v18chispa};clip-path:polygon(60% 0,15% 58%,46% 58%,36% 100%,85% 38%,54% 38%);border:0}
 @media (max-height:480px){#mapa-grande .mg-panel{--lado:calc(100dvh - 120px)}#mapa-grande .mg-ley{display:none}}
 :root.a11y-zurdo #mapa-grande .mg-head{flex-direction:row-reverse}:root.a11y-zurdo #mapa-grande h2{margin:0 4px 0 auto}
 :root.a11y-contraste #minimapa .mm-btn{background:#000;border-color:#fff;border-width:4px;box-shadow:none}
@@ -248,7 +251,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     '<button type="button" class="mg-ruta" aria-pressed="false">Ruta</button><button type="button" class="mg-quitar" hidden>Quitar destino</button><button type="button" class="mg-cerrar" aria-label="Cerrar el mapa (M)">Cerrar</button></div>' +
     '<canvas class="mg-c" width="400" height="400" aria-label="Mapa de la isla. Toca para fijar un destino"></canvas><p class="mg-info" aria-live="polite"></p>' +
     '<ul class="mg-ley"><li><i class="l-obj"></i>Objetivo</li><li><i class="l-mision"></i>Misión</li><li><i class="l-parada"></i>Parada</li><li><i class="l-reto"></i>Reto</li><li><i class="l-fruto"></i>Fruto</li><li><i class="l-lugar"></i>Lugar</li><li><i class="l-pueblo"></i>Asentamiento</li><li><i class="l-dest"></i>Destino</li>' +
-    '<li hidden class="li-v18"><i class="l-v18golf"></i>Minigolf</li><li hidden class="li-v18"><i class="l-v18puerto"></i>Misión V18</li><li hidden class="li-v18"><i class="l-v18rival"></i>Rival</li></ul></div>';
+    '<li hidden class="li-v18"><i class="l-v18golf"></i>Minigolf</li><li hidden class="li-v18"><i class="l-v18puerto"></i>Misión V18</li><li hidden class="li-v18"><i class="l-v18rival"></i>Rival</li><li hidden class="li-v18"><i class="l-v18chispa"></i>Carrera con Chispa</li></ul></div>';
   let elC, elG, cvC, cvG, ctxC, ctxG, txtD, txtDot, abierto = false, dprC = 0, dprG = 0, anchoC = -1, porColocar = true; // anchoC −1: sin medida del observador
   function montar() {
     if (!doc.getElementById(ESTILO_ID)) { const st = doc.createElement('style'); st.id = ESTILO_ID; st.textContent = ESTILO; doc.head.appendChild(st); }
@@ -319,6 +322,9 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       for (let i = 0; i < 6; i++) { const a = i * 1.0472, cx = Math.cos(a) * r * 1.02, cy = Math.sin(a) * r * 1.02; ctx.moveTo(cx + r * 0.24, cy); ctx.arc(cx, cy, r * 0.24, 0, 6.2832); }
       ctx.moveTo(r * 0.98, 0); ctx.arc(0, 0, r * 0.98, 0, 6.2832);
     }
+    else if (tipo === 'v18chispa') { // rayo: la carrera con Chispa (V18.3 fase 5)
+      ctx.moveTo(r * 0.25, -r * 1.15); ctx.lineTo(-r * 0.75, r * 0.15); ctx.lineTo(-r * 0.05, r * 0.15); ctx.lineTo(-r * 0.3, r * 1.15); ctx.lineTo(r * 0.8, -r * 0.3); ctx.lineTo(r * 0.1, -r * 0.3); ctx.closePath();
+    }
     else if (tipo === 'v18rival') { // rival del duelo visto desde la cumbre: rombo rojo (Vista de cumbre #20)
       ctx.moveTo(0, -r * 1.05); ctx.lineTo(r * 1.05, 0); ctx.lineTo(0, r * 1.05); ctx.lineTo(-r * 1.05, 0); ctx.closePath();
     }
@@ -365,7 +371,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       ctx.lineWidth = 2.2 * gk; ctx.strokeStyle = de ? COL.dest : COL.obj; ctx.stroke(); ctx.restore();
     }
     // Marcadores en orden de importancia (los de arriba se dibujan al final)
-    const orden = ['fruto', 'pueblo', 'lugar', 'reto', 'parada', 'mision', 'v18golf', 'v18puerto', 'v18rival', 'dest', 'obj'], inset = rM + 3 * k;
+    const orden = ['fruto', 'pueblo', 'lugar', 'reto', 'parada', 'mision', 'v18golf', 'v18puerto', 'v18rival', 'v18chispa', 'dest', 'obj'], inset = rM + 3 * k;
     const dentro = (x, y) => x > inset * 0.4 && y > inset * 0.4 && x < w - inset * 0.4 && y < h - inset * 0.4;
     const bordes = [], rotulos = [];
     for (const tipo of orden) for (const m of ms) {
@@ -382,7 +388,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       const rr = tipo === 'fruto' ? rM * 0.62 : tipo === 'lugar' ? rM * 0.8 : tipo === 'pueblo' ? rM * (grande ? 0.95 : 0.8) : tipo === 'obj' ? rM * 1.15 : rM;
       marca(ctx, tipo, x, y, rr, gk, tipo === 'reto' && grande && m.n ? String(m.n) : GLIFO[tipo], m);
       const nomLugar = G.idioma ? G.idioma.tr(m.nombre) : m.nombre; // U1: nombre del lugar en el idioma elegido
-      if (grande && (tipo === 'lugar' || tipo === 'pueblo' || tipo === 'v18golf' || tipo === 'v18puerto') && nomLugar) { // el nombre solo si no pisa otro ya escrito (los lugares de la Villa están muy juntos)
+      if (grande && (tipo === 'lugar' || tipo === 'pueblo' || tipo === 'v18golf' || tipo === 'v18puerto' || tipo === 'v18chispa') && nomLugar) { // el nombre solo si no pisa otro ya escrito (los lugares de la Villa están muy juntos)
         const fs = Math.round(11 * fsk() * k); ctx.font = '700 ' + fs + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineWidth = 3.5 * k; ctx.lineJoin = 'round';
         const tw = ctx.measureText(nomLugar).width, lx = clamp(x, tw / 2 + 3 * k, w - tw / 2 - 3 * k), caja = [lx - tw / 2, y + rM, lx + tw / 2, y + rM + fs];
         if (!rotulos.some(c => caja[0] < c[2] && caja[2] > c[0] && caja[1] < c[3] && caja[3] > c[1])) {
@@ -544,9 +550,12 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       G.v18puerto = { mapa: () => ({ x: S.pos.x - 15, z: S.pos.z - 15, nombre: 'El puerto que volvió a vivir' }) };
       msV = marcadores();
       check('La misión del puerto sale como marcador propio con nombre cuando toca', msV.some(m => m.tipo === 'v18puerto' && m.nombre === 'El puerto que volvió a vivir'));
-      G.V18 = false; G.v18minigolf = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18puerto = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) };
-      check('Sin la bandera V18 los marcadores V18 no salen (la versión estable no cambia)', !marcadores().some(m => /^v18(golf|puerto)/.test(m.tipo)));
-      G.V18 = v18bk; if (minBk === undefined) delete G.v18minigolf; else G.v18minigolf = minBk; if (pueBk === undefined) delete G.v18puerto; else G.v18puerto = pueBk;
+      const chiBk = G.v18chispa; G.v18chispa = { mapa: () => ({ x: S.pos.x + 12, z: S.pos.z - 12, nombre: 'Carrera con Chispa' }) };
+      msV = marcadores();
+      check('V18.3: la carrera con Chispa sale como marcador propio (rayo) con nombre', msV.some(m => m.tipo === 'v18chispa' && m.nombre === 'Carrera con Chispa') && typeof COL.v18chispa === 'string');
+      G.V18 = false; G.v18minigolf = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18puerto = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18chispa = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) };
+      check('Sin la bandera V18 los marcadores V18 no salen (la versión estable no cambia)', !marcadores().some(m => /^v18(golf|puerto|chispa)/.test(m.tipo)));
+      G.V18 = v18bk; if (minBk === undefined) delete G.v18minigolf; else G.v18minigolf = minBk; if (pueBk === undefined) delete G.v18puerto; else G.v18puerto = pueBk; if (chiBk === undefined) delete G.v18chispa; else G.v18chispa = chiBk;
       tUlt = -1e9; tick(performance.now());
       check('Se dibuja con todos los tipos a la vez sin errores', !!ultimo && ultimo.marcas >= quiero.length);
       ext.reto = undefined; ext.frutos = undefined;

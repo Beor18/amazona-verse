@@ -2116,5 +2116,21 @@ window.AV_EN = {
  "¡Un loro frente blanca vio que ganaste sin perder ni una pluma! Su poder: Pluma rebote. Elígelo en Pausa → Mis cotorras.": "A white-fronted amazon saw you win without losing a single feather! Its power: Bounce feather. Pick it in Pause → My parrots.",
  "¡Con el puente arreglado y sin la Maraña, un loro de cejas rojas llegó al bosque! Su poder: Hojas que envuelven. Elígelo en Pausa → Mis cotorras.": "With the bridge fixed and the Tangle gone, a red-browed amazon came to the forest! Its power: Wrapping leaves. Pick it in Pause → My parrots.",
  "¡Un loro de Kawall te vio recoger todas las piedras y fibras y quiere volar contigo! Su poder: Ojo de selva. Elígelo en Pausa → Mis cotorras.": "A Kawall's amazon saw you gather all the stones and fibers and wants to fly with you! Its power: Jungle eye. Pick it in Pause → My parrots.",
- "El Ojo de sol no ve nada cercano que marcar.": "The Sun Eye sees nothing nearby to mark."
+ "El Ojo de sol no ve nada cercano que marcar.": "The Sun Eye sees nothing nearby to mark.",
+ "Chispa": "Chispa",
+ "Carrera con Chispa": "Race with Chispa",
+ "Echar una carrera con Chispa": "Race Chispa",
+ "¡Hola, plumitas! Soy Chispa, la más veloz de los Portales. ¿Una carrerita?": "Hey there, feathers! I'm Chispa, the fastest pup in the Gateways. Up for a little race?",
+ "¡Cuatro banderines y de vuelta aquí! El que llegue último… ¡lava mis gafas!": "Four flags and back here! Last one in… cleans my goggles!",
+ "¿Otra vez tú? ¡Esta vez voy a correr con las dos orejas!": "You again? This time I'm running with both ears!",
+ "¡Pasa por los 4 banderines en orden y vuelve a la meta!": "Pass the 4 flags in order and come back to the finish!",
+ "Banderín {}/4": "Flag {}/4",
+ "Siguiente banderín": "Next flag",
+ "¡Gané, gané! … ¿Eh? ¿Todavía faltan banderines?": "I won, I won! …Huh? There are still flags left?",
+ "¡Guau! ¡Me ganaste! Mis patas iban rapidísimo… pero tus alas, más.": "Woof! You beat me! My paws were super fast… but your wings were faster.",
+ "Toma, te presto mis gafas. ¡Mentira! ¿Otra?": "Here, you can borrow my goggles. Just kidding! Again?",
+ "¡Gané! ¡Soy un rayo con cola!": "I won! I'm a lightning bolt with a tail!",
+ "Si quieres la revancha, aquí te espero. Prometo no presumir… tanto.": "If you want a rematch, I'll be right here. I promise not to brag… too much.",
+ "¡Nuevo récord: {}!": "New record: {}!",
+ "Te alejaste: la carrera con Chispa queda para otro rato.": "You wandered off: the race with Chispa will have to wait."
 };
