@@ -173,7 +173,8 @@ window.AVV18Ciclo = function (G) {
       if (bt) bt.click();
       check('3 · Seleccionarla: arausiaca es la cotorra del duelo', V.seleccionada() === DOMINICA && V.estado(DOMINICA) === 'seleccionada' && !G.ui.cardOpen, ids.join(','));
 
-      // 4. Duelo: ir a la explanada y retar a la Campeona hablando con ella
+      // 4. Duelo: ir a la explanada y retar a la Campeona hablando con ella (rival de arausiaca = ventralis: su poder es el que le da habilidades.js,
+      // Grito del Yunque o, con nuevas.js cargado —siempre con la V18 por defecto—, Eco de la Cordillera)
       const sitio = Cb.sitio;
       for (let i = 0; i < 40 && !G.interaccion.list.find(it => it.id === 'v18_rival' && it.visible()); i++) await new Promise(r => setTimeout(r, 250)); // el modelo de la rival carga aparte
       ir({ x: sitio.x - 2, z: sitio.z }); cuadros(2);
@@ -181,7 +182,7 @@ window.AVV18Ciclo = function (G) {
       const retada = usarIt('v18_rival');
       const C = Cb.estado();
       check('4 · El duelo usa el poder de la especie elegida (Escudo de plumas); la rival grita',
-        retada && C.j.especie === DOMINICA && C.j.poder === 'escudo_plumas' && C.r.poder === 'grito_yunque' && C.fase === 'cuenta', C.j && (C.j.especie + ' / ' + C.j.poder + ' vs ' + C.r.especie + ' / ' + C.r.poder));
+        retada && C.j.especie === DOMINICA && C.j.poder === 'escudo_plumas' && C.r.poder === G.v18hab.poderDe(C.r.especie) && ['grito_yunque', 'eco_cordillera'].indexOf(C.r.poder) >= 0 && C.fase === 'cuenta', C.j && (C.j.especie + ' / ' + C.j.poder + ' vs ' + C.r.especie + ' / ' + C.r.poder));
       for (let t = 0; t < 4 && C.fase === 'cuenta'; t += 0.05) Cb.paso(0.05);
       // Pelea con la API pública del duelo: escudo cuando la rival está cerca, ala a tiro, semilla lejos. Si se pierde, «Otra vez».
       let intentos = 1, escudosJ = 0;
