@@ -1256,7 +1256,13 @@ AVE.module('streaming', function (G) {
       if (!hdZona()) { if (hdGlobal.mallas.length || hdGlobal.ids) quitarHDGlobal(); return; } // QA-158: en «bajo» la fusión global HD no existe
       if (hdGlobal.paso) { hdGlobal.rehacer = true; return; } // hay una a medias: al cerrar rehace con ids frescos
       if (Object.values(zonas).some(Z => Z.hdFundiendo)) return;
-      const zs = Object.values(zonas).filter(Z => Z.hdMallas).sort((a, b) => a.id < b.id ? -1 : 1);
+      // KIMI-135: la fusión global es de ciudades (línea ~1172: «en las ciudades, todos los _hd comparten la misma
+      // vista aérea»). Con zonas NO-ciudad dentro, hdGlobal.zonas mezclaba una zona con hdSombra y activaba
+      // castShadow en TODA la malla global: en la peor vista (kelvin_ruinas_yunque, alto) las 2 mallas × 6 runs
+      // proyectaban sombra = 12 calls de sombra, duplicando la silueta ligera de la ciudad (su sombraMalla ya la
+      // da, carril despachar). Las zonas sueltas conservan su fusión zonal (misma geometría/imagen, su sombra
+      // propia vía Z.hdSombra) y aquí dejan de sumar tramos y sombra a la vista de la ciudad.
+      const zs = Object.values(zonas).filter(Z => Z.hdMallas && Z.ciudad).sort((a, b) => a.id < b.id ? -1 : 1);
       const ids = zs.map(Z => Z.id + ':' + [...Z.hdModelos].sort().join(',')).join('|');
       if (ids === hdGlobal.ids) return;
       quitarHDGlobal();
