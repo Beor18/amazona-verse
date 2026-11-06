@@ -11,7 +11,8 @@
    El juego NO se toca: solo lectura y API pública. Sin ?qa=1 (la batería concurrente
    contamina el FPS, KIMI-052). Veredicto: propuesta de calidad «escuela» si algo < 25 FPS.
    Uso: node tools/build/kimi1_127.js --etiqueta cb-r1 [--cpu 6] [--secs 12] [--packs cap1,ep2,...]
-        [--sin-demo]
+        [--sin-demo] [--calidad bajo] [--iphone] (KIMI-165: iPhone emulado 390×844 dpr 3,
+        CPU ×4, touch + UA iOS; pack cap1 solo; la demo en --calidad bajo|medio)
 */
 'use strict';
 const http = require('http');
@@ -26,21 +27,22 @@ const CFG = JSON.parse(fs.readFileSync(path.join(AQUI, 'config.json'), 'utf8')).
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
+const IPHONE = process.argv.includes('--iphone'); // KIMI-165: perfil iPhone emulado (390×844 dpr 3, CPU ×4, touch + UA iOS)
 const ETIQUETA = arg('--etiqueta', 'cb-r1');
-const CPU = parseInt(arg('--cpu', '6'), 10);
+const CPU = parseInt(arg('--cpu', IPHONE ? '4' : '6'), 10);
 const SECS = parseInt(arg('--secs', '12'), 10);
-const ANCHO = parseInt(arg('--ancho', '1366'), 10);
-const ALTO = parseInt(arg('--alto', '768'), 10);
-const DPR = parseFloat(arg('--dpr', '1'));
-const PACKS = arg('--packs', 'cap1,ep2,ep3,ep4,ep5,ep6').split(',');
+const ANCHO = parseInt(arg('--ancho', IPHONE ? '390' : '1366'), 10);
+const ALTO = parseInt(arg('--alto', IPHONE ? '844' : '768'), 10);
+const DPR = parseFloat(arg('--dpr', IPHONE ? '3' : '1'));
+const PACKS = arg('--packs', IPHONE ? 'cap1' : 'cap1,ep2,ep3,ep4,ep5,ep6').split(',');
 const CON_DEMO = !process.argv.includes('--sin-demo');
-const CALIDAD = 'bajo';
+const CALIDAD = arg('--calidad', 'bajo'); // KIMI-165: la demo se pidió en «bajo» y «medio»
 const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi127'));
 fs.mkdirSync(SALIDA, { recursive: true });
 const LOGF = path.join(SALIDA, `k127_${ETIQUETA}.log`);
 fs.writeFileSync(LOGF, '');
 function log(msg) { try { fs.appendFileSync(LOGF, `[${new Date().toISOString().slice(11, 19)}] ${msg}\n`); } catch (e) { } }
-const res = { tarea: 'KIMI-127', etiqueta: ETIQUETA, pantalla: `chromebook ${ANCHO}x${ALTO}@${DPR} cpuX${CPU}`, calidad: CALIDAD, packs: PACKS, demo: CON_DEMO, head: null };
+const res = { tarea: 'KIMI-127', etiqueta: ETIQUETA, pantalla: `${IPHONE ? 'iphone' : 'chromebook'} ${ANCHO}x${ALTO}@${DPR} cpuX${CPU}`, calidad: CALIDAD, packs: PACKS, demo: CON_DEMO, head: null };
 function guardar() { try { fs.writeFileSync(path.join(SALIDA, `k127_${ETIQUETA}.json`), JSON.stringify(res, null, 1)); } catch (e) { } }
 
 for (const d of fs.readdirSync(os.tmpdir())) {
@@ -266,8 +268,12 @@ function mataPorPerfil() {
     tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
     const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
     for (const m of ['Page.enable', 'Runtime.enable', 'Log.enable']) await cdp.call(m, {}, ses);
-    // Chromebook: desktop (sin mobile/touch/UA); solo métricas de ventana y CPU
-    await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: false }, ses);
+    // Chromebook: desktop (sin mobile/touch/UA); iPhone (KIMI-165): touch + UA iOS para el perfil de texturas real
+    await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: IPHONE }, ses);
+    if (IPHONE) {
+      try { await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, ses); } catch (e) { }
+      try { await cdp.call('Emulation.setUserAgentOverride', { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' }, ses); } catch (e) { }
+    }
     try { await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses); } catch (e) { }
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: seedJS }, ses);
     const t0 = Date.now();
