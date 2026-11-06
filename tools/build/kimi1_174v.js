@@ -66,6 +66,19 @@ async function evaluar(cdp, ses, exp, timeoutS, promesa) {
   return r.result ? r.result.value : undefined;
 }
 
+const RAF_LIMIT_JS = `try {
+  window.__rafOri = window.requestAnimationFrame.bind(window);
+  window.__rafUlt = 0;
+  window.requestAnimationFrame = function (cb) {
+    return window.__rafOri(function (ts) {
+      const ahora = performance.now(), ult = window.__rafUlt;
+      const falta = 31 - (ahora - ult);
+      if (!ult || falta <= 0) { window.__rafUlt = ahora; try { cb(ts); } catch (e) { } }
+      else setTimeout(function () { window.requestAnimationFrame(cb); }, falta);
+    });
+  };
+} catch (e) {}`;
+
 const SEMILLA_SAVE_JS = `try {
   localStorage.clear(); sessionStorage.clear();
   window.__erroresConsola = [];
@@ -123,7 +136,8 @@ const PREP_JS = `(async () => { try { return await (async () => {
   try { G.v18.desbloquear('vittata'); } catch (e) {}
   return 'ok golf=' + !!G.v18minigolf; })(); } catch (e) { return 'ERR ' + (e && e.stack || e); } })()`;
 
-// Grabador en página (mismo patrón que kimi1_129.js): MediaRecorder sobre canvas.captureStream(30).
+// Grabador en página (kimi1_129 + requestFrame): MediaRecorder sobre canvas.captureStream(0) con
+// bombeo explícito track.requestFrame() a 30 fps — fiable en WebGL sin preserveDrawingBuffer.
 const REC_JS = `(() => { try {
   if (window.__rec) return window.__rec.mime;
   const cv = document.querySelector('canvas');
@@ -133,10 +147,13 @@ const REC_JS = `(() => { try {
   const mime = mimos.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
   if (!mime) return 'ERR sin MediaRecorder';
   let rec = null, chunks = [];
+  window.__recLog = [];
+  const anota = m => { try { window.__recLog.push(performance.now().toFixed(0) + ' ' + m); } catch (e) { } };
   window.__rec = {
     mime,
-    empieza() { chunks = []; rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: (window.__recBits || 1600000) }); rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); }; rec.start(400); },
+    empieza() { chunks = []; rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: (window.__recBits || 1600000) }); rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); }; rec.onerror = ev => anota('rec.error ' + (ev && ev.error && ev.error.name || ev)); rec.onstop = () => anota('rec.stop state=' + (rec && rec.state)); rec.start(400); anota('rec.start'); },
     async para(nombre) {
+      anota('rec.para state=' + (rec && rec.state));
       const blob = await new Promise(res => { rec.onstop = () => res(new Blob(chunks, { type: mime })); rec.stop(); });
       const r = await fetch('/__kimi174/grabar?nombre=' + encodeURIComponent(nombre), { method: 'POST', body: blob });
       const j = await r.json();
@@ -157,10 +174,11 @@ const JUGAR_JS = `(async () => { try { return await (async () => {
   const ROCE_A = 1.4, ROCE_B = 0.55, VMIN = 1.5, VMAX = 13;
   const recorre = v0 => v0 / ROCE_B - ROCE_A / (ROCE_B * ROCE_B) * Math.log(1 + ROCE_B * v0 / ROCE_A);
   const fuerzaPara = d => { let lo = 0, hi = 1; for (let i = 0; i < 30; i++) { const m = (lo + hi) / 2; if (recorre(VMIN + (VMAX - VMIN) * m) < d) lo = m; else hi = m; } return (lo + hi) / 2; };
-  const RUTA = [{ u: 0.8, v: -2.0 }, { u: 3.8, v: -2.0 }];
-  const esperaRueda = async ms => { const t0 = performance.now(); while (performance.now() - t0 < ms) { if (Mg.estado().fase === 'rueda') return true; await sleep(100); } return Mg.estado().fase === 'rueda'; };
+  const RUTA = [{ u: -1.2, v: 2.0 }, { u: 0.8, v: -2.0 }, { u: 3.8, v: -2.0 }];
+  const esperaFase = async fases => { const t0 = performance.now(); while (performance.now() - t0 < 30000) { if (fases.indexOf(Mg.estado().fase) >= 0) return Mg.estado().fase; await sleep(100); } return Mg.estado().fase; };
   Mg.iniciar({ forzar: true });
-  if (!await esperaRueda(15000)) return 'ERR fase tras iniciar: ' + Mg.estado().fase;
+  const fase0 = await esperaFase(['apuntar', 'rueda']);
+  if (fase0 === 'nada' || fase0 === 'nido') return 'ERR fase tras iniciar: ' + fase0;
   const tiros = [];
   let iw = 0;
   const t0v = performance.now();
@@ -172,13 +190,13 @@ const JUGAR_JS = `(async () => { try { return await (async () => {
     const wm = mundo(w.u, w.v);
     const ex = wm.x - B.x, ez = wm.z - B.z;
     G.camara.yaw = Math.atan2(-ex, -ez);
-    await sleep(900); // la cámara asiente y se lee la línea de apuntado
+    await sleep(tiros.length ? 900 : 1600); // la cámara asiente y se lee la línea naranja de apuntado
     const d = Math.hypot(ex, ez);
     const f = Math.max(0.06, Math.min(1, fuerzaPara(d)));
     const r = Mg.tirar(f);
-    if (!r || r.ok === false) { await sleep(400); continue; }
+    if (r !== true) { await sleep(400); continue; }
     tiros.push({ tiro: tiros.length + 1, fuerza: +f.toFixed(2) });
-    await esperaRueda(30000);
+    await esperaFase(['apuntar', 'nido', 'fuera']);
   }
   const A = Mg.estado();
   await sleep(1200); // deja ver el nido / la tabla final
@@ -187,11 +205,12 @@ const JUGAR_JS = `(async () => { try { return await (async () => {
 
 async function lanzarChrome() {
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi1k174v-'));
-  const args = ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + perf,
+  const ventana = process.argv.indexOf('--ventana') > 0;
+  const args = [(ventana ? '' : '--headless=new'), '--remote-debugging-port=0', '--user-data-dir=' + perf,
     '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run', '--no-default-browser-check', '--disable-extensions',
     '--mute-audio', '--disable-sync', '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
     '--disable-backgrounding-occluded-windows', '--disable-component-update', '--enable-precise-memory-info',
-    '--window-size=1280,720', 'about:blank'];
+    '--window-size=1280,720', '--force-device-scale-factor=1', '--window-position=60,60', 'about:blank'].filter(Boolean);
   const chrome = spawn(CHROME, args, { stdio: ['ignore', 'ignore', 'pipe'] });
   let err = ''; chrome.stderr.on('data', d => { err += d; });
   const puertoFile = path.join(perf, 'DevToolsActivePort');
@@ -221,6 +240,7 @@ function mataPorPerfil() {
     const tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
     const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
     for (const m of ['Page.enable', 'Runtime.enable', 'Log.enable']) await cdp.call(m, {}, ses);
+    await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: RAF_LIMIT_JS }, ses);
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS }, ses);
     await cdp.call('Page.navigate', { url: `${origen}/index.html?pack=cap1&mapa=real&v18=1` }, ses);
     const t0 = Date.now(); let listo = false;
@@ -246,6 +266,9 @@ function mataPorPerfil() {
     await evaluar(cdp, ses, `window.__rec.para(${JSON.stringify(NOMBRE_MP4)})`, 60).then(r => { res.grabacion = r; }).catch(e => { res.falloPara = String(e && e.message || e); });
     log('grabación: ' + JSON.stringify(res.grabacion || res.falloPara));
     res.erroresConsola = await evaluar(cdp, ses, `(window.__erroresConsola || []).slice(0, 30)`, 15);
+    res.recLog = await evaluar(cdp, ses, `(window.__recLog || []).slice(0, 40)`, 15);
+    log('recLog: ' + JSON.stringify(res.recLog));
+    res.pagina = await evaluar(cdp, ses, `(async()=>{const n=await new Promise(r=>{let c=0;const t0=performance.now();const f=()=>{c++;performance.now()-t0<1000?requestAnimationFrame(f):r(c)};requestAnimationFrame(f)});return JSON.stringify({vis:document.visibilityState,rafPorSeg:n,presencia:!!document.querySelector('#v18-golf'),lienzo:[document.querySelector('canvas')&&document.querySelector('canvas').width,document.querySelector('canvas')&&document.querySelector('canvas').height]})})()`, 15, true).then(JSON.parse);
     log('errores de consola: ' + JSON.stringify(res.erroresConsola));
     const st = fs.statSync(path.join(SALIDA, NOMBRE_MP4));
     const head = Buffer.alloc(12); const fd = fs.openSync(path.join(SALIDA, NOMBRE_MP4), 'r'); fs.readSync(fd, head, 0, 12, 0); fs.closeSync(fd);

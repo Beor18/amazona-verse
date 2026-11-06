@@ -1,0 +1,38 @@
+{
+ "etiqueta": "video-r5",
+ "tarea": "KIMI-174(c)",
+ "video": "k174_video-r5.mp4",
+ "segs": 26,
+ "pantalla": "1280x720 GPU real, MediaRecorder 1,6 Mbps",
+ "mime": "video/mp4;codecs=avc1.42E01E",
+ "juego": {
+  "fase": "nido",
+  "golpes": 4,
+  "tiros": 4,
+  "medalla": "plata"
+ },
+ "grabacion": {
+  "mime": "video/mp4;codecs=avc1.42E01E",
+  "bytes": 1395819,
+  "destino": "C:\\Users\\kelvi\\amazonaversegame\\docs\\img\\kimi174\\k174_video-r5.mp4"
+ },
+ "erroresConsola": [],
+ "recLog": [
+  "12521 rec.start",
+  "25793 rec.para state=recording"
+ ],
+ "pagina": {
+  "vis": "visible",
+  "rafPorSeg": 21,
+  "presencia": true,
+  "lienzo": [
+   1264,
+   569
+  ]
+ },
+ "mp4": {
+  "bytes": 1395819,
+  "firma": "ftyp",
+  "mb": 1.3
+ }
+}

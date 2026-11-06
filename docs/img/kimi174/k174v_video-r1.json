@@ -5,5 +5,21 @@
  "segs": 32,
  "pantalla": "1280x720 GPU real, MediaRecorder 1,6 Mbps",
  "mime": "video/mp4;codecs=avc1.42E01E",
- "fallo": "jugar: ERR fase tras iniciar: apuntar"
+ "juego": {
+  "fase": "apuntar",
+  "golpes": 6,
+  "tiros": 6,
+  "medalla": null
+ },
+ "grabacion": {
+  "mime": "video/mp4;codecs=avc1.42E01E",
+  "bytes": 1765986,
+  "destino": "C:\\Users\\kelvi\\amazonaversegame\\docs\\img\\kimi174\\k174_video-r1.mp4"
+ },
+ "erroresConsola": [],
+ "mp4": {
+  "bytes": 1765986,
+  "firma": "ftyp",
+  "mb": 1.7
+ }
 }

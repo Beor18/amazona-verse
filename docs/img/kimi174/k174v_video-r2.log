@@ -1,0 +1,8 @@
+[21:56:23] lanzando Chrome y entrando (v18=1)...
+[21:56:37] prep ok (ok golf=true)
+[21:56:37] grabador listo (video/mp4;codecs=avc1.42E01E); jugando y grabando 40 s...
+[21:56:50] juego: {"fase":"nido","golpes":4,"tiros":4,"medalla":"plata"}
+[21:56:50] grabación: {"mime":"video/mp4;codecs=avc1.42E01E","bytes":1424776,"destino":"C:\\Users\\kelvi\\amazonaversegame\\docs\\img\\kimi174\\k174_video-r2.mp4"}
+[21:56:50] errores de consola: []
+[21:56:50] mp4: {"bytes":1424776,"firma":"ftyp","mb":1.4}
+[21:56:51] evidencia: C:\Users\kelvi\amazonaversegame\docs\img\kimi174\k174v_video-r2.json
