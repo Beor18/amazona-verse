@@ -160,7 +160,7 @@ function mataPorPerfil() {
 
 async function cargarPagina(cdp, ses, origen, id) {
   await cdp.call('Page.enable', {}, ses);
-  await cdp.call('Page.navigate', { url: `${origen}/index.html?pack=cap1&mapa=real${BANDERA ? '&v18=1' : ''}` }, ses);
+  await cdp.call('Page.navigate', { url: `${origen}/index.html?pack=cap1&mapa=real${BANDERA ? '&v18=1' : '&v18=0'}` }, ses);
   const t0 = Date.now(); let listo = false;
   while (Date.now() - t0 < (CFG.espera_listo_s || 150) * 1000) {
     try { if (await evaluar(cdp, ses, `!!(${CFG.listo_js})`, 10, false)) { listo = true; break; } } catch (e) { }

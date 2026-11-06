@@ -161,7 +161,7 @@ window.AVV18Reparar = function (G) {
   // de Villa Raíz al puente. Cada una se recoge una sola vez (G.v18.mundo['v18_<clave>'] = 'recogida', se guarda al momento).
   // La piedra suma a S.inv.piedra. La fibra suma a S.inv.madera: el inventario de siempre no tiene «fibra» y la fibra sirve
   // para atar las tablas, así que cuenta como material de madera (nada de tipo nuevo en S.inv, en el HUD ni en el guardado).
-  // Siguen ahí con el puente ya reparado: son del mundo (sirven también para el refugio del cap. 1). Siempre con ?v18=1.
+  // Siguen ahí con el puente ya reparado: son del mundo (sirven también para el refugio del cap. 1). Siempre con la bandera V18 (por defecto; ?v18=0 la apaga).
   const TIPOS = {
     piedra: { glb: 'piedra_recogible', inv: 'piedra', label: 'Recoger piedra', aviso: '+1 piedra', color: '#9aa0a3' },
     fibra: { glb: 'fibra_recogible', inv: 'madera', label: 'Recoger fibra', aviso: '+1 fibra (cuenta como madera)', color: '#8a9a4a' }

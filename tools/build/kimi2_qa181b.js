@@ -236,7 +236,7 @@ async function ronda(res, nombre, usarHead) {
     await cdp.call('Emulation.setDeviceMetricsOverride', { width: PF.w, height: PF.h, deviceScaleFactor: PF.dpr, mobile: false }, ses);
     try { await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses); } catch (e) { }
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS }, ses);
-    await cdp.call('Page.navigate', { url: `${origen}/index.html?pack=cap1&mapa=real` }, ses);
+    await cdp.call('Page.navigate', { url: `${origen}/index.html?pack=cap1&mapa=real&v18=0` }, ses);
     const t0 = Date.now(); let listo = false;
     while (Date.now() - t0 < (CFG.espera_listo_s || 150) * 1000) {
       try { if (await evaluar(cdp, ses, `!!(${CFG.listo_js})`, 10, false)) { listo = true; break; } } catch (e) { }

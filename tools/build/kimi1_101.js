@@ -115,7 +115,7 @@ function mataPorPerfil() {
     });
     // fase 1: carga + entrada al mundo
     res.faseActual = 'carga';
-    await cdp.call('Page.navigate', { url: `${origen}/index.html?pack=cap1&mapa=real${V18 ? '&v18=1' : ''}` }, ses);
+    await cdp.call('Page.navigate', { url: `${origen}/index.html?pack=cap1&mapa=real${V18 ? '&v18=1' : '&v18=0'}` }, ses);
     const t0 = Date.now(); let listo = false;
     while (Date.now() - t0 < (CFG.espera_listo_s || 150) * 1000) {
       try { if (await evaluar(cdp, ses, `!!(${CFG.listo_js})`, 10, false)) { listo = true; break; } } catch (e) { }

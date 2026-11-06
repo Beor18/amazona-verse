@@ -341,8 +341,8 @@ window.AVV18Evolucion = function (G) {
     try {
       // 10 (antes que nada). Sin la bandera no se carga nada: lo mide boot.js antes de pedir este módulo
       const antes = o.antes || {};
-      if (antes.v18 === false) check('Sin la bandera ?v18=1 no se carga evolucion.js (ni con gestos del jugador)', !antes.cargado && !antes.evo && !antes.script, JSON.stringify(antes));
-      else check('Sin la bandera no se carga nada (esta sesión tiene la bandera: se comprueba en boot.js con v18On)', antes.v18 === true || antes.v18 == null, JSON.stringify(antes));
+      if (antes.v18 === false) check('Con la bandera apagada (?v18=0) no se carga evolucion.js (ni con gestos del jugador)', !antes.cargado && !antes.evo && !antes.script, JSON.stringify(antes));
+      else check('Con la bandera apagada no se carga nada (esta sesión tiene la bandera, encendida por defecto: se comprueba con ?v18=0)', antes.v18 === true || antes.v18 == null, JSON.stringify(antes));
 
       // 1. Curva y topes de XP
       let mono = true; for (let x = 0, n0 = 1; x <= XP_MAX + 500; x += 7) { const n = nivelDe(x); if (n < n0) mono = false; n0 = n; }

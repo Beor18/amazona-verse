@@ -217,7 +217,7 @@ const esperaListo = async (cdp, ses) => {
     for (const esc of lista) {
       resumen.escenarios[esc.id] = { nota: esc.nota, calidades: {} };
       for (const calidad of (arg('--calidades', '') ? arg('--calidades', '').split(',') : esc.calidades)) {
-        const url = `${origen}/index.html?pack=${esc.pack}&mapa=real&calidad=${calidad}${esc.v18 ? '&v18=1' : ''}`;
+        const url = `${origen}/index.html?pack=${esc.pack}&mapa=real&calidad=${calidad}${esc.v18 ? '&v18=1' : '&v18=0'}`;
         console.log(`· ${esc.id} [${calidad}] navegando…`);
         const { ses, tid } = await paginaFresca(cdp, semillaSave(esc.pack, esc.v18, esc.mundo), url);
         if (!await esperaListo(cdp, ses)) { console.log(`  !! el juego no arrancó en ${esc.id}/${calidad}`); resumen.escenarios[esc.id].calidades[calidad] = { error: 'no listo' }; continue; }

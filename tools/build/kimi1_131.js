@@ -157,7 +157,7 @@ function mataPorPerfil() {
     await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: false }, ses);
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_JS }, ses);
     const soloCargas = (arg('--cargas', '') || '').split(',').filter(Boolean);
-    for (const carga of [{ id: 'sinbandera', q: '' }, { id: 'v18', q: '&v18=1' }].filter(c => !soloCargas.length || soloCargas.includes(c.id))) {
+    for (const carga of [{ id: 'sinbandera', q: '&v18=0' }, { id: 'v18', q: '&v18=1' }].filter(c => !soloCargas.length || soloCargas.includes(c.id))) {
       await cdp.call('Page.navigate', { url: `${origen}/index.html?pack=cap1&mapa=real${carga.q}` }, ses);
       const t0 = Date.now(); let listo = false;
       while (Date.now() - t0 < (CFG.espera_listo_s || 150) * 1000) {

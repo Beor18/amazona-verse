@@ -255,7 +255,7 @@ async function lanzarChromeUnaVez() {
   const origen = `http://127.0.0.1:${puerto}`;
   // la semilla y los ganchos van ANTES de navegar: el juego lee el guardado en el arranque
   await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS + '\n' + GANCHOS_JS }, ses);
-  await cdp.call('Page.navigate', { url: `${origen}/index.html${V18 ? '?v18=1' : ''}` }, ses);
+  await cdp.call('Page.navigate', { url: `${origen}/index.html${V18 ? '?v18=1' : '?v18=0'}` }, ses);
   // portada → tarjeta Aventura (la partida sembrada entra sin creador)
   let clicado = false;
   for (let i = 0; i < 150 && !clicado; i++) {

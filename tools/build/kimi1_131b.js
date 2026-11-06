@@ -68,7 +68,7 @@ function mataPorPerfil() { try { const ps = "Get-CimInstance Win32_Process -Filt
     await cdp.call('Emulation.setDeviceMetricsOverride', { width: 1600, height: 900, deviceScaleFactor: 1, mobile: false }, ses);
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_JS }, ses);
     let ronda = 0;
-    for (const carga of [{ id: 'sinbandera', q: '' }, { id: 'v18', q: '&v18=1' }, { id: 'sinbandera2', q: '' }, { id: 'v18b', q: '&v18=1' }]) {
+    for (const carga of [{ id: 'sinbandera', q: '&v18=0' }, { id: 'v18', q: '&v18=1' }, { id: 'sinbandera2', q: '&v18=0' }, { id: 'v18b', q: '&v18=1' }]) {
       await cdp.call('Page.navigate', { url: `${origen}/index.html?pack=cap1&mapa=real${carga.q}` }, ses);
       const t0 = Date.now(); let listo = false;
       while (Date.now() - t0 < (CFG.espera_listo_s || 150) * 1000) { try { if (await evaluar(cdp, ses, `!!(${CFG.listo_js})`, 10, false)) { listo = true; break; } } catch (e) { } await cdp.bombear(0.5); }

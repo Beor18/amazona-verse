@@ -43,7 +43,7 @@
       fr = document.createElement('iframe');
       fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
       fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1024px;height:700px;border:0;';
-      const url = new URL(location.href); url.search = '?pack=ep2' + (/[?&]v18=1/.test(location.search) ? '&v18=1' : ''); url.hash = '';
+      const url = new URL(location.href); url.search = '?pack=ep2' + ((/[?&]v18=([01])\b/.exec(location.search) || [])[1] ? '&v18=' + /[?&]v18=([01])\b/.exec(location.search)[1] : ''); url.hash = '';
       fr.src = url.href; document.body.appendChild(fr);
       W = await until(() => { const x = fr.contentWindow; return x && x.AV && x.AV.pack === 'ep2' && x.AV.G && (x.AV.G.actores.player3D || x.AV.G.actores.failed3D) && x; }, opts.timeout || 180000, 100);
       if (W) await sleep(800);

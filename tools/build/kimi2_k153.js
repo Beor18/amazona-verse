@@ -151,7 +151,7 @@ function matarArbol(chrome, perf) {
 
   const informe = { maquina: { ancho: ANCHO, alto: ALTO, dpr: DPR, cpu: CPU, gpu: 'real (ANGLE/D3D11)', banderaV18: BANDERA === '1' }, pruebas: {} };
   let fallos = 0;
-  const urlTop = `${origen}/index.html${BANDERA === '1' ? '?v18=1' : ''}`;
+  const urlTop = `${origen}/index.html${BANDERA === '1' ? '?v18=1' : '?v18=0'}`;
 
   for (const prueba of PRUEBAS) {
     const t0 = Date.now();

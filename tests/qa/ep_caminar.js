@@ -47,7 +47,7 @@
     fr.style.cssText = opts.movil
       ? 'position:fixed;left:-1200px;top:0;width:390px;height:844px;border:0;'
       : 'position:fixed;left:-10000px;top:0;width:1024px;height:700px;border:0;';
-    const url = new URL(location.href); url.search = '?pack=' + cfg.pack + (cfg.query || '') + (/[?&]v18=1/.test(location.search) ? '&v18=1' : '') + (opts.movil ? '&calidad=bajo' : ''); url.hash = '';
+    const url = new URL(location.href); url.search = '?pack=' + cfg.pack + (cfg.query || '') + ((/[?&]v18=([01])\b/.exec(location.search) || [])[1] ? '&v18=' + /[?&]v18=([01])\b/.exec(location.search)[1] : '') + (opts.movil ? '&calidad=bajo' : ''); url.hash = '';
     fr.src = url.href; document.body.appendChild(fr);
     W = await until(() => { const x = fr.contentWindow; return x && x.AV && x.AV.pack === cfg.pack && x.AV.G && (x.AV.G.actores.player3D || x.AV.G.actores.failed3D) && x; }, opts.timeout || 240000, 100);
     if (W) await sleep(800);

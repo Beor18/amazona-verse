@@ -161,7 +161,7 @@ function fechaAlta(rel) {
     await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS }, ses);
     t0 = Date.now();
-    await cdp.call('Page.navigate', { url: origen + '/index.html?qa=1&cap=1' + (URL_EXTRA ? '&' + URL_EXTRA : '') }, ses);
+    await cdp.call('Page.navigate', { url: origen + '/index.html?qa=1&cap=1' + (URL_EXTRA ? '&' + URL_EXTRA : '&v18=0') }, ses); // sin URL_EXTRA: la versión estable (?v18=0)
 
     let tReveal = null, motivoCarga = null, msCarga = null, ultimoTap = 0, nTaps = 0;
     const TAP_JS = `(() => {

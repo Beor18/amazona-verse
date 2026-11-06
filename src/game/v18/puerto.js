@@ -820,13 +820,16 @@ window.AVV18Puerto = function (G) {
     };
     try {
       // 1 · solo con la bandera, sin cargar nada antes
-      check('1 · Sin la bandera no se cargó nada: ni npc.js ni puerto.js, ni ningún modelo de personaje', antes.v18 ? true : (!antes.npc && !antes.puerto && !antes.glb),
-        antes.v18 ? 'bandera puesta en esta sesión (comprobación de carga no aplica)' : JSON.stringify(antes));
+      check('1 · Con la bandera apagada (?v18=0) no se cargó nada: ni npc.js ni puerto.js, ni ningún modelo de personaje', antes.v18 ? true : (!antes.npc && !antes.puerto && !antes.glb),
+        antes.v18 ? 'bandera puesta en esta sesión (por defecto; la carga se comprueba con ?v18=0)' : JSON.stringify(antes));
       check('1b · El sitio medido es el del mapa real (plaza a orillas del río, meseta encima)', M.valido && M.hecho, 'plaza ' + alto(SITIO.plaza.x, SITIO.plaza.z).toFixed(1) + ' · A ' + alto(SITIO.a.x, SITIO.a.z).toFixed(1) + ' · B ' + alto(SITIO.b.x, SITIO.b.z).toFixed(1));
       V.borrar(); V.recargar(); A.forzar = false; A.avisado = false; A.llegada = false; A.pistas.clear(); A.aciertos = 0; A.senalada = false; A.guia = false; aplicar();
       // 2 · con la bandera apagada y con el puente sin reparar no aparece nada
-      ir(SITIO.plaza.x, SITIO.plaza.z); V.cambiarMundo('puente_villa', 'reparado'); correr(0.3); await esperar(150);
-      const sinBandera = !G.V18 ? (!listaMision() && !gMaq.visible && N.activos().length === 0) : true;
+      // (la V18 va encendida por defecto desde el 6-nov: se apaga G.V18 solo durante este bloque, como con ?v18=0, y se deja como estaba)
+      const v18bk = G.V18; let sinBandera = false;
+      G.V18 = false;
+      try { ir(SITIO.plaza.x, SITIO.plaza.z); V.cambiarMundo('puente_villa', 'reparado'); correr(0.3); await esperar(150);
+        sinBandera = !listaMision() && !gMaq.visible && N.activos().length === 0; } finally { G.V18 = v18bk; }
       V.cambiarMundo('puente_villa', 'roto'); A.forzar = true; correr(0.3); await esperar(150);
       const nn = G.interaccion.nearest();
       check('2 · Sin la bandera, o antes de reparar el puente, no aparece nada (ni máquina, ni personajes, ni interacción)', sinBandera && !listaMision() && !gMaq.visible && N.activos().length === 0 && !(nn && /v18_puerto|v18npc/.test(nn.id)), nn && nn.id);
