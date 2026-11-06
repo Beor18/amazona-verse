@@ -6,6 +6,8 @@
 # 5-nov 16:40: tanda nueva
 # 5-nov tarde (otra cuenta): demo de hoy
 # 5-nov noche (otra cuenta): copia al día; minigolf y 2 cotorras nuevas
+BM161
+BM162
 BM157
 BM158
 BM159
