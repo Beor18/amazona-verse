@@ -1,0 +1,38 @@
+[20:15:50] pack cap1: navegando...
+[20:15:55] …latido
+[20:16:00] …latido
+[20:16:05] …latido
+[20:16:10] …latido
+[20:16:15] …latido
+[20:16:19] pack cap1: listo en 5.923s, entrada en 28.045s; muestreo 12s en el spawn
+[20:16:20] …latido
+[20:16:26] …latido
+[20:16:31] …latido
+[20:16:36] …latido
+[20:16:41] …latido
+[20:16:46] …latido
+[20:16:49] pack cap1: fpsMed=19 min=14 peorMs=118 calls=109 ktris=413 medL=109 calls/0.41M errores=[]
+[20:16:49] demo: navegando con ?v18=1...
+[20:16:51] …latido
+[20:16:56] …latido
+[20:17:01] …latido
+[20:17:06] …latido
+[20:17:11] …latido
+[20:17:16] …latido
+[20:17:19] demo: midiendo base...
+[20:17:21] …latido
+[20:17:26] …latido
+[20:17:31] …latido
+[20:17:33] demo/base: fpsMed=6 min=1 peorMs=5532 calls=139 ktris=566
+[20:17:33] demo: midiendo duelo...
+[20:17:36] …latido
+[20:17:41] …latido
+[20:17:45] demo/duelo: fpsMed=13 min=12 peorMs=152 calls=115 ktris=375
+[20:17:46] demo: midiendo sombra...
+[20:17:46] …latido
+[20:17:51] …latido
+[20:17:56] …latido
+[20:18:00] demo/sombra: fpsMed=12 min=7 peorMs=214 calls=98 ktris=379
+[20:18:00] demo: midiendo puente...
+[20:18:01] …latido
+[20:18:06] …latido

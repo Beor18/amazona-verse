@@ -999,3 +999,45 @@ KIMI-132) con 1,8× de píxeles por dpr 1,0; las palancas conocidas son las de l
 (escalón <25 fps sostenido → resolución 0,75 + post off, KIMI-133/145/146) y son **decisión de Kelvin**.
 El juego no se tocó (medición solamente); el adaptativo en «medio» manual queda anulado por diseño
 (`?calidad=` fija manual), en juego real bajaría solo a «bajo».
+## KIMI-175 · rendimiento en el móvil de CADA actividad V18 (6-nov · Kimi 2 — encargo coordinadora 20:20 UTC, hito 1)
+
+Encargo: con GPU real, iPhone emulado 390×844 @ DPR 3, CPU ×4, calidad «bajo» y «medio», medir cada
+actividad de la V18: duelo, puente reparado, Sombra, misión del puerto, carrera de Chispa, minigolf y la
+Ciudad de los 36. Criterio: nada < 30 FPS en «bajo» (si baja, fix en carril render/streaming/materiales/flora).
+La V18 aún va detrás de la bandera (`?v18=1`, boot.js:100); medir con la bandera ES la simulación de
+«encendida por defecto» (KIMI-177 la pondrá por defecto después).
+
+**Base previa (misma metodología, KIMI-165 @ 8a9803a0):** demo duelo 54 · Sombra 38 · puente 55 fps med en
+«bajo» (35–54; todos ≥ 30 ✓); «medio» forzado 22–32 (< 30, cuello de hilo a ×4 con dpr 1,0 — palancas
+«escuela» = decisión de Kelvin, QA-181). Esta vuelta (HEAD actual) re-mide esos tres + añade puerto, Chispa,
+minigolf y ciudad.
+
+**Metodología de esta vuelta:** `tools/build/kimi1_127.js --iphone --calidad bajo|medio --etiqueta k175-*`
+(demo: villa + duelo/Sombra/puente por API pública). Las 4 actividades nuevas se miden en la vuelta siguiente
+con la misma semilla y perfil (herramienta dedicada): puerto (plaza de La Mina, máquina), Chispa (carrera en
+Los Portales), minigolf (hoyo 1) y Ciudad de los 36 (vuelo rasante sobre la ciudad).
+
+### demo V18 en HEAD (6-nov ~20:15-20:18 UTC) <span id="k175-head">— bajo completo · medio cortado en puente (re-medición en curso)</span>
+
+Corrida `kimi1_127.js --iphone --calidad bajo|medio` (390×844 @ dpr 3, CPU ×4, GPU real RX 5700 XT).
+Ojo: la corrida se midió **con la PC compartida** (Kimi 1 volcaba evidencia k106 en 16:06-16:09 local y
+las dos sesiones comparten GPU): los fps pueden ir deprimidos por contención — la re-medición con PC libre
+está en curso en la misma vuelta. El escenario «base» se mide recién navegado: su peorMs (~5,5-5,7 s) es la
+ventana de asentado del streaming, no el estado asentado.
+
+| escenario | calidad | fps med | fps mín | peor ms | calls | ktris |
+|---|---|---|---|---|---|---|
+| cap1 spawn (asentado) | bajo | 29 | 6 | 2304 | 60 | 251 |
+| demo base (recién cargada) | bajo | 10 | 1 | 5725 | 112 | 465 |
+| demo duelo Campeana | bajo | 25 | 21 | 101 | 77 | 238 |
+| demo Sombra de Tormenta | bajo | 16 | 13 | 154 | 64 | 243 |
+| demo puente colgante | bajo | 26 | 14 | 150 | 71 | 239 |
+| cap1 spawn (asentado) | medio | 19 | 14 | 118 | 109 | 413 |
+| demo base (recién cargada) | medio | 6 | 1 | 5532 | 139 | 566 |
+| demo duelo Campeana | medio | 13 | 12 | 152 | 121 | 375 |
+| demo Sombra de Tormenta | medio | 12 | 7 | 214 | 99 | 381 |
+| demo puente colgante | medio | — | — | — | — | — (corrida cortada) |
+
+Con estos números (si se confirman en limpio) **duelo 25 / Sombra 16 / puente 26 en «bajo» incumplirían el
+criterio de 30 FPS** frente a la base KIMI-165 (54/38/55) — a resolver en la re-medición: o es contención de
+la corrida, o hay que buscar la regresión entre 8a9803a0 y HEAD en el carril render/streaming.
