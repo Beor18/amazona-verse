@@ -111,7 +111,7 @@ Al llegar a `reparado`, si existe `G.v18evo` y `!V.otorgado('xp_puerto')`, se ej
 11. **Tras recargar** (`V.recargar()` + `apply`), siguen la escalera, la máquina reconvertida, las dos apariencias y los diálogos nuevos.
 12. Una partida v1/v2 sin claves sigue igual, y un valor basura en `puerto_mina` no rompe nada.
 13. La XP se paga una sola vez, también si `evolucion.js` se carga después.
-14. **Táctil:** el botón Poder y Acción funcionan; al salir del radio se devuelve `G.interaccion.modo`. Los textos tienen inglés en `en.js` y en ningún texto aparece «FeixZero».
+14. **Táctil:** el botón Poder y Acción funcionan; al salir del radio se devuelve `G.interaccion.modo`. Los textos tienen inglés en `en.js` y ningún texto nombra a personas reales del equipo de modelado (directiva V18.3 §1).
 15. Las 13 baterías quedan en verde, con 0 errores de consola.
 
 **Riesgos:** (a) La pendiente de 38° puede ser demasiado empinada para el motor a pie. **Mitigación:** tramo en dos rampas con un descanso. (b) Las coordenadas son provisionales hasta medirlas en el juego. **Mitigación:** la prueba 3. (c) El retrato está en `docs/img/v18_3/`, y hay que comprobar que `sitio.sh` lo publique. Si no, se mueve a `assets/`, sin duplicarlo. (d) Un Constructor que use la malla de la Ingeniera puede leerse como un clon. Por eso es provisional y lleva accesorios distintos, hasta BM159. (e) Puede chocar con otros `G.interaccion.modo`. La Sombra, el Sapo y el minigolf están a más de 150 m, y solo se toma el modo dentro del radio. (f) Si el cap. 3 se muda a La Mina (H18), hay que reubicar la misión. (g) La escala humana junto a las cotorras **[KELVIN]**. (h) Rendimiento en móvil: 2 NPC de 13,7 k triángulos y un mixer. Hay que medirlo en un teléfono real.

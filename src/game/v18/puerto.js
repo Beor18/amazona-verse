@@ -28,7 +28,7 @@ window.AVV18Puerto = function (G) {
   const S = G.S, T = G.terreno, scene = G.renderer.scene;
   const ID = 'puerto_mina';
   const ESTADOS = ['obra', 'descubierto', 'investigado', 'desactivado', 'reparado'];
-  const XP_FIN = 150, R_DESCUBRE = 14, R_ENCUENTRO = 16, R_HUD = 45, R_AVISO = 40, FRENO_S = 3, BOCANADA_S = 5;
+  const XP_FIN = 150, R_VISTA = 220, R_DESCUBRE = 14, R_ENCUENTRO = 16, R_HUD = 45, R_AVISO = 40, FRENO_S = 3, BOCANADA_S = 5;
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   // Medido en el mapa real (assets/data/mapa_cap1*.js) y en el juego: eje de la escalera de A (pie, plaza) a B (borde de la meseta)
   const SITIO = { plaza: { x: 73.6, z: -75.2 }, a: { x: 74.4, z: -73.25 }, b: { x: 85.6, z: -74.45 } };
@@ -130,7 +130,9 @@ window.AVV18Puerto = function (G) {
   const mat = (k, c, o) => mats[k] || (mats[k] = new THREE.MeshStandardMaterial(Object.assign({ color: new THREE.Color(c).convertSRGBToLinear(), roughness: 0.75, metalness: 0 }, o || {})));
   const caja = (w, h, d, m) => new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
   const cil = (r0, r1, h, n, m) => new THREE.Mesh(new THREE.CylinderGeometry(r0, r1, h, n || 10), m);
-  const grupo = n => { const g = new THREE.Group(); g.name = n; scene.add(g); return g; };
+  // todo cuelga de una raíz que se oculta lejos de La Mina (> R_VISTA): con el plano lejano a 1600 m, si no, se dibujaría desde toda la isla
+  const raiz = new THREE.Group(); raiz.name = 'v18-puerto'; raiz.visible = false; scene.add(raiz);
+  const grupo = n => { const g = new THREE.Group(); g.name = n; raiz.add(g); return g; };
   let gObra, gEscalera, gMaq, gPistas = {}, gMats = {}, gRuta;
   const maq = { cuerpo: null, engranaje: null, broca: null, luces: [], flor: null, pos: { x: 0, z: 0 }, giro: 0, pintada: null, mueve: null };
   function construir() {
@@ -221,7 +223,7 @@ window.AVV18Puerto = function (G) {
       g.add(o, aura); g.position.set(p.x, y, p.z); gPistas[k] = g;
       G.interaccion.add({ id: 'v18_puerto_pista_' + k, x: p.x, z: p.z, r: 2.2, visible: () => listaMision() && estado() === 'descubierto' && !A.pistas.has(k), label: () => TXT.pistas[k][0], use: () => verPista(k) });
     }
-    gRuta = new THREE.InstancedMesh(new THREE.SphereGeometry(0.09, 8, 6), brillo, 12); gRuta.name = 'v18-puerto-ruta'; scene.add(gRuta);
+    gRuta = new THREE.InstancedMesh(new THREE.SphereGeometry(0.09, 8, 6), brillo, 12); gRuta.name = 'v18-puerto-ruta'; raiz.add(gRuta);
     // 6 · materiales de la escalera
     const cuerdaM = mat('cuerda', '#c9a86a');
     for (const [key, tipo, s0] of P.mats) {
@@ -296,7 +298,9 @@ window.AVV18Puerto = function (G) {
   function nuevoJugador(sp) { return H.luchador({ id: 'jugador', nombre: 'Tú', especie: sp || especie(), pos: S.pos, mira: () => S.facing }); }
   const tecnica = () => { const h = A.j && H.get(A.j.poder); return (h && h.tecnica) || 'pico'; };
   function descubrir() {
-    if (A.descubriendo || estado() !== 'obra') return false;
+    if (estado() !== 'obra') return false;
+    // si otra charla o un clear() cortaron la de la Ingeniera, su final no llega: con la caja cerrada se puede volver a empezar
+    if (A.descubriendo && G.dialogo && G.dialogo.activo && G.dialogo.activo()) return false;
     A.descubriendo = true;
     N.decir('ingeniera', TXT.descubre, () => { A.descubriendo = false; if (avanzar('descubierto')) { quitarGuia(); aplicar(); } });
     return true;
@@ -358,7 +362,8 @@ window.AVV18Puerto = function (G) {
     emitir({ tipo: 'bocanada', d });
     if (d > 6) return 'lejos';
     if (A.j && A.j.escudo > 0 && enEncuentro()) { A.j.escudo = 0; try { if (G.v18fx && G.v18fx.dispersar) G.v18fx.dispersar(S.pos); } catch (e) { /* fx */ } acertar('plumas'); return 'escudo'; }
-    if (d < 4 && d > 0.3) A.empuje = { x: (S.pos.x - maq.pos.x) / d * 3.2, z: (S.pos.z - maq.pos.z) / d * 3.2, t: 0.3 }; // empuja suave, sin quitar nada
+    const enSuelo = S.pos.y - alto(S.pos.x, S.pos.z) < 2.5;
+    if (d < 4 && d > 0.3 && enSuelo && !A.frenando) A.empuje = { x: (S.pos.x - maq.pos.x) / d * 3.2, z: (S.pos.z - maq.pos.z) / d * 3.2, t: 0.3 }; // empuja suave, sin quitar nada
     return 'empuja';
   }
   function frenar() {
@@ -531,6 +536,8 @@ window.AVV18Puerto = function (G) {
     if (!M.valido || !M.hecho) return;
     for (let i = timers.length - 1; i >= 0; i--) { timers[i].t -= dt; if (timers[i].t <= 0) { const f = timers[i].fn; timers.splice(i, 1); f(); } }
     const lista = listaMision();
+    const cerca = Math.hypot(S.pos.x - SITIO.plaza.x, S.pos.z - SITIO.plaza.z) < R_VISTA;
+    if (raiz.visible !== cerca) raiz.visible = cerca;
     if (gMaq.visible !== (lista || reparado())) aplicar();
     if (!lista) { soltarModo(); pintarHud(false); return; }
     pasoMaquina(dt);
@@ -661,7 +668,7 @@ window.AVV18Puerto = function (G) {
       // 3 · lejos no se carga nada; aviso y bandera
       const villa = (T.mapa.lugares && T.mapa.lugares.villa) || { x: 125, z: 140 };
       ir(villa.x, villa.z); V.cambiarMundo('puente_villa', 'reparado'); correr(0.4); await esperar(300); correr(0.1);
-      check('3 · Carga diferida: lejos del puerto (> 150 m) no hay personajes ni se pidió su modelo', Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z) > 150 && N.activos().length === 0 && N.stats().pedidos.length === 0 && !recursos().length,
+      check('3 · Carga diferida: lejos del puerto (> 150 m) no hay personajes ni se pidió su modelo', Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z) > 150 && N.activos().length === 0 && N.stats().pedidos.length === 0 && !recursos().length && !raiz.visible,
         'dist ' + Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z).toFixed(0) + ' m · pedidos ' + N.stats().pedidos.length);
       check('3b · Con el puente reparado: aviso «retumba una máquina» y bandera verde del minimapa en la plaza', toasts.includes(TXT.aviso) && (!G.minimapa || guia.puesta || (G.minimapa.marcadores && G.minimapa.marcadores().some(m => m.tipo === 'dest'))), toasts.slice(-2).join(' | '));
       // 4 · el sitio respeta lo que ya existe
@@ -691,6 +698,9 @@ window.AVV18Puerto = function (G) {
       const pl = en(-12, 8); ir(pl.x, pl.z); correr(0.5); await esperar(50);
       check('8 · Paso 1: al llegar, el Constructor ignora el aviso de la Ingeniera (bocadillos)', A.llegada && (G.dialogo.libre ? !!G.dialogo.libre() : true), (G.dialogo.actual && G.dialogo.actual() || {}).text);
       cerrarCharlas();
+      // otra charla que corta la de la Ingeniera (clear) no deja la misión trabada en «obra»
+      const d1 = descubrir(); G.dialogo.clear(); const d2 = descubrir();
+      check('8a · Si otra charla corta la de la Ingeniera, se puede volver a empezar (no se traba en «obra»)', d1 && d2 && estado() === 'obra' && G.dialogo.open(), d1 + ' / ' + d2);
       const pd = en(-4, 1); ir(pd.x, pd.z, MAQ.on); correr(0.2);
       const abre = G.dialogo.open() && (G.dialogo.actual() || {}).who === 'La Ingeniera';
       cerrarCharlas(); correr(0.1);
@@ -780,7 +790,7 @@ window.AVV18Puerto = function (G) {
       const D = window.AV_EN || {}, pats = Object.keys(D).filter(k => k.indexOf('{}') >= 0).map(k => new RegExp('^' + k.split('{}').map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('(.+?)') + '$'));
       const tx = textos(), faltan = tx.filter(t => !D[t] && !pats.some(re => re.test(t)));
       check('19 · Todos los textos tienen inglés en content/cap1/en.js', !faltan.length, faltan.slice(0, 6).join(' | '));
-      check('19b · Ningún texto ni dato menciona «FeixZero»', !/feix/i.test(tx.join(' ') + JSON.stringify(N.defs())));
+      check('19b · Ningún texto ni dato menciona el nombre del modelador (directiva V18.3 §1)', !/\x66eix/i.test(tx.join(' ') + JSON.stringify(N.defs())));
       // 20 · lejos se liberan
       V.cambiarMundo('puente_villa', 'reparado'); ir(villa.x, villa.z); correr(0.2);
       const st = N.stats();
