@@ -88,11 +88,13 @@ console.error('EJEMPLOS CRUDOS: ' + JSON.stringify(outRaw, null, 1).slice(0, 300
 
 const out = { instanciasEn: instClave, mapa: {} };
 for (const id of MODELOS) {
-  const fila = { kit: KIT[id] ? { tris: KIT[id].tris, trisHD: KIT[id].trisHD, trisLejos: KIT[id].trisLejos, hd: KIT[id].hd, kb: KIT[id].kb, kbHD: KIT[id].kbHD, radio: KIT[id].radio, alto: KIT[id].alto } : null, versiones: {}, nInst: porModelo[id].length, ejemplos: porModelo[id].slice(0, 4) };
+  const fila = { kit: KIT[id] ? { tris: KIT[id].tris, trisHD: KIT[id].trisHD, trisLejos: KIT[id].trisLejos, hd: KIT[id].hd, kb: KIT[id].kb, kbHD: KIT[id].kbHD, kbLejos: KIT[id].kbLejos, radio: KIT[id].radio, alto: KIT[id].alto } : null, versiones: {}, nInst: porModelo[id].length, ejemplos: porModelo[id].slice(0, 4) };
   for (const suf of ['', '_hd', '_lejos']) {
     const f = path.join(RAIZ, 'assets/models/edificios', id + suf + '.glb');
     if (fs.existsSync(f)) fila.versiones[suf || 'ligero'] = triangulosGlb(f);
     else fila.versiones[suf || 'ligero'] = null;
+    const w = path.join(RAIZ, 'assets/models/edificios', id + suf + '_glb.js');
+    if (fs.existsSync(w) && fila.versiones[suf || 'ligero']) fila.versiones[suf || 'ligero'].kbWrapper = Math.round(fs.statSync(w).size / 102.4) / 10;
   }
   out.mapa[id] = fila;
 }
