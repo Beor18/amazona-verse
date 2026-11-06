@@ -615,6 +615,7 @@ window.AVV18Combate = function (G) {
       if (r.poder === 'semilla_pina' && dist > 3 && dist < 12 && azar() < 0.3) { r.poderT = 4; usar(r, 'semilla_pina'); return; }
       if (r.poder === 'remolino' && dist < 3.2 && azar() < 0.3) { r.poderT = 4; usar(r, 'remolino'); return; }
       if (r.poder === 'imitacion' && j.ultPoder && dist > 2 && azar() < 0.3) { r.poderT = 4; usar(r, 'imitacion'); return; }
+      if (r.poder === 'vista_cumbre' && dist > 2.2 && dist < 3.6 && azar() < 0.3) { r.poderT = 4; usar(r, 'vista_cumbre'); return; } // la ventana donde su ala larga alcanza y el de la jugadora no
     }
     if (dist < 2.3 && r.golpeT <= 0) { r.golpeT = 1.15; usar(r, 'golpe_ala'); return; }
     if (dist > 6 && dist < 16 && r.tiroT <= 0 && r.energia > 40) { r.tiroT = 2.4; usar(r, 'semilla'); return; }
@@ -737,12 +738,13 @@ window.AVV18Combate = function (G) {
   // existen (dorado sobre la rival vista, hojas, plumas). Sin azar(): no cambia las decisiones de la IA en las pruebas.
   function pasoNuevos(f, dt) {
     if (!f) return;
-    for (const k of ['capa', 'rebote', 'hojas', 'vista', 'remolino', 'drena']) if (f[k] > 0) f[k] = Math.max(0, f[k] - dt);
+    for (const k of ['capa', 'rebote', 'hojas', 'vista', 'remolino', 'drena', 'vistacumbre']) if (f[k] > 0) f[k] = Math.max(0, f[k] - dt);
     if (f.drena > 0) f.energia = Math.max(0, f.energia - ((H.get('plumas_aliso') || {}).quita || 7) * dt); // Plumas de aliso: robo de energía
-    if (!(f.vista > 0 || f.hojas > 0 || f.rebote > 0 || f.capa > 0 || f.remolino > 0 || f.drena > 0)) { f.fxT = 0; return; }
+    if (!(f.vista > 0 || f.hojas > 0 || f.rebote > 0 || f.capa > 0 || f.remolino > 0 || f.drena > 0 || f.vistacumbre > 0)) { f.fxT = 0; return; }
     f.fxT = (f.fxT || 0) - dt; if (f.fxT > 0) return;
     f.fxT = 0.3; C.stats.brillos = (C.stats.brillos || 0) + 1;
     if (f.vista > 0) { fx('gold', f.pos.x, f.pos.y + 1.2, f.pos.z); fx('gold', f.pos.x, f.pos.y + 2.0, f.pos.z); }
+    if (f.vistacumbre > 0) fx('gold', f.pos.x, f.pos.y + 1.6, f.pos.z); // Vista de cumbre: brillo propio mientras dura
     if (f.hojas > 0 || f.capa > 0 || f.remolino > 0) fx('leaves', f.pos.x, f.pos.y + 0.9, f.pos.z);
     if (f.rebote > 0 || f.drena > 0) fx('feathers', f.pos.x, f.pos.y + 1.3, f.pos.z);
   }
@@ -1017,6 +1019,11 @@ window.AVV18Combate = function (G) {
     P.recargar();
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
-  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, estado: () => C, test };
+  // Vista de cumbre: posición de la rival para el minimapa mientras la jugadora la «ve desde la cumbre» (lee minimapa.js)
+  function mapa() {
+    if (!(C.j && C.j.vistacumbre > 0 && C.r && (C.fase === 'lucha' || C.fase === 'cuenta'))) return null;
+    return { x: C.r.pos.x, z: C.r.pos.z, nombre: 'Rival' };
+  }
+  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, estado: () => C, mapa, test };
   return G.v18combate;
 };

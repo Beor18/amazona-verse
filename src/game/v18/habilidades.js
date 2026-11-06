@@ -48,7 +48,8 @@ window.AVV18Habilidades = function (G) {
   registrar({ id: 'golpe_ala', basico: true, nombre: 'Golpe de ala', coste: 0, cooldown: 0.55, alcance: 2.4, fx: 'feathers',
     efecto(ctx) {
       const { yo, otro } = ctx; ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('aleteo');
-      if (dist(yo, otro) > this.alcance) return { ok: true, acierto: false };
+      const alcance = this.alcance * (yo.vistacumbre > 0 ? ((get('vista_cumbre') || {}).alcanceK || 1.35) : 1); // Vista de cumbre: los golpes de ala alcanzan un poco más
+      if (dist(yo, otro) > alcance) return { ok: true, acierto: false };
       return { ok: true, acierto: ctx.golpear(otro, { plumas: 1, empuje: 7, mareo: 0.7, dir: dirA(yo, otro) }) };
     } });
   registrar({ id: 'semilla', basico: true, nombre: 'Semilla', coste: 15, cooldown: 0.8, alcance: 18, fx: 'leaves',
@@ -574,6 +575,19 @@ window.AVV18Habilidades = function (G) {
       ctx.fx('feathers', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('aleteo');
       const r = orig.efecto.call(media, c2) || { ok: true };
       return { ok: true, copia: orig.id, acierto: r.acierto };
+    } });
+  // Vista de cumbre (guatemalae, OJOS — V18_MATRIZ_36.md #20): 6 s en «la cumbre»: ves a la rival en el minimapa
+  // (marcador v18rival: la publica combate.js → mapa() y lo pinta minimapa.js) y tus golpes de ala alcanzan ×1,35
+  // (lo aplica golpe_ala leyendo yo.vistacumbre). Ventaja: precisión y lectura de la rival. Debilidad: no hace daño
+  // ni defiende. Coste 30 · espera 9 s (matriz). Sin invulnerabilidad. Se consigue en el Álbum (nuevas.js, provisional).
+  registrar({ id: 'vista_cumbre', nombre: 'Vista de cumbre', especies: ['guatemalae'], tecnica: 'ojos', coste: 30, cooldown: 9,
+    fx: 'gold', dura: 6, alcanceK: 1.35,
+    efecto(ctx) {
+      const { yo } = ctx;
+      yo.vistacumbre = this.dura; yo.cara = 'fight';
+      ctx.fx('gold', yo.pos.x, yo.pos.y + 1.4, yo.pos.z); ctx.fx('ring', yo.pos.x, yo.pos.y, yo.pos.z); ctx.sonar('ring', 2);
+      ctx.poder({ id: this.id, de: yo.id, dura: this.dura });
+      return { ok: true };
     } });
 
   // ---------- Luchadores ----------

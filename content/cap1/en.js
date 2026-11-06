@@ -1853,6 +1853,8 @@ window.AV_EN = {
  "¡Descubriste al loro de anteojos rojos en el Álbum! Su poder: Vuelta de pino. Elígelo en Pausa → Mis cotorras.": "You discovered the red-spectacled amazon in the Album! Its power: Pine loop. Pick it in Pause → My parrots.",
  "¡Descubriste al loro cabeza amarilla en el Álbum! Su poder: Imitación. Elígelo en Pausa → Mis cotorras.": "You discovered the yellow-headed amazon in the Album! Its power: Imitation. Pick it in Pause → My parrots.",
  "Imitación": "Imitation",
+ "¡Descubriste al loro harinoso del norte en el Álbum! Su poder: Vista de cumbre. Elígelo en Pausa → Mis cotorras.": "You discovered the northern mealy amazon in the Album! Its power: Summit view. Pick it in Pause → My parrots.",
+ "Vista de cumbre": "Summit view",
  "Columna de nube": "Cloud column",
  "Plumas de manglar": "Mangrove feathers",
  "Vuelo de niebla": "Mist flight",

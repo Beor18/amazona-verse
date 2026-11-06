@@ -31,7 +31,7 @@ window.AVMinimapa = function (G) {
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || (G.pack && G.pack.id) || 'amazonaverse') + '.minimapa';
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const H = (x, z) => G.terreno.height(x, z);
-  const COL = { obj: '#ffd23f', mision: '#ff7a30', parada: '#2f8fe0', reto: '#8e5be8', fruto: '#e8364a', lugar: '#ffffff', pueblo: '#f2b552', piedra: '#d8cfbd', dest: '#2fc15a', yo: '#ffffff', tinta: '#14202b', v18golf: '#35c46f', v18puerto: '#c9803a' };
+  const COL = { obj: '#ffd23f', mision: '#ff7a30', parada: '#2f8fe0', reto: '#8e5be8', fruto: '#e8364a', lugar: '#ffffff', pueblo: '#f2b552', piedra: '#d8cfbd', dest: '#2fc15a', yo: '#ffffff', tinta: '#14202b', v18golf: '#35c46f', v18puerto: '#c9803a', v18rival: '#d4303a' };
 
   // ---------- Preferencia (solo este dispositivo; si no hay almacén, valores por defecto) ----------
   const pref = { ruta: true };
@@ -171,6 +171,8 @@ window.AVMinimapa = function (G) {
       try { const p = G.v18puerto && G.v18puerto.mapa && G.v18puerto.mapa(); if (p) out.push({ tipo: 'v18puerto', x: p.x, z: p.z, nombre: p.nombre }); } catch (e) { /* sin módulo */ }
       // KIMI-150: el Ojo de sol marca en el minimapa lo más cercano durante unos segundos (explorar.js; sin bandera no existe)
       try { const e = G.v18explorar && G.v18explorar.mapa && G.v18explorar.mapa(); if (e) out.push({ tipo: 'lugar', x: e.x, z: e.z, nombre: e.nombre }); } catch (e2) { /* sin módulo */ }
+      // Vista de cumbre (Vista de cumbre #20): la jugadora «ve» a la rival del duelo mientras dura el poder (combate.js mapa())
+      try { const rv = G.v18combate && G.v18combate.mapa && G.v18combate.mapa(); if (rv) out.push({ tipo: 'v18rival', x: rv.x, z: rv.z, nombre: rv.nombre }); } catch (e3) { /* sin módulo */ }
     }
     const bq = G.banquete && G.banquete._dev && G.banquete._dev.mundo && G.banquete._dev.mundo.lista;
     // Frutos: solo los 14 más cercanos (sin ruido; el Banquete tiene cientos y el mapa debe poder leerse)
@@ -228,7 +230,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
 #mapa-grande .mg-ley .l-mision{background:${COL.mision};border-radius:50%}#mapa-grande .mg-ley .l-parada{background:${COL.parada};border-radius:50%}
 #mapa-grande .mg-ley .l-reto{background:${COL.reto};transform:rotate(45deg) scale(.85)}#mapa-grande .mg-ley .l-fruto{background:${COL.fruto};border-radius:50%;width:9px;height:9px}
 #mapa-grande .mg-ley .l-lugar{background:#fff}#mapa-grande .mg-ley .l-pueblo{background:${COL.pueblo};clip-path:polygon(50% 0,100% 45%,100% 100%,0 100%,0 45%);border:0}#mapa-grande .mg-ley .l-obj{background:${COL.obj};border-radius:50%}#mapa-grande .mg-ley .l-dest{background:${COL.dest};border-radius:2px 50% 50% 2px}
-#mapa-grande .mg-ley .l-v18golf{background:${COL.v18golf};clip-path:polygon(18% 100%,18% 0,100% 26%,18% 52%);border:0}#mapa-grande .mg-ley .l-v18puerto{background:${COL.v18puerto};border-radius:50%}
+#mapa-grande .mg-ley .l-v18golf{background:${COL.v18golf};clip-path:polygon(18% 100%,18% 0,100% 26%,18% 52%);border:0}#mapa-grande .mg-ley .l-v18puerto{background:${COL.v18puerto};border-radius:50%}#mapa-grande .mg-ley .l-v18rival{background:${COL.v18rival};transform:rotate(45deg) scale(.85)}
 @media (max-height:480px){#mapa-grande .mg-panel{--lado:calc(100dvh - 120px)}#mapa-grande .mg-ley{display:none}}
 :root.a11y-zurdo #mapa-grande .mg-head{flex-direction:row-reverse}:root.a11y-zurdo #mapa-grande h2{margin:0 4px 0 auto}
 :root.a11y-contraste #minimapa .mm-btn{background:#000;border-color:#fff;border-width:4px;box-shadow:none}
@@ -246,7 +248,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     '<button type="button" class="mg-ruta" aria-pressed="false">Ruta</button><button type="button" class="mg-quitar" hidden>Quitar destino</button><button type="button" class="mg-cerrar" aria-label="Cerrar el mapa (M)">Cerrar</button></div>' +
     '<canvas class="mg-c" width="400" height="400" aria-label="Mapa de la isla. Toca para fijar un destino"></canvas><p class="mg-info" aria-live="polite"></p>' +
     '<ul class="mg-ley"><li><i class="l-obj"></i>Objetivo</li><li><i class="l-mision"></i>Misión</li><li><i class="l-parada"></i>Parada</li><li><i class="l-reto"></i>Reto</li><li><i class="l-fruto"></i>Fruto</li><li><i class="l-lugar"></i>Lugar</li><li><i class="l-pueblo"></i>Asentamiento</li><li><i class="l-dest"></i>Destino</li>' +
-    '<li hidden class="li-v18"><i class="l-v18golf"></i>Minigolf</li><li hidden class="li-v18"><i class="l-v18puerto"></i>Misión V18</li></ul></div>';
+    '<li hidden class="li-v18"><i class="l-v18golf"></i>Minigolf</li><li hidden class="li-v18"><i class="l-v18puerto"></i>Misión V18</li><li hidden class="li-v18"><i class="l-v18rival"></i>Rival</li></ul></div>';
   let elC, elG, cvC, cvG, ctxC, ctxG, txtD, txtDot, abierto = false, dprC = 0, dprG = 0, anchoC = -1, porColocar = true; // anchoC −1: sin medida del observador
   function montar() {
     if (!doc.getElementById(ESTILO_ID)) { const st = doc.createElement('style'); st.id = ESTILO_ID; st.textContent = ESTILO; doc.head.appendChild(st); }
@@ -317,6 +319,9 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       for (let i = 0; i < 6; i++) { const a = i * 1.0472, cx = Math.cos(a) * r * 1.02, cy = Math.sin(a) * r * 1.02; ctx.moveTo(cx + r * 0.24, cy); ctx.arc(cx, cy, r * 0.24, 0, 6.2832); }
       ctx.moveTo(r * 0.98, 0); ctx.arc(0, 0, r * 0.98, 0, 6.2832);
     }
+    else if (tipo === 'v18rival') { // rival del duelo visto desde la cumbre: rombo rojo (Vista de cumbre #20)
+      ctx.moveTo(0, -r * 1.05); ctx.lineTo(r * 1.05, 0); ctx.lineTo(0, r * 1.05); ctx.lineTo(-r * 1.05, 0); ctx.closePath();
+    }
     else if (tipo === 'obj') { for (let i = 0; i < 10; i++) { const a = -1.5708 + i * 0.6283, rr = i % 2 ? r * 0.55 : r * 1.25; ctx[i ? 'lineTo' : 'moveTo'](Math.cos(a) * rr, Math.sin(a) * rr); } ctx.closePath(); }
     else { ctx.arc(0, 0, r, 0, 6.2832); }
     ctx.fill(); ctx.stroke();
@@ -360,7 +365,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       ctx.lineWidth = 2.2 * gk; ctx.strokeStyle = de ? COL.dest : COL.obj; ctx.stroke(); ctx.restore();
     }
     // Marcadores en orden de importancia (los de arriba se dibujan al final)
-    const orden = ['fruto', 'pueblo', 'lugar', 'reto', 'parada', 'mision', 'v18golf', 'v18puerto', 'dest', 'obj'], inset = rM + 3 * k;
+    const orden = ['fruto', 'pueblo', 'lugar', 'reto', 'parada', 'mision', 'v18golf', 'v18puerto', 'v18rival', 'dest', 'obj'], inset = rM + 3 * k;
     const dentro = (x, y) => x > inset * 0.4 && y > inset * 0.4 && x < w - inset * 0.4 && y < h - inset * 0.4;
     const bordes = [], rotulos = [];
     for (const tipo of orden) for (const m of ms) {
