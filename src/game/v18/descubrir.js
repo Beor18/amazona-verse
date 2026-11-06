@@ -38,7 +38,7 @@ window.AVV18Descubrir = function (G) {
     nota: 'Cambia tu poder en el duelo. Tú sigues siendo tú.',
     listo: 'Listo', poder: 'Poder', boton: 'Mis cotorras', elegida: 'Para el duelo:'
   };
-  const RETRATOS = new Set(['agilis', 'arausiaca', 'barbadensis', 'farinosa', 'xantholora']); // BM152 (Mac): retratos con el personaje del juego
+  const RETRATOS = new Set(['agilis', 'arausiaca', 'barbadensis', 'diadema', 'farinosa', 'guildingii', 'xantholora']); // BM152 (Mac): retratos con el personaje del juego
   const NOMBRES = { vittata: 'Cotorra puertorriqueña', arausiaca: 'Cotorra de Dominica' };
   const PODERES = { islenas: 'Grito del Yunque', montaneras: 'Escudo de plumas' }; // respaldo si el motor de habilidades (habilidades.js) aún no cargó
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 3600); } catch (e) { /* sin interfaz */ } };

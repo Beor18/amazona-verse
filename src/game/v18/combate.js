@@ -36,7 +36,8 @@ window.AVV18Combate = function (G) {
     ganaGuarda: '¡Ganaste 2 maderas y 1 piedra! El puente ya está reparado: guárdalas para lo que venga.', ganaOtra: '¡Ganaste otra vez! Los materiales ya te los llevaste; busca más por el bosque.',
     pierde: '¡Uy, te mareaste! Sacude las plumas y prueba otra vez.', lejos: 'Te alejaste: el duelo queda para luego.',
     bloquea: '¡Bloqueado!', rompe: '¡Escudo roto!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!',
-    ganaste: '¡Ganaste!', perdiste: '¡Casi!', bienvenida: '¡A jugar! Quítale sus 5 plumas a la Campeona.', apoyo: '¡La cotorra de Dominica te cubre!'
+    ganaste: '¡Ganaste!', perdiste: '¡Casi!', bienvenida: '¡A jugar! Quítale sus 5 plumas a la Campeona.', apoyo: '¡La cotorra de Dominica te cubre!',
+    capa: '¡Capa de palma: semilla devuelta!', rebote: '¡Rebote!', hojas: '¡Las hojas aguantaron el golpe!', avisoSelva: '¡Cuidado, va a atacar!'
   };
   // Generador con semilla: la IA decide igual en cada prueba
   let semilla = 1;
@@ -205,6 +206,11 @@ window.AVV18Combate = function (G) {
   function golpear(de, blanco, g) {
     if (C.fase !== 'lucha' || !blanco) return false;
     if (blanco.escudo > 0 && g.rompeEscudo) { quitarEscudo(blanco); flotante(TXT.rompe, 1.2); } // Ala fuerte: rompe el escudo y el golpe entra entero
+    // Hojas que envuelven: el siguiente golpe que quitaría una pluma solo marea (el escudo y la inmunidad van antes)
+    if (blanco.hojas > 0 && (g.plumas || 0) > 0 && !(blanco.escudo > 0) && !(blanco.inv > 0 && !g.forzar)) {
+      blanco.hojas = 0; g = Object.assign({}, g, { plumas: 0, mareo: Math.max(g.mareo || 0, (H.get('hojas_envuelven') || {}).mareo || 0.8) });
+      fx('leaves', blanco.pos.x, blanco.pos.y + 1, blanco.pos.z); flotante(TXT.hojas, 1.0); C.stats.hojas = (C.stats.hojas || 0) + 1;
+    }
     const rc = H.recibir(de, blanco, g); // regla común (habilidades.js): escudo, invulnerabilidad, plumas, mareo, empujón
     if (rc.escudo) {
       // Escudo de plumas: un golpe normal se para del todo; el grito se reduce, no se anula. En los dos casos se dispersa.
@@ -335,8 +341,16 @@ window.AVV18Combate = function (G) {
     el.hidden = false; apoyoT = 1.2;
     fx('feathers', S.pos.x, S.pos.y + 1.3, S.pos.z);
   }
+  // Ojo de selva: el siguiente ataque de la vista se anuncia y sale un momento después (las defensas no se retrasan)
+  const DEFENSAS = new Set(['escudo_plumas', 'quiebro', 'capa_palma', 'pluma_rebote', 'hojas_envuelven']);
   function usar(f, id) {
     if (C.fase !== 'lucha' || !f) return { ok: false, motivo: 'fase' };
+    if (f.vista > 0 && !f.avisada && !DEFENSAS.has(id)) {
+      const l = H.listo(f, id); if (!l.ok) return l;
+      f.avisada = true; flotante(TXT.avisoSelva, 0.9); fx('gold', f.pos.x, f.pos.y + 1.6, f.pos.z); sonar('ring', 1);
+      C.timers.push({ t: (H.get('ojo_selva') || {}).aviso || 0.6, fn: () => usar(f, id) });
+      return { ok: true, id, avisada: true };
+    }
     const r = H.usar(f, id, ctxDe(f));
     if (r.ok && f.ia) { C.stats.ataques++; if (!H.get(id).basico) C.stats.poderes++; }
     if (r.ok) pintar();
@@ -653,10 +667,41 @@ window.AVV18Combate = function (G) {
       if (b.arco && b.botes > 0 && p.y < suelo && b.t < b.vida) { p.y = suelo; b.vy = Math.abs(b.vy) * b.arco.rebote; b.botes--; b.boto = (b.boto || 0) + 1; fx('leaves', p.x, suelo + 0.1, p.z); } // ...y bota dos veces
       let fin = b.t >= b.vida || p.y < suelo - 0.1;
       if (!fin && dx * dx + dy * dy + dz * dz < b.radio * b.radio) {
+        if (devolver(b, blanco)) continue; // Capa de palma / Pluma rebote: la semilla vuelve a quien la tiró
         golpear(b.de, blanco, Object.assign({ dir: { x: b.vx / 16, z: b.vz / 16 } }, b.golpe)); fin = true;
       }
       if (fin) { scene.remove(b.m); C.balas.splice(i, 1); if (C.fase !== 'lucha') return; }
     }
+  }
+  // Capa de palma (solo por delante, hacia donde mira quien la lleva) y Pluma rebote (de cualquier lado): la semilla cambia de
+  // dueña y vuela hacia quien la tiró. Una semilla devuelta no se devuelve otra vez (un solo rebote).
+  function devolver(b, f) {
+    if (b.devuelta || !b.de || b.de === f || C.fase !== 'lucha') return false;
+    const quien = b.de, v = Math.hypot(b.vx, b.vz) || 1;
+    let como = null;
+    if (f.capa > 0) { const m = H.mira(f, quien); if ((-b.vx * m.x - b.vz * m.z) / v >= ((H.get('capa_palma') || {}).cono || 0.3)) como = 'capa'; }
+    if (!como && f.rebote > 0) como = 'rebote';
+    if (!como) return false;
+    if (como === 'capa') { f.capa = 0; f.alasT = 0; } else f.rebote = 0;
+    const p = b.m.position, dx = quien.pos.x - p.x, dz = quien.pos.z - p.z, d = Math.hypot(dx, dz) || 1, vel = Math.max(16, v);
+    Object.assign(b, { de: f, devuelta: como, falla: false, arco: null, botes: 0, t: 0, vx: dx / d * vel, vz: dz / d * vel,
+      vy: ((quien.pos.y + 0.9) - p.y) / Math.max(0.15, d / vel), vida: d / vel + 0.6 });
+    C.stats.devueltas = (C.stats.devueltas || 0) + 1;
+    fx(como === 'capa' ? 'leaves' : 'feathers', p.x, p.y, p.z); sonar('ring', 2); flotante(como === 'capa' ? TXT.capa : TXT.rebote, 1.0);
+    emitir({ tipo: 'hit', de: quien.id, a: f.id, valor: 0, devuelta: como });
+    return true;
+  }
+  // Los estados de los cuatro de coste M bajan con el tiempo de juego; mientras duran, un brillo de los efectos que ya existen
+  // (dorado sobre la rival vista, hojas, plumas). Sin azar(): no cambia las decisiones de la IA en las pruebas.
+  function pasoNuevos(f, dt) {
+    if (!f) return;
+    for (const k of ['capa', 'rebote', 'hojas', 'vista']) if (f[k] > 0) f[k] = Math.max(0, f[k] - dt);
+    if (!(f.vista > 0 || f.hojas > 0 || f.rebote > 0 || f.capa > 0)) { f.fxT = 0; return; }
+    f.fxT = (f.fxT || 0) - dt; if (f.fxT > 0) return;
+    f.fxT = 0.3; C.stats.brillos = (C.stats.brillos || 0) + 1;
+    if (f.vista > 0) { fx('gold', f.pos.x, f.pos.y + 1.2, f.pos.z); fx('gold', f.pos.x, f.pos.y + 2.0, f.pos.z); }
+    if (f.hojas > 0 || f.capa > 0) fx('leaves', f.pos.x, f.pos.y + 0.9, f.pos.z);
+    if (f.rebote > 0) fx('feathers', f.pos.x, f.pos.y + 1.3, f.pos.z);
   }
   // Un paso del duelo (lo llama el bucle del juego; las pruebas lo llaman con dt fijo)
   function paso(dt) {
@@ -671,7 +716,7 @@ window.AVV18Combate = function (G) {
     }
     if (C.fase === 'lucha') {
       C.tLucha = (C.tLucha || 0) + dt;
-      H.paso(C.j, dt); H.paso(C.r, dt);
+      H.paso(C.j, dt); H.paso(C.r, dt); pasoNuevos(C.j, dt); pasoNuevos(C.r, dt);
       for (let i = C.timers.length - 1; i >= 0; i--) { const t = C.timers[i]; t.t -= dt; if (t.t <= 0) { C.timers.splice(i, 1); t.fn(); if (C.fase !== 'lucha') break; } }
       if (C.fase === 'lucha') pasoIA(dt);
       if (C.fase === 'lucha') pasoBalas(dt);

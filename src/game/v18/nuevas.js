@@ -8,6 +8,11 @@
      despertar al Sapo Encantado      → loro diadema (diadema)                · Semilla de río (PICO)
      primera medalla de oro en el minigolf → loro de Santa Lucía (versicolor) · Mirada del Pitón (OJOS)
      ganar 3 duelos en total          → amazona de pico amarillo (collaria)   · Ojo de sol (OJOS)
+   Cuatro de coste M (V18_MATRIZ_36.md #3, #18, #31, #25), con hitos que ya existen:
+     completar por primera vez el hoyo del minigolf → loro cubano (leucocephala) · Capa de palma (PLUMAS)
+     ganar un duelo sin perder ninguna pluma         → loro frente blanca (albifrons) · Pluma rebote (PLUMAS)
+     reparar el puente Y deshacer la Serpiente       → loro de cejas rojas (rhodocorytha) · Hojas que envuelven (PLUMAS)
+     recoger las 2 piedras y las 2 fibras (reparar.js) → loro de Kawall (kawalli) · Ojo de selva (OJOS)
    Llegan solas al cumplir el hito (aviso y a «Mis cotorras»); en partidas viejas que ya lo cumplían, sin aviso.
    Solo cambia el poder del duelo y de la amenaza: el personaje del jugador se queda igual. Mara y Vela (martinicana,
    violacea) son consejeras en la temporada 1 y no entran aquí. Solo con la bandera V18.
@@ -20,6 +25,7 @@ window.AVV18Nuevas = function (G) {
   const rango = e => Math.max(0, V.ESTADOS.indexOf(e || 'no_descubierta'));
   // Duelos ganados contra la rival (no cuenta el de 2 jugadores). Partidas viejas con la primera victoria ya pagada empiezan en 1.
   const duelosGanados = () => Number(V.mundo('duelos_ganados')) || (V.cuantos('victoria_duelo') > 0 ? 1 : 0);
+  const RECOGIBLES = ['piedra_1', 'piedra_2', 'fibra_1', 'fibra_2']; // claves de G.v18.mundo que pone reparar.js al recogerlos
   const HITOS = [
     { id: 'agilis', cuando: () => V.cuantos('victoria_duelo') > 0,
       txt: '¡Una amazona de pico negro vio tu duelo y quiere volar contigo! Su poder: Quiebro.' },
@@ -36,7 +42,15 @@ window.AVV18Nuevas = function (G) {
     { id: 'versicolor', m: true, cuando: () => V.otorgado('minigolf_villa_oro') || ((V.mundo('minigolf_villa') || {}).medalla === 'oro'),
       txt: '¡Un loro de Santa Lucía vio tu hoyo de oro y quiere volar contigo! Su poder: Mirada del Pitón.' },
     { id: 'collaria', cuando: () => duelosGanados() >= 3,
-      txt: '¡Una amazona de pico amarillo vio tus 3 duelos ganados y se une a tu bandada! Su poder: Ojo de sol.' }
+      txt: '¡Una amazona de pico amarillo vio tus 3 duelos ganados y se une a tu bandada! Su poder: Ojo de sol.' },
+    { id: 'leucocephala', m: true, cuando: () => V.otorgado('minigolf_villa_completo'),
+      txt: '¡Un loro cubano vio tu primer hoyo de minigolf y quiere volar contigo! Su poder: Capa de palma.' },
+    { id: 'albifrons', m: true, cuando: () => V.cuantos('victoria_perfecta') > 0,
+      txt: '¡Un loro frente blanca vio que ganaste sin perder ni una pluma! Su poder: Pluma rebote.' },
+    { id: 'rhodocorytha', m: true, cuando: () => V.mundo('puente_villa') === 'reparado' && V.mundo('serpiente_marana') === 'deshecha',
+      txt: '¡Con el puente arreglado y sin la Maraña, un loro de cejas rojas llegó al bosque! Su poder: Hojas que envuelven.' },
+    { id: 'kawalli', m: true, cuando: () => RECOGIBLES.every(k => V.mundo(k) === 'recogida'),
+      txt: '¡Un loro de Kawall te vio recoger todas las piedras y fibras y quiere volar contigo! Su poder: Ojo de selva.' }
   ];
   const TXT = { elige: 'Elígela en Pausa → Mis cotorras.', eligeM: 'Elígelo en Pausa → Mis cotorras.' }; // m: el aviso habla de «un loro»
   function revisar(avisar) {
@@ -54,6 +68,7 @@ window.AVV18Nuevas = function (G) {
     V.cambiarMundo('duelos_ganados', duelosGanados() + 1); // el evento llega antes de que combate.js pague la primera
     const C = G.v18combate && G.v18combate.estado(), sp = C && C.j && C.j.especie;
     if (sp && sp !== 'vittata') V.otorgar('combate_otra', 'victoria_otra', 1);
+    if (Number(ev.valor) >= ((C && C.j && C.j.plumasMax) || 5)) V.otorgar('combate_perfecto', 'victoria_perfecta', 1); // ganar sin perder ninguna pluma (valor = plumas que te quedan)
     setTimeout(() => revisar(true), 3600); // después del aviso de victoria (antes lo tapaba al instante)
   });
   G.on('v18', ev => { if (ev && (ev.tipo === 'mundo' || ev.tipo === 'recompensa')) setTimeout(() => revisar(true), 4200); }); // tras «¡Puente reparado!» y el premio de la Sombra
@@ -103,6 +118,34 @@ window.AVV18Nuevas = function (G) {
         ids.map(H.poderDe).join(','));
       check('No avisa dos veces la misma', revisar(true).length === 0);
       check('Mara y Vela no se pueden elegir (consejeras en la temporada 1)', rango(V.estado('martinicana')) < 1 && rango(V.estado('violacea')) < 1);
+
+      // ---- Las 4 de coste M: cada una con su hito, desde una partida nueva ----
+      V.borrar(); V.recargar(); toasts.length = 0;
+      const M4 = ['leucocephala', 'albifrons', 'rhodocorytha', 'kawalli'], esta = id => rango(V.estado(id)) >= rango('seleccionable'), ninguna = l => l.every(id => rango(V.estado(id)) < 1);
+      check('Al empezar no están el loro cubano, el frente blanca, el de cejas rojas ni el de Kawall', ninguna(M4));
+      V.otorgar('minigolf_villa_completo', 'minigolf_completo', 1); revisar(true);
+      check('Completar el hoyo del minigolf la primera vez trae el loro cubano (Capa de palma), con aviso', esta('leucocephala') && ninguna(M4.slice(1)) &&
+        toasts.some(t => /loro cubano/.test(t) && /Capa de palma/.test(t) && /Elígelo en Pausa → Mis cotorras/.test(t)));
+      const B1 = G.v18combate; G.v18combate = null;
+      try {
+        G.emit('v18combate', { tipo: 'win', de: 'jugador', valor: 4 }); revisar(true); const conPerdida = esta('albifrons');
+        G.emit('v18combate', { tipo: 'loss', de: 'rival', valor: 5 }); G.emit('v18combate', { tipo: 'win', de: 'j1', duelo: 2, valor: 5 }); revisar(true); const otras = esta('albifrons');
+        G.emit('v18combate', { tipo: 'win', de: 'jugador', valor: 5 }); revisar(true);
+        check('Ganar un duelo sin perder ninguna pluma trae el loro frente blanca (Pluma rebote); ganar perdiendo una, perder o el duelo de 2, no',
+          !conPerdida && !otras && esta('albifrons') && toasts.some(t => /loro frente blanca/.test(t) && /Pluma rebote/.test(t) && /Mis cotorras/.test(t)), 'con pérdida ' + conPerdida + ', otras ' + otras);
+      } finally { G.v18combate = B1; }
+      V.cambiarMundo('puente_villa', 'reparado'); revisar(true); const soloPuente = esta('rhodocorytha');
+      V.descubrir('guildingii'); V.desbloquear('guildingii'); // la de San Vicente ya probada arriba: así el aviso de esta no espera en la cola
+      V.cambiarMundo('serpiente_marana', 'deshecha'); revisar(true);
+      check('Reparar el puente y deshacer la Serpiente trae el loro de cejas rojas (Hojas que envuelven); solo el puente, no', !soloPuente && esta('rhodocorytha') &&
+        toasts.some(t => /cejas rojas/.test(t) && /Hojas que envuelven/.test(t) && /Mis cotorras/.test(t)));
+      for (const k of ['piedra_1', 'piedra_2', 'fibra_1']) V.cambiarMundo(k, 'recogida');
+      revisar(true); const tres = esta('kawalli'); V.cambiarMundo('fibra_2', 'recogida'); revisar(true);
+      check('Recoger las 2 piedras y las 2 fibras trae el loro de Kawall (Ojo de selva); con 3, aún no', !tres && esta('kawalli') &&
+        toasts.some(t => /loro de Kawall/.test(t) && /Ojo de selva/.test(t) && /Mis cotorras/.test(t)));
+      check('Las 4 tienen su poder propio', H.poderDe('leucocephala') === 'capa_palma' && H.poderDe('albifrons') === 'pluma_rebote' && H.poderDe('rhodocorytha') === 'hojas_envuelven' && H.poderDe('kawalli') === 'ojo_selva',
+        M4.map(H.poderDe).join(','));
+      check('...y no se avisan dos veces', revisar(true).length === 0);
 
       // ---- Los 8 poderes en el duelo, a paso fijo ----
       if (B && B.iniciar) {
@@ -194,6 +237,59 @@ window.AVV18Nuevas = function (G) {
         const solP = tuerce(5, 0.5, 3), sinP = tuerce(0, 1, 3);
         check('...si se aparta un poco, la semilla la sigue y le da (sin la marca, falla)', solP.n === 1 && sinP.n === 0, 'con Ojo de sol ' + solP.n + ', sin marca ' + sinP.n);
         S.facing = { x: 1, z: 0 }; B.salir();
+
+        // ---- Las 4 de coste M en el duelo, a paso fijo ----
+        // La rival tira una semilla desde 7 m; devuelve cuántas plumas pierde cada una
+        const tiroR = () => { C.r.cd = {}; C.r.energia = 100; C.r.mareo = 0; C.r.inv = 0; C.j.inv = 0; C.j.mareo = 0; C.j.escudo = 0; quieta(7);
+          const pj = C.j.plumas, pr = C.r.plumas, ok = B.usar(C.r, 'semilla').ok; corre(1.4); return { ok, j: pj - C.j.plumas, r: pr - C.r.plumas }; };
+        const poder = id => { C.j.cd = {}; C.j.energia = 100; C.j.mareo = 0; return B.usar(C.j, id); };
+        // Capa de palma: por delante para una semilla y la devuelve; por detrás no; dura poco
+        B.iniciar({ sinCuenta: true, especie: 'leucocephala' }); quieta(7); listo(); S.facing = { x: 1, z: 0 };
+        const rcp = poder('capa_palma'), cp1 = tiroR(), gastada = !(C.j.capa > 0), cp2 = tiroR();
+        check('Capa de palma: para la semilla que llega por delante y se la devuelve a la rival (le quita 1 pluma); solo una', rcp.ok && cp1.ok && cp1.j === 0 && cp1.r === 1 && gastada && cp2.j === 1,
+          'tú −' + cp1.j + ', rival −' + cp1.r + ', siguiente: tú −' + cp2.j);
+        S.facing = { x: -1, z: 0 }; poder('capa_palma'); const cpA = tiroR(); S.facing = { x: 1, z: 0 };
+        C.j.cd = {}; poder('capa_palma'); corre(2); const cpT = tiroR();
+        check('...por detrás no para nada, y a los 1,5 s ya no está', cpA.j === 1 && cpA.r === 0 && cpT.j === 1, 'detrás: tú −' + cpA.j + ', a los 2 s: tú −' + cpT.j);
+        C.j.cd = {}; poder('capa_palma'); C.r.cd = {}; C.r.mareo = 0; C.j.inv = 0; quieta(1.5); const pcg = C.j.plumas, gcp = B.usar(C.r, 'golpe_ala');
+        check('...ni los golpes de ala', gcp.ok && gcp.acierto && C.j.plumas === pcg - 1);
+        B.salir();
+        // Pluma rebote: 5 s, de cualquier lado, una semilla; la devuelta no rebota otra vez
+        B.iniciar({ sinCuenta: true, especie: 'albifrons' }); quieta(7); listo(); S.facing = { x: -1, z: 0 }; // de espaldas: rebota igual
+        const rpr = poder('pluma_rebote'), dura = C.j.rebote; corre(2); const pr1 = tiroR(), pr2 = tiroR();
+        check('Pluma rebote: dura 5 s; la semilla que te da (aunque estés de espaldas) rebota a la rival; solo la primera', rpr.ok && dura > 4.9 && pr1.j === 0 && pr1.r === 1 && pr2.j === 1,
+          'dura ' + (dura || 0).toFixed(1) + ' s; tú −' + pr1.j + ', rival −' + pr1.r + ', siguiente: tú −' + pr2.j);
+        poder('pluma_rebote'); C.r.rebote = 5; const prD = tiroR(); C.r.rebote = 0;
+        C.j.cd = {}; poder('pluma_rebote'); corre(5.2); const prT = tiroR(); S.facing = { x: 1, z: 0 };
+        check('...un solo rebote (la rival con rebote no te la devuelve otra vez) y a los 5 s se acaba', prD.j === 0 && prD.r === 1 && prT.j === 1, 'rebote doble: rival −' + prD.r + '; a los 5,2 s: tú −' + prT.j);
+        B.salir();
+        // Hojas que envuelven: el siguiente golpe solo marea; el otro ya quita pluma; 3 s
+        B.iniciar({ sinCuenta: true, especie: 'rhodocorytha' }); quieta(1.5); listo();
+        const golpeR = () => { C.r.cd = {}; C.r.energia = 100; C.r.mareo = 0; C.j.inv = 0; C.j.mareo = 0; quieta(1.5); const p0 = C.j.plumas, g = B.usar(C.r, 'golpe_ala'); return { ok: g.ok && g.acierto, n: p0 - C.j.plumas, mareo: C.j.mareo }; };
+        const rho = poder('hojas_envuelven'), h0 = C.j.hojas, hg1 = golpeR(), hg2 = golpeR();
+        check('Hojas que envuelven: el siguiente golpe solo marea (no quita pluma); el otro ya sí', rho.ok && h0 > 2.9 && hg1.ok && hg1.n === 0 && hg1.mareo > 0.7 && !(C.j.hojas > 0) && hg2.n === 1,
+          'golpe 1: −' + hg1.n + ' (mareo ' + hg1.mareo.toFixed(2) + '), golpe 2: −' + hg2.n);
+        poder('hojas_envuelven'); const hs = tiroR(); C.j.cd = {}; poder('hojas_envuelven'); corre(3.2); const hT = golpeR();
+        check('...también con una semilla (y no la devuelve); a los 3 s ya no protege', hs.j === 0 && hs.r === 0 && hT.n === 1, 'semilla: tú −' + hs.j + ', rival −' + hs.r + '; a los 3,2 s: −' + hT.n);
+        B.salir();
+        // Ojo de selva: brillo dorado 4 s sobre la rival, sin daño; su siguiente ataque se anuncia y llega 0,6 s después
+        B.iniciar({ sinCuenta: true, especie: 'kawalli' }); quieta(1.5); listo();
+        let oro = 0; const burst0 = G.fx && G.fx.burst;
+        if (burst0) G.fx.burst = function (x, y, z, k) { if (k === 'gold' && Math.hypot(x - C.r.pos.x, z - C.r.pos.z) < 0.6) oro++; return burst0.apply(this, arguments); };
+        let rk, oro1 = 0;
+        try { rk = poder('ojo_selva'); corre(1); oro1 = oro; } finally { if (burst0) G.fx.burst = burst0; }
+        check('Ojo de selva: la rival brilla en dorado 4 s y no le quita plumas', rk.ok && C.r.vista > 2.9 && C.r.plumas === C.r.plumasMax && oro1 >= 3, 'vista ' + (C.r.vista || 0).toFixed(2) + ' s, destellos ' + oro1);
+        C.r.cd = {}; C.r.energia = 100; C.j.inv = 0; quieta(1.5); const pk = C.j.plumas, ga1 = B.usar(C.r, 'golpe_ala');
+        const celC = document.querySelector('#v18-duelo [data-k="centro"]'), avisoTxt = celC ? celC.textContent : '', antes = C.j.plumas; corre(0.7);
+        check('...su siguiente ataque se anuncia («¡Cuidado, va a atacar!») y llega un momento después', ga1.ok && ga1.avisada && /Cuidado/.test(avisoTxt) && antes === pk && C.j.plumas === pk - 1,
+          'aviso «' + avisoTxt + '», plumas ' + pk + '→' + antes + '→' + C.j.plumas);
+        C.r.cd = {}; C.j.inv = 0; quieta(1.5); const pk2 = C.j.plumas, ga2 = B.usar(C.r, 'golpe_ala');
+        check('...solo el siguiente: el otro sale al momento', ga2.ok && !ga2.avisada && ga2.acierto && C.j.plumas === pk2 - 1);
+        C.j.cd = {}; C.j.inv = 0; poder('ojo_selva'); C.r.cd = {}; C.r.energia = 100; quieta(1.5); const pk3 = C.j.plumas, ga3 = B.usar(C.r, 'golpe_ala');
+        S.pos.x -= 5; corre(0.7); // con el aviso da tiempo a apartarse
+        check('...con el aviso da tiempo a apartarse y el golpe falla', ga3.avisada && C.j.plumas === pk3, 'plumas ' + pk3 + '→' + C.j.plumas);
+        corre(3.5); check('...y a los 4 s se acaba', !(C.r.vista > 0));
+        B.salir();
       } else check('El duelo está cargado', false);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }
     try { if (B && B.estado().fase !== 'nada') B.salir(); } catch (e) { /* */ }

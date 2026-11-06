@@ -355,6 +355,23 @@
     };
     return [{ bone: 'espalda1', obj: lower }, { bone: 'espalda2', obj: upper }, { bone: 'armL1', obj: sl('L') }, { bone: 'armL1001', obj: sl('R') }];
   }
+  // Traje de Guardián (BM157): la pieza real es traje_guardian.glb (túnica TELA + pechera y hombreras de plumas ORO + cotorra en
+  // vuelo + corona de yagrumo). Esta versión simple sirve de miniatura en el creador y mientras carga el .glb: túnica del color
+  // elegido, medallón dorado con la cotorra y hombreras doradas (sin corona: así la miniatura enfoca el traje).
+  function guardianParts(color) {
+    const M = cloth('liso', color), oro = mat('#e3b022', { metalness: 0.85, roughness: 0.32 }), verde = mat('#35a046', { roughness: 0.6 });
+    const lower = new THREE.Mesh(tube(split(TORSO, 0.30, 0.505), 0.025), M);
+    const upper = new THREE.Mesh(tube(split(TORSO, 0.505, 0.70), 0.025), M);
+    const g = new THREE.Group();
+    const med = new THREE.Mesh(new THREE.CylinderGeometry(0.082, 0.082, 0.012, 28), oro); med.rotation.x = Math.PI / 2; med.position.set(0, 0.535, 0.275); g.add(med);
+    const ave = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.008, 20), verde); ave.rotation.x = Math.PI / 2; ave.position.set(0, 0.535, 0.284); g.add(ave);
+    for (const sg of [1, -1]) {
+      const hb = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), oro);
+      hb.scale.set(0.11, 0.045, 0.1); hb.position.set(sg * 0.2, 0.69, 0.02); hb.rotation.z = -sg * 0.35; g.add(hb);
+      const pl = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 8), oro); pl.scale.set(0.035, 0.05, 0.012); pl.position.set(sg * 0.11, 0.6, 0.262); g.add(pl);
+    }
+    return [{ bone: 'espalda1', obj: lower }, { bone: 'espalda2', obj: upper }, { bone: 'espalda2', obj: g }];
+  }
   function pantsParts(color, style) {
     const M = cloth(style, color), long = style === 'mezclilla';
     const band = new THREE.Mesh(tube(HIPS, 0.022), M);
@@ -603,6 +620,11 @@
     { id: 'lentes', slot: 'eyes', mount: 'mount_eyes', name: 'Lentes', colors: ['#2b2b2b', '#c9a227', '#d6403a', '#3d8fb0', '#f4f4f0'], styles: [['sol', 'De sol'], ['redondas', 'Redondas'], ['deportivas', 'Deportivas'], ['buceo', 'Máscara de buceo'], ['binoculares', 'Binoculares']], glb: { sol: 'lentes_sol', redondas: 'lentes_redondas', deportivas: 'lentes_deportivas', buceo: 'lentes_buceo', binoculares: 'lentes_binoculares' }, build: shades },
     { id: 'camisa', slot: 'torso', fit: shirtParts, glb: 'camisa', name: 'Camisa', colors: ['#f4f4f0', '#d6403a', '#3d8fb0', '#2f8f4e', '#f2a03d', '#2b2b2b', '#7a4fb3', '#e8c32a'],
       styles: [['liso', 'Lisa'], ['pr', 'Bandera PR'], ['hawaiana', 'Hawaiana'], ['guayabera', 'Guayabera'], ['deportiva', 'Deportiva 787'], ['camuflaje', 'Camuflaje'], ['chaleco', 'Chaleco explorador']] },
+    // Traje de Guardián (BM157): traje entero en la ranura de la camisa (la sustituye). La TELA se tiñe con el color elegido; oro y
+    // cotorra quedan fijos. La corona va en el mismo .glb, rígida al hueso de la cabeza: headPart la separa y character.js la
+    // apaga si hay algo en la ranura de la cabeza (gorra, casco… van en su lugar).
+    { id: 'traje', slot: 'torso', fit: guardianParts, glb: 'traje_guardian', headPart: 'cabeza001', name: 'Traje de Guardián',
+      colors: ['#1f7a5c', '#2a5bd7', '#b3262b', '#7a4fb3', '#2b2b2b', '#f4f4f0'] },
     // Pantalón: liso/flores/cargo/camuflaje van sobre el corto; mezclilla, sobre el largo
     { id: 'pantalon', slot: 'legs', fit: pantsParts, glb: { liso: 'pantalon_corto', flores: 'pantalon_corto', cargo: 'pantalon_corto', camuflaje: 'pantalon_corto', mezclilla: 'pantalon_largo' }, name: 'Pantalón', colors: ['#3d6fa8', '#8a6a3a', '#2f8f4e', '#2b2b2b', '#d6403a', '#f2a03d'],
       styles: [['liso', 'Corto'], ['flores', 'De playa'], ['cargo', 'Cargo'], ['camuflaje', 'Militar'], ['mezclilla', 'Mezclilla largo']] },

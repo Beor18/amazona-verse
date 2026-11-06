@@ -2058,5 +2058,18 @@ window.AV_EN = {
  "El puerto que volvió a vivir": "The Harbor That Came Back to Life",
  "{}: mira al engranaje y pulsa Acción o G": "{}: face the gear and press Action or G",
  "Toca Poder mirando al engranaje": "Tap Power while facing the gear",
- "Escudo de plumas: ábrelo cuando la máquina sople (Acción o G)": "Feather Shield: open it when the machine puffs (Action or G)"
+ "Escudo de plumas: ábrelo cuando la máquina sople (Acción o G)": "Feather Shield: open it when the machine puffs (Action or G)",
+ "Traje de Guardián": "Guardian suit",
+ "Capa de palma": "Palm cape",
+ "Pluma rebote": "Bounce feather",
+ "Hojas que envuelven": "Wrapping leaves",
+ "Ojo de selva": "Jungle eye",
+ "¡Capa de palma: semilla devuelta!": "Palm cape: seed sent back!",
+ "¡Rebote!": "Bounce!",
+ "¡Las hojas aguantaron el golpe!": "The leaves took the hit!",
+ "¡Cuidado, va a atacar!": "Watch out, she's about to attack!",
+ "¡Un loro cubano vio tu primer hoyo de minigolf y quiere volar contigo! Su poder: Capa de palma. Elígelo en Pausa → Mis cotorras.": "A Cuban amazon saw your first mini-golf hole and wants to fly with you! Its power: Palm cape. Pick it in Pause → My parrots.",
+ "¡Un loro frente blanca vio que ganaste sin perder ni una pluma! Su poder: Pluma rebote. Elígelo en Pausa → Mis cotorras.": "A white-fronted amazon saw you win without losing a single feather! Its power: Bounce feather. Pick it in Pause → My parrots.",
+ "¡Con el puente arreglado y sin la Maraña, un loro de cejas rojas llegó al bosque! Su poder: Hojas que envuelven. Elígelo en Pausa → Mis cotorras.": "With the bridge fixed and the Tangle gone, a red-browed amazon came to the forest! Its power: Wrapping leaves. Pick it in Pause → My parrots.",
+ "¡Un loro de Kawall te vio recoger todas las piedras y fibras y quiere volar contigo! Su poder: Ojo de selva. Elígelo en Pausa → Mis cotorras.": "A Kawall's amazon saw you gather all the stones and fibers and wants to fly with you! Its power: Jungle eye. Pick it in Pause → My parrots."
 };

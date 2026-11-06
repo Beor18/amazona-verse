@@ -195,6 +195,48 @@ window.AVV18Habilidades = function (G) {
       return { ok: true };
     } });
 
+  // ---------- Cuatro de coste M (V18_MATRIZ_36.md #3, #18, #31, #25): defensas de PLUMAS y un OJOS que avisa ----------
+  // El efecto solo pone el estado (segundos que quedan); quien mueve las semillas y reparte los golpes lo aplica y lo
+  // descuenta (combate.js: devolver(), golpear() y pasoNuevos()). Donde no se aplica (amenaza, duelo de 2), no pasa nada.
+  // Capa de palma (leucocephala, PLUMAS): escudo frontal breve (1,5 s) que para UNA semilla que llega por delante (hacia
+  // donde miras) y la devuelve a quien la tiró. Ventaja: castiga al que dispara. Debilidad: no para golpes de ala ni por detrás.
+  registrar({ id: 'capa_palma', nombre: 'Capa de palma', especies: ['leucocephala'], tecnica: 'plumas', coste: 25, cooldown: 10, fx: 'leaves', dura: 1.5, cono: 0.3,
+    efecto(ctx) {
+      const { yo } = ctx; yo.capa = this.dura; yo.alasT = this.dura;
+      ctx.fx('leaves', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('unlock');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, dura: this.dura });
+      return { ok: true };
+    } });
+  // Pluma rebote (albifrons, PLUMAS): durante 5 s, la siguiente semilla que te dé (venga de donde venga) rebota hacia la
+  // rival en vez de quitarte una pluma. Solo un rebote: una semilla devuelta no se vuelve a devolver. Ventaja: dura y no hay
+  // que apuntar. Debilidad: espera larga y no hace nada contra golpes de ala.
+  registrar({ id: 'pluma_rebote', nombre: 'Pluma rebote', especies: ['albifrons'], tecnica: 'plumas', coste: 25, cooldown: 10, fx: 'feathers', dura: 5,
+    efecto(ctx) {
+      const { yo } = ctx; yo.rebote = this.dura; yo.alasT = 0.5;
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 1.1, yo.pos.z); ctx.sonar('unlock');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, dura: this.dura });
+      return { ok: true };
+    } });
+  // Hojas que envuelven (rhodocorytha, PLUMAS): 3 s envuelta en hojas; el siguiente golpe que te quitaría una pluma solo te
+  // marea. Ventaja: aguantar. Debilidad: no ataca ni devuelve nada, y el mareo te deja un momento sin atacar.
+  registrar({ id: 'hojas_envuelven', nombre: 'Hojas que envuelven', especies: ['rhodocorytha'], tecnica: 'plumas', coste: 25, cooldown: 10, fx: 'leaves', dura: 3, mareo: 0.8,
+    efecto(ctx) {
+      const { yo } = ctx; yo.hojas = this.dura;
+      ctx.fx('leaves', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.fx('leaves', yo.pos.x, yo.pos.y + 0.4, yo.pos.z); ctx.sonar('unlock');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, dura: this.dura });
+      return { ok: true };
+    } });
+  // Ojo de selva (kawalli, OJOS): 4 s en que la rival brilla en dorado y su siguiente ataque se anuncia («¡Cuidado, va a
+  // atacar!») y sale 0,6 s más tarde: da tiempo a apartarse. Ventaja: seguirla y leerla. Debilidad: no hace daño.
+  registrar({ id: 'ojo_selva', nombre: 'Ojo de selva', especies: ['kawalli'], tecnica: 'ojos', coste: 30, cooldown: 9, fx: 'gold', dura: 4, aviso: 0.6,
+    efecto(ctx) {
+      const { yo, otro } = ctx;
+      otro.vista = this.dura; otro.avisada = false; yo.cara = 'fight';
+      ctx.fx('gold', otro.pos.x, otro.pos.y + 1.4, otro.pos.z); ctx.fx('ring', otro.pos.x, otro.pos.y, otro.pos.z); ctx.sonar('ring', 2);
+      ctx.poder({ id: this.id, de: yo.id, a: otro.id, dura: this.dura });
+      return { ok: true };
+    } });
+
   // ---------- Luchadores ----------
   function luchador(o) {
     const sp = o.especie || 'vittata';
