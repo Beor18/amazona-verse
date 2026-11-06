@@ -502,7 +502,7 @@ window.AVV18Minigolf = function (G) {
   // QA con input real: justo detrás, en la línea de puntería, tapaba la semilla y la línea de puntos desde la cámara.
   // Va a la izquierda de la pantalla (LADO m) y un poco atrás (ATRAS m): la semilla y la mira quedan libres a su derecha.
   // (ancla propia: lo que la física haya movido a la jugadora en este cuadro, p. ej. con el joystick oculto, no se acumula)
-  const ancla = { x: 0, z: 0 }, LADO = 1.05, ATRAS = 0.9;
+  const ancla = { x: 0, z: 0 }, LADO = 1.3, ATRAS = 0.7;
   const sitioVittata = () => { const d = dir(), atras = A.fase === 'rueda' ? 2.2 : ATRAS; return { x: B.x - d.x * atras + d.z * LADO, z: B.z - d.z * atras - d.x * LADO }; };
   function seguir(dt, snap) {
     const d = dir(), t = sitioVittata();
@@ -648,7 +648,7 @@ window.AVV18Minigolf = function (G) {
       '#v18-golf .vg-tabla .vg-m{font-size:17px;text-align:right}' +
       '#v18-golf .vg-guia{font-size:12px;opacity:.85;text-align:center;margin-top:6px}' +
       // QA: la guía #prompt se veía a través del panel y la pista «Pulsa V para volar» seguía en el hoyo; la guía va en el panel
-      'body.v18-golf-on #prompt,body.v18-golf-on #guia-pista{display:none!important}' +
+      'body.v18-golf-on #prompt,body.v18-golf-on #guia-pista,body.v18-golf-on #guia-panel{display:none!important}' +
       // En el móvil los avisos suben arriba durante el hoyo: abajo tapaban a Vittata y la semilla
       '@media (max-width:760px){body.v18-golf-on #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto}body.v18-golf-on #minimapa{visibility:hidden}}' +
       '@media (min-width:761px) and (pointer:fine){#v18-golf{bottom:16px}}';
@@ -766,6 +766,9 @@ window.AVV18Minigolf = function (G) {
         Math.hypot(S.pos.x - sitioVittata().x, S.pos.z - sitioVittata().z) < 0.05);
       // QA con input real: Vittata tapaba la semilla y la mira. Ahora está a un lado: lejos de la recta cámara → semilla (en planta)
       {
+        // El «plano de descubrimiento» (órbita de 1,2 s al descubrir un lugar, p. ej. la playa al llegar aquí) no avanza en la
+        // prueba (no hay follow): se termina para medir la cámara del hoyo tal como queda
+        const plano0 = G.camara.vida && G.camara.vida.plano; if (G.camara.vida) G.camara.vida.plano = 0;
         try { G.camara.place(true); } catch (e) { /* cámara */ }
         const c = G.renderer.camera.position, ex = B.x - c.x, ez = B.z - c.z, l2 = ex * ex + ez * ez || 1;
         const t = Math.max(0, Math.min(1, ((S.pos.x - c.x) * ex + (S.pos.z - c.z) * ez) / l2)), lat = Math.hypot(S.pos.x - (c.x + ex * t), S.pos.z - (c.z + ez * t));
@@ -773,7 +776,7 @@ window.AVV18Minigolf = function (G) {
         const aSem = Math.hypot(S.pos.x - B.x, S.pos.z - B.z), mira = Array.from({ length: N_PUNTOS }, (_, i) => { const m = new THREE.Matrix4(); puntos.getMatrixAt(i, m); return new THREE.Vector3().setFromMatrixPosition(m); });
         G.renderer.camera.updateMatrixWorld(); const enCuadro = [semilla.position, ...mira.slice(0, 4)].every(q => { const v = q.clone().project(G.renderer.camera); return Math.abs(v.x) < 1 && Math.abs(v.y) < 1 && v.z < 1; });
         check('Vittata se pone a un lado de la semilla (como un golfista): no tapa la semilla ni la línea de puntos (≥ 0,6 m de la recta cámara → semilla) y las dos salen en el cuadro',
-          lat >= 0.6 && aSem > R + 0.6 && aSem < 2.2 && puntos.visible && enCuadro, JSON.stringify({ lateral: +lat.toFixed(2), aSemilla: +aSem.toFixed(2), enCuadro, alto: G.camara.CAM.height }));
+          lat >= 0.6 && aSem > R + 0.6 && aSem < 2.2 && puntos.visible && enCuadro, JSON.stringify({ lateral: +lat.toFixed(2), aSemilla: +aSem.toFixed(2), enCuadro, alto: G.camara.CAM.height, camD: +Math.hypot(c.x - S.pos.x, c.z - S.pos.z).toFixed(2), camAng: +(Math.atan2(c.x - S.pos.x, c.z - S.pos.z) - G.camara.yaw).toFixed(3), plano0 }));
       }
       const d0 = dir(), haciaNido = Math.atan2(P_NIDO.z - B.z, P_NIDO.x - B.x);
       check('Al empezar apunta hacia el nido (la cámara de siempre mira por ahí)', Math.abs(Math.atan2(d0.z, d0.x) - haciaNido) < 0.01);
