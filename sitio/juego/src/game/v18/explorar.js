@@ -31,8 +31,9 @@ window.AVV18Explorar = function (G) {
   const toast = t => { try { G.ui.toast(t); } catch (e) { /* sin ui */ } };
 
   // ¿Algún encuentro v18 activo? En ellos la G la consume el propio encuentro (captura) y los fx los mueve su paso().
+  const ENCUENTROS = ['v18combate', 'v18duelo2', 'v18amenaza', 'v18sapo', 'v18serpiente', 'v18puerto', 'v18minigolf'];
   function encuentro() {
-    try { const f = m => (m && m.estado && m.estado().fase) || 'nada'; return ['v18combate', 'v18duelo2', 'v18amenaza', 'v18sapo', 'v18serpiente', 'v18puerto', 'v18minigolf'].some(k => G[k] && f(G[k]) !== 'nada'); } catch (e) { return false; }
+    try { for (const k of ENCUENTROS) { const m = G[k]; if (m && m.estado && ((m.estado().fase) || 'nada') !== 'nada') return true; } return false; } catch (e) { return false; }
   }
   function libre() {
     if (!G.V18 || encuentro()) return false;
@@ -182,7 +183,7 @@ window.AVV18Explorar = function (G) {
   }
 
   // ---------- Paso ----------
-  let accFx = 0; // segundos durante los que este módulo mueve los fx compartidos tras el último uso
+  let accFx = 0, btnT = 0; // segundos durante los que este módulo mueve los fx compartidos tras el último uso
   G.on('update', dt => {
     for (const k in cd) if (cd[k] > 0) cd[k] = Math.max(0, cd[k] - dt);
     if (impulso && impulso.t > 0) { S.pos.x += impulso.x * dt; S.pos.z += impulso.z * dt; impulso.t -= dt; }
@@ -210,9 +211,10 @@ window.AVV18Explorar = function (G) {
     if (sol && performance.now() > sol.hasta) sol = null;
     // fx compartidos: solo los movemos en exploración libre (en los encuentros los mueve su propio paso)
     if (accFx > 0) { accFx -= dt; try { if (G.v18fx && !encuentro()) G.v18fx.paso(dt); } catch (e) { /* */ } }
-    // botón táctil
-    const b = boton(TACTIL && G.V18);
+    // botón táctil (CPU, móvil: se revisa cada 0,1 s, no en cada cuadro)
+    const b = TACTIL && (btnT -= dt) <= 0 ? boton(G.V18) : null;
     if (b) {
+      btnT = 0.1;
       const ver = libre();
       if (b.hidden === ver) b.hidden = !ver;
       if (ver) { const nombre = (G.v18hab && G.v18hab.get(G.v18hab.poderDe(especie())) || {}).nombre || 'Poder'; if (b.textContent !== nombre) b.textContent = nombre; }

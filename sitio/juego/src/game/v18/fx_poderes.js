@@ -236,8 +236,13 @@ window.AVV18Fx = function (G) {
     return { ok: true };
   }
 
+  let quieto = false; // CPU (móvil): sin anillos ni escudos, tras una pasada que los deja a escala 0 no se reescriben ni se suben los búferes
   function paso(dt) {
     tFx += Math.min(0.1, Math.max(0, dt || 0));
+    let hay = escudos.length > 0;
+    for (let i = 0; i < MAXR && !hay; i++) if (ranillos[i]) hay = true;
+    if (!hay && quieto) return;
+    quieto = !hay;
     let vivos = 0;
     for (let i = 0; i < MAXR; i++) { pintarAnillo(i, ranillos[i]); if (ranillos[i]) vivos++; }
     rings.visible = vivos > 0;

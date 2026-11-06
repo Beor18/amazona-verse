@@ -487,11 +487,12 @@ window.AVV18Habilidades = function (G) {
       yo.alasT = h.sube * 2;
       ctx.fx('feathers', yo.pos.x, yo.pos.y + 1.2, yo.pos.z); ctx.sonar('dash');
       ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + h.alto, z: yo.pos.z } });
-      ctx.despues(h.sube, () => { // la picada cae sobre la posición actual de la rival: si se movió, falla
-        const d = dirA(yo, otro);
+      const blanco = { x: otro.pos.x, z: otro.pos.z }; // donde estaba la rival al despegar
+      ctx.despues(h.sube, () => { // la picada cae junto a la rival: si se apartó más de `toca` mientras subía, falla
+        const d = dirA(yo, otro), aparto = Math.hypot(otro.pos.x - blanco.x, otro.pos.z - blanco.z);
         yo.pos.x = otro.pos.x - d.x * 0.7; yo.pos.z = otro.pos.z - d.z * 0.7; // aterriza junto a ella
         ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z);
-        if (d.d <= h.toca) ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: h.mareo, dir: { x: d.x, z: d.z }, forzar: true });
+        if (aparto <= h.toca) ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: h.mareo, dir: { x: d.x, z: d.z }, forzar: true });
       });
       return { ok: true, acierto: null };
     } });

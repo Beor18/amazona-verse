@@ -326,7 +326,7 @@
       const espera = tt.hidden && !!UI.avisoPendiente;
       cm.hidden = true; tick(0.1);
       check('W3 · un aviso con el cómic abierto espera y sale al cerrarlo', espera && !tt.hidden && tt.textContent === 'Aviso de prueba W3' && !UI.avisoPendiente, espera + ' · ' + tt.textContent);
-      UI.hideToast(); cm.hidden = cm0;
+      UI.hideToast(); tt.textContent = ''; cm.hidden = cm0; // QA-184: el aviso oculto no deja su texto en español para idiomaTest
     }
     SV.reset(true);
     try { for (const c of SV.copiasIlegibles()) if (!copiasAntes.has(c.clave)) localStorage.removeItem(c.clave); } catch (e) { /* sin almacenamiento */ }
