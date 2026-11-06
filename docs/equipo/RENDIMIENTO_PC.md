@@ -827,3 +827,31 @@ emergencia de QA-53-variantes). **Conclusión: hace falta la calidad «escuela»
 palancas concretas y siguiente paso (perfil de CPU) en **BUGS.md QA-181**. Evidencia:
 `docs/img/kimi127/k127_cb-r3.{json,log}` + `k127_cb-r3_<pack>_villa.jpg` ×6 + `k127_cb-r3_demo_*.jpg` ×4.
 El juego no se tocó (herramienta + docs solamente).
+
+## KIMI-132 · QA-181 paso 3 · Perfil de CPU del Chromebook (atribución del hilo, 06-nov)
+
+Perfil CDP (self-time por samples+timeDeltas) en el spawn asentado, 1366×768 @ DPR 1,
+CPU ×6, calidad baja, GPU real RX 5700 XT; ventana 15-17 s por pack; entrada real sembrada
+sin creador. Evidencia `docs/img/kimi132/k132_r1.{json,log}` + capturas. PC compartida con
+otra sesión Kimi durante la medición: los % de self-time (throttling por proceso) son válidos;
+los tiempos absolutos son techo.
+
+| pack | fps med | calls | ktris | heap | three.js | nativo | renderer | sólidos | streaming | vegetación | física | terreno | game |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| cap1 | 17 | 62 | 268 | 152 MB | 35,2 % | 24,1 % | 9,9 % | 0,4 % | 3,1 % | **0,3 %** | 1,9 % | 1,3 % | 9,5 % |
+| ep3 | 11 | 91 | 553 | 140 MB | 28,5 % | 19,1 % | 5,3 % | **20,2 %** | 4,6 % | **0,7 %** | 1,4 % | 2,1 % | 5,2 % |
+
+Top funciones cap1: updateMatrixWorld 5,9 · (program) nativo 24,1 · multiplyMatrices 3,1 ·
+getProgramCacheKey 2,5 · objPendiente (renderer) 2,6 · cuadro (streaming) 2,4 · traverse ·
+renderBufferDirect. Top ep3: (program) 19,1 · muestraVanos 5,9 · filtro 3,1 · triSeguir 2,6 ·
+block 2,3 · updateMatrixWorld 3,0 · triQuery 1,7 · avanzar (streaming) 1,6.
+
+**Lectura:** el hilo lo dominan three.js (grafo de escena: updateMatrixWorld/traverse/
+multiplyMatrices/getProgramCacheKey) + el submit nativo ANGLE (~60 % entre ambos en cap1).
+La vegetación es despreciable (0,3-0,7 %): la palanca «impostores de flora» del borrador
+«escuela» queda descartada por medición. En ep3 el segundo coste es el trabajo de vanos de
+`solidos.js` (muestraVanos/filtro/triSeguir, 20 %). El mecanismo de calor de renderer.js ya es
+barato (objPendiente 2,6 % + calentarPresupuesto 1,1 % + texturasDe 1,0 %). El nivel «escuela»
+debe recortar resolución (0,75) + post, el trabajo de vanos en reposo y calls/estado por cuadro;
+la puerta de entrada sigue siendo el escalón por fps sostenido (<25 durante ~8 s), propuesta
+completa en BUGS.md QA-181. El juego no se tocó (herramienta `tools/build/kimi1_132.js` + docs).
