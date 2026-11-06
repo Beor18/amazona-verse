@@ -1,0 +1,436 @@
+{
+ "tarea": "KIMI-140",
+ "bug": "QA-181",
+ "etiqueta": "r1",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "v18": true,
+ "secs": 12,
+ "head": "sw 200 | head local boot",
+ "escenarios": {
+  "quieto": {
+   "fpsPorSeg": [
+    3,
+    5,
+    5,
+    12,
+    11,
+    13,
+    11,
+    12,
+    6,
+    2,
+    0
+   ],
+   "fpsMed": 7,
+   "fpsMin": 0,
+   "peorMs": 7040,
+   "p95Ms": 303,
+   "stats": [
+    {
+     "calls": 173,
+     "tris": 581828,
+     "fpsMedidor": 2,
+     "sombras": false,
+     "dpr": 1
+    },
+    {
+     "calls": 95,
+     "tris": 412099,
+     "fpsMedidor": 4,
+     "sombras": false,
+     "dpr": 1
+    },
+    {
+     "calls": 98,
+     "tris": 398689,
+     "fpsMedidor": 7,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 100,
+     "tris": 399362,
+     "fpsMedidor": 12,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 102,
+     "tris": 402987,
+     "fpsMedidor": 12,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 102,
+     "tris": 402203,
+     "fpsMedidor": 13,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 101,
+     "tris": 402227,
+     "fpsMedidor": 12,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 101,
+     "tris": 402227,
+     "fpsMedidor": 7,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 103,
+     "tris": 471477,
+     "fpsMedidor": 0,
+     "sombras": false,
+     "dpr": 0.75
+    }
+   ],
+   "heapMB": 191
+  },
+  "sombra": {
+   "fpsPorSeg": [
+    12,
+    15,
+    14,
+    14,
+    11,
+    14,
+    15,
+    14,
+    15,
+    15,
+    15,
+    15
+   ],
+   "fpsMed": 14,
+   "fpsMin": 11,
+   "peorMs": 149,
+   "p95Ms": 101,
+   "stats": [
+    {
+     "calls": 92,
+     "tris": 386718,
+     "fpsMedidor": 9,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 97,
+     "tris": 403723,
+     "fpsMedidor": 14,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 98,
+     "tris": 403887,
+     "fpsMedidor": 14,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 98,
+     "tris": 403899,
+     "fpsMedidor": 12,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 98,
+     "tris": 403897,
+     "fpsMedidor": 11,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 98,
+     "tris": 403897,
+     "fpsMedidor": 14,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 98,
+     "tris": 403897,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 101,
+     "tris": 407179,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 102,
+     "tris": 411117,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 101,
+     "tris": 410157,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 101,
+     "tris": 410157,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    }
+   ],
+   "heapMB": 226,
+   "perfil": {
+    "totalMs": 17295,
+    "porModulo": [
+     {
+      "modulo": "nativo",
+      "selfMs": 4730,
+      "pct": 27.3
+     },
+     {
+      "modulo": "three.js",
+      "selfMs": 4408,
+      "pct": 25.5
+     },
+     {
+      "modulo": "anónima/sin-url",
+      "selfMs": 2685,
+      "pct": 15.5
+     },
+     {
+      "modulo": "game",
+      "selfMs": 1492,
+      "pct": 8.6
+     },
+     {
+      "modulo": "solidos",
+      "selfMs": 1346,
+      "pct": 7.8
+     },
+     {
+      "modulo": "renderer",
+      "selfMs": 1123,
+      "pct": 6.5
+     },
+     {
+      "modulo": "fisica",
+      "selfMs": 303,
+      "pct": 1.8
+     },
+     {
+      "modulo": "streaming",
+      "selfMs": 274,
+      "pct": 1.6
+     },
+     {
+      "modulo": "terreno",
+      "selfMs": 252,
+      "pct": 1.5
+     },
+     {
+      "modulo": "otro:personaje/character.js",
+      "selfMs": 233,
+      "pct": 1.3
+     },
+     {
+      "modulo": "engine/otro",
+      "selfMs": 175,
+      "pct": 1
+     },
+     {
+      "modulo": "v18/otro",
+      "selfMs": 83,
+      "pct": 0.5
+     },
+     {
+      "modulo": "v18/amenaza",
+      "selfMs": 66,
+      "pct": 0.4
+     },
+     {
+      "modulo": "vegetacion",
+      "selfMs": 38,
+      "pct": 0.2
+     },
+     {
+      "modulo": "content",
+      "selfMs": 37,
+      "pct": 0.2
+     },
+     {
+      "modulo": "agua",
+      "selfMs": 27,
+      "pct": 0.2
+     },
+     {
+      "modulo": "v18/combate",
+      "selfMs": 12,
+      "pct": 0.1
+     },
+     {
+      "modulo": "v18/fx",
+      "selfMs": 5,
+      "pct": 0
+     },
+     {
+      "modulo": "v18/duelo2",
+      "selfMs": 2,
+      "pct": 0
+     },
+     {
+      "modulo": "boot",
+      "selfMs": 2,
+      "pct": 0
+     },
+     {
+      "modulo": "mundo",
+      "selfMs": 1,
+      "pct": 0
+     }
+    ],
+    "topFunciones": [
+     {
+      "funcion": "nativo · (program)",
+      "selfMs": 4730,
+      "hits": 0
+     },
+     {
+      "funcion": "anónima/sin-url · getClientRects",
+      "selfMs": 1430,
+      "hits": 0
+     },
+     {
+      "funcion": "game · marca",
+      "selfMs": 856,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · updateMatrixWorld",
+      "selfMs": 693,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · Pt",
+      "selfMs": 356,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · multiplyMatrices",
+      "selfMs": 341,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · getProgramCacheKey",
+      "selfMs": 313,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · traverse",
+      "selfMs": 276,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · spans",
+      "selfMs": 259,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · block",
+      "selfMs": 241,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · triSeguir",
+      "selfMs": 222,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · At",
+      "selfMs": 218,
+      "hits": 0
+     },
+     {
+      "funcion": "terreno · triQuery",
+      "selfMs": 215,
+      "hits": 0
+     },
+     {
+      "funcion": "renderer · siguienteCalor",
+      "selfMs": 195,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · trabajar",
+      "selfMs": 187,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · renderBufferDirect",
+      "selfMs": 183,
+      "hits": 0
+     },
+     {
+      "funcion": "streaming · cuadro",
+      "selfMs": 182,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · Oi",
+      "selfMs": 169,
+      "hits": 0
+     },
+     {
+      "funcion": "game · (anónima)",
+      "selfMs": 160,
+      "hits": 0
+     },
+     {
+      "funcion": "renderer · calentarPresupuesto",
+      "selfMs": 160,
+      "hits": 0
+     },
+     {
+      "funcion": "fisica · pushOut",
+      "selfMs": 154,
+      "hits": 0
+     },
+     {
+      "funcion": "renderer · render",
+      "selfMs": 150,
+      "hits": 0
+     },
+     {
+      "funcion": "three.js · It",
+      "selfMs": 136,
+      "hits": 0
+     },
+     {
+      "funcion": "anónima/sin-url · now",
+      "selfMs": 129,
+      "hits": 0
+     },
+     {
+      "funcion": "solidos · insert",
+      "selfMs": 127,
+      "hits": 0
+     }
+    ]
+   }
+  }
+ },
+ "erroresConsola": [],
+ "delta": 7
+}

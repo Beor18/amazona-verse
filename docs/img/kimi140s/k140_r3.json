@@ -1,0 +1,126 @@
+{
+ "tarea": "KIMI-140",
+ "bug": "QA-181",
+ "etiqueta": "r3",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "v18": true,
+ "secs": 12,
+ "head": "sw 200 | head local boot",
+ "escenarios": {
+  "quieto": {
+   "fpsPorSeg": [
+    15,
+    15,
+    15,
+    15,
+    15,
+    15,
+    14,
+    15,
+    15,
+    14,
+    14,
+    14
+   ],
+   "fpsMed": 15,
+   "fpsMin": 14,
+   "peorMs": 121,
+   "p95Ms": 96,
+   "stats": [
+    {
+     "calls": 86,
+     "tris": 394080,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 86,
+     "tris": 394080,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394080,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394080,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394080,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394080,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394080,
+     "fpsMedidor": 13,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394080,
+     "fpsMedidor": 15,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394080,
+     "fpsMedidor": 16,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394080,
+     "fpsMedidor": 13,
+     "sombras": false,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394080,
+     "fpsMedidor": 14,
+     "sombras": false,
+     "dpr": 0.75
+    }
+   ],
+   "heapMB": 147,
+   "asentado": {
+    "trabajos": 0,
+    "descargando": 0,
+    "vistoST": 16
+   }
+  },
+  "sombraPrep": {
+   "asentado": {
+    "trabajos": 0,
+    "descargando": 0,
+    "vistoST": 4
+   },
+   "fase": "lucha"
+  }
+ },
+ "fatal": "TypeError: Cannot read properties of undefined (reading 'fpsMed')\n    at C:\\Users\\kelvi\\amazonaversegame3\\tools\\build\\kimi3_140.js:310:39\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+}

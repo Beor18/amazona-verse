@@ -1,0 +1,35 @@
+[08:49:35] lanzando Chrome y entrando al juego (v18=1)...
+[08:49:40] …latido
+[08:49:40] juego listo, entrando...
+[08:49:45] …latido
+[08:49:50] …latido
+[08:49:55] …latido
+[08:50:00] …latido
+[08:50:04] entrada ok, preparando módulos v18...
+[08:50:05] …latido
+[08:50:10] prep ok
+[08:50:10] …latido
+[08:50:11] calidad bajo (=bajo); esperando asentado...
+[08:50:14] asentado
+[08:50:14] midiendo bajo/quieto...
+[08:50:15] …latido
+[08:50:20] …latido
+[08:50:25] …latido
+[08:50:30] …latido
+[08:50:35] …latido
+[08:50:40] …latido
+[08:50:45] …latido
+[08:50:50] …latido
+[08:50:55] …latido
+[08:51:00] …latido
+[08:51:05] …latido
+[08:51:10] bajo/quieto: fpsMed=9 calls=85
+[08:51:10] midiendo bajo/sombra...
+[08:51:10] …latido
+[08:51:15] …latido
+[08:51:20] …latido
+[08:51:25] …latido
+[08:51:30] bajo/sombra: fpsMed=9 calls=102
+[08:51:30] …latido
+[08:51:30] delta sombra-quieto = 0 fps
+[08:51:31] fin

@@ -1,0 +1,32 @@
+[08:44:38] lanzando Chrome y entrando al juego (v18=1)...
+[08:44:42] juego listo, entrando...
+[08:44:43] …latido
+[08:44:48] …latido
+[08:44:53] …latido
+[08:44:58] …latido
+[08:45:03] …latido
+[08:45:05] entrada ok, preparando módulos v18...
+[08:45:08] …latido
+[08:45:10] prep ok
+[08:45:11] calidad bajo (=bajo); esperando asentado...
+[08:45:13] …latido
+[08:45:14] asentado
+[08:45:14] midiendo bajo/quieto...
+[08:45:18] …latido
+[08:45:23] …latido
+[08:45:28] …latido
+[08:45:33] …latido
+[08:45:38] …latido
+[08:45:43] …latido
+[08:45:48] …latido
+[08:45:53] …latido
+[08:45:55] bajo/quieto: fpsMed=15 calls=85
+[08:45:55] midiendo bajo/sombra...
+[08:45:58] …latido
+[08:46:03] …latido
+[08:46:08] …latido
+[08:46:13] …latido
+[08:46:16] FATAL TypeError: Cannot read properties of undefined (reading 'fpsMed')
+    at C:\Users\kelvi\amazonaversegame3\tools\build\kimi3_140.js:310:39
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+[08:46:16] fin

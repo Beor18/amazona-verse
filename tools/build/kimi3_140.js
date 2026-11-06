@@ -109,6 +109,22 @@ const PREP_JS = `(async () => { try { return await (async () => {
     G, S,
     sleep, espera,
     ir(x, z) { S.pos.x = x; S.pos.z = z; if (G.fisica && G.fisica.MOVE) { G.fisica.MOVE.vx = G.fisica.MOVE.vz = 0; } },
+    // Espera a que la cola de streaming esté VACÍA de verdad (2 pasadas seguidas), tope msMax.
+    // Sin esto la ventana «quieto» tras un teleport paga el asentado y contamina el A/B (visto en r1: 7 fps).
+    // El gestor de streaming es G.mundo.streaming (ST de las pruebas; r2 usó G.ST inexistente y esperó el tope).
+    statsST() { try { const ST = G.mundo && G.mundo.streaming; return ST && ST.stats ? ST.stats() : null; } catch (e) { return null; } },
+    async asentar(msMax) {
+      const t0 = performance.now(); let quietas = 0, visto = 0;
+      while (performance.now() - t0 < (msMax || 30000)) {
+        const st = this.statsST(); const t = st ? st.trabajos : -1, d = st ? st.descargando : -1;
+        if (st) visto++;
+        if (t === 0 && d === 0) { if (++quietas >= 2) break; } else quietas = 0;
+        await sleep(1000);
+      }
+      await sleep(1000);
+      const fin = this.statsST();
+      return { trabajos: fin ? fin.trabajos : null, descargando: fin ? fin.descargando : null, vistoST: visto };
+    },
     async muestra(durSec) {
       const deltas = []; let ult = performance.now(); let vivo = true;
       const marca = () => { if (!vivo) return; const a = performance.now(); deltas.push(a - ult); ult = a; requestAnimationFrame(marca); };
@@ -137,11 +153,15 @@ const PREP_JS = `(async () => { try { return await (async () => {
 const ESCENARIOS_JS = `(() => {
   const K = window.__k85, G = K.G, S = K.S, Cb = G.v18combate, Am = G.v18amenaza;
   return {
-    async quieto() { try { Cb.salir(); } catch (e) {} try { Am.salir(); } catch (e) {} const c = Am.centro; K.ir(c.x + 5, c.z); await K.sleep(3500); return K.muestra(${SECS}); },
-    async sombra() {
+    async quieto() { try { Cb.salir(); } catch (e) {} try { Am.salir(); } catch (e) {} const c = Am.centro; K.ir(c.x + 5, c.z); const asent = await K.asentar(40000); const r = await K.muestra(${SECS}); r.asentado = asent; return r; },
+    async sombraPrep() {
       try { Cb.salir(); } catch (e) {}
-      const c = Am.centro; K.ir(c.x + 5, c.z); await K.sleep(2500);
+      const c = Am.centro; K.ir(c.x + 5, c.z); const asent = await K.asentar(45000);
       if (Am.estado().fase === 'nada') Am.iniciar({ forzar: true, sinEspera: true });
+      await K.sleep(1500); // la niebla se materializa y la pelea arranca
+      return { asentado: asent, fase: Am.estado().fase };
+    },
+    async sombraMide() {
       const drv = setInterval(() => { try { Am.usarPoder(); } catch (e) {} }, 900);
       const r = await K.muestra(${SECS});
       clearInterval(drv);
@@ -263,8 +283,13 @@ function mataPorPerfil() {
       log(`midiendo bajo/${nombre}...`);
       let r;
       if (nombre === 'sombra') {
+        let prep;
+        try { prep = JSON.parse(await evaluar(cdp, ses, `(async () => { const E = ${ESCENARIOS_JS}; return JSON.stringify(await E.sombraPrep()); })()`, 120)); }
+        catch (e) { prep = { error: String(e && e.message || e).slice(0, 300) }; }
+        res.escenarios.sombraPrep = prep;
+        guardar(res);
         await cdp.call('Profiler.start', {}, ses);
-        try { r = JSON.parse(await evaluar(cdp, ses, `(async () => { const E = ${ESCENARIOS_JS}; return JSON.stringify(await E.sombra()); })()`, 180)); }
+        try { r = JSON.parse(await evaluar(cdp, ses, `(async () => { const E = ${ESCENARIOS_JS}; return JSON.stringify(await E.sombraMide()); })()`, 180)); }
         catch (e) { r = { error: String(e && e.message || e).slice(0, 300) }; }
         try {
           const prof = (await cdp.call('Profiler.stop', {}, ses, 90000)).profile;
@@ -279,6 +304,7 @@ function mataPorPerfil() {
         try { r = JSON.parse(await evaluar(cdp, ses, `(async () => { const E = ${ESCENARIOS_JS}; return JSON.stringify(await E.quieto()); })()`, 180)); }
         catch (e) { r = { error: String(e && e.message || e).slice(0, 300) }; }
       }
+      if (!r || typeof r !== 'object') r = { error: 'resultado vacío del eval (r=' + String(r) + ')' };
       res.escenarios[nombre] = r;
       guardar(res);
       log(`bajo/${nombre}: fpsMed=${r.fpsMed} calls=${r.stats && r.stats.length && r.stats[r.stats.length - 1] && r.stats[r.stats.length - 1].calls}`);
