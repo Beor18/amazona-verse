@@ -12,7 +12,7 @@ import avtest, look_capturas  # noqa: E402
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.abspath(os.path.join(AQUI, '..', '..'))
-ESPECIES = ['agilis', 'farinosa', 'barbadensis', 'xantholora', 'arausiaca']
+ESPECIES = ['agilis', 'farinosa', 'barbadensis', 'xantholora', 'arausiaca', 'guildingii', 'diadema']
 JS = r'''(async () => {
   for (let i = 0; i < 100 && !(window.AVCharacter && window.THREE); i++) await new Promise(r => setTimeout(r, 300));
   if (!window.AVCharacter) throw new Error('sin AVCharacter; THREE=' + typeof window.THREE + ' AV=' + Object.keys(window.AV || {}).slice(0, 8));
