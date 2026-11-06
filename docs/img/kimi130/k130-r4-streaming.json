@@ -1,0 +1,10 @@
+{
+ "etiqueta": "k130-r4-streaming",
+ "head": "20394a99",
+ "url": "?v18=1",
+ "perfil": "escritorio GPU real RX 5700 XT, calidad alta (kimi2_una_bateria.js streamingTest)",
+ "resultado": "streamingTest 24/24 en 25 s, 0 errores de consola",
+ "peorVista": {"zona": "kelvin_ruinas_yunque", "giro": 4.7, "drawCalls": 149, "tope": 150, "edificios": 69, "detalle": "71 instancias cerca, 34 _hd, 6 lejos sueltas, 17 zonas fundidas"},
+ "memoria": {"heapMB": "824.6->832.1 (sin gc, no se exige)", "threeGeo": "377->377", "threeTex": "170->173", "materiales": "34->34", "modelos": "147->147", "KB": "711126->711126"},
+ "notaQA81": "la fusion HD global de KIMI-135 (4e34388e) quita la sombra duplicada (check nuevo verde) pero la peor vista SIGUE en 149 calls (tope 150, verde; el ~145 aspirado por KIMI-106-bis no se alcanza) — dato para Kimi 1, no se toca streaming.js (carril de Kimi 3)"
+}
