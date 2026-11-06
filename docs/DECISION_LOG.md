@@ -397,3 +397,6 @@ Dos `.blend` propios de Kelvin en su Drive: «Piloto Cotorra.blend» (`1twWbEV_L
 
 ## 6-nov-2026 · Cotorras vivas con el estilo de los personajes (Kelvin)
 «Todo como los personajes actuales»: patas amarillas, puntas azules en las alas y demás rasgos igual que el personaje del jugador (KIMI-122).
+
+## 6-nov-2026 · V18.3: los seis personajes históricos de Kelvin (aprobada para diseño y prototipo por fases)
+Directiva: `docs/DIRECTIVA_V18_3.md`. Piloto Cotorra (mentor), Human (antagonista: constructor irresponsable), Girl (aliada), Shiba (rival cómico), Monkey (antagonista secundario que puede cambiar de bando) y Cat Superior Moon (mentor, sin katana). Nombres y roles provisionales: antes se audita el canon. Un solo sistema de personajes con estados (neutral, aliado, rival, antagonista, reconciliado). Fase 1: auditoría narrativa y técnica; fase 2: Human como primer antagonista funcional. Sin marcas (Real Madrid), sin fotos personales, sin armas, y derechos verificados antes de publicar. No reemplaza V18.1 ni detiene V18.2.
