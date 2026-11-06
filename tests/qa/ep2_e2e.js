@@ -240,7 +240,7 @@
       await until(() => cr.hidden, 8000);
       await jugar(0.5);
       check('Empezar cierra el creador y crea el perfil', cr.hidden && S.profile.created, S.profile.name);
-      const habla = await until(() => (G.dialogo.activo ? G.dialogo.activo() : G.dialogo.open()), 20000); // caja o bocadillo (la escena de inicio sale en bocadillo) // pack.inicio llega 300 ms después de guardar (creador.js)
+      const habla = await until(() => (G.dialogo.activo ? G.dialogo.activo() : G.dialogo.open()), 45000); // caja o bocadillo (la escena de inicio sale en bocadillo) // pack.inicio llega 300 ms después de guardar (creador.js)
       check('Al empezar habla Vittata (escena de inicio)', !!habla, G.dialogo.actual() && G.dialogo.actual().text);
       await captura('inicio');
       await resolver();

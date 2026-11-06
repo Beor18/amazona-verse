@@ -100,7 +100,7 @@
         if (fijosES.has(base)) { cand.push([n, t]); continue; }
         if (MOTOR.has(t) || !pareceES(t) || !G.idioma.faltan([t]).length) continue;
         if (!valores || valores.length !== Object.keys(W.AV_EN || {}).length) valores = Object.values(W.AV_EN || {}); // el pack suma su en.js después (ep3: la cita de la RAE)
-        if (valores.some(v => v === t || (t.length >= 3 && v.endsWith(t)))) continue;
+        if (valores.some(v => v === t || (t.length >= 3 && v.endsWith(t)) || (v.length >= 12 && t.endsWith(v) && !pareceES(t.slice(0, t.length - v.length))))) continue; // «Source: » + una cita ya traducida (ep3, RAE)
         cand.push([n, t]);
       }
       if (!cand.length) return;
