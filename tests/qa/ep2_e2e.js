@@ -92,7 +92,7 @@
         const nom = G.S && G.S.profile && G.S.profile.name, sinNom = nom ? [nom, G.idioma.tr(nom)].reduce((u, x) => u.split(x).join(' '), t).trim() : t;
         if (!G.idioma.faltan([t]).length || !/\p{L}{2}/u.test(sinNom) || !G.idioma.faltan([sinNom]).length || MOTOR.has(t) || NOMBRE_NIDO.test(t)) continue;
         // Ya en inglés (un valor del diccionario, o su final mientras el diálogo se escribe letra a letra) aunque diga «no» o «El Yunque»
-        if (!valores) valores = Object.values(W.AV_EN || {});
+        if (!valores || valores.length !== Object.keys(W.AV_EN || {}).length) valores = Object.values(W.AV_EN || {}); // el pack suma su en.js después
         // QA-85 (W6): en el móvil el diálogo se ve a medio escribir: el principio de una línea inglesa («No…» de «Now…», «Las…» de «Last…»)
         if (valores.some(v => v === t || (t.length >= 3 && v.endsWith(t)) || (t.length >= 2 && v.startsWith(t)))) continue;
         { // la línea que se está escribiendo (caja o bocadillo), traducida entera, aunque lleve un nombre dentro («I choose {}…»)
@@ -240,7 +240,7 @@
       await until(() => cr.hidden, 8000);
       await jugar(0.5);
       check('Empezar cierra el creador y crea el perfil', cr.hidden && S.profile.created, S.profile.name);
-      const habla = await until(() => G.dialogo.open(), 20000); // pack.inicio llega 300 ms después de guardar (creador.js)
+      const habla = await until(() => (G.dialogo.activo ? G.dialogo.activo() : G.dialogo.open()), 20000); // caja o bocadillo (la escena de inicio sale en bocadillo) // pack.inicio llega 300 ms después de guardar (creador.js)
       check('Al empezar habla Vittata (escena de inicio)', !!habla, G.dialogo.actual() && G.dialogo.actual().text);
       await captura('inicio');
       await resolver();

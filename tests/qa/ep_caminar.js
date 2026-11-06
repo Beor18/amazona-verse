@@ -99,7 +99,7 @@
         const base = t.replace(/^[·✓]\s*/, '').replace(/\s*\(\d+\/\d+\)$/, '').replace(/\s*\d+\/\d+$/, '');
         if (fijosES.has(base)) { cand.push([n, t]); continue; }
         if (MOTOR.has(t) || !pareceES(t) || !G.idioma.faltan([t]).length) continue;
-        if (!valores) valores = Object.values(W.AV_EN || {});
+        if (!valores || valores.length !== Object.keys(W.AV_EN || {}).length) valores = Object.values(W.AV_EN || {}); // el pack suma su en.js después (ep3: la cita de la RAE)
         if (valores.some(v => v === t || (t.length >= 3 && v.endsWith(t)))) continue;
         cand.push([n, t]);
       }
