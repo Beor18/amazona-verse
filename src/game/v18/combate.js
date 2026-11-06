@@ -487,6 +487,7 @@ window.AVV18Combate = function (G) {
       const a = b.dataset.a;
       if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (a === 'alianza') { if (C.j && C.j.alianza) usar(C.j, C.j.alianza); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
     });
+    const viejo = document.getElementById('v18-duelo'); if (viejo) viejo.remove(); // una instancia nueva del módulo (QA-163 en v18CombateTest) no deja dos #v18-duelo
     document.body.appendChild(el);
     hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
     return hud;
