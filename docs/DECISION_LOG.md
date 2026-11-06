@@ -409,3 +409,6 @@ Texto: `docs/DIRECTIVA_V18_3_RESOLUCION.md` (sustituye a la V18.3 en lo que corr
 - **Máquina del puerto (BM165):** Kimi la conecta solo si en el juego se ve mejor que las piezas simples (KIMI-162).
 - **Cap. 3:** se queda donde está hoy, en la desembocadura. Moverlo a Puerto de La Mina costaría de 3 a 5 días y chocaría con la misión de la V18.3 que ya está allí. Kelvin pidió terminar sin idas y vueltas. Si quiere moverlo más adelante, queda anotado. (Decisión de la coordinadora con la delegación de Kelvin.)
 
+## 6-nov-2026 · Emblema del pacto: propuesta B (Kelvin)
+Kelvin elige la **B · Semilla con alas** (`docs/img/emblema_propuestas/emblema_b.svg`): una semilla dorada que brota, sostenida por dos alas de 18 plumas cada una (36 piezas). La promesa va grabada en el reverso. Pendiente técnico: engrosar las plumas para que se lea a 32 px y ponerlo en el cap. 6 donde hoy sale el emblema.
+
