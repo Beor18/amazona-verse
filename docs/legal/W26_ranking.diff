@@ -1,0 +1,94 @@
+diff -u -r a/src/game/records.js b/src/game/records.js
+--- a/src/game/records.js	2026-11-06 11:32:02.110060050 +0000
++++ b/src/game/records.js	2026-11-06 11:32:02.586322503 +0000
+@@ -92,7 +92,7 @@
+       maze: ['Amazona Maze', 'Amazona Maze'], // src/game/maze.js (AB1, publicado en BI2)
+       compartirRecord: ['Compartir mi récord', 'Share my record'], compartir: ['Compartir', 'Share'],
+       rankSinAdulto: ['Tu récord quedó guardado en este dispositivo. Para publicarlo en línea hace falta un adulto.', 'Your record is saved on this device. An adult is needed to post it online.'],
+-      rankTitulo: ['Publicar en el ranking', 'Post to the leaderboard'], rankTexto: ['Elige tu apodo de animal. No se guarda nada personal: solo el apodo y tu marca.', 'Pick your animal nickname. Nothing personal is saved: just the nickname and your score.'],
++      rankTitulo: ['Publicar en el ranking', 'Post to the leaderboard'], rankTexto: ['Elige tu apodo de animal. Se guardan tu apodo, tu marca y un código secreto de este dispositivo (no es tu nombre ni tu IP). Un adulto puede pedir que lo borremos.', 'Pick your animal nickname. We save your nickname, your score and a secret code for this device (not your name or your IP). A grown-up can ask us to delete it.'],
+       rankAnimal: ['Animal', 'Animal'], rankAdj: ['Cualidad', 'Quality'], rankNum: ['Número', 'Number'], rankAzar: ['Otro al azar', 'Another at random'], rankPub: ['Publicar', 'Post'],
+       rankEnviando: ['Enviando…', 'Sending…'], rankPuesto: ['¡Quedaste en el puesto {}!', 'You are number {}!'], rankListo: ['¡Marca publicada!', 'Score posted!'], rankVer: ['Ver el top', 'See the top'],
+       rankMal: ['No se pudo publicar ahora. Tu marca sigue guardada; prueba más tarde.', 'Could not post right now. Your score is still saved; try again later.'],
+diff -u -r a/tools/supabase/README.md b/tools/supabase/README.md
+--- a/tools/supabase/README.md	2026-11-06 11:32:02.102119785 +0000
++++ b/tools/supabase/README.md	2026-11-06 11:32:02.358905426 +0000
+@@ -9,10 +9,10 @@
+ - **URL:** `https://muxxdjyxwjxaoziczkcz.supabase.co/functions/v1/amazona-records`
+ - **Seguridad infantil:**
+   - El alias es «Animal Adjetivo NN», de listas fijas; no hay texto libre.
+-  - No se guarda nada personal: el dispositivo y la IP van como hash SHA-256 con sal.
++  - La IP no se guarda. El código de dispositivo va como HMAC-SHA256 con la clave secreta RANKING_SECRET (secreto de la función, fuera del repo).
+ - **Antitrampas:**
+   - Cada reto tiene límites de verosimilitud (tiempos mínimos, puntos por segundo de partida).
+-  - Se aceptan 20 envíos por hora por dispositivo y 60 por IP.
++  - Se aceptan 20 envíos por hora por dispositivo y 600 por hora en total (sin límite por IP).
+   - Cada dispositivo aparece una sola vez en el top.
+   - Una marca se oculta con `update amazona.records set oculto = true where id = …`.
+ - **Retos:**
+diff -u -r a/tools/supabase/amazona-records/index.ts b/tools/supabase/amazona-records/index.ts
+--- a/tools/supabase/amazona-records/index.ts	2026-11-06 11:32:02.085566191 +0000
++++ b/tools/supabase/amazona-records/index.ts	2026-11-06 11:32:02.357335948 +0000
+@@ -1,11 +1,16 @@
+ // Amazona Verse · récords públicos de los minijuegos (top por reto).
+ // Esquema privado «amazona» (no expuesto por REST); conexión directa con SUPABASE_DB_URL.
+-// Seguridad: sin datos personales (alias de lista fija; dispositivo e IP como SHA-256 con sal),
+-// límites de verosimilitud por reto, límite de envíos por dispositivo e IP, CORS solo para los dominios del juego.
++// Seguridad: alias de lista fija; el código de dispositivo se guarda solo como HMAC-SHA256 con una clave secreta del
++// entorno (RANKING_SECRET, nunca en el código). No se guarda la IP ni nada derivado de ella.
++// Límites de verosimilitud por reto, límite de envíos por dispositivo y un tope global, CORS solo para los dominios del juego.
+ import postgres from 'npm:postgres@3.4.4';
+ 
+ const sql = postgres(Deno.env.get('SUPABASE_DB_URL')!, { max: 2, prepare: false });
+-const SAL = 'amazona-verse-records-v1';
++// Clave secreta de la función (supabase secrets set RANKING_SECRET=...). Sin ella la función no arranca: mejor caer que usar una por defecto.
++const CLAVE = Deno.env.get('RANKING_SECRET');
++if (!CLAVE || CLAVE.length < 32) throw new Error('Falta RANKING_SECRET (mínimo 32 caracteres)');
++const CLAVE_HMAC = crypto.subtle.importKey('raw', new TextEncoder().encode(CLAVE), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
++const TOPE_GLOBAL_HORA = 600; // freno general sin IP: máximo de envíos por hora entre todos
+ const ORIGENES = [/^https:\/\/(www\.)?amazonaverse\.com$/, /^https:\/\/amazona-verse[a-z0-9-]*\.vercel\.app$/, /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/];
+ 
+ // Cada reto: si gana el menor (tiempo en ms) o el mayor (puntos), y límites de verosimilitud.
+@@ -25,7 +30,7 @@
+ const ALIAS = new RegExp('^(' + ANIMALES.join('|') + ') (' + ADJETIVOS.join('|') + ') ([1-9][0-9]?)$');
+ 
+ async function hash(s: string) {
+-  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(SAL + ':' + s));
++  const b = await crypto.subtle.sign('HMAC', await CLAVE_HMAC, new TextEncoder().encode(s));
+   return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+ }
+ function cors(origen: string | null) {
+@@ -66,11 +71,11 @@
+     if (!Number.isFinite(valor) || !Number.isFinite(dur) || valor < R.min || valor > R.max || dur < 0 || dur > 3600000 || (R.ok && !R.ok(valor, dur))) return resp(h, { error: 'inverosimil' }, 422);
+     if (!ALIAS.test(alias)) return resp(h, { error: 'alias' }, 400);
+     if (!/^[A-Za-z0-9-]{16,64}$/.test(disp)) return resp(h, { error: 'dispositivo' }, 400);
+-    const ipCruda = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'sin-ip';
+-    const dh = await hash('d:' + disp), ih = await hash('i:' + ipCruda);
+-    const [c] = await sql`select (select count(*) from amazona.records where dispositivo = ${dh} and creado > now() - interval '1 hour')::int as d, (select count(*) from amazona.records where ip = ${ih} and creado > now() - interval '1 hour')::int as i`;
+-    if (c.d >= 20 || c.i >= 60) return resp(h, { error: 'espera' }, 429);
+-    await sql`insert into amazona.records (reto, valor, dur_ms, alias, dispositivo, ip) values (${reto}, ${valor}, ${dur}, ${alias}, ${dh}, ${ih})`;
++    // La IP no se lee, no se hashea y no se guarda (memo COPPA, W26).
++    const dh = await hash('d:' + disp);
++    const [c] = await sql`select (select count(*) from amazona.records where dispositivo = ${dh} and creado > now() - interval '1 hour')::int as d, (select count(*) from amazona.records where creado > now() - interval '1 hour')::int as g`;
++    if (c.d >= 20 || c.g >= TOPE_GLOBAL_HORA) return resp(h, { error: 'espera' }, 429);
++    await sql`insert into amazona.records (reto, valor, dur_ms, alias, dispositivo) values (${reto}, ${valor}, ${dur}, ${alias}, ${dh})`;
+     const lista = await top(reto, 20);
+     const puesto = lista.findIndex(f => f.alias === alias && f.valor === valor) + 1;
+     return resp(h, { ok: true, puesto: puesto || null, top: lista.slice(0, 10) });
+diff -u -r a/tools/supabase/migracion.sql b/tools/supabase/migracion.sql
+--- a/tools/supabase/migracion.sql	2026-11-06 11:32:02.094619388 +0000
++++ b/tools/supabase/migracion.sql	2026-11-06 11:32:02.358343835 +0000
+@@ -8,7 +8,6 @@
+   dur_ms integer not null check (dur_ms >= 0),
+   alias text not null check (char_length(alias) between 3 and 40),
+   dispositivo text not null check (char_length(dispositivo) = 64),
+-  ip text not null check (char_length(ip) = 64),
+   oculto boolean not null default false,
+   creado timestamptz not null default now()
+ );
+@@ -16,4 +15,4 @@
+ revoke all on all tables in schema amazona from public, anon, authenticated;
+ create index if not exists records_reto_valor on amazona.records (reto, valor) where not oculto;
+ create index if not exists records_dispositivo on amazona.records (dispositivo, creado);
+-create index if not exists records_ip on amazona.records (ip, creado);
++create index if not exists records_creado on amazona.records (creado);
