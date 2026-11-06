@@ -547,7 +547,7 @@ window.AVV18Evolucion = function (G) {
 
       // Equilibrio (informativo, con números): dos jugadoras automáticas de ritmo humano (una acción cada 0,6 s como mucho), con la
       // misma estrategia en nv 1, 10 y 20, contra la Campeona sin cambios. «cuerpo»: se pega y usa el ala; «distancia»: guarda la
-      // distancia del grito, grita y lanza semillas (el estilo donde la etapa más se nota).
+      // distancia del grito, grita y lanza semillas, sin ala (el estilo donde la etapa más se nota).
       if (o.equilibrio !== false) {
         const res = {}, N = o.n || 6;
         for (const estilo of ['cuerpo', 'distancia']) for (const nivel of [1, 10, 20]) {
@@ -567,7 +567,7 @@ window.AVV18Evolucion = function (G) {
               if (j.mareo > 0 || t < prox) return;
               let u = null;
               if (gH.ok && d.d < alcG + 0.3 && d.d > 2.4) u = 'grito_yunque';
-              else if (d.d < 2.3 && H.listo(j, 'golpe_ala').ok) u = 'golpe_ala';
+              else if (estilo === 'cuerpo' && d.d < 2.3 && H.listo(j, 'golpe_ala').ok) u = 'golpe_ala';
               else if (estilo === 'distancia' && d.d > 3 && j.energia >= 50 && H.listo(j, 'semilla').ok) u = 'semilla';
               if (u && Cb.usar(j, u).ok) { prox = t + 0.6; if (u === 'grito_yunque') gr++; }
             });
