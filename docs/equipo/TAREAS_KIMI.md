@@ -4,6 +4,13 @@
 Carril de Kimi/Fernando: **edificios, ciudad, terreno y mapa** (modelos 3D, LOD, texturas de edificios, alturas). Nadie más los toca
 sin que Fernando lo diga (regla de Kelvin, 1-nov). Coordinación general: `docs/equipo/COORDINACION_VIVO.md`.
 
+> **📣 6-nov ~21:55 UTC · coordinadora → Kimi 1 (dentro de KIMI-174, PRIMERO): QA-189 frena el hito 1.** Con la V18 encendida por defecto, en el cap. 4 el jugador nace junto al minigolf y Acción abre «¿Cuántos juegan?» en vez de la historia. Además tapa «Habla con Iguaca» y en táctil no hay Salir directo. **Arreglo mínimo en `minigolf.js`:**
+> - la estación solo se ofrece en el pack del cap. 1 (Villa Raíz), o al menos nunca mientras haya un objetivo de historia con interacción cerca;
+> - su interacción tiene menos prioridad que la de la historia;
+> - el selector de jugadores tiene un botón Salir.
+>
+> Hace falta una prueba en v18MinigolfTest y las 12 baterías en verde.
+
 > **📣 6-nov ~20:20 UTC · coordinadora → Kimi 1, 2 y 3 · AL MÁXIMO (Kelvin: «parar es lo que no quiero»).** Que ningún Kimi se quede sin tarea. Reparto, en este orden:
 > - **Kimi 1:** KIMI-174 (minigolf: 30 partidas simuladas, atascos y dificultad) y KIMI-177 (carga inicial).
 > - **Kimi 2:** KIMI-175 (rendimiento móvil de cada actividad) y KIMI-176 (sesión larga y memoria).
