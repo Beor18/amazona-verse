@@ -636,9 +636,21 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       Object.assign(S.pos, posBk); S.facing = facBk; raiz.className = hcBk;
       SV.restaurar(snap); SV.suspender(false);
       if (lugBk && Array.isArray(S.lugares)) S.lugares = lugBk;
+      if (snap.marcador == null && S.marcador != null) S.marcador = null; // restaurar dispara 'apply' y marcador.js materializa S.marcador (diseño QA-82): se devuelve al valor previo (null), no es un escape de esta prueba
       dirty = true;
     }
-    check('G.S queda como estaba', JSON.stringify(SV.instantanea()) === JSON.stringify(snap));
+    const snapFin = SV.instantanea();
+    if (JSON.stringify(snapFin) !== JSON.stringify(snap)) {
+      const diffs = [];
+      const walk = (a, b, p) => {
+        if (JSON.stringify(a) === JSON.stringify(b)) return;
+        if (a && b && typeof a === 'object' && typeof b === 'object' && !Array.isArray(a) && !Array.isArray(b)) {
+          for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) walk(a[k], b[k], p + '.' + k);
+        } else diffs.push(p + ': ' + JSON.stringify(b) + ' → ' + JSON.stringify(a));
+      };
+      walk(snapFin, snap, 'S');
+      check('G.S queda como estaba', false, diffs.slice(0, 6).join(' | '));
+    } else check('G.S queda como estaba', true);
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
 
