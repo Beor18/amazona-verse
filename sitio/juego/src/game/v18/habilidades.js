@@ -48,7 +48,8 @@ window.AVV18Habilidades = function (G) {
   registrar({ id: 'golpe_ala', basico: true, nombre: 'Golpe de ala', coste: 0, cooldown: 0.55, alcance: 2.4, fx: 'feathers',
     efecto(ctx) {
       const { yo, otro } = ctx; ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('aleteo');
-      if (dist(yo, otro) > this.alcance) return { ok: true, acierto: false };
+      const alcance = this.alcance * (yo.vistacumbre > 0 ? ((get('vista_cumbre') || {}).alcanceK || 1.35) : 1); // Vista de cumbre: los golpes de ala alcanzan un poco más
+      if (dist(yo, otro) > alcance) return { ok: true, acierto: false };
       return { ok: true, acierto: ctx.golpear(otro, { plumas: 1, empuje: 7, mareo: 0.7, dir: dirA(yo, otro) }) };
     } });
   registrar({ id: 'semilla', basico: true, nombre: 'Semilla', coste: 15, cooldown: 0.8, alcance: 18, fx: 'leaves',
@@ -558,7 +559,7 @@ window.AVV18Habilidades = function (G) {
       if (!copia || copia === h.id) return nada();
       const orig = get(copia); if (!orig || orig.basico) return nada(); // los básicos no se imitan
       const escalaG = g => { if (!g) return g; const s = Object.assign({}, g);
-        if (s.plumas) s.plumas = Math.floor(s.plumas * 0.5); // una pluma copiada no llega a quitarse
+        if (s.plumas) s.plumas = Math.floor(s.plumas * 0.5); // media fuerza, a la baja: 1 pluma copiada no se quita
         if (s.empuje) s.empuje *= 0.5;
         if (s.mareo) s.mareo *= 0.5;
         delete s.rompeEscudo; return s; };
@@ -566,14 +567,27 @@ window.AVV18Habilidades = function (G) {
         golpear: (blanco, g) => ctx.golpear(blanco, escalaG(g)),
         lanzar: b => ctx.lanzar(Object.assign({}, b, { vx: (b.vx || 0) * 0.7, vy: (b.vy || 0) * 0.7, vz: (b.vz || 0) * 0.7,
           vida: b.vida ? b.vida * 0.8 : b.vida, golpe: escalaG(b.golpe), drena: b.drena ? b.drena * 0.5 : b.drena })),
-        escudo: (f, s) => ctx.escudo(f, s ? s * 0.5 : s),
         poder: ev => ctx.poder(Object.assign({}, ev, { id: h.id, copia: orig.id }))
       });
+      const media = Object.create(orig); // el «this» del efecto copiado: su duración (escudo) también a la mitad
+      if (typeof orig.dura === 'number') media.dura = orig.dura * 0.5;
       yo.cara = 'fight'; yo.picoT = 0.5; // abre el pico: está repitiendo el canto
       ctx.fx('feathers', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('aleteo');
-      const r = orig.efecto.call(orig, c2) || { ok: true };
-      if (yo.escudo > 0) yo.escudo *= 0.5; // el estado de escudo lo pone el propio efecto copiado: se media aquí
+      const r = orig.efecto.call(media, c2) || { ok: true };
       return { ok: true, copia: orig.id, acierto: r.acierto };
+    } });
+  // Vista de cumbre (guatemalae, OJOS — V18_MATRIZ_36.md #20): 6 s en «la cumbre»: ves a la rival en el minimapa
+  // (marcador v18rival: la publica combate.js → mapa() y lo pinta minimapa.js) y tus golpes de ala alcanzan ×1,35
+  // (lo aplica golpe_ala leyendo yo.vistacumbre). Ventaja: precisión y lectura de la rival. Debilidad: no hace daño
+  // ni defiende. Coste 30 · espera 9 s (matriz). Sin invulnerabilidad. Se consigue en el Álbum (nuevas.js, provisional).
+  registrar({ id: 'vista_cumbre', nombre: 'Vista de cumbre', especies: ['guatemalae'], tecnica: 'ojos', coste: 30, cooldown: 9,
+    fx: 'gold', dura: 6, alcanceK: 1.35,
+    efecto(ctx) {
+      const { yo } = ctx;
+      yo.vistacumbre = this.dura; yo.cara = 'fight';
+      ctx.fx('gold', yo.pos.x, yo.pos.y + 1.4, yo.pos.z); ctx.fx('ring', yo.pos.x, yo.pos.y, yo.pos.z); ctx.sonar('ring', 2);
+      ctx.poder({ id: this.id, de: yo.id, dura: this.dura });
+      return { ok: true };
     } });
 
   // ---------- Luchadores ----------

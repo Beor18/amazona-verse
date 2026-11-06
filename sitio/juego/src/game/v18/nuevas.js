@@ -94,7 +94,8 @@ window.AVV18Nuevas = function (G) {
     { id: 'lilacina', txt: '¡Descubriste al loro de lores rojas en el Álbum! Su poder: Plumas de manglar.' },
     { id: 'mercenarius', txt: '¡Descubriste al loro mercenario en el Álbum! Su poder: Vuelo de niebla.' },
     { id: 'pretrei', txt: '¡Descubriste al loro de anteojos rojos en el Álbum! Su poder: Vuelta de pino.' },
-    { id: 'oratrix', txt: '¡Descubriste al loro cabeza amarilla en el Álbum! Su poder: Imitación.' }
+    { id: 'oratrix', txt: '¡Descubriste al loro cabeza amarilla en el Álbum! Su poder: Imitación.' },
+    { id: 'guatemalae', txt: '¡Descubriste al loro harinoso del norte en el Álbum! Su poder: Vista de cumbre.' }
   ];
   // La tarjeta acaba de abrirse (evento del Álbum): desbloqueo inmediato con aviso
   function albumLlega(id, avisar) {
@@ -247,6 +248,14 @@ window.AVV18Nuevas = function (G) {
       G.emit('album', { id: 'oratrix', fuente: 'test' });
       check('El mismo descubrimiento no avisa dos veces (Imitación)', toasts.filter(t => /cabeza amarilla/.test(t)).length === 1);
       check('La de coste A tiene su poder propio', H.poderDe('oratrix') === 'imitacion', H.poderDe('oratrix'));
+      // La #20 Vista de cumbre (guatemalae, Álbum del Diario, provisional): completa la matriz salvo #30/#36 (necesitan IA expuesta)
+      check('La Vista de cumbre (guatemalae) empieza sin descubrir', rango(V.estado('guatemalae')) < rango('descubierta'));
+      G.emit('album', { id: 'guatemalae', fuente: 'test' });
+      check('Descubrir su tarjeta en el Álbum deja elegible al loro harinoso del norte (Vista de cumbre), con aviso',
+        rango(V.estado('guatemalae')) >= rango('seleccionable') && toasts.some(t => /harinoso del norte/.test(t) && /Vista de cumbre/.test(t) && /Mis cotorras/.test(t)));
+      G.emit('album', { id: 'guatemalae', fuente: 'test' });
+      check('El mismo descubrimiento no avisa dos veces (Vista de cumbre)', toasts.filter(t => /harinoso del norte/.test(t)).length === 1);
+      check('La Vista de cumbre tiene su poder propio', H.poderDe('guatemalae') === 'vista_cumbre', H.poderDe('guatemalae'));
 
       // ---- Las 4 de coste M: cada una con su hito, desde una partida nueva ----
       V.borrar(); V.recargar(); toasts.length = 0;
@@ -708,6 +717,31 @@ window.AVV18Nuevas = function (G) {
         C.r.mareo = 0; C.r.cd.semilla = 0; C.r.energia = 100;
         B.usar(C.r, 'semilla'); // los básicos no se registran ni se imitan
         check('Los básicos (semilla, golpe de ala) no se registran para la Imitación', C.r.ultPoder === poderR0);
+        // La reducción a media fuerza la aplica el propio efecto copiado (su «this» media), no un parche global:
+        // imitar un poder sin escudo no debe tocar el escudo que ya tuviera puesta la imitadora
+        C.j.escudo = 2; C.j.cd = {}; C.j.energia = 100; C.r.ultPoder = 'grito_yunque';
+        const rim2 = B.usar(C.j, 'imitacion');
+        check('Imitar un grito con el escudo propio puesto no lo toca (sigue 2 s, no 1)',
+          rim2.ok && rim2.copia === 'grito_yunque' && Math.abs(C.j.escudo - 2) < 0.01,
+          'escudo propio ' + (C.j.escudo || 0).toFixed(2) + ' s');
+        C.j.escudo = 0;
+        B.salir();
+        // Vista de cumbre (guatemalae, V18_MATRIZ_36.md #20): 6 s en la cumbre — ves a la rival en el minimapa y tu
+        // golpe de ala alcanza ×1,35; sin daño propio ni invulnerabilidad
+        B.iniciar({ sinCuenta: true, especie: 'guatemalae' }); quieta(2.9); listo(); S.facing = { x: 1, z: 0 }; C.r.mareo = 5;
+        const mapaSin = G.v18combate.mapa(); // sin el poder, la rival no se «ve»
+        const pvg0 = C.r.plumas, golpeSin = B.usar(C.j, 'golpe_ala');
+        check('...a 2,9 m (fuera del alcance normal de 2,4 m) el golpe de ala falla', golpeSin.ok && !golpeSin.acierto && C.r.plumas === pvg0,
+          'plumas ' + pvg0 + '→' + C.r.plumas);
+        const rvc = B.usar(C.j, 'vista_cumbre');
+        const mapaCon = G.v18combate.mapa();
+        listo(); C.j.cd.golpe_ala = 0; C.r.mareo = 5; const pvg1 = C.r.plumas, golpeCon = B.usar(C.j, 'golpe_ala');
+        check('Vista de cumbre: 6 s en que ves a la rival en el minimapa y tu golpe de ala alcanza un poco más (acierta a 2,9 m)',
+          rvc.ok && C.j.vistacumbre > 5.5 && mapaSin === null && mapaCon && Math.abs(mapaCon.x - C.r.pos.x) < 0.01 && golpeCon.ok && golpeCon.acierto && C.r.plumas === pvg1 - 1,
+          'vistacumbre ' + (C.j.vistacumbre || 0).toFixed(1) + ' s, mapa ' + (mapaCon ? mapaCon.x.toFixed(1) + ',' + mapaCon.z.toFixed(1) : 'null') + ', plumas ' + pvg1 + '→' + C.r.plumas);
+        corre(6.2); quieta(2.9); listo(); C.j.cd.golpe_ala = 0; C.r.mareo = 5; const pvg2 = C.r.plumas, golpeFin = B.usar(C.j, 'golpe_ala');
+        check('...y a los 6 s se acaba: el mapa la pierde y el ala vuelve a 2,4 m (a 2,9 m falla otra vez)',
+          !(C.j.vistacumbre > 0) && G.v18combate.mapa() === null && golpeFin.ok && !golpeFin.acierto && C.r.plumas === pvg2);
         B.salir();
       } else check('El duelo está cargado', false);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }
