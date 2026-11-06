@@ -900,7 +900,7 @@ enlaces) y la **Sombra de la demo**; las villas asentidas ya cumplen ≥25 fps. 
 se tocó (medición + docs). Evidencia: `docs/img/kimi127/k127_libre-r1.{json,log}` +
 `k127_libre-r1_<pack>_villa.jpg` ×6 + `k127_libre-r1_demo_*.jpg` ×4.
 
-## KIMI-137 · QA-181 (palanca vanos) · atribución del coste de la búsqueda de vanos y primera recorte (06-nov · Kimi 1)
+## KIMI-138 · QA-181 (palanca vanos) · atribución del coste de la búsqueda de vanos y primera recorte (06-nov · Kimi 1; renumerada desde KIMI-137, ID duplicado con la fila QA-81 de Kimi 3 — los commits llevan el nombre viejo)
 
 KIMI-132 dejó medido que en el spawn de ep3 (Chromebook ×6, «bajo») `solidos.js` se come
 ~20 % del hilo (muestraVanos 5,94 % / filtro 3,06 % / triSeguir 2,56 % / block 2,25 % /
