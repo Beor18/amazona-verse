@@ -20,6 +20,11 @@
      hacia donde apuntas y, si alcanza la semilla, la empuja en esa dirección (empuje extra y corregir la trayectoria).
    - Puntuación: golpes, par 3, récord local y medalla (oro = par o mejor, plata = par + 1, bronce = completar). Se guarda en el
      progreso V18 (G.v18.mundo('minigolf_villa') = { mejor, medalla }); «Comenzar de cero» lo borra (guardado.js borrarV18).
+   - Por turnos (directiva, sección 12): al empezar, «1 jugador» / «2» / «3» / «4 jugadores» (teclas 1–4; Enter, Acción o
+     Golpear = 1 jugador). Mismo aparato, sin cuentas ni servidores. Cada jugador tiene su color (franja y aro de su semilla,
+     nombre en el HUD), su sitio y sus golpes; el turno pasa cuando la semilla se para, sale o entra; el que ya está en el
+     nido se salta. Solo la semilla del turno es física: las demás son marcas fantasma sin choque. Grito: uno por jugador.
+     Acaba cuando todos entran (o con 10 golpes: cuenta como terminado con 10). Récord y premios solo con 1 jugador.
    Solo con la bandera V18. Prueba: AV.v18MinigolfTest(). */
 window.AVV18Minigolf = function (G) {
   'use strict';
@@ -46,6 +51,9 @@ window.AVV18Minigolf = function (G) {
     poder: 'Grito', reiniciar: 'Reiniciar', salir: 'Salir', fuerza: 'Fuerza', izq: 'Apuntar a la izquierda', der: 'Apuntar a la derecha',
     nuevo: '¡Nuevo récord!', sinRecord: 'Récord: —', usado: 'Grito usado',
     oro: 'Medalla de oro', plata: 'Medalla de plata', bronce: 'Medalla de bronce',
+    elige: '¿Cuántos juegan?', eligeSub: 'Por turnos, en este mismo aparato', j1: '1 jugador', j2: '2 jugadores', j3: '3 jugadores', j4: '4 jugadores',
+    empate: '¡Empate!', sinPremios: 'En partidas por turnos no hay premios ni récord', tope: '¡10 golpes! Cuenta como terminado.',
+    oroC: 'Oro', plataC: 'Plata', bronceC: 'Bronce',
     premio1: '¡Primer hoyo completado! Ganaste 3 fibras (cuentan como madera).', premioOro: '¡Primera medalla de oro! Ganaste 2 maderas.'
   };
   // Premios (Kelvin 5-nov), una sola vez por logro, al inventario de siempre: la fibra cuenta como madera (reparar.js, BM148)
@@ -66,6 +74,10 @@ window.AVV18Minigolf = function (G) {
     }
     return dados;
   }
+  // Por turnos (2–4 jugadores en el mismo aparato)
+  const MAX_J = 4, TOPE = 10, ESPERA = 1.0, COLORES = ['#ff6b5a', '#4fb3ff', '#6fdc6a', '#c58cff'];
+  const nombre = i => 'Jugador ' + (i + 1), turnoTxt = i => 'Turno: ' + nombre(i), ganaTxt = i => '¡Gana ' + nombre(i) + '!';
+  const jugTxt = (i, n) => nombre(i) + ': ' + n, nidoJTxt = (i, n) => nombre(i) + (n === 1 ? ': ¡Al nido en 1 golpe!' : ': ¡Al nido en ' + n + ' golpes!');
   const golpesTxt = n => 'Golpes: ' + n, recordTxt = n => 'Récord: ' + n, nidoTxt = n => n === 1 ? '¡Al nido en 1 golpe!' : '¡Al nido en ' + n + ' golpes!';
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
@@ -173,14 +185,25 @@ window.AVV18Minigolf = function (G) {
   {
     const cuerpo = new THREE.Mesh(new THREE.SphereGeometry(R, 18, 14), new THREE.MeshStandardMaterial({ color: '#c98f45', roughness: 0.7, flatShading: true }));
     const franja = new THREE.Mesh(new THREE.TorusGeometry(R * 0.98, 0.045, 6, 22), new THREE.MeshStandardMaterial({ color: '#6b4220', roughness: 0.8 }));
-    semilla.add(cuerpo, franja);
+    semilla.add(cuerpo, franja); semilla.userData.franja = franja;
   }
+  const FRANJA0 = '#6b4220';
+  // Aro de color bajo la semilla del turno y marcas fantasma (sin choque) de los demás jugadores
+  const geoAro = new THREE.RingGeometry(R + 0.06, R + 0.2, 28);
+  const aroTurno = new THREE.Mesh(geoAro, new THREE.MeshBasicMaterial({ color: COLORES[0], transparent: true, opacity: 0.9, depthWrite: false, side: THREE.DoubleSide }));
+  aroTurno.rotation.x = -Math.PI / 2; aroTurno.renderOrder = 3; aroTurno.name = 'v18_golf_aro';
+  const fantasmas = COLORES.map((c, i) => {
+    const g = new THREE.Group(); g.name = 'v18_golf_fantasma' + (i + 1);
+    const bola = new THREE.Mesh(new THREE.SphereGeometry(R, 14, 10), new THREE.MeshStandardMaterial({ color: c, roughness: 0.6, transparent: true, opacity: 0.45, depthWrite: false, flatShading: true }));
+    const aro = new THREE.Mesh(geoAro, new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.75, depthWrite: false, side: THREE.DoubleSide }));
+    aro.rotation.x = -Math.PI / 2; aro.position.y = -R * 0.9; aro.renderOrder = 3; g.add(bola, aro); return g;
+  });
   const salida = new THREE.Mesh(new THREE.RingGeometry(1.0, 1.25, 40), new THREE.MeshBasicMaterial({ color: '#ffd27a', transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide }));
   salida.rotation.x = -Math.PI / 2; salida.renderOrder = 3; salida.name = 'v18_golf_salida';
   const N_PUNTOS = 8, puntos = new THREE.InstancedMesh(new THREE.SphereGeometry(0.07, 6, 4), new THREE.MeshBasicMaterial({ color: '#fff6dc', transparent: true, opacity: 0.85, depthWrite: false }), N_PUNTOS);
   puntos.name = 'v18_golf_mira';
   troncos.name = 'v18_golf_troncos';
-  for (const m of [troncos, nido, semilla, salida, puntos]) { m.frustumCulled = false; m.visible = false; scene.add(m); }
+  for (const m of [troncos, nido, semilla, salida, puntos, aroTurno, ...fantasmas]) { m.frustumCulled = false; m.visible = false; scene.add(m); }
   troncos.castShadow = false; puntos.renderOrder = 4;
   const _o = new THREE.Object3D(), _q = new THREE.Quaternion(), _ax = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0), _d = new THREE.Vector3();
 
@@ -212,7 +235,9 @@ window.AVV18Minigolf = function (G) {
 
   // ---------- Estado ----------
   const A = { fase: 'nada', golpes: 0, carga: 0, cargaT: 0, cargando: false, grito: false, giro: 0, manual: false, acc: 0, t: 0, nidoT: 0, timers: [],
-    rebotes: 0, fueras: 0, ultimo: null, invitado: false, resultado: null };
+    rebotes: 0, fueras: 0, ultimo: null, invitado: false, resultado: null, eligiendo: false, njug: 1, turno: 0, esperaT: 0, hundir: false };
+  let J = []; // jugadores de la partida: { golpes, x, z, ultimo, grito, f, dentro, tope }
+  const multi = () => A.njug > 1;
   const B = { x: 0, y: 0, z: 0, vx: 0, vz: 0, mov: false, t: 0 };
   const pos = { x: 0, y: 0, z: 0 }; // la semilla como blanco del Grito (habilidades.js lee .pos)
   function ponerSemilla(x, z) { B.x = x; B.z = z; B.vx = B.vz = 0; B.mov = false; B.t = 0; B.y = H(x, z) + R * 0.95; semilla.position.set(B.x, B.y, B.z); }
@@ -243,24 +268,87 @@ window.AVV18Minigolf = function (G) {
     if (A.fase !== 'nada' || !K) return false;
     if (!o.forzar && (!libre() || otroActivo())) return false;
     if (M.flying) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } }
-    A.fase = 'apuntar'; empezarHoyo();
-    enganchar(); montarHud(); hud.el.hidden = false; pintar(true);
+    A.fase = 'apuntar'; A.njug = 1; A.eligiendo = true; empezarHoyo();
+    enganchar(); montarHud(); hud.el.hidden = false; paneles(); pintar(true);
     toast(TXT.empieza, 3000); emitir({ tipo: 'empieza' });
     return true;
   }
   function empezarHoyo() {
-    Object.assign(A, { golpes: 0, carga: 0, cargaT: 0, cargando: false, grito: false, acc: 0, nidoT: 0, rebotes: 0, fueras: 0, resultado: null });
+    Object.assign(A, { golpes: 0, carga: 0, cargaT: 0, cargando: false, grito: false, acc: 0, nidoT: 0, rebotes: 0, fueras: 0, resultado: null, turno: 0, esperaT: 0, hundir: false });
     A.timers.length = 0; A.fase = 'apuntar';
     ponerSemilla(P_TEE.x, P_TEE.z); A.ultimo = { x: B.x, z: B.z }; semilla.scale.setScalar(1);
-    f = HAB ? HAB.luchador({ id: 'golf', especie: 'vittata', poder: 'grito_yunque', pos: S.pos, mira: dir }) : null;
+    const luchador = i => HAB ? HAB.luchador({ id: i ? 'golf' + (i + 1) : 'golf', especie: 'vittata', poder: 'grito_yunque', pos: S.pos, mira: dir }) : null;
+    J = Array.from({ length: A.njug }, (_, i) => ({ golpes: 0, x: P_TEE.x, z: P_TEE.z, ultimo: { x: P_TEE.x, z: P_TEE.z }, grito: false, f: luchador(i), dentro: false, tope: false }));
+    f = J[0].f; colorTurno();
     apuntarA(P_NIDO.x, P_NIDO.z); seguir(0, true);
     try { G.camara.place(true); } catch (e) { /* cámara */ }
-    if (hud) { hud.q('fin').hidden = true; hud.q('bot').hidden = false; }
+    paneles();
+  }
+  // Elegir cuántos juegan (solo al empezar; 1 jugador deja la partida tal cual)
+  function elegir(n) {
+    n = Math.max(1, Math.min(MAX_J, n | 0 || 1));
+    if (!A.eligiendo || A.fase !== 'apuntar') return false;
+    A.eligiendo = false;
+    if (n !== A.njug) { A.njug = n; empezarHoyo(); }
+    if (n > 1) toast(turnoTxt(0), 2000);
+    paneles(); pintar(true); emitir({ tipo: 'jugadores', n });
+    return true;
+  }
+  function colorTurno() {
+    semilla.userData.franja.material.color.set(multi() ? COLORES[A.turno] : FRANJA0);
+    aroTurno.material.color.set(COLORES[A.turno] || COLORES[0]);
+  }
+  // Turnos: guarda al que acaba de tirar y, tras una pausa corta, pasa al siguiente que no esté en el nido
+  function guardarJ() { const j = J[A.turno]; if (!j) return; Object.assign(j, { golpes: A.golpes, x: B.x, z: B.z, ultimo: A.ultimo, grito: A.grito, f }); }
+  function cargarJ(i) {
+    const j = J[i]; A.turno = i; A.golpes = j.golpes; A.grito = j.grito; A.ultimo = j.ultimo; f = j.f;
+    A.timers.length = 0; A.cargando = false; A.carga = 0; A.hundir = false; A.nidoT = 0; semilla.scale.setScalar(1);
+    ponerSemilla(j.x, j.z); colorTurno(); apuntarA(P_NIDO.x, P_NIDO.z); seguir(0, true);
+    A.fase = 'apuntar'; toast(turnoTxt(i), 1800); emitir({ tipo: 'turno', jugador: i }); pintar(true);
+  }
+  function siguiente() {
+    for (let k = 1; k <= J.length; k++) { const i = (A.turno + k) % J.length; if (!J[i].dentro && !J[i].tope) return i; }
+    return -1;
+  }
+  function finTurno() {
+    guardarJ(); const j = J[A.turno];
+    if (!j.dentro && j.golpes >= TOPE) { j.golpes = A.golpes = TOPE; j.tope = true; toast(TXT.tope, 2000); }
+    A.timers.length = 0; A.cargando = false; B.mov = false; B.vx = B.vz = 0;
+    A.fase = 'turno'; A.esperaT = ESPERA; pintar();
+  }
+  // Tabla final: por golpes (empate = mismo puesto), medalla de cada uno y quién gana
+  function clasificar(js) {
+    const filas = js.map((j, i) => ({ i, golpes: j.golpes, tope: !!j.tope, medalla: medalla(j.golpes) })).sort((a, b) => a.golpes - b.golpes || a.i - b.i);
+    filas.forEach((r, k) => { r.puesto = k && filas[k - 1].golpes === r.golpes ? filas[k - 1].puesto : k + 1; });
+    const empate = filas.length > 1 && filas[1].golpes === filas[0].golpes;
+    return { filas, ganador: empate ? -1 : filas[0].i, empate, txt: empate ? TXT.empate : ganaTxt(filas[0].i) };
+  }
+  function resultados() {
+    A.fase = 'nido'; A.cargando = false; B.mov = false;
+    const c = clasificar(J);
+    A.resultado = { multi: true, jugadores: c.filas.map(r => Object.assign({}, r)), ganador: c.ganador, empate: c.empate, premios: [], nuevo: false };
+    const y = H(P_NIDO.x, P_NIDO.z); fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 18); sonar('unlock'); toast(c.txt, 3200);
+    if (hud) {
+      const f1 = hud.q('fin1'); f1.textContent = c.txt; f1.style.color = c.empate ? '' : COLORES[c.ganador];
+      hud.q('tabla').innerHTML = c.filas.map(r => `<div class="vg-fila"><b>${r.puesto}.</b><span style="color:${COLORES[r.i]}">${nombre(r.i)}</span>` +
+        `<span>${golpesTxt(r.golpes)}</span><span class="vg-m" data-m="${r.medalla}">${TXT[r.medalla + 'C']}</span></div>`).join('');
+      hud.q('fin3').textContent = TXT.sinPremios;
+    }
+    paneles(); emitir({ tipo: 'final', ganador: c.ganador, empate: c.empate }); pintar(true);
+  }
+  // Qué panel del HUD se ve: elegir jugadores, controles o resultado
+  function paneles() {
+    if (!hud) return;
+    const fin = A.fase === 'nido', m = !!(A.resultado && A.resultado.multi);
+    hud.q('elige').hidden = !A.eligiendo || fin; hud.q('bot').hidden = A.eligiendo || fin; hud.q('fin').hidden = !fin;
+    hud.q('tabla').hidden = !m; hud.q('fin2').hidden = m; hud.q('jugs').hidden = !multi() || fin;
+    if (!m) { hud.q('fin1').style.color = ''; }
   }
   function reiniciar() { if (A.fase === 'nada') return false; empezarHoyo(); pintar(true); emitir({ tipo: 'reinicia' }); return true; }
   function salir(motivo) {
     if (A.fase === 'nada') return false;
     A.fase = 'nada'; A.cargando = false; A.timers.length = 0; soltar();
+    A.eligiendo = false; A.njug = 1; A.turno = 0; A.hundir = false; J = []; colorTurno(); aroTurno.visible = false; for (const g of fantasmas) g.visible = false;
     if (hud) hud.el.hidden = true;
     ponerSemilla(P_TEE.x, P_TEE.z); semilla.scale.setScalar(1); puntos.visible = false;
     S.pos.x = P_ENTRADA.x; S.pos.z = P_ENTRADA.z; S.pos.y = H(S.pos.x, S.pos.z) + 0.05; S.vy = 0; M.vx = M.vz = 0;
@@ -270,6 +358,7 @@ window.AVV18Minigolf = function (G) {
   }
   function empezarCarga() {
     if (A.fase !== 'apuntar' || A.cargando) return false;
+    if (A.eligiendo) elegir(1); // golpear sin elegir = 1 jugador
     A.cargando = true; A.cargaT = 0; A.carga = 0; return true;
   }
   function soltarCarga() {
@@ -279,6 +368,7 @@ window.AVV18Minigolf = function (G) {
   // Golpe: p de 0 a 1 (la fuerza), hacia donde se apunta
   function tirar(p) {
     if (A.fase !== 'apuntar') return false;
+    if (A.eligiendo) elegir(1);
     const d = dir(), v0 = VMIN + (VMAX - VMIN) * Math.max(0, Math.min(1, p));
     A.ultimo = { x: B.x, z: B.z };
     B.vx = d.x * v0; B.vz = d.z * v0; B.mov = true; B.t = 0;
@@ -314,9 +404,17 @@ window.AVV18Minigolf = function (G) {
     A.fueras++; A.golpes++;
     ponerSemilla(A.ultimo.x, A.ultimo.z); A.fase = 'apuntar';
     toast(TXT.fuera, 2200); sonar('wrong'); emitir({ tipo: 'fuera', n: A.golpes }); pintar();
+    if (multi()) finTurno();
   }
   function alNido() {
-    B.mov = false; B.vx = B.vz = 0; A.fase = 'nido'; A.nidoT = 0; A.cargando = false;
+    B.mov = false; B.vx = B.vz = 0; A.nidoT = 0; A.cargando = false; A.hundir = true;
+    if (multi()) { // por turnos: sin récord ni premios; entra y pasa el turno
+      const i = A.turno, n = A.golpes; J[i].dentro = true;
+      const y = H(P_NIDO.x, P_NIDO.z); fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 12); fx('feathers', P_NIDO.x, y + 0.8, P_NIDO.z, 8); sonar('unlock');
+      toast(nidoJTxt(i, n), 2600); emitir({ tipo: 'nido', jugador: i, golpes: n, medalla: medalla(n), nuevo: false });
+      finTurno(); return;
+    }
+    A.fase = 'nido';
     const n = A.golpes, med = medalla(n), r0 = record(), nuevo = !r0 || n < r0.mejor;
     if (nuevo && V) V.cambiarMundo(ID, { mejor: n, medalla: med });
     const r = record() || { mejor: n, medalla: med };
@@ -331,6 +429,7 @@ window.AVV18Minigolf = function (G) {
       hud.q('fin3').textContent = nuevo ? TXT.nuevo : recordTxt(r.mejor);
       hud.q('fin').hidden = false; hud.q('bot').hidden = true;
     }
+    paneles();
     emitir({ tipo: 'nido', golpes: n, medalla: med, nuevo });
     pintar(true);
   }
@@ -390,7 +489,7 @@ window.AVV18Minigolf = function (G) {
     // reposo (o tope de tiempo: nunca se queda rodando para siempre)
     if ((sp2 < REPOSO) || B.t > T_MAX) {
       B.vx = B.vz = 0; B.mov = false;
-      if (A.fase === 'rueda') { A.fase = 'apuntar'; emitir({ tipo: 'reposo', x: B.x, z: B.z }); pintar(); }
+      if (A.fase === 'rueda') { A.fase = 'apuntar'; emitir({ tipo: 'reposo', x: B.x, z: B.z }); pintar(); if (multi()) finTurno(); }
     }
   }
 
@@ -417,6 +516,17 @@ window.AVV18Minigolf = function (G) {
     puntos.instanceMatrix.needsUpdate = true;
   }
 
+  // Aro del turno y fantasmas de los demás (en su sitio; los que ya entraron no se ven)
+  function marcas() {
+    const m = multi() && A.fase !== 'nada';
+    aroTurno.visible = m && !A.hundir && A.fase !== 'nido';
+    if (aroTurno.visible) aroTurno.position.set(B.x, H(B.x, B.z) + 0.05, B.z);
+    fantasmas.forEach((g, i) => {
+      const j = m && i !== A.turno ? J[i] : null;
+      g.visible = !!j && !j.dentro && Math.hypot(j.x - B.x, j.z - B.z) > R * 1.5;
+      if (g.visible) g.position.set(j.x, H(j.x, j.z) + R * 0.95, j.z);
+    });
+  }
   function paso(dt) {
     if (!K) return;
     const lejos = Math.hypot(S.pos.x - K.x, S.pos.z - K.z) > 90;
@@ -435,8 +545,10 @@ window.AVV18Minigolf = function (G) {
       while (A.acc >= PASO) { A.acc -= PASO; sub(PASO); if (A.fase !== 'rueda' && !A.timers.length) { A.acc = 0; break; } }
     } else A.acc = 0;
     if (f && HAB) HAB.paso(f, dt);
-    if (A.fase === 'nido') { A.nidoT += dt; const k = Math.min(1, A.nidoT / 0.5); semilla.position.set(P_NIDO.x, H(P_NIDO.x, P_NIDO.z) + R * 0.95 - k * R * 0.9, P_NIDO.z); semilla.scale.setScalar(1 - 0.25 * k); }
+    if (A.fase === 'turno') { A.esperaT -= dt; if (A.esperaT <= 0) { const i = siguiente(); if (i < 0) resultados(); else cargarJ(i); } }
+    if (A.hundir) { A.nidoT += dt; const k = Math.min(1, A.nidoT / 0.5); semilla.position.set(P_NIDO.x, H(P_NIDO.x, P_NIDO.z) + R * 0.95 - k * R * 0.9, P_NIDO.z); semilla.scale.setScalar(1 - 0.25 * k); }
     else semilla.position.set(B.x, B.y, B.z);
+    marcas();
     seguir(dt, false);
     dibujarMira();
     if (hud && !hud.el.hidden) pintar();
@@ -445,7 +557,7 @@ window.AVV18Minigolf = function (G) {
   // ---------- Entrada ----------
   const modo = {
     activo: () => A.fase !== 'nada',
-    accion: () => { if (A.fase === 'nido') salir(TXT.sale); else if (A.cargando) soltarCarga(); else empezarCarga(); },
+    accion: () => { if (A.eligiendo) elegir(1); else if (A.fase === 'nido') salir(TXT.sale); else if (A.cargando) soltarCarga(); else empezarCarga(); },
     aviso: () => (TACTIL ? TXT.guiaT : TXT.guia),
     get verbo() { return A.fase === 'nido' ? TXT.seguir : A.cargando ? TXT.soltar : TXT.golpe; }
   };
@@ -460,7 +572,8 @@ window.AVV18Minigolf = function (G) {
     if (k === 'arrowleft' || k === 'a') { girosTecla.izq = true; giroTeclas(); }
     else if (k === 'arrowright' || k === 'd') { girosTecla.der = true; giroTeclas(); }
     if (e.repeat) return;
-    if (k === ' ') empezarCarga();
+    if (A.eligiendo && k.length === 1 && k >= '1' && k <= String(MAX_J)) elegir(+k);
+    else if (k === ' ') empezarCarga();
     else if (k === 'e' || k === 'enter') modo.accion();
     else if (k === 'g') grito();
     else if (k === 'r') reiniciar();
@@ -507,6 +620,11 @@ window.AVV18Minigolf = function (G) {
       '#v18-golf .vg-fin{text-align:center}#v18-golf .vg-fin p{margin:2px 0;font-size:18px;font-weight:600}#v18-golf .vg-fin .vg-m{font-size:22px}' +
       '#v18-golf .vg-m[data-m="oro"]{color:#ffd84a}#v18-golf .vg-m[data-m="plata"]{color:#dfe7ee}#v18-golf .vg-m[data-m="bronce"]{color:#e0a36a}' +
       '#v18-golf .vg-fin .vg-bot2{grid-template-columns:1fr 1fr}' +
+      '#v18-golf .vg-elige{text-align:center}#v18-golf .vg-elige p{margin:2px 0;font-size:18px;font-weight:600}#v18-golf .vg-elige .vg-et{font-size:13px}' +
+      '#v18-golf .vg-bot4{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}#v18-golf .vg-bot4 button{min-height:60px;font-size:18px}' +
+      '#v18-golf .vg-jugs{display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:center;font-size:14px;font-weight:600;margin-top:4px}#v18-golf .vg-jugs .on{text-decoration:underline}#v18-golf .vg-jugs .ya{opacity:.7}' +
+      '#v18-golf .vg-tabla{margin:4px auto 2px;max-width:360px}#v18-golf .vg-fila{display:grid;grid-template-columns:2em 1fr auto 4.5em;gap:8px;align-items:center;font-size:17px;font-weight:600;text-align:left}' +
+      '#v18-golf .vg-tabla .vg-m{font-size:17px;text-align:right}' +
       '@media (min-width:761px) and (pointer:fine){#v18-golf{bottom:16px}}';
     document.head.appendChild(st);
   }
@@ -514,11 +632,13 @@ window.AVV18Minigolf = function (G) {
     if (hud) return hud;
     estilo();
     const el = document.createElement('div'); el.id = 'v18-golf'; el.hidden = true;
-    el.innerHTML = `<div class="vg-caja"><div class="vg-info"><span>${TXT.hoyo}</span><span>${TXT.par}</span><span data-k="golpes"></span><span data-k="record"></span></div>` +
+    el.innerHTML = `<div class="vg-caja"><div class="vg-info"><span>${TXT.hoyo}</span><span>${TXT.par}</span><span data-k="golpes"></span><span data-k="record"></span><span data-k="turno"></span></div><div class="vg-jugs" data-k="jugs" hidden></div>` +
       `<div class="vg-barra"><b data-k="barra"></b></div><div class="vg-et">${TXT.fuerza}</div>` +
+      `<div class="vg-elige" data-k="elige" hidden><p>${TXT.elige}</p><div class="vg-et">${TXT.eligeSub}</div><div class="vg-bot4">` +
+      [1, 2, 3, 4].map(n => `<button data-a="j${n}">${TXT['j' + n]}</button>`).join('') + `</div></div>` +
       `<div data-k="bot"><div class="vg-bot"><button data-a="izq" aria-label="${TXT.izq}">◀</button><button class="vg-golpe" data-a="golpe">${TXT.golpe}</button><button data-a="der" aria-label="${TXT.der}">▶</button></div>` +
       `<div class="vg-bot2"><button data-a="grito" data-k="bgrito">${TXT.poder}</button><button data-a="reiniciar">${TXT.reiniciar}</button><button data-a="salir">${TXT.salir}</button></div></div>` +
-      `<div class="vg-fin" data-k="fin" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><p data-k="fin3"></p>` +
+      `<div class="vg-fin" data-k="fin" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><div class="vg-tabla" data-k="tabla" hidden></div><p data-k="fin3"></p>` +
       `<div class="vg-bot2"><button data-a="otra">${TXT.otra}</button><button data-a="seguir">${TXT.seguir}</button></div></div></div>`;
     const boton = e => e.target.closest && e.target.closest('button[data-a]');
     el.addEventListener('pointerdown', e => {
@@ -529,6 +649,7 @@ window.AVV18Minigolf = function (G) {
       if (a === 'izq') A.giro = 1; else if (a === 'der') A.giro = -1;
       else if (a === 'golpe') empezarCarga(); else if (a === 'grito') grito(); else if (a === 'reiniciar') reiniciar();
       else if (a === 'salir' || a === 'seguir') salir(TXT.sale); else if (a === 'otra') reiniciar();
+      else if (/^j[1-4]$/.test(a)) elegir(+a[1]);
     });
     const suelta = e => {
       const b = boton(e); if (!b) return; b.classList.remove('on');
@@ -546,7 +667,15 @@ window.AVV18Minigolf = function (G) {
   function pintar() {
     if (!hud) return;
     texto('golpes', golpesTxt(A.golpes));
-    const r = record(); texto('record', r ? recordTxt(r.mejor) : TXT.sinRecord);
+    const r = record(), m = multi(); texto('record', m ? '' : r ? recordTxt(r.mejor) : TXT.sinRecord);
+    const tu = hud.q('turno'); texto('turno', m && A.fase !== 'nido' ? turnoTxt(A.turno) : ''); tu.style.color = m ? COLORES[A.turno] : '';
+    if (m) { // golpes de cada uno (se rehace solo si cambia)
+      const firma = J.map((j, i) => (i === A.turno ? A.golpes : j.golpes) + (j.dentro ? 'd' : j.tope ? 't' : '')).join(',') + '|' + A.turno, js = hud.q('jugs');
+      if (js.dataset.f !== firma) {
+        js.dataset.f = firma;
+        js.innerHTML = J.map((j, i) => `<span class="${i === A.turno ? 'on' : ''}${j.dentro || j.tope ? ' ya' : ''}" style="color:${COLORES[i]}">${jugTxt(i, i === A.turno ? A.golpes : j.golpes)}</span>${j.dentro ? '<b> ✓</b>' : ''}`).join('');
+      }
+    }
     hud.q('barra').style.width = Math.round(100 * (A.cargando ? A.carga : 0)) + '%';
     const bg = hud.q('bgrito'); bg.classList.toggle('cd', A.grito || A.fase !== 'rueda');
     const t = A.grito ? TXT.usado : TXT.poder; if (bg.dataset.t !== t) { bg.dataset.t = t; bg.textContent = t; }
@@ -703,6 +832,59 @@ window.AVV18Minigolf = function (G) {
       // 9. «Comenzar de cero» borra el récord (vive en el progreso V18)
       V.borrar(); V.recargar();
       check('«Comenzar de cero» (borra el progreso V18) también borra el récord del minigolf', record() === null);
+      // 10. Por turnos (2–4 jugadores en el mismo aparato): sin récord ni premios
+      toasts.length = 0; const mad0 = mad(), hex = i => '#' + semilla.userData.franja.material.color.getHexString() === COLORES[i];
+      const espera = () => correr(ESPERA + 0.1), meter = () => { colocar(NIDO.u - 3, 0); apuntaLocal(NIDO.u, NIDO.v); tirar(fuerzaPara(3.3)); hastaQuieta(); };
+      iniciar({ forzar });
+      check('Al empezar se elige cuántos juegan (4 botones grandes); por defecto 1 jugador', A.eligiendo && A.njug === 1 && !hud.q('elige').hidden && hud.q('bot').hidden &&
+        hud.el.querySelectorAll('[data-k="elige"] button').length === 4 && hud.q('jugs').hidden);
+      tecla('keydown', 'Enter');
+      check('Enter = 1 jugador: la partida de siempre (controles, récord, sin turnos ni marcas)', !A.eligiendo && A.njug === 1 && J.length === 1 && !hud.q('bot').hidden && hud.q('elige').hidden &&
+        hud.q('turno').textContent === '' && hud.q('record').textContent === TXT.sinRecord && hex(0) === false && !aroTurno.visible);
+      salir(); iniciar({ forzar }); tecla('keydown', '2'); correr(0.05);
+      check('Tecla 2 = 2 jugadores: «Turno: Jugador 1», golpes de cada uno y su color', A.njug === 2 && J.length === 2 && A.turno === 0 && hud.q('turno').textContent === turnoTxt(0) &&
+        hud.q('turno').style.color !== '' && hud.q('jugs').children.length === 2 && !hud.q('jugs').hidden && hud.q('record').textContent === '' && hex(0) && aroTurno.visible, hud.q('jugs').textContent);
+      apuntaLocal(TEE.u + 4, 0); seguir(0, true); tirar(0.3); hastaQuieta(); const enEspera = A.fase === 'turno'; espera();
+      check('El turno pasa al otro cuando la semilla se para; cada uno con su sitio, sus golpes y su color', enEspera && A.turno === 1 && A.fase === 'apuntar' && A.golpes === 0 && J[0].golpes === 1 &&
+        Math.hypot(B.x - P_TEE.x, B.z - P_TEE.z) < 0.01 && fantasmas[0].visible && !fantasmas[1].visible && toasts.includes(turnoTxt(1)) && hud.q('turno').textContent === turnoTxt(1) && hex(1) &&
+        hud.q('jugs').textContent.includes(jugTxt(0, 1)), JSON.stringify({ fase: A.fase, turno: A.turno, golpes: J.map(j => j.golpes), jugs: hud.q('jugs').textContent }));
+      // Grito: uno por jugador
+      const gritar = () => { colocar(TEE.u, 0); apuntaLocal(TEE.u + 5, 0); tirar(0.15); correr(0.4); apuntaLocal(enLocal().u + 4, enLocal().v); const r = grito(); correr(0.3); return r; };
+      const gB1 = gritar(), gB2 = grito(); hastaQuieta(); espera();
+      const gA1 = A.turno === 0 && !A.grito ? gritar() : { ok: false }; hastaQuieta(); espera();
+      const gB3 = A.turno === 1 && A.grito ? gritar() : { ok: true };
+      check('Grito del Yunque: uno por jugador y por hoyo', gB1.ok && gB2.motivo === 'usado' && gA1.ok && !gB3.ok && gB3.motivo === 'usado', JSON.stringify([gB1.ok, gB2.motivo, gA1.ok, gB3.motivo]));
+      hastaQuieta(); espera();
+      // Fuera del área: +1 solo para ese jugador
+      const gA = J[0].golpes, gBb = J[1].golpes, t0 = A.turno;
+      colocar(0, 1.5); apuntaLocal(0, 9); tirar(0.4); { const p = aMundo(K, 0, HW + 1.5); B.x = p.x; B.z = p.z; } correr(0.1); espera();
+      check('Si sale del área suma 1 golpe solo a quien tiró, y pasa el turno', t0 === 0 && J[0].golpes === gA + 2 && J[1].golpes === gBb && A.turno === 1, JSON.stringify({ t0, antes: [gA, gBb], ahora: J.map(j => j.golpes) }));
+      // Quien entra en el nido se salta
+      meter(); const dentroB = J[1].dentro && A.fase === 'turno' && toasts.includes(nidoJTxt(1, J[1].golpes)); espera();
+      colocar(TEE.u, 0); apuntaLocal(TEE.u + 4, 0); tirar(0.2); hastaQuieta(); espera();
+      check('Quien ya está en el nido se salta: vuelve a tirar el que falta (y su marca no se ve)', dentroB && A.turno === 0 && A.fase === 'apuntar' && !fantasmas[1].visible && /✓/.test(hud.q('jugs').textContent), JSON.stringify({ turno: A.turno, fase: A.fase }));
+      meter(); espera();
+      const esp = clasificar(J), res = A.resultado || {};
+      check('Todos en el nido: tabla por golpes con medalla de cada uno y quién gana', A.fase === 'nido' && res.multi && !hud.q('fin').hidden && !hud.q('tabla').hidden && hud.q('fin2').hidden &&
+        hud.q('tabla').children.length === 2 && hud.q('fin1').textContent === esp.txt && hud.q('tabla').children[0].textContent.includes(nombre(esp.filas[0].i)) && esp.filas[0].golpes <= esp.filas[1].golpes,
+        JSON.stringify({ fin1: hud.q('fin1').textContent, filas: esp.filas }));
+      check('Por turnos no hay récord ni premios (y se dice)', record() === null && mad() === mad0 && !V.otorgado('minigolf_villa_completo') && !V.otorgado('minigolf_villa_oro') && res.premios.length === 0 &&
+        hud.q('fin3').textContent === TXT.sinPremios, 'madera ' + (mad() - mad0));
+      reiniciar();
+      check('«Otra vez» repite con los mismos jugadores, todo a 0', A.njug === 2 && J.length === 2 && J.every(j => !j.golpes && !j.dentro) && A.turno === 0 && A.fase === 'apuntar' && !A.eligiendo && hud.q('fin').hidden && !hud.q('bot').hidden);
+      // Tope de 10 golpes: cuenta como terminado con 10; los dos igual = empate
+      const alTope = () => { A.golpes = TOPE - 1; colocar(TEE.u, 0); apuntaLocal(TEE.u + 3, 0); tirar(0.15); hastaQuieta(); espera(); };
+      alTope(); const tope1 = J[0].tope && J[0].golpes === TOPE && A.turno === 1; alTope();
+      check('Con 10 golpes cuenta como terminado; si empatan: «¡Empate!»', tope1 && A.fase === 'nido' && A.resultado.empate && hud.q('fin1').textContent === TXT.empate &&
+        A.resultado.jugadores.every(r => r.golpes === TOPE && r.puesto === 1 && r.medalla === 'bronce'), JSON.stringify(A.resultado.jugadores));
+      const c4 = clasificar([{ golpes: 5 }, { golpes: 2 }, { golpes: 4 }, { golpes: 2 }]), c3 = clasificar([{ golpes: 4 }, { golpes: 3 }, { golpes: 6 }]);
+      check('Orden de la tabla y ganador (empates comparten puesto)', c4.empate && c4.filas.map(r => r.i).join() === '1,3,2,0' && c4.filas.map(r => r.puesto).join() === '1,1,3,4' &&
+        !c3.empate && c3.ganador === 1 && c3.txt === '¡Gana Jugador 2!' && c3.filas.map(r => r.medalla).join() === 'oro,plata,bronce');
+      salir(); iniciar({ forzar });
+      { const b4 = hud.el.querySelector('[data-a="j4"]'); b4.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true })); b4.dispatchEvent(new PointerEvent('pointerup', { bubbles: true })); }
+      check('Botón «4 jugadores» (táctil): 4 jugadores, cada uno con su color', A.njug === 4 && J.length === 4 && hud.q('jugs').children.length === 4 && new Set(COLORES).size === 4 && hud.q('elige').hidden);
+      salir();
+      check('Salir de una partida por turnos vuelve a 1 jugador y quita las marcas', A.njug === 1 && J.length === 0 && !aroTurno.visible && fantasmas.every(g => !g.visible) && hex(0) === false && record() === null);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
     try { if (A.fase !== 'nada') salir(); } catch (e) { /* ya fuera */ }
     A.manual = false; A.invitado = true; puntos.visible = false;
@@ -714,6 +896,6 @@ window.AVV18Minigolf = function (G) {
     V.recargar(); if (susp) susp(false);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
-  G.v18minigolf = { ID, PAR, iniciar, salir, reiniciar, tirar, grito, empezarCarga, soltarCarga, paso, medalla, record, estado: () => A, semilla: () => B, get sitio() { return K; }, test };
+  G.v18minigolf = { ID, PAR, iniciar, salir, reiniciar, tirar, grito, empezarCarga, soltarCarga, paso, medalla, record, elegir, clasificar, jugadores: () => J, estado: () => A, semilla: () => B, get sitio() { return K; }, test };
   return G.v18minigolf;
 };

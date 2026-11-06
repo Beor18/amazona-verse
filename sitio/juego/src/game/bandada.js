@@ -6,7 +6,7 @@
    la acompaña unos 18 s dando vueltas a su alrededor y luego se va. Nunca en las baterías (G.quiet) ni antes de crear el personaje.
    - Se carga al pedirlo (boot.js la trae tras 'listo'): no suma a la descarga inicial. window.AVBandada(G) → { pedir, estado, test }.
    - Rendimiento: una sola malla instanciada por nivel de detalle (dos draw calls en total): la cotorra real horneada
-     desde vittata_base_lod1.glb (KIMI-056, assets/data/cotorra_horneada.js; ~1,8 k tris de cerca y ~0,3 k a más de 55 m;
+     a mano (KIMI-122, assets/data/cotorra_horneada.js de tools/build/cotorra_horneada_gen.js; ~1,4 k tris de cerca y ~0,3 k a más de 55 m;
      sin el dato, esferas de ~110 tris como antes). El aleteo va en el vertex shader. Respeta la calidad automática de
      renderer.js: bajo = 6 (QA-110: el iPhone arranca en bajo y el mundo no debe quedar vacío; nunca más de 6, ni la de
      20 de M3), medio = 12, alto = 20; se reajusta sola con G.on('calidad'). Sin sombras y sin tocar el terreno ni el mundo.
@@ -102,41 +102,55 @@ window.AVBandada = function (G) {
   const cerca = instanciada(malla(true)), lejos = instanciada(malla(false));
   scene.add(cerca); scene.add(lejos);
 
-  // ---------- KIMI-056 · cotorra de verdad: malla horneada desde vittata_base_lod1.glb (assets/data/cotorra_horneada.js) ----------
-  // Mismos InstancedMesh y tinte por especie; el shader funde la pose plegada del modelo con la de vuelo
-  // desplegada (alas barridas hacia atrás) y aletea en el hombro. Si el dato no carga, se queda la esferas de siempre.
-  const uPivAla = { value: new THREE.Vector3(0.089, 0, 0.065) }, uPivCuello = { value: new THREE.Vector3(0, 0.045, 0.206) };
+  // ---------- KIMI-122 · cotorra de verdad: malla low-poly hecha a mano (assets/data/cotorra_horneada.js) ----------
+  // La genera tools/build/cotorra_horneada_gen.js (antes, KIMI-056, se horneaba de vittata_base_lod1.glb y salían bolas arrugadas).
+  // Cada vértice trae dos poses: vuelo (position/normal) y posada de pie con las alas plegadas (aPleg/aPlegN); iPose.x funde
+  // una con otra. Color: aTin.x = 1 se tiñe con el verde de la especie (instanceColor), 0 = color propio (cara blanca, ojo,
+  // pico amarillo, patas, primarias azules); aTin.y = máscara de la cabeza (0 frente … 1 nuca): el color de la cabeza de la
+  // especie cubre donde máscara < cob (iPose.w). Mismos InstancedMesh y API; si el dato no carga, se quedan las esferas.
+  const uPivAla = { value: new THREE.Vector3(0.085, 0.045, 0.06) }, uPivCuello = { value: new THREE.Vector3(0, 0.05, 0.15) }, uPivCuelloP = { value: new THREE.Vector3(0, 0.05, 0.15) };
   const matReal = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
   matReal.onBeforeCompile = sh => {
-    sh.uniforms.uT = uT; sh.uniforms.uPivotAla = uPivAla; sh.uniforms.uPivotCuello = uPivCuello;
-    sh.vertexShader = 'uniform float uT;\nuniform vec3 uPivotAla;\nuniform vec3 uPivotCuello;\nattribute float iFase;\nattribute vec4 iPose;\nattribute vec3 iAcento;\nattribute float aParte;\nattribute vec3 aPleg;\n' + sh.vertexShader
+    sh.uniforms.uT = uT; sh.uniforms.uPivotAla = uPivAla; sh.uniforms.uPivotCuello = uPivCuello; sh.uniforms.uPivotCuelloP = uPivCuelloP;
+    sh.vertexShader = 'uniform float uT;\nuniform vec3 uPivotAla;\nuniform vec3 uPivotCuello;\nuniform vec3 uPivotCuelloP;\nattribute float iFase;\nattribute vec4 iPose;\nattribute vec3 iAcento;\nattribute float aParte;\nattribute vec3 aPleg;\nattribute vec3 aPlegN;\nattribute vec2 aTin;\n' + sh.vertexShader
       .replace('#include <color_vertex>', `#include <color_vertex>
-  if (aParte > 0.5 && aParte < 1.5 && iPose.w > 0.01) vColor.xyz = mix(vColor.xyz, color.xyz * iAcento, iPose.w * 0.9);
-  if (aParte > 1.5 && aParte < 2.5) vColor.xyz = vec3(0.62, 0.58, 0.48);`)
-      .replace('#include <begin_vertex>', `vec3 transformed = vec3(position);
+  vColor.xyz = mix(color.xyz, vColor.xyz, aTin.x);
+  if (aTin.y < 1.5) vColor.xyz = mix(vColor.xyz, color.xyz * iAcento, (1.0 - smoothstep(iPose.w - 0.05, iPose.w + 0.03, aTin.y)) * step(0.01, iPose.w));`)
+      .replace('#include <beginnormal_vertex>', `float des = clamp(iPose.x, 0.0, 1.0);
+  vec3 avP = mix(aPleg, position, des);
+  vec3 objectNormal = normalize(mix(aPlegN, normal, des));
   if (aParte > 2.5 && aParte < 3.5) {
-    float sx = sign(position.x), des = iPose.x, fl = sin(uT * 13.0 + iFase);
-    vec3 base = mix(aPleg, position, des);
-    float ang = sx * fl * 0.6 * des;
+    // aleteo en el hombro; la punta se dobla un poco más (onda)
+    float sx = sign(position.x), fl = sin(uT * 13.0 + iFase);
     vec3 piv = vec3(sx * uPivotAla.x, uPivotAla.y, uPivotAla.z);
-    vec3 q = base - piv; float c = cos(ang), s = sin(ang);
-    transformed = vec3(q.x * c - q.y * s, q.x * s + q.y * c, q.z) + piv;
+    float ang = sx * fl * 0.62 * des * (1.0 + 0.5 * smoothstep(0.2, 0.42, abs(position.x)));
+    float c = cos(ang), s = sin(ang);
+    vec3 q = avP - piv;
+    avP = vec3(q.x * c - q.y * s, q.x * s + q.y * c, q.z) + piv;
+    objectNormal = vec3(objectNormal.x * c - objectNormal.y * s, objectNormal.x * s + objectNormal.y * c, objectNormal.z);
   }
   if (aParte > 0.5 && aParte < 2.5) {
-    vec3 q = transformed - uPivotCuello;
+    // cabeza (con ojos y pico): giro y cabeceo en el cuello de la pose actual
+    vec3 pc = mix(uPivotCuelloP, uPivotCuello, des), q = avP - pc;
     float cy = cos(iPose.z), sy = sin(iPose.z), cp = cos(iPose.y), sp = sin(iPose.y);
     q = vec3(cy * q.x + sy * q.z, q.y, -sy * q.x + cy * q.z);
     q = vec3(q.x, cp * q.y - sp * q.z, sp * q.y + cp * q.z);
-    transformed = q + uPivotCuello;
-  }`);
+    avP = q + pc;
+    vec3 n = objectNormal;
+    n = vec3(cy * n.x + sy * n.z, n.y, -sy * n.x + cy * n.z);
+    objectNormal = vec3(n.x, cp * n.y - sp * n.z, sp * n.y + cp * n.z);
+  }`)
+      .replace('#include <begin_vertex>', 'vec3 transformed = avP;');
   };
   function geoHorneada(d) {
-    const g = new THREE.BufferGeometry();
+    const g = new THREE.BufferGeometry(), n = d.pos.length / 3;
     g.setAttribute('position', new THREE.Float32BufferAttribute(d.pos, 3));
     g.setAttribute('normal', new THREE.Float32BufferAttribute(d.nor, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(d.col, 3));
     g.setAttribute('aPleg', new THREE.Float32BufferAttribute(d.pleg, 3));
+    g.setAttribute('aPlegN', new THREE.Float32BufferAttribute(d.plegN || d.nor, 3));
     g.setAttribute('aParte', new THREE.Float32BufferAttribute(d.par, 1));
+    g.setAttribute('aTin', new THREE.Float32BufferAttribute(d.tin || new Array(n * 2).fill(1).map((v, i) => (i % 2 ? 2 : 1)), 2));
     g.setIndex(d.idx);
     return g;
   }
@@ -150,6 +164,7 @@ window.AVBandada = function (G) {
     }
     uPivAla.value.set(D.ala[0], D.ala[1], D.ala[2]);
     uPivCuello.value.set(D.cuello[0], D.cuello[1], D.cuello[2]);
+    const cp = D.cuelloPleg || D.cuello; uPivCuelloP.value.set(cp[0], cp[1], cp[2]);
     G.bandada.real = true;
   }
   if (window.AVE && AVE.assets) AVE.assets.script('assets/data/cotorra_horneada.js')
