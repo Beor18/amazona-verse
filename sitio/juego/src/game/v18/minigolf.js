@@ -41,7 +41,7 @@ window.AVV18Minigolf = function (G) {
   const PASO = 1 / 120, VMIN = 1.5, VMAX = 13, ROCE_A = 1.4, ROCE_B = 0.55, PEND = 0.6, REBOTE = 0.62, ROCE_PARED = 0.9,
     REPOSO = 0.12, CAIDA = 3.2, EMBUDO = 3.5, T_MAX = 25, PERIODO = 1.3, GIRO = 1.1;
   const TXT = {
-    label: 'Jugar al minigolf', invita: 'Minigolf de Villa Raíz: lleva la semilla gigante hasta el nido. Pulsa Acción junto a ella.',
+    label: 'Jugar al minigolf', nombre: 'Minigolf de Villa Raíz', invita: 'Minigolf de Villa Raíz: lleva la semilla gigante hasta el nido. Pulsa Acción junto a ella.',
     empieza: '¡Hoyo 1, par 3! Lleva la semilla gigante al nido con los menos golpes.',
     empiezaPar: '¡Hoyo 1, par 3! Par 3 quiere decir que lo ideal es meterla en el nido en 3 golpes.',
     guia: '← → o arrastra: apuntar · Mantén Espacio: fuerza · G: Grito · R: reiniciar · Esc: salir',
@@ -951,6 +951,6 @@ window.AVV18Minigolf = function (G) {
     V.recargar(); if (susp) susp(false);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
-  G.v18minigolf = { ID, PAR, iniciar, salir, reiniciar, tirar, grito, empezarCarga, soltarCarga, paso, medalla, record, elegir, clasificar, jugadores: () => J, estado: () => A, semilla: () => B, get sitio() { return K; }, test };
+  G.v18minigolf = { ID, PAR, iniciar, salir, reiniciar, tirar, grito, empezarCarga, soltarCarga, paso, medalla, record, elegir, clasificar, jugadores: () => J, estado: () => A, semilla: () => B, get sitio() { return K; }, mapa: () => (K && A.fase === 'nada' ? { x: P_ENTRADA.x, z: P_ENTRADA.z, nombre: TXT.nombre } : null), test };
   return G.v18minigolf;
 };

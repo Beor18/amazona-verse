@@ -160,6 +160,7 @@ AVE.module('comicPlantilla', function (G) {
         const rotY = v => new THREE.Vector3(...v).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), az).multiplyScalar(10);
         R.key.position.copy(rotY([-0.55, 0.75, 0.6])); R.fill.position.copy(rotY([0.8, 0.15, 0.6])); R.rim.position.copy(rotY([0.6, 0.6, -0.9]));
         R.renderer.toneMappingExposure = 0.78;
+        R.scene.updateMatrixWorld(); // KIMI-145: dibujo directo fuera del cuadro (Scene.autoUpdate=false)
         R.renderer.render(R.scene, cam);
         x.drawImage(R.canvas, 0, 0, px, px);
         const bbox = cajaAlfa(out);

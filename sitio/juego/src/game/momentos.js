@@ -161,7 +161,7 @@ AVE.module('momentos', function (G) {
     try {
       cam.position.copy(q); cam.lookAt(mira); cam.updateMatrixWorld();
       // Dibujo directo, como snapshot() (renderer.js): con el posproceso, drawScene() dentro del bucle dejaba la foto en negro
-      if (R.renderer && R.scene) R.renderer.render(R.scene, cam); else R.drawScene();
+      if (R.renderer && R.scene) { R.scene.updateMatrixWorld(); R.renderer.render(R.scene, cam); } else R.drawScene();
       const src = R.canvas, sw = src.width, sh = src.height;
       if (!sw || !sh || !R.leerLienzo) return null;
       let cw = sw, ch = sw * 0.75; if (ch > sh) { ch = sh; cw = sh / 0.75; }

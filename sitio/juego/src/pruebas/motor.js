@@ -137,6 +137,34 @@ AVE.module('pruebas', function (G) {
       }
       check('El ropero monta todas sus piezas y estilos en sus huesos', failed.length === 0 && pieces > 0, failed.join(', ') || pieces + ' partes');
       check('Gorras y lentes del ropero no tapan los ojos (reposo)', wHits.length === 0, [...new Set(wHits)].join(', ') || 'sin choques');
+      // BM157 · Traje de Guardián: pieza de Blender con piel; la TELA toma el color elegido y cambia al recolorear; la corona
+      // (2.º grupo, rígida a la cabeza) se ve sola y se apaga con un casco; quitarlo deja montar la camisa de nuevo
+      {
+        const tj = window.AVCharacter.ACCESSORIES.find(a => a.id === 'traje'), info = [];
+        const linHex = h => '#' + new THREE.Color(h).convertSRGBToLinear().getHexString();
+        const mats = () => (ch.mounted.torso ? ch.mounted.torso.objects : []).flatMap(o => [].concat(o.material));
+        const tiene = h => mats().some(m => m.color && !m.userData.avHeadPart && ('#' + m.color.getHexString() === linHex(h)));
+        const corona = () => mats().filter(m => m.userData.avHeadPart);
+        let ok = !!tj;
+        if (tj) {
+          ch.applyLook({ species: 'vittata', accessories: { torso: { id: 'traje', color: tj.colors[1] } } });
+          const m1 = ch.mounted.torso, c1 = tiene(tj.colors[1]);
+          ok = ok && !!(m1 && m1.blender && m1.objects.every(o => o.isSkinnedMesh && o.parent)) && c1; info.push('glb ' + !!(m1 && m1.blender), 'color ' + c1);
+          const cr = corona(); ok = ok && cr.length === 1 && cr[0].visible; info.push('corona ' + cr.length);
+          ch.root.updateMatrixWorld(true);
+          let ojo = 0; for (const o of ch.mounted.torso.objects) { const p = o.geometry.attributes.position, v = new THREE.Vector3(); for (let i = 0; i < p.count; i += 3) { o.boneTransform ? o.boneTransform(i, v.fromBufferAttribute(p, i)) : v.fromBufferAttribute(p, i); v.applyMatrix4(o.matrixWorld); if (eyes.some(e => e.distanceTo(v) < EYE_R)) ojo++; } }
+          ok = ok && ojo === 0; info.push('ojos ' + ojo);
+          ch.applyLook({ species: 'festiva', accessories: { torso: { id: 'traje', color: tj.colors[2] } } });
+          const c2 = tiene(tj.colors[2]) && !tiene(tj.colors[1]); ok = ok && c2 && ch.mounted.torso.objects[0] !== m1.objects[0] && !m1.objects[0].parent; info.push('recolor ' + c2);
+          ch.applyLook({ species: 'festiva', accessories: { torso: { id: 'traje', color: tj.colors[2] }, head: { id: 'casco', color: '#f2c21a', style: 'constructor' } } });
+          const sinCorona = corona().length === 1 && !corona()[0].visible && !!ch.mounted.head; ok = ok && sinCorona; info.push('casco sin corona ' + sinCorona);
+          ch.applyLook({ species: 'festiva', accessories: { torso: { id: 'traje', color: tj.colors[2] } } });
+          ok = ok && corona()[0].visible;
+          ch.applyLook({ species: 'vittata', accessories: { torso: { id: 'camisa', color: '#d6403a', style: 'liso' } } });
+          const cam = ch.mounted.torso; ok = ok && !!(cam && cam.id === 'camisa' && cam.objects.length && corona().length === 0); info.push('camisa ' + !!(cam && cam.blender));
+        }
+        check('El traje de Guardián se monta del .glb, toma y cambia el color, y su corona cede al sombrero', ok, info.join(', '));
+      }
       ch.applyLook({ species: 'festiva', accessories: {} });
     }
     // BM124 (2-nov): todas las especies del creador tienen piel; la máscara facial va pintada en la piel de cada especie

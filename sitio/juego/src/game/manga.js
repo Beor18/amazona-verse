@@ -405,7 +405,7 @@ window.AVManga = function (G) {
           cam.lookAt(s.mx, s.my, s.mz);
           cam.updateMatrixWorld(true);
           if (typeof R.drawScene === 'function') R.drawScene();
-          else R.renderer.render(R.scene, cam);
+          else { R.scene.updateMatrixWorld(); R.renderer.render(R.scene, cam); }
           foto = tratar(leerLienzo());
           if (desvio(foto, 32).desv < 6) {
             const b = baseJugador();
@@ -414,7 +414,7 @@ window.AVManga = function (G) {
             cam.lookAt(b.x, b.y + 2, b.z);
             cam.updateMatrixWorld(true);
             if (typeof R.drawScene === 'function') R.drawScene();
-            else R.renderer.render(R.scene, cam);
+            else { R.scene.updateMatrixWorld(); R.renderer.render(R.scene, cam); }
             foto = tratar(leerLienzo());
           }
           origen = 'mapa';

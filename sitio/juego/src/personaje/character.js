@@ -260,6 +260,27 @@
     if (typeof def.glb === 'string') return def.glb;
     return def.glb[style] || def.glb['*'] || null;
   }
+  // Pieza con una parte rígida a la cabeza (def.headPart = hueso; la corona del traje de Guardián, en la misma primitiva que la
+  // pechera): una vez por geometría compartida, sus triángulos pasan al final del índice como 2.º grupo de dibujo.
+  function splitHeadPart(mesh, boneName) {
+    const geo = mesh.geometry;
+    if (geo.userData.avHeadSplit !== undefined) return;
+    geo.userData.avHeadSplit = false;
+    const j = mesh.skeleton.bones.findIndex(b => b.name === boneName), I = geo.index, si = geo.attributes.skinIndex, sw = geo.attributes.skinWeight;
+    if (j < 0 || !I || !si || !sw) return;
+    const one = sw.normalized ? (sw.array instanceof Uint8Array ? 255 : sw.array instanceof Uint16Array ? 65535 : 1) : 1;
+    const get = ['getX', 'getY', 'getZ', 'getW'];
+    const rigid = v => get.some(f => si[f](v) === j && sw[f](v) >= 0.99 * one);
+    const body = [], head = [];
+    for (let t = 0; t < I.count; t += 3) {
+      const a = I.getX(t), b = I.getX(t + 1), c = I.getX(t + 2);
+      (rigid(a) && rigid(b) && rigid(c) ? head : body).push(a, b, c);
+    }
+    if (!head.length || !body.length) return;
+    body.concat(head).forEach((v, k) => I.setX(k, v)); I.needsUpdate = true;
+    geo.clearGroups(); geo.addGroup(0, body.length, 0); geo.addGroup(body.length, head.length, 1);
+    geo.userData.avHeadSplit = true;
+  }
   // morph: la malla trae morph targets (el pañuelo, con su forma 'camisa'); en r128 el material debe declararlo
   function ropaMaterial(m, color, style, morph, geo) {
     const W = window.AVWardrobe;
@@ -1092,12 +1113,18 @@
       const out = [];
       sceneCopy.traverse(o => { if (o.isSkinnedMesh) out.push(o); });
       for (const mesh of out) {
+        if (def.headPart) splitHeadPart(mesh, def.headPart);
         const bones = mesh.skeleton.bones.map(b => this.bones[b.name]);
         if (bones.some(b => !b)) return null;
         mesh.bind(new THREE.Skeleton(bones, mesh.skeleton.boneInverses.map(m => m.clone())), mesh.bindMatrix);
         const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
         const swap = mats.map(m => ropaMaterial(m, want.color, want.style, !!mesh.morphTargetInfluences, mesh.geometry));
         mesh.material = Array.isArray(mesh.material) ? swap : swap[0];
+        if (mesh.geometry.userData.avHeadSplit && !Array.isArray(mesh.material)) {
+          // 2.º grupo (la parte de cabeza) con su propio material, que _fitClothes apaga si hay algo en la cabeza
+          const c = mesh.material.clone(); c.skinning = true; c.morphTargets = mesh.material.morphTargets; c.userData = { avHeadPart: true };
+          mesh.material = [mesh.material, c];
+        }
         if (mats.every(m => /^BANDERA/.test(m.name))) mesh.visible = (TELA_STYLE[want.style] || want.style) === 'pr';
         mesh.castShadow = true; mesh.frustumCulled = false; mesh.userData.isAccessory = true;
         body.parent.add(mesh);
@@ -1106,6 +1133,8 @@
     }
     // Qué ajustes de pose y altura pide la ropa puesta (los aplica clothes() en cada cuadro)
     _fitClothes() {
+      // Traje con corona (headPart): con algo en la ranura de la cabeza la corona se apaga y el sombrero va en su lugar
+      for (const k of SLOTS) { const m = this.mounted[k]; if (m && m.blender) for (const o of m.objects) if (Array.isArray(o.material)) for (const x of o.material) if (x.userData.avHeadPart) x.visible = !this.mounted.head; }
       const M = this.mounted, feet = M.feet, legs = M.legs;
       const hand = M.hand;
       this.fitAdj = { toes: !!feet, wing: legs ? WING_CLEAR : 0, splay: feet && feet.style === 'buzo' ? SPLAY.amount : 0, longHand: !!(hand && LONG_HAND[hand.style]) };
