@@ -1,0 +1,278 @@
+{
+ "etiqueta": "perfil1",
+ "cuando": "2026-11-06T22:34:25.564Z",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "v18": true,
+ "seed": "amazonaverse.v18 puente_villa:reparado + vittata (misma semilla que k110)",
+ "contencion": "PC compartida con otras sesiones Kimi (numeros techo si hay otras corridas)",
+ "escenarios": {
+  "bajo": {
+   "puerto": {
+    "fpsPorSeg": [
+     23,
+     28,
+     29,
+     30,
+     29,
+     30,
+     31,
+     28,
+     26,
+     29,
+     30,
+     31,
+     31,
+     29,
+     28
+    ],
+    "fpsMed": 29,
+    "fpsMin": 23,
+    "peorMs": 72,
+    "p95Ms": 45,
+    "stats": [
+     {
+      "calls": 65,
+      "tris": 264974,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 58,
+      "tris": 264858,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 60,
+      "tris": 271682,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 60,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 60,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 60,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 60,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 60,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 60,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 60,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 60,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 60,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 60,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 271694,
+      "sombras": false,
+      "dpr": 0.75
+     }
+    ],
+    "heapMB": 162,
+    "estadoPuerto": "investigado",
+    "maq": {
+     "x": 77.08,
+     "z": -73.54
+    },
+    "perfil": {
+     "cuadros": 12366,
+     "msTotal": 21165.5,
+     "top": [
+      [
+       5179.8,
+       "(program) :0"
+      ],
+      [
+       2035.7,
+       "insert solidos.js:45"
+      ],
+      [
+       1199.7,
+       "triSeguir solidos.js:110"
+      ],
+      [
+       1099.7,
+       "triQuery terreno.js:183"
+      ],
+      [
+       595.7,
+       "updateMatrixWorld three.min.js:6"
+      ],
+      [
+       417.1,
+       "traverse three.min.js:6"
+      ],
+      [
+       368,
+       "objPendiente renderer.js:657"
+      ],
+      [
+       335,
+       "now :0"
+      ]
+     ]
+    }
+   },
+   "chispa": {
+    "durSec": 10.99,
+    "faseFin": "nada",
+    "ultimo": {
+     "gana": true,
+     "ms": 11013,
+     "nuevo": true,
+     "chispa": 3
+    },
+    "fpsPorSeg": [
+     28,
+     27,
+     21,
+     28,
+     30,
+     21,
+     27,
+     29,
+     29,
+     28,
+     24
+    ],
+    "fpsMed": 27,
+    "fpsMin": 21,
+    "peorMs": 166,
+    "p95Ms": 52,
+    "callsMed": 92,
+    "trisMed": 326575,
+    "heapMB": 176,
+    "perfil": {
+     "cuadros": 10295,
+     "msTotal": 16605,
+     "top": [
+      [
+       3056,
+       "(program) :0"
+      ],
+      [
+       918.3,
+       "insert solidos.js:45"
+      ],
+      [
+       571.8,
+       "triQuery terreno.js:183"
+      ],
+      [
+       556.2,
+       "updateMatrixWorld three.min.js:6"
+      ],
+      [
+       450.5,
+       "dibujar minimapa.js:356"
+      ],
+      [
+       429.9,
+       "triSeguir solidos.js:110"
+      ],
+      [
+       382.6,
+       "objPendiente renderer.js:657"
+      ],
+      [
+       377.8,
+       "traverse three.min.js:6"
+      ]
+     ]
+    }
+   },
+   "ciudad": {
+    "durSec": 22.03,
+    "fin": [
+     -52.06,
+     108.89,
+     -119.96
+    ],
+    "fpsPorSeg": [
+     27,
+     26,
+     28,
+     31,
+     30,
+     30,
+     32,
+     30,
+     38,
+     44,
+     48,
+     47,
+     42,
+     43,
+     41,
+     37,
+     42,
+     41,
+     42,
+     40,
+     31,
+     33
+    ],
+    "fpsMed": 37,
+    "fpsMin": 26,
+    "peorMs": 64,
+    "p95Ms": 41,
+    "callsMed": 97,
+    "trisMed": 301345,
+    "heapMB": 135
+   }
+  }
+ },
+ "capturas": {
+  "bajo_puerto": "k175_perfil1_bajo_puerto.jpg",
+  "bajo_chispa": "k175_perfil1_bajo_chispa.jpg",
+  "bajo_ciudad": "k175_perfil1_bajo_ciudad.jpg"
+ },
+ "erroresConsola": []
+}

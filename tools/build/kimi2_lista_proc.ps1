@@ -1,12 +1,9 @@
-foreach ($per in 'kimi1k174d-8NzYZI', 'kimi3m171-snlt6X') {
-  $main = Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | Where-Object { $_.CommandLine -like "*$per*" -and $_.CommandLine -notlike '*--type=*' } | Select-Object -First 1
-  if ($main) {
-    $ppid = $main.ParentProcessId
-    $pproc = Get-CimInstance Win32_Process -Filter "ProcessId=$ppid" -ErrorAction SilentlyContinue
-    if ($pproc) {
-      $c = $pproc.Name + ' :: ' + $pproc.CommandLine
-      if ($c.Length -gt 140) { $c = $c.Substring(0, 140) }
-      Write-Output ("$per main=" + $main.ProcessId + " padre=$ppid => " + $c)
-    } else { Write-Output ("$per main=" + $main.ProcessId + " padre=$ppid => MUERTO") }
-  }
+$cs = Get-CimInstance Win32_Process -Filter "Name='chrome.exe'"
+Write-Output ('total: ' + ($cs | Measure-Object).Count)
+$cs | Group-Object { if ($_.CommandLine -match 'user-data-dir=.?([^\" ]+)') { $Matches[1] } else { 'sin-dir' } } | Select-Object Name, Count | Format-Table -AutoSize
+$main = $cs | Where-Object { $_.CommandLine -notlike '*--type=*' }
+foreach ($m in $main) {
+  $ppid = $m.ParentProcessId
+  $p = Get-CimInstance Win32_Process -Filter "ProcessId=$ppid" -ErrorAction SilentlyContinue
+  Write-Output ('main ' + $m.ProcessId + ' padre=' + $ppid + ' ' + $(if ($p) { $p.Name } else { 'MUERTO' }))
 }

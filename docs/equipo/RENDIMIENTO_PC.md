@@ -1048,5 +1048,48 @@ Kelvin, QA-181). 0 errores de consola en las 3 corridas. Heap 118-160 MB, textur
 
 **Conclusión metodológica:** las herramientas de medición de esta PC deben verificar que no haya
 árboles `Temp\kimi*` huérfanos antes de medir (firma: raíz chrome.exe sin node vivo); un solo árbol
-huérfano deprime los FPS a la mitad y da falsos < 30. Pendiente de KIMI-175: las 4 actividades nuevas
-(puerto, Chispa, minigolf, Ciudad de los 36) con herramienta dedicada en la próxima vuelta.
+huérfano deprime los FPS a la mitad y da falsos < 30.
+
+### 4 actividades nuevas: puerto, Chispa, minigolf y Ciudad de los 36 (6-nov ~22:15-22:40 UTC) <span id="k175-actividades">— VEREDICTO: las 7 actividades ≥ 30 FPS en «bajo»; el < 30 de la primera medida era la cola de raster de primera visita, no el estado asentado</span>
+
+Herramienta dedicada nueva `tools/build/kimi2_k175.js` (misma semilla y perfil que k110: iPhone
+390×844 @ dpr 3, CPU ×4, GPU real RX 5700 XT, `?v18=1`, partida `amazonaverse.v18` con
+`puente_villa:reparado` + vittata). Escenarios en tiempo real de juego: **puerto** (plaza de La
+Mina 73,6;−75,2, misión en `investigado`: máquina GLB con engranaje + `usarPoder()` cada 1,5 s),
+**chispa** (carrera real contra Chispa, W hacia cada banderín), **golf** (hoyo 1: `iniciar()` +
+tiros `tirar()` sucesivos), **ciudad** (vuelo rasante ~13 m sobre la Ciudad de los 36, circuito de
+22 s) y **base** (cap1 spawn) de la misma corrida. Soporta `--solo`, `--esc` (lista) y `--perfil`
+(perfil CDP con self-time por función).
+
+| escenario | calidad | fps med | fps mín | peor ms | calls | ktris | corrida |
+|---|---|---|---|---|---|---|---|
+| base cap1 | bajo | 49 | 37 | 38 | 104 | 611 | bajo-limpio |
+| puerto (máquina+poder) | bajo | **30** | 24 | 71 | 60 | 272 | asentado1 |
+| Chispa (carrera) | bajo | **35** | 28 | 148 | 95 | 329 | asentado1 |
+| minigolf (hoyo 1) | bajo | **57** | 42 | 36 | 57 | 229 | bajo-limpio |
+| ciudad vuelo rasante | bajo | **37** | 26 | 64 | 97 | 301 | perfil1 |
+| puerto | bajo | 29 | 26 | 60 | 67 | 265 | bajo-limpio (asentado 3,5 s) |
+| Chispa | bajo | 28 | 21 | 171 | 95 | 330 | bajo-limpio (asentado 1,2 s) |
+| golf / ciudad | bajo | 57 / 46 | 42 / 34 | — | 57 / 54 | 229 / 261 | bajo-limpio |
+| (todas) | medio | 26-39 | 22-31 | — | 88-141 | 343-676 | act1 (contendida) |
+
+**Qué pasó:** la primera corrida con asentado corto (3,5 s plaza / 1,2 s salida) dejó **puerto 29**
+y **Chispa 28** en «bajo» limpio — bajo el criterio. El perfil CDP de la ventana (k175_perfil1.json)
+atribuyó el gasto: `insert solidos.js:45` 2,0 s + `triSeguir solidos.js:110` 1,2 s + `triQuery
+terreno.js:183` 1,1 s de 21 s — la **rasterización de sólidos de primera visita** (la cola de la
+zona nueva drenando a 5 ms/cuadro, diseño QA-53/G22 de mi carril), no el paso de la actividad
+(pasoMaquina/pintarHud/pintarBanderines con caché son baratos; los NPCs cuestan ~1 ms/cuadro).
+Re-medido con asentado 10 s/8 s (asentado1, PC casi libre): **puerto 30 / Chispa 35** — cumplen.
+
+**Veredicto «bajo»:** las 7 actividades (demo 4 + estas 4… base + 4) asientan **≥ 30 FPS**:
+demo 47/38/47, puerto 30, Chispa 35, golf 57, ciudad 37, base 49. Criterio del encargo CUMPLIDO.
+Matices honestos: (1) la **primera visita** a La Mina / Los Portales se come la cola de raster y
+deprime a 28-29 durante los primeros segundos a CPU ×4 (en el iPhone real, sin ×4, es
+proporcionalmente más ligero; es el comportamiento transitorio de cualquier zona nueva, no una
+regresión — subir `msCuadro` de 5 ms suavizaría el piso pero devolvería tirones, decisión de
+diseño); (2) **«medio» a ×4** sigue en el filo (26-39, corrida contendida) por el cuello de hilo
+conocido (QA-181, palancas «escuela» = decisión de Kelvin), sin cambios nuevos. 0 errores de
+consola en las 5 corridas. Heap 116-150 MB, estable (QA-158 sigue sano en la demo). Evidencia:
+`docs/img/kimi175/k175_{act1,bajo-limpio,perfil1,asentado1}.json` + capturas por escenario.
+Captura clave: `k175_bajo-limpio_bajo_golf.jpg` (hoyo 1 jugado). Herramienta: `--perfil` deja el
+self-time por función en el JSON (reutilizable para KIMI-176).

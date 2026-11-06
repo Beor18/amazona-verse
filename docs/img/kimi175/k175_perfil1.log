@@ -1,0 +1,31 @@
+[22:34:25] lanzando Chrome y entrando al juego (v18=1)...
+[22:34:29] juego listo, entrando...
+[22:34:30] …latido
+[22:34:35] …latido
+[22:34:40] …latido
+[22:34:44] entrada ok, preparando modulos v18...
+[22:34:45] …latido
+[22:34:47] prep ok
+[22:34:47] calidad bajo (=bajo)
+[22:34:50] …latido
+[22:34:51] midiendo bajo/puerto...
+[22:34:55] …latido
+[22:35:00] …latido
+[22:35:05] …latido
+[22:35:10] …latido
+[22:35:12] [bajo/puerto] fpsMed=29 min=23 peorMs=72 calls=60 tris=270723
+[22:35:13] midiendo bajo/chispa...
+[22:35:15] …latido
+[22:35:20] …latido
+[22:35:25] …latido
+[22:35:30] [bajo/chispa] fpsMed=27 min=21 peorMs=166 calls=92 tris=326575
+[22:35:30] midiendo bajo/ciudad...
+[22:35:30] …latido
+[22:35:35] …latido
+[22:35:40] …latido
+[22:35:45] …latido
+[22:35:50] …latido
+[22:35:55] [bajo/ciudad] fpsMed=37 min=26 peorMs=64 calls=97 tris=301345
+[22:35:55] …latido
+[22:35:55] errores de consola: []
+[22:35:57] evidencia: C:\Users\kelvi\amazonaversegame2\docs\img\kimi175\k175_perfil1.json

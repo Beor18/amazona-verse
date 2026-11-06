@@ -1,0 +1,43 @@
+[22:26:23] lanzando Chrome y entrando al juego (v18=1)...
+[22:26:26] juego listo, entrando...
+[22:26:28] …latido
+[22:26:33] …latido
+[22:26:38] …latido
+[22:26:40] entrada ok, preparando modulos v18...
+[22:26:43] …latido
+[22:26:43] prep ok
+[22:26:44] calidad bajo (=bajo)
+[22:26:47] midiendo bajo/base...
+[22:26:48] …latido
+[22:26:53] …latido
+[22:26:58] …latido
+[22:27:01] [bajo/base] fpsMed=49 min=37 peorMs=38 calls=104 tris=611306
+[22:27:02] midiendo bajo/puerto...
+[22:27:03] …latido
+[22:27:08] …latido
+[22:27:13] …latido
+[22:27:18] …latido
+[22:27:20] [bajo/puerto] fpsMed=29 min=26 peorMs=60 calls=62 tris=271082
+[22:27:21] midiendo bajo/chispa...
+[22:27:23] …latido
+[22:27:28] …latido
+[22:27:33] …latido
+[22:27:36] [bajo/chispa] fpsMed=28 min=21 peorMs=171 calls=95 tris=329846
+[22:27:36] midiendo bajo/golf...
+[22:27:38] …latido
+[22:27:43] …latido
+[22:27:48] …latido
+[22:27:53] …latido
+[22:27:58] …latido
+[22:28:03] …latido
+[22:28:08] …latido
+[22:28:10] [bajo/golf] fpsMed=57 min=42 peorMs=36 calls=57 tris=229021
+[22:28:11] midiendo bajo/ciudad...
+[22:28:13] …latido
+[22:28:18] …latido
+[22:28:23] …latido
+[22:28:28] …latido
+[22:28:33] …latido
+[22:28:35] [bajo/ciudad] fpsMed=37 min=21 peorMs=80 calls=54 tris=263166
+[22:28:36] errores de consola: []
+[22:28:37] evidencia: C:\Users\kelvi\amazonaversegame2\docs\img\kimi175\k175_bajo-limpio.json

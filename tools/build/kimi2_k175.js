@@ -28,6 +28,8 @@ function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.a
 const ETIQUETA = arg('--etiqueta', 'r1');
 const CPU = parseInt(arg('--cpu', '4'), 10);
 const SOLO = arg('--solo', '');              // '' | bajo | medio
+const PERFIL = process.argv.indexOf('--perfil') > 0;   // perfil CDP 6 s en puerto/chispa
+const ESC = arg('--esc', '');                // lista csv de escenarios (defecto todos)
 const PF = { w: 390, h: 844, dpr: 3, ua: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' };
 const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi175'));
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -137,13 +139,15 @@ const PREP_JS = `(async () => { try { return await (async () => {
 const ESCENARIOS_JS = `(() => {
   const K = window.__k175, G = K.G, S = K.S, F = G.fisica, M = F.MOVE, I = G.input;
   const r2 = v => Math.round(v * 100) / 100;
+  const cerrarDlg = () => { try { G.dialogo.clear(); } catch (e) {} try { G.dialogo.cancelarLibre && G.dialogo.cancelarLibre(); } catch (e) {} try { if (G.ui.hideToast) G.ui.hideToast(); } catch (e) {} };
   return {
-    async base() { K.ir(150, 170); await K.sleep(6000); return K.medir(8); },
+    async base() { cerrarDlg(); K.ir(150, 170); await K.sleep(6000); return K.medir(8); },
     async puerto() {
       const P = G.v18puerto;
+      cerrarDlg();
       try { P.avanzar('investigado'); P.aplicar(); } catch (e) {}
       K.ir(P.SITIO.plaza.x, P.SITIO.plaza.z);
-      await K.sleep(3500); // zona + streaming + GLB de la máquina
+      await K.sleep(10000); // zona + streaming + GLB máquina + drenado de la cola de raster
       const drv = setInterval(() => { try { P.usarPoder(); } catch (e) {} }, 1500);
       const r = await K.medir(14);
       clearInterval(drv);
@@ -153,8 +157,9 @@ const ESCENARIOS_JS = `(() => {
     },
     async chispa() {
       const C = G.v18chispa;
+      cerrarDlg();
       K.ir(C.SITIO.salida.x, C.SITIO.salida.z);
-      await K.sleep(1200);
+      await K.sleep(8000); // drena la cola de raster de Los Portales antes de correr
       if (!C.empezar({ forzar: true })) return { error: 'empezar devolvió false' };
       const okCarrera = await K.espera(() => C.estado().fase === 'carrera', 9000);
       if (!okCarrera) { try { C.cancelar(); } catch (e) {} return { error: 'la carrera no pasó de «cuenta»' }; }
@@ -193,6 +198,7 @@ const ESCENARIOS_JS = `(() => {
     },
     async golf() {
       const Mg = G.v18minigolf;
+      cerrarDlg();
       if (!Mg.iniciar({ forzar: true })) return { error: 'iniciar devolvió false' };
       try { Mg.elegir(1); } catch (e) {}
       const sitio = (() => { try { const k = Mg.sitio; return k ? { x: k.x, z: k.z } : null; } catch (e) { return null; } })();
@@ -232,6 +238,7 @@ const ESCENARIOS_JS = `(() => {
     },
     async ciudad() {
       const CEN = { x: -33, z: -136 };
+      cerrarDlg();
       // acercamiento: aparecemos junto a la ciudad ya en el aire (el teleport al
       // centro redirige por zonas.js — KIMI-013; el borde no)
       K.ir(-14, -100);
@@ -251,6 +258,10 @@ const ESCENARIOS_JS = `(() => {
         G.camara.yaw = Math.atan2(-(tx - S.pos.x), -(tz - S.pos.z));
         const sobre = S.pos.y - G.terreno.height(S.pos.x, S.pos.z);
         if (sobre < 12) kd('keydown', ' ', 'Space'); else kd('keyup', ' ', 'Space');
+        // perro guardián: si el diálogo/«busy» bloqueó el vuelo, volar por posición directa
+        if (performance.now() - t1 > 8000 && Math.hypot(S.pos.x - CEN.x, S.pos.z - CEN.z) > 55) {
+          S.pos.x = tx; S.pos.z = tz; S.pos.y = G.terreno.height(tx, tz) + 13; S.vy = 0;
+        }
         await K.sleep(120);
         try { stats.push(K.stats() || null); } catch (e) { stats.push(null); }
       }
@@ -314,6 +325,26 @@ async function foto(cdp, ses, nombre) {
   } catch (e) { }
   return null;
 }
+// self-time por función de un perfil CDP (método de lento_movil.py, en JS)
+function atribuirPerfil(profile, N) {
+  try {
+    const nodos = new Map(); for (const n of profile.nodes) nodos.set(n.id, n);
+    const padre = new Map(); for (const n of profile.nodes) for (const c of (n.children || [])) padre.set(c, n.id);
+    let t = profile.startTime; const S = profile.samples, D = profile.timeDeltas;
+    const propio = new Map();
+    for (let i = 1; i < S.length; i++) {
+      t += D[i]; if (t == null) continue;
+      const sid = S[i - 1], nd = nodos.get(sid); if (!nd) continue;
+      const cf = nd.callFrame || {}; const us = D[i] || 0;
+      const url = (cf.url || '').split('/').pop();
+      const k = (cf.functionName || '(anon)') + ' ' + url + ':' + ((cf.lineNumber || -1) + 1);
+      propio.set(k, (propio.get(k) || 0) + us);
+    }
+    const top = [...propio.entries()].sort((a, b) => b[1] - a[1]).slice(0, N || 8)
+      .map(([k, v]) => [Math.round(v / 100) / 10, k]);
+    return { cuadros: S.length, msTotal: Math.round((profile.endTime - profile.startTime) / 100) / 10, top };
+  } catch (e) { return { error: String(e && e.message || e).slice(0, 200) }; }
+}
 
 (async () => {
   const { srv, puerto } = await servir();
@@ -349,17 +380,27 @@ async function foto(cdp, ses, nombre) {
     log('prep ok');
 
     const calidades = SOLO ? [SOLO] : ['bajo', 'medio'];
+    const listaEsc = ESC ? ESC.split(',') : ['base', 'puerto', 'chispa', 'golf', 'ciudad'];
     res.escenarios = {};
     for (const cal of calidades) {
       const nivel = await evaluar(cdp, ses, `(() => { const r = AV.G.renderer.setCalidad('${cal}', true); return r && r.nivel; })()`, 30, false);
       log(`calidad ${cal} (=${nivel})`);
       await cdp.bombear(3);
       const esc = {};
-      for (const nombre of ['base', 'puerto', 'chispa', 'golf', 'ciudad']) {
+      for (const nombre of listaEsc) {
         log(`midiendo ${cal}/${nombre}...`);
         let r;
+        const quierePerfil = PERFIL && (nombre === 'puerto' || nombre === 'chispa');
+        if (quierePerfil) { try { await cdp.call('Profiler.enable', {}, ses); await cdp.call('Profiler.start', {}, ses); } catch (e) { } }
         try { r = JSON.parse(await evaluar(cdp, ses, `(async () => { const E = ${ESCENARIOS_JS}; return JSON.stringify(await E['${nombre}']()); })()`, 200)); }
         catch (e) { r = { error: String(e && e.message || e).slice(0, 300) }; }
+        if (quierePerfil) {
+          try {
+            const pr = await cdp.call('Profiler.stop', {}, ses, 30000);
+            r.perfil = atribuirPerfil(pr.profile, 8);
+            try { await cdp.call('Profiler.disable', {}, ses); } catch (e) { }
+          } catch (e) { r.perfilError = String(e && e.message || e).slice(0, 160); }
+        }
         esc[nombre] = r;
         guardar(res);
         const cap = await foto(cdp, ses, `k175_${ETIQUETA}_${cal}_${nombre}.jpg`);

@@ -1,0 +1,320 @@
+{
+ "etiqueta": "bajo-limpio",
+ "cuando": "2026-11-06T22:26:23.177Z",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "v18": true,
+ "seed": "amazonaverse.v18 puente_villa:reparado + vittata (misma semilla que k110)",
+ "contencion": "PC compartida con otras sesiones Kimi (numeros techo si hay otras corridas)",
+ "escenarios": {
+  "bajo": {
+   "base": {
+    "fpsPorSeg": [
+     37,
+     51,
+     49,
+     48,
+     50,
+     50,
+     51,
+     52,
+     53
+    ],
+    "fpsMed": 49,
+    "fpsMin": 37,
+    "peorMs": 38,
+    "p95Ms": 28,
+    "stats": [
+     {
+      "calls": 104,
+      "tris": 611303,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 104,
+      "tris": 611305,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 104,
+      "tris": 611307,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 104,
+      "tris": 611307,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 104,
+      "tris": 611307,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 104,
+      "tris": 611307,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 104,
+      "tris": 611307,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 104,
+      "tris": 611307,
+      "sombras": false,
+      "dpr": 0.75
+     }
+    ],
+    "heapMB": 148
+   },
+   "puerto": {
+    "fpsPorSeg": [
+     26,
+     28,
+     31,
+     30,
+     31,
+     31,
+     29,
+     26,
+     30,
+     28,
+     27,
+     30,
+     31,
+     29,
+     31
+    ],
+    "fpsMed": 29,
+    "fpsMin": 26,
+    "peorMs": 60,
+    "p95Ms": 43,
+    "stats": [
+     {
+      "calls": 67,
+      "tris": 264976,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 269860,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 62,
+      "tris": 271694,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 62,
+      "tris": 271694,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     },
+     {
+      "calls": 61,
+      "tris": 271692,
+      "sombras": false,
+      "dpr": 0.75
+     }
+    ],
+    "heapMB": 116,
+    "estadoPuerto": "investigado",
+    "maq": {
+     "x": 77.08,
+     "z": -73.54
+    }
+   },
+   "chispa": {
+    "durSec": 10.12,
+    "faseFin": "nada",
+    "ultimo": {
+     "gana": true,
+     "ms": 10371,
+     "nuevo": true,
+     "chispa": 2
+    },
+    "fpsPorSeg": [
+     28,
+     28,
+     29,
+     31,
+     30,
+     21,
+     28,
+     28,
+     31,
+     30
+    ],
+    "fpsMed": 28,
+    "fpsMin": 21,
+    "peorMs": 171,
+    "p95Ms": 48,
+    "callsMed": 95,
+    "trisMed": 329846,
+    "heapMB": 129
+   },
+   "golf": {
+    "tiros": 1,
+    "durSec": 30.45,
+    "sitio": {
+     "x": 178,
+     "z": 205
+    },
+    "faseFin": "nada",
+    "fpsPorSeg": [
+     42,
+     57,
+     59,
+     58,
+     61,
+     61,
+     61,
+     61,
+     60,
+     62,
+     61,
+     52,
+     54,
+     60,
+     61,
+     59,
+     52,
+     61,
+     53,
+     58,
+     61,
+     60,
+     61,
+     59,
+     45,
+     52,
+     56,
+     59,
+     58,
+     60,
+     58
+    ],
+    "fpsMed": 57,
+    "fpsMin": 42,
+    "peorMs": 36,
+    "p95Ms": 24,
+    "callsMed": 57,
+    "trisMed": 229021,
+    "heapMB": 131
+   },
+   "ciudad": {
+    "durSec": 22.02,
+    "fin": [
+     -15.03,
+     34.55,
+     -98.97
+    ],
+    "fpsPorSeg": [
+     27,
+     21,
+     27,
+     25,
+     31,
+     34,
+     33,
+     29,
+     35,
+     31,
+     39,
+     34,
+     39,
+     45,
+     42,
+     46,
+     49,
+     52,
+     52,
+     47,
+     42,
+     43
+    ],
+    "fpsMed": 37,
+    "fpsMin": 21,
+    "peorMs": 80,
+    "p95Ms": 42,
+    "callsMed": 54,
+    "trisMed": 263166,
+    "heapMB": 137
+   }
+  }
+ },
+ "capturas": {
+  "bajo_base": "k175_bajo-limpio_bajo_base.jpg",
+  "bajo_puerto": "k175_bajo-limpio_bajo_puerto.jpg",
+  "bajo_chispa": "k175_bajo-limpio_bajo_chispa.jpg",
+  "bajo_golf": "k175_bajo-limpio_bajo_golf.jpg",
+  "bajo_ciudad": "k175_bajo-limpio_bajo_ciudad.jpg"
+ },
+ "erroresConsola": []
+}
