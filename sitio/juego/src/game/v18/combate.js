@@ -37,7 +37,8 @@ window.AVV18Combate = function (G) {
     pierde: '¡Uy, te mareaste! Sacude las plumas y prueba otra vez.', lejos: 'Te alejaste: el duelo queda para luego.',
     bloquea: '¡Bloqueado!', rompe: '¡Escudo roto!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!',
     ganaste: '¡Ganaste!', perdiste: '¡Casi!', bienvenida: '¡A jugar! Quítale sus 5 plumas a la Campeona.', apoyo: '¡La cotorra de Dominica te cubre!',
-    capa: '¡Capa de palma: semilla devuelta!', rebote: '¡Rebote!', hojas: '¡Las hojas aguantaron el golpe!', avisoSelva: '¡Cuidado, va a atacar!'
+    capa: '¡Capa de palma: semilla devuelta!', rebote: '¡Rebote!', hojas: '¡Las hojas aguantaron el golpe!', avisoSelva: '¡Cuidado, va a atacar!',
+    avisoBandada: '¡Ojo de bandada: la rival va a usar su poder!', cuento: '¡La rival se queda escuchando el cuento!'
   };
   // Generador con semilla: la IA decide igual en cada prueba
   let semilla = 1;
@@ -355,6 +356,11 @@ window.AVV18Combate = function (G) {
     }
     const r = H.usar(f, id, ctxDe(f));
     if (r.ok && !r.avisada && !H.get(id).basico) f.ultPoder = id; // Imitación: cada una recuerda lo último que usó (lo lee la otra)
+    if (r.ok && f.ia && C.j && C.j.ojobandada > 0 && !H.get(id).basico) { // Ojo de bandada: la jugadora ve venir el poder de la rival
+      C.stats.avisos = (C.stats.avisos || 0) + 1;
+      flotante(TXT.avisoBandada, 1.0); fx('ring', f.pos.x, f.pos.y + 1.7, f.pos.z); sonar('ring', 2);
+    }
+    if (r.ok && id === 'cuento' && !f.ia) flotante(TXT.cuento, 1.0); // Cuento: confirmación de que la rival se distrajo
     if (r.ok && f.ia) { C.stats.ataques++; if (!H.get(id).basico) C.stats.poderes++; }
     if (r.ok) pintar();
     else if (!f.ia && r.motivo === 'energia') pulso('en-j');
@@ -594,6 +600,7 @@ window.AVV18Combate = function (G) {
   function pasoIA(dt) {
     const r = C.r, j = C.j;
     if (r.mareo > 0 || r.deslumbrada > 0) return; // deslumbrada por el Abanico de colores: 1 s sin hacer nada
+    if (r.distraida > 0) return; // Cuento: distraída escuchando — no ataca ni se defiende hasta que se le pasa
     const d = H.dirA(r, j), dist = d.d;
     r.golpeT -= dt; r.tiroT -= dt; r.esquivaT -= dt; r.poderT -= dt; r.pensar -= dt;
     // Defensa: una semilla del jugador que viene cerca → escudo (si es arausiaca y lo tiene) o un quiebro de lado
@@ -625,7 +632,7 @@ window.AVV18Combate = function (G) {
     let vx = 0, vz = 0;
     if (r.kb.t > 0) { r.kb.t -= dt; vx += r.kb.x; vz += r.kb.z; r.kb.x *= 0.88; r.kb.z *= 0.88; }
     if (r.mov.t > 0) { r.mov.t -= dt; vx += r.mov.x; vz += r.mov.z; }
-    else if (r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0)) {
+    else if (r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0) && !(r.distraida > 0)) {
       const velK = r.pesada > 0 ? 0.45 : 1; // Plumas de manglar: pisar una pluma la deja más lenta
       if (d.d > 2.0) { vx += d.x * 4.2 * velK; vz += d.z * 4.2 * velK; } // se acerca
       else { vx += -d.z * r.lado * 1.6 * velK; vz += d.x * r.lado * 1.6 * velK; } // rodea

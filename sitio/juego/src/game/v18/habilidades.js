@@ -590,6 +590,33 @@ window.AVV18Habilidades = function (G) {
       return { ok: true };
     } });
 
+  // ---------- Los 2 últimos implementables (KIMI-163, V18_MATRIZ_36.md #30 y #36): se consiguen en el Álbum ----------
+  // Ojo de bandada (amazonica, OJOS): 6 s en «modo bandada»: el aviso del centro del duelo salta EN CUANTO la rival
+  // usa su poder (su barra de energía ya se ve siempre en el HUD). Ventaja: nada te pilla por sorpresa. Debilidad:
+  // no hace daño. Espera 8 s (matriz). El aviso lo pone usar() de combate.js (duelo2: sin IA, no hay a quién avisar).
+  registrar({ id: 'ojo_bandada', nombre: 'Ojo de bandada', especies: ['amazonica'], tecnica: 'ojos', coste: 30, cooldown: 8,
+    fx: 'gold', dura: 6,
+    efecto(ctx) {
+      const { yo } = ctx;
+      yo.ojobandada = this.dura; yo.cara = 'fight';
+      ctx.fx('gold', yo.pos.x, yo.pos.y + 1.4, yo.pos.z); ctx.fx('ring', yo.pos.x, yo.pos.y + 1.0, yo.pos.z); ctx.sonar('ring', 2);
+      ctx.poder({ id: this.id, de: yo.id, dura: this.dura });
+      return { ok: true };
+    } });
+  // Cuento (aestiva, PICO): habla sin parar 1,5 s y la rival se distrae: no ataca, no se defiende y no se acerca.
+  // Ventaja: para su ataque en seco. Debilidad: no hace daño. Espera 11 s (matriz). El bloqueo lo leen pasoIA y
+  // moverRival de combate.js (duelo2: sin IA, la distracción no la lee nadie — degrada seguro, como la Imitación).
+  registrar({ id: 'cuento', nombre: 'Cuento', especies: ['aestiva'], tecnica: 'pico', coste: 30, cooldown: 11,
+    fx: 'stars', dura: 1.5,
+    efecto(ctx) {
+      const { yo, otro } = ctx;
+      yo.picoT = this.dura; yo.cara = 'fight'; // el pico no para de moverse
+      otro.distraida = this.dura;
+      ctx.fx('stars', yo.pos.x, yo.pos.y + 1.6, yo.pos.z); ctx.fx('bubbles', yo.pos.x, yo.pos.y + 1.9, yo.pos.z); ctx.sonar('pickup', 1);
+      ctx.poder({ id: this.id, de: yo.id, a: otro.id, dura: this.dura });
+      return { ok: true };
+    } });
+
   // ---------- Luchadores ----------
   function luchador(o) {
     const sp = o.especie || 'vittata';
@@ -653,6 +680,8 @@ window.AVV18Habilidades = function (G) {
     f.deslumbrada = Math.max(0, (f.deslumbrada || 0) - dt); f.falla = Math.max(0, (f.falla || 0) - dt); f.lenta = Math.max(0, (f.lenta || 0) - dt);
     f.grande = Math.max(0, (f.grande || 0) - dt); if (!(f.lenta > 0)) f.lentaK = 0; // Ojo de manglar: el frenado y el tamaño duran lo mismo
     f.pesada = Math.max(0, (f.pesada || 0) - dt); // Plumas de manglar: pisar una pluma va más lento
+    f.ojobandada = Math.max(0, (f.ojobandada || 0) - dt); // Ojo de bandada: la ventana del aviso
+    f.distraida = Math.max(0, (f.distraida || 0) - dt); // Cuento: distraída no ataca ni se acerca
     if (!f.picoT && f.cara === 'fight') f.cara = null;
   }
   G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, recibir, paso, dist, dirA, mira, ver };
