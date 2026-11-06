@@ -312,7 +312,8 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
   }
   const GLIFO = { mision: '!', parada: '?', reto: '' };
   // v = { cx, cz, mpp }: centro en metros y metros por píxel CSS; w, h en píxeles de dibujo; k = factor de píxel (dpr)
-  function dibujar(ctx, w, h, v, k, grande) {
+  // msPre: marcadores ya calculados (el pintar los comparte con su firma de no-repintado, QA-181/KIMI-141)
+  function dibujar(ctx, w, h, v, k, grande, msPre) {
     const px = x => (x - v.cx) / v.mpp * k + w / 2, pz = z => (z - v.cz) / v.mpp * k + h / 2;
     ctx.save(); ctx.fillStyle = '#245f86'; ctx.fillRect(0, 0, w, h);
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'low';
@@ -328,7 +329,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     const hc = contraste();
     if (hc) { ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fillRect(0, 0, w, h); }
     const gk = (hc ? 1.35 : 1) * k, rM = (grande ? 9 : 7) * gk;
-    const ms = marcadores(), ob = ms.find(m => m.tipo === 'obj'), de = ms.find(m => m.tipo === 'dest');
+    const ms = msPre || marcadores(), ob = ms.find(m => m.tipo === 'obj'), de = ms.find(m => m.tipo === 'dest');
     const px0 = px(S.pos.x), pz0 = pz(S.pos.z), fin = de || ob;
     // Ruta: línea discontinua hacia el destino (o el objetivo)
     if (pref.ruta && fin) {
@@ -391,12 +392,22 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     elG.querySelector('.mg-quitar').hidden = !destino;
     elG.querySelector('.mg-ruta').setAttribute('aria-pressed', String(pref.ruta));
   }
+  // QA-181/KIMI-141 (Chromebook ×6): el dibujo del compacto es función determinista de estas entradas;
+  // quieto, nada cambia entre tics → no se repinta (el lienzo conserva la imagen). Misma imagen, ~0 ms.
+  let firmaC = null;
   function pintar() {
     if (abierto) { refrescarGrande(); return; }
     if (!elC || elC.hidden || !(anchoC >= 0 ? anchoC > 0 : visible(elC))) return;
     dprC = ajustar(cvC, ctxC, dprC, anchoC);
     const objR = M.flying ? R_VOLANDO : R_ANDANDO; radio += (objR - radio) * 0.3; // el zoom se suaviza al despegar y aterrizar
-    ultimo = dibujar(ctxC, cvC.width, cvC.height, vistaCompacta(), dprC, false);
+    const ms = marcadores();
+    const fac = S.facing || { x: 0, z: -1 };
+    const firma = [
+      dprC, cvC.width, contraste() ? 1 : 0, B.listo ? 1 : 0, B.florado ? 1 : 0, pref.ruta ? 1 : 0,
+      Math.round(S.pos.x * 4), Math.round(S.pos.z * 4), Math.round(fac.x * 100), Math.round(fac.z * 100), Math.round(radio * 10),
+      ms.map(m => m.tipo + (m.oculto ? 'o' : '') + (m.piedra ? 'p' : '') + Math.round(m.x * 2) + ',' + Math.round(m.z * 2) + (m.n || '')).join(';')
+    ].join('|');
+    if (firma !== firmaC) { firmaC = firma; ultimo = dibujar(ctxC, cvC.width, cvC.height, vistaCompacta(), dprC, false, ms); }
     textoCompacto();
   }
   // ~10 veces por segundo (el cuadro de render solo comprueba el reloj)

@@ -1,0 +1,5 @@
+[09:09:24] chrome listo; servidor :63013 (antes=false)
+[09:09:51] entrar: ok
+[09:10:28] test 38/38 · micro 2.08 ms/tick · minimapaOculto=false
+[09:10:42] perfil minimapa: {"minimapa · textoCompacto":{"selfMs":11.4,"pct":0.1},"minimapa · ajustar":{"selfMs":2.1,"pct":0},"minimapa · pintar":{"selfMs":8.5,"pct":0.1},"minimapa · tick":{"selfMs":3.2,"pct":0},"minimapa · marcadores":{"selfMs":16.2,"pct":0.1},"minimapa · (anónima)":{"selfMs":6.9,"pct":0},"minimapa · colocar":{"selfMs":4.2,"pct":0},"minimapa · texto":{"selfMs":1.1,"pct":0}} · consola 0
+[09:10:43] cerrado: ok

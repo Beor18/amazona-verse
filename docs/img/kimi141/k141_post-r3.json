@@ -1,0 +1,17 @@
+{
+ "tarea": "KIMI-141",
+ "bug": "QA-181",
+ "etiqueta": "post-r3",
+ "antes": false,
+ "chromebook": {
+  "cpu": 6,
+  "w": 1366,
+  "h": 768,
+  "dpr": 1
+ },
+ "secs": 12,
+ "minimapaTest": null,
+ "microMsPorTick": null,
+ "perfil": null,
+ "consola": null
+}
