@@ -571,11 +571,12 @@ window.AVV18Puerto = function (G) {
     } else if (!maq.bloqGLB) { maq.luces[0].visible = maq.luces[1].visible = true; } // con el modelo BM165 las luces de alarma van con su grupo (pintarMaquina)
     if (maq.sacude > 0) { maq.sacude -= dt; gMaq.position.x += Math.sin(performance.now() / 20) * 0.04; }
   }
+  const _o3Ruta = new THREE.Object3D(); // reutilizado: ruta() corre en cada cuadro del encuentro
   function ruta() {
     const ver = enEncuentro() || (estado() === 'descubierto' && tecnica() === 'ojos');
     gRuta.visible = ver;
     if (!ver) return;
-    const g = posEngranaje(), o3 = new THREE.Object3D(), t0 = performance.now() / 600;
+    const g = posEngranaje(), o3 = _o3Ruta, t0 = performance.now() / 600;
     for (let i = 0; i < 12; i++) { const t = ((i / 12) + t0 % 1 / 12); const x = S.pos.x + (g.x - S.pos.x) * t, z = S.pos.z + (g.z - S.pos.z) * t; o3.position.set(x, alto(x, z) + 0.35 + Math.sin(Math.PI * t) * 0.8, z); o3.updateMatrix(); gRuta.setMatrixAt(i, o3.matrix); }
     gRuta.instanceMatrix.needsUpdate = true;
   }
