@@ -29,6 +29,7 @@ const SECS = +(arg('--secs', '150'));
 const ETIQUETA = arg('--etiqueta', 'r1');
 const RAIZ_SRV = arg('--raiz', ''); // servir otro árbol (p. ej. archive de la línea base e0dfc12)
 const SIN_GIT = process.argv.includes('--sin-git');
+const URL_EXTRA = arg('--url-extra', ''); // p. ej. "v18=1" para medir con la V18 por defecto (KIMI-177)
 const BASE_NUBE = 'e0dfc12'; // línea base de la medición de la nube (6,58 MB)
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi062');
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -160,7 +161,7 @@ function fechaAlta(rel) {
     await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS }, ses);
     t0 = Date.now();
-    await cdp.call('Page.navigate', { url: origen + '/index.html?qa=1&cap=1' }, ses);
+    await cdp.call('Page.navigate', { url: origen + '/index.html?qa=1&cap=1' + (URL_EXTRA ? '&' + URL_EXTRA : '') }, ses);
 
     let tReveal = null, motivoCarga = null, msCarga = null, ultimoTap = 0, nTaps = 0;
     const TAP_JS = `(() => {
@@ -217,7 +218,7 @@ function fechaAlta(rel) {
       topTotal: topDe(recs.filter(r => r.msFin !== null), 15),
       v18Urls: recs.filter(r => /\/v18\//.test(r.u)).map(r => r.u.replace(origen, '')),
     };
-    res.asserts.sinBanderaNadaDeV18 = res.red.v18Urls.length === 0;
+    res.asserts.sinBanderaNadaDeV18 = URL_EXTRA ? null : res.red.v18Urls.length === 0;
     res.asserts.calidadBaja = (res.muestras.find(m => m.calidad) || {}).calidad || null;
 
     // atribución: qué recursos de la ventana de carga se añadieron después de BASE_NUBE
