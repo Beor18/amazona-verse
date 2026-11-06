@@ -236,6 +236,66 @@ window.AVV18Habilidades = function (G) {
       ctx.poder({ id: this.id, de: yo.id, a: otro.id, dura: this.dura });
       return { ok: true };
     } });
+  // ---------- Tres más (Kelvin 6-nov, KIMI-149, V18_MATRIZ_36.md #15, #19, #33): se consiguen descubriéndolas en el Álbum ----------
+  // Viento de islas (tresmariae, ALAS): ráfaga ancha (±63°) que empuja a la rival lejos SIN quitar plumas. Ventaja: control del
+  // espacio, la acerca al borde. Debilidad: sin daño: si está en el centro, apenas importa. Espera 9 s (matriz).
+  registrar({ id: 'viento_islas', nombre: 'Viento de islas', especies: ['tresmariae'], tecnica: 'alas', coste: 30, cooldown: 9,
+    fx: 'onda', alcance: 9, cono: 0.45, vel: 14, empuje: 20, mareo: 0.5,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, dir = mira(yo, otro);
+      yo.alasT = 0.6; // batida de alas (ALAS), no pico
+      const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
+      ctx.onda(origen, dir, h.alcance, h.vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
+      ctx.poder({ id: h.id, de: yo.id, origen, direccion: { x: dir.x, y: 0, z: dir.z }, alcance: h.alcance });
+      const alcanza = () => {
+        const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
+        if (d > h.alcance + 0.6) return false;
+        return d < 1.6 || (dx * dir.x + dz * dir.z) / d >= h.cono; // cono más ancho que el grito: casi no hay que apuntar
+      };
+      const d0 = Math.hypot(otro.pos.x - origen.x, otro.pos.z - origen.z);
+      ctx.despues(Math.min(h.alcance, d0) / h.vel, () => {
+        if (!alcanza()) return;
+        ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: h.mareo, dir: { x: dir.x, z: dir.z }, forzar: true }); // solo empuje
+      });
+      return { ok: true, acierto: null, dir };
+    } });
+  // Voz de volcán (auropalliata, PICO): 1 s de carga con el pico abierto (se ve venir) y entonces suelta una onda con el mayor
+  // empuje del juego. Ventaja: empuje 26 e interrumpe. Debilidad: la carga anuncia el disparo y no quita plumas. Espera 11 s.
+  registrar({ id: 'voz_volcan', nombre: 'Voz de volcán', especies: ['auropalliata'], tecnica: 'pico', coste: 35, cooldown: 11,
+    fx: 'onda', alcance: 9, cono: 0.75, vel: 13, empuje: 26, carga: 1, pico: 1.5,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, dir = mira(yo, otro);
+      yo.picoT = h.pico; yo.cara = 'fight'; // la carga va a la vista: avisa antes de soltarla
+      ctx.sonar('ring', 1);
+      ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 1.0, z: yo.pos.z }, direccion: { x: dir.x, y: 0, z: dir.z }, carga: h.carga });
+      ctx.despues(h.carga, () => {
+        const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
+        ctx.onda(origen, dir, h.alcance, h.vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
+        const alcanza = () => {
+          const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
+          if (d > h.alcance + 0.6) return false;
+          return d < 1.2 || (dx * dir.x + dz * dir.z) / d >= h.cono;
+        };
+        const d0 = Math.hypot(otro.pos.x - origen.x, otro.pos.z - origen.z);
+        ctx.despues(Math.min(h.alcance, d0) / h.vel, () => {
+          if (!alcanza()) return;
+          ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: 1.1, dir: { x: dir.x, z: dir.z }, forzar: true });
+        });
+      });
+      return { ok: true, acierto: null, dir };
+    } });
+  // Ojo de manglar (brasiliensis, OJOS): 3 s en que las semillas de la rival vuelan a ×0,4 (más que la Mirada del Pitón) y se
+  // dibujan GRANDES (malla ×1,8): se ven venir y se esquivan. Ventaja: tapa sus tiros en la ventana. Debilidad: nada contra el
+  // golpe de ala ni hace daño. Espera 9 s (matriz).
+  registrar({ id: 'ojo_manglar', nombre: 'Ojo de manglar', especies: ['brasiliensis'], tecnica: 'ojos', coste: 30, cooldown: 9,
+    fx: 'ring', dura: 3, lento: 0.4, grande: 1.8,
+    efecto(ctx) {
+      const { yo, otro } = ctx;
+      otro.lenta = this.dura; otro.lentaK = this.lento; otro.grande = this.dura; yo.cara = 'fight';
+      ctx.fx('ring', otro.pos.x, otro.pos.y + 1.0, otro.pos.z); ctx.fx('bubbles', otro.pos.x, otro.pos.y + 1.4, otro.pos.z); ctx.sonar('ring', 1);
+      ctx.poder({ id: this.id, de: yo.id, a: otro.id, dura: this.dura });
+      return { ok: true };
+    } });
 
   // ---------- Luchadores ----------
   function luchador(o) {
@@ -298,6 +358,7 @@ window.AVV18Habilidades = function (G) {
     f.mareo = Math.max(0, f.mareo - dt); f.inv = Math.max(0, f.inv - dt); f.escudo = Math.max(0, f.escudo - dt);
     f.picoT = Math.max(0, (f.picoT || 0) - dt); f.marcada = Math.max(0, (f.marcada || 0) - dt); f.alasT = Math.max(0, (f.alasT || 0) - dt);
     f.deslumbrada = Math.max(0, (f.deslumbrada || 0) - dt); f.falla = Math.max(0, (f.falla || 0) - dt); f.lenta = Math.max(0, (f.lenta || 0) - dt);
+    f.grande = Math.max(0, (f.grande || 0) - dt); if (!(f.lenta > 0)) f.lentaK = 0; // Ojo de manglar: el frenado y el tamaño duran lo mismo
     if (!f.picoT && f.cara === 'fight') f.cara = null;
   }
   G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, recibir, paso, dist, dirA, mira, ver };

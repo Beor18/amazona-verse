@@ -14,9 +14,13 @@
      reparar el puente Y deshacer la Serpiente       → loro de cejas rojas (rhodocorytha) · Hojas que envuelven (PLUMAS)
      recoger las 2 piedras y las 2 fibras (reparar.js) → loro de Kawall (kawalli) · Ojo de selva (OJOS)
    Llegan solas al cumplir el hito (aviso y a «Mis cotorras»); en partidas viejas que ya lo cumplían, sin aviso.
+   Tres más (KIMI-149, provisional hasta que Kelvin decida el hito: se consiguen descubriéndolas en el Álbum del Diario):
+     descubrir en el Álbum → papagayo de cara roja (brasiliensis) · Ojo de manglar (OJOS)
+     descubrir en el Álbum → loro de nuca amarilla (auropalliata) · Voz de volcán (PICO)
+     descubrir en el Álbum → loro de las Tres Marías (tresmariae) · Viento de islas (ALAS)
    Solo cambia el poder del duelo y de la amenaza: el personaje del jugador se queda igual. Mara y Vela (martinicana,
    violacea) son consejeras en la temporada 1 y no entran aquí. Solo con la bandera V18.
-   Prueba: AV.v18NuevasTest() (hitos y los 8 poderes en el duelo). */
+   Prueba: AV.v18NuevasTest() (hitos, el desbloqueo por Álbum y los 11 poderes en el duelo). */
 window.AVV18Nuevas = function (G) {
   'use strict';
   if (G.v18nuevas) return G.v18nuevas;
@@ -53,6 +57,31 @@ window.AVV18Nuevas = function (G) {
       txt: '¡Un loro de Kawall te vio recoger todas las piedras y fibras y quiere volar contigo! Su poder: Ojo de selva.' }
   ];
   const TXT = { elige: 'Elígela en Pausa → Mis cotorras.', eligeM: 'Elígelo en Pausa → Mis cotorras.' }; // m: el aviso habla de «un loro»
+  // KIMI-149 (provisional, hasta que Kelvin decida el hito): estas 3 llegan al descubrir su tarjeta en el Álbum del Diario.
+  const ALBUM = [
+    { id: 'brasiliensis', txt: '¡Descubriste al papagayo de cara roja en el Álbum! Su poder: Ojo de manglar.' },
+    { id: 'auropalliata', txt: '¡Descubriste al loro de nuca amarilla en el Álbum! Su poder: Voz de volcán.' },
+    { id: 'tresmariae', txt: '¡Descubriste al loro de las Tres Marías en el Álbum! Su poder: Viento de islas.' }
+  ];
+  // La tarjeta acaba de abrirse (evento del Álbum): desbloqueo inmediato con aviso
+  function albumLlega(id, avisar) {
+    const a = ALBUM.find(x => x.id === id);
+    if (!a || rango(V.estado(id)) >= rango('seleccionable')) return false;
+    V.descubrir(id); V.desbloquear(id);
+    if (avisar !== false) toast(a.txt + ' ' + TXT.eligeM);
+    return true;
+  }
+  // Partidas viejas con la tarjeta ya abierta: quedan elegibles al cargar, sin aviso
+  function revisarAlbum() {
+    const nuevas = [];
+    for (const a of ALBUM) {
+      if (rango(V.estado(a.id)) >= rango('seleccionable')) continue;
+      if (!(G.album && G.album.visto && G.album.visto(a.id))) continue;
+      if (albumLlega(a.id, false)) nuevas.push(a.id);
+    }
+    return nuevas;
+  }
+  G.on('album', ev => { if (ev && ev.id) albumLlega(ev.id); }); // el Álbum emite al abrir cada tarjeta (album.js)
   function revisar(avisar) {
     const nuevas = [];
     for (const h of HITOS) {
@@ -73,8 +102,8 @@ window.AVV18Nuevas = function (G) {
   });
   G.on('v18', ev => { if (ev && (ev.tipo === 'mundo' || ev.tipo === 'recompensa')) setTimeout(() => revisar(true), 4200); }); // tras «¡Puente reparado!» y el premio de la Sombra
   G.on('v18minigolf', ev => { if (ev && ev.tipo === 'nido' && ev.medalla === 'oro') setTimeout(() => revisar(true), 5200); }); // tras el aviso del premio de oro
-  G.on('apply', () => setTimeout(() => revisar(false), 0), 97);
-  setTimeout(() => revisar(false), 0);
+  G.on('apply', () => setTimeout(() => { revisar(false); revisarAlbum(); }, 0), 97);
+  setTimeout(() => { revisar(false); revisarAlbum(); }, 0);
 
   // =====================================================================================================================
   function test() {
@@ -114,10 +143,20 @@ window.AVV18Nuevas = function (G) {
           'duelos ' + d1 + '→' + d2 + '→' + duelosGanados());
       } finally { G.v18combate = B0; }
       check('Cada una tiene su poder propio', H.poderDe('agilis') === 'quiebro' && H.poderDe('farinosa') === 'ala_fuerte' && H.poderDe('barbadensis') === 'lluvia_semillas' && H.poderDe('xantholora') === 'ojo_cenote' &&
-        H.poderDe('guildingii') === 'abanico_colores' && H.poderDe('diadema') === 'semilla_rio' && H.poderDe('versicolor') === 'mirada_piton' && H.poderDe('collaria') === 'ojo_sol',
+        H.poderDe('guildingii') === 'abanico_colores' && H.poderDe('diadema') === 'semilla_rio' && H.poderDe('versicolor') === 'mirada_piton' && H.poderDe('collaria') === 'ojo_sol' &&
+        H.poderDe('brasiliensis') === 'ojo_manglar' && H.poderDe('auropalliata') === 'voz_volcan' && H.poderDe('tresmariae') === 'viento_islas',
         ids.map(H.poderDe).join(','));
       check('No avisa dos veces la misma', revisar(true).length === 0);
       check('Mara y Vela no se pueden elegir (consejeras en la temporada 1)', rango(V.estado('martinicana')) < 1 && rango(V.estado('violacea')) < 1);
+      // KIMI-149: la tanda B se consigue descubriéndola en el Álbum (provisional hasta que Kelvin decida el hito)
+      check('Las de tanda B (Álbum) empiezan sin descubrir', ['brasiliensis', 'auropalliata', 'tresmariae'].every(id => rango(V.estado(id)) < rango('descubierta')));
+      G.emit('album', { id: 'auropalliata', fuente: 'test' });
+      check('Descubrir su tarjeta en el Álbum deja elegible al loro de nuca amarilla (Voz de volcán), con aviso',
+        rango(V.estado('auropalliata')) >= rango('seleccionable') && toasts.some(t => /nuca amarilla/.test(t) && /Voz de volcán/.test(t) && /Mis cotorras/.test(t)));
+      G.emit('album', { id: 'auropalliata', fuente: 'test' });
+      check('El mismo descubrimiento no avisa dos veces', toasts.filter(t => /nuca amarilla/.test(t)).length === 1);
+      revisarAlbum(); // partidas viejas: tarjetas ya abiertas en el Álbum, sin aviso
+      check('revisarAlbum no desbloquea tarjetas que aún no están abiertas en el Álbum', rango(V.estado('brasiliensis')) < 1 && rango(V.estado('tresmariae')) < 1);
 
       // ---- Las 4 de coste M: cada una con su hito, desde una partida nueva ----
       V.borrar(); V.recargar(); toasts.length = 0;
@@ -290,6 +329,51 @@ window.AVV18Nuevas = function (G) {
         check('...con el aviso da tiempo a apartarse y el golpe falla', ga3.avisada && C.j.plumas === pk3, 'plumas ' + pk3 + '→' + C.j.plumas);
         corre(3.5); check('...y a los 4 s se acaba', !(C.r.vista > 0));
         B.salir();
+        // ---- Los 3 de tanda B (KIMI-149, Álbum) en el duelo, a paso fijo ----
+        // Mide el empujón real: espera a que la onda llegue (kb.t > 0), marca la posición y avanza 8 cuadros dentro
+        // de la ventana de kb (la rival no puede re-acercarse mientras dura el mareo del golpe).
+        const esperaEmpujon = () => {
+          for (let k = 0; k < 150; k++) { B.paso(1 / 30); if (C.r.kb.t > 0) break; }
+          if (!(C.r.kb.t > 0)) return { av: 0, mareo: C.r.mareo };
+          const p0 = { x: C.r.pos.x, z: C.r.pos.z };
+          for (let k = 0; k < 8; k++) B.paso(1 / 30);
+          return { av: Math.hypot(C.r.pos.x - p0.x, C.r.pos.z - p0.z), mareo: C.r.mareo };
+        };
+        // Viento de islas: ráfaga ancha que empuja lejos SIN quitar plumas
+        B.iniciar({ sinCuenta: true, especie: 'tresmariae' }); quieta(6); listo(); C.r.kb.t = 0; C.r.kb.x = C.r.kb.z = 0;
+        const pv0 = C.r.plumas;
+        const rv = B.usar(C.j, 'viento_islas');
+        const ev = esperaEmpujon();
+        check('Viento de islas: empuja a la rival lejos SIN quitar plumas', rv.ok && ev.av > 2.5 && C.r.plumas === pv0, 'empujón ' + ev.av.toFixed(1) + ' m, plumas ' + pv0);
+        B.salir();
+        // Voz de volcán: 1 s de carga a la vista (pico abierto, sin empujar) y entonces el mayor empuje, sin plumas
+        B.iniciar({ sinCuenta: true, especie: 'auropalliata' }); quieta(5); listo(); C.r.kb.t = 0; C.r.kb.x = C.r.kb.z = 0;
+        const pz0 = C.r.plumas;
+        const rz = B.usar(C.j, 'voz_volcan');
+        corre(0.5); const sinEmpujar = !(C.r.kb.t > 0) && C.j.picoT > 0; // la carga avisa: pico abierto y todavía no empuja
+        const ez = esperaEmpujon();
+        check('Voz de volcán: carga 1 s a la vista y luego el mayor empuje, sin plumas', rz.ok && sinEmpujar && ez.av > 3.5 && ez.mareo > 0.7 && C.r.plumas === pz0,
+          'pico ' + C.j.picoT.toFixed(2) + ', empujón ' + ez.av.toFixed(1) + ' m (mareo ' + ez.mareo.toFixed(2) + '), plumas ' + pz0);
+        B.salir();
+        // Ojo de manglar: 3 s en que las semillas de la rival van a ×0,4 y se dibujan grandes (se esquivan)
+        B.iniciar({ sinCuenta: true, especie: 'brasiliensis' }); quieta(6); listo();
+        const rg = B.usar(C.j, 'ojo_manglar');
+        check('Ojo de manglar: la rival queda 3 s con los tiros lentos (×0,4) y grandes', rg.ok && C.r.lenta > 2.9 && C.r.lenta <= 3 && C.r.grande > 2.9 && C.r.lentaK === 0.4,
+          'lenta ' + (C.r.lenta || 0).toFixed(2) + ', grande ' + (C.r.grande || 0).toFixed(2) + ', K ' + C.r.lentaK);
+        const avanzaBala = () => {
+          C.r.cd = {}; C.r.energia = 100; C.r.mareo = 0; C.j.inv = 0; C.j.escudo = 0; quieta(8);
+          B.usar(C.r, 'semilla'); const sb = C.balas[C.balas.length - 1];
+          if (!sb) return { escala: 0, av: 0 };
+          B.paso(1 / 30); const escala = sb.m.scale.x, x0 = sb.m.position.x, z0 = sb.m.position.z;
+          for (let k = 0; k < 5; k++) B.paso(1 / 30);
+          return { escala, av: C.balas.includes(sb) ? Math.hypot(sb.m.position.x - x0, sb.m.position.z - z0) : 99 };
+        };
+        const conOjo = avanzaBala(); // los 3 s aún corren: sus semillas salen lentas y grandes
+        C.r.lenta = 0; C.r.lentaK = 0; C.r.grande = 0;
+        const sinOjo = avanzaBala();
+        check('...su semilla avanza menos de la mitad y la malla se dibuja ×1,8', conOjo.escala > 1.7 && sinOjo.av > 2.2 * conOjo.av,
+          'avance ' + conOjo.av.toFixed(2) + ' m vs ' + sinOjo.av.toFixed(2) + ' m, escala ' + conOjo.escala.toFixed(2));
+        S.facing = { x: 1, z: 0 }; B.salir();
       } else check('El duelo está cargado', false);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }
     try { if (B && B.estado().fase !== 'nada') B.salir(); } catch (e) { /* */ }
@@ -299,6 +383,6 @@ window.AVV18Nuevas = function (G) {
     V.recargar(); if (susp) susp(false);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
-  G.v18nuevas = { HITOS, revisar, test };
+  G.v18nuevas = { HITOS, revisar, revisarAlbum, albumLlega, test };
   return G.v18nuevas;
 };

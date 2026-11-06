@@ -657,7 +657,8 @@ window.AVV18Combate = function (G) {
     for (let i = C.balas.length - 1; i >= 0; i--) {
       const b = C.balas[i], p = b.m.position;
       const blanco = b.de === C.j ? C.r : C.j;
-      const dt = b.de && b.de.lenta > 0 ? dt0 * ((H.get('mirada_piton') || {}).lento || 0.5) : dt0; // Mirada del Pitón: las semillas de la rival frenada van a la mitad (también las que ya volaban)
+      const dt = b.de && b.de.lenta > 0 ? dt0 * (b.de.lentaK || ((H.get('mirada_piton') || {}).lento || 0.5)) : dt0; // Mirada del Pitón / Ojo de manglar (lentaK: ×0,4): las semillas de la rival frenadas van más lento (también las que ya volaban)
+      b.m.scale.setScalar(b.de && b.de.grande > 0 ? ((H.get('ojo_manglar') || {}).grande || 1.8) : 1); // Ojo de manglar: la semilla se dibuja grande mientras dura el efecto
       if (blanco.marcada > 0 && !b.falla) { const hx = blanco.pos.x - p.x, hz = blanco.pos.z - p.z, hn = Math.hypot(hx, hz) || 1, v = Math.hypot(b.vx, b.vz), k = Math.min(1, dt * 6 * (blanco.marcaK || 1));
         b.vx += (hx / hn * v - b.vx) * k; b.vz += (hz / hn * v - b.vz) * k;
         b.vy += (((blanco.pos.y + 0.9) - p.y) / Math.max(0.15, hn / (v || 1)) - b.vy) * k; } // Ojo del cenote: la semilla busca a la marcada (también en altura: en la explanada en cuesta se iba por debajo)
