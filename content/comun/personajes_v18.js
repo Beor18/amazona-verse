@@ -87,5 +87,20 @@ window.AV_NPC_V18 = [
     porEstado: {
       mentor: { apariencia: 'mentor', anim: 'idle', dialogo: ['Bienvenida a mi claro, pequeña cotorra. Yo soy Moon: aquí se entrena la esquiva, paso a paso.'] }
     }
+  },
+  {
+    id: 'guardian', nombre: { es: 'Guardián del Primer Vuelo', en: 'Guardian of the First Flight' }, rol: 'aliado',
+    // BM169 (Mac, 6-nov): piloto cotorra mentor histórico de vuelo (colores lisos, sin foto ni marcas; acciones del .glb:
+    // Idle y Hablar). Su «Circuito del Primer Vuelo» está en src/game/v18/guardian.js, en un claro del suroeste de la isla
+    // (docs/DIRECTIVA_V18_3_RESOLUCION.md §F). Retrato: insignia provisional hasta que haya captura propia.
+    modelo: 'assets/models/personajes/guardian_vuelo.glb', script: 'assets/models/personajes/guardian_vuelo_glb.js', b64: 'guardian_vuelo',
+    alto: 1, insignia: { fondo: '#123f4c', color: '#7ee0d2' },
+    anim: { idle: 'Idle', hablar: 'Hablar', senalar: 'Hablar' },
+    apariencias: { piloto: { mallas: {}, colores: {}, accesorios: [] } },
+    estados: ['mentor'],
+    transiciones: {},
+    porEstado: {
+      mentor: { apariencia: 'piloto', anim: 'idle', dialogo: ['¿Nuevas alas por aquí? Yo soy el Guardián del Primer Vuelo: de mí aprendieron a volar hasta las nubes viejas.'] }
+    }
   }
 ];
