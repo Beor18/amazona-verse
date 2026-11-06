@@ -267,12 +267,15 @@ window.AVV18Moon = function (G) {
       r.ultimo = A.ultimo; return r;
     };
     try {
-      check('1 · Sin la bandera no se cargó nada: ni moon.js ni el modelo de Moon', antes.v18 ? true : (!antes.moon && !antes.glb), antes.v18 ? 'bandera puesta en esta sesión' : JSON.stringify(antes));
+      check('1 · Con la bandera apagada (?v18=0) no se cargó nada: ni moon.js ni el modelo de Moon', antes.v18 ? true : (!antes.moon && !antes.glb), antes.v18 ? 'bandera puesta en esta sesión (por defecto; la carga se comprueba con ?v18=0)' : JSON.stringify(antes));
       cancelar(); A.forzar = false; V.cambiarMundo(ID, null);
       // 2 · sin bandera (y sin forzar), aunque Vittata esté al lado, no aparece nada
-      ir(SITIO.x + 4, SITIO.z + 4); correr(0.3); await esperar(200); correr(0.1);
-      const sinBandera = G.V18 ? true : (!N.instancia(NPC) && N.activos().indexOf(NPC) < 0 && mapa() === null && !empezar());
-      check('2 · Sin la bandera V18 no aparece Moon, ni su marcador, ni se puede empezar el entreno', sinBandera, G.V18 ? 'bandera puesta' : N.activos().join(','));
+      // (la V18 va encendida por defecto desde el 6-nov: se apaga G.V18 solo durante este bloque, como con ?v18=0, y se deja como estaba)
+      const v18bk = G.V18; let sinBandera = false;
+      G.V18 = false;
+      try { ir(SITIO.x + 4, SITIO.z + 4); correr(0.3); await esperar(200); correr(0.1);
+        sinBandera = !N.instancia(NPC) && N.activos().indexOf(NPC) < 0 && mapa() === null && !empezar(); } finally { G.V18 = v18bk; }
+      check('2 · Sin la bandera V18 no aparece Moon, ni su marcador, ni se puede empezar el entreno', sinBandera, N.activos().join(','));
       A.forzar = true;
       // 3 · lejos: carga diferida
       const villa = (T.mapa && T.mapa.lugares && T.mapa.lugares.villa) || { x: 150, z: 170 };
