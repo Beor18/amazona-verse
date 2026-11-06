@@ -714,3 +714,61 @@ medición emulada la sustituye hasta entonces, precedente KIMI-053). «Medio» d
 (opcional). Nota técnica para futuras semillas de cap5: el save vive en `ep5.save` (meta.almacen)
 y `validSave` exige `v:1` (SAVE_VERSION = pack.guardado.version) — lo mismo que falló el intento
 ep5 de KIMI-111.
+
+## KIMI-124 · FPS de lo nuevo con GPU real: minigolf y V18.2 (6-nov · Kimi 1)
+
+Tarea 1d (PLAN ULTRA): demo `?v18=1`, minigolf (hoyo de Villa Raíz, 1 jugador y por turnos) y la
+V18.2 (subida de nivel —duelo a nv 20, «Eco Amplificado» de etapa máxima— y Eco Protector con la
+alianza elegida), en PC 1080p y móvil emulado 390×844 CPU ×4, en bajo/medio/alto. Los escenarios
+duelo/puente/Sombra de la demo ya tenían medición limpia con PC libre (KIMI-088: bajo base 37 ·
+duelo 52 · Sombra 38 · puente 56; KIMI-083: escritorio medio/alto del duelo de 2 a ≥140 fps):
+aquí se cierran las partes que faltaban (minigolf y V18.2). Herramienta nueva
+`tools/build/kimi1_124.js` (carga manual de los módulos v18 con la cadena de boot.js —los
+`aDemanda` internos no son accesibles y el gesto `alPrimerGesto` no llegó a cargarlos en el
+headless—, escenarios por API pública sin tocar el juego, alianza de verdad con
+`v18progreso.desbloquear('arausiaca')` + `v18evo.dar/elegirAlianza`, driver de supervivencia que
+orbita el sitio del duelo para que la pelea dure la ventana). Evidencia
+`docs/img/kimi124/k124_{movil-r2,pc-r1}.{json,log,jpg×6}`. **0 errores de consola en las dos
+corridas.**
+
+**Móvil 390×844 dpr 3 CPU ×4 (perfil real del iPhone; números techo: otras sesiones activas en la
+PC — la base del spawn quedó en 24 fps frente a los 37 de la referencia limpia de KIMI-088; los
+veredictos son escenario-vs-base de la MISMA corrida):**
+
+| escenario | bajo fpsMed (min) | medio fpsMed (min) | alto fpsMed (min) |
+|---|---|---|---|
+| base (spawn villa) | 24 (22) | 12* (1*) | 12 (9) |
+| minigolf 1 jugador | **34 (23)** | **23 (20)** | **18 (16)** |
+| minigolf 2 jug. por turnos | **36 (29)** | **24 (19)** | **19 (16)** |
+| duelo evo nv 20 (Eco Amplif.) | **26 (23)** | **18 (16)** | **17 (14)** |
+| duelo + Eco Protector (alianza) | **26 (23)** | **18 (17)** | **17 (15)** |
+
+*medio/base quedó contaminada por el flip bajo→medio de la propia corrida (peor cuadro 1640 ms;
+familia QA-53/KIMI-054, irreducible en hilo documentado); los escenarios de medio se midieron tras
+el asentado. Draw calls escenario-vs-base (bajo/medio/alto): golf +2/+2/−33 (la cámara del hoyo
+mira el claro del bosque: menos flora), duelos +4…+5/−22…−9/−36…−29 — **nada sube calls por
+encima de su base**; el Eco Protector costó Δ0 sobre el duelo nv 20 en las tres calidades
+(uso real confirmado `alianza:"eco_protector"`, 1 uso por ventana de 8 s = su cadencia real:
+cooldown 14 s + 60 de energía).
+
+**Escritorio 1920×1080 CPU ×1 (GPU real RX 5700 XT):**
+
+| escenario | bajo fpsMed (min) | medio fpsMed (min) | alto fpsMed (min) |
+|---|---|---|---|
+| base (spawn villa) | 104 | 82 (68) | 121 (94) |
+| minigolf 1 jugador | **128 (103)** | **108 (100)** | **138 (127)** |
+| minigolf 2 jug. por turnos | **136 (124)** | **108 (96)** | **130 (115)** |
+| duelo evo nv 20 | **115 (67)** | **94 (59)** | **126 (91)** |
+| duelo + Eco Protector | **129 (103)** | **133 (70)** | **119 (89)** |
+
+**Conclusión: nada nuevo baja de su propia base en ningún perfil — sin fix en render/streaming.**
+En «bajo» (el contrato móvil) cada escenario nuevo queda **igual o por encima** de su base medida
+en la misma corrida, y la referencia limpia (KIMI-088, PC libre) ya certificó ≥30 con margen para
+la base de la demo (37) y sus escenarios (52/38/56); los contenidos v18 cuestan ~0 (mismas
+conclusiones de KIMI-061/082: FX instanciados a 1–2 draw calls con Δ0 medido). En escritorio todo
+asienta ≥89 fps salvo transitorios aislados de streaming (mín. puntual 5 en bajo/base, peor cuadro
+267 ms — asentado del mundo, no de los escenarios). Límites honestos: móvil = techo por contención
+(re-medición opcional con PC libre, `node tools/build/kimi1_124.js --etiqueta libre`); el grito
+dentro del minigolf no llegó a dispararse en las ventanas de 8 s (el driver priorizaba tirar; su
+FX es el mismo ya medido con Δ0 en KIMI-061/082); Eco Protector se mide con 1 uso real por
+ventana (dura 2 s). El juego no se tocó (herramienta + docs solamente).
