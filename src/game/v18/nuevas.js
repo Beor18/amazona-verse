@@ -708,6 +708,14 @@ window.AVV18Nuevas = function (G) {
         C.r.mareo = 0; C.r.cd.semilla = 0; C.r.energia = 100;
         B.usar(C.r, 'semilla'); // los básicos no se registran ni se imitan
         check('Los básicos (semilla, golpe de ala) no se registran para la Imitación', C.r.ultPoder === poderR0);
+        // La reducción a media fuerza la aplica el propio efecto copiado (su «this» media), no un parche global:
+        // imitar un poder sin escudo no debe tocar el escudo que ya tuviera puesta la imitadora
+        C.j.escudo = 2; C.j.cd = {}; C.j.energia = 100; C.r.ultPoder = 'grito_yunque';
+        const rim2 = B.usar(C.j, 'imitacion');
+        check('Imitar un grito con el escudo propio puesto no lo toca (sigue 2 s, no 1)',
+          rim2.ok && rim2.copia === 'grito_yunque' && Math.abs(C.j.escudo - 2) < 0.01,
+          'escudo propio ' + (C.j.escudo || 0).toFixed(2) + ' s');
+        C.j.escudo = 0;
         B.salir();
       } else check('El duelo está cargado', false);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }

@@ -558,7 +558,7 @@ window.AVV18Habilidades = function (G) {
       if (!copia || copia === h.id) return nada();
       const orig = get(copia); if (!orig || orig.basico) return nada(); // los básicos no se imitan
       const escalaG = g => { if (!g) return g; const s = Object.assign({}, g);
-        if (s.plumas) s.plumas = Math.floor(s.plumas * 0.5); // una pluma copiada no llega a quitarse
+        if (s.plumas) s.plumas = Math.floor(s.plumas * 0.5); // media fuerza, a la baja: 1 pluma copiada no se quita
         if (s.empuje) s.empuje *= 0.5;
         if (s.mareo) s.mareo *= 0.5;
         delete s.rompeEscudo; return s; };
@@ -566,13 +566,13 @@ window.AVV18Habilidades = function (G) {
         golpear: (blanco, g) => ctx.golpear(blanco, escalaG(g)),
         lanzar: b => ctx.lanzar(Object.assign({}, b, { vx: (b.vx || 0) * 0.7, vy: (b.vy || 0) * 0.7, vz: (b.vz || 0) * 0.7,
           vida: b.vida ? b.vida * 0.8 : b.vida, golpe: escalaG(b.golpe), drena: b.drena ? b.drena * 0.5 : b.drena })),
-        escudo: (f, s) => ctx.escudo(f, s ? s * 0.5 : s),
         poder: ev => ctx.poder(Object.assign({}, ev, { id: h.id, copia: orig.id }))
       });
+      const media = Object.create(orig); // el «this» del efecto copiado: su duración (escudo) también a la mitad
+      if (typeof orig.dura === 'number') media.dura = orig.dura * 0.5;
       yo.cara = 'fight'; yo.picoT = 0.5; // abre el pico: está repitiendo el canto
       ctx.fx('feathers', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('aleteo');
-      const r = orig.efecto.call(orig, c2) || { ok: true };
-      if (yo.escudo > 0) yo.escudo *= 0.5; // el estado de escudo lo pone el propio efecto copiado: se media aquí
+      const r = orig.efecto.call(media, c2) || { ok: true };
       return { ok: true, copia: orig.id, acierto: r.acierto };
     } });
 
