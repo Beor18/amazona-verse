@@ -1,5 +1,5 @@
 # V18.2 · Diseño técnico breve del prototipo (directiva §14)
-Fuente: `docs/DIRECTIVA_V18_2_EVOLUCION.md`. Alcance: Vittata con 3 etapas, Arausiaca con Escudo de plumas, XP y niveles, un desbloqueo visible, la alianza Eco Protector contra la Campeona, guardado, teclado y táctil. Todo va detrás de `?v18=1` y sin modelos nuevos, compras ni azar. Basado en el código real de `progreso.js`, `habilidades.js`, `combate.js`, `nuevas.js`, `fx_poderes.js`, `descubrir.js` y `boot.js` (6-nov).
+Fuente: `docs/DIRECTIVA_V18_2.md`. Alcance: Vittata con 3 etapas, Arausiaca con Escudo de plumas, XP y niveles, un desbloqueo visible, la alianza Eco Protector contra la Campeona, guardado, teclado y táctil. Todo va detrás de `?v18=1` y sin modelos nuevos, compras ni azar. Basado en el código real de `progreso.js`, `habilidades.js`, `combate.js`, `nuevas.js`, `fx_poderes.js`, `descubrir.js` y `boot.js` (6-nov).
 
 ## 1. Módulo y ganchos
 - **Nuevo `src/game/v18/evolucion.js` → `window.AVV18Evolucion(G)` → `G.v18evo`.** Contiene la curva, la XP, los topes, las etapas, la alianza, los avisos y el test. Registra `eco_protector` con `G.v18hab.registrar` (API pública), así que habilidades.js no necesita conocer la alianza.

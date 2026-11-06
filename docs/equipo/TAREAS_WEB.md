@@ -101,7 +101,7 @@ Cuando termines la tabla, **sigue sin parar** con los bugs no gráficos abiertos
 | W20 | libre · prioridad 2 (optimizar) | **Fugas al cambiar de capítulo o de modo:** abre y cierra 10 veces cap. 1 → cap. 4 → Retos → Modo familia → Aula, y mide listeners, timers, nodos del DOM y heap (sin contar texturas). Lo que crezca sin parar en la lógica de juego (`src/game/*` que no sea de Kimi), arréglalo (quitar listeners/timers al salir). | `src/game/` (módulos de lógica), `src/engine/ui.js` | prueba nueva `AV.fugasTest` y las 12 en verde |
 | W21 | hecha · fbd56642 · `avtest.py --paralelo 2`: las 12 baterías repartidas en 2 Chrome a la vez; mismo commit 350a07f: serie 12/12 en 1018 s (17,0 min) y paralelo 12/12 en 629 s (10,5 min, −38 %), mismos recuentos, 0 errores de consola, 0 rotas | **Pruebas más rápidas para publicar antes** (encargo de la coordinadora, 5-nov: paralelizar en vez de tocar las pruebas). **Cómo se usa:** `tools/build/test.sh <build> --paralelo 2` o, en la nube, `AVT_REF=<sha> AVT_TAG=<nombre> AVT_PARALELO=2 /home/user/.avt/chrome_dos.sh /home/user/.avt/probar_ref.sh` (`chrome_dos.sh` toma las DOS llaves de Chrome; con `chrome_slot.sh` solo hay una y se pasaría del tope). Por defecto `--paralelo 1` = en serie como siempre (`publicar_nube.sh` y la Mac no cambian). Cada instancia tiene su perfil (sin localStorage compartido) y su portada → creador → Empezar; mismo servidor; se reparten por `pruebas.duracion_estimada_s` de `config.json` (la más larga al grupo más corto, orden relativo de siempre dentro de cada grupo); tope de 2 aunque pidas más. Salida igual (`· PASA · …` en el orden de config, red y consola de las dos) más una línea por instancia; la carga inicial y el heap son los de la instancia 1. **Arreglo de aislamiento:** `preparar_js` ahora pulsa «Saltar intro» (`#c1-saltar`) si la apertura del cap. 1 sigue: la apertura se come la primera tecla (`alTeclear`, `content/cap1/historia.js`) y en otro orden era la del Espacio de `movementTest` (51/52 reproducible en serie con ese orden). | `tools/build/avtest.py`, `tools/build/config.json`, `tools/build/test.sh` (+ fuera del repo: `probar_ref.sh`, `chrome_dos.sh`) | serie y paralelo sobre el mismo commit, mismos resultados |
 
-**📣 6-nov 00:40 UTC · coordinadora → otra cuenta:** Kelvin aprobó la **V18.2 (evolución, niveles y alianzas)**, guardada en `docs/DIRECTIVA_V18_2_EVOLUCION.md`. **El prototipo lo hace la coordinadora** en un módulo nuevo `src/game/v18/evolucion.js`, detrás de la bandera. Incluye a Vittata con 3 etapas, a Arausiaca, la experiencia y el nivel, la alianza Eco Protector, el rival de IA, el guardado y los controles en móvil. **Por favor no lo empieces tú**, para no repetir lo del minigolf. Tú sigue con KIMI-122 (cotorras vivas), W26 y la matriz de 36. Si necesito un gancho en `habilidades.js` (multiplicadores por nivel), lo dejo aquí antes de tocarlo.
+**📣 6-nov 00:40 UTC · coordinadora → otra cuenta:** Kelvin aprobó la **V18.2 (evolución, niveles y alianzas)**, guardada en `docs/DIRECTIVA_V18_2.md`. **El prototipo lo hace la coordinadora** en un módulo nuevo `src/game/v18/evolucion.js`, detrás de la bandera. Incluye a Vittata con 3 etapas, a Arausiaca, la experiencia y el nivel, la alianza Eco Protector, el rival de IA, el guardado y los controles en móvil. **Por favor no lo empieces tú**, para no repetir lo del minigolf. Tú sigue con KIMI-122 (cotorras vivas), W26 y la matriz de 36. Si necesito un gancho en `habilidades.js` (multiplicadores por nivel), lo dejo aquí antes de tocarlo.
 
 **📣 6-nov 01:05 UTC · coordinadora → otra cuenta:** la QA del minigolf con input real dio la partida completa en escritorio y en móvil: 4 golpes, plata, el récord persiste y la física no falla. Encontró 4 problemas de uso, que **arreglo yo ahora en `minigolf.js`** sobre tu versión por turnos (`9d488aec`):
 1. Vittata tapa la semilla y la línea de puntos: cámara, Vittata y semilla quedan en fila.
@@ -110,4 +110,22 @@ Cuando termines la tabla, **sigue sin parar** con los bugs no gráficos abiertos
 4. La barra de fuerza sigue vacía en la pantalla final.
 
 Por favor **no toques `minigolf.js` hasta que lo suba** (≈1 h); si tienes cambios a medias ahí, súbelos ya y avísame aquí.
+
+**📣 6-nov 02:45 UTC · coordinadora → otra cuenta y Mac: reparto de la V18.3 definitiva** (`docs/DIRECTIVA_V18_3_RESOLUCION.md`):
+- **Otra cuenta:** entregables 2 y 3, la matriz narrativa y la compatibilidad con el canon. Pon `V18_3_AUDITORIA.md` al día con la resolución:
+  - hay humanos;
+  - mundo abierto;
+  - el padre guía es el Papá del cap. 2;
+  - FeixZero fuera del canon.
+  Además, los diálogos de la misión «El puerto que volvió a vivir», en un archivo de contenido aparte que yo cargo.
+- **Mac:** entregables 1, 4, 5 y 6, los modelos.
+  - **BM159:** el Constructor, con casco, chaleco, botas y sin marcas.
+  - **BM160:** la Ingeniera; ya está hecha, `ingeniera.glb`.
+  - Más adelante: Tuerca, Chispa, Maestro Moon (sin katana) y el Piloto.
+- **Coordinadora:** entregables 7 a 12, el código. Incluye:
+  - `src/game/v18/npc.js`, un sistema de NPC reutilizable;
+  - `src/game/v18/puerto.js`, la primera misión en Puerto de La Mina, detrás de la bandera;
+  - el prototipo funcional del Constructor y de la Ingeniera;
+  - la persistencia del escenario y las pruebas móviles.
+  Mientras llega el glb del Constructor, uso uno provisional. **Por favor no empieces esos dos archivos.**
 

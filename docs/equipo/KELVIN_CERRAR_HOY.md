@@ -62,19 +62,24 @@ Además, en el Aula del cap. 1 hay 2 preguntas (q3 y q4) en «por_verificar».
 | B11 | En el iPhone, kit de arte a 512 px en calidad «bajo» | Sí (evita que se cierre por memoria) |
 | B12 | Cotorras vivas nuevas (KIMI-122) | Mirar el antes/después y decir sí |
 
-## C. V18.3, los seis personajes (10 decisiones de `V18_3_AUDITORIA.md` §6)
-| # | Pregunta | Recomendada |
-|---|---|---|
-| C1 | ¿Hay humanos en Amazona Verse? | Solo en la capa V18 o en la temporada 3, no en los caps. 1–6 |
-| C2 | ¿Quién es el «padre guía»? | El Guardián |
-| C3 | Nombres de Human, Girl, Shiba, Monkey, Cat y Piloto | Que el equipo proponga 3 por personaje |
-| C4 | ¿Solo en la capa V18 y la temporada 3? | Sí |
-| C5 | Piloto Cotorra: ¿anfitrión de Retos o mentor? | Anfitrión de Retos, con otra especie y piel distinta de Vittata |
-| C6 | Lugar de la fase 2 | Puerto de La Mina |
-| C7 | Función de Girl | La que conoce la máquina y lo explica |
-| C8 | Cat mentor y Monkey de obstáculos, como fantasía | Sí |
-| C9 | Derechos de los seis `.blend` (colaborador, «FeixZero», «cotorrofiver»); quitar Real Madrid, foto y katana | Confirmación escrita del colaborador; sí a quitar esos tres |
-| C10 | Estilo: ¿cyberpunk o toon vibrante? | Toon vibrante con un toque tecnológico |
+## C. V18.3, los seis personajes: **DECIDIDO por Kelvin (6-nov)**
+Está en `docs/DIRECTIVA_V18_3_RESOLUCION.md`:
+- Hay humanos, buenos y malos según lo que hacen.
+- Los seis van en el mundo abierto; su arco completo, en la temporada 3.
+- Los caps. 1–6 no se tocan.
+- El padre guía es el Papá del cap. 2.
+- Nombres provisionales:
+  - Constructor de Sombras (antagonista);
+  - Ingeniera de la Esperanza (aliada);
+  - Tuerca (inventor);
+  - Chispa (rival cómico);
+  - Maestro Moon (mentor, sin katana);
+  - Guardián del Primer Vuelo (mentor de vuelo).
+- Primera misión: Puerto de La Mina, «El puerto que volvió a vivir».
+- Estilo: un modelo con varias apariencias.
+- FeixZero no forma parte del canon.
+
+Solo queda pendiente de Kelvin la parte de derechos: comprobar por separado cualquier componente externo antes de publicarlo.
 
 ## D. Lo que necesita tu tiempo o tus aparatos (no se decide, se hace)
 | # | Qué | Tiempo |
