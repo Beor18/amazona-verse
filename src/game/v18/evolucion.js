@@ -221,14 +221,15 @@ window.AVV18Evolucion = function (G) {
   function carta(tit, nombre, frase, alianza, extra) {
     if (!document.getElementById('v18-evo-css')) {
       const st = document.createElement('style'); st.id = 'v18-evo-css';
-      st.textContent = '#v18-evo-carta{position:fixed;left:0;right:0;margin-inline:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);width:min(360px,calc(100vw - 32px));z-index:45;pointer-events:none;' +
+      // arriba (sobre el aviso y el panel del duelo, que al terminar ya dice lo mismo): abajo tapaba los botones grandes en el móvil
+      st.textContent = '#v18-evo-carta{position:fixed;left:0;right:0;margin-inline:auto;top:calc(env(safe-area-inset-top,0px) + 8px);width:min(360px,calc(100vw - 32px));z-index:45;pointer-events:none;' +
         'background:linear-gradient(160deg,#fff6d8,#ffd98a);color:#3b2a14;border-radius:16px;padding:12px 16px;box-shadow:0 0 0 3px #ffefb8,0 6px 24px #0007;font-family:Fredoka,system-ui,sans-serif;text-align:center;animation:v18evo .45s ease-out}' +
         '#v18-evo-carta h3{margin:0;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:#8a5a20}#v18-evo-carta b{display:block;font-size:24px;margin:2px 0 4px}#v18-evo-carta p{margin:0;font-size:14px;line-height:1.3}' +
         '#v18-evo-carta img{width:44px;height:44px;border-radius:50%;float:left;margin-right:8px;background:#fff8}' +
         '.v18-evo-f{display:block;font-size:12px;margin-top:3px}.v18-evo-bar{display:block;height:4px;border-radius:2px;background:#0003;overflow:hidden;margin:2px 6px}.v18-evo-bar b{display:block;height:100%;background:#e0a526}' +
         '.v18-evo-et{display:inline-block;font-size:10px;padding:1px 5px;border-radius:8px;background:#ffe39a;color:#3b2a14;margin:2px 1px}.v18-evo-et.no{background:#0002;color:inherit;opacity:.6}' +
         '.v18-evo-x{margin-top:8px;font-size:14px}.v18-evo-x .btn{min-height:44px}' +
-        '@keyframes v18evo{from{transform:translateY(16px) scale(.9);opacity:0}to{transform:none;opacity:1}}';
+        '@keyframes v18evo{from{transform:translateY(-16px) scale(.9);opacity:0}to{transform:none;opacity:1}}';
       document.head.appendChild(st);
     }
     if (!cartaEl) { cartaEl = document.createElement('div'); cartaEl.id = 'v18-evo-carta'; cartaEl.setAttribute('role', 'status'); document.body.appendChild(cartaEl); }

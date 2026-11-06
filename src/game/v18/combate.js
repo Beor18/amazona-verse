@@ -463,7 +463,7 @@ window.AVV18Combate = function (G) {
       `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div></div></div>` +
       `<div class="vd-centro" data-k="centro"></div><div class="vd-apoyo" data-k="apoyo" hidden><img src="assets/retratos/v18/arausiaca.png" alt=""><span>${TXT.apoyo}</span></div>` +
       `<div class="vd-bot" data-k="bot"><button data-a="golpe_ala">${TXT.ala}</button><button data-a="semilla">${TXT.semilla}</button><button data-a="poder">${TXT.poder}</button></div>` +
-      `<div class="vd-fin" data-k="fin" hidden><p data-k="finTxt"></p><p class="vd-finxp" data-k="finXp"></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
+      `<div class="vd-fin" data-k="fin" hidden><p class="vd-finxp" data-k="finXp"></p><p data-k="finTxt"></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
     el.addEventListener('pointerdown', e => {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
