@@ -403,3 +403,9 @@ Directiva: `docs/DIRECTIVA_V18_3.md`. Piloto Cotorra (mentor), Human (antagonist
 
 ## 6-nov-2026 · Resolución definitiva V18.3 (Kelvin)
 Texto: `docs/DIRECTIVA_V18_3_RESOLUCION.md` (sustituye a la V18.3 en lo que corrige). **Sí hay humanos** en Amazona Verse (ni todos buenos ni todos malos). Los seis van al **mundo abierto**, con el arco completo en la temporada 3; **los seis capítulos no se tocan**. El **padre guía es el Papá del cap. 2** (no el Guardián ni el Piloto Cotorra). Nombres y papeles aprobados como base: Constructor de Sombras (Human, antagonista), Ingeniera de la Esperanza (Girl, aliada), Tuerca (Monkey), Chispa (Shiba), Maestro Moon (Cat, sin katana), Guardián del Primer Vuelo (Piloto Cotorra). Primera misión: **«El puerto que volvió a vivir»**, en Puerto de La Mina. Un modelo, varias apariencias; un solo sistema de NPC. **FeixZero** (el modelador 3D) no forma parte del canon: su nombre no entra en el juego ni en la historia; se conserva solo como dato interno de procedencia.
+
+## 6-nov-2026 · Delegadas por Kelvin («que lo resuelva Kimi»)
+- **`monumento_e` y `carpa_g`:** Kimi elige con GPU real entre la versión actual y la original (KIMI-161).
+- **Máquina del puerto (BM165):** Kimi la conecta solo si en el juego se ve mejor que las piezas simples (KIMI-162).
+- **Cap. 3:** se queda donde está hoy, en la desembocadura. Moverlo a Puerto de La Mina costaría de 3 a 5 días y chocaría con la misión de la V18.3 que ya está allí. Kelvin pidió terminar sin idas y vueltas. Si quiere moverlo más adelante, queda anotado. (Decisión de la coordinadora con la delegación de Kelvin.)
+
