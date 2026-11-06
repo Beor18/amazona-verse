@@ -1,0 +1,11 @@
+{
+ "etiqueta": "piloto-bajo",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "v18": true,
+ "secs": 8,
+ "calidades": [
+  "bajo"
+ ],
+ "escenarios": {},
+ "fallo": "prep: ERR módulos v18 sin cargar"
+}

@@ -1,0 +1,1242 @@
+{
+ "etiqueta": "movil-r2",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "v18": true,
+ "secs": 8,
+ "calidades": [
+  "bajo",
+  "medio",
+  "alto"
+ ],
+ "escenarios": {
+  "bajo": {
+   "base": {
+    "fpsPorSeg": [
+     25,
+     24,
+     25,
+     25,
+     25,
+     23,
+     22,
+     26
+    ],
+    "fpsMed": 24,
+    "fpsMin": 22,
+    "peorMs": 72,
+    "p95Ms": 55,
+    "stats": [
+     {
+      "calls": 67,
+      "tris": 316455,
+      "fpsMedidor": 25,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 67,
+      "tris": 316289,
+      "fpsMedidor": 28,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 316289,
+      "fpsMedidor": 26,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 316289,
+      "fpsMedidor": 24,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 316289,
+      "fpsMedidor": 26,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 316289,
+      "fpsMedidor": 24,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 316289,
+      "fpsMedidor": 22,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 316289,
+      "fpsMedidor": 26,
+      "sombras": false,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 124
+   },
+   "golf1": {
+    "fpsPorSeg": [
+     30,
+     30,
+     23,
+     30,
+     32,
+     40,
+     39,
+     41,
+     40
+    ],
+    "fpsMed": 34,
+    "fpsMin": 23,
+    "peorMs": 142,
+    "p95Ms": 45,
+    "stats": [
+     {
+      "calls": 66,
+      "tris": 231436,
+      "fpsMedidor": 29,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 231436,
+      "fpsMedidor": 29,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 230796,
+      "fpsMedidor": 21,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 65,
+      "tris": 230826,
+      "fpsMedidor": 29,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 230826,
+      "fpsMedidor": 30,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 232156,
+      "fpsMedidor": 39,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 230824,
+      "fpsMedidor": 37,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 65,
+      "tris": 231136,
+      "fpsMedidor": 39,
+      "sombras": false,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 130,
+    "extra": {
+     "fase": "rueda",
+     "golpes": 3,
+     "sitio": {
+      "x": 178,
+      "z": 205
+     },
+     "grito": false
+    }
+   },
+   "golf2": {
+    "fpsPorSeg": [
+     30,
+     31,
+     29,
+     38,
+     40,
+     36,
+     39,
+     40,
+     38
+    ],
+    "fpsMed": 36,
+    "fpsMin": 29,
+    "peorMs": 52,
+    "p95Ms": 41,
+    "stats": [
+     {
+      "calls": 67,
+      "tris": 231492,
+      "fpsMedidor": 30,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 67,
+      "tris": 231492,
+      "fpsMedidor": 32,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 69,
+      "tris": 231162,
+      "fpsMedidor": 32,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 68,
+      "tris": 231186,
+      "fpsMedidor": 41,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 68,
+      "tris": 231823,
+      "fpsMedidor": 37,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 69,
+      "tris": 231798,
+      "fpsMedidor": 40,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 69,
+      "tris": 231162,
+      "fpsMedidor": 41,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 230882,
+      "fpsMedidor": 39,
+      "sombras": false,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 161,
+    "extra": {
+     "fase": "rueda",
+     "njug": 2,
+     "turno": 1,
+     "golpes": [
+      1,
+      0
+     ]
+    }
+   },
+   "dueloNv20": {
+    "fpsPorSeg": [
+     23,
+     27,
+     27,
+     26,
+     27,
+     27,
+     26,
+     25
+    ],
+    "fpsMed": 26,
+    "fpsMin": 23,
+    "peorMs": 104,
+    "p95Ms": 55,
+    "stats": [
+     {
+      "calls": 59,
+      "tris": 233976,
+      "fpsMedidor": 27,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 73,
+      "tris": 240348,
+      "fpsMedidor": 28,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 76,
+      "tris": 238793,
+      "fpsMedidor": 27,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 64,
+      "tris": 232325,
+      "fpsMedidor": 25,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 80,
+      "tris": 236899,
+      "fpsMedidor": 27,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 84,
+      "tris": 240419,
+      "fpsMedidor": 28,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 64,
+      "tris": 238315,
+      "fpsMedidor": 28,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 63,
+      "tris": 238260,
+      "fpsMedidor": 25,
+      "sombras": false,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 171,
+    "extra": {
+     "fase": "lucha",
+     "nv": 13
+    }
+   },
+   "ecoProtector": {
+    "fpsPorSeg": [
+     24,
+     23,
+     26,
+     27,
+     27,
+     28,
+     27,
+     27,
+     26
+    ],
+    "fpsMed": 26,
+    "fpsMin": 23,
+    "peorMs": 71,
+    "p95Ms": 53,
+    "stats": [
+     {
+      "calls": 63,
+      "tris": 234020,
+      "fpsMedidor": 26,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 75,
+      "tris": 238701,
+      "fpsMedidor": 25,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 76,
+      "tris": 238561,
+      "fpsMedidor": 27,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 66,
+      "tris": 233313,
+      "fpsMedidor": 27,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 85,
+      "tris": 240461,
+      "fpsMedidor": 28,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 78,
+      "tris": 240655,
+      "fpsMedidor": 27,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 63,
+      "tris": 237364,
+      "fpsMedidor": 28,
+      "sombras": false,
+      "dpr": 1
+     },
+     {
+      "calls": 61,
+      "tris": 233353,
+      "fpsMedidor": 28,
+      "sombras": false,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 173,
+    "extra": {
+     "fase": "lucha",
+     "usosEco": 1,
+     "alianza": "eco_protector",
+     "ali": {
+      "desbloqueada": true,
+      "elegida": true
+     }
+    }
+   }
+  },
+  "medio": {
+   "base": {
+    "fpsPorSeg": [
+     1,
+     6,
+     7,
+     9,
+     17,
+     17,
+     18,
+     18
+    ],
+    "fpsMed": 12,
+    "fpsMin": 1,
+    "peorMs": 1640,
+    "p95Ms": 224,
+    "stats": [
+     {
+      "calls": 116,
+      "tris": 459945,
+      "fpsMedidor": 1,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 124,
+      "tris": 486061,
+      "fpsMedidor": 7,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 130,
+      "tris": 524697,
+      "fpsMedidor": 6,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 129,
+      "tris": 524633,
+      "fpsMedidor": 15,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 130,
+      "tris": 524697,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 130,
+      "tris": 524697,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 130,
+      "tris": 524697,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 154
+   },
+   "golf1": {
+    "fpsPorSeg": [
+     22,
+     22,
+     20,
+     22,
+     21,
+     22,
+     25,
+     26,
+     25
+    ],
+    "fpsMed": 23,
+    "fpsMin": 20,
+    "peorMs": 74,
+    "p95Ms": 60,
+    "stats": [
+     {
+      "calls": 100,
+      "tris": 358284,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 100,
+      "tris": 358284,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 100,
+      "tris": 357644,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 100,
+      "tris": 358396,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 100,
+      "tris": 357685,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 100,
+      "tris": 358325,
+      "fpsMedidor": 23,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 100,
+      "tris": 357685,
+      "fpsMedidor": 25,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 100,
+      "tris": 358403,
+      "fpsMedidor": 26,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 136,
+    "extra": {
+     "fase": "apuntar",
+     "golpes": 3,
+     "sitio": {
+      "x": 178,
+      "z": 205
+     },
+     "grito": false
+    }
+   },
+   "golf2": {
+    "fpsPorSeg": [
+     23,
+     23,
+     22,
+     22,
+     19,
+     23,
+     27,
+     28,
+     28
+    ],
+    "fpsMed": 24,
+    "fpsMin": 19,
+    "peorMs": 69,
+    "p95Ms": 58,
+    "stats": [
+     {
+      "calls": 101,
+      "tris": 358340,
+      "fpsMedidor": 23,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 101,
+      "tris": 358340,
+      "fpsMedidor": 23,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 103,
+      "tris": 358008,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 102,
+      "tris": 357356,
+      "fpsMedidor": 22,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 103,
+      "tris": 357884,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 103,
+      "tris": 358648,
+      "fpsMedidor": 24,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 103,
+      "tris": 358008,
+      "fpsMedidor": 25,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 100,
+      "tris": 357812,
+      "fpsMedidor": 28,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 157,
+    "extra": {
+     "fase": "rueda",
+     "njug": 2,
+     "turno": 1,
+     "golpes": [
+      1,
+      0
+     ]
+    }
+   },
+   "dueloNv20": {
+    "fpsPorSeg": [
+     16,
+     19,
+     19,
+     19,
+     16,
+     18,
+     19,
+     19
+    ],
+    "fpsMed": 18,
+    "fpsMin": 16,
+    "peorMs": 101,
+    "p95Ms": 75,
+    "stats": [
+     {
+      "calls": 114,
+      "tris": 387024,
+      "fpsMedidor": 17,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 95,
+      "tris": 384289,
+      "fpsMedidor": 20,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 110,
+      "tris": 383166,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 103,
+      "tris": 382238,
+      "fpsMedidor": 21,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 96,
+      "tris": 375039,
+      "fpsMedidor": 15,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 96,
+      "tris": 374061,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 109,
+      "tris": 384503,
+      "fpsMedidor": 19,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 116,
+      "tris": 387793,
+      "fpsMedidor": 19,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 170,
+    "extra": {
+     "fase": "lucha",
+     "nv": 13
+    }
+   },
+   "ecoProtector": {
+    "fpsPorSeg": [
+     17,
+     19,
+     19,
+     21,
+     17,
+     17,
+     19,
+     20,
+     17
+    ],
+    "fpsMed": 18,
+    "fpsMin": 17,
+    "peorMs": 86,
+    "p95Ms": 75,
+    "stats": [
+     {
+      "calls": 113,
+      "tris": 386996,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 97,
+      "tris": 378822,
+      "fpsMedidor": 21,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 107,
+      "tris": 384229,
+      "fpsMedidor": 19,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 110,
+      "tris": 379189,
+      "fpsMedidor": 19,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 111,
+      "tris": 379244,
+      "fpsMedidor": 17,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 109,
+      "tris": 382711,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 112,
+      "tris": 392809,
+      "fpsMedidor": 20,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 113,
+      "tris": 394131,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 188,
+    "extra": {
+     "fase": "lucha",
+     "usosEco": 1,
+     "alianza": "eco_protector",
+     "ali": {
+      "desbloqueada": true,
+      "elegida": true
+     }
+    }
+   }
+  },
+  "alto": {
+   "base": {
+    "fpsPorSeg": [
+     11,
+     12,
+     12,
+     9,
+     12,
+     14,
+     11,
+     11
+    ],
+    "fpsMed": 12,
+    "fpsMin": 9,
+    "peorMs": 190,
+    "p95Ms": 129,
+    "stats": [
+     {
+      "calls": 125,
+      "tris": 904762,
+      "fpsMedidor": 12,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 126,
+      "tris": 904826,
+      "fpsMedidor": 12,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 126,
+      "tris": 904826,
+      "fpsMedidor": 12,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 126,
+      "tris": 904826,
+      "fpsMedidor": 9,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 126,
+      "tris": 921075,
+      "fpsMedidor": 12,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 122,
+      "tris": 992138,
+      "fpsMedidor": 14,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 123,
+      "tris": 992202,
+      "fpsMedidor": 8,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 122,
+      "tris": 992138,
+      "fpsMedidor": 12,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 321
+   },
+   "golf1": {
+    "fpsPorSeg": [
+     19,
+     19,
+     18,
+     18,
+     16,
+     18,
+     17,
+     16,
+     21
+    ],
+    "fpsMed": 18,
+    "fpsMin": 16,
+    "peorMs": 152,
+    "p95Ms": 77,
+    "stats": [
+     {
+      "calls": 86,
+      "tris": 450772,
+      "fpsMedidor": 19,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 86,
+      "tris": 450772,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 85,
+      "tris": 433734,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 84,
+      "tris": 434790,
+      "fpsMedidor": 19,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 85,
+      "tris": 435142,
+      "fpsMedidor": 15,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 84,
+      "tris": 434790,
+      "fpsMedidor": 19,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 85,
+      "tris": 434790,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 84,
+      "tris": 434678,
+      "fpsMedidor": 17,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 395,
+    "extra": {
+     "fase": "rueda",
+     "golpes": 3,
+     "sitio": {
+      "x": 178,
+      "z": 205
+     },
+     "grito": false
+    }
+   },
+   "golf2": {
+    "fpsPorSeg": [
+     19,
+     19,
+     19,
+     18,
+     16,
+     17,
+     18,
+     19,
+     24
+    ],
+    "fpsMed": 19,
+    "fpsMin": 16,
+    "peorMs": 142,
+    "p95Ms": 68,
+    "stats": [
+     {
+      "calls": 86,
+      "tris": 435134,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 86,
+      "tris": 435134,
+      "fpsMedidor": 19,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 88,
+      "tris": 434098,
+      "fpsMedidor": 19,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 87,
+      "tris": 435154,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 87,
+      "tris": 435450,
+      "fpsMedidor": 16,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 88,
+      "tris": 435794,
+      "fpsMedidor": 19,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 88,
+      "tris": 435154,
+      "fpsMedidor": 21,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 85,
+      "tris": 436694,
+      "fpsMedidor": 20,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 621,
+    "extra": {
+     "fase": "rueda",
+     "njug": 2,
+     "turno": 1,
+     "golpes": [
+      1,
+      0
+     ]
+    }
+   },
+   "dueloNv20": {
+    "fpsPorSeg": [
+     15,
+     18,
+     18,
+     17,
+     14,
+     17,
+     17,
+     17,
+     16
+    ],
+    "fpsMed": 17,
+    "fpsMin": 14,
+    "peorMs": 108,
+    "p95Ms": 87,
+    "stats": [
+     {
+      "calls": 87,
+      "tris": 569489,
+      "fpsMedidor": 15,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 79,
+      "tris": 493702,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 78,
+      "tris": 526421,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 91,
+      "tris": 496026,
+      "fpsMedidor": 17,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 92,
+      "tris": 455733,
+      "fpsMedidor": 13,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 79,
+      "tris": 479171,
+      "fpsMedidor": 17,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 101,
+      "tris": 580813,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 102,
+      "tris": 583193,
+      "fpsMedidor": 16,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 723,
+    "extra": {
+     "fase": "lucha",
+     "nv": 13
+    }
+   },
+   "ecoProtector": {
+    "fpsPorSeg": [
+     15,
+     17,
+     17,
+     17,
+     16,
+     18,
+     18,
+     18,
+     15
+    ],
+    "fpsMed": 17,
+    "fpsMin": 15,
+    "peorMs": 109,
+    "p95Ms": 80,
+    "stats": [
+     {
+      "calls": 89,
+      "tris": 569877,
+      "fpsMedidor": 16,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 82,
+      "tris": 529229,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 95,
+      "tris": 494756,
+      "fpsMedidor": 16,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 91,
+      "tris": 495228,
+      "fpsMedidor": 17,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 82,
+      "tris": 480655,
+      "fpsMedidor": 15,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 83,
+      "tris": 508561,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 91,
+      "tris": 500825,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     },
+     {
+      "calls": 103,
+      "tris": 611143,
+      "fpsMedidor": 18,
+      "sombras": true,
+      "dpr": 1
+     }
+    ],
+    "heapMB": 746,
+    "extra": {
+     "fase": "lucha",
+     "usosEco": 1,
+     "alianza": "eco_protector",
+     "ali": {
+      "desbloqueada": true,
+      "elegida": true
+     }
+    }
+   }
+  }
+ },
+ "alianza": "ok ali={\"desbloqueada\":true,\"elegida\":true}",
+ "erroresConsola": []
+}
