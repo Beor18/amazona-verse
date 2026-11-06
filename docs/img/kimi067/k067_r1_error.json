@@ -1,0 +1,15 @@
+{
+ "error": "JS: \"ReferenceError: cal is not defined\\n    at <anonymous>:5:17\\n    at <anonymous>:41:9\"",
+ "parcial": {
+  "etiqueta": "r1",
+  "perfil": {
+   "ancho": 390,
+   "alto": 844,
+   "dpr": 3,
+   "cpu": 4
+  },
+  "ventanas": {},
+  "ciudadVivaTest": null,
+  "errs": null
+ }
+}
