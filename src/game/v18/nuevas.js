@@ -18,6 +18,10 @@
      descubrir en el Álbum → papagayo de cara roja (brasiliensis) · Ojo de manglar (OJOS)
      descubrir en el Álbum → loro de nuca amarilla (auropalliata) · Voz de volcán (PICO)
      descubrir en el Álbum → loro de las Tres Marías (tresmariae) · Viento de islas (ALAS)
+   Tres más (KIMI-148, provisional igual: Álbum del Diario):
+     descubrir en el Álbum → loro de cachetes azules (dufresniana) · Gota de lluvia (PLUMAS)
+     descubrir en el Álbum → loro tamaulipeco (viridigenalis) · Chillido de bandada (PICO)
+     descubrir en el Álbum → loro corona lila (finschi) · Ráfaga (ALAS)
    Solo cambia el poder del duelo y de la amenaza: el personaje del jugador se queda igual. Mara y Vela (martinicana,
    violacea) son consejeras en la temporada 1 y no entran aquí. Solo con la bandera V18.
    Prueba: AV.v18NuevasTest() (hitos, el desbloqueo por Álbum y los 11 poderes en el duelo). */
@@ -61,7 +65,10 @@ window.AVV18Nuevas = function (G) {
   const ALBUM = [
     { id: 'brasiliensis', txt: '¡Descubriste al papagayo de cara roja en el Álbum! Su poder: Ojo de manglar.' },
     { id: 'auropalliata', txt: '¡Descubriste al loro de nuca amarilla en el Álbum! Su poder: Voz de volcán.' },
-    { id: 'tresmariae', txt: '¡Descubriste al loro de las Tres Marías en el Álbum! Su poder: Viento de islas.' }
+    { id: 'tresmariae', txt: '¡Descubriste al loro de las Tres Marías en el Álbum! Su poder: Viento de islas.' },
+    { id: 'dufresniana', txt: '¡Descubriste al loro de cachetes azules en el Álbum! Su poder: Gota de lluvia.' },
+    { id: 'viridigenalis', txt: '¡Descubriste al loro tamaulipeco en el Álbum! Su poder: Chillido de bandada.' },
+    { id: 'finschi', txt: '¡Descubriste al loro corona lila en el Álbum! Su poder: Ráfaga.' }
   ];
   // La tarjeta acaba de abrirse (evento del Álbum): desbloqueo inmediato con aviso
   function albumLlega(id, avisar) {
@@ -148,15 +155,24 @@ window.AVV18Nuevas = function (G) {
         ids.map(H.poderDe).join(','));
       check('No avisa dos veces la misma', revisar(true).length === 0);
       check('Mara y Vela no se pueden elegir (consejeras en la temporada 1)', rango(V.estado('martinicana')) < 1 && rango(V.estado('violacea')) < 1);
-      // KIMI-149: la tanda B se consigue descubriéndola en el Álbum (provisional hasta que Kelvin decida el hito)
-      check('Las de tanda B (Álbum) empiezan sin descubrir', ['brasiliensis', 'auropalliata', 'tresmariae'].every(id => rango(V.estado(id)) < rango('descubierta')));
+      // KIMI-149/KIMI-148: las tandas A y B se consiguen descubriéndolas en el Álbum (provisional hasta que Kelvin decida el hito)
+      const ALBUM6 = ['brasiliensis', 'auropalliata', 'tresmariae', 'dufresniana', 'viridigenalis', 'finschi'];
+      check('Las de tanda A y B (Álbum) empiezan sin descubrir', ALBUM6.every(id => rango(V.estado(id)) < rango('descubierta')));
       G.emit('album', { id: 'auropalliata', fuente: 'test' });
       check('Descubrir su tarjeta en el Álbum deja elegible al loro de nuca amarilla (Voz de volcán), con aviso',
         rango(V.estado('auropalliata')) >= rango('seleccionable') && toasts.some(t => /nuca amarilla/.test(t) && /Voz de volcán/.test(t) && /Mis cotorras/.test(t)));
       G.emit('album', { id: 'auropalliata', fuente: 'test' });
       check('El mismo descubrimiento no avisa dos veces', toasts.filter(t => /nuca amarilla/.test(t)).length === 1);
+      G.emit('album', { id: 'finschi', fuente: 'test' });
+      check('Descubrir su tarjeta en el Álbum deja elegible al loro corona lila (Ráfaga), con aviso',
+        rango(V.estado('finschi')) >= rango('seleccionable') && toasts.some(t => /corona lila/.test(t) && /Ráfaga/.test(t) && /Mis cotorras/.test(t)));
+      G.emit('album', { id: 'finschi', fuente: 'test' });
+      check('El mismo descubrimiento no avisa dos veces (tanda A)', toasts.filter(t => /corona lila/.test(t)).length === 1);
       revisarAlbum(); // partidas viejas: tarjetas ya abiertas en el Álbum, sin aviso
-      check('revisarAlbum no desbloquea tarjetas que aún no están abiertas en el Álbum', rango(V.estado('brasiliensis')) < 1 && rango(V.estado('tresmariae')) < 1);
+      check('revisarAlbum no desbloquea tarjetas que aún no están abiertas en el Álbum',
+        ['brasiliensis', 'tresmariae', 'dufresniana', 'viridigenalis'].every(id => rango(V.estado(id)) < 1));
+      check('Las de tanda A tienen su poder propio', H.poderDe('dufresniana') === 'gota_lluvia' && H.poderDe('viridigenalis') === 'chillido_bandada' && H.poderDe('finschi') === 'rafaga',
+        [H.poderDe('dufresniana'), H.poderDe('viridigenalis'), H.poderDe('finschi')].join(','));
 
       // ---- Las 4 de coste M: cada una con su hito, desde una partida nueva ----
       V.borrar(); V.recargar(); toasts.length = 0;
@@ -373,6 +389,56 @@ window.AVV18Nuevas = function (G) {
         const sinOjo = avanzaBala();
         check('...su semilla avanza menos de la mitad y la malla se dibuja ×1,8', conOjo.escala > 1.7 && sinOjo.av > 2.2 * conOjo.av,
           'avance ' + conOjo.av.toFixed(2) + ' m vs ' + sinOjo.av.toFixed(2) + ' m, escala ' + conOjo.escala.toFixed(2));
+        S.facing = { x: 1, z: 0 }; B.salir();
+
+        // ---- Los 3 de tanda A (KIMI-148, Álbum) en el duelo, a paso fijo ----
+        // Gota de lluvia: escudo de 4,5 s; para un golpe de ala entero; contra el grito frena menos que el Escudo de plumas
+        B.iniciar({ sinCuenta: true, especie: 'dufresniana' }); quieta(6); listo(); S.facing = { x: 1, z: 0 };
+        const rgot = B.usar(C.j, 'gota_lluvia');
+        check('Gota de lluvia: escudo de 4,5 s (dura casi el doble que el Escudo de plumas)', rgot.ok && C.j.escudo > 4.4 && C.j.escudo <= 4.5, 'escudo ' + (C.j.escudo || 0).toFixed(2));
+        C.r.cd = {}; C.r.energia = 100; C.r.mareo = 0; C.j.inv = 0; const pg = C.j.plumas; B.usar(C.r, 'golpe_ala');
+        check('...para un golpe de ala (sin perder plumas)', C.j.plumas === pg, 'plumas ' + pg + '→' + C.j.plumas);
+        const empujonContra = escudoId => { // la rival grita con el jugador escudado: mide el empujón que recibe
+          C.j.cd = {}; C.j.energia = 100; C.j.mareo = 0; C.j.escudo = 0; C.j.inv = 0; C.j.kb.t = 0; C.j.kb.x = C.j.kb.z = 0;
+          B.usar(C.j, escudoId);
+          C.r.poder = 'grito_yunque'; C.r.cd = {}; C.r.energia = 100; C.r.mareo = 0; C.r.lenta = 0; quieta(5); C.timers.length = 0;
+          B.usar(C.r, 'grito_yunque');
+          for (let k = 0; k < 150; k++) { B.paso(1 / 30); if (C.j.kb.t > 0) break; }
+          const p0 = { x: S.pos.x, z: S.pos.z };
+          for (let k = 0; k < 8; k++) B.paso(1 / 30);
+          return Math.hypot(S.pos.x - p0.x, S.pos.z - p0.z);
+        };
+        const avGota = empujonContra('gota_lluvia');
+        B.iniciar({ sinCuenta: true, especie: 'arausiaca' }); quieta(6); listo(); S.facing = { x: 1, z: 0 };
+        const avEscudoP = empujonContra('escudo_plumas');
+        check('...pero contra el grito frena menos que el Escudo de plumas', avGota > 1.15 * avEscudoP && avEscudoP > 0.15,
+          'gota ' + avGota.toFixed(2) + ' m vs escudo ' + avEscudoP.toFixed(2) + ' m');
+        B.salir();
+        // Chillido de bandada: llega lejos (9,5 m, más que el alcance del Grito) y empuja poco, sin plumas
+        B.iniciar({ sinCuenta: true, especie: 'viridigenalis' }); quieta(6); listo(); S.facing = { x: 1, z: 0 }; C.r.kb.t = 0; C.r.kb.x = C.r.kb.z = 0;
+        const pchi = C.r.plumas;
+        const rchi = B.usar(C.j, 'chillido_bandada');
+        const ech = esperaEmpujon();
+        check('Chillido de bandada: desde 9,5 m empuja poco (sin plumas) y corta un momento', rchi.ok && ech.av > 0.4 && ech.av < 2.4 && ech.mareo > 0.1 && C.r.plumas === pchi,
+          'empujón ' + ech.av.toFixed(2) + ' m, mareo ' + ech.mareo.toFixed(2) + ', plumas ' + pchi);
+        C.j.cd = {}; C.j.energia = 100; C.j.mareo = 0; C.r.inv = 0; C.r.mareo = 0; C.r.kb.t = 0; C.r.kb.x = C.r.kb.z = 0; quieta(12); C.timers.length = 0;
+        B.usar(C.j, 'chillido_bandada');
+        for (let k = 0; k < 150; k++) B.paso(1 / 30);
+        check('...y desde 12 m (más de su alcance de 11 m) no llega', !(C.r.kb.t > 0) && C.r.plumas === pchi, 'plumas ' + pchi + '→' + C.r.plumas);
+        B.salir();
+        // Ráfaga: dos impulsos hacia delante (~5–6 m); el segundo empuja y quita 1 pluma si toca a la rival
+        B.iniciar({ sinCuenta: true, especie: 'finschi' }); quieta(6); listo(); S.facing = { x: 1, z: 0 };
+        const px0 = S.pos.x, prf = C.r.plumas;
+        const rraf = B.usar(C.j, 'rafaga');
+        for (let k = 0; k < 60; k++) B.paso(1 / 30);
+        const cruce = S.pos.x - px0;
+        check('Ráfaga: cruza ~5–6 m en dos impulsos y, al tocar a la rival (4,5 m), le quita 1 pluma', rraf.ok && cruce > 3.5 && cruce < 7 && C.r.plumas === prf - 1,
+          'cruce ' + cruce.toFixed(1) + ' m, plumas ' + prf + '→' + C.r.plumas);
+        C.j.cd = {}; C.j.energia = 100; C.j.mareo = 0; C.r.inv = 0; quieta(11); const prf2 = C.r.plumas; const px1 = S.pos.x;
+        const rraf2 = B.usar(C.j, 'rafaga');
+        for (let k = 0; k < 60; k++) B.paso(1 / 30);
+        check('...y si no toca (rival a 11 m), solo cruza: no quita plumas', rraf2.ok && C.r.plumas === prf2 && S.pos.x - px1 > 3.5,
+          'plumas ' + prf2 + ', cruce ' + (S.pos.x - px1).toFixed(1) + ' m');
         S.facing = { x: 1, z: 0 }; B.salir();
       } else check('El duelo está cargado', false);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }

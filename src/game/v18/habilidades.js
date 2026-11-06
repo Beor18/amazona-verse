@@ -91,7 +91,7 @@ window.AVV18Habilidades = function (G) {
     fx: 'escudo', dura: 2.5, reduceEmpuje: 0.4, reduceMareo: 0.35,
     efecto(ctx) {
       const { yo } = ctx;
-      yo.escudo = this.dura; yo.alasT = this.dura;
+      yo.escudo = this.dura; yo.alasT = this.dura; yo.escudoE = { reduceEmpuje: this.reduceEmpuje, reduceMareo: this.reduceMareo };
       ctx.escudo(yo, this.dura); ctx.sonar('unlock');
       ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, dura: this.dura });
       return { ok: true };
@@ -297,6 +297,63 @@ window.AVV18Habilidades = function (G) {
       return { ok: true };
     } });
 
+  // ---------- Tres más (Kelvin 6-nov, KIMI-148, V18_MATRIZ_36.md #27, #16, #13): se consiguen descubriéndolas en el Álbum ----------
+  // Gota de lluvia (dufresniana, PLUMAS): como el Escudo de plumas pero dura más (4,5 s) y frena menos el grito (empuje
+  // ×0,65, mareo ×0,5): un golpe normal se sigue parando entero. Ventaja: ventana larga. Debilidad: débil contra poderes.
+  // Espera 9 s (matriz). La reducción va en yo.escudoE y la aplica recibir() a quien sea el blanco.
+  registrar({ id: 'gota_lluvia', nombre: 'Gota de lluvia', especies: ['dufresniana'], tecnica: 'plumas', coste: 30, cooldown: 9,
+    fx: 'escudo', dura: 4.5, reduceEmpuje: 0.65, reduceMareo: 0.5,
+    efecto(ctx) {
+      const { yo } = ctx;
+      yo.escudo = this.dura; yo.alasT = this.dura; yo.escudoE = { reduceEmpuje: this.reduceEmpuje, reduceMareo: this.reduceMareo };
+      ctx.escudo(yo, this.dura); ctx.sonar('unlock');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, dura: this.dura });
+      return { ok: true };
+    } });
+  // Chillido de bandada (viridigenalis, PICO): como el Grito pero llega mucho más lejos (11 m, cono más ancho ±45°) y
+  // empuja poco (6) con interrupción breve. Ventaja: alcance, no hay que acercarse. Debilidad: poca fuerza. Espera 8 s (matriz).
+  registrar({ id: 'chillido_bandada', nombre: 'Chillido de bandada', especies: ['viridigenalis'], tecnica: 'pico', coste: 30, cooldown: 8,
+    fx: 'onda', alcance: 11, cono: 0.7, vel: 16, empuje: 6, interrumpe: 0.5, pico: 0.7,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, dir = mira(yo, otro);
+      const vel = h.vel * (yo.lenta > 0 ? ((get('mirada_piton') || {}).lento || 0.5) : 1); // Mirada del Pitón: la onda va más lenta
+      const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
+      yo.picoT = h.pico; yo.cara = 'fight'; // abre el pico (como el Grito)
+      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
+      ctx.poder({ id: h.id, de: yo.id, origen, direccion: { x: dir.x, y: 0, z: dir.z }, alcance: h.alcance });
+      const alcanza = () => {
+        const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
+        if (d > h.alcance + 0.6) return false;
+        return d < 1.6 || (dx * dir.x + dz * dir.z) / d >= h.cono;
+      };
+      const d0 = Math.hypot(otro.pos.x - origen.x, otro.pos.z - origen.z);
+      ctx.despues(Math.min(h.alcance, d0) / vel, () => {
+        if (!alcanza()) return;
+        ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: h.interrumpe, interrumpe: true, sonido: true, dir: { x: dir.x, z: dir.z }, forzar: true });
+      });
+      return { ok: true, acierto: null, dir };
+    } });
+  // Ráfaga (finschi, ALAS): dos impulsos seguidos hacia donde mira (el impulso del Quiebro, hacia delante); el segundo
+  // empuja y quita 1 pluma si toca a la rival (≤2,4 m en el momento del impulso). Ventaja: cruza ~6 m rápido y castiga lo
+  // que pillas en el camino. Debilidad: cuesta más energía y, si falla el toque, solo te acercas. Espera 7 s (matriz).
+  registrar({ id: 'rafaga', nombre: 'Ráfaga', especies: ['finschi'], tecnica: 'alas', coste: 40, cooldown: 7,
+    fx: 'feathers', vel: 15, espera: 0.38, toca: 2.4, empuje: 9, mareo: 0.6,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, d = mira(yo, otro);
+      const impulso = () => {
+        yo.kb = yo.kb || { x: 0, z: 0, t: 0 }; yo.kb.x = d.x * h.vel; yo.kb.z = d.z * h.vel; yo.kb.t = 0.3;
+        yo.alasT = 0.4;
+        ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('dash');
+      };
+      impulso();
+      ctx.despues(h.espera, () => {
+        impulso();
+        if (dist(yo, otro) <= h.toca) ctx.golpear(otro, { plumas: 1, empuje: h.empuje, mareo: h.mareo, dir: dirA(yo, otro) });
+      });
+      ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: d.x, y: 0, z: d.z } });
+      return { ok: true, acierto: null };
+    } });
+
   // ---------- Luchadores ----------
   function luchador(o) {
     const sp = o.especie || 'vittata';
@@ -341,7 +398,7 @@ window.AVV18Habilidades = function (G) {
     if (escudo) {
       blanco.escudo = 0; blanco.alasT = 0;
       if (!g.interrumpe) return { r: 'bloqueado', n: 0, empuje: 0, mareo: 0, parcial: false, escudo };
-      const E = get('escudo_plumas') || ESCUDO_DEF;
+      const E = blanco.escudoE || get('escudo_plumas') || ESCUDO_DEF; // la reducción la pone el escudo que llevaba (Gota de lluvia frena menos)
       n = 0; empuje *= E.reduceEmpuje; mareo *= E.reduceMareo; parcial = true;
     }
     if (blanco.inv > 0 && !g.forzar) return { r: 'inmune', n: 0, empuje: 0, mareo: 0, parcial, escudo };
