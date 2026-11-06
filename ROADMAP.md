@@ -1,13 +1,14 @@
 # Amazona Verse: roadmap y pendientes
 
-Actualizado el **3 de noviembre de 2026**. Detalle vivo en `docs/equipo/COORDINACION_VIVO.md`, la tabla «Estado» de `docs/equipo/TAREAS_API.md`,
-`docs/equipo/CAP1_PENDIENTE.md`, `docs/equipo/BUGS.md` y `docs/DECISION_LOG.md`. Publica la nube (`tools/build/publicar_nube.sh`) o la Mac (`publicar_mac.sh`), siempre con las 12 baterías obligatorias en verde; este documento no
+Actualizado el **6 de noviembre de 2026**. Detalle vivo en `docs/equipo/COORDINACION_VIVO.md`, la tabla «Estado» de `docs/equipo/TAREAS_API.md`,
+`docs/equipo/CAP1_PENDIENTE.md`, `docs/equipo/BUGS.md`, `docs/equipo/ESTADO_REAL.md`, `docs/equipo/V18_TABLERO.md` y `docs/DECISION_LOG.md`. Publica la nube (`tools/build/publicar_nube.sh`) o la Mac (`publicar_mac.sh`), siempre con las 12 baterías obligatorias en verde; este documento no
 dice qué versión está en línea (míralo en la hoja viva).
 
-## Dónde estamos (3-nov)
+## Dónde estamos (6-nov)
 Cada punto lleva el commit que lo prueba.
 - **Capítulo 1 al 100 %.** Jugable de principio a fin; sobrinos de Kelvin lo terminaron en 16 min. Solo quedan decisiones de Kelvin (`docs/equipo/CAP1_PENDIENTE.md`, `PENDIENTES_KELVIN.md`).
 - **Toda la temporada en un solo mapa.** Los 6 capítulos se juegan en el mapa real del cap. 1, una zona por capítulo (`src/game/zonas.js`): caps. 2 a 4 (BM111–BM113) y caps. 5 y 6 encendidos por Kelvin el 3-nov (`cf88e2ab`; `?mapa=pequeno` vuelve al mundo pequeño para pruebas). QA visual con GPU de los caps. 5 y 6: `07300c5c`.
+- **Mundo V18.1 (demo con `?v18=1`).** Ciclo completo jugable (duelo con la Campeona, reparación del puente, Sombra de Tormenta, cotorras y poderes nuevos); minigolf «La Ruta de las Semillas», hoyo 1 en Villa Raíz, a solas o por turnos (`2acad2d8`, `9d488aec`); Serpiente Emplumada y Sapo Cantor desbloqueables (`25c9ca65`). Detalle vivo en `docs/equipo/V18_TABLERO.md`. **V18.2 (evolución de Vittata)** aprobada el 6-nov (`9139b6c4`, `9c3372f5`) con prototipo ya en main (`088689ca`); **V18.3 (puerto)** en desarrollo (`fa5ce523`).
 - **36 especies con piel** (37 pieles con la de Vittata): agilis, albifrons y festiva (BM124, `bfbb9378`), finschi, lilacina, vinacea y autumnalis (`7c552a1d`) y las extintas Mara y Vela (`a188c4e9`). Cada piel con sus fuentes en `docs/equipo/pieles_fuentes/`.
 - **Diario de los caps. 2 a 6:** las fichas de Ciencia se ganan jugando (`8684a696`).
 - **Mundo vivo, etapa 1:** cotorras residentes en 5 lugares, la bandada viaja y se posa, y el Álbum de las 36 en el Diario (`1b710e3b`); bandada de la casa, local y sin red (CG-18, `9095e5a2`).
@@ -33,7 +34,7 @@ Cada punto lleva el commit que lo prueba.
 - [ ] Edificios: los `_hd` boca abajo ya están (KIMI-Task-009); quedan la Ciudad de los 36 y los edificios rotos (BM133 y BM134, en la Mac) y la flora en el mar o pegada a la montaña (KIMI-Task-006 y 008, en curso).
 - [x] Encender el mapa real en los caps. 5 y 6 (`cf88e2ab`, 3-nov).
 - [ ] iPad en el tepuy del cap. 5: 6,9 M triángulos en calidad baja, 31/16 FPS (KIMI-Task-011, `3d5ea1f2`); el zoom en bucle no se reproduce (BM131, `24b1a26a`).
-- [ ] Revisar en una Mac los rojos que dependen del orden de las baterías (BM116).
+- [x] Revisar en una Mac los rojos que dependen del orden de las baterías (BM116, `6f4604e9`, 6-nov).
 
 **Con niños y familias**
 - [ ] Prueba de juego con niños y niñas (duración real y qué les divierte), antes que cualquier piloto en aula.
