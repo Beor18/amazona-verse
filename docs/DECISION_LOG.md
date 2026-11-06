@@ -384,3 +384,7 @@ Los 2 árboles existentes se quedan como obstáculos del hoyo de Villa Raíz (si
 
 ## 6-nov-2026 · Kelvin confirma la matriz y anuncia la V18.2 (adicional)
 Confirma las 5 decisiones del 5-nov sobre la matriz (arriba). La propuesta de evolución y alianzas V18.2 es adicional y no reemplaza la matriz.
+
+## 6-nov-2026 · V18.2: evolución, niveles y alianzas (Kelvin y Nathanael)
+Aprobada para diseño y prototipo inicial, complementaria a la V18.1, que no se detiene. Las cotorras no cambian de especie; sin modelos nuevos por evolución. Los niveles van de 1 a 40, en 4 etapas. Los 6 elementos de fantasía enriquecen los 36 poderes, no los sustituyen. Habrá 6 alianzas especiales, empezando por Eco Protector (Vittata + Arausiaca). Sin compras ni azar. Prototipo: Vittata (3 etapas), Arausiaca, experiencia, Eco Protector, rival de IA, guardado y móvil. La identidad autóctona por regiones queda fuera, para una fase futura. Texto: `docs/DIRECTIVA_V18_2_EVOLUCION.md`. Prototipo: coordinadora.
+
