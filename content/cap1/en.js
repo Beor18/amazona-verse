@@ -1936,6 +1936,7 @@ window.AV_EN = {
  "Casa": "Home",
  "— sin número": "— no number",
  "Jugar al minigolf": "Play mini golf",
+ "Minigolf de Villa Raíz": "Villa Raíz Mini Golf",
  "Acción: Jugar al minigolf": "Action: Play mini golf",
  "Minigolf de Villa Raíz: lleva la semilla gigante hasta el nido. Pulsa Acción junto a ella.": "Villa Raíz mini golf: get the giant seed into the nest. Press Action next to it.",
  "¡Hoyo 1, par 3! Lleva la semilla gigante al nido con los menos golpes.": "Hole 1, par 3! Get the giant seed into the nest in as few strokes as you can.",

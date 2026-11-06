@@ -821,6 +821,7 @@ window.AVV18Puerto = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18puerto = { ID, ESTADOS, estado, avanzar, aplicar, usarPoder, reparar, pagarXP, paso, SITIO, test, get perfil() { return M.perfil; }, get valido() { return M.valido; }, sesion: () => A };
+  G.v18puerto = { ID, ESTADOS, estado, avanzar, aplicar, usarPoder, reparar, pagarXP, paso, SITIO, test, get perfil() { return M.perfil; }, get valido() { return M.valido; }, sesion: () => A,
+    mapa: () => (listaMision() && estado() !== 'reparado' ? { x: MAQ.on.x, z: MAQ.on.z, nombre: TXT.titulo } : null) };
   return G.v18puerto;
 };

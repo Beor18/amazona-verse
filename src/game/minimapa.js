@@ -8,7 +8,8 @@
    - Marcadores: objetivo principal (amarillo, estrella; misión de la historia o siguiente punto del reto; si queda fuera de vista se pega
      al borde con una punta), misión «!» (naranja), parada o descubrimiento «?» (azul), Reto (rombo morado), fruto del Banquete (punto
      rojo), lugar descubierto (cuadrado blanco con su nombre en el grande), destino (verde, bandera). Cada tipo lleva forma y glifo
-     distintos: no depende solo del color.
+     distintos: no depende solo del color. Con la bandera V18 (KIMI-154): minigolf de Villa Raíz (banderín verde, con nombre en el
+     grande) y misión del puerto (engranaje cobre junto a la máquina, solo mientras toca: puente reparado y misión sin terminar).
    - Ruta opcional: una línea discontinua hacia el destino (o, si no hay, hacia el objetivo). Se activa en el mapa grande («Ruta»);
      la preferencia se guarda en este dispositivo.
    - Datos: relieve con sombreado, agua (G.agua.levelAt) y flora (G.vegetacion.instancias) se precalculan UNA vez en un canvas de
@@ -30,7 +31,7 @@ window.AVMinimapa = function (G) {
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || (G.pack && G.pack.id) || 'amazonaverse') + '.minimapa';
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const H = (x, z) => G.terreno.height(x, z);
-  const COL = { obj: '#ffd23f', mision: '#ff7a30', parada: '#2f8fe0', reto: '#8e5be8', fruto: '#e8364a', lugar: '#ffffff', pueblo: '#f2b552', piedra: '#d8cfbd', dest: '#2fc15a', yo: '#ffffff', tinta: '#14202b' };
+  const COL = { obj: '#ffd23f', mision: '#ff7a30', parada: '#2f8fe0', reto: '#8e5be8', fruto: '#e8364a', lugar: '#ffffff', pueblo: '#f2b552', piedra: '#d8cfbd', dest: '#2fc15a', yo: '#ffffff', tinta: '#14202b', v18golf: '#35c46f', v18puerto: '#c9803a' };
 
   // ---------- Preferencia (solo este dispositivo; si no hay almacén, valores por defecto) ----------
   const pref = { ruta: true };
@@ -151,6 +152,7 @@ window.AVMinimapa = function (G) {
     if (!hayRetos()) for (const it of G.interaccion.list) {
       if (typeof it.x !== 'number' || (it.visible && !it.visible())) continue;
       if (rec.has(it.id) || /^(m|p|c)\d+$/.test(it.id)) continue;
+      if (/^v18_(minigolf|puerto)/.test(it.id)) continue; // KIMI-154: los cubren los marcadores propios v18golf/v18puerto (con nombre)
       const tipo = /^parada_/.test(it.id) ? 'parada' : NO_MISION.test(it.id) ? null : 'mision', clave = Math.round(it.x) + ',' + Math.round(it.z);
       if (!tipo || vistos.has(clave)) continue;
       vistos.add(clave); out.push({ tipo, x: it.x, z: it.z, id: it.id });
@@ -161,6 +163,12 @@ window.AVMinimapa = function (G) {
       // Asentamientos (AY1): los 14 siempre, con glifo de madera o de piedra; el nombre solo cuando ya se descubrió
       if (p.asentamiento) out.push({ tipo: 'pueblo', x: p.x, z: p.z, nombre: vis ? L.nombreDe(p) : '', id: p.id, piedra: p.asentamiento.glifo === 'piedra', oculto: !vis });
       else if (vis) out.push({ tipo: 'lugar', x: p.x, z: p.z, nombre: L.nombreDe(p), id: p.id });
+    }
+    // KIMI-154 (V18): el minigolf y la misión del puerto tienen marcador propio con nombre (Kelvin: «no veo el mini golf»);
+    // la disponibilidad la decide cada módulo (mapa() → null cuando no toca). Sin la bandera V18, nada cambia.
+    if (G.V18) {
+      try { const g = G.v18minigolf && G.v18minigolf.mapa && G.v18minigolf.mapa(); if (g) out.push({ tipo: 'v18golf', x: g.x, z: g.z, nombre: g.nombre }); } catch (e) { /* sin módulo */ }
+      try { const p = G.v18puerto && G.v18puerto.mapa && G.v18puerto.mapa(); if (p) out.push({ tipo: 'v18puerto', x: p.x, z: p.z, nombre: p.nombre }); } catch (e) { /* sin módulo */ }
     }
     const bq = G.banquete && G.banquete._dev && G.banquete._dev.mundo && G.banquete._dev.mundo.lista;
     // Frutos: solo los 14 más cercanos (sin ruido; el Banquete tiene cientos y el mapa debe poder leerse)
@@ -218,6 +226,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
 #mapa-grande .mg-ley .l-mision{background:${COL.mision};border-radius:50%}#mapa-grande .mg-ley .l-parada{background:${COL.parada};border-radius:50%}
 #mapa-grande .mg-ley .l-reto{background:${COL.reto};transform:rotate(45deg) scale(.85)}#mapa-grande .mg-ley .l-fruto{background:${COL.fruto};border-radius:50%;width:9px;height:9px}
 #mapa-grande .mg-ley .l-lugar{background:#fff}#mapa-grande .mg-ley .l-pueblo{background:${COL.pueblo};clip-path:polygon(50% 0,100% 45%,100% 100%,0 100%,0 45%);border:0}#mapa-grande .mg-ley .l-obj{background:${COL.obj};border-radius:50%}#mapa-grande .mg-ley .l-dest{background:${COL.dest};border-radius:2px 50% 50% 2px}
+#mapa-grande .mg-ley .l-v18golf{background:${COL.v18golf};clip-path:polygon(18% 100%,18% 0,100% 26%,18% 52%);border:0}#mapa-grande .mg-ley .l-v18puerto{background:${COL.v18puerto};border-radius:50%}
 @media (max-height:480px){#mapa-grande .mg-panel{--lado:calc(100dvh - 120px)}#mapa-grande .mg-ley{display:none}}
 :root.a11y-zurdo #mapa-grande .mg-head{flex-direction:row-reverse}:root.a11y-zurdo #mapa-grande h2{margin:0 4px 0 auto}
 :root.a11y-contraste #minimapa .mm-btn{background:#000;border-color:#fff;border-width:4px;box-shadow:none}
@@ -234,7 +243,8 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
   const HTML_GRANDE = '<div class="mg-panel"><div class="mg-head"><h2 id="mg-titulo">Mapa</h2>' +
     '<button type="button" class="mg-ruta" aria-pressed="false">Ruta</button><button type="button" class="mg-quitar" hidden>Quitar destino</button><button type="button" class="mg-cerrar" aria-label="Cerrar el mapa (M)">Cerrar</button></div>' +
     '<canvas class="mg-c" width="400" height="400" aria-label="Mapa de la isla. Toca para fijar un destino"></canvas><p class="mg-info" aria-live="polite"></p>' +
-    '<ul class="mg-ley"><li><i class="l-obj"></i>Objetivo</li><li><i class="l-mision"></i>Misión</li><li><i class="l-parada"></i>Parada</li><li><i class="l-reto"></i>Reto</li><li><i class="l-fruto"></i>Fruto</li><li><i class="l-lugar"></i>Lugar</li><li><i class="l-pueblo"></i>Asentamiento</li><li><i class="l-dest"></i>Destino</li></ul></div>';
+    '<ul class="mg-ley"><li><i class="l-obj"></i>Objetivo</li><li><i class="l-mision"></i>Misión</li><li><i class="l-parada"></i>Parada</li><li><i class="l-reto"></i>Reto</li><li><i class="l-fruto"></i>Fruto</li><li><i class="l-lugar"></i>Lugar</li><li><i class="l-pueblo"></i>Asentamiento</li><li><i class="l-dest"></i>Destino</li>' +
+    '<li hidden class="li-v18"><i class="l-v18golf"></i>Minigolf</li><li hidden class="li-v18"><i class="l-v18puerto"></i>Misión V18</li></ul></div>';
   let elC, elG, cvC, cvG, ctxC, ctxG, txtD, txtDot, abierto = false, dprC = 0, dprG = 0, anchoC = -1, porColocar = true; // anchoC −1: sin medida del observador
   function montar() {
     if (!doc.getElementById(ESTILO_ID)) { const st = doc.createElement('style'); st.id = ESTILO_ID; st.textContent = ESTILO; doc.head.appendChild(st); }
@@ -243,6 +253,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     const ancla = $('toast'); (ancla && ancla.parentNode ? ancla.parentNode : doc.body).insertBefore(elC, ancla || null); doc.body.appendChild(elG);
     cvC = elC.querySelector('canvas'); cvG = elG.querySelector('.mg-c'); ctxC = cvC.getContext('2d'); ctxG = cvG.getContext('2d');
     txtD = elC.querySelector('.mm-d'); txtDot = elC.querySelector('.mm-dot');
+    if (G.V18) for (const li of elG.querySelectorAll('.li-v18')) li.hidden = false; // KIMI-154: leyenda de los marcadores V18
     // Tamaños por ResizeObserver (AF1): ni visible() ni clientWidth ni colocar() fuerzan un reflujo en cada tick (en el móvil lento,
     // del 4 al 18 % de la CPU). Oculto (el minimapa o un padre con display:none), el lienzo mide 0. Sin ResizeObserver, lo de antes.
     if (window.ResizeObserver) {
@@ -297,9 +308,17 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     else if (tipo === 'lugar') { ctx.rect(-r * 0.75, -r * 0.75, r * 1.5, r * 1.5); }
     else if (tipo === 'fruto') { ctx.arc(0, 0, r * 0.62, 0, 6.2832); }
     else if (tipo === 'dest') { ctx.moveTo(-r * 0.55, r); ctx.lineTo(-r * 0.55, -r); ctx.lineTo(r * 0.95, -r * 0.45); ctx.lineTo(-r * 0.55, 0.1 * r); }
+    else if (tipo === 'v18golf') { // banderín: asta con gallardeta (KIMI-154)
+      ctx.moveTo(-r * 0.15, r); ctx.lineTo(-r * 0.15, -r); ctx.lineTo(r * 0.95, -r * 0.62); ctx.lineTo(-r * 0.15, -r * 0.24); ctx.closePath();
+    }
+    else if (tipo === 'v18puerto') { // engranaje: 6 dientes sobre el círculo (KIMI-154)
+      for (let i = 0; i < 6; i++) { const a = i * 1.0472, cx = Math.cos(a) * r * 1.02, cy = Math.sin(a) * r * 1.02; ctx.moveTo(cx + r * 0.24, cy); ctx.arc(cx, cy, r * 0.24, 0, 6.2832); }
+      ctx.moveTo(r * 0.98, 0); ctx.arc(0, 0, r * 0.98, 0, 6.2832);
+    }
     else if (tipo === 'obj') { for (let i = 0; i < 10; i++) { const a = -1.5708 + i * 0.6283, rr = i % 2 ? r * 0.55 : r * 1.25; ctx[i ? 'lineTo' : 'moveTo'](Math.cos(a) * rr, Math.sin(a) * rr); } ctx.closePath(); }
     else { ctx.arc(0, 0, r, 0, 6.2832); }
     ctx.fill(); ctx.stroke();
+    if (tipo === 'v18puerto') { ctx.beginPath(); ctx.arc(0, 0, r * 0.3, 0, 6.2832); ctx.fillStyle = COL.tinta; ctx.fill(); } // agujero del engranaje
     if (glifo && r >= 5 * k) { ctx.fillStyle = tipo === 'mision' || tipo === 'parada' || tipo === 'reto' ? '#fff' : COL.tinta; ctx.font = '800 ' + Math.round(r * 1.35) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(glifo, 0, tipo === 'mision' ? 0.5 : 1); }
     ctx.restore();
   }
@@ -339,7 +358,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       ctx.lineWidth = 2.2 * gk; ctx.strokeStyle = de ? COL.dest : COL.obj; ctx.stroke(); ctx.restore();
     }
     // Marcadores en orden de importancia (los de arriba se dibujan al final)
-    const orden = ['fruto', 'pueblo', 'lugar', 'reto', 'parada', 'mision', 'dest', 'obj'], inset = rM + 3 * k;
+    const orden = ['fruto', 'pueblo', 'lugar', 'reto', 'parada', 'mision', 'v18golf', 'v18puerto', 'dest', 'obj'], inset = rM + 3 * k;
     const dentro = (x, y) => x > inset * 0.4 && y > inset * 0.4 && x < w - inset * 0.4 && y < h - inset * 0.4;
     const bordes = [], rotulos = [];
     for (const tipo of orden) for (const m of ms) {
@@ -356,7 +375,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       const rr = tipo === 'fruto' ? rM * 0.62 : tipo === 'lugar' ? rM * 0.8 : tipo === 'pueblo' ? rM * (grande ? 0.95 : 0.8) : tipo === 'obj' ? rM * 1.15 : rM;
       marca(ctx, tipo, x, y, rr, gk, tipo === 'reto' && grande && m.n ? String(m.n) : GLIFO[tipo], m);
       const nomLugar = G.idioma ? G.idioma.tr(m.nombre) : m.nombre; // U1: nombre del lugar en el idioma elegido
-      if (grande && (tipo === 'lugar' || tipo === 'pueblo') && nomLugar) { // el nombre solo si no pisa otro ya escrito (los lugares de la Villa están muy juntos)
+      if (grande && (tipo === 'lugar' || tipo === 'pueblo' || tipo === 'v18golf' || tipo === 'v18puerto') && nomLugar) { // el nombre solo si no pisa otro ya escrito (los lugares de la Villa están muy juntos)
         const fs = Math.round(11 * fsk() * k); ctx.font = '700 ' + fs + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineWidth = 3.5 * k; ctx.lineJoin = 'round';
         const tw = ctx.measureText(nomLugar).width, lx = clamp(x, tw / 2 + 3 * k, w - tw / 2 - 3 * k), caja = [lx - tw / 2, y + rM, lx + tw / 2, y + rM + fs];
         if (!rotulos.some(c => caja[0] < c[2] && caja[2] > c[0] && caja[1] < c[3] && caja[3] > c[1])) {
@@ -510,6 +529,17 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       check('Los asentamientos salen con su glifo (todos; el nombre solo si ya se descubrió)', !(L && L.lista().some(p => p.asentamiento)) || (pu.length === L.lista().filter(p => p.asentamiento).length && pu.every(m => m.oculto === !m.nombre)), pu.length + ' asentamientos');
       const ms2 = marcadores();
       check('La misión es «!», la parada «?» y cada tipo tiene forma propia', GLIFO.mision === '!' && GLIFO.parada === '?' && ms2.filter(m => m.tipo === 'reto').length === 2);
+      // KIMI-154: marcadores V18 (minigolf banderín / puerto engranaje): solo con la bandera G.V18 y con nombre
+      const v18bk = G.V18, minBk = G.v18minigolf, pueBk = G.v18puerto;
+      G.V18 = true; G.v18minigolf = { mapa: () => ({ x: S.pos.x + 15, z: S.pos.z + 15, nombre: 'Minigolf de Villa Raíz' }) }; G.v18puerto = { mapa: () => null };
+      let msV = marcadores();
+      check('Con la bandera V18 el minigolf sale como marcador propio con nombre (y el puerto no si no toca)', msV.some(m => m.tipo === 'v18golf' && !!m.nombre) && !msV.some(m => m.tipo === 'v18puerto'), msV.filter(m => /^v18/.test(m.tipo)).map(m => m.tipo).join(','));
+      G.v18puerto = { mapa: () => ({ x: S.pos.x - 15, z: S.pos.z - 15, nombre: 'El puerto que volvió a vivir' }) };
+      msV = marcadores();
+      check('La misión del puerto sale como marcador propio con nombre cuando toca', msV.some(m => m.tipo === 'v18puerto' && m.nombre === 'El puerto que volvió a vivir'));
+      G.V18 = false; G.v18minigolf = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18puerto = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) };
+      check('Sin la bandera V18 los marcadores V18 no salen (la versión estable no cambia)', !marcadores().some(m => /^v18(golf|puerto)/.test(m.tipo)));
+      G.V18 = v18bk; if (minBk === undefined) delete G.v18minigolf; else G.v18minigolf = minBk; if (pueBk === undefined) delete G.v18puerto; else G.v18puerto = pueBk;
       tUlt = -1e9; tick(performance.now());
       check('Se dibuja con todos los tipos a la vez sin errores', !!ultimo && ultimo.marcas >= quiero.length);
       ext.reto = undefined; ext.frutos = undefined;
