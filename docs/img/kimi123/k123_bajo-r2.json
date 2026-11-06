@@ -1,0 +1,115 @@
+{
+ "etiqueta": "bajo-r2",
+ "calidad": "bajo",
+ "pantalla": "escritorio 1600x900 cpuX1 calidad bajo GPU real",
+ "capturas": {
+  "dia_plaza": {
+   "nombre": "k123_bajo-r2_dia_plaza.jpg",
+   "enCuadro": 5,
+   "stats": {
+    "calls": 140,
+    "tris": 301126,
+    "fps": 144,
+    "tex": 124,
+    "geo": 185,
+    "heapMB": 142,
+    "hora": null,
+    "enc": 0
+   }
+  },
+  "dia_aire": {
+   "nombre": "k123_bajo-r2_dia_aire.jpg",
+   "enCuadro": 5,
+   "stats": {
+    "calls": 141,
+    "tris": 288059,
+    "fps": 140,
+    "tex": 124,
+    "geo": 185,
+    "heapMB": 144,
+    "hora": null,
+    "enc": 0
+   }
+  },
+  "noche_plaza": {
+   "nombre": "k123_bajo-r2_noche_plaza.jpg",
+   "enCuadro": 20,
+   "stats": {
+    "calls": 138,
+    "tris": 253028,
+    "fps": 142,
+    "tex": 124,
+    "geo": 186,
+    "heapMB": 134,
+    "hora": 20,
+    "enc": 0.9999999999999842
+   }
+  },
+  "noche_aire": {
+   "nombre": "k123_bajo-r2_noche_aire.jpg",
+   "enCuadro": 14,
+   "stats": {
+    "calls": 141,
+    "tris": 252677,
+    "fps": 140,
+    "tex": 124,
+    "geo": 186,
+    "heapMB": 137,
+    "hora": 20,
+    "enc": 0.9999999999999963
+   }
+  }
+ },
+ "notas": [],
+ "bandadaTest": {
+  "passed": 17,
+  "total": 17,
+  "fallos": []
+ },
+ "prep": {
+  "ok": true,
+  "esperaS": 0,
+  "conSolido": "60/60",
+  "aves": 20,
+  "malla": {
+   "real": true,
+   "cerca": {
+    "tri": 1400,
+    "horneada": true
+   },
+   "lejos": {
+    "tri": 308,
+    "horneada": true
+   }
+  }
+ },
+ "dia": {
+  "hay": true,
+  "forzada": false,
+  "aves": 20,
+  "bando": 5
+ },
+ "noche": {
+  "hora": 20,
+  "enc": 0.9999999999139353,
+  "aves": 20,
+  "dormidas": 19,
+  "atardecer": null
+ },
+ "ciudadVivaTest": {
+  "passed": 21,
+  "total": 21,
+  "fallos": []
+ },
+ "vivoTest": {
+  "passed": 64,
+  "total": 64,
+  "claves": [
+   "passed",
+   "total",
+   "results"
+  ],
+  "fallos": []
+ },
+ "erroresConsola": []
+}

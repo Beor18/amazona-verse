@@ -1,0 +1,32 @@
+[02:30:32] lanzando Chrome y entrando al juego (cap1, calidad alto)...
+[02:30:37] …latido
+[02:30:42] …latido
+[02:30:47] corriendo bandadaTest (villa, mallas limpias)...
+[02:30:47] …latido
+[02:30:50] bandadaTest: {"passed":17,"total":17,"fallos":[]}
+[02:30:50] ciudad preparada: {"ok":true,"esperaS":0,"conSolido":"60/60","aves":48,"malla":{"real":true,"cerca":{"tri":1400,"horneada":true},"lejos":{"tri":308,"horneada":true}}}
+[02:30:50] fase día: esperando bandada...
+[02:30:52] …latido
+[02:30:57] …latido
+[02:30:59] día: {"hay":true,"forzada":false,"aves":48,"bando":8}
+[02:31:02] …latido
+[02:31:06] captura día/plaza: k123_alto-r2_dia_plaza.jpg (aves en cuadro 8)
+[02:31:07] …latido
+[02:31:12] …latido
+[02:31:13] captura día/aire: k123_alto-r2_dia_aire.jpg (aves en cuadro 8)
+[02:31:13] fase noche: atardecer forzado + S.hora 20 + CV.hora 22...
+[02:31:17] …latido
+[02:31:22] …latido
+[02:31:25] noche: {"hora":20,"enc":0.9999999999151234,"aves":48,"dormidas":39,"atardecer":null}
+[02:31:27] …latido
+[02:31:29] captura noche/plaza: k123_alto-r2_noche_plaza.jpg (aves en cuadro 45)
+[02:31:32] …latido
+[02:31:34] captura noche/aire: k123_alto-r2_noche_aire.jpg (aves en cuadro 42)
+[02:31:34] corriendo ciudadVivaTest...
+[02:31:37] …latido
+[02:31:42] …latido
+[02:31:42] ciudadVivaTest: {"passed":21,"total":21,"fallos":[]}
+[02:31:42] corriendo vivoTest...
+[02:31:43] vivoTest: {"passed":64,"total":64,"claves":["passed","total","results"],"fallos":[]}
+[02:31:43] errores de consola: []
+[02:31:43] evidencia: C:\Users\kelvi\amazonaversegame3\docs\img\kimi123\k123_alto-r2.json
