@@ -17,7 +17,7 @@ Fuentes: `K4_DECISIONES_ABIERTAS.md` (cruce de PENDIENTES, DECISIONES_LISTA, DEC
 | A1 | **Prueba con niños** de los caps. 2 a 6 y de la demo `?v18=1` (guía: `GUIA_PLAYTEST_NINOS.md`) | Hacerla cuando puedas, con permiso de los padres. No es una decisión: es lo único que solo puedes hacer tú | La temporada pasa del 74 % al 83 % |
 | A2 | **Aspecto de la Ciudad de los 36** (capturas de BM133, BM134 y BM136) | Aprobarla como está; lo que quieras cambiar, se anota | Cierre del cap. 6 |
 | A3 | **Cotorras vivas nuevas** (KIMI-122, antes y después en `docs/img/kelvin_6nov/`) | Aprobadas como están (Kimi las validó con GPU, KIMI-123) | Ciudad viva, cap. 6 |
-| A4 | **Emblema del pacto** (cap. 6) | El equipo propone 3 diseños sencillos y tú eliges uno | Cierre del cap. 6 |
+| A4 | **Emblema del pacto** (cap. 6) | El equipo propone 3 diseños sencillos y tú eliges uno. **Ya están:** hoja `docs/img/emblema_propuestas/hoja.png` (A rueda de 36 plumas · B semilla con alas · C nido en espiral; SVG y PNG al lado). Cada uno tiene 36 piezas (la medalla es una) y la promesa va grabada en el reverso. Sin conectar al juego hasta que elijas | Cierre del cap. 6 |
 | A5 | **Cap. 3: desembocadura o Puerto de La Mina** | **Ya aplicado por delegación:** se queda en la desembocadura (DECISION_LOG 6-nov) | Cierre del cap. 3 |
 
 ## B. Datos educativos (`K4_FUENTES.md`)
