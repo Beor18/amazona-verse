@@ -1,0 +1,620 @@
+{
+  "orden": [
+    "selfTest",
+    "missionTest",
+    "accessoryTest",
+    "templateTest",
+    "eduTest",
+    "maestroTest"
+  ],
+  "cpu": 4,
+  "movil": {
+    "ancho": 375,
+    "alto": 812,
+    "dpr": 3
+  },
+  "baterias": {
+    "selfTest": {
+      "p": 103,
+      "t": 103,
+      "mal": [],
+      "segundos": 35.4
+    },
+    "missionTest": {
+      "p": 79,
+      "t": 79,
+      "mal": [],
+      "segundos": 10.2
+    },
+    "accessoryTest": {
+      "p": 12,
+      "t": 12,
+      "mal": [],
+      "segundos": 0.9
+    },
+    "templateTest": {
+      "p": 19,
+      "t": 19,
+      "mal": [],
+      "segundos": 3.7
+    },
+    "eduTest": {
+      "p": 80,
+      "t": 80,
+      "mal": [],
+      "segundos": 43.4
+    },
+    "maestroTest": {
+      "p": 26,
+      "t": 26,
+      "mal": [],
+      "segundos": 2.6
+    }
+  },
+  "llamadasRegistrar": [
+    {
+      "t": 1793944380516,
+      "clock": 2.1,
+      "partidas": 0,
+      "registro": null,
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at empezar (http://127.0.0.1:54100/content/cap1/educativa.js:427:9) <- at Object.usarMarcas [as use] (http://127.0.0.1:54100/content/cap1/educativa.js:453:11) <- at Object.action (http://127.0.0.1:54100/src/game/interaccion.js:38:18)"
+    },
+    {
+      "t": 1793944380569,
+      "clock": 2.1,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:457:15 <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49)"
+    },
+    {
+      "t": 1793944380766,
+      "clock": 3.1,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944380970,
+      "clock": 4.1,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944381156,
+      "clock": 5.1,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944381428,
+      "clock": 6.1,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at HTMLButtonElement.terminar (http://127.0.0.1:54100/content/cap1/educativa.js:561:21) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944381615,
+      "clock": 7.1,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944381616,
+      "clock": 7.1,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:515:13) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82)"
+    },
+    {
+      "t": 1793944381935,
+      "clock": 9,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:599:24 <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:587:47)"
+    },
+    {
+      "t": 1793944387291,
+      "clock": 46.5,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:647:47 <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:443:23)"
+    },
+    {
+      "t": 1793944395509,
+      "clock": 107.3,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:695:67 <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:587:47)"
+    },
+    {
+      "t": 1793944396390,
+      "clock": 113.7,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:718:13 <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49)"
+    },
+    {
+      "t": 1793944396865,
+      "clock": 119.8,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:747:25) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:738:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944396894,
+      "clock": 119.8,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at card.querySelector.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:772:83) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70) <- at jugarRutaGota (http://127.0.0.1:54100/content/cap1/pruebas.js:727:5)"
+    },
+    {
+      "t": 1793944397012,
+      "clock": 119.8,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944397051,
+      "clock": 119.8,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944397091,
+      "clock": 119.8,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944397120,
+      "clock": 119.8,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944397121,
+      "clock": 119.8,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at terminarMision (http://127.0.0.1:54100/content/cap1/educativa.js:796:9) <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49)"
+    },
+    {
+      "t": 1793944397127,
+      "clock": 119.8,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at terminarMision (http://127.0.0.1:54100/content/cap1/educativa.js:797:9) <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49) <- at nextCaja (http://127.0.0.1:54100/src/game/dialogo.js:88:82)"
+    },
+    {
+      "t": 1793944398466,
+      "clock": 140.3,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.fn (http://127.0.0.1:54100/content/cap1/educativa.js:849:138) <- at G.emit (http://127.0.0.1:54100/src/engine/core.js:78:92) <- at Object.update (http://127.0.0.1:54100/src/engine/renderer.js:1058:7)"
+    },
+    {
+      "t": 1793944398478,
+      "clock": 140.9,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.fn (http://127.0.0.1:54100/content/cap1/educativa.js:849:138) <- at G.emit (http://127.0.0.1:54100/src/engine/core.js:78:92) <- at Object.update (http://127.0.0.1:54100/src/engine/renderer.js:1058:7)"
+    },
+    {
+      "t": 1793944402269,
+      "clock": 167.6,
+      "partidas": 1,
+      "registro": "8c719fb8f21cf505",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.fn (http://127.0.0.1:54100/content/cap1/educativa.js:849:138) <- at G.emit (http://127.0.0.1:54100/src/engine/core.js:78:92) <- at Object.update (http://127.0.0.1:54100/src/engine/renderer.js:1058:7)"
+    },
+    {
+      "t": 1793944434707,
+      "clock": 1.4,
+      "partidas": 0,
+      "registro": null,
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at empezar (http://127.0.0.1:54100/content/cap1/educativa.js:427:9) <- at Object.usarMarcas [as use] (http://127.0.0.1:54100/content/cap1/educativa.js:453:11) <- at Object.action (http://127.0.0.1:54100/src/game/interaccion.js:38:18)"
+    },
+    {
+      "t": 1793944434735,
+      "clock": 1.4,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:457:15 <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49)"
+    },
+    {
+      "t": 1793944434976,
+      "clock": 2.4,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944435196,
+      "clock": 3.4,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944435415,
+      "clock": 4.4,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944435700,
+      "clock": 5.4,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at HTMLButtonElement.terminar (http://127.0.0.1:54100/content/cap1/educativa.js:561:21) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944435910,
+      "clock": 6.4,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944435911,
+      "clock": 6.4,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:515:13) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82)"
+    },
+    {
+      "t": 1793944436297,
+      "clock": 8.3,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:599:24 <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:587:47)"
+    },
+    {
+      "t": 1793944442801,
+      "clock": 46.7,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:647:47 <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:443:23)"
+    },
+    {
+      "t": 1793944452437,
+      "clock": 107.5,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:695:67 <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:587:47)"
+    },
+    {
+      "t": 1793944453495,
+      "clock": 113.9,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:718:13 <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49)"
+    },
+    {
+      "t": 1793944454070,
+      "clock": 120,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:747:25) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:738:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944454101,
+      "clock": 120,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at card.querySelector.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:772:83) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70) <- at jugarRutaGota (http://127.0.0.1:54100/content/cap1/pruebas.js:727:5)"
+    },
+    {
+      "t": 1793944454221,
+      "clock": 120,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944454277,
+      "clock": 120,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944454310,
+      "clock": 120,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944454343,
+      "clock": 120,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944454344,
+      "clock": 120,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at terminarMision (http://127.0.0.1:54100/content/cap1/educativa.js:796:9) <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49)"
+    },
+    {
+      "t": 1793944454349,
+      "clock": 120,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at terminarMision (http://127.0.0.1:54100/content/cap1/educativa.js:797:9) <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49) <- at nextCaja (http://127.0.0.1:54100/src/game/dialogo.js:88:82)"
+    },
+    {
+      "t": 1793944456576,
+      "clock": 140.5,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.fn (http://127.0.0.1:54100/content/cap1/educativa.js:849:138) <- at G.emit (http://127.0.0.1:54100/src/engine/core.js:78:92) <- at Object.update (http://127.0.0.1:54100/src/engine/renderer.js:1058:7)"
+    },
+    {
+      "t": 1793944456589,
+      "clock": 141.1,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.fn (http://127.0.0.1:54100/content/cap1/educativa.js:849:138) <- at G.emit (http://127.0.0.1:54100/src/engine/core.js:78:92) <- at Object.update (http://127.0.0.1:54100/src/engine/renderer.js:1058:7)"
+    },
+    {
+      "t": 1793944456708,
+      "clock": 143.7,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at Object.alTerminar (http://127.0.0.1:54100/content/cap1/paradas.js:143:32) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66) <- at Object.eduTest (http://127.0.0.1:54100/content/cap1/pruebas.js:817:249) <- at async <anonymous>:1:26"
+    },
+    {
+      "t": 1793944456774,
+      "clock": 143.8,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at Object.alTerminar (http://127.0.0.1:54100/content/cap1/paradas.js:143:32) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66) <- at Object.eduTest (http://127.0.0.1:54100/content/cap1/pruebas.js:817:249) <- at async <anonymous>:1:26"
+    },
+    {
+      "t": 1793944456841,
+      "clock": 143.9,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at Object.alTerminar (http://127.0.0.1:54100/content/cap1/paradas.js:143:32) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66) <- at Object.eduTest (http://127.0.0.1:54100/content/cap1/pruebas.js:817:249) <- at async <anonymous>:1:26"
+    },
+    {
+      "t": 1793944456909,
+      "clock": 144,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at Object.alTerminar (http://127.0.0.1:54100/content/cap1/paradas.js:143:32) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66) <- at Object.eduTest (http://127.0.0.1:54100/content/cap1/pruebas.js:817:249) <- at async <anonymous>:1:26"
+    },
+    {
+      "t": 1793944456991,
+      "clock": 144.1,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at Object.alTerminar (http://127.0.0.1:54100/content/cap1/paradas.js:143:32) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66) <- at Object.eduTest (http://127.0.0.1:54100/content/cap1/pruebas.js:817:249) <- at async <anonymous>:1:26"
+    },
+    {
+      "t": 1793944457059,
+      "clock": 144.2,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at Object.alTerminar (http://127.0.0.1:54100/content/cap1/paradas.js:143:32) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66) <- at Object.eduTest (http://127.0.0.1:54100/content/cap1/pruebas.js:817:249) <- at async <anonymous>:1:26"
+    },
+    {
+      "t": 1793944457129,
+      "clock": 144.3,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at Object.alTerminar (http://127.0.0.1:54100/content/cap1/paradas.js:143:32) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66) <- at Object.eduTest (http://127.0.0.1:54100/content/cap1/pruebas.js:817:249) <- at async <anonymous>:1:26"
+    },
+    {
+      "t": 1793944457202,
+      "clock": 144.4,
+      "partidas": 1,
+      "registro": "dc310a955dda5963",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at Object.alTerminar (http://127.0.0.1:54100/content/cap1/paradas.js:143:32) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66) <- at Object.eduTest (http://127.0.0.1:54100/content/cap1/pruebas.js:817:249) <- at async <anonymous>:1:26"
+    },
+    {
+      "t": 1793944457961,
+      "clock": 0.7,
+      "partidas": 1,
+      "registro": null,
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at empezar (http://127.0.0.1:54100/content/cap1/educativa.js:427:9) <- at Object.usarMarcas [as use] (http://127.0.0.1:54100/content/cap1/educativa.js:453:11) <- at Object.action (http://127.0.0.1:54100/src/game/interaccion.js:38:18)"
+    },
+    {
+      "t": 1793944457986,
+      "clock": 0.7,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:457:15 <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49)"
+    },
+    {
+      "t": 1793944458194,
+      "clock": 1.7,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944458404,
+      "clock": 2.7,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944458618,
+      "clock": 3.7,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944458922,
+      "clock": 4.7,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at HTMLButtonElement.terminar (http://127.0.0.1:54100/content/cap1/educativa.js:561:21) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944459123,
+      "clock": 5.7,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:512:11) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944459124,
+      "clock": 5.7,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:515:13) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:496:82)"
+    },
+    {
+      "t": 1793944459499,
+      "clock": 7.6,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:599:24 <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:587:47)"
+    },
+    {
+      "t": 1793944465779,
+      "clock": 46,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:647:47 <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:443:23)"
+    },
+    {
+      "t": 1793944475751,
+      "clock": 106.8,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:695:67 <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:587:47)"
+    },
+    {
+      "t": 1793944476824,
+      "clock": 113.2,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at http://127.0.0.1:54100/content/cap1/educativa.js:718:13 <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49)"
+    },
+    {
+      "t": 1793944477421,
+      "clock": 119.3,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at elegir (http://127.0.0.1:54100/content/cap1/educativa.js:747:25) <- at b.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:738:82) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70)"
+    },
+    {
+      "t": 1793944477453,
+      "clock": 119.3,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at card.querySelector.onclick (http://127.0.0.1:54100/content/cap1/educativa.js:772:83) <- at click (http://127.0.0.1:54100/content/cap1/pruebas.js:640:70) <- at jugarRutaGota (http://127.0.0.1:54100/content/cap1/pruebas.js:727:5)"
+    },
+    {
+      "t": 1793944477574,
+      "clock": 119.3,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944477609,
+      "clock": 119.3,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944477643,
+      "clock": 119.3,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944477676,
+      "clock": 119.3,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944477709,
+      "clock": 119.3,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at Object.alResponder (http://127.0.0.1:54100/content/cap1/educativa.js:786:80) <- at Object.alTerminar (http://127.0.0.1:54100/src/game/aula.js:363:30) <- at sg.onclick (http://127.0.0.1:54100/src/game/aula.js:321:66)"
+    },
+    {
+      "t": 1793944477711,
+      "clock": 119.3,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at hecho (http://127.0.0.1:54100/content/cap1/educativa.js:419:9) <- at terminarMision (http://127.0.0.1:54100/content/cap1/educativa.js:796:9) <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49)"
+    },
+    {
+      "t": 1793944477715,
+      "clock": 119.3,
+      "partidas": 2,
+      "registro": "3fbb4c50de296ca1",
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at registrar (http://127.0.0.1:54100/content/cap1/educativa.js:400:12) <- at terminarMision (http://127.0.0.1:54100/content/cap1/educativa.js:797:9) <- at fin (http://127.0.0.1:54100/src/game/dialogo.js:71:49) <- at nextCaja (http://127.0.0.1:54100/src/game/dialogo.js:88:82)"
+    },
+    {
+      "t": 1793944479840,
+      "clock": 2.1,
+      "partidas": 0,
+      "registro": null,
+      "pila": "at AU.registrar (<anonymous>:8:14) <- at Object.maestroTest (http://127.0.0.1:54100/content/cap1/pruebas.js:900:10) <- at http://127.0.0.1:54100/src/boot.js:62:108 <- at async <anonymous>:1:26"
+    }
+  ],
+  "snapshots": {
+    "selfTest": {
+      "partidas": 0,
+      "registro": null,
+      "clave": "amazonaverse.aula.cap1",
+      "lsaula": null
+    },
+    "missionTest": {
+      "partidas": 0,
+      "registro": null,
+      "clave": "amazonaverse.aula.cap1",
+      "lsaula": null
+    },
+    "accessoryTest": {
+      "partidas": 0,
+      "registro": null,
+      "clave": "amazonaverse.aula.cap1",
+      "lsaula": null
+    },
+    "templateTest": {
+      "partidas": 0,
+      "registro": null,
+      "clave": "amazonaverse.aula.cap1",
+      "lsaula": null
+    },
+    "eduTest": {
+      "partidas": 0,
+      "registro": null,
+      "clave": "amazonaverse.aula.cap1",
+      "lsaula": null
+    },
+    "maestroTest": {
+      "partidas": 0,
+      "registro": null,
+      "clave": "amazonaverse.aula.cap1",
+      "lsaula": null
+    }
+  },
+  "erroresConsola": []
+}
