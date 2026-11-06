@@ -1,0 +1,129 @@
+{
+ "etiqueta": "r5",
+ "pantalla": "escritorio 1600x900@1 cpuX1",
+ "head": "desconocido",
+ "datos": {
+  "v18": true,
+  "base": {
+   "fpsMed": 128.2,
+   "peorMs": 26,
+   "callsMed": 88,
+   "trisMed": 799829,
+   "heap": 822,
+   "stats": {
+    "calls": 88,
+    "tris": 799843,
+    "tex": 173,
+    "geo": 110
+   }
+  },
+  "duracionTestMs": 34,
+  "test": {
+   "passed": 18,
+   "total": 19,
+   "fallos": [
+    "Lluvia de semillas lanza 3 semillas :: 7"
+   ]
+  },
+  "campo": [
+   {
+    "sp": "vittata",
+    "poder": "grito_yunque",
+    "fpsBase": 90.1,
+    "fpsCon": 51.5,
+    "callsBase": 103,
+    "callsCon": 117,
+    "trisCon": 942780
+   },
+   {
+    "sp": "agilis",
+    "poder": "quiebro",
+    "fpsBase": 58.8,
+    "fpsCon": 103.1,
+    "callsBase": 102,
+    "callsCon": 102,
+    "trisCon": 958759
+   },
+   {
+    "sp": "barbadensis",
+    "poder": "lluvia_semillas",
+    "fpsBase": 96.2,
+    "fpsCon": 88.5,
+    "callsBase": 102,
+    "callsCon": 104,
+    "trisCon": 958762
+   },
+   {
+    "sp": "xantholora",
+    "poder": "ojo_cenote",
+    "fpsBase": 83.3,
+    "fpsCon": 98,
+    "callsBase": 102,
+    "callsCon": 102,
+    "trisCon": 958758
+   },
+   {
+    "sp": "farinosa",
+    "poder": "ala_fuerte",
+    "fpsBase": 102,
+    "fpsCon": 87,
+    "callsBase": 102,
+    "callsCon": 103,
+    "trisCon": 958756
+   },
+   {
+    "sp": "guildingii",
+    "poder": "abanico_colores",
+    "fpsBase": 73,
+    "fpsCon": 93.5,
+    "callsBase": 102,
+    "callsCon": 102,
+    "trisCon": 958757
+   },
+   {
+    "sp": "diadema",
+    "poder": "semilla_rio",
+    "fpsBase": 95.2,
+    "fpsCon": 80.6,
+    "callsBase": 102,
+    "callsCon": 103,
+    "trisCon": 958756
+   },
+   {
+    "sp": "versicolor",
+    "poder": "mirada_piton",
+    "fpsBase": 91.7,
+    "fpsCon": 96.2,
+    "callsBase": 102,
+    "callsCon": 102,
+    "trisCon": 958756
+   },
+   {
+    "sp": "collaria",
+    "poder": "ojo_sol",
+    "fpsBase": 86.2,
+    "fpsCon": 92.6,
+    "callsBase": 102,
+    "callsCon": 102,
+    "trisCon": 958755
+   },
+   {
+    "sp": "arausiaca",
+    "poder": "escudo_plumas",
+    "fpsBase": 100,
+    "fpsCon": 102,
+    "callsBase": 102,
+    "callsCon": 102,
+    "trisCon": 958836
+   }
+  ],
+  "contexto": {
+   "calls": 101,
+   "tris": 958707,
+   "tex": 185,
+   "geo": 137,
+   "heap": 856
+  }
+ },
+ "erroresConsola": []
+}

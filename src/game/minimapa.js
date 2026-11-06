@@ -169,6 +169,8 @@ window.AVMinimapa = function (G) {
     if (G.V18) {
       try { const g = G.v18minigolf && G.v18minigolf.mapa && G.v18minigolf.mapa(); if (g) out.push({ tipo: 'v18golf', x: g.x, z: g.z, nombre: g.nombre }); } catch (e) { /* sin módulo */ }
       try { const p = G.v18puerto && G.v18puerto.mapa && G.v18puerto.mapa(); if (p) out.push({ tipo: 'v18puerto', x: p.x, z: p.z, nombre: p.nombre }); } catch (e) { /* sin módulo */ }
+      // KIMI-150: el Ojo de sol marca en el minimapa lo más cercano durante unos segundos (explorar.js; sin bandera no existe)
+      try { const e = G.v18explorar && G.v18explorar.mapa && G.v18explorar.mapa(); if (e) out.push({ tipo: 'lugar', x: e.x, z: e.z, nombre: e.nombre }); } catch (e2) { /* sin módulo */ }
     }
     const bq = G.banquete && G.banquete._dev && G.banquete._dev.mundo && G.banquete._dev.mundo.lista;
     // Frutos: solo los 14 más cercanos (sin ruido; el Banquete tiene cientos y el mapa debe poder leerse)
