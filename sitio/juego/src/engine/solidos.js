@@ -569,6 +569,29 @@ AVE.module('solidos', function (G) {
   const VA = { cel: 0.15, banda: [0.3, 1.1], radios: [0.45, 0.7, 1.0, 1.3], minInterior: 1.5, cubierto: 0.7, ancho: [0.6, 4], minAlto: 1, max: 6, grosor: 0.08 };
   const vanosHechos = new Map(); // nombre → { vanos, motivo, ms }
   const vanoCola = []; // búsquedas de puerta repartidas en varios cuadros (QA-53 / G22)
+  // KIMI-139 (QA-181): modelos MACIZOS verificados — la búsqueda real de vanos (sonda
+  // tools/build/kimi1_137.js, corrida `--sin-macizos` completa en los 6 packs, 6-nov) dio 0
+  // paneles (veredicto 'sin vanos'/'cerrado'/'sin interior') en TODAS sus apariciones, y la
+  // corrida de referencia normal no los contradice. Se fija ese veredicto sin muestrear:
+  // misma semántica (nada que tapar, mismos bloques/tramos) sin el coste — en el Chromebook
+  // ×6 era ~87 % del trabajo de vanos (varios ms por modelo, hilo principal, al cargar cada
+  // zona). Ojo: la búsqueda real ES inestable en algunos modelos (misma geometría, veredicto
+  // distinto entre cargas: bohio_redondo, caney_largo, ruina_mirador…): por eso la lista
+  // exige unanimidad nv===0; un modelo reexportado del kit con una puerta nueva QUEDARÍA sin
+  // panel (puerta abierta a un interior vacío, el bug B4 de origen) → al reexportar un modelo
+  // del kit, re-verificar con `node tools/build/kimi1_137.js --sin-macizos --packs cap1,ep2,
+  // ep3,ep4,ep5,ep6` y actualizar la lista (evidencia docs/img/kimi137/k139_lista.json).
+  const MACIZOS = new Set([
+    'bloque_piedra', 'bohio_puntiagudo', 'campamento_c', 'canoa', 'carpa_a', 'carpa_c', 'carpa_e',
+    'casa_plataforma', 'cercado_redondo', 'complejo_ruinas', 'empalizada', 'losa_piedra',
+    'mirador_escalonado', 'monumento_c', 'monumento_d', 'monumento_f', 'monumento_g',
+    'muralla_atalaya_a', 'muralla_atalaya_b', 'muro_templo', 'plataforma_piedra', 'portal_madera_a',
+    'portal_madera_b', 'portal_madera_c', 'portal_puas', 'puente_madera', 'ruina_altar', 'ruina_pilar',
+    'ruina_portal', 'ruina_torre', 'ruina_torre_b', 'ruina_torre_c', 'ruina_torre_e', 'ruina_torre_f',
+    'templo_grande', 'templo_grande_a', 'templo_grande_d', 'templo_grande_e', 'templo_grande_f',
+    'templo_mediano', 'templo_mediano_f', 'templo_mediano_g', 'templo_mediano_h', 'toldo_pequeno',
+    'torre_vigia', 'torre_vigia_b',
+  ]);
   const kNorm = a => !a || !a.normalized ? 1 : a.array instanceof Uint8Array ? 1 / 255 : a.array instanceof Uint16Array ? 1 / 65535
     : a.array instanceof Int8Array ? 1 / 127 : a.array instanceof Int16Array ? 1 / 32767 : 1;
   function prepararVanos(partes) {
@@ -585,9 +608,12 @@ AVE.module('solidos', function (G) {
     };
   }
   // Muestreo de la planta, por tandas. Tm es la rejilla de techo (antes T): no pisa el terreno.
+  // KIMI-137 (QA-181): interpolación incremental (la muestra avanza con sumas en vez de recomputar
+  // la baricéntrica por punto), celda con `| 0` (la rejilla tiene margen `pad`: el índice es positivo)
+  // y tope de presupuesto cada 128 muestras (performance.now() por muestra pesaba en el perfil).
   function muestraVanos(job, t0, ms) {
     const partes = job.partes, C = job.C, ox = job.ox, oz = job.oz, y0 = job.y0, nx = job.nx;
-    const Bp = job.Bp, Tm = job.Tm, techoV = job.techoV;
+    const Bp = job.Bp, Tm = job.Tm, techoV = job.techoV, b0 = VA.banda[0], b1 = VA.banda[1];
     while (job.pi < partes.length) {
       const p = partes[job.pi], pos = p.geo.attributes.position, I = p.geo.index;
       const nt = I ? I.count / 3 : pos.count / 3, k = kNorm(pos);
@@ -598,8 +624,8 @@ AVE.module('solidos', function (G) {
           vb.fromBufferAttribute(pos, I ? I.getX(t * 3 + 1) : t * 3 + 1).multiplyScalar(k);
           vc.fromBufferAttribute(pos, I ? I.getX(t * 3 + 2) : t * 3 + 2).multiplyScalar(k);
           const ymin = Math.min(va.y, vb.y, vc.y) - y0, ymax = Math.max(va.y, vb.y, vc.y) - y0;
-          if (ymax < VA.banda[0]) { job.ti++; continue; }
-          const paso = C * (ymin > VA.banda[1] ? 1.4 : 0.7);
+          if (ymax < b0) { job.ti++; continue; }
+          const paso = C * (ymin > b1 ? 1.4 : 0.7);
           job.nu = Math.max(1, Math.ceil(va.distanceTo(vb) / paso));
           job.nv = Math.max(1, Math.ceil(va.distanceTo(vc) / paso));
           job.vax = va.x; job.vay = va.y; job.vaz = va.z;
@@ -611,14 +637,18 @@ AVE.module('solidos', function (G) {
         const vax = job.vax, vay = job.vay, vaz = job.vaz, vbx = job.vbx, vby = job.vby, vbz = job.vbz, vcx = job.vcx, vcy = job.vcy, vcz = job.vcz;
         for (; job.i <= nu; job.i++) {
           const u = job.i / nu;
+          const ddx = (vcx - vax) / nv, ddy = (vcy - vay) / nv, ddz = (vcz - vaz) / nv;
+          let x = vax + (vbx - vax) * u + ddx * job.j;
+          let y = vay + (vby - vay) * u + ddy * job.j - y0;
+          let z = vaz + (vbz - vaz) * u + ddz * job.j;
           for (; job.j <= nv; job.j++) {
             const v = job.j / nv; if (u + v > 1.0001) break;
-            const y = vay + (vby - vay) * u + (vcy - vay) * v - y0;
-            if (y >= VA.banda[0]) {
-              const c = Math.floor((vax + (vbx - vax) * u + (vcx - vax) * v - ox) / C) + Math.floor((vaz + (vbz - vaz) * u + (vcz - vaz) * v - oz) / C) * nx;
-              if (y <= VA.banda[1]) Bp[c] = 1; else { Tm[c] = 1; if (y < techoV[c]) techoV[c] = y; }
+            if (y >= b0) {
+              const c = (((x - ox) / C) | 0) + (((z - oz) / C) | 0) * nx;
+              if (y <= b1) Bp[c] = 1; else { Tm[c] = 1; if (y < techoV[c]) techoV[c] = y; }
             }
-            if ((++job.pasos & 31) === 0 && performance.now() - t0 >= ms) { job.j++; return false; }
+            x += ddx; y += ddy; z += ddz;
+            if ((++job.pasos & 127) === 0 && performance.now() - t0 >= ms) { job.j++; return false; }
           }
           job.j = 0;
         }
@@ -805,11 +835,18 @@ AVE.module('solidos', function (G) {
     if (R && R.listo && !abierta && R.vanos.length && R.partesRef !== partes) { R.partesRef = partes; R.fundir = fundir; R.fundido = false; return aplicarPaneles(R, true); }
     if (R && R.listo && (R.fundido || abierta)) return abierta ? 0 : R.vanos.length;
     if (!R) {
-      try { R = prepararVanos(partes); }
-      catch (e) { R = { motivo: 'error: ' + (e && e.message || e), vanos: [], listo: true, fundido: true, ms: 0 }; }
-      R.nombre = nombre;
-      vanosHechos.set(nombre, R);
-      if (!R.listo) vanoCola.push(R);
+      if (!abierta && MACIZOS.has(nombre)) {
+        // KIMI-139: macizo verificado — veredicto de 0 paneles fijado sin muestreo (ver lista arriba).
+        // No retiene partes (los jobs reales sí: sus geometrías ya las retiene streaming).
+        R = { motivo: 'macizo', vanos: [], listo: true, fundido: false, ms: 0, nombre };
+        vanosHechos.set(nombre, R);
+      } else {
+        try { R = prepararVanos(partes); }
+        catch (e) { R = { motivo: 'error: ' + (e && e.message || e), vanos: [], listo: true, fundido: true, ms: 0 }; }
+        R.nombre = nombre;
+        vanosHechos.set(nombre, R);
+        if (!R.listo) vanoCola.push(R);
+      }
     }
     R.nombre = nombre; R.abierta = abierta; R.partesRef = partes; R.fundir = fundir;
     if (!R.listo) bombearVanos(msSolidos());
