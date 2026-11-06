@@ -1,0 +1,60 @@
+[14:02:29] pack ep2: navegando...
+[14:02:34] …latido
+[14:02:39] …latido
+[14:02:44] …latido
+[14:02:49] …latido
+[14:02:54] …latido
+[14:02:56] pack ep2: listo en 4.207s, entrada en 26.731s; muestreo 12s en el spawn
+[14:02:59] …latido
+[14:03:04] …latido
+[14:03:09] …latido
+[14:03:14] …latido
+[14:03:19] …latido
+[14:03:23] pack ep2: fpsMed=34 min=28 peorMs=56 calls=59 ktris=270 medL=59 calls/0.27M errores=[]
+[14:03:23] pack ep3: navegando...
+[14:03:24] …latido
+[14:03:29] …latido
+[14:03:34] …latido
+[14:03:39] …latido
+[14:03:42] pack ep3: listo en 4.276s, entrada en 19.581s; muestreo 12s en el spawn
+[14:03:44] …latido
+[14:03:49] …latido
+[14:03:54] …latido
+[14:03:59] …latido
+[14:04:00] pack ep3: fpsMed=26 min=3 peorMs=1115 calls=91 ktris=459 medL=90 calls/0.55M errores=[]
+[14:04:00] pack ep4: navegando...
+[14:04:04] …latido
+[14:04:09] …latido
+[14:04:14] …latido
+[14:04:19] …latido
+[14:04:22] pack ep4: listo en 4.168s, entrada en 21.875s; muestreo 12s en el spawn
+[14:04:24] …latido
+[14:04:29] …latido
+[14:04:34] …latido
+[14:04:39] pack ep4: fpsMed=23 min=3 peorMs=1704 calls=114 ktris=478 medL=112 calls/0.56M errores=[]
+[14:04:39] pack ep5: navegando...
+[14:04:39] …latido
+[14:04:44] …latido
+[14:04:49] …latido
+[14:04:54] …latido
+[14:04:59] …latido
+[14:05:04] …latido
+[14:05:05] pack ep5: listo en 4.24s, entrada en 26.057s; muestreo 12s en el spawn
+[14:05:09] …latido
+[14:05:14] …latido
+[14:05:19] …latido
+[14:05:24] pack ep5: fpsMed=23 min=1 peorMs=1471 calls=103 ktris=233 medL=102 calls/0.24M errores=[]
+[14:05:24] pack ep6: navegando...
+[14:05:24] …latido
+[14:05:29] …latido
+[14:05:34] …latido
+[14:05:39] …latido
+[14:05:44] …latido
+[14:05:49] pack ep6: listo en 4.121s, entrada en 24.737s; muestreo 12s en el spawn
+[14:05:49] …latido
+[14:05:54] …latido
+[14:05:59] …latido
+[14:06:04] …latido
+[14:06:09] …latido
+[14:06:10] pack ep6: fpsMed=29 min=1 peorMs=1554 calls=86 ktris=218 medL=86 calls/0.22M errores=[]
+[14:06:10] evidencia: C:\Users\kelvi\amazonaversegame\docs\img\kimi127\k127_libre-p.json

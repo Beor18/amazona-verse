@@ -1,0 +1,155 @@
+{
+ "tarea": "KIMI-127",
+ "etiqueta": "libre",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "packs": [
+  "cap1",
+  "ep2",
+  "ep3",
+  "ep4",
+  "ep5",
+  "ep6"
+ ],
+ "demo": true,
+ "head": "desconocido",
+ "capas": {
+  "cap1": {
+   "cargaListaS": 5,
+   "cargaEntradaS": 27.9,
+   "pos": [
+    -8,
+    -2.5
+   ],
+   "fpsPorSeg": [
+    25,
+    27,
+    26,
+    25,
+    27,
+    27,
+    26,
+    26,
+    25,
+    23,
+    30,
+    29,
+    27
+   ],
+   "fpsMed": 26,
+   "fpsMin": 23,
+   "peorMs": 73,
+   "stats": [
+    {
+     "calls": 63,
+     "ktris": 268,
+     "fpsMedidor": 26,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 135
+    },
+    {
+     "calls": 62,
+     "ktris": 268,
+     "fpsMedidor": 28,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 123
+    },
+    {
+     "calls": 62,
+     "ktris": 268,
+     "fpsMedidor": 26,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 138
+    },
+    {
+     "calls": 62,
+     "ktris": 268,
+     "fpsMedidor": 26,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 119
+    },
+    {
+     "calls": 62,
+     "ktris": 268,
+     "fpsMedidor": 28,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 131
+    },
+    {
+     "calls": 62,
+     "ktris": 268,
+     "fpsMedidor": 27,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 143
+    },
+    {
+     "calls": 61,
+     "ktris": 268,
+     "fpsMedidor": 27,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 123
+    },
+    {
+     "calls": 61,
+     "ktris": 268,
+     "fpsMedidor": 28,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 135
+    },
+    {
+     "calls": 61,
+     "ktris": 268,
+     "fpsMedidor": 26,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 114
+    },
+    {
+     "calls": 62,
+     "ktris": 268,
+     "fpsMedidor": 28,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 126
+    },
+    {
+     "calls": 62,
+     "ktris": 268,
+     "fpsMedidor": 31,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 139
+    },
+    {
+     "calls": 62,
+     "ktris": 268,
+     "fpsMedidor": 28,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "heapMB": 119
+    }
+   ],
+   "med": {
+    "calls": 62,
+    "triangulos": 267796,
+    "texturasMB": 154.8,
+    "geometrias": 95,
+    "heapMB": 119,
+    "fps": 28
+   },
+   "medErr": null,
+   "errores": []
+  },
+  "ep2": {
+   "error": "WebSocket: error"
+  }
+ }
+}
