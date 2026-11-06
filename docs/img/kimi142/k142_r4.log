@@ -1,0 +1,9 @@
+[09:54:17] chrome listo; servidor :50082
+[09:54:45] entrar: ok
+[09:54:54] prep ok
+[09:55:49] quieto prep: {"trabajos":0,"descargando":0,"vistoST":26}
+[09:56:07] quieto: fpsMed=8 · perfil 17836.5 ms · layout: 114.8 ms 0% llamador=guia · colocarPm @guia_controles.js:271
+[09:56:31] sombra prep: {"trabajos":0,"descargando":0,"vistoST":16}
+[09:56:46] sombra: fpsMed=5 · perfil 13503.4 ms · layout: 333.1 ms 0% llamador=guia · colocarPm @guia_controles.js:271
+[09:56:46] consola 0 errores
+[09:56:47] cerrado: ok

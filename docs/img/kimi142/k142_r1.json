@@ -1,0 +1,565 @@
+{
+ "tarea": "KIMI-142",
+ "bug": "QA-181",
+ "etiqueta": "r1",
+ "chromebook": {
+  "cpu": 6,
+  "w": 1366,
+  "h": 768,
+  "dpr": 1
+ },
+ "secs": 12,
+ "escenarios": {
+  "quietoPrep": {
+   "asentado": {
+    "trabajos": 0,
+    "descargando": 0,
+    "vistoST": 15
+   },
+   "fase": "nada"
+  },
+  "quieto": {
+   "fpsPorSeg": [
+    11,
+    9,
+    10,
+    8,
+    8,
+    9,
+    9,
+    9,
+    9,
+    10,
+    9,
+    9
+   ],
+   "fpsMed": 9,
+   "fpsMin": 8,
+   "peorMs": 335,
+   "p95Ms": 161,
+   "stats": [
+    {
+     "calls": 86,
+     "tris": 394078,
+     "fpsMedidor": 12,
+     "dpr": 0.75
+    },
+    {
+     "calls": 86,
+     "tris": 394078,
+     "fpsMedidor": 7,
+     "dpr": 0.75
+    },
+    {
+     "calls": 86,
+     "tris": 394078,
+     "fpsMedidor": 9,
+     "dpr": 0.75
+    },
+    {
+     "calls": 86,
+     "tris": 394078,
+     "fpsMedidor": 8,
+     "dpr": 0.75
+    },
+    {
+     "calls": 86,
+     "tris": 394078,
+     "fpsMedidor": 9,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394078,
+     "fpsMedidor": 9,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394078,
+     "fpsMedidor": 9,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394078,
+     "fpsMedidor": 10,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394078,
+     "fpsMedidor": 9,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394078,
+     "fpsMedidor": 10,
+     "dpr": 0.75
+    },
+    {
+     "calls": 85,
+     "tris": 394078,
+     "fpsMedidor": 10,
+     "dpr": 0.75
+    }
+   ],
+   "heapMB": 198,
+   "perfilTotalMs": 15669.5,
+   "top": [
+    {
+     "fn": "nativo · (program)",
+     "selfMs": 5230.9,
+     "pct": 33.4,
+     "hits": 4977
+    },
+    {
+     "fn": "anónima/sin-url · getClientRects",
+     "selfMs": 1464.4,
+     "pct": 9.3,
+     "hits": 2729
+    },
+    {
+     "fn": "three.js · updateMatrixWorld",
+     "selfMs": 658.2,
+     "pct": 4.2,
+     "hits": 1221
+    },
+    {
+     "fn": "three.js · Pt",
+     "selfMs": 321.4,
+     "pct": 2.1,
+     "hits": 599
+    },
+    {
+     "fn": "anónima/sin-url · getProgramParameter",
+     "selfMs": 310.7,
+     "pct": 2,
+     "hits": 593
+    },
+    {
+     "fn": "three.js · multiplyMatrices",
+     "selfMs": 305.1,
+     "pct": 1.9,
+     "hits": 570
+    },
+    {
+     "fn": "three.js · getProgramCacheKey",
+     "selfMs": 267.6,
+     "pct": 1.7,
+     "hits": 497
+    },
+    {
+     "fn": "renderer · objPendiente",
+     "selfMs": 259.9,
+     "pct": 1.7,
+     "hits": 488
+    },
+    {
+     "fn": "three.js · At",
+     "selfMs": 243.4,
+     "pct": 1.6,
+     "hits": 453
+    },
+    {
+     "fn": "solidos · insert",
+     "selfMs": 237.3,
+     "pct": 1.5,
+     "hits": 444
+    },
+    {
+     "fn": "terreno · triQuery",
+     "selfMs": 236.9,
+     "pct": 1.5,
+     "hits": 441
+    },
+    {
+     "fn": "solidos · spans",
+     "selfMs": 198.5,
+     "pct": 1.3,
+     "hits": 370
+    },
+    {
+     "fn": "three.js · traverse",
+     "selfMs": 192.3,
+     "pct": 1.2,
+     "hits": 359
+    },
+    {
+     "fn": "streaming · cuadro",
+     "selfMs": 154.8,
+     "pct": 1,
+     "hits": 290
+    },
+    {
+     "fn": "three.js · (anónima)",
+     "selfMs": 152.2,
+     "pct": 1,
+     "hits": 284
+    },
+    {
+     "fn": "game · (anónima)",
+     "selfMs": 132.4,
+     "pct": 0.8,
+     "hits": 248
+    },
+    {
+     "fn": "three.js · renderBufferDirect",
+     "selfMs": 131.8,
+     "pct": 0.8,
+     "hits": 248
+    },
+    {
+     "fn": "renderer · calentarPresupuesto",
+     "selfMs": 127.7,
+     "pct": 0.8,
+     "hits": 241
+    },
+    {
+     "fn": "three.js · It",
+     "selfMs": 125.2,
+     "pct": 0.8,
+     "hits": 237
+    },
+    {
+     "fn": "fisica · pushOut",
+     "selfMs": 120.3,
+     "pct": 0.8,
+     "hits": 226
+    }
+   ],
+   "layout": [
+    {
+     "funcion": "getClientRects",
+     "selfMs": 1223,
+     "hits": 2282,
+     "llamador": "guia · (anónima) @guia_controles.js:211",
+     "raiz": "anónima/sin-url · (root)",
+     "cadena": [
+      "guia · (anónima)",
+      "guia · pmPuede",
+      "guia · (anónima)",
+      "guia · pmPaso",
+      "guia · pmTick",
+      "guia · actualizar",
+      "guia · (anónima)",
+      "engine/otro · G.emit"
+     ],
+     "pct": 0
+    },
+    {
+     "funcion": "getClientRects",
+     "selfMs": 241.4,
+     "hits": 447,
+     "llamador": "guia · colocarPm @guia_controles.js:241",
+     "raiz": "anónima/sin-url · (root)",
+     "cadena": [
+      "guia · colocarPm",
+      "guia · pintarPm",
+      "guia · pmTick",
+      "guia · actualizar",
+      "guia · (anónima)",
+      "engine/otro · G.emit",
+      "renderer · update",
+      "renderer · frame"
+     ],
+     "pct": 0
+    },
+    {
+     "funcion": "getBoundingClientRect",
+     "selfMs": 1.6,
+     "hits": 3,
+     "llamador": "minimapa · colocar @minimapa.js:269",
+     "raiz": "anónima/sin-url · (root)",
+     "cadena": [
+      "minimapa · colocar",
+      "minimapa · tick",
+      "minimapa · (anónima)",
+      "engine/otro · G.emit",
+      "renderer · render",
+      "renderer · frame",
+      "anónima/sin-url · (root)"
+     ],
+     "pct": 0
+    }
+   ]
+  },
+  "sombraPrep": {
+   "asentado": {
+    "trabajos": 0,
+    "descargando": 0,
+    "vistoST": 2
+   },
+   "fase": "lucha"
+  },
+  "sombra": {
+   "fpsPorSeg": [
+    8,
+    10,
+    9,
+    9,
+    10,
+    9,
+    9,
+    10,
+    9,
+    9,
+    9,
+    11
+   ],
+   "fpsMed": 9,
+   "fpsMin": 8,
+   "peorMs": 203,
+   "p95Ms": 165,
+   "stats": [
+    {
+     "calls": 92,
+     "tris": 402119,
+     "fpsMedidor": 9,
+     "dpr": 0.75
+    },
+    {
+     "calls": 96,
+     "tris": 403819,
+     "fpsMedidor": 10,
+     "dpr": 0.75
+    },
+    {
+     "calls": 99,
+     "tris": 402883,
+     "fpsMedidor": 9,
+     "dpr": 0.75
+    },
+    {
+     "calls": 98,
+     "tris": 402883,
+     "fpsMedidor": 10,
+     "dpr": 0.75
+    },
+    {
+     "calls": 101,
+     "tris": 407179,
+     "fpsMedidor": 10,
+     "dpr": 0.75
+    },
+    {
+     "calls": 101,
+     "tris": 407179,
+     "fpsMedidor": 10,
+     "dpr": 0.75
+    },
+    {
+     "calls": 101,
+     "tris": 407179,
+     "fpsMedidor": 9,
+     "dpr": 0.75
+    },
+    {
+     "calls": 101,
+     "tris": 407179,
+     "fpsMedidor": 10,
+     "dpr": 0.75
+    },
+    {
+     "calls": 101,
+     "tris": 407179,
+     "fpsMedidor": 8,
+     "dpr": 0.75
+    },
+    {
+     "calls": 101,
+     "tris": 407179,
+     "fpsMedidor": 8,
+     "dpr": 0.75
+    },
+    {
+     "calls": 102,
+     "tris": 408139,
+     "fpsMedidor": 12,
+     "dpr": 0.75
+    }
+   ],
+   "heapMB": 187,
+   "perfilTotalMs": 14158.4,
+   "top": [
+    {
+     "fn": "nativo · (program)",
+     "selfMs": 3768.4,
+     "pct": 26.6,
+     "hits": 5127
+    },
+    {
+     "fn": "anónima/sin-url · getClientRects",
+     "selfMs": 1570.1,
+     "pct": 11.1,
+     "hits": 2939
+    },
+    {
+     "fn": "three.js · updateMatrixWorld",
+     "selfMs": 657.1,
+     "pct": 4.6,
+     "hits": 1226
+    },
+    {
+     "fn": "three.js · multiplyMatrices",
+     "selfMs": 304.9,
+     "pct": 2.2,
+     "hits": 571
+    },
+    {
+     "fn": "three.js · getProgramCacheKey",
+     "selfMs": 301.4,
+     "pct": 2.1,
+     "hits": 562
+    },
+    {
+     "fn": "renderer · objPendiente",
+     "selfMs": 281.6,
+     "pct": 2,
+     "hits": 528
+    },
+    {
+     "fn": "three.js · At",
+     "selfMs": 269.9,
+     "pct": 1.9,
+     "hits": 503
+    },
+    {
+     "fn": "three.js · Pt",
+     "selfMs": 266.7,
+     "pct": 1.9,
+     "hits": 498
+    },
+    {
+     "fn": "solidos · insert",
+     "selfMs": 240.9,
+     "pct": 1.7,
+     "hits": 449
+    },
+    {
+     "fn": "solidos · spans",
+     "selfMs": 217.9,
+     "pct": 1.5,
+     "hits": 408
+    },
+    {
+     "fn": "three.js · traverse",
+     "selfMs": 197.4,
+     "pct": 1.4,
+     "hits": 369
+    },
+    {
+     "fn": "three.js · renderBufferDirect",
+     "selfMs": 187.7,
+     "pct": 1.3,
+     "hits": 351
+    },
+    {
+     "fn": "streaming · cuadro",
+     "selfMs": 181,
+     "pct": 1.3,
+     "hits": 338
+    },
+    {
+     "fn": "terreno · triQuery",
+     "selfMs": 149.3,
+     "pct": 1.1,
+     "hits": 278
+    },
+    {
+     "fn": "three.js · (anónima)",
+     "selfMs": 146.2,
+     "pct": 1,
+     "hits": 274
+    },
+    {
+     "fn": "solidos · trabajar",
+     "selfMs": 125.5,
+     "pct": 0.9,
+     "hits": 234
+    },
+    {
+     "fn": "fisica · pushOut",
+     "selfMs": 120.5,
+     "pct": 0.9,
+     "hits": 226
+    },
+    {
+     "fn": "anónima/sin-url · bindBuffer",
+     "selfMs": 117.3,
+     "pct": 0.8,
+     "hits": 219
+    },
+    {
+     "fn": "renderer · texturasDe",
+     "selfMs": 113.7,
+     "pct": 0.8,
+     "hits": 212
+    },
+    {
+     "fn": "fisica · step",
+     "selfMs": 112.6,
+     "pct": 0.8,
+     "hits": 212
+    }
+   ],
+   "layout": [
+    {
+     "funcion": "getClientRects",
+     "selfMs": 1254.5,
+     "hits": 2348,
+     "llamador": "guia · (anónima) @guia_controles.js:211",
+     "raiz": "anónima/sin-url · (root)",
+     "cadena": [
+      "guia · (anónima)",
+      "guia · pmPuede",
+      "guia · (anónima)",
+      "guia · pmPaso",
+      "guia · pmTick",
+      "guia · actualizar",
+      "guia · (anónima)",
+      "engine/otro · G.emit"
+     ],
+     "pct": 0
+    },
+    {
+     "funcion": "getClientRects",
+     "selfMs": 315.7,
+     "hits": 591,
+     "llamador": "guia · colocarPm @guia_controles.js:241",
+     "raiz": "anónima/sin-url · (root)",
+     "cadena": [
+      "guia · colocarPm",
+      "guia · pintarPm",
+      "guia · pmTick",
+      "guia · actualizar",
+      "guia · (anónima)",
+      "engine/otro · G.emit",
+      "renderer · update",
+      "renderer · frame"
+     ],
+     "pct": 0
+    },
+    {
+     "funcion": "getBoundingClientRect",
+     "selfMs": 1.6,
+     "hits": 3,
+     "llamador": "minimapa · colocar @minimapa.js:269",
+     "raiz": "anónima/sin-url · (root)",
+     "cadena": [
+      "minimapa · colocar",
+      "minimapa · tick",
+      "minimapa · (anónima)",
+      "engine/otro · G.emit",
+      "renderer · render",
+      "renderer · frame",
+      "anónima/sin-url · (root)"
+     ],
+     "pct": 0
+    }
+   ]
+  }
+ },
+ "consola": []
+}
