@@ -53,6 +53,10 @@ Cada trabajador ya corre bajo `caffeinate -i`, así que la Mac no se duerme mien
 
 ### Comandos exactos para Kelvin (Terminal de la Mac, con la Mac en el hotspot si el router bloquea)
 
+
+## Vigilante automático (6-nov)
+Para que la Mac no se quede parada: `tools/agente_api/instalar_vigilante.sh` (una sola vez) deja a launchd corriendo `tools/agente_api/vigilante.sh` al iniciar sesión y cada 10 min. El vigilante trae la cola de GitHub, pone la copia al día con main cuando ningún trabajador está a mitad de tarea (los restos van a `git stash`), arranca el subidor si está apagado y arranca trabajadores hasta 2. No gasta crédito por sí solo. Necesita la clave en el Llavero (`security add-generic-password -a "$USER" -s amazonaverse-api -w`). Registro: `~/AmazonaVerse/logs_api/vigilante.log`. Quitarlo: `launchctl unload ~/Library/LaunchAgents/com.amazonaverse.vigilante.plist`.
+
 **A · Arrancar todo, el de siempre** (también sirve tras un apagón o reinicio):
 ```bash
 cd ~/AmazonaVerse/juego_api
