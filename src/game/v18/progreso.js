@@ -1,7 +1,8 @@
 /* Juego · V18.1 «El mundo que cambia contigo» (Kelvin 5-nov) · progreso compartido (frente D).
    UN solo dueño del progreso del ciclo V18.1: los frentes A (combate), B (reparar) y C (especies) leen y escriben aquí, nunca
    en un almacén propio. Contrato en docs/equipo/V18_CONTRATOS.md.
-   - Solo existe con la bandera V18 (?v18=1, o localStorage `amazonaverse.v18` = '1'): la versión estable no cambia.
+   - Solo existe con la bandera V18 (?v18=1, o localStorage `<almacen>.v18on` = '1'; QA-164: la bandera tiene su propia clave,
+     no la del progreso): la versión estable no cambia.
    - Almacén `<almacen>.v18` = { v: 1, especies: { <speciesId>: estado }, inv: { <itemId>: n }, otorgados: { <rewardKey>: true },
      mundo: { <worldChangeId>: estado }, sel: <speciesId|null>, evo: { ... } }.
    - v2 (V18.2, evolución): solo añade `evo` (niveles, XP y alianzas; dueño del formato: evolucion.js). Una partida v1 migra
@@ -103,6 +104,19 @@ window.AVV18Progreso = function (G) {
           const sp = perfilActual();
           check('Perfil creado después de leer el progreso: su especie entra elegible (QA-165)', rango(estado(sp)) >= rango('seleccionable') && seleccionada() === sp, sp + ' ' + estado(sp));
         } finally { G.S.profile = prof0; }
+      }
+      // QA-164: la bandera de arranque (boot.js) vive en <almacen>.v18on, NO en la clave del progreso: guardar no la apaga
+      {
+        const claveBandera = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.v18on';
+        let b0 = null; try { b0 = localStorage.getItem(claveBandera); } catch (e) { /* sin almacenamiento */ }
+        try {
+          localStorage.setItem(claveBandera, '1');
+          otorgar('qa164_bandera', 'pluma_rival', 1);
+          let b1 = null; try { b1 = localStorage.getItem(claveBandera); } catch (e) { /* sin almacenamiento */ }
+          check('QA-164: guardar el progreso no borra la bandera de arranque (claves distintas)', clave() !== claveBandera && b1 === '1',
+            clave() + ' vs ' + claveBandera + ' · bandera=' + b1);
+        } catch (e) { check('QA-164: guardar el progreso no borra la bandera de arranque (claves distintas)', false, e && e.message); }
+        try { if (b0 == null) localStorage.removeItem(claveBandera); else localStorage.setItem(claveBandera, b0); } catch (e) { /* sin almacenamiento */ }
       }
     } catch (e) { check('Sin excepciones', false, e && e.message); }
     try { if (crudo == null) localStorage.removeItem(clave()); else localStorage.setItem(clave(), crudo); } catch (e) { /* sin almacenamiento */ }
