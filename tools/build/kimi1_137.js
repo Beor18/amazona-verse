@@ -37,6 +37,9 @@ const ALTO = parseInt(arg('--alto', '768'), 10);
 const DPR = parseFloat(arg('--dpr', '1'));
 const PACKS = arg('--packs', 'ep3,cap1').split(',');
 const CALIDAD = 'bajo';
+// KIMI-139: sirve solidos.js con la lista MACIZOS vaciada → la búsqueda de vanos corre DE VERDAD
+// para todos los modelos (referencia para verificar la lista; usar tras reexportar un modelo del kit).
+const SIN_MACIZOS = process.argv.includes('--sin-macizos');
 const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi137'));
 fs.mkdirSync(SALIDA, { recursive: true });
 const LOGF = path.join(SALIDA, `k137_${ETIQUETA}.log`);
@@ -58,7 +61,15 @@ function servir() {
     if (p.endsWith('/')) p += 'index.html';
     const f = path.join(RAIZ, p);
     if (!f.startsWith(RAIZ) || req.method !== 'GET') { res.writeHead(403); return res.end(); }
-    fs.readFile(f, (e, d) => { if (e) { res.writeHead(404); return res.end('404'); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' }); res.end(d); });
+    fs.readFile(f, (e, d) => {
+      if (e) { res.writeHead(404); return res.end('404'); }
+      // KIMI-139 (--sin-macizos): sirve solidos.js con la lista MACIZOS vaciada → la búsqueda
+      // de vanos corre de verdad para todos los modelos (referencia para verificar la lista).
+      if (SIN_MACIZOS && /src[\\/]engine[\\/]solidos\.js$/.test(f)) {
+        d = Buffer.from(d.toString('utf8').replace(/const MACIZOS = new Set\(\[[\s\S]*?\]\)/, 'const MACIZOS = new Set()'));
+      }
+      res.writeHead(200, { 'Content-Type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' }); res.end(d);
+    });
   });
   return new Promise(r => srv.listen(0, '127.0.0.1', () => r({ srv, puerto: srv.address().port })));
 }
@@ -210,6 +221,7 @@ function mataPorPerfil() {
     const cargaEntrarS = (Date.now() - t0) / 1000;
     return { ses, cargaListaS, cargaEntrarS };
   }
+  const agg = {}; // KIMI-139: nombre → {motivos, nv, ms, packs} agregado entre packs (alcance global: se usa también en el resumen final)
   try {
     res.packs = {};
     for (const pack of PACKS) {
@@ -229,15 +241,24 @@ function mataPorPerfil() {
           muestras.push(JSON.parse(await evaluar(cdp, ses, MUESTRA_JS, 10)));
         }
         const raf = JSON.parse(await evaluar(cdp, ses, CIERRE_RAF_JS, 10));
+        // KIMI-139: segundo drenado justo antes del volcado final — durante la ventana pueden
+        // haber llegado modelos nuevos (el spawn sigue haciendo streaming) y sus trabajos de
+        // vanos quedaban sin veredicto ('motivo' vacío) en el dump.
+        await evaluar(cdp, ses, `(async () => { try { const G = AV.G; if (G.mundo && G.mundo.streaming && G.mundo.streaming.terminar) await G.mundo.streaming.terminar(); if (G.solidos && G.solidos.terminar) G.solidos.terminar(); await new Promise(r => setTimeout(r, 600)); return 'ok'; } catch (e) { return 'ERR ' + e; } })()`, 90);
         const vanosFin = JSON.parse(await evaluar(cdp, ses, VANOS_JS, 30));
         const errores = await evaluar(cdp, ses, `JSON.stringify((window.__erroresConsola || []).slice(0, 20))`, 10);
         const st = JSON.parse(await evaluar(cdp, ses, `(() => { const s = AV.G.renderer.stats(); return JSON.stringify({ calls: s.calls, ktris: s.triangulos != null ? Math.round(s.triangulos / 1000) : null, heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null }); })()`, 10));
         const totalMs = vanosFin.reduce((a, v) => a + (v.ms || 0), 0);
         const deltaMs = statsBase.vanosMs != null ? (muestras.length ? muestras[muestras.length - 1].vanosMs - statsBase.vanosMs : 0) : null;
         const top = vanosFin.slice(0, 8).map(v => `${v.n}:${v.ms}ms/${v.motivo}${v.N ? '/N' + v.N : ''}`).join(' · ');
+        for (const v of vanosFin) {
+          const a = agg[v.n] || (agg[v.n] = { motivos: {}, nv: 0, ms: 0, packs: [] });
+          a.motivos[v.motivo] = (a.motivos[v.motivo] || 0) + 1;
+          a.nv = Math.max(a.nv, v.nv || 0); a.ms += v.ms || 0; a.packs.push(pack);
+        }
         res.packs[pack] = { cargaListaS: Math.round(cargaListaS * 10) / 10, cargaEntradaS: Math.round(cargaEntrarS * 10) / 10,
           vanosTrabajos: vanosFin.length, vanosMsTotal: totalMs, vanosMsVentana: deltaMs,
-          vanosTop: vanosFin.slice(0, 12), motivos: vanosFin.reduce((m, v) => { m[v.motivo] = (m[v.motivo] || 0) + 1; return m; }, {}),
+          vanosTop: vanosFin.slice(0, 12), vanosTodos: vanosFin, motivos: vanosFin.reduce((m, v) => { m[v.motivo] = (m[v.motivo] || 0) + 1; return m; }, {}),
           fpsMed: raf.fpsMed, fpsMin: raf.fpsMin, p95Ms: raf.p95Ms, peorMs: raf.peorMs,
           statsBase, statsFin: muestras.length ? muestras[muestras.length - 1] : null, muestras,
           calls: st.calls, ktris: st.ktris, heapMB: st.heapMB, errores: JSON.parse(errores || '[]') };
@@ -258,6 +279,19 @@ function mataPorPerfil() {
   }
   let fallos = 0;
   for (const p of PACKS) { const r = res.packs[p]; if (!r || r.error || (r.errores && r.errores.length)) fallos++; }
-  console.log(`KIMI-137 ${ETIQUETA}: ${fallos === 0 ? 'OK' : 'REVISAR'} — ${JSON.stringify(Object.fromEntries(PACKS.map(p => [p, res.packs[p] && !res.packs[p].error ? `${res.packs[p].vanosTrabajos} trabajos/${res.packs[p].vanosMsTotal}ms/fps${res.packs[p].fpsMed}` : 'ERROR'])))}`);
+  // KIMI-139: candidatos a MACIZOS — un nombre solo entra si TODAS sus apariciones (todos los
+  // packs) dieron veredicto de 0 paneles ('sin vanos'/'cerrado'/'sin interior') con nv===0.
+  // Cualquier otra aparición ('vanos', 'demasiados', 'grande', 'error') lo descarta.
+  const OK = ['sin vanos', 'cerrado', 'sin interior'];
+  const candidatos = [], descartados = [];
+  for (const [n, a] of Object.entries(agg)) {
+    const claves = Object.keys(a.motivos);
+    (a.nv === 0 && claves.length && claves.every(m => OK.includes(m)) ? candidatos : descartados).push(n);
+  }
+  candidatos.sort(); descartados.sort();
+  res.agregado = { modelos: Object.keys(agg).length, candidatosMacizo: candidatos, descartados,
+    msCandidatos: candidatos.reduce((s, n) => s + agg[n].ms, 0), msTodos: Object.values(agg).reduce((s, a) => s + a.ms, 0) };
+  guardar();
+  console.log(`KIMI-137 ${ETIQUETA}: ${fallos === 0 ? 'OK' : 'REVISAR'} — macizos ${candidatos.length}/${Object.keys(agg).length} modelos (${res.agregado.msCandidatos}/${res.agregado.msTodos} ms) — ${JSON.stringify(Object.fromEntries(PACKS.map(p => [p, res.packs[p] && !res.packs[p].error ? `${res.packs[p].vanosTrabajos} trabajos/${res.packs[p].vanosMsTotal}ms/fps${res.packs[p].fpsMed}` : 'ERROR'])))}`);
   process.exit(fallos === 0 ? 0 : 1);
 })();

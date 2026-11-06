@@ -1,0 +1,3781 @@
+{
+ "tarea": "KIMI-137",
+ "bug": "QA-181",
+ "etiqueta": "k139-real",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "packs": {
+  "cap1": {
+   "cargaListaS": 5.9,
+   "cargaEntradaS": 28.8,
+   "vanosTrabajos": 52,
+   "vanosMsTotal": 40676,
+   "vanosMsVentana": 0,
+   "vanosTop": [
+    {
+     "n": "monumento_a",
+     "ms": 4384,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 3270,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9752,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 3256,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 29829,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 2966,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 34587,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 2381,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1890,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 2346,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_g",
+     "ms": 2144,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5986,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 2049,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 13589,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 1931,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9870,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 1829,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 1805,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 1772,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 57408,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "monumento_a",
+     "ms": 4384,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 3270,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9752,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 3256,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 29829,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 2966,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 34587,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 2381,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1890,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 2346,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_g",
+     "ms": 2144,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5986,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 2049,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 13589,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 1931,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9870,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 1829,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 1805,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 1772,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 57408,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 1141,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 17792,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 865,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 61915,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 816,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 6622,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 728,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2025,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 616,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 600,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 24272,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 583,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 494,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3600,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 435,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 7380,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bloque_piedra",
+     "ms": 428,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 6384,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 425,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 386,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5893,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 371,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 273,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 30820,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 261,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 13924,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 258,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1560,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_e",
+     "ms": 257,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 21840,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 215,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 186,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4288,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 175,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3782,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_c",
+     "ms": 166,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2924,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 142,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1224,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 108,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 8836,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_a",
+     "ms": 107,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2346,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 89,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3195,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "toldo_pequeno",
+     "ms": 72,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1980,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "corral",
+     "ms": 57,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 8710,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_b",
+     "ms": 52,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2890,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 33,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4047,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_c",
+     "ms": 30,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 13200,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_puas",
+     "ms": 27,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3276,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 23,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 11712,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 21,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 18,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 18,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3520,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 17,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4158,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 16,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 5355,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "campamento_c",
+     "ms": 15,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3658,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "canoa",
+     "ms": 10,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1392,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 9,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1444,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "vanos": 6,
+    "cerrado": 21,
+    "sin interior": 19,
+    "sin vanos": 6
+   },
+   "fpsMed": 20,
+   "fpsMin": 18,
+   "p95Ms": 66,
+   "peorMs": 81,
+   "statsBase": {
+    "vanosN": 52,
+    "vanosMs": 40676,
+    "stats": {
+     "bloques": 2791,
+     "bloquesFlora": 1424,
+     "triangulos": 860118,
+     "rellenas": 603,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2268,
+     "kbFlora": 1157
+    }
+   },
+   "statsFin": {
+    "vanosN": 52,
+    "vanosMs": 40676,
+    "stats": {
+     "bloques": 2791,
+     "bloquesFlora": 1424,
+     "triangulos": 860118,
+     "rellenas": 603,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2268,
+     "kbFlora": 1157
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 52,
+     "vanosMs": 40676,
+     "stats": {
+      "bloques": 2791,
+      "bloquesFlora": 1424,
+      "triangulos": 860118,
+      "rellenas": 603,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2268,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 52,
+     "vanosMs": 40676,
+     "stats": {
+      "bloques": 2791,
+      "bloquesFlora": 1424,
+      "triangulos": 860118,
+      "rellenas": 603,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2268,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 52,
+     "vanosMs": 40676,
+     "stats": {
+      "bloques": 2791,
+      "bloquesFlora": 1424,
+      "triangulos": 860118,
+      "rellenas": 603,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2268,
+      "kbFlora": 1157
+     }
+    }
+   ],
+   "calls": 62,
+   "ktris": 268,
+   "heapMB": 151,
+   "errores": []
+  },
+  "ep2": {
+   "cargaListaS": 4.8,
+   "cargaEntradaS": 26.2,
+   "vanosTrabajos": 51,
+   "vanosMsTotal": 40012,
+   "vanosMsVentana": 0,
+   "vanosTop": [
+    {
+     "n": "monumento_a",
+     "ms": 3332,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 3273,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 2881,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9752,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 2567,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 29829,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 2537,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_g",
+     "ms": 2414,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5986,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 2408,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 34587,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 2275,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 13589,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 2136,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9870,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 2003,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1890,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 1916,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 1797,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 57408,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "monumento_a",
+     "ms": 3332,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 3273,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 2881,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9752,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 2567,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 29829,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 2537,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_g",
+     "ms": 2414,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5986,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 2408,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 34587,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 2275,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 13589,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 2136,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9870,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 2003,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1890,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 1916,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 1797,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 57408,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 1725,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 1222,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 17792,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 950,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 61915,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 614,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2025,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 568,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 6622,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 543,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 24272,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 518,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 412,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3600,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 389,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 30820,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 352,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5893,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 309,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 281,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 13924,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_b",
+     "ms": 262,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2890,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 245,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4158,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 210,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1560,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 191,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4288,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_e",
+     "ms": 178,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 21840,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_c",
+     "ms": 175,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2924,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 172,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3782,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 156,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bloque_piedra",
+     "ms": 137,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 6384,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 135,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4047,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_a",
+     "ms": 134,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2346,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 125,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1224,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 94,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 11712,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "corral",
+     "ms": 91,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 8710,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 39,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 8836,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_puas",
+     "ms": 37,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3276,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 36,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 7380,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_c",
+     "ms": 26,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 13200,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 24,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 21,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 20,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3520,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 17,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3195,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 16,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 5355,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 16,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "campamento_c",
+     "ms": 15,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3658,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 12,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1444,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "canoa",
+     "ms": 6,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1392,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "vanos": 7,
+    "cerrado": 21,
+    "sin vanos": 5,
+    "sin interior": 18
+   },
+   "fpsMed": 26,
+   "fpsMin": 25,
+   "p95Ms": 57,
+   "peorMs": 70,
+   "statsBase": {
+    "vanosN": 51,
+    "vanosMs": 40012,
+    "stats": {
+     "bloques": 2637,
+     "bloquesFlora": 1322,
+     "triangulos": 799546,
+     "rellenas": 537,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2143,
+     "kbFlora": 1074
+    }
+   },
+   "statsFin": {
+    "vanosN": 51,
+    "vanosMs": 40012,
+    "stats": {
+     "bloques": 2637,
+     "bloquesFlora": 1322,
+     "triangulos": 799546,
+     "rellenas": 537,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2143,
+     "kbFlora": 1074
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 51,
+     "vanosMs": 40012,
+     "stats": {
+      "bloques": 2637,
+      "bloquesFlora": 1322,
+      "triangulos": 799546,
+      "rellenas": 537,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2143,
+      "kbFlora": 1074
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40012,
+     "stats": {
+      "bloques": 2637,
+      "bloquesFlora": 1322,
+      "triangulos": 799546,
+      "rellenas": 537,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2143,
+      "kbFlora": 1074
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 40012,
+     "stats": {
+      "bloques": 2637,
+      "bloquesFlora": 1322,
+      "triangulos": 799546,
+      "rellenas": 537,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2143,
+      "kbFlora": 1074
+     }
+    }
+   ],
+   "calls": 58,
+   "ktris": 270,
+   "heapMB": 143,
+   "errores": []
+  },
+  "ep3": {
+   "cargaListaS": 5.3,
+   "cargaEntradaS": 23,
+   "vanosTrabajos": 39,
+   "vanosMsTotal": 42040,
+   "vanosMsVentana": 9241,
+   "vanosTop": [
+    {
+     "n": "complejo_ruinas",
+     "ms": 2478,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 2012,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 30820,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 1943,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1444,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 1941,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3195,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 1932,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1560,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 1931,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1224,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 1928,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 1925,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3600,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 1921,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 1919,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2025,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 1915,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 1877,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "complejo_ruinas",
+     "ms": 2478,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 2012,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 30820,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 1943,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1444,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 1941,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3195,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 1932,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1560,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 1931,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1224,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 1928,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 1925,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3600,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 1921,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 1919,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2025,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 1915,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 1877,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 1816,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 57408,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 1715,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 17792,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 1652,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 61915,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 1370,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 34587,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 1264,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 8836,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 1064,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9752,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 995,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 6622,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 981,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 974,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4288,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 949,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 942,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 13924,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 940,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 877,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 5355,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 870,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 7380,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 649,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 29829,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 405,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 11712,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 224,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 221,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4047,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 157,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 24272,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 108,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3782,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 53,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 19,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5893,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 18,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3520,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 17,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4158,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 16,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1890,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "campamento_c",
+     "ms": 14,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3658,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_puas",
+     "ms": 8,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3276,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "sin vanos": 5,
+    "cerrado": 17,
+    "sin interior": 14,
+    "vanos": 3
+   },
+   "fpsMed": 16,
+   "fpsMin": 11,
+   "p95Ms": 102,
+   "peorMs": 172,
+   "statsBase": {
+    "vanosN": 14,
+    "vanosMs": 1260,
+    "stats": {
+     "bloques": 526,
+     "bloquesFlora": 981,
+     "triangulos": 378043,
+     "rellenas": 110,
+     "pendientes": 70,
+     "regiones": 25,
+     "kb": 427,
+     "kbFlora": 797
+    }
+   },
+   "statsFin": {
+    "vanosN": 25,
+    "vanosMs": 10501,
+    "stats": {
+     "bloques": 547,
+     "bloquesFlora": 981,
+     "triangulos": 399880,
+     "rellenas": 110,
+     "pendientes": 100,
+     "regiones": 25,
+     "kb": 444,
+     "kbFlora": 797
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 18,
+     "vanosMs": 2904,
+     "stats": {
+      "bloques": 532,
+      "bloquesFlora": 981,
+      "triangulos": 384031,
+      "rellenas": 110,
+      "pendientes": 82,
+      "regiones": 25,
+      "kb": 432,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 23,
+     "vanosMs": 7715,
+     "stats": {
+      "bloques": 539,
+      "bloquesFlora": 981,
+      "triangulos": 392154,
+      "rellenas": 110,
+      "pendientes": 109,
+      "regiones": 25,
+      "kb": 438,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 25,
+     "vanosMs": 10501,
+     "stats": {
+      "bloques": 547,
+      "bloquesFlora": 981,
+      "triangulos": 399880,
+      "rellenas": 110,
+      "pendientes": 100,
+      "regiones": 25,
+      "kb": 444,
+      "kbFlora": 797
+     }
+    }
+   ],
+   "calls": 91,
+   "ktris": 553,
+   "heapMB": 150,
+   "errores": []
+  },
+  "ep4": {
+   "cargaListaS": 4.1,
+   "cargaEntradaS": 22.4,
+   "vanosTrabajos": 39,
+   "vanosMsTotal": 29502,
+   "vanosMsVentana": 882,
+   "vanosTop": [
+    {
+     "n": "complejo_ruinas",
+     "ms": 2382,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 2319,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 8836,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 1687,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 1667,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 30820,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 1650,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 1595,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2025,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 1595,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1444,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 1592,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3195,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 1588,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1560,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 1583,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1224,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 1580,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 1577,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 57408,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "complejo_ruinas",
+     "ms": 2382,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 2319,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 8836,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 1687,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 1667,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 30820,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 1650,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 1595,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2025,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 1595,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1444,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 1592,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3195,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 1588,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1560,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 1583,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1224,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 1580,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 1577,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 57408,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 1575,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3600,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 1572,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 1479,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 17792,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 1417,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 61915,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 740,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 34587,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 373,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 11712,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 293,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 24272,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 190,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 13924,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 183,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 29829,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 159,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 132,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4288,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 112,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4047,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 106,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3782,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 105,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 5355,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 37,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 6622,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 31,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 28,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3520,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 21,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 21,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 20,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4158,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 19,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5893,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 18,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9752,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 16,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1890,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "campamento_c",
+     "ms": 15,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3658,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 10,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 7380,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_puas",
+     "ms": 8,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3276,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 7,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "sin vanos": 4,
+    "cerrado": 17,
+    "sin interior": 14,
+    "vanos": 4
+   },
+   "fpsMed": 18,
+   "fpsMin": 13,
+   "p95Ms": 94,
+   "peorMs": 139,
+   "statsBase": {
+    "vanosN": 20,
+    "vanosMs": 1762,
+    "stats": {
+     "bloques": 550,
+     "bloquesFlora": 1244,
+     "triangulos": 441404,
+     "rellenas": 113,
+     "pendientes": 71,
+     "regiones": 25,
+     "kb": 447,
+     "kbFlora": 1011
+    }
+   },
+   "statsFin": {
+    "vanosN": 25,
+    "vanosMs": 2644,
+    "stats": {
+     "bloques": 611,
+     "bloquesFlora": 1244,
+     "triangulos": 442338,
+     "rellenas": 113,
+     "pendientes": 176,
+     "regiones": 25,
+     "kb": 496,
+     "kbFlora": 1011
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 24,
+     "vanosMs": 1904,
+     "stats": {
+      "bloques": 582,
+      "bloquesFlora": 1244,
+      "triangulos": 441989,
+      "rellenas": 113,
+      "pendientes": 152,
+      "regiones": 25,
+      "kb": 473,
+      "kbFlora": 1011
+     }
+    },
+    {
+     "vanosN": 25,
+     "vanosMs": 2644,
+     "stats": {
+      "bloques": 611,
+      "bloquesFlora": 1244,
+      "triangulos": 442096,
+      "rellenas": 113,
+      "pendientes": 149,
+      "regiones": 25,
+      "kb": 496,
+      "kbFlora": 1011
+     }
+    },
+    {
+     "vanosN": 25,
+     "vanosMs": 2644,
+     "stats": {
+      "bloques": 611,
+      "bloquesFlora": 1244,
+      "triangulos": 442338,
+      "rellenas": 113,
+      "pendientes": 176,
+      "regiones": 25,
+      "kb": 496,
+      "kbFlora": 1011
+     }
+    }
+   ],
+   "calls": 111,
+   "ktris": 560,
+   "heapMB": 133,
+   "errores": []
+  },
+  "ep5": {
+   "cargaListaS": 4.2,
+   "cargaEntradaS": 27,
+   "vanosTrabajos": 44,
+   "vanosMsTotal": 22370,
+   "vanosMsVentana": 4455,
+   "vanosTop": [
+    {
+     "n": "plataforma_piedra",
+     "ms": 3626,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 61915,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 3623,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 17792,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 1921,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 1828,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 1357,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 34587,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 1352,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 1205,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 8836,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_a",
+     "ms": 952,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 771,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 769,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 746,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 5355,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 732,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "plataforma_piedra",
+     "ms": 3626,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 61915,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 3623,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 17792,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 1921,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 1828,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 1357,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 34587,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 1352,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 1205,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 8836,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_a",
+     "ms": 952,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 771,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 769,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 746,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 5355,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 732,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 577,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 57408,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 463,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 29829,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 430,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4288,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 340,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 7380,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 311,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 6622,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 296,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 30820,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 204,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9752,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 178,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2025,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 166,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 13589,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 129,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4047,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 76,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 13924,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_b",
+     "ms": 40,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 9956,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 31,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3520,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 25,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3782,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 22,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 20,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 11712,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 19,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 16,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5893,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_a",
+     "ms": 16,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 7470,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 15,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3195,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 14,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9870,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 14,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4158,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_c",
+     "ms": 13,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2750,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_d",
+     "ms": 11,
+     "motivo": "vanos",
+     "nv": 4,
+     "N": 3550,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 9,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3600,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 9,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1560,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 9,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1444,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 8,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_g",
+     "ms": 8,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5986,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 7,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1224,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bloque_piedra",
+     "ms": 6,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 6384,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "canoa",
+     "ms": 6,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1392,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "sin interior": 14,
+    "cerrado": 20,
+    "sin vanos": 5,
+    "vanos": 5
+   },
+   "fpsMed": 17,
+   "fpsMin": 14,
+   "p95Ms": 127,
+   "peorMs": 162,
+   "statsBase": {
+    "vanosN": 33,
+    "vanosMs": 14001,
+    "stats": {
+     "bloques": 1502,
+     "bloquesFlora": 894,
+     "triangulos": 358696,
+     "rellenas": 112,
+     "pendientes": 21,
+     "regiones": 25,
+     "kb": 1220,
+     "kbFlora": 726
+    }
+   },
+   "statsFin": {
+    "vanosN": 44,
+    "vanosMs": 18456,
+    "stats": {
+     "bloques": 1533,
+     "bloquesFlora": 894,
+     "triangulos": 377442,
+     "rellenas": 112,
+     "pendientes": 98,
+     "regiones": 25,
+     "kb": 1246,
+     "kbFlora": 726
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 34,
+     "vanosMs": 14001,
+     "stats": {
+      "bloques": 1521,
+      "bloquesFlora": 894,
+      "triangulos": 370310,
+      "rellenas": 112,
+      "pendientes": 104,
+      "regiones": 25,
+      "kb": 1236,
+      "kbFlora": 726
+     }
+    },
+    {
+     "vanosN": 39,
+     "vanosMs": 15437,
+     "stats": {
+      "bloques": 1525,
+      "bloquesFlora": 894,
+      "triangulos": 373298,
+      "rellenas": 112,
+      "pendientes": 101,
+      "regiones": 25,
+      "kb": 1239,
+      "kbFlora": 726
+     }
+    },
+    {
+     "vanosN": 44,
+     "vanosMs": 18456,
+     "stats": {
+      "bloques": 1533,
+      "bloquesFlora": 894,
+      "triangulos": 377442,
+      "rellenas": 112,
+      "pendientes": 98,
+      "regiones": 25,
+      "kb": 1246,
+      "kbFlora": 726
+     }
+    }
+   ],
+   "calls": 102,
+   "ktris": 232,
+   "heapMB": 158,
+   "errores": []
+  },
+  "ep6": {
+   "cargaListaS": 4.1,
+   "cargaEntradaS": 25.6,
+   "vanosTrabajos": 50,
+   "vanosMsTotal": 11487,
+   "vanosMsVentana": 0,
+   "vanosTop": [
+    {
+     "n": "muro_templo",
+     "ms": 1937,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 17792,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 1372,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 57408,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 1096,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 922,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 61915,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 573,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 537,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 6622,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 456,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 412,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2025,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_e",
+     "ms": 378,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 21840,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 363,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9870,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 356,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 13589,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 333,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "muro_templo",
+     "ms": 1937,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 17792,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 1372,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 57408,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 1096,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 118428,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 922,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 61915,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 573,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 44308,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 537,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 6622,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 456,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 21021,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 412,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2025,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_e",
+     "ms": 378,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 21840,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 363,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9870,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 356,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 13589,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 333,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 290,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 30820,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_b",
+     "ms": 284,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2890,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_a",
+     "ms": 282,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 214,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3600,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 212,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 29829,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 171,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 148,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 137,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 13924,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 129,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4356,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 122,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4288,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 104,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 4158,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_c",
+     "ms": 87,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2924,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 79,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 34587,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 61,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 5355,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "corral",
+     "ms": 41,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 8710,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 41,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 8836,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 30,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3782,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 30,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 4047,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 27,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1890,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_c",
+     "ms": 24,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 13200,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 23,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 9752,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 21,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 11712,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 19,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 17,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_a",
+     "ms": 17,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 2346,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 17,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3520,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 16,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5893,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 15,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1560,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 15,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3195,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "campamento_c",
+     "ms": 14,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 3658,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 13,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 11,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1444,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_puas",
+     "ms": 8,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 3276,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bloque_piedra",
+     "ms": 8,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 6384,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_g",
+     "ms": 8,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 5986,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "canoa",
+     "ms": 6,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1392,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 6,
+     "motivo": "cerrado",
+     "nv": 0,
+     "N": 7380,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 5,
+     "motivo": "sin interior",
+     "nv": 0,
+     "N": 1224,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "sin interior": 18,
+    "cerrado": 20,
+    "sin vanos": 5,
+    "vanos": 7
+   },
+   "fpsMed": 32,
+   "fpsMin": 30,
+   "p95Ms": 46,
+   "peorMs": 52,
+   "statsBase": {
+    "vanosN": 50,
+    "vanosMs": 11487,
+    "stats": {
+     "bloques": 2478,
+     "bloquesFlora": 1010,
+     "triangulos": 723611,
+     "rellenas": 504,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2013,
+     "kbFlora": 821
+    }
+   },
+   "statsFin": {
+    "vanosN": 50,
+    "vanosMs": 11487,
+    "stats": {
+     "bloques": 2478,
+     "bloquesFlora": 1010,
+     "triangulos": 723611,
+     "rellenas": 504,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2013,
+     "kbFlora": 821
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 50,
+     "vanosMs": 11487,
+     "stats": {
+      "bloques": 2478,
+      "bloquesFlora": 1010,
+      "triangulos": 723611,
+      "rellenas": 504,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2013,
+      "kbFlora": 821
+     }
+    },
+    {
+     "vanosN": 50,
+     "vanosMs": 11487,
+     "stats": {
+      "bloques": 2478,
+      "bloquesFlora": 1010,
+      "triangulos": 723611,
+      "rellenas": 504,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2013,
+      "kbFlora": 821
+     }
+    },
+    {
+     "vanosN": 50,
+     "vanosMs": 11487,
+     "stats": {
+      "bloques": 2478,
+      "bloquesFlora": 1010,
+      "triangulos": 723611,
+      "rellenas": 504,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2013,
+      "kbFlora": 821
+     }
+    }
+   ],
+   "calls": 86,
+   "ktris": 217,
+   "heapMB": 150,
+   "errores": []
+  }
+ },
+ "ventanaS": 3,
+ "head": "desconocido",
+ "agregado": {
+  "modelos": 56,
+  "candidatosMacizo": [
+   "bloque_piedra",
+   "bohio_puntiagudo",
+   "campamento_c",
+   "canoa",
+   "carpa_a",
+   "carpa_c",
+   "carpa_e",
+   "casa_plataforma",
+   "cercado_redondo",
+   "complejo_ruinas",
+   "empalizada",
+   "losa_piedra",
+   "mirador_escalonado",
+   "monumento_c",
+   "monumento_d",
+   "monumento_f",
+   "monumento_g",
+   "muralla_atalaya_a",
+   "muralla_atalaya_b",
+   "muro_templo",
+   "plataforma_piedra",
+   "portal_madera_a",
+   "portal_madera_b",
+   "portal_madera_c",
+   "portal_puas",
+   "puente_madera",
+   "ruina_altar",
+   "ruina_pilar",
+   "ruina_portal",
+   "ruina_torre",
+   "ruina_torre_b",
+   "ruina_torre_c",
+   "ruina_torre_e",
+   "ruina_torre_f",
+   "templo_grande",
+   "templo_grande_a",
+   "templo_grande_d",
+   "templo_grande_e",
+   "templo_grande_f",
+   "templo_mediano",
+   "templo_mediano_f",
+   "templo_mediano_g",
+   "templo_mediano_h",
+   "toldo_pequeno",
+   "torre_vigia",
+   "torre_vigia_b"
+  ],
+  "descartados": [
+   "bohio_redondo",
+   "caney_largo",
+   "carpa_b",
+   "carpa_d",
+   "casa_paja_a",
+   "casa_paja_b",
+   "corral",
+   "monumento_a",
+   "monumento_e",
+   "ruina_mirador"
+  ],
+  "msCandidatos": 162702,
+  "msTodos": 186087
+ }
+}

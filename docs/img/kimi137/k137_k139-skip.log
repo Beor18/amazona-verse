@@ -1,0 +1,71 @@
+[08:49:58] pack cap1: navegando...
+[08:50:03] …latido
+[08:50:08] …latido
+[08:50:13] …latido
+[08:50:18] …latido
+[08:50:23] …latido
+[08:50:28] …latido
+[08:50:33] …latido
+[08:50:38] …latido
+[08:50:43] …latido
+[08:50:48] …latido
+[08:50:53] …latido
+[08:50:58] pack cap1: listo en 5.917s, entrada en 28.608s; asentado. Volcando vanos base...
+[08:50:58] …latido
+[08:51:02] pack cap1: vanos 52 trabajos / 7055 ms total (crecieron 0 ms en la ventana de 3 s) | fps med=14 min=12 p95=106ms peor=156ms | calls=62 ktris=268 heap=153MB | top: monumento_a:4032ms/vanos/N35144 · casa_paja_b:1398ms/vanos/N14640 · caney_largo:828ms/vanos/N11628 · monumento_e:452ms/vanos/N21840 · corral:159ms/vanos/N8710 · bohio_redondo:84ms/vanos/N4225 · ruina_mirador:73ms/sin vanos/N7434 · casa_paja_a:29ms/vanos/N6162 | errores=[]
+[08:51:02] pack ep2: navegando...
+[08:51:03] …latido
+[08:51:08] …latido
+[08:51:13] …latido
+[08:51:18] …latido
+[08:51:23] …latido
+[08:51:28] …latido
+[08:51:33] …latido
+[08:51:38] …latido
+[08:51:43] …latido
+[08:51:48] …latido
+[08:51:50] pack ep2: listo en 5.955s, entrada en 27.568s; asentado. Volcando vanos base...
+[08:51:53] …latido
+[08:51:54] pack ep2: vanos 51 trabajos / 3646 ms total (crecieron 0 ms en la ventana de 3 s) | fps med=26 min=26 p95=56ms peor=76ms | calls=57 ktris=270 heap=120MB | top: monumento_a:1324ms/sin vanos/N35144 · casa_paja_b:889ms/sin vanos/N14640 · caney_largo:670ms/vanos/N11628 · monumento_e:360ms/vanos/N21840 · ruina_mirador:157ms/sin vanos/N7434 · corral:132ms/vanos/N8710 · bohio_redondo:89ms/sin vanos/N4225 · casa_paja_a:25ms/vanos/N6162 | errores=[]
+[08:51:54] pack ep3: navegando...
+[08:51:58] …latido
+[08:52:03] …latido
+[08:52:08] …latido
+[08:52:13] …latido
+[08:52:18] …latido
+[08:52:23] pack ep3: listo en 5.112s, entrada en 23.889s; asentado. Volcando vanos base...
+[08:52:23] …latido
+[08:52:28] …latido
+[08:52:30] pack ep3: vanos 39 trabajos / 2185 ms total (crecieron 1356 ms en la ventana de 3 s) | fps med=14 min=13 p95=113ms peor=179ms | calls=91 ktris=553 heap=126MB | top: caney_largo:703ms/sin vanos/N11628 · casa_paja_b:653ms/vanos/N14640 · ruina_mirador:460ms/vanos/N7434 · casa_paja_a:237ms/sin vanos/N6162 · bohio_redondo:132ms/vanos/N4225 · casa_plataforma:0ms/macizo · monumento_g:0ms/macizo · torre_vigia_b:0ms/macizo | errores=[]
+[08:52:30] pack ep4: navegando...
+[08:52:33] …latido
+[08:52:38] …latido
+[08:52:43] …latido
+[08:52:48] …latido
+[08:52:53] …latido
+[08:52:58] …latido
+[08:53:00] pack ep4: listo en 5.455s, entrada en 25.254s; asentado. Volcando vanos base...
+[08:53:03] …latido
+[08:53:08] pack ep4: vanos 39 trabajos / 665 ms total (crecieron 0 ms en la ventana de 3 s) | fps med=15 min=13 p95=110ms peor=170ms | calls=112 ktris=560 heap=122MB | top: caney_largo:248ms/vanos/N11628 · casa_paja_a:232ms/sin vanos/N6162 · ruina_mirador:113ms/vanos/N7434 · casa_paja_b:45ms/vanos/N14640 · bohio_redondo:27ms/vanos/N4225 · casa_plataforma:0ms/macizo · monumento_g:0ms/macizo · torre_vigia_b:0ms/macizo | errores=[]
+[08:53:08] pack ep5: navegando...
+[08:53:08] …latido
+[08:53:13] …latido
+[08:53:18] …latido
+[08:53:23] …latido
+[08:53:28] …latido
+[08:53:33] …latido
+[08:53:38] …latido
+[08:53:42] pack ep5: listo en 4.332s, entrada en 26.857s; asentado. Volcando vanos base...
+[08:53:43] …latido
+[08:53:47] pack ep5: vanos 46 trabajos / 5551 ms total (crecieron 1820 ms en la ventana de 3 s) | fps med=15 min=13 p95=147ms peor=153ms | calls=103 ktris=231 heap=143MB | top: monumento_a:3416ms/sin vanos/N35144 · casa_paja_b:617ms/vanos/N14640 · bohio_redondo:510ms/vanos/N4225 · caney_largo:385ms/sin vanos/N11628 · casa_paja_a:308ms/vanos/N6162 · carpa_b:180ms/vanos/N9956 · ruina_mirador:116ms/sin vanos/N7434 · carpa_d:19ms/vanos/N3550 | errores=[]
+[08:53:47] pack ep6: navegando...
+[08:53:48] …latido
+[08:53:53] …latido
+[08:53:58] …latido
+[08:54:03] …latido
+[08:54:08] …latido
+[08:54:13] …latido
+[08:54:18] …latido
+[08:54:22] pack ep6: listo en 4.373s, entrada en 25.319s; asentado. Volcando vanos base...
+[08:54:23] …latido
+[08:54:27] pack ep6: vanos 51 trabajos / 1559 ms total (crecieron 0 ms en la ventana de 3 s) | fps med=16 min=5 p95=142ms peor=1685ms | calls=85 ktris=217 heap=156MB | top: monumento_e:448ms/vanos/N21840 · monumento_a:360ms/vanos/N35144 · casa_paja_b:334ms/vanos/N14640 · caney_largo:161ms/vanos/N11628 · ruina_mirador:109ms/sin vanos/N7434 · bohio_redondo:93ms/vanos/N4225 · corral:34ms/vanos/N8710 · casa_paja_a:20ms/sin vanos/N6162 | errores=[]

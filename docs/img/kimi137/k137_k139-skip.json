@@ -1,0 +1,3801 @@
+{
+ "tarea": "KIMI-137",
+ "bug": "QA-181",
+ "etiqueta": "k139-skip",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "packs": {
+  "cap1": {
+   "cargaListaS": 5.9,
+   "cargaEntradaS": 28.6,
+   "vanosTrabajos": 52,
+   "vanosMsTotal": 7055,
+   "vanosMsVentana": 0,
+   "vanosTop": [
+    {
+     "n": "monumento_a",
+     "ms": 4032,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 1398,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 828,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_e",
+     "ms": 452,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 21840,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "corral",
+     "ms": 159,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 8710,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 84,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 73,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 29,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "toldo_pequeno",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "monumento_a",
+     "ms": 4032,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 1398,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 828,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_e",
+     "ms": 452,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 21840,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "corral",
+     "ms": 159,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 8710,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 84,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 73,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 29,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "toldo_pequeno",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "canoa",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_puas",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "campamento_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bloque_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "vanos": 7,
+    "sin vanos": 1,
+    "macizo": 44
+   },
+   "fpsMed": 14,
+   "fpsMin": 12,
+   "p95Ms": 106,
+   "peorMs": 156,
+   "statsBase": {
+    "vanosN": 52,
+    "vanosMs": 7055,
+    "stats": {
+     "bloques": 2791,
+     "bloquesFlora": 1424,
+     "triangulos": 860514,
+     "rellenas": 600,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2268,
+     "kbFlora": 1157
+    }
+   },
+   "statsFin": {
+    "vanosN": 52,
+    "vanosMs": 7055,
+    "stats": {
+     "bloques": 2791,
+     "bloquesFlora": 1424,
+     "triangulos": 860514,
+     "rellenas": 600,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2268,
+     "kbFlora": 1157
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 52,
+     "vanosMs": 7055,
+     "stats": {
+      "bloques": 2791,
+      "bloquesFlora": 1424,
+      "triangulos": 860514,
+      "rellenas": 600,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2268,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 52,
+     "vanosMs": 7055,
+     "stats": {
+      "bloques": 2791,
+      "bloquesFlora": 1424,
+      "triangulos": 860514,
+      "rellenas": 600,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2268,
+      "kbFlora": 1157
+     }
+    },
+    {
+     "vanosN": 52,
+     "vanosMs": 7055,
+     "stats": {
+      "bloques": 2791,
+      "bloquesFlora": 1424,
+      "triangulos": 860514,
+      "rellenas": 600,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2268,
+      "kbFlora": 1157
+     }
+    }
+   ],
+   "calls": 62,
+   "ktris": 268,
+   "heapMB": 153,
+   "errores": []
+  },
+  "ep2": {
+   "cargaListaS": 6,
+   "cargaEntradaS": 27.6,
+   "vanosTrabajos": 51,
+   "vanosMsTotal": 3646,
+   "vanosMsVentana": 0,
+   "vanosTop": [
+    {
+     "n": "monumento_a",
+     "ms": 1324,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 889,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 670,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_e",
+     "ms": 360,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 21840,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 157,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "corral",
+     "ms": 132,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 8710,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 89,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 25,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "monumento_a",
+     "ms": 1324,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 889,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 670,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_e",
+     "ms": 360,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 21840,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 157,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "corral",
+     "ms": 132,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 8710,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 89,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 25,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "canoa",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_puas",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "campamento_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bloque_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "sin vanos": 4,
+    "vanos": 4,
+    "macizo": 43
+   },
+   "fpsMed": 26,
+   "fpsMin": 26,
+   "p95Ms": 56,
+   "peorMs": 76,
+   "statsBase": {
+    "vanosN": 51,
+    "vanosMs": 3646,
+    "stats": {
+     "bloques": 2637,
+     "bloquesFlora": 1322,
+     "triangulos": 799090,
+     "rellenas": 539,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2143,
+     "kbFlora": 1074
+    }
+   },
+   "statsFin": {
+    "vanosN": 51,
+    "vanosMs": 3646,
+    "stats": {
+     "bloques": 2637,
+     "bloquesFlora": 1322,
+     "triangulos": 799090,
+     "rellenas": 539,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2143,
+     "kbFlora": 1074
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 51,
+     "vanosMs": 3646,
+     "stats": {
+      "bloques": 2637,
+      "bloquesFlora": 1322,
+      "triangulos": 799090,
+      "rellenas": 539,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2143,
+      "kbFlora": 1074
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 3646,
+     "stats": {
+      "bloques": 2637,
+      "bloquesFlora": 1322,
+      "triangulos": 799090,
+      "rellenas": 539,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2143,
+      "kbFlora": 1074
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 3646,
+     "stats": {
+      "bloques": 2637,
+      "bloquesFlora": 1322,
+      "triangulos": 799090,
+      "rellenas": 539,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2143,
+      "kbFlora": 1074
+     }
+    }
+   ],
+   "calls": 57,
+   "ktris": 270,
+   "heapMB": 120,
+   "errores": []
+  },
+  "ep3": {
+   "cargaListaS": 5.1,
+   "cargaEntradaS": 23.9,
+   "vanosTrabajos": 39,
+   "vanosMsTotal": 2185,
+   "vanosMsVentana": 1356,
+   "vanosTop": [
+    {
+     "n": "caney_largo",
+     "ms": 703,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 653,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 460,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 237,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 132,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "caney_largo",
+     "ms": 703,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 653,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 460,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 237,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 132,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_puas",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "campamento_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "sin vanos": 2,
+    "vanos": 3,
+    "macizo": 34
+   },
+   "fpsMed": 14,
+   "fpsMin": 13,
+   "p95Ms": 113,
+   "peorMs": 179,
+   "statsBase": {
+    "vanosN": 15,
+    "vanosMs": 369,
+    "stats": {
+     "bloques": 523,
+     "bloquesFlora": 981,
+     "triangulos": 376518,
+     "rellenas": 110,
+     "pendientes": 72,
+     "regiones": 25,
+     "kb": 425,
+     "kbFlora": 797
+    }
+   },
+   "statsFin": {
+    "vanosN": 25,
+    "vanosMs": 1725,
+    "stats": {
+     "bloques": 568,
+     "bloquesFlora": 981,
+     "triangulos": 408656,
+     "rellenas": 110,
+     "pendientes": 55,
+     "regiones": 25,
+     "kb": 462,
+     "kbFlora": 797
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 15,
+     "vanosMs": 369,
+     "stats": {
+      "bloques": 539,
+      "bloquesFlora": 981,
+      "triangulos": 390327,
+      "rellenas": 110,
+      "pendientes": 54,
+      "regiones": 25,
+      "kb": 438,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 21,
+     "vanosMs": 369,
+     "stats": {
+      "bloques": 551,
+      "bloquesFlora": 981,
+      "triangulos": 400329,
+      "rellenas": 110,
+      "pendientes": 63,
+      "regiones": 25,
+      "kb": 448,
+      "kbFlora": 797
+     }
+    },
+    {
+     "vanosN": 25,
+     "vanosMs": 1725,
+     "stats": {
+      "bloques": 568,
+      "bloquesFlora": 981,
+      "triangulos": 408656,
+      "rellenas": 110,
+      "pendientes": 55,
+      "regiones": 25,
+      "kb": 462,
+      "kbFlora": 797
+     }
+    }
+   ],
+   "calls": 91,
+   "ktris": 553,
+   "heapMB": 126,
+   "errores": []
+  },
+  "ep4": {
+   "cargaListaS": 5.5,
+   "cargaEntradaS": 25.3,
+   "vanosTrabajos": 39,
+   "vanosMsTotal": 665,
+   "vanosMsVentana": 0,
+   "vanosTop": [
+    {
+     "n": "caney_largo",
+     "ms": 248,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 232,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 113,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 45,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 27,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "caney_largo",
+     "ms": 248,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 232,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 113,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 45,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 27,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_puas",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "campamento_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "vanos": 4,
+    "sin vanos": 1,
+    "macizo": 34
+   },
+   "fpsMed": 15,
+   "fpsMin": 13,
+   "p95Ms": 110,
+   "peorMs": 170,
+   "statsBase": {
+    "vanosN": 20,
+    "vanosMs": 552,
+    "stats": {
+     "bloques": 550,
+     "bloquesFlora": 1244,
+     "triangulos": 440732,
+     "rellenas": 110,
+     "pendientes": 55,
+     "regiones": 25,
+     "kb": 447,
+     "kbFlora": 1011
+    }
+   },
+   "statsFin": {
+    "vanosN": 25,
+    "vanosMs": 552,
+    "stats": {
+     "bloques": 611,
+     "bloquesFlora": 1244,
+     "triangulos": 442292,
+     "rellenas": 110,
+     "pendientes": 148,
+     "regiones": 25,
+     "kb": 496,
+     "kbFlora": 1011
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 21,
+     "vanosMs": 552,
+     "stats": {
+      "bloques": 550,
+      "bloquesFlora": 1244,
+      "triangulos": 441816,
+      "rellenas": 110,
+      "pendientes": 153,
+      "regiones": 25,
+      "kb": 447,
+      "kbFlora": 1011
+     }
+    },
+    {
+     "vanosN": 25,
+     "vanosMs": 552,
+     "stats": {
+      "bloques": 585,
+      "bloquesFlora": 1244,
+      "triangulos": 442068,
+      "rellenas": 110,
+      "pendientes": 151,
+      "regiones": 25,
+      "kb": 475,
+      "kbFlora": 1011
+     }
+    },
+    {
+     "vanosN": 25,
+     "vanosMs": 552,
+     "stats": {
+      "bloques": 611,
+      "bloquesFlora": 1244,
+      "triangulos": 442292,
+      "rellenas": 110,
+      "pendientes": 148,
+      "regiones": 25,
+      "kb": 496,
+      "kbFlora": 1011
+     }
+    }
+   ],
+   "calls": 112,
+   "ktris": 560,
+   "heapMB": 122,
+   "errores": []
+  },
+  "ep5": {
+   "cargaListaS": 4.3,
+   "cargaEntradaS": 26.9,
+   "vanosTrabajos": 46,
+   "vanosMsTotal": 5551,
+   "vanosMsVentana": 1820,
+   "vanosTop": [
+    {
+     "n": "monumento_a",
+     "ms": 3416,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 617,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 510,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 385,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 308,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_b",
+     "ms": 180,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 9956,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 116,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_d",
+     "ms": 19,
+     "motivo": "vanos",
+     "nv": 4,
+     "N": 3550,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "monumento_a",
+     "ms": 3416,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 617,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 510,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 385,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 308,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_b",
+     "ms": 180,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 9956,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 116,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_d",
+     "ms": 19,
+     "motivo": "vanos",
+     "nv": 4,
+     "N": 3550,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bloque_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "canoa",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "sin vanos": 3,
+    "vanos": 5,
+    "macizo": 38
+   },
+   "fpsMed": 15,
+   "fpsMin": 13,
+   "p95Ms": 147,
+   "peorMs": 153,
+   "statsBase": {
+    "vanosN": 33,
+    "vanosMs": 3731,
+    "stats": {
+     "bloques": 1502,
+     "bloquesFlora": 894,
+     "triangulos": 359217,
+     "rellenas": 112,
+     "pendientes": 30,
+     "regiones": 25,
+     "kb": 1220,
+     "kbFlora": 726
+    }
+   },
+   "statsFin": {
+    "vanosN": 46,
+    "vanosMs": 5551,
+    "stats": {
+     "bloques": 1533,
+     "bloquesFlora": 894,
+     "triangulos": 377522,
+     "rellenas": 112,
+     "pendientes": 98,
+     "regiones": 25,
+     "kb": 1246,
+     "kbFlora": 726
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 33,
+     "vanosMs": 3731,
+     "stats": {
+      "bloques": 1521,
+      "bloquesFlora": 894,
+      "triangulos": 370962,
+      "rellenas": 112,
+      "pendientes": 104,
+      "regiones": 25,
+      "kb": 1236,
+      "kbFlora": 726
+     }
+    },
+    {
+     "vanosN": 44,
+     "vanosMs": 5243,
+     "stats": {
+      "bloques": 1527,
+      "bloquesFlora": 894,
+      "triangulos": 373647,
+      "rellenas": 112,
+      "pendientes": 101,
+      "regiones": 25,
+      "kb": 1241,
+      "kbFlora": 726
+     }
+    },
+    {
+     "vanosN": 46,
+     "vanosMs": 5551,
+     "stats": {
+      "bloques": 1533,
+      "bloquesFlora": 894,
+      "triangulos": 377522,
+      "rellenas": 112,
+      "pendientes": 98,
+      "regiones": 25,
+      "kb": 1246,
+      "kbFlora": 726
+     }
+    }
+   ],
+   "calls": 103,
+   "ktris": 231,
+   "heapMB": 143,
+   "errores": []
+  },
+  "ep6": {
+   "cargaListaS": 4.4,
+   "cargaEntradaS": 25.3,
+   "vanosTrabajos": 51,
+   "vanosMsTotal": 1559,
+   "vanosMsVentana": 0,
+   "vanosTop": [
+    {
+     "n": "monumento_e",
+     "ms": 448,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 21840,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_a",
+     "ms": 360,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 334,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 161,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 109,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 93,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "corral",
+     "ms": 34,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 8710,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 20,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "vanosTodos": [
+    {
+     "n": "monumento_e",
+     "ms": 448,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 21840,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_a",
+     "ms": 360,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 35144,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_b",
+     "ms": 334,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 14640,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "caney_largo",
+     "ms": 161,
+     "motivo": "vanos",
+     "nv": 2,
+     "N": 11628,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_mirador",
+     "ms": 109,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 7434,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_redondo",
+     "ms": 93,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 4225,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "corral",
+     "ms": 34,
+     "motivo": "vanos",
+     "nv": 1,
+     "N": 8710,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_paja_a",
+     "ms": 20,
+     "motivo": "sin vanos",
+     "nv": 0,
+     "N": 6162,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "plataforma_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muro_templo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_h",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_pilar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_altar",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_portal",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "ruina_torre_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "cercado_redondo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bohio_puntiagudo",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "canoa",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "empalizada",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "casa_plataforma",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "muralla_atalaya_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "torre_vigia",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "mirador_escalonado",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_grande_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_d",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_b",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_madera_a",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "portal_puas",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "puente_madera",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "campamento_c",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "bloque_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "losa_piedra",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "carpa_e",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "complejo_ruinas",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "monumento_g",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano_f",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    },
+    {
+     "n": "templo_mediano",
+     "ms": 0,
+     "motivo": "macizo",
+     "nv": 0,
+     "N": 0,
+     "listo": true,
+     "fundido": true
+    }
+   ],
+   "motivos": {
+    "vanos": 6,
+    "sin vanos": 2,
+    "macizo": 43
+   },
+   "fpsMed": 16,
+   "fpsMin": 5,
+   "p95Ms": 142,
+   "peorMs": 1685,
+   "statsBase": {
+    "vanosN": 43,
+    "vanosMs": 1559,
+    "stats": {
+     "bloques": 2237,
+     "bloquesFlora": 1010,
+     "triangulos": 607464,
+     "rellenas": 340,
+     "pendientes": 136,
+     "regiones": 25,
+     "kb": 1818,
+     "kbFlora": 821
+    }
+   },
+   "statsFin": {
+    "vanosN": 51,
+    "vanosMs": 1559,
+    "stats": {
+     "bloques": 2790,
+     "bloquesFlora": 1010,
+     "triangulos": 752965,
+     "rellenas": 567,
+     "pendientes": 0,
+     "regiones": 25,
+     "kb": 2267,
+     "kbFlora": 821
+    }
+   },
+   "muestras": [
+    {
+     "vanosN": 48,
+     "vanosMs": 1559,
+     "stats": {
+      "bloques": 2272,
+      "bloquesFlora": 1010,
+      "triangulos": 618275,
+      "rellenas": 340,
+      "pendientes": 132,
+      "regiones": 25,
+      "kb": 1846,
+      "kbFlora": 821
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 1559,
+     "stats": {
+      "bloques": 2790,
+      "bloquesFlora": 1010,
+      "triangulos": 752965,
+      "rellenas": 567,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2267,
+      "kbFlora": 821
+     }
+    },
+    {
+     "vanosN": 51,
+     "vanosMs": 1559,
+     "stats": {
+      "bloques": 2790,
+      "bloquesFlora": 1010,
+      "triangulos": 752965,
+      "rellenas": 567,
+      "pendientes": 0,
+      "regiones": 25,
+      "kb": 2267,
+      "kbFlora": 821
+     }
+    }
+   ],
+   "calls": 85,
+   "ktris": 217,
+   "heapMB": 156,
+   "errores": []
+  }
+ },
+ "ventanaS": 3,
+ "head": "desconocido",
+ "agregado": {
+  "modelos": 56,
+  "candidatosMacizo": [],
+  "descartados": [
+   "bloque_piedra",
+   "bohio_puntiagudo",
+   "bohio_redondo",
+   "campamento_c",
+   "caney_largo",
+   "canoa",
+   "carpa_a",
+   "carpa_b",
+   "carpa_c",
+   "carpa_d",
+   "carpa_e",
+   "casa_paja_a",
+   "casa_paja_b",
+   "casa_plataforma",
+   "cercado_redondo",
+   "complejo_ruinas",
+   "corral",
+   "empalizada",
+   "losa_piedra",
+   "mirador_escalonado",
+   "monumento_a",
+   "monumento_c",
+   "monumento_d",
+   "monumento_e",
+   "monumento_f",
+   "monumento_g",
+   "muralla_atalaya_a",
+   "muralla_atalaya_b",
+   "muro_templo",
+   "plataforma_piedra",
+   "portal_madera_a",
+   "portal_madera_b",
+   "portal_madera_c",
+   "portal_puas",
+   "puente_madera",
+   "ruina_altar",
+   "ruina_mirador",
+   "ruina_pilar",
+   "ruina_portal",
+   "ruina_torre",
+   "ruina_torre_b",
+   "ruina_torre_c",
+   "ruina_torre_e",
+   "ruina_torre_f",
+   "templo_grande",
+   "templo_grande_a",
+   "templo_grande_d",
+   "templo_grande_e",
+   "templo_grande_f",
+   "templo_mediano",
+   "templo_mediano_f",
+   "templo_mediano_g",
+   "templo_mediano_h",
+   "toldo_pequeno",
+   "torre_vigia",
+   "torre_vigia_b"
+  ],
+  "msCandidatos": 0,
+  "msTodos": 20661
+ }
+}

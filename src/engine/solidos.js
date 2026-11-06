@@ -569,6 +569,29 @@ AVE.module('solidos', function (G) {
   const VA = { cel: 0.15, banda: [0.3, 1.1], radios: [0.45, 0.7, 1.0, 1.3], minInterior: 1.5, cubierto: 0.7, ancho: [0.6, 4], minAlto: 1, max: 6, grosor: 0.08 };
   const vanosHechos = new Map(); // nombre → { vanos, motivo, ms }
   const vanoCola = []; // búsquedas de puerta repartidas en varios cuadros (QA-53 / G22)
+  // KIMI-139 (QA-181): modelos MACIZOS verificados — la búsqueda real de vanos (sonda
+  // tools/build/kimi1_137.js, corrida `--sin-macizos` completa en los 6 packs, 6-nov) dio 0
+  // paneles (veredicto 'sin vanos'/'cerrado'/'sin interior') en TODAS sus apariciones, y la
+  // corrida de referencia normal no los contradice. Se fija ese veredicto sin muestrear:
+  // misma semántica (nada que tapar, mismos bloques/tramos) sin el coste — en el Chromebook
+  // ×6 era ~87 % del trabajo de vanos (varios ms por modelo, hilo principal, al cargar cada
+  // zona). Ojo: la búsqueda real ES inestable en algunos modelos (misma geometría, veredicto
+  // distinto entre cargas: bohio_redondo, caney_largo, ruina_mirador…): por eso la lista
+  // exige unanimidad nv===0; un modelo reexportado del kit con una puerta nueva QUEDARÍA sin
+  // panel (puerta abierta a un interior vacío, el bug B4 de origen) → al reexportar un modelo
+  // del kit, re-verificar con `node tools/build/kimi1_137.js --sin-macizos --packs cap1,ep2,
+  // ep3,ep4,ep5,ep6` y actualizar la lista (evidencia docs/img/kimi137/k139_lista.json).
+  const MACIZOS = new Set([
+    'bloque_piedra', 'bohio_puntiagudo', 'campamento_c', 'canoa', 'carpa_a', 'carpa_c', 'carpa_e',
+    'casa_plataforma', 'cercado_redondo', 'complejo_ruinas', 'empalizada', 'losa_piedra',
+    'mirador_escalonado', 'monumento_c', 'monumento_d', 'monumento_f', 'monumento_g',
+    'muralla_atalaya_a', 'muralla_atalaya_b', 'muro_templo', 'plataforma_piedra', 'portal_madera_a',
+    'portal_madera_b', 'portal_madera_c', 'portal_puas', 'puente_madera', 'ruina_altar', 'ruina_pilar',
+    'ruina_portal', 'ruina_torre', 'ruina_torre_b', 'ruina_torre_c', 'ruina_torre_e', 'ruina_torre_f',
+    'templo_grande', 'templo_grande_a', 'templo_grande_d', 'templo_grande_e', 'templo_grande_f',
+    'templo_mediano', 'templo_mediano_f', 'templo_mediano_g', 'templo_mediano_h', 'toldo_pequeno',
+    'torre_vigia', 'torre_vigia_b',
+  ]);
   const kNorm = a => !a || !a.normalized ? 1 : a.array instanceof Uint8Array ? 1 / 255 : a.array instanceof Uint16Array ? 1 / 65535
     : a.array instanceof Int8Array ? 1 / 127 : a.array instanceof Int16Array ? 1 / 32767 : 1;
   function prepararVanos(partes) {
@@ -812,11 +835,18 @@ AVE.module('solidos', function (G) {
     if (R && R.listo && !abierta && R.vanos.length && R.partesRef !== partes) { R.partesRef = partes; R.fundir = fundir; R.fundido = false; return aplicarPaneles(R, true); }
     if (R && R.listo && (R.fundido || abierta)) return abierta ? 0 : R.vanos.length;
     if (!R) {
-      try { R = prepararVanos(partes); }
-      catch (e) { R = { motivo: 'error: ' + (e && e.message || e), vanos: [], listo: true, fundido: true, ms: 0 }; }
-      R.nombre = nombre;
-      vanosHechos.set(nombre, R);
-      if (!R.listo) vanoCola.push(R);
+      if (!abierta && MACIZOS.has(nombre)) {
+        // KIMI-139: macizo verificado — veredicto de 0 paneles fijado sin muestreo (ver lista arriba).
+        // No retiene partes (los jobs reales sí: sus geometrías ya las retiene streaming).
+        R = { motivo: 'macizo', vanos: [], listo: true, fundido: false, ms: 0, nombre };
+        vanosHechos.set(nombre, R);
+      } else {
+        try { R = prepararVanos(partes); }
+        catch (e) { R = { motivo: 'error: ' + (e && e.message || e), vanos: [], listo: true, fundido: true, ms: 0 }; }
+        R.nombre = nombre;
+        vanosHechos.set(nombre, R);
+        if (!R.listo) vanoCola.push(R);
+      }
     }
     R.nombre = nombre; R.abierta = abierta; R.partesRef = partes; R.fundir = fundir;
     if (!R.listo) bombearVanos(msSolidos());
