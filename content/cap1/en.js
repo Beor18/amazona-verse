@@ -2118,6 +2118,8 @@ window.AV_EN = {
  "¡Un loro de Kawall te vio recoger todas las piedras y fibras y quiere volar contigo! Su poder: Ojo de selva. Elígelo en Pausa → Mis cotorras.": "A Kawall's amazon saw you gather all the stones and fibers and wants to fly with you! Its power: Jungle eye. Pick it in Pause → My parrots.",
  "El Ojo de sol no ve nada cercano que marcar.": "The Sun Eye sees nothing nearby to mark.",
  "Chispa": "Chispa",
+ "Entreno con Moon": "Training with Moon",
+ "Misión V18": "V18 mission",
  "Carrera con Chispa": "Race with Chispa",
  "Echar una carrera con Chispa": "Race Chispa",
  "¡Hola, plumitas! Soy Chispa, la más veloz de los Portales. ¿Una carrerita?": "Hey there, feathers! I'm Chispa, the fastest pup in the Gateways. Up for a little race?",
