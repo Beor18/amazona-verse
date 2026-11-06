@@ -2,7 +2,7 @@
 
 Aquí está todo lo que el equipo necesita de Kelvin, en un solo sitio y ordenado por lo que más frena.
 
-**Cómo funciona (Kelvin, 6-nov: «no te detengas esperando cosas mías»):**
+**Cómo funciona (Kelvin, 6-nov: «no te detengas esperando cosas mías»; aceptado como base única de coordinación el 6-nov tarde: no se crea otro documento maestro ni se repiten preguntas):**
 - Cada punto trae la **recomendación** del equipo.
 - Mientras Kelvin no diga otra cosa, **el equipo trabaja con la recomendación**, siempre que se pueda deshacer y no cueste dinero.
 - Lo legal, lo de dinero y lo que no se puede deshacer **no se aplica sin su sí**: va marcado con 🔒.
@@ -61,16 +61,40 @@ Fuentes: `K4_DECISIONES_ABIERTAS.md` (cruce de PENDIENTES, DECISIONES_LISTA, DEC
 
 | # | Decisión | Recomendación (se aplica mientras no digas otra cosa) |
 |---|---|---|
-| F1 | **Personajes de la Mac para la V18.3** (`docs/img/bm166` a `bm169`): Tuerca, Maestro Moon (sin katana) y el Guardián del Primer Vuelo | Aprobados como están. Kimi los conecta con su actividad (KIMI-166 a 168). Chispa ya está en el juego con su carrera |
 | F2 | **Guardián del Primer Vuelo: especie A o B** (`docs/img/bm169/opcion_a_*` y `opcion_b_*`) | Opción A mientras no elijas; cambiarla es una línea |
 | F3 | **Contador «Avance» de la portada** (hoy dice 96 %: solo mezcla el cap. 1 y las tareas de la Mac) | A: que muestre el avance real de la temporada (74 %). 🔒 Es público: no se cambia sin tu sí |
-| F4 | **Los 3 poderes que faltan de la matriz** (33 de 36 funcionan): las 2 extintas (Mara y Vela, consejeras que no se eligen) y uno que pide decisión de diseño | Mara y Vela sin poder jugable, porque son consejeras (C10); el tercero se describe en `K4_MATRIZ_ESTADO.md` |
+
+### Cifra única de poderes (verificada en el código, 6-nov 19:45 UTC)
+Esta cifra sustituye las de «10», «21» y «33» que salían antes en otros mensajes.
+- **Implementados:** 34 de 36, registrados en `src/game/v18/habilidades.js`, uno por especie.
+- **Probados:** 34 de 34. Cada uno aparece en las pruebas `v18NuevasTest` (130/130), `v18CombateTest` o `v18AmenazaTest`, todas en verde en la última publicación.
+- **Disponibles para el jugador:** 34.
+  - Vittata, desde el inicio.
+  - Arausiaca, por su reto en el árbol.
+  - Las otras 32, por hitos o al descubrirlas en el Álbum (`nuevas.js`; la forma de conseguirlas es provisional, C3).
+- **Los 2 que faltan:** *martinicana* y *violacea*, las extintas Mara y Vela. Son consejeras y no se eligen (C10), así que no tienen poder jugable.
+
+### Estado único de los seis personajes de la V18.3
+| Personaje | Modelo (Mac) | Integrado en el juego | Probado | Publicado | Responsable de lo que falta |
+|---|---|---|---|---|---|
+| El Constructor | BM159 ✔ (+ Reparar, BM164) | ✔ misión del puerto | ✔ v18PuertoTest 42/42 | ✔ | — |
+| La Ingeniera | BM160 ✔ | ✔ misión del puerto | ✔ v18PuertoTest 42/42 | ✔ | — |
+| Chispa | BM167 ✔ | ✔ carrera en Los Portales del Río | ✔ v18ChispaTest 18/18 | ✔ | — |
+| Tuerca | BM166 ✔ | en curso | — | — | Kimi (KIMI-168) |
+| Maestro Moon | BM168 ✔ (sin armas) | en curso | — | — | Kimi (KIMI-166) |
+| Guardián del Primer Vuelo | BM169 ✔ (opción A por defecto, F2) | en curso | — | — | Kimi (KIMI-167) |
+
+Un modelo creado no cuenta como personaje terminado: solo cuenta cuando está integrado, probado y publicado. El padre guía es el Papá del cap. 2, distinto del Guardián del Primer Vuelo. FeixZero no aparece en nada.
+
+### Métrica de avance (preparada; el cambio público espera tu autorización, F3)
+- **Métrica propuesta, verificable:** criterios de cierre de la temporada cumplidos sobre 54 (6 capítulos × 9 criterios, definidos en `ESTADO_REAL.md` §3). Hoy: 40/54 = 74 %.
+- **Hasta que la autorices:** el contador público se queda como está y no se publica otra cifra.
 
 ## E. Lo que el equipo hace mientras tanto (sin esperar)
 
 - **Kimi:**
   - KIMI-161 y KIMI-162;
-  - los 15 poderes que faltan de la matriz (hoy funcionan 21 de 36);
+  - la matriz de poderes (hecha: 34 de 36, ver «Cifra única»);
   - las pruebas con GPU cada vez que entra código.
 - **Mac:** los modelos de la fase 5 de la V18.3 (Tuerca, Chispa, Maestro Moon sin katana, y el Piloto con piel propia). Ninguno se conecta al juego sin capturas.
 - **Nube:** integrar, probar y publicar todo lo que llegue, y mantener al día `ESTADO_REAL.md` y este documento.
