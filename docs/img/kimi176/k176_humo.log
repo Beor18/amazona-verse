@@ -1,0 +1,12 @@
+[22:57:32] FASE 1: cap1 larga (1.5 min) con actividades
+[22:58:02] entrada cap1 ok
+[22:58:04] muestra cap1-asentado: heap=73MB geo=null tex=null fps=undefined pos=150,5,170
+[22:58:19] muestra cap1-asentado: heap=121MB geo=null tex=null fps=undefined pos=150,5,170
+[22:58:34] muestra cap1-final: heap=115MB geo=null tex=null fps=undefined pos=150,5,170
+[22:58:49] muestra cap1-final: heap=110MB geo=null tex=null fps=undefined pos=150,5,170
+[22:58:53] FASE 1 fin: {"n":4,"pendienteMBmin":42.33,"r2":0.4,"heapIni":73,"heapFin":110,"deltaMB":37}
+[22:58:53] FASE 2: cap 2
+[22:59:23] muestra cap2-asentado: heap=106MB geo=null tex=null fps=undefined pos=150,5,170
+[22:59:37] muestra cap2-asentado: heap=117MB geo=null tex=null fps=undefined pos=150,5,170
+[22:59:56] muestra cap2-vuelo: heap=138MB geo=null tex=null fps=undefined pos=2,34,2
+[23:00:02] FASE 2: cap 3

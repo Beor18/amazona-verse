@@ -1,0 +1,187 @@
+{
+ "etiqueta": "r2caps",
+ "perfil": {
+  "ancho": 390,
+  "alto": 844,
+  "dpr": 3,
+  "cpu": 4
+ },
+ "inicio": "2026-11-06T23:16:41.158Z",
+ "fases": {
+  "cap2": {
+   "entrada": "ok",
+   "durMin": 1.33,
+   "heapPico": 131,
+   "heapFin": 131,
+   "geoFin": 285,
+   "texFin": 135,
+   "callsMed": 72
+  },
+  "cap3": {
+   "entrada": "ok",
+   "durMin": 1.35,
+   "heapPico": 140,
+   "heapFin": 124,
+   "geoFin": 94,
+   "texFin": 135,
+   "callsMed": 64
+  }
+ },
+ "muestras": [
+  {
+   "t": 30373,
+   "seg": "cap2-asentado",
+   "fpsMed": 3,
+   "heapMB": 94,
+   "geo": 119,
+   "tex": 121,
+   "progs": 54,
+   "calls": 61,
+   "tris": 253160,
+   "pos": [
+    150,
+    5,
+    170
+   ],
+   "errores": 0
+  },
+  {
+   "t": 46168,
+   "seg": "cap2-asentado",
+   "fpsMed": 6,
+   "heapMB": 118,
+   "geo": 145,
+   "tex": 134,
+   "progs": 73,
+   "calls": 105,
+   "tris": 611401,
+   "pos": [
+    150,
+    5,
+    170
+   ],
+   "errores": 0
+  },
+  {
+   "t": 89920,
+   "seg": "cap2-vuelo",
+   "fpsMed": 12,
+   "heapMB": 129,
+   "geo": 285,
+   "tex": 135,
+   "progs": 77,
+   "calls": 61,
+   "tris": 315928,
+   "pos": [
+    2,
+    34,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 105115,
+   "seg": "cap2-vuelo",
+   "fpsMed": 15,
+   "heapMB": 131,
+   "geo": 285,
+   "tex": 135,
+   "progs": 77,
+   "calls": 61,
+   "tris": 315928,
+   "pos": [
+    2,
+    34,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 29258,
+   "seg": "cap3-asentado",
+   "fpsMed": 3,
+   "heapMB": 93,
+   "geo": 86,
+   "tex": 124,
+   "progs": 47,
+   "calls": 58,
+   "tris": 266127,
+   "pos": [
+    2,
+    17,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 46701,
+   "seg": "cap3-asentado",
+   "fpsMed": 5,
+   "heapMB": 140,
+   "geo": 96,
+   "tex": 136,
+   "progs": 57,
+   "calls": 68,
+   "tris": 309212,
+   "pos": [
+    2,
+    10,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 88952,
+   "seg": "cap3-vuelo",
+   "fpsMed": 16,
+   "heapMB": 125,
+   "geo": 94,
+   "tex": 135,
+   "progs": 55,
+   "calls": 64,
+   "tris": 312202,
+   "pos": [
+    2,
+    35,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 104194,
+   "seg": "cap3-vuelo",
+   "fpsMed": 21,
+   "heapMB": 124,
+   "geo": 94,
+   "tex": 135,
+   "progs": 55,
+   "calls": 64,
+   "tris": 312202,
+   "pos": [
+    2,
+    35,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 27905,
+   "seg": "cap4-asentado",
+   "fpsMed": 4,
+   "heapMB": 94,
+   "geo": 83,
+   "tex": 127,
+   "progs": 45,
+   "calls": 56,
+   "tris": 264687,
+   "pos": [
+    2,
+    20,
+    2
+   ],
+   "errores": 0
+  }
+ ],
+ "fotos": {},
+ "erroresConsola": []
+}

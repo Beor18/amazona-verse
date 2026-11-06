@@ -1,0 +1,26 @@
+[23:21:18] FASE 2: cap 2
+[23:21:55] muestra cap2-asentado: heap=84MB geo=128 tex=128 fps=3 pos=150,5,170
+[23:22:09] muestra cap2-asentado: heap=126MB geo=146 tex=133 fps=11 pos=150,5,170
+[23:22:53] muestra cap2-vuelo: heap=140MB geo=309 tex=135 fps=17 pos=2,34,2
+[23:23:08] muestra cap2-vuelo: heap=124MB geo=309 tex=135 fps=21 pos=2,34,2
+[23:23:11] FASE 2: cap 3
+[23:23:40] muestra cap3-asentado: heap=137MB geo=93 tex=126 fps=4 pos=2,9,2
+[23:23:54] muestra cap3-asentado: heap=120MB geo=96 tex=134 fps=10 pos=2,10,2
+[23:24:39] muestra cap3-vuelo: heap=130MB geo=95 tex=134 fps=23 pos=2,34,2
+[23:24:54] muestra cap3-vuelo: heap=128MB geo=95 tex=134 fps=28 pos=2,34,2
+[23:24:57] FASE 2: cap 4
+[23:25:25] muestra cap4-asentado: heap=111MB geo=92 tex=128 fps=5 pos=2,9,2
+[23:25:39] muestra cap4-asentado: heap=119MB geo=93 tex=134 fps=12 pos=2,10,2
+[23:26:24] muestra cap4-vuelo: heap=129MB geo=92 tex=134 fps=26 pos=2,34,2
+[23:26:40] muestra cap4-vuelo: heap=129MB geo=92 tex=134 fps=27 pos=2,34,2
+[23:26:42] FASE 2: cap 5
+[23:27:10] muestra cap5-asentado: heap=140MB geo=90 tex=128 fps=6 pos=2,9,2
+[23:27:24] muestra cap5-asentado: heap=124MB geo=93 tex=134 fps=12 pos=2,10,2
+[23:28:09] muestra cap5-vuelo: heap=129MB geo=92 tex=134 fps=23 pos=2,34,2
+[23:28:25] muestra cap5-vuelo: heap=129MB geo=92 tex=134 fps=30 pos=2,34,2
+[23:28:27] FASE 2: cap 6
+[23:28:58] muestra cap6-asentado: heap=140MB geo=91 tex=126 fps=5 pos=2,9,2
+[23:29:13] muestra cap6-asentado: heap=123MB geo=93 tex=134 fps=12 pos=2,10,2
+[23:29:58] muestra cap6-vuelo: heap=128MB geo=92 tex=134 fps=21 pos=2,35,2
+[23:30:13] muestra cap6-vuelo: heap=128MB geo=92 tex=134 fps=27 pos=2,35,2
+[23:30:16] guardado C:\Users\kelvi\amazonaversegame2\docs\img\kimi176\k176_r3caps.json

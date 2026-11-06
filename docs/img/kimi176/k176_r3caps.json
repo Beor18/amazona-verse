@@ -1,0 +1,401 @@
+{
+ "etiqueta": "r3caps",
+ "perfil": {
+  "ancho": 390,
+  "alto": 844,
+  "dpr": 3,
+  "cpu": 4
+ },
+ "inicio": "2026-11-06T23:21:18.942Z",
+ "fases": {
+  "cap2": {
+   "entrada": "ok",
+   "durMin": 1.33,
+   "heapPico": 140,
+   "heapFin": 124,
+   "geoFin": 309,
+   "texFin": 135,
+   "callsMed": 74
+  },
+  "cap3": {
+   "entrada": "ok",
+   "durMin": 1.33,
+   "heapPico": 137,
+   "heapFin": 128,
+   "geoFin": 95,
+   "texFin": 134,
+   "callsMed": 65
+  },
+  "cap4": {
+   "entrada": "ok",
+   "durMin": 1.33,
+   "heapPico": 129,
+   "heapFin": 129,
+   "geoFin": 92,
+   "texFin": 134,
+   "callsMed": 65
+  },
+  "cap5": {
+   "entrada": "ok",
+   "durMin": 1.33,
+   "heapPico": 140,
+   "heapFin": 129,
+   "geoFin": 92,
+   "texFin": 134,
+   "callsMed": 65
+  },
+  "cap6": {
+   "entrada": "ok",
+   "durMin": 1.34,
+   "heapPico": 140,
+   "heapFin": 128,
+   "geoFin": 92,
+   "texFin": 134,
+   "callsMed": 65
+  }
+ },
+ "muestras": [
+  {
+   "t": 29249,
+   "seg": "cap2-asentado",
+   "fpsMed": 3,
+   "heapMB": 84,
+   "geo": 128,
+   "tex": 128,
+   "progs": 62,
+   "calls": 70,
+   "tris": 308960,
+   "pos": [
+    150,
+    5,
+    170
+   ],
+   "errores": 0
+  },
+  {
+   "t": 43052,
+   "seg": "cap2-asentado",
+   "fpsMed": 11,
+   "heapMB": 126,
+   "geo": 146,
+   "tex": 133,
+   "progs": 73,
+   "calls": 104,
+   "tris": 611447,
+   "pos": [
+    150,
+    5,
+    170
+   ],
+   "errores": 0
+  },
+  {
+   "t": 87404,
+   "seg": "cap2-vuelo",
+   "fpsMed": 17,
+   "heapMB": 140,
+   "geo": 309,
+   "tex": 135,
+   "progs": 79,
+   "calls": 61,
+   "tris": 315928,
+   "pos": [
+    2,
+    34,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 102684,
+   "seg": "cap2-vuelo",
+   "fpsMed": 21,
+   "heapMB": 124,
+   "geo": 309,
+   "tex": 135,
+   "progs": 79,
+   "calls": 61,
+   "tris": 315928,
+   "pos": [
+    2,
+    34,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 25735,
+   "seg": "cap3-asentado",
+   "fpsMed": 4,
+   "heapMB": 137,
+   "geo": 93,
+   "tex": 126,
+   "progs": 51,
+   "calls": 64,
+   "tris": 294539,
+   "pos": [
+    2,
+    9,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 40243,
+   "seg": "cap3-asentado",
+   "fpsMed": 10,
+   "heapMB": 120,
+   "geo": 96,
+   "tex": 134,
+   "progs": 57,
+   "calls": 67,
+   "tris": 309212,
+   "pos": [
+    2,
+    10,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 85216,
+   "seg": "cap3-vuelo",
+   "fpsMed": 23,
+   "heapMB": 130,
+   "geo": 95,
+   "tex": 134,
+   "progs": 56,
+   "calls": 64,
+   "tris": 312202,
+   "pos": [
+    2,
+    34,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 100411,
+   "seg": "cap3-vuelo",
+   "fpsMed": 28,
+   "heapMB": 128,
+   "geo": 95,
+   "tex": 134,
+   "progs": 56,
+   "calls": 64,
+   "tris": 312202,
+   "pos": [
+    2,
+    34,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 24623,
+   "seg": "cap4-asentado",
+   "fpsMed": 5,
+   "heapMB": 111,
+   "geo": 92,
+   "tex": 128,
+   "progs": 53,
+   "calls": 65,
+   "tris": 295155,
+   "pos": [
+    2,
+    9,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 39134,
+   "seg": "cap4-asentado",
+   "fpsMed": 12,
+   "heapMB": 119,
+   "geo": 93,
+   "tex": 134,
+   "progs": 57,
+   "calls": 67,
+   "tris": 309212,
+   "pos": [
+    2,
+    10,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 84152,
+   "seg": "cap4-vuelo",
+   "fpsMed": 26,
+   "heapMB": 129,
+   "geo": 92,
+   "tex": 134,
+   "progs": 56,
+   "calls": 64,
+   "tris": 312202,
+   "pos": [
+    2,
+    34,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 99316,
+   "seg": "cap4-vuelo",
+   "fpsMed": 27,
+   "heapMB": 129,
+   "geo": 92,
+   "tex": 134,
+   "progs": 56,
+   "calls": 64,
+   "tris": 312202,
+   "pos": [
+    2,
+    34,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 24493,
+   "seg": "cap5-asentado",
+   "fpsMed": 6,
+   "heapMB": 140,
+   "geo": 90,
+   "tex": 128,
+   "progs": 51,
+   "calls": 64,
+   "tris": 294591,
+   "pos": [
+    2,
+    9,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 39028,
+   "seg": "cap5-asentado",
+   "fpsMed": 12,
+   "heapMB": 124,
+   "geo": 93,
+   "tex": 134,
+   "progs": 57,
+   "calls": 67,
+   "tris": 309212,
+   "pos": [
+    2,
+    10,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 84073,
+   "seg": "cap5-vuelo",
+   "fpsMed": 23,
+   "heapMB": 129,
+   "geo": 92,
+   "tex": 134,
+   "progs": 56,
+   "calls": 64,
+   "tris": 312202,
+   "pos": [
+    2,
+    34,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 99233,
+   "seg": "cap5-vuelo",
+   "fpsMed": 30,
+   "heapMB": 129,
+   "geo": 92,
+   "tex": 134,
+   "progs": 56,
+   "calls": 64,
+   "tris": 312202,
+   "pos": [
+    2,
+    34,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 27388,
+   "seg": "cap6-asentado",
+   "fpsMed": 5,
+   "heapMB": 140,
+   "geo": 91,
+   "tex": 126,
+   "progs": 51,
+   "calls": 64,
+   "tris": 294539,
+   "pos": [
+    2,
+    9,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 41902,
+   "seg": "cap6-asentado",
+   "fpsMed": 12,
+   "heapMB": 123,
+   "geo": 93,
+   "tex": 134,
+   "progs": 57,
+   "calls": 67,
+   "tris": 309212,
+   "pos": [
+    2,
+    10,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 86939,
+   "seg": "cap6-vuelo",
+   "fpsMed": 21,
+   "heapMB": 128,
+   "geo": 92,
+   "tex": 134,
+   "progs": 56,
+   "calls": 64,
+   "tris": 312202,
+   "pos": [
+    2,
+    35,
+    2
+   ],
+   "errores": 0
+  },
+  {
+   "t": 102169,
+   "seg": "cap6-vuelo",
+   "fpsMed": 27,
+   "heapMB": 128,
+   "geo": 92,
+   "tex": 134,
+   "progs": 56,
+   "calls": 64,
+   "tris": 312202,
+   "pos": [
+    2,
+    35,
+    2
+   ],
+   "errores": 0
+  }
+ ],
+ "fotos": {},
+ "erroresConsola": []
+}

@@ -1,0 +1,39 @@
+[23:00:16] FASE 1: cap1 larga (11 min) con actividades
+[23:00:50] entrada cap1 ok
+[23:00:54] muestra cap1-asentado: heap=101MB geo=122 tex=128 fps=3 pos=150,5,170
+[23:01:08] muestra cap1-asentado: heap=119MB geo=138 tex=132 fps=7 pos=150,5,170
+[23:01:34] muestra cap1-vuelo-villa: heap=110MB geo=144 tex=134 fps=14 pos=150,34,170
+[23:01:59] muestra cap1-vuelo-camino: heap=127MB geo=302 tex=136 fps=13 pos=61,44,41
+[23:02:24] muestra cap1-vuelo-ciudad: heap=137MB geo=306 tex=136 fps=13 pos=-13,61,-98
+[23:02:48] muestra cap1-vuelo-plaza: heap=139MB geo=303 tex=135 fps=20 pos=-32,125,-134
+[23:03:13] muestra cap1-vuelo-meseta: heap=119MB geo=303 tex=136 fps=19 pos=-89,59,-61
+[23:03:38] muestra cap1-vuelo-minas: heap=137MB geo=436 tex=136 fps=14 pos=71,20,-75
+[23:04:03] muestra cap1-vuelo-portales: heap=147MB geo=438 tex=135 fps=14 pos=43,81,-118
+[23:04:13] actividad: duelo
+[23:05:01] muestra cap1-duelo: heap=134MB geo=366 tex=134 fps=17 pos=175,4,177
+[23:05:07] actividad: sombra
+[23:05:54] muestra cap1-sombra: heap=124MB geo=366 tex=134 fps=22 pos=175,4,177
+[23:06:00] actividad: puerto
+[23:06:53] muestra cap1-puerto: heap=129MB geo=375 tex=135 fps=14 pos=73,5,-76
+[23:07:14] muestra cap1-vuelo-villa: heap=147MB geo=393 tex=134 fps=17 pos=149,36,168
+[23:07:38] muestra cap1-vuelo-camino: heap=154MB geo=463 tex=136 fps=18 pos=61,46,41
+[23:08:03] muestra cap1-vuelo-ciudad: heap=150MB geo=458 tex=136 fps=16 pos=-13,61,-98
+[23:08:27] muestra cap1-vuelo-plaza: heap=135MB geo=455 tex=135 fps=20 pos=-32,125,-134
+[23:08:52] muestra cap1-vuelo-meseta: heap=143MB geo=455 tex=136 fps=19 pos=-89,59,-61
+[23:09:17] muestra cap1-vuelo-minas: heap=123MB geo=454 tex=136 fps=17 pos=71,30,-75
+[23:09:42] muestra cap1-vuelo-portales: heap=132MB geo=455 tex=135 fps=22 pos=41,112,-118
+[23:09:52] actividad: puerto
+[23:10:45] muestra cap1-puerto: heap=132MB geo=456 tex=135 fps=20 pos=73,5,-76
+[23:10:54] muestra cap1-final: heap=147MB geo=456 tex=135 fps=18 pos=150,5,170
+[23:11:09] muestra cap1-final: heap=133MB geo=379 tex=134 fps=21 pos=150,5,170
+[23:11:12] FASE 1 fin: {"n":22,"pendienteMBmin":1.89,"r2":0.24,"heapIni":101,"heapFin":133,"deltaMB":32}
+[23:11:12] FASE 2: cap 2
+[23:11:40] muestra cap2-asentado: heap=107MB geo=119 tex=127 fps=4 pos=150,5,170
+[23:11:55] muestra cap2-asentado: heap=128MB geo=136 tex=132 fps=12 pos=150,5,170
+[23:12:39] muestra cap2-vuelo: heap=139MB geo=297 tex=134 fps=18 pos=2,35,2
+[23:12:54] muestra cap2-vuelo: heap=121MB geo=297 tex=134 fps=21 pos=2,35,2
+[23:12:57] FASE 2: cap 3
+[23:13:28] muestra cap3-asentado: heap=109MB geo=92 tex=128 fps=4 pos=2,9,2
+[23:13:42] muestra cap3-asentado: heap=121MB geo=93 tex=135 fps=10 pos=2,10,2
+[23:14:27] muestra cap3-vuelo: heap=131MB geo=92 tex=135 fps=24 pos=2,34,2
+[23:14:43] muestra cap3-vuelo: heap=127MB geo=92 tex=135 fps=26 pos=2,34,2

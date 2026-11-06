@@ -1,0 +1,391 @@
+{
+ "etiqueta": "r1",
+ "nota": "corrida interrumpida en FASE 2 cap3 (CDP); FASE 1 cap1 completa reconstruida del log (sin escritura incremental)",
+ "perfil": {
+  "ancho": 390,
+  "alto": 844,
+  "dpr": 3,
+  "cpu": 4
+ },
+ "v18": true,
+ "fases": {
+  "cap1-larga": {
+   "durMin": 11,
+   "tendenciaHeap": {
+    "n": 22,
+    "pendienteMBmin": 1.89,
+    "r2": 0.24,
+    "heapIni": 101,
+    "heapFin": 133,
+    "deltaMB": 32,
+    "nota": "computada por la herramienta con timestamps reales (15 s entre muestras)"
+   },
+   "veredicto": "sin fuga: crecimiento de caché en la 1ª vuelta (101→154 MB), meseta estable la 2ª (110-150 oscilando con el streaming); texturas planas en 134-136; geo estable ~455 tras visitar todas las zonas"
+  }
+ },
+ "muestras": [
+  {
+   "seg": "cap1-asentado",
+   "heapMB": 101,
+   "geo": 122,
+   "tex": 128,
+   "fpsMed": 3,
+   "pos": [
+    150,
+    5,
+    170
+   ]
+  },
+  {
+   "seg": "cap1-asentado",
+   "heapMB": 119,
+   "geo": 138,
+   "tex": 132,
+   "fpsMed": 7,
+   "pos": [
+    150,
+    5,
+    170
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-villa",
+   "heapMB": 110,
+   "geo": 144,
+   "tex": 134,
+   "fpsMed": 14,
+   "pos": [
+    150,
+    34,
+    170
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-camino",
+   "heapMB": 127,
+   "geo": 302,
+   "tex": 136,
+   "fpsMed": 13,
+   "pos": [
+    61,
+    44,
+    41
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-ciudad",
+   "heapMB": 137,
+   "geo": 306,
+   "tex": 136,
+   "fpsMed": 13,
+   "pos": [
+    -13,
+    61,
+    -98
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-plaza",
+   "heapMB": 139,
+   "geo": 303,
+   "tex": 135,
+   "fpsMed": 20,
+   "pos": [
+    -32,
+    125,
+    -134
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-meseta",
+   "heapMB": 119,
+   "geo": 303,
+   "tex": 136,
+   "fpsMed": 19,
+   "pos": [
+    -89,
+    59,
+    -61
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-minas",
+   "heapMB": 137,
+   "geo": 436,
+   "tex": 136,
+   "fpsMed": 14,
+   "pos": [
+    71,
+    20,
+    -75
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-portales",
+   "heapMB": 147,
+   "geo": 438,
+   "tex": 135,
+   "fpsMed": 14,
+   "pos": [
+    43,
+    81,
+    -118
+   ]
+  },
+  {
+   "seg": "cap1-duelo",
+   "heapMB": 134,
+   "geo": 366,
+   "tex": 134,
+   "fpsMed": 17,
+   "pos": [
+    175,
+    4,
+    177
+   ]
+  },
+  {
+   "seg": "cap1-sombra",
+   "heapMB": 124,
+   "geo": 366,
+   "tex": 134,
+   "fpsMed": 22,
+   "pos": [
+    175,
+    4,
+    177
+   ]
+  },
+  {
+   "seg": "cap1-puerto",
+   "heapMB": 129,
+   "geo": 375,
+   "tex": 135,
+   "fpsMed": 14,
+   "pos": [
+    73,
+    5,
+    -76
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-villa",
+   "heapMB": 147,
+   "geo": 393,
+   "tex": 134,
+   "fpsMed": 17,
+   "pos": [
+    149,
+    36,
+    168
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-camino",
+   "heapMB": 154,
+   "geo": 463,
+   "tex": 136,
+   "fpsMed": 18,
+   "pos": [
+    61,
+    46,
+    41
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-ciudad",
+   "heapMB": 150,
+   "geo": 458,
+   "tex": 136,
+   "fpsMed": 16,
+   "pos": [
+    -13,
+    61,
+    -98
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-plaza",
+   "heapMB": 135,
+   "geo": 455,
+   "tex": 135,
+   "fpsMed": 20,
+   "pos": [
+    -32,
+    125,
+    -134
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-meseta",
+   "heapMB": 143,
+   "geo": 455,
+   "tex": 136,
+   "fpsMed": 19,
+   "pos": [
+    -89,
+    59,
+    -61
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-minas",
+   "heapMB": 123,
+   "geo": 454,
+   "tex": 136,
+   "fpsMed": 17,
+   "pos": [
+    71,
+    30,
+    -75
+   ]
+  },
+  {
+   "seg": "cap1-vuelo-portales",
+   "heapMB": 132,
+   "geo": 455,
+   "tex": 135,
+   "fpsMed": 22,
+   "pos": [
+    41,
+    112,
+    -118
+   ]
+  },
+  {
+   "seg": "cap1-puerto",
+   "heapMB": 132,
+   "geo": 456,
+   "tex": 135,
+   "fpsMed": 20,
+   "pos": [
+    73,
+    5,
+    -76
+   ]
+  },
+  {
+   "seg": "cap1-final",
+   "heapMB": 147,
+   "geo": 456,
+   "tex": 135,
+   "fpsMed": 18,
+   "pos": [
+    150,
+    5,
+    170
+   ]
+  },
+  {
+   "seg": "cap1-final",
+   "heapMB": 133,
+   "geo": 379,
+   "tex": 134,
+   "fpsMed": 21,
+   "pos": [
+    150,
+    5,
+    170
+   ]
+  },
+  {
+   "seg": "cap2-asentado",
+   "heapMB": 107,
+   "geo": 119,
+   "tex": 127,
+   "fpsMed": 4,
+   "pos": [
+    150,
+    5,
+    170
+   ]
+  },
+  {
+   "seg": "cap2-asentado",
+   "heapMB": 128,
+   "geo": 136,
+   "tex": 132,
+   "fpsMed": 12,
+   "pos": [
+    150,
+    5,
+    170
+   ]
+  },
+  {
+   "seg": "cap2-vuelo",
+   "heapMB": 139,
+   "geo": 297,
+   "tex": 134,
+   "fpsMed": 18,
+   "pos": [
+    2,
+    35,
+    2
+   ]
+  },
+  {
+   "seg": "cap2-vuelo",
+   "heapMB": 121,
+   "geo": 297,
+   "tex": 134,
+   "fpsMed": 21,
+   "pos": [
+    2,
+    35,
+    2
+   ]
+  },
+  {
+   "seg": "cap3-asentado",
+   "heapMB": 109,
+   "geo": 92,
+   "tex": 128,
+   "fpsMed": 4,
+   "pos": [
+    2,
+    9,
+    2
+   ]
+  },
+  {
+   "seg": "cap3-asentado",
+   "heapMB": 121,
+   "geo": 93,
+   "tex": 135,
+   "fpsMed": 10,
+   "pos": [
+    2,
+    10,
+    2
+   ]
+  },
+  {
+   "seg": "cap3-vuelo",
+   "heapMB": 131,
+   "geo": 92,
+   "tex": 135,
+   "fpsMed": 24,
+   "pos": [
+    2,
+    34,
+    2
+   ]
+  },
+  {
+   "seg": "cap3-vuelo",
+   "heapMB": 127,
+   "geo": 92,
+   "tex": 135,
+   "fpsMed": 26,
+   "pos": [
+    2,
+    34,
+    2
+   ]
+  }
+ ],
+ "fotos": {
+  "ciudad": "k176_r1_ciudad.jpg"
+ }
+}

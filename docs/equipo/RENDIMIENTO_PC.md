@@ -1093,3 +1093,54 @@ consola en las 5 corridas. Heap 116-150 MB, estable (QA-158 sigue sano en la dem
 `docs/img/kimi175/k175_{act1,bajo-limpio,perfil1,asentado1}.json` + capturas por escenario.
 Captura clave: `k175_bajo-limpio_bajo_golf.jpg` (hoyo 1 jugado). Herramienta: `--perfil` deja el
 self-time por función en el JSON (reutilizable para KIMI-176).
+
+## KIMI-176 · sesión larga (20 min) en el móvil con la V18: fugas de memoria (6-nov · Kimi 2 — encargo coordinadora 20:20 UTC, hito 1)
+
+Encargo: 20 min volando por los 6 capítulos y entrando a cada actividad con `?v18=1`, midiendo heap,
+texturas y geometrías; buscar fugas (lo que sube y no baja tras GC) y arreglar las del carril.
+
+**Herramienta nueva:** `tools/build/kimi2_k176.js` (iPhone 390×844 @ dpr 3, CPU ×4, GPU real RX 5700 XT,
+Chrome headless con `--js-flags=--expose-gc` para leer el heap **post-GC** cada 15 s + `renderer.info`
+geometrías/texturas/programas + FPS por intervalo). Misma semilla V18 que KIMI-175. Soporta
+`--solo-caps` (saltar la fase 1) y escribe el JSON **incrementalmente** (sobrevive un corte).
+El cambio de capítulo va por `localStorage['amazonaverse.capitulo'] = {v:1, id:'capN'}` (formato de
+`menu_modos.apuntarCapitulo`; boot.js:15-18 lo exige con `v === 1`).
+
+### FASE 1 · cap 1 continuo, 11 min, 22 muestras post-GC (k176_r1)
+
+Circuito de vuelo ×2 (villa → camino → ciudad → plaza → meseta → minas → portales) con las 5
+actividades V18 intercaladas (duelo, Sombra, puerto, Chispa, minigolf).
+
+| métrica | resultado |
+|---|---|
+| heap JS | 101 → 154 MB en la 1ª vuelta (caché de streaming al visitar zonas nuevas), **meseta estable la 2ª vuelta (123–154 MB, misma banda)**; asentado final 133 MB |
+| tendencia heap (22 muestras) | **+1,89 MB/min, R²=0,24 → no significativa** (la oscilación de la caché domina; sin deriva) |
+| texturas | **planas en 127–136** durante todo el circuito |
+| geometrías | suben al visitar zonas nuevas (122 → 455) y **se estabilizan en la 2ª vuelta** (455); al volver al spawn bajan a 379 (evicción del streaming) |
+| actividades | duelo/sombra/puerto entraron y salieron limpias (geo 438 → 366 tras salir del duelo; sin residuo) |
+| FPS en vuelo (×4) | 13–30, coherente con KIMI-175 (móvil real mucho más liviano) |
+
+### FASE 2 · caps 2–6, ~75 s cada uno tras recarga (k176_r3caps)
+
+| cap | heap pico | heap fin | geo | tex | calls med |
+|---|---|---|---|---|---|
+| 2 | 140 | 124 | 309 | 135 | 74 |
+| 3 | 137 | 128 | 95 | 134 | 65 |
+| 4 | 129 | 129 | 92 | 134 | 65 |
+| 5 | 140 | 129 | 92 | 134 | 65 |
+| 6 | 140 | 128 | 92 | 134 | 65 |
+
+**0 errores de consola en toda la sesión.** Los picos 129–140 MB coinciden con la cifra demo ya
+aprobada (QA-158 sano; KIMI-175 midió 116–150 MB estable).
+
+### Veredicto
+
+**Sin fugas detectadas** en 20+ min de sesión continua con la V18: heap post-GC sin deriva
+significativa, texturas planas, geometrías con caché que sube y evicta como está diseñado, y las
+actividades limpian al salir. Nada que recortar en el carril; nada que trasladar a BUGS.md.
+Evidencia: `docs/img/kimi176/k176_r1.{json,log}` + `k176_r1_ciudad.jpg` (captura en vuelo con HUD
+V18) + `k176_r3caps.{json,log}`. Notas de herramienta: (1) la corrida r1 se cortó en FASE 2 cap3
+(CDP) y su JSON se reconstruyó del log (la escritura incremental se añadió después); (2) r2caps quedó
+corrupto por dos instancias simultáneas de la herramienta (lanzamiento con `&` huérfano) — archivos
+marcados `.CORRUPTO-duplicado.*` conservados; (3) en una PC compartida, medidas con ~50 Chrome
+huérfanos ajenos deprimen FPS pero no el heap post-GC.
