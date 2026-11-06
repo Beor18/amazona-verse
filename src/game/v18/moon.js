@@ -1,0 +1,369 @@
+/* Juego · V18.3 fase 5 · Maestro Moon, gato mentor (entrenamiento amistoso): «Entrenamiento de esquiva» (G.v18moon).
+   Directiva docs/DIRECTIVA_V18_3_RESOLUCION.md §6E y §12; sistema de personajes docs/equipo/V18_3_DISENO.md §1 (src/game/v18/npc.js,
+   fila de datos 'maestromoon' en content/comun/personajes_v18.js). Contenido opcional del mundo abierto: no toca los capítulos ni sus misiones.
+   - Dónde: un claro llano del Embarcadero de las Canoas (oeste de la isla), lejos del Puerto de La Mina, del minigolf, de la
+     explanada del duelo, de la carrera con Chispa y del puente roto. Sitio fijo medido en el mapa y en el juego (terreno, agua,
+     colisiones, troncos y sólidos): SITIO más abajo. La prueba vuelve a medirlo.
+   - Moon sale con el sistema único de NPC: carga diferida (el .glb no se pide hasta que Vittata está a < 90 m), máx. 2 a la vez.
+   - El entrenamiento: Acción junto a Moon → reto → cuenta 3-2-1 → 30 s esquivando bolas de luz lentas que Moon lanza desde su
+     sitio hacia donde estaba Vittata al lanzarlas. Menos de 3 toques al final = victoria; al tercer toque el entreno acaba.
+     Sin violencia: las bolas son luz, no hacen daño; Moon anima y celebra. Alejarse > 45 m o volar alto (> 11 m del suelo 3 s)
+     lo cancela. Nada de presión: «¿Otra ronda?» y ya.
+   - Progreso V18 (G.v18.mundo('entreno_moon') = { mejor (mínimo de toques en un entreno ganado), victorias, jugadas, xp }).
+     30 XP de G.v18evo una sola vez, al ganar la primera (también si evolucion.js llega después). «Comenzar de cero» lo borra con el resto de la V18.
+   - Minimapa: marcador propio (luna creciente, con nombre) en Moon mientras dure el módulo (minimapa.js, mapa()).
+   Solo con la bandera V18 (src/boot.js). Prueba: AV.v18MoonTest(). */
+window.AVV18Moon = function (G) {
+  'use strict';
+  if (G.v18moon) return G.v18moon;
+  const V = G.v18 || window.AVV18Progreso(G);
+  const N = G.v18npc || window.AVV18Npc(G);
+  const S = G.S, T = G.terreno, F = G.fisica, scene = G.renderer.scene;
+  const ID = 'entreno_moon', NPC = 'maestromoon', XP_GANAR = 30;
+  const DUR_S = 30, CUENTA_S = 3, MAX_TOQUES = 3, V_ORB = 4.2, CADENCIA_S = 2.6, PRIMERA_S = 1.6;
+  const R_ORB = 0.26, R_HIT = 0.8, GRACIA_S = 0.45, MERCY_S = 1.2, VIDA_S = 4.5, R_SALE = 45, ALTO_MAX = 11, ALTO_T_S = 3;
+  // Medido en el mapa real y en el juego (sonda de terreno, agua, colisiones, troncos y sólidos; ver la prueba, check 5)
+  // (plano a ≤ 1,1 m en el círculo de 11 m; h ≈ 16; a > 115 m de puerto/villa/golf/duelo/chispa/misterio).
+  const SITIO = { x: -150.5, z: 14, rotY: 1.57 };
+  const TXT = {
+    nombre: 'Entrenamiento con Moon', label: 'Entrenar la esquiva con Moon',
+    reto: ['Bienvenida a mi claro, pequeña cotorra. Yo soy Moon: aquí se entrena la esquiva, paso a paso.', 'Lanzaré bolas de luz MUY lentas. Aguanta 30 s con menos de 3 toques y el entreno es tuyo. ¿Empezamos?'],
+    revancha: ['¿Otra ronda? Recuerda: no persigas la bola, deja que pase y aparta el cuerpo.'],
+    cuenta: '¡Esquiva las bolas de luz! Menos de 3 toques en 30 s.',
+    ya: '¡Ya!', quedan: 'Quedan {} s', toques: 'Toques {}/' + MAX_TOQUES, record: 'Mejor marca',
+    gana: ['¡Bien hecho! Tu cuerpo respondió antes que tu cabeza. Eso es la esquiva.', 'Vuelve cuando quieras: la práctica hace al vuelo.'],
+    pierde: ['Tres toques. No pasa nada: hasta las águilas aprenden cayendo.', 'Descansa un momento y lo intentamos otra vez.'],
+    nuevo: '¡Nuevo récord: solo {} toques!',
+    xp: 'Tu aventura cuenta: +{} XP para tu cotorra.',
+    lejos: 'Te alejaste del claro: el entrenamiento con Moon queda para otro rato.',
+    alto: 'El entreno es en el suelo: baja a entrenar la esquiva de verdad.'
+  };
+  const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  const toast = (t, ms) => { try { G.ui.toast(t, ms || 2600); } catch (e) { /* sin interfaz */ } };
+  const fx = (k, x, y, z, n) => { try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
+  const emitir = ev => { try { G.emit('v18moon', ev); } catch (e) { /* sin oyentes */ } };
+  const H = (x, z) => T.height(x, z);
+  const reloj = s => (Math.max(0, s)).toFixed(1).replace('.', ',') + ' s';
+
+  const A = { fase: 'nada', t: 0, cuenta: 0, toques: 0, mercy: 0, lanzarEn: 0, altoT: 0, orbs: [], forzar: false, manual: false, ultimo: null, xpT: 0 };
+  const activa = () => !!(G.V18 || A.forzar);
+
+  // ---------- Progreso ----------
+  function record() { const r = V.mundo(ID); return r && typeof r === 'object' ? r : null; }
+  function pagarXP() {
+    const r = record();
+    if (!r || !(r.victorias > 0) || r.xp || !G.v18evo || !G.v18evo.dar) return 0;
+    V.cambiarMundo(ID, Object.assign({}, r, { xp: true })); // primero se marca: nunca dos veces
+    const n = G.v18evo.dar(V.seleccionada ? V.seleccionada() || 'vittata' : 'vittata', XP_GANAR, 'moon') || 0;
+    if (n) toast(TXT.xp.replace('{}', n), 2800);
+    return n;
+  }
+
+  // ---------- Bolas de luz (pool fijo: 0 assets, ≤3 vivas) ----------
+  const gOrbs = new THREE.Group(); gOrbs.name = 'v18moon:orbs'; gOrbs.visible = false; scene.add(gOrbs);
+  const mOrb = new THREE.MeshBasicMaterial({ color: new THREE.Color('#ffd76a').convertSRGBToLinear() });
+  const mGlowCv = document.createElement('canvas'); mGlowCv.width = mGlowCv.height = 64;
+  (() => { const g = mGlowCv.getContext('2d'), gr = g.createRadialGradient(32, 32, 4, 32, 32, 30);
+    gr.addColorStop(0, 'rgba(255,236,170,.95)'); gr.addColorStop(0.45, 'rgba(255,214,106,.45)'); gr.addColorStop(1, 'rgba(255,214,106,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64); })();
+  const mGlow = new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(mGlowCv), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+  const POOL = [];
+  for (let i = 0; i < 3; i++) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(R_ORB, 12, 10), mOrb);
+    const sp = new THREE.Sprite(mGlow); sp.scale.set(1.6, 1.6, 1); m.add(sp);
+    m.visible = false; gOrbs.add(m); POOL.push(m);
+  }
+  function lanzar() {
+    const o = POOL.find(p => !p.visible); if (!o) return false;
+    const ox = A.mx, oy = H(A.mx, A.mz) + 1.05, oz = A.mz; // de la «mano» de Moon, a la altura del pecho de Vittata
+    const tx = S.pos.x, ty = S.pos.y + 0.6, tz = S.pos.z;
+    let dx = tx - ox, dy = ty - oy, dz = tz - oz; const d = Math.hypot(dx, dy, dz) || 1;
+    dx /= d; dy /= d; dz /= d;
+    o.position.set(ox, oy, oz); o.visible = true;
+    A.orbs.push({ m: o, vx: dx * V_ORB, vy: dy * V_ORB, vz: dz * V_ORB, t: 0 });
+    N.animar(NPC, 'senalar'); // telegrafo: Moon «apunta» al lanzar
+    fx('gold', ox, oy, oz, 4); sonar('tick');
+    return true;
+  }
+  function matarOrbs() { for (const o of A.orbs) o.m.visible = false; A.orbs.length = 0; gOrbs.visible = false; }
+  function pasoOrbs(dt) {
+    gOrbs.visible = A.orbs.length > 0;
+    for (let i = A.orbs.length - 1; i >= 0; i--) {
+      const o = A.orbs[i];
+      o.t += dt;
+      o.m.position.x += o.vx * dt; o.m.position.y += o.vy * dt; o.m.position.z += o.vz * dt;
+      const p = o.m.position, suelo = H(p.x, p.z);
+      let muerta = o.t > VIDA_S || p.y < suelo + 0.12;
+      if (p.y < suelo + 0.12) fx('dust', p.x, suelo + 0.1, p.z, 5);
+      const d = Math.hypot(S.pos.x - p.x, (S.pos.y + 0.6) - p.y, S.pos.z - p.z);
+      if (!muerta && o.t > GRACIA_S && A.mercy <= 0 && d < R_HIT) {
+        muerta = true; A.toques++; A.mercy = MERCY_S;
+        fx('stars', p.x, p.y, p.z, 10); sonar('pickup');
+        toast(TXT.toques.replace('{}', A.toques), 1400);
+        emitir({ tipo: 'toque', toques: A.toques });
+      }
+      if (muerta) { o.m.visible = false; A.orbs.splice(i, 1); }
+    }
+  }
+
+  // ---------- HUD ----------
+  let hud = null;
+  function montarHud() {
+    if (hud) return hud;
+    if (!document.getElementById('v18-moon-css')) {
+      const st = document.createElement('style'); st.id = 'v18-moon-css';
+      st.textContent = '#v18-moon{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(300px,calc(100vw - 32px));z-index:40;' +
+        'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(24,26,58,.8);border:2px solid #b9a7ff;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
+        '#v18-moon .vm-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-moon .vm-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
+        '#v18-moon .vm-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd76a;text-shadow:0 2px 0 #6a4dc9}#v18-moon .vm-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
+        '@media (max-width:760px){#v18-moon{top:calc(env(safe-area-inset-top,0px) + 64px)}}';
+      document.head.appendChild(st);
+    }
+    const el = document.createElement('div'); el.id = 'v18-moon'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+    el.innerHTML = '<div class="vm-t"></div><div class="vm-n" hidden></div><div class="vm-l"><span class="vm-p"></span><span class="vm-s"></span></div><div class="vm-r"></div>';
+    document.body.appendChild(el);
+    const q = c => el.querySelector(c);
+    hud = { el, t: q('.vm-t'), n: q('.vm-n'), p: q('.vm-p'), s: q('.vm-s'), r: q('.vm-r'), cache: {} };
+    hud.t.textContent = TXT.nombre;
+    return hud;
+  }
+  const pon = (k, txt) => { if (hud.cache[k] !== txt) { hud.cache[k] = txt; hud[k].textContent = txt; } };
+  function pintarHud() {
+    if (!hud) return;
+    const on = A.fase === 'cuenta' || A.fase === 'entreno';
+    hud.el.hidden = !on; if (!on) return;
+    const n = A.fase === 'cuenta' ? String(Math.max(1, Math.ceil(A.cuenta))) : A.fase === 'entreno' && A.t < 0.8 ? TXT.ya : '';
+    hud.n.hidden = !n; pon('n', n);
+    pon('p', TXT.quedan.replace('{}', String(Math.max(0, Math.ceil(DUR_S - A.t)))));
+    pon('s', TXT.toques.replace('{}', String(A.toques)));
+    const r = record(); pon('r', r && r.mejor != null ? TXT.record + ': ' + r.mejor + ' · ' + reloj(A.t) : reloj(A.t));
+  }
+
+  // ---------- Moon (instancia del sistema de NPC) ----------
+  function colocarEnSitio() {
+    N.colocar(NPC, { x: SITIO.x, z: SITIO.z, rotY: SITIO.rotY, aparece: activa, comenta: true });
+    N.alUsar(NPC, { label: () => TXT.label, use: invitar, visible: () => A.fase === 'nada' && activa() });
+  }
+  const ponerMoon = () => {
+    const inst = N.instancia(NPC); if (!inst) return;
+    inst.x = SITIO.x; inst.z = SITIO.z; inst.giro = SITIO.rotY; inst.meta = null;
+    inst.raiz.position.set(SITIO.x, H(SITIO.x, SITIO.z), SITIO.z); inst.raiz.rotation.y = SITIO.rotY;
+  };
+
+  // ---------- Entrenamiento ----------
+  function invitar() {
+    if (A.fase !== 'nada') return false;
+    const r = record();
+    return N.decir(NPC, r && r.jugadas ? TXT.revancha : TXT.reto, () => empezar());
+  }
+  function empezar(o) {
+    o = o || {};
+    if (A.fase !== 'nada' || (!activa() && !o.forzar)) return false;
+    montarHud();
+    A.mx = SITIO.x; A.mz = SITIO.z;
+    Object.assign(A, { fase: 'cuenta', t: 0, cuenta: CUENTA_S, toques: 0, mercy: 0, lanzarEn: PRIMERA_S, altoT: 0, ultimo: null });
+    matarOrbs();
+    N.colocar(NPC, { comenta: false, anim: 'idle' });
+    ponerMoon();
+    toast(TXT.cuenta, 2800); sonar('tick');
+    emitir({ tipo: 'empieza' });
+    pintarHud();
+    return true;
+  }
+  function terminar(gana) {
+    const r0 = record() || {}, r = { mejor: r0.mejor == null ? null : r0.mejor, victorias: r0.victorias || 0, jugadas: (r0.jugadas || 0) + 1, xp: !!r0.xp };
+    let nuevo = false;
+    if (gana) { r.victorias++; if (r.mejor == null || A.toques < r.mejor) { r.mejor = A.toques; nuevo = true; } }
+    V.cambiarMundo(ID, r);
+    A.fase = 'nada'; A.ultimo = { gana, toques: A.toques, nuevo };
+    matarOrbs(); pintarHud();
+    N.colocar(NPC, { x: SITIO.x, z: SITIO.z, rotY: SITIO.rotY, comenta: true, anim: undefined });
+    ponerMoon();
+    if (gana) { sonar('unlock'); fx('gold', S.pos.x, S.pos.y + 1.2, S.pos.z, 14); if (nuevo) toast(TXT.nuevo.replace('{}', A.toques), 3000); }
+    else { sonar('ring'); N.animar(NPC, 'hablar'); }
+    if (gana) pagarXP();
+    emitir({ tipo: 'fin', gana, toques: A.toques, nuevo });
+    N.decir(NPC, gana ? TXT.gana : TXT.pierde);
+    return A.ultimo;
+  }
+  function cancelar(causa) {
+    if (A.fase === 'nada') return false;
+    A.fase = 'nada'; matarOrbs(); pintarHud();
+    N.colocar(NPC, { x: SITIO.x, z: SITIO.z, rotY: SITIO.rotY, comenta: true, anim: undefined });
+    ponerMoon();
+    toast(causa === 'alto' ? TXT.alto : TXT.lejos, 2600); emitir({ tipo: 'cancela', causa: causa || 'lejos' });
+    return true;
+  }
+  let reloj3d = 0;
+  function paso(dt) {
+    reloj3d += dt;
+    if (A.fase === 'nada') {
+      if ((A.xpT -= dt) <= 0) { A.xpT = 2; if (activa()) pagarXP(); }
+      return;
+    }
+    A.mercy = Math.max(0, A.mercy - dt);
+    if (A.fase === 'cuenta') {
+      if ((A.cuenta -= dt) <= 0) { A.fase = 'entreno'; A.t = 0; A.lanzarEn = PRIMERA_S; sonar('dash'); }
+    } else if (A.fase === 'entreno') {
+      A.t += dt;
+      if ((A.lanzarEn -= dt) <= 0) { A.lanzarEn += CADENCIA_S; lanzar(); }
+      pasoOrbs(dt);
+      if (A.toques >= MAX_TOQUES) { terminar(false); return; }
+      if (A.t >= DUR_S) { terminar(true); return; }
+      const alej = Math.hypot(S.pos.x - A.mx, S.pos.z - A.mz);
+      const alto = S.pos.y - H(S.pos.x, S.pos.z);
+      A.altoT = alto > ALTO_MAX ? A.altoT + dt : 0;
+      if (alej > R_SALE) { cancelar('lejos'); return; }
+      if (A.altoT > ALTO_T_S) { cancelar('alto'); return; }
+    } else pasoOrbs(dt); // los restos mueren aunque acabe de cambiar de fase
+    pintarHud();
+  }
+  G.on('update', (dt, busy) => { if (A.manual) return; if (busy && A.fase === 'nada') return; paso(Math.min(dt, 0.1)); }, 48);
+  G.on('apply', () => { if (A.fase !== 'nada') { A.fase = 'nada'; matarOrbs(); pintarHud(); } }, 52);
+  colocarEnSitio();
+
+  const mapa = () => {
+    if (!activa()) return null;
+    return { x: SITIO.x, z: SITIO.z, nombre: TXT.nombre };
+  };
+  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.quedan, TXT.toques, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.alto].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
+    for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
+    if (d.nombre) l.push(d.nombre.es); return l; };
+
+  // ---------- Prueba ----------
+  async function test(o) {
+    o = o || {};
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    const esperar = ms => new Promise(r => setTimeout(r, ms));
+    const antes = o.antes || {};
+    try { await G.mundo.listo; } catch (e) { /* sin mundo */ }
+    const tit = document.getElementById('title'), titAbierta = !!(tit && tit.open), cre = document.getElementById('creator'), creOculto = cre ? cre.hidden : true;
+    if (titAbierta) tit.open = false; if (cre) cre.hidden = true; try { G.pausa.sincronizar(); } catch (e) { /* sin pausa */ }
+    let crudo = null; try { crudo = localStorage.getItem(V.clave()); } catch (e) { /* */ }
+    const MV = F.MOVE, keys = G.input.keys;
+    const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing && { x: S.facing.x, z: S.facing.z }, yaw0 = G.camara.yaw, inv0 = JSON.stringify(S.inv || {});
+    const toast0 = G.ui.toast, toasts = []; G.ui.toast = t => { toasts.push(String(t)); };
+    const susp = G.guardado.suspender; if (susp) susp(true);
+    const evo0 = G.v18evo, xpDado = [];
+    G.v18evo = { dar: (sp, n, f) => { xpDado.push([sp, n, f]); return n; } }; // espía: no toca la XP de la partida
+    A.manual = true;
+    const correr = (s, h) => { h = h || 1 / 30; for (let t = 0; t < s; t += h) { N.paso(h, false); paso(h); } };
+    const ir = (x, z) => { S.pos.x = x; S.pos.z = z; S.pos.y = H(x, z) + 0.02; S.vy = 0; MV.flying = false; MV.swimming = false; MV.grounded = true; MV.vx = MV.vz = 0; };
+    const recursos = () => (performance.getEntriesByType('resource') || []).map(r => r.name).filter(n => /models\/personajes\/maestro_moon/.test(n));
+    const cerrar = () => { try { G.dialogo.clear(); } catch (e) { /* */ } try { G.dialogo.cancelarLibre && G.dialogo.cancelarLibre(); } catch (e) { /* */ } };
+    // corre el entreno entero: «jugar» orbita a Moon a 9 m (las bolas vuelan rectas: esquivar = no estar donde apuntaban)
+    const entreno = (jugar) => {
+      const r = { pasos: 0, maxOrbs: 0, toques: [] };
+      if (!empezar({ forzar: true })) return null;
+      const h = 1 / 30;
+      for (let k = 0; k < 1500 && A.fase !== 'nada'; k++) {
+        if (jugar && A.fase === 'entreno') {
+          const a = k * h * 0.55; // órbita lenta, ~5 m/s: esquivable andando deprisa
+          ir(A.mx + Math.cos(a) * 9, A.mz + Math.sin(a) * 9);
+        }
+        paso(h); r.pasos++; r.maxOrbs = Math.max(r.maxOrbs, A.orbs.length);
+        if (A.toques !== r.toques[r.toques.length - 1]) r.toques.push(A.toques);
+      }
+      r.ultimo = A.ultimo; return r;
+    };
+    try {
+      check('1 · Sin la bandera no se cargó nada: ni moon.js ni el modelo de Moon', antes.v18 ? true : (!antes.moon && !antes.glb), antes.v18 ? 'bandera puesta en esta sesión' : JSON.stringify(antes));
+      cancelar(); A.forzar = false; V.cambiarMundo(ID, null);
+      // 2 · sin bandera (y sin forzar), aunque Vittata esté al lado, no aparece nada
+      ir(SITIO.x + 4, SITIO.z + 4); correr(0.3); await esperar(200); correr(0.1);
+      const sinBandera = G.V18 ? true : (!N.instancia(NPC) && N.activos().indexOf(NPC) < 0 && mapa() === null && !empezar());
+      check('2 · Sin la bandera V18 no aparece Moon, ni su marcador, ni se puede empezar el entreno', sinBandera, G.V18 ? 'bandera puesta' : N.activos().join(','));
+      A.forzar = true;
+      // 3 · lejos: carga diferida
+      const villa = (T.mapa && T.mapa.lugares && T.mapa.lugares.villa) || { x: 150, z: 170 };
+      for (const id of N.activos()) N.liberar(id);
+      const rec0 = recursos().length, ped0 = N.stats().pedidos.filter(p => /maestro_moon/.test(p)).length;
+      ir(villa.x, villa.z); correr(0.3); await esperar(300); correr(0.1);
+      check('3 · Carga diferida: lejos (> 150 m) no está Moon ni se pidió su modelo', Math.hypot(villa.x - SITIO.x, villa.z - SITIO.z) > 150 && !N.instancia(NPC) && recursos().length === rec0 && N.stats().pedidos.filter(p => /maestro_moon/.test(p)).length === ped0,
+        'dist ' + Math.hypot(villa.x - SITIO.x, villa.z - SITIO.z).toFixed(0) + ' m · Δrecursos ' + (recursos().length - rec0));
+      // 4 · cerca: aparece con su modelo (maestro_moon.glb), máximo 2 personajes a la vez
+      ir(SITIO.x + 10, SITIO.z + 10); correr(0.2);
+      for (let i = 0; i < 100 && !N.instancia(NPC); i++) { await esperar(100); correr(0.05); }
+      const inst = N.instancia(NPC);
+      check('4 · Cerca (< 90 m) aparece Moon con su modelo propio y sus acciones (Idle, Hablar, Señalar); máx. 2 personajes', !!inst && !inst.provisional && ['Idle', 'Hablar', 'Señalar'].every(n => inst.acciones[n]) && N.activos().length <= N.MAX_ACTIVOS && N.stats().pedidos.some(p => /maestro_moon\.glb/.test(p)),
+        inst ? Object.keys(inst.acciones).join(',') + ' · activos ' + N.activos().join(',') : 'sin instancia');
+      // 5 · el sitio: seco, sin troncos, colisiones ni sólidos en el círculo; lejos de las demás actividades V18 (> 100 m)
+      ir(SITIO.x, SITIO.z); correr(0.05); await esperar(400);
+      try { if (G.solidos && G.solidos.terminar) G.solidos.terminar(); } catch (e) { /* */ }
+      const VG = G.vegetacion, P = VG && VG.instancias, inf = VG && VG.info, tr = [];
+      if (P && inf) for (const m in P) { const I = inf[m], PM = P[m]; if (!I || !PM) continue; const roca = /roca|piedra|tronco/.test(m); if (!roca && !(I.tronco >= 0.05)) continue;
+        for (let i = 0; i < PM.n; i++) { const x = PM.pos[i * 4], z = PM.pos[i * 4 + 2], sc = PM.pos[i * 4 + 3]; if (Math.hypot(x - SITIO.x, z - SITIO.z) < 45) tr.push({ x, z, r: roca ? Math.max(0.5, (I.ancho || 1) * 0.5 * sc) : Math.max(0.2, I.tronco * sc) }); } }
+      const cols = (F.colliders || []).filter(c => c && c.x != null && Math.hypot(c.x - SITIO.x, c.z - SITIO.z) < 50 && !/^v18npc/.test(c.id || ''));
+      const dCol = (x, z, c) => c.hx ? Math.hypot(Math.max(0, Math.abs(x - c.x) - c.hx), Math.max(0, Math.abs(z - c.z) - c.hz)) : Math.hypot(x - c.x, z - c.z) - (c.r || 0);
+      let mT = 99, mojado = 0, solido = 0, pend = 0;
+      for (let a = 0; a < 16; a++) for (const r of [3, 7, 11]) { const x = SITIO.x + Math.cos(a / 16 * 6.2832) * r, z = SITIO.z + Math.sin(a / 16 * 6.2832) * r, h = H(x, z);
+        pend = Math.max(pend, Math.abs(h - H(SITIO.x, SITIO.z)) / Math.max(1, r));
+        if (G.agua && G.agua.levelAt && G.agua.levelAt(x, z) > h - 0.3) mojado++;
+        for (const t of tr) mT = Math.min(mT, Math.hypot(x - t.x, z - t.z) - t.r);
+        for (const c of cols) mT = Math.min(mT, dCol(x, z, c));
+        if (G.solidos && G.solidos.activo && [0.3, 0.9, 1.5, 2.5].some(y => G.solidos.dentro(x, z, h + y) > -Infinity)) solido++; }
+      const puerto = { x: 73.6, z: -75.2 }, golf = G.v18minigolf && G.v18minigolf.sitio, duelo = G.v18combate && G.v18combate.sitio, chispa = G.v18chispa && G.v18chispa.SITIO, misterio = G.v18Misterio && G.v18Misterio.sitio && G.v18Misterio.sitio();
+      const dist = q => q ? Math.hypot(q.x - SITIO.x, q.z - SITIO.z) : Infinity;
+      const lejos = { puerto: dist(puerto), villa: dist(villa), golf: dist(golf), duelo: dist(duelo), chispa: dist(chispa), misterio: dist(misterio) };
+      check('5 · Sitio abierto: círculo de 11 m en seco, sin troncos, colisiones ni sólidos; lejos de puerto, golf, duelo, Chispa y el misterio (> 100 m)',
+        !mojado && !solido && mT >= 0.8 && pend < 0.09 && [lejos.puerto, lejos.golf, lejos.duelo, lejos.chispa, lejos.misterio].every(d => d > 100),
+        'libre ' + mT.toFixed(2) + ' m · pendiente ' + pend.toFixed(2) + ' · mojado ' + mojado + ' · sólidos ' + solido + ' · ' + Object.keys(lejos).map(k => k + ' ' + (isFinite(lejos[k]) ? lejos[k].toFixed(0) : '—')).join(' '));
+      // 6 · minimapa
+      const mm = mapa();
+      check('6 · Marcador del minimapa en Moon, con nombre', mm && mm.nombre === TXT.nombre && Math.hypot(mm.x - SITIO.x, mm.z - SITIO.z) < 0.1);
+      // 7 · ganar esquivando (órbita lenta a 9 m)
+      ir(SITIO.x, SITIO.z);
+      const it = N.instancia(NPC) && G.interaccion.nearest && G.interaccion.nearest();
+      check('7a · Junto a Moon, Acción ofrece el entrenamiento', it && it.id === 'v18npc_' + NPC && it.label() === TXT.label, it && it.id);
+      const g1 = entreno(true); cerrar();
+      check('7 · Esquivando (órbita a 9 m) se gana: 30 s con menos de 3 toques', g1 && g1.ultimo && g1.ultimo.gana && g1.ultimo.toques < MAX_TOQUES,
+        g1 ? JSON.stringify({ toques: g1.ultimo && g1.ultimo.toques, pasos: g1.pasos, maxOrbs: g1.maxOrbs }) : 'no empezó');
+      const r1 = record();
+      check('8 · Resultado y récord en el progreso V18 (mundo.entreno_moon)', r1 && r1.victorias === 1 && r1.jugadas === 1 && r1.mejor === g1.ultimo.toques && g1.ultimo.nuevo, JSON.stringify(r1));
+      check('9 · 30 XP al ganar la primera vez', xpDado.length === 1 && xpDado[0][1] === XP_GANAR && r1.xp === true, JSON.stringify(xpDado));
+      // 10 · perder dejándose tocar (quieta al lado, a ~6 m)
+      correr(1); ir(SITIO.x + 6, SITIO.z);
+      const p1 = entreno(false); cerrar();
+      const r2 = record();
+      check('10 · Quieta sin moverse pierde: 3 toques y el entreno acaba antes de los 30 s', p1 && p1.ultimo && !p1.ultimo.gana && p1.ultimo.toques >= MAX_TOQUES && p1.pasos * (1 / 30) < DUR_S,
+        p1 ? JSON.stringify(p1.ultimo) + ' · ' + (p1.pasos / 30).toFixed(1) + ' s' : 'no empezó');
+      check('11 · Perder no cambia el récord ni da XP; cuenta la partida', r2.mejor === r1.mejor && r2.victorias === 1 && r2.jugadas === 2 && xpDado.length === 1, JSON.stringify(r2));
+      // 12 · persiste tras recargar; la XP no se repite
+      V.recargar(); G.emit('apply'); await esperar(50);
+      const r3 = record();
+      check('12 · Tras recargar siguen el récord, las victorias y las partidas', r3 && r3.mejor === r1.mejor && r3.victorias === 1 && r3.jugadas === 2 && r3.xp === true, JSON.stringify(r3));
+      correr(1); ir(SITIO.x, SITIO.z);
+      const g2 = entreno(true); cerrar();
+      check('13 · Otra victoria no repite la XP: pagarXP tras recargar no da nada', g2 && g2.ultimo && g2.ultimo.gana && pagarXP() === 0 && xpDado.length === 1 && record().victorias === 2, JSON.stringify(xpDado));
+      // 14 · alejarse cancela; volar alto cancela
+      ir(SITIO.x, SITIO.z); empezar({ forzar: true }); correr(CUENTA_S + 0.3);
+      ir(SITIO.x + R_SALE + 10, SITIO.z); correr(0.1);
+      const canceloLejos = A.fase === 'nada' && record().jugadas === 3 && toasts.includes(TXT.lejos);
+      ir(SITIO.x, SITIO.z); empezar({ forzar: true }); correr(CUENTA_S + 0.3);
+      S.pos.y = H(S.pos.x, S.pos.z) + ALTO_MAX + 2; correr(ALTO_T_S + 0.2);
+      check('14 · Alejarse > 45 m cancela sin contar partida; volar > 11 m durante 3 s también cancela', canceloLejos && A.fase === 'nada' && record().jugadas === 3 && toasts.includes(TXT.alto), 'jugadas ' + record().jugadas);
+      cerrar();
+      // 15 · textos
+      if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
+      const D = window.AV_EN || {}, pats = Object.keys(D).filter(k => k.indexOf('{}') >= 0).map(k => new RegExp('^' + k.split('{}').map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('(.+?)') + '$'));
+      const tx = textos(), faltan = tx.filter(t => !D[t] && !pats.some(re => re.test(t)));
+      check('15 · Todos los textos de Moon tienen inglés en content/cap1/en.js', !faltan.length, faltan.slice(0, 6).join(' | '));
+      check('15b · Ningún texto ni dato menciona el nombre del modelador (directiva V18.3 §1)', !/\x66eix/i.test(tx.join(' ') + JSON.stringify(N.def(NPC))));
+      check('16 · No toca el inventario del capítulo', JSON.stringify(S.inv || {}) === inv0);
+    } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
+    // restaurar
+    cerrar(); if (A.fase !== 'nada') { A.fase = 'nada'; matarOrbs(); pintarHud(); }
+    A.manual = false; A.forzar = false; A.ultimo = null;
+    if (evo0 === undefined) delete G.v18evo; else G.v18evo = evo0;
+    G.ui.toast = toast0;
+    S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; if (fac0 && S.facing) { S.facing.x = fac0.x; S.facing.z = fac0.z; } G.camara.yaw = yaw0;
+    try { if (crudo == null) localStorage.removeItem(V.clave()); else localStorage.setItem(V.clave(), crudo); } catch (e) { /* */ }
+    V.recargar(); colocarEnSitio(); N.paso(0.01, false);
+    if (titAbierta) tit.open = true; if (cre) cre.hidden = creOculto; try { G.pausa.sincronizar(); } catch (e) { /* sin pausa */ }
+    if (susp) susp(false);
+    return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
+  }
+
+  G.v18moon = { ID, SITIO, DUR_S, MAX_TOQUES, XP_GANAR, empezar, cancelar, invitar, paso, record, pagarXP, mapa, textos, estado: () => A, test };
+  return G.v18moon;
+};

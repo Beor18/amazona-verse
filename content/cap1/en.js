@@ -2132,5 +2132,22 @@ window.AV_EN = {
  "¡Gané! ¡Soy un rayo con cola!": "I won! I'm a lightning bolt with a tail!",
  "Si quieres la revancha, aquí te espero. Prometo no presumir… tanto.": "If you want a rematch, I'll be right here. I promise not to brag… too much.",
  "¡Nuevo récord: {}!": "New record: {}!",
- "Te alejaste: la carrera con Chispa queda para otro rato.": "You wandered off: the race with Chispa will have to wait."
+ "Te alejaste: la carrera con Chispa queda para otro rato.": "You wandered off: the race with Chispa will have to wait.",
+ "Entrenamiento con Moon": "Training with Moon",
+ "Maestro Moon": "Master Moon",
+ "Entrenar la esquiva con Moon": "Dodge training with Moon",
+ "Bienvenida a mi claro, pequeña cotorra. Yo soy Moon: aquí se entrena la esquiva, paso a paso.": "Welcome to my clearing, little parrot. I am Moon: this is where we train dodging, step by step.",
+ "Lanzaré bolas de luz MUY lentas. Aguanta 30 s con menos de 3 toques y el entreno es tuyo. ¿Empezamos?": "I will throw VERY slow light balls. Last 30 s with fewer than 3 hits and the training is yours. Shall we begin?",
+ "¿Otra ronda? Recuerda: no persigas la bola, deja que pase y aparta el cuerpo.": "Another round? Remember: don't chase the ball, let it pass and move your body aside.",
+ "¡Esquiva las bolas de luz! Menos de 3 toques en 30 s.": "Dodge the light balls! Fewer than 3 hits in 30 s.",
+ "Quedan {} s": "{} s left",
+ "Toques {}/3": "Hits {}/3",
+ "Mejor marca": "Best mark",
+ "¡Bien hecho! Tu cuerpo respondió antes que tu cabeza. Eso es la esquiva.": "Well done! Your body answered before your mind. That is dodging.",
+ "Vuelve cuando quieras: la práctica hace al vuelo.": "Come back anytime: practice makes flight.",
+ "Tres toques. No pasa nada: hasta las águilas aprenden cayendo.": "Three hits. It's all right: even eagles learn by falling.",
+ "Descansa un momento y lo intentamos otra vez.": "Rest for a moment and we will try again.",
+ "¡Nuevo récord: solo {} toques!": "New record: only {} hits!",
+ "Te alejaste del claro: el entrenamiento con Moon queda para otro rato.": "You wandered off from the clearing: the training with Moon will have to wait.",
+ "El entreno es en el suelo: baja a entrenar la esquiva de verdad.": "Training is on the ground: come down and train dodging for real."
 };
