@@ -94,7 +94,7 @@ Un modelo creado no cuenta como personaje terminado: solo cuenta cuando está in
 
 - **Kimi:**
   - KIMI-161 y KIMI-162;
-  - la matriz de poderes (hecha: 34 de 36, ver «Cifra única»);
+  - la matriz de poderes: hecha (34 de 36, ver «Cifra única de poderes»);
   - las pruebas con GPU cada vez que entra código.
 - **Mac:** los modelos de la fase 5 de la V18.3 (Tuerca, Chispa, Maestro Moon sin katana, y el Piloto con piel propia). Ninguno se conecta al juego sin capturas.
 - **Nube:** integrar, probar y publicar todo lo que llegue, y mantener al día `ESTADO_REAL.md` y este documento.
