@@ -1,0 +1,69 @@
+{
+ "etiqueta": "r1",
+ "pantalla": "escritorio 1280x800@1 cpuX1",
+ "head": "f50fb913",
+ "packs": {
+  "ep4": {
+   "foto": "k189_r1_ep4.jpg",
+   "pos": [
+    191,
+    165
+   ],
+   "distSitio": 7,
+   "interaccion": {
+    "visible": false
+   },
+   "props": {
+    "v18_golf_troncos": false,
+    "v18_golf_nido": false,
+    "v18_golf_semilla": false,
+    "v18_golf_salida": false,
+    "v18_golf_mira": false,
+    "v18_golf_aro": false,
+    "v18_golf_fantasma1": false,
+    "v18_golf_fantasma2": false,
+    "v18_golf_fantasma3": false,
+    "v18_golf_fantasma4": false
+   },
+   "mapa": null,
+   "nearest": null,
+   "prompt": "",
+   "invitado": false,
+   "toast": "¿Oyes ese canto? Una cotorra que no es de aquí canta en la copa de un árbol.",
+   "errores": []
+  },
+  "cap1": {
+   "foto": "k189_r1_cap1.jpg",
+   "pos": [
+    167.7,
+    205
+   ],
+   "distSitio": 10.3,
+   "interaccion": {
+    "visible": true
+   },
+   "props": {
+    "v18_golf_troncos": true,
+    "v18_golf_nido": true,
+    "v18_golf_semilla": true,
+    "v18_golf_salida": true,
+    "v18_golf_mira": false,
+    "v18_golf_aro": false,
+    "v18_golf_fantasma1": false,
+    "v18_golf_fantasma2": false,
+    "v18_golf_fantasma3": false,
+    "v18_golf_fantasma4": false
+   },
+   "mapa": {
+    "x": 167.7,
+    "z": 205,
+    "nombre": "Minigolf de Villa Raíz"
+   },
+   "nearest": "v18_minigolf",
+   "prompt": "Acción: Jugar al minigolf",
+   "invitado": false,
+   "toast": "¡Sacudida de plumas!",
+   "errores": []
+  }
+ }
+}
