@@ -683,3 +683,34 @@ clavada a 37,9 m en el spawn: flake de entrada/streaming QA-111) y comicTest 62/
 documentada 61–67 de estado acumulado: «Mis escenas»/gags) — mismas familias de HEAD, no atribuibles
 a look.js (no toca dibujo, física ni streaming). 0 errores de consola en todas las corridas.
 Evidencia: `docs/img/kimi053/qa53v_k055-r1.json` (+capturas).
+
+## KIMI-126 · iPad emulado en el tepuy del cap. 5 (6-nov · Kimi 3; KIMI-Task-011 pendiente)
+
+Contexto: el iPad de Kelvin daba 31 FPS (mín. 16) y 6,9 M tris en el tepuy de la Ciudad de los 36
+(2-nov, calidad media). La pregunta de KIMI-126 era si en HEAD hacía falta bajar triángulos/draw
+calls en calidad **baja** para ≥ 30 FPS. Medición con GPU real (RX 5700 XT) emulando el iPad de
+Kelvin (820×1180 CSS @ DPR 1,5, UA iPad, táctil, CPU ×4), `?pack=ep5&mapa=real&calidad=bajo`,
+herramienta `tools/build/kimi3_126.js`, evidencia `docs/img/kimi126/k126_ipad-bajo-r6.{json,jpg×4}`.
+
+**Vuelo continuo 40 s** (miradores → cumbre → ciudad → aire, a ~17 m/s): FPS **p50=50 · p10=32 ·
+mín=14** (un tirón aislado de streaming, familia QA-53/158) · triángulos med=356 k (máx 435 k;
+−94 % frente a los 6,9 M del 2-nov: el trabajo lo hizo el LOD KIMI-011) · draw calls med=122
+(máx 132) · heap 126–156 MB · **0 contextos WebGL perdidos · 0 errores de consola**.
+
+**Tomas asentadas** (ST.terminar + look.medir):
+
+| vista | calls | tris | tex | heap | fps |
+|---|---|---|---|---|---|
+| cumbre_N | 139 | 0,36 M | 187 MB | 115 MB | **44** |
+| cumbre_E | 96 | 0,19 M | 187 MB | 115 MB | **56** |
+| miradores_NE | 57 | 0,18 M | 187 MB | 120 MB | **61** |
+| aire_ciudad | 137 | 0,36 M | 187 MB | 118 MB | **51** |
+
+**Conclusión: en calidad baja el tepuy YA cumple ≥ 30 FPS con margen (todas las tomas asentadas
+≥ 44 FPS a CPU ×4): no hace falta recortar triángulos ni draw calls ni tocar el look.** Los
+números son techo (PC compartida: otra sesión grababa la demo en paralelo); los veredictos son
+estructurales (tris en vista ≤ 0,36 M). Falta la prueba física en el iPad de Kelvin (0r: la
+medición emulada la sustituye hasta entonces, precedente KIMI-053). «Medio» de referencia sin medir
+(opcional). Nota técnica para futuras semillas de cap5: el save vive en `ep5.save` (meta.almacen)
+y `validSave` exige `v:1` (SAVE_VERSION = pack.guardado.version) — lo mismo que falló el intento
+ep5 de KIMI-111.
