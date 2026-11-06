@@ -354,11 +354,7 @@ window.AVV18Combate = function (G) {
       return { ok: true, id, avisada: true };
     }
     const r = H.usar(f, id, ctxDe(f));
-<<<<<<< Updated upstream
     if (r.ok && !r.avisada && !H.get(id).basico) f.ultPoder = id; // Imitación: cada una recuerda lo último que usó (lo lee la otra)
-=======
-    if (r.ok && !H.get(id).basico) f.ultPoder = id; // Imitación (oratrix): el registro del último poder de cada una
->>>>>>> Stashed changes
     if (r.ok && f.ia) { C.stats.ataques++; if (!H.get(id).basico) C.stats.poderes++; }
     if (r.ok) pintar();
     else if (!f.ia && r.motivo === 'energia') pulso('en-j');

@@ -1851,12 +1851,8 @@ window.AV_EN = {
  "¡Descubriste al loro de lores rojas en el Álbum! Su poder: Plumas de manglar. Elígelo en Pausa → Mis cotorras.": "You discovered the red-lored amazon in the Album! Its power: Mangrove feathers. Pick it in Pause → My parrots.",
  "¡Descubriste al loro mercenario en el Álbum! Su poder: Vuelo de niebla. Elígelo en Pausa → Mis cotorras.": "You discovered the scaly-naped amazon in the Album! Its power: Mist flight. Pick it in Pause → My parrots.",
  "¡Descubriste al loro de anteojos rojos en el Álbum! Su poder: Vuelta de pino. Elígelo en Pausa → Mis cotorras.": "You discovered the red-spectacled amazon in the Album! Its power: Pine loop. Pick it in Pause → My parrots.",
-<<<<<<< Updated upstream
  "¡Descubriste al loro cabeza amarilla en el Álbum! Su poder: Imitación. Elígelo en Pausa → Mis cotorras.": "You discovered the yellow-headed amazon in the Album! Its power: Imitation. Pick it in Pause → My parrots.",
  "Imitación": "Imitation",
-=======
- "¡Descubriste al loro cabeza amarilla en el Álbum! Su poder: Imitación. Elígelo en Pausa → Mis cotorras.": "You discovered the yellow-headed amazon in the Album! Its power: Mimicry. Pick it in Pause → My parrots.",
->>>>>>> Stashed changes
  "Columna de nube": "Cloud column",
  "Plumas de manglar": "Mangrove feathers",
  "Vuelo de niebla": "Mist flight",

@@ -35,11 +35,7 @@
      descubrir en el Álbum → loro de cachetes amarillos (autumnalis) · Remolino (ALAS)
      descubrir en el Álbum → loro alisero (tucumana) · Plumas de aliso (PLUMAS)
      descubrir en el Álbum → loro vináceo (vinacea) · Semilla de piña (PICO)
-<<<<<<< Updated upstream
    Una más (KIMI-160, la única de coste A, provisional igual: Álbum del Diario):
-=======
-   Una más (KIMI-160, coste A, provisional igual: Álbum del Diario):
->>>>>>> Stashed changes
      descubrir en el Álbum → loro cabeza amarilla (oratrix) · Imitación (PICO)
    Solo cambia el poder del duelo y de la amenaza: el personaje del jugador se queda igual. Mara y Vela (martinicana,
    violacea) son consejeras en la temporada 1 y no entran aquí. Solo con la bandera V18.
@@ -243,24 +239,14 @@ window.AVV18Nuevas = function (G) {
       revisarAlbum();
       check('revisarAlbum no desbloquea las tarjetas de tanda E que aún no están abiertas en el Álbum',
         ['lilacina', 'mercenarius', 'pretrei'].every(id => rango(V.estado(id)) < 1));
-<<<<<<< Updated upstream
       // KIMI-160: la Imitación (oratrix, la única de coste A) se consigue igual (Álbum del Diario, provisional)
       check('La de coste A (oratrix, Imitación) empieza sin descubrir', rango(V.estado('oratrix')) < rango('descubierta'));
-=======
-      // KIMI-160: la tanda F (#14 Imitación, oratrix, la única de coste A) se consigue igual (Álbum del Diario, provisional)
-      check('La de tanda F (Álbum, coste A) empieza sin descubrir', rango(V.estado('oratrix')) < rango('descubierta'));
->>>>>>> Stashed changes
       G.emit('album', { id: 'oratrix', fuente: 'test' });
       check('Descubrir su tarjeta en el Álbum deja elegible al loro cabeza amarilla (Imitación), con aviso',
         rango(V.estado('oratrix')) >= rango('seleccionable') && toasts.some(t => /cabeza amarilla/.test(t) && /Imitación/.test(t) && /Mis cotorras/.test(t)));
       G.emit('album', { id: 'oratrix', fuente: 'test' });
-<<<<<<< Updated upstream
       check('El mismo descubrimiento no avisa dos veces (Imitación)', toasts.filter(t => /cabeza amarilla/.test(t)).length === 1);
       check('La de coste A tiene su poder propio', H.poderDe('oratrix') === 'imitacion', H.poderDe('oratrix'));
-=======
-      check('El mismo descubrimiento no avisa dos veces (tanda F)', toasts.filter(t => /cabeza amarilla/.test(t)).length === 1);
-      check('La de tanda F tiene su poder propio', H.poderDe('oratrix') === 'imitacion', H.poderDe('oratrix'));
->>>>>>> Stashed changes
 
       // ---- Las 4 de coste M: cada una con su hito, desde una partida nueva ----
       V.borrar(); V.recargar(); toasts.length = 0;
@@ -692,7 +678,6 @@ window.AVV18Nuevas = function (G) {
           rvp.ok && d1p > d0p + 2.4 && d1p > 4.5 && miraRival > 0.98,
           'dist ' + d0p.toFixed(1) + '→' + d1p.toFixed(1) + ' m, mira ' + miraRival.toFixed(3));
         B.salir();
-<<<<<<< Updated upstream
         // Imitación (oratrix, coste A): copia el último poder NO básico que usó la rival, a media fuerza;
         // si la rival aún no ha usado nada, no gasta energía ni espera
         B.iniciar({ sinCuenta: true, especie: 'oratrix' }); quieta(6); listo(); S.facing = { x: 1, z: 0 }; C.r.mareo = 5;
@@ -723,42 +708,6 @@ window.AVV18Nuevas = function (G) {
         C.r.mareo = 0; C.r.cd.semilla = 0; C.r.energia = 100;
         B.usar(C.r, 'semilla'); // los básicos no se registran ni se imitan
         check('Los básicos (semilla, golpe de ala) no se registran para la Imitación', C.r.ultPoder === poderR0);
-=======
-
-        // ---- Imitación (KIMI-160, Álbum, coste A) en el duelo, a paso fijo ----
-        // Copia el último poder que usó la rival, a media fuerza: el Grito copiado empuja la mitad (15 → 7,5) y no quita plumas
-        B.iniciar({ sinCuenta: true, especie: 'oratrix' }); quieta(4); listo(); S.facing = { x: 1, z: 0 };
-        C.r.ultPoder = 'grito_yunque'; // la rival acaba de usar el Grito del Yunque
-        const pim = C.r.plumas;
-        const rim = B.usar(C.j, 'imitacion');
-        let kbIm = 0;
-        for (let k = 0; k < 24; k++) { B.paso(1 / 30); kbIm = Math.max(kbIm, Math.hypot(C.r.kb.x, C.r.kb.z)); }
-        check('Imitación: copia el último poder de la rival a media fuerza (grito: empuje ~7,5, la mitad de 15, sin plumas)',
-          rim.ok && rim.copia === 'grito_yunque' && kbIm > 6.5 && kbIm < 8.5 && C.r.plumas === pim,
-          'kb máx ' + kbIm.toFixed(1) + ' (grito 15), copia ' + rim.copia + ', plumas ' + pim + '→' + C.r.plumas);
-        const rimEsp = B.usar(C.j, 'imitacion');
-        check('...y respeta su espera de la matriz (12 s): no se usa dos veces seguidas',
-          !rimEsp.ok && rimEsp.motivo === 'espera', rimEsp.motivo || 'ok');
-        B.salir();
-        // Si la rival no ha usado nada, el canto copiado sale vacío: sin efecto
-        B.iniciar({ sinCuenta: true, especie: 'oratrix' }); quieta(4); listo(); S.facing = { x: 1, z: 0 };
-        const pim2 = C.r.plumas;
-        const rim2 = B.usar(C.j, 'imitacion');
-        for (let k = 0; k < 12; k++) B.paso(1 / 30);
-        check('...y si la rival no ha usado ningún poder, no copia nada (sin empuje ni plumas)',
-          rim2.ok && rim2.copia == null && Math.hypot(C.r.kb.x, C.r.kb.z) === 0 && C.r.plumas === pim2,
-          'copia ' + rim2.copia + ', kb ' + Math.hypot(C.r.kb.x, C.r.kb.z).toFixed(1));
-        B.salir();
-        // Las plumas también a la mitad, redondeadas a la baja: copiar la Semilla de río quita 0 plumas (la original quita 1)
-        B.iniciar({ sinCuenta: true, especie: 'oratrix' }); quieta(7); listo(); S.facing = { x: 1, z: 0 };
-        C.r.ultPoder = 'semilla_rio';
-        const pim3 = C.r.plumas;
-        const rim3 = B.usar(C.j, 'imitacion');
-        corre(1.2);
-        check('...y las plumas copiadas redondean a la baja: la Semilla de río copiada quita 0 plumas (la original quita 1)',
-          rim3.ok && rim3.copia === 'semilla_rio' && C.r.plumas === pim3,
-          'plumas ' + pim3 + '→' + C.r.plumas + ', copia ' + rim3.copia);
->>>>>>> Stashed changes
         B.salir();
       } else check('El duelo está cargado', false);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }
