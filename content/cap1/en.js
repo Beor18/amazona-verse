@@ -1857,7 +1857,6 @@ window.AV_EN = {
  "Plumas de manglar": "Mangrove feathers",
  "Vuelo de niebla": "Mist flight",
  "Vuelta de pino": "Pine loop",
- "Imitación": "Mimicry",
  "Serpiente de la Maraña": "Tangle Serpent",
  "Shhh… todo está mejor enredado.": "Shhh… everything is better tangled.",
  "Ya vendré a enredar otro día…": "I'll come back to tangle things another day…",

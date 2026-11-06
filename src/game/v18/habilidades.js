@@ -549,7 +549,7 @@ window.AVV18Habilidades = function (G) {
   // vuelos ×0,7 y algo más cortos, escudo a mitad de tiempo; no rompe escudos). Si la rival aún no ha usado ningún poder
   // (o el último fue otra Imitación), no gasta energía ni espera. Ventaja: versátil, se adapta a la rival. Debilidad:
   // depende por completo de lo que haya usado ella. Espera 12 s (matriz). El registro del último poder lo lleva combate.js
-  // (`otro.ultPoder`, se limpia al iniciar el duelo); en el duelo de 2 no hay registro y la copia devuelve «nada que imitar».
+  // (`otro.ultPoder`, se limpia al iniciar el duelo); duelo2.js también lo anota.
   registrar({ id: 'imitacion', nombre: 'Imitación', especies: ['oratrix'], tecnica: 'pico', coste: 30, cooldown: 12,
     fx: 'feathers',
     efecto(ctx) {
@@ -574,31 +574,6 @@ window.AVV18Habilidades = function (G) {
       const r = orig.efecto.call(orig, c2) || { ok: true };
       if (yo.escudo > 0) yo.escudo *= 0.5; // el estado de escudo lo pone el propio efecto copiado: se media aquí
       return { ok: true, copia: orig.id, acierto: r.acierto };
-    } });
-
-  // ---------- Imitación (KIMI-160, tanda F): la última de coste A (V18_MATRIZ_36.md #14) ----------
-  // Repite el canto de la rival y copia el último poder que usó, a media fuerza: el impacto copiado empuja y
-  // marea la mitad y las plumas redondean a la baja (1 pluma copiada empuja y marea, pero no quita); el escudo
-  // copiado dura la mitad. El registro del último poder lo llevan combate.js y duelo2.js (f.ultPoder).
-  registrar({ id: 'imitacion', nombre: 'Imitación', especies: ['oratrix'], tecnica: 'pico', coste: 30, cooldown: 12,
-    efecto(ctx) {
-      const { yo, otro } = ctx, h = this;
-      yo.picoT = 0.7; yo.cara = 'fight'; // abre el pico: repite el canto de la rival
-      const def = otro.ultPoder && get(otro.ultPoder);
-      if (!def || def.basico || def.id === 'imitacion') { ctx.sonar('ring', 1); return { ok: true, acierto: false, copia: null }; }
-      const mediaG = g => { g = Object.assign({}, g);
-        if (typeof g.empuje === 'number') g.empuje *= 0.5;
-        if (typeof g.mareo === 'number') g.mareo *= 0.5;
-        if (typeof g.plumas === 'number') g.plumas = Math.floor(g.plumas * 0.5); // media fuerza, a la baja: 1 → 0
-        return g; };
-      const ctx2 = Object.assign({}, ctx, {
-        golpear: (blanco, g) => ctx.golpear(blanco, mediaG(g)),
-        lanzar: b => { b = Object.assign({}, b); if (b.golpe) b.golpe = mediaG(b.golpe); return ctx.lanzar(b); } });
-      const media = Object.create(def); // el «this» del efecto copiado: su duración (escudo) también a la mitad
-      if (typeof def.dura === 'number') media.dura = def.dura * 0.5;
-      const r = def.efecto.call(media, ctx2) || { ok: true };
-      ctx.poder({ id: h.id, copia: def.id, de: yo.id });
-      return { ok: true, acierto: !!(r && r.acierto), copia: def.id };
     } });
 
   // ---------- Luchadores ----------
