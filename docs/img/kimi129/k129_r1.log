@@ -1,0 +1,80 @@
+[06:56:02] 
+=== cap1: navegando...
+[06:56:30] cap1: spawn en (-8, -2.5); armando grabador...
+[06:56:33] cap1: grabando (mime video/mp4;codecs=avc1.42E01E)...
+[06:56:42] cap1: pata 1/4 → llegó (2.5,16.8)
+[06:56:51] cap1: pata 2/4 → llegó (21.9,6.3)
+[06:57:10] cap1: pata 3/4 → bloqueada a 5.3 m (10.9,-13)
+[06:57:12] vuelo: despegada
+[06:57:24] vuelo: aterrizada
+[06:57:35] cap1: pata 4/4 → llegó (-5,-7.5)
+[06:57:38] cap1: take de 65.4s · fps med=65 min=2 peor=1413ms · volcando vídeo...
+[06:57:38] cap1: vídeo {"mime":"video/mp4;codecs=avc1.42E01E","bytes":14695353,"destino":"kimi129_cap1_r1.mp4"}
+[06:57:38] 
+=== ep2: navegando...
+[06:57:57] ep2: spawn en (-8, -2.5); armando grabador...
+[06:57:59] ep2: grabando (mime video/mp4;codecs=avc1.42E01E)...
+[06:58:12] ep2: pata 1/4 → llegó (2.5,16.8)
+[06:58:19] ep2: pata 2/4 → llegó (21.3,7.6)
+[06:58:42] ep2: pata 3/4 → bloqueada a 10.6 m (10.6,-11.8)
+[06:58:44] vuelo: despegada
+[06:58:54] vuelo: aterrizada
+[06:59:11] ep2: pata 4/4 → llegó (-9.6,7.1)
+[06:59:14] ep2: take de 74.8s · fps med=82 min=11 peor=643ms · volcando vídeo...
+[06:59:14] ep2: vídeo {"mime":"video/mp4;codecs=avc1.42E01E","bytes":15191588,"destino":"kimi129_ep2_r1.mp4"}
+[06:59:14] 
+=== ep3: navegando...
+[06:59:28] ep3: spawn en (172, 174); armando grabador...
+[06:59:31] ep3: grabando (mime video/mp4;codecs=avc1.42E01E)...
+[06:59:47] ep3: pata 1/4 → llegó (182.5,193.3)
+[06:59:54] ep3: pata 2/4 → llegó (201.5,183)
+[07:00:03] ep3: pata 3/4 → llegó (189.5,164.1)
+[07:00:06] vuelo: despegada
+[07:00:15] vuelo: aterrizada
+[07:00:19] ep3: pata 4/4 → llegó (169.8,173.6)
+[07:00:23] ep3: take de 52s · fps med=78 min=4 peor=596ms · volcando vídeo...
+[07:00:23] ep3: vídeo {"mime":"video/mp4;codecs=avc1.42E01E","bytes":10385755,"destino":"kimi129_ep3_r1.mp4"}
+[07:00:23] 
+=== ep4: navegando...
+[07:00:41] ep4: spawn en (191.1, 165); armando grabador...
+[07:00:43] ep4: grabando (mime video/mp4;codecs=avc1.42E01E)...
+[07:00:56] ep4: pata 1/4 → llegó (201.6,184.3)
+[07:01:11] ep4: pata 2/4 → llegó (221.2,173.9)
+[07:01:23] ep4: pata 3/4 → llegó (211.5,155.5)
+[07:01:26] vuelo: despegada
+[07:01:35] vuelo: aterrizada
+[07:02:02] ep4: pata 4/4 → bloqueada a 26.4 m (191.8,164.8)
+[07:02:29] ep4: take de 104.9s · fps med=76 min=1 peor=2037ms · volcando vídeo...
+[07:02:29] ep4: vídeo {"mime":"video/mp4;codecs=avc1.42E01E","bytes":20067689,"destino":"kimi129_ep4_r1.mp4"}
+[07:02:29] 
+=== ep5: navegando...
+[07:02:53] ep5: spawn en (-46, -121); armando grabador...
+[07:02:56] ep5: grabando (mime video/mp4;codecs=avc1.42E01E)...
+[07:03:13] ep5: pata 1/4 → llegó (-35.5,-101.7)
+[07:03:33] ep5: pata 2/4 → bloqueada a 7.5 m (-15.9,-112.6)
+[07:03:57] ep5: pata 3/4 → bloqueada a 23.2 m (-29.1,-125.7)
+[07:03:59] vuelo: despegada
+[07:04:08] vuelo: aterrizada
+[07:04:16] ep5: pata 4/4 → llegó (-45.7,-94.4)
+[07:04:40] ep5: take de 103.8s · fps med=60 min=1 peor=2709ms · volcando vídeo...
+[07:04:40] ep5: vídeo {"mime":"video/mp4;codecs=avc1.42E01E","bytes":18669808,"destino":"kimi129_ep5_r1.mp4"}
+[07:04:40] 
+=== ep6: navegando...
+[07:05:03] ep6: spawn en (44, -62); armando grabador...
+[07:05:06] ep6: grabando (mime video/mp4;codecs=avc1.42E01E)...
+[07:05:33] ep6: pata 1/4 → bloqueada a 19.0 m (54.5,-42.7)
+[07:05:59] ep6: pata 2/4 → bloqueada a 13.2 m (65.9,-68.7)
+[07:06:23] ep6: pata 3/4 → bloqueada a 11.1 m (45.5,-80.6)
+[07:06:26] vuelo: despegada
+[07:06:35] vuelo: aterrizada
+[07:06:40] ep6: pata 4/4 → llegó (28.8,-61.8)
+[07:06:48] ep6: take de 102.1s · fps med=61 min=1 peor=1313ms · volcando vídeo...
+[07:06:48] ep6: vídeo {"mime":"video/mp4;codecs=avc1.42E01E","bytes":20881871,"destino":"kimi129_ep6_r1.mp4"}
+[07:06:49] resumen: [
+ "cap1: 65.4s 14MB fpsMed=65 errores=0",
+ "ep2: 74.8s 14MB fpsMed=82 errores=0",
+ "ep3: 52s 10MB fpsMed=78 errores=0",
+ "ep4: 104.9s 19MB fpsMed=76 errores=0",
+ "ep5: 103.8s 18MB fpsMed=60 errores=0",
+ "ep6: 102.1s 20MB fpsMed=61 errores=0"
+]

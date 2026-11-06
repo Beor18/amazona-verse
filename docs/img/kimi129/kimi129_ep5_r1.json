@@ -1,0 +1,83 @@
+{
+ "tarea": "KIMI-129",
+ "pack": "ep5",
+ "etiqueta": "r1",
+ "pantalla": "1920x1080 dpr1 GPU real (RX 5700 XT), escritorio, calidad por defecto",
+ "entrada": "CDP Input.dispatchKeyEvent (input real)",
+ "head": "desconocido",
+ "spawn": {
+  "x": -46,
+  "z": -121
+ },
+ "mime": "video/mp4;codecs=avc1.42E01E",
+ "patas": [
+  {
+   "hasta": [
+    -35.5,
+    -101.7
+   ],
+   "ok": true,
+   "dFinal": 1.9,
+   "llego": [
+    -35.857582688958274,
+    -103.39723338069817
+   ]
+  },
+  {
+   "hasta": [
+    -15.9,
+    -112.6
+   ],
+   "ok": false,
+   "dFinal": 7.5,
+   "llego": [
+    -19.354228533780034,
+    -105.94272441728701
+   ]
+  },
+  {
+   "hasta": [
+    -29.1,
+    -125.7
+   ],
+   "ok": false,
+   "dFinal": 23.2,
+   "llego": [
+    -25.310665105013246,
+    -102.75533573882933
+   ]
+  },
+  {
+   "hasta": [
+    -45.7,
+    -94.4
+   ],
+   "ok": true,
+   "dFinal": 2.4,
+   "llego": [
+    -46.23650122983083,
+    -96.69556719972731
+   ]
+  }
+ ],
+ "vuelo": {
+  "aterrizo": true
+ },
+ "regreso": {
+  "ok": false,
+  "d": 23.7
+ },
+ "segsGrabados": 103.8,
+ "fps": {
+  "med": 60,
+  "min": 1,
+  "peorMs": 2709,
+  "n": 6230
+ },
+ "video": {
+  "mime": "video/mp4;codecs=avc1.42E01E",
+  "bytes": 18669808,
+  "destino": "kimi129_ep5_r1.mp4"
+ },
+ "erroresConsola": []
+}
