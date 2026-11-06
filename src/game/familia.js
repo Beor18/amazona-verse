@@ -297,6 +297,7 @@ window.AVFamilia = function (G) {
     } catch (e) { ok('sin excepciones', false, e && (e.stack || e.message || e)); }
     cerrar(); raiz.hidden = antes;
     try { if (G.ui && G.ui.hideToast) G.ui.hideToast(); } catch (e) { /* sin ui */ } // los avisos de la prueba (trucos, premios) no se quedan en pantalla
+    { const chip = document.getElementById('truco-chip'); if (chip) chip.hidden = true; } // el contador de trucos del turno de prueba (se apaga solo con cuadros del juego)
     if (G.escondite && G.escondite.paso) { try { G.escondite.paso(1000); } catch (e) { /* cierra la ronda de la prueba */ } }
     G.S.pos.x = pos.x; G.S.pos.y = pos.y; G.S.pos.z = pos.z;
     if (aj) { aj.idioma = idi || 'es'; G.emit('aula', 'idioma', aj.idioma); }
