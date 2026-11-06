@@ -562,7 +562,9 @@ window.AVV18Puerto = function (G) {
     if (rango(e) < rango('desactivado') && dM < 12) { if ((A.bocanadaT -= dt) <= 0) { A.bocanadaT = BOCANADA_S; bocanada(); } }
     if (A.empuje && A.empuje.t > 0) { S.pos.x += A.empuje.x * dt; S.pos.z += A.empuje.z * dt; A.empuje.t -= dt; }
     pasoFreno(dt);
-    pintarHud(dP < R_HUD && !busy);
+    // antes de empezar, el panel (que en el móvil oculta la línea de misión y el minimapa) solo sale ya junto a la máquina: quien pasa
+    // por La Mina con una misión del capítulo (la ruta de la gota va a 6 m) no pierde su guía
+    pintarHud(dP < R_HUD && (e !== 'obra' || dM < R_DESCUBRE + 6) && !busy);
   }
   G.on('update', (dt, busy) => { if (!A.manual) paso(Math.min(dt, 0.1), busy); }, 73);
   G.on('apply', () => setTimeout(() => { A.pistas.clear(); A.aciertos = 0; A.frenando = false; maq.mueve = null; soltarModo(); aplicar(); }, 0), 97);
@@ -671,6 +673,8 @@ window.AVV18Puerto = function (G) {
       check('3 · Carga diferida: lejos del puerto (> 150 m) no hay personajes ni se pidió su modelo', Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z) > 150 && N.activos().length === 0 && N.stats().pedidos.length === 0 && !recursos().length && !raiz.visible,
         'dist ' + Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z).toFixed(0) + ' m · pedidos ' + N.stats().pedidos.length);
       check('3b · Con el puente reparado: aviso «retumba una máquina» y bandera verde del minimapa en la plaza', toasts.includes(TXT.aviso) && (!G.minimapa || guia.puesta || (G.minimapa.marcadores && G.minimapa.marcadores().some(m => m.tipo === 'dest'))), toasts.slice(-2).join(' | '));
+      { const pp = en(-25, 10); ir(pp.x, pp.z); correr(0.1); montarHud();
+        check('3c · De paso por La Mina sin empezar la misión, el panel no tapa la línea de misión ni el minimapa del capítulo', hud.el.hidden && !document.body.classList.contains('v18-puerto-on'), Math.hypot(pp.x - maq.pos.x, pp.z - maq.pos.z).toFixed(0) + ' m de la máquina'); }
       // 4 · el sitio respeta lo que ya existe
       const seg = (px, pz, x0, z0, x1, z1) => { const vx = x1 - x0, vz = z1 - z0, t = Math.max(0, Math.min(1, ((px - x0) * vx + (pz - z0) * vz) / (vx * vx + vz * vz))); return Math.hypot(px - x0 - vx * t, pz - z0 - vz * t); };
       const dEje = (x, z) => { let m = Infinity; for (let s = -1; s <= L + 1; s += 0.25) { for (const l of [-1.1, 0, 1.1]) { const p = en(s, l); m = Math.min(m, Math.hypot(p.x - x, p.z - z)); } } return m; };
