@@ -1,0 +1,32 @@
+{
+ "etiqueta": "actual-alto",
+ "pantalla": "1600x900@1 cpuX1",
+ "calidad": "alto",
+ "edificios": {
+  "carpa_g": {
+   "teleport": "ok {\"v\":[-74.8,26.9,101.2],\"d\":23.8}",
+   "stats": {
+    "calls": 87,
+    "tris": 1666180,
+    "fps": 144,
+    "heap": 882,
+    "tex": 173,
+    "geo": 147,
+    "prog": 74
+   }
+  },
+  "monumento_e": {
+   "teleport": "ok {\"v\":[54.8,25.9,101.3],\"d\":26.7}",
+   "stats": {
+    "calls": 116,
+    "tris": 1072897,
+    "fps": 144,
+    "heap": 841,
+    "tex": 173,
+    "geo": 230,
+    "prog": 79
+   }
+  }
+ },
+ "erroresConsola": 0
+}

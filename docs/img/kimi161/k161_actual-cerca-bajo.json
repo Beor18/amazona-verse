@@ -1,0 +1,32 @@
+{
+ "etiqueta": "actual-cerca-bajo",
+ "pantalla": "1600x900@1 cpuX1",
+ "calidad": "bajo",
+ "edificios": {
+  "carpa_g": {
+   "teleport": "ok {\"v\":[-85.3,25,90.7],\"d\":8.9}",
+   "stats": {
+    "calls": 78,
+    "tris": 229880,
+    "fps": 144,
+    "heap": 132,
+    "tex": 124,
+    "geo": 122,
+    "prog": 69
+   }
+  },
+  "monumento_e": {
+   "teleport": "ok {\"v\":[46.4,25.9,92.9],\"d\":14.8}",
+   "stats": {
+    "calls": 117,
+    "tris": 354951,
+    "fps": 144,
+    "heap": 136,
+    "tex": 124,
+    "geo": 247,
+    "prog": 77
+   }
+  }
+ },
+ "erroresConsola": 0
+}

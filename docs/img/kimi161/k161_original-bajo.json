@@ -1,0 +1,32 @@
+{
+ "etiqueta": "original-bajo",
+ "pantalla": "1600x900@1 cpuX1",
+ "calidad": "bajo",
+ "edificios": {
+  "carpa_g": {
+   "teleport": "ok {\"v\":[-74.8,26.9,101.2],\"d\":23.8}",
+   "stats": {
+    "calls": 72,
+    "tris": 270913,
+    "fps": 144,
+    "heap": 125,
+    "tex": 124,
+    "geo": 139,
+    "prog": 64
+   }
+  },
+  "monumento_e": {
+   "teleport": "ok {\"v\":[54.8,25.9,101.3],\"d\":26.7}",
+   "stats": {
+    "calls": 77,
+    "tris": 353923,
+    "fps": 144,
+    "heap": 128,
+    "tex": 124,
+    "geo": 215,
+    "prog": 71
+   }
+  }
+ },
+ "erroresConsola": 0
+}
