@@ -365,6 +365,7 @@ Objetivo: que la ciudad se sienta habitada, con vida y sorpresas, sin sacrificar
 - **Poderes** (`docs/equipo/V18_MATRIZ_36.md`):
   - Se aprueban las familias PICO, OJOS, PLUMAS y ALAS. La matriz es un diseño provisional, no el balance definitivo.
   - El Grito del Yunque y el Escudo de plumas siguen siendo la referencia.
+  - Los nombres de los poderes se mantienen de forma provisional (Kelvin, confirmado el 6-nov). Cada poder debe dar una diferencia real de jugabilidad; cada uno se comprueba con su prueba en `nuevas.js`.
   - Los siguientes son Quiebro, Lluvia de semillas, Ojo del cenote y Ala fuerte. Ala fuerte necesita una función especial clara, distinta del golpe básico.
   - Cada poder: cambia la forma de jugar, tiene ventaja y debilidad, usa animaciones y efectos que ya existen, sirve en combate y, si toca, en exploración, y rinde bien en móvil.
 - **Mara y Vela** siguen dentro de las 36. En la temporada 1 son consejeras y no se pueden elegir; sus poderes se guardan para una expansión.
@@ -380,3 +381,6 @@ Propuesta aprobada para prototipo, complementaria a V18.1 (no la retrasa). Direc
 
 ## 5-nov-2026 · Minigolf: troncos, premios y nombres propios (Kelvin)
 Los 2 árboles existentes se quedan como obstáculos del hoyo de Villa Raíz (sin tapar el nido ni atrapar la semilla). Premios una sola vez por logro: 3 fibras al completar el hoyo por primera vez y 2 maderas con el primer oro; repetir solo mejora el récord. Marea, Nudo, Eco y Brote se quedan en español también en inglés cuando son nombres propios; su uso como palabra común se traduce.
+
+## 6-nov-2026 · Kelvin confirma la matriz y anuncia la V18.2 (adicional)
+Confirma las 5 decisiones del 5-nov sobre la matriz (arriba). La propuesta de evolución y alianzas V18.2 es adicional y no reemplaza la matriz.
