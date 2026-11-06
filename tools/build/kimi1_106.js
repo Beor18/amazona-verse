@@ -173,7 +173,7 @@ async function cargarPagina(cdp, ses, origen, id) {
 (async () => {
   const { srv, puerto } = await servir();
   const origen = `http://127.0.0.1:${puerto}`;
-  const lista = SOLO ? PRUEBAS.filter(p => p.id === SOLO) : PRUEBAS;
+  const lista = SOLO ? PRUEBAS.filter(p => SOLO.split(',').includes(p.id)) : PRUEBAS;
   const res = { etiqueta: ETIQUETA, bandera: BANDERA ? 'v18=1' : 'sin bandera', pantalla: ESCRITORIO ? `escritorio ${ANCHO}x${ALTO}@${DPR} cpuX${CPUX}` : `movil ${ANCHO}x${ALTO}@${DPR} cpuX${CPUX} (iPhone emulado)`, head: null, pruebas: {} };
   const outJson = path.join(SALIDA, `k106_${ETIQUETA}${BANDERA ? '' : '_sinbandera'}.json`);
   const { chrome, perf, puerto: puertoDev, wsPath } = await lanzarChrome();
