@@ -1186,7 +1186,18 @@ AVE.module('streaming', function (G) {
         quitarHDZona(Z);
       }
       Z.hdFundiendo = true;
-      Z.hdF = { i: 0, g: 0, modelos, grupos: new Map(), temporales: [], ms: [] };
+      // KIMI-135: fundir las instancias en orden espacial de Morton (Z-order) sobre su posición: las vecinas
+      // en el espacio quedan en tramos contiguos de la geometría fundida, así los runs por cuadro (vis.hd de
+      // la fusión global sobre todo) tienden a ser rangos contiguos y no se fragmentan con el orden del mapa.
+      // Misma geometría/imagen, solo cambia el orden.
+      const _spread = v => { v &= 0xffff; v = (v | (v << 8)) & 0x00ff00ff; v = (v | (v << 4)) & 0x0f0f0f0f; v = (v | (v << 2)) & 0x33333333; return (v | (v << 1)) & 0x55555555; };
+      const _morton = (x, z) => (_spread(x) | (_spread(z) << 1)) >>> 0;
+      const inst = Z.inst.slice().sort((a, b) => {
+        const qa = _morton(Math.round((a.cx - Z.cx) / 4 + 512), Math.round((a.cz - Z.cz) / 4 + 512));
+        const qb = _morton(Math.round((b.cx - Z.cx) / 4 + 512), Math.round((b.cz - Z.cz) / 4 + 512));
+        return qa - qb;
+      });
+      Z.hdF = { i: 0, g: 0, modelos, grupos: new Map(), temporales: [], ms: [], inst };
       encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id);
     }
     // KIMI-Task-017: se funde en tandas de ~6 ms por trabajo (el fundido entero de una zona eran 100–420 ms
@@ -1197,12 +1208,12 @@ AVE.module('streaming', function (G) {
       const limpiar = () => { for (const g of F.temporales) g.dispose(); F.temporales = []; };
       const t0 = performance.now();
       try {
-        while (F.i < Z.inst.length && performance.now() - t0 < 6) {
-          const I = Z.inst[F.i++];
+        while (F.i < F.inst.length && performance.now() - t0 < 6) {
+          const I = F.inst[F.i++];
           if (!F.modelos.has(I.modelo)) continue;
           for (const p of res(I.modelo, 'hd').partes) apilarParte(F, p, I);
         }
-        if (F.i < Z.inst.length) { encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id); return; }
+        if (F.i < F.inst.length) { encolar(() => fundirHDPaso(Z), 'fundirHD:' + Z.id); return; }
         // KIMI-020/031: el cierre (fundirTex/fundir por material) también se trocea en tandas de ~6 ms, un grupo
         // por paso. En kelvin_ruinas_yunque el cierre entero era un solo trabajo de ~3,6 s (móvil ×4) que
         // congelaba el cuadro tanto en juego como en terminar(); el troceo por grupos (KIMI-020) no bastaba
@@ -1256,7 +1267,13 @@ AVE.module('streaming', function (G) {
       if (!hdZona()) { if (hdGlobal.mallas.length || hdGlobal.ids) quitarHDGlobal(); return; } // QA-158: en «bajo» la fusión global HD no existe
       if (hdGlobal.paso) { hdGlobal.rehacer = true; return; } // hay una a medias: al cerrar rehace con ids frescos
       if (Object.values(zonas).some(Z => Z.hdFundiendo)) return;
-      const zs = Object.values(zonas).filter(Z => Z.hdMallas).sort((a, b) => a.id < b.id ? -1 : 1);
+      // KIMI-135: la fusión global es de ciudades (línea ~1172: «en las ciudades, todos los _hd comparten la misma
+      // vista aérea»). Con zonas NO-ciudad dentro, hdGlobal.zonas mezclaba una zona con hdSombra y activaba
+      // castShadow en TODA la malla global: en la peor vista (kelvin_ruinas_yunque, alto) las 2 mallas × 6 runs
+      // proyectaban sombra = 12 calls de sombra, duplicando la silueta ligera de la ciudad (su sombraMalla ya la
+      // da, carril despachar). Las zonas sueltas conservan su fusión zonal (misma geometría/imagen, su sombra
+      // propia vía Z.hdSombra) y aquí dejan de sumar tramos y sombra a la vista de la ciudad.
+      const zs = Object.values(zonas).filter(Z => Z.hdMallas && Z.ciudad).sort((a, b) => a.id < b.id ? -1 : 1);
       const ids = zs.map(Z => Z.id + ':' + [...Z.hdModelos].sort().join(',')).join('|');
       if (ids === hdGlobal.ids) return;
       quitarHDGlobal();

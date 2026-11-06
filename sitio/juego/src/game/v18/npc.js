@@ -57,12 +57,15 @@ window.AVV18Npc = function (G) {
     const r = d.respaldo && def(d.respaldo);
     return r && r.modelo ? r : null;
   }
+  // Solo una cadena propia del almacén: con la clave «constructor», ({})[clave] sería Object.prototype.constructor (una función,
+  // verdadera) y el cargador intentaría decodificarla antes de pedir el _glb.js (el modelo no cargaba nunca).
+  const b64De = k => { const t = window.AV_PERSONAJES_B64; return t && Object.prototype.hasOwnProperty.call(t, k) && typeof t[k] === 'string' ? t[k] : undefined; };
   function cargarModelo(id) {
     const d = def(id), f = d && fuente(d);
     if (!f) return Promise.resolve(null);
     if (!cache[f.modelo]) {
       ST.pedidos.push(f.modelo);
-      cache[f.modelo] = G.assets.loadGLB(f.modelo, { b64: () => (window.AV_PERSONAJES_B64 || {})[f.b64], script: f.script, base: '', error: 'personaje no disponible: ' + f.id })
+      cache[f.modelo] = G.assets.loadGLB(f.modelo, { b64: () => b64De(f.b64), script: f.script, base: '', error: 'personaje no disponible: ' + f.id })
         .then(g => ({ raiz: g.scene.children.length === 1 ? g.scene.children[0] : g.scene, clips: g.animations || [], variantes: leerVariantes(g.scene) }), () => null);
     }
     return cache[f.modelo];
@@ -250,7 +253,7 @@ window.AVV18Npc = function (G) {
     const it = its.get(inst.id); if (it) { it.x = inst.x; it.z = inst.z; }
   }
   const angDif = (a, b) => { let d = a - b; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; };
-  const comentado = {};
+  const comentado = Object.create(null); // sin prototipo: el id «constructor» no debe leer Object.prototype.constructor
   function paso(dt, busy) {
     // 1. qué personajes tocan: colocados, con su condición y cerca; los 2 más cercanos
     const quiere = [];

@@ -37,23 +37,18 @@ window.AV_NPC_V18 = [
   },
   {
     id: 'constructor', nombre: { es: 'El Constructor', en: 'The Builder' }, rol: 'antagonista',
-    // BM159 todavía no llegó: mientras tanto usa el modelo de la Ingeniera (respaldo) con otra paleta, sin pelo, con casco y chaleco
-    // de piezas simples, y algo más alto. Cuando exista constructor.glb basta con poner aquí su modelo/script/b64 y quitar
-    // respaldo y provisional: el código no cambia. No se pide un archivo que no existe (un 404 es un error de consola).
-    modelo: null, script: null, b64: null, respaldo: 'ingeniera', provisional: true,
-    alto: 1.08, insignia: { fondo: '#3b4250', icono: 'casco', color: '#ffd23a' },
-    anim: { idle: 'Idle', hablar: 'Hablar', trabajar: 'Reparar', senalar: 'Hablar' },
+    // BM159 (Mac, 6-nov): modelo propio (1,75 m, colores lisos, sin foto ni marcas); mallas rígidas animadas por nodos (sin skin).
+    // Casco, Chaleco, GuanteL/R, Botas y Mochila son mallas separadas del .glb que se encienden y apagan. Acciones del .glb: Idle,
+    // Hablar, Señalar y Enfadado (no trae «Reparar»: al trabajar señala la obra).
+    modelo: 'assets/models/personajes/constructor.glb', script: 'assets/models/personajes/constructor_glb.js', b64: 'constructor',
+    alto: 1, retrato: 'assets/retratos/v18/constructor.jpg',
+    anim: { idle: 'Idle', hablar: 'Hablar', trabajar: 'Señalar', senalar: 'Señalar', enfadado: 'Enfadado' },
     mallas: { Guantes: ['GuanteL', 'GuanteR'] },
-    accesorios: {
-      casco: { hueso: 'Cabeza', forma: 'casco', color: '#ffd23a', pos: [0, 3.25, 0] },
-      franja: { hueso: 'Cabeza', forma: 'franja', color: '#3fae5a', pos: [0, 3.25, 0] },
-      chaleco: { hueso: null, forma: 'chaleco', color: '#ff7a1a', pos: [0, 4.55, 0.3] }
-    },
     apariencias: {
-      // Supervisor industrial: casco amarillo, chaleco naranja de bandas, ropa gris oscura, nada de herramientas
-      supervisor: { mallas: { Pelo: false, Chaqueta: false, Mochila: false, Cinturon: false, Guantes: false }, colores: { MONO: '#3d4148' }, accesorios: ['casco', 'chaleco'] },
-      // El que empieza a reparar: sin chaleco, con mochila de herramientas, cinturón y guantes, ropa cálida y franja verde en el casco
-      reparador: { mallas: { Pelo: false, Chaqueta: false, Mochila: true, Cinturon: true, Guantes: true }, colores: { MONO: '#7a5a3a', MOCHILA: '#4f6b2f', GUANTES: '#c98a3c' }, accesorios: ['casco', 'franja'] }
+      // Supervisor industrial: casco amarillo y chaleco naranja de bandas del .glb, camisa oscura, nada de herramientas ni guantes
+      supervisor: { mallas: { Casco: true, Chaleco: true, Mochila: false, Guantes: false, Botas: true }, colores: {}, accesorios: [] },
+      // El que empieza a reparar: sin chaleco, con mochila de herramientas y guantes del .glb, camisa de trabajo más cálida
+      reparador: { mallas: { Casco: true, Chaleco: false, Mochila: true, Guantes: true, Botas: true }, colores: { CAMISA: '#7a5a3a' }, accesorios: [] }
     },
     estados: ['supervisor', 'reparador'],
     transiciones: { supervisor: { reparador: true } },

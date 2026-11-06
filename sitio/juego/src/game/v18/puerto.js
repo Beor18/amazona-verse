@@ -667,11 +667,18 @@ window.AVV18Puerto = function (G) {
       V.cambiarMundo('puente_villa', 'roto'); A.forzar = true; correr(0.3); await esperar(150);
       const nn = G.interaccion.nearest();
       check('2 · Sin la bandera, o antes de reparar el puente, no aparece nada (ni máquina, ni personajes, ni interacción)', sinBandera && !listaMision() && !gMaq.visible && N.activos().length === 0 && !(nn && /v18_puerto|v18npc/.test(nn.id)), nn && nn.id);
+      // QA-180 (triage KIMI-130, fixes test-side): el bloque del check 2 deja a Vittata en la plaza con la misión listada y la
+      // máquina a 3,9 m: la caja «qué pasó» (descubrir, :551) se abre aquí, se queda abierta entre checks y enmascara la llegada
+      // del 8 / adelanta el estado (8a/8b). Se cancela SIN pasarla (clear() no avanza de estado) y se rearma el aviso, que el
+      // check 2 armó en la plaza (dP≈0, sin toast) y sin esto el toast y la guía del 3b jamás disparan desde la villa (dP 257 > R_AVISO).
+      try { G.dialogo.clear(); } catch (e) { /* */ }
+      A.descubriendo = false; A.avisado = false; A.llegada = false;
       // 3 · lejos no se carga nada; aviso y bandera
       const villa = (T.mapa.lugares && T.mapa.lugares.villa) || { x: 125, z: 140 };
+      const pedidos0 = N.stats().pedidos.length, recursos0 = recursos().length; // QA-180: acumulativos en la sesión (el check 2 pidió ingeniera.glb estando en la plaza): se mide el delta de esta ventana
       ir(villa.x, villa.z); V.cambiarMundo('puente_villa', 'reparado'); correr(0.4); await esperar(300); correr(0.1);
-      check('3 · Carga diferida: lejos del puerto (> 150 m) no hay personajes ni se pidió su modelo', Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z) > 150 && N.activos().length === 0 && N.stats().pedidos.length === 0 && !recursos().length && !raiz.visible,
-        'dist ' + Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z).toFixed(0) + ' m · pedidos ' + N.stats().pedidos.length);
+      check('3 · Carga diferida: lejos del puerto (> 150 m) no hay personajes ni se pidió su modelo', Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z) > 150 && N.activos().length === 0 && N.stats().pedidos.length === pedidos0 && recursos().length === recursos0 && !raiz.visible,
+        'dist ' + Math.hypot(villa.x - SITIO.plaza.x, villa.z - SITIO.plaza.z).toFixed(0) + ' m · Δpedidos ' + (N.stats().pedidos.length - pedidos0) + ' · Δrecursos ' + (recursos().length - recursos0));
       check('3b · Con el puente reparado: aviso «retumba una máquina» y bandera verde del minimapa en la plaza', toasts.includes(TXT.aviso) && (!G.minimapa || guia.puesta || (G.minimapa.marcadores && G.minimapa.marcadores().some(m => m.tipo === 'dest'))), toasts.slice(-2).join(' | '));
       { const pp = en(-25, 10); ir(pp.x, pp.z); correr(0.1); montarHud();
         check('3c · De paso por La Mina sin empezar la misión, el panel no tapa la línea de misión ni el minimapa del capítulo', hud.el.hidden && !document.body.classList.contains('v18-puerto-on'), Math.hypot(pp.x - maq.pos.x, pp.z - maq.pos.z).toFixed(0) + ' m de la máquina'); }
@@ -687,15 +694,15 @@ window.AVV18Puerto = function (G) {
       // 5 · antes de repararla, la ladera no se sube a pie
       const antesSube = subir(500);
       check('5 · Antes de la misión no se sube a pie (la máquina tapa el pie y la ladera pasa de 48°: hoy se vuela o se rodea)', !antesSube.ok, 's ' + antesSube.s.toFixed(1) + ' de ' + L.toFixed(1));
-      // 6 · cerca: dos personajes como mucho, modelo de la Ingeniera, Constructor provisional sin 404
+      // 6 · cerca: dos personajes como mucho, cada uno con su modelo (ingeniera.glb y constructor.glb), sin 404
       const cerca = en(-30, 25); ir(cerca.x, cerca.z); correr(0.2);
       for (let i = 0; i < 80 && !(N.instancia('ingeniera') && N.instancia('constructor')); i++) { await esperar(100); correr(0.05); }
       const ing = N.instancia('ingeniera'), cons = N.instancia('constructor');
       check('6 · A < 90 m aparecen la Ingeniera y el Constructor (2 como mucho)', ing && cons && N.activos().length <= N.MAX_ACTIVOS, N.activos().join(','));
-      check('6b · La Ingeniera es ingeniera.glb con Idle, Hablar y Reparar', ing && ['Idle', 'Hablar', 'Reparar'].every(a => ing.acciones[a]) && N.stats().pedidos.length === 1 && /ingeniera\.glb$/.test(N.stats().pedidos[0]), N.stats().pedidos.join(','));
-      check('6c · El Constructor es provisional (modelo de respaldo, casco y chaleco) y no se pidió ningún constructor.glb', cons && cons.provisional && cons.acc.casco && cons.acc.chaleco && !recursos().some(n => /constructor/.test(n)) && !N.stats().pedidos.some(n => /constructor/.test(n)));
+      check('6b · La Ingeniera es ingeniera.glb con Idle, Hablar y Reparar', ing && ['Idle', 'Hablar', 'Reparar'].every(a => ing.acciones[a]) && N.stats().pedidos.some(n => /ingeniera\.glb$/.test(n)), N.stats().pedidos.join(','));
+      check('6c · El Constructor es constructor.glb (no provisional) con Idle, Hablar y Señalar, y casco, chaleco, guantes y mochila son mallas del .glb', cons && !cons.provisional && ['Idle', 'Hablar', 'Señalar'].every(a => cons.acciones[a]) && ['Casco', 'Chaleco', 'GuanteL', 'GuanteR', 'Mochila'].every(n => cons.nodos[n] && (cons.nodos[n].isMesh || cons.nodos[n].children.some(c => c.isMesh))) && !Object.keys(cons.acc).length && N.stats().pedidos.length === 2 && N.stats().pedidos.some(n => /constructor\.glb$/.test(n)), N.stats().pedidos.join(','));
       const g0 = geos(); N.apariencia('constructor', 'reparador'); N.apariencia('ingeniera', 'responsable'); const g1 = geos(); N.apariencia('constructor', 'supervisor'); N.apariencia('ingeniera', 'aprendiz');
-      check('6d · Cambiar de apariencia no crea geometría (un modelo, varias apariencias)', g0 === g1 && geos() === g0 && cons.apariencia === 'supervisor' && !cons.nodos.Pelo.visible && cons.acc.casco.visible && cons.acc.chaleco.visible && ing.apariencia === 'aprendiz' && !ing.nodos.Chaqueta.visible,
+      check('6d · Cambiar de apariencia no crea geometría (un modelo, varias apariencias)', g0 === g1 && geos() === g0 && cons.apariencia === 'supervisor' && cons.nodos.Casco.visible && cons.nodos.Chaleco.visible && !cons.nodos.Mochila.visible && !cons.nodos.GuanteL.visible && ing.apariencia === 'aprendiz' && !ing.nodos.Chaqueta.visible,
         'geometrías ' + g0 + ' → ' + g1);
       check('7 · La máquina tapa la subida: collider puesto al pie de la ladera', G.fisica.colliders.indexOf(M.collider) >= 0 && M.collider.when() && Math.hypot(M.collider.x - SITIO.a.x, M.collider.z - SITIO.a.z) < 3.5);
       // 8 · pasos 1 y 3: llegar y descubrir (las charlas se pasan con E, como el jugador)
@@ -764,7 +771,7 @@ window.AVV18Puerto = function (G) {
       correr(0.2);
       const ci = N.instancia('constructor'), ii = N.instancia('ingeniera');
       check('14 · Paso 8: escalera con faroles y banderines, obra recogida, máquina verde con maceta y farol', gEscalera.visible && !gObra.visible && maq.flor.visible && !maq.broca.visible && maq.pintada === 'flor');
-      check('14b · El Constructor pasa a reparador (sin chaleco, franja verde) y la Ingeniera a responsable (chaqueta, insignia)', N.estado('constructor') === 'reparador' && N.estado('ingeniera') === 'responsable' && ci && ci.apariencia === 'reparador' && !ci.acc.chaleco.visible && ci.acc.franja.visible && ii && ii.apariencia === 'responsable' && ii.nodos.Chaqueta.visible && ii.acc.insignia.visible);
+      check('14b · El Constructor pasa a reparador (sin chaleco, con mochila de herramientas y guantes) y la Ingeniera a responsable (chaqueta, insignia)', N.estado('constructor') === 'reparador' && N.estado('ingeniera') === 'responsable' && ci && ci.apariencia === 'reparador' && !ci.nodos.Chaleco.visible && ci.nodos.Mochila.visible && ci.nodos.GuanteL.visible && ci.nodos.GuanteR.visible && ci.nodos.Casco.visible && ii && ii.apariencia === 'responsable' && ii.nodos.Chaqueta.visible && ii.acc.insignia.visible);
       const sube = subir(900);
       check('14c · La escalera se sube a pie de la plaza a la meseta, sin volar ni rescate de atasco', sube.ok && sube.y > -0.6, 's ' + sube.s.toFixed(1) + '/' + L.toFixed(1) + ' · Δy ' + sube.y.toFixed(2) + ' · rescates ' + sube.rescates + (sube.volo ? ' · voló' : ''));
       // 15 · paso 9: persiste tras guardar y recargar

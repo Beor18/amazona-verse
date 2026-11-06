@@ -453,7 +453,8 @@ window.AVBandada = function (G) {
       S.pos.x = 0; S.pos.z = 0;
       aparecer('prueba', { forzar: true, n: 20, dist: 200, ang: 0.7 }); await preparar(); if (F.estado === 'off') aparecer('prueba', { forzar: true, n: 20, dist: 200, ang: 0.7 });
       mover(0.05);
-      ok('Salen 20 cotorras visibles en 1 o 2 mallas instanciadas', F.n === 20 && cerca.count + lejos.count === 20 && [cerca, lejos].filter(m => m.visible).length <= 2, cerca.count + ' cerca, ' + lejos.count + ' lejos');
+      const extraN = (G.bandada.EXTRA || []).length; // QA-178: las 2 mallas son compartidas con residentes/comunidades/ciudad viva (EXTRA): se restan sus instancias
+      ok('Salen 20 cotorras visibles en 1 o 2 mallas instanciadas', F.n === 20 && cerca.count + lejos.count === 20 + extraN && [cerca, lejos].filter(m => m.visible).length <= 2, (cerca.count + lejos.count) + ' en las mallas (' + extraN + ' de residentes/ciudad) · cerca ' + cerca.count + ' · lejos ' + lejos.count);
       const dist = Math.hypot(F.lider.x - S.pos.x, F.lider.z - S.pos.z);
       ok('Sale a lo lejos (más de 150 m)', dist > 150, Math.round(dist) + ' m');
       ok('Usan 3 o más especies (colores distintos)', new Set(F.aves.map(a => colores[a.sp % colores.length].id)).size >= 3 || colores.length < 3, colores.length + ' colores');
@@ -486,7 +487,8 @@ window.AVBandada = function (G) {
       ok('Después se van y la bandada termina', F.estado === 'off');
       // Reacciona a la calidad
       aparecer('prueba', { forzar: true, n: 20, dist: 200, ang: 0.3 }); alCalidad({ nivel: 'bajo' });
-      ok('Si la calidad baja a «bajo», se retira', F.estado === 'off' && cerca.count + lejos.count === 0);
+      dibujar(); // QA-178: terminar no repinta en caliente (el repintado corre en el update): forzar el recuento real tras la retirada
+      ok('Si la calidad baja a «bajo», se retira', F.estado === 'off' && cerca.count + lejos.count === (G.bandada.EXTRA || []).length); // QA-178: con EXTRA activas las mallas siguen (terminar no las apaga), pero la bandada se va
       // Disparadores reales con el personaje creado
       G.quiet = false; const creado = S.profile.created; S.profile.created = true;
       G.emit('aprendizaje', { tipo: 'mision', id: 'x' }); const trasMision = pend && pend.motivo; pend = null;

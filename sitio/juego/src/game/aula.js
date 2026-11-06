@@ -517,11 +517,13 @@ AVE.module('aula', function (G) {
     document.body.appendChild(panel);
     panel.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cerrarMaestro(); } });
   }
+  // Diferenciación: las claves del contenido son rangos internos («3-4», «5-6»); en pantalla solo «Nivel 1 / Nivel 2» (regla de Kelvin, K4-01)
+  const difK = k => /^\d+-\d+$/.test(k) ? nivelDe(k) : k === 'apoyo_idioma' ? t({ es: 'Apoyo de idioma', en: 'Language support' }) : k;
   const lista = a => `<ul>${(a || []).map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
   function htmlGuia() {
     const MM = LEC.modo_maestro || {}, g = MM.guia_45_min || {};
     const fase = (k, f) => f ? `<details${k === 'antes' ? ' open' : ''}><summary>${esc(m(k))} · ${f.minutos} ${esc(m('min'))}</summary><ol>${(f.pasos || []).map(x => `<li>${esc(x)}</li>`).join('')}</ol></details>` : '';
-    const dif = g.diferenciacion ? `<details><summary>${esc(m('dif'))}</summary><dl>${Object.entries(g.diferenciacion).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></details>` : '';
+    const dif = g.diferenciacion ? `<details><summary>${esc(m('dif'))}</summary><dl>${Object.entries(g.diferenciacion).map(([k, v]) => `<dt>${esc(difK(k))}</dt><dd>${esc(v)}</dd>`).join('')}</dl></details>` : '';
     const obj = (LEC.objetivos || []).map(o => `<li><b>${esc(o.id)}</b> ${esc(t(o.enunciado))} <small>DEPR ${esc((o.depr_2022 || []).join(', '))} · NGSS ${esc((o.ngss || []).join(', '))}</small></li>`).join('');
     const act = (MM.actividades_sin_pantalla || []).map(a => `<details><summary>${esc(a.titulo)} · ${esc(nivelDe(a.grados))} · ${a.minutos} ${esc(m('min'))}</summary>
       <p><b>${esc(m('materiales'))}:</b> ${esc((a.materiales || []).join(', '))}</p><ol>${(a.pasos || []).map(x => `<li>${esc(x)}</li>`).join('')}</ol></details>`).join('');
