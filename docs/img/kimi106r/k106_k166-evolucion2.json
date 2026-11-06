@@ -1,0 +1,56 @@
+{
+ "etiqueta": "k166-evolucion2",
+ "bandera": "v18=1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "pruebas": {
+  "evolucion": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 84,
+     "peorMs": 20,
+     "n": 246,
+     "callsMed": 55,
+     "trisMed": 229218,
+     "heap": 115
+    },
+    "duracionMs": 3017,
+    "test": {
+     "passed": 45,
+     "total": 45,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 60,
+     "tris": 291697,
+     "geo": 78,
+     "tex": 130,
+     "prog": 48,
+     "heap": 108
+    }
+   }
+  }
+ }
+}

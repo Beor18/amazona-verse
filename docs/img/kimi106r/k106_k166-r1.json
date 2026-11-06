@@ -1,0 +1,499 @@
+{
+ "etiqueta": "k166-r1",
+ "bandera": "v18=1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "pruebas": {
+  "progreso": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 82,
+     "peorMs": 23,
+     "n": 237,
+     "callsMed": 55,
+     "trisMed": 229216,
+     "heap": 116
+    },
+    "duracionMs": 22,
+    "test": {
+     "passed": 8,
+     "total": 8,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 55,
+     "tris": 229229,
+     "geo": 79,
+     "tex": 123,
+     "prog": 44,
+     "heap": 116
+    }
+   }
+  },
+  "fx": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 81.3,
+     "peorMs": 23,
+     "n": 233,
+     "callsMed": 55,
+     "trisMed": 229217,
+     "heap": 117
+    },
+    "duracionMs": 34,
+    "test": {
+     "passed": 17,
+     "total": 17,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 54,
+     "tris": 229165,
+     "geo": 78,
+     "tex": 123,
+     "prog": 43,
+     "heap": 118
+    }
+   }
+  },
+  "descubrir": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 82,
+     "peorMs": 23,
+     "n": 234,
+     "callsMed": 55,
+     "trisMed": 229221,
+     "heap": 109
+    },
+    "duracionMs": 270,
+    "test": {
+     "passed": 21,
+     "total": 21,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 55,
+     "tris": 229229,
+     "geo": 76,
+     "tex": 123,
+     "prog": 43,
+     "heap": 128
+    }
+   }
+  },
+  "ciclo": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 67.6,
+     "peorMs": 31,
+     "n": 193,
+     "callsMed": 55,
+     "trisMed": 229214,
+     "heap": 113
+    },
+    "duracionMs": 2503,
+    "test": {
+     "passed": 22,
+     "total": 23,
+     "fallos": [
+      "4 · El duelo usa el poder de la especie elegida (Escudo de plumas); la rival grita :: arausiaca / escudo_plumas vs ventralis / eco_cordillera"
+     ]
+    },
+    "contexto": {
+     "calls": 65,
+     "tris": 219528,
+     "geo": 116,
+     "tex": 131,
+     "prog": 55,
+     "heap": 112
+    }
+   }
+  },
+  "reparar": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 80,
+     "peorMs": 24,
+     "n": 229,
+     "callsMed": 55,
+     "trisMed": 229215,
+     "heap": 124
+    },
+    "duracionMs": 7944,
+    "test": {
+     "passed": 32,
+     "total": 32,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 109,
+     "tris": 458422,
+     "geo": 77,
+     "tex": 123,
+     "prog": 44,
+     "heap": 119
+    }
+   }
+  },
+  "amenaza": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 80,
+     "peorMs": 22,
+     "n": 231,
+     "callsMed": 55,
+     "trisMed": 229219,
+     "heap": 119
+    },
+    "duracionMs": 297,
+    "test": {
+     "passed": 21,
+     "total": 21,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 57,
+     "tris": 257497,
+     "geo": 78,
+     "tex": 125,
+     "prog": 45,
+     "heap": 104
+    }
+   }
+  },
+  "nuevas": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 78.7,
+     "peorMs": 24,
+     "n": 224,
+     "callsMed": 55,
+     "trisMed": 229216,
+     "heap": 133
+    },
+    "duracionMs": 1268,
+    "test": {
+     "passed": 130,
+     "total": 130,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 57,
+     "tris": 257497,
+     "geo": 77,
+     "tex": 126,
+     "prog": 46,
+     "heap": 131
+    }
+   }
+  },
+  "combate": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 60.2,
+     "peorMs": 27,
+     "n": 173,
+     "callsMed": 55,
+     "trisMed": 229219,
+     "heap": 112
+    },
+    "duracionMs": 1643,
+    "test": {
+     "passed": 40,
+     "total": 40,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 55,
+     "tris": 229229,
+     "geo": 77,
+     "tex": 123,
+     "prog": 44,
+     "heap": 106
+    }
+   }
+  },
+  "duelo2": {
+   "esperadoMin": 22,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 69,
+     "peorMs": 28,
+     "n": 202,
+     "callsMed": 55,
+     "trisMed": 229218,
+     "heap": 109
+    },
+    "duracionMs": 583,
+    "test": {
+     "passed": 23,
+     "total": 24,
+     "fallos": [
+      "Cámara compartida: encuadra a las dos y se abre hasta un límite :: {\"dCerca\":\"9.8\",\"dLejos\":\"21.6\",\"x1\":\"-2.19\",\"x2\":\"2.17\"}"
+     ]
+    },
+    "contexto": {
+     "calls": 56,
+     "tris": 257433,
+     "geo": 77,
+     "tex": 125,
+     "prog": 46,
+     "heap": 134
+    }
+   }
+  },
+  "misterio": {
+   "esperadoMin": 6,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 55.2,
+     "peorMs": 36,
+     "n": 158,
+     "callsMed": 55,
+     "trisMed": 229217,
+     "heap": 196
+    },
+    "duracionMs": 113,
+    "test": {
+     "passed": 6,
+     "total": 7,
+     "fallos": [
+      "Los ojos se abren cerca y siguen al jugador :: apertura 0.00 · ojos 0"
+     ]
+    },
+    "contexto": {
+     "calls": 54,
+     "tris": 229165,
+     "geo": 78,
+     "tex": 123,
+     "prog": 44,
+     "heap": 197
+    }
+   }
+  },
+  "minigolf": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "error": "WebSocket: error"
+  }
+ }
+}
