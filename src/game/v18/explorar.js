@@ -284,7 +284,7 @@ window.AVV18Explorar = function (G) {
       // Disparo libre: respeta la puerta de encuentro (no dispara dentro de un encuentro v18)
       const stub = G.v18combate, f0 = stub && stub.estado && stub.estado().fase;
       let gateOk = true;
-      if (stub && stub.estado) { G.v18combate = { estado: () => ({ fase: 'lucha' }) }; cd.grito_yunque = 0; gateOk = disparar('grito_yunque') === false; G.v18combate = stub; }
+      if (stub && stub.estado) { G.v18combate = { estado: () => ({ fase: 'lucha' }) }; cd.grito_yunque = 0; gateOk = disparar() === false; G.v18combate = stub; }
       check('En un encuentro v18 no dispara (la G es del encuentro)', gateOk, f0);
       // La G se queda en exploración: el oyente consume la tecla y la quita del set de la cámara
       cd.grito_yunque = 0;
