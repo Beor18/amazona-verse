@@ -13,7 +13,12 @@
        apuntar con flechas → cargar Espacio y soltar → Grito del Yunque con G en la primera bola →
        hoyo → medalla → salir con Esc.
    Salida: docs/img/kimi121/kimi121_<juego>_<etiqueta>.<mp4|webm> + .json + captura de referencia .jpg
-   Uso: node tools/build/kimi3_121.js [--juego golf] [--etiqueta r1] [--salida <dir>]
+   Uso: node tools/build/kimi3_121.js [--juego golf|demo] [--etiqueta r1] [--salida <dir>]
+   --juego demo (KIMI-121, segundo vídeo: ciclo ?v18=1): con la semilla fiel del arnés (perfil vittata
+   seleccionada, puente roto), se JUEGA EN CÁMARA con input real: recoger 2 maderas de la orilla + 1 piedra
+   de la cabecera (E), reparar el puente (E), cruzarlo a pie al otro lado (W + saltos al atasco) y la pelea
+   con la Sombra de Tormenta (apuntar la cámara a la nube y G, 3 aciertos). El beat del duelo de la
+   explanada queda para la siguiente vuelta (notado en la fila). Solo se lee estado para decidir la entrada.
 */
 'use strict';
 const http = require('http');
@@ -122,7 +127,7 @@ const REC_JS = `(() => { try {
   let rec = null, chunks = [];
   window.__rec = {
     mime,
-    empieza() { chunks = []; rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 2200000 }); rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); }; rec.start(400); },
+    empieza() { chunks = []; rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: (window.__recBits || 2200000) }); rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); }; rec.start(400); },
     async para(nombre) {
       const blob = await new Promise(res => { rec.onstop = () => res(new Blob(chunks, { type: mime })); rec.stop(); });
       const r = await fetch('/__kimi121/grabar?nombre=' + encodeURIComponent(nombre), { method: 'POST', body: blob });
@@ -136,7 +141,8 @@ const REC_JS = `(() => { try {
 const TECLAS = {
   w: { vk: 87, code: 'KeyW', key: 'w' }, a: { vk: 65, code: 'KeyA', key: 'a' }, s: { vk: 83, code: 'KeyS', key: 's' }, d: { vk: 68, code: 'KeyD', key: 'd' },
   q: { vk: 81, code: 'KeyQ', key: 'q' }, r: { vk: 82, code: 'KeyR', key: 'r' },
-  e: { vk: 69, code: 'KeyE', key: 'e' }, g: { vk: 71, code: 'KeyG', key: 'g' }, enter: { vk: 13, code: 'Enter', key: 'Enter' },
+  e: { vk: 69, code: 'KeyE', key: 'e' }, g: { vk: 71, code: 'KeyG', key: 'g' }, c: { vk: 67, code: 'KeyC', key: 'c' },
+  v: { vk: 86, code: 'KeyV', key: 'v' }, x: { vk: 88, code: 'KeyX', key: 'x' }, enter: { vk: 13, code: 'Enter', key: 'Enter' },
   izq: { vk: 37, code: 'ArrowLeft', key: 'ArrowLeft' }, der: { vk: 39, code: 'ArrowRight', key: 'ArrowRight' },
   espacio: { vk: 32, code: 'Space', key: ' ' }, esc: { vk: 27, code: 'Escape', key: 'Escape' }
 };
@@ -153,6 +159,242 @@ function cargaPara(d) {
   let lo = 0.05, hi = 0.97;
   for (let i = 0; i < 44; i++) { const m = (lo + hi) / 2; if (dist(m) < d) lo = m; else hi = m; }
   return (lo + hi) / 2;
+}
+
+// ---------- KIMI-121 · --juego demo: materiales → reparar → cruce a pie → Sombra (input real) ----------
+// Semilla fiel del arnés (como kimi2_k088): perfil vittata seleccionada, puente roto; los materiales se
+// recogen EN CÁMARA en la orilla/cabecera (están puestos por reparar.js junto al puente, lado Villa Raíz).
+const SEMILLA_DEMO_JS = `try {
+  localStorage.clear(); sessionStorage.clear();
+  window.__erroresConsola = [];
+  addEventListener('error', e => __erroresConsola.push(String(e.message || e)));
+  addEventListener('unhandledrejection', e => __erroresConsola.push('rechazo: ' + (e.reason && e.reason.message || e.reason)));
+  const cerr = console.error; console.error = function () { try { __erroresConsola.push([].map.call(arguments, String).join(' ').slice(0, 300)); } catch (e) {} return cerr.apply(this, arguments); };
+  localStorage.setItem('amazonaverse.menu', JSON.stringify({ v: 1, ultimo: 'aventura' }));
+  localStorage.setItem('amazonaverse.save', JSON.stringify({
+    v: 6, formato: 2, escrito: Date.now(), saveId: 'qa-kimi3k121d-' + Math.random().toString(36).slice(2, 10),
+    profile: { created: true, name: 'Estrella de la Bahía', look: null, species: 'vittata' },
+    pos: { x: 166.5, z: 151 }, facing: { x: 0.6, z: -0.75 }, step: 0,
+    inv: {}, collected: [], complete: false, explorando: false, clock: 0,
+    events: [], captures: {}, missions: {}, field: [], unlocked: [], wear: {},
+    comic: { title: 'Mi cómic', cover: 'vittata', layout: 'grid', order: [0, 1, 2, 3], captions: {}, vinetas: {} },
+    evaluated: { A: false, B: false }, examined: { maquina: false, transmisor: false }
+  }));
+  localStorage.setItem('amazonaverse.v18', JSON.stringify({ v: 1, sel: 'vittata', especies: { vittata: 'seleccionada' }, inv: {}, otorgados: {}, mundo: {} }));
+} catch (e) {}`;
+
+async function estadoDemo(cdp, ses) {
+  return JSON.parse(await evaluar(cdp, ses, `(() => { try { const G = AV.G, S = AV.state, R = G.v18Reparar, AM = G.v18amenaza;
+    const inv = { madera: (S.inv && S.inv.madera) || 0, piedra: (S.inv && S.inv.piedra) || 0 };
+    const ms = typeof R.maderas === 'function' ? R.maderas() : R.maderas;
+    const mt = typeof R.materiales === 'function' ? R.materiales() : R.materiales;
+    const E = R.P.eje;
+    const cab = (t) => E ? { x: E.ax + E.ux * E.L * t, z: E.az + E.uz * E.L * t } : null;
+    const A = AM ? AM.estado() : null;
+    return JSON.stringify({ x: S.pos.x, z: S.pos.z, y: S.pos.y, yaw: G.camara.yaw, volando: !!(G.fisica.MOVE && G.fisica.MOVE.flying),
+      puente: R.estado(), inv,
+      maderas: (ms || []).map(m => ({ x: m.x, z: m.z })),
+      piedras: (mt || []).filter(m => m.tipo === 'piedra').map(m => ({ x: m.x, z: m.z })),
+      repararP: cab(-0.06), cabA: cab(0.03), cabMedia: cab(0.5), cabB: cab(1.04),
+      sombra: A ? { fase: A.fase, aciertos: A.aciertos, plumas: A.j && A.j.plumas, px: A.pos.x, pz: A.pos.z, d: Math.hypot(A.pos.x - S.pos.x, A.pos.z - S.pos.z) } : null });
+  } catch (e) { return JSON.stringify({ error: String(e && e.message || e) }); } })()`, 15));
+}
+
+// Caminar como caminarHasta pero con esquiva lateral + salto cuando no hay progreso: el cruce a pie del
+// puente sube la ladera de la orilla (pendiente límite) y el estribo de la torre exige rodear un poco,
+// como el niño del playtest (KIMI-110: 12-15 saltos; con las rampas del frente B a veces 0).
+async function cruzarConSaltos(cdp, ses, tx, tz, tol, log) {
+  let ultD = 1e9, sinProgreso = 0, saltos = 0, lado = 0, intentos = 0;
+  for (let i = 0; i < 320; i++) {
+    const st = JSON.parse(await evaluar(cdp, ses, `(() => { const S = AV.state, G = AV.G; return JSON.stringify({ x: S.pos.x, z: S.pos.z, y: S.pos.y, yaw: G.camara.yaw }); })()`, 15));
+    const d = Math.hypot(tx - st.x, tz - st.z);
+    if (d < tol) { log(`cruce: llegado a ${d.toFixed(1)} m (${saltos} saltos)`); await tecla(cdp, ses, 'w', false); return true; }
+    if (d > ultD - 0.1) sinProgreso++; else sinProgreso = 0;
+    ultD = d;
+    if (sinProgreso >= 3) { // atasco: alternar esquiva lateral y salto
+      lado = 1 - lado;
+      intentos++;
+      await tecla(cdp, ses, 'w', true);
+      if (intentos % 2 === 0) {
+        const lat = lado ? 'a' : 'd';
+        await tecla(cdp, ses, lat, true); await dormir(0.8); await tecla(cdp, ses, lat, false);
+      } else {
+        await tecla(cdp, ses, 'espacio', true); await dormir(0.07); await tecla(cdp, ses, 'espacio', false);
+        saltos++; await dormir(0.35);
+      }
+      sinProgreso = 0;
+      continue;
+    }
+    const deseada = Math.atan2(-(tx - st.x), -(tz - st.z));
+    const diff = envolver(deseada - st.yaw);
+    if (Math.abs(diff) > 0.1) {
+      await tecla(cdp, ses, 'w', false);
+      const t = diff > 0 ? 'q' : 'r';
+      await tecla(cdp, ses, t, true); await dormir(Math.min(0.4, Math.abs(diff) / 1.9)); await tecla(cdp, ses, t, false);
+    } else {
+      await tecla(cdp, ses, 'w', true); await dormir(0.2);
+    }
+    if (i % 40 === 39) log(`cruce: ${d.toFixed(1)} m, y=${st.y.toFixed(1)}, saltos=${saltos}`);
+  }
+  await tecla(cdp, ses, 'w', false);
+  log('cruce: sin llegar (tope de pasos)');
+  return false;
+}
+
+// Vuelo con input real: V despega/aterriza (toggleFly), X aterriza (land), Espacio sube, C baja (input.js/fisica.js).
+// Se usa para la recogida de materiales: la orilla del río tiene un barranco que bloquea la aproximación
+// a pie desde el camino (medido: atasco permanente a 2,4 m).
+async function despegar(cdp, ses, log) {
+  const volando = async () => (await estadoDemo(cdp, ses)).volando;
+  if (await volando()) return true;
+  await tecla(cdp, ses, 'v', true); await dormir(0.1); await tecla(cdp, ses, 'v', false);
+  for (let i = 0; i < 16; i++) { await dormir(0.25); if (await volando()) { log('volando'); return true; } }
+  log('no despegó (V no respondió)');
+  return false;
+}
+async function aterrizar(cdp, ses, log) {
+  await tecla(cdp, ses, 'x', true); await dormir(0.1); await tecla(cdp, ses, 'x', false);
+  for (let i = 0; i < 24; i++) { await dormir(0.25); const st = await estadoDemo(cdp, ses); if (!st.volando) { log('aterrizada'); return true; } }
+  return false;
+}
+// Volar hasta un punto 2D; si no hay progreso (rama/techo), sube con Espacio y reintenta.
+async function volarHasta(cdp, ses, tx, tz, tol2d, log) {
+  let ultD = 1e9, sinP = 0;
+  for (let i = 0; i < 220; i++) {
+    const st = await estadoDemo(cdp, ses);
+    const d = Math.hypot(tx - st.x, tz - st.z);
+    if (d < tol2d) { await tecla(cdp, ses, 'w', false); return true; }
+    if (d > ultD - 0.15) sinP++; else sinP = 0;
+    ultD = d;
+    if (sinP >= 5) { // ramas/techo: subir un tramo y seguir (el vuelo no choca con el follaje de arriba)
+      log(`vuelo: atascada a ${d.toFixed(1)} m; subiendo`);
+      await tecla(cdp, ses, 'espacio', true); await dormir(0.9); await tecla(cdp, ses, 'espacio', false);
+      sinP = 0; continue;
+    }
+    const deseada = Math.atan2(-(tx - st.x), -(tz - st.z));
+    const diff = envolver(deseada - st.yaw);
+    if (Math.abs(diff) > 0.12) {
+      await tecla(cdp, ses, 'w', false);
+      const t = diff > 0 ? 'q' : 'r';
+      await tecla(cdp, ses, t, true); await dormir(Math.min(0.45, Math.abs(diff) / 1.9)); await tecla(cdp, ses, t, false);
+    } else {
+      await tecla(cdp, ses, 'w', true); await dormir(0.24);
+    }
+    if (i % 30 === 29) log(`vuelo: ${d.toFixed(1)} m (y=${st.y.toFixed(1)})`);
+  }
+  await tecla(cdp, ses, 'w', false);
+  return false;
+}
+
+// Pelea con la Sombra de Tormenta: apuntar la cámara al centro de la nube (A.pos) y G, hasta 3 aciertos.
+async function lucharSombra(cdp, ses, res, log) {
+  const t0 = Date.now(); let gritos = 0, ultAciertos = 0;
+  while (Date.now() - t0 < 120000) {
+    const st = await estadoDemo(cdp, ses);
+    if (!st.sombra) { await dormir(0.5); continue; }
+    const A = st.sombra;
+    if (A.aciertos >= 3 || A.fase === 'ganada') { log(`Sombra dispersada (${A.aciertos} aciertos, ${gritos} gritos)`); return true; }
+    if (A.fase !== 'lucha') { // entrar en el radio de la pelea (R_EMPIEZA ≈ 16 m; la nube está a ~14 m del eje del puente)
+      if (A.d > 12) { log('Sombra a ' + A.d.toFixed(0) + ' m: acercando'); await cruzarConSaltos(cdp, ses, A.px, A.pz, 10, log); }
+      await dormir(0.6); continue;
+    }
+    if (A.plumas === 0) { log('sin plumas; esperando reintento'); await dormir(2.5); continue; }
+    // Apuntar la cámara a la nube y gritar.
+    const deseada = Math.atan2(-(A.px - st.x), -(A.pz - st.z));
+    const diff = envolver(deseada - st.yaw);
+    if (Math.abs(diff) > 0.05) {
+      const t = diff > 0 ? 'q' : 'r';
+      await tecla(cdp, ses, t, true); await dormir(Math.min(0.5, Math.abs(diff) / 1.9)); await tecla(cdp, ses, t, false);
+      continue;
+    }
+    await tecla(cdp, ses, 'g', true); await dormir(0.1); await tecla(cdp, ses, 'g', false);
+    gritos++;
+    if (A.aciertos > ultAciertos) { ultAciertos = A.aciertos; log(`acierto ${ultAciertos}/3`); }
+    await dormir(1.1); // cooldown del grito
+  }
+  log('Sombra: tope de tiempo');
+  return false;
+}
+
+async function demoFlow(cdp, ses, res, ext, log) {
+  log('esperando G.v18Reparar / G.v18amenaza...');
+  let ok = false;
+  for (let i = 0; i < 90; i++) { try { ok = await evaluar(cdp, ses, `!!(window.AV && AV.G && AV.G.v18Reparar && AV.G.v18Reparar.P.eje && AV.G.v18amenaza)`, 10, false); } catch (e) { } if (ok) break; await dormir(1); }
+  if (!ok) throw new Error('módulos v18 del puente/Sombra no cargaron');
+  let st = await estadoDemo(cdp, ses);
+  if (st.error) throw new Error('estadoDemo: ' + st.error);
+  if (!st.repararP || !st.cabA || !st.cabB) throw new Error('sin eje del puente');
+  log(`puente ${st.puente}; reparar en (${st.repararP.x.toFixed(1)},${st.repararP.z.toFixed(1)}); maderas=${st.maderas.length} piedras=${st.piedras.length}`);
+  log('materiales: ' + JSON.stringify({ maderas: st.maderas, piedras: st.piedras, spawn: { x: st.x, z: st.z } }));
+
+  // Grabación a 1,0 Mbps (tope 25 MB ⇒ ~3 min de take; el take va ágil).
+  await evaluar(cdp, ses, `window.__recBits = 1000000`, 10, false);
+  res.mime = await evaluar(cdp, ses, REC_JS, 20, false);
+  if (!res.mime || res.mime.indexOf('ERR') === 0) throw new Error('recorder: ' + res.mime);
+  log('MediaRecorder mime: ' + res.mime);
+  await evaluar(cdp, ses, `window.__rec.empieza()`, 15, false);
+  res.recStarted = new Date().toISOString();
+
+  // 1) Recoger 2 maderas + 1 piedra con E (input real; se verifica S.inv tras cada una).
+  // El barranco de la orilla bloquea el último tramo a pie: se vuela hasta encima (input real), se
+  // aterriza junto al objeto y se recoge con E; luego se despega hacia el siguiente. Ave de verdad.
+  const recoger = async (p, que) => { // la interacción tiene r=2,2: basta estar a 2,05 m (con colisión del objeto, a pie no llega)
+    await volarHasta(cdp, ses, p.x, p.z, 3.2, log);
+    await aterrizar(cdp, ses, log);
+    await caminarHasta(cdp, ses, p.x, p.z, 2.05);
+    for (let intento = 0; intento < 3; intento++) {
+      const antes = (await estadoDemo(cdp, ses)).inv;
+      await tecla(cdp, ses, 'e', true); await dormir(0.12); await tecla(cdp, ses, 'e', false);
+      await dormir(0.9);
+      const desp = (await estadoDemo(cdp, ses)).inv;
+      if (que === 'madera' ? desp.madera > antes.madera : desp.piedra > antes.piedra) { log(`+1 ${que} (${desp.madera}m/${desp.piedra}p)`); return true; }
+      await caminarHasta(cdp, ses, p.x, p.z, 2.05);
+    }
+    log(`no se pudo recoger ${que} en (${p.x.toFixed(1)},${p.z.toFixed(1)})`);
+    return false;
+  };
+  await despegar(cdp, ses, log);
+  for (const m of st.maderas.slice(0, 2)) { await recoger(m, 'madera'); await despegar(cdp, ses, log); }
+  if (st.piedras.length) { await recoger(st.piedras[0], 'piedra'); await despegar(cdp, ses, log); }
+  st = await estadoDemo(cdp, ses);
+  log(`inventario: ${st.inv.madera} maderas, ${st.inv.piedra} piedras`);
+
+  // 2) Reparar el puente (E en la cabecera del lado de Villa Raíz): se vuela al camino y se termina a pie.
+  await volarHasta(cdp, ses, st.repararP.x, st.repararP.z, 4.5, log);
+  await aterrizar(cdp, ses, log);
+  await caminarHasta(cdp, ses, st.repararP.x, st.repararP.z, 2.0);
+  for (let i = 0; i < 3; i++) {
+    await tecla(cdp, ses, 'e', true); await dormir(0.12); await tecla(cdp, ses, 'e', false);
+    await dormir(1.2);
+    st = await estadoDemo(cdp, ses);
+    if (st.puente === 'reparado') break;
+  }
+  if (st.puente !== 'reparado') throw new Error('el puente no se reparó (inv=' + JSON.stringify(st.inv) + ')');
+  res.puente = st.puente;
+  log('¡puente reparado! cruzando a pie...');
+
+  // Referencia visual con el puente reparado.
+  await cdp.bombear(0.8);
+  try {
+    const shot = await cdp.call('Page.captureScreenshot', { format: 'jpeg', quality: 80 }, ses, 20000);
+    fs.writeFileSync(path.join(SALIDA, `kimi121_${JUEGO}_${ETIQUETA}_ref.jpg`), Buffer.from(shot.data, 'base64'));
+  } catch (e) { log('captura ref: ' + e.message); }
+
+  // 3) Cruce a pie hasta media pasarela (la Sombra está a ~14 m del eje: la pelea salta allí, sobre el río),
+  // 4) pelea con la Sombra (G apuntando a la nube) y 5) terminar de cruzar a la otra cabecera.
+  const medio = (await estadoDemo(cdp, ses)).cabMedia;
+  await cruzarConSaltos(cdp, ses, medio.x, medio.z, 1.6, log);
+  log('buscando la pelea con la Sombra...');
+  res.sombra = await lucharSombra(cdp, ses, res, log);
+  log('terminando el cruce a la cabecera B...');
+  res.cruce = await cruzarConSaltos(cdp, ses, st.cabB.x, st.cabB.z, 2.4, log);
+  st = await estadoDemo(cdp, ses);
+  res.estadoFinal = { puente: st.puente, inv: st.inv, sombra: st.sombra };
+  await dormir(2.2); // premio/toast final en cámara
+
+  log('parando la grabación y volcando el vídeo...');
+  res.video = await evaluar(cdp, ses, `window.__rec.para('kimi121_${JUEGO}_${ETIQUETA}.${ext()}')`, 120);
+  log(`vídeo: ${JSON.stringify(res.video)}`);
 }
 
 async function lanzarChrome() {
@@ -184,22 +426,30 @@ async function estadoGolf(cdp, ses) {
       bx: B.x, bz: B.z, mov: !!B.mov, x: S.pos.x, z: S.pos.z, yaw: G.camara.yaw, volando: !!G.fisica.MOVE.flying }); } catch (e) { return JSON.stringify({ error: String(e && e.message || e) }); } })()`, 15));
 }
 async function caminarHasta(cdp, ses, tx, tz, tol, res) {
-  let ultD = 1e9, sinProgreso = 0, lado = 0;
+  let ultD = 1e9, sinProgreso = 0, lado = 0, mejorD = 1e9, esquivas = 0;
   for (let i = 0; i < 200; i++) {
     const st = JSON.parse(await evaluar(cdp, ses, `(() => { const S = AV.state, G = AV.G; return JSON.stringify({ x: S.pos.x, z: S.pos.z, yaw: G.camara.yaw }); })()`, 15));
     const dx = tx - st.x, dz = tz - st.z, d = Math.hypot(dx, dz);
     if (d < tol) { log(`caminar: llegado a ${d.toFixed(1)} m de (${tx.toFixed(1)},${tz.toFixed(1)})`); await tecla(cdp, ses, 'w', false); return true; }
     if (d > ultD - 0.12) sinProgreso++; else sinProgreso = 0;
     ultD = d;
+    if (d < mejorD - 0.3) { mejorD = d; esquivas = 0; }
     if (sinProgreso >= 5) { // atascada contra un tronco/roca: esquivar con paso lateral manteniendo W
       lado = 1 - lado;
       const lat = lado ? 'a' : 'd';
       log(`caminar: atascada a ${d.toFixed(1)} m; esquivando con ${lat.toUpperCase()}`);
       await tecla(cdp, ses, 'w', true);
       await tecla(cdp, ses, lat, true);
-      await dormir(0.7);
+      await dormir(1.1);
       await tecla(cdp, ses, lat, false);
       sinProgreso = 0;
+      esquivas++;
+      if (esquivas % 4 === 0) { // varios intentos sin avanzar: retroceder y tomar carrerilla
+        log('caminar: retrocediendo 1,2 s y reintentando');
+        await tecla(cdp, ses, 'w', false);
+        await tecla(cdp, ses, 's', true); await dormir(1.2); await tecla(cdp, ses, 's', false);
+        await tecla(cdp, ses, 'w', true);
+      }
       continue;
     }
     const deseada = Math.atan2(-dx, -dz);
@@ -235,7 +485,7 @@ async function caminarHasta(cdp, ses, tx, tz, tol, res) {
     const tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
     const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
     for (const m of ['Page.enable', 'Runtime.enable', 'Log.enable']) await cdp.call(m, {}, ses);
-    await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS }, ses);
+    await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: JUEGO === 'demo' ? SEMILLA_DEMO_JS : SEMILLA_SAVE_JS }, ses);
     await cdp.call('Page.navigate', { url: `${origen}/index.html?pack=cap1&mapa=real&v18=1` }, ses);
     const t0 = Date.now(); let listo = false;
     while (Date.now() - t0 < (CFG.espera_listo_s || 150) * 1000) {
@@ -249,6 +499,8 @@ async function caminarHasta(cdp, ses, tx, tz, tol, res) {
     // Gesto real para que boot.js cargue los módulos v18 perezosos.
     await cdp.call('Input.dispatchMouseEvent', { type: 'mousePressed', x: 960, y: 540, button: 'left', clickCount: 1 }, ses);
     await cdp.call('Input.dispatchMouseEvent', { type: 'mouseReleased', x: 960, y: 540, button: 'left', clickCount: 1 }, ses);
+    if (JUEGO === 'demo') { await demoFlow(cdp, ses, res, ext, log); }
+    else {
     log('esperando G.v18minigolf...');
     let okGolf = false;
     for (let i = 0; i < 60; i++) { try { okGolf = await evaluar(cdp, ses, `!!(window.AV && AV.G && AV.G.v18minigolf && AV.G.v18minigolf.sitio)`, 10, false); } catch (e) { } if (okGolf) break; await dormir(1); }
@@ -370,6 +622,7 @@ async function caminarHasta(cdp, ses, tx, tz, tol, res) {
     log('parando la grabación y volcando el vídeo...');
     res.video = await evaluar(cdp, ses, `window.__rec.para('kimi121_${JUEGO}_${ETIQUETA}.${ext()}')`, 120);
     log(`vídeo: ${JSON.stringify(res.video)}`);
+    }
     res.erroresConsola = await evaluar(cdp, ses, `(window.__erroresConsola || []).slice(0, 30)`, 15);
     await cdp.call('Target.closeTarget', { targetId: tid }).catch(() => { });
   } catch (e) {

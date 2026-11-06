@@ -1,0 +1,30 @@
+[04:24:46] lanzando Chrome 1920x1080 (GPU real) y entrando con ?v18=1...
+[04:24:49] juego listo, entrando...
+[04:25:07] esperando G.v18Reparar / G.v18amenaza...
+[04:25:10] puente roto; reparar en (168.1,145.8); maderas=2 piedras=2
+[04:25:10] materiales: {"maderas":[{"x":167.49721111754187,"z":148.7157878075805},{"x":172.31435896842288,"z":146.32865740838724}],"piedras":[{"x":167.62331197718947,"z":151.5242399672578},{"x":158.60384,"z":157.17440000000002}],"spawn":{"x":166.5,"z":151}}
+[04:25:10] MediaRecorder mime: video/mp4;codecs=avc1.42E01E
+[04:25:11] volando
+[04:25:13] aterrizada
+[04:25:14] caminar: llegado a 1.5 m de (167.5,148.7)
+[04:25:16] +1 madera (1m/0p)
+[04:25:20] volando
+[04:25:29] aterrizada
+[04:25:29] caminar: llegado a 1.9 m de (172.3,146.3)
+[04:25:30] +1 madera (2m/0p)
+[04:25:31] volando
+[04:25:34] vuelo: atascada a 6.5 m; subiendo
+[04:25:37] aterrizada
+[04:25:37] caminar: llegado a 0.7 m de (167.6,151.5)
+[04:25:39] +1 piedra (2m/1p)
+[04:25:39] volando
+[04:25:39] inventario: 2 maderas, 1 piedras
+[04:25:44] aterrizada
+[04:25:44] caminar: llegado a 1.2 m de (168.1,145.8)
+[04:25:45] ¡puente reparado! cruzando a pie...
+[04:25:51] cruce: llegado a 1.8 m (0 saltos)
+[04:25:51] buscando la pelea con la Sombra...
+[04:27:51] Sombra: tope de tiempo
+[04:27:54] parando la grabación y volcando el vídeo...
+[04:27:54] vídeo: {"mime":"video/mp4;codecs=avc1.42E01E","bytes":11802098,"destino":"kimi121_demo_r6.mp4"}
+[04:27:57] evidencia en C:\Users\kelvi\amazonaversegame3\docs\img\kimi121
