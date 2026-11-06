@@ -118,6 +118,7 @@
     if (v18On && !(window.matchMedia && matchMedia('(pointer: coarse)').matches)) alPrimerGesto(cargarV18Duelo2);
     // V18.1 · cuatro cotorras más que llegan con los hitos (Quiebro, Ala fuerte, Lluvia de semillas, Ojo del cenote; Kelvin 5-nov)
     const nuevas18 = aDemanda('src/game/v18/nuevas.js', 'AVV18Nuevas'), cargarV18Nuevas = () => Promise.all([cargarCombate(), cargarV18Amenaza()]).then(nuevas18); AV.v18NuevasTest = o => cargarV18Nuevas().then(n => n.test(o)); if (v18On) alPrimerGesto(cargarV18Nuevas);
+    AV.v18PoderesTest = o => Promise.all([cargarV18Nuevas(), cargarV18Descubrir()]).then(([n]) => n.testPoderes(o)); // cierre: los 34 poderes, uno a uno (desbloqueo, G/botón, guardado, inglés)
     // V18.1 · segunda y tercera amenaza de fantasía (Kelvin 5-nov): Serpiente de la Maraña (nudos) y Sapo Encantado (minijuego de ritmo)
     const serpiente18 = aDemanda('src/game/v18/serpiente.js', 'AVV18Serpiente'), cargarV18Serpiente = () => Promise.all([cargarV18(), cargarMarana()]).then(serpiente18); AV.v18SerpienteTest = o => cargarV18Serpiente().then(x => x.test(o)); if (v18On) alPrimerGesto(cargarV18Serpiente);
     const sapo18 = aDemanda('src/game/v18/sapo.js', 'AVV18Sapo'), cargarV18Sapo = () => cargarV18().then(sapo18); AV.v18SapoTest = o => cargarV18Sapo().then(x => x.test(o)); if (v18On) alPrimerGesto(cargarV18Sapo);

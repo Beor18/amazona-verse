@@ -793,6 +793,229 @@ window.AVV18Nuevas = function (G) {
     V.recargar(); if (susp) susp(false);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
-  G.v18nuevas = { HITOS, revisar, revisarAlbum, albumLlega, test };
+
+  // =====================================================================================================================
+  // AV.v18PoderesTest(): los 34 poderes jugables, uno a uno (Kelvin, cierre: alcance cerrado a 34; Mara y Vela no tienen poder).
+  // Para cada especie: (1) se desbloquea por la vía real (vittata desde el inicio; arausiaca con el reto de descubrir.js;
+  // las 12 de hito y las 20 del Álbum de aquí) y una sola vez; (2) elegida en «Mis cotorras», en el duelo su poder sale con
+  // la G y con el botón (mantener Impulso), gasta su energía, respeta la espera, produce su efecto y no deja invulnerable;
+  // (3) tras guardar y recargar (progreso.js) sigue desbloqueada y elegida; (4) su nombre, su línea «Poder: …» y su aviso
+  // tienen inglés. Devuelve también `tabla` (una fila por especie) para el informe.
+  const NO_PODER = ['martinicana', 'violacea']; // consejeras de la temporada 1
+  // Efecto medible de cada poder: d = distancia de la rival (quieta), t = segundos a paso fijo; mide(C, m) con m = lo visto
+  // justo al activarlo (m.ya), durante la ventana (m.golpes de la jugadora a la rival, m.dMax) y m.ev (evento v18poder).
+  const MIDE = {
+    grito_yunque: { d: 4, golpe: 1 }, escudo_plumas: { ya: (C) => C.j.escudo > 0 },
+    quiebro: { ya: (C) => C.j.inv > 0 && C.j.kb.t > 0 }, lluvia_semillas: { ya: (C, m) => C.balas.length === m.balas0 + 3 },
+    ojo_cenote: { ya: (C) => C.r.marcada > 0 }, ala_fuerte: { d: 2, golpe: 1 },
+    abanico_colores: { ya: (C) => C.r.deslumbrada > 0 && C.r.falla > 0 }, semilla_rio: { ya: (C, m) => C.balas.length === m.balas0 + 1 },
+    mirada_piton: { ya: (C) => C.r.lenta > 0 }, ojo_sol: { ya: (C) => C.r.marcada > 0 && C.r.marcaK < 1 },
+    capa_palma: { ya: (C) => C.j.capa > 0 }, pluma_rebote: { ya: (C) => C.j.rebote > 0 }, hojas_envuelven: { ya: (C) => C.j.hojas > 0 },
+    ojo_selva: { ya: (C) => C.r.vista > 0 }, viento_islas: { d: 4, golpe: 1 }, voz_volcan: { d: 4, golpe: 1 },
+    ojo_manglar: { ya: (C) => C.r.lenta > 0 && C.r.grande > 0 }, gota_lluvia: { ya: (C) => C.j.escudo > 0 },
+    chillido_bandada: { d: 4, golpe: 1 }, rafaga: { d: 4.5, golpe: 1 }, eco_cordillera: { d: 4, golpe: 1 }, rasante: { d: 5, golpe: 1 },
+    canto_real: { d: 4, golpe: 1 }, remolino: { d: 2.2, ya: (C) => C.j.remolino > 0, golpe: 1 },
+    plumas_aliso: { d: 6, golpe: 1, ya: (C, m) => C.balas.length === m.balas0 + 1 }, semilla_pina: { ya: (C, m) => C.balas.length === m.balas0 + 1 },
+    columna_nube: { d: 3, golpe: 1 }, plumas_manglar: { ya: (C) => C.trampas.length === 3 }, vuelo_niebla: { d: 4, golpe: 1 },
+    vuelta_pino: { d: 2.6, aleja: 2.4 }, imitacion: { copia: true }, vista_cumbre: { ya: (C) => C.j.vistacumbre > 0 },
+    ojo_bandada: { ya: (C) => C.j.ojobandada > 0 }, cuento: { ya: (C) => C.r.distraida > 0 }
+  };
+  let regPoderes = null; // oyentes únicos (G no tiene off): mudos fuera de la prueba
+  G.on('v18', e => { if (regPoderes && e && e.tipo === 'especie' && e.estado === 'seleccionable') regPoderes.altas[e.id] = (regPoderes.altas[e.id] || 0) + 1; });
+  G.on('v18poder', e => { if (regPoderes) regPoderes.poderEv.push(e); });
+  G.on('v18combate', e => { if (regPoderes && e && e.tipo === 'hit' && e.de === 'jugador' && e.a === 'rival' && !e.bloqueado) regPoderes.golpes.push(e); });
+  async function testPoderes() {
+    const out = [], check = (name, ok, extra) => { out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); return !!ok; };
+    const D = G.v18descubrir, B = G.v18combate;
+    let crudo = null; try { crudo = localStorage.getItem(V.clave()); } catch (e) { /* */ }
+    const toasts = [], toast0 = G.ui.toast; G.ui.toast = t => { toasts.push(String(t)); };
+    const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, inv0 = Object.assign({}, S.inv || {});
+    const prof0 = S.profile, idioma0 = G.idioma && G.idioma.actual && G.idioma.actual();
+    const susp = G.guardado.suspender; if (susp) susp(true);
+    const altas = {}; // id → veces que llegó a «seleccionable» (evento de progreso.js)
+    const fila = {}; // id → { poder, desbloqueo, activacion, guardado, ingles, nota }
+    const poderEv = [], golpes = []; regPoderes = { altas, poderEv, golpes };
+    const pn0 = Object.getOwnPropertyDescriptor(performance, 'now');
+    try {
+      if (!S.profile || !((S.profile.look && S.profile.look.species) || S.profile.species)) S.profile = Object.assign({}, S.profile || {}, { look: { species: 'vittata' } });
+      V.borrar(); V.recargar();
+      const ESP = H.lista().filter(h => !h.basico && h.especies).map(h => ({ sp: h.especies[0], id: h.id, h }));
+      const ids = ESP.map(e => e.sp);
+      check('Hay 34 poderes jugables, uno por especie, todos distintos', ESP.length === 34 && new Set(ids).size === 34 && new Set(ESP.map(e => e.id)).size === 34 &&
+        ESP.every(e => H.poderDe(e.sp) === e.id), ESP.length + ' poderes');
+      check('Mara y Vela (martinicana, violacea) no tienen poder propio ni se pueden elegir',
+        NO_PODER.every(sp => !ids.includes(sp) && rango(V.estado(sp)) < 1));
+      for (const e of ESP) fila[e.sp] = { poder: e.h.nombre, desbloqueo: false, activacion: false, guardado: false, ingles: false, nota: [] };
+      const sel = id => rango(V.estado(id)) >= rango('seleccionable');
+
+      // ---------- (1) Desbloqueo por la vía real ----------
+      fila.vittata.desbloqueo = check('Vittata: elegible desde el inicio (partida nueva) y elegida por defecto', sel('vittata') && V.seleccionada() === 'vittata', V.estado('vittata'));
+      check('Al empezar, ninguna de las otras 33 está', ids.filter(id => id !== 'vittata').every(id => rango(V.estado(id)) < 1),
+        ids.filter(id => id !== 'vittata' && rango(V.estado(id)) >= 1).join(','));
+      // arausiaca: descubrir.js (acercarse → reto de seguirla por las copas)
+      if (D) {
+        await D.listo; if (D.B && D.B.listo) await D.B.listo;
+        const P = D.P, SALTOS = P.length - 1, ir = (p, dy) => { S.pos.x = p.x; S.pos.y = p.y + (dy || 0); S.pos.z = p.z; };
+        const correr = s => { for (let t = 0; t < s; t += 0.1) D.paso(0.1); };
+        D.R.activo = false;
+        ir({ x: P[0].x + 4, y: P[0].y - 6, z: P[0].z + 3 }); correr(0.2);
+        const desc = V.estado('arausiaca') === 'descubierta';
+        D.empezarReto();
+        for (let k = 1; k <= SALTOS && D.R.activo; k++) { correr(0.5); ir(P[k], 1.5); D.paso(0.1); }
+        const ok1 = sel('arausiaca'), otra = D.empezarReto();
+        fila.arausiaca.desbloqueo = check('Arausiaca: se descubre al acercarse y el reto de seguirla la desbloquea; no se puede repetir',
+          desc && ok1 && !otra && altas.arausiaca === 1 && toasts.filter(t => /ya vuela contigo/.test(t)).length === 1,
+          'descubierta ' + desc + ', elegible ' + ok1 + ', altas ' + altas.arausiaca);
+      } else check('descubrir.js cargado', false);
+      // Las 12 de hito: con los hitos reales del juego (duelos ganados de verdad, cambios de mundo y premios del minigolf)
+      const aviso = h => toasts.filter(t => t.indexOf(h.txt) === 0).length;
+      const ganar = (plumasJ) => {
+        B.iniciar({ sinCuenta: true }); const C = B.estado();
+        C.r.pos.x = S.pos.x + 1.5; C.r.pos.z = S.pos.z; C.r.pos.y = G.terreno.height(C.r.pos.x, C.r.pos.z); C.r.pensar = 99; C.r.esquivaT = 99; C.r.poderT = 99; C.r.golpeT = 99; C.r.tiroT = 99;
+        S.facing = { x: 1, z: 0 }; C.r.plumas = 1; C.r.inv = 0; C.r.escudo = 0; C.j.plumas = plumasJ; C.j.cd = {};
+        B.usar(C.j, 'golpe_ala'); const r = C.resultado, sp = C.j.especie; B.salir(); return r === 'win' ? sp : null;
+      };
+      const paso1 = (txt, hacer, esperadas, aun) => {
+        hacer();
+        const st0 = window.setTimeout; let nuevas, seg; // los avisos en cola (setTimeout) salen ya: se cuentan todos
+        window.setTimeout = (fn, ms) => (ms > 1000 ? (fn(), 0) : st0(fn, ms));
+        try { nuevas = revisar(true); seg = revisar(true); } finally { window.setTimeout = st0; }
+        const ok = esperadas.every(sel) && aun.every(id => !sel(id)) && seg.length === 0;
+        check(txt, ok, 'nuevas ' + nuevas.join(',') + (aun.length ? ' · aún no: ' + aun.join(',') : ''));
+        for (const id of esperadas) { const h = HITOS.find(x => x.id === id); if (fila[id]) { fila[id].desbloqueo = ok && aviso(h) === 1 && altas[id] === 1; if (!fila[id].desbloqueo) fila[id].nota.push('desbloqueo: avisos ' + aviso(h) + ', altas ' + altas[id]); } }
+      };
+      paso1('Ganar un duelo (perdiendo una pluma) trae la de pico negro; aún no la frente blanca, el yucateco ni la de pico amarillo',
+        () => ganar(4), ['agilis'], ['albifrons', 'xantholora', 'collaria']);
+      paso1('Ganar sin perder ninguna pluma trae el loro frente blanca', () => ganar(5), ['albifrons'], ['xantholora', 'collaria']);
+      paso1('Ganar con otra cotorra (pico negro) trae el yucateco y, con 3 duelos ganados, la de pico amarillo',
+        () => { V.seleccionar('agilis'); ganar(4); V.seleccionar('vittata'); }, ['xantholora', 'collaria'], ['farinosa']);
+      paso1('Reparar el puente trae el corona azul; el de cejas rojas aún no', () => V.cambiarMundo('puente_villa', 'reparado'), ['farinosa'], ['rhodocorytha']);
+      paso1('Dispersar la Sombra trae la cabeciamarilla', () => V.cambiarMundo('sombra_tormenta', 'dispersa'), ['barbadensis'], ['guildingii']);
+      paso1('Deshacer la Serpiente trae el de San Vicente y, con el puente, el de cejas rojas', () => V.cambiarMundo('serpiente_marana', 'deshecha'), ['guildingii', 'rhodocorytha'], ['diadema']);
+      paso1('Despertar al Sapo trae el loro diadema', () => V.cambiarMundo('sapo_encantado', 'despierto'), ['diadema'], ['leucocephala']);
+      paso1('Primer hoyo completo del minigolf trae el loro cubano; el de Santa Lucía aún no', () => V.otorgar('minigolf_villa_completo', 'minigolf_completo', 1), ['leucocephala'], ['versicolor']);
+      paso1('Primer oro del minigolf trae el de Santa Lucía', () => V.otorgar('minigolf_villa_oro', 'minigolf_oro', 1), ['versicolor'], ['kawalli']);
+      paso1('Con 3 de las 4 piedras y fibras, el de Kawall aún no', () => ['piedra_1', 'piedra_2', 'fibra_1'].forEach(k => V.cambiarMundo(k, 'recogida')), [], ['kawalli']);
+      paso1('Con las 4, llega el de Kawall', () => V.cambiarMundo('fibra_2', 'recogida'), ['kawalli'], []);
+      // Las 20 del Álbum: abrir su tarjeta (evento del Álbum), dos veces
+      for (const a of ALBUM) {
+        const antes = sel(a.id);
+        revisarAlbum(); const sinAbrir = sel(a.id);
+        G.emit('album', { id: a.id, fuente: 'test' }); G.emit('album', { id: a.id, fuente: 'test' });
+        const n = toasts.filter(t => t.indexOf(a.txt) === 0).length;
+        if (fila[a.id]) { fila[a.id].desbloqueo = !antes && !sinAbrir && sel(a.id) && n === 1 && altas[a.id] === 1; if (!fila[a.id].desbloqueo) fila[a.id].nota.push('desbloqueo: avisos ' + n + ', altas ' + altas[a.id]); }
+      }
+      const malAlbum = ALBUM.filter(a => !(fila[a.id] && fila[a.id].desbloqueo)).map(a => a.id);
+      check('Las 20 del Álbum: llegan al abrir su tarjeta (no antes), con un solo aviso y una sola alta', malAlbum.length === 0 && ALBUM.length === 20, malAlbum.join(','));
+      const noDos = ids.filter(id => id !== 'vittata' && altas[id] !== 1);
+      check('Ninguna de las 33 se otorga dos veces (una sola alta cada una)', noDos.length === 0, noDos.map(id => id + '×' + (altas[id] || 0)).join(','));
+      V.recargar();
+      const perdidas = ids.filter(id => !sel(id));
+      check('Tras recargar, las 34 siguen desbloqueadas', perdidas.length === 0, perdidas.join(','));
+
+      // ---------- (4) Inglés: nombre del poder, la línea «Poder: …» de Mis cotorras y el aviso al llegar ----------
+      if (G.idioma && G.idioma.poner) {
+        await G.idioma.poner('en');
+        const tr = G.idioma.tr, conEn = s => { const r = tr(s); return r !== s && !/Su poder|Elíge|Búscala|Descubriste|¡|Poder/.test(r); };
+        // la línea «Poder: …» tal como sale en la tarjeta de Mis cotorras, ya traducida en pantalla
+        D.abrirSeleccion(); await new Promise(r => setTimeout(r, 60));
+        const card = G.ui.$('card'), lineaEn = sp => { const b = card && card.querySelector('[data-v18sp="' + sp + '"] small'); return b ? b.textContent.trim() : ''; };
+        const AV_TXT = h => (HITOS.find(x => x.id === h) || ALBUM.find(x => x.id === h));
+        for (const e of ESP) {
+          const a = AV_TXT(e.sp), m = [];
+          if (!conEn(e.h.nombre)) m.push('nombre');
+          const li = lineaEn(e.sp); if (!/^Power: /.test(li) || li === 'Power: ' + e.h.nombre) m.push('«Poder: …» (' + li + ')');
+          if (a) { const full = toasts.find(t => t.indexOf(a.txt) === 0); if (!full || !conEn(full)) m.push('aviso'); }
+          if (e.sp === 'arausiaca') { const full = toasts.find(t => /ya vuela contigo/.test(t)); if (!full || !conEn(full)) m.push('aviso'); }
+          fila[e.sp].ingles = !m.length; if (m.length) fila[e.sp].nota.push('sin EN: ' + m.join('/') + ' → ' + tr(e.h.nombre));
+        }
+        G.ui.hideCard(); await G.idioma.poner(idioma0 === 'en' ? 'en' : 'es');
+        const sinEn = ESP.filter(e => !fila[e.sp].ingles);
+        check('Los 34 tienen inglés (nombre, «Poder: …» y aviso de llegada)', sinEn.length === 0, sinEn.map(e => e.sp + ': ' + fila[e.sp].nota.join(' ')).join(' | '));
+      } else check('idioma.js cargado', false);
+
+      // ---------- (2) y (3): elegirla en Mis cotorras, guardar y recargar, y su poder en el duelo ----------
+      const C = B.estado(), corre = s => { for (let t = 0; t < s; t += 1 / 30) B.paso(1 / 30); };
+      const quieta = (dx, mareo) => { C.r.pos.x = S.pos.x + dx; C.r.pos.z = S.pos.z; C.r.pos.y = G.terreno.height(C.r.pos.x, C.r.pos.z);
+        C.r.pensar = 99; C.r.esquivaT = 99; C.r.poderT = 99; C.r.golpeT = 99; C.r.tiroT = 99; C.r.mov.t = 0; C.r.kb.t = 0; C.r.mareo = mareo || 0;
+        C.r.inv = 0; C.r.escudo = 0; S.facing = { x: 1, z: 0 }; };
+      const teclaG = () => document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'g', code: 'KeyG', bubbles: true, cancelable: true }));
+      const soltarG = () => document.body.dispatchEvent(new KeyboardEvent('keyup', { key: 'g', code: 'KeyG', bubbles: true, cancelable: true }));
+      const boton = () => { // mantener Impulso ≥ 450 ms (táctil): el reloj se adelanta sin esperar de verdad
+        if (!G.dones || !G.dones.sostener) return false;
+        G.dones.sostener(true); const t0 = performance.now();
+        Object.defineProperty(performance, 'now', { configurable: true, value: () => t0 + 600 });
+        try { G.dones.sostener(false); } finally { if (pn0) Object.defineProperty(performance, 'now', pn0); else delete performance.now; }
+        return true;
+      };
+      for (const e of ESP) {
+        const f = fila[e.sp], M = MIDE[e.id] || {}, nota = f.nota;
+        // Mis cotorras: abrir la tarjeta y pulsar su botón
+        const lista = D.abrirSeleccion(), btn = G.ui.$('card') && G.ui.$('card').querySelector('[data-v18sp="' + e.sp + '"]');
+        if (btn) btn.click(); else G.ui.hideCard();
+        const elegida = lista.includes(e.sp) && !!btn && V.seleccionada() === e.sp;
+        // (3) guardar y recargar
+        let guardada = null; try { guardada = JSON.parse(localStorage.getItem(V.clave()) || 'null'); } catch (x) { /* */ }
+        V.recargar();
+        f.guardado = elegida && !!guardada && guardada.sel === e.sp && rango(guardada.especies[e.sp]) >= rango('seleccionable') && V.estado(e.sp) === 'seleccionada' && V.seleccionada() === e.sp;
+        if (!f.guardado) nota.push('guardado: elegida ' + elegida + ', sel ' + (guardada && guardada.sel) + ', estado ' + V.estado(e.sp));
+        // (2) el duelo con la especie elegida (sin forzarla)
+        B.iniciar({ sinCuenta: true }); toasts.length = 0;
+        const h = H.ver(C.j, H.get(e.id)), m = { balas0: 0 };
+        const dist = M.d || 3, quietaR = !!(M.golpe || M.aleja); // para medir el golpe, la rival no se mueve (mareada); el resto, normal
+        quieta(dist, quietaR ? 5 : 0); C.j.cd = {}; C.j.energia = 100; C.j.mareo = 0;
+        if (M.copia) C.r.ultPoder = C.r.poder; // Imitación: la rival ya usó su poder
+        let invMax = 0;
+        const esSuyo = C.j.especie === e.sp && C.j.poder === e.id;
+        m.balas0 = C.balas.length; const ev0 = poderEv.length, g0 = golpes.length, d0 = Math.hypot(C.r.pos.x - S.pos.x, C.r.pos.z - S.pos.z);
+        teclaG(); soltarG();
+        const gasto = 100 - C.j.energia, cd1 = C.j.cd[e.id] || 0;
+        const ya = M.ya ? !!M.ya(C, m) : true;
+        const evs = poderEv.slice(ev0).filter(x => x.de === 'jugador');
+        invMax = Math.max(invMax, C.j.inv || 0);
+        // la espera: otra G al momento no hace nada
+        const eAntes = C.j.energia; teclaG(); soltarG();
+        const respeta = poderEv.length === ev0 + evs.length && Math.abs(C.j.energia - eAntes) < 1e-6 && H.listo(C.j, e.id).motivo === 'espera';
+        let dMax = d0;
+        for (let t = 0; t < 1.5; t += 1 / 30) { B.paso(1 / 30); invMax = Math.max(invMax, C.j.inv || 0); dMax = Math.max(dMax, Math.hypot(C.r.pos.x - S.pos.x, C.r.pos.z - S.pos.z)); }
+        const nGolpes = golpes.length - g0;
+        let efecto = ya && evs.length >= 1;
+        if (M.golpe) efecto = efecto && nGolpes >= 1;
+        if (M.aleja) efecto = efecto && dMax > d0 + M.aleja;
+        if (M.copia) efecto = efecto && evs.some(x => x.copia === C.r.poder);
+        // aún en espera justo antes de que se acabe; después vuelve con el botón
+        for (let t = 1.5; t < h.cooldown - 0.25; t += 1 / 30) { B.paso(1 / 30); invMax = Math.max(invMax, C.j.inv || 0); }
+        C.j.mareo = 0; const casi = H.listo(C.j, e.id).motivo;
+        corre(0.5); C.j.mareo = 0; quieta(dist, quietaR ? 5 : 0); if (M.copia) C.r.ultPoder = C.r.poder;
+        const ev1 = poderEv.length, hayBoton = boton();
+        const conBoton = hayBoton && poderEv.length > ev1 && (C.j.cd[e.id] || 0) > h.cooldown - 0.05;
+        // sin invulnerabilidad: pasado el poder, la rival le quita una pluma con un golpe de ala
+        for (let t = 0; t < 7; t += 1 / 30) { B.paso(1 / 30); invMax = Math.max(invMax, C.j.inv || 0); }
+        quieta(1.5); C.r.cd = {}; C.r.energia = 100; C.r.distraida = 0; C.r.deslumbrada = 0; C.r.falla = 0; C.j.mareo = 0;
+        const pj0 = C.j.plumas, gr = B.usar(C.r, 'golpe_ala');
+        const vulnerable = gr.ok && C.j.plumas === pj0 - 1 && invMax <= 0.65;
+        f.activacion = esSuyo && Math.abs(gasto - h.coste) < 1e-6 && h.coste > 0 && Math.abs(cd1 - h.cooldown) < 1e-6 && respeta && casi === 'espera' && efecto && conBoton && vulnerable;
+        if (!f.activacion) nota.push('duelo: pausa ' + (G.pausa && G.pausa.motivos ? Array.from(G.pausa.motivos).join('+') : '-') + ', suyo ' + esSuyo + ', gasto ' + gasto.toFixed(1) + '/' + h.coste + ', espera ' + cd1.toFixed(2) + '/' + h.cooldown + ' respeta ' + respeta + ' casi ' + casi +
+          ', efecto ' + efecto + ' (ya ' + ya + ', ev ' + evs.length + ', golpes ' + nGolpes + ', aleja ' + (dMax - d0).toFixed(1) + '), botón ' + conBoton + ', vulnerable ' + vulnerable + ' (inv máx ' + invMax.toFixed(2) + ', ala ' + gr.ok + ' ' + pj0 + '→' + C.j.plumas + ')');
+        B.salir();
+        check(e.sp + ' · ' + e.h.nombre + ': elegida en Mis cotorras, guardada, y su poder con G y botón (energía, espera, efecto, sin invulnerabilidad)',
+          f.desbloqueo && f.activacion && f.guardado && f.ingles, nota.join(' · '));
+      }
+      // al final, una recarga más: la última elegida sigue elegida y nada se perdió
+      V.recargar();
+      check('Tras la última recarga sigue elegida la última y las 34 desbloqueadas', V.seleccionada() === ESP[ESP.length - 1].sp && ids.every(sel));
+    } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }
+    regPoderes = null;
+    try { if (B && B.estado().fase !== 'nada') B.salir(); } catch (e) { /* */ }
+    try { G.ui.hideCard(); } catch (e) { /* */ }
+    G.ui.toast = toast0; S.profile = prof0;
+    S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.facing = fac0;
+    if (S.inv) { for (const k of Object.keys(S.inv)) if (!(k in inv0)) delete S.inv[k]; Object.assign(S.inv, inv0); }
+    try { if (crudo == null) localStorage.removeItem(V.clave()); else localStorage.setItem(V.clave(), crudo); } catch (e) { /* */ }
+    V.recargar(); if (susp) susp(false);
+    const tabla = Object.keys(fila).map(sp => ({ especie: sp, poder: fila[sp].poder, desbloqueo: fila[sp].desbloqueo, activacion: fila[sp].activacion, guardado: fila[sp].guardado, ingles: fila[sp].ingles }));
+    return { passed: out.filter(r => r.ok).length, total: out.length, results: out, tabla };
+  }
+  G.v18nuevas = { HITOS, revisar, revisarAlbum, albumLlega, test, testPoderes };
   return G.v18nuevas;
 };

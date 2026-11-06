@@ -258,7 +258,7 @@ window.AVV18Descubrir = function (G) {
   const evo = (fn, x) => { try { return G.v18evo && G.v18evo[fn] ? (G.v18evo[fn](x) || '') : ''; } catch (e) { return ''; } };
   function abrirSeleccion() {
     const ids = seleccionables(), sel = V.seleccionada();
-    const botones = ids.map(id => `<button class="btn${id === sel ? '' : ' ghost'}" type="button" data-v18sp="${esc(id)}" aria-pressed="${id === sel}">${RETRATOS.has(id) ? `<img src="assets/retratos/v18/${esc(id)}.png" alt="" width="64" height="64" style="display:block;margin:0 auto 4px">` : ''}<span class="v18-nom">${esc(nombre(id))}</span><small style="display:block;opacity:.8">${esc(TXT.poder)}: ${esc(poder(id))}</small>${evo('htmlFicha', id)}</button>`).join('');
+    const botones = ids.map(id => `<button class="btn${id === sel ? '' : ' ghost'}" type="button" data-v18sp="${esc(id)}" aria-pressed="${id === sel}">${RETRATOS.has(id) ? `<img src="assets/retratos/v18/${esc(id)}.png" alt="" width="64" height="64" style="display:block;margin:0 auto 4px">` : ''}<span class="v18-nom">${esc(nombre(id))}</span><small style="display:block;opacity:.8"><span>${esc(TXT.poder)}</span>: <span>${esc(poder(id))}</span></small>${evo('htmlFicha', id)}</button>`).join('');
     G.ui.showCard(`<div class="v18-elegir"><style>.v18-elegir .v18-nom{display:block}.v18-elegir .v18-nom::first-letter{text-transform:uppercase}</style><h2>${esc(TXT.titulo)}</h2><p>${esc(TXT.nota)}</p><div class="row">${botones}</div>${evo('htmlExtra')}<div class="row"><button class="btn" id="v18-elegir-ok" type="button">${esc(TXT.listo)}</button></div></div>`);
     const card = G.ui.$('card'); evo('enlazar', card);
     card.querySelectorAll('[data-v18sp]').forEach(b => { b.onclick = () => elegir(b.getAttribute('data-v18sp')); });

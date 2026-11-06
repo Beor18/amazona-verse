@@ -235,7 +235,7 @@ AVE.module('idioma', function (G) {
     await toma('pausa', popAbrir, popCerrar);
     await toma('menu de modos', () => G.menuModos && G.menuModos.mostrar(), () => { const d = $('modos'); if (d && d.open) d.close(); });
     await toma('mis records', () => { popAbrir(); const b = $('b-records'); if (b) b.click(); }, () => { const r = $('records'); const c = r && r.querySelector('[data-cerrar],.rec-cerrar,button'); if (r && !r.hidden && c) c.click(); popCerrar(); });
-    await toma('retos', () => { const b = $('b-retos'); if (b) b.click(); }, () => { popCerrar(); });
+    await toma('retos', () => { const b = $('b-retos'); if (b) b.click(); }, () => { const r = G.retosApi; if (r && (r.activo || r.fase !== 'nada')) r.salir(); popCerrar(); }); // salir de verdad: si no, queda la pausa «retos» puesta
     await toma('criadero', () => G.criadero && G.criadero.abrir(), () => G.criadero && G.criadero.cerrar());
     await toma('comic', () => { const b = $('b-comic-menu'); if (b) b.click(); }, () => { const c = $('c-close'); if (c) c.click(); });
     await toma('creador', () => G.creador && G.creador.open(false), () => G.creador && G.creador.close());
