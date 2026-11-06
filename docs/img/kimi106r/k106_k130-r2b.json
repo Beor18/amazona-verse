@@ -1,0 +1,62 @@
+{
+ "etiqueta": "k130-r2b",
+ "bandera": "v18=1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "pruebas": {
+  "puerto": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 33.1,
+     "peorMs": 64,
+     "n": 93,
+     "callsMed": 54,
+     "trisMed": 229218,
+     "heap": 124
+    },
+    "duracionMs": 15230,
+    "test": {
+     "passed": 37,
+     "total": 42,
+     "fallos": [
+      "3 · Carga diferida: lejos del puerto (> 150 m) no hay personajes ni se pidió su modelo :: dist 257 m · pedidos 1",
+      "3b · Con el puente reparado: aviso «retumba una máquina» y bandera verde del minimapa en la plaza :: ",
+      "8 · Paso 1: al llegar, el Constructor ignora el aviso de la Ingeniera (bocadillos) :: ¡Hola, Vittata! Qué bueno que llegaste.",
+      "8a · Si otra charla corta la de la Ingeniera, se puede volver a empezar (no se traba en «obra») :: false / false",
+      "8b · Pasos 2 y 3: a 14 m de la máquina la Ingeniera cuenta qué pasó (caja) y con E se pasa → descubierto :: descubierto"
+     ]
+    },
+    "contexto": {
+     "calls": 63,
+     "tris": 244246,
+     "geo": 230,
+     "tex": 134,
+     "prog": 70,
+     "heap": 159
+    }
+   }
+  }
+ }
+}
