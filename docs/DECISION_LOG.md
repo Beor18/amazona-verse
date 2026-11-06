@@ -394,3 +394,6 @@ Aprobada para diseño y prototipo inicial, complementaria a V18.1 (no la detiene
 
 ## 6-nov-2026 · Recursos 3D de Kelvin disponibles (sin uso decidido)
 Dos `.blend` propios de Kelvin en su Drive: «Piloto Cotorra.blend» (`1twWbEV_LHTWmIj5yKlI6-SPHYmsbJ-8y`) y «Piloto CiberPunk Dog Shiba.blend» (`1aiS5Vjo1NgW6Z9eve7dtgVkTqZS_8uCO`, un shiba inu). Más de la misma serie «Piloto CiberPunk», también suyos: «Girl» (`1jQeLTwARBAuzZuh4jKNKNZ1K4mfJGPyi`), «Human» (`1StKBfvVQDgxFVHw7oeuxUdxoAxDbgl8E`) y «Monkey» (`1wDAco_6HVKqmO3YDTFQWyLUuLYaTJb-r`). Y «Cat Superior Moon.blend» (gato ninja con bandana y katana, Blender 2.80; Kelvin lo subió al chat de la otra cuenta, no está en Drive ni en el repo; trae una imagen de referencia externa de 500×500). Kelvin: el shiba queda disponible «por si necesitamos antagonistas y otros personajes». Meterlo en la historia es decisión de canon de Kelvin; hasta entonces solo se usan sus piezas (BM157). La carpeta de cosplays (Wonder, Marty, Slash, Mario) no se usa: son personajes o personas con derechos.
+
+## 6-nov-2026 · Cotorras vivas con el estilo de los personajes (Kelvin)
+«Todo como los personajes actuales»: patas amarillas, puntas azules en las alas y demás rasgos igual que el personaje del jugador (KIMI-122).
