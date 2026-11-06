@@ -429,6 +429,153 @@ window.AVV18Habilidades = function (G) {
       return { ok: true, acierto: null, dir };
     } });
 
+  // ---------- Tres más (Kelvin 6-nov, KIMI-158, V18_MATRIZ_36.md #21, #35, #32): se consiguen descubriéndolas en el Álbum ----------
+  // Remolino (autumnalis, ALAS): gira 1,2 s en el sitio: deshace TODAS las semillas rivales que tenga cerca (desviar en
+  // círculo completo) y empuja a la rival si está pegada (≤3 m), sin quitar plumas. Ventaja: defensa activa que corta los
+  // tiros. Debilidad: quieta mientras gira (no se mueve; combate.js lo aplica) y sin daño. Espera 9 s (matriz).
+  registrar({ id: 'remolino', nombre: 'Remolino', especies: ['autumnalis'], tecnica: 'alas', coste: 30, cooldown: 9,
+    fx: 'leaves', dura: 1.2, alcance: 5.5, toca: 3, empuje: 12, mareo: 0.5,
+    efecto(ctx) {
+      const { yo, otro } = ctx;
+      yo.remolino = this.dura; yo.alasT = this.dura;
+      ctx.desviar({ x: yo.pos.x, y: yo.pos.y + 1, z: yo.pos.z }, { x: 1, z: 0 }, this.alcance, -2); // cono −2: a su alrededor, en cualquier dirección
+      if (dist(yo, otro) <= this.toca) { const d = dirA(yo, otro); ctx.golpear(otro, { plumas: 0, empuje: this.empuje, mareo: this.mareo, dir: { x: d.x, z: d.z }, forzar: true }); }
+      ctx.fx('leaves', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('aleteo');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, dura: this.dura });
+      return { ok: true };
+    } });
+  // Plumas de aliso (tucumana, PLUMAS): lanza una pluma (13 m/s); si acierta, se pega a la rival y le roba energía
+  // (7/s durante 3 s). Ventaja: agota a la rival (menos poderes). Debilidad: lenta y quita pocas plumas (ninguna: solo
+  // empujoncito y mareo leve). La regla del robo la aplica combate.js (pasoNuevos: descuenta `drena`). Espera 10 s (matriz).
+  registrar({ id: 'plumas_aliso', nombre: 'Plumas de aliso', especies: ['tucumana'], tecnica: 'plumas', coste: 30, cooldown: 10,
+    fx: 'feathers', vel: 13, alcance: 15, dura: 3, quita: 7,
+    efecto(ctx) {
+      const { yo, otro } = ctx, d = dirA(yo, otro);
+      let ax = d.x, az = d.z;
+      if (yo.mira && !yo.ia) { const f = yo.mira(); if (f && f.x * d.x + f.z * d.z < 0.35) { ax = f.x; az = f.z; } } // puntería amable, como la semilla
+      ctx.lanzar({ de: yo, x: yo.pos.x + ax * 0.8, y: yo.pos.y + 0.9, z: yo.pos.z + az * 0.8, vx: ax * this.vel, vy: (otro.pos.y - yo.pos.y) / Math.max(0.3, d.d / this.vel), vz: az * this.vel,
+        vida: this.alcance / this.vel, radio: 1.2, golpe: { plumas: 0, empuje: 2, mareo: 0.3 }, drena: this.dura });
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 1.1, yo.pos.z); ctx.sonar('aleteo');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: ax, y: 0, z: az } });
+      return { ok: true };
+    } });
+  // Semilla de piña (vinacea, PICO): semilla grande y lenta (10 m/s, en arco) que, al caer sin haber acertado, se abre en
+  // tres pequeñas en abanico. Ventaja: cubre zona y llega por arriba. Debilidad: lenta de lanzar y la grande es fácil de
+  // esquivar. La apertura la hace combate.js al acabar la bala (flag `pina`). Espera 10 s (matriz).
+  registrar({ id: 'semilla_pina', nombre: 'Semilla de piña', especies: ['vinacea'], tecnica: 'pico', coste: 30, cooldown: 10,
+    fx: 'leaves', vel: 10, vida: 1.15, gorda: 1.7, abre: 0.5, hijas: 3,
+    efecto(ctx) {
+      const { yo, otro } = ctx, d = dirA(yo, otro);
+      if (yo.mira && !yo.ia) { const f = yo.mira(); if (f && f.x * d.x + f.z * d.z < 0.35) { const n = Math.hypot(f.x, f.z) || 1; d.x = f.x / n; d.z = f.z / n; } } // puntería amable, como la Semilla de río
+      ctx.lanzar({ de: yo, x: yo.pos.x + d.x * 0.8, y: yo.pos.y + 0.9, z: yo.pos.z + d.z * 0.8, vx: d.x * this.vel, vy: 0, vz: d.z * this.vel,
+        vida: this.vida, radio: 1.6, gorda: this.gorda, arco: { vy: 2.5, g: 11 }, pina: this.hijas, golpe: { plumas: 1, empuje: 5, mareo: 0.6 } });
+      ctx.fx('leaves', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: this.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: d.x, y: 0, z: d.z } });
+      return { ok: true };
+    } });
+  // ---------- Cuatro más (Kelvin 6-nov, KIMI-159, V18_MATRIZ_36.md #8, #22, #23, #34): se consiguen en el Álbum ----------
+  // Columna de nube (imperialis, ALAS): sube en vertical un momento y cae en picada encima de donde ESTÁ la rival: si
+  // cae encima, marea más que ningún otro golpe (1,4 s) con empuje leve y sin plumas. Como tarda en subir, la rival
+  // puede apartarse y esquivarla. Ventaja: el mayor mareo del juego. Debilidad: lenta en subir y nada de daño.
+  // Espera 11 s (matriz).
+  registrar({ id: 'columna_nube', nombre: 'Columna de nube', especies: ['imperialis'], tecnica: 'alas', coste: 30, cooldown: 11,
+    fx: 'feathers', sube: 0.7, alto: 3.2, toca: 1.9, empuje: 5, mareo: 1.4,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this;
+      yo.lift = { dura: h.sube * 2, t: 0, alto: h.alto }; // sube y cae: la malla sigue la curva del lift
+      yo.alasT = h.sube * 2;
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 1.2, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + h.alto, z: yo.pos.z } });
+      ctx.despues(h.sube, () => { // la picada cae sobre la posición actual de la rival: si se movió, falla
+        const d = dirA(yo, otro);
+        yo.pos.x = otro.pos.x - d.x * 0.7; yo.pos.z = otro.pos.z - d.z * 0.7; // aterriza junto a ella
+        ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z);
+        if (d.d <= h.toca) ctx.golpear(otro, { plumas: 0, empuje: h.empuje, mareo: h.mareo, dir: { x: d.x, z: d.z }, forzar: true });
+      });
+      return { ok: true, acierto: null };
+    } });
+  // Plumas de manglar (lilacina, PLUMAS): siembra 3 plumas en el suelo en línea hacia la rival: quien las pisa queda
+  // más lento 2,8 s (cada pluma se gasta en el primer pie que pisa). Ventaja: corta los acercamientos. Debilidad: hay
+  // que prepararlas y no hace daño. Espera 10 s (matriz). Las trampas las procesa quien arma el ctx (ctx.trampa).
+  registrar({ id: 'plumas_manglar', nombre: 'Plumas de manglar', especies: ['lilacina'], tecnica: 'plumas', coste: 30, cooldown: 10,
+    fx: 'feathers', dura: 14, paso: 2.0, n: 3, lenta: 2.8,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, d = dirA(yo, otro);
+      for (let k = 1; k <= h.n; k++) {
+        const x = yo.pos.x + d.x * h.paso * k, z = yo.pos.z + d.z * h.paso * k;
+        if (ctx.trampa) ctx.trampa(x, z, h.dura, yo);
+        ctx.fx('feathers', x, yo.pos.y + 0.4, z);
+      }
+      ctx.sonar('unlock');
+      ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z } });
+      return { ok: true };
+    } });
+  // Vuelo de niebla (mercenarius, ALAS): vuelo rasante muy rápido que ATRAVIESA a la rival: al pasar junto a ella le
+  // quita 1 pluma con empuje leve. Si falla el roce, queda detrás y cansada (mareo breve a sí misma). Ventaja: entra
+  // y sale y siempre quita 1 pluma al pasar. Debilidad: la línea es recta y fallar cuesta. Espera 10 s (matriz).
+  registrar({ id: 'vuelo_niebla', nombre: 'Vuelo de niebla', especies: ['mercenarius'], tecnica: 'alas', coste: 30, cooldown: 10,
+    fx: 'feathers', vel: 26, dura: 0.65, toca: 1.5, empuje: 6, mareo: 0.5, cansancio: 0.7,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, d = mira(yo, otro);
+      yo.kb = yo.kb || { x: 0, z: 0, t: 0 }; yo.kb.x = d.x * h.vel; yo.kb.z = d.z * h.vel; yo.kb.t = h.dura;
+      yo.alasT = h.dura;
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z }, direccion: { x: d.x, y: 0, z: d.z } });
+      let rozo = false;
+      for (let k = 1; k <= 4; k++) ctx.despues(0.13 * k, () => { // el roce se comprueba en cada punto del vuelo
+        if (rozo || dist(yo, otro) > h.toca) return;
+        rozo = true;
+        ctx.golpear(otro, { plumas: 1, empuje: h.empuje, mareo: h.mareo, dir: dirA(yo, otro) });
+      });
+      ctx.despues(h.dura + 0.05, () => { if (!rozo) yo.mareo = Math.max(yo.mareo, h.cansancio); }); // falla: detrás y cansada
+      return { ok: true, acierto: null };
+    } });
+  // Vuelta de pino (pretrei, ALAS): vuelta en el aire hacia atrás (~3,5 m): esquiva por distancia (sin
+  // invulnerabilidad) y queda de frente mirando a la rival. Ventaja: corta cualquier ataque que llegue por delante y
+  // deja la posición para contraatacar. Debilidad: no hace daño y cuesta poco menos que nada de espacio. Espera 7 s.
+  registrar({ id: 'vuelta_pino', nombre: 'Vuelta de pino', especies: ['pretrei'], tecnica: 'alas', coste: 30, cooldown: 7,
+    fx: 'feathers', vel: 14, t: 0.28, alto: 1.4,
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, d = dirA(yo, otro);
+      yo.kb = yo.kb || { x: 0, z: 0, t: 0 }; yo.kb.x = -d.x * h.vel; yo.kb.z = -d.z * h.vel; yo.kb.t = h.t; // la vuelta, hacia atrás
+      yo.lift = { dura: h.t * 2, t: 0, alto: h.alto };
+      yo.alasT = h.t * 2;
+      if (ctx.mirar) ctx.mirar(); // queda mirando a la rival, lista para el contraataque
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 1.1, yo.pos.z); ctx.sonar('dash');
+      ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 1.0, z: yo.pos.z } });
+      return { ok: true, acierto: null };
+    } });
+  // Imitación (oratrix, PICO): repite el último poder que usó la rival, a media fuerza (plumas/empuje/mareo a la mitad,
+  // vuelos ×0,7 y algo más cortos, escudo a mitad de tiempo; no rompe escudos). Si la rival aún no ha usado ningún poder
+  // (o el último fue otra Imitación), no gasta energía ni espera. Ventaja: versátil, se adapta a la rival. Debilidad:
+  // depende por completo de lo que haya usado ella. Espera 12 s (matriz). El registro del último poder lo lleva combate.js
+  // (`otro.ultPoder`, se limpia al iniciar el duelo); duelo2.js también lo anota.
+  registrar({ id: 'imitacion', nombre: 'Imitación', especies: ['oratrix'], tecnica: 'pico', coste: 30, cooldown: 12,
+    fx: 'feathers',
+    efecto(ctx) {
+      const { yo, otro } = ctx, h = this, copia = otro && otro.ultPoder;
+      const nada = () => { yo.energia = Math.min(yo.energiaMax, yo.energia + h.coste); yo.cd[h.id] = 0; return { ok: false, motivo: 'nada que imitar' }; };
+      if (!copia || copia === h.id) return nada();
+      const orig = get(copia); if (!orig || orig.basico) return nada(); // los básicos no se imitan
+      const escalaG = g => { if (!g) return g; const s = Object.assign({}, g);
+        if (s.plumas) s.plumas = Math.floor(s.plumas * 0.5); // una pluma copiada no llega a quitarse
+        if (s.empuje) s.empuje *= 0.5;
+        if (s.mareo) s.mareo *= 0.5;
+        delete s.rompeEscudo; return s; };
+      const c2 = Object.assign({}, ctx, {
+        golpear: (blanco, g) => ctx.golpear(blanco, escalaG(g)),
+        lanzar: b => ctx.lanzar(Object.assign({}, b, { vx: (b.vx || 0) * 0.7, vy: (b.vy || 0) * 0.7, vz: (b.vz || 0) * 0.7,
+          vida: b.vida ? b.vida * 0.8 : b.vida, golpe: escalaG(b.golpe), drena: b.drena ? b.drena * 0.5 : b.drena })),
+        escudo: (f, s) => ctx.escudo(f, s ? s * 0.5 : s),
+        poder: ev => ctx.poder(Object.assign({}, ev, { id: h.id, copia: orig.id }))
+      });
+      yo.cara = 'fight'; yo.picoT = 0.5; // abre el pico: está repitiendo el canto
+      ctx.fx('feathers', yo.pos.x, yo.pos.y + 1, yo.pos.z); ctx.sonar('aleteo');
+      const r = orig.efecto.call(orig, c2) || { ok: true };
+      if (yo.escudo > 0) yo.escudo *= 0.5; // el estado de escudo lo pone el propio efecto copiado: se media aquí
+      return { ok: true, copia: orig.id, acierto: r.acierto };
+    } });
+
   // ---------- Luchadores ----------
   function luchador(o) {
     const sp = o.especie || 'vittata';
@@ -491,6 +638,7 @@ window.AVV18Habilidades = function (G) {
     f.picoT = Math.max(0, (f.picoT || 0) - dt); f.marcada = Math.max(0, (f.marcada || 0) - dt); f.alasT = Math.max(0, (f.alasT || 0) - dt);
     f.deslumbrada = Math.max(0, (f.deslumbrada || 0) - dt); f.falla = Math.max(0, (f.falla || 0) - dt); f.lenta = Math.max(0, (f.lenta || 0) - dt);
     f.grande = Math.max(0, (f.grande || 0) - dt); if (!(f.lenta > 0)) f.lentaK = 0; // Ojo de manglar: el frenado y el tamaño duran lo mismo
+    f.pesada = Math.max(0, (f.pesada || 0) - dt); // Plumas de manglar: pisar una pluma va más lento
     if (!f.picoT && f.cara === 'fight') f.cara = null;
   }
   G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, recibir, paso, dist, dirA, mira, ver };
