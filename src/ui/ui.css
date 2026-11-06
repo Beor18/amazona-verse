@@ -439,6 +439,9 @@ kbd {
 .ico.fauna::before { background: #fff; -webkit-mask-image: var(--i-paw); mask-image: var(--i-paw); }
 .ico.cultura { border: 0; border-radius: 50%; background: var(--c-primary); transform: none; }
 .ico.cultura::before { background: var(--c-primary-ink); -webkit-mask-image: var(--i-sun); mask-image: var(--i-sun); }
+/* El emblema de los 36 (cap. 6, Kelvin 6-nov: propuesta B, semilla con alas): icono del Cuaderno del pacto y de la medalla */
+.ico.pacto { border: 0; background: #fff8e6 url("../../assets/emblema_pacto.svg") center / 40px 40px no-repeat; box-shadow: inset 0 0 0 2px rgba(23, 51, 31, 0.25); }
+.ico.pacto::before { content: none; }
 #card:has(.diary) .lbl { display: flex; align-items: center; gap: var(--sp-2); margin: 0 0 var(--sp-3); font: 700 var(--fs-lg)/1.2 var(--font-display); text-transform: none; letter-spacing: 0; color: var(--c-ink); }
 #card:has(.diary) .lbl::before { content: ""; width: 24px; height: 24px; background: var(--c-primary); -webkit-mask: var(--i-shirt) center / contain no-repeat; mask: var(--i-shirt) center / contain no-repeat; }
 .ropa { grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: var(--sp-2); }

@@ -13,7 +13,8 @@
                 src/game/temporada.js: quien navega, eps. 3–4, y el guardián del bosquecillo, ep. 4), más los 6 de la historia (mínimo 6),
                 y los 14 asientos que esperan (36 − 22) se ven como luces lejanas sobre el mar. Sin arte nuevo: sprites que ya existen.
      Kelvin 4-nov (K23 A): el pacto sigue siendo el emblema completo, con la promesa grabada
-                («nos conocemos, nos ayudamos y nos seguimos buscando»). Solo texto y S.collected 'emblema'; el dibujo final es de Kelvin.
+                («nos conocemos, nos ayudamos y nos seguimos buscando»). S.collected 'emblema'. Kelvin 6-nov: el dibujo es la propuesta B (semilla con alas, assets/emblema_pacto.svg):
+                flota sobre la plaza al renovar el pacto y es el icono del Cuaderno.
      Kelvin 4-nov (K24 A): las dos voces hablan desde el transmisor y no tienen asiento propio: quedan entre los que esperan.
                 Kelvin 2-nov (definitivo): se llaman Mara (martinicana) y Vela (violacea); son dos voces distintas que se unen al
                 final, así que la insinuación de por qué hablan «desde ahora» (D4) la dicen las dos juntas («Voces»), sin explicar.
@@ -468,7 +469,13 @@
         const pts = puntosAsientos(), on = new Set([0, 1, 2, 3]);
         for (const k of SENTABLES) if (tiene('sentado_' + k)) for (let j = 0; j < ASIENTOS[k]; j++) on.add(MARCA[k] + j);
         pts.forEach((p, i) => { const l = on.has(i); const m = new THREE.Mesh(geoAsiento, new THREE.MeshLambertMaterial({ color: l ? COL_ON : COL_ESPERA, emissive: l ? COL_ON : COL_ESPERA, emissiveIntensity: l ? 0.8 : 0.04 })); m.position.set(p[0], H(p[0], p[1]) + 0.05, p[1]); asientos.add(m); });
+        emblema.visible = tiene('emblema');
       }
+      // El emblema de los 36 (Kelvin 6-nov: propuesta B, semilla con alas; assets/emblema_pacto.svg): flota sobre el centro de la
+      // plaza desde que se renueva el pacto. Un sprite con el SVG como textura, sin modelo nuevo.
+      const emblema = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.TextureLoader().load('assets/emblema_pacto.svg'), transparent: true }));
+      emblema.userData.src = 'assets/emblema_pacto.svg';
+      emblema.scale.set(2.4, 2.4, 1); emblema.position.set(PLAZA.x, H(PLAZA.x, PLAZA.z) + 3.4, PLAZA.z); emblema.visible = false; scene.add(emblema);
       const sentados = () => FIJOS + SENTABLES.reduce((n, k) => n + (tiene('sentado_' + k) ? ASIENTOS[k] : 0), 0);
 
       const encuadrar = (x, z) => { if (!G.camara) return; G.camara.yaw = Math.atan2(S.pos.x - x, S.pos.z - z) + 0.4; G.camara.manual(); };
@@ -745,7 +752,7 @@
       function guardian() {
         if (S.step < 5) { G.dialogo.say([Gu(S.step < 4 ? 'El pacto antiguo… lo recuerdo a pedazos. Con los que llegan, quizá se complete.' : 'Cuando estén todos sentados, hablamos.')]); return; }
         if (S.complete) { G.dialogo.say([Gu('Las islas olvidadas no oyen el relevo. Pero ya no vas sola, Guardiana.')]); return; }
-        encuadrar(PLAZA.x, PLAZA.z); poner('emblema'); poner('medalla'); G.ui.toast('El emblema de los 36, completo', 3000); G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); dibujarAsientos(); registrar(); G.misiones.check();
+        encuadrar(PLAZA.x, PLAZA.z); poner('emblema'); poner('medalla'); dibujarAsientos(); G.ui.toast('El emblema de los 36, completo', 3000); G.eventos.log('PactRenewed'); G.comic.capture('pacto'); G.audio.play('unlock'); registrar(); G.misiones.check();
         luzTx.material.emissive = new THREE.Color('#7fd3c8'); G.fx.burst(PLAZA.x, H(PLAZA.x, PLAZA.z) + 2, PLAZA.z, 'gold', 40);
         G.dialogo.say([
           Gu('El pacto antiguo decía… Lo recuerdo a pedazos. Mejor así: ahora lo recordamos entre todos.'),
@@ -831,7 +838,7 @@
         else m.position.set(Math.cos(a) * r, MAR + 2 + (i * 13 % 5), Math.sin(a) * r);
         lucesLejanas.add(m);
       }
-      G.ep6 = { mapaReal: REAL, PR, PUENTE, lucesLejanas, colocarNpcs, VISITANTES, PAREJAS, TAREAS, PERSONAS, FORMAS, simular, PL, perchaV, topPuente, llevando: () => llevando, ROCA_ALTO, techoRoca, sentados, asientos, tablero, probar, seccionMedalla };
+      G.ep6 = { mapaReal: REAL, PR, PUENTE, lucesLejanas, colocarNpcs, VISITANTES, PAREJAS, TAREAS, PERSONAS, FORMAS, simular, PL, perchaV, topPuente, llevando: () => llevando, ROCA_ALTO, techoRoca, sentados, asientos, emblema, tablero, probar, seccionMedalla };
     },
 
     pruebas: {
@@ -992,6 +999,7 @@
           useAt('guardian'); drain();
           check('M3 · El pacto renovado y el final de temporada: pava, cuaderno y pantalla de fin', G.eventos.had('PactRenewed') && G.eventos.had('Chapter6Completed') && S.complete && S.step === G.misiones.DONE && S.missions.circulo && S.unlocked.includes('pava') && !$('end').hidden);
           check('M3 · D33: el pacto es un objeto, el emblema de los 36 completo', S.collected.includes('emblema'));
+          check('El emblema B (semilla con alas) flota sobre la plaza', G.ep6.emblema.visible && G.ep6.emblema.userData.src === 'assets/emblema_pacto.svg', 'visible ' + G.ep6.emblema.visible);
           check('M3 · Kelvin 2-nov: el Guardián le da su medalla a Vittata al final y sale en el Cuaderno', S.collected.includes('medalla') && /La medalla del Guardián/.test(G.ep6.seccionMedalla.html()));
           check('El cómic sale de los eventos (con la viñeta del atasco, que sí pasó)', G.comic.comicPanels().length === 6, G.comic.comicPanels().length);
 
