@@ -1,0 +1,245 @@
+{
+ "tarea": "KIMI-121",
+ "juego": "demo",
+ "etiqueta": "r10",
+ "pantalla": "1920x1080 dpr1 GPU real (RX 5700 XT), escritorio, CPU x1",
+ "entrada": "CDP Input.dispatchKeyEvent (input real)",
+ "v18": true,
+ "mime": "video/mp4;codecs=avc1.42E01E",
+ "recStarted": "2026-11-06T06:18:01.850Z",
+ "descubierta": true,
+ "retoHecho": true,
+ "elegida": "arausiaca",
+ "trace": [
+  {
+   "t": 2.1,
+   "d": 9,
+   "pj": 5,
+   "pr": 5,
+   "e": 100,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 2.3,
+   "d": 4.9,
+   "pj": 5,
+   "pr": 5,
+   "e": 85,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 2.9,
+   "d": 10.9,
+   "pj": 5,
+   "pr": 5,
+   "e": 92,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 3.2,
+   "d": 9.8,
+   "pj": 5,
+   "pr": 5,
+   "e": 95,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 3.6,
+   "d": 5.9,
+   "pj": 5,
+   "pr": 5,
+   "e": 83,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 4.2,
+   "d": 11,
+   "pj": 5,
+   "pr": 4,
+   "e": 90,
+   "mj": 0,
+   "invR": 0.35,
+   "mr": 0.1
+  },
+  {
+   "t": 4.5,
+   "d": 10.6,
+   "pj": 5,
+   "pr": 4,
+   "e": 93,
+   "mj": 0,
+   "invR": 0.1,
+   "mr": 0
+  },
+  {
+   "t": 4.7,
+   "d": 6.3,
+   "pj": 5,
+   "pr": 4,
+   "e": 82,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 5.3,
+   "d": 11.9,
+   "pj": 5,
+   "pr": 3,
+   "e": 88,
+   "mj": 0,
+   "invR": 0.37,
+   "mr": 0.1
+  },
+  {
+   "t": 5.6,
+   "d": 11.4,
+   "pj": 5,
+   "pr": 3,
+   "e": 92,
+   "mj": 0,
+   "invR": 0.1,
+   "mr": 0
+  },
+  {
+   "t": 5.9,
+   "d": 6.5,
+   "pj": 5,
+   "pr": 3,
+   "e": 80,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 6.4,
+   "d": 10.2,
+   "pj": 5,
+   "pr": 3,
+   "e": 87,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 6.6,
+   "d": 9.9,
+   "pj": 5,
+   "pr": 3,
+   "e": 88,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 6.8,
+   "d": 5.4,
+   "pj": 5,
+   "pr": 3,
+   "e": 77,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 7.4,
+   "d": 9.8,
+   "pj": 5,
+   "pr": 2,
+   "e": 83,
+   "mj": 0,
+   "invR": 0.37,
+   "mr": 0.1
+  },
+  {
+   "t": 7.6,
+   "d": 9.6,
+   "pj": 5,
+   "pr": 2,
+   "e": 86,
+   "mj": 0,
+   "invR": 0.14,
+   "mr": 0
+  },
+  {
+   "t": 7.9,
+   "d": 5.2,
+   "pj": 5,
+   "pr": 2,
+   "e": 74,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 8.4,
+   "d": 10.3,
+   "pj": 5,
+   "pr": 1,
+   "e": 80,
+   "mj": 0,
+   "invR": 0.37,
+   "mr": 0.1
+  },
+  {
+   "t": 8.6,
+   "d": 10.1,
+   "pj": 5,
+   "pr": 1,
+   "e": 83,
+   "mj": 0,
+   "invR": 0.13,
+   "mr": 0
+  },
+  {
+   "t": 8.9,
+   "d": 5.8,
+   "pj": 5,
+   "pr": 1,
+   "e": 71,
+   "mj": 0,
+   "invR": 0,
+   "mr": 0
+  },
+  {
+   "t": 9.4,
+   "fin": "win",
+   "pj": 5,
+   "pr": 0
+  }
+ ],
+ "lucha": {
+  "s": 9,
+  "golpes": 0,
+  "semillas": 7,
+  "escudos": 0,
+  "plumasJ": 5,
+  "plumasR": 0,
+  "derrotas": 0
+ },
+ "dueloGanado": true,
+ "duelo": true,
+ "estadoFinal": {
+  "inv": {
+   "madera": 2,
+   "piedra": 1
+  },
+  "sel": "arausiaca"
+ },
+ "video": {
+  "mime": "video/mp4;codecs=avc1.42E01E",
+  "bytes": 5760931,
+  "destino": "kimi121_demo_r10.mp4"
+ },
+ "erroresConsola": []
+}

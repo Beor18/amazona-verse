@@ -13,12 +13,16 @@
        apuntar con flechas → cargar Espacio y soltar → Grito del Yunque con G en la primera bola →
        hoyo → medalla → salir con Esc.
    Salida: docs/img/kimi121/kimi121_<juego>_<etiqueta>.<mp4|webm> + .json + captura de referencia .jpg
-   Uso: node tools/build/kimi3_121.js [--juego golf|demo] [--etiqueta r1] [--salida <dir>]
+   Uso: node tools/build/kimi3_121.js [--juego golf|demo] [--etiqueta r1] [--salida <dir>] [--fase todo|duelo|puente]
    --juego demo (KIMI-121, segundo vídeo: ciclo ?v18=1): con la semilla fiel del arnés (perfil vittata
-   seleccionada, puente roto), se JUEGA EN CÁMARA con input real: recoger 2 maderas de la orilla + 1 piedra
-   de la cabecera (E), reparar el puente (E), cruzarlo a pie al otro lado (W + saltos al atasco) y la pelea
-   con la Sombra de Tormenta (apuntar la cámara a la nube y G, 3 aciertos). El beat del duelo de la
-   explanada queda para la siguiente vuelta (notado en la fila). Solo se lee estado para decidir la entrada.
+   seleccionada, puente roto), se JUEGA EN CÁMARA con input real. --fase todo (por defecto) = el ciclo entero
+   en un solo take: el beat del duelo de la explanada (descubrir a la cotorra de Dominica volando a su árbol,
+   su reto de copas siguiéndola volando, elegirla en la tarjeta con un click real, y el duelo contra la
+   Campeona con E=ala / F rápida=semilla / F larga=Escudo de plumas — el premio da las 2 maderas + 1 piedra)
+   y a continuación lo que ya grababa r6/r9: reparar el puente (E), cruzarlo a pie (W + saltos al atasco) y la
+   pelea con la Sombra de Tormenta (apuntar la cámara a la nube y G, 3 aciertos). --fase duelo = solo el beat
+   del duelo (vídeo corto); --fase puente = lo viejo (recoger materiales del mundo + puente + Sombra).
+   Solo se lee estado para decidir la entrada; nada de teletransportes.
 */
 'use strict';
 const http = require('http');
@@ -35,6 +39,7 @@ const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Applica
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
 const JUEGO = arg('--juego', 'golf');
 const ETIQUETA = arg('--etiqueta', 'r1');
+const FASE = arg('--fase', JUEGO === 'demo' ? 'todo' : 'golf'); // demo: todo | duelo | puente
 const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi121'));
 fs.mkdirSync(SALIDA, { recursive: true });
 const LOGF = path.join(SALIDA, `kimi121_${JUEGO}_${ETIQUETA}.log`);
@@ -141,9 +146,10 @@ const REC_JS = `(() => { try {
 const TECLAS = {
   w: { vk: 87, code: 'KeyW', key: 'w' }, a: { vk: 65, code: 'KeyA', key: 'a' }, s: { vk: 83, code: 'KeyS', key: 's' }, d: { vk: 68, code: 'KeyD', key: 'd' },
   q: { vk: 81, code: 'KeyQ', key: 'q' }, r: { vk: 82, code: 'KeyR', key: 'r' },
-  e: { vk: 69, code: 'KeyE', key: 'e' }, g: { vk: 71, code: 'KeyG', key: 'g' }, c: { vk: 67, code: 'KeyC', key: 'c' },
+  e: { vk: 69, code: 'KeyE', key: 'e' }, f: { vk: 70, code: 'KeyF', key: 'f' }, g: { vk: 71, code: 'KeyG', key: 'g' }, c: { vk: 67, code: 'KeyC', key: 'c' },
   v: { vk: 86, code: 'KeyV', key: 'v' }, x: { vk: 88, code: 'KeyX', key: 'x' }, enter: { vk: 13, code: 'Enter', key: 'Enter' },
   izq: { vk: 37, code: 'ArrowLeft', key: 'ArrowLeft' }, der: { vk: 39, code: 'ArrowRight', key: 'ArrowRight' },
+  shift: { vk: 16, code: 'ShiftLeft', key: 'Shift' },
   espacio: { vk: 32, code: 'Space', key: ' ' }, esc: { vk: 27, code: 'Escape', key: 'Escape' }
 };
 async function tecla(cdp, ses, nombre, abajo) {
@@ -324,26 +330,274 @@ async function lucharSombra(cdp, ses, res, log) {
   return false;
 }
 
+// Click real del ratón sobre un selector (para la tarjeta de selección de cotorra).
+async function clickEn(cdp, ses, selector) {
+  const r = await evaluar(cdp, ses, `(() => { const b = document.querySelector(${JSON.stringify(selector)}); if (!b) return ''; const rc = b.getBoundingClientRect(); return JSON.stringify({ x: rc.x + rc.width / 2, y: rc.y + rc.height / 2 }); })()`, 15);
+  if (!r) return false;
+  const p = JSON.parse(r);
+  await cdp.call('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p.x, y: p.y }, ses, 10000);
+  await cdp.call('Input.dispatchMouseEvent', { type: 'mousePressed', x: p.x, y: p.y, button: 'left', clickCount: 1 }, ses, 10000);
+  await dormir(0.07);
+  await cdp.call('Input.dispatchMouseEvent', { type: 'mouseReleased', x: p.x, y: p.y, button: 'left', clickCount: 1 }, ses, 10000);
+  return true;
+}
+
+// Estado del beat del duelo: descubrir (P/R/B), selección, sitio del duelo, rival y combate vivo.
+async function estadoCombate(cdp, ses) {
+  return JSON.parse(await evaluar(cdp, ses, `(() => { try { const G = AV.G, S = AV.state, D = G.v18descubrir, Cb = G.v18combate, V = G.v18, C = Cb ? Cb.estado() : null;
+    const it = (G.interaccion && G.interaccion.list) ? G.interaccion.list.find(i => i.id === 'v18_rival') : null;
+    return JSON.stringify({ x: S.pos.x, z: S.pos.z, y: S.pos.y, yaw: G.camara.yaw, volando: !!(G.fisica.MOVE && G.fisica.MOVE.flying),
+      arausiaca: V ? V.estado('arausiaca') : null, sel: V ? V.seleccionada() : null,
+      P: D && D.P ? D.P.map(p => ({ x: p.x, y: p.y, z: p.z })) : [],
+      reto: D && D.R ? { activo: D.R.activo, k: D.R.k, t: Math.round(D.R.t) } : null,
+      pajaro: D && D.B ? { k: D.B.k, volando: !!D.B.vuelo } : null,
+      sitio: Cb ? { x: Cb.sitio.x, z: Cb.sitio.z } : null,
+      cerca: (G.interaccion && G.interaccion.list) ? G.interaccion.list.filter(i => (!i.visible || i.visible()) && Math.hypot(S.pos.x - i.x, S.pos.z - i.z) < (i.r || 3)).map(i => ({ id: i.id, d: +Math.hypot(S.pos.x - i.x, S.pos.z - i.z).toFixed(2) })).sort((a, b) => a.d - b.d).slice(0, 4) : [],
+      rival: it ? { x: it.x, z: it.z, visible: !!(it.visible && it.visible()) } : null,
+      duelo: C ? { fase: C.fase, resultado: C.resultado, plumasJ: C.j ? C.j.plumas : null, plumasR: C.r ? C.r.plumas : null,
+        jr: C.j ? { e: Math.round(C.j.energia), esc: +(C.j.escudo || 0).toFixed(1) } : null,
+        r: C.r ? { x: C.r.pos.x, z: C.r.pos.z, ry: C.r.pos.y, inv: +(C.r.inv || 0).toFixed(2), mareo: +(C.r.mareo || 0).toFixed(1), fin: +(C.r.finMareo || 0).toFixed(1) } : null,
+        jmareo: C.j ? +(C.j.mareo || 0).toFixed(1) : null, jcdAla: C.j && C.j.cd ? +(C.j.cd.golpe_ala || 0).toFixed(2) : null } : null });
+  } catch (e) { return JSON.stringify({ error: String(e && e.message || e) }); } })()`, 15));
+}
+
+// Vuelo 3D con input real: como volarHasta pero controlando la altitud (Espacio sube / C baja) para
+// alcanzar las copas del reto de descubrir (el check del juego es dist3 < 6,5 m a la percha).
+async function volarHasta3D(cdp, ses, tx, ty, tz, tol3d, log) {
+  let ultD = 1e9, sinP = 0;
+  for (let i = 0; i < 280; i++) {
+    const st = await estadoCombate(cdp, ses);
+    if (st.error) break;
+    const d2 = Math.hypot(tx - st.x, tz - st.z), d3 = Math.hypot(tx - st.x, ty - st.y, tz - st.z);
+    if (d3 < tol3d) { await tecla(cdp, ses, 'w', false); await tecla(cdp, ses, 'espacio', false); await tecla(cdp, ses, 'c', false); return true; }
+    if (d3 > ultD - 0.15) sinP++; else sinP = 0;
+    ultD = d3;
+    if (sinP >= 6) { log(`vuelo3D: atasco a ${d3.toFixed(1)} m; subiendo un tramo`); await tecla(cdp, ses, 'espacio', true); await dormir(1.0); await tecla(cdp, ses, 'espacio', false); sinP = 0; continue; }
+    const dy = ty - st.y;
+    await tecla(cdp, ses, 'espacio', dy > 2.0 && d2 < 16);
+    await tecla(cdp, ses, 'c', dy < -2.5);
+    const deseada = Math.atan2(-(tx - st.x), -(tz - st.z));
+    const diff = envolver(deseada - st.yaw);
+    if (Math.abs(diff) > 0.12) {
+      await tecla(cdp, ses, 'w', false);
+      const t = diff > 0 ? 'q' : 'r';
+      await tecla(cdp, ses, t, true); await dormir(Math.min(0.4, Math.abs(diff) / 1.9)); await tecla(cdp, ses, t, false);
+    } else {
+      await tecla(cdp, ses, 'w', true); await dormir(0.22);
+    }
+    if (i % 30 === 29) log(`vuelo3D: d3=${d3.toFixed(1)} (2D ${d2.toFixed(1)}, dy ${dy.toFixed(1)})`);
+  }
+  await tecla(cdp, ses, 'w', false); await tecla(cdp, ses, 'espacio', false); await tecla(cdp, ses, 'c', false);
+  log('vuelo3D: sin llegar (tope de pasos)');
+  return false;
+}
+
+// Pelea real contra la Campeona (input real: E = golpe de ala, F rápida = semilla, F larga = Escudo de
+// plumas). La rival es vittata: ala gratis a <2,4 m (cd 0,55), Grito del Yunque a 2-7 m (interrumpe 1,1 s,
+// empuje 15) y semillas a 6-16 m (su cadencia 2,4 s; la nuestra 0,8 s y cuesta 15). Estrategia = kite en la
+// banda 6,5-16 m: escapar EN CUANTO baja de 6,5 (con Shift+S+D ~10,5 m/s se le gana a su carga ~8,5 m/s;
+// si llega a 2 m el ala gratis con su cadencia despluma), sembrar a la cadencia del juego con energía casi
+// siempre disponible, escudo solo si se pega sin escapar a tiempo y remate de ala si una semilla la marea
+// a tiro. Tras perder una pluma hay ~0,95 s de invulnerabilidad: nada de aporrear.
+async function lucharCampeona(cdp, ses, res, log) {
+  const t0 = Date.now(); let ultSemilla = 0, ultEscudo = 0, golpes = 0, semillas = 0, escudos = 0, derrotas = 0;
+  res.trace = [];
+  while (Date.now() - t0 < 240000) {
+    const st = await estadoCombate(cdp, ses);
+    if (st.error) throw new Error(st.error);
+    const C = st.duelo;
+    if (!C) { await dormir(0.5); continue; }
+    if (C.fase === 'fin') {
+      if (res.trace.length < 500) res.trace.push({ t: Math.round((Date.now() - t0) / 100) / 10, fin: C.resultado, pj: C.plumasJ, pr: C.plumasR });
+      if (C.resultado === 'win') { res.lucha = { s: Math.round((Date.now() - t0) / 1000), golpes, semillas, escudos, plumasJ: C.plumasJ, plumasR: C.plumasR, derrotas }; log(`¡Campeona vencida! ${golpes} alas / ${semillas} semillas / ${escudos} escudos · plumas ${C.plumasJ}-${C.plumasR} · ${res.lucha.s} s (${derrotas} derrotas previas)`); return true; }
+      derrotas++;
+      if (derrotas >= 4) { log(`derrota ${C.plumasJ}-${C.plumasR}: la ${derrotas}.ª — se deja la pelea (se reintenta en otra vuelta)`); return false; }
+      await dormir(1.5); // FIN_PAUSA de 1,2 s antes de que responda «Otra vez»
+      for (let i = 0; i < 4; i++) { // «Otra vez» (E) hasta que el duelo rearranque
+        await tecla(cdp, ses, 'e', true); await dormir(0.12); await tecla(cdp, ses, 'e', false);
+        await dormir(0.9);
+        const s1 = await estadoCombate(cdp, ses);
+        if (s1.duelo && s1.duelo.fase !== 'fin') break;
+      }
+      log(`derrota ${C.plumasJ}-${C.plumasR}: «Otra vez» (${derrotas}.ª)`); await dormir(1.2); continue;
+    }
+    if (C.fase !== 'lucha' || !C.r) { await dormir(0.4); continue; }
+    const dx = C.r.x - st.x, dz = C.r.z - st.z, dy = (C.r.ry != null ? C.r.ry : st.y) - st.y;
+    const d = Math.hypot(dx, dz), dE = Math.hypot(dx, dz, dy * 0.6); // distancia del juego (habilidades.js pesa y×0,6)
+    const deseada = Math.atan2(-dx, -dz), diff = envolver(deseada - st.yaw);
+    const ahora = Date.now(), e = C.jr ? C.jr.e : 0, esc = C.jr ? C.jr.esc : 0;
+    let act = '-';
+    if (res.trace.length < 500) { res.trace.push({ t: Math.round((Date.now() - t0) / 100) / 10, d: +d.toFixed(1), pj: C.plumasJ, pr: C.plumasR, e, mj: C.jmareo, invR: C.r.inv, mr: C.r.mareo }); if (res.trace.length % 10 === 0) log('traza ' + JSON.stringify(res.trace[res.trace.length - 1])); }
+    if (Math.abs(diff) > 0.14) { // encararla: la semilla solo auto-apunta si vamos más o menos de frente
+      await tecla(cdp, ses, 'w', false);
+      const t = diff > 0 ? 'q' : 'r';
+      await tecla(cdp, ses, t, true); await dormir(Math.min(0.3, Math.abs(diff) / 2.2)); await tecla(cdp, ses, t, false);
+      continue;
+    }
+    // Máquina de la pelea (una acción por tick, sin lecturas de verificación: la latencia mata; los
+    // aciertos se leen en la traza comparando plumas con el tick anterior). Pura guerrilla de semillas:
+    // orbitar S+Shift+D (10,5 en diagonal > sus 4,2 de acercamiento) sin bajar de 5 m nunca, sembrando a
+    // cadencia del juego con puntería amable (45 % entra; la suya, a posición fija, zafa más contra un
+    // móvil y dispara 2,4× más lento). El ala solo cuando una semilla la dejó atontada encima; el escudo
+    // solo para salir del rincón. Su ala nos empuja (empuje 7): esa separación ES la fuga.
+    const prAntes = res.trace.length > 1 ? res.trace[res.trace.length - 2].pr : C.plumasR;
+    if (C.plumasR != null && prAntes != null && C.plumasR < prAntes) log(`¡golpea! plumas rival ${C.plumasR} (pj ${C.plumasJ})`);
+    if (d < 3 && esc <= 0 && e >= 35) { // rincón/inmersión sin escudo: Escudo de plumas (para sus alas enteras)
+      ultEscudo = ahora; escudos++;
+      await tecla(cdp, ses, 'f', true); await dormir(0.55); await tecla(cdp, ses, 'f', false); continue;
+    }
+    if (C.r.mareo > 0 && dE < 2.3 && (C.jmareo || 0) <= 0) { // atontada por una semilla y encima: ala gratis
+      await tecla(cdp, ses, 'e', true); await dormir(0.09); await tecla(cdp, ses, 'e', false); golpes++; continue;
+    }
+    if (d < 16 && e >= 45 && ahora - ultSemilla > 850) { // semilla desde cualquier distancia de tiro (máx. daño, riesgo bajo)
+      ultSemilla = ahora; semillas++;
+      await tecla(cdp, ses, 'w', true); await dormir(0.11); await tecla(cdp, ses, 'w', false); // facing a ella (la órbita lo voltea)
+      await tecla(cdp, ses, 'f', true); await dormir(0.12); await tecla(cdp, ses, 'f', false);
+      continue;
+    }
+    // órbita de escape (también cuando no hay energía: seguir en movimiento es la defensa contra sus semillas)
+    await tecla(cdp, ses, 'shift', true);
+    await tecla(cdp, ses, 's', true); await tecla(cdp, ses, 'd', true); await dormir(0.5);
+    await tecla(cdp, ses, 'd', false); await tecla(cdp, ses, 's', false); await tecla(cdp, ses, 'shift', false);
+  }
+  return false;
+}
+
+// Beat del duelo de la explanada: descubrir a la cotorra de Dominica → su reto de copas (4 perchas volando,
+// 50 s) → elegirla en la tarjeta (click real) → retar a la Campeona y ganarle. El premio son 2 maderas + 1
+// piedra: lo que pide el puente. Todo con input real; solo se lee estado para decidir.
+async function beatDuelo(cdp, ses, res, log) {
+  // A. Volar al árbol donde canta (a 34-60 m de la villa) y descubrirla.
+  let st = await estadoCombate(cdp, ses);
+  if (st.error) throw new Error(st.error);
+  const P0 = st.P[0];
+  if (!P0) throw new Error('descubrir sin perchas (P vacío)');
+  log(`cotorra de Dominica: su rama está en (${P0.x.toFixed(1)},${P0.z.toFixed(1)}), copa a y≈${P0.y.toFixed(1)}`);
+  await despegar(cdp, ses, log);
+  await volarHasta(cdp, ses, P0.x, P0.z, 9, log);
+  await aterrizar(cdp, ses, log);
+  await caminarHasta(cdp, ses, P0.x, P0.z, 6);
+  for (let i = 0; i < 30; i++) { st = await estadoCombate(cdp, ses); if (st.arausiaca && st.arausiaca !== 'no_descubierta') break; await dormir(0.5); }
+  if (st.arausiaca === 'no_descubierta') { await tecla(cdp, ses, 'e', true); await dormir(0.12); await tecla(cdp, ses, 'e', false); await dormir(1); st = await estadoCombate(cdp, ses); }
+  log('estado de arausiaca: ' + st.arausiaca);
+  if (st.arausiaca === 'no_descubierta') throw new Error('arausiaca no se descubrió');
+  res.descubierta = true;
+
+  // B. Reto de copas: E junto a ella y seguirla volando de percha en percha (tope 2 intentos).
+  for (let intento = 1; intento <= 2; intento++) {
+    st = await estadoCombate(cdp, ses);
+    if (!(st.reto && st.reto.activo)) {
+      await caminarHasta(cdp, ses, P0.x, P0.z, 3.6);
+      await tecla(cdp, ses, 'e', true); await dormir(0.12); await tecla(cdp, ses, 'e', false);
+      for (let i = 0; i < 16; i++) { await dormir(0.5); st = await estadoCombate(cdp, ses); if (st.reto && st.reto.activo) break; }
+      if (!(st.reto && st.reto.activo)) { log(`intento ${intento}: el reto no arrancó con E`); continue; }
+    }
+    log(`reto de copas: ${st.reto.t} s para ${st.P.length - 1} perchas`);
+    await despegar(cdp, ses, log);
+    for (let k = 1; k < st.P.length; k++) {
+      for (let i = 0; i < 14; i++) { const s2 = await estadoCombate(cdp, ses); if (!s2.reto || !s2.reto.activo || s2.reto.k > k) break; await dormir(0.3); }
+      const s2 = await estadoCombate(cdp, ses);
+      if (!s2.reto || !s2.reto.activo) break;
+      if (s2.reto.k > k) continue;
+      const p = s2.P[k];
+      log(`reto: percha ${k}/${s2.P.length - 1} en (${p.x.toFixed(0)},${p.z.toFixed(0)}) y≈${p.y.toFixed(1)}`);
+      await volarHasta3D(cdp, ses, p.x, p.y, p.z, 4.4, log);
+    }
+    for (let i = 0; i < 30; i++) { await dormir(0.5); st = await estadoCombate(cdp, ses); if (st.arausiaca === 'seleccionable' || st.arausiaca === 'seleccionada') break; }
+    if (st.arausiaca === 'seleccionable' || st.arausiaca === 'seleccionada') break;
+    log('reto no completado; reintento'); await aterrizar(cdp, ses, log);
+  }
+  if (!(st.arausiaca === 'seleccionable' || st.arausiaca === 'seleccionada')) throw new Error('el reto de copas no se completó');
+  res.retoHecho = true;
+  log('¡arausiaca desbloqueada! volviendo a su rama a elegirla...');
+
+  // C. Elegirla: esperar a que vuelva a su rama, E para abrir la tarjeta y click real en su botón.
+  for (let i = 0; i < 40; i++) { st = await estadoCombate(cdp, ses); if (st.pajaro && !st.pajaro.volando && st.pajaro.k === 0) break; await dormir(0.5); }
+  await volarHasta(cdp, ses, P0.x, P0.z, 8, log);
+  await aterrizar(cdp, ses, log);
+  await caminarHasta(cdp, ses, P0.x, P0.z, 4);
+  let abierta = false;
+  for (let intento = 0; intento < 3 && !abierta; intento++) {
+    await tecla(cdp, ses, 'e', true); await dormir(0.12); await tecla(cdp, ses, 'e', false);
+    await dormir(1.2);
+    abierta = await evaluar(cdp, ses, `!!(window.AV && AV.G.ui.cardOpen && document.querySelector('[data-v18sp="arausiaca"]'))`, 10, false);
+  }
+  if (!abierta) throw new Error('la tarjeta de selección no abrió');
+  if (!await clickEn(cdp, ses, '[data-v18sp="arausiaca"]')) throw new Error('no se pudo clickar a arausiaca');
+  await dormir(1.0);
+  st = await estadoCombate(cdp, ses);
+  res.elegida = st.sel;
+  log('cotorra elegida para el duelo: ' + st.sel + ' (estado ' + st.arausiaca + ')');
+  if (st.sel !== 'arausiaca') throw new Error('la selección no quedó en arausiaca: ' + st.sel);
+
+  // D. Explanada: acercarse a la Campeona y retarla (E). El duelo nos coloca en la arena.
+  const sitio = st.sitio;
+  if (!sitio) throw new Error('sin sitio del duelo');
+  log(`explanada del duelo en (${sitio.x.toFixed(0)},${sitio.z.toFixed(0)}); yendo...`);
+  await despegar(cdp, ses, log);
+  await volarHasta(cdp, ses, sitio.x - 4, sitio.z, 5, log);
+  await aterrizar(cdp, ses, log);
+  let rival = null;
+  for (let i = 0; i < 30; i++) { st = await estadoCombate(cdp, ses); if (st.rival && st.rival.visible) { rival = st.rival; break; } await dormir(0.4); }
+  if (!rival) throw new Error('la Campeona no está visible en la explanada');
+  await caminarHasta(cdp, ses, rival.x, rival.z, 1.3); // pegado a ella: que sea el interactuable más cercano
+  for (let i = 0; i < 6; i++) {
+    st = await estadoCombate(cdp, ses);
+    if (st.duelo && (st.duelo.fase === 'cuenta' || st.duelo.fase === 'lucha')) break;
+    if (i > 0) log('interacciones cercanas: ' + JSON.stringify(st.cerca));
+    await tecla(cdp, ses, 'e', true); await dormir(0.12); await tecla(cdp, ses, 'e', false);
+    await dormir(1.0);
+    st = await estadoCombate(cdp, ses);
+    if (st.duelo && (st.duelo.fase === 'cuenta' || st.duelo.fase === 'lucha')) break;
+    if (i % 2 === 1) await caminarHasta(cdp, ses, rival.x, rival.z, 1.2);
+  }
+  if (!st.duelo || (st.duelo.fase !== 'cuenta' && st.duelo.fase !== 'lucha')) throw new Error('el duelo no arrancó');
+  log('¡duelo con la Campeona! (jugamos con arausiaca: Escudo de plumas; ella grita)');
+  res.dueloGanado = await lucharCampeona(cdp, ses, res, log);
+  return res.dueloGanado;
+}
+
 async function demoFlow(cdp, ses, res, ext, log) {
-  log('esperando G.v18Reparar / G.v18amenaza...');
+  log('esperando módulos v18 (reparar/amenaza' + (FASE === 'puente' ? '' : '/descubrir/combate') + ')...');
   let ok = false;
-  for (let i = 0; i < 90; i++) { try { ok = await evaluar(cdp, ses, `!!(window.AV && AV.G && AV.G.v18Reparar && AV.G.v18Reparar.P.eje && AV.G.v18amenaza)`, 10, false); } catch (e) { } if (ok) break; await dormir(1); }
-  if (!ok) throw new Error('módulos v18 del puente/Sombra no cargaron');
+  const modsListos = FASE === 'puente'
+    ? `!!(window.AV && AV.G && AV.G.v18Reparar && AV.G.v18Reparar.P.eje && AV.G.v18amenaza)`
+    : `!!(window.AV && AV.G && AV.G.v18Reparar && AV.G.v18Reparar.P.eje && AV.G.v18amenaza && AV.G.v18descubrir && AV.G.v18descubrir.P.length && AV.G.v18combate && AV.G.v18combate.sitio)`;
+  for (let i = 0; i < 90; i++) { try { ok = await evaluar(cdp, ses, modsListos, 10, false); } catch (e) { } if (ok) break; await dormir(1); }
+  if (!ok) throw new Error('módulos v18 no cargaron');
   let st = await estadoDemo(cdp, ses);
   if (st.error) throw new Error('estadoDemo: ' + st.error);
   if (!st.repararP || !st.cabA || !st.cabB) throw new Error('sin eje del puente');
   log(`puente ${st.puente}; reparar en (${st.repararP.x.toFixed(1)},${st.repararP.z.toFixed(1)}); maderas=${st.maderas.length} piedras=${st.piedras.length}`);
-  log('materiales: ' + JSON.stringify({ maderas: st.maderas, piedras: st.piedras, spawn: { x: st.x, z: st.z } }));
 
-  // Grabación a 1,0 Mbps (tope 25 MB ⇒ ~3 min de take; el take va ágil).
-  await evaluar(cdp, ses, `window.__recBits = 1000000`, 10, false);
+  // Grabación: 0,85 Mbps en el take del duelo (~3 min ⇒ ~19 MB), 0,7 Mbps en el ciclo entero (~4,7 min).
+  await evaluar(cdp, ses, `window.__recBits = ${FASE === 'todo' ? 700000 : 850000}`, 10, false);
   res.mime = await evaluar(cdp, ses, REC_JS, 20, false);
   if (!res.mime || res.mime.indexOf('ERR') === 0) throw new Error('recorder: ' + res.mime);
   log('MediaRecorder mime: ' + res.mime);
   await evaluar(cdp, ses, `window.__rec.empieza()`, 15, false);
   res.recStarted = new Date().toISOString();
 
-  // 1) Recoger 2 maderas + 1 piedra con E (input real; se verifica S.inv tras cada una).
+  // 0) Beat del duelo de la explanada (descubrir → reto → elegir → Campeona; premio = 2 maderas + 1 piedra).
+  if (FASE !== 'puente') {
+    res.duelo = await beatDuelo(cdp, ses, res, log);
+    if (FASE === 'duelo') {
+      await dormir(2.6); // panel de victoria/premio en cámara
+      st = await estadoDemo(cdp, ses);
+      res.estadoFinal = { inv: st.inv, sel: (await estadoCombate(cdp, ses)).sel };
+      log('parando la grabación y volcando el vídeo...');
+      res.video = await evaluar(cdp, ses, `window.__rec.para('kimi121_${JUEGO}_${ETIQUETA}.${ext()}')`, 120);
+      log(`vídeo: ${JSON.stringify(res.video)}`);
+      return;
+    }
+  }
+
+  // 1) Materiales: solo si el inventario no los tiene ya (el premio del duelo da 2 maderas + 1 piedra).
+  st = await estadoDemo(cdp, ses);
+  if ((st.inv.madera || 0) >= 2 && (st.inv.piedra || 0) >= 1) {
+    log(`materiales ya en el inventario (premio del duelo): ${st.inv.madera}m/${st.inv.piedra}p — se salta la recogida`);
+  } else {
+  log('materiales: ' + JSON.stringify({ maderas: st.maderas, piedras: st.piedras, spawn: { x: st.x, z: st.z } }));
   // El barranco de la orilla bloquea el último tramo a pie: se vuela hasta encima (input real), se
   // aterriza junto al objeto y se recoge con E; luego se despega hacia el siguiente. Ave de verdad.
   const recoger = async (p, que) => { // la interacción tiene r=2,2: basta estar a 2,05 m (con colisión del objeto, a pie no llega)
@@ -366,6 +620,7 @@ async function demoFlow(cdp, ses, res, ext, log) {
   if (st.piedras.length) { await recoger(st.piedras[0], 'piedra'); await despegar(cdp, ses, log); }
   st = await estadoDemo(cdp, ses);
   log(`inventario: ${st.inv.madera} maderas, ${st.inv.piedra} piedras`);
+  }
 
   // 2) Reparar el puente (E en la cabecera del lado de Villa Raíz): se vuela al camino y se termina a pie.
   await volarHasta(cdp, ses, st.repararP.x, st.repararP.z, 4.5, log);
