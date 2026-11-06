@@ -95,7 +95,9 @@ window.AVV18Nuevas = function (G) {
     { id: 'mercenarius', txt: '¡Descubriste al loro mercenario en el Álbum! Su poder: Vuelo de niebla.' },
     { id: 'pretrei', txt: '¡Descubriste al loro de anteojos rojos en el Álbum! Su poder: Vuelta de pino.' },
     { id: 'oratrix', txt: '¡Descubriste al loro cabeza amarilla en el Álbum! Su poder: Imitación.' },
-    { id: 'guatemalae', txt: '¡Descubriste al loro harinoso del norte en el Álbum! Su poder: Vista de cumbre.' }
+    { id: 'guatemalae', txt: '¡Descubriste al loro harinoso del norte en el Álbum! Su poder: Vista de cumbre.' },
+    { id: 'amazonica', txt: '¡Descubriste al loro guaro en el Álbum! Su poder: Ojo de bandada.' },
+    { id: 'aestiva', txt: '¡Descubriste al loro hablador en el Álbum! Su poder: Cuento.' }
   ];
   // La tarjeta acaba de abrirse (evento del Álbum): desbloqueo inmediato con aviso
   function albumLlega(id, avisar) {
@@ -256,6 +258,17 @@ window.AVV18Nuevas = function (G) {
       G.emit('album', { id: 'guatemalae', fuente: 'test' });
       check('El mismo descubrimiento no avisa dos veces (Vista de cumbre)', toasts.filter(t => /harinoso del norte/.test(t)).length === 1);
       check('La Vista de cumbre tiene su poder propio', H.poderDe('guatemalae') === 'vista_cumbre', H.poderDe('guatemalae'));
+      // Las 2 últimas implementables (KIMI-163): #30 Ojo de bandada (amazonica) y #36 Cuento (aestiva), Álbum del Diario
+      check('El Ojo de bandada (amazonica) empieza sin descubrir', rango(V.estado('amazonica')) < rango('descubierta'));
+      G.emit('album', { id: 'amazonica', fuente: 'test' });
+      check('Descubrir su tarjeta en el Álbum deja elegible al loro guaro (Ojo de bandada), con aviso',
+        rango(V.estado('amazonica')) >= rango('seleccionable') && toasts.some(t => /guaro/.test(t) && /Ojo de bandada/.test(t) && /Mis cotorras/.test(t)));
+      check('El Ojo de bandada tiene su poder propio', H.poderDe('amazonica') === 'ojo_bandada', H.poderDe('amazonica'));
+      check('El Cuento (aestiva) empieza sin descubrir', rango(V.estado('aestiva')) < rango('descubierta'));
+      G.emit('album', { id: 'aestiva', fuente: 'test' });
+      check('Descubrir su tarjeta en el Álbum deja elegible al loro hablador (Cuento), con aviso',
+        rango(V.estado('aestiva')) >= rango('seleccionable') && toasts.some(t => /hablador/.test(t) && /Cuento/.test(t) && /Mis cotorras/.test(t)));
+      check('El Cuento tiene su poder propio', H.poderDe('aestiva') === 'cuento', H.poderDe('aestiva'));
 
       // ---- Las 4 de coste M: cada una con su hito, desde una partida nueva ----
       V.borrar(); V.recargar(); toasts.length = 0;
@@ -742,6 +755,34 @@ window.AVV18Nuevas = function (G) {
         corre(6.2); quieta(2.9); listo(); C.j.cd.golpe_ala = 0; C.r.mareo = 5; const pvg2 = C.r.plumas, golpeFin = B.usar(C.j, 'golpe_ala');
         check('...y a los 6 s se acaba: el mapa la pierde y el ala vuelve a 2,4 m (a 2,9 m falla otra vez)',
           !(C.j.vistacumbre > 0) && G.v18combate.mapa() === null && golpeFin.ok && !golpeFin.acierto && C.r.plumas === pvg2);
+        B.salir();
+        // Ojo de bandada (amazonica, V18_MATRIZ_36.md #30): 6 s en que el aviso salta cuando la rival usa su poder
+        B.iniciar({ sinCuenta: true, especie: 'amazonica' }); quieta(6); listo(); S.facing = { x: 1, z: 0 };
+        const poderRival = C.r.poder, avisos0 = (B.estado().stats || {}).avisos || 0;
+        const rob = B.usar(C.j, 'ojo_bandada');
+        C.r.cd = {}; C.r.energia = 100; C.r.mareo = 0; B.usar(C.r, poderRival); // la rival usa su poder
+        const avisos1 = (B.estado().stats || {}).avisos || 0;
+        check('Ojo de bandada: 6 s en que el aviso salta cuando la rival usa su poder (información, sin daño)',
+          rob.ok && C.j.ojobandada > 5.5 && avisos1 === avisos0 + 1,
+          'ojobandada ' + (C.j.ojobandada || 0).toFixed(1) + ' s, avisos ' + avisos0 + '→' + avisos1 + ' (' + poderRival + ')');
+        corre(6.2); listo(); C.r.cd = {}; C.r.energia = 100; C.r.mareo = 0;
+        B.usar(C.r, poderRival);
+        const avisos2 = (B.estado().stats || {}).avisos || 0;
+        check('...y se le acaba a los 6 s: sin el ojo puesto, el mismo poder de la rival no avisa',
+          !(C.j.ojobandada > 0) && avisos2 === avisos1, 'avisos ' + avisos1 + '→' + avisos2);
+        B.salir();
+        // Cuento (aestiva, #36): la IA se distrae 1,5 s — no ataca, no se defiende y no se acerca
+        B.iniciar({ sinCuenta: true, especie: 'aestiva' }); quieta(2); listo(); S.facing = { x: 1, z: 0 };
+        const pjCu0 = C.j.plumas, xrC = C.r.pos.x, zrC = C.r.pos.z;
+        const rcu = B.usar(C.j, 'cuento');
+        C.r.pensar = 0; C.r.golpeT = 0; // la única barrera entre la rival y el golpe debe ser la distracción
+        corre(1.2);
+        const movidaC = Math.hypot(C.r.pos.x - xrC, C.r.pos.z - zrC);
+        check('Cuento: la rival queda distraída 1,5 s — a 2 m no ataca (0 plumas perdidas) ni se acerca',
+          rcu.ok && C.r.distraida > 0.2 && C.j.plumas === pjCu0 && movidaC < 0.15,
+          'distraída ' + (C.r.distraida || 0).toFixed(2) + ' s, plumas ' + pjCu0 + '→' + C.j.plumas + ', movida ' + movidaC.toFixed(2) + ' m');
+        corre(1.4);
+        check('...y a los 1,5 s se le pasa y vuelve a atacar sola', C.j.plumas === pjCu0 - 1, 'plumas ' + pjCu0 + '→' + C.j.plumas);
         B.salir();
       } else check('El duelo está cargado', false);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }
