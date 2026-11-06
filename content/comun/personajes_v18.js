@@ -39,10 +39,10 @@ window.AV_NPC_V18 = [
     id: 'constructor', nombre: { es: 'El Constructor', en: 'The Builder' }, rol: 'antagonista',
     // BM159 (Mac, 6-nov): modelo propio (1,75 m, colores lisos, sin foto ni marcas); mallas rígidas animadas por nodos (sin skin).
     // Casco, Chaleco, GuanteL/R, Botas y Mochila son mallas separadas del .glb que se encienden y apagan. Acciones del .glb: Idle,
-    // Hablar, Señalar y Enfadado (no trae «Reparar»: al trabajar señala la obra).
+    // Hablar, Señalar y Enfadado (Reparar llegó con BM164: martilleo en bucle).
     modelo: 'assets/models/personajes/constructor.glb', script: 'assets/models/personajes/constructor_glb.js', b64: 'constructor',
     alto: 1, retrato: 'assets/retratos/v18/constructor.jpg',
-    anim: { idle: 'Idle', hablar: 'Hablar', trabajar: 'Señalar', senalar: 'Señalar', enfadado: 'Enfadado' },
+    anim: { idle: 'Idle', hablar: 'Hablar', trabajar: 'Reparar', senalar: 'Señalar', enfadado: 'Enfadado' },
     mallas: { Guantes: ['GuanteL', 'GuanteR'] },
     apariencias: {
       // Supervisor industrial: casco amarillo y chaleco naranja de bandas del .glb, camisa oscura, nada de herramientas ni guantes
