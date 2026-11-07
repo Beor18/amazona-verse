@@ -118,7 +118,7 @@ AVE.module('dialogo', function (G) {
         '@keyframes bl-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}' +
         '@media (prefers-reduced-motion:reduce){.bocadillo{animation:none}}' +
         '@media (hover:none),(pointer:coarse){#bocadillos{max-width:min(560px,calc(100vw - 320px))}}' +
-        '@media (max-width:560px){#bocadillos{left:max(12px,env(safe-area-inset-left,0px));right:auto;margin-inline:0;bottom:calc(env(safe-area-inset-bottom,0px) + 330px);max-width:calc(100vw - 24px - 56px)}.bocadillo{font-size:15px;border-radius:18px}.bocadillo img{width:38px;height:38px}}' +
+        '@media (max-width:560px){#bocadillos{left:max(12px,env(safe-area-inset-left,0px));right:auto;margin-inline:0;bottom:calc(env(safe-area-inset-bottom,0px) + 262px);max-width:calc(100vw - 24px - 56px)}.bocadillo{font-size:15px;border-radius:18px}.bocadillo img{width:38px;height:38px}}' +
         '@media (max-height:520px) and (orientation:landscape){#bocadillos{bottom:calc(env(safe-area-inset-bottom,0px) + 70px);max-width:min(480px,calc(100vw - 360px))}}';
       document.head.appendChild(st);
     }
