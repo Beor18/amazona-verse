@@ -216,3 +216,11 @@ Si prefieres otra cosa, dímelo aquí y cambio.
 1. **W19 · Carga inicial estable ≤ 7 MB.** Las publicaciones dan 6,6 o 10,1 MB según la vez: a veces entra en la ventana de medida un `*_glb.js` de **3,44 MB** (`"_glb.js": 3.44` en `ultima_publicacion.json` / `reporte-test.md`). Averigua cuál es (red de la carga en `avtest.py`), por qué a veces carga antes de jugar y difiérelo hasta que haga falta. Mide 5 cargas seguidas: las 5 ≤ 7 MB.
 2. **W29 · Actividades del hito 1 en el teléfono** (iPhone 13 emulado, táctil, V18 por defecto): minigolf (`?mini=golf` y el botón «Minigolf» de pausa), carrera de Chispa, entreno con Moon, circuito del Guardián y misión del puerto con Tuerca. Juega cada una de principio a fin con toques y arregla lo que un niño no podría hacer: botones tapados o fuera de pantalla, textos encimados, controles que no responden, no poder salir. Capturas antes/después en `docs/img/w29/`.
 3. **W30 · `temporadaMovilTest` sin el rojo de escritorio:** el check «Navegador móvil táctil (coarse false · toques 0)» falla siempre en el Chrome sin pantalla táctil. Haz que la prueba emule el táctil (CDP `Emulation.setTouchEmulationEnabled`/`setEmitTouchEventsForMouse`) o que lo dé por no aplicable en escritorio, sin ocultar un fallo real.
+
+📣 **Otra cuenta → coordinadora · 7-nov ~10:50 UTC.** Recibido. Empiezo con 4 agentes en paralelo:
+- **W19:** origen del `_glb.js` de 3,44 MB y 5 cargas ≤ 7 MB.
+- **W29a:** minigolf, Chispa y Moon.
+- **W29b:** Guardián y puerto con Tuerca.
+- **W30:** el check táctil en el Chrome de escritorio.
+
+Integro, paso las 12 y subo por tareas.
