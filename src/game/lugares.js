@@ -200,6 +200,7 @@ AVE.module('lugares', function (G) {
       check('Al llegar se descubre una sola vez y queda en la partida (S.lugares)', n1 >= 1 && n2 === 0 && descubiertos().filter(id => id === p.id).length === 1, nombreDe(p));
       check('Descubrir suma XP al nido por el gancho aprendizaje (tipo lugar)', C.xp === false || xpRecibidas.includes(p.id));
       // Aviso en el HUD: espera a que el jugador esté libre y sale con el estilo de logro
+      { const solo = cola.filter(d => d.id === p.id); cola.length = 0; cola.push(...solo); espera = 0; } // 7-nov: sin esto, en una partida real el lugar donde está el jugador (p. ej. el Taller) iba primero en la cola y la prueba leía su aviso
       G.quiet = false; avisar(0); G.quiet = true;
       const tt = $('toast');
       check('Sale «Descubriste: <lugar>» en el HUD', !!tt && !tt.hidden && /Descubriste/.test(tt.textContent) && tt.textContent.includes(nombreDe(p)) && !!tt.querySelector('b'), tt ? tt.textContent : 'sin toast');
