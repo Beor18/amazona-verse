@@ -50,10 +50,10 @@
   ],
   "hito2": [
    {
-    "que": "Fichas educativas (fuentes): las resuelve Kelvin",
+    "que": "Fichas educativas verificadas con fuente oficial (las que no, siguen ocultas)",
     "donde": "content/*/lecciones.js",
-    "quien": "Kelvin",
-    "estado": "de Kelvin"
+    "quien": "Nube",
+    "estado": "en curso"
    },
    {
     "que": "Inglés de la fuente de «canoa» (cap. 3, CG-51)",

@@ -414,3 +414,10 @@ Kelvin elige la **B · Semilla con alas** (`docs/img/emblema_propuestas/emblema_
 
 ## 6-nov-2026 · V18 por defecto en el enlace principal (Kelvin)
 Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». Desde ahora **https://amazona-verse.vercel.app/juego/** carga toda la V18 (duelo, puente, Sombra, minigolf, poderes, niveles V18.2, misión del puerto V18.3, Chispa…) sin `?v18=1`. La **versión estable anterior** sigue disponible con **`?v18=0`** (o `localStorage['amazonaverse.v18on'] = '0'`); `?v18=1` y la clave `'1'` siguen encendiéndola. Cambio reversible en una línea de `src/boot.js` (`v18Bandera`).
+
+## 7-nov-2026 · Kelvin acepta las recomendaciones de «Lo que necesito de Kelvin»
+- **Aprobado:** la Ciudad de los 36 y las cotorras vivas; el Guardián del Primer Vuelo, opción A; integrar y probar a Tuerca y Maestro Moon; las cotorras nuevas se descubren por el Álbum (provisional).
+- **Sin tocar:** los 6 capítulos. Lo legal, los derechos y la privacidad siguen sujetos a revisión, y Supabase no se toca sin su autorización.
+- **Verificación y QA:** las fuentes educativas las verifica el agente responsable, no Kelvin; las fichas sin respaldo siguen ocultas.
+- **Forma de trabajar:** no más documentos con preguntas ya contestadas. Cuando esté la versión estable, solo el enlace.
+
