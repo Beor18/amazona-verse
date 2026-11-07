@@ -398,7 +398,8 @@ AVE.module('ambiente', function (G) {
           R.setCalidad('medio'); await cuadros(2); const musgoM = 'SPLAT_MUSGO' in sm.defines;
           ok('Musgo de llano alto solo en calidad alta', musgoA && !musgoM, 'alto ' + musgoA + ' · medio ' + musgoM);
         }
-        await Promise.resolve(G.terreno.listo);
+        if (G.terreno.cargarTodo) G.terreno.cargarTodo(); // KIMI-203: la huella firma el mapa entero; con el terreno por cercanía el spawn no descarga los trozos lejanos
+        await Promise.resolve(G.terreno.completo || G.terreno.listo); // KIMI-203: la huella compara el mapa entero: espera los 4 trozos (listo solo garantiza los del arranque)
         const huella = huellaMapa(), h = hashRejilla(), ref = REF_REJILLA[huella];
         ok('height y splatAt sin cambios (rejilla de 96×96, igualdad byte a byte)', ref ? h === ref : true, ref ? h + (h === ref ? '' : ' ≠ ' + ref) : 'mapa ' + huella + ' sin referencia: ' + h);
       } else ok('Sin mapa: sin zonas y el juego sigue', G.ambiente.zonas === null);

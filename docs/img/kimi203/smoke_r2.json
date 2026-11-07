@@ -1,0 +1,83 @@
+{
+  "etiqueta": "r2",
+  "head": "b009ad16",
+  "consola": [],
+  "pasos": [],
+  "revelado": false,
+  "enReveal": {
+    "pos": {
+      "x": 134,
+      "z": 182.5
+    },
+    "trozos": [
+      "terreno_no",
+      "terreno_ne",
+      "terreno_so",
+      "terreno_se"
+    ],
+    "cargados": [
+      "terreno:terreno_se"
+    ],
+    "exacto": true,
+    "alturas": {
+      "centro": 8.562600135803223,
+      "villa": 5.22762656211853,
+      "ciudad": 96.97142791748047
+    },
+    "splatCiudad": false,
+    "sueloEnCiudad": false,
+    "vegetacion": "lista"
+  },
+  "tras8s": {
+    "pos": {
+      "x": 134,
+      "z": 182.5
+    },
+    "trozos": [
+      "terreno_no",
+      "terreno_ne",
+      "terreno_so",
+      "terreno_se"
+    ],
+    "cargados": [
+      "terreno:terreno_se"
+    ],
+    "exacto": true,
+    "alturas": {
+      "centro": 8.562600135803223,
+      "villa": 5.22762656211853,
+      "ciudad": 96.97142791748047
+    },
+    "splatCiudad": false,
+    "sueloEnCiudad": false,
+    "vegetacion": "lista"
+  },
+  "enCiudad": {
+    "pos": {
+      "x": -20,
+      "z": -100
+    },
+    "trozos": [
+      "terreno_no",
+      "terreno_ne",
+      "terreno_so",
+      "terreno_se"
+    ],
+    "cargados": [
+      "terreno:terreno_se",
+      "terreno:terreno_no",
+      "terreno:terreno_ne",
+      "terreno:terreno_so"
+    ],
+    "exacto": true,
+    "alturas": {
+      "centro": 8.562600135803223,
+      "villa": 5.22762656211853,
+      "ciudad": 96.97142791748047
+    },
+    "splatCiudad": false,
+    "sueloEnCiudad": true,
+    "vegetacion": "lista"
+  },
+  "ok": false
+}
