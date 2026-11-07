@@ -328,6 +328,14 @@
       check('W3 · un aviso con el cómic abierto espera y sale al cerrarlo', espera && !tt.hidden && tt.textContent === 'Aviso de prueba W3' && !UI.avisoPendiente, espera + ' · ' + tt.textContent);
       UI.hideToast(); tt.textContent = ''; cm.hidden = cm0; // QA-184: el aviso oculto no deja su texto en español para idiomaTest
     }
+    { // QA-188 (W28): durante la apertura del capítulo (narrador en bocadillos libres, «Saltar intro») el aviso espera y sale al terminar
+      const UI = G.ui, tt = document.getElementById('toast'), s = document.createElement('button'); s.id = 'c1-saltar'; document.body.appendChild(s);
+      UI.hideToast(); UI.toast('Aviso de prueba QA188', 3000);
+      const espera188 = tt.hidden && !!UI.avisoPendiente;
+      s.remove(); tick(0.1);
+      check('QA-188 · un aviso durante la apertura (narrador) espera y sale al terminarla', espera188 && !tt.hidden && tt.textContent === 'Aviso de prueba QA188' && !UI.avisoPendiente, espera188 + ' · ' + tt.textContent);
+      UI.hideToast(); tt.textContent = '';
+    }
     SV.reset(true);
     try { for (const c of SV.copiasIlegibles()) if (!copiasAntes.has(c.clave)) localStorage.removeItem(c.clave); } catch (e) { /* sin almacenamiento */ }
     devolver();

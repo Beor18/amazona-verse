@@ -687,6 +687,9 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   /* CG-4 (QA-86, QA-87): con el diálogo o los gestos abiertos, el aviso sube bajo el objetivo; abajo tapaba el nombre y la
      primera línea del diálogo y las filas 3–4 de los gestos (375×812) */
   body:has(:is(#dialog, #emotes):not([hidden])) #toast { top: calc(env(safe-area-inset-top, 0px) + 118px); bottom: auto; }
+  /* QA-188 (W28): con un bocadillo de historia visible (el narrador y los diálogos de los packs van en bocadillos libres, no
+     en #dialog), el aviso sube igual que con la caja de diálogo; abajo quedaba debajo del bocadillo y los dos ilegibles (ep2) */
+  body:has(#bocadillos:not([hidden])) #toast { top: calc(env(safe-area-inset-top, 0px) + 118px); bottom: auto; }
   body:has(#end:not([hidden])) #toast { top: calc(env(safe-area-inset-top, 0px) + var(--sp-3)); bottom: auto; } /* QA-88: sobre el panel final tapaba «Ver mi cómic» */
   #dialog { bottom: calc(env(safe-area-inset-bottom, 0px) + var(--sp-3)); gap: 0 var(--sp-3); padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3); }
   .d-portrait { width: 76px; height: 76px; margin-top: -36px; border-width: 4px; }

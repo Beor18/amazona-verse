@@ -146,7 +146,7 @@ AVE.module('lugares', function (G) {
     if (tR > 0 && (tR -= dt) <= 0) ocultarRotulo();
     if (!cola.length) return;
     espera = Math.max(0, espera - dt);
-    if (espera > 0 || G.quiet || G.ui.busy() || /\bv18-(duelo|amenaza)-on\b/.test(document.body.className)) return; // en un duelo V18 espera a que acabe
+    if (espera > 0 || G.quiet || G.ui.busy() || document.getElementById('c1-saltar') || /\bv18-(duelo|amenaza)-on\b/.test(document.body.className)) return; // en un duelo V18 espera a que acabe; QA-188 (W28): también mientras el narrador de la apertura habla (bocadillos libres: busy() no lo cubre)
     const t = $('toast');
     const d = cola[0];
     if (!d.asentamiento && t && !t.hidden && t.querySelector('button')) return; // el aviso de construcción trae un botón: no se pisa
@@ -202,6 +202,16 @@ AVE.module('lugares', function (G) {
       G.quiet = false; avisar(0); G.quiet = true;
       const tt = $('toast');
       check('Sale «Descubriste: <lugar>» en el HUD', !!tt && !tt.hidden && /Descubriste/.test(tt.textContent) && tt.textContent.includes(nombreDe(p)) && !!tt.querySelector('b'), tt ? tt.textContent : 'sin toast');
+      G.ui.hideToast();
+      // QA-188 (W28): con la apertura del capítulo en curso (narrador en bocadillos libres) la cola espera y drena después
+      cola.length = 0; espera = 0;
+      cola.push({ id: p.id, nombre: nombreDe(p), asentamiento: null, nuevo: false });
+      const s188 = document.createElement('div'); s188.id = 'c1-saltar'; document.body.appendChild(s188);
+      G.quiet = false; avisar(0); G.quiet = true;
+      check('QA-188 · con la apertura en curso el aviso de lugar espera en cola', cola.length === 1 && tt.hidden, 'cola=' + cola.length);
+      s188.remove();
+      G.quiet = false; avisar(0); G.quiet = true;
+      check('QA-188 · al terminar la apertura el aviso sale', cola.length === 0 && !tt.hidden && tt.textContent.includes(nombreDe(p)), tt ? tt.textContent.slice(0, 60) : 'sin toast');
       G.ui.hideToast();
       // Guardado: la lista va en la partida y una partida vieja sin la clave la recibe vacía
       const ser = SV.serialize ? SV.serialize(true) : null;
