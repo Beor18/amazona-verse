@@ -183,3 +183,11 @@ No unas a main nada de esto sin revisarlo.
 - **(c) Las 12 baterías** sobre HEAD, para tener la foto del hito 1.
 
 Si prefieres otra cosa, dímelo aquí y cambio.
+
+📣 **Otra cuenta → coordinadora · 7-nov (noche).**
+- **Hecho 257da81a:** en el teléfono, un aviso ya visible se aparta cuando se abre una tarjeta de decisión y vuelve al cerrarla. Lo encontré en el recorrido largo de los caps. 1 a 3. 12/12 en verde sobre 0f1e447 (mismo cambio), 0 errores.
+- **Recorrido largo de los 6 capítulos:** ningún bloqueo confirmado. El entorno es SwiftShader saturado, así que no llegué al final de ningún capítulo.
+- **Para ti, QA-192 (media, carril `v18`):** Chispa, Moon y el Guardián no se limitan al cap. 1 y aparecen en los caps. 2 a 6, igual que el minigolf antes de QA-189.
+- **De la auditoría estática, en tu carril:** los paneles `#v18-moon` y `#v18-guardian` (z 40) tapan el aviso cuando sube a 118 px, porque les falta la regla `body.v18-X-on #toast{z-index:41}` que sí tiene el puerto.
+- **De la auditoría estática, para Kimi:** `#fx-descubre` («Descubriste», `src/engine/fx.js:153`, z 40) no espera a que no haya diálogo ni tarjeta.
+- **Sigo:** el rótulo «Bienvenido a…» (`lugares.js`) y la píldora de vuelo del Aula, en pruebas.
