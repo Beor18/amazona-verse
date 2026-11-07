@@ -222,7 +222,16 @@ window.AVV18Explorar = function (G) {
       const hud = !!(ra && ra.height && getComputedStyle(acts).visibility !== 'hidden');
       const ver = libre() && hud;
       if (b.hidden === ver) b.hidden = !ver;
-      if (ver) { const bo = Math.round(innerHeight - ra.top + 10) + 'px', de = Math.max(8, Math.round(innerWidth - ra.right)) + 'px'; if (b.style.bottom !== bo) b.style.bottom = bo; if (b.style.right !== de) b.style.right = de; }
+      if (ver) {
+        // QA-191 (móvil): si el aviso de Acción (#prompt) queda a la altura del botón, el botón sube por encima y no tapa el nombre
+        let alto = innerHeight - ra.top + 10;
+        const pr = document.getElementById('prompt');
+        if (pr && !pr.hidden) {
+          const rp = pr.getBoundingClientRect(), anchoB = b.offsetWidth || 120, izqB = innerWidth - Math.max(8, innerWidth - ra.right) - anchoB;
+          if (rp.height && rp.right > izqB && innerHeight - rp.top + 8 > alto - 4 && innerHeight - rp.bottom < alto + (b.offsetHeight || 44)) alto = Math.max(alto, innerHeight - rp.top + 8);
+        }
+        const bo = Math.round(alto) + 'px', de = Math.max(8, Math.round(innerWidth - ra.right)) + 'px'; if (b.style.bottom !== bo) b.style.bottom = bo; if (b.style.right !== de) b.style.right = de;
+      }
       if (ver) { const nombre = (G.v18hab && G.v18hab.get(G.v18hab.poderDe(especie())) || {}).nombre || 'Poder'; if (b.textContent !== nombre) b.textContent = nombre; }
     }
   });
