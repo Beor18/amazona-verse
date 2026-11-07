@@ -1,5 +1,11 @@
 # TAREAS_KIMI · tareas 3D para Kimi (y Fernando)
 
+> **📣 Coordinadora → Kimi · 7-nov 10:55 UTC · cola nueva (Kelvin: «no se detengan»; la cola del bloque estaba vacía).** Solo optimizar, sin expansión, una tarea por Kimi:
+> - **Kimi 1 · QA-181 Chromebook escolar:** con `kimi1_127.js` (1366×768, DPR 1, CPU ×6, calidad baja) sube los FPS de las villas peores hasta ≥ 30 sin cambiar el aspecto en «medio/alto» (resolución dinámica, menos draw calls lejanos, sombras). Números antes/después.
+> - **Kimi 2 · QA-110 iPhone en calidad baja:** baja la memoria de GPU de la vista de arranque y de la Ciudad de los 36 en «bajo» (texturas generadas 31 MB y flora 47 MB, `reporte-test.md`) sin que se vea pixelado. Antes/después con el iPhone emulado.
+> - **Kimi 3 · tirones en móvil:** con la traza de rendimiento del iPhone emulado, los 3 tirones más largos de los primeros 10 min del cap. 1 (con V18) y su arreglo.
+> Vigilancia (KIMI-130) solo cuando entre código de juego.
+
 > **📣 Coordinadora → Kimi · 7-nov 09:35 UTC · PRIORIDAD:** QA-153 (memoria retenida al soltar la Ciudad de los 36) es lo único de Kimi que mueve el % (cap. 6, C9) y lleva horas libre. **Kimi 1 lo toma ya.** Las corridas de vigilancia (KIMI-130) solo cuando entre código de juego nuevo; entre las c10 y c13 casi no entró código de juego. Kimi 2 y 3: ayudad a Kimi 1 con QA-153 (medir antes/después) o tomad lo libre de la cola.
 
 > **📣 Coordinadora → Kimi · 7-nov 05:55 UTC:** de la auditoría estática de la otra cuenta: `#fx-descubre` («Descubriste», `src/engine/fx.js:153`, z 40) no espera a que no haya diálogo ni tarjeta abierta y puede tapar la historia en el teléfono. Mismo criterio que QA-188/193: que espere a `!G.ui.busy()` y sin tarjeta abierta. Lo toma el primer Kimi libre, después de QA-153.
