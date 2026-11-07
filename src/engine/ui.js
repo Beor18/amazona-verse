@@ -30,7 +30,12 @@ AVE.module('ui', function (G) {
   function toast(text, ms) { const p = { text, ms }; if (tapado()) { pendiente = p; return; } mostrar(p); }
   function toastHTML(html, ms) { const p = { html, ms }; if (tapado()) { pendiente = p; return; } mostrar(p); }
   function hideToast() { $('toast').hidden = true; toastTimer = 0; }
-  G.on('update', () => { if (pendiente && !tapado()) { const p = pendiente; pendiente = null; mostrar(p); } }, 84);
+  // QA-188 (en vivo, 7-nov): un aviso que ya estaba en pantalla cuando algo pasa a taparlo (empieza la apertura del cap. 1
+  // justo al cerrar el creador, se abre el cómic…) se aparta y vuelve al terminar, como los que llegan después
+  G.on('update', () => {
+    if (!pendiente && actual && !$('toast').hidden && tapado()) { pendiente = actual; hideToast(); return; }
+    if (pendiente && !tapado()) { const p = pendiente; pendiente = null; mostrar(p); }
+  }, 84);
   function overlayOpen() { return !$('end').hidden || !$('comic').hidden || !$('creator').hidden; }
   // Ocupado: diálogo, tarjeta u overlay abiertos (el jugador no se mueve ni recoge)
   function busy() { return G.dialogo.open() || cardOpen || overlayOpen(); }

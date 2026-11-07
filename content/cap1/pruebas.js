@@ -335,6 +335,13 @@
       s.remove(); tick(0.1);
       check('QA-188 · un aviso durante la apertura (narrador) espera y sale al terminarla', espera188 && !tt.hidden && tt.textContent === 'Aviso de prueba QA188' && !UI.avisoPendiente, espera188 + ' · ' + tt.textContent);
       UI.hideToast(); tt.textContent = '';
+      // …y uno que ya estaba en pantalla cuando empieza la apertura se aparta y vuelve al terminarla (visto en vivo, 7-nov)
+      UI.toast('Aviso previo QA188', 3000); const antes = !tt.hidden;
+      const s2 = document.createElement('button'); s2.id = 'c1-saltar'; document.body.appendChild(s2); tick(0.05);
+      const aparta = tt.hidden && !!UI.avisoPendiente;
+      s2.remove(); tick(0.05);
+      check('QA-188 · un aviso ya visible cuando empieza la apertura se aparta y vuelve al terminarla', antes && aparta && !tt.hidden && tt.textContent === 'Aviso previo QA188' && !UI.avisoPendiente, antes + ' · ' + aparta + ' · ' + tt.textContent);
+      UI.hideToast(); tt.textContent = '';
     }
     { // Largo A (7-nov): un aviso ya visible cuando se abre una tarjeta en el teléfono se aparta y vuelve al cerrarla
       const UI = G.ui, tt = document.getElementById('toast');
