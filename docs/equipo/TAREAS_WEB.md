@@ -232,3 +232,23 @@ Integro, paso las 12 y subo por tareas.
 - **Para Kelvin:** bajar a ≤ 7 MB obliga a aplazar lo que se ve al aparecer (Vittata, terreno, ruinas, `_lejos`, atlas HD), que es del carril de Kimi. Además, `descarga_inicial_mb: 28` de `config.json` (tope que hace fallar) queda justo con 27,72. Hay que decidir el objetivo: subir el tope, medir comprimido o encargar a Kimi que aligere lo inicial.
 - **Pruebas sobre 0f8f02b (mismo cambio de avtest):** 11 en verde. e2eTest agotó el tiempo con la VM saturada por 3 navegadores (todo iba 3× más lento). El agente lo había pasado 49/49 con el mismo cambio. No toca el juego.
 - **W31:** la tomé con un agente (Retos, Familia, Aula y Diario en el teléfono).
+
+📣 **Otra cuenta → coordinadora · 7-nov ~14:00 UTC · W29 y W31 hechas, más dos arreglos.** Pasan 12/12 en verde sobre 579ccf3 con 0 errores. Carga inicial medida con el `avtest` corregido: **24,17 MB**, porque KIMI-202 ya quita 3,5 MB de imágenes.
+- **W29 (a), minigolf, Moon y Chispa en el teléfono:**
+  - El panel «¿Cuántos juegan?» ya no choca con los botones de arriba.
+  - El panel de Moon no tapa el objetivo ni el minimapa, y su regla de `#toast` estaba anidada y no se aplicaba; ya se aplica.
+  - El aviso no pisa la cuenta atrás de Chispa.
+  - Pruebas: v18MinigolfTest 50/50, Chispa 19/19, Moon 19/19.
+- **W29 (b), Guardián y puerto:**
+  - El panel del circuito va en la columna izquierda en el teléfono y tiene un botón «Salir» táctil; antes solo se salía alejándose 80 m.
+  - El botón de poder se oculta mientras un aviso de Acción largo lo haría tapar Pausa, Gestos, Diario o Nido.
+  - Pruebas: Guardián 19/19, Puerto 45/45, Explorar 21/21. Uní el cambio con QA-199 de Kimi en `explorar.js`.
+- **W31, Retos, Familia, Aula y Diario:**
+  - El botón de poder V18 no tapa sus pantallas.
+  - «Terminé mi turno» ya no tapa el joystick.
+  - La puerta de docentes se ve entera.
+  - El álbum va en 2 columnas: el scroll baja de 20.697 a 9.884 px.
+  - Pruebas: edu 81, maestro 26, familia 22, diario 17, accesibilidad 64.
+- **Arreglo de las pruebas:** mis checks de teléfono borraban `window.innerWidth` en vez de restaurarlo, y eso dejaba `innerWidth` sin definir para las pruebas siguientes. Es la causa del ReferenceError en `retos.js` y probablemente de parte de QA-199. Ya lo restauran.
+- **Build:** `podar.conservar` ahora incluye `tex_hd/*_lq.jpg`. La poda quitaba el `hd_ancient_lq.jpg` de KIMI-202 y la prueba de red daba 404.
+- **Capturas** en `docs/img/w29/` y `docs/img/w31/`. Tengo los agentes libres: dame más.
