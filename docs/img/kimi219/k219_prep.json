@@ -1,0 +1,131 @@
+{
+ "when": "2026-11-07T23:02:11.590Z",
+ "archivos": {
+  "terreno_so.glb": {
+   "antes": 608656,
+   "despues": 455852,
+   "deltaPct": 25.1,
+   "posCuantizados": 1,
+   "norCuantizados": 1,
+   "errMaxMm": [
+    1.743,
+    0.868,
+    1.868
+   ],
+   "problemas": []
+  },
+  "terreno_se.glb": {
+   "antes": 608656,
+   "despues": 455860,
+   "deltaPct": 25.1,
+   "posCuantizados": 1,
+   "norCuantizados": 1,
+   "errMaxMm": [
+    1.743,
+    0.841,
+    1.868
+   ],
+   "problemas": []
+  },
+  "terreno_no.glb": {
+   "antes": 608652,
+   "despues": 455860,
+   "deltaPct": 25.1,
+   "posCuantizados": 1,
+   "norCuantizados": 1,
+   "errMaxMm": [
+    1.743,
+    0.432,
+    1.868
+   ],
+   "problemas": []
+  },
+  "terreno_ne.glb": {
+   "antes": 608648,
+   "despues": 455860,
+   "deltaPct": 25.1,
+   "posCuantizados": 1,
+   "norCuantizados": 1,
+   "errMaxMm": [
+    1.743,
+    0.434,
+    1.868
+   ],
+   "problemas": []
+  },
+  "complejo_ruinas.glb": {
+   "antes": 996092,
+   "despues": 575592,
+   "deltaPct": 42.2,
+   "posCuantizados": 6,
+   "norCuantizados": 6,
+   "errMaxMm": [
+    0.451,
+    0.208,
+    0.294
+   ],
+   "problemas": []
+  },
+  "ceiba.glb": {
+   "antes": 473968,
+   "despues": 220708,
+   "deltaPct": 53.4,
+   "posCuantizados": 2,
+   "norCuantizados": 2,
+   "errMaxMm": [
+    0.145,
+    0.099,
+    0.137
+   ],
+   "problemas": []
+  },
+  "flamboyan.glb": {
+   "antes": 319796,
+   "despues": 124844,
+   "deltaPct": 61,
+   "posCuantizados": 2,
+   "norCuantizados": 2,
+   "errMaxMm": [
+    0.094,
+    0.053,
+    0.092
+   ],
+   "problemas": []
+  }
+ },
+ "costuras": {
+  "terreno_so.glb+terreno_se.glb": {
+   "eje": "x",
+   "frontera": 0,
+   "paresCompartidos": 101,
+   "desplMaxMm": 1.55,
+   "desplMedMm": 0.52
+  },
+  "terreno_no.glb+terreno_ne.glb": {
+   "eje": "x",
+   "frontera": 0,
+   "paresCompartidos": 101,
+   "desplMaxMm": 0.79,
+   "desplMedMm": 0.27
+  },
+  "terreno_so.glb+terreno_no.glb": {
+   "eje": "z",
+   "frontera": 0,
+   "paresCompartidos": 101,
+   "desplMaxMm": 3.45,
+   "desplMedMm": 0.46
+  },
+  "terreno_se.glb+terreno_ne.glb": {
+   "eje": "z",
+   "frontera": 0,
+   "paresCompartidos": 101,
+   "desplMaxMm": 3.46,
+   "desplMedMm": 0.51
+  }
+ },
+ "total": {
+  "antes": 4224468,
+  "despues": 2744576,
+  "deltaKb": 1445.2
+ }
+}
