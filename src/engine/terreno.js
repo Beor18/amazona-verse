@@ -658,9 +658,7 @@ AVE.module('terreno', function (G) {
   const colliders = G.fisica.colliders;
   const allTrees = [];
   const chunks = [];
-  const rectsCargados = [];        // cobertura de los trozos de terreno ya cargados (para sueloEn)
-  let listo = Promise.resolve(), completo = Promise.resolve();
-  let listoResolve = () => {}, completoResolve = () => {}, cargarTodo = () => {};
+  let listo = Promise.resolve();
 
   if (MAPA) {
     // ---------- Trozos del terreno del mapa ----------
@@ -748,99 +746,32 @@ AVE.module('terreno', function (G) {
     }
     const B64 = (W.mapa && W.mapa.b64) || 'AV_MAPA_B64';
     const trozos = (MAPA.terreno && MAPA.terreno.trozos) || [];
-    // KIMI-203 (encargo coordinadora 7-nov, meta ≤12 MB de descarga inicial y 'descarga_inicial_mb: 28'
-    // justo): los trozos del terreno lejanos NO se descargan al arrancar. Cada trozo se pide cuando
-    // la cámara queda a ≤TRADIO m de su rect (el mismo criterio de cercanía que el streaming de zonas;
-    // en reposo en el spawn los 3 trozos lejanos nunca se piden y quedan fuera de la medición de la
-    // carga inicial). Mientras un trozo no ha cargado, height() usa el heightmap Uint16 —la red de
-    // seguridad que ya había antes de 'terrenoListo'— y splatAt devuelve null: la vegetación distingue
-    // con sueloEn() «sin suelo de verdad» (trozo cargado, sin splat) de «aún no descargado» (siembra
-    // tolerante y re-siembra al llegar el trozo, vía 'terrenoTrozo'). Los ids sin cuadrante (no/ne/so/se)
-    // se cargan siempre. listo = trozos del arranque cargados (lo espera la pantalla de carga);
-    // completo = los 4 (lo esperan las pruebas que firman el mapa entero, vía cargarTodo()).
-    const TRADIO = (() => { const m = /[?&]tradio=(\d+)/.exec(location.search); return m ? +m[1] : 130; })();
-    const TM = MAPA.tamano, tcx = TM.x0 + TM.ancho / 2, tcz = TM.z0 + TM.largo / 2;
-    function rectDe(t) {
-      const m = /(?:^|_)terreno_(no|ne|so|se)$/.exec(t.id || '');
-      if (!m) return null;
-      const q = m[1];
-      return { x0: q[1] === 'o' ? TM.x0 : tcx, x1: q[1] === 'o' ? tcx : TM.x0 + TM.ancho,
-               z0: q[0] === 'n' ? TM.z0 : tcz, z1: q[0] === 'n' ? tcz : TM.z0 + TM.largo };
-    }
-    const distRect = (r, x, z) => Math.hypot(Math.max(r.x0 - x, 0, x - r.x1), Math.max(r.z0 - z, 0, z - r.z1));
-    const geos = [];                 // geometrías ya cargadas (re-soldar y reconstruir TG al llegar cada trozo)
-    const estadoT = new Map();       // trozo → 'cargando' | 'listo'
-    let nListo = 0, arranqueListo = false;
-    listo = new Promise(r => { listoResolve = r; });
-    completo = new Promise(r => { completoResolve = r; });
-    let tgCola = Promise.resolve();  // serializa las reconstrucciones de TG (cada una con el set completo)
-    function reconstruirTG() {
-      tgCola = tgCola.then(() => buildTriGrid(geos)).catch(() => {});
-      return tgCola;
-    }
-    function cargarTrozo(t) {
-      if (estadoT.has(t)) return estadoT.get(t);
-      const p = G.assets.loadGLB(t.glb, {
-        b64: () => (window[B64] || {})[t.id], script: t.glb.replace(/\.glb$/, '_glb.js'), base: '', error: 'terreno no disponible: ' + t.id,
-      }).then(g => {
-        g.scene.updateMatrixWorld(true);
-        let geo = null;
-        g.scene.traverse(o => { if (o.isMesh && !geo) geo = o.geometry.clone().applyMatrix4(o.matrixWorld); });
-        if (!geo) return null;
-        const c = geo.getAttribute('color');
-        if (c) { geo.setAttribute('splat', c); geo.deleteAttribute('color'); }
-        else geo.setAttribute('splat', new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count * 4).fill(0.25), 4));
-        pintarPlazas(geo);
-        if (!geo.getAttribute('normal')) geo.computeVertexNormals();
-        geo.computeBoundingSphere();
-        const mesh = new THREE.Mesh(geo, sueloMat);
-        mesh.name = 'terreno:' + t.id; mesh.receiveShadow = true; mesh.castShadow = !!R.calidad.sombraTerreno;
-        mesh.matrixAutoUpdate = false; mesh.updateMatrix();
-        scene.add(mesh); chunks.push(mesh);
-        return geo;
-      }).catch(e => { console.warn('AVE terreno:', e && e.message || e); return null; })
-        .then(geo => {
-          estadoT.set(t, 'listo'); nListo++;
-          rectsCargados.push(rectDe(t) || { x0: -1e9, z0: -1e9, x1: 1e9, z1: 1e9 }); // id sin cuadrante: cobertura total
-          if (geo) { geos.push(geo); soldarNormales(geos); } // re-solda con los vecinos ya presentes
-          return reconstruirTG().then(() => {
-            if (geo) G.emit('terrenoTrozo', { id: t.id }); // KIMI-203: la vegetación re-siembra con el suelo ya conocido
-            if (nListo >= trozos.length) completoResolve();
-            if (!arranqueListo && arranque && arranque.every(a => estadoT.get(a) === 'listo')) {
-              arranqueListo = true; G.emit('terrenoListo'); listoResolve();
-            }
-          });
-        });
-      estadoT.set(t, p);
-      return p;
-    }
-    // Muestra de arranque: la posición del jugador; si aún es la del prototipo (a <32 m del centro del
-    // mapa, donde los 4 cuadrantes se tocan), se usa el spawn declarado del mapa. Después, el chequeo
-    // corre cada 400 ms con la posición viva: un trozo se pide al acercarse (vuelo incluido).
-    let arranque = null;
-    const centroRegla = p => MAPA.spawn && Math.hypot(p.x - tcx, p.z - tcz) < 32 ? { x: MAPA.spawn.x, z: MAPA.spawn.z } : p;
-    const chequear = () => {
-      const S = G.S;
-      if (!S || !S.pos) return;
-      const p = centroRegla(S.pos);
-      if (!arranque) arranque = trozos.filter(t => { const r = rectDe(t); return !r || distRect(r, p.x, p.z) <= TRADIO; });
-      for (const t of trozos) {
-        if (estadoT.has(t)) continue;
-        const r = rectDe(t);
-        if (!r || distRect(r, p.x, p.z) <= TRADIO) cargarTrozo(t);
-      }
-    };
-    chequear();
-    const vigilanteT = setInterval(chequear, 400);
-    completo.then(() => clearInterval(vigilanteT));
-    if (!trozos.length) { listoResolve(); completoResolve(); }
-    // Carga de una vez los trozos pendientes (las pruebas que firman el mapa entero, p. ej.
-    // ambienteTest, lo llaman antes de esperar 'completo': con el diferido por cercanía el jugador
-    // quieto en el spawn no los descargaría nunca). En el juego no lo llama nadie: solo el chequeo.
-    cargarTodo = () => { for (const t of trozos) cargarTrozo(t); };
-    // Red de seguridad: si a los 4 s no hubo posición de jugador para decidir (entornos de prueba
-    // raros), se cargan todos como antes: listo/completo nunca pueden quedar colgados.
-    setTimeout(() => { if (!arranque) { arranque = trozos.slice(); for (const t of trozos) cargarTrozo(t); } }, 4000);
+    listo = Promise.all(trozos.map(t => G.assets.loadGLB(t.glb, {
+      b64: () => (window[B64] || {})[t.id], script: t.glb.replace(/\.glb$/, '_glb.js'), base: '', error: 'terreno no disponible: ' + t.id,
+    }).then(g => {
+      g.scene.updateMatrixWorld(true);
+      let geo = null;
+      g.scene.traverse(o => { if (o.isMesh && !geo) geo = o.geometry.clone().applyMatrix4(o.matrixWorld); });
+      if (!geo) return null;
+      const c = geo.getAttribute('color');
+      if (c) { geo.setAttribute('splat', c); geo.deleteAttribute('color'); }
+      else geo.setAttribute('splat', new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count * 4).fill(0.25), 4));
+      pintarPlazas(geo);
+      if (!geo.getAttribute('normal')) geo.computeVertexNormals();
+      geo.computeBoundingSphere();
+      const mesh = new THREE.Mesh(geo, sueloMat);
+      mesh.name = 'terreno:' + t.id; mesh.receiveShadow = true; mesh.castShadow = !!R.calidad.sombraTerreno;
+      mesh.matrixAutoUpdate = false; mesh.updateMatrix();
+      scene.add(mesh); chunks.push(mesh);
+      return geo;
+    }).catch(e => { console.warn('AVE terreno:', e && e.message || e); return null; })))
+      .then(geos => {
+        const ok = geos.filter(Boolean);
+        soldarNormales(ok);
+        const fin = () => G.emit('terrenoListo');
+        if (!ok.length) { fin(); return; }
+        return buildTriGrid(ok).then(fin);
+      });
     G.on('calidad', C => { for (const m of chunks) m.castShadow = !!C.sombraTerreno; });
   } else {
     // ---------- Suelo analítico ----------
@@ -1009,8 +940,8 @@ AVE.module('terreno', function (G) {
   }
 
   return {
-    WORLD, places, pois, poi, rawHeight, height, surfaceY, normalAt, splatAt, sueloEn: (x, z) => !MAPA || rectsCargados.some(r => x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1), cargarTodo, addPlatform, removePlatform, plataformas, platformTop,
+    WORLD, places, pois, poi, rawHeight, height, surfaceY, normalAt, splatAt, addPlatform, removePlatform, plataformas, platformTop,
     flats: FLATS, waterBase, riverX, islas, selvaTepuy, trees: allTrees, groundMaterial, splatMaterial, macroNoise, texRep,
-    mapa: MAPA, chunks, get listo() { return listo; }, get completo() { return completo; }, get exacto() { return TG.ready; }, hmHeight: HM ? hmHeight : null,
+    mapa: MAPA, chunks, get listo() { return listo; }, get exacto() { return TG.ready; }, hmHeight: HM ? hmHeight : null,
   };
 });

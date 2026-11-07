@@ -728,10 +728,6 @@ window.AVMovimientoTest = function (G) {
           SOL.terminar();
           const AX = 74.7, AZ = -167.3, TX2 = 74.7, TZ2 = -143; // llegada 12 m atrás, palo a +z hacia el rincón
           reset(AX, AZ);
-          // KIMI-203: el terreno carga por cercanía y la flora re-siembra al llegar su trozo; el
-          // escenario exige ese estado final (si no, corre con la flora sembrada «a ciegas» del arranque)
-          for (let i = 0; i < 80 && !(G.terreno.sueloEn && G.terreno.sueloEn(AX, AZ)); i++) await new Promise(r => setTimeout(r, 100));
-          await new Promise(r => setTimeout(r, 300)); // 'terrenoTrozo' → re-siembra → rehacerFlora
           Object.assign(M, { flying: true, landing: false, takeoff: 0, grounded: false, vx: 0, vz: 0 }); S.pos.y = H(AX, AZ) + 1.2; S.vy = 0;
           const yw2 = G.camara.yaw, l2 = Math.hypot(TX2 - AX, TZ2 - AZ), ux2 = (TX2 - AX) / l2, uz2 = (TZ2 - AZ) / l2;
           const st2 = { x: ux2 * Math.cos(yw2) - uz2 * Math.sin(yw2), y: ux2 * Math.sin(yw2) + uz2 * Math.cos(yw2) }; // mundo → palo
