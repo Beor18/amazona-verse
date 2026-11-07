@@ -1,0 +1,266 @@
+{
+ "etiqueta": "r3",
+ "pantalla": "1600x900@1 cpuX1",
+ "calidades": {
+  "bajo": {
+   "vistas": {
+    "oeste_pasillo": {
+     "teleport": "ok {\"v\":[165,6.3,172]}",
+     "stats": {
+      "calls": 84,
+      "tris": 258668,
+      "fps": 136,
+      "heap": 123,
+      "tex": 139,
+      "geo": 201,
+      "prog": 104
+     }
+    },
+    "sur": {
+     "teleport": "ok {\"v\":[182,6.4,155]}",
+     "stats": {
+      "calls": 96,
+      "tris": 277418,
+      "fps": 144,
+      "heap": 134,
+      "tex": 137,
+      "geo": 213,
+      "prog": 103
+     }
+    },
+    "este": {
+     "teleport": "ok {\"v\":[199,3.5,172]}",
+     "stats": {
+      "calls": 140,
+      "tris": 454750,
+      "fps": 109,
+      "heap": 121,
+      "tex": 137,
+      "geo": 229,
+      "prog": 104
+     }
+    },
+    "norte": {
+     "teleport": "ok {\"v\":[182,5,189]}",
+     "stats": {
+      "calls": 145,
+      "tris": 450635,
+      "fps": 144,
+      "heap": 144,
+      "tex": 137,
+      "geo": 259,
+      "prog": 106
+     }
+    }
+   },
+   "arena": "ok",
+   "censoTrasDespeje": {
+    "centro": [
+     182,
+     172
+    ],
+    "circulo": {},
+    "pasillo": {},
+    "nCirculo": 0,
+    "nPasillo": 0,
+    "veg": {
+     "fundido": 0.75,
+     "total": 11544,
+     "mallas": 20,
+     "instanciasVisibles": 140,
+     "impostores": 2671,
+     "pasto": 2,
+     "colliders": 134,
+     "arboles": 7307,
+     "bosque": 5372,
+     "tepuy": 307,
+     "copasCima": 0,
+     "ses": {
+      "on": false,
+      "repite": false,
+      "pend": false,
+      "activo": true
+     },
+     "dLod": 25.222373962402344,
+     "arbolesLod": 0,
+     "arbolesMalla": 39,
+     "trisArboles": 58944,
+     "topeTris": 60000,
+     "dArbol": 25.222373962402344,
+     "dSombra": 0,
+     "sombraR": 0,
+     "tope": 300
+    }
+   },
+   "censoFinal": {
+    "centro": [
+     182,
+     172
+    ],
+    "circulo": {},
+    "pasillo": {},
+    "nCirculo": 0,
+    "nPasillo": 0,
+    "veg": {
+     "fundido": 0.75,
+     "total": 11544,
+     "mallas": 18,
+     "instanciasVisibles": 88,
+     "impostores": 5818,
+     "pasto": 17,
+     "colliders": 84,
+     "arboles": 7307,
+     "bosque": 5372,
+     "tepuy": 307,
+     "copasCima": 0,
+     "ses": {
+      "on": false,
+      "repite": false,
+      "pend": false,
+      "activo": true
+     },
+     "dLod": 32.19961452484131,
+     "arbolesLod": 0,
+     "arbolesMalla": 34,
+     "trisArboles": 58845,
+     "topeTris": 60000,
+     "dArbol": 32.19961452484131,
+     "dSombra": 0,
+     "sombraR": 0,
+     "tope": 300
+    }
+   },
+   "erroresConsola": 0
+  },
+  "alto": {
+   "vistas": {
+    "oeste_pasillo": {
+     "teleport": "ok {\"v\":[165,6.3,172]}",
+     "stats": {
+      "calls": 121,
+      "tris": 790017,
+      "fps": 116,
+      "heap": 798,
+      "tex": 186,
+      "geo": 228,
+      "prog": 98
+     }
+    },
+    "sur": {
+     "teleport": "ok {\"v\":[182,6.4,155]}",
+     "stats": {
+      "calls": 129,
+      "tris": 695717,
+      "fps": 136,
+      "heap": 788,
+      "tex": 186,
+      "geo": 233,
+      "prog": 98
+     }
+    },
+    "este": {
+     "teleport": "ok {\"v\":[199,3.5,172]}",
+     "stats": {
+      "calls": 234,
+      "tris": 1478442,
+      "fps": 93,
+      "heap": 807,
+      "tex": 186,
+      "geo": 264,
+      "prog": 99
+     }
+    },
+    "norte": {
+     "teleport": "ok {\"v\":[182,5,189]}",
+     "stats": {
+      "calls": 203,
+      "tris": 1156911,
+      "fps": 116,
+      "heap": 803,
+      "tex": 186,
+      "geo": 322,
+      "prog": 101
+     }
+    }
+   },
+   "arena": "ok",
+   "censoTrasDespeje": {
+    "centro": [
+     182,
+     172
+    ],
+    "circulo": {},
+    "pasillo": {},
+    "nCirculo": 0,
+    "nPasillo": 0,
+    "veg": {
+     "fundido": 0.75,
+     "total": 11544,
+     "mallas": 21,
+     "instanciasVisibles": 859,
+     "impostores": 2341,
+     "pasto": 40,
+     "colliders": 134,
+     "arboles": 7307,
+     "bosque": 5372,
+     "tepuy": 307,
+     "copasCima": 0,
+     "ses": {
+      "on": false,
+      "repite": false,
+      "pend": false,
+      "activo": true
+     },
+     "dLod": 81.03739547729492,
+     "arbolesLod": 216,
+     "arbolesMalla": 206,
+     "trisArboles": 299774,
+     "topeTris": 300000,
+     "dArbol": 49.94068908691406,
+     "dSombra": 29.98616444656564,
+     "sombraR": 30,
+     "tope": 2000
+    }
+   },
+   "censoFinal": {
+    "centro": [
+     182,
+     172
+    ],
+    "circulo": {},
+    "pasillo": {},
+    "nCirculo": 0,
+    "nPasillo": 0,
+    "veg": {
+     "fundido": 0.75,
+     "total": 11544,
+     "mallas": 20,
+     "instanciasVisibles": 634,
+     "impostores": 5565,
+     "pasto": 66,
+     "colliders": 84,
+     "arboles": 7307,
+     "bosque": 5372,
+     "tepuy": 307,
+     "copasCima": 0,
+     "ses": {
+      "on": false,
+      "repite": false,
+      "pend": false,
+      "activo": true
+     },
+     "dLod": 96.33479309082031,
+     "arbolesLod": 194,
+     "arbolesMalla": 181,
+     "trisArboles": 299525,
+     "topeTris": 300000,
+     "dArbol": 67.31222152709961,
+     "dSombra": 29.66484204395251,
+     "sombraR": 30,
+     "tope": 2000
+    }
+   },
+   "erroresConsola": 0
+  }
+ }
+}
