@@ -1,0 +1,48 @@
+{
+ "etiqueta": "qa198-gpu-real",
+ "fecha": "7-nov ~08:30 UTC",
+ "pantalla": "GPU real RX 5700 XT (kimi2_una_bateria.js, pagina limpia por corrida)",
+ "head": "d8786dfc",
+ "nota": "3 corridas aisladas de movementTest para QA-198 (check de camara en pared, umbral 2,5 m). En la VM SwiftShader de la nube dio dist 2,22 y 1,81 intermitentes; con GPU real dist 7,5 DETERMINISTA en 3/3 -> no oscila fuera de la VM.",
+ "runs": [
+  {
+   "run": 1,
+   "passed": 52,
+   "total": 52,
+   "camPared": {
+    "ok": true,
+    "extra": "{\"dentro\":null,\"dist\":7.5}"
+   },
+   "pared": {
+    "ok": true,
+    "extra": "{\"edificio\":\"casa_paja_a@kelvin_aldea_rio_este#0\",\"entradas\":3,\"penetraMax\":0,\"distanciaMin\":2.7}"
+   }
+  },
+  {
+   "run": 2,
+   "passed": 52,
+   "total": 52,
+   "camPared": {
+    "ok": true,
+    "extra": "{\"dentro\":null,\"dist\":7.5}"
+   },
+   "pared": {
+    "ok": true,
+    "extra": "{\"edificio\":\"casa_paja_a@kelvin_aldea_rio_este#0\",\"entradas\":3,\"penetraMax\":0,\"distanciaMin\":2.7}"
+   }
+  },
+  {
+   "run": 3,
+   "passed": 52,
+   "total": 52,
+   "camPared": {
+    "ok": true,
+    "extra": "{\"dentro\":null,\"dist\":7.5}"
+   },
+   "pared": {
+    "ok": true,
+    "extra": "{\"edificio\":\"casa_paja_a@kelvin_aldea_rio_este#0\",\"entradas\":3,\"penetraMax\":0,\"distanciaMin\":2.7}"
+   }
+  }
+ ]
+}
