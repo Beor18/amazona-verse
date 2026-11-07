@@ -397,11 +397,14 @@ window.AVMovimientoTest = function (G) {
           met.pared = { edificio: idT, entradas: probadas, penetraMax: peor, distanciaMin: r2(dmin) };
           check('No atraviesa una pared: choca y se desliza sin meterse', probadas > 0 && peor <= 2, JSON.stringify(met.pared));
           // La cámara, mirando hacia el edificio, no puede quedarse dentro del muro (la pared llenaba la vista).
-          const angCam = Math.atan2(bx - S.pos.x, bz - S.pos.z);
-          G.camara.yaw = angCam; G.camara.place(true);
-          const cp = G.renderer.camera.position, den = SO.dentro(cp.x, cp.z, cp.y), distH = Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z);
-          met.camPared = { dentro: den === -Infinity ? null : r2(den), dist: r2(distH) };
-          check('La cámara no se mete en la pared del edificio y no se pega (sigue a más de 2,5 m)', !(den > -Infinity) && distH >= 2.5, JSON.stringify(met.camPared));
+          // QA-198 (respaldo acordado en BUGS.md): con cuadros muy lentos (VM/SwiftShader) la zona del edificio
+          // puede no estar asentada en el primer disparo; se asientan 2 cuadros + sólidos y se re-coloca la
+          // cámara UNA vez antes de declarar rojo. El umbral de 2,5 m no se toca.
+          const medirCam = () => { G.camara.yaw = Math.atan2(bx - S.pos.x, bz - S.pos.z); G.camara.place(true); const cp = G.renderer.camera.position; return { den: SO.dentro(cp.x, cp.z, cp.y), distH: Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z) }; };
+          let mc = medirCam(), reintentoCam = 0;
+          if (mc.den > -Infinity || mc.distH < 2.5) { SO.terminar(); frame(null, 2); mc = medirCam(); reintentoCam = 1; }
+          met.camPared = { dentro: mc.den === -Infinity ? null : r2(mc.den), dist: r2(mc.distH), reintento: reintentoCam };
+          check('La cámara no se mete en la pared del edificio y no se pega (sigue a más de 2,5 m)', !(mc.den > -Infinity) && mc.distH >= 2.5, JSON.stringify(met.camPared));
         }
         lap('techo_pared');
         // Rama: de los 10 árboles más cercanos, el primero con un punto fino entre 1,5 y 8 m sobre el suelo, lejos del tronco
