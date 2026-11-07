@@ -10,7 +10,7 @@
     "que": "Todo en el enlace principal (V18 encendida por defecto)",
     "donde": "src/boot.js y pruebas",
     "quien": "Nube",
-    "estado": "en pruebas"
+    "estado": "hecho"
    },
    {
     "que": "Batería completa de pruebas sin rojos reales",
@@ -23,24 +23,18 @@
     "donde": "streaming y render",
     "quien": "Kimi 2",
     "estado": "en curso"
-   },
-   {
-    "que": "Tuerca y Guardián del Primer Vuelo en el juego",
-    "donde": "puerto.js y su actividad",
-    "quien": "Kimi 3",
-    "estado": "en curso (no frena el hito 1)"
    }
   ],
   "optimizar": [
    {
+    "que": "Carga inicial ≤ 7 MB estable (a veces entra un modelo de 3,4 MB antes de jugar)",
+    "donde": "carga diferida de modelos",
+    "quien": "Otra cuenta (W19)"
+   },
+   {
     "que": "iPhone en calidad baja (memoria de GPU, QA-110)",
     "donde": "render y texturas",
     "quien": "Kimi"
-   },
-   {
-    "que": "Carga inicial ≤ 7 MB con la V18 por defecto",
-    "donde": "carga diferida de personajes y retratos",
-    "quien": "Kimi 1"
    },
    {
     "que": "Chromebook escolar (QA-181)",
@@ -56,22 +50,16 @@
     "estado": "en curso"
    },
    {
-    "que": "Inglés de la fuente de «canoa» (cap. 3, CG-51)",
-    "donde": "content/ep3",
-    "quien": "Nube",
-    "estado": "en curso"
-   },
-   {
     "que": "Bugs abiertos propios de cada capítulo",
     "donde": "docs/equipo/BUGS.md",
-    "quien": "Otra cuenta (W27)",
+    "quien": "Otra cuenta (W29: actividades en el teléfono)",
     "estado": "en curso"
    },
    {
     "que": "Maestro Moon, Tuerca y Guardián probados en móvil",
     "donde": "src/game/v18",
     "quien": "Kimi 3",
-    "estado": "Moon hecho"
+    "estado": "hechos"
    }
   ]
  }
