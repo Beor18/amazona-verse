@@ -104,7 +104,7 @@
         if (introPendiente() && typeof inicioReal === 'function') { guardar({ intro: 0 }); setTimeout(() => { if (!G.dialogo.open()) inicioReal(G); }, 300); }
         p = Promise.resolve(true);
       } else if (modo === 'golf') { // minigolf de Villa Raíz (src/game/v18/minigolf.js): es del cap. 1; desde otro capítulo se abre el cap. 1 con ?mini=golf
-        if (P.id !== 'cap1') { apuntarCapitulo('cap1'); try { const u = new URL(location.href); u.searchParams.set('mini', 'golf'); location.href = u.toString(); } catch (e) { /* sin URL */ } p = Promise.resolve(true); }
+        if (P.id !== 'cap1') { apuntarCapitulo('cap1'); try { const u = new URL(location.href); u.searchParams.delete('pack'); u.searchParams.set('mini', 'golf'); /* sin ?pack: abre el cap. 1 (revisión 7-nov) */ location.href = u.toString(); } catch (e) { /* sin URL */ } p = Promise.resolve(true); }
         else p = listo().then(() => new Promise(res => {
           // la apertura del cap. 1 queda pendiente para Aventura: si asoma mientras se juega al minigolf, se corta (no tapa el hoyo)
           const sinApertura = () => { try { if (document.getElementById('c1-fade') && G.c && G.c.apertura) G.c.apertura.fin(); } catch (e) { /* sin apertura */ } };

@@ -42,7 +42,7 @@ window.AVV18Minigolf = function (G) {
     REPOSO = 0.12, CAIDA = 3.2, EMBUDO = 3.5, T_MAX = 25, PERIODO = 1.3, GIRO = 1.1;
   const TXT = {
     label: 'Jugar al minigolf', nombre: 'Minigolf de Villa Raíz', invita: 'Minigolf de Villa Raíz: lleva la semilla gigante hasta el nido. Pulsa Acción junto a ella.',
-    empieza: '¡Hoyo 1, par 3! Lleva la semilla gigante al nido con los menos golpes.',
+    empieza: '¡Hoyo 1, par 3! Lleva la semilla gigante al nido en los menos golpes que puedas.',
     empiezaPar: '¡Hoyo 1, par 3! Par 3 quiere decir que lo ideal es meterla en el nido en 3 golpes.',
     guia: '← → o arrastra: apuntar · Mantén Espacio: fuerza · G: Grito · R: reiniciar · Esc: salir',
     guiaT: 'Arrastra o usa ◀ ▶ para apuntar · Mantén Golpear y suelta',
@@ -80,7 +80,8 @@ window.AVV18Minigolf = function (G) {
   const nombre = i => 'Jugador ' + (i + 1), turnoTxt = i => 'Turno: ' + nombre(i), ganaTxt = i => '¡Gana ' + nombre(i) + '!';
   const jugTxt = (i, n) => nombre(i) + ': ' + n, nidoJTxt = (i, n) => nombre(i) + (n === 1 ? ': ¡Al nido en 1 golpe!' : ': ¡Al nido en ' + n + ' golpes!');
   const golpesTxt = n => 'Golpes: ' + n, recordTxt = n => 'Récord: ' + n, nidoTxt = n => n === 1 ? '¡Al nido en 1 golpe!' : '¡Al nido en ' + n + ' golpes!';
-  const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  // Se lee en cada uso (como duelo2.js): la prueba simula un aparato táctil cambiando matchMedia
+  const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2400); } catch (e) { /* sin interfaz */ } };
   const fx = (k, x, y, z, n) => { try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
@@ -564,7 +565,10 @@ window.AVV18Minigolf = function (G) {
       if (on && !A.invitado && !A.manual && Math.hypot(S.pos.x - P_TEE.x, S.pos.z - P_TEE.z) < 10 && it.visible() && avisoLibre()) { A.invitado = true; toast(TXT.invita, 3600); }
       return;
     }
-    if (A.giro) { G.camara.yaw += A.giro * GIRO * dt; if (G.camara.manual) try { G.camara.manual(); } catch (e) { /* */ } }
+    // Táctil: arrastrar en la mitad izquierda de la pantalla agarra el joystick (input.js; oculto en el hoyo) en vez de girar la
+    // cámara; sin esto ese arrastre no apuntaba. El joystick a los lados apunta como ◀ ▶ (Vittata no se mueve: seguir() la ancla).
+    const giro = A.giro || -((G.input && G.input.stick && G.input.stick.x) || 0);
+    if (giro) { G.camara.yaw += giro * GIRO * dt; if (G.camara.manual) try { G.camara.manual(); } catch (e) { /* */ } }
     if (A.cargando) { A.cargaT += dt; const k = (A.cargaT / PERIODO) % 2; A.carga = k <= 1 ? k : 2 - k; }
     if (A.fase === 'rueda' || A.timers.length) {
       A.acc += Math.min(dt, 0.25);
@@ -584,7 +588,7 @@ window.AVV18Minigolf = function (G) {
   const modo = {
     activo: () => A.fase !== 'nada',
     accion: () => { if (A.eligiendo) elegir(1); else if (A.fase === 'nido') salir(TXT.sale); else if (A.cargando) soltarCarga(); else empezarCarga(); },
-    aviso: () => (TACTIL ? TXT.guiaT : TXT.guia),
+    aviso: () => (tactil() ? TXT.guiaT : TXT.guia),
     get verbo() { return A.fase === 'nido' ? TXT.seguir : A.cargando ? TXT.soltar : TXT.golpe; }
   };
   const TRAGAR = new Set(['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's', ' ', 'g', 'r', 'escape', 'e', 'enter', 'f', 'v', 'x', 'c', '1', '2', '3', '4', '5', '6', '7']);
@@ -688,7 +692,7 @@ window.AVV18Minigolf = function (G) {
       [1, 2, 3, 4].map(n => `<button data-a="j${n}">${TXT['j' + n]}</button>`).join('') + `</div>` +
       `<div class="vg-elige-salir"><button data-a="salir">${TXT.salir}</button></div></div>` +
       `<div data-k="bot"><div class="vg-bot"><button data-a="izq" aria-label="${TXT.izq}">◀</button><button class="vg-golpe" data-a="golpe">${TXT.golpe}</button><button data-a="der" aria-label="${TXT.der}">▶</button></div>` +
-      `<div class="vg-bot2"><button data-a="grito" data-k="bgrito">${TXT.poder}</button><button data-a="reiniciar">${TXT.reiniciar}</button><button data-a="salir">${TXT.salir}</button></div><div class="vg-guia" data-k="guia">${TACTIL ? TXT.guiaT : TXT.guia}</div></div>` +
+      `<div class="vg-bot2"><button data-a="grito" data-k="bgrito">${TXT.poder}</button><button data-a="reiniciar">${TXT.reiniciar}</button><button data-a="salir">${TXT.salir}</button></div><div class="vg-guia" data-k="guia">${tactil() ? TXT.guiaT : TXT.guia}</div></div>` +
       `<div class="vg-fin" data-k="fin" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><div class="vg-tabla" data-k="tabla" hidden></div><p data-k="fin3"></p>` +
       `<div class="vg-bot2"><button data-a="otra">${TXT.otra}</button><button data-a="seguir">${TXT.seguir}</button></div></div></div>`;
     const boton = e => e.target.closest && e.target.closest('button[data-a]');
@@ -717,7 +721,7 @@ window.AVV18Minigolf = function (G) {
   const texto = (k, t) => { const e = hud.q(k); if (e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } }; // una vez: el traductor no pelea
   function pintar() {
     if (!hud) return;
-    texto('golpes', golpesTxt(A.golpes));
+    texto('golpes', golpesTxt(A.golpes)); texto('guia', tactil() ? TXT.guiaT : TXT.guia);
     const r = record(), m = multi(); texto('record', m ? '' : r ? recordTxt(r.mejor) : TXT.sinRecord);
     const tu = hud.q('turno'); texto('turno', m && A.fase !== 'nido' ? turnoTxt(A.turno) : ''); tu.style.color = m ? COLORES[A.turno] : '';
     if (m) { // golpes de cada uno (se rehace solo si cambia)
@@ -988,6 +992,94 @@ window.AVV18Minigolf = function (G) {
       check('Botón «4 jugadores» (táctil): 4 jugadores, cada uno con su color', A.njug === 4 && J.length === 4 && hud.q('jugs').children.length === 4 && new Set(COLORES).size === 4 && hud.q('elige').hidden);
       salir();
       check('Salir de una partida por turnos vuelve a 1 jugador y quita las marcas', A.njug === 1 && J.length === 0 && !aroTurno.visible && fantasmas.every(g => !g.visible) && hex(0) === false && record() === null);
+      // 14 (§5). Controles en móvil: aparato táctil simulado (matchMedia de puntero grueso, como duelo2.js y combate.js) y toques
+      // sintéticos (PointerEvent pointerType 'touch', como AV.tactilTest) en el lienzo y en los botones del HUD
+      {
+        const mm0 = window.matchMedia, cv = G.renderer && G.renderer.canvas, stEl = document.getElementById('stick'), st = (G.input && G.input.stick) || { x: 0, y: 0 };
+        const estSt = stEl ? stEl.style.cssText : '', raiz = document.documentElement.classList;
+        const toque = (el, tipo, o) => el.dispatchEvent(new PointerEvent(tipo, Object.assign({ bubbles: true, cancelable: true, pointerType: 'touch', isPrimary: true, clientX: 0, clientY: 0 }, o)));
+        const pulsa = (sel, id) => { const b = hud.el.querySelector(sel), r = b.getBoundingClientRect(), o = { pointerId: id, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 }; toque(b, 'pointerdown', o); return { b, o }; };
+        const suelta = (p, tipo) => toque(p.b, tipo || 'pointerup', p.o);
+        const bot = a => '[data-k="bot"] [data-a="' + a + '"]';
+        const alineado = d => { const sp = Math.hypot(B.vx, B.vz); return sp > 0 ? (B.vx * d.x + B.vz * d.z) / sp : 0; };
+        let fr = null;
+        try {
+          window.matchMedia = q => (/pointer:\s*coarse/.test(q) ? { matches: true, media: q, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, onchange: null } : mm0.call(window, q));
+          if (A.fase !== 'nada') salir();
+          iniciar({ forzar }); suelta(pulsa('[data-k="elige"] [data-a="j1"]', 30)); correr(0.05);
+          check('Móvil: en táctil la guía del hoyo y el aviso de Acción nombran los botones, no las teclas', tactil() && A.njug === 1 && !A.eligiendo && !hud.q('bot').hidden &&
+            hud.q('guia').textContent === TXT.guiaT && G.interaccion.modo.aviso() === TXT.guiaT && !/Espacio|\bG:|Esc/.test(TXT.guiaT), hud.q('guia').textContent);
+          // Apuntar arrastrando: en el lado de la cámara el lienzo gira la vista; en el lado del joystick (oculto en el hoyo) también apunta
+          const zurdo = raiz.contains('a11y-zurdo'), W = window.innerWidth, y = Math.round(window.innerHeight * 0.35);
+          const xCam = Math.round(W * (zurdo ? 0.2 : 0.8)), xPalo = Math.round(W * (zurdo ? 0.8 : 0.2)), sgn = zurdo ? -1 : 1;
+          const yaw0 = G.camara.yaw;
+          toque(cv, 'pointerdown', { pointerId: 32, clientX: xCam, clientY: y });
+          toque(cv, 'pointermove', { pointerId: 32, clientX: xCam - 14, clientY: y }); // pasa la zona muerta
+          toque(cv, 'pointermove', { pointerId: 32, clientX: xCam - 64, clientY: y });
+          toque(cv, 'pointerup', { pointerId: 32, clientX: xCam - 64, clientY: y });
+          correr(0.05);
+          const yaw1 = G.camara.yaw, ancla1 = sitioVittata();
+          check('Móvil: arrastrar el dedo por la pantalla gira la mira (sin golpear ni mover a Vittata)', yaw1 > yaw0 + 0.1 && A.fase === 'apuntar' && A.golpes === 0 && puntos.visible &&
+            Math.hypot(S.pos.x - ancla1.x, S.pos.z - ancla1.z) < 0.6, JSON.stringify({ yaw0: +yaw0.toFixed(3), yaw1: +yaw1.toFixed(3) }));
+          if (stEl) stEl.style.display = 'block'; // en la ventana de escritorio de la prueba el joystick está con display:none
+          toque(cv, 'pointerdown', { pointerId: 33, clientX: xPalo, clientY: y });
+          toque(cv, 'pointermove', { pointerId: 33, clientX: xPalo + 60 * sgn, clientY: y });
+          const empuja = st.x; correr(0.4); const yaw2 = G.camara.yaw, anc2 = sitioVittata(), quieta = Math.hypot(S.pos.x - anc2.x, S.pos.z - anc2.z);
+          toque(cv, 'pointerup', { pointerId: 33, clientX: xPalo + 60 * sgn, clientY: y });
+          check('Móvil: arrastrar en el lado del joystick (oculto en el hoyo) también apunta y Vittata no se va', raiz.contains('a11y-unamano') ||
+            (Math.abs(empuja) > 0.2 && Math.abs(yaw2 - yaw1) > 0.2 && Math.sign(yaw1 - yaw2) === Math.sign(empuja) && quieta < 0.6 && st.x === 0 && A.fase === 'apuntar'),
+            JSON.stringify({ palo: +empuja.toFixed(2), yaw: [+yaw1.toFixed(3), +yaw2.toFixed(3)], quieta: +quieta.toFixed(2) }));
+          // ◀ ▶ mientras se mantienen
+          const yaw3 = G.camara.yaw, pi = pulsa(bot('izq'), 34); correr(0.3); const yawI = G.camara.yaw, onI = pi.b.classList.contains('on'); suelta(pi);
+          const pd = pulsa(bot('der'), 35); correr(0.3); const yawD = G.camara.yaw; suelta(pd); correr(0.05);
+          check('Móvil: ◀ ▶ apuntan mientras se mantienen y paran al soltar', yawI > yaw3 + 0.2 && onI && yawD < yawI - 0.2 && A.giro === 0 && !pi.b.classList.contains('on') && Math.abs(G.camara.yaw - yawD) < 1e-9,
+            JSON.stringify([+yaw3.toFixed(3), +yawI.toFixed(3), +yawD.toFixed(3)]));
+          // Cargar manteniendo Golpear y soltar: golpe hacia donde apunta la mira
+          const pg = pulsa(bot('golpe'), 36); correr(0.45);
+          const carga = { cargando: A.cargando, carga: +A.carga.toFixed(2), barra: hud.q('barra').style.width }, dGol = dir(); suelta(pg);
+          check('Móvil: mantener «Golpear» carga la fuerza (barra) y al soltar la semilla sale hacia la mira', carga.cargando && carga.carga > 0.15 && carga.barra !== '0%' &&
+            A.fase === 'rueda' && A.golpes === 1 && !A.cargando && alineado(dGol) > 0.99, JSON.stringify(Object.assign(carga, { fase: A.fase, golpes: A.golpes, alineado: +alineado(dGol).toFixed(3) })));
+          // Grito con su botón (con la semilla rodando)
+          correr(0.1); const pgr = pulsa(bot('grito'), 37); suelta(pgr);
+          check('Móvil: el botón «Grito» lanza el Grito del Yunque con la semilla rodando', A.grito && hud.q('bgrito').textContent === TXT.usado, hud.q('bgrito').textContent);
+          hastaQuieta();
+          // Un dedo que el sistema cancela (pointercancel) no golpea
+          if (A.fase !== 'apuntar') reiniciar();
+          const g0 = A.golpes, pc = pulsa(bot('golpe'), 38); correr(0.3); const cargaba = A.cargando; suelta(pc, 'pointercancel');
+          check('Móvil: si el sistema cancela el toque (pointercancel), «Golpear» no golpea', cargaba && !A.cargando && A.fase === 'apuntar' && A.golpes === g0);
+          // Botones grandes (≥ 44 px) y dentro de la pantalla en un teléfono de 390 px: maqueta con las hojas de estilo reales
+          fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+          fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:390px;height:844px;border:0';
+          const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => `<link rel="stylesheet" href="${l.href}">`).join('');
+          const css = document.getElementById('v18-golf-css');
+          fr.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${css ? css.outerHTML : ''}</head><body class="v18-golf-on">${hud.el.outerHTML}</body></html>`;
+          document.body.appendChild(fr);
+          await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+          const md = fr.contentDocument, mal = [];
+          const panel = (nombreP, lado, vis) => {
+            const e = md.getElementById('v18-golf'); e.hidden = false; e.classList.toggle('vg-lado', lado);
+            for (const k of ['elige', 'bot', 'fin']) e.querySelector('[data-k="' + k + '"]').hidden = k !== vis;
+            const bs = [...e.querySelectorAll('[data-k="' + vis + '"] button')];
+            if (!bs.length) mal.push(nombreP + ': sin botones');
+            for (const b of bs) {
+              const r = b.getBoundingClientRect();
+              if (r.width < 44 || r.height < 44 || r.left < 0 || r.right > 390 || r.bottom > 844 || r.top < 0) mal.push(`${nombreP} «${b.textContent.trim()}» ${Math.round(r.width)}×${Math.round(r.height)} en ${Math.round(r.left)}–${Math.round(r.right)}`);
+            }
+            if (md.documentElement.scrollWidth > 390) mal.push(nombreP + ': scroll horizontal ' + md.documentElement.scrollWidth);
+          };
+          if (!md || !md.getElementById('v18-golf')) mal.push('la maqueta no cargó');
+          else { panel('hoyo', false, 'bot'); panel('elegir', true, 'elige'); panel('final', false, 'fin'); }
+          check('Móvil: a 390 px todos los botones del hoyo (jugar, elegir jugadores, final) miden ≥ 44 px y no se salen de la pantalla', !mal.length, mal.join(' · '));
+          // Salir con su botón
+          const ps = pulsa(bot('salir'), 39); suelta(ps);
+          check('Móvil: el botón «Salir» deja el hoyo y devuelve el control', A.fase === 'nada' && hud.el.hidden && G.interaccion.modo !== modo && !document.body.classList.contains('v18-golf-on'));
+        } catch (e) { check('Móvil: controles táctiles sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
+        window.matchMedia = mm0;
+        try { if (cv) for (const id of [32, 33]) toque(cv, 'pointerup', { pointerId: id }); } catch (e) { /* ya sueltos */ }
+        if (stEl) { stEl.style.cssText = estSt; stEl.classList.remove('flotando'); }
+        if (fr) fr.remove();
+        if (A.fase !== 'nada') salir();
+      }
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
     try { if (A.fase !== 'nada') salir(); } catch (e) { /* ya fuera */ }
     A.manual = false; A.invitado = true; puntos.visible = false;
@@ -1002,7 +1094,7 @@ window.AVV18Minigolf = function (G) {
   // Acceso directo (Kelvin 7-nov: «no lo veo publicado para probarlo»): botón «Minigolf» en el menú de pausa del cap. 1
   // y enlace ?mini=golf. Lleva a Vittata a la entrada del hoyo de Villa Raíz y empieza la partida.
   function irYJugar() {
-    if (!K || !ofrecible() || A.fase !== 'nada') return false;
+    if (!K || !ofrecible() || A.fase !== 'nada' || otroActivo()) return false; // no en medio de un encuentro V18 (revisión 7-nov)
     if (M.flying) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } }
     S.pos.x = P_ENTRADA.x; S.pos.z = P_ENTRADA.z; S.pos.y = H(S.pos.x, S.pos.z) + 0.05; S.vy = 0; M.vx = M.vz = 0;
     return iniciar({ forzar: true });
@@ -1021,11 +1113,11 @@ window.AVV18Minigolf = function (G) {
         tile.addEventListener('click', () => setTimeout(irYJugar, 0));
         grid.appendChild(tile);
       }
-      tile.hidden = !(K && ofrecible() && A.fase === 'nada');
+      tile.hidden = !(K && ofrecible() && A.fase === 'nada' && !otroActivo());
     });
     if (/[?&]mini=golf\b/.test(location.search)) {
       let n = 0;
-      const probar = () => { if (libre() && !otroActivo() && irYJugar()) return; if (++n < 180) setTimeout(probar, 1000); };
+      const probar = () => { const portada = document.getElementById('title'); if (!(portada && portada.open) && libre() && !otroActivo() && irYJugar()) return; /* espera a que se cierre la portada, como los demás ?mini= */ if (++n < 180) setTimeout(probar, 1000); };
       setTimeout(probar, 1500);
     }
   }
