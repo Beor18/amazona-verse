@@ -58,7 +58,7 @@
       "ttf",
       "otf"
     ],
-    "conservar": ["assets/comic/plantilla/*", "assets/retratos/v18/*"],
+    "conservar": ["assets/comic/plantilla/*", "assets/retratos/v18/*", "assets/models/edificios/tex_hd/*_lq.jpg"],
     "quitar": []
   },
   "texturas": {
