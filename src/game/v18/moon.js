@@ -46,7 +46,7 @@ window.AVV18Moon = function (G) {
   const reloj = s => (Math.max(0, s)).toFixed(1).replace('.', ',') + ' s';
 
   const A = { fase: 'nada', t: 0, cuenta: 0, toques: 0, mercy: 0, lanzarEn: 0, altoT: 0, orbs: [], forzar: false, manual: false, ultimo: null, xpT: 0 };
-  const activa = () => !!(G.V18 || A.forzar);
+  const activa = () => !!((G.V18 && G.pack && G.pack.id === 'cap1') || A.forzar); // QA-192: la actividad es de Villa Raíz; la prueba la fuerza con A.forzar
 
   // ---------- Progreso ----------
   function record() { const r = V.mundo(ID); return r && typeof r === 'object' ? r : null; }
@@ -276,6 +276,12 @@ window.AVV18Moon = function (G) {
       try { ir(SITIO.x + 4, SITIO.z + 4); correr(0.3); await esperar(200); correr(0.1);
         sinBandera = !N.instancia(NPC) && N.activos().indexOf(NPC) < 0 && mapa() === null && !empezar(); } finally { G.V18 = v18bk; }
       check('2 · Sin la bandera V18 no aparece Moon, ni su marcador, ni se puede empezar el entreno', sinBandera, N.activos().join(','));
+      // 2b · QA-192: con la V18 encendida pero fuera del cap. 1 (packs 2-6) tampoco aparece
+      const packBk = G.pack && G.pack.id; let fueraPack = false;
+      if (packBk) { G.pack.id = 'ep4';
+        try { ir(SITIO.x + 4, SITIO.z + 4); correr(0.3); await esperar(200); correr(0.1);
+          fueraPack = !N.instancia(NPC) && N.activos().indexOf(NPC) < 0 && mapa() === null && !empezar(); } finally { G.pack.id = packBk; } }
+      check('2b · Con la V18 encendida fuera del cap. 1 (pack ep4) no aparece Moon ni su marcador ni el entreno (QA-192)', packBk ? fueraPack : true, 'pack ' + packBk + ' · activos ' + N.activos().join(','));
       A.forzar = true;
       // 3 · lejos: carga diferida
       const villa = (T.mapa && T.mapa.lugares && T.mapa.lugares.villa) || { x: 150, z: 170 };
