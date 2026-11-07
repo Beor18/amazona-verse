@@ -1,0 +1,113 @@
+{
+ "tarea": "KIMI-219-ab",
+ "modo": "despues",
+ "ts": "2026-11-07T23:40:36.232Z",
+ "carga": {
+  "archivos": 200,
+  "totalBytes": 19904922,
+  "porTipo": {
+   ".css": 157975,
+   ".png": 1039033,
+   ".js": 4107531,
+   ".woff2": 53176,
+   ".glb": 11540608,
+   ".json": 4529,
+   ".jpg": 3002070
+  },
+  "top12": [
+   {
+    "u": "vittata.glb",
+    "b": 1313316
+   },
+   {
+    "u": "three.min.js",
+    "b": 603745
+   },
+   {
+    "u": "complejo_ruinas.glb",
+    "b": 575892
+   },
+   {
+    "u": "terreno_no.glb",
+    "b": 456160
+   },
+   {
+    "u": "terreno_ne.glb",
+    "b": 456160
+   },
+   {
+    "u": "terreno_se.glb",
+    "b": 456160
+   },
+   {
+    "u": "terreno_so.glb",
+    "b": 456152
+   },
+   {
+    "u": "templo_mediano_h_lejos.glb",
+    "b": 445284
+   },
+   {
+    "u": "hd_savage_lq1024.jpg",
+    "b": 406347
+   },
+   {
+    "u": "hd_ancient_lq1024.jpg",
+    "b": 327046
+   },
+   {
+    "u": "complejo_ruinas_lejos.glb",
+    "b": 310428
+   },
+   {
+    "u": "templo_grande_d_lejos.glb",
+    "b": 309300
+   }
+  ]
+ },
+ "captura": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi219\\k219_ab_despues.jpg",
+ "diff": {
+  "px": 78090,
+  "pct": 23.724,
+  "media": 5.719
+ },
+ "puertas": {
+  "movementTest": {
+   "passed": 52,
+   "total": 52,
+   "fallos": []
+  },
+  "v18DescubrirTest": {
+   "passed": 26,
+   "total": 26,
+   "fallos": []
+  },
+  "bohiosTest": {
+   "passed": 27,
+   "total": 27,
+   "fallos": []
+  },
+  "v18GuardianTest": {
+   "passed": 23,
+   "total": 23,
+   "fallos": []
+  },
+  "v18PuertoTest": {
+   "passed": 47,
+   "total": 47,
+   "fallos": []
+  },
+  "streamingTest": {
+   "error": "WS"
+  }
+ },
+ "consola": {
+  "errores": 4,
+  "muestras": [
+   "EXC {\"exceptionId\":1,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:53805/index.html?v18=1&calidad=bajo\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decode",
+   "EXC {\"exceptionId\":2,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:53805/index.html?v18=1&calidad=bajo\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decode",
+   "EXC {\"exceptionId\":3,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:53805/index.html?v18=1&calidad=bajo\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decode",
+   "EXC {\"exceptionId\":4,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:53805/index.html?v18=1&calidad=bajo\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decode"
+  ]
+ }
+}
