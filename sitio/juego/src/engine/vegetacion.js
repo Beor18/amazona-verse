@@ -995,7 +995,7 @@ AVE.module('vegetacion', function (G) {
   // despejar(x0, z0, x1, z1, dentro) quita las instancias con el pie dentro de la caja y dentro(x, z, modelo, info, escala) cierto:
   // salen de sus celdas (ni malla, ni impostor, ni sombra, ni collider), su mancha se apaga, su posición pasa a un sitio
   // lejano con escala 0 (los que leen instancias —cámara, minimapa, juice— ya no la ven) y los sólidos de flora se rehacen.
-  // Solo lo llama la demo V18.1 (?v18=1); sin llamarlo no cambia nada. Devuelve cuántas quitó.
+  // Solo lo llama la V18 (bandera encendida por defecto; ?v18=0 la apaga); sin llamarlo no cambia nada. Devuelve cuántas quitó.
   const LEJOS_DESPEJE = 1e6;
   function despejar(x0, z0, x1, z1, dentro) {
     if (!activo) return 0;

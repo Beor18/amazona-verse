@@ -548,7 +548,7 @@ window.AVV18Duelo2 = function (G) {
   async function test() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     salir(); try { Cb.salir(); } catch (e) { /* sin duelo abierto */ }
-    const v18on0 = G.V18; G.V18 = true; // el arnés abre el juego sin ?v18=1: la prueba se hace como en la demo y luego se deja la bandera como estaba
+    const v18on0 = G.V18; G.V18 = true; // el arnés puede abrir el juego con ?v18=0: la prueba se hace como en la demo y luego se deja la bandera como estaba
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, inv0 = JSON.stringify(S.inv || {}), esp0 = D.esp2;
     const P = G.v18, crudo = (() => { try { return localStorage.getItem(P.clave()); } catch (e) { return null; } })();
     const guardar0 = G.guardado && G.guardado.save; let guardados = 0;

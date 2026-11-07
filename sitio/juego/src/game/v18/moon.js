@@ -267,12 +267,15 @@ window.AVV18Moon = function (G) {
       r.ultimo = A.ultimo; return r;
     };
     try {
-      check('1 · Sin la bandera no se cargó nada: ni moon.js ni el modelo de Moon', antes.v18 ? true : (!antes.moon && !antes.glb), antes.v18 ? 'bandera puesta en esta sesión' : JSON.stringify(antes));
+      check('1 · Con la bandera apagada (?v18=0) no se cargó nada: ni moon.js ni el modelo de Moon', antes.v18 ? true : (!antes.moon && !antes.glb), antes.v18 ? 'bandera puesta en esta sesión (por defecto; la carga se comprueba con ?v18=0)' : JSON.stringify(antes));
       cancelar(); A.forzar = false; V.cambiarMundo(ID, null);
       // 2 · sin bandera (y sin forzar), aunque Vittata esté al lado, no aparece nada
-      ir(SITIO.x + 4, SITIO.z + 4); correr(0.3); await esperar(200); correr(0.1);
-      const sinBandera = G.V18 ? true : (!N.instancia(NPC) && N.activos().indexOf(NPC) < 0 && mapa() === null && !empezar());
-      check('2 · Sin la bandera V18 no aparece Moon, ni su marcador, ni se puede empezar el entreno', sinBandera, G.V18 ? 'bandera puesta' : N.activos().join(','));
+      // (la V18 va encendida por defecto desde el 6-nov: se apaga G.V18 solo durante este bloque, como con ?v18=0, y se deja como estaba)
+      const v18bk = G.V18; let sinBandera = false;
+      G.V18 = false;
+      try { ir(SITIO.x + 4, SITIO.z + 4); correr(0.3); await esperar(200); correr(0.1);
+        sinBandera = !N.instancia(NPC) && N.activos().indexOf(NPC) < 0 && mapa() === null && !empezar(); } finally { G.V18 = v18bk; }
+      check('2 · Sin la bandera V18 no aparece Moon, ni su marcador, ni se puede empezar el entreno', sinBandera, N.activos().join(','));
       A.forzar = true;
       // 3 · lejos: carga diferida
       const villa = (T.mapa && T.mapa.lugares && T.mapa.lugares.villa) || { x: 150, z: 170 };
@@ -302,7 +305,7 @@ window.AVV18Moon = function (G) {
         for (const t of tr) mT = Math.min(mT, Math.hypot(x - t.x, z - t.z) - t.r);
         for (const c of cols) mT = Math.min(mT, dCol(x, z, c));
         if (G.solidos && G.solidos.activo && [0.3, 0.9, 1.5, 2.5].some(y => G.solidos.dentro(x, z, h + y) > -Infinity)) solido++; }
-      const puerto = { x: 73.6, z: -75.2 }, golf = G.v18minigolf && G.v18minigolf.sitio, duelo = G.v18combate && G.v18combate.sitio, chispa = G.v18chispa && G.v18chispa.SITIO, misterio = G.v18Misterio && G.v18Misterio.sitio && G.v18Misterio.sitio();
+      const puerto = { x: 73.6, z: -75.2 }, golf = G.v18minigolf && G.v18minigolf.sitio, duelo = G.v18combate && G.v18combate.sitio, chispa = G.v18chispa && G.v18chispa.SITIO && (G.v18chispa.SITIO.salida || G.v18chispa.SITIO), /* el SITIO de Chispa es { salida, puntos } */ misterio = G.v18Misterio && G.v18Misterio.sitio && G.v18Misterio.sitio();
       const dist = q => q ? Math.hypot(q.x - SITIO.x, q.z - SITIO.z) : Infinity;
       const lejos = { puerto: dist(puerto), villa: dist(villa), golf: dist(golf), duelo: dist(duelo), chispa: dist(chispa), misterio: dist(misterio) };
       check('5 · Sitio abierto: círculo de 11 m en seco, sin troncos, colisiones ni sólidos; lejos de puerto, golf, duelo, Chispa y el misterio (> 100 m)',

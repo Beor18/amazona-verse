@@ -117,8 +117,19 @@
     });
     return gltf;
   }
+  // KIMI-177: normal plana 2×2 (RGB 128,128,255) en data URI. En «bajo» sustituye a la normal gigante del kit
+  // de la ciudad (JPEG de ~14 MB referenciado por URI dentro de los GLB cerca/lejos: GLTFLoader la pedía al
+  // parsear aunque el material propio se descartara al fusionarse con el atlas AV_HD). Mismo criterio que el
+  // atlas («el relieve va en el atlas, solo en alta», streaming.js): a DPR 0,75 no se aprecia. El predicado
+  // de calidad lo fija streaming.js; si la calidad sube, el gancho 'calidad' engancha la normal verdadera.
+  const NORMAL_PLANA = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGNoaPgPRAwQCgA19gf9SShDzAAAAABJRU5ErkJggg==';
+  let normalPlanaBaja = () => false;
+  const TEX_HD_NORMAL = /\/tex_hd\/hd_(ancient|savage)_n\.jpg([?#].*)?$/;
+  function setNormalPlanaBaja(f) { normalPlanaBaja = typeof f === 'function' ? f : () => !!f; }
   function cargador() {
-    const L = new THREE.GLTFLoader();
+    const mgr = new THREE.LoadingManager();
+    mgr.setURLModifier(url => (normalPlanaBaja() && TEX_HD_NORMAL.test(url)) ? NORMAL_PLANA : url);
+    const L = new THREE.GLTFLoader(mgr);
     if (window.MeshoptDecoder && L.setMeshoptDecoder) L.setMeshoptDecoder(window.MeshoptDecoder);
     return L;
   }
@@ -181,7 +192,7 @@
   registrarCache();
 
   window.AVE = window.AVE || {};
-  AVE.assets = { script, loadGLB, image, imagenRetenida: retenida };
+  AVE.assets = { script, loadGLB, image, imagenRetenida: retenida, setNormalPlanaBaja };
 
   AVE.module('assets', function () {
     const loader = new THREE.TextureLoader();
@@ -191,6 +202,6 @@
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
       return t;
     }
-    return { script, loadGLB, image, tex, loader };
+    return { script, loadGLB, image, tex, loader, setNormalPlanaBaja };
   });
 })();

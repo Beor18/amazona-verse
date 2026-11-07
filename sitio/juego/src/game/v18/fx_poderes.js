@@ -1,5 +1,5 @@
 /* Juego · V18.1 «El mundo que cambia contigo» (Kelvin 5-nov) · FX de los dos poderes de la demo D7 (frente A).
-   Contrato en docs/equipo/V18_CONTRATOS.md. Solo se carga con la bandera V18 (?v18=1 o localStorage amazonaverse.v18 = '1')
+   Contrato en docs/equipo/V18_CONTRATOS.md. Solo se carga con la bandera V18 (encendida por defecto; se apaga con ?v18=0 o localStorage amazonaverse.v18on = '0')
    desde boot.js (aDemanda + alPrimerGesto); AV.v18FxTest() lo carga bajo demanda para probarlo.
    - Grito del Yunque (Vittata, familia PICO): onda(origen, direccion, alcance) lanza 2-3 anillos de onda sonora que salen
      del pico hacia delante, se abren y se desvanecen a lo largo del alcance (empujar e interrumpir lo aplica combate.js).

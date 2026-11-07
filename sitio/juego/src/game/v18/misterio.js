@@ -5,7 +5,7 @@
    Al repararlo, la Maraña se retira: el mundo que cambia contigo. Inliminable (la bandada no lo limpia),
    sin recompensa, sin diario, sin avisos: es un misterio que se ve y se oye.
    Coste: 0 draw calls extra (los 2 de siempre de la Maraña, instanciados) y 0 texturas nuevas.
-   Detrás de la bandera ?v18=1 (src/boot.js). Prueba: AV.v18MisterioTest(). */
+   Detrás de la bandera V18 (src/boot.js; encendida por defecto, ?v18=0 la apaga). Prueba: AV.v18MisterioTest(). */
 window.AVV18Misterio = function (G) {
   'use strict';
   if (G.v18Misterio) return G.v18Misterio;

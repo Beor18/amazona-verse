@@ -335,12 +335,15 @@ window.AVV18Guardian = function (G) {
       r.ultimo = A.ultimo; return r;
     };
     try {
-      check('1 · Sin la bandera no se cargó nada: ni guardian.js ni el modelo del Guardián', antes.v18 ? true : (!antes.guardian && !antes.glb), antes.v18 ? 'bandera puesta en esta sesión' : JSON.stringify(antes));
+      check('1 · Con la bandera apagada (?v18=0) no se cargó nada: ni guardian.js ni el modelo del Guardián', antes.v18 ? true : (!antes.guardian && !antes.glb), antes.v18 ? 'bandera puesta en esta sesión (por defecto; la carga se comprueba con ?v18=0)' : JSON.stringify(antes));
       cancelar(); A.forzar = false; V.cambiarMundo(ID, null);
       // 2 · sin bandera (y sin forzar), aunque Vittata esté al lado, no aparece nada
-      ir(SITIO.salida.x + 4, SITIO.salida.z + 4); correr(0.3); await esperar(200); correr(0.1);
-      const sinBandera = G.V18 ? true : (!N.instancia(NPC) && N.activos().indexOf(NPC) < 0 && mapa() === null && !empezar());
-      check('2 · Sin la bandera V18 no aparece el Guardián, ni su marcador, ni se puede empezar el circuito', sinBandera, G.V18 ? 'bandera puesta' : N.activos().join(','));
+      // (la V18 va encendida por defecto desde el 6-nov: se apaga G.V18 solo durante este bloque, como con ?v18=0, y se deja como estaba)
+      const v18bk = G.V18; let sinBandera = false;
+      G.V18 = false;
+      try { ir(SITIO.salida.x + 4, SITIO.salida.z + 4); correr(0.3); await esperar(200); correr(0.1);
+        sinBandera = !N.instancia(NPC) && N.activos().indexOf(NPC) < 0 && mapa() === null && !empezar(); } finally { G.V18 = v18bk; }
+      check('2 · Sin la bandera V18 no aparece el Guardián, ni su marcador, ni se puede empezar el circuito', sinBandera, N.activos().join(','));
       A.forzar = true;
       // 3 · lejos: carga diferida
       const villa = (T.mapa && T.mapa.lugares && T.mapa.lugares.villa) || { x: 150, z: 170 };
@@ -398,7 +401,7 @@ window.AVV18Guardian = function (G) {
           const yv = (ant.alt != null ? gy(ant) : H(ant.x, ant.z) + 1.2) + (p.alt != null ? gy(p) - (ant.alt != null ? gy(ant) : H(ant.x, ant.z) + 1.2) : H(p.x, p.z) + 1.2 - (ant.alt != null ? gy(ant) : H(ant.x, ant.z) + 1.2)) * s2 / L;
           pasillo = Math.min(pasillo, yv - H(x, z)); }
         ant = p; }
-      const puerto = { x: 73.6, z: -75.2 }, golf = G.v18minigolf && G.v18minigolf.sitio, duelo = G.v18combate && G.v18combate.sitio, chispa = G.v18chispa && G.v18chispa.SITIO, moon = G.v18moon && G.v18moon.SITIO, misterio = G.v18Misterio && G.v18Misterio.sitio && G.v18Misterio.sitio();
+      const puerto = { x: 73.6, z: -75.2 }, golf = G.v18minigolf && G.v18minigolf.sitio, duelo = G.v18combate && G.v18combate.sitio, chispa = G.v18chispa && G.v18chispa.SITIO && (G.v18chispa.SITIO.salida || G.v18chispa.SITIO), /* el SITIO de Chispa es { salida, puntos } */ moon = G.v18moon && G.v18moon.SITIO, misterio = G.v18Misterio && G.v18Misterio.sitio && G.v18Misterio.sitio();
       const dist = q => q ? Math.hypot(q.x - SITIO.salida.x, q.z - SITIO.salida.z) : Infinity;
       const lejos = { puerto: dist(puerto), villa: dist(villa), golf: dist(golf), duelo: dist(duelo), chispa: dist(chispa), moon: dist(moon), misterio: dist(misterio) };
       check('5 · Sitio abierto: salida en seco (centro con ≥ 0,7 m de colisiones y troncos (solo aloja al NPC), pendiente ≤ 1,3 (ladera interior: circuito 100 % aéreo)); ' + tray.length + ' tramos con pasillo ≥ 2,2 m sobre el terreno, puertas sin sólidos y ≥ 1,5 m de troncos; actividades V18 a ≥ 80 m sin solapamiento',

@@ -95,9 +95,12 @@
     if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
     if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); alPrimerGesto(fauna); } // src/game/fauna.js
     const cargarVecinos = aDemanda('src/game/vecinos.js', 'AVVecinos'); AV.vecinosTest = o => cargarVecinos().then(v => v.test(o)); alPrimerGesto(cargarVecinos); // CG-44
-    // V18.1 «El mundo que cambia contigo» (Kelvin 5-nov): solo con la bandera (?v18=1 o localStorage amazonaverse.v18on = '1'; QA-164: no es la clave del progreso <almacen>.v18).
-    // Sin ella no se carga nada nuevo y la versión estable queda igual. Contrato: docs/equipo/V18_CONTRATOS.md.
-    const v18On = (() => { try { return /[?&]v18=1\b/.test(location.search) || localStorage.getItem('amazonaverse.v18on') === '1'; } catch (e) { return false; } })();
+    // V18.1 «El mundo que cambia contigo» (Kelvin 5-nov). Kelvin 6-nov: ENCENDIDA por defecto en el enlace principal (docs/DECISION_LOG.md).
+    // Se apaga con ?v18=0 o localStorage amazonaverse.v18on = '0' (QA-164: no es la clave del progreso <almacen>.v18); ?v18=1 / '1' la encienden.
+    // Apagada no se carga nada nuevo y queda la versión estable anterior. Contrato: docs/equipo/V18_CONTRATOS.md.
+    const v18Bandera = (search, leerClave) => { const q = /[?&]v18=([01])\b/.exec(search || ''); if (q) return q[1] === '1'; try { return leerClave() !== '0'; } catch (e) { return true; } };
+    AV.v18Bandera = v18Bandera; // la prueba de progreso.js (AV.v18Test) comprueba que ?v18=0 y la clave '0' la apagan
+    const v18On = v18Bandera(location.search, () => localStorage.getItem('amazonaverse.v18on'));
     G.V18 = v18On;
     const cargarV18 = aDemanda('src/game/v18/progreso.js', 'AVV18Progreso'); AV.v18Test = o => cargarV18().then(v => v.test(o));
     const cargarV18Fx = aDemanda('src/game/v18/fx_poderes.js', 'AVV18Fx'); AV.v18FxTest = o => cargarV18Fx().then(v => v.test(o)); if (v18On) alPrimerGesto(cargarV18Fx); // KIMI-061: FX de los poderes (G.v18fx)

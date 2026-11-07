@@ -1,7 +1,7 @@
 /* Juego · V18.1 «El mundo que cambia contigo» (Kelvin 5-nov) · progreso compartido (frente D).
    UN solo dueño del progreso del ciclo V18.1: los frentes A (combate), B (reparar) y C (especies) leen y escriben aquí, nunca
    en un almacén propio. Contrato en docs/equipo/V18_CONTRATOS.md.
-   - Solo existe con la bandera V18 (?v18=1, o localStorage `<almacen>.v18on` = '1'; QA-164: la bandera tiene su propia clave,
+   - Solo existe con la bandera V18 (encendida por defecto desde el 6-nov; se apaga con ?v18=0 o localStorage `<almacen>.v18on` = '0'; QA-164: la bandera tiene su propia clave,
      no la del progreso): la versión estable no cambia.
    - Almacén `<almacen>.v18` = { v: 1, especies: { <speciesId>: estado }, inv: { <itemId>: n }, otorgados: { <rewardKey>: true },
      mundo: { <worldChangeId>: estado }, sel: <speciesId|null>, evo: { ... } }.
@@ -117,6 +117,14 @@ window.AVV18Progreso = function (G) {
             clave() + ' vs ' + claveBandera + ' · bandera=' + b1);
         } catch (e) { check('QA-164: guardar el progreso no borra la bandera de arranque (claves distintas)', false, e && e.message); }
         try { if (b0 == null) localStorage.removeItem(claveBandera); else localStorage.setItem(claveBandera, b0); } catch (e) { /* sin almacenamiento */ }
+      }
+      // Kelvin 6-nov: la V18 va encendida por defecto; ?v18=0 o la clave '0' la apagan (versión estable anterior); ?v18=1 / '1' la encienden
+      {
+        const B = window.AV && window.AV.v18Bandera, k = v => () => v, roto = () => { throw new Error('sin almacenamiento'); };
+        const casos = B ? [['', k(null), true], ['', k('1'), true], ['', k('0'), false], ['?v18=0', k(null), false], ['?pack=cap1&v18=0', k('1'), false],
+          ['?v18=1', k('0'), true], ['?v18=10', k('0'), false], ['', roto, true]].map(([q, c, esp]) => [q, B(q, c) === esp]) : [];
+        check('Bandera V18 por defecto encendida; ?v18=0 y la clave «0» la apagan; ?v18=1 la enciende (boot.js)', !!B && casos.every(c => c[1]),
+          B ? casos.filter(c => !c[1]).map(c => c[0] || '(sin query)').join(',') || 'ok' : 'AV.v18Bandera no existe');
       }
     } catch (e) { check('Sin excepciones', false, e && e.message); }
     try { if (crudo == null) localStorage.removeItem(clave()); else localStorage.setItem(clave(), crudo); } catch (e) { /* sin almacenamiento */ }
