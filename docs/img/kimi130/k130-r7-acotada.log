@@ -1,0 +1,45 @@
+[combate] 40/40 OK base=82fps err=0
+=== MOON ===
+· preparar: ok: portada → creador → Empezar (Coral Solar) → carga 7343 ms (listo) → intro saltada
+· v18MoonTest: 18/18
+  OK   1 · Con la bandera apagada (?v18=0) no se cargó nada: ni moon.js ni el modelo de Moon  ·  bandera puesta en esta sesión (por defecto; la carga se comprueba con ?v18=0)
+  OK   2 · Sin la bandera V18 no aparece Moon, ni su marcador, ni se puede empezar el entreno
+  OK   3 · Carga diferida: lejos (> 150 m) no está Moon ni se pidió su modelo  ·  dist 339 m · Δrecursos 0
+  OK   4 · Cerca (< 90 m) aparece Moon con su modelo propio y sus acciones (Idle, Hablar, Señalar); máx. 2 personajes  ·  Idle,Hablar,Señalar · activos maestromoon
+  OK   5 · Sitio abierto: círculo de 11 m en seco, sin troncos, colisiones ni sólidos; lejos de puerto, golf, duelo, Chispa y el misterio (> 100 m)  ·  libre 0.90 m · pendiente 0.07 · mojado 0 · sólidos 0 · puerto 241 villa 339 golf — duelo — chispa — misterio —
+  OK   6 · Marcador del minimapa en Moon, con nombre
+  OK   7a · Junto a Moon, Acción ofrece el entrenamiento  ·  v18npc_maestromoon
+  OK   7 · Esquivando (órbita a 9 m) se gana: 30 s con menos de 3 toques  ·  {"toques":0,"pasos":991,"maxOrbs":2}
+  OK   8 · Resultado y récord en el progreso V18 (mundo.entreno_moon)  ·  {"mejor":0,"victorias":1,"jugadas":1,"xp":true}
+  OK   9 · 30 XP al ganar la primera vez  ·  [["vittata",30,"moon"]]
+  OK   10 · Quieta sin moverse pierde: 3 toques y el entreno acaba antes de los 30 s  ·  {"gana":false,"toques":3,"nuevo":false} · 11.1 s
+  OK   11 · Perder no cambia el récord ni da XP; cuenta la partida  ·  {"mejor":0,"victorias":1,"jugadas":2,"xp":true}
+  OK   12 · Tras recargar siguen el récord, las victorias y las partidas  ·  {"mejor":0,"victorias":1,"jugadas":2,"xp":true}
+  OK   13 · Otra victoria no repite la XP: pagarXP tras recargar no da nada  ·  [["vittata",30,"moon"]]
+  OK   14 · Alejarse > 45 m cancela sin contar partida; volar > 11 m durante 3 s también cancela  ·  jugadas 3
+  OK   15 · Todos los textos de Moon tienen inglés en content/cap1/en.js
+  OK   15b · Ningún texto ni dato menciona el nombre del modelador (directiva V18.3 §1)
+  OK   16 · No toca el inventario del capítulo
+· errores de consola: 0
+=== GUARDIAN ===
+· preparar: ok: portada → creador → Empezar (Lluvia Azul) → carga 7351 ms (listo) → intro saltada
+· v18GuardianTest: 18/18
+  OK   1 · Con la bandera apagada (?v18=0) no se cargó nada: ni guardian.js ni el modelo del Guardián  ·  bandera puesta en esta sesión (por defecto; la carga se comprueba con ?v18=0)
+  OK   2 · Sin la bandera V18 no aparece el Guardián, ni su marcador, ni se puede empezar el circuito
+  OK   3 · Carga diferida: lejos (> 150 m) no está el Guardián ni se pidió su modelo  ·  dist 297 m · Δrecursos 0
+  OK   4 · Cerca (< 90 m) aparece el Guardián con su modelo propio y sus acciones (Idle, Hablar); máx. 2 personajes  ·  Idle,Hablar · activos guardian
+  OK   5 · Sitio abierto: salida en seco (centro con ≥ 0,7 m de colisiones y troncos (solo aloja al NPC), pendiente ≤ 1,3 (ladera interior: circuito 100 % aéreo)); 6 tramos con pasillo ≥ 2,2 m sobre el terreno, puertas sin sólidos y ≥ 1,5 m de troncos; actividades V18 a ≥ 80 m sin solapamiento  ·  largo 107 m · libre 2.14 m · pendiente 1.04 · mojado 0 · sólidos 0/0 · pasillo 2.4 m · puertas-troncos 1.8 m · peorPuerta {"puerta":2,"id":"?","d":1.8} · peorCol {"id":"?","x":-65,"z":-37,"d":2.15} · peorTronco {"m":"tabonuco","x":-65,"z":-37,"d":2.14} · puerto 142 villa 297 golf — duelo — chispa — moon — misterio —
+  OK   6 · Marcador del minimapa en el Guardián, con nombre
+  OK   7a · Junto al Guardián, Acción ofrece el circuito  ·  v18npc_guardian
+  OK   7 · Volando las 5 puertas en orden y volviendo a la salida se completa el circuito, cronometrado  ·  {"ms":200,"orden":"012345","pasos":97}
+  OK   8 · Resultado y récord en el progreso V18 (mundo.circuito_guardian)  ·  {"mejor":200,"vueltas":1,"jugadas":1,"xp":true}
+  OK   9 · 30 XP al completar la primera vez  ·  [["vittata",30,"guardian"]]
+  OK   10 · El orden importa: estar 0,7 s en la puerta 2 no la cuenta (sigue en la 1); el circuito solo acaba en la salida tras la 5  ·  {"ms":900,"orden":"012345","visto2":0}
+  OK   11 · Completar de nuevo no quita el récord mejor ni repite la XP  ·  {"mejor":200,"vueltas":2,"jugadas":2,"xp":true}
+  OK   12 · Tras recargar siguen el récord, las vueltas y las jugadas  ·  {"mejor":200,"vueltas":2,"jugadas":2,"xp":true}
+  OK   13 · Otra vuelta completada no repite la XP: pagarXP tras recargar no da nada  ·  [["vittata",30,"guardian"]]
+  OK   14 · En circuito el minimapa marca la puerta siguiente; alejarse > 80 m cancela sin contar la vuelta
+  OK   15 · Todos los textos del Guardián tienen inglés en content/cap1/en.js
+  OK   15b · Ningún texto ni dato menciona el nombre del modelador (directiva V18.3 §1)
+  OK   16 · No toca el inventario del capítulo
+· errores de consola: 0
