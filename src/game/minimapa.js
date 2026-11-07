@@ -222,7 +222,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
 @media (max-height:520px) and (orientation:landscape){body:has(#minimapa:not([hidden])) #subtitulos{right:200px}}
 #mapa-grande{inset:0;z-index:calc(var(--z-card) + 1);display:grid;place-items:center;padding:calc(env(safe-area-inset-top,0px) + 8px) max(8px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 8px) max(8px,env(safe-area-inset-left,0px));background:rgba(8,16,24,.55)}
 #mapa-grande[hidden]{display:none}
-#mapa-grande .mg-panel{--lado:min(calc(100vw - 32px),calc(100dvh - 190px),560px);width:calc(var(--lado) + 16px);max-width:100%;box-sizing:border-box;padding:8px;border-radius:18px;background:rgba(18,30,42,.96);border:2px solid rgba(255,255,255,.85);color:#fff;font:600 calc(13px * var(--fs-k,1))/1.3 var(--font-body,sans-serif)}
+#mapa-grande .mg-panel{--lado:min(calc(100vw - 32px),calc(100dvh - 190px),560px);width:calc(var(--lado) + 16px);max-width:100%;max-height:calc(100dvh - 16px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;padding:8px;border-radius:18px;background:rgba(18,30,42,.96);border:2px solid rgba(255,255,255,.85);color:#fff;font:600 calc(13px * var(--fs-k,1))/1.3 var(--font-body,sans-serif)}
 #mapa-grande .mg-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
 #mapa-grande h2{margin:0 auto 0 4px;font:700 calc(16px * var(--fs-k,1))/1.2 var(--font-display,inherit)}
 #mapa-grande .mg-head button{min-height:44px;padding:0 12px;border-radius:999px;border:2px solid rgba(255,255,255,.7);background:#243a50;color:#fff;font:700 calc(13px * var(--fs-k,1))/1 var(--font-body,sans-serif);cursor:pointer}
