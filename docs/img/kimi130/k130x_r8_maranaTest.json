@@ -1,0 +1,21 @@
+{
+ "etiqueta": "k130-extra-r8",
+ "test": "maranaTest",
+ "bandera": "v18=1",
+ "pantalla": "movil 390x844@3 (kimi2_k130_extra)",
+ "head": null,
+ "base": null,
+ "pruebas": {
+  "marana": {
+   "esperadoMin": 1,
+   "head": null,
+   "test": {
+    "passed": 13,
+    "total": 13,
+    "fallos": []
+   },
+   "erroresConsola": [],
+   "heapMB": 232
+  }
+ }
+}
