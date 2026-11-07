@@ -1235,14 +1235,45 @@ AVE.module('vegetacion', function (G) {
         const total = bolaPx(foto(0, true)); if (total < 40) continue;
         const f0 = foto(0, false), sin = bolaPx(f0); if (sin > total * 0.6) continue; // la planta no la tapa lo bastante
         const f1 = foto(fu0, false), con = bolaPx(f1);
-        // lo que no está en el cono no cambia: píxeles distintos lejos de la esfera (fuera del 40 % central)
-        let fuera = 0, nFuera = 0;
-        for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) {
-          if (Math.abs(xx - W / 2) < W * 0.2 && Math.abs(yy - H / 2) < H * 0.2) continue;
-          nFuera++; const k = (yy * W + xx) * 4;
-          if (f0[k] !== f1[k] || f0[k + 1] !== f1[k + 1] || f0[k + 2] !== f1[k + 2]) fuera++;
+        // Lo que no está en el cono no cambia. La caja central de pantalla no basta: el cono
+        // cámara→pecho proyecta fuera de ella cerca de la cámara (t < ~0,45 con FOV 55°: un
+        // fragmento a 1–3 m dentro del cono cambia a >24 px del centro). Máscara exacta en
+        // mundo: se excluye del recuento todo píxel cuyo rayo atraviesa el cono (los píxeles
+        // que el fundido recorta legítimamente, la feature misma); fuera de la máscara el
+        // render tiene que ser idéntico con y sin fundido (cualquier difusión ahí sería leak).
+        const coneMask = new Uint8Array(W * H);
+        {
+          const tanV = Math.tan((cam.fov || 55) * Math.PI / 360), aspect = W / H;
+          const fwd = cam.getWorldDirection(new THREE.Vector3());
+          const right = new THREE.Vector3().crossVectors(fwd, cam.up).normalize();
+          const up = new THREE.Vector3().crossVectors(right, fwd);
+          const ax = cam.position.x, ay = cam.position.y, az = cam.position.z;
+          const abx = pecho.x - ax, aby = pecho.y - ay, abz = pecho.z - az;
+          const ab2 = abx * abx + aby * aby + abz * abz, abLen = Math.sqrt(ab2);
+          for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) {
+            const u = ((xx + 0.5) / W * 2 - 1) * tanV * aspect, v = (1 - (yy + 0.5) / H * 2) * tanV;
+            let dx = fwd.x + right.x * u + up.x * v, dy = fwd.y + right.y * u + up.y * v, dz = fwd.z + right.z * u + up.z * v;
+            const dl = Math.hypot(dx, dy, dz); dx /= dl; dy /= dl; dz /= dl;
+            for (let s = 0.6; s < abLen + 0.6; s += 0.4) {
+              const px2 = ax + dx * s, py2 = ay + dy * s, pz2 = az + dz * s;
+              const t = ((px2 - ax) * abx + (py2 - ay) * aby + (pz2 - az) * abz) / ab2;
+              if (t <= 0.02 || t >= 1) continue;
+              const r = FU.radio * (0.25 + 0.75 * t) * 1.2 + 0.12; // 20 % + 0,12 m de margen (muestreo)
+              const qx = px2 - (ax + abx * t), qy = py2 - (ay + aby * t), qz = pz2 - (az + abz * t);
+              if (qx * qx + qy * qy + qz * qz < r * r) { coneMask[yy * W + xx] = 1; break; }
+            }
+          }
         }
-        mejor = { planta: c.m + ' #' + c.i, a: Math.round(c.d) + ' m', total, sin, con, fuera, nFuera };
+        let fuera = 0, nFuera = 0, fueraCaja = 0;
+        for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) {
+          const inCaja = Math.abs(xx - W / 2) < W * 0.2 && Math.abs(yy - H / 2) < H * 0.2;
+          if (inCaja) continue;
+          nFuera++; const k = (yy * W + xx) * 4;
+          const diff = f0[k] !== f1[k] || f0[k + 1] !== f1[k + 1] || f0[k + 2] !== f1[k + 2];
+          if (diff && coneMask[yy * W + xx]) fueraCaja++; // diagnóstico: cambian pero están en el cono (legítimo)
+          if (diff && !coneMask[yy * W + xx]) fuera++;
+        }
+        mejor = { planta: c.m + ' #' + c.i, a: Math.round(c.d) + ' m', total, sin, con, fuera, nFuera, fueraCaja };
         break;
       }
     } finally {
@@ -1251,9 +1282,9 @@ AVE.module('vegetacion', function (G) {
       ocultos.forEach(o => { o.visible = true; });
     }
     const M = mejor;
-    check('B1 (GPU): una planta real que tapa a Vittata se funde: sin fundido se ve < 60 % de ella, con fundido > 70 %; fuera del cono no cambia ningún píxel',
+    check('B1 (GPU): una planta real que tapa a Vittata se funde: sin fundido se ve < 60 % de ella, con fundido > 70 %; fuera del cono cámara→pecho (máscara en mundo) no cambia ningún píxel',
       M && M.con >= M.total * 0.7 && M.con > M.sin + (M.total - M.sin) * 0.5 && M.fuera === 0,
-      M ? JSON.stringify({ planta: M.planta, a: M.a, visible_sin: r2(M.sin / M.total), visible_con: r2(M.con / M.total), px_esfera: M.total, cambian_fuera: M.fuera + '/' + M.nFuera }) : 'ninguna planta cerca del inicio la tapaba');
+      M ? JSON.stringify({ planta: M.planta, a: M.a, visible_sin: r2(M.sin / M.total), visible_con: r2(M.con / M.total), px_esfera: M.total, cambian_fuera: M.fuera + '/' + M.nFuera, en_cono: M.fueraCaja }) : 'ninguna planta cerca del inicio la tapaba');
   }
   async function test() {
     const P = G.pruebas, { check, result } = P.runner();
