@@ -224,13 +224,13 @@ window.AVV18Explorar = function (G) {
       if (b.hidden === ver) b.hidden = !ver;
       if (ver) {
         // QA-191 (móvil): si el aviso de Acción (#prompt) queda a la altura del botón, el botón sube por encima y no tapa el nombre
-        let alto = innerHeight - ra.top + 10;
+        let alto = window.innerHeight - ra.top + 10;
         const pr = document.getElementById('prompt');
         if (pr && !pr.hidden) {
-          const rp = pr.getBoundingClientRect(), anchoB = b.offsetWidth || 120, izqB = innerWidth - Math.max(8, innerWidth - ra.right) - anchoB;
-          if (rp.height && rp.right > izqB && innerHeight - rp.top + 8 > alto - 4 && innerHeight - rp.bottom < alto + (b.offsetHeight || 44)) alto = Math.max(alto, innerHeight - rp.top + 8);
+          const rp = pr.getBoundingClientRect(), anchoB = b.offsetWidth || 120, izqB = window.innerWidth - Math.max(8, window.innerWidth - ra.right) - anchoB;
+          if (rp.height && rp.right > izqB && window.innerHeight - rp.top + 8 > alto - 4 && window.innerHeight - rp.bottom < alto + (b.offsetHeight || 44)) alto = Math.max(alto, window.innerHeight - rp.top + 8);
         }
-        const bo = Math.round(alto) + 'px', de = Math.max(8, Math.round(innerWidth - ra.right)) + 'px'; if (b.style.bottom !== bo) b.style.bottom = bo; if (b.style.right !== de) b.style.right = de;
+        const bo = Math.round(alto) + 'px', de = Math.max(8, Math.round(window.innerWidth - ra.right)) + 'px'; if (b.style.bottom !== bo) b.style.bottom = bo; if (b.style.right !== de) b.style.right = de;
       }
       if (ver) { const nombre = (G.v18hab && G.v18hab.get(G.v18hab.poderDe(especie())) || {}).nombre || 'Poder'; if (b.textContent !== nombre) b.textContent = nombre; }
     }
@@ -312,8 +312,8 @@ window.AVV18Explorar = function (G) {
         else {
           const ra = acts.getBoundingClientRect(), h0 = b.hidden;
           b.hidden = false;
-          b.style.bottom = Math.round(innerHeight - ra.top + 10) + 'px';
-          b.style.right = Math.max(8, Math.round(innerWidth - ra.right)) + 'px';
+          b.style.bottom = Math.round(window.innerHeight - ra.top + 10) + 'px';
+          b.style.right = Math.max(8, Math.round(window.innerWidth - ra.right)) + 'px';
           const rb = b.getBoundingClientRect(), ri = imp.getBoundingClientRect();
           const solapa = !(rb.right <= ri.left || ri.right <= rb.left || rb.bottom <= ri.top || ri.bottom <= rb.top);
           let robo = false;

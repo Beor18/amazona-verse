@@ -539,7 +539,7 @@
       vertical: { atras: 6.6, alto: 4.2, adelante: 5.5, mY: 0.15, fov: 62 },
     };
     const cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), asp: null, prev: '' };
-    function aspecto() { if (cam.asp) return cam.asp; const el = R.renderer && R.renderer.domElement, w = el ? el.clientWidth : innerWidth, h = el ? el.clientHeight : innerHeight; return h > 0 ? w / h : 1.6; }
+    function aspecto() { if (cam.asp) return cam.asp; const el = R.renderer && R.renderer.domElement, w = el ? el.clientWidth : window.innerWidth, h = el ? el.clientHeight : window.innerHeight; return h > 0 ? w / h : 1.6; }
     const modoCam = () => (aspecto() < 1 ? 'vertical' : 'ancho');
     function reencuadrar() { if (!st.activo) return; const f = CAMS[modoCam()].fov; if (Math.abs(R.camera.fov - f) > 0.01) { R.camera.fov = f; R.camera.updateProjectionMatrix(); } }
     addEventListener('resize', reencuadrar); addEventListener('orientationchange', () => { reencuadrar(); setTimeout(reencuadrar, 350); });
@@ -708,7 +708,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
       J.arr = { id: id == null ? 1 : id, x0: x, l0: J.objetivo != null ? J.objetivo : J.lado }; J.objetivo = J.arr.l0;
       arrancar(); return true;
     }
-    function arrastrar(x) { if (!J.arr || st.fase === 'fin') return; const w = (R.renderer && R.renderer.domElement && R.renderer.domElement.clientWidth) || innerWidth || 1; J.objetivo = J.arr.l0 + (x - J.arr.x0) / w * P.arrastre; }
+    function arrastrar(x) { if (!J.arr || st.fase === 'fin') return; const w = (R.renderer && R.renderer.domElement && R.renderer.domElement.clientWidth) || window.innerWidth || 1; J.objetivo = J.arr.l0 + (x - J.arr.x0) / w * P.arrastre; }
     // ---------- Modalidades: botones, cambio y textos ----------
     const NOMBRE_MODO = { puntos: 'Clásico', reloj: 'Contrarreloj', fantasma: 'Contra tu fantasma' };
     function botonesModo() { return MODOS.map(m => `<button class="btn ghost secondary" type="button" data-rr-modo="${m}" aria-pressed="false">${NOMBRE_MODO[m]}</button>`).join(''); }
@@ -963,7 +963,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
           check('Antes de mover nada la canoa espera (fase listo)', st.fase === 'listo' && (paso(0.5), st.fase === 'listo' && J.s === P.inicio));
           const l0 = J.lado; J.der = true; arrancar(); for (let k = 0; k < 12; k++) paso(1 / 60); J.der = false;
           check('La tecla → (o D) arranca y lleva la canoa a la derecha', st.fase === 'juego' && J.lado > l0 + 0.3 && J.s > P.inicio, (J.lado - l0).toFixed(2) + ' m');
-          J.vl = 0; const l1 = J.lado; toqueEn(200, 7); arrastrar(200 - ((R.renderer.domElement.clientWidth || innerWidth) * 0.15)); for (let k = 0; k < 30; k++) paso(1 / 60);
+          J.vl = 0; const l1 = J.lado; toqueEn(200, 7); arrastrar(200 - ((R.renderer.domElement.clientWidth || window.innerWidth) * 0.15)); for (let k = 0; k < 30; k++) paso(1 / 60);
           check('Un dedo: arrastrar a la izquierda lleva la canoa a la izquierda (sin pasar de la velocidad lateral)', J.lado < l1 - 0.5 && Math.abs(J.vl) <= P.vLat + 1e-6, (J.lado - l1).toFixed(2) + ' m');
           J.arr = null; J.objetivo = null; J.vl = 0;
           J.der = true; for (let k = 0; k < 120; k++) paso(1 / 60); J.der = false;

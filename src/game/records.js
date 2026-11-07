@@ -1025,7 +1025,7 @@
         const grande = [...root.querySelectorAll('button')].filter(b => b.getClientRects().length && b.offsetHeight < 44);
         check('Los botones del panel miden 44 px o más', grande.length === 0, grande.length + ' pequeños');
         const rb = root.querySelector('.rec-box'), cuerpo = root.querySelector('.rec-body');
-        check('Nada se desborda a lo ancho', rb.scrollWidth <= rb.clientWidth + 1 && cuerpo.scrollWidth <= cuerpo.clientWidth + 1 && rb.getBoundingClientRect().right <= innerWidth + 1, `${cuerpo.scrollWidth}/${cuerpo.clientWidth} en ${innerWidth}`);
+        check('Nada se desborda a lo ancho', rb.scrollWidth <= rb.clientWidth + 1 && cuerpo.scrollWidth <= cuerpo.clientWidth + 1 && rb.getBoundingClientRect().right <= window.innerWidth + 1, `${cuerpo.scrollWidth}/${cuerpo.clientWidth} en ${window.innerWidth}`);
         check('Sin logros, las seis insignias salen vacías', /Mis descubrimientos/.test(txt) && /Aún sin combo/.test(txt) && /Aún sin tiempo/.test(txt) && root.querySelectorAll('#rec-descubrimientos .rec-ins').length === 6);
         localStorage.setItem(pruebas.trucos, JSON.stringify({ v: 1, mejor: 3 }));
         localStorage.setItem(pruebas.escondite, JSON.stringify({ v: 1, mejor: 42.5 }));

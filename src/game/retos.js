@@ -1099,7 +1099,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         const cam = R.camera, v3 = new THREE.Vector3(_qf.x, _qf.y + 2.3, _qf.z).project(cam), d = Math.hypot(_qf.x - S.pos.x, _qf.y - S.pos.y, _qf.z - S.pos.z);
         const ver = v3.z < 1 && d < 90 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1;
         f.tag.style.display = ver ? '' : 'none';
-        if (ver) f.tag.style.transform = `translate(${((v3.x + 1) / 2 * innerWidth).toFixed(0)}px, ${((1 - v3.y) / 2 * innerHeight).toFixed(0)}px) translate(-50%, -100%)`;
+        if (ver) f.tag.style.transform = `translate(${((v3.x + 1) / 2 * window.innerWidth).toFixed(0)}px, ${((1 - v3.y) / 2 * window.innerHeight).toFixed(0)}px) translate(-50%, -100%)`;
       }
     }
     // Grabación: una muestra cada 0,1 s mientras corre el reloj de la carrera
@@ -1263,7 +1263,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       for (const c of C.corrientes) animarCorriente(c, dt);
       dibujarFantasma(dt);
       // Rivales
-      const cam = R.camera, w = innerWidth, h = innerHeight, v3 = new THREE.Vector3();
+      const cam = R.camera, w = window.innerWidth, h = window.innerHeight, v3 = new THREE.Vector3();
       C.rivales.forEach((r, i) => {
         const ch = r.ch, root = ch.root;
         const sR = r.llego ? Rr.largo : r.s;

@@ -432,7 +432,7 @@
     // En vertical (móvil) el ancho de imagen es corto: la cámara se aleja un poco para que quepan Vittata y el siguiente hueco
     // El aspecto se mide una vez y se guarda hasta el siguiente resize o giro (AF1: clientWidth en cada cuadro forzaba un reflujo, ~5 % de la CPU del móvil)
     let aspMedido = 0;
-    function aspecto() { if (cam.asp) return cam.asp; if (aspMedido) return aspMedido; const w = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientWidth : innerWidth, h = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientHeight : innerHeight; return h > 0 ? (aspMedido = w / h) : 1.6; }
+    function aspecto() { if (cam.asp) return cam.asp; if (aspMedido) return aspMedido; const w = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientWidth : window.innerWidth, h = R.renderer && R.renderer.domElement ? R.renderer.domElement.clientHeight : window.innerHeight; return h > 0 ? (aspMedido = w / h) : 1.6; }
     // FOV vertical según el aspecto: el ancho de imagen que se ve (FOV horizontal) no baja de ~el de una pantalla 16:9 + 20 %: en vertical
     // (390×844) sube el FOV vertical para que quepan Vittata y los 2 siguientes obstáculos; en horizontal queda el de la cámara
     const modoEf = () => (cam.modo === 'diagonal' && aspecto() < 1 ? 'vertical' : cam.modo); // el encuadre vertical del móvil

@@ -433,7 +433,7 @@ AVE.module('actores', function (G) {
     if (tag.sp.visible) {
       const r = companion3D.root.position, h = J.altura * ((compa.info && compa.info.escala) || 1); tag.sp.position.set(r.x, r.y + h + 0.35, r.z);
       // sizeAttenuation false: alto en NDC = escala × P[5]; px = NDC × alto/2 → escala = 2·px / (alto del lienzo × P[5])
-      const cam = G.renderer.camera, H = G.renderer.canvas.clientHeight || innerHeight, k = 2 / (H * cam.projectionMatrix.elements[5]);
+      const cam = G.renderer.camera, H = G.renderer.canvas.clientHeight || window.innerHeight, k = 2 / (H * cam.projectionMatrix.elements[5]);
       tag.sp.scale.set(TAG_PX * k * tag.w / tag.c.height, TAG_PX * k, 1);
     }
   }

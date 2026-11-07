@@ -1104,7 +1104,7 @@ AVE.module('criadero', function (G) {
   }
   function resize() {
     if (!scene3d.renderer || !canvas) return;
-    const w = canvas.clientWidth || innerWidth, h = canvas.clientHeight || innerHeight;
+    const w = canvas.clientWidth || window.innerWidth, h = canvas.clientHeight || window.innerHeight;
     scene3d.renderer.setSize(w, h, false); scene3d.camera.aspect = w / h; scene3d.camera.updateProjectionMatrix();
   }
   function camara(dt) {
