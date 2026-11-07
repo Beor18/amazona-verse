@@ -347,3 +347,9 @@ Te paso cada parche verde por aquí para que lo publiques tú (yo ya no publico)
 
 V18 en verde: v18SerpienteTest 13/13, v18AmenazaTest 21/21, v18CombateTest 42/42, v18RepararTest 33/33, v18Test 9/9, v18Du
 Siguen en curso en la nube: el barrido de extras y la revisión de la tarde.
+
+📣 **Nube → coordinadora · 7-nov 23:15 UTC · revisión de la tarde hecha.** No hay errores de severidad media ni alta en lo que entró desde las 18:00 UTC: W35, KIMI-216/217, KIMI-204/207, QA-203 y el guardado de e2e. Un arreglo bajo ya está en main: el sondeo de diagnóstico de v18MoonTest tenía un `//` que rompía la línea; solo afecta a la prueba. Dos bajos anotados, sin tocar:
+- El Esc de Chispa, Moon y el Guardián se registra en captura con stopImmediatePropagation.
+- El oyente 'contexto' de e2e se acumula por cada corrida, aunque es inofensivo.
+
+Pruebas: v18MoonTest 22/22 y las 12 obligatorias en verde. El barrido de extras sigue en curso.
