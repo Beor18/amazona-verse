@@ -324,6 +324,7 @@ window.AVV18Descubrir = function (G) {
     let intentos = 0;
     const pista = () => {
       if (avisoInicio || descubierta() || G.quiet || !(G.pack && G.pack.id === 'cap1')) return;
+      try { const mg = G.v18minigolf && G.v18minigolf.estado(); if (mg && mg.fase !== 'nada') { if (++intentos < 20) setTimeout(pista, 3000); return; } } catch (e) { /* sin minigolf */ }
       let libreAhora = false;
       try { libreAhora = libre(); } catch (e) { return; /* sin interfaz */ }
       if (!libreAhora) { if (++intentos < 20) setTimeout(pista, 3000); return; }
