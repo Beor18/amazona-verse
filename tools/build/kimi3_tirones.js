@@ -98,21 +98,35 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
     await ev(cdp, ses, 'eval(' + JSON.stringify(cod) + '); "ok"', 60, false);
   }
   pinta('· scripts listos · temporadaMovilTest caps:[1] con el pulgar (los primeros min del cap. 1)…');
+  const latido = setInterval(async () => {
+    try {
+      const d = await ev(cdp, ses, `(() => { const frs = [...document.querySelectorAll('iframe')]; const fr = frs.find(x => { try { const w = x.contentWindow; return w && w.__frames; } catch (e) { return false; } }); const W = fr ? fr.contentWindow : null; return W ? JSON.stringify({ n: W.__frames.n, tir: (W.__tirones || []).length, ult: (W.__tirones || []).slice(-1)[0] || null }) : 'sin-iframe'; })()`, 15, false);
+      pinta('· latido: ' + d);
+    } catch (e) { pinta('· latido: eval falló (' + String(e.message || e).slice(0, 80) + ')'); }
+  }, 60000);
   let r = null, fallo = null;
   const tJuego = Date.now();
   try { r = await ev(cdp, ses, `AV.temporadaMovilTest({ caps: [1], idioma: 'es' })`, 2400); } catch (e) { fallo = e.message; }
   const durJuegoS = Math.round((Date.now() - tJuego) / 1000);
+  clearInterval(latido);
   pinta('· temporadaMovilTest devolvió en ' + durJuegoS + ' s' + (fallo ? ' · EXCEPCIÓN: ' + fallo.slice(0, 300) : ''));
-  const datos = await ev(cdp, ses, `JSON.stringify({ tirones: window.__tirones, frames: window.__frames, heapFin: performance.memory ? Math.round(performance.memory.usedJSHeapSize/1048576) : -1 })`, 30, false).then(x => { try { return JSON.parse(x); } catch (e) { return null; } }).catch(() => null);
+  const datos = await ev(cdp, ses, `(() => {
+    const frs = [...document.querySelectorAll('iframe')];
+    const fr = frs.find(x => { try { const w = x.contentWindow; return w && w.AV && w.AV.pack === 'cap1' && w.__frames; } catch (e) { return false; } });
+    const W = fr ? fr.contentWindow : window;
+    const out = { enIframe: !!fr, tirones: W.__tirones || [], frames: W.__frames || { n: 0, sumMs: 0 }, heapFin: W.performance && W.performance.memory ? Math.round(W.performance.memory.usedJSHeapSize / 1048576) : -1 };
+    out.tironesMain = window.__tirones || []; out.framesMain = window.__frames || null; // el shell principal, por si acaso
+    return JSON.stringify(out);
+  })()`, 30, false).then(x => { try { return JSON.parse(x); } catch (e) { return null; } }).catch(() => null);
   const tirones = (datos && datos.tirones) || [];
   const frames = (datos && datos.frames) || { n: 0, sumMs: 0 };
   tirones.sort((a, b) => b.ms - a.ms);
-  pinta('· cuadros totales: ' + frames.n + ' · duración media/cuadro: ' + (frames.n ? Math.round(frames.sumMs / frames.n) : 0) + ' ms · tirones >' + UMBRAL + ' ms: ' + tirones.length);
+  pinta('· registrador en iframe del juego: ' + (datos ? datos.enIframe : '?') + ' · cuadros totales: ' + frames.n + ' · ms medios: ' + (frames.n ? Math.round(frames.sumMs / frames.n) : 0) + ' · tirones >' + UMBRAL + ' ms: ' + tirones.length + (datos && datos.framesMain ? ' · (shell principal: ' + datos.framesMain.n + ' cuadros, ' + (datos.tironesMain || []).length + ' tirones)' : ''));
   pinta('· TOP 10 tirones (ms):');
   for (const t of tirones.slice(0, 10)) pinta('  #' + (tirones.indexOf(t) + 1) + ' ' + t.ms + ' ms @ ' + t.s + ' s · heap ' + t.heapMB + ' MB · ' + (t.fase || '-'));
   if (r) pinta('· batería: ' + r.passed + '/' + r.total);
   pinta('· errores de consola: ' + errores.length + (errores.length ? ' · ' + errores.slice(0, 3).join(' | ') : ''));
-  fs.writeFileSync(path.join(SALIDA, 'tirones-' + ETIQUETA + '.json'), JSON.stringify({ etiqueta: ETIQUETA, cpu: CPU, dpr: DPR, v18: true, umbralMs: UMBRAL, duracionJuegoS: durJuegoS, cuadros: frames.n, msMedio: frames.n ? Math.round(frames.sumMs / frames.n) : 0, heapFinMB: datos ? datos.heapFin : -1, bateria: r ? { passed: r.passed, total: r.total } : null, nTirones: tirones.length, tirones, errores }, null, 1));
+  fs.writeFileSync(path.join(SALIDA, 'tirones-' + ETIQUETA + '.json'), JSON.stringify({ etiqueta: ETIQUETA, cpu: CPU, dpr: DPR, v18: true, umbralMs: UMBRAL, duracionJuegoS: durJuegoS, enIframe: datos ? !!datos.enIframe : null, cuadros: frames.n, msMedio: frames.n ? Math.round(frames.sumMs / frames.n) : 0, heapFinMB: datos ? datos.heapFin : -1, shellPrincipal: datos && datos.framesMain ? { cuadros: datos.framesMain.n, nTirones: (datos.tironesMain || []).length } : null, bateria: r ? { passed: r.passed, total: r.total } : null, nTirones: tirones.length, tirones, errores }, null, 1));
   try { const errsJuego = await ev(cdp, ses, 'JSON.stringify((window.__aveErrores || []).slice(0, 8))', 10, false); pinta('· __aveErrores de la página: ' + errsJuego); } catch (e) { }
   limpiar();
   try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) { pinta('· aviso: perfil temporal no se pudo borrar (se libera solo): ' + perf); }
