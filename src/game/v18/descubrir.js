@@ -364,6 +364,7 @@ window.AVV18Descubrir = function (G) {
     G.ui.toast = (t, ms) => { toasts.push(String(t)); return toastOrig.call(G.ui, t, ms); };
     const ir = (p, dy) => { s.pos.x = p.x; s.pos.y = p.y + (dy || 0); s.pos.z = p.z; };
     const correr = (seg, fn) => { for (let t = 0; t < seg; t += 0.1) { if (fn) fn(); paso(0.1); } };
+    const porQue = () => { try { return ' · libre ' + libre() + ' (ocupado ' + !!G.ui.busy() + ', diálogo ' + !!(G.dialogo && G.dialogo.activo && G.dialogo.activo()) + ', fade ' + !!document.getElementById('c1-fade') + ', saltar ' + !!document.getElementById('c1-saltar') + ')'; } catch (e) { return ' · ' + e.message; } };
     try {
       await listo; await crearCotorra();
       V.borrar(); V.recargar(); R.activo = false; posar(0); avisoCerca = false;
@@ -379,7 +380,7 @@ window.AVV18Descubrir = function (G) {
       ir(v, 1); toasts.length = 0; correr(0.5);
       check('Lejos (en la plaza) no se descubre', estado() === 'no_descubierta');
       ir({ x: P[0].x + 40, y: P[0].y, z: P[0].z }); correr(0.3);
-      check('A menos de 80 m sale la pista del canto', toasts.some(t => /canto/.test(t)) && estado() === 'no_descubierta', toasts.join(' | '));
+      check('A menos de 80 m sale la pista del canto', toasts.some(t => /canto/.test(t)) && estado() === 'no_descubierta', toasts.join(' | ') + porQue());
       // QA-188/QA-186: las pistas esperan a que la historia esté libre (caja, bocadillo o narrador) y la de inicio solo sale en el cap. 1
       const D = G.v18descubrir;
       toasts.length = 0; avisoCerca = false;
@@ -389,7 +390,7 @@ window.AVV18Descubrir = function (G) {
       check('Con el diálogo o el narrador en pantalla, la pista del canto espera (QA-188)', !toasts.some(t => /canto/.test(t)) && !avisoCerca, toasts.join(' | '));
       if (G.dialogo) G.dialogo.activo = actBk;
       toasts.length = 0; correr(0.3);
-      check('…y sale en cuanto la historia queda libre', toasts.some(t => /canto/.test(t)) && avisoCerca, toasts.join(' | '));
+      check('…y sale en cuanto la historia queda libre', toasts.some(t => /canto/.test(t)) && avisoCerca, toasts.join(' | ') + porQue());
       const idBk = G.pack.id, quietBk = G.quiet;
       G.quiet = false; // avisarInicio no dispara con G.quiet (el arnés corre con quiet=true)
       avisoInicio = false; G.pack.id = 'ep5';
@@ -400,7 +401,7 @@ window.AVV18Descubrir = function (G) {
       if (G.dialogo) G.dialogo.activo = actBk;
       check('La pista de inicio espera a la historia libre (QA-188)', noSalioConHistoria, toasts.join(' | '));
       avisoInicio = false;
-      check('La pista de inicio sí sale en el cap. 1 con la historia libre', D.avisarInicio() === true && toasts.some(t => /Villa Raíz/.test(t)), toasts.join(' | '));
+      check('La pista de inicio sí sale en el cap. 1 con la historia libre', D.avisarInicio() === true && toasts.some(t => /Villa Raíz/.test(t)), toasts.join(' | ') + porQue());
       G.quiet = quietBk;
       toasts.length = 0; try { G.ui.hideToast(); } catch (e) { /* sin toast */ }
       toasts.length = 0; ir({ x: P[0].x + 4, y: P[0].y - 6, z: P[0].z + 3 }); correr(0.2);
