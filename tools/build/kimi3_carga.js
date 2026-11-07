@@ -12,6 +12,7 @@
    Sirve una carpeta tipo build (--raiz; por defecto nada: hay que pasarla) con Cache-Control no-store (igual que avtest).
 
    Uso: node tools/build/kimi3_carga.js --raiz <carpeta> [--etiqueta r1] [--espera-red 45] [--url-extra "v18=1"] [--sin-semilla]
+        [--escritorio] [--calidad bajo|medio|alto]   (KIMI-206/QA-201: A/B de la carga inicial en medio/alto vs bajo con perfil Mac)
    Salida: consola + docs/img/kimi3carga/k3carga_<etiqueta>.json (+ captura _final.jpg)
 */
 'use strict';
@@ -24,11 +25,13 @@ const { spawn, execSync } = require('child_process');
 const AQUI = __dirname;
 const RAIZ = path.resolve(AQUI, '..', '..');
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const ANCHO = 390, ALTO = 844, DPR = 3, CPU = 4;
+const ESCRITORIO = process.argv.includes('--escritorio'); // KIMI-206/QA-201: perfil Mac (ventana grande, UA desktop, CPU x1)
+const ANCHO = ESCRITORIO ? 1600 : 390, ALTO = ESCRITORIO ? 900 : 844, DPR = ESCRITORIO ? 1 : 3, CPU = ESCRITORIO ? 1 : 4;
 const ETIQUETA = arg('--etiqueta', 'r1');
 const RAIZ_SRV = path.resolve(arg('--raiz', ''));
 const ESPERA_RED_S = +(arg('--espera-red', '45'));
 const URL_EXTRA = arg('--url-extra', '');
+const CALIDAD = arg('--calidad', ''); // bajo|medio|alto forzada vía ?calidad= (A/B QA-201)
 const SIN_SEMILLA = process.argv.includes('--sin-semilla');
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi3carga');
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -63,6 +66,8 @@ async function ev(cdp, ses, exp, t, aw) {
 }
 
 const UA_IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
+const UA_DESKTOP = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+const UA = ESCRITORIO ? UA_DESKTOP : UA_IPHONE;
 // Misma semilla que kimi1_062.js (jugador existente: Jugar entra directo, sin creador)
 const SEMILLA_SAVE_JS = `try {
   localStorage.clear(); sessionStorage.clear();
@@ -125,7 +130,8 @@ function tipoDe(url) {
   const origen = `http://127.0.0.1:${puerto}`;
   const head = execSync('git rev-parse --short HEAD', { cwd: RAIZ, encoding: 'utf8' }).trim();
   const res = { etiqueta: ETIQUETA, herramienta: 'kimi3_carga.js (contabilidad W19 de avtest.py)', head,
-    raiz: RAIZ_SRV, pantalla: 'movil 390x844@3 cpuX4', ua: 'iPhone (bajo natural)', inicio: new Date().toISOString(),
+    raiz: RAIZ_SRV, pantalla: ESCRITORIO ? 'escritorio 1600x900@1 cpuX1' : 'movil 390x844@3 cpuX4',
+    ua: ESCRITORIO ? 'desktop Mac-like' + (CALIDAD ? ' (calidad forzada ' + CALIDAD + ')' : '') : 'iPhone (bajo natural)' + (CALIDAD ? ' (calidad forzada ' + CALIDAD + ')' : ''), inicio: new Date().toISOString(),
     muestras: [], red: null };
   const chromeL = await lanzarChrome();
   const ws = new WebSocket(`ws://127.0.0.1:${chromeL.puerto}${chromeL.wsPath}`);
@@ -174,13 +180,14 @@ function tipoDe(url) {
     const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
     for (const m of ['Page.enable', 'Runtime.enable', 'Network.enable', 'Log.enable']) await cdp.call(m, {}, ses);
     await cdp.call('Network.setCacheDisabled', { cacheDisabled: true }, ses);
-    await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: true }, ses);
-    await cdp.call('Emulation.setUserAgentOverride', { userAgent: UA_IPHONE }, ses);
-    await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, ses);
+    await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: !ESCRITORIO }, ses);
+    await cdp.call('Emulation.setUserAgentOverride', { userAgent: UA }, ses);
+    if (!ESCRITORIO) await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, ses);
     await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
     if (!SIN_SEMILLA) await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS }, ses);
     t0 = Date.now();
-    await cdp.call('Page.navigate', { url: origen + '/index.html?cap=1' + (URL_EXTRA ? '&' + URL_EXTRA : '') }, ses);
+    const url0 = origen + '/index.html?cap=1' + (CALIDAD ? '&calidad=' + CALIDAD : '') + (URL_EXTRA ? '&' + URL_EXTRA : '');
+    await cdp.call('Page.navigate', { url: url0 }, ses);
 
     // Fase arranque: hasta reveal y luego red quieta (>=2 s sin peticiones nuevas/pendientes, tope ESPERA_RED_S tras reveal)
     let tReveal = null, motivoCarga = null, msCarga = null, ultimoTap = 0, nTaps = 0, tArranqueFin = null, ultimaRed = Date.now();
