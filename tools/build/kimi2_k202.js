@@ -21,8 +21,6 @@ const AQUI = __dirname;
 const RAIZ = path.resolve(AQUI, '..', '..');
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const CALIDAD = +(arg('--calidad', '0.85'));
-const TAM = +(arg('--tam', '2048')); // KIMI-204: 1024 hornea hd_<kit>_lq1024.jpg para el móvil pequeño en «bajo»
-const SUFIJO = arg('--sufijo', 'lq');
 const SALIDA_DIR = arg('--salida', path.join(RAIZ, 'assets', 'models', 'edificios', 'tex_hd'));
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi202');
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -115,8 +113,8 @@ function mataPorPerfil() {
 (async () => {
   const { srv, puerto } = await servir();
   const origen = `http://127.0.0.1:${puerto}`;
-  const res = { etiqueta: 'k202-' + SUFIJO, que: `hd_<kit>_${SUFIJO}.jpg ${TAM}² horneado para arranque «bajo» (KIMI-202/204)`, calidad: CALIDAD,
-    referencia: `pipeline actual: 4096 → canvas ${TAM} (streaming.js reducirAtlas); el diff mide solo la deriva del JPEG sobre esa referencia`,
+  const res = { etiqueta: 'k202-lq', que: 'hd_<kit>_lq.jpg 2048² horneado para arranque «bajo» (KIMI-202)', calidad: CALIDAD,
+    referencia: 'pipeline actual: 4096 → canvas 2048 (streaming.js reducirAtlas); el diff mide solo la deriva del JPEG sobre esa referencia',
     muestreoDiff: '1 de cada 4 píxeles, umbral max-canal >4/255', kits: {} };
   let chrome = null;
   try {
@@ -128,20 +126,20 @@ function mataPorPerfil() {
     for (const kit of KITS) {
       const src = `/assets/models/edificios/tex_hd/hd_${kit}.jpg`;
       const info = await evaluar(cdp, sessionId, `window.cargar('${src}')`, 60);
-      const med = await evaluar(cdp, sessionId, `window.hornear(${TAM}, ${CALIDAD})`, 120);
+      const med = await evaluar(cdp, sessionId, `window.hornear(2048, ${CALIDAD})`, 120);
       const dataUrl = await evaluar(cdp, sessionId, 'window.dame()', 30);
-      const destino = path.join(SALIDA_DIR, `hd_${kit}_${SUFIJO}.jpg`);
+      const destino = path.join(SALIDA_DIR, `hd_${kit}_lq.jpg`);
       fs.writeFileSync(destino, Buffer.from(dataUrl.split(',')[1], 'base64'));
       const bytesDisco = fs.statSync(destino).size;
       res.kits[kit] = { fuente: src, fuenteBytes: fs.statSync(path.join(RAIZ, src.replace(/^\//, ''))).size, ...med, bytesDisco, destino: destino.replace(RAIZ + path.sep, '').split(path.sep).join('/') };
-      console.log(`[k202] ${kit}: fuente ${(res.kits[kit].fuenteBytes / 1048576).toFixed(2)} MB ${info.ancho}×${info.alto} → ${SUFIJO} ${TAM}² q${CALIDAD} = ${(bytesDisco / 1048576).toFixed(2)} MB · diff ${med.diffPct}% (media ${med.diffMedia}, max ${med.diffMax})`);
+      console.log(`[k202] ${kit}: fuente ${(res.kits[kit].fuenteBytes / 1048576).toFixed(2)} MB ${info.ancho}×${info.alto} → lq 2048² q${CALIDAD} = ${(bytesDisco / 1048576).toFixed(2)} MB · diff ${med.diffPct}% (media ${med.diffMedia}, max ${med.diffMax})`);
     }
   } finally {
     if (chrome) try { chrome.kill(); } catch (e) { }
     mataPorPerfil();
     srv.close();
   }
-  const f = path.join(SALIDA, `k202_${SUFIJO}.json`);
+  const f = path.join(SALIDA, 'k202_lq.json');
   fs.writeFileSync(f, JSON.stringify(res, null, 1));
   console.log('[k202] JSON: ' + f);
 })().catch(e => { console.error('[k202] FALLO:', e.message); process.exit(1); });

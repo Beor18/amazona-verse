@@ -124,10 +124,6 @@
   // de calidad lo fija streaming.js; si la calidad sube, el gancho 'calidad' engancha la normal verdadera.
   const NORMAL_PLANA = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGNoaPgPRAwQCgA19gf9SShDzAAAAABJRU5ErkJggg==';
   let normalPlanaBaja = () => false;
-  // KIMI-204: sufijo del JPEG ligero del difuso del atlas en «bajo» ('_lq' 2048² en escritorio/tablet,
-  // '_lq1024' en el móvil de pantalla pequeña — el tope que reducirAtlas ya le aplicaba por canvas).
-  // Lo fija streaming.js según calidad y dispositivo.
-  let sufijoLQDifuso = () => '_lq';
   const TEX_HD_NORMAL = /\/tex_hd\/hd_(ancient|savage)_n\.jpg([?#].*)?$/;
   // KIMI-202: los GLB lejanos/_hd del kit de la ciudad referencian el difuso del atlas 4096² por URI interna
   // (templo_*_lejos, complejo_ruinas_*, muro_templo_*, ruina_torre_* → hd_ancient; los _hd del kit savage →
@@ -135,13 +131,12 @@
   // sirve el JPEG ligero 2048² horneado (hd_<kit>_lq.jpg, misma resolución que ya aplicaba reducirAtlas).
   const TEX_HD_DIFUSO = /\/tex_hd\/hd_(ancient|savage)\.jpg([?#].*)?$/;
   function setNormalPlanaBaja(f) { normalPlanaBaja = typeof f === 'function' ? f : () => !!f; }
-  function setSufijoLQDifuso(f) { sufijoLQDifuso = typeof f === 'function' ? f : () => String(f || '_lq'); }
   function cargador() {
     const mgr = new THREE.LoadingManager();
     mgr.setURLModifier(url => {
       if (!normalPlanaBaja()) return url;
       if (TEX_HD_NORMAL.test(url)) return NORMAL_PLANA;
-      if (TEX_HD_DIFUSO.test(url)) return url.replace(/hd_(ancient|savage)\.jpg/, 'hd_$1' + sufijoLQDifuso() + '.jpg');
+      if (TEX_HD_DIFUSO.test(url)) return url.replace(/hd_(ancient|savage)\.jpg/, 'hd_$1_lq.jpg');
       return url;
     });
     const L = new THREE.GLTFLoader(mgr);
@@ -207,7 +202,7 @@
   registrarCache();
 
   window.AVE = window.AVE || {};
-  AVE.assets = { script, loadGLB, image, imagenRetenida: retenida, setNormalPlanaBaja, setSufijoLQDifuso };
+  AVE.assets = { script, loadGLB, image, imagenRetenida: retenida, setNormalPlanaBaja };
 
   AVE.module('assets', function () {
     const loader = new THREE.TextureLoader();
@@ -217,6 +212,6 @@
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
       return t;
     }
-    return { script, loadGLB, image, tex, loader, setNormalPlanaBaja, setSufijoLQDifuso };
+    return { script, loadGLB, image, tex, loader, setNormalPlanaBaja };
   });
 })();
