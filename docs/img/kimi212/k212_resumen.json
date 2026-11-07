@@ -1,0 +1,23 @@
+{
+  "etiqueta": "k212",
+  "fecha_utc": "2026-11-07 ~20:06-20:07 UTC",
+  "head": "0464adcd (post-W34 f1b3e1fc + W35 3c155966)",
+  "quien": "Kimi 3",
+  "arnes": "tools/build/kimi2_una_bateria.js (pagina fresca por prueba, GPU real RX 5700 XT, 1280x800)",
+  "objetivo": "Validar con GPU real los cambios de W34: look.js medir() mundoGrandes + test() hermeticos de trucos/rescate (familiaTest ya no hereda su estado)",
+  "resultados": {
+    "lookTest": {
+      "score": "42/44",
+      "rojos": [
+        "Look «toon»: las texturas grandes del mundo bajan a 512 px — 40→40 (atlas HD no encogible: 4; del mundo encogibles: 9→9) · 516.9→516.9 MB",
+        "Look «vibrant_toon»: mismo check, mismos numeros"
+      ],
+      "veredicto": "ROJOS PREEXISTENTES documentados (familia «texturas grandes 512 px», decision de Kelvin pendiente): en calidad alta el tope no encoge las 9 encogibles (9→9). El check viejo (texturasGrandes-atlas) daba el mismo rojo aqui (40→40); W34 solo hizo el conteo honesto. En la VM SwiftShader de la nube gano verde porque g0===0 (bajo). No es regresion de W34."
+    },
+    "trucosTest": { "score": "7/7", "notas": "W34 validado: doble A en vuelo suelta la tecla (keyup) y restaura combo/ultimo/ultimoId" },
+    "familiaTest": { "score": "22/22", "notas": "W34 validado: «QA-117 los trucos cuentan el combo del turno» = 3 (era 4 por estado heredado de trucosTest)" },
+    "rescateTest": { "score": "33/33", "notas": "W34 validado: «Otra vez» reinicia en 0 ms midiendo clic→pichon listo (era setTimeout, rojo en SwiftShader)" }
+  },
+  "errores_consola": 0,
+  "huerfanos_untracked": "re-verificados x14 (kimi106r 134-1339 B stubs head:null/superseded · kimi121 r1-r5/r7/r8 superseded por r6/r9/r10 commiteados · playtest r3-fix superseded por r4-diag · tools/album/retratos.html carril album): mismos veredictos ya commiteados, intactos sin trackear a proposito, no se borra nada"
+}
