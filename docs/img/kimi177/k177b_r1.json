@@ -1,0 +1,76 @@
+{
+ "etiqueta": "r1",
+ "que": "recomprimir atlas diffuse HD (KIMI-177, pendiente de decision de Kelvin)",
+ "canvas": "2D toDataURL, Chrome --disable-gpu (sin GPU real, no contamina otras sesiones)",
+ "muestreoDiff": "1 de cada 4 pixeles, umbral max-canal >4/255",
+ "atlos": {
+  "hd_ancient": {
+   "originalBytes": 4330479,
+   "ancho": 4096,
+   "alto": 4096,
+   "porQ": {
+    "q92": {
+     "bytes": 4806767,
+     "ahorroMB": -0.45,
+     "ahorroPct": -11,
+     "diffPctPixGt4": 3.146,
+     "diffMedia": 1,
+     "diffMax": 19,
+     "stage": "docs/img/kimi177/stage/hd_ancient_q92.jpg"
+    },
+    "q85": {
+     "bytes": 4020011,
+     "ahorroMB": 0.3,
+     "ahorroPct": 7.2,
+     "diffPctPixGt4": 4.529,
+     "diffMedia": 1.03,
+     "diffMax": 21,
+     "stage": "docs/img/kimi177/stage/hd_ancient_q85.jpg"
+    },
+    "q80": {
+     "bytes": 3583745,
+     "ahorroMB": 0.71,
+     "ahorroPct": 17.2,
+     "diffPctPixGt4": 20.431,
+     "diffMedia": 2.12,
+     "diffMax": 31,
+     "stage": "docs/img/kimi177/stage/hd_ancient_q80.jpg"
+    }
+   }
+  },
+  "hd_savage": {
+   "originalBytes": 5411579,
+   "ancho": 4096,
+   "alto": 4096,
+   "porQ": {
+    "q92": {
+     "bytes": 5770940,
+     "ahorroMB": -0.34,
+     "ahorroPct": -6.6,
+     "diffPctPixGt4": 18.933,
+     "diffMedia": 1.72,
+     "diffMax": 25,
+     "stage": "docs/img/kimi177/stage/hd_savage_q92.jpg"
+    },
+    "q85": {
+     "bytes": 4847795,
+     "ahorroMB": 0.54,
+     "ahorroPct": 10.4,
+     "diffPctPixGt4": 25.252,
+     "diffMedia": 1.94,
+     "diffMax": 30,
+     "stage": "docs/img/kimi177/stage/hd_savage_q85.jpg"
+    },
+    "q80": {
+     "bytes": 4377671,
+     "ahorroMB": 0.99,
+     "ahorroPct": 19.1,
+     "diffPctPixGt4": 44.274,
+     "diffMedia": 2.97,
+     "diffMax": 33,
+     "stage": "docs/img/kimi177/stage/hd_savage_q80.jpg"
+    }
+   }
+  }
+ }
+}
