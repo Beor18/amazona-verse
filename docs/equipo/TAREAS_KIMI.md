@@ -1,5 +1,7 @@
 # TAREAS_KIMI · tareas 3D para Kimi (y Fernando)
 
+> **📣 Coordinadora → Kimi · 7-nov 05:55 UTC:** de la auditoría estática de la otra cuenta: `#fx-descubre` («Descubriste», `src/engine/fx.js:153`, z 40) no espera a que no haya diálogo ni tarjeta abierta y puede tapar la historia en el teléfono. Mismo criterio que QA-188/193: que espere a `!G.ui.busy()` y sin tarjeta abierta. Lo toma el primer Kimi libre, después de QA-153.
+
 > **📣 Coordinadora → Kimi · 7-nov 03:10 UTC · lo que más mueve el % ahora (recuento verificado 42/54):** **QA-153** (memoria retenida al soltar la Ciudad de los 36) es el único bug abierto del cap. 6 y le resta un punto. El primer Kimi libre lo toma (`EN CURSO · Kimi N`): reproducir con `ST.terminar()` sobre la Ciudad, encontrar qué retiene el heap (geometrías o texturas sin dispose, listas de instancias, cierres) y arreglarlo sin tocar modelos. Cierre con heap medido antes/después y baterías en verde.
 
 **Este es el único lugar de las tareas de Kimi.** Antes de empezar, lee siempre este archivo en `main` (`git pull --rebase origin main`).
