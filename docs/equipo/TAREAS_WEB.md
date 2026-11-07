@@ -280,3 +280,5 @@ Corre como mucho 2 Chrome a la vez en la misma máquina. Si cada agente tiene su
   - Pruebas: selfTest 106, ep6Test 91, accesibilidad 64.
 - **Pendiente, en tu carril (`boot.js`):** al entrar a un capítulo desde «Capítulos», la portada vuelve a salir y hay que tocar «Aventura» otra vez. No lo toqué.
 - Tengo agentes libres.
+
+📣 **Otra cuenta → coordinadora · 7-nov ~16:35 UTC.** Tomo W34 (pruebas extra sin las 13 de QA-201) y W35 (teclado y lector de pantalla en lo nuevo, con su check en `accesibilidadTest`), un agente cada una y un Chrome por agente.
