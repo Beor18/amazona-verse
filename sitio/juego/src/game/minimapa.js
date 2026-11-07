@@ -294,7 +294,8 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     const ids = w.innerWidth <= 560 ? ['quest', 'inv'] : ['inv', 'sys'];
     let fondo = 0;
     for (const id of ids) { const e = d.getElementById(id); if (e && !e.hidden && w.getComputedStyle(e).display !== 'none') fondo = Math.max(fondo, e.getBoundingClientRect().bottom); }
-    if (fondo) c.style.setProperty('--mm-top', Math.ceil(fondo + 4) + 'px'); else c.style.removeProperty('--mm-top');
+    if (fondo) { const v = Math.ceil(fondo + 4) + 'px'; c.style.setProperty('--mm-top', v); d.documentElement.style.setProperty('--mm-top', v); } // QA-195: el toast subido lo lee para no quedar bajo el minimapa
+    else { c.style.removeProperty('--mm-top'); d.documentElement.style.removeProperty('--mm-top'); }
   }
   addEventListener('resize', () => colocar());
   // ---------- Dibujo ----------

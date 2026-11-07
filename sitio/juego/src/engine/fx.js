@@ -101,6 +101,12 @@ AVE.module('fx', function (G) {
   function update(dt) {
     // Un 'render' sin dt (o NaN) dejaba las partículas en NaN y THREE avisaba «Computed radius is NaN» al dibujarlas (AJ2)
     dt = Number.isFinite(dt) && dt > 0 ? Math.min(dt, 0.1) : 0;
+    // QA-197: el «Descubriste» encolado espera a historia libre; caduca a los 12 s
+    if (descPend) {
+      descPend.t -= dt;
+      if (descPend.t <= 0) descPend = null;
+      else if (libreDescubre()) { const n = descPend.nombre; descPend = null; descubrimiento(n); }
+    }
     // KIMI-060: una partícula pegada a la cámara (la sigue al volar) se dibuja a 150+ px como un
     // disco plano liso que lee como falla gráfica (iPad de Kelvin, 5-nov); a <3,5 m no aporta nada
     // visual: se retira bajo tierra y sigue su fundido normal.
@@ -147,6 +153,13 @@ AVE.module('fx', function (G) {
   }
   // Descubrir un lugar: destello suave a pantalla completa, título grande 1,5 s y acorde corto
   let capa = null;
+  // QA-197 (auditoría 7-nov): el título a pantalla completa (z 40) saltaba aunque hubiera diálogo,
+  // tarjeta u overlay abiertos y tapaba la historia en el teléfono. Mismo criterio que QA-188: se
+  // encola y sale en cuanto la historia queda libre (tope 12 s; si no se libera, se pierde).
+  let descPend = null;
+  const libreDescubre = () => !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo())
+    && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar')
+    && !/\bv18-(duelo|amenaza)-on\b/.test(document.body.className);
   function descubrimiento(nombre) {
     if (!capa) {
       capa = document.createElement('div'); capa.id = 'fx-descubre'; capa.setAttribute('aria-hidden', 'true');
@@ -168,7 +181,11 @@ AVE.module('fx', function (G) {
     if (G.audio && G.audio.has && G.audio.has('descubrir')) G.audio.play('descubrir');
     return capa;
   }
-  G.on('lugar', d => { if (!G.quiet) descubrimiento(d && d.nombre); });
+  G.on('lugar', d => {
+    if (G.quiet) return;
+    if (libreDescubre()) descubrimiento(d && d.nombre);
+    else descPend = { nombre: d && d.nombre, t: 12 };
+  });
 
   // ---------- Lluvia (la enciende un pack con G.fx.rain.visible = true) ----------
   // Caja local ±30 en XZ y 0–25 en Y. La gota nace y muere con alfa (no aparece de golpe en la tapa)

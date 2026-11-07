@@ -29,6 +29,8 @@ window.AVV18Reparar = function (G) {
   const sonar = n => { try { G.audio.play(n); } catch (e) { /* sin audio */ } };
   const estado = () => V.mundo(ID) || 'roto';
   const reparado = () => estado() === 'reparado';
+  // QA-192: el puente V18 es de Villa Raíz; fuera del cap. 1 no se ofrece nada (mismo patrón que chispa/moon/guardian)
+  const enCap1 = () => !!(G.pack && G.pack.id === 'cap1');
 
   // ---------- El puente real: piso (eje y comba) y malla ----------
   const P = { piso: null, malla: null, idx0: null, rotoIdx: null, ocultos: 0, eje: null };
@@ -133,7 +135,7 @@ window.AVV18Reparar = function (G) {
       if (mod) { const o = mod(); o.rotation.y = 0.6 * lado; g.add(o); }
       g.position.set(p.x, y, p.z); scene.add(g);
       const M = { key, x: p.x, z: p.z, y, g };
-      M.it = G.interaccion.add({ id: 'v18_' + key, x: p.x, z: p.z, r: 2.2, visible: () => !reparado() && !cogida(M),
+      M.it = G.interaccion.add({ id: 'v18_' + key, x: p.x, z: p.z, r: 2.2, visible: () => enCap1() && !reparado() && !cogida(M),
         label: () => 'Recoger madera del puente', use: () => recoger(M) });
       maderas.push(M);
     });
@@ -153,7 +155,7 @@ window.AVV18Reparar = function (G) {
     sincronizar();
     return true;
   }
-  function sincronizar() { for (const M of maderas) M.g.visible = !reparado() && !cogida(M); for (const R of materiales) R.g.visible = !cogida(R); }
+  function sincronizar() { for (const M of maderas) M.g.visible = enCap1() && !reparado() && !cogida(M); for (const R of materiales) R.g.visible = enCap1() && !cogida(R); }
 
   // ---------- Materiales sin pelear (decisión 9 de Kelvin: también se consiguen explorando) ----------
   // BM148: piedra_recogible.glb y fibra_recogible.glb (assets/models/mapa, copia base64 AV_MAPA_B64.<nombre> en _glb.js).
@@ -209,7 +211,7 @@ window.AVV18Reparar = function (G) {
       g.position.set(p.x, y, p.z); scene.add(g);
       const R = { key, tipo, x: p.x, z: p.z, y, g, modelo: null };
       modelo(tipo).then(m => { const o = m ? m.clone(true) : respaldo(tipo); R.modelo = m ? 'glb' : 'respaldo'; g.add(o); });
-      R.it = G.interaccion.add({ id: 'v18_recogible_' + k, x: p.x, z: p.z, r: 2.2, visible: () => !cogida(R), label: () => TIPOS[tipo].label, use: () => recogerMaterial(R) });
+      R.it = G.interaccion.add({ id: 'v18_recogible_' + k, x: p.x, z: p.z, r: 2.2, visible: () => enCap1() && !cogida(R), label: () => TIPOS[tipo].label, use: () => recogerMaterial(R) });
       materiales.push(R);
     }
     sincronizar();
@@ -251,14 +253,14 @@ window.AVV18Reparar = function (G) {
   function ponerInteraccion() {
     if (itReparar || !P.eje) return;
     const p = punto(-0.06);
-    itReparar = G.interaccion.add({ id: 'v18_reparar_puente', x: p.x, z: p.z, r: 3.2, visible: () => !reparado(),
+    itReparar = G.interaccion.add({ id: 'v18_reparar_puente', x: p.x, z: p.z, r: 3.2, visible: () => enCap1() && !reparado(),
       label: () => 'Reparar el puente: 2 maderas + 1 piedra', use: reparar });
   }
 
   // ---------- Corriente del puente (solo reparado): volando, sube hasta 28 m sobre el tablero ----------
   const CORR = { r: 3.6, alto: 28, sube: 9, avisada: false, pistaT: 0, fxT: 0 };
   function enCorriente(x, z, y) {
-    if (!reparado() || !P.eje) return false;
+    if (!reparado() || !P.eje || !enCap1()) return false;
     const c = centro();
     return Math.hypot(x - c.x, z - c.z) < CORR.r && (y == null || y < c.y + CORR.alto);
   }
@@ -525,6 +527,15 @@ window.AVV18Reparar = function (G) {
       const rotoPie = await cruzarAPie(-6.5, 3, 400);
       check('Roto: las rampas de las cabeceras no sostienen y a pie no se sube al puente', cabeceras.rampas.length === 4 && cabeceras.rampas.every(r => !r.when()) && rotoPie.s < -0.5, textoCruce(rotoPie));
       check('Interacción visible junto al puente con el coste en madera y piedra', itReparar && itReparar.visible() && /2 maderas \+ 1 piedra/.test(itReparar.label()) && !/pluma/.test(itReparar.label()), itReparar && itReparar.label());
+      // QA-192: fuera del cap. 1 ni recogibles ni reparación ni corriente (el puente V18 es de Villa Raíz)
+      try {
+        const pack0 = G.pack && G.pack.id; G.pack.id = 'ep4';
+        try {
+          sincronizar();
+          check('QA-192: fuera del cap. 1 el puente V18 no ofrece nada',
+            !itReparar.visible() && maderas.every(M => !M.g.visible && !M.it.visible()) && materiales.every(R => !R.g.visible && !R.it.visible()) && !enCorriente(c.x, c.z, c.y + 1));
+        } finally { G.pack.id = pack0; sincronizar(); }
+      } catch (e) { check('QA-192: fuera del cap. 1 el puente V18 no ofrece nada', false, e && e.message); }
       toasts.length = 0;
       check('Sin materiales no repara y el aviso nombra las dos vías (duelo o juntar por el bosque)',
         reparar() === false && estado() === 'roto' && toasts.some(t => dosVias(t) && /2 maderas y 1 piedra/.test(t)), toasts.join(' | '));

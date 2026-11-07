@@ -733,9 +733,13 @@ AVE.module('accesibilidad', function (G) {
           const m = await maqueta(W, H, zurdo ? 'a11y-zurdo' : '');
           try {
             m.q('dialog').hidden = true; m.q('emotes').hidden = true; m.q('toast').hidden = true; m.q('subtitulos').hidden = true;
+            // QA-196: la maqueta clona el HUD vivo; si el clon captura un cuadro de natación, #b-fly trae `hidden` (interaccion.js
+            // lo sincroniza con MOVE.swimming) y el layout no se puede medir. Se normaliza al estado canónico en tierra.
+            if (m.q('b-fly')) m.q('b-fly').hidden = false;
+            if (m.q('b-dive')) m.q('b-dive').hidden = true;
             const rS = rect(m, '#stick'), rA = rect(m, '#acts'), rJ = rect(m, '#b-jump'), rG = rect(m, '#b-act'), rF = rect(m, '#b-fly'), rD = rect(m, '#b-dash');
             const et = `${W}×${H} ${zurdo ? 'zurdo' : 'diestro'}`;
-            if (!rS || !rA || !rJ || !rG) { malosZ.push(`${et}: faltan los controles`); continue; }
+            if (!rS || !rA || !rJ || !rG || !rF || !rD) { malosZ.push(`${et}: faltan los controles`); continue; }
             for (const [n, r] of [['joystick', rS], ['botones', rA]]) if (r.left < -1 || r.right > W + 1 || r.bottom > H + 1 || r.top < -1) malosZ.push(`${et}: ${n} se sale de la pantalla`);
             if (choca(rS, rA)) malosZ.push(`${et}: el joystick y los botones se pisan`);
             for (const id of ['sys', 'quest', 'inv']) if (choca(rS, rect(m, '#' + id)) || choca(rA, rect(m, '#' + id))) malosZ.push(`${et}: los controles tapan #${id}`);
@@ -771,6 +775,9 @@ AVE.module('accesibilidad', function (G) {
         const m = await maqueta(W, H, 'a11y-unamano' + (zurdoM ? ' a11y-zurdo' : ''));
         try {
           m.q('dialog').hidden = true; m.q('emotes').hidden = true; m.q('toast').hidden = true; m.q('subtitulos').hidden = true;
+          // QA-196: mismo criterio que en «Modo zurdo»: el clon puede traer #b-fly oculto por natación; se mide el estado en tierra.
+          if (m.q('b-fly')) m.q('b-fly').hidden = false;
+          if (m.q('b-dive')) m.q('b-dive').hidden = true;
           const et = `${W}×${H} ${zurdoM ? 'pulgar derecho' : 'pulgar izquierdo'}`;
           const rS = rect(m, '#stick'), rA = rect(m, '#acts'), rAct = rect(m, '#b-act'), rJump = rect(m, '#b-jump'), rFly = rect(m, '#b-fly'), rTonel = rect(m, '#b-tonel'), rLoop = rect(m, '#b-loop');
           if (!rS || !rA || !rAct || !rJump || !rFly || !rTonel || !rLoop) { malosMano.push(`${et}: faltan controles`); continue; }

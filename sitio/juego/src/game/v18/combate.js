@@ -191,8 +191,11 @@ window.AVV18Combate = function (G) {
       kb: { x: 0, z: 0, t: 0 }, finMareo: 0, mira: () => S.facing }, evoJugador(sp, o) || {}));
   }
   C.r = nuevoRival();
+  // QA-192: el duelo es de Villa Raíz; fuera del cap. 1 no se crea la rival ni se ofrece (mismo patrón que chispa/moon/guardian)
+  const enCap1 = () => !!(G.pack && G.pack.id === 'cap1');
   function crearRival() {
     if (C.listo) return C.listo;
+    if (!enCap1()) return (C.listo = Promise.resolve(null));
     if (!window.AVCharacter || !window.AVCharacter.create) return (C.listo = Promise.resolve(null));
     return (C.listo = window.AVCharacter.create().then(ch => {
       ch.applyLook({ species: C.r.especie, accessories: { eyes: { id: 'gafas', color: '#7fd3ff' } } });
@@ -802,13 +805,13 @@ window.AVV18Combate = function (G) {
   }
 
   // ---------- En el mundo: la rival espera en la explanada ----------
-  const it = G.interaccion.add({ id: 'v18_rival', x: rivalPos.x, z: rivalPos.z, r: 3.2, visible: () => C.fase === 'nada' && !!C.ch,
+  const it = G.interaccion.add({ id: 'v18_rival', x: rivalPos.x, z: rivalPos.z, r: 3.2, visible: () => enCap1() && C.fase === 'nada' && !!C.ch,
     label: () => TXT.retar, use: () => iniciar({}) });
   let retirada = false; // retirar(): una instancia de prueba (QA-163) deja el mundo sin rival, marca ni interacción duplicados
   G.on('update', (dt, busy) => {
     if (retirada) return;
     it.x = rivalPos.x; it.z = rivalPos.z;
-    marca.visible = Math.hypot(S.pos.x - sitio.x, S.pos.z - sitio.z) < 90;
+    marca.visible = enCap1() && Math.hypot(S.pos.x - sitio.x, S.pos.z - sitio.z) < 90;
     if (busy && C.fase !== 'nada') return;
     paso(Math.min(dt, 0.1));
   }, 70);
@@ -826,7 +829,7 @@ window.AVV18Combate = function (G) {
   const pedirSitio = () => { recolocar = true; };
   Promise.resolve(G.vegetacion && G.vegetacion.listo).then(pedirSitio, pedirSitio);
   Promise.resolve(G.mundo && G.mundo.listo).then(pedirSitio, () => {});
-  G.on('update', () => { if (!retirada && recolocar && C.fase === 'nada' && !(G.v18duelo2 && G.v18duelo2.estado().fase !== 'nada')) moverSitio(); }, 69); // no se recoloca en mitad de un duelo de 2
+  G.on('update', () => { if (!retirada && recolocar && enCap1() && C.fase === 'nada' && !(G.v18duelo2 && G.v18duelo2.estado().fase !== 'nada')) moverSitio(); }, 69); // no se recoloca en mitad de un duelo de 2
   crearRival();
 
   // ---------- Prueba ----------
@@ -1031,6 +1034,14 @@ window.AVV18Combate = function (G) {
         G.v18combate = orig; // deja la instancia de siempre (TACTIL según el dispositivo real), la misma que tienen los demás módulos
       }
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
+    // QA-192: fuera del cap. 1 el duelo no se ofrece aunque la rival exista; la marca usa la misma guarda
+    try {
+      const cap1oferta = C.fase === 'nada' && !!C.ch; // lo que se ofrecería en cap1
+      const pack0 = G.pack && G.pack.id; G.pack.id = 'ep4';
+      try { check('QA-192: fuera del cap. 1 no se ofrece el duelo', !it.visible()); }
+      finally { G.pack.id = pack0; }
+      check('QA-192: en el cap. 1 la oferta solo depende del estado del duelo', it.visible() === cap1oferta);
+    } catch (e) { check('QA-192: fuera del cap. 1 no se ofrece el duelo', false, e && e.message); }
     try { salir(); } catch (e) { /* ya fuera */ }
     G.ui.toast = toast0;
     oyente.mudo = true; evs.length = 0; podEv.length = 0; // G.on no tiene «off»: los oyentes de la prueba se quedan mudos
