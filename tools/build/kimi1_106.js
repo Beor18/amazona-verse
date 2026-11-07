@@ -89,7 +89,7 @@ const ENTRAR_JS = `(async () => { try { return await (async () => { const sleep 
   await sleep(1500);
   return 'ok'; })(); } catch (e) { return 'ERR ' + (e && e.stack || e); } })()`;
 
-/* las 14 pruebas V18. min = mínimo esperado en este perfil (documentado como diseño, no es rojo) */
+/* las 18 pruebas V18. min = mínimo esperado en este perfil (documentado como diseño, no es rojo) */
 const PRUEBAS = [
   { id: 'progreso', nombre: 'v18Test', fn: 'v18Test', tope: 240, min: 1 },
   { id: 'explorar', nombre: 'v18ExplorarTest', fn: 'v18ExplorarTest', tope: 300, min: 1 },
@@ -107,6 +107,9 @@ const PRUEBAS = [
   { id: 'sapo', nombre: 'v18SapoTest', fn: 'v18SapoTest', tope: 300, min: 1 },
   { id: 'serpiente', nombre: 'v18SerpienteTest', fn: 'v18SerpienteTest', tope: 300, min: 1 },
   { id: 'puerto', nombre: 'v18PuertoTest', fn: 'v18PuertoTest', tope: 300, min: 1 }, // V18.3 «El puerto que volvió a vivir» (KIMI-130 corrida 2)
+  { id: 'moon', nombre: 'v18MoonTest', fn: 'v18MoonTest', tope: 300, min: 1 }, // V18.2 Maestro Moon (KIMI-130 corrida 7 lo corría fuera de la suite)
+  { id: 'guardian', nombre: 'v18GuardianTest', fn: 'v18GuardianTest', tope: 300, min: 1 }, // V18.2 Guardián del Primer Vuelo (idem)
+  { id: 'chispa', nombre: 'v18ChispaTest', fn: 'v18ChispaTest', tope: 300, min: 1 }, // V18.3 carrera de Chispa (anotado en KIMI-169: «la suite aún no incluye la 16ª prueba»)
 ];
 function jsPrueba(p) {
   return `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), AV = window.AV, G = AV.G;
