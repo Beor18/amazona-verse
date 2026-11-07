@@ -144,6 +144,7 @@ AVE.module('lugares', function (G) {
   }
   function avisar(dt) {
     if (tR > 0 && (tR -= dt) <= 0) ocultarRotulo();
+    if (tR > 0 && G.ui.cardOpen && window.innerWidth <= 560) ocultarRotulo(); // auditoría 7-nov: en el teléfono el rótulo (z 30, a 30vh) tapaba la pregunta de una tarjeta abierta después
     if (!cola.length) return;
     espera = Math.max(0, espera - dt);
     if (espera > 0 || G.quiet || G.ui.busy() || (G.dialogo && G.dialogo.activo && G.dialogo.activo()) || $('c1-fade') || $('c1-saltar') || /\bv18-(duelo|amenaza)-on\b/.test(document.body.className)) return; // QA-188 (W28): espera también a diálogo/bocadillo/narrador (busy no los cubre) y a la apertura del cap. 1; en un duelo V18 espera a que acabe
@@ -254,6 +255,9 @@ AVE.module('lugares', function (G) {
         const rt = document.getElementById('rotulo-lugar');
         check('Al llegar sale «¡Lugar descubierto! Bienvenido a …» con su nombre', descubiertos().includes(a.id) && rt && !rt.hidden && /Lugar descubierto/.test(rt.textContent) && /Bienvenido a/.test(rt.textContent) && rt.textContent.includes(a.asentamiento.nombre),
           rt ? rt.textContent : 'sin rótulo');
+        Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true });
+        try { G.ui.showCard('<h2>Prueba</h2>'); avisar(0); check('En el teléfono, si se abre una tarjeta el rótulo se quita (no tapa la pregunta)', !!rt && rt.hidden, rt ? String(rt.hidden) : 'sin rótulo'); }
+        finally { G.ui.hideCard(); delete window.innerWidth; }
         const hd = htmlDiario();
         check('El Diario suma su línea en «Lugares de la isla» (1/14)', hd.includes('(1/14)') && hd.includes(esc(a.asentamiento.diario)) && (hd.match(/\?\?\?/g) || []).length === 13);
         // Salir y volver: «Bienvenido a …» otra vez, sin «descubierto»; enseguida no se repite
