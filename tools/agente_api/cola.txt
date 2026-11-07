@@ -51,3 +51,6 @@ BM130
 BM131
 BM132
 BM135
+# 7-nov 02:45 (coordinadora nube): la Mac se apagó; tras reanudar, Safari real (Kelvin: «pongámosla a ayudar»)
+BM170
+BM171
