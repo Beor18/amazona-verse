@@ -216,6 +216,8 @@ window.AVFamilia = function (G) {
   }
   function cerrar() { enJuego = false; fin.hidden = true; abierto = false; raiz.hidden = true; jugadores = []; turno = 0; }
   $('fam-cerrar').addEventListener('click', cerrar);
+  // Escape cierra el panel como «Cerrar» (captura + stopPropagation: no abre la pausa debajo)
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && abierto && !raiz.hidden) { e.preventDefault(); e.stopImmediatePropagation(); cerrar(); } }, true);
   $('fam-ok').addEventListener('click', () => { listo = jugar(); });
   fin.addEventListener('click', cerrarTurno);
 
@@ -242,6 +244,9 @@ window.AVFamilia = function (G) {
       anotar(1, 9); anotar(1, 8); anotar(1, 7); const m4 = anotar(1, 6);
       ok('Con 4 jugadores nadie se queda sin premio', cuatro.length === 4 && m4.length === 4 && m4.every(m => m.premio), m4.map(m => m.premio).join(' · '));
 
+      abrir();
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      ok('Escape cierra el panel En familia', raiz.hidden && !abierto);
       abrir();
       ok('QA-116 hay botones de Escondite y de la Maraña', !!$('fam-juego-escondite') && !!$('fam-juego-marana') && !!$('fam-juego-trucos'));
       $('fam-juego-marana').click();

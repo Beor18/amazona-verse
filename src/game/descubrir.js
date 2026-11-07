@@ -101,6 +101,9 @@ AVE.module('descubrir', function (G) {
     });
   }
 
+  // Al cambiar de idioma con el menú abierto, la etiqueta se repinta (tras idioma.js, que fija G.idioma.actual)
+  G.on('aula', k => { if (k === 'idioma' && caja && menu) setTimeout(pintarPausa, 0); });
+
   // ---------- Todos los lugares: celebración ----------
   G.on('lugar', () => { if (!G.quiet && cuenta().todos) G.audio.play('unlock'); });
 
@@ -179,6 +182,10 @@ AVE.module('descubrir', function (G) {
         d.textContent.includes('You discovered Poza Honda! Places discovered') &&
         (!menu || /Places discovered/.test(pintarPausa().textContent)), d.textContent.slice(0, 120));
       if (aj) aj.idioma = 'es';
+      if (menu && caja) {
+        G.emit('aula', 'idioma', 'es'); await new Promise(r => setTimeout(r, 30));
+        check('Al volver a ES la etiqueta de la pausa sigue al idioma', !/Places discovered/.test(caja.textContent) && /Lugares descubiertos|todos los lugares/.test(caja.textContent), caja.textContent);
+      }
       // Todos
       S.lugares = P.map(q => q.id);
       c = cuenta();
