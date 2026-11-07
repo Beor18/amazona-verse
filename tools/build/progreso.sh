@@ -19,7 +19,7 @@ if [ "$cap1" = null ] && [ "$tareas" = null ]; then total=null
 elif [ "$cap1" = null ]; then total=$tareas
 elif [ "$tareas" = null ]; then total=$cap1
 else total=$(( (cap1 + tareas + 1) / 2 )); fi
-# Métrica verificable (Kelvin, 6-nov): si existe docs/equipo/avance.json, el total es el de la temporada (criterios cumplidos / 54)
+# Métrica verificable (Kelvin, 6-nov): si existe docs/equipo/avance.json, el total es el de la temporada (criterios cumplidos / 48: 8 por capítulo, sin la prueba con personas, Kelvin 7-nov)
 temp=null; v18=null; pod=null
 if [ -f "$R/docs/equipo/avance.json" ]; then
   temp=$(awk '/"temporada"/{match($0,/"cumplidos": *[0-9]+/);c=substr($0,RSTART,RLENGTH);gsub(/[^0-9]/,"",c);match($0,/"total": *[0-9]+/);t=substr($0,RSTART,RLENGTH);gsub(/[^0-9]/,"",t);if(t>0)printf "%.0f",100*c/t;exit}' "$R/docs/equipo/avance.json" 2>/dev/null || echo null)

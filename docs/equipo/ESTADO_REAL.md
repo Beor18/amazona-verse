@@ -163,7 +163,7 @@ Quedan 26 para la temporada 1: 12 de coste B, 13 de coste M y 1 de coste A (#14,
 | C3 | Hay un recorrido a pie (sin teletransporte) en verde |
 | C4 | En inglés no sale texto en español |
 | C5 | Se termina en el móvil con toques reales (CG-66) |
-| C6 | Se midió con personas reales |
+| C6 | ~~Se midió con personas reales~~ **No cuenta para el % (Kelvin, 7-nov: la prueba con personas se hace cuando todo esté terminado y jugable). Total: 8 criterios por capítulo, 48.** |
 | C7 | No quedan decisiones de Kelvin abiertas propias del capítulo |
 | C8 | Ninguna ficha del Diario del capítulo está en «por_verificar» |
 | C9 | No hay bugs abiertos propios en `BUGS.md` |

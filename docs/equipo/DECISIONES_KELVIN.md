@@ -14,7 +14,7 @@ Fuentes: `K4_DECISIONES_ABIERTAS.md` (cruce de PENDIENTES, DECISIONES_LISTA, DEC
 
 | # | Decisión | Recomendación (se aplica mientras no digas otra cosa) | Qué desbloquea |
 |---|---|---|---|
-| A1 | **Prueba con niños** de los caps. 2 a 6 y de la demo `?v18=1` (guía: `GUIA_PLAYTEST_NINOS.md`) | Hacerla cuando puedas, con permiso de los padres. No es una decisión: es lo único que solo puedes hacer tú | La temporada pasa del 74 % al 83 % |
+| A1 | **Prueba con niños** | **Kelvin 7-nov: se hace cuando todo esté terminado y jugable; no cuenta para el %** (8 criterios por capítulo, 48) | — |
 | A2 | **Aspecto de la Ciudad de los 36** (capturas de BM133, BM134 y BM136) | Aprobarla como está; lo que quieras cambiar, se anota | Cierre del cap. 6 |
 | A3 | **Cotorras vivas nuevas** (KIMI-122, antes y después en `docs/img/kelvin_6nov/`) | Aprobadas como están (Kimi las validó con GPU, KIMI-123) | Ciudad viva, cap. 6 |
 | A4 | **Emblema del pacto** (cap. 6) | **DECIDIDO (Kelvin, 6-nov): B · Semilla con alas** (`docs/img/emblema_propuestas/emblema_b.svg`). El equipo lo pone en el juego | Cierre del cap. 6 |
