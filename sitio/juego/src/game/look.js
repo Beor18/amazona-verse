@@ -202,15 +202,24 @@ window.AVLook = function (G) {
     if (uu) for (const u in uu) { const v = uu[u] && uu[u].value; if (v && v.isTexture) fn(v, u); }
   }
   // BE5: el GLTFLoader sube las imágenes de la flora como CanvasTexture sobre un ImageBitmap, y antes se saltaban (el tope no
-  // les llegaba). Las de la flora sí se encogen; los lienzos dibujados y las de edificios y personajes, no. En medio y bajo la
-  // normal de la flora (corteza y roca) va a la mitad del tope: se nota poco y ahorra ~18 MB en el móvil.
+  // les llegaba). Las de la flora sí se encogen; los lienzos dibujados y las de personajes, no (las del kit de edificios
+  // bajan solo en «bajo», topeK edificio). En medio y bajo la normal de la flora (corteza y roca) va a la mitad del tope.
   // QA-110 (7-nov): en «bajo» el mapa de la flora también baja a la mitad (512→256): son ~29 texturas de hoja/corteza/pasto
   // y ahorra ~30 MB de las 47 de flora en el iPhone; las hojas usan alfa y el toon enmascara el suavizado. En medio/alto, igual.
+  // KIMI-218 (7-nov, encargo QA-110 «generadas a menor resolución en bajo»): en «bajo» las texturas del kit de
+  // edificios (KB3D_*, AV_Restaurado_*, canoa — las «generadas» sin URL del volcado) bajan igual a la mitad
+  // (512→256): ~21 texturas, −21 MB en la Ciudad de los 36. El atlas HD (avAtlas) sigue sin encogerse y
+  // Vittata (personajes) queda fuera: el criterio es por familia de material, no por malla.
   const esBitmap = img => typeof ImageBitmap !== 'undefined' && img instanceof ImageBitmap;
-  function topeK(max, k, flora) {
-    if (!flora || !max) return max;
-    if (k === 'normalMap') return R.calidad.nivel !== 'alto' ? max >> 1 : max;
-    return R.calidad.nivel === 'bajo' ? max >> 1 : max;
+  const KIT_EDIFICIO = /^(KB3D_|AV_Restaurado_|canoa)/;
+  function topeK(max, k, flora, edificio) {
+    if (!max) return max;
+    if (flora) {
+      if (k === 'normalMap') return R.calidad.nivel !== 'alto' ? max >> 1 : max;
+      return R.calidad.nivel === 'bajo' ? max >> 1 : max;
+    }
+    if (edificio && R.calidad.nivel === 'bajo') return max >> 1;
+    return max;
   }
   // KIMI-055: al conmutar la calidad, encoger recortaba TODAS las texturas de la escena dentro del
   // mismo evento (un lienzo + drawImage por textura: ~0,4-0,5 s de hilo a CPU ×4 en el flip, QA-53).
@@ -227,10 +236,12 @@ window.AVLook = function (G) {
     const c = document.createElement('canvas'); c.width = Math.min(max, o.width); c.height = Math.min(max, o.height);
     try { c.getContext('2d').drawImage(o, 0, 0, c.width, c.height); t.image = c; t.needsUpdate = true; } catch (e) { /* imagen sin leer: se queda */ }
   }
-  function encoger(t, max, k, flora) {
+  function encoger(t, max, k, flora, edificio) {
     const img = t.image;
-    if (t.isCanvasTexture && !imagenes.has(t) && !(flora && esBitmap(img))) return;
-    max = topeK(max, k, flora);
+    // KIMI-218: el kit de edificios llega como CanvasTexture sobre ImageBitmap (igual que la flora, BE5);
+    // sin la excepción el tope nunca les llega y se quedan a 512 en «bajo».
+    if (t.isCanvasTexture && !imagenes.has(t) && !((flora || edificio) && esBitmap(img))) return;
+    max = topeK(max, k, flora, edificio);
     if (!img || t.isDataTexture || t.isCompressedTexture || t.isCubeTexture || t.isVideoTexture || Array.isArray(img)) return;
     // El atlas HD (4096, celda 1024) no se encoge: a 512 la celda quedaría en 128 y la piedra se ve blanda.
     // ?tex= sigue pudiendo medirlo. La flora y el suelo sí bajan.
@@ -298,7 +309,7 @@ window.AVLook = function (G) {
       if (tenia !== !!(m.defines && m.defines.AV_RIM)) recompilar = true;
     }
     const max = topeTex(L);
-    texturasDe(m, (t, k) => encoger(t, max, k, flora));
+    texturasDe(m, (t, k) => encoger(t, max, k, flora, edificio));
     if (recompilar) m.needsUpdate = true;
     if (L) tocados.add(m); else tocados.delete(m);
   }
@@ -310,13 +321,15 @@ window.AVLook = function (G) {
     if (a && a < 1024 && R.calidad.nivel === "alto" && !(window.matchMedia && matchMedia('(pointer: coarse)').matches)) a = 1024;   // BM14: en alto de escritorio el look no encoge flora ni suelo por debajo de 1024
     return a && b ? Math.min(a, b) : a || b;
   }
-  function recortar() { R.scene.traverse(o => { if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, (t, k) => encoger(t, topeTex(null), k, /^flora:/.test(o.name))); }); }
+  function recortar() { R.scene.traverse(o => { if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, (t, k) => encoger(t, topeTex(null), k, /^flora:/.test(o.name), edificioDe(o, m))); }); }
+  function edificioDe(o, m) { return /^(edificios|edificiosInst|estructura:)/.test(o.name) || KIT_EDIFICIO.test((m && m.name) || ''); }
   function barrer(L, todos) {
     const max = topeTex(L);
     R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
       const flora = /^flora:/.test(o.name);
-      if (todos || !tocados.has(m)) tocar(m, L, !!o.isSkinnedMesh, todos, flora, /^(edificios|estructura:)/.test(o.name));
-      else if (max) texturasDe(m, (t, k) => encoger(t, max, k, flora)); // las imágenes llegan después del primer toque: se encogen al verlas
+      const edificio = edificioDe(o, m);
+      if (todos || !tocados.has(m)) tocar(m, L, !!o.isSkinnedMesh, todos, flora, edificio);
+      else if (max) texturasDe(m, (t, k) => encoger(t, max, k, flora, edificio)); // las imágenes llegan después del primer toque: se encogen al verlas
     } });
     if (!L) { for (const m of tocados) tocar(m, null, false, true); tocados.clear(); }
   }

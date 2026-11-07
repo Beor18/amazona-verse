@@ -248,7 +248,7 @@ window.AVV18Fx = function (G) {
     rings.visible = vivos > 0;
     rings.instanceMatrix.needsUpdate = true;
     if (rings.instanceColor) rings.instanceColor.needsUpdate = true;
-    if (escudos.length) for (const e of escudos.slice()) pintarEscudo(e);
+    for (let i = 0; i < escudos.length;) { const e = escudos[i]; pintarEscudo(e); if (escudos[i] === e) i++; }
     plumas.visible = escudos.length > 0;
     plumas.instanceMatrix.needsUpdate = true;
     if (plumas.instanceColor) plumas.instanceColor.needsUpdate = true;

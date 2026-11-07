@@ -175,25 +175,27 @@ window.AVV18Duelo2 = function (G) {
   }
   function saltar2() { const j = D.j2; if (D.fase === 'lucha' && j.lift.dura <= 0 && j.mareo <= 0) { j.lift.alto = 1.1; j.lift.t = 0; j.lift.dura = 0.55; sonar('jump'); } }
   // Mando (Gamepad API): el primero conectado juega como Jugador 2. Botones de la disposición estándar.
-  const pad = { b: [], sostB: 0, usado: false };
+  // QA-205: botones con funciones de módulo y salida en un objeto reutilizable (se lee cada cuadro)
+  const pad = { b: [], sostB: 0, usado: false, out: { x: 0, y: 0, correr: false } };
+  const btnG = (gp, i) => !!(gp.buttons[i] && gp.buttons[i].pressed), nuevoG = (gp, i) => btnG(gp, i) && !pad.b[i];
   function leerMando() {
     let gp = null;
     try { const l = navigator.getGamepads ? navigator.getGamepads() : []; for (const g of l) if (g && g.connected) { gp = g; break; } } catch (e) { /* sin mandos */ }
     if (!gp) return null;
     pad.usado = true;
-    const btn = i => !!(gp.buttons[i] && gp.buttons[i].pressed), nuevo = i => btn(i) && !pad.b[i];
     let x = gp.axes[0] || 0, y = gp.axes[1] || 0;
-    if (btn(14)) x = -1; if (btn(15)) x = 1; if (btn(12)) y = -1; if (btn(13)) y = 1;
+    if (btnG(gp, 14)) x = -1; if (btnG(gp, 15)) x = 1; if (btnG(gp, 12)) y = -1; if (btnG(gp, 13)) y = 1;
     if (Math.hypot(x, y) < 0.2) { x = 0; y = 0; }
     if (D.fase === 'lucha') {
-      if (nuevo(2)) usar(D.j2, 'golpe_ala');
-      if (nuevo(3)) usar(D.j2, poderDe(D.j2));
-      if (nuevo(0)) saltar2();
-      if (nuevo(1)) pad.sostB = performance.now();
-      if (!btn(1) && pad.b[1] && pad.sostB) { const ms = performance.now() - pad.sostB; pad.sostB = 0; usar(D.j2, ms >= 450 ? poderDe(D.j2) : 'semilla'); }
-    } else if (D.fase === 'fin' && (nuevo(0) || nuevo(2))) otraVezSiListo();
-    for (let i = 0; i < gp.buttons.length; i++) pad.b[i] = btn(i);
-    return { x, y, correr: Math.hypot(x, y) > 0.92 || btn(5) };
+      if (nuevoG(gp, 2)) usar(D.j2, 'golpe_ala');
+      if (nuevoG(gp, 3)) usar(D.j2, poderDe(D.j2));
+      if (nuevoG(gp, 0)) saltar2();
+      if (nuevoG(gp, 1)) pad.sostB = performance.now();
+      if (!btnG(gp, 1) && pad.b[1] && pad.sostB) { const ms = performance.now() - pad.sostB; pad.sostB = 0; usar(D.j2, ms >= 450 ? poderDe(D.j2) : 'semilla'); }
+    } else if (D.fase === 'fin' && (nuevoG(gp, 0) || nuevoG(gp, 2))) otraVezSiListo();
+    for (let i = 0; i < gp.buttons.length; i++) pad.b[i] = btnG(gp, i);
+    const o = pad.out; o.x = x; o.y = y; o.correr = Math.hypot(x, y) > 0.92 || btnG(gp, 5);
+    return o;
   }
 
   // ---------- Vittata (J1): pico, alas y tambaleo (envoltura de player3D.update mientras dura; actores.js no se toca) ----------
@@ -405,18 +407,19 @@ window.AVV18Duelo2 = function (G) {
     pos2.y = ALTURA(pos2) + lift;
     j.vel = Math.hypot(vx, vz);
   }
+  const giro = a => Math.atan2(Math.sin(a), Math.cos(a));
   function dibujar2(dt) {
     const ch = D.ch; if (!ch) return;
     const j = D.j2, root = ch.root, now = performance.now() / 1000;
     root.visible = true; root.position.set(pos2.x, pos2.y, pos2.z);
-    const giro = a => Math.atan2(Math.sin(a), Math.cos(a));
     root.rotation.y += giro(j.yaw - root.rotation.y) * Math.min(1, dt * 10);
     root.rotation.z = j.mareo > 0 ? Math.sin(now * (j.finMareo > 0 ? 9 : 14)) * (j.finMareo > 0 ? 0.32 : 0.25) : root.rotation.z * 0.8;
     const enAire = j.lift.dura > 0, vel = j.vel || 0;
-    Object.assign(ch, { speed: vel, gait: vel > 7 ? 1 : 0, airborne: enAire, flying: enAire, legsDown: enAire ? 0.6 : 1, swimming: false, diving: false,
-      wingMode: j.alasT > 0 ? 'land' : enAire ? 'flap' : vel > 0.5 ? 'walk' : 'idle',
-      expression: j.mareo > 0 ? 'surprised' : j.picoT > 0 ? 'fight' : 'happy', mouth: j.picoT > 0 ? Math.min(1, j.picoT / 0.15) : null, lookAt: null,
-      emote: null, posado: '', agachada: 0, groundY: ALTURA(pos2), groundAt: null });
+    // QA-205: campos sueltos en vez de un literal nuevo por cuadro (mismo orden)
+    ch.speed = vel; ch.gait = vel > 7 ? 1 : 0; ch.airborne = enAire; ch.flying = enAire; ch.legsDown = enAire ? 0.6 : 1; ch.swimming = false; ch.diving = false;
+    ch.wingMode = j.alasT > 0 ? 'land' : enAire ? 'flap' : vel > 0.5 ? 'walk' : 'idle';
+    ch.expression = j.mareo > 0 ? 'surprised' : j.picoT > 0 ? 'fight' : 'happy'; ch.mouth = j.picoT > 0 ? Math.min(1, j.picoT / 0.15) : null; ch.lookAt = null;
+    ch.emote = null; ch.posado = ''; ch.agachada = 0; ch.groundY = ALTURA(pos2); ch.groundAt = null;
     try { ch.update(dt); } catch (e) { /* animación */ }
   }
   function pasoJ1(dt) {

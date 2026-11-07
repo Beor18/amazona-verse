@@ -254,18 +254,25 @@ window.AVV18Npc = function (G) {
   }
   const angDif = (a, b) => { let d = a - b; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; };
   const comentado = Object.create(null); // sin prototipo: el id «constructor» no debe leer Object.prototype.constructor
+  // QA-202: arrays de trabajo reutilizables y orden con función de módulo (paso corre en todos los cuadros)
+  const quiere = [], _tuplas = [], porDist = (a, b) => a[0] - b[0];
   function paso(dt, busy) {
     // 1. qué personajes tocan: colocados, con su condición y cerca; los 2 más cercanos
-    const quiere = [];
+    quiere.length = 0;
     for (const [id, c] of COL) {
       let ok = false; try { ok = !c.aparece || !!c.aparece(); } catch (e) { ok = false; }
       const d = Math.hypot(S.pos.x - c.x, S.pos.z - c.z);
       if (!ok || d > R_LIBERA) { if (INST.has(id)) liberar(id); continue; }
-      if (INST.has(id) || d < R_CARGA) quiere.push([d, id]);
+      if (INST.has(id) || d < R_CARGA) {
+        const q = _tuplas[quiere.length] || (_tuplas[quiere.length] = [0, null]);
+        q[0] = d; q[1] = id; quiere.push(q);
+      }
     }
-    quiere.sort((a, b) => a[0] - b[0]);
-    quiere.slice(MAX_ACTIVOS).forEach(q => liberar(q[1]));
-    quiere.slice(0, MAX_ACTIVOS).forEach(q => { if (!INST.has(q[1])) instanciar(q[1]); });
+    if (quiere.length) {
+      if (quiere.length > 1) quiere.sort(porDist);
+      for (let i = MAX_ACTIVOS; i < quiere.length; i++) liberar(quiere[i][1]);
+      for (let i = 0; i < quiere.length && i < MAX_ACTIVOS; i++) if (!INST.has(quiere[i][1])) instanciar(quiere[i][1]);
+    }
     // 2. cada instancia viva
     const bajo = nivel() === 'bajo';
     for (const inst of INST.values()) {
