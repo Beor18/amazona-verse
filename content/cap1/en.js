@@ -1838,7 +1838,7 @@ window.AV_EN = {
  "Gota de lluvia": "Raindrop",
  "Chillido de bandada": "Flock screech",
  "Ráfaga": "Gust",
- "¡Descubriste a la cotorra de La Española en el Álbum! Su poder: Eco de la Cordillera. Elígela en Pausa → Mis cotorras.": "You discovered the Hispaniolan amazon in the Album! Its power: Mountain echo. Pick it in Pause → My parrots.",
+ "¡Descubriste a la cotorra de La Española en el Álbum! Su poder: Eco de la Cordillera. Elígela en Pausa → Mis cotorras.": "You discovered the Hispaniolan amazon in the Album! Its power: Mountain echo. Pick her in Pause → My parrots.",
  "¡Descubriste al loro de lomo rojo en el Álbum! Su poder: A ras del agua. Elígelo en Pausa → Mis cotorras.": "You discovered the festive amazon in the Album! Its power: Skimming flight. Pick it in Pause → My parrots.",
  "¡Descubriste al loro real amazónico en el Álbum! Su poder: Canto real. Elígelo en Pausa → Mis cotorras.": "You discovered the yellow-crowned amazon in the Album! Its power: Royal song. Pick it in Pause → My parrots.",
  "Eco de la Cordillera": "Mountain echo",
@@ -2189,5 +2189,5 @@ window.AV_EN = {
  "Del gran río": "Great river",
  "Del bosque del sur": "Southern forest",
  "Limpiaste un rastro de la Maraña. Es un cuento de la bandada, no un dato de la isla.": "You cleared a trail of the Tangle. It is a flock story, not a fact about the island.",
- "Entreno con Moon": "Training with Moon"
+ "Algo brilla cerca": "Something shiny nearby"
 };
