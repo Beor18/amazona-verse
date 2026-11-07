@@ -482,9 +482,21 @@ def oyente(estado):
             q = p.get('request') or {}
             estado['reqs'].setdefault(p['requestId'], {}).update(url=q.get('url', ''), metodo=q.get('method'), tipo=p.get('type'), fase=estado['fase'])
         elif me == 'Network.responseReceived':
-            estado['reqs'].setdefault(p['requestId'], {})['estado'] = (p.get('response') or {}).get('status')
+            r = p.get('response') or {}
+            q = estado['reqs'].setdefault(p['requestId'], {})
+            q['estado'] = r.get('status')
+            # W19: lo que sirve sw.js (*_glb.js, .glb, tex_hd) llega a la pestaña con encodedDataLength 0 porque la descarga
+            # la hace el service worker en su propio target. Antes contaba 0 o el tamaño real según si sw.js ya controlaba
+            # la página cuando el terreno pedía sus trozos (6,6 o 10,1 MB). Si el SW lo bajó de la red, cuenta lo recibido.
+            if r.get('fromServiceWorker') and r.get('serviceWorkerResponseSource') in (None, 'network', 'fallback-code'):
+                q['sw_red'] = 0
+        elif me == 'Network.dataReceived':
+            q = estado['reqs'].get(p.get('requestId'))
+            if q is not None and 'sw_red' in q:
+                q['sw_red'] += int(p.get('dataLength') or 0)
         elif me == 'Network.loadingFinished':
-            estado['reqs'].setdefault(p['requestId'], {}).update(bytes=int(p.get('encodedDataLength') or 0), fin=True)
+            q = estado['reqs'].setdefault(p['requestId'], {})
+            q.update(bytes=int(p.get('encodedDataLength') or 0) or q.get('sw_red', 0), fin=True)
         elif me == 'Network.loadingFailed':
             estado['reqs'].setdefault(p['requestId'], {}).update(fallo=p.get('errorText'), cancelado=p.get('canceled'), bloqueo=p.get('blockedReason'), fin=True)
         elif me in ('Inspector.targetCrashed', 'Target.targetCrashed'):
