@@ -1,0 +1,326 @@
+{
+ "etiqueta": "r2",
+ "pantalla": "390x844@3 cpuX4",
+ "bloqueoS": 20,
+ "topeS": 180,
+ "pasadas": {
+  "base": {
+   "colagrande": 999999999,
+   "muestras": [
+    {
+     "t": 46148,
+     "trabajos": 218,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": null,
+     "p95ms": null,
+     "maxms": 20067,
+     "seg": 0.1
+    },
+    {
+     "t": 46677,
+     "trabajos": 228,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 24,
+     "p95ms": 20067,
+     "maxms": 20067,
+     "seg": 0.6
+    },
+    {
+     "t": 47195,
+     "trabajos": 210,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 75,
+     "maxms": 20067,
+     "seg": 1.1
+    },
+    {
+     "t": 47732,
+     "trabajos": 221,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 25,
+     "p95ms": 75,
+     "maxms": 20067,
+     "seg": 1.7
+    },
+    {
+     "t": 48268,
+     "trabajos": 222,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 25,
+     "p95ms": 65,
+     "maxms": 20067,
+     "seg": 2.2
+    },
+    {
+     "t": 48803,
+     "trabajos": 194,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 28,
+     "p95ms": 57,
+     "maxms": 20067,
+     "seg": 2.7
+    },
+    {
+     "t": 49345,
+     "trabajos": 178,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 28,
+     "p95ms": 57,
+     "maxms": 20067,
+     "seg": 3.3
+    },
+    {
+     "t": 49880,
+     "trabajos": 245,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 28,
+     "p95ms": 49,
+     "maxms": 65,
+     "seg": 3.8
+    },
+    {
+     "t": 50397,
+     "trabajos": 156,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 30,
+     "p95ms": 45,
+     "maxms": 53,
+     "seg": 4.3
+    },
+    {
+     "t": 50902,
+     "trabajos": 96,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 30,
+     "p95ms": 44,
+     "maxms": 53,
+     "seg": 4.8
+    },
+    {
+     "t": 51412,
+     "trabajos": 63,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 30,
+     "p95ms": 45,
+     "maxms": 59,
+     "seg": 5.4
+    },
+    {
+     "t": 51929,
+     "trabajos": 18,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 31,
+     "p95ms": 45,
+     "maxms": 59,
+     "seg": 5.9
+    },
+    {
+     "t": 52454,
+     "trabajos": 8,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 31,
+     "p95ms": 44,
+     "maxms": 59,
+     "seg": 6.4
+    }
+   ],
+   "asentado": "ok 8 trabajos=0 desc=4",
+   "armar": "ok {\"v\":[-33,127,-136],\"descargando\":0,\"trabajos\":261}",
+   "preBloqueo": {
+    "t": 25963,
+    "trabajos": 250,
+    "descargando": 0,
+    "recuperacion": false,
+    "fps": 20,
+    "p95ms": 235,
+    "maxms": 349
+   },
+   "bloqueo": {
+    "duracionRealS": 20.1,
+    "resultado": "desbloqueado 1"
+   },
+   "picoTrabajos": 245,
+   "recuperado100EnS": 4.8,
+   "colaVaciaEnS": 6.4,
+   "erroresConsola": 0
+  },
+  "post": {
+   "colagrande": 2500,
+   "muestras": [
+    {
+     "t": 39437,
+     "trabajos": 215,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": null,
+     "p95ms": null,
+     "maxms": 20029,
+     "seg": 0.1
+    },
+    {
+     "t": 39975,
+     "trabajos": 205,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 33,
+     "p95ms": 20029,
+     "maxms": 20029,
+     "seg": 0.6
+    },
+    {
+     "t": 40489,
+     "trabajos": 221,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 32,
+     "p95ms": 55,
+     "maxms": 20029,
+     "seg": 1.1
+    },
+    {
+     "t": 41031,
+     "trabajos": 212,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 32,
+     "p95ms": 53,
+     "maxms": 20029,
+     "seg": 1.6
+    },
+    {
+     "t": 41568,
+     "trabajos": 192,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 30,
+     "p95ms": 51,
+     "maxms": 20029,
+     "seg": 2.2
+    },
+    {
+     "t": 42128,
+     "trabajos": 186,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 29,
+     "p95ms": 51,
+     "maxms": 20029,
+     "seg": 2.7
+    },
+    {
+     "t": 42640,
+     "trabajos": 215,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 28,
+     "p95ms": 53,
+     "maxms": 20029,
+     "seg": 3.3
+    },
+    {
+     "t": 43191,
+     "trabajos": 255,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 27,
+     "p95ms": 57,
+     "maxms": 75,
+     "seg": 3.8
+    },
+    {
+     "t": 43713,
+     "trabajos": 123,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 27,
+     "p95ms": 57,
+     "maxms": 75,
+     "seg": 4.3
+    },
+    {
+     "t": 44247,
+     "trabajos": 98,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 27,
+     "p95ms": 57,
+     "maxms": 75,
+     "seg": 4.9
+    },
+    {
+     "t": 44788,
+     "trabajos": 70,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 27,
+     "p95ms": 57,
+     "maxms": 75,
+     "seg": 5.4
+    },
+    {
+     "t": 45307,
+     "trabajos": 37,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 29,
+     "p95ms": 57,
+     "maxms": 75,
+     "seg": 5.9
+    },
+    {
+     "t": 45843,
+     "trabajos": 0,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 30,
+     "p95ms": 51,
+     "maxms": 75,
+     "seg": 6.5
+    },
+    {
+     "t": 46356,
+     "trabajos": 0,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 32,
+     "p95ms": 44,
+     "maxms": 53,
+     "seg": 7
+    }
+   ],
+   "asentado": "ok 2 trabajos=8 desc=4",
+   "armar": "ok {\"v\":[-33,127,-136],\"descargando\":0,\"trabajos\":223}",
+   "preBloqueo": {
+    "t": 19312,
+    "trabajos": 223,
+    "descargando": 0,
+    "recuperacion": false,
+    "fps": 26,
+    "p95ms": 113,
+    "maxms": 153
+   },
+   "bloqueo": {
+    "duracionRealS": 20,
+    "resultado": "desbloqueado 1"
+   },
+   "picoTrabajos": 255,
+   "recuperado100EnS": 4.9,
+   "colaVaciaEnS": 7,
+   "erroresConsola": 0
+  }
+ }
+}

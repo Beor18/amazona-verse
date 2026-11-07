@@ -1,0 +1,357 @@
+{
+ "etiqueta": "r4",
+ "pantalla": "390x844@3 cpuX4",
+ "bloqueoS": 15,
+ "topeS": 150,
+ "pasadas": {
+  "base": {
+   "colagrande": 999999999,
+   "muestras": [
+    {
+     "t": 44093,
+     "trabajos": 236,
+     "descargando": 4,
+     "recuperacion": false,
+     "fps": null,
+     "p95ms": null,
+     "maxms": 15045,
+     "seg": 0.1
+    },
+    {
+     "t": 44647,
+     "trabajos": 224,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 15045,
+     "maxms": 15045,
+     "seg": 0.6
+    },
+    {
+     "t": 45195,
+     "trabajos": 206,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 22,
+     "p95ms": 15045,
+     "maxms": 15045,
+     "seg": 1.2
+    },
+    {
+     "t": 45734,
+     "trabajos": 198,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 183,
+     "maxms": 15045,
+     "seg": 1.7
+    },
+    {
+     "t": 46272,
+     "trabajos": 202,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 167,
+     "maxms": 15045,
+     "seg": 2.3
+    },
+    {
+     "t": 46829,
+     "trabajos": 196,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 167,
+     "maxms": 15045,
+     "seg": 2.8
+    },
+    {
+     "t": 47375,
+     "trabajos": 179,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 86,
+     "maxms": 15045,
+     "seg": 3.4
+    },
+    {
+     "t": 47892,
+     "trabajos": 169,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 86,
+     "maxms": 15045,
+     "seg": 3.9
+    },
+    {
+     "t": 48416,
+     "trabajos": 161,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 68,
+     "maxms": 183,
+     "seg": 4.4
+    },
+    {
+     "t": 48971,
+     "trabajos": 200,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 82,
+     "maxms": 183,
+     "seg": 5
+    },
+    {
+     "t": 49494,
+     "trabajos": 210,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 63,
+     "maxms": 88,
+     "seg": 5.5
+    },
+    {
+     "t": 50023,
+     "trabajos": 92,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 22,
+     "p95ms": 67,
+     "maxms": 88,
+     "seg": 6
+    },
+    {
+     "t": 50570,
+     "trabajos": 80,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 21,
+     "p95ms": 68,
+     "maxms": 114,
+     "seg": 6.6
+    },
+    {
+     "t": 51129,
+     "trabajos": 54,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 21,
+     "p95ms": 68,
+     "maxms": 114,
+     "seg": 7.1
+    },
+    {
+     "t": 51656,
+     "trabajos": 36,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 68,
+     "maxms": 114,
+     "seg": 7.6
+    },
+    {
+     "t": 52179,
+     "trabajos": 0,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 19,
+     "p95ms": 68,
+     "maxms": 114,
+     "seg": 8.2
+    },
+    {
+     "t": 52716,
+     "trabajos": 0,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 19,
+     "p95ms": 68,
+     "maxms": 114,
+     "seg": 8.7
+    }
+   ],
+   "asentado": "ok 4 trabajos=8 desc=4",
+   "armar": "ok {\"descargando\":8,\"trabajos\":250}",
+   "preBloqueo": {
+    "t": 28916,
+    "trabajos": 252,
+    "descargando": 6,
+    "recuperacion": false,
+    "fps": 13,
+    "p95ms": 416,
+    "maxms": 416
+   },
+   "bloqueo": {
+    "duracionRealS": 15,
+    "resultado": "desbloqueado 1"
+   },
+   "picoTrabajos": 236,
+   "recuperado100EnS": 6,
+   "colaVaciaEnS": 8.7,
+   "erroresConsola": 0
+  },
+  "post": {
+   "colagrande": 150,
+   "muestras": [
+    {
+     "t": 36847,
+     "trabajos": 223,
+     "descargando": 0,
+     "recuperacion": true,
+     "fps": null,
+     "p95ms": null,
+     "maxms": 15051,
+     "seg": 0.1
+    },
+    {
+     "t": 37353,
+     "trabajos": 223,
+     "descargando": 0,
+     "recuperacion": true,
+     "fps": 24,
+     "p95ms": 15051,
+     "maxms": 15051,
+     "seg": 0.6
+    },
+    {
+     "t": 37889,
+     "trabajos": 203,
+     "descargando": 0,
+     "recuperacion": true,
+     "fps": 24,
+     "p95ms": 65,
+     "maxms": 15051,
+     "seg": 1.1
+    },
+    {
+     "t": 38418,
+     "trabajos": 206,
+     "descargando": 0,
+     "recuperacion": true,
+     "fps": 25,
+     "p95ms": 65,
+     "maxms": 15051,
+     "seg": 1.6
+    },
+    {
+     "t": 38941,
+     "trabajos": 195,
+     "descargando": 0,
+     "recuperacion": true,
+     "fps": 26,
+     "p95ms": 65,
+     "maxms": 15051,
+     "seg": 2.2
+    },
+    {
+     "t": 39476,
+     "trabajos": 178,
+     "descargando": 0,
+     "recuperacion": true,
+     "fps": 26,
+     "p95ms": 63,
+     "maxms": 15051,
+     "seg": 2.7
+    },
+    {
+     "t": 40024,
+     "trabajos": 148,
+     "descargando": 0,
+     "recuperacion": true,
+     "fps": 26,
+     "p95ms": 60,
+     "maxms": 15051,
+     "seg": 3.2
+    },
+    {
+     "t": 40548,
+     "trabajos": 181,
+     "descargando": 0,
+     "recuperacion": true,
+     "fps": 26,
+     "p95ms": 59,
+     "maxms": 79,
+     "seg": 3.8
+    },
+    {
+     "t": 41069,
+     "trabajos": 206,
+     "descargando": 0,
+     "recuperacion": true,
+     "fps": 27,
+     "p95ms": 53,
+     "maxms": 79,
+     "seg": 4.3
+    },
+    {
+     "t": 41607,
+     "trabajos": 79,
+     "descargando": 0,
+     "recuperacion": true,
+     "fps": 28,
+     "p95ms": 49,
+     "maxms": 79,
+     "seg": 4.8
+    },
+    {
+     "t": 42143,
+     "trabajos": 44,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 28,
+     "p95ms": 48,
+     "maxms": 59,
+     "seg": 5.4
+    },
+    {
+     "t": 42682,
+     "trabajos": 0,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 28,
+     "p95ms": 48,
+     "maxms": 59,
+     "seg": 5.9
+    },
+    {
+     "t": 43197,
+     "trabajos": 5,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 29,
+     "p95ms": 46,
+     "maxms": 59,
+     "seg": 6.4
+    }
+   ],
+   "asentado": "ok 3 trabajos=0 desc=4",
+   "armar": "ok {\"descargando\":0,\"trabajos\":251}",
+   "preBloqueo": {
+    "t": 21685,
+    "trabajos": 244,
+    "descargando": 0,
+    "recuperacion": true,
+    "fps": 18,
+    "p95ms": 126,
+    "maxms": 139
+   },
+   "bloqueo": {
+    "duracionRealS": 15,
+    "resultado": "desbloqueado 1"
+   },
+   "vioRecuperacion": true,
+   "picoTrabajos": 223,
+   "recuperado100EnS": 4.8,
+   "colaVaciaEnS": 6.4,
+   "erroresConsola": 0
+  }
+ }
+}

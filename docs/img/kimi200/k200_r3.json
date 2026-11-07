@@ -1,0 +1,580 @@
+{
+ "etiqueta": "r3",
+ "pantalla": "390x844@3 cpuX4",
+ "bloqueoS": 15,
+ "topeS": 150,
+ "pasadas": {
+  "base": {
+   "colagrande": 999999999,
+   "muestras": [
+    {
+     "t": 43246,
+     "trabajos": 254,
+     "descargando": 4,
+     "recuperacion": false,
+     "fps": null,
+     "p95ms": null,
+     "maxms": 15097,
+     "seg": 0.1
+    },
+    {
+     "t": 43816,
+     "trabajos": 223,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 12,
+     "p95ms": 15097,
+     "maxms": 15097,
+     "seg": 0.7
+    },
+    {
+     "t": 44427,
+     "trabajos": 224,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 14,
+     "p95ms": 15097,
+     "maxms": 15097,
+     "seg": 1.3
+    },
+    {
+     "t": 44988,
+     "trabajos": 210,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 12,
+     "p95ms": 15097,
+     "maxms": 15097,
+     "seg": 1.9
+    },
+    {
+     "t": 45530,
+     "trabajos": 203,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 14,
+     "p95ms": 246,
+     "maxms": 15097,
+     "seg": 2.4
+    },
+    {
+     "t": 46076,
+     "trabajos": 206,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 16,
+     "p95ms": 246,
+     "maxms": 15097,
+     "seg": 3
+    },
+    {
+     "t": 46647,
+     "trabajos": 210,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 16,
+     "p95ms": 236,
+     "maxms": 15097,
+     "seg": 3.5
+    },
+    {
+     "t": 47239,
+     "trabajos": 201,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 236,
+     "maxms": 15097,
+     "seg": 4.1
+    },
+    {
+     "t": 47768,
+     "trabajos": 173,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 110,
+     "maxms": 15097,
+     "seg": 4.7
+    },
+    {
+     "t": 48297,
+     "trabajos": 167,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 117,
+     "maxms": 15097,
+     "seg": 5.2
+    },
+    {
+     "t": 48847,
+     "trabajos": 145,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 110,
+     "maxms": 15097,
+     "seg": 5.7
+    },
+    {
+     "t": 49415,
+     "trabajos": 174,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 106,
+     "maxms": 246,
+     "seg": 6.3
+    },
+    {
+     "t": 49959,
+     "trabajos": 206,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 106,
+     "maxms": 246,
+     "seg": 6.8
+    },
+    {
+     "t": 50513,
+     "trabajos": 129,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 85,
+     "maxms": 117,
+     "seg": 7.4
+    },
+    {
+     "t": 51041,
+     "trabajos": 98,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 85,
+     "maxms": 117,
+     "seg": 7.9
+    },
+    {
+     "t": 51574,
+     "trabajos": 82,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 88,
+     "maxms": 117,
+     "seg": 8.5
+    },
+    {
+     "t": 52124,
+     "trabajos": 55,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 92,
+     "maxms": 117,
+     "seg": 9
+    },
+    {
+     "t": 52698,
+     "trabajos": 34,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 16,
+     "p95ms": 92,
+     "maxms": 117,
+     "seg": 9.6
+    },
+    {
+     "t": 53261,
+     "trabajos": 0,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 16,
+     "p95ms": 85,
+     "maxms": 117,
+     "seg": 10.2
+    },
+    {
+     "t": 53784,
+     "trabajos": 0,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 16,
+     "p95ms": 84,
+     "maxms": 108,
+     "seg": 10.7
+    }
+   ],
+   "asentado": "ok 4 trabajos=8 desc=4",
+   "armar": "ok {\"descargando\":8,\"trabajos\":262}",
+   "preBloqueo": {
+    "t": 27986,
+    "trabajos": 262,
+    "descargando": 8,
+    "recuperacion": false,
+    "fps": 14,
+    "p95ms": 424,
+    "maxms": 424
+   },
+   "bloqueo": {
+    "duracionRealS": 15.1,
+    "resultado": "desbloqueado 1"
+   },
+   "picoTrabajos": 254,
+   "recuperado100EnS": 7.9,
+   "colaVaciaEnS": 10.7,
+   "erroresConsola": 0
+  },
+  "post-prod": {
+   "colagrande": 2500,
+   "muestras": [
+    {
+     "t": 39658,
+     "trabajos": 222,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": null,
+     "p95ms": null,
+     "maxms": 15053,
+     "seg": 0.1
+    },
+    {
+     "t": 40249,
+     "trabajos": 206,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 15053,
+     "maxms": 15053,
+     "seg": 0.7
+    },
+    {
+     "t": 40779,
+     "trabajos": 198,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 21,
+     "p95ms": 82,
+     "maxms": 15053,
+     "seg": 1.2
+    },
+    {
+     "t": 41331,
+     "trabajos": 202,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 21,
+     "p95ms": 82,
+     "maxms": 15053,
+     "seg": 1.7
+    },
+    {
+     "t": 41885,
+     "trabajos": 194,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 80,
+     "maxms": 15053,
+     "seg": 2.3
+    },
+    {
+     "t": 42400,
+     "trabajos": 177,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 24,
+     "p95ms": 79,
+     "maxms": 15053,
+     "seg": 2.8
+    },
+    {
+     "t": 42936,
+     "trabajos": 158,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 24,
+     "p95ms": 79,
+     "maxms": 15053,
+     "seg": 3.3
+    },
+    {
+     "t": 43496,
+     "trabajos": 167,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 74,
+     "maxms": 15053,
+     "seg": 3.9
+    },
+    {
+     "t": 44015,
+     "trabajos": 197,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 67,
+     "maxms": 82,
+     "seg": 4.4
+    },
+    {
+     "t": 44561,
+     "trabajos": 101,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 24,
+     "p95ms": 58,
+     "maxms": 74,
+     "seg": 5
+    },
+    {
+     "t": 45103,
+     "trabajos": 73,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 24,
+     "p95ms": 58,
+     "maxms": 74,
+     "seg": 5.5
+    },
+    {
+     "t": 45632,
+     "trabajos": 27,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 24,
+     "p95ms": 58,
+     "maxms": 74,
+     "seg": 6
+    },
+    {
+     "t": 46178,
+     "trabajos": 0,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 58,
+     "maxms": 74,
+     "seg": 6.6
+    },
+    {
+     "t": 46702,
+     "trabajos": 0,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 23,
+     "p95ms": 58,
+     "maxms": 67,
+     "seg": 7.1
+    }
+   ],
+   "asentado": "ok 2 trabajos=0 desc=4",
+   "armar": "ok {\"descargando\":0,\"trabajos\":240}",
+   "preBloqueo": {
+    "t": 24474,
+    "trabajos": 225,
+    "descargando": 0,
+    "recuperacion": false,
+    "fps": 17,
+    "p95ms": 179,
+    "maxms": 179
+   },
+   "bloqueo": {
+    "duracionRealS": 15.1,
+    "resultado": "desbloqueado 1"
+   },
+   "picoTrabajos": 222,
+   "recuperado100EnS": 5.5,
+   "colaVaciaEnS": 7.1,
+   "erroresConsola": 0
+  },
+  "post-baja": {
+   "colagrande": 400,
+   "muestras": [
+    {
+     "t": 38943,
+     "trabajos": 226,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": null,
+     "p95ms": null,
+     "maxms": 15067,
+     "seg": 0.1
+    },
+    {
+     "t": 39524,
+     "trabajos": 231,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 17,
+     "p95ms": 15067,
+     "maxms": 15067,
+     "seg": 0.7
+    },
+    {
+     "t": 40045,
+     "trabajos": 207,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 83,
+     "maxms": 15067,
+     "seg": 1.2
+    },
+    {
+     "t": 40621,
+     "trabajos": 210,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 83,
+     "maxms": 15067,
+     "seg": 1.8
+    },
+    {
+     "t": 41151,
+     "trabajos": 200,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 82,
+     "maxms": 15067,
+     "seg": 2.3
+    },
+    {
+     "t": 41687,
+     "trabajos": 190,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 21,
+     "p95ms": 82,
+     "maxms": 15067,
+     "seg": 2.8
+    },
+    {
+     "t": 42246,
+     "trabajos": 173,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 81,
+     "maxms": 15067,
+     "seg": 3.4
+    },
+    {
+     "t": 42804,
+     "trabajos": 157,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 81,
+     "maxms": 15067,
+     "seg": 4
+    },
+    {
+     "t": 43334,
+     "trabajos": 173,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 80,
+     "maxms": 15067,
+     "seg": 4.5
+    },
+    {
+     "t": 43842,
+     "trabajos": 194,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 79,
+     "maxms": 83,
+     "seg": 5
+    },
+    {
+     "t": 44387,
+     "trabajos": 209,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 69,
+     "maxms": 80,
+     "seg": 5.5
+    },
+    {
+     "t": 44903,
+     "trabajos": 99,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 19,
+     "p95ms": 70,
+     "maxms": 85,
+     "seg": 6.1
+    },
+    {
+     "t": 45431,
+     "trabajos": 78,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 69,
+     "maxms": 85,
+     "seg": 6.6
+    },
+    {
+     "t": 45967,
+     "trabajos": 39,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 69,
+     "maxms": 85,
+     "seg": 7.1
+    },
+    {
+     "t": 46510,
+     "trabajos": 0,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 20,
+     "p95ms": 68,
+     "maxms": 85,
+     "seg": 7.7
+    },
+    {
+     "t": 47040,
+     "trabajos": 0,
+     "descargando": 0,
+     "recuperacion": false,
+     "fps": 21,
+     "p95ms": 67,
+     "maxms": 85,
+     "seg": 8.2
+    }
+   ],
+   "asentado": "ok 3 trabajos=0 desc=4",
+   "armar": "ok {\"descargando\":0,\"trabajos\":259}",
+   "preBloqueo": {
+    "t": 23776,
+    "trabajos": 248,
+    "descargando": 0,
+    "recuperacion": false,
+    "fps": 18,
+    "p95ms": 135,
+    "maxms": 135
+   },
+   "bloqueo": {
+    "duracionRealS": 15,
+    "resultado": "desbloqueado 1"
+   },
+   "picoTrabajos": 231,
+   "recuperado100EnS": 6.1,
+   "colaVaciaEnS": 8.2,
+   "erroresConsola": 0
+  }
+ }
+}

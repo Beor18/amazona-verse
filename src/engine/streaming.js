@@ -96,6 +96,13 @@ AVE.module('streaming', function (G) {
     hdTris: { bajo: 400e3, medio: 900e3, alto: Infinity },
     gracia: 3,                                     // s sin uso antes de soltar un modelo
     msCuadro: 4, msArranque: 24,                   // presupuesto de CPU por tanda (en juego / antes de mundoListo)
+    // QA-200: modo recuperación de la cola. Si decenas de descargas aterrizan juntas tras una hambruna del hilo
+    // (interrupción de iOS, tormenta de GC), los trabajos se acumulan por miles y el drenado a msCuadro tarda
+    // minutos en recuperarse (tirones largos). Pasado colaGrande la bomba drena con msRecuperacion hasta bajar
+    // de la mitad (histeresis). Inerte en juego normal: la cola sana son decenas o cientos de trabajos (la
+    // explosión medida era 6 250-11 420). A/B y herramientas: ?colagrande=N (muy alto = desactivado).
+    colaGrande: (() => { try { const v = parseInt(new URLSearchParams(location.search).get('colagrande'), 10); return v > 0 ? v : 2500; } catch (e) { return 2500; } })(),
+    msRecuperacion: 12,
     precargaVuelo: 2.5, precargaVueloMax: 120, precargaVueloMin: 15, // KIMI-Task-017: anticipo (s × velocidad), tope en m y velocidad mínima (m/s): solo en vuelo rápido, no a pie (los gags del cómic capturan a velocidad baja)
     descargas: 2, descargasArranque: 3,            // descargas a la vez (KIMI-017: 2 en caliente; los picos al teleport lejos del spawn eran N GLB con 1 descarga a la vez)
     revisar: 0.3,                                  // s entre revisiones de niveles
@@ -135,12 +142,18 @@ AVE.module('streaming', function (G) {
   let programado = false, arrancando = true, quieto = true; // quieto: el jugador no se ha movido desde el inicio
   let precarga = null; // precargarZona (pantalla de carga, src/ui/carga.js): { descargas, ms } mientras dura; null = lo de siempre
   let terminarMax = false; // KIMI-020: mientras terminar() bombea la cola, más descargas en paralelo (un asentado aéreo pide decenas de GLB)
+  let recuperacion = false; // QA-200: la cola explotó (trabajos > CFG.colaGrande) y se drena con más presupuesto hasta la mitad
   const ric = window.requestIdleCallback ? (fn => window.requestIdleCallback(fn, { timeout: 60 })) : (fn => setTimeout(fn, 16));
   function programar() { if (!programado && trabajos.length) { programado = true; ric(bombear); } }
   function bombear(dl) {
     programado = false;
     const libre = dl && dl.timeRemaining ? dl.timeRemaining() : CFG.msCuadro;
-    const presupuesto = arrancando ? CFG.msArranque : precarga ? precarga.ms : Math.max(2, Math.min(CFG.msCuadro, libre));
+    if (!arrancando && !precarga) {
+      if (!recuperacion && trabajos.length > CFG.colaGrande) recuperacion = true;
+      else if (recuperacion && trabajos.length < CFG.colaGrande / 2) recuperacion = false;
+    } else recuperacion = false;
+    const tope = recuperacion ? CFG.msRecuperacion : CFG.msCuadro;
+    const presupuesto = arrancando ? CFG.msArranque : precarga ? precarga.ms : Math.max(2, Math.min(tope, libre));
     const t0 = performance.now();
     while (trabajos.length && (performance.now() - t0 < presupuesto || performance.now() === t0)) {
       const j = trabajos.shift();
@@ -2111,7 +2124,7 @@ AVE.module('streaming', function (G) {
         return { zonas: zs.length, zonasCerca: zs.filter(Z => Z.nivel === 2).length, zonasLejos: zs.filter(Z => Z.nivel === 1).length,
           instancias: inst.length, colocadas: inst.filter(I => I.colocado).length, modelosCerca: modCerca, modelosLejos: modLejos, modelosHD: modHD,
           materiales: Object.keys(mats).length, kbGeometria: Math.round(bytes / 1024), visiblesCerca: vis.cerca, visiblesLejos: vis.lejos, visiblesHD: vis.hd, hd: hdActivo(),
-          drawEdificios: vis.mallas + vis.zonas, zonasFundidas: zs.filter(Z => Z.malla).length, descargando: enVuelo + cola.filter(r => r.estado === 'cola').length, trabajos: trabajos.length, omitidos: [...omitidos] };
+          drawEdificios: vis.mallas + vis.zonas, zonasFundidas: zs.filter(Z => Z.malla).length, descargando: enVuelo + cola.filter(r => r.estado === 'cola').length, trabajos: trabajos.length, recuperacion, omitidos: [...omitidos] };
       },
       // Diagnóstico para las herramientas de Kimi 3 (tools/build/kimi3_*.js): por qué terminar() sigue esperando.
       // Solo lectura; no toca la cola ni los trabajos.
