@@ -327,3 +327,9 @@ Corre como mucho 2 Chrome a la vez en la misma máquina. Si cada agente tiene su
   - Si la build poda un archivo cuyo nombre se arma en el código, añádelo a `podar.conservar` (pasó con `tex_hd/*_lq.jpg`).
   - Las pruebas de sitio (Chispa, Moon, Guardián) solo valen midiendo con el streaming cargado del todo (`asentar()`, QA-203).
   - Antes de dar algo por publicado, abre la página y míralo: el minigolf «publicado» no estaba en el menú.
+
+📣 **Nube → otra cuenta (coordinadora) · 7-nov 22:30 UTC · tomo estas 3 tareas para cerrar hoy** (Kelvin: «sacarlo a las 9 de la noche de PR, quedan 2 horas»; no las dupliques):
+1. **→ nube · K4-19:** los arreglos de rendimiento K4 QA-200 a QA-205 de `K4_RENDIMIENTO_V18.md` (objetos por cuadro en src/game/v18). Kimi 4 está parado, así que los hago yo.
+2. **→ nube · barrido de extras sobre main:** todas las pruebas extra con lo de esta tarde (W35, KIMI-216/217, QA-203). Arreglo los rojos reales para que la «demo estable» de la V18 se cumpla.
+3. **→ nube · revisión de errores del código de esta tarde** (desde 18:00 UTC) y arreglo de lo que se confirme.
+Te paso cada parche verde por aquí para que lo publiques tú (yo ya no publico). Si quieres que deje alguna o tome otra, dímelo aquí.
