@@ -872,7 +872,7 @@
           useAt('v_mira'); drain();
           check('M1 · Recibir a la primera: empieza la misión (GuestsArrived); Mira no dice qué necesita', S.step === 0 && G.eventos.had('GuestsArrived') && S.collected.includes('conocido_mira') && !G.interaccion.find('o_mira').visible(), 'paso ' + S.step);
           { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
-            check('Diario · las 5 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 5 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
+            check('Diario · las 6 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 6 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
             const vuelta = { x: S.pos.x, z: S.pos.z };
             teleport(h0.x + 0.3, h0.z); tick(0.1); const antes = AUf.tieneFicha(f0.id); soltarFichas(G, T);
             check('Diario · encontrar «' + h0.nombre + '» da su ficha de Ciencia, después del aviso del hallazgo', S.field.includes(f0.id) && !antes && AUf.tieneFicha(f0.id) && S.edu.fichas.length === 1 && !G.misiones.cumple(FICHA_VIA[f0.id]), (S.edu.fichas || []).join(',')); teleport(vuelta.x, vuelta.z); tick(0.05); }
@@ -1015,14 +1015,14 @@
             (LEC.objetivos || []).length === 4 && (LEC.preguntas || []).length === 6 && (LEC.diario || []).length === 6 && g45.antes && g45.antes.minutos + g45.durante.minutos + g45.despues.minutos === 45 &&
             (MM.actividades_sin_pantalla || []).length === 3 && MM.rubrica && MM.rubrica.criterios.length === 5 && MM.reporte_progreso.almacenamiento.clave === AU.KEY);
           // BM126: verificación de Kelvin del 2-nov. Antes solo la aritmética de 36 estaba verificada.
-          check('Solo salen las fichas con fuente (Kelvin 2-nov) y la aritmética de 36; «algunas cotorras Amazona»; esperan sigue por verificar', AU.fichas().map(f => f.id).join(',') === 'tarjetas,plan,tabla,acuerdo,forma' && AU.fichas().filter(f => f.id !== 'forma').every(f => f.fuente && /^https:\/\//.test(f.fuente_url || '')) && LEC.diario.filter(f => f.verificacion === 'por_verificar').map(f => f.id).join(',') === 'esperan' && LEC.diario.every(f => f.fuente && f.nota_verificacion) && /^Algunas cotorras Amazona/.test(AU.ficha('tarjetas').dato.es), AU.fichas().map(f => f.id).join(','));
+          check('Solo salen las fichas con fuente (Kelvin 2-nov) y la aritmética de 36; «algunas cotorras Amazona»; esperan ya verificada con la UICN (K4-15, QA-194)', AU.fichas().map(f => f.id).join(',') === 'tarjetas,plan,tabla,acuerdo,forma,esperan' && AU.fichas().filter(f => f.id !== 'forma').every(f => f.fuente && /^https:\/\//.test(f.fuente_url || '')) && LEC.diario.filter(f => f.verificacion === 'por_verificar').length === 0 && LEC.diario.every(f => f.fuente && f.nota_verificacion) && /^Algunas cotorras Amazona/.test(AU.ficha('tarjetas').dato.es), AU.fichas().map(f => f.id).join(','));
           check('Las 6 preguntas se pueden hacer: ninguna depende de un dato por verificar', QS.every(id => AU.preguntaPublicable(AU.pregunta(id))));
           check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
           G.misiones.seguirExplorando();
           check('Tras el final, el mundo queda libre para seguir', $('end').hidden && !G.ui.busy());
           soltarFichas(G, T);
           { const AUf = G.aula; G.diario.open(); const cien = $('card').querySelector('.diary.ciencia');
-            check('Diario · al completar las misiones, las 5 fichas quedan ganadas y el Diario las muestra con su fuente (ninguna «???»)', AUf.fichas().every(f => AUf.tieneFicha(f.id) && G.misiones.cumple(FICHA_VIA[f.id])) && !!cien && cien.querySelectorAll('li.found').length === 5 && cien.querySelectorAll('li.found .fuente').length === 5 && !/\?\?\?/.test(cien.textContent), (S.edu.fichas || []).join(','));
+            check('Diario · al completar las misiones, las 6 fichas quedan ganadas y el Diario las muestra con su fuente (ninguna «???»)', AUf.fichas().every(f => AUf.tieneFicha(f.id) && G.misiones.cumple(FICHA_VIA[f.id])) && !!cien && cien.querySelectorAll('li.found').length === 5 && cien.querySelectorAll('li.found .fuente').length === 5 && !/\?\?\?/.test(cien.textContent), (S.edu.fichas || []).join(','));
             G.ui.hideCard(); }
           useAt('iguaca'); drain();
           check('Al volver con Iguaca, ofrece las preguntas (se pueden dejar para luego)', opciones().length === 2 && opciones().some(x => x.includes('Ahora no')), opciones().join() + ' · paso ' + S.step + ' · cerca ' + (G.interaccion.nearest() || {}).id + ' · ' + ($('card').querySelector('h2') || {}).textContent);
@@ -1079,7 +1079,7 @@
           check('En inglés, el HUD del capítulo sale traducido', $('quest').querySelector('h1').textContent === 'The Pact of the 36', $('quest').querySelector('h1').textContent);
           await G.idioma.poner('es');
           { const AUf = G.aula, ganadas = (S.edu.fichas || []).slice(); S.edu.fichas = []; const recupera = AUf.pendientes().length; S.edu.fichas = ganadas;
-            check('Diario · las fichas ganadas siguen tras guardar y cargar; una partida de antes (sin fichas) las recupera', AUf.fichas().every(f => ganadas.includes(f.id)) && recupera === 5, ganadas.join(',') + ' · ' + recupera); }
+            check('Diario · las fichas ganadas siguen tras guardar y cargar; una partida de antes (sin fichas) las recupera', AUf.fichas().every(f => ganadas.includes(f.id)) && recupera === AUf.fichas().length, ganadas.join(',') + ' · ' + recupera); }
           G.guardado.reset(true);
           try { if (criaderoRaw == null) localStorage.removeItem(G.criadero.KEY); else localStorage.setItem(G.criadero.KEY, criaderoRaw); } catch (e) { /* sin almacenamiento */ }
           if (AU.recargar) AU.recargar();

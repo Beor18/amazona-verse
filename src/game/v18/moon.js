@@ -113,6 +113,7 @@ window.AVV18Moon = function (G) {
     if (!document.getElementById('v18-moon-css')) {
       const st = document.createElement('style'); st.id = 'v18-moon-css';
       st.textContent = '#v18-moon{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(300px,calc(100vw - 32px));z-index:40;' +
+        'body:has(#v18-moon:not([hidden])) #toast{z-index:41}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(24,26,58,.8);border:2px solid #b9a7ff;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
         '#v18-moon .vm-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-moon .vm-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-moon .vm-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd76a;text-shadow:0 2px 0 #6a4dc9}#v18-moon .vm-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
