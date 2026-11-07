@@ -844,7 +844,7 @@
       check('Cada parada de ciencia de Puerto Rico muestra su fuente al abrirse', conFuente.length === 5 && conFuente.every(Boolean), conFuente.join());
       check('Paradas respondidas y en el registro del aula', PAR.every(p => S.edu.paradas && S.edu.paradas[p.id] === 1) && AU.partida().paradas && Object.keys(AU.partida().paradas).length === 8, JSON.stringify(S.edu.paradas));
       check('Modo Maestro: pestaña Paradas con objetivo y estándares', AU.pestanas().includes('paradas'));
-      check('Solo fichas verificadas', f.every(id => AU.verificada(AU.ficha(id))) && ['capas_bosque', 'heliconia'].every(id => !f.includes(id)), f.join(','));
+      check('Solo fichas verificadas', f.every(id => AU.verificada(AU.ficha(id))) && f.every(id => (AU.ficha(id) || {}).verificacion === 'verificado') /* 7-nov: capas_bosque y heliconia ya tienen fuente abierta (STRI, IITF) */, f.join(','));
       G.diario.open();
       const dc = $('card').querySelector('.diary.ciencia');
       check('Diario de Campo · Ciencia: cada ficha con su fuente y sin enlaces', dc && dc.querySelectorAll('li.found').length === f.length && dc.querySelectorAll('li.found .fuente').length === f.length && /Fuente: USFWS/.test(dc.textContent) && !/https?:/.test(dc.innerHTML), dc && dc.querySelectorAll('li').length + ' fichas');
