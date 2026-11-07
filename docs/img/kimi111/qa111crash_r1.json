@@ -1,0 +1,105 @@
+{
+ "etiqueta": "r1",
+ "patron": "16 cargas del juego en UN navegador (mismo target, Page.navigate por carga, como la suite V18)",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "url": "index.html?pack=cap1&mapa=real&v18=1",
+ "head": "desconocido",
+ "cargas": [
+  {
+   "n": 1,
+   "nav": "ok",
+   "entrar": "ok",
+   "fin": {
+    "heap": 111,
+    "geo": 79,
+    "tex": 122,
+    "prog": 44,
+    "calls": 55,
+    "tris": 229229
+   },
+   "procesos": null
+  },
+  {
+   "n": 2,
+   "nav": "ok",
+   "entrar": "ok",
+   "fin": {
+    "heap": 122,
+    "geo": 79,
+    "tex": 122,
+    "prog": 44,
+    "calls": 55,
+    "tris": 229229
+   },
+   "procesos": null
+  },
+  {
+   "n": 3,
+   "nav": "ok",
+   "entrar": "ok",
+   "fin": {
+    "heap": 122,
+    "geo": 79,
+    "tex": 122,
+    "prog": 44,
+    "calls": 55,
+    "tris": 229229
+   },
+   "procesos": null
+  },
+  {
+   "n": 4,
+   "nav": "ok",
+   "entrar": "ok",
+   "fin": {
+    "heap": 119,
+    "geo": 78,
+    "tex": 122,
+    "prog": 43,
+    "calls": 54,
+    "tris": 229165
+   },
+   "procesos": null
+  },
+  {
+   "n": 5,
+   "nav": "ok",
+   "entrar": "ok",
+   "fin": {
+    "heap": 111,
+    "geo": 77,
+    "tex": 122,
+    "prog": 44,
+    "calls": 55,
+    "tris": 229229
+   },
+   "procesos": null
+  },
+  {
+   "n": 6,
+   "nav": "ok",
+   "entrar": "ok",
+   "fin": {
+    "heap": 120,
+    "geo": 77,
+    "tex": 122,
+    "prog": 44,
+    "calls": 55,
+    "tris": 229229
+   },
+   "procesos": null
+  }
+ ],
+ "crash": null,
+ "notas": "Parada manual tras 6 cargas: la tendencia ya es clara (plana). Sonda v3 con memoria de procesos arreglada para corridas futuras.",
+ "muestreoProcesos": [
+  "06:01:16 cargas=3 browser=161 hijo=717 gpu=269",
+  "06:02:01 cargas=3 browser=161 hijo=719 gpu=263",
+  "06:02:46 cargas=4 browser=161 hijo=720 gpu=265",
+  "06:03:32 cargas=4 browser=161 hijo=744 gpu=261",
+  "06:04:17 cargas=5 browser=161 hijo=764 gpu=269",
+  "06:05:03 cargas=5 browser=161 hijo=738 gpu=267",
+  "06:05:48 cargas=6 browser=161 hijo=734 gpu=267",
+  "06:06:34 cargas=6 browser=161 hijo=736 gpu=266"
+ ]
+}
