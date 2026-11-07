@@ -307,3 +307,23 @@ Corre como mucho 2 Chrome a la vez en la misma máquina. Si cada agente tiene su
   - **temporadaE2eTest:** 31/31 sola; falló detrás de un e2e con tiempo agotado.
   - **ciudadVivaTest y ep2e2eTest:** 21/21 y 83/83, pero tardan 707 s y 944 s, por encima del tope de 600 s con SwiftShader; con GPU real están verdes.
 - **Sin completar en la VM (hace falta GPU o más tiempo):** ep3e2e, ep4e2e, ep5e2e(Real), ep6e2e(Real), temporadaReal(En), temporadaMovil, playtestAuto y playtestCap1-6.
+
+📣 **Coordinadora (nube) → otra cuenta · 7-nov 22:20 UTC · TRASPASO DE MANDO (Kelvin: «le paso el mando al otro Claude con el plan Ultra; todos a toda máquina, varios agentes en paralelo»).** Desde ahora **tú coordinas y publicas**. Yo dejo de publicar para que no haya dos publicadores, y paso a trabajar en lo que me asignes aquí (una tarea con «→ nube»).
+
+**Estado al traspaso (main 14881101, publicado y 12/12 en verde):**
+- **Temporada:** 48/48 criterios de cierre (sin pruebas con personas, por decisión de Kelvin). **V18:** 18/19; falta «demo estable», que depende de QA-201 (Mac) y de la carga. **Total público:** 95 % (el menor de los dos; Kelvin pidió no confundir los criterios con el % de desarrollo).
+- **Carga inicial real en «bajo»:** 24,2 MB sin comprimir. Kimi 2 (KIMI-218) busca ≤ 18 MB sin cambiar la vista. Diferir el terreno lejano hace que la flora cambie de sitio (KIMI-203 y KIMI-208 revertidos); diferir agua, bohío y toldo no compensa (KIMI-210).
+- **Decisiones de Kelvin del 7-nov:** cerradas en `docs/DECISION_LOG.md`. No se reabren 1, 2 y 4; la 3, heliconia, ya está verificada. Minigolf: solo el hoyo 1, y no se le pregunta más. Ningún cambio de edificios se publica sin su visto bueno. Lo legal (D1–D6), Supabase y el lanzamiento público siguen bloqueados.
+- **Abierto ahora:**
+  - Kimi 2: carga ≤ 18 MB.
+  - Kimi 3: QA-110 (memoria del iPhone en «bajo») y `streamingTest` con 174 draw calls en kelvin_ruinas_yunque tras KIMI-216.
+  - Kimi 1: lo que quede de QA-202 (Mac).
+  - Kimi 4: K4-19, sus arreglos de rendimiento QA-200 a QA-206. Está parado hasta que Kelvin le pegue el mensaje.
+  - Mac: BM173 repetida cuando entre código.
+- **Cómo publicar sin romper nada** (lo aprendido hoy):
+  - Una sola publicación a la vez; como mucho 2 Chrome en la misma máquina de 16 GB, porque con 3 se reinicia.
+  - `node --check` de cada .js cambiado antes del push. Un comentario `//` dentro de una línea de código partida rompe la sintaxis.
+  - `git grep "^<<<<<<< "` vacío.
+  - Si la build poda un archivo cuyo nombre se arma en el código, añádelo a `podar.conservar` (pasó con `tex_hd/*_lq.jpg`).
+  - Las pruebas de sitio (Chispa, Moon, Guardián) solo valen midiendo con el streaming cargado del todo (`asentar()`, QA-203).
+  - Antes de dar algo por publicado, abre la página y míralo: el minigolf «publicado» no estaba en el menú.
