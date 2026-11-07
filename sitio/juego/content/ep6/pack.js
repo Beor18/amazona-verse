@@ -819,8 +819,11 @@
         '.ep6-tarea,.ep6-ayud{min-height:56px;width:100%;display:flex;justify-content:space-between;align-items:center;gap:.5em}.ep6-sel{outline:3px solid var(--gold,#ffd27a)}.ep6-dest{outline:2px dashed var(--gold,#ffd27a)}' +
         '.ep6-sim{text-align:left;padding-left:1.2em}.ep6-sim li{margin:.25em 0}.ep6-sim li.luego{opacity:.45}.ep6-sim li.now{font-weight:700}.ep6-sim li.mal{color:var(--crest,#d6403a)}.ep6-sim small{display:block;font-weight:400}.ep6-fin{font-weight:700}' +
         '@media (max-width:520px){.ep6-tablero{grid-template-columns:1fr}' +
+        // 7-nov: los 6 ayudantes (nombres cortos) en 3 columnas, para que el tablero entero quepa casi sin desplazar
+        '.ep6-tablero>div:last-child .ep6-lista{display:grid;grid-template-columns:repeat(3,1fr);gap:.3em}.ep6-tablero>div:last-child .ep6-lista li{margin:0}.ep6-ayud{justify-content:center;padding-inline:.3em}' +
         // 7-nov: en el teléfono el tablero (5 tareas y 6 ayudantes en una columna) pasa de la pantalla; «Probar el plan» y «Cerrar» quedan fijos abajo
-        '.ep6-acciones{position:sticky;bottom:calc(-1 * var(--sp-6,24px));margin:0 calc(-1 * var(--sp-6,24px)) calc(-1 * var(--sp-6,24px));padding:.6em var(--sp-6,24px) var(--sp-6,24px);background:var(--c-paper,#f6ead0);box-shadow:0 -6px 10px rgba(0,0,0,.12);z-index:1}}';
+        '.ep6-acciones{position:sticky;bottom:calc(-1 * var(--sp-6,24px));margin:0 calc(-1 * var(--sp-6,24px)) calc(-1 * var(--sp-6,24px));padding:.6em var(--sp-6,24px) var(--sp-6,24px);background:var(--c-paper,#f6ead0);box-shadow:0 -6px 10px rgba(0,0,0,.12);z-index:1}' +
+        '#card .ep6-acciones{display:grid;grid-template-columns:1fr 1fr;gap:.5em}#card .ep6-acciones #ch-0{grid-column:1/-1}#card .ep6-acciones #ch-1,#card .ep6-acciones #ch-2{font-size:var(--fs-md,16px)}}';
       document.head.appendChild(css);
 
       const redibujar = () => { colocarNpcs(); dibujarAsientos(); };
