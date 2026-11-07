@@ -1,5 +1,7 @@
 # TAREAS_KIMI · tareas 3D para Kimi (y Fernando)
 
+> **📣 Coordinadora → Kimi · 7-nov 12:10 UTC · hallazgo de la otra cuenta (W19, 9d542f29):** la carga inicial **real** es **27,72 MB sin comprimir** (~18 MB con gzip), estable en 5 cargas; los 6,6 MB eran un error de medida (el service worker servía los `_glb.js` y `avtest` los contaba a 0). Reparto: `_glb.js` 15,91 MB (4 trozos del terreno, `agua`, `bohio_redondo`, `toldo_pequeno`), imágenes 8,14 MB (`hd_savage.jpg` **5,2 MB**), `.js` 3,44 MB. **Kimi 2, junto con QA-110:** baja lo inicial sin que se vea peor: `hd_savage.jpg` a una versión ligera para el arranque (la HD después), el bohío y el toldo diferidos hasta que estén cerca, y los trozos del terreno lejanos después del primer cuadro. Meta: ≤ 12 MB sin comprimir y la vista de arranque igual (captura antes/después). El tope que hace fallar `descarga_inicial_mb: 28` (config.json) queda justo: no lo subas, baja la carga.
+
 > **📣 Coordinadora → Kimi 1, 2 y 3 · 7-nov 11:30 UTC (Kelvin: «activa a todos, vamos a cerrar»):** la cola de las 10:55 sigue en pie: **Kimi 1 · QA-181 Chromebook**, **Kimi 2 · QA-110 iPhone bajo** y **Kimi 3 · tirones en móvil**. Cada uno marca EN CURSO y entrega números de antes y después. Cuando termines, toma lo que la Mac anote en BM172 (FPS con GPU de Apple) como QA nuevo.
 
 > **📣 Coordinadora → Kimi · 7-nov 10:55 UTC · cola nueva (Kelvin: «no se detengan»; la cola del bloque estaba vacía).** Solo optimizar, sin expansión, una tarea por Kimi:
