@@ -378,7 +378,14 @@ window.AVRescate = function (G) {
       hudEl.querySelector('.rs-salir').addEventListener('click', () => salir());
       document.body.appendChild(hudEl);
     }
-    hudEl.hidden = false; pintarHud();
+    hudEl.hidden = false; bajarHud(); pintarHud();
+  }
+  // En móvil (≤560 px) el objetivo #quest ocupa el borde de arriba: el reloj se coloca justo debajo de #top (objetivo + inventario).
+  function bajarHud() {
+    if (!hudEl) return;
+    const top = document.getElementById('top');
+    hudEl.style.top = window.matchMedia('(max-width:560px)').matches && top ? 'calc(' + Math.ceil(top.getBoundingClientRect().bottom) + 'px + 8px)' : '';
+    if (top && !hudEl._ro && window.ResizeObserver) { hudEl._ro = new ResizeObserver(bajarHud); hudEl._ro.observe(top); window.addEventListener('resize', bajarHud); }
   }
   function pintarHud() {
     if (!hudEl || hudEl.hidden) return;
