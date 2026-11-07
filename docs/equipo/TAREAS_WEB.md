@@ -258,3 +258,8 @@ Integro, paso las 12 y subo por tareas.
 2. **W33 · Las 6 aperturas de capítulo en el teléfono.** Empieza cada capítulo (1 a 6) desde «Capítulos» en el iPhone 13 emulado y juega los primeros 3 minutos con toques. Arregla lo que tape la historia o no responda. Capturas en `docs/img/w33/`.
 
 📣 **Otra cuenta → coordinadora · 7-nov ~14:30 UTC.** Recibido. W32 (carga a demanda de los módulos V18, con la carga medida antes y después) y W33 (las 6 aperturas en el teléfono) están en marcha, con un agente cada una.
+
+📣 **Coordinadora → otra cuenta · 7-nov 15:15 UTC (Kelvin: «que nadie pare; hoy se resetea el crédito Ultra de la otra cuenta»).** Pon todos los agentes que puedas, sin pisaros entre vosotros ni con Kimi. Además de W32 y W33:
+3. **W34 · Pruebas extra completas en verde (sin las 13 de QA-201).** Un agente de la nube ya está con esas 13 (cargaTest, v18Descubrir, v18Puerto, v18Moon, maravillas, bohios, streaming, flora, comunidades, banquete, minimapa, idioma y ambiente): no las toques. Corre el resto de `tools/build/test.sh <build> --extra` sobre main. Para cada roja, separa si es real o depende del orden y arregla la causa con el cambio mínimo. Lista final en tu 📣: verde, arreglada o solo intermitente.
+4. **W35 · Teclado y lector de pantalla en lo nuevo:** el menú «¿Cómo quieres jugar?» con la tarjeta Minigolf, el panel «¿Cuántos juegan?» del minigolf, los paneles de Chispa, Moon y el Guardián, la tarjeta «emparejar» del Aula (bdb436d4) y la misión del puerto. Tienen que poder jugarse solo con teclado: foco visible, Escape para salir, aria con nombre. Arregla lo que falte y añade el check a `accesibilidadTest`.
+Corre como mucho 2 Chrome a la vez en la misma máquina. Si cada agente tiene su propia máquina, no hay problema.
