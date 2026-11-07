@@ -105,7 +105,14 @@
         p = Promise.resolve(true);
       } else if (modo === 'golf') { // minigolf de Villa Raíz (src/game/v18/minigolf.js): es del cap. 1; desde otro capítulo se abre el cap. 1 con ?mini=golf
         if (P.id !== 'cap1') { apuntarCapitulo('cap1'); try { const u = new URL(location.href); u.searchParams.set('mini', 'golf'); location.href = u.toString(); } catch (e) { /* sin URL */ } p = Promise.resolve(true); }
-        else p = listo().then(() => new Promise(res => { let n = 0; const t = () => { const mg = G.v18minigolf; if (mg && mg.irYJugar && mg.irYJugar()) return res(true); if (++n < 60) setTimeout(t, 500); else res(false); }; t(); }));
+        else p = listo().then(() => new Promise(res => {
+          // la apertura del cap. 1 queda pendiente para Aventura: si asoma mientras se juega al minigolf, se corta (no tapa el hoyo)
+          const sinApertura = () => { try { if (document.getElementById('c1-fade') && G.c && G.c.apertura) G.c.apertura.fin(); } catch (e) { /* sin apertura */ } };
+          let n = 0, vigila = 0;
+          const guardia = () => { sinApertura(); const mg = G.v18minigolf; if (++vigila < 60 && mg && mg.estado && mg.estado().fase !== 'nada') setTimeout(guardia, 500); };
+          const t = () => { sinApertura(); const mg = G.v18minigolf; if (mg && mg.irYJugar && mg.irYJugar()) { guardia(); return res(true); } if (++n < 60) setTimeout(t, 500); else res(false); };
+          t();
+        }));
       } else if (modo === 'carreras') p = listo().then(() => cargar.retos()).then(r => r.abrir());
       else if (modo === 'tormenta' || modo === 'banquete') p = listo().then(() => cargar.retos()).then(r => r.jugar(modo));
       else if (modo === 'flight') p = listo().then(() => (window.AV && window.AV.flight ? window.AV.flight() : false));
