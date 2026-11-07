@@ -82,7 +82,7 @@ AVE.module('lugares', function (G) {
     'color:#fff;text-align:center;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.35);animation:rotulo-lugar 3.6s ease forwards}' +
     '#rotulo-lugar[hidden]{display:none}#rotulo-lugar small{display:block;font:700 calc(13px * var(--fs-k,1))/1.3 var(--font-body,sans-serif);letter-spacing:.04em;opacity:.9}' +
     '#rotulo-lugar small.nuevo{color:#ffd23f}#rotulo-lugar b{display:block;font:700 calc(24px * var(--fs-k,1))/1.2 var(--font-display,sans-serif);overflow-wrap:anywhere}' +
-    '@media (max-width:560px){#rotulo-lugar{top:calc(env(safe-area-inset-top,0px) + 30vh);padding:8px 16px 10px}#rotulo-lugar b{font-size:calc(20px * var(--fs-k,1))}}' +
+    '@media (max-width:560px){#rotulo-lugar{top:max(calc(env(safe-area-inset-top,0px) + 30vh), calc(var(--mm-top, calc(env(safe-area-inset-top,0px) + 134px)) + var(--mm,96px) + 12px));padding:8px 16px 10px}#rotulo-lugar b{font-size:calc(20px * var(--fs-k,1))}}' +
     '@keyframes rotulo-lugar{0%{opacity:0;transform:translate(-50%,8px)}10%,82%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,0)}}' +
     '@media (prefers-reduced-motion:reduce){#rotulo-lugar{animation:rotulo-lugar-quieto 3.6s linear forwards}@keyframes rotulo-lugar-quieto{0%,85%{opacity:1}100%{opacity:0}}}' +
     ':root.a11y-contraste #rotulo-lugar{background:#000;border-color:#fff;border-width:3px}';
@@ -170,6 +170,11 @@ AVE.module('lugares', function (G) {
   async function test() {
     const out = [];
     const check = (name, ok, extra) => { out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); };
+    // QA-195: los módulos perezosos (marcador, minimapa…) se enganchan al primer gesto y escriben su
+    // clave en S al arrancar; dispara el gesto y espera ANTES de la instantánea, si no la comparación
+    // final «G.S queda como estaba» falla según el timing (la clave aparece a mitad de prueba).
+    try { window.dispatchEvent(new PointerEvent('pointerdown')); } catch (e) { }
+    await new Promise(r => setTimeout(r, 1500));
     const SV = G.guardado, snap = SV.instantanea(), quiet = G.quiet;
     const posBk = Object.assign({}, S.pos), xpRecibidas = [];
     SV.suspender(true); G.quiet = true;
@@ -235,6 +240,30 @@ AVE.module('lugares', function (G) {
         fade.remove(); cola.length = 0; espera = 0;
         check('Durante la apertura del cap. 1 el aviso también espera (QA-188)', okEspera);
       }
+      // QA-195 (W28): en ≤560px, con el aviso SUBIDO (diálogo/bocadillos abiertos), el CSS lo baja
+      // bajo el minimapa (top = max(118px, --mm-top + --mm + 8px)): geometría real contra #minimapa.
+      {
+        Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true });
+        try {
+          let mm = document.getElementById('minimapa');
+          for (let i = 0; !mm && i < 12; i++) { try { window.dispatchEvent(new PointerEvent('pointerdown')); } catch (e) { } await new Promise(r => setTimeout(r, 250)); mm = document.getElementById('minimapa'); }
+          G.ui.toastHTML('<b>Descubriste</b> Flamboyán de la plaza de la entrada', 6000);
+          const boc = document.createElement('div'); boc.id = 'bocadillos'; document.body.appendChild(boc);
+          await new Promise(r => setTimeout(r, 350));
+          const a = tt.getBoundingClientRect();
+          let solapa = false, extra = 'sin minimapa montado (lo cubre la sonda GPU real)';
+          if (mm && a.width > 0) {
+            const h0 = mm.hidden; mm.hidden = false;
+            const m = mm.getBoundingClientRect();
+            solapa = m.width > 0 && !(a.right <= m.left || m.right <= a.left || a.bottom <= m.top || m.bottom <= a.top);
+            mm.hidden = h0;
+            extra = 'toast y ' + Math.round(a.top) + '–' + Math.round(a.bottom) + ' · minimapa y ' + Math.round(m.top) + '–' + Math.round(m.bottom);
+          }
+          check('QA-195 · en el teléfono el aviso subido no queda bajo el minimapa', !solapa, extra);
+          boc.remove();
+          G.ui.hideToast();
+        } finally { delete window.innerWidth; }
+      }
       // Guardado: la lista va en la partida y una partida vieja sin la clave la recibe vacía
       const ser = SV.serialize ? SV.serialize(true) : null;
       check('S.lugares se guarda con la partida', !ser || (typeof ser === 'string' ? ser.includes('"lugares"') : true), SV.KEYS && SV.KEYS.includes('lugares') ? 'clave del pack' : 'sin clave en KEYS');
@@ -257,7 +286,20 @@ AVE.module('lugares', function (G) {
         check('Al llegar sale «¡Lugar descubierto! Bienvenido a …» con su nombre', descubiertos().includes(a.id) && rt && !rt.hidden && /Lugar descubierto/.test(rt.textContent) && /Bienvenido a/.test(rt.textContent) && rt.textContent.includes(a.asentamiento.nombre),
           rt ? rt.textContent : 'sin rótulo');
         Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true });
-        try { G.ui.showCard('<h2>Prueba</h2>'); avisar(0); check('En el teléfono, si se abre una tarjeta el rótulo se quita (no tapa la pregunta)', !!rt && rt.hidden, rt ? String(rt.hidden) : 'sin rótulo'); }
+        try {
+          // QA-195: el rótulo (top = max(30vh, minimapa inferior + 12px)) tampoco queda bajo el minimapa
+          let mm = document.getElementById('minimapa');
+          let solapa = false, extra = 'sin minimapa montado';
+          if (mm && rt && !rt.hidden) {
+            const h0 = mm.hidden; mm.hidden = false;
+            const a = rt.getBoundingClientRect(), m = mm.getBoundingClientRect();
+            solapa = a.width > 0 && m.width > 0 && !(a.right <= m.left || m.right <= a.left || a.bottom <= m.top || m.bottom <= a.top);
+            mm.hidden = h0;
+            extra = 'rotulo y ' + Math.round(a.top) + '–' + Math.round(a.bottom) + ' · minimapa y ' + Math.round(m.top) + '–' + Math.round(m.bottom);
+          }
+          check('QA-195 · en el teléfono el rótulo no queda bajo el minimapa', !solapa, extra);
+          G.ui.showCard('<h2>Prueba</h2>'); avisar(0); check('En el teléfono, si se abre una tarjeta el rótulo se quita (no tapa la pregunta)', !!rt && rt.hidden, rt ? String(rt.hidden) : 'sin rótulo');
+        }
         finally { G.ui.hideCard(); delete window.innerWidth; }
         const hd = htmlDiario();
         check('El Diario suma su línea en «Lugares de la isla» (1/14)', hd.includes('(1/14)') && hd.includes(esc(a.asentamiento.diario)) && (hd.match(/\?\?\?/g) || []).length === 13);
@@ -284,7 +326,17 @@ AVE.module('lugares', function (G) {
       SV.suspender(false); G.quiet = quiet;
       cola.length = 0; espera = 0;
     }
-    check('G.S queda como estaba', JSON.stringify(SV.instantanea()) === JSON.stringify(snap));
+    {
+      const ahora2 = SV.instantanea();
+      let diff = '';
+      if (JSON.stringify(ahora2) !== JSON.stringify(snap)) {
+        try {
+          const A = JSON.parse(JSON.stringify(ahora2)), B = JSON.parse(JSON.stringify(snap));
+          diff = Object.keys(A).concat(Object.keys(B)).filter((k, i, arr) => arr.indexOf(k) === i && JSON.stringify(A[k]) !== JSON.stringify(B[k])).slice(0, 6).join(',');
+        } catch (e) { diff = '?'; }
+      }
+      check('G.S queda como estaba', !diff, diff || undefined);
+    }
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
   // AV.lugaresTest (boot.js es del coordinador: se expone aquí si boot no lo hizo)

@@ -1,0 +1,70 @@
+{
+ "etiqueta": "post2",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "Chrome/156.0.8078.80",
+ "consola": [],
+ "fase": "qa195-rotulo",
+ "qa195": {
+  "ancho": 390,
+  "alto": 844,
+  "minimapaVisible": true,
+  "poi": {
+   "id": "flamboyan_plaza",
+   "nombre": "Flamboyán de la plaza",
+   "x": 158,
+   "z": 176
+  },
+  "minimapa": {
+   "l": 226,
+   "t": 139,
+   "r": 322,
+   "b": 235,
+   "w": 96,
+   "h": 96
+  },
+  "mmTopInline": "139px",
+  "mmTopRoot": "139px",
+  "texto": "¡Descubriste Estación de Conservación! Lugares descubiertos 3/46",
+  "dialogoAbierto": true,
+  "conDialogo": {
+   "caja": {
+    "l": 12,
+    "t": 243,
+    "r": 322,
+    "b": 329.9,
+    "w": 310,
+    "h": 86.9
+   },
+   "topCSS": "243px",
+   "solapaMinimapa": false
+  },
+  "stats": {
+   "calls": 55,
+   "tris": 230511
+  }
+ },
+ "rotulo": {
+  "asentamiento": {
+   "id": "kelvin_aldea_rio_este_2",
+   "nombre": "Villa Mangle · Mesa del Este"
+  },
+  "rotulo": {
+   "texto": "¡Lugar descubierto!Bienvenido aVilla Mangle · Mesa del Este Lugares descubiertos 4/46",
+   "caja": {
+    "l": 97.5,
+    "t": 253.2,
+    "r": 292.5,
+    "b": 392.8,
+    "w": 195,
+    "h": 139.6
+   },
+   "topCSS": "253.2px",
+   "solapaMinimapa": false
+  }
+ },
+ "veredicto": {
+  "toastSinSolape": true,
+  "rotuloSinSolape": true
+ },
+ "ok": true
+}
