@@ -1,9 +1,10 @@
 /* Juego · V18.3 fase 5 · Maestro Moon, gato mentor (entrenamiento amistoso): «Entrenamiento de esquiva» (G.v18moon).
    Directiva docs/DIRECTIVA_V18_3_RESOLUCION.md §6E y §12; sistema de personajes docs/equipo/V18_3_DISENO.md §1 (src/game/v18/npc.js,
    fila de datos 'maestromoon' en content/comun/personajes_v18.js). Contenido opcional del mundo abierto: no toca los capítulos ni sus misiones.
-   - Dónde: un claro llano del Embarcadero de las Canoas (oeste de la isla), lejos del Puerto de La Mina, del minigolf, de la
-     explanada del duelo, de la carrera con Chispa y del puente roto. Sitio fijo medido en el mapa y en el juego (terreno, agua,
-     colisiones, troncos y sólidos): SITIO más abajo. La prueba vuelve a medirlo.
+   - Dónde: un claro llano de las Lomas del Oeste (junto a la casita), lejos del Puerto de La Mina, del minigolf, de la
+     explanada del duelo, de la carrera con Chispa y del puente roto. Sitio fijo sin edificios medido en el mapa y en el juego con
+     todo cargado (terreno, agua, colisiones y sólidos); la flora del círculo se despeja al activarse, como en el duelo. La prueba
+     vuelve a medirlo (check 5).
    - Moon sale con el sistema único de NPC: carga diferida (el .glb no se pide hasta que Vittata está a < 90 m), máx. 2 a la vez.
    - El entrenamiento: Acción junto a Moon → reto → cuenta 3-2-1 → 30 s esquivando bolas de luz lentas que Moon lanza desde su
      sitio hacia donde estaba Vittata al lanzarlas. Menos de 3 toques al final = victoria; al tercer toque el entreno acaba.
@@ -27,13 +28,16 @@ window.AVV18Moon = function (G) {
   // QA-201: en (-150.5, 14) había matorrales y una raíz dentro del círculo (sólidos en (-149.4, 16.8), (-161.5, 14) y (-154.7, 3.8);
   // tronco a -0,16 m): Moon entrenaba entre la flora. Se corre 14,6 m al NNE, al claro de verdad medido con la misma sonda
   // (libre 1,8 m, pendiente 0,056, en seco y sin sólidos).
-  // QA-203 (PENDIENTE de decisión de Kelvin): esa sonda midió sin la zona kelvin_aldea_rio_oeste cargada. Con todo cargado (lo que ve
-  // el jugador) el círculo cae sobre monumento_b #0 (en -147,4, 30,6: libre -6,4 m, 16 sólidos) y roza muralla_atalaya_b y muro_roca.
-  // Sonda exhaustiva con todo cargado (rejilla de 2 m de todo el mapa, a > 100 m de puerto, Chispa, golf, duelo y misterio): NINGÚN
-  // círculo de 11 m cumple el check 5; los pocos llanos sin troncos son solares de edificios (≥ 16 sólidos). Ni con radio 9,5 m.
-  // Opciones (de Kelvin): despejar la flora del claro como hace la explanada del duelo (vegetacion.despejar), mover muros de la aldea
-  // o aceptar un claro con pendiente o algún tronco. Mientras, el check 5 queda en rojo de verdad.
-  const SITIO = { x: -146.5, z: 28, rotY: 1.57 };
+  // QA-203: esa sonda midió sin la zona kelvin_aldea_rio_oeste cargada. Con todo cargado (lo que ve el jugador) el círculo caía
+  // sobre monumento_b #0 (en -147,4, 30,6: libre -6,4 m, 16 sólidos): Moon entrenaba dentro de un edificio. Con todo cargado no
+  // hay en el mapa ningún círculo de 11 m llano y sin troncos que no sea un solar de edificio, así que, como la explanada del duelo
+  // (precedente aprobado por Kelvin, DECISIONES C4), se despeja solo la flora del claro (despejarSitio, abajo). Sitio nuevo en las
+  // Lomas del Oeste, a 42 m de la casita: sin edificios, muros, colliders ni sólidos a < 14 m del círculo en los datos del mapa
+  // (huellas de escena_kelvin_cap1.json, colisiones, estructuras, plazas y props) y medido en el juego con todo cargado (check 5:
+  // libre 1,96 m tras despejar 52 instancias de flora, pendiente 0,04, en seco, 0 sólidos; a 288 m de la villa y 318 m del puerto).
+  // Otros candidatos medidos igual (flora a despejar / pendiente): (-172, 166) 54 / 0,025; (-186, 142) 44 / 0,046 (a ~40 m del
+  // acantilado del oeste); (-214, 128) 51 / 0,026 (a 16 m del acantilado). Se elige el más céntrico y accesible a pie.
+  const SITIO = { x: -138, z: 162, rotY: 1.57 };
   const TXT = {
     nombre: 'Entrenamiento con Moon', label: 'Entrenar la esquiva con Moon',
     reto: ['Bienvenida a mi claro, pequeña cotorra. Yo soy Moon: aquí se entrena la esquiva, paso a paso.', 'Lanzaré bolas de luz MUY lentas. Aguanta 30 s con menos de 3 toques y el entreno es tuyo. ¿Empezamos?'],
@@ -151,8 +155,27 @@ window.AVV18Moon = function (G) {
     const r = record(); pon('r', r && r.mejor != null ? TXT.record + ': ' + r.mejor + ' · ' + reloj(A.t) : reloj(A.t));
   }
 
+  // ---------- El claro: se despeja solo la flora del círculo (como la explanada del duelo, combate.js despejarSitio) ----------
+  // QA-203: con todo cargado no hay en el mapa ningún círculo de 11 m llano, en seco y sin troncos que no sea el solar de un
+  // edificio. Precedente aprobado por Kelvin (DECISIONES C4, árboles quitados en el círculo del duelo): se quitan en marcha las
+  // instancias de flora con el pie a < 13 m del centro y los árboles cuya copa entra más de 2 m en el círculo. Edificios, muros
+  // y modelos no se tocan (el sitio se eligió sin ninguno: check 5).
+  const R_DESP = 13, despeje = { n: 0, ultimo: 0 };
+  const enDespeje = (cx, cz) => (x, z, m, inf, sc) => {
+    const copa = inf && inf.ancho ? 0.4 * inf.ancho * (sc || 1) : 0, d = Math.hypot(x - cx, z - cz);
+    return d < R_DESP || d - copa < 9;
+  };
+  function despejarEn(cx, cz) {
+    const VG = G.vegetacion;
+    if (!VG || !VG.despejar || !VG.instancias || !Object.keys(VG.instancias).length) return 0;
+    const L = R_DESP + 12, n = VG.despejar(cx - L, cz - L, cx + L, cz + L, enDespeje(cx, cz)) || 0;
+    return n;
+  }
+  function despejarSitio() { const n = despejarEn(SITIO.x, SITIO.z); despeje.n += n; despeje.ultimo = n; return n; }
+
   // ---------- Moon (instancia del sistema de NPC) ----------
   function colocarEnSitio() {
+    if (activa()) despejarSitio();
     N.colocar(NPC, { x: SITIO.x, z: SITIO.z, rotY: SITIO.rotY, aparece: activa, comenta: true });
     N.alUsar(NPC, { label: () => TXT.label, use: invitar, visible: () => A.fase === 'nada' && activa() });
   }
@@ -171,7 +194,7 @@ window.AVV18Moon = function (G) {
   function empezar(o) {
     o = o || {};
     if (A.fase !== 'nada' || (!activa() && !o.forzar)) return false;
-    montarHud();
+    montarHud(); despejarSitio();
     A.mx = SITIO.x; A.mz = SITIO.z;
     Object.assign(A, { fase: 'cuenta', t: 0, cuenta: CUENTA_S, toques: 0, mercy: 0, lanzarEn: PRIMERA_S, altoT: 0, ultimo: null });
     matarOrbs();
@@ -210,7 +233,7 @@ window.AVV18Moon = function (G) {
   function paso(dt) {
     reloj3d += dt;
     if (A.fase === 'nada') {
-      if ((A.xpT -= dt) <= 0) { A.xpT = 2; if (activa()) pagarXP(); }
+      if ((A.xpT -= dt) <= 0) { A.xpT = 2; if (activa()) { pagarXP(); despejarSitio(); } } // el claro, en cuanto la flora existe (y si se regenera)
       return;
     }
     A.mercy = Math.max(0, A.mercy - dt);
@@ -315,25 +338,34 @@ window.AVV18Moon = function (G) {
       check('4 · Cerca (< 90 m) aparece Moon con su modelo propio y sus acciones (Idle, Hablar, Señalar); máx. 2 personajes', !!inst && !inst.provisional && ['Idle', 'Hablar', 'Señalar'].every(n => inst.acciones[n]) && N.activos().length <= N.MAX_ACTIVOS && N.stats().pedidos.some(p => /maestro_moon\.glb/.test(p)),
         inst ? Object.keys(inst.acciones).join(',') + ' · activos ' + N.activos().join(',') : 'sin instancia');
       // 5 · el sitio: seco, sin troncos, colisiones ni sólidos en el círculo; lejos de las demás actividades V18 (> 100 m)
-      await asentar(SITIO.x, SITIO.z); // QA-203: lo que ve el jugador allí: streaming de la zona cargado del todo y sus sólidos rasterizados
-      const VG = G.vegetacion, P = VG && VG.instancias, inf = VG && VG.info, tr = [];
-      if (P && inf) for (const m in P) { const I = inf[m], PM = P[m]; if (!I || !PM) continue; const roca = /roca|piedra|tronco/.test(m); if (!roca && !(I.tronco >= 0.05)) continue;
-        for (let i = 0; i < PM.n; i++) { const x = PM.pos[i * 4], z = PM.pos[i * 4 + 2], sc = PM.pos[i * 4 + 3]; if (Math.hypot(x - SITIO.x, z - SITIO.z) < 45) tr.push({ x, z, r: roca ? Math.max(0.5, (I.ancho || 1) * 0.5 * sc) : Math.max(0.2, I.tronco * sc) }); } }
-      const cols = (F.colliders || []).filter(c => c && c.x != null && Math.hypot(c.x - SITIO.x, c.z - SITIO.z) < 50 && !/^v18npc/.test(c.id || ''));
-      const dCol = (x, z, c) => c.hx ? Math.hypot(Math.max(0, Math.abs(x - c.x) - c.hx), Math.max(0, Math.abs(z - c.z) - c.hz)) : Math.hypot(x - c.x, z - c.z) - (c.r || 0);
-      let peor = '', mT = 99, mojado = 0, solido = 0, pend = 0;
-      for (let a = 0; a < 16; a++) for (const r of [3, 7, 11]) { const x = SITIO.x + Math.cos(a / 16 * 6.2832) * r, z = SITIO.z + Math.sin(a / 16 * 6.2832) * r, h = H(x, z);
-        pend = Math.max(pend, Math.abs(h - H(SITIO.x, SITIO.z)) / Math.max(1, r));
-        if (G.agua && G.agua.levelAt && G.agua.levelAt(x, z) > h - 0.3) mojado++;
-        for (const t of tr) { const d = Math.hypot(x - t.x, z - t.z) - t.r; if (d < mT) { mT = d; peor = 'tronco'; } }
-        for (const c of cols) { const d = dCol(x, z, c); if (d < mT) { mT = d; peor = c.id || c.kind || '?'; } }
-        if (G.solidos && G.solidos.activo && [0.3, 0.9, 1.5, 2.5].some(y => G.solidos.dentro(x, z, h + y) > h + 0.15)) solido++; } // QA-201: un sólido de flora con el tope a ras del suelo (raíz o rama enterrada) no estorba; dentro() lo cuenta por su margen de 0,4 m
+      // QA-203: lo que ve el jugador allí: streaming de la zona cargado del todo, la flora del claro despejada (como el duelo)
+      // y los sólidos rasterizados. Flora que se despeja no cuenta; edificios, muros, colliders y sólidos que quedan, sí (cero).
+      const medir = async (cx, cz) => {
+        await asentar(cx, cz);
+        const quitadas = despejarEn(cx, cz); try { if (G.solidos && G.solidos.terminar) G.solidos.terminar(); } catch (e) { /* */ }
+        const VG = G.vegetacion, P = VG && VG.instancias, inf = VG && VG.info, tr = [];
+        if (P && inf) for (const m in P) { const I = inf[m], PM = P[m]; if (!I || !PM) continue; const roca = /roca|piedra|tronco/.test(m); if (!roca && !(I.tronco >= 0.05)) continue;
+          for (let i = 0; i < PM.n; i++) { const x = PM.pos[i * 4], z = PM.pos[i * 4 + 2], sc = PM.pos[i * 4 + 3]; if (sc > 0 && Math.hypot(x - cx, z - cz) < 45) tr.push({ x, z, r: roca ? Math.max(0.5, (I.ancho || 1) * 0.5 * sc) : Math.max(0.2, I.tronco * sc) }); } }
+        const cols = (F.colliders || []).filter(c => c && c.x != null && Math.hypot(c.x - cx, c.z - cz) < 50 && !/^v18npc/.test(c.id || ''));
+        const dCol = (x, z, c) => c.hx ? Math.hypot(Math.max(0, Math.abs(x - c.x) - c.hx), Math.max(0, Math.abs(z - c.z) - c.hz)) : Math.hypot(x - c.x, z - c.z) - (c.r || 0);
+        const r = { quitadas, peor: '', mT: 99, mojado: 0, solido: 0, pend: 0 };
+        for (let a = 0; a < 16; a++) for (const rr of [3, 7, 11]) { const x = cx + Math.cos(a / 16 * 6.2832) * rr, z = cz + Math.sin(a / 16 * 6.2832) * rr, h = H(x, z);
+          r.pend = Math.max(r.pend, Math.abs(h - H(cx, cz)) / Math.max(1, rr));
+          if (G.agua && G.agua.levelAt && G.agua.levelAt(x, z) > h - 0.3) r.mojado++;
+          for (const t of tr) { const d = Math.hypot(x - t.x, z - t.z) - t.r; if (d < r.mT) { r.mT = d; r.peor = 'tronco'; } }
+          for (const c of cols) { const d = dCol(x, z, c); if (d < r.mT) { r.mT = d; r.peor = c.id || c.kind || '?'; } }
+          if (G.solidos && G.solidos.activo && [0.3, 0.9, 1.5, 2.5].some(y => G.solidos.dentro(x, z, h + y) > h + 0.15)) r.solido++; } // QA-201: un sólido de flora con el tope a ras del suelo (raíz o rama enterrada) no estorba; dentro() lo cuenta por su margen de 0,4 m
+        return r;
+      };
+      if (o.sondear) { // diagnóstico: AV.v18MoonTest({ sondear: [[x, z], …] }) mide otros sitios igual (despeja su flora en esta sesión) const sd = []; for (const [cx, cz] of o.sondear) { const r = await medir(cx, cz); sd.push(cx + ',' + cz + ': quita ' + r.quitadas + ' libre ' + r.mT.toFixed(2) + ' ' + r.peor + ' pend ' + r.pend.toFixed(3) + ' moj ' + r.mojado + ' sol ' + r.solido); }
+        check('5z · sondeo', true, sd.join(' | ')); }
+      const m5 = await medir(SITIO.x, SITIO.z);
       const puerto = { x: 73.6, z: -75.2 }, golf = G.v18minigolf && G.v18minigolf.sitio, duelo = G.v18combate && G.v18combate.sitio, chispa = G.v18chispa && G.v18chispa.SITIO && (G.v18chispa.SITIO.salida || G.v18chispa.SITIO), /* el SITIO de Chispa es { salida, puntos } */ misterio = G.v18Misterio && G.v18Misterio.sitio && G.v18Misterio.sitio();
       const dist = q => q ? Math.hypot(q.x - SITIO.x, q.z - SITIO.z) : Infinity;
       const lejos = { puerto: dist(puerto), villa: dist(villa), golf: dist(golf), duelo: dist(duelo), chispa: dist(chispa), misterio: dist(misterio) };
-      check('5 · Sitio abierto: círculo de 11 m en seco, sin troncos, colisiones ni sólidos; lejos de puerto, golf, duelo, Chispa y el misterio (> 100 m)',
-        !mojado && !solido && mT >= 0.8 && pend < 0.09 && [lejos.puerto, lejos.golf, lejos.duelo, lejos.chispa, lejos.misterio].every(d => d > 100),
-        'libre ' + mT.toFixed(2) + ' m' + (mT < 0.8 ? ' (' + peor + ')' : '') + ' · pendiente ' + pend.toFixed(2) + ' · mojado ' + mojado + ' · sólidos ' + solido + ' · ' + Object.keys(lejos).map(k => k + ' ' + (isFinite(lejos[k]) ? lejos[k].toFixed(0) : '—')).join(' '));
+      check('5 · Sitio abierto: círculo de 11 m en seco, sin edificios, colisiones ni sólidos (la flora del claro se despeja, como en el duelo); lejos de puerto, golf, duelo, Chispa y el misterio (> 100 m)',
+        !m5.mojado && !m5.solido && m5.mT >= 0.8 && m5.pend < 0.09 && [lejos.puerto, lejos.golf, lejos.duelo, lejos.chispa, lejos.misterio].every(d => d > 100),
+        'libre ' + m5.mT.toFixed(2) + ' m' + (m5.mT < 0.8 ? ' (' + m5.peor + ')' : '') + ' · pendiente ' + m5.pend.toFixed(2) + ' · mojado ' + m5.mojado + ' · sólidos ' + m5.solido + ' · flora despejada ' + (despeje.n + m5.quitadas) + ' · ' + Object.keys(lejos).map(k => k + ' ' + (isFinite(lejos[k]) ? lejos[k].toFixed(0) : '—')).join(' '));
       // 6 · minimapa
       const mm = mapa();
       check('6 · Marcador del minimapa en Moon, con nombre', mm && mm.nombre === TXT.nombre && Math.hypot(mm.x - SITIO.x, mm.z - SITIO.z) < 0.1);

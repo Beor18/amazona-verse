@@ -77,7 +77,7 @@ window.AV_NPC_V18 = [
     id: 'maestromoon', nombre: { es: 'Maestro Moon', en: 'Master Moon' }, rol: 'aliado',
     // BM168 (Mac, 6-nov): gato mentor (colores lisos, sin foto ni marcas; SIN armas, directiva V18.3 §6E); acciones del .glb:
     // Idle, Hablar y Señalar. Mentor de precisión y estrategia: su «Entrenamiento de esquiva» está en src/game/v18/moon.js
-    // (un claro del Embarcadero de las Canoas). Retrato: insignia provisional hasta que haya captura propia.
+    // (un claro de las Lomas del Oeste, junto a la casita). Retrato: insignia provisional hasta que haya captura propia.
     modelo: 'assets/models/personajes/maestro_moon.glb', script: 'assets/models/personajes/maestro_moon_glb.js', b64: 'maestro_moon',
     alto: 1, insignia: { fondo: '#232a4d', color: '#f4d67c' },
     anim: { idle: 'Idle', hablar: 'Hablar', senalar: 'Señalar' },
