@@ -25,12 +25,13 @@
     const S = G.S, $ = G.util.$, P = G.pack, raiz = document.documentElement;
     const ALMACEN = ((P.meta && P.meta.almacen) || P.id) + '.menu';
     const portada = $('title'), form = $('modos'), creador = $('creator');
-    const MODOS = ['aventura', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'maze', 'libre', 'nido', 'records'];
+    const MODOS = ['aventura', 'golf', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'maze', 'libre', 'nido', 'records'];
     const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
     const TX = () => ({
       titulo: L('¿Cómo quieres jugar?', 'How do you want to play?'), ultimo: L('Lo último que jugaste', 'Last played'),
       listo: L('¡A jugar!', 'Let’s play!'), cambiar: L('Cambiar de juego', 'Change game'),
       aventura: [L('Aventura', 'Adventure'), subAventura()],
+      golf: [L('Minigolf', 'Mini golf'), L('Lleva la semilla gigante hasta el nido', 'Take the giant seed to the nest')], // V18 (Kelvin 7-nov: a la vista en el menú)
       carreras: [L('Carreras', 'Races'), L('El Yunque, el río y tu fantasma', 'El Yunque, the river and your ghost')],
       tormenta: [L('¡Escapa de la tormenta!', 'Escape the storm!'), L('90 segundos sobre el mar', '90 seconds over the sea')],
       banquete: [L('¡Banquete!', 'Feast!'), L('Frutos en vuelo y combos', 'Fruit on the wing and combos')],
@@ -102,6 +103,9 @@
       if (modo === 'aventura') {
         if (introPendiente() && typeof inicioReal === 'function') { guardar({ intro: 0 }); setTimeout(() => { if (!G.dialogo.open()) inicioReal(G); }, 300); }
         p = Promise.resolve(true);
+      } else if (modo === 'golf') { // minigolf de Villa Raíz (src/game/v18/minigolf.js): es del cap. 1; desde otro capítulo se abre el cap. 1 con ?mini=golf
+        if (P.id !== 'cap1') { apuntarCapitulo('cap1'); try { const u = new URL(location.href); u.searchParams.set('mini', 'golf'); location.href = u.toString(); } catch (e) { /* sin URL */ } p = Promise.resolve(true); }
+        else p = listo().then(() => new Promise(res => { let n = 0; const t = () => { const mg = G.v18minigolf; if (mg && mg.irYJugar && mg.irYJugar()) return res(true); if (++n < 60) setTimeout(t, 500); else res(false); }; t(); }));
       } else if (modo === 'carreras') p = listo().then(() => cargar.retos()).then(r => r.abrir());
       else if (modo === 'tormenta' || modo === 'banquete') p = listo().then(() => cargar.retos()).then(r => r.jugar(modo));
       else if (modo === 'flight') p = listo().then(() => (window.AV && window.AV.flight ? window.AV.flight() : false));
