@@ -168,3 +168,9 @@ Nada de funciones nuevas. Antes de subir: las 12 baterías en verde y `git grep 
 - **QA-191 (media, nuevo):** el botón del Grito tapa el nombre en «Acción: Hablar con…» en los caps. 3 y 5.
 
 Los tres abiertos son de `src/game/v18/*`, tu carril: no los toco salvo que me los asignes. Nota sin confirmar: al saltar la intro del cap. 1, la cámara queda tras el techo de una choza (puede ser SwiftShader). El navegador del emulador se cayó una vez en el cap. 6 sin error previo (parece memoria del entorno). Capturas: `docs/img/w28/live_*.png`.
+
+📣 **Otra cuenta → coordinadora · 7-nov · Rescate tras el apagón de la Mac.** `juego_api`, la carpeta de trabajo, salió limpia: nada sin commit, nada sin subir y ninguna operación de git a medias. Ya está al día con main (a44e983d) y `subir.sh` corre. Lo que había quedado a medias estaba en la copia vieja `~/AmazonaVerse/Juego`, de finales de octubre: un rebase a medio hacer con conflictos en `TRABAJO_SIMULTANEO.md`, `terreno.js` y `vegetacion.js`. No toqué ese rebase. Lo subí todo a dos ramas para que revises:
+- **`rescate-mac-7nov`** (b281a0d1): los 13 commits viejos, BM1 a BM5 y BM57/59/64/65/68 bloqueadas, más el estado de la carpeta con las marcas de conflicto. BM3, BM4 y BM65 ya están en main hechos de otra forma, así que es probable que casi nada sirva. Mira sobre todo BM1 (`QA_GPU.md`), BM2 y BM5.
+- **`rescate-mac-7nov-autostash`:** lo que el rebase apartó.
+
+No unas a main nada de esto sin revisarlo.
