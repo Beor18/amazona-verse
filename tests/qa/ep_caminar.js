@@ -411,21 +411,29 @@
     async function perseguir(segs, hecho) {
       if (!MV().flying) { await boton('b-fly'); await jugar(0.6); }
       if (tr) tr.vuelo = true;
-      let quieto = 0, px = S.pos.x, py = S.pos.y, pz = S.pos.z, lado = 1;
+      let quieto = 0, px = S.pos.x, py = S.pos.y, pz = S.pos.z, lado = 1, contra = 0, rodeos = 0, empujo = false;
       for (let t = 0; t < segs && !hecho(); t += 0.25) {
-        if (ocupado()) { soltarPalo(); await resolver(); continue; }
+        if (ocupado()) { soltarPalo(); await resolver(); empujo = false; continue; }
         const g = G.misiones.guideTarget(); if (!g) break;
         // trabada (en una copa o un borde): como un niño, vuelve a subir un poco y empuja de lado
-        quieto = Math.hypot(S.pos.x - px, S.pos.y - py, S.pos.z - pz) < 0.05 ? quieto + 1 : 0; px = S.pos.x; py = S.pos.y; pz = S.pos.z;
+        const dh = Math.hypot(S.pos.x - px, S.pos.z - pz);
+        quieto = Math.hypot(dh, S.pos.y - py) < 0.05 ? quieto + 1 : 0;
+        // contra un tronco o una roca: el palo empuja y no avanza (sube y baja siguiendo la altura de la gota, así que `quieto` no
+        // lo ve). Un niño la rodea: de lado un rato, hacia un lado y luego hacia el otro (escorrentía del cap. 1, x 75 z -155)
+        contra = dh < 0.1 ? contra + (empujo ? 1 : 0) : 0; px = S.pos.x; py = S.pos.y; pz = S.pos.z; empujo = false;
         if (quieto >= 8) { quieto = 0; if (MV().landing) await boton('b-fly'); await sostener('b-jump', 0.4); await empujar(0.6, true, lado, { dx: g.x - S.pos.x, dz: g.z - S.pos.z }); lado = -lado; continue; }
+        if (contra >= 8) { contra = 0; if (window.AV_E2E_LOG) log('rodea', r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), 'lado', lado); await empujar(1.2, true, lado, { dx: g.x - S.pos.x, dz: g.z - S.pos.z }); if (++rodeos % 2 === 0) lado = -lado; px = S.pos.x; pz = S.pos.z; continue; }
         if (!MV().flying && !MV().swimming) { await boton('b-fly'); await jugar(0.3); continue; }
         const dx = g.x - S.pos.x, dz = g.z - S.pos.z, d = Math.hypot(dx, dz);
         if (t % 10 < 0.25) log('sigue', [r1(t), 'd', r1(d), 'y', r1(S.pos.y), 'gy', g.y == null ? '-' : r1(g.y), 'vuela', MV().flying, 'nada', MV().swimming, 'mv', s({ l: MV().landing, sp: MV().speed, p: MV().posado || MV().perched }), 'palo', s(G.input.stick), paloPuesto, 'reloj', r1(S.clock), 'pos', r1(S.pos.x), r1(S.pos.z), s(G.c && G.c.edu && G.c.edu.estado ? G.c.edu.estado() : ''), cfg.progreso ? cfg.progreso(G) : ''].join(' '));
         // en el móvil, volando, no hay botón de bajar: «Aterrizar» baja suave y «Volar» (el mismo botón) vuelve a sostenerla
-        if (g.y != null && MV().flying && !MV().landing && S.pos.y > g.y + 2.5) await boton('b-fly');
-        else if (g.y != null && MV().flying && MV().landing && S.pos.y < g.y + 0.8) await boton('b-fly');
+        // W17: si su propio suelo ya está alto (la gota baja por una quebrada y Vittata va por la ladera de al lado), ya va rasante:
+        // aterrizar ahí solo la posa (la ayuda para posarse la centraba en una rama de x 75 z -155 y no salía de ahí, cap. 1)
+        const sobreSuelo = S.pos.y - G.terreno.height(S.pos.x, S.pos.z);
+        if (g.y != null && MV().flying && !MV().landing && S.pos.y > g.y + 2.5 && sobreSuelo > 2.5) await boton('b-fly');
+        else if (g.y != null && MV().flying && MV().landing && (S.pos.y < g.y + 0.8 || sobreSuelo < 2)) await boton('b-fly');
         if (g.y != null && S.pos.y < g.y - 0.6 && !MV().landing) await sostener('b-jump', 0.15);
-        if (d > 1.2) await empujar(0.25, d > 6, 0, { dx, dz }); else { soltarPalo(); if (cfg.accionCerca && cfg.accionCerca(G)) await accion(); await jugar(0.25); } // agarrar/soltar al vuelo (crecida del cap. 1)
+        if (d > 1.2) { await empujar(0.25, d > 6, 0, { dx, dz }); empujo = true; } else { soltarPalo(); if (cfg.accionCerca && cfg.accionCerca(G)) await accion(); await jugar(0.25); } // agarrar/soltar al vuelo (crecida del cap. 1)
       }
       soltarPalo();
     }
