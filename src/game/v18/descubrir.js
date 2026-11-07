@@ -42,6 +42,12 @@ window.AVV18Descubrir = function (G) {
   const NOMBRES = { vittata: 'Cotorra puertorriqueña', arausiaca: 'Cotorra de Dominica' };
   const PODERES = { islenas: 'Grito del Yunque', montaneras: 'Escudo de plumas' }; // respaldo si el motor de habilidades (habilidades.js) aún no cargó
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 3600); } catch (e) { /* sin interfaz */ } };
+  // QA-188/QA-186: un aviso de pista no sale con la historia en pantalla (caja de diálogo, bocadillo o subtítulo
+  // del narrador) ni durante la apertura en negro del cap. 1; espera a que el jugador esté libre de verdad
+  const libre = () => {
+    try { return !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo()) && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar'); }
+    catch (e) { return true; }
+  };
   const sonar = (n, a) => { try { if (G.audio && (!G.audio.has || G.audio.has(n))) return G.audio.play(n, a); } catch (e) { /* sin audio */ } return false; };
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const estado = () => V.estado(ID);
@@ -229,7 +235,7 @@ window.AVV18Descubrir = function (G) {
     if (R.activo) { pasoReto(dt, s); return; }
     if (!B.vuelo && dXZ < R_PISTA && (B.cantaT -= dt) <= 0) { B.cantaT = 4 + Math.random() * 2; cantar(); }
     if (!descubierta()) {
-      if (!avisoCerca && dXZ < R_PISTA && dXZ > R_DESC_XZ * 2) { avisoCerca = true; toast(TXT.pistaCerca, 4000); }
+      if (!avisoCerca && dXZ < R_PISTA && dXZ > R_DESC_XZ * 2 && libre()) { avisoCerca = true; toast(TXT.pistaCerca, 4000); }
       if (dXZ < R_DESC_XZ || d3 < R_DESC_3D) descubrir();
     }
   }
@@ -301,17 +307,26 @@ window.AVV18Descubrir = function (G) {
 
   // ---------- Arranque ----------
   let montado = false;
+  // QA-186/QA-188: la pista de inicio solo tiene sentido en Villa Raíz (cap. 1: la cotorra visitante y su canto
+  // viven junto a la villa) y solo sale con la historia libre; se consume aunque no salga (no se insiste)
+  function avisarInicio() {
+    if (avisoInicio || descubierta() || G.quiet) return false;
+    avisoInicio = true;
+    try { if ((G.pack && G.pack.id === 'cap1') && libre()) { toast(TXT.pistaInicio, 5000); return true; } } catch (e) { /* sin interfaz */ }
+    return false;
+  }
   function montar() {
     if (montado) return true;
     montado = true;
     elegirPerchas(); posar(0); ponerInteraccion(); crearCotorra(); pintarBoton();
-    // QA-186: la pista habla de Villa Raíz, así que solo sale en el cap. 1, y espera a que no haya diálogo ni historia en pantalla
+    // QA-186: la pista habla de Villa Raíz, así que solo sale en el cap. 1, y espera a que no haya diálogo ni
+    // historia en pantalla (QA-188: busy() no cubre bocadillos ni narrador, y falta la apertura en negro)
     let intentos = 0;
     const pista = () => {
       if (avisoInicio || descubierta() || G.quiet || !(G.pack && G.pack.id === 'cap1')) return;
-      let ocupado = true;
-      try { ocupado = G.ui.busy(); } catch (e) { return; /* sin interfaz */ }
-      if (ocupado) { if (++intentos < 20) setTimeout(pista, 3000); return; }
+      let libreAhora = false;
+      try { libreAhora = libre(); } catch (e) { return; /* sin interfaz */ }
+      if (!libreAhora) { if (++intentos < 20) setTimeout(pista, 3000); return; }
       avisoInicio = true;
       toast(TXT.pistaInicio, 5000);
     };
@@ -352,6 +367,29 @@ window.AVV18Descubrir = function (G) {
       check('Lejos (en la plaza) no se descubre', estado() === 'no_descubierta');
       ir({ x: P[0].x + 40, y: P[0].y, z: P[0].z }); correr(0.3);
       check('A menos de 80 m sale la pista del canto', toasts.some(t => /canto/.test(t)) && estado() === 'no_descubierta', toasts.join(' | '));
+      // QA-188/QA-186: las pistas esperan a que la historia esté libre (caja, bocadillo o narrador) y la de inicio solo sale en el cap. 1
+      const D = G.v18descubrir;
+      toasts.length = 0; avisoCerca = false;
+      const actBk = G.dialogo && G.dialogo.activo;
+      if (G.dialogo) G.dialogo.activo = () => true;
+      correr(0.3);
+      check('Con el diálogo o el narrador en pantalla, la pista del canto espera (QA-188)', !toasts.some(t => /canto/.test(t)) && !avisoCerca, toasts.join(' | '));
+      if (G.dialogo) G.dialogo.activo = actBk;
+      toasts.length = 0; correr(0.3);
+      check('…y sale en cuanto la historia queda libre', toasts.some(t => /canto/.test(t)) && avisoCerca, toasts.join(' | '));
+      const idBk = G.pack.id, quietBk = G.quiet;
+      G.quiet = false; // avisarInicio no dispara con G.quiet (el arnés corre con quiet=true)
+      avisoInicio = false; G.pack.id = 'ep5';
+      check('La pista de inicio no sale fuera del cap. 1 (QA-186)', D.avisarInicio() === false && !toasts.some(t => /Villa Raíz/.test(t)), toasts.join(' | '));
+      avisoInicio = false; G.pack.id = idBk;
+      if (G.dialogo) G.dialogo.activo = () => true;
+      const noSalioConHistoria = D.avisarInicio() === false && !toasts.some(t => /Villa Raíz/.test(t));
+      if (G.dialogo) G.dialogo.activo = actBk;
+      check('La pista de inicio espera a la historia libre (QA-188)', noSalioConHistoria, toasts.join(' | '));
+      avisoInicio = false;
+      check('La pista de inicio sí sale en el cap. 1 con la historia libre', D.avisarInicio() === true && toasts.some(t => /Villa Raíz/.test(t)), toasts.join(' | '));
+      G.quiet = quietBk;
+      toasts.length = 0; try { G.ui.hideToast(); } catch (e) { /* sin toast */ }
       toasts.length = 0; ir({ x: P[0].x + 4, y: P[0].y - 6, z: P[0].z + 3 }); correr(0.2);
       check('Al acercarse se descubre y avisa «Descubriste una cotorra de Dominica»', estado() === 'descubierta' && toasts.some(t => t.indexOf(TXT.descubre) === 0), toasts.join(' | '));
       check('Descubierta no es elegible todavía', !V.seleccionar(ID) && it.label() === TXT.seguir && seleccionables().indexOf(ID) < 0);
@@ -395,6 +433,6 @@ window.AVV18Descubrir = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18descubrir = { ID, P, B, R, estado, descubrir, empezarReto, abrirSeleccion, elegir, seleccionables, paso, listo, test };
+  G.v18descubrir = { ID, P, B, R, estado, descubrir, empezarReto, abrirSeleccion, elegir, seleccionables, paso, listo, test, libre, avisarInicio };
   return G.v18descubrir;
 };
