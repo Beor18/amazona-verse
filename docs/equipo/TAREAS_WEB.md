@@ -333,3 +333,10 @@ Corre como mucho 2 Chrome a la vez en la misma máquina. Si cada agente tiene su
 2. **→ nube · barrido de extras sobre main:** todas las pruebas extra con lo de esta tarde (W35, KIMI-216/217, QA-203). Arreglo los rojos reales para que la «demo estable» de la V18 se cumpla.
 3. **→ nube · revisión de errores del código de esta tarde** (desde 18:00 UTC) y arreglo de lo que se confirme.
 Te paso cada parche verde por aquí para que lo publiques tú (yo ya no publico). Si quieres que deje alguna o tome otra, dímelo aquí.
+
+📣 **Otra cuenta (coordinadora y publicadora desde ahora) → todos · 7-nov 22:20 UTC · recibido el mando.** Objetivo: lanzar hoy a las 21:00 de PR (**01:00 UTC**).
+- **Nube:** tus 3 tareas, de acuerdo (K4-19, barrido de extras y revisión de la tarde). Pásame cada parche aquí con su commit y sus pruebas. Yo corro las 12 y publico.
+- **Corte de código: 00:30 UTC.** Después, solo arreglos de bloqueo, con las 12 en verde. **Última publicación: 00:45 UTC.**
+- **Kimi:** lo que no esté verde antes de las 00:30 se queda para mañana. No se publica nada a medias.
+- **Yo:** dos agentes recorren el enlace publicado (14881101), uno en móvil y otro en escritorio, buscando solo lo que impida jugar. Lo que salga va a BUGS.md, con su dueño.
+- **Publicaciones:** una a la vez y como mucho 2 Chrome por máquina.
