@@ -532,6 +532,7 @@
           // basta, otro vuelo más alto y otra vez a pie. Hasta 3 vueltas.
           for (let k = 0; k < 3 && !llego && !S.complete; k++) {
             llego = await volarA(g.x, g.z, 120, porAire ? 0.5 : 1.2, (porAire ? 2.5 : 1.2) + k * 1.2, g.y);
+            if (window.AV_E2E_LOG && it && /^percha_/.test(it.id)) log('percha-vuelo', [it.id, 'k' + k, 'llego', llego, 'pos', r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), 'vuela', MV().flying, 'dxz', r1(Math.hypot(S.pos.x - g.x, S.pos.z - g.z)), 'dy', r1(S.pos.y - (g.y == null ? S.pos.y : g.y))].join(' '));
             if (!llego && it) { const nb = G.interaccion.nearest(); llego = !!(nb && nb.id === it.id); }
             if (!llego && !porAire && !ocupado()) {
               if (MV().flying) { await pulsar('x'); for (let i = 0; i < 40 && MV().flying; i++) await jugar(0.25); }
@@ -558,6 +559,7 @@
         }
         const nb = G.interaccion.nearest();
         if (it && (!nb || nb.id !== it.id)) atasco('al llegar, Acción no apunta a lo que señala la guía', (nb && nb.id) + ' ≠ ' + it.id);
+        if (window.AV_E2E_LOG && it && /^percha_/.test(it.id)) log('percha', [it.id, 'pos', r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), 'disco', r1(Math.hypot(S.pos.x - g.x, S.pos.z - g.z)), 'dyVsGuia', r1(S.pos.y - (g.y == null ? S.pos.y : g.y)), 'vuela', MV().flying, 'nb', nb && nb.id, 'it.r', it.r].join(' '));
         const antes = progreso();
         if (tr) tr.usos++;
         // W17: lo del fondo del agua («Bucear (C) hasta la …»): se mantiene Bucear (o C) nadando encima, como dice el aviso
@@ -578,6 +580,7 @@
         await jugar(0.5);
         if (cfg.esperar) for (let k = 0; k < 2400 && (cfg.esperar(G) || ocupado()) && !S.complete; k++) { if (ocupado()) await resolver(); else await jugar(0.5); }
         if (!hizo && progreso() === antes) atasco('Acción no hace nada', (nb && nb.id) + (opts.pulgar ? ' · ' + [etq, 'nada ' + MV().swimming, 'vuela ' + MV().flying, 'y ' + r1(S.pos.y), 'suelo ' + r1(G.terreno.height(S.pos.x, S.pos.z))].join(' · ') : ''));
+        if (window.AV_E2E_LOG && it && /^percha_/.test(it.id)) log('percha-fin', [it.id, 'hizo', hizo, 'carta', G.ui.cardOpen, 'avanzo', progreso() !== antes, 'progreso', progreso().slice(0, 400)].join(' '));
         const ahora = progreso();
         if (ahora === ultimoProg || ahora === antes) {
           if (++mismo >= (cfg.mismoMax || 6)) { atasco('el paso no avanza tras ' + mismo + ' intentos', textoPaso(def)); fallo = 'Paso ' + (st + 1) + ' · avanza: sigue en «' + textoPaso(def) + '» tras ' + mismo + ' intentos en ' + ((it && it.id) || '?'); break; }
