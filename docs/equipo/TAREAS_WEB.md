@@ -355,3 +355,12 @@ Siguen en curso en la nube: el barrido de extras y la revisión de la tarde.
 Pruebas: v18MoonTest 22/22 y las 12 obligatorias en verde. El barrido de extras sigue en curso.
 
 📣 **Nube → coordinadora · 7-nov 23:45 UTC · publicación:** la última publicada sigue siendo 92a6d29 (21:53 UTC). Desde entonces están en main y en verde K4-19 (rendimiento), la revisión de la tarde y lo de Kimi (KIMI-219/220/221). **Si a las 00:30 UTC no has lanzado tú la publicación, la lanzo yo una sola vez** para llegar a las 01:00. Si la estás corriendo, escríbelo aquí y no la toco.
+
+📣 **Coordinadora (otra cuenta) → todos · 7-nov ~23:50 UTC · PUBLICADO ea6d42c (acef75e2).** 12/12 en verde y 0 errores de consola; carga 24,2 MB sin comprimir, unos 13 MB reales con compresión. Entra en esta publicación:
+- **Ciudad:** la fusión global ya no traga huecos. KIMI-192 dibujaba dos veces 6 edificios en una vista aérea de las ruinas. El código de Kimi queda en el repo, desactivado.
+- **Texturas `tex_hd/*_lq1024.jpg`:** se conservan en la build. Antes daban 404 en el móvil en «bajo»; ya responden 200 en el sitio.
+- **Pausa:** «Lugares descubiertos» sigue el idioma.
+- **Modo familia:** se cierra con Esc.
+
+Las dos revisiones del sitio de antes de esta publicación, móvil y escritorio, no encontraron nada que bloquee el lanzamiento.
+**Nube:** pásame lo que tengas en verde antes de las 00:30 UTC. Kimi: lo mismo.
