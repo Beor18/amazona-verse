@@ -114,6 +114,9 @@ AVE.module('streaming', function (G) {
   // 1024 en el móvil pequeño (MOVIL_PEQ, mismo criterio que materialAtlas y reducirAtlas). El callback
   // es perezoso: MOVIL_PEQ queda inicializado mucho antes de que se parseé el primer GLB.
   if (G.assets && G.assets.setSufijoLQDifuso) G.assets.setSufijoLQDifuso(() => nivelCal() === 'bajo' ? (MOVIL_PEQ ? '_lq1024' : '_lq') : '_lq');
+  // KIMI-207 (QA-201): en «medio/alto» la normal del atlas se sirve horneada a 2048² (hd_<kit>_n_lq.jpg);
+  // criterio complementario del de arriba (bajo = plana 2×2, medio/alto = LQ 2048²).
+  if (G.assets && G.assets.setNormalLQMedia) G.assets.setNormalLQMedia(() => nivelCal() !== 'bajo');
   // QA-107 (iPhone, 3-nov): en el móvil, en «medio», la ciudad del tepuy cargaba su kit desde el punto de aparición (420 m) y el
   // _hd hasta 150 m; al despegar subían de golpe los atlas y las fusiones y Safari cerraba la pestaña. En el móvil, la ciudad
   // (vista, malla, _hd y tope de triángulos) usa los valores de «bajo» fuera de «alto». El escritorio no cambia.
@@ -431,7 +434,8 @@ AVE.module('streaming', function (G) {
       // image y el 4096² se subiría entero a la GPU en un móvil que sube de calidad).
       if ((!m.normalMap || esNormalPlana(m.normalMap)) && nivelCal() !== 'bajo') {
         const kit = /Ancient$/.test(k) ? 'ancient' : 'savage';
-        const nm = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '_n.jpg', () => reducirAtlas(m));
+        // KIMI-207: misma normal LQ 2048² que en un arranque en medio/alto (criterio único, sin sorpresas al subir)
+        const nm = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '_n_lq.jpg', () => reducirAtlas(m));
         nm.flipY = false;
         m.normalMap = nm;
         m.needsUpdate = true;
@@ -916,7 +920,10 @@ AVE.module('streaming', function (G) {
         // spawn con la fusión cercana de la ciudad). Mismo criterio que el kit ligero («el relieve va en el atlas, solo
         // en alta», línea ~231). Si la calidad sube, el gancho 'calidad' de abajo la descarga y la engancha al mismo
         // material (needsUpdate, sin refundir la zona).
-        const normalMap = nivelCal() === 'bajo' ? null : G.assets.tex(base + 'tex_hd/hd_' + kit + '_n.jpg');
+        // KIMI-207 (QA-201): en «medio/alto» la normal del atlas baja al JPEG horneado 2048²
+        // (tex_hd/hd_<kit>_n_lq.jpg, ~1,7 MB frente a ~14 MB del 4096²): eran 27,7 MB de la carga inicial
+        // en medio/alto (Mac 36,7 MB > tope 28) y el relieve toon no la distingue (A/B de capturas KIMI-207).
+        const normalMap = nivelCal() === 'bajo' ? null : G.assets.tex(base + 'tex_hd/hd_' + kit + '_n_lq.jpg');
         if (normalMap) normalMap.flipY = false;
         mats[k] = { mat: crearMaterial({ name: k, map, normalMap, side: THREE.DoubleSide }, k), refs: 0, fijo: false };
         if (lq) {

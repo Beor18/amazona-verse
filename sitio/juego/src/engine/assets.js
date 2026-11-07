@@ -128,6 +128,10 @@
   // '_lq1024' en el móvil de pantalla pequeña — el tope que reducirAtlas ya le aplicaba por canvas).
   // Lo fija streaming.js según calidad y dispositivo.
   let sufijoLQDifuso = () => '_lq';
+  // KIMI-207 (QA-201): en «medio/alto» la normal del atlas que los GLB referencian por URI interna
+  // (templo_*_lejos, _hd del kit…) se sirve como el JPEG horneado 2048² hd_<kit>_n_lq.jpg (~1,7 MB frente
+  // a ~14 MB del 4096²), mismo criterio que materialAtlas de streaming.js. El predicado lo fija streaming.js.
+  let normalLQMedia = () => true;
   const TEX_HD_NORMAL = /\/tex_hd\/hd_(ancient|savage)_n\.jpg([?#].*)?$/;
   // KIMI-202: los GLB lejanos/_hd del kit de la ciudad referencian el difuso del atlas 4096² por URI interna
   // (templo_*_lejos, complejo_ruinas_*, muro_templo_*, ruina_torre_* → hd_ancient; los _hd del kit savage →
@@ -136,11 +140,16 @@
   const TEX_HD_DIFUSO = /\/tex_hd\/hd_(ancient|savage)\.jpg([?#].*)?$/;
   function setNormalPlanaBaja(f) { normalPlanaBaja = typeof f === 'function' ? f : () => !!f; }
   function setSufijoLQDifuso(f) { sufijoLQDifuso = typeof f === 'function' ? f : () => String(f || '_lq'); }
+  function setNormalLQMedia(f) { normalLQMedia = typeof f === 'function' ? f : () => !!f; }
   function cargador() {
     const mgr = new THREE.LoadingManager();
     mgr.setURLModifier(url => {
+      if (TEX_HD_NORMAL.test(url)) {
+        if (normalPlanaBaja()) return NORMAL_PLANA;
+        if (normalLQMedia()) return url.replace(/hd_(ancient|savage)_n\.jpg/, 'hd_$1_n_lq.jpg');
+        return url;
+      }
       if (!normalPlanaBaja()) return url;
-      if (TEX_HD_NORMAL.test(url)) return NORMAL_PLANA;
       if (TEX_HD_DIFUSO.test(url)) return url.replace(/hd_(ancient|savage)\.jpg/, 'hd_$1' + sufijoLQDifuso() + '.jpg');
       return url;
     });
@@ -207,7 +216,7 @@
   registrarCache();
 
   window.AVE = window.AVE || {};
-  AVE.assets = { script, loadGLB, image, imagenRetenida: retenida, setNormalPlanaBaja, setSufijoLQDifuso };
+  AVE.assets = { script, loadGLB, image, imagenRetenida: retenida, setNormalPlanaBaja, setSufijoLQDifuso, setNormalLQMedia };
 
   AVE.module('assets', function () {
     const loader = new THREE.TextureLoader();
@@ -217,6 +226,6 @@
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
       return t;
     }
-    return { script, loadGLB, image, tex, loader, setNormalPlanaBaja, setSufijoLQDifuso };
+    return { script, loadGLB, image, tex, loader, setNormalPlanaBaja, setSufijoLQDifuso, setNormalLQMedia };
   });
 })();
