@@ -29,6 +29,7 @@ const ETIQUETA = arg('--etiqueta', 'r1');
 const SOLO = arg('--solo', '');
 const BANDERA = arg('--bandera', '1') !== '0'; // 1 = ?v18=1 (default), 0 = regresión sin bandera
 const ESCRITORIO = process.argv.includes('--escritorio');
+const TACTIL = process.argv.includes('--tactil'); // emula puntero grueso (botones táctiles del HUD; QA-185/187)
 const ANCHO = ESCRITORIO ? 1600 : 390, ALTO = ESCRITORIO ? 900 : 844, DPR = ESCRITORIO ? 1 : 3, CPUX = ESCRITORIO ? 1 : 4;
 const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi106r'));
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -91,6 +92,7 @@ const ENTRAR_JS = `(async () => { try { return await (async () => { const sleep 
 /* las 14 pruebas V18. min = mínimo esperado en este perfil (documentado como diseño, no es rojo) */
 const PRUEBAS = [
   { id: 'progreso', nombre: 'v18Test', fn: 'v18Test', tope: 240, min: 1 },
+  { id: 'explorar', nombre: 'v18ExplorarTest', fn: 'v18ExplorarTest', tope: 300, min: 1 },
   { id: 'fx', nombre: 'v18FxTest', fn: 'v18FxTest', tope: 180, min: 1 },
   { id: 'descubrir', nombre: 'v18DescubrirTest', fn: 'v18DescubrirTest', tope: 300, min: 1 },
   { id: 'ciclo', nombre: 'v18CicloTest', fn: 'v18CicloTest', tope: 600, min: 1 },
@@ -130,7 +132,7 @@ function jsPrueba(p) {
     const t = await AV.${p.fn}();
     out.duracionMs = Math.round(performance.now() - t0);
     out.test = { passed: t.passed, total: t.total, fallos: (t.results || []).filter(r => !r.ok).map(r => r.name + ' :: ' + String(r.extra).slice(0, 300)) };
-    out.contexto = stats(); out.contexto.heap = heap();
+    out.contexto = stats(); out.contexto.heap = heap(); out.contexto.tactil = matchMedia('(pointer: coarse)').matches;
   } catch (e) { out.error = String(e && e.stack || e); }
   return JSON.stringify(out); })()`;
 }
@@ -187,6 +189,7 @@ async function cargarPagina(cdp, ses, origen, id) {
     await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: !ESCRITORIO }, ses);
     await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPUX }, ses);
     if (!ESCRITORIO) await cdp.call('Emulation.setUserAgentOverride', { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' }, ses);
+    if (TACTIL) { await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, ses); await cdp.call('Emulation.setEmitTouchEventsForMouse', { enabled: true, configuration: 'mobile' }, ses); }
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_JS }, ses);
     const errores = [];
     cdp.ws.addEventListener('message', m => {

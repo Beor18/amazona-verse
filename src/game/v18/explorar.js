@@ -29,6 +29,7 @@ window.AVV18Explorar = function (G) {
 
   const sonar = n => { try { if (G.audio && G.audio.has && G.audio.has(n)) G.audio.play(n); } catch (e) { /* sin audio */ } };
   const toast = t => { try { G.ui.toast(t); } catch (e) { /* sin ui */ } };
+  const $ = id => document.getElementById(id);
 
   // ¿Algún encuentro v18 activo? En ellos la G la consume el propio encuentro (captura) y los fx los mueve su paso().
   const ENCUENTROS = ['v18combate', 'v18duelo2', 'v18amenaza', 'v18sapo', 'v18serpiente', 'v18puerto', 'v18minigolf'];
@@ -38,7 +39,8 @@ window.AVV18Explorar = function (G) {
   function libre() {
     if (!G.V18 || encuentro()) return false;
     try { if (G.pausa && G.pausa.activa && G.pausa.activa()) return false; } catch (e) { /* */ }
-    try { if (G.ui.overlayOpen() || G.ui.cardOpen || (G.dialogo && G.dialogo.open())) return false; } catch (e) { /* */ }
+    // QA-187: ni se dispara ni se muestra el botón durante la apertura del capítulo (pantalla negra #c1-fade / «Saltar intro»), mismo criterio que amenaza.js
+    try { if ($('c1-fade') || $('c1-saltar') || G.ui.overlayOpen() || G.ui.cardOpen || (G.dialogo && G.dialogo.open())) return false; } catch (e) { /* */ }
     return true;
   }
   function especie() {
@@ -286,6 +288,33 @@ window.AVV18Explorar = function (G) {
       let gateOk = true;
       if (stub && stub.estado) { G.v18combate = { estado: () => ({ fase: 'lucha' }) }; cd.grito_yunque = 0; gateOk = disparar() === false; G.v18combate = stub; }
       check('En un encuentro v18 no dispara (la G es del encuentro)', gateOk, f0);
+      // QA-187: durante la apertura del capítulo (pantalla negra #c1-fade / «Saltar intro») ni dispara ni se ofrece
+      const fd = document.createElement('div'); fd.id = 'c1-fade'; document.body.appendChild(fd);
+      const st = document.createElement('button'); st.id = 'c1-saltar'; document.body.appendChild(st);
+      cd.grito_yunque = 0;
+      const qa187 = libre() === false && disparar() === false && (cd.grito_yunque || 0) === 0;
+      fd.remove(); st.remove();
+      check('QA-187: no dispara durante la apertura (#c1-fade / #c1-saltar)', qa187, '');
+      // QA-185 (táctil): el botón colocado donde lo pone el update() no pisa Impulso (#b-dash) ni roba su toque
+      let qa185 = true, qa185x = 'no táctil';
+      if (TACTIL) {
+        const b = boton(true), imp = $('b-dash'), acts = $('acts');
+        if (!b || !imp || !acts) { qa185 = false; qa185x = 'faltan elementos: boton ' + !!b + ' impulso ' + !!imp + ' acts ' + !!acts; }
+        else {
+          const ra = acts.getBoundingClientRect(), h0 = b.hidden;
+          b.hidden = false;
+          b.style.bottom = Math.round(innerHeight - ra.top + 10) + 'px';
+          b.style.right = Math.max(8, Math.round(innerWidth - ra.right)) + 'px';
+          const rb = b.getBoundingClientRect(), ri = imp.getBoundingClientRect();
+          const solapa = !(rb.right <= ri.left || ri.right <= rb.left || rb.bottom <= ri.top || ri.bottom <= rb.top);
+          let robo = false;
+          try { const el = document.elementFromPoint(ri.left + ri.width / 2, ri.top + ri.height / 2); robo = el === b || !!(el && b.contains(el)); } catch (e) { /* */ }
+          qa185 = !solapa && !robo;
+          qa185x = 'solapa ' + solapa + ' · robo ' + robo;
+          b.hidden = h0;
+        }
+      }
+      check('QA-185: el botón táctil no pisa Impulso ni roba su toque', qa185, qa185x);
       // La G se queda en exploración: el oyente consume la tecla y la quita del set de la cámara
       cd.grito_yunque = 0;
       const ev = new KeyboardEvent('keydown', { key: 'g', code: 'KeyG', bubbles: true, cancelable: true });
