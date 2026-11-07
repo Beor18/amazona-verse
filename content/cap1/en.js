@@ -2142,7 +2142,6 @@ window.AV_EN = {
  "¡Nuevo récord: {}!": "New record: {}!",
  "Te alejaste: la carrera con Chispa queda para otro rato.": "You wandered off: the race with Chispa will have to wait.",
  "Entrenamiento con Moon": "Training with Moon",
- "Entreno con Moon": "Moon training",
  "Maestro Moon": "Master Moon",
  "Entrenar la esquiva con Moon": "Dodge training with Moon",
  "Bienvenida a mi claro, pequeña cotorra. Yo soy Moon: aquí se entrena la esquiva, paso a paso.": "Welcome to my clearing, little parrot. I am Moon: this is where we train dodging, step by step.",
