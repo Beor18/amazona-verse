@@ -262,10 +262,15 @@ window.AVV18Amenaza = function (G) {
   function flotante(t) { if (hud) { hud.q('centro').textContent = t; centroT = 1.4; } }
   function pintar() {
     if (!hud || !A.j) return;
-    const bolas = (n, max) => Array.from({ length: max }, (_, i) => '<i class="' + (i < n ? '' : 'off') + '"></i>').join('');
-    const nubes = bolas(ACIERTOS - A.aciertos, ACIERTOS), plumas = bolas(A.j.plumas, PLUMAS);
-    if (hud.q('nubes').dataset.v !== nubes) { hud.q('nubes').dataset.v = nubes; hud.q('nubes').innerHTML = nubes; }
-    if (hud.q('plumas').dataset.v !== plumas) { hud.q('plumas').dataset.v = plumas; hud.q('plumas').innerHTML = plumas; }
+    // QA-204: las cadenas de bolas solo se rehacen cuando cambian los números
+    const nN = ACIERTOS - A.aciertos, nP = A.j.plumas;
+    if (hud.nN !== nN || hud.nP !== nP) {
+      hud.nN = nN; hud.nP = nP;
+      const bolas = (n, max) => Array.from({ length: max }, (_, i) => '<i class="' + (i < n ? '' : 'off') + '"></i>').join('');
+      const nubes = bolas(nN, ACIERTOS), plumas = bolas(nP, PLUMAS);
+      if (hud.q('nubes').dataset.v !== nubes) { hud.q('nubes').dataset.v = nubes; hud.q('nubes').innerHTML = nubes; }
+      if (hud.q('plumas').dataset.v !== plumas) { hud.q('plumas').dataset.v = plumas; hud.q('plumas').innerHTML = plumas; }
+    }
     const b = hud.q('poder'), nom = (H.get(A.j.poder) || {}).nombre || TXT.poder;
     if (b.dataset.t !== nom) { b.dataset.t = nom; b.textContent = nom; }
     b.classList.toggle('no', !H.listo(A.j, A.j.poder).ok);
