@@ -1,0 +1,67 @@
+{
+  "etiqueta": "k130-c13",
+  "pantalla": "escritorio 1280x800 cpuX1",
+  "head": null,
+  "rondas": [
+    {
+      "ronda": 1,
+      "prep": "ok",
+      "segundos": 65,
+      "passed": 52,
+      "total": 52,
+      "error": null,
+      "camPared": {
+        "dentro": null,
+        "dist": 6.86,
+        "reintento": 0
+      },
+      "pared": {
+        "edificio": "casa_paja_a@kelvin_aldea_rio_este#1",
+        "entradas": 1,
+        "penetraMax": 0,
+        "distanciaMin": 4.63
+      },
+      "camEdificios": {
+        "n": 258,
+        "candidatos": 9,
+        "elegido": "casa_paja_a@kelvin_aldea_rio_este#1",
+        "dist": 44.91,
+        "vittata": [
+          84.17,
+          178.08
+        ]
+      },
+      "falloCamara": []
+    },
+    {
+      "ronda": 2,
+      "prep": "ok",
+      "segundos": 61,
+      "passed": 52,
+      "total": 52,
+      "error": null,
+      "camPared": {
+        "dentro": null,
+        "dist": 7.5,
+        "reintento": 0
+      },
+      "pared": {
+        "edificio": "casa_paja_a@kelvin_aldea_rio_este#0",
+        "entradas": 3,
+        "penetraMax": 0,
+        "distanciaMin": 2.7
+      },
+      "camEdificios": {
+        "n": 258,
+        "candidatos": 6,
+        "elegido": "casa_paja_a@kelvin_aldea_rio_este#0",
+        "dist": 67.61,
+        "vittata": [
+          137.74,
+          186.24
+        ]
+      },
+      "falloCamara": []
+    }
+  ]
+}
