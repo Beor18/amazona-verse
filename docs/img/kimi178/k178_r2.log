@@ -1,0 +1,24 @@
+[01:08:23] navegando al juego (v18on en semilla, enlace principal)...
+[01:08:34] sitios: {"ok":true,"golf":{"x":178,"z":205},"duelo":{"x":182,"z":172},"puerto":{"x":null,"z":null},"maq":null,"chispa":null,"puente":{"x":157.875,"z":136.525}}
+[01:08:36] grabando (video/mp4;codecs=avc1.42E01E)...
+[01:08:36] [villa] paseo por Villa Raíz
+[01:08:52] [golf] volando a la entrada del minigolf
+[01:09:37] [golf] llegada (vuelo 44s, andando 0s, cerca=true); E para jugar
+[01:09:38] [golf] entrada al hoyo: panel
+[01:09:44] [golf] tiros: {"fase":"apuntar","golpes":2}
+[01:09:47] [duelo] volando a la explanada (rival en {"x":186,"z":172})
+[01:09:59] [duelo] vuelo 11s (llego=true); hablo con la Campeona
+[01:10:01] [duelo] fase tras hablar: cuenta
+[01:10:10] [duelo] fase fin: fin (poder=true)
+[01:10:10] [puente] volando al puente {"x":157.875,"z":136.525}
+[01:10:21] [puente] cruzando (vuelo 11s, llego=true)
+[01:10:24] [puerto] volando a la plaza {"x":73.6,"z":-75.2}
+[01:11:14] [puerto] visitado (vuelo 34s, llego=true)
+[01:11:14] [chispa] volando a la salida {"x":49.8,"z":54.3}
+[01:12:09] [chispa] fase tras hablar: nada
+[01:12:13] [chispa] puerta 0
+[01:12:36] [chispa] fin (puertas=1)
+[01:12:36] [outro] cierre: aterrizar y mirar el mundo
+[01:12:41] grabación: {"mime":"video/mp4;codecs=avc1.42E01E","bytes":38243356,"destino":"k178_hito1_r2.mp4"}
+[01:12:41] errores de consola: []
+[01:12:41] reproducción: {"dur":4.2,"w":1920,"h":1080} · mp4: {"bytes":38243356,"firma":"ftyp","mb":36.5,"mvhdSegs":0}
