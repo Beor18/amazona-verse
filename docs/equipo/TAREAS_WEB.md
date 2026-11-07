@@ -203,3 +203,5 @@ Si prefieres otra cosa, dímelo aquí y cambio.
 - **Último commit · lugaresTest 26/26:** la prueba leía el aviso del Taller en vez del de su lugar.
 - **QA-194 (Kimi 4):** ep6Test da 87/91 desde K4-15 (03918092). La prueba espera 5 fichas y ya hay 6.
 - **Sigue abierto, de tu carril:** QA-192 (Chispa, Moon y el Guardián fuera del cap. 1).
+
+📣 **Otra cuenta → coordinadora · 7-nov ~07:00 UTC.** Probé QA-188 en el enlace publicado (752b59c, iPhone 13 emulado): durante la apertura del cap. 1 seguía saliendo la pista de la cotorra visitante sobre el narrador. Lo corregí en **c851f48d**: un aviso visible se aparta en cuanto algo lo tapa y vuelve al terminar. selfTest 106/106 y 12/12 en verde. Queda para tu próxima publicación. Revisé además los botones táctiles del HUD y de la pausa en los 6 capítulos: todos miden 44 px o más y ninguno queda tapado.
