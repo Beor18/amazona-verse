@@ -125,10 +125,20 @@
   const NORMAL_PLANA = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGNoaPgPRAwQCgA19gf9SShDzAAAAABJRU5ErkJggg==';
   let normalPlanaBaja = () => false;
   const TEX_HD_NORMAL = /\/tex_hd\/hd_(ancient|savage)_n\.jpg([?#].*)?$/;
+  // KIMI-202: los GLB lejanos/_hd del kit de la ciudad referencian el difuso del atlas 4096² por URI interna
+  // (templo_*_lejos, complejo_ruinas_*, muro_templo_*, ruina_torre_* → hd_ancient; los _hd del kit savage →
+  // hd_savage). GLTFLoader las pide al parsear aunque la fusión descarte el material propio: en «bajo» se
+  // sirve el JPEG ligero 2048² horneado (hd_<kit>_lq.jpg, misma resolución que ya aplicaba reducirAtlas).
+  const TEX_HD_DIFUSO = /\/tex_hd\/hd_(ancient|savage)\.jpg([?#].*)?$/;
   function setNormalPlanaBaja(f) { normalPlanaBaja = typeof f === 'function' ? f : () => !!f; }
   function cargador() {
     const mgr = new THREE.LoadingManager();
-    mgr.setURLModifier(url => (normalPlanaBaja() && TEX_HD_NORMAL.test(url)) ? NORMAL_PLANA : url);
+    mgr.setURLModifier(url => {
+      if (!normalPlanaBaja()) return url;
+      if (TEX_HD_NORMAL.test(url)) return NORMAL_PLANA;
+      if (TEX_HD_DIFUSO.test(url)) return url.replace(/hd_(ancient|savage)\.jpg/, 'hd_$1_lq.jpg');
+      return url;
+    });
     const L = new THREE.GLTFLoader(mgr);
     if (window.MeshoptDecoder && L.setMeshoptDecoder) L.setMeshoptDecoder(window.MeshoptDecoder);
     return L;
