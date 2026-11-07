@@ -24,7 +24,10 @@ window.AVV18Moon = function (G) {
   const R_ORB = 0.26, R_HIT = 0.8, GRACIA_S = 0.45, MERCY_S = 1.2, VIDA_S = 4.5, R_SALE = 45, ALTO_MAX = 11, ALTO_T_S = 3;
   // Medido en el mapa real y en el juego (sonda de terreno, agua, colisiones, troncos y sólidos; ver la prueba, check 5)
   // (plano a ≤ 1,1 m en el círculo de 11 m; h ≈ 16; a > 115 m de puerto/villa/golf/duelo/chispa/misterio).
-  const SITIO = { x: -150.5, z: 14, rotY: 1.57 };
+  // QA-201: en (-150.5, 14) había matorrales y una raíz dentro del círculo (sólidos en (-149.4, 16.8), (-161.5, 14) y (-154.7, 3.8);
+  // tronco a -0,16 m): Moon entrenaba entre la flora. Se corre 14,6 m al NNE, al claro de verdad medido con la misma sonda
+  // (libre 1,8 m, pendiente 0,056, en seco y sin sólidos).
+  const SITIO = { x: -146.5, z: 28, rotY: 1.57 };
   const TXT = {
     nombre: 'Entrenamiento con Moon', label: 'Entrenar la esquiva con Moon',
     reto: ['Bienvenida a mi claro, pequeña cotorra. Yo soy Moon: aquí se entrena la esquiva, paso a paso.', 'Lanzaré bolas de luz MUY lentas. Aguanta 30 s con menos de 3 toques y el entreno es tuyo. ¿Empezamos?'],

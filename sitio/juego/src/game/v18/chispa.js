@@ -24,7 +24,11 @@ window.AVV18Chispa = function (G) {
   // Medido en el mapa real y en el juego (sonda de terreno, agua, colisiones, troncos y sólidos; ver la prueba, check 5)
   // (rejilla de 1 m, ±40 m alrededor de la plaza 37,8, 52,3; troncos y colisiones a ≥ 0,9 m; a ≥ 3,4 m de los 3 toldos; pendiente ≤ 0,5 m/m;
   // sólidos de casas y ramas ya cargados (postes, barandas, cumbreras); vuelta sencilla de 5 tramos y 70 m). Salida al este de la plaza, mirando al centro.
-  const SITIO = { salida: { x: 49.8, z: 54.3, rotY: -1.74 }, puntos: [{ x: 35.8, z: 56.3 }, { x: 23.8, z: 72.3 }, { x: 37.8, z: 72.3 }, { x: 43.8, z: 64.3 }] };
+  // QA-202: con la siembra de flora restaurada (KIMI-203 revertido) la vuelta vieja (35.8, 56.3) → (23.8, 72.3) → (37.8, 72.3) → (43.8, 64.3)
+  // cruzaba matorrales y troncos (libre -0,09 m, 2 sólidos): Vittata se atascaba en el banderín 3 y Chispa ganaba. Los 4 banderines pasan
+  // a pasillos libres medidos con la misma sonda en el juego (rejilla de 1 m: libre ≥ 1,7 m en cada tramo, en seco, sin sólidos, pendiente ≤ 0,2).
+  // Misma salida y misma vuelta de 5 tramos y 70 m, con el primer banderín en la plaza. Sin tocar modelos ni vegetación.
+  const SITIO = { salida: { x: 49.8, z: 54.3, rotY: -1.74 }, puntos: [{ x: 39.8, z: 54.3 }, { x: 31.8, z: 62.3 }, { x: 45.8, z: 78.3 }, { x: 41.8, z: 62.3 }] };
   const RUTA = SITIO.puntos.concat([{ x: SITIO.salida.x, z: SITIO.salida.z, meta: true }]);
   const TXT = {
     nombre: 'Carrera con Chispa', label: 'Echar una carrera con Chispa',
