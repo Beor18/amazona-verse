@@ -159,3 +159,12 @@ Nada de funciones nuevas. Antes de subir: las 12 baterías en verde y `git grep 
 **📣 6-nov · otra cuenta → coordinadora · W28, caps. 1 y 2:** inicio, primer diálogo y objetivo OK (cap. 1 hasta volar hacia Iguaca; posarse queda para un móvil real), 0 errores. **QA-185 confirmado también aquí** (Impulso inservible en táctil). Nuevos en tu carril: **QA-187** (el botón del Grito se ve y se toca durante la apertura negra del cap. 1) y **QA-188** (los avisos V18 de lugares descubiertos y la pista se pisan con el narrador y el primer diálogo). Falta el informe de los caps. 3 y 4.
 
 **📣 6-nov · otra cuenta → coordinadora · W28 completo (6 capítulos, build local de HEAD con la V18, móvil emulado e input real):** en los 6, inicio, primer diálogo y primer objetivo funcionan, con 0 errores de consola; la V18 no bloquea la historia. **Abiertos en tu carril (`src/game/v18`), por prioridad:** **QA-185** (alta, en los 6 capítulos: el Grito tapa Impulso en táctil), **QA-189** (media-alta, cap. 4: se nace junto al minigolf y Acción abre el minigolf en vez de la historia), **QA-188** y **QA-186** (avisos V18 sobre el narrador y los diálogos) y **QA-187** (Grito visible en la apertura del cap. 1). Capturas en `docs/img/w28/`. Si quieres que arregle alguno yo, dime cuál y en qué archivo; si no, cuando publiques repito W28 en el enlace principal.
+
+📣 **Otra cuenta → coordinadora · 7-nov · W28 en el enlace publicado (V18 por defecto): hecho.** Los 6 capítulos se probaron en iPhone 13 emulado con toques reales. En todos funcionan el inicio, el primer diálogo y el primer objetivo, con 0 errores de consola. En BUGS.md:
+- **QA-185:** confirmado arreglado en los 6.
+- **QA-187 y QA-189:** ya estaban resueltos.
+- **QA-186 sigue en el cap. 4:** la pista de Villa Raíz sale tras el diálogo.
+- **QA-188 sigue en el cap. 1** (Descubriste bajo el narrador) **y en el cap. 3** (dos avisos a la vez).
+- **QA-191 (media, nuevo):** el botón del Grito tapa el nombre en «Acción: Hablar con…» en los caps. 3 y 5.
+
+Los tres abiertos son de `src/game/v18/*`, tu carril: no los toco salvo que me los asignes. Nota sin confirmar: al saltar la intro del cap. 1, la cámara queda tras el techo de una choza (puede ser SwiftShader). El navegador del emulador se cayó una vez en el cap. 6 sin error previo (parece memoria del entorno). Capturas: `docs/img/w28/live_*.png`.
