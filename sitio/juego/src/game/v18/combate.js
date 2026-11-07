@@ -1003,8 +1003,10 @@ window.AVV18Combate = function (G) {
         !(G.actores && G.actores.player3D && Object.prototype.hasOwnProperty.call(G.actores.player3D, 'update')) && !scene.getObjectByName('v18_escudo') && !scene.getObjectByName('v18_onda'));
       {
         const tk = tipo => document.body.dispatchEvent(new KeyboardEvent(tipo, { key: 'g', code: 'KeyG', bubbles: true, cancelable: true }));
+        const ex = G.v18explorar; if (ex && ex.soltar) ex.soltar(); // en exploración la G es del poder (explorar.js): aquí se mira solo el duelo
         tk('keydown'); const conG = !!(G.input && G.input.keys && G.input.keys.has('g')); tk('keyup');
         check('QA-173: fuera del duelo G vuelve a llegar a la cámara', conG && !G.input.keys.has('g'), String(conG));
+        if (ex && ex.enganchar) ex.enganchar();
       }
       // QA-163: en táctil no hay tecla G: el aviso del duelo nombra los botones de pantalla. Se prueba con una instancia
       // «de puntero grueso» del módulo (matchMedia stub) y al final se restaura la instancia de siempre.
