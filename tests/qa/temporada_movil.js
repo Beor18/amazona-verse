@@ -129,7 +129,11 @@
       try { for (const k of Object.keys(respaldo)) if (JUEGO.test(k)) localStorage.removeItem(k); } catch (e) { /* */ }
     }
     const coarse = matchMedia('(pointer: coarse)').matches;
-    check('Navegador móvil táctil (pointer: coarse, ' + innerWidth + '×' + innerHeight + ', DPR ' + devicePixelRatio + ')', coarse && innerWidth <= 430, 'coarse ' + coarse + ' · toques ' + navigator.maxTouchPoints);
+    // W30: en un Chrome de escritorio sin táctil ni agente móvil (p. ej. test.sh --extra) esta comprobación no aplica; si el
+    // contexto dice ser un móvil (agente iPhone/Android, como los lanzadores Playwright y CDP) y no es táctil, sigue fallando
+    const agenteMovil = /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent), sinTactil = !coarse && !navigator.maxTouchPoints;
+    if (!agenteMovil && sinTactil) check('Navegador móvil táctil: no aplica (Chrome de escritorio sin táctil; esta prueba se lanza con tests/qa/temporada_movil_correr.js)', true, 'coarse false · toques 0 · ' + innerWidth + '×' + innerHeight);
+    else check('Navegador móvil táctil (pointer: coarse, ' + innerWidth + '×' + innerHeight + ', DPR ' + devicePixelRatio + ')', coarse && innerWidth <= 430, 'coarse ' + coarse + ' · toques ' + navigator.maxTouchPoints);
     const o = { idioma, tacto: true, movil: true, playtest: true, temporada: true, nativo: coarse, pulgar: true, keep: true, timeout: opts.timeout || 300000 };
     try {
       for (const n of caps) {

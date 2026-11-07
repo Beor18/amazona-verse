@@ -150,7 +150,8 @@ function matarArbol(chrome, perf) {
     const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
     for (const m of ['Page.enable', 'Runtime.enable']) await cdp.call(m, {}, ses);
     await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: true }, ses);
-    await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, ses);
+    await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5, configuration: 'mobile' }, ses);
+    await cdp.call('Emulation.setEmitTouchEventsForMouse', { enabled: true, configuration: 'mobile' }, ses);
     await cdp.call('Emulation.setUserAgentOverride', { userAgent: UA }, ses);
     if (CPU > 1) await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_SAVE_JS }, ses);

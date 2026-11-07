@@ -51,7 +51,7 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   for (const m of ['Page.enable', 'Runtime.enable']) await cdp.call(m, {}, ses);
   // móvil táctil como temporada_movil_correr.js (390×844, iPhone, toques) + CPU opcional
   await cdp.call('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true }, ses);
-  await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, ses);
+  await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5, configuration: 'mobile' }, ses);
   await cdp.call('Emulation.setEmitTouchEventsForMouse', { enabled: true, configuration: 'mobile' }, ses);
   await cdp.call('Emulation.setUserAgentOverride', { userAgent: UA }, ses);
   await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPU }, ses);
