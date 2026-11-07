@@ -779,7 +779,7 @@ window.AV_WEB = window.AV_WEB || { correo: '', formulario: '' };
 (function () {
   var pill = document.getElementById('av-progreso'), dlg = document.getElementById('av-estado');
   var cuerpo = document.getElementById('ae-cuerpo'), pub = document.getElementById('ae-pub');
-  var prog = null, est = null, cargando = false, HECHAS_VISIBLES = 5;
+  var prog = null, est = null, av = null, cargando = false, HECHAS_VISIBLES = 5;
   var en = function () { return document.documentElement.lang === 'en'; };
   var TZ = 'America/Puerto_Rico';
   var CARRILES = [
@@ -830,6 +830,15 @@ window.AV_WEB = window.AV_WEB || { correo: '', formulario: '' };
     pub.textContent = p.join(' · ');
     cuerpo.innerHTML = '';
     if (!est) { cuerpo.appendChild(el('p', 'ae-vacio', cargando ? (en() ? 'Loading…' : 'Cargando…') : (en() ? 'We couldn’t load the status right now. Try again later.' : 'No pudimos cargar el estado ahora. Inténtalo más tarde.'))); return; }
+    if (av && av.falta) {
+      var F = av.falta, bloques = [['hito1', 'Falta para la versión estable', 'Left for the stable version'], ['optimizar', 'Dónde optimizamos', 'Where we optimize'], ['hito2', 'Falta para terminarlo todo', 'Left to finish everything']];
+      bloques.forEach(function (b) {
+        var filas = F[b[0]] || []; if (!filas.length) return;
+        var g = el('div', 'ae-grupo ae-falta'); g.appendChild(el('h4', null, en() ? b[2] : b[1]));
+        var ul2 = el('ul'); filas.forEach(function (f) { var li = el('li'); li.appendChild(el('span', null, f.que + ' — ' + f.donde)); li.appendChild(el('em', null, f.quien + (f.estado ? ' · ' + f.estado : ''))); ul2.appendChild(li); });
+        g.appendChild(ul2); cuerpo.appendChild(g);
+      });
+    }
     var r = est.resumen || {}, ul = el('ul', 'ae-res');
     [['ae-c', r.en_construccion, 'En construcción', 'In progress'], ['', (r.pendientes || 0) + (r.bloqueadas || 0), 'Pendientes', 'To do'],
      ['ae-h', r.hechas_hoy, 'Hechas hoy', 'Done today']].forEach(function (x) {
@@ -859,6 +868,7 @@ window.AV_WEB = window.AV_WEB || { correo: '', formulario: '' };
     if (est || cargando) return;
     cargando = true; pintar();
     try {
+      fetch('avance.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { av = j; if (dlg.open) pintar(); }).catch(function () {});
       fetch('estado.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) { est = j && j.por_agente ? j : null; }).catch(function () { est = null; })
         .then(function () { cargando = false; if (dlg.open) pintar(); });

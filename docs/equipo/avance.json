@@ -1,8 +1,78 @@
 {
-  "_que_es": "Avance público de la portada (Kelvin, 6-nov: métrica verificable). Temporada = criterios de cierre cumplidos de los 6 capítulos (9 criterios por capítulo, definidos en ESTADO_REAL.md §3). Se actualiza a mano cuando un criterio se cumple, con su commit de evidencia en el campo 'evidencia'.",
-  "temporada": { "cumplidos": 40, "total": 54,
-    "capitulos": { "cap1": 7, "cap2": 8, "cap3": 5, "cap4": 8, "cap5": 7, "cap6": 5 },
-    "evidencia": "docs/equipo/ESTADO_REAL.md §0 y §3 (6-nov)" },
-  "v18": { "cumplidos": 17, "total": 23, "evidencia": "ESTADO_REAL.md §2 (alcance mínimo y hitos D7–D30 de la directiva V18.1)" },
-  "poderes": { "jugables": 34, "total": 36, "nota": "las 2 que faltan son Mara y Vela, consejeras sin poder (decisión de Kelvin)" }
+ "_que_es": "Avance público de la portada (Kelvin, 6-nov: métrica verificable). Temporada = criterios de cierre cumplidos de los 6 capítulos (9 criterios por capítulo, definidos en ESTADO_REAL.md §3). Se actualiza a mano cuando un criterio se cumple, con su commit de evidencia en el campo 'evidencia'.",
+ "temporada": {"cumplidos": 40, "total": 54, "capitulos": {"cap1": 7, "cap2": 8, "cap3": 5, "cap4": 8, "cap5": 7, "cap6": 5}, "evidencia": "docs/equipo/ESTADO_REAL.md §0 y §3 (6-nov)"},
+ "v18": {"cumplidos": 17, "total": 23, "evidencia": "ESTADO_REAL.md §2 (alcance mínimo y hitos D7–D30 de la directiva V18.1)"},
+ "poderes": {"jugables": 34, "total": 36, "nota": "las 2 que faltan son Mara y Vela, consejeras sin poder (decisión de Kelvin)"},
+ "falta": {
+  "_que_es": "Lo que falta para terminar lo técnico y jugable, con responsable único y dónde. Se actualiza cuando algo se cierra.",
+  "hito1": [
+   {
+    "que": "Todo en el enlace principal (V18 encendida por defecto)",
+    "donde": "src/boot.js y pruebas",
+    "quien": "Nube",
+    "estado": "en pruebas"
+   },
+   {
+    "que": "Batería completa de pruebas sin rojos reales",
+    "donde": "todas las baterías",
+    "quien": "Nube",
+    "estado": "en curso"
+   },
+   {
+    "que": "Memoria estable en sesión larga en móvil",
+    "donde": "streaming y render",
+    "quien": "Kimi 2",
+    "estado": "en curso"
+   },
+   {
+    "que": "Tuerca y Guardián del Primer Vuelo en el juego",
+    "donde": "puerto.js y su actividad",
+    "quien": "Kimi 3",
+    "estado": "en curso (no frena el hito 1)"
+   }
+  ],
+  "optimizar": [
+   {
+    "que": "iPhone en calidad baja (memoria de GPU, QA-110)",
+    "donde": "render y texturas",
+    "quien": "Kimi"
+   },
+   {
+    "que": "Carga inicial ≤ 7 MB con la V18 por defecto",
+    "donde": "carga diferida de personajes y retratos",
+    "quien": "Kimi 1"
+   },
+   {
+    "que": "Chromebook escolar (QA-181)",
+    "donde": "resolución dinámica y escena",
+    "quien": "Kimi"
+   }
+  ],
+  "hito2": [
+   {
+    "que": "Fichas educativas verificadas con fuente oficial (caps. 1, 5 y 6)",
+    "donde": "content/*/lecciones.js",
+    "quien": "Nube",
+    "estado": "en curso"
+   },
+   {
+    "que": "Inglés de la fuente de «canoa» (cap. 3, CG-51)",
+    "donde": "content/ep3",
+    "quien": "Nube",
+    "estado": "en curso"
+   },
+   {
+    "que": "Bugs abiertos propios de cada capítulo",
+    "donde": "docs/equipo/BUGS.md",
+    "quien": "Otra cuenta (W27)",
+    "estado": "en curso"
+   },
+   {
+    "que": "Maestro Moon, Tuerca y Guardián probados en móvil",
+    "donde": "src/game/v18",
+    "quien": "Kimi 3",
+    "estado": "Moon hecho"
+   }
+  ]
+ }
 }

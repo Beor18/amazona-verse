@@ -15,6 +15,7 @@ rm -rf "$OUT/docs" "$OUT/README.md" "$OUT/netlify.toml" "$OUT/.nojekyll" "$OUT/.
 cp -R "$SITE" "$OUT/juego" && rm -rf "$OUT/juego/tests"
 # Contador de avance de la esquina de la landing (web/index.html lo lee); si falla, la landing no lo enseña y el sitio sale igual
 "$JUEGO/tools/build/progreso.sh" "$JUEGO" > "$OUT/progreso.json" 2>/dev/null || rm -f "$OUT/progreso.json"
+cp "$JUEGO/docs/equipo/avance.json" "$OUT/avance.json" 2>/dev/null || true
 # Panel «Así vamos» que abre esa pastilla (tools/build/estado.py: qué hace cada carril, sin nada privado); igual: si falla, no sale
 PY="$(source "$JUEGO/tools/build/lib.sh" && avb_python 2>/dev/null)" || PY=""
 { [ -n "$PY" ] && "$PY" -I "$JUEGO/tools/build/estado.py" "$JUEGO" > "$OUT/estado.json" 2>/dev/null; } || rm -f "$OUT/estado.json"
