@@ -996,6 +996,36 @@ window.AVV18Minigolf = function (G) {
     V.recargar(); if (susp) susp(false);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
-  G.v18minigolf = { ID, PAR, iniciar, salir, reiniciar, tirar, grito, empezarCarga, soltarCarga, paso, medalla, record, elegir, clasificar, jugadores: () => J, estado: () => A, semilla: () => B, get sitio() { return K; }, mapa: () => (K && ofrecible() && A.fase === 'nada' ? { x: P_ENTRADA.x, z: P_ENTRADA.z, nombre: TXT.nombre } : null), test };
+  // Acceso directo (Kelvin 7-nov: «no lo veo publicado para probarlo»): botón «Minigolf» en el menú de pausa del cap. 1
+  // y enlace ?mini=golf. Lleva a Vittata a la entrada del hoyo de Villa Raíz y empieza la partida.
+  function irYJugar() {
+    if (!K || !ofrecible() || A.fase !== 'nada') return false;
+    if (M.flying) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } }
+    S.pos.x = P_ENTRADA.x; S.pos.z = P_ENTRADA.z; S.pos.y = H(S.pos.x, S.pos.z) + 0.05; S.vy = 0; M.vx = M.vz = 0;
+    return iniciar({ forzar: true });
+  }
+  {
+    let tile = null;
+    const menu = G.ui.$ && G.ui.$('pause');
+    if (menu) menu.addEventListener('beforetoggle', e => {
+      if (e.newState !== 'open') return;
+      const grid = menu.querySelector('.pause-grid'); if (!grid) return;
+      if (!tile) {
+        tile = document.createElement('button');
+        tile.className = 'btn tile'; tile.id = 'b-v18-minigolf'; tile.type = 'button';
+        tile.setAttribute('data-icon', 'star'); tile.setAttribute('popovertarget', 'pause'); tile.setAttribute('popovertargetaction', 'hide');
+        tile.textContent = 'Minigolf';
+        tile.addEventListener('click', () => setTimeout(irYJugar, 0));
+        grid.appendChild(tile);
+      }
+      tile.hidden = !(K && ofrecible() && A.fase === 'nada');
+    });
+    if (/[?&]mini=golf\b/.test(location.search)) {
+      let n = 0;
+      const probar = () => { if (libre() && !otroActivo() && irYJugar()) return; if (++n < 180) setTimeout(probar, 1000); };
+      setTimeout(probar, 1500);
+    }
+  }
+  G.v18minigolf = { ID, PAR, irYJugar, iniciar, salir, reiniciar, tirar, grito, empezarCarga, soltarCarga, paso, medalla, record, elegir, clasificar, jugadores: () => J, estado: () => A, semilla: () => B, get sitio() { return K; }, mapa: () => (K && ofrecible() && A.fase === 'nada' ? { x: P_ENTRADA.x, z: P_ENTRADA.z, nombre: TXT.nombre } : null), test };
   return G.v18minigolf;
 };
