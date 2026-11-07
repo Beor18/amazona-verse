@@ -1,0 +1,2038 @@
+{
+ "etiqueta": "k204reshoot-r1",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "ua": "iPhone (bajo natural)",
+ "head": "eb288d7d",
+ "baseNube": "e0dfc12",
+ "inicio": "2026-11-07T15:53:40.206Z",
+ "muestras": [
+  {
+   "listo": false,
+   "calls": null,
+   "tris": null,
+   "fps": null,
+   "calidad": null,
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 2281341,
+   "t": 1001,
+   "s": 0.4
+  },
+  {
+   "listo": false,
+   "calls": null,
+   "tris": null,
+   "fps": null,
+   "calidad": null,
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 3975483,
+   "t": 1486,
+   "s": 1.4
+  },
+  {
+   "listo": false,
+   "calls": null,
+   "tris": null,
+   "fps": null,
+   "calidad": null,
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 4413360,
+   "t": 2026,
+   "s": 1.9
+  },
+  {
+   "listo": false,
+   "calls": null,
+   "tris": null,
+   "fps": null,
+   "calidad": null,
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 5319208,
+   "t": 2493,
+   "s": 2.4
+  },
+  {
+   "listo": false,
+   "calls": null,
+   "tris": null,
+   "fps": null,
+   "calidad": null,
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 6188982,
+   "t": 2937,
+   "s": 2.9
+  },
+  {
+   "listo": false,
+   "calls": null,
+   "tris": null,
+   "fps": null,
+   "calidad": null,
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 7131523,
+   "t": 3508,
+   "s": 3.4
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 0,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 17981078,
+   "t": 6776,
+   "s": 3.9
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 4,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 14412364,
+   "t": 8578,
+   "s": 7.2
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 1,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 21273809,
+   "t": 10132,
+   "s": 10
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 1,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 24846953,
+   "t": 10757,
+   "s": 10.6
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 4,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 26995698,
+   "t": 11226,
+   "s": 11.2
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 9,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 28313847,
+   "t": 11809,
+   "s": 11.6
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 6,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 28550961,
+   "t": 12254,
+   "s": 12.2
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 8,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 29255633,
+   "t": 12665,
+   "s": 12.7
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 21,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 31606721,
+   "t": 13102,
+   "s": 13.1
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 6,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 36378277,
+   "t": 14561,
+   "s": 13.5
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 6,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 43700084,
+   "t": 15887,
+   "s": 15.4
+  },
+  {
+   "listo": true,
+   "calls": 20,
+   "tris": 19563,
+   "fps": 6,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 36236609,
+   "t": 23972,
+   "s": 16.3
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 4,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 40538700,
+   "t": 25388,
+   "s": 24.4
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 5,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 40910335,
+   "t": 26423,
+   "s": 26.2
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 5,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 50461624,
+   "t": 26972,
+   "s": 26.8
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 7,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 56217136,
+   "t": 29288,
+   "s": 27.4
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 1,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "tope",
+   "msCarga": 20271,
+   "heap": 61534620,
+   "t": 30016,
+   "s": 29.7
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 1,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "tope",
+   "msCarga": 20271,
+   "heap": 52884778,
+   "t": 32412,
+   "s": 30.4
+  },
+  {
+   "listo": true,
+   "calls": 11,
+   "tris": 14812,
+   "fps": 0,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "tope",
+   "msCarga": 20271,
+   "heap": 59799075,
+   "t": 33228,
+   "s": 32.8
+  },
+  {
+   "listo": true,
+   "calls": 20,
+   "tris": 30794,
+   "fps": 2,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "tope",
+   "msCarga": 20271,
+   "heap": 66235591,
+   "t": 34219,
+   "s": 33.6
+  },
+  {
+   "listo": true,
+   "calls": 22,
+   "tris": 32082,
+   "fps": 2,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "tope",
+   "msCarga": 20271,
+   "heap": 66682146,
+   "t": 46076,
+   "s": 43
+  },
+  {
+   "listo": true,
+   "calls": 4372,
+   "tris": 13655990,
+   "fps": 0,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "tope",
+   "msCarga": 20271,
+   "heap": 54812965,
+   "t": 47001,
+   "s": 46.5
+  }
+ ],
+ "red": {
+  "bytesTotalMB": 16.73,
+  "nRecursos": 279,
+  "tRevealMs": 29705,
+  "motivoCarga": "tope",
+  "msCargaJuego": 20271,
+  "hastaReveal": {
+   "totalMB": 15.44,
+   "porTipo": {
+    "otro": 0.27,
+    "imagen": 3.05,
+    ".js": 4.37,
+    "glb": 7.74,
+    ".json": 0
+   },
+   "n": 269
+  },
+  "hastaRevealMas5": {
+   "totalMB": 15.52,
+   "porTipo": {
+    "otro": 0.27,
+    "imagen": 3.13,
+    ".js": 4.37,
+    "glb": 7.74,
+    ".json": 0
+   },
+   "n": 272
+  },
+  "total": {
+   "totalMB": 16.73,
+   "porTipo": {
+    "otro": 0.27,
+    "imagen": 3.24,
+    ".js": 4.37,
+    "glb": 8.84,
+    ".json": 0
+   },
+   "n": 279
+  },
+  "topEnReveal": [
+   {
+    "mb": 1.252,
+    "t": 10.7,
+    "tipo": "glb",
+    "u": "/assets/models/vittata.glb"
+   },
+   {
+    "mb": 0.581,
+    "t": 9.2,
+    "tipo": "glb",
+    "u": "/assets/models/mapa/terreno_se.glb"
+   },
+   {
+    "mb": 0.576,
+    "t": 0.2,
+    "tipo": ".js",
+    "u": "/assets/vendor/three/build/three.min.js"
+   },
+   {
+    "mb": 0.452,
+    "t": 13.9,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/ceiba.glb"
+   },
+   {
+    "mb": 0.425,
+    "t": 15.3,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_mediano_h_lejos.glb"
+   },
+   {
+    "mb": 0.312,
+    "t": 16.7,
+    "tipo": "imagen",
+    "u": "/assets/models/edificios/tex_hd/hd_ancient_lq1024.jpg"
+   },
+   {
+    "mb": 0.305,
+    "t": 13.9,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/flamboyan.glb"
+   },
+   {
+    "mb": 0.296,
+    "t": 26.8,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/complejo_ruinas_lejos.glb"
+   },
+   {
+    "mb": 0.295,
+    "t": 26.5,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_grande_d_lejos.glb"
+   },
+   {
+    "mb": 0.275,
+    "t": 6.3,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_musgo_n.jpg"
+   },
+   {
+    "mb": 0.257,
+    "t": 13.8,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/arbol_enano.glb"
+   },
+   {
+    "mb": 0.25,
+    "t": 26.1,
+    "tipo": "glb",
+    "u": "/assets/models/isla_mapa.glb"
+   },
+   {
+    "mb": 0.225,
+    "t": 13.7,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/tabonuco.glb"
+   },
+   {
+    "mb": 0.214,
+    "t": 29.3,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/casa_plataforma.glb"
+   },
+   {
+    "mb": 0.214,
+    "t": 29.3,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/monumento_g.glb"
+   },
+   {
+    "mb": 0.185,
+    "t": 13.6,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/yagrumo.glb"
+   },
+   {
+    "mb": 0.18,
+    "t": 0.5,
+    "tipo": ".js",
+    "u": "/assets/data/mapa_cap1_altura.js"
+   },
+   {
+    "mb": 0.179,
+    "t": 6.3,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_tierra_hojarasca_n.jpg"
+   },
+   {
+    "mb": 0.174,
+    "t": 14,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/bambu.glb"
+   },
+   {
+    "mb": 0.173,
+    "t": 13.8,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/helecho_arboreo.glb"
+   }
+  ],
+  "topTotal": [
+   {
+    "mb": 1.252,
+    "t": 10.7,
+    "tipo": "glb",
+    "u": "/assets/models/vittata.glb"
+   },
+   {
+    "mb": 0.581,
+    "t": 9.2,
+    "tipo": "glb",
+    "u": "/assets/models/mapa/terreno_se.glb"
+   },
+   {
+    "mb": 0.576,
+    "t": 0.2,
+    "tipo": ".js",
+    "u": "/assets/vendor/three/build/three.min.js"
+   },
+   {
+    "mb": 0.452,
+    "t": 13.9,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/ceiba.glb"
+   },
+   {
+    "mb": 0.425,
+    "t": 15.3,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_mediano_h_lejos.glb"
+   },
+   {
+    "mb": 0.312,
+    "t": 16.7,
+    "tipo": "imagen",
+    "u": "/assets/models/edificios/tex_hd/hd_ancient_lq1024.jpg"
+   },
+   {
+    "mb": 0.305,
+    "t": 13.9,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/flamboyan.glb"
+   },
+   {
+    "mb": 0.296,
+    "t": 26.8,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/complejo_ruinas_lejos.glb"
+   },
+   {
+    "mb": 0.295,
+    "t": 26.5,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_grande_d_lejos.glb"
+   },
+   {
+    "mb": 0.275,
+    "t": 6.3,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_musgo_n.jpg"
+   },
+   {
+    "mb": 0.257,
+    "t": 13.8,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/arbol_enano.glb"
+   },
+   {
+    "mb": 0.25,
+    "t": 26.1,
+    "tipo": "glb",
+    "u": "/assets/models/isla_mapa.glb"
+   },
+   {
+    "mb": 0.249,
+    "t": 47.5,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/muralla_atalaya_a.glb"
+   },
+   {
+    "mb": 0.234,
+    "t": 47.3,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/muralla_atalaya_b.glb"
+   },
+   {
+    "mb": 0.225,
+    "t": 13.7,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/tabonuco.glb"
+   }
+  ],
+  "todasVentana": [
+   {
+    "kb": 35,
+    "tipo": "otro",
+    "u": "/index.html?qa=1&cap=1&v18=0"
+   },
+   {
+    "kb": 5,
+    "tipo": "otro",
+    "u": "/src/ui/tokens.css"
+   },
+   {
+    "kb": 17,
+    "tipo": "otro",
+    "u": "/src/ui/criadero.css"
+   },
+   {
+    "kb": 95,
+    "tipo": "otro",
+    "u": "/src/ui/ui.css"
+   },
+   {
+    "kb": 4,
+    "tipo": "otro",
+    "u": "/assets/vendor/fonts/fuentes.css"
+   },
+   {
+    "kb": 8,
+    "tipo": "otro",
+    "u": "/src/ui/menu_modos.css"
+   },
+   {
+    "kb": 103,
+    "tipo": "imagen",
+    "u": "/assets/vittata.png"
+   },
+   {
+    "kb": 1,
+    "tipo": "otro",
+    "u": "/src/ui/retos_dia.css"
+   },
+   {
+    "kb": 45,
+    "tipo": ".js",
+    "u": "/tests/qa/qa.js"
+   },
+   {
+    "kb": 589,
+    "tipo": ".js",
+    "u": "/assets/vendor/three/build/three.min.js"
+   },
+   {
+    "kb": 94,
+    "tipo": ".js",
+    "u": "/assets/vendor/three/examples/js/loaders/GLTFLoader.js"
+   },
+   {
+    "kb": 29,
+    "tipo": ".js",
+    "u": "/assets/vendor/meshopt/meshopt_decoder.js"
+   },
+   {
+    "kb": 12,
+    "tipo": ".js",
+    "u": "/src/engine/assets.js"
+   },
+   {
+    "kb": 11,
+    "tipo": "otro",
+    "u": "/assets/vendor/fonts/AtkinsonHyperlegible-latin-400.woff2"
+   },
+   {
+    "kb": 5,
+    "tipo": ".js",
+    "u": "/src/engine/core.js"
+   },
+   {
+    "kb": 8,
+    "tipo": ".js",
+    "u": "/src/personaje/showcase.js"
+   },
+   {
+    "kb": 12,
+    "tipo": ".js",
+    "u": "/assets/vendor/three/examples/js/utils/SkeletonUtils.js"
+   },
+   {
+    "kb": 11,
+    "tipo": ".js",
+    "u": "/src/engine/audio.js"
+   },
+   {
+    "kb": 88,
+    "tipo": ".js",
+    "u": "/src/personaje/character.js"
+   },
+   {
+    "kb": 104,
+    "tipo": ".js",
+    "u": "/src/engine/renderer.js"
+   },
+   {
+    "kb": 13,
+    "tipo": ".js",
+    "u": "/src/personaje/pieles.js"
+   },
+   {
+    "kb": 51,
+    "tipo": ".js",
+    "u": "/src/personaje/wardrobe.js"
+   },
+   {
+    "kb": 40,
+    "tipo": ".js",
+    "u": "/src/engine/camara.js"
+   },
+   {
+    "kb": 21,
+    "tipo": ".js",
+    "u": "/src/engine/fx.js"
+   },
+   {
+    "kb": 31,
+    "tipo": ".js",
+    "u": "/src/engine/input.js"
+   },
+   {
+    "kb": 46,
+    "tipo": ".js",
+    "u": "/src/engine/fisica.js"
+   },
+   {
+    "kb": 32,
+    "tipo": ".js",
+    "u": "/src/engine/agua.js"
+   },
+   {
+    "kb": 5,
+    "tipo": ".js",
+    "u": "/src/engine/ui.js"
+   },
+   {
+    "kb": 41,
+    "tipo": ".js",
+    "u": "/src/engine/actores.js"
+   },
+   {
+    "kb": 2,
+    "tipo": ".js",
+    "u": "/src/engine/pausa.js"
+   },
+   {
+    "kb": 54,
+    "tipo": ".js",
+    "u": "/src/engine/solidos.js"
+   },
+   {
+    "kb": 12,
+    "tipo": ".js",
+    "u": "/src/engine/agarre.js"
+   },
+   {
+    "kb": 3,
+    "tipo": ".js",
+    "u": "/src/game/interaccion.js"
+   },
+   {
+    "kb": 35,
+    "tipo": ".js",
+    "u": "/src/engine/ambiente.js"
+   },
+   {
+    "kb": 4,
+    "tipo": ".js",
+    "u": "/src/game/eventos.js"
+   },
+   {
+    "kb": 25,
+    "tipo": ".js",
+    "u": "/src/engine/mundo.js"
+   },
+   {
+    "kb": 12,
+    "tipo": ".js",
+    "u": "/src/game/misiones.js"
+   },
+   {
+    "kb": 64,
+    "tipo": ".js",
+    "u": "/src/engine/terreno.js"
+   },
+   {
+    "kb": 54,
+    "tipo": ".js",
+    "u": "/src/engine/guardado.js"
+   },
+   {
+    "kb": 4,
+    "tipo": ".js",
+    "u": "/src/game/objetos.js"
+   },
+   {
+    "kb": 93,
+    "tipo": ".js",
+    "u": "/src/engine/vegetacion.js"
+   },
+   {
+    "kb": 159,
+    "tipo": ".js",
+    "u": "/src/engine/streaming.js"
+   },
+   {
+    "kb": 13,
+    "tipo": ".js",
+    "u": "/src/game/dialogo.js"
+   },
+   {
+    "kb": 28,
+    "tipo": ".js",
+    "u": "/src/game/lugares.js"
+   },
+   {
+    "kb": 17,
+    "tipo": ".js",
+    "u": "/src/game/diario.js"
+   },
+   {
+    "kb": 42,
+    "tipo": ".js",
+    "u": "/src/game/album.js"
+   },
+   {
+    "kb": 57,
+    "tipo": ".js",
+    "u": "/src/game/aula.js"
+   },
+   {
+    "kb": 21,
+    "tipo": ".js",
+    "u": "/src/game/idioma.js"
+   },
+   {
+    "kb": 15,
+    "tipo": ".js",
+    "u": "/src/game/descubrir.js"
+   },
+   {
+    "kb": 27,
+    "tipo": ".js",
+    "u": "/src/game/creador.js"
+   },
+   {
+    "kb": 23,
+    "tipo": ".js",
+    "u": "/src/game/momentos.js"
+   },
+   {
+    "kb": 26,
+    "tipo": ".js",
+    "u": "/content/comun/huevos.js"
+   },
+   {
+    "kb": 50,
+    "tipo": ".js",
+    "u": "/src/game/comic_plantilla.js"
+   },
+   {
+    "kb": 70,
+    "tipo": ".js",
+    "u": "/src/game/accesibilidad.js"
+   },
+   {
+    "kb": 7,
+    "tipo": ".js",
+    "u": "/src/game/ninos.js"
+   },
+   {
+    "kb": 53,
+    "tipo": ".js",
+    "u": "/content/comun/especies.js"
+   },
+   {
+    "kb": 18,
+    "tipo": ".js",
+    "u": "/src/pruebas/motor.js"
+   },
+   {
+    "kb": 39,
+    "tipo": ".js",
+    "u": "/src/game/guia_controles.js"
+   },
+   {
+    "kb": 11,
+    "tipo": ".js",
+    "u": "/src/game/retos_dia.js"
+   },
+   {
+    "kb": 9,
+    "tipo": ".js",
+    "u": "/src/game/zonas.js"
+   },
+   {
+    "kb": 114,
+    "tipo": ".js",
+    "u": "/src/game/comic.js"
+   },
+   {
+    "kb": 131,
+    "tipo": ".js",
+    "u": "/src/game/criadero.js"
+   },
+   {
+    "kb": 59,
+    "tipo": ".js",
+    "u": "/src/game/menu_modos.js"
+   },
+   {
+    "kb": 59,
+    "tipo": ".js",
+    "u": "/content/cap1/lecciones.js"
+   },
+   {
+    "kb": 184,
+    "tipo": ".js",
+    "u": "/assets/data/mapa_cap1_altura.js"
+   },
+   {
+    "kb": 62,
+    "tipo": ".js",
+    "u": "/content/cap1/mundo.js"
+   },
+   {
+    "kb": 165,
+    "tipo": ".js",
+    "u": "/assets/data/mapa_cap1.js"
+   },
+   {
+    "kb": 5,
+    "tipo": ".js",
+    "u": "/src/game/temporada.js"
+   },
+   {
+    "kb": 11,
+    "tipo": ".js",
+    "u": "/content/cap1/misiones.js"
+   },
+   {
+    "kb": 8,
+    "tipo": ".js",
+    "u": "/content/cap1/coleccionables.js"
+   },
+   {
+    "kb": 7,
+    "tipo": ".js",
+    "u": "/content/cap1/dialogos_cap1.js"
+   },
+   {
+    "kb": 30,
+    "tipo": ".js",
+    "u": "/content/cap1/pack.js"
+   },
+   {
+    "kb": 15,
+    "tipo": ".js",
+    "u": "/content/cap1/paradas.js"
+   },
+   {
+    "kb": 69,
+    "tipo": ".js",
+    "u": "/content/cap1/educativa.js"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M20 4c-7.5 0-13 5.5-13 13 7.5 0 13-5.5 13-13zM4 20l11-11M9.5 14.5h5'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5c-3.5-.5-6.5 0-8.5 1.5zM12 6.5v13'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M17.5 7H6a3 5 0 0 0 0 10h11.5'/%3E%3Cellipse fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' cx='17.5' cy='12' rx='3' ry='5'/%3E%3Cellipse fill='%23000' cx='17.5' cy='12' rx='1' ry='1.7'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 76,
+    "tipo": ".js",
+    "u": "/content/cap1/historia.js"
+   },
+   {
+    "kb": 7,
+    "tipo": ".js",
+    "u": "/src/ui/ui.js"
+   },
+   {
+    "kb": 36,
+    "tipo": ".js",
+    "u": "/src/boot.js"
+   },
+   {
+    "kb": 21,
+    "tipo": ".js",
+    "u": "/src/game/secretos.js"
+   },
+   {
+    "kb": 5,
+    "tipo": ".js",
+    "u": "/content/cap1/secretos.js"
+   },
+   {
+    "kb": 65,
+    "tipo": ".js",
+    "u": "/tests/qa/e2e.js"
+   },
+   {
+    "kb": 11,
+    "tipo": "otro",
+    "u": "/assets/vendor/fonts/AtkinsonHyperlegible-latin-700.woff2"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' stroke='%23000' stroke-width='2' stroke-linejoin='round' d='M5 18.5 3.5 13l3-5.5 5.5-2.5 6 2 2.5 5.5-2 6z'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z'/%3E%3Ccircle fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' cx='12' cy='12' r='3.2'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' cx='12' cy='12' r='9'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M8.5 14.5c1 1.3 2.2 2 3.5 2s2.5-.7 3.5-2'/%3E%3Ccircle fill='%23000' cx='9' cy='10' r='1.4'/%3E%3Ccircle fill='%23000' cx='15' cy='10' r='1.4'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect fill='%23000' x='6' y='4.5' width='4.2' height='15' rx='1.6'/%3E%3Crect fill='%23000' x='13.8' y='4.5' width='4.2' height='15' rx='1.6'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' stroke='%23000' stroke-width='2' stroke-linejoin='round' d='M21 4.5c-5.5 0-11 1.5-15.2 5.6C3.6 12.3 3 15 3.4 18.6c1.6-1.5 3.4-2.4 5.6-2.6-1.2-.4-2.3-.4-3.3-.1 2.6-2 5.8-3 9.3-3.3-1.6-.4-3.2-.4-4.7-.1 3.3-1.8 6.6-3.6 8.7-8z'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M4.5 6l6 6-6 6M12.5 6l6 6-6 6'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M12 19.5V5M5.5 11.5 12 5l6.5 6.5'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M11 2.5c.7 4.6 2.8 6.8 7.5 7.5-4.7.7-6.8 2.9-7.5 7.5-.7-4.6-2.8-6.8-7.5-7.5 4.7-.7 6.8-2.9 7.5-7.5zM18.5 14.5c.3 1.9 1.1 2.7 3 3-1.9.3-2.7 1.1-3 3-.3-1.9-1.1-2.7-3-3 1.9-.3 2.7-1.1 3-3z'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 29,
+    "tipo": "otro",
+    "u": "/assets/vendor/fonts/Fredoka-latin-500.woff2"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' x='2.5' y='6' width='19' height='12' rx='2.5'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' d='M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M8 14h8'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 103,
+    "tipo": "imagen",
+    "u": "/assets/vittata.png"
+   },
+   {
+    "kb": 16,
+    "tipo": "otro",
+    "u": "/src/ui/aula.css"
+   },
+   {
+    "kb": 161,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_musgo.jpg"
+   },
+   {
+    "kb": 282,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_musgo_n.jpg"
+   },
+   {
+    "kb": 152,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_tierra_hojarasca.jpg"
+   },
+   {
+    "kb": 107,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_roca.jpg"
+   },
+   {
+    "kb": 125,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_roca_n.jpg"
+   },
+   {
+    "kb": 96,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_arena_rio.jpg"
+   },
+   {
+    "kb": 39,
+    "tipo": "imagen",
+    "u": "/assets/tex/agua_normal.jpg"
+   },
+   {
+    "kb": 183,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_tierra_hojarasca_n.jpg"
+   },
+   {
+    "kb": 38,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_arena_rio_n.jpg"
+   },
+   {
+    "kb": 109,
+    "tipo": "imagen",
+    "u": "/assets/guardian.png"
+   },
+   {
+    "kb": 116,
+    "tipo": "imagen",
+    "u": "/assets/luma.png"
+   },
+   {
+    "kb": 130,
+    "tipo": "imagen",
+    "u": "/assets/abuela.png"
+   },
+   {
+    "kb": 115,
+    "tipo": "imagen",
+    "u": "/assets/papa.png"
+   },
+   {
+    "kb": 109,
+    "tipo": "imagen",
+    "u": "/assets/guardian.png"
+   },
+   {
+    "kb": 35,
+    "tipo": ".js",
+    "u": "/src/game/dones.js"
+   },
+   {
+    "kb": 80,
+    "tipo": "glb",
+    "u": "/assets/models/mapa/agua.glb"
+   },
+   {
+    "kb": 47,
+    "tipo": ".js",
+    "u": "/src/game/gags.js"
+   },
+   {
+    "kb": 22,
+    "tipo": ".js",
+    "u": "/src/game/rareza.js"
+   },
+   {
+    "kb": 135,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/bohio_redondo.glb"
+   },
+   {
+    "kb": 47,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/toldo_pequeno.glb"
+   },
+   {
+    "kb": 4,
+    "tipo": ".json",
+    "u": "/assets/models/vittata_mounts.json"
+   },
+   {
+    "kb": 22,
+    "tipo": ".js",
+    "u": "/src/ui/carga.js"
+   },
+   {
+    "kb": 56,
+    "tipo": ".js",
+    "u": "/src/game/look.js"
+   },
+   {
+    "kb": 156,
+    "tipo": "imagen",
+    "u": "/assets/models/edificios/tex/kb3d_roofthatched.jpg"
+   },
+   {
+    "kb": 104,
+    "tipo": "imagen",
+    "u": "/assets/models/edificios/tex/kb3d_woodplanks.jpg"
+   },
+   {
+    "kb": 81,
+    "tipo": "imagen",
+    "u": "/assets/models/edificios/tex/kb3d_barknew.jpg"
+   },
+   {
+    "kb": 89,
+    "tipo": "imagen",
+    "u": "/assets/models/edificios/tex/kb3d_tarpfabricdamaged.jpg"
+   },
+   {
+    "kb": 6,
+    "tipo": "otro",
+    "u": "/src/ui/carga.css"
+   },
+   {
+    "kb": 595,
+    "tipo": "glb",
+    "u": "/assets/models/mapa/terreno_se.glb"
+   },
+   {
+    "kb": 21,
+    "tipo": "imagen",
+    "u": "/assets/models/vittata_masks.png"
+   },
+   {
+    "kb": 103,
+    "tipo": "imagen",
+    "u": "/assets/vittata.png"
+   },
+   {
+    "kb": 1282,
+    "tipo": "glb",
+    "u": "/assets/models/vittata.glb"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/916de232-68cd-4937-951d-ca7c82b99216"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/5e634399-e202-4e7d-a2f0-46491b8c7bd9"
+   },
+   {
+    "kb": 103,
+    "tipo": "imagen",
+    "u": "/assets/vittata.png"
+   },
+   {
+    "kb": 53,
+    "tipo": "imagen",
+    "u": "/assets/textures/pieles/vittata.jpg"
+   },
+   {
+    "kb": 35,
+    "tipo": "otro",
+    "u": "/index.html"
+   },
+   {
+    "kb": 3,
+    "tipo": ".js",
+    "u": "/assets/data/bosque_cap1.js"
+   },
+   {
+    "kb": 65,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/pasto.glb"
+   },
+   {
+    "kb": 66,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/hojarasca.glb"
+   },
+   {
+    "kb": 173,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/palma_sierra.glb"
+   },
+   {
+    "kb": 161,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/palma_sierra_joven.glb"
+   },
+   {
+    "kb": 189,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/yagrumo.glb"
+   },
+   {
+    "kb": 155,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/yagrumo_joven.glb"
+   },
+   {
+    "kb": 230,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/tabonuco.glb"
+   },
+   {
+    "kb": 177,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/helecho_arboreo.glb"
+   },
+   {
+    "kb": 264,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/arbol_enano.glb"
+   },
+   {
+    "kb": 312,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/flamboyan.glb"
+   },
+   {
+    "kb": 463,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/ceiba.glb"
+   },
+   {
+    "kb": 178,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/bambu.glb"
+   },
+   {
+    "kb": 83,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/bromelia.glb"
+   },
+   {
+    "kb": 76,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/heliconia.glb"
+   },
+   {
+    "kb": 103,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/helecho_suelo.glb"
+   },
+   {
+    "kb": 114,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/tronco_caido.glb"
+   },
+   {
+    "kb": 77,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/piedras_rio.glb"
+   },
+   {
+    "kb": 103,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/roca_musgo_a.glb"
+   },
+   {
+    "kb": 108,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/roca_musgo_b.glb"
+   },
+   {
+    "kb": 142,
+    "tipo": "glb",
+    "u": "/assets/models/mapa/puente.glb"
+   },
+   {
+    "kb": 134,
+    "tipo": "glb",
+    "u": "/assets/models/mapa/muelle.glb"
+   },
+   {
+    "kb": 16,
+    "tipo": ".js",
+    "u": "/assets/models/edificios/kit.js"
+   },
+   {
+    "kb": 48,
+    "tipo": "glb",
+    "u": "/assets/models/mapa/grutas.glb"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/62b68a98-a566-411f-ab02-403ff1c4cbb2"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/7b428d3d-fb33-49d6-bf73-6c9fa14847df"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/a37aad60-bf4b-48f8-b818-4983e5262eb6"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/59a8cfd7-c80e-4578-b844-6194c93b6dfc"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/bce92521-208e-4bea-b1c2-a4e15bbf0f6c"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/62798773-2c48-44fd-8f61-28c4381499cd"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/bfbfb6d5-0702-4293-ad1f-569367db7011"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/42a25dfc-9189-470d-a681-0f0810aafc41"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/7e1c4442-88db-4324-8d0b-abe355bb1f8c"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/797a640c-4f65-44e9-a099-37199e7afc96"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/d976feb8-3146-4ac3-bad2-83181ff29f87"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/de29dc5e-5f8c-4d94-98d6-791c5497e788"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/b189d664-15e0-477f-93ef-e665b8021213"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/a9ff3787-cbab-4be0-aa26-355b36d95e46"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/f43fa951-4985-41b6-9017-83ef1ed759b7"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/21a86be9-959c-44b4-a646-6346c9384fc9"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/6202a83f-a17e-4a6f-b821-76be2a875523"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/6da343a7-2a0b-4588-9905-14c7e5edc9fb"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/c55d1cc5-fd23-4d72-953f-955347000ccf"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/e0a03cff-d626-45e7-9990-24f294464ccf"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/1bd849fc-ec0f-4dd3-9ded-e153f352b7ca"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/fa9c991c-68bd-4bfb-9ee9-72adee2d9a51"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/b0484df7-4009-4c6c-8261-54691a962578"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/932bd828-cc91-43f7-8a25-bdfd017d01e4"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/35c56af8-741a-47f7-be32-2aa261c097d5"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/b9abe339-ac1e-4e12-a31e-f047f771253c"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/a7cce038-e690-49d9-aaea-0e3c34e83d0d"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/18f828ee-0444-41fc-ae0b-816bf3e5d4e0"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/f4ec6bda-c4f3-40a2-8066-741176ec28a6"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/ae9a9ceb-4328-45e0-9963-e3014a6a4487"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/e4345436-e6cf-4c67-a831-7bb425cbc3d5"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/016c74cc-e8f5-407c-9203-4ac757d2c122"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/6c460c55-66c7-430d-9acd-dff65e12547c"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/55b7e098-bd18-49e2-8007-cd0f4cbcaea7"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/2cf2f4be-e474-4231-989d-d16b7b2f565c"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/480d1c45-e5d1-4a8e-ad7a-b3ef976eda12"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/21c804ca-532d-426c-aa6c-3cdaee5c52fa"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/3ac98e55-6263-49ed-bfc3-aa42e863f273"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/d029a419-c633-4ae7-a92b-4ac2f3df2f9c"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/29265da4-fb5c-4a05-ad48-43feb16d4610"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/c6ace009-9b4b-4344-bbb7-5056ece903ef"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/8e804523-f987-42ec-9eb6-51f6bb280dfc"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "blob:/e1f90107-0be3-4d8f-bfc1-753eb90fa328"
+   },
+   {
+    "kb": 19,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/casa_plataforma_lejos.glb"
+   },
+   {
+    "kb": 9,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/mirador_escalonado_lejos.glb"
+   },
+   {
+    "kb": 24,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/monumento_g_lejos.glb"
+   },
+   {
+    "kb": 101,
+    "tipo": ".js",
+    "u": "/src/game/musica.js"
+   },
+   {
+    "kb": 435,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_mediano_h_lejos.glb"
+   },
+   {
+    "kb": 40,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/ruina_torre_lejos.glb"
+   },
+   {
+    "kb": 2,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/losa_piedra_lejos.glb"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGNoaPgPRAwQCgA19gf9SShDzAAAAABJRU5ErkJggg=="
+   },
+   {
+    "kb": 319,
+    "tipo": "imagen",
+    "u": "/assets/models/edificios/tex_hd/hd_ancient_lq1024.jpg"
+   },
+   {
+    "kb": 6,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/toldo_pequeno_lejos.glb"
+   },
+   {
+    "kb": 18,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/casa_paja_a_lejos.glb"
+   },
+   {
+    "kb": 48,
+    "tipo": ".js",
+    "u": "/src/game/fauna.js"
+   },
+   {
+    "kb": 10,
+    "tipo": ".js",
+    "u": "/src/game/vecinos.js"
+   },
+   {
+    "kb": 10,
+    "tipo": ".js",
+    "u": "/src/game/sorpresas.js"
+   },
+   {
+    "kb": 15,
+    "tipo": ".js",
+    "u": "/src/game/maravillas.js"
+   },
+   {
+    "kb": 22,
+    "tipo": ".js",
+    "u": "/src/game/guineo.js"
+   },
+   {
+    "kb": 18,
+    "tipo": ".js",
+    "u": "/src/game/bohios.js"
+   },
+   {
+    "kb": 46,
+    "tipo": ".js",
+    "u": "/src/game/rescate.js"
+   },
+   {
+    "kb": 38,
+    "tipo": ".js",
+    "u": "/src/game/bandada.js"
+   },
+   {
+    "kb": 8,
+    "tipo": ".js",
+    "u": "/src/game/trucos.js"
+   },
+   {
+    "kb": 30,
+    "tipo": ".js",
+    "u": "/src/game/juice.js"
+   },
+   {
+    "kb": 6,
+    "tipo": ".js",
+    "u": "/src/game/humor.js"
+   },
+   {
+    "kb": 6,
+    "tipo": ".js",
+    "u": "/src/game/escondite.js"
+   },
+   {
+    "kb": 14,
+    "tipo": ".js",
+    "u": "/src/game/marana.js"
+   },
+   {
+    "kb": 14,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/bohio_redondo_lejos.glb"
+   },
+   {
+    "kb": 19,
+    "tipo": ".js",
+    "u": "/src/game/familia.js"
+   },
+   {
+    "kb": 32,
+    "tipo": ".js",
+    "u": "/src/game/rio_vivo.js"
+   },
+   {
+    "kb": 52,
+    "tipo": ".js",
+    "u": "/src/game/banquete.js"
+   },
+   {
+    "kb": 61,
+    "tipo": ".js",
+    "u": "/src/game/minimapa.js"
+   },
+   {
+    "kb": 39,
+    "tipo": ".js",
+    "u": "/src/game/marcador.js"
+   },
+   {
+    "kb": 29,
+    "tipo": ".js",
+    "u": "/src/game/clima.js"
+   },
+   {
+    "kb": 20,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/torre_vigia_b_lejos.glb"
+   },
+   {
+    "kb": 6,
+    "tipo": ".js",
+    "u": "/content/cap1/asentamientos.js"
+   },
+   {
+    "kb": 22,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/torre_vigia_lejos.glb"
+   },
+   {
+    "kb": 4,
+    "tipo": "otro",
+    "u": "/src/ui/marcador.css"
+   },
+   {
+    "kb": 18,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/muralla_atalaya_b_lejos.glb"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='13' r='8' fill='none' stroke='%23000' stroke-width='2.4'/%3E%3Cpath fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' d='M12 8.5V13l3 2M9.5 2.5h5'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 0,
+    "tipo": "otro",
+    "u": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' stroke='%23000' stroke-width='2' stroke-linejoin='round' d='M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z'/%3E%3C/svg%3E"
+   },
+   {
+    "kb": 11,
+    "tipo": ".js",
+    "u": "/src/engine/dosel.js"
+   },
+   {
+    "kb": 4,
+    "tipo": ".js",
+    "u": "/content/cap1/fauna.js"
+   },
+   {
+    "kb": 107,
+    "tipo": ".js",
+    "u": "/assets/data/cotorra_horneada.js"
+   },
+   {
+    "kb": 31,
+    "tipo": ".js",
+    "u": "/src/game/residentes.js"
+   },
+   {
+    "kb": 16,
+    "tipo": ".js",
+    "u": "/src/game/comunidades.js"
+   },
+   {
+    "kb": 10,
+    "tipo": ".js",
+    "u": "/src/game/wow.js"
+   },
+   {
+    "kb": 18,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/muralla_atalaya_a_lejos.glb"
+   },
+   {
+    "kb": 7,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/empalizada_lejos.glb"
+   },
+   {
+    "kb": 28,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/portal_puas_lejos.glb"
+   },
+   {
+    "kb": 20,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/puente_madera_lejos.glb"
+   },
+   {
+    "kb": 256,
+    "tipo": "glb",
+    "u": "/assets/models/isla_mapa.glb"
+   },
+   {
+    "kb": 83,
+    "tipo": "imagen",
+    "u": "/assets/tex/suelo.jpg"
+   },
+   {
+    "kb": 42,
+    "tipo": "imagen",
+    "u": "/assets/tex/pasto.jpg"
+   },
+   {
+    "kb": 35,
+    "tipo": ".js",
+    "u": "/src/game/ciudad_viva.js"
+   },
+   {
+    "kb": 8,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/campamento_c_lejos.glb"
+   },
+   {
+    "kb": 8,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/carpa_e_lejos.glb"
+   },
+   {
+    "kb": 14,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/portal_madera_b_lejos.glb"
+   },
+   {
+    "kb": 302,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_grande_d_lejos.glb"
+   },
+   {
+    "kb": 26,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/monumento_d_lejos.glb"
+   },
+   {
+    "kb": 28,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/caney_largo_lejos.glb"
+   },
+   {
+    "kb": 31,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/cercado_redondo_lejos.glb"
+   },
+   {
+    "kb": 13,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/bohio_puntiagudo_lejos.glb"
+   },
+   {
+    "kb": 22,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/casa_paja_b_lejos.glb"
+   },
+   {
+    "kb": 303,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/complejo_ruinas_lejos.glb"
+   },
+   {
+    "kb": 28,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/monumento_f_lejos.glb"
+   },
+   {
+    "kb": 24,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/monumento_e_lejos.glb"
+   },
+   {
+    "kb": 14,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/portal_madera_c_lejos.glb"
+   },
+   {
+    "kb": 15,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/portal_madera_a_lejos.glb"
+   },
+   {
+    "kb": 219,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/casa_plataforma.glb"
+   },
+   {
+    "kb": 219,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/monumento_g.glb"
+   },
+   {
+    "kb": 138,
+    "tipo": "glb",
+    "u": "/assets/models/guineo/guineo.glb"
+   }
+  ],
+  "v18Urls": []
+ },
+ "asserts": {
+  "sinBanderaNadaDeV18": true,
+  "calidadBaja": "bajo"
+ },
+ "taps": [
+  {
+   "s": 7.2,
+   "r": "tap:Lo último que jugasteAventuraE"
+  },
+  {
+   "s": 13.5,
+   "r": "tecla"
+  },
+  {
+   "s": 24.4,
+   "r": "tecla"
+  }
+ ],
+ "altasDesdeBase": {
+  "dd559b1f": {
+   "mb": 0.31,
+   "n": 1,
+   "ejemplos": [
+    "assets/models/edificios/tex_hd/hd_ancient_lq1024.jpg"
+   ]
+  },
+  "b6f8f0b7": {
+   "mb": 0.1,
+   "n": 1,
+   "ejemplos": [
+    "assets/data/cotorra_horneada.js"
+   ]
+  }
+ }
+}

@@ -1,0 +1,1140 @@
+{
+ "etiqueta": "k204-base",
+ "pantalla": "movil 390x844@3 cpuX4",
+ "ua": "iPhone (bajo natural)",
+ "head": "1e573741",
+ "baseNube": "e0dfc12",
+ "inicio": "2026-11-07T14:39:07.235Z",
+ "muestras": [
+  {
+   "listo": false,
+   "calls": null,
+   "tris": null,
+   "fps": null,
+   "calidad": null,
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 3708189,
+   "t": 553,
+   "s": 0.4
+  },
+  {
+   "listo": false,
+   "calls": null,
+   "tris": null,
+   "fps": null,
+   "calidad": null,
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 7395182,
+   "t": 1019,
+   "s": 1
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 0,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 17977425,
+   "t": 2054,
+   "s": 1.4
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 2,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 19110316,
+   "t": 2754,
+   "s": 2.5
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 5,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 28030104,
+   "t": 3190,
+   "s": 3.2
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 19,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 35426705,
+   "t": 3755,
+   "s": 3.6
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 31,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 37598320,
+   "t": 4264,
+   "s": 4.2
+  },
+  {
+   "listo": true,
+   "calls": 20,
+   "tris": 19563,
+   "fps": 10,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 36510630,
+   "t": 7126,
+   "s": 4.7
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 0,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 42536770,
+   "t": 7633,
+   "s": 7.5
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 13,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 53731514,
+   "t": 8330,
+   "s": 8.1
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 6,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 52777393,
+   "t": 8785,
+   "s": 8.7
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 5,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 59926626,
+   "t": 9240,
+   "s": 9.2
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 7,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 54269822,
+   "t": 9779,
+   "s": 9.7
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 6,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 50611194,
+   "t": 10344,
+   "s": 10.2
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 6,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 66542005,
+   "t": 11148,
+   "s": 10.8
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 6,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 65704239,
+   "t": 11613,
+   "s": 11.6
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 16,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 63863397,
+   "t": 12074,
+   "s": 12
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 16,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 62628147,
+   "t": 12498,
+   "s": 12.5
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 17,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 64760169,
+   "t": 12968,
+   "s": 12.9
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 17,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 62165650,
+   "t": 13433,
+   "s": 13.4
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 13,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 72011090,
+   "t": 13886,
+   "s": 13.8
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 21,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 82871450,
+   "t": 14375,
+   "s": 14.3
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 13,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 59874848,
+   "t": 15170,
+   "s": 14.8
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 4,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 61976089,
+   "t": 15648,
+   "s": 15.6
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 7,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 62325583,
+   "t": 16074,
+   "s": 16.1
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 10,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 69108550,
+   "t": 16543,
+   "s": 16.5
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 15,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 75604461,
+   "t": 17017,
+   "s": 17
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 15,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 84952826,
+   "t": 23108,
+   "s": 17.4
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 1,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 93892060,
+   "t": 23592,
+   "s": 23.5
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 17,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 91423472,
+   "t": 24051,
+   "s": 24
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 24,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 112501116,
+   "t": 24588,
+   "s": 24.5
+  },
+  {
+   "listo": true,
+   "calls": 0,
+   "tris": 0,
+   "fps": 19,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": false,
+   "motivo": null,
+   "msCarga": null,
+   "heap": 128548307,
+   "t": 25414,
+   "s": 25
+  },
+  {
+   "listo": true,
+   "calls": 81,
+   "tris": 462962,
+   "fps": 5,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 133059840,
+   "t": 25839,
+   "s": 25.8
+  },
+  {
+   "listo": true,
+   "calls": 52,
+   "tris": 412109,
+   "fps": 22,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 130781111,
+   "t": 26254,
+   "s": 26.2
+  },
+  {
+   "listo": true,
+   "calls": 50,
+   "tris": 402919,
+   "fps": 37,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 119986439,
+   "t": 26666,
+   "s": 26.7
+  },
+  {
+   "listo": true,
+   "calls": 78,
+   "tris": 448569,
+   "fps": 47,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 125288663,
+   "t": 27080,
+   "s": 27.1
+  },
+  {
+   "listo": true,
+   "calls": 81,
+   "tris": 462962,
+   "fps": 44,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 130123395,
+   "t": 27487,
+   "s": 27.5
+  },
+  {
+   "listo": true,
+   "calls": 81,
+   "tris": 462974,
+   "fps": 44,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 134938103,
+   "t": 27893,
+   "s": 27.9
+  },
+  {
+   "listo": true,
+   "calls": 81,
+   "tris": 462974,
+   "fps": 47,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 123440218,
+   "t": 28304,
+   "s": 28.3
+  },
+  {
+   "listo": true,
+   "calls": 81,
+   "tris": 462974,
+   "fps": 49,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 128409698,
+   "t": 28713,
+   "s": 28.7
+  },
+  {
+   "listo": true,
+   "calls": 81,
+   "tris": 462974,
+   "fps": 49,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 125727790,
+   "t": 30867,
+   "s": 29.1
+  },
+  {
+   "listo": true,
+   "calls": 43,
+   "tris": 137171,
+   "fps": 10,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 132419221,
+   "t": 31300,
+   "s": 31.3
+  },
+  {
+   "listo": true,
+   "calls": 44,
+   "tris": 124909,
+   "fps": 25,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 126037637,
+   "t": 31748,
+   "s": 31.7
+  },
+  {
+   "listo": true,
+   "calls": 43,
+   "tris": 136727,
+   "fps": 34,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 135887613,
+   "t": 32151,
+   "s": 32.2
+  },
+  {
+   "listo": true,
+   "calls": 55,
+   "tris": 146654,
+   "fps": 32,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 128995584,
+   "t": 32587,
+   "s": 32.6
+  },
+  {
+   "listo": true,
+   "calls": 69,
+   "tris": 154336,
+   "fps": 27,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 132992816,
+   "t": 33023,
+   "s": 33
+  },
+  {
+   "listo": true,
+   "calls": 70,
+   "tris": 154846,
+   "fps": 34,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 136989960,
+   "t": 33444,
+   "s": 33.4
+  },
+  {
+   "listo": true,
+   "calls": 70,
+   "tris": 155094,
+   "fps": 34,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 126616054,
+   "t": 33883,
+   "s": 33.9
+  },
+  {
+   "listo": true,
+   "calls": 70,
+   "tris": 155094,
+   "fps": 39,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 131844054,
+   "t": 34308,
+   "s": 34.3
+  },
+  {
+   "listo": true,
+   "calls": 70,
+   "tris": 155094,
+   "fps": 48,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 137268074,
+   "t": 34719,
+   "s": 34.7
+  },
+  {
+   "listo": true,
+   "calls": 70,
+   "tris": 155094,
+   "fps": 50,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 97633329,
+   "t": 35127,
+   "s": 35.1
+  },
+  {
+   "listo": true,
+   "calls": 70,
+   "tris": 155094,
+   "fps": 50,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 103092286,
+   "t": 35554,
+   "s": 35.5
+  },
+  {
+   "listo": true,
+   "calls": 70,
+   "tris": 155094,
+   "fps": 50,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 108044902,
+   "t": 35967,
+   "s": 36
+  },
+  {
+   "listo": true,
+   "calls": 70,
+   "tris": 155094,
+   "fps": 48,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 96117266,
+   "t": 36373,
+   "s": 36.4
+  },
+  {
+   "listo": true,
+   "calls": 70,
+   "tris": 155094,
+   "fps": 44,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 110366362,
+   "t": 38566,
+   "s": 36.8
+  },
+  {
+   "listo": true,
+   "calls": 168,
+   "tris": 577884,
+   "fps": 5,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 110434075,
+   "t": 39245,
+   "s": 39
+  },
+  {
+   "listo": true,
+   "calls": 217,
+   "tris": 495616,
+   "fps": 12,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 100776532,
+   "t": 39859,
+   "s": 39.7
+  },
+  {
+   "listo": true,
+   "calls": 114,
+   "tris": 222935,
+   "fps": 3,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 111826184,
+   "t": 40350,
+   "s": 40.3
+  },
+  {
+   "listo": true,
+   "calls": 194,
+   "tris": 400934,
+   "fps": 11,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 120744623,
+   "t": 40808,
+   "s": 40.8
+  },
+  {
+   "listo": true,
+   "calls": 184,
+   "tris": 413112,
+   "fps": 9,
+   "calidad": "bajo",
+   "v18": false,
+   "revelado": true,
+   "motivo": "listo",
+   "msCarga": 17790,
+   "heap": 107821090,
+   "t": 41265,
+   "s": 41.2
+  }
+ ],
+ "red": {
+  "bytesTotalMB": 31.63,
+  "nRecursos": 377,
+  "tRevealMs": 25817,
+  "motivoCarga": "listo",
+  "msCargaJuego": 17790,
+  "hastaReveal": {
+   "totalMB": 26.64,
+   "porTipo": {
+    "otro": 0.27,
+    "imagen": 6.97,
+    ".js": 4.36,
+    "glb": 15.03,
+    ".json": 0
+   },
+   "n": 342
+  },
+  "hastaRevealMas5": {
+   "totalMB": 26.64,
+   "porTipo": {
+    "otro": 0.27,
+    "imagen": 6.97,
+    ".js": 4.36,
+    "glb": 15.03,
+    ".json": 0
+   },
+   "n": 342
+  },
+  "total": {
+   "totalMB": 31.63,
+   "porTipo": {
+    "otro": 0.27,
+    "imagen": 6.97,
+    ".js": 4.36,
+    "glb": 20.02,
+    ".json": 0
+   },
+   "n": 377
+  },
+  "topEnReveal": [
+   {
+    "mb": 1.6,
+    "t": 10.3,
+    "tipo": "imagen",
+    "u": "/assets/models/edificios/tex_hd/hd_savage_lq.jpg"
+   },
+   {
+    "mb": 1.332,
+    "t": 4.5,
+    "tipo": "imagen",
+    "u": "/assets/models/edificios/tex_hd/hd_ancient_lq.jpg"
+   },
+   {
+    "mb": 1.252,
+    "t": 2.9,
+    "tipo": "glb",
+    "u": "/assets/models/vittata.glb"
+   },
+   {
+    "mb": 0.95,
+    "t": 12.3,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/complejo_ruinas.glb"
+   },
+   {
+    "mb": 0.581,
+    "t": 2.7,
+    "tipo": "glb",
+    "u": "/assets/models/mapa/terreno_se.glb"
+   },
+   {
+    "mb": 0.576,
+    "t": 0.1,
+    "tipo": ".js",
+    "u": "/assets/vendor/three/build/three.min.js"
+   },
+   {
+    "mb": 0.55,
+    "t": 17,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_grande_e_lejos.glb"
+   },
+   {
+    "mb": 0.517,
+    "t": 17.1,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_grande_f_lejos.glb"
+   },
+   {
+    "mb": 0.485,
+    "t": 23.7,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_grande_a_lejos.glb"
+   },
+   {
+    "mb": 0.452,
+    "t": 3.8,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/ceiba.glb"
+   },
+   {
+    "mb": 0.425,
+    "t": 4.2,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_mediano_h_lejos.glb"
+   },
+   {
+    "mb": 0.305,
+    "t": 3.8,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/flamboyan.glb"
+   },
+   {
+    "mb": 0.296,
+    "t": 7.6,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/complejo_ruinas_lejos.glb"
+   },
+   {
+    "mb": 0.295,
+    "t": 7.4,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_grande_d_lejos.glb"
+   },
+   {
+    "mb": 0.287,
+    "t": 23.9,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_mediano_g_lejos.glb"
+   },
+   {
+    "mb": 0.275,
+    "t": 1.9,
+    "tipo": "imagen",
+    "u": "/assets/tex/entorno/suelo_musgo_n.jpg"
+   },
+   {
+    "mb": 0.273,
+    "t": 24,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_mediano_f_lejos.glb"
+   },
+   {
+    "mb": 0.257,
+    "t": 3.7,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/arbol_enano.glb"
+   },
+   {
+    "mb": 0.25,
+    "t": 16.2,
+    "tipo": "glb",
+    "u": "/assets/models/isla_mapa.glb"
+   },
+   {
+    "mb": 0.249,
+    "t": 11.3,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/muralla_atalaya_a.glb"
+   }
+  ],
+  "topTotal": [
+   {
+    "mb": 1.6,
+    "t": 10.3,
+    "tipo": "imagen",
+    "u": "/assets/models/edificios/tex_hd/hd_savage_lq.jpg"
+   },
+   {
+    "mb": 1.332,
+    "t": 4.5,
+    "tipo": "imagen",
+    "u": "/assets/models/edificios/tex_hd/hd_ancient_lq.jpg"
+   },
+   {
+    "mb": 1.252,
+    "t": 2.9,
+    "tipo": "glb",
+    "u": "/assets/models/vittata.glb"
+   },
+   {
+    "mb": 0.95,
+    "t": 12.3,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/complejo_ruinas.glb"
+   },
+   {
+    "mb": 0.581,
+    "t": 2.7,
+    "tipo": "glb",
+    "u": "/assets/models/mapa/terreno_se.glb"
+   },
+   {
+    "mb": 0.576,
+    "t": 0.1,
+    "tipo": ".js",
+    "u": "/assets/vendor/three/build/three.min.js"
+   },
+   {
+    "mb": 0.55,
+    "t": 17,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_grande_e_lejos.glb"
+   },
+   {
+    "mb": 0.517,
+    "t": 17.1,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_grande_f_lejos.glb"
+   },
+   {
+    "mb": 0.485,
+    "t": 23.7,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_grande_a_lejos.glb"
+   },
+   {
+    "mb": 0.452,
+    "t": 3.8,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/ceiba.glb"
+   },
+   {
+    "mb": 0.425,
+    "t": 4.2,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/templo_mediano_h_lejos.glb"
+   },
+   {
+    "mb": 0.359,
+    "t": 40.8,
+    "tipo": "glb",
+    "u": "/assets/models/ropa/botas_aventura.glb"
+   },
+   {
+    "mb": 0.318,
+    "t": 40.8,
+    "tipo": "glb",
+    "u": "/assets/models/ropa/mano_lupa.glb"
+   },
+   {
+    "mb": 0.305,
+    "t": 3.8,
+    "tipo": "glb",
+    "u": "/assets/models/entorno/flamboyan.glb"
+   },
+   {
+    "mb": 0.296,
+    "t": 7.6,
+    "tipo": "glb",
+    "u": "/assets/models/edificios/complejo_ruinas_lejos.glb"
+   }
+  ],
+  "v18Urls": []
+ },
+ "asserts": {
+  "sinBanderaNadaDeV18": true,
+  "calidadBaja": "bajo"
+ },
+ "taps": [
+  {
+   "s": 7.5,
+   "r": "tap:Lo último que jugasteAventuraE"
+  },
+  {
+   "s": 13.8,
+   "r": "tecla"
+  },
+  {
+   "s": 23.5,
+   "r": "tecla"
+  }
+ ],
+ "altasDesdeBase": {
+  "67db1018": {
+   "mb": 2.93,
+   "n": 2,
+   "ejemplos": [
+    "assets/models/edificios/tex_hd/hd_ancient_lq.jpg",
+    "assets/models/edificios/tex_hd/hd_savage_lq.jpg"
+   ]
+  },
+  "b6f8f0b7": {
+   "mb": 0.1,
+   "n": 1,
+   "ejemplos": [
+    "assets/data/cotorra_horneada.js"
+   ]
+  }
+ }
+}

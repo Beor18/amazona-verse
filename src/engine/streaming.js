@@ -110,6 +110,10 @@ AVE.module('streaming', function (G) {
   // KIMI-177 avance 2: en «bajo» los GLB del kit de la ciudad no descargan su normal gigante embebida
   // (assets.js sustituye la URL por una normal plana 2×2); aquí se conecta el criterio de calidad del motor.
   if (G.assets && G.assets.setNormalPlanaBaja) G.assets.setNormalPlanaBaja(() => nivelCal() === 'bajo');
+  // KIMI-204: el difuso embebido que sí se sirve ligero en «bajo» es el 2048 en escritorio/tablet y el
+  // 1024 en el móvil pequeño (MOVIL_PEQ, mismo criterio que materialAtlas y reducirAtlas). El callback
+  // es perezoso: MOVIL_PEQ queda inicializado mucho antes de que se parseé el primer GLB.
+  if (G.assets && G.assets.setSufijoLQDifuso) G.assets.setSufijoLQDifuso(() => nivelCal() === 'bajo' ? (MOVIL_PEQ ? '_lq1024' : '_lq') : '_lq');
   // QA-107 (iPhone, 3-nov): en el móvil, en «medio», la ciudad del tepuy cargaba su kit desde el punto de aparición (420 m) y el
   // _hd hasta 150 m; al despegar subían de golpe los atlas y las fusiones y Safari cerraba la pestaña. En el móvil, la ciudad
   // (vista, malla, _hd y tope de triángulos) usa los valores de «bajo» fuera de «alto». El escritorio no cambia.
@@ -898,8 +902,13 @@ AVE.module('streaming', function (G) {
         // por canvas al llegar el evento 'calidad' (atlasMax() = celdas*celda/2 en bajo), así que la vista
         // de «bajo» no cambia; se ahorra la descarga y el pico de decodificación del 4096. Al subir de
         // calidad el gancho 'calidad' de abajo pide el 4096 real y lo engancha al mismo material.
+        // KIMI-204: en el móvil de pantalla pequeña (MOVIL_PEQ) el tope de reducirAtlas ya es 1024²
+        // (atlasMax = celdas*celda/4, decisión QA-110 de Kelvin), así que se sirve el JPEG horneado a
+        // 1024 (hd_<kit>_lq1024.jpg, ~0,3-0,4 MB): los MISMOS píxeles que el canvas 1024 que reducirAtlas
+        // haría del 2048, sin doble decodificación y con ~2,2 MB menos de descarga.
         const lq = nivelCal() === 'bajo';
-        const map = G.assets.tex(base + 'tex_hd/hd_' + kit + (lq ? '_lq' : '') + '.jpg');
+        const lqMovil = lq && MOVIL_PEQ;
+        const map = G.assets.tex(base + 'tex_hd/hd_' + kit + (lqMovil ? '_lq1024' : lq ? '_lq' : '') + '.jpg');
         map.encoding = THREE.sRGBEncoding;
         map.flipY = false;
         // KIMI-177: en «bajo» la normal del atlas (JPEG de ~14 MB, las dos ~28 MB) no se descarga: a DPR 0,75 su relieve
@@ -912,9 +921,10 @@ AVE.module('streaming', function (G) {
         mats[k] = { mat: crearMaterial({ name: k, map, normalMap, side: THREE.DoubleSide }, k), refs: 0, fijo: false };
         if (lq) {
           mats[k].mat.userData.avLQDifuso = true;
-          // El shader del atlas corrige el LOD con avAtlasEsc (tamaño real / 4096): con el 2048 hay que fijarla
-          // ya, no solo cuando pase reducirAtlas (puede que ningún evento 'calidad' llegue antes de la fusión).
-          mats[k].mat.userData.avAtlasEsc.value = 0.5;
+          // El shader del atlas corrige el LOD con avAtlasEsc (tamaño real / 4096): hay que fijarla ya con
+          // el JPEG horneado (0,5 para el 2048, 0,25 para el 1024 del móvil pequeño), no solo cuando pase
+          // reducirAtlas (puede que ningún evento 'calidad' llegue antes de la fusión).
+          mats[k].mat.userData.avAtlasEsc.value = lqMovil ? 0.25 : 0.5;
         }
       }
       return mats[k].mat;
