@@ -7,6 +7,7 @@
 
    Uso: node tools/build/kimi2_empezar.js [--rondas 4] [--pack cap1] [--cpu 4] [--salida DIR] [--puerto N]
                                         [--baterias] [--sin-semilla] [--solo a,b] [--capturas] [--vistas "x,z,yaw;…"]
+                                        [--extra-url "v18=1"] ( también en --baterias y en las recargas de rescate )
 */
 'use strict';
 const http = require('http');
@@ -253,7 +254,7 @@ async function lanzarChrome() {
   async function rescatarPagina(ses) {
     if (await paginaViva(ses)) return false;
     console.log('  · pestaña caída: recargando y reentrando…');
-    try { await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ses, 20000); } catch (e) { /* sesión muerta */ }
+    try { await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1${EXTRA_URL ? '&' + EXTRA_URL : ''}` }, ses, 20000); } catch (e) { /* sesión muerta */ }
     if (!(await esperarListo(ses))) return 'la página no arrancó tras recargar';
     return 'recargada: ' + String(await evaluar(cdp, ses, PREPARAR_JS, 300)).slice(0, 120);
   }
@@ -279,7 +280,7 @@ async function lanzarChrome() {
     async function pestanaPrincipal(sembrar, preparar) {
       const { tid, ses } = await nuevaPestana(false, sembrar);
       ctx.ses = ses; ctx.tid = tid; ctx.preparar = preparar;
-      await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ses);
+      await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1${EXTRA_URL ? '&' + EXTRA_URL : ''}` }, ses);
       if (!(await esperarListo(ses))) throw new Error('el juego no arrancó');
       console.log('· jugador ' + (sembrar ? 'sembrado' : 'nuevo') + ': ' + await evaluar(cdp, ses, preparar, 300));
     }
@@ -301,7 +302,7 @@ async function lanzarChrome() {
         }
         if (RECARGA_ANTES.includes(b) && (await paginaViva(ctx.ses))) {
           console.log('  · recargando la página antes de ' + b + ' (memoria GPU limpia, QA-111)');
-          try { await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1` }, ctx.ses, 20000); } catch (e) { /* pestaña muerta: lo rescatará rescatarPagina */ }
+          try { await cdp.call('Page.navigate', { url: `${origen}/index.html?qa=1${EXTRA_URL ? '&' + EXTRA_URL : ''}` }, ctx.ses, 20000); } catch (e) { /* pestaña muerta: lo rescatará rescatarPagina */ }
           if (await esperarListo(ctx.ses)) console.log('  · reentrada: ' + String(await evaluar(cdp, ctx.ses, ctx.preparar, 300)).slice(0, 90));
         }
         const rescate = await rescatarPagina(ctx.ses);
