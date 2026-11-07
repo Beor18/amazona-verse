@@ -292,7 +292,7 @@ AVE.module('fisica', function (G) {
     // Un salto de más de 2 m desde el cuadro anterior es un teletransporte (misión, prueba, cargar partida): lo de antes no cuenta
     ATS.reloj = (ATS.reloj || 0) + dt; // tiempo de juego para la regla del lugar seguro
     const u = ATS.ult; ATS.ult = { x: S.pos.x, y: S.pos.y, z: S.pos.z };
-    if (u && Math.hypot(S.pos.x - u.x, S.pos.y - u.y, S.pos.z - u.z) > 2) { ATS.t = 0; ATS.salida = null; MOVE.atasco = 0; }
+    if (u && Math.hypot(S.pos.x - u.x, S.pos.y - u.y, S.pos.z - u.z) > 2) { ATS.t = 0; ATS.salida = null; MOVE.atasco = 0; ATS.hist = []; }
     // Saliendo: sigue hasta el punto libre aunque a medio camino ya no cuente como metida (los pies en el borde de una losa)
     if (ATS.salida) {
       ATS.t += dt; MOVE.atasco = ATS.t;
