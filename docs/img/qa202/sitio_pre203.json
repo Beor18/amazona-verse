@@ -1,0 +1,142 @@
+· preparar: ok: portada → creador → Empezar (Hoja Veloz) → carga 8245 ms (listo) → intro saltada
+{
+ "terreno": {
+  "sueloEnSitio": "n/a",
+  "h": 16.135857351881363,
+  "exacto": true
+ },
+ "nTroncos": 33,
+ "troncos": [
+  {
+   "tipo": "tronco",
+   "modelo": "yagrumo",
+   "x": -147.1,
+   "z": 9.5,
+   "dist": 5.59,
+   "r": 0.2
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "tabonuco",
+   "x": -156.5,
+   "z": 9.7,
+   "dist": 7.39,
+   "r": 0.32
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "tabonuco",
+   "x": -154.5,
+   "z": 7.1,
+   "dist": 7.95,
+   "r": 0.33
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "yagrumo_joven",
+   "x": -149.4,
+   "z": 4.7,
+   "dist": 9.37,
+   "r": 0.2
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "tabonuco",
+   "x": -159.8,
+   "z": 15.7,
+   "dist": 9.42,
+   "r": 0.31
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "tabonuco",
+   "x": -142.5,
+   "z": 8.4,
+   "dist": 9.78,
+   "r": 0.37
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "palma_sierra",
+   "x": -159.4,
+   "z": 9.6,
+   "dist": 9.95,
+   "r": 0.21
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "yagrumo_joven",
+   "x": -158.5,
+   "z": 7.5,
+   "dist": 10.31,
+   "r": 0.2
+  }
+ ],
+ "nColliders": 46,
+ "colliders": [
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#2",
+   "x": -150.4,
+   "z": 13.4,
+   "dist": 0.57,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#2",
+   "x": -151.2,
+   "z": 12.4,
+   "dist": 1.76,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#2",
+   "x": -152,
+   "z": 11.3,
+   "dist": 3.09,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#2",
+   "x": -152.9,
+   "z": 10.3,
+   "dist": 4.42,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#1",
+   "x": -155.2,
+   "z": 16.3,
+   "dist": 5.28,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#1",
+   "x": -155.8,
+   "z": 15.1,
+   "dist": 5.43,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#1",
+   "x": -154.7,
+   "z": 17.6,
+   "dist": 5.46,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "(anon)",
+   "x": -147.1,
+   "z": 9.5,
+   "dist": 5.59,
+   "r": 0.2
+  }
+ ],
+ "libreMin": -0.44,
+ "culpable": {
+  "tipo": "collider",
+  "id": "muro_roca@kelvin_aldea_rio_oeste#2",
+  "x": -152,
+  "z": 11.3
+ },
+ "solido": 7
+}

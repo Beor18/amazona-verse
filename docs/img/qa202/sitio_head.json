@@ -1,0 +1,144 @@
+· preparar: ok: portada → creador → Empezar (Trueno del Yunque) → carga 7046 ms (listo) → intro saltada
+{
+ "terreno": {
+  "sueloEnSitio": true,
+  "h": 16.135857351881363,
+  "exacto": true
+ },
+ "nTroncos": 32,
+ "troncos": [
+  {
+   "tipo": "tronco",
+   "modelo": "yagrumo",
+   "x": -147.1,
+   "z": 9.5,
+   "dist": 5.59,
+   "r": 0.2
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "tabonuco",
+   "x": -156.5,
+   "z": 9.7,
+   "dist": 7.39,
+   "r": 0.32
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "palma_sierra_joven",
+   "x": -158.2,
+   "z": 13.5,
+   "dist": 7.74,
+   "r": 0.2
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "palma_sierra",
+   "x": -154.1,
+   "z": 6.6,
+   "dist": 8.23,
+   "r": 0.2
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "tabonuco",
+   "x": -145.6,
+   "z": 5.8,
+   "dist": 9.52,
+   "r": 0.37
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "palma_sierra",
+   "x": -159.4,
+   "z": 17.9,
+   "dist": 9.67,
+   "r": 0.2
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "yagrumo_joven",
+   "x": -142,
+   "z": 8.8,
+   "dist": 9.91,
+   "r": 0.2
+  },
+  {
+   "tipo": "tronco",
+   "modelo": "palma_sierra",
+   "x": -159.4,
+   "z": 9.6,
+   "dist": 9.95,
+   "r": 0.21
+  }
+ ],
+ "nColliders": 46,
+ "colliders": [
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#2",
+   "x": -150.4,
+   "z": 13.4,
+   "dist": 0.57,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#2",
+   "x": -151.2,
+   "z": 12.4,
+   "dist": 1.76,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#2",
+   "x": -152,
+   "z": 11.3,
+   "dist": 3.09,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#2",
+   "x": -152.9,
+   "z": 10.3,
+   "dist": 4.42,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#1",
+   "x": -155.2,
+   "z": 16.3,
+   "dist": 5.28,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#1",
+   "x": -155.8,
+   "z": 15.1,
+   "dist": 5.43,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "muro_roca@kelvin_aldea_rio_oeste#1",
+   "x": -154.7,
+   "z": 17.6,
+   "dist": 5.46,
+   "r": 0.8027643299889564
+  },
+  {
+   "id": "(anon)",
+   "x": -147.1,
+   "z": 9.5,
+   "dist": 5.59,
+   "r": 0.2
+  }
+ ],
+ "libreMin": -1.47,
+ "culpable": {
+  "tipo": "roca",
+  "modelo": "tronco_caido",
+  "x": -155.3,
+  "z": 3.4,
+  "dist": 11.6,
+  "r": 2.2
+ },
+ "solido": 8
+}

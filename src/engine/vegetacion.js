@@ -233,9 +233,10 @@ AVE.module('vegetacion', function (G) {
     };
     const marcar = (x, z, r) => { const k = Math.floor(x / 4) * 8192 + Math.floor(z / 4); let l = ocup.get(k); if (!l) ocup.set(k, l = []); l.push({ x, z, r }); };
     const lista = []; // { m, x, y, z, s, rot, tilt, tinte, rank }
-    const add = (m, x, z, s, extra) => {
+    const add = (m, x, z, s, extra, r) => {
       const y = T.height(x, z);
-      const it = Object.assign({ m, x, y, z, s, rot: rnd() * Math.PI * 2, tx: (rnd() - 0.5) * 0.06, tz: (rnd() - 0.5) * 0.06, h: rnd(), rank: rnd() }, extra);
+      r = r || rnd;
+      const it = Object.assign({ m, x, y, z, s, rot: r() * Math.PI * 2, tx: (r() - 0.5) * 0.06, tz: (r() - 0.5) * 0.06, h: r(), rank: r() }, extra);
       lista.push(it); return it;
     };
     // héroes primero (ocupan su sitio)
@@ -274,18 +275,26 @@ AVE.module('vegetacion', function (G) {
     const tapadoArbol = (x, z) => tapado(x, z, 3) || enPieza(x, z);
     const cel = FD.celda, area = cel * cel / 100;
     const radioArbol = { palma_sierra: 1.8, yagrumo: 1.8, tabonuco: 3.2, helecho_arboreo: 1.8, ceiba: 6, flamboyan: 4.5, bambu: 2.2 };
+    // QA-202/KIMI-203: cada celda (especie, ix, iz) se siembra con su propia semilla. Con el RNG
+    // secuencial único, cualquier decisión que cambiara al llegar un trozo de terreno (splat
+    // descubierto por la malla nueva) re-barajaba TODAS las plantas posteriores en cada
+    // re-siembra: el bosque cambiaba al volar y los claros verificados (actividades V18) se
+    // contaminaban. Por celda, una decisión que cambia solo re-mueve las plantas de esa celda y
+    // el layout converge al estado final cuando el terreno está completo.
+    const celdaSemilla = (esp, ix, iz) => { let h = 2166136261; const s = esp + '|' + ix + '|' + iz; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return (h ^ 9137) >>> 0; };
     for (const esp of FD.especies || []) {
       const d = dens[esp], md = MODELOS[esp];
       if (!d || !md) continue;
       const esArb = md.kit.some(k => esArbol(k));
       for (let iz = 0; iz < FD.nz; iz++) for (let ix = 0; ix < FD.nx; ix++) {
         const v = d[ix + iz * FD.nx]; if (!v) continue;
+        const rc = rng(celdaSemilla(esp, ix, iz));
         const exp = v / 10 * area;
-        let n = Math.floor(exp); if (rnd() < exp - n) n++;
+        let n = Math.floor(exp); if (rc() < exp - n) n++;
         for (let k = 0; k < n; k++) {
           let ok = false, x = 0, z = 0;
           for (let t = 0; t < 4 && !ok; t++) {
-            x = FD.x0 + (ix + rnd()) * cel; z = FD.z0 + (iz + rnd()) * cel;
+            x = FD.x0 + (ix + rc()) * cel; z = FD.z0 + (iz + rc()) * cel;
             ok = libre(x, z);
           }
           if (!ok) continue;
@@ -294,12 +303,12 @@ AVE.module('vegetacion', function (G) {
           if (esArb ? tapadoArbol(x, z) : tapado(x, z, 1.6)) continue;
           if (!esArb && esp !== 'rocas' && T.normalAt(x, z).y < 0.72) continue; // matas: no en paredes de roca
           let m = md.kit[0];
-          if (esp === 'rocas') m = cercaAgua(x, z, 3.5) && md.kit.includes('piedras_rio') ? 'piedras_rio' : md.kit[rnd() < 0.5 ? 0 : 1];
+          if (esp === 'rocas') m = cercaAgua(x, z, 3.5) && md.kit.includes('piedras_rio') ? 'piedras_rio' : md.kit[rc() < 0.5 ? 0 : 1];
           else if (md.kit.length > 1) {
             const mz = md.mezcla == null ? null : typeof md.mezcla === 'number' ? md.mezcla : md.mezcla[md.kit[1]];
-            m = mz != null ? md.kit[rnd() < mz ? 1 : 0] : md.kit[Math.floor(rnd() * md.kit.length)];
+            m = mz != null ? md.kit[rc() < mz ? 1 : 0] : md.kit[Math.floor(rc() * md.kit.length)];
           }
-          const s = (md.escala || 1) * (0.82 + rnd() * 0.36);
+          const s = (md.escala || 1) * (0.82 + rc() * 0.36);
           if (esArb) {
             const nrm = T.normalAt(x, z);
             if (nrm.y < 0.72) continue;
@@ -307,9 +316,9 @@ AVE.module('vegetacion', function (G) {
             if (!libreDe(x, z, r)) continue;
             marcar(x, z, r);
           }
-          const it = add(m, x, z, s);
+          const it = add(m, x, z, s, null, rc);
           // hojarasca bajo tabonucos y ceibas
-          if ((m === 'tabonuco' || m === 'ceiba') && libre(x + 0.6, z + 0.4)) add('hojarasca', x + (rnd() - 0.5) * 1.2, z + (rnd() - 0.5) * 1.2, 0.9 + rnd() * 0.7 * (m === 'ceiba' ? 1.8 : 1));
+          if ((m === 'tabonuco' || m === 'ceiba') && libre(x + 0.6, z + 0.4)) add('hojarasca', x + (rc() - 0.5) * 1.2, z + (rc() - 0.5) * 1.2, 0.9 + rc() * 0.7 * (m === 'ceiba' ? 1.8 : 1), null, rc);
           if (CAT(m) !== 'arbol' && CAT(m) !== 'roca') it.tx = it.tz = 0;
         }
       }
