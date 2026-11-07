@@ -1,0 +1,27 @@
+[11:42:24] pack ep3: navegando...
+[11:42:29] …latido
+[11:42:34] …latido
+[11:42:39] …latido
+[11:42:44] …latido
+[11:42:49] …latido
+[11:42:53] pack ep3: listo en 5.536s, entrada en 28.965s; asentando y perfilando 15s
+[11:42:54] …latido
+[11:42:59] …latido
+[11:43:04] …latido
+[11:43:09] …latido
+[11:43:14] …latido
+[11:43:18] pack ep3: fpsMed=13 min=1 p95=179ms calls=96 ktris=587 heap=142MB | perfil 17544ms | top: three.js 31.87% · nativo 22.64% · anónima/sin-url 12.66% · renderer 8.23% · game 6.6% · solidos 5.35% | errores=[]
+[11:43:18] pack ep4: navegando...
+[11:43:19] …latido
+[11:43:24] …latido
+[11:43:29] …latido
+[11:43:34] …latido
+[11:43:39] …latido
+[11:43:44] pack ep4: listo en 5.445s, entrada en 26.002s; asentando y perfilando 15s
+[11:43:44] …latido
+[11:43:49] …latido
+[11:43:54] …latido
+[11:43:59] …latido
+[11:44:04] …latido
+[11:44:09] pack ep4: fpsMed=12 min=0 p95=185ms calls=117 ktris=594 heap=121MB | perfil 17458ms | top: three.js 31.09% · nativo 24.73% · solidos 11.12% · anónima/sin-url 8.82% · renderer 6.87% · game 6.06% | errores=[]
+[11:44:09] evidencia: C:\Users\kelvi\amazonaversegame\docs\img\kimi132\k132_k1v5.json
