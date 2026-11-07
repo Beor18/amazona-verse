@@ -1178,13 +1178,38 @@ AVE.module('streaming', function (G) {
     }
     // KIMI-034: runs con objetos reutilizados y comparación estructural — antes armaba array + objetos + clave
     // (string) nuevos por malla visible en cada cuadro: basura por cuadro en vuelo.
-    function tramos(m, quiere) {
+    function tramos(m, quiere, gapo, gapV) {
       const pool = m.userData._rp || (m.userData._rp = []), runs = m.userData._ru || (m.userData._ru = []);
       runs.length = 0;
-      for (const t of m.userData.tramos) if (quiere(t.z)) {
-        const u = runs.length ? runs[runs.length - 1] : null;
-        if (u && u.start + u.count === t.start) u.count += t.count;
-        else { const r = pool[runs.length] || (pool[runs.length] = { start: 0, count: 0 }); r.start = t.start; r.count = t.count; runs.push(r); }
+      const T = m.userData.tramos;
+      if (!gapo) {
+        for (const t of T) if (quiere(t.z)) {
+          const u = runs.length ? runs[runs.length - 1] : null;
+          if (u && u.start + u.count === t.start) u.count += t.count;
+          else { const r = pool[runs.length] || (pool[runs.length] = { start: 0, count: 0 }); r.start = t.start; r.count = t.count; runs.push(r); }
+        }
+      } else {
+        // KIMI-192 (QA-81, pedido de Kimi 1 en PEDIDOS 144): en las fusiones GLOBALES los runs se fragmentan
+        // por el frustum (cada tramo es una instancia marcada a las que quiere() da paso este cuadro): en la
+        // peor vista la fusión HD global dibujaba 7 runs de AV_HD_Ancient. Un run se traga los huecos de
+        // instancias NO marcadas que tenga entre pecho y espalda (gapo tramos y gapV vértices de sobre-dibujo
+        // acotados): el coste es vértice/clip de vecinas fuera de cuadro, el ahorro es 1 draw call por hueco.
+        let i = 0;
+        while (i < T.length) {
+          if (!quiere(T[i].z)) { i++; continue; }
+          const r = pool[runs.length] || (pool[runs.length] = { start: 0, count: 0 });
+          r.start = T[i].start; r.count = T[i].count;
+          let huecos = 0, extra = 0, j = i + 1;
+          while (j < T.length) {
+            const t = T[j];
+            if (quiere(t.z)) { r.count = t.start + t.count - r.start; huecos = 0; j++; continue; }
+            huecos++; extra += t.count;
+            if (huecos > gapo || extra > gapV) break;
+            r.count = t.start + t.count - r.start;
+            j++;
+          }
+          runs.push(r); i = j;
+        }
       }
       const prev = m.userData._pr || (m.userData._pr = []);
       let igual = prev.length === runs.length;
@@ -1787,7 +1812,7 @@ AVE.module('streaming', function (G) {
     function globalFus(G2, quiere, so) {
       const zs = G2.zonas.size ? [...G2.zonas] : []; // 1 array por global y cuadro (antes era 1 por malla)
       for (const m of G2.mallas) {
-        const n = tramos(m, quiere);
+        const n = tramos(m, quiere, 8, 100000); // KIMI-192: gapo 8 tramos / 100 k vértices de sobre-dibujo acotado
         m.visible = n > 0;
         m.castShadow = m.visible && zs.some(id => zonas[id] && zonas[id][so]);
         vis.mallas += n;

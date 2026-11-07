@@ -1,0 +1,38 @@
+{
+ "etiqueta": "post2",
+ "fecha": "2026-11-07T04:40:45.492Z",
+ "zona": "kelvin_ruinas_yunque",
+ "posJ": [
+  -4,
+  25,
+  -85
+ ],
+ "porYaw": [
+  "0:81",
+  "1.6:95",
+  "3.1:121",
+  "4.7:148"
+ ],
+ "peor": {
+  "calls": 148,
+  "yaw": 4.71238898038469
+ },
+ "fusibles": [
+  {
+   "nombre": "edificiosZonaHDGlobal:AV_HD_Savage",
+   "visible": false,
+   "mat": "AV_HD_Savage",
+   "runs": 0,
+   "tramos": 29
+  },
+  {
+   "nombre": "edificiosZonaHDGlobal:AV_HD_Ancient",
+   "visible": true,
+   "mat": "AV_HD_Ancient",
+   "runs": 5,
+   "tramos": 452
+  }
+ ],
+ "runsHD": 5,
+ "runsCerca": 0
+}
