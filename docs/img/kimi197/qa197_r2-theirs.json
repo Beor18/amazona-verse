@@ -1,0 +1,78 @@
+{
+ "etiqueta": "r2-theirs",
+ "bug": "QA-197 · #fx-descubre espera a pantalla libre (QA-188/193)",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "url": "index.html?pack=cap1&mapa=real",
+ "head": "desconocido",
+ "casos": {
+  "A_libre": {
+   "existe": true,
+   "visible": true,
+   "texto": "Punto QA-197 A",
+   "cardAbierta": false,
+   "busy": false
+  },
+  "B_tarjeta_espera": {
+   "existe": true,
+   "visible": false,
+   "texto": "",
+   "cardAbierta": true,
+   "busy": true
+  },
+  "B_tras_cerrar": {
+   "existe": true,
+   "visible": true,
+   "texto": "Punto QA-197 B",
+   "cardAbierta": false,
+   "busy": false
+  },
+  "C_bocadillo_espera": {
+   "existe": true,
+   "visible": false,
+   "texto": "",
+   "cardAbierta": false,
+   "busy": false
+  },
+  "C_tras_liberar": {
+   "existe": true,
+   "visible": true,
+   "texto": "Punto QA-197 C",
+   "cardAbierta": false,
+   "busy": false
+  },
+  "D_tope_durante": {
+   "existe": true,
+   "visible": false,
+   "texto": "",
+   "cardAbierta": true,
+   "busy": true
+  },
+  "D_tras_tope": {
+   "existe": true,
+   "visible": false,
+   "texto": "",
+   "cardAbierta": false,
+   "busy": false
+  }
+ },
+ "base": {
+  "heapMB": 116,
+  "geo": 77,
+  "tex": 122,
+  "prog": 44,
+  "calls": 55,
+  "tris": 229229,
+  "fps": 47
+ },
+ "final": {
+  "heapMB": 113,
+  "geo": 76,
+  "tex": 122,
+  "prog": 43,
+  "calls": 54,
+  "tris": 229165,
+  "fps": 59
+ },
+ "erroresConsola": [],
+ "duracionS": 135
+}
