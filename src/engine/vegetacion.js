@@ -350,6 +350,7 @@ AVE.module('vegetacion', function (G) {
         it.y -= (1 - ny) * 4; // en la ladera, el pie del lado de abajo no queda en el aire
         n++; tepuyPos.push(x, z);
       }
+<<<<<<< Updated upstream
       // Revisión 11:10: las copas de 8–11 m se leían como nenúfares y solo caían en el borde
       // (el centro de la meseta no es «libre»: lo ocupan las piezas). Aquí son copas chicas, también
       // entre los edificios. El risco vertical no lleva copa.
@@ -362,12 +363,17 @@ AVE.module('vegetacion', function (G) {
         if (y < 78 || nyC < 0.78 || enAgua(jx, jz, y) || tapado(jx, jz, 1.4) || enCiudad(jx, jz, -2)) continue;
         copasCima.push({ x: jx, y, z: jz, ny: nyC, s: 2.6 + rC() * 1.5, h: 2.8 + rC() * 1.3, tono: rC() });
       }
+=======
+>>>>>>> Stashed changes
     }
     return lista;
   }
   const bosquePos = []; // x, z de los árboles de relleno (floraTest)
   const tepuyPos = []; // y los de la selva del tepuy (BL1)
+<<<<<<< Updated upstream
   const copasCima = []; // copas sueltas de la meseta (G19), entre los edificios
+=======
+>>>>>>> Stashed changes
   function empaquetar(lista) {
     const q = new THREE.Quaternion(), e = new THREE.Euler(), sc = new THREE.Vector3(), ps = new THREE.Vector3(), m4 = new THREE.Matrix4(), c = new THREE.Color();
     const cuenta = {};
@@ -890,7 +896,11 @@ AVE.module('vegetacion', function (G) {
     for (const m in grupos) for (const p of grupos[m].prims) for (const im of [p.cerca, p.lejos]) if (im && im.visible) { out.mallas++; out.instanciasVisibles += im.count; }
     let arboles = 0;
     for (const m of ARBOLES) if (porModelo[m]) arboles += porModelo[m].n;
+<<<<<<< Updated upstream
     return Object.assign(out, { arboles, bosque: bosquePos.length / 2, tepuy: tepuyPos.length / 2, copasCima: copasCima.length }, ULT);
+=======
+    return Object.assign(out, { arboles, bosque: bosquePos.length / 2, tepuy: tepuyPos.length / 2 }, ULT);
+>>>>>>> Stashed changes
   }
 
   // ---------- floraTest (AW2): bosque lleno, tope por calidad, sombras, colisión y triángulos por vista ----------
@@ -927,12 +937,15 @@ AVE.module('vegetacion', function (G) {
           if (!libre(tepuyPos[i], tepuyPos[i + 1])) noLibreT++;
         }
         check('Selva del tepuy (BL1): más de 800 árboles alrededor de la ciudad, en su elipse y en suelo libre', st.tepuy > 800 && !fueraT && !noLibreT, st.tepuy + ' árboles, ' + fueraT + ' fuera de la elipse, ' + noLibreT + ' en suelo no libre');
+<<<<<<< Updated upstream
         let malC = 0, grandes = 0;
         for (const c of copasCima) {
           if (!(T.selvaTepuy(c.x, c.z) > 0.4) || c.ny < 0.75 || c.y < 74 || c.s > 4.6) malC++;
           if (c.s > 4.6) grandes++;
         }
         check('Copas de la cima (G19): chicas, en la meseta, no en el risco', copasCima.length >= 50 && !malC && !grandes, copasCima.length + ' copas, ' + malC + ' fuera de sitio, ' + grandes + ' de más de 4,6 m');
+=======
+>>>>>>> Stashed changes
       }
       const MB = usarBosque && window[BOSQUE.global];
       if (MB) {

@@ -574,6 +574,9 @@
       dibujarObra();
     },
 
+    // Temporada (AV1, src/game/menu_modos.js): al terminar se guarda en el progreso de la temporada qué se acordó y qué se cuidó.
+    // Los GDD de los caps. 5 y 6 no lo usan todavía; queda a mano en G.temporada.decision(4).
+    temporada: { decision: S => { const t = k => S.collected.includes(k); return { opcion: OIDS.find(o => t('opcion_' + o)) || null, cuidado: CIDS.find(c => t('cuidado_' + c)) || null }; } },
 
     pruebas: {
       async selfTest(G, T, opts) {
