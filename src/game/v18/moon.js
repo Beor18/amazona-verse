@@ -399,7 +399,8 @@ window.AVV18Moon = function (G) {
           if (G.solidos && G.solidos.activo && [0.3, 0.9, 1.5, 2.5].some(y => G.solidos.dentro(x, z, h + y) > h + 0.15)) r.solido++; } // QA-201: un sólido de flora con el tope a ras del suelo (raíz o rama enterrada) no estorba; dentro() lo cuenta por su margen de 0,4 m
         return r;
       };
-      if (o.sondear) { // diagnóstico: AV.v18MoonTest({ sondear: [[x, z], …] }) mide otros sitios igual (despeja su flora en esta sesión) const sd = []; for (const [cx, cz] of o.sondear) { const r = await medir(cx, cz); sd.push(cx + ',' + cz + ': quita ' + r.quitadas + ' libre ' + r.mT.toFixed(2) + ' ' + r.peor + ' pend ' + r.pend.toFixed(3) + ' moj ' + r.mojado + ' sol ' + r.solido); }
+      // diagnóstico: AV.v18MoonTest({ sondear: [[x, z], …] }) mide otros sitios igual (despeja su flora en esta sesión)
+      if (o.sondear) { const sd = []; for (const [cx, cz] of o.sondear) { const r = await medir(cx, cz); sd.push(cx + ',' + cz + ': quita ' + r.quitadas + ' libre ' + r.mT.toFixed(2) + ' ' + r.peor + ' pend ' + r.pend.toFixed(3) + ' moj ' + r.mojado + ' sol ' + r.solido); }
         check('5z · sondeo', true, sd.join(' | ')); }
       const m5 = await medir(SITIO.x, SITIO.z);
       const puerto = { x: 73.6, z: -75.2 }, golf = G.v18minigolf && G.v18minigolf.sitio, duelo = G.v18combate && G.v18combate.sitio, chispa = G.v18chispa && G.v18chispa.SITIO && (G.v18chispa.SITIO.salida || G.v18chispa.SITIO), /* el SITIO de Chispa es { salida, puntos } */ misterio = G.v18Misterio && G.v18Misterio.sitio && G.v18Misterio.sitio();
