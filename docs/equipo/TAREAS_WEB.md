@@ -263,3 +263,20 @@ Integro, paso las 12 y subo por tareas.
 3. **W34 · Pruebas extra completas en verde (sin las 13 de QA-201).** Un agente de la nube ya está con esas 13 (cargaTest, v18Descubrir, v18Puerto, v18Moon, maravillas, bohios, streaming, flora, comunidades, banquete, minimapa, idioma y ambiente): no las toques. Corre el resto de `tools/build/test.sh <build> --extra` sobre main. Para cada roja, separa si es real o depende del orden y arregla la causa con el cambio mínimo. Lista final en tu 📣: verde, arreglada o solo intermitente.
 4. **W35 · Teclado y lector de pantalla en lo nuevo:** el menú «¿Cómo quieres jugar?» con la tarjeta Minigolf, el panel «¿Cuántos juegan?» del minigolf, los paneles de Chispa, Moon y el Guardián, la tarjeta «emparejar» del Aula (bdb436d4) y la misión del puerto. Tienen que poder jugarse solo con teclado: foco visible, Escape para salir, aria con nombre. Arregla lo que falte y añade el check a `accesibilidadTest`.
 Corre como mucho 2 Chrome a la vez en la misma máquina. Si cada agente tiene su propia máquina, no hay problema.
+
+📣 **Otra cuenta → coordinadora · 7-nov ~17:00 UTC · W32 y W33 hechas.** 12/12 en verde sobre 88df6a6, 0 errores. Carga inicial oficial: **21,87 MB**, de los que 3,46 MB son `.js`.
+- **W32:** los módulos V18 se cargan a demanda en `boot.js`:
+  - Chispa, Moon y Guardián al acercarse a 130 m de su sitio, en el cap. 1. Hasta entonces, un stub mantiene la marca del minimapa; sus coordenadas están copiadas de cada `SITIO`, así que si un SITIO se mueve hay que moverlo también en `boot.js`.
+  - Puerto, cuando el puente está reparado.
+  - Serpiente y Sapo, según el estado de la Sombra y la Serpiente.
+  - Duelo2 a 40 m; su marca del suelo ahora se ve a 40 m en vez de a 90.
+  - Misterio, en el cap. 1 con el puente roto.
+  - Minigolf se queda igual: está a unos 49 m del spawn y conectado a la pausa, a `menu_modos.js` y a `?mini=golf`.
+  - Pruebas V18: Chispa, Moon y Guardián 19/19; Duelo2 25; Misterio 8; Sapo 15; Serpiente 13; Minigolf 50; Combate 42; Explorar 21.
+  - **Ojo, medida:** `avtest` nunca dispara el primer gesto, porque usa `.click()` y no un `pointerdown`. Por eso lo que se carga «al primer gesto» no entra en la medida oficial. Con un `pointerdown`, el `.js` pasa de 5,08 a 4,79 MB, y la carga real de un jugador era de unos 28,3 MB, por encima del tope de 28. Conviene que la medida oficial incluya un `pointerdown`.
+- **W33:** jugué las 6 aperturas desde «Capítulos» en el teléfono, con toques; 0 errores. Arreglos:
+  - El bocadillo del narrador baja de 330 a 262 px, porque en el cap. 6 el aviso tapaba la frase de Iguaca.
+  - `#toast` tiene altura máxima según el modo (libre, diálogo o bocadillo) y se compacta cuando hay historia abierta, así que un aviso largo del Cuaderno ya no llega al joystick ni a los botones.
+  - Pruebas: selfTest 106, ep6Test 91, accesibilidad 64.
+- **Pendiente, en tu carril (`boot.js`):** al entrar a un capítulo desde «Capítulos», la portada vuelve a salir y hay que tocar «Aventura» otra vez. No lo toqué.
+- Tengo agentes libres.
