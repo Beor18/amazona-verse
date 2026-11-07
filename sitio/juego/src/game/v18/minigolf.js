@@ -290,7 +290,8 @@ window.AVV18Minigolf = function (G) {
     if (!o.forzar && (!libre() || otroActivo())) return false;
     if (M.flying) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } }
     A.fase = 'apuntar'; A.njug = 1; A.eligiendo = true;
-    enganchar(); empezarHoyo(); montarHud(); hud.el.hidden = false; paneles(); pintar(true);
+    focoPrevio = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;
+    enganchar(); empezarHoyo(); montarHud(); hud.el.hidden = false; hud.vista = null; paneles(); pintar(true);
     toast(parVisto ? TXT.empieza : TXT.empiezaPar, parVisto ? 3000 : 4200); parVisto = true; emitir({ tipo: 'empieza' });
     return true;
   }
@@ -366,13 +367,28 @@ window.AVV18Minigolf = function (G) {
     hud.q('tabla').hidden = !m; hud.q('fin2').hidden = m; hud.q('jugs').hidden = !multi() || fin;
     hud.q('barraW').hidden = hud.q('fuerzaEt').hidden = fin || A.eligiendo; // la barra de fuerza vacía no pinta nada en el resultado
     if (!m) { hud.q('fin1').style.color = ''; }
+    enfocar(A.eligiendo && !fin ? 'j1' : fin ? 'otra' : 'golpe');
+  }
+  // W35 · teclado: al cambiar de panel, el foco va a su primer botón (elegir: «1 jugador»; jugando: «Golpear»; resultado:
+  // «Otra vez»), solo si el foco estaba en el juego o dentro del panel (no se le quita a otra ventana). Al salir vuelve a donde estaba.
+  let focoPrevio = null;
+  function enfocar(a) {
+    if (!hud || hud.el.hidden || hud.vista === a) return;
+    hud.vista = a;
+    const act = document.activeElement, enJuego = !act || act === document.body || hud.el.contains(act) || (focoPrevio && act === focoPrevio);
+    if (!enJuego) return;
+    const b = hud.el.querySelector('button[data-a="' + a + '"]'); if (b && b.getClientRects().length) try { b.focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
   }
   function reiniciar() { if (A.fase === 'nada') return false; empezarHoyo(); pintar(true); emitir({ tipo: 'reinicia' }); return true; }
   function salir(motivo) {
     if (A.fase === 'nada') return false;
     A.fase = 'nada'; A.cargando = false; A.timers.length = 0; soltar();
     A.eligiendo = false; A.njug = 1; A.turno = 0; A.hundir = false; J = []; colorTurno(); aroTurno.visible = false; for (const g of fantasmas) g.visible = false;
-    if (hud) hud.el.hidden = true;
+    if (hud) {
+      const dentro = hud.el.contains(document.activeElement); hud.el.hidden = true; hud.vista = null;
+      if (dentro) { const f = focoPrevio; if (f && document.contains(f) && f.getClientRects().length && !hud.el.contains(f)) try { f.focus({ preventScroll: true }); } catch (e) { /* */ } else try { document.activeElement.blur(); } catch (e) { /* */ } }
+    }
+    focoPrevio = null;
     ponerSemilla(P_TEE.x, P_TEE.z); semilla.scale.setScalar(1); puntos.visible = false;
     S.pos.x = P_ENTRADA.x; S.pos.z = P_ENTRADA.z; S.pos.y = H(S.pos.x, S.pos.z) + 0.05; S.vy = 0; M.vx = M.vz = 0;
     if (motivo) toast(motivo, 2600);
@@ -598,6 +614,10 @@ window.AVV18Minigolf = function (G) {
   function teclaAbajo(e) {
     if (!enganchado || pausa() || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
     const k = (e.key || '').toLowerCase(); if (!TRAGAR.has(k)) return;
+    // W35: Enter o Espacio sobre un botón del panel con el foco (elegir jugadores, Grito, Reiniciar, Salir, Otra vez…) lo pulsa,
+    // como cualquier botón; «Golpear» y ◀ ▶ siguen con las teclas del hoyo (Espacio mantenido = fuerza)
+    const bf = e.target && e.target.closest && hud && hud.el.contains(e.target) ? e.target.closest('button[data-a]') : null;
+    if (bf && (k === 'enter' || k === ' ') && !/^(golpe|izq|der)$/.test(bf.dataset.a)) { e.stopImmediatePropagation(); return; }
     e.stopImmediatePropagation(); e.preventDefault();
     if (k === 'arrowleft' || k === 'a') { girosTecla.izq = true; giroTeclas(); }
     else if (k === 'arrowright' || k === 'd') { girosTecla.der = true; giroTeclas(); }
@@ -659,6 +679,7 @@ window.AVV18Minigolf = function (G) {
       '#v18-golf .vg-et{font-size:11px;opacity:.8}' +
       '#v18-golf .vg-bot{display:grid;grid-template-columns:1fr 2fr 1fr;gap:8px;margin-top:8px}#v18-golf .vg-bot2{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}' +
       '#v18-golf button{pointer-events:auto;font:inherit;font-size:16px;font-weight:600;min-height:52px;padding:6px 10px;border-radius:26px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 6px #0005;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}' +
+      '#v18-golf button:focus-visible{outline:4px solid var(--c-focus,#ffe066);outline-offset:2px;box-shadow:0 0 0 9px rgba(8,20,14,.7)}' +
       '#v18-golf button.vg-golpe{background:#ffd27a;font-size:18px}#v18-golf button.cd{opacity:.45}#v18-golf button.on{outline:3px solid #8fe08a}' +
       '#v18-golf .vg-fin{text-align:center}#v18-golf .vg-fin p{margin:2px 0;font-size:18px;font-weight:600}#v18-golf .vg-fin .vg-m{font-size:22px}' +
       '#v18-golf .vg-m[data-m="oro"]{color:#ffd84a}#v18-golf .vg-m[data-m="plata"]{color:#dfe7ee}#v18-golf .vg-m[data-m="bronce"]{color:#e0a36a}' +
@@ -686,14 +707,15 @@ window.AVV18Minigolf = function (G) {
     if (hud) return hud;
     estilo();
     const el = document.createElement('div'); el.id = 'v18-golf'; el.hidden = true;
-    el.innerHTML = `<div class="vg-caja"><div class="vg-info"><span>${TXT.hoyo}</span><span>${TXT.par}</span><span data-k="golpes"></span><span data-k="record"></span><span data-k="turno"></span></div><div class="vg-jugs" data-k="jugs" hidden></div>` +
+    el.setAttribute('role', 'region'); el.setAttribute('aria-labelledby', 'vg-hoyo'); // W35: zona con nombre para el lector de pantalla
+    el.innerHTML = `<div class="vg-caja"><div class="vg-info"><span id="vg-hoyo">${TXT.hoyo}</span><span>${TXT.par}</span><span data-k="golpes"></span><span data-k="record"></span><span data-k="turno"></span></div><div class="vg-jugs" data-k="jugs" hidden></div>` +
       `<div class="vg-barra" data-k="barraW"><b data-k="barra"></b></div><div class="vg-et" data-k="fuerzaEt">${TXT.fuerza}</div>` +
-      `<div class="vg-elige" data-k="elige" hidden><p>${TXT.elige}</p><div class="vg-et">${TXT.eligeSub}</div><div class="vg-bot4">` +
-      [1, 2, 3, 4].map(n => `<button data-a="j${n}">${TXT['j' + n]}</button>`).join('') + `</div>` +
-      `<div class="vg-elige-salir"><button data-a="salir">${TXT.salir}</button></div></div>` +
+      `<div class="vg-elige" data-k="elige" role="group" aria-labelledby="vg-elige-t" aria-describedby="vg-elige-sub" hidden><p id="vg-elige-t">${TXT.elige}</p><div class="vg-et" id="vg-elige-sub">${TXT.eligeSub}</div><div class="vg-bot4">` +
+      [1, 2, 3, 4].map(n => `<button type="button" data-a="j${n}">${TXT['j' + n]}</button>`).join('') + `</div>` +
+      `<div class="vg-elige-salir"><button type="button" data-a="salir">${TXT.salir}</button></div></div>` +
       `<div data-k="bot"><div class="vg-bot"><button data-a="izq" aria-label="${TXT.izq}">◀</button><button class="vg-golpe" data-a="golpe">${TXT.golpe}</button><button data-a="der" aria-label="${TXT.der}">▶</button></div>` +
       `<div class="vg-bot2"><button data-a="grito" data-k="bgrito">${TXT.poder}</button><button data-a="reiniciar">${TXT.reiniciar}</button><button data-a="salir">${TXT.salir}</button></div><div class="vg-guia" data-k="guia">${tactil() ? TXT.guiaT : TXT.guia}</div></div>` +
-      `<div class="vg-fin" data-k="fin" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><div class="vg-tabla" data-k="tabla" hidden></div><p data-k="fin3"></p>` +
+      `<div class="vg-fin" data-k="fin" role="status" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><div class="vg-tabla" data-k="tabla" hidden></div><p data-k="fin3"></p>` +
       `<div class="vg-bot2"><button data-a="otra">${TXT.otra}</button><button data-a="seguir">${TXT.seguir}</button></div></div></div>`;
     const boton = e => e.target.closest && e.target.closest('button[data-a]');
     el.addEventListener('pointerdown', e => {
@@ -703,9 +725,15 @@ window.AVV18Minigolf = function (G) {
       const a = b.dataset.a; b.classList.add('on');
       if (a === 'izq') A.giro = 1; else if (a === 'der') A.giro = -1;
       else if (a === 'golpe') empezarCarga(); else if (a === 'grito') grito(); else if (a === 'reiniciar') reiniciar();
-      else if (a === 'salir' || a === 'seguir') salir(TXT.sale); else if (a === 'otra') reiniciar();
-      else if (/^j[1-4]$/.test(a)) elegir(+a[1]);
+      else accion(a);
     });
+    const accion = a => {
+      if (a === 'grito') grito(); else if (a === 'reiniciar' || a === 'otra') reiniciar();
+      else if (a === 'salir' || a === 'seguir') salir(TXT.sale);
+      else if (/^j[1-4]$/.test(a)) elegir(+a[1]);
+    };
+    // W35: con el teclado (Enter o Espacio sobre el botón con el foco) llega un click sin puntero (detail 0)
+    el.addEventListener('click', e => { const b = boton(e); if (!b || e.detail !== 0) return; e.preventDefault(); accion(b.dataset.a); });
     const suelta = e => {
       const b = boton(e); if (!b) return; b.classList.remove('on');
       const a = b.dataset.a;
@@ -750,6 +778,44 @@ window.AVV18Minigolf = function (G) {
   Promise.resolve(G.mundo && G.mundo.listo).then(pedirSitio, () => {});
   setTimeout(pedirSitio, 5000);
   G.on('update', () => { if (recolocar && A.fase === 'nada') { recolocar = false; const n = buscarSitio(); if (!K || n.x !== K.x || n.z !== K.z || n.a !== K.a) montar(n); else Object.assign(K, { troncos: n.troncos, rango: n.rango }); } }, 76);
+
+  // ---------- W35 · teclado y lector de pantalla (lo llaman esta prueba y AV.accesibilidadTest) ----------
+  // Abrir → foco en «1 jugador» de «¿Cuántos juegan?» (grupo con nombre); todos los botones con nombre; Enter sobre un botón lo
+  // pulsa (no lo traga el hoyo); el foco pasa a «Golpear»; Esc sale sin abrir la Pausa y el foco vuelve a donde estaba.
+  function teclado() {
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    if (A.fase !== 'nada' || !K || !ofrecible()) return out;
+    const nombre = el => (el.getAttribute('aria-labelledby') || '').split(/\s+/).map(id => document.getElementById(id)).filter(Boolean).map(x => x.textContent.trim()).join(' ') || el.getAttribute('aria-label') || el.textContent.trim();
+    const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M.flying, yaw0 = G.camara.yaw, man0 = A.manual, toast0 = G.ui.toast, r0 = JSON.stringify(record());
+    const foco0 = document.activeElement, ancla = document.createElement('button');
+    ancla.type = 'button'; ancla.textContent = 'W35'; ancla.style.cssText = 'position:fixed;left:0;top:0;opacity:0;pointer-events:none'; document.body.appendChild(ancla); ancla.focus();
+    const tecla = (el, key, tipo) => { const ev = new KeyboardEvent(tipo || 'keydown', { key, bubbles: true, cancelable: true }); el.dispatchEvent(ev); return ev; };
+    G.ui.toast = () => {}; A.manual = true;
+    try {
+      iniciar({ forzar: true });
+      const el = hud.el, eli = hud.q('elige'), j1 = el.querySelector('[data-a="j1"]'), j2 = el.querySelector('[data-a="j2"]');
+      check('W35 · Minigolf «¿Cuántos juegan?»: al abrir, el foco va a «1 jugador»; el panel y el grupo tienen nombre',
+        document.activeElement === j1 && el.getAttribute('role') === 'region' && !!nombre(el) && eli.getAttribute('role') === 'group' && !!nombre(eli), (document.activeElement && (document.activeElement.dataset.a || document.activeElement.id)) + ' · ' + nombre(eli));
+      const sinNombre = [...el.querySelectorAll('button')].filter(b => !nombre(b)).map(b => b.dataset.a);
+      check('W35 · Minigolf: todos los botones del panel son <button> con nombre', !sinNombre.length, sinNombre.join(', '));
+      j2.focus(); const ev = tecla(j2, 'Enter'); const nativo = !ev.defaultPrevented; if (nativo) j2.click(); // el navegador hace el clic (detail 0) si nadie lo impidió
+      const golpe = el.querySelector('[data-a="golpe"]');
+      check('W35 · Minigolf: Enter sobre «2 jugadores» lo pulsa (el hoyo no se traga la tecla) y el foco pasa a «Golpear»', nativo && A.njug === 2 && !A.eligiendo && document.activeElement === golpe, JSON.stringify({ nativo, n: A.njug, foco: document.activeElement && document.activeElement.dataset.a }));
+      const ev2 = tecla(golpe, ' '); tecla(golpe, ' ', 'keyup'); A.cargando = false;
+      check('W35 · Minigolf: con el foco en «Golpear», Espacio sigue cargando la fuerza (no hace clic)', ev2.defaultPrevented);
+      const kd = tecla(document.activeElement, 'Escape'); tecla(document.activeElement || document.body, 'Escape', 'keyup');
+      const pz = document.getElementById('pause'); let pausa = false; try { pausa = !!(pz && pz.matches(':popover-open')); if (pausa) pz.hidePopover(); } catch (e) { /* sin popover */ }
+      check('W35 · Minigolf: Esc sale del hoyo sin abrir la Pausa y el foco vuelve a donde estaba', A.fase === 'nada' && kd.defaultPrevented && !pausa && el.hidden && document.activeElement === ancla && JSON.stringify(record()) === r0,
+        JSON.stringify({ fase: A.fase, pausa, foco: document.activeElement && (document.activeElement.textContent || document.activeElement.id) }));
+    } catch (e) { check('W35 · Minigolf: teclado sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
+    finally {
+      try { if (A.fase !== 'nada') salir(); } catch (e) { /* ya fuera */ }
+      A.manual = man0; G.ui.toast = toast0; puntos.visible = false;
+      S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.facing = fac0; M.flying = fly0; M.vx = M.vz = 0; G.camara.yaw = yaw0;
+      ancla.remove(); try { if (foco0 && foco0 !== document.body && document.contains(foco0)) foco0.focus({ preventScroll: true }); } catch (e) { /* */ }
+    }
+    return out;
+  }
 
   // =====================================================================================================================
   async function test() {
@@ -1080,6 +1146,7 @@ window.AVV18Minigolf = function (G) {
         if (fr) fr.remove();
         if (A.fase !== 'nada') salir();
       }
+      for (const r of teclado()) out.push(r); // W35
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
     try { if (A.fase !== 'nada') salir(); } catch (e) { /* ya fuera */ }
     A.manual = false; A.invitado = true; puntos.visible = false;
@@ -1121,6 +1188,6 @@ window.AVV18Minigolf = function (G) {
       setTimeout(probar, 1500);
     }
   }
-  G.v18minigolf = { ID, PAR, irYJugar, iniciar, salir, reiniciar, tirar, grito, empezarCarga, soltarCarga, paso, medalla, record, elegir, clasificar, jugadores: () => J, estado: () => A, semilla: () => B, get sitio() { return K; }, mapa: () => (K && ofrecible() && A.fase === 'nada' ? { x: P_ENTRADA.x, z: P_ENTRADA.z, nombre: TXT.nombre } : null), test };
+  G.v18minigolf = { ID, PAR, irYJugar, iniciar, salir, reiniciar, tirar, grito, empezarCarga, soltarCarga, paso, medalla, record, elegir, clasificar, teclado, jugadores: () => J, estado: () => A, semilla: () => B, get sitio() { return K; }, mapa: () => (K && ofrecible() && A.fase === 'nada' ? { x: P_ENTRADA.x, z: P_ENTRADA.z, nombre: TXT.nombre } : null), test };
   return G.v18minigolf;
 };
