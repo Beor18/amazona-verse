@@ -1,0 +1,62 @@
+{
+ "etiqueta": "k130-r9b",
+ "bandera": "v18=1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "pruebas": {
+  "guardian": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 36.8,
+     "peorMs": 43,
+     "n": 108,
+     "callsMed": 54,
+     "trisMed": 229215,
+     "heap": 115
+    },
+    "duracionMs": 10736,
+    "test": {
+     "passed": 19,
+     "total": 19,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 52,
+     "tris": 222191,
+     "geo": 186,
+     "tex": 122,
+     "prog": 57,
+     "heap": 108,
+     "tactil": false
+    }
+   }
+  },
+  "chispa": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "error": "WebSocket: error"
+  }
+ }
+}
