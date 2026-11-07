@@ -1,0 +1,106 @@
+{
+ "etiqueta": "k130-r6b",
+ "bandera": "v18=1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "pruebas": {
+  "ciclo": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 31.3,
+     "peorMs": 77,
+     "n": 90,
+     "callsMed": 54,
+     "trisMed": 229219,
+     "heap": 114
+    },
+    "duracionMs": 4464,
+    "test": {
+     "passed": 22,
+     "total": 23,
+     "fallos": [
+      "4 · El duelo usa el poder de la especie elegida (Escudo de plumas); la rival grita :: arausiaca / escudo_plumas vs ventralis / eco_cordillera"
+     ]
+    },
+    "contexto": {
+     "calls": 80,
+     "tris": 219528,
+     "geo": 129,
+     "tex": 127,
+     "prog": 51,
+     "heap": 128
+    }
+   }
+  },
+  "amenaza": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 33.8,
+     "peorMs": 144,
+     "n": 87,
+     "callsMed": 54,
+     "trisMed": 229214,
+     "heap": 120
+    },
+    "duracionMs": 807,
+    "test": {
+     "passed": 21,
+     "total": 21,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 54,
+     "tris": 229229,
+     "geo": 79,
+     "tex": 123,
+     "prog": 42,
+     "heap": 110
+    }
+   }
+  }
+ }
+}
