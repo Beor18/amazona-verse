@@ -312,6 +312,12 @@ AVE.module('fisica', function (G) {
     // Kelvin 7-nov: para no caer una y otra vez en la misma trampa, si la red tiene que sacarla 3 veces en 20 s de juego
     // dentro de 8 m (un bucle de atasco, no un roce suelto), Vittata reaparece siempre en el mismo lugar seguro: el punto de
     // aparición del capítulo (G.guardado.spawn), sobre el suelo
+    const tapa = techoCuerpo(SOL, S.pos.x, S.pos.z, S.pos.y, S.pos.y + 30, h);
+    const arriba = tapa < Infinity && !cieloAlcanzable(SOL, pen, S.pos.y, h, 8, 30);
+    // QA-156a2 (rama de vuelo): en vuelo, contra una cara cóncava el paso se deshace cada cuadro con pen 0 en reposo y el
+    // planeo no pierde altura a velocidad 0: queda cernida fija. Misma red «sin castigo»: recolocarla al lado libre
+    if (!arriba && !n && !MOVE.flying) return; // atascada sin nada que la tape ni la contenga: la red no la mueve
+    // solo cuentan las veces que la red la mueve de verdad
     const hist = (ATS.hist || []).filter(r => ATS.reloj - r.t < 20 && Math.hypot(S.pos.x - r.x, S.pos.z - r.z) < 8);
     hist.push({ t: ATS.reloj, x: S.pos.x, z: S.pos.z }); ATS.hist = hist;
     const sp = G.guardado && G.guardado.spawn;
@@ -320,13 +326,8 @@ AVE.module('fisica', function (G) {
       recolocar({ x: sp.x, z: sp.z, y: suelo(sp.x, sp.z, G.terreno.height(sp.x, sp.z) + 40) + 0.05, como: 'seguro' });
       return;
     }
-    const tapa = techoCuerpo(SOL, S.pos.x, S.pos.z, S.pos.y, S.pos.y + 30, h);
-    if (tapa < Infinity && !cieloAlcanzable(SOL, pen, S.pos.y, h, 8, 30)) recolocar({ x: S.pos.x, z: S.pos.z, y: salirPorArriba(SOL, pen, tapa, h), como: 'arriba' });
-    else if (n) recolocar(libreCerca(SOL, h, false));
-    // QA-156a2: en vuelo (sin aterrizar), contra una cara cóncava el paso se deshace cada cuadro con pen 0 en
-    // reposo (ni dentro ni techo: las dos ramas de arriba no disparan) y el planeo no pierde altura a velocidad
-    // 0: queda cernida fija con el palo empujado para siempre. Misma red «sin castigo»: recolocarla al lado libre
-    else if (MOVE.flying) recolocar(libreCerca(SOL, h, false));
+    if (arriba) recolocar({ x: S.pos.x, z: S.pos.z, y: salirPorArriba(SOL, pen, tapa, h), como: 'arriba' });
+    else recolocar(libreCerca(SOL, h, false));
   }
 
   // ---------- Un paso de simulación del jugador; devuelve si se está moviendo ----------
