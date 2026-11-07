@@ -298,3 +298,20 @@ Por eso el «estado propuesto» de abajo dice **«verificado (tras abrir el enla
 3. heliconia: si acepta una fuente científica no oficial (el resumen de la ESA 2010) o la ficha se queda oculta.
 4. canoa («del taíno») y ciclo_agua: hay que abrir dle.rae.es/canoa y la página de la Water Science School del USGS desde un navegador normal (desde la nube dan 403).
 5. esperan: hay que abrir la Lista Roja (iucnredlist.org da 403; BirdLife DataZone carga la categoría con JavaScript).
+
+
+---
+
+## Verificación real, segunda pasada (7-nov-2026, Kimi 4a, K4-15)
+
+Se abrieron de nuevo las fuentes oficiales de las 5 fichas que seguían ocultas tras la primera pasada (esta vez con acceso web que sí pasa los 403 de usgs.gov e iucnredlist.org). Resultado: 2 pasan a «verificado» y 3 se quedan ocultas por falta de fuente oficial. Nada inventado.
+
+| # | Ficha | URL exacta | Frase citada | Resultado |
+|---|-------|-----------|--------------|-----------|
+| 4 | capas_bosque | — | — | **Se queda oculta.** Se rebuscó en USDA FS / IITF: el GTR-35 solo menciona estratificación «canopy, subcanopy»; ninguna fuente oficial nombra las 4 capas (suelo, sotobosque, dosel, emergente) tal como las usa la ficha. |
+| 12 | heliconia | — | — | **Se queda oculta.** DRNA y fws.gov no tienen página de la especie; el resumen de la ESA 2010 no es fuente oficial, y IFAS Extension (tampoco oficial) describe las brácteas «scarlet or yellow», que no coincide con la ficha. |
+| 15 | ciclo_agua | https://www.usgs.gov/special-topics/water-science-school/science/water-cycle (USGS Water Science School, abierta el 7-nov-2026) | «The sun’s energy causes liquid water to evaporate into water vapor»; «Clouds are formed by water condensing in the atmosphere… we experience precipitation»; «Water moves into the ground through infiltration… across the surface through snowmelt, runoff, and streamflow… into rivers, the ocean» | **Pasa a «verificado»** (content/cap1/lecciones.js, commit 4fde3a3f; assets/data/lecciones_cap1.json, commit 7ef63392). La página cubre los 5 procesos de la ficha: evaporación, condensación, precipitación, infiltración y escorrentía. |
+| 16 | q3 (pregunta del Aula) | — | — | **Se queda oculta.** Depende de capas_bosque: mientras esa ficha no tenga fuente oficial, la pregunta no se publica. |
+| 21 | esperan (cap. 6) | https://www.iucnredlist.org/species/22728705/194903850 (A. martinicana, BirdLife International 2021) y https://www.iucnredlist.org/species/22728701/94994037 (A. violacea, BirdLife International 2016), abiertas el 7-nov-2026 | «is listed as Extinct» (en ambas fichas de la Lista Roja) | **Pasa a «verificado»** (content/ep6/lecciones.js, commits 03918092 y 7ec6a224). Texto ajustado a la fuente: «ya se extinguieron» en vez de «desaparecieron de la naturaleza». Las 36 del universo del juego se mantienen (canon de Kelvin, directiva E3, 4-nov). |
+
+Incidencia reparada durante esta pasada: una escritura errónea dejó placeholders en content/cap1/lecciones.js y assets/data/lecciones_cap1.json (commit bc9e730f). lecciones.js quedó restaurado byte a byte en 4fde3a3f (verificado por SHA de git: 92bed5fc…) y el JSON en 7ef63392 (agente de PC), ya con el cambio de ciclo_agua aplicado (contenido comprobado idéntico al preparado). Regla permanente: las escrituras remotas llevan el contenido completo literal; nunca placeholders.
