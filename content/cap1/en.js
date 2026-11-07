@@ -2160,6 +2160,7 @@ window.AV_EN = {
  "El entreno es en el suelo: baja a entrenar la esquiva de verdad.": "Training is on the ground: come down and train dodging for real.",
  "Circuito del Primer Vuelo": "First Flight Circuit",
  "Guardián del Primer Vuelo": "Guardian of the First Flight",
+ "Circuito del Guardián": "Guardian circuit",
  "Volar el circuito con el Guardián": "Fly the circuit with the Guardian",
  "¿Nuevas alas por aquí? Yo soy el Guardián del Primer Vuelo: de mí aprendieron a volar hasta las nubes viejas.": "New wings around here? I am the Guardian of the First Flight: even the old clouds learned to fly from me.",
  "Cinco columnas de viento marcadas con humo de colores. Pásalas en orden, vuelve a la salida y cronometramos tu vuelo. ¿Vamos?": "Five wind columns marked with colored smoke. Pass them in order, come back to the start, and we will time your flight. Shall we?",
