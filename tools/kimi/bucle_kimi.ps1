@@ -1,4 +1,4 @@
-﻿# Bucle de trabajo continuo para Kimi en la PC Windows de Kelvin (3-nov-2026).
+# Bucle de trabajo continuo para Kimi en la PC Windows de Kelvin (3-nov-2026).
 # Kimi en modo ventana se detiene al terminar cada tarea y espera a que alguien escriba.
 # Este script lo relanza solo en modo sin ventana (kimi -p): hace una tarea, termina, y el bucle
 # vuelve a empezar tras leer el bloque de docs/equipo/TAREAS_KIMI.md. Asi nunca se queda parado.
@@ -45,7 +45,31 @@ while ($true) {
   Set-Location $Carpeta
   # Si quedo trabajo sin subir (la PC se apago a mitad), se le dice a Kimi que lo revise y lo suba ANTES de seguir
   $pendiente = (git status --porcelain 2>$null | Out-String).Trim()
-  git pull --rebase --autostash origin main 2>&1 | Add-Content $log
+  # Pull seguro: SIN --autostash. Ese flag cortado por apagon deja el rebase-merge fantasma con solo
+  # 'autostash' que bloquea los pulls de todos (incidentes documentados 3-7 nov en PEDIDOS.md).
+  # Solo los cambios RASTREADOS (M/A/D/UU...) frenan el pull; los untracked (??) no estorban un
+  # 'pull --rebase' y en esta carpeta hay huérfanos permanentes sin trackear a proposito.
+  # El codigo de salida de git se lee antes de cualquier pipe (2>&1 | Add-Content se tragaba los
+  # fallos) y un rebase/merge a medias frena la vuelta con aviso, en vez de lanzar Kimi sobre un repo roto.
+  $gitRoto = $false
+  $sucioRastreado = @(git status --porcelain 2>$null | Where-Object { $_ -notmatch '^\?\?' })
+  if ($sucioRastreado.Count -gt 0) {
+    Add-Content $log "[aviso] hay cambios rastreados sin commit: se omite el pull de esta vuelta; Kimi decidira que hacer con ellos."
+  } else {
+    $gitOut = git pull --rebase origin main 2>&1
+    $gitCodigo = $LASTEXITCODE
+    Add-Content $log ($gitOut | Out-String)
+    if ($gitCodigo -ne 0) { Add-Content $log "[aviso] pull fallo (codigo ${gitCodigo}: red, offline o carrera con otra sesion); se sigue la vuelta con el HEAD actual." }
+    foreach ($p in 'rebase-merge', 'rebase-apply') {
+      $rp = git rev-parse --git-path $p 2>$null
+      if ($rp -and (Test-Path (Join-Path $Carpeta $rp))) { $gitRoto = $true }
+    }
+    if (Test-Path (Join-Path $Carpeta '.git\MERGE_HEAD')) { $gitRoto = $true }
+    if ($gitRoto) {
+      Add-Content $log '[ERROR] pull/rebase a medias: se omite esta vuelta hasta que un agente lo resuelva (familia documentada en PEDIDOS.md).'
+      $pendiente = "[git] pull --rebase quedo a medias en esta carpeta (rebase/merge en curso). Resuelvelo ANTES de tu tarea (ver docs/equipo/PEDIDOS.md, incidentes del autostash)."
+    }
+  }
   $extra = ''
   if ($pendiente) { $extra = "`nATENCION: en esta carpeta hay cambios sin subir de una vuelta anterior (la PC se apago o se corto):`n$pendiente`nPrimero revisalos: si son tuyos y no rompen el juego, termina ese avance, haz commit solo de esas rutas y push; si estan a medias y no sirven, dejalos anotados en tu fila y sigue. No borres nada." }
   $texto = (($prompt + $extra) -replace "`r?`n", ' ')
