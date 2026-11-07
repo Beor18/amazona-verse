@@ -1,0 +1,65 @@
+{
+  "etiqueta": "fix1",
+  "pantalla": "escritorio 1280x800 cpuX1",
+  "head": null,
+  "rondas": [
+    {
+      "ronda": 1,
+      "prep": "ok",
+      "segundos": 54,
+      "passed": 52,
+      "total": 52,
+      "error": null,
+      "camPared": {
+        "dentro": null,
+        "dist": 7.5
+      },
+      "pared": {
+        "edificio": "bohio_redondo@kelvin_aldea_meandros#6",
+        "entradas": 3,
+        "penetraMax": 2,
+        "distanciaMin": 1.82
+      },
+      "camEdificios": {
+        "n": 159,
+        "candidatos": 6,
+        "elegido": "bohio_redondo@kelvin_aldea_meandros#6",
+        "dist": 157.93,
+        "vittata": [
+          84.17,
+          178.08
+        ]
+      },
+      "falloCamara": []
+    },
+    {
+      "ronda": 2,
+      "prep": "ok",
+      "segundos": 52,
+      "passed": 52,
+      "total": 52,
+      "error": null,
+      "camPared": {
+        "dentro": null,
+        "dist": 7.5
+      },
+      "pared": {
+        "edificio": "bohio_redondo@kelvin_aldea_meandros#6",
+        "entradas": 3,
+        "penetraMax": 2,
+        "distanciaMin": 1.82
+      },
+      "camEdificios": {
+        "n": 159,
+        "candidatos": 6,
+        "elegido": "bohio_redondo@kelvin_aldea_meandros#6",
+        "dist": 157.93,
+        "vittata": [
+          84.17,
+          178.08
+        ]
+      },
+      "falloCamara": []
+    }
+  ]
+}

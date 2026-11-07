@@ -1,0 +1,75 @@
+{
+  "etiqueta": "acum1",
+  "pantalla": "escritorio 1280x800 cpuX1",
+  "head": null,
+  "rondas": [
+    {
+      "ronda": 1,
+      "prep": "ok",
+      "segundos": 56,
+      "passed": 52,
+      "total": 52,
+      "error": null,
+      "camPared": {
+        "dentro": null,
+        "dist": 6.73
+      },
+      "pared": {
+        "edificio": "bohio_redondo@kelvin_aldea_rio_oeste#4",
+        "entradas": 3,
+        "penetraMax": 0,
+        "distanciaMin": 3.33
+      },
+      "camEdificios": {
+        "n": 258,
+        "ids": [
+          "templo_grande_a@kelvin_ruinas_yunque#0",
+          "templo_grande_a@kelvin_ruinas_yunque#1",
+          "templo_grande_a@kelvin_ruinas_yunque_2#0",
+          "templo_mediano_h@kelvin_aldea_rio_este_2#0",
+          "templo_mediano_h@kelvin_aldea_rio_este_2#1",
+          "templo_mediano_h@kelvin_aldea_rio_este_2#2"
+        ],
+        "vittata": [
+          84.17,
+          178.08
+        ]
+      },
+      "falloCamara": []
+    },
+    {
+      "ronda": 2,
+      "prep": "ok",
+      "segundos": 57,
+      "passed": 52,
+      "total": 52,
+      "error": null,
+      "camPared": {
+        "dentro": null,
+        "dist": 6.73
+      },
+      "pared": {
+        "edificio": "bohio_redondo@kelvin_aldea_rio_oeste#4",
+        "entradas": 3,
+        "penetraMax": 0,
+        "distanciaMin": 3.33
+      },
+      "camEdificios": {
+        "n": 258,
+        "ids": [
+          "templo_grande_a@kelvin_ruinas_yunque#0",
+          "templo_grande_a@kelvin_ruinas_yunque#1",
+          "templo_grande_a@kelvin_ruinas_yunque_2#0",
+          "templo_mediano_h@kelvin_aldea_rio_este_2#0",
+          "templo_mediano_h@kelvin_aldea_rio_este_2#1",
+          "templo_mediano_h@kelvin_aldea_rio_este_2#2"
+        ],
+        "vittata": [
+          84.17,
+          178.08
+        ]
+      },
+      "falloCamara": []
+    }
+  ]
+}

@@ -364,9 +364,18 @@ window.AVMovimientoTest = function (G) {
         const altoCerca = (x, z, r) => { let b = null; for (let dz = -r; dz <= r; dz += 0.3) for (let dx = -r; dx <= r; dx += 0.3) { const t = SO.altoEn(x + dx, z + dz, 1e4); if (t > -Infinity && (!b || t > b.t)) b = { x: x + dx, z: z + dz, t }; } return b; };
         // alto del cuerpo que usa fisica.js ahora: agachada bajo un alero o un toldo, el que le queda (no se mete por agacharse)
         const cuerpo = () => Math.min(SO.SO.cuerpo, (M.alto || SO.SO.cuerpo) - 0.01);
-        // Techo: el edificio con techo más alto de los de tipo casa, bohío o caney (si no, el primero con más de 3 m)
+        // Techo/pared: un bohío/caney/casa_paja (si no, el edificio kelvin con más de 3 m).
         const ids = Object.keys(ACT).filter(id => ACT[id].tipo === 'kelvin' && (ACT[id].alto || 0) > 3).sort((a, b) => ACT[b].alto - ACT[a].alto);
-        const idT = ids.find(id => /casa_paja|bohio|caney/.test(id)) || ids[0];
+        // QA-198: el edificio se elegía como «el más alto de TODO lo cargado», pero el conjunto de activos depende
+        // del estado de streaming acumulado (en la VM con SwiftShader el check de la cámara oscilaba: dist 2,22/1,81
+        // frente a ~7 m en GPU real). Se elige el bohío/caney/casa_paja CERCANO a Vittata —su zona sí está asentada
+        // y cargada en cualquier máquina— con desempate estable por id; sin candidatos cerca se conserva el criterio
+        // viejo (el primero por altura de todo lo cargado).
+        const esHut = id => /casa_paja|bohio|caney/.test(id);
+        const dV = id => Math.hypot(ACT[id].pos[0] - S.pos.x, ACT[id].pos[2] - S.pos.z);
+        const cerca = ids.filter(id => esHut(id) && dV(id) <= 250).sort((a, b) => dV(a) - dV(b) || a.localeCompare(b));
+        const idT = cerca[0] || ids.find(esHut) || ids[0];
+        met.camEdificios = { n: ids.length, candidatos: cerca.length, elegido: idT, dist: idT ? r2(dV(idT)) : null, vittata: [r2(S.pos.x), r2(S.pos.z)] };
         if (idT) {
           const [bx, by, bz] = ACT[idT].pos, tp = altoCerca(bx, bz, 1.5);
           aterrizarEn(tp.x, tp.z, tp.t + 4);
