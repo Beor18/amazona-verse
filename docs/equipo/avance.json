@@ -1,6 +1,6 @@
 {
  "_que_es": "Avance público de la portada (Kelvin, 6-nov: métrica verificable). Temporada = criterios de cierre cumplidos de los 6 capítulos (8 criterios por capítulo; la prueba con personas no cuenta, Kelvin 7-nov: se hace cuando todo esté terminado; definidos en ESTADO_REAL.md §3). Se actualiza a mano cuando un criterio se cumple, con su commit de evidencia en el campo 'evidencia'.",
- "temporada": {"cumplidos": 44, "total": 48, "capitulos": {"cap1": 7, "cap2": 8, "cap3": 8, "cap4": 8, "cap5": 7, "cap6": 6}, "evidencia": "recuento verificado 7-nov, 8 criterios por capítulo (sin la prueba con personas, Kelvin 7-nov). Cap. 3 completo (CG-51 cerrado, temporadaRealEnTest 10/10). Faltan: C8 en caps. 1, 5 y 6 (fichas por verificar) y C9 en el cap. 6 (QA-153)"},
+ "temporada": {"cumplidos": 45, "total": 48, "capitulos": {"cap1": 7, "cap2": 8, "cap3": 8, "cap4": 8, "cap5": 7, "cap6": 7}, "evidencia": "recuento verificado 7-nov, 8 criterios por capítulo (sin la prueba con personas, Kelvin 7-nov). Cap. 3 completo (CG-51 cerrado, temporadaRealEnTest 10/10). Cap. 6: esperan verificada con la UICN (K4-15). Faltan: C8 en caps. 1 y 5 (fichas por verificar) y C9 en el cap. 6 (QA-153)"},
  "v18": {"cumplidos": 17, "total": 23, "evidencia": "ESTADO_REAL.md §2 (alcance mínimo y hitos D7–D30 de la directiva V18.1)"},
  "poderes": {"jugables": 34, "total": 36, "nota": "las 2 que faltan son Mara y Vela, consejeras sin poder (decisión de Kelvin)"},
  "falta": {
