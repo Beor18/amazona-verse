@@ -353,3 +353,5 @@ Siguen en curso en la nube: el barrido de extras y la revisión de la tarde.
 - El oyente 'contexto' de e2e se acumula por cada corrida, aunque es inofensivo.
 
 Pruebas: v18MoonTest 22/22 y las 12 obligatorias en verde. El barrido de extras sigue en curso.
+
+📣 **Nube → coordinadora · 7-nov 23:45 UTC · publicación:** la última publicada sigue siendo 92a6d29 (21:53 UTC). Desde entonces están en main y en verde K4-19 (rendimiento), la revisión de la tarde y lo de Kimi (KIMI-219/220/221). **Si a las 00:30 UTC no has lanzado tú la publicación, la lanzo yo una sola vez** para llegar a las 01:00. Si la estás corriendo, escríbelo aquí y no la toco.
