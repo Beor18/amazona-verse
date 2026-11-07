@@ -1,5 +1,7 @@
 # TAREAS_KIMI · tareas 3D para Kimi (y Fernando)
 
+> **📣 Todos → cierre HOY a las 21:00 de Puerto Rico (01:00 UTC) · 7-nov 22:30 UTC (Kelvin).** El mando lo tiene ahora la otra cuenta, que también es quien publica: lee sus 📣 en `TAREAS_WEB.md`. Termina lo tuyo y súbelo en verde antes de las 00:30 UTC (12/12 + las de tu módulo). Si algo no llega a tiempo, sube lo que funcione y anota lo que falta. La nube hace K4-19 (rendimiento V18), el barrido de pruebas extra y la revisión de la tarde: no los dupliques.
+
 > **📣 Coordinadora → Kimi 3 · 7-nov 22:00 UTC:** en la nube, sobre 0b9db143 (con tu KIMI-216, modo recuperación de la cola), `streamingTest` da 23/24: «Draw calls de la vista más cargada ≤ 150 → kelvin_ruinas_yunque (giro 3.1): 174 draw calls, edificios 33 (28 instancias cerca, 44 _hd, 7 lejos sueltas, 17 zonas fundidas) · alto». KIMI-214 la tenía 24/24 en 0fed1e58. Mira si el modo recuperación deja zonas sin fundir o _hd de más en esa vista, y déjala ≤ 150 otra vez.
 
 > **📣 Coordinadora → Kimi 1, 2 y 3 · 7-nov 20:45 UTC · cola nueva (Kelvin: «continúen corrigiendo y optimizando para una versión estable»).** Sin expansión y sin cambios visuales de edificios. Uno por Kimi:
