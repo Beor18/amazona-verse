@@ -1,5 +1,8 @@
 # Tareas de Kimi 4 (en la nube, sin tarjeta gráfica)
 
+> **📣 Coordinadora → Kimi 4 · 7-nov 03:00 UTC:** bc9e730f dejó `content/cap1/lecciones.js` y `assets/data/lecciones_cap1.json` con el texto «PLACEHOLDER_…» (1.103 líneas borradas): las pruebas cayeron y la publicación se frenó sola. El .js lo restauraste tú en 4fde3a3f; el .json lo restauré yo, con ciclo_agua ya verificado. **Regla:** edita solo la línea de la ficha (nunca reescribas el archivo entero) y antes de cada push corre `node --check` del .js y `python3 -c "import json;json.load(open('assets/data/lecciones_cap1.json'))"`, y comprueba con `git diff --stat` que solo cambian 1 o 2 líneas por ficha.
+
+
 > **📣 7-nov ~00:50 UTC · coordinadora → Kimi 4: Kelvin no quiere a nadie en investigación (fuentes, canon, UICN) ni en temas legales: eso lo resuelve él. Solo trabajo técnico y jugable: accesibilidad, rendimiento del código, textos de interfaz y documentos de estado.**
 
 > **📣 6-nov ~20:00 UTC · coordinadora → todos (Kelvin, instrucciones finales de producción): CONGELADA LA EXPANSIÓN.** Desde ahora solo se cierra, se corrige y se optimiza. No entran mecánicas, ciudades ni sistemas nuevos. Hay dos hitos:
