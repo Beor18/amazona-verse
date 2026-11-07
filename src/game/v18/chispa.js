@@ -125,7 +125,9 @@ window.AVV18Chispa = function (G) {
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-chispa'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
-    el.innerHTML = '<div class="vc-t"></div><div class="vc-n" hidden></div><div class="vc-l"><span class="vc-p"></span><span class="vc-s"></span></div><div class="vc-r"></div>';
+    // W35 · lector de pantalla: el panel se nombra con su título; el reloj (cambia cada décima) y el récord no se anuncian solos
+    el.setAttribute('aria-labelledby', 'vc-t');
+    el.innerHTML = '<div class="vc-t" id="vc-t"></div><div class="vc-n" hidden></div><div class="vc-l"><span class="vc-p"></span><span class="vc-s" aria-live="off"></span></div><div class="vc-r" aria-live="off"></div>';
     document.body.appendChild(el);
     const q = c => el.querySelector(c);
     hud = { el, t: q('.vc-t'), n: q('.vc-n'), p: q('.vc-p'), s: q('.vc-s'), r: q('.vc-r'), cache: {} };
@@ -200,14 +202,22 @@ window.AVV18Chispa = function (G) {
     N.decir(NPC, gana ? TXT.gana : TXT.pierde);
     return A.ultimo;
   }
-  function cancelar() {
+  function cancelar(motivo) {
     if (A.fase === 'nada') return false;
     A.fase = 'nada'; pintarHud(); pintarBanderines(0);
     ponerChispa();
     N.colocar(NPC, { x: SITIO.salida.x, z: SITIO.salida.z, rotY: SITIO.salida.rotY, caminar: true, comenta: true, anim: undefined });
-    toast(TXT.lejos, 2600); emitir({ tipo: 'cancela' });
+    if (motivo !== 'sale') toast(TXT.lejos, 2600); // con Esc no hay aviso de «te alejaste» (no lo es; falta un texto propio con su inglés en content/cap1/en.js)
+    emitir({ tipo: 'cancela', motivo: motivo || 'lejos' });
     return true;
   }
+  // W35 · teclado: Esc deja la carrera (como alejarse, sin contar partida) y no abre además la Pausa (ui.js mira defaultPrevented)
+  function teclaEsc(e) {
+    if (e.key !== 'Escape' || e.repeat || (A.fase !== 'cuenta' && A.fase !== 'carrera')) return;
+    if ((e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName)) || (G.pausa && G.pausa.activa && G.pausa.activa()) || G.ui.cardOpen) return;
+    e.preventDefault(); e.stopImmediatePropagation(); cancelar('sale');
+  }
+  addEventListener('keydown', teclaEsc, true);
   function moverChispa(dt) {
     if (A.gagT > 0) { if ((A.gagT -= dt) <= 0) N.animar(NPC, 'correr'); return false; }
     let paso = V_CHISPA * dt;
@@ -260,6 +270,34 @@ window.AVV18Chispa = function (G) {
   const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.punto, TXT.meta, TXT.siguiente, TXT.tiempo, TXT.record, TXT.gag, TXT.nuevo, TXT.xp, TXT.lejos].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
     if (d.nombre) l.push(d.nombre.es); return l; };
+
+  // ---------- W35 · teclado y lector de pantalla (lo llaman esta prueba y AV.accesibilidadTest) ----------
+  function teclado() {
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    if (A.fase !== 'nada') return out;
+    const nombre = el => (el.getAttribute('aria-labelledby') || '').split(/\s+/).map(id => document.getElementById(id)).filter(Boolean).map(x => x.textContent.trim()).join(' ') || el.getAttribute('aria-label') || '';
+    const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing && { x: S.facing.x, z: S.facing.z }, yaw0 = G.camara.yaw, man0 = A.manual, toast0 = G.ui.toast, r0 = JSON.stringify(record());
+    const foco0 = document.activeElement;
+    G.ui.toast = () => {}; A.manual = true;
+    try {
+      empezar({ forzar: true });
+      const el = hud.el;
+      check('W35 · Chispa: el panel de la carrera se anuncia (role=status, aria-live) con nombre; el reloj y el récord no se leen a cada décima',
+        !el.hidden && el.getAttribute('role') === 'status' && el.getAttribute('aria-live') === 'polite' && !!nombre(el) && hud.s.getAttribute('aria-live') === 'off' && hud.r.getAttribute('aria-live') === 'off', nombre(el));
+      check('W35 · Chispa: el panel no roba el foco (la carrera se juega con las teclas de siempre)', document.activeElement === foco0 && !el.querySelector('button, [tabindex]'));
+      const kd = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); document.body.dispatchEvent(kd);
+      document.body.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', bubbles: true, cancelable: true }));
+      const pz = document.getElementById('pause'); let pausa = false; try { pausa = !!(pz && pz.matches(':popover-open')); if (pausa) pz.hidePopover(); } catch (e) { /* sin popover */ }
+      check('W35 · Chispa: Esc deja la carrera (sin contar partida) y no abre la Pausa', A.fase === 'nada' && kd.defaultPrevented && el.hidden && !pausa && JSON.stringify(record()) === r0, JSON.stringify({ fase: A.fase, esc: kd.defaultPrevented, pausa }));
+    } catch (e) { check('W35 · Chispa: teclado sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
+    finally {
+      if (A.fase !== 'nada') { A.fase = 'nada'; pintarHud(); pintarBanderines(0); }
+      A.manual = man0; G.ui.toast = toast0;
+      S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; if (fac0 && S.facing) { S.facing.x = fac0.x; S.facing.z = fac0.z; } G.camara.yaw = yaw0;
+      colocarEnSalida();
+    }
+    return out;
+  }
 
   // ---------- Prueba ----------
   async function test(o) {
@@ -391,6 +429,7 @@ window.AVV18Chispa = function (G) {
       ir(SITIO.salida.x + R_SALE + 10, SITIO.salida.z); correr(0.1);
       check('14 · En carrera el minimapa marca el banderín siguiente; alejarse > 70 m cancela sin contar partida', mmC && mmC.nombre === TXT.siguiente && Math.hypot(mmC.x - RUTA[0].x, mmC.z - RUTA[0].z) < 0.1 && A.fase === 'nada' && record().jugadas === 3 && toasts.includes(TXT.lejos));
       cerrar();
+      for (const r of teclado()) out.push(r); // W35
       // 15 · textos
       if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
       const D = window.AV_EN || {}, pats = Object.keys(D).filter(k => k.indexOf('{}') >= 0).map(k => new RegExp('^' + k.split('{}').map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('(.+?)') + '$'));
@@ -413,6 +452,6 @@ window.AVV18Chispa = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18chispa = { ID, SITIO, RUTA, V_CHISPA, XP_GANAR, empezar, cancelar, invitar, paso, record, pagarXP, mapa, textos, estado: () => A, test };
+  G.v18chispa = { ID, SITIO, RUTA, V_CHISPA, XP_GANAR, empezar, cancelar, invitar, paso, record, pagarXP, mapa, textos, teclado, estado: () => A, test };
   return G.v18chispa;
 };

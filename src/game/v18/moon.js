@@ -136,7 +136,9 @@ window.AVV18Moon = function (G) {
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-moon'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
-    el.innerHTML = '<div class="vm-t"></div><div class="vm-n" hidden></div><div class="vm-l"><span class="vm-p"></span><span class="vm-s"></span></div><div class="vm-r"></div>';
+    // W35 · lector de pantalla: el panel se nombra con su título; los segundos que quedan y el reloj no se anuncian solos (los toques sí)
+    el.setAttribute('aria-labelledby', 'vm-t');
+    el.innerHTML = '<div class="vm-t" id="vm-t"></div><div class="vm-n" hidden></div><div class="vm-l"><span class="vm-p" aria-live="off"></span><span class="vm-s"></span></div><div class="vm-r" aria-live="off"></div>';
     document.body.appendChild(el);
     const q = c => el.querySelector(c);
     hud = { el, t: q('.vm-t'), n: q('.vm-n'), p: q('.vm-p'), s: q('.vm-s'), r: q('.vm-r'), cache: {} };
@@ -226,9 +228,17 @@ window.AVV18Moon = function (G) {
     A.fase = 'nada'; matarOrbs(); pintarHud();
     N.colocar(NPC, { x: SITIO.x, z: SITIO.z, rotY: SITIO.rotY, comenta: true, anim: undefined });
     ponerMoon();
-    toast(causa === 'alto' ? TXT.alto : TXT.lejos, 2600); emitir({ tipo: 'cancela', causa: causa || 'lejos' });
+    if (causa !== 'sale') toast(causa === 'alto' ? TXT.alto : TXT.lejos, 2600); // con Esc no hay aviso (falta un texto propio con su inglés en content/cap1/en.js)
+    emitir({ tipo: 'cancela', causa: causa || 'lejos' });
     return true;
   }
+  // W35 · teclado: Esc lo deja (como alejarse, sin contar partida) y no abre además la Pausa (ui.js mira defaultPrevented)
+  function teclaEsc(e) {
+    if (e.key !== 'Escape' || e.repeat || !(A.fase === 'cuenta' || A.fase === 'entreno')) return;
+    if ((e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName)) || (G.pausa && G.pausa.activa && G.pausa.activa()) || G.ui.cardOpen) return;
+    e.preventDefault(); e.stopImmediatePropagation(); cancelar('sale');
+  }
+  addEventListener('keydown', teclaEsc, true);
   let reloj3d = 0;
   function paso(dt) {
     reloj3d += dt;
@@ -264,6 +274,38 @@ window.AVV18Moon = function (G) {
   const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.quedan, TXT.toques, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.alto].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
     if (d.nombre) l.push(d.nombre.es); return l; };
+
+  // ---------- W35 · teclado y lector de pantalla (lo llaman esta prueba y AV.accesibilidadTest) ----------
+  function teclado() {
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    if (A.fase !== 'nada') return out;
+    const nombre = el => (el.getAttribute('aria-labelledby') || '').split(/\s+/).map(id => document.getElementById(id)).filter(Boolean).map(x => x.textContent.trim()).join(' ') || el.getAttribute('aria-label') || '';
+    const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing && { x: S.facing.x, z: S.facing.z }, yaw0 = G.camara.yaw, man0 = A.manual, toast0 = G.ui.toast, r0 = JSON.stringify(record());
+    const foco0 = document.activeElement;
+    const esc = () => {
+      const kd = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); document.body.dispatchEvent(kd);
+      document.body.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', bubbles: true, cancelable: true }));
+      const pz = document.getElementById('pause'); let pausa = false; try { pausa = !!(pz && pz.matches(':popover-open')); if (pausa) pz.hidePopover(); } catch (e) { /* sin popover */ }
+      return { prev: kd.defaultPrevented, pausa };
+    };
+    G.ui.toast = () => {}; A.manual = true;
+    try {
+      empezar({ forzar: true });
+      const el = hud.el;
+      check('W35 · Moon: el panel se anuncia (role=status, aria-live) con nombre; el reloj y los segundos que quedan no se leen solos',
+        !el.hidden && el.getAttribute('role') === 'status' && el.getAttribute('aria-live') === 'polite' && !!nombre(el) && hud.p.getAttribute('aria-live') === 'off' && hud.r.getAttribute('aria-live') === 'off' && hud.s.getAttribute('aria-live') !== 'off', nombre(el));
+      check('W35 · Moon: el panel no roba el foco (se esquiva con las teclas de siempre)', document.activeElement === foco0 && !el.querySelector('button, [tabindex]'));
+      const r = esc();
+      check('W35 · Moon: Esc lo deja (sin contar partida) y no abre la Pausa', A.fase === 'nada' && r.prev && el.hidden && !r.pausa && JSON.stringify(record()) === r0, JSON.stringify({ fase: A.fase, esc: r.prev, pausa: r.pausa }));
+    } catch (e) { check('W35 · Moon: teclado sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
+    finally {
+      if (A.fase !== 'nada') { A.fase = 'nada'; matarOrbs(); pintarHud(); }
+      A.manual = man0; G.ui.toast = toast0;
+      S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; if (fac0 && S.facing) { S.facing.x = fac0.x; S.facing.z = fac0.z; } G.camara.yaw = yaw0;
+      colocarEnSitio();
+    }
+    return out;
+  }
 
   // ---------- Prueba ----------
   async function test(o) {
@@ -401,6 +443,7 @@ window.AVV18Moon = function (G) {
       S.pos.y = H(S.pos.x, S.pos.z) + ALTO_MAX + 2; correr(ALTO_T_S + 0.2);
       check('14 · Alejarse > 45 m cancela sin contar partida; volar > 11 m durante 3 s también cancela', canceloLejos && A.fase === 'nada' && record().jugadas === 3 && toasts.includes(TXT.alto), 'jugadas ' + record().jugadas);
       cerrar();
+      for (const r of teclado()) out.push(r); // W35
       // 15 · textos
       if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
       const D = window.AV_EN || {}, pats = Object.keys(D).filter(k => k.indexOf('{}') >= 0).map(k => new RegExp('^' + k.split('{}').map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('(.+?)') + '$'));
@@ -422,6 +465,6 @@ window.AVV18Moon = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18moon = { ID, SITIO, DUR_S, MAX_TOQUES, XP_GANAR, empezar, cancelar, invitar, paso, record, pagarXP, mapa, textos, estado: () => A, test };
+  G.v18moon = { ID, SITIO, DUR_S, MAX_TOQUES, XP_GANAR, empezar, cancelar, invitar, paso, record, pagarXP, mapa, textos, teclado, estado: () => A, test };
   return G.v18moon;
 };

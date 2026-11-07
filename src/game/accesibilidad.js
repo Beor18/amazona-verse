@@ -836,6 +836,69 @@ AVE.module('accesibilidad', function (G) {
         check(`Subtítulos ${W}×${H}: dentro de la pantalla, sin tapar el objetivo, los botones ni el diálogo`, !malosS.length, malosS.slice(0, 3).join('; '));
       }
 
+      // ---------- W35 · teclado y lector de pantalla en lo nuevo ----------
+      // Menú «¿Cómo quieres jugar?» (con Minigolf) y la tarjeta «emparejar» del Aula aquí; el minigolf («¿Cuántos juegan?»), Chispa,
+      // Moon, el Guardián y el puerto con su propio teclado() cuando su módulo ya está cargado (boot.js los carga a demanda: esta
+      // prueba no los carga; v18MinigolfTest, v18ChispaTest, v18MoonTest, v18GuardianTest y v18PuertoTest corren los mismos checks).
+      {
+        const nombreDe = el => !el ? '' : ((el.getAttribute('aria-labelledby') || '').split(/\s+/).map(id => id && document.getElementById(id)).filter(Boolean).map(x => x.textContent.trim()).join(' ') ||
+          el.getAttribute('aria-label') || el.textContent || '').trim();
+        const foco0 = document.activeElement;
+        // Sonda: una tecla neutra. Si alguien se la queda (preventDefault), es la escucha «cualquier tecla salta la apertura» del
+        // cap. 1 que sigue puesta aunque la apertura ya se cortó (apertura.fin() quita el botón pero no la escucha): se gasta aquí
+        // para que los checks de teclado sean deterministas y se anota (no es de esta prueba: content/cap1/historia.js).
+        let sonda = false;
+        { const t0 = G.ui.toast; G.ui.toast = () => {}; try { const ev = new KeyboardEvent('keydown', { key: 'F24', bubbles: true, cancelable: true }); document.body.dispatchEvent(ev); sonda = ev.defaultPrevented; } finally { G.ui.toast = t0; } }
+        const tecla = (el, key) => { const ev = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }); el.dispatchEvent(ev); return ev; };
+        // Foco visible: la regla global de ui.css (anillo de ≥ 3 px) sigue en las hojas cargadas
+        let anillo = false;
+        for (const sh of document.styleSheets) { let rs = null; try { rs = sh.cssRules; } catch (e) { continue; } for (const r of rs || []) if (r.selectorText === ':focus-visible' && r.style && /solid/.test(r.style.outline || r.style.outlineStyle) && parseFloat(r.style.outlineWidth || (r.style.outline || '').replace(/^\D*/, '')) >= 3) anillo = true; }
+        check('W35 · Foco visible: la regla :focus-visible (anillo sólido ≥ 3 px) está en las hojas del juego', anillo);
+        const form = $('modos'), tiles = form ? [...form.querySelectorAll('.modo')] : [], golf = form && form.querySelector('[data-modo="golf"]');
+        const malosM = tiles.filter(b => b.tagName !== 'BUTTON' || !nombreDe(b) || b.tabIndex < 0 || b.disabled).map(b => b.dataset.modo || b.id);
+        check('W35 · «¿Cómo quieres jugar?»: el menú tiene nombre y sus tarjetas (también Minigolf) son <button> con nombre que se alcanzan con Tab',
+          !!form && !!nombreDe(form) && tiles.length >= 7 && !!golf && /golf/i.test(nombreDe(golf)) && !malosM.length, malosM.join(', ') || nombreDe(golf));
+        const tit = $('title');
+        if (tit && tit.open && golf && golf.offsetParent !== null) { // la portada abierta (en la prueba normal ya se cerró al empezar)
+          const av = form.querySelector('[data-modo="aventura"]'); av.focus(); const ev = tecla(av, 'ArrowRight');
+          check('W35 · «¿Cómo quieres jugar?»: las flechas pasan de Aventura a Minigolf', document.activeElement === golf && ev.defaultPrevented, document.activeElement && document.activeElement.dataset.modo);
+        }
+        // Tarjeta «emparejar» del Aula (bdb436d4)
+        const AU = G.aula, q3 = AU && AU.pregunta && AU.pregunta('q3');
+        if (q3 && q3.tipo === 'emparejar' && AU.hacerPregunta) {
+          const card = $('card'), b = (l, k) => $('emp-' + l + '-' + k), abierta0 = !card.hidden, html0 = card.innerHTML;
+          try {
+            AU.hacerPregunta(q3, { cabecera: '', alTerminar() {} });
+            const grupo = card.querySelector('.edu[role="group"]'), ops = [...card.querySelectorAll('button')];
+            const sinNombre = ops.filter(x => !nombreDe(x)).map(x => x.id || x.className);
+            check('W35 · Aula «emparejar»: la tarjeta se nombra con su pregunta, el foco empieza dentro (primero de la izquierda) y todos sus botones tienen nombre',
+              !card.hidden && !!grupo && nombreDe(grupo) === card.querySelector('#emp-q').textContent.trim() && document.activeElement === b('i', 0) && card.contains(document.activeElement) && !sinNombre.length, sinNombre.join(', ') || (document.activeElement && document.activeElement.id));
+            b('i', 0).click();
+            await new Promise(r => setTimeout(r, 160));
+            const av = $('emp-aviso');
+            check('W35 · Aula «emparejar»: al elegir uno se anuncia en su zona aria-live (escrita después de pintar la tarjeta)', !!av && av.getAttribute('aria-live') === 'polite' && !!av.textContent.trim(), av && av.textContent);
+            const diag = [document.activeElement && (document.activeElement.id || document.activeElement.tagName), [...((G.pausa && G.pausa.motivos) || [])].join('+')];
+            tecla(document.activeElement, 'Escape');
+            const suelto = !card.hidden && b('i', 0).getAttribute('aria-pressed') === 'false';
+            diag.push(document.activeElement && (document.activeElement.id || document.activeElement.tagName));
+            tecla(document.activeElement || document.body, 'Escape');
+            check('W35 · Aula «emparejar»: Escape suelta la elección y, sin nada elegido, cierra la tarjeta', suelto && card.hidden, JSON.stringify({ suelto, cerrada: card.hidden, diag }));
+          } finally {
+            if (abierta0) { G.ui.showCard(html0); } else if (!card.hidden) G.ui.hideCard();
+          }
+        }
+        // Módulos V18 a demanda: sus checks de teclado si ya están cargados
+        const mods = [['v18minigolf', 'Minigolf'], ['v18chispa', 'Chispa'], ['v18moon', 'Moon'], ['v18guardian', 'Guardián'], ['v18puerto', 'Puerto']], aqui = [], fuera = [];
+        for (const [k, n] of mods) {
+          const m = G[k];
+          if (!m || typeof m.teclado !== 'function') { fuera.push(n); continue; }
+          const rs = m.teclado(); if (rs.length) aqui.push(n); else fuera.push(n + ' (ocupado o fuera de su capítulo)');
+          for (const r of rs) out.push(r);
+        }
+        try { if (foco0 && foco0 !== document.body && document.contains(foco0)) foco0.focus({ preventScroll: true }); else if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur(); } catch (e) { /* sin foco */ }
+        check('W35 · Teclado en lo nuevo: menú y Aula comprobados aquí; módulos V18 cargados también (los demás, en su propia prueba)', true, 'aquí: ' + (aqui.join(', ') || '—') + ' · en su prueba: ' + (fuera.join(', ') || '—') + (sonda ? ' · AVISO: una escucha de teclado se quedó la 1.ª tecla (la de «saltar la apertura» del cap. 1, ya cortada)' : ''));
+      }
+
       // ---------- Guardado ----------
       set('texto', 2); set('contraste', true); set('subtitulos', true); set('relajado', true); set('zurdo', true); set('daltonismo', true); set('unamano', true);
       const d = JSON.parse(G.guardado.serialize(true)), a0 = d.profile && d.profile.a11y;

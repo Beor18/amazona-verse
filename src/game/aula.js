@@ -356,13 +356,17 @@ AVE.module('aula', function (G) {
         const cuerpo = `<p class="edu-emp-ayuda">${esc(u('empAyuda'))}</p><div class="edu-emp">
           <div class="edu-emp-col" role="group" aria-labelledby="emp-lbl-i"><span class="edu-emp-lbl" id="emp-lbl-i">${esc(u('empIzq'))}</span>${IZ.map((_, k) => boton('i', k)).join('')}</div>
           <div class="edu-emp-col" role="group" aria-labelledby="emp-lbl-d"><span class="edu-emp-lbl" id="emp-lbl-d">${esc(u('empDer'))}</span>${ordenDer.map(k => boton('d', k)).join('')}</div></div>
-          <p class="sr-only" aria-live="polite">${esc(s.aviso)}</p>`;
+          <p class="sr-only" id="emp-aviso" aria-live="polite"></p>`;
         const leerTxt = t(q.enunciado) + ' ' + IZ.map(op => t(op)).join('. ') + '. ' + ordenDer.map(k => t(DE[k])).join('. ');
         const deshacer = !s.hecho ? `<button class="btn ghost sm" id="emp-deshacer" type="button" data-icon="reset"${s.hist.length ? '' : ' disabled'}>${esc(u('deshacer'))}</button>` : '';
-        G.ui.showCard(`<div class="edu" lang="${aj.idioma}">${o.cabecera || ''}<p class="edu-q">${esc(t(q.enunciado))}</p>${cuerpo}
+        // W35: la tarjeta se nombra con su pregunta (el #card compartido solo dice «Tarjeta»)
+        G.ui.showCard(`<div class="edu" lang="${aj.idioma}" role="group" aria-labelledby="emp-q">${o.cabecera || ''}<p class="edu-q" id="emp-q">${esc(t(q.enunciado))}</p>${cuerpo}
           ${msg ? `<p class="edu-retro ${cls || ''}" role="status">${msg}</p>` : ''}
           <div class="row edu-pie">${btnLeer(leerTxt)}${deshacer}${s.hecho ? `<button class="btn" id="edu-seguir" type="button" data-icon="play">${u('seguir')}</button>` : ''}</div></div>`);
         const card = $('card');
+        // W35: el aviso para el lector de pantalla se escribe después de pintar: una zona aria-live que nace ya con su texto
+        // (la tarjeta se repinta entera con cada toque) no se anuncia
+        const aviso = s.aviso; if (aviso) setTimeout(() => { const a = $('emp-aviso'); if (a && card.contains(a)) a.textContent = aviso; }, 80);
         for (const b of card.querySelectorAll('.edu-emp-op')) {
           b.onclick = () => empAccion(b.dataset.lado, +b.dataset.k);
           b.onkeydown = e => {

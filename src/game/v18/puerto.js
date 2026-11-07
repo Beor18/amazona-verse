@@ -641,12 +641,17 @@ window.AVV18Puerto = function (G) {
       '#v18-puerto button.no{opacity:.45}@media (max-width:760px){body.v18-puerto-on #quest{display:none}body.v18-puerto-on #minimapa{visibility:hidden}#v18-puerto{top:calc(env(safe-area-inset-top,0px) + 64px)}}body.v18-puerto-on #toast{z-index:41}';
     document.head.appendChild(st);
     const el = document.createElement('div'); el.id = 'v18-puerto'; el.hidden = true; el.setAttribute('role', 'status');
-    el.innerHTML = '<div class="vp-t">' + TXT.titulo + '</div><div class="vp-o" data-k="obj"></div><div class="vp-b" data-k="barra" hidden><i></i></div><button type="button" data-k="poder" hidden>' + TXT.poder + '</button>';
-    el.addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('button'); if (!b) return; e.preventDefault(); e.stopPropagation(); usarPoder(); pintarHud(); });
+    el.setAttribute('aria-labelledby', 'vp-t'); // W35: el panel se nombra con el título de la misión; la barra del freno es solo visual (el % va en el objetivo)
+    el.innerHTML = '<div class="vp-t" id="vp-t">' + TXT.titulo + '</div><div class="vp-o" data-k="obj"></div><div class="vp-b" data-k="barra" aria-hidden="true" hidden><i></i></div><button type="button" data-k="poder" hidden>' + TXT.poder + '</button>';
+    el.addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('button'); if (!b) return; e.preventDefault(); e.stopPropagation(); pulsarPoder(); });
+    // W35: con el teclado (Tab hasta el botón y Enter o Espacio) llega un click sin puntero (detail 0); la tecla G sigue igual
+    el.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (!b || e.detail !== 0) return; e.preventDefault(); pulsarPoder(); });
     document.body.appendChild(el);
     hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
     return hud;
   }
+  let espiaPoder = null; // W35: la prueba de teclado cuenta las pulsaciones sin usar el poder
+  function pulsarPoder() { if (espiaPoder) { espiaPoder(); return; } usarPoder(); pintarHud(!hud.el.hidden); } // sin ocultar el panel (el foco no se pierde)
   function objetivo() {
     const e = estado();
     if (e === 'obra') return TXT.obj.obra;
@@ -662,6 +667,7 @@ window.AVV18Puerto = function (G) {
     document.body.classList.toggle('v18-puerto-on', mostrar);
     if (!mostrar) return;
     const o = objetivo(), q = hud.q('obj'); if (q.textContent !== o) q.textContent = o;
+    const vivo = A.frenando ? 'off' : 'polite'; if (q.getAttribute('aria-live') !== vivo) q.setAttribute('aria-live', vivo); // W35: el % del freno no se anuncia a cada paso
     const b = hud.q('barra'); b.hidden = !A.frenando; if (A.frenando) b.firstChild.style.width = Math.round(A.freno / FRENO_S * 100) + '%';
     const p = hud.q('poder'); p.hidden = !tomado;
     if (tomado && A.j) { const nom = (H.get(A.j.poder) || {}).nombre || TXT.poder; if (p.textContent !== nom) p.textContent = nom; p.classList.toggle('no', !H.listo(A.j, A.j.poder).ok); }
@@ -977,6 +983,7 @@ window.AVV18Puerto = function (G) {
       // 18 · no toca las misiones del capítulo
       const dm = difMis(mis0, misiones());
       check('18 · No toca las misiones del capítulo: ningún paso de la misión ni tecla cambió misiones, pasos, eventos ni inventario', !cambios.length, cambios.slice(0, 4).join(' | ') + (dm.length ? ' · (el capítulo avanzó solo durante la prueba: ' + dm.map(x => x.split(':')[0]).join(', ') + ')' : ''));
+      for (const r of teclado()) out.push(r); // W35
       // 19 · textos
       if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
       const D = window.AV_EN || {}, pats = Object.keys(D).filter(k => k.indexOf('{}') >= 0).map(k => new RegExp('^' + k.split('{}').map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('(.+?)') + '$'));
@@ -1003,7 +1010,23 @@ window.AVV18Puerto = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18puerto = { ID, ESTADOS, estado, avanzar, aplicar, usarPoder, reparar, pagarXP, paso, SITIO, test, get perfil() { return M.perfil; }, get valido() { return M.valido; }, get maq() { return maq; }, sesion: () => A,
+  // W35 · teclado y lector de pantalla (lo llaman esta prueba y AV.accesibilidadTest)
+  function teclado() {
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    montarHud();
+    const el = hud.el, b = hud.q('poder'), vis0 = el.hidden, bh0 = b.hidden, foco0 = document.activeElement, t = document.getElementById('vp-t');
+    let n = 0; espiaPoder = () => { n++; };
+    try {
+      check('W35 · Puerto: el panel de la misión se anuncia (role=status) con nombre; la barra del freno es solo visual',
+        el.getAttribute('role') === 'status' && el.getAttribute('aria-labelledby') === 'vp-t' && !!(t && t.textContent.trim()) && hud.q('barra').getAttribute('aria-hidden') === 'true');
+      el.hidden = false; b.hidden = false; b.focus(); b.click(); // clic sin puntero (detail 0), como Enter o Espacio sobre el botón
+      check('W35 · Puerto: el botón del poder es un <button> con nombre que se alcanza con Tab y responde a Enter o Espacio (antes solo al toque)',
+        b.tagName === 'BUTTON' && b.type === 'button' && !!b.textContent.trim() && b.tabIndex === 0 && document.activeElement === b && n === 1, 'pulsaciones ' + n);
+    } catch (e) { check('W35 · Puerto: teclado sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
+    finally { espiaPoder = null; if (document.activeElement === b) b.blur(); el.hidden = vis0; b.hidden = bh0; if (foco0 && foco0 !== document.body && document.contains(foco0)) try { foco0.focus({ preventScroll: true }); } catch (e) { /* */ } }
+    return out;
+  }
+  G.v18puerto = { ID, ESTADOS, estado, teclado, avanzar, aplicar, usarPoder, reparar, pagarXP, paso, SITIO, test, get perfil() { return M.perfil; }, get valido() { return M.valido; }, get maq() { return maq; }, sesion: () => A,
     mapa: () => (listaMision() && estado() !== 'reparado' ? { x: MAQ.on.x, z: MAQ.on.z, nombre: TXT.titulo } : null) };
   return G.v18puerto;
 };
