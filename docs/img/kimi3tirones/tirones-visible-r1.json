@@ -1,0 +1,95 @@
+{
+ "etiqueta": "visible-r1",
+ "cpu": 4,
+ "dpr": 3,
+ "v18": true,
+ "pantalla": true,
+ "umbralMs": 250,
+ "duracionJuegoS": 245,
+ "enIframe": false,
+ "cuadros": 6,
+ "msMedio": 488,
+ "heapFinMB": 223,
+ "deltas": [
+  2320,
+  4,
+  189,
+  2,
+  413,
+  3
+ ],
+ "shellPrincipal": {
+  "cuadros": 884,
+  "nTirones": 66
+ },
+ "bateria": {
+  "passed": 29,
+  "total": 29
+ },
+ "nTirones": 2,
+ "tirones": [
+  {
+   "s": 2.3,
+   "ms": 2320,
+   "heapMB": 193,
+   "fase": "ini[visible] st {trabajos:0,descargando:0,kbG:0,zonas:0,fundidas:0,colocadas:0} · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 2.9,
+   "ms": 413,
+   "heapMB": 222,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:0,kbG:0,zonas:0,fundidas:0,colocadas:0} · fin[ui · pausa · visible]"
+  }
+ ],
+ "longtasks": [
+  {
+   "s": 0,
+   "d": 63,
+   "n": "unknown",
+   "a": "unknown"
+  },
+  {
+   "s": 0.3,
+   "d": 64,
+   "n": "same-origin-ancestor",
+   "a": "unknown"
+  },
+  {
+   "s": 0.3,
+   "d": 129,
+   "n": "same-origin-ancestor",
+   "a": "unknown"
+  },
+  {
+   "s": 0.5,
+   "d": 53,
+   "n": "same-origin-ancestor",
+   "a": "unknown"
+  },
+  {
+   "s": 0.6,
+   "d": 54,
+   "n": "same-origin-ancestor",
+   "a": "unknown"
+  },
+  {
+   "s": 0.7,
+   "d": 51,
+   "n": "same-origin-ancestor",
+   "a": "unknown"
+  },
+  {
+   "s": 1,
+   "d": 1302,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 2.5,
+   "d": 386,
+   "n": "self",
+   "a": "unknown"
+  }
+ ],
+ "errores": []
+}
