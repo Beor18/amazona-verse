@@ -107,6 +107,9 @@ AVE.module('streaming', function (G) {
   // desde fuera de iniciar(); dentro de iniciar los actualizan nivelZona/aplicarNivel/ajustarHD.
   let transNivel = 0, transHD = 0, bajasEvitadas = 0;
   const nivelCal = () => (R.calidad && R.calidad.nivel) || 'medio';
+  // KIMI-177 avance 2: en «bajo» los GLB del kit de la ciudad no descargan su normal gigante embebida
+  // (assets.js sustituye la URL por una normal plana 2×2); aquí se conecta el criterio de calidad del motor.
+  if (G.assets && G.assets.setNormalPlanaBaja) G.assets.setNormalPlanaBaja(() => nivelCal() === 'bajo');
   // QA-107 (iPhone, 3-nov): en el móvil, en «medio», la ciudad del tepuy cargaba su kit desde el punto de aparición (420 m) y el
   // _hd hasta 150 m; al despegar subían de golpe los atlas y las fusiones y Safari cerraba la pestaña. En el móvil, la ciudad
   // (vista, malla, _hd y tope de triángulos) usa los valores de «bajo» fuera de «alto». El escritorio no cambia.
@@ -413,13 +416,16 @@ AVE.module('streaming', function (G) {
     }
     if (m.map && m.map.image) m.userData.avAtlasEsc.value = m.map.image.width / (HD.celdas * HD.celda);
   }
+  // KIMI-177: la normal 2×2 plana (data URI de assets.js) marca «estaba en bajo y no se descargó la real».
+  const esNormalPlana = t => !!(t && t.image && t.image.width === 2 && t.image.height === 2);
   G.on('calidad', () => {
     for (const k in mats) if (/^AV_HD_/.test(k)) {
       const m = mats[k].mat;
-      // KIMI-177: el atlas pudo crearse en «bajo» sin normal (no se descargó, ~14 MB); al subir la calidad se pide y engancha.
-      if (!m.normalMap && nivelCal() !== 'bajo') {
+      // KIMI-177: el atlas pudo crearse en «bajo» sin normal (no se descargó, ~14 MB) o con la normal plana
+      // de los GLB (avance 2); al subir la calidad se pide la verdadera y se engancha al mismo material.
+      if ((!m.normalMap || esNormalPlana(m.normalMap)) && nivelCal() !== 'bajo') {
         const kit = /Ancient$/.test(k) ? 'ancient' : 'savage';
-        const nm = G.assets.tex(base + 'tex_hd/hd_' + kit + '_n.jpg');
+        const nm = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '_n.jpg');
         nm.flipY = false;
         m.normalMap = nm;
         m.needsUpdate = true;
@@ -714,8 +720,9 @@ AVE.module('streaming', function (G) {
 
   // ---------- Gestor de una lista de edificios (uno por G: lo crea mundo.js) ----------
   let ST = null;
+  let kitBase = 'assets/models/edificios/'; // KIMI-177: lo fija iniciar(); lo lee el gancho 'calidad' (fuera de su alcance)
   function iniciar(cfg) {
-    const T = G.terreno, MAPA = cfg.mapa, ED = cfg.ED, B64 = ED.b64 || 'AV_EDIFICIOS_B64', base = ED.base;
+    const T = G.terreno, MAPA = cfg.mapa, ED = cfg.ED, B64 = ED.b64 || 'AV_EDIFICIOS_B64', base = kitBase = ED.base;
     const KIT = () => window[ED.kitGlobal || 'AV_EDIFICIOS_KIT'] || null;
     const nombreDe = url => String(url).split('/').pop().replace(/\.glb$/, '');
     const ZM = MAPA.zonasEdificios || {};
