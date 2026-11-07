@@ -136,3 +136,21 @@ body:has(#dialog:not([hidden])) #edu-vuelo { display: none; } /* auditoría 7-no
 
 /* W31: el botón «Poder» (V18, z-index 70) se quedaba encima del Modo Maestro y tapaba sus tarjetas */
 body:has(#maestro:not([hidden])) #v18-exp-poder { display: none !important; }
+
+/* «Emparejar» (q3 del cap. 1): dos columnas que caben en un teléfono de 320–390 px; cada par lleva el número de su elemento
+   de la izquierda (no depende solo del color) */
+.edu-emp-ayuda { margin: 0 0 var(--sp-2) !important; font-size: var(--fs-sm) !important; color: var(--c-ink-muted); }
+.edu-emp { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-2); margin: 0 0 var(--sp-3); }
+.edu-emp-col { display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.edu-emp-lbl { font: 700 var(--fs-xs)/1.2 var(--font-body); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--c-ink-muted); }
+#card .edu-emp-op { min-height: 52px; min-width: 0; width: 100%; padding: var(--sp-2); gap: var(--sp-2); font-size: var(--fs-sm); overflow-wrap: anywhere; hyphens: auto; }
+.edu-emp-num { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--c-paper-2); border: 2px dashed rgba(107, 82, 54, 0.45); font: 700 13px/1 var(--font-display); color: var(--c-ink); }
+.edu-emp-op[data-lado="d"]:not(.unido) .edu-emp-num { background: transparent; }
+.edu-emp-txt { min-width: 0; }
+#card .edu-emp-op.elegido { box-shadow: 0 var(--lip) 0 var(--btn-lip), 0 0 0 4px var(--gold); }
+#card .edu-emp-op.unido .edu-emp-num { border-style: solid; color: #fff; }
+.edu-emp-op.par-0 .edu-emp-num { background: #2f6f9f !important; border-color: #1d4f75; }
+.edu-emp-op.par-1 .edu-emp-num { background: #2f7d45 !important; border-color: #1d5a2f; }
+.edu-emp-op.par-2 .edu-emp-num { background: #9a4a17 !important; border-color: #6e3310; }
+.edu-emp-op.par-3 .edu-emp-num { background: #6b3f9a !important; border-color: #4b2a70; }
+:root.a11y-contraste #card .edu-emp-op.elegido { box-shadow: 0 0 0 4px #fff; }
