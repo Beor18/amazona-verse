@@ -14,6 +14,9 @@
    cargaba index.html?v18=1 (una 2.ª instancia del juego bombeando la cola y compartiendo el hilo
    principal con el iframe a CPU ×4 → cuadros de 3 s aun con el iframe visible). Así el juego corre en
    UNA sola instancia (el iframe del bot), la condición del iPhone real.
+   KIMI-3 v5: el iframe carga OFF-SCREEN (en pantalla desde t=0 la carga no progresa a ×4: backing store
+   1170×2532 renderizando durante el boot) y el latido lo pasa a EN PANTALLA en cuanto AV.G.mundo.listo:
+   gameplay medido sin throttling y con la carga rápida.
    Uso: node tools/build/kimi3_tirones.js [--cpu 4] [--dpr 3] [--salida DIR] [--etiqueta r1] [--pantalla 0|1] */
 'use strict';
 const http = require('http');
@@ -32,7 +35,7 @@ const ETIQUETA = arg('--etiqueta', 'r1');
 const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi3tirones'));
 const UMBRAL = parseFloat(arg('--umbral', '250'));
 const PANTALLA = arg('--pantalla', '1') !== '0';
-function servir() { const srv = http.createServer((req, res) => { let p; try { p = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res.writeHead(400); return res.end('400'); } if (p.endsWith('/')) p += 'index.html'; if (p === '/k3shell.html') { res.writeHead(200, { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' }); res.end('<!doctype html><meta charset="utf-8"><title>k3-shell</title><body>shell k3'); return; } const f = path.join(RAIZ, p); if (!f.startsWith(RAIZ) || req.method !== 'GET') { res.writeHead(403); return res.end('403'); } fs.readFile(f, (e, d) => { if (e) { res.writeHead(404); return res.end('404'); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' }); res.end(d); }); }); return new Promise(r => srv.listen(0, '127.0.0.1', () => r({ srv, puerto: srv.address().port }))); }
+function servir() { const srv = http.createServer((req, res) => { let p; try { p = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res.writeHead(400); return res.end('400'); } if (p.endsWith('/')) p += 'index.html'; if (p === '/k3shell.html') { if (/[?&]pack=/.test(req.url)) { p = '/index.html'; } else { res.writeHead(200, { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' }); res.end('<!doctype html><meta charset="utf-8"><title>k3-shell</title><body>shell k3'); return; } } const f = path.join(RAIZ, p); if (!f.startsWith(RAIZ) || req.method !== 'GET') { res.writeHead(403); return res.end('403'); } fs.readFile(f, (e, d) => { if (e) { res.writeHead(404); return res.end('404'); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'max-age=600' }); res.end(d); }); }); return new Promise(r => srv.listen(0, '127.0.0.1', () => r({ srv, puerto: srv.address().port }))); }
 class CDP {
   constructor(ws) { this.ws = ws; this.id = 0; this.pend = new Map(); this.ev = []; ws.onerror = e => { for (const [, p] of this.pend) p.re2(new Error('WS')); this.pend.clear(); }; ws.onmessage = m => { const d = JSON.parse(m.data); if (d.id && this.pend.has(d.id)) { const p = this.pend.get(d.id); this.pend.delete(d.id); d.error ? p.re2(new Error(d.error.message)) : p.re(d.result); } else if (d.method) for (const f of this.ev) { try { f(d); } catch (e) { } } }; }
   listo() { return new Promise(r => { this.ws.onopen = r; }); }
@@ -132,17 +135,32 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   }
   const tBot = Date.now();
   while (Date.now() - tBot < 60000) { try { if (await ev(cdp, ses, `!!(window.AV && AV.temporadaMovilTest && AV.epCaminar)`, 5, false)) break; } catch (e) { } await cdp.bombear(0.5); }
-  pinta('· bot listo (AV.temporadaMovilTest) · temporadaMovilTest caps:[1] con el pulgar (los primeros min del cap. 1)…');
+  pinta('· bot listo (AV.temporadaMovilTest) · precalentando caché HTTP con un iframe desechable (misma URL que usará el bot)…');
+  await ev(cdp, ses, `(() => { const w = document.createElement('iframe'); w.style.cssText = 'position:fixed;left:-2000px;top:0;width:390px;height:844px;border:0'; w.src = 'index.html?pack=cap1&v18=1&calidad=bajo'; window.__k3warm = w; document.body.appendChild(w); return 'warm-up creado'; })()`, 15, false).then(x => pinta('· ' + x));
+  const tW = Date.now(); let warmListo = false, ultRec = -1, estabil = 0;
+  while (Date.now() - tW < 210000) {
+    try {
+      const st = await ev(cdp, ses, `(() => { const w = window.__k3warm; if (!w) return null; const x = w.contentWindow; let listo = false; try { listo = !!(x && x.AV && x.AV.G && x.AV.G.actores && (x.AV.G.actores.player3D || x.AV.G.actores.failed3D)); } catch (e) {} let nRec = 0; try { nRec = x && x.performance ? x.performance.getEntriesByType('resource').length : 0; } catch (e) {} return JSON.stringify({ listo, nRec }); })()`, 15, false).then(s => { try { return JSON.parse(s); } catch (e) { return null; } });
+      if (st) {
+        if (st.listo) { warmListo = true; pinta('· warm-up: juego listo (' + Math.round((Date.now() - tW) / 1000) + ' s, ' + st.nRec + ' recursos)'); break; }
+        if (st.nRec === ultRec) estabil++; else { estabil = 0; ultRec = st.nRec; }
+        if (estabil >= 8 && ultRec > 40) { pinta('· warm-up: red estable (' + ultRec + ' recursos, ~16 s sin nuevas peticiones)'); break; }
+      }
+    } catch (e) { }
+    await cdp.bombear(2);
+  }
+  await ev(cdp, ses, `(() => { try { window.__k3warm && window.__k3warm.remove(); window.__k3warm = null; } catch (e) {} return 'warm-up retirado'; })()`, 10, false).then(x => pinta('· ' + x + ' (listo=' + warmListo + ')'));
+  pinta('· temporadaMovilTest caps:[1] con el pulgar (los primeros min del cap. 1)…');
   const latido = setInterval(async () => {
     try {
       const d = await ev(cdp, ses, `(() => {
         const frs = [...document.querySelectorAll('iframe')];
         const fr = frs.find(x => { try { const w = x.contentWindow; return w && w.__frames; } catch (e) { return false; } });
         if (!fr) return 'sin-iframe';
-        ${PANTALLA ? `try { if (!fr.dataset.k3pantalla) { fr.style.cssText = 'position:fixed;left:0;top:0;width:390px;height:844px;border:0;z-index:2147483647;background:#000'; fr.dataset.k3pantalla = '1'; } } catch (e) {}` : ''}
         const W = fr.contentWindow;
         let cola = null;
         try { if (W.AV && W.AV.G && W.AV.G.mundo && W.AV.G.mundo.streaming && W.AV.G.mundo.streaming.stats) { const st = W.AV.G.mundo.streaming.stats(); cola = { trabajos: st.trabajos, descargando: st.descargando }; } } catch (e) {}
+        ${PANTALLA ? `try { let listo = false; try { listo = !!(W.AV && W.AV.G && W.AV.G.mundo && W.AV.G.mundo.streaming); } catch (e) {} if (listo && !fr.dataset.k3pantalla) { fr.style.cssText = 'position:fixed;left:0;top:0;width:390px;height:844px;border:0;z-index:2147483647;background:#000'; fr.dataset.k3pantalla = '1'; } } catch (e) {}` : ''}
         const rc = fr.getBoundingClientRect();
         return JSON.stringify({ n: W.__frames.n, tir: (W.__tirones || []).length, ult: (W.__tirones || []).slice(-1)[0] || null, vis: W.document.visibilityState, rect: [Math.round(rc.left), Math.round(rc.top), Math.round(rc.width), Math.round(rc.height)], cola });
       })()`, 15, false);

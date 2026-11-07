@@ -1,0 +1,44 @@
+· servidor http://127.0.0.1:57824 · 390×844 dpr 3 táctil · CPU ×4 · ?v18=1 · umbral 250 ms · etiqueta shell-r5 · iframe EN PANTALLA · shell vacía (instancia única)
+· shell lista; inyectando ep_caminar.js + temporada_movil.js…
+· bot listo (AV.temporadaMovilTest) · precalentando caché HTTP con un iframe desechable (misma URL que usará el bot)…
+· warm-up creado
+· warm-up: juego listo (7 s, 117 recursos)
+· warm-up retirado (listo=true)
+· temporadaMovilTest caps:[1] con el pulgar (los primeros min del cap. 1)…
+· latido: {"n":437,"tir":18,"ult":{"s":33,"ms":9472,"heapMB":112,"fase":"ini[visible] st {trabajos:1033,descargando:63,kbG:13336,zonas:17,fundidas:7,colocadas:72} · lentos:[{\"n\":\"subirTex\",\"ms\":239,\"t\":8322}] · fin[visible]"},"vis":"visible","rect":[0,0,390,844],"cola":{"trabajos":1033,"descargando":63}}
+· latido: {"n":470,"tir":32,"ult":{"s":61.7,"ms":2240,"heapMB":103,"fase":"ini[visible] st {trabajos:1394,descargando:44,kbG:13543,zonas:17,fundidas:7,colocadas:101} · lentos:[{\"n\":\"subirTex\",\"ms\":239,\"t\":8322}] · fin[visible]"},"vis":"visible","rect":[0,0,390,844],"cola":{"trabajos":1395,"descargando":43}}
+· latido: eval falló (timeout Runtime.evaluate)
+· latido: eval falló (timeout Runtime.evaluate)
+· latido: {"n":497,"tir":41,"ult":{"s":155.3,"ms":5650,"heapMB":132,"fase":"ini[ui · visible] st {trabajos:6434,descargando:46,kbG:8814,zonas:17,fundidas:4,colocadas:113} · lentos:[{\"n\":\"subirTex\",\"ms\":239,\"t\":8322}] · fin[visible]"},"vis":"visible","rect":[0,0,390,844],"cola":{"trabajos":6436,"descargando":44}}
+· latido: eval falló (timeout Runtime.evaluate)
+· latido: {"n":515,"tir":47,"ult":{"s":211,"ms":4799,"heapMB":104,"fase":"ini[visible] st {trabajos:11967,descargando:32,kbG:10323,zonas:17,fundidas:4,colocadas:117} · lentos:[{\"n\":\"subirTex\",\"ms\":239,\"t\":8322}] · fin[ui · visible]"},"vis":"visible","rect":[0,0,390,844],"cola":{"trabajos":11969,"descargando":30}}
+· latido: {"n":580,"tir":51,"ult":{"s":241.4,"ms":12652,"heapMB":103,"fase":"ini[ui · visible] st {trabajos:11272,descargando:0,kbG:11151,zonas:17,fundidas:4,colocadas:171} · lentos:[{\"n\":\"subirTex\",\"ms\":239,\"t\":8322}] · fin[visible]"},"vis":"visible","rect":[0,0,390,844],"cola":{"trabajos":11272,"descargando":0}}
+· temporadaMovilTest devolvió en 264 s
+· registrador en iframe del juego: false (datos por espejo del padre) · cuadros totales: 592 · ms medios: 426 · tirones >250 ms: 54 · (shell principal: 0 cuadros, 0 tirones)
+· deltas cuadro (ms): p50 23 · p90 225 · p95 828 · p99 9472 · max 69273 · n 592
+· TOP 10 tirones (ms):
+  #1 69273 ms @ 148.2 s · heap 120 MB · ini[visible] st {trabajos:6250,descargando:50,kbG:8808,zonas:17,fundidas:4,colocadas:106} · lentos:[{"n":"subirTex","ms":239,"t":8322}] · fin[visible]
+  #2 24935 ms @ 201.9 s · heap 121 MB · ini[visible] st {trabajos:11420,descargando:34,kbG:10183,zonas:17,fundidas:4,colocadas:117} · lentos:[{"n":"subirTex","ms":239,"t":8322}] · fin[visible]
+  #3 19512 ms @ 176.5 s · heap 131 MB · ini[visible] st {trabajos:7972,descargando:36,kbG:9095,zonas:17,fundidas:4,colocadas:117} · lentos:[{"n":"subirTex","ms":239,"t":8322}] · fin[visible]
+  #4 12652 ms @ 241.4 s · heap 103 MB · ini[ui · visible] st {trabajos:11272,descargando:0,kbG:11151,zonas:17,fundidas:4,colocadas:171} · lentos:[{"n":"subirTex","ms":239,"t":8322}] · fin[visible]
+  #5 9864 ms @ 43.9 s · heap 131 MB · ini[visible] st {trabajos:1872,descargando:63,kbG:13336,zonas:17,fundidas:7,colocadas:81} · lentos:[{"n":"subirTex","ms":239,"t":8322}] · fin[visible]
+  #6 9472 ms @ 33 s · heap 112 MB · ini[visible] st {trabajos:1033,descargando:63,kbG:13336,zonas:17,fundidas:7,colocadas:72} · lentos:[{"n":"subirTex","ms":239,"t":8322}] · fin[visible]
+  #7 6692 ms @ 78.9 s · heap 147 MB · ini[visible] st {trabajos:2561,descargando:33,kbG:14327,zonas:17,fundidas:7,colocadas:105} · lentos:[{"n":"subirTex","ms":239,"t":8322}] · fin[visible]
+  #8 6340 ms @ 218.7 s · heap 141 MB · ini[ui · visible] st {trabajos:10899,descargando:8,kbG:11151,zonas:17,fundidas:4,colocadas:118} · lentos:[{"n":"subirTex","ms":239,"t":8322}] · fin[visible]
+  #9 5650 ms @ 155.3 s · heap 132 MB · ini[ui · visible] st {trabajos:6434,descargando:46,kbG:8814,zonas:17,fundidas:4,colocadas:113} · lentos:[{"n":"subirTex","ms":239,"t":8322}] · fin[visible]
+  #10 5382 ms @ 247.1 s · heap 116 MB · ini[visible] st {trabajos:11552,descargando:0,kbG:11151,zonas:17,fundidas:4,colocadas:171} · lentos:[{"n":"subirTex","ms":239,"t":8322}] · fin[visible]
+· TOP 10 longtasks (ms):
+  lt 69214 ms @ 79 s · same-origin-ancestor · atrib unknown
+  lt 24600 ms @ 177.3 s · same-origin-ancestor · atrib unknown
+  lt 19462 ms @ 157.1 s · same-origin-ancestor · atrib unknown
+  lt 12598 ms @ 228.8 s · same-origin-ancestor · atrib unknown
+  lt 9640 ms @ 34.3 s · same-origin-ancestor · atrib unknown
+  lt 9256 ms @ 23.8 s · same-origin-ancestor · atrib unknown
+  lt 6650 ms @ 72.2 s · same-origin-ancestor · atrib unknown
+  lt 6283 ms @ 212.4 s · same-origin-ancestor · atrib unknown
+  lt 5597 ms @ 149.7 s · same-origin-ancestor · atrib unknown
+  lt 5203 ms @ 241.9 s · same-origin-ancestor · atrib unknown
+· batería: 28/29
+· errores de consola: 0
+· __aveErrores de la página: []
+· aviso: perfil temporal no se pudo borrar (se libera solo): C:\Users\kelvi\AppData\Local\Temp\kimi3tir-Fer0sL
