@@ -1,0 +1,81 @@
+[11:06:51] pack cap1: navegando...
+[11:06:56] …latido
+[11:07:01] …latido
+[11:07:06] …latido
+[11:07:11] …latido
+[11:07:16] …latido
+[11:07:19] pack cap1: listo en 4.873s, entrada en 27.47s; muestreo 12s en el spawn
+[11:07:21] …latido
+[11:07:26] …latido
+[11:07:31] …latido
+[11:07:36] …latido
+[11:07:41] …latido
+[11:07:46] …latido
+[11:07:51] …latido
+[11:07:56] …latido
+[11:07:59] pack cap1: fpsMed=20 min=19 peorMs=88 calls=67 ktris=330 medL=67 calls/0.33M errores=[]
+[11:07:59] pack ep2: navegando...
+[11:08:01] …latido
+[11:08:06] …latido
+[11:08:11] …latido
+[11:08:16] …latido
+[11:08:21] …latido
+[11:08:26] pack ep2: listo en 5.128s, entrada en 26.538s; muestreo 12s en el spawn
+[11:08:26] …latido
+[11:08:31] …latido
+[11:08:36] …latido
+[11:08:41] …latido
+[11:08:46] …latido
+[11:08:48] pack ep2: fpsMed=18 min=2 peorMs=3249 calls=62 ktris=304 medL=61 calls/0.30M errores=[]
+[11:08:48] pack ep3: navegando...
+[11:08:51] …latido
+[11:08:56] …latido
+[11:09:01] …latido
+[11:09:06] …latido
+[11:09:09] pack ep3: listo en 5.388s, entrada en 21.465s; muestreo 12s en el spawn
+[11:09:11] …latido
+[11:09:16] …latido
+[11:09:21] …latido
+[11:09:26] …latido
+[11:09:27] pack ep3: fpsMed=15 min=7 peorMs=430 calls=93 ktris=450 medL=96 calls/0.59M errores=[]
+[11:09:27] pack ep4: navegando...
+[11:09:31] …latido
+[11:09:36] …latido
+[11:09:41] …latido
+[11:09:46] …latido
+[11:09:50] pack ep4: listo en 5.153s, entrada en 23.143s; muestreo 12s en el spawn
+[11:09:51] …latido
+[11:09:56] …latido
+[11:10:01] …latido
+[11:10:06] …latido
+[11:10:08] pack ep4: fpsMed=13 min=1 peorMs=1802 calls=116 ktris=481 medL=117 calls/0.59M errores=[]
+[11:10:08] pack ep5: navegando...
+[11:10:11] …latido
+[11:10:16] …latido
+[11:10:21] …latido
+[11:10:26] …latido
+[11:10:31] …latido
+[11:10:36] …latido
+[11:10:37] pack ep5: listo en 5.384s, entrada en 28.376s; muestreo 12s en el spawn
+[11:10:41] …latido
+[11:10:46] …latido
+[11:10:51] …latido
+[11:10:56] …latido
+[11:10:58] pack ep5: fpsMed=14 min=4 peorMs=1657 calls=106 ktris=267 medL=105 calls/0.27M errores=[]
+[11:10:58] pack ep6: navegando...
+[11:11:01] …latido
+[11:11:07] …latido
+[11:11:12] …latido
+[11:11:17] …latido
+[11:11:22] …latido
+[11:11:24] pack ep6: listo en 4.984s, entrada en 26.009s; muestreo 12s en el spawn
+[11:11:27] …latido
+[11:11:32] …latido
+[11:11:37] …latido
+[11:11:42] …latido
+[11:11:47] …latido
+[11:11:50] pack ep6: fpsMed=21 min=1 peorMs=1374 calls=89 ktris=252 medL=88 calls/0.25M errores=[]
+[11:11:50] demo: navegando con ?v18=1...
+[11:11:52] …latido
+[11:11:57] …latido
+[11:12:02] …latido
