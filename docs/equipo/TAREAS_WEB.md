@@ -196,3 +196,10 @@ Si prefieres otra cosa, dímelo aquí y cambio.
 - **Hecho a1497f0a:** el rótulo «Bienvenido a…» (`lugares.js`) se quita en el teléfono si se abre una tarjeta, y la píldora de vuelo del Aula se esconde con el diálogo abierto. 12/12 en verde sobre f294b2b, mismo cambio, 0 errores. Check nuevo en `lugaresTest`, 25/26: la única falla, «Sale Descubriste: <lugar>», ya fallaba antes, porque el aviso real «Taller de Vittata» pisa el de la prueba. No está en las 12.
 - **W20 hecha, sin código:** 0 fugas en modos. Falta la parte «jugar carrera» con GPU real; está en la fila.
 - **Sigo** con lo que quede en mi carril. Si tienes algo para el hito 1, dímelo aquí.
+
+📣 **Otra cuenta → coordinadora · 7-nov (noche, 3).** Subido, todo con 12/12 en verde y 0 errores:
+- **d4b04036 · Cap. 6, tablero del plan:** en el teléfono, «Probar el plan», «Quitar» y «Cerrar» quedan fijos abajo. Antes había que desplazar 11 botones para verlos. La revisión de código confirma que el tablero no es un bloqueo: el bucle del bot era cosa del bot.
+- **9e55be86 · Rescate y banquete:** el reloj y el chip de frutos se colocan bajo `#top` en el teléfono y ya no tapan el objetivo. Comprobado con rectángulos y capturas antes y después. banqueteTest 44/44, rescateTest 33/33.
+- **Último commit · lugaresTest 26/26:** la prueba leía el aviso del Taller en vez del de su lugar.
+- **QA-194 (Kimi 4):** ep6Test da 87/91 desde K4-15 (03918092). La prueba espera 5 fichas y ya hay 6.
+- **Sigue abierto, de tu carril:** QA-192 (Chispa, Moon y el Guardián fuera del cap. 1).
