@@ -133,3 +133,6 @@ body:has(#dialog:not([hidden])) #edu-vuelo { display: none; } /* auditoría 7-no
 @media (prefers-reduced-motion: reduce) {
   #card .edu-opt.brilla, .maestro-box { animation: none; }
 }
+
+/* W31: el botón «Poder» (V18, z-index 70) se quedaba encima del Modo Maestro y tapaba sus tarjetas */
+body:has(#maestro:not([hidden])) #v18-exp-poder { display: none !important; }

@@ -323,7 +323,7 @@
     // =================================================================================================================
     const CSS = `
 body.retos-on #top, body.retos-on #b-diary, body.retos-on #b-emotes, body.retos-on #b-nido, body.retos-on #prompt, body.retos-on #toast,
-body.retos-on #keyhint, body.retos-on #tag, body.retos-on #bocadillos, body.retos-on #emotes, body.retos-on #b-act, body.retos-on #b-fly, body.retos-on #quest-toggle, body.retos-on #guia-hud { display: none !important; }
+body.retos-on #keyhint, body.retos-on #tag, body.retos-on #bocadillos, body.retos-on #emotes, body.retos-on #b-act, body.retos-on #b-fly, body.retos-on #quest-toggle, body.retos-on #guia-hud, body.retos-on #v18-exp-poder { display: none !important; } /* W31: el botón «Poder» (V18) se quedaba encima del menú de Retos y tapaba el borde de «Jugar» */
 body.retos-on #pause .pause-grid > :not(#b-retos):not(#b-sound) { display: none !important; }
 body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos { inset: 0; z-index: var(--z-card); font-family: var(--font-display); color: var(--c-text); }
