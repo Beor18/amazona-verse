@@ -1,8 +1,80 @@
 # K4-02 · Fuentes para las fichas educativas sin verificar
 
-Hecho por la coordinadora (nube) el 6-nov-2026. Se basa en `KELVIN_CERRAR_HOY.md` §A1 y §A2.1-A2.3. **No se ha cambiado ninguna ficha: decide Kelvin.**
+Hecho por la coordinadora (nube) el 6-nov-2026. Se basa en `KELVIN_CERRAR_HOY.md` §A1 y §A2.1-A2.3. **Actualizado el 7-nov-2026 con la verificación abriendo las fuentes (sección siguiente): 2 fichas verificadas; los ajustes de texto quedan pendientes de Kelvin.**
 
-## Límite importante: léelo antes de aprobar
+## Verificación real con la fuente abierta (7-nov-2026)
+
+Hecha por un agente de la nube el 7-nov-2026, con la red ya abierta a `www.fws.gov`, `www.fs.usda.gov`, `research.fs.usda.gov`, `www.iucngisd.org`, `npgallery.nps.gov`, `water.usgs.gov` y `datazone.birdlife.org`. Kelvin decidió el 7-nov que la verificación la hace el agente responsable (`docs/DECISION_LOG.md`). Regla aplicada: **solo pasa a «verificado» la ficha cuyo texto actual (es y en) dice lo mismo que la fuente oficial abierta**. Si la fuente confirma el dato pero el texto necesita un ajuste, la ficha no se toca y el texto propuesto queda abajo como **«pendiente de Kelvin: ajuste de texto»**. Fecha de consulta de todas las fuentes: **2026-11-07**.
+
+**No se pudieron abrir:** `www.usgs.gov` (403), `dle.rae.es` (403, página de comprobación anti-bots), `www.iucnredlist.org` (403), `www.asale.org`, `webarchive.library.unt.edu` y `web.archive.org` (fuera de la red). Los PDF `stelprdb53389xx` de `fs.usda.gov/Internet/FSE_DOCUMENTS/` dan **404**. En su lugar se usaron dos documentos oficiales del USDA FS que sí abren:
+- **Evaluación del Plan Forestal** (borrador): https://www.fs.usda.gov/sites/nfs/files/legacy-media/elyunque/Draft%20Assessment%20-%20Assessing%20Eco%20Sustainability_0.pdf (en adelante, «Evaluación»).
+- **El Yunque National Forest Atlas** (IITF y El Yunque, 2018): https://www.fs.usda.gov/sites/nfs/files/legacy-media/elyunque/Atlas%20ENGLISH.pdf (en adelante, «Atlas»).
+
+### Tabla del resultado
+
+| # | Id | Fuente oficial abierta | Abierta | Cita literal | Estado final |
+|---|---|---|---|---|---|
+| 1 | cotorra_1975 | https://www.fws.gov/story/2001-07/nine-ten-captive-bred-puerto-rican-parrots-released-caribbean-national-forest-still · comunicado de 1975 (PDF) · Atlas p. 40 | ✔ | «only 24 individuals remained in the wild and, by 1975, the population had reached an alarming low of only 13 birds» | **parcial** (oculta) · ajuste pendiente |
+| 2 | zorzal_pardo | https://www.fws.gov/sites/default/files/documents/historic-news-releases/1975/19750922A.PDF | ✔ | «Vicious competition for nest space with the pearly-eyed thrasher…»; «they prefer nesting cavities in the same trees used by parrots» | **verificado** (commit b4013c91) |
+| 3 | cotorra_alimento | https://www.fws.gov/species/puerto-rican-amazon-amazona-vittata | ✔ | «feeds chiefly on wild fruits, particularly the sierra palm (Prestoria montana), but may also consume flowers and tender shoots» | **por_verificar** (oculta) · ajuste pendiente |
+| 4 | capas_bosque | — (no hay fuente oficial con el modelo de 4 capas) | — | — | **por_verificar** (oculta) · no confirmada |
+| 5 | bosque_tipos | Evaluación, p. 32 del PDF | ✔ | «Four forest types—Tabonuco, Colorado, Dwarf (Elfin), and Palm—are recognized locally»; la de palma «is found on steep slopes and in ravines mainly above 500 meters» | **parcial** (oculta) · ajuste pendiente |
+| 6 | lluvia_bosque_enano | Evaluación, p. 40 · Atlas, p. 31 | ✔ | «more than 200 inches (381 centimeters) at the highest elevations of the Cloud (Dwarf) Forest»; Atlas: «Some areas in the uppermost cloud forest receive more than 5000 mm (200 inches) annually» | **parcial** (oculta) · ajuste pendiente («150 a 200» no aparece) |
+| 7 | tabonuco | Evaluación, p. 32 · Atlas, p. 36 | ✔ | «The Tabonuco Forest, dominated by the tabonuco tree […] lies between 120 and 600 meters elevation»; Atlas: «between 150 m and 700 m» | **parcial** (oculta) · ajuste pendiente (las fuentes no coinciden en el límite) |
+| 8 | helecho_gigante | https://www.fs.usda.gov/r08/elyunque/animals-plants · Evaluación, p. 20 | ✔ | «more than 150 species of ferns»; «abundant stems of the tree fern Cyathea bryophylla» | **parcial** (oculta) · ajuste pendiente («comunes» no aparece) |
+| 9 | arboles_nativos | Atlas, p. 16-17 · https://www.fs.usda.gov/r08/elyunque/animals-plants | ✔ | Atlas: «225 native tree species», «8 are endemic to the Luquillo Mountains»; página: «about 250 different types of trees» | **parcial** (oculta) · **no confirmada** (240 y 23 no aparecen) · ajuste propuesto |
+| 10 | bromelia | Evaluación, p. 5, 6 y 22 | ✔ | «epiphytic ferns, bromeliads, orchids»; «aquatic systems in tank bromeliads»; Guzmania berteriana «is found more commonly along canopy tree trunks than on the forest floor» | **por_verificar** (oculta) · ajuste pendiente |
+| 11 | coqui_bromelia | https://www.iucngisd.org/gisd/species.php?sc=105 · Atlas, p. 40 | ✔ | «the fertilised egg undergoes direct development, rather than passing through a free-living larval (tadpole) stage»; «Male frogs nest in protected cavities near the ground, such as dead, curled leaves or rolled palm frond petioles» | **por_verificar** (oculta) · ajuste pendiente (las bromelias no aparecen) |
+| 12 | heliconia | — (no hay fuente oficial; la Evaluación y el Atlas no la nombran) | — | — | **por_verificar** (oculta) · no confirmada |
+| 13 | ceiba | https://research.fs.usda.gov/treesearch/30402 (PDF, p. 1; autor: J. D. Chinea-Rivera, 1990) | ✔ | «one of the largest and fastest growing trees of tropical America. Ceiba can attain a height of more than 50 m […] the stem develops stout spines and prominent buttresses» | **por_verificar** (oculta) · ajuste pendiente |
+| 14 | bambu | https://research.fs.usda.gov/treesearch/30351 (PDF, p. 1; Francis 1993) | ✔ | «known as common bamboo or bambú (Spanish)»; «It was introduced to Puerto Rico at least 150 years ago» | **verificado** (commit b4013c91) |
+| 15 | ciclo_agua | https://water.usgs.gov/edu/graphics/watercycle-usgs.pdf (la página de la Water Science School dio 403) | ✔ (cartel) | Solo rótulos: «Sun», «Evaporation», «Condensation», «Precipitation», «Infiltration», «Surface runoff», «Streamflow», «Oceans». «Se enfría» no aparece | **parcial** (oculta) · no confirmada tal cual (falta abrir la página del USGS) |
+| 16 | Aula q3 | — | — | Depende de capas_bosque. Además, la Evaluación dice que en el palo colorado «Bromeliads are common on the forest floor» (p. 22), lo que choca con la pareja «dosel = bromelias» | **por_verificar** (oculta) · no confirmada |
+| 17 | Aula q4 | https://www.fws.gov/species/puerto-rican-amazon-amazona-vittata · Atlas: «Palm fruits are part of the basic diet of the Puerto Rican parrot» | ✔ | (la de la ficha 3) | **por_verificar** (oculta). El dato se sostiene, pero la pregunta va atada a cotorra_alimento (`requiere_validacion` y las pruebas de `content/cap1/pruebas.js`, líneas 672, 795 y 872): se publica cuando Kelvin apruebe el ajuste de la ficha 3 |
+| 18 | E9 techo_zinc (cap. 2) | https://npgallery.nps.gov/NRHP/GetAsset/NRHP/90000767_text | ✔ | «hipped or side-gabled, usually high-pitched roof of ceramic tile or corrugated zinc» (y el formulario pone «roof Corrugated Zinc» y «Urban-residential Criollo») | **verificado** (se queda; la frase es literal en el n.º 90000767) |
+| 19 | canoa_taina (cap. 3) | dle.rae.es/canoa: **no abre** (403) | ✘ | — | **verificado** (se queda como está, con el *Diccionario de americanismos* leído el 4-nov). «Del taíno» sigue sin comprobar |
+| 20 | CG-51 (cap. 3, inglés) | no es un dato | — | — | **hecho**: `content/ep3/en.js` dice «Royal Spanish Academy (RAE), Dictionary of the Spanish Language, entry “canoa” (canoe), sense 1a» (commit b4013c91) |
+| 21 | esperan (cap. 6) | datazone.birdlife.org (abre, pero la categoría se carga con JavaScript y no sale en el HTML) · iucnredlist.org (403) | ✘ | — | **por_verificar** (oculta) · no confirmada en esta sesión; el ajuste de texto de la ficha 21 sigue en pie |
+
+**Resumen:** 2 pasan a «verificado» (zorzal_pardo y bambu), E9 sigue verificada, CG-51 traducido. 10 tienen la fuente oficial abierta pero necesitan un ajuste de texto (1, 3, 5, 6, 7, 8, 9, 10, 11 y 13) y siguen ocultas. 6 no se confirman y siguen como estaban (4, 12, 15, 16, 19 en su parte «del taíno», 21). q4 espera a la ficha 3.
+
+### Pendiente de Kelvin: ajustes de texto (es / en)
+
+Cada ficha pasaría a «verificado», con la fuente indicada, en cuanto Kelvin apruebe el texto. No se ha cambiado nada en el juego.
+
+1. **cotorra_1975.** Fuente: USFWS, historia de 2001 (URL de la tabla).
+   - es: «En 1975 llegaron a quedar solo 13 cotorras silvestres.» · en: «In 1975, only 13 wild parrots were left.»
+   - Ojo: las fuentes del USFWS no coinciden en el año. El comunicado del 22-sep-1975 dice «Last year, a research team led by Dr. Snyder counted only 13 birds, an all time low» (o sea, 1974), y el Atlas dice «Only an estimated 13 individuals were living in the wild by 1976». Alternativa que encaja con las tres: es «A mediados de los años 70 llegaron a quedar solo 13 cotorras silvestres.» · en «By the mid-1970s, only 13 wild parrots were left.» (corto: «Años 70: quedaban 13.» · «1970s: 13 left.»). Si se elige esta, revisar también «Compara con las 13 cotorras de 1975» (`content/cap1/en.js:1562` y su original en español).
+2. **cotorra_alimento.** Fuente: USFWS, ficha de la especie.
+   - es: «La cotorra come sobre todo frutos silvestres, en especial los de la palma de sierra. También come flores y brotes tiernos.» · en: «The parrot feeds mainly on wild fruits, especially those of the sierra palm. It also eats flowers and tender shoots.» (el corto se queda igual). Con esto se publica también q4.
+3. **bosque_tipos.** Fuente: Evaluación, p. 32.
+   - es: «El Yunque tiene cuatro tipos de bosque según la altura y el terreno: tabonuco, palo colorado, palma de sierra y bosque enano en las cumbres.» · en: «El Yunque has four forest types, depending on elevation and terrain: tabonuco, palo colorado, sierra palm and dwarf forest on the peaks.»
+   - corto: «4 bosques según altura y terreno.» · «4 forests by elevation and terrain.»
+4. **lluvia_bosque_enano.** Fuente: Evaluación, p. 40, y Atlas, p. 31. (En la Evaluación, «381 centimeters» es una errata: 200 pulgadas son 508 cm. El Atlas da 5000 mm.)
+   - es: «En las partes más altas del bosque enano caen más de 200 pulgadas de lluvia al año.» · en: «The highest parts of the dwarf forest get more than 200 inches of rain a year.»
+   - corto: «Cumbres: más de 200 pulgadas al año.» · «Peaks: 200+ inches a year.»
+5. **tabonuco.** Fuente: Evaluación, p. 32. «Unos 2,000 pies» (600 m) coincide con la Evaluación, pero el Atlas pone el límite en 700 m (unos 2,300 pies). Texto sin cifra:
+   - es: «El tabonuco da nombre al bosque de las partes más bajas de El Yunque, donde es el árbol dominante.» · en: «The tabonuco gives its name to the forest on El Yunque's lowest slopes, where it is the dominant tree.» (el corto se queda igual)
+6. **helecho_gigante.** Fuentes: página «Animals and Plants» del USDA FS y Evaluación, p. 20.
+   - es: «En El Yunque hay más de 150 especies de helechos. Algunos, como el helecho gigante, son tan grandes que parecen árboles.» · en: «El Yunque has more than 150 species of ferns. Some, like the giant tree fern, are so big they look like trees.» (el corto se queda igual)
+7. **arboles_nativos.** Fuente: Atlas, p. 16-17 (datos rápidos de El Yunque). La cifra actual (240 y 23) no aparece en ninguna fuente oficial que abra hoy.
+   - es: «El Yunque tiene 225 especies de árboles nativos; 8 solo crecen en la sierra de Luquillo.» · en: «El Yunque has 225 native tree species; 8 grow only in the Luquillo Mountains.»
+   - corto: «225 árboles nativos; 8 únicos.» · «225 native trees; 8 unique.»
+8. **bromelia.** Fuente: Evaluación, p. 5, 6 y 22.
+   - es: «Muchas bromelias crecen sobre los árboles, y algunas forman un tanque que guarda agua.» · en: «Many bromeliads grow on trees, and some form a tank that holds water.»
+   - corto: «Algunas guardan agua.» · «Some hold water.»
+9. **coqui_bromelia.** Fuente: IUCN GISD (sc=105) y Atlas, p. 40.
+   - es: «Del huevo del coquí sale un coquí chiquitito, sin etapa de renacuajo. Los huevos quedan en lugares protegidos, como hojas secas enrolladas, y el macho los cuida.» · en: «A tiny coquí hatches from the egg, with no tadpole stage. The eggs are kept in sheltered spots, like curled dead leaves, and the male guards them.»
+   - corto: «Sin renacuajo; el macho cuida los huevos.» · «No tadpole; the male guards the eggs.»
+10. **ceiba.** Fuente: USDA FS, Chinea-Rivera 1990, SO-ITF-SM-29 (Treesearch 30402), p. 1. La fuente no dice que los contrafuertes «la sostienen». También dice que en Puerto Rico la ceiba crece «on dry coastal soils» y aparece en la asociación de *Dacryodes excelsa* y *Sloanea berteriana* (el tabonuco).
+    - es: «La ceiba puede pasar de 50 metros de altura. Su tronco forma grandes contrafuertes, como tablas.» · en: «The ceiba can grow taller than 50 meters. Its trunk forms big buttresses, like boards.»
+    - corto: «Árbol gigante con contrafuertes.» · «Giant tree with buttresses.»
+
+Ya estaban propuestos y siguen igual: la ficha 21 (esperan; falta abrir la Lista Roja) y las opciones de capas_bosque, q3 y heliconia. Para cerrar ciclo_agua y canoa («del taíno») hay que abrir `www.usgs.gov` y `dle.rae.es` desde un navegador normal.
+
+---
+
+## Límite importante (6-nov, ya superado: ver la verificación del 7-nov arriba)
 
 Desde esta sesión en la nube **no se pudo abrir ninguna fuente oficial**: `www.fws.gov`, `www.fs.usda.gov` y `www.rae.es` están fuera de la red permitida (ENOTFOUND). Todas las citas de abajo salen del **índice del buscador** (WebSearch), que muestra el texto de ese documento oficial. Casi siempre son frases literales en inglés; donde no hay frase literal, se dice.
 
@@ -220,9 +292,9 @@ Por eso el «estado propuesto» de abajo dice **«verificado (tras abrir el enla
 
 ---
 
-## Qué tiene que decidir Kelvin
-1. Si aprueba en bloque los 13 cambios a «verificado» (antes 15; lluvia_bosque_enano y ceiba quedan pendientes tras la revisión) (con los textos ajustados donde se indica) **en cuanto alguien abra los enlaces**.
+## Qué tiene que decidir Kelvin (actualizado el 7-nov-2026)
+1. Si aprueba los 10 ajustes de texto de la sección «Pendiente de Kelvin: ajustes de texto» (cotorra_1975 con su año, cotorra_alimento, bosque_tipos, lluvia_bosque_enano, tabonuco, helecho_gigante, arboles_nativos, bromelia, coqui_bromelia y ceiba). Con cada uno aprobado, la ficha pasa a «verificado» con la fuente ya abierta (y q4 con cotorra_alimento).
 2. capas_bosque y q3: si se dejan ocultas o pasan a «narrativo».
 3. heliconia: si acepta una fuente científica no oficial (el resumen de la ESA 2010) o la ficha se queda oculta.
-4. canoa: si abre dle.rae.es/canoa para comprobar «Del taíno».
-5. Permiso para abrir en la red de la nube `www.fws.gov`, `www.fs.usda.gov` y `www.rae.es`, si quiere que la comprobación final la haga una sesión en la nube.
+4. canoa («del taíno») y ciclo_agua: hay que abrir dle.rae.es/canoa y la página de la Water Science School del USGS desde un navegador normal (desde la nube dan 403).
+5. esperan: hay que abrir la Lista Roja (iucnredlist.org da 403; BirdLife DataZone carga la categoría con JavaScript).
