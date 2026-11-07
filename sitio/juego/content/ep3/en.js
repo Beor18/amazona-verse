@@ -439,5 +439,5 @@ window.AV_EN = Object.assign(window.AV_EN || {}, {
  "National Weather Service, JetStream, The Sea Breeze (brisa de mar y brisa de tierra)": "National Weather Service, JetStream, The Sea Breeze (sea breeze and land breeze)",
  "Te Ara, Enciclopedia de Nueva Zelanda (plantas de la costa: el coco); New Zealand Plant Conservation Network (cocos varados)": "Te Ara, The Encyclopedia of New Zealand (coastal plants: the coconut); New Zealand Plant Conservation Network (stranded coconuts)",
  "ASALE y RAE, Diccionario de americanismos, «canoa» (de origen indígena antillano); NPS, Taíno Settlement": "ASALE and RAE, Dictionary of Americanisms, “canoa” (of Indigenous Antillean origin); NPS, Taíno Settlement",
- "RAE, Diccionario de la lengua española, «canoa», acepción 1a": "RAE, Diccionario de la lengua española (Spanish dictionary), “canoa”, sense 1a",
+ "RAE, Diccionario de la lengua española, «canoa», acepción 1a": "Royal Spanish Academy (RAE), Dictionary of the Spanish Language, entry “canoa” (canoe), sense 1a",
 });
