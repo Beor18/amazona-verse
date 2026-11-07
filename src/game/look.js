@@ -427,7 +427,16 @@ window.AVLook = function (G) {
   // ---------- Medidas: FPS, draw calls, triángulos, programas y memoria de texturas (estimada desde las imágenes) ----------
   function medir() {
     const s = R.stats(), vistas = new Set(); let bytes = 0, n = 0, grandes = 0;
-    let atlas = 0;
+    let atlas = 0, mundo = 0;
+    // W34: «mundo» = las grandes que encoger() puede bajar (mismo filtro); no cuentan Vittata ni los lienzos de edificios
+    // (CanvasTexture del GLB), ni el atlas de impostores (render target sin imagen que dibujar). En «bajo» (texMax 512)
+    // solo quedan esas por encima de 512 y la prueba del look daba rojo sin nada que encoger (4 → 4).
+    const encogible = (t, flora) => { const img = t.image;
+      if (!img || t.isDataTexture || t.isCompressedTexture || t.isCubeTexture || t.isVideoTexture || Array.isArray(img)) return false;
+      if (t.isCanvasTexture && !imagenes.has(t) && !(flora && esBitmap(img))) return false;
+      if (!imagenes.has(t) && !(img.height > 512)) return false; // encoger() solo baja las que pasan del tope en los dos lados
+      const o = imagenes.get(t) || img; // lo que recortarYa() dibujaría: un objeto sin píxeles (impostores) no se puede bajar
+      return esBitmap(o) || !!o.src || !!o.getContext; };
     // F0.6: desglose por origen (la URL de la imagen o el nombre de la malla) y las 10 texturas más pesadas
     const por = {}, top = [];
     const origen = (src, o) => /\/tex_hd\//.test(src) ? 'atlas_hd' : /\/tex\/entorno\/suelo/.test(src) ? 'suelo' : /\/models\/entorno\//.test(src) || /^flora:/.test(o.name) ? 'flora'
@@ -438,7 +447,7 @@ window.AVLook = function (G) {
       if (!w) return; n++;
       const src = (img && (img.src || img.currentSrc)) || (imagenes.has(t) && imagenes.get(t).src) || '';
       const esAtlas = !!(t.userData && t.userData.avAtlas) || /\/tex_hd\/hd_/.test(src);
-      if (w > 512) { grandes++; if (esAtlas) atlas++; }
+      if (w > 512) { grandes++; if (esAtlas) atlas++; else if (encogible(t, /^flora:/.test(o.name))) mundo++; }
       const b = w * h * 4 * (t.generateMipmaps ? 4 / 3 : 1), k = esAtlas ? 'atlas_hd' : origen(src, o);
       bytes += b; por[k] = (por[k] || 0) + b;
       top.push([(src.split('/').pop() || t.name || o.name || '?').slice(0, 48), w + '×' + h, Math.round(b / 104857.6) / 10]);
@@ -449,7 +458,7 @@ window.AVLook = function (G) {
     const dbs = R.renderer.getDrawingBufferSize(new THREE.Vector2()), post = R.post.activo ? dbs.x * dbs.y * 8 * 2.5 : 0;
     const pm = performance.memory, heapMB = pm && pm.usedJSHeapSize ? Math.round(pm.usedJSHeapSize / 1048576) : null;
     return { look: actual || 'fabrica', fps: s.fps, calls: s.calls, triangulos: s.triangulos, calidad: s.calidad, dpr: s.dpr, post: s.post,
-      programas: R.renderer.info.programs.length, heapMB, geometrias: R.renderer.info.memory.geometries, texturasGPU: R.renderer.info.memory.textures, texturas: n, texturasGrandes: grandes, atlasGrandes: atlas, texturasMB: Math.round(bytes / 1048576 * 10) / 10,
+      programas: R.renderer.info.programs.length, heapMB, geometrias: R.renderer.info.memory.geometries, texturasGPU: R.renderer.info.memory.textures, texturas: n, texturasGrandes: grandes, atlasGrandes: atlas, mundoGrandes: mundo, texturasMB: Math.round(bytes / 1048576 * 10) / 10,
       sombraMB: Math.round(sombra / 1048576 * 10) / 10, postMB: Math.round(post / 1048576 * 10) / 10, texturasPor: por, texturasTop: top };
   }
 
@@ -549,8 +558,8 @@ window.AVLook = function (G) {
             /CustomToneMapping\( vec3 color \) \{ return ACESFilmicToneMapping\( color \); \}/.test(SC.tonemapping_pars_fragment) && (!pg || (pg.uSat.value === 1 && pg.uCon.value === 1 && pg.uTint.value.x === 1 && pg.uVig.value === (R.post.grade.uniforms.uVig.value))), pg ? 'composer' : 'sin composer'); }
         if (L.toon) {
           check(`Look «${n}»: la rampa suave está en Phong y Lambert y Standard/Physical (Vittata) no cambian`, SC.lights_phong_pars_fragment.includes(RAMPA) && SC.lights_lambert_vertex.includes(RAMPA) && !SC.lights_physical_pars_fragment.includes(RAMPA));
-          const g0 = m0.texturasGrandes - (m0.atlasGrandes || 0), g1 = m1.texturasGrandes - (m1.atlasGrandes || 0);
-          check(`Look «${n}»: las texturas grandes del mundo bajan a 512 px`, g1 < g0 || g0 === 0, m0.texturasGrandes + ' → ' + m1.texturasGrandes + ' (el atlas HD no se encoge: ' + (m1.atlasGrandes || 0) + ') · ' + m0.texturasMB + ' → ' + m1.texturasMB + ' MB');
+          const g0 = m0.mundoGrandes, g1 = m1.mundoGrandes;
+          check(`Look «${n}»: las texturas grandes del mundo bajan a 512 px`, g1 < g0 || g0 === 0, m0.texturasGrandes + ' → ' + m1.texturasGrandes + ' (el atlas HD no se encoge: ' + (m1.atlasGrandes || 0) + '; del mundo, encogibles: ' + g0 + ' → ' + g1 + ') · ' + m0.texturasMB + ' → ' + m1.texturasMB + ' MB');
           { let cuantas = 0, mal = 0, maxW = 0; R.scene.traverse(o => { if (!o.material || !/^flora:/.test(o.name)) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) texturasDe(m, (t, k) => {
               if (!t.isCanvasTexture || !(imagenes.has(t) || esBitmap(t.image))) return; cuantas++; const tope = topeK(topeTex(L), k, true), w = t.image.width;
               if (k === 'normalMap') maxW = Math.max(maxW, w); if (tope && w > tope && t.image.height > tope) mal++; }); });

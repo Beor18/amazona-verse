@@ -532,8 +532,11 @@ window.AVRescate = function (G) {
       check('Un resultado de prueba no se anota', REC.anotar({ modo: 'rescate', llego: true, ms: 5000, medalla: 'oro', prueba: true }, ana) === false);
       // 6. «Otra vez» reinicia en < 1 s sin tocar step ni misiones
       const step0 = S.step, mis0 = JSON.stringify(S.missions), t0 = performance.now();
-      $('rs-otra').click(); await espera(30);
-      check('«Otra vez» reinicia en menos de 1 s sin tocar S.step ni S.missions', R.activo && R.fase === 'cuenta' && performance.now() - t0 < 1000 && S.step === step0 && JSON.stringify(S.missions) === mis0, (performance.now() - t0).toFixed(0) + ' ms');
+      // W34: el tiempo es el del reinicio (clic → pichón listo → fase «cuenta»), no el del setTimeout de la espera, que en
+      // SwiftShader sale detrás de un cuadro de 1-2 s (rojo de entorno en la VM: 1347 y 1913 ms)
+      $('rs-otra').click(); if (pichon.listo) await pichon.listo; await Promise.resolve();
+      const tReinicio = performance.now() - t0; await espera(30);
+      check('«Otra vez» reinicia en menos de 1 s sin tocar S.step ni S.missions', R.activo && R.fase === 'cuenta' && tReinicio < 1000 && S.step === step0 && JSON.stringify(S.missions) === mis0, tReinicio.toFixed(0) + ' ms');
       // 5. Con el banquete activo, jugar() devuelve false; y el banquete puede consultar G.rescate.activo()
       check('Mientras dura, G.rescate.activo() es true (para que el banquete no arranque)', api.activo() === true);
       salir();

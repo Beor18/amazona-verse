@@ -80,7 +80,9 @@ window.AVTrucos = function (G) {
 
   function test() {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
-    const guard = { flying: M.flying, clock: S.clock, quiet: G.quiet, x: S.pos.x, y: S.pos.y, z: S.pos.z };
+    // W34: también combo/ultimo/ultimoId; sin eso quedaba ultimo = 300 (reloj de la prueba) y, con el reloj real por debajo,
+    // el siguiente truco seguía el combo (familiaTest «los trucos cuentan el combo del turno» daba 4 en vez de 3 tras trucosTest)
+    const guard = { flying: M.flying, clock: S.clock, quiet: G.quiet, x: S.pos.x, y: S.pos.y, z: S.pos.z, combo, ultimo, ultimoId };
     let crudo = null; try { crudo = localStorage.getItem(CLAVE); } catch (e) { /* */ }
     const records = [];
     const oy = d => records.push(d);
@@ -106,9 +108,12 @@ window.AVTrucos = function (G) {
       dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }));
       ok('Doble A en vuelo hace un tonel', ultimoId === 'tonel' && combo === 1, ultimoId + ' ×' + combo);
     } catch (e) { ok('sin excepciones', false, e && e.message); }
+    // W34: soltar la A; si no, input.js la deja pulsada (G.input.keys) y Vittata gira sola en las baterías siguientes
+    // (rescateTest tras trucosTest: el zorzal no veía vuelo recto y S.facing cambiaba: 29/33)
+    try { dispatchEvent(new KeyboardEvent('keyup', { key: 'a' })); } catch (e) { /* sin teclado */ }
     M.flying = guard.flying; S.clock = guard.clock; G.quiet = guard.quiet;
     S.pos.x = guard.x; S.pos.y = guard.y; S.pos.z = guard.z;
-    mejor = antesMejor; chip.hidden = true;
+    mejor = antesMejor; chip.hidden = true; combo = guard.combo; ultimo = guard.ultimo; ultimoId = guard.ultimoId;
     try { if (crudo == null) localStorage.removeItem(CLAVE); else localStorage.setItem(CLAVE, crudo); } catch (e) { /* */ }
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }

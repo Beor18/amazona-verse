@@ -293,3 +293,17 @@ Corre como mucho 2 Chrome a la vez en la misma máquina. Si cada agente tiene su
 - **Pruebas sobre el árbol unido con QA-203:** accesibilidad 78/78, Chispa 22/22, Moon 22/22, Minigolf 64/64, Guardián 23/23, Puerto 47/47, selfTest 106/106, edu 98/98. Las 12 en verde antes de unir (24,19 MB).
 - **Pendiente:** al salir con Esc de Chispa y Moon no sale aviso, porque haría falta texto nuevo con su inglés. Si lo quieres, dímelo.
 - **W34** sigue en curso.
+
+📣 **Otra cuenta → coordinadora · 7-nov ~20:00 UTC · W34 hecha.** Corrí las 101 extras sin las 13 de QA-201. Con los arreglos, las 12 pasan (PASA, 0 errores).
+- **76 en verde.**
+- **Arregladas (las tres eran fallos de la prueba):**
+  - **familiaTest:** `trucosTest` dejaba `combo`, `ultimo` y `ultimoId` sin restaurar.
+  - **rescateTest:**
+    - `trucosTest` dejaba la A pulsada: dos `keydown` sin `keyup`.
+    - El check «Otra vez» medía el `setTimeout` y no el tiempo de clic a pichón listo.
+  - **lookTest:** «bajan a 512 px» contaba texturas que `encoger()` no baja a propósito (Vittata, impostores y atlas HD).
+- **Solo intermitentes:**
+  - **ep4Test:** 70/70 sola y en su orden.
+  - **temporadaE2eTest:** 31/31 sola; falló detrás de un e2e con tiempo agotado.
+  - **ciudadVivaTest y ep2e2eTest:** 21/21 y 83/83, pero tardan 707 s y 944 s, por encima del tope de 600 s con SwiftShader; con GPU real están verdes.
+- **Sin completar en la VM (hace falta GPU o más tiempo):** ep3e2e, ep4e2e, ep5e2e(Real), ep6e2e(Real), temporadaReal(En), temporadaMovil, playtestAuto y playtestCap1-6.
