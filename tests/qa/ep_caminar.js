@@ -176,6 +176,10 @@
       return true;
     }
     async function sostener(id, segs) {
+      // sin el pulgar, el botón se toca con el mismo dedo (pointerId 7) que el palo: al soltar el botón se soltaba también el palo
+      // pero paloPuesto seguía en true y los empujones siguientes eran pointermove que el palo ya no seguía (Vittata subía sin
+      // avanzar hasta el techo del vuelo: playtestCap6Test, pasos 5 y 6). Como boton(), primero se suelta el palo
+      if (!opts.pulgar) soltarPalo();
       const el = $(id);
       if (!el || el.hidden || oculto(el)) { await jugar(segs); return false; }
       mirarToque(el, '#' + id);
@@ -206,7 +210,9 @@
     };
     if (tacto && !opts.nativo) {
       const st = doc.createElement('style');
-      st.textContent = '#stick{display:block !important}#acts{display:grid !important}';
+      // …y como en un navegador táctil (html.guia-tactil, src/game/guia_controles.js), sin la guía de teclas: su pista salía
+      // encima de Acción (playtestCap1Test: «#b-act tapado por div#guia-pista»), cosa que en un móvil de verdad no pasa
+      st.textContent = '#stick{display:block !important}#acts{display:grid !important}#guia-hud{display:none !important}';
       doc.head.appendChild(st);
     }
     const ocupado = () => G.ui.busy();
@@ -526,6 +532,19 @@
         const it = (g.id && G.interaccion.find(g.id)) || G.interaccion.list.find(x => Math.abs(x.x - g.x) < 0.01 && Math.abs(x.z - g.z) < 0.01 && (!x.visible || x.visible()));
         const porAire = cfg.volar && cfg.volar(G, it);
         let llego = porAire ? false : await hacia(g.x, g.z, 120, 1.4, it && it.id);
+        // W17 (pulgar): una percha baja (la del suelo del bosque, cap. 1) puede quedar más alta que un escalón donde el suelo
+        // baja: a pie se llega al lado pero no encima. Como un niño, salta encima (Saltar con el otro pulgar, el palo hacia
+        // ella); antes se iba volando y se posaba en la rama de encima, fuera de la percha, sin salir de ahí (paso 4, 0/4)
+        const enObjetivo = () => { const nb = G.interaccion.nearest(); return !!nb && Math.abs(nb.x - g.x) < 0.01 && Math.abs(nb.z - g.z) < 0.01; };
+        for (let k = 0; k < 3 && opts.pulgar && tacto && g.y != null && !S.complete && !ocupado() && !MV().flying && !MV().swimming && !enObjetivo() &&
+          Math.hypot(g.x - S.pos.x, g.z - S.pos.z) < 3 && g.y - S.pos.y > 0.2 && g.y - S.pos.y < 2.5; k++) {
+          const rumbo = () => ({ dx: g.x - S.pos.x, dz: g.z - S.pos.z });
+          await empujar(0.05, false, 0, rumbo());
+          await sostener('b-jump', 0.25);
+          await empujar(0.35, false, 0, rumbo());
+          soltarPalo(); await jugar(0.5);
+          if (enObjetivo()) { llego = true; log('salta a', r1(g.x), r1(g.z), 'y', r1(S.pos.y)); }
+        }
         if (!llego && !S.complete && !ocupado()) { // a pie no se llega: se intenta volando (como haría un niño)
           if (!porAire) atasco('a pie no llega: prueba volando', [r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), '→', r1(g.x), r1(g.z), it && it.id].join(' '));
           // W9 (QA-99): tras posarse (a veces en un borde, cerca pero no encima) se vuelve a caminar el tramo que falte; si no
