@@ -78,16 +78,13 @@ AVE.module('vegetacion', function (G) {
   const dens = {};
   for (const k in FD.densidad || {}) dens[k] = b64u8(FD.densidad[k]);
   // KIMI-006: sin malla visible debajo (borde de la isla, mar abierto) tampoco se siembra: la altura de juego allí es la del
-  // relleno bajo el mar de mapa_cap1_altura.js, y una piedra en esa franja se veía flotando sobre el agua.
-  // KIMI-203: el descarte solo aplica donde la malla YA cargó (sueloEn); un punto en un trozo de terreno aún no
-  // descargado no es «sin suelo»: se siembra con la altura del heightmap, como antes de 'terrenoListo'.
-  const sinSuelo = (x, z) => T.mapa && T.exacto && T.splatAt && (!T.sueloEn || T.sueloEn(x, z)) && !T.splatAt(x, z);
+  // relleno bajo el mar de mapa_cap1_altura.js, y una piedra en esa franja se veía flotando sobre el agua
+  const sinSuelo = (x, z) => T.mapa && T.exacto && T.splatAt && !T.splatAt(x, z);
   const enAgua = (x, z, y) => G.agua.levelAt(x, z) > y - 0.15 || sinSuelo(x, z);
   const cercaAgua = (x, z, r) => { for (const [dx, dz] of [[r, 0], [-r, 0], [0, r], [0, -r]]) if (G.agua.levelAt(x + dx, z + dz) > -Infinity && G.agua.levelAt(x + dx, z + dz) > T.height(x + dx, z + dz) - 0.3) return true; return false; };
 
   // ---------- Carga de modelos ----------
   const geos = {};          // modelo -> [{ geo, mat, tipo }]
-  const geoCompartidas = new Set(); // geometrías del kit cargado (no se disponen al re-sembrar)
   const info = {};          // modelo -> { alto, ancho, tronco }
   function cargar(nombre) {
     if (geos[nombre]) return Promise.resolve(geos[nombre]);
@@ -106,7 +103,6 @@ AVE.module('vegetacion', function (G) {
           geo.computeBoundingBox(); box.union(geo.boundingBox);
           const src = o.material, tipo = /^HOJA/.test(src.name) ? 'hoja' : /^ROCA/.test(src.name) ? 'roca' : 'corteza';
           prims.push({ geo, src, tipo });
-          geoCompartidas.add(geo);
         });
         // radio del tronco: distancia media al eje de los vértices de corteza entre 0,4 y 1,4 m
         let tr = 0, n = 0;
@@ -233,9 +229,10 @@ AVE.module('vegetacion', function (G) {
     };
     const marcar = (x, z, r) => { const k = Math.floor(x / 4) * 8192 + Math.floor(z / 4); let l = ocup.get(k); if (!l) ocup.set(k, l = []); l.push({ x, z, r }); };
     const lista = []; // { m, x, y, z, s, rot, tilt, tinte, rank }
-    const add = (m, x, z, s, extra) => {
+    const add = (m, x, z, s, extra, r) => {
       const y = T.height(x, z);
-      const it = Object.assign({ m, x, y, z, s, rot: rnd() * Math.PI * 2, tx: (rnd() - 0.5) * 0.06, tz: (rnd() - 0.5) * 0.06, h: rnd(), rank: rnd() }, extra);
+      r = r || rnd;
+      const it = Object.assign({ m, x, y, z, s, rot: r() * Math.PI * 2, tx: (r() - 0.5) * 0.06, tz: (r() - 0.5) * 0.06, h: r(), rank: r() }, extra);
       lista.push(it); return it;
     };
     // héroes primero (ocupan su sitio)
@@ -274,18 +271,26 @@ AVE.module('vegetacion', function (G) {
     const tapadoArbol = (x, z) => tapado(x, z, 3) || enPieza(x, z);
     const cel = FD.celda, area = cel * cel / 100;
     const radioArbol = { palma_sierra: 1.8, yagrumo: 1.8, tabonuco: 3.2, helecho_arboreo: 1.8, ceiba: 6, flamboyan: 4.5, bambu: 2.2 };
+    // QA-202/KIMI-203: cada celda (especie, ix, iz) se siembra con su propia semilla. Con el RNG
+    // secuencial único, cualquier decisión que cambiara al llegar un trozo de terreno (splat
+    // descubierto por la malla nueva) re-barajaba TODAS las plantas posteriores en cada
+    // re-siembra: el bosque cambiaba al volar y los claros verificados (actividades V18) se
+    // contaminaban. Por celda, una decisión que cambia solo re-mueve las plantas de esa celda y
+    // el layout converge al estado final cuando el terreno está completo.
+    const celdaSemilla = (esp, ix, iz) => { let h = 2166136261; const s = esp + '|' + ix + '|' + iz; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return (h ^ 9137) >>> 0; };
     for (const esp of FD.especies || []) {
       const d = dens[esp], md = MODELOS[esp];
       if (!d || !md) continue;
       const esArb = md.kit.some(k => esArbol(k));
       for (let iz = 0; iz < FD.nz; iz++) for (let ix = 0; ix < FD.nx; ix++) {
         const v = d[ix + iz * FD.nx]; if (!v) continue;
+        const rc = rng(celdaSemilla(esp, ix, iz));
         const exp = v / 10 * area;
-        let n = Math.floor(exp); if (rnd() < exp - n) n++;
+        let n = Math.floor(exp); if (rc() < exp - n) n++;
         for (let k = 0; k < n; k++) {
           let ok = false, x = 0, z = 0;
           for (let t = 0; t < 4 && !ok; t++) {
-            x = FD.x0 + (ix + rnd()) * cel; z = FD.z0 + (iz + rnd()) * cel;
+            x = FD.x0 + (ix + rc()) * cel; z = FD.z0 + (iz + rc()) * cel;
             ok = libre(x, z);
           }
           if (!ok) continue;
@@ -294,12 +299,12 @@ AVE.module('vegetacion', function (G) {
           if (esArb ? tapadoArbol(x, z) : tapado(x, z, 1.6)) continue;
           if (!esArb && esp !== 'rocas' && T.normalAt(x, z).y < 0.72) continue; // matas: no en paredes de roca
           let m = md.kit[0];
-          if (esp === 'rocas') m = cercaAgua(x, z, 3.5) && md.kit.includes('piedras_rio') ? 'piedras_rio' : md.kit[rnd() < 0.5 ? 0 : 1];
+          if (esp === 'rocas') m = cercaAgua(x, z, 3.5) && md.kit.includes('piedras_rio') ? 'piedras_rio' : md.kit[rc() < 0.5 ? 0 : 1];
           else if (md.kit.length > 1) {
             const mz = md.mezcla == null ? null : typeof md.mezcla === 'number' ? md.mezcla : md.mezcla[md.kit[1]];
-            m = mz != null ? md.kit[rnd() < mz ? 1 : 0] : md.kit[Math.floor(rnd() * md.kit.length)];
+            m = mz != null ? md.kit[rc() < mz ? 1 : 0] : md.kit[Math.floor(rc() * md.kit.length)];
           }
-          const s = (md.escala || 1) * (0.82 + rnd() * 0.36);
+          const s = (md.escala || 1) * (0.82 + rc() * 0.36);
           if (esArb) {
             const nrm = T.normalAt(x, z);
             if (nrm.y < 0.72) continue;
@@ -307,9 +312,9 @@ AVE.module('vegetacion', function (G) {
             if (!libreDe(x, z, r)) continue;
             marcar(x, z, r);
           }
-          const it = add(m, x, z, s);
+          const it = add(m, x, z, s, null, rc);
           // hojarasca bajo tabonucos y ceibas
-          if ((m === 'tabonuco' || m === 'ceiba') && libre(x + 0.6, z + 0.4)) add('hojarasca', x + (rnd() - 0.5) * 1.2, z + (rnd() - 0.5) * 1.2, 0.9 + rnd() * 0.7 * (m === 'ceiba' ? 1.8 : 1));
+          if ((m === 'tabonuco' || m === 'ceiba') && libre(x + 0.6, z + 0.4)) add('hojarasca', x + (rc() - 0.5) * 1.2, z + (rc() - 0.5) * 1.2, 0.9 + rc() * 0.7 * (m === 'ceiba' ? 1.8 : 1), null, rc);
           if (CAT(m) !== 'arbol' && CAT(m) !== 'roca') it.tx = it.tz = 0;
         }
       }
@@ -747,21 +752,18 @@ AVE.module('vegetacion', function (G) {
   }
   const hash2 = (x, z) => { let h = Math.imul(x | 0, 374761393) ^ Math.imul(z | 0, 668265263); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
   const nTmp = {};
-  // Candidatos de un bloque de 8 m (se calcula una vez salvo suelo «aún no cargado»: KIMI-203 no lo cachea y se
-  // reintenta cuando llegue el trozo del terreno): x, y, z, escala, giro, tinte
+  // Candidatos de un bloque de 8 m (se calculan una vez): x, y, z, escala, giro, tinte
   function bloquePasto(bx, bz) {
     const key = bx * 8192 + bz;
     let b = PASTO.bloques.get(key);
     if (b) return b;
     b = [];
-    let incierto = false; // alguna muestra quedó sin splat porque su trozo de terreno aún no cargó
     const paso = 0.62;
     for (let i = 0; i < 13; i++) for (let k = 0; k < 13; k++) {
       const gx = bx * 13 + i, gz = bz * 13 + k;
       const x = gx * paso + hash2(gx, gz) * paso * 0.9, z = gz * paso + hash2(gz + 77, gx - 31) * paso * 0.9;
       if (!libre(x, z)) continue;
-      const sp = T.splatAt(x, z);
-      if (!sp) { if (T.sueloEn && !T.sueloEn(x, z)) incierto = true; continue; }
+      const sp = T.splatAt(x, z); if (!sp) continue;
       const pasto = sp[0] - sp[1] * 0.6 - sp[2] - sp[3] * 1.5;
       const r = hash2(gx * 3 + 1, gz * 7 + 5);
       if (pasto < 0.25 + r * 0.45) continue;
@@ -770,10 +772,8 @@ AVE.module('vegetacion', function (G) {
       if (T.normalAt(x, z, nTmp).y < 0.82) continue; // nada de pasto en acantilados ni taludes
       b.push(x, y, z, 0.75 + hash2(gx + 9, gz + 3) * 0.6, hash2(gx - 5, gz + 11) * 6.283, r);
     }
-    if (!incierto) { // solo se cachea lo completo: lo incierto se reintenta al cargar el trozo
-      PASTO.bloques.set(key, b);
-      if (PASTO.bloques.size > 400) { const it = PASTO.bloques.keys(); for (let j = 0; j < 100; j++) PASTO.bloques.delete(it.next().value); }
-    }
+    PASTO.bloques.set(key, b);
+    if (PASTO.bloques.size > 400) { const it = PASTO.bloques.keys(); for (let j = 0; j < 100; j++) PASTO.bloques.delete(it.next().value); }
     return b;
   }
   const pastoUlt = { x: 1e9, z: 1e9, nivel: '' };
@@ -1053,52 +1053,18 @@ AVE.module('vegetacion', function (G) {
   const listo = new Promise(res => { listoRes = res; });
   let activo = false;
   const mascara = () => usarBosque && !window[BOSQUE.global] ? G.assets.script(BOSQUE.src).catch(e => console.warn('AVE bosque:', e && e.message || e)) : null;
-  // KIMI-203: quita del mundo todo lo creado por una siembra (mallas instanciadas, impostores,
-  // manchas, copas de cima, pasto y colliders propios). Las geometrías del kit (compartidas) no se
-  // tocan; las fusionadas por crearMallas (mergeGeos) sí se disponen. Devuelve la escena al estado
-  // previo a siembra() para poder re-sembrar con más terreno cargado.
-  function desplantar() {
-    for (const m in grupos) for (const p of grupos[m].prims) for (const im of [p.cerca, p.lejos, p.lod]) {
-      if (!im) continue;
-      scene.remove(im);
-      try { im.dispose(); } catch (e) { /* r128 */ }
-      if (im.geometry && !geoCompartidas.has(im.geometry)) im.geometry.dispose();
-    }
-    for (const m in grupos) delete grupos[m];
-    for (const m in porModelo) delete porModelo[m];
-    if (IMP.mesh) { scene.remove(IMP.mesh); try { IMP.mesh.dispose(); } catch (e) { /* r128 */ } IMP.mesh = null; }
-    if (IMP.rt) { IMP.rt.dispose(); IMP.rt = null; IMP.pintar = null; IMP.tex = null; IMP.tile = {}; }
-    if (manchas) { scene.remove(manchas); manchas.geometry.dispose(); manchas = null; }
-    if (copasMesh) { scene.remove(copasMesh); copasMesh.geometry.dispose(); copasMesh = null; }
-    if (PASTO.mesh) { scene.remove(PASTO.mesh); PASTO.mesh = null; }
-    PASTO.bloques.clear();
-    const cols = G.fisica.colliders;
-    for (const c of misColliders) { const i = cols.indexOf(c); if (i >= 0) cols.splice(i, 1); }
-    misColliders.length = 0;
-  }
-  function siembra() {
-    const lista = generar().filter(it => geos[it.m]);
-    empaquetar(lista);
-    for (const m in porModelo) crearMallas(m);
-    try { hornearImpostores(); } catch (e) { console.warn('AVE impostores:', e && e.message || e); }
-    crearManchas();
-    crearCopasCima();
-    crearPasto();
-    activo = true;
-    actualizar(true); actualizarPasto(true); actualizarColliders(true);
-  }
   T.listo.then(() => Promise.all([mascara(), ...[...necesarios].map(n => cargar(n).catch(e => { console.warn('AVE flora:', e && e.message || e); return null; }))]))
     .then(() => {
-      siembra();
+      const lista = generar().filter(it => geos[it.m]);
+      empaquetar(lista);
+      for (const m in porModelo) crearMallas(m);
+      try { hornearImpostores(); } catch (e) { console.warn('AVE impostores:', e && e.message || e); }
+      crearManchas();
+      crearCopasCima();
+      crearPasto();
+      activo = true;
+      actualizar(true); actualizarPasto(true); actualizarColliders(true);
       listoRes();
-      // KIMI-203: el terreno carga por cercanía; una siembra hecha con trozos ausentes trató su
-      // suelo como «desconocido» (sueloEn) y pudo plantar donde la malla luego dice que no hay.
-      // Al llegar cada trozo se re-siembra (generar() es determinista): lo mal plantado se quita,
-      // lo nuevo entra, y los sólidos de flora se rasterizan de nuevo.
-      G.on('terrenoTrozo', () => {
-        if (!activo) return;
-        try { desplantar(); siembra(); if (G.solidos && G.solidos.rehacerFlora) G.solidos.rehacerFlora(); } catch (e) { console.warn('AVE re-siembra:', e && e.message || e); }
-      });
     }).catch(e => { console.warn('AVE vegetación:', e && e.message || e); listoRes(); });
 
   // Fundido: se apaga si no hay cámara de seguimiento normal (FUNDIDO.fuerza = 0 lo desactiva)

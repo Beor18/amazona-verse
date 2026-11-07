@@ -338,6 +338,18 @@ window.AVV18Descubrir = function (G) {
     Promise.resolve(G.vegetacion && G.vegetacion.listo).catch(() => null),
     new Promise(r => setTimeout(r, 15000))
   ]).then(() => Promise.resolve(G.mundo && G.mundo.listo).catch(() => null)).then(montar);
+  // QA-201: si montó antes que la flora (tope de 15 s) o la flora se re-siembra al llegar un trozo del terreno (KIMI-203),
+  // las perchas se vuelven a elegir sobre las copas de verdad (sin esto quedaba posada en el aire, 8 m sobre el suelo)
+  function reelegirPerchas() {
+    if (!montado || R.activo || B.vuelo) return;
+    const antes = P.map(p => p.x + ',' + p.z).join(';');
+    elegirPerchas();
+    if (P.map(p => p.x + ',' + p.z).join(';') === antes) return;
+    posar(0);
+    if (it) { it.x = P[0].x; it.z = P[0].z; }
+  }
+  Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => setTimeout(reelegirPerchas, 0), () => {});
+  G.on('terrenoTrozo', () => setTimeout(reelegirPerchas, 0));
   G.on('update', (dt, busy) => { if (!busy && montado) paso(dt); }, 47);
   G.on('apply', () => { R.activo = false; setTimeout(() => { if (montado) { posar(0); pintarBoton(); } }, 0); }, 96);
   G.on('v18', ev => { if (ev && ev.tipo === 'especie') pintarBoton(); });

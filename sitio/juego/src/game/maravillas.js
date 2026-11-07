@@ -222,6 +222,8 @@ window.AVMaravillas = function (G) {
         const px = B.x, pz = B.z, w = aguaEn(px, pz).w;
         TOQUES.length = 0; pasoToques(0, false);
         S.pos.x = px; S.pos.z = pz; S.pos.y = w + 0.8; G.quiet = false; tToque = 100; ultToque = -9; ultX = ultZ = 1e9;
+        // QA-201: las baterías anteriores pueden dejar el tope de partículas (200) lleno sin un cuadro de render en medio; se vacía antes de medir
+        if (G.fx && G.fx.update) for (let i = 0; i < 6; i++) G.fx.update(0.5);
         const vivas0 = G.fx ? G.fx.live : 0;
         pasoToques(0.016, false);
         ok('De día el agua no destella', TOQUES.length === 0);

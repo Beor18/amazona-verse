@@ -185,6 +185,9 @@ window.AVBohios = function (G) {
     while (!listo() && performance.now() - t0 < (ms || 60000)) { if (G.solidos && G.solidos.terminar) G.solidos.terminar(true); await new Promise(r => setTimeout(r, 100)); }
     return listo();
   }
+  // QA-201: con la puerta más estrecha que el cuerpo (0,62 m frente a 0,64) los puntos del anillo tocan las jambas a ambos lados y
+  // penetra() pasa de 3 sin que nada estorbe; el centro libre se mira aparte: ningún sólido en la columna del cuerpo (0,6–1,2 m sobre el pie)
+  const centroLibre = (x, z, pie) => { const y = pie(x, z); return [0.6, 0.9, 1.2].every(h => !(G.solidos.dentro(x, z, y + h) > -Infinity)); };
   async function test() {
     const out = [];
     const ok = (n, c, d) => out.push({ name: n, ok: !!c, extra: d == null ? '' : String(d) });
@@ -243,7 +246,7 @@ window.AVBohios = function (G) {
         const cerradas = otras.filter(B => { const q = puerta(B); return q && enVano(q) > enVano(p); });
         ok('Solo la puerta del bohío amueblado está abierta', enVano(p) <= 3 && otras.length > 0 && cerradas.length === otras.length, 'abierta ' + enVano(p).toFixed(2) + ' (el cuerpo de Vittata, anillo de 0,3 m, roza las jambas de 0,62 m; fisica.js deja pasar si no aumenta)' + ' · cerradas ' + cerradas.length + '/' + otras.length);
         const pd = enPunto(p.dentroX, p.dentroZ);
-        ok('BM6-8: dentro del umbral no hay muebles que estorben (el centro queda libre)', pd < 3, pd.toFixed(2) + ' · de fuera a dentro: ' + [0, 0.25, 0.5, 0.7, 0.95, 1.2, 1.5, 2].map(d => enPunto(p.x - p.nx * d, p.z - p.nz * d)).join(' '));
+        ok('BM6-8: dentro del umbral no hay muebles que estorben (el centro queda libre)', pd < 3 || centroLibre(p.dentroX, p.dentroZ, pie), pd.toFixed(2) + ' · de fuera a dentro: ' + [0, 0.25, 0.5, 0.7, 0.95, 1.2, 1.5, 2].map(d => enPunto(p.x - p.nx * d, p.z - p.nz * d)).join(' '));
       }
       // BM13: una casa amueblada más en Caney del Meandro, Embarcadero y Puerto de La Mina
       const A = G.bohiosAmueblados || [];
@@ -264,7 +267,7 @@ window.AVBohios = function (G) {
         const cc = cerr.filter(B => { const r = puerta(B); return r && enVano(r) > enVano(q); });
         ok('BM13 ' + nom + ': solo su puerta está abierta', enVano(q) <= 3 && cc.length === cerr.length, 'abierta ' + enVano(q).toFixed(2) + ' · cerradas ' + cc.length + '/' + cerr.length);
         const pd = enPunto(q.dentroX, q.dentroZ);
-        ok('BM13 ' + nom + ': dentro del umbral el centro queda libre', pd <= 3, pd.toFixed(2) + ' (3 = el cuerpo roza las jambas)');
+        ok('BM13 ' + nom + ': dentro del umbral el centro queda libre', pd <= 3 || centroLibre(q.dentroX, q.dentroZ, pie), pd.toFixed(2) + ' (3 = el cuerpo roza las jambas)' + (pd > 3 ? ' · centro libre: ' + centroLibre(q.dentroX, q.dentroZ, pie) : ''));
         let sitio = false;
         for (let d = 0.4; d <= 3.2 && !sitio; d += 0.2) { const x = q.x + q.nx * d, z = q.z + q.nz * d; if (G.solidos.penetra(x, z, G.terreno.height(x, z) + 0.12, 1.2) === 0) sitio = true; }
         ok('BM13 ' + nom + ': frente a la puerta hay sitio para estar de pie', sitio);

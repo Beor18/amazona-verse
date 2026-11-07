@@ -207,8 +207,8 @@
   AVE.module('assets', function () {
     const loader = new THREE.TextureLoader();
     // Textura del mundo con repetición (ruta relativa al documento)
-    function tex(path) {
-      const t = loader.load(path);
+    function tex(path, cb) {
+      const t = loader.load(path, cb);
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
       return t;
     }

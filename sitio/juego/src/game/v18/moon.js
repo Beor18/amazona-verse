@@ -313,7 +313,7 @@ window.AVV18Moon = function (G) {
         if (G.agua && G.agua.levelAt && G.agua.levelAt(x, z) > h - 0.3) mojado++;
         for (const t of tr) mT = Math.min(mT, Math.hypot(x - t.x, z - t.z) - t.r);
         for (const c of cols) mT = Math.min(mT, dCol(x, z, c));
-        if (G.solidos && G.solidos.activo && [0.3, 0.9, 1.5, 2.5].some(y => G.solidos.dentro(x, z, h + y) > -Infinity)) solido++; }
+        if (G.solidos && G.solidos.activo && [0.3, 0.9, 1.5, 2.5].some(y => G.solidos.dentro(x, z, h + y) > h + 0.15)) solido++; } // QA-201: un sólido de flora con el tope a ras del suelo (raíz o rama enterrada) no estorba; dentro() lo cuenta por su margen de 0,4 m
       const puerto = { x: 73.6, z: -75.2 }, golf = G.v18minigolf && G.v18minigolf.sitio, duelo = G.v18combate && G.v18combate.sitio, chispa = G.v18chispa && G.v18chispa.SITIO && (G.v18chispa.SITIO.salida || G.v18chispa.SITIO), /* el SITIO de Chispa es { salida, puntos } */ misterio = G.v18Misterio && G.v18Misterio.sitio && G.v18Misterio.sitio();
       const dist = q => q ? Math.hypot(q.x - SITIO.x, q.z - SITIO.z) : Infinity;
       const lejos = { puerto: dist(puerto), villa: dist(villa), golf: dist(golf), duelo: dist(duelo), chispa: dist(chispa), misterio: dist(misterio) };

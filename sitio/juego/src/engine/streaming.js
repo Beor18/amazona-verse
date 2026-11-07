@@ -423,22 +423,26 @@ AVE.module('streaming', function (G) {
       const m = mats[k].mat;
       // KIMI-177: el atlas pudo crearse en «bajo» sin normal (no se descargó, ~14 MB) o con la normal plana
       // de los GLB (avance 2); al subir la calidad se pide la verdadera y se engancha al mismo material.
+      // El tex() carga en paralelo: se reduce al llegar la imagen (reducirAtlas en el acto no vería
+      // image y el 4096² se subiría entero a la GPU en un móvil que sube de calidad).
       if ((!m.normalMap || esNormalPlana(m.normalMap)) && nivelCal() !== 'bajo') {
         const kit = /Ancient$/.test(k) ? 'ancient' : 'savage';
-        const nm = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '_n.jpg');
+        const nm = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '_n.jpg', () => reducirAtlas(m));
         nm.flipY = false;
         m.normalMap = nm;
         m.needsUpdate = true;
       }
       // KIMI-202: el difuso pudo crearse en «bajo» con el JPEG ligero 2048² (hd_<kit>_lq.jpg); al subir se
-      // pide el 4096 real y se engancha al mismo material (el reducirAtlas de abajo lo deja en el tope
-      // que corresponda a la nueva calidad, igual que con el mapa original).
+      // pide el 4096 real y se engancha al mismo material (el reducirAtlas —en el acto y al cargar— lo
+      // deja en el tope que corresponda a la nueva calidad, igual que con el mapa original).
       if (m.userData.avLQDifuso && nivelCal() !== 'bajo') {
         const kit = /Ancient$/.test(k) ? 'ancient' : 'savage';
-        const map = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '.jpg');
+        const map = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '.jpg', () => reducirAtlas(m));
         map.encoding = THREE.sRGBEncoding;
         map.flipY = false;
+        const viejo = m.map;
         m.map = map;
+        if (viejo && viejo !== map) { try { viejo.dispose(); } catch (e) { /* r128 */ } }
         m.userData.avLQDifuso = false;
         m.userData.avAtlasEsc.value = 1; // el 4096 real: LOD del shader como en un arranque en alta
         m.needsUpdate = true;
