@@ -1559,7 +1559,7 @@ window.AV_EN = {
  "Papel cuadriculado": "Graph paper",
  "Datos de USFWS (feb. 2026)": "USFWS data (Feb. 2026)",
  "Haz una gráfica de barras con las cotorras silvestres de cada bosque.": "Make a bar graph of the wild parrots in each forest.",
- "Compara con las 13 cotorras de 1975.": "Compare with the 13 parrots of 1975.",
+ "Compara con las 13 cotorras silvestres de mediados de los años 70.": "Compare with the 13 wild parrots of the mid-1970s.",
  "Discute por qué tener tres poblaciones las protege de huracanes y enfermedades.": "Discuss why having three populations protects them from hurricanes and disease.",
  "Inicio": "Beginning",
  "En desarrollo": "Developing",

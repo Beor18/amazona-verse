@@ -792,7 +792,7 @@
       check('Al quitar la pausa el bucle sigue', G.camara.juice.hitStop === 0 && !G.pausa.activa());
       // La misión completa, con errores para probar pistas y sin castigo
       const r = jugarRutaGota(G, T, { check, pred1: 0, errores: true, fallarPregunta: 'q2' });
-      check('Formativa breve de 3.º–4.º sin preguntas por verificar (q3, q4)', r.ids.join() === 'q1,q2,q5,q6', r.ids.join());
+      check('Formativa breve de 3.º–4.º con q4 (cotorra_alimento verificada) y sin q3 (por verificar)', r.ids.join() === 'q1,q2,q4,q5,q6', r.ids.join());
       const reg = AU.partida();
       check('Registro del aula: pasos, perchas, intentos y predicción', reg && reg.pasos_completados.length === 8 && reg.perchas_observadas === 4 && reg.cadena_correcta_intento === 2 && reg.explicacion_ciclo_intento === 2 && reg.prediccion_registrada === true && reg.prediccion_coincidio === false, JSON.stringify(reg));
       check('Intentos por pregunta (q2 fallada dos veces = 3)', reg.preguntas.q2 === 3 && reg.preguntas.q1 === 1 && reg.preguntas.q3 === '', JSON.stringify(reg.preguntas));
@@ -818,7 +818,7 @@
       check('Cada parada de ciencia de Puerto Rico muestra su fuente al abrirse', conFuente.length === 5 && conFuente.every(Boolean), conFuente.join());
       check('Paradas respondidas y en el registro del aula', PAR.every(p => S.edu.paradas && S.edu.paradas[p.id] === 1) && AU.partida().paradas && Object.keys(AU.partida().paradas).length === 8, JSON.stringify(S.edu.paradas));
       check('Modo Maestro: pestaña Paradas con objetivo y estándares', AU.pestanas().includes('paradas'));
-      check('Solo fichas verificadas', f.every(id => AU.verificada(AU.ficha(id))) && ['capas_bosque', 'bromelia', 'ceiba', 'heliconia', 'cotorra_alimento', 'tabonuco', 'helecho_gigante'].every(id => !f.includes(id)), f.join(','));
+      check('Solo fichas verificadas', f.every(id => AU.verificada(AU.ficha(id))) && ['capas_bosque', 'heliconia'].every(id => !f.includes(id)), f.join(','));
       G.diario.open();
       const dc = $('card').querySelector('.diary.ciencia');
       check('Diario de Campo · Ciencia: cada ficha con su fuente y sin enlaces', dc && dc.querySelectorAll('li.found').length === f.length && dc.querySelectorAll('li.found .fuente').length === f.length && /Fuente: USFWS/.test(dc.textContent) && !/https?:/.test(dc.innerHTML), dc && dc.querySelectorAll('li').length + ' fichas');
@@ -869,7 +869,7 @@
         try { localStorage.setItem(SV.KEY, snap); } catch (e) { /* sin almacenamiento */ }
         check('Guardar y cargar a mitad de la misión conserva el avance', SV.load(true) && S.edu.hecho.p4 && !S.edu.hecho.p5 && S.step === 3);
       } });
-      check('5.º–6.º: formativa con q7 (abierta por el flamboyán), sin q3 ni q4', r2.ids.join() === 'q1,q2,q5,q6,q7', r2.ids.join());
+      check('5.º–6.º: formativa con q4 y q7 (abierta por el flamboyán), sin q3', r2.ids.join() === 'q1,q2,q4,q5,q6,q7', r2.ids.join());
       check('Predicción acertada: Iguaca lo reconoce', S.edu.pred1 === 'lluvia_montana' && AU.partida().prediccion_coincidio === true);
       check('Dos partidas en el registro del dispositivo', AU.partidas.length === 2 && AU.partidas[1].grado === '5-6');
       check('Sin errores de JavaScript', (window.__aveErrores || []).length === 0, (window.__aveErrores || []).slice(0, 2).join(' | '));
