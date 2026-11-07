@@ -423,3 +423,12 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
 
 
 - **7-nov · Kelvin: «descártala».** La versión de lejos de 20 piezas de templos rescatada de la Mac (BM2, 28-oct, rama `rescate-mac-7nov`) queda descartada: con piezas flotantes y huecos se ve peor que la actual. Los edificios se quedan como están.
+
+- **7-nov · Kelvin cierra las decisiones pendientes:**
+  1. «Marcas en la piedra» y «El número 36» (cap. 5) son contenido narrativo del juego: `narrativo_fuera`, fuera del Diario. Los criterios de cierre de la temporada quedan en 48/48, pero no es el % global: el total público es el menor de temporada y V18.
+  2. El lugar seguro se activa solo tras 3 atascos en 20 s; no se vuelve al inicio por un roce aislado.
+  3. La heliconia se queda: verificada en la fuente (Wunderle y Arendt 2011, IITF/USDA FS, https://research.fs.usda.gov/download/treesearch/39394.pdf): «In the tabonuco forest, Puerto Rican Emeralds feed heavily on flowers of the dominant understory shrub, Palicourea riparia Benth. (Waide, 1996) and Green Mangos were captured only when Heliconia was flowering (Wunderle et al., 1987)». El mismo artículo dice que el Luquillo Experimental Forest es el Bosque Nacional El Yunque. «Zumbador verde» es el nombre del DRNA para *Anthracothorax viridis* (Green Mango).
+  4. Se mantiene la regla del Nivel 2 del Aula. Tras el 1.er fallo sale la pista con «¡Inténtalo otra vez!»; en el 3.er intento, «aquí tienes la respuesta correcta, marcada en verde».
+  5. Minigolf: el hoyo 1 se queda terminado y optimizado; los hoyos 2 a 6 esperan a que Kelvin lo juegue. No se vuelve a preguntar.
+  6. Puerto y edificios: Kimi sigue con las mejoras; nada de edificios se publica sin el visto bueno de Kelvin.
+  - Lo legal (D1–D6) sigue pendiente: esto no autoriza el lanzamiento público, ni Supabase, ni recursos sin derechos confirmados. Las decisiones 1, 2 y 4 no se reabren salvo error comprobable.
