@@ -1,0 +1,3 @@
+· preparar: ok: portada → creador → Empezar (Trueno de la Bahía) → carga 7890 ms (listo) → intro saltada
+· trucosTest: {"passed":7,"total":7,"results":[{"name":"Un tonel abre el combo","ok":true,"extra":"¡Tonel!  ×1"},{"name":"El segundo es «¡Plumas al viento!»","ok":true,"extra":"¡Plumas al viento!  ×2"},{"name":"El tercero es «¡Cotorra loca!»","ok":true,"extra":"¡Cotorra loca!  ×3"},{"name":"El récord se guarda y avisa","ok":true,"extra":"3"},{"name":"Pasados 4 s el combo vuelve a 1","ok":true,"extra":"1"},{"name":"Un latigazo horizontal hace un tonel","ok":true,"extra":"tonel"},{"name":"Doble A en vuelo hace un tonel","ok":true,"extra":"tonel ×1"}]}
+· 0 s
