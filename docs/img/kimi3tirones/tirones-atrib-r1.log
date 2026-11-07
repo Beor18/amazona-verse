@@ -1,0 +1,34 @@
+· servidor http://127.0.0.1:53559 · 390×844 dpr 3 táctil · CPU ×4 · ?v18=1 · umbral 250 ms · etiqueta atrib-r1
+· juego listo; inyectando ep_caminar.js + temporada_movil.js…
+· scripts listos · temporadaMovilTest caps:[1] con el pulgar (los primeros min del cap. 1)…
+· latido: {"n":324,"tir":34,"ult":{"s":63.2,"ms":3909,"heapMB":165,"fase":"ini[visible] st {trabajos:1576,descargando:40,kbG:14021,zonas:17,fundidas:7,colocadas:101} · lentos:[{\"n\":\"subirTex\",\"ms\":215,\"t\":12156},{\"n\":\"procesar:casa_paja_a:cerca\",\"ms\":29,\"t\":14439}] · fin[ui · visible]"}}
+· latido: {"n":335,"tir":38,"ult":{"s":128.2,"ms":59281,"heapMB":150,"fase":"ini[visible] st {trabajos:6354,descargando:49,kbG:8859,zonas:17,fundidas:7,colocadas:113} · lentos:[{\"n\":\"subirTex\",\"ms\":215,\"t\":12156},{\"n\":\"procesar:casa_paja_a:cerca\",\"ms\":29,\"t\":14439}] · fin[visible]"}}
+· latido: {"n":414,"tir":49,"ult":{"s":189.4,"ms":11417,"heapMB":159,"fase":"ini[visible] st {trabajos:9206,descargando:2,kbG:11224,zonas:17,fundidas:7,colocadas:172} · lentos:[{\"n\":\"subirTex\",\"ms\":215,\"t\":12156},{\"n\":\"procesar:casa_paja_a:cerca\",\"ms\":29,\"t\":14439}] · fin[visible]"}}
+· temporadaMovilTest devolvió en 205 s
+· registrador en iframe del juego: false · cuadros totales: 844 · ms medios: 249 · tirones >250 ms: 59 · (shell principal: 844 cuadros, 59 tirones)
+· TOP 10 tirones (ms):
+  #1 59275 ms @ 133.6 s · heap 150 MB · ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{"n":"subirTex","ms":250,"t":12710}] · fin[ui · pausa · visible]
+  #2 17058 ms @ 158.9 s · heap 142 MB · ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{"n":"subirTex","ms":250,"t":12710}] · fin[ui · pausa · visible]
+  #3 11412 ms @ 194.8 s · heap 159 MB · ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{"n":"subirTex","ms":250,"t":12710}] · fin[ui · pausa · visible]
+  #4 9231 ms @ 168.5 s · heap 161 MB · ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{"n":"subirTex","ms":250,"t":12710}] · fin[ui · pausa · visible]
+  #5 7956 ms @ 48.7 s · heap 126 MB · ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{"n":"subirTex","ms":250,"t":12710}] · fin[ui · pausa · visible]
+  #6 6575 ms @ 40.4 s · heap 144 MB · ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{"n":"subirTex","ms":250,"t":12710}] · fin[ui · pausa · visible]
+  #7 5860 ms @ 140.5 s · heap 151 MB · ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{"n":"subirTex","ms":250,"t":12710}] · fin[ui · pausa · visible]
+  #8 4591 ms @ 183.3 s · heap 146 MB · ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{"n":"subirTex","ms":250,"t":12710}] · fin[ui · pausa · visible]
+  #9 4130 ms @ 74.2 s · heap 145 MB · ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{"n":"subirTex","ms":250,"t":12710}] · fin[ui · pausa · visible]
+  #10 3906 ms @ 68.7 s · heap 165 MB · ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{"n":"subirTex","ms":250,"t":12710}] · fin[ui · pausa · visible]
+· TOP 10 longtasks (ms):
+  lt 59209 ms @ 74.4 s · self · atrib unknown
+  lt 17006 ms @ 141.9 s · self · atrib unknown
+  lt 11294 ms @ 183.5 s · self · atrib unknown
+  lt 8898 ms @ 159.6 s · self · atrib unknown
+  lt 7659 ms @ 41 s · self · atrib unknown
+  lt 6385 ms @ 34 s · self · atrib unknown
+  lt 5794 ms @ 134.7 s · self · atrib unknown
+  lt 4545 ms @ 178.7 s · self · atrib unknown
+  lt 4086 ms @ 70.1 s · self · atrib unknown
+  lt 3859 ms @ 64.8 s · self · atrib unknown
+· batería: 29/29
+· errores de consola: 0
+· __aveErrores de la página: []
+· aviso: perfil temporal no se pudo borrar (se libera solo): C:\Users\kelvi\AppData\Local\Temp\kimi3tir-UHx0wY

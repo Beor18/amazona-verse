@@ -1,0 +1,890 @@
+{
+ "etiqueta": "atrib-r1",
+ "cpu": 4,
+ "dpr": 3,
+ "v18": true,
+ "umbralMs": 250,
+ "duracionJuegoS": 205,
+ "enIframe": false,
+ "cuadros": 844,
+ "msMedio": 249,
+ "heapFinMB": 236,
+ "shellPrincipal": {
+  "cuadros": 844,
+  "nTirones": 59
+ },
+ "bateria": {
+  "passed": 29,
+  "total": 29
+ },
+ "nTirones": 59,
+ "tirones": [
+  {
+   "s": 133.6,
+   "ms": 59275,
+   "heapMB": 150,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 158.9,
+   "ms": 17058,
+   "heapMB": 142,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 194.8,
+   "ms": 11412,
+   "heapMB": 159,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 168.5,
+   "ms": 9231,
+   "heapMB": 161,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 48.7,
+   "ms": 7956,
+   "heapMB": 126,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 40.4,
+   "ms": 6575,
+   "heapMB": 144,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 140.5,
+   "ms": 5860,
+   "heapMB": 151,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 183.3,
+   "ms": 4591,
+   "heapMB": 146,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 74.2,
+   "ms": 4130,
+   "heapMB": 145,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 68.7,
+   "ms": 3906,
+   "heapMB": 165,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 200,
+   "ms": 2903,
+   "heapMB": 143,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 2.8,
+   "ms": 2796,
+   "heapMB": 19,
+   "fase": "ini[visible] st {trabajos:0,descargando:2,kbG:0,zonas:0,fundidas:0,colocadas:0} · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 51.8,
+   "ms": 2607,
+   "heapMB": 138,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 64.3,
+   "ms": 2584,
+   "heapMB": 145,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 32.9,
+   "ms": 2319,
+   "heapMB": 139,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 175.1,
+   "ms": 2205,
+   "heapMB": 150,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 177.3,
+   "ms": 2165,
+   "heapMB": 156,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 172,
+   "ms": 2133,
+   "heapMB": 154,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 54.8,
+   "ms": 2050,
+   "heapMB": 133,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 196.8,
+   "ms": 1985,
+   "heapMB": 143,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 16.5,
+   "ms": 1894,
+   "heapMB": 118,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 12,
+   "ms": 1881,
+   "heapMB": 86,
+   "fase": "ini[ui · pausa · visible] st {trabajos:16,descargando:78,kbG:268,zonas:17,fundidas:0,colocadas:17} · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 25.9,
+   "ms": 1865,
+   "heapMB": 140,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 207.1,
+   "ms": 1797,
+   "heapMB": 211,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 61.4,
+   "ms": 1592,
+   "heapMB": 127,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 56.7,
+   "ms": 1501,
+   "heapMB": 145,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 7.3,
+   "ms": 1426,
+   "heapMB": 46,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:0,kbG:177,zonas:0,fundidas:0,colocadas:0} · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 29,
+   "ms": 1426,
+   "heapMB": 137,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 209.4,
+   "ms": 1312,
+   "heapMB": 206,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 59.6,
+   "ms": 890,
+   "heapMB": 144,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 141.5,
+   "ms": 754,
+   "heapMB": 138,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 58.4,
+   "ms": 743,
+   "heapMB": 122,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 69.6,
+   "ms": 703,
+   "heapMB": 162,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 201.7,
+   "ms": 652,
+   "heapMB": 166,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 3.7,
+   "ms": 581,
+   "heapMB": 25,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:2,kbG:0,zonas:0,fundidas:0,colocadas:0} · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 20.4,
+   "ms": 515,
+   "heapMB": 116,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 57.4,
+   "ms": 502,
+   "heapMB": 133,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 33.6,
+   "ms": 469,
+   "heapMB": 158,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 52.6,
+   "ms": 463,
+   "heapMB": 128,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 134.3,
+   "ms": 454,
+   "heapMB": 172,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 203.5,
+   "ms": 425,
+   "heapMB": 168,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 7.9,
+   "ms": 410,
+   "heapMB": 64,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:0,kbG:177,zonas:0,fundidas:0,colocadas:0} · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 202.3,
+   "ms": 403,
+   "heapMB": 166,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 5,
+   "ms": 401,
+   "heapMB": 38,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:0,kbG:177,zonas:0,fundidas:0,colocadas:0} · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 210,
+   "ms": 400,
+   "heapMB": 235,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 27,
+   "ms": 398,
+   "heapMB": 112,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 30.6,
+   "ms": 369,
+   "heapMB": 129,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 13.9,
+   "ms": 366,
+   "heapMB": 97,
+   "fase": "ini[ui · pausa · visible] st {trabajos:1,descargando:57,kbG:5252,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 159.3,
+   "ms": 360,
+   "heapMB": 151,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 29.3,
+   "ms": 347,
+   "heapMB": 126,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 3.1,
+   "ms": 334,
+   "heapMB": 25,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:2,kbG:0,zonas:0,fundidas:0,colocadas:0} · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 12.9,
+   "ms": 323,
+   "heapMB": 60,
+   "fase": "ini[ui · pausa · visible] st {trabajos:6,descargando:65,kbG:2527,zonas:17,fundidas:4,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 17.8,
+   "ms": 323,
+   "heapMB": 86,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 30.2,
+   "ms": 323,
+   "heapMB": 149,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 29.7,
+   "ms": 317,
+   "heapMB": 126,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 40.7,
+   "ms": 316,
+   "heapMB": 148,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 52.1,
+   "ms": 287,
+   "heapMB": 147,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 26.5,
+   "ms": 265,
+   "heapMB": 124,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  },
+  {
+   "s": 70,
+   "ms": 251,
+   "heapMB": 145,
+   "fase": "ini[ui · pausa · visible] st {trabajos:0,descargando:57,kbG:7153,zonas:17,fundidas:7,colocadas:17} · lentos:[{\"n\":\"subirTex\",\"ms\":250,\"t\":12710}] · fin[ui · pausa · visible]"
+  }
+ ],
+ "longtasks": [
+  {
+   "s": 0.5,
+   "d": 2247,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 2.8,
+   "d": 188,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 3,
+   "d": 91,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 3.1,
+   "d": 53,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 3.2,
+   "d": 518,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 4,
+   "d": 51,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 4.1,
+   "d": 66,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 4.5,
+   "d": 78,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 4.6,
+   "d": 433,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 5.1,
+   "d": 220,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 5.6,
+   "d": 58,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 5.7,
+   "d": 79,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 5.9,
+   "d": 1383,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 7.5,
+   "d": 389,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 8.8,
+   "d": 61,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 10,
+   "d": 84,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 10.2,
+   "d": 1827,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 12.5,
+   "d": 102,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 12.7,
+   "d": 254,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 14.9,
+   "d": 1665,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 17.4,
+   "d": 94,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 17.6,
+   "d": 218,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 20,
+   "d": 375,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 26.3,
+   "d": 148,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 26.7,
+   "d": 351,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 27.2,
+   "d": 131,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 27.6,
+   "d": 1376,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 29.1,
+   "d": 229,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 29.5,
+   "d": 95,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 30.4,
+   "d": 144,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 31,
+   "d": 1902,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 33.4,
+   "d": 214,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 34,
+   "d": 6385,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 41,
+   "d": 7659,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 48.9,
+   "d": 175,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 49.3,
+   "d": 2538,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 52,
+   "d": 118,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 52.4,
+   "d": 218,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 52.8,
+   "d": 2003,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 54.9,
+   "d": 190,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 55.2,
+   "d": 1458,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 57,
+   "d": 440,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 57.7,
+   "d": 705,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 58.5,
+   "d": 52,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 58.7,
+   "d": 52,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 58.9,
+   "d": 692,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 59.7,
+   "d": 57,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 59.9,
+   "d": 1545,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 61.5,
+   "d": 130,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 61.8,
+   "d": 2530,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 64.8,
+   "d": 3859,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 68.9,
+   "d": 656,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 69.7,
+   "d": 61,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 69.8,
+   "d": 206,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 70.1,
+   "d": 4086,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 74.4,
+   "d": 59209,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 134,
+   "d": 297,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 134.7,
+   "d": 5794,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 140.7,
+   "d": 91,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 140.9,
+   "d": 649,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 141.7,
+   "d": 69,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 141.8,
+   "d": 59,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 141.9,
+   "d": 17006,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 159.1,
+   "d": 128,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 159.6,
+   "d": 8898,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 169.9,
+   "d": 2074,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 173,
+   "d": 2149,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 175.2,
+   "d": 2101,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 178.7,
+   "d": 4545,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 183.5,
+   "d": 11294,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 195,
+   "d": 1788,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 197,
+   "d": 70,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 197.1,
+   "d": 2853,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 200.5,
+   "d": 75,
+   "n": "unknown",
+   "a": "unknown"
+  },
+  {
+   "s": 200.7,
+   "d": 52,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 200.8,
+   "d": 76,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 201.1,
+   "d": 609,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 201.9,
+   "d": 385,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 203.1,
+   "d": 402,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 205.3,
+   "d": 58,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 205.4,
+   "d": 1701,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 207.7,
+   "d": 52,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 207.8,
+   "d": 75,
+   "n": "self",
+   "a": "unknown"
+  },
+  {
+   "s": 208.1,
+   "d": 1287,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  },
+  {
+   "s": 209.6,
+   "d": 377,
+   "n": "same-origin-descendant",
+   "a": "unknown"
+  }
+ ],
+ "errores": []
+}
