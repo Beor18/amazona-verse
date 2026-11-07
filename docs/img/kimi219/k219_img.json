@@ -1,0 +1,166 @@
+{
+ "when": "2026-11-07T23:24:46.379Z",
+ "etiqueta": "k219-img-r1",
+ "que": "menú de re-encode JPEG (misma resolución) de las imágenes más pesadas de la carga inicial; diff contra el archivo actual (lo que se ve hoy); muestreo 1/4 px, umbral max-canal >4/255",
+ "imagenes": {
+  "hd_savage_lq": {
+   "src": "/assets/models/edificios/tex_hd/hd_savage_lq.jpg",
+   "bytesActual": 1677754,
+   "ancho": 2048,
+   "alto": 2048,
+   "calidades": {
+    "q92": {
+     "bytes": 1676680,
+     "ahorroKb": 1,
+     "ahorroPct": 0.1,
+     "diffPct": 0.009,
+     "diffMedia": 0.08,
+     "diffMax": 7,
+     "candidato": "tools/build/salida/kimi219-img/hd_savage_lq_q92.jpg"
+    },
+    "q88": {
+     "bytes": 1509337,
+     "ahorroKb": 164.5,
+     "ahorroPct": 10,
+     "diffPct": 19.929,
+     "diffMedia": 2.21,
+     "diffMax": 21,
+     "candidato": "tools/build/salida/kimi219-img/hd_savage_lq_q88.jpg"
+    },
+    "q85": {
+     "bytes": 1406257,
+     "ahorroKb": 265.1,
+     "ahorroPct": 16.2,
+     "diffPct": 41.868,
+     "diffMedia": 3.4,
+     "diffMax": 38,
+     "candidato": "tools/build/salida/kimi219-img/hd_savage_lq_q85.jpg"
+    },
+    "q80": {
+     "bytes": 960961,
+     "ahorroKb": 700,
+     "ahorroPct": 42.7,
+     "diffPct": 50.253,
+     "diffMedia": 3.94,
+     "diffMax": 40,
+     "candidato": "tools/build/salida/kimi219-img/hd_savage_lq_q80.jpg"
+    },
+    "q75": {
+     "bytes": 887347,
+     "ahorroKb": 771.9,
+     "ahorroPct": 47.1,
+     "diffPct": 54.556,
+     "diffMedia": 4.26,
+     "diffMax": 42,
+     "candidato": "tools/build/salida/kimi219-img/hd_savage_lq_q75.jpg"
+    }
+   }
+  },
+  "hd_ancient_lq": {
+   "src": "/assets/models/edificios/tex_hd/hd_ancient_lq.jpg",
+   "bytesActual": 1396380,
+   "ancho": 2048,
+   "alto": 2048,
+   "calidades": {
+    "q92": {
+     "bytes": 1396506,
+     "ahorroKb": -0.1,
+     "ahorroPct": 0,
+     "diffPct": 0,
+     "diffMedia": 0.01,
+     "diffMax": 5,
+     "candidato": "tools/build/salida/kimi219-img/hd_ancient_lq_q92.jpg"
+    },
+    "q88": {
+     "bytes": 1264365,
+     "ahorroKb": 128.9,
+     "ahorroPct": 9.5,
+     "diffPct": 11.741,
+     "diffMedia": 1.89,
+     "diffMax": 21,
+     "candidato": "tools/build/salida/kimi219-img/hd_ancient_lq_q88.jpg"
+    },
+    "q85": {
+     "bytes": 1172641,
+     "ahorroKb": 218.5,
+     "ahorroPct": 16,
+     "diffPct": 31.624,
+     "diffMedia": 3.08,
+     "diffMax": 34,
+     "candidato": "tools/build/salida/kimi219-img/hd_ancient_lq_q85.jpg"
+    },
+    "q80": {
+     "bytes": 706153,
+     "ahorroKb": 674,
+     "ahorroPct": 49.4,
+     "diffPct": 39.983,
+     "diffMedia": 3.57,
+     "diffMax": 43,
+     "candidato": "tools/build/salida/kimi219-img/hd_ancient_lq_q80.jpg"
+    },
+    "q75": {
+     "bytes": 644645,
+     "ahorroKb": 734.1,
+     "ahorroPct": 53.8,
+     "diffPct": 43.291,
+     "diffMedia": 3.76,
+     "diffMax": 40,
+     "candidato": "tools/build/salida/kimi219-img/hd_ancient_lq_q75.jpg"
+    }
+   }
+  },
+  "suelo_musgo_n": {
+   "src": "/assets/tex/entorno/suelo_musgo_n.jpg",
+   "bytesActual": 288641,
+   "ancho": 1024,
+   "alto": 1024,
+   "calidades": {
+    "q92": {
+     "bytes": 310568,
+     "ahorroKb": -21.4,
+     "ahorroPct": -7.6,
+     "diffPct": 8.821,
+     "diffMedia": 1.43,
+     "diffMax": 12,
+     "candidato": "tools/build/salida/kimi219-img/suelo_musgo_n_q92.jpg"
+    },
+    "q88": {
+     "bytes": 279317,
+     "ahorroKb": 9.1,
+     "ahorroPct": 3.2,
+     "diffPct": 2.939,
+     "diffMedia": 0.98,
+     "diffMax": 14,
+     "candidato": "tools/build/salida/kimi219-img/suelo_musgo_n_q88.jpg"
+    },
+    "q85": {
+     "bytes": 254969,
+     "ahorroKb": 32.9,
+     "ahorroPct": 11.7,
+     "diffPct": 25.706,
+     "diffMedia": 1.97,
+     "diffMax": 23,
+     "candidato": "tools/build/salida/kimi219-img/suelo_musgo_n_q85.jpg"
+    },
+    "q80": {
+     "bytes": 223838,
+     "ahorroKb": 63.3,
+     "ahorroPct": 22.5,
+     "diffPct": 57.53,
+     "diffMedia": 3.16,
+     "diffMax": 33,
+     "candidato": "tools/build/salida/kimi219-img/suelo_musgo_n_q80.jpg"
+    },
+    "q75": {
+     "bytes": 161188,
+     "ahorroKb": 124.5,
+     "ahorroPct": 44.2,
+     "diffPct": 67.133,
+     "diffMedia": 3.62,
+     "diffMax": 34,
+     "candidato": "tools/build/salida/kimi219-img/suelo_musgo_n_q75.jpg"
+    }
+   }
+  }
+ }
+}
