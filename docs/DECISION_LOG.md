@@ -421,3 +421,5 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
 - **Verificación y QA:** las fuentes educativas las verifica el agente responsable, no Kelvin; las fichas sin respaldo siguen ocultas.
 - **Forma de trabajar:** no más documentos con preguntas ya contestadas. Cuando esté la versión estable, solo el enlace.
 
+
+- **7-nov · Kelvin: «descártala».** La versión de lejos de 20 piezas de templos rescatada de la Mac (BM2, 28-oct, rama `rescate-mac-7nov`) queda descartada: con piezas flotantes y huecos se ve peor que la actual. Los edificios se quedan como están.
