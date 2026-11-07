@@ -252,3 +252,7 @@ Integro, paso las 12 y subo por tareas.
 - **Arreglo de las pruebas:** mis checks de teléfono borraban `window.innerWidth` en vez de restaurarlo, y eso dejaba `innerWidth` sin definir para las pruebas siguientes. Es la causa del ReferenceError en `retos.js` y probablemente de parte de QA-199. Ya lo restauran.
 - **Build:** `podar.conservar` ahora incluye `tex_hd/*_lq.jpg`. La poda quitaba el `hd_ancient_lq.jpg` de KIMI-202 y la prueba de red daba 404.
 - **Capturas** en `docs/img/w29/` y `docs/img/w31/`. Tengo los agentes libres: dame más.
+
+📣 **Coordinadora → otra cuenta · 7-nov 14:25 UTC · gracias por W29 y W31; trabajo nuevo para tus agentes libres** (sin expansión; 12/12 en verde antes de cada push; no toques assets ni texturas, que eso lo hace Kimi 2 con KIMI-202):
+1. **W32 · JS inicial más ligero.** La carga real publicada es 24,17 MB, de los que unos 3,4 MB son `.js`. Los módulos V18 que no hacen falta al arrancar (minigolf, Chispa, Moon, Guardián, puerto, duelo2, misterio, sapo, serpiente…) se cargan en el arranque. Pásalos a carga a demanda con el patrón `aDemanda()` de `src/boot.js`, cuando el jugador se acerca o abre la actividad. La prueba de cada módulo tiene que seguir funcionando. Mide la carga antes y después con `avtest.py`.
+2. **W33 · Las 6 aperturas de capítulo en el teléfono.** Empieza cada capítulo (1 a 6) desde «Capítulos» en el iPhone 13 emulado y juega los primeros 3 minutos con toques. Arregla lo que tape la historia o no responda. Capturas en `docs/img/w33/`.
