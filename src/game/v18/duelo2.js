@@ -484,7 +484,7 @@ window.AVV18Duelo2 = function (G) {
   }
 
   // ---------- En el mundo: el sitio del duelo de 2 jugadores, en el centro del círculo de la explanada ----------
-  function disponible() { return !!G.V18 && !tactil(); }
+  function disponible() { return !!G.V18 && !tactil() && !!(G.pack && G.pack.id === 'cap1'); } // QA-192: la estación es de la explanada de Villa Raíz
   // Marca pintada en el suelo (un solo plano; textura canvas en runtime, 0 assets): halo cálido suave,
   // guía tenue, dos medias lunas entrelazadas (oro = Jugador 1 al oeste, azul = Jugador 2 al este) y dos plumas cruzadas.
   const texSitio = (() => {
@@ -648,6 +648,12 @@ window.AVV18Duelo2 = function (G) {
         !follow0 && G.camara.follow === FOLLOW_ORIG && F.toggleFly === FLY_ORIG && vuelve && !ev2.defaultPrevented && !D.ch.root.visible);
       check('Sin errores de consola durante la prueba', errores.length === 0, errores.join(' | '));
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
+    // QA-192: fuera del cap. 1 la estación no existe (la marca del suelo usa la misma guarda)
+    try {
+      const pack0 = G.pack && G.pack.id; G.pack.id = 'ep4';
+      try { check('QA-192: fuera del cap. 1 no se ofrece el duelo de 2', !disponible() && !it.visible()); }
+      finally { G.pack.id = pack0; }
+    } catch (e) { check('QA-192: fuera del cap. 1 no se ofrece el duelo de 2', false, e && e.message); }
     try { salir(); } catch (e) { /* fuera */ }
     G.V18 = v18on0;
     oy.mudo = true; removeEventListener('error', oyErr); removeEventListener('unhandledrejection', oyErr);

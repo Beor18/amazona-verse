@@ -14,6 +14,8 @@ window.AVV18Misterio = function (G) {
   const ID_RASTRO = 'v18_puente', ID_PUENTE = 'puente_villa';
   let rastro = null, intentos = 0;
   const roto = () => (V.mundo(ID_PUENTE) || 'roto') !== 'reparado';
+  // QA-192: el misterio vigila el puente de Villa Raíz; fuera del cap. 1 no aparece (mismo patrón que chispa/moon/guardian)
+  const enCap1 = () => !!(G.pack && G.pack.id === 'cap1');
 
   // junto al hueco roto, en la orilla de la cabecera (fuera del tablero y del río): vigila el puente desde la hierba
   function sitio() {
@@ -26,6 +28,7 @@ window.AVV18Misterio = function (G) {
     return { x: pl.ax + nx * (L * t) + px * lado, z: pl.az + nz * (L * t) + pz * lado };
   }
   function colocar() {
+    if (!enCap1()) return false;
     if (rastro) return true;
     if (!G.marana) return false;
     const p = sitio();
@@ -38,7 +41,7 @@ window.AVV18Misterio = function (G) {
     try { G.marana.retirar(ID_RASTRO); } catch (e) { /* sin maraña */ }
     rastro = null;
   }
-  function sincronizar() { if (roto()) colocar(); else retirar(); }
+  function sincronizar() { if (enCap1() && roto()) colocar(); else retirar(); }
 
   // espera a que existan el puente (terreno.plataformas) y la maraña; se reintenta al aplicar y con cada cambio del puente
   function esperar() {
@@ -63,6 +66,12 @@ window.AVV18Misterio = function (G) {
       check('Está junto al puente (a 3–12 m del eje, fuera del tablero)', !!rastro && pl &&
         Math.hypot(rastro.x - mx, rastro.z - mz) > 2 && Math.hypot(rastro.x - mx, rastro.z - mz) < 12,
         'eje ' + Math.round(mx) + ',' + Math.round(mz) + ' · rastro ' + (rastro && Math.round(rastro.x) + ',' + Math.round(rastro.z)));
+      // QA-192: fuera del cap. 1 el misterio no aparece aunque el puente esté roto
+      try {
+        const pack0 = G.pack && G.pack.id; G.pack.id = 'ep4';
+        try { sincronizar(); check('QA-192: fuera del cap. 1 no hay misterio en el puente', !rastro && G.marana.rastros.every(r => r.id !== ID_RASTRO)); }
+        finally { G.pack.id = pack0; sincronizar(); }
+      } catch (e) { check('QA-192: fuera del cap. 1 no hay misterio en el puente', false, e && e.message); }
       // la cara: ojos que se abren cerca y siguen; la voz es el sonido existente (lo cubre maranaTest)
       G.quiet = false; if (M) M.flying = false;
       if (G.marana.probar) G.marana.probar(true); // en calidad baja la Maraña se apaga: la prueba mira la cara igual
