@@ -79,6 +79,9 @@ window.AVV18Reparar = function (G) {
     return true;
   }
   const centro = () => (P.eje ? Object.assign(punto(0.5), { y: deckY(0.5) }) : null);
+  // QA-203: el centro solo cambia si cambia el eje; paso y enCorriente lo leen cada cuadro sin crear objetos (solo lectura)
+  const _cen = { eje: null, c: null };
+  const centroFijo = () => { if (_cen.eje !== P.eje) { _cen.eje = P.eje; _cen.c = centro(); } return _cen.c; };
 
   // ---------- QA-172: cruzarlo a pie de orilla a orilla (solo reparado) ----------
   // Medido en el juego (eje del piso, s en m desde la cabecera A de Villa Raíz; L ≈ 24,7 m): el estribo de concreto del modelo
@@ -261,14 +264,19 @@ window.AVV18Reparar = function (G) {
   const CORR = { r: 3.6, alto: 28, sube: 9, avisada: false, pistaT: 0, fxT: 0 };
   function enCorriente(x, z, y) {
     if (!reparado() || !P.eje || !enCap1()) return false;
-    const c = centro();
+    const c = centroFijo();
     return Math.hypot(x - c.x, z - c.z) < CORR.r && (y == null || y < c.y + CORR.alto);
   }
   // QA-172: en la cabecera B crece un árbol del bosque (su tronco queda entre el tablero y el estribo, en el centro del paso).
   // Se rodea: si Vittata camina hacia él y no avanza, se aparta de lado hacia el hueco libre (primero a un lado y, si allí
   // también choca, al otro), sin atravesar nada. Solo a pie, con el puente reparado y en las cabeceras.
   const RODEO = { t: 0, lado: -1, v: 2.4, espera: 0.2, x: 0, z: 0 };
-  const pideMover = () => { const k = G.input && G.input.keys, st = G.input && G.input.stick; return !!((k && ['w', 's', 'a', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].some(t => k.has(t))) || (st && Math.hypot(st.x, st.y) > 0.12)); };
+  const TECLAS_MOVER = ['w', 's', 'a', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
+  const pideMover = () => {
+    const k = G.input && G.input.keys, st = G.input && G.input.stick;
+    if (k) for (let i = 0; i < TECLAS_MOVER.length; i++) if (k.has(TECLAS_MOVER[i])) return true;
+    return !!(st && Math.hypot(st.x, st.y) > 0.12);
+  };
   function rodeo(dt, M) {
     const SOL = G.solidos && G.solidos.activo ? G.solidos : null, E = P.eje;
     const avance = dt > 0 ? Math.hypot(S.pos.x - RODEO.x, S.pos.z - RODEO.z) / dt : 0; // m/s desde el cuadro anterior
@@ -280,7 +288,9 @@ window.AVV18Reparar = function (G) {
     const pen0 = SOL.penetra(S.pos.x, S.pos.z, S.pos.y), d = RODEO.v * dt;
     // hacia dónde camina por el eje (la cámara manda el paso): para apartarse, de lado y, si de lado roza, también un poco atrás
     const yaw = G.camara.yaw, haciaB = (-Math.sin(yaw)) * E.ux + (-Math.cos(yaw)) * E.uz >= 0 ? 1 : -1;
-    for (const lado of [RODEO.lado, -RODEO.lado]) for (const atras of [0, 0.6]) {
+    const lado0 = RODEO.lado;
+    for (let li = 0; li < 2; li++) for (let ai = 0; ai < 2; ai++) {
+      const lado = li ? -lado0 : lado0, atras = ai ? 0.6 : 0;
       const nx = S.pos.x - E.uz * lado * d - E.ux * haciaB * atras * d, nz = S.pos.z + E.ux * lado * d - E.uz * haciaB * atras * d;
       if (Math.abs(lat + lado * d) > 0.75 || SOL.penetra(nx, nz, S.pos.y) > pen0) continue;
       S.pos.x = nx; S.pos.z = nz; RODEO.lado = lado; RODEO.x = nx; RODEO.z = nz;
@@ -318,13 +328,15 @@ window.AVV18Reparar = function (G) {
   // al tablero, a menos de ~50°) en los últimos 9 m de cada orilla y sobre el tablero, se la acerca al eje de lado
   // (2,2 m/s como mucho, nunca metiéndola más en un sólido). Volando, nadando o alejándose del puente no hace nada.
   const EMBUDO = { orilla: 9, lat: 3, v: 2.2, veces: 0 };
+  const _w = { x: 0, z: 0 }, _st0 = { x: 0, y: 0 };
   function pedido() {
-    const k = G.input && G.input.keys, st = (G.input && G.input.stick) || { x: 0, y: 0 };
+    const k = G.input && G.input.keys, st = (G.input && G.input.stick) || _st0;
     let ix = st.x || 0, iz = st.y || 0;
     if (k) { if (k.has('w') || k.has('arrowup')) iz -= 1; if (k.has('s') || k.has('arrowdown')) iz += 1; if (k.has('a') || k.has('arrowleft')) ix -= 1; if (k.has('d') || k.has('arrowright')) ix += 1; }
     const yaw = G.camara.yaw, fx = -Math.sin(yaw), fz = -Math.cos(yaw), rx = Math.cos(yaw), rz = -Math.sin(yaw);
     const mx = rx * ix - fx * iz, mz = rz * ix - fz * iz, l = Math.hypot(mx, mz);
-    return l > 0.12 ? { x: mx / l, z: mz / l } : null;
+    if (!(l > 0.12)) return null;
+    _w.x = mx / l; _w.z = mz / l; return _w;
   }
   function encauzar(dt, M) {
     const SOL = G.solidos && G.solidos.activo ? G.solidos : null, E = P.eje;
@@ -346,7 +358,7 @@ window.AVV18Reparar = function (G) {
     if (!P.eje || !reparado()) return;
     const M = G.fisica && G.fisica.MOVE;
     if (!bajarBaranda(dt, M) && !encauzar(dt, M)) rodeo(dt, M);
-    const c = centro(), d = Math.hypot(S.pos.x - c.x, S.pos.z - c.z);
+    const c = centroFijo(), d = Math.hypot(S.pos.x - c.x, S.pos.z - c.z);
     if (d < 60 && (CORR.fxT -= dt) <= 0) { CORR.fxT = 0.45; try { G.fx.burst(c.x + (Math.random() - 0.5) * 3, c.y + 1 + Math.random() * 6, c.z + (Math.random() - 0.5) * 3, 'leaves', 2); } catch (e) { /* sin fx */ } }
     if (!M || d > CORR.r) return;
     if (!M.flying) {
