@@ -1,0 +1,130 @@
+· listo: true
+· preparar: ok: portada → creador → Empezar (Pluma Brillante) → carga 7778 ms (listo) → intr
+· zona: kelvin_ruinas_yunque · instancias: 61 · por yaw: 0:78  1.6:92  3.1:118  4.7:145
+· jugador: -4,25,-85 · cámara: -999,-999,-999
+· peor vista: yaw 4.71238898038469 = 145 calls (cuadro entero: sombra+escena+post)
+· invocaciones de renderer.render (1ª=escena+sombra, resto=post): 131 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 =  145
+· sin shadowMap:  { smE0: true, sinSM: 145, sinCS: 143 } calls (ahorro sombra = NaN)
+· calidad/stats: {"calidad":"alto","sombras":true}
+· totales por recorrido de escena: escena 322 · sombra(castShadow) 98 · post+sombras reales = peor - escena = -177
+· ablación por grupo (delta = calls que aporta en la peor vista):
+      35 calls ·   61 obj ocultos → flora
+      14 calls ·  180 obj ocultos → SIN_NOMBRE
+      -4 calls ·  390 obj ocultos → edificiosInst
+      -4 calls ·   44 obj ocultos → edificiosZona
+      -1 calls ·    4 obj ocultos → terreno
+      -3 calls ·    3 obj ocultos → estructura
+      -2 calls ·   13 obj ocultos → spark
+      -4 calls ·    2 obj ocultos → esfera
+      -2 calls ·    2 obj ocultos → cielo
+· grupos (prefijo · objetos · calls · tris · castShadow · ejemplos):
+     117 calls   47 obj      6k tris sombra  30 | SIN_NOMBRE · Mesh · mat:? · (sin nombre)
+      61 calls   61 obj     44k tris sombra  20 | flora · flora:ceiba:hoja / flora:ceiba:corteza / flora:flamboyan:hoja
+      12 calls   12 obj      0k tris sombra   0 | SIN_NOMBRE · Sprite · mat:? · (sin nombre)
+       9 calls    4 obj      3k tris sombra   0 | edificiosInst:bohio_redondo: · edificiosInst:bohio_redondo:cerca:KB3D_RoofThatched / edificiosInst:bohio_redondo:cerca:KB3D_WoodPlanks / edificiosInst:bohio_redondo:cerca:KB3D_BarkNew
+       7 calls    7 obj      2k tris sombra   7 | maquina_cuerpo · maquina_cuerpo:p0 / maquina_cuerpo:p1 / maquina_cuerpo:p2
+       7 calls    7 obj      1k tris sombra   7 | transmisor_cuerpo · transmisor_cuerpo:p0 / transmisor_cuerpo:p1 / transmisor_cuerpo:p2
+       5 calls    5 obj      0k tris sombra   0 | edificiosInst:templo_mediano · edificiosInst:templo_mediano_h:cerca:AV_Restaurado_Piedra / edificiosInst:templo_mediano_h:cerca:AV_Restaurado_Tallado / edificiosInst:templo_mediano_h:cerca:AV_Restaurado_Base
+       5 calls    5 obj      0k tris sombra   0 | edificiosInst:ruina_torre:ce · edificiosInst:ruina_torre:cerca:AV_Restaurado_Piedra / edificiosInst:ruina_torre:cerca:AV_Restaurado_Tallado / edificiosInst:ruina_torre:cerca:AV_Restaurado_Base
+       5 calls    5 obj      2k tris sombra   0 | edificiosInst:templo_grande_ · edificiosInst:templo_grande_d:cerca:AV_Restaurado_Piedra / edificiosInst:templo_grande_d:cerca:AV_Restaurado_Tallado / edificiosInst:templo_grande_d:cerca:AV_Restaurado_Base
+       5 calls    5 obj      0k tris sombra   0 | edificiosInst:ruina_torre_b: · edificiosInst:ruina_torre_b:cerca:AV_Restaurado_Piedra / edificiosInst:ruina_torre_b:cerca:AV_Restaurado_Tallado / edificiosInst:ruina_torre_b:cerca:AV_Restaurado_Base
+       5 calls    4 obj    371k tris sombra   2 | edificiosZonaHD:kelvin_aldea · edificiosZonaHD:kelvin_aldea_yunque:AV_HD_Savage / edificiosZonaHD:kelvin_aldea_mina:canoe_canoa / edificiosZonaHD:kelvin_aldea_yunque:canoe_canoa
+       4 calls    4 obj      0k tris sombra   4 | indicador_marco · indicador_marco:p0 / indicador_marco:p1
+       4 calls    4 obj     80k tris sombra   4 | terreno · terreno:terreno_so / terreno:terreno_no / terreno:terreno_ne
+       4 calls    4 obj      4k tris sombra   0 | edificiosInst:torre_vigia_b: · edificiosInst:torre_vigia_b:lejos:AV_Lejos / edificiosInst:torre_vigia_b:cerca:KB3D_BarkNew / edificiosInst:torre_vigia_b:cerca:KB3D_WoodPlanks
+       3 calls    3 obj      0k tris sombra   0 | spark · spark
+       3 calls    3 obj      0k tris sombra   3 | maquina · maquina:luz
+       3 calls    3 obj      0k tris sombra   0 | m3 · m3:arbusto:hoja
+       3 calls    3 obj      6k tris sombra   3 | estructura · estructura:puente / estructura:muelle / estructura:grutas
+       3 calls    3 obj      4k tris sombra   0 | edificiosInst:casa_plataform · edificiosInst:casa_plataforma:cerca:KB3D_WoodPlanks / edificiosInst:casa_plataforma:cerca:KB3D_BarkNew / edificiosInst:casa_plataforma:cerca:KB3D_RockSharp
+       3 calls    3 obj      3k tris sombra   0 | edificiosInst:muralla_atalay · edificiosInst:muralla_atalaya_b:cerca:KB3D_RockSharp / edificiosInst:muralla_atalaya_b:cerca:KB3D_BarkNew / edificiosInst:muralla_atalaya_b:cerca:KB3D_TarpFabricDamaged
+       3 calls    3 obj      2k tris sombra   0 | edificiosInst:monumento_d:ce · edificiosInst:monumento_d:cerca:KB3D_BarkNew / edificiosInst:monumento_d:cerca:KB3D_RockSharp / edificiosInst:monumento_d:cerca:KB3D_WoodPlanks
+       3 calls    3 obj      2k tris sombra   0 | edificiosInst:caney_largo:ce · edificiosInst:caney_largo:cerca:KB3D_RoofThatched / edificiosInst:caney_largo:cerca:KB3D_BarkNew / edificiosInst:caney_largo:cerca:KB3D_RockSharp
+       3 calls    3 obj      3k tris sombra   0 | edificiosInst:bohio_puntiagu · edificiosInst:bohio_puntiagudo:cerca:KB3D_RoofThatched / edificiosInst:bohio_puntiagudo:cerca:KB3D_WoodPlanks / edificiosInst:bohio_puntiagudo:cerca:KB3D_BarkNew
+       3 calls    3 obj      4k tris sombra   0 | edificiosInst:casa_paja_b:ce · edificiosInst:casa_paja_b:cerca:KB3D_WoodPlanks / edificiosInst:casa_paja_b:cerca:KB3D_BarkNew / edificiosInst:casa_paja_b:cerca:KB3D_TarpFabricDamaged
+       3 calls    3 obj      3k tris sombra   0 | edificiosInst:cercado_redond · edificiosInst:cercado_redondo:cerca:KB3D_WoodPlanks / edificiosInst:cercado_redondo:cerca:KB3D_BarkNew / edificiosInst:cercado_redondo:cerca:KB3D_WoodHewn
+       2 calls    2 obj      0k tris sombra   0 | SIN_NOMBRE · Line · mat:? · (sin nombre)
+       2 calls    2 obj      1k tris sombra   2 | SIN_NOMBRE · Mesh · mat:KB3D_BarkNew · (sin nombre)
+       2 calls    2 obj      0k tris sombra   2 | esfera · esfera
+       2 calls    2 obj      0k tris sombra   2 | engranaje · engranaje:p0 / engranaje:p1
+       2 calls    2 obj      0k tris sombra   2 | transmisor · transmisor:piloto / transmisor:bisel
+       2 calls    2 obj      0k tris sombra   2 | antena · antena:p0 / antena:p1
+       2 calls    2 obj      1k tris sombra   2 | edificiosInst:toldo_pequeno: · edificiosInst:toldo_pequeno:cerca:KB3D_BarkNew / edificiosInst:toldo_pequeno:cerca:KB3D_TarpFabricDamaged
+       2 calls    2 obj      1k tris sombra   0 | edificiosInst:empalizada:cer · edificiosInst:empalizada:cerca:KB3D_BarkNew / edificiosInst:empalizada:cerca:KB3D_RockSharp
+       2 calls    1 obj    228k tris sombra   0 | edificiosZona:global:lejos · edificiosZona:global:lejos
+       2 calls    1 obj   4288k tris sombra   0 | edificiosZonaHDGlobal:AV_HD_ · edificiosZonaHDGlobal:AV_HD_Ancient
+       1 calls    1 obj      1k tris sombra   0 | cielo · cielo
+       1 calls    1 obj      0k tris sombra   0 | cielo-nubes · cielo-nubes
+       1 calls    1 obj      0k tris sombra   0 | fondoMarino · fondoMarino
+       1 calls    1 obj      0k tris sombra   0 | SIN_NOMBRE · Points · mat:? · (sin nombre)
+       1 calls    1 obj     11k tris sombra   0 | mar · mar
+       1 calls    1 obj      0k tris sombra   0 | rocio · rocio
+       1 calls    1 obj      1k tris sombra   1 | SIN_NOMBRE · Mesh · mat:KB3D_TarpFabricDamaged · (sin nombre)
+       1 calls    1 obj      2k tris sombra   1 | SIN_NOMBRE · Mesh · mat:KB3D_RoofThatched · (sin nombre)
+       1 calls    1 obj      1k tris sombra   1 | SIN_NOMBRE · Mesh · mat:KB3D_WoodPlanks · (sin nombre)
+       1 calls    1 obj      0k tris sombra   0 | edu · edu:marcador:anillo
+       1 calls    1 obj      2k tris sombra   0 | rio · rio
+       1 calls    1 obj      7k tris sombra   1 | Vittata_1 · Vittata_1
+       1 calls    1 obj     21k tris sombra   1 | Vittata_2 · Vittata_2
+       1 calls    1 obj      1k tris sombra   0 | edificiosInst:monumento_f:le · edificiosInst:monumento_f:lejos:AV_Lejos
+       1 calls    1 obj      0k tris sombra   0 | ambiente-particulas · ambiente-particulas
+       1 calls    1 obj      0k tris sombra   0 | faroles · faroles:postes
+       1 calls    1 obj      1k tris sombra   0 | edificiosInst:monumento_a:le · edificiosInst:monumento_a:lejos:AV_Lejos
+       1 calls    1 obj      0k tris sombra   0 | edificiosInst:canoa:cerca:ca · edificiosInst:canoa:cerca:canoa
+       1 calls    1 obj     30k tris sombra   1 | edificiosZonaSombra:kelvin_r · edificiosZonaSombra:kelvin_ruinas_yunque
+· ANÓNIMOS detalle (55 objetos):
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"SphereGeometry","inst":0,"mat":"MeshLambertMaterial","color":"ffffff","tris":420,"sombra":false,"pos":[-330,0,430]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"SphereGeometry","inst":0,"mat":"MeshLambertMaterial","color":"ffffff","tris":420,"sombra":false,"pos":[40,0,520]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"SphereGeometry","inst":0,"mat":"MeshLambertMaterial","color":"ffffff","tris":420,"sombra":false,"pos":[380,0,420]}
+    {"cadena":"Points < Scene","tipo":"Points","geo":"BufferGeometry","inst":0,"mat":"PointsMaterial","color":"9fc9de","tris":300,"sombra":false,"pos":[-4,25,-85]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"CylinderGeometry","inst":0,"mat":"MeshBasicMaterial","color":"fff1b0","tris":28,"sombra":false,"pos":[158,-9,176]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"ConeGeometry","inst":0,"mat":"MeshBasicMaterial","color":"f2a03d","tris":36,"sombra":false,"pos":[-4,28,-84]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"CircleGeometry","inst":0,"mat":"MeshBasicMaterial","color":"000000","tris":16,"sombra":false,"pos":[-4,25,-85]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"CircleGeometry","inst":0,"mat":"MeshBasicMaterial","color":"000000","tris":16,"sombra":false,"pos":[-5,25,-83]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"CircleGeometry","inst":0,"mat":"MeshBasicMaterial","color":"000000","tris":16,"sombra":false,"pos":[158,11,176]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"CircleGeometry","inst":0,"mat":"MeshBasicMaterial","color":"000000","tris":16,"sombra":false,"pos":[142,5,166]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"CircleGeometry","inst":0,"mat":"MeshBasicMaterial","color":"000000","tris":16,"sombra":false,"pos":[79,26,183]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"CircleGeometry","inst":0,"mat":"MeshBasicMaterial","color":"000000","tris":16,"sombra":false,"pos":[76,26,183]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"CylinderGeometry","inst":0,"mat":"MeshLambertMaterial","color":"401a06","tris":28,"sombra":false,"pos":[122,5,188]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"CylinderGeometry","inst":0,"mat":"MeshLambertMaterial","color":"401a06","tris":28,"sombra":false,"pos":[176,5,162]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"CylinderGeometry","inst":0,"mat":"MeshLambertMaterial","color":"401a06","tris":28,"sombra":false,"pos":[112,8,160]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"CylinderGeometry","inst":0,"mat":"MeshLambertMaterial","color":"401a06","tris":28,"sombra":false,"pos":[190,4,170]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"CylinderGeometry","inst":0,"mat":"MeshLambertMaterial","color":"401a06","tris":28,"sombra":false,"pos":[126,5,153]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"DodecahedronGeometry","inst":0,"mat":"MeshLambertMaterial","color":"52595d","tris":36,"sombra":false,"pos":[160,1,197]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"DodecahedronGeometry","inst":0,"mat":"MeshLambertMaterial","color":"52595d","tris":36,"sombra":false,"pos":[100,11,176]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"DodecahedronGeometry","inst":0,"mat":"MeshLambertMaterial","color":"52595d","tris":36,"sombra":false,"pos":[196,4,153]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"DodecahedronGeometry","inst":0,"mat":"MeshLambertMaterial","color":"52595d","tris":36,"sombra":false,"pos":[140,1,197]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"TorusGeometry","inst":0,"mat":"MeshLambertMaterial","color":"94a7b0","tris":120,"sombra":false,"pos":[188,0,115]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"SphereGeometry","inst":0,"mat":"MeshLambertMaterial","color":"060606","tris":216,"sombra":false,"pos":[6,69,-197]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"SphereGeometry","inst":0,"mat":"MeshLambertMaterial","color":"e6e6de","tris":216,"sombra":false,"pos":[6,69,-197]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"ConeGeometry","inst":0,"mat":"MeshLambertMaterial","color":"060606","tris":18,"sombra":false,"pos":[6,69,-197]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"SphereGeometry","inst":0,"mat":"MeshLambertMaterial","color":"7a9099","tris":216,"sombra":false,"pos":[77,5,-13]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"ConeGeometry","inst":0,"mat":"MeshLambertMaterial","color":"465d67","tris":18,"sombra":false,"pos":[77,5,-13]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"SphereGeometry","inst":0,"mat":"MeshLambertMaterial","color":"ab0d0a","tris":216,"sombra":false,"pos":[61,16,-109]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"CylinderGeometry","inst":0,"mat":"MeshLambertMaterial","color":"40240a","tris":32,"sombra":false,"pos":[61,16,-109]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"CylinderGeometry","inst":0,"mat":"MeshLambertMaterial","color":"0b1d27","tris":28,"sombra":false,"pos":[186,5,128]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"CylinderGeometry","inst":0,"mat":"MeshLambertMaterial","color":"0b1d27","tris":28,"sombra":false,"pos":[174,7,143]}
+    {"cadena":"Mesh < Scene","tipo":"Mesh","geo":"CylinderGeometry","inst":0,"mat":"MeshLambertMaterial","color":"0b1d27","tris":28,"sombra":false,"pos":[157,9,100]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"BoxGeometry","inst":4,"mat":"MeshLambertMaterial","color":"401c08","tris":12,"sombra":true,"pos":[0,0,0]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"BoxGeometry","inst":4,"mat":"MeshLambertMaterial","color":"e2590b","tris":12,"sombra":false,"pos":[0,0,0]}
+    {"cadena":"Line < Group < Scene","tipo":"Line","geo":"BufferGeometry","inst":0,"mat":"LineBasicMaterial","color":"e2590b","tris":2,"sombra":false,"pos":[0,0,0]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"BoxGeometry","inst":0,"mat":"MeshLambertMaterial","color":"cdad63","tris":12,"sombra":true,"pos":[176,5,132]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"BoxGeometry","inst":0,"mat":"MeshLambertMaterial","color":"401c08","tris":12,"sombra":false,"pos":[176,5,132]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"BoxGeometry","inst":0,"mat":"MeshLambertMaterial","color":"e2590b","tris":12,"sombra":false,"pos":[176,6,132]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"BoxGeometry","inst":4,"mat":"MeshLambertMaterial","color":"401c08","tris":12,"sombra":true,"pos":[0,0,0]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"BoxGeometry","inst":4,"mat":"MeshLambertMaterial","color":"ab0d0a","tris":12,"sombra":false,"pos":[0,0,0]}
+    {"cadena":"Line < Group < Scene","tipo":"Line","geo":"BufferGeometry","inst":0,"mat":"LineBasicMaterial","color":"ab0d0a","tris":2,"sombra":false,"pos":[0,0,0]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"BoxGeometry","inst":0,"mat":"MeshLambertMaterial","color":"cdad63","tris":12,"sombra":true,"pos":[72,28,177]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"BoxGeometry","inst":0,"mat":"MeshLambertMaterial","color":"401c08","tris":12,"sombra":false,"pos":[72,27,177]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"BoxGeometry","inst":0,"mat":"MeshLambertMaterial","color":"ab0d0a","tris":12,"sombra":false,"pos":[72,28,177]}
+    {"cadena":"Mesh < Group < Scene","tipo":"Mesh","geo":"PlaneGeometry","inst":0,"mat":"MeshBasicMaterial","color":"0a0502","tris":2,"sombra":false,"pos":[136,6,177]}
+    {"cadena":"Mesh < Group < Group < Scene","tipo":"Mesh","geo":"BoxGeometry","inst":5,"mat":"MeshLambertMaterial","color":"632c0c","tris":12,"sombra":true,"pos":[133,5,178]}
+    {"cadena":"Mesh < Group < Group < Scene","tipo":"Mesh","geo":"BufferGeometry","inst":0,"mat":"KB3D_BarkNew","color":"ffffff","tris":30,"sombra":true,"pos":[137,6,181]}
+    {"cadena":"Mesh < Group < Group < Scene","tipo":"Mesh","geo":"BufferGeometry","inst":0,"mat":"KB3D_TarpFabricDamaged","color":"ffffff","tris":1146,"sombra":true,"pos":[137,6,181]}
+    {"cadena":"Mesh < Group < Group < Scene","tipo":"Mesh","geo":"BufferGeometry","inst":0,"mat":"KB3D_RoofThatched","color":"ffffff","tris":1994,"sombra":true,"pos":[133,5,178]}
+    {"cadena":"Mesh < Group < Group < Scene","tipo":"Mesh","geo":"BufferGeometry","inst":0,"mat":"KB3D_WoodPlanks","color":"ffffff","tris":748,"sombra":true,"pos":[133,5,178]}
+    {"cadena":"Mesh < Group < Group < Scene","tipo":"Mesh","geo":"BufferGeometry","inst":0,"mat":"KB3D_BarkNew","color":"ffffff","tris":540,"sombra":true,"pos":[133,5,178]}
+    {"cadena":"Mesh < Group < parpado_L < cabeza001","tipo":"Mesh","geo":"BufferGeometry","inst":0,"mat":"MeshStandardMaterial","color":"e6e6de","tris":896,"sombra":false,"pos":[-4,27,-85]}
+    {"cadena":"Mesh < Group < parpado_L < cabeza001","tipo":"Mesh","geo":"TubeGeometry","inst":0,"mat":"MeshStandardMaterial","color":"676763","tris":768,"sombra":false,"pos":[-4,27,-85]}
+    {"cadena":"Mesh < Group < parpado_R < cabeza001","tipo":"Mesh","geo":"BufferGeometry","inst":0,"mat":"MeshStandardMaterial","color":"e6e6de","tris":896,"sombra":false,"pos":[-4,27,-85]}
+    {"cadena":"Mesh < Group < parpado_R < cabeza001","tipo":"Mesh","geo":"TubeGeometry","inst":0,"mat":"MeshStandardMaterial","color":"676763","tris":768,"sombra":false,"pos":[-4,27,-85]}
