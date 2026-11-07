@@ -2195,12 +2195,25 @@ AVE.module('streaming', function (G) {
       const propios = modelosZ.filter(n => !otros(n));
       // Vista más cargada: borde sur de la zona con más instancias, mirando a su centro
       const ZM = zs.slice().sort((a, b) => b.inst.length - a.inst.length)[0];
-      await ir(ZM.cx, ZM.cz + Math.min(ZM.r, 40) + 6, 0, -1);
+      const bzM = ZM.cz + Math.min(ZM.r, 40) + 6;
+      await ir(ZM.cx, bzM, 0, -1);
       // draw calls de un cuadro entero (sombra, escena y post), contados aquí: R.stats() solo se actualiza en el bucle
       const contar = () => { const rr = R.renderer, orig = rr.render; let n = 0; rr.render = function (a, b) { orig.call(rr, a, b); n += rr.info.render.calls; }; try { G.camara.place(true); R.render(1 / 60, false); } finally { rr.render = orig; } return n; };
-      // la peor de cuatro orientaciones de la cámara
-      let st = null, hdMax = 0;
+      // la peor de cuatro orientaciones de la cámara. Cada toma se acepta solo con el mundo asentado en el punto
+      // medido: con otra batería QA concurrente en la página (runner de la nube con ?qa=1) sus teleports dejan
+      // la escena a mitad y la toma mide otra vista (rojo intermitente en la nube «174 calls, giro 3.1» con un
+      // desglose imposible en HEAD verde: 28/44/7 frente a 69/34/6; mismo mecanismo que QA-160). Si tras los
+      // reintentos no asienta, se mide igualmente pero el extra lo dice.
+      let st = null, hdMax = 0, aviso = '';
       for (const yaw of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) {
+        for (let intento = 0; intento < 4; intento++) {
+          if (Math.hypot(S.pos.x - ZM.cx, S.pos.z - bzM) > 3) await ir(ZM.cx, bzM, 0, -1);
+          await ST.terminar();
+          const se0 = ST.stats();
+          if (!se0.trabajos && !se0.descargando && Math.hypot(S.pos.x - ZM.cx, S.pos.z - bzM) <= 3) break;
+        }
+        const se0 = ST.stats();
+        if (se0.trabajos || se0.descargando || Math.hypot(S.pos.x - ZM.cx, S.pos.z - bzM) > 3) aviso = ' · toma sin asentar (QA concurrente)';
         G.camara.yaw = yaw; dibujar(2);
         const c = contar(), se = ST.stats();
         if (!st || c > st.calls) st = { calls: c, yaw, edif: se.drawEdificios, cerca: se.visiblesCerca, lejos: se.visiblesLejos, hd: se.visiblesHD, zonas: se.zonasFundidas };
@@ -2231,7 +2244,7 @@ AVE.module('streaming', function (G) {
       }
       }
       check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ' (giro ' + r2(st.yaw) + '): ' + st.calls + ' draw calls, edificios ' + st.edif +
-        ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal());
+        ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal() + aviso);
       const lejosM = [];
       scene.traverse(o => { if (o.name && o.name.indexOf(':lejos') >= 0) lejosM.push(o); });
       check('El lejano recibe la sombra del sol y no la proyecta', lejosM.length > 0 && lejosM.every(o => o.receiveShadow && !o.castShadow),
