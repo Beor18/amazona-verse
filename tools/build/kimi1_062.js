@@ -74,7 +74,7 @@ const SEMILLA_SAVE_JS = `try {
   localStorage.setItem('amazonaverse.save', JSON.stringify({
     v: 6, formato: 2, escrito: Date.now(), saveId: 'qa-kimi1-' + Math.random().toString(36).slice(2, 10),
     profile: { created: true, name: 'Estrella de la Bahía', look: null },
-    pos: { x: -8, z: -2.5, y: 0 }, facing: { x: 0, z: 1 }, step: 0,
+    pos: { x: 134, z: 182.5, y: 5.24 }, facing: { x: 0, z: -1 }, step: 0,
     inv: {}, collected: [], complete: false, explorando: false, clock: 0,
     events: [], captures: {}, missions: {}, field: [], unlocked: [], wear: {},
     comic: { title: 'Mi cómic', cover: 'vittata', layout: 'grid', order: [0, 1, 2, 3], captions: {}, vinetas: {} },
