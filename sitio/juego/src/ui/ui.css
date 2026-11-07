@@ -695,6 +695,20 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
      en #dialog), el aviso sube igual que con la caja de diálogo; abajo quedaba debajo del bocadillo y los dos ilegibles (ep2) */
   body:has(#bocadillos:not([hidden])) #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; }
   body:has(#end:not([hidden])) #toast { top: calc(env(safe-area-inset-top, 0px) + var(--sp-3)); bottom: auto; } /* QA-88: sobre el panel final tapaba «Ver mi cómic» */
+  /* W33 (cap. 6, iPhone 13 390×664): un aviso alto (tarjetas del Cuaderno, «Viste algo nuevo en la ciudad…») crecía hacia abajo
+     hasta tapar el palo y la columna de botones, o el bocadillo (se solapaban 100 px). Ahora el aviso tiene un tope de alto que
+     termina donde empiezan los controles (#acts arranca a ~198 px del borde inferior; el bocadillo, a 262 + ~84 px) y, donde
+     el hueco es corto (con diálogo, bocadillo o gestos), usa letra y relleno compactos y sin el icono para que quepa el texto
+     entero. Si aun así no cabe, se recorta por abajo en vez de tapar los botones. */
+  #toast { --tt: 118px; max-height: calc(100vh - 262px - env(safe-area-inset-bottom, 0px) - 130px); max-height: calc(100dvh - 262px - env(safe-area-inset-bottom, 0px) - 130px); overflow: hidden; }
+  body:has(#dialog:not([hidden])) #toast, body:has(#bocadillos:not([hidden])) #toast { --tt: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); }
+  body:has(#emotes:not([hidden])) #toast { --tt: calc(env(safe-area-inset-top, 0px) + 118px); }
+  body:has(#end:not([hidden])) #toast { --tt: calc(env(safe-area-inset-top, 0px) + var(--sp-3)); }
+  body:is(:has(#dialog:not([hidden])), :has(#emotes:not([hidden])), :has(#end:not([hidden]))) #toast { max-height: calc(100vh - var(--tt) - 210px - env(safe-area-inset-bottom, 0px)); max-height: calc(100dvh - var(--tt) - 210px - env(safe-area-inset-bottom, 0px)); }
+  body:has(#bocadillos:not([hidden])) #toast { max-height: calc(100vh - var(--tt) - 262px - 84px - env(safe-area-inset-bottom, 0px)); max-height: calc(100dvh - var(--tt) - 262px - 84px - env(safe-area-inset-bottom, 0px)); }
+  body:is(:has(#dialog:not([hidden])), :has(#bocadillos:not([hidden])), :has(#emotes:not([hidden]))) #toast { min-height: 0; padding: var(--sp-2) var(--sp-3); font-size: calc(12.5px * var(--fs-k, 1)); line-height: 1.28; }
+  body:is(:has(#dialog:not([hidden])), :has(#bocadillos:not([hidden])), :has(#emotes:not([hidden]))) #toast::before { display: none; }
+  body:is(:has(#dialog:not([hidden])), :has(#bocadillos:not([hidden])), :has(#emotes:not([hidden]))) #toast b { font-size: calc(13px * var(--fs-k, 1)); line-height: 1.2; }
   #dialog { bottom: calc(env(safe-area-inset-bottom, 0px) + var(--sp-3)); gap: 0 var(--sp-3); padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3); }
   .d-portrait { width: 76px; height: 76px; margin-top: -36px; border-width: 4px; }
   #dialog .who { font-size: var(--fs-md); margin-top: -30px; }

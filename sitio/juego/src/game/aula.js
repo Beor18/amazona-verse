@@ -57,6 +57,8 @@ AVE.module('aula', function (G) {
     guia: { es: 'Guía de clase', en: 'Lesson guide' }, progreso: { es: 'Progreso', en: 'Progress' },
     reporte: { es: 'Reporte', en: 'Report' }, fuentes: { es: 'Fuentes', en: 'Sources' },
     pista: { es: 'Pista', en: 'Hint' }, asi: { es: 'Así es', en: "Here's how" },
+    otraVez: { es: '¡Inténtalo otra vez!', en: 'Try again!' }, // Kelvin 7-nov: que el jugador entienda cuándo falla y cómo volver a intentarlo
+    respuesta3: { es: 'aquí tienes la respuesta correcta, marcada en verde. La próxima vez te saldrá.', en: "here's the correct answer, marked in green. You'll get it next time." },
     empAyuda: { es: 'Toca uno de cada lado para unirlos.', en: 'Tap one on each side to match them.' },
     empIzq: { es: 'Primero, elige uno', en: 'First, pick one' }, empDer: { es: 'Luego, su pareja', en: 'Then, its match' },
     empCon: { es: 'unido con', en: 'matched with' }, empElegido: { es: 'elegido', en: 'selected' },
@@ -419,9 +421,9 @@ AVE.module('aula', function (G) {
     const sinEtiqueta = x => String(x || '').replace(/^\s*(pista|hint)\s*:\s*/i, '');
     const fallo = () => {
       G.audio.play('wrong');
-      if (s.intento >= 2) { s.intento = 3; s.hecho = true; pintar(`<b>${esc(u('asi'))}:</b> ${esc(t(q.retro.correcta))}`, 'asi'); auto(t(q.retro.correcta)); return; }
+      if (s.intento >= 2) { s.intento = 3; s.hecho = true; pintar(`<b>${esc(u('asi'))}:</b> ${esc(u('respuesta3'))}`, 'asi'); auto(u('asi') + ': ' + u('respuesta3')); return; }
       const pista = sinEtiqueta(t(q.retro.incorrecta));
-      s.intento = 2; pintar(`<b>${esc(u('pista'))}:</b> ${esc(pista)}`, 'pista'); auto(u('pista') + ': ' + pista);
+      s.intento = 2; pintar(`<b>${esc(u('pista'))}:</b> ${esc(pista)} <b>${esc(u('otraVez'))}</b>`, 'pista'); auto(u('pista') + ': ' + pista + ' ' + u('otraVez'));
     };
     function elegir(i, k) {
       if (s.hecho) return;
