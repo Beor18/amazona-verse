@@ -613,7 +613,7 @@
         const ayud = p => `<li><button class="btn ep6-ayud${sel === p.id ? ' ep6-sel' : ''}" type="button" data-ayud="${p.id}" aria-pressed="${sel === p.id}">${esc(p.nombre)}</button></li>`;
         G.ui.showCard(`<h2>${esc('El tablero del plan')}</h2><p>${esc(sel ? 'Ahora toca la tarea que hará ' + nombre(sel) + '.' : 'Toca un ayudante y luego una tarea.')}</p>` +
           `<div class="ep6-tablero"><div><h3>${esc('Tareas')}</h3><ul class="ep6-lista">${TAREAS.map(fila).join('')}</ul></div><div><h3>${esc('Ayudantes')}</h3><ul class="ep6-lista">${PERSONAS.map(ayud).join('')}</ul></div></div>` +
-          `<div class="row"><button class="btn" id="ch-0" type="button">${esc('Probar el plan')}</button><button class="btn" id="ch-1" type="button">${esc('Quitar a alguien de una tarea')}</button><button class="btn" id="ch-2" type="button">${esc('Cerrar')}</button></div>`);
+          `<div class="row ep6-acciones"><button class="btn" id="ch-0" type="button">${esc('Probar el plan')}</button><button class="btn" id="ch-1" type="button">${esc('Quitar a alguien de una tarea')}</button><button class="btn" id="ch-2" type="button">${esc('Cerrar')}</button></div>`);
         for (const b of document.querySelectorAll('#card [data-ayud]')) b.onclick = () => { sel = sel === b.dataset.ayud ? null : b.dataset.ayud; tablero(); };
         for (const b of document.querySelectorAll('#card [data-tarea]')) b.onclick = () => { if (sel) { P.asig[b.dataset.tarea] = sel; sel = null; G.audio.play('tick'); } else if (quitar) { P.asig[b.dataset.tarea] = null; quitar = false; G.audio.play('tick'); } tablero(); };
         $('ch-0').onclick = () => probar();
@@ -818,7 +818,9 @@
       css.textContent = '.ep6-lista{list-style:none;margin:0 0 .5em;padding:0}.ep6-lista li{margin:.2em 0}.ep6-tablero{display:grid;grid-template-columns:1fr 1fr;gap:.6em;text-align:left}.ep6-tablero h3{font-size:1em;margin:.2em 0}' +
         '.ep6-tarea,.ep6-ayud{min-height:56px;width:100%;display:flex;justify-content:space-between;align-items:center;gap:.5em}.ep6-sel{outline:3px solid var(--gold,#ffd27a)}.ep6-dest{outline:2px dashed var(--gold,#ffd27a)}' +
         '.ep6-sim{text-align:left;padding-left:1.2em}.ep6-sim li{margin:.25em 0}.ep6-sim li.luego{opacity:.45}.ep6-sim li.now{font-weight:700}.ep6-sim li.mal{color:var(--crest,#d6403a)}.ep6-sim small{display:block;font-weight:400}.ep6-fin{font-weight:700}' +
-        '@media (max-width:520px){.ep6-tablero{grid-template-columns:1fr}}';
+        '@media (max-width:520px){.ep6-tablero{grid-template-columns:1fr}' +
+        // 7-nov: en el teléfono el tablero (5 tareas y 6 ayudantes en una columna) pasa de la pantalla; «Probar el plan» y «Cerrar» quedan fijos abajo
+        '.ep6-acciones{position:sticky;bottom:calc(-1 * var(--sp-6,24px));margin:0 calc(-1 * var(--sp-6,24px)) calc(-1 * var(--sp-6,24px));padding:.6em var(--sp-6,24px) var(--sp-6,24px);background:var(--c-paper,#f6ead0);box-shadow:0 -6px 10px rgba(0,0,0,.12);z-index:1}}';
       document.head.appendChild(css);
 
       const redibujar = () => { colocarNpcs(); dibujarAsientos(); };
