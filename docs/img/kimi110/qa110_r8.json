@@ -1,0 +1,3907 @@
+{
+ "etiqueta": "r8",
+ "pantalla": "390x844@3 cpuX4",
+ "calidades": {
+  "bajo": {
+   "villa": {
+    "pos": [
+     -8,
+     17.22,
+     -2.5
+    ],
+    "med": {
+     "look": "vibrant_toon",
+     "fps": 24,
+     "calls": 54,
+     "triangulos": 226045,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "post": false,
+     "programas": 44,
+     "heapMB": 126,
+     "geometrias": 96,
+     "texturasGPU": 122,
+     "texturas": 121,
+     "texturasGrandes": 4,
+     "atlasGrandes": 1,
+     "texturasMB": 117.6,
+     "sombraMB": 0,
+     "postMB": 0,
+     "texturasPor": {
+      "generadas": 45.9,
+      "otros": 7,
+      "personajes": 12,
+      "flora": 47.4,
+      "atlas_hd": 5.3
+     },
+     "texturasTop": [
+      [
+       "Vittata_1",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "Vittata_2",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "flora:impostores",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "edificiosInst:muro_templo:lejos:AV_HD_Ancient",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ]
+     ]
+    },
+    "medErr": null,
+    "genadas": [
+     {
+      "mesh": "Vittata_1",
+      "mat": "Material.001",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": ""
+     },
+     {
+      "mesh": "Vittata_2",
+      "mat": "cuerpo",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": ""
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:lejos:AV_HD_An",
+      "mat": "AV_HD_Ancient",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": "avAtlas+avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_RoofThatched",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_WoodPlanks",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_BarkNew",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_TarpFabricDamaged",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "Vittata_1",
+      "mat": "Material.001",
+      "tex": "piel_vittata",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tabonuco:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:heliconia:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bromelia:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_a:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_b:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:piedras_rio:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:hojarasca:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_suelo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tronco_caido:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:pasto",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Piedra",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Piedra",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Tallado",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Tallado",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Base",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Base",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:plataforma_piedra:cerca:KB",
+      "mat": "KB3D_floorM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:templo_grande:cerca:AV_Res",
+      "mat": "AV_Restaurado_Bloques",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:templo_grande:cerca:AV_Res",
+      "mat": "AV_Restaurado_Bloques",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_s",
+      "mat": "KB3D_stoneM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_p",
+      "mat": "KB3D_pillarsM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_w",
+      "mat": "KB3D_wallL",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:canoa:cerca:canoa",
+      "mat": "canoa",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:monumento_c:cerca:KB3D_Roc",
+      "mat": "KB3D_RockSharp",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:monumento_c:cerca:KB3D_Mud",
+      "mat": "KB3D_MudRocky",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:portal_madera_a:cerca:KB3D",
+      "mat": "KB3D_WoodHewn",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:complejo_ruinas:cerca:KB3D",
+      "mat": "KB3D_beams",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:complejo_ruinas:cerca:KB3D",
+      "mat": "KB3D_mudM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "flora:tabonuco:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x256",
+      "mb": 0.7,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x512",
+      "mb": 0.7,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "letrero_compa",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x112",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tabonuco:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_a:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_b:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:piedras_rio:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tronco_caido:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "esfera",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "gag_zetas",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "64x64",
+      "mb": 0,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:manchas",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "64x64",
+      "mb": 0,
+      "ud": ""
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:lejos:AV_HD_An",
+      "mat": "AV_HD_Ancient",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "2x2",
+      "mb": 0,
+      "ud": "avAtlas+avSubida"
+     }
+    ],
+    "genadasMB": 91.2
+   },
+   "ciudad": {
+    "pos": [
+     -33,
+     126.87,
+     -136
+    ],
+    "med": {
+     "look": "vibrant_toon",
+     "fps": 25,
+     "calls": 107,
+     "triangulos": 257591,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "post": false,
+     "programas": 47,
+     "heapMB": 133,
+     "geometrias": 165,
+     "texturasGPU": 120,
+     "texturas": 119,
+     "texturasGrandes": 4,
+     "atlasGrandes": 1,
+     "texturasMB": 116.2,
+     "sombraMB": 0,
+     "postMB": 0,
+     "texturasPor": {
+      "generadas": 44.5,
+      "otros": 7,
+      "personajes": 12,
+      "flora": 47.4,
+      "atlas_hd": 5.3
+     },
+     "texturasTop": [
+      [
+       "Vittata_1",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "Vittata_2",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "flora:impostores",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "edificiosInst:muro_templo:lejos:AV_HD_Ancient",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ],
+      [
+       "fondoMarino",
+       "512×512",
+       1.3
+      ]
+     ]
+    },
+    "medErr": null,
+    "genadas": [
+     {
+      "mesh": "Vittata_1",
+      "mat": "Material.001",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": ""
+     },
+     {
+      "mesh": "Vittata_2",
+      "mat": "cuerpo",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": ""
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:lejos:AV_HD_An",
+      "mat": "AV_HD_Ancient",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": "avAtlas+avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_RoofThatched",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_WoodPlanks",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_BarkNew",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_TarpFabricDamaged",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "Vittata_1",
+      "mat": "Material.001",
+      "tex": "piel_vittata",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tabonuco:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:heliconia:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bromelia:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_a:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_b:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:piedras_rio:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:hojarasca:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_suelo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tronco_caido:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:pasto",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Piedra",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Piedra",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Tallado",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Tallado",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Base",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Base",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:plataforma_piedra:cerca:KB",
+      "mat": "KB3D_floorM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:templo_grande:cerca:AV_Res",
+      "mat": "AV_Restaurado_Bloques",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:templo_grande:cerca:AV_Res",
+      "mat": "AV_Restaurado_Bloques",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_s",
+      "mat": "KB3D_stoneM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_p",
+      "mat": "KB3D_pillarsM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_w",
+      "mat": "KB3D_wallL",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:canoa:cerca:canoa",
+      "mat": "canoa",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:mirador_escalonado:cerca:K",
+      "mat": "KB3D_RockSharp",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:cercado_redondo:cerca:KB3D",
+      "mat": "KB3D_WoodHewn",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:complejo_ruinas:cerca:KB3D",
+      "mat": "KB3D_beams",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:complejo_ruinas:cerca:KB3D",
+      "mat": "KB3D_mudM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "flora:tabonuco:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x256",
+      "mb": 0.7,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x512",
+      "mb": 0.7,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "letrero_compa",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x112",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tabonuco:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_a:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_b:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:piedras_rio:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tronco_caido:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "esfera",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "gag_zetas",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "64x64",
+      "mb": 0,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:manchas",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "64x64",
+      "mb": 0,
+      "ud": ""
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:lejos:AV_HD_An",
+      "mat": "AV_HD_Ancient",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "2x2",
+      "mb": 0,
+      "ud": "avAtlas+avSubida"
+     }
+    ],
+    "genadasMB": 89.9
+   },
+   "errores": 0
+  },
+  "medio": {
+   "villa": {
+    "pos": [
+     -8,
+     17.22,
+     -2.5
+    ],
+    "med": {
+     "look": "vibrant_toon",
+     "fps": 16,
+     "calls": 103,
+     "triangulos": 370495,
+     "calidad": "medio",
+     "dpr": 1,
+     "post": true,
+     "programas": 49,
+     "heapMB": 103,
+     "geometrias": 125,
+     "texturasGPU": 140,
+     "texturas": 119,
+     "texturasGrandes": 5,
+     "atlasGrandes": 2,
+     "texturasMB": 120.2,
+     "sombraMB": 4,
+     "postMB": 6.3,
+     "texturasPor": {
+      "generadas": 32.5,
+      "suelo": 10.7,
+      "otros": 7,
+      "personajes": 12,
+      "flora": 47.4,
+      "atlas_hd": 10.7
+     },
+     "texturasTop": [
+      [
+       "Vittata_1",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "Vittata_2",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "flora:impostores",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "edificiosInst:muro_templo:lejos:AV_HD_Ancient",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "edificiosInst:muro_templo:lejos:AV_HD_Ancient",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "suelo_musgo.jpg",
+       "512×512",
+       1.3
+      ],
+      [
+       "suelo_tierra_hojarasca.jpg",
+       "512×512",
+       1.3
+      ],
+      [
+       "suelo_roca.jpg",
+       "512×512",
+       1.3
+      ],
+      [
+       "suelo_arena_rio.jpg",
+       "512×512",
+       1.3
+      ],
+      [
+       "suelo_musgo_n.jpg",
+       "512×512",
+       1.3
+      ]
+     ]
+    },
+    "medErr": null,
+    "genadas": [
+     {
+      "mesh": "Vittata_1",
+      "mat": "Material.001",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": ""
+     },
+     {
+      "mesh": "Vittata_2",
+      "mat": "cuerpo",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": ""
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:lejos:AV_HD_An",
+      "mat": "AV_HD_Ancient",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": "avAtlas+avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:lejos:AV_HD_An",
+      "mat": "AV_HD_Ancient",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": "avAtlas+avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_BarkNew",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_TarpFabricDamaged",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_RoofThatched",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_WoodPlanks",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "Vittata_1",
+      "mat": "Material.001",
+      "tex": "piel_vittata",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tabonuco:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:heliconia:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bromelia:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_a:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_b:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:piedras_rio:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:hojarasca:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_suelo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tronco_caido:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:pasto",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "edificiosInst:plataforma_piedra:cerca:KB",
+      "mat": "KB3D_floorM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Piedra",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Piedra",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Tallado",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Tallado",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Base",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Base",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:templo_grande:cerca:AV_Res",
+      "mat": "AV_Restaurado_Bloques",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:templo_grande:cerca:AV_Res",
+      "mat": "AV_Restaurado_Bloques",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_s",
+      "mat": "KB3D_stoneM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_p",
+      "mat": "KB3D_pillarsM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_w",
+      "mat": "KB3D_wallL",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:cercado_redondo:cerca:KB3D",
+      "mat": "KB3D_WoodHewn",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:canoa:cerca:canoa",
+      "mat": "canoa",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:monumento_c:cerca:KB3D_Roc",
+      "mat": "KB3D_RockSharp",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:monumento_c:cerca:KB3D_Mud",
+      "mat": "KB3D_MudRocky",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "flora:tabonuco:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x256",
+      "mb": 0.7,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x512",
+      "mb": 0.7,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "letrero_compa",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x112",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tabonuco:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_a:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_b:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:piedras_rio:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tronco_caido:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "esfera",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "gag_zetas",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "64x64",
+      "mb": 0,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:manchas",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "64x64",
+      "mb": 0,
+      "ud": ""
+     }
+    ],
+    "genadasMB": 93.9
+   },
+   "ciudad": {
+    "pos": [
+     -33,
+     126.87,
+     -136
+    ],
+    "med": {
+     "look": "vibrant_toon",
+     "fps": 15,
+     "calls": 156,
+     "triangulos": 378933,
+     "calidad": "medio",
+     "dpr": 1,
+     "post": true,
+     "programas": 51,
+     "heapMB": 145,
+     "geometrias": 201,
+     "texturasGPU": 142,
+     "texturas": 121,
+     "texturasGrandes": 5,
+     "atlasGrandes": 2,
+     "texturasMB": 122.9,
+     "sombraMB": 4,
+     "postMB": 6.3,
+     "texturasPor": {
+      "generadas": 35.2,
+      "suelo": 10.7,
+      "otros": 7,
+      "personajes": 12,
+      "flora": 47.4,
+      "atlas_hd": 10.7
+     },
+     "texturasTop": [
+      [
+       "Vittata_1",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "Vittata_2",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "flora:impostores",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "edificiosInst:muro_templo:lejos:AV_HD_Ancient",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "edificiosInst:muro_templo:lejos:AV_HD_Ancient",
+       "1024×1024",
+       5.3
+      ],
+      [
+       "suelo_musgo.jpg",
+       "512×512",
+       1.3
+      ],
+      [
+       "suelo_tierra_hojarasca.jpg",
+       "512×512",
+       1.3
+      ],
+      [
+       "suelo_roca.jpg",
+       "512×512",
+       1.3
+      ],
+      [
+       "suelo_arena_rio.jpg",
+       "512×512",
+       1.3
+      ],
+      [
+       "suelo_musgo_n.jpg",
+       "512×512",
+       1.3
+      ]
+     ]
+    },
+    "medErr": null,
+    "genadas": [
+     {
+      "mesh": "Vittata_1",
+      "mat": "Material.001",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": ""
+     },
+     {
+      "mesh": "Vittata_2",
+      "mat": "cuerpo",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": ""
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:lejos:AV_HD_An",
+      "mat": "AV_HD_Ancient",
+      "tex": "",
+      "slot": "map",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": "avAtlas+avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:lejos:AV_HD_An",
+      "mat": "AV_HD_Ancient",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "1024x1024",
+      "mb": 5.3,
+      "ud": "avAtlas+avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_BarkNew",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_TarpFabricDamaged",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_RoofThatched",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "?",
+      "mat": "KB3D_WoodPlanks",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "Vittata_1",
+      "mat": "Material.001",
+      "tex": "piel_vittata",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tabonuco:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:heliconia:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bromelia:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_a:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_b:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:piedras_rio:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:hojarasca:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_suelo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tronco_caido:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:pasto",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": ""
+     },
+     {
+      "mesh": "edificiosInst:plataforma_piedra:cerca:KB",
+      "mat": "KB3D_floorM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Piedra",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Piedra",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Tallado",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Tallado",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Base",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:muro_templo:cerca:AV_Resta",
+      "mat": "AV_Restaurado_Base",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:templo_grande:cerca:AV_Res",
+      "mat": "AV_Restaurado_Bloques",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:templo_grande:cerca:AV_Res",
+      "mat": "AV_Restaurado_Bloques",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_s",
+      "mat": "KB3D_stoneM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_p",
+      "mat": "KB3D_pillarsM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:ruina_mirador:cerca:KB3D_w",
+      "mat": "KB3D_wallL",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:cercado_redondo:cerca:KB3D",
+      "mat": "KB3D_WoodHewn",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:canoa:cerca:canoa",
+      "mat": "canoa",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:monumento_c:cerca:KB3D_Roc",
+      "mat": "KB3D_RockSharp",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:monumento_c:cerca:KB3D_Mud",
+      "mat": "KB3D_MudRocky",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:complejo_ruinas:cerca:KB3D",
+      "mat": "KB3D_beams",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "edificiosInst:complejo_ruinas:cerca:KB3D",
+      "mat": "KB3D_mudM",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x512",
+      "mb": 1.3,
+      "ud": "avSubida"
+     },
+     {
+      "mesh": "flora:tabonuco:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x256",
+      "mb": 0.7,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:hoja",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x512",
+      "mb": 0.7,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "letrero_compa",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x112",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "512x128",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:ceiba:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:flamboyan:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tabonuco:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:helecho_arboreo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:bambu:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_a:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:roca_musgo_b:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:piedras_rio:roca",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:palma_sierra_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:yagrumo_joven:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:arbol_enano:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:tronco_caido:corteza",
+      "mat": "?",
+      "tex": "",
+      "slot": "normalMap",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "precarga-rafaga",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "256x256",
+      "mb": 0.3,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "esfera",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "gag_zetas",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "128x128",
+      "mb": 0.1,
+      "ud": ""
+     },
+     {
+      "mesh": "?",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "64x64",
+      "mb": 0,
+      "ud": ""
+     },
+     {
+      "mesh": "flora:manchas",
+      "mat": "?",
+      "tex": "",
+      "slot": "map",
+      "wh": "64x64",
+      "mb": 0,
+      "ud": ""
+     }
+    ],
+    "genadasMB": 96.5
+   },
+   "errores": 0
+  }
+ }
+}

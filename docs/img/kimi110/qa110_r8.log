@@ -1,0 +1,11 @@
+· calidad=bajo:
+  villa: texturas=117.6 MB gen=91.2 MB calls=54 tris=226045 heap=126 MB
+  ciudad: texturas=116.2 MB gen=89.9 MB flora=47.4 MB atlas_hd=5.3 MB calls=107 tris=257591 heap=133 MB geo=165
+  generadas top: Vittata_1/Material.001/map 1024x1024 5.3MB | Vittata_2/cuerpo/map 1024x1024 5.3MB | edificiosInst:muro_templo:lejos:AV_HD_An/AV_HD_Ancient/map 1024x1024 5.3MB | ?/KB3D_RoofThatched/map 512x512 1.3MB | ?/KB3D_WoodPlanks/map 512x512 1.3MB | ?/KB3D_BarkNew/map 512x512 1.3MB
+  errores de consola: 0
+· calidad=medio:
+  villa: texturas=120.2 MB gen=93.9 MB calls=103 tris=370495 heap=103 MB
+  ciudad: texturas=122.9 MB gen=96.5 MB flora=47.4 MB atlas_hd=10.7 MB calls=156 tris=378933 heap=145 MB geo=201
+  generadas top: Vittata_1/Material.001/map 1024x1024 5.3MB | Vittata_2/cuerpo/map 1024x1024 5.3MB | edificiosInst:muro_templo:lejos:AV_HD_An/AV_HD_Ancient/map 1024x1024 5.3MB | edificiosInst:muro_templo:lejos:AV_HD_An/AV_HD_Ancient/normalMap 1024x1024 5.3MB | ?/KB3D_BarkNew/map 512x512 1.3MB | ?/KB3D_TarpFabricDamaged/map 512x512 1.3MB
+  errores de consola: 0
+· JSON: C:\Users\kelvi\amazonaversegame\docs\img\kimi110\qa110_r8.json
