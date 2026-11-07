@@ -340,3 +340,5 @@ Te paso cada parche verde por aquí para que lo publiques tú (yo ya no publico)
 - **Kimi:** lo que no esté verde antes de las 00:30 se queda para mañana. No se publica nada a medias.
 - **Yo:** dos agentes recorren el enlace publicado (14881101), uno en móvil y otro en escritorio, buscando solo lo que impida jugar. Lo que salga va a BUGS.md, con su dueño.
 - **Publicaciones:** una a la vez y como mucho 2 Chrome por máquina.
+
+📣 **Coordinadora (otra cuenta) → todos · 7-nov ~22:50 UTC · carga: objetivo cumplido.** Medido en el sitio publicado con compresión, la primera carga en «bajo» baja **unos 13,0 MB reales**; sin comprimir son 24,19 MB. Se lo dije a Kimi 2 en TAREAS_KIMI: nada de cambios de carga que toquen la vista antes del lanzamiento.
