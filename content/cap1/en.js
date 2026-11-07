@@ -1985,7 +1985,7 @@ window.AV_EN = {
  "Minigolf de Villa Raíz": "Villa Raíz Mini Golf",
  "Acción: Jugar al minigolf": "Action: Play mini golf",
  "Minigolf de Villa Raíz: lleva la semilla gigante hasta el nido. Pulsa Acción junto a ella.": "Villa Raíz mini golf: get the giant seed into the nest. Press Action next to it.",
- "¡Hoyo 1, par 3! Lleva la semilla gigante al nido con los menos golpes.": "Hole 1, par 3! Get the giant seed into the nest in as few strokes as you can.",
+ "¡Hoyo 1, par 3! Lleva la semilla gigante al nido en los menos golpes que puedas.": "Hole 1, par 3! Get the giant seed into the nest in as few strokes as you can.",
  "← → o arrastra: apuntar · Mantén Espacio: fuerza · G: Grito · R: reiniciar · Esc: salir": "← → or drag: aim · Hold Space: power · G: Shout · R: restart · Esc: leave",
  "Arrastra o usa ◀ ▶ para apuntar · Mantén Golpear y suelta": "Drag or use ◀ ▶ to aim · Hold Hit and let go",
  "¡La semilla se salió! Vuelve a su sitio (+1 golpe).": "The seed went out! Back to its spot (+1 stroke).",

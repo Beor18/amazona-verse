@@ -42,7 +42,7 @@ window.AVV18Minigolf = function (G) {
     REPOSO = 0.12, CAIDA = 3.2, EMBUDO = 3.5, T_MAX = 25, PERIODO = 1.3, GIRO = 1.1;
   const TXT = {
     label: 'Jugar al minigolf', nombre: 'Minigolf de Villa Raíz', invita: 'Minigolf de Villa Raíz: lleva la semilla gigante hasta el nido. Pulsa Acción junto a ella.',
-    empieza: '¡Hoyo 1, par 3! Lleva la semilla gigante al nido con los menos golpes.',
+    empieza: '¡Hoyo 1, par 3! Lleva la semilla gigante al nido en los menos golpes que puedas.',
     empiezaPar: '¡Hoyo 1, par 3! Par 3 quiere decir que lo ideal es meterla en el nido en 3 golpes.',
     guia: '← → o arrastra: apuntar · Mantén Espacio: fuerza · G: Grito · R: reiniciar · Esc: salir',
     guiaT: 'Arrastra o usa ◀ ▶ para apuntar · Mantén Golpear y suelta',
