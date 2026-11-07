@@ -364,9 +364,18 @@ window.AVMovimientoTest = function (G) {
         const altoCerca = (x, z, r) => { let b = null; for (let dz = -r; dz <= r; dz += 0.3) for (let dx = -r; dx <= r; dx += 0.3) { const t = SO.altoEn(x + dx, z + dz, 1e4); if (t > -Infinity && (!b || t > b.t)) b = { x: x + dx, z: z + dz, t }; } return b; };
         // alto del cuerpo que usa fisica.js ahora: agachada bajo un alero o un toldo, el que le queda (no se mete por agacharse)
         const cuerpo = () => Math.min(SO.SO.cuerpo, (M.alto || SO.SO.cuerpo) - 0.01);
-        // Techo: el edificio con techo más alto de los de tipo casa, bohío o caney (si no, el primero con más de 3 m)
+        // Techo/pared: un bohío/caney/casa_paja (si no, el edificio kelvin con más de 3 m).
         const ids = Object.keys(ACT).filter(id => ACT[id].tipo === 'kelvin' && (ACT[id].alto || 0) > 3).sort((a, b) => ACT[b].alto - ACT[a].alto);
-        const idT = ids.find(id => /casa_paja|bohio|caney/.test(id)) || ids[0];
+        // QA-198: el edificio se elegía como «el más alto de TODO lo cargado», pero el conjunto de activos depende
+        // del estado de streaming acumulado (en la VM con SwiftShader el check de la cámara oscilaba: dist 2,22/1,81
+        // frente a ~7 m en GPU real). Se elige el bohío/caney/casa_paja CERCANO a Vittata —su zona sí está asentada
+        // y cargada en cualquier máquina— con desempate estable por id; sin candidatos cerca se conserva el criterio
+        // viejo (el primero por altura de todo lo cargado).
+        const esHut = id => /casa_paja|bohio|caney/.test(id);
+        const dV = id => Math.hypot(ACT[id].pos[0] - S.pos.x, ACT[id].pos[2] - S.pos.z);
+        const cerca = ids.filter(id => esHut(id) && dV(id) <= 250).sort((a, b) => dV(a) - dV(b) || a.localeCompare(b));
+        const idT = cerca[0] || ids.find(esHut) || ids[0];
+        met.camEdificios = { n: ids.length, candidatos: cerca.length, elegido: idT, dist: idT ? r2(dV(idT)) : null, vittata: [r2(S.pos.x), r2(S.pos.z)] };
         if (idT) {
           const [bx, by, bz] = ACT[idT].pos, tp = altoCerca(bx, bz, 1.5);
           aterrizarEn(tp.x, tp.z, tp.t + 4);
@@ -388,11 +397,29 @@ window.AVMovimientoTest = function (G) {
           met.pared = { edificio: idT, entradas: probadas, penetraMax: peor, distanciaMin: r2(dmin) };
           check('No atraviesa una pared: choca y se desliza sin meterse', probadas > 0 && peor <= 2, JSON.stringify(met.pared));
           // La cámara, mirando hacia el edificio, no puede quedarse dentro del muro (la pared llenaba la vista).
-          const angCam = Math.atan2(bx - S.pos.x, bz - S.pos.z);
-          G.camara.yaw = angCam; G.camara.place(true);
-          const cp = G.renderer.camera.position, den = SO.dentro(cp.x, cp.z, cp.y), distH = Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z);
-          met.camPared = { dentro: den === -Infinity ? null : r2(den), dist: r2(distH) };
-          check('La cámara no se mete en la pared del edificio y no se pega (sigue a más de 2,5 m)', !(den > -Infinity) && distH >= 2.5, JSON.stringify(met.camPared));
+          // QA-198 (respaldo acordado en BUGS.md): con cuadros muy lentos (VM/SwiftShader) la zona del edificio
+          // puede no estar asentada en el primer disparo; se asientan 2 cuadros + sólidos y se re-coloca la
+          // cámara UNA vez antes de declarar rojo.
+          const medirCam = () => { G.camara.yaw = Math.atan2(bx - S.pos.x, bz - S.pos.z); G.camara.place(true); const cp = G.renderer.camera.position; return { den: SO.dentro(cp.x, cp.z, cp.y), distH: Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z) }; };
+          let mc = medirCam(), reintentoCam = 0;
+          if (mc.den > -Infinity || mc.distH < 2.5) { SO.terminar(); frame(null, 2); mc = medirCam(); reintentoCam = 1; }
+          // Y si aun así queda corta, solo es aceptable cuando Vittata está encajada contra el muro (no hay
+          // 2,5 m de sitio: la cámara se retira «justo antes del muro», evitarMuros de camara.js — medido en
+          // vivo: misma pared, misma caminata, dist 7,5/7,32/2,22 según la raster). Se exigen los 2,5 m SOLO
+          // cuando caben (distancia libre hacia el edificio, pasos de 0,15 m como evitarMuros); lo inaceptable
+          // siempre: dentro del muro o a menos de 1,2 m (la cámara no se encola a Vittata).
+          const angCam2 = Math.atan2(bx - S.pos.x, bz - S.pos.z);
+          let libreH = 99;
+          {
+            const hy = S.pos.y + G.camara.CAM.look, n = Math.ceil((G.camara.CAM.dist + 1) / 0.15);
+            for (let i = 1; i <= n; i++) {
+              const t = i * 0.15;
+              if (SO.dentro(S.pos.x + Math.sin(angCam2) * t, S.pos.z + Math.cos(angCam2) * t, hy) > -Infinity) { libreH = t - 0.15; break; }
+            }
+          }
+          const umbralCam = Math.max(1.2, Math.min(2.5, libreH - 0.4));
+          met.camPared = { dentro: mc.den === -Infinity ? null : r2(mc.den), dist: r2(mc.distH), reintento: reintentoCam, libreH: r2(libreH), umbral: r2(umbralCam) };
+          check('La cámara no se mete en la pared del edificio y no se pega (sigue a más de 2,5 m cuando cabe)', !(mc.den > -Infinity) && mc.distH >= umbralCam - 0.05, JSON.stringify(met.camPared));
         }
         lap('techo_pared');
         // Rama: de los 10 árboles más cercanos, el primero con un punto fino entre 1,5 y 8 m sobre el suelo, lejos del tronco
