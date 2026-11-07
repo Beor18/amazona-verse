@@ -1,0 +1,355 @@
+{
+ "etiqueta": "k130-c14",
+ "bandera": "v18=1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "pruebas": {
+  "explorar": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 36.5,
+     "peorMs": 52,
+     "n": 108,
+     "callsMed": 54,
+     "trisMed": 229214,
+     "heap": 103
+    },
+    "duracionMs": 125,
+    "test": {
+     "passed": 21,
+     "total": 21,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 54,
+     "tris": 229229,
+     "geo": 78,
+     "tex": 121,
+     "prog": 43,
+     "heap": 104,
+     "tactil": false
+    }
+   }
+  },
+  "descubrir": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 73,
+     "peorMs": 27,
+     "n": 201,
+     "callsMed": 55,
+     "trisMed": 229218,
+     "heap": 129
+    },
+    "duracionMs": 358,
+    "test": {
+     "passed": 26,
+     "total": 26,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 54,
+     "tris": 229165,
+     "geo": 76,
+     "tex": 122,
+     "prog": 43,
+     "heap": 116,
+     "tactil": false
+    }
+   }
+  },
+  "ciclo": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 63.7,
+     "peorMs": 34,
+     "n": 182,
+     "callsMed": 49,
+     "trisMed": 167113,
+     "heap": 94
+    },
+    "duracionMs": 2645,
+    "test": {
+     "passed": 23,
+     "total": 23,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 52,
+     "tris": 146220,
+     "geo": 120,
+     "tex": 130,
+     "prog": 56,
+     "heap": 113,
+     "tactil": false
+    }
+   }
+  },
+  "minigolf": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 65.8,
+     "peorMs": 26,
+     "n": 187,
+     "callsMed": 49,
+     "trisMed": 167113,
+     "heap": 210
+    },
+    "duracionMs": 4247,
+    "test": {
+     "passed": 50,
+     "total": 50,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 49,
+     "tris": 167127,
+     "geo": 73,
+     "tex": 122,
+     "prog": 44,
+     "heap": 201,
+     "tactil": false
+    }
+   }
+  },
+  "moon": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 76.3,
+     "peorMs": 25,
+     "n": 217,
+     "callsMed": 49,
+     "trisMed": 167115,
+     "heap": 92
+    },
+    "duracionMs": 5325,
+    "test": {
+     "passed": 18,
+     "total": 19,
+     "fallos": [
+      "5 · Sitio abierto: círculo de 11 m en seco, sin troncos, colisiones ni sólidos; lejos de puerto, golf, duelo, Chispa y el misterio (> 100 m) :: libre -1.49 m · pendiente 0.07 · mojado 0 · sólidos 1 · puerto 241 villa 339 golf — duelo — chispa — misterio —"
+     ]
+    },
+    "contexto": {
+     "calls": 104,
+     "tris": 196545,
+     "geo": 183,
+     "tex": 123,
+     "prog": 53,
+     "heap": 103,
+     "tactil": false
+    }
+   }
+  },
+  "guardian": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 64.5,
+     "peorMs": 30,
+     "n": 185,
+     "callsMed": 49,
+     "trisMed": 167113,
+     "heap": 190
+    },
+    "duracionMs": 12452,
+    "test": {
+     "passed": 18,
+     "total": 19,
+     "fallos": [
+      "5 · Sitio abierto: salida en seco (centro con ≥ 0,7 m de colisiones y troncos (solo aloja al NPC), pendiente ≤ 1,3 (ladera interior: circuito 100 % aéreo)); 6 tramos con pasillo ≥ 2,2 m sobre el terreno, puertas sin sólidos y ≥ 1,5 m de troncos; actividades V18 a ≥ 80 m sin solapamiento :: largo 107 m · libre 12.90 m · pendiente 1.02 · mojado 0 · sólidos 1/1 · pasillo 2.5 m · puertas-troncos 1.9 m · peorPuerta {\"puerta\":4,\"id\":\"carpa_d@kelvin_aldea_meandros_2#0\",\"d\":1.91} · peorCol {\"id\":\"puente_madera@kelvin_aldea_meandros_2#0\",\"x\":-76,\"z\":-47,\"d\":12.9} · peorTronco {\"m\":\"tabonuco\",\""
+     ]
+    },
+    "contexto": {
+     "calls": 49,
+     "tris": 220339,
+     "geo": 226,
+     "tex": 124,
+     "prog": 59,
+     "heap": 241,
+     "tactil": false
+    }
+   }
+  },
+  "chispa": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "datos": {
+    "v18": true,
+    "calidad": {
+     "nivel": "bajo",
+     "sombras": 0,
+     "sombraRadio": 0,
+     "sombraTerreno": false,
+     "post": 0,
+     "normalesSuelo": false,
+     "dosEscalas": false,
+     "texMax": 512,
+     "flora": 0.5,
+     "floraDist": 0.55,
+     "pasto": 0,
+     "sombraFlora": false,
+     "agua": 0,
+     "particulas": 0.4,
+     "manual": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "objetivo": 55
+    },
+    "base": {
+     "fpsMed": 67.6,
+     "peorMs": 25,
+     "n": 196,
+     "callsMed": 49,
+     "trisMed": 167114,
+     "heap": 98
+    },
+    "duracionMs": 9020,
+    "test": {
+     "passed": 19,
+     "total": 19,
+     "fallos": []
+    },
+    "contexto": {
+     "calls": 42,
+     "tris": 134667,
+     "geo": 246,
+     "tex": 123,
+     "prog": 57,
+     "heap": 141,
+     "tactil": false
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,353 @@
+{
+  "informe": {
+    "selfTest": {
+      "p": 106,
+      "t": 106,
+      "mal": [],
+      "posaRed": 0,
+      "posaHist": null
+    },
+    "missionTest": {
+      "p": 79,
+      "t": 79,
+      "mal": [],
+      "posaRed": 0,
+      "posaHist": null
+    },
+    "accessoryTest": {
+      "p": 13,
+      "t": 13,
+      "mal": [],
+      "posaRed": 0,
+      "posaHist": null
+    },
+    "templateTest": {
+      "p": 19,
+      "t": 19,
+      "mal": [],
+      "posaRed": 0,
+      "posaHist": null
+    },
+    "eduTest": {
+      "p": 81,
+      "t": 81,
+      "mal": [],
+      "posaRed": 0,
+      "posaHist": null
+    },
+    "maestroTest": {
+      "p": 26,
+      "t": 26,
+      "mal": [],
+      "posaRed": 0,
+      "posaHist": null
+    },
+    "criaderoTest": {
+      "p": 44,
+      "t": 44,
+      "ok": true,
+      "mal": [],
+      "posaRed": 0,
+      "posaHist": null
+    },
+    "movementTest": {
+      "p": 52,
+      "t": 52,
+      "mal": [],
+      "mp": {
+        "rama": {
+          "gestos": 1,
+          "tipo": "rama",
+          "peso": 1,
+          "alasEquilibrio": true,
+          "asentarGeneral": 0,
+          "red": 1
+        },
+        "posado": "fino",
+        "suelo": {
+          "gestos": 0,
+          "tipo": "rama",
+          "peso": 0,
+          "alasEquilibrio": false,
+          "asentarGeneral": 0.93,
+          "red": 1
+        },
+        "aterrizarRama": {
+          "cuadros": 1,
+          "volando": false,
+          "posado": "fino",
+          "que": "rama",
+          "altoSobreTerreno": 5.26
+        },
+        "aterrizarSuelo": {
+          "cuadros": 94,
+          "volando": false,
+          "posado": "",
+          "que": "",
+          "altoSobreTerreno": 0
+        },
+        "hist": [
+          {
+            "via": "aire",
+            "t": 15.24,
+            "tipo": "rama",
+            "posado": "fino",
+            "que": "rama",
+            "gy": 23.26,
+            "hy": 16.01,
+            "y": 23.26,
+            "fly": 0
+          },
+          {
+            "via": "red",
+            "t": 9.02,
+            "tipo": "rama",
+            "posado": "fino",
+            "que": "rama",
+            "gy": 17.62,
+            "hy": 12.36,
+            "y": 17.62,
+            "fly": 0
+          },
+          {
+            "via": "aire",
+            "t": 2.25,
+            "tipo": "",
+            "posado": "",
+            "que": "",
+            "gy": 25.14,
+            "hy": 25.14,
+            "y": 25.14,
+            "fly": 0
+          }
+        ]
+      },
+      "mc": {
+        "y0": 29.36,
+        "y1": 29.51,
+        "techoVuelo": 54.48,
+        "groundY": 25.14,
+        "perchY": null,
+        "vy1": 0,
+        "landing": false,
+        "fly1": true,
+        "take1": -0.02
+      },
+      "posaRed": 1,
+      "posaHist": [
+        {
+          "via": "aire",
+          "t": 15.24,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 23.26,
+          "hy": 16.01,
+          "y": 23.26,
+          "fly": 0
+        },
+        {
+          "via": "red",
+          "t": 9.02,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 17.62,
+          "hy": 12.36,
+          "y": 17.62,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 2.25,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 25.14,
+          "hy": 25.14,
+          "y": 25.14,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 11.55,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 94.39,
+          "hy": 94.39,
+          "y": 94.39,
+          "fly": 0
+        }
+      ]
+    },
+    "saveTest": {
+      "p": 64,
+      "t": 64,
+      "mal": [],
+      "posaRed": 1,
+      "posaHist": [
+        {
+          "via": "aire",
+          "t": 15.24,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 23.26,
+          "hy": 16.01,
+          "y": 23.26,
+          "fly": 0
+        },
+        {
+          "via": "red",
+          "t": 9.02,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 17.62,
+          "hy": 12.36,
+          "y": 17.62,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 2.25,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 25.14,
+          "hy": 25.14,
+          "y": 25.14,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 11.55,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 94.39,
+          "hy": 94.39,
+          "y": 94.39,
+          "fly": 0
+        }
+      ]
+    },
+    "comicTest": {
+      "p": 67,
+      "t": 67,
+      "mal": [],
+      "posaRed": 1,
+      "posaHist": [
+        {
+          "via": "aire",
+          "t": 15.24,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 23.26,
+          "hy": 16.01,
+          "y": 23.26,
+          "fly": 0
+        },
+        {
+          "via": "red",
+          "t": 9.02,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 17.62,
+          "hy": 12.36,
+          "y": 17.62,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 2.25,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 25.14,
+          "hy": 25.14,
+          "y": 25.14,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 11.55,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 94.39,
+          "hy": 94.39,
+          "y": 94.39,
+          "fly": 0
+        }
+      ]
+    },
+    "lookCapitulosTest": {
+      "p": 13,
+      "t": 13,
+      "mal": [],
+      "posaRed": 1,
+      "posaHist": [
+        {
+          "via": "aire",
+          "t": 15.24,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 23.26,
+          "hy": 16.01,
+          "y": 23.26,
+          "fly": 0
+        },
+        {
+          "via": "red",
+          "t": 9.02,
+          "tipo": "rama",
+          "posado": "fino",
+          "que": "rama",
+          "gy": 17.62,
+          "hy": 12.36,
+          "y": 17.62,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 2.25,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 25.14,
+          "hy": 25.14,
+          "y": 25.14,
+          "fly": 0
+        },
+        {
+          "via": "aire",
+          "t": 11.55,
+          "tipo": "",
+          "posado": "",
+          "que": "",
+          "gy": 94.39,
+          "hy": 94.39,
+          "y": 94.39,
+          "fly": 0
+        }
+      ]
+    },
+    "e2eTest": {
+      "p": 29,
+      "t": 32,
+      "mal": [
+        "5 · Guardar a mitad del capítulo, recargar y todo persiste (perfil, paso, misiones, ruta de la gota, refugio, inventario, ropa, eventos, criadero) — {\"distintos\":[\"nombre\",\"especie\",\"accs\",\"paso\",\"misiones\",\"edu\",\"refugio\",\"construcciones\",\"inv\",\"eventos\",\"ropa\",\"criadero\"],\"eventosNuevos\":null,\"antes\":{\"nombre\":\"Lluvia Verde\",\"especie\":\"violacea\",\"accs\":[\"sombrero\",\"panuelo\"],\"paso\":4,\"misiones\":\"{\\\"m1\\\":true,\\\"educativa\\\":true,\\\"m3\\\":false}\",\"edu\":\"{\\\"p1\\\":true,\\\"p2\\\":true,\\\"p3\\\":true,\\\"p4\\\":true,\\\"p5\\\":true,\\\"p6\\\":true,\\\"p7\\\":true,\\\"p8\\\":tr",
+        "4.7 · Guardián (tras recargar): hablar con él, reconoce el refugio y regala el banco de trabajo — {\"paso\":0,\"banco\":false,\"cercano\":\"ninguno\"}",
+        "! · El recorrido no puede seguir tras 4.7 — etapa anterior fallida"
+      ],
+      "posaRed": 0,
+      "posaHist": null
+    }
+  },
+  "errores": []
+}
