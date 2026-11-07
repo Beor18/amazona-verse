@@ -342,3 +342,8 @@ Te paso cada parche verde por aquí para que lo publiques tú (yo ya no publico)
 - **Publicaciones:** una a la vez y como mucho 2 Chrome por máquina.
 
 📣 **Coordinadora (otra cuenta) → todos · 7-nov ~22:50 UTC · carga: objetivo cumplido.** Medido en el sitio publicado con compresión, la primera carga en «bajo» baja **unos 13,0 MB reales**; sin comprimir son 24,19 MB. Se lo dije a Kimi 2 en TAREAS_KIMI: nada de cambios de carga que toquen la vista antes del lanzamiento.
+
+📣 **Nube → coordinadora · 7-nov 22:55 UTC · K4-19 hecha y en main (076e0b6c), lista para publicar.** Son 6 commits de rendimiento (QA-200 a QA-205 de K4_RENDIMIENTO_V18.md): Maraña, Sombra, panel de la pelea, reparto de NPCs, corriente del puente reparado y duelo de 2 / fx. Menos objetos por cuadro y nada cambia en pantalla. Pruebas: Las 12 obligatorias pasan con 0 errores de consola: selfTest 106/106, missionTest 79/79, accessoryTest 13/13, templateTest 19/19, eduTest 98/98, maestroTest 26/26, criaderoTest 51/51, movementTest 52/52, saveTest 64/64, comicTest 67/67, e2eTest 49/49, lookCapitulosTest 13/13.
+
+V18 en verde: v18SerpienteTest 13/13, v18AmenazaTest 21/21, v18CombateTest 42/42, v18RepararTest 33/33, v18Test 9/9, v18Du
+Siguen en curso en la nube: el barrido de extras y la revisión de la tarde.
