@@ -186,17 +186,28 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   if (menu) menu.addEventListener('toggle', e => { if (e.newState === 'closed') { if (panelAbierto) pintarPanel(); if (!ley.hidden) pintarLeyenda(); volando = null; } });
 
   // ---------- Pistas y avisos ----------
-  let pistaT = 0, pistaId = '';
+  let pistaT = 0, pistaId = '', pistaHtml = '';
   const enSesion = {};
   function pista(id, html, seg) {
     if (tactil()) return false;
     // En inglés se traduce la frase entera con sus teclas («Pulsa {} para volar»): el traductor de la página va nodo a nodo y
     // no reconoce una frase partida por <kbd>
+    pistaHtml = html;
     if (G.idioma && G.idioma.tr) html = G.idioma.tr(html);
     pistaEl.innerHTML = html; pistaEl.hidden = false; pistaT = seg || AJ.pista; pistaId = id; enSesion[id] = (enSesion[id] || 0) + 1;
     return true;
   }
-  function ocultarPista() { pistaEl.hidden = true; pistaT = 0; pistaId = ''; }
+  function ocultarPista() { pistaEl.hidden = true; pistaEl.innerHTML = ''; pistaT = 0; pistaId = ''; pistaHtml = ''; }
+  // Al cambiar el idioma con una pista en pantalla se re-renderiza entera en el idioma nuevo (el traductor de la página
+  // no recompone frases partidas por <kbd>, p. ej. «Mantén <kbd>C</kbd> para bucear»); la oculta se vacía para que no
+  // quede texto ES huérfano en el DOM (lo detecta idiomaTest; repro acumulado Mac 20/31, KIMI-218)
+  if (G.on) G.on('aula', k => {
+    if (k !== 'idioma' || !G.idioma) return;
+    Promise.resolve(G.idioma.listo).then(() => {
+      if (!pistaHtml) return;
+      pistaEl.innerHTML = G.idioma.tr ? G.idioma.tr(pistaHtml) : pistaHtml;
+    });
+  });
   function aviso(id, texto, seg) { if (tactil()) { G.ui.toast(texto, (seg || 3.5) * 1000); return; } pista(id, texto, seg || 3.5); }
   let vientoT = -1e9, libreT = -1e9;
   G.on('viento', on => { if (!on || S.clock - vientoT < 15) return; vientoT = S.clock; aviso('viento', '¡Mucho viento allá arriba! Vittata no puede subir más.'); });

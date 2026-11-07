@@ -716,5 +716,5 @@ AVE.module('guardado', function (G) {
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.saveTest) AV.saveTest = o => test(o); }, 0);
 
   return { KEY: SAVE_KEY, VERSION: SAVE_VERSION, FORMATO, KEYS: SAVED_KEYS, spawn, freshState, replace, serialize, save, autosave, migrate, validSave, load,
-    applyWorld, reset, arrancarVacio, copiasIlegibles: (be, base) => copiasIlegibles(be || almacen, base || SAVE_KEY), estado: () => Object.assign({}, estado), limpiarTexto, suspender, instantanea, restaurar, test };
+    applyWorld, reset, arrancarVacio, copiasIlegibles: (be, base) => copiasIlegibles(be || almacen, base || SAVE_KEY), estado: () => Object.assign({}, estado), limpiarTexto, suspender, suspendido: () => suspendido, instantanea, restaurar, test };
 });
