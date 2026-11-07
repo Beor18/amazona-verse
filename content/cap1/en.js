@@ -2171,7 +2171,7 @@ window.AV_EN = {
  "Siguiente puerta": "Next gate",
  "¡Eso es! Cinco puertas y una vuelta entera. Tu primer vuelo ya tiene historia.": "That's it! Five gates and a whole lap. Your first flight already has a story.",
  "El cielo se aprende volándolo. Vuelve cuando quieras a mejorar tu marca.": "The sky is learned by flying it. Come back anytime to beat your mark.",
- "Te alejaste del circuito: el vuelo con el Guardián queda para otro rato.": "You wandered off from the circuit: the flight with the Guardian will have to wait."
+ "Te alejaste del circuito: el vuelo con el Guardián queda para otro rato.": "You wandered off from the circuit: the flight with the Guardian will have to wait.",
  "¡Achís!": "Achoo!",
  "¡Qué mareo!": "So dizzy!",
  "¡Ups, resbalón!": "Whoops, a slip!",
