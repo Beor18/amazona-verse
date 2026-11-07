@@ -286,7 +286,7 @@ AVE.module('aula', function (G) {
   const PREG = LEC.preguntas || [];
   const pregunta = id => PREG.find(q => q.id === id) || null;
   // Sin validar no se pregunta (mismo criterio que las fichas)
-  const preguntaPublicable = q => !!q && !/^por_verificar/.test(String(q.verificacion || ''));
+  const preguntaPublicable = q => !!q && !/^por_verificar/.test(String(q.verificacion || '')) && Array.isArray(q.opciones); // 7-nov: «emparejar» (q3) aún no tiene tarjeta en el juego
   // Orden de las opciones (estable por semilla). evitar: índice que no debe quedar primero (la respuesta correcta)
   function mezclar(n, semilla, evitar) {
     const R = G.util.rng(semilla || 1), idx = Array.from({ length: n }, (_, i) => i);
