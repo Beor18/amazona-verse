@@ -1,0 +1,3199 @@
+{
+ "movil": {
+  "ancho": 375,
+  "alto": 812,
+  "dpr": 3,
+  "cpu": 4,
+  "secs": 175,
+  "cap": 4,
+  "etiqueta": "head1",
+  "calidad": "alto"
+ },
+ "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+ "muestras": [
+  {
+   "t": 633,
+   "heapUsado": 3850931,
+   "heapTotal": 11747799,
+   "geometries": null,
+   "textures": null,
+   "programas": 0,
+   "calls": null,
+   "tris": null,
+   "fps": null,
+   "calidad": null,
+   "sombras": null,
+   "zonas": null,
+   "px": null,
+   "pz": null,
+   "s": 0.6,
+   "gc": false
+  },
+  {
+   "t": 2297,
+   "heapUsado": 17025053,
+   "heapTotal": 22360905,
+   "geometries": 0,
+   "textures": 0,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 0,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 0,
+    "mats": 0,
+    "inst": 0,
+    "descargando": 2
+   },
+   "px": null,
+   "pz": null,
+   "s": 2.3,
+   "gc": false
+  },
+  {
+   "t": 3488,
+   "heapUsado": 33407427,
+   "heapTotal": 51785619,
+   "geometries": 0,
+   "textures": 0,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 2,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 0,
+    "mats": 0,
+    "inst": 0,
+    "descargando": 2
+   },
+   "px": null,
+   "pz": null,
+   "s": 3.5,
+   "gc": false
+  },
+  {
+   "t": 4040,
+   "heapUsado": 25697314,
+   "heapTotal": 46439622,
+   "geometries": 0,
+   "textures": 0,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 8,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 132,
+    "mats": 3,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 4,
+   "gc": false
+  },
+  {
+   "t": 4554,
+   "heapUsado": 28499861,
+   "heapTotal": 46886265,
+   "geometries": 0,
+   "textures": 0,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 21,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 4.6,
+   "gc": false
+  },
+  {
+   "t": 5072,
+   "heapUsado": 32013253,
+   "heapTotal": 47770981,
+   "geometries": 0,
+   "textures": 0,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 60,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 5.1,
+   "gc": false
+  },
+  {
+   "t": 5596,
+   "heapUsado": 28824777,
+   "heapTotal": 47778661,
+   "geometries": 0,
+   "textures": 0,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 61,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 5.6,
+   "gc": false
+  },
+  {
+   "t": 6338,
+   "heapUsado": 41194283,
+   "heapTotal": 56895851,
+   "geometries": 0,
+   "textures": 0,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 46,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 0,
+    "cerca": 0,
+    "lejos": 0,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 0,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 6.3,
+   "gc": false
+  },
+  {
+   "t": 10128,
+   "heapUsado": 59163956,
+   "heapTotal": 88422024,
+   "geometries": 20,
+   "textures": 25,
+   "programas": 0,
+   "calls": 20,
+   "tris": 19563,
+   "fps": 25,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 9,
+    "lejos": 8,
+    "hd": 0,
+    "kbGeo": 177,
+    "mats": 4,
+    "inst": 422,
+    "descargando": 165
+   },
+   "px": null,
+   "pz": null,
+   "s": 10.1,
+   "gc": false
+  },
+  {
+   "t": 10703,
+   "heapUsado": 57111323,
+   "heapTotal": 90895439,
+   "geometries": 20,
+   "textures": 32,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 1,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 9,
+    "lejos": 8,
+    "hd": 0,
+    "kbGeo": 242,
+    "mats": 8,
+    "inst": 422,
+    "descargando": 162
+   },
+   "px": null,
+   "pz": null,
+   "s": 10.7,
+   "gc": false
+  },
+  {
+   "t": 11301,
+   "heapUsado": 50077095,
+   "heapTotal": 84911983,
+   "geometries": 20,
+   "textures": 34,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 9,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 9,
+    "lejos": 8,
+    "hd": 0,
+    "kbGeo": 940,
+    "mats": 10,
+    "inst": 422,
+    "descargando": 159
+   },
+   "px": null,
+   "pz": null,
+   "s": 11.3,
+   "gc": false
+  },
+  {
+   "t": 12261,
+   "heapUsado": 49603121,
+   "heapTotal": 88282445,
+   "geometries": 20,
+   "textures": 35,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 11,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 11,
+    "lejos": 6,
+    "hd": 0,
+    "kbGeo": 2237,
+    "mats": 11,
+    "inst": 422,
+    "descargando": 154
+   },
+   "px": null,
+   "pz": null,
+   "s": 12.3,
+   "gc": false
+  },
+  {
+   "t": 12819,
+   "heapUsado": 56326862,
+   "heapTotal": 88228602,
+   "geometries": 20,
+   "textures": 36,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 3,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 11,
+    "lejos": 6,
+    "hd": 0,
+    "kbGeo": 2955,
+    "mats": 11,
+    "inst": 422,
+    "descargando": 146
+   },
+   "px": null,
+   "pz": null,
+   "s": 12.8,
+   "gc": false
+  },
+  {
+   "t": 13376,
+   "heapUsado": 58784712,
+   "heapTotal": 91129168,
+   "geometries": 20,
+   "textures": 39,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 10,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 11,
+    "lejos": 6,
+    "hd": 0,
+    "kbGeo": 3422,
+    "mats": 14,
+    "inst": 422,
+    "descargando": 134
+   },
+   "px": null,
+   "pz": null,
+   "s": 13.4,
+   "gc": false
+  },
+  {
+   "t": 13954,
+   "heapUsado": 78023444,
+   "heapTotal": 100737568,
+   "geometries": 20,
+   "textures": 39,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 15,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 11,
+    "lejos": 6,
+    "hd": 0,
+    "kbGeo": 4338,
+    "mats": 14,
+    "inst": 422,
+    "descargando": 116
+   },
+   "px": null,
+   "pz": null,
+   "s": 14,
+   "gc": false
+  },
+  {
+   "t": 14513,
+   "heapUsado": 71943016,
+   "heapTotal": 110544776,
+   "geometries": 20,
+   "textures": 40,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 13,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 11,
+    "lejos": 6,
+    "hd": 0,
+    "kbGeo": 5914,
+    "mats": 16,
+    "inst": 422,
+    "descargando": 103
+   },
+   "px": null,
+   "pz": null,
+   "s": 14.5,
+   "gc": false
+  },
+  {
+   "t": 15062,
+   "heapUsado": 79324741,
+   "heapTotal": 117738113,
+   "geometries": 20,
+   "textures": 41,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 15,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 11,
+    "lejos": 6,
+    "hd": 0,
+    "kbGeo": 9369,
+    "mats": 16,
+    "inst": 422,
+    "descargando": 92
+   },
+   "px": null,
+   "pz": null,
+   "s": 15.1,
+   "gc": false
+  },
+  {
+   "t": 15608,
+   "heapUsado": 94308162,
+   "heapTotal": 127441154,
+   "geometries": 20,
+   "textures": 43,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 17,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 11,
+    "lejos": 6,
+    "hd": 0,
+    "kbGeo": 13027,
+    "mats": 18,
+    "inst": 422,
+    "descargando": 77
+   },
+   "px": null,
+   "pz": null,
+   "s": 15.6,
+   "gc": false
+  },
+  {
+   "t": 16192,
+   "heapUsado": 95852636,
+   "heapTotal": 130596388,
+   "geometries": 20,
+   "textures": 43,
+   "programas": 0,
+   "calls": 0,
+   "tris": 0,
+   "fps": 15,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 11,
+    "lejos": 6,
+    "hd": 0,
+    "kbGeo": 16304,
+    "mats": 20,
+    "inst": 422,
+    "descargando": 69
+   },
+   "px": null,
+   "pz": null,
+   "s": 16.2,
+   "gc": false
+  },
+  {
+   "t": 29716,
+   "heapUsado": 83811358,
+   "heapTotal": 119863982,
+   "geometries": 114,
+   "textures": 138,
+   "programas": 51,
+   "calls": 0,
+   "tris": 0,
+   "fps": 7,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 16769,
+    "mats": 19,
+    "inst": 422,
+    "descargando": 67
+   },
+   "px": null,
+   "pz": null,
+   "s": 29.7,
+   "gc": false
+  },
+  {
+   "t": 30291,
+   "heapUsado": 96377732,
+   "heapTotal": 121697916,
+   "geometries": 114,
+   "textures": 138,
+   "programas": 54,
+   "calls": 0,
+   "tris": 0,
+   "fps": 0,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 17485,
+    "mats": 19,
+    "inst": 422,
+    "descargando": 67
+   },
+   "px": null,
+   "pz": null,
+   "s": 30.3,
+   "gc": false
+  },
+  {
+   "t": 30926,
+   "heapUsado": 99272851,
+   "heapTotal": 129361823,
+   "geometries": 114,
+   "textures": 138,
+   "programas": 56,
+   "calls": 0,
+   "tris": 0,
+   "fps": 5,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 18170,
+    "mats": 19,
+    "inst": 422,
+    "descargando": 67
+   },
+   "px": null,
+   "pz": null,
+   "s": 30.9,
+   "gc": false
+  },
+  {
+   "t": 31527,
+   "heapUsado": 103521151,
+   "heapTotal": 135032611,
+   "geometries": 114,
+   "textures": 138,
+   "programas": 58,
+   "calls": 0,
+   "tris": 0,
+   "fps": 6,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 25298,
+    "mats": 19,
+    "inst": 422,
+    "descargando": 67
+   },
+   "px": null,
+   "pz": null,
+   "s": 31.5,
+   "gc": false
+  },
+  {
+   "t": 32881,
+   "heapUsado": 99920985,
+   "heapTotal": 137689405,
+   "geometries": 178,
+   "textures": 138,
+   "programas": 67,
+   "calls": 141,
+   "tris": 859581,
+   "fps": 3,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 0,
+    "kbGeo": 25298,
+    "mats": 19,
+    "inst": 422,
+    "descargando": 60
+   },
+   "px": null,
+   "pz": null,
+   "s": 32.9,
+   "gc": false
+  },
+  {
+   "t": 33594,
+   "heapUsado": 110183714,
+   "heapTotal": 141223606,
+   "geometries": 179,
+   "textures": 140,
+   "programas": 68,
+   "calls": 133,
+   "tris": 857145,
+   "fps": 3,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 1,
+    "kbGeo": 26122,
+    "mats": 20,
+    "inst": 422,
+    "descargando": 56
+   },
+   "px": null,
+   "pz": null,
+   "s": 33.6,
+   "gc": false
+  },
+  {
+   "t": 34143,
+   "heapUsado": 128173869,
+   "heapTotal": 150789021,
+   "geometries": 187,
+   "textures": 140,
+   "programas": 68,
+   "calls": 101,
+   "tris": 818078,
+   "fps": 4,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 4,
+    "kbGeo": 27107,
+    "mats": 20,
+    "inst": 422,
+    "descargando": 51
+   },
+   "px": null,
+   "pz": null,
+   "s": 34.1,
+   "gc": false
+  },
+  {
+   "t": 34734,
+   "heapUsado": 137756053,
+   "heapTotal": 160144953,
+   "geometries": 194,
+   "textures": 140,
+   "programas": 68,
+   "calls": 101,
+   "tris": 877291,
+   "fps": 10,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 4,
+    "kbGeo": 27776,
+    "mats": 20,
+    "inst": 422,
+    "descargando": 48
+   },
+   "px": null,
+   "pz": null,
+   "s": 34.7,
+   "gc": false
+  },
+  {
+   "t": 35303,
+   "heapUsado": 111332081,
+   "heapTotal": 157045005,
+   "geometries": 194,
+   "textures": 140,
+   "programas": 68,
+   "calls": 99,
+   "tris": 859796,
+   "fps": 12,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 4,
+    "kbGeo": 37618,
+    "mats": 20,
+    "inst": 422,
+    "descargando": 45
+   },
+   "px": null,
+   "pz": null,
+   "s": 35.3,
+   "gc": false
+  },
+  {
+   "t": 42687,
+   "heapUsado": 164479502,
+   "heapTotal": 209454778,
+   "geometries": 205,
+   "textures": 156,
+   "programas": 69,
+   "calls": 111,
+   "tris": 833222,
+   "fps": 6,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 5,
+    "kbGeo": 38979,
+    "mats": 29,
+    "inst": 422,
+    "descargando": 44
+   },
+   "px": null,
+   "pz": null,
+   "s": 42.7,
+   "gc": false
+  },
+  {
+   "t": 43267,
+   "heapUsado": 141266491,
+   "heapTotal": 209465771,
+   "geometries": 219,
+   "textures": 156,
+   "programas": 70,
+   "calls": 110,
+   "tris": 706380,
+   "fps": 10,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 5,
+    "kbGeo": 38979,
+    "mats": 29,
+    "inst": 422,
+    "descargando": 42
+   },
+   "px": null,
+   "pz": null,
+   "s": 43.3,
+   "gc": false
+  },
+  {
+   "t": 43819,
+   "heapUsado": 159586283,
+   "heapTotal": 217002735,
+   "geometries": 220,
+   "textures": 156,
+   "programas": 70,
+   "calls": 73,
+   "tris": 643411,
+   "fps": 14,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 8,
+    "kbGeo": 40482,
+    "mats": 29,
+    "inst": 422,
+    "descargando": 33
+   },
+   "px": null,
+   "pz": null,
+   "s": 43.8,
+   "gc": false
+  },
+  {
+   "t": 44369,
+   "heapUsado": 134656366,
+   "heapTotal": 199055886,
+   "geometries": 221,
+   "textures": 156,
+   "programas": 70,
+   "calls": 71,
+   "tris": 622504,
+   "fps": 13,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 10,
+    "kbGeo": 41371,
+    "mats": 29,
+    "inst": 422,
+    "descargando": 28
+   },
+   "px": null,
+   "pz": null,
+   "s": 44.4,
+   "gc": false
+  },
+  {
+   "t": 45259,
+   "heapUsado": 194408276,
+   "heapTotal": 258738768,
+   "geometries": 221,
+   "textures": 156,
+   "programas": 70,
+   "calls": 76,
+   "tris": 643595,
+   "fps": 8,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 12,
+    "kbGeo": 50854,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 25
+   },
+   "px": null,
+   "pz": null,
+   "s": 45.3,
+   "gc": false
+  },
+  {
+   "t": 45940,
+   "heapUsado": 209162497,
+   "heapTotal": 280200521,
+   "geometries": 225,
+   "textures": 156,
+   "programas": 70,
+   "calls": 95,
+   "tris": 695169,
+   "fps": 6,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 15,
+    "kbGeo": 52632,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 23
+   },
+   "px": null,
+   "pz": null,
+   "s": 45.9,
+   "gc": false
+  },
+  {
+   "t": 46474,
+   "heapUsado": 212746306,
+   "heapTotal": 276413722,
+   "geometries": 225,
+   "textures": 158,
+   "programas": 70,
+   "calls": 100,
+   "tris": 715800,
+   "fps": 10,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 18,
+    "kbGeo": 54950,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 19
+   },
+   "px": null,
+   "pz": null,
+   "s": 46.5,
+   "gc": false
+  },
+  {
+   "t": 47010,
+   "heapUsado": 223237135,
+   "heapTotal": 278982803,
+   "geometries": 225,
+   "textures": 163,
+   "programas": 70,
+   "calls": 103,
+   "tris": 719971,
+   "fps": 9,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 21,
+    "kbGeo": 56633,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 18
+   },
+   "px": null,
+   "pz": null,
+   "s": 47,
+   "gc": false
+  },
+  {
+   "t": 47956,
+   "heapUsado": 169866075,
+   "heapTotal": 239945611,
+   "geometries": 225,
+   "textures": 166,
+   "programas": 70,
+   "calls": 103,
+   "tris": 719971,
+   "fps": 10,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 25,
+    "kbGeo": 82713,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 9
+   },
+   "px": null,
+   "pz": null,
+   "s": 48,
+   "gc": true
+  },
+  {
+   "t": 48566,
+   "heapUsado": 220742312,
+   "heapTotal": 277299404,
+   "geometries": 225,
+   "textures": 166,
+   "programas": 70,
+   "calls": 103,
+   "tris": 719971,
+   "fps": 8,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 27,
+    "kbGeo": 92869,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 9
+   },
+   "px": null,
+   "pz": null,
+   "s": 48.6,
+   "gc": false
+  },
+  {
+   "t": 57332,
+   "heapUsado": 239625067,
+   "heapTotal": 277629567,
+   "geometries": 225,
+   "textures": 166,
+   "programas": 95,
+   "calls": 103,
+   "tris": 719971,
+   "fps": 8,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 4,
+    "lejos": 13,
+    "hd": 27,
+    "kbGeo": 92869,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 9
+   },
+   "px": null,
+   "pz": null,
+   "s": 57.3,
+   "gc": false
+  },
+  {
+   "t": 58591,
+   "heapUsado": 226217254,
+   "heapTotal": 279876218,
+   "geometries": 240,
+   "textures": 170,
+   "programas": 104,
+   "calls": 102,
+   "tris": 748898,
+   "fps": 4,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 11,
+    "lejos": 6,
+    "hd": 28,
+    "kbGeo": 92917,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 27
+   },
+   "px": null,
+   "pz": null,
+   "s": 58.6,
+   "gc": false
+  },
+  {
+   "t": 59600,
+   "heapUsado": 234445997,
+   "heapTotal": 280162485,
+   "geometries": 247,
+   "textures": 170,
+   "programas": 107,
+   "calls": 179,
+   "tris": 1509904,
+   "fps": 2,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 11,
+    "lejos": 6,
+    "hd": 29,
+    "kbGeo": 93131,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 27
+   },
+   "px": null,
+   "pz": null,
+   "s": 59.6,
+   "gc": false
+  },
+  {
+   "t": 60858,
+   "heapUsado": 217636054,
+   "heapTotal": 278147462,
+   "geometries": 245,
+   "textures": 171,
+   "programas": 108,
+   "calls": 97,
+   "tris": 751602,
+   "fps": 1,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 30,
+    "kbGeo": 98630,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 26
+   },
+   "px": null,
+   "pz": null,
+   "s": 60.9,
+   "gc": false
+  },
+  {
+   "t": 61708,
+   "heapUsado": 264700308,
+   "heapTotal": 332365044,
+   "geometries": 246,
+   "textures": 174,
+   "programas": 108,
+   "calls": 184,
+   "tris": 1544896,
+   "fps": 5,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 32,
+    "kbGeo": 99246,
+    "mats": 35,
+    "inst": 422,
+    "descargando": 25
+   },
+   "px": null,
+   "pz": null,
+   "s": 61.7,
+   "gc": false
+  },
+  {
+   "t": 62440,
+   "heapUsado": 281069776,
+   "heapTotal": 339191444,
+   "geometries": 267,
+   "textures": 176,
+   "programas": 107,
+   "calls": 105,
+   "tris": 761083,
+   "fps": 5,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 34,
+    "kbGeo": 99863,
+    "mats": 35,
+    "inst": 422,
+    "descargando": 23
+   },
+   "px": null,
+   "pz": null,
+   "s": 62.4,
+   "gc": false
+  },
+  {
+   "t": 63076,
+   "heapUsado": 233794871,
+   "heapTotal": 299970975,
+   "geometries": 272,
+   "textures": 181,
+   "programas": 109,
+   "calls": 182,
+   "tris": 1537408,
+   "fps": 4,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 34,
+    "kbGeo": 99863,
+    "mats": 35,
+    "inst": 422,
+    "descargando": 21
+   },
+   "px": null,
+   "pz": null,
+   "s": 63.1,
+   "gc": false
+  },
+  {
+   "t": 63677,
+   "heapUsado": 242619453,
+   "heapTotal": 301390757,
+   "geometries": 275,
+   "textures": 182,
+   "programas": 108,
+   "calls": 89,
+   "tris": 758471,
+   "fps": 4,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 34,
+    "kbGeo": 99863,
+    "mats": 35,
+    "inst": 422,
+    "descargando": 20
+   },
+   "px": null,
+   "pz": null,
+   "s": 63.7,
+   "gc": false
+  },
+  {
+   "t": 64587,
+   "heapUsado": 265707585,
+   "heapTotal": 304204825,
+   "geometries": 276,
+   "textures": 182,
+   "programas": 109,
+   "calls": 1876,
+   "tris": 17573984,
+   "fps": 4,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 34,
+    "kbGeo": 99863,
+    "mats": 35,
+    "inst": 422,
+    "descargando": 19
+   },
+   "px": null,
+   "pz": null,
+   "s": 64.6,
+   "gc": false
+  },
+  {
+   "t": 65368,
+   "heapUsado": 252232091,
+   "heapTotal": 305380207,
+   "geometries": 276,
+   "textures": 182,
+   "programas": 109,
+   "calls": 1020,
+   "tris": 9860648,
+   "fps": 4,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 34,
+    "kbGeo": 99863,
+    "mats": 35,
+    "inst": 422,
+    "descargando": 16
+   },
+   "px": null,
+   "pz": null,
+   "s": 65.4,
+   "gc": false
+  },
+  {
+   "t": 66035,
+   "heapUsado": 275494575,
+   "heapTotal": 341626055,
+   "geometries": 277,
+   "textures": 183,
+   "programas": 110,
+   "calls": 87,
+   "tris": 749912,
+   "fps": 6,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 35,
+    "kbGeo": 109281,
+    "mats": 37,
+    "inst": 422,
+    "descargando": 13
+   },
+   "px": null,
+   "pz": null,
+   "s": 66,
+   "gc": false
+  },
+  {
+   "t": 66683,
+   "heapUsado": 295057303,
+   "heapTotal": 363217763,
+   "geometries": 276,
+   "textures": 183,
+   "programas": 109,
+   "calls": 87,
+   "tris": 750568,
+   "fps": 8,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 37,
+    "kbGeo": 125370,
+    "mats": 38,
+    "inst": 422,
+    "descargando": 9
+   },
+   "px": null,
+   "pz": null,
+   "s": 66.7,
+   "gc": false
+  },
+  {
+   "t": 67242,
+   "heapUsado": 307810821,
+   "heapTotal": 366305129,
+   "geometries": 277,
+   "textures": 187,
+   "programas": 109,
+   "calls": 87,
+   "tris": 750568,
+   "fps": 9,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 38,
+    "kbGeo": 125749,
+    "mats": 39,
+    "inst": 422,
+    "descargando": 4
+   },
+   "px": null,
+   "pz": null,
+   "s": 67.2,
+   "gc": false
+  },
+  {
+   "t": 67887,
+   "heapUsado": 261421493,
+   "heapTotal": 333508461,
+   "geometries": 278,
+   "textures": 188,
+   "programas": 109,
+   "calls": 87,
+   "tris": 749920,
+   "fps": 11,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 40,
+    "kbGeo": 127023,
+    "mats": 39,
+    "inst": 422,
+    "descargando": 1
+   },
+   "px": null,
+   "pz": null,
+   "s": 67.9,
+   "gc": false
+  },
+  {
+   "t": 71613,
+   "heapUsado": 277091117,
+   "heapTotal": 335032221,
+   "geometries": 287,
+   "textures": 187,
+   "programas": 116,
+   "calls": 160,
+   "tris": 1484144,
+   "fps": 9,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 11,
+    "lejos": 6,
+    "hd": 41,
+    "kbGeo": 133074,
+    "mats": 39,
+    "inst": 422,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 71.6,
+   "gc": false
+  },
+  {
+   "t": 72240,
+   "heapUsado": 294302425,
+   "heapTotal": 341541277,
+   "geometries": 287,
+   "textures": 187,
+   "programas": 116,
+   "calls": 232,
+   "tris": 1736574,
+   "fps": 1,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 43,
+    "kbGeo": 136203,
+    "mats": 39,
+    "inst": 422,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 72.2,
+   "gc": false
+  },
+  {
+   "t": 106964,
+   "heapUsado": 254997969,
+   "heapTotal": 337610813,
+   "geometries": 294,
+   "textures": 191,
+   "programas": 124,
+   "calls": 78,
+   "tris": 857376,
+   "fps": 0,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 6,
+    "lejos": 11,
+    "hd": 31,
+    "kbGeo": 120187,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 24
+   },
+   "px": null,
+   "pz": null,
+   "s": 107,
+   "gc": false
+  },
+  {
+   "t": 107704,
+   "heapUsado": 263629768,
+   "heapTotal": 339503376,
+   "geometries": 296,
+   "textures": 193,
+   "programas": 127,
+   "calls": 380,
+   "tris": 4304480,
+   "fps": 2,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 6,
+    "lejos": 11,
+    "hd": 31,
+    "kbGeo": 120187,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 22
+   },
+   "px": null,
+   "pz": null,
+   "s": 107.7,
+   "gc": false
+  },
+  {
+   "t": 109048,
+   "heapUsado": 262596916,
+   "heapTotal": 343235548,
+   "geometries": 302,
+   "textures": 195,
+   "programas": 130,
+   "calls": 211,
+   "tris": 2565234,
+   "fps": 3,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 6,
+    "lejos": 11,
+    "hd": 32,
+    "kbGeo": 120254,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 20
+   },
+   "px": null,
+   "pz": null,
+   "s": 109.1,
+   "gc": false
+  },
+  {
+   "t": 109983,
+   "heapUsado": 276510935,
+   "heapTotal": 348111387,
+   "geometries": 302,
+   "textures": 195,
+   "programas": 130,
+   "calls": 74,
+   "tris": 550508,
+   "fps": 2,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 6,
+    "lejos": 11,
+    "hd": 33,
+    "kbGeo": 120280,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 17
+   },
+   "px": null,
+   "pz": null,
+   "s": 110,
+   "gc": false
+  },
+  {
+   "t": 111588,
+   "heapUsado": 302924260,
+   "heapTotal": 353639676,
+   "geometries": 303,
+   "textures": 196,
+   "programas": 130,
+   "calls": 73,
+   "tris": 562565,
+   "fps": 2,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 6,
+    "lejos": 11,
+    "hd": 34,
+    "kbGeo": 120281,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 16
+   },
+   "px": null,
+   "pz": null,
+   "s": 111.6,
+   "gc": false
+  },
+  {
+   "t": 113360,
+   "heapUsado": 286652581,
+   "heapTotal": 362234953,
+   "geometries": 303,
+   "textures": 196,
+   "programas": 130,
+   "calls": 77,
+   "tris": 534485,
+   "fps": 1,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 6,
+    "lejos": 11,
+    "hd": 34,
+    "kbGeo": 120281,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 15
+   },
+   "px": null,
+   "pz": null,
+   "s": 113.4,
+   "gc": false
+  },
+  {
+   "t": 113931,
+   "heapUsado": 334018965,
+   "heapTotal": 384461801,
+   "geometries": 300,
+   "textures": 196,
+   "programas": 131,
+   "calls": 74,
+   "tris": 413903,
+   "fps": 1,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 113.9,
+   "gc": false
+  },
+  {
+   "t": 114913,
+   "heapUsado": 316429389,
+   "heapTotal": 384819105,
+   "geometries": 294,
+   "textures": 196,
+   "programas": 130,
+   "calls": 75,
+   "tris": 414539,
+   "fps": 17,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 114.9,
+   "gc": false
+  },
+  {
+   "t": 115760,
+   "heapUsado": 307485413,
+   "heapTotal": 385780853,
+   "geometries": 292,
+   "textures": 196,
+   "programas": 129,
+   "calls": 74,
+   "tris": 414539,
+   "fps": 4,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 116,
+   "gc": false
+  },
+  {
+   "t": 116525,
+   "heapUsado": 269234335,
+   "heapTotal": 332317835,
+   "geometries": 292,
+   "textures": 196,
+   "programas": 129,
+   "calls": 74,
+   "tris": 414539,
+   "fps": 13,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 116.5,
+   "gc": false
+  },
+  {
+   "t": 117210,
+   "heapUsado": 279522267,
+   "heapTotal": 332324747,
+   "geometries": 292,
+   "textures": 196,
+   "programas": 129,
+   "calls": 74,
+   "tris": 414539,
+   "fps": 17,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 117.2,
+   "gc": false
+  },
+  {
+   "t": 118098,
+   "heapUsado": 266005803,
+   "heapTotal": 335708827,
+   "geometries": 292,
+   "textures": 196,
+   "programas": 126,
+   "calls": 74,
+   "tris": 414539,
+   "fps": 12,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 118.1,
+   "gc": false
+  },
+  {
+   "t": 123513,
+   "heapUsado": 287142320,
+   "heapTotal": 335278168,
+   "geometries": 301,
+   "textures": 188,
+   "programas": 126,
+   "calls": 125,
+   "tris": 807986,
+   "fps": 6,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 6,
+    "lejos": 11,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 123.5,
+   "gc": false
+  },
+  {
+   "t": 126440,
+   "heapUsado": 285686410,
+   "heapTotal": 335945610,
+   "geometries": 393,
+   "textures": 188,
+   "programas": 129,
+   "calls": 207,
+   "tris": 2516178,
+   "fps": 0,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 5,
+    "lejos": 12,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 126.4,
+   "gc": false
+  },
+  {
+   "t": 129193,
+   "heapUsado": 276120063,
+   "heapTotal": 340993543,
+   "geometries": 402,
+   "textures": 198,
+   "programas": 130,
+   "calls": 86,
+   "tris": 329190,
+   "fps": 1,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 9,
+    "lejos": 8,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 4
+   },
+   "px": null,
+   "pz": null,
+   "s": 129.2,
+   "gc": false
+  },
+  {
+   "t": 130619,
+   "heapUsado": 277400377,
+   "heapTotal": 344041957,
+   "geometries": 407,
+   "textures": 204,
+   "programas": 132,
+   "calls": 110,
+   "tris": 535840,
+   "fps": 4,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 6,
+    "lejos": 11,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 0
+   },
+   "px": null,
+   "pz": null,
+   "s": 130.6,
+   "gc": false
+  },
+  {
+   "t": 173884,
+   "heapUsado": 273628154,
+   "heapTotal": 277483946,
+   "geometries": 490,
+   "textures": 190,
+   "programas": 147,
+   "calls": 91,
+   "tris": 761135,
+   "fps": 0,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 12
+   },
+   "px": null,
+   "pz": null,
+   "s": 173.9,
+   "gc": false
+  },
+  {
+   "t": 204195,
+   "heapUsado": 293289922,
+   "heapTotal": 296311554,
+   "geometries": 491,
+   "textures": 196,
+   "programas": 146,
+   "calls": 110,
+   "tris": 1410242,
+   "fps": 3,
+   "calidad": "alto",
+   "sombras": true,
+   "zonas": {
+    "n": 17,
+    "cerca": 10,
+    "lejos": 7,
+    "hd": 38,
+    "kbGeo": 133828,
+    "mats": 34,
+    "inst": 422,
+    "descargando": 4
+   },
+   "px": null,
+   "pz": null,
+   "s": 204.2,
+   "gc": false
+  }
+ ],
+ "red": {
+  "totalMB": 192.4,
+  "n": 748,
+  "fallos": 75,
+  "porExt": {
+   "css": 0.27640628814697266,
+   "png": 2.1280031204223633,
+   "js": 8.763747215270996,
+   "html": 0.10111713409423828,
+   "?": 0.0002880096435546875,
+   "woff2": 0.10090446472167969,
+   "jpg": 52.81848621368408,
+   "glb": 128.11841297149658,
+   "json": 0.0042247772216796875,
+   "webp": 0.13817882537841797
+  },
+  "top": [
+   {
+    "u": "edificios/templo_mediano_h_hd.glb",
+    "mb": 15.1,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_hd/hd_ancient_n.jpg",
+    "mb": 13.65,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_hd/hd_savage_n.jpg",
+    "mb": 13.36,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "edificios/templo_grande_d_hd.glb",
+    "mb": 10.04,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/templo_grande_hd.glb",
+    "mb": 9.14,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/templo_grande_f_hd.glb",
+    "mb": 6.53,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/templo_grande_e_hd.glb",
+    "mb": 5.84,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/carpa_b_hd.glb",
+    "mb": 5.78,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/carpa_b_hd.glb",
+    "mb": 5.78,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/templo_grande_a_hd.glb",
+    "mb": 5.52,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/complejo_ruinas_hd400.glb",
+    "mb": 5.25,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_hd/hd_savage.jpg",
+    "mb": 5.16,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "edificios/muro_templo_hd.glb",
+    "mb": 4.17,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_hd/hd_ancient.jpg",
+    "mb": 4.13,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "edificios/templo_mediano_f_hd.glb",
+    "mb": 2.99,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/templo_mediano_g_hd.glb",
+    "mb": 2.97,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/templo_mediano_hd.glb",
+    "mb": 2.43,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/carpa_c_hd.glb",
+    "mb": 1.68,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/carpa_c_hd.glb",
+    "mb": 1.68,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "models/vittata.glb",
+    "mb": 1.25,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/carpa_d_hd.glb",
+    "mb": 1.19,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/carpa_d_hd.glb",
+    "mb": 1.19,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/complejo_ruinas.glb",
+    "mb": 0.95,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_original/KB3D_sculptM_Normal.jpg",
+    "mb": 0.79,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_damageM_Normal.jpg",
+    "mb": 0.69,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_bricksM_Normal.jpg",
+    "mb": 0.68,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_decoM_Normal.jpg",
+    "mb": 0.63,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_wallL_Normal.jpg",
+    "mb": 0.58,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "mapa/terreno_so.glb",
+    "mb": 0.58,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "mapa/terreno_se.glb",
+    "mb": 0.58,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "mapa/terreno_no.glb",
+    "mb": 0.58,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "mapa/terreno_ne.glb",
+    "mb": 0.58,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "build/three.min.js",
+    "mb": 0.58,
+    "mime": "text/javascript"
+   },
+   {
+    "u": "build/three.min.js",
+    "mb": 0.58,
+    "mime": "text/javascript"
+   },
+   {
+    "u": "tex_original/KB3D_wallM_Normal.jpg",
+    "mb": 0.56,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "edificios/templo_grande_e_lejos.glb",
+    "mb": 0.55,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "tex_original/KB3D_stoneM_Normal.jpg",
+    "mb": 0.54,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "tex_original/KB3D_pillarsM_Normal.jpg",
+    "mb": 0.52,
+    "mime": "image/jpeg"
+   },
+   {
+    "u": "edificios/monumento_f_hd.glb",
+    "mb": 0.52,
+    "mime": "model/gltf-binary"
+   },
+   {
+    "u": "edificios/templo_grande_f_lejos.glb",
+    "mb": 0.52,
+    "mime": "model/gltf-binary"
+   }
+  ]
+ },
+ "snaps": [
+  {
+   "t": 135,
+   "totalMB": 282.7,
+   "nodos": 1187478,
+   "top": [
+    {
+     "ctor": "system / JSArrayBufferData",
+     "mb": 216.2
+    },
+    {
+     "ctor": "system / ExternalStringData",
+     "mb": 15.73
+    },
+    {
+     "ctor": "(object elements)",
+     "mb": 7.12
+    },
+    {
+     "ctor": "system / InstructionStream",
+     "mb": 7.02
+    },
+    {
+     "ctor": "ArrayBuffer",
+     "mb": 2.69
+    },
+    {
+     "ctor": "Object",
+     "mb": 2.37
+    },
+    {
+     "ctor": "heap number",
+     "mb": 1.96
+    },
+    {
+     "ctor": "(sin nombre)",
+     "mb": 1.6
+    },
+    {
+     "ctor": "system / TrustedByteArray",
+     "mb": 1.48
+    },
+    {
+     "ctor": "Uint32Array",
+     "mb": 1.38
+    },
+    {
+     "ctor": "system / BytecodeArray",
+     "mb": 1.3
+    },
+    {
+     "ctor": "blink::PlainTextNode",
+     "mb": 1.24
+    },
+    {
+     "ctor": "Array",
+     "mb": 1.05
+    },
+    {
+     "ctor": "blink::HeapHashTableBacking<blink::HashTable<std::pair<blink::String, blink::TextDirection>, blink::KeyValuePair<std::pair<blink::String, blink::TextDirection>, blink::FrameShapeCache::ShapeEntry>, blink::KeyValuePairExtractor, blink::HashMapValueTraits<blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HashTraits<blink::FrameShapeCache::ShapeEntry>>, blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HeapAllocator>>",
+     "mb": 0.86
+    },
+    {
+     "ctor": "(object properties)",
+     "mb": 0.7
+    },
+    {
+     "ctor": "system / Map",
+     "mb": 0.59
+    },
+    {
+     "ctor": "system / FeedbackVector",
+     "mb": 0.55
+    },
+    {
+     "ctor": "Float32Array",
+     "mb": 0.49
+    },
+    {
+     "ctor": "Lt",
+     "mb": 0.46
+    },
+    {
+     "ctor": "se",
+     "mb": 0.42
+    },
+    {
+     "ctor": "Int16Array",
+     "mb": 0.4
+    },
+    {
+     "ctor": "Int8Array",
+     "mb": 0.4
+    },
+    {
+     "ctor": "system / DescriptorArray",
+     "mb": 0.35
+    },
+    {
+     "ctor": "system / ProtectedFixedArray",
+     "mb": 0.32
+    },
+    {
+     "ctor": "system / WeakArrayList",
+     "mb": 0.32
+    },
+    {
+     "ctor": "ta",
+     "mb": 0.32
+    },
+    {
+     "ctor": "(constant pool)",
+     "mb": 0.29
+    },
+    {
+     "ctor": "system / Code",
+     "mb": 0.29
+    },
+    {
+     "ctor": "system / ScopeInfo",
+     "mb": 0.27
+    },
+    {
+     "ctor": "system / FunctionTemplateInfo",
+     "mb": 0.27
+    },
+    {
+     "ctor": "blink::HeapHashTableBacking<blink::HashTable<std::pair<blink::String, blink::TextDirection>, blink::KeyValuePair<std::pair<blink::String, blink::TextDirection>, blink::FrameShapeCache::NodeEntry>, blink::KeyValuePairExtractor, blink::HashMapValueTraits<blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HashTraits<blink::FrameShapeCache::NodeEntry>>, blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HeapAllocator>>",
+     "mb": 0.26
+    },
+    {
+     "ctor": "system / PropertyArray",
+     "mb": 0.26
+    },
+    {
+     "ctor": "blink::ImageResource",
+     "mb": 0.24
+    },
+    {
+     "ctor": "blink::ImmutableCSSPropertyValueSet",
+     "mb": 0.22
+    },
+    {
+     "ctor": "WebGLUniformLocation",
+     "mb": 0.22
+    },
+    {
+     "ctor": "sn",
+     "mb": 0.22
+    },
+    {
+     "ctor": "Uint8Array",
+     "mb": 0.22
+    },
+    {
+     "ctor": "WebGLBuffer",
+     "mb": 0.21
+    },
+    {
+     "ctor": "blink::ScriptResource",
+     "mb": 0.2
+    },
+    {
+     "ctor": "(concatenated string)",
+     "mb": 0.19
+    }
+   ],
+   "abDet": {
+    "umbralKB": 64,
+    "totalMB": 161.8,
+    "n": 498,
+    "huerfanos": 0,
+    "cubetas": {
+     "64-256K": {
+      "n": 47217,
+      "mb": 100.66
+     },
+     "256K-1M": {
+      "n": 83,
+      "mb": 42.66
+     },
+     "1-4M": {
+      "n": 24,
+      "mb": 43.27
+     },
+     ">4M": {
+      "n": 5,
+      "mb": 29.61
+     }
+    },
+    "grupos": [
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Float32Array",
+      "b": 83844380,
+      "n": 234
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Float32Array",
+      "b": 44458144,
+      "n": 187
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint32Array",
+      "b": 18764292,
+      "n": 12
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  ·→Memory",
+      "b": 9568256,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Uint32Array",
+      "b": 5764892,
+      "n": 8
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint16Array",
+      "b": 3192680,
+      "n": 27
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Uint16Array",
+      "b": 2771172,
+      "n": 19
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint8Array",
+      "b": 332369,
+      "n": 2
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Int32Array",
+      "b": 317288,
+      "n": 3
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  58→system / InstructionStream",
+      "b": 150544,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint8ClampedArray",
+      "b": 147456,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  156→system / InstructionStream",
+      "b": 116912,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  155→system / InstructionStream",
+      "b": 116912,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  154→system / InstructionStream",
+      "b": 87684,
+      "n": 1
+     }
+    ],
+    "top": [
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Float32Array",
+      "mb": 79.96,
+      "n": 234
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Float32Array",
+      "mb": 42.4,
+      "n": 187
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint32Array",
+      "mb": 17.9,
+      "n": 12
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  ·→Memory",
+      "mb": 9.13,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Uint32Array",
+      "mb": 5.5,
+      "n": 8
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint16Array",
+      "mb": 3.04,
+      "n": 27
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Uint16Array",
+      "mb": 2.64,
+      "n": 19
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint8Array",
+      "mb": 0.32,
+      "n": 2
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Int32Array",
+      "mb": 0.3,
+      "n": 3
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  58→system / InstructionStream",
+      "mb": 0.14,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint8ClampedArray",
+      "mb": 0.14,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  156→system / InstructionStream",
+      "mb": 0.11,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  155→system / InstructionStream",
+      "mb": 0.11,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  154→system / InstructionStream",
+      "mb": 0.08,
+      "n": 1
+     }
+    ]
+   }
+  },
+  {
+   "t": 165,
+   "totalMB": 299,
+   "nodos": 1240860,
+   "top": [
+    {
+     "ctor": "system / JSArrayBufferData",
+     "mb": 224.66
+    },
+    {
+     "ctor": "system / ExternalStringData",
+     "mb": 20.15
+    },
+    {
+     "ctor": "(object elements)",
+     "mb": 7.14
+    },
+    {
+     "ctor": "system / InstructionStream",
+     "mb": 7.13
+    },
+    {
+     "ctor": "ArrayBuffer",
+     "mb": 2.74
+    },
+    {
+     "ctor": "Object",
+     "mb": 2.44
+    },
+    {
+     "ctor": "heap number",
+     "mb": 1.99
+    },
+    {
+     "ctor": "(sin nombre)",
+     "mb": 1.6
+    },
+    {
+     "ctor": "system / TrustedByteArray",
+     "mb": 1.51
+    },
+    {
+     "ctor": "Uint32Array",
+     "mb": 1.42
+    },
+    {
+     "ctor": "system / BytecodeArray",
+     "mb": 1.32
+    },
+    {
+     "ctor": "blink::PlainTextNode",
+     "mb": 1.24
+    },
+    {
+     "ctor": "Array",
+     "mb": 1.06
+    },
+    {
+     "ctor": "blink::HeapHashTableBacking<blink::HashTable<std::pair<blink::String, blink::TextDirection>, blink::KeyValuePair<std::pair<blink::String, blink::TextDirection>, blink::FrameShapeCache::ShapeEntry>, blink::KeyValuePairExtractor, blink::HashMapValueTraits<blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HashTraits<blink::FrameShapeCache::ShapeEntry>>, blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HeapAllocator>>",
+     "mb": 0.86
+    },
+    {
+     "ctor": "(object properties)",
+     "mb": 0.77
+    },
+    {
+     "ctor": "system / Map",
+     "mb": 0.7
+    },
+    {
+     "ctor": "system / FeedbackVector",
+     "mb": 0.56
+    },
+    {
+     "ctor": "Float32Array",
+     "mb": 0.49
+    },
+    {
+     "ctor": "Lt",
+     "mb": 0.47
+    },
+    {
+     "ctor": "system / DescriptorArray",
+     "mb": 0.45
+    },
+    {
+     "ctor": "se",
+     "mb": 0.42
+    },
+    {
+     "ctor": "Int16Array",
+     "mb": 0.41
+    },
+    {
+     "ctor": "Int8Array",
+     "mb": 0.41
+    },
+    {
+     "ctor": "blink::ScriptResource",
+     "mb": 0.4
+    },
+    {
+     "ctor": "system / ProtectedFixedArray",
+     "mb": 0.34
+    },
+    {
+     "ctor": "system / WeakArrayList",
+     "mb": 0.33
+    },
+    {
+     "ctor": "ta",
+     "mb": 0.32
+    },
+    {
+     "ctor": "(constant pool)",
+     "mb": 0.3
+    },
+    {
+     "ctor": "system / Code",
+     "mb": 0.29
+    },
+    {
+     "ctor": "system / ScopeInfo",
+     "mb": 0.28
+    },
+    {
+     "ctor": "system / FunctionTemplateInfo",
+     "mb": 0.28
+    },
+    {
+     "ctor": "blink::HashTrieNode<blink::CSSVariableData>",
+     "mb": 0.27
+    },
+    {
+     "ctor": "blink::ImmutableCSSPropertyValueSet",
+     "mb": 0.27
+    },
+    {
+     "ctor": "blink::HeapHashTableBacking<blink::HashTable<std::pair<blink::String, blink::TextDirection>, blink::KeyValuePair<std::pair<blink::String, blink::TextDirection>, blink::FrameShapeCache::NodeEntry>, blink::KeyValuePairExtractor, blink::HashMapValueTraits<blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HashTraits<blink::FrameShapeCache::NodeEntry>>, blink::HashTraits<std::pair<blink::String, blink::TextDirection>>, blink::HeapAllocator>>",
+     "mb": 0.26
+    },
+    {
+     "ctor": "system / PropertyArray",
+     "mb": 0.26
+    },
+    {
+     "ctor": "blink::ImageResource",
+     "mb": 0.25
+    },
+    {
+     "ctor": "WebGLUniformLocation",
+     "mb": 0.22
+    },
+    {
+     "ctor": "sn",
+     "mb": 0.22
+    },
+    {
+     "ctor": "Uint8Array",
+     "mb": 0.22
+    },
+    {
+     "ctor": "blink::NetworkResourcesData::ResourceData",
+     "mb": 0.22
+    }
+   ],
+   "abDet": {
+    "umbralKB": 64,
+    "totalMB": 170,
+    "n": 512,
+    "huerfanos": 0,
+    "cubetas": {
+     "64-256K": {
+      "n": 48098,
+      "mb": 101.14
+     },
+     "256K-1M": {
+      "n": 92,
+      "mb": 46.3
+     },
+     "1-4M": {
+      "n": 27,
+      "mb": 47.6
+     },
+     ">4M": {
+      "n": 5,
+      "mb": 29.61
+     }
+    },
+    "grupos": [
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Float32Array",
+      "b": 86434568,
+      "n": 245
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Float32Array",
+      "b": 48285684,
+      "n": 190
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint32Array",
+      "b": 18764292,
+      "n": 12
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  ·→Memory",
+      "b": 9568256,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Uint32Array",
+      "b": 8026940,
+      "n": 9
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint16Array",
+      "b": 3494498,
+      "n": 29
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Uint16Array",
+      "b": 2785122,
+      "n": 19
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint8Array",
+      "b": 332369,
+      "n": 2
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Int32Array",
+      "b": 317288,
+      "n": 3
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  58→system / InstructionStream",
+      "b": 150544,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint8ClampedArray",
+      "b": 147456,
+      "n": 1
+     }
+    ],
+    "top": [
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Float32Array",
+      "mb": 82.43,
+      "n": 245
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Float32Array",
+      "mb": 46.05,
+      "n": 190
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint32Array",
+      "mb": 17.9,
+      "n": 12
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  ·→Memory",
+      "mb": 9.13,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Uint32Array",
+      "mb": 7.66,
+      "n": 9
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint16Array",
+      "mb": 3.33,
+      "n": 29
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Uint16Array",
+      "mb": 2.66,
+      "n": 19
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint8Array",
+      "mb": 0.32,
+      "n": 2
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  buffer→Int32Array",
+      "mb": 0.3,
+      "n": 3
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  58→system / InstructionStream",
+      "mb": 0.14,
+      "n": 1
+     },
+     {
+      "clave": "backing_store→ArrayBuffer  ‹  [4]→Uint8ClampedArray",
+      "mb": 0.14,
+      "n": 1
+     }
+    ]
+   }
+  }
+ ],
+ "snapDiff": [
+  {
+   "ctor": "system / JSArrayBufferData",
+   "aMB": 216.2,
+   "bMB": 224.66,
+   "deltaMB": 8.45
+  },
+  {
+   "ctor": "system / ExternalStringData",
+   "aMB": 15.73,
+   "bMB": 20.15,
+   "deltaMB": 4.42
+  },
+  {
+   "ctor": "blink::ScriptResource",
+   "aMB": 0.2,
+   "bMB": 0.4,
+   "deltaMB": 0.2
+  },
+  {
+   "ctor": "blink::HashTrieNode<blink::CSSVariableData>",
+   "aMB": 0.09,
+   "bMB": 0.27,
+   "deltaMB": 0.18
+  },
+  {
+   "ctor": "{\"v\":6,\"formato\":2,\"escrito\":1794038015214,\"saveId\":\"qa-kimi2-m8997bs0\",\"profile\":{\"created\":true,\"name\":\"Estrella de la Bahía\",\"look\":null},\"comic\":{\"title\":\"Mi primera reconstrucción\",\"cover\":\"vittata\",\"layout\":\"grid\",\"order\":[0,1,2,3],\"captions\":{},\"vinetas\":{\"chapuzon\":{\"look\":{\"species\":\"vittata\",\"accessories\":{\"neck\":{\"id\":\"panuelo\",\"color\":\"#f2a03d\",\"style\":\"liso\"}}},\"seq\":1}}},\"pos\":{\"x\":-8,\"z\":-2.5,\"y\":9.779782807190335},\"facing\":{\"x\":0,\"z\":1},\"step\":0,\"inv\":{},\"collected\":[],\"complete\":false,\"explorando\":false,\"events\":[{\"id\":\"qa-kimi2-m8997bs0-1\",\"schemaVersion\":1,\"saveId\":\"qa-kimi2-m8997bs0\",\"type\":\"SkillMoment\",\"key\":\"FirstSplash\",\"chapter\":1,\"seq\":1,\"t\":10.3,\"location\":null,\"characters\":[\"vittata\"],\"choice\":null,\"outcome\":null,\"sceneTemplate\":\"splash\",\"locKey\":\"evt.FirstSplash\",\"meta\":{\"vuelo\":false}}],\"captures\":{\"chapuzon\":\"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAA",
+   "aMB": 0,
+   "bMB": 0.13,
+   "deltaMB": 0.13
+  },
+  {
+   "ctor": "system / InstructionStream",
+   "aMB": 7.02,
+   "bMB": 7.13,
+   "deltaMB": 0.11
+  },
+  {
+   "ctor": "system / Map",
+   "aMB": 0.59,
+   "bMB": 0.7,
+   "deltaMB": 0.11
+  },
+  {
+   "ctor": "system / DescriptorArray",
+   "aMB": 0.35,
+   "bMB": 0.45,
+   "deltaMB": 0.1
+  },
+  {
+   "ctor": "(object properties)",
+   "aMB": 0.7,
+   "bMB": 0.77,
+   "deltaMB": 0.08
+  },
+  {
+   "ctor": "Object",
+   "aMB": 2.37,
+   "bMB": 2.44,
+   "deltaMB": 0.07
+  },
+  {
+   "ctor": "(constant elements)",
+   "aMB": 0.04,
+   "bMB": 0.1,
+   "deltaMB": 0.07
+  },
+  {
+   "ctor": "blink::CSSVariableData",
+   "aMB": 0.11,
+   "bMB": 0.17,
+   "deltaMB": 0.06
+  },
+  {
+   "ctor": "ArrayBuffer",
+   "aMB": 2.69,
+   "bMB": 2.74,
+   "deltaMB": 0.05
+  },
+  {
+   "ctor": "blink::StyleRule",
+   "aMB": 0.12,
+   "bMB": 0.17,
+   "deltaMB": 0.05
+  },
+  {
+   "ctor": "Uint32Array",
+   "aMB": 1.38,
+   "bMB": 1.42,
+   "deltaMB": 0.04
+  },
+  {
+   "ctor": "blink::ImmutableCSSPropertyValueSet",
+   "aMB": 0.22,
+   "bMB": 0.27,
+   "deltaMB": 0.04
+  },
+  {
+   "ctor": "system / ObjectBoilerplateDescription",
+   "aMB": 0.14,
+   "bMB": 0.19,
+   "deltaMB": 0.04
+  },
+  {
+   "ctor": "Text",
+   "aMB": 0.1,
+   "bMB": 0.14,
+   "deltaMB": 0.04
+  },
+  {
+   "ctor": "system / UncompiledDataWithoutPreparseData",
+   "aMB": 0.07,
+   "bMB": 0.11,
+   "deltaMB": 0.04
+  },
+  {
+   "ctor": "blink::ComputedStyle",
+   "aMB": 0.04,
+   "bMB": 0.08,
+   "deltaMB": 0.04
+  },
+  {
+   "ctor": "blink::ComputedStyleBase::StyleSurroundData",
+   "aMB": 0.03,
+   "bMB": 0.07,
+   "deltaMB": 0.04
+  },
+  {
+   "ctor": "heap number",
+   "aMB": 1.96,
+   "bMB": 1.99,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "system / TrustedByteArray",
+   "aMB": 1.48,
+   "bMB": 1.51,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "blink::NetworkResourcesData::ResourceData",
+   "aMB": 0.19,
+   "bMB": 0.22,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "system / FeedbackCell",
+   "aMB": 0.13,
+   "bMB": 0.16,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "system / WeakFixedArray",
+   "aMB": 0.13,
+   "bMB": 0.16,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "blink::ShareableElementData",
+   "aMB": 0.04,
+   "bMB": 0.07,
+   "deltaMB": 0.03
+  },
+  {
+   "ctor": "(object elements)",
+   "aMB": 7.12,
+   "bMB": 7.14,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "system / BytecodeArray",
+   "aMB": 1.3,
+   "bMB": 1.32,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::UniqueElementData",
+   "aMB": 0.1,
+   "bMB": 0.11,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::ElementAnimations",
+   "aMB": 0.06,
+   "bMB": 0.08,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::NodeRareData",
+   "aMB": 0.05,
+   "bMB": 0.06,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::TransformPaintPropertyNode",
+   "aMB": 0.04,
+   "bMB": 0.06,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::ComputedStyleBase::StyleBoxData",
+   "aMB": 0.03,
+   "bMB": 0.06,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "system / PropertyCell",
+   "aMB": 0.03,
+   "bMB": 0.05,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::CachedMatchedProperties",
+   "aMB": 0.03,
+   "bMB": 0.04,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "system / ArrayBoilerplateDescription",
+   "aMB": 0.02,
+   "bMB": 0.04,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::CSSAnimationData",
+   "aMB": 0.01,
+   "bMB": 0.04,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::ComputedStyleBase::StyleMisc2Data",
+   "aMB": 0.01,
+   "bMB": 0.04,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::FontResource",
+   "aMB": 0.02,
+   "bMB": 0.03,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::ComputedStyleBase::StyleMiscData",
+   "aMB": 0.01,
+   "bMB": 0.03,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "system / PreparseData",
+   "aMB": 0.01,
+   "bMB": 0.03,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::HeapHashTableBacking<blink::HashTable<blink::PropertyHandle, blink::KeyValuePair<blink::PropertyHandle, cppgc::internal::BasicMember<blink::StringKeyframe::PropertyResolver, cppgc::internal::StrongMemberTag, cppgc::internal::DijkstraWriteBarrierPolicy>>, blink::KeyValuePairExtractor, blink::HashMapValueTraits<blink::HashTraits<blink::PropertyHandle>, blink::HashTraits<cppgc::internal::BasicMember<blink::StringKeyframe::PropertyResolver, cppgc::internal::StrongMemberTag, cppgc::internal::DijkstraWriteBarrierPolicy>>>, blink::HashTraits<blink::PropertyHandle>, blink::HeapAllocator>>",
+   "aMB": 0.01,
+   "bMB": 0.03,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::GridSizingTrackCollection",
+   "aMB": 0.01,
+   "bMB": 0.03,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "CSSAnimation",
+   "aMB": 0.01,
+   "bMB": 0.03,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::HeapHashTableBacking<blink::HashTable<unsigned int, blink::KeyValuePair<unsigned int, std::pair<const blink::StringImpl *, cppgc::internal::BasicMember<blink::ShareableElementData, cppgc::internal::StrongMemberTag, cppgc::internal::DijkstraWriteBarrierPolicy>>>, blink::KeyValuePairExtractor, blink::HashMapValueTraits<blink::AlreadyHashedTraits, blink::HashTraits<std::pair<const blink::StringImpl *, cppgc::internal::BasicMember<blink::ShareableElementData, cppgc::internal::StrongMemberTag, cppgc::internal::DijkstraWriteBarrierPolicy>>>>, blink::AlreadyHashedTraits, blink::HeapAllocator>>",
+   "aMB": 0,
+   "bMB": 0.02,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "blink::CSSStyleSheetResource",
+   "aMB": 0,
+   "bMB": 0.02,
+   "deltaMB": 0.02
+  },
+  {
+   "ctor": "Array",
+   "aMB": 1.05,
+   "bMB": 1.06,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "Int16Array",
+   "aMB": 0.4,
+   "bMB": 0.41,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "Int8Array",
+   "aMB": 0.4,
+   "bMB": 0.41,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "system / ProtectedFixedArray",
+   "aMB": 0.32,
+   "bMB": 0.34,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "(constant pool)",
+   "aMB": 0.29,
+   "bMB": 0.3,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "system / ScopeInfo",
+   "aMB": 0.27,
+   "bMB": 0.28,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "system / FunctionTemplateInfo",
+   "aMB": 0.27,
+   "bMB": 0.28,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "blink::ImageResource",
+   "aMB": 0.24,
+   "bMB": 0.25,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "Uint8Array",
+   "aMB": 0.22,
+   "bMB": 0.22,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "(concatenated string)",
+   "aMB": 0.19,
+   "bMB": 0.2,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "blink::DocumentLoader",
+   "aMB": 0.13,
+   "bMB": 0.14,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "system / SharedFunctionInfo",
+   "aMB": 0.11,
+   "bMB": 0.13,
+   "deltaMB": 0.01
+  },
+  {
+   "ctor": "PerformanceResourceTiming",
+   "aMB": 0.08,
+   "bMB": 0.09,
+   "deltaMB": 0.01
+  }
+ ],
+ "abDiff": [
+  {
+   "clave": "backing_store→ArrayBuffer  ‹  buffer→Float32Array",
+   "aMB": 42.4,
+   "bMB": 46.05,
+   "deltaMB": 3.65,
+   "aN": 187,
+   "bN": 190
+  },
+  {
+   "clave": "backing_store→ArrayBuffer  ‹  [4]→Float32Array",
+   "aMB": 79.96,
+   "bMB": 82.43,
+   "deltaMB": 2.47,
+   "aN": 234,
+   "bN": 245
+  },
+  {
+   "clave": "backing_store→ArrayBuffer  ‹  buffer→Uint32Array",
+   "aMB": 5.5,
+   "bMB": 7.66,
+   "deltaMB": 2.16,
+   "aN": 8,
+   "bN": 9
+  }
+ ]
+}
