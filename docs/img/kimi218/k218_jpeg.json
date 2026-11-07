@@ -1,0 +1,128 @@
+{
+ "etiqueta": "k218-jpeg",
+ "que": "JPEG misma resolución recomprimidos (palanca KIMI-218)",
+ "umbrales": {
+  "assets/models/edificios/tex_hd/hd_savage_lq1024.jpg": {
+   "media": 2.5,
+   "max": 14
+  },
+  "assets/models/edificios/tex_hd/hd_ancient_lq1024.jpg": {
+   "media": 2.5,
+   "max": 14
+  },
+  "assets/tex/entorno/suelo_musgo_n.jpg": {
+   "media": 1.5,
+   "max": 10
+  }
+ },
+ "archivos": {
+  "assets/models/edificios/tex_hd/hd_savage_lq1024.jpg": {
+   "dim": "1024x1024",
+   "bytesOrig": 406047,
+   "esNormalMap": false,
+   "tabla": [
+    {
+     "q": 0.9,
+     "bytes": 389963,
+     "diffMedia": 1.376,
+     "diffMax": 12,
+     "diffPct": 4.574
+    },
+    {
+     "q": 0.82,
+     "bytes": 242381,
+     "diffMedia": 3.777,
+     "diffMax": 39,
+     "diffPct": 46.376
+    },
+    {
+     "q": 0.75,
+     "bytes": 211124,
+     "diffMedia": 4.171,
+     "diffMax": 35,
+     "diffPct": 51.686
+    },
+    {
+     "q": 0.68,
+     "bytes": 186518,
+     "diffMedia": 4.806,
+     "diffMax": 43,
+     "diffPct": 58.441
+    }
+   ],
+   "elegido": null
+  },
+  "assets/models/edificios/tex_hd/hd_ancient_lq1024.jpg": {
+   "dim": "1024x1024",
+   "bytesOrig": 326746,
+   "esNormalMap": false,
+   "tabla": [
+    {
+     "q": 0.9,
+     "bytes": 315659,
+     "diffMedia": 1.001,
+     "diffMax": 14,
+     "diffPct": 1.061
+    },
+    {
+     "q": 0.82,
+     "bytes": 180941,
+     "diffMedia": 3.103,
+     "diffMax": 44,
+     "diffPct": 33.487
+    },
+    {
+     "q": 0.75,
+     "bytes": 151982,
+     "diffMedia": 3.319,
+     "diffMax": 42,
+     "diffPct": 37.723
+    },
+    {
+     "q": 0.68,
+     "bytes": 133646,
+     "diffMedia": 3.691,
+     "diffMax": 51,
+     "diffPct": 43.847
+    }
+   ],
+   "elegido": null
+  },
+  "assets/tex/entorno/suelo_musgo_n.jpg": {
+   "dim": "1024x1024",
+   "bytesOrig": 288641,
+   "esNormalMap": true,
+   "tabla": [
+    {
+     "q": 0.9,
+     "bytes": 293729,
+     "diffMedia": 1.132,
+     "diffMax": 9,
+     "diffPct": 2.716
+    },
+    {
+     "q": 0.82,
+     "bytes": 234092,
+     "diffMedia": 2.811,
+     "diffMax": 34,
+     "diffPct": 48.963
+    },
+    {
+     "q": 0.75,
+     "bytes": 161207,
+     "diffMedia": 3.619,
+     "diffMax": 34,
+     "diffPct": 67.133
+    },
+    {
+     "q": 0.68,
+     "bytes": 141617,
+     "diffMedia": 3.751,
+     "diffMax": 34,
+     "diffPct": 69.167
+    }
+   ],
+   "elegido": null
+  }
+ }
+}
