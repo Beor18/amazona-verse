@@ -28,7 +28,13 @@ window.AVV18Chispa = function (G) {
   // cruzaba matorrales y troncos (libre -0,09 m, 2 sólidos): Vittata se atascaba en el banderín 3 y Chispa ganaba. Los 4 banderines pasan
   // a pasillos libres medidos con la misma sonda en el juego (rejilla de 1 m: libre ≥ 1,7 m en cada tramo, en seco, sin sólidos, pendiente ≤ 0,2).
   // Misma salida y misma vuelta de 5 tramos y 70 m, con el primer banderín en la plaza. Sin tocar modelos ni vegetación.
-  const SITIO = { salida: { x: 49.8, z: 54.3, rotY: -1.74 }, puntos: [{ x: 39.8, z: 54.3 }, { x: 31.8, z: 62.3 }, { x: 45.8, z: 78.3 }, { x: 41.8, z: 62.3 }] };
+  // QA-203: esa sonda se hizo con lo que había cargado en una sesión nueva, sin el streaming de Los Portales del Río. Con la zona
+  // kelvin_aldea_rio_este_3 cargada (lo que ve el jugador al llegar) el tramo hacia el banderín 3 (45,8, 78,3) cruzaba el portal de
+  // madera (portal_madera_b #2: libre -0,01 m, 7 sólidos de techo y baranda), y junto a (29, 57) hay un toldo bajo con su poste donde
+  // Vittata se atasca. Vuelta nueva medida con todo cargado (streaming terminado, sólidos de casas y flora rasterizados; rejilla de
+  // 0,5 m, pasillo de ±1,2 m sin sólidos ni toldos bajo el cuerpo, libre ≥ 1,7 m en el eje de cada tramo, en seco, pendiente ≤ 0,5).
+  // La salida se corre 4 m al oeste, a la plaza; vuelta de 5 tramos y 72 m.
+  const SITIO = { salida: { x: 45.8, z: 54.3, rotY: -1.74 }, puntos: [{ x: 41.8, z: 62.3 }, { x: 19.8, z: 60.3 }, { x: 23.8, z: 68.3 }, { x: 37.8, z: 70.3 }] };
   const RUTA = SITIO.puntos.concat([{ x: SITIO.salida.x, z: SITIO.salida.z, meta: true }]);
   const TXT = {
     nombre: 'Carrera con Chispa', label: 'Echar una carrera con Chispa',
@@ -275,6 +281,12 @@ window.AVV18Chispa = function (G) {
     const correr = (s, h) => { h = h || 1 / 30; for (let t = 0; t < s; t += h) { N.paso(h, false); paso(h); } };
     const ir = (x, z) => { S.pos.x = x; S.pos.z = z; S.pos.y = H(x, z) + 0.02; S.vy = 0; MV.flying = false; MV.swimming = false; MV.grounded = true; MV.vx = MV.vz = 0; };
     const recursos = () => (performance.getEntriesByType('resource') || []).map(r => r.name).filter(n => /models\/personajes\/chispa/.test(n));
+    // QA-203: el sitio se mide con el entorno cargado del todo, como lo encuentra el jugador al llegar (y no con lo que una
+    // prueba anterior dejó a medias): se fuerza el streaming de edificios alrededor, se espera a que su cola termine, a que
+    // solidos.js recoja los edificios nuevos (lo hace cada 2 s) y se rasteriza todo lo pendiente (edificios y flora)
+    const asentar = async (x, z) => { ir(x, z); correr(0.05); const ST = G.mundo && G.mundo.streaming;
+      if (ST && ST.alrededor) { try { await Promise.race([ST.alrededor(x, z), esperar(60000)]); if (ST.terminar) await ST.terminar({ topeMs: 60000 }); } catch (e) { /* */ } }
+      await esperar(2300); try { if (G.solidos && G.solidos.terminar) G.solidos.terminar(); } catch (e) { /* */ } };
     const cerrar = () => { try { G.dialogo.clear(); } catch (e) { /* */ } try { G.dialogo.cancelarLibre && G.dialogo.cancelarLibre(); } catch (e) { /* */ } };
     // corre la carrera entera: con «jugar» Vittata corre (Mayús + W) hacia el siguiente banderín, como un jugador con teclado
     const carrera = (jugar) => {
@@ -325,27 +337,26 @@ window.AVV18Chispa = function (G) {
       check('4 · Cerca (< 90 m) aparece Chispa con su modelo propio y sus acciones (Idle, Correr, Celebrar); máx. 2 personajes', !!inst && !inst.provisional && ['Idle', 'Correr', 'Celebrar'].every(n => inst.acciones[n]) && N.activos().length <= N.MAX_ACTIVOS && N.stats().pedidos.some(p => /chispa\.glb/.test(p)),
         inst ? Object.keys(inst.acciones).join(',') + ' · activos ' + N.activos().join(',') : 'sin instancia');
       // 5 · el sitio: en seco, sin troncos, colisiones ni sólidos en la ruta; lejos del puerto, del minigolf y de la explanada del duelo
-      for (const p of RUTA) { ir(p.x, p.z); correr(0.05); await esperar(400); } // que el streaming cargue los sólidos (casas, ramas) de toda la ruta
-      try { if (G.solidos && G.solidos.terminar) G.solidos.terminar(); } catch (e) { /* */ }
+      for (const p of RUTA) await asentar(p.x, p.z); // QA-203: lo que ve el jugador allí: streaming de la zona cargado del todo y sus sólidos (casas, ramas) rasterizados
       const VG = G.vegetacion, P = VG && VG.instancias, inf = VG && VG.info, tr = [];
       if (P && inf) for (const m in P) { const I = inf[m], PM = P[m]; if (!I || !PM) continue; const roca = /roca|piedra|tronco/.test(m); if (!roca && !(I.tronco >= 0.05)) continue;
         for (let i = 0; i < PM.n; i++) { const x = PM.pos[i * 4], z = PM.pos[i * 4 + 2], sc = PM.pos[i * 4 + 3]; if (Math.hypot(x - SITIO.salida.x, z - SITIO.salida.z) < 45) tr.push({ x, z, r: roca ? Math.max(0.5, (I.ancho || 1) * 0.5 * sc) : Math.max(0.2, I.tronco * sc) }); } }
       const cols = (F.colliders || []).filter(c => c && c.x != null && Math.hypot(c.x - SITIO.salida.x, c.z - SITIO.salida.z) < 50 && !/^v18npc/.test(c.id || ''));
       const dCol = (x, z, c) => c.hx ? Math.hypot(Math.max(0, Math.abs(x - c.x) - c.hx), Math.max(0, Math.abs(z - c.z) - c.hz)) : Math.hypot(x - c.x, z - c.z) - (c.r || 0);
-      let mT = 99, mojado = 0, solido = 0, largo = 0, pend = 0;
+      let peor = '', mT = 99, mojado = 0, solido = 0, largo = 0, pend = 0;
       for (let i = 0; i < RUTA.length; i++) { const a = i ? RUTA[i - 1] : SITIO.salida, b = RUTA[i], L = Math.hypot(b.x - a.x, b.z - a.z); largo += L; let hp = H(a.x, a.z);
         for (let s = 0; s <= L; s += 0.5) { const x = a.x + (b.x - a.x) * s / L, z = a.z + (b.z - a.z) * s / L, h = H(x, z);
           pend = Math.max(pend, Math.abs(h - hp) / 0.5); hp = h;
           if (G.agua && G.agua.levelAt(x, z) > h - 0.3) mojado++;
-          for (const t of tr) mT = Math.min(mT, Math.hypot(x - t.x, z - t.z) - t.r);
-          for (const c of cols) mT = Math.min(mT, dCol(x, z, c));
+          for (const t of tr) { const d = Math.hypot(x - t.x, z - t.z) - t.r; if (d < mT) { mT = d; peor = 'tronco'; } }
+          for (const c of cols) { const d = dCol(x, z, c); if (d < mT) { mT = d; peor = c.id || c.kind || '?'; } }
           if (G.solidos && G.solidos.activo && [0.3, 0.9, 1.5, 2.5].some(y => G.solidos.dentro(x, z, h + y) > -Infinity)) solido++; } }
       const puerto = { x: 73.6, z: -75.2 }, golf = G.v18minigolf && G.v18minigolf.sitio, duelo = G.v18combate && G.v18combate.sitio;
       const dist = q => q ? Math.hypot(q.x - SITIO.salida.x, q.z - SITIO.salida.z) : Infinity;
       const lejos = { puerto: dist(puerto), villa: dist(villa), golf: dist(golf), duelo: dist(duelo) };
       check('5 · Sitio abierto: ruta de ' + RUTA.length + ' puntos en seco, sin troncos, colisiones ni sólidos; lejos del puerto, del minigolf y del duelo (> 120 m)',
         !mojado && !solido && mT >= 0.8 && pend < 0.9 && Math.min(lejos.puerto, lejos.villa, lejos.golf, lejos.duelo) > 120 && (!G.zonas || !G.zonas.zonaEn || !G.zonas.zonaEn(SITIO.salida.x, SITIO.salida.z)),
-        'largo ' + largo.toFixed(0) + ' m · libre ' + mT.toFixed(2) + ' m · pendiente ' + pend.toFixed(2) + ' · mojado ' + mojado + ' · sólidos ' + solido + ' · ' + Object.keys(lejos).map(k => k + ' ' + (isFinite(lejos[k]) ? lejos[k].toFixed(0) : '—')).join(' '));
+        'largo ' + largo.toFixed(0) + ' m · libre ' + mT.toFixed(2) + ' m' + (mT < 0.8 ? ' (' + peor + ')' : '') + ' · pendiente ' + pend.toFixed(2) + ' · mojado ' + mojado + ' · sólidos ' + solido + ' · ' + Object.keys(lejos).map(k => k + ' ' + (isFinite(lejos[k]) ? lejos[k].toFixed(0) : '—')).join(' '));
       // 6 · minimapa
       const mm = mapa();
       check('6 · Marcador del minimapa en Chispa, con nombre', mm && mm.nombre === TXT.nombre && Math.hypot(mm.x - SITIO.salida.x, mm.z - SITIO.salida.z) < 0.1);
