@@ -820,6 +820,9 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
       let sAntes = null;
       return (async () => {
         try {
+          // El marcador crea S.marcador al cargarse y al leerlo la primera vez: se materializa antes de la foto de la partida
+          if (!G.marcador && G.cargarMarcador) await G.cargarMarcador().catch(() => null);
+          if (G.marcador && G.marcador.tiempo) G.marcador.tiempo();
           await crearPool(); sAntes = comparable(S);
           check('Declaración completa (id, nombre, recursos, cámara, controles, inicio, victoria, persecución, puntuación, música, resultados, récords) y publicado (BI2)', ['id', 'nombre', 'descripcion', 'recursos', 'camara', 'controles', 'inicio', 'victoria', 'persecucion', 'puntuacion', 'musica', 'resultados', 'records'].every(k => DECL[k] != null) && DECL.oculto === false);
           const ok = await abrir();
