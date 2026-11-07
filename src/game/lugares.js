@@ -240,6 +240,23 @@ AVE.module('lugares', function (G) {
         fade.remove(); cola.length = 0; espera = 0;
         check('Durante la apertura del cap. 1 el aviso también espera (QA-188)', okEspera);
       }
+      // QA-197 (auditoría 7-nov): el título a pantalla completa «Descubriste» (#fx-descubre, z 40,
+      // src/engine/fx.js) usa el mismo criterio: con la historia ocupada se encola y sale al liberarse
+      {
+        const capaFx = () => document.getElementById('fx-descubre');
+        if (capaFx()) capaFx().style.display = 'none'; // base: sin destello previo en pantalla (1,5 s reales de ventana)
+        const sal197 = document.createElement('div'); sal197.id = 'c1-saltar'; document.body.appendChild(sal197);
+        G.quiet = false;
+        G.emit('lugar', { id: 'qa197', nombre: 'Punto QA-197' });
+        const esperaFx = !capaFx() || capaFx().style.display === 'none';
+        sal197.remove();
+        for (let i = 0; i < 10; i++) { if (G.fx && G.fx.update) G.fx.update(0.05); }
+        const okFx = !!capaFx() && capaFx().style.display !== 'none' && capaFx().querySelector('.fx-d2').textContent === 'Punto QA-197';
+        if (capaFx()) capaFx().style.display = 'none'; // dejar el overlay como estaba
+        G.quiet = true;
+        check('QA-197 · con la apertura en curso el «Descubriste» a pantalla completa espera', esperaFx, capaFx() ? 'display=' + capaFx().style.display : 'sin capa');
+        check('QA-197 · y sale en cuanto la historia queda libre', okFx, capaFx() ? capaFx().querySelector('.fx-d2').textContent : 'sin capa');
+      }
       // QA-195 (W28): en ≤560px, con el aviso SUBIDO (diálogo/bocadillos abiertos), el CSS lo baja
       // bajo el minimapa (top = max(118px, --mm-top + --mm + 8px)): geometría real contra #minimapa.
       {
