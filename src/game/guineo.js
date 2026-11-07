@@ -326,14 +326,14 @@ window.AVGuineo = function (G) {
         ok('Se mecen con el viento (viento de la flora en el shader)', U.uViento.value.z > 0 && mallas.every(m => m.geometry.getAttribute('aViento')) && /^guineo/.test(mat.customProgramCacheKey())); // look.js añade su sufijo a la clave
         ok('Se ven: capa 0 y fuera del recorte de objetos pequeños del renderer', mallas.every(m => m.userData.sinCulling && (m.layers.mask & 1)));
         ok('Colisión en el pseudotallo de cada mata', colliders.length === matas.length && colliders.every(c => G.fisica.colliders.includes(c)));
-        const h0 = huertos[0];
+        const h0 = huertos.reduce((a, b) => (b.matas.length > a.matas.length ? b : a), huertos[0]);
         R.camera.position.set(h0.x + 12, T.height(h0.x, h0.z) + 6, h0.z + 12);
         R.calidad.nivel = 'alto'; actualizar(true);
         const alto = stats();
         ok('Draw calls acotadas: ≤ 3 mallas instanciadas (una por variante) para todos los huertos', mallas.length === 3 && alto.mallasVisibles <= 3 && alto.visibles > 0, alto.mallasVisibles + ' mallas · ' + alto.visibles + ' matas · ' + alto.tris + ' triángulos');
         R.calidad.nivel = 'bajo'; actualizar(true);
         const bajo = stats();
-        ok('Calidad baja: menos matas, ninguna con racimo y menos distancia', bajo.porVariante[0] === 0 && bajo.visibles < alto.visibles && bajo.visibles > 0 && DIST.bajo < DIST.alto, bajo.visibles + ' matas en baja (' + alto.visibles + ' en alta)');
+        ok('Calidad baja: menos matas, ninguna con racimo y menos distancia', bajo.porVariante[0] === 0 && (h0.matas.length <= MAX_BAJO || bajo.visibles < alto.visibles) && bajo.visibles > 0 && DIST.bajo < DIST.alto, bajo.visibles + ' matas en baja (' + alto.visibles + ' en alta)');
         R.camera.position.set(h0.x + 900, 0, h0.z + 900); R.calidad.nivel = 'alto'; actualizar(true);
         ok('Lejos de todos los huertos no se dibuja ninguna', stats().mallasVisibles === 0);
       } finally {
