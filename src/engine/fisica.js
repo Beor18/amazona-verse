@@ -290,6 +290,7 @@ AVE.module('fisica', function (G) {
   }
   function desencajar(dt, SOL, pen, h, pide) {
     // Un salto de más de 2 m desde el cuadro anterior es un teletransporte (misión, prueba, cargar partida): lo de antes no cuenta
+    ATS.reloj = (ATS.reloj || 0) + dt; // tiempo de juego para la regla del lugar seguro
     const u = ATS.ult; ATS.ult = { x: S.pos.x, y: S.pos.y, z: S.pos.z };
     if (u && Math.hypot(S.pos.x - u.x, S.pos.y - u.y, S.pos.z - u.z) > 2) { ATS.t = 0; ATS.salida = null; MOVE.atasco = 0; }
     // Saliendo: sigue hasta el punto libre aunque a medio camino ya no cuente como metida (los pies en el borde de una losa)
@@ -308,13 +309,14 @@ AVE.module('fisica', function (G) {
     ATS.t += dt; MOVE.atasco = ATS.t;
     if (ATS.t <= T.atasco) return;
     ATS.t = 0; MOVE.atasco = 0;
-    // Kelvin 7-nov: para no volver a caer en la misma trampa, si se atasca otra vez cerca (25 m) antes de 30 s, Vittata
-    // reaparece siempre en el mismo lugar seguro: el punto de aparición del capítulo (G.guardado.spawn), sobre el suelo
-    const ahora = performance.now(), prev = ATS.ultRecoloca;
-    ATS.ultRecoloca = { t: ahora, x: S.pos.x, z: S.pos.z };
+    // Kelvin 7-nov: para no caer una y otra vez en la misma trampa, si la red tiene que sacarla 3 veces en 20 s de juego
+    // dentro de 8 m (un bucle de atasco, no un roce suelto), Vittata reaparece siempre en el mismo lugar seguro: el punto de
+    // aparición del capítulo (G.guardado.spawn), sobre el suelo
+    const hist = (ATS.hist || []).filter(r => ATS.reloj - r.t < 20 && Math.hypot(S.pos.x - r.x, S.pos.z - r.z) < 8);
+    hist.push({ t: ATS.reloj, x: S.pos.x, z: S.pos.z }); ATS.hist = hist;
     const sp = G.guardado && G.guardado.spawn;
-    if (prev && sp && ahora - prev.t < 30000 && Math.hypot(S.pos.x - prev.x, S.pos.z - prev.z) < 25 && Math.hypot(S.pos.x - sp.x, S.pos.z - sp.z) > 25) {
-      ATS.ultRecoloca = null; MOVE.flying = false; MOVE.landing = false; MOVE.takeoff = 0;
+    if (hist.length >= 3 && sp && Math.hypot(S.pos.x - sp.x, S.pos.z - sp.z) > 25) {
+      ATS.hist = []; MOVE.flying = false; MOVE.landing = false; MOVE.takeoff = 0;
       recolocar({ x: sp.x, z: sp.z, y: suelo(sp.x, sp.z, G.terreno.height(sp.x, sp.z) + 40) + 0.05, como: 'seguro' });
       return;
     }
