@@ -111,7 +111,7 @@ window.AVV18Chispa = function (G) {
         '#v18-chispa .vc-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd23f;text-shadow:0 2px 0 #b35a00}#v18-chispa .vc-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
         // QA móvil: el panel (centrado, 300 px) tapaba el objetivo, el reloj, los contadores y medio minimapa. En el teléfono, como el duelo y la
         // Sombra, el objetivo se oculta durante la carrera y el panel va a la izquierda, sin llegar al minimapa (que sigue: marca el banderín)
-        '@media (max-width:760px){body.v18-chispa-on #quest{display:none}#v18-chispa{top:calc(env(safe-area-inset-top,0px) + 64px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}}';
+        '@media (max-width:760px){body.v18-chispa-on #quest{display:none}#v18-chispa{top:calc(env(safe-area-inset-top,0px) + 58px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}#v18-chispa .vc-n{font-size:calc(30px * var(--fs-k,1));line-height:1}}'; // W29a: más compacto, para que el aviso (bajo el minimapa) no tape la última fila
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-chispa'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
