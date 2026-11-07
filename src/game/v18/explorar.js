@@ -231,6 +231,13 @@ window.AVV18Explorar = function (G) {
           if (rp.height && rp.right > izqB && window.innerHeight - rp.top + 8 > alto - 4 && window.innerHeight - rp.bottom < alto + (b.offsetHeight || 44)) alto = Math.max(alto, window.innerHeight - rp.top + 8);
         }
         const bo = Math.round(alto) + 'px', de = Math.max(8, Math.round(window.innerWidth - ra.right)) + 'px'; if (b.style.bottom !== bo) b.style.bottom = bo; if (b.style.right !== de) b.style.right = de;
+        // W29 (móvil): ya subido por encima del aviso, si quedara sobre los botones de sistema (Pausa, Gestos, Diario, Nido) taparía la Pausa
+        // (no habría cómo salir): mientras dure el aviso se oculta; el poder sigue en G y vuelve en cuanto el aviso se va
+        const pw = b.offsetWidth || 120, ph = b.offsetHeight || 44, bR = window.innerWidth - Math.max(8, window.innerWidth - ra.right), bB = window.innerHeight - alto;
+        for (const id of ['b-menu', 'b-emotes', 'b-diary', 'b-nido']) {
+          const e = document.getElementById(id), re = e && !e.hidden && e.getBoundingClientRect();
+          if (re && re.width && !(bR <= re.left || re.right <= bR - pw || bB <= re.top || re.bottom <= bB - ph)) { b.hidden = true; break; }
+        }
       }
       if (ver) { const nombre = (G.v18hab && G.v18hab.get(G.v18hab.poderDe(especie())) || {}).nombre || 'Poder'; if (b.textContent !== nombre) b.textContent = nombre; }
     }
