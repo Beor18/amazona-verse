@@ -11,6 +11,7 @@
    tras cada prueba (sobrevive a cortes) y sale 1 si hay error de herramienta o de consola nueva.
 
    Uso: node tools/build/kimi1_106.js --etiqueta r1 [--bandera 0|1] [--solo fx|ciclo|...]
+                                        [--reinicia-cada N] ( QA-111 residual: rearranque preventivo del navegador cada N pruebas )
 */
 'use strict';
 const http = require('http');
@@ -30,6 +31,12 @@ const SOLO = arg('--solo', '');
 const BANDERA = arg('--bandera', '1') !== '0'; // 1 = ?v18=1 (default), 0 = regresión sin bandera
 const ESCRITORIO = process.argv.includes('--escritorio');
 const TACTIL = process.argv.includes('--tactil'); // emula puntero grueso (botones táctiles del HUD; QA-185/187)
+// QA-111 residual (palanca de KIMI-199 portada de kimi2_empezar.js): rearranque preventivo del navegador
+// cada N pruebas (0 = apagado: comportamiento actual). La suite monolítica de 18 pruebas se comía 1-2
+// crashes del proceso de GPU en Chrome 156 (carga acumulada de teleports+GLB entre navegaciones); cada
+// prueba recarga la página, pero el PROCESO del navegador envejece igual: reiniciarlo cada N pruebas
+// sale por ~10-20 s de reentrada y lo deja fresco.
+const REINICIA_CADA = parseInt(arg('--reinicia-cada', '0'), 10) || 0;
 const ANCHO = ESCRITORIO ? 1600 : 390, ALTO = ESCRITORIO ? 900 : 844, DPR = ESCRITORIO ? 1 : 3, CPUX = ESCRITORIO ? 1 : 4;
 const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi106r'));
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -149,6 +156,7 @@ async function lanzarChrome() {
     '--window-size=390,844', 'about:blank'];
   const chrome = spawn(CHROME, args, { stdio: ['ignore', 'ignore', 'pipe'] });
   let err = ''; chrome.stderr.on('data', d => { err += d; });
+  chrome.verStderr = () => err;
   const puertoFile = path.join(perf, 'DevToolsActivePort');
   for (let i = 0; i < 150; i++) {
     if (fs.existsSync(puertoFile)) { const l = fs.readFileSync(puertoFile, 'utf8').split('\n'); if (l.length > 1 && l[1].trim()) return { chrome, perf, puerto: parseInt(l[0], 10), wsPath: l[1].trim() }; }
@@ -182,26 +190,60 @@ async function cargarPagina(cdp, ses, origen, id) {
   const lista = SOLO ? PRUEBAS.filter(p => SOLO.split(',').includes(p.id)) : PRUEBAS;
   const res = { etiqueta: ETIQUETA, bandera: BANDERA ? 'v18=1' : 'sin bandera', pantalla: ESCRITORIO ? `escritorio ${ANCHO}x${ALTO}@${DPR} cpuX${CPUX}` : `movil ${ANCHO}x${ALTO}@${DPR} cpuX${CPUX} (iPhone emulado)`, head: null, pruebas: {} };
   const outJson = path.join(SALIDA, `k106_${ETIQUETA}${BANDERA ? '' : '_sinbandera'}.json`);
-  const { chrome, perf, puerto: puertoDev, wsPath } = await lanzarChrome();
-  const ws = new WebSocket(`ws://127.0.0.1:${puertoDev}${wsPath}`);
-  const cdp = new CDP(ws); await cdp.listo();
-  try {
-    const tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
-    const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
-    for (const m of ['Page.enable', 'Runtime.enable', 'Log.enable']) await cdp.call(m, {}, ses);
-    await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: !ESCRITORIO }, ses);
-    await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPUX }, ses);
-    if (!ESCRITORIO) await cdp.call('Emulation.setUserAgentOverride', { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' }, ses);
-    if (TACTIL) { await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, ses); await cdp.call('Emulation.setEmitTouchEventsForMouse', { enabled: true, configuration: 'mobile' }, ses); }
-    await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_JS }, ses);
-    const errores = [];
+  let navegador = await lanzarChrome();
+  let ws = new WebSocket(`ws://127.0.0.1:${navegador.puerto}${navegador.wsPath}`);
+  let cdp = new CDP(ws); await cdp.listo();
+  let ses = null;
+  const errores = [];
+  // El listener va sobre el ws vigente: tras un reinicio hay que reengancharlo (reiniciarChrome lo hace).
+  function engancharErrores() {
     cdp.ws.addEventListener('message', m => {
       try { const d = JSON.parse(m.data);
         if (d.method === 'Runtime.consoleAPICalled' && d.params.type === 'error') errores.push('console.error: ' + (d.params.args || []).map(a => a.value || a.description || '').join(' ').slice(0, 300));
         if (d.method === 'Log.entryAdded' && d.params.entry && d.params.entry.level === 'error') errores.push('log: ' + String(d.params.entry.text).slice(0, 300));
       } catch (e) { }
     });
+  }
+  async function prepararSesion() {
+    const tid = (await cdp.call('Target.createTarget', { url: 'about:blank' })).targetId;
+    ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
+    for (const m of ['Page.enable', 'Runtime.enable', 'Log.enable']) await cdp.call(m, {}, ses);
+    await cdp.call('Emulation.setDeviceMetricsOverride', { width: ANCHO, height: ALTO, deviceScaleFactor: DPR, mobile: !ESCRITORIO }, ses);
+    await cdp.call('Emulation.setCPUThrottlingRate', { rate: CPUX }, ses);
+    if (!ESCRITORIO) await cdp.call('Emulation.setUserAgentOverride', { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1' }, ses);
+    if (TACTIL) { await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 }, ses); await cdp.call('Emulation.setEmitTouchEventsForMouse', { enabled: true, configuration: 'mobile' }, ses); }
+    await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA_JS }, ses);
+  }
+  // QA-111 residual (KIMI-199): mata el proceso real del navegador (Chrome 156 va detached del spawn y
+  // chrome.kill() no basta: dejaría chrome.exe huérfanos robando GPU) y rearranca con sesión y emulación nuevas.
+  async function reiniciarChrome(motivo) {
+    console.log('  · rearranque del navegador (' + (motivo || 'caído') + ')…');
+    try { console.log('  · stderr del navegador (' + (motivo || 'caído') + '): ' + String(navegador.chrome.verStderr && navegador.chrome.verStderr()).replace(/\s+/g, ' ').slice(-220)); } catch (e) {}
+    try {
+      const info = await cdp.call('SystemInfo.getProcessInfo', {}, undefined, 5000);
+      const br = (info.processInfo || []).find(p => p.type === 'browser');
+      if (br && br.id) spawn('taskkill', ['/F', '/T', '/PID', String(br.id)], { stdio: 'ignore' });
+      else try { navegador.chrome.kill(); } catch (e) {}
+    } catch (e) { try { navegador.chrome.kill(); } catch (e2) {} }
+    const viejo = navegador.perf;
+    navegador = await lanzarChrome();
+    try { ws.close(); } catch (e) {}
+    ws = new WebSocket(`ws://127.0.0.1:${navegador.puerto}${navegador.wsPath}`);
+    cdp = new CDP(ws); await cdp.listo();
+    engancharErrores();
+    await prepararSesion();
+    try { fs.rmSync(viejo, { recursive: true, force: true }); } catch (e) { /* perfil en uso; lo recoge mataPorPerfil/limpieza */ }
+  }
+  try {
+    engancharErrores();
+    await prepararSesion();
+    let desdeArranque = 0;
     for (const p of lista) {
+      // QA-111 residual (KIMI-199): rearranque preventivo cada N pruebas (con --reinicia-cada N).
+      if (REINICIA_CADA > 0 && desdeArranque >= REINICIA_CADA) {
+        await reiniciarChrome('rearranque preventivo --reinicia-cada ' + REINICIA_CADA);
+        desdeArranque = 0;
+      }
       const r = { esperadoMin: p.min, erroresConsola: [] };
       try {
         await cargarPagina(cdp, ses, origen, p.id);
@@ -210,6 +252,7 @@ async function cargarPagina(cdp, ses, origen, id) {
         r.datos = JSON.parse(await evaluar(cdp, ses, jsPrueba(p), p.tope));
         r.erroresConsola = errores.slice(0, 12);
       } catch (e) { r.error = String(e && e.message || e); }
+      desdeArranque++;
       res.pruebas[p.id] = r;
       fs.writeFileSync(outJson, JSON.stringify(res, null, 1)); // incremental: sobrevive a cortes
       const d = r.datos || {};
@@ -217,9 +260,9 @@ async function cargarPagina(cdp, ses, origen, id) {
     }
   } catch (e) { res.error = String(e && e.message || e); }
   fs.writeFileSync(outJson, JSON.stringify(res, null, 1));
-  try { chrome.kill('SIGKILL'); } catch (e) { }
+  try { navegador.chrome.kill('SIGKILL'); } catch (e) { }
   mataPorPerfil();
-  try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) { }
+  try { fs.rmSync(navegador.perf, { recursive: true, force: true }); } catch (e) { }
   srv.close();
   const mal = res.error || Object.entries(res.pruebas).some(([id, p]) => p.error || (p.datos && p.datos.error) || (p.datos && p.datos.test && p.datos.test.passed < (p.esperadoMin || 1)) || (p.erroresConsola && p.erroresConsola.length));
   process.exit(mal ? 1 : 0);
