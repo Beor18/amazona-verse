@@ -305,11 +305,17 @@ window.AVV18Descubrir = function (G) {
     if (montado) return true;
     montado = true;
     elegirPerchas(); posar(0); ponerInteraccion(); crearCotorra(); pintarBoton();
-    setTimeout(() => {
-      if (avisoInicio || descubierta() || G.quiet) return;
+    // QA-186: la pista habla de Villa Raíz, así que solo sale en el cap. 1, y espera a que no haya diálogo ni historia en pantalla
+    let intentos = 0;
+    const pista = () => {
+      if (avisoInicio || descubierta() || G.quiet || !(G.pack && G.pack.id === 'cap1')) return;
+      let ocupado = true;
+      try { ocupado = G.ui.busy(); } catch (e) { return; /* sin interfaz */ }
+      if (ocupado) { if (++intentos < 20) setTimeout(pista, 3000); return; }
       avisoInicio = true;
-      try { if (!G.ui.busy()) toast(TXT.pistaInicio, 5000); } catch (e) { /* sin interfaz */ }
-    }, 9000);
+      toast(TXT.pistaInicio, 5000);
+    };
+    setTimeout(pista, 9000);
     return true;
   }
   const listo = Promise.race([
