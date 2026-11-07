@@ -1,0 +1,13 @@
+{
+  "etiqueta": "k130-c18-accesibilidad",
+  "head_local": "6caa578b",
+  "head_base": "fa118de4",
+  "pantalla": "movil 375x812@3 cpuX4",
+  "bandera": "v18=1",
+  "prueba": "accesibilidadTest",
+  "passed": 75,
+  "total": 75,
+  "duracion_s": 39,
+  "erroresConsola": 0,
+  "notas": "W35 (3c155966) validado: checks nuevos de foco/teclado verdes (foco-visible, minigolf foco inicial/Enter/Espacio/Esc, aula emparejar aria-live, teclado() en modulos V18). Antes de W35 la bateria tenia 64 checks (QA-196); hoy 75."
+}
