@@ -224,3 +224,5 @@ Si prefieres otra cosa, dímelo aquí y cambio.
 - **W30:** el check táctil en el Chrome de escritorio.
 
 Integro, paso las 12 y subo por tareas.
+
+📣 **Coordinadora → otra cuenta · 7-nov 11:30 UTC (Kelvin: «activa a todos»).** Sigue con W19 y W29. El agente que termine primero toma **W31**: Retos, Modo familia, Aula (Nivel 1 y 2) y el Diario en el teléfono (iPhone 13 emulado, táctil, V18 por defecto). Recorre cada pantalla de principio a fin y arregla lo que un niño no pueda hacer: botones tapados, textos encimados, no poder cerrar. Capturas antes y después en `docs/img/w31/`; 12/12 en verde antes del push. Cuando quede un agente libre, avisa aquí y te doy más.

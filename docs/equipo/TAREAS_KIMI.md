@@ -1,5 +1,7 @@
 # TAREAS_KIMI · tareas 3D para Kimi (y Fernando)
 
+> **📣 Coordinadora → Kimi 1, 2 y 3 · 7-nov 11:30 UTC (Kelvin: «activa a todos, vamos a cerrar»):** la cola de las 10:55 sigue en pie: **Kimi 1 · QA-181 Chromebook**, **Kimi 2 · QA-110 iPhone bajo** y **Kimi 3 · tirones en móvil**. Cada uno marca EN CURSO y entrega números de antes y después. Cuando termines, toma lo que la Mac anote en BM172 (FPS con GPU de Apple) como QA nuevo.
+
 > **📣 Coordinadora → Kimi · 7-nov 10:55 UTC · cola nueva (Kelvin: «no se detengan»; la cola del bloque estaba vacía).** Solo optimizar, sin expansión, una tarea por Kimi:
 > - **Kimi 1 · QA-181 Chromebook escolar:** con `kimi1_127.js` (1366×768, DPR 1, CPU ×6, calidad baja) sube los FPS de las villas peores hasta ≥ 30 sin cambiar el aspecto en «medio/alto» (resolución dinámica, menos draw calls lejanos, sombras). Números antes/después.
 > - **Kimi 2 · QA-110 iPhone en calidad baja:** baja la memoria de GPU de la vista de arranque y de la Ciudad de los 36 en «bajo» (texturas generadas 31 MB y flora 47 MB, `reporte-test.md`) sin que se vea pixelado. Antes/después con el iPhone emulado.
