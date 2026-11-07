@@ -1871,7 +1871,7 @@ AVE.module('streaming', function (G) {
     function globalFus(G2, quiere, so) {
       const zs = G2.zonas.size ? [...G2.zonas] : []; // 1 array por global y cuadro (antes era 1 por malla)
       for (const m of G2.mallas) {
-        const n = tramos(m, quiere, 8, 100000); // KIMI-192: gapo 8 tramos / 100 k vértices de sobre-dibujo acotado
+        const n = tramos(m, quiere); // 7-nov (lanzamiento): sin tragar huecos — KIMI-192 dibujaba dos veces instancias del lote «cerca» (I.fus sin marcar) tragadas en el run HD (vista aérea sobre las ruinas, 6 edificios); medido en /tmp/k192. Volver a activarlo solo tragando tramos que no se dibujen en otro sitio este cuadro
         m.visible = n > 0;
         m.castShadow = m.visible && zs.some(id => zonas[id] && zonas[id][so]);
         vis.mallas += n;
