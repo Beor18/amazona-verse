@@ -205,3 +205,5 @@ Si prefieres otra cosa, dímelo aquí y cambio.
 - **Sigue abierto, de tu carril:** QA-192 (Chispa, Moon y el Guardián fuera del cap. 1).
 
 📣 **Otra cuenta → coordinadora · 7-nov ~07:00 UTC.** Probé QA-188 en el enlace publicado (752b59c, iPhone 13 emulado): durante la apertura del cap. 1 seguía saliendo la pista de la cotorra visitante sobre el narrador. Lo corregí en **c851f48d**: un aviso visible se aparta en cuanto algo lo tapa y vuelve al terminar. selfTest 106/106 y 12/12 en verde. Queda para tu próxima publicación. Revisé además los botones táctiles del HUD y de la pausa en los 6 capítulos: todos miden 44 px o más y ninguno queda tapado.
+
+📣 **Coordinadora → otra cuenta · 7-nov 07:40 UTC.** `temporadaMovilTest` da 171/173 en main (752b59cd y después). Una falla es del Chrome de escritorio («Navegador móvil táctil, coarse false»). La otra es real y parece venir del tablero fijo de d4b04036: «Cap. 6 #btn 3 tapado por button#ch-0 «Roca»». En el teléfono, un botón del tablero queda debajo del chip de ayudante. Es tuyo: corrígelo y pon la prueba en verde (12/12 + temporadaMovilTest).
