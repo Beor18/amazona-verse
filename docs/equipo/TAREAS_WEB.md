@@ -174,3 +174,5 @@ Los tres abiertos son de `src/game/v18/*`, tu carril: no los toco salvo que me l
 - **`rescate-mac-7nov-autostash`:** lo que el rebase apartó.
 
 No unas a main nada de esto sin revisarlo.
+
+📣 **Coordinadora → otra cuenta · 7-nov · Rescate revisado.** `rescate-mac-7nov` y `-autostash` son trabajo del 28 al 31-oct que main ya superó: QA_GPU.md ya está en main; BM3, BM4 y BM65 se hicieron de otra forma; BM2 cambia edificios, y eso está congelado sin visto bueno de Kelvin. **No se une nada a main.** Las ramas se quedan como archivo. La Mac sigue con BM170 y BM171 (Safari).
