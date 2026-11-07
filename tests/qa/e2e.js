@@ -54,6 +54,13 @@
     try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(prefijo)) respaldo[k] = localStorage.getItem(k); } } catch (e) { /* sin almacenamiento */ }
     const limpiar = () => { try { for (const k of Object.keys(localStorage)) if (k.startsWith(prefijo)) localStorage.removeItem(k); } catch (e) { /* */ } };
     limpiar();
+    // La partida de ESTA pestaña no escribe en el almacén mientras dura la prueba: el iframe comparte el localStorage del origen y una
+    // escritura de la pestaña (p. ej. el guardado al perder el contexto WebGL, QA-158, con dos juegos en la GPU tras otras baterías)
+    // pisaba la partida del iframe entre «guardar» y «recargar» (paso 7 rojo solo tras otras baterías). Lo de la pestaña se repone igual
+    // al final desde el respaldo; se cuentan las pérdidas de contexto de la pestaña como evidencia.
+    const GP = window.AV && window.AV.G, GV = GP && GP.guardado, suspPadre0 = !!(GV && GV.suspendido && GV.suspendido());
+    if (GV && GV.suspender) GV.suspender(true);
+    const padre = { contextoPerdido: 0 }; let padreVivo = true; try { GP.on('contexto', ok => { if (padreVivo && !ok) padre.contextoPerdido++; }); } catch (e) { /* sin ganchos */ }
     const fr = document.createElement('iframe');
     fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
     fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1024px;height:700px;border:0;';
@@ -546,7 +553,7 @@
       const fin1 = resumenFin();
       const nuevos7 = colaEv(evFin0, firmaEv());
       const distintos = Object.keys(fin0).filter(x => x === 'eventos' ? !nuevos7 : s(fin0[x]) !== s(fin1[x]));
-      check('7', 'Guardar al final, recargar y el capítulo sigue completo (paso final, misiones, refugio, plano, transmisor, ropa y eventos)', guardo2 !== false && !distintos.length && S.complete && S.step === G.misiones.DONE, { distintos, eventosNuevos: nuevos7, antes: fin0, despues: fin1 });
+      check('7', 'Guardar al final, recargar y el capítulo sigue completo (paso final, misiones, refugio, plano, transmisor, ropa y eventos)', guardo2 !== false && !distintos.length && S.complete && S.step === G.misiones.DONE, { distintos, guardo2, padre, eventosNuevos: nuevos7, antes: fin0, despues: fin1 }, 1200);
       // Tras recargar: con «Seguir explorando» el panel no vuelve a tapar el mundo; sin él, se reabre (y bloquea)
       const panel = !$('end').hidden;
       if (bs) check('7', 'Tras recargar con el capítulo terminado y «Seguir explorando» elegido, el panel final no vuelve a abrirse y se puede jugar', !panel && !G.ui.busy() && !!S.explorando, { panel, ocupado: G.ui.busy(), explorando: S.explorando });
@@ -661,6 +668,7 @@
       if (!opts.keep) fr.remove();
       limpiar();
       try { for (const [k, v] of Object.entries(respaldo)) localStorage.setItem(k, v); } catch (e) { /* */ }
+      padreVivo = false; if (GV && GV.suspender) GV.suspender(suspPadre0);
       // Informe por paso: tiempo real de cada tramo (suma de sus comprobaciones) y primer paso que falla. Va como una comprobación
       // más (informativa, siempre ok) para que salga en el informe de test.sh; el fallo en sí lo dan las comprobaciones rojas
       const porPaso = [], vistos = {};
