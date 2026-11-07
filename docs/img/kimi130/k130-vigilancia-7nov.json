@@ -1,0 +1,24 @@
+{
+ "etiqueta": "k130-vigilancia-7nov",
+ "fecha": "2026-11-07 ~11:15 UTC",
+ "head": "ab5d874d3794316ff9b6cd51cc1a08f68a421dff",
+ "equipo": "GPU real RX 5700 XT · PC libre (censo de entrada 0 chrome/0 node)",
+ "motivo": "Sin código de juego nuevo desde la corrida 13 (21a9fadd): diff src/content/tests = solo 40cc2efa W30 (test-only, tests/qa/temporada_movil.js) → no corrida 14; vigilancia suelta de los dos puntos tocables",
+ "streamingTest": {
+  "herramienta": "node tools/build/kimi2_una_bateria.js streamingTest (móvil 375x812 dpr 3 CPU x4, partida sembrada)",
+  "resultado": "24/24 en 23 s",
+  "peorVista": "kelvin_ruinas_yunque giro 4.7 = 144 draw calls (tope 150)",
+  "sinFugas": "KB 711350->711350 · materiales 34->34 · modelos 147->147 · three geo 384->384 · tex 173->173 · asentado real (0 trabajos/0 descargando)",
+  "qa158": "verde: en bajo el spawn no carga la ciudad del tepuy",
+  "erroresConsola": 0
+ },
+ "temporadaMovilTest_cap1": {
+  "herramienta": "node tools/build/kimi1_039_extras.js --pruebas temporada --caps 1 --cpu 4 (réplica CDP de temporada_movil_correr.js: Chrome propio, móvil 390x844 dpr 2 táctil, UA iPhone)",
+  "resultado": "29/29 en 275,5 s",
+  "valida": "40cc2efa (W30): el check 'Navegador móvil táctil' sigue aplicando y en verde en un contexto con agente móvil y táctil emulado",
+  "erroresConsola": 0,
+  "nota": "1er intento cayó en la familia QA-111 del entorno (WebSocket error) → reintento verde"
+ },
+ "huérfanosSesiónCortada": "re-verificados por 7ª vez (spot-check de contenido: k106_k130-c10b = stub WebSocket 234 B head:null; k131_r1 = stub CDP timeout; tamaños igual que los anotados en la vuelta 1): inservibles/superseded, intactos sin trackear, no se borra nada",
+ "censoSalida": "árbol Chrome kimi1k127-r7DzYH vivo desde 11:06:51 UTC (kimi1_127.js, herramienta que NO lancé yo: instancia hermana/ajena en la PC) — no tocado; disco C: 14 GB libres"
+}
