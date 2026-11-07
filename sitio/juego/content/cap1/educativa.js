@@ -415,7 +415,7 @@
         e.hecho[id] = true;
         G.emit('aprendizaje', { tipo: 'paso', id: 'educativa.' + id });
         G.audio.play('unlock');
-        AU.desbloquear((paso(id) || {}).diario || []);
+        AU.desbloquear([...new Set(((paso(id) || {}).diario || []).concat(fichasDePaso(id)))]); // y las fichas cuyo «paso» es este (cotorra_1975 en p8)
         registrar();
         G.misiones.check();
       }
@@ -804,6 +804,7 @@
         { paso: 'construir refugio', hay: () => G.eventos.had('ShelterConstructed') && !S.event },
         { paso: 'crecida', hay: () => G.eventos.had('ShelterFlooded') || G.eventos.had('ShelterRelocated') || (S.builds.length > 0 && !S.event && G.eventos.had('ShelterConstructed') && S.refuge && !S.refuge.damaged && S.step >= 4) },
         { paso: 'mirador', hay: () => G.eventos.had('LocationDiscoveredMirador') },
+        { paso: 'M3', hay: () => !!S.missions.m3 }, // coqui_bromelia: con los 3 coquíes del coro
       ];
 
       // Distancia del jugador a la voluta o a la gota; si va bajo tierra (infiltración) se mide contra la superficie

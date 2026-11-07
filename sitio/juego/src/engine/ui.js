@@ -8,16 +8,22 @@ AVE.module('ui', function (G) {
   'use strict';
   const $ = G.util.$;
   let cardOpen = false;
-  function showCard(html) { $('card').innerHTML = html; $('card').hidden = false; cardOpen = true; }
+  // Largo A (7-nov): un aviso que ya estaba en pantalla al abrirse la tarjeta (en un teléfono la cubre) le tapaba la
+  // pregunta y las opciones; se aparta y vuelve al cerrarla, como los que llegan con la tarjeta abierta (QA-93).
+  function showCard(html) {
+    $('card').innerHTML = html; $('card').hidden = false; cardOpen = true;
+    if (window.innerWidth <= 560 && !$('toast').hidden && actual) { if (!pendiente) pendiente = actual; hideToast(); }
+  }
   function hideCard() { $('card').hidden = true; cardOpen = false; G.emit('cardHidden'); }
   let toastTimer = 0;
   // QA-93 (W3): un aviso que salta con una pantalla que lo taparía (la tarjeta en un teléfono, ≤ 560 px, como el Diario o
   // Retos; o el cómic o el creador, a pantalla completa) espera a que se cierre y sale después. Solo se guarda el último.
-  let pendiente = null;
+  let pendiente = null, actual = null;
   // QA-93: tarjeta en teléfono, cómic o creador. QA-188 (W28): también la apertura del capítulo — el narrador habla en
   // bocadillos libres, no en G.dialogo, así que busy() no lo cubre y el aviso salía pegado a su subtítulo.
   const tapado = () => (cardOpen && window.innerWidth <= 560) || !$('comic').hidden || !$('creator').hidden || !!document.getElementById('c1-saltar');
   function mostrar(p) {
+    actual = p;
     if (p.html) $('toast').innerHTML = p.html; else { G.audio.play('tick'); $('toast').textContent = p.text; }
     $('toast').hidden = false; toastTimer = p.ms === 0 ? Infinity : (p.ms || 2200) / 1000;
   }

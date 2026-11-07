@@ -22,8 +22,10 @@ AVE.module('zonas', function (G) {
     4: { x: 200, z: 157, r: 38, nombre: 'el río de Villa Raíz', en: 'the Villa Raíz river' },     // BM113
     // cap. 5: Los Miradores y la meseta del tepuy (el relevo), y la Puerta del Yunque abajo (el Guardián); se tocan en el borde norte
     5: { x: -52, z: -132, r: 32, mas: [[-28, -80, 30]], nombre: 'Los Miradores', en: 'The Lookouts' },
-    // cap. 6: el río al pie del tepuy (muelles y puente), la Ciudad de los 36 en la meseta (el círculo) y el paso entre los dos
-    6: { x: 36, z: -50, r: 24, mas: [[-38, -128, 20], [11, -76, 20], [-14, -102, 20]], nombre: 'la Ciudad de los 36', en: 'the City of the 36' },
+    // cap. 6: el río al pie del tepuy (muelles y puente), la Ciudad de los 36 en la meseta (el círculo) y el paso entre los dos.
+    // [-30, -104, 12]: el pie del risco bajo la plaza (a pie se resbala por la ladera hacia el oeste; desde ahí, subir volando a
+    // la plaza, que se ve encima, chocaba con el viento en el hueco entre los dos últimos círculos: playtestCap6Test, paso 5)
+    6: { x: 36, z: -50, r: 24, mas: [[-38, -128, 20], [11, -76, 20], [-14, -102, 20], [-30, -104, 12]], nombre: 'la Ciudad de los 36', en: 'the City of the 36' },
   };
   const enIngles = () => !!(G.idioma && G.idioma.actual && G.idioma.actual() === 'en');
   const cap = (G.pack.meta && G.pack.meta.capitulo) || 0;

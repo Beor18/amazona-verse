@@ -146,7 +146,7 @@ AVE.module('lugares', function (G) {
     if (tR > 0 && (tR -= dt) <= 0) ocultarRotulo();
     if (!cola.length) return;
     espera = Math.max(0, espera - dt);
-    if (espera > 0 || G.quiet || G.ui.busy() || document.getElementById('c1-saltar') || /\bv18-(duelo|amenaza)-on\b/.test(document.body.className)) return; // en un duelo V18 espera a que acabe; QA-188 (W28): también mientras el narrador de la apertura habla (bocadillos libres: busy() no lo cubre)
+    if (espera > 0 || G.quiet || G.ui.busy() || (G.dialogo && G.dialogo.activo && G.dialogo.activo()) || $('c1-fade') || $('c1-saltar') || /\bv18-(duelo|amenaza)-on\b/.test(document.body.className)) return; // QA-188 (W28): espera también a diálogo/bocadillo/narrador (busy no los cubre) y a la apertura del cap. 1; en un duelo V18 espera a que acabe
     const t = $('toast');
     const d = cola[0];
     if (!d.asentamiento && t && !t.hidden && t.querySelector('button')) return; // el aviso de construcción trae un botón: no se pisa
@@ -213,6 +213,26 @@ AVE.module('lugares', function (G) {
       G.quiet = false; avisar(0); G.quiet = true;
       check('QA-188 · al terminar la apertura el aviso sale', cola.length === 0 && !tt.hidden && tt.textContent.includes(nombreDe(p)), tt ? tt.textContent.slice(0, 60) : 'sin toast');
       G.ui.hideToast();
+      // QA-188: con diálogo/bocadillo/narrador en pantalla el aviso espera; igual con la pantalla negra de la apertura
+      cola.length = 0; espera = 0;
+      if (G.dialogo) {
+        const actBk = G.dialogo.activo; G.dialogo.activo = () => true;
+        cola.push({ id: 'qa188', nombre: 'Punto QA-188' });
+        G.quiet = false; avisar(0); G.quiet = true;
+        check('Con el diálogo o el narrador en pantalla, el aviso espera (QA-188)', cola.length === 1 && !!tt && tt.hidden, cola.length + ' en cola');
+        G.dialogo.activo = actBk;
+        espera = 0; G.quiet = false; avisar(0); G.quiet = true;
+        check('…y sale en cuanto la historia queda libre', cola.length === 0 && !!tt && !tt.hidden && tt.textContent.includes('Punto QA-188'), tt ? tt.textContent : 'sin toast');
+        G.ui.hideToast();
+      }
+      {
+        const fade = document.createElement('div'); fade.id = 'c1-fade'; document.body.appendChild(fade);
+        cola.push({ id: 'qa188b', nombre: 'Punto QA-188b' }); espera = 0;
+        G.quiet = false; avisar(0); G.quiet = true;
+        const okEspera = cola.length === 1 && !!tt && tt.hidden;
+        fade.remove(); cola.length = 0; espera = 0;
+        check('Durante la apertura del cap. 1 el aviso también espera (QA-188)', okEspera);
+      }
       // Guardado: la lista va en la partida y una partida vieja sin la clave la recibe vacía
       const ser = SV.serialize ? SV.serialize(true) : null;
       check('S.lugares se guarda con la partida', !ser || (typeof ser === 'string' ? ser.includes('"lugares"') : true), SV.KEYS && SV.KEYS.includes('lugares') ? 'clave del pack' : 'sin clave en KEYS');
