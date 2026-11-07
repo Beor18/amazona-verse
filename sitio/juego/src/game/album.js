@@ -139,7 +139,7 @@ AVE.module('album', function (G) {
   }
 
   // ---------- Diario ----------
-  const ESTILO = '.album36{list-style:none;margin:4px 0 12px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}' +
+  const ESTILO = '.album36{list-style:none;margin:4px 0 12px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}' +
     '.album36 li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;padding:0 0 10px;overflow:hidden;border-radius:14px;background:#fffaf0;border:2px solid rgba(107,82,54,.22);box-shadow:0 2px 0 rgba(107,82,54,.12),0 6px 14px rgba(60,40,20,.10);min-width:0}' +
     '.album36 li img.retrato{display:block;width:100%;height:auto;aspect-ratio:4/5;margin:0 0 6px;border-bottom:2px solid rgba(107,82,54,.18);background:#e4ddd0}' +
     '.album36 li b,.album36 li small,.album36 li i{padding:0 8px}' +

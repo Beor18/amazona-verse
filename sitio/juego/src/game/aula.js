@@ -178,7 +178,7 @@ AVE.module('aula', function (G) {
     // Puerta docente: mantener pulsado 1,2 s (dedo, ratón o Enter/Espacio) y resolver una multiplicación. No es contraseña:
     // solo evita que un niño entre por accidente o por curiosidad.
     let hold = 0;
-    const abrirReto = () => { hold = 0; link.classList.remove('manteniendo'); nuevoReto(); link.hidden = true; form.hidden = false; form.querySelector('input').focus(); };
+    const abrirReto = () => { hold = 0; link.classList.remove('manteniendo'); nuevoReto(); link.hidden = true; form.hidden = false; form.querySelector('input').focus(); try { form.scrollIntoView({ block: 'nearest' }); } catch (e) { /* W31: «Entrar» y «Cancelar» quedaban cortados al pie del menú */ } };
     const empezar = e => { if (e.type === 'keydown' && (e.repeat || (e.key !== 'Enter' && e.key !== ' '))) return; if (e.type === 'keydown') e.preventDefault(); clearTimeout(hold); link.classList.add('manteniendo'); hold = setTimeout(abrirReto, HOLD_MS); rankingClase().catch(() => {}); };
     const soltar = () => { clearTimeout(hold); hold = 0; link.classList.remove('manteniendo'); };
     link.addEventListener('pointerdown', empezar); link.addEventListener('keydown', empezar);

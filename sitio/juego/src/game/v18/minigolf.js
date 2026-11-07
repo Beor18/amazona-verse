@@ -360,6 +360,7 @@ window.AVV18Minigolf = function (G) {
   function paneles() {
     if (!hud) return;
     const fin = A.fase === 'nido', m = !!(A.resultado && A.resultado.multi);
+    hud.el.classList.toggle('vg-lado', A.eligiendo || (fin && m)); // W29a: paneles altos (elegir jugadores, tabla de varios): no llegan a la columna de botones de la derecha
     hud.q('elige').hidden = !A.eligiendo || fin; hud.q('bot').hidden = A.eligiendo || fin; hud.q('fin').hidden = !fin;
     hud.q('tabla').hidden = !m; hud.q('fin2').hidden = m; hud.q('jugs').hidden = !multi() || fin;
     hud.q('barraW').hidden = hud.q('fuerzaEt').hidden = fin || A.eligiendo; // la barra de fuerza vacía no pinta nada en el resultado
@@ -672,6 +673,8 @@ window.AVV18Minigolf = function (G) {
       // (escritorio) o en medio, encima de la mira (móvil)
       'body.v18-golf-on #bocadillos{top:calc(env(safe-area-inset-top,0px) + 96px);bottom:auto}' +
       '@media (max-width:760px){body.v18-golf-on #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto}body.v18-golf-on #bocadillos{top:calc(env(safe-area-inset-top,0px) + 116px)}body.v18-golf-on #minimapa{visibility:hidden}}' +
+      // W29a: en el móvil el panel alto (elegir jugadores) subía hasta los botones de Diario/Emociones/Pausa y el botón tapaba «Récord»: el panel se estrecha y deja libre esa columna
+      '@media (max-width:760px){#v18-golf.vg-lado{margin-inline:16px auto;width:calc(100vw - 96px)}#v18-golf.vg-lado .vg-bot4 button{padding:6px 4px}}' +
       '@media (min-width:761px) and (pointer:fine){#v18-golf{bottom:16px}}';
     document.head.appendChild(st);
   }

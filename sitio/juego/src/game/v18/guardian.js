@@ -162,15 +162,20 @@ window.AVV18Guardian = function (G) {
     if (!document.getElementById('v18-guardian-css')) {
       const st = document.createElement('style'); st.id = 'v18-guardian-css';
       st.textContent = '#v18-guardian{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(300px,calc(100vw - 32px));z-index:40;' +
-        'body:has(#v18-guardian:not([hidden])) #toast{z-index:41}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(14,38,48,.8);border:2px solid #4fc3d8;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
+        '#v18-guardian .vg-h{display:flex;align-items:center;justify-content:center;gap:8px}#v18-guardian .vg-x{pointer-events:auto;flex:none;min-width:44px;min-height:44px;padding:0 12px;border:0;border-radius:22px;background:#fff3d6;color:#3b2a14;font:inherit;font-size:14px;font-weight:700}' +
         '#v18-guardian .vg-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-guardian .vg-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-guardian .vg-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#7ee0d2;text-shadow:0 2px 0 #123f4c}#v18-guardian .vg-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
-        '@media (max-width:760px){#v18-guardian{top:calc(env(safe-area-inset-top,0px) + 64px)}}';
+        'body:has(#v18-guardian:not([hidden])) #toast{z-index:41}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto (W29: la regla estaba dentro de la del panel y no valía)
+        // W29 (móvil): a 64 px el panel tapaba la línea de misión, el inventario y el minimapa. Va en la columna izquierda libre, bajo la fila de fichas (92-130 px) y a la izquierda del minimapa
+        '@media (max-width:560px){#v18-guardian{top:calc(env(safe-area-inset-top,0px) + 132px);left:12px;right:auto;margin-inline:0;width:min(220px,calc(100vw - 190px));min-width:150px;padding:6px 10px}' +
+        '#v18-guardian .vg-n{font-size:calc(34px * var(--fs-k,1))}#v18-guardian .vg-l{font-size:calc(15px * var(--fs-k,1))}}';
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-guardian'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
-    el.innerHTML = '<div class="vg-t"></div><div class="vg-n" hidden></div><div class="vg-l"><span class="vg-p"></span><span class="vg-s"></span></div><div class="vg-r"></div>';
+    el.innerHTML = '<div class="vg-h"><div class="vg-t"></div><button type="button" class="vg-x">Salir</button></div><div class="vg-n" hidden></div><div class="vg-l"><span class="vg-p"></span><span class="vg-s"></span></div><div class="vg-r"></div>';
+    // W29: sin teclado no había cómo dejar el circuito a medias (solo alejarse > 80 m): botón «Salir» ≥ 44 px, con pointerdown como los demás del juego
+    el.querySelector('.vg-x').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cancelar(); });
     document.body.appendChild(el);
     const q = c => el.querySelector(c);
     hud = { el, t: q('.vg-t'), n: q('.vg-n'), p: q('.vg-p'), s: q('.vg-s'), r: q('.vg-r'), cache: {} };

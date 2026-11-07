@@ -29,7 +29,10 @@ window.AVFamilia = function (G) {
   fin.type = 'button'; fin.id = 'fam-fin'; fin.className = 'btn'; fin.hidden = true;
   document.body.appendChild(fin);
   const css = document.createElement('style');
-  css.textContent = '#fam-fin{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:45;min-height:44px}';
+  css.textContent = '#fam-fin{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:45;min-height:44px}'
+    // W31: en el móvil el botón de turno no pisa el joystick ni Saltar (va arriba a la izquierda, bajo el cronómetro) y el botón «Poder» (V18) no tapa el panel
+    + '@media (pointer:coarse),(max-width:700px){#fam-fin{left:14px;bottom:auto;top:calc(env(safe-area-inset-top,0px) + 126px);transform:none}}'
+    + 'body:has(#familia:not([hidden])) #v18-exp-poder{display:none!important}';
   document.head.appendChild(css);
 
   function nombreEspecie(id) {

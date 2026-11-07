@@ -113,11 +113,13 @@ window.AVV18Moon = function (G) {
     if (!document.getElementById('v18-moon-css')) {
       const st = document.createElement('style'); st.id = 'v18-moon-css';
       st.textContent = '#v18-moon{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(300px,calc(100vw - 32px));z-index:40;' +
-        'body:has(#v18-moon:not([hidden])) #toast{z-index:41}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(24,26,58,.8);border:2px solid #b9a7ff;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
         '#v18-moon .vm-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-moon .vm-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-moon .vm-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd76a;text-shadow:0 2px 0 #6a4dc9}#v18-moon .vm-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
-        '@media (max-width:760px){#v18-moon{top:calc(env(safe-area-inset-top,0px) + 64px)}}';
+        'body:has(#v18-moon:not([hidden])) #toast{z-index:41}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto (W29a: estaba dentro de la regla de #v18-moon, anidada, y no llegaba a #toast)
+        // W29a (móvil): el panel, centrado y de 300 px, tapaba el objetivo, los contadores y medio minimapa (Toques 0/3 bajo el mapa). Como en la carrera de Chispa:
+        // el objetivo se oculta durante el entreno y el panel va a la izquierda, sin llegar al minimapa
+        '@media (max-width:760px){body.v18-moon-on #quest{display:none}#v18-moon{top:calc(env(safe-area-inset-top,0px) + 58px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}#v18-moon .vm-n{font-size:calc(30px * var(--fs-k,1));line-height:1}#v18-moon .vm-l{font-size:calc(14px * var(--fs-k,1));gap:6px;white-space:nowrap}}';
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-moon'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
@@ -132,7 +134,7 @@ window.AVV18Moon = function (G) {
   function pintarHud() {
     if (!hud) return;
     const on = A.fase === 'cuenta' || A.fase === 'entreno';
-    hud.el.hidden = !on; if (!on) return;
+    hud.el.hidden = !on; document.body.classList.toggle('v18-moon-on', on); if (!on) return;
     const n = A.fase === 'cuenta' ? String(Math.max(1, Math.ceil(A.cuenta))) : A.fase === 'entreno' && A.t < 0.8 ? TXT.ya : '';
     hud.n.hidden = !n; pon('n', n);
     pon('p', TXT.quedan.replace('{}', String(Math.max(0, Math.ceil(DUR_S - A.t)))));
