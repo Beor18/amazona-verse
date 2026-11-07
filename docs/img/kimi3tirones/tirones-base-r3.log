@@ -1,0 +1,24 @@
+· servidor http://127.0.0.1:65481 · 390×844 dpr 3 táctil · CPU ×4 · ?v18=1 · umbral 250 ms · etiqueta base-r3
+· juego listo; inyectando ep_caminar.js + temporada_movil.js…
+· scripts listos · temporadaMovilTest caps:[1] con el pulgar (los primeros min del cap. 1)…
+· latido: {"n":316,"tir":32,"ult":{"s":62.7,"ms":3530,"heapMB":145,"fase":"st {\"zonas\":17,\"zonasCerca\":3,\"zonasLejos\":14,\"instancias\":422,\"colocadas\":101,\"modelosCerca\":25,\"modelosLejos\":32,\"modelosHD\":0,\"materiales\":1 · ui-ocupada · "}}
+· latido: eval falló (timeout Runtime.evaluate)
+· latido: eval falló (timeout Runtime.evaluate)
+· latido: {"n":81,"tir":4,"ult":{"s":6.4,"ms":1747,"heapMB":229,"fase":"st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":3,\"modelosCerca\":2,\"modelosLejos\":4,\"modelosHD\":0,\"materiales\":4,\"kb · ui-ocupada · pausa · "}}
+· temporadaMovilTest devolvió en 245 s
+· registrador en iframe del juego: false · cuadros totales: 884 · ms medios: 283 · tirones >250 ms: 62 · (shell principal: 884 cuadros, 62 tirones)
+· TOP 10 tirones (ms):
+  #1 68332 ms @ 142.4 s · heap 139 MB · st {"zonas":17,"zonasCerca":2,"zonasLejos":15,"instancias":422,"colocadas":17,"modelosCerca":2,"modelosLejos":30,"modelosHD":0,"materiales":5," · ui-ocupada · pausa · 
+  #2 27469 ms @ 180.1 s · heap 158 MB · st {"zonas":17,"zonasCerca":2,"zonasLejos":15,"instancias":422,"colocadas":17,"modelosCerca":2,"modelosLejos":30,"modelosHD":0,"materiales":5," · ui-ocupada · pausa · 
+  #3 26460 ms @ 206.9 s · heap 155 MB · st {"zonas":17,"zonasCerca":2,"zonasLejos":15,"instancias":422,"colocadas":17,"modelosCerca":2,"modelosLejos":30,"modelosHD":0,"materiales":5," · ui-ocupada · pausa · 
+  #4 7851 ms @ 233.1 s · heap 167 MB · st {"zonas":17,"zonasCerca":2,"zonasLejos":15,"instancias":422,"colocadas":17,"modelosCerca":2,"modelosLejos":30,"modelosHD":0,"materiales":5," · ui-ocupada · pausa · 
+  #5 7615 ms @ 39.7 s · heap 145 MB · st {"zonas":17,"zonasCerca":2,"zonasLejos":15,"instancias":422,"colocadas":17,"modelosCerca":2,"modelosLejos":30,"modelosHD":0,"materiales":5," · ui-ocupada · pausa · 
+  #6 7144 ms @ 47.1 s · heap 155 MB · st {"zonas":17,"zonasCerca":2,"zonasLejos":15,"instancias":422,"colocadas":17,"modelosCerca":2,"modelosLejos":30,"modelosHD":0,"materiales":5," · ui-ocupada · pausa · 
+  #7 6582 ms @ 150.5 s · heap 151 MB · st {"zonas":17,"zonasCerca":2,"zonasLejos":15,"instancias":422,"colocadas":17,"modelosCerca":2,"modelosLejos":30,"modelosHD":0,"materiales":5," · ui-ocupada · pausa · 
+  #8 4146 ms @ 217.9 s · heap 153 MB · st {"zonas":17,"zonasCerca":2,"zonasLejos":15,"instancias":422,"colocadas":17,"modelosCerca":2,"modelosLejos":30,"modelosHD":0,"materiales":5," · ui-ocupada · pausa · 
+  #9 3974 ms @ 237.3 s · heap 161 MB · st {"zonas":17,"zonasCerca":2,"zonasLejos":15,"instancias":422,"colocadas":17,"modelosCerca":2,"modelosLejos":30,"modelosHD":0,"materiales":5," · ui-ocupada · pausa · 
+  #10 3802 ms @ 74 s · heap 142 MB · st {"zonas":17,"zonasCerca":2,"zonasLejos":15,"instancias":422,"colocadas":17,"modelosCerca":2,"modelosLejos":30,"modelosHD":0,"materiales":5," · ui-ocupada · pausa · 
+· batería: 29/29
+· errores de consola: 0
+· __aveErrores de la página: []
+· aviso: perfil temporal no se pudo borrar (se libera solo): C:\Users\kelvi\AppData\Local\Temp\kimi3tir-WDrXTi

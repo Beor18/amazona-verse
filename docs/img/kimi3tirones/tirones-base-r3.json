@@ -1,0 +1,396 @@
+{
+ "etiqueta": "base-r3",
+ "cpu": 4,
+ "dpr": 3,
+ "v18": true,
+ "umbralMs": 250,
+ "duracionJuegoS": 245,
+ "enIframe": false,
+ "cuadros": 884,
+ "msMedio": 283,
+ "heapFinMB": 206,
+ "shellPrincipal": {
+  "cuadros": 884,
+  "nTirones": 62
+ },
+ "bateria": {
+  "passed": 29,
+  "total": 29
+ },
+ "nTirones": 62,
+ "tirones": [
+  {
+   "s": 142.4,
+   "ms": 68332,
+   "heapMB": 139,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 180.1,
+   "ms": 27469,
+   "heapMB": 158,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 206.9,
+   "ms": 26460,
+   "heapMB": 155,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 233.1,
+   "ms": 7851,
+   "heapMB": 167,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 39.7,
+   "ms": 7615,
+   "heapMB": 145,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 47.1,
+   "ms": 7144,
+   "heapMB": 155,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 150.5,
+   "ms": 6582,
+   "heapMB": 151,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 217.9,
+   "ms": 4146,
+   "heapMB": 153,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 237.3,
+   "ms": 3974,
+   "heapMB": 161,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 74,
+   "ms": 3802,
+   "heapMB": 142,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 68.3,
+   "ms": 3526,
+   "heapMB": 145,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 212.4,
+   "ms": 3236,
+   "heapMB": 139,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 3,
+   "ms": 2973,
+   "heapMB": 18,
+   "fase": "st {\"zonas\":0,\"zonasCerca\":0,\"zonasLejos\":0,\"instancias\":0,\"colocadas\":0,\"modelosCerca\":0,\"modelosLejos\":0,\"modelosHD\":0,\"materiales\":0,\"kbGeom · ui-ocupada · pausa · "
+  },
+  {
+   "s": 64.3,
+   "ms": 2885,
+   "heapMB": 133,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 223.9,
+   "ms": 2712,
+   "heapMB": 168,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 53.7,
+   "ms": 2611,
+   "heapMB": 123,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 50.3,
+   "ms": 2436,
+   "heapMB": 145,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 240,
+   "ms": 2392,
+   "heapMB": 138,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 220.3,
+   "ms": 2280,
+   "heapMB": 147,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 12.5,
+   "ms": 2033,
+   "heapMB": 81,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":4,\"modelosHD\":0,\"materiales\":4,\"k · ui-ocupada · pausa · "
+  },
+  {
+   "s": 56,
+   "ms": 1972,
+   "heapMB": 126,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 61.2,
+   "ms": 1909,
+   "heapMB": 150,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 17.4,
+   "ms": 1855,
+   "heapMB": 121,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 26.4,
+   "ms": 1836,
+   "heapMB": 141,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 247,
+   "ms": 1744,
+   "heapMB": 229,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 29.5,
+   "ms": 1657,
+   "heapMB": 140,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 209,
+   "ms": 1572,
+   "heapMB": 159,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 7.6,
+   "ms": 1519,
+   "heapMB": 37,
+   "fase": "st {\"zonas\":0,\"zonasCerca\":0,\"zonasLejos\":0,\"instancias\":0,\"colocadas\":0,\"modelosCerca\":2,\"modelosLejos\":0,\"modelosHD\":0,\"materiales\":4,\"kbGeom · ui-ocupada · pausa · "
+  },
+  {
+   "s": 249.4,
+   "ms": 1311,
+   "heapMB": 175,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 69.9,
+   "ms": 1131,
+   "heapMB": 151,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 151.9,
+   "ms": 928,
+   "heapMB": 167,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 59.1,
+   "ms": 864,
+   "heapMB": 129,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 57.7,
+   "ms": 714,
+   "heapMB": 139,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 30.9,
+   "ms": 657,
+   "heapMB": 147,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 241.7,
+   "ms": 604,
+   "heapMB": 162,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 3.8,
+   "ms": 523,
+   "heapMB": 28,
+   "fase": "st {\"zonas\":0,\"zonasCerca\":0,\"zonasLejos\":0,\"instancias\":0,\"colocadas\":0,\"modelosCerca\":0,\"modelosLejos\":0,\"modelosHD\":0,\"materiales\":0,\"kbGeom · ui-ocupada · pausa · "
+  },
+  {
+   "s": 143.2,
+   "ms": 520,
+   "heapMB": 160,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 56.8,
+   "ms": 517,
+   "heapMB": 146,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 21.2,
+   "ms": 513,
+   "heapMB": 125,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 243.4,
+   "ms": 439,
+   "heapMB": 189,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 250.1,
+   "ms": 438,
+   "heapMB": 205,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 8.3,
+   "ms": 423,
+   "heapMB": 53,
+   "fase": "st {\"zonas\":0,\"zonasCerca\":0,\"zonasLejos\":0,\"instancias\":0,\"colocadas\":0,\"modelosCerca\":2,\"modelosLejos\":0,\"modelosHD\":0,\"materiales\":4,\"kbGeom · ui-ocupada · pausa · "
+  },
+  {
+   "s": 242.3,
+   "ms": 418,
+   "heapMB": 162,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 32,
+   "ms": 415,
+   "heapMB": 130,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 5.2,
+   "ms": 395,
+   "heapMB": 35,
+   "fase": "st {\"zonas\":0,\"zonasCerca\":0,\"zonasLejos\":0,\"instancias\":0,\"colocadas\":0,\"modelosCerca\":2,\"modelosLejos\":0,\"modelosHD\":0,\"materiales\":4,\"kbGeom · ui-ocupada · pausa · "
+  },
+  {
+   "s": 30,
+   "ms": 392,
+   "heapMB": 133,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 18.7,
+   "ms": 386,
+   "heapMB": 85,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 27.4,
+   "ms": 354,
+   "heapMB": 112,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 47.7,
+   "ms": 350,
+   "heapMB": 145,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 64.7,
+   "ms": 350,
+   "heapMB": 137,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 31.4,
+   "ms": 347,
+   "heapMB": 134,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 3.3,
+   "ms": 341,
+   "heapMB": 26,
+   "fase": "st {\"zonas\":0,\"zonasCerca\":0,\"zonasLejos\":0,\"instancias\":0,\"colocadas\":0,\"modelosCerca\":0,\"modelosLejos\":0,\"modelosHD\":0,\"materiales\":0,\"kbGeom · ui-ocupada · pausa · "
+  },
+  {
+   "s": 50.8,
+   "ms": 309,
+   "heapMB": 164,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 13.5,
+   "ms": 308,
+   "heapMB": 59,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":22,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 180.4,
+   "ms": 303,
+   "heapMB": 164,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 40,
+   "ms": 296,
+   "heapMB": 150,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 51.1,
+   "ms": 282,
+   "heapMB": 167,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 142.7,
+   "ms": 282,
+   "heapMB": 142,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 58.1,
+   "ms": 273,
+   "heapMB": 144,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 18.3,
+   "ms": 265,
+   "heapMB": 114,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 14.4,
+   "ms": 254,
+   "heapMB": 87,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  },
+  {
+   "s": 26.9,
+   "ms": 251,
+   "heapMB": 124,
+   "fase": "st {\"zonas\":17,\"zonasCerca\":2,\"zonasLejos\":15,\"instancias\":422,\"colocadas\":17,\"modelosCerca\":2,\"modelosLejos\":30,\"modelosHD\":0,\"materiales\":5,\" · ui-ocupada · pausa · "
+  }
+ ],
+ "errores": []
+}

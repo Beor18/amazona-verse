@@ -54,24 +54,28 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   for (const m of ['Page.enable', 'Runtime.enable']) await cdp.call(m, {}, ses);
   // Registrador de cuadros: antes que cualquier script de la página (rápido y sin dependencias).
   await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: `(function(){
-    window.__tirones = []; window.__frames = { n: 0, sumMs: 0, t0: performance.now() };
+    window.__tirones = []; window.__frames = { n: 0, sumMs: 0, t0: performance.now() }; window.__ultTiron = 0;
+    var orig = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : null;
+    if (!orig) return;
     var last = performance.now();
-    function tick(t){
-      var d = t - last; last = t;
-      window.__frames.n++; window.__frames.sumMs += d;
-      if (d > ${UMBRAL}) {
-        var fase = '';
-        try { if (window.AV && AV.G) {
-          try { var st = AV.G.mundo && AV.G.mundo.streaming && AV.G.mundo.streaming.stats ? AV.G.mundo.streaming.stats() : null; if (st) fase += 'st ' + JSON.stringify(st).slice(0, 140) + ' · '; } catch (e) {}
-          try { if (AV.G.ui && AV.G.ui.busy) fase += 'ui-ocupada · '; } catch (e) {}
-          try { if (AV.G.pausa && AV.G.pausa.activa && AV.G.pausa.activa()) fase += 'pausa · '; } catch (e) {}
-        } } catch (e) {}
-        if (document.hidden) fase += 'hidden';
-        window.__tirones.push({ s: Math.round((t - window.__frames.t0) / 100) / 10, ms: Math.round(d), heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : -1, fase: fase.slice(0, 200) });
-      }
-      requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
+    window.requestAnimationFrame = function(cb){
+      return orig(function(t){
+        var now = performance.now(); var d = now - last; last = now;
+        window.__frames.n++; window.__frames.sumMs += d;
+        if (d > ${UMBRAL} && now - window.__ultTiron > 150) {
+          window.__ultTiron = now;
+          var fase = '';
+          try { if (window.AV && AV.G) {
+            try { var st = AV.G.mundo && AV.G.mundo.streaming && AV.G.mundo.streaming.stats ? AV.G.mundo.streaming.stats() : null; if (st) fase += 'st ' + JSON.stringify(st).slice(0, 140) + ' · '; } catch (e) {}
+            try { if (AV.G.ui && AV.G.ui.busy) fase += 'ui-ocupada · '; } catch (e) {}
+            try { if (AV.G.pausa && AV.G.pausa.activa && AV.G.pausa.activa()) fase += 'pausa · '; } catch (e) {}
+          } } catch (e) {}
+          if (document.hidden) fase += 'hidden';
+          window.__tirones.push({ s: Math.round((now - window.__frames.t0) / 100) / 10, ms: Math.round(d), heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : -1, fase: fase.slice(0, 200) });
+        }
+        if (cb) cb(t);
+      });
+    };
   })();` }, ses);
   await cdp.call('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: DPR, mobile: true }, ses);
   await cdp.call('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5, configuration: 'mobile' }, ses);
