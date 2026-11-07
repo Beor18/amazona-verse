@@ -1,0 +1,29 @@
+{
+ "etiqueta": "k202-n_lq",
+ "que": "hd_<kit>_n_lq.jpg 2048² horneado para arranque «bajo» (KIMI-202/204)",
+ "calidad": 0.9,
+ "referencia": "pipeline actual: 4096 → canvas 2048 (streaming.js reducirAtlas); el diff mide solo la deriva del JPEG sobre esa referencia",
+ "muestreoDiff": "1 de cada 4 píxeles, umbral max-canal >4/255",
+ "kits": {
+  "savage": {
+   "fuente": "/assets/models/edificios/tex_hd/hd_savage_n.jpg",
+   "fuenteBytes": 14013169,
+   "bytes": 1799402,
+   "diffPct": 92.476,
+   "diffMedia": 11.36,
+   "diffMax": 118,
+   "bytesDisco": 1799385,
+   "destino": "assets/models/edificios/tex_hd/hd_savage_n_n_lq.jpg"
+  },
+  "ancient": {
+   "fuente": "/assets/models/edificios/tex_hd/hd_ancient_n.jpg",
+   "fuenteBytes": 14313829,
+   "bytes": 1737362,
+   "diffPct": 89.226,
+   "diffMedia": 9.55,
+   "diffMax": 137,
+   "bytesDisco": 1737343,
+   "destino": "assets/models/edificios/tex_hd/hd_ancient_n_n_lq.jpg"
+  }
+ }
+}
