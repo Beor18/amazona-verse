@@ -307,17 +307,19 @@ window.AVV18Amenaza = function (G) {
     if (niebla.instanceColor) niebla.instanceColor.needsUpdate = true;
     const dx = S.pos.x - p.x, dz = S.pos.z - p.z, dn = Math.hypot(dx, dz) || 1, fx0 = dx / dn, fz0 = dz / dn; // los ojos miran a la jugadora
     const ek = (A.fase === 'disuelve' ? Math.max(0.01, 1 - A.t) : (A.j && A.j.mareo > 0 ? 1.25 : 1)) * (avisa ? 1.12 : 1) * (rayo ? 0.85 : 1);
-    [-1, 1].forEach((s, i) => {
+    for (let i = 0; i < 2; i++) {
+      const s = i ? 1 : -1;
       _o.position.set(p.x + fx0 * 2.6 * k - fz0 * 0.62 * s, p.y + 0.35 + 0.3 * k, p.z + fz0 * 2.6 * k + fx0 * 0.62 * s);
       _o.scale.setScalar(ek); _o.updateMatrix(); ojos.setMatrixAt(i, _o.matrix);
-    });
+    }
     ojos.instanceMatrix.needsUpdate = true;
   }
   function mover(dt) {
     const P = PATRONES[A.patron];
     A.giro += P.giro * dt;
-    const L = ANCLAS(A.giro), meta = L[A.ancla], now = performance.now() / 1000;
-    const tx = meta.x + Math.sin(now * 0.7) * 2.2, tz = meta.z + Math.cos(now * 0.55) * 1.8;
+    // QA-201: solo el ancla activa, sin array por cuadro
+    const aa = A.giro + A.ancla * Math.PI / 2, now = performance.now() / 1000;
+    const tx = centro.x + Math.cos(aa) * 6 + Math.sin(now * 0.7) * 2.2, tz = centro.z + Math.sin(aa) * 6 + Math.cos(now * 0.55) * 1.8;
     const v = 1 - Math.exp(-dt * 1.6);
     A.pos.x += (tx - A.pos.x) * v; A.pos.z += (tz - A.pos.z) * v;
     A.pos.y += (altura(A.pos.x, A.pos.z) + ALTO - A.pos.y) * v;
