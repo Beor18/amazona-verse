@@ -1,0 +1,48 @@
+{
+ "etiqueta": "k130-c16-movement",
+ "head": "8a7050a1",
+ "bandera": "v18=1",
+ "pantalla": "movil 375x812 dpr3 cpuX4 GPU real RX 5700 XT (pagina fresca aislada, kimi2_una_bateria.js)",
+ "passed": 52,
+ "total": 52,
+ "segundos": 55,
+ "checks_clave": {
+  "espacioFoco": {
+   "ok": true,
+   "sube": true,
+   "sueltaFoco": true,
+   "subeM": 2.13,
+   "nota": "en acumulada daba 0.05 = firma blur (KIMI-095/BM135)"
+  },
+  "mantenerSubir": {
+   "ok": true,
+   "sube2sM": 10.87,
+   "techoM": 33.64,
+   "cuadrosTrabada": 0,
+   "sitio": [
+    56.39,
+    150.35
+   ],
+   "nota": "en acumulada 88 cuadros trabada en sitio 78.85,127.35 = flake BM86 x re-siembra KIMI-203 (corrida 15)"
+  },
+  "camaraPared": {
+   "ok": true,
+   "dentro": null,
+   "dist": 6.85,
+   "reintento": 0,
+   "libreH": 0.3,
+   "umbral": 1.2,
+   "nota": "fix fusionado QA-198 actuando"
+  },
+  "posarseRama": {
+   "ok": true,
+   "gestos": 1,
+   "red": 0
+  },
+  "cernido": {
+   "ok": true,
+   "deriva": "0.15 m en 2 s"
+  }
+ },
+ "erroresConsola": []
+}

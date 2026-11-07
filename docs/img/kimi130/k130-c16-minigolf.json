@@ -1,0 +1,42 @@
+{
+ "etiqueta": "k130-c16-minigolf",
+ "head": "dfc15609",
+ "bandera": "v18=1",
+ "pantalla": "movil 375x812 dpr3 cpuX4 GPU real (pagina fresca)",
+ "passed": 59,
+ "total": 59,
+ "ultimosChecks": [
+  {
+   "n": "Móvil: arrastrar el dedo por la pantalla gira la mira (sin g",
+   "ok": true
+  },
+  {
+   "n": "Móvil: arrastrar en el lado del joystick (oculto en el hoyo)",
+   "ok": true
+  },
+  {
+   "n": "Móvil: ◀ ▶ apuntan mientras se mantienen y paran al soltar",
+   "ok": true
+  },
+  {
+   "n": "Móvil: mantener «Golpear» carga la fuerza (barra) y al solta",
+   "ok": true
+  },
+  {
+   "n": "Móvil: el botón «Grito» lanza el Grito del Yunque con la sem",
+   "ok": true
+  },
+  {
+   "n": "Móvil: si el sistema cancela el toque (pointercancel), «Golp",
+   "ok": true
+  },
+  {
+   "n": "Móvil: a 390 px todos los botones del hoyo (jugar, elegir ju",
+   "ok": true
+  },
+  {
+   "n": "Móvil: el botón «Salir» deja el hoyo y devuelve el control",
+   "ok": true
+  }
+ ]
+}
