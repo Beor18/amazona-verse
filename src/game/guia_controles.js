@@ -200,7 +200,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   function aviso(id, texto, seg) { if (tactil()) { G.ui.toast(texto, (seg || 3.5) * 1000); return; } pista(id, texto, seg || 3.5); }
   let vientoT = -1e9, libreT = -1e9;
   G.on('viento', on => { if (!on || S.clock - vientoT < 15) return; vientoT = S.clock; aviso('viento', '¡Mucho viento allá arriba! Vittata no puede subir más.'); });
-  G.on('desatasco', () => { if (S.clock - libreT < 4) return; libreT = S.clock; aviso('desatasco', '¡Listo! Vittata se había atascado y ya está libre.'); });
+  G.on('desatasco', e => { if (S.clock - libreT < 4) return; libreT = S.clock; if (e && e.como === 'seguro') aviso('desatasco', 'Vittata vuelve a su lugar seguro.'); else aviso('desatasco', '¡Listo! Vittata se había atascado y ya está libre.'); });
   G.on('vuelo', on => { if (on) hecho('volar'); });
   // CG-48: los primeros minutos. Una pista visual (anillo), sin ventana de texto. Se apaga al hacerlo.
   const PM_ORDEN = ['mover', 'despegar', 'posar', 'impulso', 'truco'];

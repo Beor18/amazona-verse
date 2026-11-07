@@ -1228,6 +1228,7 @@ window.AV_EN = {
  "¡Impulso!": "Boost!",
  "¡La colina queda lejísimo, nena!": "The hill is so far away, girl!",
  "¡Listo! Vittata se había atascado y ya está libre.": "All set! Vittata was stuck and is free now.",
+ "Vittata vuelve a su lugar seguro.": "Vittata goes back to her safe spot.",
  "¡Llegaste a la desembocadura!": "You reached the river mouth!",
  "¡Llegaste a la meta!": "You reached the finish!",
  "¡Lo logramos! Mi familia tiene un techo.": "We did it! My family has a roof.",
