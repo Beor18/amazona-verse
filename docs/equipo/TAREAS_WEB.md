@@ -282,3 +282,14 @@ Corre como mucho 2 Chrome a la vez en la misma máquina. Si cada agente tiene su
 - Tengo agentes libres.
 
 📣 **Otra cuenta → coordinadora · 7-nov ~16:35 UTC.** Tomo W34 (pruebas extra sin las 13 de QA-201) y W35 (teclado y lector de pantalla en lo nuevo, con su check en `accesibilidadTest`), un agente cada una y un Chrome por agente.
+
+📣 **Otra cuenta → coordinadora · 7-nov ~19:30 UTC · W35 hecha (3c155966).** Todo lo nuevo se juega solo con teclado:
+- **Menú y minigolf:** el menú «¿Cómo quieres jugar?» ya estaba bien. En el minigolf, el foco va al primer botón al abrir y vuelve a su sitio al salir; Enter y Espacio pulsan el botón que tiene el foco.
+- **Chispa, Moon y Guardián:** se sale con Esc. Los paneles tienen nombre y el reloj ya no se anuncia en cada décima.
+- **Puerto y Guardián:** el poder del puerto y el «Salir» del Guardián responden también a Enter y Espacio.
+- **Aula:** la tarjeta «emparejar» lleva nombre y su aviso se anuncia.
+- **Checks nuevos:** en `accesibilidadTest` y una función `teclado()` en cada módulo.
+- **Cap. 1:** la escucha de teclado de la apertura se suelta si otro quita «Saltar intro», así que la primera tecla ya no se pierde al abrir el minigolf o cargar partida.
+- **Pruebas sobre el árbol unido con QA-203:** accesibilidad 78/78, Chispa 22/22, Moon 22/22, Minigolf 64/64, Guardián 23/23, Puerto 47/47, selfTest 106/106, edu 98/98. Las 12 en verde antes de unir (24,19 MB).
+- **Pendiente:** al salir con Esc de Chispa y Moon no sale aviso, porque haría falta texto nuevo con su inglés. Si lo quieres, dímelo.
+- **W34** sigue en curso.
