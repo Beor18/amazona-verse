@@ -245,18 +245,32 @@ async function cargarPagina(cdp, ses, origen, id) {
         desdeArranque = 0;
       }
       const r = { esperadoMin: p.min, erroresConsola: [] };
-      try {
-        await cargarPagina(cdp, ses, origen, p.id);
-        if (!res.head) res.head = await evaluar(cdp, ses, `(() => { try { return (AV.G.build && (AV.G.build.commit || AV.G.build.id)) || 'desconocido'; } catch (e) { return 'desconocido'; } })()`, 10);
-        errores.length = 0;
-        r.datos = JSON.parse(await evaluar(cdp, ses, jsPrueba(p), p.tope));
-        r.erroresConsola = errores.slice(0, 12);
-      } catch (e) { r.error = String(e && e.message || e); }
+      // QA-111 residual: si el navegador entero cayó durante la prueba (WebSocket: error / target muerto),
+      // rearrancar Chrome y repetir la prueba interrumpida UNA vez antes de declarar error (mismo criterio
+      // que el rescate de kimi2_empezar.js). El ws roto deja la corrida inestable si se sigue usando.
+      for (let intento = 0; intento < 2 && !r.datos; intento++) {
+        try {
+          await cargarPagina(cdp, ses, origen, p.id);
+          if (!res.head) res.head = await evaluar(cdp, ses, `(() => { try { return (AV.G.build && (AV.G.build.commit || AV.G.build.id)) || 'desconocido'; } catch (e) { return 'desconocido'; } })()`, 10);
+          errores.length = 0;
+          r.datos = JSON.parse(await evaluar(cdp, ses, jsPrueba(p), p.tope));
+          r.erroresConsola = errores.slice(0, 12);
+        } catch (e) {
+          const msg = String(e && e.message || e);
+          if (intento === 0 && /websocket|target|session|no such|disconnected|caido|caído/i.test(msg)) {
+            r.rescate = true;
+            await reiniciarChrome('rescate QA-111 tras caida en ' + p.id);
+            desdeArranque = 0; // navegador fresco: el preventivo vuelve a contar desde cero
+            continue;
+          }
+          r.error = msg;
+        }
+      }
       desdeArranque++;
       res.pruebas[p.id] = r;
       fs.writeFileSync(outJson, JSON.stringify(res, null, 1)); // incremental: sobrevive a cortes
       const d = r.datos || {};
-      console.log(`[${p.id}] ${d.sinTest ? 'SIN TEST (inerte sin bandera)' : (d.test ? (d.test.passed + '/' + d.test.total + (d.test.passed >= p.min ? ' OK' : ' *** ROJO') + (d.test.fallos.length ? ' fallos:' + JSON.stringify(d.test.fallos).slice(0, 200) : '')) : ('ERROR ' + (r.error || d.error || '')))} base=${d.base ? d.base.fpsMed + 'fps' : '-'} err=${r.erroresConsola.length}`);
+      console.log(`[${p.id}] ${d.sinTest ? 'SIN TEST (inerte sin bandera)' : (d.test ? (d.test.passed + '/' + d.test.total + (d.test.passed >= p.min ? ' OK' : ' *** ROJO') + (d.test.fallos.length ? ' fallos:' + JSON.stringify(d.test.fallos).slice(0, 200) : '')) : ('ERROR ' + (r.error || d.error || '')))} base=${d.base ? d.base.fpsMed + 'fps' : '-'} err=${r.erroresConsola.length}${r.rescate ? ' RESC=1' : ''}`);
     }
   } catch (e) { res.error = String(e && e.message || e); }
   fs.writeFileSync(outJson, JSON.stringify(res, null, 1));
