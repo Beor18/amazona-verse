@@ -1022,7 +1022,7 @@
           check('Tras el final, el mundo queda libre para seguir', $('end').hidden && !G.ui.busy());
           soltarFichas(G, T);
           { const AUf = G.aula; G.diario.open(); const cien = $('card').querySelector('.diary.ciencia');
-            check('Diario · al completar las misiones, las 6 fichas quedan ganadas y el Diario las muestra con su fuente (ninguna «???»)', AUf.fichas().every(f => AUf.tieneFicha(f.id) && G.misiones.cumple(FICHA_VIA[f.id])) && !!cien && cien.querySelectorAll('li.found').length === 5 && cien.querySelectorAll('li.found .fuente').length === 5 && !/\?\?\?/.test(cien.textContent), (S.edu.fichas || []).join(','));
+            check('Diario · al completar las misiones, las 6 fichas quedan ganadas y el Diario las muestra con su fuente (ninguna «???»)', AUf.fichas().every(f => AUf.tieneFicha(f.id) && G.misiones.cumple(FICHA_VIA[f.id])) && !!cien && cien.querySelectorAll('li.found').length === AUf.fichas().length && cien.querySelectorAll('li.found .fuente').length === AUf.fichas().length && !/\?\?\?/.test(cien.textContent), (S.edu.fichas || []).join(','));
             G.ui.hideCard(); }
           useAt('iguaca'); drain();
           check('Al volver con Iguaca, ofrece las preguntas (se pueden dejar para luego)', opciones().length === 2 && opciones().some(x => x.includes('Ahora no')), opciones().join() + ' · paso ' + S.step + ' · cerca ' + (G.interaccion.nearest() || {}).id + ' · ' + ($('card').querySelector('h2') || {}).textContent);
