@@ -1,0 +1,14 @@
+{
+ "etiqueta": "matriz-r1",
+ "pantalla": "movil 375x812@3 cpuX4 GPU real",
+ "rondas": [
+  {
+   "ronda": 1,
+   "error": "{\"exceptionId\":1,\"text\":\"Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'pos')\",\"lineNumber\":15,\"columnNumber\":43,\"scriptId\":\"89\",\"stackTrace\":{\"callFrames\":[{\"functionN"
+  },
+  {
+   "ronda": 2,
+   "error": "{\"exceptionId\":1,\"text\":\"Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'pos')\",\"lineNumber\":15,\"columnNumber\":43,\"scriptId\":\"89\",\"stackTrace\":{\"callFrames\":[{\"functionN"
+  }
+ ]
+}

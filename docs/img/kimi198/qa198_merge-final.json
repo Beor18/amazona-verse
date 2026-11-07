@@ -1,0 +1,141 @@
+{
+ "etiqueta": "merge-final",
+ "pantalla": "movil 375x812@3 cpuX4 GPU real",
+ "rondas": [
+  {
+   "ronda": 1,
+   "prep": "ok: portada → creador → Empezar (Estrella del Yunque) → carga 20057 ms (tope)",
+   "pick": "casa_paja_a@kelvin_aldea_rio_este#0",
+   "totalKelvin": 42,
+   "top6": [
+    {
+     "id": "complejo_ruinas@kelvin_aldea_colina#0",
+     "alto": 19.88
+    },
+    {
+     "id": "monumento_g@kelvin_aldea_rio_este#0",
+     "alto": 13.1
+    },
+    {
+     "id": "torre_vigia_b@kelvin_aldea_rio_este#0",
+     "alto": 9.73
+    },
+    {
+     "id": "monumento_f@kelvin_aldea_colina#0",
+     "alto": 9.67
+    },
+    {
+     "id": "mirador_escalonado@kelvin_aldea_colina#0",
+     "alto": 9.26
+    },
+    {
+     "id": "muralla_atalaya_b@kelvin_aldea_rio_este#0",
+     "alto": 8.84
+    }
+   ],
+   "edificio": "casa_paja_a@kelvin_aldea_rio_este#0",
+   "distanciaMin": 2.7,
+   "penetraMax": 0,
+   "camPared": {
+    "dentro": null,
+    "dist": 2.22,
+    "reintento": 1,
+    "libreH": 0.15,
+    "umbral": 1.2
+   },
+   "checkCamara": "verde",
+   "passed": 52,
+   "total": 52
+  },
+  {
+   "ronda": 2,
+   "prep": "ok: portada → creador → Empezar (Coral Verde) → carga 15116 ms (listo) → intro saltada",
+   "pick": "casa_paja_a@kelvin_aldea_rio_este#0",
+   "totalKelvin": 42,
+   "top6": [
+    {
+     "id": "complejo_ruinas@kelvin_aldea_colina#0",
+     "alto": 19.88
+    },
+    {
+     "id": "monumento_g@kelvin_aldea_rio_este#0",
+     "alto": 13.1
+    },
+    {
+     "id": "torre_vigia_b@kelvin_aldea_rio_este#0",
+     "alto": 9.73
+    },
+    {
+     "id": "monumento_f@kelvin_aldea_colina#0",
+     "alto": 9.67
+    },
+    {
+     "id": "mirador_escalonado@kelvin_aldea_colina#0",
+     "alto": 9.26
+    },
+    {
+     "id": "muralla_atalaya_b@kelvin_aldea_rio_este#0",
+     "alto": 8.84
+    }
+   ],
+   "edificio": "casa_paja_a@kelvin_aldea_rio_este#0",
+   "distanciaMin": 2.7,
+   "penetraMax": 0,
+   "camPared": {
+    "dentro": null,
+    "dist": 2.22,
+    "reintento": 1,
+    "libreH": 0.15,
+    "umbral": 1.2
+   },
+   "checkCamara": "verde",
+   "passed": 52,
+   "total": 52
+  },
+  {
+   "ronda": 3,
+   "prep": "ok: portada → creador → Empezar (Rayo del Río) → carga 15365 ms (listo)",
+   "pick": "casa_paja_a@kelvin_aldea_rio_este#0",
+   "totalKelvin": 42,
+   "top6": [
+    {
+     "id": "complejo_ruinas@kelvin_aldea_colina#0",
+     "alto": 19.88
+    },
+    {
+     "id": "monumento_g@kelvin_aldea_rio_este#0",
+     "alto": 13.1
+    },
+    {
+     "id": "torre_vigia_b@kelvin_aldea_rio_este#0",
+     "alto": 9.73
+    },
+    {
+     "id": "monumento_f@kelvin_aldea_colina#0",
+     "alto": 9.67
+    },
+    {
+     "id": "mirador_escalonado@kelvin_aldea_colina#0",
+     "alto": 9.26
+    },
+    {
+     "id": "muralla_atalaya_b@kelvin_aldea_rio_este#0",
+     "alto": 8.84
+    }
+   ],
+   "edificio": "casa_paja_a@kelvin_aldea_rio_este#0",
+   "distanciaMin": 2.7,
+   "penetraMax": 0,
+   "camPared": {
+    "dentro": null,
+    "dist": 2.22,
+    "reintento": 1,
+    "libreH": 0.15,
+    "umbral": 1.2
+   },
+   "checkCamara": "verde",
+   "passed": 52,
+   "total": 52
+  }
+ ]
+}

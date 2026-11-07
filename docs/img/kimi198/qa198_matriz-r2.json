@@ -1,0 +1,196 @@
+{
+ "etiqueta": "matriz-r2",
+ "pantalla": "movil 375x812@3 cpuX4 GPU real",
+ "rondas": [
+  {
+   "ronda": 1,
+   "matriz": [
+    {
+     "id": "casa_paja_a@kelvin_aldea_rio_este#0",
+     "alto": 5.99,
+     "probadas": 3,
+     "dmin": 2.7,
+     "peor": 0,
+     "den": null,
+     "dist": 7.5,
+     "libreH": 0.15
+    },
+    {
+     "id": "casa_paja_a@kelvin_aldea_rio_este#1",
+     "alto": 5.99,
+     "probadas": 1,
+     "dmin": 4.63,
+     "peor": 0,
+     "den": null,
+     "dist": 6.86,
+     "libreH": 0.3
+    },
+    {
+     "id": "casa_paja_a@kelvin_aldea_rio_este#2",
+     "alto": 5.99,
+     "probadas": 3,
+     "dmin": 3.34,
+     "peor": 0,
+     "den": null,
+     "dist": 7.5,
+     "libreH": 0.15
+    },
+    {
+     "id": "complejo_ruinas@kelvin_aldea_colina#0",
+     "alto": 19.88,
+     "probadas": 2,
+     "dmin": 1.46,
+     "peor": 0,
+     "den": null,
+     "dist": 7.5,
+     "libreH": 2.55
+    },
+    {
+     "id": "monumento_g@kelvin_aldea_rio_este#0",
+     "alto": 13.1,
+     "probadas": 4,
+     "dmin": 6.68,
+     "peor": 0,
+     "den": null,
+     "dist": 7.5,
+     "libreH": 99
+    },
+    {
+     "id": "torre_vigia_b@kelvin_aldea_rio_este#0",
+     "alto": 9.73,
+     "probadas": 2,
+     "dmin": 3.72,
+     "peor": 0,
+     "den": null,
+     "dist": 5.49,
+     "libreH": 0.15
+    },
+    {
+     "id": "monumento_f@kelvin_aldea_colina#0",
+     "alto": 9.67,
+     "probadas": 0,
+     "dmin": 99,
+     "peor": 0,
+     "den": null,
+     "dist": 5.49,
+     "libreH": 99
+    },
+    {
+     "id": "mirador_escalonado@kelvin_aldea_colina#0",
+     "alto": 9.26,
+     "probadas": 4,
+     "dmin": 3.61,
+     "peor": 0,
+     "den": null,
+     "dist": 1.03,
+     "libreH": 0.3
+    },
+    {
+     "id": "muralla_atalaya_b@kelvin_aldea_rio_este#0",
+     "alto": 8.84,
+     "probadas": 1,
+     "dmin": 5.74,
+     "peor": 0,
+     "den": null,
+     "dist": 4.82,
+     "libreH": 0.15
+    }
+   ]
+  },
+  {
+   "ronda": 2,
+   "matriz": [
+    {
+     "id": "casa_paja_a@kelvin_aldea_rio_este#0",
+     "alto": 5.99,
+     "probadas": 3,
+     "dmin": 2.7,
+     "peor": 0,
+     "den": null,
+     "dist": 2.22,
+     "libreH": 0.15
+    },
+    {
+     "id": "casa_paja_a@kelvin_aldea_rio_este#1",
+     "alto": 5.99,
+     "probadas": 1,
+     "dmin": 4.63,
+     "peor": 0,
+     "den": null,
+     "dist": 6.86,
+     "libreH": 0.3
+    },
+    {
+     "id": "casa_paja_a@kelvin_aldea_rio_este#2",
+     "alto": 5.99,
+     "probadas": 3,
+     "dmin": 3.34,
+     "peor": 0,
+     "den": null,
+     "dist": 7.5,
+     "libreH": 0.15
+    },
+    {
+     "id": "templo_mediano_h@kelvin_aldea_rio_este_2#0",
+     "alto": 28.14,
+     "probadas": 0,
+     "dmin": 99,
+     "peor": 0,
+     "den": null,
+     "dist": 7.5,
+     "libreH": 99
+    },
+    {
+     "id": "templo_mediano_h@kelvin_aldea_rio_este_2#1",
+     "alto": 28.14,
+     "probadas": 1,
+     "dmin": 7.44,
+     "peor": 0,
+     "den": null,
+     "dist": 2.92,
+     "libreH": 99
+    },
+    {
+     "id": "templo_mediano_h@kelvin_aldea_rio_este_2#2",
+     "alto": 28.14,
+     "probadas": 2,
+     "dmin": 1.4,
+     "peor": 0,
+     "den": null,
+     "dist": 7.5,
+     "libreH": 99
+    },
+    {
+     "id": "templo_grande_d@kelvin_aldea_rio_este_2#0",
+     "alto": 17.33,
+     "probadas": 1,
+     "dmin": 7.63,
+     "peor": 0,
+     "den": null,
+     "dist": 7.5,
+     "libreH": 0.3
+    },
+    {
+     "id": "puente_madera@kelvin_aldea_rio_este_3#0",
+     "alto": 16.74,
+     "probadas": 3,
+     "dmin": 7.25,
+     "peor": 0,
+     "den": null,
+     "dist": 5.64,
+     "libreH": 1.35
+    },
+    {
+     "id": "ruina_torre@kelvin_aldea_rio_este_2#0",
+     "alto": 13.64,
+     "probadas": 3,
+     "dmin": 8.34,
+     "peor": 0,
+     "den": null,
+     "dist": 7.5,
+     "libreH": 99
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,46 @@
+{
+ "etiqueta": "gpu-r1",
+ "pantalla": "movil 375x812@3 cpuX4 GPU real",
+ "rondas": [
+  {
+   "ronda": 1,
+   "prep": "ok: portada → creador → Empezar (Cielo Valiente) → carga 20057 ms (tope)",
+   "candidatos": [
+    {
+     "id": "complejo_ruinas@kelvin_aldea_colina#0",
+     "alto": 19.88
+    },
+    {
+     "id": "monumento_g@kelvin_aldea_rio_este#0",
+     "alto": 13.1
+    },
+    {
+     "id": "torre_vigia_b@kelvin_aldea_rio_este#0",
+     "alto": 9.73
+    },
+    {
+     "id": "monumento_f@kelvin_aldea_colina#0",
+     "alto": 9.67
+    },
+    {
+     "id": "mirador_escalonado@kelvin_aldea_colina#0",
+     "alto": 9.26
+    },
+    {
+     "id": "muralla_atalaya_b@kelvin_aldea_rio_este#0",
+     "alto": 8.84
+    }
+   ],
+   "edificio": "casa_paja_a@kelvin_aldea_rio_este#0",
+   "distanciaMin": 2.7,
+   "penetraMax": 0,
+   "camPared": {
+    "dentro": null,
+    "dist": 7.5
+   },
+   "checkCamara": "verde",
+   "passed": 52,
+   "total": 52
+  }
+ ]
+}
