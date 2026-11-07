@@ -57,8 +57,10 @@ window.AVV18Serpiente = function (G) {
   const lista = () => !!(V && V.mundo('sombra_tormenta') === 'dispersa'); // segunda amenaza: después de la Sombra
   // Espiral: radio 1,6 m alrededor del tronco, de 0,6 a 7 m de alto; los nudos van a alturas 1,2 · 3 · 4,8 · 6,4 m
   const ALTOS = [1.2, 3.0, 4.8, 6.4];
-  function puntoEspiral(u, giro) { const a = u * Math.PI * 5 + giro, h = 0.6 + u * 6.6; return { x: sitio.x + Math.cos(a) * 1.6, y: altura(sitio.x, sitio.z) + h, z: sitio.z + Math.sin(a) * 1.6 }; }
-  function posNudo(i) { const u = (ALTOS[i] - 0.6) / 6.6; const p = puntoEspiral(u, A.giro); const a = u * Math.PI * 5 + A.giro; return { x: p.x + Math.cos(a) * 0.5, y: p.y, z: p.z + Math.sin(a) * 0.5 }; }
+  // out y y0 opcionales (QA-200): dibujar() reutiliza objetos de trabajo y consulta la altura una vez por cuadro
+  function puntoEspiral(u, giro, out, y0) { const a = u * Math.PI * 5 + giro, h = 0.6 + u * 6.6; const p = out || {}; p.x = sitio.x + Math.cos(a) * 1.6; p.y = (y0 === undefined ? altura(sitio.x, sitio.z) : y0) + h; p.z = sitio.z + Math.sin(a) * 1.6; return p; }
+  function posNudo(i, out, y0) { const u = (ALTOS[i] - 0.6) / 6.6; const p = puntoEspiral(u, A.giro, out, y0); const a = u * Math.PI * 5 + A.giro; p.x += Math.cos(a) * 0.5; p.z += Math.sin(a) * 0.5; return p; }
+  const _pt = { x: 0, y: 0, z: 0 };
   // Brillo: ventana de 1,1 s cada 2,6 s (más corta con cada nudo suelto: más precisión)
   const PERIODO = 2.6, ventana = () => Math.max(0.65, 1.1 - 0.12 * A.siguiente);
   const brilla = () => A.ciclo < ventana();
@@ -130,24 +132,24 @@ window.AVV18Serpiente = function (G) {
 
   // ---------- Dibujo y paso ----------
   function dibujar() {
-    const k = A.escala;
+    const k = A.escala, y0 = altura(sitio.x, sitio.z);
     for (let i = 0; i < NB; i++) {
-      const p = puntoEspiral(i / (NB - 1), A.giro);
+      const p = puntoEspiral(i / (NB - 1), A.giro, _pt, y0);
       _o.position.set(sitio.x + (p.x - sitio.x) * k, p.y, sitio.z + (p.z - sitio.z) * k);
       _o.scale.setScalar(Math.max(0.01, (1 - 0.35 * i / NB) * (A.fase === 'deshace' ? Math.max(0, 1 - A.t / 1.3) : 1)));
       _o.updateMatrix(); bejucos.setMatrixAt(i, _o.matrix);
     }
     bejucos.instanceMatrix.needsUpdate = true;
     for (let i = 0; i < NUDOS; i++) {
-      const p = posNudo(i), suelto = A.sueltos[i], toca = i === A.siguiente && A.fase === 'lucha';
+      const p = posNudo(i, _pt, y0), suelto = A.sueltos[i], toca = i === A.siguiente && A.fase === 'lucha';
       _o.position.set(p.x, p.y, p.z); _o.rotation.set(A.t * 2, A.t * 3, 0);
       _o.scale.setScalar(suelto ? 0.01 : toca && brilla() ? 1.35 : toca ? 1.1 : 0.85); _o.updateMatrix(); nudos.setMatrixAt(i, _o.matrix);
       nudos.setColorAt(i, suelto ? colNudo.suelto : toca ? (brilla() ? colNudo.brilla : colNudo.toca) : colNudo.apagado);
     }
     _o.rotation.set(0, 0, 0);
     nudos.instanceMatrix.needsUpdate = true; if (nudos.instanceColor) nudos.instanceColor.needsUpdate = true;
-    const cab = puntoEspiral(1, A.giro), dx = S.pos.x - cab.x, dz = S.pos.z - cab.z, n = Math.hypot(dx, dz) || 1;
-    [-1, 1].forEach((s, i) => { _o.position.set(cab.x + dx / n * 0.45 - dz / n * 0.22 * s, cab.y + 0.15, cab.z + dz / n * 0.45 + dx / n * 0.22 * s); _o.scale.setScalar(A.fase === 'deshace' ? 0.01 : 1); _o.updateMatrix(); ojos.setMatrixAt(i, _o.matrix); });
+    const cab = puntoEspiral(1, A.giro, _pt, y0), dx = S.pos.x - cab.x, dz = S.pos.z - cab.z, n = Math.hypot(dx, dz) || 1;
+    for (let i = 0; i < 2; i++) { const s = i ? 1 : -1; _o.position.set(cab.x + dx / n * 0.45 - dz / n * 0.22 * s, cab.y + 0.15, cab.z + dz / n * 0.45 + dx / n * 0.22 * s); _o.scale.setScalar(A.fase === 'deshace' ? 0.01 : 1); _o.updateMatrix(); ojos.setMatrixAt(i, _o.matrix); }
     ojos.instanceMatrix.needsUpdate = true;
   }
   function paso(dt) {
