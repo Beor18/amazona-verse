@@ -8,6 +8,7 @@
    Uso: node tools/build/kimi2_empezar.js [--rondas 4] [--pack cap1] [--cpu 4] [--salida DIR] [--puerto N]
                                         [--baterias] [--sin-semilla] [--solo a,b] [--capturas] [--vistas "x,z,yaw;…"]
                                         [--extra-url "v18=1"] ( también en --baterias y en las recargas de rescate )
+                                        [--reinicia-cada N] ( QA-111 residual: rearranque preventivo del navegador cada N baterías )
 */
 'use strict';
 const http = require('http');
@@ -40,6 +41,11 @@ const SALIDA = arg('--salida', path.join(AQUI, 'salida', 'kimi2-empezar'));
 const PERFIL = process.argv.includes('--perfil');
 const FASES = process.argv.includes('--fases');
 const SIN_SEMILLA = process.argv.includes('--sin-semilla'); // comparación A/B: flujo viejo (creador real, sin partida sembrada)
+// QA-111 residual (KIMI-199): en --baterias, rearranca el navegador de forma preventiva cada N baterías
+// (0 = apagado: comportamiento actual). Las corridas largas (~12 baterías + suite V18) se comían 1-2 crashes
+// del proceso de GPU (KIMI-193: no es fuga de la página, es carga acumulada de teleports+GLB+2.º contexto
+// WebGL); reiniciar de forma preventiva sale por ~30-60 s de reentrada y deja el navegador fresco.
+const REINICIA_CADA = parseInt(arg('--reinicia-cada', '0'), 10) || 0;
 fs.mkdirSync(SALIDA, { recursive: true });
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.woff': 'font/woff', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon' };
@@ -204,9 +210,17 @@ async function lanzarChrome() {
   }
   await arrancarNavegador();
   async function navegadorVivo() { try { await cdp.call('Browser.getVersion', {}, undefined, 8000); return true; } catch (e) { return false; } }
-  async function reiniciarNavegador() {
-    try { console.log('  · stderr del navegador caído: ' + String(chrome.verStderr && chrome.verStderr()).replace(/\s+/g, ' ').slice(-220)); } catch (e) {}
-    try { chrome.kill(); } catch (e) {}
+  async function reiniciarNavegador(motivo) {
+    try { console.log('  · stderr del navegador (' + (motivo || 'caído') + '): ' + String(chrome.verStderr && chrome.verStderr()).replace(/\s+/g, ' ').slice(-220)); } catch (e) {}
+    // Chrome 156: el proceso padre del spawn ya salió y el navegador real va detached, así que chrome.kill()
+    // no basta y dejaría chrome.exe huérfanos robando GPU (encontrado verificando KIMI-199): se localiza el
+    // proceso real por CDP y se mata el árbol entero con taskkill /T; chrome.kill() queda como respaldo.
+    try {
+      const info = await cdp.call('SystemInfo.getProcessInfo', {}, undefined, 5000);
+      const br = (info.processInfo || []).find(p => p.type === 'browser');
+      if (br && br.id) spawn('taskkill', ['/F', '/T', '/PID', String(br.id)], { stdio: 'ignore' });
+      else try { chrome.kill(); } catch (e) {}
+    } catch (e) { try { chrome.kill(); } catch (e2) {} }
     const viejo = perf;
     await arrancarNavegador();
     try { fs.rmSync(viejo, { recursive: true, force: true }); } catch (e) { /* perfil en uso; se limpia otro día */ }
@@ -290,6 +304,7 @@ async function lanzarChrome() {
     const RECARGA_ANTES = ['criaderoTest'];
     async function correrBaterias(baterias, sembrar, preparar) {
       const reintentos = {};
+      let desdeArranque = 0;
       for (let i = 0; i < baterias.length; i++) {
         const b = baterias[i];
         // Crash del navegador entero (no solo la pestaña): rearrancar Chrome, rehacer la entrada y
@@ -298,7 +313,15 @@ async function lanzarChrome() {
           console.log('  · el navegador entero cayó antes de ' + b + '; rearrancando…');
           await reiniciarNavegador();
           await pestanaPrincipal(sembrar, preparar);
+          desdeArranque = 0;
           if (!reintentos[b]) { reintentos[b] = 1; i--; continue; }
+        }
+        // QA-111 residual (KIMI-199): rearranque preventivo cada N baterías (con --reinicia-cada N).
+        if (REINICIA_CADA > 0 && desdeArranque >= REINICIA_CADA) {
+          console.log('  · rearranque preventivo del navegador antes de ' + b + ' (--reinicia-cada ' + REINICIA_CADA + ', QA-111 residual)…');
+          await reiniciarNavegador('rearranque preventivo');
+          await pestanaPrincipal(sembrar, preparar);
+          desdeArranque = 0;
         }
         if (RECARGA_ANTES.includes(b) && (await paginaViva(ctx.ses))) {
           console.log('  · recargando la página antes de ' + b + ' (memoria GPU limpia, QA-111)');
@@ -317,6 +340,7 @@ async function lanzarChrome() {
           const falla = (j.t != null && j.p != null && j.p !== j.t) || j.ok === false || (j.mal && j.mal.length);
           console.log(`  · ${b}: ${j.p}/${j.t}${j.mal && j.mal.length ? ' · falla: ' + j.mal.join(' | ') : ''}${falla ? ' <<<' : ''} (${Math.round((Date.now() - t0) / 1000)} s)`);
         } catch (e) { informe[b] = { error: e.message.slice(0, 200) }; console.log(`  · ${b}: ERROR ${e.message.slice(0, 160)}`); }
+        desdeArranque++;
       }
     }
     // Pestaña principal con semilla (QA-111): Jugar entra directo; si algo falló, el preparar cierra el creador.
