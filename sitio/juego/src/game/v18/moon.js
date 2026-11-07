@@ -46,7 +46,7 @@ window.AVV18Moon = function (G) {
   const reloj = s => (Math.max(0, s)).toFixed(1).replace('.', ',') + ' s';
 
   const A = { fase: 'nada', t: 0, cuenta: 0, toques: 0, mercy: 0, lanzarEn: 0, altoT: 0, orbs: [], forzar: false, manual: false, ultimo: null, xpT: 0 };
-  const activa = () => !!(G.V18 || A.forzar);
+  const activa = () => !!((G.V18 && G.pack && G.pack.id === 'cap1') || A.forzar); // QA-192: la actividad es de Villa Raíz; la prueba la fuerza con A.forzar
 
   // ---------- Progreso ----------
   function record() { const r = V.mundo(ID); return r && typeof r === 'object' ? r : null; }
@@ -113,6 +113,7 @@ window.AVV18Moon = function (G) {
     if (!document.getElementById('v18-moon-css')) {
       const st = document.createElement('style'); st.id = 'v18-moon-css';
       st.textContent = '#v18-moon{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(300px,calc(100vw - 32px));z-index:40;' +
+        'body:has(#v18-moon:not([hidden])) #toast{z-index:41}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(24,26,58,.8);border:2px solid #b9a7ff;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
         '#v18-moon .vm-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-moon .vm-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-moon .vm-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd76a;text-shadow:0 2px 0 #6a4dc9}#v18-moon .vm-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
@@ -276,6 +277,12 @@ window.AVV18Moon = function (G) {
       try { ir(SITIO.x + 4, SITIO.z + 4); correr(0.3); await esperar(200); correr(0.1);
         sinBandera = !N.instancia(NPC) && N.activos().indexOf(NPC) < 0 && mapa() === null && !empezar(); } finally { G.V18 = v18bk; }
       check('2 · Sin la bandera V18 no aparece Moon, ni su marcador, ni se puede empezar el entreno', sinBandera, N.activos().join(','));
+      // 2b · QA-192: con la V18 encendida pero fuera del cap. 1 (packs 2-6) tampoco aparece
+      const packBk = G.pack && G.pack.id; let fueraPack = false;
+      if (packBk) { G.pack.id = 'ep4';
+        try { ir(SITIO.x + 4, SITIO.z + 4); correr(0.3); await esperar(200); correr(0.1);
+          fueraPack = !N.instancia(NPC) && N.activos().indexOf(NPC) < 0 && mapa() === null && !empezar(); } finally { G.pack.id = packBk; } }
+      check('2b · Con la V18 encendida fuera del cap. 1 (pack ep4) no aparece Moon ni su marcador ni el entreno (QA-192)', packBk ? fueraPack : true, 'pack ' + packBk + ' · activos ' + N.activos().join(','));
       A.forzar = true;
       // 3 · lejos: carga diferida
       const villa = (T.mapa && T.mapa.lugares && T.mapa.lugares.villa) || { x: 150, z: 170 };

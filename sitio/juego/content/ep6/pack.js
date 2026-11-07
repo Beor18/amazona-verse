@@ -613,7 +613,7 @@
         const ayud = p => `<li><button class="btn ep6-ayud${sel === p.id ? ' ep6-sel' : ''}" type="button" data-ayud="${p.id}" aria-pressed="${sel === p.id}">${esc(p.nombre)}</button></li>`;
         G.ui.showCard(`<h2>${esc('El tablero del plan')}</h2><p>${esc(sel ? 'Ahora toca la tarea que hará ' + nombre(sel) + '.' : 'Toca un ayudante y luego una tarea.')}</p>` +
           `<div class="ep6-tablero"><div><h3>${esc('Tareas')}</h3><ul class="ep6-lista">${TAREAS.map(fila).join('')}</ul></div><div><h3>${esc('Ayudantes')}</h3><ul class="ep6-lista">${PERSONAS.map(ayud).join('')}</ul></div></div>` +
-          `<div class="row"><button class="btn" id="ch-0" type="button">${esc('Probar el plan')}</button><button class="btn" id="ch-1" type="button">${esc('Quitar a alguien de una tarea')}</button><button class="btn" id="ch-2" type="button">${esc('Cerrar')}</button></div>`);
+          `<div class="row ep6-acciones"><button class="btn" id="ch-0" type="button">${esc('Probar el plan')}</button><button class="btn" id="ch-1" type="button">${esc('Quitar a alguien de una tarea')}</button><button class="btn" id="ch-2" type="button">${esc('Cerrar')}</button></div>`);
         for (const b of document.querySelectorAll('#card [data-ayud]')) b.onclick = () => { sel = sel === b.dataset.ayud ? null : b.dataset.ayud; tablero(); };
         for (const b of document.querySelectorAll('#card [data-tarea]')) b.onclick = () => { if (sel) { P.asig[b.dataset.tarea] = sel; sel = null; G.audio.play('tick'); } else if (quitar) { P.asig[b.dataset.tarea] = null; quitar = false; G.audio.play('tick'); } tablero(); };
         $('ch-0').onclick = () => probar();
@@ -818,7 +818,9 @@
       css.textContent = '.ep6-lista{list-style:none;margin:0 0 .5em;padding:0}.ep6-lista li{margin:.2em 0}.ep6-tablero{display:grid;grid-template-columns:1fr 1fr;gap:.6em;text-align:left}.ep6-tablero h3{font-size:1em;margin:.2em 0}' +
         '.ep6-tarea,.ep6-ayud{min-height:56px;width:100%;display:flex;justify-content:space-between;align-items:center;gap:.5em}.ep6-sel{outline:3px solid var(--gold,#ffd27a)}.ep6-dest{outline:2px dashed var(--gold,#ffd27a)}' +
         '.ep6-sim{text-align:left;padding-left:1.2em}.ep6-sim li{margin:.25em 0}.ep6-sim li.luego{opacity:.45}.ep6-sim li.now{font-weight:700}.ep6-sim li.mal{color:var(--crest,#d6403a)}.ep6-sim small{display:block;font-weight:400}.ep6-fin{font-weight:700}' +
-        '@media (max-width:520px){.ep6-tablero{grid-template-columns:1fr}}';
+        '@media (max-width:520px){.ep6-tablero{grid-template-columns:1fr}' +
+        // 7-nov: en el teléfono el tablero (5 tareas y 6 ayudantes en una columna) pasa de la pantalla; «Probar el plan» y «Cerrar» quedan fijos abajo
+        '.ep6-acciones{position:sticky;bottom:calc(-1 * var(--sp-6,24px));margin:0 calc(-1 * var(--sp-6,24px)) calc(-1 * var(--sp-6,24px));padding:.6em var(--sp-6,24px) var(--sp-6,24px);background:var(--c-paper,#f6ead0);box-shadow:0 -6px 10px rgba(0,0,0,.12);z-index:1}}';
       document.head.appendChild(css);
 
       const redibujar = () => { colocarNpcs(); dibujarAsientos(); };
@@ -870,7 +872,7 @@
           useAt('v_mira'); drain();
           check('M1 · Recibir a la primera: empieza la misión (GuestsArrived); Mira no dice qué necesita', S.step === 0 && G.eventos.had('GuestsArrived') && S.collected.includes('conocido_mira') && !G.interaccion.find('o_mira').visible(), 'paso ' + S.step);
           { const AUf = G.aula, f0 = AUf.fichas()[0], h0 = f0 && G.diario.entries.find(x => x.id === f0.id);
-            check('Diario · las 5 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 5 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
+            check('Diario · las 6 fichas publicadas se pueden ganar: su hallazgo (mismo id) y un momento de la misión', AUf.fichas().length === 6 && AUf.fichas().every(f => AUf.via(f.id) && FICHA_VIA[f.id] && G.diario.entries.some(x => x.id === f.id)) && !(S.edu.fichas || []).length, AUf.fichas().map(f => f.id).join(','));
             const vuelta = { x: S.pos.x, z: S.pos.z };
             teleport(h0.x + 0.3, h0.z); tick(0.1); const antes = AUf.tieneFicha(f0.id); soltarFichas(G, T);
             check('Diario · encontrar «' + h0.nombre + '» da su ficha de Ciencia, después del aviso del hallazgo', S.field.includes(f0.id) && !antes && AUf.tieneFicha(f0.id) && S.edu.fichas.length === 1 && !G.misiones.cumple(FICHA_VIA[f0.id]), (S.edu.fichas || []).join(',')); teleport(vuelta.x, vuelta.z); tick(0.05); }
@@ -1013,14 +1015,14 @@
             (LEC.objetivos || []).length === 4 && (LEC.preguntas || []).length === 6 && (LEC.diario || []).length === 6 && g45.antes && g45.antes.minutos + g45.durante.minutos + g45.despues.minutos === 45 &&
             (MM.actividades_sin_pantalla || []).length === 3 && MM.rubrica && MM.rubrica.criterios.length === 5 && MM.reporte_progreso.almacenamiento.clave === AU.KEY);
           // BM126: verificación de Kelvin del 2-nov. Antes solo la aritmética de 36 estaba verificada.
-          check('Solo salen las fichas con fuente (Kelvin 2-nov) y la aritmética de 36; «algunas cotorras Amazona»; esperan sigue por verificar', AU.fichas().map(f => f.id).join(',') === 'tarjetas,plan,tabla,acuerdo,forma' && AU.fichas().filter(f => f.id !== 'forma').every(f => f.fuente && /^https:\/\//.test(f.fuente_url || '')) && LEC.diario.filter(f => f.verificacion === 'por_verificar').map(f => f.id).join(',') === 'esperan' && LEC.diario.every(f => f.fuente && f.nota_verificacion) && /^Algunas cotorras Amazona/.test(AU.ficha('tarjetas').dato.es), AU.fichas().map(f => f.id).join(','));
+          check('Solo salen las fichas con fuente (Kelvin 2-nov) y la aritmética de 36; «algunas cotorras Amazona»; esperan ya verificada con la UICN (K4-15, QA-194)', AU.fichas().map(f => f.id).join(',') === 'tarjetas,plan,tabla,acuerdo,forma,esperan' && AU.fichas().filter(f => f.id !== 'forma').every(f => f.fuente && /^https:\/\//.test(f.fuente_url || '')) && LEC.diario.filter(f => f.verificacion === 'por_verificar').length === 0 && LEC.diario.every(f => f.fuente && f.nota_verificacion) && /^Algunas cotorras Amazona/.test(AU.ficha('tarjetas').dato.es), AU.fichas().map(f => f.id).join(','));
           check('Las 6 preguntas se pueden hacer: ninguna depende de un dato por verificar', QS.every(id => AU.preguntaPublicable(AU.pregunta(id))));
           check('Nunca «grados» en lo que ve el maestro ni el niño', !/grado/i.test(JSON.stringify([g45, (MM.actividades_sin_pantalla || []).map(a => [a.titulo, a.materiales, a.pasos]), MM.rubrica, LEC.objetivos.map(o => o.enunciado), LEC.preguntas.map(q => [q.enunciado, q.opciones, q.retro])])));
           G.misiones.seguirExplorando();
           check('Tras el final, el mundo queda libre para seguir', $('end').hidden && !G.ui.busy());
           soltarFichas(G, T);
           { const AUf = G.aula; G.diario.open(); const cien = $('card').querySelector('.diary.ciencia');
-            check('Diario · al completar las misiones, las 5 fichas quedan ganadas y el Diario las muestra con su fuente (ninguna «???»)', AUf.fichas().every(f => AUf.tieneFicha(f.id) && G.misiones.cumple(FICHA_VIA[f.id])) && !!cien && cien.querySelectorAll('li.found').length === 5 && cien.querySelectorAll('li.found .fuente').length === 5 && !/\?\?\?/.test(cien.textContent), (S.edu.fichas || []).join(','));
+            check('Diario · al completar las misiones, las 6 fichas quedan ganadas y el Diario las muestra con su fuente (ninguna «???»)', AUf.fichas().every(f => AUf.tieneFicha(f.id) && G.misiones.cumple(FICHA_VIA[f.id])) && !!cien && cien.querySelectorAll('li.found').length === AUf.fichas().length && cien.querySelectorAll('li.found .fuente').length === AUf.fichas().length && !/\?\?\?/.test(cien.textContent), (S.edu.fichas || []).join(','));
             G.ui.hideCard(); }
           useAt('iguaca'); drain();
           check('Al volver con Iguaca, ofrece las preguntas (se pueden dejar para luego)', opciones().length === 2 && opciones().some(x => x.includes('Ahora no')), opciones().join() + ' · paso ' + S.step + ' · cerca ' + (G.interaccion.nearest() || {}).id + ' · ' + ($('card').querySelector('h2') || {}).textContent);
@@ -1077,7 +1079,7 @@
           check('En inglés, el HUD del capítulo sale traducido', $('quest').querySelector('h1').textContent === 'The Pact of the 36', $('quest').querySelector('h1').textContent);
           await G.idioma.poner('es');
           { const AUf = G.aula, ganadas = (S.edu.fichas || []).slice(); S.edu.fichas = []; const recupera = AUf.pendientes().length; S.edu.fichas = ganadas;
-            check('Diario · las fichas ganadas siguen tras guardar y cargar; una partida de antes (sin fichas) las recupera', AUf.fichas().every(f => ganadas.includes(f.id)) && recupera === 5, ganadas.join(',') + ' · ' + recupera); }
+            check('Diario · las fichas ganadas siguen tras guardar y cargar; una partida de antes (sin fichas) las recupera', AUf.fichas().every(f => ganadas.includes(f.id)) && recupera === AUf.fichas().length, ganadas.join(',') + ' · ' + recupera); }
           G.guardado.reset(true);
           try { if (criaderoRaw == null) localStorage.removeItem(G.criadero.KEY); else localStorage.setItem(G.criadero.KEY, criaderoRaw); } catch (e) { /* sin almacenamiento */ }
           if (AU.recargar) AU.recargar();

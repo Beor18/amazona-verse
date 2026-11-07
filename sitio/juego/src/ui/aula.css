@@ -24,6 +24,7 @@
 .edu-pie { justify-content: space-between; }
 /* Ruta de la gota en vuelo (p5 ráfaga, p6 rasante): el mundo sigue detrás */
 #edu-vuelo { position: fixed; left: 50%; bottom: 22%; transform: translateX(-50%); margin: 0; z-index: 30; max-width: min(420px, calc(100vw - 24px)); padding: 8px 14px; border-radius: 999px; font: 700 var(--fs-md)/1.2 var(--font-display); color: #1a2a18; background: #e7f6c8; border: 3px solid #2f6a32; box-shadow: 0 3px 0 #1d4a22; pointer-events: none; }
+body:has(#dialog:not([hidden])) #edu-vuelo { display: none; } /* auditoría 7-nov: la píldora (z 30, bottom 22 %) pisaba el borde de arriba del diálogo */
 #edu-vuelo.rasante { background: #d7f0f6; border-color: #1e6a86; box-shadow: 0 3px 0 #14556c; }
 .edu-pie #edu-seguir { margin-left: auto; }
 /* Secuencias (cadena alimentaria, ciclo del agua): lista numerada de casillas */

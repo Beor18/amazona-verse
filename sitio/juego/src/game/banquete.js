@@ -200,11 +200,18 @@ window.AVBanquete = function (G) {
       '@media (prefers-reduced-motion:reduce){#bq-chip.late{animation:none}}';
     document.head.appendChild(st);
   }
+  // En móvil (≤560 px) el objetivo #quest ocupa el borde de arriba: el chip se coloca justo debajo de #top (objetivo + inventario).
+  function bajarChip() {
+    if (!chip) return;
+    const top = document.getElementById('top');
+    chip.style.top = window.matchMedia('(max-width:560px)').matches && top ? Math.ceil(top.getBoundingClientRect().bottom) + 8 + 'px' : '';
+    if (top && !chip._ro && window.ResizeObserver) { chip._ro = new ResizeObserver(bajarChip); chip._ro.observe(top); window.addEventListener('resize', bajarChip); }
+  }
   function pintarChip() {
     if (!chip) { estilo(); chip = document.createElement('div'); chip.id = 'bq-chip'; chip.setAttribute('aria-live', 'polite'); chip.innerHTML = '<i aria-hidden="true"></i><span></span>'; document.body.appendChild(chip); }
     const ver = B.llevo > 0;
     chip.querySelector('span').textContent = B.llevo >= LLEVO_MAX ? `Frutos: ${B.llevo} de ${LLEVO_MAX} · ¡llévalos al nido!` : `Frutos para el nido: ${B.llevo}`;
-    chip.classList.toggle('ver', ver);
+    chip.classList.toggle('ver', ver); bajarChip();
     if (ver) { chip.classList.remove('late'); void chip.offsetWidth; chip.classList.add('late'); }
   }
 

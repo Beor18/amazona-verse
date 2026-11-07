@@ -144,6 +144,7 @@ AVE.module('lugares', function (G) {
   }
   function avisar(dt) {
     if (tR > 0 && (tR -= dt) <= 0) ocultarRotulo();
+    if (tR > 0 && G.ui.cardOpen && window.innerWidth <= 560) ocultarRotulo(); // auditoría 7-nov: en el teléfono el rótulo (z 30, a 30vh) tapaba la pregunta de una tarjeta abierta después
     if (!cola.length) return;
     espera = Math.max(0, espera - dt);
     if (espera > 0 || G.quiet || G.ui.busy() || (G.dialogo && G.dialogo.activo && G.dialogo.activo()) || $('c1-fade') || $('c1-saltar') || /\bv18-(duelo|amenaza)-on\b/.test(document.body.className)) return; // QA-188 (W28): espera también a diálogo/bocadillo/narrador (busy no los cubre) y a la apertura del cap. 1; en un duelo V18 espera a que acabe
@@ -199,6 +200,7 @@ AVE.module('lugares', function (G) {
       check('Al llegar se descubre una sola vez y queda en la partida (S.lugares)', n1 >= 1 && n2 === 0 && descubiertos().filter(id => id === p.id).length === 1, nombreDe(p));
       check('Descubrir suma XP al nido por el gancho aprendizaje (tipo lugar)', C.xp === false || xpRecibidas.includes(p.id));
       // Aviso en el HUD: espera a que el jugador esté libre y sale con el estilo de logro
+      { const solo = cola.filter(d => d.id === p.id); cola.length = 0; cola.push(...solo); espera = 0; } // 7-nov: sin esto, en una partida real el lugar donde está el jugador (p. ej. el Taller) iba primero en la cola y la prueba leía su aviso
       G.quiet = false; avisar(0); G.quiet = true;
       const tt = $('toast');
       check('Sale «Descubriste: <lugar>» en el HUD', !!tt && !tt.hidden && /Descubriste/.test(tt.textContent) && tt.textContent.includes(nombreDe(p)) && !!tt.querySelector('b'), tt ? tt.textContent : 'sin toast');
@@ -254,6 +256,9 @@ AVE.module('lugares', function (G) {
         const rt = document.getElementById('rotulo-lugar');
         check('Al llegar sale «¡Lugar descubierto! Bienvenido a …» con su nombre', descubiertos().includes(a.id) && rt && !rt.hidden && /Lugar descubierto/.test(rt.textContent) && /Bienvenido a/.test(rt.textContent) && rt.textContent.includes(a.asentamiento.nombre),
           rt ? rt.textContent : 'sin rótulo');
+        Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true });
+        try { G.ui.showCard('<h2>Prueba</h2>'); avisar(0); check('En el teléfono, si se abre una tarjeta el rótulo se quita (no tapa la pregunta)', !!rt && rt.hidden, rt ? String(rt.hidden) : 'sin rótulo'); }
+        finally { G.ui.hideCard(); delete window.innerWidth; }
         const hd = htmlDiario();
         check('El Diario suma su línea en «Lugares de la isla» (1/14)', hd.includes('(1/14)') && hd.includes(esc(a.asentamiento.diario)) && (hd.match(/\?\?\?/g) || []).length === 13);
         // Salir y volver: «Bienvenido a …» otra vez, sin «descubierto»; enseguida no se repite
