@@ -260,7 +260,7 @@ AVE.module('lugares', function (G) {
       // QA-195 (W28): en ≤560px, con el aviso SUBIDO (diálogo/bocadillos abiertos), el CSS lo baja
       // bajo el minimapa (top = max(118px, --mm-top + --mm + 8px)): geometría real contra #minimapa.
       {
-        Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true });
+        const iw0 = Object.getOwnPropertyDescriptor(window, 'innerWidth'); Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true }); // se restaura tal cual: borrarlo deja innerWidth sin definir el resto de la sesión
         try {
           let mm = document.getElementById('minimapa');
           for (let i = 0; !mm && i < 12; i++) { try { window.dispatchEvent(new PointerEvent('pointerdown')); } catch (e) { } await new Promise(r => setTimeout(r, 250)); mm = document.getElementById('minimapa'); }
@@ -279,7 +279,7 @@ AVE.module('lugares', function (G) {
           check('QA-195 · en el teléfono el aviso subido no queda bajo el minimapa', !solapa, extra);
           boc.remove();
           G.ui.hideToast();
-        } finally { delete window.innerWidth; }
+        } finally { if (iw0) Object.defineProperty(window, 'innerWidth', iw0); else delete window.innerWidth; }
       }
       // Guardado: la lista va en la partida y una partida vieja sin la clave la recibe vacía
       const ser = SV.serialize ? SV.serialize(true) : null;
@@ -302,7 +302,7 @@ AVE.module('lugares', function (G) {
         const rt = document.getElementById('rotulo-lugar');
         check('Al llegar sale «¡Lugar descubierto! Bienvenido a …» con su nombre', descubiertos().includes(a.id) && rt && !rt.hidden && /Lugar descubierto/.test(rt.textContent) && /Bienvenido a/.test(rt.textContent) && rt.textContent.includes(a.asentamiento.nombre),
           rt ? rt.textContent : 'sin rótulo');
-        Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true });
+        const iw0 = Object.getOwnPropertyDescriptor(window, 'innerWidth'); Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true }); // se restaura tal cual: borrarlo deja innerWidth sin definir el resto de la sesión
         try {
           // QA-195: el rótulo (top = max(30vh, minimapa inferior + 12px)) tampoco queda bajo el minimapa
           let mm = document.getElementById('minimapa');
@@ -317,7 +317,7 @@ AVE.module('lugares', function (G) {
           check('QA-195 · en el teléfono el rótulo no queda bajo el minimapa', !solapa, extra);
           G.ui.showCard('<h2>Prueba</h2>'); avisar(0); check('En el teléfono, si se abre una tarjeta el rótulo se quita (no tapa la pregunta)', !!rt && rt.hidden, rt ? String(rt.hidden) : 'sin rótulo');
         }
-        finally { G.ui.hideCard(); delete window.innerWidth; }
+        finally { G.ui.hideCard(); if (iw0) Object.defineProperty(window, 'innerWidth', iw0); else delete window.innerWidth; }
         const hd = htmlDiario();
         check('El Diario suma su línea en «Lugares de la isla» (1/14)', hd.includes('(1/14)') && hd.includes(esc(a.asentamiento.diario)) && (hd.match(/\?\?\?/g) || []).length === 13);
         // Salir y volver: «Bienvenido a …» otra vez, sin «descubierto»; enseguida no se repite

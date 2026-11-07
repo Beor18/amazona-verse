@@ -345,14 +345,14 @@
     }
     { // Largo A (7-nov): un aviso ya visible cuando se abre una tarjeta en el teléfono se aparta y vuelve al cerrarla
       const UI = G.ui, tt = document.getElementById('toast');
-      Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true });
+      const iw0 = Object.getOwnPropertyDescriptor(window, 'innerWidth'); Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true }); // se restaura tal cual: borrarlo deja innerWidth sin definir el resto de la sesión
       try {
         UI.hideToast(); UI.toast('Aviso de prueba tarjeta', 3000);
         const antes = !tt.hidden;
         UI.showCard('<h2>Prueba</h2>'); const aparta = tt.hidden && !!UI.avisoPendiente;
         UI.hideCard(); tick(0.1);
         check('Un aviso visible al abrir una tarjeta en el teléfono se aparta y vuelve al cerrarla', antes && aparta && !tt.hidden && tt.textContent === 'Aviso de prueba tarjeta' && !UI.avisoPendiente, antes + ' · ' + aparta + ' · ' + tt.textContent);
-      } finally { delete window.innerWidth; UI.hideToast(); tt.textContent = ''; }
+      } finally { if (iw0) Object.defineProperty(window, 'innerWidth', iw0); else delete window.innerWidth; UI.hideToast(); tt.textContent = ''; }
     }
     SV.reset(true);
     try { for (const c of SV.copiasIlegibles()) if (!copiasAntes.has(c.clave)) localStorage.removeItem(c.clave); } catch (e) { /* sin almacenamiento */ }
