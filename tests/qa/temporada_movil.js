@@ -118,6 +118,7 @@
   };
 
   window.AV = window.AV || {};
+  window.AV.caminarCfg = CFG; // tests/qa/playtest_auto.js juega el cap. 1 con esto (perchas, la gota en vuelo, el refugio)
   window.AV.temporadaMovilTest = async function (opts) {
     opts = opts || {};
     const caps = opts.caps || [1, 2, 3, 4, 5, 6], idioma = opts.idioma || 'es';

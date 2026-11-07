@@ -128,6 +128,7 @@
       "tests/qa/ep6_e2e.js",
       "tests/qa/cg34_regresion.js",
       "tests/qa/temporada_real.js",
+      "tests/qa/temporada_movil.js",
       "tests/qa/playtest_auto.js"
     ],
     "listo_js": "window.AV && window.AV.G && window.AV.G.actores && (window.AV.G.actores.player3D || window.AV.G.actores.failed3D)",

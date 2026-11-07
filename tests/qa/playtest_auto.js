@@ -27,7 +27,10 @@
     let res = null;
     try {
       if (n >= 3 && window.AV['ep' + n + 'e2eTest']) res = await window.AV['ep' + n + 'e2eTest'](Object.assign({}, o, n >= 5 ? { mapa: 'real' } : {}));
-      else res = await window.AV.epCaminar({ pack: n === 1 ? 'cap1' : 'ep' + n, n: n, query: n >= 5 ? '&mapa=real' : '', maxIter: 120 }, o);
+      else if (n === 1 && window.AV.caminarCfg && window.AV.caminarCfg[1]) { // la guía sola no basta: «Pósate» pide posarse encima de la percha
+        // y la gota se mueve; se juega como un niño que lee el objetivo (tests/qa/temporada_movil.js, cap. 1 con el pulgar)
+        res = await window.AV.epCaminar(window.AV.caminarCfg[1], Object.assign({}, o, { pulgar: true }));
+      } else res = await window.AV.epCaminar({ pack: n === 1 ? 'cap1' : 'ep' + n, n: n, query: n >= 5 ? '&mapa=real' : '', maxIter: 120 }, o);
     } catch (e) {
       ok('Cap. ' + n + ' se mide', false, e && e.message);
       return { passed: 0, total: 1, results: out };

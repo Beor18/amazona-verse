@@ -620,8 +620,9 @@
         const AUc = G.aula;
         if (AUc && AUc.activo && AUc.pendientes && AUc.fichas().length) {
           for (let k = 0; k < 240 && AUc.pendientes().length; k++) { if (ocupado()) await resolver(); await jugar(0.5); }
-          const fal = AUc.fichas().filter(x => !AUc.tieneFicha(x.id)).map(x => x.id);
-          check('Diario · las ' + AUc.fichas().length + ' fichas de Ciencia del capítulo quedan ganadas al jugarlo', !fal.length, fal.join(',') || (S.edu.fichas || []).join(','));
+          const fs = AUc.fichas().filter(x => x.paso !== 'opcional'); // las «opcional» (flamboyán, bambú) se ganan explorando, fuera del recorrido
+          const fal = fs.filter(x => !AUc.tieneFicha(x.id)).map(x => x.id);
+          check('Diario · las ' + fs.length + ' fichas de Ciencia del capítulo quedan ganadas al jugarlo', !fal.length, fal.join(',') || (S.edu.fichas || []).join(','));
         }
       }
       cerrar();
