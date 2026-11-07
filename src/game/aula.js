@@ -5,7 +5,7 @@
    - Fichas de ciencia de la lección: solo se publican las verificadas (o «narrativo»: contadas dentro del juego, sin afirmar
      un hecho real) y del grado elegido; se muestran en el Diario con su fuente. Las URL solo aparecen en el Modo Maestro.
      Caps. 2–6: G.aula.enlazar({ id: disparador }) dice con qué acción del jugador se gana cada ficha (y siempre con su hallazgo).
-   - Preguntas de la lección (opción múltiple y ordenar) con retroalimentación inmediata, pista en el 2.º intento y
+   - Preguntas de la lección (opción múltiple, ordenar y emparejar) con retroalimentación inmediata, pista en el 2.º intento y
      respuesta explicada en el 3.º, sin puntaje visible. La usa la evaluación formativa del pack.
    - Modo Maestro: acceso discreto desde el menú de pausa resolviendo una suma (no es contraseña ni cuenta). Contiene la
      guía de clase, el progreso de este dispositivo y el reporte descargable (CSV/JSON) sin datos personales.
@@ -57,6 +57,10 @@ AVE.module('aula', function (G) {
     guia: { es: 'Guía de clase', en: 'Lesson guide' }, progreso: { es: 'Progreso', en: 'Progress' },
     reporte: { es: 'Reporte', en: 'Report' }, fuentes: { es: 'Fuentes', en: 'Sources' },
     pista: { es: 'Pista', en: 'Hint' }, asi: { es: 'Así es', en: "Here's how" },
+    empAyuda: { es: 'Toca uno de cada lado para unirlos.', en: 'Tap one on each side to match them.' },
+    empIzq: { es: 'Primero, elige uno', en: 'First, pick one' }, empDer: { es: 'Luego, su pareja', en: 'Then, its match' },
+    empCon: { es: 'unido con', en: 'matched with' }, empElegido: { es: 'elegido', en: 'selected' },
+    empSuelto: { es: 'Sin unir', en: 'Not matched' }, deshacer: { es: 'Deshacer', en: 'Undo' },
     respuesta: { es: 'Tu respuesta', en: 'Your answer' }, deNuevo: { es: 'Empezar de nuevo', en: 'Start over' },
     fuente: { es: 'Fuente', en: 'Source' }, ciencia: { es: 'Ciencia', en: 'Science' },
     porDescubrir: { es: 'Ficha de ciencia por descubrir', en: 'Science card to discover' },
@@ -286,7 +290,8 @@ AVE.module('aula', function (G) {
   const PREG = LEC.preguntas || [];
   const pregunta = id => PREG.find(q => q.id === id) || null;
   // Sin validar no se pregunta (mismo criterio que las fichas)
-  const preguntaPublicable = q => !!q && !/^por_verificar/.test(String(q.verificacion || '')) && Array.isArray(q.opciones); // 7-nov: «emparejar» (q3) aún no tiene tarjeta en el juego
+  const esEmparejar = q => q.tipo === 'emparejar' && !!q.opciones && Array.isArray(q.opciones.izquierda) && Array.isArray(q.opciones.derecha) && Array.isArray(q.correcta);
+  const preguntaPublicable = q => !!q && !/^por_verificar/.test(String(q.verificacion || '')) && (Array.isArray(q.opciones) || esEmparejar(q));
   // Orden de las opciones (estable por semilla). evitar: índice que no debe quedar primero (la respuesta correcta)
   function mezclar(n, semilla, evitar) {
     const R = G.util.rng(semilla || 1), idx = Array.from({ length: n }, (_, i) => i);
@@ -298,6 +303,7 @@ AVE.module('aula', function (G) {
   function hacerPregunta(q, o) {
     const s = { intento: 1, orden: [], hecho: false, semilla: (q.id.charCodeAt(1) || 7) * 31 };
     const pintar = (msg, cls) => {
+      if (esEmparejar(q)) { pintarEmp(msg, cls); return; }
       const opts = q.opciones.map((op, i) => ({ op, i }));
       const vista = q.tipo === 'ordenar' ? opts : mezclar(opts.length, s.semilla, q.correcta).map(k => opts[k]);
       const correcta = q.correcta;
@@ -321,6 +327,94 @@ AVE.module('aula', function (G) {
       const sg = $('edu-seguir'); if (sg) { sg.onclick = () => o.alTerminar(s.intento); sg.focus(); }
       else { const f = card.querySelector('.edu-opt:not([disabled])'); if (f) f.focus(); }
     };
+    // «emparejar» (q3): dos columnas; se toca uno de un lado y luego uno del otro para unirlos (también con el teclado: Enter o
+    // Espacio elige, las flechas se mueven por la columna y entre columnas, Escape suelta). Se puede deshacer. Con los 4 pares
+    // hechos se corrige: los pares buenos se quedan fijos y los malos se sueltan para el 2.º intento (con la pista); en el 3.º se
+    // muestra la solución. Cada par lleva el número de su elemento de la izquierda (no depende solo del color).
+    let pintarEmp = null, empAccion = null;
+    if (esEmparejar(q)) {
+      const IZ = q.opciones.izquierda, DE = q.opciones.derecha, n = IZ.length;
+      const sol = Array(n).fill(null); for (const [i, j] of q.correcta) sol[i] = j;
+      const ordenDer = mezclar(DE.length, s.semilla, sol[0]);
+      Object.assign(s, { pares: Array(n).fill(null), fijos: [], sel: null, hist: [], aviso: '' });
+      const izqDe = j => s.pares.indexOf(j);
+      const etiqueta = (lado, k) => {
+        const txt = t(lado === 'i' ? IZ[k] : DE[k]), otro = lado === 'i' ? s.pares[k] : izqDe(k);
+        const par = otro != null && otro >= 0 ? `, ${u('empCon')} ${t(lado === 'i' ? DE[otro] : IZ[otro])}` : '';
+        return txt + par + (s.sel && s.sel.lado === lado && s.sel.k === k ? `, ${u('empElegido')}` : '');
+      };
+      const boton = (lado, k) => {
+        const otro = lado === 'i' ? s.pares[k] : izqDe(k), unido = otro != null && otro >= 0, num = lado === 'i' ? k : otro;
+        const fijo = s.hecho || s.fijos.includes(lado === 'i' ? k : otro), elegido = !!(s.sel && s.sel.lado === lado && s.sel.k === k);
+        const cls = (fijo && unido ? ' ok' : '') + (elegido ? ' elegido' : '') + (unido ? ' unido par-' + num : '');
+        return `<button class="btn secondary edu-opt edu-emp-op${cls}" id="emp-${lado}-${k}" type="button" data-lado="${lado}" data-k="${k}" aria-pressed="${elegido}" aria-label="${esc(etiqueta(lado, k))}"${fijo && unido ? ' disabled' : ''}>`
+          + `<span class="edu-emp-num" aria-hidden="true">${unido || lado === 'i' ? num + 1 : ''}</span><span class="edu-emp-txt">${esc(t(lado === 'i' ? IZ[k] : DE[k]))}</span></button>`;
+      };
+      pintarEmp = (msg, cls) => {
+        const cuerpo = `<p class="edu-emp-ayuda">${esc(u('empAyuda'))}</p><div class="edu-emp">
+          <div class="edu-emp-col" role="group" aria-labelledby="emp-lbl-i"><span class="edu-emp-lbl" id="emp-lbl-i">${esc(u('empIzq'))}</span>${IZ.map((_, k) => boton('i', k)).join('')}</div>
+          <div class="edu-emp-col" role="group" aria-labelledby="emp-lbl-d"><span class="edu-emp-lbl" id="emp-lbl-d">${esc(u('empDer'))}</span>${ordenDer.map(k => boton('d', k)).join('')}</div></div>
+          <p class="sr-only" aria-live="polite">${esc(s.aviso)}</p>`;
+        const leerTxt = t(q.enunciado) + ' ' + IZ.map(op => t(op)).join('. ') + '. ' + ordenDer.map(k => t(DE[k])).join('. ');
+        const deshacer = !s.hecho ? `<button class="btn ghost sm" id="emp-deshacer" type="button" data-icon="reset"${s.hist.length ? '' : ' disabled'}>${esc(u('deshacer'))}</button>` : '';
+        G.ui.showCard(`<div class="edu" lang="${aj.idioma}">${o.cabecera || ''}<p class="edu-q">${esc(t(q.enunciado))}</p>${cuerpo}
+          ${msg ? `<p class="edu-retro ${cls || ''}" role="status">${msg}</p>` : ''}
+          <div class="row edu-pie">${btnLeer(leerTxt)}${deshacer}${s.hecho ? `<button class="btn" id="edu-seguir" type="button" data-icon="play">${u('seguir')}</button>` : ''}</div></div>`);
+        const card = $('card');
+        for (const b of card.querySelectorAll('.edu-emp-op')) {
+          b.onclick = () => empAccion(b.dataset.lado, +b.dataset.k);
+          b.onkeydown = e => {
+            const col = [...b.parentNode.querySelectorAll('.edu-emp-op:not([disabled])')], i = col.indexOf(b);
+            let dest = null;
+            if (e.key === 'ArrowDown') dest = col[(i + 1) % col.length];
+            else if (e.key === 'ArrowUp') dest = col[(i - 1 + col.length) % col.length];
+            else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+              const otra = [...card.querySelectorAll(`.edu-emp-op[data-lado="${b.dataset.lado === 'i' ? 'd' : 'i'}"]:not([disabled])`)];
+              dest = otra[Math.min(Math.max(i, 0), otra.length - 1)];
+            } else if (e.key === 'Escape' && s.sel) { e.preventDefault(); e.stopPropagation(); s.sel = null; s.aviso = ''; pintarEmp(); return; }
+            if (dest) { e.preventDefault(); e.stopPropagation(); dest.focus(); }
+            else if (e.key === 'Enter' || e.key === ' ') e.stopPropagation(); // que el botón se active y el juego no salte ni actúe
+          };
+        }
+        const dh = $('emp-deshacer'); if (dh) dh.onclick = () => empAccion('deshacer');
+        const sg = $('edu-seguir'); if (sg) { sg.onclick = () => o.alTerminar(s.intento); sg.focus(); return; }
+        // Foco: con uno elegido, a la otra columna; si no, al primero de la izquierda sin unir
+        let f = null;
+        if (s.sel) f = card.querySelector(`.edu-emp-op[data-lado="${s.sel.lado === 'i' ? 'd' : 'i'}"]:not(.unido):not([disabled])`);
+        if (!f) f = card.querySelector('.edu-emp-op[data-lado="i"]:not(.unido):not([disabled])') || card.querySelector('.edu-emp-op:not([disabled])');
+        if (f) f.focus();
+      };
+      const soltar = (lado, k) => {
+        const i = lado === 'i' ? k : izqDe(k); if (i < 0 || s.pares[i] == null) return;
+        s.pares[i] = null; s.hist = s.hist.filter(x => x !== i);
+      };
+      empAccion = (lado, k) => {
+        if (s.hecho) return;
+        if (lado === 'deshacer') {
+          const i = s.hist.pop(); if (i == null) return;
+          s.aviso = `${u('empSuelto')}: ${t(IZ[i])}`; s.pares[i] = null; s.sel = null; G.audio.play('tick'); pintarEmp(); return;
+        }
+        const fijo = lado === 'i' ? s.fijos.includes(k) : s.fijos.includes(izqDe(k));
+        if (fijo) return;
+        if (s.sel && s.sel.lado === lado && s.sel.k === k) { s.sel = null; s.aviso = ''; pintarEmp(); return; }
+        if (s.sel && s.sel.lado !== lado) {
+          const i = lado === 'i' ? k : s.sel.k, j = lado === 'i' ? s.sel.k : k;
+          soltar('i', i); soltar('d', j);
+          s.pares[i] = j; s.hist.push(i); s.sel = null;
+          s.aviso = `${t(IZ[i])} ${u('empCon')} ${t(DE[j])}`;
+          G.audio.play('pickup', s.hist.length);
+          if (s.pares.every(x => x != null)) { corregir(); return; }
+          pintarEmp(); return;
+        }
+        soltar(lado, k); s.sel = { lado, k }; s.aviso = `${t(lado === 'i' ? IZ[k] : DE[k])}, ${u('empElegido')}`; G.audio.play('tick'); pintarEmp();
+      };
+      const corregir = () => {
+        if (s.pares.every((j, i) => j === sol[i])) { s.hecho = true; s.aviso = ''; pintarEmp(esc(t(q.retro.correcta)), 'ok'); G.audio.play('unlock'); auto(t(q.retro.correcta)); return; }
+        if (s.intento >= 2) { s.pares = sol.slice(); s.fijos = sol.map((_, i) => i); }
+        else { s.pares.forEach((j, i) => { if (j === sol[i]) { if (!s.fijos.includes(i)) s.fijos.push(i); } else s.pares[i] = null; }); s.hist = []; }
+        s.aviso = ''; fallo();
+      };
+    }
     // La etiqueta «Pista:» la pone la tarjeta; si el texto de la lección ya la trae, no se repite (QA-23)
     const sinEtiqueta = x => String(x || '').replace(/^\s*(pista|hint)\s*:\s*/i, '');
     const fallo = () => {
@@ -329,8 +423,9 @@ AVE.module('aula', function (G) {
       const pista = sinEtiqueta(t(q.retro.incorrecta));
       s.intento = 2; pintar(`<b>${esc(u('pista'))}:</b> ${esc(pista)}`, 'pista'); auto(u('pista') + ': ' + pista);
     };
-    function elegir(i) {
+    function elegir(i, k) {
       if (s.hecho) return;
+      if (empAccion) { empAccion(i, k); return; } // emparejar: elegir('i' | 'd', índice) o elegir('deshacer')
       if (q.tipo === 'ordenar') {
         const k = s.orden.length;
         if (q.correcta[k] === i) {

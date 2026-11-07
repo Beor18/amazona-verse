@@ -756,7 +756,15 @@
     for (let k = 0; k < 12; k++) {
       const cur = AU.enCurso(); if (!cur) break;
       const q = cur.q; vistas.push(q.id);
-      if (o.fallarPregunta === q.id) {
+      if (q.tipo === 'emparejar') {
+        // Une cada elemento de la izquierda con su pareja; si es la que se falla, primero dos veces con las parejas corridas
+        const unir = pares => pares.forEach(([i, j]) => { click('emp-i-' + i); click('emp-d-' + j); });
+        const corridas = () => q.correcta.map(([i], k) => [i, q.correcta[(k + 1) % q.correcta.length][1]]);
+        if (o.fallarPregunta === q.id) {
+          unir(corridas()); ok('Pregunta fallada: pista en el 2.º intento', /Pista|Hint/.test(card()));
+          unir(corridas()); ok('3.er intento: se muestra la respuesta y se explica', /Así es|Here's how/.test(card()));
+        } else unir(q.correcta);
+      } else if (o.fallarPregunta === q.id) {
         if (q.tipo === 'ordenar') { click('ch-' + q.correcta[1]); click('ch-' + q.correcta[1]); }
         else { click('ch-' + (q.correcta + 1) % q.opciones.length); ok('Pregunta fallada: pista en el 2.º intento', /Pista|Hint/.test(card())); click('ch-' + (q.correcta + 2) % q.opciones.length); }
         ok('3.er intento: se muestra la respuesta y se explica', /Así es|Here's how/.test(card()));
@@ -818,10 +826,10 @@
       check('Al quitar la pausa el bucle sigue', G.camara.juice.hitStop === 0 && !G.pausa.activa());
       // La misión completa, con errores para probar pistas y sin castigo
       const r = jugarRutaGota(G, T, { check, pred1: 0, errores: true, fallarPregunta: 'q2' });
-      check('Formativa breve de 3.º–4.º con q4 (cotorra_alimento verificada) y sin q3 (por verificar)', r.ids.join() === 'q1,q2,q4,q5,q6', r.ids.join());
+      check('Formativa breve de 3.º–4.º con q4 (cotorra_alimento verificada); q3 (emparejar) es solo de 5.º–6.º', r.ids.join() === 'q1,q2,q4,q5,q6', r.ids.join());
       const reg = AU.partida();
       check('Registro del aula: pasos, perchas, intentos y predicción', reg && reg.pasos_completados.length === 8 && reg.perchas_observadas === 4 && reg.cadena_correcta_intento === 2 && reg.explicacion_ciclo_intento === 2 && reg.prediccion_registrada === true && reg.prediccion_coincidio === false, JSON.stringify(reg));
-      check('Intentos por pregunta (q2 fallada dos veces = 3)', reg.preguntas.q2 === 3 && reg.preguntas.q1 === 1 && reg.preguntas.q3 === '', JSON.stringify(reg.preguntas));
+      check('Intentos por pregunta (q2 fallada dos veces = 3; q3 no se pregunta en 3.º–4.º)', reg.preguntas.q2 === 3 && reg.preguntas.q1 === 1 && reg.preguntas.q3 === '', JSON.stringify(reg.preguntas));
       check('Objetivos con evidencia del juego al terminar la misión', reg.objetivos_logrados.join() === 'O1,O2,O5', reg.objetivos_logrados.join());
       // Construir con la evidencia: la elección sigue libre; llegan las fichas del refugio y de la crecida
       const B = G.terreno.places.B;
@@ -895,7 +903,58 @@
         try { localStorage.setItem(SV.KEY, snap); } catch (e) { /* sin almacenamiento */ }
         check('Guardar y cargar a mitad de la misión conserva el avance', SV.load(true) && S.edu.hecho.p4 && !S.edu.hecho.p5 && S.step === 3);
       } });
-      check('5.º–6.º: formativa con q4 y q7 (abierta por el flamboyán), sin q3', r2.ids.join() === 'q1,q2,q4,q5,q6,q7', r2.ids.join());
+      check('5.º–6.º: formativa con q3 (emparejar, verificada con STRI), q4 y q7 (abierta por el flamboyán)', r2.ids.join() === 'q1,q2,q3,q4,q5,q6,q7', r2.ids.join());
+      check('5.º–6.º: q3 respondida a la primera queda en el registro y da O1 (perchas + q3)', AU.partida().preguntas.q3 === 1 && AU.partida().objetivos_logrados.includes('O1'), JSON.stringify(AU.partida().preguntas) + ' ' + AU.partida().objetivos_logrados.join());
+      // Tarjeta «emparejar» (q3) por separado: 4 + 4, acierto, error con pista y solución, deshacer, teclado y tamaño en teléfono
+      {
+        const q3 = AU.pregunta('q3'), sol = []; q3.correcta.forEach(([i, j]) => { sol[i] = j; });
+        const card = () => $('card'), b = (l, k) => $('emp-' + l + '-' + k), fin = [];
+        const abrir = () => AU.hacerPregunta(q3, { cabecera: '', alTerminar: n => fin.push(n) });
+        const unir = (i, j) => { b('i', i).click(); b('d', j).click(); };
+        check('Emparejar: q3 se publica (verificada y con tarjeta)', AU.preguntaPublicable(q3) && LEC.formativa.seleccion['5-6'].includes('q3'));
+        abrir();
+        const izq = [...card().querySelectorAll('.edu-emp-op[data-lado="i"]')], der = [...card().querySelectorAll('.edu-emp-op[data-lado="d"]')];
+        check('Emparejar: pinta 4 de la izquierda y 4 de la derecha, en dos grupos con nombre y con aria-pressed', izq.length === 4 && der.length === 4 && card().querySelectorAll('.edu-emp-col[role="group"][aria-labelledby]').length === 2 && [...izq, ...der].every(x => x.getAttribute('aria-pressed') === 'false' && x.getAttribute('aria-label')) && izq.map(x => x.textContent).join('|').includes('Suelo'), izq.length + '+' + der.length);
+        check('Emparejar: la derecha va mezclada (la pareja del primero no queda enfrente)', +der[0].dataset.k !== sol[0], der.map(x => x.dataset.k).join());
+        const foco0 = document.activeElement;
+        check('Emparejar · teclado: el foco empieza en el primero de la izquierda', foco0 === b('i', 0), foco0 && foco0.id);
+        const tecla = (el, key) => el.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+        tecla(b('i', 0), 'ArrowDown'); const f1 = document.activeElement; tecla(f1, 'ArrowUp'); const f2 = document.activeElement;
+        tecla(f2, 'ArrowRight'); const f3 = document.activeElement;
+        check('Emparejar · teclado: flechas arriba/abajo por la columna y derecha a la otra columna', f1 === b('i', 1) && f2 === b('i', 0) && f3 && f3.dataset.lado === 'd', [f1, f2, f3].map(x => x && x.id).join());
+        b('i', 2).click();
+        const f4 = document.activeElement;
+        check('Emparejar · teclado: al elegir uno queda marcado (aria-pressed) y el foco pasa a la otra columna', b('i', 2).getAttribute('aria-pressed') === 'true' && b('i', 2).classList.contains('elegido') && f4 && f4.dataset.lado === 'd', f4 && f4.id);
+        tecla(document.activeElement, 'Escape');
+        check('Emparejar · teclado: Escape suelta la elección', b('i', 2).getAttribute('aria-pressed') === 'false' && !card().querySelector('.edu-emp-op.elegido'));
+        unir(0, sol[0]);
+        check('Emparejar: un par unido lleva el mismo número en los dos lados y lo dice su etiqueta', b('i', 0).classList.contains('unido') && b('d', sol[0]).classList.contains('par-0') && /unido con/.test(b('i', 0).getAttribute('aria-label')) && $('emp-deshacer') && !$('emp-deshacer').disabled, b('i', 0).getAttribute('aria-label'));
+        $('emp-deshacer').click();
+        check('Emparejar: Deshacer suelta el último par', !b('i', 0).classList.contains('unido') && !b('d', sol[0]).classList.contains('unido') && $('emp-deshacer').disabled);
+        // Tamaño: botones ≥ 44 px y nada se sale de la tarjeta, también con la tarjeta del ancho de un iPhone 13 (390 − 32 px).
+        // El tamaño se mide en px de maqueta (offset*): la tarjeta entra con la animación pop-in (scale 0,9) y el rect saldría encogido
+        const medir = () => { const c = card().getBoundingClientRect(), malos = [];
+          for (const x of card().querySelectorAll('.edu-emp-op, #emp-deshacer')) { const r = x.getBoundingClientRect(); if (x.offsetWidth < 44 || x.offsetHeight < 44) malos.push(x.id + ' ' + x.offsetWidth + '×' + x.offsetHeight); if (r.left < c.left - 1 || r.right > c.right + 1) malos.push(x.id + ' se sale'); }
+          return malos; };
+        const m1 = medir(), w0 = card().style.width; card().style.width = '358px'; const m2 = medir(); card().style.width = w0;
+        check('Emparejar: botones ≥ 44 px y dentro de la tarjeta (también a 358 px, iPhone 13)', !m1.length && !m2.length, m1.concat(m2).slice(0, 4).join('; '));
+        q3.correcta.forEach(([i, j]) => unir(i, j));
+        check('Emparejar · acierto: con los 4 pares bien, retro «correcta», todo en verde y Seguir', card().querySelector('.edu-retro.ok') && card().textContent.includes(AU.t(q3.retro.correcta)) && card().querySelectorAll('.edu-emp-op.ok').length === 8 && !!$('edu-seguir') && document.activeElement === $('edu-seguir'));
+        $('edu-seguir').click();
+        check('Emparejar · acierto a la primera: alTerminar(1)', fin.join() === '1', fin.join());
+        // Error: dos pares bien y dos cruzados → pista; los buenos se quedan fijos y los malos se sueltan
+        abrir();
+        const [p0, p1, p2, p3] = q3.correcta;
+        unir(p0[0], p0[1]); unir(p1[0], p1[1]); unir(p2[0], p3[1]); unir(p3[0], p2[1]);
+        const pistaTxt = AU.t(q3.retro.incorrecta).replace(/^\s*(pista|hint)\s*:\s*/i, '');
+        check('Emparejar · error: pista en el 2.º intento (con el texto de la lección, sin «Pista:» repetido)', card().querySelector('.edu-retro.pista') && card().textContent.includes(pistaTxt) && !/Pista:\s*Pista/i.test(card().textContent) && !$('edu-seguir'), card().querySelector('.edu-retro') && card().querySelector('.edu-retro').textContent);
+        check('Emparejar · error: los 2 pares buenos quedan fijos y los 2 malos se sueltan', b('i', p0[0]).disabled && b('i', p1[0]).disabled && b('i', p0[0]).classList.contains('ok') && !b('i', p2[0]).classList.contains('unido') && !b('i', p3[0]).classList.contains('unido') && !b('i', p2[0]).disabled);
+        unir(p2[0], p3[1]); unir(p3[0], p2[1]);
+        check('Emparejar · 3.er intento: se muestra la solución («Así es») y alTerminar(3)', /Así es/.test(card().textContent) && card().querySelectorAll('.edu-emp-op.ok').length === 8 && q3.correcta.every(([i, j]) => b('d', j).classList.contains('par-' + i)) && !!$('edu-seguir') && ($('edu-seguir').click(), fin.join() === '1,3'), fin.join());
+        AU.setAjuste('idioma', 'en'); abrir();
+        check('Emparejar en inglés: enunciado, columnas, ayuda y Deshacer en EN', card().textContent.includes(q3.enunciado.en) && card().textContent.includes('Floor') && /Tap one on each side/.test(card().textContent) && /Undo/.test(card().textContent) && !/Sotobosque|Deshacer/.test(card().textContent));
+        AU.setAjuste('idioma', 'es'); G.ui.hideCard();
+      }
       check('Predicción acertada: Iguaca lo reconoce', S.edu.pred1 === 'lluvia_montana' && AU.partida().prediccion_coincidio === true);
       check('Dos partidas en el registro del dispositivo', AU.partidas.length === 2 && AU.partidas[1].grado === '5-6');
       check('Sin errores de JavaScript', (window.__aveErrores || []).length === 0, (window.__aveErrores || []).slice(0, 2).join(' | '));
