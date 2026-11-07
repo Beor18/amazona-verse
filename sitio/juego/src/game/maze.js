@@ -501,7 +501,7 @@
     // ---------- Cámara superior en 3/4: desde el sur, sigue a Vittata; en vertical (móvil) más alta y con más campo ----------
     const CAMS = { ancho: { alto: 12.5, atras: 8, fov: 50, mira: -1.4 }, vertical: { alto: 15.5, atras: 7.5, fov: 60, mira: -2.6 } };
     const cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), asp: 0, prev: '' };
-    function aspecto() { if (cam.asp) return cam.asp; const el = R.renderer && R.renderer.domElement, w = el ? el.clientWidth : innerWidth, h = el ? el.clientHeight : innerHeight; return h > 0 ? w / h : 1.6; }
+    function aspecto() { if (cam.asp) return cam.asp; const el = R.renderer && R.renderer.domElement, w = el ? el.clientWidth : window.innerWidth, h = el ? el.clientHeight : window.innerHeight; return h > 0 ? w / h : 1.6; }
     const modoCam = () => (aspecto() < 1 ? 'vertical' : 'ancho');
     function camObjetivo(out) { const c = CAMS[modoCam()]; return out.set(S.pos.x, st.A.piso + c.alto, S.pos.z + c.atras); }
     function camMira() { const c = CAMS[modoCam()]; return cam.mira.set(S.pos.x, st.A.piso + 0.6, S.pos.z + c.mira); }

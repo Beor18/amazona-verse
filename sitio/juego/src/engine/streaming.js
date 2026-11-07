@@ -430,6 +430,19 @@ AVE.module('streaming', function (G) {
         m.normalMap = nm;
         m.needsUpdate = true;
       }
+      // KIMI-202: el difuso pudo crearse en «bajo» con el JPEG ligero 2048² (hd_<kit>_lq.jpg); al subir se
+      // pide el 4096 real y se engancha al mismo material (el reducirAtlas de abajo lo deja en el tope
+      // que corresponda a la nueva calidad, igual que con el mapa original).
+      if (m.userData.avLQDifuso && nivelCal() !== 'bajo') {
+        const kit = /Ancient$/.test(k) ? 'ancient' : 'savage';
+        const map = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '.jpg');
+        map.encoding = THREE.sRGBEncoding;
+        map.flipY = false;
+        m.map = map;
+        m.userData.avLQDifuso = false;
+        m.userData.avAtlasEsc.value = 1; // el 4096 real: LOD del shader como en un arranque en alta
+        m.needsUpdate = true;
+      }
       reducirAtlas(m);
     }
   });
@@ -876,7 +889,13 @@ AVE.module('streaming', function (G) {
     function materialAtlas(kit) {
       const k = 'AV_HD_' + (kit === 'ancient' ? 'Ancient' : 'Savage');
       if (!mats[k]) {
-        const map = G.assets.tex(base + 'tex_hd/hd_' + kit + '.jpg');
+        // KIMI-202: en «bajo» el difuso del atlas baja a un JPEG 2048² horneado (tex_hd/hd_<kit>_lq.jpg,
+        // ~1,3-1,6 MB frente a 4,1-5,4 MB del 4096²): es la MISMA resolución que ya aplicaba reducirAtlas()
+        // por canvas al llegar el evento 'calidad' (atlasMax() = celdas*celda/2 en bajo), así que la vista
+        // de «bajo» no cambia; se ahorra la descarga y el pico de decodificación del 4096. Al subir de
+        // calidad el gancho 'calidad' de abajo pide el 4096 real y lo engancha al mismo material.
+        const lq = nivelCal() === 'bajo';
+        const map = G.assets.tex(base + 'tex_hd/hd_' + kit + (lq ? '_lq' : '') + '.jpg');
         map.encoding = THREE.sRGBEncoding;
         map.flipY = false;
         // KIMI-177: en «bajo» la normal del atlas (JPEG de ~14 MB, las dos ~28 MB) no se descarga: a DPR 0,75 su relieve
@@ -887,6 +906,12 @@ AVE.module('streaming', function (G) {
         const normalMap = nivelCal() === 'bajo' ? null : G.assets.tex(base + 'tex_hd/hd_' + kit + '_n.jpg');
         if (normalMap) normalMap.flipY = false;
         mats[k] = { mat: crearMaterial({ name: k, map, normalMap, side: THREE.DoubleSide }, k), refs: 0, fijo: false };
+        if (lq) {
+          mats[k].mat.userData.avLQDifuso = true;
+          // El shader del atlas corrige el LOD con avAtlasEsc (tamaño real / 4096): con el 2048 hay que fijarla
+          // ya, no solo cuando pase reducirAtlas (puede que ningún evento 'calidad' llegue antes de la fusión).
+          mats[k].mat.userData.avAtlasEsc.value = 0.5;
+        }
       }
       return mats[k].mat;
     }

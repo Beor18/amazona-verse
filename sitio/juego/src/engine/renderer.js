@@ -339,7 +339,7 @@ AVE.module('renderer', function (G) {
   // nunca hubo uno, 1280×720. Así snapshot() (fotos del cómic) siempre tiene píxeles (QA-21).
   const tam = { w: 1280, h: 720 };
   function resize() {
-    if (innerWidth > 0 && innerHeight > 0) { tam.w = innerWidth; tam.h = innerHeight; }
+    if (window.innerWidth > 0 && window.innerHeight > 0) { tam.w = window.innerWidth; tam.h = window.innerHeight; }
     renderer.setSize(tam.w, tam.h, false); camera.aspect = tam.w / tam.h; camera.updateProjectionMatrix();
     if (post.composer) post.resize();
   }
@@ -1041,7 +1041,7 @@ AVE.module('renderer', function (G) {
     P.t = now;
     if (!P.el) {
       P.el = document.createElement('div'); P.el.id = 'av-fps'; P.el.setAttribute('aria-hidden', 'true');
-      P.el.style.cssText = 'position:fixed;right:max(12px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + ' + (innerWidth <= 480 ? 200 : 140) + 'px);z-index:35;' +   // móvil: bajo el objetivo desplegado (QA-33)
+      P.el.style.cssText = 'position:fixed;right:max(12px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + ' + (window.innerWidth <= 480 ? 200 : 140) + 'px);z-index:35;' +   // móvil: bajo el objetivo desplegado (QA-33)
         'pointer-events:none;padding:3px 9px;border-radius:8px;background:rgba(8,20,14,.78);color:#f4f7f1;white-space:pre;text-align:right;' +
         'font:600 11px/1.35 ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums';
       document.body.appendChild(P.el);

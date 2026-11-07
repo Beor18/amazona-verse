@@ -204,8 +204,14 @@ window.AVLook = function (G) {
   // BE5: el GLTFLoader sube las imágenes de la flora como CanvasTexture sobre un ImageBitmap, y antes se saltaban (el tope no
   // les llegaba). Las de la flora sí se encogen; los lienzos dibujados y las de edificios y personajes, no. En medio y bajo la
   // normal de la flora (corteza y roca) va a la mitad del tope: se nota poco y ahorra ~18 MB en el móvil.
+  // QA-110 (7-nov): en «bajo» el mapa de la flora también baja a la mitad (512→256): son ~29 texturas de hoja/corteza/pasto
+  // y ahorra ~30 MB de las 47 de flora en el iPhone; las hojas usan alfa y el toon enmascara el suavizado. En medio/alto, igual.
   const esBitmap = img => typeof ImageBitmap !== 'undefined' && img instanceof ImageBitmap;
-  function topeK(max, k, flora) { return flora && max && k === 'normalMap' && R.calidad.nivel !== 'alto' ? max >> 1 : max; }
+  function topeK(max, k, flora) {
+    if (!flora || !max) return max;
+    if (k === 'normalMap') return R.calidad.nivel !== 'alto' ? max >> 1 : max;
+    return R.calidad.nivel === 'bajo' ? max >> 1 : max;
+  }
   // KIMI-055: al conmutar la calidad, encoger recortaba TODAS las texturas de la escena dentro del
   // mismo evento (un lienzo + drawImage por textura: ~0,4-0,5 s de hilo a CPU ×4 en el flip, QA-53).
   // Con diferirRec el evento solo apunta el recorte y los cuadros siguientes lo reparten (tope de

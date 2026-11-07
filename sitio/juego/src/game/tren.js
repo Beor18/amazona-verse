@@ -501,7 +501,7 @@
     // cam.tun y cam.pte (0 a 1) mezclan sin saltos el plano normal con el del túnel (cerca y bajo) y el lateral del puente largo
     const cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), fov: 50, asp: 0, k: 0, tun: 0, pte: 0, lado: 1 };
     let aspMedido = 0;
-    function aspecto() { if (cam.asp) return cam.asp; if (aspMedido) return aspMedido; const el = R.renderer && R.renderer.domElement, w = el ? el.clientWidth : innerWidth, h = el ? el.clientHeight : innerHeight; return h > 0 ? (aspMedido = w / h) : 1.6; }
+    function aspecto() { if (cam.asp) return cam.asp; if (aspMedido) return aspMedido; const el = R.renderer && R.renderer.domElement, w = el ? el.clientWidth : window.innerWidth, h = el ? el.clientHeight : window.innerHeight; return h > 0 ? (aspMedido = w / h) : 1.6; }
     const vertical = () => aspecto() < 1;
     function fovPara(a) { return a < 1 ? 62 : a < 1.4 ? 56 : 50; }
     function camObjetivo(out) {

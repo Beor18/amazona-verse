@@ -177,12 +177,12 @@ AVE.module('input', function (G) {
       if (y == null) return dentroX;
       return dentroX && y >= r.top - 12 && y <= r.bottom + 12;
     }
-    return zurdo() ? x > innerWidth * 0.55 : x < innerWidth * 0.45;
+    return zurdo() ? x > window.innerWidth * 0.55 : x < window.innerWidth * 0.45;
   };
   function colocarPalo(x, y) {
     const lado = ladoPalo();
-    stickEl.style.left = Math.max(8, Math.min(innerWidth - lado - 8, x - lado / 2)) + 'px';
-    stickEl.style.top = Math.max(8, Math.min(innerHeight - lado - 8, y - lado / 2)) + 'px';
+    stickEl.style.left = Math.max(8, Math.min(window.innerWidth - lado - 8, x - lado / 2)) + 'px';
+    stickEl.style.top = Math.max(8, Math.min(window.innerHeight - lado - 8, y - lado / 2)) + 'px';
     stickEl.style.right = 'auto'; stickEl.style.bottom = 'auto';
     stickEl.classList.add('flotando');
   }
@@ -379,19 +379,19 @@ AVE.module('input', function (G) {
     try { navigator.vibrate = n => { ms = n; return true; }; } catch (e) { /* vibrate es de solo lectura en algún navegador */ }
     try {
       stickEl.style.display = 'block';
-      const y = Math.round(innerHeight * 0.72), x = 72;
+      const y = Math.round(window.innerHeight * 0.72), x = 72;
       ev('pointerdown', { pointerId: 11, clientX: x, clientY: y });
       ok('el joystick aparece bajo el dedo', stickEl.classList.contains('flotando') && stickId === 11, stickEl.style.left);
       ev('pointermove', { pointerId: 11, clientX: x + 6, clientY: y });
       ok('zona muerta: un temblor no mueve', stick.x === 0 && stick.y === 0, stick.x + ',' + stick.y);
       ev('pointermove', { pointerId: 11, clientX: x + 52, clientY: y });
       ok('a media caña la marcha es suave', stick.x > 0.05 && stick.x < 0.85, String(stick.x));
-      const sx = stick.x, y1 = Math.round(innerHeight * 0.42);
-      ev('pointerdown', { pointerId: 12, clientX: innerWidth - 80, clientY: y1 });
-      ev('pointermove', { pointerId: 12, clientX: innerWidth - 60, clientY: y1 }); // cruza la zona muerta de la cámara
-      ev('pointermove', { pointerId: 12, clientX: innerWidth - 20, clientY: y1 });
+      const sx = stick.x, y1 = Math.round(window.innerHeight * 0.42);
+      ev('pointerdown', { pointerId: 12, clientX: window.innerWidth - 80, clientY: y1 });
+      ev('pointermove', { pointerId: 12, clientX: window.innerWidth - 60, clientY: y1 }); // cruza la zona muerta de la cámara
+      ev('pointermove', { pointerId: 12, clientX: window.innerWidth - 20, clientY: y1 });
       ok('el otro dedo gira la cámara y el joystick sigue', G.camara.yaw !== yaw0 && stickId === 11 && Math.abs(stick.x - sx) < 0.08, 'yaw ' + G.camara.yaw + ' palo ' + stick.x);
-      ev('pointerup', { pointerId: 12, clientX: innerWidth - 30, clientY: y1 });
+      ev('pointerup', { pointerId: 12, clientX: window.innerWidth - 30, clientY: y1 });
       ev('pointerup', { pointerId: 11, clientX: x + 52, clientY: y });
       ok('al soltar, el joystick vuelve a cero', stickId == null && stick.x === 0 && stick.y === 0);
       // Kelvin 5-nov: Safari no siempre manda pointerup; el joystick no se queda empujado
@@ -405,7 +405,7 @@ AVE.module('input', function (G) {
       dispatchEvent(te);
       ok('sin pointerup: si no queda ningún dedo en la pantalla el joystick se suelta', tomado && stickId == null && stick.x === 0);
       G.camara.yaw = yaw0;
-      const xr = innerWidth - 90, yr = Math.round(innerHeight * 0.5);
+      const xr = window.innerWidth - 90, yr = Math.round(window.innerHeight * 0.5);
       ev('pointerdown', { pointerId: 13, clientX: xr, clientY: yr });
       ev('pointerup', { pointerId: 13, clientX: xr + 4, clientY: yr - 96 });
       ok('latigazo hacia arriba: despegar', despegues === 1 && bajadas === 0, despegues + '/' + bajadas);
