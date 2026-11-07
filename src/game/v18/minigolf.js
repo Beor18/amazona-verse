@@ -1094,7 +1094,7 @@ window.AVV18Minigolf = function (G) {
   // Acceso directo (Kelvin 7-nov: «no lo veo publicado para probarlo»): botón «Minigolf» en el menú de pausa del cap. 1
   // y enlace ?mini=golf. Lleva a Vittata a la entrada del hoyo de Villa Raíz y empieza la partida.
   function irYJugar() {
-    if (!K || !ofrecible() || A.fase !== 'nada') return false;
+    if (!K || !ofrecible() || A.fase !== 'nada' || otroActivo()) return false; // no en medio de un encuentro V18 (revisión 7-nov)
     if (M.flying) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } }
     S.pos.x = P_ENTRADA.x; S.pos.z = P_ENTRADA.z; S.pos.y = H(S.pos.x, S.pos.z) + 0.05; S.vy = 0; M.vx = M.vz = 0;
     return iniciar({ forzar: true });
@@ -1113,11 +1113,11 @@ window.AVV18Minigolf = function (G) {
         tile.addEventListener('click', () => setTimeout(irYJugar, 0));
         grid.appendChild(tile);
       }
-      tile.hidden = !(K && ofrecible() && A.fase === 'nada');
+      tile.hidden = !(K && ofrecible() && A.fase === 'nada' && !otroActivo());
     });
     if (/[?&]mini=golf\b/.test(location.search)) {
       let n = 0;
-      const probar = () => { if (libre() && !otroActivo() && irYJugar()) return; if (++n < 180) setTimeout(probar, 1000); };
+      const probar = () => { const portada = document.getElementById('title'); if (!(portada && portada.open) && libre() && !otroActivo() && irYJugar()) return; /* espera a que se cierre la portada, como los demás ?mini= */ if (++n < 180) setTimeout(probar, 1000); };
       setTimeout(probar, 1500);
     }
   }

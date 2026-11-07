@@ -49,7 +49,8 @@ window.AVV18Guardian = function (G) {
     gana: ['¡Eso es! Cinco puertas y una vuelta entera. Tu primer vuelo ya tiene historia.', 'El cielo se aprende volándolo. Vuelve cuando quieras a mejorar tu marca.'],
     nuevo: '¡Nuevo récord: {}!',
     xp: 'Tu aventura cuenta: +{} XP para tu cotorra.',
-    lejos: 'Te alejaste del circuito: el vuelo con el Guardián queda para otro rato.'
+    lejos: 'Te alejaste del circuito: el vuelo con el Guardián queda para otro rato.',
+    sale: 'Saliste del circuito: el vuelo con el Guardián queda para otro rato.'
   };
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2600); } catch (e) { /* sin interfaz */ } };
@@ -175,7 +176,7 @@ window.AVV18Guardian = function (G) {
     const el = document.createElement('div'); el.id = 'v18-guardian'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
     el.innerHTML = '<div class="vg-h"><div class="vg-t"></div><button type="button" class="vg-x">Salir</button></div><div class="vg-n" hidden></div><div class="vg-l"><span class="vg-p"></span><span class="vg-s"></span></div><div class="vg-r"></div>';
     // W29: sin teclado no había cómo dejar el circuito a medias (solo alejarse > 80 m): botón «Salir» ≥ 44 px, con pointerdown como los demás del juego
-    el.querySelector('.vg-x').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cancelar(); });
+    el.querySelector('.vg-x').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cancelar('sale'); });
     document.body.appendChild(el);
     const q = c => el.querySelector(c);
     hud = { el, t: q('.vg-t'), n: q('.vg-n'), p: q('.vg-p'), s: q('.vg-s'), r: q('.vg-r'), cache: {} };
@@ -258,12 +259,12 @@ window.AVV18Guardian = function (G) {
     N.decir(NPC, TXT.gana);
     return A.ultimo;
   }
-  function cancelar() {
+  function cancelar(motivo) {
     if (A.fase === 'nada') return false;
     A.fase = 'nada'; pintarHud(); pintarPuertas(0);
     ponerGuardian();
     N.colocar(NPC, { x: SITIO.salida.x, z: SITIO.salida.z, rotY: SITIO.salida.rotY, comenta: true, anim: undefined });
-    toast(TXT.lejos, 2600); emitir({ tipo: 'cancela' });
+    toast(motivo === 'sale' ? TXT.sale : TXT.lejos, 2600); emitir({ tipo: 'cancela' });
     return true;
   }
   let reloj3d = 0;

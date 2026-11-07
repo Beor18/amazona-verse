@@ -277,6 +277,7 @@ AVE.module('fisica', function (G) {
   const ATS = { t: 0, x: 0, y: 0, z: 0, salida: null, ult: null };
   function recolocar(o) {
     S.pos.x = o.x; S.pos.y = o.y; S.pos.z = o.z; S.vy = 0; MOVE.vx = MOVE.vz = 0;
+    ATS.ult = { x: o.x, y: o.y, z: o.z }; // la propia red no cuenta como teletransporte (si no, borraba el historial del lugar seguro)
     ATS.t = 0; ATS.salida = null; MOVE.atasco = 0; MOVE.desatascos = (MOVE.desatascos || 0) + 1;
     G.emit('desatasco', { x: o.x, y: o.y, z: o.z, como: o.como });
   }
