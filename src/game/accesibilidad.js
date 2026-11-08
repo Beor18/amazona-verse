@@ -1073,7 +1073,7 @@ AVE.module('accesibilidad', function (G) {
           }
         } else sinV18.push('V18 apagada o fuera del cap. 1');
         // La regla global de «reducir movimiento» (ui.css, sección 7) apaga toda animación (la entrada v18evo de la tarjeta, la chapa «Lo último»…)
-        const quieto = [...document.styleSheets].some(h => { try { return [...h.cssRules].some(r => r.media && /prefers-reduced-motion:\s*reduce/.test(r.media.mediaText) && [...r.cssRules].some(x => /(^|,)\s*\*\s*(,|$)/.test(x.selectorText || '') && /animation:\s*none\s*!important/.test(x.cssText))); } catch (e) { return false; } });
+        const quieto = [...document.styleSheets].some(h => { try { return [...h.cssRules].some(r => r.media && /prefers-reduced-motion:\s*reduce/.test(r.media.mediaText) && [...r.cssRules].some(x => /(^|,)\s*\*\s*(,|$)/.test(x.selectorText || '') && x.style && x.style.animationName === 'none' && x.style.getPropertyPriority('animation-name') === 'important')); } catch (e) { return false; } });
         check('V18 · Con «reducir movimiento» la tarjeta de nivel, el «+N XP» y las tarjetas del menú no se animan (regla global de ui.css)', quieto);
         const paneles = [['v18-chispa', 'Chispa'], ['v18-moon', 'Moon'], ['v18-guardian', 'Guardián']], panelSin = [];
         for (const [id, n] of paneles) {
@@ -1157,7 +1157,7 @@ AVE.module('accesibilidad', function (G) {
         }
         const sinPiezas = !piezas.some(p => !p.panel);
         check('V18 · Tarjeta de etapa y de nivel, «+N XP», Mis cotorras con los retos de alianza y Retos con amigos a 375×812 y 320×568: contraste ≥ 4,5:1 (también con alto contraste), botones ≥ 44 px, nada se sale ni se corta y el texto crece con --fs-k',
-          !malos18.length && (!G.V18 || !sinPiezas), [...new Set(malos18.map(x => x.replace(/^\d+px nivel \d( contraste)? /, '')))].slice(0, 12).join('; ') || ('medidas: ' + piezas.map(p => p.nombre).join(', ') + (sinV18.length ? ' · sin: ' + sinV18.join(' | ') : '')));
+          !malos18.length && (!G.V18 || !sinPiezas), [...new Set(malos18.map(x => x.replace(/^\d+px nivel \d( contraste)? /, '')))].slice(0, 25).join('; ') || ('medidas: ' + piezas.map(p => p.nombre).join(', ') + (sinV18.length ? ' · sin: ' + sinV18.join(' | ') : '')));
         const malosAria = piezas.filter(p => p.panel && !p.aria).map(p => p.nombre);
         // Los paneles son de la V18.3 (chispa.js, moon.js, guardian.js): lo que falle se anota aquí para su dueño, sin poner la prueba en rojo
         check('V18 · Paneles de Chispa, Moon y el Guardián: se anuncian con nombre (role=status, aria-live polite); medidas de contraste, toque y texto grande anotadas',

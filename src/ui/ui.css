@@ -383,6 +383,8 @@ kbd {
 #card h2::before { content: ""; width: 26px; height: 26px; flex: none; background: var(--leaf); -webkit-mask: var(--i-sparkle) center / contain no-repeat; mask: var(--i-sparkle) center / contain no-repeat; }
 #card p { margin: 0 0 var(--sp-3); font-size: var(--fs-md); }
 #card .note, #card small { color: var(--c-ink-muted); }
+/* Dentro de un botón (Mis cotorras, Retos con amigos) el texto pequeño va con la tinta del botón: el marrón del papel sobre el botón oscuro o naranja no se leía */
+#card .btn small { color: inherit; }
 #card dl { display: grid; grid-template-columns: auto 1fr; gap: 0; margin: 0 0 var(--sp-4); font-size: 15px; border-radius: var(--r-md); overflow: hidden; border: 2px solid var(--c-paper-2); }
 #card dt, #card dd { margin: 0; padding: var(--sp-2) var(--sp-3); }
 #card dt { font-weight: 700; color: var(--c-ink-muted); background: var(--c-paper-2); }
