@@ -152,9 +152,11 @@ window.AVFamiliaAventuras = function (G) {
   }
   function abrir() { menu(); return true; }
   function cerrar() { soltar(); raiz.hidden = true; hud.hidden = true; abierto = false; }
-  document.addEventListener('keydown', e => {
+  let escapes = 0;
+  // En la captura de window (antes que los atajos del juego): Esc cierra el panel y no abre la pausa debajo
+  addEventListener('keydown', e => {
     if (e.key !== 'Escape' || !abierto || raiz.hidden) return;
-    e.preventDefault(); e.stopImmediatePropagation(); cerrar();
+    escapes++; e.preventDefault(); e.stopImmediatePropagation(); cerrar();
   }, true);
 
   function soltar() { // deja la aventura en curso sin anotarla
@@ -636,8 +638,9 @@ window.AVFamiliaAventuras = function (G) {
       ok('HUD de turno: botones de 44 px y no tapa la parte de abajo (joystick)', hb.length >= 2 && hb.every(r => r.height >= 43.5 && r.width >= 43.5) && hr.bottom < innerHeight * 0.6, Math.round(hr.top) + '-' + Math.round(hr.bottom));
       $('fq-hud-salir').click();
       ok('Dejar una aventura a medias vuelve al menú sin anotarla', !actual && !raiz.hidden && !hecha('duo'));
+      const esc0 = escapes, diag = 'abierto ' + abierto + ' · oculto ' + raiz.hidden;
       document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
-      ok('Escape cierra el panel', raiz.hidden && !abierto);
+      ok('Escape cierra el panel', raiz.hidden && !abierto, diag + ' → ' + abierto + '/' + raiz.hidden + ' · escapes ' + (escapes - esc0));
     } catch (e) { ok('sin excepciones', false, e && (e.stack || e.message || e)); }
     soltar(); cerrar();
     try { if (G.escondite && G.escondite.paso) G.escondite.paso(1000); } catch (e) { /* cierra la ronda */ }
