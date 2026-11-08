@@ -1,0 +1,182 @@
+{
+ "tarea": "KIMI-250",
+ "cuando": "2026-11-08T05:11:08.629Z",
+ "head": "23d94ec7",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "ventana": {
+  "ancho": 1600,
+  "alto": 900
+ },
+ "calidad": "medio",
+ "preparacion": "ok: portada → creador → Empezar (Coral Alegre) → carga 7389 ms (listo) → intro saltada",
+ "red_quieta_s": "35.7",
+ "carga_inicial": {
+  "mb": 55.59,
+  "archivos_n": 268,
+  "por_tipo_mb": {
+   ".glb": 31.9,
+   "imágenes": 19.93,
+   ".js": 3.53,
+   "otros": 0.24
+  },
+  "mb_peticiones": 56,
+  "peticiones_n": 272,
+  "mayores_kb": [
+   [
+    "assets/models/edificios/templo_grande_d_hd.glb",
+    10285
+   ],
+   [
+    "assets/models/edificios/complejo_ruinas_hd400.glb",
+    5381
+   ],
+   [
+    "assets/models/edificios/tex_hd/hd_savage_n_lq.jpg",
+    1757
+   ],
+   [
+    "assets/models/edificios/tex_hd/hd_ancient_n_lq.jpg",
+    1697
+   ],
+   [
+    "assets/models/edificios/tex_hd/hd_savage_lq.jpg",
+    1639
+   ],
+   [
+    "assets/models/edificios/tex_hd/hd_ancient_lq.jpg",
+    1364
+   ],
+   [
+    "assets/models/vittata.glb",
+    1282
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_damageM_Normal.jpg",
+    704
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_bricksM_Normal.jpg",
+    698
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_decoM_Normal.jpg",
+    645
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_wallL_Normal.jpg",
+    597
+   ],
+   [
+    "assets/vendor/three/build/three.min.js",
+    589
+   ],
+   [
+    "assets/models/edificios/complejo_ruinas.glb",
+    562
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_stoneM_Normal.jpg",
+    553
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_pillarsM_Normal.jpg",
+    534
+   ]
+  ]
+ },
+ "vista_arranque": {
+  "look": "vibrant_toon",
+  "fps": 144,
+  "calls": 159,
+  "triangulos": 519165,
+  "calidad": "medio",
+  "dpr": 1,
+  "post": true,
+  "programas": 73,
+  "heapMB": 181,
+  "geometrias": 189,
+  "texturasGPU": 165,
+  "texturas": 146,
+  "texturasGrandes": 7,
+  "atlasGrandes": 4,
+  "mundoGrandes": 0,
+  "texturasMB": 244.2,
+  "sombraMB": 4,
+  "postMB": 22.6,
+  "texturasPor": {
+   "generadas": 65.9,
+   "suelo": 10.7,
+   "otros": 7,
+   "personajes": 12,
+   "flora": 63.4,
+   "atlas_hd": 85.3
+  },
+  "texturasTop": [
+   [
+    "flora:impostores",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "Vittata_1",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "Vittata_2",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "suelo_musgo.jpg",
+    "512×512",
+    1.3
+   ],
+   [
+    "suelo_tierra_hojarasca.jpg",
+    "512×512",
+    1.3
+   ],
+   [
+    "suelo_roca.jpg",
+    "512×512",
+    1.3
+   ]
+  ]
+ },
+ "upgrade_32s": {
+  "error": "TypeError: Cannot read properties of undefined (reading 'traverse')",
+  "hdRedPost": [
+   [
+    "http://127.0.0.1:60361/assets/models/edificios/tex_hd/hd_savage.jpg",
+    5285
+   ],
+   [
+    "http://127.0.0.1:60361/assets/models/edificios/tex_hd/hd_ancient.jpg",
+    4229
+   ]
+  ]
+ },
+ "consola_errores_n": 0,
+ "consola_errores": []
+}
