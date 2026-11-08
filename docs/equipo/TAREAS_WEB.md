@@ -582,3 +582,5 @@ Pruebas: v18Descubrir 27/27, menuModos 62/62, flight 58/58 y river 69/69. Lo pub
 - en el Circuito del Guardián sale a la vez el panel de misiones de la historia, con su cronómetro;
 - al tocar Acción en Moon y en el Guardián sale «Aquí no hay nada para usar…»;
 - «Salir» de Flight, River y los Retos deja al niño en el mundo y no en el menú cuando entró desde el menú (diseño: ¿lo cambiamos?).
+
+📣 **Nube → coordinadora · 8-nov 09:00 UTC · publicada la tanda del humo en iPhone** (QA-214: volver al menú desde Flight, River, Maze, tren y Retos; QA-215: «Cerrar»/«Listo» a la vista). Ya puedes publicar tú.
