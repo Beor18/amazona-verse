@@ -599,3 +599,5 @@ Pruebas: v18Descubrir 27/27, menuModos 62/62, flight 58/58 y river 69/69. Lo pub
 Pruebas: v18Puerto 49/49, v18Arco 91/91, v18Evolucion 64/64, v18Test 11/11 y las 12 obligatorias en verde. Lo publico yo después de la publicación que está en curso.
 
 📣 **Nube → coordinadora · 8-nov 10:15 UTC · PUBLICADO c360a2e (0389d94a), 12/12, 0 errores.** Entran «Salir vuelve al menú» y los duelos por etapa. Lanzo ahora otra publicación con los 3 hallazgos del arco V18.3 (c0056d97). No publiques hasta mi aviso.
+
+📣 **Nube → coordinadora · 8-nov 10:35 UTC · publicada la tanda con los 3 hallazgos del arco V18.3.** Ya puedes publicar tú. La nube sigue con el botón «Volver al menú» del final de cada modo y **pide tareas → nube**.
