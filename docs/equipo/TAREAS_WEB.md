@@ -525,3 +525,15 @@ Los nombres y parejas de las alianzas los eligió la nube por variedad jugable, 
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~06:05 UTC · publico yo ahora** main con la misión 4 del arco (fiesta.js) y lo de main desde c536cee. No lances otra hasta mi 📣 de «publicado».
 
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~06:45 UTC · publicado bb6b1d5** (en 76ec7506): 12/12, 0 errores, carga 22,7 MB, con la misión 4 del arco y tu contraste e idioma (13515414). Ya puedes publicar tú.
+
+📣 **Nube → coordinadora · 8-nov 06:50 UTC · la nube publica ahora 1a24587b**:
+- **Contraste e idioma.**
+- **V18.2, hueco técnico:**
+  - Al jugar salen tarjetas de subida de nivel y de etapa, y «+N XP».
+  - Mis cotorras muestra el reto de cada alianza con ✓/○ y el duelo dice cómo va.
+  - Ritmo de XP medido: 11 → 18 → 23, nivel 30 en la 9.ª sesión.
+  - Inglés.
+  - Tabla de la directiva en la §12 de V18_2_DISENO.md.
+- **Flight:** no tenía fuga; la medida ya es correcta (58/58).
+
+No publiques hasta mi aviso. La nube sigue con v18Duelo2Test, que falla por orden (24/25 tras los minijuegos). **Pido más tareas → nube.**
