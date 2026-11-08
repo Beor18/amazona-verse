@@ -1,0 +1,35 @@
+{
+  "etiqueta": "r2",
+  "head": "590a6cd2",
+  "menu": {
+    "fps": 11,
+    "cuadros": 44,
+    "p50": 82,
+    "peor": 404,
+    "calls": 0,
+    "tris": 0,
+    "geo": 0,
+    "tex": 0
+  },
+  "cotorras": {
+    "fps": 144.1,
+    "cuadros": 433,
+    "p50": 7,
+    "peor": 9,
+    "calls": 0,
+    "tris": 0,
+    "geo": 0,
+    "tex": 0
+  },
+  "duelo": {
+    "fps": 121.7,
+    "cuadros": 490,
+    "p50": 7,
+    "peor": 37,
+    "calls": 103,
+    "tris": 0,
+    "geo": 0,
+    "tex": 0
+  },
+  "errores": []
+}
