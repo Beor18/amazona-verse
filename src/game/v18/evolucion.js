@@ -150,6 +150,7 @@ window.AVV18Evolucion = function (G) {
   function nombre(sp) {
     if (sp === 'vittata') return 'Vittata';
     let en = false; try { en = !!(G.idioma && G.idioma.activo && G.idioma.activo()); } catch (e) { en = false; }
+    if (sp === 'arausiaca') return en ? 'Dominica parrot' : 'Cotorra de Dominica'; // el mismo nombre que su botón (descubrir.js) y los avisos
     const L = window.AV_ESPECIES, e = L && Array.isArray(L.especies) && L.especies.find(x => x && x.id === sp);
     const s = String((e && e.comun && (en ? e.comun.en : e.comun.es)) || sp);
     return s.charAt(0).toUpperCase() + s.slice(1);
@@ -1133,10 +1134,10 @@ window.AVV18Evolucion = function (G) {
         const prof = S.profile; let g0 = null; try { S.profile = null; P.borrar(); g0 = guia(); } finally { S.profile = prof; } reset();
         const tec = g1 && g1.querySelector('[data-v18guia-teclas]'), kb = tec ? [...tec.querySelectorAll('kbd')].map(k => k.textContent).join('') : '';
         const box = document.createElement('div'); box.innerHTML = htmlAlianzas();
-        check('Mis cotorras se entiende sola: guía arriba (corta) con la meta, «Gana un duelo +40 XP» y «Minigolf +15 XP», las teclas G y H (táctil: el botón Poder), «Toca una cotorra» con 2 o más, y sin cotorras dice que empieces la Aventura; las alianzas dicen qué son',
+        check('Mis cotorras se entiende sola: guía arriba (corta) con la meta, «Gana un duelo +40 XP» y «Minigolf +15 XP», las teclas G y H (táctil: el botón Poder), «Toca una cotorra» con 2 o más, y sin cotorras dice que empieces la Aventura; las alianzas dicen qué son; la de Dominica se llama igual que en su botón',
           !!g1 && g1.textContent.length < 260 && g1.textContent.indexOf(TXT.guiaUna) >= 0 && g1.textContent.indexOf(con(TXT.guiaDuelo, XP.gana)) >= 0 && g1.textContent.indexOf(con(TXT.guiaGolf, XP.golfNido)) >= 0 &&
           (TACTIL ? tec.textContent.indexOf(TXT.guiaTactil) >= 0 : kb === 'GH') && !!g2 && g2.textContent.indexOf(TXT.guiaElige) >= 0 &&
-          !!g0 && !!g0.querySelector('[data-v18guia-vacia]') && g0.textContent.indexOf(TXT.guiaVacia) >= 0 && !!box.querySelector('[data-v18ali-que]') && box.textContent.indexOf(TXT.aliQue) >= 0,
+          !!g0 && !!g0.querySelector('[data-v18guia-vacia]') && g0.textContent.indexOf(TXT.guiaVacia) >= 0 && !!box.querySelector('[data-v18ali-que]') && box.textContent.indexOf(TXT.aliQue) >= 0 && nombre('arausiaca') === 'Cotorra de Dominica',
           JSON.stringify({ g1: g1 && g1.textContent.slice(0, 200), kb, g2: !!g2 && g2.textContent.slice(0, 60), g0: !!g0 && g0.textContent.slice(0, 80) })); }
       // Los textos nuevos tienen su inglés en content/cap1/en.js (el traductor los busca tal cual)
       {
