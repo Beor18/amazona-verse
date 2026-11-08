@@ -221,7 +221,7 @@
     const tomar = tipo => (pool[tipo] && pool[tipo].libres.length ? pool[tipo].libres.pop() : -1);
     const soltar = (tipo, i) => { if (i >= 0 && pool[tipo]) pool[tipo].libres.push(i); };
     const vivas = () => { let n = 0; for (const t in pool) n += CAP[t] - pool[t].libres.length; return n; };
-    const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _e = new THREE.Euler(), _o = new THREE.Vector3(), _c = new THREE.Vector3();
+    const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _e = new THREE.Euler(), _o = new THREE.Vector3(), _c = new THREE.Vector3(), _qr = new THREE.Quaternion();
     function esconder(tipo, i) { const p = pool[tipo]; if (!p || i < 0) return; _m.makeScale(0, 0, 0); for (const im of p.mallas) im.setMatrixAt(i, _m); }
     function subirMatrices() { for (const t in pool) for (const im of pool[t].mallas) { im.count = CAP[t]; im.instanceMatrix.needsUpdate = true; } }
     // Coloca la instancia con el centro de su caja en (x, ·, z) y su base (o su centro, si centroY) a la altura y
@@ -237,7 +237,7 @@
       const p = pool.tronco; if (!p || i < 0) return;
       const k = len / Math.max(0.5, p.largo), rotY = p.eje === 'x' ? Math.atan2(-nz, nx) : p.eje === 'z' ? Math.atan2(nx, nz) : 0;
       if (p.eje === 'y') { _e.set(0, Math.atan2(nx, nz), Math.PI / 2, 'YXZ'); } else _e.set(0, rotY, 0, 'YXZ');
-      _q.setFromEuler(_e); if (p.eje !== 'y') { const r = new THREE.Quaternion().setFromAxisAngle(_o.set(nx, 0, nz), giro); _q.premultiply(r); }
+      _q.setFromEuler(_e); if (p.eje !== 'y') { _qr.setFromAxisAngle(_o.set(nx, 0, nz), giro); _q.premultiply(_qr); }
       _s.set(p.eje === 'x' ? k : 1, p.eje === 'y' ? k : 1, p.eje === 'z' ? k : 1);
       p.box.getCenter(_c); _o.set(_c.x * _s.x, _c.y * _s.y, _c.z * _s.z).applyQuaternion(_q);
       _p.set(x - _o.x, y - _o.y, z - _o.z); _m.compose(_p, _q, _s);
@@ -420,11 +420,12 @@
       J.fx = fx; J.fz = fz;
     }
     // Lo que actores.js lee para animar a Vittata: posada (agachada, agarrada) en la canoa, mirando río abajo
+    const _fac = { x: 0, z: 1 };
     function sincronizar() {
       if (!C) return;
       const q = enCauce(J.s, _qq), w = mundo(q, J.lado, _w), fx = J.fx != null ? J.fx : q.tx, fz = J.fz != null ? J.fz : q.tz;
       S.pos.x = w.x - fx * 0.35; S.pos.z = w.z - fz * 0.35; S.pos.y = q.y + 0.12; S.vy = 0;
-      S.facing = { x: fx, z: fz };
+      _fac.x = fx; _fac.z = fz; S.facing = _fac;
       M.flying = false; M.landing = false; M.takeoff = 0; M.swimming = false; M.grounded = true; M.dashT = 0; M.posado = 'fino';
       M.vx = 0; M.vz = 0; M.speed = 0; M.fase = ''; M.groundY = S.pos.y;
     }
@@ -526,8 +527,9 @@
       const q = enCauce(_fq.s, _fc), w = mundo(q, _fq.l, _fw), root = f.ch.root;
       root.position.set(w.x, q.y + 0.9, w.z); root.rotation.set(0.35, Math.atan2(q.tx, q.tz), 0);
       const quieto = _fq.fin || st.fase === 'listo';
-      Object.assign(f.ch, { speed: quieto ? 1 : J.v, gait: 0, airborne: true, flying: true, legsDown: quieto ? 0.65 : 0, swimming: false, diving: false,
-        wingMode: quieto ? 'hover' : 'fly', expression: 'happy', mouth: null, lookAt: null, emote: null, posado: '', agachada: 0, groundY: q.y, groundAt: null });
+      const ch = f.ch;
+      ch.speed = quieto ? 1 : J.v; ch.gait = 0; ch.airborne = true; ch.flying = true; ch.legsDown = quieto ? 0.65 : 0; ch.swimming = false; ch.diving = false;
+      ch.wingMode = quieto ? 'hover' : 'fly'; ch.expression = 'happy'; ch.mouth = null; ch.lookAt = null; ch.emote = null; ch.posado = ''; ch.agachada = 0; ch.groundY = q.y; ch.groundAt = null;
       f.ch.update(dt || 0);
       J.ventaja = st.fase === 'juego' ? J.s - _fq.s : null;
     }
