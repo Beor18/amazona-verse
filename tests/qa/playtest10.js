@@ -446,5 +446,5 @@
 
   const AV = (window.AV = window.AV || {});
   AV.playtest10 = playtest10;
-  AV.playtest10Test = playtest10; // solo corre si este archivo se inyecta (está en «inyectar» de tools/build/config.json: test.sh --extra la corre)
+  AV.playtest10Test = playtest10; // solo corre si este archivo se inyecta; test.sh no lo inyecta (pasa de los 600 s por batería: ver _nota_inyectar de tools/build/config.json)
 })();
