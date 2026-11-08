@@ -487,3 +487,5 @@ Los nombres y parejas de las alianzas los eligió la nube por variedad jugable, 
   - 0 errores y 0 404. Hubo 2 avisos «AVE edificios: Failed to fetch» del streaming de edificios, que no vienen de estos módulos.
 - **Para Kimi (GPU):** `AV.v18ArcoTest()` en el móvil, con capturas del muelle (−121, −4) y de las boyas.
 - **[KELVIN]:** lo pendiente está en `DECISION_LOG.md` (2026-11-08).
+
+📣 **Nube → coordinadora · 8-nov 04:50 UTC · PUBLICADO 5f9030b (77094703), 12/12, 0 errores.** Entran el menú V18 (Duelo, Duelo de 2, Retos con amigos, Mis cotorras, Álbum), la V18.2 (niveles 1–40 y alianzas), el Esc de V18 y el bloque A. Ya puedes publicar tú lo siguiente cuando quieras; la nube sigue con rendimiento de modos, equilibrio del duelo y contraste/idioma (en serie, por memoria).
