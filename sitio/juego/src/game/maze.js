@@ -47,6 +47,7 @@
     }
     const ingles = () => !!(G.idioma && G.idioma.actual && G.idioma.actual() === 'en');
     const tx = (es, en) => (ingles() ? en : es); // textos nuevos de AO2 en ES y EN
+    const alMenu = () => !!(G.menuModos && G.menuModos.desdeMenu && G.menuModos.desdeMenu()); /* se entró desde «¿Cómo quieres jugar?»: «Salir» lleva al menú */
     const sonar = (n, a) => { try { if (A_ && (!A_.has || A_.has(n) || /^(tick|land|unlock|splash|jump)$/.test(n))) A_.play(n, a); else A_.play('tick', a); } catch (e) { /* sin audio */ } };
 
     // ---------- Declaración del minijuego (docs/equipo/MINIJUEGOS.md §4) ----------
@@ -692,6 +693,7 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
       u.rec.textContent = tx('Tu mejor: ', 'Your best: ') + J.mejor;
       u.extra.textContent = tx('Plumas doradas ', 'Golden feathers ') + J.plumas + '/' + lab.plumas.length + tx(' · mapa ', ' · map ') + J.mapaPct + ' %' + (J.explora ? tx(' · ¡exploradora! +', ' · explorer! +') + J.explora : '') + tx(' · plumas en tu colección: ', ' · feathers in your collection: ') + (J.plumasTot || 0);
       u.meta.textContent = siguienteMeta();
+      u.fin.querySelector('[data-salir]').textContent = alMenu() ? tx('Volver al menú', 'Back to menu') : tx('Volver a la historia', 'Back to the story'); /* entró desde «¿Cómo quieres jugar?»: el botón lleva al menú */
       u.fin.hidden = false;
       const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }

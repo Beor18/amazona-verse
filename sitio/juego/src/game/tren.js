@@ -43,6 +43,7 @@
     const nivelAgua = (x, z) => { const w = G.agua.levelAt(x, z); return w > -1e8 ? w : -Infinity; };
     const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
     const ingles = () => !!(G.idioma && G.idioma.actual && G.idioma.actual() === 'en');
+    const alMenu = () => !!(G.menuModos && G.menuModos.desdeMenu && G.menuModos.desdeMenu()); /* se entró desde «¿Cómo quieres jugar?»: «Salir» lleva al menú */
     // Sonidos propios (sintéticos, por G.audio.define): silbato de dos notas, retumbe con eco del túnel y traqueteo del puente de hierro
     if (G.audio && G.audio.define && !G.audio.has('tren_silbato')) {
       G.audio.define('tren_silbato', (t0, a, A) => { for (const [f, d0, d] of [[587, 0, 0.3], [740, 0.34, 0.62]]) { A.tone(f, t0 + d0, d, { type: 'sawtooth', gain: 0.035 }); A.tone(f * 1.26, t0 + d0, d, { type: 'triangle', gain: 0.05 }); } A.noise(t0, 0.95, { freq: 2600, q: 2, gain: 0.035 }); });
@@ -99,7 +100,7 @@
       '¡Uy, qué tambaleo! Frena en las curvas.': 'Whoa, wobbly! Slow down on the curves.',
       'Fin del turno': 'End of the shift', 'puntos': 'points', 'punto': 'point', 'entregas': 'deliveries', 'entrega': 'delivery',
       'a tiempo': 'on time', 'cajas caídas': 'boxes dropped', 'tu mejor': 'your best', 'Récord': 'Best',
-      '¡Nuevo récord!': 'New record!', 'Otra vez': 'Again', 'Volver a la historia': 'Back to the story',
+      '¡Nuevo récord!': 'New record!', 'Otra vez': 'Again', 'Volver a la historia': 'Back to the story', 'Volver al menú': 'Back to menu',
       'Haz una entrega para tener tu primer récord.': 'Make a delivery to get your first record.',
       '¡Tienes todas las medallas! Intenta superar tu récord.': 'You have every medal! Try to beat your record.',
       'Te faltan {} puntos para {}': 'You need {} more points for {}', 'el bronce': 'bronze', 'la plata': 'silver', 'el oro': 'gold',
@@ -730,6 +731,7 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
       u.rec.textContent = J.entregas ? J.entregas + ' ' + t(J.entregas === 1 ? 'entrega' : 'entregas') + ' · ' + J.aTiempo + ' ' + t('a tiempo') + (J.perdidas ? ' · ' + J.perdidas + ' ' + t('cajas caídas') : '') + (J.mejor ? ' · ' + t('tu mejor') + ': ' + J.mejor : '') : t('Haz una entrega para tener tu primer récord.');
       const ls = metaLineas(); u.meta.innerHTML = ls.map(x => '<span>' + x + '</span>').join(''); u.meta.hidden = !ls.length;
       const sb = SABIAS[J.semilla % SABIAS.length]; u.sabias.lastElementChild.textContent = ingles() ? sb[1] : sb[0];
+      u.fin.querySelector('.tr-botones [data-salir]').textContent = t(alMenu() ? 'Volver al menú' : 'Volver a la historia'); /* entró desde «¿Cómo quieres jugar?»: el botón lleva al menú */
       u.fin.hidden = false; u.desvio.hidden = true; u.aviso.hidden = true;
       const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }

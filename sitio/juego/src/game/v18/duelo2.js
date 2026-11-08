@@ -18,6 +18,7 @@
    Prueba: AV.v18Duelo2Test(). */
 window.AVV18Duelo2 = function (G) {
   'use strict';
+  const alMenu = () => !!(G.menuModos && G.menuModos.desdeMenu && G.menuModos.desdeMenu()); /* se entró desde «¿Cómo quieres jugar?»: el botón del final lleva al menú */
   if (G.v18duelo2) return G.v18duelo2;
   const H = G.v18hab, Cb = G.v18combate, S = G.S, F = G.fisica, M = F.MOVE, R = G.renderer, scene = R.scene, camera = R.camera;
   const sitio = Cb.sitio, ARENA_R = 12, PLUMAS = 5;
@@ -25,7 +26,7 @@ window.AVV18Duelo2 = function (G) {
   const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const TXT = {
     opcion: 'Duelo de 2 jugadores', j1: 'Jugador 1', j2: 'Jugador 2', energia: 'Energía', ya: '¡Ya!',
-    otra: 'Otra vez', salir: 'Salir', jugar: '¡A jugar!', cancelar: 'Ahora no',
+    otra: 'Otra vez', salir: 'Salir', menu: 'Volver al menú', jugar: '¡A jugar!', cancelar: 'Ahora no',
     titulo: 'Duelo de 2 jugadores', nota: 'Dos personas en esta computadora. Gana quien le quite las 5 plumas a la otra. Es un juego: no da premios.',
     elige: '¿Con qué cotorra juega el Jugador 2?',
     teclas1: 'Jugador 1: W A S D mover · E ala · F semilla (mantener: poder) · G poder',
@@ -375,7 +376,7 @@ window.AVV18Duelo2 = function (G) {
     const txt = quien === 'j1' ? TXT.gana1 : TXT.gana2;
     emitir({ tipo: 'fin', de: quien, a: perd.id, valor: (quien === 'j1' ? D.j1 : D.j2).plumas });
     sonar('unlock'); fx('gold', perd.pos.x, perd.pos.y + 1.2, perd.pos.z);
-    if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').hidden = false; flotante(''); }
+    if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; flotante(''); }
     // Sin recompensa: ni inventario, ni G.v18, ni guardado
   }
   function otraVez() { return iniciar({ forzar: true }); }

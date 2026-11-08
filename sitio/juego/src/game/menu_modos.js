@@ -270,7 +270,8 @@
     };
 
     // ---------- Abierto desde el menú: al salir del modo (su «Salir» o el botón de salir del final) se vuelve al menú ----------
-    // lanzar y lanzar18 marcan el modo (desdeMenu); volver() quita la marca. Abierto desde el mundo (estación del minigolf, retos
+    // lanzar y lanzar18 marcan el modo (desdeMenu); volver() quita la marca. Cada modo la lee con G.menuModos.desdeMenu() al pintar
+    // su final, para que el botón de salir diga «Volver al menú» (y no «Volver a la historia»). Abierto desde el mundo (estación del minigolf, retos
     // del mapa) no hay marca y se vuelve al mundo como siempre. Se vigila el estado del modo, no sus botones: vale cualquier salida.
     let desdeMenu = null, vigiaMenu = 0;
     const SIGUE = {
@@ -303,6 +304,7 @@
     }
     function lanzar(modo) {
       if (modo !== 'libre') salirLibre();
+      if (!ENCIMA.includes(modo) && (SIGUE[modo] || API18[modo])) desdeMenu = modo; /* ya marcado al pintar el modo (el menú de Carreras dice «Volver al menú») */
       let p;
       if (modo === 'aventura') {
         aplazar = false;
@@ -517,15 +519,31 @@
           ['tormenta', 'Tormenta', () => retos.jugar('tormenta'), () => retos.salir(), () => retos.activo && retos.reto === 'tormenta'],
           ['carreras', 'Carreras', () => retos.abrir(), () => retos.salir(), () => retos.fase === 'menu' && !retos.pruebas.ui().el.hidden]
         ];
+        // El botón de salir del final dice «Volver al menú» si se entró desde el menú, y como siempre si se entró desde el mundo
+        const CLAVE_RET = ((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.retos';
+        const textoEs = (el, s) => !!el && [s, G.idioma && G.idioma.tr ? G.idioma.tr(s) : s].includes(el.textContent.trim());
+        async function finFlight(s) {
+          const fa = G.flightApi, d = fa && fa._dev; if (!d) return false;
+          let rec0 = null; try { rec0 = localStorage.getItem(CLAVE_RET); } catch (e) { /* sin almacén */ }
+          d.vaciar(); d.st.fase = 'juego'; d.J.dist = 30; d.J.y = fa.P.yMin - 0.1; d.J.vy = -1; d.paso(1 / 60);
+          const ok = await hasta(() => !!(d.st.ui && !d.st.ui.fin.hidden), 3000) && textoEs(d.st.ui.fin.querySelector('[data-salir]'), s);
+          try { if (rec0 == null) localStorage.removeItem(CLAVE_RET); else localStorage.setItem(CLAVE_RET, rec0); } catch (e) { /* sin almacén */ }
+          return ok;
+        }
+        const salirCarreras = s => textoEs(retos.pruebas.ui().menu.querySelector('.rt-fila [data-salir]'), s);
         for (const [m, nom, abrirMundo, salirM, activoM] of SALIDAS) {
           await elegir(m);
           const dentro = await hasta(activoM, 15000);
+          if (m === 'flight') check('Amazona Flight abierto desde el menú: el botón del final dice «Volver al menú»', dentro && await finFlight('Volver al menú'), G.flightApi._dev.st.ui && G.flightApi._dev.st.ui.fin.querySelector('[data-salir]').textContent);
+          if (m === 'carreras') check('Carreras abierto desde el menú: el botón de salir dice «Volver al menú»', dentro && salirCarreras('Volver al menú'));
           salirM();
           const alMenu = await hasta(() => portada.open, 8000);
           check(`${nom}: abierto desde el menú, «Salir» vuelve al menú`, dentro && alMenu && !activoM() && desdeMenu === null, 'dentro ' + dentro + ', portada ' + portada.open + ', marca ' + desdeMenu + ', vigía ' + !!vigiaMenu + ', sigue ' + sigueEn(m) + ', ocupado ' + ocupado18());
           volver(); cerrarPortada();
           await abrirMundo();
           const dentroM = await hasta(activoM, 15000);
+          if (m === 'flight') check('Amazona Flight abierto desde el mundo: el botón del final sigue diciendo «Volver a la historia»', dentroM && await finFlight('Volver a la historia'), G.flightApi._dev.st.ui && G.flightApi._dev.st.ui.fin.querySelector('[data-salir]').textContent);
+          if (m === 'carreras') check('Carreras abierto desde el mundo: el botón de salir sigue diciendo «Volver a la historia»', dentroM && salirCarreras('Volver a la historia'));
           salirM(); await espera(1200);
           check(`${nom}: abierto desde el mundo, «Salir» deja en el mundo`, dentroM && !portada.open && !activoM(), 'dentro ' + dentroM + ', portada ' + portada.open);
           volver();
@@ -551,7 +569,7 @@
           }
           const z = el => Number(getComputedStyle(el).zIndex) || 0;
           // Las actividades V18: al salir o terminar, al menú si se entró desde él; desde el mundo (la estación del minigolf) siguen en el mundo
-          await elegir('golf'); const dGolf = await hasta(() => enMarcha18('golf'), 30000);
+          await elegir('golf'); const dGolf = await hasta(() => enMarcha18('golf'), 30000); await espera(600);
           G.v18minigolf.salir(); const mGolf = await hasta(() => portada.open, 8000);
           check('V18 · Minigolf abierto desde el menú: «Salir» vuelve al menú', dGolf && mGolf && !enMarcha18('golf'), 'dentro ' + dGolf + ', portada ' + portada.open + ', marca ' + desdeMenu + ', vigía ' + !!vigiaMenu + ', fase ' + fase18(G.v18minigolf) + ', ocupado ' + ocupado18());
           volver(); cerrarPortada();
@@ -559,10 +577,29 @@
           G.v18minigolf.salir(); await espera(1200);
           check('V18 · Minigolf desde la estación del mundo: «Salir» deja en el mundo', dGolfM && !portada.open && !enMarcha18('golf'), 'dentro ' + dGolfM + ', portada ' + portada.open);
           volver();
-          await elegir('chispa'); const dCh = await hasta(() => enMarcha18('chispa'), 60000);
+          await elegir('chispa'); const dCh = await hasta(() => enMarcha18('chispa'), 60000); await espera(600); /* la vigía la ve en marcha (mira cada 400 ms) */
           G.v18chispa.cancelar('sale'); const mCh = await hasta(() => portada.open, 8000);
           check('V18 · Chispa abierta desde el menú: al salir vuelve al menú', dCh && mCh && fase18(G.v18chispa) === 'nada', 'dentro ' + dCh + ', portada ' + portada.open + ', marca ' + desdeMenu + ', vigía ' + !!vigiaMenu + ', fase ' + fase18(G.v18chispa) + ', ocupado ' + ocupado18());
           volver();
+          // El final del duelo (una derrota: sin premio): «Volver al menú» si se entró desde el menú; «Salir» desde el mundo
+          const perder = () => { const C = G.v18combate.estado(); return hasta(() => {
+            if (C.fase === 'fin') return true;
+            if (C.fase === 'cuenta') G.v18combate.paso(1); /* la cuenta 3-2-1 sin esperarla */
+            if (C.fase !== 'lucha') return false;
+            for (const f of [C.j, C.r]) { f.cd = {}; f.mareo = 0; f.inv = 0; f.escudo = 0; }
+            C.j.plumas = Math.min(C.j.plumas, 1); C.r.pos.x = S.pos.x + 1.2; C.r.pos.z = S.pos.z; C.r.poderT = 99;
+            try { G.v18combate.usar(C.r, 'golpe_ala'); } catch (e) { /* aún no puede */ }
+            return false;
+          }, 20000); };
+          const salirDuelo = () => { const f = G.v18combate.estado(), h = document.querySelector('#v18-duelo .vd-fin [data-a="salir"]'); return { fin: f.fase === 'fin' && f.resultado === 'loss', h }; };
+          await elegir('duelo'); const dDu = await hasta(() => ['cuenta', 'lucha'].includes(fase18(G.v18combate)), 30000) && await perder();
+          const fDu = salirDuelo();
+          check('V18 · Duelo abierto desde el menú: el botón del final dice «Volver al menú»', dDu && fDu.fin && textoEs(fDu.h, 'Volver al menú'), 'fase ' + fase18(G.v18combate) + ', botón ' + (fDu.h && fDu.h.textContent));
+          volver(); cerrarPortada();
+          G.v18combate.iniciar({ sinCuenta: true }); const dDuM = await perder();
+          const fDuM = salirDuelo();
+          check('V18 · Duelo desde el mundo: el botón del final sigue diciendo «Salir»', dDuM && fDuM.fin && textoEs(fDuM.h, 'Salir') && !portada.open, 'fase ' + fase18(G.v18combate) + ', botón ' + (fDuM.h && fDuM.h.textContent));
+          G.v18combate.salir(); volver();
           for (const m of SUB) {
             await elegir('amigos'); await espera(30);
             const c = $('card'), bots = c.querySelectorAll('[data-amigo]');
@@ -667,7 +704,7 @@
     }
 
     // QA-212: ocupado() = hay una actividad V18 en marcha (duelo, minigolf, carreras…); lo miran las pistas de descubrir.js y ciclo.js
-    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, ocupado: () => ocupado18(), get libre() { return libre; }, get pendiente() { return pendiente; } };
+    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, desdeMenu: () => desdeMenu, ocupado: () => ocupado18(), get libre() { return libre; }, get pendiente() { return pendiente; } };
     api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir });
     return api;
   };

@@ -28,6 +28,7 @@
    Solo con la bandera V18. Prueba: AV.v18MinigolfTest(). */
 window.AVV18Minigolf = function (G) {
   'use strict';
+  const alMenu = () => !!(G.menuModos && G.menuModos.desdeMenu && G.menuModos.desdeMenu()); /* se entró desde «¿Cómo quieres jugar?»: el botón del final lleva al menú */
   if (G.v18minigolf) return G.v18minigolf;
   const S = G.S, V = G.v18, HAB = G.v18hab, F = G.fisica, M = F.MOVE, scene = G.renderer.scene;
   const ID = 'minigolf_villa', PAR = 3;
@@ -47,7 +48,7 @@ window.AVV18Minigolf = function (G) {
     guia: '← → o arrastra: apuntar · Mantén Espacio: fuerza · G: Grito · R: reiniciar · Esc: salir',
     guiaT: 'Arrastra o usa ◀ ▶ para apuntar · Mantén Golpear y suelta',
     fuera: '¡La semilla se salió! Vuelve a su sitio (+1 golpe).', gritoYa: 'El Grito del Yunque ya se usó en este hoyo.',
-    gritoQuieta: 'El Grito empuja la semilla mientras rueda.', grito: '¡Grito del Yunque!', otra: 'Otra vez', seguir: 'Seguir explorando',
+    gritoQuieta: 'El Grito empuja la semilla mientras rueda.', grito: '¡Grito del Yunque!', otra: 'Otra vez', seguir: 'Seguir explorando', menu: 'Volver al menú',
     sale: '¡Hasta luego! El minigolf te espera en Villa Raíz.', hoyo: 'Hoyo 1 · Villa Raíz', par: 'Par 3', golpe: 'Golpear', soltar: 'Soltar',
     poder: 'Grito', reiniciar: 'Reiniciar', salir: 'Salir', fuerza: 'Fuerza', izq: 'Apuntar a la izquierda', der: 'Apuntar a la derecha',
     nuevo: '¡Nuevo récord!', sinRecord: 'Récord: —', usado: 'Grito usado',
@@ -466,6 +467,7 @@ window.AVV18Minigolf = function (G) {
     if (hud) {
       hud.q('fin1').textContent = nidoTxt(n); hud.q('fin2').textContent = TXT[med]; hud.q('fin2').dataset.m = med;
       hud.q('fin3').textContent = nuevo ? TXT.nuevo : recordTxt(r.mejor);
+      hud.el.querySelector('.vg-fin [data-a="seguir"]').textContent = alMenu() ? TXT.menu : TXT.seguir;
       hud.q('fin').hidden = false; hud.q('bot').hidden = true;
     }
     paneles();
