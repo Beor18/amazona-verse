@@ -1,0 +1,33 @@
+{
+ "head": "480674da",
+ "fases": [
+  {
+   "fase": "a11y#1",
+   "passed": 94,
+   "total": 95,
+   "mal": [
+    {
+     "n": "El tamaño de texto sobrevive a recargar la partida guardada",
+     "x": "limpio true · válida true · texto 0 · 16 px"
+    }
+   ]
+  },
+  {
+   "fase": "menuModos",
+   "passed": 83,
+   "total": 83,
+   "mal": []
+  },
+  {
+   "fase": "a11y#2",
+   "passed": 107,
+   "total": 108,
+   "mal": [
+    {
+     "n": "El tamaño de texto sobrevive a recargar la partida guardada",
+     "x": "limpio true · válida true · texto 0 · 16 px"
+    }
+   ]
+  }
+ ]
+}

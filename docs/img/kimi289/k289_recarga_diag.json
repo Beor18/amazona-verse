@@ -1,0 +1,41 @@
+{
+ "head": "480674da",
+ "salida": {
+  "t2puesta": true,
+  "leer2": 2,
+  "crudoA11y": {
+   "texto": 2,
+   "contraste": false,
+   "subtitulos": false,
+   "relajado": false,
+   "zurdo": false,
+   "daltonismo": false,
+   "unamano": false
+  },
+  "valida": true,
+  "dRa11y": {
+   "texto": 2,
+   "contraste": false,
+   "subtitulos": false,
+   "relajado": false,
+   "zurdo": false,
+   "daltonismo": false,
+   "unamano": false
+  },
+  "tras": {
+   "a11yEnS": "{\"texto\":2,\"contraste\":false,\"subtitulos\":false,\"relajado\":false,\"zurdo\":false,\"daltonismo\":false,\"unamano\":false}",
+   "leer": 2,
+   "t2": true,
+   "vistos": [
+    [
+     "p1",
+     "{\"texto\":2,\"contraste\":false,\"subtitulos\":false,\"relajado\":false,\"zurdo\":false,\"daltonismo\":false,\"unamano\":false}"
+    ],
+    [
+     "p100",
+     "{\"texto\":2,\"contraste\":false,\"subtitulos\":false,\"relajado\":false,\"zurdo\":false,\"daltonismo\":false,\"unamano\":false}"
+    ]
+   ]
+  }
+ }
+}
