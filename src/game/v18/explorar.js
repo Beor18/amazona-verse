@@ -529,11 +529,14 @@ window.AVV18Explorar = function (G) {
       // sin plantas aptas (en el aire, a 50 m del suelo), el Eco Dirigido ilumina lo recogible cercano
       S.pos.x = px; S.pos.z = pz; S.pos.y = py + 50; S.facing.x = 1; S.facing.z = 0; pulsos.length = 0;
       const itR = G.interaccion.add({ id: 'v18exp_rec', x: px + 6, z: pz, r: 2, label: () => 'recogible de prueba', use: () => {} });
-      FX.grito_yunque(ED); const rev = ap.n === 0 && pulsos.some(p => Math.abs(p.x - (px + 6)) < 0.01);
+      let cerc = null, cd0 = 15; for (const it of G.interaccion.list) { if (it.visible && !it.visible()) continue; const dd = Math.hypot(it.x - S.pos.x, it.z - S.pos.z); if (dd < cd0) { cd0 = dd; cerc = it; } }
+      FX.grito_yunque(ED); const rev = ap.n === 0 && !!cerc && pulsos.some(p => Math.abs(p.x - cerc.x) < 0.01 && Math.abs(p.z - cerc.z) < 0.01);
       const iR = G.interaccion.list.indexOf(itR); if (iR >= 0) G.interaccion.list.splice(iR, 1); pulsos.length = 0; devolver();
-      check('V18.2 §4: sin flora apta en el cono, el Eco Dirigido ilumina lo recogible más cercano', rev, '');
+      check('V18.2 §4: sin flora apta en el cono, el Eco Dirigido ilumina lo recogible más cercano', rev, cerc ? (cerc.id || '?') + ' a ' + cd0.toFixed(1) + ' m' : 'nada cerca');
       S.pos.y = py; S.facing.x = f0x; S.facing.z = f0z;
       // ---- V18.2 §6: el elemento de la alianza activa se ve al usar el poder y al caminar ----
+      // sin evolución cargada (esta batería no la carga), una de prueba con la misma forma (paraDuelo + ALIANZAS)
+      const evo0 = G.v18evo; if (!evo0) G.v18evo = { paraDuelo: () => ({ nivel: 1 }), ALIANZAS: [{ id: 'marea_lluvia', elemento: 'agua' }] };
       if (G.v18fx && G.v18fx.estela && G.v18evo && G.v18evo.paraDuelo) {
         const E = G.v18evo, pd = E.paraDuelo, R0 = G.renderer.REDUCED, el = {};
         const apagaFx = () => { for (let k = 0; k < 25; k++) G.v18fx.paso(0.1); };   // paso() avanza como mucho 0,1 s
@@ -555,6 +558,7 @@ window.AVV18Explorar = function (G) {
         check('V18.2 §6: con la alianza activa, el poder suelta su elemento (agua) y al caminar deja una estela sutil; quieta, sin alianza o con movimiento reducido, nada',
           !el.err && el.elem === 'agua' && el.poder >= 6 && el.camina === 1 && el.quieta === 0 && el.reducido === 0 && el.sin === 0, JSON.stringify(el));
       }
+      if (!evo0) delete G.v18evo;
     } catch (e) { check('sin excepciones', false, e && e.message); }
     try { devolver(); } catch (e) { /* */ }
     S.pos.x = px; S.pos.y = py; S.pos.z = pz; G.quiet = q; impulso = null; semillas.length = 0; pulsos.length = 0; sol = null;
