@@ -1530,6 +1530,13 @@ window.AVV18Minigolf = function (G) {
         if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
         const D = window.AV_EN || {}, faltan = ['empiezaPar', 'guia', 'guiaT', 'meta', 'metaOro', 'pSuelta', 'pGrito', 'pGritoT', 'pSuave', 'pFuerte', 'pCerca', 'pFlecha', 'medOro', 'medOtra'].filter(k => !D[TXT[k]]);
         check('Cómo se juega · los textos nuevos tienen inglés en content/cap1/en.js', !faltan.length, faltan.join(', '));
+        { // en7 (QA-219): los textos de los hoyos 2 a 6 y del selector también tienen inglés
+          const h6 = HOYOS.slice(1), falt = ['eligeHoyo', 'eligeHoyoSub', 'siguiente', 'hoyos', 'cerradoC', 'sinJugar'].map(k => TXT[k])
+            .concat(h6.map(h => h.zona), h6.map(h => PISTA[h.n]), h6.map(h => tx('empieza', h)), h6.map(h => tx('hoyo', h)), h6.map(h => tx('sale', h)), h6.map(abreTxt),
+              ['Hoyo {}', 'Jugar al minigolf (hoyo {})', 'Minigolf, hoyo {}', 'Oro con {} golpes o menos', 'El hoyo {} se abre al completar el hoyo {}.', 'Oro · Récord: {}'])
+            .filter(t => typeof D[t] !== 'string');
+          check('en7 · los hoyos 2 a 6 y «¿Qué hoyo quieres jugar?» tienen inglés en content/cap1/en.js', !falt.length, falt.slice(0, 4).join(' | '));
+        }
         reiniciar();
       }
       // 7. Completar el hoyo: con un plan sencillo entra en pocos golpes (el nido registra la llegada)
