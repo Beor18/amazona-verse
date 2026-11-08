@@ -504,7 +504,7 @@ window.AVV18Combate = function (G) {
   // un duelo ya abierto no toma la cámara del duelo por la de siempre.
   const CAM_DUELO = { dist: 8.6, height: 6.1 };
   let camPedida = false, draw0 = null, miDraw = null, orb = 0, orbLado = 1;
-  const ORBITA = 0.45, camGuarda = new THREE.Vector3();
+  const ORBITA = 0.2, /* Kelvin: los controles deben entenderse; un giro grande descuadra WASD con lo que se ve (≈11° máx.) */ camGuarda = new THREE.Vector3();
   function orbitar(dt) {
     const cam = R.camera, j = S.pos, rp = C.r && C.r.pos;
     let quiere = 0;
