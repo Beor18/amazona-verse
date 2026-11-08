@@ -490,15 +490,15 @@ window.AVV18Evolucion = function (G) {
       // arriba (sobre el aviso y el panel del duelo, que al terminar ya dice lo mismo): abajo tapaba los botones grandes en el móvil
       st.textContent = '#v18-evo-carta{position:fixed;left:0;right:0;margin-inline:auto;top:calc(env(safe-area-inset-top,0px) + 8px);width:min(360px,calc(100vw - 32px));z-index:45;pointer-events:none;' +
         'background:linear-gradient(160deg,#fff6d8,#ffd98a);color:#3b2a14;border-radius:16px;padding:12px 16px;box-shadow:0 0 0 3px #ffefb8,0 6px 24px #0007;font-family:Fredoka,system-ui,sans-serif;text-align:center;animation:v18evo .45s ease-out}' +
-        '#v18-evo-carta h3{margin:0;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:#8a5a20}#v18-evo-carta b{display:block;font-size:24px;margin:2px 0 4px}#v18-evo-carta p{margin:0;font-size:14px;line-height:1.3}' +
+        '#v18-evo-carta h3{margin:0;font-size:calc(15px * var(--fs-k,1));letter-spacing:.04em;text-transform:uppercase;color:#7a4a10}#v18-evo-carta b{display:block;font-size:calc(24px * var(--fs-k,1));margin:2px 0 4px}#v18-evo-carta p{margin:0;font-size:calc(14px * var(--fs-k,1));line-height:1.3}' +
         '#v18-evo-carta img{width:44px;height:44px;border-radius:50%;float:left;margin-right:8px;background:#fff8}' +
-        '.v18-evo-f{display:block;font-size:12px;margin-top:3px}.v18-evo-bar{display:block;height:4px;border-radius:2px;background:#0003;overflow:hidden;margin:2px 6px}.v18-evo-bar b{display:block;height:100%;background:#e0a526}' +
-        '.v18-evo-m{display:block;font-size:12px;line-height:1.25;margin:1px 2px;opacity:.9}' +
-        '.v18-evo-et{display:inline-block;font-size:12px;padding:2px 7px;border-radius:9px;background:#ffe39a;color:#3b2a14;margin:2px 1px}.v18-evo-et.no{background:#0003;color:inherit;opacity:.78}' +
-        '.v18-evo-x{margin-top:8px;font-size:14px}.v18-evo-x .btn{min-height:44px}' +
-        '#v18-evo-carta.mini{width:min(260px,calc(100vw - 32px));padding:6px 12px;border-radius:12px}#v18-evo-carta.mini h3{font-size:16px;letter-spacing:0;text-transform:none;color:#7a4a10}' +
-        '#v18-evo-carta.mini b{font-size:14px;margin:0 0 2px}#v18-evo-carta.mini p{font-size:12px}' +
-        '.v18-evo-ali{margin:6px 0;padding:6px 8px;border-radius:10px;background:#0001;text-align:left;font-size:13px;line-height:1.3}.v18-evo-ali p{margin:3px 0 0}' +
+        '.v18-evo-f{display:block;font-size:calc(12px * var(--fs-k,1));margin-top:3px}.v18-evo-bar{display:block;height:4px;border-radius:2px;background:#0003;overflow:hidden;margin:2px 6px}.v18-evo-bar b{display:block;height:100%;background:#e0a526}' +
+        '.v18-evo-m{display:block;font-size:calc(12px * var(--fs-k,1));line-height:1.25;margin:1px 2px;opacity:.9}' +
+        '.v18-evo-et{display:inline-block;font-size:calc(12px * var(--fs-k,1));padding:2px 7px;border-radius:9px;background:#ffe39a;color:#3b2a14;margin:2px 1px}.v18-evo-et.no{background:#0003;color:inherit}' +
+        '.v18-evo-x{margin-top:8px;font-size:calc(14px * var(--fs-k,1))}.v18-evo-x .btn{min-height:44px}' +
+        '#v18-evo-carta.mini{width:min(260px,calc(100vw - 32px));padding:6px 12px;border-radius:12px}#v18-evo-carta.mini h3{font-size:calc(16px * var(--fs-k,1));letter-spacing:0;text-transform:none;color:#7a4a10}' +
+        '#v18-evo-carta.mini b{font-size:calc(14px * var(--fs-k,1));margin:0 0 2px}#v18-evo-carta.mini p{font-size:calc(12px * var(--fs-k,1))}' +
+        '.v18-evo-ali{margin:6px 0;padding:6px 8px;border-radius:10px;background:#0001;text-align:left;font-size:calc(13px * var(--fs-k,1));line-height:1.3}.v18-evo-ali p{margin:3px 0 0}' +
         '.v18-evo-ali .si{color:#2f7a2f;font-weight:700}.v18-evo-ali .no{opacity:.8}.v18-evo-ali img{vertical-align:middle;border-radius:50%;margin-right:4px}' +
         '@media (min-width:761px){#v18-evo-carta{top:calc(env(safe-area-inset-top,0px) + 96px)}}' + // en la computadora el aviso (#toast, capa superior) ocupa el borde de arriba
         '@keyframes v18evo{from{transform:translateY(-16px) scale(.9);opacity:0}to{transform:none;opacity:1}}';

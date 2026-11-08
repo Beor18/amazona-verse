@@ -423,6 +423,8 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
   let radio = R_ANDANDO, ultimo = null;
   const vistaCompacta = () => ({ cx: S.pos.x, cz: S.pos.z, mpp: 2 * radio / ((anchoC >= 0 ? anchoC : cvC.clientWidth) || 124) });
   const vistaGrande = lado => ({ cx: T.x0 + T.ancho / 2, cz: T.z0 + T.largo / 2, mpp: Math.max(T.ancho, T.largo) / lado });
+  // La tecla del mapa se puede cambiar en Pausa › Teclas (src/engine/input.js); la de fábrica es M
+  const teclaMapa = () => { const I = G.input; return I && I.mapa && I.mapa.mapa && I.etiqueta ? I.etiqueta(I.mapa.mapa) : 'M'; };
   function textoCompacto() {
     const ob = objetivo(), de = destino;
     const t = ob ? texto(distancia(ob)) : de ? texto(distancia(de)) : (lugarCerca() || 'Explora');
@@ -430,7 +432,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     if (txtD.textContent !== t) txtD.textContent = t;
     txtDot.classList.toggle('off', !punto);
     txtDot.style.background = ob ? COL.obj : COL.dest;
-    const aria = 'Minimapa. ' + (ob ? 'Objetivo a ' + t : de ? 'Destino a ' + t : t) + '. Tocar para ampliar (tecla M)';
+    const aria = 'Minimapa. ' + (ob ? 'Objetivo a ' + t : de ? 'Destino a ' + t : t) + '. Tocar para ampliar (tecla ' + teclaMapa() + ')';
     const b = elC.querySelector('.mm-btn'); if (b.getAttribute('aria-label') !== aria) b.setAttribute('aria-label', aria);
     return t;
   }
@@ -483,7 +485,8 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     if (abierto) return true;
     if (!elC || !puede() || !(S.profile && S.profile.created)) return false;
     abierto = true; elG.hidden = false; G.pausa.set('mapa', true); empezarBase(); refrescarGrande();
-    const c = elG.querySelector('.mg-cerrar'); try { c.focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
+    const c = elG.querySelector('.mg-cerrar'); c.setAttribute('aria-label', 'Cerrar el mapa (' + teclaMapa() + ')');
+    try { c.focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
     G.emit && G.emit('minimapaGrande', true); return true;
   }
   function cerrar() {
@@ -497,8 +500,8 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
     const t = e.target, tag = t && t.tagName; if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
     if (e.key === 'Escape' && abierto) { cerrar(); e.preventDefault(); return; }
-    if ((e.key === 'm' || e.key === 'M') && !e.repeat) {
-      const mp = G.input && G.input.mapa; if (mp && Object.keys(mp).some(a => mp[a] === 'm')) return; // la tecla M fue reasignada a una acción
+    const esMapa = G.input && G.input.es ? G.input.es('mapa', e) : (e.key === 'm' || e.key === 'M'); // tecla remapeable (input.js)
+    if (esMapa && !e.repeat) {
       if (alternar()) e.preventDefault();
     }
   };

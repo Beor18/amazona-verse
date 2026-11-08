@@ -2002,6 +2002,9 @@ window.AV_EN = {
  "Jugar al minigolf": "Play mini golf",
  "Minigolf de Villa Raíz": "Villa Raíz Mini Golf",
  "Acción: Jugar al minigolf": "Action: Play mini golf",
+ "Acción: mirar hacia la puerta siguiente": "Action: look toward the next gate",
+ "Acción: esquivar con un impulso": "Action: dodge with a dash",
+ "Esquivar": "Dodge",
  "Minigolf de Villa Raíz: lleva la semilla gigante hasta el nido. Pulsa Acción junto a ella.": "Villa Raíz mini golf: get the giant seed into the nest. Press Action next to it.",
  "¡Hoyo 1, par 3! Lleva la semilla gigante al nido en los menos golpes que puedas.": "Hole 1, par 3! Get the giant seed into the nest in as few strokes as you can.",
  "← → o arrastra: apuntar · Mantén Espacio: fuerza · G: Grito · R: reiniciar · Esc: salir": "← → or drag: aim · Hold Space: power · G: Shout · R: restart · Esc: leave",
@@ -2453,5 +2456,12 @@ window.AV_EN = {
  "No se pudo publicar ahora. Tu marca sigue guardada; prueba más tarde.": "Couldn't post it right now. Your score is still saved; try again later.",
  "Parece que no hay conexión. Tu marca sigue guardada; prueba más tarde.": "Looks like there's no connection. Your score is still saved; try again later.",
  "Esa marca no se pudo validar. ¡Prueba otra partida!": "That score couldn't be checked. Try another round!",
- "Has publicado muchas veces. Vuelve un poco más tarde.": "You've posted a lot. Come back a little later."
+ "Has publicado muchas veces. Vuelve un poco más tarde.": "You've posted a lot. Come back a little later.",
+ "Volar (otra vez: aterrizar)": "Fly (again: land)",
+ "Impulso (mantenlo: tu poder)": "Boost (hold it: your power)",
+ "Abrir el mapa": "Open the map",
+ "Esa tecla ya se usaba. Las cambiamos: la otra acción ahora va con {}.": "That key was already in use. We swapped them: the other action now uses {}.",
+ ". Tocar para ampliar (tecla {})": ". Tap to enlarge ({} key)",
+ "Destino a {}. Tocar para ampliar (tecla {})": "Destination: {}. Tap to enlarge ({} key)",
+ "Cerrar el mapa ({})": "Close the map ({})"
 };

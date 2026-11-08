@@ -276,10 +276,12 @@ kbd {
 .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sp-2) var(--sp-4); margin: 0 0 var(--sp-2); font-size: var(--fs-sm); }
 .keys > div { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
 .keys dt { display: flex; align-items: center; gap: 3px; flex: none; font-weight: 700; color: var(--c-eyebrow); }
-.keys dd { margin: 0; color: var(--c-text); }
+.keys dd { margin: 0; min-width: 0; overflow-wrap: break-word; color: var(--c-text); }
 .help-touch { display: none; }
 @media (hover: none), (pointer: coarse) { .help-keys { display: none; } .help-touch { display: grid; } }
 .pause-help .note { margin: 0; }
+/* Remapeo (input.js): al cambiar una tecla que ya se usaba, la otra fila se marca un momento para que se vea el intercambio */
+.pause-teclas .chip.tecla-cambiada { outline: 3px solid var(--c-primary); outline-offset: 2px; }
 #confirm-reset { width: min(420px, calc(100vw - 32px)); margin: auto; padding: var(--sp-6); text-align: center; }
 #confirm-reset:popover-open { animation: pop-in var(--dur-3) var(--ease-pop); }
 #confirm-reset::backdrop { background: rgba(6, 16, 12, 0.5); }
@@ -381,6 +383,8 @@ kbd {
 #card h2::before { content: ""; width: 26px; height: 26px; flex: none; background: var(--leaf); -webkit-mask: var(--i-sparkle) center / contain no-repeat; mask: var(--i-sparkle) center / contain no-repeat; }
 #card p { margin: 0 0 var(--sp-3); font-size: var(--fs-md); }
 #card .note, #card small { color: var(--c-ink-muted); }
+/* Dentro de un botón (Mis cotorras, Retos con amigos) el texto pequeño va con la tinta del botón: el marrón del papel sobre el botón oscuro o naranja no se leía */
+#card .btn small { color: inherit; }
 #card dl { display: grid; grid-template-columns: auto 1fr; gap: 0; margin: 0 0 var(--sp-4); font-size: 15px; border-radius: var(--r-md); overflow: hidden; border: 2px solid var(--c-paper-2); }
 #card dt, #card dd { margin: 0; padding: var(--sp-2) var(--sp-3); }
 #card dt { font-weight: 700; color: var(--c-ink-muted); background: var(--c-paper-2); }

@@ -49,7 +49,8 @@ window.AVV18Moon = function (G) {
     nuevo: '¡Nuevo récord: solo {} toques!',
     xp: 'Tu aventura cuenta: +{} XP para tu cotorra.',
     lejos: 'Te alejaste del claro: el entrenamiento con Moon queda para otro rato.',
-    alto: 'El entreno es en el suelo: baja a entrenar la esquiva de verdad.'
+    alto: 'El entreno es en el suelo: baja a entrenar la esquiva de verdad.',
+    esquiva: 'Esquivar', esquivaA: 'Acción: esquivar con un impulso'
   };
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2600); } catch (e) { /* sin interfaz */ } };
@@ -149,12 +150,21 @@ window.AVV18Moon = function (G) {
   function pintarHud() {
     if (!hud) return;
     const on = A.fase === 'cuenta' || A.fase === 'entreno';
-    hud.el.hidden = !on; document.body.classList.toggle('v18-moon-on', on); if (!on) return;
+    hud.el.hidden = !on; document.body.classList.toggle('v18-moon-on', on); enganche(on); if (!on) return;
     const n = A.fase === 'cuenta' ? String(Math.max(1, Math.ceil(A.cuenta))) : A.fase === 'entreno' && A.t < 0.8 ? TXT.ya : '';
     hud.n.hidden = !n; pon('n', n);
     pon('p', TXT.quedan.replace('{}', String(Math.max(0, Math.ceil(DUR_S - A.t)))));
     pon('s', TXT.toques.replace('{}', String(A.toques)));
     const r = record(); pon('r', r && r.mejor != null ? TXT.record + ': ' + r.mejor + ' · ' + reloj(A.t) : reloj(A.t));
+  }
+
+  // QA V18.3: mientras dura el entreno se toma Acción con G.interaccion.modo (patrón de combate.js), para que no diga «Aquí no hay
+  // nada para usar»: Acción esquiva con un impulso (el mismo del botón Impulso). Al acabar se devuelve.
+  const modo = { activo: () => A.fase === 'cuenta' || A.fase === 'entreno', accion: () => { try { F.tryDash(); } catch (e) { /* sin física */ } }, aviso: () => TXT.esquivaA, verbo: TXT.esquiva };
+  let modo0 = null, enganchado = false;
+  function enganche(on) {
+    if (on === enganchado) return; enganchado = on;
+    if (on) { modo0 = G.interaccion.modo; G.interaccion.modo = modo; } else if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
   }
 
   // ---------- El claro: se despeja solo la flora del círculo (como la explanada del duelo, combate.js despejarSitio) ----------
@@ -279,7 +289,7 @@ window.AVV18Moon = function (G) {
     if (!activa()) return null;
     return { x: SITIO.x, z: SITIO.z, nombre: TXT.nombre };
   };
-  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.quedan, TXT.toques, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.alto].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
+  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.quedan, TXT.toques, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.alto, TXT.esquiva, TXT.esquivaA].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
     if (d.nombre) l.push(d.nombre.es); return l; };
 
@@ -460,6 +470,16 @@ window.AVV18Moon = function (G) {
       ir(SITIO.x, SITIO.z); empezar({ forzar: true }); correr(CUENTA_S + 0.3);
       S.pos.y = H(S.pos.x, S.pos.z) + ALTO_MAX + 2; correr(ALTO_T_S + 0.2);
       check('14 · Alejarse > 45 m cancela sin contar partida; volar > 11 m durante 3 s también cancela', canceloLejos && A.fase === 'nada' && record().jugadas === 3 && toasts.includes(TXT.alto), 'jugadas ' + record().jugadas);
+      cerrar();
+      // 17 · QA V18.3 (coordinadora): Acción durante el entreno decía «Aquí no hay nada para usar». Ahora esquiva con un impulso; al acabar se suelta
+      ir(SITIO.x + 9, SITIO.z); empezar({ forzar: true }); correr(CUENTA_S + 0.3);
+      const nT = toasts.length; MV.dashCd = 0; MV.dashT = 0;
+      try { G.interaccion.action(); } catch (e) { /* lo dice el check */ }
+      const nada = toasts.slice(nT).filter(t => /nada para usar/.test(t)), esquiva = MV.dashT > 0;
+      cancelar('sale'); MV.dashT = 0; MV.dashCd = 0;
+      const suelta = !(G.interaccion.modo && G.interaccion.modo.activo());
+      check('17 · Acción durante el entreno no dice «Aquí no hay nada para usar»: esquiva con un impulso; al acabar se suelta Acción', !nada.length && esquiva && suelta,
+        JSON.stringify({ nada, esquiva, verbo: G.interaccion.modo && G.interaccion.modo.verbo }));
       cerrar();
       for (const r of teclado()) out.push(r); // W35
       // 15 · textos

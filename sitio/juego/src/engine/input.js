@@ -7,11 +7,14 @@
    Esc emite el gancho 'escape' (un pack cancela ahí sus modos, p. ej. construir) y cierra la tarjeta abierta.
    Con el juego en pausa (G.pausa) se ignoran las acciones: saltar, impulso, volar, gestos, Acción y los botones táctiles.
    Remapeo (sección «Teclas» del menú de pausa, solo con teclado): mover (W A S D), volar (V, alterna como siempre),
-   aterrizar (X, solo baja) y acción (E) se pueden cambiar; asignar una tecla que ya usa otra acción las intercambia.
-   Las flechas, Enter (acción) y las demás teclas quedan fijas y no se pueden asignar. Se guarda en este dispositivo,
-   aparte de la partida: localStorage `<almacen>.teclas` = { v: 1, mapa: { arriba, abajo, izquierda, derecha, volar,
-   aterrizar, accion } } (sin la clave = teclas de fábrica). `keys` sigue usando las teclas canónicas ('w' 'a' 's' 'd'
-   para mover), así fisica.js no cambia.
+   aterrizar (X, solo baja), acción (E), impulso y poder (F, mantenerlo usa el don) y mapa (M, lo lee minimapa.js con es('mapa'))
+   se pueden cambiar. Choque: asignar una tecla que ya usa otra acción las intercambia, lo avisa en la nota y marca un momento
+   la otra fila (.tecla-cambiada). Las flechas, Enter (acción), Espacio, C, P (pausa), Q/R, T/G (cámara y poder V18), H y 1–7 quedan fijas.
+   Se guarda en este dispositivo, aparte de la partida: localStorage `<almacen>.teclas` = { v: 1, mapa: { arriba, abajo,
+   izquierda, derecha, volar, aterrizar, accion, poder, mapa } } (sin la clave = teclas de fábrica; un guardado viejo sin
+   poder o mapa los completa con los de fábrica o una tecla libre). `keys` sigue usando las teclas canónicas ('w' 'a' 's' 'd'
+   para mover, 'f' para el impulso mantenido), así fisica.js, dones.js y guia_controles.js no cambian.
+   En táctil la sección no se ve (.help-keys) y los botones de pantalla no cambian. alCambiar(fn) avisa a quien pinta teclas.
    PRUEBAS: G.input.test() (AV.teclasTest) comprueba remapeo, intercambio, reservadas, guardado y restablecer. */
 AVE.module('input', function (G) {
   'use strict';
@@ -22,13 +25,17 @@ AVE.module('input', function (G) {
   const paused = () => !!(G.pausa && G.pausa.activa());
 
   // ---------- Mapa de teclas ----------
-  const ACCIONES = ['arriba', 'abajo', 'izquierda', 'derecha', 'volar', 'aterrizar', 'accion'];
-  const DEFECTO = { arriba: 'w', abajo: 's', izquierda: 'a', derecha: 'd', volar: 'v', aterrizar: 'x', accion: 'e' };
-  const CANON = { arriba: 'w', abajo: 's', izquierda: 'a', derecha: 'd' }; // lo que fisica.js lee en `keys`
+  const ACCIONES = ['arriba', 'abajo', 'izquierda', 'derecha', 'volar', 'aterrizar', 'accion', 'poder', 'mapa'];
+  const DEFECTO = { arriba: 'w', abajo: 's', izquierda: 'a', derecha: 'd', volar: 'v', aterrizar: 'x', accion: 'e', poder: 'f', mapa: 'm' };
+  // Lo que se mantiene pulsado y otros leen en `keys`: fisica.js (mover) y guia_controles.js (impulso, 'f')
+  const CANON = { arriba: 'w', abajo: 's', izquierda: 'a', derecha: 'd', poder: 'f' };
+  // Textos en español; el inglés está en content/cap1/en.js
   const NOMBRES = { arriba: 'Avanzar', abajo: 'Retroceder', izquierda: 'Izquierda', derecha: 'Derecha',
-    volar: 'Volar (otra vez: aterrizar)', aterrizar: 'Aterrizar', accion: 'Acción: hablar, examinar, usar' };
-  // Fijas: Espacio, C, F, Q, R y los gestos 1–7 ya tienen función; las teclas con nombre (flechas, Enter, Shift, Esc…) tampoco
-  const RESERVADAS = new Set([' ', 'c', 'f', 'q', 'r', '1', '2', '3', '4', '5', '6', '7']);
+    volar: 'Volar (otra vez: aterrizar)', aterrizar: 'Aterrizar', accion: 'Acción: hablar, examinar, usar',
+    poder: 'Impulso (mantenlo: tu poder)', mapa: 'Abrir el mapa' };
+  // Fijas: Espacio, C, P (pausa, ui.js), Q, R, T, G, H y los gestos 1–7 ya tienen función (G y H son el poder y la alianza de
+  // los duelos V18); las teclas con nombre (flechas, Enter, Shift, Esc…) tampoco
+  const RESERVADAS = new Set([' ', 'c', 'p', 'q', 'r', 't', 'g', 'h', '1', '2', '3', '4', '5', '6', '7']);
   const asignable = k => typeof k === 'string' && [...k].length === 1 && k.trim() !== '' && !RESERVADAS.has(k);
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.teclas';
   function valido(m) {
@@ -37,8 +44,20 @@ AVE.module('input', function (G) {
     for (const a of ACCIONES) { const k = m[a]; if (!asignable(k) || vistas.has(k)) return false; vistas.add(k); }
     return true;
   }
+  // Un guardado de antes (sin poder ni mapa) se completa: la tecla de fábrica si está libre, si no la primera libre
+  function completar(m) {
+    if (!m || typeof m !== 'object') return null;
+    const r = {};
+    for (const a of ACCIONES) if (Object.prototype.hasOwnProperty.call(m, a)) r[a] = m[a];
+    for (const a of ACCIONES) {
+      if (r[a] != null) continue;
+      const usadas = new Set(Object.values(r));
+      r[a] = usadas.has(DEFECTO[a]) ? [...'bjklnopuyz'].find(k => !usadas.has(k)) : DEFECTO[a];
+    }
+    return r;
+  }
   function leerMapa() {
-    try { const d = JSON.parse(localStorage.getItem(CLAVE) || 'null'); if (d && valido(d.mapa)) return Object.assign({}, d.mapa); } catch (e) { /* sin almacenamiento o dañado */ }
+    try { const d = JSON.parse(localStorage.getItem(CLAVE) || 'null'); const m = d && completar(d.mapa); if (valido(m)) return m; } catch (e) { /* sin almacenamiento o dañado */ }
     return Object.assign({}, DEFECTO);
   }
   function guardarMapa() {
@@ -53,16 +72,21 @@ AVE.module('input', function (G) {
   // ¿La tecla del evento hace esta acción? (Enter siempre es Acción; ui.js lo usa también para saltar el texto)
   const es = (accion, e) => mapa[accion] === e.key.toLowerCase() || (accion === 'accion' && e.key === 'Enter');
   // Asigna una tecla; si otra acción la usaba, se intercambian. false si la tecla no se puede asignar.
+  // ultimoCambio: la otra acción del último intercambio (null si no hubo choque)
+  let ultimoCambio = null;
+  const oyentes = [];
+  const avisar = () => { for (const f of oyentes) { try { f(Object.assign({}, mapa)); } catch (e) { /* un oyente roto no para a los demás */ } } };
   function asignar(accion, tecla) {
     const k = String(tecla || '').toLowerCase();
     if (!ACCIONES.includes(accion) || !asignable(k)) return false;
     const otra = accionDe(k);
-    if (otra && otra !== accion) mapa[otra] = mapa[accion];
+    ultimoCambio = otra && otra !== accion ? otra : null;
+    if (ultimoCambio) mapa[otra] = mapa[accion];
     mapa[accion] = k;
-    soltarTodo(); guardarMapa(); pintar();
+    soltarTodo(); guardarMapa(); pintar(); avisar();
     return true;
   }
-  function restablecer() { mapa = Object.assign({}, DEFECTO); soltarTodo(); guardarMapa(); pintar(); }
+  function restablecer() { mapa = Object.assign({}, DEFECTO); ultimoCambio = null; soltarTodo(); guardarMapa(); pintar(); avisar(); }
 
   // Qué metió cada tecla física en `keys`, para sacar justo eso al soltarla
   const pulsadas = new Map();
@@ -91,7 +115,7 @@ AVE.module('input', function (G) {
     if (t != null) { keys.add(t); pulsadas.set(k, t); }
     if (paused()) { if (e.key === ' ') e.preventDefault(); return; }
     if (e.key === ' ') { jumpHeld = true; if (!e.repeat) G.fisica.tryJump(); e.preventDefault(); }
-    if (k === 'f' && !e.repeat) { G.fisica.tryDash(); if (G.dones && G.dones.sostener) G.dones.sostener(true); }
+    if (es('poder', e) && !e.repeat) { G.fisica.tryDash(); if (G.dones && G.dones.sostener) G.dones.sostener(true); }
     if (es('volar', e) && !e.repeat) G.fisica.toggleFly();
     if (es('aterrizar', e) && !e.repeat) G.fisica.land();
     if (/^[1-7]$/.test(e.key) && !e.repeat) G.actores.playEmote(G.actores.EMOTE_KEYS[+e.key - 1]);
@@ -102,7 +126,7 @@ AVE.module('input', function (G) {
     const k = e.key.toLowerCase();
     if (pulsadas.has(k)) { keys.delete(pulsadas.get(k)); pulsadas.delete(k); } else keys.delete(k);
     if (e.key === ' ') { jumpHeld = false; G.fisica.releaseJump(); }
-    if (k === 'f' && G.dones && G.dones.sostener) G.dones.sostener(false);
+    if (es('poder', e) && G.dones && G.dones.sostener) G.dones.sostener(false);
   });
   addEventListener('blur', () => { soltarTodo(); jumpHeld = false; if (G.dones && G.dones.sostener) G.dones.sostener(false); });
 
@@ -138,7 +162,11 @@ AVE.module('input', function (G) {
     const antes = accionDe(e.key.toLowerCase());
     capturando = null;
     if (!asignar(a, e.key)) { capturando = a; nota(`«${etiqueta(e.key)}» no se puede usar: ya tiene otra función. Prueba otra tecla.`); return; }
-    nota(antes && antes !== a ? `Hecho. ${NOMBRES[antes]} pasa a ${etiqueta(mapa[antes])}.` : 'Hecho.');
+    if (antes && antes !== a) {
+      nota(`Esa tecla ya se usaba. Las cambiamos: la otra acción ahora va con ${etiqueta(mapa[antes])}.`);
+      const fila = sec && sec.querySelector(`[data-tecla="${antes}"]`);
+      if (fila) { fila.classList.add('tecla-cambiada'); setTimeout(() => fila.classList.remove('tecla-cambiada'), 2400); }
+    } else nota('Hecho.');
   }, true);
   // Pinta los botones de la sección, la ayuda de controles y la pista del HUD con las teclas actuales
   function pintar() {
@@ -151,10 +179,13 @@ AVE.module('input', function (G) {
     const mover = ['arriba', 'izquierda', 'abajo', 'derecha'].map(a => `<kbd>${etiqueta(mapa[a])}</kbd>`).join('');
     const ayuda = document.querySelectorAll('#pause .help-keys:not(.pause-teclas) > div');
     for (const fila of ayuda) {
+      // La fila se reconoce una vez por su texto en español y se marca: con la partida en inglés el texto ya no es este
       const dd = fila.querySelector('dd'), dt = fila.querySelector('dt'), txt = dd ? dd.textContent : '';
-      if (/^Moverte/.test(txt)) dt.innerHTML = mover;
-      else if (/^Volar/.test(txt)) dt.innerHTML = `<kbd>${etiqueta(mapa.volar)}</kbd>`;
-      else if (/^Acción/.test(txt)) dt.innerHTML = `<kbd>${etiqueta(mapa.accion)}</kbd>`;
+      if (!fila.dataset.teclaFila) fila.dataset.teclaFila = /^Moverte/.test(txt) ? 'mover' : /^Volar/.test(txt) ? 'volar' : /^Acción/.test(txt) ? 'accion' :
+        /^Impulso/.test(txt) ? 'poder' : /^Abrir el mapa/.test(txt) ? 'mapa' : '-';
+      const f = fila.dataset.teclaFila;
+      if (f === 'mover') dt.innerHTML = mover;
+      else if (f !== '-' && dt) dt.innerHTML = `<kbd>${etiqueta(mapa[f])}</kbd>`;
     }
     const pista = document.querySelectorAll('#keyhint kbd');
     if (pista[0]) pista[0].textContent = ['arriba', 'izquierda', 'abajo', 'derecha'].map(a => etiqueta(mapa[a])).join('');
@@ -328,7 +359,7 @@ AVE.module('input', function (G) {
     const tecla = (tipo, key) => dispatchEvent(new KeyboardEvent(tipo, { key }));
     try {
       restablecer();
-      ok('de fábrica: WASD, V, X, E', ACCIONES.every(a => mapa[a] === DEFECTO[a]), JSON.stringify(mapa));
+      ok('de fábrica: WASD, V, X, E, F, M', ACCIONES.every(a => mapa[a] === DEFECTO[a]), JSON.stringify(mapa));
       ok('de fábrica no deja nada guardado', (() => { try { return localStorage.getItem(CLAVE) === null; } catch (e) { return true; } })());
       ok('asignar avanzar a I', asignar('arriba', 'I') && mapa.arriba === 'i', mapa.arriba);
       tecla('keydown', 'i'); const mueve = keys.has('w'); tecla('keyup', 'i');
@@ -351,6 +382,11 @@ AVE.module('input', function (G) {
       ok('se relee igual', ACCIONES.every(a => relee[a] === mapa[a]));
       try { localStorage.setItem(CLAVE, JSON.stringify({ v: 1, mapa: { arriba: 'w', abajo: 'w' } })); } catch (e) { /* sin almacenamiento */ }
       ok('un guardado dañado vuelve a fábrica', ACCIONES.every(a => leerMapa()[a] === DEFECTO[a]));
+      // Guardado de antes de poder y mapa: se conserva lo elegido y lo nuevo toma la tecla de fábrica, o una libre si choca
+      try { localStorage.setItem(CLAVE, JSON.stringify({ v: 1, mapa: { arriba: 'i', abajo: 'k', izquierda: 'j', derecha: 'l', volar: 'm', aterrizar: 'x', accion: 'e' } })); } catch (e) { /* sin almacenamiento */ }
+      const viejo = leerMapa();
+      ok('un guardado de antes sin poder ni mapa se completa sin repetir teclas', viejo.arriba === 'i' && viejo.volar === 'm' && viejo.poder === 'f' && viejo.mapa !== 'm' && valido(viejo), JSON.stringify(viejo));
+      ok('P (pausa), T y G (cámara y poder) no se pueden asignar', !['p', 't', 'g', 'h'].some(k => asignar('mapa', k)));
       ok('la sección pinta las teclas', !!sec && sec.querySelectorAll('[data-tecla]').length === ACCIONES.length &&
         sec.querySelector('[data-tecla="accion"] kbd').textContent === 'I' && !!sec.querySelector('#b-teclas-reset'));
       const pista = document.querySelector('#keyhint kbd');
@@ -435,5 +471,6 @@ AVE.module('input', function (G) {
   }
 
   return { keys, stick, get jumpHeld() { return jumpHeld; }, set jumpHeld(v) { jumpHeld = v; }, actBtn, syncSwimButtons,
-    ACCIONES, DEFECTO, get mapa() { return Object.assign({}, mapa); }, asignar, restablecer, es, test, tactil, mirarRecogido };
+    ACCIONES, DEFECTO, NOMBRES, CLAVE, releer: leerMapa, get mapa() { return Object.assign({}, mapa); }, get ultimoCambio() { return ultimoCambio; },
+    etiqueta, alCambiar: f => { if (typeof f === 'function') oyentes.push(f); }, asignar, restablecer, es, test, tactil, mirarRecogido };
 });

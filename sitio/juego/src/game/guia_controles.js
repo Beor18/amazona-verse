@@ -41,7 +41,7 @@ AVE.module('guiaControles', function (G) {
   function teclas() {
     const m = (G.input && G.input.mapa) || {};
     return { mover: ['arriba', 'izquierda', 'abajo', 'derecha'].map(a => nombre(m[a] || { arriba: 'w', izquierda: 'a', abajo: 's', derecha: 'd' }[a])),
-      volar: nombre(m.volar || 'v'), aterrizar: nombre(m.aterrizar || 'x'), accion: nombre(m.accion || 'e') };
+      volar: nombre(m.volar || 'v'), aterrizar: nombre(m.aterrizar || 'x'), accion: nombre(m.accion || 'e'), poder: nombre(m.poder || 'f') };
   }
   const RATON = '<svg class="guia-raton" viewBox="0 0 32 24" aria-hidden="true"><rect x="10" y="2" width="12" height="20" rx="6" fill="none" stroke="currentColor" stroke-width="2.2"/>' +
     '<path d="M16 2.5v7" stroke="currentColor" stroke-width="2.2"/><path d="M1.5 12l4-3.6v7.2zM30.5 12l-4-3.6v7.2z" fill="currentColor"/></svg>';
@@ -55,7 +55,7 @@ AVE.module('guiaControles', function (G) {
       { id: 'aterrizar', k: kbd(t.aterrizar) + o + kbd(t.volar), txt: 'Dejar de volar', sub: 'Aterriza suave en el suelo', corto: 'aterriza suave', destacada: true },
       { id: 'camara', k: RATON + o + kbd('Q') + kbd('R'), txt: 'Mover la cámara', sub: 'Arrastra con el ratón; arriba y abajo para mirar al cielo o al suelo (también T y G)', corto: 'arrastra; T/G mira arriba' },
       { id: 'accion', k: kbd(t.accion), txt: 'Acción', sub: 'Hablar, examinar y usar', corto: 'hablar, examinar, usar' },
-      { id: 'don', k: kbd('F'), txt: 'Don', sub: 'Mantén Impulso un momento', corto: 'mantenlo' }, // EN en content/cap1/en.js (antes iba mezclado en el texto)
+      { id: 'don', k: kbd(t.poder), txt: 'Don', sub: 'Mantén Impulso un momento', corto: 'mantenlo' }, // EN en content/cap1/en.js (antes iba mezclado en el texto)
     ];
   }
   // corto: la leyenda del icono es compacta (una línea por fila); el panel lleva la explicación entera
