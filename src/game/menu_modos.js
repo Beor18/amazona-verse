@@ -75,7 +75,7 @@
     G.on('nuevoEstudiante', () => { try { localStorage.removeItem(ALMACEN); } catch (e) { /* sin almacén */ } });
 
     // ---------- Apertura del capítulo aplazada (primera vez sin Aventura) ----------
-    let inicioReal = P.inicio, aplazar = false;
+    let inicioReal = P.inicio, aplazar = false, aplazaN = 0;
     if (typeof inicioReal === 'function') P.inicio = function (g) { if (aplazar) { aplazar = false; guardar({ intro: 1 }); return undefined; } return inicioReal(g); };
     function introPendiente() { return leer().intro === 1 && S.profile && S.profile.created && S.step === 0 && !S.complete; }
 
@@ -152,7 +152,14 @@
       moon: a => { const s = a.SITIO; llevar(s.x + Math.sin(s.rotY) * 6, s.z + Math.cos(s.rotY) * 6, s.x, s.z); return a.empezar(); }, // delante de Moon, mirándola
       guardian: a => { const s = a.SITIO.salida; llevar(s.x, s.z, a.RUTA[0].x, a.RUTA[0].z); return a.empezar(); }
     };
-    const sinApertura = () => { try { if (document.getElementById('c1-fade') && G.c && G.c.apertura) G.c.apertura.fin(); } catch (e) { /* sin apertura */ } };
+    const sinApertura = () => {
+      const fade = document.getElementById('c1-fade'), saltar = document.getElementById('c1-saltar');
+      if (!fade && !saltar) return;
+      try { if (G.c && G.c.apertura) G.c.apertura.fin(); } catch (e) { /* sin apertura */ }
+      try { if (G.dialogo && G.dialogo.cancelarLibre) G.dialogo.cancelarLibre(); } catch (e) { /* sin bocadillos */ }
+      if (saltar) saltar.remove(); /* historia.js suelta su tecla al ver que el botón ya no está */
+      guardar({ intro: 1 });
+    };
     function alCap1(modo) {
       apuntarCapitulo('cap1');
       try { const u = new URL(location.href); u.searchParams.delete('pack'); u.searchParams.set('mini', modo); location.href = u.toString(); } catch (e) { /* sin URL */ }
@@ -189,7 +196,8 @@
       const c = $('card'); if (!c || !portada || !portada.open) return;
       c.classList.add('mm-encima'); c.inert = false;
       if (!portada.inert) { origen = document.activeElement; portada.inert = true; portadaInerte = true; }
-      setTimeout(() => { const b = c.querySelector('button'); if (b && !c.hidden) b.focus({ preventScroll: true }); }, 0);
+      c.scrollTop = 0; c.tabIndex = -1;
+      setTimeout(() => { if (!c.hidden) { c.focus({ preventScroll: true }); c.scrollTop = 0; } }, 0);
     }
     G.on('cardHidden', () => {
       const c = $('card'); if (!c || !c.classList.contains('mm-encima')) return;
@@ -257,6 +265,7 @@
       if (modo !== 'libre') salirLibre();
       let p;
       if (modo === 'aventura') {
+        aplazar = false;
         if (introPendiente() && typeof inicioReal === 'function') { guardar({ intro: 0 }); setTimeout(() => { if (!G.dialogo.open()) inicioReal(G); }, 300); }
         p = Promise.resolve(true);
       } else if (V18M.includes(modo) && API18[modo]) p = lanzar18(modo); // golf, duelo, duelo2, chispa, moon, guardian
@@ -296,7 +305,9 @@
         const modo = pendiente; pendiente = null; soltarCreador();
         if (!(S.profile && S.profile.created)) return; // se cerró sin cotorra (cargar una partida, reinicio): nada que abrir
         if (modo === 'aventura') { aplazar = false; return; } // pack.inicio llega 300 ms después del guardado (creador.js) y se juega
-        guardar({ intro: 1 }); aplazar = true; setTimeout(() => { aplazar = false; }, 1500); // con otro modo la apertura se aplaza
+        // con otro modo la apertura se aplaza; carga.js puede retrasar pack.inicio hasta que se destapa el mundo (más de 1,5 s en
+        // un equipo lento: la apertura salía encima del minigolf y del duelo), así que la marca dura hasta 2 min o hasta Aventura
+        const n = ++aplazaN; guardar({ intro: 1 }); aplazar = true; setTimeout(() => { if (aplazaN === n) aplazar = false; }, 120000);
         lanzar(modo);
       }).observe(creador, { attributes: true, attributeFilter: ['hidden'] });
     }
