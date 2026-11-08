@@ -419,7 +419,6 @@ A.3 (edificios lejanos al llegar) se lo pasé a Kimi 3 en TAREAS_KIMI.md, porque
 
 📣 **Nube → coordinadora · 8-nov 02:40 UTC · regla de Kelvin: «no se detengan; pidan tareas siempre que terminen».** Cada vez que un agente de la nube termine, te lo diré aquí y te pediré la siguiente tarea. Para no quedarme parada mientras contestas, deja aquí una **cola de tareas → nube** ordenada; yo tomo la primera libre y la marco «EN CURSO · nube». Ahora estoy con el menú V18, el bloque A y la V18.2.
 
-<<<<<<< HEAD
 📣 **Nube → coordinadora · 8-nov 03:35 UTC · Esc de las actividades V18 en main (7a1fdce7), listo para publicar; un agente de la nube libre: pido tarea.**
 - Chispa, Moon y el Guardián ceden el Esc a diálogos, tarjetas, overlays, guía de controles, mapa grande, familia, criadero y maestro. Cada prueba tiene un check nuevo.
 - e2e quita su oyente 'contexto' al terminar. Para eso hay un **G.off(name, fn) nuevo en src/engine/core.js** (2 líneas). Míralo, por si no lo quieres.
@@ -450,3 +449,19 @@ Pendiente real: equiposTest e idiomaTest. lookTest, ambienteTest, cargaTest, cli
 - **cargaTest** (prueba): con caché la carga se hace en 9 cuadros; con GPU por software cada cuadro tarda ~300 ms. Allí se mide en cuadros (≤ 90, 1,5 s a 60 fps); con GPU real, en ms como siempre.
 - **Carga de arranque** (avtest con la cuenta del SW, `?calidad=`, servidor local sin compresión, 2 cargas por nivel, idénticas): bajo 22,67 MB en 201 archivos · **medio 58,29 MB** en 269 archivos (glb 40,78 · imágenes 13,77 · js 3,50), 188 draw calls, 370,9 MB de texturas · **alto 58,29 MB** (igual), 201–202 draw calls, 516,9 MB de texturas. Pasan el límite de 28 MB de config y los avisos de 150 draw calls y 300 MB de texturas. No toqué nada de carga (es de Kimi 2 y 3).
 - **BUGS.md**: abiertas sin Kimi ni Kelvin: QA-78 resuelta (arriba); QA-106 sin tocar (falta `#fps` en el iPad real); CG-56 sin tocar (informativa, no tiene código). `avance.json` sin tocar: «demo estable» depende de KIMI-243.
+
+📣 **Nube → coordinadora · 8-nov 04:00 UTC · dos entregas en main, listas para publicar (12/12 en verde en cada una):**
+1. **Bloque A**:
+   - lookTest 44/44, trenTest 57/57 y cargaTest 16/16: eran las pruebas las que medían mal en SwiftShader.
+   - v18FxTest 18/18, con un **fallo real arreglado**: el escudo seguía girando al cerrar el combate y ahora `G.v18fx.apagar(actor)` lo quita.
+   - QA-78 resuelta.
+   - Carga medida con el SW: bajo 22,67 MB; medio y alto 58,29 MB sin comprimir (188 y 202 draw calls; 371 y 517 MB de texturas). Pasa del tope de 28: es de Kimi 2 y 3.
+2. **V18.2 (bloque B.1)**:
+   - Niveles 1–40 en las 34 especies, con 4 etapas: Aprendiz, Despertar 10, Guardián 20 y Maestro 30. Cada etapa mejora la potencia y la espera, y desde Guardián hay habilidad secundaria.
+   - Las 6 alianzas de bandada: Eco Protector, Lluvia Guiada, Viento Cruzado, Destello del Pitón, Marea de Lluvia y Ráfaga Volcánica. Se desbloquean con el líder a nivel 10, el compañero en la bandada y ganando a la Campeona.
+   - Hitos de XP nuevos: minigolf, oro, victoria perfecta y 3 duelos ganados.
+   - Ficha de la cotorra con nivel, XP que falta, etapa, mejora y alianza.
+   - Guardado v1/v2 compatible.
+   - Pruebas: v18EvolucionTest 60/60, v18Test 10/10, combate 42/42, duelo2 25/25, poderes 55/55 y nuevas 130/130.
+
+Los nombres y parejas de las alianzas los eligió la nube por variedad jugable, como pedía la directiva; si Kelvin quiere otros, se cambian. **Pido tarea → nube** para los dos agentes que quedan libres.
