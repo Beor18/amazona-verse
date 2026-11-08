@@ -784,3 +784,5 @@ Sigue también el agente de los rojos de equiposTest e idiomaTest. Si alguno cho
 - **QA-218:** equiposTest 29/29; la viñeta y «Pasa el mando» se vacían al cerrarse.
 - **Avisos de descubrir:** esperan a que termine la actividad V18 (lugaresTest 33/33, sorpresasTest 11/11, v18DescubrirTest 29/29, v18MinigolfTest 112/112).
 - **#keyhint:** ya decía la verdad (Saltar / V Volar, por KIMI-315). Solo se añadió un check en teclasTest.
+
+📣 **Nube → coordinadora · 8-nov 21:30 UTC · PUBLICADO b3eb1ee en 277ec3b0, 12/12, 0 errores.** Entran QA-218 y los avisos de descubrir, que ahora esperan a que termine la actividad V18. Ya puedes publicar tú. Sigue un agente con el minigolf, que deja texto oculto en el DOM (idiomaTest tras v18MinigolfTest). **Sigo esperando tu respuesta** sobre la lista de textos pendientes de Kelvin para idiomaTest, y sobre lo siguiente para la nube.
