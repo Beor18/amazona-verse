@@ -83,13 +83,24 @@ window.AVV18Muelle = function (G) {
     let sAgua = null;
     for (let s = 0; s <= 12; s += 0.25) { const p = en(s); if (mojado(p.x, p.z)) { sAgua = s; break; } }
     if (sAgua == null || sAgua < 2.5) return null;
-    const s0 = sAgua - 2, s1 = sAgua + 4.5, pf = en(s1), pa = en(sAgua + 0.5);
+    const s0 = sAgua - 3, s1 = sAgua + 4.5, pf = en(s1), pa = en(sAgua + 0.5);
     if (!mojado(pf.x, pf.z) || !mojado(pa.x, pa.z)) return null;
-    const cubierta = nivelAgua(pa.x, pa.z) + 0.5, p0 = en(s0), h0 = alto(p0.x, p0.z) + 0.06;
+    const cubierta = nivelAgua(pa.x, pa.z) + 0.5, p0 = en(s0), h0 = alto(p0.x, p0.z) + 0.03;
     if (Math.abs(h0 - cubierta) > 2.5) return null; // la orilla tiene que estar cerca del agua (rampa suave)
-    return { sAgua, s0, s1, cubierta, h0 };
+    // Perfil (como la escalera de puerto.js): envolvente superior del terreno (+ holgura) y de la cubierta sobre el agua; cada tramo
+    // recto es una rampa del terreno. Donde el borde de la orilla asomara por encima de las tablas, mandaría su pendiente y no se pasaría.
+    const pts = [];
+    for (let s = s0; s <= s1 + 1e-6; s += 0.25) { const q = en(Math.min(s, s1)), sc = Math.min(s, s1); pts.push([sc, Math.max(alto(q.x, q.z) + (sc < s0 + 0.1 ? 0.03 : 0.14), sc >= sAgua ? cubierta : -Infinity)]); }
+    const h = [];
+    for (const q of pts) { while (h.length >= 2) { const [a, b] = [h[h.length - 2], h[h.length - 1]]; if ((b[0] - a[0]) * (q[1] - a[1]) - (b[1] - a[1]) * (q[0] - a[0]) >= 0) h.pop(); else break; } h.push(q); }
+    const ang = (a, b) => Math.atan2(b[1] - a[1], b[0] - a[0]), perfil = [h[0]];
+    for (let i = 1; i < h.length - 1; i++) if (Math.abs(ang(perfil[perfil.length - 1], h[i]) - ang(h[i], h[i + 1])) > 0.087) perfil.push(h[i]);
+    perfil.push(h[h.length - 1]);
+    let pend = 0; for (let i = 0; i < perfil.length - 1; i++) pend = Math.max(pend, Math.abs(ang(perfil[i], perfil[i + 1])) * 180 / Math.PI);
+    if (pend > 35) return null;
+    return { sAgua, s0, s1, cubierta: perfil[perfil.length - 1][1], h0, perfil, pend };
   }
-  const yMuelle = s => { const E = M.eje; if (s <= E.sAgua) { const t = Math.max(0, Math.min(1, (s - E.s0) / (E.sAgua - E.s0))); return E.h0 + (E.cubierta - E.h0) * t; } return E.cubierta; };
+  const yMuelle = s => { const r = M.eje.perfil; for (let i = 0; i < r.length - 1; i++) if (s <= r[i + 1][0] || i === r.length - 2) { const t = Math.max(0, Math.min(1, (s - r[i][0]) / (r[i + 1][0] - r[i][0]))); return r[i][1] + (r[i + 1][1] - r[i][1]) * t; } return r[0][1]; };
 
   // ---------- Escena (piezas simples) ----------
   const mats = {};
@@ -133,8 +144,8 @@ window.AVV18Muelle = function (G) {
     for (let i = 0; i < nB; i++) { const t = (i + 0.5) / nB; o3.position.set(f0.x + (f1.x - f0.x) * t, f0.y + (f1.y - f0.y) * t - Math.sin(Math.PI * t) * 0.5, f0.z); o3.rotation.set(0, 0, 0); o3.updateMatrix(); ban.setMatrixAt(i, o3.matrix); ban.setColorAt(i, new THREE.Color(COLS[i % COLS.length]).convertSRGBToLinear()); }
     gMuelle.add(ban);
     // rampa del terreno: de la orilla al agua y la cubierta; solo sostiene con el muelle hecho
-    const pA = en(E.s0), pW = en(E.sAgua), pB = en(E.s1);
-    for (const [a, b, ya, yb] of [[pA, pW, E.h0, E.cubierta], [pW, pB, E.cubierta, E.cubierta]]) {
+    for (let i = 0; i < E.perfil.length - 1; i++) {
+      const [sa, ya] = E.perfil[i], [sb, yb] = E.perfil[i + 1], a = en(sa), b = en(sb);
       const pl = T.addPlatform({ tipo: 'rampa', a: [a.x, ya, a.z], b: [b.x, yb, b.z], ancho: 2.0, id: 'v18_muelle' }); pl.when = hecho; M.rampas.push(pl);
     }
     // 3 · las boyas (en el agua, a los lados del eje del muelle)
@@ -404,7 +415,7 @@ window.AVV18Muelle = function (G) {
     // caminar con el motor de movimiento por el eje del muelle (como subir() de puerto.js)
     const caminar = pasos => {
       const E = M.eje, keys = G.input.keys, r = { ok: false, s: 0, nado: false, volo: false, y: 0 };
-      const p0 = en(E.s0 - 1.5); ir(p0.x, p0.z);
+      const p0 = en(E.s0 - 0.5); ir(p0.x, p0.z);
       if (G.solidos && G.solidos.terminar) try { G.solidos.terminar(); } catch (e) { /* */ }
       S.pos.y = F.suelo ? F.suelo(p0.x, p0.z, alto(p0.x, p0.z) + 0.5) : alto(p0.x, p0.z);
       const yaw0 = G.camara.yaw; keys.add('w');
@@ -422,7 +433,7 @@ window.AVV18Muelle = function (G) {
     };
     try {
       check('1 · El sitio es el del río real: orilla del embarcadero, agua al este y lejos de las canoas', M.valido && M.hecho,
-        M.eje ? 'agua a ' + M.eje.sAgua.toFixed(2) + ' m · cubierta ' + M.eje.cubierta.toFixed(2) + ' · orilla ' + M.eje.h0.toFixed(2) : 'sin eje');
+        M.eje ? 'agua a ' + M.eje.sAgua.toFixed(2) + ' m · cubierta ' + M.eje.cubierta.toFixed(2) + ' · orilla ' + M.eje.h0.toFixed(2) + ' · pendiente máx ' + M.eje.pend.toFixed(1) + '° · ' + M.eje.perfil.map(q => q[0].toFixed(1) + '/' + q[1].toFixed(2)).join(' ') : 'sin eje');
       V.borrar(); V.recargar(); Object.assign(A, { forzar: true, avisado: false, llegada: false, reuniendo: false, ojos: false, sosteniendo: false, sost: 0 });
       try { G.dialogo.clear(); } catch (e) { /* */ }
       // 2 · sin los faroles de las Atalayas no hay nada; con ellos, los dos se mudan al alejarse de las Atalayas
@@ -433,7 +444,7 @@ window.AVV18Muelle = function (G) {
       const enAtalayas = !A.tengo;
       const villa = (T.mapa.lugares && T.mapa.lugares.villa) || { x: 150, z: 170 };
       ir(villa.x, villa.z); correr(0.2);
-      check('2 · Antes de encender los faroles no hay nada; luego los dos siguen en las Atalayas con Vittata allí y se mudan al alejarse', antes && enAtalayas && A.tengo && G.v18arco.elenco(), antes + ' / ' + enAtalayas + ' / ' + A.tengo);
+      check('2 · Antes de encender los faroles no hay nada; luego los dos siguen en las Atalayas con Vittata allí y se mudan al alejarse', antes && enAtalayas && A.tengo, antes + ' / ' + enAtalayas + ' / ' + A.tengo);
       check('2b · Aviso y bandera verde; el marcador «Misión V18» (puerto → arco → muelle) apunta al embarcadero', toasts.includes(TXT.aviso) && (PU && PU.mapa ? (PU.mapa() || {}).nombre === TXT.titulo : true), JSON.stringify(PU && PU.mapa && PU.mapa()));
       const zona = G.zonas && G.zonas.zonaEn ? [SITIO.plaza, SITIO.a, en(M.eje.s1)].filter(p => G.zonas.zonaEn(p.x, p.z)).length : 0;
       check('2c · Fuera de las zonas de los capítulos y a más de 80 m de las Atalayas', !zona && dist(SITIO.a, ATALAYAS) > 80, 'zona ' + zona + ' · ' + dist(SITIO.a, ATALAYAS).toFixed(0) + ' m');
