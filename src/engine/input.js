@@ -392,6 +392,10 @@ AVE.module('input', function (G) {
         sec.querySelector('[data-tecla="accion"] kbd').textContent === 'I' && !!sec.querySelector('#b-teclas-reset'));
       const pista = document.querySelector('#keyhint kbd');
       ok('la pista del HUD sigue el mapa', !pista || pista.textContent === 'EASD', pista && pista.textContent);
+      // pul4: la barra dice la verdad (Espacio salta —en el aire, doble salto y luego vuela—; V despega directo) y el chip de volar sigue el remapeo
+      asignar('volar', 'n');
+      const chips = [...document.querySelectorAll('#keyhint kbd')].map(k => k.textContent);
+      ok('pul4 · la barra de abajo: 4 chips (mover · Espacio saltar · volar · acción) y volar/acción siguen el mapa', !pista || (chips.length === 4 && chips[2] === 'N' && chips[3] === 'I'), chips.join(' · '));
       sec.querySelector('#b-teclas-reset').click();
       ok('Restablecer vuelve a fábrica y borra lo guardado', ACCIONES.every(a => mapa[a] === DEFECTO[a]) &&
         (() => { try { return localStorage.getItem(CLAVE) === null; } catch (e) { return true; } })());

@@ -103,7 +103,7 @@ AVE.module('fx', function (G) {
     dt = Number.isFinite(dt) && dt > 0 ? Math.min(dt, 0.1) : 0;
     // QA-197: el «Descubriste» encolado espera a historia libre; caduca a los 12 s
     if (descPend) {
-      descPend.t -= dt;
+      if (!enV18()) descPend.t -= dt; // pul4: durante la actividad V18 no caduca
       if (descPend.t <= 0) descPend = null;
       else if (libreDescubre()) { const n = descPend.nombre; descPend = null; descubrimiento(n); }
     }
@@ -157,9 +157,11 @@ AVE.module('fx', function (G) {
   // tarjeta u overlay abiertos y tapaba la historia en el teléfono. Mismo criterio que QA-188: se
   // encola y sale en cuanto la historia queda libre (tope 12 s; si no se libera, se pierde).
   let descPend = null;
+  // pul4 (8-nov): con una actividad V18 en marcha (minigolf, duelo, retos: el criterio de lugares.js, G.lugares.enV18) también
+  // espera, y sin caducar: sale al terminar la actividad en vez de tapar la meta o la flecha del primer tiro.
+  const enV18 = () => (G.lugares && G.lugares.enV18) ? G.lugares.enV18() : /\bv18-(duelo|amenaza|golf)-on\b/.test(document.body.className);
   const libreDescubre = () => !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo())
-    && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar')
-    && !/\bv18-(duelo|amenaza)-on\b/.test(document.body.className);
+    && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar') && !enV18();
   function descubrimiento(nombre) {
     if (!capa) {
       capa = document.createElement('div'); capa.id = 'fx-descubre'; capa.setAttribute('aria-hidden', 'true');

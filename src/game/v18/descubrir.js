@@ -230,16 +230,19 @@ window.AVV18Descubrir = function (G) {
   }
 
   // ---------- Descubrir ----------
-  let avisoCerca = false, avisoInicio = false;
+  let avisoCerca = false, avisoInicio = false, avisoDesc = false;
   function descubrir() {
     if (!V.descubrir(ID)) return false;
     sonar('descubrir');
     try { G.fx.burst(B.pos.x, B.pos.y + 1, B.pos.z, 'stars', 14); } catch (e) { /* sin fx */ }
-    toast(TXT.descubreMas, 5000);
+    // pul4 (8-nov): con una actividad V18 en marcha (minigolf, duelo, retos: otraCosa(), el criterio de la guía) el aviso espera
+    // y sale al terminar (paso), para no tapar la meta o la flecha del primer tiro
+    if (otraCosa()) avisoDesc = true; else toast(TXT.descubreMas, 5000);
     return true;
   }
   function paso(dt) {
     const s = S(); if (!s || !s.pos || !P.length) return;
+    if (avisoDesc && !otraCosa()) { avisoDesc = false; toast(TXT.descubreMas, 5000); }
     moverCotorra(dt);
     const dXZ = distXZ(s.pos, B.pos), d3 = dist3(s.pos, B.pos);
     if (R.activo) { pasoReto(dt, s); return; }
@@ -380,7 +383,7 @@ window.AVV18Descubrir = function (G) {
     const porQue = () => { try { return ' · libre ' + libre() + ' (ocupado ' + !!G.ui.busy() + ', diálogo ' + !!(G.dialogo && G.dialogo.activo && G.dialogo.activo()) + ', fade ' + !!document.getElementById('c1-fade') + ', saltar ' + !!document.getElementById('c1-saltar') + ', otra cosa ' + otraCosa() + ')'; } catch (e) { return ' · ' + e.message; } };
     try {
       await listo; await crearCotorra();
-      V.borrar(); V.recargar(); R.activo = false; posar(0); avisoCerca = false;
+      V.borrar(); V.recargar(); R.activo = false; posar(0); avisoCerca = false; avisoDesc = false;
       const v = centroVilla();
       check('Cotorra de Dominica en el mundo, con su piel, en una copa fuera de la plaza',
         B.ch && B.ch.root.parent === scene && P.length === SALTOS + 1 && distXZ(P[0], v) > 30,
@@ -430,7 +433,18 @@ window.AVV18Descubrir = function (G) {
       check('La pista de inicio sí sale en el cap. 1 con la historia libre', D.avisarInicio() === true && toasts.some(t => /Villa Raíz/.test(t)), toasts.join(' | ') + porQue());
       G.quiet = quietBk;
       toasts.length = 0; try { G.ui.hideToast(); } catch (e) { /* sin toast */ }
-      toasts.length = 0; ir({ x: P[0].x + 4, y: P[0].y - 6, z: P[0].z + 3 }); correr(0.2);
+      toasts.length = 0;
+      { // pul4: con una actividad V18 en marcha se descubre igual, pero el aviso espera a que termine y sale después
+        const MMbk = G.menuModos, tenia = Object.prototype.hasOwnProperty.call(G, 'menuModos');
+        G.menuModos = Object.assign(Object.create(MMbk || null), { ocupado: () => true });
+        let durante = '', desc = '';
+        try { ir({ x: P[0].x + 4, y: P[0].y - 6, z: P[0].z + 3 }); correr(0.2); durante = toasts.join(' | '); desc = estado(); }
+        finally { if (tenia) G.menuModos = MMbk; else delete G.menuModos; }
+        correr(0.2);
+        check('pul4 · con un duelo, el minigolf o un reto V18 en marcha «Descubriste una cotorra…» espera y sale al terminar',
+          desc === 'descubierta' && !/Descubriste/.test(durante) && toasts.some(t => t.indexOf(TXT.descubre) === 0), 'durante: ' + durante + ' · después: ' + toasts.join(' | '));
+      }
+      ir({ x: P[0].x + 4, y: P[0].y - 6, z: P[0].z + 3 }); correr(0.2);
       check('Al acercarse se descubre y avisa «Descubriste una cotorra de Dominica»', estado() === 'descubierta' && toasts.some(t => t.indexOf(TXT.descubre) === 0), toasts.join(' | '));
       check('Descubierta no es elegible todavía', !V.seleccionar(ID) && it.label() === TXT.seguir && seleccionables().indexOf(ID) < 0);
       { // V18.1 §2.2: en «Mis cotorras» la descubierta sale apagada con la pista para conseguirla, y no se puede elegir
