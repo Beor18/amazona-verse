@@ -509,9 +509,9 @@ window.AVV18Evolucion = function (G) {
         '.v18-evo-ali{margin:6px 0;padding:6px 8px;border-radius:10px;background:#0001;text-align:left;font-size:calc(13px * var(--fs-k,1));line-height:1.3}.v18-evo-ali p{margin:3px 0 0}' +
         '.v18-evo-ali .si{color:#2f7a2f;font-weight:700}.v18-evo-ali .no{opacity:.8}.v18-evo-ali img{vertical-align:middle;border-radius:50%;margin-right:4px}' +
         '.v18-evo-guia{margin:6px 0 8px;padding:8px 10px;border-radius:12px;background:#fff3c4;color:#3b2a14;text-align:left;font-size:calc(14px * var(--fs-k,1));line-height:1.35}' +
-        '.v18-evo-guia p{margin:3px 0}.v18-evo-guia .meta{font-weight:700}.v18-evo-guia .chip{display:inline-block;padding:2px 8px;margin:2px 2px 0 0;border-radius:9px;background:#ffe39a;font-size:calc(13px * var(--fs-k,1))}' +
-        '.v18-evo-guia kbd{display:inline-block;font:700 13px/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 5px;margin:0 3px 0 6px;border-radius:6px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center}' +
-        ':root.a11y-contraste .v18-evo-guia{background:#000;color:#fff;border:2px solid #fff}:root.a11y-contraste .v18-evo-guia .chip{background:#333;color:#fff}' +
+        '.v18-evo-guia p{margin:3px 0}.v18-evo-guia .meta{font-weight:700}.v18-evo-guia .v18-evo-chip{display:inline-block;padding:2px 8px;margin:2px 2px 0 0;border-radius:9px;background:#ffe39a;font-size:calc(13px * var(--fs-k,1))}' +
+        '.v18-evo-guia kbd{display:inline-block;vertical-align:middle;height:auto;font:700 13px/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 5px;margin:0 3px 0 6px;border-radius:6px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center}' +
+        ':root.a11y-contraste .v18-evo-guia{background:#000;color:#fff;border:2px solid #fff}:root.a11y-contraste .v18-evo-guia .v18-evo-chip{background:#333;color:#fff}' +
         '@media (min-width:761px){#v18-evo-carta{top:calc(env(safe-area-inset-top,0px) + 96px)}}' + // en la computadora el aviso (#toast, capa superior) ocupa el borde de arriba
         '@keyframes v18evo{from{transform:translateY(-16px) scale(.9);opacity:0}to{transform:none;opacity:1}}';
       document.head.appendChild(st);
@@ -569,13 +569,14 @@ window.AVV18Evolucion = function (G) {
   // Qué hacer aquí, cómo se sube y con qué tecla, en 3-4 líneas cortas (un texto por nodo para el traductor EN)
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   function htmlGuia() {
+    try { css(); } catch (e) { /* sin documento */ } // sin cotorras no se dibuja ninguna ficha (que es la que pone los estilos)
     const sel = V.seleccionada(), L = window.AV_ESPECIES, ids = ['vittata', 'arausiaca'].concat(L && Array.isArray(L.especies) ? L.especies.map(x => x && x.id) : []);
     const n = ids.filter((sp, i) => sp && ids.indexOf(sp) === i && elegible(sp)).length;
     const sp = sel || (elegible('vittata') ? 'vittata' : null);
     let h = '<div class="v18-evo-guia" data-v18guia>';
     if (!sp && !n) h += `<p class="meta" data-v18guia-vacia><span>${esc(TXT.guiaVacia)}</span></p>`;
     else h += `<p class="meta"><span>${esc(n >= 2 ? TXT.guiaElige : TXT.guiaUna)}</span></p>`;
-    h += `<p><span>${esc(TXT.guiaSube)}</span> <span class="chip">${esc(con(TXT.guiaDuelo, XP.gana))}</span><span class="chip">${esc(con(TXT.guiaGolf, XP.golfNido))}</span><span class="chip">${esc(TXT.guiaExplora)}</span></p>`;
+    h += `<p><span>${esc(TXT.guiaSube)}</span> <span class="v18-evo-chip">${esc(con(TXT.guiaDuelo, XP.gana))}</span><span class="v18-evo-chip">${esc(con(TXT.guiaGolf, XP.golfNido))}</span><span class="v18-evo-chip">${esc(TXT.guiaExplora)}</span></p>`;
     h += `<p><span>${esc(TXT.guiaEtapas)}</span></p>`;
     h += TACTIL ? `<p data-v18guia-teclas><span>${esc(TXT.guiaTactil)}</span></p>`
       : `<p data-v18guia-teclas><span>${esc(TXT.guiaTeclas)}</span><kbd>G</kbd><span>${esc(TXT.guiaPoder)}</span><kbd>H</kbd><span>${esc(TXT.guiaAli)}</span></p>`;
