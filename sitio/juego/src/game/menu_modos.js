@@ -76,6 +76,8 @@
 
     // ---------- Apertura del capítulo aplazada (primera vez sin Aventura) ----------
     let inicioReal = P.inicio, aplazar = false, aplazaN = 0;
+    // ?mini=<modo> pendiente (más abajo): si en la portada se elige una actividad, el ?mini= ya no arranca (ni encima de ella ni al terminarla)
+    let miniPend = null;
     if (typeof inicioReal === 'function') P.inicio = function (g) { if (aplazar) { aplazar = false; guardar({ intro: 1 }); return undefined; } return inicioReal(g); };
     function introPendiente() { return leer().intro === 1 && S.profile && S.profile.created && S.step === 0 && !S.complete; }
 
@@ -320,6 +322,7 @@
     // nido y records se abren encima del menú (la portada sigue abierta); el resto cierra la portada primero
     function elegir(modo) {
       if (!MODOS.includes(modo) && !SUB.includes(modo)) return Promise.resolve(false);
+      if (miniPend && !ENCIMA.includes(modo)) miniPend = null;
       if (ENCIMA.includes(modo)) return lanzar(modo); // encima del menú; no cuentan como «lo último que jugaste»
       recordar(modo);
       if (modo === 'aventura' && !G.quiet) apuntarCapitulo(P.id); // al volver a entrar se abre este capítulo (boot.js)
@@ -382,13 +385,14 @@
     {
       const q = /[?&]mini=(duelo2|duelo|cotorras|album|chispa|moon|guardian)\b/.exec(location.search), m = q && q[1];
       if (m && P.id === 'cap1' && (G.V18 || m === 'album')) {
-        let n = 0;
-        const libreYa = () => !(creador && !creador.hidden) && !G.ui.cardOpen && !(G.dialogo && G.dialogo.open && G.dialogo.open());
+        let n = 0; miniPend = m;
+        // Libre: sin creador, tarjeta, diálogo ni otra actividad en marcha (los minijuegos ponen G.ui.busy; las de la V18, ocupado18)
+        const libreYa = () => !(creador && !creador.hidden) && !G.ui.cardOpen && !(G.dialogo && G.dialogo.open && G.dialogo.open()) && !(G.ui.busy && G.ui.busy()) && !ocupado18();
         if (m === 'cotorras' || m === 'album') {
-          const ir = () => { if (libreYa() || (portada && portada.open && !G.ui.cardOpen)) { lanzar(m); return; } if (++n < 60) setTimeout(ir, 1000); };
+          const ir = () => { if (miniPend !== m) return; if (libreYa() || (portada && portada.open && !G.ui.cardOpen)) { lanzar(m); return; } if (++n < 60) setTimeout(ir, 1000); };
           listo().then(() => setTimeout(ir, 1500));
         } else {
-          const probar = () => { if (!(portada && portada.open) && libreYa()) { if (!enMarcha18(m)) lanzar18(m); return; } if (++n < 180) setTimeout(probar, 1000); }; /* espera a que se cierre la portada */
+          const probar = () => { if (miniPend !== m) return; if (!(portada && portada.open) && libreYa()) { miniPend = null; if (!enMarcha18(m)) lanzar18(m); return; } if (++n < 180) setTimeout(probar, 1000); }; /* espera a que se cierre la portada */
           setTimeout(probar, 1500);
         }
       }
@@ -592,7 +596,8 @@
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, get libre() { return libre; }, get pendiente() { return pendiente; } };
+    // QA-212: ocupado() = hay una actividad V18 en marcha (duelo, minigolf, carreras…); lo miran las pistas de descubrir.js y ciclo.js
+    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, ocupado: () => ocupado18(), get libre() { return libre; }, get pendiente() { return pendiente; } };
     api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir });
     return api;
   };

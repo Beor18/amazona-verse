@@ -353,8 +353,8 @@ window.AVV18Arco = function (G) {
   // ---------- Pasos del jugador ----------
   function reunion() {
     if (estado() !== 'inicio' || !A.tengo) return false;
-    if (A.reuniendo && G.dialogo && G.dialogo.activo && G.dialogo.activo()) return false; // otra charla la cortó: se puede volver a empezar
-    A.reuniendo = true;
+    if (A.reuniendo && G.dialogo && G.dialogo.open && G.dialogo.open()) return false; // QA-211: espera a una caja, no a los bocadillos (esos los corta) // otra charla la cortó: se puede volver a empezar
+    A.reuniendo = true; try { G.dialogo.cancelarLibre(); } catch (e) { /* QA-211: los bocadillos de llegada no siguen después */ }
     quitarGuia();
     charla(TXT.reunion.slice(0, 2), () => {
       // la Ingeniera se pone el equipo de rescate antes de pedir ayuda (se ve el cambio mientras habla)
@@ -689,7 +689,12 @@ window.AVV18Arco = function (G) {
       cerrarCharlas();
       const r1 = reunion(); G.dialogo.clear(); const r2 = reunion();
       check('6a · Si otra charla corta la reunión, se puede volver a empezar (no se traba en «inicio»)', r1 && r2 && estado() === 'inicio' && G.dialogo.open(), r1 + ' / ' + r2);
-      G.dialogo.clear(); A.reuniendo = false;
+      // QA-211: si la reunión empieza con los bocadillos de llegada en marcha, los corta (no siguen después de la caja, fuera de orden)
+      { try { G.dialogo.clear(); } catch (e) { /* */ } A.reuniendo = false;
+        charla(TXT.llegada, null, { libre: true, caja: false }); const habia = !!G.dialogo.libre();
+        const r = reunion(); const corta = r && !G.dialogo.libre() && G.dialogo.open();
+        try { G.dialogo.clear(); } catch (e) { /* */ } A.reuniendo = false;
+        check('QA-211 · La reunión corta los bocadillos de llegada en curso', habia && corta && estado() === 'inicio', 'había ' + habia + ' · corta ' + corta + ' · ' + estado()); }
       ir(SITIO.maq.x - 5, SITIO.maq.z - 5, SITIO.maq); correr(0.2);
       const abre = G.dialogo.open() && (G.dialogo.actual() || {}).who === 'El Constructor';
       cerrarCharlas(); correr(0.1);

@@ -234,8 +234,11 @@ window.AVV18Explorar = function (G) {
       if (ver) {
         // QA-191 (móvil): si el aviso de Acción (#prompt) queda a la altura del botón, el botón sube por encima y no tapa el nombre
         let alto = window.innerHeight - ra.top + 10;
-        const pr = document.getElementById('prompt');
-        if (pr && !pr.hidden) {
+        // QA-208 (móvil): lo mismo con los bocadillos de los personajes (dialogo.js, #bocadillos), que van justo encima del aviso:
+        // subido por el aviso, el botón tapaba el final de la frase (misiones V18.3). Si así queda sobre la Pausa, W29 lo oculta.
+        for (const id of ['prompt', 'bocadillos']) {
+          const pr = document.getElementById(id);
+          if (!pr || pr.hidden || getComputedStyle(pr).visibility === 'hidden') continue;
           const rp = pr.getBoundingClientRect(), anchoB = b.offsetWidth || 120, izqB = window.innerWidth - Math.max(8, window.innerWidth - ra.right) - anchoB;
           if (rp.height && rp.right > izqB && window.innerHeight - rp.top + 8 > alto - 4 && window.innerHeight - rp.bottom < alto + (b.offsetHeight || 44)) alto = Math.max(alto, window.innerHeight - rp.top + 8);
         }

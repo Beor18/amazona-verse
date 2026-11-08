@@ -103,6 +103,9 @@ html.modo-libre :is(#quest, #keyhint) { display: none !important; }
 @media (prefers-reduced-motion: reduce) { .modo, .modo.es-ultimo { animation: none; } }
 /* V18 encima del menú (menu_modos.js): Mis cotorras, el Álbum y Retos con amigos usan #card por encima de la portada */
 #card.mm-encima { z-index: calc(var(--z-title) + 2); }
+/* QA-209: el título «Álbum de las 36 · n/34» es una .lbl (dorado, para paneles oscuros); en el Diario lo pinta #card:has(.diary), pero
+   abierto desde el menú quedaba dorado sobre papel, casi ilegible */
+#card .mm-album .lbl { color: var(--c-ink); }
 #card .mm-xp { display: block; font-weight: 700; font-size: var(--fs-xs); letter-spacing: 0.02em; }
 #card .mm-faltan { margin: var(--sp-3) 0; padding: var(--sp-2) var(--sp-3); border-radius: var(--r-md); background: var(--c-paper-2); }
 #card .mm-faltan summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font: 700 var(--fs-md)/1.2 var(--font-display); }

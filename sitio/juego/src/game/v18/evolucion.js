@@ -60,11 +60,11 @@ window.AVV18Evolucion = function (G) {
     { desde: 1, id: 'grito_yunque', nombre: 'Grito del Yunque', alcance: 7, cono: 0.82, vel: 16, empuje: 15, interrumpe: 1.1, coste: 35, cooldown: 5,
       frase: 'Onda sonora que empuja e interrumpe. Acércate y apunta.' },
     { desde: 10, id: 'eco_amplificado', nombre: 'Eco Amplificado', alcance: 9, cono: 0.74, vel: 16, empuje: 17, interrumpe: 1.2, coste: 35, cooldown: 5.5,
-      frase: 'Tu grito llega más lejos (9 m) y abre más. Espera un poco más entre gritos.' },
+      frase: 'Tu grito llega más lejos (9 m) y es más ancho. Tienes que esperar un poco más entre gritos.' },
     { desde: 20, id: 'eco_dirigido', nombre: 'Eco Dirigido', alcance: 11, cono: 0.9, vel: 22, empuje: 18, interrumpe: 1.4, coste: 40, cooldown: 6, desvia: true,
-      frase: 'Grito estrecho y rápido hasta 11 m: apunta bien y deshaz las semillas de la rival.' },
+      frase: 'Grito estrecho y rápido de hasta 11 m: apunta bien y deshaz las semillas de la rival.' },
     { desde: 30, id: 'grito_maestro', nombre: 'Grito Maestro', alcance: 11, cono: 0.82, vel: 22, empuje: 19, interrumpe: 1.4, coste: 40, cooldown: 6, desvia: true, maestro: true,
-      frase: 'Grito rápido hasta 11 m, más abierto que el Eco Dirigido, que deshace semillas y suelta destellos dorados.' }
+      frase: 'Grito rápido de hasta 11 m, más abierto que el Eco Dirigido: deshace semillas y suelta destellos dorados.' }
   ];
   const TOPES_GRITO = { cooldownMin: 5, costeMin: 35, alcanceMax: 11, interrumpeMax: 1.4 };
   // ---------- Etapas de las 34 especies del catálogo base (§3) ----------
@@ -124,16 +124,16 @@ window.AVV18Evolucion = function (G) {
     falta: 'Faltan {} XP para el nivel {}', max: 'Nivel máximo', mejora: 'Mejora:', maestroFx: 'destellos dorados',
     k_alcance: 'Alcance', k_dura: 'Duración', k_vel: 'Velocidad', k_vida: 'Recorrido de la semilla', k_empuje: 'Empuje', k_devuelve: 'Energía que devuelve',
     k_quita: 'Energía que quita', k_gorda: 'Tamaño de la semilla', k_mareo: 'Mareo', k_cooldown: 'Espera',
-    sec_pico: 'Además deshace las semillas de la rival que vienen de frente.', sec_ojos: 'Además marca a la rival 1,5 s: no esquiva y tus semillas la siguen.',
-    sec_plumas: 'Además te da un desvío de 0,4 s en que no te dan.', sec_alas: 'Además deja tu golpe de ala listo al momento.',
-    fr_despertar: 'Tu poder mejora y espera menos entre usos.', fr_guardian: 'Tu poder gana una habilidad secundaria.', fr_maestro: 'Dominio avanzado: tu poder brilla con destellos dorados.',
+    sec_pico: 'Además, deshace las semillas de la rival que vienen de frente.', sec_ojos: 'Además, marca a la rival 1,5 s: no puede esquivar y tus semillas la siguen.',
+    sec_plumas: 'Además, te da un desvío de 0,4 s en el que nada te golpea.', sec_alas: 'Además, deja tu golpe de ala listo al momento.',
+    fr_despertar: 'Tu poder mejora y se recarga más rápido.', fr_guardian: 'Tu poder gana una habilidad secundaria.', fr_maestro: 'Dominio avanzado: tu poder brilla con destellos dorados.',
     retro: 'Tu aventura cuenta: +{} XP para tu cotorra.', prueba: 'Modo de prueba de la evolución',
     subeTit: '¡Subiste de nivel!', retroTit: '¡Tu aventura cuenta!', xpTit: 'Experiencia',
     aliSec: 'Alianzas de bandada', aliPorDesc: 'Alianzas por descubrir: {}',
     reqLider: '{} en nivel 10 (ahora Nv {})', reqApoyo: '{} en tu bandada',
     retoPoder: 'Reto: gana a la Campeona con {} usando {} 2 veces.', retoEco: 'Reto: gana a la Campeona con {} interrumpiéndola 2 veces con tu grito.',
     usarCon: 'Elige a {} en Mis cotorras para usarla.',
-    aliDispN: 'Nueva alianza disponible, {}: gana a la Campeona con {} usando {} 2 veces.',
+    aliDispN: '¡Nueva alianza disponible! {}: gana a la Campeona con {} usando {} 2 veces.',
     retoFin: 'Reto de alianza {}: llevas {} de 2', retoFinLogrado: 'Reto de alianza {}: ¡logrado!'
   };
   // Retratos que existen en assets/retratos/v18 (sin retrato no se pide imagen: nada de errores 404 en la consola)

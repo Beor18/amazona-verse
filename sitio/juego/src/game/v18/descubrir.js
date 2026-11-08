@@ -44,8 +44,16 @@ window.AVV18Descubrir = function (G) {
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 3600); } catch (e) { /* sin interfaz */ } };
   // QA-188/QA-186: un aviso de pista no sale con la historia en pantalla (caja de diálogo, bocadillo o subtítulo
   // del narrador) ni durante la apertura en negro del cap. 1; espera a que el jugador esté libre de verdad
+  // QA-212: tampoco con una actividad V18 en marcha (la cuenta atrás del duelo…; G.menuModos.ocupado, la de menu_modos.js) ni con la
+  // portada (el menú de modos) o la pausa abiertas: no se puede ir a buscarla y tapa lo que hay en pantalla
+  const otraCosa = () => {
+    try {
+      const t = document.getElementById('title'), p = document.getElementById('pause');
+      return !!(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) || !!(t && t.open) || !!(p && p.matches && p.matches(':popover-open'));
+    } catch (e) { return false; }
+  };
   const libre = () => {
-    try { return !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo()) && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar'); }
+    try { return !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo()) && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar') && !otraCosa(); }
     catch (e) { return true; }
   };
   const sonar = (n, a) => { try { if (G.audio && (!G.audio.has || G.audio.has(n))) return G.audio.play(n, a); } catch (e) { /* sin audio */ } return false; };
@@ -273,7 +281,8 @@ window.AVV18Descubrir = function (G) {
     const ids = seleccionables(), sel = V.seleccionada();
     const botones = ids.map(id => `<button class="btn${id === sel ? '' : ' ghost'}" type="button" data-v18sp="${esc(id)}" aria-pressed="${id === sel}">${RETRATOS.has(id) ? `<img src="assets/retratos/v18/${esc(id)}.png" alt="" width="64" height="64" style="display:block;margin:0 auto 4px">` : ''}<span class="v18-nom">${esc(nombre(id))}</span><small style="display:block;opacity:.8"><span>${esc(TXT.poder)}</span>: <span>${esc(poder(id))}</span></small>${evo('htmlFicha', id)}</button>`).join('');
     // QA móvil: cada botón en columna (retrato, nombre, poder, ficha); en fila el texto quedaba en columnas de 3 o 4 letras en el teléfono
-    G.ui.showCard(`<div class="v18-elegir"><style>.v18-elegir .v18-nom{display:block}.v18-elegir .v18-nom::first-letter{text-transform:uppercase}.v18-elegir [data-v18sp]{flex:1 1 130px;flex-direction:column;justify-content:flex-start;text-align:center;min-width:0}</style><h2>${esc(TXT.titulo)}</h2><p>${esc(TXT.nota)}</p><div class="row">${botones}</div>${evo('htmlExtra')}<div class="row"><button class="btn" id="v18-elegir-ok" type="button">${esc(TXT.listo)}</button></div></div>`);
+    // QA-210: con relleno arriba y abajo (el .btn no tiene): sin retrato, el nombre y «XP» tocaban el borde de la tarjeta
+    G.ui.showCard(`<div class="v18-elegir"><style>.v18-elegir .v18-nom{display:block}.v18-elegir .v18-nom::first-letter{text-transform:uppercase}.v18-elegir [data-v18sp]{flex:1 1 130px;flex-direction:column;justify-content:flex-start;text-align:center;min-width:0;padding-block:12px}</style><h2>${esc(TXT.titulo)}</h2><p>${esc(TXT.nota)}</p><div class="row">${botones}</div>${evo('htmlExtra')}<div class="row"><button class="btn" id="v18-elegir-ok" type="button">${esc(TXT.listo)}</button></div></div>`);
     const card = G.ui.$('card'); evo('enlazar', card);
     card.querySelectorAll('[data-v18sp]').forEach(b => { b.onclick = () => elegir(b.getAttribute('data-v18sp')); });
     const ok = G.ui.$('v18-elegir-ok'); if (ok) ok.onclick = () => G.ui.hideCard();
@@ -400,6 +409,19 @@ window.AVV18Descubrir = function (G) {
       const noSalioConHistoria = D.avisarInicio() === false && !toasts.some(t => /Villa Raíz/.test(t));
       if (G.dialogo) G.dialogo.activo = actBk;
       check('La pista de inicio espera a la historia libre (QA-188)', noSalioConHistoria, toasts.join(' | '));
+      // QA-212: ni con una actividad V18 en marcha (la cuenta atrás del duelo, vista por G.menuModos.ocupado) ni con el menú de la portada
+      // o la pausa abiertos; las dos pistas (la de inicio y «¿Oyes ese canto?») esperan
+      {
+        const sapoBk = G.v18sapo, tit = document.getElementById('title'), titBk = !!(tit && tit.open), n0 = toasts.length;
+        G.v18sapo = { estado: () => ({ fase: 'cuenta' }) }; // una actividad cualquiera de las que mira ocupado18(), en marcha
+        const conDuelo = !!(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()), inicioDuelo = D.avisarInicio(); avisoInicio = false;
+        const cercaDuelo = libre();
+        if (sapoBk === undefined) delete G.v18sapo; else G.v18sapo = sapoBk;
+        if (tit) tit.open = true; const inicioPortada = D.avisarInicio(); avisoInicio = false; const cercaPortada = libre(); if (tit) tit.open = titBk;
+        check('QA-212 · Las pistas de la cotorra visitante esperan con una actividad V18 en marcha (G.menuModos.ocupado) y con el menú de la portada abierto',
+          (!G.menuModos || conDuelo) && inicioDuelo === false && !cercaDuelo && inicioPortada === false && !cercaPortada && !toasts.slice(n0).some(t => /Villa Raíz|canto/.test(t)) && libre(),
+          'ocupado ' + conDuelo + ' · inicio ' + inicioDuelo + '/' + inicioPortada + ' · cerca libre ' + cercaDuelo + '/' + cercaPortada + ' · ' + toasts.slice(n0).join(' | '));
+      }
       avisoInicio = false;
       check('La pista de inicio sí sale en el cap. 1 con la historia libre', D.avisarInicio() === true && toasts.some(t => /Villa Raíz/.test(t)), toasts.join(' | ') + porQue());
       G.quiet = quietBk;
