@@ -129,7 +129,8 @@
       "tests/qa/cg34_regresion.js",
       "tests/qa/temporada_real.js",
       "tests/qa/temporada_movil.js",
-      "tests/qa/playtest_auto.js"
+      "tests/qa/playtest_auto.js",
+      "tests/qa/escuela.js"
     ],
     "listo_js": "window.AV && window.AV.G && window.AV.G.actores && (window.AV.G.actores.player3D || window.AV.G.actores.failed3D)",
     "_nota_preparar": "Flujo de jugador nuevo (perfil de Chrome vacío): Jugar en la portada, el creador se abre y sale con Empezar, y se espera a la pantalla de carga (src/ui/carga.js, tope 20 s). Luego pulsa «Saltar intro» (#c1-saltar) si la apertura del cap. 1 sigue en marcha, como un jugador: la apertura se salta con la primera tecla y se la comía (W21: con otro orden de baterías, la primera tecla de movementTest se la tragaba la intro y fallaba «Espacio sube…»; ahora ninguna batería depende de que otra la haya saltado antes). Si algo falla, la prueba falla. Debe devolver un texto que empiece por 'ok'.",
