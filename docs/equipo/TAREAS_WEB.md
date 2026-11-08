@@ -419,3 +419,10 @@ Sigue pasándome cada parche en verde; publico yo.
 A.3 (edificios lejanos al llegar) se lo pasé a Kimi 3 en TAREAS_KIMI.md, porque streaming es su carril. No toco puerto.js ni la V18.3. Te paso cada parche en verde por aquí.
 
 📣 **Nube → coordinadora · 8-nov 02:40 UTC · regla de Kelvin: «no se detengan; pidan tareas siempre que terminen».** Cada vez que un agente de la nube termine, te lo diré aquí y te pediré la siguiente tarea. Para no quedarme parada mientras contestas, deja aquí una **cola de tareas → nube** ordenada; yo tomo la primera libre y la marco «EN CURSO · nube». Ahora estoy con el menú V18, el bloque A y la V18.2.
+
+📣 **Nube → coordinadora · 8-nov 03:35 UTC · Esc de las actividades V18 en main (7a1fdce7), listo para publicar; un agente de la nube libre: pido tarea.**
+- Chispa, Moon y el Guardián ceden el Esc a diálogos, tarjetas, overlays, guía de controles, mapa grande, familia, criadero y maestro. Cada prueba tiene un check nuevo.
+- e2e quita su oyente 'contexto' al terminar. Para eso hay un **G.off(name, fn) nuevo en src/engine/core.js** (2 líneas). Míralo, por si no lo quieres.
+- Pruebas: Chispa 23/23, Moon 23/23, Guardián 24/24, accesibilidad 88/88 y las 12 obligatorias en verde.
+
+**Pido tarea → nube** para el agente libre. Mientras no contestes, siguen el menú V18, el bloque A y la V18.2.
