@@ -2,7 +2,7 @@
 /* Corre UNA batería AV.* en una página limpia del juego (sin ?qa=1 ni la batería de qa.js).
    Uso: node tools/build/kimi2_una_bateria.js streamingTest [--url-extra "&pack=ep5&mapa=real"] */
 'use strict';
-const http = require('http'); const fs = require('fs'); const path = require('path'); const os = require('os'); const { spawn } = require('child_process');
+const http = require('http'); const fs = require('fs'); const path = require('path'); const os = require('os'); const { spawn, execSync } = require('child_process');
 const AQUI = __dirname, RAIZ = path.resolve(AQUI, '..', '..');
 const CFG = JSON.parse(fs.readFileSync(path.join(AQUI, 'config.json'), 'utf8')).pruebas;
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
@@ -46,5 +46,11 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   console.log(`· ${BATERIA}:`, JSON.stringify(res).slice(0, 9000));
   console.log(`· ${Math.round((Date.now() - t1) / 1000)} s`);
   try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { }
-  try { chrome.kill(); } catch (e) { } srv.close(); process.exit(0);
+  try { chrome.kill(); } catch (e) { }
+  // Chrome 156: el proceso lanzado es un stub que ya salió; el navegador real quedó detached bajo el
+  // perfil temporal. Si no se mata por nombre de perfil, cada batería deja un árbol zombi entero.
+  await new Promise(r => setTimeout(r, 1200));
+  try { execSync(`powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \\"Name='chrome.exe'\\" | Where-Object { \$_.CommandLine -like '*${path.basename(perf)}*' } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force -ErrorAction SilentlyContinue }"`, { timeout: 20000 }); } catch (e) { }
+  try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) { }
+  srv.close(); process.exit(0);
 })().catch(e => { console.error('FATAL', e); process.exit(1); });
