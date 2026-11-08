@@ -168,7 +168,9 @@ window.AVRescate = function (G) {
     if (r.parent !== scene) scene.attach(r);
     pichon.base = { x, y, z }; r.position.set(x, y, z); r.visible = true;
   }
-  const posPichon = () => (pichon.root ? pichon.root.getWorldPosition(new THREE.Vector3()) : new THREE.Vector3());
+  // out (opcional): el vector que se rellena; el bucle pasa _pp para no crear uno por cuadro
+  const posPichon = out => (pichon.root ? pichon.root.getWorldPosition(out || new THREE.Vector3()) : (out ? out.set(0, 0, 0) : new THREE.Vector3()));
+  const _pp = new THREE.Vector3();
 
   // ---------- Zorzal pardo (Margarops fuscatus): malla simple, curioso, nunca ataca ----------
   const zorzal = { g: null, alas: [], estado: 'off', t: 0, recta: 0, giro: 0, rumbo: null, visto: false, susto: false };
@@ -202,15 +204,15 @@ window.AVRescate = function (G) {
   function pasoZorzal(dt) {
     const z = zorzal; if (z.estado === 'off' || !z.g) return;
     z.t += dt;
-    const l = lado(), obj = { x: S.pos.x + l.x * 2, y: S.pos.y + 1.2, z: S.pos.z + l.z * 2 };
+    const objX = S.pos.x - S.facing.z * 2, objY = S.pos.y + 1.2, objZ = S.pos.z + S.facing.x * 2;
     const p = z.g.position;
     if (z.estado === 'seva') {
       p.x += (p.x - S.pos.x) * dt * 1.5; p.z += (p.z - S.pos.z) * dt * 1.5; p.y += dt * 4; // se aleja hacia arriba
       if (z.t > 1.6) { z.estado = 'off'; z.g.visible = false; }
     } else {
       const k = Math.min(1, dt * (z.estado === 'llega' ? 2.2 : 5));
-      p.x += (obj.x - p.x) * k; p.y += (obj.y - p.y) * k; p.z += (obj.z - p.z) * k;
-      if (z.estado === 'llega' && Math.hypot(p.x - obj.x, p.z - obj.z) < 0.6) z.estado = 'junto';
+      p.x += (objX - p.x) * k; p.y += (objY - p.y) * k; p.z += (objZ - p.z) * k;
+      if (z.estado === 'llega' && Math.hypot(p.x - objX, p.z - objZ) < 0.6) z.estado = 'junto';
       // Rumbo: «recto» mientras el giro acumulado sea pequeño; un giro > 30° o un picado cuentan como maniobra
       const rumbo = Math.atan2(S.facing.x, S.facing.z);
       let d = rumbo - z.rumbo; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
@@ -389,7 +391,7 @@ window.AVRescate = function (G) {
   }
   function pintarHud() {
     if (!hudEl || hudEl.hidden) return;
-    const el = hudEl.querySelector('.rs-reloj'), t = R.fase === 'cuenta' ? (Math.ceil(R.cuenta - 0.2) > 0 ? String(Math.ceil(R.cuenta - 0.2)) : '¡Ya!') : reloj(R.t);
+    const el = hudEl._reloj || (hudEl._reloj = hudEl.querySelector('.rs-reloj')), t = R.fase === 'cuenta' ? (Math.ceil(R.cuenta - 0.2) > 0 ? String(Math.ceil(R.cuenta - 0.2)) : '¡Ya!') : reloj(R.t);
     if (el.textContent !== t) el.textContent = t;
   }
   let estiloListo = false;
@@ -411,7 +413,7 @@ window.AVRescate = function (G) {
   G.on('update', (dt, busy) => {
     if (disponible() && !cartel.g) construirCartel();
     if (cartel.g) cartel.g.visible = disponible();
-    if (pichon.root && pichon.root.visible && !llevaPichon()) { const p = posPichon(); itPichon.x = p.x; itPichon.z = p.z; }
+    if (pichon.root && pichon.root.visible && !llevaPichon()) { const p = posPichon(_pp); itPichon.x = p.x; itPichon.z = p.z; }
     const s = pichon.saltando; // el saltito del giro 1 va con el tiempo del juego (0,5 s), no con el cuadro
     if (s && pichon.root) {
       s.t += dt / 0.5; const k = Math.min(1, s.t), r = pichon.root.position;
@@ -437,7 +439,7 @@ window.AVRescate = function (G) {
     pintarHud();
   });
   G.on('render', dt => {
-    if (R.activo && R.fase !== 'cuenta' && R.fase !== 'carga') G.fx.guide(llevaPichon() ? cartel.nido : (pichon.root ? posPichon() : null), performance.now() / 1000);
+    if (R.activo && R.fase !== 'cuenta' && R.fase !== 'carga') G.fx.guide(llevaPichon() ? cartel.nido : (pichon.root ? posPichon(_pp) : null), performance.now() / 1000);
     if (pichon.saltando) { /* el saltito lo mueve el update */ } else if (pichon.root && pichon.root.visible && !llevaPichon() && R.activo) {
       pichon.root.position.y = pichon.base.y + Math.abs(Math.sin(performance.now() / 1000 * 5)) * 0.06; // saltitos de espera
       pichon.root.rotation.y = Math.atan2(S.pos.x - pichon.root.position.x, S.pos.z - pichon.root.position.z);
