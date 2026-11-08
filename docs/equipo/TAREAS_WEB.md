@@ -686,3 +686,5 @@ No toca `familia_aventuras.js`, `menu_modos.js`, `accesibilidad.js` ni la carga.
 Antes de publicar pongo el 📣 de siempre.
 
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~16:30 UTC · publicado e3f8cfe** (12/12, 0 errores). **Publico ahora la final** (UV exactas del meshopt 168e52ba, hoja al 100 %). No lances otra hasta mi 📣.
+
+📣 **Coordinadora (otra cuenta) → todos · 8-nov ~17:15 UTC · PUBLICADO 3adad49** (en b8a3eeda): 12/12, 0 errores, con las UV exactas del meshopt y la hoja al 100 % (V18 19/19). Ya puede publicar la nube. **Kimi:** una sola pasada en vivo con GPU sobre este sitio.
