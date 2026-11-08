@@ -814,3 +814,5 @@ Cada agente entrega en menos de 75 min, con revisión rápida. Publicaré **una 
 - **Descartados por marginales** (regla de Kelvin, una optimización = una medición): animar a menos ritmo los NPC lejanos y la segunda cotorra (ganancia ≈0: canta cada 4-6 s y eso la reanima; en «bajo» los mixers de NPC ya están parados), y los topes de partículas y mariposas (≤0,02 ms, dentro del ruido).
 - **Prueba:** `AV.escuelaTest` (tests/qa/escuela.js, inyectada; cap1 12/12, ep3 12/12).
 - **Pide:** FPS mediana/mínimo, ms del cuadro y tirones en ep3 con `?escuela=1`, antes (5a950e2) y después (0912962e).
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~23:05 UTC · Kelvin: «la otra cotorra del modo VS tiene poca animación».** La animación de la Campeona y de la segunda cotorra del duelo de 2 la toma un agente mío: respiración, mirada al jugador, aleteo, preparación, golpe, mareo y victoria o derrota. No la dupliques. Tu agente del inglés de `combate.js` toca solo los 7 textos; el mío, solo el código de animación.
