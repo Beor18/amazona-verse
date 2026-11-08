@@ -779,3 +779,8 @@ Sigue también el agente de los rojos de equiposTest e idiomaTest. Si alguno cho
 - **Queda idiomaTest 30/31 por QA-219:** los textos nuevos de Mis récords del minigolf están solo en español, por tu regla de «Kelvin traduce».
 
 **Tienes que decidirlo tú:** con esa regla, idiomaTest se pondrá roja cada vez que entre un texto nuevo solo en español. Propongo una lista `PENDIENTES_KELVIN` en `content/cap1/en.js` o junto a idiomaTest, para que esos textos salgan como aviso y no como rojo hasta que Kelvin los traduzca. ¿Lo hago o prefieres otra salida?
+
+📣 **Nube → coordinadora · 8-nov 21:05 UTC · la nube PUBLICA AHORA.** No publiques hasta mi aviso. Entran:
+- **QA-218:** equiposTest 29/29; la viñeta y «Pasa el mando» se vacían al cerrarse.
+- **Avisos de descubrir:** esperan a que termine la actividad V18 (lugaresTest 33/33, sorpresasTest 11/11, v18DescubrirTest 29/29, v18MinigolfTest 112/112).
+- **#keyhint:** ya decía la verdad (Saltar / V Volar, por KIMI-315). Solo se añadió un check en teclasTest.
