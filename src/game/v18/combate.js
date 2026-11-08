@@ -37,14 +37,22 @@ window.AVV18Combate = function (G) {
   // poder: probabilidad de usarlo cuando puede; vel: velocidad al acercarse; plumas: las que trae (hoy, las 5 en todas).
   // aparta: se sale del alcance de tu ala mientras la suya espera; rehace: se aparta de un salto al recuperarse de un golpe;
   // leeGrito: se escuda al verte abrir el pico; cerca y tiroMin: distancias del ala y de la semilla. CLASICA es la de siempre.
+  // aviso y apunta: segundos que anuncia el golpe de ala y la semilla (telegrafía, 8-nov); el aviso se acorta con la etapa.
   // Números medidos con la jugadora «media» de AV.v18EvolucionTest (36 duelos por etapa, con semilla): gana del 55 al 75 %.
+  // 8-nov: con la telegrafía (que la deja comprometida y a tiro) y el rodeo fuera de tu alcance se reajustaron reflejos,
+  // semillas, velocidad y poder para volver a esa franja (antes, sin tocarlos, la jugadora media ganaba el 92–100 %).
   const CLASICA = { id: 'clasica', pensar: 0.25, ve: 5.5, calma: 2.4, esquiva: 0.55, escudo: 0.55, ala: 1.15, tiro: 2.4, poder: 0.3, vel: 4.2, plumas: PLUMAS };
   const DIFICULTAD = [
-    { id: 'aprendiz', pensar: 0.17, ve: 6.33, calma: 1.85, esquiva: 0.69, escudo: 0.69, ala: 0.9, tiro: 1.96, poder: 0.47, vel: 4.64, aparta: 0.33, rehace: 0.44, cerca: 2.36, leeGrito: 0.39, tiroMin: 4.63, plumas: PLUMAS },
-    { id: 'despertar', pensar: 0.14, ve: 6.63, calma: 1.65, esquiva: 0.74, escudo: 0.74, ala: 0.81, tiro: 1.8, poder: 0.52, vel: 4.8, aparta: 0.45, rehace: 0.6, cerca: 2.38, leeGrito: 0.52, tiroMin: 4.13, plumas: PLUMAS },
-    { id: 'guardian', pensar: 0.13, ve: 6.7, calma: 1.6, esquiva: 0.75, escudo: 0.75, ala: 0.79, tiro: 1.76, poder: 0.54, vel: 4.84, aparta: 0.48, rehace: 0.64, cerca: 2.38, leeGrito: 0.56, tiroMin: 4, plumas: PLUMAS },
-    { id: 'maestro', pensar: 0.11, ve: 6.93, calma: 1.45, esquiva: 0.79, escudo: 0.79, ala: 0.72, tiro: 1.64, poder: 0.59, vel: 4.96, aparta: 0.57, rehace: 0.76, cerca: 2.4, leeGrito: 0.66, tiroMin: 3.63, plumas: PLUMAS }
+    { id: 'aprendiz', pensar: 0.17, ve: 6.33, calma: 1.074, esquiva: 0.96, escudo: 0.96, ala: 0.9, tiro: 0.898, poder: 0.725, vel: 5.765, aparta: 0.825, rehace: 0.89, cerca: 2.36, leeGrito: 0.81, tiroMin: 4.63, aviso: 0.5, apunta: 0.3, plumas: PLUMAS },
+    { id: 'despertar', pensar: 0.14, ve: 6.63, calma: 1.308, esquiva: 0.89, escudo: 0.89, ala: 0.81, tiro: 1.288, poder: 0.625, vel: 5.245, aparta: 0.695, rehace: 0.89, cerca: 2.38, leeGrito: 0.73, tiroMin: 4.13, aviso: 0.45, apunta: 0.3, plumas: PLUMAS },
+    { id: 'guardian', pensar: 0.13, ve: 6.7, calma: 1.074, esquiva: 0.95, escudo: 0.95, ala: 0.79, tiro: 1.008, poder: 0.82, vel: 5.74, aparta: 0.86, rehace: 0.96, cerca: 2.38, leeGrito: 0.88, tiroMin: 4, aviso: 0.42, apunta: 0.3, plumas: PLUMAS },
+    { id: 'maestro', pensar: 0.11, ve: 6.93, calma: 1.15, esquiva: 0.93, escudo: 0.93, ala: 0.72, tiro: 1.18, poder: 0.76, vel: 5.49, aparta: 0.81, rehace: 0.95, cerca: 2.4, leeGrito: 0.87, tiroMin: 3.63, aviso: 0.38, apunta: 0.3, plumas: PLUMAS }
   ];
+
+
+  // Telegrafía: segundos que la rival anuncia su golpe de ala (se agacha y abre las alas) y su semilla (apunta). Cada etapa
+  // puede traer los suyos (aviso, apunta); si no, estos.
+  const AVISO_ALA = 0.45, AVISO_SEMILLA = 0.3, APARTA_ESPERA = 0.9; // y entre dos saltos atrás seguidos, para que no salte sin parar
   function dificultadDe(j) {
     if (!j || !j.nivel) return CLASICA;
     let i = j.nivel >= 30 ? 3 : j.nivel >= 20 ? 2 : j.nivel >= 10 ? 1 : 0;
@@ -200,7 +208,8 @@ window.AVV18Combate = function (G) {
     const sp = especieRival(especieJugador()), D = dif || CLASICA, pl = Math.max(1, Math.min(PLUMAS, D.plumas || PLUMAS));
     return H.luchador({ id: 'rival', nombre: TXT.rival, especie: sp, ia: true, pos: rivalPos, plumas: pl, plumasMax: pl, dif: D,
       kb: { x: 0, z: 0, t: 0 }, mov: { x: 0, z: 0, t: 0 }, lift: { alto: 0, t: 0, dura: 0 }, yaw: -Math.PI / 2,
-      pensar: 0.4, golpeT: 1, tiroT: 1.5, esquivaT: 0, poderT: 2.5, lado: 1, finMareo: 0 });
+      pensar: 0.4, golpeT: 1, tiroT: 1.5, esquivaT: 0, poderT: 2.5, lado: 1, finMareo: 0,
+      v: { x: 0, z: 0 }, ladoT: 3, apartaT: 0, prep: '', prepT: 0, prepDur: 0, avisoUsado: 0, golpeAnim: 0, saltoT: 0, saltoDur: 0, agacha: 0 });
   }
   // V18.2: nivel, variante y alianza del jugador (solo él). Las pruebas que fuerzan especie van sin evolución salvo que la pidan.
   function evoJugador(sp, o) {
@@ -253,6 +262,9 @@ window.AVV18Combate = function (G) {
       if (blanco.ia || !de.ia) flotante(TXT.reduce, 1.2);
     }
     if (rc.r !== 'ok') return false;
+    // La Campeona anunciando su golpe de ala aguanta un golpe normal (pierde la pluma, apenas se mueve y el golpe sale igual):
+    // ante el «!» hay que apartarse o escudarse; solo lo que interrumpe (el Grito y compañía) la corta.
+    if (blanco.ia && blanco.prep === 'golpe_ala' && !g.interrumpe && blanco.plumas > 0) { rc.mareo = 0; blanco.mareo = 0; rc.empuje *= 0.25; blanco.kb.x *= 0.25; blanco.kb.z *= 0.25; C.stats.aguanta = (C.stats.aguanta || 0) + 1; }
     const n = rc.n, empuje = rc.empuje, mareo = rc.mareo, parcial = rc.parcial;
     if (g.interrumpe) interrumpir(blanco, mareo, parcial);
     if (blanco.lift && empuje > 0) { blanco.lift.alto = n > 0 ? 0.45 : 0.25; blanco.lift.t = 0; blanco.lift.dura = 0.32; C.stats.reacciones++; } // saltito de sorpresa
@@ -655,10 +667,20 @@ window.AVV18Combate = function (G) {
   function pasoIA(dt) {
     const r = C.r, j = C.j, D = r.dif || CLASICA, pp = D.poder;
     if (r.mareo > 0) r.tocada = true;
-    if (r.mareo > 0 || r.deslumbrada > 0) return; // deslumbrada por el Abanico de colores: 1 s sin hacer nada
-    if (r.distraida > 0) return; // Cuento: distraída escuchando — no ataca ni se defiende hasta que se le pasa
+    // Mareada, deslumbrada (Abanico de colores) o distraída (Cuento): no hace nada, y el ataque que anunciaba se pierde
+    if (r.mareo > 0 || r.deslumbrada > 0 || r.distraida > 0) { r.prep = ''; return; }
     const d = H.dirA(r, j), dist = d.d;
-    r.golpeT -= dt; r.tiroT -= dt; r.esquivaT -= dt; r.poderT -= dt; r.pensar -= dt;
+    r.golpeT -= dt; r.tiroT -= dt; r.esquivaT -= dt; r.poderT -= dt; r.pensar -= dt; r.apartaT -= dt;
+    // Telegrafía (Kelvin 8-nov): el golpe de ala y la semilla se anuncian (se agacha y abre las alas, o apunta, con «!»
+    // encima) y salen al acabar el aviso. Mientras avisa está comprometida: no esquiva ni cambia de idea.
+    if (r.prep) {
+      r.vioGrito = j.picoT > 0 ? 1 : 0;
+      if ((r.prepT -= dt) > 0) return;
+      const id = r.prep; r.prep = ''; r.avisoUsado = r.prepDur;
+      const u = usar(r, id); r.avisoUsado = 0;
+      if (id === 'golpe_ala' && u.ok) r.golpeAnim = 0.3;
+      return;
+    }
     // Reflejo al recuperarse de un golpe: se aparta de un salto en vez de quedarse a tiro (rompe las cadenas de golpes)
     if (r.tocada) { r.tocada = false; if (D.rehace && azar() < D.rehace) { saltoAtras(r, d, 0.3); return; } }
     // Reflejo ante el poder de la jugadora: lo ve venir (abre el pico) y se escuda si puede
@@ -670,7 +692,7 @@ window.AVV18Combate = function (G) {
     if (viene && r.esquivaT <= 0 && !(r.marcada > 0)) {
       r.esquivaT = D.calma;
       if (r.poder === 'escudo_plumas' && r.escudo <= 0 && H.listo(r, 'escudo_plumas').ok && azar() < D.escudo) { usar(r, 'escudo_plumas'); return; }
-      if (azar() < D.esquiva) { r.lado = azar() < 0.5 ? -1 : 1; r.mov.x = -d.z * r.lado * 9; r.mov.z = d.x * r.lado * 9; r.mov.t = 0.28; C.stats.esquivas++; return; }
+      if (azar() < D.esquiva) { const q = azar() < 0.5 ? -1 : 1; r.mov.x = -d.z * q * 9; r.mov.z = d.x * q * 9; r.mov.t = 0.28; saltito(r, 0.28); C.stats.esquivas++; return; }
     }
     if (r.pensar > 0) return;
     r.pensar = D.pensar;
@@ -687,53 +709,118 @@ window.AVV18Combate = function (G) {
       if (r.poder === 'vista_cumbre' && dist > 2.2 && dist < 3.6 && azar() < pp) { r.poderT = 4; usar(r, 'vista_cumbre'); return; } // la ventana donde su ala larga alcanza y el de la jugadora no
     }
     // Reflejo cuerpo a cuerpo: con el ala en espera y la jugadora encima, sale de su alcance
-    if (D.aparta && dist < 2.6 && r.golpeT > 0 && azar() < D.aparta) { saltoAtras(r, d, 0.24); return; }
-    if (dist < (D.cerca || 2.3) && r.golpeT <= 0) { r.golpeT = D.ala; usar(r, 'golpe_ala'); return; }
-    if (dist > (D.tiroMin || 6) && dist < 16 && r.tiroT <= 0 && r.energia > 40) { r.tiroT = D.tiro; usar(r, 'semilla'); return; }
+    if (D.aparta && dist < 2.6 && r.golpeT > 0 && r.apartaT <= 0 && azar() < D.aparta) { r.apartaT = APARTA_ESPERA; saltoAtras(r, d, 0.24); return; }
+    const aviso = D.aviso || AVISO_ALA, apunta = D.apunta || AVISO_SEMILLA;
+    if (dist < (D.cerca || 2.3) && r.golpeT <= 0) { r.golpeT = Math.max(D.ala, aviso + 0.6); preparar(r, 'golpe_ala', aviso); return; }
+    if (dist > (D.tiroMin || 6) && dist < 16 && r.tiroT <= 0 && r.energia > 40) { r.tiroT = D.tiro + apunta; preparar(r, 'semilla', apunta); return; }
   }
+  function preparar(r, id, t) {
+    r.prep = id; r.prepT = r.prepDur = t; C.stats.avisosIA = (C.stats.avisosIA || 0) + 1;
+    if (id === 'golpe_ala') fx('gold', r.pos.x, r.pos.y + 1.9, r.pos.z); // brillo sobre la cabeza al empezar el aviso
+  }
+  // Quiebro o salto atrás: un saltito con aleteo un poco más largo que el empujón (aterriza al acabar)
+  function saltito(r, t) { r.saltoT = 0; r.saltoDur = t + 0.08; }
   function saltoAtras(r, d, t) {
-    r.lado = azar() < 0.5 ? -1 : 1;
-    r.mov.x = (-d.x * 0.8 - d.z * r.lado * 0.6) * 9; r.mov.z = (-d.z * 0.8 + d.x * r.lado * 0.6) * 9; r.mov.t = t; C.stats.esquivas++;
+    const q = azar() < 0.5 ? -1 : 1;
+    r.mov.x = (-d.x * 0.8 - d.z * q * 0.6) * 9; r.mov.z = (-d.z * 0.8 + d.x * q * 0.6) * 9; r.mov.t = t; saltito(r, t); C.stats.esquivas++;
   }
+  // Movimiento (Kelvin 8-nov): la IA decide qué quiere (acercarse, rodear a distancia de ala, plantarse para atacar) y el
+  // cuerpo lo sigue con aceleración y frenado limitados; el rodeo cambia de sentido cada pocos segundos (o al llegar al borde)
+  // y el giro del cuerpo tiene velocidad angular máxima. Los quiebros y los empujones siguen siendo rápidos, pero con saltito.
+  const QUIERE = 2.0, LEJOS = 2.8, RODEO = 1.8, ACEL = 10, FRENO = 14, GIRO = 7, GIRO_ATAQUE = 10;
   function moverRival(dt) {
-    const r = C.r, j = C.j, d = H.dirA(r, j);
+    const r = C.r, j = C.j, d = H.dirA(r, j), V = r.v, D = r.dif || CLASICA;
     let vx = 0, vz = 0;
     if (r.kb.t > 0) { r.kb.t -= dt; vx += r.kb.x; vz += r.kb.z; r.kb.x *= 0.88; r.kb.z *= 0.88; }
-    if (r.mov.t > 0) { r.mov.t -= dt; vx += r.mov.x; vz += r.mov.z; }
-    else if (r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0) && !(r.distraida > 0)) {
-      const velK = r.pesada > 0 ? 0.45 : 1; // Plumas de manglar: pisar una pluma la deja más lenta
-      const ve = (r.dif || CLASICA).vel;
-      if (d.d > 2.0) { vx += d.x * ve * velK; vz += d.z * ve * velK; } // se acerca
-      else { vx += -d.z * r.lado * 1.6 * velK; vz += d.x * r.lado * 1.6 * velK; } // rodea
+    if (r.golpeAnim > 0) r.golpeAnim -= dt;
+    if (r.saltoDur > 0) { r.saltoT += dt; if (r.saltoT >= r.saltoDur) r.saltoDur = 0; }
+    if (r.mov.t > 0) { r.mov.t -= dt; vx += r.mov.x; vz += r.mov.z; V.x = r.mov.x * 0.25; V.z = r.mov.z * 0.25; } // sale del quiebro con algo de inercia
+    else {
+      let qx = 0, qz = 0; // velocidad que quiere
+      const libre = r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0) && !(r.distraida > 0);
+      if (libre && r.prep === 'golpe_ala' && d.d > 1.5) { qx = d.x * 1.6; qz = d.z * 1.6; } // agachada, se arrima despacio para el golpe
+      else if (libre && !r.prep) {
+        const ve = D.vel * (r.pesada > 0 ? 0.45 : 1); // Plumas de manglar: pisar una pluma la deja más lenta
+        const ox = r.pos.x - sitio.x, oz = r.pos.z - sitio.z, od = Math.hypot(ox, oz);
+        let tx = -d.z * r.lado, tz = d.x * r.lado;
+        r.ladoT -= dt;
+        // Cambia el sentido del rodeo de vez en cuando, o si el borde de la explanada le corta el paso
+        if (r.ladoT <= 0 || (od > ARENA_R - 2 && (tx * ox + tz * oz) > 0 && r.ladoT < 2.2)) { r.lado = -r.lado; r.ladoT = 2.6 + azar() * 2.4; tx = -tx; tz = -tz; }
+        const quiere = r.golpeT > 0.25 ? LEJOS : QUIERE; // con el ala en espera, rodea justo fuera de tu alcance; lista, se arrima
+        const rad = Math.max(-1, Math.min(1, (d.d - quiere) / 0.8)), cerca = 1 - Math.min(1, Math.max(0, d.d - quiere) / 3);
+        const k = rad * ve * (rad < 0 ? 0.6 : 1), o = RODEO * cerca * (r.pesada > 0 ? 0.45 : 1);
+        qx = d.x * k + tx * o; qz = d.z * k + tz * o;
+      }
+      const ax = qx - V.x, az = qz - V.z, a = Math.hypot(ax, az), paso = (qx * qx + qz * qz < V.x * V.x + V.z * V.z ? FRENO : ACEL) * dt;
+      if (a > paso) { V.x += ax / a * paso; V.z += az / a * paso; } else { V.x = qx; V.z = qz; }
+      vx += V.x; vz += V.z;
     }
     const x0 = r.pos.x, z0 = r.pos.z;
     r.pos.x += vx * dt; r.pos.z += vz * dt;
     // Dentro de la explanada
     const ox = r.pos.x - sitio.x, oz = r.pos.z - sitio.z, od = Math.hypot(ox, oz);
     if (od > ARENA_R - 0.5) { r.pos.x = sitio.x + ox / od * (ARENA_R - 0.5); r.pos.z = sitio.z + oz / od * (ARENA_R - 0.5); }
-    C.stats.movida += Math.hypot(r.pos.x - x0, r.pos.z - z0);
+    const movida = Math.hypot(r.pos.x - x0, r.pos.z - z0);
+    C.stats.movida += movida;
     let lift = 0;
     if (r.lift.dura > 0) { r.lift.t += dt; const k = r.lift.t / r.lift.dura; if (k >= 1) r.lift.dura = 0; else lift = r.lift.alto * Math.sin(Math.PI * k); }
     r.pos.y = ALTURA(r.pos) + lift;
-    if (C.fase === 'lucha' || C.fase === 'cuenta') r.yaw = Math.atan2(d.x, d.z);
-    return Math.hypot(vx, vz);
+    // Rumbo: mira a la jugadora (de cerca, al atacar y al rodear); de lejos y corriendo, hacia donde va. Giro limitado.
+    if (C.fase === 'lucha' || C.fase === 'cuenta') {
+      const sp = Math.hypot(V.x, V.z);
+      const obj = C.fase === 'lucha' && !r.prep && r.mov.t <= 0 && d.d > 4.5 && sp > 1.5 ? Math.atan2(V.x, V.z) : Math.atan2(d.x, d.z);
+      const g = (r.prep ? GIRO_ATAQUE : GIRO) * dt;
+      r.yaw += Math.max(-g, Math.min(g, giroPi(obj - r.yaw)));
+    }
+    return dt > 0 ? movida / dt : 0;
   }
   const giroPi = a => Math.atan2(Math.sin(a), Math.cos(a));
+  // «!» sobre la cabeza mientras anuncia un ataque: naranja y grande antes del ala, amarillo y más pequeño antes de la semilla
+  let marcaAviso = null;
+  function avisoSprite() {
+    if (marcaAviso) return marcaAviso;
+    const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+    const g = cv.getContext('2d');
+    g.fillStyle = '#ffffff'; g.strokeStyle = 'rgba(40,24,8,0.9)'; g.lineWidth = 14;
+    g.beginPath(); g.arc(128, 128, 104, 0, Math.PI * 2); g.fill(); g.stroke();
+    g.fillStyle = '#2a1a08'; g.beginPath(); g.moveTo(108, 52); g.lineTo(148, 52); g.lineTo(138, 152); g.lineTo(118, 152); g.closePath(); g.fill();
+    g.beginPath(); g.arc(128, 188, 17, 0, Math.PI * 2); g.fill();
+    const t = new THREE.CanvasTexture(cv);
+    marcaAviso = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false, depthWrite: false }));
+    marcaAviso.renderOrder = 20; marcaAviso.visible = false; marcaAviso.name = 'v18_aviso'; marcaAviso.frustumCulled = false;
+    scene.add(marcaAviso); C.marcaAviso = marcaAviso;
+    return marcaAviso;
+  }
+  const mirarA = new THREE.Vector3();
   function dibujarRival(dt, vel, sinAnimar) {
     const ch = C.ch; if (!ch) return;
-    const r = C.r, root = ch.root, now = performance.now() / 1000;
+    const r = C.r, root = ch.root, now = performance.now() / 1000, lucha = C.fase === 'lucha';
+    const prep = lucha ? r.prep : '';
     root.visible = true;
-    root.position.set(r.pos.x, r.pos.y, r.pos.z);
-    root.rotation.y += giroPi(r.yaw - root.rotation.y) * Math.min(1, dt * 8);
-    root.rotation.z = r.mareo > 0 ? Math.sin(now * (r.finMareo > 0 ? 9 : 14)) * (r.finMareo > 0 ? 0.32 : 0.25) : root.rotation.z * 0.8; // tambaleo del mareo
+    // Saltito de los quiebros (solo se ve: la posición de juego no sube)
+    const salto = r.saltoDur > 0 ? 0.32 * Math.sin(Math.PI * Math.min(1, r.saltoT / r.saltoDur)) : 0;
+    const hop = (ch.gait || 0) > 1.5 && !salto ? Math.abs(Math.sin(ch.ph || 0)) * 0.06 * Math.min(1, vel / 2.5) : 0; // saltitos al trotar
+    root.position.set(r.pos.x, r.pos.y + salto + hop, r.pos.z);
+    root.rotation.y = r.yaw; // el rumbo ya gira con velocidad limitada (moverRival)
+    const kz = Math.min(1, dt * 10);
+    root.rotation.z = r.mareo > 0 ? Math.sin(now * (r.finMareo > 0 ? 9 : 14)) * (r.finMareo > 0 ? 0.32 : 0.25) : root.rotation.z + ((prep === 'semilla' ? 0.16 : 0) - root.rotation.z) * kz; // tambaleo del mareo; ladea la cabeza al apuntar
+    root.rotation.x += ((prep === 'semilla' ? 0.14 : prep ? 0 : Math.min(0.1, vel * 0.02)) - root.rotation.x) * kz; // se inclina al correr y al apuntar
+    if (prep || marcaAviso) {
+      const m = avisoSprite(); m.visible = !!prep;
+      if (prep) { const s = (prep === 'golpe_ala' ? 0.62 : 0.46) * (1 + 0.12 * Math.sin(now * 18)); m.scale.set(s, s, 1); m.position.set(r.pos.x, r.pos.y + salto + 2.25, r.pos.z); m.material.color.set(prep === 'golpe_ala' ? '#ff9d2e' : '#ffe066'); }
+    }
     if (sinAnimar) return; // CPU (móvil): colocada, pero sin animar el esqueleto este cuadro (ver dibujarQuieta)
     if (r.finMareo > 0 && azar() < dt * 5) fx('gold', r.pos.x, r.pos.y + 1.8, r.pos.z); // estrellitas del mareo final
-    const enAire = r.lift.dura > 0;
-    Object.assign(ch, { speed: vel, gait: vel > 5 ? 1 : 0, airborne: enAire, flying: enAire, legsDown: enAire ? 0.6 : 1, swimming: false, diving: false,
-      wingMode: r.alasT > 0 ? 'land' : enAire ? 'flap' : r.mov.t > 0 ? 'takeoff' : vel > 0.5 ? 'walk' : 'idle',
-      expression: r.mareo > 0 ? 'surprised' : r.picoT > 0 ? 'fight' : 'happy',
-      mouth: r.picoT > 0 ? boca(r) : null, lookAt: null,
-      emote: null, posado: '', agachada: 0, groundY: ALTURA(r.pos), groundAt: null });
+    r.agacha += ((prep === 'golpe_ala' ? 0.62 : prep === 'semilla' ? 0.18 : 0) - r.agacha) * Math.min(1, dt * 12); // se agacha para el golpe
+    const enAire = r.lift.dura > 0 || r.saltoDur > 0;
+    // Andar de lado o deprisa: saltitos con las alas a medio abrir ('hop'); despacio y de frente, pasos
+    const lado = vel > 0.7 && Math.sin(r.yaw) * r.v.x + Math.cos(r.yaw) * r.v.z < 0.5 * Math.hypot(r.v.x, r.v.z); // de lado o hacia atrás
+    if (lucha && C.j) mirarA.set(C.j.pos.x, C.j.pos.y + 1.2, C.j.pos.z);
+    Object.assign(ch, { speed: vel, gait: vel > 3 || lado ? 2 : vel > 0.3 ? 1 : 0, airborne: enAire, flying: enAire, legsDown: enAire ? 0.6 : 1, swimming: false, diving: false,
+      wingMode: r.alasT > 0 ? 'land' : r.golpeAnim > 0 ? 'flap' : prep === 'golpe_ala' ? 'preflare' : enAire ? 'flap' : vel > 0.3 ? 'walk' : 'idle',
+      expression: r.mareo > 0 ? 'surprised' : r.picoT > 0 || prep ? 'fight' : 'happy',
+      mouth: r.picoT > 0 ? boca(r) : null, lookAt: lucha && C.j && !(r.mareo > 0) ? mirarA : null,
+      emote: null, posado: '', agachada: enAire ? 0 : r.agacha, groundY: ALTURA(r.pos), groundAt: null });
     try { ch.update(dt); } catch (e) { /* animación */ }
   }
   function pasoJugador(dt) {
@@ -866,7 +953,7 @@ window.AVV18Combate = function (G) {
   function moverRivalQuieta(dt) {
     const r = C.r; r.pos.y = ALTURA(r.pos);
     const dx = S.pos.x - r.pos.x, dz = S.pos.z - r.pos.z;
-    if (dx * dx + dz * dz < 400) r.yaw = Math.atan2(dx, dz); // mira a quien se acerca
+    if (dx * dx + dz * dz < 400) { const g = 4 * dt; r.yaw += Math.max(-g, Math.min(g, giroPi(Math.atan2(dx, dz) - r.yaw))); } // mira a quien se acerca, girando poco a poco
     return 0;
   }
 
@@ -911,6 +998,61 @@ window.AVV18Combate = function (G) {
     const correr = (s, antes) => { for (let t = 0; t < s && C.fase === 'lucha'; t += 0.05) { if (antes) antes(); paso(0.05); } };
     const quieta = (dx) => { C.r.pos.x = S.pos.x + dx; C.r.pos.z = S.pos.z; C.r.pensar = 99; C.r.esquivaT = 99; C.r.poderT = 99; C.r.mov.t = 0; };
     const cara = (x) => { S.facing = { x, z: 0 }; };
+    // Mide cómo se mueve la rival en un duelo de `seg` s contra una jugadora con guion (se acerca, se aleja y la rodea, tira
+    // semillas y golpea). Por cuadro: giro del cuerpo (rad/s), cambio de dirección del paso (sin contar empujones ni quiebros),
+    // andar de lado sin saltitos, velocidad de la animación frente a la real, y si sus ataques básicos llegan avisados.
+    function medirMovimiento(seg) {
+      iniciar({ sinCuenta: true, especie: 'vittata', dificultad: DIFICULTAD[DIFICULTAD.length - 1] }); // la más viva: Maestro
+      const r = C.r, j = C.j, dt = 0.05, res = { s: seg, giroMax: 0, bruscos: 0, inversiones: 0, lateral: 0, desfase: 0, quiebros: 0, quiebrosSinSalto: 0, alas: 0, alasAvisadas: 0, semillas: 0, semillasAvisadas: 0, marca: false, agacha: false };
+      const usar0 = H.usar;
+      H.usar = function (f, id) {
+        const o = usar0.apply(this, arguments);
+        if (f === C.r && o && o.ok && id === 'golpe_ala') { res.alas++; if ((f.avisoUsado || 0) >= 0.35) res.alasAvisadas++; }
+        if (f === C.r && o && o.ok && id === 'semilla') { res.semillas++; if ((f.avisoUsado || 0) >= 0.25) res.semillasAvisadas++; }
+        return o;
+      };
+      const yawVis = () => (C.ch ? C.ch.root.rotation.y : r.yaw);
+      let n = 0, mov = 0, lat = 0, des = 0, tiro = 0, golpe = 0, yaw0 = yawVis(), hist = [];
+      S.pos.x = sitio.x - 5; S.pos.z = sitio.z;
+      try {
+        for (let t = 0; t < seg && C.fase === 'lucha'; t += dt) {
+          // La jugadora: 0–3,5 s se acerca, 3,5–7 se aleja, 7–14 la rodea a 3 m (cambiando de sentido a los 10,5 s)
+          const fase = t < 3.5 ? 0 : t < 7 ? 1 : 2, dx = r.pos.x - S.pos.x, dz = r.pos.z - S.pos.z, d = Math.hypot(dx, dz) || 1;
+          let mx = 0, mz = 0;
+          if (fase === 0) { if (d > 1.6) { mx = dx / d; mz = dz / d; } } else if (fase === 1) { if (d < 7) { mx = -dx / d; mz = -dz / d; } }
+          else { const sg = t < 10.5 ? 1 : -1; mx = -dz / d * sg + (d - 3) / d * dx * 0.5; mz = dx / d * sg + (d - 3) / d * dz * 0.5; }
+          const mn = Math.hypot(mx, mz) || 1;
+          if (mx || mz) { S.pos.x += mx / mn * 4.2 * dt; S.pos.z += mz / mn * 4.2 * dt; }
+          const ox = S.pos.x - sitio.x, oz = S.pos.z - sitio.z, od = Math.hypot(ox, oz); if (od > 10) { S.pos.x = sitio.x + ox / od * 10; S.pos.z = sitio.z + oz / od * 10; }
+          S.facing = { x: dx / d, z: dz / d }; M.vx = M.vz = 0;
+          j.plumas = PLUMAS; r.plumas = PLUMAS;
+          if ((tiro -= dt) <= 0 && d > 3.5 && H.listo(j, 'semilla').ok) { usar(j, 'semilla'); tiro = 1.7; }
+          if ((golpe -= dt) <= 0 && d < 2.2 && H.listo(j, 'golpe_ala').ok) { usar(j, 'golpe_ala'); golpe = 1.1; }
+          const x0 = r.pos.x, z0 = r.pos.z, quiebro = r.mov.t > 0, sacudida = r.kb.t > 0 || quiebro || r.mareo > 0;
+          paso(dt);
+          if (C.fase !== 'lucha') break;
+          const y1 = yawVis(); if (!(r.mareo > 0)) res.giroMax = Math.max(res.giroMax, Math.abs(giroPi(y1 - yaw0)) / dt); yaw0 = y1;
+          if (r.prep && C.marcaAviso && C.marcaAviso.visible) res.marca = true;
+          if (C.ch && C.ch.agachada > 0.3) res.agacha = true;
+          const vx = (r.pos.x - x0) / dt, vz = (r.pos.z - z0) / dt, v = Math.hypot(vx, vz);
+          if ((quiebro || r.mov.t > 0) && !(r.kb.t > 0) && !(r.mareo > 0)) { res.quiebros++; if (C.ch && !C.ch.airborne) res.quiebrosSinSalto++; }
+          if (sacudida || r.kb.t > 0 || r.mov.t > 0 || r.mareo > 0) { hist.length = 0; continue; }
+          n++;
+          if (C.ch && Math.abs((C.ch.speed || 0) - v) > 0.5) des++;
+          const pv = hist.length ? hist[hist.length - 1] : null;
+          if (pv && v > 0.6 && pv.v > 0.6 && (vx * pv.x + vz * pv.z) / (v * pv.v) < Math.cos(Math.PI / 4)) res.bruscos++;
+          const p3 = hist.length >= 3 ? hist[hist.length - 3] : null;
+          if (p3 && v > 0.6 && p3.v > 0.6 && (vx * p3.x + vz * p3.z) / (v * p3.v) < -0.5) res.inversiones++;
+          hist.push({ x: vx, z: vz, v }); if (hist.length > 3) hist.shift();
+          if (v > 1) { mov++; const fy = y1; if (Math.abs(Math.sin(fy) * vx + Math.cos(fy) * vz) / v < 0.5 && !(C.ch && C.ch.gait > 1.5)) lat++; }
+        }
+      } finally { H.usar = usar0; }
+      res.bruscos = Math.round(100 * res.bruscos / seg) / 100; res.inversiones = Math.round(100 * res.inversiones / seg) / 100;
+      res.lateral = Math.round(100 * lat / Math.max(1, mov)) / 100; res.desfase = Math.round(100 * des / Math.max(1, n)) / 100; res.giroMax = Math.round(10 * res.giroMax) / 10;
+      res.cuadros = n; res.andando = mov;
+      salir();
+      return res;
+    }
     try {
       // 1. Poderes por especie y básicos
       const grito = H.get('grito_yunque'), esc = H.get('escudo_plumas');
@@ -1039,6 +1181,44 @@ window.AVV18Combate = function (G) {
       correr(1.2, () => { quieta(7); });
       check('La semilla vuela y pega a distancia', C.r.plumas === plS - 1, C.r.plumas);
 
+      // 6b. Movimiento de la rival (Kelvin 8-nov: «no me gustó cómo se mueve el bot»): se mide cuadro a cuadro en un duelo
+      // de 14 s contra una jugadora que la rodea, se acerca y se aleja: giro del cuerpo, cambios bruscos de dirección,
+      // deslizarse de lado sin saltitos, y que cada golpe de ala y cada semilla vengan avisados.
+      {
+        const mv = medirMovimiento(14);
+        check('Movimiento: gira con velocidad limitada, sin temblores ni cambios bruscos de dirección', mv.giroMax <= 15 && mv.bruscos <= 0.3 && mv.inversiones <= 0.3, JSON.stringify(mv));
+        check('Movimiento: no se desliza de lado sin saltitos y anda a la velocidad que se mueve', mv.lateral <= 0.08 && mv.desfase <= 0.05, JSON.stringify(mv));
+        check('Telegrafía: cada golpe de ala y cada semilla de la rival vienen avisados (se agacha y abre las alas, o apunta, con «!» encima)',
+          mv.alas >= 1 && mv.alasAvisadas === mv.alas && mv.semillasAvisadas === mv.semillas && mv.marca && mv.agacha, JSON.stringify(mv));
+        // El aviso se puede leer: quieta, el golpe llega al acabar el aviso; apartándose a tiempo, falla; pegarle mientras avisa
+        // le quita la pluma pero no la frena; el Grito sí la interrumpe.
+        const prepara = () => { iniciar({ sinCuenta: true, especie: 'vittata' }); const r = C.r; r.pos.x = S.pos.x + 1.8; r.pos.z = S.pos.z; r.golpeT = 0; r.pensar = 0; r.poderT = 99; r.esquivaT = 99; r.tiroT = 99; C.j.inv = 0; cara(1); };
+        const fija = () => { M.vx = M.vz = 0; C.r.poderT = 99; C.r.tiroT = 99; };
+        prepara(); paso(0.05);
+        const avisa = C.r.prep === 'golpe_ala' && C.j.plumas === PLUMAS;
+        correr(0.25, fija);
+        const aunNo = C.j.plumas === PLUMAS && C.r.prep === 'golpe_ala', vis = !!(C.marcaAviso && C.marcaAviso.visible), ag = !C.ch || C.ch.agachada > 0.3, alas = !C.ch || C.ch.wingMode === 'preflare';
+        correr(0.4, fija);
+        check('Telegrafía: el golpe de ala se anuncia ~0,45 s (agachada, alas abiertas, «!») y luego llega', avisa && aunNo && vis && ag && alas && C.j.plumas === PLUMAS - 1 && !C.marcaAviso.visible,
+          JSON.stringify({ avisa, aunNo, vis, ag, alas, plj: C.j.plumas }));
+        prepara(); paso(0.05); correr(0.2, fija); S.pos.x = C.r.pos.x - 4.5; correr(0.5, fija);
+        check('Telegrafía: si te apartas al ver el «!», el golpe falla', C.j.plumas === PLUMAS, C.j.plumas);
+        prepara(); paso(0.05); C.j.cd.golpe_ala = 0; const pg = usar(C.j, 'golpe_ala'); const sigue = C.r.prep === 'golpe_ala' && C.r.plumas === PLUMAS - 1; correr(0.6, fija);
+        check('Telegrafía: pegarle mientras avisa le quita una pluma pero el golpe sale igual (hay que apartarse o escudarse)', pg.acierto && sigue && C.j.plumas === PLUMAS - 1, JSON.stringify({ acierto: pg.acierto, sigue, plj: C.j.plumas }));
+        prepara(); C.r.pos.x = S.pos.x + 8; C.r.golpeT = 99; C.r.tiroT = 0; C.r.energia = 100; paso(0.05);
+        const apunta = C.r.prep === 'semilla' && !C.balas.some(b => b.de === C.r);
+        correr(0.15, () => { M.vx = M.vz = 0; C.r.poderT = 99; });
+        const ladea = !C.ch || C.ch.root.rotation.z > 0.05, sinBala = !C.balas.some(b => b.de === C.r);
+        correr(0.25, () => { M.vx = M.vz = 0; C.r.poderT = 99; });
+        check('Telegrafía: antes de la semilla apunta ~0,3 s (ladea la cabeza, «!» pequeño) y luego tira', apunta && ladea && sinBala && C.balas.some(b => b.de === C.r), JSON.stringify({ apunta, ladea, sinBala }));
+        prepara(); C.r.golpeT = 99; C.r.pensar = 99; saltoAtras(C.r, H.dirA(C.r, C.j), 0.3); paso(0.05); paso(0.05);
+        const yR = C.ch ? C.ch.root.position.y - C.r.pos.y : 1, enAire = !C.ch || C.ch.airborne;
+        check('Movimiento: los quiebros y saltos atrás se ven como un saltito con aleteo', yR > 0.1 && enAire, JSON.stringify({ yR, enAire }));
+        prepara(); paso(0.05); C.j.cd.grito_yunque = 0; C.j.energia = 100; usar(C.j, 'grito_yunque'); correr(0.8, fija);
+        check('Telegrafía: el Grito sí la interrumpe y el golpe anunciado se pierde', !C.r.prep && C.j.plumas === PLUMAS && C.stats.interrupciones >= 1, JSON.stringify({ prep: C.r.prep, plj: C.j.plumas }));
+        salir();
+      }
+
       // 7. Victoria: 2 maderas y 1 piedra del inventario del juego, una sola vez
       P.borrar(); const m0 = S.inv.madera || 0, p0 = S.inv.piedra || 0;
       iniciar({ sinCuenta: true, especie: 'vittata' }); C.r.plumas = 1; quieta(1.2); C.r.escudo = 0; evs.length = 0; toasts.length = 0;
@@ -1138,7 +1318,7 @@ window.AVV18Combate = function (G) {
   function retirar() {
     try { salir(); } catch (e) { /* ya fuera */ }
     retirada = true; const i = G.interaccion.list.indexOf(it); if (i >= 0) G.interaccion.list.splice(i, 1);
-    scene.remove(marca); const quitar = ch => { if (ch && ch.root) scene.remove(ch.root); };
+    scene.remove(marca); if (marcaAviso) scene.remove(marcaAviso); const quitar = ch => { if (ch && ch.root) scene.remove(ch.root); };
     quitar(C.ch); Promise.resolve(C.listo).then(quitar, () => {});
     if (hud && hud.el) hud.el.remove();
   }
