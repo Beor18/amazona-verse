@@ -5,6 +5,10 @@
      tormenta  → retos.jugar('tormenta')                                      banquete → retos.jugar('banquete') (src/game/banquete.js)
      libre     → el mundo sin el panel de misiones ni la flecha de guía       nido     → el criadero (src/game/criadero.js), encima del menú
      records   → Mis récords (src/game/records.js), encima del menú
+   V18 (solo con la bandera; Kelvin 7 y 8-nov: lo divertido a la vista): golf → minigolf.js · duelo → combate.js · duelo2 → duelo2.js
+     (sin táctil) · amigos → tarjeta encima del menú con Chispa, Moon y el Guardián (chispa.js, moon.js, guardian.js) · cotorras →
+     descubrir.js + evolucion.js (nivel, XP, etapa, poder y las que faltan con su aviso de nuevas.js), encima · album → album.js, encima.
+     Cada actividad lleva a Vittata a su sitio y empieza (lanzar18); desde otro capítulo abre el cap. 1 con ?mini=<modo>.
    - Las tarjetas «submit» cierran el <dialog id="title"> con su valor (sin JS); el evento close trae returnValue y aquí se abre el modo.
      Mi nido y Mis récords son type=button: se abren encima y al cerrarlos el menú sigue ahí.
    - Lo último que jugaste sale destacado (clase es-ultimo, chapa y foco) y se guarda en localStorage `<almacen>.menu` = { v, ultimo, intro }.
@@ -25,13 +29,25 @@
     const S = G.S, $ = G.util.$, P = G.pack, raiz = document.documentElement;
     const ALMACEN = ((P.meta && P.meta.almacen) || P.id) + '.menu';
     const portada = $('title'), form = $('modos'), creador = $('creator');
-    const MODOS = ['aventura', 'golf', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'maze', 'libre', 'nido', 'records'];
+    const MODOS = ['aventura', 'golf', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'maze', 'libre', 'nido', 'records'];
+    // V18 (Kelvin 8-nov: «¿dónde está lo divertido?»): cada actividad de la V18 con su tarjeta. «Retos con amigos» abre una tarjeta con
+    // las tres de los amigos (SUB); Mis cotorras, el Álbum y Retos con amigos se abren encima del menú, como Mi nido (ENCIMA).
+    const SUB = ['chispa', 'moon', 'guardian'], ENCIMA = ['nido', 'records', 'cotorras', 'album', 'amigos'];
+    const V18M = ['golf', 'duelo', 'duelo2', 'amigos', 'cotorras', 'chispa', 'moon', 'guardian'];
     const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
     const TX = () => ({
       titulo: L('¿Cómo quieres jugar?', 'How do you want to play?'), ultimo: L('Lo último que jugaste', 'Last played'),
       listo: L('¡A jugar!', 'Let’s play!'), cambiar: L('Cambiar de juego', 'Change game'),
       aventura: [L('Aventura', 'Adventure'), subAventura()],
       golf: [L('Minigolf', 'Mini golf'), L('Lleva la semilla gigante hasta el nido', 'Take the giant seed to the nest')], // V18 (Kelvin 7-nov: a la vista en el menú)
+      duelo: [L('Duelo', 'Duel'), L('Uno a uno contra la Campeona', 'One-on-one against the Champion')], // src/game/v18/combate.js
+      duelo2: [L('Duelo de 2', '2-player duel'), L('Dos jugadores en la misma computadora', 'Two players on the same computer')], // src/game/v18/duelo2.js
+      amigos: [L('Retos con amigos', 'Challenges with friends'), L('Chispa, Moon y el Guardián', 'Chispa, Moon and the Guardian')],
+      cotorras: [L('Mis cotorras', 'My parrots'), L('Nivel, poder y las que faltan', 'Level, power and the ones to get')], // descubrir.js + evolucion.js
+      album: [L('Álbum', 'Album'), L('Las 36 cotorras que vas viendo', 'The 36 parrots you spot')], // src/game/album.js
+      chispa: [L('Carrera con Chispa', 'Race with Chispa'), L('Cuatro banderines y vuelta a la meta', 'Four flags and back to the finish')], // src/game/v18/chispa.js
+      moon: [L('Entrenamiento con Moon', 'Training with Moon'), L('Esquiva las bolas de luz', 'Dodge the light orbs')], // src/game/v18/moon.js
+      guardian: [L('Circuito del Primer Vuelo', 'First Flight Circuit'), L('Vuela por las 5 columnas de viento', 'Fly through the 5 wind columns')], // src/game/v18/guardian.js
       carreras: [L('Carreras', 'Races'), L('El Yunque, el río y tu fantasma', 'El Yunque, the river and your ghost')],
       tormenta: [L('¡Escapa de la tormenta!', 'Escape the storm!'), L('90 segundos sobre el mar', '90 seconds over the sea')],
       banquete: [L('¡Banquete!', 'Feast!'), L('Frutos en vuelo y combos', 'Fruit on the wing and combos')],
@@ -55,7 +71,7 @@
     // ---------- Memoria del menú (no es la partida) ----------
     const leer = () => { try { const d = JSON.parse(localStorage.getItem(ALMACEN) || 'null'); return d && d.v === 1 ? d : { v: 1 }; } catch (e) { return { v: 1 }; } };
     const guardar = o => { try { localStorage.setItem(ALMACEN, JSON.stringify(Object.assign(leer(), o))); } catch (e) { /* sin almacén */ } };
-    const ultimo = () => { const u = leer().ultimo; return MODOS.includes(u) ? u : null; };
+    const ultimo = () => { const u = leer().ultimo; return MODOS.includes(u) ? u : SUB.includes(u) ? 'amigos' : null; };
     G.on('nuevoEstudiante', () => { try { localStorage.removeItem(ALMACEN); } catch (e) { /* sin almacén */ } });
 
     // ---------- Apertura del capítulo aplazada (primera vez sin Aventura) ----------
@@ -71,6 +87,9 @@
 
     // ---------- Pintar el menú ----------
     function tarjetas() { return form ? [...form.querySelectorAll('[data-modo]')] : []; }
+    const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+    // Las de la V18 solo con la bandera encendida; el Duelo de 2 necesita teclado (duelo2.js no se carga en táctil)
+    const seVe = m => !V18M.includes(m) || (!!G.V18 && (m !== 'duelo2' || !tactil()));
     function mostrar() {
       if (!form) return;
       const T = TX(), u = ultimo();
@@ -78,6 +97,7 @@
       const bm = $('b-menu-modos'); if (bm) bm.textContent = T.cambiar;
       tarjetas().forEach((b, i) => {
         const m = b.dataset.modo, tx = T[m]; if (!tx) return;
+        if (V18M.includes(m)) { const ve = seVe(m); b.hidden = !ve; b.style.display = ve ? '' : 'none'; }
         const bb = b.querySelector('b'), sm = b.querySelector('small');
         if (bb) bb.textContent = tx[0]; if (sm) sm.textContent = tx[1];
         b.style.setProperty('--i', i);
@@ -87,7 +107,7 @@
         if (chapa) { chapa.textContent = T.ultimo; chapa.hidden = !es; }
         b.setAttribute('aria-label', tx[0] + '. ' + tx[1] + (es ? '. ' + T.ultimo : ''));
       });
-      const foco = tarjetas().find(b => b.dataset.modo === u) || tarjetas()[0];
+      const foco = tarjetas().find(b => b.dataset.modo === u && !b.hidden) || tarjetas()[0];
       if (foco && portada && portada.open) setTimeout(() => { if (portada.open && !portada.inert) foco.focus({ preventScroll: true }); }, 0);
     }
     function recordar(modo) { guardar({ ultimo: modo }); }
@@ -97,23 +117,149 @@
     const listo = () => Promise.resolve(G.mundo && G.mundo.listo).catch(() => {});
     const toast = txt => { if (!G.quiet) G.ui.toast(txt, 3000); };
     const fallo = () => toast(L('No se pudo abrir. Prueba otra vez.', 'It could not open. Try again.'));
+    // ---------- V18: llevar a Vittata a su actividad y empezarla (el patrón del minigolf: irYJugar) ----------
+    // Solo con la V18 encendida y sin otra actividad V18 en marcha. Son del cap. 1: desde otro capítulo se abre el cap. 1 con
+    // ?mini=<modo> (sin ?pack) y allí arranca al cerrarse la portada. La apertura del cap. 1 queda pendiente para Aventura: si
+    // asoma mientras dura la actividad, se corta.
+    const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const API18 = { golf: 'v18minigolf', duelo: 'v18combate', duelo2: 'v18duelo2', chispa: 'v18chispa', moon: 'v18moon', guardian: 'v18guardian' };
+    const CARGA18 = { golf: 'golf', duelo: 'combate', duelo2: 'duelo2', chispa: 'chispa', moon: 'moon', guardian: 'guardian', cotorras: 'cotorras' };
+    const api18 = m => { const a = G[API18[m]]; return a && !a.diferido ? a : null; };
+    const fase18 = a => { try { return (a && !a.diferido && a.estado && a.estado().fase) || 'nada'; } catch (e) { return 'nada'; } };
+    const QUIETA = ['nada', 'disuelve', 'deshace', 'despierta'];
+    function ocupado18() {
+      return [G.v18combate, G.v18amenaza, G.v18serpiente, G.v18sapo, G.v18duelo2, G.v18minigolf, G.v18chispa, G.v18moon, G.v18guardian].some(a => !QUIETA.includes(fase18(a)));
+    }
+    function tarjeta2Abierta() { const c = $('card'); return !!(c && !c.hidden && c.querySelector('.v18-d2')); }
+    function enMarcha18(m) { return !QUIETA.includes(fase18(api18(m))) || (m === 'duelo2' && tarjeta2Abierta()); }
+    function cargar18(m) { const f = cargar.v18 && cargar.v18[CARGA18[m]]; return f ? Promise.resolve(f()).catch(e => { console.warn('menu_modos: carga V18 ' + m, e); }) : Promise.resolve(); }
+    function llevar(x, z, mx, mz) {
+      const F = G.fisica, M = F && F.MOVE;
+      if (M && M.flying && F.endFlight) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } }
+      S.pos.x = x; S.pos.z = z; S.pos.y = G.terreno.height(x, z) + 0.05; S.vy = 0;
+      if (M) { M.vx = M.vz = 0; M.swimming = false; }
+      if (mx != null) {
+        const dx = mx - x, dz = mz - z, d = Math.hypot(dx, dz) || 1;
+        S.facing = { x: dx / d, z: dz / d }; if (G.camara) G.camara.yaw = Math.atan2(-dx / d, -dz / d);
+      }
+      try { if (G.camara && G.camara.place) G.camara.place(true); } catch (e) { /* cámara */ }
+    }
+    const IR18 = {
+      golf: a => a.irYJugar(),
+      duelo: a => a.iniciar({}), // combate.js coloca a Vittata y a la Campeona en la explanada
+      duelo2: a => { if (!a.disponible()) return false; const s = G.v18combate && G.v18combate.sitio; if (s) llevar(s.x - 5, s.z, s.x, s.z); return a.abrirTarjeta(); },
+      chispa: a => { const s = a.SITIO.salida; llevar(s.x, s.z, a.RUTA[0].x, a.RUTA[0].z); return a.empezar(); },
+      moon: a => { const s = a.SITIO; llevar(s.x + Math.sin(s.rotY) * 6, s.z + Math.cos(s.rotY) * 6, s.x, s.z); return a.empezar(); }, // delante de Moon, mirándola
+      guardian: a => { const s = a.SITIO.salida; llevar(s.x, s.z, a.RUTA[0].x, a.RUTA[0].z); return a.empezar(); }
+    };
+    const sinApertura = () => { try { if (document.getElementById('c1-fade') && G.c && G.c.apertura) G.c.apertura.fin(); } catch (e) { /* sin apertura */ } };
+    function alCap1(modo) {
+      apuntarCapitulo('cap1');
+      try { const u = new URL(location.href); u.searchParams.delete('pack'); u.searchParams.set('mini', modo); location.href = u.toString(); } catch (e) { /* sin URL */ }
+    }
+    function salir18() {
+      for (const m of ['golf', 'duelo', 'duelo2']) { const a = api18(m); if (a && !QUIETA.includes(fase18(a))) { try { a.salir(); } catch (e) { /* ya fuera */ } } }
+      for (const m of SUB) { const a = api18(m); if (a && !QUIETA.includes(fase18(a))) { try { a.cancelar('sale'); } catch (e) { /* ya fuera */ } } }
+      const c = $('card'); if (G.ui.cardOpen && c && (tarjeta2Abierta() || c.classList.contains('mm-encima'))) G.ui.hideCard();
+    }
+    function lanzar18(modo) {
+      if (!G.V18) return Promise.resolve(false);
+      if (P.id !== 'cap1') { alCap1(modo); return Promise.resolve(true); }
+      return listo().then(() => cargar18(modo)).then(() => new Promise(res => {
+        let n = 0, vigila = 0;
+        const guardia = () => { sinApertura(); if (++vigila < 120 && enMarcha18(modo)) setTimeout(guardia, 500); };
+        const t = () => {
+          sinApertura(); const a = api18(modo);
+          if (a && enMarcha18(modo)) { guardia(); return res(true); } // ya estaba en marcha (?mini= o un toque anterior)
+          let ok = false;
+          if (a && !ocupado18()) { try { ok = !!IR18[modo](a); } catch (e) { console.warn('menu_modos: ' + modo, e); } }
+          if (ok) { guardia(); return res(true); }
+          if (++n < 60) setTimeout(t, 500); else res(false);
+        };
+        t();
+      }));
+    }
+    // ---------- Encima del menú: Mis cotorras, Álbum y Retos con amigos (tarjeta #card por encima de la portada) ----------
+    let origen = null;
+    function encima(html) {
+      G.ui.showCard(html); marcarEncima();
+    }
+    function marcarEncima() {
+      const c = $('card'); if (!c || !portada || !portada.open) return;
+      c.classList.add('mm-encima'); origen = document.activeElement;
+      setTimeout(() => { const b = c.querySelector('button'); if (b && !c.hidden) b.focus({ preventScroll: true }); }, 0);
+    }
+    G.on('cardHidden', () => {
+      const c = $('card'); if (!c || !c.classList.contains('mm-encima')) return;
+      c.classList.remove('mm-encima');
+      const o = origen; origen = null;
+      if (o && portada && portada.open && document.contains(o)) setTimeout(() => { try { o.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
+    });
+    const CANDADO = '<svg class="mm-candado" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2" fill="currentColor"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="2.4" fill="none"/></svg>';
+    // El aviso con el que llega cada una (nuevas.js, descubrir.js), sin «Elígela en Pausa…»; en EN, su traducción de content/cap1/en.js
+    function comoLlega(p) {
+      if (!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en') || !(G.idioma && G.idioma.tr)) return p.txt;
+      const en = G.idioma.tr(p.aviso);
+      if (en === p.aviso) return p.txt;
+      return en.replace(/\s*(Pick|Find) (her|him|it) in Pause → My parrots\.\s*$/, '');
+    }
+    function abrirCotorras() {
+      if (!G.V18) return Promise.resolve(false);
+      if (P.id !== 'cap1') { alCap1('cotorras'); return Promise.resolve(true); }
+      return listo().then(() => cargar18('cotorras')).then(() => {
+        const D = G.v18descubrir; if (!D || !D.abrirSeleccion) return false;
+        const ids = D.abrirSeleccion(), c = $('card'), E = G.v18evo;
+        if (E && E.info) c.querySelectorAll('[data-v18sp]').forEach(b => {
+          try { const r = E.info(b.dataset.v18sp); if (r && isFinite(r.xp)) b.insertAdjacentHTML('beforeend', `<small class="mm-xp" data-no-tr>XP ${Math.round(r.xp)}</small>`); } catch (e) { /* sin evolución */ }
+        });
+        const N = G.v18nuevas, pend = N && N.pendientes ? N.pendientes() : [];
+        if (D.ID && !ids.includes(D.ID) && D.TXT && D.TXT.pistaInicio) pend.splice(pend.findIndex(p => p.album) < 0 ? pend.length : pend.findIndex(p => p.album), 0, { id: D.ID, txt: D.TXT.pistaInicio, aviso: D.TXT.pistaInicio });
+        if (pend.length) {
+          const filas = pend.map(p => `<li data-v18falta="${esc(p.id)}">${CANDADO}<span>${esc(comoLlega(p))}</span></li>`).join('');
+          const html = `<details class="mm-faltan" data-no-tr${ids.length < 2 ? ' open' : ''}><summary>${esc(L('Por conseguir', 'Still to get'))} (${pend.length})</summary>` +
+            `<p class="note">${esc(L('Así llegan a tu bandada:', 'This is how they join your flock:'))}</p><ul>${filas}</ul></details>`;
+          const filaOk = c.querySelector('#v18-elegir-ok'); const fila = filaOk && filaOk.closest('.row');
+          if (fila) fila.insertAdjacentHTML('beforebegin', html); else c.insertAdjacentHTML('beforeend', html);
+        }
+        marcarEncima();
+        return true;
+      });
+    }
+    function abrirAlbum() {
+      if (P.id !== 'cap1') { alCap1('album'); return Promise.resolve(true); }
+      const A = G.album, h = A && A.html ? A.html() : '';
+      if (!h) return Promise.resolve(false);
+      encima(`<div class="mm-album" data-no-tr><h2>${esc(L('Álbum', 'Album'))}</h2>${h}<div class="row"><button class="btn" type="button" id="mm-album-ok">${esc(L('Cerrar', 'Close'))}</button></div></div>`);
+      const ok = $('mm-album-ok'); if (ok) ok.onclick = () => G.ui.hideCard();
+      return Promise.resolve(true);
+    }
+    function abrirAmigos() {
+      if (!G.V18) return Promise.resolve(false);
+      const T = TX();
+      const bots = SUB.map(m => `<button class="btn mm-amigo" type="button" data-amigo="${m}">${ICONOS[m]}<b>${esc(T[m][0])}</b><small>${esc(T[m][1])}</small></button>`).join('');
+      encima(`<div class="mm-amigos" data-no-tr><h2>${esc(T.amigos[0])}</h2><div class="mm-amigos-grid">${bots}</div><div class="row"><button class="btn ghost" type="button" id="mm-amigos-no">${esc(L('Cerrar', 'Close'))}</button></div></div>`);
+      const c = $('card');
+      c.querySelectorAll('[data-amigo]').forEach(b => { b.onclick = () => { const m = b.dataset.amigo; G.ui.hideCard(); elegir(m); }; });
+      const no = $('mm-amigos-no'); if (no) no.onclick = () => G.ui.hideCard();
+      return Promise.resolve(true);
+    }
+    const ICONOS = {
+      chispa: '<svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 50q24-8 48 0" stroke="var(--wood)" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M14 22h2v28h-2z" fill="var(--ink)"/><path d="M16 22l12 4-12 4z" fill="var(--crest)"/><path d="M46 22h2v26h-2z" fill="var(--ink)"/><path d="M48 22l12 4-12 4z" fill="var(--sky)"/><path d="M34 6l-9 18h7l-4 16 13-20h-7l5-14z" fill="var(--gold)"/></svg>',
+      moon: '<svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M40 6a20 20 0 1 0 18 30A16 16 0 1 1 40 6z" fill="var(--parchment)"/><circle cx="14" cy="16" r="5" fill="#fff6c8" opacity=".9"/><circle cx="24" cy="44" r="4" fill="#fff6c8" opacity=".8"/><circle cx="12" cy="52" r="3" fill="#fff6c8" opacity=".7"/><circle cx="44" cy="50" r="7" fill="var(--leaf)"/><path d="M42 45q2-5 7-3-2 3-7 3z" fill="var(--crest)"/><path d="M49 49l5 1.5-5 1.5z" fill="var(--beak)"/></svg>',
+      guardian: '<svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M12 58V30" stroke="#5ac8fa" stroke-width="6" stroke-linecap="round" opacity=".75"/><path d="M28 58V18" stroke="var(--gold)" stroke-width="6" stroke-linecap="round" opacity=".8"/><path d="M44 58V28" stroke="#7ee08a" stroke-width="6" stroke-linecap="round" opacity=".8"/><path d="M6 24q10-14 22-6t22-6" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="54" cy="14" r="6" fill="var(--leaf)"/><path d="M57 13l5 1.5-5 1.5z" fill="var(--beak)"/></svg>'
+    };
+
     function lanzar(modo) {
       if (modo !== 'libre') salirLibre();
       let p;
       if (modo === 'aventura') {
         if (introPendiente() && typeof inicioReal === 'function') { guardar({ intro: 0 }); setTimeout(() => { if (!G.dialogo.open()) inicioReal(G); }, 300); }
         p = Promise.resolve(true);
-      } else if (modo === 'golf') { // minigolf de Villa Raíz (src/game/v18/minigolf.js): es del cap. 1; desde otro capítulo se abre el cap. 1 con ?mini=golf
-        if (P.id !== 'cap1') { apuntarCapitulo('cap1'); try { const u = new URL(location.href); u.searchParams.delete('pack'); u.searchParams.set('mini', 'golf'); /* sin ?pack: abre el cap. 1 (revisión 7-nov) */ location.href = u.toString(); } catch (e) { /* sin URL */ } p = Promise.resolve(true); }
-        else p = listo().then(() => new Promise(res => {
-          // la apertura del cap. 1 queda pendiente para Aventura: si asoma mientras se juega al minigolf, se corta (no tapa el hoyo)
-          const sinApertura = () => { try { if (document.getElementById('c1-fade') && G.c && G.c.apertura) G.c.apertura.fin(); } catch (e) { /* sin apertura */ } };
-          let n = 0, vigila = 0;
-          const guardia = () => { sinApertura(); const mg = G.v18minigolf; if (++vigila < 60 && mg && mg.estado && mg.estado().fase !== 'nada') setTimeout(guardia, 500); };
-          const t = () => { sinApertura(); const mg = G.v18minigolf; if (mg && mg.irYJugar && mg.irYJugar()) { guardia(); return res(true); } if (++n < 60) setTimeout(t, 500); else res(false); };
-          t();
-        }));
-      } else if (modo === 'carreras') p = listo().then(() => cargar.retos()).then(r => r.abrir());
+      } else if (V18M.includes(modo) && API18[modo]) p = lanzar18(modo); // golf, duelo, duelo2, chispa, moon, guardian
+      else if (modo === 'cotorras') p = abrirCotorras();
+      else if (modo === 'album') p = abrirAlbum();
+      else if (modo === 'amigos') p = abrirAmigos();
+      else if (modo === 'carreras') p = listo().then(() => cargar.retos()).then(r => r.abrir());
       else if (modo === 'tormenta' || modo === 'banquete') p = listo().then(() => cargar.retos()).then(r => r.jugar(modo));
       else if (modo === 'flight') p = listo().then(() => (window.AV && window.AV.flight ? window.AV.flight() : false));
       else if (modo === 'tren') p = listo().then(() => (window.AV && window.AV.tren ? window.AV.tren() : false)); // El tren de Vittata (src/game/tren.js, C16)
@@ -152,8 +298,8 @@
     }
     // nido y records se abren encima del menú (la portada sigue abierta); el resto cierra la portada primero
     function elegir(modo) {
-      if (!MODOS.includes(modo)) return Promise.resolve(false);
-      if (modo === 'nido' || modo === 'records') return lanzar(modo); // encima del menú; no cuentan como «lo último que jugaste»
+      if (!MODOS.includes(modo) && !SUB.includes(modo)) return Promise.resolve(false);
+      if (ENCIMA.includes(modo)) return lanzar(modo); // encima del menú; no cuentan como «lo último que jugaste»
       recordar(modo);
       if (modo === 'aventura' && !G.quiet) apuntarCapitulo(P.id); // al volver a entrar se abre este capítulo (boot.js)
       const primera = !(S.profile && S.profile.created);
@@ -170,6 +316,7 @@
       const rv = G.riverRushApi; if (rv) { try { rv.salir(); } catch (e) { /* ya fuera */ } }
       const mz = G.mazeApi; if (mz) { try { mz.salir(); } catch (e) { /* ya fuera */ } } // src/game/maze.js (BI2)
       if (G.criadero && G.criadero.abierto && G.criadero.abierto()) G.criadero.cerrar();
+      salir18();
       salirLibre();
       const pausa = $('pause'); try { if (pausa && pausa.matches(':popover-open')) pausa.hidePopover(); } catch (e) { /* sin popover */ }
       if (portada && !portada.open) { portada.returnValue = ''; portada.show(); }
@@ -183,7 +330,7 @@
       portada.addEventListener('close', () => {
         const v = portada.returnValue; portada.returnValue = '';
         if (v === 'retos') { cargar.retos().then(r => r.abrir(), fallo); return; } // valor de la portada anterior
-        if (MODOS.includes(v)) { elegir(v); return; }
+        if (MODOS.includes(v) || SUB.includes(v)) { elegir(v); return; }
         if (pendiente == null && !(S.profile && S.profile.created)) { pendiente = 'aventura'; prepararCreador(); } // cierre sin valor y sin cotorra: la historia
       });
       // Si se tocó una tarjeta antes de que cargara este archivo, el dialog ya está cerrado con su valor
@@ -193,12 +340,11 @@
       form.addEventListener('click', e => {
         const b = e.target.closest('[data-modo]'); if (!b) return;
         if (!G.quiet && G.audio && G.audio.play) try { G.audio.play('pickup', 2); } catch (e2) { /* sin audio */ }
-        if (b.type === 'button' && b.dataset.modo === 'nido') elegir('nido');
-        else if (b.type === 'button' && b.dataset.modo === 'records') elegir('records'); // la tarjeta es #b-records-menu; #b-records-title es su etiqueta <b> (records.js la traduce con textContent)
+        if (b.type === 'button' && ENCIMA.includes(b.dataset.modo)) elegir(b.dataset.modo); // records: la tarjeta es #b-records-menu; #b-records-title es su etiqueta <b> (records.js la traduce con textContent)
       });
       form.addEventListener('keydown', e => {
         if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
-        const ts = tarjetas(), i = ts.indexOf(document.activeElement); if (i < 0) return;
+        const ts = tarjetas().filter(b => !b.hidden), i = ts.indexOf(document.activeElement); if (i < 0) return;
         const cols = Math.max(1, Math.round(form.querySelector('.modos-grid').clientWidth / ts[0].offsetWidth));
         const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowDown' ? cols : -cols;
         const j = i + d; if (j < 0 || j >= ts.length) return;
@@ -210,6 +356,22 @@
     // Al cambiar el idioma en Opciones (portada cerrada), «Cambiar de juego» del menú de pausa y las tarjetas se quedaban en el idioma anterior
     G.on('aula', k => { if (k === 'idioma') mostrar(); });
     mostrar();
+    // ?mini=<modo> (alCap1, desde otro capítulo): la actividad arranca cuando se cierra la portada, como ?mini=golf (minigolf.js);
+    // Mis cotorras y el Álbum se abren encima del menú en cuanto el mundo está listo
+    {
+      const q = /[?&]mini=(duelo2|duelo|cotorras|album|chispa|moon|guardian)\b/.exec(location.search), m = q && q[1];
+      if (m && P.id === 'cap1' && (G.V18 || m === 'album')) {
+        let n = 0;
+        const libreYa = () => !(creador && !creador.hidden) && !G.ui.cardOpen && !(G.dialogo && G.dialogo.open && G.dialogo.open());
+        if (m === 'cotorras' || m === 'album') {
+          const ir = () => { if (libreYa() || (portada && portada.open && !G.ui.cardOpen)) { lanzar(m); return; } if (++n < 60) setTimeout(ir, 1000); };
+          listo().then(() => setTimeout(ir, 1500));
+        } else {
+          const probar = () => { if (!(portada && portada.open) && libreYa()) { if (!enMarcha18(m)) lanzar18(m); return; } if (++n < 180) setTimeout(probar, 1000); }; /* espera a que se cierre la portada */
+          setTimeout(probar, 1500);
+        }
+      }
+    }
 
     // =================================================================================================================
     // Prueba: AV.menuModosTest()
@@ -250,10 +412,11 @@
       try {
         // 1. Markup y contrato de la portada (config.json preparar_js y e2e.js tocan el primer botón del formulario)
         const ts = tarjetas();
-        check('Una tarjeta por modo (con Amazona Flight, el tren, River Rush y Amazona Maze)', ts.length === MODOS.length && ['tren', 'river', 'maze'].every(m => !!form.querySelector(`[data-modo="${m}"]`)) && form.querySelector('[data-modo="flight"] b').textContent === 'Amazona Flight' && MODOS.every(m => ts.some(b => b.dataset.modo === m)), ts.map(b => b.dataset.modo).join(','));
+        check('Una tarjeta por modo (con Amazona Flight, el tren, River Rush, Amazona Maze y las de la V18)', ts.length === MODOS.length && ['tren', 'river', 'maze', 'golf', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album'].every(m => !!form.querySelector(`[data-modo="${m}"]`)) && form.querySelector('[data-modo="flight"] b').textContent === 'Amazona Flight' && MODOS.every(m => ts.some(b => b.dataset.modo === m)), ts.map(b => b.dataset.modo).join(','));
         const primero = form.querySelector('button');
         check('La primera tarjeta es Aventura y es submit del form method=dialog', primero && primero.dataset.modo === 'aventura' && primero.type === 'submit' && form.method === 'dialog');
-        check('Nido y récords no cierran la portada (type=button)', ['nido', 'records'].every(m => form.querySelector(`[data-modo="${m}"]`).type === 'button'));
+        check('Nido, récords, Mis cotorras, Álbum y Retos con amigos no cierran la portada (type=button)', ENCIMA.every(m => form.querySelector(`[data-modo="${m}"]`).type === 'button'));
+        check('Las tarjetas de la V18 se ven con la bandera encendida y se ocultan sin ella', ['golf', 'duelo', 'amigos', 'cotorras'].every(m => form.querySelector(`[data-modo="${m}"]`).hidden === !G.V18));
         check('Textos en ES', $('modos-t').textContent === '¿Cómo quieres jugar?' && form.querySelector('[data-modo="libre"] b').textContent === 'Vuelo libre', '«' + $('modos-t').textContent + '» / «' + form.querySelector('[data-modo="libre"] b').textContent + '»');
         // 2. Cada tarjeta abre su modo y «Cambiar de juego» vuelve al menú
         retos = await cargar.retos(); retos.pruebas.prueba(true);
@@ -285,6 +448,49 @@
         const okMaze = await hasta(() => G.mazeApi && G.mazeApi.activo, 15000);
         check('Amazona Maze: la tarjeta abre el laberinto y cierra la portada', okMaze && !portada.open);
         volver(); check('Vuelve al menú desde Amazona Maze', portada.open && !G.mazeApi.activo && !document.body.classList.contains('maze-on'));
+        // V18 (Kelvin 8-nov: «¿dónde está lo divertido?»): cada tarjeta lleva a Vittata a su actividad y la empieza de verdad
+        if (G.V18 && P.id === 'cap1') {
+          const cerca = (x, z, r) => Math.hypot(S.pos.x - x, S.pos.z - z) < r;
+          await elegir('golf');
+          const okGolf = await hasta(() => enMarcha18('golf'), 30000);
+          check('V18 · Minigolf: la tarjeta lleva a Vittata al hoyo y empieza la partida', okGolf && !portada.open && document.body.classList.contains('v18-golf-on'), 'fase ' + fase18(G.v18minigolf));
+          volver(); check('V18 · Vuelve al menú y sale del minigolf', portada.open && !enMarcha18('golf') && !document.body.classList.contains('v18-golf-on'));
+          await elegir('duelo');
+          const okDuelo = await hasta(() => ['cuenta', 'lucha'].includes(fase18(G.v18combate)), 30000), sd = G.v18combate && G.v18combate.sitio;
+          check('V18 · Duelo: la tarjeta lleva a Vittata a la explanada y empieza el duelo contra la Campeona', okDuelo && !portada.open && sd && cerca(sd.x, sd.z, 8), 'fase ' + fase18(G.v18combate) + (sd ? ', a ' + Math.hypot(S.pos.x - sd.x, S.pos.z - sd.z).toFixed(1) + ' m' : ''));
+          volver(); check('V18 · Vuelve al menú y sale del duelo', portada.open && fase18(G.v18combate) === 'nada');
+          if (seVe('duelo2')) {
+            await elegir('duelo2');
+            const ok2 = await hasta(tarjeta2Abierta, 30000);
+            check('V18 · Duelo de 2: la tarjeta lleva a Vittata a la explanada y abre la elección de cotorras', ok2 && !portada.open && sd && cerca(sd.x, sd.z, 8));
+            const jugar = $('v18-d2-ok'); if (jugar) jugar.click();
+            check('V18 · Duelo de 2: «¡A jugar!» empieza el duelo de dos', ['cuenta', 'lucha'].includes(fase18(G.v18duelo2)), 'fase ' + fase18(G.v18duelo2));
+            volver(); check('V18 · Vuelve al menú y sale del duelo de 2', portada.open && fase18(G.v18duelo2) === 'nada' && !tarjeta2Abierta());
+          }
+          const z = el => Number(getComputedStyle(el).zIndex) || 0;
+          for (const m of SUB) {
+            await elegir('amigos');
+            const c = $('card'), bots = c.querySelectorAll('[data-amigo]');
+            if (m === SUB[0]) check('V18 · Retos con amigos: tarjeta encima del menú con Chispa, Moon y el Guardián', !c.hidden && c.classList.contains('mm-encima') && portada.open && bots.length === 3 && z(c) > z(portada), bots.length + ' botones, z ' + z(c) + '/' + z(portada));
+            const b = c.querySelector(`[data-amigo="${m}"]`); if (b) b.click();
+            const okA = await hasta(() => enMarcha18(m), 60000), a = api18(m), s = a && (a.SITIO.salida || a.SITIO);
+            check(`V18 · ${TX()[m][0]}: desde Retos con amigos lleva a Vittata a su sitio y empieza`, okA && !portada.open && c.hidden && s && cerca(s.x, s.z, 12), 'fase ' + fase18(a) + (s ? ', a ' + Math.hypot(S.pos.x - s.x, S.pos.z - s.z).toFixed(1) + ' m' : ''));
+            volver(); check(`V18 · Vuelve al menú y deja ${TX()[m][0]}`, portada.open && fase18(a) === 'nada' && ultimo() === 'amigos');
+          }
+          await elegir('cotorras');
+          const cc = $('card'), sps = cc.querySelectorAll('[data-v18sp]'), pend = G.v18nuevas && G.v18nuevas.pendientes ? G.v18nuevas.pendientes() : [];
+          const faltan = cc.querySelectorAll('.mm-faltan li'), det = cc.querySelector('.mm-faltan');
+          check('V18 · Mis cotorras: encima del menú, cada cotorra con su poder, su nivel, su etapa y su XP', !cc.hidden && cc.classList.contains('mm-encima') && portada.open && sps.length >= 1 &&
+            [...sps].every(b => b.querySelector('.v18-evo-f') && b.querySelector('.v18-evo-bar') && b.querySelector('.mm-xp') && /Poder|Power/.test(b.textContent)), sps.length + ' cotorras');
+          check('V18 · Mis cotorras: las que faltan se ven, con candado y cómo llegan (el aviso de nuevas.js)', faltan.length >= pend.length && (!pend.length || (det && (sps.length >= 2 || det.open) && faltan[0].textContent.length > 20)), faltan.length + '/' + pend.length);
+          G.ui.hideCard(); check('V18 · Al cerrar Mis cotorras el menú sigue', cc.hidden && portada.open && !cc.classList.contains('mm-encima'));
+        }
+        if (G.album && G.album.html && G.album.html()) {
+          await elegir('album');
+          const ca = $('card');
+          check('Álbum: se abre encima del menú con las cotorras del Álbum de las 36', !ca.hidden && ca.classList.contains('mm-encima') && portada.open && ca.querySelectorAll('.album36 li').length >= 34, ca.querySelectorAll('.album36 li').length + ' tarjetas');
+          const ok = $('mm-album-ok'); if (ok) ok.click(); check('Al cerrar el Álbum el menú sigue', ca.hidden && portada.open);
+        }
         await elegir('libre');
         check('Vuelo libre: sin panel de misiones ni guía, y la partida sigue siendo la misma', !portada.open && raiz.classList.contains('modo-libre') && getComputedStyle($('quest')).display === 'none' && libre);
         G.emit('render', 0.016); check('Vuelo libre: la flecha de guía no se ve', G.fx && G.fx.guideBeam ? !G.fx.guideBeam.visible : true);
@@ -329,7 +535,7 @@
         volver();
         // 5. EN
         const aj = G.aula && G.aula.aj, idioma0 = aj ? aj.idioma : null;
-        if (aj) { aj.idioma = 'en'; mostrar(); check('Textos en EN', $('modos-t').textContent === 'How do you want to play?' && form.querySelector('[data-modo="nido"] b').textContent === 'My nest'); aj.idioma = idioma0; mostrar(); }
+        if (aj) { aj.idioma = 'en'; mostrar(); check('Textos en EN', $('modos-t').textContent === 'How do you want to play?' && form.querySelector('[data-modo="nido"] b').textContent === 'My nest' && form.querySelector('[data-modo="duelo"] b').textContent === 'Duel' && form.querySelector('[data-modo="amigos"] small').textContent === 'Chispa, Moon and the Guardian'); aj.idioma = idioma0; mostrar(); }
         // 6. Maqueta móvil: sin desbordes, tarjetas de 44 px o más y sin solaparse
         for (const [w, h] of [[375, 812], [320, 568], [812, 375]]) {
           const m = await maquetaPortada(w, h);
@@ -351,6 +557,7 @@
         check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 400));
       } finally {
         console.error = ce; inicioReal = inicio0; aplazar = false; pendiente = null; soltarCreador(); salirLibre();
+        try { salir18(); } catch (e) { /* ya fuera */ }
         try { if (retos) { retos.salir(); retos.pruebas.prueba(false); } } catch (e) { /* ya fuera */ }
         try { if (G.criadero && G.criadero.abierto && G.criadero.abierto()) G.criadero.cerrar(); } catch (e) { /* cerrado */ }
         try { if (G.recordsApi) G.recordsApi.cerrar(); } catch (e) { /* cerrado */ }

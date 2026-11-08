@@ -263,7 +263,8 @@
     if (bRetos) bRetos.addEventListener('click', () => AV.retos());
     // «¿Cómo quieres jugar?» (src/game/menu_modos.js): las tarjetas de la portada abren cada modo (también el valor «retos» de la portada anterior) y «Cambiar de juego» vuelve al menú
     // La temporada (AV1, en el mismo archivo): progreso de los 6 capítulos, «Siguiente capítulo» en el panel final y la pantalla «Capítulos» (portada y pausa)
-    if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: () => cargarRecords().then(r => conBandada(r)) }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); AV.temporada = menu.temporada; AV.temporadaTest = o => menu.temporada.test(o); AV.capituloElegidoTest = o => menu.temporada.capituloTest(o); }
+    if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: () => cargarRecords().then(r => conBandada(r)),
+      v18: { golf: cargarV18Golf, combate: cargarCombate, duelo2: cargarV18Duelo2, chispa: cargarV18Chispa, moon: cargarV18Moon, guardian: cargarV18Guardian, cotorras: () => Promise.all([cargarCombate(), cargarV18Descubrir(), cargarV18Evo(), cargarV18Nuevas()]) } }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); AV.temporada = menu.temporada; AV.temporadaTest = o => menu.temporada.test(o); AV.capituloElegidoTest = o => menu.temporada.capituloTest(o); }
     const recAlm = (P.meta && P.meta.almacen) || P.id, recRetos = recAlm + '.retos', recCasa = recAlm + '.records', recEquipos = recAlm + '.equipos', recDones = recRetos + '.dones'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro, la bandada, Retos «Con dones» y los descubrimientos)
     const recDesc = [recAlm + '.trucos', recAlm + '.escondite', recAlm + '.ciudadVisitas', recAlm + '.marana', recAlm + '.vecinos', recAlm + '.humor', recAlm + '.retosDia'];
     AV.retosDiaTest = o => Promise.resolve(G.retosDia.test(o)); // CG-52
