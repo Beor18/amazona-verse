@@ -1,0 +1,43 @@
+{
+ "tarea": "KIMI-299",
+ "parche": "eb21ebdf",
+ "metodo": "decode MeshoptDecoder vendorizado; por material: tris/caja(mundo)/area; nombres de nodo",
+ "filas": [
+  {
+   "modelo": "monumento_d_hd.glb",
+   "antes_KB": 9189,
+   "despues_KB": 2040,
+   "ext_despues": [
+    "KHR_mesh_quantization",
+    "EXT_meshopt_compression"
+   ],
+   "caja_mm": 0.053,
+   "area_rel": 0.0000228,
+   "errores": []
+  },
+  {
+   "modelo": "corral_hd.glb",
+   "antes_KB": 8081,
+   "despues_KB": 1679,
+   "ext_despues": [
+    "KHR_mesh_quantization",
+    "EXT_meshopt_compression"
+   ],
+   "caja_mm": 0.123,
+   "area_rel": 0.000013,
+   "errores": []
+  },
+  {
+   "modelo": "carpa_b_hd.glb",
+   "antes_KB": 5921,
+   "despues_KB": 1239,
+   "ext_despues": [
+    "KHR_mesh_quantization",
+    "EXT_meshopt_compression"
+   ],
+   "caja_mm": 0.095,
+   "area_rel": 0.00000728,
+   "errores": []
+  }
+ ]
+}

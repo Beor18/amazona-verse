@@ -1,0 +1,169 @@
+{
+ "tarea": "KIMI-244",
+ "cuando": "2026-11-08T13:55:04.583Z",
+ "head": "d18467eb",
+ "url": "local",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "ventana": {
+  "ancho": 1600,
+  "alto": 900
+ },
+ "calidad": "bajo",
+ "preparacion": "ok: portada → creador → Empezar (Luna Brillante) → carga 7642 ms (listo)",
+ "red_quieta_s": "0.2",
+ "carga_inicial": {
+  "mb": 19.73,
+  "archivos_n": 187,
+  "por_tipo_mb": {
+   ".glb": 11.26,
+   "imágenes": 4.72,
+   ".js": 3.5,
+   "otros": 0.25
+  },
+  "mb_peticiones": 20.03,
+  "peticiones_n": 190,
+  "mayores_kb": [
+   [
+    "assets/models/edificios/tex_hd/hd_savage_lq.jpg",
+    1639
+   ],
+   [
+    "assets/models/edificios/tex_hd/hd_ancient_lq.jpg",
+    1364
+   ],
+   [
+    "assets/models/vittata.glb",
+    1282
+   ],
+   [
+    "assets/vendor/three/build/three.min.js",
+    589
+   ],
+   [
+    "assets/models/edificios/complejo_ruinas.glb",
+    562
+   ],
+   [
+    "assets/models/mapa/terreno_no.glb",
+    445
+   ],
+   [
+    "assets/models/mapa/terreno_ne.glb",
+    445
+   ],
+   [
+    "assets/models/mapa/terreno_se.glb",
+    445
+   ],
+   [
+    "assets/models/mapa/terreno_so.glb",
+    445
+   ],
+   [
+    "assets/models/edificios/templo_mediano_h_lejos.glb",
+    435
+   ],
+   [
+    "assets/models/entorno/ceiba.glb",
+    356
+   ],
+   [
+    "assets/models/edificios/complejo_ruinas_lejos.glb",
+    303
+   ],
+   [
+    "assets/models/edificios/templo_grande_d_lejos.glb",
+    302
+   ],
+   [
+    "assets/models/ropa/panuelo.glb",
+    278
+   ],
+   [
+    "assets/models/entorno/arbol_enano.glb",
+    264
+   ]
+  ]
+ },
+ "vista_arranque": {
+  "look": "vibrant_toon",
+  "fps": 5,
+  "calls": 121,
+  "triangulos": 347467,
+  "calidad": "bajo",
+  "dpr": 0.75,
+  "post": false,
+  "programas": 76,
+  "heapMB": 75,
+  "geometrias": 141,
+  "texturasGPU": 107,
+  "texturas": 101,
+  "texturasGrandes": 4,
+  "atlasGrandes": 1,
+  "mundoGrandes": 0,
+  "texturasMB": 67.5,
+  "sombraMB": 0,
+  "postMB": 0,
+  "texturasPor": {
+   "generadas": 10.8,
+   "otros": 3,
+   "personajes": 12,
+   "flora": 20.4,
+   "atlas_hd": 21.3
+  },
+  "texturasTop": [
+   [
+    "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "Vittata_1",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "Vittata_2",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "flora:impostores",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "vittata.png",
+    "512×512",
+    1.3
+   ],
+   [
+    "luma.png",
+    "512×512",
+    1.3
+   ],
+   [
+    "vittata.jpg",
+    "512×512",
+    1.3
+   ],
+   [
+    "flora:tabonuco:hoja",
+    "512×256",
+    0.7
+   ],
+   [
+    "flora:helecho_arboreo:hoja",
+    "256×512",
+    0.7
+   ],
+   [
+    "fondoMarino",
+    "256×256",
+    0.3
+   ]
+  ]
+ },
+ "consola_errores_n": 0,
+ "consola_errores": []
+}
