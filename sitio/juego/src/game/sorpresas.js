@@ -120,8 +120,13 @@ window.AVSorpresas = function (G) {
     guardar();
     return lista.map((m, i) => jugar(m, x + i * 1.6, z));
   }
+  // pul4 (8-nov): «Viste algo nuevo en la ciudad: …» salía al empezar un duelo, el minigolf o un reto V18 y tapaba la meta.
+  // Mismo criterio que lugares.js (G.lugares.enV18, el de la guía de controles): mientras dura la visita espera y, si sigue
+  // en la ciudad al terminar, el momento sale entonces (no se pierde: fuera sigue en true).
+  const enV18 = () => { try { return !!(G.lugares && G.lugares.enV18 && G.lugares.enV18()); } catch (e) { return false; } };
   function alMover() {
     if ((G.quiet || enPrueba) && !alMover.forzar) return;
+    if (enV18()) return;
     const c = centro();
     const d = Math.hypot(S.pos.x - c.x, S.pos.z - c.z);
     const r = c.r || 40;
@@ -176,6 +181,16 @@ window.AVSorpresas = function (G) {
       const c1 = una();
       if (G.fx) G.fx.burst = burst;
       ok('No suma draw calls nuevos (no hay malla propia)', c1 - c0 <= 0 && !G.renderer.scene.children.some(o => o && o.name === 'sorpresas'), c0 + ' → ' + c1);
+      {
+        // pul4: con una actividad V18 en marcha, entrar en la ciudad no suelta el momento; al terminar, sí
+        const c = centro(), px = S.pos.x, pz = S.pos.z, v1 = memoria.visitas, fueraBk = fuera;
+        alMover.forzar = true; fuera = true; S.pos.x = c.x; S.pos.z = c.z;
+        document.body.classList.add('v18-golf-on');
+        let durante = -1, despues = -1;
+        try { alMover(); durante = memoria.visitas - v1; document.body.classList.remove('v18-golf-on'); alMover(); despues = memoria.visitas - v1; }
+        finally { document.body.classList.remove('v18-golf-on'); alMover.forzar = false; S.pos.x = px; S.pos.z = pz; fuera = fueraBk; }
+        ok('pul4 · con un duelo, el minigolf o un reto V18 en marcha «Viste algo nuevo» espera y sale al terminar', !G.lugares || (durante === 0 && despues === 1), 'durante ' + durante + ' · después ' + despues);
+      }
       const v0 = memoria.visitas;
       visitar(11, -76);
       ok('El contador de visitas sube', memoria.visitas === v0 + 1, String(memoria.visitas));

@@ -142,12 +142,21 @@ AVE.module('lugares', function (G) {
     }
     return n;
   }
+  // pul4 (8-nov): el aviso «¡Descubriste …! Lugares descubiertos N/M» salía al empezar el minigolf, un duelo o un reto V18 y tapaba
+  // la meta o la flecha del primer tiro. Mismo criterio que la guía de controles (guia_controles.js, du2): G.menuModos.ocupado()
+  // y las clases de la V18 en el body; el aviso se queda en la cola y sale cuando la actividad termina.
+  const enV18 = () => {
+    try {
+      return !!(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) || /\bv18-(duelo|amenaza|golf)-on\b/.test(document.body.className) ||
+        !!(G.v18descubrir && G.v18descubrir.R && G.v18descubrir.R.activo);
+    } catch (e) { return false; }
+  };
   function avisar(dt) {
     if (tR > 0 && (tR -= dt) <= 0) ocultarRotulo();
     if (tR > 0 && G.ui.cardOpen && window.innerWidth <= 560) ocultarRotulo(); // auditoría 7-nov: en el teléfono el rótulo (z 30, a 30vh) tapaba la pregunta de una tarjeta abierta después
     if (!cola.length) return;
     espera = Math.max(0, espera - dt);
-    if (espera > 0 || G.quiet || G.ui.busy() || (G.dialogo && G.dialogo.activo && G.dialogo.activo()) || $('c1-fade') || $('c1-saltar') || /\bv18-(duelo|amenaza)-on\b/.test(document.body.className)) return; // QA-188 (W28): espera también a diálogo/bocadillo/narrador (busy no los cubre) y a la apertura del cap. 1; en un duelo V18 espera a que acabe
+    if (espera > 0 || G.quiet || G.ui.busy() || (G.dialogo && G.dialogo.activo && G.dialogo.activo()) || $('c1-fade') || $('c1-saltar') || enV18()) return; // QA-188 (W28): espera también a diálogo/bocadillo/narrador (busy no los cubre) y a la apertura del cap. 1; pul4: con una actividad V18 en marcha (minigolf, duelo, retos…) espera a que acabe
     const t = $('toast');
     const d = cola[0];
     if (!d.asentamiento && t && !t.hidden && t.querySelector('button')) return; // el aviso de construcción trae un botón: no se pisa
@@ -240,6 +249,31 @@ AVE.module('lugares', function (G) {
         fade.remove(); cola.length = 0; espera = 0;
         check('Durante la apertura del cap. 1 el aviso también espera (QA-188)', okEspera);
       }
+      // pul4: con una actividad V18 en marcha (G.menuModos.ocupado, el criterio de la guía) o el minigolf (v18-golf-on) el aviso espera
+      // en la cola y sale al terminar: no tapa la meta ni la flecha del primer tiro y no se pierde
+      {
+        const MMbk = G.menuModos, tenia = Object.prototype.hasOwnProperty.call(G, 'menuModos');
+        let ocup = true;
+        G.menuModos = Object.assign(Object.create(MMbk || null), { ocupado: () => ocup });
+        try {
+          cola.length = 0; espera = 0; G.ui.hideToast();
+          cola.push({ id: 'pul4', nombre: 'Punto pul4', asentamiento: null, nuevo: false });
+          G.quiet = false; avisar(0); avisar(1); G.quiet = true;
+          const esperaDuelo = cola.length === 1 && tt.hidden;
+          ocup = false; document.body.classList.add('v18-golf-on');
+          G.quiet = false; avisar(0); G.quiet = true;
+          const esperaGolf = cola.length === 1 && tt.hidden;
+          document.body.classList.remove('v18-golf-on');
+          G.quiet = false; avisar(0); G.quiet = true;
+          const sale = cola.length === 0 && !tt.hidden && tt.textContent.includes('Punto pul4');
+          check('pul4 · con un duelo, un reto o el minigolf V18 en marcha el aviso «¡Descubriste …!» espera en la cola', esperaDuelo && esperaGolf, 'duelo ' + esperaDuelo + ' · golf ' + esperaGolf);
+          check('pul4 · y sale en cuanto la actividad termina (no se pierde)', sale, tt ? tt.textContent.slice(0, 60) : 'sin toast');
+        } finally {
+          document.body.classList.remove('v18-golf-on');
+          if (tenia) G.menuModos = MMbk; else delete G.menuModos;
+          cola.length = 0; espera = 0; G.ui.hideToast();
+        }
+      }
       // QA-197 (auditoría 7-nov): el título a pantalla completa «Descubriste» (#fx-descubre, z 40,
       // src/engine/fx.js) usa el mismo criterio: con la historia ocupada se encola y sale al liberarse
       {
@@ -256,6 +290,22 @@ AVE.module('lugares', function (G) {
         G.quiet = true;
         check('QA-197 · con la apertura en curso el «Descubriste» a pantalla completa espera', esperaFx, capaFx() ? 'display=' + capaFx().style.display : 'sin capa');
         check('QA-197 · y sale en cuanto la historia queda libre', okFx, capaFx() ? capaFx().querySelector('.fx-d2').textContent : 'sin capa');
+      }
+      // pul4: el «Descubriste» a pantalla completa (fx.js) espera durante la actividad V18 sin caducar (más de 12 s) y sale al terminar
+      {
+        const capaFx = () => document.getElementById('fx-descubre');
+        if (capaFx()) capaFx().style.display = 'none';
+        document.body.classList.add('v18-golf-on');
+        G.quiet = false;
+        G.emit('lugar', { id: 'pul4fx', nombre: 'Punto pul4 fx' });
+        for (let i = 0; i < 300 && G.fx && G.fx.update; i++) G.fx.update(0.05); // 15 s con el minigolf en marcha
+        const esperaFx = !capaFx() || capaFx().style.display === 'none';
+        document.body.classList.remove('v18-golf-on');
+        for (let i = 0; i < 4 && G.fx && G.fx.update; i++) G.fx.update(0.05);
+        const okFx = !!capaFx() && capaFx().style.display !== 'none' && capaFx().querySelector('.fx-d2').textContent === 'Punto pul4 fx';
+        if (capaFx()) capaFx().style.display = 'none';
+        G.quiet = true;
+        check('pul4 · el «Descubriste» a pantalla completa espera toda la actividad V18 (15 s, sin caducar) y sale al terminar', esperaFx && okFx, 'espera ' + esperaFx + ' · sale ' + okFx);
       }
       // QA-195 (W28): en ≤560px, con el aviso SUBIDO (diálogo/bocadillos abiertos), el CSS lo baja
       // bajo el minimapa (top = max(118px, --mm-top + --mm + 8px)): geometría real contra #minimapa.
@@ -359,5 +409,5 @@ AVE.module('lugares', function (G) {
   // AV.lugaresTest (boot.js es del coordinador: se expone aquí si boot no lo hizo)
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.lugaresTest) AV.lugaresTest = o => test(o); }, 0);
 
-  return { lista, nombreDe, descubiertos, cerca, revisar, avisar, descubrir, omitido, asentamientos, asentamiento, cargarAsentamientos, test };
+  return { lista, nombreDe, descubiertos, cerca, revisar, avisar, descubrir, omitido, asentamientos, asentamiento, cargarAsentamientos, enV18, test };
 });

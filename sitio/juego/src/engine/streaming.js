@@ -153,7 +153,11 @@ AVE.module('streaming', function (G) {
     const f = scene.fog; if (!f) return Infinity;
     return f.near < 0 ? -f.near + f.far * 3.5 : f.far; // atmosférica (near negativo): por debajo de ~3 % de visibilidad
   }
-  const alcance = () => Math.min(CFG.dibujo[nivelCal()] || 190, alcanceNiebla());
+  // KIMI-320 (Modo Escuela, QA-181): «menor distancia de dibujo» — los edificios sueltos se recortan ~25 %
+  // antes (bajo 150→112 m · medio 190→142 · alto 320→240). El horizonte lo siguen cubriendo las zonas
+  // fundidas (zonaLejos 650 m, alcanceZona), igual que en «bajo» a 150-650 m: la isla no se queda sin
+  // edificios, solo cae antes el detalle por instancia (menos draw calls y submit por cuadro).
+  const alcance = () => Math.min((CFG.dibujo[nivelCal()] || 190) * ((R.calidad && R.calidad.escuela === true) ? 0.75 : 1), alcanceNiebla());
   const radioCerca = () => Math.min(CFG.cerca[nivelCal()] || 110, alcance());
   const alcanceZona = () => Math.min(Math.max(CFG.zonaLejos[nivelCal()] || 0, alcance()), alcanceNiebla());
 
@@ -1912,6 +1916,14 @@ AVE.module('streaming', function (G) {
     let fusN = 0;
     const quiereHD = I => I.fusN === fusN && I.fus === 1, quiereCerca = I => I.fusN === fusN && I.fus === 2;
     const lejosVeZona = id => !!(zonas[id] && zonas[id].lejosVe);
+    // KIMI-331 (Modo Escuela): Math.hypot mide ~2-2,4× más lento que sqrt en V8 (su escalado anti-overflow)
+    // y aquí las coordenadas son de metros: mismo resultado con diferencia ~1e-13 m, muy por debajo de los
+    // umbrales (metros). Son ~3 hipot por instancia activa y cuadro en cuadro().
+    const distXZ = (x1, z1, x2, z2) => { const x = x1 - x2, z = z1 - z2; return Math.sqrt(x * x + z * z); };
+    const distXYZ = (x1, y1, z1, x2, y2, z2) => { const x = x1 - x2, y = y1 - y2, z = z1 - z2; return Math.sqrt(x * x + y * y + z * z); };
+    const SIN_LISTA = []; // evita el array nuevo de `|| []` por zona y cuadro
+    const candPool = [];  // objetos del bucket HD reutilizados (patrón KIMI-034, sin basura por cuadro)
+    const esBohioAbiertoI = I => G.esBohioAbierto(I);
     function despachar(I, Z, L, sombra, nC) {
       // KIMI-Task-011: en las fusiones de zona cada instancia es un tramo; solo se dibujan los tramos de las que quieren esa
       // versión este cuadro (antes, la fusión entera en cuanto su caja estaba a la vista: el _hd de toda la ciudad a 450 m).
@@ -1931,7 +1943,8 @@ AVE.module('streaming', function (G) {
       L.lista.push(I); if (sombra) { if (Z.ciudad && Z.sombraMalla) Z.sombraPide = true; else L.sombra = true; }
     }
     function globalFus(G2, quiere, so) {
-      const zs = G2.zonas.size ? [...G2.zonas] : []; // 1 array por global y cuadro (antes era 1 por malla)
+      // KIMI-331: el Set de zonas se sustituye (nunca se muta) al refundir: la copia array se cachea por identidad.
+      const zs = G2.zonas.size ? (G2._zsa && G2._zsaN === G2.zonas ? G2._zsa : (G2._zsaN = G2.zonas, G2._zsa = [...G2.zonas])) : SIN_LISTA;
       for (const m of G2.mallas) {
         const n = tramos(m, quiere, 8, 100000); // KIMI-192/KIMI-225: gapo 8 tramos / 100 k vértices acotados; KIMI-225: el tramos() con gapo solo traga instancias que no se dibujan por otro camino este cuadro (el doble dibujo que motivó el revert 3ccbb99d)
         m.visible = n > 0;
@@ -1948,24 +1961,24 @@ AVE.module('streaming', function (G) {
       for (const k in lotes) { const L = lotes[k]; L.lista.length = 0; L.sombra = false; }
       vis.zonas = vis.hd = vis.cerca = 0;
       const nC = ++nCuadro; fusN = nC;
-      const enVista = h => { const bs = h.geometry.boundingSphere; return cp.distanceTo(bs.center) - bs.radius < maxZ && frustum.intersectsSphere(bs); };
+      const enVista = (h, maxZ2) => { const bs = h.geometry.boundingSphere; return cp.distanceTo(bs.center) - bs.radius < maxZ2 && frustum.intersectsSphere(bs); };
       for (const id in zonas) {
         const Z = zonas[id], m = Z.malla;
         Z.usaHDFusion = !!((Z.ciudad || Z.nivel === 2) && Z.hdMallas && Z.hdMallas.length && Z.inst.every(I => I.colocado || !Z.hdModelos.has(I.modelo)));
         Z.usaCercaFusion = !!((Z.ciudad || Z.nivel === 2) && Z.cercaMallas && Z.cercaMallas.length);
         Z.hdVe = Z.cercaVe = Z.hdSombra = Z.cercaSombra = Z.sombraPide = false;
         if (Z.sombraMalla) Z.sombraMalla.visible = false;
-        for (const h of Z.hdMallas || []) { h.visible = false; h.castShadow = false; }
-        for (const h of Z.cercaMallas || []) { h.visible = false; h.castShadow = false; }
+        for (const h of Z.hdMallas || SIN_LISTA) { h.visible = false; h.castShadow = false; }
+        for (const h of Z.cercaMallas || SIN_LISTA) { h.visible = false; h.castShadow = false; }
         Z.lejosVe = false;
         if (!m) { Z.usaMalla = false; continue; }
-        const dz = Math.hypot(cp.x - Z.cx, cp.z - Z.cz) - Z.r;
-        const dj = Math.hypot(px - Z.cx, pz - Z.cz) - Z.r;
+        const dz = distXZ(cp.x, cp.z, Z.cx, Z.cz) - Z.r;
+        const dj = distXZ(px, pz, Z.cx, Z.cz) - Z.r;
         const umbral = lodD + (Z.usaMalla ? -H : H);
         // La silueta fundida solo si la cámara y Vittata están lejos del borde. Junto a las ruinas se dibujan las mallas.
         // En la ciudad del tepuy, nunca: la silueta beige tapa el kit justo en la vista aérea.
         Z.usaMalla = !Z.ciudad && (Z.nivel === 1 || (dz > umbral && dj > umbral));
-        Z.lejosVe = Z.usaMalla && enVista(m);
+        Z.lejosVe = Z.usaMalla && enVista(m, maxZ);
         m.visible = Z.lejosVe && !lejosGlobal.zonas.has(Z.id);
         if (Z.mallaExtra) for (const e of Z.mallaExtra) e.visible = m.visible;
         if (m.visible) vis.zonas++;
@@ -1978,13 +1991,13 @@ AVE.module('streaming', function (G) {
       for (let i = 0; i < activas.length; i++) {
         const I = activas[i], Z = zonas[I.zona];
         if (Z.usaMalla) continue; // la dibuja la malla fundida de su zona
-        const dCam = Math.hypot(I.cx - cp.x, I.cy - cp.y, I.cz - cp.z);
+        const dCam = distXYZ(I.cx, I.cy, I.cz, cp.x, cp.y, cp.z);
         const vista = Z.ciudad;
         const cM = CFG.ciudadMalla[nivelCiudad()], maxI = vista ? Math.max(max, cM) : max;
         if (dCam - I.r > maxI) continue;
         // Metros hasta la superficie de la esfera, el menor entre la cámara y Vittata. Encima de una torre el centro
         // queda muchos metros abajo: con la distancia al centro el lod lejano (beige, sin textura) seguía puesto.
-        const dPla = Math.hypot(I.cx - px, I.cy - py, I.cz - pz);
+        const dPla = distXYZ(I.cx, I.cy, I.cz, px, py, pz);
         const dl = Math.max(0, Math.min(dCam, dPla) - I.r);
         const grande = I.r > CFG.hdGrande;
         const lodLim = vista ? Math.max(lodD, cM) : lodD;
@@ -2000,10 +2013,10 @@ AVE.module('streaming', function (G) {
         if (!L) continue;
         // Los props chicos (losas, toldos, canoas: BH1) solo dan sombra junto a Vittata: más allá son unos pocos texels
         // del mapa de sombras y cada modelo con sombra es un draw call más en la pasada de sombras.
-        const sombra = L.tipo !== 'lejos' && conSombra && Math.hypot(I.cx - px, I.cz - pz) < (I.r < CFG.sombraChica ? rS * 0.5 : rS) + I.r;
+        const sombra = L.tipo !== 'lejos' && conSombra && distXZ(I.cx, I.cz, px, pz) < (I.r < CFG.sombraChica ? rS * 0.5 : rS) + I.r;
         esfera.center.set(I.cx, I.cy, I.cz); esfera.radius = I.r;
         if (!sombra && !frustum.intersectsSphere(esfera)) continue;
-        if (L.tipo === 'hd' && hdTope < Infinity) { candHD.push({ I, Z, sombra, k: dl - (I.hdPres ? 10 : 0) }); continue; }
+        if (L.tipo === 'hd' && hdTope < Infinity) { const c = candPool.pop() || { I: null, Z: null, sombra: false, k: 0 }; c.I = I; c.Z = Z; c.sombra = sombra; c.k = dl - (I.hdPres ? 10 : 0); candHD.push(c); continue; }
         despachar(I, Z, L, sombra, nC);
       }
       if (candHD.length) {
@@ -2015,6 +2028,7 @@ AVE.module('streaming', function (G) {
           const L = c.I.hdPres ? lotes[c.I.modelo + ':hd'] : (lotes[c.I.modelo + ':cerca'] || lotes[c.I.modelo + ':lejos']);
           if (!c.I.hdPres) c.I.hd = false;
           if (L) despachar(c.I, c.Z, L, c.sombra && L.tipo !== 'lejos', nC);
+          candPool.push(c);
         }
         candHD.length = 0;
       }
@@ -2046,8 +2060,8 @@ AVE.module('streaming', function (G) {
             }
           }
         }
-        if (L.panel && G.esBohioAbierto && li.some(I => G.esBohioAbierto(I))) { // BM13: varias abiertas (una por aldea), todas al final
-          const cerr = li.filter(I => !G.esBohioAbierto(I)), abi = li.filter(I => G.esBohioAbierto(I));
+        if (L.panel && G.esBohioAbierto && li.some(esBohioAbiertoI)) { // BM13: varias abiertas (una por aldea), todas al final
+          const cerr = li.filter(I => !G.esBohioAbierto(I)), abi = li.filter(esBohioAbiertoI);
           for (let j = 0; j < li.length; j++) li[j] = j < cerr.length ? cerr[j] : abi[j - cerr.length];
         }
         let igual = li.length === pr.length;
