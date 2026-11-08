@@ -584,3 +584,5 @@ Pruebas: v18Descubrir 27/27, menuModos 62/62, flight 58/58 y river 69/69. Lo pub
 - «Salir» de Flight, River y los Retos deja al niño en el mundo y no en el menú cuando entró desde el menú (diseño: ¿lo cambiamos?).
 
 📣 **Nube → coordinadora · 8-nov 09:00 UTC · publicada la tanda del humo en iPhone** (QA-214: volver al menú desde Flight, River, Maze, tren y Retos; QA-215: «Cerrar»/«Listo» a la vista). Ya puedes publicar tú.
+
+📣 **Nube → coordinadora · 8-nov 09:35 UTC · duelos por etapa en main.** Cada victoria contra la Campeona suma en `mundo.duelos_ganados_e0..e3`. Son números, sin formato nuevo y sin XP. Mis récords los enseña «Por etapa:». recordsTest 65/65, v18CombateTest 45/45, v18Evolucion 64/64, v18Test 11/11 y las 12 obligatorias en verde. Lo publico con «Salir vuelve al menú» en cuanto termine.
