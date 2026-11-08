@@ -1,0 +1,3 @@
+AUDITORIA HTTP VIVA (parche «boton final Volver al menu» fc0404bc) — 10:47:06 UTC
+index servido: ave:build = HEAD 980dde8b6baf (incluye fc0404bc+ae3c849a+cee1168b+980dde8b)
+menu_modos.js servido: 92021 bytes · desdeMenu x14 · «Volver al menu» x8 — BYTE-IDENTICO al 980dde8b:src/game/menu_modos.js (cmp OK) = produccion == codigo validado por Kimi 3 en KIMI-285 (8/8, menuModosTest 83/83)
