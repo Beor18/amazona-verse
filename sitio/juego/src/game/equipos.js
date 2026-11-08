@@ -463,9 +463,11 @@
           }
         });
       }
+      // records.js monta #records en su primer abrir(); si la bandada se enganchó antes (carga a demanda desde boot.js),
+      // el oyente de las pestañas y el observador se ponen aquí, al abrir, o «Bandada» no hace nada.
       if (G.recordsApi && !G.recordsApi._eqAbrir) {
         const abrir0 = G.recordsApi.abrir;
-        G.recordsApi.abrir = function () { const r = abrir0.apply(this, arguments); try { asegurar(); } catch (err) { /* la pestaña no tapa los récords */ } return r; };
+        G.recordsApi.abrir = function () { const r = abrir0.apply(this, arguments); try { enganchar(); asegurar(); } catch (err) { /* la pestaña no tapa los récords */ } return r; };
         G.recordsApi._eqAbrir = true;
       }
       const body = document.querySelector('#records .rec-body');

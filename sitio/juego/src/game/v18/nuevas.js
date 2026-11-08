@@ -117,6 +117,11 @@ window.AVV18Nuevas = function (G) {
     }
     return nuevas;
   }
+  // Las que faltan y cómo llegan, con el mismo aviso que sale al conseguirlas (menú de inicio → Mis cotorras, menu_modos.js)
+  function pendientes() {
+    return HITOS.concat(ALBUM).filter(h => rango(V.estado(h.id)) < rango('seleccionable'))
+      .map(h => ({ id: h.id, txt: h.txt, aviso: h.txt + ' ' + ((ALBUM.includes(h) ? !h.f : h.m) ? TXT.eligeM : TXT.elige), album: ALBUM.includes(h) }));
+  }
   G.on('album', ev => { if (ev && ev.id) albumLlega(ev.id); }); // el Álbum emite al abrir cada tarjeta (album.js)
   function revisar(avisar) {
     const nuevas = [];
@@ -1016,6 +1021,6 @@ window.AVV18Nuevas = function (G) {
     const tabla = Object.keys(fila).map(sp => ({ especie: sp, poder: fila[sp].poder, desbloqueo: fila[sp].desbloqueo, activacion: fila[sp].activacion, guardado: fila[sp].guardado, ingles: fila[sp].ingles }));
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out, tabla };
   }
-  G.v18nuevas = { HITOS, revisar, revisarAlbum, albumLlega, test, testPoderes };
+  G.v18nuevas = { HITOS, revisar, revisarAlbum, albumLlega, pendientes, test, testPoderes };
   return G.v18nuevas;
 };

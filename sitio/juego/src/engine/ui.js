@@ -12,7 +12,7 @@ AVE.module('ui', function (G) {
   // pregunta y las opciones; se aparta y vuelve al cerrarla, como los que llegan con la tarjeta abierta (QA-93).
   function showCard(html) {
     $('card').innerHTML = html; $('card').hidden = false; cardOpen = true;
-    if (window.innerWidth <= 560 && !$('toast').hidden && actual) { if (!pendiente) pendiente = actual; hideToast(); }
+    if (window.innerWidth <= 560 && !$('toast').hidden && actual) { if (!pendiente) pendiente = actual; ocultar(); }
   }
   function hideCard() { $('card').hidden = true; cardOpen = false; G.emit('cardHidden'); }
   let toastTimer = 0;
@@ -29,11 +29,15 @@ AVE.module('ui', function (G) {
   }
   function toast(text, ms) { const p = { text, ms }; if (tapado()) { pendiente = p; return; } mostrar(p); }
   function toastHTML(html, ms) { const p = { html, ms }; if (tapado()) { pendiente = p; return; } mostrar(p); }
-  function hideToast() { $('toast').hidden = true; toastTimer = 0; }
+  // QA-207: «ocultar» (interno) quita el aviso de la pantalla y respeta el apartado; los apartados de showCard y del update lo usan.
+  // hideToast() (público) además descarta el aviso que estaba en pantalla si quedó apartado, para que no vuelva al cerrarse
+  // la tarjeta. Un aviso distinto que llegó con la pantalla tapada y aún no se ha visto (QA-93) sigue esperando.
+  function ocultar() { $('toast').hidden = true; toastTimer = 0; }
+  function hideToast() { if (pendiente && pendiente === actual) pendiente = null; ocultar(); }
   // QA-188 (en vivo, 7-nov): un aviso que ya estaba en pantalla cuando algo pasa a taparlo (empieza la apertura del cap. 1
   // justo al cerrar el creador, se abre el cómic…) se aparta y vuelve al terminar, como los que llegan después
   G.on('update', () => {
-    if (!pendiente && actual && !$('toast').hidden && tapado()) { pendiente = actual; hideToast(); return; }
+    if (!pendiente && actual && !$('toast').hidden && tapado()) { pendiente = actual; ocultar(); return; }
     if (pendiente && !tapado()) { const p = pendiente; pendiente = null; mostrar(p); }
   }, 84);
   function overlayOpen() { return !$('end').hidden || !$('comic').hidden || !$('creator').hidden; }
@@ -41,7 +45,7 @@ AVE.module('ui', function (G) {
   function busy() { return G.dialogo.open() || cardOpen || overlayOpen(); }
   // El creador es opaco: mientras está abierto el mundo no se dibuja
   function worldHidden() { return !$('creator').hidden; }
-  G.on('update', dt => { if (toastTimer !== Infinity && toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) hideToast(); } }, 85);
+  G.on('update', dt => { if (toastTimer !== Infinity && toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) ocultar(); } }, 85);
 
   // Botón de sonido
   const soundBtn = $('b-sound'), A = G.audio;

@@ -236,6 +236,14 @@ window.AVV18Fx = function (G) {
     return { ok: true };
   }
 
+  // Quita al instante el escudo de un actor, sin dispersión (fin de combate o salida: no queda un escudo fantasma girando).
+  function apagar(actor) {
+    const e = escudos.find(x => x.clave === claveDe(actor));
+    if (!e) return { ok: false };
+    quitar(e); plumas.visible = escudos.length > 0;
+    return { ok: true };
+  }
+
   let quieto = false; // CPU (móvil): sin anillos ni escudos, tras una pasada que los deja a escala 0 no se reescriben ni se suben los búferes
   function paso(dt) {
     tFx += Math.min(0.1, Math.max(0, dt || 0));
@@ -263,6 +271,9 @@ window.AVV18Fx = function (G) {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const avanza = s => { for (let i = 0, k = Math.ceil(s / 0.1); i < k; i++) paso(0.1); };
     try {
+      for (let i = 0; i < MAXR; i++) ranillos[i] = null;
+      for (let i = escudos.length - 1; i >= 0; i--) quitar(escudos[i]);
+      paso(0.1);
       const nEsp = nivel() === 'bajo' ? 2 : 3;
       const r0 = onda({ x: 0, y: 50, z: 0 }, { x: 1, y: 0, z: 0 }, 9);
       check('onda() encola los anillos esperados', r0.ok && estado().anillos === nEsp, estado().anillos + ' (' + nEsp + ' en ' + nivel() + ')');
@@ -311,11 +322,13 @@ window.AVV18Fx = function (G) {
       avanza(1.5);
       dispersar('tercero'); dispersar('cuarto');
       avanza(1.5);
+      escudo('rival', 10); const ap = apagar('rival');
+      check('apagar(actor) quita su escudo al instante, sin dispersión (fin de combate)', ap.ok && estado().escudos === 0 && !plumas.visible, JSON.stringify(estado()));
       check('Sin excepciones y todo se apaga al final', estado().escudos === 0 && estado().anillos === 0, JSON.stringify(estado()));
     } catch (e) { check('Sin excepciones', false, e && e.message); }
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18fx = { onda, escudo, dispersar, paso, estado, test, _interno: { ranillos, escudos, rings, plumas, pPos } };
+  G.v18fx = { onda, escudo, dispersar, apagar, paso, estado, test, _interno: { ranillos, escudos, rings, plumas, pPos } };
   return G.v18fx;
 };

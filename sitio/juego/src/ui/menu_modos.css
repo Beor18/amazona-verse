@@ -101,3 +101,23 @@ dialog.capitulos::backdrop { background: rgba(10, 8, 30, 0.6); }
 /* Vuelo libre: sin el panel de misiones ni la pista de teclas; el resto del HUD sigue */
 html.modo-libre :is(#quest, #keyhint) { display: none !important; }
 @media (prefers-reduced-motion: reduce) { .modo, .modo.es-ultimo { animation: none; } }
+/* V18 encima del menú (menu_modos.js): Mis cotorras, el Álbum y Retos con amigos usan #card por encima de la portada */
+#card.mm-encima { z-index: calc(var(--z-title) + 2); }
+#card .mm-xp { display: block; font-weight: 700; font-size: var(--fs-xs); letter-spacing: 0.02em; }
+#card .mm-faltan { margin: var(--sp-3) 0; padding: var(--sp-2) var(--sp-3); border-radius: var(--r-md); background: var(--c-paper-2); }
+#card .mm-faltan summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font: 700 var(--fs-md)/1.2 var(--font-display); }
+#card .mm-faltan ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+#card .mm-faltan li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: var(--sp-2); align-items: start; font-size: var(--fs-sm); line-height: 1.3; overflow-wrap: anywhere; }
+#card .mm-candado { width: 18px; height: 18px; margin-top: 1px; color: var(--c-ink-muted); }
+#card .mm-amigos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: var(--sp-2); margin: 0 0 var(--sp-3); }
+#card .mm-amigo { flex-direction: column; justify-content: flex-start; min-height: 132px; min-width: 0; padding: var(--sp-2); gap: var(--sp-1); white-space: normal; text-align: center; overflow-wrap: anywhere; }
+#card .mm-amigo .modo-img { width: 52px; height: 52px; flex: none; }
+#card .mm-amigo b { font: 700 var(--fs-md)/1.15 var(--font-display); }
+#card .mm-amigo small { font-size: var(--fs-xs); line-height: 1.2; }
+:root.a11y-contraste #card .mm-faltan { background: #000; color: #fff; }
+/* Ficha de nivel de evolucion.js en Mis cotorras: su hoja se inyecta solo al salir la carta de «subiste de nivel» (mismos valores) */
+#card .v18-evo-f { display: block; font-size: 12px; margin-top: 3px; }
+#card .v18-evo-bar { display: block; height: 4px; border-radius: 2px; background: #0003; overflow: hidden; margin: 2px 6px; }
+#card .v18-evo-bar b { display: block; height: 100%; background: #e0a526; }
+#card .v18-evo-et { display: inline-block; font-size: 10px; padding: 1px 5px; border-radius: 8px; background: #ffe39a; color: #3b2a14; margin: 2px 1px; }
+#card .v18-evo-et.no { background: #0002; color: inherit; opacity: 0.6; }

@@ -95,6 +95,17 @@ window.AVV18Progreso = function (G) {
       cambiarMundo('puente_villa', 'reparado');
       recargar();
       check('Tras recargar siguen especie, inventario y mundo', seleccionada() === 'arausiaca' && cuantos('pluma_rival') === 0 && mundo('puente_villa') === 'reparado' && !otorgar('combate_1', 'pluma_rival', 1));
+      // V18.2: una partida v1 (sin evo) pasa a v2 sin perder nada; el evo de una v2 (prototipo o producto, 6 alianzas) se guarda y se lee tal cual
+      {
+        localStorage.setItem(clave(), JSON.stringify({ v: 1, especies: { agilis: 'seleccionable' }, inv: { pluma_rival: 3 }, otorgados: { combate_1: true }, mundo: { puente_villa: 'reparado' }, sel: 'agilis' })); D = null;
+        const a = datos(), okV1 = a.v === 2 && a.especies.agilis === 'seleccionable' && a.inv.pluma_rival === 3 && a.otorgados.combate_1 && a.mundo.puente_villa === 'reparado' && a.sel === 'agilis' && !!a.evo && typeof a.evo === 'object';
+        const evo = { esp: { vittata: { xp: 500 }, agilis: { xp: 1500 } }, alianzas: { eco_protector: 'desbloqueada', viento_cruzado: 'disponible' }, alianzaSel: 'eco_protector', marcas: { puente: true } };
+        localStorage.setItem(clave(), JSON.stringify({ v: 2, especies: {}, inv: {}, otorgados: {}, mundo: {}, sel: null, evo })); D = null;
+        datos(); guardar(); D = null; const c = datos(), crudoC = JSON.parse(localStorage.getItem(clave()));
+        check('V18.2: una partida v1 migra a v2 sin perder nada y el evo de una v2 (niveles y alianzas) se conserva al guardar y recargar',
+          okV1 && crudoC.v === 2 && c.evo.esp.agilis.xp === 1500 && c.evo.alianzas.viento_cruzado === 'disponible' && c.evo.alianzaSel === 'eco_protector' && c.evo.marcas.puente, JSON.stringify(c.evo));
+        borrar();
+      }
       // QA-165: jugador nuevo, V18 se lee antes de que el creador haga el perfil; al crearlo, su especie entra elegible
       const prof0 = G.S && G.S.profile;
       if (G.S) {

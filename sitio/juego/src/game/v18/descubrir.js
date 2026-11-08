@@ -447,6 +447,6 @@ window.AVV18Descubrir = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18descubrir = { ID, P, B, R, estado, descubrir, empezarReto, abrirSeleccion, elegir, seleccionables, paso, listo, test, libre, avisarInicio };
+  G.v18descubrir = { ID, TXT, P, B, R, estado, descubrir, empezarReto, abrirSeleccion, elegir, seleccionables, paso, listo, test, libre, avisarInicio };
   return G.v18descubrir;
 };

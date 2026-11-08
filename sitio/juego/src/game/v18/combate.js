@@ -168,7 +168,7 @@ window.AVV18Combate = function (G) {
   const especieJugador = () => espForzada || (G.v18 && G.v18.seleccionada && G.v18.seleccionada()) ||
     (S.profile && ((S.profile.look && S.profile.look.species) || S.profile.species)) || 'vittata';
   const especieRival = sp => H.familia(sp) === 'montaneras' ? 'ventralis' : 'arausiaca';
-  const nuevasStats = () => ({ movida: 0, ataques: 0, esquivas: 0, poderes: 0, aciertosIA: 0, bloqueos: 0, interrupciones: 0, ondas: 0, escudos: 0, dispersiones: 0, poderesEv: 0, reacciones: 0, intJ: 0, desvios: 0 });
+  const nuevasStats = () => ({ movida: 0, ataques: 0, esquivas: 0, poderes: 0, aciertosIA: 0, bloqueos: 0, interrupciones: 0, ondas: 0, escudos: 0, dispersiones: 0, poderesEv: 0, reacciones: 0, intJ: 0, desvios: 0, poderJ: 0 });
   const C = { fase: 'nada', t: 0, cuenta: 0, j: null, r: null, balas: [], timers: [], trampas: [], resultado: null, ch: null, listo: null, stats: nuevasStats() };
   // Recompensa de la primera victoria: materiales del inventario del juego (S.inv), los mismos del cap. 1
   const PREMIO = { madera: 2, piedra: 1 };
@@ -305,7 +305,10 @@ window.AVV18Combate = function (G) {
   function quitarEscudo(f, sinFx) {
     f.escudo = 0; f.alasT = 0;
     const e = f.escudoFx; if (!e) return; f.escudoFx = null;
-    if (e === 'v18fx') { if (!sinFx && v18fx('dispersar')) try { G.v18fx.dispersar(f); } catch (er) { /* efecto */ } }
+    if (e === 'v18fx') {
+      if (!sinFx && v18fx('dispersar')) try { G.v18fx.dispersar(f); } catch (er) { /* efecto */ }
+      if (sinFx && v18fx('apagar')) try { G.v18fx.apagar(f); } catch (er) { /* efecto */ }
+    }
     else scene.remove(e);
     if (!sinFx) { fx('feathers', f.pos.x, f.pos.y + 1, f.pos.z); C.stats.dispersiones++; }
   }
@@ -345,6 +348,12 @@ window.AVV18Combate = function (G) {
   function apoyo(quien) {
     if (!hud) return; const el = hud.q('apoyo'); if (!el) return;
     el.hidden = false; apoyoT = 1.2;
+    // V18.2: el retrato y el aviso de la compañera de cada alianza
+    if (quien && el.dataset.de !== quien) {
+      el.dataset.de = quien; const img = el.querySelector('img'), sp = el.querySelector('span');
+      if (img) img.src = 'assets/retratos/v18/' + quien + '.png';
+      if (sp) sp.textContent = (G.v18evo && G.v18evo.textoApoyo) ? G.v18evo.textoApoyo(quien) : TXT.apoyo;
+    }
     fx('feathers', S.pos.x, S.pos.y + 1.3, S.pos.z);
   }
   // Ojo de selva: el siguiente ataque de la vista se anuncia y sale un momento después (las defensas no se retrasan)
@@ -365,6 +374,8 @@ window.AVV18Combate = function (G) {
     }
     if (r.ok && id === 'cuento' && !f.ia) flotante(TXT.cuento, 1.0); // Cuento: confirmación de que la rival se distrajo
     if (r.ok && f.ia) { C.stats.ataques++; if (!H.get(id).basico) C.stats.poderes++; }
+    // V18.2: desafío de las alianzas (usar el poder propio 2 veces)
+    if (r.ok && !r.avisada && !f.ia && id === f.poder) C.stats.poderJ++;
     if (r.ok) pintar();
     else if (!f.ia && r.motivo === 'energia') pulso('en-j');
     return r;
@@ -566,7 +577,8 @@ window.AVV18Combate = function (G) {
     C.fase = 'fin'; C.resultado = res; C.finT = performance.now(); quitarBalas(); C.timers.length = 0;
     const gano = res === 'win';
     emitir({ tipo: res, de: gano ? 'jugador' : 'rival', a: gano ? 'rival' : 'jugador', valor: gano ? C.j.plumas : C.r.plumas,
-      especie: C.j.especie, dura: Math.round((C.tLucha || 0) * 10) / 10, interrupciones: C.stats.intJ, quitadas: PLUMAS - C.r.plumas }); // V18.2: para la XP
+      // V18.2: para la XP
+      especie: C.j.especie, dura: Math.round((C.tLucha || 0) * 10) / 10, interrupciones: C.stats.intJ, poderJ: C.stats.poderJ, quitadas: PLUMAS - C.r.plumas });
     let txt;
     // La que se queda sin plumas se marea un rato, con estrellitas, y se sacude (nadie se hace daño)
     const perdedora = gano ? C.r : C.j; perdedora.finMareo = 2.2; perdedora.mareo = Math.max(perdedora.mareo, 2.2);

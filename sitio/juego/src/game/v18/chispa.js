@@ -211,10 +211,18 @@ window.AVV18Chispa = function (G) {
     emitir({ tipo: 'cancela', motivo: motivo || 'lejos' });
     return true;
   }
+  // Esc cede a cualquier capa con su propio Esc (diálogo, tarjeta, overlays, guía de controles, mapa grande, paneles): la actividad no se lo queda
+  function otraCapaEsc() {
+    const abierta = id => { const x = document.getElementById(id); return !!x && !x.hidden; };
+    try {
+      if ((G.dialogo && G.dialogo.open && G.dialogo.open()) || G.ui.cardOpen || (G.ui.busy && G.ui.busy())) return true;
+      return ['dialog', 'card', 'end', 'comic', 'creator', 'guia-panel', 'guia-leyenda', 'mapa-grande', 'familia', 'criadero', 'maestro'].some(abierta);
+    } catch (e) { return true; }
+  }
   // W35 · teclado: Esc deja la carrera (como alejarse, sin contar partida) y no abre además la Pausa (ui.js mira defaultPrevented)
   function teclaEsc(e) {
     if (e.key !== 'Escape' || e.repeat || (A.fase !== 'cuenta' && A.fase !== 'carrera')) return;
-    if ((e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName)) || (G.pausa && G.pausa.activa && G.pausa.activa()) || G.ui.cardOpen) return;
+    if ((e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName)) || (G.pausa && G.pausa.activa && G.pausa.activa()) || otraCapaEsc()) return;
     e.preventDefault(); e.stopImmediatePropagation(); cancelar('sale');
   }
   addEventListener('keydown', teclaEsc, true);
@@ -285,6 +293,15 @@ window.AVV18Chispa = function (G) {
       check('W35 · Chispa: el panel de la carrera se anuncia (role=status, aria-live) con nombre; el reloj y el récord no se leen a cada décima',
         !el.hidden && el.getAttribute('role') === 'status' && el.getAttribute('aria-live') === 'polite' && !!nombre(el) && hud.s.getAttribute('aria-live') === 'off' && hud.r.getAttribute('aria-live') === 'off', nombre(el));
       check('W35 · Chispa: el panel no roba el foco (la carrera se juega con las teclas de siempre)', document.activeElement === foco0 && !el.querySelector('button, [tabindex]'));
+      const gp = G.guiaControles && G.guiaControles.prueba, forz0 = gp && gp.forzado;
+      if (gp) gp.forzado = 'teclado';
+      if (gp && gp.mostrar(true)) {
+        const kg = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); document.body.dispatchEvent(kg);
+        const cerrada = gp.el.panel.hidden && !gp.panelAbierto, fase = A.fase;
+        if (!cerrada) gp.cerrar();
+        check('W35 · Chispa: con la guía de controles abierta, Esc cierra la guía y no deja la carrera', cerrada && fase !== 'nada' && !kg.defaultPrevented, JSON.stringify({ cerrada, fase, esc: kg.defaultPrevented }));
+      } else check('W35 · Chispa: con la guía de controles abierta, Esc cierra la guía y no deja la carrera', !gp, gp ? 'la guía no se abrió' : 'sin guía de teclado (sin cargar)');
+      if (gp) gp.forzado = forz0;
       const kd = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); document.body.dispatchEvent(kd);
       document.body.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', bubbles: true, cancelable: true }));
       const pz = document.getElementById('pause'); let pausa = false; try { pausa = !!(pz && pz.matches(':popover-open')); if (pausa) pz.hidePopover(); } catch (e) { /* sin popover */ }
