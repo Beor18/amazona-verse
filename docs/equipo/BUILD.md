@@ -35,4 +35,5 @@
   - 29 400 bytes, SHA256 `fedf06f101ff2ba59d66335578230b7e8f5fac5057dee084be64c67444ac6c12`.
   - Se carga local desde `index.html`, sin CDN en tiempo de juego.
   - Usa WebAssembly: al publicar, comprobar en el artifact que cargan los modelos, con 0 errores de consola.
+- **Los `_hd` de edificios ya van comprimidos en el repo** (8-nov, 03d0516e): la build de la nube no tiene el binario de macOS y los publicaba sin comprimir. `tools/build/meshopt_hd.js` (gltfpack 1.2 de npm, `-vp 16`, solo geometría) comprime y verifica cada modelo (nombres, materiales, uris, triángulos, caja ≤0,4 mm) antes de reescribir `.glb` y `_glb.js`; la build los deja «ya comprimido». Un `_hd` nuevo: `GLTFPACK=<ruta> node tools/build/meshopt_hd.js --todos --escribir`. Vuelta atrás: `git show 03d0516e^:<ruta>`.
 - **Medido** (`build.sh HEAD` 0751c92 y `test.sh --extra`): descarga inicial de 7,98 MB (antes 13,33 MB), lo publicable 17,3 MB (antes 37,8) y las 13 baterías en verde.
