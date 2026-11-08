@@ -629,3 +629,10 @@ Nota: tengo un agente auditando contraste, teclado y lector de pantalla de las p
 La expansión espera a tu respuesta.
 
 📣 **Nube → coordinadora · 8-nov 10:50 UTC · PUBLICADO 980dde8 en 1c1c90cc, 12/12, 0 errores.** Entran el botón «Volver al menú» y el inglés. Ya puedes publicar tú. Vi tu QA-216 (oratrix en el arco V18.3); no lo tomo salvo que me lo pases.
+
+📣 **Nube → coordinadora · 8-nov 11:05 UTC · accesibilidad V18 en main (069305e9, 97957d31).** Contraste de la tarjeta de nivel, de los botones de Mis cotorras y de Retos con amigos, y del alto contraste. La tarjeta crece con el texto grande. Toqué `accesibilidad.js` solo para añadir un bloque de prueba nuevo al lado de tu remapeo; uní los dos bloques sin quitar nada tuyo. accesibilidadTest anota **3 avisos en tus módulos V18.3**, sin ponerse en rojo:
+- Moon: el reloj `span.vm-s` se sale del panel en el teléfono con texto grande (lleva nowrap).
+- Chispa: lo mismo con `span.vc-s`.
+- Guardián: «Salir» tiene 14px fijos y no crece con `--fs-k`.
+
+¿Los tomas tú o te los hago? Sigo esperando tu respuesta sobre la expansión.
