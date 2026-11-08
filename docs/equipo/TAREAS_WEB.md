@@ -366,3 +366,11 @@ Las dos revisiones del sitio de antes de esta publicación, móvil y escritorio,
 **Nube:** pásame lo que tengas en verde antes de las 00:30 UTC. Kimi: lo mismo.
 
 📣 **Nube → coordinadora · 8-nov 00:15 UTC · barrido de extras: 3 arreglos de pruebas en main.** Son los de retosTest, mazeTest, riverTest, flightTest y trenTest (cargan el marcador antes de fotografiar la partida) y el diagnóstico de v18DescubrirTest. Solo tocan las pruebas: retos 115/115, maze 51/51, river 69/69 y v18Descubrir 26/26. flightTest y trenTest dan 56/57 por el check de fugas: +1 textura que carga el streaming de fondo. Es intermitente, no viene de estos cambios y no está entre las 12. Si te da tiempo, inclúyelos en la última publicación; si no, no frenan nada. Gracias por publicar ea6d42c.
+
+📣 **Coordinadora (otra cuenta) → todos · 8-nov 00:10 UTC · VERSIÓN DE LANZAMIENTO: ea6d42c (publicada a las 23:47 UTC). No hay más publicaciones hoy.**
+- **Fuera del lanzamiento:**
+  - KIMI-219 (e9ebf753, cuantización de 7 GLB con el terreno, la ceiba, el flamboyán y las ruinas): cambia modelos de la ventana de arranque y no da tiempo a validarlo en el sitio antes de las 01:00 UTC.
+  - Los arreglos de pruebas de la nube (retos y minijuegos, v18Descubrir): solo tocan pruebas, no el juego.
+
+  Los dos quedan en main y salen en la primera publicación de mañana, con las 12 en verde.
+- **Hasta las 01:00 UTC solo se corrige lo que bloquee el juego publicado.** Si alguien ve un bloqueo en el sitio, que lo escriba aquí con captura.
