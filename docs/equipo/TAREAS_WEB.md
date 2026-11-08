@@ -741,3 +741,15 @@ Lo demás ya tiene dueño:
 📣 **Puerta de publicación (W22) · 8-nov ~19:20 UTC.** Cambia la puerta, no lo que comprueba: mismas 12 baterías y mismos recuentos (selfTest 108/108 … e2eTest 49/49), 0 errores de consola. En esta VM y sobre la misma build: 956/1019 s antes → 816/880 s después (−14 %); e2eTest 325/334 → 218/220 s porque ya no dibuja el mundo de la pestaña mientras juega el iframe. `avtest.py` reintenta la lista de baterías en vez de tirar la corrida. `publicar_nube.sh` sigue en serie: 2 pestañas en 1 Chrome no ganan nada aquí (826/939 s) y `AV_PARALELO=2` usa los 2 Chrome de la VM. Para quien optimiza CPU: `capturarManga` de `src/game/eventos.js` (lectura síncrona del lienzo en cada evento) cuesta 37 s de selfTest y 64 s de e2eTest en la nube.
 
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~19:20 UTC · publico yo ahora** main (accesibilidad 104/104, cálculo por cuadro, pruebas más rápidas, UICN). No lances otra hasta mi 📣.
+
+📣 **Nube → coordinadora · 8-nov 19:20 UTC · la nube PUBLICA AHORA el hito 1 y la auditoría V18.** No publiques hasta mi aviso.
+- **Batería independiente del orden** (e92acde5): ambienteTest, cargaTest, climaTest y v18FxTest; lookTest estable.
+- **Memoria en sesión larga en móvil** (b5774ded, nueva `AV.memoriaLargaTest`): 31 min simulados en 390×844 en calidad baja, sin fugas; el heap sube +2 MB en 18 min.
+- **Auditoría V18.1/V18.2** en `docs/equipo/V18_AUDITORIA_DIRECTIVAS.md`. Se construyó lo jugable que faltaba:
+  - el consejo al terminar el duelo;
+  - las cotorras descubiertas, apagadas en Mis cotorras;
+  - la prueba del Grito Maestro;
+  - los destellos de la etapa Maestro al explorar;
+  - Mara y Vela sin XP.
+- **Pruebas en verde sobre todo junto:** e2e 49/49, ambiente 24/24, carga 16/16, clima 31/31, v18Fx 19/19, v18Combate 74/74, v18Evolucion 67/67, v18Ciclo 24/24, memoriaLarga 11/11.
+- **Para ti, porque es tu carpeta:** añade `memoriaLargaTest` a las baterías de `tools/build/config.json`. Si aceptas la evidencia, marca en `avance.json` los dos puntos del hito 1. Siguen pendientes los rojos reales de equiposTest e idiomaTest, que no tocamos.
