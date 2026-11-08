@@ -230,14 +230,22 @@ async function fps(cdp, ses, segs) {
       if (!G.v18arco) await AVE.assets.script('src/game/v18/arco.js').then(() => window.AVV18Arco(G));
       const A = G.v18arco;
       if (!A) return 'sin-api';
-      // despertar el elenco y poner a Vittata en la plaza de las Atalayas
+      // escenario de juego real: puerto reparado + Vittata lejos (>160 m del puerto) → el elenco se muda a las Atalayas
+      try { G.v18.cambiarMundo('puerto_mina', 'reparado'); } catch (e) {}
+      try { A.avanzar('reunion'); } catch (e) {}
       A.aplicar();
+      if (G.v18puerto && G.v18puerto.aplicar) G.v18puerto.aplicar();
       const st = A.estado();
       const s = A.SITIO && (A.SITIO.plaza || A.SITIO.maq) || null;
-      if (s) { const ST = AV.G.mundo && AV.G.mundo.streaming; if (ST && ST.terminar) ST.terminar(); AV.G.S.pos.x = s.x; AV.G.S.pos.z = s.z; AV.G.S.pos.y = 30; }
+      if (s) { const ST = G.mundo && G.mundo.streaming; if (ST && ST.terminar) ST.terminar(); G.S.pos.x = s.x; G.S.pos.z = s.z; G.S.pos.y = 30; }
       return { estado: st, sitio: s, elenco: A.elenco() };
     } catch (e) { return 'err:' + (e && e.message || e); } })()`, 120, true).catch(e => 'err:' + e.message);
     await cdp.bombear(4);
+    // el elenco tarda unos cuadros en mudarse (>160 m del puerto): esperarlo como haría un niño
+    const elencoOK = await espera(cdp, ses, `(window.AV && AV.G.v18arco && AV.G.v18arco.elenco && AV.G.v18arco.elenco()) === true`, 20);
+    const elenco = await evaluar(cdp, ses, `(() => { const A = AV.G.v18arco, N = AV.G.v18npc; return { tengo: !!(A && A.elenco && A.elenco()), npcs: N && N.activos ? N.activos() : [], tuerca: !!(A && A.tuercaAqui && A.tuercaAqui()), estado: A ? A.estado() : null }; })()`, 15, false);
+    apunta({ beat: 'arco-elenco', despierto: !!elencoOK, elenco });
+    if (!elencoOK) nota('arco', 'el elenco no se despertó en 20 s: ' + JSON.stringify(elenco));
     await foto(cdp, ses, 'b7_arco_atalayas');
     // hablar con el primer NPC interactivo cercano (botón de interacción táctil o tecla E)
     const dialogo = await evaluar(cdp, ses, `(() => { try {
@@ -262,7 +270,10 @@ async function fps(cdp, ses, segs) {
       return 'diario';
     } catch (e) { return 'err:' + e.message; } })()`, 30, true).catch(e => 'err:' + e.message);
     await cdp.bombear(1.5);
-    const btnFQ = await tocaSel(cdp, ses, '[data-fq-abrir]');
+    // el botón vive al final del diario: en el teléfono queda bajo el pliegue; un niño scrollea hasta él
+    const fqVisible = await evaluar(cdp, ses, `(() => { const b = document.querySelector('[data-fq-abrir]'); if (!b) return false; b.scrollIntoView({ block: 'center' }); return true; })()`, 10, false);
+    await cdp.bombear(0.5);
+    const btnFQ = fqVisible ? await tocaSel(cdp, ses, '[data-fq-abrir]') : false;
     if (!btnFQ) { await evaluar(cdp, ses, `(() => { const b = document.querySelector('[data-fq-abrir]'); if (b) { b.click(); return true; } return false; })()`, 10, false); }
     await cdp.bombear(0.8);
     await foto(cdp, ses, 'b8_family_menu');
