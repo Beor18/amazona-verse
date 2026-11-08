@@ -1,0 +1,42 @@
+{
+ "beats": [
+  {
+   "beat": "portada",
+   "tarjetasV18": [
+    "aventura",
+    "golf",
+    "duelo",
+    "amigos",
+    "cotorras",
+    "album",
+    "carreras",
+    "tormenta",
+    "banquete",
+    "flight",
+    "river",
+    "libre",
+    "nido",
+    "records"
+   ]
+  },
+  {
+   "beat": "creador",
+   "ok": true
+  },
+  {
+   "beat": "spawn-cap1",
+   "calidad": "desconocida",
+   "fps": {
+    "med": 36.7,
+    "peorMs": 49
+   }
+  }
+ ],
+ "consola": [],
+ "fricciones": [
+  {
+   "beat": "spawn-cap1",
+   "nota": "calidad esperada «bajo» en iPhone emulado y salió «desconocida»"
+  }
+ ]
+}
