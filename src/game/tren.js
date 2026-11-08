@@ -955,7 +955,7 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
           for (let i = 0; i < 30; i++) { otraVez(); toque(); held.gas = true; tick(2 + (i % 3)); held.gas = false; if (st.fase === 'juego') fin(); }
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           const m1 = mem();
-          check('30 reinicios: nada nuevo en la escena del tren y las geometrías del renderer no crecen (±12: el streaming del mundo carga y libera las suyas)', raiz.children.length === nHijos && E.humos.length <= P.humoMax && m1.g <= m0.g + 12 && m1.t <= m0.t + 1, JSON.stringify(m0) + ' → ' + JSON.stringify(m1) + ' · ' + raiz.children.length + ' hijos');
+          check('30 reinicios: nada nuevo en la escena del tren y las geometrías y texturas del renderer no crecen (±12: el streaming del mundo carga y libera las suyas; una fuga por reinicio daría 30 o más)', raiz.children.length === nHijos && E.humos.length <= P.humoMax && m1.g <= m0.g + 12 && m1.t <= m0.t + 12, JSON.stringify(m0) + ' → ' + JSON.stringify(m1) + ' · ' + raiz.children.length + ' hijos');
           check('La flora que caía sobre la vía está apartada (rank) y se repone al salir', flora.length > 0 && flora.every(f => f[0].rank[f[1]] === 99), flora.length + ' instancias');
           const mmEsc = scene.getObjectByName('flora:manchas'), muestra = manchas[0] && [manchas[0][0], manchas[0][1], manchas[0][2][0]];
           check('Las manchas de sombra de los árboles apartados también se apartan (escala 0) y se reponen al salir', !mmEsc || (manchas.length > 0 && manchas.every(([mm, i]) => mm.instanceMatrix.array[i * 16] === 0 && mm.instanceMatrix.array[i * 16 + 5] === 0)), mmEsc ? manchas.length + ' manchas' : 'sin flora:manchas en la escena');
@@ -967,7 +967,12 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
             check('Inglés: HUD, botones, cargas y resultados se traducen (diccionario propio, raíz con data-no-tr)', okEn && st.ui.el.hasAttribute('data-no-tr'), st.ui.rec.textContent);
             if (id) { await id.poner(lang0 || 'es'); await id.listo; } textos(); st.ui.fin.hidden = true; }
           // ---------- Salir ----------
+          const propios = new Set(E.texturas), liberados = new Set();
+          raiz.traverse(o => { if (o.isMesh) { propios.add(o.geometry); if (o.material && o.material.map) propios.add(o.material.map); } });
+          const alLiberar = ev => liberados.add(ev.target);
+          for (const x of propios) x.addEventListener('dispose', alLiberar);
           salir();
+          for (const x of propios) x.removeEventListener('dispose', alLiberar);
           check('Al salir se quitan las envolturas y la cámara vuelve', G.ui.busy === busy0 && F.step === step0 && G.camara.follow === follow0 && G.camara.draw === draw0 && R.camera.fov === fov0 && !document.body.classList.contains('tren-on') && !document.body.classList.contains('retos-on'));
           check('Al salir G.quiet vuelve, el mundo no queda en pausa, Vittata ya no está posada y la flora recupera su rank', G.quiet === quiet0 && G.pausa.activa() === pausa0 && M.posado === '' && flora.length === 0 && manchas.length === 0 && (!muestra || muestra[0].instanceMatrix.array[muestra[1] * 16] === muestra[2]));
           check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes);
@@ -977,7 +982,7 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
           check('Nada del tren queda en la escena: grupo fuera, vía y tren liberados', !raiz.parent && raiz.children.length === 0 && !st.via && !E.tren && Object.keys(MAT).length === 0);
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           const m2 = mem();
-          check('Al salir las geometrías y texturas del renderer bajan de las de la partida (todo se libera)', m2.g < m0.g && m2.t <= m0.t, JSON.stringify(m0) + ' → ' + JSON.stringify(m2));
+          check('Al salir se liberan todas las geometrías y texturas del tren y las del renderer bajan de las de la partida (las texturas, ±12 por el streaming del mundo)', liberados.size === propios.size && m2.g < m0.g && m2.t <= m0.t + 12, liberados.size + '/' + propios.size + ' liberadas · ' + JSON.stringify(m0) + ' → ' + JSON.stringify(m2));
         } catch (e) {
           check('Sin excepciones', false, (e && e.stack) || String(e));
           try { salir(); } catch (e2) { /* ya fuera */ }
