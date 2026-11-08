@@ -117,6 +117,7 @@ const PRUEBAS = [
   { id: 'moon', nombre: 'v18MoonTest', fn: 'v18MoonTest', tope: 300, min: 1 }, // V18.2 Maestro Moon (KIMI-130 corrida 7 lo corría fuera de la suite)
   { id: 'guardian', nombre: 'v18GuardianTest', fn: 'v18GuardianTest', tope: 300, min: 1 }, // V18.2 Guardián del Primer Vuelo (idem)
   { id: 'chispa', nombre: 'v18ChispaTest', fn: 'v18ChispaTest', tope: 300, min: 1 }, // V18.3 carrera de Chispa (anotado en KIMI-169: «la suite aún no incluye la 16ª prueba»)
+  { id: 'arco', nombre: 'v18ArcoTest', fn: 'v18ArcoTest', tope: 300, min: 1 }, // V18.3 misión 2 del arco, «Los faroles de las Atalayas» (src/game/v18/arco.js)
 ];
 function jsPrueba(p) {
   return `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), AV = window.AV, G = AV.G;

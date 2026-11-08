@@ -19,6 +19,9 @@
    - XP V18.2: 150 al terminar, una sola vez, también si evolucion.js se carga después (no se toca evolucion.js).
    - Controles: PC, Acción (E) y G para el poder; táctil, el botón Acción y un botón «Poder» (≥ 44 px) que solo sale junto a la
      máquina en el paso 4. Dentro de ese radio se toma G.interaccion.modo y se devuelve al salir.
+   - Después: la misión 2 del arco, «Los faroles de las Atalayas» (arco.js). Con el puerto reparado y Vittata lejos (> 160 m), los
+     tres se mudan a las Atalayas del Oeste: aquí se quedan la escalera y la máquina con flores, y cedido() deja de colocarlos.
+     El paso de Tuerca a inventor se guarda como estado narrativo (personaje:tuerca, fila de personajes_v18.js).
    Solo con la bandera V18 (src/boot.js). Prueba: AV.v18PuertoTest(). */
 window.AVV18Puerto = function (G) {
   'use strict';
@@ -128,6 +131,9 @@ window.AVV18Puerto = function (G) {
   const materiales = () => P.mats.filter(m => recogida(m[0])).length;
   // sesión (rehacerlas no cuesta nada): pistas vistas y aciertos del paso 4
   const A = { pistas: new Set(), aciertos: 0, j: null, freno: 0, frenando: false, bocanadaT: BOCANADA_S, manual: false, forzar: false, avisado: false, llegada: false, descubriendo: false, guia: false, senalada: false, empuje: null };
+  // Misión 2 del arco (arco.js): con el puerto reparado y Vittata lejos, la Ingeniera, el Constructor y Tuerca se mudan a las
+  // Atalayas del Oeste; mientras tanto el puerto no los coloca y su charla la responde arco.js
+  const cedido = () => { try { return !!(G.v18arco && G.v18arco.elenco && G.v18arco.elenco()); } catch (e) { return false; } };
   const listaMision = () => !!(G.V18 || A.forzar) && V.mundo('puente_villa') === 'reparado' && M.valido && (!G.zonas || !G.zonas.activa || G.zonas.dentro(SITIO.plaza.x, SITIO.plaza.z));
 
   // ---------- Escena (primitivas de respaldo + modelo BM165 de la máquina, cargado en diferido) ----------
@@ -385,13 +391,13 @@ window.AVV18Puerto = function (G) {
     G.interaccion.add({ id: 'v18_puerto_reparar', x: P.reparar.x, z: P.reparar.z, r: 2.6, visible: () => listaMision() && estado() === 'desactivado', label: () => TXT.reparar, use: reparar });
     // Tuerca (BM166): carga diferida propia como la máquina; su interacción solo con la misión activa o terminada
     itTue = G.interaccion.add({ id: 'v18_puerto_tuerca', x: P.tueObra.x, z: P.tueObra.z, r: 2.6,
-      visible: () => (listaMision() || reparado()) && !!tue.glb,
+      visible: () => (listaMision() || reparado()) && !!tue.glb && !cedido(),
       label: () => TXT.tue.hablar, use: hablarTuerca });
     // personajes (npc.js): solo con la misión lista y cerca; la carga la decide npc.js
     N.colocar('ingeniera', { x: P.ingObra.x, z: P.ingObra.z, rotY: Math.atan2(MAQ.on.x - P.ingObra.x, MAQ.on.z - P.ingObra.z), aparece: listaMision, comenta: false });
     N.colocar('constructor', { x: P.conObra.x, z: P.conObra.z, rotY: Math.atan2(-U.x, -U.z), aparece: listaMision, comenta: false });
-    N.alUsar('ingeniera', { label: () => 'Hablar con la Ingeniera', use: hablarIngeniera });
-    N.alUsar('constructor', { label: () => 'Hablar con el Constructor', use: () => N.decir('constructor', (N.def('constructor').porEstado[N.estado('constructor')] || {}).dialogo) });
+    N.alUsar('ingeniera', { label: () => 'Hablar con la Ingeniera', use: () => cedido() ? G.v18arco.usar('ingeniera') : hablarIngeniera() });
+    N.alUsar('constructor', { label: () => 'Hablar con el Constructor', use: () => cedido() ? G.v18arco.usar('constructor') : N.decir('constructor', (N.def('constructor').porEstado[N.estado('constructor')] || {}).dialogo) });
   }
 
   // ---------- Aplicar el estado guardado (persistencia, recarga y «Comenzar de cero») ----------
@@ -400,11 +406,12 @@ window.AVV18Puerto = function (G) {
     construir();
     const e = estado(), lista = listaMision(), fin = e === 'reparado';
     // partida con la misión hecha pero sin las claves de personaje (o de una build vieja): se deducen
-    if (fin) { N.cambiarEstado('ingeniera', 'responsable'); N.cambiarEstado('constructor', 'reparador'); }
+    if (fin) { N.cambiarEstado('ingeniera', 'responsable'); N.cambiarEstado('constructor', 'reparador'); N.cambiarEstado('tuerca', 'inventor'); }
+    const fuera18 = fin && cedido(); // los tres están en las Atalayas (misión 2 del arco): aquí quedan la escalera y la máquina
     gObra.visible = lista && !fin;
     gEscalera.visible = fin; // la escalera es del mundo: con la misión hecha se queda aunque la bandera se apague
     gMaq.visible = lista || fin;
-    gTue.visible = lista || fin;
+    gTue.visible = (lista || fin) && !fuera18;
     if (tue.glb) { vestirTue(); if (!tue.mueve) situarTue(); }
     const fuera = rango(e) >= rango('desactivado');
     if (!maq.mueve) { const p = fuera ? MAQ.off : MAQ.on; maq.pos.x = p.x; maq.pos.z = p.z; }
@@ -412,7 +419,7 @@ window.AVV18Puerto = function (G) {
     for (const k in gPistas) gPistas[k].visible = lista && e === 'descubierto' && !A.pistas.has(k);
     for (const k in gMats) gMats[k].visible = lista && e === 'desactivado' && !recogida(k);
     gRuta.visible = false;
-    if (fin) {
+    if (fuera18) { /* los coloca arco.js */ } else if (fin) {
       N.colocar('ingeniera', { x: P.ingFin.x, z: P.ingFin.z, caminar: true, rotY: Math.atan2(U.x, U.z), anim: 'idle', aparece: () => listaMision() || reparado(), comenta: true });
       N.colocar('constructor', { x: P.conFin.x, z: P.conFin.z, caminar: true, rotY: Math.atan2(-Nn.x, -Nn.z), anim: 'trabajar', aparece: () => listaMision() || reparado(), comenta: true });
     } else {
@@ -560,7 +567,7 @@ window.AVV18Puerto = function (G) {
     // primero se guarda el estado del mundo (G.v18, al momento) y luego vienen los efectos
     if (!avanzar('reparado')) return false;
     V.otorgar('puerto_mina', 'puerto_mina', 1);
-    N.cambiarEstado('ingeniera', 'responsable'); N.cambiarEstado('constructor', 'reparador');
+    N.cambiarEstado('ingeniera', 'responsable'); N.cambiarEstado('constructor', 'reparador'); N.cambiarEstado('tuerca', 'inventor');
     A.tueCharlas = 0;
     if (tue.glb && !tue.mueve) tue.mueve = { de: { x: P.tueObra.x, z: P.tueObra.z }, a: { x: P.tueFin.x, z: P.tueFin.z }, t: 0 };
     aplicar();
@@ -957,7 +964,7 @@ window.AVV18Puerto = function (G) {
       check('14b · El Constructor pasa a reparador (sin chaleco, con mochila de herramientas y guantes) y la Ingeniera a responsable (chaqueta, insignia)', N.estado('constructor') === 'reparador' && N.estado('ingeniera') === 'responsable' && ci && ci.apariencia === 'reparador' && !ci.nodos.Chaleco.visible && ci.nodos.Mochila.visible && ci.nodos.GuanteL.visible && ci.nodos.GuanteR.visible && ci.nodos.Casco.visible && ii && ii.apariencia === 'responsable' && ii.nodos.Chaqueta.visible && ii.acc.insignia.visible);
     for (let i = 0; i < 60 && tue.mueve; i++) { await esperar(100); correr(0.05); }
     check('14d · Tuerca pasa a inventor reparador: delantal y llave, sin capucha, trabajando (Reparar) junto a su máquina reconvertida',
-      !!tue.glb && tue.nodos.Delantal.visible && tue.nodos.Llave.visible && !tue.nodos.Capuchon.visible && tue.anim === 'Reparar' && Math.hypot(tue.raiz.position.x - MAQ.off.x, tue.raiz.position.z - MAQ.off.z) < 3.5,
+      !!tue.glb && N.estado('tuerca') === 'inventor' && tue.nodos.Delantal.visible && tue.nodos.Llave.visible && !tue.nodos.Capuchon.visible && tue.anim === 'Reparar' && Math.hypot(tue.raiz.position.x - MAQ.off.x, tue.raiz.position.z - MAQ.off.z) < 3.5,
       tue.glb ? 'anim ' + tue.anim + ' · d ' + Math.hypot(tue.raiz.position.x - MAQ.off.x, tue.raiz.position.z - MAQ.off.z).toFixed(1) : 'sin glb');
       const sube = subir(900);
       check('14c · La escalera se sube a pie de la plaza a la meseta, sin volar ni rescate de atasco', sube.ok && sube.y > -0.6, 's ' + sube.s.toFixed(1) + '/' + L.toFixed(1) + ' · Δy ' + sube.y.toFixed(2) + ' · rescates ' + sube.rescates + (sube.volo ? ' · voló' : ''));
@@ -975,11 +982,11 @@ window.AVV18Puerto = function (G) {
       check('16 · Una partida V18 vieja sin estas claves carga y empieza en «obra»; un valor desconocido no rompe nada', vieja && estado() === 'obra' && N.estado('constructor') === 'supervisor');
       localStorage.setItem(V.clave(), JSON.stringify({ v: 2, especies: {}, inv: {}, otorgados: {}, mundo: { puente_villa: 'reparado', puerto_mina: 'reparado' }, sel: null, evo: {} }));
       V.recargar(); G.emit('apply'); await esperar(60); correr(0.1);
-      check('16b · Con la misión hecha pero sin las claves de personaje (build vieja) se deducen reparador y responsable', N.estado('constructor') === 'reparador' && N.estado('ingeniera') === 'responsable' && gEscalera.visible);
+      check('16b · Con la misión hecha pero sin las claves de personaje (build vieja) se deducen reparador, responsable y Tuerca inventor', N.estado('constructor') === 'reparador' && N.estado('ingeniera') === 'responsable' && N.estado('tuerca') === 'inventor' && gEscalera.visible);
       check('16c · El estado nunca retrocede ni cambia de bando sin causa', !N.cambiarEstado('constructor', 'supervisor') && !avanzar('obra') && reparado());
       // 17 · «Comenzar de cero» (borra la clave V18 y aplica el mundo, como guardado.reset)
       localStorage.removeItem(V.clave()); G.emit('apply'); await esperar(60); correr(0.1);
-      check('17 · «Comenzar de cero» lo borra: sin escalera, máquina otra vez atascada, personajes al principio', estado() === 'obra' && !gEscalera.visible && !M.rampas.some(p => p.when()) && N.estado('constructor') === 'supervisor' && N.estado('ingeniera') === 'aprendiz' && maq.pintada !== 'flor');
+      check('17 · «Comenzar de cero» lo borra: sin escalera, máquina otra vez atascada, personajes al principio', estado() === 'obra' && !gEscalera.visible && !M.rampas.some(p => p.when()) && N.estado('constructor') === 'supervisor' && N.estado('ingeniera') === 'aprendiz' && N.estado('tuerca') === 'operador' && maq.pintada !== 'flor');
       // 18 · no toca las misiones del capítulo
       const dm = difMis(mis0, misiones());
       check('18 · No toca las misiones del capítulo: ningún paso de la misión ni tecla cambió misiones, pasos, eventos ni inventario', !cambios.length, cambios.slice(0, 4).join(' | ') + (dm.length ? ' · (el capítulo avanzó solo durante la prueba: ' + dm.map(x => x.split(':')[0]).join(', ') + ')' : ''));
@@ -1027,6 +1034,7 @@ window.AVV18Puerto = function (G) {
     return out;
   }
   G.v18puerto = { ID, ESTADOS, estado, teclado, avanzar, aplicar, usarPoder, reparar, pagarXP, paso, SITIO, test, get perfil() { return M.perfil; }, get valido() { return M.valido; }, get maq() { return maq; }, sesion: () => A,
-    mapa: () => (listaMision() && estado() !== 'reparado' ? { x: MAQ.on.x, z: MAQ.on.z, nombre: TXT.titulo } : null) };
+    // con el puerto reparado, el marcador «Misión V18» sigue el arco: la misión 2 en las Atalayas (arco.js), si toca
+    mapa: () => (listaMision() && estado() !== 'reparado' ? { x: MAQ.on.x, z: MAQ.on.z, nombre: TXT.titulo } : reparado() && G.v18arco && G.v18arco.mapa ? G.v18arco.mapa() : null) };
   return G.v18puerto;
 };
