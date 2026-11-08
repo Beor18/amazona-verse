@@ -1,0 +1,12 @@
+[22:58:42] servidor http://127.0.0.1:64672
+[22:59:07] entrar='ok' en 23.7s
+[22:59:08] captura t=200
+[22:59:08] captura t=1000
+[22:59:09] captura t=2000
+[22:59:11] captura t=4000
+[22:59:15] captura t=8000
+[22:59:17] teleport='kelvin_aldea_mina_2 @112m'
+[22:59:23] captura acercamiento t=4s
+[22:59:30] asentado={"ms":3062,"tope":false,"pendientes":null}
+[22:59:31] errores=[]
+[22:59:32] fin

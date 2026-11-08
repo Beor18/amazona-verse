@@ -1,0 +1,15 @@
+{
+ "etiqueta": "dbg1",
+ "cuando": "2026-11-08T22:53:59.921Z",
+ "pantalla": "1600x900 dpr1",
+ "calidad": "auto (sin flags)",
+ "cpu": "x1",
+ "gpu": "PC real (ANGLE/D3D11)",
+ "muestras": [],
+ "llegada": {
+  "error": "entrar: sin perfil: AV=true G=true hash= psave=true creador=true dialogos=2 guardado={\"v\":6,\"formato\":2,\"escrito\":1794178440702,\"saveId\":\"qa-kimi"
+ },
+ "asentado": null,
+ "errores": null,
+ "chromePid": 32700
+}

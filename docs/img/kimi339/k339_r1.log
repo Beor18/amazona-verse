@@ -1,0 +1,9 @@
+[22:55:59] servidor http://127.0.0.1:64544
+[22:56:18] entrar='ok' en 17.6s
+[22:56:18] captura t=200
+[22:56:19] captura t=1000
+[22:56:20] captura t=2000
+[22:56:22] captura t=4000
+[22:56:26] captura t=8000
+[22:56:28] ERROR {"exceptionId":1,"text":"Uncaught","lineNumber":2,"columnNumber":107,"scriptId":"96","exception":{"type":"object","subtype":"error","className":"SyntaxError","description":"SyntaxError: Missing catch or finally after try","objectId":"1590578065216465272.2.2"}}
+[22:56:29] fin
