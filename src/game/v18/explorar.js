@@ -167,7 +167,10 @@ window.AVV18Explorar = function (G) {
     cd[id] = h.cooldown || 5;
     try { G.emit('v18poder', { id, de: 'jugador', explorando: true, origen: { x: S.pos.x, y: S.pos.y, z: S.pos.z } }); } catch (e) { /* sin oyentes */ }
     const fn = FX[id];
-    return fn ? !!fn(h) : true;
+    const r = fn ? !!fn(h) : true;
+    // V18.2 §3: en la etapa Maestro (nivel 30+) el poder suelta destellos dorados también explorando, como en el duelo
+    if (h.maestro) { try { G.fx.burst(S.pos.x, S.pos.y + 1.5, S.pos.z, 'gold', 10); G.fx.burst(S.pos.x, S.pos.y + 1.9, S.pos.z, 'stars', 6); accFx = Math.max(accFx, 1); } catch (e) { /* sin fx */ } }
+    return r;
   }
 
   // ---------- Entrada: G en exploración (burbuja: los encuentros la consumen antes en captura) ----------
@@ -289,6 +292,16 @@ window.AVV18Explorar = function (G) {
         } catch (e) { mal.push(String(e && e.message)); }
         E.paraDuelo = pd;
         check('Explorando, la espera del poder es la de la etapa (la misma de G.v18evo.ajustar que en el duelo); en el nivel 1, la de siempre', !mal.length, mal.join(' | ') || 'ok');
+        // V18.2 §3: Maestro (nv 30) suelta destellos dorados explorando; Guardián (nv 20) no
+        const b0 = G.fx.burst, oros = { 20: 0, 30: 0 }; let nvB = 0;
+        try {
+          G.fx.burst = function (x, y, z, kind) { if (kind === 'gold' && nvB) oros[nvB]++; return b0.apply(this, arguments); };
+          const pid = Hx.poderDe(especie());
+          for (const nv of [20, 30]) { nvB = nv; E.paraDuelo = () => ({ nivel: nv }); cd[pid] = 0; disparar(pid); }
+        } catch (e) { oros.err = String(e && e.message); }
+        G.fx.burst = b0; E.paraDuelo = pd; nvB = 0;
+        for (const b of semillas) scene.remove(b.m); semillas.length = 0; pulsos.length = 0; impulso = null; S.pos.x = px; S.pos.z = pz;
+        check('Explorando, el poder en la etapa Maestro (nv 30) suelta destellos dorados; en Guardián (nv 20) no', !oros.err && oros[30] > oros[20], JSON.stringify(oros));
       }
       // Quiebro: impulso lateral que mueve a Vittata
       cd.quiebro = 0; disparar('quiebro');
