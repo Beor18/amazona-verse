@@ -325,7 +325,7 @@ window.AVV18Evolucion = function (G) {
     const m = MEJORA[h.id], i = etapaIdx(f.nivel);
     if (!m || !i || f.especie === 'vittata' || f.especie === 'arausiaca' || H.poderDe(f.especie) !== h.id) return h;
     const et = ETAPAS_ESP[i], a = Object.create(h);
-    if (m[0] && typeof h[m[0]] === 'number') a[m[0]] = r2(h[m[0]] * Math.min(m[1], et.k));
+    if (m[0] && typeof h[m[0]] === 'number') a[m[0]] = Math.min(h[m[0]] * m[1], r2(h[m[0]] * Math.min(m[1], et.k)));
     a.cooldown = r2(Math.max(h.cooldown * 0.85, h.cooldown * et.cd)); a.etapa = et.id; a.nombreEtapa = et.nombre;
     if (et.secundaria || et.maestro) { const tec = h.tecnica; a.secundaria = tec; a.maestro = !!et.maestro; envolver(a, h, function (ctx) { secundaria(tec, ctx); if (et.maestro) brillo(ctx); }); }
     return a;
