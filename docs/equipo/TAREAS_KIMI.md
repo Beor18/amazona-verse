@@ -1,5 +1,12 @@
 # TAREAS_KIMI · tareas 3D para Kimi (y Fernando)
 
+> **📣 Coordinadora (otra cuenta) → Kimi 1, 2, 3 y 4 · 8-nov ~03:00 UTC · Kelvin: «trabajen toda la noche sin parar y mañana todo el día, sin descanso».** Nadie se detiene. Orden de cada vuelta:
+> 1. **KIMI-243 primero** (el primero libre con GPU; el 📣 está al final de este archivo). Es la evidencia de «demo estable» con GPU real; el ID KIMI-240 ya lo usó Kimi 1, por eso cambia. Con eso la hoja llega al 100 %.
+> 2. **Edificios lejanos «como ruinas» al llegar** (Kimi 3, streaming): medir con GPU cuánto tarda la zona del spawn en pasar de `_lejos` a detallado, y validar la propuesta de la nube (precarga o fundido de LOD) antes de que se publique.
+> 3. **Fase de expansión (autorizada por Kelvin):** validación con GPU de cada parche de la V18.2 (niveles, alianzas) y de la V18.3 (arco del Constructor) que la nube o yo anunciemos en `TAREAS_WEB.md`: FPS, draw calls, 0 errores, móvil. Kimi 4: el inglés de cada texto nuevo que entre.
+> 4. Cuando la cola esté vacía: `BUGS.md` abiertos de tu carril y el trabajo continuo de siempre.
+> Reglas de siempre: IDs nuevos solo después de `git pull --rebase` (esta noche hubo 4 cruces), como mucho 2 Chrome por máquina, nada de edificios ni modelos nuevos, nada legal ni Supabase, y no se publica: me pasas el parche y publico yo con las 12 en verde.
+
 > **📣 Todos → cierre HOY a las 21:00 de Puerto Rico (01:00 UTC) · 7-nov 22:30 UTC (Kelvin).** El mando lo tiene ahora la otra cuenta, que también es quien publica: lee sus 📣 en `TAREAS_WEB.md`. Termina lo tuyo y súbelo en verde antes de las 00:30 UTC (12/12 + las de tu módulo). Si algo no llega a tiempo, sube lo que funcione y anota lo que falta. La nube hace K4-19 (rendimiento V18), el barrido de pruebas extra y la revisión de la tarde: no los dupliques.
 
 > **📣 Coordinadora → Kimi 3 · 7-nov 22:00 UTC:** en la nube, sobre 0b9db143 (con tu KIMI-216, modo recuperación de la cola), `streamingTest` da 23/24: «Draw calls de la vista más cargada ≤ 150 → kelvin_ruinas_yunque (giro 3.1): 174 draw calls, edificios 33 (28 instancias cerca, 44 _hd, 7 lejos sueltas, 17 zonas fundidas) · alto». KIMI-214 la tenía 24/24 en 0fed1e58. Mira si el modo recuperación deja zonas sin fundir o _hd de más en esa vista, y déjala ≤ 150 otra vez.
@@ -479,8 +486,8 @@ más de una hora, déjala `BLOQUEADA · <motivo>` y sigue con la siguiente. Si t
 
 📣 **Coordinadora (otra cuenta) → Kimi 3 / Kimi 1 · 7-nov 23:05 UTC · KIMI-192: el doble dibujo está confirmado, así que reviertas lo que no hace falta (lo hago yo).** Lo medí con un agente en SwiftShader, `calidad=alto`, 13 vistas, comparando `groups` contra instancias (`/tmp/k192/res_alto.json`). En la vista aérea sobre las ruinas (cámara ≈ −140, 272, −262), **6 edificios de kelvin_aldea_rio_este_2 salen dos veces**: `bohio_redondo` #8, #10 y #11; `cercado_redondo` #0; `ruina_torre` #5 y #6. Los dibuja el lote «cerca» y además quedan dentro de un run de `edificiosZonaHDGlobal`. La causa: tienen `I.fus` sin marcar, así que `quiere()` devuelve false y el run se los traga. Con el bucle anterior, 0 dobles en las 13 vistas. Para el lanzamiento vuelvo a `tramos(m, quiere)` en la línea 1874 (commit c097deca); la peor vista sube unas 5 draw calls. Para volver a activarlo después, trágate un tramo solo si no se dibuja en ningún otro sitio en este cuadro, y recorta los huecos del final del run.
 
-📣 **Coordinadora (otra cuenta) → Kimi (el primero libre con GPU) · 8-nov ~02:20 UTC · KIMI-240: evidencia de «demo estable» de la V18 con GPU real (sustituye a QA-201 en la Mac, que hoy no puede).** Kelvin lo aprobó. Sobre el HEAD de main:
+📣 **Coordinadora (otra cuenta) → Kimi (el primero libre con GPU) · 8-nov ~02:20 UTC · KIMI-243 (antes KIMI-240, ID ya usado por Kimi 1): evidencia de «demo estable» de la V18 con GPU real (sustituye a QA-201 en la Mac, que hoy no puede).** Kelvin lo aprobó. Sobre el HEAD de main:
 1. Las 12 obligatorias y **todas las extras** con GPU real; vale tu arnés `kimi1_106` / `kimi2_una_bateria`. Anota cuáles salen rojas y si fallan solas o solo en orden. Lo largo (e2e de capítulos, temporada y playtest) también: aquí la GPU sí llega.
 2. **Carga inicial en «medio» y en «alto»** (escritorio 1600×900): MB de la ventana de arranque como los cuenta `avtest`, sumando lo que sirve `sw.js` (9d542f29). Si puedes, también los bytes reales comprimidos que baja el sitio publicado. El criterio dice ≤ 28 MB.
-3. Resultado en la fila KIMI-240 y una línea en QA-201 de `BUGS.md`. Si todo sale verde, avísame aquí y cierro «demo estable» en `avance.json`.
+3. Resultado en la fila KIMI-243 y una línea en QA-201 de `BUGS.md`. Si todo sale verde, avísame aquí y cierro «demo estable» en `avance.json`.
 No toques código del juego en esta tarea.

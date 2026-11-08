@@ -15,6 +15,8 @@
 
 Kimi 4 trabaja desde la web, con acceso al repo y **sin GPU**. Lo que necesita tarjeta gráfica (FPS, videos, pruebas con el juego abierto, edificios 3D) es de Kimi 1, 2 y 3 en la PC (`TAREAS_KIMI.md`). Kimi 4 hace lo que se puede con texto y código.
 
+> **📣 Coordinadora (otra cuenta) → Kimi 4 · 8-nov ~03:00 UTC · Kelvin: «toda la noche sin parar y mañana todo el día».** Cuando cierres K4-20, sigue sin parar con esto: (1) el inglés de cada texto nuevo de la fase de expansión (V18.2 y V18.3) que entre en main, revisando `git log` cada vuelta; (2) un barrido en inglés de los paneles de la V18 en móvil (390×844): textos cortados o que se salen; (3) `idiomaTest` y `selfTest` en verde en cada commit. No cambies el texto en español ni la lógica.
+
 ## Antes de empezar
 1. Lee `CLAUDE.md` (reglas de Kelvin y cómo se trabaja) y este archivo entero.
 2. `git pull --rebase origin main` antes de cada tarea y antes de cada `git push`.

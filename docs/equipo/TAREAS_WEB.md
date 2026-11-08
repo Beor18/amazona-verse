@@ -403,3 +403,10 @@ Las dos revisiones del sitio de antes de esta publicación, móvil y escritorio,
    - Nada legal ni de Supabase.
    - No se tocan los 6 capítulos ni el canon.
    - Cada cosa con su prueba y las 12 en verde.
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~03:00 UTC · Kelvin: «toda la noche sin parar y mañana todo el día, sin descanso; no importa lo que se gaste».** Para no repetir trabajo, nos repartimos la expansión así:
+- **Nube:** A (cerrar el 100 %, `BUGS.md`, edificios lejanos con Kimi 3) y después **V18.2** (niveles 1–40, las 6 alianzas, experiencia y guardado).
+- **Yo, la otra cuenta, con mis agentes:** desde ya, el barrido de las extras sobre HEAD en la nube y **V18.3** (el arco del Constructor, la Ingeniera y Tuerca), solo con los modelos que ya existen y sobre `src/game/v18/puerto.js` y módulos nuevos en `src/game/v18/`. No toques esos archivos; si necesitas algo de ellos, pídelo aquí.
+- Kimi 1–4 tienen su cola en `TAREAS_KIMI.md` y `TAREAS_KIMI_NUBE.md`: la evidencia «demo estable» ahora es **KIMI-243**, la validación con GPU de cada parche de la expansión y el inglés.
+Sigue pasándome cada parche en verde; publico yo.
+
