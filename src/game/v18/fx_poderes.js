@@ -76,7 +76,8 @@ window.AVV18Fx = function (G) {
   // esta PC (ANGLE/D3D11 con Chrome headless; comprobado 5-nov r7 — ni estas plumas ni la ráfaga de G.fx se veían;
   // en el iPad real de Kelvin sí se dibuja, KIMI-060). El InstancedMesh usa TRIANGLES, como los anillos y la flora.
   const MAXE = 2, PLUMAS = 32;           // hasta 2 escudos (Vittata + rival); 32 plumas por escudo
-  const NP = MAXE * PLUMAS;
+  const NE = 16, E0 = MAXE * PLUMAS;      // V18.2 §6: 16 tarjetas más al final para la estela del elemento de la alianza
+  const NP = E0 + NE;
   // Sprite propio (64×64, canvas en runtime): pluma estilizada por tarjeta — halo suave, vana con degradado
   // (base cálida → punta verde-dorada), barbas finas y cañón curvo. Se tiñe por instancia con PLUMA_COLS.
   const TEX_PLUMA = (() => {
@@ -240,14 +241,65 @@ window.AVV18Fx = function (G) {
   function apagar(actor) {
     const e = escudos.find(x => x.clave === claveDe(actor));
     if (!e) return { ok: false };
-    quitar(e); plumas.visible = escudos.length > 0;
+    quitar(e); plumas.visible = escudos.length > 0 || eVivas > 0;
     return { ok: true };
+  }
+
+  // ---------- V18.2 §6: estela del elemento de la alianza (explorando) ----------
+  // Mismas tarjetas de pluma (mismo InstancedMesh y textura: 0 draw calls y 0 modelos nuevos), en las NE últimas instancias.
+  // Cada elemento cambia color y movimiento: fuego = chispas que suben, agua = gotas que caen, viento = remolino, naturaleza =
+  // hojitas que flotan, luz = destellos quietos, eco = ondas que se abren a ras de suelo. Sin asignaciones: arreglos fijos.
+  // Con movimiento reducido no sale nada (devuelve { ok: false }).
+  const ELEM = {
+    fuego: { cols: ['#ffb347', '#ff7a2e', '#ffd84a'], abre: 0.45, sube: 1.7, grav: -0.6, vida: 0.8, esc: 0.32 },
+    agua: { cols: ['#9fdcff', '#d8f3ff', '#6cc4f0'], abre: 0.35, sube: -0.2, grav: 4, vida: 0.7, esc: 0.26, alto: 1.1 },
+    viento: { cols: ['#e8fff6', '#c8f0e8', '#ffffff'], abre: 1.5, sube: 0.4, grav: 0, vida: 0.9, esc: 0.3, gira: 3 },
+    naturaleza: { cols: ['#7fd38f', '#a3c94a', '#3f8f3a'], abre: 0.6, sube: 0.7, grav: 1.2, vida: 1, esc: 0.34 },
+    luz: { cols: ['#fff8d0', '#ffffff', '#ffe9a0'], abre: 0.3, sube: 0.45, grav: 0, vida: 0.7, esc: 0.28, brilla: 1 },
+    eco: { cols: ['#ffcf5e', '#fff3b0', '#a8ffb8'], abre: 1.3, sube: 0.1, grav: 0, vida: 0.8, esc: 0.3 }
+  };
+  const ELEM_IDS = Object.keys(ELEM);
+  for (const k of ELEM_IDS) ELEM[k].cols = ELEM[k].cols.map(h => new THREE.Color(h));
+  const eX = new Float32Array(NE * 3), eV = new Float32Array(NE * 3), eT = new Float32Array(NE).fill(-1), eE = new Uint8Array(NE);
+  let eSig = 0, eVivas = 0;
+  function estela(elemento, x, y, z, n) {
+    const P = ELEM[elemento];
+    if (!P || reducido()) return { ok: false, n: 0 };
+    n = Math.max(1, Math.min(NE, n | 0 || 1));
+    const ei = ELEM_IDS.indexOf(elemento);
+    for (let k = 0; k < n; k++) {
+      const i = eSig; eSig = (eSig + 1) % NE;
+      const a = Math.random() * 6.283, r = P.abre * (0.5 + Math.random() * 0.5);
+      eX[i * 3] = x; eX[i * 3 + 1] = y + (P.alto || 0); eX[i * 3 + 2] = z;
+      eV[i * 3] = Math.cos(a) * r; eV[i * 3 + 1] = P.sube * (0.7 + Math.random() * 0.6); eV[i * 3 + 2] = Math.sin(a) * r;
+      eT[i] = tFx; eE[i] = ei;
+    }
+    plumas.visible = true; quieto = false;
+    return { ok: true, n };
+  }
+  function pintarEstela() {
+    let vivas = 0;
+    for (let i = 0; i < NE; i++) {
+      const idx = E0 + i;
+      if (eT[i] < 0) continue;
+      const P = ELEM[ELEM_IDS[eE[i]]], t = tFx - eT[i], p = t / P.vida;
+      if (p >= 1 || p < 0) { eT[i] = -1; pPos[idx * 3 + 1] = -1e4; _m.makeScale(0, 0, 0); plumas.setMatrixAt(idx, _m); plumas.setColorAt(idx, NEGRO); continue; }
+      vivas++;
+      let vx = eV[i * 3], vz = eV[i * 3 + 2];
+      if (P.gira) { const g = P.gira * t, cg = Math.cos(g), sg = Math.sin(g); const ax = vx * cg - vz * sg; vz = vx * sg + vz * cg; vx = ax; }
+      const f = Math.min(1, p / 0.15) * Math.pow(1 - p, 1.2) * (P.brilla ? 0.7 + 0.3 * Math.sin(t * 22 + i) : 1);
+      _c.copy(P.cols[i % P.cols.length]).multiplyScalar(f);
+      ponerPluma(idx, eX[i * 3] + vx * t, eX[i * 3 + 1] + eV[i * 3 + 1] * t - 0.5 * P.grav * t * t, eX[i * 3 + 2] + vz * t, P.esc * (0.8 + 0.4 * p), _c, i * 1.3 + t * 2);
+    }
+    eVivas = vivas;
+    return vivas;
   }
 
   let quieto = false; // CPU (móvil): sin anillos ni escudos, tras una pasada que los deja a escala 0 no se reescriben ni se suben los búferes
   function paso(dt) {
     tFx += Math.min(0.1, Math.max(0, dt || 0));
-    let hay = escudos.length > 0;
+    let hay = escudos.length > 0 || eVivas > 0;
+    for (let i = 0; i < NE && !hay; i++) if (eT[i] >= 0) hay = true;
     for (let i = 0; i < MAXR && !hay; i++) if (ranillos[i]) hay = true;
     if (!hay && quieto) return;
     quieto = !hay;
@@ -257,15 +309,16 @@ window.AVV18Fx = function (G) {
     rings.instanceMatrix.needsUpdate = true;
     if (rings.instanceColor) rings.instanceColor.needsUpdate = true;
     for (let i = 0; i < escudos.length;) { const e = escudos[i]; pintarEscudo(e); if (escudos[i] === e) i++; }
-    plumas.visible = escudos.length > 0;
+    const nEst = pintarEstela();
+    plumas.visible = escudos.length > 0 || nEst > 0;
     plumas.instanceMatrix.needsUpdate = true;
     if (plumas.instanceColor) plumas.instanceColor.needsUpdate = true;
   }
 
   G.on('render', dt => paso(Number.isFinite(dt) ? dt : 0.016), 31);
-  G.on('apply', () => { for (let i = 0; i < MAXR; i++) ranillos[i] = null; for (let i = escudos.length - 1; i >= 0; i--) quitar(escudos[i]); rings.visible = plumas.visible = false; }, 31);
+  G.on('apply', () => { for (let i = 0; i < MAXR; i++) ranillos[i] = null; for (let i = escudos.length - 1; i >= 0; i--) quitar(escudos[i]); eT.fill(-1); eVivas = 0; rings.visible = plumas.visible = false; }, 31);
 
-  const estado = () => ({ anillos: ranillos.filter(Boolean).length, escudos: escudos.length, llamadas: (rings.visible ? 1 : 0) + (plumas.visible ? 1 : 0), nivel: nivel() });
+  const estado = () => ({ anillos: ranillos.filter(Boolean).length, escudos: escudos.length, estela: eVivas, llamadas: (rings.visible ? 1 : 0) + (plumas.visible ? 1 : 0), nivel: nivel() });
 
   function test() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
@@ -335,12 +388,36 @@ window.AVV18Fx = function (G) {
       avanza(1.5);
       escudo('rival', 10); const ap = apagar('rival');
       check('apagar(actor) quita su escudo al instante, sin dispersión (fin de combate)', ap.ok && estado().escudos === 0 && !plumas.visible, JSON.stringify(estado()));
+      // V18.2 §6: estela del elemento de la alianza (mismo InstancedMesh, sin modelos nuevos, sin asignar por cuadro)
+      const R0 = G.renderer.REDUCED, est = {};
+      try {
+        G.renderer.REDUCED = false;
+        const yE = S.pos.y + 0.5;
+        for (const el of ELEM_IDS) est[el] = estela(el, S.pos.x, yE, S.pos.z, 2).ok;
+        paso(0.1);
+        const ids0 = new Set(scene.children.map(o => o.uuid));
+        let lejos = 0; for (let i = E0; i < NP; i++) if (pPos[i * 3 + 1] > -100 && Math.hypot(pPos[i * 3] - S.pos.x, pPos[i * 3 + 2] - S.pos.z) > 2.5) lejos++;
+        est.vivas = eVivas; est.lejos = lejos; est.visible = plumas.visible;
+        est.malla = scene.children.length === ids0.size && plumas.count === NP;
+        // agua cae y fuego sube
+        for (let i = 0; i < NE; i++) eT[i] = -1;
+        estela('fuego', 0, 50, 0, 1); const iF = (eSig + NE - 1) % NE; estela('agua', 0, 50, 0, 1); const iA = (eSig + NE - 1) % NE;
+        avanza(0.4);
+        est.fuegoSube = pPos[(E0 + iF) * 3 + 1] > 50.3; est.aguaCae = pPos[(E0 + iA) * 3 + 1] < 51.1;
+        avanza(1.2);
+        est.muere = eVivas === 0 && !plumas.visible;
+        G.renderer.REDUCED = true; est.reducido = estela('luz', 0, 50, 0, 3).ok === false && eVivas === 0;
+        est.desconocido = estela('nada', 0, 50, 0, 1).ok === false;
+      } catch (e) { est.err = e && e.message; }
+      G.renderer.REDUCED = R0;
+      check('V18.2 §6: estela del elemento (fuego, agua, viento, naturaleza, luz, eco) con las tarjetas de pluma del mismo InstancedMesh: cerca de la cotorra, fuego sube, agua cae, se apaga sola; nada con movimiento reducido',
+        !est.err && ELEM_IDS.every(k => est[k]) && est.vivas === 12 && est.lejos === 0 && est.visible && est.malla && est.fuegoSube && est.aguaCae && est.muere && est.reducido && est.desconocido, JSON.stringify(est));
       check('Sin excepciones y todo se apaga al final', estado().escudos === 0 && estado().anillos === 0, JSON.stringify(estado()));
     } catch (e) { check('Sin excepciones', false, e && e.message); }
     finally { if (cal0) { ponerCal(cal0.nivel); RC.manual = cal0.manual; } }
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18fx = { onda, escudo, dispersar, apagar, paso, estado, test, _interno: { ranillos, escudos, rings, plumas, pPos } };
+  G.v18fx = { onda, escudo, dispersar, apagar, estela, ELEMENTOS: ELEM_IDS, paso, estado, test, _interno: { ranillos, escudos, rings, plumas, pPos } };
   return G.v18fx;
 };
