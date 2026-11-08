@@ -1,0 +1,5 @@
+· servidor http://127.0.0.1:58256 · Chrome en puerto DevTools (perfil C:\Users\kelvi\AppData\Local\Temp\kimi2-Ml9zXN) · 375×812 dpr 3 · CPU ×4
+· jugador nuevo: ok: portada → creador → Empezar (Lluvia Verde) → carga 13845 ms (listo) → intro saltada
+  · e2eTest: 29/32 · falla: 5 · Guardar a mitad del capítulo, recargar y todo persiste (perfil, paso, misiones, ruta de la gota, refugio, inventario, ropa, eventos, criadero) — {"distintos":["nombre","especie","accs","paso","misiones","edu","refugio","construcciones","inv","eventos","ropa","criadero"],"eventosNuevos":null,"antes":{"nombre":"Coral Solar","especie":"violacea","accs":["sombrero","panuelo"],"paso":4,"misiones":"{\"m1\":true,\"educativa\":true,\"m3\":false}","edu":"{\"p1\":true,\"p2\":true,\"p3\":true,\"p4\":true,\"p5\":true,\"p6\":true,\"p7\":true,\"p8\":tru | 4.7 · Guardián (tras recargar): hablar con él, reconoce el refugio y regala el banco de trabajo — {"paso":0,"banco":false,"cercano":"ninguno"} | ! · El recorrido no puede seguir tras 4.7 — etapa anterior fallida <<< (41 s)
+· errores de consola: []
+· informe en C:\Users\kelvi\amazonaversegame\tools\build\salida\kimi2-empezar\baterias.json
