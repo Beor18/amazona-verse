@@ -346,13 +346,15 @@ window.AVV18Guardian = function (G) {
       check('W35 · Guardián: Enter o Espacio sobre «Salir» deja el circuito (antes solo respondía al toque)', A.fase === 'nada' && el.hidden, A.fase);
       if (document.activeElement === bx) bx.blur();
       empezar({ forzar: true });
-      const gp = G.guiaControles && G.guiaControles.prueba;
+      const gp = G.guiaControles && G.guiaControles.prueba, forz0 = gp && gp.forzado;
+      if (gp) gp.forzado = 'teclado';
       if (gp && gp.mostrar(true)) {
         const kg = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); document.body.dispatchEvent(kg);
         const cerrada = gp.el.panel.hidden && !gp.panelAbierto, fase = A.fase;
         if (!cerrada) gp.cerrar();
         check('W35 · Guardián: con la guía de controles abierta, Esc cierra la guía y no deja el circuito', cerrada && fase !== 'nada' && !kg.defaultPrevented, JSON.stringify({ cerrada, fase, esc: kg.defaultPrevented }));
-      } else check('W35 · Guardián: con la guía de controles abierta, Esc cierra la guía y no deja el circuito', true, 'sin guía de teclado (táctil o sin cargar)');
+      } else check('W35 · Guardián: con la guía de controles abierta, Esc cierra la guía y no deja el circuito', !gp, gp ? 'la guía no se abrió' : 'sin guía de teclado (sin cargar)');
+      if (gp) gp.forzado = forz0;
       const r = esc();
       check('W35 · Guardián: Esc lo deja (sin contar partida) y no abre la Pausa', A.fase === 'nada' && r.prev && el.hidden && !r.pausa && JSON.stringify(record()) === r0, JSON.stringify({ fase: A.fase, esc: r.prev, pausa: r.pausa }));
     } catch (e) { check('W35 · Guardián: teclado sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }

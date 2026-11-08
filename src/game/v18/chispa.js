@@ -293,13 +293,15 @@ window.AVV18Chispa = function (G) {
       check('W35 · Chispa: el panel de la carrera se anuncia (role=status, aria-live) con nombre; el reloj y el récord no se leen a cada décima',
         !el.hidden && el.getAttribute('role') === 'status' && el.getAttribute('aria-live') === 'polite' && !!nombre(el) && hud.s.getAttribute('aria-live') === 'off' && hud.r.getAttribute('aria-live') === 'off', nombre(el));
       check('W35 · Chispa: el panel no roba el foco (la carrera se juega con las teclas de siempre)', document.activeElement === foco0 && !el.querySelector('button, [tabindex]'));
-      const gp = G.guiaControles && G.guiaControles.prueba;
+      const gp = G.guiaControles && G.guiaControles.prueba, forz0 = gp && gp.forzado;
+      if (gp) gp.forzado = 'teclado';
       if (gp && gp.mostrar(true)) {
         const kg = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); document.body.dispatchEvent(kg);
         const cerrada = gp.el.panel.hidden && !gp.panelAbierto, fase = A.fase;
         if (!cerrada) gp.cerrar();
         check('W35 · Chispa: con la guía de controles abierta, Esc cierra la guía y no deja la carrera', cerrada && fase !== 'nada' && !kg.defaultPrevented, JSON.stringify({ cerrada, fase, esc: kg.defaultPrevented }));
-      } else check('W35 · Chispa: con la guía de controles abierta, Esc cierra la guía y no deja la carrera', true, 'sin guía de teclado (táctil o sin cargar)');
+      } else check('W35 · Chispa: con la guía de controles abierta, Esc cierra la guía y no deja la carrera', !gp, gp ? 'la guía no se abrió' : 'sin guía de teclado (sin cargar)');
+      if (gp) gp.forzado = forz0;
       const kd = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); document.body.dispatchEvent(kd);
       document.body.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', bubbles: true, cancelable: true }));
       const pz = document.getElementById('pause'); let pausa = false; try { pausa = !!(pz && pz.matches(':popover-open')); if (pausa) pz.hidePopover(); } catch (e) { /* sin popover */ }
