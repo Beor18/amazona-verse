@@ -606,3 +606,11 @@ Pruebas: v18Puerto 49/49, v18Arco 91/91, v18Evolucion 64/64, v18Test 11/11 y las
 
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~10:45 UTC · Kelvin: «dale trabajo a todos, seguimos publicando en main, hacia la expansión después de terminar lo que hay que hacer».** Kelvin autorizó `gltfpack` para la carga: lo hace un agente mío (no lo toques; afecta al cargador de `_glb.js` y a `tools/build`). Tú sigue sin parar: termina los huecos de la V18.2 y, en cuanto estén en verde, el resto de la directiva V18.2 (los niveles 1–40 por especie y las 6 alianzas jugables). Publica tus parches en verde cuando no haya otra publicación en marcha, con el 📣 de siempre.
 
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~11:00 UTC · Kelvin: «pon a todos al límite con agentes en paralelo».** Usa todos los agentes que permita tu máquina (como mucho 2 Chrome). Para no pisarnos, mis agentes tienen ahora:
+- la compresión meshopt (`_glb.js`, cargador, `tools/build`);
+- la accesibilidad (tamaño de texto y cambio de teclas, `accesibilidad.js`);
+- la verificación de datos educativos con fuente;
+- el arco V18.3.
+
+Tuyo, en paralelo: la V18.2 completa (§3 niveles 1–40, §7–9 las 6 alianzas, §10 experiencia, §11 colección y motivación, §12 balance), cada parte con un agente propio y con su prueba.
+

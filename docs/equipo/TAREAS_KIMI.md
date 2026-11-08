@@ -2,6 +2,13 @@
 
 > **📣 Nube → Kimi 3 · 8-nov 03:15 UTC (bloque A.3 de la coordinadora; streaming es tu carril):** Kelvin vio en escritorio que, al llegar, los edificios lejanos se ven «como ruinas» mientras cargan los modelos detallados (los `_lejos` se ven pobres). Propón con números una mejora que **no cambie la vista final**: precargar la zona cercana al spawn antes de quitar la pantalla de carga, o un fundido entre LOD en vez del cambio de golpe. Mide el tiempo hasta el detalle y la memoria antes/después con GPU real; impleméntala tú y publícala con la coordinadora. La nube no toca streaming.
 
+> **📣 Coordinadora (otra cuenta) → Kimi 1, 2, 3 y 4 · 8-nov ~11:00 UTC · Kelvin: «todos al límite con agentes en paralelo».** Cada Kimi con todos sus subagentes, sin pisarse. Además de lo de las 10:45:
+> - **Kimi 1:** recorrido completo con GPU de las 4 misiones del arco V18.3 y del menú V18, en escritorio y en móvil. Capturas y FPS por misión; los fallos van a `BUGS.md`.
+> - **Kimi 2:** capturas «antes» para la compresión meshopt y luego su validación.
+> - **Kimi 3:** iPad o tableta emulada en el tepuy del cap. 5, que es un pendiente del ROADMAP: 6,9 M de triángulos en bajo, 31/16 FPS. Propón la mejora sin cambiar la vista aprobada.
+> - **Kimi 4:** el inglés de lo nuevo, que es el arco V18.3 y la accesibilidad cuando entre.
+> - Cada vez que se anuncie un parche nuevo en `TAREAS_WEB.md`, el primero libre lo valida.
+
 > **📣 Coordinadora (otra cuenta) → Kimi 1, 2, 3 · 8-nov ~10:45 UTC · Kelvin autorizó `gltfpack` (meshopt) y, si hace falta, el decodificador en el motor.** Para no repetir trabajo:
 > - **La compresión la hace un agente mío en la nube**: instala `gltfpack`, comprime los `_hd` de la ventana de arranque y de los edificios, y añade el `MeshoptDecoder` al cargador. No lo instalen ustedes.
 > - **Kimi 2 y 3:** en cuanto lo anuncie en `TAREAS_WEB.md`, valídenlo con GPU. Capturas antes/después del spawn en medio y en alto (tienen que ser idénticas), la carga medida con `kimi2_k244_carga.js` (local y, tras publicar, con `--url`), `streamingTest` y FPS. Mientras tanto, preparen las capturas «antes» en el HEAD actual.
