@@ -25,7 +25,10 @@ class CDP { constructor(ws) { this.ws = ws; this.id = 0; this.pend = new Map(); 
 async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.evaluate', { expression: exp, awaitPromise: pr !== false, returnByValue: true }, ses, (t || 60) * 1000); if (r.exceptionDetails) throw new Error(JSON.stringify(r.exceptionDetails).slice(0, 300)); return r.result ? r.result.value : undefined; }
 (async () => {
   const gpu = (() => { try { const out = execSync('powershell -NoProfile -Command "(Get-CimInstance Win32_VideoController | Where-Object { \$_.AdapterRAM -gt 0 } | Select-Object -First 1).Name"', { timeout: 15000 }).toString().trim(); return out; } catch (e) { return '?'; } })();
-  const { srv, puerto } = await servir(); const origen = `http://127.0.0.1:${puerto}`;
+  const URLBASE = arg('--url', '');
+  let srv = null, puerto = 0, origen = '';
+  if (URLBASE) { origen = URLBASE.replace(/\/+$/, ''); }
+  else { const s = await servir(); srv = s.srv; puerto = s.puerto; origen = `http://127.0.0.1:${puerto}`; }
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi2u-k244-'));
   const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + perf, '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run', '--mute-audio', `--window-size=${ANCHO},${ALTO}`], { stdio: ['ignore', 'ignore', 'pipe'] });
   let err = ''; chrome.stderr.on('data', d => { err += d; });
@@ -61,7 +64,7 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   const archivos = {}, peticiones = { n: 0, bytes: 0 };
   for (const q of Object.values(reqs)) {
     const u = q.url; if (!u || u.startsWith('data:') || u.startsWith('blob:') || u.startsWith('about:') || u.startsWith('chrome') || u.startsWith('devtools')) continue;
-    let ruta; try { const s = new URL(u); if (s.hostname !== '127.0.0.1' || s.port != puerto) { ruta = u; } else ruta = decodeURIComponent(s.pathname).replace(/^\//, '') || 'index.html'; } catch (e) { continue; }
+    let ruta; try { const s = new URL(u); if (!URLBASE && s.hostname === '127.0.0.1' && s.port == puerto) ruta = decodeURIComponent(s.pathname).replace(/^\//, '') || 'index.html'; else if (URLBASE && u.startsWith(origen + '/')) ruta = decodeURIComponent(u.slice(origen.length + 1).split('?')[0]) || 'index.html'; else ruta = u; } catch (e) { continue; }
     peticiones.n++; peticiones.bytes += q.bytes;
     if (!(ruta in archivos) || q.bytes > archivos[ruta]) archivos[ruta] = q.bytes;
   }
@@ -70,7 +73,7 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   const porTipo = {}; let bytes = 0;
   for (const [r, b] of Object.entries(archivos)) { bytes += b; porTipo[tipo(r)] = (porTipo[tipo(r)] || 0) + b; }
   const MB = 1048576;
-  const res = { tarea: 'KIMI-244', cuando: new Date().toISOString(), head: execSync('git rev-parse --short HEAD', { cwd: RAIZ }).toString().trim(), gpu, ventana: { ancho: ANCHO, alto: ALTO }, calidad: CALIDAD || 'auto', preparacion: prep, red_quieta_s: ((Date.now() - tq) / 1000).toFixed(1), carga_inicial: { mb: +(bytes / MB).toFixed(2), archivos_n: Object.keys(archivos).length, por_tipo_mb: Object.fromEntries(Object.entries(porTipo).map(([k, v]) => [k, +(v / MB).toFixed(2)]).sort((a, b) => b[1] - a[1])), mb_peticiones: +(peticiones.bytes / MB).toFixed(2), peticiones_n: peticiones.n, mayores_kb: Object.entries(archivos).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([k, v]) => [k, Math.round(v / 1024)]) }, vista_arranque: vista, consola_errores_n: erroresConsola.length, consola_errores: erroresConsola.slice(0, 10) };
+  const res = { tarea: 'KIMI-244', cuando: new Date().toISOString(), head: execSync('git rev-parse --short HEAD', { cwd: RAIZ }).toString().trim(), url: URLBASE || 'local', gpu, ventana: { ancho: ANCHO, alto: ALTO }, calidad: CALIDAD || 'auto', preparacion: prep, red_quieta_s: ((Date.now() - tq) / 1000).toFixed(1), carga_inicial: { mb: +(bytes / MB).toFixed(2), archivos_n: Object.keys(archivos).length, por_tipo_mb: Object.fromEntries(Object.entries(porTipo).map(([k, v]) => [k, +(v / MB).toFixed(2)]).sort((a, b) => b[1] - a[1])), mb_peticiones: +(peticiones.bytes / MB).toFixed(2), peticiones_n: peticiones.n, mayores_kb: Object.entries(archivos).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([k, v]) => [k, Math.round(v / 1024)]) }, vista_arranque: vista, consola_errores_n: erroresConsola.length, consola_errores: erroresConsola.slice(0, 10) };
   const f = path.join(SALIDA, `k244_carga_${CALIDAD || 'auto'}_${ETIQUETA}.json`);
   fs.writeFileSync(f, JSON.stringify(res, null, 1));
   console.log(`· calidad=${res.calidad} ventana=${ANCHO}×${ALTO} gpu=${gpu} head=${res.head}`);
@@ -86,5 +89,5 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   await new Promise(r => setTimeout(r, 1500));
   try { execSync(`taskkill /PID ${chrome.pid} /T /F 2>nul`, { timeout: 10000 }); } catch (e) { }
   try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) { }
-  srv.close(); process.exit(0);
+  if (srv) srv.close(); process.exit(0);
 })().catch(e => { console.error('FATAL', e.message || e); process.exit(1); });
