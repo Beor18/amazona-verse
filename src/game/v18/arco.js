@@ -633,7 +633,7 @@ window.AVV18Arco = function (G) {
   G.on('v18arco', e => { if (evTest) evTest.push(e); });
   G.on('v18', e => { if (v18Test) v18Test(e); }, 10);
   const textos = () => {
-    const t = [TXT.titulo, TXT.aviso, TXT.nido, TXT.ojos, TXT.achis, TXT.falla, TXT.espera, TXT.encender, TXT.encendido, TXT.poder, TXT.guiaT, TXT.guiaEscudo, TXT.hablarTue, TXT.hablarIng, TXT.hablarCon,
+    const t = [TXT.titulo, TXT.aviso, TXT.nido, TXT.ojos, TXT.achis, TXT.falla, TXT.espera, TXT.noAhora, TXT.encender, TXT.encendido, TXT.poder, TXT.guiaT, TXT.guiaEscudo, TXT.hablarTue, TXT.hablarIng, TXT.hablarCon,
       con(TXT.acierto, 1), con(TXT.guia, 'Grito del Yunque'), TXT.obj.inicio, con(TXT.obj.nidos, 1), con(TXT.obj.poder, 2), TXT.obj.afinado]
       .concat(TXT.nidos.map(x => x + ' ' + con(TXT.nidoN, 1)), [TXT.llegada, TXT.reunion, TXT.nidosListos, TXT.afinado, TXT.fin].flatMap(l => l.map(x => x[1])));
     for (const id of ['constructor', 'ingeniera', 'tuerca']) { const d = N.def(id); if (!d) continue; t.push(d.nombre.es); for (const e in d.porEstado) t.push(...(d.porEstado[e].dialogo || [])); }
