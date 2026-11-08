@@ -471,13 +471,13 @@ window.AVV18Puerto = function (G) {
   }
   function verPista(k) {
     if (estado() !== 'descubierto' || A.pistas.has(k)) return false;
-    A.pistas.add(k); sonar('pickup');
+    A.pistas.add(k); V.cambiarMundo(clavePista(k), 'vista'); sonar('pickup');
     const p = P.pistas[k]; fx('gold', p.x, alto(p.x, p.z) + 0.5, p.z, 10);
     toast(TXT.pistas[k][1] + ' (' + A.pistas.size + '/3)', 3600);
     gPistas[k].visible = false;
     emitir({ tipo: 'pista', id: k, n: A.pistas.size });
     if (A.pistas.size === 2 && tecnica() !== 'ojos' && !A.senalada) { A.senalada = true; N.decir('ingeniera', [TXT.senala], null, { libre: true, caja: false }); }
-    if (A.pistas.size >= 3) { A.aciertos = 0; N.decir('ingeniera', [TXT.trabado], null, { libre: true, caja: false }); }
+    if (A.pistas.size >= 3) { A.aciertos = 0; V.cambiarMundo(CLAVE_ACIERTOS, 0); N.decir('ingeniera', [TXT.trabado], null, { libre: true, caja: false }); }
     return true;
   }
   const gear = { id: 'engranaje', pos: { x: 0, y: 0, z: 0 } };
@@ -496,6 +496,12 @@ window.AVV18Puerto = function (G) {
     };
   }
   const enEncuentro = () => listaMision() && estado() === 'descubierto' && A.pistas.size >= 3 && A.aciertos < 3;
+  // Progreso del paso guardado en el mundo de progreso.js, uno a uno como las tablas (valores que no son 'recogida': no pagan XP de material)
+  const clavePista = k => 'v18_puerto_pista_' + k, CLAVE_ACIERTOS = 'v18_puerto_aciertos';
+  function restaurarPaso() {
+    A.pistas.clear(); for (const k in P.pistas) if (V.mundo(clavePista(k)) === 'vista') A.pistas.add(k);
+    A.aciertos = Math.max(0, Math.min(2, Number(V.mundo(CLAVE_ACIERTOS)) || 0));
+  }
   function usarPoder() {
     if (!enEncuentro()) return { ok: false, motivo: 'fase' };
     if (!A.j) A.j = nuevoJugador();
@@ -512,7 +518,7 @@ window.AVV18Puerto = function (G) {
   }
   function acertar(como) {
     if (!enEncuentro()) return false;
-    A.aciertos++; sonar('unlock'); const g = posEngranaje(); fx('stars', g.x, g.y, g.z, 14); fx('dust', g.x, g.y, g.z, 8);
+    A.aciertos++; V.cambiarMundo(CLAVE_ACIERTOS, A.aciertos); sonar('unlock'); const g = posEngranaje(); fx('stars', g.x, g.y, g.z, 14); fx('dust', g.x, g.y, g.z, 8);
     maq.sacude = 0.5;
     emitir({ tipo: 'acierto', como, n: A.aciertos });
     if (A.aciertos < 3) { toast(con(TXT.acierto, A.aciertos), 2200); return true; }
@@ -686,6 +692,15 @@ window.AVV18Puerto = function (G) {
     const $ = id => document.getElementById(id), oculto = id => !$(id) || $(id).hidden;
     try { if ($('c1-fade') || (G.dialogo && G.dialogo.open && G.dialogo.open()) || G.ui.cardOpen || (G.ui.busy && G.ui.busy())) return false; return oculto('end') && oculto('comic') && oculto('creator'); } catch (e) { return false; }
   }
+  // El aviso de inicio espera al jugador libre de verdad, como QA-188/212 en descubrir.js: sin diálogo ni bocadillos de historia,
+  // sin la apertura, sin actividad del menú V18 y con la portada y la pausa cerradas
+  function libreAviso() {
+    try {
+      const t = document.getElementById('title'), p = document.getElementById('pause');
+      if (!libre() || (G.dialogo && G.dialogo.activo && G.dialogo.activo()) || document.getElementById('c1-saltar')) return false;
+      return !(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) && !(t && t.open) && !(p && p.matches && p.matches(':popover-open'));
+    } catch (e) { return false; }
+  }
   function pasoMaquina(dt) {
     if (maq.mueve) { maq.mueve.t = Math.min(1, maq.mueve.t + dt); const t = maq.mueve.t, k = t * t * (3 - 2 * t); maq.pos.x = maq.mueve.de.x + (maq.mueve.a.x - maq.mueve.de.x) * k; maq.pos.z = maq.mueve.de.z + (maq.mueve.a.z - maq.mueve.de.z) * k; if (t >= 1) maq.mueve = null; }
     const mode = reparado() ? 'flor' : rango(estado()) >= rango('desactivado') ? 'apagada' : 'trabada';
@@ -719,7 +734,7 @@ window.AVV18Puerto = function (G) {
     if (tue.glb && (lista || reparado())) pasoTue(dt);
     const e = estado(), dM = Math.hypot(S.pos.x - maq.pos.x, S.pos.z - maq.pos.z), dP = Math.hypot(S.pos.x - SITIO.plaza.x, S.pos.z - SITIO.plaza.z);
     // aviso y bandera (una vez por sesión) mientras la misión no empezó
-    if (e === 'obra' && !A.avisado && !busy) { A.avisado = true; if (dP > R_AVISO) { toast(TXT.aviso, 5200); ponerGuia(); } }
+    if (e === 'obra' && !A.avisado && !busy && dP > R_AVISO && libreAviso()) { A.avisado = true; toast(TXT.aviso, 5200); ponerGuia(); }
     if (e === 'obra' && !A.llegada && dP < 32 && !busy && libre() && N.instancia('constructor') && N.instancia('ingeniera')) {
       A.llegada = true; const l = TXT.llegada;
       N.decir(l[0][0], [l[0][1]], () => N.decir(l[1][0], [l[1][1]], () => N.decir(l[2][0], [l[2][1]], null, { libre: true, caja: false }), { libre: true, caja: false }), { libre: true, caja: false });
@@ -743,7 +758,7 @@ window.AVV18Puerto = function (G) {
     pintarHud(dP < R_HUD && (e !== 'obra' || dM < R_DESCUBRE + 6) && !busy);
   }
   G.on('update', (dt, busy) => { if (!A.manual) paso(Math.min(dt, 0.1), busy); }, 73);
-  G.on('apply', () => setTimeout(() => { A.pistas.clear(); A.aciertos = 0; A.frenando = false; maq.mueve = null; soltarModo(); aplicar(); }, 0), 97);
+  G.on('apply', () => setTimeout(() => { restaurarPaso(); A.frenando = false; maq.mueve = null; soltarModo(); aplicar(); }, 0), 97);
   G.on('v18', ev => { if (!ev) return; if (ev.tipo === 'mundo' && (ev.id === ID || /^v18_puerto_/.test(ev.id || '') || ev.id === 'puente_villa')) aplicar(); if (ev.tipo === 'evo') pagarXP(); });
 
   // ---------- Arranque: el mundo real y el sitio medido ----------
@@ -929,6 +944,8 @@ window.AVV18Puerto = function (G) {
       ir(lejos.x, lejos.z, g); A.j.energia = 100; A.j.cd = {}; pulsar('e'); correr(0.8);
       check('10 · Junto a la máquina se toma el modo de acción y sale el botón Poder', tomaModo);
       check('10b · Grito del Yunque de espaldas no cuenta; apuntado con G y con E, sí (2/3)', sinApuntar === 0 && conG === 1 && A.aciertos === 2, sinApuntar + ' / ' + conG + ' / ' + A.aciertos);
+      A.pistas.clear(); A.aciertos = 0; V.recargar(); restaurarPaso();
+      check('10e · Tras recargar siguen las 3 pistas vistas y los 2 aciertos al engranaje (guardados en el mundo, sin XP de material)', A.pistas.size === 3 && A.aciertos === 2 && V.mundo(CLAVE_ACIERTOS) === 2, A.pistas.size + ' pistas · ' + A.aciertos + ' aciertos');
       A.j = nuevoJugador('arausiaca'); ir(g.x - U.x * 3, g.z - U.z * 3, g); A.j.energia = 100; A.j.cd = {};
       const bt = hud.q('poder'); correr(0.05); pintarHud(true);
       bt.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }));
