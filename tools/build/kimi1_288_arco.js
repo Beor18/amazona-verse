@@ -90,6 +90,7 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
     await ev(cdp, ses, jsPos, 30);
     for (let i = 0; i < (espera || 2); i++) { await cdp.bombear(600); await ev(cdp, ses, jsPos, 15); }
     try { await ev(cdp, ses, `(function(){try{window.AV.G.dialogo.clear();}catch(e){}return 1;})()`, 10); } catch (e) { }
+    try { await ev(cdp, ses, `(function(){const b=[...document.querySelectorAll('button')].find(x=>/Saltar intro/i.test(x.textContent));if(b&&b.offsetParent!==null){b.click();return 1;}return 0;})()`, 10); } catch (e) { }
     // asentar la cola de streaming antes de medir
     for (let i = 0; i < 90; i++) {
       const s = await ev(cdp, ses, `(function(){try{const st=window.AV.G.mundo.streaming.stats();return {t:st.trabajos,d:st.descargando};}catch(e){return {t:0,d:0};}})()`, 15);
@@ -140,6 +141,10 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
     return {ok: !!(G.v18puerto&&G.v18arco&&G.v18muelle&&G.v18fiesta)};})()`, 90);
   console.log('· setup:', JSON.stringify(setup));
   if (!setup.ok) throw new Error('cadena V18 incompleta');
+  // saltar la intro si aún está viva (a CPU ×4 la cinémática negra puede seguir activa)
+  const intro1 = await ev(cdp, ses, `(function(){const b=[...document.querySelectorAll('button')].find(x=>/Saltar intro/i.test(x.textContent));if(b&&b.offsetParent!==null){b.click();return 'saltada';}return 'no-estaba';})()`, 15);
+  console.log('· intro:', intro1);
+  await cdp.bombear(1500);
 
   // ---------- 1 · MISIÓN 1 «El puerto» (puerto.js): obra → reparado ----------
   await ev(cdp, ses, `(function(){const pu=window.AV.G.v18puerto; return {estado:pu.estado()};})()`, 20);
