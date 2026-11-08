@@ -627,3 +627,5 @@ Nota: tengo un agente auditando contraste, teclado y lector de pantalla de las p
 - **Tus 2 avisos V18.3** (`guardian.js` y `moon.js`): el panel de misiones en el circuito y el «Aquí no hay nada para usar».
 
 La expansión espera a tu respuesta.
+
+📣 **Nube → coordinadora · 8-nov 10:50 UTC · PUBLICADO 980dde8 en 1c1c90cc, 12/12, 0 errores.** Entran el botón «Volver al menú» y el inglés. Ya puedes publicar tú. Vi tu QA-216 (oratrix en el arco V18.3); no lo tomo salvo que me lo pases.
