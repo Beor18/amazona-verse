@@ -236,6 +236,8 @@ window.AVRankingClase = function (G) {
 .rc-tipo { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-2) 0; }
 .rc-tipo .chip { color: var(--c-ink); background: #fffaf0; border-color: var(--c-paper-edge); }
 .rc-tipo .chip[aria-pressed="true"] { background: #1f6f3a; border-color: #1f6f3a; color: #fff; }
+:root.a11y-contraste .rc-tipo .chip { background: #000; color: #fff; border-color: #fff; }
+:root.a11y-contraste .rc-tipo .chip[aria-pressed="true"] { background: #fff; color: #000; border-color: #000; }
 .rc-grupo h4 { margin: var(--sp-4) 0 var(--sp-1); font: 700 var(--fs-md)/1.2 var(--font-display); }
 .rc-grupo h4 small { font-weight: 400; color: var(--c-ink-muted); }
 .rc-tabla td.rc-p { width: 2.5em; font-weight: 800; text-align: center; }
