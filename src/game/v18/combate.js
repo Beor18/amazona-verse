@@ -547,6 +547,8 @@ window.AVV18Combate = function (G) {
       '#v18-duelo .vd-chip .vd-cdv{position:absolute;left:0;right:0;bottom:0;height:var(--cd,0%);background:rgba(40,30,20,.45);pointer-events:none}' +
       '#v18-duelo .vd-chip.listo{box-shadow:0 0 0 3px #8fe08a,0 0 14px #8fe08a99;transform:translateY(-1px)}#v18-duelo .vd-chip.sin{opacity:.55}#v18-duelo .vd-chip.cd{opacity:.8}' +
       '#v18-duelo .vd-chip[hidden]{display:none}#v18-duelo:not(.tactil) button.vd-ali{display:none}' +
+      // Los chips van abajo, encima del aviso de Acción: así no tapan a la cotorra ni a la rival en el centro de la pantalla
+      '#v18-duelo:not(.tactil) .vd-bot{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 132px);margin:0;flex-wrap:nowrap;gap:8px}' +
       '#v18-duelo button.vd-como{display:flex;align-items:center;gap:5px;margin:6px 0 0 auto;min-height:36px;padding:4px 10px;font-size:13px;background:#ffe39a;--icon-size:16px}#v18-duelo.tactil button.vd-como{min-height:56px;font-size:14px}' +
       '#v18-duelo button.vd-como[hidden]{display:none!important}' +
       '#v18-duelo .vd-pista{margin:6px auto 0;width:max-content;max-width:100%;background:rgba(255,227,154,.95);color:#3b2a14;text-shadow:none;font-weight:600;font-size:16px;padding:6px 14px;border-radius:18px;box-shadow:0 2px 8px #0005;text-align:center;animation:vdPista .25s ease-out}' +
