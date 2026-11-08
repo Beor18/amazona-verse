@@ -1,0 +1,16 @@
+AUDITORIA HTTP PRODUCCION - 2026-11-08T15:14:27Z
+URL: https://www.amazonaverse.com/juego/
+
+== meta build ==
+ave:build" content="HEAD e3f8cfeb7467
+
+== marcadores meshopt ==
+templo_mediano_h_hd_glb.js bytes: 4843593
+templo_grande_d_hd_glb.js bytes: 3546424
+MeshoptDecoder en assets.js: 2
+
+== marcadores Family Quest / parches de la tanda ==
+familia_aventuras.js: 200 44530B
+duelos_ganados_e en records.js: 5
+desdeMenu en menu_modos.js: 14
+v18_arco_aciertos en arco.js: 1
