@@ -93,19 +93,25 @@
     "que": "Árbol que tapa el nido de la torre 0 de las Atalayas (intervención mínima)",
     "donde": "src/game/v18/arco.js",
     "quien": "Otra cuenta",
-    "estado": "en curso"
+    "estado": "hecho",
+    "commit": "18ec0356",
+    "nota": "8-nov: solo se quitan los árboles cuya copa llega al nido de la torre 0 (G.vegetacion.despejar, como el muelle); v18ArcoTest 94/94 con el check 8e"
    },
    {
     "que": "Inglés de Family Quest y del aviso de poderes",
     "donde": "content/cap1/en.js",
     "quien": "Otra cuenta",
-    "estado": "en curso"
+    "estado": "hecho",
+    "commit": "93742361",
+    "nota": "8-nov: idiomaTest 31/31 y familyQuestTest con pasada en inglés por 33 vistas sin español; fuera la exclusión «solo en español» del aviso"
    },
    {
     "que": "Descargar el cómic familiar en el dispositivo (sin subir nada)",
     "donde": "src/game/familia_aventuras.js",
     "quien": "Otra cuenta",
-    "estado": "pendiente (después de los bloqueantes)"
+    "estado": "hecho",
+    "commit": "0e649abd",
+    "nota": "8-nov: botón «Descargar» en la página y en cada viñeta (lienzo → blob → <a download>; en iOS, otra pestaña); familyQuestTest 53/53, sin red"
    },
    {
     "que": "UICN verificada con fuentes vigentes y discrepancias documentadas (sin tocar el catálogo narrativo)",
