@@ -36,8 +36,13 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   while (Date.now() - t0 < 240000) { try { if (await ev(cdp, ses, `!!(${CFG.listo_js})`, 10, false)) { ok = true; break; } } catch (e) { } await cdp.bombear(0.5); }
   if (!ok) { console.log('· no arrancó'); process.exit(1); }
   console.log('· preparar: ' + await ev(cdp, ses, CFG.preparar_js, 300));
+  const INY = process.argv.indexOf('--inyectar') > 0 ? process.argv[process.argv.indexOf('--inyectar') + 1].split(',') : [];
+  for (const ruta of INY) {
+    await ev(cdp, ses, `new Promise((ok, mal) => { const s = document.createElement('script'); s.src = ${JSON.stringify('/' + ruta.replace(/^\/+/, ''))}; s.charset = 'utf-8'; s.onload = () => ok('ok ${ruta}'); s.onerror = () => mal(new Error('no cargó ${ruta}')); document.head.appendChild(s); })`, 30);
+  }
   const t1 = Date.now();
-  const res = await ev(cdp, ses, `window.AV.${BATERIA}()`, 590);
+  const TOUT = +(process.argv.indexOf('--timeout') > 0 ? process.argv[process.argv.indexOf('--timeout') + 1] : 590);
+  const res = await ev(cdp, ses, `window.AV.${BATERIA}()`, TOUT);
   console.log(`· ${BATERIA}:`, JSON.stringify(res).slice(0, 9000));
   console.log(`· ${Math.round((Date.now() - t1) / 1000)} s`);
   try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { }
