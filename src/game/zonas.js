@@ -42,8 +42,19 @@ AVE.module('zonas', function (G) {
     if (S.complete && ZONAS[cap + 1]) a.add(cap + 1);
     return [...a].filter(n => ZONAS[n]).sort((p, q) => p - q);
   }
+  // QA-181: dentro() corre cada cuadro; la lista solo cambia con el registro de temporada o S.complete, así que se
+  // recalcula (JSON.parse del registro) solo cuando cambia el texto guardado o S.complete. Mismo resultado.
+  const memo = { crudo: undefined, completo: undefined, lista: null };
+  function abiertasCache() {
+    const T = window.AVTemporada; let crudo = null; try { crudo = localStorage.getItem((T && T.KEY) || 'amazonaverse.temporada'); } catch (e) { crudo = null; }
+    const completo = !!S.complete;
+    if (!memo.lista || crudo !== memo.crudo || completo !== memo.completo || !T) {
+      memo.crudo = crudo; memo.completo = completo; memo.lista = abiertas();
+    }
+    return memo.lista;
+  }
   const en = (z, x, zz) => Math.hypot(x - z.x, zz - z.z) <= z.r || (z.mas || []).some(c => Math.hypot(x - c[0], zz - c[1]) <= c[2]);
-  const dentro = (x, z) => abiertas().some(n => en(ZONAS[n], x, z));
+  const dentro = (x, z) => { const l = abiertasCache(); for (let i = 0; i < l.length; i++) if (en(ZONAS[l[i]], x, z)) return true; return false; };
   const zonaEn = (x, z) => { for (const n of Object.keys(ZONAS)) if (en(ZONAS[n], x, z)) return Number(n); return 0; };
 
   function aviso(x, z) {

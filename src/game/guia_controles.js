@@ -330,8 +330,8 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   let pmColocado = { id: null, t: -1e9 };
   function pintarPm(forzar, cambioHud) {
     const id = pmPaso(forzar);
-    pm.hidden = !id;
-    if (id) pm.dataset.paso = id;
+    if (pm.hidden !== !id) pm.hidden = !id; // QA-181: sin mutación por cuadro si no cambia
+    if (id && pm.dataset.paso !== id) pm.dataset.paso = id;
     pm.classList.toggle('pm-atascado', !!id && pmE.t >= 20);
     const q = document.getElementById('quest');
     if (q) q.classList.toggle('pm-senala', !!id && pmE.t >= 20);
@@ -345,7 +345,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   function pmTick(dt) {
     const M = G.fisica.MOVE, jugando = pmForzar || enJuego();
     if (!jugando || (G.quiet && !pmForzar)) {
-      pm.hidden = true;
+      if (!pm.hidden) pm.hidden = true;
       const q = document.getElementById('quest'); if (q) q.classList.remove('pm-senala');
       return;
     }
@@ -404,7 +404,8 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       if (!jugando && (G.ui.busy() || enMinijuego())) cerrar(); // empieza un diálogo, una tarjeta o el minigolf: el panel no estorba
     }
     // Pastilla de vuelo: la tecla para dejar de volar, mientras vuela
-    const t = teclas(), quiere = M.flying && !M.landing && !tactil() ? t.aterrizar : '';
+    let tc = null; const t = () => tc || (tc = teclas()); // QA-181: el mapa de teclas solo se arma si hace falta (volando o con una pista)
+    const quiere = M.flying && !M.landing && !tactil() ? t().aterrizar : '';
     if (quiere !== volando) {
       volando = quiere;
       pastilla.hidden = !quiere;
@@ -417,13 +418,13 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if ((altoT -= dt) <= 0) { altoT = 0.25; mirarAlto(); }
     if (M.flying) { vueloT += dt; sueloT = 0; } else { vueloT = 0; if (M.grounded) { sueloT += dt; if (!est.hecho.volar) sinVolarT += dt; } }
     if (pistaT > 0) return;
-    if (!est.hecho.volar && sinVolarT > AJ.suelo && (enSesion.volar || 0) < 3) { sinVolarT = -AJ.repetirVolar; pista('volar', `Pulsa ${kbd(t.volar)} para volar`); return; }
+    if (!est.hecho.volar && sinVolarT > AJ.suelo && (enSesion.volar || 0) < 3) { sinVolarT = -AJ.repetirVolar; pista('volar', `Pulsa ${kbd(t().volar)} para volar`); return; }
     if (M.flying && vueloT > 1.2 && !est.hecho.subir && !enSesion.subir) { pista('subir', `Mantén ${kbd('Espacio')} para subir y ${kbd('C')} para bajar`); return; }
     if (altoDelante && pidiendoMover()) {
       if (M.flying && !enSesion.altoVuelo && !G.input.jumpHeld) { enSesion.altoVuelo = 1; pista('alto', `Mantén ${kbd('Espacio')} para subir`); return; }
-      if (!M.flying && M.grounded && !enSesion.altoSuelo) { enSesion.altoSuelo = 1; pista('alto', `¿Quieres subir ahí? Pulsa ${kbd(t.volar)} para volar y mantén ${kbd('Espacio')}`); return; }
+      if (!M.flying && M.grounded && !enSesion.altoSuelo) { enSesion.altoSuelo = 1; pista('alto', `¿Quieres subir ahí? Pulsa ${kbd(t().volar)} para volar y mantén ${kbd('Espacio')}`); return; }
     }
-    if (M.flying && vueloT > AJ.vueloSinAterrizar && !est.hecho.aterrizar && !enSesion.aterrizar) { pista('aterrizar', `Para dejar de volar, pulsa ${kbd(t.aterrizar)}`); return; }
+    if (M.flying && vueloT > AJ.vueloSinAterrizar && !est.hecho.aterrizar && !enSesion.aterrizar) { pista('aterrizar', `Para dejar de volar, pulsa ${kbd(t().aterrizar)}`); return; }
     if (M.swimming && nadoT > AJ.nadoSinBucear && !est.hecho.bucear && !enSesion.bucear) { pista('bucear', `Mantén ${kbd('C')} para bucear`); return; }
   }
   G.on('update', dt => actualizar(dt || 0), 90);

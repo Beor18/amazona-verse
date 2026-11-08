@@ -172,6 +172,10 @@ AVE.module('fisica', function (G) {
   const KIND_SOLIDO = { edificio: 1, estructura: 1, arbol: 1, taller: 1, post: 1 };
   function pushOut(p, c, rad) {
     if (c.r <= 0 || (c.when && !c.when())) return;
+    // QA-181: descarte barato antes de las consultas de sólidos y de terreno (2 pasadas por todos los colliders cada cuadro).
+    // Fuera del rectángulo inflado por el radio el empuje de abajo no hace nada (d >= rad o d >= min): mismo resultado.
+    const ex = (c.hx ? c.hx : c.r) + rad + 1e-6, ez = (c.hx ? c.hz : c.r) + rad + 1e-6;
+    if (p.x - c.x > ex || c.x - p.x > ex || p.z - c.z > ez || c.z - p.z > ez) return;
     if (KIND_SOLIDO[c.kind] && G.solidos && G.solidos.activo) {
       if (c._solV !== G.solidos.version) { c._sol = G.solidos.cubre(c); c._solV = G.solidos.version; } // se renueva al crecer los sólidos
       if (c._sol) return;
