@@ -687,6 +687,9 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       let sAntes = null;
       return (async () => {
         try {
+          // El marcador crea S.marcador al cargarse y al leerlo la primera vez: se materializa antes de la foto de la partida
+          if (!G.marcador && G.cargarMarcador) await G.cargarMarcador().catch(() => null);
+          if (G.marcador && G.marcador.tiempo) G.marcador.tiempo();
           await crearPool(); sAntes = comparable(S); // el kit ya cargado: lo que escriban otros módulos perezosos mientras tanto no cuenta como cambio
           check('Declaración completa (id, nombre, recursos, cámara, controles, inicio, derrota, puntuación, música, resultados, récords)',
             ['id', 'nombre', 'descripcion', 'recursos', 'camara', 'controles', 'inicio', 'derrota', 'puntuacion', 'musica', 'resultados', 'records'].every(k => DECL[k] != null) && DECL.oculto === false);

@@ -1608,6 +1608,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const SV = G.guardado, claves = ['', '.tmp', '.prev'].map(s => SV.KEY + s);
       const leer = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
       const comparable = d => { const o = {}; for (const k of SV.KEYS) o[k] = d && d[k]; return JSON.stringify(o); };
+      // Sin gesto del jugador (arnés) el marcador aún no cargó: se carga aquí; si no, crea S.marcador en mitad de la prueba
+      if (!G.marcador && G.cargarMarcador) await G.cargarMarcador().catch(() => null);
       if (G.marcador && G.marcador.tiempo) G.marcador.tiempo(); // el marcador crea S.marcador al leerlo la primera vez (no es del reto): se materializa antes de la foto (QA-82)
       const realAntes = claves.map(leer), sAntes = comparable(S), recReal = leer(ALMACEN), errores0 = (window.__aveErrores || []).length;
       const ce = console.error, errores = []; console.error = function () { errores.push(Array.from(arguments).join(' ')); return ce.apply(console, arguments); };
