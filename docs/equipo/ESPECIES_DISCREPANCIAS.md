@@ -29,3 +29,5 @@ Kelvin decide. Estas 13 de las 36 especies del catálogo (34 vivas y 2 extintas)
   - Hay evaluaciones de 2016 a 2022. Si existe una más nueva, esa manda.
 - Hasta confirmarlo, el juego no muestra el estado UICN de estas especies.
 - *Amazona tresmariae*: la UICN no la evalúa aparte, porque la trata como subespecie de *A. oratrix*, que está En peligro.
+
+**Evidencia nueva, 8-nov-2026:** *A. imperialis* — BirdLife DataZone (https://datazone.birdlife.org/species/factsheet/imperial-amazon-amazona-imperialis) confirma En peligro crítico: 2019 (C2a(i,ii); D) y 2021 (A4acd; C1+2a(i,ii); D). La ficha de 2019 (e.T22686411A154800996) coincide con la fila de la tabla. El resto de las filas no se volvió a consultar. Sin cambios de estado (decide Kelvin).

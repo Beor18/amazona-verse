@@ -38,3 +38,21 @@ hay que cambiar esa prueba en el mismo commit.
   y «60-65 days», cambiar la cita de `rescate.js` y `en.js` a esa fuente, sin «por verificar».
 - Coquí: cambiar el texto a «canta sobre todo del atardecer a la medianoche» (eLife 2022) o confirmar «hasta el amanecer» con el DRNA.
 - Tren: pedir al Archivo General de PR o al ICP una fuente primaria para la red de vía estrecha y para el fin del servicio en 1953.
+
+## Segunda ronda (8-nov-2026, tarea BM84 de seguimiento)
+
+Estado real de las fichas de BM84 (`EDUCATIVO_EP2_EP6.md`, 31 datos): **27 verificadas, 1 narrativa (zocos), 2 canon, 1 cifra del catálogo (36; Kelvin la mantiene como canon, E3)**. Los «9 parciales» y «10 por verificar» del ROADMAP ya estaban cerrados el 2-nov y el 4-nov. Quedaban los datos de esta página; se investigaron con búsqueda web. Consultado el 8-nov-2026. Sin cambios en los textos del juego (ningún dato resultó erróneo).
+
+| Dato | Veredicto | Fuente (título, URL) | Nota |
+|---|---|---|---|
+| Rescate: la cotorra anida en huecos de árboles, sobre todo de palo colorado | parcial | American Federation of Aviculture, *Puerto Rican Amazon* https://parrots.org/encyclopedia/puerto-rican-amazon: «palo colorado *Cyrilla racemiflora* zone, important for nesting»; temporada «February-June in tree cavities». Las cajas nido: ver BM84 (SORA / AFA) en `EDUCATIVO_EP2_EP6.md` | La fuente habla de la zona de palo colorado, no de «el árbol». Texto del juego razonable, sin cambio. Falta USFWS/USFS (fs.usda.gov da 404; webarchive.unt.edu da 503) |
+| Rescate: los pichones salen del nido a los 60–65 días | parcial | AFA, misma página: edad al dejar el nido «About 9 weeks» (≈63 días) | Compatible con 60–65. Sigue «por verificar» en USFWS; la cifra en días solo la da el extracto del buscador del USFS |
+| Coquí: canta «del atardecer al amanecer» (comentarios de `atardecer.js`, `misiones.js`) | parcial | NWF, *Puerto Rican Coquí* https://nwf.org/Educational-Resources/Wildlife-Guide/Amphibians/Puerto-Rican-Coqui: «can be heard from dusk until dawn all over the island»; eLife 2022 (Beard et al.) https://elifesciences.org/articles/73401: «peak calling in males is between dusk and midnight» | Sin fuente oficial (USGS NAS da 403, DRNA sin página). Si el juego lo dijera a niños: «canta sobre todo de noche» es lo seguro |
+| Tren: red de vía estrecha, American Railroad Company of Porto Rico | sin fuente primaria | Wikipedia, *American Railroad Company* https://en.wikipedia.org/wiki/American_Railroad_Company y *Rail transport in Puerto Rico* https://en.wikipedia.org/wiki/Rail_transport_in_Puerto_Rico | Solo secundarias. Sigue «por verificar» |
+| Tren: pasajeros terminan a mediados del siglo XX | sin fuente primaria (consistente) | Wikipedia (mismas): pasajeros hasta 1953, toda operación hasta 1957. Un blog (trenopedia) dice 1954 | «Mediados del siglo XX» es correcto con cualquiera de las fechas |
+| Estado UICN de *A. imperialis* en el Diario | verificado | BirdLife DataZone, *Imperial Amazon* https://datazone.birdlife.org/species/factsheet/imperial-amazon-amazona-imperialis: En peligro crítico (2019: C2a(i,ii); D; 2021: A4acd; C1+2a(i,ii); D) | Ficha UICN e.T22686411A154800996. Ver `ESPECIES_DISCREPANCIAS.md` |
+| Fichas de ep2–ep6 que aquí figuraban «por verificar» | cerradas | Ver `EDUCATIVO_EP2_EP6.md` (2-nov y 4-nov) | 18 verificadas por Kelvin + 6 publicadas con fuente |
+| Indicadores `depr_2022` | sin verificar | — | Requieren el documento del DEPR (sin acceso) |
+
+Recuento de esta ronda: **verificado 1 (imperialis), parcial 3 (cartel de nido, 60–65 días, coquí), sin fuente primaria 2 (tren), sin verificar 1 (depr_2022), corregidos 0.**
+Bloqueados desde esta red: fs.usda.gov (404), webarchive.unt.edu (503), nas.er.usgs.gov (403), corpora.tika.apache.org y digitalcommons.usf.edu/SORA (sin acceso o redirección).

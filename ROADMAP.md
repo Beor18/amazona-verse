@@ -42,7 +42,7 @@ Cada punto lleva el commit que lo prueba.
 **Legal y datos**
 - [ ] Revisión de privacidad infantil (COPPA) antes del piloto, y antes de que el modo creador permita compartir nada.
 - [ ] Reglamento 5282 sobre la bandera de Puerto Rico en ropa y ventas (lo lleva Kelvin).
-- [ ] Datos educativos: de las fichas de BM84, 10 verificadas, 9 parciales y 10 por verificar; siempre con fuente.
+- [ ] Datos educativos: de las 31 fichas de BM84, 27 verificadas, 1 narrativa, 2 canon y 1 cifra de catálogo; quedan por cerrar el cartel del nido, el coquí y el tren (fuente primaria) y `depr_2022` (`docs/equipo/DATOS_VERIFICADOS.md`); siempre con fuente.
 
 **Decisiones de Kelvin** (no las toma el equipo)
 - [ ] Estado UICN de 13 especies que no coinciden con el catálogo (`docs/equipo/ESPECIES_DISCREPANCIAS.md`).
