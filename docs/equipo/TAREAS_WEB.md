@@ -150,8 +150,7 @@ Por favor **no toques `minigolf.js` hasta que lo suba** (≈1 h); si tienes camb
    - edificios y modelos
 2. **W28 · Recorrido de los 6 capítulos con la V18 encendida en el enlace principal**, cuando esté publicada (te aviso aquí). Desde el móvil emulado y con input real, revisa que el inicio de cada capítulo, el primer diálogo y el primer objetivo funcionan, y que la V18 no tapa nada de la historia. Lo que salga va a BUGS.md, y lo arreglas si es de tu carril.
 
-Nada de funciones nuevas. Antes de subir: las 12 baterías en verde y `git grep "^<<<<<<< "` vacío.
-
+Nada de funciones nuevas. Antes de subir: las 12 baterías en verde y `git grep "^
 **📣 6-nov · otra cuenta → coordinadora · W27 hecho (12/12 en verde sobre 20fa7c4, 0 errores):** lo que queda abierto en los caps. 1–6 es de render o rendimiento (Kimi). En mi carril: **QA-184** (nuevo, corregido: la prueba W3 de `content/cap1/pruebas.js` dejaba «Aviso de prueba W3» en el `#toast` oculto y `idiomaTest` fallaba 20/31 tras `selfTest`; ahora 103/103 → 31/31, ep6Test 91/91) y **QA-89** pasado a cerrado (ya tenía la decisión de Kelvin y su arreglo probado). La 1.ª vuelta de las 12 sacó el intermitente conocido de movementTest (KIMI-095); la 2.ª, 12/12. `git grep "^<<<<<<< "` solo encuentra `docs/img/kimi144/k144_guia_controles_variante_descartada.conflicto.txt`, una copia archivada de Kimi, no código. **W28:** lo adelanto con 3 agentes sobre la build local de HEAD con la V18; cuando publiques, lo repito en el enlace principal.
 
 **📣 6-nov · otra cuenta → coordinadora · W28 (primeros resultados, caps. 5 y 6, build local de HEAD con la V18, móvil emulado e input real):** inicio, primer diálogo y primer objetivo OK, 0 errores de consola. **Dos fallos en tu carril (`src/game/v18`, no los toco):** **QA-185 (alta)**: en táctil el botón «Grito del Yunque» de `explorar.js` tapa media «Impulso» y roba el toque (captura en `docs/img/w28/`). **QA-186 (baja)**: la pista de `descubrir.js` sobre Villa Raíz sale encima del primer diálogo en los caps. 5 y 6. Caps. 1–4: siguen los otros 2 agentes.
@@ -420,6 +419,7 @@ A.3 (edificios lejanos al llegar) se lo pasé a Kimi 3 en TAREAS_KIMI.md, porque
 
 📣 **Nube → coordinadora · 8-nov 02:40 UTC · regla de Kelvin: «no se detengan; pidan tareas siempre que terminen».** Cada vez que un agente de la nube termine, te lo diré aquí y te pediré la siguiente tarea. Para no quedarme parada mientras contestas, deja aquí una **cola de tareas → nube** ordenada; yo tomo la primera libre y la marco «EN CURSO · nube». Ahora estoy con el menú V18, el bloque A y la V18.2.
 
+<<<<<<< HEAD
 📣 **Nube → coordinadora · 8-nov 03:35 UTC · Esc de las actividades V18 en main (7a1fdce7), listo para publicar; un agente de la nube libre: pido tarea.**
 - Chispa, Moon y el Guardián ceden el Esc a diálogos, tarjetas, overlays, guía de controles, mapa grande, familia, criadero y maestro. Cada prueba tiene un check nuevo.
 - e2e quita su oyente 'contexto' al terminar. Para eso hay un **G.off(name, fn) nuevo en src/engine/core.js** (2 líneas). Míralo, por si no lo quieres.
@@ -443,3 +443,10 @@ Extras (todo lo que no son las 12 obligatorias) en la nube con SwiftShader. 92 b
 | playtest10Test | «no existe en esta build» | n/a | Igual: tests/qa/playtest10.js:449 dice que test.sh no lo inyecta. |
 
 Pendiente real: equiposTest e idiomaTest. lookTest, ambienteTest, cargaTest, climaTest y v18FxTest hay que repetirlos con GPU; no se tocó código del juego.
+📣 **Nube → coordinadora · 8-nov · bloque A, puntos 1–3 hechos (parche en `/home/user/.avt/parches_cierreA`, sin push).** 12 obligatorias en verde en c9c2b29 + trenTest 57/57, v18CombateTest 42/42, v18RepararTest 33/33, v18FxTest 18/18 (corriendo detrás de las dos), cargaTest 16/16; lookTest 44/44 en 31683a9; 0 errores de consola.
+- **lookTest** (QA-78, prueba): en SwiftShader la primera compilación de las familias de fábrica tarda ~65 s y `asentar()` cortaba a los 10 s; la foto de fábrica salía con media escena oculta. Con GPU por software espera hasta 120 s. Ahora 114 → 114 draw calls y 0,0 % de píxeles distintos al volver. Looks y draw calls sin tocar; la restauración ya era correcta.
+- **trenTest** (prueba): el tren no crea nada al reiniciar; la segunda medida salía desde otro punto de la vía y sumaba el mundo que entraba en cuadro (+21 geometrías, +9 texturas). Las dos medidas se toman con el tren en la Playa y se cuentan exactas las geometrías y texturas del tren; al salir se comprueba que se libera cada una.
+- **v18FxTest** (prueba + juego): la prueba empieza sin escudos ni anillos. En el juego, al cerrar un combate (`quitarBalas`) el escudo de v18fx seguía girando hasta su fin; ahora `G.v18fx.apagar(actor)` lo quita al instante (check nuevo).
+- **cargaTest** (prueba): con caché la carga se hace en 9 cuadros; con GPU por software cada cuadro tarda ~300 ms. Allí se mide en cuadros (≤ 90, 1,5 s a 60 fps); con GPU real, en ms como siempre.
+- **Carga de arranque** (avtest con la cuenta del SW, `?calidad=`, servidor local sin compresión, 2 cargas por nivel, idénticas): bajo 22,67 MB en 201 archivos · **medio 58,29 MB** en 269 archivos (glb 40,78 · imágenes 13,77 · js 3,50), 188 draw calls, 370,9 MB de texturas · **alto 58,29 MB** (igual), 201–202 draw calls, 516,9 MB de texturas. Pasan el límite de 28 MB de config y los avisos de 150 draw calls y 300 MB de texturas. No toqué nada de carga (es de Kimi 2 y 3).
+- **BUGS.md**: abiertas sin Kimi ni Kelvin: QA-78 resuelta (arriba); QA-106 sin tocar (falta `#fps` en el iPad real); CG-56 sin tocar (informativa, no tiene código). `avance.json` sin tocar: «demo estable» depende de KIMI-243.
