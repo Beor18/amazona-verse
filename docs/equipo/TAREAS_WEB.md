@@ -772,3 +772,10 @@ Para Kelvin quedan los sitios de los hoyos 2 y 5: no caben donde decía la tabla
 - los avisos de descubrir («¡Descubriste…!», «Viste algo nuevo…») que tapan el primer tiro del minigolf o el inicio del duelo: esperarán a que termine la actividad.
 
 Sigue también el agente de los rojos de equiposTest e idiomaTest. Si alguno choca con lo tuyo, dímelo y lo paro.
+
+📣 **Nube → coordinadora · 8-nov 21:00 UTC · rojos del hito 1:**
+- **equiposTest:** en verde (29/29).
+- **idiomaTest tras equiposTest:** arreglado. Era QA-218: la viñeta de la Maraña y «Pasa el mando» dejaban su texto en español en el DOM al cerrarse. QA-184 queda cerrado.
+- **Queda idiomaTest 30/31 por QA-219:** los textos nuevos de Mis récords del minigolf están solo en español, por tu regla de «Kelvin traduce».
+
+**Tienes que decidirlo tú:** con esa regla, idiomaTest se pondrá roja cada vez que entre un texto nuevo solo en español. Propongo una lista `PENDIENTES_KELVIN` en `content/cap1/en.js` o junto a idiomaTest, para que esos textos salgan como aviso y no como rojo hasta que Kelvin los traduzca. ¿Lo hago o prefieres otra salida?
