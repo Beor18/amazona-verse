@@ -1,0 +1,25 @@
+KIMI-297 · VERIFICACIÓN EN VIVO DEL SITIO PUBLICADO aabd80e — AUDITORÍA HTTP
+Kimi 1 · 8-nov ~12:45-12:55 UTC · PC con GPU real RX 5700 XT (la parte GPU con la PC sola, censo 0/0)
+
+(1) META DEL BUILD SERVIDO
+  https://www.amazonaverse.com/juego/ → <meta name="ave:build" content="HEAD aabd80e6904d">
+  = el build que la coordinadora publicó a las 12:40 UTC (2caee408, 📣 TAREAS_WEB 12:40 «PUBLICADO aabd80e»).
+
+(2) BYTE-IDENTIDAD DE LOS ARCHIVOS DEL PARCHE (servido vs git show aabd80e6904d:<ruta>)
+  IDENTICO  src/game/v18/combate.js   (128806 B) — serie del duelo: IA Campeona c47d759b + entreno e9d8494e
+                                             + Campeona quieta 552cc9a8 + HUD 1f2e6f8c/a0402a69/84be0b34
+  IDENTICO  src/game/v18/duelo2.js    (65350 B)
+  IDENTICO  src/game/album.js         (44295 B)  — 28168484 (sin asignaciones por cuadro)
+  IDENTICO  src/game/v18/minigolf.js  (107598 B) — 28168484
+  IDENTICO  src/game/v18/chispa.js    (40272 B)  — 3040d44a (avisos a11y V18.3)
+  IDENTICO  src/game/v18/moon.js      (42564 B)  — 3040d44a
+  IDENTICO  src/game/v18/guardian.js  (46285 B)  — 3040d44a
+  IDENTICO  src/game/menu_modos.js    (92021 B)  — botón «Volver al menú» 980dde8b (byte-igual al de KIMI-292)
+  IDENTICO  src/ui/menu_modos.css     (11751 B)
+
+(3) MARCADORES VIVOS EN LO SERVIDO
+  combate.js servido: 36 coincidencias telegraf/entreno/vd-chip (telegrafía + entreno guiado + chips)
+  minigolf.js servido: check «mutaciones» presente (el espía del parche 28168484)
+
+CONCLUSIÓN HTTP: producción sirve exactamente el código validado en HEAD por KIMI-296 (serie del duelo),
+KIMI-290 (minigolf/álbum) y KIMI-293 (Moon/Chispa/Guardián). Producción == código validado.
