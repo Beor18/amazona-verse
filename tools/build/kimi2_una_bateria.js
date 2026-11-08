@@ -15,7 +15,7 @@ function servir() { const srv = http.createServer((req, res) => { let p; try { p
 class CDP { constructor(ws) { this.ws = ws; this.id = 0; this.pend = new Map(); ws.onerror = e => { for (const [, p] of this.pend) p.re2(new Error('WS')); this.pend.clear(); }; ws.onmessage = m => { const d = JSON.parse(m.data); if (d.id && this.pend.has(d.id)) { const p = this.pend.get(d.id); this.pend.delete(d.id); d.error ? p.re2(new Error(d.error.message)) : p.re(d.result); } }; } listo() { return new Promise(r => { this.ws.onopen = r; }); } call(me, pa, si, t) { const id = ++this.id; return new Promise((re, re2) => { this.pend.set(id, { re, re2 }); this.ws.send(JSON.stringify({ id, method: me, params: pa || {}, sessionId: si })); if (t) setTimeout(() => { if (this.pend.has(id)) { this.pend.delete(id); re2(new Error('timeout ' + me)); } }, t); }); } bombear(s) { return new Promise(r => setTimeout(r, s * 1000)); } }
 async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.evaluate', { expression: exp, awaitPromise: pr !== false, returnByValue: true }, ses, (t || 30) * 1000); if (r.exceptionDetails) throw new Error(JSON.stringify(r.exceptionDetails).slice(0, 400)); return r.result ? r.result.value : undefined; }
 (async () => {
-  const srv = URL_BASE ? null : await servir(); const origen = URL_BASE ? URL_BASE.replace(/\/$/, '') : `http://127.0.0.1:${srv.address().port}`;
+  const srv = URL_BASE ? null : await servir(); const origen = URL_BASE ? URL_BASE.replace(/\/$/, '') : `http://127.0.0.1:${srv.puerto}`;
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi2u-'));
   const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + perf, '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run', '--mute-audio', '--window-size=1280,800'], { stdio: ['ignore', 'ignore', 'pipe'] });
   let err = ''; chrome.stderr.on('data', d => { err += d; });
@@ -54,5 +54,5 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   await new Promise(r => setTimeout(r, 1200));
   try { console.log('· ' + execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${path.join(AQUI, 'kimi2_mata_perfil.ps1')}" ${path.basename(perf)}`, { timeout: 30000 }).toString().trim()); } catch (e) { }
   try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) { }
-  if (srv) srv.close(); process.exit(0);
+  if (srv) srv.srv.close(); process.exit(0);
 })().catch(e => { console.error('FATAL', e); process.exit(1); });

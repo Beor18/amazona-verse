@@ -1,0 +1,11 @@
+KIMI-283 (Kimi 3) · canario GPU real de carril en HEAD f8c9e4a4 (código byte-idéntico a cf750143 ya validado: git diff cf750143..HEAD -- src content assets index.html sw.js VACÍO)
+GPU real RX 5700 XT · arnés tools/build/kimi2_una_bateria.js (página limpia por batería, entrada real portada→creador→Empezar) · PC libre (0 chrome/0 node ajenos; 156 perfiles huérfanos Temp/kimi* borrados antes, C: 3,0→12,8 GB)
+
+streamingTest 24/24 · 33 s — peor vista kelvin_ruinas_yunque (giro 4.7) = 127 draw calls ≤ 150 (46 instancias cerca · 60 _hd · 5 lejos sueltas · 17 zonas fundidas · alto) · «sin fugas» KB 325930→325930 · materiales 36→36 · modelos 136→136 · 17/17 _hd listos (templo_grande 0.00 · templo_grande_f 0.00 · ruina_mirador 0.05 pendientes conocidos) · atlas sRGB ok (AV_HD_*=3001) · «cadena base64 no retenida» verde · spawn «bajo» sin ciudad = QA-158 firme
+movementTest 52/52 · 32 s — cernido sano deriva 0,15 m · posarse en rama tabonuco gestos=1 red=0 · aterrizarRama 78 cuadros · QA-156/156a2 verdes · 197 edificios sólidos · heap 433,6→432,6 MB (streamingTest, sin gc no exigido)
+lookTest 42/44 · 14 s — los 2 rojos SON los conocidos «las texturas grandes del mundo bajan a 512 px» (atlas HD KB3D no se encoge por decisión de Kelvin; 42→42, 4 atlas HD no encogibles, memoria 400,9→528,9 MB) · checks de imagen diferencial QA-176 verdes: vibrante 89,8 % · soleado 47,7 % · toon 97,1 % · vibrant_toon 52,2 % píxeles distintos y 0,0 % al volver a fábrica (croma 37,4→37,4) · draw calls 185→185 · tris 2.753.547→2.753.547 estables
+floraTest 19/19 — B1 (GPU) firme: tabonuco #1994 funde 0→0,75 en el cono, cambian_fuera 0/19421, en_cono 47 · 7000 árboles · 128/128 troncos <40 m
+ambienteTest 24/24 · 6 s — 0 fugas tras 4 vueltas: geo 222 / tex 167 / prog 122 estables · faroles 2 calls
+0 errores de consola en las 5 baterías · mata_perfil «0 procesos» ×5 (sin zombis)
+
+Herramienta: fix de regresión de KIMI-282 (e65437b5) en tools/build/kimi2_una_bateria.js — el refactor de --url dejó `srv` como {srv,puerto} y rompió las corridas LOCALES (srv.address()/srv.close() «not a function»; con --url no se ejecutaba esa rama, por eso la nube/Kimi 2 no lo vieron). Fix: srv.puerto y srv.srv.close(). node --check OK + ambienteTest de verificación exit 0 sin FATAL.
