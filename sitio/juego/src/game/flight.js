@@ -392,7 +392,7 @@
       if (J.nuevo) f.mejor = J.puntos;
       J.mejor = f.mejor || 0;
       guardarRec(rec);
-      G.emit('retosResultado', { modo: 'flight', puntos: J.puntos, prueba: claveRec !== ALMACEN });
+      G.emit('retosResultado', { modo: 'flight', puntos: J.puntos, nuevo: J.nuevo, prueba: claveRec !== ALMACEN });
       if (J.nuevo) sonar('unlock');
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 350);
     }

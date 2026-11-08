@@ -112,7 +112,7 @@ window.AVV18Minigolf = function (G) {
     empate: '¡Empate!', sinPremios: 'En partidas por turnos no hay premios ni récord', tope: '¡10 golpes! Cuenta como terminado.',
     oroC: 'Oro', plataC: 'Plata', bronceC: 'Bronce',
     premio1: '¡Primer hoyo completado! Ganaste 3 fibras: sirven igual que la madera para reparar.', premioOro: '¡Primera medalla de oro! Ganaste 2 maderas.',
-    // Hoyos 2 a 6 (solo en español: Kelvin traduce)
+    // Hoyos 2 a 6 (inglés en content/cap1/en.js, bloque «en7»)
     eligeHoyo: '¿Qué hoyo quieres jugar?', eligeHoyoSub: 'Completa un hoyo para abrir el siguiente', siguiente: 'Siguiente hoyo', hoyos: 'Elegir hoyo',
     cerradoC: 'Cerrado', sinJugar: 'Sin jugar'
   };
@@ -1530,6 +1530,13 @@ window.AVV18Minigolf = function (G) {
         if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
         const D = window.AV_EN || {}, faltan = ['empiezaPar', 'guia', 'guiaT', 'meta', 'metaOro', 'pSuelta', 'pGrito', 'pGritoT', 'pSuave', 'pFuerte', 'pCerca', 'pFlecha', 'medOro', 'medOtra'].filter(k => !D[TXT[k]]);
         check('Cómo se juega · los textos nuevos tienen inglés en content/cap1/en.js', !faltan.length, faltan.join(', '));
+        { // en7 (QA-219): los textos de los hoyos 2 a 6 y del selector también tienen inglés
+          const h6 = HOYOS.slice(1), falt = ['eligeHoyo', 'eligeHoyoSub', 'siguiente', 'hoyos', 'cerradoC', 'sinJugar'].map(k => TXT[k])
+            .concat(h6.map(h => h.zona), h6.map(h => PISTA[h.n]), h6.map(h => tx('empieza', h)), h6.map(h => tx('hoyo', h)), h6.map(h => tx('sale', h)), h6.map(abreTxt),
+              ['Hoyo {}', 'Jugar al minigolf (hoyo {})', 'Minigolf, hoyo {}', 'Oro con {} golpes o menos', 'El hoyo {} se abre al completar el hoyo {}.', 'Oro · Récord: {}'])
+            .filter(t => typeof D[t] !== 'string');
+          check('en7 · los hoyos 2 a 6 y «¿Qué hoyo quieres jugar?» tienen inglés en content/cap1/en.js', !falt.length, falt.slice(0, 4).join(' | '));
+        }
         reiniciar();
       }
       // 7. Completar el hoyo: con un plan sencillo entra en pocos golpes (el nido registra la llegada)

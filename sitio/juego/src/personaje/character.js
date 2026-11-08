@@ -1031,10 +1031,15 @@
     // IK de patas: en pendiente o escalón cada pie busca su suelo (groundAt) y la cadera baja lo que pida el pie más bajo.
     // Después los dedos se inclinan con la normal del suelo bajo cada pie (en ladera no se clavan ni quedan en el aire).
     // ikErr: lo que le falta a cada pie para su suelo tras el IK (m, + = flota), para las pruebas.
+    // QA-181 (Modo Escuela): con ikEscuela (actores.js lo pone solo con calidad.escuela === true) el IK se calcula un cuadro
+    // de cada dos; el otro repite su corrección (el giro local que dio a cada hueso sobre la pose animada y la bajada de la
+    // cadera) encima de la animación nueva, sin consultas de suelo ni CCD. Sin el modo, como siempre.
     _footIK(dt) {
       const on = !!(this.groundAt && !this.airborne && !this.swimming && this.feet && this.feet.length === 2);
       this.fkW = (this.fkW || 0) + ((on ? 1 : 0) - (this.fkW || 0)) * Math.min(1, dt * 10);
-      if (this.fkW < 0.02 || !on) { this.ikFeet = this.ikErr = null; return; }
+      if (this.fkW < 0.02 || !on) { this.ikFeet = this.ikErr = null; if (this._ikEsc) this._ikEsc.ok = false; return; }
+      if (this.ikEscuela && this._footIKRepite()) return;
+      const n0 = this.ikSaved.length;
       this.root.updateMatrixWorld(true);
       const sc = this.root.scale.y, max = ANIM.footIK * sc, g0 = this.groundY != null ? this.groundY : this.root.position.y;
       const d = this.feet.map(f => { f.eff.getWorldPosition(_ep); return clamp(this.groundAt(_ep.x, _ep.z) - g0, -max, max); });
@@ -1053,6 +1058,29 @@
         }
         this._footTilt(f, this.fkW);
       });
+      if (this.ikEscuela) this._footIKGuarda(n0, pelvis, d); else if (this._ikEsc) this._ikEsc.ok = false;
+    }
+    // Modo Escuela: el cuadro de repetición (devuelve false si toca calcular)
+    _footIKRepite() {
+      const c = this._ikEsc;
+      if (!c || !c.ok || c.repetido) { if (c) c.repetido = false; return false; }
+      c.repetido = true;
+      if (c.pelvis < -1e-4) this.root.position.y += c.pelvis;
+      for (let i = 0; i < c.n; i++) { const b = c.huesos[i]; this.ikSaved.push([b, b.quaternion.clone()]); b.quaternion.multiply(c.deltas[i]); }
+      this.ikFeet = c.feet; this.ikErr = c.err;
+      return true;
+    }
+    // Modo Escuela: guarda la corrección del cuadro calculado (por hueso, la primera pose guardada es la animada: delta = pre⁻¹·post)
+    _footIKGuarda(n0, pelvis, d) {
+      const c = this._ikEsc || (this._ikEsc = { ok: false, repetido: false, n: 0, huesos: [], deltas: [], vistos: new Set(), pelvis: 0, feet: null, err: null });
+      const sv = this.ikSaved; c.n = 0; c.vistos.clear();
+      for (let i = n0; i < sv.length; i++) {
+        const b = sv[i][0]; if (c.vistos.has(b)) continue; c.vistos.add(b);
+        const q = c.deltas[c.n] || (c.deltas[c.n] = new THREE.Quaternion());
+        q.copy(sv[i][1]).invert().multiply(b.quaternion);
+        c.huesos[c.n++] = b;
+      }
+      c.pelvis = pelvis; c.feet = d; c.err = this.ikErr; c.ok = true; c.repetido = false;
     }
     // Dedos con la normal del suelo: las raíces de los dedos giran alrededor de la bola (que no se mueve) y quedan como en la
     // animación sobre suelo llano, pero inclinadas con la ladera (sin heredar el giro que el IK dio al tarso). La normal sale de

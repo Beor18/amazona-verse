@@ -56,11 +56,119 @@ window.AVV18Explorar = function (G) {
   function pulso(x, y, z, kind, n, veces, intervalo) { pulsos.push({ x, y, z, kind, n, k: 0, veces, t: 0, intervalo: intervalo || 0.7 }); }
   function mirada() { const f = S.facing || { x: 0, z: 1 }; const n = Math.hypot(f.x, f.z) || 1; return { x: f.x / n, z: f.z / n }; }
 
+  // ---------- V18.2 §4: el Eco Dirigido (y el Grito Maestro) aparta la flora pequeña que ya hay en el mundo ----------
+  // Sin modelos ni diseño nuevo: helechos de suelo, bromelias, heliconias y demás plantas bajas instanciadas de vegetacion.js
+  // (G.vegetacion.instancias) en el cono y el alcance del grito se doblan hacia fuera, sueltan hojas y, a los APARTA_DURA s,
+  // vuelven solas a su sitio. También vuelven al instante si Vittata se aleja más de APARTA_LEJOS m (cambio de zona) o al
+  // cargar partida ('apply'). No se toca nada de misión: ni árboles, troncos, rocas ni pasto, ni plantas a menos de 3 m de
+  // algo con lo que se interactúa (G.interaccion), ni las que despejar() ya quitó. Los troncos caídos y las rocas tienen
+  // sólidos (solidos.js) y moverlos cambiaría las colisiones: por eso no entran. Si no hay ninguna planta apta en el cono,
+  // el grito ilumina lo recogible más cercano (pulsos dorados). Sin asignaciones por cuadro (arreglos y matrices fijas).
+  const APARTA_MAX = 14, APARTA_DURA = 9, APARTA_LEJOS = 60, APARTA_ANG = 0.8;
+  const NO_APARTA = /roca|piedra|tronco|pasto|hojarasca|palma|yagrumo|tabonuco|ceiba|flamboyan|bambu|arbol|helecho_arboreo/;
+  const apBak = new Float32Array(APARTA_MAX * 16), apDir = new Float32Array(APARTA_MAX * 2), apI = new Int32Array(APARTA_MAX), apM = [];
+  const ap = { n: 0, t: 0, f: 0, x: 0, z: 0, fase: 'nada' };   // fase: nada | sale | quieta | vuelve
+  const _mA = new THREE.Matrix4(), _mB = new THREE.Matrix4(), _mC = new THREE.Matrix4(), _ax = new THREE.Vector3();
+  function vegRefresca() { try { if (G.vegetacion && G.vegetacion.actualizar) G.vegetacion.actualizar(); } catch (e) { /* sin flora */ } }
+  // Escribe en la flora la inclinación f (0 = su sitio, 1 = del todo apartada) de las plantas guardadas
+  function inclinar(f) {
+    const P0 = G.vegetacion && G.vegetacion.instancias; if (!P0) return;
+    for (let j = 0; j < ap.n; j++) {
+      const P = P0[apM[j]], i = apI[j], o = j * 16; if (!P) continue;
+      if (P.pos[i * 4 + 3] === 0 && P.pos[i * 4] > 1e5) continue;   // la quitó despejar() mientras tanto: no se resucita
+      if (f <= 0) { for (let k = 0; k < 16; k++) P.mat[i * 16 + k] = apBak[o + k]; continue; }
+      const bx = apBak[o + 12], by = apBak[o + 13], bz = apBak[o + 14], dx = apDir[j * 2], dz = apDir[j * 2 + 1];
+      _mA.fromArray(apBak, o);
+      _mB.makeRotationAxis(_ax.set(dz, 0, -dx), APARTA_ANG * f);     // eje = arriba × dirección: la copa cae hacia fuera
+      _mC.makeTranslation(-bx, -by, -bz); _mB.multiply(_mC);
+      _mC.makeTranslation(bx, by, bz); _mC.multiply(_mB).multiply(_mA);
+      _mC.toArray(P.mat, i * 16);
+    }
+  }
+  function devolver() {
+    if (!ap.n) { ap.fase = 'nada'; return; }
+    inclinar(0); ap.n = 0; apM.length = 0; ap.fase = 'nada'; ap.f = 0; vegRefresca();
+  }
+  function cercaDeMision(x, z) {
+    try { for (const it of G.interaccion.list) { if (Math.abs(it.x - x) < 3 && Math.abs(it.z - z) < 3) return true; } } catch (e) { /* */ }
+    return false;
+  }
+  // Busca y aparta; inmediato = sin animación (lo usa la prueba). Devuelve cuántas apartó.
+  function apartar(h, inmediato) {
+    devolver();
+    const V = G.vegetacion, P0 = V && V.instancias, inf = (V && V.info) || {}; if (!P0) return 0;
+    const d = mirada(), alc = h.alcance || 11, cono = h.cono || 0.9, ox = S.pos.x, oz = S.pos.z, oy = S.pos.y;
+    let n = 0;
+    for (const m in P0) {
+      if (NO_APARTA.test(m)) continue;
+      const P = P0[m], alto = (inf[m] && inf[m].alto) || 1;
+      for (let i = 0; i < P.n && n < APARTA_MAX; i++) {
+        const x = P.pos[i * 4], z = P.pos[i * 4 + 2], sc = P.pos[i * 4 + 3];
+        const dx = x - ox, dz = z - oz; if (Math.abs(dx) > alc || Math.abs(dz) > alc || !sc) continue;
+        const dist = Math.hypot(dx, dz); if (dist > alc || dist < 0.3 || alto * sc > 2.6 || Math.abs(P.pos[i * 4 + 1] - oy) > 4) continue;
+        if ((dx * d.x + dz * d.z) / dist < cono || cercaDeMision(x, z)) continue;
+        for (let k = 0; k < 16; k++) apBak[n * 16 + k] = P.mat[i * 16 + k];
+        apDir[n * 2] = dx / dist; apDir[n * 2 + 1] = dz / dist; apI[n] = i; apM[n] = m; n++;
+      }
+      if (n >= APARTA_MAX) break;
+    }
+    ap.n = n; ap.x = ox; ap.z = oz; ap.t = 0;
+    if (!n) return 0;
+    for (let j = 0; j < n; j++) if (j < 6) { const P = P0[apM[j]], i = apI[j]; G.fx.burst(P.pos[i * 4], P.pos[i * 4 + 1] + 0.5, P.pos[i * 4 + 2], 'leaves', 5); }
+    if (inmediato) { ap.fase = 'quieta'; ap.f = 1; inclinar(1); vegRefresca(); }
+    else ap.fase = 'sale';
+    return n;
+  }
+  // Sin plantas aptas: el eco ilumina lo recogible/interactivo más cercano dentro de su alcance (+4 m)
+  function revelar(h) {
+    let best = null, bd = (h.alcance || 11) + 4;
+    try { for (const it of G.interaccion.list) { if (it.visible && !it.visible()) continue; const dd = Math.hypot(it.x - S.pos.x, it.z - S.pos.z); if (dd < bd) { bd = dd; best = it; } } } catch (e) { /* */ }
+    if (!best) return false;
+    const y = H(best.x, best.z) + 1; pulso(best.x, y, best.z, 'gold', 8, 2, 0.6); G.fx.ringFx(best.x, y, best.z, 1.6, 0.8, 0.5);
+    return true;
+  }
+  function pasoApartar(dt) {
+    if (ap.fase === 'nada') return;
+    ap.t += dt;
+    if (Math.abs(S.pos.x - ap.x) > APARTA_LEJOS || Math.abs(S.pos.z - ap.z) > APARTA_LEJOS) { devolver(); return; } // otra zona: todo a su sitio
+    // pocos pasos (cada uno = una pasada de visibilidad de la flora): 3 al salir (0,24 s) y 4 al volver (0,6 s)
+    let f = ap.f;
+    if (ap.fase === 'sale') { f = Math.min(1, Math.ceil(ap.t / 0.08) / 3); if (f >= 1) ap.fase = 'quieta'; }
+    else if (ap.fase === 'quieta') { if (ap.t >= APARTA_DURA) { ap.fase = 'vuelve'; ap.t = 0; } return; }
+    else if (ap.fase === 'vuelve') { f = Math.max(0, 1 - Math.ceil(ap.t / 0.15) / 4); if (f <= 0) { devolver(); return; } }
+    if (f !== ap.f) { ap.f = f; inclinar(f); vegRefresca(); }
+  }
+  G.on('apply', () => devolver());
+
+  // ---------- V18.2 §6: el elemento de la alianza activa se ve explorando (G.v18fx.estela, tarjetas de pluma ya existentes) ----------
+  let aliEl = null, aliT = 0, estT = 0, ulX = S.pos.x, ulZ = S.pos.z;
+  function elementoActivo() {
+    try {
+      const E = G.v18evo; if (!E || !E.paraDuelo || !E.ALIANZAS) return null;
+      const dd = E.paraDuelo(especie()); if (!dd || !dd.alianza) return null;
+      for (const a of E.ALIANZAS) if (a.id === dd.alianza) return a.elemento || null;
+    } catch (e) { /* sin evolución */ }
+    return null;
+  }
+  function estela(n) {
+    if (!aliEl || !G.v18fx || !G.v18fx.estela || G.renderer.REDUCED) return false;
+    return G.v18fx.estela(aliEl, S.pos.x, S.pos.y + 0.45, S.pos.z, n).ok;
+  }
+  function pasoEstela(dt) {
+    if ((aliT -= dt) <= 0) { aliT = 1; aliEl = elementoActivo(); }   // una vez por segundo, no en cada cuadro
+    const mov = Math.abs(S.pos.x - ulX) + Math.abs(S.pos.z - ulZ); ulX = S.pos.x; ulZ = S.pos.z;
+    if (!aliEl || G.renderer.REDUCED || dt <= 0) return;
+    estT -= dt;
+    if (estT <= 0 && mov / dt > 1.5 && mov / dt < 60 && !encuentro()) { estT = 0.3; if (libre()) estela(1); }
+  }
+
   // ---------- Efectos de exploración (la columna «Explorando» de la matriz) ----------
   const FX = {
     // Grito del Yunque: la onda sale del pico hacia donde se mira (mismo FX que en el duelo); asusta a la Sombra si está cerca
     grito_yunque(h) {
       try { if (G.v18fx) G.v18fx.onda(null, null, h.alcance || 9); } catch (e) { /* sin fx */ }
+      // V18.2 §4: el Eco Dirigido (nv 20) y el Grito Maestro (nv 30) apartan la flora pequeña de su cono; si no hay, iluminan lo cercano
+      if (h.desvia) { let n = 0; try { n = apartar(h); } catch (e) { /* sin flora */ } if (!n) revelar(h); }
       sonar('dash');
       return true;
     },
@@ -168,6 +276,8 @@ window.AVV18Explorar = function (G) {
     try { G.emit('v18poder', { id, de: 'jugador', explorando: true, origen: { x: S.pos.x, y: S.pos.y, z: S.pos.z } }); } catch (e) { /* sin oyentes */ }
     const fn = FX[id];
     const r = fn ? !!fn(h) : true;
+    // V18.2 §6: con la alianza de esta cotorra activa, el poder suelta el elemento de la alianza
+    aliEl = elementoActivo(); aliT = 1; estela(8);
     // V18.2 §3: en la etapa Maestro (nivel 30+) el poder suelta destellos dorados también explorando, como en el duelo
     if (h.maestro) { try { G.fx.burst(S.pos.x, S.pos.y + 1.5, S.pos.z, 'gold', 10); G.fx.burst(S.pos.x, S.pos.y + 1.9, S.pos.z, 'stars', 6); accFx = Math.max(accFx, 1); } catch (e) { /* sin fx */ } }
     return r;
@@ -223,6 +333,7 @@ window.AVV18Explorar = function (G) {
       if (p.k >= p.veces) pulsos.splice(i, 1);
     }
     if (sol && performance.now() > sol.hasta) sol = null;
+    pasoApartar(dt); pasoEstela(dt);
     // fx compartidos: solo los movemos en exploración libre (en los encuentros los mueve su propio paso)
     if (accFx > 0) { accFx -= dt; try { if (G.v18fx && !encuentro()) G.v18fx.paso(dt); } catch (e) { /* */ } }
     // botón táctil (CPU, móvil: se revisa cada 0,1 s, no en cada cuadro)
@@ -378,7 +489,78 @@ window.AVV18Explorar = function (G) {
       const ev = new KeyboardEvent('keydown', { key: 'g', code: 'KeyG', bubbles: true, cancelable: true });
       document.body.dispatchEvent(ev);
       check('La G dispara el poder en exploración y no llega a la cámara', (G.input.keys ? !G.input.keys.has('g') : true) && cd.grito_yunque > 0, 'cd ' + cd.grito_yunque.toFixed(1));
+      // ---- V18.2 §4: el Eco Dirigido aparta la flora pequeña del mundo y vuelve a su sitio ----
+      const f0x = S.facing.x, f0z = S.facing.z, ED = { alcance: 11, cono: 0.9, desvia: true }, V = G.vegetacion, P0 = V && V.instancias;
+      let pl = null;
+      if (P0) for (const m in P0) {
+        if (NO_APARTA.test(m)) continue; const P = P0[m], alto = (V.info && V.info[m] && V.info[m].alto) || 1;
+        for (let i = 0; i < P.n; i++) { const sc = P.pos[i * 4 + 3]; if (sc && alto * sc <= 2.6 && !cercaDeMision(P.pos[i * 4], P.pos[i * 4 + 2])) { pl = { m, i, P }; break; } }
+        if (pl) break;
+      }
+      const apr = { planta: pl ? pl.m + ' #' + pl.i : 'ninguna' };
+      if (pl) {
+        const P = pl.P, o = pl.i * 16, x = P.pos[pl.i * 4], z = P.pos[pl.i * 4 + 2], antes = Array.from(P.mat.subarray(o, o + 16));
+        S.pos.x = x - 4; S.pos.z = z; S.pos.y = P.pos[pl.i * 4 + 1]; S.facing.x = 1; S.facing.z = 0;
+        apr.n = apartar(ED, true);
+        let esta = false; for (let j = 0; j < ap.n; j++) if (apM[j] === pl.m && apI[j] === pl.i) esta = true;
+        const ly = Math.hypot(P.mat[o + 4], P.mat[o + 5], P.mat[o + 6]) || 1;
+        apr.inclina = +(P.mat[o + 4] / ly - antes[4] / ly).toFixed(2);   // el eje vertical de la planta se va hacia +x (lejos de Vittata)
+        apr.pie = Math.abs(P.mat[o + 12] - antes[12]) + Math.abs(P.mat[o + 13] - antes[13]) + Math.abs(P.mat[o + 14] - antes[14]) < 1e-3;
+        apr.esta = esta;
+        devolver();
+        apr.vuelve = antes.every((v, k) => P.mat[o + k] === v) && ap.n === 0;
+        // zona nueva: alejarse más de APARTA_LEJOS la devuelve en el siguiente paso
+        apartar(ED, true); S.pos.x += APARTA_LEJOS + 20; pasoApartar(0.016); S.pos.x -= APARTA_LEJOS + 20;
+        apr.zona = antes.every((v, k) => P.mat[o + k] === v) && ap.fase === 'nada';
+        // y sola al acabar el tiempo (sale → quieta → vuelve → a su sitio)
+        apartar(ED, false); for (let k = 0; k < 6; k++) pasoApartar(0.08); const fueraT = P.mat[o + 4] !== antes[4];
+        pasoApartar(APARTA_DURA + 0.1); for (let k = 0; k < 6; k++) pasoApartar(0.15);
+        apr.tiempo = fueraT && antes.every((v, k) => P.mat[o + k] === v) && ap.fase === 'nada';
+        // misión: con algo interactivo encima, esa planta no se toca
+        const itM = G.interaccion.add({ id: 'v18exp_mision', x, z, r: 2, label: () => 'misión de prueba', use: () => {} });
+        apartar(ED, true); let tocada = false; for (let j = 0; j < ap.n; j++) if (apM[j] === pl.m && apI[j] === pl.i) tocada = true; devolver();
+        const iM = G.interaccion.list.indexOf(itM); if (iM >= 0) G.interaccion.list.splice(iM, 1);
+        apr.mision = !tocada;
+        // el Eco Amplificado (sin desvia) no aparta nada
+        cd.grito_yunque = 0; FX.grito_yunque({ alcance: 9, cono: 0.74 }); apr.amplificado = ap.n === 0;
+        check('V18.2 §4: el Eco Dirigido inclina hacia fuera la flora pequeña de su cono (el pie no se mueve), vuelve a su sitio sola, al cambiar de zona o al recargar; no toca lo de misión; el Eco Amplificado no aparta',
+          apr.n >= 1 && apr.esta && apr.inclina > 0.3 && apr.pie && apr.vuelve && apr.zona && apr.tiempo && apr.mision && apr.amplificado, JSON.stringify(apr));
+      } else check('V18.2 §4: hay flora pequeña en el mundo para el Eco Dirigido', !P0, apr.planta + (P0 ? '' : ' (sin vegetación en esta vista)'));
+      // sin plantas aptas (en el aire, a 50 m del suelo), el Eco Dirigido ilumina lo recogible cercano
+      S.pos.x = px; S.pos.z = pz; S.pos.y = py + 50; S.facing.x = 1; S.facing.z = 0; pulsos.length = 0;
+      const itR = G.interaccion.add({ id: 'v18exp_rec', x: px + 6, z: pz, r: 2, label: () => 'recogible de prueba', use: () => {} });
+      let cerc = null, cd0 = 15; for (const it of G.interaccion.list) { if (it.visible && !it.visible()) continue; const dd = Math.hypot(it.x - S.pos.x, it.z - S.pos.z); if (dd < cd0) { cd0 = dd; cerc = it; } }
+      FX.grito_yunque(ED); const rev = ap.n === 0 && !!cerc && pulsos.some(p => Math.abs(p.x - cerc.x) < 0.01 && Math.abs(p.z - cerc.z) < 0.01);
+      const iR = G.interaccion.list.indexOf(itR); if (iR >= 0) G.interaccion.list.splice(iR, 1); pulsos.length = 0; devolver();
+      check('V18.2 §4: sin flora apta en el cono, el Eco Dirigido ilumina lo recogible más cercano', rev, cerc ? (cerc.id || '?') + ' a ' + cd0.toFixed(1) + ' m' : 'nada cerca');
+      S.pos.y = py; S.facing.x = f0x; S.facing.z = f0z;
+      // ---- V18.2 §6: el elemento de la alianza activa se ve al usar el poder y al caminar ----
+      // sin evolución cargada (esta batería no la carga), una de prueba con la misma forma (paraDuelo + ALIANZAS)
+      const evo0 = G.v18evo; if (!evo0) G.v18evo = { paraDuelo: () => ({ nivel: 1 }), ALIANZAS: [{ id: 'marea_lluvia', elemento: 'agua' }] };
+      if (G.v18fx && G.v18fx.estela && G.v18evo && G.v18evo.paraDuelo) {
+        const E = G.v18evo, pd = E.paraDuelo, R0 = G.renderer.REDUCED, el = {};
+        const apagaFx = () => { for (let k = 0; k < 25; k++) G.v18fx.paso(0.1); };   // paso() avanza como mucho 0,1 s
+        try {
+          G.renderer.REDUCED = false;
+          E.paraDuelo = () => ({ nivel: 1, alianza: 'marea_lluvia' });
+          const pid = G.v18hab.poderDe(especie()); cd[pid] = 0; disparar(pid); G.v18fx.paso(0.01);
+          el.poder = G.v18fx.estado().estela; el.elem = aliEl;
+          apagaFx();
+          aliT = 0; estT = 0; ulX = S.pos.x; ulZ = S.pos.z; S.pos.x += 0.1; pasoEstela(0.016); G.v18fx.paso(0.01); S.pos.x -= 0.1;
+          el.camina = G.v18fx.estado().estela;
+          apagaFx();
+          aliT = 0; estT = 0; ulX = S.pos.x; ulZ = S.pos.z; pasoEstela(0.016); G.v18fx.paso(0.01); el.quieta = G.v18fx.estado().estela;
+          G.renderer.REDUCED = true; aliT = 0; estT = 0; S.pos.x += 0.1; pasoEstela(0.016); S.pos.x -= 0.1; cd[pid] = 0; disparar(pid); G.v18fx.paso(0.01); el.reducido = G.v18fx.estado().estela;
+          G.renderer.REDUCED = false; E.paraDuelo = () => ({ nivel: 1 }); aliT = 0; estT = 0; ulX = S.pos.x; S.pos.x += 0.1; pasoEstela(0.016); S.pos.x -= 0.1; G.v18fx.paso(0.01); el.sin = G.v18fx.estado().estela;
+        } catch (e) { el.err = e && e.message; }
+        E.paraDuelo = pd; G.renderer.REDUCED = R0; aliT = 0; aliEl = null; apagaFx();
+        for (const b of semillas) scene.remove(b.m); semillas.length = 0; pulsos.length = 0; impulso = null; S.pos.x = px; S.pos.z = pz;
+        check('V18.2 §6: con la alianza activa, el poder suelta su elemento (agua) y al caminar deja una estela sutil; quieta, sin alianza o con movimiento reducido, nada',
+          !el.err && el.elem === 'agua' && el.poder >= 6 && el.camina === 1 && el.quieta === 0 && el.reducido === 0 && el.sin === 0, JSON.stringify(el));
+      }
+      if (!evo0) delete G.v18evo;
     } catch (e) { check('sin excepciones', false, e && e.message); }
+    try { devolver(); } catch (e) { /* */ }
     S.pos.x = px; S.pos.y = py; S.pos.z = pz; G.quiet = q; impulso = null; semillas.length = 0; pulsos.length = 0; sol = null;
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
