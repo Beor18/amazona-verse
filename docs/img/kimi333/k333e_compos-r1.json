@@ -1,0 +1,800 @@
+{
+ "etiqueta": "compos-r1",
+ "packs": {
+  "ep3": {
+   "totEscena": 329,
+   "escuela": true,
+   "calidad": "bajo",
+   "dpr": 1,
+   "infoCalls": 102,
+   "infoTris": 428230,
+   "grupos": [
+    {
+     "prefijo": "SIN_NOMBRE · Mesh · mat:?",
+     "objetos": 81,
+     "calls": 188,
+     "ktris": 54,
+     "ejemplos": [
+      "(sin nombre)"
+     ]
+    },
+    {
+     "prefijo": "SIN_NOMBRE · Mesh · mat:bohio-interior",
+     "objetos": 7,
+     "calls": 26,
+     "ktris": 0,
+     "ejemplos": [
+      "(sin nombre)"
+     ]
+    },
+    {
+     "prefijo": "flora",
+     "objetos": 20,
+     "calls": 20,
+     "ktris": 13,
+     "ejemplos": [
+      "flora:flamboyan:hoja",
+      "flora:flamboyan:corteza",
+      "flora:tabonuco:hoja",
+      "flora:tabonuco:corteza"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:bohio_redondo:",
+     "objetos": 5,
+     "calls": 10,
+     "ktris": 4,
+     "ejemplos": [
+      "edificiosInst:bohio_redondo:lejos:AV_Lejos",
+      "edificiosInst:bohio_redondo:cerca:KB3D_RoofThatched",
+      "edificiosInst:bohio_redondo:cerca:KB3D_WoodPlanks",
+      "edificiosInst:bohio_redondo:cerca:KB3D_BarkNew"
+     ]
+    },
+    {
+     "prefijo": "spark",
+     "objetos": 6,
+     "calls": 6,
+     "ktris": 0,
+     "ejemplos": [
+      "spark"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:ruina_torre_b:",
+     "objetos": 5,
+     "calls": 5,
+     "ktris": 0,
+     "ejemplos": [
+      "edificiosInst:ruina_torre_b:cerca:AV_Restaurado_Piedra",
+      "edificiosInst:ruina_torre_b:cerca:AV_Restaurado_Tallado",
+      "edificiosInst:ruina_torre_b:cerca:AV_Restaurado_Base",
+      "edificiosInst:ruina_torre_b:cerca:AV_Restaurado_Bloques"
+     ]
+    },
+    {
+     "prefijo": "SIN_NOMBRE · Sprite · mat:?",
+     "objetos": 4,
+     "calls": 4,
+     "ktris": 0,
+     "ejemplos": [
+      "(sin nombre)"
+     ]
+    },
+    {
+     "prefijo": "terreno",
+     "objetos": 4,
+     "calls": 4,
+     "ktris": 80,
+     "ejemplos": [
+      "terreno:terreno_no",
+      "terreno:terreno_so",
+      "terreno:terreno_ne",
+      "terreno:terreno_se"
+     ]
+    },
+    {
+     "prefijo": "estructura",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 6,
+     "ejemplos": [
+      "estructura:puente",
+      "estructura:muelle",
+      "estructura:grutas"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:casa_plataform",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 4,
+     "ejemplos": [
+      "edificiosInst:casa_plataforma:cerca:KB3D_WoodPlanks",
+      "edificiosInst:casa_plataforma:cerca:KB3D_BarkNew",
+      "edificiosInst:casa_plataforma:cerca:KB3D_RockSharp"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:monumento_d:ce",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 2,
+     "ejemplos": [
+      "edificiosInst:monumento_d:cerca:KB3D_BarkNew",
+      "edificiosInst:monumento_d:cerca:KB3D_RockSharp",
+      "edificiosInst:monumento_d:cerca:KB3D_WoodPlanks"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:caney_largo:ce",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 2,
+     "ejemplos": [
+      "edificiosInst:caney_largo:cerca:KB3D_RoofThatched",
+      "edificiosInst:caney_largo:cerca:KB3D_BarkNew",
+      "edificiosInst:caney_largo:cerca:KB3D_RockSharp"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:bohio_puntiagu",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 3,
+     "ejemplos": [
+      "edificiosInst:bohio_puntiagudo:cerca:KB3D_RoofThatched",
+      "edificiosInst:bohio_puntiagudo:cerca:KB3D_WoodPlanks",
+      "edificiosInst:bohio_puntiagudo:cerca:KB3D_BarkNew"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:cercado_redond",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 3,
+     "ejemplos": [
+      "edificiosInst:cercado_redondo:cerca:KB3D_WoodPlanks",
+      "edificiosInst:cercado_redondo:cerca:KB3D_BarkNew",
+      "edificiosInst:cercado_redondo:cerca:KB3D_WoodHewn"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:casa_paja_b:ce",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 4,
+     "ejemplos": [
+      "edificiosInst:casa_paja_b:cerca:KB3D_WoodPlanks",
+      "edificiosInst:casa_paja_b:cerca:KB3D_BarkNew",
+      "edificiosInst:casa_paja_b:cerca:KB3D_TarpFabricDamaged"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:monumento_f:ce",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 3,
+     "ejemplos": [
+      "edificiosInst:monumento_f:cerca:KB3D_RockSharp",
+      "edificiosInst:monumento_f:cerca:KB3D_WoodPlanks",
+      "edificiosInst:monumento_f:cerca:KB3D_BarkNew"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:mirador_escalo",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 4,
+     "ejemplos": [
+      "edificiosInst:mirador_escalonado:cerca:KB3D_RockSharp",
+      "edificiosInst:mirador_escalonado:cerca:KB3D_WoodPlanks",
+      "edificiosInst:mirador_escalonado:cerca:KB3D_BarkNew"
+     ]
+    },
+    {
+     "prefijo": "edificiosZona:global:lejos",
+     "objetos": 1,
+     "calls": 3,
+     "ktris": 218,
+     "ejemplos": [
+      "edificiosZona:global:lejos"
+     ]
+    },
+    {
+     "prefijo": "canoa",
+     "objetos": 2,
+     "calls": 2,
+     "ktris": 1,
+     "ejemplos": [
+      "canoa"
+     ]
+    },
+    {
+     "prefijo": "Vittata_1",
+     "objetos": 2,
+     "calls": 2,
+     "ktris": 14,
+     "ejemplos": [
+      "Vittata_1"
+     ]
+    },
+    {
+     "prefijo": "Vittata_2",
+     "objetos": 2,
+     "calls": 2,
+     "ktris": 42,
+     "ejemplos": [
+      "Vittata_2"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:muralla_atalay",
+     "objetos": 2,
+     "calls": 2,
+     "ktris": 1,
+     "ejemplos": [
+      "edificiosInst:muralla_atalaya_b:lejos:AV_Lejos",
+      "edificiosInst:muralla_atalaya_a:lejos:AV_Lejos"
+     ]
+    },
+    {
+     "prefijo": "cielo",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "cielo"
+     ]
+    },
+    {
+     "prefijo": "cielo-nubes",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "cielo-nubes"
+     ]
+    },
+    {
+     "prefijo": "fondoMarino",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "fondoMarino"
+     ]
+    },
+    {
+     "prefijo": "mar",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 11,
+     "ejemplos": [
+      "mar"
+     ]
+    },
+    {
+     "prefijo": "rocio",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "rocio"
+     ]
+    },
+    {
+     "prefijo": "rio",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 2,
+     "ejemplos": [
+      "rio"
+     ]
+    },
+    {
+     "prefijo": "Hut_RoundThatched_Hay001001",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 2,
+     "ejemplos": [
+      "Hut_RoundThatched_Hay001001"
+     ]
+    },
+    {
+     "prefijo": "Hut_RoundThatched_Hay001001_1",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "Hut_RoundThatched_Hay001001_1"
+     ]
+    },
+    {
+     "prefijo": "Hut_RoundThatched_Hay001001_2",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "Hut_RoundThatched_Hay001001_2"
+     ]
+    },
+    {
+     "prefijo": "BldgA_Hay001001",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "BldgA_Hay001001"
+     ]
+    },
+    {
+     "prefijo": "BldgA_Hay001001_1",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "BldgA_Hay001001_1"
+     ]
+    },
+    {
+     "prefijo": "BldgA_Hay001001_2",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "BldgA_Hay001001_2"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:casa_paja_a:le",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "edificiosInst:casa_paja_a:lejos:AV_Lejos"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:torre_vigia_b:",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "edificiosInst:torre_vigia_b:lejos:AV_Lejos"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:torre_vigia:le",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "edificiosInst:torre_vigia:lejos:AV_Lejos"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:empalizada:lej",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "edificiosInst:empalizada:lejos:AV_Lejos"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:portal_puas:le",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "edificiosInst:portal_puas:lejos:AV_Lejos"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:puente_madera:",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "edificiosInst:puente_madera:lejos:AV_Lejos"
+     ]
+    }
+   ],
+   "errores": []
+  },
+  "ep5": {
+   "totEscena": 266,
+   "escuela": true,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "infoCalls": 107,
+   "infoTris": 249846,
+   "grupos": [
+    {
+     "prefijo": "SIN_NOMBRE · Mesh · mat:bohio-interior",
+     "objetos": 21,
+     "calls": 78,
+     "ktris": 1,
+     "ejemplos": [
+      "(sin nombre)"
+     ]
+    },
+    {
+     "prefijo": "SIN_NOMBRE · Mesh · mat:?",
+     "objetos": 40,
+     "calls": 76,
+     "ktris": 10,
+     "ejemplos": [
+      "(sin nombre)"
+     ]
+    },
+    {
+     "prefijo": "flora",
+     "objetos": 20,
+     "calls": 20,
+     "ktris": 10,
+     "ejemplos": [
+      "flora:tabonuco:hoja",
+      "flora:tabonuco:corteza",
+      "flora:helecho_arboreo:hoja",
+      "flora:helecho_arboreo:corteza"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:templo_mediano",
+     "objetos": 20,
+     "calls": 20,
+     "ktris": 2,
+     "ejemplos": [
+      "edificiosInst:templo_mediano_h:cerca:AV_Restaurado_Piedra",
+      "edificiosInst:templo_mediano_h:cerca:AV_Restaurado_Tallado",
+      "edificiosInst:templo_mediano_h:cerca:AV_Restaurado_Base",
+      "edificiosInst:templo_mediano_h:cerca:AV_Restaurado_Bloques"
+     ]
+    },
+    {
+     "prefijo": "spark",
+     "objetos": 6,
+     "calls": 6,
+     "ktris": 0,
+     "ejemplos": [
+      "spark"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:templo_grande:",
+     "objetos": 5,
+     "calls": 5,
+     "ktris": 2,
+     "ejemplos": [
+      "edificiosInst:templo_grande:cerca:AV_Restaurado_Piedra",
+      "edificiosInst:templo_grande:cerca:AV_Restaurado_Tallado",
+      "edificiosInst:templo_grande:cerca:AV_Restaurado_Base",
+      "edificiosInst:templo_grande:cerca:AV_Restaurado_Bloques"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:templo_grande_",
+     "objetos": 5,
+     "calls": 5,
+     "ktris": 1,
+     "ejemplos": [
+      "edificiosInst:templo_grande_a:cerca:AV_Restaurado_Piedra",
+      "edificiosInst:templo_grande_a:cerca:AV_Restaurado_Tallado",
+      "edificiosInst:templo_grande_a:cerca:AV_Restaurado_Base",
+      "edificiosInst:templo_grande_a:cerca:AV_Restaurado_Bloques"
+     ]
+    },
+    {
+     "prefijo": "terreno",
+     "objetos": 4,
+     "calls": 4,
+     "ktris": 80,
+     "ejemplos": [
+      "terreno:terreno_no",
+      "terreno:terreno_ne",
+      "terreno:terreno_so",
+      "terreno:terreno_se"
+     ]
+    },
+    {
+     "prefijo": "SIN_NOMBRE · Sprite · mat:?",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 0,
+     "ejemplos": [
+      "(sin nombre)"
+     ]
+    },
+    {
+     "prefijo": "estructura",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 6,
+     "ejemplos": [
+      "estructura:muelle",
+      "estructura:puente",
+      "estructura:grutas"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:ruina_mirador:",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 2,
+     "ejemplos": [
+      "edificiosInst:ruina_mirador:cerca:KB3D_stoneM",
+      "edificiosInst:ruina_mirador:cerca:KB3D_pillarsM",
+      "edificiosInst:ruina_mirador:cerca:KB3D_wallL"
+     ]
+    },
+    {
+     "prefijo": "edificiosInst:ruina_pilar:ce",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 0,
+     "ejemplos": [
+      "edificiosInst:ruina_pilar:cerca:AV_Restaurado_Tallado",
+      "edificiosInst:ruina_pilar:cerca:AV_Restaurado_Base",
+      "edificiosInst:ruina_pilar:cerca:AV_Restaurado_Bloques"
+     ]
+    },
+    {
+     "prefijo": "Vittata_1",
+     "objetos": 2,
+     "calls": 2,
+     "ktris": 14,
+     "ejemplos": [
+      "Vittata_1"
+     ]
+    },
+    {
+     "prefijo": "Vittata_2",
+     "objetos": 2,
+     "calls": 2,
+     "ktris": 42,
+     "ejemplos": [
+      "Vittata_2"
+     ]
+    },
+    {
+     "prefijo": "bandada",
+     "objetos": 2,
+     "calls": 2,
+     "ktris": 2,
+     "ejemplos": [
+      "bandada"
+     ]
+    },
+    {
+     "prefijo": "cielo",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "cielo"
+     ]
+    },
+    {
+     "prefijo": "cielo-nubes",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "cielo-nubes"
+     ]
+    },
+    {
+     "prefijo": "fondoMarino",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "fondoMarino"
+     ]
+    },
+    {
+     "prefijo": "mar",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 11,
+     "ejemplos": [
+      "mar"
+     ]
+    },
+    {
+     "prefijo": "rocio",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "rocio"
+     ]
+    },
+    {
+     "prefijo": "ep5-noche-luces",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ep5-noche-luces"
+     ]
+    },
+    {
+     "prefijo": "ep5-noche-suelo",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "ep5-noche-suelo"
+     ]
+    },
+    {
+     "prefijo": "ep5-noche-estrellas",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "ep5-noche-estrellas"
+     ]
+    },
+    {
+     "prefijo": "rio",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 2,
+     "ejemplos": [
+      "rio"
+     ]
+    },
+    {
+     "prefijo": "bloque_piedra",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "bloque_piedra"
+     ]
+    },
+    {
+     "prefijo": "ruina_altar_1",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_altar_1"
+     ]
+    },
+    {
+     "prefijo": "ruina_altar_2",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_altar_2"
+     ]
+    },
+    {
+     "prefijo": "ruina_altar_3",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_altar_3"
+     ]
+    },
+    {
+     "prefijo": "ruina_portal_1",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_portal_1"
+     ]
+    },
+    {
+     "prefijo": "ruina_portal_2",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_portal_2"
+     ]
+    },
+    {
+     "prefijo": "ruina_portal_3",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_portal_3"
+     ]
+    },
+    {
+     "prefijo": "ruina_portal_4",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_portal_4"
+     ]
+    },
+    {
+     "prefijo": "ruina_torre_1",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_torre_1"
+     ]
+    },
+    {
+     "prefijo": "ruina_torre_2",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_torre_2"
+     ]
+    },
+    {
+     "prefijo": "ruina_torre_3",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_torre_3"
+     ]
+    },
+    {
+     "prefijo": "ruina_torre_4",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_torre_4"
+     ]
+    },
+    {
+     "prefijo": "ruina_torre_5",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_torre_5"
+     ]
+    },
+    {
+     "prefijo": "CampB_Pikes001001",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "CampB_Pikes001001"
+     ]
+    },
+    {
+     "prefijo": "CampB_Pikes001001_1",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "CampB_Pikes001001_1"
+     ]
+    },
+    {
+     "prefijo": "Component_Lookout_StoneMd001001",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "Component_Lookout_StoneMd001001"
+     ]
+    }
+   ],
+   "errores": []
+  }
+ },
+ "chromePid": 72184
+}

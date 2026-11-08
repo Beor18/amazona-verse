@@ -83,6 +83,7 @@ window.AVBohios = function (G) {
     if (!suf) casa = I;
     grupo = new THREE.Group();
     grupo.name = 'bohio-interior' + suf;
+    grupo.userData.inst = I; // KIMI-333: referencia para la puerta de visibilidad de Modo Escuela
     montadas[I.id] = grupo;
     const v = vanoDe();
     const n = v ? girar(I, v.nx, v.nz) : { x: 0, z: 1 };
@@ -178,6 +179,23 @@ window.AVBohios = function (G) {
       puertaMedida: p,
     };
   }
+
+  // KIMI-333 (Modo Escuela): los muebles de los bohíos se recorren y frustum-cullan cada cuadro aunque
+  // estén dentro de la casa y no se vean nunca desde fuera. Fuera de 60 m el grupo entero se apaga
+  // (visible=false poda el recorrido de la escena entero); cullPequenos ya los sacaba del dibujo a
+  // >55 m, pero tres los visitaba igual. Solo con calidad.escuela (en medio/alto todo sigue como antes).
+  const ESCUELA_R = 60;
+  function aplicarVisibilidadEscuela() {
+    const esc = R.calidad && R.calidad.escuela === true;
+    for (const id in montadas) {
+      const g = montadas[id];
+      if (!g || !g.parent) continue;
+      const I = g.userData.inst;
+      if (!esc || !I || !I.pos) { if (!g.visible) g.visible = true; continue; }
+      g.visible = Math.hypot(S.pos.x - I.pos[0], S.pos.z - I.pos[2]) <= ESCUELA_R;
+    }
+  }
+  G.on('render', aplicarVisibilidadEscuela, 18); // antes del sync3D de actores (15) y del draw
 
   // QA-79: con la máquina cargada la búsqueda de puertas (solidos.cerrarVanos, por tramos) aún no acabó cuando la prueba mide
   async function esperarVanos(ms) {
