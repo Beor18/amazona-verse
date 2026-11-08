@@ -139,6 +139,16 @@ AVE.module('streaming', function (G) {
   // (vista, malla, _hd y tope de triángulos) usa los valores de «bajo» fuera de «alto». El escritorio no cambia.
   const MOVIL_C = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const nivelCiudad = () => { const n = nivelCal(); return MOVIL_C && n === 'medio' ? 'bajo' : n; };
+  // KIMI-251 (encargo TAREAS_WEB 8-nov «diferir los _hd al acercarse»): distancia a la que el _hd de la gran
+  // ciudad puede verse por primera vez. Sus instancias solo se colocan en nivel 2 (colocar() exige
+  // zonas[I.zona].nivel === 2, o sea Z.d < Rc) y encima deben quedar dentro del límite de dibujo _hd de
+  // cuadro() (max(CFG.hd, min(ciudadMalla, ciudadHD))). Pedir el _hd desde el spawn (la villa queda a
+  // d≈228 m y ciudadVista es 420/650) metía ~31 MB de GLB _hd en la ventana de arranque de medio/alto
+  // sin que se pudiera ver NI UNA SOLA instancia _hd (verificado: con la cola drenada y el _hd listo, la
+  // vista del spawn dibuja los mismos 20 _hd de siempre, todos del kit cercano). Se pide solo al acercarse
+  // al primer uso real con un margen de descarga de 60 m sobre el radio de colocación; al alejarse se
+  // suelta como antes (bajada diferida, KIMI-038).
+  const hdCiudadLimite = () => { const ni = nivelCiudad(); return Math.max(CFG.hd[ni] || 0, (CFG.cerca[ni] || 60) + 60); };
   function alcanceNiebla() {
     const f = scene.fog; if (!f) return Infinity;
     return f.near < 0 ? -f.near + f.far * 3.5 : f.far; // atmosférica (near negativo): por debajo de ~3 % de visibilidad
@@ -1848,7 +1858,7 @@ AVE.module('streaming', function (G) {
           if (quiere) { encolar(() => fundirCercaZona(Z), 'fundirCerca:' + Z.id); encolar(() => fundirSombraZona(Z), 'fundirSombra:' + Z.id); }
           else { quitarCercaZona(Z); quitarSombraZona(Z); }
         }
-        ajustarHD(Z, hdZona() && hdActivo() && (Z.ciudad || (Z.nivel === 2 && Z.d < Rc + (Z.hd ? H : 0)))); // QA-158: en «bajo» sin fusión HD de zona (cargarTodo forzada: sin _hd, como antes)
+        ajustarHD(Z, hdZona() && hdActivo() && ((Z.ciudad && Z.d < hdCiudadLimite() + (Z.hd ? H : 0)) || (Z.nivel === 2 && Z.d < Rc + (Z.hd ? H : 0)))); // QA-158: en «bajo» sin fusión HD de zona (cargarTodo forzada: sin _hd, como antes) · KIMI-251: el _hd de la ciudad solo se pide cuando puede verse (Z.d < hdCiudadLimite), no desde el spawn
         if (Z.hd) for (const n of Z.modelos) {
           const rh = recursos[n] && recursos[n].hd;
           if (rh && rh.estado === 'cola') rh.prio = distModelo(Z, n);

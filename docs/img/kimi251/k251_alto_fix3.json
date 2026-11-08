@@ -1,0 +1,118 @@
+{
+ "tarea": "KIMI-251",
+ "cuando": "2026-11-08T05:28:19.822Z",
+ "head": "18f38ff1",
+ "calidad": "alto",
+ "bloquear_hd": false,
+ "bloqueados": 0,
+ "preparacion": "ok: portada → creador → Empezar (Ola Feliz) → carga 11800 ms (listo) → intro saltada",
+ "stats": {
+  "zonas": 17,
+  "zonasCerca": 6,
+  "zonasLejos": 11,
+  "instancias": 422,
+  "colocadas": 129,
+  "modelosCerca": 48,
+  "modelosLejos": 63,
+  "modelosHD": 22,
+  "materiales": 35,
+  "kbGeometria": 325457,
+  "visiblesCerca": 53,
+  "visiblesLejos": 0,
+  "visiblesHD": 20,
+  "hd": true,
+  "drawEdificios": 48,
+  "zonasFundidas": 17,
+  "descargando": 0,
+  "trabajos": 0,
+  "recuperacion": false,
+  "omitidos": []
+ },
+ "diagResumen": {
+  "quieto": false,
+  "arrancando": false,
+  "cola": 0,
+  "enColaHD": 0
+ },
+ "look": {
+  "look": "vibrant_toon",
+  "fps": 56,
+  "calls": 165,
+  "triangulos": 1093883,
+  "calidad": "alto",
+  "dpr": 1,
+  "post": true,
+  "programas": 76,
+  "heapMB": 417,
+  "geometrias": 267,
+  "texturasGPU": 167,
+  "texturas": 148,
+  "texturasGrandes": 42,
+  "atlasGrandes": 4,
+  "mundoGrandes": 9,
+  "texturasMB": 528.9,
+  "sombraMB": 16,
+  "postMB": 22.6,
+  "texturasPor": {
+   "generadas": 172.5,
+   "suelo": 42.7,
+   "otros": 7,
+   "personajes": 16,
+   "flora": 77.4,
+   "atlas_hd": 213.3
+  },
+  "texturasTop": [
+   [
+    "hd_savage.jpg",
+    "4096×4096",
+    85.3
+   ],
+   [
+    "hd_ancient.jpg",
+    "4096×4096",
+    85.3
+   ],
+   [
+    "flora:impostores",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "suelo_musgo.jpg",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "suelo_tierra_hojarasca.jpg",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "suelo_roca.jpg",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "suelo_arena_rio.jpg",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "suelo_musgo_n.jpg",
+    "1024×1024",
+    5.3
+   ]
+  ]
+ },
+ "jpg": "k251_alto_fix3.jpg"
+}

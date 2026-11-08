@@ -1,0 +1,118 @@
+{
+ "tarea": "KIMI-251",
+ "cuando": "2026-11-08T05:23:45.974Z",
+ "head": "18f38ff1",
+ "calidad": "medio",
+ "bloquear_hd": true,
+ "bloqueados": 21,
+ "preparacion": "ok: portada → creador → Empezar (Nube Tropical) → carga 11847 ms (listo) → intro saltada",
+ "stats": {
+  "zonas": 17,
+  "zonasCerca": 6,
+  "zonasLejos": 11,
+  "instancias": 422,
+  "colocadas": 129,
+  "modelosCerca": 30,
+  "modelosLejos": 30,
+  "modelosHD": 21,
+  "materiales": 34,
+  "kbGeometria": 109041,
+  "visiblesCerca": 41,
+  "visiblesLejos": 30,
+  "visiblesHD": 2,
+  "hd": true,
+  "drawEdificios": 41,
+  "zonasFundidas": 7,
+  "descargando": 70,
+  "trabajos": 8,
+  "recuperacion": false,
+  "omitidos": []
+ },
+ "diagResumen": {
+  "quieto": true,
+  "arrancando": false,
+  "cola": 70,
+  "enColaHD": 19
+ },
+ "look": {
+  "look": "vibrant_toon",
+  "fps": 96,
+  "calls": 159,
+  "triangulos": 519165,
+  "calidad": "medio",
+  "dpr": 1,
+  "post": true,
+  "programas": 73,
+  "heapMB": 233,
+  "geometrias": 190,
+  "texturasGPU": 165,
+  "texturas": 146,
+  "texturasGrandes": 7,
+  "atlasGrandes": 4,
+  "mundoGrandes": 0,
+  "texturasMB": 372.2,
+  "sombraMB": 4,
+  "postMB": 22.6,
+  "texturasPor": {
+   "generadas": 65.9,
+   "suelo": 10.7,
+   "otros": 7,
+   "personajes": 12,
+   "flora": 63.4,
+   "atlas_hd": 213.3
+  },
+  "texturasTop": [
+   [
+    "hd_savage.jpg",
+    "4096×4096",
+    85.3
+   ],
+   [
+    "hd_ancient.jpg",
+    "4096×4096",
+    85.3
+   ],
+   [
+    "flora:impostores",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "Vittata_1",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "Vittata_2",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "suelo_musgo.jpg",
+    "512×512",
+    1.3
+   ],
+   [
+    "suelo_tierra_hojarasca.jpg",
+    "512×512",
+    1.3
+   ],
+   [
+    "suelo_roca.jpg",
+    "512×512",
+    1.3
+   ]
+  ]
+ },
+ "jpg": "k251_medio_sinhd2.jpg"
+}
