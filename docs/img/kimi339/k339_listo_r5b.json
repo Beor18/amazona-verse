@@ -1,0 +1,196 @@
+{
+ "url": "https://www.amazonaverse.com/juego",
+ "etiqueta": "r5b",
+ "beats": [
+  {
+   "beat": "portada",
+   "tarjetasV18": [
+    "aventura",
+    "golf",
+    "duelo",
+    "duelo2",
+    "amigos",
+    "cotorras",
+    "album",
+    "carreras",
+    "tormenta",
+    "banquete",
+    "flight",
+    "river",
+    "libre",
+    "nido",
+    "records"
+   ]
+  },
+  {
+   "beat": "creador",
+   "ok": true
+  },
+  {
+   "beat": "spawn-cap1",
+   "calidad": "alto",
+   "fps": {
+    "med": 144.1,
+    "peorMs": 7
+   },
+   "render": {
+    "calls": 1,
+    "tris": 1
+   }
+  },
+  {
+   "beat": "mover-volar",
+   "andadoW": 2.11,
+   "viaW": "sintetico",
+   "duranteW": {
+    "keys": [],
+    "krec": [
+     "w:KeyW"
+    ],
+    "krecB": [],
+    "blur": 0,
+    "pos": {
+     "x": 134,
+     "z": 182.5
+    },
+    "sintetico": {
+     "x": 132.2212415769077,
+     "z": 181.36095750024643,
+     "keys": []
+    }
+   },
+   "volando": true,
+   "subioM": 11
+  },
+  {
+   "beat": "menu-v18",
+   "abierto": true
+  },
+  {
+   "beat": "duelo",
+   "inicio": "iniciado",
+   "entrenoOK": true,
+   "fase": "lucha"
+  },
+  {
+   "beat": "minigolf",
+   "r": {
+    "hoyos": 6
+   },
+   "fase": "apuntar",
+   "golpes": [
+    0,
+    1
+   ],
+   "via": "tecla",
+   "carga": {
+    "cargando": true,
+    "carga": 0.78,
+    "fase": "apuntar",
+    "paus": "n/a",
+    "krec": [
+     "w:KeyW",
+     "w:KeyW",
+     "v:KeyV",
+     " :Space",
+     "v:KeyV",
+     "e:KeyE",
+     " :Space"
+    ]
+   }
+  },
+  {
+   "beat": "mis-cotorras",
+   "r": {
+    "carta": false,
+    "guia": true
+   }
+  },
+  {
+   "beat": "album",
+   "r": {
+    "imgs": 0,
+    "txt": true
+   }
+  },
+  {
+   "beat": "arco-constructor",
+   "r": {
+    "estado": "reunion",
+    "sitio": {
+     "x": -69.2,
+     "z": 68.4
+    },
+    "npcs": []
+   },
+   "elenco": true,
+   "npcsTras": {
+    "activos": [
+     "constructor",
+     "ingeniera"
+    ],
+    "defs": [
+     "ingeniera",
+     "constructor",
+     "tuerca",
+     "chispa",
+     "maestromoon",
+     "guardian"
+    ]
+   },
+   "dialogo": "v18npc_constructor:emit",
+   "dlgAbierto": false
+  },
+  {
+   "beat": "family-quest-descarga",
+   "diario": "diario",
+   "boton": {
+    "hayFq": true,
+    "paso1": "Ver nuestra página",
+    "paso2": "Descargar",
+    "porId": true
+   },
+   "descarga": {
+    "dl": {
+     "nombre": "nuestra-aventura-en-familia.png"
+    },
+    "png": [
+     137,
+     80,
+     78,
+     71
+    ],
+    "err": null
+   },
+   "hechas": [
+    "cuento"
+   ]
+  },
+  {
+   "beat": "accesibilidad",
+   "antes": 16,
+   "r": "popover/clic-ok",
+   "despues": {
+    "cls": "a11y-t2",
+    "px": 21
+   }
+  }
+ ],
+ "consola": [],
+ "bloqueos": [
+  {
+   "beat": "arco",
+   "txt": "no hubo diálogo con el Constructor (interacción: \"v18npc_constructor:emit\")"
+  }
+ ],
+ "tool": [],
+ "__errs": [],
+ "memoriaFinal": {
+  "calls": 1,
+  "tris": 1,
+  "geo": 443,
+  "tex": 179,
+  "heap": 527
+ },
+ "veredicto": "NO LISTO"
+}

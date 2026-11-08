@@ -1,0 +1,642 @@
+{
+ "carga": "listo",
+ "pre": {
+  "estado": "reunion",
+  "llegada": false,
+  "npcs": [],
+  "dialogoActivo": false
+ },
+ "muestras": [
+  {
+   "t": 48268,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 48682,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 49114,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 49556,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 49979,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 50396,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 50827,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 51248,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 51651,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 52062,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 52483,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 52911,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 53322,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 53738,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 54158,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 54568,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 54992,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 55413,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 55845,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 56262,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 56668,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 57087,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 57505,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 57952,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 58362,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 58768,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 59178,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 59583,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 60003,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 60415,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 60824,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 61241,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 61658,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 62080,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 62492,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 62911,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 63320,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 63738,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 64160,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 64579,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 64989,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 65400,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 65823,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 66228,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 66636,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 67054,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 67464,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 67886,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 68336,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 68752,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 69169,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 69578,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 69999,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 70406,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 70814,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 71237,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 71649,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 72054,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 72472,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 72890,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 73304,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 73720,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 74130,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 74539,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 74952,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 75361,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 75775,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 76183,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 76597,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  },
+  {
+   "t": 77032,
+   "open": false,
+   "activo": false,
+   "libre": false,
+   "actual": null,
+   "llegada": false,
+   "estado": "reunion"
+  }
+ ],
+ "disparo": null
+}
