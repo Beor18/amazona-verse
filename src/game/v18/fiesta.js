@@ -564,7 +564,7 @@ window.AVV18Fiesta = function (G) {
       const bt = hud.q('poder'), tomaModo = G.interaccion.modo === modo && !bt.hidden;
       A.j.energia = 100; A.j.cd = {}; tocarEl(bt); correr(0.8);
       const uno = cuenta(escListo);
-      const e1 = SITIO.escombros[1]; ir(e1.x + 3.2, e1.z + 2.4, e1); // desde el este: así el montón más cercano es este y no el del centro correr(0.05); A.j.energia = 100; A.j.cd = {}; tocar(); correr(0.8);
+      const e1 = SITIO.escombros[1]; ir(e1.x + 3.2, e1.z + 2.4, e1); correr(0.05); A.j.energia = 100; A.j.cd = {}; tocar(); correr(0.8); // desde el este: así el montón más cercano es este
       const dos = cuenta(escListo), tras2 = JSON.stringify(A.ultimo) + ' modo ' + (G.interaccion.modo === modo) + ' charla ' + G.dialogo.open() + ' tarjeta ' + G.ui.cardOpen;
       A.j = nuevoJugador('arausiaca'); const e2 = SITIO.escombros[2]; ir(e2.x - 1.6, e2.z - 1.2, e2); correr(0.05); A.j.energia = 100; A.j.cd = {}; tocarEl(bt); correr(0.3);
       check('5 · Paso 3: tocando Poder (Grito, de lejos), Acción en modo poder y el Escudo de plumas de cerca se quitan los 3 montones → limpio', tomaModo && uno === 1 && dos === 2 && cuenta(escListo) === 3 && estado() === 'limpio' && SITIO.escombros.every((p, i) => !gEsc[i].visible),
