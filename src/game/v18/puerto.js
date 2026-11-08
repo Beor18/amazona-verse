@@ -465,6 +465,7 @@ window.AVV18Puerto = function (G) {
     // si otra charla o un clear() cortaron la de la Ingeniera, su final no llega: con la caja cerrada se puede volver a empezar
     if (A.descubriendo && G.dialogo && G.dialogo.activo && G.dialogo.activo()) return false;
     A.descubriendo = true;
+    try { G.dialogo.cancelarLibre(); } catch (e) { /* QA-211: los bocadillos de llegada no siguen después de la caja, fuera de orden */ }
     N.decir('ingeniera', TXT.descubre, () => { A.descubriendo = false; if (avanzar('descubierto')) { quitarGuia(); aplicar(); } });
     return true;
   }
@@ -892,6 +893,11 @@ window.AVV18Puerto = function (G) {
       // otra charla que corta la de la Ingeniera (clear) no deja la misión trabada en «obra»
       const d1 = descubrir(); G.dialogo.clear(); const d2 = descubrir();
       check('8a · Si otra charla corta la de la Ingeniera, se puede volver a empezar (no se traba en «obra»)', d1 && d2 && estado() === 'obra' && G.dialogo.open(), d1 + ' / ' + d2);
+      // QA-211: si la charla de la Ingeniera empieza con los bocadillos de llegada en marcha, los corta (no siguen después, fuera de orden)
+      { G.dialogo.clear(); A.descubriendo = false; const l = TXT.llegada;
+        N.decir(l[0][0], [l[0][1]], () => N.decir(l[1][0], [l[1][1]], null, { libre: true, caja: false }), { libre: true, caja: false }); const habia = !!G.dialogo.libre();
+        const d3 = descubrir(); const corta = d3 && !G.dialogo.libre() && G.dialogo.open();
+        check('QA-211 · La charla de la Ingeniera corta los bocadillos de llegada en curso', habia && corta && estado() === 'obra', 'había ' + habia + ' · corta ' + corta); }
       const pd = en(-4, 1); ir(pd.x, pd.z, MAQ.on); correr(0.2);
       const abre = G.dialogo.open() && (G.dialogo.actual() || {}).who === 'La Ingeniera';
       cerrarCharlas(); correr(0.1);

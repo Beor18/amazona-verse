@@ -596,7 +596,8 @@
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, get libre() { return libre; }, get pendiente() { return pendiente; } };
+    // QA-212: ocupado() = hay una actividad V18 en marcha (duelo, minigolf, carreras…); lo miran las pistas de descubrir.js y ciclo.js
+    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, ocupado: () => ocupado18(), get libre() { return libre; }, get pendiente() { return pendiente; } };
     api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir });
     return api;
   };

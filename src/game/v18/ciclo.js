@@ -105,11 +105,20 @@ window.AVV18Ciclo = function (G) {
     if (ev.tipo === 'especie' && ev.id === DOMINICA && tieneDominica()) soltarGuia('dominica');
   });
   G.on('v18combate', ev => { if (ev && ev.tipo === 'win') alGanar(); });
+  // QA-212: tampoco con una actividad V18 en marcha (la cuenta atrás del duelo…; G.menuModos.ocupado, la de menu_modos.js) ni con la
+  // portada (el menú de modos) o la pausa abiertas: no se puede ir a buscarla y tapa lo que hay en pantalla
+  const otraCosa = () => {
+    try {
+      const t = document.getElementById('title'), p = document.getElementById('pause');
+      return !!(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) || !!(t && t.open) || !!(p && p.matches && p.matches(':popover-open'));
+    } catch (e) { return false; }
+  };
   function paso(dt) {
     ponerGuia();
-    if (E.pistaT > 0 && (E.pistaT -= dt) <= 0) darPista();
+    // QA-212: con otra cosa en pantalla la pista espera (vuelve a mirar al segundo) en vez de salir encima
+    if (E.pistaT > 0 && (E.pistaT -= dt) <= 0) { if (otraCosa()) E.pistaT = 1; else darPista(); }
     // al volver al puente (otra sesión), una vez: recuerda el reto extra
-    if (!E.pistaSesion && reparado()) {
+    if (!E.pistaSesion && reparado() && !otraCosa()) {
       const p = puntoPuente() || (G.v18Reparar && G.v18Reparar.P && G.v18Reparar.P.eje && { x: G.v18Reparar.P.eje.ax, z: G.v18Reparar.P.eje.az });
       if (p && Math.hypot(S.pos.x - p.x, S.pos.z - p.z) < R_VOLVER) { if (!darPista()) E.pistaSesion = true; }
     }
@@ -214,6 +223,14 @@ window.AVV18Ciclo = function (G) {
       ir({ x: sitio.x - 30, z: sitio.z }); Cb.paso(0.05);
       check('6 · Al alejarse, el duelo se cierra solo', C.fase === 'nada');
       ir(pp); cuadros(2);
+      // QA-212: con una actividad V18 en marcha (G.menuModos.ocupado) la pista del reto extra espera y no se pierde
+      {
+        const sapoBk = G.v18sapo; G.v18sapo = { estado: () => ({ fase: 'cuenta' }) };
+        const t0 = E.pistaT, n0 = toasts.length; E.pistaT = 0.05; paso(0.1); const espero = E.pistaT > 0 && toasts.length === n0;
+        if (sapoBk === undefined) delete G.v18sapo; else G.v18sapo = sapoBk;
+        E.pistaT = t0;
+        check('QA-212 · La pista del reto extra no sale con una actividad V18 en marcha: espera', !G.menuModos || espero, 'pistaT ' + E.pistaT + ' · ' + toasts.slice(n0).join(' | '));
+      }
       toasts.length = 0; E.pistaSesion = false; // como en una partida real: el recordatorio de «volver al puente» está armado
       const rep = usarIt('v18_reparar_puente');
       check('6 · Reparar el puente gasta exactamente 2 maderas y 1 piedra', rep && R.estado() === 'reparado' && S.inv.madera === 0 && S.inv.piedra === 0 && R.P.piso.when() === true, 'madera ' + S.inv.madera + ', piedra ' + S.inv.piedra);

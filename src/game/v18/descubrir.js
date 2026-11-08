@@ -44,8 +44,16 @@ window.AVV18Descubrir = function (G) {
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 3600); } catch (e) { /* sin interfaz */ } };
   // QA-188/QA-186: un aviso de pista no sale con la historia en pantalla (caja de diálogo, bocadillo o subtítulo
   // del narrador) ni durante la apertura en negro del cap. 1; espera a que el jugador esté libre de verdad
+  // QA-212: tampoco con una actividad V18 en marcha (la cuenta atrás del duelo…; G.menuModos.ocupado, la de menu_modos.js) ni con la
+  // portada (el menú de modos) o la pausa abiertas: no se puede ir a buscarla y tapa lo que hay en pantalla
+  const otraCosa = () => {
+    try {
+      const t = document.getElementById('title'), p = document.getElementById('pause');
+      return !!(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) || !!(t && t.open) || !!(p && p.matches && p.matches(':popover-open'));
+    } catch (e) { return false; }
+  };
   const libre = () => {
-    try { return !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo()) && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar'); }
+    try { return !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo()) && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar') && !otraCosa(); }
     catch (e) { return true; }
   };
   const sonar = (n, a) => { try { if (G.audio && (!G.audio.has || G.audio.has(n))) return G.audio.play(n, a); } catch (e) { /* sin audio */ } return false; };
@@ -401,6 +409,19 @@ window.AVV18Descubrir = function (G) {
       const noSalioConHistoria = D.avisarInicio() === false && !toasts.some(t => /Villa Raíz/.test(t));
       if (G.dialogo) G.dialogo.activo = actBk;
       check('La pista de inicio espera a la historia libre (QA-188)', noSalioConHistoria, toasts.join(' | '));
+      // QA-212: ni con una actividad V18 en marcha (la cuenta atrás del duelo, vista por G.menuModos.ocupado) ni con el menú de la portada
+      // o la pausa abiertos; las dos pistas (la de inicio y «¿Oyes ese canto?») esperan
+      {
+        const sapoBk = G.v18sapo, tit = document.getElementById('title'), titBk = !!(tit && tit.open);
+        G.v18sapo = { estado: () => ({ fase: 'cuenta' }) }; // una actividad cualquiera de las que mira ocupado18(), en marcha
+        const conDuelo = !!(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()), inicioDuelo = D.avisarInicio(); avisoInicio = false;
+        const cercaDuelo = libre();
+        if (sapoBk === undefined) delete G.v18sapo; else G.v18sapo = sapoBk;
+        if (tit) tit.open = true; const inicioPortada = D.avisarInicio(); avisoInicio = false; const cercaPortada = libre(); if (tit) tit.open = titBk;
+        check('QA-212 · Las pistas de la cotorra visitante esperan con una actividad V18 en marcha (G.menuModos.ocupado) y con el menú de la portada abierto',
+          (!G.menuModos || conDuelo) && inicioDuelo === false && !cercaDuelo && inicioPortada === false && !cercaPortada && !toasts.some(t => /Villa Raíz|canto/.test(t)) && libre(),
+          'ocupado ' + conDuelo + ' · inicio ' + inicioDuelo + '/' + inicioPortada + ' · cerca libre ' + cercaDuelo + '/' + cercaPortada + ' · ' + toasts.join(' | '));
+      }
       avisoInicio = false;
       check('La pista de inicio sí sale en el cap. 1 con la historia libre', D.avisarInicio() === true && toasts.some(t => /Villa Raíz/.test(t)), toasts.join(' | ') + porQue());
       G.quiet = quietBk;
