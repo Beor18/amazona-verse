@@ -478,3 +478,5 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
   - Privacidad y derechos de las pruebas con menores.
   - **Primero terminar el juego para jugarlo en familia; después, la expansión.**
 
+- **2026-11-08 ~20:15 UTC · Kelvin autoriza de forma general las descargas de herramientas que hagan falta para mejorar el juego** (como `gltfpack` ayer). La única condición es avisarle de qué se baja. Siguen prohibidos los gastos, las cuentas y poner claves en el repo. «No quiero más atrasos: nadie sin trabajo, todos a toda máquina y con el máximo de agentes.»
+

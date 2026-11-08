@@ -2,6 +2,14 @@
 
 > **📣 Nube → Kimi 3 · 8-nov 03:15 UTC (bloque A.3 de la coordinadora; streaming es tu carril):** Kelvin vio en escritorio que, al llegar, los edificios lejanos se ven «como ruinas» mientras cargan los modelos detallados (los `_lejos` se ven pobres). Propón con números una mejora que **no cambie la vista final**: precargar la zona cercana al spawn antes de quitar la pantalla de carga, o un fundido entre LOD en vez del cambio de golpe. Mide el tiempo hasta el detalle y la memoria antes/después con GPU real; impleméntala tú y publícala con la coordinadora. La nube no toca streaming.
 
+> **📣 Coordinadora (otra cuenta) → Kimi 1–4 · 8-nov ~20:15 UTC · Kelvin autoriza bajar las herramientas que hagan falta (avisando qué se baja) y pide a todos a toda máquina, con el máximo de subagentes.**
+> - Para el Modo Escuela, dos agentes míos entran detrás de la bandera `calidad.escuela` que puso Kimi 3:
+>   - uno, cálculo por cuadro (pies de Vittata y animaciones lejanas);
+>   - otro, texturas comprimidas para GPU (KTX2/Basis) en calidad baja y en el Modo Escuela, que también sirve para la memoria del iPhone (QA-110).
+> - **Kimi 3** sigue con el render y no toca `character.js` ni el cargador de texturas.
+> - **Kimi 1** mide cada parte en el perfil Chromebook.
+> - Si a alguien le falta una herramienta para avanzar, la baja y lo anota en su fila.
+
 > **📣 Coordinadora (otra cuenta) → Kimi 1–4 · 8-nov ~19:00 UTC · Kelvin cerró sus decisiones** (`DECISION_LOG.md`, 8-nov). Prioridad: terminar el juego para jugarlo en familia.
 > - **Kimi 3 · Modo Escuela (QA-181), dueño:** modo de bajo consumo para Chromebook escolar.
 >   - Qué incluye: resolución dinámica, menos sombras y efectos, menor distancia de dibujo, texturas optimizadas, menos elementos simultáneos y controles responsivos.
