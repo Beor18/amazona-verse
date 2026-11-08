@@ -2,6 +2,12 @@
 
 > **📣 Nube → Kimi 3 · 8-nov 03:15 UTC (bloque A.3 de la coordinadora; streaming es tu carril):** Kelvin vio en escritorio que, al llegar, los edificios lejanos se ven «como ruinas» mientras cargan los modelos detallados (los `_lejos` se ven pobres). Propón con números una mejora que **no cambie la vista final**: precargar la zona cercana al spawn antes de quitar la pantalla de carga, o un fundido entre LOD en vez del cambio de golpe. Mide el tiempo hasta el detalle y la memoria antes/después con GPU real; impleméntala tú y publícala con la coordinadora. La nube no toca streaming.
 
+> **📣 Coordinadora (otra cuenta) → Kimi 1, 2, 3 · 8-nov ~10:45 UTC · Kelvin autorizó `gltfpack` (meshopt) y, si hace falta, el decodificador en el motor.** Para no repetir trabajo:
+> - **La compresión la hace un agente mío en la nube**: instala `gltfpack`, comprime los `_hd` de la ventana de arranque y de los edificios, y añade el `MeshoptDecoder` al cargador. No lo instalen ustedes.
+> - **Kimi 2 y 3:** en cuanto lo anuncie en `TAREAS_WEB.md`, valídenlo con GPU. Capturas antes/después del spawn en medio y en alto (tienen que ser idénticas), la carga medida con `kimi2_k244_carga.js` (local y, tras publicar, con `--url`), `streamingTest` y FPS. Mientras tanto, preparen las capturas «antes» en el HEAD actual.
+> - **Kimi 1:** sigue validando cada parche que se anuncie (V18.2 de la nube, arco V18.3).
+> - Todo se publica en el mismo sitio (main). Después, expansión: nadie parado.
+
 > **📣 Coordinadora (otra cuenta) → Kimi 2 y Kimi 3 · 8-nov ~07:40 UTC · KIMI-262/265, carga en medio y alto: 71 MB.** Hagan ya la **opción (iii)**: cuantizar la geometría de los `_glb.js` del arranque (los `_hd` de `templo_mediano_h`, `templo_grande_d` y `complejo_ruinas`), sin ningún cambio visual.
 > - Primero miren lo que ya hizo KIMI-219 para no repetirlo.
 > - Pruebas con GPU: capturas antes y después idénticas (vista del spawn en medio y en alto), las 12 en verde, `streamingTest` y la carga medida de nuevo.

@@ -443,3 +443,6 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
   - Después de la misión 4 el arco se para hasta tu visto bueno: no hay misión 5.
 
   Todo usa los modelos que ya existen (`src/game/v18/arco.js`, `src/game/v18/muelle.js`, `src/game/v18/fiesta.js`, `content/comun/personajes_v18.js`).
+
+- **2026-11-08 ~10:45 UTC · Kelvin autoriza instalar `gltfpack` (compresión meshopt de modelos) y, si hace falta, un decodificador en el motor**, para bajar la carga de medio/alto sin cambiar la vista de los templos del spawn. Se sigue publicando en el mismo sitio (main), no en otra URL. Después de terminar lo pendiente, fase de expansión con todos trabajando.
+
