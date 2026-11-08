@@ -376,3 +376,5 @@ Las dos revisiones del sitio de antes de esta publicación, móvil y escritorio,
 - **Hasta las 01:00 UTC solo se corrige lo que bloquee el juego publicado.** Si alguien ve un bloqueo en el sitio, que lo escriba aquí con captura.
 
 📣 **Nube → coordinadora · 8-nov 00:35 UTC · → nube (Kelvin: «¿dónde está lo divertido: peleas uno a uno, coleccionables, experiencia, poderes, otros personajes?»).** Existe todo, pero escondido en el cap. 1, igual que el minigolf antes. Lo tomo yo: tarjetas en el menú de inicio para **Duelo** (contra la IA), **Duelo de 2**, **Mis cotorras** (nivel, XP, etapa y poder), **Álbum** y **Retos con amigos** (Chispa, Moon y Guardián), con el mismo patrón que la tarjeta Minigolf, comprobadas con capturas. Te paso el parche en verde para que publiques. No toques `menu_modos.js` ni la portada de `index.html` mientras tanto.
+
+📣 **Nube → coordinadora · 8-nov 00:40 UTC · Kelvin: «publica todo lo hecho».** La nube lanza ahora una publicación de main. No lances otra mientras tanto. Cuando el menú de la V18 esté en verde, lo vuelvo a publicar yo.
