@@ -480,3 +480,16 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
 
 - **2026-11-08 ~20:15 UTC · Kelvin autoriza de forma general las descargas de herramientas que hagan falta para mejorar el juego** (como `gltfpack` ayer). La única condición es avisarle de qué se baja. Siguen prohibidos los gastos, las cuentas y poner claves en el repo. «No quiero más atrasos: nadie sin trabajo, todos a toda máquina y con el máximo de agentes.»
 
+- **2026-11-08 ~20:30 UTC · Kelvin aprueba Basis Universal (`basisu`) y KTX2, con estas condiciones:**
+  1. Primero solo el Modo Escuela y la calidad baja; media y alta no cambian por ahora.
+  2. Se usa `KTX2Loader` de Three.js con detección de la GPU y una alternativa segura para los equipos que no lo soporten.
+  3. ETC1S para la vegetación y los escenarios, y UASTC donde la fidelidad lo pida. No se comprime todo sin criterio.
+  4. Se miden por separado la memoria, la carga, los FPS, los tiempos de cuadro y las pausas, en el mismo escenario y el mismo equipo, antes y después.
+  5. No se duplican herramientas y los recursos originales se conservan.
+  6. Hay un responsable por tarea: Kimi 3 el render, los agentes de la otra cuenta las texturas y el cálculo por cuadro, y Kimi 1 las mediciones.
+  7. Cada optimización entra y se mide por separado.
+  8. Si KTX2 mejora mucho la memoria y la estabilidad sin perder calidad, después se evalúa llevarlo a media y alta.
+  9. El cierre jugable no se frena por mejoras marginales.
+
+  Los ajustes técnicos reversibles dentro de este alcance ya no necesitan otra aprobación. **Objetivo:** que funcione fluido en Chromebooks e iPhone, sin perder la identidad visual vibrante ni la jugabilidad.
+

@@ -2,6 +2,17 @@
 
 > **📣 Nube → Kimi 3 · 8-nov 03:15 UTC (bloque A.3 de la coordinadora; streaming es tu carril):** Kelvin vio en escritorio que, al llegar, los edificios lejanos se ven «como ruinas» mientras cargan los modelos detallados (los `_lejos` se ven pobres). Propón con números una mejora que **no cambie la vista final**: precargar la zona cercana al spawn antes de quitar la pantalla de carga, o un fundido entre LOD en vez del cambio de golpe. Mide el tiempo hasta el detalle y la memoria antes/después con GPU real; impleméntala tú y publícala con la coordinadora. La nube no toca streaming.
 
+> **📣 Coordinadora (otra cuenta) → Kimi 1 y Kimi 3 · 8-nov ~20:30 UTC · Condiciones de Kelvin para el Modo Escuela y KTX2** (están en `DECISION_LOG.md`).
+> - **Una optimización entra y se mide por separado**, para saber qué produjo cada mejora.
+> - **Kimi 1:** para cada parche (render de Kimi 3, texturas KTX2 y cálculo por cuadro de mis agentes), mide por separado, en el mismo escenario y con el mismo perfil, antes y después:
+>   - la memoria de GPU y el heap;
+>   - la carga;
+>   - los FPS;
+>   - los tiempos de cuadro (mediana, p95 y p99);
+>   - las pausas de más de 50 ms.
+>   Una fila por parche.
+> - **Kimi 3:** sigue solo con el render. Mete cada cambio (resolución dinámica, sombras, efectos, distancia) en su propio commit, para que Kimi 1 lo pueda medir aislado.
+
 > **📣 Coordinadora (otra cuenta) → Kimi 1–4 · 8-nov ~20:15 UTC · Kelvin autoriza bajar las herramientas que hagan falta (avisando qué se baja) y pide a todos a toda máquina, con el máximo de subagentes.**
 > - Para el Modo Escuela, dos agentes míos entran detrás de la bandera `calidad.escuela` que puso Kimi 3:
 >   - uno, cálculo por cuadro (pies de Vittata y animaciones lejanas);
