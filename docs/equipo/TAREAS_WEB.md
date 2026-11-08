@@ -426,3 +426,20 @@ A.3 (edificios lejanos al llegar) se lo pasé a Kimi 3 en TAREAS_KIMI.md, porque
 - Pruebas: Chispa 23/23, Moon 23/23, Guardián 24/24, accesibilidad 88/88 y las 12 obligatorias en verde.
 
 **Pido tarea → nube** para el agente libre. Mientras no contestes, siguen el menú V18, el bloque A y la V18.2.
+## 📣 Coordinadora (otra cuenta) · extras sobre db707840
+
+Extras (todo lo que no son las 12 obligatorias) en la nube con SwiftShader. 92 baterías corridas, 83 verdes. Se omitieron 13 e2e/playtest largos: «timeout, necesita GPU» (no son rojos): ciudadVivaTest, ep2e2eTest, ep3e2eTest, ep4e2eTest, ep5e2eTest, ep5e2eRealTest, ep6e2eTest, ep6e2eRealTest, playtestAutoTest, streamingTest, temporadaMovilTest, temporadaRealTest, temporadaRealEnTest. Consola: 0 errores, 0 avisos; red 0 rotas.
+
+| Batería | Resultado | Sola / en orden | Causa |
+|---|---|---|---|
+| ambienteTest | 24/25 en orden, 24/24 sola | solo en orden | Chequeo «0 fugas tras 4 vueltas» (geometrías ±2): con el mundo ya recorrido por otras baterías, el streaming descarga geometrías (370→329) y programas suben (177→202). Fuga falsa por orden. |
+| cargaTest | 15/16 en orden, 16/16 sola | solo en orden | «Con caché tarda < 1,5 s»: 2354 ms con 3 texturas pendientes. Carga en una VM con load 15-23 y dos Chrome ajenos; es tiempo, no lógica. |
+| climaTest | 30/31 en orden, 31/31 sola | solo en orden | «FPS medidos en calidad baja»: 0 → 0 fps; el medidor no tuvo cuadros por la carga de la VM. |
+| v18FxTest | 16/17 en orden, 17/17 sola | solo en orden | «onda() encola los anillos esperados (12 (2 en bajo))»: depende de la calidad gráfica que dejó la batería anterior (climaTest la baja). Estado compartido. |
+| equiposTest | 25/28 | falla sola y en orden | Fallan 3 chequeos del panel Bandada: src/game/equipos.js:528 (nombre, suma y cada cotorra), :538 (emblema, colores de bandera en el canvas #eq-emblema) y :569 (texto en inglés «Your flock»). Los chequeos anteriores de la misma pestaña pasan. Sin el texto del panel en el informe no se afinó más: hace falta ver el textContent de #eq-panel. Real; para quien tenga equipos.js (CG-18). |
+| idiomaTest | 20/31 | falla sola y en orden | src/game/idioma.js:306: con EN puesto quedan 17-18 textos en español visibles («Aún sin combo», «Aún sin tiempo», «Sorpresas de la ciudad», «Rastros de Maraña», «Story de la bandada», «Siestas de Vittata», «Retos de hoy», «Mañana cambian. Sin rachas.», «Pasa el mando», «Ahora vuela Pluma Verde. Tramo 2 de 3.»…) y las pantallas «pausa» etc. (idioma.js:309). Textos de records.js (p. ej. :79) y equipos sin traducir en la pantalla de pausa/Mis récords. Real. |
+| lookTest | 42/44 en orden, 39/44 sola | falla en ambos (peor sola) | src/game/look.js:594: draw calls con el look puesto suben (84→103/111/102/127) y programas 200→237-310; y :599, 41 % de píxeles distintos al quitarlo. Con la VM lenta la fauna y el streaming del mundo siguen cambiando entre medidas; fuera de GPU no es concluyente. |
+| ep4GuardadoTest | «no existe en esta build» | n/a | No es rojo real: tests/qa/ep4_guardado.js no está en «inyectar» de tools/build/config.json. |
+| playtest10Test | «no existe en esta build» | n/a | Igual: tests/qa/playtest10.js:449 dice que test.sh no lo inyecta. |
+
+Pendiente real: equiposTest e idiomaTest. lookTest, ambienteTest, cargaTest, climaTest y v18FxTest hay que repetirlos con GPU; no se tocó código del juego.
