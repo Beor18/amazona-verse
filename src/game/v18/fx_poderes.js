@@ -270,13 +270,24 @@ window.AVV18Fx = function (G) {
   function test() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const avanza = s => { for (let i = 0, k = Math.ceil(s / 0.1); i < k; i++) paso(0.1); };
+    // La prueba fija su calidad (otras baterías, como climaTest o ambienteTest, la dejan cambiada) y la devuelve al terminar
+    const RC = G.renderer.calidad, cal0 = RC && { nivel: RC.nivel, manual: RC.manual }, ponerCal = n => { if (RC && G.renderer.setCalidad && RC.nivel !== n) G.renderer.setCalidad(n); };
     try {
+      if (RC) RC.manual = true;
+      ponerCal('medio');
       for (let i = 0; i < MAXR; i++) ranillos[i] = null;
       for (let i = escudos.length - 1; i >= 0; i--) quitar(escudos[i]);
       paso(0.1);
-      const nEsp = nivel() === 'bajo' ? 2 : 3;
+      const nEsp = reducido() ? 2 : (nivel() === 'bajo' ? 2 : 3);
       const r0 = onda({ x: 0, y: 50, z: 0 }, { x: 1, y: 0, z: 0 }, 9);
-      check('onda() encola los anillos esperados', r0.ok && estado().anillos === nEsp, estado().anillos + ' (' + nEsp + ' en ' + nivel() + ')');
+      check('onda() encola los anillos esperados', r0.ok && estado().anillos === nEsp, estado().anillos + ' (' + nEsp + ' en ' + nivel() + (reducido() ? ', movimiento reducido' : '') + ')');
+      if (RC) {
+        for (let i = 0; i < MAXR; i++) ranillos[i] = null;
+        ponerCal('bajo'); const rB = onda({ x: 0, y: 50, z: 0 }, { x: 1, y: 0, z: 0 }, 9), nB = estado().anillos;
+        for (let i = 0; i < MAXR; i++) ranillos[i] = null;
+        ponerCal('medio'); onda({ x: 0, y: 50, z: 0 }, { x: 1, y: 0, z: 0 }, 9);
+        check('En calidad baja onda() pone 2 anillos (la prueba fija la calidad y la devuelve)', rB.ok && nB === 2 && nivel() === 'medio', nB + ' en bajo · vuelve a ' + nivel());
+      }
       check('Los anillos son un solo InstancedMesh (1 draw call)', rings.isInstancedMesh && rings.visible);
       avanza(0.4);
       let avanzo = false;
@@ -326,6 +337,7 @@ window.AVV18Fx = function (G) {
       check('apagar(actor) quita su escudo al instante, sin dispersión (fin de combate)', ap.ok && estado().escudos === 0 && !plumas.visible, JSON.stringify(estado()));
       check('Sin excepciones y todo se apaga al final', estado().escudos === 0 && estado().anillos === 0, JSON.stringify(estado()));
     } catch (e) { check('Sin excepciones', false, e && e.message); }
+    finally { if (cal0) { ponerCal(cal0.nivel); RC.manual = cal0.manual; } }
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
