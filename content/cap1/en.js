@@ -2013,7 +2013,7 @@ window.AV_EN = {
  "Oro con 3 golpes o menos": "Gold in 3 strokes or fewer",
  "¡Suelta para golpear!": "Let go to hit!",
  "¡Pulsa G: el Grito la empuja!": "Press G: the Shout pushes it!",
- "¡Toca Grito: la empuja!": "Tap Shout: it pushes it!",
+ "¡Toca Grito: la empuja!": "Tap Shout to push it!",
  "Mantén pulsado más rato: más fuerza": "Hold it longer: more power",
  "¡Muy fuerte! Cerca del nido, golpea suave": "Too hard! Near the nest, hit softly",
  "¡Casi! Ahora un golpe suave": "Almost! Now a soft hit",

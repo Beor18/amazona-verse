@@ -122,7 +122,7 @@ window.AVV18Chispa = function (G) {
     if (hud) return hud;
     if (!document.getElementById('v18-chispa-css')) {
       const st = document.createElement('style'); st.id = 'v18-chispa-css';
-      st.textContent = '#v18-chispa{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(340px,calc(100vw - 32px));z-index:40;' +
+      st.textContent = 'body:has(#v18-chispa:not([hidden])) #toast{z-index:41}' + /* revisión clrt: el aviso, encima del panel de resultado en el móvil, como en Moon y el Guardián */ '#v18-chispa{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(340px,calc(100vw - 32px));z-index:40;' +
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(20,32,60,.78);border:2px solid #ff8a1f;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
         '#v18-chispa .vc-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-chispa .vc-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-chispa .vc-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd23f;text-shadow:0 2px 0 #b35a00}#v18-chispa .vc-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
