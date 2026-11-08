@@ -248,6 +248,7 @@
     // ---------- Escena: vía, estaciones, tren (primitivas; se crea al entrar y se libera al salir) ----------
     const raiz = new THREE.Group(); raiz.name = 'tren'; raiz.visible = false;
     const lin = c => new THREE.Color(c).convertSRGBToLinear();
+    const LIN = {}, linDe = c => LIN[c] || (LIN[c] = lin(c));
     const MAT = {};
     const mat = (k, c, o) => MAT[k] || (MAT[k] = Object.assign(new THREE.MeshLambertMaterial(Object.assign({ color: lin(c) }, o || {})), { name: 'tren:' + k }));
     const E0 = () => ({ inst: {}, tuneles: [], carteles: [], tren: null, coches: [], vehiculos: [], cajas: [], cajasEst: [], caida: null, humo: null, humos: [], texturas: [], ruedas: null, ruedasDe: [], bielas: null, haz: null });
@@ -359,7 +360,7 @@
       st.via = null; st.listo = false;
     }
     // Coloca el tren (cada vehículo entre su punto delantero y trasero por la vía), las cajas y el humo
-    const _f = { x: 0, y: 0, z: 0 }, _b = { x: 0, y: 0, z: 0 };
+    const _f = { x: 0, y: 0, z: 0 }, _b = { x: 0, y: 0, z: 0 }, BIELAS = [[-1.03, 0], [1.03, Math.PI / 2]];
     function colocar(dt) {
       if (!st.via || !E.tren) return;
       let d = 0; const roll = J.roll;
@@ -368,18 +369,18 @@
         atras(d - L / 2, _f); atras(d + L / 2, _b);
         m.position.set((_f.x + _b.x) / 2, (_f.y + _b.y) / 2, (_f.z + _b.z) / 2);
         m.quaternion.copy(orientar(_f.x - _b.x, _f.y - _b.y, _f.z - _b.z, roll));
-        if (k > 0) { const cj = E.cajas[k - 1], c = J.carga[k - 1]; cj.visible = !!c; if (c) { cj.material.color.copy(lin(CARGAS[c.tipo].color)); cj.position.copy(m.position).addScaledVector(_up, 1.5); cj.quaternion.copy(m.quaternion); } }
+        if (k > 0) { const cj = E.cajas[k - 1], c = J.carga[k - 1]; cj.visible = !!c; if (c) { cj.material.color.copy(linDe(CARGAS[c.tipo].color)); cj.position.copy(m.position).addScaledVector(_up, 1.5); cj.quaternion.copy(m.quaternion); } }
         d += L + P.enganche;
       }
       const V = st.via;
-      for (let i = 0; i < V.ests.length; i++) { const e = V.ests[i], cj = E.cajasEst[i]; cj.visible = !!e.espera; if (e.espera) cj.material.color.copy(lin(CARGAS[e.espera.tipo].color)); }
+      for (let i = 0; i < V.ests.length; i++) { const e = V.ests[i], cj = E.cajasEst[i]; cj.visible = !!e.espera; if (e.espera) cj.material.color.copy(linDe(CARGAS[e.espera.tipo].color)); }
       if (E.caida.visible) { const c = E.caida.userData; c.t += dt || 0; c.vy -= 12 * (dt || 0); E.caida.position.x += c.vx * (dt || 0); E.caida.position.z += c.vz * (dt || 0); E.caida.position.y = Math.max(c.suelo, E.caida.position.y + c.vy * (dt || 0)); E.caida.rotation.x += 2 * (dt || 0); if (c.t > 2.5) E.caida.visible = false; }
       // Ruedas: giran lo que el tren avanzó (ángulo = distancia / radio); bielas: barra horizontal que sigue la manivela de las ruedas
       const ang = J.dist / P.rRueda, rw = E.ruedas; rw.count = 0; _s.set(1, 1, 1);
       for (const [k, x, z] of E.ruedasDe) { const m = E.coches[k]; _m.compose(m.position, m.quaternion, _s); _m2.makeRotationX(ang).setPosition(x, P.rRueda, z); rw.setMatrixAt(rw.count++, _m.multiply(_m2)); }
       rw.instanceMatrix.needsUpdate = true;
       const bl = E.bielas, lo = E.tren; bl.count = 0;
-      for (const [sx, fase] of [[-1.03, 0], [1.03, Math.PI / 2]]) { const a = ang + fase; _m.compose(lo.position, lo.quaternion, _s); _m2.makeTranslation(sx, P.rRueda + P.manivela * Math.cos(a), P.manivela * Math.sin(a)); bl.setMatrixAt(bl.count++, _m.multiply(_m2)); }
+      for (let b = 0; b < 2; b++) { const sx = BIELAS[b][0], a = ang + BIELAS[b][1]; _m.compose(lo.position, lo.quaternion, _s); _m2.makeTranslation(sx, P.rRueda + P.manivela * Math.cos(a), P.manivela * Math.sin(a)); bl.setMatrixAt(bl.count++, _m.multiply(_m2)); }
       bl.instanceMatrix.needsUpdate = true;
       // Haz del farol: se enciende al entrar en el túnel (lo que la cámara ya sabe: cam.tun) y parpadea un poco con el traqueteo
       const luzT = cam.tun; E.haz.visible = luzT > 0.02; if (E.haz.visible) E.haz.material.opacity = luzT * (0.15 + 0.02 * Math.sin(J.dist * 2.1));
@@ -481,11 +482,12 @@
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : P.finPanel * 1000);
     }
     // Lo que actores.js lee para animar a Vittata (posada en el techo de la locomotora; el rig no se toca)
+    const _fac = { x: 0, z: 1 };
     function sincronizar() {
       const m = E.tren; if (!m) return;
       _p.set(0, 2.6, -1.1).applyQuaternion(m.quaternion).add(m.position);
       S.pos.x = _p.x; S.pos.y = _p.y; S.pos.z = _p.z; S.vy = 0;
-      _fw.set(0, 0, 1).applyQuaternion(m.quaternion); const L = Math.hypot(_fw.x, _fw.z) || 1; S.facing = { x: _fw.x / L, z: _fw.z / L };
+      _fw.set(0, 0, 1).applyQuaternion(m.quaternion); const L = Math.hypot(_fw.x, _fw.z) || 1; _fac.x = _fw.x / L; _fac.z = _fw.z / L; S.facing = _fac;
       M.flying = false; M.landing = false; M.takeoff = 0; M.swimming = false; M.grounded = true; M.dashT = 0; M.posado = 'fino';
       M.vx = 0; M.vz = 0; M.speed = 0; M.fase = ''; M.groundY = S.pos.y;
     }
@@ -670,26 +672,35 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
       u.chip.classList.remove('pop'); void u.chip.offsetWidth; u.chip.classList.add('pop');
       let html = '';
       for (let i = 0; i < P.capacidad; i++) { const c = J.carga[i]; html += c ? `<div class="tr-carga" style="--col:#${CARGAS[c.tipo].color.toString(16).padStart(6, '0')}"><b>${t(c.tipo)}</b><span>→ ${t(destinoDe(c.tipo).nombre)}</span><i></i></div>` : `<div class="tr-carga vacia"><b>${t('Sin carga')}</b><span>&nbsp;</span><i style="transform:scaleX(0)"></i></div>`; }
-      u.cargas.innerHTML = html;
+      u.cargas.innerHTML = html; u.barras = u.cargas.querySelectorAll('.tr-carga i');
     }
     // Lo que cambia cada cuadro: reloj, velocidad, barras de plazo, aviso de estación/desvío/curva
+    function estDe(V, id) { for (const e of V.ests) if (e.id === id) return e; return null; }
+    function llevaA(id) { for (const c of J.carga) if (c.destino === id) return true; return false; }
     function pintarVivo() {
       const u = st.ui, V = st.via; if (!u || !V) return;
       const rl = reloj(J.resta), vl = String(Math.round(J.v * 3.6)); if (rl !== u.tiempoTxt) u.tiempo.textContent = u.tiempoTxt = rl; if (vl !== u.velTxt) u.vel.textContent = u.velTxt = vl;
-      const barras = u.cargas.querySelectorAll('.tr-carga i'); for (let i = 0; i < J.carga.length; i++) { const c = J.carga[i], k = clamp(1 - (J.t - c.t0) / P.plazo, 0, 1); if (barras[i]) { barras[i].style.transform = 'scaleX(' + k.toFixed(3) + ')'; barras[i].style.background = k > 0.3 ? '' : '#ff7a59'; } }
+      const barras = u.barras || (u.barras = u.cargas.querySelectorAll('.tr-carga i'));
+      for (let i = 0; i < J.carga.length; i++) {
+        const c = J.carga[i], k = clamp(1 - (J.t - c.t0) / P.plazo, 0, 1), b = barras[i]; if (!b) continue;
+        const tf = k.toFixed(3), bg = k > 0.3 ? '' : '#ff7a59';
+        if (b._tf !== tf) { b._tf = tf; b.style.transform = 'scaleX(' + tf + ')'; }
+        if (b._bg !== bg) { b._bg = bg; b.style.background = bg; }
+      }
       if (st.fase !== 'juego') { u.desvio.hidden = true; return; }
       // Desvío a la vista: las dos vías y, si una carga va a una estación de una de ellas, «por aquí»
       const sg = V.segs[J.seg], nd = V.nodos[sg.a], dNodo = sg.largo - J.s;
       if (nd.sal.length >= 2 && dNodo <= P.avisoDesvio) {
         if (u.desvio.hidden || u.desvio.dataset.nodo !== nd.id) { u.desvio.hidden = false; u.desvio.dataset.nodo = nd.id; const nom = i => { const e = V.ests.find(q => q.segIdx === nd.sal[i]); return e ? t(e.nombre) : t(i ? 'derecha' : 'izquierda'); }; u.izq.textContent = nom(0); u.der.textContent = nom(1); }
-        const bs = u.desvio.querySelectorAll('[data-via]'), el = J.desvio[nd.id] ? 1 : 0; bs[0].classList.toggle('on', el === 0); bs[1].classList.toggle('on', el === 1);
-        const ideal = J.carga.length ? nd.sal.findIndex(i => J.carga.some(c => V.ests.find(q => q.id === c.destino).segIdx === i)) : -1;
+        const bs = u.vias || (u.vias = u.desvio.querySelectorAll('[data-via]')), el = J.desvio[nd.id] ? 1 : 0; bs[0].classList.toggle('on', el === 0); bs[1].classList.toggle('on', el === 1);
+        let ideal = -1;
+        for (let k = 0; k < nd.sal.length && ideal < 0; k++) for (const c of J.carga) { const e = estDe(V, c.destino); if (e && e.segIdx === nd.sal[k]) { ideal = k; break; } }
         for (let i = 0; i < 2; i++) bs[i].classList.toggle('pista', ideal === i);
       } else u.desvio.hidden = true;
       if (J.avisoT > 0) return;
       // Aviso de estación próxima (frena y para) o de curva (baja a N)
       let txt = '';
-      for (const e of V.ests) if (e.segIdx === J.seg && e.s - J.s > -P.paradaR && e.s - J.s < P.avisoEstacion) { const lleva = J.carga.some(c => c.destino === e.id), hay = !!e.espera && J.carga.length < P.capacidad; txt = t('Estación') + ': ' + t(e.nombre) + (lleva || hay ? ' · ' + t('Frena y para') : ''); break; }
+      for (const e of V.ests) if (e.segIdx === J.seg && e.s - J.s > -P.paradaR && e.s - J.s < P.avisoEstacion) { const lleva = llevaA(e.id), hay = !!e.espera && J.carga.length < P.capacidad; txt = t('Estación') + ': ' + t(e.nombre) + (lleva || hay ? ' · ' + t('Frena y para') : ''); break; }
       if (!txt) for (const c of sg.curvas) if (c.i0 - J.s > -2 && c.i0 - J.s < P.avisoCurva && J.v > c.v) { txt = t('Curva: baja a') + ' ' + Math.round(c.v * 3.6) + ' km/h'; break; }
       if (!txt) { const q = enVia(sg, J.s); if (sg.esp[q.i] === 2) txt = t('Túnel'); else if (sg.esp[q.i] === 1) txt = t('Puente'); }
       if (txt !== u.aviso.textContent || u.aviso.hidden === !!txt) { u.aviso.textContent = txt; u.aviso.hidden = !txt; }

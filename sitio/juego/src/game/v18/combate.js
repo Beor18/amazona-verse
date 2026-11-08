@@ -20,6 +20,9 @@
    - V18.2 (evolución, src/game/v18/evolucion.js): solo el jugador trae { nivel, variante, alianza } (G.v18evo.paraDuelo); la
      Campeona no sube. Tecla H (solo en el duelo y con alianza elegida) o el botón .vd-ali: poder de alianza. El fin del duelo
      añade { especie, dura, interrupciones, quitadas } al evento win/loss. Sin evolucion.js todo queda como antes.
+   - V18.2 equilibrio (DIFICULTAD): la Campeona entrena a la altura de tu etapa (Aprendiz, Despertar, Guardián, Maestro).
+     Cambian sus reflejos (cada cuánto decide y si esquiva o se escuda), cuánto usa su poder y cuántas plumas trae; sus golpes
+     quitan lo mismo de siempre. Sin nivel del jugador (pruebas que fuerzan especie) juega la de siempre (CLASICA).
    Solo con la bandera V18. Prueba: AV.v18CombateTest(). */
 window.AVV18Combate = function (G) {
   'use strict';
@@ -28,6 +31,25 @@ window.AVV18Combate = function (G) {
   const ALTURA = h => G.terreno.height(h.x, h.z);
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches); // QA-163: sin tecla G en táctil
   const ARENA_R = 12, SALIDA_R = 24, PLUMAS = 5;
+  // La Campeona según la etapa del jugador. pensar: segundos entre decisiones; esquiva y escudo: probabilidad de reaccionar a
+  // una semilla (ve: a cuántos metros la ve venir; calma: espera entre reacciones); ala y tiro: espera entre golpes y semillas;
+  // poder: probabilidad de usarlo cuando puede; vel: velocidad al acercarse; plumas: las que trae (hoy, las 5 en todas).
+  // aparta: se sale del alcance de tu ala mientras la suya espera; rehace: se aparta de un salto al recuperarse de un golpe;
+  // leeGrito: se escuda al verte abrir el pico; cerca y tiroMin: distancias del ala y de la semilla. CLASICA es la de siempre.
+  // Números medidos con la jugadora «media» de AV.v18EvolucionTest (36 duelos por etapa, con semilla): gana del 55 al 75 %.
+  const CLASICA = { id: 'clasica', pensar: 0.25, ve: 5.5, calma: 2.4, esquiva: 0.55, escudo: 0.55, ala: 1.15, tiro: 2.4, poder: 0.3, vel: 4.2, plumas: PLUMAS };
+  const DIFICULTAD = [
+    { id: 'aprendiz', pensar: 0.17, ve: 6.33, calma: 1.85, esquiva: 0.69, escudo: 0.69, ala: 0.9, tiro: 1.96, poder: 0.47, vel: 4.64, aparta: 0.33, rehace: 0.44, cerca: 2.36, leeGrito: 0.39, tiroMin: 4.63, plumas: PLUMAS },
+    { id: 'despertar', pensar: 0.14, ve: 6.63, calma: 1.65, esquiva: 0.74, escudo: 0.74, ala: 0.81, tiro: 1.8, poder: 0.52, vel: 4.8, aparta: 0.45, rehace: 0.6, cerca: 2.38, leeGrito: 0.52, tiroMin: 4.13, plumas: PLUMAS },
+    { id: 'guardian', pensar: 0.13, ve: 6.7, calma: 1.6, esquiva: 0.75, escudo: 0.75, ala: 0.79, tiro: 1.76, poder: 0.54, vel: 4.84, aparta: 0.48, rehace: 0.64, cerca: 2.38, leeGrito: 0.56, tiroMin: 4, plumas: PLUMAS },
+    { id: 'maestro', pensar: 0.11, ve: 6.93, calma: 1.45, esquiva: 0.79, escudo: 0.79, ala: 0.72, tiro: 1.64, poder: 0.59, vel: 4.96, aparta: 0.57, rehace: 0.76, cerca: 2.4, leeGrito: 0.66, tiroMin: 3.63, plumas: PLUMAS }
+  ];
+  function dificultadDe(j) {
+    if (!j || !j.nivel) return CLASICA;
+    let i = j.nivel >= 30 ? 3 : j.nivel >= 20 ? 2 : j.nivel >= 10 ? 1 : 0;
+    try { if (G.v18evo && G.v18evo.etapaIdx) i = G.v18evo.etapaIdx(j.nivel); } catch (e) { /* sin evolución: la cuenta de arriba */ }
+    return DIFICULTAD[Math.max(0, Math.min(DIFICULTAD.length - 1, i))];
+  }
   const TXT = {
     retar: 'Retar a la Campeona de la Explanada', tu: 'Tú', rival: 'Campeona de la Explanada',
     ala: 'Ala', semilla: 'Semilla', poder: 'Poder', otra: 'Otra vez', salir: 'Salir', energia: 'Energía',
@@ -173,9 +195,9 @@ window.AVV18Combate = function (G) {
   // Recompensa de la primera victoria: materiales del inventario del juego (S.inv), los mismos del cap. 1
   const PREMIO = { madera: 2, piedra: 1 };
   const rivalPos = { x: sitio.x + 4, y: sitio.y, z: sitio.z };
-  function nuevoRival() {
-    const sp = especieRival(especieJugador());
-    return H.luchador({ id: 'rival', nombre: TXT.rival, especie: sp, ia: true, pos: rivalPos, plumas: PLUMAS, plumasMax: PLUMAS,
+  function nuevoRival(dif) {
+    const sp = especieRival(especieJugador()), D = dif || CLASICA, pl = Math.max(1, Math.min(PLUMAS, D.plumas || PLUMAS));
+    return H.luchador({ id: 'rival', nombre: TXT.rival, especie: sp, ia: true, pos: rivalPos, plumas: pl, plumasMax: pl, dif: D,
       kb: { x: 0, z: 0, t: 0 }, mov: { x: 0, z: 0, t: 0 }, lift: { alto: 0, t: 0, dura: 0 }, yaw: -Math.PI / 2,
       pensar: 0.4, golpeT: 1, tiroT: 1.5, esquivaT: 0, poderT: 2.5, lado: 1, finMareo: 0 });
   }
@@ -525,7 +547,7 @@ window.AVV18Combate = function (G) {
   }
   function pintar() {
     if (!hud || !C.j) return;
-    const pl = (k, f) => Array.from(hud.q(k).children).forEach((i, n) => i.classList.toggle('fuera', n >= f.plumas));
+    const pl = (k, f) => Array.from(hud.q(k).children).forEach((i, n) => { i.classList.toggle('fuera', n >= f.plumas); i.hidden = n >= (f.plumasMax || PLUMAS); });
     pl('plj', C.j); pl('plr', C.r);
     hud.q('en-j').firstChild.style.width = Math.round(100 * C.j.energia / C.j.energiaMax) + '%';
     hud.q('en-r').firstChild.style.width = Math.round(100 * C.r.energia / C.r.energiaMax) + '%';
@@ -559,7 +581,7 @@ window.AVV18Combate = function (G) {
     crearRival();
     semilla = o.semilla || 7; espForzada = o.especie || null;
     quitarBalas(); C.trampas.length = 0; if (C.j && C.j.wob && pl3d && pl3d.root) { pl3d.root.rotation.z -= C.j.wob; C.j.wob = 0; }
-    C.j = nuevoJugador(o); const ch = C.ch; C.r = nuevoRival(); C.ch = ch; C.tLucha = 0;
+    C.j = nuevoJugador(o); const ch = C.ch; C.r = nuevoRival(o.dificultad || dificultadDe(C.j)); C.ch = ch; C.tLucha = 0;
     C.j.ultPoder = null; C.r.ultPoder = null; // Imitación: duelo nuevo, nada que copiar todavía
     if (C.ch && C.chEsp !== C.r.especie) { try { C.ch.applyLook({ species: C.r.especie, accessories: { eyes: { id: 'gafas', color: '#7fd3ff' } } }); C.chEsp = C.r.especie; } catch (e) { /* piel */ } }
     C.timers.length = 0; C.resultado = null; C.premio = false;
@@ -578,7 +600,7 @@ window.AVV18Combate = function (G) {
     const gano = res === 'win';
     emitir({ tipo: res, de: gano ? 'jugador' : 'rival', a: gano ? 'rival' : 'jugador', valor: gano ? C.j.plumas : C.r.plumas,
       // V18.2: para la XP
-      especie: C.j.especie, dura: Math.round((C.tLucha || 0) * 10) / 10, interrupciones: C.stats.intJ, poderJ: C.stats.poderJ, quitadas: PLUMAS - C.r.plumas });
+      especie: C.j.especie, dura: Math.round((C.tLucha || 0) * 10) / 10, interrupciones: C.stats.intJ, poderJ: C.stats.poderJ, quitadas: (C.r.plumasMax || PLUMAS) - C.r.plumas });
     let txt;
     // La que se queda sin plumas se marea un rato, con estrellitas, y se sacude (nadie se hace daño)
     const perdedora = gano ? C.r : C.j; perdedora.finMareo = 2.2; perdedora.mareo = Math.max(perdedora.mareo, 2.2);
@@ -613,34 +635,47 @@ window.AVV18Combate = function (G) {
 
   // ---------- IA de la rival ----------
   function pasoIA(dt) {
-    const r = C.r, j = C.j;
+    const r = C.r, j = C.j, D = r.dif || CLASICA, pp = D.poder;
+    if (r.mareo > 0) r.tocada = true;
     if (r.mareo > 0 || r.deslumbrada > 0) return; // deslumbrada por el Abanico de colores: 1 s sin hacer nada
     if (r.distraida > 0) return; // Cuento: distraída escuchando — no ataca ni se defiende hasta que se le pasa
     const d = H.dirA(r, j), dist = d.d;
     r.golpeT -= dt; r.tiroT -= dt; r.esquivaT -= dt; r.poderT -= dt; r.pensar -= dt;
+    // Reflejo al recuperarse de un golpe: se aparta de un salto en vez de quedarse a tiro (rompe las cadenas de golpes)
+    if (r.tocada) { r.tocada = false; if (D.rehace && azar() < D.rehace) { saltoAtras(r, d, 0.3); return; } }
+    // Reflejo ante el poder de la jugadora: lo ve venir (abre el pico) y se escuda si puede
+    const grita = j.picoT > 0 && !(r.vioGrito > 0);
+    r.vioGrito = j.picoT > 0 ? 1 : 0;
+    if (grita && D.leeGrito && dist < 12 && r.poder === 'escudo_plumas' && r.escudo <= 0 && H.listo(r, 'escudo_plumas').ok && azar() < D.leeGrito) { usar(r, 'escudo_plumas'); return; }
     // Defensa: una semilla del jugador que viene cerca → escudo (si es arausiaca y lo tiene) o un quiebro de lado
-    const viene = C.balas.find(b => b.de === j && Math.hypot(b.m.position.x - r.pos.x, b.m.position.z - r.pos.z) < 5.5);
+    const viene = C.balas.find(b => b.de === j && Math.hypot(b.m.position.x - r.pos.x, b.m.position.z - r.pos.z) < D.ve);
     if (viene && r.esquivaT <= 0 && !(r.marcada > 0)) {
-      r.esquivaT = 2.4;
-      if (r.poder === 'escudo_plumas' && r.escudo <= 0 && H.listo(r, 'escudo_plumas').ok && azar() < 0.55) { usar(r, 'escudo_plumas'); return; }
-      if (azar() < 0.55) { r.lado = azar() < 0.5 ? -1 : 1; r.mov.x = -d.z * r.lado * 9; r.mov.z = d.x * r.lado * 9; r.mov.t = 0.28; C.stats.esquivas++; return; }
+      r.esquivaT = D.calma;
+      if (r.poder === 'escudo_plumas' && r.escudo <= 0 && H.listo(r, 'escudo_plumas').ok && azar() < D.escudo) { usar(r, 'escudo_plumas'); return; }
+      if (azar() < D.esquiva) { r.lado = azar() < 0.5 ? -1 : 1; r.mov.x = -d.z * r.lado * 9; r.mov.z = d.x * r.lado * 9; r.mov.t = 0.28; C.stats.esquivas++; return; }
     }
     if (r.pensar > 0) return;
-    r.pensar = 0.25;
+    r.pensar = D.pensar;
     // Poder: el escudo cuando la tienes encima; el grito cuando estás delante y a tiro (sale hacia ti, que es adonde mira)
     if (r.poderT <= 0 && H.listo(r, r.poder).ok) {
-      if (r.poder === 'escudo_plumas' && r.escudo <= 0 && dist < 2.8 && azar() < 0.3) { r.poderT = 3; usar(r, 'escudo_plumas'); return; }
-      if (r.poder === 'grito_yunque' && dist > 2 && dist < 6 && azar() < 0.3) { r.poderT = 4; usar(r, 'grito_yunque'); return; }
-      if (r.poder === 'abanico_colores' && dist < 7 && azar() < 0.3) { r.poderT = 4; usar(r, 'abanico_colores'); return; }
-      if (r.poder === 'semilla_rio' && dist > 4 && dist < 14 && azar() < 0.3) { r.poderT = 4; usar(r, 'semilla_rio'); return; }
-      if (r.poder === 'plumas_aliso' && dist > 3 && dist < 14 && azar() < 0.3) { r.poderT = 4; usar(r, 'plumas_aliso'); return; }
-      if (r.poder === 'semilla_pina' && dist > 3 && dist < 12 && azar() < 0.3) { r.poderT = 4; usar(r, 'semilla_pina'); return; }
-      if (r.poder === 'remolino' && dist < 3.2 && azar() < 0.3) { r.poderT = 4; usar(r, 'remolino'); return; }
-      if (r.poder === 'imitacion' && j.ultPoder && dist > 2 && azar() < 0.3) { r.poderT = 4; usar(r, 'imitacion'); return; }
-      if (r.poder === 'vista_cumbre' && dist > 2.2 && dist < 3.6 && azar() < 0.3) { r.poderT = 4; usar(r, 'vista_cumbre'); return; } // la ventana donde su ala larga alcanza y el de la jugadora no
+      if (r.poder === 'escudo_plumas' && r.escudo <= 0 && dist < 2.8 && azar() < pp) { r.poderT = 3; usar(r, 'escudo_plumas'); return; }
+      if (r.poder === 'grito_yunque' && dist > 2 && dist < 6 && azar() < pp) { r.poderT = 4; usar(r, 'grito_yunque'); return; }
+      if (r.poder === 'abanico_colores' && dist < 7 && azar() < pp) { r.poderT = 4; usar(r, 'abanico_colores'); return; }
+      if (r.poder === 'semilla_rio' && dist > 4 && dist < 14 && azar() < pp) { r.poderT = 4; usar(r, 'semilla_rio'); return; }
+      if (r.poder === 'plumas_aliso' && dist > 3 && dist < 14 && azar() < pp) { r.poderT = 4; usar(r, 'plumas_aliso'); return; }
+      if (r.poder === 'semilla_pina' && dist > 3 && dist < 12 && azar() < pp) { r.poderT = 4; usar(r, 'semilla_pina'); return; }
+      if (r.poder === 'remolino' && dist < 3.2 && azar() < pp) { r.poderT = 4; usar(r, 'remolino'); return; }
+      if (r.poder === 'imitacion' && j.ultPoder && dist > 2 && azar() < pp) { r.poderT = 4; usar(r, 'imitacion'); return; }
+      if (r.poder === 'vista_cumbre' && dist > 2.2 && dist < 3.6 && azar() < pp) { r.poderT = 4; usar(r, 'vista_cumbre'); return; } // la ventana donde su ala larga alcanza y el de la jugadora no
     }
-    if (dist < 2.3 && r.golpeT <= 0) { r.golpeT = 1.15; usar(r, 'golpe_ala'); return; }
-    if (dist > 6 && dist < 16 && r.tiroT <= 0 && r.energia > 40) { r.tiroT = 2.4; usar(r, 'semilla'); return; }
+    // Reflejo cuerpo a cuerpo: con el ala en espera y la jugadora encima, sale de su alcance
+    if (D.aparta && dist < 2.6 && r.golpeT > 0 && azar() < D.aparta) { saltoAtras(r, d, 0.24); return; }
+    if (dist < (D.cerca || 2.3) && r.golpeT <= 0) { r.golpeT = D.ala; usar(r, 'golpe_ala'); return; }
+    if (dist > (D.tiroMin || 6) && dist < 16 && r.tiroT <= 0 && r.energia > 40) { r.tiroT = D.tiro; usar(r, 'semilla'); return; }
+  }
+  function saltoAtras(r, d, t) {
+    r.lado = azar() < 0.5 ? -1 : 1;
+    r.mov.x = (-d.x * 0.8 - d.z * r.lado * 0.6) * 9; r.mov.z = (-d.z * 0.8 + d.x * r.lado * 0.6) * 9; r.mov.t = t; C.stats.esquivas++;
   }
   function moverRival(dt) {
     const r = C.r, j = C.j, d = H.dirA(r, j);
@@ -649,7 +684,8 @@ window.AVV18Combate = function (G) {
     if (r.mov.t > 0) { r.mov.t -= dt; vx += r.mov.x; vz += r.mov.z; }
     else if (r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0) && !(r.distraida > 0)) {
       const velK = r.pesada > 0 ? 0.45 : 1; // Plumas de manglar: pisar una pluma la deja más lenta
-      if (d.d > 2.0) { vx += d.x * 4.2 * velK; vz += d.z * 4.2 * velK; } // se acerca
+      const ve = (r.dif || CLASICA).vel;
+      if (d.d > 2.0) { vx += d.x * ve * velK; vz += d.z * ve * velK; } // se acerca
       else { vx += -d.z * r.lado * 1.6 * velK; vz += d.x * r.lado * 1.6 * velK; } // rodea
     }
     const x0 = r.pos.x, z0 = r.pos.z;
@@ -1077,6 +1113,6 @@ window.AVV18Combate = function (G) {
     quitar(C.ch); Promise.resolve(C.listo).then(quitar, () => {});
     if (hud && hud.el) hud.el.remove();
   }
-  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, estado: () => C, mapa, test, retirar };
+  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, estado: () => C, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
   return G.v18combate;
 };

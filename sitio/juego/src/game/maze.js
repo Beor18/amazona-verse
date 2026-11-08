@@ -395,8 +395,9 @@
         mover(g, P.vel * g.v * dt / P.celda, elegirGuardian);
         if (J.gracia <= 0 && Math.hypot(g.gx - J.gx, g.gz - J.gz) < P.alcance) encontrada(g);
       }
-      if (lab.frutos.every(f => !f.activo)) fin();
+      if (lab.frutos.every(inactivo)) fin();
     }
+    const inactivo = f => !f.activo;
     function recoger(f) {
       f.activo = false; esconder('f' + f.tipo, f.i);
       J.racha++; J.combo = Math.min(P.comboMax, 1 + Math.floor(J.racha / 2));
@@ -442,16 +443,18 @@
     }
 
     // ---------- Dibujar (cada cuadro) ----------
+    const _fac = { x: 0, z: 1 };
     function sincronizar() {
       const A = st.A; if (!A) return;
       S.pos.x = mundoX(J.gx); S.pos.z = mundoZ(J.gz); S.pos.y = A.piso; S.vy = 0;
       const d = J.d >= 0 ? J.d : J.ultima;
-      if (d >= 0) { S.facing = { x: DX[d], z: DZ[d] }; J.ultima = d; }
+      if (d >= 0) { _fac.x = DX[d]; _fac.z = DZ[d]; S.facing = _fac; J.ultima = d; }
       const v = st.fase === 'juego' && J.d >= 0 ? P.vel : 0;
       M.flying = false; M.landing = false; M.takeoff = 0; M.swimming = false; M.grounded = true; M.dashT = 0; M.posado = ''; M.fase = '';
       M.vx = S.facing.x * v; M.vz = S.facing.z * v; M.speed = v; M.groundY = A.piso;
       const pj = G.actores.player3D; if (pj) pj.root.visible = !(J.gracia > 0 && !REDUCED && Math.floor(J.gracia * 8) % 2 === 1); // parpadeo de gracia
     }
+    const TIPOS_CUADRO = ['fpalma', 'ftabonuco', 'guardian', 'ojo', 'pupila', 'pluma', 'huella'];
     function colocar(dt) {
       if (!st.A) return;
       const piso = st.A.piso;
@@ -473,9 +476,9 @@
         poner('huella', k, mundoX(c % P.n), piso + 0.1, mundoZ((c / P.n) | 0), 0, 0, 0, s * apaga, s * apaga, s * apaga);
       }
       const pg = pool.guardian, anchoG = pg ? (pg.size.x + pg.size.z) / 2 : 1, altoG = pg ? pg.size.y : 1;
-      guard.forEach((g, k) => {
-        const oculto = g.vuelta > 0;
-        if (oculto) { esconder('guardian', k); for (const t of ['ojo', 'pupila']) { esconder(t, 2 * k); esconder(t, 2 * k + 1); } return; }
+      for (let k = 0; k < guard.length; k++) {
+        const g = guard[k], oculto = g.vuelta > 0;
+        if (oculto) { esconder('guardian', k); esconder('ojo', 2 * k); esconder('ojo', 2 * k + 1); esconder('pupila', 2 * k); esconder('pupila', 2 * k + 1); continue; }
         const x = mundoX(g.gx), z = mundoZ(g.gz), salto = Math.abs(Math.sin(g.hop * (g.fuera ? 7 : 3.5))) * 0.22, s = 1.0 / anchoG, y = piso + salto;
         const d = g.d >= 0 ? g.d : 2, fx = DX[d], fz = DZ[d] + 0.9, fl = Math.hypot(fx, fz) || 1, ux = fx / fl, uz = fz / fl; // los ojos miran adonde va y un poco a la cámara
         poner('guardian', k, x, y - (pg ? pg.box.min.y * s * 0.9 : 0), z, 0, g.hop * 0.3, 0, s, s * 0.9, s);
@@ -485,8 +488,8 @@
           poner('ojo', 2 * k + o, ex, hy, ez, 0, 0, 0, 1, 1, 1);
           poner('pupila', 2 * k + o, ex + ux * 0.09, hy, ez + uz * 0.09, 0, 0, 0, 1, 1, 1);
         }
-      });
-      subir(['fpalma', 'ftabonuco', 'guardian', 'ojo', 'pupila', 'pluma', 'huella']);
+      }
+      subir(TIPOS_CUADRO);
     }
     function update(dt) {
       if (!st.activo || G.pausa.activa()) return;
@@ -501,12 +504,14 @@
     // ---------- Cámara superior en 3/4: desde el sur, sigue a Vittata; en vertical (móvil) más alta y con más campo ----------
     const CAMS = { ancho: { alto: 12.5, atras: 8, fov: 50, mira: -1.4 }, vertical: { alto: 15.5, atras: 7.5, fov: 60, mira: -2.6 } };
     const cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), asp: 0, prev: '' };
-    function aspecto() { if (cam.asp) return cam.asp; const el = R.renderer && R.renderer.domElement, w = el ? el.clientWidth : window.innerWidth, h = el ? el.clientHeight : window.innerHeight; return h > 0 ? w / h : 1.6; }
+    // El aspecto se mide una vez y se guarda hasta el siguiente resize o giro (como en Flight: clientWidth varias veces por cuadro forzaba reflujos)
+    let aspMedido = 0;
+    function aspecto() { if (cam.asp) return cam.asp; if (aspMedido) return aspMedido; const el = R.renderer && R.renderer.domElement, w = el ? el.clientWidth : window.innerWidth, h = el ? el.clientHeight : window.innerHeight; return h > 0 ? (aspMedido = w / h) : 1.6; }
     const modoCam = () => (aspecto() < 1 ? 'vertical' : 'ancho');
     function camObjetivo(out) { const c = CAMS[modoCam()]; return out.set(S.pos.x, st.A.piso + c.alto, S.pos.z + c.atras); }
     function camMira() { const c = CAMS[modoCam()]; return cam.mira.set(S.pos.x, st.A.piso + 0.6, S.pos.z + c.mira); }
     function reencuadrar() { if (!st.activo) return; const f = CAMS[modoCam()].fov; if (Math.abs(R.camera.fov - f) > 0.01) { R.camera.fov = f; R.camera.updateProjectionMatrix(); } }
-    addEventListener('resize', reencuadrar);
+    addEventListener('resize', () => { aspMedido = 0; reencuadrar(); }); addEventListener('orientationchange', () => { aspMedido = 0; });
     function camFollow(dt) { const m = modoCam(); if (m !== cam.prev) { cam.prev = m; dt = null; } camObjetivo(cam.pos); if (dt == null) R.camera.position.copy(cam.pos); else R.camera.position.lerp(cam.pos, rate(5, dt)); }
     function camDraw(dt) {
       reencuadrar(); R.camera.lookAt(camMira());
@@ -630,7 +635,10 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
     function avisos() {
       const u = st.ui; if (!u) return;
       if (st.fase === 'juego') {
-        if (J.tuto) { const tp = textoPista(); if (tp.paso !== st.tutoPaso) ponerPista(tp); u.barra.style.transform = 'scaleX(' + clamp(1 - J.t / P.tuto, 0, 1).toFixed(3) + ')'; }
+        if (J.tuto) {
+          if (Math.min(2, Math.floor(J.t / (P.tuto / 3))) !== st.tutoPaso) ponerPista(textoPista());
+          const bx = clamp(1 - J.t / P.tuto, 0, 1).toFixed(3); if (bx !== st.barraX) { st.barraX = bx; u.barra.style.transform = 'scaleX(' + bx + ')'; }
+        }
         else if (!u.pista.hidden) u.pista.hidden = true;
       }
       const ay = st.fase === 'juego' && J.pistaT > 0; if (u.ayuda.hidden === ay) u.ayuda.hidden = !ay;

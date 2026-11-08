@@ -175,6 +175,7 @@
       ayuda.marco = new THREE.LineLoop(mg, new THREE.LineBasicMaterial({ color: 0xfff7c8, transparent: true, opacity: 0.95, depthTest: false, fog: false })); ayuda.marco.renderOrder = 8;
       for (const m of [ayuda.sombra, ayuda.ventana, ayuda.destello, ayuda.marco]) { m.frustumCulled = false; m.visible = false; m.castShadow = false; m.receiveShadow = false; m.name = 'flight:ayuda'; raiz.add(m); }
     }
+    const noPasado = q => !q.pasado;
     function colocarAyudas(base) {
       const a = ayuda; if (!a.sombra || !st.A) return;
       const A = st.A, h = Math.max(0, J.y);
@@ -189,7 +190,7 @@
         y0 = Math.max(y0, J.y - 4); y1 = Math.min(y1, J.y + 4);
         d.visible = y1 > y0; d.position.set(xw, base + (y0 + y1) / 2, zw); d.scale.set(rad, Math.max(0.1, y1 - y0), rad); d.material.opacity = 0.65 * (1 - g.t / 0.5) * (0.6 + 0.4 * Math.abs(Math.cos(g.t * 28)));
       } else d.visible = false;
-      const o = obst.find(q => !q.pasado), v = a.ventana;
+      const o = obst.find(noPasado), v = a.ventana;
       a.marco.visible = false;
       if (!o || st.fase === 'fin') { v.visible = false; return; }
       const b0 = o.bajo != null ? o.bajo : P.yMin, b1 = o.alto != null ? o.alto : P.yMax, xw = A.x + (o.x - J.dist) * A.dx, zw = A.z + (o.x - J.dist) * A.dz;
@@ -395,11 +396,12 @@
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 350);
     }
     // Lo que actores.js lee para animar a Vittata (nada más: el rig no se toca)
+    const _fac = { x: 0, z: 1 };
     function sincronizar() {
       const A = st.A; if (!A) return;
       S.pos.x = A.x; S.pos.z = A.z; S.pos.y = superficie(A.x, A.z) + J.y; S.vy = J.vy;
       const g = CAMS[modoEf()].giro, cg = Math.cos(g), sg = Math.sin(g); // gira hacia la cámara (el mar): mira a cámara en diagonal
-      S.facing = { x: A.dx * cg - A.dz * sg, z: A.dz * cg + A.dx * sg };
+      _fac.x = A.dx * cg - A.dz * sg; _fac.z = A.dz * cg + A.dx * sg; S.facing = _fac;
       M.flying = true; M.landing = false; M.takeoff = 0; M.swimming = false; M.grounded = false; M.dashT = 0; M.posado = '';
       const v = st.fase === 'juego' ? J.v : st.fase === 'fin' ? 1 : 3;
       M.vx = S.facing.x * v; M.vz = S.facing.z * v; M.speed = v;
@@ -446,7 +448,8 @@
       const y0 = c.base ? superficie(A.x, A.z) + c.alto : S.pos.y + c.alto * cam.k; // lateral: desde el mar; 3/4: desde la altura de Vittata
       out.set(S.pos.x + nx * c.lado * cam.k + A.dx * c.ad * cam.k, y0 + (c.base ? J.y * c.kY : 0), S.pos.z + nz * c.lado * cam.k + A.dz * c.ad * cam.k);
     }
-    function camFollow(dt) { const me = modoEf() + Math.round(aspecto() * 10); if (me !== cam.prev) { cam.prev = me; dt = null; } // al cambiar de encuadre (aspecto, giro de pantalla) la cámara salta al sitio, sin viaje
+    // Al cambiar de encuadre (aspecto, giro de pantalla) la cámara salta al sitio, sin viaje; modo y aspecto se comparan por separado (sin texto nuevo por cuadro)
+    function camFollow(dt) { const me = modoEf(), ma = Math.round(aspecto() * 10); if (me !== cam.prev || ma !== cam.prevA) { cam.prev = me; cam.prevA = ma; dt = null; }
       camObjetivo(cam.pos); if (dt == null) R.camera.position.copy(cam.pos); else R.camera.position.lerp(cam.pos, rate(6, dt)); }
     function camMira() { const A = st.A, c = CAMS[modoEf()], m = 1; return cam.mira.set(S.pos.x + A.dx * c.mAd * m, superficie(A.x, A.z) + c.mY + J.y * c.mK, S.pos.z + A.dz * c.mAd * m); }
     function camDraw(dt) {

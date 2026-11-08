@@ -7,7 +7,7 @@
    - Solo se carga con la bandera V18 (boot.js); sin ella la versión estable no cambia.
    - Respeta a los encuentros: los duelos/peleas consumen la G en fase de captura y este oyente va en burbuja, así que
      solo dispara en exploración libre. Además comprueba el estado de los módulos v18 antes de actuar.
-   - Las esperas (cooldown) son las de la matriz (las mismas que en el duelo, vía G.v18hab).
+   - Las esperas (cooldown) son las de la etapa de la cotorra (G.v18evo.ajustar, las mismas que en el duelo); sin evolución, las de la matriz.
    Prueba: AV.v18ExplorarTest(). */
 window.AVV18Explorar = function (G) {
   'use strict';
@@ -149,11 +149,20 @@ window.AVV18Explorar = function (G) {
   };
 
   // ---------- Disparo ----------
+  // V18.2: los números de la etapa de la cotorra (G.v18evo.ajustar, los mismos que en el duelo); sin evolución, los de siempre
+  function conEtapa(sp, h) {
+    if (!h) return h;
+    try {
+      const E = G.v18evo; if (!E || !E.ajustar || !E.paraDuelo) return h;
+      const d = E.paraDuelo(sp); if (!d || !d.nivel) return h;
+      return E.ajustar({ especie: sp, nivel: d.nivel, variante: d.variante }, h) || h;
+    } catch (e) { return h; }
+  }
   function disparar(forzarId) {
     if (!forzarId && !libre()) return false;
     const Hx = G.v18hab; if (!Hx) return false;
-    const id = forzarId || Hx.poderDe(especie());
-    const h = Hx.get(id); if (!h) return false;
+    const sp = especie(), id = forzarId || Hx.poderDe(sp);
+    const h = conEtapa(sp, Hx.get(id)); if (!h) return false;
     if (!forzarId && (cd[id] || 0) > 0) return false;
     cd[id] = h.cooldown || 5;
     try { G.emit('v18poder', { id, de: 'jugador', explorando: true, origen: { x: S.pos.x, y: S.pos.y, z: S.pos.z } }); } catch (e) { /* sin oyentes */ }
@@ -261,6 +270,23 @@ window.AVV18Explorar = function (G) {
       // Disparo de cada poder: sin excepciones, con espera puesta
       const ids = ['grito_yunque', 'escudo_plumas', 'quiebro', 'lluvia_semillas', 'ojo_cenote', 'ala_fuerte', 'abanico_colores', 'semilla_rio', 'mirada_piton', 'ojo_sol'];
       for (const id of ids) { cd[id] = 0; const ok = disparar(id); check('Explorando · ' + id + ' dispara y pone su espera', ok && (cd[id] || 0) > 0, 'cd ' + (cd[id] || 0).toFixed(1)); }
+      // V18.2: la espera explorando es la de la etapa (G.v18evo.ajustar), igual que en el duelo
+      if (G.v18evo && G.v18evo.ajustar && G.v18evo.paraDuelo) {
+        const E = G.v18evo, pd = E.paraDuelo, Hx = G.v18hab, mal = [];
+        try {
+          for (const [sp, nv] of [['vittata', 10], ['vittata', 20], ['agilis', 20], ['barbadensis', 30], ['arausiaca', 30]]) {
+            const pid = Hx.poderDe(sp), esp = (E.ajustar({ especie: sp, nivel: nv }, Hx.get(pid)) || {}).cooldown;
+            E.paraDuelo = () => ({ nivel: nv }); cd[pid] = 0; disparar(pid);
+            const sp0 = especie(); if (sp0 !== sp) { const h2 = conEtapa(sp, Hx.get(pid)); if (h2.cooldown !== esp) mal.push(sp + ' ' + nv + ': ' + h2.cooldown + ' ≠ ' + esp); }
+            else if (cd[pid] !== esp) mal.push(sp + ' ' + nv + ': ' + cd[pid] + ' ≠ ' + esp);
+            if (esp === Hx.get(pid).cooldown) mal.push(sp + ' ' + nv + ': la etapa no cambia la espera');
+          }
+          E.paraDuelo = () => ({ nivel: 1 }); const g1 = conEtapa('vittata', Hx.get('grito_yunque'));
+          if (g1 !== Hx.get('grito_yunque')) mal.push('nv 1 cambia el grito');
+        } catch (e) { mal.push(String(e && e.message)); }
+        E.paraDuelo = pd;
+        check('Explorando, la espera del poder es la de la etapa (la misma de G.v18evo.ajustar que en el duelo); en el nivel 1, la de siempre', !mal.length, mal.join(' | ') || 'ok');
+      }
       // Quiebro: impulso lateral que mueve a Vittata
       cd.quiebro = 0; disparar('quiebro');
       const movido = impulso && (Math.abs(impulso.x) > 0 || Math.abs(impulso.z) > 0);
