@@ -548,7 +548,7 @@ window.AVV18Arco = function (G) {
     const e = estado();
     // aviso y bandera (una vez por sesión) mientras la misión no empezó: también desde lejos
     if (e === 'inicio' && !A.avisado && !busy) { A.avisado = true; if (dP > R_AVISO) { toast(TXT.aviso, 5200); ponerGuia(); } }
-    if (!tue.raiz && !tue.cargando && dP < N.R_CARGA) cargarTue();
+    if (!tue.raiz && !tue.cargando && !tue.fallo && dP < N.R_CARGA) cargarTue(); // si el modelo falló no se reintenta (sin errores en bucle)
     else if (tue.raiz && dP > N.R_LIBERA) liberarTue();
     if (!cerca) { soltarModo(); pintarHud(false); return; }
     pasoMaquina(dt);
