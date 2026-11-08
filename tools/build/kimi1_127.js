@@ -13,6 +13,7 @@
    Uso: node tools/build/kimi1_127.js --etiqueta cb-r1 [--cpu 6] [--secs 12] [--packs cap1,ep2,...]
         [--sin-demo] [--calidad bajo] [--iphone] (KIMI-165: iPhone emulado 390×844 dpr 3,
         CPU ×4, touch + UA iOS; pack cap1 solo; la demo en --calidad bajo|medio)
+       [--url-extra escuela=1] (KIMI-318: extra de URL en villas y demo, p. ej. Modo Escuela)
 */
 'use strict';
 const http = require('http');
@@ -37,6 +38,7 @@ const DPR = parseFloat(arg('--dpr', IPHONE ? '3' : '1'));
 const PACKS = arg('--packs', IPHONE ? 'cap1' : 'cap1,ep2,ep3,ep4,ep5,ep6').split(',');
 const CON_DEMO = !process.argv.includes('--sin-demo');
 const CALIDAD = arg('--calidad', 'bajo'); // KIMI-165: la demo se pidió en «bajo» y «medio»
+const URL_EXTRA = arg('--url-extra', ''); // KIMI-318: p. ej. el parámetro del Modo Escuela cuando Kimi 3 lo aterrice
 const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi127'));
 fs.mkdirSync(SALIDA, { recursive: true });
 const LOGF = path.join(SALIDA, `k127_${ETIQUETA}.log`);
@@ -296,7 +298,7 @@ function mataPorPerfil() {
     for (const pack of PACKS) {
       try {
         log(`pack ${pack}: navegando...`);
-        const { ses, cargaListaS, cargaEntrarS } = await paginaFresca(semillaSave(pack), `${origen}/index.html?pack=${pack}&mapa=real&calidad=${CALIDAD}`);
+        const { ses, cargaListaS, cargaEntrarS } = await paginaFresca(semillaSave(pack), `${origen}/index.html?pack=${pack}&mapa=real&calidad=${CALIDAD}${URL_EXTRA ? '&' + URL_EXTRA : ''}`);
         if (!res.head) res.head = await evaluar(cdp, ses, `(() => { try { return (AV.G.build && (AV.G.build.commit || AV.G.build.id)) || 'desconocido'; } catch (e) { return 'desconocido'; } })()`, 10);
         log(`pack ${pack}: listo en ${cargaListaS}s, entrada en ${cargaEntrarS}s; muestreo ${SECS}s en el spawn`);
         const m = JSON.parse(await evaluar(cdp, ses, `(${MUESTRA_JS})(${SECS})`, 120));
@@ -319,7 +321,7 @@ function mataPorPerfil() {
       try {
         log('demo: navegando con ?v18=1...');
         const seedDemo = semillaSave('cap1') + '\n' + SEMILLA_V18_EXTRA;
-        const { ses } = await paginaFresca(seedDemo, `${origen}/index.html?pack=cap1&mapa=real&v18=1&calidad=${CALIDAD}`);
+        const { ses } = await paginaFresca(seedDemo, `${origen}/index.html?pack=cap1&mapa=real&v18=1&calidad=${CALIDAD}${URL_EXTRA ? '&' + URL_EXTRA : ''}`);
         const prep = await evaluar(cdp, ses, PREP_JS, 150);
         if (!/^ok/.test(prep)) throw new Error('prep: ' + prep);
         res.demo = {};
