@@ -1,0 +1,331 @@
+{
+ "tarea": "KIMI-290",
+ "para": "meshopt _hd (validación A/B)",
+ "etiqueta": "aa-r1",
+ "head": "f5a1c033",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "cuandos": "2026-11-08T11:45:24.577Z",
+ "base": "docs/img/kimi287 (KIMI-287)",
+ "pasadas": [
+  {
+   "calidad": "medio",
+   "run": 1,
+   "consola_errores_ini": 0,
+   "preparar": "ok: portada → creador → Empezar (Sol del Mar) → carga 8652 ms (listo) → intro saltada",
+   "statsAsentado": {
+    "fps": 144,
+    "calls": 159,
+    "triangulos": 519165,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 189,
+     "textures": 167
+    },
+    "heapMB": 363,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "statsSpawn": {
+    "fps": 144,
+    "calls": 159,
+    "triangulos": 519165,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 189,
+     "textures": 167
+    },
+    "heapMB": 372.7,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaSpawn": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi290\\k290_medio_r1_spawn.jpg",
+   "vuelo": "y=40.2",
+   "statsAerea": {
+    "fps": 144,
+    "calls": 149,
+    "triangulos": 539179,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 36.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 191,
+     "textures": 167
+    },
+    "heapMB": 356.7,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaAerea": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi290\\k290_medio_r1_aerea.jpg",
+   "consola_errores": 0
+  },
+  {
+   "calidad": "alto",
+   "run": 1,
+   "consola_errores_ini": 0,
+   "preparar": "ok: portada → creador → Empezar (Viento Brillante) → carga 4675 ms (listo) → intro saltada",
+   "statsAsentado": {
+    "fps": 144,
+    "calls": 174,
+    "triangulos": 1056460,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 203,
+     "textures": 167
+    },
+    "heapMB": 367.1,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "statsSpawn": {
+    "fps": 144,
+    "calls": 174,
+    "triangulos": 1056460,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 203,
+     "textures": 167
+    },
+    "heapMB": 364.6,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaSpawn": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi290\\k290_alto_r1_spawn.jpg",
+   "vuelo": "y=40.2",
+   "statsAerea": {
+    "fps": 144,
+    "calls": 145,
+    "triangulos": 2740893,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 36.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 204,
+     "textures": 167
+    },
+    "heapMB": 367.2,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaAerea": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi290\\k290_alto_r1_aerea.jpg",
+   "consola_errores": 0
+  }
+ ],
+ "aa": {
+  "medio_spawn": {
+   "pct": [
+    48.606,
+    18.912,
+    7.481,
+    1.551
+   ],
+   "media": 9.836,
+   "max": 255
+  },
+  "medio_aerea": {
+   "pct": [
+    40.588,
+    8.735,
+    2.883,
+    0.76
+   ],
+   "media": 6.608,
+   "max": 247
+  },
+  "alto_spawn": {
+   "pct": [
+    51.11,
+    13.93,
+    3.85,
+    0.548
+   ],
+   "media": 8.566,
+   "max": 226
+  },
+  "alto_aerea": {
+   "pct": [
+    66.404,
+    15.126,
+    3.524,
+    0.498
+   ],
+   "media": 9.72,
+   "max": 239
+  }
+ },
+ "veredicto": {
+  "medio_spawn_vsr1": {
+   "pct": [
+    30.082,
+    3.202,
+    0.788,
+    0.156
+   ],
+   "media": 3.869,
+   "max": 228,
+   "heat": "k290_diff_medio_spawn_vsr1.jpg"
+  },
+  "medio_spawn_vsr2": {
+   "pct": [
+    46.646,
+    17.01,
+    6.688,
+    1.381
+   ],
+   "media": 9.119,
+   "max": 245,
+   "heat": "k290_diff_medio_spawn_vsr2.jpg"
+  },
+  "medio_aerea_vsr1": {
+   "pct": [
+    20.965,
+    1.722,
+    0.731,
+    0.255
+   ],
+   "media": 3.212,
+   "max": 238,
+   "heat": "k290_diff_medio_aerea_vsr1.jpg"
+  },
+  "medio_aerea_vsr2": {
+   "pct": [
+    38.167,
+    7.186,
+    2.331,
+    0.644
+   ],
+   "media": 6.019,
+   "max": 236,
+   "heat": "k290_diff_medio_aerea_vsr2.jpg"
+  },
+  "alto_spawn_vsr1": {
+   "pct": [
+    40.829,
+    12.057,
+    4.035,
+    0.785
+   ],
+   "media": 7.171,
+   "max": 246,
+   "heat": "k290_diff_alto_spawn_vsr1.jpg"
+  },
+  "alto_spawn_vsr2": {
+   "pct": [
+    54.112,
+    18.892,
+    6.42,
+    0.879
+   ],
+   "media": 10.179,
+   "max": 241,
+   "heat": "k290_diff_alto_spawn_vsr2.jpg"
+  },
+  "alto_aerea_vsr1": {
+   "pct": [
+    48.166,
+    8.686,
+    2.27,
+    0.38
+   ],
+   "media": 6.804,
+   "max": 238,
+   "heat": "k290_diff_alto_aerea_vsr1.jpg"
+  },
+  "alto_aerea_vsr2": {
+   "pct": [
+    66.965,
+    16.256,
+    3.957,
+    0.486
+   ],
+   "media": 9.976,
+   "max": 230,
+   "heat": "k290_diff_alto_aerea_vsr2.jpg"
+  }
+ },
+ "consola": {
+  "errores": 0,
+  "muestras": []
+ },
+ "veredicto_medio": "IDENTICA",
+ "detalle_medio": {
+  "dCalls": 0,
+  "dTrisPct": 0,
+  "dTex": 0,
+  "calls": 159,
+  "tris": 519165,
+  "fps": 144,
+  "heapMB": 372.7,
+  "vista": "aerea",
+  "base": "r1",
+  "pxOk": true,
+  "pct16": 1.722,
+  "pct32": 0.731,
+  "pct64": 0.255,
+  "aa16": 8.735,
+  "aa32": 2.883,
+  "aa64": 0.76
+ },
+ "veredicto_alto": "IDENTICA",
+ "detalle_alto": {
+  "dCalls": 0,
+  "dTrisPct": 0,
+  "dTex": 0,
+  "calls": 174,
+  "tris": 1056460,
+  "fps": 144,
+  "heapMB": 364.6,
+  "vista": "aerea",
+  "base": "r1",
+  "pxOk": true,
+  "pct16": 8.686,
+  "pct32": 2.27,
+  "pct64": 0.38,
+  "aa16": 15.126,
+  "aa32": 3.524,
+  "aa64": 0.498
+ }
+}
