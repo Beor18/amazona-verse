@@ -82,7 +82,8 @@ window.AVV18Minigolf = function (G) {
   const jugTxt = (i, n) => nombre(i) + ': ' + n, nidoJTxt = (i, n) => nombre(i) + (n === 1 ? ': ¡Al nido en 1 golpe!' : ': ¡Al nido en ' + n + ' golpes!');
   const golpesTxt = n => 'Golpes: ' + n, recordTxt = n => 'Récord: ' + n, nidoTxt = n => n === 1 ? '¡Al nido en 1 golpe!' : '¡Al nido en ' + n + ' golpes!';
   // Se lee en cada uso (como duelo2.js): la prueba simula un aparato táctil cambiando matchMedia
-  const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  let _mmF = null, _mm = null; // la consulta se guarda (su .matches está vivo); se rehace si cambian window.matchMedia (las pruebas lo simulan)
+  const tactil = () => { const f = window.matchMedia; if (!f) return false; if (f !== _mmF) { _mmF = f; _mm = matchMedia('(pointer: coarse)'); } return !!(_mm && _mm.matches); };
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2400); } catch (e) { /* sin interfaz */ } };
   const fx = (k, x, y, z, n) => { try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
@@ -252,6 +253,8 @@ window.AVV18Minigolf = function (G) {
   const RANGO_M = { oro: 3, plata: 2, bronce: 1 };
   // Hacia dónde se apunta: hacia donde mira la cámara de siempre (arrastrar ya la gira)
   const dir = () => { const y = G.camara.yaw; return { x: -Math.sin(y), z: -Math.cos(y) }; };
+  const _dir = { x: 0, z: 0 }; // la misma dirección para el cuadro (paso, seguir, mira): sin objeto nuevo; quien la guarde usa dir()
+  const dirF = () => { const y = G.camara.yaw; _dir.x = -Math.sin(y); _dir.z = -Math.cos(y); return _dir; };
   function apuntarA(x, z) { const dx = x - B.x, dz = z - B.z; G.camara.yaw = Math.atan2(-dx, -dz); }
   function otroActivo() {
     for (const o of [G.v18combate, G.v18amenaza, G.v18serpiente, G.v18sapo, G.v18duelo2]) {
@@ -522,8 +525,8 @@ window.AVV18Minigolf = function (G) {
     const mx = B.x - x0, mz = B.z - z0, md = Math.hypot(mx, mz);
     if (md > 1e-5) { _ax.set(mz / md, 0, -mx / md); _q.setFromAxisAngle(_ax, md / R); semilla.quaternion.premultiply(_q); }
     // fuera del área o al agua: vuelve a su sitio con 1 golpe más
-    const q = aLocal(K, B.x, B.z);
-    if (Math.abs(q.u) > L / 2 + 0.4 || Math.abs(q.v) > HW + 0.4 || agua(B.x, B.z) > B.y - R) { fuera(); return; }
+    const qx = B.x - K.x, qz = B.z - K.z, qu = qx * K.ux + qz * K.uz, qv = qx * K.vx + qz * K.vz; // aLocal() sin objeto
+    if (Math.abs(qu) > L / 2 + 0.4 || Math.abs(qv) > HW + 0.4 || agua(B.x, B.z) > B.y - R) { fuera(); return; }
     // al nido
     const dn2 = Math.hypot(P_NIDO.x - B.x, P_NIDO.z - B.z), sp2 = Math.hypot(B.vx, B.vz);
     if (dn2 < NIDO_R * 0.75 && sp2 < CAIDA) { alNido(); return; }
@@ -539,20 +542,21 @@ window.AVV18Minigolf = function (G) {
   // Va a la izquierda de la pantalla (LADO m) y un poco atrás (ATRAS m): la semilla y la mira quedan libres a su derecha.
   // (ancla propia: lo que la física haya movido a la jugadora en este cuadro, p. ej. con el joystick oculto, no se acumula)
   const ancla = { x: 0, z: 0 }, LADO = 1.3, ATRAS = 0.7;
-  const sitioVittata = () => { const d = dir(), atras = A.fase === 'rueda' ? 2.2 : ATRAS; return { x: B.x - d.x * atras + d.z * LADO, z: B.z - d.z * atras - d.x * LADO }; };
+  const _sv = { x: 0, z: 0 }, _fac = { x: 0, z: 1 };
+  const sitioVittata = () => { const d = dirF(), atras = A.fase === 'rueda' ? 2.2 : ATRAS; _sv.x = B.x - d.x * atras + d.z * LADO; _sv.z = B.z - d.z * atras - d.x * LADO; return _sv; };
   function seguir(dt, snap) {
-    const d = dir(), t = sitioVittata();
+    const t = sitioVittata(), d = dirF();
     const tx = t.x, tz = t.z, k = snap ? 1 : 1 - Math.exp(-6 * dt);
     ancla.x += (tx - ancla.x) * k; ancla.z += (tz - ancla.z) * k;
     S.pos.x = ancla.x; S.pos.z = ancla.z; S.pos.y = H(S.pos.x, S.pos.z) + 0.05;
-    S.vy = 0; M.vx = M.vz = 0; M.dashT = 0; S.facing = { x: d.x, z: d.z };
+    S.vy = 0; M.vx = M.vz = 0; M.dashT = 0; _fac.x = d.x; _fac.z = d.z; S.facing = _fac; // vector propio (como tren.js y flight.js): sin objeto por cuadro
     if (M.flying) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } } // el gesto de deslizar arriba (volar) no saca del hoyo
   }
 
   function dibujarMira() {
     const ver = A.fase === 'apuntar';
     puntos.visible = ver; if (!ver) return;
-    const d = dir(), largo = 1.2 + (A.cargando ? A.carga : 0.3) * 5;
+    const d = dirF(), largo = 1.2 + (A.cargando ? A.carga : 0.3) * 5;
     for (let i = 0; i < N_PUNTOS; i++) {
       const s = R + 0.3 + largo * (i + 1) / N_PUNTOS, x = B.x + d.x * s, z = B.z + d.z * s;
       _o.position.set(x, H(x, z) + 0.12, z); _o.quaternion.identity(); _o.scale.setScalar(A.cargando ? 1.25 : 1); _o.updateMatrix(); puntos.setMatrixAt(i, _o.matrix);
@@ -565,11 +569,11 @@ window.AVV18Minigolf = function (G) {
     const m = multi() && A.fase !== 'nada';
     aroTurno.visible = m && !A.hundir && A.fase !== 'nido';
     if (aroTurno.visible) aroTurno.position.set(B.x, H(B.x, B.z) + 0.05, B.z);
-    fantasmas.forEach((g, i) => {
-      const j = m && i !== A.turno ? J[i] : null;
+    for (let i = 0; i < fantasmas.length; i++) { // bucle: sin closure por cuadro
+      const g = fantasmas[i], j = m && i !== A.turno ? J[i] : null;
       g.visible = !!j && !j.dentro && Math.hypot(j.x - B.x, j.z - B.z) > R * 1.5;
       if (g.visible) g.position.set(j.x, H(j.x, j.z) + R * 0.95, j.z);
-    });
+    }
   }
   function paso(dt) {
     if (!K) return;
@@ -745,26 +749,37 @@ window.AVV18Minigolf = function (G) {
     for (const t of ['pointerup', 'pointercancel']) el.addEventListener(t, suelta);
     el.addEventListener('contextmenu', e => e.preventDefault());
     document.body.appendChild(el);
-    hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
+    const qs = {}; // las piezas del HUD son fijas: se buscan una vez (pintar() las pide cada cuadro)
+    hud = { el, q: k => qs[k] || (qs[k] = el.querySelector('[data-k="' + k + '"]')), golpe: el.querySelector('[data-a="golpe"]') };
     return hud;
   }
   const texto = (k, t) => { const e = hud.q(k); if (e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } }; // una vez: el traductor no pelea
+  // Lo último que se pintó: cada cuadro solo se comparan números; el texto y el estilo se escriben solo si cambian.
+  const PK = { golpes: -1, guia: null, record: NaN, turno: NaN, color: NaN, barra: -1, cd: null, grito: null, golpeCd: null, firma: [] };
+  function firmaCambia() { // golpes, dentro/tope y turno de cada jugador, sin map/join por cuadro
+    const f = PK.firma; let cambia = f.length !== J.length + 1;
+    if (cambia) f.length = J.length + 1;
+    for (let i = 0; i < J.length; i++) { const j = J[i], v = (i === A.turno ? A.golpes : j.golpes) * 4 + (j.dentro ? 1 : j.tope ? 2 : 0); if (f[i] !== v) { f[i] = v; cambia = true; } }
+    if (f[J.length] !== A.turno) { f[J.length] = A.turno; cambia = true; }
+    return cambia;
+  }
   function pintar() {
     if (!hud) return;
-    texto('golpes', golpesTxt(A.golpes)); texto('guia', tactil() ? TXT.guiaT : TXT.guia);
-    const r = record(), m = multi(); texto('record', m ? '' : r ? recordTxt(r.mejor) : TXT.sinRecord);
-    const tu = hud.q('turno'); texto('turno', m && A.fase !== 'nido' ? turnoTxt(A.turno) : ''); tu.style.color = m ? COLORES[A.turno] : '';
-    if (m) { // golpes de cada uno (se rehace solo si cambia)
-      const firma = J.map((j, i) => (i === A.turno ? A.golpes : j.golpes) + (j.dentro ? 'd' : j.tope ? 't' : '')).join(',') + '|' + A.turno, js = hud.q('jugs');
-      if (js.dataset.f !== firma) {
-        js.dataset.f = firma;
-        js.innerHTML = J.map((j, i) => `<span class="${i === A.turno ? 'on' : ''}${j.dentro || j.tope ? ' ya' : ''}" style="color:${COLORES[i]}">${jugTxt(i, i === A.turno ? A.golpes : j.golpes)}</span>${j.dentro ? '<b> ✓</b>' : ''}`).join('');
-      }
+    if (PK.golpes !== A.golpes) { PK.golpes = A.golpes; texto('golpes', golpesTxt(A.golpes)); }
+    const tt = tactil(); if (PK.guia !== tt) { PK.guia = tt; texto('guia', tt ? TXT.guiaT : TXT.guia); }
+    const r = record(), m = multi(), kr = m ? -1 : r ? r.mejor : 0;
+    if (PK.record !== kr) { PK.record = kr; texto('record', m ? '' : r ? recordTxt(r.mejor) : TXT.sinRecord); }
+    const kt = m && A.fase !== 'nido' ? A.turno : -1; if (PK.turno !== kt) { PK.turno = kt; texto('turno', kt >= 0 ? turnoTxt(kt) : ''); }
+    const kc = m ? A.turno : -1; if (PK.color !== kc) { PK.color = kc; hud.q('turno').style.color = m ? COLORES[A.turno] : ''; }
+    if (m && firmaCambia()) { // golpes de cada uno (se rehace solo si cambia)
+      const js = hud.q('jugs');
+      js.dataset.f = J.map((j, i) => (i === A.turno ? A.golpes : j.golpes) + (j.dentro ? 'd' : j.tope ? 't' : '')).join(',') + '|' + A.turno;
+      js.innerHTML = J.map((j, i) => `<span class="${i === A.turno ? 'on' : ''}${j.dentro || j.tope ? ' ya' : ''}" style="color:${COLORES[i]}">${jugTxt(i, i === A.turno ? A.golpes : j.golpes)}</span>${j.dentro ? '<b> ✓</b>' : ''}`).join('');
     }
-    hud.q('barra').style.width = Math.round(100 * (A.cargando ? A.carga : 0)) + '%';
-    const bg = hud.q('bgrito'); bg.classList.toggle('cd', A.grito || A.fase !== 'rueda');
-    const t = A.grito ? TXT.usado : TXT.poder; if (bg.dataset.t !== t) { bg.dataset.t = t; bg.textContent = t; }
-    const bgol = hud.el.querySelector('[data-a="golpe"]'); bgol.classList.toggle('cd', A.fase !== 'apuntar');
+    const kb = Math.round(100 * (A.cargando ? A.carga : 0)); if (PK.barra !== kb) { PK.barra = kb; hud.q('barra').style.width = kb + '%'; }
+    const bg = hud.q('bgrito'), cd = A.grito || A.fase !== 'rueda'; if (PK.cd !== cd) { PK.cd = cd; bg.classList.toggle('cd', cd); }
+    if (PK.grito !== A.grito) { PK.grito = A.grito; const t = A.grito ? TXT.usado : TXT.poder; if (bg.dataset.t !== t) { bg.dataset.t = t; bg.textContent = t; } }
+    const gc = A.fase !== 'apuntar'; if (PK.golpeCd !== gc) { PK.golpeCd = gc; hud.golpe.classList.toggle('cd', gc); }
   }
 
   // ---------- En el mundo ----------
@@ -922,6 +937,33 @@ window.AVV18Minigolf = function (G) {
       check('A toda fuerza contra un tronco tampoco lo atraviesa: rebota', umax < TRONCOS[0].u - TRONCO - R + 0.02 && enLocal().u < umax - 0.5, JSON.stringify({ umax: +umax.toFixed(2), tronco: TRONCOS[0].u }));
       const g0 = A.golpes;
       check('El contador suma un golpe por tiro', g0 === 3 && hud.q('golpes').textContent === golpesTxt(3), hud.q('golpes').textContent);
+      // Rendimiento: el paso de cada cuadro no crea objetos de THREE, no usa map/filter/forEach, no busca en el DOM, no cambia
+      // S.facing de objeto y el HUD no se reescribe si nada cambia (espías durante 120 cuadros apuntando y 60 rodando)
+      {
+        colocar(TEE.u, 0); apuntaLocal(TEE.u + 5, 0); correr(0.1);
+        const cuenta = { three: 0, arr: 0, dom: 0 }, sp = { on: false }, origT = {}, origA = {}, qs0 = Element.prototype.querySelector, qsa0 = Element.prototype.querySelectorAll, gid0 = document.getElementById;
+        const mo = new MutationObserver(() => {}); let mut = 0, fac = true, rodando = false;
+        try {
+          for (const k of ['Vector3', 'Vector2', 'Quaternion', 'Matrix4', 'Color', 'Euler', 'Object3D']) { origT[k] = THREE[k]; THREE[k] = new Proxy(origT[k], { construct(t, a, nt) { if (sp.on) cuenta.three++; return Reflect.construct(t, a, nt); } }); }
+          for (const k of ['map', 'filter', 'forEach']) { const o = origA[k] = Array.prototype[k]; Array.prototype[k] = function () { if (sp.on) cuenta.arr++; return o.apply(this, arguments); }; }
+          Element.prototype.querySelector = function () { if (sp.on) cuenta.dom++; return qs0.apply(this, arguments); };
+          Element.prototype.querySelectorAll = function () { if (sp.on) cuenta.dom++; return qsa0.apply(this, arguments); };
+          document.getElementById = function () { if (sp.on) cuenta.dom++; return gid0.apply(this, arguments); };
+          mo.observe(hud.el, { subtree: true, childList: true, attributes: true, characterData: true });
+          const f0 = S.facing; sp.on = true; for (let i = 0; i < 120; i++) paso(1 / 60); sp.on = false; fac = S.facing === f0;
+          mut = mo.takeRecords().length;
+          tirar(0.5); rodando = A.fase === 'rueda'; sp.on = true; for (let i = 0; i < 60 && A.fase === 'rueda'; i++) paso(1 / 60); sp.on = false;
+        } finally {
+          sp.on = false; mo.disconnect();
+          for (const k in origT) THREE[k] = origT[k];
+          for (const k in origA) Array.prototype[k] = origA[k];
+          Element.prototype.querySelector = qs0; Element.prototype.querySelectorAll = qsa0; document.getElementById = gid0;
+        }
+        hastaQuieta();
+        check('Sin asignaciones por cuadro: 0 objetos de THREE, 0 map/filter/forEach, 0 búsquedas en el DOM, S.facing fijo y HUD sin repintar', rodando &&
+          !cuenta.three && !cuenta.arr && !cuenta.dom && fac && !mut, JSON.stringify(Object.assign({ mutaciones: mut, facing: fac, rodando }, cuenta)));
+        A.golpes = g0; pintar();
+      }
       // 4. Fuera del área: vuelve a su sitio con 1 golpe más
       colocar(0, 1.5); const ult = { x: B.x, z: B.z }; apuntaLocal(0, 9); tirar(0.4);
       { const p = aMundo(K, 0, HW + 1.5); B.x = p.x; B.z = p.z; } correr(0.1);
