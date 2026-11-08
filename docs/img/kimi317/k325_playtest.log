@@ -1,0 +1,13 @@
+{
+ "beats": 11,
+ "fricciones": [],
+ "consola": 0,
+ "__errs": 0,
+ "mem": {
+  "calls": 127,
+  "tris": 369467,
+  "geo": 303,
+  "tex": 132,
+  "heap": 148
+ }
+}
