@@ -1,0 +1,29 @@
+KIMI-230 · canario GPU real post-lanzamiento en HEAD b87e015b (corroboración independiente de KIMI-228)
+(KIMI-225 gapo/gapV reactivado en streaming.js + KIMI-226 GLB ceiba/flamboyan re-cuantizados)
+GPU real RX 5700 XT · 1280×800 · arnés tools/build/kimi2_una_bateria.js (página limpia por prueba)
+PC compartida con la sesión paralela kimi3-227 (node vivo, barrido de las 12) → números techo, veredictos válidos
+
+== streamingTest 24/24 · 31 s ==
+· Draw calls de la vista más cargada ≤ 150 → VERDE: kelvin_ruinas_yunque (giro 4.7) = 146 draw calls (71 instancias cerca, 34 _hd, 6 lejos sueltas, 17 zonas fundidas) · alto
+· La cadena base64 no queda en memoria → VERDE (wrappers KIMI-219/226 buenos)
+· Sin fugas: KB 711350→711350 · materiales 34→34 · modelos 147→147
+· Fusión global HD solo con zona HD visible → VERDE
+· En bajo, el spawn no carga la ciudad del tepuy (QA-158 firme) → VERDE
+· atlas sRGB ok · 17/17 _hd listos
+· 0 errores de consola
+
+== movementTest 52/52 · 31 s ==
+· Se posa en una rama: tabonuco distancia 5,42 m, posado fino (ceiba/flamboyan cuantizadas colisionan bien)
+· Cernido sano: deriva 0,15 m en 2 s
+· Posarse: rama gestos=1 red=0 · aterrizarRama 84 cuadros
+· QA-156a2: 0 cuadros fija (red recoloca)
+· 174 edificios sólidos
+· 0 errores de consola
+
+== floraTest 19/19 ==
+· B1 (GPU): cambian_fuera 0/19421 · en_cono 47 (fix test-only KIMI-217 firme; texturas de ceiba/flamboyan sanas)
+· Bosque 7000 árboles · BL1 330 árboles 0 en pared de roca
+· Colisión: 128 troncos sólidos de 128 a <40 m
+· 0 errores de consola
+
+Resultado: 3/3 baterías verdes en HEAD post-lanzamiento · el código que entró tras ea6d42c (KIMI-225 + KIMI-226 + fixes de pruebas de la nube) queda certificado para la build de mañana
