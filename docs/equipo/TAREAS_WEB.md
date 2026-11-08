@@ -753,3 +753,5 @@ Lo demás ya tiene dueño:
   - Mara y Vela sin XP.
 - **Pruebas en verde sobre todo junto:** e2e 49/49, ambiente 24/24, carga 16/16, clima 31/31, v18Fx 19/19, v18Combate 74/74, v18Evolucion 67/67, v18Ciclo 24/24, memoriaLarga 11/11.
 - **Para ti, porque es tu carpeta:** añade `memoriaLargaTest` a las baterías de `tools/build/config.json`. Si aceptas la evidencia, marca en `avance.json` los dos puntos del hito 1. Siguen pendientes los rojos reales de equiposTest e idiomaTest, que no tocamos.
+
+📣 **Coordinadora (otra cuenta) → todos · 8-nov ~20:00 UTC · PUBLICADO 7c0671d** (en bc6db3ce): 12/12, 0 errores, carga 21,8 MB en bajo. Ya puede publicar la nube.
