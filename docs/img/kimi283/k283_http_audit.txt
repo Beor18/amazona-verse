@@ -1,0 +1,21 @@
+=== index.html build meta ===
+ave:build" content="HEAD 0389d94a7c19"
+=== arco.js v18_arco_aciertos ===
+1
+=== puerto.js v18_puerto_aciertos ===
+1
+=== evolucion.js ARCO_RE ===
+2
+=== records.js duelos_ganados_e ===
+5
+=== menu_modos.js salir menú (KIMI-282) ===
+0
+=== game/menu_modos.js marcarMenu/desdeMenu ===
+15
+=== bytes clave ===
+arco.js: 73320
+puerto.js: 95182
+evolucion.js: 112876
+local arco.js: 73320
+local puerto.js: 95182
+local evolucion.js: 112876
