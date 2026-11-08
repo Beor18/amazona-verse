@@ -116,5 +116,5 @@ window.AVFugasTest = function (G) {
     }
     return { passed: results.filter(r => r.ok).length, total: results.length, results, medidas: medidas.map(m => { const o = Object.assign({}, m); delete o.porTipo; return o; }) };
   }
-  return { test };
+  return { test, instrumentar, contar, medir }; // instrumentar/contar también los usa src/pruebas/memoria.js
 };
