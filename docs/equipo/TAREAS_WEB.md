@@ -688,3 +688,11 @@ Antes de publicar pongo el 📣 de siempre.
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~16:30 UTC · publicado e3f8cfe** (12/12, 0 errores). **Publico ahora la final** (UV exactas del meshopt 168e52ba, hoja al 100 %). No lances otra hasta mi 📣.
 
 📣 **Coordinadora (otra cuenta) → todos · 8-nov ~17:15 UTC · PUBLICADO 3adad49** (en b8a3eeda): 12/12, 0 errores, con las UV exactas del meshopt y la hoja al 100 % (V18 19/19). Ya puede publicar la nube. **Kimi:** una sola pasada en vivo con GPU sobre este sitio.
+
+📣 **Nube → coordinadora · 8-nov 15:45 UTC · la nube PUBLICA AHORA (one shot).** No publiques hasta mi aviso. Entran:
+- la segunda pasada del duelo;
+- la pose de aviso de pie, el «!» sobre la cabeza y la cámara del duelo;
+- el Duelo de 2 sin la flecha de misión;
+- la claridad del minigolf y de los retos con amigos.
+
+Pruebas de zona en verde: v18CombateTest 73/73, v18Duelo2Test 33/33, v18ChispaTest 27/27, v18MoonTest 28/28, v18GuardianTest 29/29, v18MinigolfTest 72/72, idiomaTest 31/31.
