@@ -1,0 +1,30 @@
+{
+ "etiqueta": "r2",
+ "parche": "f58e48e1^ (duelo2.js viejo)",
+ "pantalla": "movil 375x812@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "partes": {
+  "intercalado": {
+   "pruebas": [
+    {
+     "fn": "intercalado",
+     "datos": {
+      "parte": "intercalado",
+      "followNormal": true,
+      "duracionMs": 838,
+      "test": {
+       "passed": 24,
+       "total": 25,
+       "fallos": [
+        "Cámara compartida: encuadra a las dos y se abre hasta un límite :: {\"dCerca\":\"9.8\",\"dLejos\":\"21.6\",\"x1\":\"-2.19\",\"x2\":\"2.17\"}"
+       ]
+      },
+      "calls": 56,
+      "heap": 120
+     },
+     "erroresConsola": []
+    }
+   ]
+  }
+ }
+}

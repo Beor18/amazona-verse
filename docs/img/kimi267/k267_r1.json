@@ -1,0 +1,129 @@
+{
+ "etiqueta": "r1",
+ "parche": "HEAD (con f58e48e1)",
+ "pantalla": "movil 375x812@3 cpuX4 (iPhone emulado)",
+ "head": "desconocido",
+ "partes": {
+  "aislado": {
+   "pruebas": [
+    {
+     "fn": "v18Duelo2Test",
+     "datos": {
+      "fn": "v18Duelo2Test",
+      "duracionMs": 1825,
+      "test": {
+       "passed": 24,
+       "total": 25,
+       "fallos": [
+        "Cámara compartida: encuadra a las dos y se abre hasta un límite :: {\"dCerca\":\"9.8\",\"dLejos\":\"21.6\",\"x1\":\"-2.19\",\"x2\":\"2.17\"}"
+       ]
+      },
+      "calls": 57,
+      "heap": 101
+     },
+     "erroresConsola": []
+    }
+   ]
+  },
+  "orden": {
+   "pruebas": [
+    {
+     "fn": "flightTest",
+     "datos": {
+      "fn": "flightTest",
+      "duracionMs": 52726,
+      "test": {
+       "passed": 57,
+       "total": 58,
+       "fallos": [
+        "Móvil vertical (390×844) en el navegador real: Vittata a x −0,3…−0,05 y ≥ 12 % del alto de pantalla, y el siguiente tronco+hueco ya a la vista ANTES del primer toque (14 m) :: listo: V -0.18,0.11 tam 12% hueco 0.68,0.92 · vuelo: V -0.18 tam 12%"
+       ]
+      },
+      "calls": 54,
+      "heap": 95
+     },
+     "erroresConsola": []
+    },
+    {
+     "fn": "riverTest",
+     "datos": {
+      "fn": "riverTest",
+      "duracionMs": 49631,
+      "test": {
+       "passed": 68,
+       "total": 69,
+       "fallos": [
+        "El fantasma es la cotorra translúcida de Retos y sale junto a la canoa :: "
+       ]
+      },
+      "calls": 118,
+      "heap": 102
+     },
+     "erroresConsola": []
+    },
+    {
+     "fn": "mazeTest",
+     "datos": {
+      "fn": "mazeTest",
+      "duracionMs": 10492,
+      "test": {
+       "passed": 51,
+       "total": 51,
+       "fallos": []
+      },
+      "calls": 58,
+      "heap": 104
+     },
+     "erroresConsola": []
+    },
+    {
+     "fn": "trenTest",
+     "datos": {
+      "fn": "trenTest",
+      "duracionMs": 13096,
+      "test": {
+       "passed": 57,
+       "total": 57,
+       "fallos": []
+      },
+      "calls": 69,
+      "heap": 108
+     },
+     "erroresConsola": []
+    },
+    {
+     "fn": "retosTest",
+     "datos": {
+      "fn": "retosTest",
+      "duracionMs": 28785,
+      "test": {
+       "passed": 115,
+       "total": 115,
+       "fallos": []
+      },
+      "calls": 69,
+      "heap": 121
+     },
+     "erroresConsola": []
+    },
+    {
+     "fn": "v18Duelo2Test",
+     "datos": {
+      "fn": "v18Duelo2Test",
+      "duracionMs": 1042,
+      "test": {
+       "passed": 24,
+       "total": 25,
+       "fallos": [
+        "Cámara compartida: encuadra a las dos y se abre hasta un límite :: {\"dCerca\":\"9.8\",\"dLejos\":\"21.6\",\"x1\":\"-2.07\",\"x2\":\"2.05\"}"
+       ]
+      },
+      "calls": 69,
+      "heap": 125
+     },
+     "erroresConsola": []
+    }
+   ]
+  }
+ }
+}

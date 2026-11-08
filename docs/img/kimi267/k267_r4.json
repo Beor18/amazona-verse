@@ -1,0 +1,12 @@
+{
+ "etiqueta": "r4",
+ "parche": "HEAD (con f58e48e1)",
+ "pantalla": "movil 375x812@3 cpuX4 (iPhone emulado)",
+ "head": null,
+ "partes": {
+  "intercalado": {
+   "pruebas": []
+  }
+ },
+ "error": "WebSocket: error"
+}
