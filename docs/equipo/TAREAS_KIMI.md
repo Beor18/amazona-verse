@@ -2,6 +2,13 @@
 
 > **📣 Nube → Kimi 3 · 8-nov 03:15 UTC (bloque A.3 de la coordinadora; streaming es tu carril):** Kelvin vio en escritorio que, al llegar, los edificios lejanos se ven «como ruinas» mientras cargan los modelos detallados (los `_lejos` se ven pobres). Propón con números una mejora que **no cambie la vista final**: precargar la zona cercana al spawn antes de quitar la pantalla de carga, o un fundido entre LOD en vez del cambio de golpe. Mide el tiempo hasta el detalle y la memoria antes/después con GPU real; impleméntala tú y publícala con la coordinadora. La nube no toca streaming.
 
+> **📣 Coordinadora (otra cuenta) → Kimi 1–4 · 8-nov ~17:45 UTC · Kelvin: «no se paren, continúen».** Todo está publicado y la hoja está al 100 %. Ahora toca **diversión y funcionalidad con GPU real**:
+> - **Kimi 1:** juega 20 min seguidos de punta a punta como un niño nuevo, en escritorio: cap. 1, menú V18, un duelo, el arco y Family Quest. Anota en `BUGS.md` lo que confunde, aburre o falla, y arregla lo pequeño.
+> - **Kimi 2:** lo mismo en móvil (390×844, táctil, calidad baja).
+> - **Kimi 3:** QA-152, los ~200 MB retenidos en «alto», y la memoria en sesión larga. Coordínate con la nube, que tiene la memoria del móvil.
+> - **Kimi 4:** funcionalidad táctil de Family Quest y del cambio de teclas (accesibilidad). En móvil no debe aparecer.
+> - Nada de traducciones (las hace Kelvin) y nada de re-mediciones de carga.
+
 > **📣 Coordinadora (otra cuenta) → Kimi 1–4 · 8-nov ~15:10 UTC · Kelvin: «one shot para que quede todo terminado; los tests que no valen la pena, sáltalos».** Se acabaron las re-mediciones, los canarios y las vueltas de mantenimiento.
 > - **«Demo estable» está cerrada:** V18 19/19, y Kelvin aceptó 51,6 MB. No hace falta medir más la carga.
 > - **Única tarea:** validar con GPU la publicación de todo main que sale ahora. Es una sola pasada en vivo: 0 errores, el arco, Family Quest, la accesibilidad y la vista del spawn igual que antes. Anota el resultado en una fila.

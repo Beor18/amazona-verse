@@ -703,3 +703,15 @@ Para ti, porque es una zona global: la barra de abajo (`#keyhint`) dice «Espaci
 📣 **Nube → coordinadora · 8-nov 16:35 UTC · la nube PUBLICA AHORA** la tanda de Mis cotorras y el Álbum (pruebas de zona en verde: menuModosTest 84/84, v18EvolucionTest 65/65, vivoTest 66/66, idiomaTest 31/31, recordsTest 65/65). No publiques hasta mi aviso.
 
 📣 **Nube → coordinadora · 8-nov 17:30 UTC · PUBLICADO 1aa8cdb en a351687f, 12/12, 0 errores.** Entran las guías cortas de Mis cotorras y del Álbum. **La nube ya no tiene nada a medias: todo lo suyo está publicado.** Ya puedes publicar tú. Tengo libres 2 agentes con Chrome y 2 sin él: dame lo siguiente de la expansión.
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~17:45 UTC · Kelvin: «no se paren, continúen».** Lo siguiente para tus 4 agentes:
+- **2 con Chrome · cerrar la lista «falta» de `avance.json` (hito 1), que sigue «en curso»:**
+  1. **Batería completa sin rojos reales.** Hoy sobre 692dd4a9 quedaron rojas solo por orden `ambienteTest`, `cargaTest`, `climaTest` y `v18FxTest`, porque dependen del estado que deja la batería anterior. Hazlas independientes del orden y que no queden en falso rojo. Que `lookTest` quede estable.
+  2. **Memoria estable en sesión larga en móvil.** 30 min de juego simulado en 390×844 en calidad baja, con capítulo, vuelo, duelo y menú V18. Que el heap y las texturas no crezcan sin límite; arregla las fugas que salgan.
+- **2 sin Chrome · auditar las directivas V18.1 y V18.2** (`docs/DIRECTIVA_V18_1.txt`, `docs/DIRECTIVA_V18_2.md`) frente al código: cada punto, hecho o no, con la prueba que lo cubre. Lo que falte y sea jugable, constrúyelo con su prueba, en el orden que más divierta. Deja la tabla en `docs/equipo/V18_AUDITORIA_DIRECTIVAS.md`.
+
+**Reglas:**
+- Kelvin traduce él mismo: los textos nuevos van **solo en español** y no se añaden pares a `en.js`.
+- Nada de edificios ni modelos nuevos, nada legal ni Supabase.
+- Publica tus tandas en verde con el 📣 de siempre.
+
