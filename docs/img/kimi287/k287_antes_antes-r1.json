@@ -1,0 +1,328 @@
+{
+ "tarea": "KIMI-287",
+ "para": "meshopt _hd (antes)",
+ "etiqueta": "antes-r1",
+ "head": "9496bf3c",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "cuandos": "2026-11-08T11:18:02.142Z",
+ "pasadas": [
+  {
+   "calidad": "medio",
+   "run": 1,
+   "consola_errores_ini": 0,
+   "preparar": "ok: portada → creador → Empezar (Luna Verde) → carga 10096 ms (listo) → intro saltada",
+   "statsAsentado": {
+    "fps": 144,
+    "calls": 159,
+    "triangulos": 519165,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 190,
+     "textures": 167
+    },
+    "heapMB": 357.5,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "statsSpawn": {
+    "fps": 144,
+    "calls": 159,
+    "triangulos": 519165,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 190,
+     "textures": 167
+    },
+    "heapMB": 367.6,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaSpawn": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi287\\k287_antes_medio_r1_spawn.jpg",
+   "vuelo": "y=40.2",
+   "statsAerea": {
+    "fps": 144,
+    "calls": 149,
+    "triangulos": 539179,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 36.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 192,
+     "textures": 167
+    },
+    "heapMB": 353.9,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaAerea": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi287\\k287_antes_medio_r1_aerea.jpg",
+   "consola_errores": 0
+  },
+  {
+   "calidad": "medio",
+   "run": 2,
+   "consola_errores_ini": 0,
+   "preparar": "ok: portada → creador → Empezar (Ola Alegre) → carga 5555 ms (listo) → intro saltada",
+   "statsAsentado": {
+    "fps": 144,
+    "calls": 159,
+    "triangulos": 519165,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 203,
+     "textures": 167
+    },
+    "heapMB": 372.8,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "statsSpawn": {
+    "fps": 144,
+    "calls": 159,
+    "triangulos": 519165,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 203,
+     "textures": 167
+    },
+    "heapMB": 358,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaSpawn": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi287\\k287_antes_medio_r2_spawn.jpg",
+   "vuelo": "y=40.2",
+   "statsAerea": {
+    "fps": 144,
+    "calls": 149,
+    "triangulos": 539179,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 36.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 205,
+     "textures": 167
+    },
+    "heapMB": 375,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaAerea": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi287\\k287_antes_medio_r2_aerea.jpg",
+   "consola_errores": 0
+  },
+  {
+   "calidad": "alto",
+   "run": 1,
+   "consola_errores_ini": 0,
+   "preparar": "ok: portada → creador → Empezar (Flor del Mar) → carga 6853 ms (listo)",
+   "statsAsentado": {
+    "fps": 144,
+    "calls": 174,
+    "triangulos": 1056460,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 206,
+     "textures": 167
+    },
+    "heapMB": 348.5,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "statsSpawn": {
+    "fps": 144,
+    "calls": 174,
+    "triangulos": 1056460,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 206,
+     "textures": 167
+    },
+    "heapMB": 348.6,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 8,
+     "zonasCerca": 6
+    }
+   },
+   "capturaSpawn": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi287\\k287_antes_alto_r1_spawn.jpg",
+   "vuelo": "y=40.2",
+   "statsAerea": {
+    "fps": 144,
+    "calls": 145,
+    "triangulos": 2740893,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 36.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 207,
+     "textures": 167
+    },
+    "heapMB": 357.5,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaAerea": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi287\\k287_antes_alto_r1_aerea.jpg",
+   "consola_errores": 0
+  },
+  {
+   "calidad": "alto",
+   "run": 2,
+   "consola_errores_ini": 0,
+   "preparar": "ok: portada → creador → Empezar (Coral del Yunque) → carga 4100 ms (listo) → intro saltada",
+   "statsAsentado": {
+    "fps": 112,
+    "calls": 174,
+    "triangulos": 1055262,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 199,
+     "textures": 167
+    },
+    "heapMB": 359,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "statsSpawn": {
+    "fps": 118,
+    "calls": 174,
+    "triangulos": 1055262,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 199,
+     "textures": 167
+    },
+    "heapMB": 368.6,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaSpawn": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi287\\k287_antes_alto_r2_spawn.jpg",
+   "vuelo": "y=40.2",
+   "statsAerea": {
+    "fps": 90,
+    "calls": 144,
+    "triangulos": 2740111,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 36.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 200,
+     "textures": 167
+    },
+    "heapMB": 361.1,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaAerea": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi287\\k287_antes_alto_r2_aerea.jpg",
+   "consola_errores": 0
+  }
+ ],
+ "control": {
+  "medio_spawn": {
+   "px": 699928,
+   "pct": 48.606,
+   "media": 9.836
+  },
+  "medio_aerea": {
+   "px": 584474,
+   "pct": 40.588,
+   "media": 6.608
+  },
+  "alto_spawn": {
+   "px": 735986,
+   "pct": 51.11,
+   "media": 8.566
+  },
+  "alto_aerea": {
+   "px": 956222,
+   "pct": 66.404,
+   "media": 9.72
+  }
+ },
+ "consola": {
+  "errores": 0,
+  "muestras": []
+ }
+}
