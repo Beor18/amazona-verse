@@ -370,7 +370,7 @@
       if (J.nuevo) f.mejor = J.puntos;
       J.mejor = f.mejor || 0; J.medalla = medallaPuntos(J.puntos);
       guardarRec(rec);
-      G.emit('retosResultado', { modo: 'rio_rush', puntos: J.puntos, metros: Math.round(J.metros), racimos: J.racimos, llego: como === 'meta', prueba: claveRec !== ALMACEN });
+      G.emit('retosResultado', { modo: 'rio_rush', puntos: J.puntos, metros: Math.round(J.metros), racimos: J.racimos, llego: como === 'meta', nuevo: J.nuevo, medalla: J.medalla, prueba: claveRec !== ALMACEN });
       if (J.nuevo && como !== 'meta') sonar('unlock');
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 450);
     }
@@ -387,7 +387,7 @@
       guardarRec(rec);
       if (J.nuevo && st.grab && st.grab.m.length >= 6) { st.grab.m.push(J.s, J.lado, 0); guardarFantasma(st.grab.m, J.ms); }
       st.grab = null;
-      G.emit('retosResultado', { modo: 'rio_rush', reloj: true, ms: J.ms, medalla: m, choques: J.choques, racimos: J.racimos, llego: true, fantasma: st.modo === 'fantasma', prueba: claveRec !== ALMACEN });
+      G.emit('retosResultado', { modo: 'rio_rush', reloj: true, ms: J.ms, medalla: m, choques: J.choques, racimos: J.racimos, llego: true, fantasma: st.modo === 'fantasma', nuevo: J.nuevo, prueba: claveRec !== ALMACEN });
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 450);
     }
 

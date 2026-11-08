@@ -55,8 +55,11 @@ window.AVV18Evolucion = function (G) {
      unas 10 sesiones). Lo de una vez de la 1.ª sesión pesa más; lo repetible del día pesa menos para que nada se pueda farmear.
      Arco, Muelle, Puerto, Chispa, Moon y Guardián pagan sus propios números con dar() (120, 100, 150 y 30). */
   const XP = { gana: 40, pierde: 15, ganaEspecie: 60, especie: 30, material: 5, puente: 120, sombra: 80, serpiente: 60, sapo: 60, retoDos: 60, golfNido: 15, golfRecord: 15, desafio: 50,
-    golfCompleto: 30, golfOro: 30, perfecta: 30, tresDuelos: 40 };
-  const TOPE = { duelosDia: 160, repetibleDia: 300, golfDia: 3, mitadDesde: 3, pierdeQuitadas: 1, pierdeDura: 20 };
+    golfCompleto: 30, golfOro: 30, perfecta: 30, tresDuelos: 40, mision: 40, carrera: 10, carreraRecord: 10 };
+  // §10 (8-nov): las misiones del capítulo 1 (misiones.js) pagan una vez; Amazona Flight, River Rush y el tren pagan por terminar
+  // (3 al día por carrera) y un extra por récord u oro (2 al día por carrera), todo dentro del tope de lo repetible
+  const TOPE = { duelosDia: 160, repetibleDia: 300, golfDia: 3, mitadDesde: 3, pierdeQuitadas: 1, pierdeDura: 20, carrerasDia: 3, recordDia: 2 };
+  const CARRERAS = { flight: 1, rio_rush: 1, tren: 1 };
   // Etapas de Vittata (Grito del Yunque). La 1 son exactamente los números de habilidades.js (no se toca nada).
   const ETAPAS = [
     { desde: 1, id: 'grito_yunque', nombre: 'Grito del Yunque', alcance: 7, cono: 0.82, vel: 16, empuje: 15, interrumpe: 1.1, coste: 35, cooldown: 5,
@@ -312,6 +315,9 @@ window.AVV18Evolucion = function (G) {
     for (const k of Object.keys(m)) if (m[k] === 'recogida' && !ARCO_RE.test(k)) out.push(['mat:' + k, XP.material]);
     for (const k of Object.keys(ot)) if (/^duelo_gana_/.test(k)) out.push(['gana:' + k.slice(11), XP.ganaEspecie]);
     for (const sp of Object.keys(d.especies || {})) if (sp !== 'vittata' && sp !== pf && rango(d.especies[sp]) >= rango('seleccionable')) out.push(['esp:' + sp, XP.especie]);
+    // §10: cada misión del capítulo 1 terminada (G.S.missions), una sola vez aunque se empiece otra partida
+    const ms = (G.S && G.S.missions) || {};
+    if (G.pack && G.pack.id === 'cap1') for (const mi of G.pack.misiones || []) if (mi && mi.id && ms[mi.id]) out.push(['mis:' + mi.id, XP.mision]);
     return out;
   }
   function revisarHitos(silencio) {
@@ -710,6 +716,15 @@ window.AVV18Evolucion = function (G) {
     if (mudo || !ev || ev.tipo !== 'nido') return;
     dar(V.seleccionada() || perfil(), XP.golfNido + (ev.nuevo ? XP.golfRecord : 0), 'golf', { repetible: true, cuenta: 'golf', max: TOPE.golfDia });
   });
+  // §10: carreras del capítulo 1 (gancho retosResultado de flight.js, river_rush.js y tren.js). Las partidas de prueba no pagan
+  function carrera(ev) {
+    if (!ev || ev.prueba || !CARRERAS[ev.modo] || !(ev.llego || ev.puntos > 0)) return 0;
+    const k = 'carrera:' + ev.modo, kr = 'carreraRec:' + ev.modo; let rec = 0;
+    if (ev.nuevo || ev.medalla === 'oro') V.cambiarEvo(e0 => { const d = dia(sanear(e0)); const c = d.por[kr] || 0; if ((d.por[k] || 0) < TOPE.carrerasDia && c < TOPE.recordDia) { d.por[kr] = c + 1; rec = XP.carreraRecord; } });
+    return dar(V.seleccionada() || perfil(), XP.carrera + rec, 'carrera', { repetible: true, cuenta: k, max: TOPE.carrerasDia });
+  }
+  G.on('retosResultado', ev => { if (!mudo) carrera(ev); });
+  G.on('aprendizaje', ev => { if (!mudo && ev && ev.tipo === 'mision') revisarHitos(); });
   G.on('v18', ev => {
     if (mudo || !ev || ev.tipo === 'evo') return;
     if (ev.tipo === 'mundo' || ev.tipo === 'recompensa' || ev.tipo === 'especie') { revisarHitos(); revisarAlianza(); }
@@ -888,6 +903,33 @@ window.AVV18Evolucion = function (G) {
         quitarCarta(); mudo = false;
         check('Ritmo (sesión simulada con todas las fuentes): nivel 10-12 tras la 1.ª sesión, 20 en la 2.ª o la 3.ª (no antes), 30 no antes de la 8.ª sesión',
           ses[0] >= 10 && ses[0] <= 12 && ses[1] < 20 && ses[2] >= 20 && ses[2] <= 24 && (s30 === 0 || s30 >= 8) && ecoS2 === 'desbloqueada', 'niveles por sesión ' + ses.join(' → ') + ' · nivel 30 en la sesión ' + (s30 || '>16') + ' · Eco Protector ' + ecoS2); }
+      // §10: carreras (Flight, River Rush, tren) y misiones del capítulo 1
+      { reset(); mudo = true; const xp = () => info('vittata').xp, corre = ev => { const a = xp(); carrera(ev); return xp() - a; };
+        const serie = () => [corre({ modo: 'flight', puntos: 12 }), corre({ modo: 'flight', puntos: 20, nuevo: true }), corre({ modo: 'flight', puntos: 5 }), corre({ modo: 'flight', puntos: 30, nuevo: true }),
+          corre({ modo: 'rio_rush', puntos: 300, medalla: 'oro', llego: true }), corre({ modo: 'rio_rush', reloj: true, ms: 40000, llego: true }), corre({ modo: 'tren', puntos: 8 }),
+          corre({ modo: 'tren', puntos: 50, nuevo: true, prueba: true }), corre({ modo: 'flight', puntos: 0 }), corre({ modo: 'rescate', llego: true, ms: 9000 })];
+        hoyFijo = 'carreras-1'; const s1 = serie();
+        check('§10 Carreras: terminar Flight, River Rush o el tren paga 10 y un récord u oro +10; la 4.ª del día = 0; prueba, 0 puntos u otro modo = 0',
+          s1.join(',') === '10,20,10,0,20,10,10,0,0,0', s1.join(','));
+        hoyFijo = 'carreras-2'; const s2 = serie();
+        check('§10 Carreras sin azar: el mismo día con las mismas carreras paga exactamente lo mismo', s2.join(',') === s1.join(','), s2.join(','));
+        hoyFijo = 'carreras-3'; const rr = [1, 2, 3].map(() => corre({ modo: 'tren', puntos: 9, nuevo: true }));
+        check('§10 Carreras: el extra por récord, como máximo 2 al día por carrera (20, 20, 10)', rr.join(',') === '20,20,10', rr.join(','));
+        hoyFijo = 'carreras-4'; P.cambiarEvo(e => { dia(sanear(e)).por.total = TOPE.repetibleDia - 5; }); const tp = corre({ modo: 'flight', puntos: 9, nuevo: true }), tp2 = corre({ modo: 'tren', puntos: 9 });
+        check('§10 Carreras dentro del tope global de lo repetible (quedan 5: paga 5 y luego 0)', tp === 5 && tp2 === 0, [tp, tp2].join(','));
+        const hist = P.seleccionar('martinicana'), selH = P.seleccionada(); hoyFijo = 'carreras-5'; const ah = info('vittata').xp; carrera({ modo: 'tren', puntos: 9 });
+        check('§10 Carreras: Mara y Vela no se eligen ni ganan XP (lo cobra la cotorra elegida)', selH !== 'martinicana' && !E().esp.martinicana && !E().esp.violacea && info('vittata').xp - ah === 10, [hist, selH, info('vittata').xp - ah].join(','));
+        const SS = G.S, ms0 = SS && SS.missions ? Object.assign({}, SS.missions) : null, ids = ((G.pack && G.pack.misiones) || []).map(m => m.id);
+        if (SS && ms0 && G.pack && G.pack.id === 'cap1' && ids.length) {
+          for (const id of ids) delete SS.missions[id];
+          reset(); mudo = true; const m0 = xp(); SS.missions[ids[0]] = true; const p1 = revisarHitos(true), p2 = revisarHitos(true);
+          for (const id of ids) delete SS.missions[id]; const p3 = revisarHitos(true); SS.missions[ids[0]] = true; const p4 = revisarHitos(true); // partida nueva: no vuelve a pagar
+          for (const id of ids) SS.missions[id] = true; const p5 = revisarHitos(true), p6 = revisarHitos(true);
+          check('§10 Misiones del capítulo 1: cada una paga 40 una sola vez (otra vez o en partida nueva = 0); todas: ' + ids.length + ' × 40',
+            p1 === 40 && p2 === 0 && p3 === 0 && p4 === 0 && p5 === 40 * (ids.length - 1) && p6 === 0 && xp() - m0 === 40 * ids.length, [p1, p2, p3, p4, p5, p6].join(','));
+          for (const id of Object.keys(SS.missions)) if (!(id in ms0)) delete SS.missions[id]; Object.assign(SS.missions, ms0);
+        } else check('§10 Misiones del capítulo 1 pagan 40 una vez', false, 'sin pack cap1 o sin misiones');
+        mudo = false; }
       oye = true;
 
       // 5. Etapas: ajustar() devuelve los números de cada etapa, sin nivel devuelve el mismo objeto, topes en todas

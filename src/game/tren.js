@@ -478,7 +478,7 @@
       if (J.nuevo) f.mejor = J.puntos;
       J.mejor = f.mejor || 0;
       guardarRec(rec);
-      G.emit('retosResultado', { modo: 'tren', puntos: J.puntos, prueba: claveRec !== ALMACEN });
+      G.emit('retosResultado', { modo: 'tren', puntos: J.puntos, nuevo: J.nuevo, prueba: claveRec !== ALMACEN });
       sonar(J.nuevo ? 'unlock' : 'tick');
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : P.finPanel * 1000);
     }
