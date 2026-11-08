@@ -1,0 +1,36 @@
+{
+ "head": "592c95aa",
+ "etiqueta": "r2",
+ "fecha": "2026-11-08T12:23:48.308Z",
+ "stats": {
+  "base": {
+   "fps": {
+    "fpsMed": 122,
+    "fpsP95": 76.3,
+    "cuadros": 352
+   },
+   "calls": 155,
+   "tris": 1073211,
+   "geo": 232,
+   "tex": 176,
+   "prog": 86
+  },
+  "duelo": {
+   "fps": {
+    "fpsMed": 142.9,
+    "fpsP95": 117.6,
+    "cuadros": 1432
+   },
+   "calls": 105,
+   "tris": 526742,
+   "geo": 243,
+   "tex": 177,
+   "prog": 88
+  },
+  "heapMB": 409.2,
+  "fase": "fin",
+  "plumasRival": 3,
+  "plumasJ": 0,
+  "errores": 0
+ }
+}
