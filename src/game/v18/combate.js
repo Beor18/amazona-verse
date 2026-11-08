@@ -682,7 +682,8 @@ window.AVV18Combate = function (G) {
   }
   function saltarEntreno() { if (!ent) return false; ponerMundo('entreno_duelo', 1); ent = null; return iniciar({ sinEntreno: true }); }
   function pasoEntreno(dt) {
-    C.r.plumas = C.r.plumasMax; C.j.plumas = C.j.plumasMax; C.j.energia = C.j.energiaMax; C.r.mov.t = 0; // quieta y sin perder nada
+    C.r.plumas = C.r.plumasMax; C.j.plumas = C.j.plumasMax; C.j.energia = C.j.energiaMax;
+    C.r.mov.t = 1; C.r.mov.x = C.r.mov.z = 0; // quieta (un «movimiento» de velocidad 0: no se acerca; los empujones sí cuentan) y sin perder nada
     if (ent.fin > 0) { ent.fin -= dt; if (ent.fin <= 0) { ent = null; iniciar({ sinEntreno: true }); } }
   }
   function alUsar(id, r) {

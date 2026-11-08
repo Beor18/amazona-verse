@@ -709,7 +709,7 @@ window.AVV18Duelo2 = function (G) {
         const lejosOk = !ent.j1 && hud.q('centro').textContent === TXT.masCerca;
         limpio(); cerca(1.5); toque('e', 'KeyE');
         const solo1 = ent.j1 && !ent.j2 && ent.paso === 0 && hud.q('entJ1').classList.contains('ya');
-        D.j1.inv = 0; toque('.', 'Period');
+        D.j1.inv = 0; D.j2.mareo = 0; D.j2.inv = 0; toque('.', 'Period'); // el aletazo del J1 marea un momento al J2: aquí no se espera
         correr(0.1);
         check('Entreno de 2: el paso avanza cuando las dos dan su aletazo (de lejos no cuenta) y nadie pierde plumas', lejosOk && solo1 && ent.paso === 1 && D.j1.plumas === PLUMAS && D.j2.plumas === PLUMAS &&
           hud.q('entK1').textContent === 'F' && hud.q('entK2').textContent === ',', JSON.stringify({ lejosOk, solo1, paso: ent.paso }));
@@ -724,16 +724,16 @@ window.AVV18Duelo2 = function (G) {
         pd(hud.q('como')); const porBoton = !!ent && D.fase === 'lucha';
         pd(hud.el.querySelector('[data-a="saltarEnt"]'));
         check('Entreno de 2: «¿Cómo se pelea?» lo abre y «Saltar entreno» va al duelo', porBoton && !ent && D.fase === 'cuenta');
-        iniciar({ sinCuenta: true, forzar: true }); limpio(); cerca(1.5);
+        iniciar({ sinCuenta: true, forzar: true }); limpio(); cerca(7);
         const kb = k => Array.from(hud.q(k).querySelectorAll('kbd')).map(e => e.textContent).join('');
         usar(D.j2, 'semilla'); paso(0.05);
         const c2 = hud.q('ch2').querySelector('[data-a="semilla"]');
         check('Duelo de 2: chips con la tecla de cada jugador (E F G · . , -); el listo brilla y el que recarga lo enseña', kb('ch1') === 'EFG' && kb('ch2') === '.,-' &&
           hud.q('ch1').querySelector('[data-a="golpe_ala"]').classList.contains('listo') && c2.classList.contains('cd') && (parseFloat(c2.style.getPropertyValue('--cd')) || 0) > 50, kb('ch1') + ' / ' + kb('ch2') + ' / ' + c2.className);
-        limpio(); cerca(1.5); for (const P of Object.values(pistas)) { P.t = 0; P.dom = {}; } D.j1.energia = D.j2.energia = 50; paso(0.05);
+        quitarBalas(); limpio(); cerca(1.5); for (const P of Object.values(pistas)) { P.t = 0; P.dom = {}; } D.j1.energia = D.j2.energia = 50; paso(0.05);
         const pc1 = hud.q('pista1').hidden ? '' : hud.q('pista1').textContent, pc2 = hud.q('pista2').hidden ? '' : hud.q('pista2').textContent;
         D.j1.plumas = PLUMAS - 1; paso(0.05); const pg1 = hud.q('pista1').textContent;
-        check('Duelo de 2: pistas por jugador con su tecla («¡Cerca! Aletazo (E)» / «(.)») y la del primer golpe', pc1 === TXT.pista1.cerca && pc2 === TXT.pista2.cerca && pg1 === TXT.pista1.golpe, JSON.stringify({ pc1, pc2, pg1 }));
+        check('Duelo de 2: pistas por jugador con su tecla («¡Cerca! Aletazo (E)» / «(.)») y la del primer golpe', pc1 === TXT.pista1.cerca && pc2 === TXT.pista2.cerca && pg1 === TXT.pista1.golpe, JSON.stringify({ pc2, pg1, pc1, j2: { m: D.j2.mareo, pl: D.j2.plumas, cd: D.j2.cd, e: D.j2.energia }, ent: !!ent }));
         salir();
       }
       // 3. Entradas independientes: el J2 se mueve con flechas, el J1 no
