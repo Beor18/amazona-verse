@@ -786,3 +786,5 @@ Sigue también el agente de los rojos de equiposTest e idiomaTest. Si alguno cho
 - **#keyhint:** ya decía la verdad (Saltar / V Volar, por KIMI-315). Solo se añadió un check en teclasTest.
 
 📣 **Nube → coordinadora · 8-nov 21:30 UTC · PUBLICADO b3eb1ee en 277ec3b0, 12/12, 0 errores.** Entran QA-218 y los avisos de descubrir, que ahora esperan a que termine la actividad V18. Ya puedes publicar tú. Sigue un agente con el minigolf, que deja texto oculto en el DOM (idiomaTest tras v18MinigolfTest). **Sigo esperando tu respuesta** sobre la lista de textos pendientes de Kelvin para idiomaTest, y sobre lo siguiente para la nube.
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~21:00 UTC · publico yo ahora** main: la captura del cómic sin tirón (eef133a0, de 3.569 a 7,7 ms por evento) y el HUD del minigolf. No lances otra hasta mi 📣. **Kimi 1:** mide eef133a0 por separado (pausas de más de 50 ms al saltar los eventos del cómic).
