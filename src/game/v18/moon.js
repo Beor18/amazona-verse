@@ -50,8 +50,13 @@ window.AVV18Moon = function (G) {
     xp: 'Tu aventura cuenta: +{} XP para tu cotorra.',
     lejos: 'Te alejaste del claro: el entrenamiento con Moon queda para otro rato.',
     alto: 'El entreno es en el suelo: baja a entrenar la esquiva de verdad.',
-    esquiva: 'Esquivar', esquivaA: 'Acción: esquivar con un impulso'
+    esquiva: 'Esquivar', esquivaA: 'Acción: esquivar con un impulso',
+    // Cómo se juega, sin leer párrafos (Kelvin 8-nov, como en el duelo): meta siempre a la vista, teclas, pistas y resultado claro
+    metaTxt: 'Esquiva las bolas de luz: 3 toques y se acaba', kMover: 'Moverte', kImpulso: 'Impulso', tImpulso: 'Impulso',
+    pViene: '¡Ahí viene! Apártate de lado', pToque: '¡Te tocó! Muévete de lado o pulsa {} para un impulso', pToqueT: '¡Te tocó! Muévete de lado o pulsa Impulso',
+    fGana: '¡Entreno superado!', fPierde: '¡Tres toques!', fToques: 'Toques: {} de 3', fOtra: 'Otra vez: no te quedes quieta'
   };
+  const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2600); } catch (e) { /* sin interfaz */ } };
   const fx = (k, x, y, z, n) => { try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
@@ -96,6 +101,7 @@ window.AVV18Moon = function (G) {
     o.position.set(ox, oy, oz); o.visible = true;
     A.orbs.push({ m: o, vx: dx * V_ORB, vy: dy * V_ORB, vz: dz * V_ORB, t: 0 });
     N.animar(NPC, 'senalar'); // telegrafo: Moon «apunta» al lanzar
+    if (!(pista.vistas & 1)) { pista.vistas |= 1; mostrarPista(TXT.pViene); }
     fx('gold', ox, oy, oz, 4); sonar('tick');
     return true;
   }
@@ -114,6 +120,7 @@ window.AVV18Moon = function (G) {
         muerta = true; A.toques++; A.mercy = MERCY_S;
         fx('stars', p.x, p.y, p.z, 10); sonar('pickup');
         toast(TXT.toques.replace('{}', A.toques), 1400);
+        if (A.toques < MAX_TOQUES && !(pista.vistas & 2)) { pista.vistas |= 2; mostrarPista(TACTIL ? TXT.pToqueT : TXT.pToque.replace('{}', teclaDe('accion', 'e'))); }
         emitir({ tipo: 'toque', toques: A.toques });
       }
       if (muerta) { o.m.visible = false; A.orbs.splice(i, 1); }
@@ -126,36 +133,76 @@ window.AVV18Moon = function (G) {
     if (hud) return hud;
     if (!document.getElementById('v18-moon-css')) {
       const st = document.createElement('style'); st.id = 'v18-moon-css';
-      st.textContent = '#v18-moon{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(300px,calc(100vw - 32px));z-index:40;' +
+      st.textContent = '#v18-moon{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(340px,calc(100vw - 32px));z-index:40;' +
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(24,26,58,.8);border:2px solid #b9a7ff;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
         '#v18-moon .vm-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-moon .vm-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-moon .vm-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd76a;text-shadow:0 2px 0 #6a4dc9}#v18-moon .vm-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
+        // Cómo se juega (8-nov, patrón del duelo): meta, chips de tecla, pista breve y resultado
+        '#v18-moon .vm-m{font-size:calc(14px * var(--fs-k,1));font-weight:700;color:#ffe39a;line-height:1.25;margin-top:2px}' +
+        '#v18-moon .vm-k{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;margin-top:5px;font-size:calc(13px * var(--fs-k,1))}#v18-moon .vm-k span{display:inline-flex;align-items:center;gap:4px}' +
+        '#v18-moon kbd{font:700 calc(12px * var(--fs-k,1))/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 6px;border-radius:6px;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 0 #0007;text-align:center}' +
+        '#v18-moon .vm-pi{margin:6px auto 0;background:rgba(255,227,154,.96);color:#3b2a14;font-weight:600;font-size:calc(14px * var(--fs-k,1));padding:4px 10px;border-radius:14px;animation:vmPista .25s ease-out}#v18-moon [hidden]{display:none}' +
+        '@keyframes vmPista{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}' +
+        '#v18-moon.fin:not([hidden]){display:flex;flex-direction:column}#v18-moon.fin .vm-t{order:-2}#v18-moon.fin .vm-n{order:-1}' +
+        '#v18-moon.fin .vm-n{font-size:calc(28px * var(--fs-k,1));line-height:1.15}#v18-moon.fin .vm-l,#v18-moon.fin .vm-k,#v18-moon.fin .vm-r,#v18-moon.fin .vm-pi{display:none}' +
         'body:has(#v18-moon:not([hidden])) #toast{z-index:41}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto (W29a: estaba dentro de la regla de #v18-moon, anidada, y no llegaba a #toast)
         // pul3 (QA V18.3): también en escritorio el panel de misiones de la historia no se ve durante el entreno; vuelve al salir (como en el Guardián)
         'body.v18-moon-on #quest,body.v18-moon-on #quest-toggle{visibility:hidden}' +
         // pul3 (accesibilidad): en el teléfono con texto grande el reloj ya no se sale del panel: la fila baja a dos líneas en vez de ir en una sola (antes nowrap)
         // W29a (móvil): el panel, centrado y de 300 px, tapaba el objetivo, los contadores y medio minimapa (Toques 0/3 bajo el mapa). Como en la carrera de Chispa:
         // el objetivo se oculta durante el entreno y el panel va a la izquierda, sin llegar al minimapa
-        '@media (max-width:760px){body.v18-moon-on #quest{display:none}#v18-moon{top:calc(env(safe-area-inset-top,0px) + 58px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}#v18-moon .vm-n{font-size:calc(30px * var(--fs-k,1));line-height:1}#v18-moon .vm-l{font-size:calc(14px * var(--fs-k,1));flex-wrap:wrap;justify-content:center;column-gap:6px;row-gap:0}}';
+        '@media (max-width:760px){body.v18-moon-on #quest{display:none}#v18-moon{top:calc(env(safe-area-inset-top,0px) + 58px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}#v18-moon .vm-n{font-size:calc(30px * var(--fs-k,1));line-height:1}#v18-moon .vm-l{font-size:calc(14px * var(--fs-k,1));flex-wrap:wrap;justify-content:center;column-gap:6px;row-gap:0}' +
+        '#v18-moon .vm-m{font-size:calc(13px * var(--fs-k,1))}#v18-moon.fin .vm-n{font-size:calc(22px * var(--fs-k,1))}}';
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-moon'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
     // W35 · lector de pantalla: el panel se nombra con su título; los segundos que quedan y el reloj no se anuncian solos (los toques sí)
     el.setAttribute('aria-labelledby', 'vm-t');
-    el.innerHTML = '<div class="vm-t" id="vm-t"></div><div class="vm-n" hidden></div><div class="vm-l"><span class="vm-p" aria-live="off"></span><span class="vm-s"></span></div><div class="vm-r" aria-live="off"></div>';
+    el.innerHTML = '<div class="vm-t" id="vm-t"></div><div class="vm-m"></div><div class="vm-n" hidden></div><div class="vm-l"><span class="vm-p" aria-live="off"></span><span class="vm-s"></span></div><div class="vm-r" aria-live="off"></div>' +
+      '<div class="vm-k" aria-hidden="true"></div><div class="vm-pi" hidden></div>';
     document.body.appendChild(el);
     const q = c => el.querySelector(c);
-    hud = { el, t: q('.vm-t'), n: q('.vm-n'), p: q('.vm-p'), s: q('.vm-s'), r: q('.vm-r'), cache: {} };
+    hud = { el, t: q('.vm-t'), m: q('.vm-m'), n: q('.vm-n'), p: q('.vm-p'), s: q('.vm-s'), r: q('.vm-r'), k: q('.vm-k'), pi: q('.vm-pi'), cache: {} };
     hud.t.textContent = TXT.nombre;
     return hud;
   }
+  const teclaDe = (a, def) => { const k = ((G.input && G.input.mapa) || {})[a] || def; return k === ' ' ? 'Espacio' : String(k).toUpperCase(); };
+  // Chips de tecla (las teclas reales de G.input.mapa; en táctil, el nombre del botón de la pantalla). Cada texto, su propio nodo (se traduce solo)
+  function pintarChips() {
+    if (!hud) return;
+    const mover = [['arriba', 'w'], ['izquierda', 'a'], ['abajo', 's'], ['derecha', 'd']].map(([a, d]) => teclaDe(a, d)).join('');
+    const chips = TACTIL ? [[TXT.tImpulso, TXT.esquiva]] : [[mover, TXT.kMover], [teclaDe('accion', 'e'), TXT.kImpulso]];
+    const clave = chips.map(c => c.join(':')).join('|');
+    if (hud.cache.k === clave) return; hud.cache.k = clave;
+    hud.k.textContent = '';
+    for (const [k, t] of chips) { const sp = document.createElement('span'), kb = document.createElement('kbd'), b = document.createElement('b'); kb.textContent = k; b.textContent = t; sp.append(kb, b); hud.k.appendChild(sp); }
+  }
+  // Pistas breves (la primera bola y el primer toque), una vez por entreno
+  const pista = { vis: 0, vistas: 0 };
+  function mostrarPista(txt) { if (!hud) return; hud.pi.textContent = txt; hud.pi.hidden = false; pista.vis = 3; }
+  function pasoPista(dt) { if (hud && pista.vis > 0 && (pista.vis -= dt) <= 0) hud.pi.hidden = true; }
+  // Resultado: el panel se queda ~4 s con «¡Entreno superado!» o «¡Tres toques!» (desde el menú se vuelve a los 3,5 s)
+  let finT = 0;
+  function mostrarFin(gana, toques) {
+    if (!hud) return;
+    clearTimeout(finT);
+    hud.el.classList.add('fin'); hud.el.hidden = false; hud.pi.hidden = true;
+    pon('n', gana ? TXT.fGana : TXT.fPierde); hud.n.hidden = false;
+    pon('m', gana ? TXT.fToques.replace('{}', toques) : TXT.fOtra);
+    document.body.classList.add('v18-moon-on'); // el panel de misiones sigue oculto mientras se ve el resultado (en el teléfono se solapaban)
+    finT = setTimeout(ocultarFin, 4200);
+  }
+  function ocultarFin() { clearTimeout(finT); finT = 0; if (!hud) return; hud.el.classList.remove('fin'); if (A.fase === 'nada') { hud.el.hidden = true; document.body.classList.remove('v18-moon-on'); } }
   const pon = (k, txt) => { if (hud.cache[k] !== txt) { hud.cache[k] = txt; hud[k].textContent = txt; } };
   function pintarHud() {
     if (!hud) return;
     const on = A.fase === 'cuenta' || A.fase === 'entreno';
-    hud.el.hidden = !on; document.body.classList.toggle('v18-moon-on', on); enganche(on); if (!on) return;
+    if (on && finT) ocultarFin();
+    if (!finT) hud.el.hidden = !on;
+    document.body.classList.toggle('v18-moon-on', on || !!finT); enganche(on); if (!on) return;
     const n = A.fase === 'cuenta' ? String(Math.max(1, Math.ceil(A.cuenta))) : A.fase === 'entreno' && A.t < 0.8 ? TXT.ya : '';
     hud.n.hidden = !n; pon('n', n);
+    pon('m', TXT.metaTxt); pintarChips();
     pon('p', TXT.quedan.replace('{}', String(Math.max(0, Math.ceil(DUR_S - A.t)))));
     pon('s', TXT.toques.replace('{}', String(A.toques)));
     const r = record(); pon('r', r && r.mejor != null ? TXT.record + ': ' + r.mejor + ' · ' + reloj(A.t) : reloj(A.t));
@@ -212,6 +259,7 @@ window.AVV18Moon = function (G) {
     montarHud(); despejarSitio();
     A.mx = SITIO.x; A.mz = SITIO.z;
     Object.assign(A, { fase: 'cuenta', t: 0, cuenta: CUENTA_S, toques: 0, mercy: 0, lanzarEn: PRIMERA_S, altoT: 0, ultimo: null });
+    pista.vis = 0; pista.vistas = 0; hud.pi.hidden = true;
     matarOrbs();
     N.colocar(NPC, { comenta: false, anim: 'idle' });
     ponerMoon();
@@ -226,7 +274,7 @@ window.AVV18Moon = function (G) {
     if (gana) { r.victorias++; if (r.mejor == null || A.toques < r.mejor) { r.mejor = A.toques; nuevo = true; } }
     V.cambiarMundo(ID, r);
     A.fase = 'nada'; A.ultimo = { gana, toques: A.toques, nuevo };
-    matarOrbs(); pintarHud();
+    matarOrbs(); pintarHud(); mostrarFin(gana, A.toques);
     N.colocar(NPC, { x: SITIO.x, z: SITIO.z, rotY: SITIO.rotY, comenta: true, anim: undefined });
     ponerMoon();
     if (gana) { sonar('unlock'); fx('gold', S.pos.x, S.pos.y + 1.2, S.pos.z, 14); if (nuevo) toast(TXT.nuevo.replace('{}', A.toques), 3000); }
@@ -269,6 +317,7 @@ window.AVV18Moon = function (G) {
     }
     A.mercy = Math.max(0, A.mercy - dt);
     if (A.fase === 'cuenta') {
+     
       if ((A.cuenta -= dt) <= 0) { A.fase = 'entreno'; A.t = 0; A.lanzarEn = PRIMERA_S; sonar('dash'); }
     } else if (A.fase === 'entreno') {
       A.t += dt;
@@ -282,7 +331,7 @@ window.AVV18Moon = function (G) {
       if (alej > R_SALE) { cancelar('lejos'); return; }
       if (A.altoT > ALTO_T_S) { cancelar('alto'); return; }
     } else pasoOrbs(dt); // los restos mueren aunque acabe de cambiar de fase
-    pintarHud();
+    pasoPista(dt); pintarHud();
   }
   G.on('update', (dt, busy) => { if (A.manual) return; if (busy && A.fase === 'nada') return; paso(Math.min(dt, 0.1)); }, 48);
   G.on('apply', () => { if (A.fase !== 'nada') { A.fase = 'nada'; matarOrbs(); pintarHud(); } }, 52);
@@ -292,7 +341,8 @@ window.AVV18Moon = function (G) {
     if (!activa()) return null;
     return { x: SITIO.x, z: SITIO.z, nombre: TXT.nombre };
   };
-  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.quedan, TXT.toques, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.alto, TXT.esquiva, TXT.esquivaA].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
+  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.quedan, TXT.toques, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.alto, TXT.esquiva, TXT.esquivaA,
+    TXT.metaTxt, TXT.kMover, TXT.kImpulso, TXT.pViene, TXT.pToque, TXT.pToqueT, TXT.fGana, TXT.fPierde, TXT.fToques, TXT.fOtra].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
     if (d.nombre) l.push(d.nombre.es); return l; };
 
@@ -487,6 +537,7 @@ window.AVV18Moon = function (G) {
       // 18 · pul3 (QA V18.3): también en escritorio el panel de misiones de la historia (#quest) se oculta durante el entreno y vuelve al
       // salir por cualquier vía: dejarlo (Salir/Esc) o acabar (quieta, Moon gana con 3 toques)
       const qEl = document.getElementById('quest'), qVis = () => !!qEl && getComputedStyle(qEl).visibility !== 'hidden' && getComputedStyle(qEl).display !== 'none';
+      ocultarFin(); // el panel del resultado de la partida anterior (mantiene oculto #quest unos segundos) no cuenta aquí
       const q0 = qVis();
       ir(SITIO.x + 9, SITIO.z); empezar({ forzar: true }); correr(0.1);
       const qCuenta = qVis(); correr(CUENTA_S + 0.3);
@@ -494,10 +545,38 @@ window.AVV18Moon = function (G) {
       const qSale = qVis();
       ir(SITIO.x, SITIO.z); empezar({ forzar: true }); correr(CUENTA_S + 0.3);
       for (let k = 0; k < 40 * 30 && A.fase !== 'nada'; k++) correr(1 / 30);
-      const qFin = qVis(), finOk = A.fase === 'nada';
-      check('18 · Durante el entreno (también en escritorio) no se ve el panel de misiones de la historia (#quest) y vuelve al salir o al acabar', !qCuenta && !qDentro && qSale === q0 && finOk && qFin === q0,
-        JSON.stringify({ ancho: innerWidth, q0, qCuenta, qDentro, qSale, qFin, finOk }));
+      const qPanelFin = qVis(), finOk = A.fase === 'nada'; ocultarFin(); const qFin = qVis();
+      check('18 · Durante el entreno (también en escritorio) no se ve el panel de misiones de la historia (#quest) y vuelve al salir o al acabar (tras el panel del resultado)', !qCuenta && !qDentro && qSale === q0 && finOk && !qPanelFin && qFin === q0,
+        JSON.stringify({ ancho: innerWidth, q0, qCuenta, qDentro, qSale, qPanelFin, qFin, finOk }));
       cerrar();
+      // 19 · Cómo se juega (Kelvin 8-nov: «no se entiende cómo hacer los movimientos»): meta a la vista, chips con tecla, pistas y resultado
+      {
+        const rG = V.mundo(ID);
+        ir(SITIO.x + 6, SITIO.z); empezar({ forzar: true });
+        correr(0.1);
+        const chips = [...hud.k.querySelectorAll('span')].map(sp => sp.querySelector('kbd').textContent + '=' + sp.querySelector('b').textContent);
+        const accK = teclaDe('accion', 'e');
+        check('19a · En la cuenta: la meta se ve en el panel y los chips dicen las teclas reales (moverte, impulso)',
+          !hud.el.hidden && hud.m.textContent === TXT.metaTxt && (TACTIL ? chips.join('|') === TXT.tImpulso + '=' + TXT.esquiva : chips.length === 2 && /^[A-Z]{4}=/.test(chips[0]) && chips[1] === accK + '=' + TXT.kImpulso),
+          JSON.stringify({ m: hud.m.textContent, chips }));
+        correr(CUENTA_S + PRIMERA_S + 0.1);
+        const pv = hud.pi.hidden ? '' : hud.pi.textContent;
+        for (let k = 0; k < 8 * 30 && A.toques < 1 && A.fase === 'entreno'; k++) correr(1 / 30);
+        const pt = hud.pi.hidden ? '' : hud.pi.textContent;
+        check('19b · Pistas breves: con la primera bola «¡Ahí viene!» y con el primer toque cómo esquivar (con la tecla de impulso)',
+          pv === TXT.pViene && A.toques === 1 && pt === (TACTIL ? TXT.pToqueT : TXT.pToque.replace('{}', accK)), JSON.stringify({ pv, pt, toques: A.toques }));
+        terminar(true); cerrar();
+        const fG = { vis: !hud.el.hidden, fin: hud.el.classList.contains('fin'), n: hud.n.textContent, m: hud.m.textContent };
+        ocultarFin(); const ocultoG = hud.el.hidden;
+        ir(SITIO.x + 6, SITIO.z); empezar({ forzar: true }); const sinFin = !hud.el.classList.contains('fin') && hud.m.textContent === TXT.metaTxt && hud.pi.hidden;
+        correr(CUENTA_S + 0.1); terminar(false); cerrar();
+        const fP = { vis: !hud.el.hidden, n: hud.n.textContent, m: hud.m.textContent };
+        ocultarFin();
+        check('19c · Al terminar, el panel dice claro qué pasó: «¡Entreno superado!» con los toques o «¡Tres toques!»; se va solo y no se queda en el siguiente',
+          fG.vis && fG.fin && fG.n === TXT.fGana && fG.m === TXT.fToques.replace('{}', 1) && ocultoG && sinFin && fP.vis && fP.n === TXT.fPierde && fP.m === TXT.fOtra && hud.el.hidden,
+          JSON.stringify({ fG, fP, ocultoG, sinFin }));
+        V.cambiarMundo(ID, rG);
+      }
       for (const r of teclado()) out.push(r); // W35
       // 15 · textos
       if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }

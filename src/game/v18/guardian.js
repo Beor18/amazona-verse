@@ -51,8 +51,17 @@ window.AVV18Guardian = function (G) {
     xp: 'Tu aventura cuenta: +{} XP para tu cotorra.',
     lejos: 'Te alejaste del circuito: el vuelo con el Guardián queda para otro rato.',
     sale: 'Saliste del circuito: el vuelo con el Guardián queda para otro rato.',
-    mirar: 'Mirar', mirarA: 'Acción: mirar hacia la puerta siguiente'
+    mirar: 'Mirar', mirarA: 'Acción: mirar hacia la puerta siguiente',
+    // Cómo se juega, sin leer párrafos (Kelvin 8-nov, como en el duelo): meta siempre a la vista (con el color de la columna), teclas,
+    // pistas de altura y resultado claro. Un texto por color: el inglés cambia el orden de las palabras
+    metaCol: ['Vuela por dentro de la columna azul', 'Vuela por dentro de la columna amarilla', 'Vuela por dentro de la columna verde', 'Vuela por dentro de la columna rosa', 'Vuela por dentro de la columna morada'],
+    metaFin: 'Vuelve a la salida, junto al Guardián',
+    kVolar: 'Volar', kSubir: 'Subir', kBajar: 'Bajar', tVolar: 'Volar', tSaltar: 'Saltar', tSubir: 'Mantén: subir',
+    pVolar: 'Pulsa {} para volar', pVolarT: 'Pulsa Volar para despegar', pAlto: '¡Más alto! Mantén {} para subir', pAltoT: '¡Más alto! Mantén Saltar para subir',
+    pBajo: '¡Más bajo! Mantén {} para bajar', pBajoT: '¡Pasa un poco más bajo!',
+    fGana: '¡Circuito completo!', fTiempo: 'Tu tiempo: {}'
   };
+  const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2600); } catch (e) { /* sin interfaz */ } };
   const fx = (k, x, y, z, n) => { try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
@@ -163,40 +172,93 @@ window.AVV18Guardian = function (G) {
     if (hud) return hud;
     if (!document.getElementById('v18-guardian-css')) {
       const st = document.createElement('style'); st.id = 'v18-guardian-css';
-      st.textContent = '#v18-guardian{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(300px,calc(100vw - 32px));z-index:40;' +
+      st.textContent = '#v18-guardian{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(340px,calc(100vw - 32px));z-index:40;' +
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(14,38,48,.8);border:2px solid #4fc3d8;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
         '#v18-guardian .vg-h{display:flex;align-items:center;justify-content:center;gap:8px}#v18-guardian .vg-x{pointer-events:auto;flex:none;min-width:44px;min-height:44px;padding:0 12px;border:0;border-radius:22px;background:#fff3d6;color:#3b2a14;font:inherit;font-size:calc(14px * var(--fs-k,1));font-weight:700}' +
         '#v18-guardian .vg-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-guardian .vg-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-guardian .vg-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#7ee0d2;text-shadow:0 2px 0 #123f4c}#v18-guardian .vg-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
+        // Cómo se juega (8-nov, patrón del duelo): meta con el color de la columna, chips de tecla, pista breve y resultado
+        '#v18-guardian .vg-m{font-size:calc(14px * var(--fs-k,1));font-weight:700;color:#ffe39a;line-height:1.25;margin-top:2px}#v18-guardian .vg-m i{display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:5px;vertical-align:-1px;box-shadow:0 0 0 2px #fff8}' +
+        '#v18-guardian .vg-k{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;margin-top:5px;font-size:calc(13px * var(--fs-k,1))}#v18-guardian .vg-k span{display:inline-flex;align-items:center;gap:4px}' +
+        '#v18-guardian kbd{font:700 calc(12px * var(--fs-k,1))/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 6px;border-radius:6px;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 0 #0007;text-align:center}' +
+        '#v18-guardian .vg-pi{margin:6px auto 0;background:rgba(255,227,154,.96);color:#3b2a14;font-weight:600;font-size:calc(14px * var(--fs-k,1));padding:4px 10px;border-radius:14px;animation:vgPista .25s ease-out}#v18-guardian [hidden]{display:none}' +
+        '@keyframes vgPista{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}' +
+        '#v18-guardian.fin:not([hidden]){display:flex;flex-direction:column}#v18-guardian.fin .vg-h{order:-2}#v18-guardian.fin .vg-n{order:-1}' +
+        '#v18-guardian.fin .vg-n{font-size:calc(28px * var(--fs-k,1));line-height:1.15}#v18-guardian.fin .vg-l,#v18-guardian.fin .vg-k,#v18-guardian.fin .vg-pi,#v18-guardian.fin .vg-x{display:none}' +
         'body:has(#v18-guardian:not([hidden])) #toast{z-index:41}' +
         // QA V18.3: el panel de misiones de la historia (con su cronómetro) no se ve mientras dura el circuito (como en el minigolf); vuelve al salir
         'body.v18-guardian-on #quest,body.v18-guardian-on #quest-toggle{visibility:hidden}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto (W29: la regla estaba dentro de la del panel y no valía)
         // W29 (móvil): a 64 px el panel tapaba la línea de misión, el inventario y el minimapa. Va en la columna izquierda libre, bajo la fila de fichas (92-130 px) y a la izquierda del minimapa
         '@media (max-width:560px){#v18-guardian{top:calc(env(safe-area-inset-top,0px) + 132px);left:12px;right:auto;margin-inline:0;width:min(220px,calc(100vw - 190px));min-width:150px;padding:6px 10px}' +
-        '#v18-guardian .vg-n{font-size:calc(34px * var(--fs-k,1))}#v18-guardian .vg-l{font-size:calc(15px * var(--fs-k,1))}}';
+        '#v18-guardian .vg-n{font-size:calc(34px * var(--fs-k,1))}#v18-guardian .vg-l{font-size:calc(15px * var(--fs-k,1))}' +
+        '#v18-guardian .vg-m{font-size:calc(13px * var(--fs-k,1))}#v18-guardian.fin .vg-n{font-size:calc(22px * var(--fs-k,1))}}';
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-guardian'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
     // W35 · lector de pantalla: el panel se nombra con su título; el reloj (cada décima) y el récord no se anuncian solos
     el.setAttribute('aria-labelledby', 'vgd-t');
-    el.innerHTML = '<div class="vg-h"><div class="vg-t" id="vgd-t"></div><button type="button" class="vg-x">Salir</button></div><div class="vg-n" hidden></div><div class="vg-l"><span class="vg-p"></span><span class="vg-s" aria-live="off"></span></div><div class="vg-r" aria-live="off"></div>';
+    el.innerHTML = '<div class="vg-h"><div class="vg-t" id="vgd-t"></div><button type="button" class="vg-x">Salir</button></div><div class="vg-m"><i></i><span></span></div><div class="vg-n" hidden></div><div class="vg-l"><span class="vg-p"></span><span class="vg-s" aria-live="off"></span></div><div class="vg-r" aria-live="off"></div>' +
+      '<div class="vg-k" aria-hidden="true"></div><div class="vg-pi" hidden></div>';
     // W29: sin teclado no había cómo dejar el circuito a medias (solo alejarse > 80 m): botón «Salir» ≥ 44 px, con pointerdown como los demás del juego
     el.querySelector('.vg-x').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cancelar('sale'); });
     // W35: con el teclado (Tab hasta «Salir» y Enter o Espacio) llega un click sin puntero (detail 0); con el ratón ya salió en pointerdown
     el.querySelector('.vg-x').addEventListener('click', e => { if (e.detail !== 0) return; e.preventDefault(); cancelar('sale'); });
     document.body.appendChild(el);
     const q = c => el.querySelector(c);
-    hud = { el, t: q('.vg-t'), n: q('.vg-n'), p: q('.vg-p'), s: q('.vg-s'), r: q('.vg-r'), cache: {} };
+    hud = { el, t: q('.vg-t'), m: q('.vg-m span'), mi: q('.vg-m i'), n: q('.vg-n'), p: q('.vg-p'), s: q('.vg-s'), r: q('.vg-r'), k: q('.vg-k'), pi: q('.vg-pi'), cache: {} };
     hud.t.textContent = TXT.nombre;
     return hud;
   }
+  const teclaDe = (a, def) => { const k = ((G.input && G.input.mapa) || {})[a] || def; return k === ' ' ? 'Espacio' : String(k).toUpperCase(); };
+  // Chips de tecla (las teclas reales de G.input.mapa; en táctil, el nombre del botón de la pantalla). Cada texto, su propio nodo (se traduce solo)
+  function pintarChips() {
+    if (!hud) return;
+    // en táctil, volando el botón Volar pasa a decir «Aterrizar»: entonces solo queda el chip de subir
+    const chips = TACTIL ? (F.MOVE.flying ? [] : [[TXT.tVolar, TXT.kVolar]]).concat([[TXT.tSaltar, TXT.tSubir]]) : [[teclaDe('volar', 'v'), TXT.kVolar], ['Espacio', TXT.kSubir], ['C', TXT.kBajar]];
+    const clave = chips.map(c => c.join(':')).join('|');
+    if (hud.cache.k === clave) return; hud.cache.k = clave;
+    hud.k.textContent = '';
+    for (const [k, t] of chips) { const sp = document.createElement('span'), kb = document.createElement('kbd'), b = document.createElement('b'); kb.textContent = k; b.textContent = t; sp.append(kb, b); hud.k.appendChild(sp); }
+  }
+  // Pistas breves: despegar (en el suelo) y altura (cerca de la columna, demasiado bajo o alto). Una cada 4 s como mucho
+  const pista = { t: 0, vis: 0, suelo: 0, ultima: '' };
+  function mostrarPista(txt) { if (!hud) return; hud.pi.textContent = txt; hud.pi.hidden = false; pista.vis = 2.8; pista.t = 4; pista.ultima = txt; }
+  function pasoPista(dt) {
+    if (!hud) return;
+    if (pista.vis > 0 && (pista.vis -= dt) <= 0) hud.pi.hidden = true;
+    if (A.fase !== 'circuito' || A.sig >= SITIO.puertas.length) return;
+    const M = F.MOVE, gp = SITIO.puertas[A.sig];
+    pista.suelo = M.flying ? 0 : pista.suelo + dt;
+    if ((pista.t -= dt) > 0) return;
+    const d = Math.hypot(S.pos.x - gp.x, S.pos.z - gp.z), dy = S.pos.y + 0.6 - gy(gp);
+    if (!M.flying) { if (pista.suelo > 1.5) mostrarPista(TACTIL ? TXT.pVolarT : TXT.pVolar.replace('{}', teclaDe('volar', 'v'))); } // en el suelo, primero despegar
+    else if (d < 14 && dy < -R_Y) mostrarPista(TACTIL ? TXT.pAltoT : TXT.pAlto.replace('{}', 'Espacio'));
+    else if (d < 14 && dy > R_Y) mostrarPista(TACTIL ? TXT.pBajoT : TXT.pBajo.replace('{}', 'C'));
+  }
+  // Resultado: el panel se queda ~4 s con «¡Circuito completo!» y el tiempo (desde el menú se vuelve a los 3,5 s)
+  let finT = 0;
+  function mostrarFin(ms) {
+    if (!hud) return;
+    clearTimeout(finT);
+    hud.el.classList.add('fin'); hud.el.hidden = false; hud.pi.hidden = true;
+    pon('n', TXT.fGana); hud.n.hidden = false;
+    pon('m', TXT.fTiempo.replace('{}', reloj(ms / 1000))); hud.mi.hidden = true;
+    document.body.classList.add('v18-guardian-on'); // el panel de misiones sigue oculto mientras se ve el resultado (en el teléfono se solapaban)
+    finT = setTimeout(ocultarFin, 4200);
+  }
+  function ocultarFin() { clearTimeout(finT); finT = 0; if (!hud) return; hud.el.classList.remove('fin'); if (A.fase === 'nada') { hud.el.hidden = true; document.body.classList.remove('v18-guardian-on'); } }
   const pon = (k, txt) => { if (hud.cache[k] !== txt) { hud.cache[k] = txt; hud[k].textContent = txt; } };
   function pintarHud() {
     if (!hud) return;
     const on = A.fase === 'cuenta' || A.fase === 'circuito';
-    hud.el.hidden = !on; enganche(on); if (!on) return;
+    if (on && finT) ocultarFin();
+    if (!finT) hud.el.hidden = !on;
+    enganche(on); if (!on) return;
     const n = A.fase === 'cuenta' ? String(Math.max(1, Math.ceil(A.cuenta))) : A.fase === 'circuito' && A.t < 0.8 ? TXT.ya : '';
     hud.n.hidden = !n; pon('n', n);
+    const fin = A.sig >= SITIO.puertas.length;
+    pon('m', fin ? TXT.metaFin : TXT.metaCol[A.sig]); hud.mi.hidden = fin; if (!fin && hud.cache.mi !== A.sig) { hud.cache.mi = A.sig; hud.mi.style.background = SITIO.puertas[A.sig].color; }
+    pintarChips();
     pon('p', A.sig >= SITIO.puertas.length ? TXT.meta : TXT.puerta.replace('{}', A.sig + 1));
     pon('s', reloj(A.fase === 'circuito' ? A.t : 0));
     const r = record(); pon('r', r && r.mejor ? TXT.record + ': ' + reloj(r.mejor / 1000) : '');
@@ -209,7 +271,7 @@ window.AVV18Guardian = function (G) {
   function enganche(on) {
     if (on === enganchado) return; enganchado = on;
     if (on) { modo0 = G.interaccion.modo; G.interaccion.modo = modo; } else if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
-    document.body.classList.toggle('v18-guardian-on', on);
+    document.body.classList.toggle('v18-guardian-on', on || !!finT);
   }
   function mirarPuerta() {
     const p = puertaActual(), dx = p.x - S.pos.x, dz = p.z - S.pos.z;
@@ -241,6 +303,7 @@ window.AVV18Guardian = function (G) {
     montarPuertas(); montarHud();
     const s = SITIO.salida, p = SITIO.puertas[0], dx = p.x - s.x, dz = p.z - s.z, d = Math.hypot(dx, dz) || 1, nx = -dz / d, nz = dx / d;
     Object.assign(A, { fase: 'cuenta', t: 0, cuenta: CUENTA_S, sig: 0, ultimo: null });
+    Object.assign(pista, { t: 1, vis: 0, suelo: 0, ultima: '' }); hud.pi.hidden = true;
     A.salidaJ = { x: s.x + nx * 1.6, z: s.z + nz * 1.6 };
     N.colocar(NPC, { comenta: false, anim: 'idle' });
     ponerGuardian();
@@ -272,7 +335,7 @@ window.AVV18Guardian = function (G) {
     r.vueltas++; if (!r.mejor || ms < r.mejor) { r.mejor = ms; nuevo = true; }
     V.cambiarMundo(ID, r);
     A.fase = 'nada'; A.ultimo = { gana: true, ms, nuevo };
-    pintarHud(); pintarPuertas(0);
+    pintarHud(); pintarPuertas(0); mostrarFin(ms);
     ponerGuardian();
     N.colocar(NPC, { x: SITIO.salida.x, z: SITIO.salida.z, rotY: SITIO.salida.rotY, comenta: true, anim: undefined });
     sonar('unlock'); fx('gold', S.pos.x, S.pos.y + 1.2, S.pos.z, 14);
@@ -325,7 +388,7 @@ window.AVV18Guardian = function (G) {
       } else if (Math.hypot(S.pos.x - SITIO.salida.x, S.pos.z - SITIO.salida.z) < R_PUERTA + 1 && S.pos.y - H(S.pos.x, S.pos.z) < ALTO_MAX) { terminar(); return; }
       if (Math.hypot(S.pos.x - p.x, S.pos.z - p.z) > R_SALE) { cancelar(); return; }
     }
-    pintarPuertas(reloj3d); pintarHud();
+    pasoPista(dt); pintarPuertas(reloj3d); pintarHud();
   }
   G.on('update', (dt, busy) => { if (A.manual) return; if (busy && A.fase === 'nada') return; paso(Math.min(dt, 0.1)); }, 48);
   G.on('apply', () => { if (A.fase !== 'nada') { A.fase = 'nada'; pintarHud(); pintarPuertas(0); colocarEnSitio(); } }, 52);
@@ -336,7 +399,8 @@ window.AVV18Guardian = function (G) {
     if (A.fase === 'cuenta' || A.fase === 'circuito') { const p = puertaActual(); return { x: p.x, z: p.z, nombre: TXT.siguiente }; }
     return { x: SITIO.salida.x, z: SITIO.salida.z, nombre: TXT.nombre };
   };
-  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.puerta, TXT.meta, TXT.siguiente, TXT.tiempo, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.mirar, TXT.mirarA].concat(TXT.reto, TXT.revancha, TXT.gana);
+  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.puerta, TXT.meta, TXT.siguiente, TXT.tiempo, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.mirar, TXT.mirarA,
+    TXT.metaFin, TXT.kVolar, TXT.kSubir, TXT.kBajar, TXT.tSaltar, TXT.tSubir, TXT.pVolar, TXT.pVolarT, TXT.pAlto, TXT.pAltoT, TXT.pBajo, TXT.pBajoT, TXT.fGana, TXT.fTiempo].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.metaCol);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
     if (d.nombre) l.push(d.nombre.es); return l; };
 
@@ -540,6 +604,7 @@ window.AVV18Guardian = function (G) {
       // 17-18 · QA V18.3 (coordinadora): durante el circuito salía a la vez el panel de misiones de la historia (#quest, con su
       // cronómetro) y Acción decía «Aquí no hay nada para usar». El panel se oculta mientras dura y vuelve al salir; Acción mira a la puerta siguiente
       const qEl = document.getElementById('quest'), qVis = () => !!qEl && getComputedStyle(qEl).visibility !== 'hidden' && getComputedStyle(qEl).display !== 'none';
+      ocultarFin(); // el panel del resultado de la partida anterior (mantiene oculto #quest unos segundos) no cuenta aquí
       const q0 = qVis();
       ir(SITIO.salida.x, SITIO.salida.z); empezar({ forzar: true }); correr(CUENTA_S + 0.2);
       const qDentro = qVis(), nT = toasts.length; G.camara.yaw = 0;
@@ -552,6 +617,37 @@ window.AVV18Guardian = function (G) {
       check('18 · Acción durante el circuito no dice «Aquí no hay nada para usar»: gira la cámara hacia la puerta siguiente; al salir se suelta Acción', !nada.length && mira && suelta,
         JSON.stringify({ nada, mira, verbo: G.interaccion.modo && G.interaccion.modo.verbo }));
       cerrar();
+      // 19 · Cómo se juega (Kelvin 8-nov: «no se entiende cómo hacer los movimientos»): meta con el color de la columna, chips con tecla,
+      // pistas de despegar y de altura, y resultado
+      {
+        const rG = V.mundo(ID);
+        ir(SITIO.salida.x, SITIO.salida.z); empezar({ forzar: true });
+        correr(0.1);
+        const chips = [...hud.k.querySelectorAll('span')].map(sp => sp.querySelector('kbd').textContent + '=' + sp.querySelector('b').textContent);
+        const volK = teclaDe('volar', 'v'), col0 = hud.mi.style.background;
+        check('19a · En la cuenta: la meta dice el color de la columna (con su punto de color) y los chips las teclas reales (volar, subir, bajar)',
+          !hud.el.hidden && hud.m.textContent === TXT.metaCol[0] && !hud.mi.hidden && !!col0 &&
+          (TACTIL ? chips.join('|') === TXT.tVolar + '=' + TXT.kVolar + '|' + TXT.tSaltar + '=' + TXT.tSubir : chips.join('|') === volK + '=' + TXT.kVolar + '|Espacio=' + TXT.kSubir + '|C=' + TXT.kBajar),
+          JSON.stringify({ m: hud.m.textContent, col0, chips }));
+        correr(CUENTA_S + 0.1); correr(2); // en el suelo sin despegar
+        const pv = hud.pi.hidden ? '' : hud.pi.textContent;
+        const g0 = SITIO.puertas[0];
+        S.pos.x = g0.x + 6; S.pos.z = g0.z; S.pos.y = H(g0.x + 6, g0.z) + 1; MV.flying = true; correr(4.2); // volando, pero muy bajo junto a la columna
+        const pa = hud.pi.hidden ? '' : hud.pi.textContent;
+        S.pos.x = g0.x; S.pos.z = g0.z; S.pos.y = gy(g0) - 0.6; correr(0.05);
+        const m1 = hud.m.textContent;
+        check('19b · Pistas breves: en el suelo, la tecla para volar; junto a la columna y muy bajo, «¡Más alto!» con la tecla de subir; al pasarla, la meta cambia de color',
+          pv === (TACTIL ? TXT.pVolarT : TXT.pVolar.replace('{}', volK)) && pa === (TACTIL ? TXT.pAltoT : TXT.pAlto.replace('{}', 'Espacio')) && A.sig === 1 && m1 === TXT.metaCol[1] && hud.mi.style.background !== col0,
+          JSON.stringify({ pv, pa, sig: A.sig, m1 }));
+        terminar(); cerrar(); MV.flying = false;
+        const fG = { vis: !hud.el.hidden, fin: hud.el.classList.contains('fin'), n: hud.n.textContent, m: hud.m.textContent, x: getComputedStyle(hud.el.querySelector('.vg-x')).display };
+        ocultarFin(); const ocultoG = hud.el.hidden;
+        ir(SITIO.salida.x, SITIO.salida.z); empezar({ forzar: true }); const sinFin = !hud.el.classList.contains('fin') && hud.m.textContent === TXT.metaCol[0] && hud.pi.hidden;
+        cancelar('sale'); cerrar();
+        check('19c · Al terminar, el panel dice «¡Circuito completo!» con tu tiempo (sin el botón Salir); se va solo y no se queda en la siguiente',
+          fG.vis && fG.fin && fG.n === TXT.fGana && /^Tu tiempo: \d/.test(fG.m) && fG.x === 'none' && ocultoG && sinFin && hud.el.hidden, JSON.stringify({ fG, ocultoG, sinFin }));
+        V.cambiarMundo(ID, rG);
+      }
       for (const r of teclado()) out.push(r); // W35
       // 15 · textos
       if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }

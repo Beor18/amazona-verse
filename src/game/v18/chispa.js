@@ -46,8 +46,15 @@ window.AVV18Chispa = function (G) {
     gana: ['¡Guau! ¡Me ganaste! Mis patas iban rapidísimo… pero tus alas, más.', 'Toma, te presto mis gafas. ¡Mentira! ¿Otra?'],
     pierde: ['¡Gané! ¡Soy un rayo con cola!', 'Si quieres la revancha, aquí te espero. Prometo no presumir… tanto.'],
     nuevo: '¡Nuevo récord: {}!', xp: 'Tu aventura cuenta: +{} XP para tu cotorra.',
-    lejos: 'Te alejaste: la carrera con Chispa queda para otro rato.'
+    lejos: 'Te alejaste: la carrera con Chispa queda para otro rato.',
+    // Cómo se juega, sin leer párrafos (Kelvin 8-nov, como en el duelo): meta siempre a la vista, teclas, pistas y resultado claro
+    metaTxt: 'Gánale a Chispa: ve al banderín naranja', rival: 'Chispa: banderín {}/4', rivalMeta: 'Chispa: ¡a la meta!',
+    kCorrer: 'Correr', kRapido: 'Más rápido', kVolar: 'Volar', kAun: 'Aún más rápido', tVolar: 'Volar', tImpulso: 'Impulso',
+    pDelante: '¡Chispa va delante! Vuela con {}: ¡es más rápido!', pDelanteT: '¡Chispa va delante! Pulsa Volar: ¡es más rápido!',
+    pMapa: 'El banderín naranja también sale en el minimapa',
+    fGana: '¡Le ganaste a Chispa!', fPierde: '¡Chispa llegó primero!', fTiempo: 'Tu tiempo: {}', fOtra: 'Otra vez: vuela para ir más rápido'
   };
+  const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2600); } catch (e) { /* sin interfaz */ } };
   const fx = (k, x, y, z, n) => { try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
@@ -115,35 +122,86 @@ window.AVV18Chispa = function (G) {
     if (hud) return hud;
     if (!document.getElementById('v18-chispa-css')) {
       const st = document.createElement('style'); st.id = 'v18-chispa-css';
-      st.textContent = '#v18-chispa{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(300px,calc(100vw - 32px));z-index:40;' +
+      st.textContent = '#v18-chispa{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(340px,calc(100vw - 32px));z-index:40;' +
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(20,32,60,.78);border:2px solid #ff8a1f;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
         '#v18-chispa .vc-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-chispa .vc-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-chispa .vc-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd23f;text-shadow:0 2px 0 #b35a00}#v18-chispa .vc-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
+        // Cómo se juega (8-nov, patrón del duelo): meta, rival, chips de tecla, pista breve y resultado
+        '#v18-chispa .vc-m{font-size:calc(14px * var(--fs-k,1));font-weight:700;color:#ffe39a;line-height:1.25;margin-top:2px}#v18-chispa .vc-c{font-size:calc(13px * var(--fs-k,1));color:#ffb46b;font-weight:700;margin-top:1px}' +
+        '#v18-chispa .vc-k{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;margin-top:5px;font-size:calc(13px * var(--fs-k,1))}#v18-chispa .vc-k span{display:inline-flex;align-items:center;gap:4px}' +
+        '#v18-chispa kbd{font:700 calc(12px * var(--fs-k,1))/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 6px;border-radius:6px;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 0 #0007;text-align:center}' +
+        '#v18-chispa .vc-pi{margin:6px auto 0;background:rgba(255,227,154,.96);color:#3b2a14;font-weight:600;font-size:calc(14px * var(--fs-k,1));padding:4px 10px;border-radius:14px;animation:vcPista .25s ease-out}#v18-chispa [hidden]{display:none}' +
+        '@keyframes vcPista{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}' +
+        '#v18-chispa.fin:not([hidden]){display:flex;flex-direction:column}#v18-chispa.fin .vc-t{order:-2}#v18-chispa.fin .vc-n{order:-1}' +
+        '#v18-chispa.fin .vc-n{font-size:calc(28px * var(--fs-k,1));line-height:1.15}#v18-chispa.fin .vc-l,#v18-chispa.fin .vc-k,#v18-chispa.fin .vc-c,#v18-chispa.fin .vc-pi{display:none}' +
         // pul3 (QA V18.3): también en escritorio el panel de misiones de la historia no se ve durante la carrera; vuelve al salir (como en el Guardián)
         'body.v18-chispa-on #quest,body.v18-chispa-on #quest-toggle{visibility:hidden}' +
         // pul3 (accesibilidad): en el teléfono con texto grande el reloj ya no se sale del panel: la fila (banderín · reloj) puede bajar a dos líneas
         // QA móvil: el panel (centrado, 300 px) tapaba el objetivo, el reloj, los contadores y medio minimapa. En el teléfono, como el duelo y la
         // Sombra, el objetivo se oculta durante la carrera y el panel va a la izquierda, sin llegar al minimapa (que sigue: marca el banderín)
-        '@media (max-width:760px){body.v18-chispa-on #quest{display:none}#v18-chispa{top:calc(env(safe-area-inset-top,0px) + 58px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}#v18-chispa .vc-n{font-size:calc(30px * var(--fs-k,1));line-height:1}#v18-chispa .vc-l{flex-wrap:wrap;justify-content:center;column-gap:8px;row-gap:0}}'; // W29a: más compacto, para que el aviso (bajo el minimapa) no tape la última fila
+        '@media (max-width:760px){body.v18-chispa-on #quest{display:none}#v18-chispa{top:calc(env(safe-area-inset-top,0px) + 58px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}#v18-chispa .vc-n{font-size:calc(30px * var(--fs-k,1));line-height:1}#v18-chispa .vc-l{flex-wrap:wrap;justify-content:center;column-gap:8px;row-gap:0}' +
+        '#v18-chispa .vc-m{font-size:calc(13px * var(--fs-k,1))}#v18-chispa.fin .vc-n{font-size:calc(22px * var(--fs-k,1))}}'; // W29a: más compacto, para que el aviso (bajo el minimapa) no tape la última fila
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-chispa'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
     // W35 · lector de pantalla: el panel se nombra con su título; el reloj (cambia cada décima) y el récord no se anuncian solos
     el.setAttribute('aria-labelledby', 'vc-t');
-    el.innerHTML = '<div class="vc-t" id="vc-t"></div><div class="vc-n" hidden></div><div class="vc-l"><span class="vc-p"></span><span class="vc-s" aria-live="off"></span></div><div class="vc-r" aria-live="off"></div>';
+    el.innerHTML = '<div class="vc-t" id="vc-t"></div><div class="vc-m"></div><div class="vc-n" hidden></div><div class="vc-l"><span class="vc-p"></span><span class="vc-s" aria-live="off"></span></div>' +
+      '<div class="vc-c" aria-live="off"></div><div class="vc-r" aria-live="off"></div><div class="vc-k" aria-hidden="true"></div><div class="vc-pi" hidden></div>';
     document.body.appendChild(el);
     const q = c => el.querySelector(c);
-    hud = { el, t: q('.vc-t'), n: q('.vc-n'), p: q('.vc-p'), s: q('.vc-s'), r: q('.vc-r'), cache: {} };
+    hud = { el, t: q('.vc-t'), m: q('.vc-m'), n: q('.vc-n'), p: q('.vc-p'), s: q('.vc-s'), c: q('.vc-c'), r: q('.vc-r'), k: q('.vc-k'), pi: q('.vc-pi'), cache: {} };
     hud.t.textContent = TXT.nombre;
     return hud;
   }
+  // Chips de tecla (las teclas reales de G.input.mapa; en táctil, el nombre del botón de la pantalla). Cada texto, su propio nodo (se traduce solo)
+  function pintarChips() {
+    if (!hud) return;
+    const m = (G.input && G.input.mapa) || {}, tk = k => (k === ' ' ? 'Espacio' : String(k || '').toUpperCase());
+    const mover = ['arriba', 'izquierda', 'abajo', 'derecha'].map(a => tk(m[a] || { arriba: 'w', izquierda: 'a', abajo: 's', derecha: 'd' }[a])).join('');
+    // en táctil, volando el botón Volar pasa a decir «Aterrizar»: entonces solo queda el chip de impulso
+    const chips = TACTIL ? [[TXT.tImpulso, TXT.kRapido]].concat(F.MOVE.flying ? [] : [[TXT.tVolar, TXT.kAun]]) : [[mover, TXT.kCorrer], ['Shift', TXT.kRapido], [tk(m.volar || 'v'), TXT.kVolar]];
+    const clave = chips.map(c => c.join(':')).join('|');
+    if (hud.cache.k === clave) return; hud.cache.k = clave;
+    hud.k.textContent = '';
+    for (const [k, t] of chips) { const sp = document.createElement('span'), kb = document.createElement('kbd'), b = document.createElement('b'); kb.textContent = k; b.textContent = t; sp.append(kb, b); hud.k.appendChild(sp); }
+  }
+  // Pistas breves: una cada 5 s como mucho y cada una, una vez por carrera
+  const pista = { t: 0, vis: 0, vistas: 0, sinBand: 0 };
+  function mostrarPista(txt) { if (!hud) return; hud.pi.textContent = txt; hud.pi.hidden = false; pista.vis = 3; pista.t = 5; }
+  function pasoPista(dt) {
+    if (!hud) return;
+    if (pista.vis > 0 && (pista.vis -= dt) <= 0) hud.pi.hidden = true;
+    if (A.fase !== 'carrera') return;
+    pista.sinBand += dt;
+    if ((pista.t -= dt) > 0) return;
+    const tecla = (k => (k === ' ' ? 'Espacio' : String(k || 'v').toUpperCase()))(((G.input && G.input.mapa) || {}).volar);
+    if (!(pista.vistas & 1) && A.ci > A.sig && A.t > 3 && !F.MOVE.flying) { pista.vistas |= 1; mostrarPista(TACTIL ? TXT.pDelanteT : TXT.pDelante.replace('{}', tecla)); }
+    else if (!(pista.vistas & 2) && pista.sinBand > 9) { pista.vistas |= 2; mostrarPista(TXT.pMapa); }
+  }
+  // Resultado: el panel se queda ~4 s con «¡Ganaste!» o «¡Chispa llegó primero!» y el tiempo (desde el menú se vuelve a los 3,5 s)
+  let finT = 0;
+  function mostrarFin(gana, ms) {
+    if (!hud) return;
+    clearTimeout(finT);
+    hud.el.classList.add('fin'); hud.el.hidden = false; hud.pi.hidden = true;
+    pon('n', gana ? TXT.fGana : TXT.fPierde); hud.n.hidden = false;
+    pon('m', gana ? TXT.fTiempo.replace('{}', reloj(ms / 1000)) : TXT.fOtra);
+    document.body.classList.add('v18-chispa-on'); // el panel de misiones sigue oculto mientras se ve el resultado (en el teléfono se solapaban)
+    finT = setTimeout(ocultarFin, 4200);
+  }
+  function ocultarFin() { clearTimeout(finT); finT = 0; if (!hud) return; hud.el.classList.remove('fin'); if (A.fase === 'nada') { hud.el.hidden = true; document.body.classList.remove('v18-chispa-on'); } }
   const pon = (k, txt) => { if (hud.cache[k] !== txt) { hud.cache[k] = txt; hud[k].textContent = txt; } };
   function pintarHud() {
     if (!hud) return;
     const on = A.fase === 'cuenta' || A.fase === 'carrera';
-    hud.el.hidden = !on; document.body.classList.toggle('v18-chispa-on', on); if (!on) return;
+    if (on && finT) ocultarFin();
+    if (!finT) hud.el.hidden = !on;
+    document.body.classList.toggle('v18-chispa-on', on || !!finT); if (!on) return;
     const n = A.fase === 'cuenta' ? String(Math.max(1, Math.ceil(A.cuenta))) : A.t < 0.8 ? TXT.ya : '';
     hud.n.hidden = !n; pon('n', n);
+    pon('m', TXT.metaTxt); pintarChips();
+    pon('c', A.ci >= RUTA.length - 1 ? TXT.rivalMeta : TXT.rival.replace('{}', Math.min(A.ci + 1, RUTA.length - 1)));
     pon('p', A.sig >= RUTA.length - 1 ? TXT.meta : TXT.punto.replace('{}', A.sig + 1));
     pon('s', reloj(A.fase === 'carrera' ? A.t : 0));
     const r = record(); pon('r', r && r.mejor ? TXT.record + ': ' + reloj(r.mejor / 1000) : '');
@@ -172,6 +230,7 @@ window.AVV18Chispa = function (G) {
     montarBanderines(); montarHud();
     const s = SITIO.salida, p = RUTA[0], dx = p.x - s.x, dz = p.z - s.z, d = Math.hypot(dx, dz) || 1, nx = -dz / d, nz = dx / d;
     Object.assign(A, { fase: 'cuenta', t: 0, cuenta: CUENTA_S, sig: 0, ci: 0, gagT: 0, gagHecho: false, ultimo: null });
+    Object.assign(pista, { t: 2, vis: 0, vistas: 0, sinBand: 0 }); hud.pi.hidden = true;
     A.salidaJ = { x: s.x + nx * 1.6, z: s.z + nz * 1.6 };
     A.cx = s.x - nx * 1.6; A.cz = s.z - nz * 1.6; A.cr = Math.atan2(dx, dz);
     N.colocar(NPC, { comenta: false, anim: 'idle' });
@@ -194,7 +253,7 @@ window.AVV18Chispa = function (G) {
     if (gana) { r.ganadas++; if (!r.mejor || ms < r.mejor) { r.mejor = ms; nuevo = true; } }
     V.cambiarMundo(ID, r);
     A.fase = 'nada'; A.ultimo = { gana, ms, nuevo, chispa: A.ci };
-    pintarHud(); pintarBanderines(0);
+    pintarHud(); pintarBanderines(0); mostrarFin(gana, ms);
     // Chispa vuelve andando a su sitio (si ganó, ya está en la meta: celebra)
     ponerChispa();
     N.colocar(NPC, { x: SITIO.salida.x, z: SITIO.salida.z, rotY: SITIO.salida.rotY, caminar: true, comenta: true, anim: undefined });
@@ -260,14 +319,14 @@ window.AVV18Chispa = function (G) {
       A.t += dt;
       const p = RUTA[A.sig], d = Math.hypot(S.pos.x - p.x, S.pos.z - p.z);
       if (d < R_PUNTO && S.pos.y - H(S.pos.x, S.pos.z) < ALTO_MAX) {
-        A.sig++; sonar('pickup'); fx('stars', p.x, H(p.x, p.z) + 2.2, p.z, 8);
+        A.sig++; pista.sinBand = 0; sonar('pickup'); fx('stars', p.x, H(p.x, p.z) + 2.2, p.z, 8);
         if (A.sig >= RUTA.length) { terminar(true); return; }
       }
       if (moverChispa(dt)) { ponerChispa(); terminar(false); return; }
       ponerChispa();
       if (Math.hypot(S.pos.x - SITIO.salida.x, S.pos.z - SITIO.salida.z) > R_SALE) { cancelar(); return; }
     }
-    pintarBanderines(reloj3d); pintarHud();
+    pasoPista(dt); pintarBanderines(reloj3d); pintarHud();
   }
   G.on('update', (dt, busy) => { if (A.manual) return; if (busy && A.fase === 'nada') return; paso(Math.min(dt, 0.1)); }, 48);
   G.on('apply', () => { if (A.fase !== 'nada') { A.fase = 'nada'; pintarHud(); pintarBanderines(0); colocarEnSalida(); } }, 52);
@@ -278,7 +337,8 @@ window.AVV18Chispa = function (G) {
     if (A.fase === 'cuenta' || A.fase === 'carrera') { const p = RUTA[A.sig]; return { x: p.x, z: p.z, nombre: TXT.siguiente }; }
     return { x: SITIO.salida.x, z: SITIO.salida.z, nombre: TXT.nombre };
   };
-  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.punto, TXT.meta, TXT.siguiente, TXT.tiempo, TXT.record, TXT.gag, TXT.nuevo, TXT.xp, TXT.lejos].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
+  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.punto, TXT.meta, TXT.siguiente, TXT.tiempo, TXT.record, TXT.gag, TXT.nuevo, TXT.xp, TXT.lejos,
+    TXT.metaTxt, TXT.rival, TXT.rivalMeta, TXT.kCorrer, TXT.kRapido, TXT.kVolar, TXT.kAun, TXT.pDelante, TXT.pDelanteT, TXT.pMapa, TXT.fGana, TXT.fPierde, TXT.fTiempo, TXT.fOtra].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
     if (d.nombre) l.push(d.nombre.es); return l; };
 
@@ -452,6 +512,7 @@ window.AVV18Chispa = function (G) {
       // 17 · pul3 (QA V18.3): también en escritorio el panel de misiones de la historia (#quest) se oculta durante la carrera y vuelve al
       // salir por cualquier vía: dejarla (Esc) o alejarse
       const qEl = document.getElementById('quest'), qVis = () => !!qEl && getComputedStyle(qEl).visibility !== 'hidden' && getComputedStyle(qEl).display !== 'none';
+      ocultarFin(); // el panel del resultado de la partida anterior (mantiene oculto #quest unos segundos) no cuenta aquí
       const q0 = qVis();
       ir(SITIO.salida.x, SITIO.salida.z); empezar({ forzar: true }); correr(0.1);
       const qCuenta = qVis(); correr(CUENTA_S + 0.2);
@@ -463,6 +524,34 @@ window.AVV18Chispa = function (G) {
       check('17 · Durante la carrera (también en escritorio) no se ve el panel de misiones de la historia (#quest) y vuelve al salir', !qCuenta && !qDentro && qSale === q0 && lejosOk && qLejos === q0,
         JSON.stringify({ ancho: innerWidth, q0, qCuenta, qDentro, qSale, qLejos, lejosOk }));
       cerrar();
+      // 18 · Cómo se juega (Kelvin 8-nov: «no se entiende cómo hacer los movimientos»): meta a la vista, rival, chips con tecla, pista y resultado
+      {
+        const rG = V.mundo(ID);
+        ir(SITIO.salida.x, SITIO.salida.z); empezar({ forzar: true });
+        correr(0.1);
+        const chips = [...hud.k.querySelectorAll('span')].map(sp => sp.querySelector('kbd').textContent + '=' + sp.querySelector('b').textContent);
+        const mapaT = (G.input && G.input.mapa) || {}, volarK = String(mapaT.volar || 'v').toUpperCase();
+        check('18a · En la cuenta: la meta se ve en el panel y los chips dicen las teclas reales (correr, más rápido, volar)',
+          !hud.el.hidden && hud.m.textContent === TXT.metaTxt && hud.c.textContent === TXT.rival.replace('{}', 1) &&
+          (TACTIL ? chips.join('|') === TXT.tImpulso + '=' + TXT.kRapido + '|' + TXT.tVolar + '=' + TXT.kAun : chips.length === 3 && chips[1] === 'Shift=' + TXT.kRapido && chips[2] === volarK + '=' + TXT.kVolar && /^[A-Z]{4}=/.test(chips[0])),
+          JSON.stringify({ m: hud.m.textContent, c: hud.c.textContent, chips }));
+        correr(CUENTA_S + 0.1); correr(4); // quieta: Chispa se adelanta
+        const pd = hud.pi.hidden ? '' : hud.pi.textContent;
+        check('18b · Si Chispa va delante sale una pista breve con la tecla de volar; el panel dice por qué banderín va Chispa',
+          pd === (TACTIL ? TXT.pDelanteT : TXT.pDelante.replace('{}', volarK)) && A.ci >= 1 && hud.c.textContent === (A.ci >= RUTA.length - 1 ? TXT.rivalMeta : TXT.rival.replace('{}', Math.min(A.ci + 1, RUTA.length - 1))),
+          JSON.stringify({ pd, ci: A.ci, c: hud.c.textContent }));
+        terminar(true); cerrar();
+        const fG = { vis: !hud.el.hidden, fin: hud.el.classList.contains('fin'), n: hud.n.textContent, m: hud.m.textContent };
+        ocultarFin(); const ocultoG = hud.el.hidden;
+        ir(SITIO.salida.x, SITIO.salida.z); empezar({ forzar: true }); const sinFin = !hud.el.classList.contains('fin') && hud.m.textContent === TXT.metaTxt;
+        correr(CUENTA_S + 0.1); terminar(false); cerrar();
+        const fP = { vis: !hud.el.hidden, n: hud.n.textContent, m: hud.m.textContent };
+        ocultarFin();
+        check('18c · Al terminar, el panel dice claro qué pasó: «¡Le ganaste a Chispa!» con tu tiempo o «¡Chispa llegó primero!»; se va solo y no se queda en la siguiente',
+          fG.vis && fG.fin && fG.n === TXT.fGana && /^Tu tiempo: \d/.test(fG.m) && ocultoG && sinFin && fP.vis && fP.n === TXT.fPierde && fP.m === TXT.fOtra && hud.el.hidden,
+          JSON.stringify({ fG, fP, ocultoG, sinFin }));
+        V.cambiarMundo(ID, rG);
+      }
       for (const r of teclado()) out.push(r); // W35
       // 15 · textos
       if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
