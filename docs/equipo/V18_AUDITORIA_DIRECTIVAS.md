@@ -52,4 +52,8 @@ Auditoría de `docs/DIRECTIVA_V18_1.txt` contra el código (no contra los docume
 
 **Construido en esta tarea (a181):** 2 piezas pequeñas y sin canon nuevo: (1) consejo al terminar el duelo (§9); (2) cotorra descubierta pero sin desbloquear visible y apagada en «Mis cotorras», con la pista para conseguirla, y el botón de la pausa sale ya con ella (§2.2 y §2.8). Textos solo en español; Kelvin decide su traducción (no se tocó `content/cap1/en.js`).
 
+**Arreglo de prueba (a181):** `v18CicloTest` estaba en rojo (11/24) en main desde `e9d8494e` (el primer duelo abre ahora el entreno guiado y la prueba esperaba la cuenta atrás). La prueba pulsa «Saltar entreno» como haría un niño y vuelve a 24/24 (`src/game/v18/ciclo.js`, paso 4).
+
+**Resultados (Chrome sin GPU, 8-nov):** v18CombateTest 74/74 · v18DescubrirTest 28/28 · v18CicloTest 24/24 · selfTest 108/108 · missionTest 79/79 · e2eTest 49/49 · menuModosTest 84/84 sola (83/84 en la tanda tras e2eTest: «Amazona Flight abierto desde el mundo…», no toca V18; en main sin estos cambios también pasa sola) · 0 errores de consola.
+
 **Decisiones de Kelvin pendientes:** traducción de los 6 textos nuevos (`porGana`, `porGanaPoder`, `tPoder`, `tPoderT`, `tCerca`, `tEsquiva` en `combate.js`; `bloq` en `descubrir.js`); nombre definitivo «Batalla de Bandadas»; si se aprueban los 34 poderes de la matriz para producción (§8 pide aprobación antes de la producción masiva).
