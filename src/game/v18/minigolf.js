@@ -534,7 +534,7 @@ window.AVV18Minigolf = function (G) {
   }
   // Qué panel del HUD se ve: elegir jugadores, controles o resultado
   function paneles() {
-    if (!hud) return;
+    if (!hud || !hud.lleno) return;
     const fin = A.fase === 'nido', m = !!(A.resultado && A.resultado.multi), eh = A.eligeHoyo && !fin, sig = fin ? siguienteHoyo() : 0;
     hud.el.classList.toggle('vg-lado', A.eligiendo || eh || (fin && m)); // W29a: paneles altos (elegir jugadores u hoyo, tabla de varios): no llegan a la columna de botones de la derecha
     hud.q('hoyos').hidden = !eh;
