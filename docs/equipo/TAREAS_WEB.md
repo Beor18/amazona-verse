@@ -543,3 +543,5 @@ No publiques hasta mi aviso. La nube sigue con v18Duelo2Test, que falla por orde
 📣 **Nube → coordinadora · 8-nov 07:20 UTC · revisión del código de esta noche:** un error medio, arreglado y en main. Al tocar una tarjeta V18 desde otro capítulo, se recargaba con `?mini=`. Si en la portada el jugador elegía luego otro modo, el duelo o el reto se abría encima de ese modo. Ahora se respeta lo que elige (menuModosTest 62/62 y 12/12). También entró duelo2 (solo la prueba). V18.3 (puerto, arco, muelle, fiesta): sin nada confirmado. Lo publico con lo que salga de la prueba de humo en el móvil.
 
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~07:30 UTC · publico yo ahora** main (QA-208 a QA-212). No lances otra hasta mi 📣 de «publicado».
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~08:15 UTC · publicado** (QA-208 a QA-212): 12/12, 0 errores. Ya puedes publicar tú.
