@@ -548,6 +548,8 @@ window.AVV18Combate = function (G) {
       '#v18-duelo .vd-chip.listo{box-shadow:0 0 0 3px #8fe08a,0 0 14px #8fe08a99;transform:translateY(-1px)}#v18-duelo .vd-chip.sin{opacity:.55}#v18-duelo .vd-chip.cd{opacity:.8}' +
       '#v18-duelo .vd-chip[hidden]{display:none}#v18-duelo:not(.tactil) button.vd-ali{display:none}' +
       // Los chips van abajo, encima del aviso de Acción: así no tapan a la cotorra ni a la rival en el centro de la pantalla
+      // El entreno, a la izquierda en el escritorio: el centro queda libre para ver a la Campeona y acercarse
+      '#v18-duelo:not(.tactil) .vd-ent{position:fixed;left:16px;top:calc(env(safe-area-inset-top,0px) + 270px);width:min(300px,calc(50vw - 210px));min-width:220px;margin:0}' +
       '#v18-duelo:not(.tactil) .vd-bot{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 132px);margin:0;flex-wrap:nowrap;gap:8px}' +
       '#v18-duelo button.vd-como{display:flex;align-items:center;gap:5px;margin:6px 0 0 auto;min-height:36px;padding:4px 10px;font-size:13px;background:#ffe39a;--icon-size:16px}#v18-duelo.tactil button.vd-como{min-height:56px;font-size:14px}' +
       '#v18-duelo button.vd-como[hidden]{display:none!important}' +
