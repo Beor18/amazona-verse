@@ -313,6 +313,7 @@ window.AVV18Fiesta = function (G) {
     if (!A.j) A.j = nuevoJugador();
     const b = apuntar(); if (!b) return { ok: false, motivo: 'nada' };
     const r = H.usar(A.j, A.j.poder, ctx());
+    A.ultimo = { poder: A.j.poder, ok: r.ok, motivo: r.motivo, i: b.i, d: +dist(S.pos, b.pos).toFixed(2) };
     if (!r.ok) { if (r.motivo === 'espera' || r.motivo === 'energia') toast(TXT.espera, 1600); return r; }
     emitir({ tipo: 'poder', id: A.j.poder });
     if (A.j.poder === 'grito_yunque') return r; // llega con la onda: golpear()
@@ -564,10 +565,10 @@ window.AVV18Fiesta = function (G) {
       A.j.energia = 100; A.j.cd = {}; tocarEl(bt); correr(0.8);
       const uno = cuenta(escListo);
       const e1 = SITIO.escombros[1]; ir(e1.x + 3.2, e1.z + 2.4, e1); // desde el este: así el montón más cercano es este y no el del centro correr(0.05); A.j.energia = 100; A.j.cd = {}; tocar(); correr(0.8);
-      const dos = cuenta(escListo);
+      const dos = cuenta(escListo), tras2 = JSON.stringify(A.ultimo) + ' modo ' + (G.interaccion.modo === modo) + ' charla ' + G.dialogo.open() + ' tarjeta ' + G.ui.cardOpen;
       A.j = nuevoJugador('arausiaca'); const e2 = SITIO.escombros[2]; ir(e2.x - 1.6, e2.z - 1.2, e2); correr(0.05); A.j.energia = 100; A.j.cd = {}; tocarEl(bt); correr(0.3);
       check('5 · Paso 3: tocando Poder (Grito, de lejos), Acción en modo poder y el Escudo de plumas de cerca se quitan los 3 montones → limpio', tomaModo && uno === 1 && dos === 2 && cuenta(escListo) === 3 && estado() === 'limpio' && SITIO.escombros.every((p, i) => !gEsc[i].visible),
-        tomaModo + ' · ' + uno + '/' + dos + '/' + cuenta(escListo) + ' · ' + estado());
+        tomaModo + ' · ' + uno + '/' + dos + '/' + cuenta(escListo) + ' · ' + estado() + ' · tras el 2.º ' + tras2 + ' · último ' + JSON.stringify(A.ultimo) + ' · modo ' + (G.interaccion.modo === modo) + ' · avisos ' + toasts.slice(-3).join(' | '));
       check('5b · Táctil: el botón Poder mide 44 px o más y, al terminar, se devuelve el modo de acción', (bt.offsetHeight >= 44 || getComputedStyle(bt).minHeight === '44px') && G.interaccion.modo !== modo, bt.offsetHeight + ' px');
       cerrarCharlas();
       // 6 · faroles: posarse en cada poste con la física y tocar Acción
