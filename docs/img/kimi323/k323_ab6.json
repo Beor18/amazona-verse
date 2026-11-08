@@ -1,0 +1,649 @@
+{
+ "tarea": "KIMI-323",
+ "etiqueta": "ab6",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "v18": true,
+ "calidad": "bajo",
+ "head": "desconocido",
+ "intercalado": {
+  "base": {
+   "nombre": "base",
+   "fps": {
+    "A": 8,
+    "B": 15,
+    "A2": 17,
+    "B2": 20
+   },
+   "fpsMin": {
+    "A": 0,
+    "B": 13,
+    "A2": 14,
+    "B2": 17
+   },
+   "p95Ms": {
+    "A": 203,
+    "B": 96,
+    "A2": 84,
+    "B2": 69
+   },
+   "calls": null,
+   "ktris": null,
+   "dpr": null,
+   "escuela": {
+    "A": false,
+    "B": true,
+    "A2": false,
+    "B2": true
+   },
+   "series": {
+    "A": [
+     12,
+     13,
+     8,
+     0
+    ],
+    "B": [
+     13,
+     14,
+     14,
+     13,
+     13,
+     16,
+     16,
+     16,
+     16
+    ],
+    "A2": [
+     17,
+     14,
+     14,
+     19,
+     18,
+     18,
+     17,
+     14,
+     19
+    ],
+    "B2": [
+     21,
+     20,
+     21,
+     20,
+     17,
+     22,
+     22,
+     21,
+     20
+    ]
+   },
+   "errores": []
+  },
+  "duelo": {
+   "nombre": "duelo",
+   "fps": {
+    "A": 22,
+    "B": 18,
+    "A2": 17,
+    "B2": 18
+   },
+   "fpsMin": {
+    "A": 15,
+    "B": 15,
+    "A2": 13,
+    "B2": 11
+   },
+   "p95Ms": {
+    "A": 78,
+    "B": 78,
+    "A2": 82,
+    "B2": 85
+   },
+   "calls": null,
+   "ktris": null,
+   "dpr": null,
+   "escuela": {
+    "A": false,
+    "B": true,
+    "A2": false,
+    "B2": true
+   },
+   "series": {
+    "A": [
+     23,
+     21,
+     22,
+     25,
+     26,
+     25,
+     22,
+     15
+    ],
+    "B": [
+     20,
+     18,
+     17,
+     19,
+     15,
+     18,
+     20,
+     20,
+     18
+    ],
+    "A2": [
+     18,
+     17,
+     19,
+     21,
+     13,
+     16,
+     16,
+     15
+    ],
+    "B2": [
+     22,
+     19,
+     18,
+     21,
+     21,
+     22,
+     17,
+     11,
+     15
+    ]
+   },
+   "errores": []
+  },
+  "sombra": {
+   "nombre": "sombra",
+   "fps": {
+    "A": 11,
+    "B": 13,
+    "A2": 11,
+    "B2": 13
+   },
+   "fpsMin": {
+    "A": 9,
+    "B": 12,
+    "A2": 10,
+    "B2": 11
+   },
+   "p95Ms": {
+    "A": 113,
+    "B": 97,
+    "A2": 121,
+    "B2": 104
+   },
+   "calls": null,
+   "ktris": null,
+   "dpr": null,
+   "escuela": {
+    "A": false,
+    "B": true,
+    "A2": false,
+    "B2": true
+   },
+   "series": {
+    "A": [
+     11,
+     12,
+     12,
+     12,
+     10,
+     12,
+     14,
+     10,
+     9
+    ],
+    "B": [
+     13,
+     12,
+     14,
+     14,
+     14,
+     13,
+     14,
+     13,
+     12
+    ],
+    "A2": [
+     12,
+     13,
+     10,
+     11,
+     11,
+     10,
+     11,
+     11
+    ],
+    "B2": [
+     13,
+     11,
+     11,
+     11,
+     12,
+     13,
+     14,
+     15,
+     14
+    ]
+   },
+   "errores": []
+  },
+  "puente": {
+   "nombre": "puente",
+   "fps": {
+    "A": 21,
+    "B": 24,
+    "A2": 20,
+    "B2": 22
+   },
+   "fpsMin": {
+    "A": 20,
+    "B": 19,
+    "A2": 15,
+    "B2": 17
+   },
+   "p95Ms": {
+    "A": 70,
+    "B": 66,
+    "A2": 85,
+    "B2": 71
+   },
+   "calls": null,
+   "ktris": null,
+   "dpr": null,
+   "escuela": {
+    "A": false,
+    "B": true,
+    "A2": false,
+    "B2": true
+   },
+   "series": {
+    "A": [
+     21,
+     22,
+     21,
+     21,
+     21,
+     20,
+     20,
+     22,
+     20
+    ],
+    "B": [
+     21,
+     24,
+     22,
+     19,
+     20,
+     27,
+     26,
+     28,
+     30
+    ],
+    "A2": [
+     20,
+     24,
+     16,
+     21,
+     20,
+     15,
+     18,
+     23,
+     25
+    ],
+    "B2": [
+     20,
+     22,
+     24,
+     18,
+     18,
+     26,
+     27,
+     17
+    ]
+   },
+   "errores": []
+  },
+  "erroresConsola": []
+ },
+ "boot": {
+  "base": {
+   "fpsPorSeg": [
+    9,
+    13,
+    9,
+    8,
+    1,
+    16,
+    17
+   ],
+   "fpsMed": 10,
+   "fpsMin": 1,
+   "peorMs": 2988,
+   "p95Ms": 189,
+   "stats": [
+    {
+     "calls": 128,
+     "ktris": 398,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 96
+    },
+    {
+     "calls": 127,
+     "ktris": 399,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 82
+    },
+    {
+     "calls": 131,
+     "ktris": 398,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 115
+    },
+    {
+     "calls": 135,
+     "ktris": 488,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 121
+    },
+    {
+     "calls": 139,
+     "ktris": 801,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 123
+    },
+    {
+     "calls": 129,
+     "ktris": 668,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 107
+    },
+    {
+     "calls": 129,
+     "ktris": 668,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 123
+    }
+   ],
+   "escuelaAlMedir": true
+  },
+  "duelo": {
+   "fpsPorSeg": [
+    17,
+    17,
+    16,
+    17,
+    18,
+    19,
+    16,
+    19,
+    18,
+    12,
+    14
+   ],
+   "fpsMed": 17,
+   "fpsMin": 12,
+   "peorMs": 133,
+   "p95Ms": 93,
+   "stats": [
+    {
+     "calls": 81,
+     "ktris": 253,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 129
+    },
+    {
+     "calls": 91,
+     "ktris": 255,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 108
+    },
+    {
+     "calls": 86,
+     "ktris": 251,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 121
+    },
+    {
+     "calls": 82,
+     "ktris": 251,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 134
+    },
+    {
+     "calls": 87,
+     "ktris": 253,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 116
+    },
+    {
+     "calls": 78,
+     "ktris": 252,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 130
+    },
+    {
+     "calls": 87,
+     "ktris": 254,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 114
+    },
+    {
+     "calls": 85,
+     "ktris": 254,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 129
+    },
+    {
+     "calls": 86,
+     "ktris": 254,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 108
+    },
+    {
+     "calls": 89,
+     "ktris": 254,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 118
+    }
+   ],
+   "escuelaAlMedir": true
+  },
+  "sombra": {
+   "fpsPorSeg": [
+    11,
+    12,
+    11,
+    11,
+    11,
+    13,
+    12,
+    9,
+    12,
+    13
+   ],
+   "fpsMed": 12,
+   "fpsMin": 9,
+   "peorMs": 131,
+   "p95Ms": 118,
+   "stats": [
+    {
+     "calls": 80,
+     "ktris": 240,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 134
+    },
+    {
+     "calls": 79,
+     "ktris": 240,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 117
+    },
+    {
+     "calls": 78,
+     "ktris": 239,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 126
+    },
+    {
+     "calls": 78,
+     "ktris": 239,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 134
+    },
+    {
+     "calls": 78,
+     "ktris": 239,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 142
+    },
+    {
+     "calls": 78,
+     "ktris": 239,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 118
+    },
+    {
+     "calls": 78,
+     "ktris": 239,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 126
+    },
+    {
+     "calls": 79,
+     "ktris": 241,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 133
+    },
+    {
+     "calls": 80,
+     "ktris": 242,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 112
+    }
+   ],
+   "escuelaAlMedir": true
+  },
+  "puente": {
+   "fpsPorSeg": [
+    14,
+    15,
+    17,
+    17,
+    17,
+    16,
+    15,
+    19,
+    19,
+    14,
+    16
+   ],
+   "fpsMed": 16,
+   "fpsMin": 14,
+   "peorMs": 120,
+   "p95Ms": 88,
+   "stats": [
+    {
+     "calls": 83,
+     "ktris": 252,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 127
+    },
+    {
+     "calls": 82,
+     "ktris": 252,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 138
+    },
+    {
+     "calls": 82,
+     "ktris": 252,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 118
+    },
+    {
+     "calls": 82,
+     "ktris": 252,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 131
+    },
+    {
+     "calls": 82,
+     "ktris": 252,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 111
+    },
+    {
+     "calls": 82,
+     "ktris": 252,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 121
+    },
+    {
+     "calls": 82,
+     "ktris": 252,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 131
+    },
+    {
+     "calls": 82,
+     "ktris": 252,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 141
+    },
+    {
+     "calls": 82,
+     "ktris": 252,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 117
+    },
+    {
+     "calls": 82,
+     "ktris": 252,
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 124
+    }
+   ],
+   "escuelaAlMedir": true
+  },
+  "erroresConsola": []
+ },
+ "ok": true
+}

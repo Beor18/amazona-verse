@@ -1,0 +1,6 @@
+[19:20:52] intercalado: navegando ?v18=1&escuela=0...
+[19:21:25] intercalado: listo, head=desconocido
+[19:21:25] FATAL Error: JS: "SyntaxError: Unexpected token ')'"
+    at ev (C:\Users\kelvi\amazonaversegame3\tools\build\kimi3_323_demoab.js:29:200)
+    at async C:\Users\kelvi\amazonaversegame3\tools\build\kimi3_323_demoab.js:213:19
+[19:21:27] exit code=1

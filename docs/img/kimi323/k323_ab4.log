@@ -1,0 +1,6 @@
+[19:19:17] intercalado: navegando ?v18=1&escuela=0...
+[19:19:49] intercalado: listo, head=desconocido
+[19:19:49] FATAL Error: JS: "TypeError: (intermediate value)(...) is not a function\n    at <anonymous>:49:103"
+    at ev (C:\Users\kelvi\amazonaversegame3\tools\build\kimi3_323_demoab.js:29:200)
+    at async C:\Users\kelvi\amazonaversegame3\tools\build\kimi3_323_demoab.js:213:19
+[19:19:51] exit code=1
