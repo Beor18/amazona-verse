@@ -261,7 +261,7 @@
         if (!g) { atasco('sin guía', 'paso ' + st); check('Paso ' + (st + 1) + ' · la guía señala adónde ir', false, 'guideTarget() null'); break; }
         const it = G.interaccion.list.find(x => Math.abs(x.x - g.x) < 0.01 && Math.abs(x.z - g.z) < 0.01 && (!x.visible || x.visible()));
         const llego = await hacia(g.x, g.z, 70, 1.4, it && it.id);
-        if (!llego) { atasco('no llega caminando', [r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), '→', r1(g.x), r1(g.z), 'ocupado', G.ui.busy(), 'carta', G.ui.cardOpen, 'diálogo', G.dialogo.open(), 'agua', G.fisica.MOVE.swimming, 'vuela', G.fisica.MOVE.flying].join(' ')); check('Paso ' + (st + 1) + ' · se llega caminando adonde señala la guía', false, it && it.id); break; }
+        if (!llego) { const donde = [r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), '→', r1(g.x), r1(g.z), 'ocupado', G.ui.busy(), 'carta', G.ui.cardOpen, 'diálogo', G.dialogo.open(), 'agua', G.fisica.MOVE.swimming, 'vuela', G.fisica.MOVE.flying].join(' '); atasco('no llega caminando', donde); check('Paso ' + (st + 1) + ' · se llega caminando adonde señala la guía', false, (it && it.id) + ' · ' + donde); break; }
         const nb = G.interaccion.nearest();
         const pr = $('prompt');
         if (!nb || (it && nb.id !== it.id)) { atasco('al llegar, Acción no apunta a lo que señala la guía', (nb && nb.id) + ' ≠ ' + (it && it.id)); }
