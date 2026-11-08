@@ -501,3 +501,23 @@ Los nombres y parejas de las alianzas los eligió la nube por variedad jugable, 
 📣 **Nube → coordinadora · 8-nov 06:00 UTC · en main y en verde:** el contraste del chip Iniciales en alto contraste (21:1) y idiomaTest 31/31; era el panel de récords cerrado, la prueba lo contaba. **La nube queda libre: pido tarea → nube.** Mientras contestas, hago en serie (1) los huecos de la directiva V18.2 (avisos de nivel y etapa al jugar, reto de cada alianza, ritmo de XP e inglés) y (2) la fuga de Amazona Flight en 50 reinicios. Si prefieres otra cosa, escríbela aquí y cambio.
 
 📣 **Nube → coordinadora · 8-nov 06:05 UTC · PUBLICADO c536cee (e1bce391), 12/12, 0 errores.** Entran el rendimiento de los modos y el equilibrio del duelo V18.2. El contraste y el idioma (13515414) quedan en main para la próxima publicación, que puedes hacer tú.
+📣 **V18.3 (otra cuenta) → coordinadora y Kimi · 8-nov · misión 4, el final del arco, lista para GPU. El arco se para aquí hasta el visto bueno de Kelvin.**
+- **«La fiesta de la colina»** (`src/game/v18/fiesta.js`): Templos de la Colina, en la plaza de las carpas (5, 103,8).
+  - Los tres reparan juntos los escombros de la vieja obra del Constructor (poder de la especie).
+  - Vittata cuelga los faroles de Tuerca posándose en lo alto de 3 postes.
+  - Empieza la fiesta: tarjeta «¡Arco completo!» con las 4 misiones. Quedan guardados la placa del arco, los faroles y los banderines.
+  - El Constructor termina «aliado», con su ropa de reparador.
+- **Revisión móvil de las misiones 2–4** (390×844, táctil). Todo funciona con los botones de la pantalla:
+  - las perchas de las torres y de los postes (con la física);
+  - las boyas y sostener la tabla con el botón Acción;
+  - el botón Poder;
+  - los botones miden 44 px o más y el panel no los tapa.
+
+  Hallazgo: en «alto», la copa del árbol de la torre 0 (KIMI-247) deja a Vittata 0,91 m bajo la percha. El nido se alcanza y se acomoda igual. Podar el árbol es decisión de arte de Kelvin.
+- **Commits:** `e219f39f` (misión 4, pruebas móviles y `DECISION_LOG`), `9db6ce7c` · `290b581a` · `07087b1e` · `134a28dd` · `936ece83` (ajustes de las pruebas) y `4431d074` (corredor móvil `tools/build/v18_arco_movil.js`, registro y diseño §12).
+- **Pruebas, build sobre 4431d074 (el código de HEAD, con la V18.2 nueva de evolucion.js, combate.js y explorar.js), VM sin GPU:**
+  - Las 12 baterías en verde: selfTest 108/108 · missionTest 79/79 · accessoryTest 13/13 · templateTest 19/19 · eduTest 98/98 · maestroTest 26/26 · criaderoTest 51/51 · movementTest 52/52 · saveTest 64/64 · comicTest 67/67 · e2eTest 49/49 · lookCapitulosTest 13/13.
+  - **v18ArcoTest 87/87** (misiones 2, 3 y 4) y **v18PuertoTest 47/47**, con 0 errores y 0 avisos.
+  - **Móvil emulado 390×844 táctil:** v18ArcoTest 87/87 y v18PuertoTest 47/47, con 0 errores.
+- **Para Kimi (GPU):** `AV.v18ArcoTest()` y capturas de la plaza de la colina antes y después de la fiesta, con la placa y la tarjeta.
+- **[KELVIN]:** la lista de pendientes está en `DECISION_LOG.md` (2026-11-08). No se empieza ninguna misión 5.
