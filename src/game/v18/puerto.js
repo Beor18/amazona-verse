@@ -47,6 +47,7 @@ window.AVV18Puerto = function (G) {
     ojos: 'Tus ojos ven lo que otros no: las pistas brillan y una ruta dorada lleva al engranaje.',
     senala: 'Mira lo que brilla junto a la máquina: ahí falta una pista.',
     trabado: '¡Ya sé! El engranaje está trabado. Con tu poder lo aflojamos: tres veces.',
+    noAhora: 'Tu poder no sale ahora. Espera un momento y vuelve a probar.', 
     acierto: '¡El engranaje se movió! {}/3', falla: 'Mira al engranaje y acércate un poco más.', espera: 'Tu poder se está recargando…',
     investigado: ['¡Se aflojó! Ahora la apago yo.', 'Tú sostén el freno, la palanca roja del costado, hasta que se pare.'],
     freno: 'Sostener el freno', frenoVa: 'Sostén el freno… {}%', frenoSuelta: '¡No sueltes el freno! Vuelve a la palanca.',
@@ -480,7 +481,8 @@ window.AVV18Puerto = function (G) {
     if (A.pistas.size >= 3) { A.aciertos = 0; V.cambiarMundo(CLAVE_ACIERTOS, 0); N.decir('ingeniera', [TXT.trabado], null, { libre: true, caja: false }); }
     return true;
   }
-  const gear = { id: 'engranaje', pos: { x: 0, y: 0, z: 0 } };
+  // QA-216: fuera del duelo no hay rival cuyo último poder copiar; el blanco lleva el de Vittata y la Imitación (oratrix) repite su Grito
+  const gear = { id: 'engranaje', pos: { x: 0, y: 0, z: 0 }, ultPoder: 'grito_yunque' };
   function posEngranaje() { const c = Math.cos(maq.giro), s = Math.sin(maq.giro); gear.pos.x = maq.pos.x + 1.18 * c; gear.pos.z = maq.pos.z - 1.18 * s; gear.pos.y = alto(maq.pos.x, maq.pos.z) + 1.35; return gear.pos; }
   const timers = [];
   function ctx() {
@@ -506,9 +508,9 @@ window.AVV18Puerto = function (G) {
     if (!enEncuentro()) return { ok: false, motivo: 'fase' };
     if (!A.j) A.j = nuevoJugador();
     const g = posEngranaje(), r = H.usar(A.j, A.j.poder, ctx());
-    if (!r.ok) { if (r.motivo === 'espera' || r.motivo === 'energia') toast(TXT.espera, 1600); return r; }
+    if (!r.ok) { if (r.motivo === 'espera' || r.motivo === 'energia') toast(TXT.espera, 1600); else if (r.motivo !== 'fase' && r.motivo !== 'nada') toast(TXT.noAhora, 2000); return r; } // QA-216: nunca sin respuesta
     emitir({ tipo: 'poder', id: A.j.poder });
-    if (A.j.poder === 'grito_yunque') return r; // acierta (o no) cuando la onda llega: golpear()
+    if (A.j.poder === 'grito_yunque' || A.j.poder === 'imitacion') return r; // acierta (o no) cuando la onda llega: golpear() (la Imitación copia el Grito)
     if (A.j.poder === 'escudo_plumas') { A.bocanadaT = Math.min(A.bocanadaT, 0.6); return r; } // acierta si la bocanada la encuentra con el escudo
     // ALAS, OJOS y el resto de PICO/PLUMAS: de cerca (su alcance + 1 m) y mirando al engranaje
     const h = H.get(A.j.poder) || {}, dx = g.x - S.pos.x, dz = g.z - S.pos.z, d = Math.hypot(dx, dz), f = S.facing || { x: 0, z: 1 }, fl = Math.hypot(f.x, f.z) || 1;
@@ -939,6 +941,14 @@ window.AVV18Puerto = function (G) {
       A.j = nuevoJugador('vittata');
       ir(lejos.x, lejos.z, { x: lejos.x - U.x, z: lejos.z - U.z }); correr(0.1);
       const tomaModo = G.interaccion.modo === modo && !hud.el.hidden && !hud.q('poder').hidden;
+
+      // QA-216: con oratrix (Imitación), fuera de un duelo no hay «último poder» que copiar: el blanco lleva el Grito de Vittata y cuenta;
+      // y cualquier otro «no» del poder (aquí, mareada) da un aviso corto en vez de nada
+      { const j0 = A.j; A.j = nuevoJugador('oratrix'); const esImit = A.j.poder === 'imitacion';
+        ir(lejos.x, lejos.z, g); A.j.energia = 100; A.j.cd = {}; const a0 = A.aciertos; pulsar('g'); correr(0.8); const conta = A.aciertos === a0 + 1;
+        A.j.mareo = 2; A.j.energia = 100; A.j.cd = {}; const n0 = toasts.length; pulsar('g'); const aviso = toasts.slice(n0).includes(TXT.noAhora);
+        A.aciertos = a0; A.j = j0; ir(lejos.x, lejos.z, { x: lejos.x - U.x, z: lejos.z - U.z }); correr(0.05);
+        check('QA-216 · Con oratrix (Imitación) el engranaje cuenta (imita el Grito de Vittata); si el poder no sale, hay aviso', esImit && conta && aviso, 'imitación ' + esImit + ' · cuenta ' + conta + ' · aviso ' + aviso); }
       A.j.energia = 100; A.j.cd = {}; pulsar('g'); correr(0.8);
       const sinApuntar = A.aciertos;
       ir(lejos.x, lejos.z, g); A.j.energia = 100; A.j.cd = {}; pulsar('g'); correr(0.8);

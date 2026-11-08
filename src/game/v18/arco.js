@@ -50,6 +50,7 @@ window.AVV18Arco = function (G) {
     ojos: 'Tus ojos ven los nidos desde lejos: brillan arriba de las torres.',
     achis: '¡Achís! El Espantanubes estornuda viento.',
     nidosListos: [['ingeniera', '¡Los tres nidos, listos! Ahora hay que calmar al Espantanubes.'], ['tuerca', 'Su motor va muy rápido. Con tu poder lo bajamos: tres veces.']],
+    noAhora: 'Tu poder no sale ahora. Espera un momento y vuelve a probar.', 
     acierto: '¡Más suave! {}/3', falla: 'Mira a la hélice y acércate un poco más.', espera: 'Tu poder se está recargando…',
     afinado: [['tuerca', '¡Ahora susurra! Ya no asusta a nadie.'], ['ingeniera', 'Tuerca, ¿y si en vez de soplar las nubes… avisa cuando vienen?'], ['tuerca', '¡Faroles mensajeros! Brillan cuando viene una tormenta. ¡Vamos a encenderlos!']],
     encender: 'Encender los faroles con Tuerca',
@@ -376,7 +377,8 @@ window.AVV18Arco = function (G) {
   const especie = () => (V.seleccionada && V.seleccionada()) || (S.profile && ((S.profile.look && S.profile.look.species) || S.profile.species)) || 'vittata';
   function nuevoJugador(sp) { return H.luchador({ id: 'jugador', nombre: 'Tú', especie: sp || especie(), pos: S.pos, mira: () => S.facing }); }
   const tecnica = () => { const h = A.j && H.get(A.j.poder); return (h && h.tecnica) || 'pico'; };
-  const helice = { id: 'helice', pos: { x: 0, y: 0, z: 0 } };
+  // QA-216: fuera del duelo no hay rival cuyo último poder copiar; el blanco lleva el de Vittata y la Imitación (oratrix) repite su Grito
+  const helice = { id: 'helice', pos: { x: 0, y: 0, z: 0 }, ultPoder: 'grito_yunque' };
   function posHelice() { const c = Math.cos(maq.giro), s = Math.sin(maq.giro); helice.pos.x = SITIO.maq.x + 0.18 * c; helice.pos.z = SITIO.maq.z - 0.18 * s; helice.pos.y = alto(SITIO.maq.x, SITIO.maq.z) + 2.85; return helice.pos; }
   const timers = [];
   function ctx() {
@@ -399,9 +401,9 @@ window.AVV18Arco = function (G) {
     if (!enEncuentro()) return { ok: false, motivo: 'fase' };
     if (!A.j) A.j = nuevoJugador();
     const g = posHelice(), r = H.usar(A.j, A.j.poder, ctx());
-    if (!r.ok) { if (r.motivo === 'espera' || r.motivo === 'energia') toast(TXT.espera, 1600); return r; }
+    if (!r.ok) { if (r.motivo === 'espera' || r.motivo === 'energia') toast(TXT.espera, 1600); else if (r.motivo !== 'fase' && r.motivo !== 'nada') toast(TXT.noAhora, 2000); return r; } // QA-216: nunca sin respuesta
     emitir({ tipo: 'poder', id: A.j.poder });
-    if (A.j.poder === 'grito_yunque') return r; // acierta (o no) cuando la onda llega: golpear()
+    if (A.j.poder === 'grito_yunque' || A.j.poder === 'imitacion') return r; // acierta (o no) cuando la onda llega: golpear() (la Imitación copia el Grito)
     if (A.j.poder === 'escudo_plumas') { A.rafagaT = Math.min(A.rafagaT, 0.6); return r; } // acierta si la ráfaga la encuentra con el escudo
     const h = H.get(A.j.poder) || {}, dx = g.x - S.pos.x, dz = g.z - S.pos.z, d = Math.hypot(dx, dz), f = S.facing || { x: 0, z: 1 }, fl = Math.hypot(f.x, f.z) || 1;
     const mira = d < 1.5 || (dx * f.x + dz * f.z) / (d * fl) >= 0.5;
@@ -744,6 +746,14 @@ window.AVV18Arco = function (G) {
       A.j = nuevoJugador('vittata');
       ir(lejos.x, lejos.z, { x: lejos.x - 4, z: lejos.z - 3 }); correr(0.1);
       const tomaModo = G.interaccion.modo === modo && !hud.el.hidden && !hud.q('poder').hidden;
+
+      // QA-216: con oratrix (Imitación), fuera de un duelo no hay «último poder» que copiar: el blanco lleva el Grito de Vittata y cuenta;
+      // y cualquier otro «no» del poder (aquí, mareada) da un aviso corto en vez de nada
+      { const j0 = A.j; A.j = nuevoJugador('oratrix'); const esImit = A.j.poder === 'imitacion';
+        ir(lejos.x, lejos.z, g); A.j.energia = 100; A.j.cd = {}; const a0 = A.aciertos; pulsar('g'); correr(0.8); const conta = A.aciertos === a0 + 1;
+        A.j.mareo = 2; A.j.energia = 100; A.j.cd = {}; const n0 = toasts.length; pulsar('g'); const aviso = toasts.slice(n0).includes(TXT.noAhora);
+        A.aciertos = a0; A.j = j0; ir(lejos.x, lejos.z, { x: lejos.x - 4, z: lejos.z - 3 }); correr(0.05);
+        check('QA-216 · Con oratrix (Imitación) la hélice del Espantanubes cuenta (imita el Grito de Vittata); si el poder no sale, hay aviso', esImit && conta && aviso, 'imitación ' + esImit + ' · cuenta ' + conta + ' · aviso ' + aviso); }
       A.j.energia = 100; A.j.cd = {}; pulsar('g'); correr(0.8);
       const sinApuntar = A.aciertos;
       ir(lejos.x, lejos.z, g); A.j.energia = 100; A.j.cd = {}; pulsar('g'); correr(0.8);

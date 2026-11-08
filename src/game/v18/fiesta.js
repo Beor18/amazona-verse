@@ -36,6 +36,7 @@ window.AVV18Fiesta = function (G) {
     llegada: [['tuerca', '¡Vittata! Los vecinos de las carpas nos invitaron a su fiesta.'], ['constructor', 'Antes hay algo que arreglar. Ven, te cuento.']],
     reunion: [['constructor', 'Cuando yo construía sin mirar, mi obra dejó escombros en esta plaza.'], ['ingeniera', 'Hoy lo arreglamos los tres juntos… bueno, los cuatro, contigo.'],
       ['tuerca', 'Yo traje faroles nuevos para la fiesta. ¡Hay que colgarlos bien alto!'], ['constructor', 'Primero los escombros. Tu poder los aparta en un momento.']],
+    noAhora: 'Tu poder no sale ahora. Espera un momento y vuelve a probar.', 
     escombro: '¡Escombros fuera! {}/3', falla: 'Mira al montón de escombros y acércate un poco más.', espera: 'Tu poder se está recargando…',
     limpio: [['ingeniera', '¡La plaza quedó limpia! Ahora, los faroles de Tuerca.'], ['tuerca', 'Vuela a lo alto de cada poste y cuelga uno. ¡Que se vean desde lejos!']],
     farol: 'Colgar el farol', farolN: '¡Farol colgado! ({}/3)',
@@ -290,7 +291,8 @@ window.AVV18Fiesta = function (G) {
   }
   const especie = () => (V.seleccionada && V.seleccionada()) || (S.profile && ((S.profile.look && S.profile.look.species) || S.profile.species)) || 'vittata';
   function nuevoJugador(sp) { return H.luchador({ id: 'jugador', nombre: 'Tú', especie: sp || especie(), pos: S.pos, mira: () => S.facing }); }
-  const blanco = { id: 'escombros', pos: { x: 0, y: 0, z: 0 }, i: -1 };
+  // QA-216: fuera del duelo no hay rival cuyo último poder copiar; el blanco lleva el de Vittata y la Imitación (oratrix) repite su Grito
+  const blanco = { id: 'escombros', pos: { x: 0, y: 0, z: 0 }, i: -1, ultPoder: 'grito_yunque' };
   function apuntar() { // el montón sin quitar más cercano
     let best = -1, bd = Infinity; SITIO.escombros.forEach((p, i) => { if (escListo(i)) return; const d = dist(S.pos, p); if (d < bd) { bd = d; best = i; } });
     if (best < 0) return null;
@@ -314,9 +316,9 @@ window.AVV18Fiesta = function (G) {
     const b = apuntar(); if (!b) return { ok: false, motivo: 'nada' };
     const r = H.usar(A.j, A.j.poder, ctx());
     A.ultimo = { poder: A.j.poder, ok: r.ok, motivo: r.motivo, i: b.i, d: +dist(S.pos, b.pos).toFixed(2) };
-    if (!r.ok) { if (r.motivo === 'espera' || r.motivo === 'energia') toast(TXT.espera, 1600); return r; }
+    if (!r.ok) { if (r.motivo === 'espera' || r.motivo === 'energia') toast(TXT.espera, 1600); else if (r.motivo !== 'fase' && r.motivo !== 'nada') toast(TXT.noAhora, 2000); return r; } // QA-216: nunca sin respuesta
     emitir({ tipo: 'poder', id: A.j.poder });
-    if (A.j.poder === 'grito_yunque') return r; // llega con la onda: golpear()
+    if (A.j.poder === 'grito_yunque' || A.j.poder === 'imitacion') return r; // llega con la onda: golpear() (la Imitación copia el Grito)
     const h = H.get(A.j.poder) || {}, dx = b.pos.x - S.pos.x, dz = b.pos.z - S.pos.z, d = Math.hypot(dx, dz), f = S.facing || { x: 0, z: 1 }, fl = Math.hypot(f.x, f.z) || 1;
     const escudo = A.j.poder === 'escudo_plumas' || h.tecnica === 'plumas'; // las plumas apartan lo que tocan: de cerca, sin apuntar
     const mira = escudo || d < 1.5 || (dx * f.x + dz * f.z) / (d * fl) >= 0.5;
@@ -579,6 +581,13 @@ window.AVV18Fiesta = function (G) {
       const e0 = SITIO.escombros[0], cerca0 = { x: e0.x - 3.2, z: e0.z - 2.4 };
       ir(cerca0.x, cerca0.z, e0); correr(0.1); pintarHud(true);
       const bt = hud.q('poder'), tomaModo = G.interaccion.modo === modo && !bt.hidden;
+      // QA-216: con oratrix (Imitación) el montón se quita (imita el Grito de Vittata) con el botón Poder; si el poder no sale, hay aviso.
+      // Después el montón se vuelve a poner para seguir la prueba como estaba
+      { const j0 = A.j; A.j = nuevoJugador('oratrix'); const esImit = A.j.poder === 'imitacion';
+        A.j.energia = 100; A.j.cd = {}; tocarEl(bt); correr(0.8); const quito = escListo(0);
+        A.j.mareo = 2; A.j.energia = 100; A.j.cd = {}; const n0 = toasts.length; tocarEl(bt); const aviso = toasts.slice(n0).includes(TXT.noAhora);
+        V.cambiarMundo(claveEsc(0), 'pendiente'); aplicar(); A.j = j0; ir(cerca0.x, cerca0.z, e0); correr(0.05);
+        check('QA-216 · Con oratrix (Imitación) los escombros se quitan (imita el Grito de Vittata); si el poder no sale, hay aviso', esImit && quito && aviso && !escListo(0) && gEsc[0].visible, 'imitación ' + esImit + ' · quitó ' + quito + ' · aviso ' + aviso); }
       A.j.energia = 100; A.j.cd = {}; tocarEl(bt); correr(0.8);
       const uno = cuenta(escListo);
       const e1 = SITIO.escombros[1]; ir(e1.x + 3.2, e1.z + 2.4, e1); correr(0.05); A.j.energia = 100; A.j.cd = {}; tocar(); correr(0.8); // desde el este: así el montón más cercano es este
