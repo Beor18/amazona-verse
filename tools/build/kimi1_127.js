@@ -146,12 +146,16 @@ const MUESTRA_JS = `(async (durSec) => { try { return await (async () => {
   const porSeg = []; let ac = 0, n = 0;
   for (const d of deltas) { ac += d; n++; if (ac >= 1000) { porSeg.push(Math.round(1000 / (ac / n))); ac = 0; n = 0; } }
   if (n > 5) porSeg.push(Math.round(1000 / (ac / n)));
+  const orden = deltas.slice().sort((a, b) => a - b);
+  const pct = p => orden.length ? Math.round(orden[Math.min(orden.length - 1, Math.floor(orden.length * p))]) : null;
+  let pausas50 = 0; for (const d of deltas) { if (d > 50) pausas50++; }
   let med = null, medErr = null;
   try { med = (AV.look && typeof AV.look.medir === 'function') ? AV.look.medir() : null; } catch (e) { medErr = String(e && e.message || e).slice(0, 200); }
   return JSON.stringify({ pos: [Math.round(S.pos.x * 10) / 10, Math.round(S.pos.z * 10) / 10],
     fpsPorSeg: porSeg, fpsMed: porSeg.length ? Math.round(porSeg.reduce((s, x) => s + x, 0) / porSeg.length) : null,
     fpsMin: porSeg.length ? Math.min.apply(null, porSeg) : null,
     peorMs: deltas.length ? Math.round(Math.max.apply(null, deltas)) : null,
+    medianaMs: pct(0.5), p95Ms: pct(0.95), p99Ms: pct(0.99), pausas50,
     stats, med: med ? { calls: med.calls, triangulos: med.triangulos, texturasMB: med.texturasMB, geometrias: med.geometrias, heapMB: med.heapMB, fps: med.fps } : null, medErr,
     errores: (window.__erroresConsola || []).slice(0, 10) }); })(); } catch (e) { return 'ERR ' + (e && e.stack || e); } })`;
 
@@ -175,7 +179,8 @@ const PREP_JS = `(async () => { try { return await (async () => {
         await sleep(1000);
         try { const st = G.renderer.stats(); const m = performance.memory;
           stats.push({ calls: st.calls, ktris: st.triangulos != null ? Math.round(st.triangulos / 1000) : null,
-            fpsMedidor: st.fps, dpr: st.dpr, heapMB: m ? Math.round(m.usedJSHeapSize / 1048576) : null }); } catch (e) { stats.push(null); }
+            fpsMedidor: st.fps, calidad: st.calidad, dpr: st.dpr, escuela: st.escuela === true,
+            heapMB: m ? Math.round(m.usedJSHeapSize / 1048576) : null }); } catch (e) { stats.push(null); }
       }
       vivo = false; deltas.shift();
       const porSeg = []; let ac = 0, n = 0;
@@ -183,9 +188,11 @@ const PREP_JS = `(async () => { try { return await (async () => {
       if (n > 5) porSeg.push(Math.round(1000 / (ac / n)));
       const orden = deltas.slice().sort((a, b) => a - b);
       const med = a => a.length ? Math.round(a.reduce((s, x) => s + x, 0) / a.length) : 0;
+      const pct = p => orden.length ? Math.round(orden[Math.min(orden.length - 1, Math.floor(orden.length * p))]) : 0;
+      let pausas50 = 0; for (const d of deltas) { if (d > 50) pausas50++; }
       return { fpsPorSeg: porSeg, fpsMed: med(porSeg), fpsMin: porSeg.length ? Math.min.apply(null, porSeg) : 0,
         peorMs: deltas.length ? Math.round(Math.max.apply(null, deltas)) : 0,
-        p95Ms: orden.length ? Math.round(orden[Math.min(orden.length - 1, Math.floor(orden.length * 0.95))]) : 0,
+        medianaMs: pct(0.5), p95Ms: pct(0.95), p99Ms: pct(0.99), pausas50,
         stats, heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null };
     }
   };
