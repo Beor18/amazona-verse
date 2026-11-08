@@ -32,6 +32,9 @@ const CALIDAD = arg('--calidad', '');
 const QUIETO_S = +arg('--quieto-s', '12');
 const PASEO_M = +arg('--paseo-m', '66');
 const SIN_PASEO = process.argv.includes('--sin-paseo');
+const VUELO = +arg('--vuelo', '0');
+const VUELO_S = +arg('--vuelo-s', '14');
+const ANTES = arg('--antes', '');
 const URL_EXTRA = arg('--url-extra', '');
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi244');
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -39,9 +42,18 @@ function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.a
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon' };
 function servir() {
+  let streamingViejo = null;
+  if (ANTES) {
+    try { streamingViejo = execSync(`git show ${ANTES}:src/engine/streaming.js`, { cwd: RAIZ, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }); }
+    catch (e) { console.error('FALLO git show ' + ANTES + ': ' + e.message); process.exit(1); }
+  }
   const srv = http.createServer((req, res) => {
     let p; try { p = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res.writeHead(400); return res.end(); }
     if (p.endsWith('/')) p += 'index.html';
+    if (streamingViejo && p === '/src/engine/streaming.js') {
+      res.writeHead(200, { 'Content-Type': 'application/javascript', 'Cache-Control': 'no-store' });
+      return res.end(streamingViejo);
+    }
     const f = path.join(RAIZ, p);
     if (!f.startsWith(RAIZ) || req.method !== 'GET') { res.writeHead(403); return res.end(); }
     fs.readFile(f, (e, d) => {
@@ -150,7 +162,8 @@ function lanzarChrome() {
   const head = execSync('git rev-parse --short HEAD', { cwd: RAIZ, encoding: 'utf8' }).trim();
   const res = { etiqueta: ETIQUETA, tarea: 'KIMI-244 ruinas al llegar', herramienta: 'kimi3_244.js', head,
     pantalla: ESCRITORIO ? 'escritorio 1600x900@1 cpuX1' : 'movil 390x844@3 cpuX4',
-    calidadForzada: CALIDAD || null, inicio: new Date().toISOString(), fases: { quieto: [], paseo: [] }, capturas: [], consolaErr: [] };
+    calidadForzada: CALIDAD || null, inicio: new Date().toISOString(), fases: { quieto: [], paseo: [], vuelo: [] }, capturas: [], consolaErr: [],
+    vueloM: VUELO, streamingServido: ANTES || 'HEAD' };
   const chromeL = await lanzarChrome();
   const ws = new WebSocket(`ws://127.0.0.1:${chromeL.puerto}${chromeL.wsPath}`);
   const cdp = new CDP(ws); await cdp.listo();
@@ -212,8 +225,27 @@ function lanzarChrome() {
     while (Date.now() - tQ < QUIETO_S * 1000) { await muestra('quieto'); await cdp.bombear(0.3); }
     await shot('fin-quieto');
 
-    // 2. PASEO: 2 m por paso hacia la plaza (Iguaca, ~66 m)
-    if (!SIN_PASEO) {
+    // 2. VUELO (opcional): alzar al jugador en el spawn y mirar el anillo de llegada desde el aire
+    if (VUELO > 0) {
+      const VUELA_JS = `(() => {
+        const AV = window.AV, G = AV.G, S = G.S, ST = (G.mundo && G.mundo.streaming) || (G.streaming && G.streaming.gestor);
+        if (!ST) return 'sin streaming';
+        S.pos.y += ${VUELO}; S.vy = 0; G.fisica.MOVE.flying = true;
+        ST.alrededor(S.pos.x, S.pos.z);
+        return 'volando y=' + Math.round(S.pos.y * 10) / 10; })()`;
+      console.log('[k244] vuelo: ' + await ev(cdp, ses, VUELA_JS, 10, false));
+      const tV = Date.now();
+      await cdp.bombear(2.5); await shot('vuelo-temprano');
+      while (Date.now() - tV < VUELO_S * 1000) { await muestra('vuelo'); await cdp.bombear(0.5); }
+      await shot('vuelo-asentado');
+      const BAJA_JS = `(() => { const AV = window.AV, G = AV.G, S = G.S;
+        S.pos.y = Math.max(2, S.pos.y - ${VUELO}); G.fisica.MOVE.flying = false; G.fisica.MOVE.landing = true;
+        return 'bajando'; })()`;
+      await ev(cdp, ses, BAJA_JS, 8, false);
+    }
+
+    // 3. PASEO: 2 m por paso hacia la plaza (Iguaca, ~66 m)
+    if (!SIN_PASEO && !VUELO) {
       const DEST = { x: 181, z: 136 };
       let total = 0, pasos = 0;
       const tP = Date.now();
@@ -245,10 +277,13 @@ function lanzarChrome() {
       return an;
     };
     const f0 = res.fases.quieto[0], fN = res.fases.quieto[res.fases.quieto.length - 1];
+    const fV0 = res.fases.vuelo[0], fVN = res.fases.vuelo[res.fases.vuelo.length - 1];
     res.resumen = {
       anillosReveal: anillos(null, f0),
       anillosFinQuieto: anillos(null, fN),
+      anillosVuelo: fV0 ? anillos(null, fVN || fV0) : null,
       statsReveal: f0 && f0.stats, statsFinQuieto: fN && fN.stats,
+      statsVueloTemprano: fV0 && fV0.stats, statsVueloAsentado: fVN && fVN.stats,
       statsAsentado: res.fases.paseo.length ? res.fases.paseo[res.fases.paseo.length - 1].stats : null,
       zonasReveal: f0 && f0.zonas ? f0.zonas.length : 0,
     };
@@ -258,6 +293,8 @@ function lanzarChrome() {
     console.log(`[k244] reveal a los ${Math.round((tReveal - tNav) / 100) / 10} s de navegar (${revelado.motivo}, ${revelado.msCarga} ms; zona ${JSON.stringify(revelado.zonaCarga)})`);
     console.log('[k244] anillos al reveal:   ' + JSON.stringify(res.resumen.anillosReveal));
     console.log('[k244] anillos fin quieto:  ' + JSON.stringify(res.resumen.anillosFinQuieto));
+    if (res.resumen.anillosVuelo) console.log('[k244] anillos vuelo:       ' + JSON.stringify(res.resumen.anillosVuelo));
+    if (res.resumen.statsVueloAsentado) console.log('[k244] stats vuelo asentado: ' + JSON.stringify(res.resumen.statsVueloAsentado));
     if (res.resumen.statsReveal) console.log('[k244] stats reveal: ' + JSON.stringify(res.resumen.statsReveal));
     if (res.resumen.statsAsentado) console.log('[k244] stats asentado: ' + JSON.stringify(res.resumen.statsAsentado));
     console.log('[k244] errores consola: ' + res.consolaErr.length);
