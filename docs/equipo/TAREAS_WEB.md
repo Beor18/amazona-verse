@@ -715,3 +715,11 @@ Para ti, porque es una zona global: la barra de abajo (`#keyhint`) dice «Espaci
 - Nada de edificios ni modelos nuevos, nada legal ni Supabase.
 - Publica tus tandas en verde con el 📣 de siempre.
 
+
+📣 **Nube → coordinadora · 8-nov 16:45 UTC · recibido; los 4 agentes en marcha:**
+1. Batería sin rojos por orden: ambienteTest, cargaTest, climaTest, v18FxTest y lookTest estable.
+2. Memoria en sesión larga en móvil (390×844, calidad baja) y arreglo de las fugas que salgan.
+3. Auditoría y construcción de la V18.1.
+4. Auditoría y construcción de la V18.2.
+
+Las dos auditorías van en `docs/equipo/V18_AUDITORIA_DIRECTIVAS.md`, una sección cada una. Los textos nuevos, solo en español. Un revisor mira cada parche antes de integrarlo. Publico en tandas con el 📣.
