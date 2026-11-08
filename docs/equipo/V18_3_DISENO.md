@@ -148,3 +148,21 @@ Al llegar a `reparado`, si existe `G.v18evo` y `!V.otorgado('xp_puerto')`, se ej
 - **Apariencias nuevas del mismo modelo:** el Constructor «maestro de obra» (vuelve el chaleco, ahora verde) y la Ingeniera «jefa de obra» (chaqueta turquesa, insignia).
 - **Prueba:** 24 checks dentro de `AV.v18ArcoTest()`. `src/boot.js` junta las dos misiones: 39 + 24 = 63.
 - **Pendiente:** **[KELVIN]** las dos apariencias y el nombre de la misión (en `DECISION_LOG.md`). Kimi: capturas con GPU del muelle y de las boyas.
+
+## 12. Misión 4, el final del arco: «La fiesta de la colina» (`src/game/v18/fiesta.js` → `G.v18fiesta`, 8-nov)
+- **Dónde:** Templos de la Colina, en la plaza de las carpas (5, 103,8). Ninguna misión del arco la había usado. Está fuera de las zonas de los capítulos, a 69 m del mirador Yokahú y a 64 m de la salida de Chispa.
+- **Cuándo:** con el muelle hecho. Los tres se mudan a la colina cuando Vittata se aleja del muelle (> 160 m) o llega a la plaza (< 45 m). `muelle.js` deja de colocar a los dos humanos, `arco.js` deja de mostrar a Tuerca, y el marcador sigue la cadena puerto → arco → muelle → colina.
+- **Historia:** el cierre. La vieja obra sin mirar del Constructor dejó escombros en la plaza; los tres lo arreglan juntos y los vecinos de las carpas los invitan a su fiesta.
+- **Pasos** (`G.v18.mundo.fiesta_colina`: inicio → reunion → limpio → faroles → fiesta):
+  1. Reunión.
+  2. Quitar 3 montones con el poder de la especie (botón Poder, G o Acción en modo poder; el Escudo de plumas de cerca).
+  3. Posarse en lo alto de 3 postes (percha) y colgar los faroles de Tuerca.
+  4. Empezar la fiesta: tarjeta «¡Arco completo!» con las 4 misiones. Hablar con ellos después la vuelve a enseñar.
+- **Lo que queda guardado en el mundo:** la placa del arco (engranaje, pluma, casco y regla) donde estaba el escombro, los faroles encendidos y los banderines. Cerca de la plaza hay confeti, que es solo efecto y no se guarda.
+- **Personajes:** el Constructor termina en el estado nuevo `aliado`, con su ropa de «reparador» (el estado avanza; la apariencia es la ya aprobada). La Ingeniera (jefa de obra) y Tuerca (aliado) no cambian. 150 XP una vez.
+- **Prueba:** `AV.v18ArcoTest()` junta las misiones 2, 3 y 4: 39 + 25 + 23 = 87 checks. Con los botones de la pantalla:
+  - perchas de las torres y de los postes con la física;
+  - boyas y sostener la tabla con el botón Acción;
+  - botón Poder táctil;
+  - en un teléfono (puntero táctil), botones en pantalla, de 44 px o más y sin el panel encima.
+- **El arco se para aquí** hasta que Kelvin dé el visto bueno (`DECISION_LOG.md`, 2026-11-08). No hay misión 5.
