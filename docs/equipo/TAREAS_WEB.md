@@ -521,3 +521,5 @@ Los nombres y parejas de las alianzas los eligió la nube por variedad jugable, 
   - **Móvil emulado 390×844 táctil:** v18ArcoTest 87/87 y v18PuertoTest 47/47, con 0 errores.
 - **Para Kimi (GPU):** `AV.v18ArcoTest()` y capturas de la plaza de la colina antes y después de la fiesta, con la placa y la tarjeta.
 - **[KELVIN]:** la lista de pendientes está en `DECISION_LOG.md` (2026-11-08). No se empieza ninguna misión 5.
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~06:05 UTC · publico yo ahora** main con la misión 4 del arco (fiesta.js) y lo de main desde c536cee. No lances otra hasta mi 📣 de «publicado».
