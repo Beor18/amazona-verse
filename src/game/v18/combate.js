@@ -305,7 +305,10 @@ window.AVV18Combate = function (G) {
   function quitarEscudo(f, sinFx) {
     f.escudo = 0; f.alasT = 0;
     const e = f.escudoFx; if (!e) return; f.escudoFx = null;
-    if (e === 'v18fx') { if (!sinFx && v18fx('dispersar')) try { G.v18fx.dispersar(f); } catch (er) { /* efecto */ } }
+    if (e === 'v18fx') {
+      if (!sinFx && v18fx('dispersar')) try { G.v18fx.dispersar(f); } catch (er) { /* efecto */ }
+      if (sinFx && v18fx('apagar')) try { G.v18fx.apagar(f); } catch (er) { /* efecto */ }
+    }
     else scene.remove(e);
     if (!sinFx) { fx('feathers', f.pos.x, f.pos.y + 1, f.pos.z); C.stats.dispersiones++; }
   }
