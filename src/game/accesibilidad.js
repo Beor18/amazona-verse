@@ -373,6 +373,24 @@ AVE.module('accesibilidad', function (G) {
       localStorage.setItem(claveMenu, JSON.stringify({ v: 1, ultimo: 'aventura' }));
       if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar();
     } catch (e) { /* sin almacén */ }
+    // «Mis récords» con su sección V18 llena (minigolf, Chispa, Moon, Guardián, duelos por etapa, niveles y alianzas): datos de ejemplo en una
+    // clave aparte de la real, que se quita al copiar
+    const RA = G.recordsApi, k18 = RA && RA.CLAVE && RA.CLAVE.v18;
+    if (k18 && !copias.has('records')) {
+      const datos18 = { v: 2, especies: { arausiaca: 'seleccionable', agilis: 'seleccionable' }, inv: {}, otorgados: { combate_1: true, duelo_gana_vittata: true, duelo_gana_arausiaca: true }, sel: 'vittata',
+        mundo: { minigolf_villa: { mejor: 3, medalla: 'oro' }, carrera_chispa: { mejor: 41300, ganadas: 2, jugadas: 5, xp: true }, entreno_moon: { mejor: 0, victorias: 1, jugadas: 4, xp: true }, circuito_guardian: { mejor: 75250, vueltas: 3, jugadas: 3, xp: true }, duelos_ganados: 4, duelos_ganados_e0: 3, duelos_ganados_e2: 1, puente_villa: 'reparado' },
+        evo: { esp: { vittata: { xp: 553, nivel: 12, mejoras: {}, variante: null }, arausiaca: { xp: 1540, nivel: 21, mejoras: {}, variante: null }, agilis: { xp: 0, nivel: 1, mejoras: {}, variante: null } }, alianzas: { eco_protector: 'desbloqueada', lluvia_guiada: 'disponible' }, alianzaSel: 'eco_protector', marcas: {}, dia: { fecha: '', por: {} }, retro: true } };
+      RA.CLAVE.v18 = k18 + '.a11y';
+      try {
+        localStorage.setItem(RA.CLAVE.v18, JSON.stringify(datos18));
+        await abre.records[0](); await espera(600);
+        if ($('records') && $('records').querySelector('#rec-v18')) copias.set('records', $('records').outerHTML);
+        await abre.records[1](); await espera(200);
+      } catch (e) { sinPantalla.push('records V18: ' + e.message); } finally {
+        try { localStorage.removeItem(RA.CLAVE.v18); } catch (e) { /* sin almacén */ }
+        RA.CLAVE.v18 = k18;
+      }
+    }
     for (const id of PANTALLAS) {
       if ($(id) && !copias.has(id)) copias.set(id, $(id).outerHTML);
       else if (!$(id) && abre[id]) {
@@ -1009,6 +1027,143 @@ AVE.module('accesibilidad', function (G) {
           S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; Object.assign(G.fisica.MOVE, mov0); S.vy = vy0;
           const n = document.querySelector('#teclas-nota'); if (n) n.textContent = '';
         }
+      }
+
+      // ---------- V18 · lo nuevo (8-nov): tarjeta de nivel y de etapa, «+N XP», Mis cotorras (ficha y retos de alianza), Retos con amigos y
+      // los paneles de Chispa, Moon y el Guardián. Mis cotorras y Retos con amigos se abren por el menú (como el jugador; cargan evolucion.js);
+      // los paneles se miden si su módulo ya está cargado (boot.js los carga a demanda; menuModosTest o su prueba los montan). Cada pieza
+      // se copia a una maqueta de 375×812 y 320×568 con los 3 tamaños de texto, con y sin alto contraste: contraste ≥ 4,5:1 (también
+      // sobre los degradados y con la opacidad), botones ≥ 44 px, nada se sale ni se corta, y el texto crece con --fs-k.
+      {
+        const piezas = [], sinV18 = [], card = $('card'), foco0 = document.activeElement;
+        const copiaCard = (nombre, sel) => { if (!card.hidden && card.querySelector(sel)) piezas.push({ nombre, html: card.outerHTML, sel: '#card' }); else sinV18.push(nombre); };
+        let respaldo = false;
+        if (G.V18 && G.menuModos && G.menuModos.elegir && G.pack && G.pack.id === 'cap1') {
+          const abierta0 = !card.hidden, html0 = card.innerHTML;
+          try {
+            await Promise.race([G.menuModos.elegir('amigos'), espera(4000)]); await frame();
+            copiaCard('Retos con amigos', '.mm-amigos'); if (!card.hidden) G.ui.hideCard();
+            await Promise.race([G.menuModos.elegir('cotorras'), espera(8000)]); await frame();
+            if (!card.hidden) G.ui.hideCard();
+            const E = G.v18evo;
+            if (E && E.prueba) {
+              E.prueba({ especie: 'vittata', nivel: 22, alianza: true }); respaldo = true;
+              await Promise.race([G.menuModos.elegir('cotorras'), espera(8000)]); await frame();
+            }
+            copiaCard('Mis cotorras', '[data-v18alianzas]'); if (!card.hidden) G.ui.hideCard();
+            if (E && E.carta) {
+              const c1 = E.carta('Nueva etapa', 'Despertar', 'Tu poder despierta: ahora llega más lejos y dura más.', false, 'Elige cómo crece tu poder en Mis cotorras.');
+              const ok1 = !!c1 && document.activeElement === foco0 && !c1.contains(document.activeElement);
+              if (c1) piezas.push({ nombre: 'Tarjeta de etapa', html: c1.outerHTML, sel: '#v18-evo-carta' });
+              const c2 = E.carta('Subiste de nivel', ['Cotorra de Hispaniola', 'Nv 12'], 'Faltan 132 XP para el nivel 13', 'arausiaca', '');
+              if (c2) piezas.push({ nombre: 'Tarjeta de nivel', html: c2.outerHTML, sel: '#v18-evo-carta' });
+              const c3 = E.carta('+40 XP', ['Vittata', 'Nv 12'], 'Faltan 132 XP para el nivel 13', false, '', 'mini');
+              if (c3) piezas.push({ nombre: '«+N XP»', html: c3.outerHTML, sel: '#v18-evo-carta' });
+              const c = c3 || c2 || c1;
+              const enfocables = c ? c.querySelectorAll('button, a[href], input, select, [tabindex]').length : -1;
+              const vivas = c ? c.querySelectorAll('[aria-live], [role="status"], [role="alert"], [role="log"]').length : -1;
+              check('V18 · Tarjeta de nivel y «+N XP»: se anuncian (role=status, sin regiones anidadas), no roban el foco, no se tocan y no tienen nada enfocable',
+                ok1 && !!c && c.getAttribute('role') === 'status' && !vivas && !enfocables && getComputedStyle(c).pointerEvents === 'none' && document.activeElement === foco0,
+                JSON.stringify({ foco: ok1, role: c && c.getAttribute('role'), vivas, enfocables, puntero: c && getComputedStyle(c).pointerEvents }));
+              if (c) c.hidden = true;
+            } else sinV18.push('tarjeta de nivel (sin evolucion.js)');
+          } catch (e) { sinV18.push('V18: ' + (e && e.message)); } finally {
+            if (respaldo) { try { G.v18evo.prueba(null); } catch (e) { /* sin evolución */ } }
+            if (abierta0) G.ui.showCard(html0); else if (!card.hidden) G.ui.hideCard();
+          }
+        } else sinV18.push('V18 apagada o fuera del cap. 1');
+        // La regla global de «reducir movimiento» (ui.css, sección 7) apaga toda animación (la entrada v18evo de la tarjeta, la chapa «Lo último»…)
+        const quieto = [...document.styleSheets].some(h => { try { return [...h.cssRules].some(r => r.media && /prefers-reduced-motion:\s*reduce/.test(r.media.mediaText) && [...r.cssRules].some(x => /(^|,)\s*\*\s*(,|$)/.test(x.selectorText || '') && /animation:\s*none\s*!important/.test(x.cssText))); } catch (e) { return false; } });
+        check('V18 · Con «reducir movimiento» la tarjeta de nivel, el «+N XP» y las tarjetas del menú no se animan (regla global de ui.css)', quieto);
+        const paneles = [['v18-chispa', 'Chispa'], ['v18-moon', 'Moon'], ['v18-guardian', 'Guardián']], panelSin = [];
+        for (const [id, n] of paneles) {
+          const el = $(id); if (!el) { panelSin.push(n); continue; }
+          const nom = (el.getAttribute('aria-labelledby') || '').split(/\s+/).map(x => x && document.getElementById(x)).filter(Boolean).map(x => x.textContent.trim()).join(' ');
+          piezas.push({ nombre: 'Panel de ' + n, html: el.outerHTML, sel: '#' + id, panel: true, aria: el.getAttribute('role') === 'status' && el.getAttribute('aria-live') === 'polite' && !!nom });
+        }
+        // Contraste del texto contra cada fondo posible: color de fondo, cada parada de un degradado y la opacidad de los padres
+        const contrasteMin = e => {
+          const w = e.ownerDocument.defaultView;
+          const rgba = s => { const m = /rgba?\(([^)]+)\)/.exec(s); if (!m) return [0, 0, 0, 0]; const p = m[1].split(/[ ,\/]+/).filter(Boolean).map(Number); return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1]; };
+          const lum = ([r, g, b]) => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+          const sobre = (a, b) => { const al = a[3] + b[3] * (1 - a[3]); if (!al) return [0, 0, 0, 0]; return [0, 1, 2].map(j => (a[j] * a[3] + b[j] * b[3] * (1 - a[3])) / al).concat(al); };
+          const capas = [];
+          for (let n = e; n && n.nodeType === 1; n = n.parentElement) {
+            const cs = w.getComputedStyle(n), paradas = (cs.backgroundImage.match(/rgba?\([^)]+\)/g) || []).map(rgba);
+            capas.push({ fondo: rgba(cs.backgroundColor), paradas, op: parseFloat(cs.opacity) || 1 });
+          }
+          const gi = capas.findIndex(c => c.paradas.length), variantes = gi < 0 ? [null] : capas[gi].paradas;
+          let peor = 99;
+          for (const v of variantes) {
+            let t = rgba(w.getComputedStyle(e).color), f = [0, 0, 0, 0];
+            capas.forEach((c, k) => { const fk = k === gi ? sobre(v, c.fondo) : c.fondo; f = sobre(f, fk); t = sobre(t, fk); f[3] *= c.op; t[3] *= c.op; });
+            const blanco = [255, 255, 255, 1], tt = sobre(t, blanco), ff = sobre(f, blanco), a = lum(tt), b = lum(ff);
+            peor = Math.min(peor, (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05));
+          }
+          return peor;
+        };
+        const conTexto = e => [...e.childNodes].some(x => x.nodeType === 3 && x.textContent.trim());
+        const malos18 = [], avisos18 = [], tam = {};
+        if (piezas.length) {
+          const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => `<link rel="stylesheet" href="${l.href}">`).join('');
+          for (const [W, H] of [[375, 812], [320, 568]]) for (let i = 0; i < NIVELES; i++) for (const contr of [false, true]) {
+            const f = document.createElement('iframe');
+            f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
+            f.style.cssText = `position:fixed;left:-10000px;top:0;width:${W}px;height:${H}px;border:0;`;
+            const estilos = [...document.querySelectorAll('style')].map(e => e.outerHTML).join('');
+            f.srcdoc = `<!doctype html><html lang="es" class="${i ? 'a11y-t' + i : ''} ${contr ? 'a11y-contraste' : ''}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${estilos}` +
+              '<style>*, *::before, *::after { animation: none !important; transition: none !important; }</style></head><body></body></html>';
+            document.body.appendChild(f);
+            try {
+              await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+              const d = f.contentDocument; if (!d) continue;
+              try { await Promise.race([d.fonts.ready, espera(2500)]); } catch (e) { /* sin fuentes */ }
+              for (const p of piezas) {
+                d.body.innerHTML = p.html;
+                const caja = d.querySelector(p.sel); if (!caja) continue;
+                caja.hidden = false; caja.inert = false;
+                for (const h of caja.querySelectorAll('[hidden]')) h.hidden = false;
+                const muestra = { n: '3', r: 'Récord: 1:15.25', s: '1:15.25', p: 'Puerta 5 de 5', t: p.nombre };
+                if (p.panel) for (const s of caja.querySelectorAll('span, div')) if (!s.children.length && !s.textContent.trim()) s.textContent = muestra[(clsDe(s).match(/-(\w)$/) || [])[1]] || 'Puerta 5 de 5';
+                await frame();
+                const et = `${W}px nivel ${i}${contr ? ' contraste' : ''} ${p.nombre}`, lista = p.panel ? avisos18 : malos18;
+                const rc = caja.getBoundingClientRect();
+                if (rc.left < -1 || rc.right > W + 1) lista.push(`${et}: se sale de la pantalla (${Math.round(rc.left)}…${Math.round(rc.right)})`);
+                if (p.sel === '#v18-evo-carta' && rc.bottom > H + 1) lista.push(`${et}: la tarjeta pasa del borde de abajo (${Math.round(rc.bottom)} > ${H})`);
+                for (const b of caja.querySelectorAll('button, select, input:not([type=hidden]), summary, a[href]')) {
+                  if (!visible(b)) continue; const r = b.getBoundingClientRect();
+                  if (r.width && (r.width < 43.5 || r.height < 43.5)) lista.push(`${et}: «${nombreB(b)}» mide ${Math.round(r.width)}×${Math.round(r.height)}`);
+                }
+                const fs = [];
+                for (const e of [caja, ...caja.querySelectorAll('*')]) {
+                  if (!visible(e) || e.closest('svg') || e.tagName === 'STYLE') continue;
+                  const r = e.getBoundingClientRect(), cs = d.defaultView.getComputedStyle(e);
+                  if (e !== caja && r.width && (r.left < rc.left - 1 || r.right > rc.right + 1) && cs.position !== 'fixed') { lista.push(`${et}: ${nomEl(e)} se sale de su caja`); break; }
+                  if (conTexto(e) && /hidden|clip/.test(cs.overflowX) && e.scrollWidth > e.clientWidth + 1) lista.push(`${et}: ${nomEl(e)} corta el texto`);
+                  if (!conTexto(e)) continue;
+                  fs.push(parseFloat(cs.fontSize));
+                  const c = contrasteMin(e); if (c < 4.5) lista.push(`${et}: contraste ${c.toFixed(1)}:1 en ${nomEl(e)} «${e.textContent.trim().slice(0, 16)}»`);
+                }
+                if (W === 375 && !contr) (tam[p.nombre] = tam[p.nombre] || [])[i] = fs;
+              }
+            } finally { f.remove(); }
+          }
+          // Texto grande: con «Muy grande» (--fs-k 1,3) cada texto de la pieza crece al menos un 10 %
+          for (const p of piezas) {
+            const t = tam[p.nombre]; if (!t || !t[0] || !t[NIVELES - 1]) continue;
+            const fijos = t[0].filter((v, k) => t[NIVELES - 1][k] != null && t[NIVELES - 1][k] < v * 1.1).length;
+            if (fijos) (p.panel ? avisos18 : malos18).push(`${p.nombre}: ${fijos} de ${t[0].length} textos no crecen con el texto grande`);
+          }
+        }
+        const sinPiezas = !piezas.some(p => !p.panel);
+        check('V18 · Tarjeta de etapa y de nivel, «+N XP», Mis cotorras con los retos de alianza y Retos con amigos a 375×812 y 320×568: contraste ≥ 4,5:1 (también con alto contraste), botones ≥ 44 px, nada se sale ni se corta y el texto crece con --fs-k',
+          !malos18.length && (!G.V18 || !sinPiezas), [...new Set(malos18.map(x => x.replace(/^\d+px nivel \d( contraste)? /, '')))].slice(0, 12).join('; ') || ('medidas: ' + piezas.map(p => p.nombre).join(', ') + (sinV18.length ? ' · sin: ' + sinV18.join(' | ') : '')));
+        const malosAria = piezas.filter(p => p.panel && !p.aria).map(p => p.nombre);
+        // Los paneles son de la V18.3 (chispa.js, moon.js, guardian.js): lo que falle se anota aquí para su dueño, sin poner la prueba en rojo
+        check('V18 · Paneles de Chispa, Moon y el Guardián: se anuncian con nombre (role=status, aria-live polite); medidas de contraste, toque y texto grande anotadas',
+          !malosAria.length, (malosAria.length ? 'sin nombre o sin aria: ' + malosAria.join(', ') + ' · ' : '') + 'medidos: ' + (piezas.filter(p => p.panel).map(p => p.nombre.replace('Panel de ', '')).join(', ') || '—') +
+          ' · sin cargar: ' + (panelSin.join(', ') || '—') + (avisos18.length ? ' · AVISO V18.3: ' + [...new Set(avisos18.map(x => x.replace(/^\d+px nivel \d( contraste)? /, '')))].slice(0, 8).join('; ') : ''));
+        try { if (foco0 && foco0 !== document.body && document.contains(foco0)) foco0.focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
       }
 
       // ---------- Guardado ----------
