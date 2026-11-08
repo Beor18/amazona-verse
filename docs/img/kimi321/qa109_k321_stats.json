@@ -1,0 +1,50 @@
+{
+ "alta": {
+  "luma": 137,
+  "palePc": 24,
+  "aguaPc": 25,
+  "tealPc": 63
+ },
+ "atardecer_alta": {
+  "luma": 95,
+  "palePc": 2,
+  "aguaPc": 1,
+  "tealPc": 0
+ },
+ "atardecer_original": {
+  "luma": 94,
+  "palePc": 4,
+  "aguaPc": 0,
+  "tealPc": 0
+ },
+ "baja_rasante": {
+  "luma": 154,
+  "palePc": 20,
+  "aguaPc": 64,
+  "tealPc": 94
+ },
+ "cenital": {
+  "luma": 110,
+  "palePc": 4,
+  "aguaPc": 16,
+  "tealPc": 29
+ },
+ "mar_adentro": {
+  "luma": 152,
+  "palePc": 15,
+  "aguaPc": 87,
+  "tealPc": 66
+ },
+ "media": {
+  "luma": 145,
+  "palePc": 29,
+  "aguaPc": 31,
+  "tealPc": 61
+ },
+ "original": {
+  "luma": 152,
+  "palePc": 41,
+  "aguaPc": 19,
+  "tealPc": 84
+ }
+}
