@@ -507,7 +507,10 @@ window.AVLook = function (G) {
     const cuadro = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
     // QA-78: con la Mac cargada la fauna, los peces y la bandada entran entre medidas; se espera a 3 cuadros seguidos con los mismos draw calls (tope 10 s)
     // KIMI-103: y a que el precalentado haya enlazado todas las familias —al aplicar un look todas quedan pendientes y ocultarPendientes las quita del dibujo, así que una foto antes del drenado sale con la escena incompleta y el croma miente.
-    const asentar = async () => { const t0 = performance.now(); let ult = -1, n = 0; while (n < 3 && performance.now() - t0 < 10000) { await cuadro(); const c = R.stats().calls, p = R.precarga ? R.precarga.programas() : 0; n = (c === ult && p <= 0 && !colaRec.length) ? n + 1 : 1; ult = c; } };
+    // Con GPU por software (la nube, SwiftShader) enlazar por primera vez todas las familias de fábrica tarda más de 10 s: con el tope corto
+    // la foto de fábrica salía con media escena oculta (92 → 117 draw calls y 21,9 % de píxeles distintos al volver). Allí se espera hasta 120 s.
+    const software = !!(R.equipo && (R.equipo.motivos || []).some(m => /software/i.test(m))), topeAsentar = software ? 120000 : 10000;
+    const asentar = async () => { const t0 = performance.now(); let ult = -1, n = 0, p = 0; while (n < 3 && performance.now() - t0 < topeAsentar) { await cuadro(); const c = R.stats().calls; p = R.precarga ? R.precarga.programas() : 0; n = (c === ult && p <= 0 && !colaRec.length) ? n + 1 : 1; ult = c; } return { ms: Math.round(performance.now() - t0), ok: n >= 3, p }; };
     const foto = () => {
       R.drawScene(R.camera); R.renderer.setRenderTarget(null);
       const gl = R.renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, px = new Uint8Array(w * h * 4);
@@ -545,7 +548,7 @@ window.AVLook = function (G) {
     const guia0 = G.fx && G.fx.guide; if (guia0) G.fx.guide = tg => guia0(tg, 0);
     try {
       if (actual) quitar();
-      await cuadro(); await asentar();
+      await cuadro(); const as0 = await asentar();
       const F0 = firma(), f0 = foto(), c0 = f0.croma, m0 = medir();
       check('Sin look («fabrica»): los ShaderChunks son los originales (los de three y la gradación W1 de renderer.js)', SC.tonemapping_fragment === ORIG.tone && SC.tonemapping_pars_fragment === ORIG.pars && SC.lights_phong_pars_fragment === ORIG.phong && SC.lights_lambert_vertex === ORIG.lambert);
       check('DEFECTO es «vibrant_toon» (decisión de Kelvin) y existe; ?look=fabrica o el chip «Fábrica» dejan ver el original', DEFECTO === 'vibrant_toon' && !!LOOKS[DEFECTO] && (q.get('look') === 'fabrica' ? antes === null : antes === (sessionStorage.getItem('ave.look') === 'fabrica' ? null : antes)), 'al entrar: ' + (antes || 'fabrica'));
@@ -558,7 +561,7 @@ window.AVLook = function (G) {
       check('Sección «Look» en la pausa, oculta salvo en modo prueba, con un chip por look', !!sec && menu.contains(sec) && sec.hidden === !DEV && sec.querySelectorAll('button[data-look]').length === NOMBRES.length + 1);
       for (const n of NOMBRES) {
         const t0 = performance.now(); aplicar(n); const tApl = performance.now() - t0;
-        await cuadro(); await cuadro(); await asentar();
+        await cuadro(); await cuadro(); const as1 = await asentar();
         const f1 = foto(), c1 = f1.croma, m1 = medir(), L = LOOKS[n], d1 = delta(f0, f1);
         check(`Look «${n}»: se aplica (chunk, exposición, sol, cielo, niebla y clave de programas)`, actual === n && SC.tonemapping_fragment !== ORIG.tone && R.renderer.toneMappingExposure === L.exposicion &&
           R.sun.intensity === L.luces.solInt && (!R.sky || hex(R.sky.material.uniforms.uCenit.value) === hex(lin(L.cielo.cenit))) && (!R.ATMOS || R.scene.fog.far === L.niebla.fin) &&
@@ -591,13 +594,13 @@ window.AVLook = function (G) {
           const hojaSh = { vertexShader: 'void main(){ vWPos = mvPosition.xyz; vLightFront += saturate( dotNL ) * d; }', fragmentShader: '#include <color_fragment>' }; refinarHoja(hojaSh, L);
           check(`Look «${n}»: el shader de la hoja recibe la variación por altura (vAvAlt) y la rampa`, hojaSh.vertexShader.includes('vAvAlt = transformed.y * iesc;') && hojaSh.fragmentShader.includes('vAvAlt )') && !hojaSh.vertexShader.includes('+= saturate( dotNL )'));
         }
-        check(`Look «${n}»: mismo número de draw calls que de fábrica (±10 % o 8: la fauna, los peces, las partículas y la bandada van y vienen entre medidas)`, Math.abs(m1.calls - m0.calls) <= Math.max(8, m0.calls * 0.1), m0.calls + ' → ' + m1.calls + ' · ' + m0.triangulos + ' → ' + m1.triangulos + ' triángulos · programas ' + m0.programas + ' → ' + m1.programas);
+        check(`Look «${n}»: mismo número de draw calls que de fábrica (±10 % o 8: la fauna, los peces, las partículas y la bandada van y vienen entre medidas)`, Math.abs(m1.calls - m0.calls) <= Math.max(8, m0.calls * 0.1), m0.calls + ' → ' + m1.calls + ' · ' + m0.triangulos + ' → ' + m1.triangulos + ' triángulos · programas ' + m0.programas + ' → ' + m1.programas + ' · asentado ' + JSON.stringify([as0, as1]));
       }
-      quitar(); await cuadro(); await cuadro(); await asentar();
+      quitar(); await cuadro(); await cuadro(); const as2 = await asentar();
       const F1 = firma(), f2 = foto(), c2 = f2.croma, m2 = medir(), d2 = delta(f0, f2);
       check('Al quitar el look todo vuelve a fábrica (chunks, exposición, luces, cielo, niebla, saturación del suelo, claves)', F0 === F1, F0 === F1 ? '' : 'difiere');
       check('Al quitar el look la imagen vuelve a la de fábrica (QA-176: diferencial; texturas y escena ya restauradas)', !!d2 && d2.distintos <= 0.08 && Math.abs(c2 - c0) < Math.max(2, c0 * 0.05),
-        d2 ? (d2.distintos * 100).toFixed(1) + ' % píxeles distintos · croma ' + c0.toFixed(1) + ' → ' + c2.toFixed(1) : 'cambió el tamaño del lienzo (' + f0.w + '×' + f0.h + ' → ' + f2.w + '×' + f2.h + ')');
+        d2 ? (d2.distintos * 100).toFixed(1) + ' % píxeles distintos · croma ' + c0.toFixed(1) + ' → ' + c2.toFixed(1) + ' · asentado ' + JSON.stringify([as0, as2]) : 'cambió el tamaño del lienzo (' + f0.w + '×' + f0.h + ' → ' + f2.w + '×' + f2.h + ')');
       check('Al quitar el look las texturas vuelven a su tamaño (no quedan reducidas; si otros módulos cargan texturas durante la prueba, el total puede crecer)', m2.texturasGrandes >= m0.texturasGrandes && m2.texturasMB > m0.texturasMB - 0.5, m0.texturasMB + ' → ' + m2.texturasMB + ' MB');
       { let rim = 0, colores = 0, obc = 0; R.scene.traverse(o => { if (!o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
           if (m.defines && m.defines.AV_RIM) rim++;
