@@ -119,9 +119,12 @@ window.AVV18Chispa = function (G) {
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(20,32,60,.78);border:2px solid #ff8a1f;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
         '#v18-chispa .vc-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-chispa .vc-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-chispa .vc-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd23f;text-shadow:0 2px 0 #b35a00}#v18-chispa .vc-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
+        // pul3 (QA V18.3): también en escritorio el panel de misiones de la historia no se ve durante la carrera; vuelve al salir (como en el Guardián)
+        'body.v18-chispa-on #quest,body.v18-chispa-on #quest-toggle{visibility:hidden}' +
+        // pul3 (accesibilidad): en el teléfono con texto grande el reloj ya no se sale del panel: la fila (banderín · reloj) puede bajar a dos líneas
         // QA móvil: el panel (centrado, 300 px) tapaba el objetivo, el reloj, los contadores y medio minimapa. En el teléfono, como el duelo y la
         // Sombra, el objetivo se oculta durante la carrera y el panel va a la izquierda, sin llegar al minimapa (que sigue: marca el banderín)
-        '@media (max-width:760px){body.v18-chispa-on #quest{display:none}#v18-chispa{top:calc(env(safe-area-inset-top,0px) + 58px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}#v18-chispa .vc-n{font-size:calc(30px * var(--fs-k,1));line-height:1}}'; // W29a: más compacto, para que el aviso (bajo el minimapa) no tape la última fila
+        '@media (max-width:760px){body.v18-chispa-on #quest{display:none}#v18-chispa{top:calc(env(safe-area-inset-top,0px) + 58px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}#v18-chispa .vc-n{font-size:calc(30px * var(--fs-k,1));line-height:1}#v18-chispa .vc-l{flex-wrap:wrap;justify-content:center;column-gap:8px;row-gap:0}}'; // W29a: más compacto, para que el aviso (bajo el minimapa) no tape la última fila
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-chispa'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
@@ -445,6 +448,20 @@ window.AVV18Chispa = function (G) {
       const mmC = mapa();
       ir(SITIO.salida.x + R_SALE + 10, SITIO.salida.z); correr(0.1);
       check('14 · En carrera el minimapa marca el banderín siguiente; alejarse > 70 m cancela sin contar partida', mmC && mmC.nombre === TXT.siguiente && Math.hypot(mmC.x - RUTA[0].x, mmC.z - RUTA[0].z) < 0.1 && A.fase === 'nada' && record().jugadas === 3 && toasts.includes(TXT.lejos));
+      cerrar();
+      // 17 · pul3 (QA V18.3): también en escritorio el panel de misiones de la historia (#quest) se oculta durante la carrera y vuelve al
+      // salir por cualquier vía: dejarla (Esc) o alejarse
+      const qEl = document.getElementById('quest'), qVis = () => !!qEl && getComputedStyle(qEl).visibility !== 'hidden' && getComputedStyle(qEl).display !== 'none';
+      const q0 = qVis();
+      ir(SITIO.salida.x, SITIO.salida.z); empezar({ forzar: true }); correr(0.1);
+      const qCuenta = qVis(); correr(CUENTA_S + 0.2);
+      const qDentro = qVis(); cancelar('sale');
+      const qSale = qVis();
+      ir(SITIO.salida.x, SITIO.salida.z); empezar({ forzar: true }); correr(CUENTA_S + 0.2);
+      ir(SITIO.salida.x + R_SALE + 10, SITIO.salida.z); correr(0.1);
+      const qLejos = qVis(), lejosOk = A.fase === 'nada';
+      check('17 · Durante la carrera (también en escritorio) no se ve el panel de misiones de la historia (#quest) y vuelve al salir', !qCuenta && !qDentro && qSale === q0 && lejosOk && qLejos === q0,
+        JSON.stringify({ ancho: innerWidth, q0, qCuenta, qDentro, qSale, qLejos, lejosOk }));
       cerrar();
       for (const r of teclado()) out.push(r); // W35
       // 15 · textos
