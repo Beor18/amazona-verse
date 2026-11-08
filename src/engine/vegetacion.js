@@ -828,7 +828,7 @@ AVE.module('vegetacion', function (G) {
   const ult = { x: 1e9, y: 0, z: 1e9, rx: 0, ry: 0, frames: 0, nivel: '' };
   const camDir = new THREE.Vector3();
   function distancias(cat) {
-    const f = C.floraDist;
+    const f = C.floraDist * (C.escuela ? 0.7 : 1);   // KIMI-320 (Modo Escuela): la flora de malla se acerca ~30 % (los impostores lejanos siguen)
     if (cat === 'arbol') return DIST.arbol * f;
     if (cat === 'roca') return DIST.roca * f;
     if (cat === 'tronco') return DIST.tronco * f;
@@ -868,7 +868,7 @@ AVE.module('vegetacion', function (G) {
     const impMax = G.dosel && G.dosel.activo ? Math.min(DIST.impostor, G.dosel.impostorMax) : DIST.impostor;
     const maxArb = topeArbol(cx, cz, distancias('arbol'));
     // BM31: la malla simplificada cubre de maxArb a lodMax y el impostor solo empieza en lodMax - banda (≥ 120 m en alto/medio).
-    const lodMax = TOPE_ARBOLES[C.nivel] > 0 && C.nivel !== 'bajo' && !FL.sinLod ? Math.max(maxArb, topeArbol(cx, cz, DIST.lod * C.floraDist, TOPE_ARBOLES[C.nivel] * 3, (TOPE_TRIS[C.nivel] || Infinity) * 0.5, 1 / LOD_PASO)) : maxArb;
+    const lodMax = TOPE_ARBOLES[C.nivel] > 0 && C.nivel !== 'bajo' && !FL.sinLod ? Math.max(maxArb, topeArbol(cx, cz, DIST.lod * C.floraDist * (C.escuela ? 0.7 : 1), TOPE_ARBOLES[C.nivel] * 3, (TOPE_TRIS[C.nivel] || Infinity) * 0.5, 1 / LOD_PASO)) : maxArb;
     ULT.dLod = lodMax;
     return { cx, cz, sombraR, maxArb, lodMax, impMax, ni: 0, nMalla: 0, nLod: 0, trisMalla: 0, dSombra: 0 };
   }
@@ -947,7 +947,7 @@ AVE.module('vegetacion', function (G) {
   const ULT = {};
   let dTope = new Float32Array(0), tTope = new Float32Array(0), iTope = new Uint32Array(0);
   function topeArbol(cx, cz, maxD, tope0, topeT0, fTris) {
-    const tope = tope0 || TOPE_ARBOLES[C.nivel], topeT = topeT0 || TOPE_TRIS[C.nivel] || Infinity, ft = fTris || 1;
+    const tope = tope0 || (C.escuela ? Math.round(TOPE_ARBOLES[C.nivel] * 0.5) : TOPE_ARBOLES[C.nivel]), topeT = topeT0 || TOPE_TRIS[C.nivel] || Infinity, ft = fTris || 1;   // KIMI-320: en Modo Escuela, la mitad de árboles en malla (el resto va a impostor, que sigue dibujándose)
     if (!(tope > 0)) return maxD;
     if (dTope.length < total) { dTope = new Float32Array(total); tTope = new Float32Array(total); iTope = new Uint32Array(total); }
     let n = 0, tris = 0;

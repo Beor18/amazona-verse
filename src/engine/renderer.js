@@ -59,7 +59,7 @@ AVE.module('renderer', function (G) {
     dyn.fast = dyn.ms < 17.6 && dyn.p95 < 24 ? dyn.fast + 1 : 0;   // a tope de refresco y sin tirones
     const pr = renderer.getPixelRatio();
     let piso = (!MOBILE && calidad.nivel === 'alto') ? Math.min(1.5, DPR_MAX) : DPR_MIN;   // BM14: en alto de escritorio no baja de 1,5 (bajar la resolución se ve pixelado; se reduce el costo de la escena)
-    if (calidad.nivel === 'bajo') piso = Math.min(0.75, piso);   // QA-181: último nivel del escalón de calidad — si ni a mínimo de resolución se llega al objetivo (Chromebook a 11-21 fps: los cuadros de ~53 ms no disparan el escalón de emergencia ≥200 ms), la resolución dinámica puede bajar de DPR_MIN a 0,75; sube de vuelta sola cuando sobra margen
+    if (calidad.nivel === 'bajo' || calidad.escuela) piso = Math.min(0.75, piso);   // QA-181/KIMI-320: último nivel del escalón — «bajo» o Modo Escuela; si ni a mínimo de resolución se llega al objetivo (Chromebook a 11-21 fps: los cuadros de ~53 ms no disparan el escalón de emergencia ≥200 ms), la resolución dinámica puede bajar de DPR_MIN a 0,75; sube de vuelta sola cuando sobra margen
     if ((dyn.slow >= 2 || grave) && pr > piso) { renderer.setPixelRatio(Math.max(piso, pr - (grave ? 0.5 : 0.25))); dyn.slow = 0; dyn.lock = 20000; dyn.n = 0; }
     else if (dyn.fast >= 6 && !dyn.lock && pr < DPR_MAX) { renderer.setPixelRatio(Math.min(DPR_MAX, pr + 0.25)); dyn.fast = 0; dyn.lock = 6000; dyn.n = 0; }
     else return;
@@ -131,7 +131,12 @@ AVE.module('renderer', function (G) {
   const PERFIL = perfilEquipo(EQUIPO);
   const fromUrl = new URLSearchParams(location.search).get('calidad');
   const inicial = NIVELES.includes(fromUrl) ? fromUrl : PERFIL.nivel;
-  const calidad = Object.assign({}, PRESETS[inicial], { manual: NIVELES.includes(fromUrl), gpu: GPU, objetivo: OBJETIVO });
+  // QA-181 / KIMI-320 (Modo Escuela): ?escuela=1 lo enciende y ?escuela=0 lo apaga (elección manual);
+  // sin parámetro va en «auto» (null): se enciende solo en «bajo» con la resolución ya en el mínimo
+  // y la media por debajo del objetivo (~8 s), y se apaga solo si fue el auto quien lo encendió.
+  const escuelaUrl = new URLSearchParams(location.search).get('escuela');
+  const calidad = Object.assign({}, PRESETS[inicial], { manual: NIVELES.includes(fromUrl), gpu: GPU, objetivo: OBJETIVO,
+    escuela: escuelaUrl === '1' ? true : escuelaUrl === '0' ? false : null, escuelaAuto: false });
 
   // ---------- Escena, cielo y niebla ----------
   const cielo = W.cielo || {};
@@ -863,9 +868,20 @@ AVE.module('renderer', function (G) {
   }
   function setCalidad(nivel, manual) {
     if (!PRESETS[nivel]) return calidad;
-    const keep = { manual: !!manual || calidad.manual, gpu: GPU, objetivo: OBJETIVO, texMax: calidad.texMax };
+    const keep = { manual: !!manual || calidad.manual, gpu: GPU, objetivo: OBJETIVO, texMax: calidad.texMax, escuela: calidad.escuela, escuelaAuto: calidad.escuelaAuto };
     Object.assign(calidad, PRESETS[nivel], keep);
     aplicarSombras(calidad); aplicarPost(calidad); manchaJugador();
+    G.emit('calidad', calidad);
+    return calidad;
+  }
+  // QA-181 / KIMI-320 (Modo Escuela): capa de ahorro por encima del preset. on=true/false la fija (manual),
+  // on=null deja el «auto». No cambia el nivel: aprieta distancias/tope de flora, población y piso de DPR.
+  function setEscuela(on, manual) {
+    const v = on == null ? null : !!on;
+    if (v === true && manual) calidad.escuelaAuto = false;
+    else if (v === true) calidad.escuelaAuto = true;   // lo encendió el auto: puede volver a apagarlo solo
+    if (calidad.escuela === v) return calidad;
+    calidad.escuela = v;
     G.emit('calidad', calidad);
     return calidad;
   }
@@ -906,11 +922,13 @@ AVE.module('renderer', function (G) {
     fpsM.bajo = (fps < OBJETIVO * 0.85 || tirones) && dprAlMinimo ? fpsM.bajo + 1 : 0;
     fpsM.alto = fps > Math.min(58, OBJETIVO * 1.6) && renderer.getPixelRatio() >= DPR_MAX - 0.01 ? fpsM.alto + 1 : 0;
     if (fpsM.bajo >= 3 && i > 0) { setCalidad(NIVELES[i - 1]); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }
+    else if (fpsM.bajo >= 8 && i === 0 && calidad.escuela !== true) { setEscuela(true); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }   // QA-181/KIMI-320: ya en «bajo» con DPR al mínimo y la media sigue baja ~8 s → Modo Escuela
+    else if (calidad.escuela === true && calidad.escuelaAuto && fpsM.alto >= 20 && !fpsM.bloqueo) { setEscuela(null); fpsM.alto = 0; }   // solo el auto lo apaga, y con el DPR otra vez arriba y ~20 s sobrados
     else if (fpsM.alto >= 12 && !fpsM.bloqueo && i < 2 && fpsM.subidas < 2 && !(PERFIL.techo && i >= NIVELES.indexOf(PERFIL.techo))) { setCalidad(NIVELES[i + 1]); fpsM.alto = 0; fpsM.subidas++; fpsM.bloqueo = 20000; fpsM.warm = 2500; }
   }
   const medidor = { fps: 0, ms: 0, frames: 0, t0: performance.now() };
   function stats() {
-    return { fps: Math.round(medidor.fps), calls: cuenta.ultimo.calls, triangulos: cuenta.ultimo.tris, calidad: calidad.nivel, dpr: renderer.getPixelRatio(), post: post.activo, sombras: sun.castShadow, gpu: GPU };
+    return { fps: Math.round(medidor.fps), calls: cuenta.ultimo.calls, triangulos: cuenta.ultimo.tris, calidad: calidad.nivel, dpr: renderer.getPixelRatio(), post: post.activo, sombras: sun.castShadow, gpu: GPU, escuela: calidad.escuela === true };
   }
 
   resize();
@@ -1364,6 +1382,22 @@ AVE.module('renderer', function (G) {
       check(`Este equipo (${calidad.nivel}): composer con bloom a ${B.escala === 0.25 ? '1/4' : '1/2'}, viñeta y ACES sin gradar dos veces`,
         renderer.toneMapping === THREE.ACESFilmicToneMapping && Math.abs(bw - dw * B.escala) <= 2 && post.bloom.strength === B.fuerza && post.grade.uniforms.uVig.value > 0, bw + ' de ' + dw + ' px');
     } else if (!quiere || !post.cargando) check(`Este equipo (${calidad.nivel}): sin composer, gradación en el tone mapping`, renderer.toneMapping === THREE.CustomToneMapping);
+    // KIMI-320 (QA-181, Modo Escuela): el modo es una capa aparte del nivel — lo enciende el auto, ?escuela=1/0 o setEscuela();
+    // no mueve el preset ni el post/sombras, y solo se apaga solo si lo encendió el auto.
+    {
+      const nivel0 = calidad.nivel, esc0 = calidad.escuela, auto0 = calidad.escuelaAuto;
+      setEscuela(true, true);
+      const enc = calidad.escuela === true && calidad.nivel === nivel0 && stats().escuela === true && calidad.escuelaAuto === false;
+      setEscuela(null, true);
+      const apag = calidad.escuela === null && calidad.nivel === nivel0 && calidad.escuelaAuto === false;
+      setEscuela(true);            // auto: marca escuelaAuto
+      const autoOn = calidad.escuela === true && calidad.escuelaAuto === true;
+      setEscuela(null);
+      const autoOff = calidad.escuela === null;
+      if (esc0 === true) setEscuela(true, true); else if (esc0 === false) setEscuela(false, true); else setEscuela(null, true);
+      calidad.escuelaAuto = auto0;
+      check('Modo Escuela: capa independiente del nivel (manual/auto, sin tocar preset ni post)', enc && apag && autoOn && autoOff, 'escuela ' + String(esc0) + ' → on/off/auto ok');
+    }
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
 
@@ -1492,7 +1526,7 @@ AVE.module('renderer', function (G) {
   }
 
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, leerLienzo: fotoLeer, drawScene,
-    sun, hemi, sky, sunDir, calidad, setCalidad, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
+    sun, hemi, sky, sunDir, calidad, setCalidad, setEscuela, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
     _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; }, get otra() { return calorOtra.size; } },
     _dyn: dyn, // QA-176: las pruebas de imagen (lookTest) lo usan para fijar la resolución dinámica; el juego no lo toca
     fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, esperas: FOTOS.esperas, caidas: FOTOS.caidas, errPBO: FOTOS.errPBO, cola: FOTOS.cola.length }),

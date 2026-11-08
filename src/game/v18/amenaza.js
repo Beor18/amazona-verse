@@ -59,7 +59,7 @@ window.AVV18Amenaza = function (G) {
   // completa (14) costaba ~5 fps en «medio» a CPU ×4 (pedido de Kimi 1, KIMI-088/PEDIDOS);
   // «medio» dibuja la misma densidad que «bajo» (9) y «alto» (escritorio) conserva la nube entera.
   const NIVEL0 = G.renderer.nivel && G.renderer.nivel();
-  const NB = G.renderer.REDUCED || NIVEL0 === 'bajo' || NIVEL0 === 'medio' ? 9 : 14;
+  const NB = G.renderer.REDUCED || NIVEL0 === 'bajo' || NIVEL0 === 'medio' || (G.renderer.calidad && G.renderer.calidad.escuela) ? 9 : 14;   // KIMI-320: en Modo Escuela la nube corta a la mitad como en bajo/medio
   // KIMI-087 (pulido visual, sin tocar la lógica): el tono va por instanceColor por bola y el borde es suave
   // con un degradado radial pintado en runtime (0 assets nuevos, ~16 KB en GPU).
   const matNiebla = new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.72, depthWrite: false });
