@@ -337,3 +337,5 @@ Las 12 baterías obligatorias pasan (selfTest 106, missionTest 79, accessoryTest
 - **idiomaTest 20/31, juiceTest 32/34, cargaTest 15/16, v18PuertoTest 44/45** (6c: constructor.glb/mallas), **v18MoonTest 18/19** (5: sitio de Moon con 1 sólido, libre 0.90 m), lookTest.
 - Presupuesto en arranque: heap 282 MB (límite 120), 185 draw calls (150), texturas 640 MB (300).
 Sin tocar `src/`: lo arregla la nube. Las extras corren en una sola pasada ~30 min en la Mac; conviene dividirlas.
+
+- **8-nov · accesibilidadTest sin verificar tras el remapeo (63e4778f, a69384e0).** En la VM (carga 12–13 en 4 núcleos) la batería pasó del tiempo: 600 s y luego 1800 s, sin resultado. En la misma máquina, movementTest tardó 1350 s (52/52). Falta correrla con la máquina libre. Si falla, revisar el bloque nuevo «Teclas ·», la recarga del tamaño de texto y las maquetas de 390×844. teclasTest 20/20, minimapaTest 44/44 y controlesTest 22/22 sí pasaron. El inglés de los textos nuevos de la sección Teclas y del minimapa lo hace Kelvin: si idiomaTest lo marca, es lo esperado.
