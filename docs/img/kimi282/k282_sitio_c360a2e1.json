@@ -1,20 +1,43 @@
 {
-  "etiqueta": "k282-sitio-c360a2e1",
-  "cuando_utc": "2026-11-08 ~10:00 UTC",
+  "etiqueta": "k282-sitio-c360a2e1-y-0389d94a",
+  "cuando_utc": "2026-11-08 ~10:00-10:05 UTC",
   "auditor": "Kimi 3 (bucle automatico)",
   "url": "https://www.amazonaverse.com/juego/",
   "metodo": "HTTP directo (curl) del sitio publicado; sin GPU (auditoria de build, no medicion de FPS)",
-  "resultados": {
-    "ave_build": "HEAD c360a2e1d1ae",
-    "records_js_duelos_ganados_e": 5,
-    "menu_modos_js_alMenu": 2,
-    "puerto_js_libreAviso": 0,
-    "evolucion_js_filtro_v18_claves": 0
-  },
-  "veredicto": {
-    "duelos_por_etapa_EN_PRODUCCION": true,
-    "salir_vuelve_al_menu_EN_PRODUCCION": true,
-    "parche_3_hallazgos_arco_V18.3_cf750143_EN_PRODUCCION": false,
-    "nota": "La publicacion c360a2e1 (anunciada por la nube 10:15 UTC) incluye duelos por etapa + Salir vuelve al menu: ambos verificados en vivo en los archivos servidos. El parche cf750143 (3 hallazgos del arco V18.3, validado con GPU real en KIMI-280 sobre HEAD) aun NO esta en produccion: puerto.js sin libreAviso y evolucion.js sin el filtro v18_muelle_/v18_puerto_/v18_arco_/v18_fiesta_. La nube anuncio 'Lanzo ahora otra publicacion con los 3 hallazgos (c0056d97)': cuando esa publicacion aterrice, toca validar en vivo (menuModosTest ya cubre Salir; v18PuertoTest/v18ArcoTest/v18EvolucionTest cubren el parche)."
-  }
+  "pasadas": [
+    {
+      "pasada": 1,
+      "hora_utc_aprox": "10:00",
+      "ave_build": "HEAD c360a2e1d1ae",
+      "resultados": {
+        "records_js_duelos_ganados_e": 5,
+        "menu_modos_js_alMenu": 2,
+        "puerto_js_libreAviso": 0,
+        "evolucion_js_filtro_v18_claves": 0
+      },
+      "veredicto": {
+        "duelos_por_etapa_EN_PRODUCCION": true,
+        "salir_vuelve_al_menu_EN_PRODUCCION": true,
+        "parche_3_hallazgos_arco_V18.3_cf750143_EN_PRODUCCION": false
+      }
+    },
+    {
+      "pasada": 2,
+      "hora_utc_aprox": "10:05",
+      "ave_build": "HEAD 0389d94a7c19",
+      "resultados": {
+        "records_js_duelos_ganados_e": 5,
+        "menu_modos_js_alMenu": 2,
+        "puerto_js_libreAviso": 2,
+        "evolucion_js_filtro_v18_claves": 2
+      },
+      "veredicto": {
+        "duelos_por_etapa_EN_PRODUCCION": true,
+        "salir_vuelve_al_menu_EN_PRODUCCION": true,
+        "parche_3_hallazgos_arco_V18.3_cf750143_EN_PRODUCCION": true
+      },
+      "nota": "La nube publico los 3 hallazgos del arco V18.3 entre las dos pasadas (📣 TAREAS_WEB.md 4a3cfa4e 'publicados los hallazgos del arco' + commit de sitio 354d3535). Con el build 0389d94a los 4 marcadores estan en produccion. El parche cf750143 ya habia sido validado con GPU real en HEAD (KIMI-280: v18ArcoTest 91/91 · v18PuertoTest 49/49 · v18EvolucionTest 64/64 · v18Test 11/11 + nucleo selfTest 108/108 · movementTest 52/52 · streamingTest 24/24 a 127 calls ≤ 150, 0 errores x7): la validacion en vivo queda cerrada con esta auditoria de los archivos servidos."
+    }
+  ],
+  "veredicto_final": "PRODUCCION AL DIA: c360a2e1 (duelos por etapa + Salir vuelve al menu) y 0389d94a (3 hallazgos arco V18.3) verificados en vivo. Ruta de publicacion de la noche completa: 7e46d05f -> c360a2e1 -> 0389d94a, todo auditado."
 }
