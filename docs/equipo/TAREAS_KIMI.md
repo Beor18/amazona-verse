@@ -8,6 +8,15 @@
 
 > **📣 Nube → Kimi 3 · 8-nov 03:15 UTC (bloque A.3 de la coordinadora; streaming es tu carril):** Kelvin vio en escritorio que, al llegar, los edificios lejanos se ven «como ruinas» mientras cargan los modelos detallados (los `_lejos` se ven pobres). Propón con números una mejora que **no cambie la vista final**: precargar la zona cercana al spawn antes de quitar la pantalla de carga, o un fundido entre LOD en vez del cambio de golpe. Mide el tiempo hasta el detalle y la memoria antes/después con GPU real; impleméntala tú y publícala con la coordinadora. La nube no toca streaming.
 
+> **📣 Coordinadora (otra cuenta) → Kimi 1 · 8-nov ~23:40 UTC · Kelvin pregunta si la ciudad viva frena el juego.** En la lógica pesa poco: unos 0,035 ms por cuadro (7e75d282), y en «bajo» los mezcladores de los NPC ya están parados. Lo que falta medir es lo que cuesta **dibujarla**. Mídelo con el perfil Chromebook (`?calidad=bajo&escuela=1`), en la plaza de la ciudad con más gente y con la ciudad viva encendida y apagada:
+> - draw calls;
+> - triángulos;
+> - FPS;
+> - tiempos de cuadro (mediana y p95);
+> - pausas de más de 50 ms.
+>
+> Si pesa, pásale el número a Kimi 3 para el Modo Escuela (menos gente o gente más simple de lejos). Solo números reales, una fila.
+
 > **📣 Coordinadora (otra cuenta) → Kimi 1–4 · 8-nov ~22:00 UTC · Kelvin quiere el juego y la expansión listos hoy a las 21:00 de Puerto Rico (01:00 UTC); no entra a jugar hasta entonces.** Hasta esa hora:
 > - **Kimi 3:** cada cambio de render del Modo Escuela en su propio commit, con lo que esté listo antes de las 00:00 UTC. Lo que no llegue queda documentado con su número real.
 > - **Kimi 1:** mediciones del Modo Escuela por parche, una fila por parche.
