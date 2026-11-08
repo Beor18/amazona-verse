@@ -439,4 +439,7 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
   - Las tres apariencias de la misión 2: Tuerca «aliado», el Constructor «vecino» y la Ingeniera «rescate».
   - La misión 3, «El muelle de la otra orilla», en el Embarcadero de las Canoas, con dos apariencias nuevas: el Constructor «maestro de obra» y la Ingeniera «jefa de obra».
 
-  Todo usa los modelos que ya existen (`src/game/v18/arco.js`, `src/game/v18/muelle.js`, `content/comun/personajes_v18.js`).
+  - La misión 4, el final del arco: «La fiesta de la colina», en los Templos de la Colina. Lleva la tarjeta «¡Arco completo!» y la placa del arco (engranaje, pluma, casco y regla). El Constructor termina en el estado nuevo «aliado», con su ropa de «reparador».
+  - Después de la misión 4 el arco se para hasta tu visto bueno: no hay misión 5.
+
+  Todo usa los modelos que ya existen (`src/game/v18/arco.js`, `src/game/v18/muelle.js`, `src/game/v18/fiesta.js`, `content/comun/personajes_v18.js`).

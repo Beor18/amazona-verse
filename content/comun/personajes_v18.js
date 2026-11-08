@@ -11,7 +11,7 @@
    Un modelo, varias apariencias (§8): nada de modelos nuevos por estado.
    Arco del Constructor, la Ingeniera y Tuerca: misión 1 en Puerto de La Mina (src/game/v18/puerto.js) y misión 2 en las Atalayas
    del Oeste (src/game/v18/arco.js). Cada misión solo avanza estados ya declarados aquí: aprendiz → responsable → rescate → jefa_obra (Ingeniera),
-   supervisor → reparador → vecino → maestro_obra (Constructor), operador → inventor → aliado (Tuerca). Misión 3: el muelle del
+   supervisor → reparador → vecino → maestro_obra → aliado (Constructor; el final del arco, con la ropa de reparador), operador → inventor → aliado (Tuerca). Misión 3: el muelle del
    Embarcadero de las Canoas (src/game/v18/muelle.js).
    Nombres en pantalla: «el Constructor» y «la Ingeniera» (provisionales; los definitivos los decide Kelvin, V18_3_AUDITORIA §0.4).
    El inglés de cada texto está en content/cap1/en.js. */
@@ -66,13 +66,15 @@ window.AV_NPC_V18 = [
       // Maestro de obra (misión 3, su primera obra buena con la Ingeniera): vuelve el chaleco, ahora verde, con casco, mochila y guantes
       maestro_obra: { mallas: { Casco: true, Chaleco: true, Mochila: true, Guantes: true, Botas: true }, colores: { CHALECO: '#3fae5a', CAMISA: '#2f6b4f' }, accesorios: [] }
     },
-    estados: ['supervisor', 'reparador', 'vecino', 'maestro_obra'],
-    transiciones: { supervisor: { reparador: true }, reparador: { vecino: true }, vecino: { maestro_obra: true } },
+    // aliado (misión 4, la fiesta de la colina): el final del arco. Es un estado nuevo hacia delante que vuelve a la ropa de reparador
+    estados: ['supervisor', 'reparador', 'vecino', 'maestro_obra', 'aliado'],
+    transiciones: { supervisor: { reparador: true }, reparador: { vecino: true }, vecino: { maestro_obra: true }, maestro_obra: { aliado: true } },
     porEstado: {
       supervisor: { apariencia: 'supervisor', anim: 'hablar', dialogo: ['¿Las cotorras? Se mudan un ratito y ya. ¡Esta obra no se para!'] },
       reparador: { apariencia: 'reparador', anim: 'trabajar', dialogo: ['Construir rápido no es construir bien… Esta vez miré primero quién vive aquí.'] },
       vecino: { apariencia: 'vecino', anim: 'idle', dialogo: ['Mirar primero, luego construir. ¡Ya me lo sé de memoria!', '¿Ves los faroles? Esta vez todos dijimos que sí.'] },
-      maestro_obra: { apariencia: 'maestro_obra', anim: 'idle', dialogo: ['¿Viste el muelle? Lo hicimos pensando en todos.', 'Ahora pregunto primero. ¡Y construyo mejor!'] }
+      maestro_obra: { apariencia: 'maestro_obra', anim: 'idle', dialogo: ['¿Viste el muelle? Lo hicimos pensando en todos.', 'Ahora pregunto primero. ¡Y construyo mejor!'] },
+      aliado: { apariencia: 'reparador', anim: 'trabajar', dialogo: ['Ahora reparo con ustedes. ¡Esa es mi mejor obra!', 'Si ves algo roto en la isla, avísame: lo arreglamos juntos.'] }
     }
   },
   {
