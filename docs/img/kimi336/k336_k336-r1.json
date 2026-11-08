@@ -1,0 +1,206 @@
+{
+ "perfil": "escritorio 1600x900@1 (niño nuevo, ?v18=1)",
+ "etiqueta": "k336-r1",
+ "head": "31755a11",
+ "beats": {
+  "portada": {
+   "tarjetas": 0,
+   "titulo": ""
+  },
+  "b1_spawn": {
+   "px": 134,
+   "py": 5.2,
+   "pz": 182.5,
+   "fps": 144,
+   "calls": 174,
+   "triangulos": 1008458,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "escuela": false,
+   "geo": 189,
+   "tex": 162,
+   "prog": 76,
+   "heap": 354,
+   "fps_med": 144,
+   "fps_p10": 143,
+   "fps_watchdog": false,
+   "hud": {
+    "quest": {
+     "vis": true,
+     "x": 12,
+     "y": 12,
+     "w": 330,
+     "h": 270,
+     "txt": "Capítulo 1 · Villa Raíz\n    El día que el cielo se rompió\n    Despega, vuela has",
+     "overflow": false
+    },
+    "acts": 7,
+    "stick": true,
+    "minimapa": null,
+    "keyhint": "WASD MoverteEspacio SaltarV VolarE Acción"
+   }
+  },
+  "b2_movimiento": {
+   "p0": {
+    "x": 134,
+    "y": 5.24,
+    "z": 182.5,
+    "flying": false
+   },
+   "p1": {
+    "x": 134,
+    "y": 14.72,
+    "z": 182.5,
+    "flying": true,
+    "grounded": false
+   },
+   "volo": true,
+   "subio_m": 9.48,
+   "camino_m": 0
+  },
+  "b2_volando": {
+   "px": 134,
+   "py": 14.8,
+   "pz": 182.5,
+   "fps": 91,
+   "calls": 203,
+   "triangulos": 2208601,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "escuela": false,
+   "geo": 268,
+   "tex": 174,
+   "prog": 93,
+   "heap": 443,
+   "fps_med": 144,
+   "fps_p10": 143.6,
+   "fps_watchdog": false,
+   "hud": {
+    "quest": {
+     "vis": true,
+     "x": 12,
+     "y": 12,
+     "w": 330,
+     "h": 270,
+     "txt": "Capítulo 1 · Villa Raíz\n    El día que el cielo se rompió\n    Despega, vuela has",
+     "overflow": false
+    },
+    "acts": 7,
+    "stick": true,
+    "minimapa": {
+     "w": 118
+    },
+    "keyhint": "WASD MoverteEspacio SaltarV VolarE Acción"
+   },
+   "volo": true
+  },
+  "b3_menu": {
+   "abierto": true,
+   "tarjetas": 0,
+   "desborda": 0
+  },
+  "b4_duelo": {
+   "px": 177,
+   "py": 4,
+   "pz": 172,
+   "fps": 144,
+   "calls": 187,
+   "triangulos": 1037631,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "escuela": false,
+   "geo": 276,
+   "tex": 176,
+   "prog": 94,
+   "heap": 408,
+   "fps_med": 144,
+   "fps_p10": 143.1,
+   "fps_watchdog": false,
+   "hud": {
+    "quest": {
+     "vis": false,
+     "x": 12,
+     "y": 12,
+     "w": 330,
+     "h": 270,
+     "txt": "Capítulo 1 · Villa Raíz\n    El día que el cielo se rompió\n    Despega, vuela has",
+     "overflow": false
+    },
+    "acts": 7,
+    "stick": true,
+    "minimapa": {
+     "w": 118
+    },
+    "keyhint": "WASD MoverteEspacio SaltarV VolarE Acción"
+   },
+   "fase": "lucha"
+  },
+  "b5_arco": {
+   "px": -69.2,
+   "py": 16.4,
+   "pz": 68.4,
+   "fps": 144,
+   "calls": 187,
+   "triangulos": 1037631,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "escuela": false,
+   "geo": 276,
+   "tex": 176,
+   "prog": 94,
+   "heap": 408,
+   "fps_med": 144,
+   "fps_p10": 143.2,
+   "fps_watchdog": false,
+   "hud": {
+    "quest": {
+     "vis": true,
+     "x": 12,
+     "y": 12,
+     "w": 330,
+     "h": 270,
+     "txt": "Capítulo 1 · Villa Raíz\n    El día que el cielo se rompió\n    Despega, vuela has",
+     "overflow": false
+    },
+    "acts": 7,
+    "stick": true,
+    "minimapa": {
+     "w": 118
+    },
+    "keyhint": "WASD MoverteEspacio SaltarV VolarE Acción"
+   },
+   "elenco": false
+  },
+  "b6_family": {
+   "abrio": true,
+   "cuento": {
+    "ok": true,
+    "hecha": true
+   }
+  }
+ },
+ "fricciones": [
+  "caminar: A no movió a Vittata (0.00 m)",
+  "menú V18: no abrió o faltan tarjetas ({\"abierto\":true,\"tarjetas\":0,\"desborda\":0})",
+  "arco: elenco no despertó en Atalayas: {\"elenco\":false,\"espera_s\":15,\"estado\":\"reunion\"}"
+ ],
+ "consola_errores": [],
+ "final": {
+  "calls": 187,
+  "heap": 413,
+  "geo": 276,
+  "tex": 176
+ }
+}
