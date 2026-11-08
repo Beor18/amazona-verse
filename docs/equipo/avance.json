@@ -53,7 +53,8 @@
     "que": "Bugs abiertos propios de cada capítulo",
     "donde": "docs/equipo/BUGS.md",
     "quien": "Otra cuenta (W29: actividades en el teléfono)",
-    "estado": "en curso"
+    "estado": "hecho",
+    "nota": "8-nov: revisado fila por fila; no queda bug de capítulo arreglable en código. Lo que sigue abierto espera dispositivos físicos de Kelvin (iPhone, iPad, Chromebook), la Mac o su decisión (QA-181 «escuela», QA-109 fondo de la bahía)"
    },
    {
     "que": "Maestro Moon, Tuerca y Guardián probados en móvil",
