@@ -50,7 +50,8 @@ window.AVV18Guardian = function (G) {
     nuevo: '¡Nuevo récord: {}!',
     xp: 'Tu aventura cuenta: +{} XP para tu cotorra.',
     lejos: 'Te alejaste del circuito: el vuelo con el Guardián queda para otro rato.',
-    sale: 'Saliste del circuito: el vuelo con el Guardián queda para otro rato.'
+    sale: 'Saliste del circuito: el vuelo con el Guardián queda para otro rato.',
+    mirar: 'Mirar', mirarA: 'Acción: mirar hacia la puerta siguiente'
   };
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2600); } catch (e) { /* sin interfaz */ } };
@@ -167,7 +168,9 @@ window.AVV18Guardian = function (G) {
         '#v18-guardian .vg-h{display:flex;align-items:center;justify-content:center;gap:8px}#v18-guardian .vg-x{pointer-events:auto;flex:none;min-width:44px;min-height:44px;padding:0 12px;border:0;border-radius:22px;background:#fff3d6;color:#3b2a14;font:inherit;font-size:14px;font-weight:700}' +
         '#v18-guardian .vg-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-guardian .vg-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-guardian .vg-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#7ee0d2;text-shadow:0 2px 0 #123f4c}#v18-guardian .vg-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
-        'body:has(#v18-guardian:not([hidden])) #toast{z-index:41}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto (W29: la regla estaba dentro de la del panel y no valía)
+        'body:has(#v18-guardian:not([hidden])) #toast{z-index:41}' +
+        // QA V18.3: el panel de misiones de la historia (con su cronómetro) no se ve mientras dura el circuito (como en el minigolf); vuelve al salir
+        'body.v18-guardian-on #quest,body.v18-guardian-on #quest-toggle{visibility:hidden}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto (W29: la regla estaba dentro de la del panel y no valía)
         // W29 (móvil): a 64 px el panel tapaba la línea de misión, el inventario y el minimapa. Va en la columna izquierda libre, bajo la fila de fichas (92-130 px) y a la izquierda del minimapa
         '@media (max-width:560px){#v18-guardian{top:calc(env(safe-area-inset-top,0px) + 132px);left:12px;right:auto;margin-inline:0;width:min(220px,calc(100vw - 190px));min-width:150px;padding:6px 10px}' +
         '#v18-guardian .vg-n{font-size:calc(34px * var(--fs-k,1))}#v18-guardian .vg-l{font-size:calc(15px * var(--fs-k,1))}}';
@@ -191,12 +194,28 @@ window.AVV18Guardian = function (G) {
   function pintarHud() {
     if (!hud) return;
     const on = A.fase === 'cuenta' || A.fase === 'circuito';
-    hud.el.hidden = !on; if (!on) return;
+    hud.el.hidden = !on; enganche(on); if (!on) return;
     const n = A.fase === 'cuenta' ? String(Math.max(1, Math.ceil(A.cuenta))) : A.fase === 'circuito' && A.t < 0.8 ? TXT.ya : '';
     hud.n.hidden = !n; pon('n', n);
     pon('p', A.sig >= SITIO.puertas.length ? TXT.meta : TXT.puerta.replace('{}', A.sig + 1));
     pon('s', reloj(A.fase === 'circuito' ? A.t : 0));
     const r = record(); pon('r', r && r.mejor ? TXT.record + ': ' + reloj(r.mejor / 1000) : '');
+  }
+
+  // QA V18.3: mientras dura el circuito se toma Acción con G.interaccion.modo (patrón de combate.js), para que no diga «Aquí no hay
+  // nada para usar»: gira la cámara hacia la puerta siguiente (o la salida, tras la 5.ª). Al salir se devuelve, y el panel de misiones vuelve.
+  const modo = { activo: () => A.fase === 'cuenta' || A.fase === 'circuito', accion: mirarPuerta, aviso: () => TXT.mirarA, verbo: TXT.mirar };
+  let modo0 = null, enganchado = false;
+  function enganche(on) {
+    if (on === enganchado) return; enganchado = on;
+    if (on) { modo0 = G.interaccion.modo; G.interaccion.modo = modo; } else if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
+    document.body.classList.toggle('v18-guardian-on', on);
+  }
+  function mirarPuerta() {
+    const p = puertaActual(), dx = p.x - S.pos.x, dz = p.z - S.pos.z;
+    if (Math.hypot(dx, dz) < 0.5) return;
+    try { G.camara.yaw = Math.atan2(-dx, -dz); } catch (e) { /* sin cámara */ }
+    sonar('tick');
   }
 
   // ---------- Guardián (instancia del sistema de NPC) ----------
@@ -317,7 +336,7 @@ window.AVV18Guardian = function (G) {
     if (A.fase === 'cuenta' || A.fase === 'circuito') { const p = puertaActual(); return { x: p.x, z: p.z, nombre: TXT.siguiente }; }
     return { x: SITIO.salida.x, z: SITIO.salida.z, nombre: TXT.nombre };
   };
-  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.puerta, TXT.meta, TXT.siguiente, TXT.tiempo, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos].concat(TXT.reto, TXT.revancha, TXT.gana);
+  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.puerta, TXT.meta, TXT.siguiente, TXT.tiempo, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.mirar, TXT.mirarA].concat(TXT.reto, TXT.revancha, TXT.gana);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
     if (d.nombre) l.push(d.nombre.es); return l; };
 

@@ -49,7 +49,8 @@ window.AVV18Moon = function (G) {
     nuevo: '¡Nuevo récord: solo {} toques!',
     xp: 'Tu aventura cuenta: +{} XP para tu cotorra.',
     lejos: 'Te alejaste del claro: el entrenamiento con Moon queda para otro rato.',
-    alto: 'El entreno es en el suelo: baja a entrenar la esquiva de verdad.'
+    alto: 'El entreno es en el suelo: baja a entrenar la esquiva de verdad.',
+    esquiva: 'Esquivar', esquivaA: 'Acción: esquivar con un impulso'
   };
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2600); } catch (e) { /* sin interfaz */ } };
@@ -149,12 +150,21 @@ window.AVV18Moon = function (G) {
   function pintarHud() {
     if (!hud) return;
     const on = A.fase === 'cuenta' || A.fase === 'entreno';
-    hud.el.hidden = !on; document.body.classList.toggle('v18-moon-on', on); if (!on) return;
+    hud.el.hidden = !on; document.body.classList.toggle('v18-moon-on', on); enganche(on); if (!on) return;
     const n = A.fase === 'cuenta' ? String(Math.max(1, Math.ceil(A.cuenta))) : A.fase === 'entreno' && A.t < 0.8 ? TXT.ya : '';
     hud.n.hidden = !n; pon('n', n);
     pon('p', TXT.quedan.replace('{}', String(Math.max(0, Math.ceil(DUR_S - A.t)))));
     pon('s', TXT.toques.replace('{}', String(A.toques)));
     const r = record(); pon('r', r && r.mejor != null ? TXT.record + ': ' + r.mejor + ' · ' + reloj(A.t) : reloj(A.t));
+  }
+
+  // QA V18.3: mientras dura el entreno se toma Acción con G.interaccion.modo (patrón de combate.js), para que no diga «Aquí no hay
+  // nada para usar»: Acción esquiva con un impulso (el mismo del botón Impulso). Al acabar se devuelve.
+  const modo = { activo: () => A.fase === 'cuenta' || A.fase === 'entreno', accion: () => { try { F.tryDash(); } catch (e) { /* sin física */ } }, aviso: () => TXT.esquivaA, verbo: TXT.esquiva };
+  let modo0 = null, enganchado = false;
+  function enganche(on) {
+    if (on === enganchado) return; enganchado = on;
+    if (on) { modo0 = G.interaccion.modo; G.interaccion.modo = modo; } else if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
   }
 
   // ---------- El claro: se despeja solo la flora del círculo (como la explanada del duelo, combate.js despejarSitio) ----------
@@ -279,7 +289,7 @@ window.AVV18Moon = function (G) {
     if (!activa()) return null;
     return { x: SITIO.x, z: SITIO.z, nombre: TXT.nombre };
   };
-  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.quedan, TXT.toques, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.alto].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
+  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.quedan, TXT.toques, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.alto, TXT.esquiva, TXT.esquivaA].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
     if (d.nombre) l.push(d.nombre.es); return l; };
 
