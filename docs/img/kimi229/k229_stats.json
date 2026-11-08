@@ -1,0 +1,38 @@
+{
+ "head": "",
+ "consola_errores": [],
+ "stats": {
+  "spawn": {
+   "fps": 122,
+   "calls": 186,
+   "triangulos": 846246,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "px": 134,
+   "pz": 182.5
+  },
+  "ciudad_norte": {
+   "fps": 55,
+   "calls": 113,
+   "triangulos": 946308,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "ciudad_sur": {
+   "fps": 14,
+   "calls": 274,
+   "triangulos": 4358144,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  }
+ }
+}
