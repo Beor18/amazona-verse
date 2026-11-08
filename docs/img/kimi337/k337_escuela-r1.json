@@ -1,0 +1,821 @@
+{
+ "tarea": "KIMI-337",
+ "bug": "QA-181",
+ "etiqueta": "escuela-r1",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "packs": {
+  "cap1": {
+   "cargaListaS": 4.8,
+   "cargaEntradaS": 27.5,
+   "asentado": {
+    "pos": [
+     -8,
+     -2.5
+    ],
+    "calls": 70,
+    "ktris": 323,
+    "fpsMedidor": 15,
+    "dpr": 0.75,
+    "heapMB": 121
+   },
+   "raf": {
+    "cuadros": 208,
+    "fpsPorSeg": [
+     0,
+     15,
+     19,
+     13,
+     15,
+     18,
+     19,
+     19,
+     19,
+     18,
+     16,
+     18,
+     16
+    ],
+    "fpsMed": 16,
+    "fpsMin": 0,
+    "peorMs": 2835,
+    "p95Ms": 87
+   },
+   "fin": {
+    "calls": 69,
+    "ktris": 323,
+    "fpsMedidor": 18,
+    "dpr": 0.75,
+    "heapMB": 137
+   },
+   "perfil": {
+    "duracionMs": 14770,
+    "muestras": 6765,
+    "modulo": [
+     {
+      "modulo": "three.js",
+      "selfMs": 5362.7,
+      "pct": 36.31
+     },
+     {
+      "modulo": "nativo",
+      "selfMs": 3903.4,
+      "pct": 26.43
+     },
+     {
+      "modulo": "renderer",
+      "selfMs": 1688.8,
+      "pct": 11.43
+     },
+     {
+      "modulo": "anónima/sin-url",
+      "selfMs": 1335.7,
+      "pct": 9.04
+     },
+     {
+      "modulo": "game",
+      "selfMs": 1138.6,
+      "pct": 7.71
+     },
+     {
+      "modulo": "streaming",
+      "selfMs": 355.2,
+      "pct": 2.4
+     },
+     {
+      "modulo": "engine/otro",
+      "selfMs": 248.1,
+      "pct": 1.68
+     },
+     {
+      "modulo": "fisica",
+      "selfMs": 219.4,
+      "pct": 1.49
+     },
+     {
+      "modulo": "terreno",
+      "selfMs": 188.1,
+      "pct": 1.27
+     },
+     {
+      "modulo": "otro:personaje/character.js",
+      "selfMs": 102.5,
+      "pct": 0.69
+     },
+     {
+      "modulo": "solidos",
+      "selfMs": 85.3,
+      "pct": 0.58
+     },
+     {
+      "modulo": "agua",
+      "selfMs": 58.1,
+      "pct": 0.39
+     },
+     {
+      "modulo": "content",
+      "selfMs": 54.7,
+      "pct": 0.37
+     },
+     {
+      "modulo": "vegetacion",
+      "selfMs": 25.9,
+      "pct": 0.18
+     },
+     {
+      "modulo": "boot",
+      "selfMs": 2,
+      "pct": 0.01
+     },
+     {
+      "modulo": "mundo",
+      "selfMs": 2,
+      "pct": 0.01
+     }
+    ],
+    "funciones": [
+     {
+      "funcion": "nativo · (program)",
+      "selfMs": 3903.4,
+      "hits": 651,
+      "pct": 26.43
+     },
+     {
+      "funcion": "three.js · updateMatrixWorld",
+      "selfMs": 965.1,
+      "hits": 544,
+      "pct": 6.53
+     },
+     {
+      "funcion": "renderer · objPendiente",
+      "selfMs": 475.2,
+      "hits": 268,
+      "pct": 3.22
+     },
+     {
+      "funcion": "three.js · traverse",
+      "selfMs": 359.4,
+      "hits": 202,
+      "pct": 2.43
+     },
+     {
+      "funcion": "three.js · getProgramCacheKey",
+      "selfMs": 357.7,
+      "hits": 200,
+      "pct": 2.42
+     },
+     {
+      "funcion": "three.js · Pt",
+      "selfMs": 335.9,
+      "hits": 190,
+      "pct": 2.27
+     },
+     {
+      "funcion": "three.js · At",
+      "selfMs": 324.2,
+      "hits": 179,
+      "pct": 2.2
+     },
+     {
+      "funcion": "three.js · multiplyMatrices",
+      "selfMs": 288.8,
+      "hits": 161,
+      "pct": 1.95
+     },
+     {
+      "funcion": "streaming · cuadro",
+      "selfMs": 249.6,
+      "hits": 139,
+      "pct": 1.69
+     },
+     {
+      "funcion": "three.js · It",
+      "selfMs": 237,
+      "hits": 133,
+      "pct": 1.6
+     },
+     {
+      "funcion": "game · (anónima)",
+      "selfMs": 230.8,
+      "hits": 133,
+      "pct": 1.56
+     },
+     {
+      "funcion": "three.js · update",
+      "selfMs": 198.8,
+      "hits": 109,
+      "pct": 1.35
+     },
+     {
+      "funcion": "three.js · (anónima)",
+      "selfMs": 164.7,
+      "hits": 91,
+      "pct": 1.12
+     },
+     {
+      "funcion": "renderer · calentarPresupuesto",
+      "selfMs": 164.5,
+      "hits": 93,
+      "pct": 1.11
+     },
+     {
+      "funcion": "renderer · texturasPendientes",
+      "selfMs": 146.9,
+      "hits": 82,
+      "pct": 0.99
+     },
+     {
+      "funcion": "terreno · triQuery",
+      "selfMs": 144.1,
+      "hits": 81,
+      "pct": 0.98
+     },
+     {
+      "funcion": "three.js · renderBufferDirect",
+      "selfMs": 143.4,
+      "hits": 81,
+      "pct": 0.97
+     },
+     {
+      "funcion": "three.js · toArray",
+      "selfMs": 132.9,
+      "hits": 74,
+      "pct": 0.9
+     },
+     {
+      "funcion": "game · paso",
+      "selfMs": 127.1,
+      "hits": 69,
+      "pct": 0.86
+     },
+     {
+      "funcion": "renderer · render",
+      "selfMs": 115.4,
+      "hits": 64,
+      "pct": 0.78
+     },
+     {
+      "funcion": "anónima/sin-url · bindBuffer",
+      "selfMs": 114.8,
+      "hits": 64,
+      "pct": 0.78
+     },
+     {
+      "funcion": "anónima/sin-url · bindVertexArray",
+      "selfMs": 102.1,
+      "hits": 56,
+      "pct": 0.69
+     },
+     {
+      "funcion": "engine/otro · G.emit",
+      "selfMs": 98.6,
+      "hits": 56,
+      "pct": 0.67
+     },
+     {
+      "funcion": "anónima/sin-url · now",
+      "selfMs": 98.2,
+      "hits": 54,
+      "pct": 0.66
+     },
+     {
+      "funcion": "fisica · pushOut",
+      "selfMs": 96.4,
+      "hits": 52,
+      "pct": 0.65
+     },
+     {
+      "funcion": "renderer · idCalorOtra",
+      "selfMs": 95.1,
+      "hits": 52,
+      "pct": 0.64
+     },
+     {
+      "funcion": "fisica · step",
+      "selfMs": 93.4,
+      "hits": 54,
+      "pct": 0.63
+     },
+     {
+      "funcion": "three.js · getParameters",
+      "selfMs": 93.1,
+      "hits": 53,
+      "pct": 0.63
+     },
+     {
+      "funcion": "three.js · setup",
+      "selfMs": 86.4,
+      "hits": 48,
+      "pct": 0.59
+     },
+     {
+      "funcion": "three.js · Cr.seqWithValue",
+      "selfMs": 80.2,
+      "hits": 46,
+      "pct": 0.54
+     },
+     {
+      "funcion": "anónima/sin-url · texImage2D",
+      "selfMs": 80,
+      "hits": 45,
+      "pct": 0.54
+     },
+     {
+      "funcion": "streaming · (anónima)",
+      "selfMs": 78.8,
+      "hits": 45,
+      "pct": 0.53
+     },
+     {
+      "funcion": "three.js · Oi",
+      "selfMs": 76.8,
+      "hits": 43,
+      "pct": 0.52
+     },
+     {
+      "funcion": "renderer · warmOtraUno",
+      "selfMs": 76.8,
+      "hits": 43,
+      "pct": 0.52
+     },
+     {
+      "funcion": "three.js · Cr.upload",
+      "selfMs": 73.5,
+      "hits": 41,
+      "pct": 0.5
+     },
+     {
+      "funcion": "anónima/sin-url · vertexAttribPointer",
+      "selfMs": 73.2,
+      "hits": 41,
+      "pct": 0.5
+     },
+     {
+      "funcion": "three.js · Wi",
+      "selfMs": 70.6,
+      "hits": 40,
+      "pct": 0.48
+     },
+     {
+      "funcion": "renderer · ocultarPendientes",
+      "selfMs": 69.7,
+      "hits": 39,
+      "pct": 0.47
+     },
+     {
+      "funcion": "renderer · (anónima)",
+      "selfMs": 69.2,
+      "hits": 38,
+      "pct": 0.47
+     },
+     {
+      "funcion": "anónima/sin-url · drawImage",
+      "selfMs": 66.9,
+      "hits": 37,
+      "pct": 0.45
+     },
+     {
+      "funcion": "anónima/sin-url · bufferSubData",
+      "selfMs": 65.8,
+      "hits": 37,
+      "pct": 0.45
+     },
+     {
+      "funcion": "otro:personaje/character.js · update",
+      "selfMs": 65.6,
+      "hits": 37,
+      "pct": 0.44
+     },
+     {
+      "funcion": "three.js · Ct",
+      "selfMs": 63.6,
+      "hits": 36,
+      "pct": 0.43
+     },
+     {
+      "funcion": "game · otraCerca",
+      "selfMs": 61.1,
+      "hits": 34,
+      "pct": 0.41
+     },
+     {
+      "funcion": "anónima/sin-url · bindTexture",
+      "selfMs": 60.7,
+      "hits": 34,
+      "pct": 0.41
+     }
+    ]
+   },
+   "errores": []
+  },
+  "ep3": {
+   "cargaListaS": 5.8,
+   "cargaEntradaS": 22.7,
+   "asentado": {
+    "pos": [
+     172,
+     174
+    ],
+    "calls": 89,
+    "ktris": 190,
+    "fpsMedidor": 2,
+    "dpr": 0.75,
+    "heapMB": 68
+   },
+   "raf": {
+    "cuadros": 136,
+    "fpsPorSeg": [
+     0,
+     8,
+     10,
+     6,
+     12,
+     20,
+     21,
+     17,
+     9,
+     1,
+     22
+    ],
+    "fpsMed": 11,
+    "fpsMin": 0,
+    "peorMs": 2242,
+    "p95Ms": 164
+   },
+   "fin": {
+    "calls": 96,
+    "ktris": 579,
+    "fpsMedidor": 21,
+    "dpr": 0.75,
+    "heapMB": 131
+   },
+   "perfil": {
+    "duracionMs": 13939,
+    "muestras": 6990,
+    "modulo": [
+     {
+      "modulo": "three.js",
+      "selfMs": 3888.4,
+      "pct": 27.9
+     },
+     {
+      "modulo": "nativo",
+      "selfMs": 2834.6,
+      "pct": 20.34
+     },
+     {
+      "modulo": "solidos",
+      "selfMs": 2675.9,
+      "pct": 19.2
+     },
+     {
+      "modulo": "anónima/sin-url",
+      "selfMs": 1510.7,
+      "pct": 10.84
+     },
+     {
+      "modulo": "renderer",
+      "selfMs": 703.9,
+      "pct": 5.05
+     },
+     {
+      "modulo": "game",
+      "selfMs": 691.8,
+      "pct": 4.96
+     },
+     {
+      "modulo": "streaming",
+      "selfMs": 581.7,
+      "pct": 4.17
+     },
+     {
+      "modulo": "terreno",
+      "selfMs": 306.5,
+      "pct": 2.2
+     },
+     {
+      "modulo": "agua",
+      "selfMs": 152.6,
+      "pct": 1.09
+     },
+     {
+      "modulo": "engine/otro",
+      "selfMs": 146.4,
+      "pct": 1.05
+     },
+     {
+      "modulo": "otro:personaje/character.js",
+      "selfMs": 130.2,
+      "pct": 0.93
+     },
+     {
+      "modulo": "fisica",
+      "selfMs": 127.9,
+      "pct": 0.92
+     },
+     {
+      "modulo": "vegetacion",
+      "selfMs": 107.4,
+      "pct": 0.77
+     },
+     {
+      "modulo": "mundo",
+      "selfMs": 54.1,
+      "pct": 0.39
+     },
+     {
+      "modulo": "assets",
+      "selfMs": 13.5,
+      "pct": 0.1
+     },
+     {
+      "modulo": "boot",
+      "selfMs": 9.6,
+      "pct": 0.07
+     },
+     {
+      "modulo": "content",
+      "selfMs": 4,
+      "pct": 0.03
+     }
+    ],
+    "funciones": [
+     {
+      "funcion": "nativo · (program)",
+      "selfMs": 2834.6,
+      "hits": 534,
+      "pct": 20.34
+     },
+     {
+      "funcion": "solidos · triSeguir",
+      "selfMs": 782.8,
+      "hits": 449,
+      "pct": 5.62
+     },
+     {
+      "funcion": "solidos · block",
+      "selfMs": 640.5,
+      "hits": 368,
+      "pct": 4.6
+     },
+     {
+      "funcion": "solidos · insert",
+      "selfMs": 448.7,
+      "hits": 259,
+      "pct": 3.22
+     },
+     {
+      "funcion": "three.js · updateMatrixWorld",
+      "selfMs": 370.3,
+      "hits": 212,
+      "pct": 2.66
+     },
+     {
+      "funcion": "three.js · getX",
+      "selfMs": 279.2,
+      "hits": 160,
+      "pct": 2
+     },
+     {
+      "funcion": "terreno · triQuery",
+      "selfMs": 250.2,
+      "hits": 144,
+      "pct": 1.8
+     },
+     {
+      "funcion": "streaming · avanzar",
+      "selfMs": 248.7,
+      "hits": 138,
+      "pct": 1.78
+     },
+     {
+      "funcion": "solidos · trabajar",
+      "selfMs": 190.8,
+      "hits": 107,
+      "pct": 1.37
+     },
+     {
+      "funcion": "anónima/sin-url · now",
+      "selfMs": 188.8,
+      "hits": 107,
+      "pct": 1.35
+     },
+     {
+      "funcion": "three.js · Pt",
+      "selfMs": 178.6,
+      "hits": 105,
+      "pct": 1.28
+     },
+     {
+      "funcion": "three.js · multiplyMatrices",
+      "selfMs": 174.3,
+      "hits": 99,
+      "pct": 1.25
+     },
+     {
+      "funcion": "game · (anónima)",
+      "selfMs": 164.4,
+      "hits": 95,
+      "pct": 1.18
+     },
+     {
+      "funcion": "three.js · (anónima)",
+      "selfMs": 163.6,
+      "hits": 93,
+      "pct": 1.17
+     },
+     {
+      "funcion": "anónima/sin-url · (idle)",
+      "selfMs": 163.3,
+      "hits": 93,
+      "pct": 1.17
+     },
+     {
+      "funcion": "three.js · getProgramCacheKey",
+      "selfMs": 156.9,
+      "hits": 89,
+      "pct": 1.13
+     },
+     {
+      "funcion": "agua · mapLevel",
+      "selfMs": 149.5,
+      "hits": 84,
+      "pct": 1.07
+     },
+     {
+      "funcion": "three.js · traverse",
+      "selfMs": 144.5,
+      "hits": 83,
+      "pct": 1.04
+     },
+     {
+      "funcion": "solidos · cm",
+      "selfMs": 143.9,
+      "hits": 83,
+      "pct": 1.03
+     },
+     {
+      "funcion": "anónima/sin-url · getProgramParameter",
+      "selfMs": 133.6,
+      "hits": 76,
+      "pct": 0.96
+     },
+     {
+      "funcion": "renderer · texturasDe",
+      "selfMs": 129.7,
+      "hits": 76,
+      "pct": 0.93
+     },
+     {
+      "funcion": "solidos · key",
+      "selfMs": 125.3,
+      "hits": 71,
+      "pct": 0.9
+     },
+     {
+      "funcion": "anónima/sin-url · (garbage collector)",
+      "selfMs": 119.5,
+      "hits": 67,
+      "pct": 0.86
+     },
+     {
+      "funcion": "three.js · At",
+      "selfMs": 111.9,
+      "hits": 63,
+      "pct": 0.8
+     },
+     {
+      "funcion": "three.js · It",
+      "selfMs": 107.3,
+      "hits": 65,
+      "pct": 0.77
+     },
+     {
+      "funcion": "three.js · applyMatrix4",
+      "selfMs": 106.3,
+      "hits": 62,
+      "pct": 0.76
+     },
+     {
+      "funcion": "three.js · getY",
+      "selfMs": 102.6,
+      "hits": 59,
+      "pct": 0.74
+     },
+     {
+      "funcion": "three.js · update",
+      "selfMs": 99.4,
+      "hits": 55,
+      "pct": 0.71
+     },
+     {
+      "funcion": "anónima/sin-url · texImage2D",
+      "selfMs": 96.3,
+      "hits": 54,
+      "pct": 0.69
+     },
+     {
+      "funcion": "streaming · cuadro",
+      "selfMs": 94.4,
+      "hits": 56,
+      "pct": 0.68
+     },
+     {
+      "funcion": "anónima/sin-url · bindBuffer",
+      "selfMs": 84.7,
+      "hits": 49,
+      "pct": 0.61
+     },
+     {
+      "funcion": "three.js · setup",
+      "selfMs": 82.6,
+      "hits": 47,
+      "pct": 0.59
+     },
+     {
+      "funcion": "anónima/sin-url · drawImage",
+      "selfMs": 82.5,
+      "hits": 48,
+      "pct": 0.59
+     },
+     {
+      "funcion": "three.js · setFromBufferAttribute",
+      "selfMs": 82.5,
+      "hits": 47,
+      "pct": 0.59
+     },
+     {
+      "funcion": "anónima/sin-url · vertexAttribPointer",
+      "selfMs": 80.3,
+      "hits": 45,
+      "pct": 0.58
+     },
+     {
+      "funcion": "three.js · renderBufferDirect",
+      "selfMs": 77.3,
+      "hits": 42,
+      "pct": 0.55
+     },
+     {
+      "funcion": "game · paso",
+      "selfMs": 74.6,
+      "hits": 41,
+      "pct": 0.54
+     },
+     {
+      "funcion": "streaming · (anónima)",
+      "selfMs": 69.5,
+      "hits": 40,
+      "pct": 0.5
+     },
+     {
+      "funcion": "three.js · applyNormalMatrix",
+      "selfMs": 69.1,
+      "hits": 40,
+      "pct": 0.5
+     },
+     {
+      "funcion": "three.js · clone",
+      "selfMs": 66.4,
+      "hits": 38,
+      "pct": 0.48
+     },
+     {
+      "funcion": "three.js · fromBufferAttribute",
+      "selfMs": 65.3,
+      "hits": 37,
+      "pct": 0.47
+     },
+     {
+      "funcion": "renderer · calentarPresupuesto",
+      "selfMs": 63.9,
+      "hits": 38,
+      "pct": 0.46
+     },
+     {
+      "funcion": "renderer · idCalor",
+      "selfMs": 59.9,
+      "hits": 34,
+      "pct": 0.43
+     },
+     {
+      "funcion": "anónima/sin-url · bindVertexArray",
+      "selfMs": 58.7,
+      "hits": 33,
+      "pct": 0.42
+     },
+     {
+      "funcion": "anónima/sin-url · bufferSubData",
+      "selfMs": 56.9,
+      "hits": 32,
+      "pct": 0.41
+     }
+    ]
+   },
+   "errores": []
+  }
+ },
+ "ventanaPerfilS": 12,
+ "head": "desconocido",
+ "nota": "PC compartida con otra sesion Kimi durante la medicion: self-time % (throttling por proceso) valido; tiempos absolutos = techo"
+}

@@ -1,0 +1,27 @@
+[22:11:12] pack cap1: navegando...
+[22:11:17] …latido
+[22:11:22] …latido
+[22:11:27] …latido
+[22:11:32] …latido
+[22:11:37] …latido
+[22:11:40] pack cap1: listo en 4.794s, entrada en 27.452s; asentando y perfilando 12s
+[22:11:42] …latido
+[22:11:47] …latido
+[22:11:52] …latido
+[22:11:57] …latido
+[22:12:02] …latido
+[22:12:07] …latido
+[22:12:12] …latido
+[22:12:14] pack cap1: fpsMed=16 min=0 p95=87ms calls=69 ktris=323 heap=137MB | perfil 14770ms | top: three.js 36.31% · nativo 26.43% · renderer 11.43% · anónima/sin-url 9.04% · game 7.71% · streaming 2.4% | errores=[]
+[22:12:14] pack ep3: navegando...
+[22:12:17] …latido
+[22:12:22] …latido
+[22:12:27] …latido
+[22:12:32] …latido
+[22:12:37] pack ep3: listo en 5.827s, entrada en 22.738s; asentando y perfilando 12s
+[22:12:37] …latido
+[22:12:42] …latido
+[22:12:47] …latido
+[22:12:52] …latido
+[22:12:56] pack ep3: fpsMed=11 min=0 p95=164ms calls=96 ktris=579 heap=131MB | perfil 13939ms | top: three.js 27.9% · nativo 20.34% · solidos 19.2% · anónima/sin-url 10.84% · renderer 5.05% · game 4.96% | errores=[]
+[22:12:57] evidencia: C:\Users\kelvi\amazonaversegame3\docs\img\kimi337\k337_escuela-r1.json
