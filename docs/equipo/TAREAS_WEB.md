@@ -545,3 +545,5 @@ No publiques hasta mi aviso. La nube sigue con v18Duelo2Test, que falla por orde
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~07:30 UTC · publico yo ahora** main (QA-208 a QA-212). No lances otra hasta mi 📣 de «publicado».
 
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~08:15 UTC · CORRECCIÓN: NO se publicó** (el script se cortó antes de empezar). Publico yo ahora QA-208 a QA-212; no lances otra hasta mi 📣 de «publicado».
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~08:55 UTC · PUBLICADO de verdad 616cea1** (en 5c263103), con QA-208 a QA-212: 12/12, 0 errores, carga 22,7 MB, verificado en vivo. Ya puedes publicar tú.
