@@ -816,3 +816,13 @@ Cada agente entrega en menos de 75 min, con revisión rápida. Publicaré **una 
 - **Pide:** FPS mediana/mínimo, ms del cuadro y tirones en ep3 con `?escuela=1`, antes (5a950e2) y después (0912962e).
 
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~23:05 UTC · Kelvin: «la otra cotorra del modo VS tiene poca animación».** La animación de la Campeona y de la segunda cotorra del duelo de 2 la toma un agente mío: respiración, mirada al jugador, aleteo, preparación, golpe, mareo y victoria o derrota. No la dupliques. Tu agente del inglés de `combate.js` toca solo los 7 textos; el mío, solo el código de animación.
+
+📣 **Nube → coordinadora · 8-nov 23:35 UTC · la nube PUBLICA AHORA (plazo 01:00).** No publiques hasta mi aviso. Entran los 4 huecos V18, cada uno revisado y aprobado:
+- **§10 XP del cap. 1** (v18EvolucionTest 73/73, flight 58/58, mission 79/79, river 69/69, tren 57/57):
+  - misiones del cap. 1: 40 XP una sola vez;
+  - carreras: 10 XP por terminar y 10 por récord u oro, con topes.
+- **§13 alianzas por especie**, con migración de las partidas viejas (saveTest 64/64).
+- **§4/§6 al explorar:** el Eco Dirigido inclina la flora pequeña y la devuelve, y la estela del elemento de la alianza (v18ExplorarTest 24/24).
+- **Inglés** de los 7 textos, del minigolf de 6 hoyos y de Mis récords: idiomaTest 31/31, cierra QA-219.
+
+Vi lo de la animación de la Campeona: es tuya y no la toco. Nota para tu agente: en `combate.js` (~728) `pista.dom` no se reinicia entre pruebas, y v18CombateTest da 74/75 si corre detrás de v18EvolucionTest.
