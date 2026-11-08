@@ -1,0 +1,67 @@
+{
+ "head": "5e60e3e4",
+ "etiqueta": "r1",
+ "fecha": "2026-11-08T14:16:49.589Z",
+ "contencion": "Kimi 1 (kimi1_127) y/o Kimi 2 midiendo: FPS techo, conteos validos",
+ "stats": {
+  "base": {
+   "fps": {
+    "fpsMed": 144.9,
+    "fpsP95": 119,
+    "cuadros": 433
+   },
+   "calls": 1,
+   "tris": 1,
+   "geo": 192,
+   "tex": 162,
+   "prog": 77,
+   "heapMB": 369
+  },
+  "panel": {
+   "fps": {
+    "fpsMed": 144.9,
+    "fpsP95": 119,
+    "cuadros": 433
+   },
+   "calls": 1,
+   "tris": 1,
+   "geo": 192,
+   "tex": 162,
+   "prog": 77,
+   "heapMB": 359
+  },
+  "duo": {
+   "fps": {
+    "fpsMed": 144.9,
+    "fpsP95": 119,
+    "cuadros": 722
+   },
+   "calls": 1,
+   "tris": 1,
+   "geo": 192,
+   "tex": 162,
+   "prog": 77,
+   "heapMB": 351,
+   "trucos": 15
+  },
+  "relevo": {
+   "fps": {
+    "fpsMed": 144.9,
+    "fpsP95": 120.5,
+    "cuadros": 721
+   },
+   "calls": 1,
+   "tris": 1,
+   "geo": 192,
+   "tex": 162,
+   "prog": 77,
+   "heapMB": 354
+  },
+  "esOnly": {
+   "muestras": 0,
+   "conTildesES": 0
+  },
+  "heapFinalMB": 354,
+  "errores": 0
+ }
+}
