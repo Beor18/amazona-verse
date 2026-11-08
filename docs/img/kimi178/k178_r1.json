@@ -1,0 +1,73 @@
+{
+ "tarea": "KIMI-178",
+ "etiqueta": "r1",
+ "video": "k178_hito1_r1.mp4",
+ "pantalla": "1920x1080@DPR1 GPU real",
+ "topeSegs": 260,
+ "sitios": {
+  "ok": true,
+  "golf": {
+   "x": 178,
+   "z": 205
+  },
+  "duelo": {
+   "x": 182,
+   "z": 172
+  },
+  "puerto": {
+   "x": null,
+   "z": null
+  },
+  "maq": null,
+  "chispa": null,
+  "puente": {
+   "x": 157.875,
+   "z": 136.525
+  }
+ },
+ "head": "desconocido",
+ "mime": "video/mp4;codecs=avc1.42E01E",
+ "villa": "ok",
+ "golf": {
+  "entrada": "forzar",
+  "tiros": "{\"fase\":\"apuntar\",\"golpes\":2}"
+ },
+ "duelo": {
+  "vuelo": 11,
+  "fase": "fin",
+  "poder": false
+ },
+ "puente": {
+  "vuelo": 13,
+  "llego": true
+ },
+ "puerto": {
+  "vuelo": 35,
+  "llego": true,
+  "maq": false
+ },
+ "chispa": "sin coordenadas",
+ "outro": "ok",
+ "recorridoSegs": 151.4,
+ "grabacion": {
+  "mime": "video/mp4;codecs=avc1.42E01E",
+  "bytes": 32164229,
+  "destino": "k178_hito1_r1.mp4"
+ },
+ "recLog": [
+  "17376 rec.start",
+  "168701 rec.para state=recording"
+ ],
+ "erroresConsola": [],
+ "mp4": {
+  "bytes": 32164229,
+  "firma": "ftyp",
+  "mb": 30.7,
+  "mvhdSegs": 0
+ },
+ "repro": {
+  "dur": 4.7,
+  "w": 1920,
+  "h": 1080
+ }
+}

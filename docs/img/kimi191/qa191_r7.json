@@ -1,0 +1,133 @@
+{
+ "etiqueta": "r7",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado, tactil)",
+ "head": "Chrome/156.0.8078.80",
+ "consola": [],
+ "fase": "qa191",
+ "qa191": {
+  "coarse": true,
+  "v18": true,
+  "promptExiste": true,
+  "base": {
+   "hidden": false,
+   "visible": true,
+   "bottom": "208px",
+   "right": "20px",
+   "caja": {
+    "l": 240.6,
+    "t": 592,
+    "r": 370,
+    "b": 636,
+    "w": 129.4,
+    "h": 44
+   }
+  },
+  "casoB": {
+   "promptDelJuego": true,
+   "solapanNatural": false,
+   "cajaPrompt": {
+    "l": 12,
+    "t": 588,
+    "r": 378,
+    "b": 638,
+    "w": 366,
+    "h": 50
+   },
+   "cajaBoton": {
+    "l": 240.6,
+    "t": 536,
+    "r": 370,
+    "b": 580,
+    "w": 129.4,
+    "h": 44
+   },
+   "forzado": {
+    "bottomPrompt": "282px",
+    "cajaPrompt": {
+     "l": 12,
+     "t": 512,
+     "r": 378,
+     "b": 562,
+     "w": 366,
+     "h": 50
+    },
+    "cajaBoton": {
+     "l": 240.6,
+     "t": 592,
+     "r": 370,
+     "b": 636,
+     "w": 129.4,
+     "h": 44
+    },
+    "solapan": false
+   },
+   "despues": {
+    "cajaBoton": {
+     "l": 240.6,
+     "t": 592,
+     "r": 370,
+     "b": 636,
+     "w": 129.4,
+     "h": 44
+    },
+    "cajaPrompt": {
+     "l": 12,
+     "t": 512,
+     "r": 378,
+     "b": 562,
+     "w": 366,
+     "h": 50
+    },
+    "bottomBoton": "208px"
+   },
+   "veredicto": {
+    "botonSube": false,
+    "sinSolape": true
+   }
+  },
+  "trasQuitar": {
+   "hidden": false,
+   "visible": true,
+   "bottom": "208px",
+   "right": "20px",
+   "caja": {
+    "l": 240.6,
+    "t": 592,
+    "r": 370,
+    "b": 636,
+    "w": 129.4,
+    "h": 44
+   },
+   "promptHidden": true
+  },
+  "casoA": {
+   "promptVisible": false,
+   "cajaBoton": {
+    "l": 240.6,
+    "t": 592,
+    "r": 370,
+    "b": 636,
+    "w": 129.4,
+    "h": 44
+   },
+   "cajaPrompt": null,
+   "solapan": false,
+   "pos": {
+    "x": -3.4,
+    "z": 4.6
+   }
+  },
+  "veredicto": {
+   "baseVisible": true,
+   "casoB": false,
+   "casoA": true,
+   "vuelveABase": true,
+   "ok": false
+  },
+  "stats": {
+   "calls": 67,
+   "tris": 312466
+  }
+ },
+ "ok": false
+}

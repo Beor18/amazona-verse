@@ -1,0 +1,77 @@
+{
+ "etiqueta": "r5",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado, tactil)",
+ "head": "Chrome/156.0.8078.80",
+ "consola": [],
+ "fase": "qa191",
+ "qa191": {
+  "coarse": true,
+  "v18": true,
+  "boton": {
+   "hidden": false,
+   "visible": true,
+   "bottom": "208px",
+   "right": "20px",
+   "caja": {
+    "l": 240.609375,
+    "t": 592,
+    "r": 370,
+    "b": 636,
+    "w": 129.390625,
+    "h": 44
+   }
+  },
+  "promptExiste": true,
+  "casoB": {
+   "cajaBoton": {
+    "l": 240.609375,
+    "t": 592,
+    "r": 370,
+    "b": 636,
+    "w": 129.390625,
+    "h": 44
+   },
+   "cajaPrompt": {
+    "l": 0,
+    "t": 0,
+    "r": 0,
+    "b": 0,
+    "w": 0,
+    "h": 0
+   },
+   "bottomBoton": "208px",
+   "sube": false,
+   "intersecan": false,
+   "altoBase": 208,
+   "condicionFix": false
+  },
+  "casoA": {
+   "promptVisible": false,
+   "cajaBoton": {
+    "l": 240.609375,
+    "t": 592,
+    "r": 370,
+    "b": 636,
+    "w": 129.390625,
+    "h": 44
+   },
+   "cajaPrompt": null,
+   "intersecan": false,
+   "pos": {
+    "x": -3.3,
+    "z": 4.7
+   }
+  },
+  "veredicto": {
+   "botonVisible": true,
+   "casoB": false,
+   "casoA": true,
+   "ok": false
+  },
+  "stats": {
+   "calls": 63,
+   "tris": 309775
+  }
+ },
+ "ok": false
+}

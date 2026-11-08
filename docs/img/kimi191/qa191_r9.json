@@ -1,0 +1,101 @@
+{
+ "etiqueta": "r9",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado, tactil)",
+ "head": "Chrome/156.0.8078.80",
+ "consola": [],
+ "fase": "qa191",
+ "qa191": {
+  "coarse": true,
+  "v18": true,
+  "promptExiste": true,
+  "base": {
+   "hidden": false,
+   "visible": true,
+   "bottom": "208px",
+   "right": "20px",
+   "caja": {
+    "l": 240.6,
+    "t": 592,
+    "r": 370,
+    "b": 636,
+    "w": 129.4,
+    "h": 44
+   }
+  },
+  "casoB": {
+   "promptDelJuego": true,
+   "escenarioBug": true,
+   "subio": true,
+   "sinSolape": true,
+   "cajaPrompt": {
+    "l": 12,
+    "t": 588,
+    "r": 378,
+    "b": 638,
+    "w": 366,
+    "h": 50
+   },
+   "cajaBoton": {
+    "l": 240.6,
+    "t": 536,
+    "r": 370,
+    "b": 580,
+    "w": 129.4,
+    "h": 44
+   },
+   "bottomBoton": "264px",
+   "bottomBase": "208px"
+  },
+  "trasQuitar": {
+   "hidden": false,
+   "visible": true,
+   "bottom": "208px",
+   "right": "20px",
+   "caja": {
+    "l": 240.6,
+    "t": 592,
+    "r": 370,
+    "b": 636,
+    "w": 129.4,
+    "h": 44
+   },
+   "promptHidden": true
+  },
+  "casoA": {
+   "promptVisible": true,
+   "cajaBoton": {
+    "l": 240.6,
+    "t": 538,
+    "r": 370,
+    "b": 582,
+    "w": 129.4,
+    "h": 44
+   },
+   "cajaPrompt": {
+    "l": 71,
+    "t": 590,
+    "r": 319,
+    "b": 638,
+    "w": 248,
+    "h": 48
+   },
+   "solapan": false,
+   "pos": {
+    "x": 159.1,
+    "z": 177.1
+   }
+  },
+  "veredicto": {
+   "baseVisible": true,
+   "casoB": true,
+   "casoA": true,
+   "vuelveABase": true,
+   "ok": true
+  },
+  "stats": {
+   "calls": 77,
+   "tris": 256929
+  }
+ },
+ "ok": true
+}

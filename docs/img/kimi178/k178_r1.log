@@ -1,0 +1,20 @@
+[01:01:30] navegando al juego (v18on en semilla, enlace principal)...
+[01:01:46] sitios: {"ok":true,"golf":{"x":178,"z":205},"duelo":{"x":182,"z":172},"puerto":{"x":null,"z":null},"maq":null,"chispa":null,"puente":{"x":157.875,"z":136.525}}
+[01:01:48] grabando (video/mp4;codecs=avc1.42E01E)...
+[01:01:48] [villa] paseo por Villa Raíz
+[01:02:04] [golf] caminando a la entrada del minigolf
+[01:02:34] [golf] entrada en 30s (llego=false); E para jugar
+[01:02:41] [golf] entrada al hoyo: forzar
+[01:02:48] [golf] tiros: {"fase":"apuntar","golpes":2}
+[01:02:51] [duelo] volando a la explanada {"x":182,"z":172}
+[01:03:01] [duelo] vuelo 11s (llego=true); hablo con la Campeona
+[01:03:14] [duelo] fase tras hablar: nada
+[01:03:24] [duelo] fase fin: fin (poder=false)
+[01:03:24] [puente] volando al puente {"x":157.875,"z":136.525}
+[01:03:36] [puente] cruzando (vuelo 13s, llego=true)
+[01:03:40] [puerto] volando a la plaza {"x":73.6,"z":-75.2}
+[01:04:15] [puerto] visitado (vuelo 35s, llego=true)
+[01:04:15] [outro] cierre: aterrizar y mirar el mundo
+[01:04:19] grabación: {"mime":"video/mp4;codecs=avc1.42E01E","bytes":32164229,"destino":"k178_hito1_r1.mp4"}
+[01:04:19] errores de consola: []
+[01:04:20] reproducción: {"dur":4.7,"w":1920,"h":1080} · mp4: {"bytes":32164229,"firma":"ftyp","mb":30.7,"mvhdSegs":0}

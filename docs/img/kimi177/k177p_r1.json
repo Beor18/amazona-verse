@@ -1,0 +1,53 @@
+{
+ "etiqueta": "r1",
+ "inicio": "2026-11-06T23:40:39.796Z",
+ "pasos": [
+  {
+   "fase": "bajo",
+   "calidad": "bajo",
+   "normales": {}
+  },
+  {
+   "fase": "alto",
+   "calidad": "alto",
+   "normales": {
+    "AV_HD_Ancient": {
+     "tieneNormal": true,
+     "plana": true,
+     "w": 2,
+     "h": 2
+    }
+   }
+  }
+ ],
+ "ok": false,
+ "veredicto": {
+  "materialesAV_HD": 0,
+  "planasEnBajo": 0,
+  "sinNormalRealEnAlto": [],
+  "engancheOk": false,
+  "errorEscena": null
+ },
+ "erroresConsola": [
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+  "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+ ]
+}

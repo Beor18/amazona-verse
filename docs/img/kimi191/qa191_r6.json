@@ -1,0 +1,8 @@
+{
+ "etiqueta": "r6",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado, tactil)",
+ "head": "Chrome/156.0.8078.80",
+ "consola": [],
+ "fase": "qa191",
+ "error": "WebSocket: error"
+}

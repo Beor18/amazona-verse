@@ -1,0 +1,46 @@
+{
+ "etiqueta": "base1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": "Chrome/156.0.8078.80",
+ "consola": [],
+ "fase": "qa195",
+ "qa195": {
+  "ancho": 390,
+  "alto": 844,
+  "poi": {
+   "id": "flamboyan_plaza",
+   "nombre": "Flamboyán de la plaza",
+   "x": 158,
+   "z": 176
+  },
+  "toast": {
+   "texto": "¡Descubriste Estación de Conservación! Lugares descubiertos 3/32",
+   "conDialogo": {
+    "caja": {
+     "l": 12,
+     "t": 118,
+     "r": 322,
+     "b": 204.9,
+     "w": 310,
+     "h": 86.9
+    },
+    "topCSS": "118px",
+    "solapaMinimapa": null
+   }
+  },
+  "minimapa": null,
+  "mmTopInline": null,
+  "dialogoAbierto": true,
+  "stats": {
+   "calls": 68,
+   "tris": 538938
+  },
+  "asentamiento": null,
+  "veredicto": {
+   "toastSinSolape": true,
+   "rotuloSinSolape": true,
+   "ok": true
+  }
+ },
+ "ok": true
+}

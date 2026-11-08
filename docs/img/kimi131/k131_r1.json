@@ -1,0 +1,7 @@
+{
+ "etiqueta": "r1",
+ "pantalla": "escritorio 1600x900@1 cpuX1",
+ "head": null,
+ "cargas": {},
+ "error": "CDP timeout Runtime.evaluate"
+}
