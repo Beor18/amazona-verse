@@ -44,9 +44,15 @@ window.AVV18Minigolf = function (G) {
   const TXT = {
     label: 'Jugar al minigolf', nombre: 'Minigolf de Villa Raíz', invita: 'Minigolf de Villa Raíz: lleva la semilla gigante hasta el nido. Pulsa Acción junto a ella.',
     empieza: '¡Hoyo 1, par 3! Lleva la semilla gigante al nido en los menos golpes que puedas.',
-    empiezaPar: '¡Hoyo 1, par 3! Par 3 quiere decir que lo ideal es meterla en el nido en 3 golpes.',
-    guia: '← → o arrastra: apuntar · Mantén Espacio: fuerza · G: Grito · R: reiniciar · Esc: salir',
-    guiaT: 'Arrastra o usa ◀ ▶ para apuntar · Mantén Golpear y suelta',
+    empiezaPar: '¡Hoyo 1! Mete la semilla en el nido. Par 3: lo ideal son 3 golpes.',
+    // Cómo se juega (Kelvin 8-nov, «que se entienda solo»): meta siempre a la vista, teclas en los botones y una pista corta
+    guia: 'Apunta con ← → y mantén Espacio para golpear',
+    guiaT: 'Apunta con ◀ ▶ y mantén Golpear',
+    meta: 'Mete la semilla en el nido', metaOro: 'Oro con 3 golpes o menos',
+    pSuelta: '¡Suelta para golpear!', pGrito: '¡Pulsa G: el Grito la empuja!', pGritoT: '¡Toca Grito: la empuja!',
+    pSuave: 'Mantén pulsado más rato: más fuerza', pFuerte: '¡Muy fuerte! Cerca del nido, golpea suave',
+    pCerca: '¡Casi! Ahora un golpe suave', pFlecha: 'Apunta hacia la flecha del nido',
+    medOro: '¡Oro: lo lograste en 3 golpes o menos!', medOtra: 'Para el oro: 3 golpes o menos',
     fuera: '¡La semilla se salió! Vuelve a su sitio (+1 golpe).', gritoYa: 'El Grito del Yunque ya se usó en este hoyo.',
     gritoQuieta: 'El Grito empuja la semilla mientras rueda.', grito: '¡Grito del Yunque!', otra: 'Otra vez', seguir: 'Seguir explorando', menu: 'Volver al menú',
     sale: '¡Hasta luego! El minigolf te espera en Villa Raíz.', hoyo: 'Hoyo 1 · Villa Raíz', par: 'Par 3', golpe: 'Golpear', soltar: 'Soltar',
@@ -209,8 +215,11 @@ window.AVV18Minigolf = function (G) {
   // Mira: naranja vivo y algo más grande (QA con input real: crema sobre la arena no se distinguía)
   const N_PUNTOS = 8, puntos = new THREE.InstancedMesh(new THREE.SphereGeometry(0.1, 8, 6), new THREE.MeshBasicMaterial({ color: '#ff6a2b', transparent: true, opacity: 0.95, depthWrite: false }), N_PUNTOS);
   puntos.name = 'v18_golf_mira';
+  // Flecha sobre el nido mientras se juega (8-nov): el nido queda lejos y pequeño; así se ve a dónde hay que llevar la semilla
+  const flecha = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.7, 14), new THREE.MeshStandardMaterial({ color: '#ff6a2b', emissive: '#ff6a2b', emissiveIntensity: 0.45, roughness: 0.5, flatShading: true }));
+  flecha.rotation.x = Math.PI; flecha.name = 'v18_golf_flecha';
   troncos.name = 'v18_golf_troncos';
-  for (const m of [troncos, nido, semilla, salida, puntos, aroTurno, ...fantasmas]) { m.frustumCulled = false; m.visible = false; scene.add(m); }
+  for (const m of [troncos, nido, semilla, salida, puntos, aroTurno, flecha, ...fantasmas]) { m.frustumCulled = false; m.visible = false; scene.add(m); }
   troncos.castShadow = false; puntos.renderOrder = 4;
   const _o = new THREE.Object3D(), _q = new THREE.Quaternion(), _ax = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0), _d = new THREE.Vector3();
 
@@ -242,7 +251,8 @@ window.AVV18Minigolf = function (G) {
 
   // ---------- Estado ----------
   const A = { fase: 'nada', golpes: 0, carga: 0, cargaT: 0, cargando: false, grito: false, giro: 0, manual: false, acc: 0, t: 0, nidoT: 0, timers: [],
-    rebotes: 0, fueras: 0, ultimo: null, invitado: false, resultado: null, eligiendo: false, njug: 1, turno: 0, esperaT: 0, hundir: false };
+    rebotes: 0, fueras: 0, ultimo: null, invitado: false, resultado: null, eligiendo: false, njug: 1, turno: 0, esperaT: 0, hundir: false,
+    aviso: '', rapido: false, tiroP: 1 }; // aviso: pista tras el último tiro ('cerca', 'fuerte', 'suave', 'flecha'); rapido: pasó por el nido demasiado deprisa
   let J = []; // jugadores de la partida: { golpes, x, z, ultimo, grito, f, dentro, tope }
   const multi = () => A.njug > 1;
   const B = { x: 0, y: 0, z: 0, vx: 0, vz: 0, mov: false, t: 0 };
@@ -300,7 +310,7 @@ window.AVV18Minigolf = function (G) {
     return true;
   }
   function empezarHoyo() {
-    Object.assign(A, { golpes: 0, carga: 0, cargaT: 0, cargando: false, grito: false, acc: 0, nidoT: 0, rebotes: 0, fueras: 0, resultado: null, turno: 0, esperaT: 0, hundir: false });
+    Object.assign(A, { golpes: 0, carga: 0, cargaT: 0, cargando: false, grito: false, acc: 0, nidoT: 0, rebotes: 0, fueras: 0, resultado: null, turno: 0, esperaT: 0, hundir: false, aviso: '', rapido: false, tiroP: 1 });
     A.timers.length = 0; A.fase = 'apuntar';
     ponerSemilla(P_TEE.x, P_TEE.z); A.ultimo = { x: B.x, z: B.z }; semilla.scale.setScalar(1);
     const luchador = i => HAB ? HAB.luchador({ id: i ? 'golf' + (i + 1) : 'golf', especie: 'vittata', poder: 'grito_yunque', pos: S.pos, mira: dir }) : null;
@@ -328,7 +338,7 @@ window.AVV18Minigolf = function (G) {
   function guardarJ() { const j = J[A.turno]; if (!j) return; Object.assign(j, { golpes: A.golpes, x: B.x, z: B.z, ultimo: A.ultimo, grito: A.grito, f }); }
   function cargarJ(i) {
     const j = J[i]; A.turno = i; A.golpes = j.golpes; A.grito = j.grito; A.ultimo = j.ultimo; f = j.f;
-    A.timers.length = 0; A.cargando = false; A.carga = 0; A.hundir = false; A.nidoT = 0; semilla.scale.setScalar(1);
+    A.timers.length = 0; A.cargando = false; A.carga = 0; A.hundir = false; A.nidoT = 0; A.aviso = ''; semilla.scale.setScalar(1);
     ponerSemilla(j.x, j.z); colorTurno(); apuntarA(P_NIDO.x, P_NIDO.z); seguir(0, true);
     A.fase = 'apuntar'; toast(turnoTxt(i), 1800); emitir({ tipo: 'turno', jugador: i }); pintar(true);
   }
@@ -368,7 +378,7 @@ window.AVV18Minigolf = function (G) {
     const fin = A.fase === 'nido', m = !!(A.resultado && A.resultado.multi);
     hud.el.classList.toggle('vg-lado', A.eligiendo || (fin && m)); // W29a: paneles altos (elegir jugadores, tabla de varios): no llegan a la columna de botones de la derecha
     hud.q('elige').hidden = !A.eligiendo || fin; hud.q('bot').hidden = A.eligiendo || fin; hud.q('fin').hidden = !fin;
-    hud.q('tabla').hidden = !m; hud.q('fin2').hidden = m; hud.q('jugs').hidden = !multi() || fin;
+    hud.q('tabla').hidden = !m; hud.q('fin2').hidden = hud.q('fin4').hidden = m; hud.q('meta').hidden = fin; hud.q('jugs').hidden = !multi() || fin; // meta: en el final ya se dice cómo fue
     hud.q('barraW').hidden = hud.q('fuerzaEt').hidden = fin || A.eligiendo; // la barra de fuerza vacía no pinta nada en el resultado
     if (!m) { hud.q('fin1').style.color = ''; }
     enfocar(A.eligiendo && !fin ? 'j1' : fin ? 'otra' : 'golpe');
@@ -393,7 +403,7 @@ window.AVV18Minigolf = function (G) {
       if (dentro) { const f = focoPrevio; if (f && document.contains(f) && f.getClientRects().length && !hud.el.contains(f)) try { f.focus({ preventScroll: true }); } catch (e) { /* */ } else try { document.activeElement.blur(); } catch (e) { /* */ } }
     }
     focoPrevio = null;
-    ponerSemilla(P_TEE.x, P_TEE.z); semilla.scale.setScalar(1); puntos.visible = false;
+    ponerSemilla(P_TEE.x, P_TEE.z); semilla.scale.setScalar(1); puntos.visible = false; flecha.visible = false;
     S.pos.x = P_ENTRADA.x; S.pos.z = P_ENTRADA.z; S.pos.y = H(S.pos.x, S.pos.z) + 0.05; S.vy = 0; M.vx = M.vz = 0;
     if (motivo) toast(motivo, 2600);
     emitir({ tipo: 'sale' });
@@ -415,7 +425,7 @@ window.AVV18Minigolf = function (G) {
     const d = dir(), v0 = VMIN + (VMAX - VMIN) * Math.max(0, Math.min(1, p));
     A.ultimo = { x: B.x, z: B.z };
     B.vx = d.x * v0; B.vz = d.z * v0; B.mov = true; B.t = 0;
-    A.golpes++; A.fase = 'rueda'; A.carga = 0;
+    A.golpes++; A.fase = 'rueda'; A.carga = 0; A.aviso = ''; A.rapido = false; A.tiroP = p;
     sonar('dash'); fx('dust', B.x, B.y - R * 0.6, B.z, 6);
     emitir({ tipo: 'golpe', n: A.golpes, p }); pintar();
     return true;
@@ -445,12 +455,12 @@ window.AVV18Minigolf = function (G) {
   }
   function fuera() {
     A.fueras++; A.golpes++;
-    ponerSemilla(A.ultimo.x, A.ultimo.z); A.fase = 'apuntar';
+    ponerSemilla(A.ultimo.x, A.ultimo.z); A.fase = 'apuntar'; A.aviso = 'flecha';
     toast(TXT.fuera, 2200); sonar('wrong'); emitir({ tipo: 'fuera', n: A.golpes }); pintar();
     if (multi()) finTurno();
   }
   function alNido() {
-    B.mov = false; B.vx = B.vz = 0; A.nidoT = 0; A.cargando = false; A.hundir = true;
+    B.mov = false; B.vx = B.vz = 0; A.nidoT = 0; A.cargando = false; A.hundir = true; flecha.visible = false;
     if (multi()) { // por turnos: sin récord ni premios; entra y pasa el turno
       const i = A.turno, n = A.golpes; J[i].dentro = true;
       const y = H(P_NIDO.x, P_NIDO.z); fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 12); fx('feathers', P_NIDO.x, y + 0.8, P_NIDO.z, 8); sonar('unlock');
@@ -470,7 +480,8 @@ window.AVV18Minigolf = function (G) {
     if (hud) {
       hud.q('fin1').textContent = nidoTxt(n); hud.q('fin2').textContent = TXT[med]; hud.q('fin2').dataset.m = med;
       hud.q('fin3').textContent = nuevo ? TXT.nuevo : recordTxt(r.mejor);
-      hud.el.querySelector('.vg-fin [data-a="seguir"]').textContent = alMenu() ? TXT.menu : TXT.seguir;
+      hud.q('t-seguir').textContent = alMenu() ? TXT.menu : TXT.seguir;
+      hud.q('fin4').textContent = med === 'oro' ? TXT.medOro : TXT.medOtra;
       hud.q('fin').hidden = false; hud.q('bot').hidden = true;
     }
     paneles();
@@ -478,6 +489,8 @@ window.AVV18Minigolf = function (G) {
     pintar(true);
   }
 
+  // Pista tras un tiro que se para fuera del nido: lo más útil primero (se pasó de fuerza, quedó cerca, tiro flojo de un toque)
+  const queAviso = dn => A.rapido ? 'fuerte' : dn < 3 ? 'cerca' : A.tiroP < 0.15 ? 'suave' : 'flecha';
   // ---------- Física (paso fijo) ----------
   function sub(h) {
     for (let i = A.timers.length - 1; i >= 0; i--) { const t = A.timers[i]; t.t -= h; if (t.t <= 0) { A.timers.splice(i, 1); pos.x = B.x; pos.y = B.y; pos.z = B.z; t.fn(); } }
@@ -530,10 +543,11 @@ window.AVV18Minigolf = function (G) {
     // al nido
     const dn2 = Math.hypot(P_NIDO.x - B.x, P_NIDO.z - B.z), sp2 = Math.hypot(B.vx, B.vz);
     if (dn2 < NIDO_R * 0.75 && sp2 < CAIDA) { alNido(); return; }
+    if (dn2 < NIDO_R) A.rapido = true; // por encima del nido sin caer: iba demasiado deprisa
     // reposo (o tope de tiempo: nunca se queda rodando para siempre)
     if ((sp2 < REPOSO) || B.t > T_MAX) {
       B.vx = B.vz = 0; B.mov = false;
-      if (A.fase === 'rueda') { A.fase = 'apuntar'; emitir({ tipo: 'reposo', x: B.x, z: B.z }); pintar(); if (multi()) finTurno(); }
+      if (A.fase === 'rueda') { A.fase = 'apuntar'; A.aviso = queAviso(dn2); emitir({ tipo: 'reposo', x: B.x, z: B.z, aviso: A.aviso }); pintar(); if (multi()) finTurno(); }
     }
   }
 
@@ -581,6 +595,8 @@ window.AVV18Minigolf = function (G) {
     const on = ofrecible(); // QA-189: fuera de Villa Raíz la estación no existe (ni piezas ni invitación)
     troncos.visible = nido.visible = semilla.visible = on && (!lejos || A.fase !== 'nada');
     salida.visible = on && A.fase === 'nada' && !lejos;
+    flecha.visible = on && A.fase !== 'nada' && A.fase !== 'nido' && !A.hundir;
+    if (flecha.visible) flecha.position.set(P_NIDO.x, nido.position.y + 3.1 + Math.sin(performance.now() / 260) * 0.18, P_NIDO.z);
     nido.userData.banderin.rotation.y = Math.sin(performance.now() / 600) * 0.25;
     if (A.fase === 'nada') {
       puntos.visible = false;
@@ -696,7 +712,18 @@ window.AVV18Minigolf = function (G) {
       '#v18-golf .vg-jugs{display:flex;flex-wrap:wrap;gap:2px 12px;justify-content:center;font-size:14px;font-weight:600;margin-top:4px}#v18-golf .vg-jugs .on{text-decoration:underline}#v18-golf .vg-jugs .ya{opacity:.7}' +
       '#v18-golf .vg-tabla{margin:4px auto 2px;max-width:360px}#v18-golf .vg-fila{display:grid;grid-template-columns:2em 1fr auto 4.5em;gap:8px;align-items:center;font-size:17px;font-weight:600;text-align:left}' +
       '#v18-golf .vg-tabla .vg-m{font-size:17px;text-align:right}' +
-      '#v18-golf .vg-guia{font-size:12px;opacity:.85;text-align:center;margin-top:6px}' +
+      // Cómo se juega (8-nov): meta a la vista, tecla en cada botón (como los chips del duelo) y una pista corta y grande
+      '#v18-golf .vg-meta{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:2px 10px;margin:4px 0 0;font-size:15px;font-weight:600;text-align:center}' +
+      '#v18-golf .vg-meta b{color:#ffe39a}#v18-golf .vg-meta b::before{content:"";display:inline-block;width:0;height:0;margin-right:6px;border:7px solid transparent;border-top:11px solid #ff6a2b;border-bottom:0;vertical-align:middle}' +
+      '#v18-golf .vg-meta span{opacity:.85;font-size:13px}' +
+      '#v18-golf button{display:inline-flex;align-items:center;justify-content:center}#v18-golf button[hidden]{display:none}' +
+      '#v18-golf button kbd{display:inline-block;margin-left:8px;font:700 13px/1 Fredoka,system-ui,sans-serif;min-width:22px;padding:4px 6px;border-radius:7px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center;vertical-align:middle}' +
+      '#v18-golf.tactil button kbd{display:none}' +
+      '#v18-golf .vg-guia{margin:8px auto 0;width:max-content;max-width:100%;min-height:1.4em;background:rgba(255,227,154,.95);color:#3b2a14;text-shadow:none;font-weight:600;font-size:15px;padding:5px 14px;border-radius:16px;box-shadow:0 2px 8px #0005;text-align:center;box-sizing:border-box}' +
+      '#v18-golf .vg-guia:empty{visibility:hidden}#v18-golf .vg-guia.nueva{animation:vgPista .25s ease-out}@keyframes vgPista{from{transform:scale(.88);opacity:0}to{transform:none;opacity:1}}' +
+      '#v18-golf .vg-fin [data-k="fin4"]{font-size:14px;opacity:.9}' +
+      'body.v18-golf-on #keyhint{visibility:hidden}' + // los controles de explorar (Espacio: saltar y volar) contradecían los del hoyo
+      '@media (prefers-reduced-motion:reduce){#v18-golf .vg-guia.nueva{animation:none}}' +
       // QA: la guía #prompt se veía a través del panel y la pista «Pulsa V para volar» seguía en el hoyo; la guía va en el panel
       'body.v18-golf-on #prompt,body.v18-golf-on #guia-pista,body.v18-golf-on #guia-panel{display:none!important}' +
       // En el móvil los avisos suben arriba durante el hoyo: abajo tapaban a Vittata y la semilla
@@ -714,15 +741,18 @@ window.AVV18Minigolf = function (G) {
     estilo();
     const el = document.createElement('div'); el.id = 'v18-golf'; el.hidden = true;
     el.setAttribute('role', 'region'); el.setAttribute('aria-labelledby', 'vg-hoyo'); // W35: zona con nombre para el lector de pantalla
-    el.innerHTML = `<div class="vg-caja"><div class="vg-info"><span id="vg-hoyo">${TXT.hoyo}</span><span>${TXT.par}</span><span data-k="golpes"></span><span data-k="record"></span><span data-k="turno"></span></div><div class="vg-jugs" data-k="jugs" hidden></div>` +
+    const k = t => `<kbd aria-hidden="true">${t}</kbd>`; // tecla del botón (se oculta en táctil); el nombre del botón no la incluye
+    const b = (a, txt, tecla, extra) => `<button type="button" data-a="${a}"${extra || ''}><span data-k="t-${a}">${txt}</span>${tecla ? k(tecla) : ''}</button>`;
+    el.innerHTML = `<div class="vg-caja"><div class="vg-info"><span id="vg-hoyo">${TXT.hoyo}</span><span>${TXT.par}</span><span data-k="golpes"></span><span data-k="record"></span><span data-k="turno"></span></div>` +
+      `<div class="vg-meta" data-k="meta"><b>${TXT.meta}</b><span>${TXT.metaOro}</span></div><div class="vg-jugs" data-k="jugs" hidden></div>` +
       `<div class="vg-barra" data-k="barraW"><b data-k="barra"></b></div><div class="vg-et" data-k="fuerzaEt">${TXT.fuerza}</div>` +
       `<div class="vg-elige" data-k="elige" role="group" aria-labelledby="vg-elige-t" aria-describedby="vg-elige-sub" hidden><p id="vg-elige-t">${TXT.elige}</p><div class="vg-et" id="vg-elige-sub">${TXT.eligeSub}</div><div class="vg-bot4">` +
-      [1, 2, 3, 4].map(n => `<button type="button" data-a="j${n}">${TXT['j' + n]}</button>`).join('') + `</div>` +
-      `<div class="vg-elige-salir"><button type="button" data-a="salir">${TXT.salir}</button></div></div>` +
-      `<div data-k="bot"><div class="vg-bot"><button data-a="izq" aria-label="${TXT.izq}">◀</button><button class="vg-golpe" data-a="golpe">${TXT.golpe}</button><button data-a="der" aria-label="${TXT.der}">▶</button></div>` +
-      `<div class="vg-bot2"><button data-a="grito" data-k="bgrito">${TXT.poder}</button><button data-a="reiniciar">${TXT.reiniciar}</button><button data-a="salir">${TXT.salir}</button></div><div class="vg-guia" data-k="guia">${tactil() ? TXT.guiaT : TXT.guia}</div></div>` +
-      `<div class="vg-fin" data-k="fin" role="status" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><div class="vg-tabla" data-k="tabla" hidden></div><p data-k="fin3"></p>` +
-      `<div class="vg-bot2"><button data-a="otra">${TXT.otra}</button><button data-a="seguir">${TXT.seguir}</button></div></div></div>`;
+      [1, 2, 3, 4].map(n => b('j' + n, TXT['j' + n], String(n))).join('') + `</div>` +
+      `<div class="vg-elige-salir">${b('salir', TXT.salir, 'Esc')}</div></div>` +
+      `<div data-k="bot"><div class="vg-bot">${b('izq', '◀', '←', ` aria-label="${TXT.izq}"`)}${b('golpe', TXT.golpe, 'Espacio', ' class="vg-golpe"')}${b('der', '▶', '→', ` aria-label="${TXT.der}"`)}</div>` +
+      `<div class="vg-bot2">${b('grito', TXT.poder, 'G', ' data-k="bgrito"')}${b('reiniciar', TXT.reiniciar, 'R')}${b('salir', TXT.salir, 'Esc')}</div><div class="vg-guia" data-k="guia" role="status">${tactil() ? TXT.guiaT : TXT.guia}</div></div>` +
+      `<div class="vg-fin" data-k="fin" role="status" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><p data-k="fin4"></p><div class="vg-tabla" data-k="tabla" hidden></div><p data-k="fin3"></p>` +
+      `<div class="vg-bot2">${b('otra', TXT.otra, 'R')}${b('seguir', TXT.seguir, 'E')}</div></div></div>`;
     const boton = e => e.target.closest && e.target.closest('button[data-a]');
     el.addEventListener('pointerdown', e => {
       const b = boton(e); if (!b) return;
@@ -755,7 +785,15 @@ window.AVV18Minigolf = function (G) {
   }
   const texto = (k, t) => { const e = hud.q(k); if (e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } }; // una vez: el traductor no pelea
   // Lo último que se pintó: cada cuadro solo se comparan números; el texto y el estilo se escriben solo si cambian.
-  const PK = { golpes: -1, guia: null, record: NaN, turno: NaN, color: NaN, barra: -1, cd: null, grito: null, golpeCd: null, firma: [] };
+  // Pista corta de la parte de abajo (clave de TXT o ''): qué hacer ahora mismo. Solo constantes: sin texto nuevo por cuadro.
+  function pistaK(tt) {
+    if (A.eligiendo || A.fase === 'nido' || A.fase === 'nada') return '';
+    if (A.cargando) return 'pSuelta';
+    if (A.fase === 'rueda') return !A.grito && HAB && f ? (tt ? 'pGritoT' : 'pGrito') : '';
+    if (A.fase === 'turno') return '';
+    return A.aviso === 'fuerte' ? 'pFuerte' : A.aviso === 'cerca' ? 'pCerca' : A.aviso === 'suave' ? 'pSuave' : A.aviso === 'flecha' ? 'pFlecha' : tt ? 'guiaT' : 'guia';
+  }
+  const PK = { golpes: -1, guia: null, tactil: null, record: NaN, turno: NaN, color: NaN, barra: -1, cd: null, grito: null, golpeCd: null, firma: [] };
   function firmaCambia() { // golpes, dentro/tope y turno de cada jugador, sin map/join por cuadro
     const f = PK.firma; let cambia = f.length !== J.length + 1;
     if (cambia) f.length = J.length + 1;
@@ -766,7 +804,8 @@ window.AVV18Minigolf = function (G) {
   function pintar() {
     if (!hud) return;
     if (PK.golpes !== A.golpes) { PK.golpes = A.golpes; texto('golpes', golpesTxt(A.golpes)); }
-    const tt = tactil(); if (PK.guia !== tt) { PK.guia = tt; texto('guia', tt ? TXT.guiaT : TXT.guia); }
+    const tt = tactil(); if (PK.tactil !== tt) { PK.tactil = tt; hud.el.classList.toggle('tactil', tt); }
+    const pk = pistaK(tt); if (PK.guia !== pk) { const g = hud.q('guia'); PK.guia = pk; texto('guia', TXT[pk] || ''); g.classList.remove('nueva'); if (pk) { void g.offsetWidth; g.classList.add('nueva'); } }
     const r = record(), m = multi(), kr = m ? -1 : r ? r.mejor : 0;
     if (PK.record !== kr) { PK.record = kr; texto('record', m ? '' : r ? recordTxt(r.mejor) : TXT.sinRecord); }
     const kt = m && A.fase !== 'nido' ? A.turno : -1; if (PK.turno !== kt) { PK.turno = kt; texto('turno', kt >= 0 ? turnoTxt(kt) : ''); }
@@ -778,7 +817,7 @@ window.AVV18Minigolf = function (G) {
     }
     const kb = Math.round(100 * (A.cargando ? A.carga : 0)); if (PK.barra !== kb) { PK.barra = kb; hud.q('barra').style.width = kb + '%'; }
     const bg = hud.q('bgrito'), cd = A.grito || A.fase !== 'rueda'; if (PK.cd !== cd) { PK.cd = cd; bg.classList.toggle('cd', cd); }
-    if (PK.grito !== A.grito) { PK.grito = A.grito; const t = A.grito ? TXT.usado : TXT.poder; if (bg.dataset.t !== t) { bg.dataset.t = t; bg.textContent = t; } }
+    if (PK.grito !== A.grito) { PK.grito = A.grito; const t = A.grito ? TXT.usado : TXT.poder; const bt = hud.q('t-grito'); if (bt.dataset.t !== t) { bt.dataset.t = t; bt.textContent = t; } }
     const gc = A.fase !== 'apuntar'; if (PK.golpeCd !== gc) { PK.golpeCd = gc; hud.golpe.classList.toggle('cd', gc); }
   }
 
@@ -984,8 +1023,39 @@ window.AVV18Minigolf = function (G) {
       check('Grito del Yunque (el poder de Vittata): empuja la semilla hacia donde apuntas', rg.ok && A.grito && sp1 > sp0 + 2 && al > 0.95 && poderes.some(e => e.id === 'grito_yunque'),
         JSON.stringify({ antes: +sp0.toFixed(2), despues: +sp1.toFixed(2), alineado: +al.toFixed(3) }));
       const rg2 = grito();
-      check('Solo un Grito por hoyo', !rg2.ok && rg2.motivo === 'usado' && hud.q('bgrito').textContent === TXT.usado);
+      check('Solo un Grito por hoyo', !rg2.ok && rg2.motivo === 'usado' && hud.q('t-grito').textContent === TXT.usado);
       hastaQuieta();
+      // 6b. Cómo se juega (Kelvin 8-nov: que un niño lo entienda en 20 s sin leer párrafos): meta, teclas, pistas y flecha
+      {
+        reiniciar(); correr(0.05);
+        const tt = tactil(), kbd = a => { const e = hud.el.querySelector('[data-k="bot"] [data-a="' + a + '"] kbd, [data-k="fin"] [data-a="' + a + '"] kbd'); return e ? e.textContent : ''; };
+        const teclas = ['izq', 'golpe', 'der', 'grito', 'reiniciar', 'salir', 'otra', 'seguir'].map(kbd).join(' '), kh = document.getElementById('keyhint');
+        const kVis = !!hud.el.querySelector('[data-a="golpe"] kbd').getClientRects().length;
+        check('Cómo se juega · la meta se ve siempre en el panel («Mete la semilla en el nido» · «Oro con 3 golpes o menos») y una flecha marca el nido',
+          !hud.q('meta').hidden && hud.q('meta').getClientRects().length && hud.q('meta').textContent.includes(TXT.meta) && hud.q('meta').textContent.includes(TXT.metaOro) &&
+          flecha.visible && Math.hypot(flecha.position.x - P_NIDO.x, flecha.position.z - P_NIDO.z) < 0.01 && flecha.position.y > nido.position.y + 2.5 && TXT.empiezaPar.includes('nido'),
+          JSON.stringify({ meta: hud.q('meta').textContent, flecha: flecha.visible, alto: +(flecha.position.y - nido.position.y).toFixed(2) }));
+        check('Cómo se juega · cada botón lleva su tecla (← Espacio → G R Esc · R E · 1–4), visible en escritorio y oculta en táctil; sin la guía de explorar (Espacio: saltar) debajo',
+          teclas === '← Espacio → G R Esc R E' && [1, 2, 3, 4].every(n => hud.el.querySelector('[data-a="j' + n + '"] kbd').textContent === String(n)) && kVis === !tt &&
+          hud.el.querySelector('[data-a="izq"]').getAttribute('aria-label') === TXT.izq && hud.q('t-golpe').textContent === TXT.golpe && (!kh || getComputedStyle(kh).visibility === 'hidden' || getComputedStyle(kh).display === 'none'),
+          JSON.stringify({ teclas, kVis, tt }));
+        const pista = () => hud.q('guia').textContent;
+        const p0 = pista(); empezarCarga(); paso(1 / 60); const p1 = pista(); soltarCarga(); const tiro = A.tiroP; paso(1 / 60); const p2 = pista(); hastaQuieta(); const p3 = pista(), av3 = A.aviso;
+        check('Cómo se juega · pista corta de lo que toca: apuntar y mantener → «¡Suelta para golpear!» → Grito mientras rueda → «más fuerza» tras un toque flojo',
+          p0 === (tt ? TXT.guiaT : TXT.guia) && p1 === TXT.pSuelta && p2 === (tt ? TXT.pGritoT : TXT.pGrito) && tiro < 0.15 && av3 === 'suave' && p3 === TXT.pSuave && [p0, p1, p2, p3].every(t => t.length <= 48),
+          JSON.stringify({ p0, p1, p2, p3, tiro: +tiro.toFixed(2) }));
+        colocar(NIDO.u - 3, 0); apuntaLocal(NIDO.u, 0); tirar(1); // a tope por encima del nido; pasado el nido se frena a mano (el rebote podría volver y entrar)
+        for (let t = 0; t < 8 && A.fase === 'rueda'; t += 1 / 60) { paso(1 / 60); if (A.rapido && Math.hypot(B.x - P_NIDO.x, B.z - P_NIDO.z) > 1.25) B.vx = B.vz = 0; }
+        hastaQuieta(); const pf = A.fase === 'apuntar' ? pista() : 'fase ' + A.fase;
+        colocar(NIDO.u - 4, 0.3); apuntaLocal(NIDO.u, 0.3); tirar(fuerzaPara(2)); hastaQuieta(); const pc = A.fase === 'apuntar' ? pista() : 'fase ' + A.fase;
+        colocar(TEE.u, 0); apuntaLocal(TEE.u + 5, 0); tirar(fuerzaPara(3)); hastaQuieta(); const pl = pista();
+        check('Cómo se juega · tras cada tiro dice qué pasó: «¡Muy fuerte!» si pasó por encima del nido, «¡Casi!» si quedó cerca, «la flecha» si quedó lejos',
+          pf === TXT.pFuerte && pc === TXT.pCerca && pl === TXT.pFlecha, JSON.stringify({ pf, pc, pl }));
+        if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
+        const D = window.AV_EN || {}, faltan = ['empiezaPar', 'guia', 'guiaT', 'meta', 'metaOro', 'pSuelta', 'pGrito', 'pGritoT', 'pSuave', 'pFuerte', 'pCerca', 'pFlecha', 'medOro', 'medOtra'].filter(k => !D[TXT[k]]);
+        check('Cómo se juega · los textos nuevos tienen inglés en content/cap1/en.js', !faltan.length, faltan.join(', '));
+        reiniciar();
+      }
       // 7. Completar el hoyo: con un plan sencillo entra en pocos golpes (el nido registra la llegada)
       reiniciar(); toasts.length = 0;
       const RUTA = [{ u: -1.2, v: 2.0 }, { u: 0.8, v: -2.0 }, { u: 3.8, v: -2.0 }, NIDO];
@@ -1003,6 +1073,8 @@ window.AVV18Minigolf = function (G) {
       check('Victoria: golpes, medalla y récord en pantalla; se guarda en el progreso local', res1 && res1.nuevo && record() && record().mejor === res1.golpes && record().medalla === medalla(res1.golpes) &&
         !hud.q('fin').hidden && hud.q('fin2').textContent === TXT[res1.medalla] && hud.q('fin3').textContent === TXT.nuevo && (V.recargar(), record() && record().mejor === res1.golpes),
         JSON.stringify({ r: record() }));
+      check('Cómo se juega · el final explica la medalla («Oro: … 3 golpes o menos» o «Para el oro: …») y la flecha del nido ya no se ve',
+        hud.q('fin4').textContent === (res1.medalla === 'oro' ? TXT.medOro : TXT.medOtra) && !hud.q('fin4').hidden && !flecha.visible && hud.q('guia').textContent === '', hud.q('fin4').textContent);
       check('Medallas: oro = par o mejor, plata = par + 1, bronce = completar', medalla(2) === 'oro' && medalla(PAR) === 'oro' && medalla(PAR + 1) === 'plata' && medalla(PAR + 3) === 'bronce' && RANGO_M.oro > RANGO_M.plata);
       // Un resultado peor no pisa el récord; uno mejor, sí
       reiniciar(); colocar(NIDO.u - 3, 0.3); A.golpes = res1.golpes + 2; apuntaLocal(NIDO.u, NIDO.v); tirar(fuerzaPara(3.3)); hastaQuieta();
@@ -1119,6 +1191,7 @@ window.AVV18Minigolf = function (G) {
           iniciar({ forzar }); suelta(pulsa('[data-k="elige"] [data-a="j1"]', 30)); correr(0.05);
           check('Móvil: en táctil la guía del hoyo y el aviso de Acción nombran los botones, no las teclas', tactil() && A.njug === 1 && !A.eligiendo && !hud.q('bot').hidden &&
             hud.q('guia').textContent === TXT.guiaT && G.interaccion.modo.aviso() === TXT.guiaT && !/Espacio|\bG:|Esc/.test(TXT.guiaT), hud.q('guia').textContent);
+          check('Móvil: en táctil los botones no enseñan teclas (sin <kbd> visibles)', hud.el.classList.contains('tactil') && [...hud.el.querySelectorAll('kbd')].every(e => !e.getClientRects().length));
           // Apuntar arrastrando: en el lado de la cámara el lienzo gira la vista; en el lado del joystick (oculto en el hoyo) también apunta
           const zurdo = raiz.contains('a11y-zurdo'), W = window.innerWidth, y = Math.round(window.innerHeight * 0.35);
           const xCam = Math.round(W * (zurdo ? 0.2 : 0.8)), xPalo = Math.round(W * (zurdo ? 0.8 : 0.2)), sgn = zurdo ? -1 : 1;
@@ -1151,7 +1224,7 @@ window.AVV18Minigolf = function (G) {
             A.fase === 'rueda' && A.golpes === 1 && !A.cargando && alineado(dGol) > 0.99, JSON.stringify(Object.assign(carga, { fase: A.fase, golpes: A.golpes, alineado: +alineado(dGol).toFixed(3) })));
           // Grito con su botón (con la semilla rodando)
           correr(0.1); const pgr = pulsa(bot('grito'), 37); suelta(pgr);
-          check('Móvil: el botón «Grito» lanza el Grito del Yunque con la semilla rodando', A.grito && hud.q('bgrito').textContent === TXT.usado, hud.q('bgrito').textContent);
+          check('Móvil: el botón «Grito» lanza el Grito del Yunque con la semilla rodando', A.grito && hud.q('t-grito').textContent === TXT.usado, hud.q('t-grito').textContent);
           hastaQuieta();
           // Un dedo que el sistema cancela (pointercancel) no golpea
           if (A.fase !== 'apuntar') reiniciar();
@@ -1193,7 +1266,7 @@ window.AVV18Minigolf = function (G) {
       for (const r of teclado()) out.push(r); // W35
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
     try { if (A.fase !== 'nada') salir(); } catch (e) { /* ya fuera */ }
-    A.manual = false; A.invitado = true; puntos.visible = false;
+    A.manual = false; A.invitado = true; puntos.visible = false; flecha.visible = false;
     G.ui.toast = toast0;
     S.inv = inv0; try { G.objetos.renderInv(); } catch (e) { /* HUD */ }
     S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.facing = fac0; M.flying = fly0; M.vx = M.vz = 0; G.camara.yaw = yaw0;
