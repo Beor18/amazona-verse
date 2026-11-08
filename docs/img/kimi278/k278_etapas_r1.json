@@ -1,0 +1,60 @@
+{
+ "etiqueta": "r1",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "hora": "2026-11-08T09:22:03.700Z",
+ "estados": {
+  "es_etapas": {
+   "porEtapa": true,
+   "filasEt": [
+    "Aprendiz3",
+    "Guardián1"
+   ],
+   "numero": "4",
+   "aunSinEtapa": false,
+   "grande": 0,
+   "desborde": false,
+   "calls1": 133,
+   "calls2": 133,
+   "tris": 388064,
+   "fps": 23,
+   "duelosTxt": "Duelos contra la Campeona4Duelos ganadosGanaste con:VittataAmazona gorgirrojaPor etapa:Aprendiz3Guardián1"
+  },
+  "en_etapas": {
+   "porEtapa": true,
+   "filasEt": [
+    "Apprentice3",
+    "Guardian1"
+   ],
+   "numero": "4",
+   "aunSinEtapa": false,
+   "grande": 0,
+   "desborde": false,
+   "calls1": 137,
+   "calls2": 34,
+   "tris": 374954,
+   "fps": 6,
+   "duelosTxt": "Duels against the Champion4Duels wonYou won with:VittataRed-necked amazonBy stage:Apprentice3Guardian1"
+  },
+  "es_vieja": {
+   "porEtapa": false,
+   "filasEt": [],
+   "numero": "1",
+   "aunSinEtapa": true,
+   "grande": 0,
+   "desborde": false,
+   "calls1": 99,
+   "calls2": 99,
+   "tris": 232112,
+   "fps": 15,
+   "duelosTxt": "Duelos contra la Campeona1Duelos ganadosAún sin duelos por etapa: se cuentan desde ahora."
+  }
+ },
+ "base": {
+  "tipo": "function",
+  "toast": null,
+  "net": [
+   "http://127.0.0.1:63413/src/game/records.js st=200"
+  ]
+ },
+ "erroresConsola": []
+}
