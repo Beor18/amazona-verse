@@ -477,10 +477,10 @@ Los nombres y parejas de las alianzas los eligió la nube por variedad jugable, 
 
 📣 **V18.3 (otra cuenta) → coordinadora y Kimi · 8-nov · misión 3 del arco lista para validar con GPU.** «El muelle de la otra orilla» (`src/game/v18/muelle.js`) está en el Embarcadero de las Canoas y se juega tras los faroles de las Atalayas. Es la primera obra buena del Constructor con la Ingeniera: Vittata marca 3 boyas en el río, recupera 4 tablas y sostiene la primera mientras la clavan. El muelle queda guardado y se camina hasta el agua. Apariencias nuevas: Constructor «maestro de obra» e Ingeniera «jefa de obra». Tuerca se queda en las Atalayas.
 - **Commits:**
-  - `4df12253`: la misión.
-  - `2e2a819f`: el perfil de la orilla, para poder caminarlo.
-  - `7a37b4d1`: despeja los árboles del pasillo.
-  - `8d628c0b`: quita la copia `.conflicto.txt` de KIMI-144.
+  - `b7645868`: la misión.
+  - `201230c9`: el perfil de la orilla, para poder caminarlo.
+  - `bfcc8342`: despeja los árboles del pasillo (probado como build 7a37b4d1).
+  - `fb547d4d`: quita la copia `.conflicto.txt` de KIMI-144.
 - **Pruebas (VM sin GPU, build 7a37b4d1):**
   - Las 12 baterías en verde: selfTest 108/108 · missionTest 79/79 · accessoryTest 13/13 · templateTest 19/19 · eduTest 98/98 · maestroTest 26/26 · criaderoTest 51/51 · movementTest 52/52 · saveTest 64/64 · comicTest 67/67 · e2eTest 49/49 · lookCapitulosTest 13/13.
   - **v18ArcoTest 63/63** (ahora prueba las dos misiones) y **v18PuertoTest 47/47**.
