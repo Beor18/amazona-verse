@@ -433,7 +433,7 @@ window.AVV18Minigolf = function (G) {
     if (M.flying) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } }
     A.fase = 'apuntar'; A.njug = 1; A.eligeHoyo = !!o.elegirHoyo; A.eligiendo = !A.eligeHoyo;
     focoPrevio = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;
-    enganchar(); empezarHoyo(); montarHud(); hud.el.hidden = false; hud.vista = null; if (A.eligeHoyo) pintarHoyos(); paneles(); pintar(true);
+    enganchar(); empezarHoyo(); montarHud(); llenarHud(); hud.el.hidden = false; hud.vista = null; if (A.eligeHoyo) pintarHoyos(); paneles(); pintar(true);
     if (!A.eligeHoyo) avisoEmpieza();
     emitir({ tipo: 'empieza', hoyo: HOYO.n });
     return true;
@@ -563,6 +563,7 @@ window.AVV18Minigolf = function (G) {
     if (hud) {
       const dentro = hud.el.contains(document.activeElement); hud.el.hidden = true; hud.vista = null;
       if (dentro) { const f = focoPrevio; if (f && document.contains(f) && f.getClientRects().length && !hud.el.contains(f)) try { f.focus({ preventScroll: true }); } catch (e) { /* */ } else try { document.activeElement.blur(); } catch (e) { /* */ } }
+      vaciarHud();
     }
     focoPrevio = null;
     ponerSemilla(P_TEE.x, P_TEE.z); semilla.scale.setScalar(1); puntos.visible = false; flecha.visible = false;
@@ -925,21 +926,6 @@ window.AVV18Minigolf = function (G) {
     estilo();
     const el = document.createElement('div'); el.id = 'v18-golf'; el.hidden = true;
     el.setAttribute('role', 'region'); el.setAttribute('aria-labelledby', 'vg-hoyo'); // W35: zona con nombre para el lector de pantalla
-    const k = t => `<kbd aria-hidden="true">${t}</kbd>`; // tecla del botón (se oculta en táctil); el nombre del botón no la incluye
-    const b = (a, txt, tecla, extra) => `<button type="button" data-a="${a}"${extra || ''}><span data-k="t-${a}">${txt}</span>${tecla ? k(tecla) : ''}</button>`;
-    const bh = h => `<button type="button" data-a="h${h.n}"><span class="vg-h"><b data-k="t-h${h.n}">${etHoyo(h.n)}</b><small>${h.zona}</small><small data-k="m-h${h.n}"></small></span>${k(String(h.n))}</button>`;
-    el.innerHTML = `<div class="vg-caja"><div class="vg-info"><span id="vg-hoyo" data-k="hoyoT">${tx('hoyo')}</span><span data-k="parT">${tx('par')}</span><span data-k="golpes"></span><span data-k="record"></span><span data-k="turno"></span></div>` +
-      `<div class="vg-meta" data-k="meta"><b>${TXT.meta}</b><span data-k="metaS">${tx('metaOro')}</span></div><div class="vg-jugs" data-k="jugs" hidden></div>` +
-      `<div class="vg-barra" data-k="barraW"><b data-k="barra"></b></div><div class="vg-et" data-k="fuerzaEt">${TXT.fuerza}</div>` +
-      `<div class="vg-elige" data-k="elige" role="group" aria-labelledby="vg-elige-t" aria-describedby="vg-elige-sub" hidden><p id="vg-elige-t">${TXT.elige}</p><div class="vg-et" id="vg-elige-sub">${TXT.eligeSub}</div><div class="vg-bot4">` +
-      [1, 2, 3, 4].map(n => b('j' + n, TXT['j' + n], String(n))).join('') + `</div>` +
-      `<div class="vg-elige-salir">${b('salir', TXT.salir, 'Esc')}</div></div>` +
-      `<div class="vg-elige" data-k="hoyos" role="group" aria-labelledby="vg-hoyos-t" aria-describedby="vg-hoyos-sub" hidden><p id="vg-hoyos-t">${TXT.eligeHoyo}</p><div class="vg-et" id="vg-hoyos-sub">${TXT.eligeHoyoSub}</div>` +
-      `<div class="vg-bot6">${HOYOS.map(bh).join('')}</div><div class="vg-elige-salir">${b('salir', TXT.salir, 'Esc')}</div></div>` +
-      `<div data-k="bot"><div class="vg-bot">${b('izq', '◀', '←', ` aria-label="${TXT.izq}"`)}${b('golpe', TXT.golpe, 'Espacio', ' class="vg-golpe"')}${b('der', '▶', '→', ` aria-label="${TXT.der}"`)}</div>` +
-      `<div class="vg-bot2">${b('grito', TXT.poder, 'G', ' data-k="bgrito"')}${b('reiniciar', TXT.reiniciar, 'R')}${b('salir', TXT.salir, 'Esc')}</div><div class="vg-guia" data-k="guia" role="status">${tactil() ? TXT.guiaT : TXT.guia}</div></div>` +
-      `<div class="vg-fin" data-k="fin" role="status" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><p data-k="fin4"></p><div class="vg-tabla" data-k="tabla" hidden></div><p data-k="fin3"></p>` +
-      `<div class="vg-bot2">${b('siguiente', TXT.siguiente, 'N', ' data-k="bsig"')}${b('hoyos', TXT.hoyos, 'H', ' data-k="bhoyos"')}${b('otra', TXT.otra, 'R')}${b('seguir', TXT.seguir, 'E')}</div></div></div>`;
     const boton = e => e.target.closest && e.target.closest('button[data-a]');
     el.addEventListener('pointerdown', e => {
       const b = boton(e); if (!b) return;
@@ -969,13 +955,41 @@ window.AVV18Minigolf = function (G) {
     for (const t of ['pointerup', 'pointercancel']) el.addEventListener(t, suelta);
     el.addEventListener('contextmenu', e => e.preventDefault());
     document.body.appendChild(el);
-    const qs = {}; // las piezas del HUD son fijas: se buscan una vez (pintar() las pide cada cuadro)
-    hud = { el, q: k => qs[k] || (qs[k] = el.querySelector('[data-k="' + k + '"]')), golpe: el.querySelector('[data-a="golpe"]') };
+    const qs = {}; // las piezas del HUD son fijas mientras está lleno: se buscan una vez (pintar() las pide cada cuadro)
+    hud = { el, qs, lleno: false, q: k => qs[k] || (qs[k] = el.querySelector('[data-k="' + k + '"]')), golpe: null };
     return hud;
+  }
+  // El contenido del HUD se crea al abrir el minigolf y se vacía al salir: un panel oculto no guarda texto en español
+  // (idiomaTest lee también lo oculto; mismo caso que QA-218). Los oyentes están en el contenedor y siguen valiendo.
+  function llenarHud() {
+    if (!hud || hud.lleno) return;
+    const k = t => `<kbd aria-hidden="true">${t}</kbd>`; // tecla del botón (se oculta en táctil); el nombre del botón no la incluye
+    const b = (a, txt, tecla, extra) => `<button type="button" data-a="${a}"${extra || ''}><span data-k="t-${a}">${txt}</span>${tecla ? k(tecla) : ''}</button>`;
+    const bh = h => `<button type="button" data-a="h${h.n}"><span class="vg-h"><b data-k="t-h${h.n}">${etHoyo(h.n)}</b><small>${h.zona}</small><small data-k="m-h${h.n}"></small></span>${k(String(h.n))}</button>`;
+    hud.el.innerHTML = `<div class="vg-caja"><div class="vg-info"><span id="vg-hoyo" data-k="hoyoT">${tx('hoyo')}</span><span data-k="parT">${tx('par')}</span><span data-k="golpes"></span><span data-k="record"></span><span data-k="turno"></span></div>` +
+      `<div class="vg-meta" data-k="meta"><b>${TXT.meta}</b><span data-k="metaS">${tx('metaOro')}</span></div><div class="vg-jugs" data-k="jugs" hidden></div>` +
+      `<div class="vg-barra" data-k="barraW"><b data-k="barra"></b></div><div class="vg-et" data-k="fuerzaEt">${TXT.fuerza}</div>` +
+      `<div class="vg-elige" data-k="elige" role="group" aria-labelledby="vg-elige-t" aria-describedby="vg-elige-sub" hidden><p id="vg-elige-t">${TXT.elige}</p><div class="vg-et" id="vg-elige-sub">${TXT.eligeSub}</div><div class="vg-bot4">` +
+      [1, 2, 3, 4].map(n => b('j' + n, TXT['j' + n], String(n))).join('') + `</div>` +
+      `<div class="vg-elige-salir">${b('salir', TXT.salir, 'Esc')}</div></div>` +
+      `<div class="vg-elige" data-k="hoyos" role="group" aria-labelledby="vg-hoyos-t" aria-describedby="vg-hoyos-sub" hidden><p id="vg-hoyos-t">${TXT.eligeHoyo}</p><div class="vg-et" id="vg-hoyos-sub">${TXT.eligeHoyoSub}</div>` +
+      `<div class="vg-bot6">${HOYOS.map(bh).join('')}</div><div class="vg-elige-salir">${b('salir', TXT.salir, 'Esc')}</div></div>` +
+      `<div data-k="bot"><div class="vg-bot">${b('izq', '◀', '←', ` aria-label="${TXT.izq}"`)}${b('golpe', TXT.golpe, 'Espacio', ' class="vg-golpe"')}${b('der', '▶', '→', ` aria-label="${TXT.der}"`)}</div>` +
+      `<div class="vg-bot2">${b('grito', TXT.poder, 'G', ' data-k="bgrito"')}${b('reiniciar', TXT.reiniciar, 'R')}${b('salir', TXT.salir, 'Esc')}</div><div class="vg-guia" data-k="guia" role="status">${tactil() ? TXT.guiaT : TXT.guia}</div></div>` +
+      `<div class="vg-fin" data-k="fin" role="status" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><p data-k="fin4"></p><div class="vg-tabla" data-k="tabla" hidden></div><p data-k="fin3"></p>` +
+      `<div class="vg-bot2">${b('siguiente', TXT.siguiente, 'N', ' data-k="bsig"')}${b('hoyos', TXT.hoyos, 'H', ' data-k="bhoyos"')}${b('otra', TXT.otra, 'R')}${b('seguir', TXT.seguir, 'E')}</div></div></div>`;
+    for (const kq in hud.qs) delete hud.qs[kq];
+    hud.golpe = hud.el.querySelector('[data-a="golpe"]'); hud.lleno = true;
+    Object.assign(PK, { hoyo: 0, golpes: -1, guia: null, tactil: null, record: NaN, turno: NaN, color: NaN, barra: -1, cd: null, grito: null, golpeCd: null }); PK.firma.length = 0;
+  }
+  function vaciarHud() {
+    if (!hud || !hud.lleno) return;
+    hud.el.textContent = ''; hud.lleno = false; hud.golpe = null;
+    for (const kq in hud.qs) delete hud.qs[kq];
   }
   // La pantalla «¿Qué hoyo quieres jugar?»: cada hoyo con su zona y su medalla, récord o «Cerrado» (se pinta al abrirla)
   function pintarHoyos() {
-    if (!hud) return;
+    if (!hud || !hud.lleno) return;
     for (const h of HOYOS) {
       const b = hud.el.querySelector('[data-a="h' + h.n + '"]'), ab = abierto(h.n), r = recordDe(h);
       hud.q('m-h' + h.n).textContent = !ab ? TXT.cerradoC : r ? TXT[r.medalla + 'C'] + ' · ' + recordTxt(r.mejor) : TXT.sinJugar;
@@ -1002,7 +1016,7 @@ window.AVV18Minigolf = function (G) {
     return cambia;
   }
   function pintar() {
-    if (!hud) return;
+    if (!hud || !hud.lleno) return;
     if (PK.hoyo !== HOYO.n) { PK.hoyo = HOYO.n; texto('hoyoT', tx('hoyo')); texto('parT', tx('par')); texto('metaS', tx('metaOro')); }
     if (PK.golpes !== A.golpes) { PK.golpes = A.golpes; texto('golpes', golpesTxt(A.golpes)); }
     const tt = tactil(); if (PK.tactil !== tt) { PK.tactil = tt; hud.el.classList.toggle('tactil', tt); }
@@ -1307,6 +1321,13 @@ window.AVV18Minigolf = function (G) {
     if (G.fx && G.fx.guide) { G.emit('render', 0.016); guiaG.fuera = A.fase === 'nada' && guiaVis() === guiaAntes; }
     check('mg27: en «¿Qué hoyo quieres jugar?» y jugando un hoyo no se ven la flecha ni el haz de la guía de la misión; al salir, la guía vuelve como estaba',
       !!G.fx && guiaG.elige === true && guiaG.hoyo === true && guiaG.fuera === true, JSON.stringify(Object.assign(guiaG, { antes: guiaAntes })));
+    { // mg28 (QA-218): al cerrar «¿Qué hoyo quieres jugar?» el panel oculto no deja texto; al volver se rellena
+      const ir2 = irYJugar(), eligeV = ir2 && A.eligeHoyo && /\p{L}/u.test(hud.q('hoyos').textContent); salir();
+      const vacio = A.fase === 'nada' && hud.el.hidden && !/\p{L}/u.test(hud.el.textContent);
+      const ir3 = irYJugar(), otraVez = ir3 && A.eligeHoyo && !hud.q('hoyos').hidden && hud.q('hoyos').textContent.includes(TXT.eligeHoyo) && hud.el.querySelectorAll('[data-k="hoyos"] .vg-bot6 button').length === 6 && hud.q('m-h1').textContent === TXT.plataC + ' · ' + recordTxt(4);
+      salir();
+      check('mg28: al salir del selector de hoyos el panel oculto se vacía (sin texto en español) y al volver sale completo', eligeV && vacio && otraVez && !/\p{L}/u.test(hud.el.textContent), JSON.stringify({ eligeV, vacio, otraVez, txt: hud.el.textContent.slice(0, 80) }));
+    }
     // Por turnos: sin récord ni premios, pero si alguien llega al nido se abre el hoyo siguiente
     V.borrar(); V.recargar(); const m1 = mad();
     iniciar({ forzar, hoyo: 1 }); elegir(2);
@@ -1560,6 +1581,7 @@ window.AVV18Minigolf = function (G) {
       tecla('keydown', 'a'); const conA = !!(G.input && G.input.keys && G.input.keys.has('a')); tecla('keyup', 'a');
       check('Salir devuelve el control: Acción, teclas, botones del juego; el HUD se va y la semilla vuelve a la salida', A.fase === 'nada' && G.interaccion.modo !== modo && conA && hud.el.hidden &&
         !document.body.classList.contains('v18-golf-on') && Math.hypot(B.x - P_TEE.x, B.z - P_TEE.z) < 0.01 && Math.hypot(S.pos.x - P_ENTRADA.x, S.pos.z - P_ENTRADA.z) < 0.01);
+      check('mg28 (QA-218): tras salir, el HUD oculto del minigolf no tiene texto (idiomaTest lee lo oculto)', hud.el.hidden && !/\p{L}/u.test(hud.el.textContent), hud.el.textContent.slice(0, 80));
       // Esc sale del hoyo y no abre además la Pausa (ui.js abre la Pausa al soltar Esc si nadie se quedó la tecla)
       {
         const pausaAbierta = () => { const pz = document.getElementById('pause'); try { return !!(pz && pz.matches(':popover-open')) || pausa(); } catch (e) { return pausa(); } };
