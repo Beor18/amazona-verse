@@ -286,6 +286,8 @@
       relevoRun.i += 1;
       return true;
     }
+    // Una capa cerrada no guarda su texto: se rellena con tx() al abrir y así no queda español oculto al cambiar de idioma (idiomaTest)
+    function cerrarCapa(c) { if (!c) return; c.hidden = true; c.querySelectorAll('h2, p, button').forEach(n => { n.textContent = ''; }); }
     function mando(miembro, tramo) {
       return new Promise(res => {
         let capa = document.getElementById('eq-mando');
@@ -294,7 +296,7 @@
           capa.setAttribute('role', 'dialog'); capa.setAttribute('aria-modal', 'true'); capa.setAttribute('aria-labelledby', 'eq-mando-t');
           capa.innerHTML = '<div class="eq-mando-box paper" tabindex="-1"><h2 id="eq-mando-t"></h2><p id="eq-mando-p"></p><button class="btn" type="button" id="eq-mando-ok"></button></div>';
           document.body.appendChild(capa);
-          capa.addEventListener('click', ev => { if (ev.target.closest('#eq-mando-ok') && capa._res) { const f = capa._res; capa._res = null; capa.hidden = true; f(true); } });
+          capa.addEventListener('click', ev => { if (ev.target.closest('#eq-mando-ok') && capa._res) { const f = capa._res; capa._res = null; cerrarCapa(capa); f(true); } });
         }
         capa.querySelector('#eq-mando-t').textContent = tx('Pasa el mando', 'Pass the controller');
         capa.querySelector('#eq-mando-p').textContent = tx('Ahora vuela ' + miembro + '. Tramo ' + tramo + ' de 3.', 'Now ' + miembro + ' flies. Leg ' + tramo + ' of 3.');
@@ -434,7 +436,7 @@
         v.setAttribute('role', 'dialog'); v.setAttribute('aria-modal', 'true'); v.setAttribute('aria-labelledby', 'eq-vineta-t');
         v.innerHTML = '<div class="eq-vineta-box paper"><h2 id="eq-vineta-t"></h2><p id="eq-vineta-p"></p><button class="btn" type="button" id="eq-vineta-ok"></button></div>';
         document.body.appendChild(v);
-        v.addEventListener('click', ev => { if (ev.target.closest('#eq-vineta-ok')) v.hidden = true; });
+        v.addEventListener('click', ev => { if (ev.target.closest('#eq-vineta-ok')) cerrarCapa(v); });
       }
       v.querySelector('#eq-vineta-t').textContent = tx('Lo hicimos juntos', 'We did it together');
       v.querySelector('#eq-vineta-p').textContent = tx('La Maraña se aflojó. Villa Raíz se ve más viva.', 'The Tangle loosened. Villa Raíz looks more alive.');
@@ -500,8 +502,8 @@
       let viva = 0; const alViva = () => { viva++; }; G.on('bandadaViva', alViva);
       const cerrarUi = () => {
         tab = 'casa';
-        const v = document.getElementById('eq-vineta'); if (v) v.hidden = true;
-        const m = document.getElementById('eq-mando'); if (m) { m.hidden = true; if (m._res) { const f = m._res; m._res = null; f(false); } }
+        cerrarCapa(document.getElementById('eq-vineta'));
+        const m = document.getElementById('eq-mando'); if (m) { cerrarCapa(m); if (m._res) { const f = m._res; m._res = null; f(false); } }
         try { if (G.recordsApi && G.recordsApi.abierto && G.recordsApi.abierto()) G.recordsApi.cerrar(); } catch (e) { /* cerrado */ }
       };
       try {
@@ -551,6 +553,7 @@
         sumarPerchas(29);
         check('A las 30 perchas la zona queda viva y sale la viñeta, sin caducar', leer().marana.perchas === 30 && leer().marana.viva === true && viva >= 1 && document.getElementById('eq-vineta') && !document.getElementById('eq-vineta').hidden && /Lo hicimos juntos/.test(document.getElementById('eq-vineta').textContent) && !/racha|caduc/.test(leerRaw(prueba)));
         document.getElementById('eq-vineta-ok').click();
+        check('Al cerrar la viñeta no queda su texto oculto', document.getElementById('eq-vineta').hidden && !/\p{L}/u.test(document.getElementById('eq-vineta').textContent), document.getElementById('eq-vineta').textContent);
         const c8 = cortes(8);
         check('El río se parte en 3 tramos', c8.length === 3 && c8[0] < c8[1] && c8[1] < c8[2] && c8[2] === 8 && c8.join(',') === '3,6,8', c8.join(','));
         check('Sin un relevo en curso el corte no anota nada', vigilar({ rio: true, sig: 3, t: 4.2, fase: 'juego', grab: { m: [1, 2, 3, 4, 5, 6] } }, 8) === false && leer().relevo.tramos.length === 0);
@@ -565,7 +568,7 @@
         const capa = document.getElementById('eq-mando');
         check('Pasa el mando dice el nombre y el tramo', capa && !capa.hidden && /Pasa el mando/.test(capa.textContent) && /Pluma Verde/.test(capa.textContent) && /Tramo 2 de 3/.test(capa.textContent) && capa.querySelector('#eq-mando-ok').offsetHeight >= 44);
         capa.querySelector('#eq-mando-ok').click();
-        check('Listo cierra la pantalla de relevo', (await prom) === true && capa.hidden);
+        check('Listo cierra la pantalla de relevo y no deja su texto oculto', (await prom) === true && capa.hidden && !/\p{L}/u.test(capa.textContent), capa.textContent);
         const hoy = vueloDelDia('20261102'), hoy2 = vueloDelDia('20261102'), otro = vueloDelDia('20261103');
         check('El vuelo del día es el mismo para la casa y no lleva racha', hoy.fecha === '20261102' && hoy.ruta === hoy2.ruta && hoy.viento === hoy2.viento && hoy.frutos === hoy2.frutos && otro.fecha !== hoy.fecha && !('racha' in hoy));
         if (G.aula && G.aula.aj) { G.aula.aj.idioma = 'en'; asegurar(); check('La pestaña también está en inglés', /Your flock/.test(document.getElementById('eq-panel').textContent) && /Flock/.test(document.querySelector('[data-eq-tab="bandada"]').textContent)); }
