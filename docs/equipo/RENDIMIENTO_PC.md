@@ -1246,3 +1246,44 @@ Evidencia: `docs/img/kimi127/k127_k318-antes-r1.{json,log}` + capturas `k127_k31
 `k127_k318-sonda-esc1.json` (confirmación `escuela:true`). Herramientas: `kimi1_k318_swap.sh` (nuevo),
 `kimi1_mata_huerfanos_k318.ps1` (genérica por patrón, doble verificación de huérfano),
 `kimi1_127.js` (vuelca `escuela` en las stats). El juego no se tocó.
+
+### Re-medición LIMPIA del par (r2 · 8-nov ~18:47→19:05 UTC): la caída de la demo de r1 fue contaminación, el modo NO cuesta hilo
+
+Ventana con censo **0 chrome / 0 node ajenos** verificado antes de cada corrida (único ajeno en todo el
+tramo: un node de Kimi 2 colgado en `--help`, 0 % CPU y sin Chrome, no tocado; al terminar A apareció un
+árbol Chrome huérfano de Kimi 2 —nodo padre muerto— y se limpió antes de B con `kimi1_mata_huerfanos_k318.ps1`,
+quedando 0/0 otra vez). **«Antes» ya no necesita swap de src/**: con el fix de KIMI-320 (`renderer.js:925`,
+el auto-ON exige `escuela == null`), `?escuela=0` mantiene el modo apagado de forma fiable →
+**A = HEAD + `--url-extra escuela=0`** (`k318-antes-r2`, 18:47→18:56) y **B = HEAD + `escuela=1`**
+(`k318-despues-r2`, 18:57→19:05), mismas 7 páginas, 0 errores de consola en ambas. Flag verificado en las
+stats volcadas: A = 67/76 muestras `escuela:false` · B = 65/75 `escuela:true` (las nulas son de demo/base).
+
+| pack | A=OFF fpsMed (mín) | B=ON fpsMed (mín) | Δ |
+|---|---|---|---|
+| cap1 | 23 (18) | 26 (24) | +3 |
+| ep2 | 26 (21) | 28 (3) | +2 |
+| ep3 | 11 (2) | 18 (1) | +7 |
+| ep4 | 8 (5) | 21 (4) | +13 |
+| ep5 | 23 (19) | 20 (3) | −3 |
+| ep6 | 21 (19) | 26 (3) | +5 |
+| demo/base | 8 (0)* | 20 (13) | +12 |
+| demo/duelo | 14 (12) | 20 (16) | +6 |
+| demo/Sombra | 11 (9) | 18 (16) | +7 |
+| demo/puente | 17 (16) | 27 (25) | +10 |
+
+\* demo/base A arrastra un pico de **10 910 ms** (mín 0 fps): artefacto del arnés, no del juego ni del modo —
+los escenarios teleportan a una zona v18 fría y la carga puede congelar ~9–11 s dentro de la ventana; aparece
+en las 3 corridas con magnitud similar (8 779 / 11 213 / 10 910 ms) y en B de r2 no se dio (peor 160 ms).
+
+**Veredicto: la hipótesis «el modo cuesta hilo principal» queda DESCARTADA con números limpios.** En la misma
+ventana el modo es neutral o mejora en 9/10 medidas: demo +6/+7/+10 fpsMed (duelo 14→20 · Sombra 11→18 ·
+puente 17→27), villas cap1/ep2/ep6 +2…+5 y ep3/ep4 +7/+13 donde el modo recorta flora/población; ep5 −3 queda
+en la varianza. La caída de la demo del par r1 (19/17/27 → 12/9/14) **no se reproduce**: fue deriva de
+ventana/contaminación de la «despues» de r1. **No hay hallazgo que pasar a Kimi 3** — el sospechado
+`emit('calidad')` inicial del modo no tiene coste medible. Dato metodológico: la varianza entre ventanas del
+perfil ×6 es alta incluso limpio (demo OFF 19/17/27 en la ventana de r1 vs 14/11/17 en la de r2), así que
+solo A/B en la misma ventana con censo limpio es concluyente; el orden A-B-A-B queda como refuerzo opcional
+si alguien lo pidiera, pero la dirección del efecto (B ≥ A en todo) ya cierra la pregunta.
+
+Evidencia: `docs/img/kimi127/k127_k318-antes-r2.{json,log}` + `k127_k318-antes-r2_*.jpg` (10 capturas),
+`k127_k318-despues-r2.{json,log}` + `k127_k318-despues-r2_*.jpg` (10). El juego no se tocó (herramientas + docs).
