@@ -1539,7 +1539,7 @@ AVE.module('streaming', function (G) {
       quitarCercaZona(Z);
       if (!modelos.size) return;
       Z.cercaFundiendo = true;
-      Z.cercaF = { i: 0, modelos, grupos: new Map(), temporales: [], ms: [] };
+      Z.cercaF = { i: 0, g: 0, modelos, grupos: new Map(), temporales: [], ms: [] }; // g: contador de grupos (igual que hdF; sin él gruposL[undefined] cerraba la fusión con 0 mallas, KIMI-341)
       encolar(() => fundirCercaPaso(Z), 'fundirCerca:' + Z.id);
     }
     // KIMI-Task-017: en tandas de ~6 ms por trabajo (el fundido entero eran hasta ~150 ms de CPU seguidos).

@@ -1,0 +1,8 @@
+[23:14:25] servidor http://127.0.0.1:49495 packs=ep3,ep5
+[23:14:40] ep3: entrar='ok' en 14.1s
+[23:14:46] ep3: asentar='ok'
+[23:14:46] ep3: totEscena=304 escuela=true calidad=bajo dpr=0.75 grupos=40 errores=[]
+[23:15:05] ep5: entrar='ok' en 17.6s
+[23:15:12] ep5: asentar='ok'
+[23:15:12] ep5: totEscena=188 escuela=true calidad=bajo dpr=0.75 grupos=40 errores=[]
+[23:15:13] fin

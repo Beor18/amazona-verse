@@ -1,0 +1,1162 @@
+{
+ "etiqueta": "k341-fix5",
+ "packs": {
+  "ep5": {
+   "totEscena": 153,
+   "escuela": true,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "infoCalls": 72,
+   "infoTris": 249846,
+   "grupos": [
+    {
+     "prefijo": "SIN_NOMBRE · Mesh · mat:?",
+     "objetos": 40,
+     "calls": 76,
+     "ktris": 10,
+     "ejemplos": [
+      "(sin nombre)"
+     ]
+    },
+    {
+     "prefijo": "flora",
+     "objetos": 20,
+     "calls": 20,
+     "ktris": 10,
+     "ejemplos": [
+      "flora:tabonuco:hoja",
+      "flora:tabonuco:corteza",
+      "flora:helecho_arboreo:hoja",
+      "flora:helecho_arboreo:corteza"
+     ]
+    },
+    {
+     "prefijo": "spark",
+     "objetos": 6,
+     "calls": 6,
+     "ktris": 0,
+     "ejemplos": [
+      "spark"
+     ]
+    },
+    {
+     "prefijo": "terreno",
+     "objetos": 4,
+     "calls": 4,
+     "ktris": 80,
+     "ejemplos": [
+      "terreno:terreno_no",
+      "terreno:terreno_ne",
+      "terreno:terreno_se",
+      "terreno:terreno_so"
+     ]
+    },
+    {
+     "prefijo": "SIN_NOMBRE · Sprite · mat:?",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 0,
+     "ejemplos": [
+      "(sin nombre)"
+     ]
+    },
+    {
+     "prefijo": "estructura",
+     "objetos": 3,
+     "calls": 3,
+     "ktris": 6,
+     "ejemplos": [
+      "estructura:puente",
+      "estructura:muelle",
+      "estructura:grutas"
+     ]
+    },
+    {
+     "prefijo": "edificiosZonaCercaGlobal:AV_",
+     "objetos": 2,
+     "calls": 3,
+     "ktris": 68,
+     "ejemplos": [
+      "edificiosZonaCercaGlobal:AV_HD_Ancient",
+      "edificiosZonaCercaGlobal:AV_Restaurado_Huecos"
+     ]
+    },
+    {
+     "prefijo": "Vittata_1",
+     "objetos": 2,
+     "calls": 2,
+     "ktris": 14,
+     "ejemplos": [
+      "Vittata_1"
+     ]
+    },
+    {
+     "prefijo": "Vittata_2",
+     "objetos": 2,
+     "calls": 2,
+     "ktris": 42,
+     "ejemplos": [
+      "Vittata_2"
+     ]
+    },
+    {
+     "prefijo": "bandada",
+     "objetos": 2,
+     "calls": 2,
+     "ktris": 2,
+     "ejemplos": [
+      "bandada"
+     ]
+    },
+    {
+     "prefijo": "cielo",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "cielo"
+     ]
+    },
+    {
+     "prefijo": "cielo-nubes",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "cielo-nubes"
+     ]
+    },
+    {
+     "prefijo": "fondoMarino",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "fondoMarino"
+     ]
+    },
+    {
+     "prefijo": "mar",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 11,
+     "ejemplos": [
+      "mar"
+     ]
+    },
+    {
+     "prefijo": "rocio",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "rocio"
+     ]
+    },
+    {
+     "prefijo": "ep5-noche-luces",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ep5-noche-luces"
+     ]
+    },
+    {
+     "prefijo": "ep5-noche-suelo",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "ep5-noche-suelo"
+     ]
+    },
+    {
+     "prefijo": "ep5-noche-estrellas",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "ep5-noche-estrellas"
+     ]
+    },
+    {
+     "prefijo": "rio",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 2,
+     "ejemplos": [
+      "rio"
+     ]
+    },
+    {
+     "prefijo": "bloque_piedra",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "bloque_piedra"
+     ]
+    },
+    {
+     "prefijo": "ruina_altar_1",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_altar_1"
+     ]
+    },
+    {
+     "prefijo": "ruina_altar_2",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_altar_2"
+     ]
+    },
+    {
+     "prefijo": "ruina_altar_3",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_altar_3"
+     ]
+    },
+    {
+     "prefijo": "ruina_torre_1",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_torre_1"
+     ]
+    },
+    {
+     "prefijo": "ruina_torre_2",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_torre_2"
+     ]
+    },
+    {
+     "prefijo": "ruina_torre_3",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_torre_3"
+     ]
+    },
+    {
+     "prefijo": "ruina_torre_4",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_torre_4"
+     ]
+    },
+    {
+     "prefijo": "ruina_torre_5",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_torre_5"
+     ]
+    },
+    {
+     "prefijo": "ruina_portal_1",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_portal_1"
+     ]
+    },
+    {
+     "prefijo": "ruina_portal_2",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_portal_2"
+     ]
+    },
+    {
+     "prefijo": "ruina_portal_3",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_portal_3"
+     ]
+    },
+    {
+     "prefijo": "ruina_portal_4",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ruina_portal_4"
+     ]
+    },
+    {
+     "prefijo": "Component_Lookout_StoneMd001001",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "Component_Lookout_StoneMd001001"
+     ]
+    },
+    {
+     "prefijo": "Component_Lookout_StoneMd001001_1",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "Component_Lookout_StoneMd001001_1"
+     ]
+    },
+    {
+     "prefijo": "Component_Lookout_StoneMd001001_2",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "Component_Lookout_StoneMd001001_2"
+     ]
+    },
+    {
+     "prefijo": "CampB_Pikes001001",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "CampB_Pikes001001"
+     ]
+    },
+    {
+     "prefijo": "CampB_Pikes001001_1",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 1,
+     "ejemplos": [
+      "CampB_Pikes001001_1"
+     ]
+    },
+    {
+     "prefijo": "ambiente-particulas",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "ambiente-particulas"
+     ]
+    },
+    {
+     "prefijo": "vecinos",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 0,
+     "ejemplos": [
+      "vecinos"
+     ]
+    },
+    {
+     "prefijo": "panuelo",
+     "objetos": 1,
+     "calls": 1,
+     "ktris": 6,
+     "ejemplos": [
+      "panuelo"
+     ]
+    }
+   ],
+   "anoniDet": [
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 420,
+     "enFrustum": false,
+     "pos": [
+      -330,
+      0,
+      430
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 420,
+     "enFrustum": false,
+     "pos": [
+      40,
+      0,
+      520
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 420,
+     "enFrustum": false,
+     "pos": [
+      380,
+      0,
+      420
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 28,
+     "enFrustum": true,
+     "pos": [
+      -46,
+      117,
+      -118
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 16,
+     "enFrustum": true,
+     "pos": [
+      -46,
+      97,
+      -121
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Sprite",
+     "tris": 2,
+     "enFrustum": true,
+     "pos": [
+      -46,
+      98,
+      -118
+     ],
+     "cadena": "Scene < Sprite"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 16,
+     "enFrustum": true,
+     "pos": [
+      -46,
+      97,
+      -118
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Sprite",
+     "tris": 2,
+     "enFrustum": false,
+     "pos": [
+      -19,
+      25,
+      -79
+     ],
+     "cadena": "Scene < Sprite"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 16,
+     "enFrustum": false,
+     "pos": [
+      -19,
+      24,
+      -79
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Sprite",
+     "tris": 2,
+     "enFrustum": true,
+     "pos": [
+      -49,
+      98,
+      -122
+     ],
+     "cadena": "Scene < Sprite"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 16,
+     "enFrustum": true,
+     "pos": [
+      -49,
+      97,
+      -122
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 20,
+     "enFrustum": false,
+     "pos": [
+      -37,
+      97,
+      -123
+     ],
+     "cadena": "Scene < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 20,
+     "enFrustum": false,
+     "pos": [
+      -12,
+      24,
+      -80
+     ],
+     "cadena": "Scene < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 20,
+     "enFrustum": false,
+     "pos": [
+      -15,
+      29,
+      -64
+     ],
+     "cadena": "Scene < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 20,
+     "enFrustum": true,
+     "pos": [
+      -46,
+      97,
+      -140
+     ],
+     "cadena": "Scene < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 20,
+     "enFrustum": false,
+     "pos": [
+      -17,
+      25,
+      -85
+     ],
+     "cadena": "Scene < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 20,
+     "enFrustum": false,
+     "pos": [
+      -34,
+      97,
+      -131
+     ],
+     "cadena": "Scene < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 140,
+     "enFrustum": true,
+     "pos": [
+      -74,
+      96,
+      -150
+     ],
+     "cadena": "Scene < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 24,
+     "enFrustum": true,
+     "pos": [
+      -74,
+      94,
+      -150
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 12,
+     "enFrustum": false,
+     "pos": [
+      -38,
+      98,
+      -118
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 12,
+     "enFrustum": false,
+     "pos": [
+      -39,
+      97,
+      -118
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 12,
+     "enFrustum": false,
+     "pos": [
+      -37,
+      97,
+      -118
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 12,
+     "enFrustum": false,
+     "pos": [
+      -39,
+      97,
+      -118
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 12,
+     "enFrustum": false,
+     "pos": [
+      -37,
+      97,
+      -118
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 12,
+     "enFrustum": false,
+     "pos": [
+      -38,
+      98,
+      -118
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 56,
+     "enFrustum": false,
+     "pos": [
+      -38,
+      98,
+      -118
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 24,
+     "enFrustum": false,
+     "pos": [
+      -38,
+      98,
+      -118
+     ],
+     "cadena": "Scene < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 896,
+     "enFrustum": true,
+     "pos": [
+      -46,
+      98,
+      -121
+     ],
+     "cadena": "cabeza < cabeza001 < parpado_L < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 768,
+     "enFrustum": true,
+     "pos": [
+      -46,
+      98,
+      -121
+     ],
+     "cadena": "cabeza < cabeza001 < parpado_L < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 896,
+     "enFrustum": true,
+     "pos": [
+      -46,
+      98,
+      -121
+     ],
+     "cadena": "cabeza < cabeza001 < parpado_R < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 768,
+     "enFrustum": true,
+     "pos": [
+      -46,
+      98,
+      -121
+     ],
+     "cadena": "cabeza < cabeza001 < parpado_R < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 560,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      185
+     ],
+     "cadena": "cabeza < cabeza001 < mount_eyes < acc_gafas < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 48,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      185
+     ],
+     "cadena": "cabeza < cabeza001 < mount_eyes < acc_gafas < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 24,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      185
+     ],
+     "cadena": "cabeza < cabeza001 < mount_eyes < acc_gafas < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 560,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      186
+     ],
+     "cadena": "cabeza < cabeza001 < mount_eyes < acc_gafas < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 48,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      186
+     ],
+     "cadena": "cabeza < cabeza001 < mount_eyes < acc_gafas < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 24,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      186
+     ],
+     "cadena": "cabeza < cabeza001 < mount_eyes < acc_gafas < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 168,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      185
+     ],
+     "cadena": "cabeza < cabeza001 < mount_eyes < acc_gafas < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 480,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      185
+     ],
+     "cadena": "cabeza < cabeza001 < mount_eyes < acc_gafas < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 896,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      185
+     ],
+     "cadena": "cabeza < cabeza001 < parpado_L < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 768,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      185
+     ],
+     "cadena": "cabeza < cabeza001 < parpado_L < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 896,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      185
+     ],
+     "cadena": "cabeza < cabeza001 < parpado_R < Group < Mesh"
+    },
+    {
+     "mat": "?",
+     "tipo": "Mesh",
+     "tris": 768,
+     "enFrustum": false,
+     "pos": [
+      111,
+      22,
+      185
+     ],
+     "cadena": "cabeza < cabeza001 < parpado_R < Group < Mesh"
+    }
+   ],
+   "zonasFusion": {
+    "zonas": [
+     {
+      "id": "villa",
+      "ciudad": false,
+      "nivel": 1,
+      "cercaMallas": 0,
+      "cercaModelos": -1,
+      "fundiendo": false,
+      "usaMalla": true,
+      "usaCF": false,
+      "ninst": 1,
+      "modelos": 1
+     },
+     {
+      "id": "lomas",
+      "ciudad": false,
+      "nivel": 1,
+      "cercaMallas": 0,
+      "cercaModelos": -1,
+      "fundiendo": false,
+      "usaMalla": true,
+      "usaCF": false,
+      "ninst": 1,
+      "modelos": 1
+     },
+     {
+      "id": "colina",
+      "ciudad": false,
+      "nivel": 1,
+      "cercaMallas": 0,
+      "cercaModelos": -1,
+      "fundiendo": false,
+      "usaMalla": true,
+      "usaCF": false,
+      "ninst": 1,
+      "modelos": 1
+     },
+     {
+      "id": "kelvin_ruinas_yunque",
+      "ciudad": true,
+      "nivel": 2,
+      "cercaMallas": 2,
+      "cercaModelos": 16,
+      "fundiendo": false,
+      "usaMalla": false,
+      "usaCF": true,
+      "ninst": 57,
+      "modelos": 16
+     },
+     {
+      "id": "kelvin_aldea_rio_este",
+      "ciudad": false,
+      "nivel": 1,
+      "cercaMallas": 0,
+      "cercaModelos": 0,
+      "fundiendo": false,
+      "usaMalla": true,
+      "usaCF": false,
+      "ninst": 42,
+      "modelos": 11
+     },
+     {
+      "id": "kelvin_aldea_rio_oeste",
+      "ciudad": false,
+      "nivel": 1,
+      "cercaMallas": 0,
+      "cercaModelos": -1,
+      "fundiendo": false,
+      "usaMalla": true,
+      "usaCF": false,
+      "ninst": 35,
+      "modelos": 10
+     },
+     {
+      "id": "kelvin_aldea_lomas",
+      "ciudad": false,
+      "nivel": 1,
+      "cercaMallas": 0,
+      "cercaModelos": -1,
+      "fundiendo": false,
+      "usaMalla": true,
+      "usaCF": false,
+      "ninst": 34,
+      "modelos": 10
+     },
+     {
+      "id": "kelvin_aldea_rio_este_2",
+      "ciudad": true,
+      "nivel": 1,
+      "cercaMallas": 3,
+      "cercaModelos": 8,
+      "fundiendo": false,
+      "usaMalla": false,
+      "usaCF": true,
+      "ninst": 29,
+      "modelos": 9
+     },
+     {
+      "id": "kelvin_aldea_mina",
+      "ciudad": false,
+      "nivel": 2,
+      "cercaMallas": 4,
+      "cercaModelos": 6,
+      "fundiendo": false,
+      "usaMalla": true,
+      "usaCF": true,
+      "ninst": 24,
+      "modelos": 7
+     },
+     {
+      "id": "kelvin_aldea_meandros",
+      "ciudad": false,
+      "nivel": 2,
+      "cercaMallas": 2,
+      "cercaModelos": 7,
+      "fundiendo": false,
+      "usaMalla": true,
+      "usaCF": true,
+      "ninst": 25,
+      "modelos": 8
+     },
+     {
+      "id": "kelvin_ruinas_yunque_2",
+      "ciudad": true,
+      "nivel": 2,
+      "cercaMallas": 2,
+      "cercaModelos": 9,
+      "fundiendo": false,
+      "usaMalla": false,
+      "usaCF": true,
+      "ninst": 23,
+      "modelos": 9
+     },
+     {
+      "id": "kelvin_aldea_colina",
+      "ciudad": true,
+      "nivel": 1,
+      "cercaMallas": 2,
+      "cercaModelos": 6,
+      "fundiendo": false,
+      "usaMalla": false,
+      "usaCF": true,
+      "ninst": 22,
+      "modelos": 6
+     },
+     {
+      "id": "kelvin_aldea_mina_2",
+      "ciudad": false,
+      "nivel": 1,
+      "cercaMallas": 0,
+      "cercaModelos": -1,
+      "fundiendo": false,
+      "usaMalla": true,
+      "usaCF": false,
+      "ninst": 23,
+      "modelos": 7
+     },
+     {
+      "id": "kelvin_aldea_rio_este_3",
+      "ciudad": false,
+      "nivel": 1,
+      "cercaMallas": 0,
+      "cercaModelos": 0,
+      "fundiendo": false,
+      "usaMalla": true,
+      "usaCF": false,
+      "ninst": 21,
+      "modelos": 10
+     },
+     {
+      "id": "kelvin_aldea_rio_oeste_2",
+      "ciudad": false,
+      "nivel": 1,
+      "cercaMallas": 0,
+      "cercaModelos": -1,
+      "fundiendo": false,
+      "usaMalla": true,
+      "usaCF": false,
+      "ninst": 18,
+      "modelos": 5
+     },
+     {
+      "id": "kelvin_aldea_yunque",
+      "ciudad": false,
+      "nivel": 2,
+      "cercaMallas": 2,
+      "cercaModelos": 7,
+      "fundiendo": false,
+      "usaMalla": false,
+      "usaCF": true,
+      "ninst": 11,
+      "modelos": 7
+     },
+     {
+      "id": "kelvin_aldea_meandros_2",
+      "ciudad": false,
+      "nivel": 2,
+      "cercaMallas": 1,
+      "cercaModelos": 6,
+      "fundiendo": false,
+      "usaMalla": false,
+      "usaCF": true,
+      "ninst": 11,
+      "modelos": 6
+     }
+    ],
+    "cercaRec": [
+     "casa_plataforma:listo:refs2",
+     "casa_paja_a:listo:refs1",
+     "mirador_escalonado:listo:refs2",
+     "plataforma_piedra:listo:refs2",
+     "muro_templo:listo:refs2",
+     "templo_grande:listo:refs4",
+     "templo_grande_e:listo:refs2",
+     "templo_grande_f:listo:refs2",
+     "templo_mediano_h:listo:refs5",
+     "ruina_torre_b:listo:refs3",
+     "ruina_torre_e:listo:refs2",
+     "ruina_torre_c:listo:refs2",
+     "ruina_torre:listo:refs3",
+     "ruina_mirador:listo:refs4",
+     "ruina_pilar:listo:refs4",
+     "ruina_altar:listo:refs2",
+     "ruina_portal:listo:refs2",
+     "ruina_torre_f:listo:refs2",
+     "templo_grande_a:listo:refs4",
+     "bohio_redondo:listo:refs3",
+     "torre_vigia_b:listo:refs1",
+     "torre_vigia:listo:refs1",
+     "muralla_atalaya_b:listo:refs2",
+     "muralla_atalaya_a:listo:refs1",
+     "empalizada:listo:refs1",
+     "puente_madera:listo:refs1",
+     "canoa:listo:refs3",
+     "carpa_a:listo:refs1",
+     "carpa_b:listo:refs1",
+     "carpa_e:listo:refs1",
+     "carpa_c:listo:refs1",
+     "carpa_d:listo:refs1",
+     "templo_grande_d:listo:refs1",
+     "monumento_d:listo:refs1",
+     "caney_largo:listo:refs1",
+     "cercado_redondo:listo:refs2",
+     "bohio_puntiagudo:listo:refs3",
+     "casa_paja_b:listo:refs2",
+     "monumento_a:listo:refs2",
+     "monumento_c:listo:refs1",
+     "corral:listo:refs1",
+     "bloque_piedra:listo:refs2",
+     "templo_mediano_g:listo:refs2",
+     "templo_mediano_f:listo:refs2",
+     "templo_mediano:listo:refs2",
+     "losa_piedra:listo:refs1",
+     "complejo_ruinas:listo:refs1",
+     "monumento_f:listo:refs1"
+    ]
+   },
+   "errores": []
+  }
+ },
+ "chromePid": 77160
+}

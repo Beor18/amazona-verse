@@ -1,0 +1,10 @@
+const fs = require('fs');
+let s = fs.readFileSync('tools/build/kimi3_341_probe.js', 'utf8');
+s = s.replace("const ETIQUETA = arg('--etiqueta', 'r1');", "const ETIQUETA = arg('--etiqueta', 'probe');");
+const anchor = "const inv = JSON.parse(await ev(cdp, ses, INVENTARIO_JS, 60));";
+if (!s.includes(anchor)) throw new Error('no encuentra punto de inyeccion');
+const cuerpo = "(() => { const G = AV.G; const ST = G.mundo && G.mundo.streaming; const out = []; try { for (const id in ST.zonas) { const Z = ST.zonas[id]; out.push({ id: id, ciudad: !!Z.ciudad, nivel: Z.nivel, cercaMallas: (Z.cercaMallas||[]).length, cercaModelos: Z.cercaModelos ? Z.cercaModelos.size : -1, fundiendo: !!Z.cercaFundiendo, usaMalla: !!Z.usaMalla, usaCF: !!Z.usaCercaFusion, ninst: Z.inst.length, modelos: Z.modelos.size }); } } catch (e) {} const rec = []; try { for (const n in ST.recursos) { const r = ST.recursos[n].cerca; if (r && r.estado !== 'nada') rec.push(n + ':' + r.estado + (r.refs ? ':refs' + r.refs : '')); } } catch (e) {} return JSON.stringify({ zonas: out, cercaRec: rec.slice(0, 60) }); })()";
+const probe = anchor + "\n  const zonasInf = JSON.parse(await ev(cdp, ses, " + JSON.stringify(cuerpo) + ", 30));\n  inv.zonasFusion = zonasInf;\n";
+s = s.replace(anchor, probe);
+fs.writeFileSync('tools/build/kimi3_341_probe.js', s);
+console.log('inyectado');
