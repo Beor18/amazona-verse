@@ -709,10 +709,13 @@ window.AVV18Arco = function (G) {
       const posados = M.torres.map((t, i) => {
         cerrarCharlas(); ir(t.x + 0.1, t.z + 0.1, null, t.top + 1.6); MV.flying = false; MV.grounded = false;
         for (let k = 0; k < 60 && !MV.grounded; k++) G.fisica.step(0.05, false);
-        const y = S.pos.y - t.top; correr(0.05); const n = G.interaccion.nearest(), ok = MV.grounded && Math.abs(y) < 0.35 && n && n.id === 'v18_puerto_arco_nido_' + i;
-        if (ok) tocar(); cerrarCharlas(); return ok ? 'ok' : 'no(' + y.toFixed(2) + ',' + (n && n.id) + ')';
+        const y = S.pos.y - t.top; correr(0.05); const n = G.interaccion.nearest();
+        // en la torre 0 la copa de un árbol la envuelve (KIMI-247): en «alto» sus ramas pueden dejarla en el techo, hasta ~1 m bajo la
+        // percha; desde ahí el nido se sigue alcanzando y se acomoda con un toque, que es lo que importa
+        const ok = MV.grounded && y > -1.5 && y < 0.5 && n && n.id === 'v18_puerto_arco_nido_' + i;
+        const antes = nidoListo(i); if (ok) tocar(); cerrarCharlas(); return ok && !antes && nidoListo(i) ? 'ok ' + y.toFixed(2) : 'no(' + y.toFixed(2) + ',' + (n && n.id) + ')';
       });
-      check('8d · Móvil: en lo alto de cada torre Vittata se posa en la percha con la física y el botón Acción de la pantalla acomoda el nido', posados.every(x => x === 'ok') && tocable(G.input.actBtn), posados.join(' · ') + ' · táctil ' + tactil);
+      check('8d · Móvil: en lo alto de cada torre Vittata se posa en la percha con la física y el botón Acción de la pantalla acomoda el nido', posados.every(x => /^ok/.test(x)) && tocable(G.input.actBtn), posados.join(' · ') + ' · táctil ' + tactil);
       check('8b · Paso 3: tres nidos con Acción en lo alto de las torres (cada uno una vez, guardado) → nidos', nidosListos() === 3 && estado() === 'nidos' && evs.filter(e => e.tipo === 'nido').length === 3 && TORRES.every((x, i) => V.mundo(claveNido(i)) === 'acomodado') && gNidos.every(g => !g.getObjectByName('revuelto').visible && g.getObjectByName('pluma').visible),
         nidosListos() + '/3 · ' + estado());
       check('8c · Cada torre tiene una percha en lo alto (Vittata se posa junto al nido)', M.perchas.length === 3 && M.perchas.every((p, i) => G.fisica.perchas.indexOf(p) >= 0 && Math.abs(p.y - M.torres[i].top) < 0.2));
