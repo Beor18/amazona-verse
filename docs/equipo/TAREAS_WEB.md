@@ -442,6 +442,7 @@ Extras (todo lo que no son las 12 obligatorias) en la nube con SwiftShader. 92 b
 | playtest10Test | «no existe en esta build» | n/a | Igual: tests/qa/playtest10.js:449 dice que test.sh no lo inyecta. |
 
 Pendiente real: equiposTest e idiomaTest. lookTest, ambienteTest, cargaTest, climaTest y v18FxTest hay que repetirlos con GPU; no se tocó código del juego.
+<<<<<<< HEAD
 📣 **Nube → coordinadora · 8-nov · bloque A, puntos 1–3 hechos (parche en `/home/user/.avt/parches_cierreA`, sin push).** 12 obligatorias en verde en c9c2b29 + trenTest 57/57, v18CombateTest 42/42, v18RepararTest 33/33, v18FxTest 18/18 (corriendo detrás de las dos), cargaTest 16/16; lookTest 44/44 en 31683a9; 0 errores de consola.
 - **lookTest** (QA-78, prueba): en SwiftShader la primera compilación de las familias de fábrica tarda ~65 s y `asentar()` cortaba a los 10 s; la foto de fábrica salía con media escena oculta. Con GPU por software espera hasta 120 s. Ahora 114 → 114 draw calls y 0,0 % de píxeles distintos al volver. Looks y draw calls sin tocar; la restauración ya era correcta.
 - **trenTest** (prueba): el tren no crea nada al reiniciar; la segunda medida salía desde otro punto de la vía y sumaba el mundo que entraba en cuadro (+21 geometrías, +9 texturas). Las dos medidas se toman con el tren en la Playa y se cuentan exactas las geometrías y texturas del tren; al salir se comprueba que se libera cada una.
@@ -465,3 +466,11 @@ Pendiente real: equiposTest e idiomaTest. lookTest, ambienteTest, cargaTest, cli
    - Pruebas: v18EvolucionTest 60/60, v18Test 10/10, combate 42/42, duelo2 25/25, poderes 55/55 y nuevas 130/130.
 
 Los nombres y parejas de las alianzas los eligió la nube por variedad jugable, como pedía la directiva; si Kelvin quiere otros, se cambian. **Pido tarea → nube** para los dos agentes que quedan libres.
+=======
+
+📣 **V18.3 (otra cuenta) → coordinadora y Kimi · 8-nov · misión 2 del arco lista para validar con GPU.** «Los faroles de las Atalayas» (`src/game/v18/arco.js`, `AV.v18ArcoTest`), en las Atalayas del Oeste, tras el puerto. Tuerca estrena su «Espantanubes», que revuelve los nidos de tres torres vigía: Vittata vuela a acomodarlos, lo calma con su poder y lo enciende con Tuerca como faroles mensajeros. Un modelo, varias apariencias: Tuerca aliado, el Constructor vecino y la Ingeniera rescate. No hay edificios ni modelos nuevos, y no se tocan los capítulos ni `sitio/`.
+- **Commits:** `2c5f579f` (misión, datos, inglés, boot y una fila en `kimi1_106.js`) y `d7b9fad0` (diseño §10 y robustez). El puerto: Tuerca guarda su paso a inventor, cede el elenco al arco y su marcador sigue el arco.
+- **Pruebas (VM sin GPU, build d7b9fad0):** las 12 en verde (selfTest 108/108 · missionTest 79/79 · accessoryTest 13/13 · templateTest 19/19 · eduTest 98/98 · maestroTest 26/26 · criaderoTest 51/51 · movementTest 52/52 · saveTest 64/64 · comicTest 67/67 · e2eTest 49/49 · lookCapitulosTest 13/13), **v18ArcoTest 39/39**, **v18PuertoTest 47/47**, 0 errores de consola y 0 404.
+- **Para Kimi (GPU):** `AV.v18ArcoTest()` en móvil 375×812 y capturas de la plaza (−69,2, 68,4) y de lo alto de las tres torres. Hay que mirar si los nidos y faroles quedan bien sobre el techo de `torre_vigia`.
+- **[KELVIN]:** el nombre «Espantanubes» y las apariencias nuevas.
+>>>>>>> f074de1d (📣 V18.3: misión 2 del arco lista para GPU (registro, auditoría §7, TAREAS_WEB))
