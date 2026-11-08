@@ -1,0 +1,13 @@
+KIMI-268 · Validación GPU real del parche QA-211/QA-212 (c4e12ce4+481978f2+fc04a880) — HEAD fc04a880
+GPU real RX 5700 XT · arnés tools/build/kimi2_una_bateria.js página limpia por batería · PC compartida (Kimi 1 kimi1_267_duelo2_orden + Kimi 3 kimi3_264 activos: tiempos techo, veredictos válidos)
+
+v18ArcoTest    --url-extra v18=1 : 90/90  (QA-211 arco OK · QA-211 muelle OK)   ~5 s de batería
+v18PuertoTest  --url-extra v18=1 : 48/48  (QA-211 charla Ingeniera OK)          [1er intento 47/48: check 8 flake de contención, bocadillo de llegada aún abierto; 2 re-corridas 48/48]
+v18DescubrirTest --url-extra v18=1 : 27/27 (QA-212 pistas esperan con actividad/portada OK)
+v18CicloTest   --url-extra v18=1 : 24/24  (QA-212 pista reto extra espera OK)
+menuModosTest  --url-extra v18=1 : 62/62  (incl. «Sin errores de consola»)
+selfTest       : 108/108
+movementTest   : 52/52
+streamingTest  : 24/24  (peor vista kelvin_ruinas_yunque giro 4.7 = 127 draw calls <= 150: 46 instancias cerca / 60 _hd / 5 lejos sueltas / 17 zonas fundidas · alto)
+
+Sonda kimi2_k268_stats.js (k268-r1): kelvin_ruinas_yunque 61 inst, yaw 4.71: 128 calls cuadro entero (escena+sombra+post) · 4.307.424 tris · geo 361 / tex 174 / prog 84 · FPS med 105,3 (p95 59,2) · heap 914 MB
