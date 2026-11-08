@@ -1,0 +1,65 @@
+{
+ "url": "https://www.amazonaverse.com/juego",
+ "etiqueta": "final",
+ "consola": {
+  "errores": 0,
+  "muestras": []
+ },
+ "pasadas": {
+  "medio": {
+   "calidad": "medio",
+   "preparar": "ok: portada → creador → Empezar (Lluvia Tropical) → carga 10586 ms (listo) → intro saltada",
+   "asentado": "tope 90007 ms trabajos=0",
+   "stats": {
+    "fps": 144,
+    "calls": 159,
+    "triangulos": 519165,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 189,
+     "textures": 162
+    },
+    "heapMB": 501.8,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "captura": "null"
+  },
+  "alto": {
+   "calidad": "alto",
+   "preparar": "ok: portada → creador → Empezar (Lluvia de la Bahía) → carga 6144 ms (listo) → intro saltada",
+   "asentado": "tope 90007 ms trabajos=0",
+   "stats": {
+    "fps": 144,
+    "calls": 174,
+    "triangulos": 1056460,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 190,
+     "textures": 162
+    },
+    "heapMB": 452.6,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "captura": "null"
+  }
+ },
+ "gpu": "AMD Radeon RX 5700 XT"
+}
