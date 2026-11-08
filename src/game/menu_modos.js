@@ -179,7 +179,10 @@
           sinApertura(); const a = api18(modo);
           if (a && enMarcha18(modo)) { guardia(); return res(true); } // ya estaba en marcha (?mini= o un toque anterior)
           let ok = false;
-          if (a && !ocupado18()) { try { ok = !!IR18[modo](a); } catch (e) { console.warn('menu_modos: ' + modo, e); } }
+          if (a && !ocupado18()) {
+            try { if (G.dialogo && G.dialogo.cancelarLibre) G.dialogo.cancelarLibre(); } catch (e) { /* sin bocadillos */ } /* el bocadillo de otro sitio (p. ej. la invitación de Chispa al dejar su carrera) no viaja con Vittata */
+            try { ok = !!IR18[modo](a); } catch (e) { console.warn('menu_modos: ' + modo, e); }
+          }
           if (ok) { guardia(); return res(true); }
           if (++n < 60) setTimeout(t, 500); else res(false);
         };
