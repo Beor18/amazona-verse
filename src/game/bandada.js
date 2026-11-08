@@ -379,18 +379,24 @@ window.AVBandada = function (G) {
   const EXTRA = []; // [{ x, y, z, yaw, pitch, roll, esc, c, a, cob, fase, ala, cab, gir }]
   const cam = G.renderer.camera;
   let pintadas = 0;
+  // Contadores de instancias del cuadro (cerca y lejos): poner() es una función fija, sin closure nueva por cuadro
+  let nc = 0, nl = 0;
+  function poner(x, y, z, rx, ry, rz, esc, cl, ac, cob, fase, ala, cab, gir) {
+    dummy.position.set(x, y, z); dummy.rotation.set(rx, ry, rz); dummy.scale.setScalar(esc); dummy.updateMatrix();
+    const dx = x - cam.position.x, dy = y - cam.position.y, dz = z - cam.position.z;
+    const im = dx * dx + dy * dy + dz * dz < LOD_LEJOS * LOD_LEJOS ? cerca : lejos, ga = im.geometry.attributes;
+    const i = im === cerca ? nc++ : nl++;
+    if (i >= MAXN) return;
+    im.setMatrixAt(i, dummy.matrix); im.instanceColor.setXYZ(i, cl.r, cl.g, cl.b);
+    ga.iFase.setX(i, fase); ga.iPose.setXYZW(i, ala, cab, gir, cob); ga.iAcento.setXYZ(i, ac.r, ac.g, ac.b);
+  }
+  function subirMalla(im, n) {
+    const ga = im.geometry.attributes;
+    im.count = n; im.visible = n > 0; im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true;
+    ga.iFase.needsUpdate = true; ga.iPose.needsUpdate = true; ga.iAcento.needsUpdate = true;
+  }
   function dibujar() {
-    let nc = 0, nl = 0;
-    const gc = cerca.geometry.attributes, gl = lejos.geometry.attributes;
-    const poner = (x, y, z, rx, ry, rz, esc, cl, ac, cob, fase, ala, cab, gir) => {
-      dummy.position.set(x, y, z); dummy.rotation.set(rx, ry, rz); dummy.scale.setScalar(esc); dummy.updateMatrix();
-      const dx = x - cam.position.x, dy = y - cam.position.y, dz = z - cam.position.z;
-      const im = dx * dx + dy * dy + dz * dz < LOD_LEJOS * LOD_LEJOS ? cerca : lejos, ga = im === cerca ? gc : gl;
-      const i = im === cerca ? nc++ : nl++;
-      if (i >= MAXN) return;
-      im.setMatrixAt(i, dummy.matrix); im.instanceColor.setXYZ(i, cl.r, cl.g, cl.b);
-      ga.iFase.setX(i, fase); ga.iPose.setXYZW(i, ala, cab, gir, cob); ga.iAcento.setXYZ(i, ac.r, ac.g, ac.b);
-    };
+    nc = 0; nl = 0;
     if (F.estado !== 'off') for (const a of F.aves) {
       const k = colores[a.sp % colores.length], vel = Math.hypot(a.vx, a.vz) || 1;
       let yaw = Math.atan2(a.vx, a.vz), pitch = -Math.atan2(a.vy, vel) * 0.8;
@@ -402,10 +408,7 @@ window.AVBandada = function (G) {
     }
     for (const r of EXTRA) poner(r.x, r.y, r.z, r.pitch, r.yaw, r.roll, r.esc, r.c, r.a, r.cob, r.fase, r.ala, r.cab, r.gir);
     nc = Math.min(nc, MAXN); nl = Math.min(nl, MAXN);
-    for (const [im, n, ga] of [[cerca, nc, gc], [lejos, nl, gl]]) {
-      im.count = n; im.visible = n > 0; im.instanceMatrix.needsUpdate = true; im.instanceColor.needsUpdate = true;
-      ga.iFase.needsUpdate = true; ga.iPose.needsUpdate = true; ga.iAcento.needsUpdate = true;
-    }
+    subirMalla(cerca, nc); subirMalla(lejos, nl);
     pintadas = nc + nl;
   }
 
