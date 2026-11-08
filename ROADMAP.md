@@ -69,6 +69,8 @@ Cada episodio reutiliza el motor, el personaje, el ropero, el criadero, el guard
 - Ajustes de accesibilidad: tamaño de texto y remapeo de teclas.
 - Family Quest: actividades opcionales en familia y viñeta conmemorativa.
 - Minijuego de piloto.
+- Peces invasores reales de Puerto Rico (pez león en los arrecifes; tilapia y pleco en los ríos), con fuente verificada (NOAA, USGS, DRNA): fichas del Diario y una actividad de observación, nunca como enemigos (Kelvin, 8-nov: para la expansión).
+- Minijuego de pesca (Kelvin, 8-nov: para la expansión; la lista completa la da Kelvin después del cierre).
 - Empaquetado para tiendas (Capacitor) si hace falta.
 - Temporadas 2 a 6, según `docs/STORY_BIBLE.md`.
 
