@@ -284,18 +284,22 @@ AVE.module('terreno', function (G) {
 
   // ---------- Texturas ----------
   const anis = Math.min(8, R.renderer.capabilities.getMaxAnisotropy ? R.renderer.capabilities.getMaxAnisotropy() : 4);
-  // Textura repetible; si maxPx, se reduce en un lienzo (equipos modestos: menos memoria de GPU)
-  function texRep(path, maxPx) {
+  // Textura repetible; si maxPx, se reduce en un lienzo (equipos modestos: menos memoria de GPU).
+  // perezosa: no se pide hasta pedirTex.get(t)() (devuelve la promesa de la imagen puesta; Texture no tiene userData en r128).
+  const pedirTex = new WeakMap();
+  function texRep(path, maxPx, perezosa) {
     const t = new THREE.Texture();
     t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = anis;
-    G.assets.image(path).then(img => {
+    let carga = null;
+    const pedir = () => carga || (carga = G.assets.image(path).then(img => {
       if (!img) return;
       if (maxPx && img.width > maxPx) {
         const c = document.createElement('canvas'); c.width = c.height = maxPx;
         c.getContext('2d').drawImage(img, 0, 0, maxPx, maxPx); t.image = c;
       } else t.image = img;
       t.needsUpdate = true;
-    });
+    }));
+    if (perezosa) pedirTex.set(t, pedir); else pedir();
     return t;
   }
   // Ruido de valor repetible 256×256 (R: manchas grandes, G: medias, B: finas, A: muy grandes) para variar color y romper la repetición
@@ -589,7 +593,8 @@ AVE.module('terreno', function (G) {
   function splatMaterial(capas, q) {
     q = q || {};
     const maxPx = q.texMax || 0;
-    const L = capas.map(c => ({ a: texRep(c.tex, maxPx), n: c.normal ? texRep(c.normal, maxPx) : null, e: c.escala || 0.45, t: new THREE.Color(c.tinte || '#ffffff'), s: c.saturacion != null ? c.saturacion : 1 }));
+    // Carga inicial: los mapas de normales solo se leen con SPLAT_NORMALES (medio y alto); en «bajo» no se piden (~0,6 MB)
+    const L = capas.map(c => ({ a: texRep(c.tex, maxPx), n: c.normal ? texRep(c.normal, maxPx, true) : null, e: c.escala || 0.45, t: new THREE.Color(c.tinte || '#ffffff'), s: c.saturacion != null ? c.saturacion : 1 }));
     const m = new THREE.MeshPhongMaterial({ color: 0xffffff, specular: 0x080808, shininess: 14 });
     const U = {
       tA0: { value: L[0].a }, tA1: { value: L[1].a }, tA2: { value: L[2].a }, tA3: { value: L[3].a },
@@ -619,15 +624,30 @@ AVE.module('terreno', function (G) {
         .replace('#include <specularmap_fragment>', '#include <specularmap_fragment>\n  specularStrength *= 1.0 - bw.z * 0.8 - bw.y * 0.4;');
     };
     m.customProgramCacheKey = () => 'splat:' + Object.keys(m.defines).join(',');
+    // Normales: se piden la primera vez que la calidad las usa. Si ya las usa al crear el material, SPLAT_NORMALES entra
+    // desde el principio, como antes (llegan durante la pantalla de carga); si la calidad sube después, entra cuando han
+    // llegado las cuatro (sin un cuadro con normales vacías).
+    const nts = L.map(l => l.n).filter(Boolean);
+    let pedidas = null, listas = !nts.length, alCrear = false, creando = true;
+    m.userData.normalesSplat = {
+      usar() {
+        if (!pedidas) {
+          alCrear = creando;
+          pedidas = Promise.all(nts.map(t => pedirTex.get(t)())).then(() => { listas = true; calidadSplat(m, R.calidad); }, () => {});
+        }
+        return listas || alCrear;
+      },
+    };
     splatMats.push(m);
     calidadSplat(m, R.calidad);
+    creando = false;
     return m;
   }
   function calidadSplat(m, C) {
     const d = {};
     if (ORILLA) d.SPLAT_ORILLA = '';
     d.SPLAT_TRIPLANAR = ''; // BB2: la roca triplanar en todas las calidades (sin ella, en bajo y en el móvil la pared se estira)
-    if (C.normalesSuelo) d.SPLAT_NORMALES = '';
+    if (C.normalesSuelo && (!m.userData.normalesSplat || m.userData.normalesSplat.usar())) d.SPLAT_NORMALES = '';
     if (C.dosEscalas) d.SPLAT_DOS_ESCALAS = '';
     if (ZONAS) { d.SPLAT_ZONAS = ''; if (C.nivel === 'alto') d.SPLAT_MUSGO = ''; }
     if (BOSQUE) d.SPLAT_BOSQUE = '';
