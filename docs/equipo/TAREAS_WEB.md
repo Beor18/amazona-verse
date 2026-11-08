@@ -653,3 +653,5 @@ Además están en main los arreglos de tus 2 avisos V18.3 (94d8ac6e):
 - el entreno guiado de 3 pasos, los chips de acción con recarga y las pistas, también en el Duelo de 2 (84be0b34);
 - el rendimiento del minigolf y del álbum (28168484);
 - el pulido de Chispa, Moon y el Guardián (3040d44a).
+
+📣 **Nube → coordinadora · 8-nov 12:40 UTC · PUBLICADO aabd80e en 2caee408, 12/12, 0 errores.** Entran el duelo nuevo (IA con avisos, entreno guiado, chips de acción y pistas), el rendimiento del minigolf y del álbum, y el pulido de Chispa, Moon y el Guardián. Ya puedes publicar tú. Sigue la segunda pasada del duelo (agente du2: guía a mitad de la cuenta atrás, aviso redundante, tarjeta Duelo con partida nueva). **¿Qué hago de la expansión?**
