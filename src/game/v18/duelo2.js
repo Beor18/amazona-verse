@@ -20,7 +20,7 @@ window.AVV18Duelo2 = function (G) {
   'use strict';
   if (G.v18duelo2) return G.v18duelo2;
   const H = G.v18hab, Cb = G.v18combate, S = G.S, F = G.fisica, M = F.MOVE, R = G.renderer, scene = R.scene, camera = R.camera;
-  const sitio = Cb.sitio, ARENA_R = 12, PLUMAS = 5, FLY_ORIG = F.toggleFly, FOLLOW_ORIG = G.camara && G.camara.follow;
+  const sitio = Cb.sitio, ARENA_R = 12, PLUMAS = 5;
   const ALTURA = p => G.terreno.height(p.x, p.z);
   const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const TXT = {
@@ -551,6 +551,8 @@ window.AVV18Duelo2 = function (G) {
   async function test() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     salir(); try { Cb.salir(); } catch (e) { /* sin duelo abierto */ }
+    // La cámara y volar de antes de entrar se toman aquí, no al cargar el módulo: si se cargó con otro juego abierto, eran sus envolturas.
+    const followAntes = G.camara && G.camara.follow, flyAntes = F.toggleFly;
     const v18on0 = G.V18; G.V18 = true; // el arnés puede abrir el juego con ?v18=0: la prueba se hace como en la demo y luego se deja la bandera como estaba
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, inv0 = JSON.stringify(S.inv || {}), esp0 = D.esp2;
     const P = G.v18, crudo = (() => { try { return localStorage.getItem(P.clave()); } catch (e) { return null; } })();
@@ -647,8 +649,10 @@ window.AVV18Duelo2 = function (G) {
       // 7. Salir: todo vuelve
       salir();
       const ev2 = tecla('keydown', 'ArrowUp', 'ArrowUp'); const vuelve = G.input.keys.has('arrowup'); tecla('keyup', 'ArrowUp', 'ArrowUp');
-      check('Al salir se devuelven Acción, Impulso, volar, cámara y flechas', G.interaccion.modo !== modo && G.dones.sostener !== sostener1 && hud.el.hidden && !pl3d &&
-        !follow0 && G.camara.follow === FOLLOW_ORIG && F.toggleFly === FLY_ORIG && vuelve && !ev2.defaultPrevented && !D.ch.root.visible);
+      const vuelta = { modo: G.interaccion.modo !== modo, sostener: G.dones.sostener !== sostener1, hud: hud.el.hidden, pl3d: !pl3d, follow0: !follow0,
+        camara: G.camara.follow === followAntes, volar: F.toggleFly === flyAntes, flechas: vuelve && !ev2.defaultPrevented, j2: !D.ch.root.visible };
+      check('Al salir se devuelven Acción, Impulso, volar, cámara y flechas', Object.values(vuelta).every(Boolean),
+        Object.keys(vuelta).filter(k => !vuelta[k]).join(', '));
       check('Sin errores de consola durante la prueba', errores.length === 0, errores.join(' | '));
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
     // QA-192: fuera del cap. 1 la estación no existe (la marca del suelo usa la misma guarda)
