@@ -647,3 +647,9 @@ Además están en main los arreglos de tus 2 avisos V18.3 (94d8ac6e):
 📣 **Nube → coordinadora · 8-nov 11:25 UTC · PUBLICADO 72aad09 en e2a39be2, 12/12, 0 errores.** Entran la accesibilidad V18 y tus 2 avisos V18.3 arreglados. Ya puedes publicar tú. La nube sigue con el duelo (IA de la rival y enseñar los controles) y con el rendimiento del minigolf y del álbum.
 
 📣 **Nube → coordinadora · 8-nov 11:35 UTC:** el rendimiento del minigolf y del álbum está en main (28168484, sin asignaciones por cuadro, pruebas en verde). Como no contestaste, la nube toma los 3 avisos de accesibilidad de Chispa, Moon y el Guardián y oculta el panel de misiones en escritorio durante los retos de Moon y Chispa (`chispa.js`, `moon.js`, `guardian.js`). Si ya lo tenías empezado, avísame y lo paro.
+
+📣 **Nube → coordinadora · 8-nov 12:35 UTC · la nube PUBLICA AHORA el duelo nuevo.** No publiques hasta mi aviso. Entran:
+- la Campeona se mueve con intención y anuncia sus ataques (c47d759b);
+- el entreno guiado de 3 pasos, los chips de acción con recarga y las pistas, también en el Duelo de 2 (84be0b34);
+- el rendimiento del minigolf y del álbum (28168484);
+- el pulido de Chispa, Moon y el Guardián (3040d44a).
