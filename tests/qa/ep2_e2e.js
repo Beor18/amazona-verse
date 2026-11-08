@@ -114,7 +114,7 @@
     // Camina hasta (x,z) con las teclas, girando la cámara al destino; si no avanza, se aparta un poco (como un niño ante un árbol)
     async function hacia(x, z, max, tol, id) {
       tecla('keydown', 'Shift'); tecla('keydown', 'w');
-      let quieto = 0, llego = false;
+      let quieto = 0, llego = false, desvios = 0;
       for (let t = 0; t < max; t += 0.25) {
         const dx = x - S.pos.x, dz = z - S.pos.z, d = Math.hypot(dx, dz);
         const nb = G.interaccion.nearest();
@@ -127,7 +127,8 @@
         const p0 = { x: S.pos.x, z: S.pos.z };
         await jugar(0.25);
         quieto = Math.hypot(S.pos.x - p0.x, S.pos.z - p0.z) < 0.15 ? quieto + 1 : 0;
-        if (quieto >= 4) { tecla('keydown', 'a'); await jugar(0.6); tecla('keyup', 'a'); quieto = 0; }
+        // Atascado contra una casa o un árbol: retrocede un poco y se aparta, alternando lados y cada vez más lejos (un solo lado se quedaba en la esquina de una casa camino del claro)
+        if (quieto >= 4) { desvios++; const lado = desvios % 2 ? 'a' : 'd'; tecla('keyup', 'w'); tecla('keydown', 's'); await jugar(0.3); tecla('keyup', 's'); tecla('keydown', lado); await jugar(0.6 * Math.min(4, Math.ceil(desvios / 2))); tecla('keyup', lado); tecla('keydown', 'w'); quieto = 0; }
       }
       tecla('keyup', 'w'); tecla('keyup', 'Shift');
       await jugar(0.3);
