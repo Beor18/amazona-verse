@@ -877,7 +877,8 @@ window.AVV18Evolucion = function (G) {
       reset(); prueba({ especie: 'vittata', xp: 370 }); evs.length = 0; toasts.length = 0;
       Cb.iniciar({ sinCuenta: true, especie: 'vittata', evoReal: true }); fresco();
       const nvAntes = C().j.nivel, hudNv = document.querySelector('#v18-duelo [data-k="nvN"]');
-      C().r.plumas = 1; quieta(1.2); cara(1, 0); Cb.usar(C().j, 'golpe_ala');
+      // Con una pluma menos: si nuevas.js ya está cargado (otra batería antes), una victoria perfecta sumaría +30 de su hito
+      C().j.plumas = C().j.plumasMax - 1; C().r.plumas = 1; quieta(1.2); cara(1, 0); Cb.usar(C().j, 'golpe_ala');
       const finXp = document.querySelector('#v18-duelo [data-k="finXp"]');
       check('Ganar a la Campeona con 370 XP: +40 XP y sube a nivel 10 con aviso, evento v18 {tipo:"evo"}, tarjeta «Eco Amplificado» y «+40 XP» en el panel',
         C().resultado === 'win' && info('vittata').nivel === 10 && info('vittata').xp === 410 && toasts.some(t => t === con(TXT.subeV, 10)) && evs.some(e => e.nivel === 10 && e.especie === 'vittata') &&
