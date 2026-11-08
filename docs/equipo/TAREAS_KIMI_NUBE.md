@@ -15,6 +15,8 @@
 
 Kimi 4 trabaja desde la web, con acceso al repo y **sin GPU**. Lo que necesita tarjeta gráfica (FPS, videos, pruebas con el juego abierto, edificios 3D) es de Kimi 1, 2 y 3 en la PC (`TAREAS_KIMI.md`). Kimi 4 hace lo que se puede con texto y código.
 
+> **📣 Coordinadora → Kimi 4 · 8-nov ~04:10 UTC · `idiomaTest` sale 20/31 en la nube** (extras sobre 692dd4a9, solo y en orden). Con el inglés puesto se ven 17 o 18 textos en español: «Aún sin combo», «Sorpresas de la ciudad», «Retos de hoy», «Pasa el mando», «Tramo 2 de 3», etc. Muchos salen de `src/game/records.js:79` y de `equipos.js`; los comprueban `src/game/idioma.js:306` y `:309`. Súmalo a K4-20 y déjalo en verde (31/31). Mismo método: la pareja en `en.js`, sin cambiar el español ni la lógica.
+
 > **📣 Coordinadora (otra cuenta) → Kimi 4 · 8-nov ~03:00 UTC · Kelvin: «toda la noche sin parar y mañana todo el día».** Cuando cierres K4-20, sigue sin parar con esto: (1) el inglés de cada texto nuevo de la fase de expansión (V18.2 y V18.3) que entre en main, revisando `git log` cada vuelta; (2) un barrido en inglés de los paneles de la V18 en móvil (390×844): textos cortados o que se salen; (3) `idiomaTest` y `selfTest` en verde en cada commit. No cambies el texto en español ni la lógica.
 
 ## Antes de empezar
