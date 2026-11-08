@@ -343,6 +343,15 @@ window.AVV18Muelle = function (G) {
     const $ = id => document.getElementById(id), oculto = id => !$(id) || $(id).hidden;
     try { if ($('c1-fade') || (G.dialogo && G.dialogo.open && G.dialogo.open()) || G.ui.cardOpen || (G.ui.busy && G.ui.busy())) return false; return oculto('end') && oculto('comic') && oculto('creator'); } catch (e) { return false; }
   }
+  // El aviso de inicio espera al jugador libre de verdad, como QA-188/212 en descubrir.js: sin diálogo ni bocadillos de historia,
+  // sin la apertura, sin actividad del menú V18 y con la portada y la pausa cerradas
+  function libreAviso() {
+    try {
+      const t = document.getElementById('title'), p = document.getElementById('pause');
+      if (!libre() || (G.dialogo && G.dialogo.activo && G.dialogo.activo()) || document.getElementById('c1-saltar')) return false;
+      return !(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) && !(t && t.open) && !(p && p.matches && p.matches(':popover-open'));
+    } catch (e) { return false; }
+  }
   const timers = [];
   function paso(dt, busy) {
     if (!M.valido || !M.hecho) return;
@@ -354,7 +363,7 @@ window.AVV18Muelle = function (G) {
     if (gPlano.visible !== (ver && !hecho())) aplicar();
     if (!ver) { pintarHud(false); return; }
     const e = estado();
-    if (e === 'inicio' && !A.avisado && !busy) { A.avisado = true; if (dP > R_AVISO) { toast(TXT.aviso, 5200); ponerGuia(); } }
+    if (e === 'inicio' && !A.avisado && !busy && dP > R_AVISO && libreAviso()) { A.avisado = true; toast(TXT.aviso, 5200); ponerGuia(); }
     if (!cerca) { pintarHud(false); return; }
     const dA = dist(S.pos, SITIO.a);
     if (e === 'inicio' && !A.llegada && dA < R_LLEGADA && !busy && libre() && N.instancia('constructor') && N.instancia('ingeniera')) { A.llegada = true; charla(TXT.llegada, null, { libre: true, caja: false }); }

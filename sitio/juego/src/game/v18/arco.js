@@ -370,7 +370,7 @@ window.AVV18Arco = function (G) {
     aplicar();
     toast(TXT.nidos[i] + ' ' + con(TXT.nidoN, n), 3600);
     emitir({ tipo: 'nido', id: i, n });
-    if (n >= TORRES.length && avanzar('nidos')) { A.aciertos = 0; aplicar(); charla(TXT.nidosListos, null, { libre: true, caja: false }); }
+    if (n >= TORRES.length && avanzar('nidos')) { A.aciertos = 0; V.cambiarMundo(CLAVE_ACIERTOS, 0); aplicar(); charla(TXT.nidosListos, null, { libre: true, caja: false }); }
     return true;
   }
   const especie = () => (V.seleccionada && V.seleccionada()) || (S.profile && ((S.profile.look && S.profile.look.species) || S.profile.species)) || 'vittata';
@@ -392,6 +392,9 @@ window.AVV18Arco = function (G) {
     };
   }
   const enEncuentro = () => listo() && A.tengo && estado() === 'nidos' && A.aciertos < 3;
+  // Aciertos al Espantanubes guardados en el mundo de progreso.js, como los nidos (un número, no 'recogida')
+  const CLAVE_ACIERTOS = 'v18_arco_aciertos';
+  const restaurarAciertos = () => { A.aciertos = Math.max(0, Math.min(2, Number(V.mundo(CLAVE_ACIERTOS)) || 0)); };
   function usarPoder() {
     if (!enEncuentro()) return { ok: false, motivo: 'fase' };
     if (!A.j) A.j = nuevoJugador();
@@ -407,7 +410,7 @@ window.AVV18Arco = function (G) {
   }
   function acertar(como) {
     if (!enEncuentro()) return false;
-    A.aciertos++; sonar('unlock'); const g = posHelice(); fx('stars', g.x, g.y, g.z, 14);
+    A.aciertos++; V.cambiarMundo(CLAVE_ACIERTOS, A.aciertos); sonar('unlock'); const g = posHelice(); fx('stars', g.x, g.y, g.z, 14);
     maq.sacude = 0.5;
     emitir({ tipo: 'acierto', como, n: A.aciertos });
     if (A.aciertos < 3) { toast(con(TXT.acierto, A.aciertos), 2200); return true; }
@@ -533,6 +536,15 @@ window.AVV18Arco = function (G) {
     const $ = id => document.getElementById(id), oculto = id => !$(id) || $(id).hidden;
     try { if ($('c1-fade') || (G.dialogo && G.dialogo.open && G.dialogo.open()) || G.ui.cardOpen || (G.ui.busy && G.ui.busy())) return false; return oculto('end') && oculto('comic') && oculto('creator'); } catch (e) { return false; }
   }
+  // El aviso de inicio espera al jugador libre de verdad, como QA-188/212 en descubrir.js: sin diálogo ni bocadillos de historia,
+  // sin la apertura, sin actividad del menú V18 y con la portada y la pausa cerradas
+  function libreAviso() {
+    try {
+      const t = document.getElementById('title'), p = document.getElementById('pause');
+      if (!libre() || (G.dialogo && G.dialogo.activo && G.dialogo.activo()) || document.getElementById('c1-saltar')) return false;
+      return !(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) && !(t && t.open) && !(p && p.matches && p.matches(':popover-open'));
+    } catch (e) { return false; }
+  }
   function pasoMaquina(dt) {
     const modoM = maq.pintada, rapido = modoM === 'sopla';
     gHelice.rotation.x += dt * (rapido ? 14 - A.aciertos * 3 : 1.2);
@@ -552,7 +564,7 @@ window.AVV18Arco = function (G) {
     if (!ver) { soltarModo(); pintarHud(false); return; }
     const e = estado();
     // aviso y bandera (una vez por sesión) mientras la misión no empezó: también desde lejos
-    if (e === 'inicio' && !A.avisado && !busy) { A.avisado = true; if (dP > R_AVISO) { toast(TXT.aviso, 5200); ponerGuia(); } }
+    if (e === 'inicio' && !A.avisado && !busy && dP > R_AVISO && libreAviso()) { A.avisado = true; toast(TXT.aviso, 5200); ponerGuia(); }
     if (fiestaTiene()) { if (tue.raiz) liberarTue(); } else if (!tue.raiz && !tue.cargando && !tue.fallo && dP < N.R_CARGA) cargarTue(); // si el modelo falló no se reintenta (sin errores en bucle)
     else if (tue.raiz && dP > N.R_LIBERA) liberarTue();
     if (!cerca) { soltarModo(); pintarHud(false); return; }
@@ -572,7 +584,7 @@ window.AVV18Arco = function (G) {
     pintarHud(dP < R_HUD && (e !== 'inicio' || dM < R_REUNION + 6) && !busy);
   }
   G.on('update', (dt, busy) => { if (!A.manual) paso(Math.min(dt, 0.1), busy); }, 74);
-  G.on('apply', () => setTimeout(() => { A.aciertos = 0; A.reuniendo = false; soltarModo(); revisarElenco(); aplicar(); }, 0), 98);
+  G.on('apply', () => setTimeout(() => { restaurarAciertos(); A.reuniendo = false; soltarModo(); revisarElenco(); aplicar(); }, 0), 98);
   G.on('v18', ev => { if (ev && ev.tipo === 'mundo' && (ev.id === ID || /^v18_arco_/.test(ev.id || '') || ev.id === 'puerto_mina')) aplicar(); if (ev && ev.tipo === 'evo') pagarXP(); });
 
   // ---------- Arranque: el mundo real y el sitio medido ----------
@@ -737,6 +749,8 @@ window.AVV18Arco = function (G) {
       ir(lejos.x, lejos.z, g); A.j.energia = 100; A.j.cd = {}; pulsar('e'); correr(0.8);
       check('9 · Junto al invento se toma el modo de acción y sale el botón Poder', tomaModo);
       check('9b · Grito del Yunque de espaldas no cuenta; apuntado con G y con E, sí (2/3)', sinApuntar === 0 && conG === 1 && A.aciertos === 2, sinApuntar + ' / ' + conG + ' / ' + A.aciertos);
+      A.aciertos = 0; V.recargar(); restaurarAciertos();
+      check('9e · Tras recargar siguen los 2 aciertos al Espantanubes (guardados en el mundo)', A.aciertos === 2 && V.mundo(CLAVE_ACIERTOS) === 2, A.aciertos + ' aciertos');
       A.j = nuevoJugador('arausiaca'); ir(SITIO.maq.x - 2.4, SITIO.maq.z - 1.8, g); A.j.energia = 100; A.j.cd = {};
       const bt = hud.q('poder'); correr(0.05); pintarHud(true);
       bt.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }));

@@ -254,6 +254,7 @@ window.AVV18Evolucion = function (G) {
     if (cartaEl && !cartaEl.classList.contains('mini')) return null;
     return carta(con(TXT.xp, n), [nombre(sp), con(TXT.nv, info(sp).nivel)], faltaTxt(sp), false, '', 'mini');
   }
+  const ARCO_RE = /^v18_(muelle|puerto|arco|fiesta)_/;
   // Hitos de una sola vez: se deducen del progreso V18 (así las partidas viejas cobran lo que ya hicieron, una vez)
   function hitos() {
     const d = V.copia(), out = [], m = d.mundo || {}, ot = d.otorgados || {}, inv = d.inv || {}, pf = perfil();
@@ -266,7 +267,8 @@ window.AVV18Evolucion = function (G) {
     if (ot.minigolf_villa_oro || (m.minigolf_villa && m.minigolf_villa.medalla === 'oro')) out.push(['golf_oro', XP.golfOro]);
     if ((inv.victoria_perfecta || 0) > 0) out.push(['perfecta', XP.perfecta]);
     if ((Number(m.duelos_ganados) || 0) >= 3) out.push(['tres_duelos', XP.tresDuelos]);
-    for (const k of Object.keys(m)) if (m[k] === 'recogida') out.push(['mat:' + k, XP.material]);
+    // Las claves de las misiones del arco (tablas, materiales…) no cuentan: esas misiones pagan su XP al terminar
+    for (const k of Object.keys(m)) if (m[k] === 'recogida' && !ARCO_RE.test(k)) out.push(['mat:' + k, XP.material]);
     for (const k of Object.keys(ot)) if (/^duelo_gana_/.test(k)) out.push(['gana:' + k.slice(11), XP.ganaEspecie]);
     for (const sp of Object.keys(d.especies || {})) if (sp !== 'vittata' && sp !== pf && rango(d.especies[sp]) >= rango('seleccionable')) out.push(['esp:' + sp, XP.especie]);
     return out;
@@ -1041,6 +1043,8 @@ window.AVV18Evolucion = function (G) {
         P.otorgar('reto_dos_cotorras', 'reto_extra', 1); tiene('reto_dos', 60); P.otorgar('minigolf_villa_completo', 'golf', 1); tiene('golf_completo', 30);
         P.otorgar('minigolf_villa_oro', 'golf_oro', 1); tiene('golf_oro', 30); P.otorgar('perfecta_t', 'victoria_perfecta', 1); tiene('perfecta', 30);
         P.cambiarMundo('duelos_ganados', 3); tiene('tres_duelos', 40); P.cambiarMundo('piedra_1', 'recogida'); tiene('mat:piedra_1', 5);
+        P.cambiarMundo('v18_muelle_tabla_9', 'recogida'); P.cambiarMundo('v18_puerto_tabla_9', 'recogida');
+        if (hitos().some(x => x[0] === 'mat:v18_muelle_tabla_9' || x[0] === 'mat:v18_puerto_tabla_9')) pend.push('mat del arco');
         P.desbloquear('collaria'); tiene('esp:collaria', 30); P.otorgar('duelo_gana_agilis', 'victoria_agilis', 1); tiene('gana:agilis', 60);
         const debe = hitos().filter(x => !E().marcas[x[0]]).reduce((s2, x) => s2 + x[1], 0), pago = revisarHitos(true), otra = revisarHitos(true);
         const mods = []; for (const [k, M] of [['chispa', G.v18chispa], ['moon', G.v18moon], ['guardian', G.v18guardian]]) {
