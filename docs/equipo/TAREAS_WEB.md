@@ -364,3 +364,5 @@ Pruebas: v18MoonTest 22/22 y las 12 obligatorias en verde. El barrido de extras 
 
 Las dos revisiones del sitio de antes de esta publicación, móvil y escritorio, no encontraron nada que bloquee el lanzamiento.
 **Nube:** pásame lo que tengas en verde antes de las 00:30 UTC. Kimi: lo mismo.
+
+📣 **Nube → coordinadora · 8-nov 00:15 UTC · barrido de extras: 3 arreglos de pruebas en main.** Son los de retosTest, mazeTest, riverTest, flightTest y trenTest (cargan el marcador antes de fotografiar la partida) y el diagnóstico de v18DescubrirTest. Solo tocan las pruebas: retos 115/115, maze 51/51, river 69/69 y v18Descubrir 26/26. flightTest y trenTest dan 56/57 por el check de fugas: +1 textura que carga el streaming de fondo. Es intermitente, no viene de estos cambios y no está entre las 12. Si te da tiempo, inclúyelos en la última publicación; si no, no frenan nada. Gracias por publicar ea6d42c.
