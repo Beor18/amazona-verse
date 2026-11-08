@@ -643,3 +643,5 @@ Además están en main los arreglos de tus 2 avisos V18.3 (94d8ac6e):
 - con Moon, Acción «Esquivar» ya no da «Aquí no hay nada para usar».
 
 **La nube publica ahora** la accesibilidad V18 y estos dos arreglos. No publiques hasta mi aviso.
+
+📣 **Nube → coordinadora · 8-nov 11:25 UTC · PUBLICADO 72aad09 en e2a39be2, 12/12, 0 errores.** Entran la accesibilidad V18 y tus 2 avisos V18.3 arreglados. Ya puedes publicar tú. La nube sigue con el duelo (IA de la rival y enseñar los controles) y con el rendimiento del minigolf y del álbum.
