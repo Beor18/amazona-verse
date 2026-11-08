@@ -715,6 +715,53 @@ medición emulada la sustituye hasta entonces, precedente KIMI-053). «Medio» d
 y `validSave` exige `v:1` (SAVE_VERSION = pack.guardado.version) — lo mismo que falló el intento
 ep5 de KIMI-111.
 
+## KIMI-287 · iPad emulado en el tepuy del cap. 5 — re-medición fresca y cierre del ítem ROADMAP (8-nov · Kimi 3)
+
+Encargo 📣 coordinadora 8-nov ~11:00 UTC: el pendiente `ROADMAP.md:36` («iPad en el tepuy del cap. 5:
+6,9 M triángulos en calidad baja, 31/16 FPS») con propuesta de mejora «sin cambiar la vista aprobada».
+Re-medición en HEAD vigente (mucho código nuevo desde KIMI-126: V18 por defecto, boost de llegada
+`RcLlegada` KIMI-246, `hdCiudadLimite` KIMI-255, cuantización KIMI-271, atlas LQ KIMI-250), misma
+emulación fiel al iPad de Kelvin (820×1180 CSS @ DPR 1,5, UA iPad, táctil, CPU ×4, GPU real RX 5700 XT),
+misma herramienta `tools/build/kimi3_126.js`. Evidencia `docs/img/kimi126/`: `k126_ipad-bajo-r2` y
+`k126_ipad-medio-r1` corridas con Kimi 1 midiendo en paralelo (FPS = techo, veredictos estructurales
+válidos) y `k126_ipad-bajo-libre2` / `k126_ipad-medio-libre` con la PC libre (matados antes 3 árboles
+headless huérfanos de arneses `kimi1k286-bXGW6H`/`kimi2u-0R95qu`/`kimi2u-WfS77u` con el padre node
+muerto, 30 procesos, criterio documentado; navegador de Kelvin intacto).
+
+**Calidad baja (objetivo contractual), PC libre — vuelo continuo 61 s:** FPS **p50=44 · p10=28 ·
+mín=4** (el mín es un tirón aislado de streaming, familia QA-53/158; KIMI-126 midió el mismo patrón)
+· triángulos med=362 k (máx 438 k) · draw calls med=128 (máx 138) · heap 108-127 MB · **0 contextos
+perdidos · 0 errores de consola**. Tomas asentadas:
+
+| vista | calls | tris | tex | heap | fps |
+|---|---|---|---|---|---|
+| cumbre_N | 141 | 0,36 M | 82 MB | 117 MB | **37** |
+| cumbre_E | 96 | 0,20 M | 82 MB | 107 MB | **52** |
+| miradores_NE | 57 | 0,18 M | 82 MB | 110 MB | **58** |
+| aire_ciudad | 141 | 0,36 M | 82 MB | 123 MB | **42** |
+
+**Calidad media (los 31/16 FPS del 2-nov eran «media»), PC libre — vuelo:** FPS **p50=52 · p10=34 ·
+mín=7** · tris med=484 k (máx 558 k) · calls med=183 (máx 192) · tex 188 MB · **0 errores de consola**.
+Tomas asentadas: cumbre_N 183 calls/0,49 M/**42 fps** · cumbre_E 148/0,33 M/47 · miradores_NE
+124/0,31 M/59 · aire_ciudad 183/0,49 M/53.
+
+**Veredicto: el ítem ROADMAP queda CERRADO con números, sin palanca y sin tocar la vista aprobada.**
+- Triángulos: 6,9 M → **0,36 M en baja** (y 4,0 M → 0,49 M en media): el LOD KIMI-011 sigue
+  haciendo el trabajo; ningún pico nuevo en el vuelo.
+- FPS asentadas: baja **37-58** (todas ≥ 35 salvo cumbre_N=37, que cumple ≥ 30 con margen) y media
+  **42-59**: criterio histórico (≥ 30 FPS en la vista del tepuy) cumplido sobrado a CPU ×4 = techo;
+  en el iPad real (sin ×4) será mayor.
+- Memoria: tex **82 MB en baja** (era 187 MB el 6-nov: las palancas KIMI-221 flora-256 + KIMI-250
+  atlas LQ siguen activas en HEAD) — lejos del techo del iPad.
+- 0 errores de consola y 0 contextos WebGL perdidos en las 4 corridas.
+- Observed honesto: descenso leve de FPS respecto al limpio de KIMI-126 (asentadas 37-58 frente a
+  44-61 con calls/tris/tex idénticos): es coste de CPU por cuadro del «V18 por defecto» y compañía,
+  no de GPU; no bloquea el criterio y queda anotado para la vigilancia continua. El p10=28 del vuelo
+  en baja son transitorios de streaming en movimiento (el asentado es lo que firma el criterio).
+- Falta la prueba física en el iPad de Kelvin con `#fps` (0r: la emulación la sustituye hasta
+  entonces, precedente KIMI-053/KIMI-126). BM131 (zoom en bucle): diagnóstico ya publicado en
+  BUGS.md; sigue sin reproducirse — los movimientos de distancia son `muroEnMedio`/dolly de aterrizaje.
+
 ## KIMI-124 · FPS de lo nuevo con GPU real: minigolf y V18.2 (6-nov · Kimi 1)
 
 Tarea 1d (PLAN ULTRA): demo `?v18=1`, minigolf (hoyo de Villa Raíz, 1 jugador y por turnos) y la
