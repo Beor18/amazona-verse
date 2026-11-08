@@ -1,0 +1,41 @@
+{
+ "gpu": "AMD Radeon RX 5700 XT",
+ "hora": "2026-11-08T08:54:19.043Z",
+ "innerW": 390,
+ "innerH": 844,
+ "checks": {
+  "album": {
+   "ok": true,
+   "pegado": true,
+   "visible": true,
+   "rect": {
+    "top": 737,
+    "bottom": 825
+   },
+   "innerH": 844,
+   "fichas": 36,
+   "scrollable": true
+  },
+  "cotorras": {
+   "ok": true,
+   "pegado": true,
+   "visible": true,
+   "porConseguir": true,
+   "rect": {
+    "top": 737,
+    "bottom": 825
+   },
+   "innerH": 844
+  },
+  "flight": {
+   "ok": true,
+   "activo": true,
+   "abierta": true,
+   "bmVisible": true,
+   "botonLibre": true,
+   "zSys": "11",
+   "apunta": "pause-aula"
+  }
+ },
+ "erroresConsola": []
+}
