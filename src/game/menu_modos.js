@@ -200,7 +200,9 @@
       c.classList.add('mm-encima'); c.inert = false;
       if (!portada.inert) { origen = document.activeElement; portada.inert = true; portadaInerte = true; }
       c.scrollTop = 0; c.tabIndex = -1;
-      setTimeout(() => { if (!c.hidden) { c.focus({ preventScroll: true }); c.scrollTop = 0; } }, 0);
+      // ui.js vuelve a poner #card inerte al reabrirse la portada (MutationObserver, después de este código si se reabrió justo antes)
+      Promise.resolve().then(() => { if (c.classList.contains('mm-encima')) c.inert = false; });
+      setTimeout(() => { if (!c.hidden && c.classList.contains('mm-encima')) { c.inert = false; c.focus({ preventScroll: true }); c.scrollTop = 0; } }, 0);
     }
     G.on('cardHidden', () => {
       const c = $('card'); if (!c || !c.classList.contains('mm-encima')) return;
@@ -224,6 +226,7 @@
       return listo().then(() => cargar18('cotorras')).then(() => {
         const D = G.v18descubrir; if (!D || !D.abrirSeleccion) return false;
         const ids = D.abrirSeleccion(), c = $('card'), E = G.v18evo;
+        const h2 = c.querySelector('h2'); if (h2) { h2.textContent = TX().cotorras[0]; h2.setAttribute('data-no-tr', ''); } /* desde el menú es la colección, no solo «con qué cotorra juegas el duelo» */
         if (E && E.info) c.querySelectorAll('[data-v18sp]').forEach(b => {
           try { const r = E.info(b.dataset.v18sp); if (r && isFinite(r.xp)) b.insertAdjacentHTML('beforeend', `<small class="mm-xp" data-no-tr>XP ${Math.round(r.xp)}</small>`); } catch (e) { /* sin evolución */ }
         });
@@ -487,7 +490,7 @@
           }
           const z = el => Number(getComputedStyle(el).zIndex) || 0;
           for (const m of SUB) {
-            await elegir('amigos');
+            await elegir('amigos'); await espera(30);
             const c = $('card'), bots = c.querySelectorAll('[data-amigo]');
             if (m === SUB[0]) check('V18 · Retos con amigos: tarjeta encima del menú con Chispa, Moon y el Guardián', !c.hidden && c.classList.contains('mm-encima') && portada.open && bots.length === 3 && z(c) > z(portada) && !c.inert && portada.inert, bots.length + ' botones, z ' + z(c) + '/' + z(portada) + ', inerte ' + c.inert + '/' + portada.inert);
             const b = c.querySelector(`[data-amigo="${m}"]`); if (b) b.click();
