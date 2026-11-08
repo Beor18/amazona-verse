@@ -1,0 +1,100 @@
+{
+ "base": "https://www.amazonaverse.com/juego",
+ "hora_utc": "2026-11-08T10:02:23.448Z",
+ "indice": {
+  "codigo": 200,
+  "bytes": 39610,
+  "build_meta": "HEAD 0389d94a7c19"
+ },
+ "archivos": {
+  "src/game/v18/evolucion.js": {
+   "codigo": 200,
+   "bytes": 112876,
+   "marcadores_ok": 2,
+   "marcadores_total": 2,
+   "faltan": [],
+   "local": {
+    "bytes": 112876,
+    "identico": true
+   }
+  },
+  "src/game/v18/arco.js": {
+   "codigo": 200,
+   "bytes": 73320,
+   "marcadores_ok": 4,
+   "marcadores_total": 4,
+   "faltan": [],
+   "local": {
+    "bytes": 73320,
+    "identico": true
+   }
+  },
+  "src/game/v18/puerto.js": {
+   "codigo": 200,
+   "bytes": 95182,
+   "marcadores_ok": 5,
+   "marcadores_total": 5,
+   "faltan": [],
+   "local": {
+    "bytes": 95182,
+    "identico": true
+   }
+  },
+  "src/game/v18/muelle.js": {
+   "codigo": 200,
+   "bytes": 52289,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "local": {
+    "bytes": 52289,
+    "identico": true
+   }
+  },
+  "src/game/v18/fiesta.js": {
+   "codigo": 200,
+   "bytes": 57599,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "local": {
+    "bytes": 57599,
+    "identico": true
+   }
+  },
+  "src/game/records.js": {
+   "codigo": 200,
+   "bytes": 132286,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "local": {
+    "bytes": 132286,
+    "identico": true
+   }
+  },
+  "src/game/v18/combate.js": {
+   "codigo": 200,
+   "bytes": 89499,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "local": {
+    "bytes": 89499,
+    "identico": true
+   }
+  },
+  "src/game/menu_modos.js": {
+   "codigo": 200,
+   "bytes": 87756,
+   "marcadores_ok": 2,
+   "marcadores_total": 2,
+   "faltan": [],
+   "local": {
+    "bytes": 87756,
+    "identico": true
+   }
+  }
+ },
+ "ok": true
+}
