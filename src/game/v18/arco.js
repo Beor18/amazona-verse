@@ -317,6 +317,7 @@ window.AVV18Arco = function (G) {
   function aplicar() {
     if (!M.valido) return false;
     construir();
+    if (!M.despejado) despejarTorre(); // si la flora llegó después de iniciar
     deducir();
     const e = estado(), fin = e === 'encendido', ver = A.tengo && listo();
     gMaq.visible = ver; gTue.visible = ver && !fiestaTiene(); gBander.visible = ver && fin; // en la fiesta de la colina (misión 4) Tuerca está allí
@@ -599,10 +600,27 @@ window.AVV18Arco = function (G) {
     const hP = alto(SITIO.plaza.x, SITIO.plaza.z), seca = !(G.agua && G.agua.levelAt(SITIO.plaza.x, SITIO.plaza.z) > hP - 0.2);
     return seca && hP > 10 && hP < 30 && M.torres.every(t => t.top > alto(t.x, t.z) + 3); // la plaza en las lomas y las torres de pie
   }
+  // KIMI-247 (Kelvin 8-nov: «intervención mínima»): la siembra de la flora depende de los trozos de terreno cargados, así que
+  // en algunas partidas sale un árbol justo fuera del disco libre de las piezas de Kelvin (4,5 m) cuya copa envuelve la torre 0
+  // y tapa su nido. Se quitan solo los árboles cuya copa llega al nido de la torre 0 (a R_NIDO_VISTA de su eje y a la altura
+  // del nido), como el pasillo del muelle (muelle.js, G.vegetacion.despejar). Nada más cambia: ni otras torres ni otros árboles.
+  const R_NIDO_VISTA = 1.5;
+  function copaTapaNido(t, x, z, inf, s) {
+    if (!inf || !(inf.alto * s >= 2.5)) return false; // solo árboles (las matas y las rocas no llegan arriba)
+    const rCopa = (inf.ancho || 0) * s / 2, cima = alto(x, z) + inf.alto * s;
+    return Math.hypot(x - t.x, z - t.z) - rCopa < R_NIDO_VISTA && cima > t.top - 1;
+  }
+  function despejarTorre() {
+    const Vg = G.vegetacion, t = M.torres && M.torres[0];
+    if (M.despejado || !t || !Vg || !Vg.despejar || !Vg.instancias || !Object.keys(Vg.instancias).length) return 0;
+    M.despejado = []; const R = 14; // caja de búsqueda (la copa la mide copaTapaNido)
+    Vg.despejar(t.x - R, t.z - R, t.x + R, t.z + R, (x, z, m, inf, s) => { const si = copaTapaNido(t, x, z, inf, s); if (si) M.despejado.push({ m, x, z, s }); return si; });
+    return M.despejado.length;
+  }
   function iniciar() {
     if (M.valido) return true;
     M.valido = validar();
-    if (M.valido) { aplicar(); revisarElenco(); }
+    if (M.valido) { aplicar(); revisarElenco(); Promise.resolve(G.vegetacion && G.vegetacion.listo).then(despejarTorre, () => {}); }
     return M.valido;
   }
   Promise.resolve(G.mundo && G.mundo.listo).then(iniciar, iniciar);
@@ -731,8 +749,8 @@ window.AVV18Arco = function (G) {
         cerrarCharlas(); ir(t.x + 0.1, t.z + 0.1, null, t.top + 1.6); MV.flying = false; MV.grounded = false;
         for (let k = 0; k < 60 && !MV.grounded; k++) G.fisica.step(0.05, false);
         const y = S.pos.y - t.top; correr(0.05); const n = G.interaccion.nearest();
-        // en la torre 0 la copa de un árbol la envuelve (KIMI-247): en «alto» sus ramas pueden dejarla en el techo, hasta ~1 m bajo la
-        // percha; desde ahí el nido se sigue alcanzando y se acomoda con un toque, que es lo que importa
+        // margen de ~1 m bajo la percha: el techo de la torre puede posarla un poco más abajo (KIMI-247; la copa que envolvía la
+        // torre 0 ya la quita despejarTorre, ver 8e); desde ahí el nido se sigue alcanzando y se acomoda con un toque
         const ok = MV.grounded && y > -1.5 && y < 0.5 && n && n.id === 'v18_puerto_arco_nido_' + i;
         const antes = nidoListo(i); if (ok) tocar(); cerrarCharlas(); return ok && !antes && nidoListo(i) ? 'ok ' + y.toFixed(2) : 'no(' + y.toFixed(2) + ',' + (n && n.id) + ')';
       });
@@ -740,6 +758,18 @@ window.AVV18Arco = function (G) {
       check('8b · Paso 3: tres nidos con Acción en lo alto de las torres (cada uno una vez, guardado) → nidos', nidosListos() === 3 && estado() === 'nidos' && evs.filter(e => e.tipo === 'nido').length === 3 && TORRES.every((x, i) => V.mundo(claveNido(i)) === 'acomodado') && gNidos.every(g => !g.getObjectByName('revuelto').visible && g.getObjectByName('pluma').visible),
         nidosListos() + '/3 · ' + estado());
       check('8c · Cada torre tiene una percha en lo alto (Vittata se posa junto al nido)', M.perchas.length === 3 && M.perchas.every((p, i) => G.fisica.perchas.indexOf(p) >= 0 && Math.abs(p.y - M.torres[i].top) < 0.2));
+      // KIMI-247: ninguna copa de árbol en la vista del nido de la torre 0 (se quitan al cargar la flora; solo esas)
+      despejarTorre();
+      const t0v = M.torres[0], Vg = G.vegetacion, tapan = [];
+      if (Vg && Vg.instancias) for (const m in Vg.instancias) {
+        const P = Vg.instancias[m], inf = Vg.info && Vg.info[m], n = P.n || P.pos.length / 4;
+        for (let i = 0; i < n; i++) { const s = P.pos[i * 4 + 3], x = P.pos[i * 4], z = P.pos[i * 4 + 2]; if (s > 0 && copaTapaNido(t0v, x, z, inf, s)) tapan.push(m + ' a ' + Math.hypot(x - t0v.x, z - t0v.z).toFixed(1) + ' m'); }
+      }
+      const tab = Vg && Vg.info && Vg.info.tabonuco; // la regla, con una copa de tabonuco: a 5 m tapa el nido, a 9 m no
+      const regla = !tab || (copaTapaNido(t0v, t0v.x + 5, t0v.z, tab, 1) && !copaTapaNido(t0v, t0v.x + 9, t0v.z, tab, 1));
+      check('8e · KIMI-247: ninguna copa de árbol en la vista del nido de la torre 0 (solo se quitan las que lo tapan)',
+        !!(Vg && Vg.instancias) && !tapan.length && Array.isArray(M.despejado) && M.despejado.every(d => Math.hypot(d.x - t0v.x, d.z - t0v.z) < 14) && regla,
+        (tapan.join(' | ') || 'vista libre') + ' · quitados ' + (M.despejado ? M.despejado.map(d => d.m + ' a ' + Math.hypot(d.x - t0v.x, d.z - t0v.z).toFixed(1) + ' m').join(', ') || '0' : '—') + ' · regla ' + regla);
       cerrarCharlas();
       // 9 · paso 4: calmar el invento con el poder (G de espaldas no cuenta; G apuntado y el botón táctil, sí)
       const g = posHelice(), lejos = { x: g.x - 3.5, z: g.z - 2.65 }; // 4,4 m: dentro del alcance del Grito (7 m) y fuera del empujón de la ráfaga (< 4 m)
