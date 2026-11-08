@@ -1,14 +1,14 @@
 {
- "codigo": "c536cee2984dfcda25b01a77839e1d98d6bfa924",
+ "codigo": "bb6b1d5fe0f3a0cb968dc82c207fae9d97f67266",
  "sitio": null,
- "fecha": "2026-11-08T05:43:19Z",
+ "fecha": "2026-11-08T06:13:32Z",
  "nota": "pruebas obligatorias en la nube en verde",
  "pruebas": {
   "estado": "pasa",
-  "inicio": "2026-11-08T05:31:02+00:00",
-  "duracion_s": 733.9,
+  "inicio": "2026-11-08T06:03:05+00:00",
+  "duracion_s": 624.2,
   "chrome": "Chrome/153.0.8010.12",
-  "huella_build": "56f8766060d93c38cef010d436d7c3957e6cf490446fce183e3d404ddcd29e3c",
+  "huella_build": "69d87ea6d996be321a94aa26bf193628d963496112ae1dfb4eff45065dcdd8df",
   "requeridas_ok": 12,
   "requeridas": 12
  },
@@ -92,7 +92,7 @@
   "muestras_error": []
  },
  "carga_inicial_mb": 22.71,
- "heap_mb": 115.2,
+ "heap_mb": 88.5,
  "fallas": [],
  "avisos": []
 }

@@ -186,7 +186,9 @@ window.AVV18Muelle = function (G) {
     if (e === 'materiales') return A.sosteniendo ? con(TXT.sosteniendo, Math.round(A.sost / SOSTENER_S * 100)) : TXT.obj.materiales;
     return '';
   }
+  const fiestaTiene = () => { try { return !!(G.v18fiesta && G.v18fiesta.elenco && G.v18fiesta.elenco()); } catch (e) { return false; } };
   function usar(id) {
+    if (fiestaTiene()) return G.v18fiesta.usar(id);
     const e = estado();
     if (e === 'inicio') return reunion();
     if (e === 'construido') return N.decir(id, (N.def(id).porEstado[N.estado(id)] || {}).dialogo || []);
@@ -215,7 +217,7 @@ window.AVV18Muelle = function (G) {
     gPlano.visible = ver && !fin; gMuelle.visible = fin && (ver || arcoHecho());
     gBoyas.forEach((g, i) => { g.visible = ver && (fin || rango(e) >= rango('plan')); g.getObjectByName('aura').visible = e === 'plan' && !boyaLista(i); });
     gTablas.forEach((g, i) => { g.visible = ver && e === 'medido' && !tablaLista(i); });
-    if (ver) colocarElenco();
+    if (ver && !fiestaTiene()) colocarElenco(); // en la fiesta de la colina (misión 4) los dos están allí
     if (fin) despejar();
     pagarXP();
     return true;
@@ -417,6 +419,10 @@ window.AVV18Muelle = function (G) {
     };
     const tecla = (k, tipo) => window.dispatchEvent(new KeyboardEvent(tipo || 'keydown', { key: k, bubbles: true, cancelable: true }));
     const pulsar = k => vigilar(() => { tecla(k); tecla(k, 'keyup'); });
+    const tocar = () => vigilar(() => G.input.actBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }))); // el botón Acción de la pantalla, como un dedo
+    const tactil = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+    // en un teléfono el botón tiene que verse y poder tocarse: en pantalla, ≥ 44 px y sin nada encima (ni el panel de la misión) en su centro
+    const tocable = el => { if (!tactil) return true; const r = el.getBoundingClientRect(); if (el.offsetWidth < 44 || el.offsetHeight < 44 || r.right > innerWidth || r.bottom > innerHeight || r.left < 0 || r.top < 0) return false; const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!e && (e === el || el.contains(e)); };
     const cerrarCharlas = () => { for (let i = 0; i < 16 && G.dialogo.open(); i++) pulsar('e'); try { G.dialogo.cancelarLibre && G.dialogo.cancelarLibre(); } catch (e) { /* */ } };
     const geos = () => (G.renderer.renderer && G.renderer.renderer.info.memory.geometries) || 0;
     const colorDe = (ms, nom) => { const m = ms.find(x => x.name === nom); return m ? '#' + m.color.clone().convertLinearToSRGB().getHexString() : null; };
@@ -474,7 +480,8 @@ window.AVV18Muelle = function (G) {
       cerrarCharlas(); correr(0.1);
       check('4b · Paso 2: junto a la orilla la Ingeniera abre la reunión (caja) y con E se pasa → plan', abre && estado() === 'plan', estado());
       // 5 · boyas: volando sobre el río, con E
-      M.boyas.forEach((p, i) => { cerrarCharlas(); ir(p.x + 0.4, p.z + 0.3, null, nivelAgua(p.x, p.z) + 1.5); correr(0.05); pulsar('e'); });
+      // como en un teléfono: volando sobre cada boya, el botón Acción de la pantalla (no la tecla E)
+      M.boyas.forEach((p, i) => { cerrarCharlas(); ir(p.x + 0.4, p.z + 0.3, null, nivelAgua(p.x, p.z) + 1.5); correr(0.05); tocar(); });
       cerrarCharlas();
       check('5 · Paso 3: tres boyas en el río con Acción (guardadas) → medido', estado() === 'medido' && M.boyas.every((p, i) => boyaLista(i)) && toasts.some(t => t === con(TXT.boyaN, 3)), estado());
       // 6 · tablas
@@ -483,14 +490,18 @@ window.AVV18Muelle = function (G) {
       check('6 · Paso 4: cuatro tablas (una en el agua) con Acción, sin tocar el inventario del capítulo → materiales', estado() === 'materiales' && M.tablas.every((p, i) => tablaLista(i)) && !cambios.some(c => c === 'inv'), estado());
       // 7 · sostener (si te vas, se suelta)
       MV.flying = false;
-      { const p = puntoPara(M.sostener.x, M.sostener.z, 1.2, 'v18_puerto_muelle_sostener'); ir(p.x, p.z, M.sostener); correr(0.05); } pulsar('e'); correr(1);
+      { const p = puntoPara(M.sostener.x, M.sostener.z, 1.2, 'v18_puerto_muelle_sostener'); ir(p.x, p.z, M.sostener); correr(0.05); } tocar(); correr(1);
       const trabajan = N.instancia('constructor') && N.instancia('constructor').anim === 'Reparar' && N.instancia('ingeniera') && N.instancia('ingeniera').anim === 'Reparar';
       ir(M.sostener.x - 6, M.sostener.z); correr(0.1);
       const solto = !A.sosteniendo && estado() === 'materiales' && toasts.includes(TXT.suelta);
       check('7 · Paso 5: con E se sostiene la tabla y los dos la clavan (Reparar); si te vas, se suelta', trabajan && solto, 'trabajan ' + trabajan + ' · suelta ' + solto);
       let guardadoAntes = null; v18Test = ev => { if (ev && ev.tipo === 'mundo' && ev.id === ID && ev.estado === 'construido' && guardadoAntes == null) { try { guardadoAntes = /"arco_muelle":"construido"/.test(localStorage.getItem(V.clave())) && !gMuelle.visible; } catch (e) { guardadoAntes = false; } } };
       const evo = G.v18evo; G.v18evo = undefined;
-      { const p = puntoPara(M.sostener.x, M.sostener.z, 1.2, 'v18_puerto_muelle_sostener'); ir(p.x, p.z, M.sostener); correr(0.05); } pulsar('e'); correr(SOSTENER_S + 0.3);
+      { const p = puntoPara(M.sostener.x, M.sostener.z, 1.2, 'v18_puerto_muelle_sostener'); ir(p.x, p.z, M.sostener); correr(0.05); } tocar(); correr(1.5);
+      montarHud(); pintarHud(true);
+      const barra = hud.q('barra'), conBarra = A.sosteniendo && !barra.hidden, tapaBoton = tocable(G.input.actBtn);
+      correr(SOSTENER_S - 1.2);
+      check('7d · Móvil: sostener con el botón Acción de la pantalla; la barra avanza y el panel no tapa el botón', conBarra && tapaBoton, 'barra ' + conBarra + ' · botón tocable ' + tapaBoton + ' · táctil ' + tactil);
       check('7b · A los 3 s el muelle queda hecho (el estado ya estaba guardado antes de los efectos)', estado() === 'construido' && guardadoAntes === true && V.otorgado('arco_muelle'), estado() + ' · ' + guardadoAntes);
       G.v18evo = evo;
       let xp = null;
@@ -546,7 +557,7 @@ window.AVV18Muelle = function (G) {
     if (susp) susp(false);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
-  const mapa = () => (listo() && A.tengo && !hecho() ? { x: SITIO.plaza.x, z: SITIO.plaza.z, nombre: TXT.titulo } : null);
+  const mapa = () => (listo() && A.tengo && !hecho() ? { x: SITIO.plaza.x, z: SITIO.plaza.z, nombre: TXT.titulo } : hecho() && G.v18fiesta && G.v18fiesta.mapa ? G.v18fiesta.mapa() : null);
   G.v18muelle = { ID, ESTADOS, estado, avanzar, aplicar, usar, paso, SITIO, test, mapa, elenco: () => A.tengo, get eje() { return M.eje; }, get valido() { return M.valido; }, sesion: () => A };
   return G.v18muelle;
 };

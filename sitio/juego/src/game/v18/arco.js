@@ -177,7 +177,7 @@ window.AVV18Arco = function (G) {
     // Tuerca (carga diferida propia, con el modelo en caché de npc.js)
     gTue = grupo('v18-arco-tuerca');
     const pt = enSeco(SITIO.tue.x, SITIO.tue.z); SITIO.tue.x = pt.x; SITIO.tue.z = pt.z;
-    itTue = G.interaccion.add({ id: 'v18_puerto_arco_tuerca', x: SITIO.tue.x, z: SITIO.tue.z, r: 2.6, visible: () => A.tengo && !!tue.raiz, label: () => TXT.hablarTue, use: () => usar('tuerca') });
+    itTue = G.interaccion.add({ id: 'v18_puerto_arco_tuerca', x: SITIO.tue.x, z: SITIO.tue.z, r: 2.6, visible: () => A.tengo && !!tue.raiz && !fiestaTiene(), label: () => TXT.hablarTue, use: () => usar('tuerca') });
     for (const k of ['ing', 'con']) { const p = enSeco(SITIO[k].x, SITIO[k].z); SITIO[k].x = p.x; SITIO[k].z = p.z; }
   }
   // sitio seco y libre cerca de (x, z) (mismo criterio que puerto.js)
@@ -285,6 +285,7 @@ window.AVV18Arco = function (G) {
     ir(0);
   }
   // Acción sobre uno de los tres (puerto.js delega aquí la Ingeniera y el Constructor mientras están en las Atalayas)
+  const fiestaTiene = () => { try { return !!(G.v18fiesta && G.v18fiesta.elenco && G.v18fiesta.elenco()); } catch (e) { return false; } };
   const muelleTiene = () => { try { return !!(G.v18muelle && G.v18muelle.elenco && G.v18muelle.elenco()); } catch (e) { return false; } };
   function usar(id) {
     if (id !== 'tuerca' && muelleTiene()) return G.v18muelle.usar(id);
@@ -317,7 +318,7 @@ window.AVV18Arco = function (G) {
     construir();
     deducir();
     const e = estado(), fin = e === 'encendido', ver = A.tengo && listo();
-    gMaq.visible = ver; gTue.visible = ver; gBander.visible = ver && fin;
+    gMaq.visible = ver; gTue.visible = ver && !fiestaTiene(); gBander.visible = ver && fin; // en la fiesta de la colina (misión 4) Tuerca está allí
     gNidos.forEach((g, i) => {
       g.visible = ver; const ok = nidoListo(i) || rango(e) >= rango('nidos');
       g.getObjectByName('revuelto').visible = !ok; g.getObjectByName('aura').visible = e === 'reunion' && !ok; g.getObjectByName('haz').visible = e === 'reunion' && !ok;
@@ -552,7 +553,7 @@ window.AVV18Arco = function (G) {
     const e = estado();
     // aviso y bandera (una vez por sesión) mientras la misión no empezó: también desde lejos
     if (e === 'inicio' && !A.avisado && !busy) { A.avisado = true; if (dP > R_AVISO) { toast(TXT.aviso, 5200); ponerGuia(); } }
-    if (!tue.raiz && !tue.cargando && !tue.fallo && dP < N.R_CARGA) cargarTue(); // si el modelo falló no se reintenta (sin errores en bucle)
+    if (fiestaTiene()) { if (tue.raiz) liberarTue(); } else if (!tue.raiz && !tue.cargando && !tue.fallo && dP < N.R_CARGA) cargarTue(); // si el modelo falló no se reintenta (sin errores en bucle)
     else if (tue.raiz && dP > N.R_LIBERA) liberarTue();
     if (!cerca) { soltarModo(); pintarHud(false); return; }
     pasoMaquina(dt);
@@ -633,6 +634,10 @@ window.AVV18Arco = function (G) {
     };
     const tecla = (k, tipo) => window.dispatchEvent(new KeyboardEvent(tipo || 'keydown', { key: k, bubbles: true, cancelable: true }));
     const pulsar = k => vigilar(() => { tecla(k); tecla(k, 'keyup'); });
+    const tocar = () => vigilar(() => G.input.actBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }))); // el botón Acción de la pantalla, como un dedo
+    const tactil = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+    // en un teléfono el botón tiene que verse y poder tocarse: en pantalla, ≥ 44 px y sin nada encima (ni el panel de la misión) en su centro
+    const tocable = el => { if (!tactil) return true; const r = el.getBoundingClientRect(); if (el.offsetWidth < 44 || el.offsetHeight < 44 || r.right > innerWidth || r.bottom > innerHeight || r.left < 0 || r.top < 0) return false; const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!e && (e === el || el.contains(e)); };
     const cerrarCharlas = () => { for (let i = 0; i < 16 && G.dialogo.open(); i++) pulsar('e'); try { G.dialogo.cancelarLibre && G.dialogo.cancelarLibre(); } catch (e) { /* */ } };
     const geos = () => (G.renderer.renderer && G.renderer.renderer.info.memory.geometries) || 0;
     // un punto a r m de (cx, cz) donde lo más cercano para Acción es `id` (los tres y el invento están juntos en la plaza)
@@ -700,7 +705,17 @@ window.AVV18Arco = function (G) {
       const t0 = M.torres[0]; ir(t0.x + 0.5, t0.z + 0.5); correr(0.05);
       const desdeSuelo = G.interaccion.nearest();
       check('8 · Desde el pie de la torre no se acomoda el nido: hay que subir volando', !(desdeSuelo && /arco_nido/.test(desdeSuelo.id)), desdeSuelo && desdeSuelo.id);
-      M.torres.forEach((t, i) => { cerrarCharlas(); ir(t.x + 0.4, t.z + 0.3, null, t.top + 0.6); correr(0.05); pulsar('e'); cerrarCharlas(); });
+      // como en un teléfono: llega volando encima de la torre, deja de volar, la física la posa en la percha y toca el botón Acción
+      const posados = M.torres.map((t, i) => {
+        cerrarCharlas(); ir(t.x + 0.1, t.z + 0.1, null, t.top + 1.6); MV.flying = false; MV.grounded = false;
+        for (let k = 0; k < 60 && !MV.grounded; k++) G.fisica.step(0.05, false);
+        const y = S.pos.y - t.top; correr(0.05); const n = G.interaccion.nearest();
+        // en la torre 0 la copa de un árbol la envuelve (KIMI-247): en «alto» sus ramas pueden dejarla en el techo, hasta ~1 m bajo la
+        // percha; desde ahí el nido se sigue alcanzando y se acomoda con un toque, que es lo que importa
+        const ok = MV.grounded && y > -1.5 && y < 0.5 && n && n.id === 'v18_puerto_arco_nido_' + i;
+        const antes = nidoListo(i); if (ok) tocar(); cerrarCharlas(); return ok && !antes && nidoListo(i) ? 'ok ' + y.toFixed(2) : 'no(' + y.toFixed(2) + ',' + (n && n.id) + ')';
+      });
+      check('8d · Móvil: en lo alto de cada torre Vittata se posa en la percha con la física y el botón Acción de la pantalla acomoda el nido', posados.every(x => /^ok/.test(x)) && tocable(G.input.actBtn), posados.join(' · ') + ' · táctil ' + tactil);
       check('8b · Paso 3: tres nidos con Acción en lo alto de las torres (cada uno una vez, guardado) → nidos', nidosListos() === 3 && estado() === 'nidos' && evs.filter(e => e.tipo === 'nido').length === 3 && TORRES.every((x, i) => V.mundo(claveNido(i)) === 'acomodado') && gNidos.every(g => !g.getObjectByName('revuelto').visible && g.getObjectByName('pluma').visible),
         nidosListos() + '/3 · ' + estado());
       check('8c · Cada torre tiene una percha en lo alto (Vittata se posa junto al nido)', M.perchas.length === 3 && M.perchas.every((p, i) => G.fisica.perchas.indexOf(p) >= 0 && Math.abs(p.y - M.torres[i].top) < 0.2));
@@ -799,7 +814,7 @@ window.AVV18Arco = function (G) {
   }
   // con los faroles encendidos, el marcador sigue el arco: la misión 3 (muelle.js), si toca
   const mapa = () => (listo() && A.tengo && !hecho() ? { x: SITIO.plaza.x, z: SITIO.plaza.z, nombre: TXT.titulo } : hecho() && G.v18muelle && G.v18muelle.mapa ? G.v18muelle.mapa() : null);
-  G.v18arco = { ID, ESTADOS, estado, avanzar, aplicar, usar, etiqueta, usarPoder, encender, pagarXP, paso, SITIO, test, mapa, elenco: () => A.tengo,
+  G.v18arco = { tuercaAqui: () => !!tue.raiz && gTue.visible, ID, ESTADOS, estado, avanzar, aplicar, usar, etiqueta, usarPoder, encender, pagarXP, paso, SITIO, test, mapa, elenco: () => A.tengo,
     get torres() { return M.torres; }, get valido() { return M.valido; }, sesion: () => A };
   return G.v18arco;
 };
