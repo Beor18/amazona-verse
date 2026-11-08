@@ -15,6 +15,27 @@
    - Alianza Eco Protector (Vittata + Arausiaca): Vittata nv ≥ 10 + Arausiaca elegible → «disponible»; ganar a la Campeona con
      Vittata interrumpiéndola ≥ 2 veces → «desbloqueada» (tarjeta). Coste 60, recarga 14 s, deja el grito en espera 5 s; lanza la
      onda de la etapa actual y pone un escudo de 2 s que para un golpe (Ala fuerte lo rompe). H / botón .vd-ali en el duelo.
+   V18.2 producto (bloque B.1, docs/DIRECTIVA_V18_2.md §3, §7–§10):
+   - Las 34 especies del catálogo base suben del 1 al 40 con cuatro etapas (§3), solo con números y efectos que ya existen:
+       1–9 Aprendiz (el poder tal cual) · 10–19 Despertar (su número principal ×1,12 y espera ×0,92)
+       20–29 Guardián (×1,24, espera ×0,88 y una habilidad secundaria según su técnica: PICO deshace las semillas de la rival
+       que vienen de frente; OJOS marca a la rival 1,5 s; PLUMAS da un desvío de 0,4 s; ALAS deja el golpe de ala listo)
+       30–40 Maestro (×1,35, espera ×0,85 y destellos dorados al usarlo). Cada poder tiene su tope (MEJORA) y el coste no baja.
+     Vittata y Arausiaca conservan sus etapas propias (arriba); Vittata suma «Grito Maestro» en el nivel 30 (§4).
+   - Alianzas de bandada (§7–§9): seis, una por elemento de fantasía (§6), elegidas por variedad de técnicas y coste técnico
+     bajo (cada una reutiliza los efectos de las dos cotorras). Las juega la líder; la compañera aporta su efecto y su retrato.
+       Eco Protector     · Vittata (PICO) + Arausiaca (PLUMAS) · eco: onda de la etapa + escudo de 2 s.
+       Lluvia Guiada     · barbadensis (PICO) + xantholora (OJOS) · naturaleza: marca 2 s y lanza la lluvia de semillas, que la sigue.
+       Viento Cruzado    · agilis (ALAS) + farinosa (ALAS) · viento: quiebro (0,6 s sin que te den) y Ala fuerte de 3 m que rompe escudos.
+       Destello del Pitón · guildingii (PLUMAS) + versicolor (OJOS) · luz: deslumbra 1 s (si está a ≤ 8 m) y frena sus tiros 2 s.
+       Marea de Lluvia   · dufresniana (PLUMAS) + diadema (PICO) · agua: escudo de lluvia de 2 s y una semilla de río que bota.
+       Ráfaga Volcánica  · finschi (ALAS) + auropalliata (PICO) · fuego: la ráfaga y, 0,75 s después, una onda de volcán corta (6 m).
+     Todas: coste 60, recarga 14 s, dejan el poder propio en espera 5 s y duran ≤ 2 s; ninguna quita más de 1 pluma.
+     Explorando (tecla G / botón Poder con la alianza elegida), la compañera ayuda: escudo (eco), señala lo cercano con que
+     interactuar (naturaleza), sopla un remolino (viento), revela los rastros de la Maraña (luz), lluvia y escudo (agua), chispas (fuego).
+     Se consiguen: líder en nivel 10 + compañera en tu bandada → «disponible»; ganar a la Campeona con la líder usando su poder
+     2 veces (Eco Protector: interrumpiéndola 2 veces) → «desbloqueada». Sin compras, sin azar, sin rankings.
+   - Formato: el mismo `evo` de v2 (alianzas: { <id>: estado }, alianzaSel: id | null). Una partida v1 o del prototipo carga igual.
    Solo con la bandera V18. Modo de prueba: AV.G.v18evo.prueba({ especie: 'vittata', nivel: 20, alianza: true }) / prueba(null).
    Prueba: AV.v18EvolucionTest(). */
 window.AVV18Evolucion = function (G) {
@@ -22,11 +43,12 @@ window.AVV18Evolucion = function (G) {
   if (G.v18evo) return G.v18evo;
   const V = G.v18 || window.AVV18Progreso(G);
   const H = G.v18hab || window.AVV18Habilidades(G);
-  const NIVEL_MAX = 40, ALI = 'eco_protector', ESTADOS_ALI = ['bloqueada', 'disponible', 'desbloqueada'], VARIANTES = ['amplificado', 'dirigido'];
+  const NIVEL_MAX = 40, ALI = 'eco_protector', ESTADOS_ALI = ['bloqueada', 'disponible', 'desbloqueada'], VARIANTES = ['amplificado', 'dirigido', 'maestro'];
   const T = n => 20 * (n - 1) + 3 * (n - 1) * (n - 2); // XP total para llegar al nivel n
   const XP_MAX = T(NIVEL_MAX);
   function nivelDe(xp) { let n = 1; while (n < NIVEL_MAX && xp >= T(n + 1)) n++; return n; }
-  const XP = { gana: 60, pierde: 25, ganaEspecie: 50, especie: 40, material: 10, puente: 120, sombra: 150, serpiente: 100, sapo: 100, retoDos: 100, golfNido: 30, golfRecord: 30, desafio: 80 };
+  const XP = { gana: 60, pierde: 25, ganaEspecie: 50, especie: 40, material: 10, puente: 120, sombra: 150, serpiente: 100, sapo: 100, retoDos: 100, golfNido: 30, golfRecord: 30, desafio: 80,
+    golfCompleto: 40, golfOro: 60, perfecta: 50, tresDuelos: 60 };
   const TOPE = { duelosDia: 360, repetibleDia: 700, golfDia: 3, mitadDesde: 5, pierdeQuitadas: 1, pierdeDura: 20 };
   // Etapas de Vittata (Grito del Yunque). La 1 son exactamente los números de habilidades.js (no se toca nada).
   const ETAPAS = [
@@ -35,9 +57,52 @@ window.AVV18Evolucion = function (G) {
     { desde: 10, id: 'eco_amplificado', nombre: 'Eco Amplificado', alcance: 9, cono: 0.74, vel: 16, empuje: 17, interrumpe: 1.2, coste: 35, cooldown: 5.5,
       frase: 'Tu grito llega más lejos (9 m) y abre más. Espera un poco más entre gritos.' },
     { desde: 20, id: 'eco_dirigido', nombre: 'Eco Dirigido', alcance: 11, cono: 0.9, vel: 22, empuje: 18, interrumpe: 1.4, coste: 40, cooldown: 6, desvia: true,
-      frase: 'Grito estrecho y rápido hasta 11 m: apunta bien y deshaz las semillas de la rival.' }
+      frase: 'Grito estrecho y rápido hasta 11 m: apunta bien y deshaz las semillas de la rival.' },
+    { desde: 30, id: 'grito_maestro', nombre: 'Grito Maestro', alcance: 11, cono: 0.82, vel: 22, empuje: 19, interrumpe: 1.4, coste: 40, cooldown: 6, desvia: true, maestro: true,
+      frase: 'Grito rápido hasta 11 m, más abierto que el Eco Dirigido, que deshace semillas y suelta destellos dorados.' }
   ];
   const TOPES_GRITO = { cooldownMin: 5, costeMin: 35, alcanceMax: 11, interrumpeMax: 1.4 };
+  // ---------- Etapas de las 34 especies del catálogo base (§3) ----------
+  const ETAPAS_ESP = [
+    { desde: 1, id: 'aprendiz', nombre: 'Aprendiz', k: 1, cd: 1 },
+    { desde: 10, id: 'despertar', nombre: 'Despertar', k: 1.12, cd: 0.92 },
+    { desde: 20, id: 'guardian', nombre: 'Guardián', k: 1.24, cd: 0.88, secundaria: true },
+    { desde: 30, id: 'maestro', nombre: 'Maestro', k: 1.35, cd: 0.85, secundaria: true, maestro: true }
+  ];
+  // Qué número sube con la etapa en cada poder y su tope (multiplicador máximo). Imitación no tiene número: solo baja su espera.
+  const MEJORA = {
+    quiebro: ['vel', 1.3], lluvia_semillas: ['alcance', 1.25], ojo_cenote: ['dura', 1.3], ala_fuerte: ['alcance', 1.2], abanico_colores: ['alcance', 1.25],
+    semilla_rio: ['vida', 1.3], mirada_piton: ['dura', 1.3], ojo_sol: ['dura', 1.3], capa_palma: ['dura', 1.3], pluma_rebote: ['dura', 1.3],
+    hojas_envuelven: ['dura', 1.25], ojo_selva: ['dura', 1.3], viento_islas: ['alcance', 1.25], voz_volcan: ['alcance', 1.25], ojo_manglar: ['dura', 1.3],
+    gota_lluvia: ['dura', 1.3], chillido_bandada: ['empuje', 1.35], rafaga: ['vel', 1.25], eco_cordillera: ['alcance', 1.35], rasante: ['dura', 1.3],
+    canto_real: ['devuelve', 1.35], remolino: ['alcance', 1.3], plumas_aliso: ['quita', 1.3], semilla_pina: ['gorda', 1.2], columna_nube: ['mareo', 1.2],
+    plumas_manglar: ['dura', 1.3], vuelo_niebla: ['vel', 1.25], vuelta_pino: ['vel', 1.25], imitacion: [null, 1], vista_cumbre: ['dura', 1.3],
+    ojo_bandada: ['dura', 1.3], cuento: ['dura', 1.2]
+  };
+  const SECUNDARIA = { pico: { desvia: 6, cono: 0.8 }, ojos: { marca: 1.5, marcaK: 0.5 }, plumas: { desvio: 0.4 }, alas: { alaLista: true } };
+  // ---------- Las 6 alianzas de bandada (§7–§9). Datos del duelo en H.registrar (más abajo) ----------
+  const ALIANZAS = [
+    { id: 'eco_protector', nombre: 'Eco Protector', lider: 'vittata', apoyo: 'arausiaca', elemento: 'eco', reto: 'interrupciones', marca: 'desafio_eco',
+      frase: 'Vittata grita y la cotorra de Dominica la cubre con un escudo de plumas. En el duelo: tecla H o el botón Eco Protector.',
+      explora: 'Explorando, tu grito sale con un escudo de plumas.' },
+    { id: 'lluvia_guiada', nombre: 'Lluvia Guiada', lider: 'barbadensis', apoyo: 'xantholora', elemento: 'naturaleza', reto: 'poder',
+      frase: 'El loro yucateco marca a la rival y tu lluvia de semillas la sigue. En el duelo: tecla H o el botón de la alianza.',
+      explora: 'Explorando, tus semillas señalan lo más cercano con lo que puedes interactuar.' },
+    { id: 'viento_cruzado', nombre: 'Viento Cruzado', lider: 'agilis', apoyo: 'farinosa', elemento: 'viento', reto: 'poder',
+      frase: 'Esquivas con un quiebro y el loro corona azul remata con un Ala fuerte que rompe escudos. En el duelo: tecla H o el botón de la alianza.',
+      explora: 'Explorando, tu quiebro levanta un remolino de hojas.' },
+    { id: 'destello_piton', nombre: 'Destello del Pitón', lider: 'guildingii', apoyo: 'versicolor', elemento: 'luz', reto: 'poder',
+      frase: 'Tu abanico deslumbra y el loro de Santa Lucía frena los tiros de la rival. En el duelo: tecla H o el botón de la alianza.',
+      explora: 'Explorando, tu abanico revela los rastros de la Maraña cercanos.' },
+    { id: 'marea_lluvia', nombre: 'Marea de Lluvia', lider: 'dufresniana', apoyo: 'diadema', elemento: 'agua', reto: 'poder',
+      frase: 'Te cubre un escudo de lluvia y el loro diadema lanza una semilla de río que bota. En el duelo: tecla H o el botón de la alianza.',
+      explora: 'Explorando, tu escudo de lluvia salpica gotas a tu alrededor.' },
+    { id: 'rafaga_volcan', nombre: 'Ráfaga Volcánica', lider: 'finschi', apoyo: 'auropalliata', elemento: 'fuego', reto: 'poder',
+      frase: 'Cruzas con una ráfaga y el loro de nuca amarilla suelta detrás una onda de volcán. En el duelo: tecla H o el botón de la alianza.',
+      explora: 'Explorando, tu ráfaga deja un rastro de chispas doradas.' }
+  ];
+  const ALI_IDS = ALIANZAS.map(a => a.id);
+  const aliDe = id => ALIANZAS.find(a => a.id === id) || null;
   const TXT = {
     subeV: '¡Vittata subió al nivel {}!', sube: '¡Tu cotorra subió al nivel {}!', nv: 'Nv {}', nivel: 'Nivel {}', xp: '+{} XP', subiste: '¡Subiste al nivel {}!',
     etapa: '¡Nueva etapa!', variante: 'Ya puedes elegir la variante del grito en Pausa → Mis cotorras.',
@@ -46,7 +111,17 @@ window.AVV18Evolucion = function (G) {
     aliDisp: 'La Campeona quiere entrenarte con una alianza: gánale con Vittata interrumpiéndola 2 veces con tu grito.',
     aliReq: 'Alianza Eco Protector: Vittata en nivel 10 y la cotorra de Dominica en tu bandada.',
     aliReto: 'Alianza Eco Protector: gana a la Campeona con Vittata interrumpiéndola 2 veces.',
+    aliDispG: 'La Campeona quiere entrenarte con una alianza: gánale con la cotorra líder usando su poder 2 veces.',
+    aliReqG: 'La cotorra líder en nivel 10 y la compañera en tu bandada.', aliRetoG: 'Gana a la Campeona con la cotorra líder usando su poder 2 veces.',
+    aliLider: 'Líder', aliApoyo: 'Compañera', aliBloq: 'Bloqueada', aliDispE: 'Disponible', aliDesb: 'Desbloqueada',
     aliTit: 'Alianza', aliOn: 'Activada', aliOff: 'Desactivada', varTit: 'Variante del grito',
+    apoyo: '¡Tu compañera de alianza te ayuda!', apoyoEco: '¡La cotorra de Dominica te cubre!',
+    falta: 'Faltan {} XP para el nivel {}', max: 'Nivel máximo', mejora: 'Mejora:', maestroFx: 'destellos dorados',
+    k_alcance: 'Alcance', k_dura: 'Duración', k_vel: 'Velocidad', k_vida: 'Recorrido de la semilla', k_empuje: 'Empuje', k_devuelve: 'Energía que devuelve',
+    k_quita: 'Energía que quita', k_gorda: 'Tamaño de la semilla', k_mareo: 'Mareo', k_cooldown: 'Espera',
+    sec_pico: 'Además deshace las semillas de la rival que vienen de frente.', sec_ojos: 'Además marca a la rival 1,5 s: no esquiva y tus semillas la siguen.',
+    sec_plumas: 'Además te da un desvío de 0,4 s en que no te dan.', sec_alas: 'Además deja tu golpe de ala listo al momento.',
+    fr_despertar: 'Tu poder mejora y espera menos entre usos.', fr_guardian: 'Tu poder gana una habilidad secundaria.', fr_maestro: 'Dominio avanzado: tu poder brilla con destellos dorados.',
     retro: 'Tu aventura cuenta: +{} XP para tu cotorra.', prueba: 'Modo de prueba de la evolución'
   };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 3200); } catch (e) { /* sin interfaz */ } };
@@ -66,13 +141,15 @@ window.AVV18Evolucion = function (G) {
       const r = e.esp[sp]; if (!r || typeof r !== 'object') { delete e.esp[sp]; continue; }
       r.xp = Number.isFinite(r.xp) && r.xp > 0 ? Math.min(XP_MAX, Math.floor(r.xp)) : 0;
       r.nivel = nivelDe(r.xp);
-      if (VARIANTES.indexOf(r.variante) < 0) r.variante = null;
-      if (!r.mejoras || typeof r.mejoras !== 'object') r.mejoras = {};
+      if (VARIANTES.indexOf(r.variante) < 0 || (r.variante === 'maestro' && r.nivel < 30)) r.variante = null;
+      if (!r.mejoras || typeof r.mejoras !== 'object' || Array.isArray(r.mejoras)) r.mejoras = {};
       if (sp === 'vittata') for (const et of ETAPAS) if (et.desde > 1 && r.nivel >= et.desde) r.mejoras[et.id] = true;
+      // mejoras desbloqueadas (§13)
+      for (const et of ETAPAS_ESP) if (et.desde > 1 && r.nivel >= et.desde) r.mejoras[et.id] = true;
     }
-    if (!e.alianzas || typeof e.alianzas !== 'object') e.alianzas = {};
-    if (ESTADOS_ALI.indexOf(e.alianzas[ALI]) < 0) e.alianzas[ALI] = 'bloqueada';
-    if (e.alianzaSel !== ALI || e.alianzas[ALI] !== 'desbloqueada') e.alianzaSel = null;
+    if (!e.alianzas || typeof e.alianzas !== 'object' || Array.isArray(e.alianzas)) e.alianzas = {};
+    for (const id of ALI_IDS) if (ESTADOS_ALI.indexOf(e.alianzas[id]) < 0) e.alianzas[id] = 'bloqueada';
+    if (ALI_IDS.indexOf(e.alianzaSel) < 0 || e.alianzas[e.alianzaSel] !== 'desbloqueada') e.alianzaSel = null;
     if (!e.marcas || typeof e.marcas !== 'object') e.marcas = {};
     if (!e.dia || typeof e.dia !== 'object' || typeof e.dia.fecha !== 'string' || !e.dia.por || typeof e.dia.por !== 'object') e.dia = { fecha: '', por: {} };
     for (const k of Object.keys(e.dia.por)) if (!Number.isFinite(e.dia.por[k]) || e.dia.por[k] < 0) e.dia.por[k] = 0;
@@ -81,12 +158,31 @@ window.AVV18Evolucion = function (G) {
   }
   const E = () => sanear(V.evo());
   const reg = (e, sp) => e.esp[sp] || (e.esp[sp] = { xp: 0, nivel: 1, mejoras: {}, variante: null });
-  const info = sp => { const r = E().esp[sp]; return r ? { xp: r.xp, nivel: r.nivel, variante: r.variante } : { xp: 0, nivel: 1, variante: null }; };
+  const etapaIdx = n => (n >= 30 ? 3 : n >= 20 ? 2 : n >= 10 ? 1 : 0);
+  const aliDeEspecie = sp => ALIANZAS.find(a => a.lider === sp) || ALIANZAS.find(a => a.apoyo === sp) || null;
+  // Lo que sabe la ficha de una cotorra: nivel, XP, XP hasta el siguiente, etapa, alianza y lo que mejora su poder
+  function info(sp) {
+    const r = E().esp[sp], xp = r ? r.xp : 0, nivel = r ? r.nivel : 1, variante = r ? r.variante : null, i = etapaIdx(nivel);
+    const sig = nivel >= NIVEL_MAX ? null : T(nivel + 1), a = aliDeEspecie(sp);
+    return { xp, nivel, variante, etapa: ETAPAS_ESP[i].id, etapaNombre: ETAPAS_ESP[i].nombre, sig, falta: sig == null ? 0 : sig - xp,
+      alianza: a ? a.id : null, alianzaEstado: a ? E().alianzas[a.id] : null, rol: a ? (a.lider === sp ? 'lider' : 'apoyo') : null, mejora: mejoraDe(sp, nivel) };
+  }
   function dia(e) { const f = hoy(); if (e.dia.fecha !== f) e.dia = { fecha: f, por: {} }; return e.dia; }
   function etapaDe(nivel, variante) {
     let et = ETAPAS[0]; for (const x of ETAPAS) if (nivel >= x.desde) et = x;
     if (et.desde >= 20 && variante === 'amplificado') et = ETAPAS[1];
+    else if (et.desde >= 30 && variante === 'dirigido') et = ETAPAS[2];
     return et;
+  }
+  // Lo que mejora el poder de una especie en un nivel (para la ficha y las pruebas): [{ k, pct }] + secundaria + maestro
+  function mejoraDe(sp, nivel) {
+    const p = H.poderDe(sp), h = H.get(p), i = etapaIdx(nivel), out = { poder: p, nombre: (h && h.nombre) || '', cambios: [], secundaria: null, maestro: i >= 3 };
+    if (!h || !i) return out;
+    const a = ajustar({ especie: sp, nivel }, h);
+    for (const k of ['alcance', 'dura', 'vel', 'vida', 'empuje', 'devuelve', 'quita', 'gorda', 'mareo']) if (typeof h[k] === 'number' && a[k] !== h[k]) out.cambios.push({ k, pct: Math.round(100 * (a[k] / h[k] - 1)) });
+    if (a.cooldown !== h.cooldown) out.cambios.push({ k: 'cooldown', pct: Math.round(100 * (a.cooldown / h.cooldown - 1)) });
+    if (sp !== 'vittata' && sp !== 'arausiaca' && i >= 2) out.secundaria = h.tecnica || null;
+    return out;
   }
 
   // ---------- XP ----------
@@ -109,6 +205,7 @@ window.AVV18Evolucion = function (G) {
       dado = Math.min(n, XP_MAX - r.xp); r.xp += dado; r.nivel = nivelDe(r.xp); despues = r.nivel; sanear(e);
       if (o.repetible) { d.por.total = (d.por.total || 0) + dado; if (o.duelo) d.por.duelo = (d.por.duelo || 0) + dado; }
     });
+    if (dado) { try { G.emit('v18', { tipo: 'evo', especie: sp, xp: dado, fuente: fuente || '' }); } catch (e) { /* sin oyentes */ } }
     if (despues > antes) subio(sp, antes, despues, o.silencio);
     if (dado) revisarAlianza();
     return dado;
@@ -119,16 +216,22 @@ window.AVV18Evolucion = function (G) {
     toast(con(sp === 'vittata' ? TXT.subeV : TXT.sube, b), 3200);
     sonar('unlock');
     try { if (G.fx && G.fx.burst && G.S) { G.fx.burst(G.S.pos.x, G.S.pos.y + 1.4, G.S.pos.z, 'gold', 14); G.fx.burst(G.S.pos.x, G.S.pos.y + 0.8, G.S.pos.z, 'stars', 8); } } catch (e) { /* sin efectos */ }
-    if (sp === 'vittata') for (const et of ETAPAS) if (et.desde > 1 && a < et.desde && b >= et.desde) carta(TXT.etapa, et.nombre, et.frase, false, et.desde === 20 ? TXT.variante : '');
+    if (sp === 'vittata') { for (const et of ETAPAS) if (et.desde > 1 && a < et.desde && b >= et.desde) carta(TXT.etapa, et.nombre, et.frase, false, et.desde === 20 ? TXT.variante : ''); return; }
+    const i = etapaIdx(b);
+    if (i > etapaIdx(a)) { const et = ETAPAS_ESP[i], m = mejoraDe(sp, b); carta(TXT.etapa, [m.nombre, et.nombre], TXT['fr_' + et.id], false, m.secundaria && i === 2 ? TXT['sec_' + m.secundaria] : ''); }
   }
   // Hitos de una sola vez: se deducen del progreso V18 (así las partidas viejas cobran lo que ya hicieron, una vez)
   function hitos() {
-    const d = V.copia(), out = [], m = d.mundo || {}, ot = d.otorgados || {}, pf = perfil();
+    const d = V.copia(), out = [], m = d.mundo || {}, ot = d.otorgados || {}, inv = d.inv || {}, pf = perfil();
     if (m.puente_villa === 'reparado') out.push(['puente', XP.puente]);
     if (m.sombra_tormenta === 'dispersa') out.push(['sombra', XP.sombra]);
     if (m.serpiente_marana === 'deshecha') out.push(['serpiente', XP.serpiente]);
     if (m.sapo_encantado === 'despierto') out.push(['sapo', XP.sapo]);
     if (ot.reto_dos_cotorras) out.push(['reto_dos', XP.retoDos]);
+    if (ot.minigolf_villa_completo) out.push(['golf_completo', XP.golfCompleto]);
+    if (ot.minigolf_villa_oro || (m.minigolf_villa && m.minigolf_villa.medalla === 'oro')) out.push(['golf_oro', XP.golfOro]);
+    if ((inv.victoria_perfecta || 0) > 0) out.push(['perfecta', XP.perfecta]);
+    if ((Number(m.duelos_ganados) || 0) >= 3) out.push(['tres_duelos', XP.tresDuelos]);
     for (const k of Object.keys(m)) if (m[k] === 'recogida') out.push(['mat:' + k, XP.material]);
     for (const k of Object.keys(ot)) if (/^duelo_gana_/.test(k)) out.push(['gana:' + k.slice(11), XP.ganaEspecie]);
     for (const sp of Object.keys(d.especies || {})) if (sp !== 'vittata' && sp !== pf && rango(d.especies[sp]) >= rango('seleccionable')) out.push(['esp:' + sp, XP.especie]);
@@ -146,38 +249,61 @@ window.AVV18Evolucion = function (G) {
     return n;
   }
 
-  // ---------- Alianza Eco Protector ----------
-  const estadoAli = () => E().alianzas[ALI];
+  // ---------- Alianzas de bandada ----------
+  const estadoAli = id => E().alianzas[id || ALI];
   let avisoTO = 0;
   function revisarAlianza() {
-    if (estadoAli() !== 'bloqueada' || info('vittata').nivel < 10 || !elegible('arausiaca')) return false;
-    V.cambiarEvo(e => { sanear(e).alianzas[ALI] = 'disponible'; });
-    clearTimeout(avisoTO); avisoTO = setTimeout(() => { if (estadoAli() === 'disponible') toast(TXT.aliDisp, 5200); }, 3800); // después de los avisos del duelo
+    const nuevas = ALIANZAS.filter(a => estadoAli(a.id) === 'bloqueada' && info(a.lider).nivel >= 10 && elegible(a.apoyo));
+    if (!nuevas.length) return false;
+    V.cambiarEvo(e => { sanear(e); for (const a of nuevas) e.alianzas[a.id] = 'disponible'; });
+    const a0 = nuevas[0];
+    // después de los avisos del duelo
+    clearTimeout(avisoTO); avisoTO = setTimeout(() => { if (estadoAli(a0.id) === 'disponible') toast(a0.id === ALI ? TXT.aliDisp : TXT.aliDispG, 5200); }, 3800);
     return true;
   }
-  function desbloquearAlianza(silencio) {
-    if (estadoAli() !== 'disponible') return false;
-    V.cambiarEvo(e => { sanear(e); e.alianzas[ALI] = 'desbloqueada'; e.alianzaSel = ALI; e.marcas.desafio_eco = true; });
-    dar('vittata', XP.desafio, 'desafio', { silencio });
-    if (!silencio) { sonar('unlock'); carta(TXT.aliNueva, TXT.aliNombre, TXT.aliFrase, true); }
+  function desbloquearAlianza(id, silencio) {
+    // firma del prototipo: desbloquearAlianza(silencio)
+    if (typeof id !== 'string') { silencio = id; id = ALI; }
+    const a = aliDe(id); if (!a || estadoAli(id) !== 'disponible') return false;
+    V.cambiarEvo(e => { sanear(e); e.alianzas[id] = 'desbloqueada'; e.alianzaSel = id; e.marcas[a.marca || ('desafio:' + id)] = true; });
+    dar(a.lider, XP.desafio, 'desafio', { silencio });
+    if (!silencio) { sonar('unlock'); carta(TXT.aliNueva, a.nombre, a.frase, a.apoyo, a.explora); }
     return true;
   }
-  function elegirAlianza(on) {
-    if (estadoAli() !== 'desbloqueada') return false;
-    V.cambiarEvo(e => { sanear(e).alianzaSel = on ? ALI : null; }); return true;
+  // elegirAlianza(on) actúa sobre la alianza de la cotorra elegida (o Eco Protector); elegirAlianza(on, id) sobre esa
+  function elegirAlianza(on, id) {
+    if (!id) { const a = ALIANZAS.find(x => x.lider === V.seleccionada()); id = a ? a.id : ALI; }
+    if (estadoAli(id) !== 'desbloqueada') return false;
+    V.cambiarEvo(e => { sanear(e); if (on) e.alianzaSel = id; else if (e.alianzaSel === id) e.alianzaSel = null; }); return true;
   }
   function elegirVariante(v) {
-    if (VARIANTES.indexOf(v) < 0 || info('vittata').nivel < 20) return false;
+    if (VARIANTES.indexOf(v) < 0 || info('vittata').nivel < (v === 'maestro' ? 30 : 20)) return false;
     V.cambiarEvo(e => { reg(sanear(e), 'vittata').variante = v; }); return true;
   }
+  const textoApoyo = sp => (sp === 'arausiaca' ? TXT.apoyoEco : TXT.apoyo);
 
   // ---------- Lo que lee el duelo (combate.js) y el motor (habilidades.js) ----------
   function paraDuelo(sp) {
-    const r = info(sp), e = E(), o = { nivel: r.nivel, variante: r.variante, xp: r.xp };
-    if (sp === 'vittata' && e.alianzas[ALI] === 'desbloqueada' && e.alianzaSel === ALI) o.alianza = ALI;
+    const r = info(sp), e = E(), o = { nivel: r.nivel, variante: r.variante, xp: r.xp }, a = aliDe(e.alianzaSel);
+    if (a && a.lider === sp && e.alianzas[a.id] === 'desbloqueada') o.alianza = a.id;
     if (sp === 'arausiaca' && r.nivel >= 20) o.bonusBloqueo = 15;
     return o;
   }
+  // Destellos dorados del Maestro y habilidad secundaria del Guardián: se añaden DESPUÉS del efecto de siempre (que lee this.*)
+  function envolver(a, h, extra) {
+    const base = h.efecto;
+    a.efecto = function (ctx) { const r = base.call(this, ctx); try { extra.call(this, ctx); } catch (e) { /* sin ese efecto */ } return r; };
+    return a;
+  }
+  function brillo(ctx) { const yo = ctx.yo; if (ctx.fx) { ctx.fx('gold', yo.pos.x, yo.pos.y + 1.5, yo.pos.z); ctx.fx('stars', yo.pos.x, yo.pos.y + 1.9, yo.pos.z); } }
+  function secundaria(tec, ctx) {
+    const yo = ctx.yo, otro = ctx.otro, s = SECUNDARIA[tec]; if (!s || !yo) return;
+    if (s.desvia && otro && ctx.desviar) { const d = H.mira(yo, otro); ctx.desviar({ x: yo.pos.x + d.x * 0.5, y: yo.pos.y + 1, z: yo.pos.z + d.z * 0.5 }, d, s.desvia, s.cono); }
+    if (s.marca && otro) { otro.marcada = Math.max(otro.marcada || 0, s.marca); if (!(otro.marcaK > 0)) otro.marcaK = s.marcaK; }
+    if (s.desvio) yo.inv = Math.max(yo.inv || 0, s.desvio);
+    if (s.alaLista && yo.cd) yo.cd.golpe_ala = 0;
+  }
+  const r2 = x => Math.round(x * 100) / 100;
   function ajustar(f, h) {
     if (!f || !f.nivel || !h) return h;
     if (h.id === 'grito_yunque' && f.especie === 'vittata') {
@@ -186,13 +312,26 @@ window.AVV18Evolucion = function (G) {
       a.alcance = Math.min(TOPES_GRITO.alcanceMax, et.alcance); a.cono = et.cono; a.vel = et.vel; a.empuje = et.empuje;
       a.interrumpe = Math.min(TOPES_GRITO.interrumpeMax, et.interrumpe); a.coste = Math.max(TOPES_GRITO.costeMin, et.coste);
       a.cooldown = Math.max(TOPES_GRITO.cooldownMin, et.cooldown); a.desvia = !!et.desvia; a.etapa = et.id; a.nombreEtapa = et.nombre;
+      if (et.maestro) { a.maestro = true; envolver(a, h, function (ctx) { brillo(ctx); }); }
       return a;
     }
-    if (h.id === 'escudo_plumas' && f.especie === 'arausiaca' && f.nivel >= 10) { const a = Object.create(h); a.dura = 3; a.etapa = 'escudo_firme'; return a; }
-    return h;
+    if (h.id === 'escudo_plumas' && f.especie === 'arausiaca') {
+      if (f.nivel < 10) return h;
+      const a = Object.create(h); a.dura = 3; a.etapa = 'escudo_firme';
+      if (f.nivel >= 30) { a.cooldown = 6.5; a.maestro = true; a.etapa = 'escudo_maestro'; envolver(a, h, function (ctx) { brillo(ctx); }); }
+      return a;
+    }
+    // Las otras 32 especies: solo su propio poder (nunca básicos, alianzas ni el poder de otra)
+    const m = MEJORA[h.id], i = etapaIdx(f.nivel);
+    if (!m || !i || f.especie === 'vittata' || f.especie === 'arausiaca' || H.poderDe(f.especie) !== h.id) return h;
+    const et = ETAPAS_ESP[i], a = Object.create(h);
+    if (m[0] && typeof h[m[0]] === 'number') a[m[0]] = r2(h[m[0]] * Math.min(m[1], et.k));
+    a.cooldown = r2(Math.max(h.cooldown * 0.85, h.cooldown * et.cd)); a.etapa = et.id; a.nombreEtapa = et.nombre;
+    if (et.secundaria || et.maestro) { const tec = h.tecnica; a.secundaria = tec; a.maestro = !!et.maestro; envolver(a, h, function (ctx) { secundaria(tec, ctx); if (et.maestro) brillo(ctx); }); }
+    return a;
   }
   function lineaHud(f) {
-    const r = info(f.especie), n = f.nivel || r.nivel, et = f.especie === 'vittata' ? etapaDe(n, f.variante).nombre : ((H.get(f.poder) || {}).nombre || '');
+    const r = info(f.especie), n = f.nivel || r.nivel, et = f.especie === 'vittata' ? etapaDe(n, f.variante).nombre : (etapaIdx(n) ? ETAPAS_ESP[etapaIdx(n)].nombre : ((H.get(f.poder) || {}).nombre || ''));
     const a = T(r.nivel), b = r.nivel >= NIVEL_MAX ? a + 1 : T(r.nivel + 1);
     return { nivel: con(TXT.nv, n), etapa: et, frac: r.nivel >= NIVEL_MAX ? 1 : Math.max(0, Math.min(1, (r.xp - a) / (b - a))) };
   }
@@ -203,7 +342,8 @@ window.AVV18Evolucion = function (G) {
 
   // ---------- Eco Protector en el motor de habilidades (API pública registrar) ----------
   H.registrar({ id: ALI, nombre: 'Eco Protector', alianza: true, tecnica: 'pico+plumas', coste: 60, cooldown: 14, dura: 2, bloqueaGrito: 5, apoyo: 'arausiaca', fx: 'onda',
-    puede: f => !(f.escudo > 0), // no se encadena con un escudo ya puesto
+    // no se encadena con un escudo ya puesto
+    puede: f => !(f.escudo > 0),
     efecto(ctx) {
       const yo = ctx.yo, g = ajustar(yo, H.get('grito_yunque'));
       const r = g.efecto.call(g, ctx) || {}; // la onda de la etapa actual de Vittata (mismo efecto que el grito)
@@ -216,9 +356,94 @@ window.AVV18Evolucion = function (G) {
       return { ok: true, acierto: null, dir: r.dir };
     } });
 
+  // ---------- Las otras 5 alianzas: cada una encadena efectos que ya existen de sus dos cotorras (sin modelos ni motor nuevos) ----------
+  // Común: coste 60, recarga 14 s, el poder propio de la líder queda en espera 5 s, aviso de apoyo con el retrato de la compañera.
+  function cierre(def, ctx, extra) {
+    const yo = ctx.yo;
+    if (yo.cd && yo.poder) yo.cd[yo.poder] = Math.max(yo.cd[yo.poder] || 0, def.bloquea);
+    ctx.apoyo(def.apoyo); ctx.sonar('unlock');
+    ctx.poder(Object.assign({ id: def.id, de: yo.id, apoyo: def.apoyo, dura: def.dura, origen: { x: yo.pos.x, y: yo.pos.y + 0.9, z: yo.pos.z } }, extra || {}));
+  }
+  const conNumeros = (id, nums) => Object.assign(Object.create(H.get(id)), nums);
+  const ALI_BASE = { alianza: true, coste: 60, cooldown: 14, bloquea: 5 };
+  // Lluvia Guiada (barbadensis + xantholora, NATURALEZA): marca 2 s (las semillas la siguen fuerte) y la lluvia de la etapa actual.
+  H.registrar(Object.assign({}, ALI_BASE, { id: 'lluvia_guiada', nombre: 'Lluvia Guiada', tecnica: 'pico+ojos', lider: 'barbadensis', apoyo: 'xantholora', dura: 2, fx: 'leaves',
+    efecto(ctx) {
+      const { yo, otro } = ctx;
+      otro.marcada = Math.max(otro.marcada || 0, this.dura); otro.marcaK = Math.max(otro.marcaK || 0, 0.8);
+      ctx.fx('gold', otro.pos.x, otro.pos.y + 1.4, otro.pos.z);
+      const l = ajustar(yo, H.get('lluvia_semillas')); l.efecto.call(l, ctx);
+      cierre(this, ctx); return { ok: true };
+    } }));
+  // Viento Cruzado (agilis + farinosa, VIENTO): quiebro (0,6 s sin que te den) y, 0,3 s después, Ala fuerte de 3 m que rompe escudos.
+  H.registrar(Object.assign({}, ALI_BASE, { id: 'viento_cruzado', nombre: 'Viento Cruzado', tecnica: 'alas+alas', lider: 'agilis', apoyo: 'farinosa', dura: 0.6, remata: 0.3, alcance: 3, fx: 'feathers',
+    efecto(ctx) {
+      const yo = ctx.yo, q = ajustar(yo, H.get('quiebro')), def = this; q.efecto.call(q, ctx);
+      ctx.despues(def.remata, () => { const a = conNumeros('ala_fuerte', { alcance: def.alcance }); a.efecto.call(a, ctx); });
+      cierre(this, ctx); return { ok: true };
+    } }));
+  // Destello del Pitón (guildingii + versicolor, LUZ): abanico (deslumbra 1 s si está a ≤ 8 m) y sus tiros van lentos 2 s.
+  H.registrar(Object.assign({}, ALI_BASE, { id: 'destello_piton', nombre: 'Destello del Pitón', tecnica: 'plumas+ojos', lider: 'guildingii', apoyo: 'versicolor', dura: 2, fx: 'stars',
+    efecto(ctx) {
+      const { yo, otro } = ctx, ab = ajustar(yo, H.get('abanico_colores')), r = ab.efecto.call(ab, ctx) || {};
+      otro.lenta = Math.max(otro.lenta || 0, this.dura);
+      ctx.fx('ring', otro.pos.x, otro.pos.y + 1.0, otro.pos.z);
+      cierre(this, ctx); return { ok: true, acierto: r.acierto };
+    } }));
+  // Marea de Lluvia (dufresniana + diadema, AGUA): escudo de lluvia de 2 s (frena como la Gota de lluvia) y una semilla de río.
+  H.registrar(Object.assign({}, ALI_BASE, { id: 'marea_lluvia', nombre: 'Marea de Lluvia', tecnica: 'plumas+pico', lider: 'dufresniana', apoyo: 'diadema', dura: 2, fx: 'escudo',
+    // no se encadena con un escudo ya puesto
+    puede: f => !(f.escudo > 0),
+    efecto(ctx) {
+      const yo = ctx.yo, g = H.get('gota_lluvia');
+      yo.escudo = this.dura; yo.alasT = Math.min(this.dura, 0.9); yo.escudoE = { reduceEmpuje: g.reduceEmpuje, reduceMareo: g.reduceMareo };
+      ctx.escudo(yo, this.dura);
+      const s = H.get('semilla_rio'); s.efecto.call(s, ctx);
+      cierre(this, ctx); return { ok: true };
+    } }));
+  // Ráfaga Volcánica (finschi + auropalliata, FUEGO): la ráfaga y, 0,75 s después, una onda de volcán corta (6 m, empuje 16, sin plumas).
+  H.registrar(Object.assign({}, ALI_BASE, { id: 'rafaga_volcan', nombre: 'Ráfaga Volcánica', tecnica: 'alas+pico', lider: 'finschi', apoyo: 'auropalliata', dura: 1, tras: 0.75, fx: 'onda',
+    efecto(ctx) {
+      const yo = ctx.yo, rf = ajustar(yo, H.get('rafaga')), def = this; rf.efecto.call(rf, ctx);
+      ctx.despues(def.tras, () => { const v = conNumeros('voz_volcan', { carga: 0.2, alcance: 6, empuje: 16, pico: 0.6 }); v.efecto.call(v, ctx); });
+      ctx.fx('gold', yo.pos.x, yo.pos.y + 1.0, yo.pos.z);
+      cierre(this, ctx); return { ok: true };
+    } }));
+
+  // ---------- La alianza explorando: al usar tu poder con la G (explorar.js emite v18poder explorando), ayuda la compañera ----------
+  let ultimaExplora = null;
+  const EXPLORA = {
+    eco_protector(p) { if (G.v18fx && G.v18fx.escudo) G.v18fx.escudo(null, 3); G.fx.burst(p.x, p.y + 1, p.z, 'feathers', 10); return 1; },
+    lluvia_guiada(p) {
+      let best = null, bd = 40;
+      try { for (const it of G.interaccion.list) { if (it.visible && !it.visible()) continue; const d = Math.hypot(it.x - p.x, it.z - p.z); if (d < bd) { bd = d; best = it; } } } catch (e) { /* sin interacción */ }
+      if (best) { const y = G.terreno && G.terreno.height ? G.terreno.height(best.x, best.z) + 1 : p.y; G.fx.burst(best.x, y, best.z, 'leaves', 10); G.fx.burst(best.x, y + 0.4, best.z, 'gold', 8); G.fx.ringFx(best.x, y, best.z, 2, 0.9, 0.6); return 1; }
+      G.fx.burst(p.x, p.y + 1, p.z, 'leaves', 8); return 0;
+    },
+    viento_cruzado(p) { G.fx.ringFx(p.x, p.y + 0.4, p.z, 5, 0.7, 0.5); G.fx.burst(p.x, p.y + 0.5, p.z, 'leaves', 16); G.fx.burst(p.x, p.y + 0.1, p.z, 'dust', 12); return 1; },
+    destello_piton(p) {
+      let n = 0;
+      try { for (const r of ((G.marana && G.marana.rastros) || [])) { if (r.limpio || Math.hypot(r.x - p.x, r.z - p.z) > 90) continue; const y = G.terreno.height(r.x, r.z) + 1.2; G.fx.burst(r.x, y, r.z, 'stars', 10); G.fx.ringFx(r.x, y, r.z, 2, 0.9, 0.6); n++; } } catch (e) { /* sin maraña */ }
+      G.fx.burst(p.x, p.y + 1.1, p.z, 'stars', 12); return n;
+    },
+    marea_lluvia(p) { if (G.v18fx && G.v18fx.escudo) G.v18fx.escudo(null, 3); if (G.fx.drops) G.fx.drops(p.x, p.y + 2.2, p.z, 1.6, p.y); G.fx.burst(p.x, p.y + 1, p.z, 'bubbles', 10); return 1; },
+    rafaga_volcan(p) { G.fx.burst(p.x, p.y + 0.8, p.z, 'gold', 16); G.fx.burst(p.x, p.y + 0.1, p.z, 'dust', 10); G.fx.ringFx(p.x, p.y + 0.4, p.z, 3, 0.6, 0.6); return 1; }
+  };
+  function explorando(ev) {
+    if (mudo || !ev || !ev.explorando || ev.de !== 'jugador' || ev.alianza) return null;
+    const sp = V.seleccionada() || perfil(), a = aliDe(E().alianzaSel);
+    if (!a || a.lider !== sp || E().alianzas[a.id] !== 'desbloqueada' || ev.id !== H.poderDe(sp)) return null;
+    const p = ev.origen || (G.S && G.S.pos) || { x: 0, y: 0, z: 0 };
+    let n = 0; try { n = EXPLORA[a.id](p); } catch (e) { /* sin efectos */ }
+    ultimaExplora = { id: a.id, apoyo: a.apoyo, n, t: Date.now() };
+    sonar('pickup', 2);
+    return ultimaExplora;
+  }
+
   // ---------- Avisos: tarjeta dorada que no bloquea el juego ----------
   let cartaEl = null, cartaTO = 0;
-  function carta(tit, nombre, frase, alianza, extra) {
+  // estilos de la tarjeta y de la ficha (Mis cotorras puede abrirse antes de ninguna tarjeta)
+  function css() {
     if (!document.getElementById('v18-evo-css')) {
       const st = document.createElement('style'); st.id = 'v18-evo-css';
       // arriba (sobre el aviso y el panel del duelo, que al terminar ya dice lo mismo): abajo tapaba los botones grandes en el móvil
@@ -227,14 +452,19 @@ window.AVV18Evolucion = function (G) {
         '#v18-evo-carta h3{margin:0;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:#8a5a20}#v18-evo-carta b{display:block;font-size:24px;margin:2px 0 4px}#v18-evo-carta p{margin:0;font-size:14px;line-height:1.3}' +
         '#v18-evo-carta img{width:44px;height:44px;border-radius:50%;float:left;margin-right:8px;background:#fff8}' +
         '.v18-evo-f{display:block;font-size:12px;margin-top:3px}.v18-evo-bar{display:block;height:4px;border-radius:2px;background:#0003;overflow:hidden;margin:2px 6px}.v18-evo-bar b{display:block;height:100%;background:#e0a526}' +
+        '.v18-evo-m{display:block;font-size:11px;line-height:1.25;margin:1px 2px;opacity:.9}' +
         '.v18-evo-et{display:inline-block;font-size:10px;padding:1px 5px;border-radius:8px;background:#ffe39a;color:#3b2a14;margin:2px 1px}.v18-evo-et.no{background:#0002;color:inherit;opacity:.6}' +
         '.v18-evo-x{margin-top:8px;font-size:14px}.v18-evo-x .btn{min-height:44px}' +
         '@media (min-width:761px){#v18-evo-carta{top:calc(env(safe-area-inset-top,0px) + 96px)}}' + // en la computadora el aviso (#toast, capa superior) ocupa el borde de arriba
         '@keyframes v18evo{from{transform:translateY(-16px) scale(.9);opacity:0}to{transform:none;opacity:1}}';
       document.head.appendChild(st);
     }
+  }
+  function carta(tit, nombre, frase, alianza, extra) {
+    css();
     if (!cartaEl) { cartaEl = document.createElement('div'); cartaEl.id = 'v18-evo-carta'; cartaEl.setAttribute('role', 'status'); document.body.appendChild(cartaEl); }
-    cartaEl.innerHTML = (alianza ? '<img src="assets/retratos/v18/arausiaca.png" alt="">' : '') + `<h3>${esc(tit)}</h3><b>${esc(nombre)}</b><p><span>${esc(frase)}</span>${extra ? ` <span>${esc(extra)}</span>` : ''}</p>`; // un texto por nodo: el traductor EN los encuentra
+    // un texto por nodo: el traductor EN los encuentra
+    cartaEl.innerHTML = (alianza ? `<img src="assets/retratos/v18/${esc(typeof alianza === 'string' ? alianza : 'arausiaca')}.png" alt="">` : '') + `<h3>${esc(tit)}</h3><b>${Array.isArray(nombre) ? nombre.map(x => `<span>${esc(x)}</span>`).join(' · ') : esc(nombre)}</b><p><span>${esc(frase)}</span>${extra ? ` <span>${esc(extra)}</span>` : ''}</p>`;
     cartaEl.hidden = false; cartaEl.style.animation = 'none'; void cartaEl.offsetWidth; cartaEl.style.animation = '';
     try { if (G.fx && G.fx.burst && G.S) G.fx.burst(G.S.pos.x, G.S.pos.y + 1.6, G.S.pos.z, 'gold', 16); } catch (e) { /* sin efectos */ }
     clearTimeout(cartaTO); cartaTO = setTimeout(quitarCarta, 5200);
@@ -242,35 +472,55 @@ window.AVV18Evolucion = function (G) {
   }
   function quitarCarta() { clearTimeout(cartaTO); if (cartaEl) { cartaEl.remove(); cartaEl = null; } }
 
-  // ---------- Mis cotorras (descubrir.js): ficha de nivel y fila de alianza ----------
+  // ---------- Mis cotorras (descubrir.js): ficha de nivel, XP hasta el siguiente, etapa, lo que mejora y alianza ----------
+  const retrato = (sp, px) => `<img src="assets/retratos/v18/${esc(sp)}.png" alt="" width="${px}" height="${px}" style="vertical-align:middle;margin-right:4px;border-radius:50%">`;
+  const estadoTxt = st => (st === 'desbloqueada' ? TXT.aliDesb : st === 'disponible' ? TXT.aliDispE : TXT.aliBloq);
+  function htmlMejora(sp, r) {
+    const m = r.mejora; if (!m.cambios.length && !m.maestro) return '';
+    let h = `<span class="v18-evo-m"><span>${esc(TXT.mejora)}</span> ` + m.cambios.map(c => `<span><span>${esc(TXT['k_' + c.k])}</span> ${c.pct > 0 ? '+' : '−'}${Math.abs(c.pct)} %</span>`).join(' · ');
+    if (m.secundaria) h += ` · <span>${esc(TXT['sec_' + m.secundaria])}</span>`;
+    if (m.maestro) h += ` · <span>${esc(TXT.maestroFx)}</span>`;
+    return h + '</span>';
+  }
   function htmlFicha(sp) {
+    try { css(); } catch (e) { /* sin documento */ }
     const r = info(sp), L = lineaHud({ especie: sp, nivel: r.nivel, variante: r.variante, poder: H.poderDe(sp) });
     let h = `<span class="v18-evo-f"><span>${esc(L.nivel)}</span> · <span>${esc(L.etapa)}</span></span><i class="v18-evo-bar"><b style="width:${Math.round(L.frac * 100)}%"></b></i>`;
+    h += `<span class="v18-evo-m">${r.sig == null ? `<span>${esc(TXT.max)}</span>` : `<span>${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span>`}</span>`;
     if (sp === 'vittata') h += '<span style="display:block">' + ETAPAS.slice(1).map(et => r.nivel >= et.desde ? `<span class="v18-evo-et">${esc(et.nombre)}</span>` : `<span class="v18-evo-et no"><span>${esc(et.nombre)}</span> · <span>${esc(con(TXT.nivel, et.desde))}</span></span>`).join('') + '</span>';
+    else {
+      h += htmlMejora(sp, r);
+      if (sp === V.seleccionada()) h += '<span style="display:block">' + ETAPAS_ESP.slice(1).map(et => r.nivel >= et.desde ? `<span class="v18-evo-et">${esc(et.nombre)}</span>` : `<span class="v18-evo-et no"><span>${esc(et.nombre)}</span> · <span>${esc(con(TXT.nivel, et.desde))}</span></span>`).join('') + '</span>';
+    }
+    if (r.alianza) { const a = aliDe(r.alianza); h += `<span class="v18-evo-et${r.alianzaEstado === 'desbloqueada' ? '' : ' no'}" data-v18ficha-ali="${a.id}"><span>${esc(a.nombre)}</span> · <span>${esc(r.rol === 'lider' ? TXT.aliLider : TXT.aliApoyo)}</span> · <span>${esc(estadoTxt(r.alianzaEstado))}</span></span>`; }
     return h;
   }
   function htmlExtra() {
-    const e = E(), v = info('vittata'), sel = V.seleccionada(), st = e.alianzas[ALI];
+    const e = E(), v = info('vittata'), sel = V.seleccionada();
     let h = '';
     if (sel === 'vittata' && v.nivel >= 20) {
-      const cur = v.variante || 'dirigido';
-      h += `<div class="row v18-evo-x"><span>${esc(TXT.varTit)}</span> ` + VARIANTES.map(x => `<button class="btn${cur === x ? '' : ' ghost'}" type="button" data-v18var="${x}" aria-pressed="${cur === x}">${esc(ETAPAS[x === 'amplificado' ? 1 : 2].nombre)}</button>`).join(' ') + '</div>';
+      const cur = v.variante || (v.nivel >= 30 ? 'maestro' : 'dirigido'), vs = VARIANTES.filter(x => x !== 'maestro' || v.nivel >= 30), et = { amplificado: 1, dirigido: 2, maestro: 3 };
+      h += `<div class="row v18-evo-x"><span>${esc(TXT.varTit)}</span> ` + vs.map(x => `<button class="btn${cur === x ? '' : ' ghost'}" type="button" data-v18var="${x}" aria-pressed="${cur === x}">${esc(ETAPAS[et[x]].nombre)}</button>`).join(' ') + '</div>';
     }
-    if (st === 'desbloqueada' && sel === 'vittata') {
-      const on = e.alianzaSel === ALI;
-      h += `<div class="row v18-evo-x"><span>${esc(TXT.aliTit)}</span> <button class="btn${on ? '' : ' ghost'}" type="button" data-v18ali="1" aria-pressed="${on}"><img src="assets/retratos/v18/arausiaca.png" alt="" width="28" height="28" style="vertical-align:middle;margin-right:4px">${esc(TXT.aliNombre)}</button> <span>${esc(on ? TXT.aliOn : TXT.aliOff)}</span></div>`;
-    } else if (st === 'disponible') h += `<p class="v18-evo-x">${esc(TXT.aliReto)}</p>`;
-    else if (st === 'bloqueada') h += `<p class="v18-evo-x" style="opacity:.75">${esc(TXT.aliReq)}</p>`;
+    const a = ALIANZAS.find(x => x.lider === sel); if (!a) return h;
+    const st = e.alianzas[a.id], eco = a.id === ALI;
+    if (st === 'desbloqueada') {
+      const on = e.alianzaSel === a.id;
+      h += `<div class="row v18-evo-x"><span>${esc(TXT.aliTit)}</span> <button class="btn${on ? '' : ' ghost'}" type="button" data-v18ali="${a.id}" aria-pressed="${on}">${retrato(a.apoyo, 28)}${esc(a.nombre)}</button> <span>${esc(on ? TXT.aliOn : TXT.aliOff)}</span></div>`;
+      h += `<p class="v18-evo-x" style="opacity:.85">${esc(a.explora)}</p>`;
+    } else if (st === 'disponible') h += eco ? `<p class="v18-evo-x">${esc(TXT.aliReto)}</p>` : `<p class="v18-evo-x"><b>${esc(a.nombre)}</b>: <span>${esc(TXT.aliRetoG)}</span></p>`;
+    else h += eco ? `<p class="v18-evo-x" style="opacity:.75">${esc(TXT.aliReq)}</p>` : `<p class="v18-evo-x" style="opacity:.75">${retrato(a.apoyo, 28)}<b>${esc(a.nombre)}</b>: <span>${esc(TXT.aliReqG)}</span></p>`;
     return h;
   }
   function enlazar(card) {
     if (!card) return;
     const otra = () => setTimeout(() => { try { const c = G.ui.$('card'); if (G.v18descubrir && c && !c.hidden) G.v18descubrir.abrirSeleccion(); } catch (er) { /* tarjeta */ } }, 0);
     card.querySelectorAll('[data-v18var]').forEach(b => { b.onclick = () => { elegirVariante(b.getAttribute('data-v18var')); sonar('pickup', 2); otra(); }; });
-    card.querySelectorAll('[data-v18ali]').forEach(b => { b.onclick = () => { elegirAlianza(E().alianzaSel !== ALI); sonar('pickup', 3); otra(); }; });
+    card.querySelectorAll('[data-v18ali]').forEach(b => { b.onclick = () => { const id = aliDe(b.getAttribute('data-v18ali')) ? b.getAttribute('data-v18ali') : ALI; elegirAlianza(E().alianzaSel !== id, id); sonar('pickup', 3); otra(); }; });
   }
 
   // ---------- Modo de prueba documentado (para videos y equilibrio) ----------
+  // prueba({ especie, nivel | xp, variante, alianza: true | '<id>' }) · prueba(null) restaura lo de antes
   function prueba(o) {
     if (o === null) {
       const res = E().respaldo; if (!res) return false;
@@ -283,7 +533,7 @@ window.AVV18Evolucion = function (G) {
       if (!e.respaldo) e.respaldo = JSON.stringify({ esp: e.esp, alianzas: e.alianzas, alianzaSel: e.alianzaSel });
       const r = reg(e, sp); r.xp = Math.max(0, Math.min(XP_MAX, o.xp != null ? o.xp : T(Math.max(1, Math.min(NIVEL_MAX, o.nivel || 1)))));
       if (o.variante) r.variante = o.variante;
-      if (o.alianza) { e.alianzas[ALI] = 'desbloqueada'; e.alianzaSel = ALI; }
+      if (o.alianza) { const id = aliDe(o.alianza) ? o.alianza : ((ALIANZAS.find(x => x.lider === sp) || {}).id || ALI); e.alianzas[id] = 'desbloqueada'; e.alianzaSel = id; }
       e.prueba = true; sanear(e);
     });
     try { console.info('[V18.2] ' + TXT.prueba + ': ' + JSON.stringify(info(sp))); } catch (e) { /* consola */ }
@@ -299,13 +549,15 @@ window.AVV18Evolucion = function (G) {
     if (ev.tipo === 'win' && ev.de === 'jugador') {
       ultimo = { xp: 0, sube: 0 };
       ultimo.xp = dar(sp, XP.gana, 'duelo', { repetible: true, duelo: true, cuenta: 'victorias', mitadDesde: TOPE.mitadDesde });
-      if (sp === 'vittata' && (ev.interrupciones || 0) >= 2) ultimo.xp += desbloquearAlianza() ? XP.desafio : 0;
+      // Desafío de cada alianza «disponible» de esta líder: Eco Protector, 2 interrupciones; las otras, 2 usos del poder propio
+      for (const a of ALIANZAS) if (a.lider === sp && estadoAli(a.id) === 'disponible' && ((a.reto === 'interrupciones' ? ev.interrupciones : ev.poderJ) || 0) >= 2) ultimo.xp += desbloquearAlianza(a.id) ? XP.desafio : 0;
     } else if (ev.tipo === 'loss' && ev.a === 'jugador') {
       ultimo = { xp: 0, sube: 0 };
       if ((ev.quitadas || 0) >= TOPE.pierdeQuitadas && (ev.dura || 0) >= TOPE.pierdeDura) ultimo.xp = dar(sp, XP.pierde, 'duelo', { repetible: true, duelo: true });
     } else return;
     if (info(sp).nivel > n0) ultimo.sube = info(sp).nivel;
   });
+  G.on('v18poder', explorando);
   G.on('v18minigolf', ev => {
     if (mudo || !ev || ev.tipo !== 'nido') return;
     dar(V.seleccionada() || perfil(), XP.golfNido + (ev.nuevo ? XP.golfRecord : 0), 'golf', { repetible: true, cuenta: 'golf', max: TOPE.golfDia });
@@ -417,8 +669,8 @@ window.AVV18Evolucion = function (G) {
       check('Etapas: nv 1 = el grito de hoy (mismo objeto); nv 10 = 9 m ±42° 5,5 s; nv 20 = 11 m ±26° onda 22 m/s 6 s y desvía; nv 25 Amplificado = 9 m',
         e1 === gr && e10.alcance === 9 && e10.cono === 0.74 && e10.cooldown === 5.5 && e10.coste === 35 && e20.alcance === 11 && e20.cono === 0.9 && e20.vel === 22 && e20.cooldown === 6 && e20.coste === 40 && e20.desvia && !e10.desvia && e25a.alcance === 9,
         JSON.stringify({ 10: [e10.alcance, e10.cono, e10.cooldown], 20: [e20.alcance, e20.cono, e20.vel, e20.cooldown] }));
-      check('Sin f.nivel (IA, duelo de 2, minigolf, amenazas) el motor recibe el mismo objeto; otras especies no cambian',
-        ajustar({ especie: 'vittata' }, gr) === gr && H.ver({ especie: 'vittata' }, gr) === gr && ajustar({ especie: 'agilis', nivel: 30 }, H.get('quiebro')) === H.get('quiebro') && ajustar({ especie: 'ventralis', nivel: 30 }, gr) === gr);
+      check('Sin f.nivel (IA, duelo de 2, minigolf, amenazas) el motor recibe el mismo objeto; ni básicos ni el poder de otra especie cambian',
+        ajustar({ especie: 'vittata' }, gr) === gr && H.ver({ especie: 'vittata' }, gr) === gr && ajustar({ especie: 'agilis', nivel: 9 }, H.get('quiebro')) === H.get('quiebro') && ajustar({ especie: 'agilis', nivel: 30 }, H.get('ala_fuerte')) === H.get('ala_fuerte') && ajustar({ especie: 'agilis', nivel: 30 }, H.get('golpe_ala')) === H.get('golpe_ala') && ajustar({ especie: 'ventralis', nivel: 30 }, gr) === gr);
       const topes = [1, 9, 10, 19, 20, 30, 40].map(n => A(n)).concat([e25a]);
       check('Topes en todas las etapas: espera ≥ 5 s, coste ≥ 35, alcance ≤ 11 m, interrupción ≤ 1,4 s, esquivable (≥ 0,43 s en llegar)',
         topes.every(h => h.cooldown >= 5 && h.coste >= 35 && h.alcance <= 11 && h.interrumpe <= 1.4 && h.alcance / h.vel >= 0.43), topes.map(h => h.alcance + '/' + h.vel).join(' '));
@@ -548,6 +800,121 @@ window.AVV18Evolucion = function (G) {
           const bA = card.querySelector('[data-v18ali]'); if (bA) bA.click(); okM = okM && E().alianzaSel === null; G.ui.hideCard(); elegirAlianza(true); }
         check('Mis cotorras: nivel, barra de XP, etapas (bloqueadas con «Nivel 20») y la fila de alianza que se activa y desactiva', okM, txt.slice(0, 160)); }
 
+      // ===================== V18.2 producto (bloque B.1): niveles 1–40, las 6 alianzas, XP de cada actividad y migración =====================
+      mudo = false; quitarCarta();
+      // 11. Curva completa: cada nivel del 1 al 40 empieza justo en T(n); la ficha sabe la XP que falta
+      { let ok = true; for (let n = 1; n <= NIVEL_MAX; n++) { if (nivelDe(T(n)) !== n || (n > 1 && nivelDe(T(n) - 1) !== n - 1)) ok = false; }
+        reset(); prueba({ especie: 'agilis', xp: T(22) + 5 }); const ia = info('agilis');
+        check('Niveles 1–40: cada nivel empieza en T(n); la ficha da nivel 22, «faltan» = T(23) − XP y etapa Guardián', ok && ia.nivel === 22 && ia.falta === T(23) - T(22) - 5 && ia.sig === T(23) && ia.etapa === 'guardian' &&
+          info('agilis').alianza === 'viento_cruzado' && prueba({ especie: 'agilis', nivel: 40 }).falta === 0 && info('agilis').sig === null, JSON.stringify(ia)); }
+      // 12. Las 34 especies del catálogo base: un poder propio cada una y cuatro etapas medibles (números del motor, con topes)
+      { const propios = H.lista().filter(h => !h.basico && !h.alianza && h.especies && h.especies.length), malos = [];
+        for (const h of propios) {
+          const sp = h.especies[0]; if (sp === 'vittata' || sp === 'arausiaca') continue;
+          const m = MEJORA[h.id], k = m && m[0]; if (!m) { malos.push(sp + ': sin tabla'); continue; }
+          const v = {}; for (const n of [1, 9, 10, 19, 20, 29, 30, 40]) v[n] = ajustar({ especie: sp, nivel: n }, h);
+          const eps = 1e-9, cdOk = v[10].cooldown < h.cooldown && v[20].cooldown < v[10].cooldown && v[30].cooldown < v[20].cooldown && v[40].cooldown === v[30].cooldown && v[19].cooldown === v[10].cooldown && v[30].cooldown >= h.cooldown * 0.85 - eps;
+          const kOk = !k || (v[10][k] > h[k] && v[20][k] >= v[10][k] && v[30][k] >= v[20][k] && v[30][k] <= h[k] * m[1] + eps);
+          const etOk = v[1] === h && v[9] === h && v[10].coste === h.coste && v[30].coste === h.coste && !v[10].secundaria && v[20].secundaria === h.tecnica && !v[20].maestro && v[30].maestro && v[29].etapa === 'guardian' && v[10].etapa === 'despertar';
+          if (!cdOk || !kOk || !etOk) malos.push(sp + (cdOk ? '' : ' espera') + (kOk ? '' : ' ' + k) + (etOk ? '' : ' etapas'));
+        }
+        const sps = new Set(propios.map(h => h.especies[0]));
+        check('Las 34 especies del catálogo base tienen poder propio; en las 32 sin etapas propias, Despertar/Guardián/Maestro mejoran número y espera (con tope, sin bajar el coste) y suman secundaria y destellos',
+          propios.length === 34 && sps.size === 34 && !sps.has('martinicana') && !sps.has('violacea') && !malos.length, propios.length + ' poderes · ' + (malos.join(', ') || 'ok')); }
+      // 13. Lo que se nota al jugar: la habilidad secundaria de cada técnica (Guardián) y los destellos del Maestro, medidos en el motor
+      { const par = (sp, nivel) => {
+          const reg = { fx: [], desv: 0 }, yo = H.luchador({ id: 'jugador', especie: sp, nivel, pos: { x: 0, y: 0, z: 0 }, kb: { x: 0, z: 0, t: 0 }, mira: () => ({ x: 1, z: 0 }) });
+          const otro = H.luchador({ id: 'rival', especie: 'vittata', ia: true, pos: { x: 4, y: 0, z: 0 }, kb: { x: 0, z: 0, t: 0 }, mov: { x: 0, z: 0, t: 0 } });
+          const ctx = { otro, fx: t => reg.fx.push(t), desviar: () => { reg.desv++; return 0; }, despues: (s, fn) => fn(), golpear: () => true, lanzar: () => {}, onda: () => {}, escudo: () => {}, poder: () => {}, sonar: () => {}, apoyo: () => {} };
+          yo.cd.golpe_ala = 0.5; const r = H.usar(yo, H.poderDe(sp), ctx); return { r, yo, otro, reg };
+        };
+        const pico = [10, 20].map(n => par('barbadensis', n).reg.desv), ojos = [10, 20].map(n => par('versicolor', n).otro.marcada || 0);
+        const plumas = [10, 20].map(n => par('albifrons', n).yo.inv || 0), alas = [10, 20].map(n => par('agilis', n).yo.cd.golpe_ala);
+        const oro = [20, 30].map(n => par('barbadensis', n).reg.fx.filter(t => t === 'gold').length);
+        check('Guardián (nv 20): PICO deshace semillas, OJOS marca 1,5 s, PLUMAS desvío 0,4 s, ALAS ala lista; en nv 10 no. Maestro (nv 30): destellos dorados',
+          pico[0] === 0 && pico[1] === 1 && ojos[0] === 0 && ojos[1] >= 1.5 && plumas[0] < 0.4 && plumas[1] >= 0.4 && alas[0] > 0 && alas[1] === 0 && oro[0] === 0 && oro[1] >= 1,
+          JSON.stringify({ pico, ojos, plumas, alas, oro })); }
+      // En el duelo real: el Quiebro de agilis en nv 20 deja el ala lista y va más rápido; en nv 1 es el de siempre
+      { const q = nivel => { Cb.iniciar({ sinCuenta: true, especie: 'agilis', evo: { nivel } }); fresco(); quieta(6); cara(1, 0); const j = C().j; j.cd.golpe_ala = 0.5; const l = H.listo(j, 'quiebro'); Cb.usar(j, 'quiebro'); return { ala: j.cd.golpe_ala, vel: l.h && l.h.vel, cd: j.cd.quiebro, nv: j.nivel }; };
+        const q1 = q(1), q20 = q(20); Cb.salir();
+        check('Duelo real: Quiebro nv 20 = más rápido, menos espera y el ala lista al momento; nv 1 = igual que hoy', q1.vel === 13 && q1.cd === 4 && q1.ala > 0 && q20.vel > 13 && q20.cd < 4 && q20.ala === 0 && q20.nv === 20, JSON.stringify({ q1, q20 })); }
+      // 14. Las 6 alianzas: requisitos, desafío, el duelo (coste, recarga, apoyo, efecto, ≤ 1 pluma) y la exploración
+      { const res = {}, ondas = () => C().stats.ondas, mias = () => C().balas.filter(b => b.de === C().j).length;
+        check('Hay 6 alianzas, cada una con líder y compañera distintas del catálogo base y un elemento distinto (§6, §9)', ALIANZAS.length === 6 && new Set(ALIANZAS.map(a => a.elemento)).size === 6 &&
+          new Set(ALIANZAS.map(a => a.lider)).size === 6 && ALIANZAS.every(a => H.get(a.id) && H.get(a.id).alianza && a.lider !== a.apoyo && H.poderDe(a.lider) && H.poderDe(a.apoyo)), ALIANZAS.map(a => a.id).join(','));
+        for (const a of ALIANZAS) {
+          const R = res[a.id] = {};
+          reset(); P.desbloquear(a.lider); P.seleccionar(a.lider); prueba({ especie: a.lider, nivel: 12 }); revisarAlianza(); R.sinApoyo = estadoAli(a.id);
+          prueba({ especie: a.lider, nivel: 9 }); P.desbloquear(a.apoyo); revisarAlianza(); R.nv9 = estadoAli(a.id);
+          prueba({ especie: a.lider, nivel: 10 }); revisarAlianza(); R.nv10 = estadoAli(a.id);
+          const reto = a.reto === 'interrupciones' ? 'interrupciones' : 'poderJ';
+          win({ especie: a.lider, [reto]: 1 }); R.reto1 = estadoAli(a.id); win({ especie: a.lider === 'arausiaca' ? 'vittata' : 'arausiaca', [reto]: 5 }); R.otra = estadoAli(a.id);
+          win({ especie: a.lider, [reto]: 2 }); R.reto2 = estadoAli(a.id); R.sel = E().alianzaSel === a.id && paraDuelo(a.lider).alianza === a.id && !paraDuelo(a.apoyo).alianza;
+          const h = H.get(a.id); R.datos = h.coste === 60 && h.cooldown === 14 && h.dura <= 2 && h.bloquea !== 0;
+          // Duelo real con la rival a 2 m delante
+          mudo = true; Cb.iniciar({ sinCuenta: true, especie: a.lider, evo: { nivel: 10, alianza: a.id } }); fresco(); quieta(2); cara(1, 0); podEv.length = 0;
+          const j = C().j, o0 = ondas(), b0 = mias(), u = Cb.usar(j, a.id), b1 = mias(), escudo = j.escudo, inv = j.inv;
+          const ap = document.querySelector('#v18-duelo [data-k="apoyo"]'), img = ap && ap.querySelector('img');
+          R.duelo = !!u.ok && j.alianza === a.id && Math.abs(j.energia - 40) < 1e-6 && j.cd[a.id] === 14 && (j.cd[j.poder] || 0) >= 5 && !H.listo(j, j.poder).ok && ap && !ap.hidden && img && img.src.indexOf(a.apoyo + '.png') >= 0 &&
+            podEv.some(e => e.id === a.id && e.apoyo === a.apoyo);
+          vaciar(); const r = C().r;
+          R.efecto = ({ eco_protector: () => Math.abs(escudo - 2) < 1e-6 && ondas() > o0, lluvia_guiada: () => r.marcada > 0 && b1 - b0 === 3, viento_cruzado: () => inv >= 0.6 - 1e-6 && r.plumas === 4,
+            destello_piton: () => r.deslumbrada > 0 && r.lenta >= 2 - 1e-6, marea_lluvia: () => Math.abs(escudo - 2) < 1e-6 && b1 - b0 === 1, rafaga_volcan: () => ondas() > o0 })[a.id]();
+          R.plumas = r.plumas; R.unaPluma = r.plumas >= 4;
+          j.cd = {}; j.energia = 50; j.escudo = 0; R.coste = H.listo(j, a.id).motivo === 'energia';
+          Cb.salir(); mudo = false;
+          // Explorando: con la líder elegida y la alianza activada, su poder trae la ayuda de la compañera; con la compañera, no
+          const ex0 = ultimaExplora; G.emit('v18poder', { id: H.poderDe(a.lider), de: 'jugador', explorando: true, origen: { x: S.pos.x, y: S.pos.y, z: S.pos.z } }); R.explora = ultimaExplora !== ex0 && ultimaExplora.id === a.id && ultimaExplora.apoyo === a.apoyo;
+          P.seleccionar(a.apoyo); const ex1 = ultimaExplora; G.emit('v18poder', { id: H.poderDe(a.apoyo), de: 'jugador', explorando: true }); R.exploraOtra = ultimaExplora === ex1;
+          R.ok = R.sinApoyo === 'bloqueada' && R.nv9 === 'bloqueada' && R.nv10 === 'disponible' && R.reto1 === 'disponible' && R.otra === 'disponible' && R.reto2 === 'desbloqueada' && R.sel && R.datos && R.duelo && R.efecto && R.unaPluma && R.coste && R.explora && R.exploraOtra;
+        }
+        quitarCarta();
+        for (const a of ALIANZAS) { const R = res[a.id]; check('Alianza ' + a.nombre + ' (' + a.lider + ' + ' + a.apoyo + '): requisitos → disponible, desafío → desbloqueada, en el duelo coste 60, recarga 14 s, apoyo con retrato, su efecto y ≤ 1 pluma; explorando, la ayuda de la compañera', R.ok, JSON.stringify(R)); } }
+      // 15. XP de cada actividad que ya existe (hitos de una vez + repetibles con tope) y los módulos que llaman a G.v18evo.dar
+      { reset(); mudo = true; const pend = []; const tiene = (key, xp) => { const h = hitos().find(x => x[0] === key); if (!h || h[1] !== xp) pend.push(key + '=' + (h ? h[1] : 'no')); };
+        P.cambiarMundo('puente_villa', 'reparado'); tiene('puente', 120); P.cambiarMundo('sombra_tormenta', 'dispersa'); tiene('sombra', 150);
+        P.cambiarMundo('serpiente_marana', 'deshecha'); tiene('serpiente', 100); P.cambiarMundo('sapo_encantado', 'despierto'); tiene('sapo', 100);
+        P.otorgar('reto_dos_cotorras', 'reto_extra', 1); tiene('reto_dos', 100); P.otorgar('minigolf_villa_completo', 'golf', 1); tiene('golf_completo', 40);
+        P.otorgar('minigolf_villa_oro', 'golf_oro', 1); tiene('golf_oro', 60); P.otorgar('perfecta_t', 'victoria_perfecta', 1); tiene('perfecta', 50);
+        P.cambiarMundo('duelos_ganados', 3); tiene('tres_duelos', 60); P.cambiarMundo('piedra_1', 'recogida'); tiene('mat:piedra_1', 10);
+        P.desbloquear('collaria'); tiene('esp:collaria', 40); P.otorgar('duelo_gana_agilis', 'victoria_agilis', 1); tiene('gana:agilis', 50);
+        const debe = hitos().filter(x => !E().marcas[x[0]]).reduce((s2, x) => s2 + x[1], 0), pago = revisarHitos(true), otra = revisarHitos(true);
+        const mods = []; for (const [k, M] of [['chispa', G.v18chispa], ['moon', G.v18moon], ['guardian', G.v18guardian]]) {
+          if (!M || !M.pagarXP || !M.ID) { mods.push(k + ': sin cargar'); continue; }
+          const a = info('vittata').xp; P.cambiarMundo(M.ID, { ganadas: 1, victorias: 1, vueltas: 1 }); const n = M.pagarXP(), n2 = M.pagarXP(); mods.push(k + ' ' + n + '/' + n2 + ' Δ' + (info('vittata').xp - a));
+          if (!(n > 0 && n2 === 0 && info('vittata').xp - a === n)) pend.push(k); }
+        const d1 = dar('vittata', 30, 'puerto');
+        mudo = false;
+        check('XP de cada actividad: puente 120, Sombra 150, Serpiente 100, Sapo 100, reto de dos 100, minigolf (hoyo 40, oro 60), victoria perfecta 50, 3 duelos 60, material 10, especie 40, victoria con especie 50; se cobran una vez; Chispa, Moon y Guardián pagan con dar() una sola vez',
+          !pend.length && pago === debe && debe >= 120 + 150 + 100 + 100 + 100 + 40 + 60 + 50 + 60 + 10 + 40 + 50 && otra === 0 && d1 === 30, (pend.join(',') || 'ok') + ' · pago ' + pago + '/' + debe + ' · ' + mods.join(' · ')); }
+      // 16. Migración: una partida del prototipo (v2 con solo Eco Protector) y una v1 cargan sin perder nada; recargar conserva todo
+      { const proto = { v: 2, especies: { arausiaca: 'seleccionable' }, inv: { pluma_rival: 1 }, otorgados: { combate_1: true }, mundo: { puente_villa: 'reparado' }, sel: 'vittata',
+          evo: { esp: { vittata: { xp: T(12) + 3, nivel: 12, mejoras: { eco_amplificado: true }, variante: null } }, alianzas: { eco_protector: 'desbloqueada' }, alianzaSel: 'eco_protector', marcas: { puente: true, desafio_eco: true, 'esp:arausiaca': true }, dia: { fecha: 'x', por: { total: 5 } }, retro: true } };
+        localStorage.setItem(P.clave(), JSON.stringify(proto)); P.recargar(); mudo = true;
+        const e = E(), rh = revisarHitos(true);
+        const okP = info('vittata').nivel === 12 && info('vittata').xp === T(12) + 3 && e.alianzas.eco_protector === 'desbloqueada' && e.alianzaSel === 'eco_protector' && paraDuelo('vittata').alianza === 'eco_protector' &&
+          ALI_IDS.filter(id => id !== ALI).every(id => e.alianzas[id] === 'bloqueada') && e.marcas.puente && e.esp.vittata.mejoras.eco_amplificado && e.esp.vittata.mejoras.despertar && rh === 0 && P.cuantos('pluma_rival') === 1;
+        prueba({ especie: 'finschi', nivel: 31, alianza: 'rafaga_volcan' }); P.recargar();
+        const okR = info('finschi').nivel === 31 && estadoAli('rafaga_volcan') === 'desbloqueada' && E().alianzaSel === 'rafaga_volcan' && info('vittata').nivel === 12 && JSON.parse(localStorage.getItem(P.clave())).v === 2;
+        localStorage.setItem(P.clave(), JSON.stringify({ v: 1, especies: { agilis: 'seleccionable' }, inv: {}, otorgados: {}, mundo: {}, sel: 'agilis' })); P.recargar();
+        const okV1 = P.seleccionada() === 'agilis' && info('agilis').nivel === 1 && ALI_IDS.every(id => estadoAli(id) === 'bloqueada') && !paraDuelo('agilis').alianza;
+        mudo = false;
+        check('Migración: la partida del prototipo (Eco Protector, nivel 12, hitos cobrados) carga igual y suma las 5 alianzas nuevas bloqueadas; recargar conserva nivel y alianza; una v1 empieza en nivel 1 sin alianzas',
+          okP && okR && okV1, JSON.stringify({ okP, okR, okV1, rh, evo: E().alianzas })); }
+      // 17. Ficha (Mis cotorras): nivel, XP que falta, etapa, lo que mejora y la alianza, también para una especie que no es Vittata
+      { reset(); P.desbloquear('agilis'); P.seleccionar('agilis'); prueba({ especie: 'agilis', nivel: 22 }); const f = document.createElement('div'); f.innerHTML = htmlFicha('agilis'); const t = f.textContent;
+        const x = document.createElement('div'); x.innerHTML = htmlExtra(); const tx = x.textContent;
+        check('Ficha de agilis nv 22: «Nv 22 · Guardián», «Faltan … XP», «Velocidad +24 %», «Espera −12 %», la secundaria de ALAS, las etapas y «Viento Cruzado · Líder»; la fila de alianza dice cómo conseguirla',
+          /Nv 22/.test(t) && /Guardián/.test(t) && /Faltan \d+ XP para el nivel 23/.test(t) && /Velocidad \+24 %/.test(t) && /Espera −12 %/.test(t) && t.indexOf(TXT.sec_alas) >= 0 && /Maestro · Nivel 30/.test(t) && /Viento Cruzado · Líder · Bloqueada/.test(t) &&
+          /Viento Cruzado/.test(tx) && tx.indexOf(TXT.aliReqG) >= 0 && lineaHud({ especie: 'agilis', nivel: 22, poder: 'quiebro' }).etapa === 'Guardián', t.slice(0, 260) + ' | ' + tx.slice(0, 120)); }
+      // Los textos nuevos tienen su inglés en content/cap1/en.js (el traductor los busca tal cual)
+      {
+        const EN = window.AV_EN || {}, faltan = [];
+        const todos = Object.values(TXT).concat(ALIANZAS.map(a => a.nombre), ALIANZAS.map(a => a.frase), ALIANZAS.map(a => a.explora), ETAPAS.map(e => e.nombre), ETAPAS.map(e => e.frase), ETAPAS_ESP.map(e => e.nombre));
+        for (const s of todos) if (s !== TXT.prueba && !EN[s]) faltan.push(s);
+        check('Textos de la evolución y las alianzas con inglés (content/cap1/en.js)', !window.AV_EN || !faltan.length, window.AV_EN ? (faltan.slice(0, 6).join(' | ') || 'ok') : 'AV_EN sin cargar (solo se carga en EN)'); }
+      P.seleccionar('vittata');
+
       // Equilibrio (informativo, con números): dos jugadoras automáticas de ritmo humano (una acción cada 0,6 s como mucho), con la
       // misma estrategia en nv 1, 10 y 20, contra la Campeona sin cambios. «cuerpo»: se pega y usa el ala; «distancia»: guarda la
       // distancia del grito, grita y lanza semillas, sin ala (el estilo donde la etapa más se nota).
@@ -595,6 +962,7 @@ window.AVV18Evolucion = function (G) {
   }
 
   G.v18evo = { T, nivelDe, NIVEL_MAX, XP, TOPE, ETAPAS, TOPES_GRITO, info, etapaDe, paraDuelo, ajustar, lineaHud, htmlFin, htmlFicha, htmlExtra, enlazar,
-    dar, revisarHitos, revisarAlianza, desbloquearAlianza, elegirAlianza, elegirVariante, estadoAlianza: estadoAli, prueba, carta, test };
+    dar, revisarHitos, revisarAlianza, desbloquearAlianza, elegirAlianza, elegirVariante, estadoAlianza: estadoAli, prueba, carta, test,
+    ALIANZAS, ETAPAS_ESP, MEJORA, etapaIdx, mejoraDe, textoApoyo, explorando, ultimaExplora: () => ultimaExplora };
   return G.v18evo;
 };
