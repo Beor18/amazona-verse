@@ -1,0 +1,27 @@
+{
+  "tarea": "KIMI-285",
+  "autor": "Kimi 3",
+  "fecha": "2026-11-08",
+  "head": "107411e6",
+  "gpu": "RX 5700 XT (real)",
+  "arnes": "tools/build/kimi2_una_bateria.js (pagina limpia por bateria, entrada real portada→creador→Empezar)",
+  "pc_libre": "censo 0 chrome/0 node al entrar y entre baterias; mata_perfil «0 procesos» en las 8 corridas",
+  "codigo_nuevo_validado": [
+    "fc0404bc boton final «Volver al menu» si se entro desde el (menu_modos.js + flight/river_rush/maze/tren/retos/v18 minigolf/duelo/duelo2 + en.js)",
+    "ae3c849a + cee1168b menuModosTest (cuenta 3-2-1 del duelo; minigolf/Chispa visibles a la vigia)",
+    "980dde8b ingles «Proxima meta» del laberinto",
+    "5fa81b2d en.js +57 entradas EN de menu_modos.js y records.js"
+  ],
+  "resultados": {
+    "streamingTest": {"passed": 24, "total": 24, "seg": 47, "detalle": "peor vista kelvin_ruinas_yunque giro 4.7 = 127 draw calls ≤ 150 (46 instancias cerca · 60 _hd · 5 lejos sueltas · 17 zonas fundidas · alto) · sin fugas KB 325930→325930 · mats 36→36 · 17/17 _hd listos · atlas sRGB ok · QA-158 firme (spawn bajo sin ciudad)"},
+    "movementTest": {"passed": 52, "total": 52, "seg": 45, "detalle": "cernido sano deriva 0,15 m · posarse en rama tabonuco gestos=1 · QA-156/156a2 verdes · 197 edificios sólidos"},
+    "lookTest": {"passed": 42, "total": 44, "seg": 20, "detalle": "2 rojos conocidos y documentados: atlas HD KB3D no se encoge a 512 px (decisión de Kelvin); QA-176 diferencial verde (90,4/43,8/97,5/47,7 % y 0,0 % al volver a fábrica) · texturas 528,9 MB estables"},
+    "floraTest": {"passed": 19, "total": 19, "seg": 19, "detalle": "B1 GPU firme: tabonuco #1994 funde 0→0,75 en el cono · 0/19421 px fuera · en_cono 47"},
+    "ambienteTest": {"passed": 24, "total": 24, "seg": 9, "detalle": "0 fugas tras 4 vueltas · geo 228/tex 167/prog 122 estables"},
+    "menuModosTest": {"passed": 83, "total": 83, "seg": 21, "detalle": "checks nuevos de fc0404bc verdes: Flight/Carreras/Duelo «Volver al menú» desde el menú y «Volver a la historia»/«Salir» desde el mundo · Salir vuelve al menú en los 6 modos"},
+    "recordsTest": {"passed": 65, "total": 65, "seg": 25, "detalle": "sección V18 y duelos por etapa verdes · EN intacto tras 5fa81b2d"},
+    "idiomaTest": {"passed": 31, "total": 31, "seg": 53, "detalle": "diccionario EN 2441 textos · 0 texto en español en las 14 pantallas · «Proxima meta» del laberinto traducida (980dde8b)"}
+  },
+  "errores_consola": 0,
+  "conclusion": "HEAD 107411e6 validado de punta a punta tras el parche «boton Volver al menu»: 8/8 baterias, los 2 rojos de lookTest son los conocidos (decision de Kelvin). Juego sin cambios: FPS/draw calls/tris/memoria en banda certificada (peor vista 127 ≤ 150)."
+}
