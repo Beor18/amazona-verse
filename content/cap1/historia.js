@@ -264,7 +264,7 @@
       function syncRefugeInteractable() { if (S.refuge) { refugeIt.x = S.refuge.x; refugeIt.z = S.refuge.z; } }
       // KELVIN-2 (decidido por el equipo el 30-oct, Kelvin lo revisa al final): como en el guion (p.7-8), el Guardián aparece en el
       // sendero al llegar al paso de construir, escucha la idea de Vittata y la ayuda a levantar el refugio; tras la crecida regala el banco.
-      function applyGuardianLook() { guardian.setVisible((S.step >= 4 || S.builds.length > 0) && !S.event); }
+      function applyGuardianLook() { guardian.setVisible((S.step >= 4 || S.builds.length > 0) && !S.event); if (guardian.visible) componerMedalla(); }
       // SCRIPT p.9 (Kelvin, 1-nov): la familia de Iguaca, la Abuela y el Papá (los del cap. 2), llega volando y se queda en la
       // puerta del refugio de la colina cuando aguanta la crecida. Al cargar la partida ya están ahí.
       const familia = ['abuela', 'papa'].map(id => G.actores.npc(id)).filter(Boolean);
@@ -932,9 +932,11 @@
         }
       }
       // Retrato del Guardián con la medalla al pecho (una pieza del emblema: la del primer fragmento, FRAG_COLORS[0]). Se compone una vez
-      // sobre assets/guardian.png; mientras carga (o si falla) se usa el retrato normal.
-      let medallaURL = '';
-      (() => {
+      // sobre assets/guardian.png; mientras carga (o si falla) se usa el retrato normal. Carga inicial: se compone cuando el Guardián
+      // sale al mundo (applyGuardianLook), mucho antes de la charla de la medalla, y no al arrancar.
+      let medallaURL = '', medallaPedida = false;
+      function componerMedalla() {
+        if (medallaPedida) return; medallaPedida = true;
         const im = new Image();
         im.onload = () => {
           try {
@@ -948,8 +950,8 @@
           } catch (e) { /* retrato normal */ }
         };
         im.src = IMG.G;
-      })();
-      C.retratoMedalla = () => medallaURL || IMG.G;
+      }
+      C.retratoMedalla = () => { componerMedalla(); return medallaURL || IMG.G; };
 
       // ---------- Al cargar o reiniciar ----------
       G.on('apply', () => { C.placeRefugeMesh(); syncRefugeInteractable(); C.applyTallerLook(); applyGuardianLook(); llegada.t = -1; applyFamiliaLook(); }, 35);
