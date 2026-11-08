@@ -1,0 +1,366 @@
+[
+ {
+  "archivo": "templo_grande_hd_glb.js",
+  "kb": 9358,
+  "ext": [],
+  "generator": "Kimi · integrar_originales.py",
+  "prims": 11,
+  "verts": 211077,
+  "geoKB": 9333,
+  "binKB": 9333,
+  "porSem": {
+   "POSITION:f32": 2474,
+   "NORMAL:f32": 2474,
+   "TEXCOORD_0:f32": 1649,
+   "TEXCOORD_1:f32": 615,
+   "indices:u16": 626,
+   "TEXCOORD_2:f32": 583,
+   "indices:u32": 913
+  },
+  "projKB": 4818
+ },
+ {
+  "archivo": "monumento_d_hd_glb.js",
+  "kb": 9189,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 138483,
+  "geoKB": 9188,
+  "binKB": 9188,
+  "porSem": {
+   "POSITION:f32": 1623,
+   "NORMAL:f32": 1623,
+   "TEXCOORD_0:f32": 1082,
+   "TEXCOORD_1:f32": 1082,
+   "indices:u32": 3778
+  },
+  "projKB": 6077
+ },
+ {
+  "archivo": "corral_hd_glb.js",
+  "kb": 8081,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 130671,
+  "geoKB": 8080,
+  "binKB": 8080,
+  "porSem": {
+   "POSITION:f32": 1531,
+   "NORMAL:f32": 1531,
+   "TEXCOORD_0:f32": 1021,
+   "TEXCOORD_1:f32": 1021,
+   "indices:u32": 2976
+  },
+  "projKB": 5145
+ },
+ {
+  "archivo": "templo_grande_f_hd_glb.js",
+  "kb": 6685,
+  "ext": [],
+  "generator": "Kimi · integrar_originales.py",
+  "prims": 11,
+  "verts": 159216,
+  "geoKB": 6662,
+  "binKB": 6662,
+  "porSem": {
+   "POSITION:f32": 1866,
+   "NORMAL:f32": 1866,
+   "TEXCOORD_0:f32": 1244,
+   "indices:u16": 845,
+   "TEXCOORD_1:f32": 841
+  },
+  "projKB": 3287
+ },
+ {
+  "archivo": "monumento_g_hd_glb.js",
+  "kb": 6213,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 97949,
+  "geoKB": 6212,
+  "binKB": 6212,
+  "porSem": {
+   "POSITION:f32": 1148,
+   "NORMAL:f32": 1148,
+   "TEXCOORD_0:f32": 765,
+   "TEXCOORD_1:f32": 765,
+   "indices:u32": 2385
+  },
+  "projKB": 4012
+ },
+ {
+  "archivo": "templo_grande_e_hd_glb.js",
+  "kb": 5979,
+  "ext": [],
+  "generator": "Kimi · integrar_originales.py",
+  "prims": 11,
+  "verts": 143589,
+  "geoKB": 5956,
+  "binKB": 5956,
+  "porSem": {
+   "POSITION:f32": 1683,
+   "NORMAL:f32": 1683,
+   "TEXCOORD_0:f32": 1122,
+   "indices:u16": 752,
+   "TEXCOORD_1:f32": 716
+  },
+  "projKB": 2933
+ },
+ {
+  "archivo": "carpa_b_hd_glb.js",
+  "kb": 5921,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 94974,
+  "geoKB": 5919,
+  "binKB": 5919,
+  "porSem": {
+   "POSITION:f32": 1113,
+   "NORMAL:f32": 1113,
+   "TEXCOORD_0:f32": 742,
+   "TEXCOORD_1:f32": 742,
+   "indices:u32": 2209
+  },
+  "projKB": 3786
+ },
+ {
+  "archivo": "templo_grande_a_hd_glb.js",
+  "kb": 5650,
+  "ext": [],
+  "generator": "Kimi · integrar_originales.py",
+  "prims": 10,
+  "verts": 102859,
+  "geoKB": 5626,
+  "binKB": 5626,
+  "porSem": {
+   "POSITION:f32": 1205,
+   "NORMAL:f32": 1205,
+   "TEXCOORD_0:f32": 804,
+   "indices:u16": 188,
+   "TEXCOORD_1:f32": 775,
+   "TEXCOORD_2:f32": 775,
+   "indices:u32": 673
+  },
+  "projKB": 2942
+ },
+ {
+  "archivo": "monumento_e_hd_glb.js",
+  "kb": 4485,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 72510,
+  "geoKB": 4484,
+  "binKB": 4484,
+  "porSem": {
+   "POSITION:f32": 850,
+   "NORMAL:f32": 850,
+   "TEXCOORD_0:f32": 566,
+   "TEXCOORD_1:f32": 566,
+   "indices:u32": 1651
+  },
+  "projKB": 2855
+ },
+ {
+  "archivo": "muro_templo_hd_glb.js",
+  "kb": 4271,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 84014,
+  "geoKB": 4270,
+  "binKB": 4270,
+  "porSem": {
+   "POSITION:f32": 985,
+   "NORMAL:f32": 985,
+   "TEXCOORD_0:f32": 656,
+   "TEXCOORD_1:f32": 656,
+   "indices:u32": 988
+  },
+  "projKB": 2383
+ },
+ {
+  "archivo": "monumento_b_hd_glb.js",
+  "kb": 4232,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 67374,
+  "geoKB": 4231,
+  "binKB": 4231,
+  "porSem": {
+   "POSITION:f32": 790,
+   "NORMAL:f32": 790,
+   "TEXCOORD_0:f32": 526,
+   "TEXCOORD_1:f32": 526,
+   "indices:u32": 1599
+  },
+  "projKB": 2718
+ },
+ {
+  "archivo": "templo_mediano_f_hd_glb.js",
+  "kb": 3062,
+  "ext": [],
+  "generator": "Kimi · integrar_originales.py",
+  "prims": 11,
+  "verts": 71660,
+  "geoKB": 3039,
+  "binKB": 3039,
+  "porSem": {
+   "POSITION:f32": 840,
+   "NORMAL:f32": 840,
+   "TEXCOORD_0:f32": 560,
+   "indices:u16": 393,
+   "TEXCOORD_1:f32": 407
+  },
+  "projKB": 1506
+ },
+ {
+  "archivo": "templo_mediano_g_hd_glb.js",
+  "kb": 3042,
+  "ext": [],
+  "generator": "Kimi · integrar_originales.py",
+  "prims": 11,
+  "verts": 71312,
+  "geoKB": 3019,
+  "binKB": 3019,
+  "porSem": {
+   "POSITION:f32": 836,
+   "NORMAL:f32": 836,
+   "TEXCOORD_0:f32": 557,
+   "TEXCOORD_1:f32": 412,
+   "indices:u16": 378
+  },
+  "projKB": 1489
+ },
+ {
+  "archivo": "templo_mediano_hd_glb.js",
+  "kb": 2489,
+  "ext": [],
+  "generator": "Kimi · integrar_originales.py",
+  "prims": 11,
+  "verts": 59695,
+  "geoKB": 2465,
+  "binKB": 2465,
+  "porSem": {
+   "POSITION:f32": 700,
+   "NORMAL:f32": 700,
+   "TEXCOORD_0:f32": 466,
+   "TEXCOORD_1:f32": 261,
+   "indices:u16": 339
+  },
+  "projKB": 1227
+ },
+ {
+  "archivo": "carpa_c_hd_glb.js",
+  "kb": 1716,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 33861,
+  "geoKB": 1714,
+  "binKB": 1714,
+  "porSem": {
+   "POSITION:f32": 397,
+   "NORMAL:f32": 397,
+   "TEXCOORD_0:f32": 265,
+   "TEXCOORD_1:f32": 265,
+   "indices:u16": 391
+  },
+  "projKB": 954
+ },
+ {
+  "archivo": "campamento_f_hd_glb.js",
+  "kb": 1708,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 33708,
+  "geoKB": 1706,
+  "binKB": 1706,
+  "porSem": {
+   "POSITION:f32": 395,
+   "NORMAL:f32": 395,
+   "TEXCOORD_0:f32": 263,
+   "TEXCOORD_1:f32": 263,
+   "indices:u16": 390
+  },
+  "projKB": 949
+ },
+ {
+  "archivo": "carpa_d_hd_glb.js",
+  "kb": 1218,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 24061,
+  "geoKB": 1216,
+  "binKB": 1216,
+  "porSem": {
+   "POSITION:f32": 282,
+   "NORMAL:f32": 282,
+   "TEXCOORD_0:f32": 188,
+   "TEXCOORD_1:f32": 188,
+   "indices:u16": 277
+  },
+  "projKB": 676
+ },
+ {
+  "archivo": "tienda_pequena_hd_glb.js",
+  "kb": 1218,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 24049,
+  "geoKB": 1216,
+  "binKB": 1216,
+  "porSem": {
+   "POSITION:f32": 282,
+   "NORMAL:f32": 282,
+   "TEXCOORD_0:f32": 188,
+   "TEXCOORD_1:f32": 188,
+   "indices:u16": 277
+  },
+  "projKB": 676
+ },
+ {
+  "archivo": "campamento_a_hd_glb.js",
+  "kb": 1094,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 22859,
+  "geoKB": 1092,
+  "binKB": 1092,
+  "porSem": {
+   "POSITION:f32": 268,
+   "NORMAL:f32": 268,
+   "TEXCOORD_0:f32": 179,
+   "TEXCOORD_1:f32": 179,
+   "indices:u16": 199
+  },
+  "projKB": 579
+ },
+ {
+  "archivo": "muro_roca_hd_glb.js",
+  "kb": 864,
+  "ext": [],
+  "generator": "AmazonaVerse lector .max (edificios_maxscene)",
+  "prims": 1,
+  "verts": 16966,
+  "geoKB": 863,
+  "binKB": 863,
+  "porSem": {
+   "POSITION:f32": 199,
+   "NORMAL:f32": 199,
+   "TEXCOORD_0:f32": 133,
+   "TEXCOORD_1:f32": 133,
+   "indices:u16": 200
+  },
+  "projKB": 482
+ }
+]
