@@ -352,6 +352,17 @@
         UI.showCard('<h2>Prueba</h2>'); const aparta = tt.hidden && !!UI.avisoPendiente;
         UI.hideCard(); tick(0.1);
         check('Un aviso visible al abrir una tarjeta en el teléfono se aparta y vuelve al cerrarla', antes && aparta && !tt.hidden && tt.textContent === 'Aviso de prueba tarjeta' && !UI.avisoPendiente, antes + ' · ' + aparta + ' · ' + tt.textContent);
+        // QA-207: si el juego lo quita con hideToast() mientras está apartado, no vuelve al cerrar la tarjeta…
+        UI.hideToast(); UI.toast('Aviso de prueba QA207', 0);
+        UI.showCard('<h2>Prueba</h2>'); const aparta207 = tt.hidden && !!UI.avisoPendiente;
+        UI.hideToast(); const descarta = !UI.avisoPendiente;
+        UI.hideCard(); tick(0.1);
+        check('QA-207 · un aviso apartado por la tarjeta y quitado con hideToast() no vuelve al cerrarla', aparta207 && descarta && tt.hidden && !UI.avisoPendiente, aparta207 + ' · ' + descarta + ' · ' + tt.hidden);
+        // …pero uno nuevo que llegó con la tarjeta abierta y aún no se ha visto sigue esperando (QA-93)
+        UI.toast('Aviso visto QA207', 3000); UI.showCard('<h2>Prueba</h2>'); UI.toast('Aviso nuevo QA207', 3000);
+        UI.hideToast(); const sigue = !!UI.avisoPendiente;
+        UI.hideCard(); tick(0.1);
+        check('QA-207 · hideToast() no tira un aviso nuevo que esperaba a que se cerrara la tarjeta (QA-93)', sigue && !tt.hidden && tt.textContent === 'Aviso nuevo QA207' && !UI.avisoPendiente, sigue + ' · ' + tt.textContent);
       } finally { if (iw0) Object.defineProperty(window, 'innerWidth', iw0); else delete window.innerWidth; UI.hideToast(); tt.textContent = ''; }
     }
     SV.reset(true);
