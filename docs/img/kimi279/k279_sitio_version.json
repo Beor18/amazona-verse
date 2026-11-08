@@ -1,0 +1,24 @@
+{
+  "tarea": "KIMI-279",
+  "cuando_utc": "2026-11-08T09:28:00Z",
+  "head_local": "5f8dfe3c",
+  "sitio": {
+    "url": "https://www.amazonaverse.com/juego/",
+    "build_meta": "HEAD 7e46d05f65ca",
+    "build_msg": "📣 humo iPhone en main; 3 notas para la coordinadora",
+    "incluye_duelos_por_etapa": false,
+    "evidencia": "src/game/records.js HTTP 200, 130795 B, 0 coincidencias de 'duelos_ganados_e'",
+    "nota": "el parche «duelos por etapa» (13c26272+c8eba666) está en main local pero AÚN NO publicado; la coordinadora lo publicará con «Salir vuelve al menú». Cuando se publique, toca validación en vivo (recordsTest/saveTest/idiomaTest + sonda «Por etapa:»)."
+  },
+  "hueco_cubierto_k278": {
+    "motivo": "KIMI-278 (Kimi 2) validó el parche con recordsTest/v18CombateTest/v18EvolucionTest/v18Test/streamingTest/movementTest + sonda visual, pero el parche tocó progreso.js y en.js y no se habían corrido saveTest/idiomaTest sobre él",
+    "saveTest": "64/64",
+    "idiomaTest": "31/31",
+    "arnes": "kimi2_una_bateria.js --etiqueta k279-r1, página limpia por batería",
+    "gpu": "RX 5700 XT real",
+    "consola": "0 errores (el arnés falla en FATAL con cualquier error de consola; ambas baterías verdes)",
+    "censo": "0 chrome/node ajenos al entrar y al salir; mata_perfil 0 procesos en las 2 corridas"
+  },
+  "herramientas_nuevas": 0,
+  "juego_tocado": false
+}
