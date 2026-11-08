@@ -1,0 +1,62 @@
+[
+ {
+  "archivo": "templo_mediano_h_hd_glb.js",
+  "kb": 15462,
+  "ext": [],
+  "generator": "Kimi · integrar_originales.py",
+  "prims": 13,
+  "verts": 305959,
+  "geoKB": 15435,
+  "binKB": 15435,
+  "porSem": {
+   "POSITION:f32": 3585,
+   "NORMAL:f32": 3585,
+   "TEXCOORD_0:f32": 2390,
+   "indices:u16": 329,
+   "TEXCOORD_1:f32": 393,
+   "TEXCOORD_2:f32": 393,
+   "indices:u32": 4759
+  },
+  "projKB": 9365
+ },
+ {
+  "archivo": "templo_grande_d_hd_glb.js",
+  "kb": 10285,
+  "ext": [],
+  "generator": "Kimi · integrar_originales.py",
+  "prims": 12,
+  "verts": 230715,
+  "geoKB": 10260,
+  "binKB": 10260,
+  "porSem": {
+   "POSITION:f32": 2704,
+   "NORMAL:f32": 2704,
+   "TEXCOORD_0:f32": 1802,
+   "indices:u16": 740,
+   "TEXCOORD_1:f32": 1296,
+   "indices:u32": 1014
+  },
+  "projKB": 5331
+ },
+ {
+  "archivo": "complejo_ruinas_hd400_glb.js",
+  "kb": 5381,
+  "ext": [
+   "KHR_mesh_quantization",
+   "EXT_meshopt_compression"
+  ],
+  "generator": "gltfpack 1.2",
+  "prims": 1,
+  "verts": 491986,
+  "geoKB": 18140,
+  "binKB": 5378,
+  "porSem": {
+   "POSITION:u16": 2883,
+   "NORMAL:i16": 2883,
+   "TEXCOORD_0:f32": 3844,
+   "TEXCOORD_1:f32": 3844,
+   "indices:u32": 4687
+  },
+  "projKB": 12855
+ }
+]
