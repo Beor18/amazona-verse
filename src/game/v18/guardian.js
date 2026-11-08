@@ -518,6 +518,21 @@ window.AVV18Guardian = function (G) {
       volarA({ x: SITIO.puertas[0].x + R_SALE + 12, z: SITIO.puertas[0].z, alt: 4 }); correr(0.1);
       check('14 · En circuito el minimapa marca la puerta siguiente; alejarse > 80 m cancela sin contar la vuelta', mmC && mmC.nombre === TXT.siguiente && Math.hypot(mmC.x - SITIO.puertas[0].x, mmC.z - SITIO.puertas[0].z) < 0.1 && A.fase === 'nada' && record().jugadas === 3 && toasts.includes(TXT.lejos));
       cerrar();
+      // 17-18 · QA V18.3 (coordinadora): durante el circuito salía a la vez el panel de misiones de la historia (#quest, con su
+      // cronómetro) y Acción decía «Aquí no hay nada para usar». El panel se oculta mientras dura y vuelve al salir; Acción mira a la puerta siguiente
+      const qEl = document.getElementById('quest'), qVis = () => !!qEl && getComputedStyle(qEl).visibility !== 'hidden' && getComputedStyle(qEl).display !== 'none';
+      const q0 = qVis();
+      ir(SITIO.salida.x, SITIO.salida.z); empezar({ forzar: true }); correr(CUENTA_S + 0.2);
+      const qDentro = qVis(), nT = toasts.length; G.camara.yaw = 0;
+      try { G.interaccion.action(); } catch (e) { /* lo dice el check */ }
+      const pq = SITIO.puertas[A.sig], yawQ = Math.atan2(-(pq.x - S.pos.x), -(pq.z - S.pos.z));
+      const nada = toasts.slice(nT).filter(t => /nada para usar/.test(t)), mira = Math.abs(Math.atan2(Math.sin(G.camara.yaw - yawQ), Math.cos(G.camara.yaw - yawQ))) < 0.05;
+      cancelar('sale');
+      const qFuera = qVis(), suelta = !(G.interaccion.modo && G.interaccion.modo.activo());
+      check('17 · Durante el circuito no se ve el panel de misiones de la historia (#quest) y vuelve al salir', !qDentro && qFuera === q0, JSON.stringify({ q0, qDentro, qFuera }));
+      check('18 · Acción durante el circuito no dice «Aquí no hay nada para usar»: gira la cámara hacia la puerta siguiente; al salir se suelta Acción', !nada.length && mira && suelta,
+        JSON.stringify({ nada, mira, verbo: G.interaccion.modo && G.interaccion.modo.verbo }));
+      cerrar();
       for (const r of teclado()) out.push(r); // W35
       // 15 · textos
       if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }

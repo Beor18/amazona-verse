@@ -461,6 +461,16 @@ window.AVV18Moon = function (G) {
       S.pos.y = H(S.pos.x, S.pos.z) + ALTO_MAX + 2; correr(ALTO_T_S + 0.2);
       check('14 · Alejarse > 45 m cancela sin contar partida; volar > 11 m durante 3 s también cancela', canceloLejos && A.fase === 'nada' && record().jugadas === 3 && toasts.includes(TXT.alto), 'jugadas ' + record().jugadas);
       cerrar();
+      // 17 · QA V18.3 (coordinadora): Acción durante el entreno decía «Aquí no hay nada para usar». Ahora esquiva con un impulso; al acabar se suelta
+      ir(SITIO.x + 9, SITIO.z); empezar({ forzar: true }); correr(CUENTA_S + 0.3);
+      const nT = toasts.length; MV.dashCd = 0; MV.dashT = 0;
+      try { G.interaccion.action(); } catch (e) { /* lo dice el check */ }
+      const nada = toasts.slice(nT).filter(t => /nada para usar/.test(t)), esquiva = MV.dashT > 0;
+      cancelar('sale'); MV.dashT = 0; MV.dashCd = 0;
+      const suelta = !(G.interaccion.modo && G.interaccion.modo.activo());
+      check('17 · Acción durante el entreno no dice «Aquí no hay nada para usar»: esquiva con un impulso; al acabar se suelta Acción', !nada.length && esquiva && suelta,
+        JSON.stringify({ nada, esquiva, verbo: G.interaccion.modo && G.interaccion.modo.verbo }));
+      cerrar();
       for (const r of teclado()) out.push(r); // W35
       // 15 · textos
       if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
