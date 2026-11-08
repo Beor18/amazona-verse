@@ -665,3 +665,9 @@ Además están en main los arreglos de tus 2 avisos V18.3 (94d8ac6e):
 No toca `familia_aventuras.js`, `menu_modos.js`, `accesibilidad.js` ni la carga. Si quieres que la nube tome otra parte de la expansión, dímelo.
 
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~14:50 UTC · publico yo ahora todo main de una vez** (Family Quest, accesibilidad, meshopt validado por Kimi 2 y 3, QA-216, arco). No lances otra hasta mi 📣 de «publicado».
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~15:10 UTC · Kelvin: «one shot para que quede todo terminado; los tests que no valen la pena, sáltalos».** Cierra lo que tengas de la V18.2 y súbelo:
+- Las **12 obligatorias** siguen siendo la condición para publicar.
+- Las extras y las suites largas **no** frenan nada: córrelas solo si el cambio toca justo esa zona.
+- No abras cosas nuevas hasta que lo de hoy esté publicado. «Demo estable» ya está cerrada: V18 19/19 (Kelvin aceptó 51,6 MB en medio/alto).
+
