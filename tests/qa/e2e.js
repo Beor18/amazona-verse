@@ -63,6 +63,12 @@
     const padre = { contextoPerdido: 0 }; let padreVivo = true;
     const alContextoPadre = ok => { if (padreVivo && !ok) padre.contextoPerdido++; };
     try { GP.on('contexto', alContextoPadre); } catch (e) { /* sin ganchos */ }
+    // Mientras dura el recorrido, el mundo de ESTA pestaña no se dibuja (se sigue simulando): nadie lo mira y, con GPU por software,
+    // cada cuadro suyo le quitaba la GPU al juego del iframe, que es lo que se prueba. Igual que con el creador o la pantalla de carga
+    // (G.ui.worldHidden, renderer.js). fin() lo devuelve tal cual.
+    const UIp = GP && GP.ui, verPadre0 = UIp && UIp.worldHidden;
+    const ocultoE2E = () => true;
+    if (verPadre0) UIp.worldHidden = ocultoE2E;
     const fr = document.createElement('iframe');
     fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
     fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1024px;height:700px;border:0;';
@@ -671,6 +677,7 @@
       limpiar();
       try { for (const [k, v] of Object.entries(respaldo)) localStorage.setItem(k, v); } catch (e) { /* */ }
       padreVivo = false; if (GV && GV.suspender) GV.suspender(suspPadre0);
+      if (verPadre0 && UIp.worldHidden === ocultoE2E) UIp.worldHidden = verPadre0;
       try { if (GP && GP.off) GP.off('contexto', alContextoPadre); } catch (e) { /* sin ganchos */ }
       // Informe por paso: tiempo real de cada tramo (suma de sus comprobaciones) y primer paso que falla. Va como una comprobación
       // más (informativa, siempre ok) para que salga en el informe de test.sh; el fallo en sí lo dan las comprobaciones rojas

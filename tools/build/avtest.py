@@ -590,7 +590,15 @@ def sesion(S, k):
                 open(os.path.join(informe, 'captura-arranque%s.png' % sufijo), 'wb').write(base64.b64decode(png))
             except (CDPError, TimeoutError):
                 aviso('no se pudo capturar la pantalla de arranque')
-            disponibles = evaluar(cdp, ses, "Object.keys(window.AV || {}).filter(k => /Test$/.test(k) && typeof window.AV[k] === 'function')", 10, promesa=False) or []
+            # Con GPU por software la página puede tardar >10 s en responder tras la carga: un tiempo agotado aquí tiraba la corrida
+            # entera (sin reporte) y publicar_nube.sh la repetía desde cero (visto el 8-nov). Se reintenta hasta 60 s.
+            for intento in range(6):
+                try:
+                    disponibles = evaluar(cdp, ses, "Object.keys(window.AV || {}).filter(k => /Test$/.test(k) && typeof window.AV[k] === 'function')", 10, promesa=False) or []
+                    break
+                except TimeoutError:
+                    if intento == 5:
+                        raise
             out['disponibles'] = disponibles
             req = [] if a.solo_medir else list(P['baterias'])
             extra = [b for b in disponibles if b not in req] if a.extra else []

@@ -795,11 +795,13 @@ AVE.module('comic', function (G) {
     const ancho = dv.getUint32(16), alto = dv.getUint32(20);
     return { ok: firma && ihdr && ancho === w && alto === h, firma, ancho, alto, bytes: blob.size };
   }
-  // Píxeles de una región reducida: desviación de la luminancia y colores distintos (una imagen en blanco da casi 0)
+  // Píxeles de una región reducida: desviación de la luminancia y colores distintos (una imagen en blanco da casi 0).
+  // Solo lo usan las pruebas. willReadFrequently: lienzo en CPU, así getImageData no espera a la GPU (con GPU por software,
+  // cada lectura esperaba a que la GPU vaciara su cola). Mide lo mismo: la región reducida y sus estadísticas.
   function estadisticas(fuente, reg) {
     reg = reg || { x: 0, y: 0, w: fuente.width, h: fuente.height };
     const c = document.createElement('canvas'); c.width = Math.max(8, Math.min(120, Math.round(reg.w))); c.height = Math.max(8, Math.min(168, Math.round(reg.h)));
-    const x = c.getContext('2d'); x.drawImage(fuente, reg.x, reg.y, reg.w, reg.h, 0, 0, c.width, c.height);
+    const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(fuente, reg.x, reg.y, reg.w, reg.h, 0, 0, c.width, c.height);
     const d = x.getImageData(0, 0, c.width, c.height).data;
     let n = 0, s = 0, s2 = 0; const colores = new Set();
     for (let i = 0; i < d.length; i += 4) {
