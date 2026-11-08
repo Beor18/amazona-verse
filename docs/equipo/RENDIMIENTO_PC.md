@@ -1191,3 +1191,58 @@ V18) + `k176_r3caps.{json,log}`. Notas de herramienta: (1) la corrida r1 se cort
 corrupto por dos instancias simultáneas de la herramienta (lanzamiento con `&` huérfano) — archivos
 marcados `.CORRUPTO-duplicado.*` conservados; (3) en una PC compartida, medidas con ~50 Chrome
 huérfanos ajenos deprimen FPS pero no el heap post-GC.
+
+
+## KIMI-318 · Modo Escuela (QA-181): medición antes/después en Chromebook ×6 (8-nov · Kimi 1)
+
+Encargo de la coordinadora (8-nov ~19:00 UTC, decisiones de Kelvin): «mide el Modo Escuela con el
+perfil Chromebook antes y después, con la máquina sola; solo números reales». El modo entró en main
+con Kimi 3 (ae29d28d núcleo + fa961a76 evidencia; activación `?escuela=1|0`, auto en «bajo» con DPR
+al mínimo y media baja ~8 s). Mismo perfil y metodología que KIMI-127/136/300
+(`node tools/build/kimi1_127.js`, 1366×768 @ DPR 1, **CPU ×6**, calidad baja, GPU real RX 5700 XT,
+semilla por almacén de pack, sin `?qa=1`). **«Antes» = swap temporal de los 6 archivos de ae29d28d**
+(renderer.js, vegetacion.js, vecinos.js, ciudad_viva.js, bandada.js, amenaza.js) **a su versión
+pre-KIMI-320 (5bd0111d)** durante la corrida, restaurados a HEAD inmediatamente después
+(`tools/build/kimi1_k318_swap.sh atras|restaura`; el swap ES necesario: con HEAD sin parámetro el
+auto del modo acabaría encendiéndolo a mitad de la ventana de muestreo en un equipo ×6, y `?escuela=0`
+no lo impide — el auto lo re-encuentra, `escuela !== true`). **«Después» = HEAD + `--url-extra escuela=1`.**
+Confirmado en sonda corta que `?escuela=1` fija `calidad.escuela=true` (stats 6/6 con `escuela:true`,
+herramienta ampliada para volcar el campo). **0 errores de consola en las 7 páginas de cada corrida.**
+
+| pack | fpsMed ANTES (mín) | fpsMed DESPUÉS (mín) | calls A→D | ktris A→D | peor ms A→D |
+|---|---|---|---|---|---|
+| cap1 | 28 (26) | 26 (21) | 69→70 | 335→323 | 89→112 |
+| ep2 | 27 (1) | 29 (2) | 66→67 | 308→298 | 1272→1277 |
+| ep3 | 15 (2) | 16 (2) | 83→79 | 349→339 | 2307→2398 |
+| ep4 | 23 (7) | 24 (6) | 106→80 | 354→291 | 511→503 |
+| ep5 | 19 (2) | 11 (1) | 106→106 | 266→252 | 2583→2528 |
+| ep6 | 24 (3) | 20 (20) | 93→89 | 252→243 | 1259→94 |
+| demo duelo | 19 (16) | 12 (10) | 86→84 | 258→257 | 171→182 |
+| demo Sombra | 17 (16) | 9 (9) | 79→79 | 247→247 | 107→185 |
+| demo puente | 27 (25) | 14 (13) | 82→82 | 258→258 | 67→141 |
+
+**Lectura (con salvedad de contaminación, abajo):** las villas quedan en su mayoría dentro de la
+varianza histórica entre corridas limpias de esta herramienta (libre-r1: 29/33/20/23/24/34 ·
+KIMI-300: 23/25/17/15/27/24 vs. «antes» de hoy: 28/27/15/23/19/24): el Modo Escuela **no empeora
+las villas** (ep4 recorta calls 106→80 y tris 354→291 con +1 fps), pero **tampoco las sube** de forma
+clara — el cuello del Chromebook ×6 sigue siendo el hilo principal (KIMI-132: three+nativo ~56-62 %),
+no el raster. **La demo empeora de forma marcada y sostenida** (series completas: puente 25-29 →
+13-14 fps; Sombra 16-18 → 9; duelo 16-23 → 10-14): ninguna palanca del modo (flora ×0,7/impostor,
+población mitad, nube NB 9, piso DPR 0,75) debería costar hilo; los calls/tris de la demo apenas
+cambian. Esto apunta a un efecto de activación (el `G.emit('calidad')` inicial del modo re-dispara
+trabajo en caliente) **o a contaminación de la segunda corrida**.
+
+**Salvedad de método (importante):** la corrida «antes» corrió con censo 0 chrome/0 node ajenos
+verificado. Entre la «antes» y la «después» otras sesiones de la PC arrancaron sus bucles (al cierre
+de esta vuelta hay 2 node vivos ajenos — sonda k322 de Kimi 3 y qa158 de Kimi 2 — con sus Chrome);
+no es posible certificar a posteriori que la «después» corrió en máquina sola. El resultado de la
+demo queda **pendiente de confirmación**: re-medir el par completo (swap incluido) en una ventana con
+censo limpio antes y durante toda la corrida, idealmente con el orden entrelazado (A-B-A-B) si la
+herramienta lo permite. La sonda corta `k318-sonda-esc1` (cap1, modo confirmado ON) dio 15 fpsMed en
+6 s — no comparable con la ventana de 12 s, no es evidencia de regresión por sí sola.
+
+Evidencia: `docs/img/kimi127/k127_k318-antes-r1.{json,log}` + capturas `k127_k318-antes-r1_*.jpg`,
+`k127_k318-despues-r1.{json,log}` + capturas `k127_k318-despues-r1_*.jpg`,
+`k127_k318-sonda-esc1.json` (confirmación `escuela:true`). Herramientas: `kimi1_k318_swap.sh` (nuevo),
+`kimi1_mata_huerfanos_k318.ps1` (genérica por patrón, doble verificación de huérfano),
+`kimi1_127.js` (vuelca `escuela` en las stats). El juego no se tocó.

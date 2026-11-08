@@ -139,7 +139,7 @@ const MUESTRA_JS = `(async (durSec) => { try { return await (async () => {
     await sleep(1000);
     try { const st = G.renderer.stats(); const m = performance.memory;
       stats.push({ calls: st.calls, ktris: st.triangulos != null ? Math.round(st.triangulos / 1000) : null,
-        fpsMedidor: st.fps, calidad: st.calidad, dpr: st.dpr,
+        fpsMedidor: st.fps, calidad: st.calidad, dpr: st.dpr, escuela: st.escuela === true,
         heapMB: m ? Math.round(m.usedJSHeapSize / 1048576) : null }); } catch (e) { stats.push(null); }
   }
   vivo = false; deltas.shift();

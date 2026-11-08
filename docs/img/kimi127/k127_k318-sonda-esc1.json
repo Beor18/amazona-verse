@@ -1,0 +1,98 @@
+{
+ "tarea": "KIMI-127",
+ "etiqueta": "k318-sonda-esc1",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "packs": [
+  "cap1"
+ ],
+ "demo": false,
+ "head": "desconocido",
+ "capas": {
+  "cap1": {
+   "cargaListaS": 6.3,
+   "cargaEntradaS": 29.3,
+   "pos": [
+    -8,
+    -2.5
+   ],
+   "fpsPorSeg": [
+    16,
+    16,
+    16,
+    14,
+    16,
+    14
+   ],
+   "fpsMed": 15,
+   "fpsMin": 14,
+   "peorMs": 152,
+   "stats": [
+    {
+     "calls": 70,
+     "ktris": 323,
+     "fpsMedidor": 15,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 129
+    },
+    {
+     "calls": 69,
+     "ktris": 323,
+     "fpsMedidor": 16,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 137
+    },
+    {
+     "calls": 70,
+     "ktris": 323,
+     "fpsMedidor": 17,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 145
+    },
+    {
+     "calls": 69,
+     "ktris": 323,
+     "fpsMedidor": 14,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 116
+    },
+    {
+     "calls": 69,
+     "ktris": 323,
+     "fpsMedidor": 16,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 125
+    },
+    {
+     "calls": 68,
+     "ktris": 323,
+     "fpsMedidor": 13,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 132
+    }
+   ],
+   "med": {
+    "calls": 68,
+    "triangulos": 323122,
+    "texturasMB": 73.8,
+    "geometrias": 119,
+    "heapMB": 132,
+    "fps": 13
+   },
+   "medErr": null,
+   "errores": []
+  }
+ }
+}
