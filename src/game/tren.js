@@ -950,12 +950,15 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
           for (const sem of [11, 23, 42]) { iniciar(sem); toque(); rob.push(robot(P.duracion + 1)); if (st.fase === 'juego') fin(); }
           check('Robot: 3 turnos enteros sin fallos; entrega al menos 3 cargas por turno y llega al bronce', rob.every(r => r.entregas >= 3 && r.puntos >= MEDALLAS[0][1]), rob.map(r => r.puntos + 'p/' + r.entregas + 'e/' + r.perdidas + 'c').join(' '));
           // ---------- 30 reinicios: sin fugas ----------
-          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-          const m0 = mem(), nHijos = raiz.children.length;
+          // Las dos medidas, con el tren en la Playa recién arrancado: misma vista, así el renderer dibuja el mismo mundo (antes la segunda
+          // medida salía desde otro punto de la vía y sumaba las geometrías y texturas del mundo que entraban en cuadro: +21 y +9 sin fuga).
+          const propiosTren = () => { const g = new Set(), tx = new Set(E.texturas); raiz.traverse(o => { if (o.isMesh) { g.add(o.geometry); if (o.material && o.material.map) tx.add(o.material.map); } }); return g.size + '/' + tx.size; };
+          otraVez(); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const m0 = mem(), nHijos = raiz.children.length, p0 = propiosTren();
           for (let i = 0; i < 30; i++) { otraVez(); toque(); held.gas = true; tick(2 + (i % 3)); held.gas = false; if (st.fase === 'juego') fin(); }
-          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-          const m1 = mem();
-          check('30 reinicios: nada nuevo en la escena del tren y las geometrías y texturas del renderer no crecen (±12: el streaming del mundo carga y libera las suyas; una fuga por reinicio daría 30 o más)', raiz.children.length === nHijos && E.humos.length <= P.humoMax && m1.g <= m0.g + 12 && m1.t <= m0.t + 12, JSON.stringify(m0) + ' → ' + JSON.stringify(m1) + ' · ' + raiz.children.length + ' hijos');
+          otraVez(); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const m1 = mem(), p1 = propiosTren(); if (st.fase === 'juego') fin();
+          check('30 reinicios: nada nuevo en la escena del tren y las geometrías y texturas del renderer no crecen (±12: el streaming del mundo carga y libera las suyas; una fuga por reinicio daría 30 o más)', raiz.children.length === nHijos && p1 === p0 && E.humos.length <= P.humoMax && m1.g <= m0.g + 12 && m1.t <= m0.t + 12, JSON.stringify(m0) + ' → ' + JSON.stringify(m1) + ' · ' + raiz.children.length + ' hijos · geometrías/texturas del tren ' + p0 + ' → ' + p1);
           check('La flora que caía sobre la vía está apartada (rank) y se repone al salir', flora.length > 0 && flora.every(f => f[0].rank[f[1]] === 99), flora.length + ' instancias');
           const mmEsc = scene.getObjectByName('flora:manchas'), muestra = manchas[0] && [manchas[0][0], manchas[0][1], manchas[0][2][0]];
           check('Las manchas de sombra de los árboles apartados también se apartan (escala 0) y se reponen al salir', !mmEsc || (manchas.length > 0 && manchas.every(([mm, i]) => mm.instanceMatrix.array[i * 16] === 0 && mm.instanceMatrix.array[i * 16 + 5] === 0)), mmEsc ? manchas.length + ' manchas' : 'sin flora:manchas en la escena');
