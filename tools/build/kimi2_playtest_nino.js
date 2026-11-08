@@ -1,14 +1,16 @@
 #!/usr/bin/env node
-/* Amazona Verse · Kimi 2 (PC Windows) — KIMI-317: playtest «como un niño nuevo» en MÓVIL
+/* Amazona Verse · Kimi 2 (PC Windows) — KIMI-317/320: playtest «como un niño nuevo» en MÓVIL
    (390×844, táctil real por CDP, calidad «bajo» natural del iPhone emulado, CPU ×4, ?v18=1).
    Recorrido de ~20 min comprimido: portada V18 → creador con valores por defecto → cap. 1
-   (caminar/volar con el joystick táctil) → pausa → menú V18 en juego → un duelo (combate.js,
-   botones táctiles) → el arco V18.3 (Atalayas: escena, diálogo, encuentro) → Family Quest
-   (Diario → Aventuras en familia → Cuento en cadena a base de toques → viñeta guardada).
-   Cada parada: captura + errores de consola + FPS; al final JSON con el resumen y las
-   «fricciones» detectadas (botones < 44 px, textos que no caben, pasos muertos, errores).
-   El viaje entre zonas usa teleport/API (las pruebas unitarias ya cubren la lógica);
-   lo táctil y lo visual se ejercita de verdad. Uso: node tools/build/kimi2_playtest_nino.js */
+   (caminar con el joystick táctil y despegar con el botón Volar) → pausa → menú V18 en juego
+   → un duelo (combate.js, botones táctiles) → el arco V18.3 (Atalayas: escena, diálogo,
+   encuentro) → Family Quest (Diario → Aventuras en familia → Cuento en cadena a base de toques
+   → viñeta guardada). Cada parada: captura + errores de consola + FPS; al final JSON con el
+   resumen y las «fricciones» detectadas (botones < 44 px, textos que no caben, pasos muertos,
+   errores). El viaje entre zonas usa teleport/API (las pruebas unitarias ya cubren la lógica);
+   lo táctil y lo visual se ejercita de verdad.
+   Los módulos cargan con AVE.assets.script (window.AVE), no AV.assets. Uso:
+   node tools/build/kimi2_playtest_nino.js */
 'use strict';
 const http = require('http');
 const fs = require('fs');
@@ -161,22 +163,24 @@ async function fps(cdp, ses, segs) {
     await evaluar(cdp, ses, `(() => { const b = [...document.querySelectorAll('button')].find(x => /saltar/i.test(x.textContent) && !x.hidden); if (b) { b.click(); return true; } return false; })()`, 10, false);
     await cdp.bombear(3);
     await foto(cdp, ses, 'b2_spawn');
-    const calidad = await evaluar(cdp, ses, `(AV.G.renderer && AV.G.renderer.calidadActual ? AV.G.renderer.calidadActual() : (AV.G.look && AV.G.look.calidad) || 'desconocida')`, 10, false);
+    const calidad = await evaluar(cdp, ses, `(AV.G.renderer && AV.G.renderer.stats ? AV.G.renderer.stats().calidad : 'desconocida')`, 10, false);
     const f0 = await fps(cdp, ses, 4);
     apunta({ beat: 'spawn-cap1', calidad, fps: f0 });
     if (String(calidad) !== 'bajo') nota('spawn-cap1', 'calidad esperada «bajo» en iPhone emulado y salió «' + calidad + '»');
 
-    // caminar y volar con el joystick táctil (dedo real sostenido)
+    // caminar con el joystick táctil (dedo real sostenido) y despegar con el botón Volar (#b-fly)
     await toca(cdp, ses, 110, 640);
     await cdp.call('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 110, y: 640, id: 1 }] }, ses);
-    await cdp.bombear(1600);
+    await cdp.bombear(1.6);
     await cdp.call('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }, ses);
     await cdp.bombear(0.6);
-    const volando0 = await evaluar(cdp, ses, `!!(AV.G.movimiento && AV.G.movimiento.flying)`, 10, false);
+    await tocaSel(cdp, ses, '#b-fly') || await evaluar(cdp, ses, `(() => { const b = document.getElementById('b-fly'); if (b) { b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); return true; } return false; })()`, 10, false);
+    await cdp.bombear(1.4);
+    const volando0 = await evaluar(cdp, ses, `!!(AV.G.fisica && AV.G.fisica.MOVE && AV.G.fisica.MOVE.flying)`, 10, false);
     await foto(cdp, ses, 'b3_joystick');
     const f1 = await fps(cdp, ses, 4);
     apunta({ beat: 'joystick', volando: !!volando0, fps: f1 });
-    if (!volando0) nota('joystick', 'tras 1,6 s de dedo sostenido no se despegó (¿poco claro cómo volar en táctil?)');
+    if (!volando0) nota('joystick', 'ni con el dedo en el joystick y el botón Volar se despegó (¿poco claro cómo volar en táctil?)');
 
     // ---------- 3 · pausa ----------
     const pausaOK = await tocaSel(cdp, ses, '#btn-pausa') || await tocaSel(cdp, ses, '[aria-label*="pausa" i]') || await evaluar(cdp, ses, `(() => { const b = [...document.querySelectorAll('button')].find(x => /pausa/i.test((x.getAttribute('aria-label')||'') + ' ' + x.textContent) && !x.hidden); if (b) { b.click(); return true; } return false; })()`, 10, false);
@@ -186,7 +190,7 @@ async function fps(cdp, ses, segs) {
     await evaluar(cdp, ses, `(() => { const b = [...document.querySelectorAll('button')].find(x => /seguir|continuar|reanudar/i.test(x.textContent) && !x.hidden); if (b) { b.click(); return true; } return false; })()`, 10, false);
 
     // ---------- 4 · menú V18 en juego: Mis cotorras ----------
-    const mc = await evaluar(cdp, ses, `(async () => { try { if (!G_v18()) {} } catch (e) {} try { await AV.assets.script('src/game/v18/evolucion.js'); } catch (e) { return 'err:' + e.message; } try { if (AV.G.v18evo && AV.G.v18evo.abrir) { AV.G.v18evo.abrir(); return 'abierto'; } return 'sin-api'; } catch (e) { return 'err:' + e.message; } })()`, 20, true).catch(e => 'err:' + e.message);
+    const mc = await evaluar(cdp, ses, `(async () => { try { const G = AV.G; if (G.menuModos && G.menuModos.elegir) { await G.menuModos.elegir('cotorras'); return 'elegir'; } if (!G.v18evo) await window.AVE.assets.script('src/game/v18/evolucion.js').then(() => window.AVV18Evolucion(G)); return G.v18evo ? 'modulo-sin-api-apertura' : 'sin-api'; } catch (e) { return 'err:' + e.message; } })()`, 30, true).catch(e => 'err:' + e.message);
     await cdp.bombear(1);
     await foto(cdp, ses, 'b5_mis_cotorras');
     apunta({ beat: 'menu-v18-mis-cotorras', r: mc });
@@ -194,8 +198,9 @@ async function fps(cdp, ses, segs) {
     await cdp.bombear(0.5);
 
     // ---------- 5 · un duelo (combate.js) con botones táctiles ----------
-    const due = await evaluar(cdp, ses, `(async () => { try { await AV.assets.script('src/game/v18/combate.js'); } catch (e) { return 'err-carga:' + e.message; } try { AV.G.v18combate.iniciar({}); return 'iniciado'; } catch (e) { return 'err:' + e.message; } })()`, 25, true).catch(e => 'err:' + e.message);
-    const listoDuelo = await espera(cdp, ses, `AV.G.v18combate && AV.G.v18combate.fase && (AV.G.v18combate.fase() === 'lucha' || AV.G.v18combate.fase() === 'cuenta')`, 60);
+    const due = await evaluar(cdp, ses, `(async () => { try { const G = AV.G; if (!G.v18combate) await window.AVE.assets.script('src/game/v18/combate.js').then(() => window.AVV18Combate(G)); G.v18combate.iniciar({}); return 'iniciado'; } catch (e) { return 'err:' + e.message; } })()`, 30, true).catch(e => 'err:' + e.message);
+    const faseDueloEval = `AV.G.v18combate && AV.G.v18combate.estado ? AV.G.v18combate.estado().fase : '?'`;
+    const listoDuelo = await espera(cdp, ses, `AV.G.v18combate && AV.G.v18combate.estado && ['entreno','cuenta','lucha'].includes(AV.G.v18combate.estado().fase)`, 60);
     await cdp.bombear(2);
     await foto(cdp, ses, 'b6_duelo');
     // tocar el botón de acción del HUD (el verbo del duelo)
@@ -207,24 +212,31 @@ async function fps(cdp, ses, segs) {
     }
     const fDuelo = await fps(cdp, ses, 5);
     await foto(cdp, ses, 'b6_duelo_pelea');
-    const faseDuelo = await evaluar(cdp, ses, `AV.G.v18combate && AV.G.v18combate.fase ? AV.G.v18combate.fase() : '?'`, 10, false);
+    const faseDuelo = await evaluar(cdp, ses, faseDueloEval, 10, false);
     apunta({ beat: 'duelo', inicio: due, listo: !!listoDuelo, fase: faseDuelo, toques, fps: fDuelo });
-    if (!listoDuelo) nota('duelo', 'el duelo no llegó a fase lucha en 60 s');
-    await evaluar(cdp, ses, `(() => { try { const b = [...document.querySelectorAll('button')].find(x => /salir|abandonar/i.test(x.textContent) && !x.hidden); if (b) { b.click(); return true; } } catch (e) {} return false; })()`, 10, false);
+    if (!listoDuelo) nota('duelo', 'el duelo no llegó a fase entreno/cuenta/lucha en 60 s');
+    await evaluar(cdp, ses, `(() => { try { const b = [...document.querySelectorAll('button')].find(x => /salir|abandonar/i.test(x.textContent) && !x.hidden); if (b) { b.click(); return 'btn'; } } catch (e) {} try { if (AV.G.v18combate && AV.G.v18combate.salir) { AV.G.v18combate.salir(); return 'api'; } } catch (e) {} return false; })()`, 10, false);
     await cdp.bombear(1);
 
     // ---------- 6 · el arco V18.3 (Atalayas): escena + diálogo + encuentro ----------
     const arco = await evaluar(cdp, ses, `(async () => { try {
-      await AV.assets.script('src/game/v18/puerto.js'); await AV.assets.script('src/game/v18/arco.js');
-      const A = AV.G.v18arco;
+      const G = AV.G, AVE = window.AVE;
+      if (!G.v18) await AVE.assets.script('src/game/v18/progreso.js').then(() => window.AVV18Progreso(G));
+      if (!G.v18hab) await AVE.assets.script('src/game/v18/habilidades.js').then(() => window.AVV18Habilidades(G));
+      if (!G.v18fx) await AVE.assets.script('src/game/v18/fx_poderes.js').then(() => window.AVV18Fx(G));
+      await AVE.assets.script('content/comun/personajes_v18.js');
+      if (!G.v18npc) await AVE.assets.script('src/game/v18/npc.js').then(() => window.AVV18Npc(G));
+      if (!G.v18puerto) await AVE.assets.script('src/game/v18/puerto.js').then(() => window.AVV18Puerto(G));
+      if (!G.v18arco) await AVE.assets.script('src/game/v18/arco.js').then(() => window.AVV18Arco(G));
+      const A = G.v18arco;
       if (!A) return 'sin-api';
       // despertar el elenco y poner a Vittata en la plaza de las Atalayas
       A.aplicar();
       const st = A.estado();
       const s = A.SITIO && (A.SITIO.plaza || A.SITIO.maq) || null;
-      if (s) { AV.G.ST.terminar && AV.G.ST.terminar(); AV.G.S.pos.x = s.x; AV.G.S.pos.z = s.z; AV.G.S.pos.y = 30; }
+      if (s) { const ST = AV.G.mundo && AV.G.mundo.streaming; if (ST && ST.terminar) ST.terminar(); AV.G.S.pos.x = s.x; AV.G.S.pos.z = s.z; AV.G.S.pos.y = 30; }
       return { estado: st, sitio: s, elenco: A.elenco() };
-    } catch (e) { return 'err:' + (e && e.message || e); } })()`, 60, true).catch(e => 'err:' + e.message);
+    } catch (e) { return 'err:' + (e && e.message || e); } })()`, 120, true).catch(e => 'err:' + e.message);
     await cdp.bombear(4);
     await foto(cdp, ses, 'b7_arco_atalayas');
     // hablar con el primer NPC interactivo cercano (botón de interacción táctil o tecla E)
@@ -242,12 +254,14 @@ async function fps(cdp, ses, segs) {
 
     // ---------- 7 · Family Quest: Diario → Aventuras en familia → Cuento en cadena ----------
     const fq0 = await evaluar(cdp, ses, `(async () => { try {
-      await AV.assets.script('src/game/familia_aventuras.js');
-      if (AV.G.diario && AV.G.diario.open) AV.G.diario.open();
-      else if (AV.G.diario && AV.G.diario.renderButton) { const b = AV.G.diario.renderButton(); if (b && b.click) b.click(); }
+      const G = AV.G;
+      try { if (G.ui && G.ui.hideCard) G.ui.hideCard(); } catch (e) {}
+      try { if (G.dialogo && G.dialogo.cerrar) G.dialogo.cerrar(); } catch (e) {}
+      if (!G.familyQuest) await window.AVE.assets.script('src/game/familia_aventuras.js').then(() => window.AVFamiliaAventuras(G));
+      if (G.diario && G.diario.open) G.diario.open();
       return 'diario';
     } catch (e) { return 'err:' + e.message; } })()`, 30, true).catch(e => 'err:' + e.message);
-    await cdp.bombear(1.2);
+    await cdp.bombear(1.5);
     const btnFQ = await tocaSel(cdp, ses, '[data-fq-abrir]');
     if (!btnFQ) { await evaluar(cdp, ses, `(() => { const b = document.querySelector('[data-fq-abrir]'); if (b) { b.click(); return true; } return false; })()`, 10, false); }
     await cdp.bombear(0.8);
@@ -275,9 +289,9 @@ async function fps(cdp, ses, segs) {
     // cerrar el panel si sigue abierto
     await evaluar(cdp, ses, `(() => { const b = document.getElementById('fq-cerrar'); if (b && !document.getElementById('fq').hidden) { b.click(); return 1; } return 0; })()`, 10, false);
 
-    // ---------- 8 · cierre: errores, heap y última captura ----------
+    // ---------- 8 · cierre: errores, memoria y última captura ----------
     const errs = await evaluar(cdp, ses, `window.__errs || []`, 10, false);
-    const mem = await evaluar(cdp, ses, `(() => { const i = AV.G.renderer.info; return { calls: i.render.calls, tris: i.render.triangles, geo: i.memory.geometries, tex: i.memory.textures, heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null }; })()`, 10, false);
+    const mem = await evaluar(cdp, ses, `(() => { const i = AV.G.renderer.renderer.info; return { calls: i.render.calls, tris: i.render.triangles, geo: i.memory.geometries, tex: i.memory.textures, heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null }; })()`, 10, false);
     const fFin = await fps(cdp, ses, 4);
     await foto(cdp, ses, 'b9_final');
     apunta({ beat: 'final', mem, fps: fFin, __errs: errs });

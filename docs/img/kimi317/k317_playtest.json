@@ -25,18 +25,80 @@
   },
   {
    "beat": "spawn-cap1",
-   "calidad": "desconocida",
+   "calidad": "bajo",
    "fps": {
-    "med": 36.7,
-    "peorMs": 49
+    "med": 49.5,
+    "peorMs": 42
    }
+  },
+  {
+   "beat": "joystick",
+   "volando": true,
+   "fps": {
+    "med": 50.8,
+    "peorMs": 35
+   }
+  },
+  {
+   "beat": "pausa",
+   "abierta": true
+  },
+  {
+   "beat": "menu-v18-mis-cotorras",
+   "r": "elegir"
+  },
+  {
+   "beat": "duelo",
+   "inicio": "iniciado",
+   "listo": true,
+   "fase": "lucha",
+   "toques": 4,
+   "fps": {
+    "med": 45.7,
+    "peorMs": 42
+   }
+  },
+  {
+   "beat": "arco",
+   "r": {
+    "estado": "inicio",
+    "sitio": {
+     "x": -69.2,
+     "z": 68.4
+    },
+    "elenco": false
+   },
+   "dialogo": "sin-interaccion",
+   "dlgAbierto": false
+  },
+  {
+   "beat": "family-quest",
+   "diario": "diario",
+   "botones": 0,
+   "chicos": 0,
+   "hechas": null
+  },
+  {
+   "beat": "final",
+   "mem": {
+    "calls": 105,
+    "tris": 355338,
+    "geo": 214,
+    "tex": 132,
+    "heap": 141
+   },
+   "fps": {
+    "med": 42.2,
+    "peorMs": 49
+   },
+   "__errs": []
   }
  ],
  "consola": [],
  "fricciones": [
   {
-   "beat": "spawn-cap1",
-   "nota": "calidad esperada «bajo» en iPhone emulado y salió «desconocida»"
+   "beat": "family",
+   "nota": "el cuento en cadena no quedó guardado en amazonaverse.familyquest"
   }
  ]
 }
