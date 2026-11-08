@@ -1,0 +1,40 @@
+{
+ "tarea": "KIMI-264",
+ "etiqueta": "r3",
+ "parche": "f5be1ff7",
+ "head": "Amazona Verse",
+ "pantalla": "movil 390x844@3 cpuX4 tactil (iPhone emulado), GPU real",
+ "checks": [
+  {
+   "name": "QA-209 · Álbum desde el menú: el título «Álbum de las 36 · n/34» es tinta oscura sobre papel (legible, contraste ≥ 4,5:1)",
+   "ok": true,
+   "extra": "{\"texto\":\"rgb(42, 29, 16)\",\"fondo\":\"rgb(251, 241, 220)\",\"contraste\":14.6,\"lumaTinta\":0.014}"
+  },
+  {
+   "name": "QA-210 · Mis cotorras: las tarjetas tienen relleno arriba y abajo (12px)",
+   "ok": true,
+   "extra": "{\"paddingTop\":\"12px\",\"paddingBottom\":\"12px\",\"botones\":0,\"reglaCss\":true,\"probe\":true,\"h2\":\"Mis cotorras\"}"
+  },
+  {
+   "name": "mundo jugable (draw calls > 5 y #acts presente)",
+   "ok": false,
+   "extra": "{\"title\":false,\"calls\":-1,\"acts\":true,\"carga\":true,\"saltar\":false}"
+  },
+  {
+   "name": "QA-208 · con bocadillos visibles el botón Poder NO los tapa (queda justo encima)",
+   "ok": false,
+   "extra": "{\"error\":\"sin botón #v18-exp-poder\",\"tactil\":true,\"url\":\"http://127.0.0.1:52561/index.html?qa=1&v18=1\"}"
+  },
+  {
+   "name": "QA-191 (regresión) · con solo el aviso, el botón sigue sin taparlo",
+   "ok": true,
+   "extra": ""
+  }
+ ],
+ "mundo": {
+  "error": "renderer no listo",
+  "url": "http://127.0.0.1:52561/index.html?qa=1&v18=1",
+  "av": true
+ },
+ "erroresConsola": []
+}

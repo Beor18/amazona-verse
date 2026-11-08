@@ -1,0 +1,30 @@
+{
+ "tarea": "KIMI-264",
+ "etiqueta": "r6",
+ "parche": "f5be1ff7",
+ "head": "Amazona Verse",
+ "pantalla": "movil 390x844@3 cpuX4 tactil (iPhone emulado), GPU real",
+ "checks": [
+  {
+   "name": "mundo jugable (draw calls > 5 y #acts presente)",
+   "ok": false,
+   "extra": "{\"title\":false,\"calls\":-1,\"acts\":true,\"carga\":true,\"saltar\":false}"
+  },
+  {
+   "name": "QA-208 · con bocadillos visibles el botón Poder NO los tapa (queda justo encima)",
+   "ok": false,
+   "extra": "{\"error\":\"sin botón #v18-exp-poder\",\"tactil\":true,\"url\":\"http://127.0.0.1:54194/index.html?v18=1\"}"
+  },
+  {
+   "name": "QA-191 (regresión) · con solo el aviso, el botón sigue sin taparlo",
+   "ok": true,
+   "extra": ""
+  }
+ ],
+ "mundo": {
+  "error": "renderer no listo",
+  "url": "http://127.0.0.1:54194/index.html?v18=1",
+  "av": true
+ },
+ "erroresConsola": []
+}

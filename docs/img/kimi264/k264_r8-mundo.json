@@ -1,0 +1,37 @@
+{
+ "tarea": "KIMI-264",
+ "etiqueta": "r8",
+ "parche": "f5be1ff7",
+ "head": "Amazona Verse",
+ "pantalla": "movil 390x844@3 cpuX4 tactil (iPhone emulado), GPU real",
+ "checks": [
+  {
+   "name": "mundo jugable (draw calls > 5 y #acts presente)",
+   "ok": true,
+   "extra": "{\"title\":false,\"calls\":70,\"acts\":true,\"carga\":true,\"saltar\":true}"
+  },
+  {
+   "name": "botón táctil del poder creado (explorar.js vivo tras el gesto)",
+   "ok": true,
+   "extra": ""
+  },
+  {
+   "name": "QA-208 · con bocadillos visibles el botón Poder NO los tapa (queda justo encima)",
+   "ok": true,
+   "extra": "{\"tactil\":true,\"btnExiste\":true,\"btnVisible\":true,\"solapaBoc\":false,\"solapaPrompt\":false,\"huecoBtnSobreBoc\":10,\"btn\":{\"top\":592,\"bottom\":636},\"boc\":{\"top\":493,\"bottom\":582},\"prompt\":{\"top\":0,\"bottom\":0,\"alto\":0},\"sinBoc\":{\"btnTop\":592,\"btnBottom\":636,\"promptTop\":0},\"actsTop\":646}"
+  },
+  {
+   "name": "QA-191 (regresión) · con solo el aviso, el botón sigue sin taparlo",
+   "ok": true,
+   "extra": ""
+  }
+ ],
+ "mundo": {
+  "calls": 91,
+  "tris": 328280,
+  "geo": 144,
+  "tex": 131,
+  "heap": 109
+ },
+ "erroresConsola": []
+}

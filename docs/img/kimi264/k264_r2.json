@@ -1,0 +1,40 @@
+{
+ "tarea": "KIMI-264",
+ "etiqueta": "r2",
+ "parche": "f5be1ff7",
+ "head": "Amazona Verse",
+ "pantalla": "movil 390x844@3 cpuX4 tactil (iPhone emulado), GPU real",
+ "checks": [
+  {
+   "name": "QA-209 · Álbum desde el menú: el título «Álbum de las 36 · n/34» es tinta oscura sobre papel (legible, contraste ≥ 4,5:1)",
+   "ok": true,
+   "extra": "{\"texto\":\"rgb(42, 29, 16)\",\"fondo\":\"rgb(251, 241, 220)\",\"contraste\":14.6,\"lumaTinta\":0.014}"
+  },
+  {
+   "name": "QA-210 · Mis cotorras: las tarjetas tienen relleno arriba y abajo (12px)",
+   "ok": false,
+   "extra": "{\"error\":\"sin [data-v18sp]\",\"cardHtml\":\"<div class=\\\"v18-elegir\\\"><style>.v18-elegir .v18-nom{display:block}.v18-elegir .v18-nom::first-letter{text-transform:uppercase}.v18-elegir [data-v18sp]{flex:1 1 130px;flex-direction:column;justify-content:flex-start;text-align:center;min-width:0;padding-block:12px}</style><h2 data-no-tr=\\\"\\\">Mis cotorras</h2><p>Cambia tu poder en el duelo. Tú sigues siendo tú.</p><div class=\\\"row\\\"></div><div class=\\\"v1\"}"
+  },
+  {
+   "name": "mundo jugable (draw calls > 5 y #acts presente)",
+   "ok": false,
+   "extra": "{\"title\":false,\"calls\":-1,\"acts\":true,\"carga\":true,\"saltar\":false}"
+  },
+  {
+   "name": "QA-208 · con bocadillos visibles el botón Poder NO los tapa (queda justo encima)",
+   "ok": false,
+   "extra": "{\"error\":\"sin botón #v18-exp-poder\",\"tactil\":true,\"url\":\"http://127.0.0.1:52429/index.html?v18=1\"}"
+  },
+  {
+   "name": "QA-191 (regresión) · con solo el aviso, el botón sigue sin taparlo",
+   "ok": true,
+   "extra": ""
+  }
+ ],
+ "mundo": {
+  "error": "renderer no listo",
+  "url": "http://127.0.0.1:52429/index.html?v18=1",
+  "av": true
+ },
+ "erroresConsola": []
+}
