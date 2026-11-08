@@ -1,0 +1,8 @@
+KIMI-291 · GPU real RX 5700 XT · arnés kimi2_una_bateria.js página limpia por batería (mata_perfil «0 procesos» en todas) · PC libre
+contextTest 32/32 (alto, página fresca) — «El atlas de impostores de la flora se repintó» verde (cobertura 10.3 % → 10.3 %)
+contextTest 30/30 (bajo forzado, página fresca) — verde (cobertura 10.1 % → 10.1 %)
+contextTest 32/32 (medio + ?v18=1, página fresca) — verde (cobertura 10.3 % → 10.3 %)
+contextTest 32/32 (alto + inyección kimi1_291_mutar.js que muta sol/hemi tras el horneado) — verde
+lookTest 42/44 — los 2 rojos conocidos «texturas grandes del mundo a 512 px» (atlas HD KB3D, decisión de Kelvin)
+floraTest 19/19 · ambienteTest 24/24 · streamingTest 24/24 · movementTest 52/52 · selfTest 108/108
+0 errores de consola en las 8 corridas

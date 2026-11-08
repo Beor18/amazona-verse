@@ -541,11 +541,20 @@ AVE.module('vegetacion', function (G) {
        rows = Math.pow(2, Math.ceil(Math.log2(Math.max(1, Math.ceil(lista.length / cols)))));
     const rt = new THREE.WebGLRenderTarget(TS * cols, TS * rows, { minFilter: THREE.LinearMipmapLinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, generateMipmaps: true });
     rt.texture.anisotropy = Math.min(8, R.renderer.capabilities.getMaxAnisotropy ? R.renderer.capabilities.getMaxAnisotropy() : 1);
-    // El atlas solo vive en la GPU: si se pierde el contexto WebGL, se repinta al volver (gancho 'contexto', más abajo)
+    // El atlas solo vive en la GPU: si se pierde el contexto WebGL, se repinta al volver (gancho 'contexto', más abajo).
+    // KIMI-291: el repintado debe reproducir el horneado original, no las luces corrientes (look.js, clima.js y
+    // atardecer.js mueven sol/hemi/exposición y el tone mapping cambia con el composer): si no, los árboles lejanos
+    // cambiarían de color tras recuperar el contexto y el check de contextTest «el atlas se repintó» fallaría
+    // aunque el repintado sea correcto. Fijamos la receta del primer pintar.
+    let ref = null;
     const pintar = () => {
+      const r0 = R.renderer;
+      if (!ref) ref = { hemiC: R.hemi.color.clone(), hemiS: R.hemi.groundColor.clone(), hemiI: R.hemi.intensity, solC: R.sun.color.clone(), solI: R.sun.intensity, tm: r0.toneMapping, exp: r0.toneMappingExposure };
+      const prevTM = r0.toneMapping, prevExp = r0.toneMappingExposure;
+      r0.toneMapping = ref.tm; r0.toneMappingExposure = ref.exp;
       const sc = new THREE.Scene();
-      sc.add(new THREE.HemisphereLight(R.hemi.color, R.hemi.groundColor, R.hemi.intensity * 1.05));
-      const dl = new THREE.DirectionalLight(R.sun.color, R.sun.intensity * 0.9); dl.position.set(0.4, 1, 0.8); sc.add(dl);
+      sc.add(new THREE.HemisphereLight(ref.hemiC, ref.hemiS, ref.hemiI * 1.05));
+      const dl = new THREE.DirectionalLight(ref.solC, ref.solI * 0.9); dl.position.set(0.4, 1, 0.8); sc.add(dl);
       const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
       const r = R.renderer, prevRT = r.getRenderTarget(), prevClear = r.getClearColor(new THREE.Color()), prevA = r.getClearAlpha(), prevShadow = r.shadowMap.enabled;
       r.shadowMap.enabled = false;
@@ -572,6 +581,7 @@ AVE.module('vegetacion', function (G) {
       });
       rt.scissorTest = false; rt.viewport.set(0, 0, TS * cols, TS * rows);
       r.setRenderTarget(prevRT); r.setClearColor(prevClear, prevA); r.shadowMap.enabled = prevShadow;
+      r0.toneMapping = prevTM; r0.toneMappingExposure = prevExp;
     };
     pintar();
     Object.assign(IMP, { rt, pintar });
