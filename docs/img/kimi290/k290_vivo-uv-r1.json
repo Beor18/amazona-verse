@@ -1,0 +1,332 @@
+{
+ "tarea": "KIMI-291",
+ "para": "meshopt _hd (validación A/B)",
+ "etiqueta": "vivo-uv-r1",
+ "head": "c8c0f4cc",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "cuandos": "2026-11-08T15:34:24.406Z",
+ "base": "docs/img/kimi287 (KIMI-287)",
+ "pasadas": [
+  {
+   "calidad": "medio",
+   "run": 1,
+   "consola_errores_ini": 0,
+   "preparar": "ok: portada → creador → Empezar (Cielo Solar) → carga 10872 ms (listo) → intro saltada",
+   "statsAsentado": {
+    "fps": 144,
+    "calls": 159,
+    "triangulos": 519165,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 190,
+     "textures": 162
+    },
+    "heapMB": 438.9,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 8,
+     "zonasCerca": 6
+    }
+   },
+   "statsSpawn": {
+    "fps": 144,
+    "calls": 159,
+    "triangulos": 519165,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 190,
+     "textures": 162
+    },
+    "heapMB": 448,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaSpawn": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi290\\k290_medio_r1_spawn.jpg",
+   "vuelo": "y=40.2",
+   "statsAerea": {
+    "fps": 144,
+    "calls": 149,
+    "triangulos": 539179,
+    "calidad": "medio",
+    "pos": {
+     "x": 134,
+     "y": 36.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 192,
+     "textures": 162
+    },
+    "heapMB": 424.1,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaAerea": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi290\\k290_medio_r1_aerea.jpg",
+   "consola_errores": 0
+  },
+  {
+   "calidad": "alto",
+   "run": 1,
+   "consola_errores_ini": 0,
+   "preparar": "ok: portada → creador → Empezar (Viento Brillante) → carga 5560 ms (listo) → intro saltada",
+   "statsAsentado": {
+    "fps": 144,
+    "calls": 174,
+    "triangulos": 1056460,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 190,
+     "textures": 162
+    },
+    "heapMB": 427.2,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "statsSpawn": {
+    "fps": 144,
+    "calls": 174,
+    "triangulos": 1056460,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 5.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 190,
+     "textures": 162
+    },
+    "heapMB": 425.1,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaSpawn": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi290\\k290_alto_r1_spawn.jpg",
+   "vuelo": "y=40.2",
+   "statsAerea": {
+    "fps": 136,
+    "calls": 145,
+    "triangulos": 2740893,
+    "calidad": "alto",
+    "pos": {
+     "x": 134,
+     "y": 36.2,
+     "z": 182.5
+    },
+    "memoria": {
+     "geometries": 191,
+     "textures": 162
+    },
+    "heapMB": 434.2,
+    "streaming": {
+     "descargando": 51,
+     "trabajos": 0,
+     "zonasCerca": 6
+    }
+   },
+   "capturaAerea": "C:\\Users\\kelvi\\amazonaversegame2\\docs\\img\\kimi290\\k290_alto_r1_aerea.jpg",
+   "consola_errores": 0
+  }
+ ],
+ "aa": {
+  "medio_spawn": {
+   "pct": [
+    44.464,
+    15.101,
+    5.97,
+    1.284
+   ],
+   "media": 8.481,
+   "max": 255
+  },
+  "medio_aerea": {
+   "pct": [
+    33.408,
+    4.803,
+    1.581,
+    0.478
+   ],
+   "media": 4.906,
+   "max": 240
+  },
+  "alto_spawn": {
+   "pct": [
+    50.633,
+    13.573,
+    3.739,
+    0.535
+   ],
+   "media": 8.436,
+   "max": 214
+  },
+  "alto_aerea": {
+   "pct": [
+    65.645,
+    14.466,
+    3.246,
+    0.413
+   ],
+   "media": 9.439,
+   "max": 240
+  }
+ },
+ "veredicto": {
+  "medio_spawn_vsr1": {
+   "pct": [
+    34.726,
+    5.099,
+    1.213,
+    0.16
+   ],
+   "media": 4.586,
+   "max": 222,
+   "heat": "k290_diff_medio_spawn_vsr1.jpg"
+  },
+  "medio_spawn_vsr2": {
+   "pct": [
+    47.584,
+    17.694,
+    6.895,
+    1.414
+   ],
+   "media": 9.363,
+   "max": 252,
+   "heat": "k290_diff_medio_spawn_vsr2.jpg"
+  },
+  "medio_aerea_vsr1": {
+   "pct": [
+    19.732,
+    1.422,
+    0.561,
+    0.187
+   ],
+   "media": 3.085,
+   "max": 239,
+   "heat": "k290_diff_medio_aerea_vsr1.jpg"
+  },
+  "medio_aerea_vsr2": {
+   "pct": [
+    37.027,
+    6.282,
+    1.98,
+    0.531
+   ],
+   "media": 5.617,
+   "max": 236,
+   "heat": "k290_diff_medio_aerea_vsr2.jpg"
+  },
+  "alto_spawn_vsr1": {
+   "pct": [
+    15.925,
+    1.241,
+    0.505,
+    0.319
+   ],
+   "media": 2.676,
+   "max": 221,
+   "heat": "k290_diff_alto_spawn_vsr1.jpg"
+  },
+  "alto_spawn_vsr2": {
+   "pct": [
+    51.738,
+    14.661,
+    4.159,
+    0.601
+   ],
+   "media": 8.832,
+   "max": 213,
+   "heat": "k290_diff_alto_spawn_vsr2.jpg"
+  },
+  "alto_aerea_vsr1": {
+   "pct": [
+    11.365,
+    0.439,
+    0.186,
+    0.082
+   ],
+   "media": 2.374,
+   "max": 188,
+   "heat": "k290_diff_alto_aerea_vsr1.jpg"
+  },
+  "alto_aerea_vsr2": {
+   "pct": [
+    65.618,
+    14.42,
+    3.188,
+    0.378
+   ],
+   "media": 9.409,
+   "max": 243,
+   "heat": "k290_diff_alto_aerea_vsr2.jpg"
+  }
+ },
+ "consola": {
+  "errores": 0,
+  "muestras": []
+ },
+ "url": "https://www.amazonaverse.com/juego",
+ "veredicto_medio": "IDENTICA",
+ "detalle_medio": {
+  "dCalls": 0,
+  "dTrisPct": 0,
+  "dTex": -5,
+  "calls": 159,
+  "tris": 519165,
+  "fps": 144,
+  "heapMB": 448,
+  "vista": "aerea",
+  "base": "r1",
+  "pxOk": true,
+  "pct16": 1.422,
+  "pct32": 0.561,
+  "pct64": 0.187,
+  "aa16": 4.803,
+  "aa32": 1.581,
+  "aa64": 0.478
+ },
+ "veredicto_alto": "IDENTICA",
+ "detalle_alto": {
+  "dCalls": 0,
+  "dTrisPct": 0,
+  "dTex": -5,
+  "calls": 174,
+  "tris": 1056460,
+  "fps": 144,
+  "heapMB": 425.1,
+  "vista": "aerea",
+  "base": "r1",
+  "pxOk": true,
+  "pct16": 0.439,
+  "pct32": 0.186,
+  "pct64": 0.082,
+  "aa16": 14.466,
+  "aa32": 3.246,
+  "aa64": 0.413
+ }
+}

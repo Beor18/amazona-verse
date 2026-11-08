@@ -1,0 +1,170 @@
+{
+ "tarea": "KIMI-244",
+ "cuando": "2026-11-08T15:34:03.992Z",
+ "head": "c8c0f4cc",
+ "url": "https://www.amazonaverse.com/juego",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "ventana": {
+  "ancho": 1600,
+  "alto": 900
+ },
+ "calidad": "alto",
+ "preparacion": "ok: portada → creador → Empezar (Estrella Solar) → carga 11079 ms (listo) → intro saltada",
+ "red_quieta_s": "30.1",
+ "carga_inicial": {
+  "mb": 61.35,
+  "archivos_n": 275,
+  "por_tipo_mb": {
+   "_glb.js": 36.47,
+   "imágenes": 23.57,
+   ".js": 1.2,
+   "otros": 0.11
+  },
+  "mb_peticiones": 61.35,
+  "peticiones_n": 278,
+  "mayores_kb": [
+   [
+    "assets/models/edificios/complejo_ruinas_hd400_glb.js",
+    7174
+   ],
+   [
+    "assets/models/edificios/templo_mediano_h_hd_glb.js",
+    6022
+   ],
+   [
+    "assets/models/edificios/tex_hd/hd_savage.jpg",
+    5285
+   ],
+   [
+    "assets/models/edificios/templo_grande_d_hd_glb.js",
+    4463
+   ],
+   [
+    "assets/models/edificios/tex_hd/hd_ancient.jpg",
+    4229
+   ],
+   [
+    "assets/models/vittata_glb.js",
+    1710
+   ],
+   [
+    "assets/models/edificios/complejo_ruinas_glb.js",
+    750
+   ],
+   [
+    "assets/models/edificios/monumento_f_hd_glb.js",
+    709
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_damageM_Normal.jpg",
+    704
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_bricksM_Normal.jpg",
+    698
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_decoM_Normal.jpg",
+    646
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_wallL_Normal.jpg",
+    597
+   ],
+   [
+    "assets/models/edificios/templo_mediano_h_lejos_glb.js",
+    579
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_stoneM_Normal.jpg",
+    553
+   ],
+   [
+    "assets/models/edificios/tex_original/KB3D_pillarsM_Normal.jpg",
+    534
+   ]
+  ]
+ },
+ "vista_arranque": {
+  "look": "vibrant_toon",
+  "fps": 136,
+  "calls": 174,
+  "triangulos": 1056460,
+  "calidad": "alto",
+  "dpr": 1,
+  "post": true,
+  "programas": 76,
+  "heapMB": 434,
+  "geometrias": 193,
+  "texturasGPU": 162,
+  "texturas": 143,
+  "texturasGrandes": 42,
+  "atlasGrandes": 4,
+  "mundoGrandes": 9,
+  "texturasMB": 524.8,
+  "sombraMB": 16,
+  "postMB": 22.6,
+  "texturasPor": {
+   "generadas": 172.4,
+   "suelo": 42.7,
+   "otros": 3,
+   "flora": 77.4,
+   "personajes": 16,
+   "atlas_hd": 213.3
+  },
+  "texturasTop": [
+   [
+    "hd_savage.jpg",
+    "4096×4096",
+    85.3
+   ],
+   [
+    "hd_ancient.jpg",
+    "4096×4096",
+    85.3
+   ],
+   [
+    "flora:impostores",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "edificiosInst:casa_plataforma:hd:AV_HD_Savage",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "edificiosInst:templo_mediano_h:lejos:AV_HD_Ancie",
+    "2048×2048",
+    21.3
+   ],
+   [
+    "suelo_musgo.jpg",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "suelo_tierra_hojarasca.jpg",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "suelo_roca.jpg",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "suelo_arena_rio.jpg",
+    "1024×1024",
+    5.3
+   ],
+   [
+    "suelo_musgo_n.jpg",
+    "1024×1024",
+    5.3
+   ]
+  ]
+ },
+ "consola_errores_n": 0,
+ "consola_errores": []
+}

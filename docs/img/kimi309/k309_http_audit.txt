@@ -1,0 +1,15 @@
+HTTP AUDIT — https://www.amazonaverse.com/juego — 2026-11-08T15:31:41Z
+meta ave:build: ave:build" content="HEAD 3adad49a1962"
+templo_mediano_h_hd_glb.js: Content-Length: 6166185
+templo_grande_d_hd_glb.js: Content-Length: 4569692
+templo_grande_hd_glb.js: Content-Length: 4197866
+monumento_d_hd_glb.js: Content-Length: 3352476
+corral_hd_glb.js: Content-Length: 2813455
+meshopt_decoder: 1 referencia(s) en index.html
+familia_aventuras.js: HTTP/1.1 200 OK
+locales UV-exactos (3adad49):
+assets/models/edificios/corral_hd_glb.js: 2813455
+assets/models/edificios/monumento_d_hd_glb.js: 3352476
+assets/models/edificios/templo_grande_d_hd_glb.js: 4569692
+assets/models/edificios/templo_grande_hd_glb.js: 4197866
+assets/models/edificios/templo_mediano_h_hd_glb.js: 6166185

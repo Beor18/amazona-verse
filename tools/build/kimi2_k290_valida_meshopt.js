@@ -32,6 +32,7 @@ const CFG = JSON.parse(fs.readFileSync(path.join(AQUI, 'config.json'), 'utf8')).
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
 const ETIQUETA = arg('--etiqueta', 'despues-r1');
+const URLBASE = arg('--url', ''); // KIMI-309: validar contra el sitio publicado (el servidor local solo sirve las imágenes de diff)
 const SOLO = arg('--solo', '');
 const ANCHO = 1600, ALTO = 900, VUELA = 35;
 const CALIDADES = (SOLO ? [SOLO] : ['medio', 'alto']);
@@ -75,7 +76,8 @@ const DIFF_JS = (ua, ub, umbralHeat) => `(async () => { const carga = u => fetch
 (async () => {
   RES.head = execSync('git rev-parse --short HEAD', { cwd: RAIZ }).toString().trim();
   try { RES.gpu = execSync('powershell -NoProfile -Command "(Get-CimInstance Win32_VideoController | Where-Object { $_.AdapterRAM -gt 0 } | Select-Object -First 1).Name"', { timeout: 15000 }).toString().trim(); } catch (e) { RES.gpu = '?'; }
-  const { srv, puerto } = await servir(); const origen = `http://127.0.0.1:${puerto}`;
+  const { srv, puerto } = await servir(); const origenDocs = `http://127.0.0.1:${puerto}`; const origen = URLBASE ? URLBASE.replace(/\/+$/, '') : origenDocs;
+  RES.url = URLBASE || 'local';
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi2u-k290-'));
   const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + perf, '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run', '--mute-audio', `--window-size=${ANCHO},${ALTO}`], { stdio: ['ignore', 'ignore', 'pipe'] });
   let err = ''; chrome.stderr.on('data', d => { err += d; });
@@ -133,9 +135,9 @@ const DIFF_JS = (ua, ub, umbralHeat) => `(async () => { const carga = u => fetch
     const ses = (await cdp.call('Target.attachToTarget', { targetId: tid, flatten: true })).sessionId;
     await cdp.call('Runtime.enable', {}, ses);
     for (const calidad of CALIDADES) for (const vista of ['spawn', 'aerea']) {
-      const base1 = `${origen}/docs/img/kimi287/k287_antes_${calidad}_r1_${vista}.jpg`;
-      const base2 = `${origen}/docs/img/kimi287/k287_antes_${calidad}_r2_${vista}.jpg`;
-      const desp = `${origen}/docs/img/kimi290/k290_${calidad}_r1_${vista}.jpg`;
+      const base1 = `${origenDocs}/docs/img/kimi287/k287_antes_${calidad}_r1_${vista}.jpg`;
+      const base2 = `${origenDocs}/docs/img/kimi287/k287_antes_${calidad}_r2_${vista}.jpg`;
+      const desp = `${origenDocs}/docs/img/kimi290/k290_${calidad}_r1_${vista}.jpg`;
       try {
         const aa = JSON.parse(await ev(cdp, ses, DIFF_JS(base1, base2, 16), 120));
         RES.aa[`${calidad}_${vista}`] = { pct: aa.pct, media: aa.media, max: aa.max };
@@ -143,7 +145,7 @@ const DIFF_JS = (ua, ub, umbralHeat) => `(async () => { const carga = u => fetch
       } catch (e) { RES.aa[`${calidad}_${vista}`] = { error: e.message.slice(0, 200) }; }
       for (const rb of ['r1', 'r2']) {
         try {
-          const ab = JSON.parse(await ev(cdp, ses, DIFF_JS(`${origen}/docs/img/kimi287/k287_antes_${calidad}_${rb}_${vista}.jpg`, desp, 16), 120));
+          const ab = JSON.parse(await ev(cdp, ses, DIFF_JS(`${origenDocs}/docs/img/kimi287/k287_antes_${calidad}_${rb}_${vista}.jpg`, desp, 16), 120));
           if (ab.heat && ab.heat !== 'null') { const rh = path.join(SALIDA, `k290_diff_${calidad}_${vista}_vs${rb}.jpg`); fs.writeFileSync(rh, Buffer.from(ab.heat.split(',')[1], 'base64')); }
           RES.veredicto[`${calidad}_${vista}_vs${rb}`] = { pct: ab.pct, media: ab.media, max: ab.max, heat: `k290_diff_${calidad}_${vista}_vs${rb}.jpg` };
           console.log(`· A/B ${calidad} ${vista} vs ${rb}: umbral16 ${ab.pct[1]} % · umbral32 ${ab.pct[2]} % · umbral64 ${ab.pct[3]} % (max Δ${ab.max})`);
