@@ -456,3 +456,6 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
   - Dónde se entra: el botón «Aventuras en familia» en el panel «En familia» de la pausa y la sección «Recuerdos en familia» del Diario.
   - Los recuerdos se guardan en el dispositivo, aparte de la partida (`<almacen>.familyquest`), con la foto del juego en JPEG de 320×240. No guardan nombres ni se comparten. Todavía no hay botón para descargar la página familiar.
   - Los textos están solo en español: el inglés lo haces tú con tus herramientas.
+
+- **2026-11-08 ~15:00 UTC · Kelvin: «sí», acepta la carga en calidad media y alta de escritorio (51,6 MB tras meshopt; bajo y móvil cumplen ≤ 28 MB).** Así los templos del spawn no se vuelven a ver como ruinas. Con la evidencia de Kimi con GPU real en lugar de QA-201 (Mac), se cierra «demo estable»: V18 19/19 en `avance.json`.
+
