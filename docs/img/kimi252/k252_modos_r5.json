@@ -1,0 +1,110 @@
+{
+ "flight": {
+  "fpsMed": 16,
+  "fpsP10": 5,
+  "peorMs": 2220,
+  "fpsSeg": [
+   5,
+   7,
+   11,
+   22,
+   23,
+   12,
+   2,
+   24,
+   25,
+   25
+  ],
+  "callsMed": 64,
+  "trisMed": 296950,
+  "heapMB": 121,
+  "heapDelta": 30,
+  "mem": {
+   "geo": 107,
+   "tex": 143
+  },
+  "errConsola": []
+ },
+ "river": {
+  "fpsMed": 10,
+  "fpsP10": 5,
+  "peorMs": 362,
+  "fpsSeg": [
+   5,
+   5,
+   10,
+   10,
+   6,
+   11,
+   11,
+   11,
+   11,
+   10,
+   14,
+   12
+  ],
+  "callsMed": 66,
+  "trisMed": 328103,
+  "heapMB": 76,
+  "heapDelta": 5,
+  "mem": {
+   "geo": 103,
+   "tex": 140
+  },
+  "errConsola": []
+ },
+ "tren": {
+  "fpsMed": 11,
+  "fpsP10": 4,
+  "peorMs": 454,
+  "fpsSeg": [
+   2,
+   4,
+   5,
+   4,
+   8,
+   10,
+   10,
+   11,
+   16,
+   17,
+   22,
+   19
+  ],
+  "callsMed": 86,
+  "trisMed": 251867,
+  "heapMB": 94,
+  "heapDelta": 25,
+  "mem": {
+   "geo": 154,
+   "tex": 140
+  },
+  "errConsola": []
+ },
+ "maze": {
+  "fpsMed": 18,
+  "fpsP10": 8,
+  "peorMs": 2533,
+  "fpsSeg": [
+   8,
+   11,
+   20,
+   25,
+   11,
+   1,
+   22,
+   26,
+   28,
+   29
+  ],
+  "callsMed": 48,
+  "trisMed": 338836,
+  "heapMB": 108,
+  "heapDelta": 11,
+  "mem": {
+   "geo": 112,
+   "tex": 145
+  },
+  "errConsola": []
+ }
+}
