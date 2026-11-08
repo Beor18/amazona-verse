@@ -111,7 +111,8 @@
     "que": "UICN verificada con fuentes vigentes y discrepancias documentadas (sin tocar el catálogo narrativo)",
     "donde": "docs/equipo/ESPECIES_DISCREPANCIAS.md",
     "quien": "Otra cuenta",
-    "estado": "en curso"
+    "estado": "hecho",
+    "nota": "8-nov: 12 de 13 discrepancias confirmadas con IOC 15.2 (columna UICN 2025), Wikipedia/DOI y extractos de DataZone; A. tresmariae no se evalúa aparte. iucnredlist.org dio 403: ninguna ficha leída directamente. Commit: COMMIT_SHA"
    }
   ]
  }
