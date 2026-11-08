@@ -816,8 +816,15 @@
         const l = document.createElement('link'); l.id = 'aula-css'; l.rel = 'stylesheet'; l.href = 'src/ui/aula.css';
         document.head.appendChild(l);
       }
-      let modoChip = null;
-      function chipVuelo(modo) { modoChip = modo; pintarChip(); }
+      let modoChip = null, chipPintado = null;
+      // QA-181: el bucle lo llama cada cuadro; solo se repinta si cambian el modo o el idioma (antes hidden, textContent y
+      // lang se reescribían en cada cuadro)
+      function chipVuelo(modo) {
+        const el = document.getElementById('edu-vuelo');
+        const firma = modo + '|' + ((AU.aj && AU.aj.idioma === 'en') || document.documentElement.lang === 'en');
+        if (el && chipPintado === firma && modo === modoChip) return;
+        modoChip = modo; pintarChip(); chipPintado = firma;
+      }
       function pintarChip() {
         let el = document.getElementById('edu-vuelo');
         if (!el) {

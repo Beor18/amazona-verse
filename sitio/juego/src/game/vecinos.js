@@ -39,7 +39,7 @@ window.AVVecinos = function (G) {
   const aves = [];
   let forzar = false, t = 0;
   const nivel = () => (forzar && forzar.nivel) || (G.renderer.calidad && G.renderer.calidad.nivel) || 'medio';
-  const tope = () => TOPE[nivel()] || 0;
+  const tope = () => { const t = TOPE[nivel()] || 0; return (G.renderer.calidad && G.renderer.calidad.escuela) ? Math.ceil(t / 2) : t; };   // KIMI-320 (Modo Escuela): la mitad de vecinos
   const fase = () => { const h = typeof S.hora === 'number' ? S.hora : 12; return h >= 19 || h < 5 ? 'noche' : (h >= 17.5 ? 'atardecer' : 'dia'); };
   const lejos = () => SITIOS.every(s => Math.hypot(S.pos.x - s.x, S.pos.z - s.z) > 90);
   if (G.audio && G.audio.define) {

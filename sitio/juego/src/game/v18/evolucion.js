@@ -45,6 +45,7 @@ window.AVV18Evolucion = function (G) {
   if (G.v18evo) return G.v18evo;
   const V = G.v18 || window.AVV18Progreso(G);
   const H = G.v18hab || window.AVV18Habilidades(G);
+  const HISTORICAS = ['martinicana', 'violacea']; // §2: consejeras de la temporada 1, fuera de la progresión
   const NIVEL_MAX = 40, ALI = 'eco_protector', ESTADOS_ALI = ['bloqueada', 'disponible', 'desbloqueada'], VARIANTES = ['amplificado', 'dirigido', 'maestro'];
   const T = n => 20 * (n - 1) + 3 * (n - 1) * (n - 2); // XP total para llegar al nivel n
   const XP_MAX = T(NIVEL_MAX);
@@ -221,7 +222,7 @@ window.AVV18Evolucion = function (G) {
   let mudo = false;  // las pruebas apagan los oyentes mientras simulan duelos
   // o: { repetible, duelo, cuenta, max, mitadDesde, silencio }
   function dar(sp, n, fuente, o) {
-    o = o || {}; if (!sp || !(n > 0)) return 0;
+    o = o || {}; if (!sp || !(n > 0) || HISTORICAS.indexOf(sp) >= 0) return 0; // §2: Mara y Vela (históricas) no suben de nivel
     let dado = 0, antes = 1, despues = 1;
     V.cambiarEvo(e0 => {
       const e = sanear(e0), d = dia(e);
@@ -510,7 +511,7 @@ window.AVV18Evolucion = function (G) {
         '.v18-evo-ali .si{color:#2f7a2f;font-weight:700}.v18-evo-ali .no{opacity:.8}.v18-evo-ali img{vertical-align:middle;border-radius:50%;margin-right:4px}' +
         '.v18-evo-guia{margin:6px 0 8px;padding:8px 10px;border-radius:12px;background:#fff3c4;color:#3b2a14;text-align:left;font-size:calc(14px * var(--fs-k,1));line-height:1.35}' +
         '.v18-evo-guia p{margin:3px 0}.v18-evo-guia .meta{font-weight:700}.v18-evo-guia .v18-evo-chip{display:inline-block;padding:2px 8px;margin:2px 2px 0 0;border-radius:9px;background:#ffe39a;font-size:calc(13px * var(--fs-k,1))}' +
-        '.v18-evo-guia kbd{display:inline-block;vertical-align:middle;height:auto;font:700 13px/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 5px;margin:0 3px 0 6px;border-radius:6px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center}' +
+        '.v18-evo-guia kbd{display:inline-block;vertical-align:middle;height:auto;font:700 calc(13px * var(--fs-k,1))/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 5px;margin:0 3px 0 6px;border-radius:6px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center}' +
         ':root.a11y-contraste .v18-evo-guia{background:#000;color:#fff;border:2px solid #fff}:root.a11y-contraste .v18-evo-guia .v18-evo-chip{background:#333;color:#fff}' +
         '@media (min-width:761px){#v18-evo-carta{top:calc(env(safe-area-inset-top,0px) + 96px)}}' + // en la computadora el aviso (#toast, capa superior) ocupa el borde de arriba
         '@keyframes v18evo{from{transform:translateY(-16px) scale(.9);opacity:0}to{transform:none;opacity:1}}';
@@ -823,6 +824,8 @@ window.AVV18Evolucion = function (G) {
       { hoyFijo = 'prueba-3'; let t = 0; for (let i = 0; i < 30; i++) { const a = info('arausiaca').xp; win(); G.emit('v18minigolf', { tipo: 'nido', golpes: 2, nuevo: true }); t += info('arausiaca').xp - a; }
         const extra = dar('arausiaca', 500, 'otra', { repetible: true }), extra2 = dar('arausiaca', 50, 'otra', { repetible: true });
         check('Tope global de lo repetible: como máximo 300 XP al día (duelos 160 + minigolf 90 + 50 de otra fuente; luego 0)', t === 250 && extra === 50 && extra2 === 0, [t, extra, extra2].join(',')); }
+      { const xm = dar('martinicana', 50, 'otra'), xv = dar('violacea', 50, 'otra', { repetible: true });
+        check('§2: las dos especies históricas (Mara y Vela) no ganan XP ni suben de nivel', xm === 0 && xv === 0 && !E().esp.martinicana && !E().esp.violacea, [xm, xv].join(',')); }
       const h0 = revisarHitos(true), pre = info('arausiaca').xp; P.cambiarMundo('puente_villa', 'reparado'); const h1 = info('arausiaca').xp; P.cambiarMundo('puente_villa', 'roto'); P.cambiarMundo('puente_villa', 'reparado');
       check('Los hitos no se repiten (el puente paga 120 una vez aunque se vuelva a marcar)', h0 === 0 && h1 - pre === 120 && info('arausiaca').xp === h1 && revisarHitos(true) === 0, [h0, h1 - pre, info('arausiaca').xp - h1].join(','));
       // Ritmo pactado (diseño §3): nivel 10 en la 1.ª sesión, 20 en 2-3 sesiones, 30 tras varias semanas. Sesión simulada con TODAS las
@@ -881,7 +884,7 @@ window.AVV18Evolucion = function (G) {
       const M = {};
       // (distancia entre las dos; la onda sale 0,5 m por delante del pico y alcanza hasta alcance + 0,6). La Campeona CLASICA:
       // la de la etapa se aparta de un salto al salir del mareo y estropearía la medida del empuje
-      for (const n of [1, 10, 20]) M[n] = { 7: medir(n, 7), 9: medir(n, 9), 11: medir(n, 11), 13: medir(n, 13), ang38: medir(n, 6.5, 38), ang30: medir(n, 6.5, 30) };
+      for (const n of [1, 10, 20, 30]) M[n] = { 7: medir(n, 7), 9: medir(n, 9), 11: medir(n, 11), 13: medir(n, 13), ang38: medir(n, 6.5, 38), ang30: medir(n, 6.5, 30) };
       const alc = n => [7, 9, 11, 13].filter(d => M[n][d].da).pop() || 0;
       check('Alcance medido: nv 1 acierta a 7 m y no a 9; nv 10 a 9 y no a 11; nv 20 a 11 y no a 13',
         M[1][7].da && !M[1][9].da && M[10][9].da && !M[10][11].da && M[20][11].da && !M[20][13].da, JSON.stringify({ 1: alc(1), 10: alc(10), 20: alc(20) }));
@@ -897,8 +900,13 @@ window.AVV18Evolucion = function (G) {
         const n0 = C().balas.filter(b => b.de === r).length; Cb.usar(C().j, 'grito_yunque');
         return { antes: n0, despues: C().balas.filter(b => b.de === r).length, desvios: C().stats.desvios };
       };
-      const sd20 = semilla(20), sd10 = semilla(10);
+      const sd20 = semilla(20), sd10 = semilla(10), sd30 = semilla(30);
       check('Eco Dirigido (nv 20) deshace la semilla rival que viene en su cono; con Eco Amplificado sigue volando', sd20.antes === 1 && sd20.despues === 0 && sd20.desvios === 1 && sd10.antes === 1 && sd10.despues === 1, JSON.stringify({ sd20, sd10 }));
+      // §4 Grito Maestro (nv 30): 11 m como el Eco Dirigido, pero más abierto (acierta a 30°), deshace semillas y suelta destellos dorados
+      Cb.iniciar({ sinCuenta: true, especie: 'vittata', evo: { nivel: 30 } }); const hM = H.listo(C().j, 'grito_yunque').h;
+      check('Grito Maestro (nv 30) medido: acierta a 11 m y no a 13; a 30° sí (el Eco Dirigido no) y a 38° no; deshace la semilla rival, nunca quita plumas y lleva destellos dorados',
+        M[30][11].da && !M[30][13].da && M[30].ang30.da && !M[20].ang30.da && !M[30].ang38.da && sd30.antes === 1 && sd30.despues === 0 && M[30][7].plumas === 5 && M[30][7].empuje >= M[20][7].empuje &&
+        hM.maestro === true && hM.etapa === 'grito_maestro' && hM.efecto !== gr.efecto, JSON.stringify({ alc: alc(30), a30: M[30].ang30.da, a38: M[30].ang38.da, sd30, empuje: [M[20][7].empuje, M[30][7].empuje] }));
       Cb.iniciar({ sinCuenta: true, especie: 'vittata', evo: { nivel: 1 } });
       check('Nivel 1 en el duelo: el motor usa el grito de hoy tal cual', H.listo(C().j, 'grito_yunque').h === gr && C().j.nivel === 1);
       Cb.salir(); mudo = false;

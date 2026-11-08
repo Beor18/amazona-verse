@@ -1135,25 +1135,25 @@ AVE.module('accesibilidad', function (G) {
                   if (!visible(b)) continue; const r = b.getBoundingClientRect();
                   if (r.width && (r.width < 43.5 || r.height < 43.5)) lista.push(`${et}: «${nombreB(b)}» mide ${Math.round(r.width)}×${Math.round(r.height)}`);
                 }
-                const fs = [];
+                const fs = [], fsQuien = [];
                 for (const e of [caja, ...caja.querySelectorAll('*')]) {
                   if (!visible(e) || e.closest('svg') || e.tagName === 'STYLE') continue;
                   const r = e.getBoundingClientRect(), cs = d.defaultView.getComputedStyle(e);
                   if (e !== caja && r.width && (r.left < rc.left - 1 || r.right > rc.right + 1) && cs.position !== 'fixed') { lista.push(`${et}: ${nomEl(e)} se sale de su caja`); break; }
                   if (conTexto(e) && /hidden|clip/.test(cs.overflowX) && e.scrollWidth > e.clientWidth + 1) lista.push(`${et}: ${nomEl(e)} corta el texto`);
                   if (!conTexto(e)) continue;
-                  fs.push(parseFloat(cs.fontSize));
+                  fs.push(parseFloat(cs.fontSize)); fsQuien.push(nomEl(e) + ' «' + e.textContent.trim().slice(0, 14) + '»');
                   const c = contrasteMin(e); if (c < 4.5) lista.push(`${et}: contraste ${c.toFixed(1)}:1 en ${nomEl(e)} «${e.textContent.trim().slice(0, 16)}»`);
                 }
-                if (W === 375 && !contr) (tam[p.nombre] = tam[p.nombre] || [])[i] = fs;
+                if (W === 375 && !contr) { (tam[p.nombre] = tam[p.nombre] || [])[i] = fs; if (!i) tam[p.nombre].quien = fsQuien; }
               }
             } finally { f.remove(); }
           }
           // Texto grande: con «Muy grande» (--fs-k 1,3) cada texto de la pieza crece al menos un 10 %
           for (const p of piezas) {
             const t = tam[p.nombre]; if (!t || !t[0] || !t[NIVELES - 1]) continue;
-            const fijos = t[0].filter((v, k) => t[NIVELES - 1][k] != null && t[NIVELES - 1][k] < v * 1.1).length;
-            if (fijos) (p.panel ? avisos18 : malos18).push(`${p.nombre}: ${fijos} de ${t[0].length} textos no crecen con el texto grande`);
+            const fijos = t[0].map((v, k) => t[NIVELES - 1][k] != null && t[NIVELES - 1][k] < v * 1.1 ? `${(t.quien || [])[k] || k} ${v}→${t[NIVELES - 1][k]} px` : null).filter(Boolean);
+            if (fijos.length) (p.panel ? avisos18 : malos18).push(`${p.nombre}: ${fijos.length} de ${t[0].length} textos no crecen con el texto grande (${fijos.slice(0, 3).join(', ')})`);
           }
         }
         const sinPiezas = !piezas.some(p => !p.panel);
@@ -1178,6 +1178,8 @@ AVE.module('accesibilidad', function (G) {
         const snapR = G.guardado.instantanea(), ultR = ultimo;
         let okR = false, extraR = '';
         try {
+          // La partida que se guarda lleva Muy grande (el check anterior dejó el perfil en Normal: guardar eso no prueba nada)
+          S.profile = Object.assign({}, S.profile, { a11y: { texto: 2 } }); sync();
           const crudo = G.guardado.serialize(true);
           ultimo = null; S.profile = Object.assign({}, S.profile, { a11y: undefined }); G.emit('apply');
           const limpio = !/a11y-t2/.test(raiz.className) && leer().texto === 0;

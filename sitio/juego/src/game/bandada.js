@@ -236,7 +236,7 @@ window.AVBandada = function (G) {
   const F = { estado: 'off', motivo: '', t: 0, n: 0, lider: { x: 0, y: 0, z: 0, vx: 0, vz: 1 }, aves: [], giro: 0, tAcompana: 0 };
   const dummy = new THREE.Object3D(); dummy.rotation.order = 'YXZ';
   const nivel = () => G.renderer.calidad.nivel;
-  const cuentaPara = n => NIVEL_N[n] != null ? NIVEL_N[n] : 12;
+  const cuentaPara = n => { const base = NIVEL_N[n] != null ? NIVEL_N[n] : 12; return (G.renderer.calidad && G.renderer.calidad.escuela) ? Math.max(1, Math.round(base / 2)) : base; };   // KIMI-320 (Modo Escuela): la mitad de la bandada
   const permitido = () => !G.quiet && !!(S.profile && S.profile.created);
   const rnd = (a, b) => a + Math.random() * (b - a);
 

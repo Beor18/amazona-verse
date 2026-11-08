@@ -150,8 +150,9 @@ window.AVRioVivo = function (G) {
   function visorPosible() {
     if (M.swimming) return false;
     if (M.flying) { const l = aguaCerca(2.5); return l > -Infinity && S.pos.y - l > -0.3 && S.pos.y - l < VUELO_BAJO; }
+    if (!(F.quieta > 0.4)) return false; // QA-181: lo barato primero (aguaCerca son 18 consultas de agua y terreno)
     const l = aguaCerca(ORILLA);
-    return l > -Infinity && S.pos.y - l < 3.5 && F.quieta > 0.4;
+    return l > -Infinity && S.pos.y - l < 3.5;
   }
 
   // ---------- HUD del visor (DOM; el CSS va aquí porque ui.css es de otro carril) ----------

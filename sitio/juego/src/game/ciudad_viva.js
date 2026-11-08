@@ -28,7 +28,7 @@ window.AVCiudadViva = function (G) {
   const azar = l => l[Math.floor(Math.random() * l.length)];
   const angDif = (a, b) => { let d = (b - a) % 6.2832; if (d > 3.1416) d -= 6.2832; if (d < -3.1416) d += 6.2832; return d; };
   const nivel = () => (G.renderer.calidad && G.renderer.calidad.nivel) || 'medio';
-  const cuantas = () => (N[nivel()] != null ? N[nivel()] : N.medio);
+  const cuantas = () => { const n = N[nivel()] != null ? N[nivel()] : N.medio; return (G.renderer.calidad && G.renderer.calidad.escuela) ? Math.ceil(n / 2) : n; };   // KIMI-320 (Modo Escuela): la mitad de la población
   const reducido = () => !!(G.renderer && G.renderer.REDUCED);
   const R = { prueba: false, pausa: false, horaPrueba: null, sitio: null, aves: [], P: null, verP: -1, on: false, cuadro: 0, t: 0, chkT: 0,
     stats: { pasos: 0, cuadros: 0 }, llamaT: 0 };

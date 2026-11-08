@@ -481,10 +481,20 @@ AVE.module('ambiente', function (G) {
       liberar(); await cuadros(2);
       const mem = () => Object.assign({}, R.renderer.info.memory, { programas: (R.renderer.info.programs || []).length });
       const m0 = mem();
-      for (let v = 0; v < 4; v++) { estado.forzar = true; await cuadros(3); liberar(); await cuadros(2); }
+      // Se cuentan los recursos del propio ambiente (geometría, material y atlas de cada vuelta), no el total de la GPU: con el
+      // mundo ya recorrido por otras baterías el streaming carga y suelta decenas de piezas a la vez (193 → 202 geometrías y
+      // 370 → 329 tras e2eTest) y el total no dice nada de este módulo. Una fuga es un recurso creado que no se suelta.
+      let creados = 0, soltados = 0, vivos = 0, repetidos = 0;
+      const vistos = new Set(), seguir = r => { if (!r) return; if (vistos.has(r)) { repetidos++; return; } vistos.add(r); creados++; r.addEventListener('dispose', function f() { soltados++; r.removeEventListener('dispose', f); }); };
+      for (let v = 0; v < 4; v++) {
+        estado.forzar = true; await cuadros(3); if (!puntos) crear(); // el gancho de render no siempre corre en headless
+        seguir(puntos.geometry); seguir(puntos.material); seguir(atlas);
+        estado.forzar = false; liberar(); await cuadros(2); // apagado: el gancho de render no las vuelve a crear
+        if (puntos || scene.getObjectByName('ambiente-particulas')) vivos++;
+      }
       const m1 = mem();
-      // El streaming, la fauna y las partículas cargan y sueltan piezas a la vez (±2 geometrías); una fuga del ambiente sumaría al menos 1 por vuelta (4)
-      ok('0 fugas tras 4 vueltas (geometrías ±2 del mundo, texturas)', m1.geometries <= m0.geometries + 2 && m1.textures <= m0.textures, JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
+      ok('0 fugas tras 4 vueltas (cada geometría, material y atlas que crea el ambiente se suelta; nada queda en la escena)', creados >= 8 && soltados === creados && !vivos && !repetidos,
+        creados + ' creados · ' + soltados + ' soltados · ' + vivos + ' en escena · ' + repetidos + ' repetidos · GPU (informativo, incluye el streaming) ' + JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
 
       // Luz de borde de actores.js (26-F): compila sobre un material Standard sin errores
       if (G.actores && G.actores.rim) {

@@ -173,6 +173,15 @@ window.AVCarga = function (G) {
         aviso.textContent = tx(AVISOS.listo);
         C.ms = Math.round(performance.now() - t0); C.motivo = motivo;
         if (zona) { C.zona = Object.assign(C.zona || {}, { faltan: zona.faltan(), hecho: zona.hecho() }); zona.terminar(); }
+        // Foto de las zonas cercanas al entrar, para cargaTest: se repasa 20 s mientras Vittata siga en el sitio de entrada (lo
+        // lejano de la zona se termina de colocar unos cuadros después). Otras baterías la llevan lejos y el streaming cambia.
+        { const st = ST(), p0 = G.S.pos ? { x: G.S.pos.x, z: G.S.pos.z } : null, tF = performance.now();
+          const fotoCerca = () => {
+            const p = G.S.pos; if (!st || !st.zonas || !st.instancias || (p0 && p && Math.hypot(p.x - p0.x, p.z - p0.z) > 30)) return;
+            C.cerca = { zonas: Object.values(st.zonas).filter(Z => Z.nivel === 2).length, sinColocar: st.instancias.filter(I => st.zonas[I.zona] && st.zonas[I.zona].nivel === 2 && !I.colocado).length };
+            if (C.cerca.sinColocar && performance.now() - tF < 20000) setTimeout(fotoCerca, 250);
+          };
+          fotoCerca(); }
         // Se destapa el mundo: el cuadro siguiente es el primero de verdad (todo enlazado). Se mide cuánto tarda.
         ocultar = false;
         if (G.pausa) G.pausa.set('carga', false);
@@ -258,10 +267,13 @@ window.AVCarga = function (G) {
       check('Al terminar, el mundo está listo', mundoOk);
       const ST = G.mundo && G.mundo.streaming;
       if (ST && ST.precargarZona) {
+        // Se mira la foto tomada al cerrar la entrada real, no el estado de ahora: si antes corrió otra batería (e2eTest lleva a
+        // Vittata a otra zona), el streaming está a medio cargar donde ella esté y la zona de inicio ya no es la de la entrada.
         const st = ST.stats(), zs = Object.values(ST.zonas);
-        const cerca = zs.filter(Z => Z.nivel === 2), sinColocar = ST.instancias.filter(I => ST.zonas[I.zona].nivel === 2 && !I.colocado).length;
-        check('Zona de inicio cargada: sus zonas cercanas con el modelo completo y colocadas', !real || real.motivo !== 'listo' || (cerca.length > 0 && sinColocar === 0),
-          cerca.length + ' zonas cerca, ' + sinColocar + ' instancias sin colocar; modelos cerca ' + st.modelosCerca + ', _hd ' + st.modelosHD + ', lejos ' + st.modelosLejos + ', ' + st.kbGeometria + ' KB de geometría');
+        const ahora = { zonas: zs.filter(Z => Z.nivel === 2).length, sinColocar: ST.instancias.filter(I => ST.zonas[I.zona] && ST.zonas[I.zona].nivel === 2 && !I.colocado).length };
+        const foto = (real && real.cerca) || ahora;
+        check('Zona de inicio cargada: sus zonas cercanas con el modelo completo y colocadas', !real || real.motivo !== 'listo' || (foto.zonas > 0 && foto.sinColocar === 0),
+          'al entrar: ' + foto.zonas + ' zonas cerca, ' + foto.sinColocar + ' instancias sin colocar' + (real && real.cerca ? '' : ' (sin foto: estado actual)') + '; ahora: ' + ahora.zonas + ' zonas, ' + ahora.sinColocar + ' sin colocar; modelos cerca ' + st.modelosCerca + ', _hd ' + st.modelosHD + ', lejos ' + st.modelosLejos + ', ' + st.kbGeometria + ' KB de geometría');
       }
       // 2. Con caché (todo ya en memoria): casi no se ve
       const pend0 = { tex: RP ? RP.texturas() : 0, prog: RP ? RP.programas() : 0 };

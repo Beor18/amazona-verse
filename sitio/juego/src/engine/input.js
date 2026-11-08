@@ -189,7 +189,8 @@ AVE.module('input', function (G) {
     }
     const pista = document.querySelectorAll('#keyhint kbd');
     if (pista[0]) pista[0].textContent = ['arriba', 'izquierda', 'abajo', 'derecha'].map(a => etiqueta(mapa[a])).join('');
-    if (pista[2]) pista[2].textContent = etiqueta(mapa.accion);
+    if (pista[2]) pista[2].textContent = etiqueta(mapa.volar);
+    if (pista[3]) pista[3].textContent = etiqueta(mapa.accion);
   }
   montar(); pintar();
 

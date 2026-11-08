@@ -384,10 +384,16 @@ window.AVClima = function (G) {
       ok('Con «reducir movimiento» no hay sacudida ni flash; en calidad baja solo audio', !tr.shake && !tr.flash && !trB.flash && trB.shake);
       ok('Los sonidos trueno y lluvia existen', G.audio.has('trueno') && G.audio.has('lluvia'));
       // FPS en calidad baja (medidos, informativos: el equipo de las baterías no es el de referencia)
-      const medir = async () => { let m = 0; for (let i = 0; i < 6; i++) { await espera(500); m = Math.max(m, R.stats().fps); } return m; };
+      // Se cuentan los cuadros aquí mismo (≥ 3 s y ≥ 4 cuadros, tope 30 s). R.stats().fps se redondea y con GPU por software,
+      // tras bajar la calidad que dejó otra batería, un cuadro puede tardar más de 2 s: daba 0 fps aunque el juego dibujaba.
+      R.setCalidad('bajo');
+      const medir = () => new Promise(fin => { let n = 0, t0 = 0, hecho = false; const guarda = setTimeout(() => { hecho = true; fin(0); }, 35000);
+        const f = t => { if (hecho) return; if (!n) t0 = t; n++; const d = t - t0;
+          if ((d >= 3000 && n >= 4) || d >= 30000) { hecho = true; clearTimeout(guarda); fin(n > 1 && d > 0 ? Math.round((n - 1) * 10000 / d) / 10 : 0); } else requestAnimationFrame(f); };
+        requestAnimationFrame(f); });
       fijar('sol', { inmediato: true }); const fSol = await medir();
       fijar('aguacero', { inmediato: true }); const fAg = await medir();
-      ok('FPS medidos en calidad baja (sol → aguacero)', fSol > 0 && fAg > 0, fSol + ' → ' + fAg + ' fps');
+      ok('FPS medidos en calidad baja (sol → aguacero)', fSol > 0 && fAg > 0 && R.calidad.nivel === 'bajo', fSol + ' → ' + fAg + ' fps (' + R.calidad.nivel + ')');
       // Quieto en las baterías y en Modo Retos
       F.sim = false; fijar(null); sim(0.3);
       ok('En las baterías (G.quiet) vuelve a sol y suelta la lluvia', F.estado === 'sol' && !G.fx.rain.visible && Math.abs(scene.fog.far - base.niebla[1]) < 0.5, F.estado + ' · lluvia ' + G.fx.rain.visible + ' · ' + Math.round(scene.fog.far) + ' m');

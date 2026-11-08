@@ -188,7 +188,10 @@ window.AVV18Ciclo = function (G) {
       for (let i = 0; i < 40 && !G.interaccion.list.find(it => it.id === 'v18_rival' && it.visible()); i++) await new Promise(r => setTimeout(r, 250)); // el modelo de la rival carga aparte
       ir({ x: sitio.x - 2, z: sitio.z }); cuadros(2);
       toasts.length = 0; evPoder.length = 0;
-      const retada = usarIt('v18_rival');
+      let retada = usarIt('v18_rival');
+      // Con progreso limpio el primer duelo abre el entreno guiado (e9d8494e): el niño puede pulsar «Saltar entreno» y va al duelo
+      const conEntreno = !!(Cb.entreno && Cb.entreno());
+      if (retada && conEntreno) retada = !!Cb.saltarEntreno();
       const C = Cb.estado();
       check('4 · El duelo usa el poder de la especie elegida (Escudo de plumas); la rival grita',
         retada && C.j.especie === DOMINICA && C.j.poder === 'escudo_plumas' && C.r.poder === G.v18hab.poderDe(C.r.especie) && ['grito_yunque', 'eco_cordillera'].indexOf(C.r.poder) >= 0 && C.fase === 'cuenta', C.j && (C.j.especie + ' / ' + C.j.poder + ' vs ' + C.r.especie + ' / ' + C.r.poder));

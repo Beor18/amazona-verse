@@ -46,10 +46,12 @@ AVE.module('interaccion', function (G) {
     const modo = modoActivo();
     const it = (!busy && !modo) ? nearest() : null;
     const pr = $('prompt'), txt = promptTxt();
-    const poner = t => { if (txt.textContent !== t) txt.textContent = t; pr.hidden = false; };
-    if (modo && !busy) { const a = api.modo.aviso(); if (a) poner(a); else pr.hidden = true; } // aviso vacío: el modo ya enseña sus controles (chips del duelo)
+    // QA-181: el DOM solo se escribe si cambia (antes hidden se reescribía cada cuadro: una mutación y estilo invalidado por cuadro)
+    const ocultar = () => { if (!pr.hidden) pr.hidden = true; };
+    const poner = t => { if (txt.textContent !== t) txt.textContent = t; if (pr.hidden) pr.hidden = false; };
+    if (modo && !busy) { const a = api.modo.aviso(); if (a) poner(a); else ocultar(); } // aviso vacío: el modo ya enseña sus controles (chips del duelo)
     else if (it) poner('Acción: ' + it.label());
-    else pr.hidden = true;
+    else ocultar();
     const verb = modo && !busy ? api.modo.verbo : it ? it.label().split(' ')[0] : G.dialogo.open() ? 'Seguir' : !busy && lleva() ? 'Soltar' : 'Acción';
     const actBtn = G.input.actBtn;
     if (actBtn.textContent !== verb) actBtn.textContent = verb;

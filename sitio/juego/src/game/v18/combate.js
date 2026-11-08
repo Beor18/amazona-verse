@@ -84,7 +84,11 @@ window.AVV18Combate = function (G) {
     pCerca: '¡Cerca! Aletazo (E)', pLejos: 'Lejos: semilla (F)', pPoder: '¡Poder listo! (G)',
     pCercaT: '¡Cerca! Aletazo (Acción)', pLejosT: 'Lejos: semilla (Impulso)', pPoderT: '¡Poder listo! (mantén Impulso)',
     dGolpe: '¡Te dieron! Muévete de lado para esquivar.', dEscudo: '¡Te dieron! Para cubrirte, usa tu poder (G):', dEscudoT: '¡Te dieron! Para cubrirte, mantén Impulso:',
-    accion: 'Acción', impulso: 'Impulso', tagPoder: 'mantén: poder'
+    accion: 'Acción', impulso: 'Impulso', tagPoder: 'mantén: poder',
+    // V18.1 §9 («entiende por qué ganó»): al terminar, una línea que explica el resultado y, si pierdes, qué probar
+    porGana: 'Le quitaste todas sus plumas.', porGanaPoder: 'Le quitaste todas sus plumas y tu poder ayudó:',
+    tPoder: 'Consejo: usa tu poder (G):', tPoderT: 'Consejo: usa tu poder (mantén Impulso):',
+    tCerca: 'Consejo: de cerca, aletazo; de lejos, semilla.', tEsquiva: 'Consejo: cuando veas «!» sobre la Campeona, apártate de lado.'
   };
   // Generador con semilla: la IA decide igual en cada prueba
   let semilla = 1;
@@ -598,6 +602,7 @@ window.AVV18Combate = function (G) {
       '#v18-duelo .vd-apoyo{display:flex;align-items:center;gap:6px;justify-content:center;margin-top:4px;font-weight:600;font-size:14px}' +
       '#v18-duelo .vd-apoyo[hidden]{display:none}#v18-duelo .vd-apoyo img{width:40px;height:40px;border-radius:50%;background:#fff3;box-shadow:0 0 10px #9fe6ff}' +
       '#v18-duelo .vd-finxp{font-size:15px!important;color:#ffe39a}#v18-duelo .vd-finxp:empty{display:none}' +
+      '#v18-duelo .vd-fintip{font-size:14px!important;opacity:.92;margin:.2em 0 .5em}#v18-duelo .vd-fintip b:empty{display:none}' +
       // Cómo se pelea (8-nov): chips de acción (icono + tecla + recarga), entreno guiado, pistas y etiquetas táctiles
       '#v18-duelo [data-icon="semilla"]{--icon:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M12 2c4 3 6 7 6 11a6 6 0 0 1-12 0c0-4 2-8 6-11z\'/%3E%3C/svg%3E")}' +
       '#v18-duelo button.vd-chip{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:6px;padding:6px 10px 6px 12px;--icon-size:20px;transition:box-shadow .15s,opacity .15s,transform .15s}' +
@@ -640,7 +645,7 @@ window.AVV18Combate = function (G) {
       `<div class="vd-ent" data-k="ent" hidden><div class="vd-ent-cab"><span data-k="entPaso"></span><span class="vd-ent-pp" data-k="entPP"><i></i><i></i><i></i></span></div>` +
       `<div class="vd-ent-cuerpo"><kbd data-k="entK"></kbd><div class="vd-ent-txt"><span data-k="entTxt"></span> <b data-k="entPod"></b></div></div><button data-a="saltarEnt" type="button">${TXT.saltarEnt}</button></div>` +
       `<div class="vd-bot" data-k="bot">${chip('golpe_ala', 'wing', TXT.ala, 'E')}${chip('semilla', 'semilla', TXT.semilla, 'F')}${chip('poder', 'bolt', TXT.poder, 'G')}${chip('alianza', 'star', '', 'H')}</div>` +
-      `<div class="vd-fin" data-k="fin" hidden><p class="vd-finxp" data-k="finXp"></p><p data-k="finTxt"></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
+      `<div class="vd-fin" data-k="fin" hidden><p class="vd-finxp" data-k="finXp"></p><p data-k="finTxt"></p><p class="vd-fintip" data-k="finTip"><span data-k="finTipTxt"></span> <b data-k="finTipPod"></b></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
     el.addEventListener('pointerdown', e => {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
@@ -843,7 +848,16 @@ window.AVV18Combate = function (G) {
     } else { txt = TXT.pierde; C.premio = false; sonar('wrong'); }
     if (G.ui && G.ui.toast) G.ui.toast(txt, 3200);
     if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; hud.q('bot').hidden = true; flotante(gano ? TXT.ganaste : TXT.perdiste, 1.6);
-      try { hud.q('finXp').innerHTML = G.v18evo && G.v18evo.htmlFin ? G.v18evo.htmlFin() : ''; } catch (e) { /* sin evolución */ } }
+      try { hud.q('finXp').innerHTML = G.v18evo && G.v18evo.htmlFin ? G.v18evo.htmlFin() : ''; } catch (e) { /* sin evolución */ }
+      const c = consejo(gano, C.stats, (C.r.plumasMax || PLUMAS) - C.r.plumas); hud.q('finTipTxt').textContent = c.txt; hud.q('finTipPod').textContent = c.pod; }
+  }
+  // V18.1 §9: por qué ganaste o qué probar tras perder (cada texto es su nodo; el nombre del poder va aparte y se traduce solo)
+  function consejo(gano, st, quitadas) {
+    const usoPoder = !!(st && st.poderJ > 0);
+    if (gano) return usoPoder ? { id: 'porGanaPoder', txt: TXT.porGanaPoder, pod: nombrePoder() } : { id: 'porGana', txt: TXT.porGana, pod: '' };
+    if (!usoPoder) return { id: 'tPoder', txt: TACTIL ? TXT.tPoderT : TXT.tPoder, pod: nombrePoder() };
+    if ((quitadas || 0) <= 1) return { id: 'tCerca', txt: TXT.tCerca, pod: '' };
+    return { id: 'tEsquiva', txt: TXT.tEsquiva, pod: '' };
   }
   // Duelos ganados por etapa (mundo.duelos_ganados_e0..e3: Aprendiz, Despertar, Guardián, Maestro), con el nivel de la cotorra
   // con la que se gana. Son números: evolucion.js no los cuenta como hitos (solo mira 'recogida' y duelos_ganados).
@@ -1597,6 +1611,13 @@ window.AVV18Combate = function (G) {
         JSON.stringify({ res: C.resultado, plj: C.j.plumas, fm: C.j.finMareo }));
       for (let i = 0; i < 60; i++) paso(0.05);
       check('El mareo final se pasa solo', C.j.finMareo === 0 && C.fase === 'fin');
+      { // V18.1 §9: el panel final explica el resultado; tras perder sin usar el poder, el consejo es usarlo (con su nombre)
+        const tt = hud ? hud.q('finTipTxt').textContent : '', tp = hud ? hud.q('finTipPod').textContent : '';
+        const a = consejo(false, { poderJ: 1 }, 0), b = consejo(false, { poderJ: 2 }, 3), w0 = consejo(true, { poderJ: 0 }, 5), w1 = consejo(true, { poderJ: 1 }, 5);
+        check('V18.1 §9: al perder, el panel da un consejo (sin usar el poder: «usa tu poder» con su nombre); con poder, acercarse o apartarse del «!»; al ganar, por qué',
+          tt === (TACTIL ? TXT.tPoderT : TXT.tPoder) && tp === nombrePoder() && !!tp && a.id === 'tCerca' && b.id === 'tEsquiva' && w0.id === 'porGana' && !w0.pod && w1.id === 'porGanaPoder' && w1.pod === nombrePoder(),
+          JSON.stringify({ tt, tp, a: a.id, b: b.id, w0: w0.id, w1: w1.id }));
+      }
       salir();
       check('Al salir se devuelven Acción, Impulso y el modelo de Vittata', G.interaccion.modo !== modo && G.dones.sostener !== sostenerDuelo && hud.el.hidden && !pl3d &&
         !(G.actores && G.actores.player3D && Object.prototype.hasOwnProperty.call(G.actores.player3D, 'update')) && !scene.getObjectByName('v18_escudo') && !scene.getObjectByName('v18_onda'));
