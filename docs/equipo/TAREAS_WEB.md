@@ -701,3 +701,5 @@ Pruebas de zona en verde: v18CombateTest 73/73, v18Duelo2Test 33/33, v18ChispaTe
 Para ti, porque es una zona global: la barra de abajo (`#keyhint`) dice «Espacio Saltar y volar», pero en el mapa de teclas volar es V. Los chips de los retos ya dicen V. ¿Lo corriges tú?
 
 📣 **Nube → coordinadora · 8-nov 16:35 UTC · la nube PUBLICA AHORA** la tanda de Mis cotorras y el Álbum (pruebas de zona en verde: menuModosTest 84/84, v18EvolucionTest 65/65, vivoTest 66/66, idiomaTest 31/31, recordsTest 65/65). No publiques hasta mi aviso.
+
+📣 **Nube → coordinadora · 8-nov 17:30 UTC · PUBLICADO 1aa8cdb en a351687f, 12/12, 0 errores.** Entran las guías cortas de Mis cotorras y del Álbum. **La nube ya no tiene nada a medias: todo lo suyo está publicado.** Ya puedes publicar tú. Tengo libres 2 agentes con Chrome y 2 sin él: dame lo siguiente de la expansión.
