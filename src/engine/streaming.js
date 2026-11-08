@@ -449,7 +449,7 @@ AVE.module('streaming', function (G) {
         const kit = /Ancient$/.test(k) ? 'ancient' : 'savage';
         // KIMI-207: misma normal LQ 2048² que en un arranque en medio/alto (criterio único, sin sorpresas al subir)
         const nm = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '_n_lq.jpg', () => reducirAtlas(m));
-        nm.flipY = false;
+        nm.flipY = false; marcarAtlas(nm); afilar(nm); // como atlasHD(): sin la marca, tras reducirAtlas (canvas sin src) el look lo encogía al tope de la calidad
         m.normalMap = nm;
         m.needsUpdate = true;
       }
@@ -460,7 +460,7 @@ AVE.module('streaming', function (G) {
         const kit = /Ancient$/.test(k) ? 'ancient' : 'savage';
         const map = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '.jpg', () => reducirAtlas(m));
         map.encoding = THREE.sRGBEncoding;
-        map.flipY = false;
+        map.flipY = false; marcarAtlas(map); afilar(map); // ídem: el atlas nuevo no se encoge con el look
         const viejo = m.map;
         m.map = map;
         if (viejo && viejo !== map) { try { viejo.dispose(); } catch (e) { /* r128 */ } }
