@@ -1,0 +1,21 @@
+10:49:18 preparar: ok: portada abierta
+10:49:23 A entrar desde menú: {"activo":true,"portada":false}
+10:49:23   OK A · la tarjeta abre Flight y cierra la portada · {"activo":true,"portada":false}
+10:53:57 preparar: ok: portada abierta
+10:54:03 A completo: {"activo":true,"portadaTrasAbrir":false,"finVisible":true,"texto":"Volver al menú","portadaTrasClick":true,"activoTrasClick":true}
+10:54:03   OK A · la tarjeta abre Flight y cierra la portada · {"activo":true,"portadaTrasAbrir":false,"finVisible":true,"texto":"Volver al menú","portadaTrasClick":true,"activoTrasClick":true}
+10:54:03   OK A · el botón del final dice «Volver al menú» · Volver al menú
+10:54:03   OK A · clic en «Volver al menú»: vuelve al menú y el modo se cierra · {"p":true,"a":true}
+10:54:12 B completo: {"activo":true,"portadaTrasAbrir":false,"finVisible":true,"texto":"Volver a la historia","portadaTrasClick":false,"activoTrasClick":true}
+10:54:12   OK B · desde el mundo se abre Flight con la portada cerrada · {"activo":true,"portadaTrasAbrir":false,"finVisible":true,"texto":"Volver a la historia","portadaTrasClick":false,"activoTrasClick":true}
+10:54:12   OK B · el botón del final sigue diciendo «Volver a la historia» · Volver a la historia
+10:54:12   OK B · clic en «Volver a la historia»: se queda en el mundo (portada cerrada) · {"p":false,"a":true}
+10:55:57 preparar: ok: portada abierta
+10:56:03 A completo: {"activo":true,"portadaTrasAbrir":false,"finVisible":true,"texto":"Volver al menú","portadaTrasClick":true,"activoTrasClick":true}
+10:56:03   OK A · la tarjeta abre Flight y cierra la portada · {"activo":true,"portadaTrasAbrir":false,"finVisible":true,"texto":"Volver al menú","portadaTrasClick":true,"activoTrasClick":true}
+10:56:03   OK A · el botón del final dice «Volver al menú» · Volver al menú
+10:56:03   OK A · clic en «Volver al menú»: vuelve al menú y el modo se cierra · {"p":true,"a":true}
+10:56:11 B completo: {"activo":true,"portadaTrasAbrir":false,"finVisible":true,"texto":"Volver a la historia","portadaTrasClick":false,"activoTrasClick":true}
+10:56:11   OK B · desde el mundo se abre Flight con la portada cerrada · {"activo":true,"portadaTrasAbrir":false,"finVisible":true,"texto":"Volver a la historia","portadaTrasClick":false,"activoTrasClick":true}
+10:56:11   OK B · el botón del final sigue diciendo «Volver a la historia» · Volver a la historia
+10:56:11   OK B · clic en «Volver a la historia»: se queda en el mundo (portada cerrada) · {"p":false,"a":true}
