@@ -382,7 +382,7 @@
         if (!REDUCED && !st.sinFx && G.fx && G.fx.burst && ahora - (st.plumas || -1e9) > 800) { st.plumas = ahora; try { G.fx.burst(S.pos.x, S.pos.y + 0.2, S.pos.z, 'feathers', 9, S.pos.y + 2.5); } catch (e) { /* sin fx */ } }
         setTimeout(() => { if (st.activo) sonar('tick'); }, 90);
       }
-      if (como === 'agua' && G.agua && G.agua.spray) { try { G.agua.spray(S.pos.x, S.pos.y + 0.3, S.pos.z); } catch (e) { /* sin agua */ } }
+      if (como === 'agua' && !st.sinFx && G.agua && G.agua.spray) { try { G.agua.spray(S.pos.x, S.pos.y + 0.3, S.pos.z); } catch (e) { /* sin agua */ } }
       if (!REDUCED) G.camara.shake && G.camara.shake(como === 'agua' ? 0.08 : 0.14, 0.25);
       // Récord (almacén de Retos) y «Mis récords» por el gancho de siempre
       const rec = leerRec(), f = rec.flight; J.antes = f.mejor || 0;
@@ -810,20 +810,31 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           // ---------- 50 reinicios con partidas de robot: sin fugas (geometrías y texturas constantes) y pool sin desbordar ----------
           // Calentamiento: una partida con choque y dos cuadros dibujados, así lo del pool, los fx, el agua y el destello del choque (se crea una
           // vez y solo se sube a la GPU la primera vez que se ve) ya están en la GPU antes de medir
+          // Las dos medidas, recién reiniciado en la salida del carril: misma vista, así el renderer dibuja el mismo mundo (si la segunda se toma
+          // donde acabó la última partida, suma las geometrías y texturas del mundo que entran en cuadro y no son del vuelo)
+          const propiosVuelo = () => { const g = new Set(), tx = new Set(); raiz.traverse(o => { if (o.geometry) g.add(o.geometry); const m = o.material; if (m) for (const k of ['map', 'normalMap']) if (m[k]) tx.add(m[k]); }); return g.size + '/' + tx.size; };
           otraVez(); toque({ sinFx: true }); robot(5, 1 / 30); if (st.fase === 'juego') fin('tronco');
-          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-          const m0 = mem(), capOk = [];
+          otraVez(); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const m0 = mem(), capOk = [], pv0 = propiosVuelo(), hijos0 = raiz.children.length;
           for (let i = 0; i < 50; i++) {
             otraVez(); toque({ sinFx: true }); robot(20 + (i % 7), 1 / 30); // partidas de 20 a 26 obstáculos (sin plumas de fx: viven 1 s y no son del pool)
             capOk.push(vivas() <= CAP.tronco + CAP.roca + CAP.bambu + CAP.palma && Object.values(pool).every(p => p.libres.length >= 0 && new Set(p.libres).size === p.libres.length));
             if (st.fase === 'juego') fin('tronco');
           }
-          await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-          const m1 = mem();
-          check('50 reinicios: geometrías y texturas del renderer no crecen (sin fugas; el streaming del mundo puede liberar las suyas mientras tanto)', m1.g <= m0.g && m1.t <= m0.t, JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
+          otraVez(); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          const m1 = mem(), pv1 = propiosVuelo();
+          check('50 reinicios: nada nuevo en el grupo del vuelo y las geometrías y texturas del renderer no crecen (±12: el streaming del mundo carga y libera las suyas; una fuga por reinicio daría 50 o más)', raiz.children.length === hijos0 && pv1 === pv0 && m1.g <= m0.g + 12 && m1.t <= m0.t + 12, JSON.stringify(m0) + ' → ' + JSON.stringify(m1) + ' · geometrías/texturas del vuelo ' + pv0 + ' → ' + pv1);
           check('50 reinicios: el pool nunca se desborda ni duplica huecos', capOk.every(Boolean));
           // ---------- Salir ----------
+          const propios = new Set(), liberados = new Set();
+          raiz.traverse(o => { if (o.geometry) propios.add(o.geometry); const m = o.material; if (m) { propios.add(m); for (const k of ['map', 'normalMap']) if (m[k]) propios.add(m[k]); } });
+          const alLiberar = ev => liberados.add(ev.target);
+          for (const x of propios) x.addEventListener('dispose', alLiberar);
+          const mPre = mem();
           salir();
+          const mPost = mem();
+          for (const x of propios) x.removeEventListener('dispose', alLiberar);
+          check('Al salir S.facing vuelve a ser un objeto propio de la partida (no el rumbo reutilizado del vuelo)', S.facing !== _fac && !!S.facing && typeof S.facing.x === 'number');
           check('Al salir se quitan las envolturas y la cámara vuelve', G.ui.busy === busy0 && F.step === step0 && G.camara.follow === follow0 && G.camara.draw === draw0 && R.camera.fov === fov0 && !document.body.classList.contains('flight-on') && !document.body.classList.contains('retos-on'));
           check('Al salir G.quiet vuelve y el mundo no queda en pausa', G.quiet === quiet0 && G.pausa.activa() === pausa0);
           check('La partida de la historia (G.S) queda intacta', comparable(S) === sAntes);
@@ -841,7 +852,9 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           check('Nada del vuelo queda en la escena: pool liberado, sin instancias vivas', raiz.visible === false && !raiz.parent && Object.keys(pool).length === 0 && vivas() === 0 && obst.length === 0 && decor.length === 0, vivas() + ' vivas · ' + obst.length + ' obst · ' + decor.length + ' decor · ' + Object.keys(pool).map(t => t + ':' + pool[t].libres.length + '/' + CAP[t]).join(' '));
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           const m2 = mem();
-          check('Al salir las geometrías y texturas del renderer bajan de las de la partida (el kit del vuelo se libera)', m2.g < m0.g && m2.t <= m0.t, JSON.stringify(m0) + ' → ' + JSON.stringify(m2));
+          // Se compara justo antes y justo después de salir(), sin cuadros por medio: tras volver la cámara a Vittata el renderer dibuja otro trozo
+          // del mundo (sus geometrías no son del vuelo y pueden sumar más de las que el vuelo libera)
+          check('Al salir se liberan todas las geometrías, materiales y texturas del vuelo y las del renderer bajan en ese momento', liberados.size === propios.size && mPost.g < mPre.g && mPost.t <= mPre.t, liberados.size + '/' + propios.size + ' liberados · ' + JSON.stringify(mPre) + ' → ' + JSON.stringify(mPost) + ' · con el mundo de vuelta ' + JSON.stringify(m2));
         } catch (e) {
           check('Sin excepciones', false, (e && e.stack) || String(e));
           try { salir(); } catch (e2) { /* ya fuera */ }

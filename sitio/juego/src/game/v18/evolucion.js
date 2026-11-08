@@ -3,10 +3,12 @@
    - Datos en el progreso V18 (progreso.js v2, `d.evo`): { esp: { <sp>: { xp, nivel, mejoras, variante } }, alianzas, alianzaSel,
      marcas (hitos ya pagados), dia (topes diarios), retro }. El nivel SIEMPRE se recalcula a partir de la XP (máx. 40).
    - Curva: XP total para el nivel n = 20(n−1) + 3(n−1)(n−2) → nv 10 = 396, nv 20 = 1.406, nv 40 = 5.226.
-   - Fuentes (eventos que ya existen): duelo contra la Campeona ganado 60 (mitad desde la 5.ª victoria del día), perdido 25
+   - Fuentes (eventos que ya existen): duelo contra la Campeona ganado 40 (mitad desde la 3.ª victoria del día), perdido 15
      (solo si le quitaste ≥ 1 pluma y duró ≥ 20 s); duelo de 2 = 0. Hitos de una vez (puente, Sombra, Serpiente, Sapo, especies,
-     materiales, primera victoria con cada especie, reto de dos cotorras, desafío de la alianza). Minigolf: 30 (+30 récord), 3/día.
-     Topes diarios: 360 XP en duelos, 700 XP en todo lo repetible. Los hitos ya cumplidos en partidas viejas pagan una vez.
+     materiales, primera victoria con cada especie, reto de dos cotorras, desafío de la alianza). Minigolf: 15 (+15 récord), 3/día.
+     Topes diarios: 160 XP en duelos, 300 XP en todo lo repetible. Los hitos ya cumplidos en partidas viejas pagan una vez.
+     Avisos al jugar (no solo en la ficha): tarjeta de nivel en cada subida, tarjeta de etapa al cruzar 10/20/30, tarjeta pequeña
+     «+N XP» al ganar XP explorando y el reto de la alianza en el panel de fin del duelo.
    - Vittata, tres etapas del Grito del Yunque (ajustar(f, h) → Object.create(h) con los números; habilidades.js no copia código):
        1–9 Grito del Yunque 7 m ±35° · 10–19 Eco Amplificado 9 m ±42° · 20+ Eco Dirigido 11 m ±26°, onda a 22 m/s, desvía semillas.
      Topes fijos: el grito nunca quita plumas, espera ≥ 5 s, coste ≥ 35, alcance ≤ 11 m, interrupción ≤ 1,4 s. Plumas, energía y
@@ -47,9 +49,12 @@ window.AVV18Evolucion = function (G) {
   const T = n => 20 * (n - 1) + 3 * (n - 1) * (n - 2); // XP total para llegar al nivel n
   const XP_MAX = T(NIVEL_MAX);
   function nivelDe(xp) { let n = 1; while (n < NIVEL_MAX && xp >= T(n + 1)) n++; return n; }
-  const XP = { gana: 60, pierde: 25, ganaEspecie: 50, especie: 40, material: 10, puente: 120, sombra: 150, serpiente: 100, sapo: 100, retoDos: 100, golfNido: 30, golfRecord: 30, desafio: 80,
-    golfCompleto: 40, golfOro: 60, perfecta: 50, tresDuelos: 60 };
-  const TOPE = { duelosDia: 360, repetibleDia: 700, golfDia: 3, mitadDesde: 5, pierdeQuitadas: 1, pierdeDura: 20 };
+  /* Equilibrio de XP (8-nov, medido con la sesión simulada del test «Ritmo»: nivel 10 en la 1.ª sesión, 20 en la 3.ª, 30 tras
+     unas 10 sesiones). Lo de una vez de la 1.ª sesión pesa más; lo repetible del día pesa menos para que nada se pueda farmear.
+     Arco, Muelle, Puerto, Chispa, Moon y Guardián pagan sus propios números con dar() (120, 100, 150 y 30). */
+  const XP = { gana: 40, pierde: 15, ganaEspecie: 60, especie: 30, material: 5, puente: 120, sombra: 80, serpiente: 60, sapo: 60, retoDos: 60, golfNido: 15, golfRecord: 15, desafio: 50,
+    golfCompleto: 30, golfOro: 30, perfecta: 30, tresDuelos: 40 };
+  const TOPE = { duelosDia: 160, repetibleDia: 300, golfDia: 3, mitadDesde: 3, pierdeQuitadas: 1, pierdeDura: 20 };
   // Etapas de Vittata (Grito del Yunque). La 1 son exactamente los números de habilidades.js (no se toca nada).
   const ETAPAS = [
     { desde: 1, id: 'grito_yunque', nombre: 'Grito del Yunque', alcance: 7, cono: 0.82, vel: 16, empuje: 15, interrumpe: 1.1, coste: 35, cooldown: 5,
@@ -122,8 +127,26 @@ window.AVV18Evolucion = function (G) {
     sec_pico: 'Además deshace las semillas de la rival que vienen de frente.', sec_ojos: 'Además marca a la rival 1,5 s: no esquiva y tus semillas la siguen.',
     sec_plumas: 'Además te da un desvío de 0,4 s en que no te dan.', sec_alas: 'Además deja tu golpe de ala listo al momento.',
     fr_despertar: 'Tu poder mejora y espera menos entre usos.', fr_guardian: 'Tu poder gana una habilidad secundaria.', fr_maestro: 'Dominio avanzado: tu poder brilla con destellos dorados.',
-    retro: 'Tu aventura cuenta: +{} XP para tu cotorra.', prueba: 'Modo de prueba de la evolución'
+    retro: 'Tu aventura cuenta: +{} XP para tu cotorra.', prueba: 'Modo de prueba de la evolución',
+    subeTit: '¡Subiste de nivel!', retroTit: '¡Tu aventura cuenta!', xpTit: 'Experiencia',
+    aliSec: 'Alianzas de bandada', aliPorDesc: 'Alianzas por descubrir: {}',
+    reqLider: '{} en nivel 10 (ahora Nv {})', reqApoyo: '{} en tu bandada',
+    retoPoder: 'Reto: gana a la Campeona con {} usando {} 2 veces.', retoEco: 'Reto: gana a la Campeona con {} interrumpiéndola 2 veces con tu grito.',
+    usarCon: 'Elige a {} en Mis cotorras para usarla.',
+    aliDispN: 'Nueva alianza disponible, {}: gana a la Campeona con {} usando {} 2 veces.',
+    retoFin: 'Reto de alianza {}: llevas {} de 2', retoFinLogrado: 'Reto de alianza {}: ¡logrado!'
   };
+  // Retratos que existen en assets/retratos/v18 (sin retrato no se pide imagen: nada de errores 404 en la consola)
+  const RETRATOS = new Set(['agilis', 'arausiaca', 'auropalliata', 'barbadensis', 'brasiliensis', 'collaria', 'diadema', 'dufresniana', 'farinosa', 'finschi', 'guildingii', 'tresmariae', 'versicolor', 'viridigenalis', 'xantholora']);
+  const conRetrato = sp => (RETRATOS.has(sp) ? sp : false);
+  // Nombre de una especie para los avisos (Vittata por su nombre; las demás, su nombre común en el idioma de la partida)
+  function nombre(sp) {
+    if (sp === 'vittata') return 'Vittata';
+    let en = false; try { en = !!(G.idioma && G.idioma.activo && G.idioma.activo()); } catch (e) { en = false; }
+    const L = window.AV_ESPECIES, e = L && Array.isArray(L.especies) && L.especies.find(x => x && x.id === sp);
+    const s = String((e && e.comun && (en ? e.comun.en : e.comun.es)) || sp);
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 3200); } catch (e) { /* sin interfaz */ } };
   const sonar = (n, a) => { try { if (G.audio && G.audio.play) G.audio.play(n, a); } catch (e) { /* sin audio */ } };
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -207,6 +230,7 @@ window.AVV18Evolucion = function (G) {
     });
     if (dado) { try { G.emit('v18', { tipo: 'evo', especie: sp, xp: dado, fuente: fuente || '' }); } catch (e) { /* sin oyentes */ } }
     if (despues > antes) subio(sp, antes, despues, o.silencio);
+    else if (dado && !o.silencio && !o.duelo && !mudo) miniXp(sp, dado);
     if (dado) revisarAlianza();
     return dado;
   }
@@ -216,9 +240,19 @@ window.AVV18Evolucion = function (G) {
     toast(con(sp === 'vittata' ? TXT.subeV : TXT.sube, b), 3200);
     sonar('unlock');
     try { if (G.fx && G.fx.burst && G.S) { G.fx.burst(G.S.pos.x, G.S.pos.y + 1.4, G.S.pos.z, 'gold', 14); G.fx.burst(G.S.pos.x, G.S.pos.y + 0.8, G.S.pos.z, 'stars', 8); } } catch (e) { /* sin efectos */ }
-    if (sp === 'vittata') { for (const et of ETAPAS) if (et.desde > 1 && a < et.desde && b >= et.desde) carta(TXT.etapa, et.nombre, et.frase, false, et.desde === 20 ? TXT.variante : ''); return; }
+    if (sp === 'vittata') { let hubo = false; for (const et of ETAPAS) if (et.desde > 1 && a < et.desde && b >= et.desde) { hubo = true; carta(TXT.etapa, et.nombre, et.frase, false, et.desde === 20 ? TXT.variante : ''); } if (!hubo) cartaNivel(sp, b); return; }
     const i = etapaIdx(b);
     if (i > etapaIdx(a)) { const et = ETAPAS_ESP[i], m = mejoraDe(sp, b); carta(TXT.etapa, [m.nombre, et.nombre], TXT['fr_' + et.id], false, m.secundaria && i === 2 ? TXT['sec_' + m.secundaria] : ''); }
+    else cartaNivel(sp, b);
+  }
+  // Lo que falta para el siguiente nivel, en una frase
+  function faltaTxt(sp) { const r = info(sp); return r.sig == null ? TXT.max : con(con(TXT.falta, r.falta), r.nivel + 1); }
+  // Subida sin etapa nueva: tarjeta de nivel (el aviso de abajo se puede pisar con otro; la tarjeta no)
+  function cartaNivel(sp, b) { carta(TXT.subeTit, [nombre(sp), con(TXT.nv, b)], faltaTxt(sp), conRetrato(sp), ''); }
+  // XP sin subir de nivel fuera del duelo (el duelo ya lo dice en su panel de fin): tarjeta pequeña que no tapa una grande
+  function miniXp(sp, n) {
+    if (cartaEl && !cartaEl.classList.contains('mini')) return null;
+    return carta(con(TXT.xp, n), [nombre(sp), con(TXT.nv, info(sp).nivel)], faltaTxt(sp), false, '', 'mini');
   }
   // Hitos de una sola vez: se deducen del progreso V18 (así las partidas viejas cobran lo que ya hicieron, una vez)
   function hitos() {
@@ -245,11 +279,14 @@ window.AVV18Evolucion = function (G) {
     V.cambiarEvo(e => { sanear(e); for (const h of nuevos) e.marcas[h[0]] = true; e.retro = true; });
     const sp = V.seleccionada() || perfil();
     const n = dar(sp, total, 'hito', { silencio: silencio || primera });
-    if (primera && n && !silencio) toast(con(TXT.retro, n), 4200);
+    if (primera && n && !silencio) { toast(con(TXT.retro, n), 4200); const r = info(sp); carta(TXT.retroTit, [nombre(sp), con(TXT.nv, r.nivel)], con(TXT.retro, n), conRetrato(sp), r.nivel >= 10 ? r.etapaNombre : ''); }
     return n;
   }
 
   // ---------- Alianzas de bandada ----------
+  const nombrePoder = sp => ((H.get(H.poderDe(sp)) || {}).nombre || '');
+  // El reto de desbloqueo de una alianza, con la líder y su poder por su nombre
+  const retoTexto = a => (a.reto === 'interrupciones' ? con(TXT.retoEco, nombre(a.lider)) : con(con(TXT.retoPoder, nombre(a.lider)), nombrePoder(a.lider)));
   const estadoAli = id => E().alianzas[id || ALI];
   let avisoTO = 0;
   function revisarAlianza() {
@@ -258,7 +295,7 @@ window.AVV18Evolucion = function (G) {
     V.cambiarEvo(e => { sanear(e); for (const a of nuevas) e.alianzas[a.id] = 'disponible'; });
     const a0 = nuevas[0];
     // después de los avisos del duelo
-    clearTimeout(avisoTO); avisoTO = setTimeout(() => { if (estadoAli(a0.id) === 'disponible') toast(a0.id === ALI ? TXT.aliDisp : TXT.aliDispG, 5200); }, 3800);
+    clearTimeout(avisoTO); avisoTO = setTimeout(() => { if (estadoAli(a0.id) === 'disponible') toast(a0.id === ALI ? TXT.aliDisp : con(con(con(TXT.aliDispN, a0.nombre), nombre(a0.lider)), nombrePoder(a0.lider)), 5200); }, 3800);
     return true;
   }
   function desbloquearAlianza(id, silencio) {
@@ -336,8 +373,10 @@ window.AVV18Evolucion = function (G) {
     return { nivel: con(TXT.nv, n), etapa: et, frac: r.nivel >= NIVEL_MAX ? 1 : Math.max(0, Math.min(1, (r.xp - a) / (b - a))) };
   }
   function htmlFin() {
-    if (!ultimo || !ultimo.xp) return '';
-    return `<span>${esc(con(TXT.xp, ultimo.xp))}</span>` + (ultimo.sube ? ` · <span>${esc(con(TXT.subiste, ultimo.sube))}</span>` : '');
+    if (!ultimo) return '';
+    const r = ultimo.reto, reto = r ? `<span style="display:block" data-v18reto-fin>${esc(r.ok ? con(TXT.retoFinLogrado, r.nombre) : con(con(TXT.retoFin, r.nombre), r.n))}</span>` : '';
+    if (!ultimo.xp) return reto;
+    return `<span>${esc(con(TXT.xp, ultimo.xp))}</span>` + (ultimo.sube ? ` · <span>${esc(con(TXT.subiste, ultimo.sube))}</span>` : '') + reto;
   }
 
   // ---------- Eco Protector en el motor de habilidades (API pública registrar) ----------
@@ -455,22 +494,40 @@ window.AVV18Evolucion = function (G) {
         '.v18-evo-m{display:block;font-size:11px;line-height:1.25;margin:1px 2px;opacity:.9}' +
         '.v18-evo-et{display:inline-block;font-size:10px;padding:1px 5px;border-radius:8px;background:#ffe39a;color:#3b2a14;margin:2px 1px}.v18-evo-et.no{background:#0002;color:inherit;opacity:.6}' +
         '.v18-evo-x{margin-top:8px;font-size:14px}.v18-evo-x .btn{min-height:44px}' +
+        '#v18-evo-carta.mini{width:min(260px,calc(100vw - 32px));padding:6px 12px;border-radius:12px}#v18-evo-carta.mini h3{font-size:16px;letter-spacing:0;text-transform:none;color:#7a4a10}' +
+        '#v18-evo-carta.mini b{font-size:14px;margin:0 0 2px}#v18-evo-carta.mini p{font-size:12px}' +
+        '.v18-evo-ali{margin:6px 0;padding:6px 8px;border-radius:10px;background:#0001;text-align:left;font-size:13px;line-height:1.3}.v18-evo-ali p{margin:3px 0 0}' +
+        '.v18-evo-ali .si{color:#2f7a2f;font-weight:700}.v18-evo-ali .no{opacity:.8}.v18-evo-ali img{vertical-align:middle;border-radius:50%;margin-right:4px}' +
         '@media (min-width:761px){#v18-evo-carta{top:calc(env(safe-area-inset-top,0px) + 96px)}}' + // en la computadora el aviso (#toast, capa superior) ocupa el borde de arriba
         '@keyframes v18evo{from{transform:translateY(-16px) scale(.9);opacity:0}to{transform:none;opacity:1}}';
       document.head.appendChild(st);
     }
   }
-  function carta(tit, nombre, frase, alianza, extra) {
+  // Con el cómic, el creador o una tarjeta en el teléfono encima, la tarjeta espera a que se cierren (como los avisos, QA-93)
+  let cartaPend = null, cartaPendTO = 0;
+  function tapada() {
+    const $ = id => document.getElementById(id), vis = el => !!el && !el.hidden;
+    return vis($('comic')) || vis($('creator')) || (vis($('card')) && window.innerWidth <= 560);
+  }
+  function soltarPend(n) {
+    clearTimeout(cartaPendTO);
+    if (!cartaPend) return;
+    if (tapada() && n < 200) { cartaPendTO = setTimeout(() => soltarPend(n + 1), 600); return; }
+    const a = cartaPend; cartaPend = null; carta.apply(null, a);
+  }
+  function carta(tit, nombre, frase, alianza, extra, tipo) {
     css();
+    if (tapada()) { if (!(tipo === 'mini' && cartaPend && cartaPend[5] !== 'mini')) cartaPend = [tit, nombre, frase, alianza, extra, tipo]; soltarPend(0); return null; }
     if (!cartaEl) { cartaEl = document.createElement('div'); cartaEl.id = 'v18-evo-carta'; cartaEl.setAttribute('role', 'status'); document.body.appendChild(cartaEl); }
     // un texto por nodo: el traductor EN los encuentra
     cartaEl.innerHTML = (alianza ? `<img src="assets/retratos/v18/${esc(typeof alianza === 'string' ? alianza : 'arausiaca')}.png" alt="">` : '') + `<h3>${esc(tit)}</h3><b>${Array.isArray(nombre) ? nombre.map(x => `<span>${esc(x)}</span>`).join(' · ') : esc(nombre)}</b><p><span>${esc(frase)}</span>${extra ? ` <span>${esc(extra)}</span>` : ''}</p>`;
+    cartaEl.className = tipo === 'mini' ? 'mini' : '';
     cartaEl.hidden = false; cartaEl.style.animation = 'none'; void cartaEl.offsetWidth; cartaEl.style.animation = '';
-    try { if (G.fx && G.fx.burst && G.S) G.fx.burst(G.S.pos.x, G.S.pos.y + 1.6, G.S.pos.z, 'gold', 16); } catch (e) { /* sin efectos */ }
-    clearTimeout(cartaTO); cartaTO = setTimeout(quitarCarta, 5200);
+    if (tipo !== 'mini') { try { if (G.fx && G.fx.burst && G.S) G.fx.burst(G.S.pos.x, G.S.pos.y + 1.6, G.S.pos.z, 'gold', 16); } catch (e) { /* sin efectos */ } }
+    clearTimeout(cartaTO); cartaTO = setTimeout(quitarCarta, tipo === 'mini' ? 2600 : 5200);
     return cartaEl;
   }
-  function quitarCarta() { clearTimeout(cartaTO); if (cartaEl) { cartaEl.remove(); cartaEl = null; } }
+  function quitarCarta() { clearTimeout(cartaTO); clearTimeout(cartaPendTO); cartaPend = null; if (cartaEl) { cartaEl.remove(); cartaEl = null; } }
 
   // ---------- Mis cotorras (descubrir.js): ficha de nivel, XP hasta el siguiente, etapa, lo que mejora y alianza ----------
   const retrato = (sp, px) => `<img src="assets/retratos/v18/${esc(sp)}.png" alt="" width="${px}" height="${px}" style="vertical-align:middle;margin-right:4px;border-radius:50%">`;
@@ -502,15 +559,37 @@ window.AVV18Evolucion = function (G) {
       const cur = v.variante || (v.nivel >= 30 ? 'maestro' : 'dirigido'), vs = VARIANTES.filter(x => x !== 'maestro' || v.nivel >= 30), et = { amplificado: 1, dirigido: 2, maestro: 3 };
       h += `<div class="row v18-evo-x"><span>${esc(TXT.varTit)}</span> ` + vs.map(x => `<button class="btn${cur === x ? '' : ' ghost'}" type="button" data-v18var="${x}" aria-pressed="${cur === x}">${esc(ETAPAS[et[x]].nombre)}</button>`).join(' ') + '</div>';
     }
-    const a = ALIANZAS.find(x => x.lider === sel); if (!a) return h;
-    const st = e.alianzas[a.id], eco = a.id === ALI;
-    if (st === 'desbloqueada') {
+    const a = ALIANZAS.find(x => x.lider === sel);
+    if (a && e.alianzas[a.id] === 'desbloqueada') {
       const on = e.alianzaSel === a.id;
       h += `<div class="row v18-evo-x"><span>${esc(TXT.aliTit)}</span> <button class="btn${on ? '' : ' ghost'}" type="button" data-v18ali="${a.id}" aria-pressed="${on}">${retrato(a.apoyo, 28)}${esc(a.nombre)}</button> <span>${esc(on ? TXT.aliOn : TXT.aliOff)}</span></div>`;
       h += `<p class="v18-evo-x" style="opacity:.85">${esc(a.explora)}</p>`;
-    } else if (st === 'disponible') h += eco ? `<p class="v18-evo-x">${esc(TXT.aliReto)}</p>` : `<p class="v18-evo-x"><b>${esc(a.nombre)}</b>: <span>${esc(TXT.aliRetoG)}</span></p>`;
-    else h += eco ? `<p class="v18-evo-x" style="opacity:.75">${esc(TXT.aliReq)}</p>` : `<p class="v18-evo-x" style="opacity:.75">${retrato(a.apoyo, 28)}<b>${esc(a.nombre)}</b>: <span>${esc(TXT.aliReqG)}</span></p>`;
-    return h;
+    }
+    return h + htmlAlianzas();
+  }
+  // Las alianzas de bandada que ya conoces (la líder o la compañera está en tu bandada): estado, qué falta y el reto, uno por uno
+  function htmlAlianzas() {
+    const e = E(), sel = V.seleccionada(), vistas = ALIANZAS.filter(a => elegible(a.lider) || elegible(a.apoyo));
+    const marca = ok => `<span class="${ok ? 'si' : 'no'}" aria-hidden="true">${ok ? '✓' : '○'}</span> `;
+    const ret = sp => (RETRATOS.has(sp) ? retrato(sp, 24) : '');
+    let h = `<div class="v18-evo-x" data-v18alianzas><b>${esc(TXT.aliSec)}</b>`;
+    for (const a of vistas) {
+      const st = e.alianzas[a.id], nl = info(a.lider).nivel;
+      h += `<div class="v18-evo-ali" data-v18ali-fila="${a.id}" data-estado="${st}">${ret(a.lider)}${ret(a.apoyo)}<b>${esc(a.nombre)}</b> · <span>${esc(estadoTxt(st))}</span>`;
+      if (st === 'bloqueada') {
+        h += `<p><span>${esc(a.id === ALI ? TXT.aliReq : TXT.aliReqG)}</span></p>`;
+        h += `<p>${marca(nl >= 10)}<span>${esc(con(con(TXT.reqLider, nombre(a.lider)), nl))}</span></p>`;
+        h += `<p>${marca(elegible(a.apoyo))}<span>${esc(con(TXT.reqApoyo, nombre(a.apoyo)))}</span></p>`;
+        h += `<p class="no">${marca(false)}<span>${esc(retoTexto(a))}</span></p>`;
+      } else if (st === 'disponible') {
+        h += `<p>${marca(true)}<span>${esc(con(con(TXT.reqLider, nombre(a.lider)), nl))}</span></p><p>${marca(true)}<span>${esc(con(TXT.reqApoyo, nombre(a.apoyo)))}</span></p>`;
+        h += `<p data-v18reto="${a.id}">${marca(false)}<b>${esc(retoTexto(a))}</b></p>`;
+      } else if (sel !== a.lider) h += `<p><span>${esc(con(TXT.usarCon, nombre(a.lider)))}</span></p>`;
+      h += '</div>';
+    }
+    const ocultas = ALIANZAS.length - vistas.length;
+    if (ocultas) h += `<p style="opacity:.75"><span>${esc(con(TXT.aliPorDesc, ocultas))}</span></p>`;
+    return h + '</div>';
   }
   function enlazar(card) {
     if (!card) return;
@@ -550,10 +629,16 @@ window.AVV18Evolucion = function (G) {
       ultimo = { xp: 0, sube: 0 };
       ultimo.xp = dar(sp, XP.gana, 'duelo', { repetible: true, duelo: true, cuenta: 'victorias', mitadDesde: TOPE.mitadDesde });
       // Desafío de cada alianza «disponible» de esta líder: Eco Protector, 2 interrupciones; las otras, 2 usos del poder propio
-      for (const a of ALIANZAS) if (a.lider === sp && estadoAli(a.id) === 'disponible' && ((a.reto === 'interrupciones' ? ev.interrupciones : ev.poderJ) || 0) >= 2) ultimo.xp += desbloquearAlianza(a.id) ? XP.desafio : 0;
+      for (const a of ALIANZAS) {
+        if (a.lider !== sp || estadoAli(a.id) !== 'disponible') continue;
+        const n = (a.reto === 'interrupciones' ? ev.interrupciones : ev.poderJ) || 0;
+        if (n >= 2 && desbloquearAlianza(a.id)) { ultimo.xp += XP.desafio; ultimo.reto = { nombre: a.nombre, ok: true }; } else ultimo.reto = { nombre: a.nombre, n: Math.min(2, n) };
+      }
     } else if (ev.tipo === 'loss' && ev.a === 'jugador') {
       ultimo = { xp: 0, sube: 0 };
       if ((ev.quitadas || 0) >= TOPE.pierdeQuitadas && (ev.dura || 0) >= TOPE.pierdeDura) ultimo.xp = dar(sp, XP.pierde, 'duelo', { repetible: true, duelo: true });
+      const a = ALIANZAS.find(x => x.lider === sp && estadoAli(x.id) === 'disponible');
+      if (a) ultimo.reto = { nombre: a.nombre, n: Math.min(2, (a.reto === 'interrupciones' ? ev.interrupciones : ev.poderJ) || 0) };
     } else return;
     if (info(sp).nivel > n0) ultimo.sube = info(sp).nivel;
   });
@@ -665,7 +750,7 @@ window.AVV18Evolucion = function (G) {
         c1.v === 2 && c1.especies.arausiaca === 'seleccionable' && c1.especies.agilis === 'descubierta' && c1.inv.pluma_rival === 2 && c1.otorgados.combate_1 && c1.mundo.puente_villa === 'reparado' && P.seleccionada() === 'vittata' &&
         typeof c1.evo === 'object' && info('vittata').nivel === 1 && paraDuelo('vittata').nivel === 1 && !paraDuelo('vittata').alianza, JSON.stringify(c1));
       const r1 = revisarHitos(true), r2 = revisarHitos(true);
-      check('Partida vieja: los hitos ya cumplidos dan su XP una sola vez (puente 120 + arausiaca 40 + 1.ª victoria 50 + material 10)', r1 === 220 && r2 === 0 && info('vittata').xp === 220, r1 + ' / ' + r2 + ' / ' + info('vittata').xp);
+      check('Partida vieja: los hitos ya cumplidos dan su XP una sola vez (puente 120 + arausiaca 30 + 1.ª victoria 60 + material 5)', r1 === 215 && r2 === 0 && info('vittata').xp === 215, r1 + ' / ' + r2 + ' / ' + info('vittata').xp);
       Cb.iniciar({ sinCuenta: true, especie: 'vittata', evoReal: true });
       check('Partida vieja: el duelo empieza con su nivel (sin alianza) y sin errores', C().fase === 'lucha' && C().j.nivel === info('vittata').nivel && !C().j.alianza, C().j.nivel);
       Cb.salir();
@@ -694,28 +779,50 @@ window.AVV18Evolucion = function (G) {
       const win = ex => G.emit('v18combate', Object.assign({ tipo: 'win', de: 'jugador', a: 'rival', especie: 'arausiaca', dura: 40, interrupciones: 0, quitadas: 5 }, ex));
       const loss = ex => G.emit('v18combate', Object.assign({ tipo: 'loss', de: 'rival', a: 'jugador', especie: 'arausiaca', dura: 40, interrupciones: 0, quitadas: 2 }, ex));
       const xs = []; for (let i = 0; i < 20; i++) { const a = info('arausiaca').xp; win(); xs.push(info('arausiaca').xp - a); }
-      check('20 victorias en un día dan como máximo 360 XP de duelo (60 ×4, luego la mitad)', info('arausiaca').xp === 360 && xs[0] === 60 && xs[4] === 30 && xs[19] === 0, xs.join(','));
+      check('20 victorias en un día dan como máximo 160 XP de duelo (40 ×2, luego la mitad)', info('arausiaca').xp === 160 && xs[0] === 40 && xs[1] === 40 && xs[2] === 20 && xs[19] === 0, xs.join(','));
       hoyFijo = 'prueba-2'; let a4 = info('arausiaca').xp;
       loss({ quitadas: 0 }); const l0 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
       loss({ dura: 12 }); const l1 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
       loss(); const l2 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
       G.emit('v18combate', { tipo: 'win', de: 'jugador', duelo: 2, especie: 'arausiaca' }); const d2 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
-      check('Derrota sin quitar plumas = 0, derrota corta (<20 s) = 0, derrota peleada = 25, duelo de 2 = 0', l0 === 0 && l1 === 0 && l2 === 25 && d2 === 0, [l0, l1, l2, d2].join(','));
-      check('Al cambiar de fecha se reinician los topes diarios (la primera victoria vuelve a dar 60)', (win(), info('arausiaca').xp - a4 === 60), info('arausiaca').xp - a4);
+      check('Derrota sin quitar plumas = 0, derrota corta (<20 s) = 0, derrota peleada = 15, duelo de 2 = 0', l0 === 0 && l1 === 0 && l2 === 15 && d2 === 0, [l0, l1, l2, d2].join(','));
+      check('Al cambiar de fecha se reinician los topes diarios (la primera victoria vuelve a dar 40)', (win(), info('arausiaca').xp - a4 === 40), info('arausiaca').xp - a4);
       P.desbloquear('arausiaca'); P.seleccionar('arausiaca'); a4 = info('arausiaca').xp;
       for (let i = 0; i < 5; i++) G.emit('v18minigolf', { tipo: 'nido', golpes: 3, nuevo: i === 0 });
-      check('Minigolf: 30 por nido (+30 récord), como máximo 3 nidos al día', info('arausiaca').xp - a4 === 120, info('arausiaca').xp - a4);
+      check('Minigolf: 15 por nido (+15 récord), como máximo 3 nidos al día', info('arausiaca').xp - a4 === 60, info('arausiaca').xp - a4);
       { hoyFijo = 'prueba-3'; let t = 0; for (let i = 0; i < 30; i++) { const a = info('arausiaca').xp; win(); G.emit('v18minigolf', { tipo: 'nido', golpes: 2, nuevo: true }); t += info('arausiaca').xp - a; }
         const extra = dar('arausiaca', 500, 'otra', { repetible: true }), extra2 = dar('arausiaca', 50, 'otra', { repetible: true });
-        check('Tope global de lo repetible: como máximo 700 XP al día (duelos 360 + minigolf 180 + 160 de otra fuente; luego 0)', t === 540 && extra === 160 && extra2 === 0, [t, extra, extra2].join(',')); }
+        check('Tope global de lo repetible: como máximo 300 XP al día (duelos 160 + minigolf 90 + 50 de otra fuente; luego 0)', t === 250 && extra === 50 && extra2 === 0, [t, extra, extra2].join(',')); }
       const h0 = revisarHitos(true), pre = info('arausiaca').xp; P.cambiarMundo('puente_villa', 'reparado'); const h1 = info('arausiaca').xp; P.cambiarMundo('puente_villa', 'roto'); P.cambiarMundo('puente_villa', 'reparado');
       check('Los hitos no se repiten (el puente paga 120 una vez aunque se vuelva a marcar)', h0 === 0 && h1 - pre === 120 && info('arausiaca').xp === h1 && revisarHitos(true) === 0, [h0, h1 - pre, info('arausiaca').xp - h1].join(','));
-      // Ritmo: nivel 10 en la 1.ª sesión, 20 en 2-3 sesiones (simulado con las fuentes reales)
-      { reset(); P.desbloquear('arausiaca'); P.cambiarMundo('puente_villa', 'reparado'); P.otorgar('duelo_gana_vittata', 'victoria_vittata', 1);
-        for (let i = 0; i < 6; i++) win({ especie: 'vittata' }); const s1 = info('vittata').nivel;
-        hoyFijo = 'prueba-s2'; P.cambiarMundo('sombra_tormenta', 'dispersa'); P.cambiarMundo('serpiente_marana', 'deshecha'); for (let i = 0; i < 8; i++) win({ especie: 'vittata' }); const s2 = info('vittata').nivel;
-        hoyFijo = 'prueba-s3'; P.cambiarMundo('sapo_encantado', 'despierto'); P.otorgar('reto_dos_cotorras', 'reto_extra', 1); for (let i = 0; i < 8; i++) win({ especie: 'vittata' }); const s3 = info('vittata').nivel;
-        check('Ritmo: nivel ≥ 10 tras la 1.ª sesión (6 duelos y los hitos), ~20 en 2-3 sesiones, nunca más de 30', s1 >= 10 && s1 < 14 && s3 >= 18 && s3 <= 30, [s1, s2, s3].join(' → ')); }
+      // Ritmo pactado (diseño §3): nivel 10 en la 1.ª sesión, 20 en 2-3 sesiones, 30 tras varias semanas. Sesión simulada con TODAS las
+      // fuentes reales (eventos de duelo y minigolf, hitos del progreso V18 y lo que pagan Arco, Muelle, Puerto, Chispa, Moon y Guardián)
+      { reset(); mudo = false;
+        const quita = k => P.cambiarEvo(e => { delete e.marcas[k]; });
+        const duelos = (g, p, ex) => { for (let i = 0; i < g; i++) win(Object.assign({ especie: 'vittata' }, i === 0 ? ex : null)); for (let i = 0; i < p; i++) loss({ especie: 'vittata' }); };
+        const nidos = (k, rec) => { for (let i = 0; i < k; i++) G.emit('v18minigolf', { tipo: 'nido', golpes: 3, nuevo: i < rec }); };
+        const esp = ids => ids.forEach(id => P.desbloquear(id));
+        const ext = (n, fuente) => dar('vittata', n, fuente);
+        const ses = [];
+        // 1.ª sesión (unos 45 min): la cotorra de Dominica y el de Kawall, 4 materiales y el puente, primera victoria con Vittata,
+        // 5 duelos (4 ganados, 1 peleado) y un hoyo de minigolf con 2 nidos
+        hoyFijo = 'ritmo-1'; quita('gana:vittata'); P.cambiarEvo(e => { delete e.marcas['esp:arausiaca']; delete e.marcas.puente; });
+        esp(['arausiaca', 'kawalli']); ['ritmo_m1', 'ritmo_m2', 'ritmo_m3', 'ritmo_m4'].forEach(k => P.cambiarMundo(k, 'recogida')); P.cambiarMundo('puente_villa', 'reparado');
+        revisarHitos(true); duelos(4, 1); nidos(2, 1); P.otorgar('minigolf_villa_completo', 'golf', 1); revisarHitos(true); ses.push(info('vittata').nivel);
+        // 2.ª: Sombra y Serpiente, las Atalayas, Chispa y Moon, 3 especies, 6 duelos (el desafío de Eco Protector incluido), victoria perfecta, 3 duelos, oro en minigolf
+        hoyFijo = 'ritmo-2'; P.cambiarMundo('sombra_tormenta', 'dispersa'); P.cambiarMundo('serpiente_marana', 'deshecha'); esp(['agilis', 'collaria', 'farinosa']);
+        ext(120, 'atalayas'); ext(30, 'chispa'); ext(30, 'moon'); duelos(5, 1, { interrupciones: 2 }); nidos(3, 1);
+        P.cambiarMundo('duelos_ganados', 3); P.otorgar('ritmo_perfecta', 'victoria_perfecta', 1); P.otorgar('minigolf_villa_oro', 'golf_oro', 1); revisarHitos(true); ses.push(info('vittata').nivel);
+        const ecoS2 = estadoAli(ALI);
+        // 3.ª: Sapo, reto de dos cotorras, Puerto y Muelle, Guardián, 3 especies, 6 duelos y 3 nidos
+        hoyFijo = 'ritmo-3'; P.cambiarMundo('sapo_encantado', 'despierto'); P.otorgar('reto_dos_cotorras', 'reto_extra', 1); esp(['barbadensis', 'diadema', 'versicolor']);
+        ext(150, 'puerto'); ext(100, 'muelle'); ext(30, 'guardian'); duelos(5, 1); nidos(3, 1); revisarHitos(true); ses.push(info('vittata').nivel);
+        // Después, sesiones normales: 4 duelos ganados, 1 peleado y 2 nidos (y una especie nueva cada dos sesiones)
+        const resto = ['guildingii', 'dufresniana', 'finschi', 'auropalliata', 'xantholora', 'viridigenalis', 'tresmariae', 'brasiliensis', 'leucocephala'];
+        let s30 = 0; for (let k = 4; k <= 16; k++) { hoyFijo = 'ritmo-' + k; if (k % 2 && resto.length) esp([resto.shift()]); duelos(4, 1); nidos(2, 0); revisarHitos(true); ses.push(info('vittata').nivel); if (!s30 && info('vittata').nivel >= 30) s30 = k; }
+        quitarCarta(); mudo = false;
+        check('Ritmo (sesión simulada con todas las fuentes): nivel 10-12 tras la 1.ª sesión, 20 en la 2.ª o la 3.ª (no antes), 30 no antes de la 8.ª sesión',
+          ses[0] >= 10 && ses[0] <= 12 && ses[1] < 20 && ses[2] >= 20 && ses[2] <= 24 && (s30 === 0 || s30 >= 8) && ecoS2 === 'desbloqueada', 'niveles por sesión ' + ses.join(' → ') + ' · nivel 30 en la sesión ' + (s30 || '>16') + ' · Eco Protector ' + ecoS2); }
       oye = true;
 
       // 5. Etapas: ajustar() devuelve los números de cada etapa, sin nivel devuelve el mismo objeto, topes en todas
@@ -766,15 +873,15 @@ window.AVV18Evolucion = function (G) {
       check('Nivel 1 en el duelo: el motor usa el grito de hoy tal cual', H.listo(C().j, 'grito_yunque').h === gr && C().j.nivel === 1);
       Cb.salir(); mudo = false;
 
-      // 7. Subida de nivel jugando: con 380 XP, ganar a la Campeona sube a 10 (aviso, evento y tarjeta); la etapa entra en el siguiente duelo
-      reset(); prueba({ especie: 'vittata', xp: 380 }); evs.length = 0; toasts.length = 0;
+      // 7. Subida de nivel jugando: con 370 XP, ganar a la Campeona sube a 10 (aviso, evento y tarjeta); la etapa entra en el siguiente duelo
+      reset(); prueba({ especie: 'vittata', xp: 370 }); evs.length = 0; toasts.length = 0;
       Cb.iniciar({ sinCuenta: true, especie: 'vittata', evoReal: true }); fresco();
       const nvAntes = C().j.nivel, hudNv = document.querySelector('#v18-duelo [data-k="nvN"]');
       C().r.plumas = 1; quieta(1.2); cara(1, 0); Cb.usar(C().j, 'golpe_ala');
       const finXp = document.querySelector('#v18-duelo [data-k="finXp"]');
-      check('Ganar a la Campeona con 380 XP: +60 XP y sube a nivel 10 con aviso, evento v18 {tipo:"evo"}, tarjeta «Eco Amplificado» y «+60 XP» en el panel',
-        C().resultado === 'win' && info('vittata').nivel === 10 && info('vittata').xp === 440 && toasts.some(t => t === con(TXT.subeV, 10)) && evs.some(e => e.nivel === 10 && e.especie === 'vittata') &&
-        !!cartaEl && /Eco Amplificado/.test(cartaEl.textContent) && finXp && /\+60 XP/.test(finXp.textContent) && /10/.test(finXp.textContent), JSON.stringify({ nv: info('vittata'), t: toasts.slice(-3), fin: finXp && finXp.textContent }));
+      check('Ganar a la Campeona con 370 XP: +40 XP y sube a nivel 10 con aviso, evento v18 {tipo:"evo"}, tarjeta «Eco Amplificado» y «+40 XP» en el panel',
+        C().resultado === 'win' && info('vittata').nivel === 10 && info('vittata').xp === 410 && toasts.some(t => t === con(TXT.subeV, 10)) && evs.some(e => e.nivel === 10 && e.especie === 'vittata') &&
+        !!cartaEl && /Eco Amplificado/.test(cartaEl.textContent) && finXp && /\+40 XP/.test(finXp.textContent) && /10/.test(finXp.textContent), JSON.stringify({ nv: info('vittata'), t: toasts.slice(-3), fin: finXp && finXp.textContent }));
       check('El HUD del duelo muestra «Nv 9 · Grito del Yunque» y la barra de XP; la etapa no cambia a mitad del duelo', nvAntes === 9 && hudNv && hudNv.textContent === 'Nv 9' && C().j.nivel === 9, hudNv && hudNv.textContent);
       C().finT -= 5000; Cb.otraVez(); C().fase = 'lucha';
       check('En el siguiente duelo («Otra vez») ya es Eco Amplificado: 9 m', C().j.nivel === 10 && H.listo(C().j, 'grito_yunque').h.alcance === 9 && document.querySelector('#v18-duelo [data-k="nvE"]').textContent === 'Eco Amplificado');
@@ -928,12 +1035,12 @@ window.AVV18Evolucion = function (G) {
         for (const a of ALIANZAS) { const R = res[a.id]; check('Alianza ' + a.nombre + ' (' + a.lider + ' + ' + a.apoyo + '): requisitos → disponible, desafío → desbloqueada, en el duelo coste 60, recarga 14 s, apoyo con retrato, su efecto y ≤ 1 pluma; explorando, la ayuda de la compañera', R.ok, JSON.stringify(R)); } }
       // 15. XP de cada actividad que ya existe (hitos de una vez + repetibles con tope) y los módulos que llaman a G.v18evo.dar
       { reset(); mudo = true; const pend = []; const tiene = (key, xp) => { const h = hitos().find(x => x[0] === key); if (!h || h[1] !== xp) pend.push(key + '=' + (h ? h[1] : 'no')); };
-        P.cambiarMundo('puente_villa', 'reparado'); tiene('puente', 120); P.cambiarMundo('sombra_tormenta', 'dispersa'); tiene('sombra', 150);
-        P.cambiarMundo('serpiente_marana', 'deshecha'); tiene('serpiente', 100); P.cambiarMundo('sapo_encantado', 'despierto'); tiene('sapo', 100);
-        P.otorgar('reto_dos_cotorras', 'reto_extra', 1); tiene('reto_dos', 100); P.otorgar('minigolf_villa_completo', 'golf', 1); tiene('golf_completo', 40);
-        P.otorgar('minigolf_villa_oro', 'golf_oro', 1); tiene('golf_oro', 60); P.otorgar('perfecta_t', 'victoria_perfecta', 1); tiene('perfecta', 50);
-        P.cambiarMundo('duelos_ganados', 3); tiene('tres_duelos', 60); P.cambiarMundo('piedra_1', 'recogida'); tiene('mat:piedra_1', 10);
-        P.desbloquear('collaria'); tiene('esp:collaria', 40); P.otorgar('duelo_gana_agilis', 'victoria_agilis', 1); tiene('gana:agilis', 50);
+        P.cambiarMundo('puente_villa', 'reparado'); tiene('puente', 120); P.cambiarMundo('sombra_tormenta', 'dispersa'); tiene('sombra', 80);
+        P.cambiarMundo('serpiente_marana', 'deshecha'); tiene('serpiente', 60); P.cambiarMundo('sapo_encantado', 'despierto'); tiene('sapo', 60);
+        P.otorgar('reto_dos_cotorras', 'reto_extra', 1); tiene('reto_dos', 60); P.otorgar('minigolf_villa_completo', 'golf', 1); tiene('golf_completo', 30);
+        P.otorgar('minigolf_villa_oro', 'golf_oro', 1); tiene('golf_oro', 30); P.otorgar('perfecta_t', 'victoria_perfecta', 1); tiene('perfecta', 30);
+        P.cambiarMundo('duelos_ganados', 3); tiene('tres_duelos', 40); P.cambiarMundo('piedra_1', 'recogida'); tiene('mat:piedra_1', 5);
+        P.desbloquear('collaria'); tiene('esp:collaria', 30); P.otorgar('duelo_gana_agilis', 'victoria_agilis', 1); tiene('gana:agilis', 60);
         const debe = hitos().filter(x => !E().marcas[x[0]]).reduce((s2, x) => s2 + x[1], 0), pago = revisarHitos(true), otra = revisarHitos(true);
         const mods = []; for (const [k, M] of [['chispa', G.v18chispa], ['moon', G.v18moon], ['guardian', G.v18guardian]]) {
           if (!M || !M.pagarXP || !M.ID) { mods.push(k + ': sin cargar'); continue; }
@@ -941,8 +1048,8 @@ window.AVV18Evolucion = function (G) {
           if (!(n > 0 && n2 === 0 && info('vittata').xp - a === n)) pend.push(k); }
         const d1 = dar('vittata', 30, 'puerto');
         mudo = false;
-        check('XP de cada actividad: puente 120, Sombra 150, Serpiente 100, Sapo 100, reto de dos 100, minigolf (hoyo 40, oro 60), victoria perfecta 50, 3 duelos 60, material 10, especie 40, victoria con especie 50; se cobran una vez; Chispa, Moon y Guardián pagan con dar() una sola vez',
-          !pend.length && pago === debe && debe >= 120 + 150 + 100 + 100 + 100 + 40 + 60 + 50 + 60 + 10 + 40 + 50 && otra === 0 && d1 === 30, (pend.join(',') || 'ok') + ' · pago ' + pago + '/' + debe + ' · ' + mods.join(' · ')); }
+        check('XP de cada actividad: puente 120, Sombra 80, Serpiente 60, Sapo 60, reto de dos 60, minigolf (hoyo 30, oro 30), victoria perfecta 30, 3 duelos 40, material 5, especie 30, victoria con especie 60; se cobran una vez; Chispa, Moon y Guardián pagan con dar() una sola vez',
+          !pend.length && pago === debe && debe >= 120 + 80 + 60 + 60 + 60 + 30 + 30 + 30 + 40 + 5 + 30 + 60 && otra === 0 && d1 === 30, (pend.join(',') || 'ok') + ' · pago ' + pago + '/' + debe + ' · ' + mods.join(' · ')); }
       // 16. Migración: una partida del prototipo (v2 con solo Eco Protector) y una v1 cargan sin perder nada; recargar conserva todo
       { const proto = { v: 2, especies: { arausiaca: 'seleccionable' }, inv: { pluma_rival: 1 }, otorgados: { combate_1: true }, mundo: { puente_villa: 'reparado' }, sel: 'vittata',
           evo: { esp: { vittata: { xp: T(12) + 3, nivel: 12, mejoras: { eco_amplificado: true }, variante: null } }, alianzas: { eco_protector: 'desbloqueada' }, alianzaSel: 'eco_protector', marcas: { puente: true, desafio_eco: true, 'esp:arausiaca': true }, dia: { fecha: 'x', por: { total: 5 } }, retro: true } };
@@ -963,6 +1070,32 @@ window.AVV18Evolucion = function (G) {
         check('Ficha de agilis nv 22: «Nv 22 · Guardián», «Faltan … XP», «Velocidad +24 %», «Espera −12 %», la secundaria de ALAS, las etapas y «Viento Cruzado · Líder»; la fila de alianza dice cómo conseguirla',
           /Nv 22/.test(t) && /Guardián/.test(t) && /Faltan \d+ XP para el nivel 23/.test(t) && /Velocidad \+24 %/.test(t) && /Espera −12 %/.test(t) && t.indexOf(TXT.sec_alas) >= 0 && /Maestro · Nivel 30/.test(t) && /Viento Cruzado · Líder · Bloqueada/.test(t) &&
           /Viento Cruzado/.test(tx) && tx.indexOf(TXT.aliReqG) >= 0 && lineaHud({ especie: 'agilis', nivel: 22, poder: 'quiebro' }).etapa === 'Guardián', t.slice(0, 260) + ' | ' + tx.slice(0, 120)); }
+      // 18. Avisos al jugar (no solo en la ficha): tarjeta de nivel en cada subida, «+N XP» pequeña al ganar XP explorando,
+      // una tarjeta grande no la pisa una pequeña y, con el cómic encima, la tarjeta espera a que se cierre
+      { reset(); quitarCarta(); prueba({ especie: 'vittata', xp: T(11) - 10 }); dar('vittata', 30, 'prueba');
+        const t1 = cartaEl ? cartaEl.textContent : '', grande1 = !!cartaEl && !cartaEl.classList.contains('mini');
+        quitarCarta(); dar('vittata', 5, 'prueba'); const t2 = cartaEl ? cartaEl.textContent : '', mini2 = !!cartaEl && cartaEl.classList.contains('mini');
+        quitarCarta(); carta(TXT.etapa, 'Eco Amplificado', 'x'); dar('vittata', 5, 'prueba'); const sigue = !!cartaEl && !cartaEl.classList.contains('mini') && /Eco Amplificado/.test(cartaEl.textContent);
+        quitarCarta(); const cm = document.getElementById('comic'), cmH = cm ? cm.hidden : true; let espera = null, sale = null;
+        if (cm) { cm.hidden = false; prueba({ especie: 'vittata', xp: T(13) - 1 }); dar('vittata', 3, 'prueba'); espera = !cartaEl; cm.hidden = cmH; await new Promise(r => setTimeout(r, 900)); sale = !!cartaEl && /Nv 13/.test(cartaEl.textContent); }
+        quitarCarta(); const fx0 = toasts.length; dar('vittata', 5, 'duelo', { duelo: true, repetible: true }); const duelSinMini = !cartaEl && toasts.length === fx0;
+        check('Avisos al jugar: cada subida de nivel trae su tarjeta («¡Subiste de nivel!», Vittata, Nv 11, lo que falta); la XP explorando sale en una tarjeta pequeña; una grande no la pisa una pequeña; con el cómic abierto espera; la XP del duelo va en su panel',
+          grande1 && /Subiste de nivel/.test(t1) && /Vittata/.test(t1) && /Nv 11/.test(t1) && /Faltan \d+ XP para el nivel 12/.test(t1) && mini2 && /\+5 XP/.test(t2) && sigue && (cm ? espera && sale : true) && duelSinMini,
+          JSON.stringify({ t1: t1.slice(0, 80), t2: t2.slice(0, 60), sigue, espera, sale, duelSinMini })); quitarCarta(); }
+      // 19. El reto de cada alianza, claro en Mis cotorras (lo que falta, con nombres) y en el panel de fin del duelo
+      { reset(); P.desbloquear('arausiaca'); P.desbloquear('barbadensis'); P.seleccionar('vittata'); prueba({ especie: 'vittata', nivel: 10 }); revisarAlianza(); quitarCarta();
+        const box = document.createElement('div'); box.innerHTML = htmlAlianzas();
+        const fEco = box.querySelector('[data-v18ali-fila="eco_protector"]'), fLl = box.querySelector('[data-v18ali-fila="lluvia_guiada"]'), fVi = box.querySelector('[data-v18ali-fila="viento_cruzado"]');
+        const ll = aliDe('lluvia_guiada'), retoLl = retoTexto(ll);
+        const okLista = fEco && fEco.getAttribute('data-estado') === 'disponible' && fEco.textContent.indexOf(retoTexto(aliDe(ALI))) >= 0 && /Vittata interrumpiéndola 2 veces/.test(fEco.textContent) &&
+          fLl && fLl.getAttribute('data-estado') === 'bloqueada' && fLl.textContent.indexOf(con(TXT.reqApoyo, nombre('xantholora'))) >= 0 && fLl.textContent.indexOf(con(con(TXT.reqLider, nombre('barbadensis')), 1)) >= 0 && fLl.textContent.indexOf(retoLl) >= 0 &&
+          retoLl.indexOf(nombre('barbadensis')) >= 0 && retoLl.indexOf(nombrePoder('barbadensis')) >= 0 && nombrePoder('barbadensis').length > 2 && !fVi && box.textContent.indexOf(con(TXT.aliPorDesc, 4)) >= 0 && !box.querySelector('img[src*="vittata"]');
+        let okCard = true; const D = G.v18descubrir;
+        if (D && D.abrirSeleccion) { D.abrirSeleccion(); const card = G.ui.$('card'); okCard = !!card.querySelector('[data-v18alianzas]') && !!card.querySelector('[data-v18reto="eco_protector"]'); G.ui.hideCard(); }
+        win({ especie: 'vittata', interrupciones: 1 }); const fin1 = htmlFin(); win({ especie: 'vittata', interrupciones: 2 }); const fin2 = htmlFin(); quitarCarta();
+        check('Mis cotorras: cada alianza conocida dice su estado y qué falta (líder en nivel 10, compañera en tu bandada) y su reto con la líder y su poder por su nombre; las que no conoces solo se cuentan; el panel de fin del duelo dice cómo va el reto',
+          okLista && okCard && fin1.indexOf(con(con(TXT.retoFin, 'Eco Protector'), 1)) >= 0 && fin2.indexOf(con(TXT.retoFinLogrado, 'Eco Protector')) >= 0 && estadoAli(ALI) === 'desbloqueada',
+          JSON.stringify({ okLista: !!okLista, okCard, fin1: fin1.replace(/<[^>]+>/g, ' ').slice(0, 90), fin2: fin2.replace(/<[^>]+>/g, ' ').slice(0, 90), lista: box.textContent.slice(0, 200) })); }
       // Los textos nuevos tienen su inglés en content/cap1/en.js (el traductor los busca tal cual)
       {
         const EN = window.AV_EN || {}, faltan = [];
