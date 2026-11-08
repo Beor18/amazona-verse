@@ -1,0 +1,84 @@
+{
+ "etiqueta": "r3",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "head": "1c08df24",
+ "pantalla": "1280x800",
+ "siembra": {
+  "alm": "amazonaverse",
+  "sembrado": true
+ },
+ "es": {
+  "idioma": "es",
+  "tarjetas": 7,
+  "titulos": [
+   "Minigolf de Villa Raíz",
+   "Carrera con Chispa",
+   "Entrenamiento con Moon",
+   "Circuito del Primer Vuelo",
+   "Duelos contra la Campeona",
+   "Niveles de mis cotorras",
+   "Alianzas de bandada"
+  ],
+  "numeros": [
+   "3",
+   "1",
+   "0:00.1",
+   "4",
+   "1 de 6"
+  ],
+  "desborde": 0,
+  "chipsDuelos": 2,
+  "filasNiveles": 2,
+  "aria": "rec-h-v18",
+  "visible": true
+ },
+ "en": {
+  "idioma": "en",
+  "tarjetas": 7,
+  "titulos": [
+   "Villa Raíz Mini Golf",
+   "Race with Chispa",
+   "Training with Moon",
+   "First Flight Circuit",
+   "Duels against the Champion",
+   "My parrots' levels",
+   "Flock alliances"
+  ],
+  "numeros": [
+   "3",
+   "1",
+   "0:00.1",
+   "4",
+   "1 of 6"
+  ],
+  "desborde": 0,
+  "chipsDuelos": 2,
+  "filasNiveles": 2,
+  "aria": "rec-h-v18",
+  "visible": true
+ },
+ "esperado": {
+  "tarjetas": 7,
+  "desborde": 0,
+  "chipsDuelos": 2,
+  "filasNiveles": 2
+ },
+ "render": {
+  "stats": {
+   "fps": 126,
+   "calls": 172,
+   "triangulos": 1885440,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "heap": 354
+ },
+ "erroresConsola": [],
+ "capturas": [
+  "k270_records_r3_es.jpg",
+  "k270_records_r3_en.jpg"
+ ]
+}
