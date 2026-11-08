@@ -10,8 +10,9 @@
    bando sin una causa en la misión: directiva V18.3 §8), porEstado { estado: { apariencia, anim, dialogo: [texto…] } }.
    Un modelo, varias apariencias (§8): nada de modelos nuevos por estado.
    Arco del Constructor, la Ingeniera y Tuerca: misión 1 en Puerto de La Mina (src/game/v18/puerto.js) y misión 2 en las Atalayas
-   del Oeste (src/game/v18/arco.js). Cada misión solo avanza estados ya declarados aquí: aprendiz → responsable → rescate (Ingeniera),
-   supervisor → reparador → vecino (Constructor), operador → inventor → aliado (Tuerca).
+   del Oeste (src/game/v18/arco.js). Cada misión solo avanza estados ya declarados aquí: aprendiz → responsable → rescate → jefa_obra (Ingeniera),
+   supervisor → reparador → vecino → maestro_obra (Constructor), operador → inventor → aliado (Tuerca). Misión 3: el muelle del
+   Embarcadero de las Canoas (src/game/v18/muelle.js).
    Nombres en pantalla: «el Constructor» y «la Ingeniera» (provisionales; los definitivos los decide Kelvin, V18_3_AUDITORIA §0.4).
    El inglés de cada texto está en content/cap1/en.js. */
 window.AV_NPC_V18 = [
@@ -32,14 +33,17 @@ window.AV_NPC_V18 = [
       responsable: { mallas: { Chaqueta: true, Mochila: true, Cinturon: true, Guantes: true }, colores: { MONO: '#1f3550', CHAQUETA: '#e8622a', GUANTES: '#7a4a1e' }, accesorios: ['insignia'] },
       // Equipo de rescate (misión 2, las Atalayas): la misma ropa en rojo de rescate, mochila amarilla e insignia; se lo pone para
       // ayudar a los nidos de las torres
-      rescate: { mallas: { Chaqueta: true, Mochila: true, Cinturon: true, Guantes: true }, colores: { MONO: '#1f3550', CHAQUETA: '#d8352a', MOCHILA: '#f2c230', CORREAS: '#8a6a12', GUANTES: '#7a4a1e' }, accesorios: ['insignia'] }
+      rescate: { mallas: { Chaqueta: true, Mochila: true, Cinturon: true, Guantes: true }, colores: { MONO: '#1f3550', CHAQUETA: '#d8352a', MOCHILA: '#f2c230', CORREAS: '#8a6a12', GUANTES: '#7a4a1e' }, accesorios: ['insignia'] },
+      // Jefa de obra (misión 3, el muelle del embarcadero): chaqueta turquesa, mochila naranja e insignia; el plano es suyo
+      jefa_obra: { mallas: { Chaqueta: true, Mochila: true, Cinturon: true, Guantes: true }, colores: { MONO: '#1f3550', CHAQUETA: '#2bb3b1', MOCHILA: '#e8622a', CORREAS: '#7a3a14', GUANTES: '#7a4a1e' }, accesorios: ['insignia'] }
     },
-    estados: ['aprendiz', 'responsable', 'rescate'],
-    transiciones: { aprendiz: { responsable: true }, responsable: { rescate: true } },
+    estados: ['aprendiz', 'responsable', 'rescate', 'jefa_obra'],
+    transiciones: { aprendiz: { responsable: true }, responsable: { rescate: true }, rescate: { jefa_obra: true } },
     porEstado: {
       aprendiz: { apariencia: 'aprendiz', anim: 'idle', dialogo: ['Esa máquina no debería estar ahí. Vamos a mirar bien antes de tocar nada.'] },
       responsable: { apariencia: 'responsable', anim: 'idle', dialogo: ['¡Mira la escalera! La hicimos juntas, tabla por tabla.', 'Ahora la máquina riega flores en vez de tapar caminos.'] },
-      rescate: { apariencia: 'rescate', anim: 'idle', dialogo: ['Equipo de rescate de nidos, ¡a tus órdenes!', 'Desde las torres, los faroles cuidan a toda la isla.'] }
+      rescate: { apariencia: 'rescate', anim: 'idle', dialogo: ['Equipo de rescate de nidos, ¡a tus órdenes!', 'Desde las torres, los faroles cuidan a toda la isla.'] },
+      jefa_obra: { apariencia: 'jefa_obra', anim: 'idle', dialogo: ['Plano listo, muelle listo. ¿Cuál será la próxima obra?', 'Un buen muelle se mira desde el agua y desde la orilla.'] }
     }
   },
   {
@@ -58,14 +62,17 @@ window.AV_NPC_V18 = [
       reparador: { mallas: { Casco: true, Chaleco: false, Mochila: true, Guantes: true, Botas: true }, colores: { CAMISA: '#7a5a3a' }, accesorios: [] },
       // Vecino que pregunta primero (misión 2, las Atalayas): casco verde (como la máquina reconvertida), camisa verde de explorador,
       // mochila y guantes; sin chaleco de supervisor
-      vecino: { mallas: { Casco: true, Chaleco: false, Mochila: true, Guantes: true, Botas: true }, colores: { CASCO: '#5fae5a', CAMISA: '#2f6b4f' }, accesorios: [] }
+      vecino: { mallas: { Casco: true, Chaleco: false, Mochila: true, Guantes: true, Botas: true }, colores: { CASCO: '#5fae5a', CAMISA: '#2f6b4f' }, accesorios: [] },
+      // Maestro de obra (misión 3, su primera obra buena con la Ingeniera): vuelve el chaleco, ahora verde, con casco, mochila y guantes
+      maestro_obra: { mallas: { Casco: true, Chaleco: true, Mochila: true, Guantes: true, Botas: true }, colores: { CHALECO: '#3fae5a', CAMISA: '#2f6b4f' }, accesorios: [] }
     },
-    estados: ['supervisor', 'reparador', 'vecino'],
-    transiciones: { supervisor: { reparador: true }, reparador: { vecino: true } },
+    estados: ['supervisor', 'reparador', 'vecino', 'maestro_obra'],
+    transiciones: { supervisor: { reparador: true }, reparador: { vecino: true }, vecino: { maestro_obra: true } },
     porEstado: {
       supervisor: { apariencia: 'supervisor', anim: 'hablar', dialogo: ['¿Las cotorras? Se mudan un ratito y ya. ¡Esta obra no se para!'] },
       reparador: { apariencia: 'reparador', anim: 'trabajar', dialogo: ['Construir rápido no es construir bien… Esta vez miré primero quién vive aquí.'] },
-      vecino: { apariencia: 'vecino', anim: 'idle', dialogo: ['Mirar primero, luego construir. ¡Ya me lo sé de memoria!', '¿Ves los faroles? Esta vez todos dijimos que sí.'] }
+      vecino: { apariencia: 'vecino', anim: 'idle', dialogo: ['Mirar primero, luego construir. ¡Ya me lo sé de memoria!', '¿Ves los faroles? Esta vez todos dijimos que sí.'] },
+      maestro_obra: { apariencia: 'maestro_obra', anim: 'idle', dialogo: ['¿Viste el muelle? Lo hicimos pensando en todos.', 'Ahora pregunto primero. ¡Y construyo mejor!'] }
     }
   },
   {
