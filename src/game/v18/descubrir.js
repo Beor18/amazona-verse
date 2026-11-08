@@ -36,7 +36,8 @@ window.AVV18Descubrir = function (G) {
     gana: '¡La cotorra de Dominica ya vuela contigo! Búscala en Pausa → Mis cotorras.',
     titulo: '¿Con qué cotorra juegas el duelo?',
     nota: 'Cambia tu poder en el duelo. Tú sigues siendo tú.',
-    listo: 'Listo', poder: 'Poder', boton: 'Mis cotorras', elegida: 'Para el duelo:'
+    listo: 'Listo', poder: 'Poder', boton: 'Mis cotorras', elegida: 'Para el duelo:',
+    bloq: 'Aún no vuela contigo. Síguela de copa en copa, cerca de Villa Raíz.'
   };
   const RETRATOS = new Set(['agilis', 'arausiaca', 'barbadensis', 'diadema', 'farinosa', 'guildingii', 'xantholora']); // BM152 (Mac): retratos con el personaje del juego
   const NOMBRES = { vittata: 'Cotorra puertorriqueña', arausiaca: 'Cotorra de Dominica' };
@@ -62,6 +63,7 @@ window.AVV18Descubrir = function (G) {
   const rango = e => Math.max(0, V.ESTADOS.indexOf(e || 'no_descubierta'));
   const descubierta = () => rango(estado()) >= rango('descubierta');
   const desbloqueada = () => rango(estado()) >= rango('seleccionable');
+  const pendiente = () => descubierta() && !desbloqueada(); // V18.1 §2.2: descubierta pero aún no desbloqueada (se ve distinta en la tarjeta)
   const S = () => G.S;
   const dist3 = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
   const distXZ = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -282,7 +284,9 @@ window.AVV18Descubrir = function (G) {
     const botones = ids.map(id => `<button class="btn${id === sel ? '' : ' ghost'}" type="button" data-v18sp="${esc(id)}" aria-pressed="${id === sel}">${RETRATOS.has(id) ? `<img src="assets/retratos/v18/${esc(id)}.png" alt="" width="64" height="64" style="display:block;margin:0 auto 4px">` : ''}<span class="v18-nom">${esc(nombre(id))}</span><small style="display:block;opacity:.8"><span>${esc(TXT.poder)}</span>: <span>${esc(poder(id))}</span></small>${evo('htmlFicha', id)}</button>`).join('');
     // QA móvil: cada botón en columna (retrato, nombre, poder, ficha); en fila el texto quedaba en columnas de 3 o 4 letras en el teléfono
     // QA-210: con relleno arriba y abajo (el .btn no tiene): sin retrato, el nombre y «XP» tocaban el borde de la tarjeta
-    G.ui.showCard(`<div class="v18-elegir"><style>.v18-elegir .v18-nom{display:block}.v18-elegir .v18-nom::first-letter{text-transform:uppercase}.v18-elegir [data-v18sp]{flex:1 1 130px;flex-direction:column;justify-content:flex-start;text-align:center;min-width:0;padding-block:12px}</style><h2>${esc(TXT.titulo)}</h2><p>${esc(TXT.nota)}</p><div class="row">${botones}</div>${evo('htmlExtra')}<div class="row"><button class="btn" id="v18-elegir-ok" type="button">${esc(TXT.listo)}</button></div></div>`);
+    // V18.1 §2.2 y §2.8: la descubierta y aún no desbloqueada sale apagada, con la pista para conseguirla (no se puede elegir)
+    const bloq = pendiente() ? `<div class="btn ghost" data-v18bloq="${esc(ID)}" aria-disabled="true" style="opacity:.7;cursor:default">${RETRATOS.has(ID) ? `<img src="assets/retratos/v18/${esc(ID)}.png" alt="" width="64" height="64" style="display:block;margin:0 auto 4px;filter:grayscale(1) brightness(.75)">` : ''}<span class="v18-nom">${esc(nombre(ID))}</span><small style="display:block;opacity:.85">${esc(TXT.bloq)}</small></div>` : '';
+    G.ui.showCard(`<div class="v18-elegir"><style>.v18-elegir .v18-nom{display:block}.v18-elegir .v18-nom::first-letter{text-transform:uppercase}.v18-elegir [data-v18sp],.v18-elegir [data-v18bloq]{flex:1 1 130px;flex-direction:column;justify-content:flex-start;text-align:center;min-width:0;padding-block:12px}</style><h2>${esc(TXT.titulo)}</h2><p>${esc(TXT.nota)}</p><div class="row">${botones}${bloq}</div>${evo('htmlExtra')}<div class="row"><button class="btn" id="v18-elegir-ok" type="button">${esc(TXT.listo)}</button></div></div>`);
     const card = G.ui.$('card'); evo('enlazar', card);
     card.querySelectorAll('[data-v18sp]').forEach(b => { b.onclick = () => elegir(b.getAttribute('data-v18sp')); });
     const ok = G.ui.$('v18-elegir-ok'); if (ok) ok.onclick = () => G.ui.hideCard();
@@ -309,7 +313,7 @@ window.AVV18Descubrir = function (G) {
       boton.addEventListener('click', () => setTimeout(abrirSeleccion, 0));
       const ref = grid.querySelector('#b-char'); if (ref) ref.after(boton); else grid.prepend(boton);
     }
-    boton.hidden = seleccionables().length < 2;
+    boton.hidden = seleccionables().length + (pendiente() ? 1 : 0) < 2; // con una descubierta pendiente también sale (pista para volver)
     return boton;
   }
   { const menu = G.ui.$('pause'); if (menu) menu.addEventListener('beforetoggle', e => { if (e.newState === 'open') pintarBoton(); }); }
@@ -429,6 +433,14 @@ window.AVV18Descubrir = function (G) {
       toasts.length = 0; ir({ x: P[0].x + 4, y: P[0].y - 6, z: P[0].z + 3 }); correr(0.2);
       check('Al acercarse se descubre y avisa «Descubriste una cotorra de Dominica»', estado() === 'descubierta' && toasts.some(t => t.indexOf(TXT.descubre) === 0), toasts.join(' | '));
       check('Descubierta no es elegible todavía', !V.seleccionar(ID) && it.label() === TXT.seguir && seleccionables().indexOf(ID) < 0);
+      { // V18.1 §2.2: en «Mis cotorras» la descubierta sale apagada con la pista para conseguirla, y no se puede elegir
+        const vis = !G.ui.$('pause') || (pintarBoton() && !boton.hidden);
+        abrirSeleccion(); const cd = G.ui.$('card'), lk = cd && cd.querySelector('[data-v18bloq="' + ID + '"]');
+        const ok = vis && !!lk && !cd.querySelector('[data-v18sp="' + ID + '"]') && lk.textContent.indexOf(TXT.bloq) >= 0;
+        if (lk) lk.click();
+        check('V18.1 §2.2: «Mis cotorras» enseña la descubierta apagada, con su pista, sin poder elegirla', ok && V.seleccionada() !== ID && estado() === 'descubierta', 'boton ' + vis + ', bloq ' + !!lk);
+        try { G.ui.hideCard(); } catch (e) { /* sin tarjeta */ }
+      }
       // reto fallido: se acaba el tiempo sin seguirla (sin castigo: vuelve a su rama)
       toasts.length = 0; it.use();
       check('Acción junto a ella empieza el reto y ella vuela a la primera copa', R.activo && B.vuelo && B.vuelo.k === 1 && toasts.some(t => /Síguela/.test(t)));
