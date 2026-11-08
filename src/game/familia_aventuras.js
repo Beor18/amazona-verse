@@ -740,9 +740,12 @@ window.AVFamiliaAventuras = function (G) {
       // El clic del <a download> y window.open se interceptan: la prueba no deja archivos ni pestañas.
       {
         const red = [], llamadas = [], clics = [], abiertas = [];
+        // KIMI-327: el propio streaming del juego sigue bajando activos locales (/assets/) durante la
+        // ventana (las fotos de las viñetas lo despiertan): no es «red» del Descargar, que es local (blob).
+        const ajena = u => { try { const p = new URL(u, location.href); return p.origin !== location.origin || !/^\/(assets|content|src|docs)\//.test(p.pathname); } catch (e) { return true; } };
         const espera0 = Date.now(); let ult = performance.getEntriesByType('resource').length; // que la carga del mundo se calme antes de medir
         while (Date.now() - espera0 < 4000) { await espera(400); const n = performance.getEntriesByType('resource').length; if (n === ult) break; ult = n; }
-        const po = window.PerformanceObserver ? new PerformanceObserver(l => { for (const e of l.getEntries()) if (!/^(blob|data):/.test(e.name)) red.push(e.name); }) : null;
+        const po = window.PerformanceObserver ? new PerformanceObserver(l => { for (const e of l.getEntries()) if (!/^(blob|data):/.test(e.name) && ajena(e.name)) red.push(e.name); }) : null;
         try { if (po) po.observe({ type: 'resource' }); } catch (e) { /* */ }
         const fetch0 = window.fetch, xhr0 = XMLHttpRequest.prototype.open, beacon0 = navigator.sendBeacon, click0 = HTMLAnchorElement.prototype.click, open0 = window.open, share0 = navigator.share;
         window.fetch = function () { llamadas.push('fetch ' + arguments[0]); return fetch0.apply(this, arguments); };
@@ -774,7 +777,7 @@ window.AVFamiliaAventuras = function (G) {
           window.fetch = fetch0; XMLHttpRequest.prototype.open = xhr0; if (beacon0) navigator.sendBeacon = beacon0; HTMLAnchorElement.prototype.click = click0; window.open = open0;
         }
         await espera(300);
-        try { if (po) { red.push(...po.takeRecords().map(e => e.name).filter(n => !/^(blob|data):/.test(n))); po.disconnect(); } } catch (e) { /* */ }
+        try { if (po) { red.push(...po.takeRecords().map(e => e.name).filter(n => !/^(blob|data):/.test(n) && ajena(n))); po.disconnect(); } } catch (e) { /* */ }
         ok('Descargar: sin red (ninguna petición, fetch, XHR ni beacon), sin compartir (Web Share) y sin cuentas', !red.length && !llamadas.length && navigator.share === share0,
           red.concat(llamadas).slice(0, 4).join(' | '));
       }
