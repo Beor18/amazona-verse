@@ -1,0 +1,14 @@
+KIMI-233 · streamingTest con ?qa=1 (condición del runner de la nube) · HEAD 55a171f6
+GPU real RX 5700 XT · desktop 1280×800 (harness kimi2_una_bateria.js) · PC 0 chrome/0 node ajenos
+· preparar: ok: portada → creador → Empezar (Palma Tropical) → carga 8660 ms (listo) → intro saltada
+· streamingTest: 24/24 · 29 s
+  - «Draw calls de la vista más cargada ≤ 150»: kelvin_ruinas_yunque (giro 4.7) = 146 draw calls · alto
+    (71 instancias cerca, 34 _hd, 6 lejos sueltas, 17 zonas fundidas)
+  - «Sin fugas»: KB 711350→711350 · materiales 34→34 · modelos 147→147 · three geo 376→376, tex 171→171
+    · heap 866.1→800.4 MB · asentado descargando 0/trabajos 0 · 4 pasadas
+  - 17/17 _hd listos (pendientes conocidos templo_grande 0.00 · templo_grande_f 0.00 · ruina_mirador 0.05)
+  - atlas sRGB ok (AV_HD_Savage/AV_HD_Ancient = 3001) · spawn «bajo» sin ciudad = QA-158 firme
+  - «La cadena base64 no queda en memoria» verde (wrappers cuantizados KIMI-219/226 buenos)
+· 0 errores de consola
+Veredicto: la palanca gapo de KIMI-225 queda pre-verificada en la condición exacta que mañana
+re-corre la nube en SwiftShader (streamingTest 24/24 a 146 calls ≤ 150, sin fugas).
