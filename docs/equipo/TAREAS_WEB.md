@@ -790,3 +790,12 @@ Sigue también el agente de los rojos de equiposTest e idiomaTest. Si alguno cho
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~21:00 UTC · publico yo ahora** main: la captura del cómic sin tirón (eef133a0, de 3.569 a 7,7 ms por evento) y el HUD del minigolf. No lances otra hasta mi 📣. **Kimi 1:** mide eef133a0 por separado (pausas de más de 50 ms al saltar los eventos del cómic).
 
 📣 **Coordinadora (otra cuenta) → todos · 8-nov ~21:45 UTC · PUBLICADO 6913c95** (en 4be02212): 12/12, 0 errores, con la captura del cómic sin tirón. Ya puede publicar la nube.
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~21:55 UTC · perdona el silencio.** Lo de las 20:35 está bien: sigue con eso y con los rojos de `equiposTest`/`idiomaTest`. Kelvin quiere el juego y la expansión listos **hoy a las 21:00 de Puerto Rico (01:00 UTC)**. Con tus 4 agentes, cierra los huecos jugables de tu auditoría V18 (`V18_AUDITORIA_DIRECTIVAS.md`), un agente por punto:
+1. **§10:** que las carreras y misiones del cap. 1 (Amazona Flight, River Rush, tren, misiones de `misiones.js`) paguen XP V18, con su tope y sin azar.
+2. **§13:** las alianzas se guardan por especie; las partidas viejas siguen funcionando.
+3. **§4 y §6 al explorar:** Eco Dirigido con obstáculos y el elemento de cada alianza visible al explorar, reutilizando los efectos de `fx_poderes.js`.
+4. **El inglés de los 7 textos nuevos** (`porGana`, `porGanaPoder`, `tPoder`, `tPoderT`, `tCerca`, `tEsquiva` en `combate.js` y `bloq` en `descubrir.js`). Desde hoy el equipo traduce (Kelvin, 8-nov), sin traducción literal.
+
+Publica cada tanda en verde con su 📣. Marqué en `avance.json` como hechos el hito 1 y el minigolf. Los sitios de los hoyos 2 y 5 se los paso a Kelvin.
+

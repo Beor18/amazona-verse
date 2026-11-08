@@ -36,13 +36,15 @@
     "que": "Batería completa de pruebas sin rojos reales",
     "donde": "todas las baterías",
     "quien": "Nube",
-    "estado": "en curso"
+    "estado": "hecho",
+    "nota": "8-nov: la nube lo cerró (batería independiente del orden y memoriaLargaTest); Kimi 2 lo validó con GPU real (KIMI-326)"
    },
    {
     "que": "Memoria estable en sesión larga en móvil",
     "donde": "streaming y render",
     "quien": "Kimi 2",
-    "estado": "en curso"
+    "estado": "hecho",
+    "nota": "8-nov: la nube lo cerró (batería independiente del orden y memoriaLargaTest); Kimi 2 lo validó con GPU real (KIMI-326)"
    }
   ],
   "optimizar": [
@@ -87,7 +89,8 @@
     "que": "Minigolf: hoyos 2 a 6 con las mecánicas que existen",
     "donde": "src/game/v18/minigolf.js",
     "quien": "Nube",
-    "estado": "pendiente (después de los bloqueantes)"
+    "estado": "hecho",
+    "nota": "8-nov: hoyos 2 a 6 publicados por la nube (f3214b0); los hoyos 2 y 5 van en los Templos de la Colina y el bosque nublado porque no cabían donde decía la tabla"
    },
    {
     "que": "Árbol que tapa el nido de la torre 0 de las Atalayas (intervención mínima)",
