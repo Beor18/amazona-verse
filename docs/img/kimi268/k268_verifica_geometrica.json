@@ -1,0 +1,121 @@
+{
+ "archivo": "assets/models/edificios/templo_mediano_h_hd.glb",
+ "bytes": {
+  "original": 15833424,
+  "nuevo": 11245452
+ },
+ "wrapper": "ok (base64 == glb)",
+ "posiciones": {
+  "errMax_mm": 0.43,
+  "errMedia_mm": 0.1918,
+  "verts": 305959
+ },
+ "attrsNoPosNorIguales": true,
+ "normalesErrMaxGrados": 0.38,
+ "porMesh": [
+  {
+   "mesh": 0,
+   "errMaxM": 0.341,
+   "errMediaM": 0.1909
+  },
+  {
+   "mesh": 1,
+   "errMaxM": 0.158,
+   "errMediaM": 0.092
+  },
+  {
+   "mesh": 2,
+   "errMaxM": 0.43,
+   "errMediaM": 0.2474
+  },
+  {
+   "mesh": 3,
+   "errMaxM": 0.42,
+   "errMediaM": 0.2364
+  },
+  {
+   "mesh": 4,
+   "errMaxM": 0.317,
+   "errMediaM": 0.1801
+  },
+  {
+   "mesh": 5,
+   "errMaxM": 0.4,
+   "errMediaM": 0.2291
+  },
+  {
+   "mesh": 6,
+   "errMaxM": 0.296,
+   "errMediaM": 0.1691
+  },
+  {
+   "mesh": 7,
+   "errMaxM": 0.405,
+   "errMediaM": 0.2082
+  },
+  {
+   "...": "5 meshes más"
+  }
+ ]
+}
+{
+ "archivo": "assets/models/edificios/templo_grande_d_hd.glb",
+ "bytes": {
+  "original": 10531772,
+  "nuevo": 7072192
+ },
+ "wrapper": "ok (base64 == glb)",
+ "posiciones": {
+  "errMax_mm": 1.049,
+  "errMedia_mm": 0.5271,
+  "verts": 230715
+ },
+ "attrsNoPosNorIguales": true,
+ "normalesErrMaxGrados": 0.379,
+ "porMesh": [
+  {
+   "mesh": 0,
+   "errMaxM": 0.954,
+   "errMediaM": 0.547
+  },
+  {
+   "mesh": 1,
+   "errMaxM": 0.878,
+   "errMediaM": 0.4935
+  },
+  {
+   "mesh": 2,
+   "errMaxM": 1.02,
+   "errMediaM": 0.5903
+  },
+  {
+   "mesh": 3,
+   "errMaxM": 1.005,
+   "errMediaM": 0.5714
+  },
+  {
+   "mesh": 4,
+   "errMaxM": 0.989,
+   "errMediaM": 0.569
+  },
+  {
+   "mesh": 5,
+   "errMaxM": 0.988,
+   "errMediaM": 0.5435
+  },
+  {
+   "mesh": 6,
+   "errMaxM": 0.846,
+   "errMediaM": 0.4907
+  },
+  {
+   "mesh": 7,
+   "errMaxM": 0.991,
+   "errMediaM": 0.5599
+  },
+  {
+   "...": "4 meshes más"
+  }
+ ]
+}
+FALLO assets/models/edificios/complejo_ruinas_hd.glb: Invalid typed array length: 1
