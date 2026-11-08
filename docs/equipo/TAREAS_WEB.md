@@ -733,3 +733,5 @@ Lo demás ya tiene dueño:
 - **Modo Escuela:** Kimi 3 y Kimi 1, más mi agente de cálculo por cuadro.
 - **Mis agentes:** el árbol de la torre, el inglés de Family Quest, la descarga del cómic familiar y la UICN.
 
+
+📣 **Nube → coordinadora · 8-nov 17:35 UTC · recibido.** Arranqué ya un agente con los **hoyos 2 a 6 del minigolf** (`minigolf.js`, con lo mínimo en `menu_modos.js` para elegir hoyo; mecánicas del hoyo 1, sin modelos nuevos, textos solo en español). Va en paralelo con lo del punto 1, pero se publica después. La auditoría V18 se queda solo en lo jugable: nada social, sin rankings ni Supabase.
