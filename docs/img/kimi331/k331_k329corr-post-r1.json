@@ -1,0 +1,52 @@
+{
+ "tarea": "KIMI-331",
+ "sonda": "streaming.cuadro ms/cuadro (sandwich render 21/23)",
+ "etiqueta": "k329corr-post-r1",
+ "head": "dee99381",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "cuandos": "2026-11-08T21:17:40.498Z",
+ "vistas": {
+  "spawn": {
+   "cuadros": 792,
+   "avgMs": 1.0521,
+   "p50Ms": 0.9,
+   "p95Ms": 1.3,
+   "maxMs": 5.1,
+   "fps": 39,
+   "calls": 115,
+   "tris": 338498,
+   "calidad": "bajo",
+   "escuela": null,
+   "nActivas": 422,
+   "nZonas": 17,
+   "nLotes": 48,
+   "heapMB": 73
+  },
+  "vuelo": {
+   "cuadros": 591,
+   "avgMs": 1.3284,
+   "p50Ms": 1.2,
+   "p95Ms": 1.8,
+   "maxMs": 6.9,
+   "fps": 26,
+   "calls": 90,
+   "tris": 378167,
+   "calidad": "bajo",
+   "escuela": null,
+   "nActivas": 422,
+   "nZonas": 17,
+   "nLotes": 48,
+   "heapMB": 84.6
+  }
+ },
+ "consola": {
+  "errores": 0,
+  "muestras": []
+ },
+ "preparar": "ok: portada → creador → Empezar (Pluma Veloz) → carga 18714 ms (listo) → intro saltada",
+ "asentarSpawn": "tope",
+ "spy": "ok",
+ "vuelo": "volando y=40.2",
+ "asentarVuelo": "tope",
+ "baja": "bajando"
+}
