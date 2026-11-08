@@ -1,0 +1,14 @@
+· preparar: ok: portada → creador → Empezar (Sol Feliz) → carga 8626 ms (listo) → intro saltada
+· fase selfTest 19:22:10
+· fase ambienteTest 19:22:26
+· fase cargaTest 19:22:30
+· fase climaTest 19:22:31
+· fase v18FxTest 19:22:42
+[
+ "selfTest 108/108",
+ "ambienteTest 24/24",
+ "cargaTest 15/16 MAL:[{\"n\":\"Entrada real: el peor cuadro del primer segundo de juego tarda < 500 ms (QA-53)\",\"x\":\"3549 ms (todo cargado a los 7269 ms; dibujo y GPU al día a los 8626 ms)\"}]",
+ "climaTest 31/31",
+ "v18FxTest 19/19"
+]
+· mata_perfil kimi2k326-y2i7aE : 0 procesos

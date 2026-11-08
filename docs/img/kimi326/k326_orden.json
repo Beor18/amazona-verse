@@ -1,0 +1,18 @@
+{
+ "head": "99941689",
+ "url_extra": "v18=1",
+ "fases": [
+  {
+   "fase": "ambienteTest",
+   "passed": 24,
+   "total": 24,
+   "mal": []
+  },
+  {
+   "fase": "cargaTest",
+   "passed": 16,
+   "total": 16,
+   "mal": []
+  }
+ ]
+}
