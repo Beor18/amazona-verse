@@ -1,0 +1,36 @@
+{
+ "head": "f3899f35",
+ "etiqueta": "k303-r1",
+ "fecha": "2026-11-08T14:35:54.496Z",
+ "stats": {
+  "base": {
+   "fps": {
+    "fpsMed": 144.9,
+    "fpsP95": 122,
+    "cuadros": 433
+   },
+   "calls": 155,
+   "tris": 1073211,
+   "geo": 233,
+   "tex": 171,
+   "prog": 86
+  },
+  "duelo": {
+   "fps": {
+    "fpsMed": 144.9,
+    "fpsP95": 122,
+    "cuadros": 1427
+   },
+   "calls": 100,
+   "tris": 526676,
+   "geo": 243,
+   "tex": 172,
+   "prog": 88
+  },
+  "heapMB": 422.4,
+  "fase": "fin",
+  "plumasRival": 2,
+  "plumasJ": 0,
+  "errores": 0
+ }
+}
