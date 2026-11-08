@@ -106,6 +106,15 @@ html.modo-libre :is(#quest, #keyhint) { display: none !important; }
 /* QA-209: el título «Álbum de las 36 · n/34» es una .lbl (dorado, para paneles oscuros); en el Diario lo pinta #card:has(.diary), pero
    abierto desde el menú quedaba dorado sobre papel, casi ilegible */
 #card .mm-album .lbl { color: var(--c-ink); }
+/* Humo en iPhone (8-nov): el Álbum (34 fichas) y Mis cotorras (con «Por conseguir (33)» abierto la primera vez) abiertos desde el menú
+   dejaban «Cerrar» / «Listo» al final, varias pantallas más abajo; la fila del botón se queda pegada abajo de la tarjeta */
+#card .mm-album > .row:last-child, #card.mm-encima .row:has(> #v18-elegir-ok) { position: sticky; bottom: calc(-1 * var(--sp-6)); z-index: 1; margin: 0 calc(-1 * var(--sp-6)) calc(-1 * var(--sp-6));
+  padding: var(--sp-4) var(--sp-6) var(--sp-6); background: linear-gradient(to bottom, transparent, var(--c-paper) 40%); }
+/* Humo en iPhone (8-nov): en Amazona Flight, River Rush, Maze y el tren la capa de toque (inset 0, z-card) tapaba el botón de Pausa, y la
+   pausa de esos modos y de los Retos escondía «Cambiar de juego»: no se podía volver al menú. La Pausa sube sobre la capa (no sobre el
+   panel final, que ya trae sus botones) y «Cambiar de juego» se queda (menu_modos.js volver() sale del modo activo) */
+html body:is(.flight-on, .river-on, .maze-on, .tren-on):not(:has(:is(.fl-fin, .rr-fin, .mz-fin, .tr-fin):not([hidden]))) #sys { z-index: calc(var(--z-card) + 1); }
+html body:is(.retos-on, .flight-on, .river-on, .maze-on, .tren-on) #pause .pause-grid > #b-menu-modos#b-menu-modos { display: inline-flex !important; }
 #card .mm-xp { display: block; font-weight: 700; font-size: var(--fs-xs); letter-spacing: 0.02em; }
 #card .mm-faltan { margin: var(--sp-3) 0; padding: var(--sp-2) var(--sp-3); border-radius: var(--r-md); background: var(--c-paper-2); }
 #card .mm-faltan summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font: 700 var(--fs-md)/1.2 var(--font-display); }

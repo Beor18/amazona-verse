@@ -373,7 +373,7 @@ window.AVV18Descubrir = function (G) {
     G.ui.toast = (t, ms) => { toasts.push(String(t)); return toastOrig.call(G.ui, t, ms); };
     const ir = (p, dy) => { s.pos.x = p.x; s.pos.y = p.y + (dy || 0); s.pos.z = p.z; };
     const correr = (seg, fn) => { for (let t = 0; t < seg; t += 0.1) { if (fn) fn(); paso(0.1); } };
-    const porQue = () => { try { return ' · libre ' + libre() + ' (ocupado ' + !!G.ui.busy() + ', diálogo ' + !!(G.dialogo && G.dialogo.activo && G.dialogo.activo()) + ', fade ' + !!document.getElementById('c1-fade') + ', saltar ' + !!document.getElementById('c1-saltar') + ')'; } catch (e) { return ' · ' + e.message; } };
+    const porQue = () => { try { return ' · libre ' + libre() + ' (ocupado ' + !!G.ui.busy() + ', diálogo ' + !!(G.dialogo && G.dialogo.activo && G.dialogo.activo()) + ', fade ' + !!document.getElementById('c1-fade') + ', saltar ' + !!document.getElementById('c1-saltar') + ', otra cosa ' + otraCosa() + ')'; } catch (e) { return ' · ' + e.message; } };
     try {
       await listo; await crearCotorra();
       V.borrar(); V.recargar(); R.activo = false; posar(0); avisoCerca = false;
