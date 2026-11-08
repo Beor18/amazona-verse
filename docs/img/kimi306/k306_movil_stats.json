@@ -1,0 +1,148 @@
+{
+ "pantalla": "movil 390x844@3 cpuX4 tactil",
+ "head": "6aa21fef",
+ "vistas": {
+  "menu_v18": {
+   "tarjetas": 36,
+   "fps": 10.4,
+   "calls": 20,
+   "triangulos": 19563,
+   "calidad": "medio",
+   "dpr": 1.5,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "puerto_plaza": {
+   "fps": 31.1,
+   "calls": 139,
+   "triangulos": 305974,
+   "calidad": "medio",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "puerto_escalera": {
+   "fps": 30.8,
+   "calls": 156,
+   "triangulos": 306349,
+   "calidad": "medio",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "puerto_aerea": {
+   "fps": 29.1,
+   "calls": 209,
+   "triangulos": 418418,
+   "calidad": "medio",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "atalayas_plaza": {
+   "fps": 25.8,
+   "calls": 133,
+   "triangulos": 339651,
+   "calidad": "medio",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "atalayas_aerea": {
+   "fps": 7.3,
+   "calls": 65,
+   "triangulos": 112628,
+   "calidad": "bajo",
+   "dpr": 1,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "muelle_orilla": {
+   "fps": 27.3,
+   "calls": 166,
+   "triangulos": 291700,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "muelle_sobre": {
+   "fps": 29.7,
+   "calls": 172,
+   "triangulos": 298391,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "muelle_aerea": {
+   "fps": 33.2,
+   "calls": 91,
+   "triangulos": 213153,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "fiesta_plaza": {
+   "fps": 30.1,
+   "calls": 101,
+   "triangulos": 225508,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "fiesta_poste": {
+   "fps": 29.9,
+   "calls": 109,
+   "triangulos": 223183,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "fiesta_aerea": {
+   "fps": 29.8,
+   "calls": 147,
+   "triangulos": 260999,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  }
+ },
+ "consola_errores": [],
+ "estados": {
+  "puerto": "reparado",
+  "atalayas": "encendido",
+  "muelle": "construido",
+  "fiesta": "fiesta"
+ },
+ "muelle_eje": {
+  "s0": 3,
+  "sAgua": 6,
+  "s1": 10.5,
+  "cubierta": 13.5
+ },
+ "fiesta_poste0": {
+  "vis": true,
+  "p": {
+   "x": -0.8,
+   "y": 24.8,
+   "z": 103.4
+  }
+ }
+}
