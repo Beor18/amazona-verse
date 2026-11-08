@@ -47,7 +47,7 @@ AVE.module('interaccion', function (G) {
     const it = (!busy && !modo) ? nearest() : null;
     const pr = $('prompt'), txt = promptTxt();
     const poner = t => { if (txt.textContent !== t) txt.textContent = t; pr.hidden = false; };
-    if (modo && !busy) poner(api.modo.aviso());
+    if (modo && !busy) { const a = api.modo.aviso(); if (a) poner(a); else pr.hidden = true; } // aviso vacío: el modo ya enseña sus controles (chips del duelo)
     else if (it) poner('Acción: ' + it.label());
     else pr.hidden = true;
     const verb = modo && !busy ? api.modo.verbo : it ? it.label().split(' ')[0] : G.dialogo.open() ? 'Seguir' : !busy && lleva() ? 'Soltar' : 'Acción';
