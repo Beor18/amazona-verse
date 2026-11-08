@@ -1,0 +1,17 @@
+{
+ "tarea": "KIMI-306 (Kimi 3) — sanity en vivo del build intermedio e3f8cfe",
+ "cuando_utc": "8-nov ~15:17-15:22",
+ "build_en_vivo": "e3f8cfeb7467 (publicado a las 15:10:36 UTC por la nube, d0d72718 + aviso 3adad49a; la build FINAL con meshopt-UV 168e52ba se publica después)",
+ "metodo": "GPU real RX 5700 XT, arnes kimi2_una_bateria.js --url https://www.amazonaverse.com/juego, entrada real portada->creador->Empezar, pagina limpia por bateria, mata_perfil 0 procesos x2",
+ "http_audit": "docs/img/kimi306/k306_http_audit.txt (familia_aventuras.js blob 1727cf7d4e == HEAD; combate.js blob 1adb271f7f1e == e3f8cfeb, sin pose Campeona 7e32dd55/75b1c21b; accesibilidad.js blob f2025ac11bfc == HEAD; templo_mediano_h_hd_glb.js 4843593 B byte-identico al blob b77490b9036f de e3f8cfeb = meshopt 1a pasacion; minigolf.js == HEAD)",
+ "familyQuestTest": {"passed": 40, "total": 40, "duracion_s": 5, "url_extra": "v18=1",
+   "destacados": ["Las 6 aventuras quedan hechas", "Viñeta: sale recortada de la plantilla, con tinta 833x447", "Recargar: los 6 recuerdos siguen ahi", "Móvil 390x844: el panel cabe sin desbordar 358x804", "Escape cierra el panel"]},
+ "streamingTest": {"passed": 24, "total": 24, "duracion_s": 37, "url_extra": "",
+   "destacados": ["Draw calls peor vista kelvin_ruinas_yunque (giro 4.7): 127 <= 150 (46 cerca / 59 _hd / 6 lejos / 17 zonas) · alto — banda certificada",
+     "Cerca: 17/17 modelos _hd listos (meshopt cargando y dibujando en vivo)",
+     "Sin fugas: KB 325930->325930 · materiales 36->36 · modelos 136->136",
+     "Atlas sRGB ok (AV_HD_*=3001)",
+     "En bajo, el spawn no carga la ciudad del tepuy (QA-158 firme)"]},
+ "errores_consola": 0,
+ "conclusion": "El build intermedio e3f8cfe es SANO en vivo en lo que a mi carril toca (Family Quest + streaming/nucleo). Falta la PASADA UNICA oficial contra la build FINAL (meshopt-UV exactas 168e52ba + pose Campeona 7e32dd55/75b1c21b) en cuanto el meta ave:build cambie: v18ArcoTest · v18PuertoTest · familyQuestTest · accesibilidadTest · streamingTest · movementTest con 0 errores de consola."
+}

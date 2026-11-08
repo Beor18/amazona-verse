@@ -1,0 +1,8 @@
+KIMI-306 auditoria HTTP en vivo 15:16:28 UTC
+meta ave:build = HEAD e3f8cfeb7467 (estable 15:12:24-15:14:07, x6 polls)
+familia_aventuras.js 44530 B blob 1727cf7d4e5f == HEAD
+combate.js 132551 B blob 1adb271f7f1e == e3f8cfeb (NO tiene pose Campeona 7e32dd55/75b1c21b; HEAD=930edcd6390b)
+minigolf.js 107598 B blob a634581e392b == e3f8cfeb == HEAD (claridad minigolf aun no aterriza en main)
+accesibilidad.js 105495 B blob f2025ac11bfc == e3f8cfeb == HEAD
+templo_mediano_h_hd_glb.js 4843593 B == e3f8cfeb (meshopt 1a pasada); HEAD(UV exactas 168e52ba)=6166185 B
+CONCLUSION: build en vivo = e3f8cfeb (mainline ~14:36) — le faltan meshopt-UV-exactas (168e52ba) y duelo-Campeona (7e32dd55+75b1c21b) respecto al HEAD vigente 28c3a592
