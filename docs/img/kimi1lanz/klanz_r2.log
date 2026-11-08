@@ -1,0 +1,4 @@
+[01:30:47] escritorio: listo 2.3s, entrada 20.1s; muestreo 12s
+[01:31:02] escritorio: fpsMed 132, peor 41ms, calls 103, errores 0, fallosRed 0, texHd 4/4 ok, 19.9 MB por cable
+[01:31:31] movil: listo 5.4s, entrada 27.6s; muestreo 12s
+[01:31:49] movil: fpsMed 19, peor 2153ms, calls 66, errores 0, fallosRed 0, texHd 2/2 ok, 5.7 MB por cable
