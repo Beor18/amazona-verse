@@ -656,6 +656,9 @@ window.AVV18Duelo2 = function (G) {
     if (busy) return;
     paso(Math.min(dt, 0.1));
   }, 75);
+  // du3 (8-nov): como en el duelo contra la Campeona (combate.js), mientras juegan dos no va la guía de la misión (fx.js):
+  // su flecha naranja flotaba sobre el Jugador 1 y el haz cruzaba la explanada. Después del gancho de misiones (60).
+  G.on('render', () => { if (D.fase !== 'nada' && G.fx && G.fx.guide) G.fx.guide(null, 0); }, 61);
   G.on('apply', () => { if (D.fase !== 'nada') salir(); }, 48);
   crearJ2();
 
@@ -799,6 +802,12 @@ window.AVV18Duelo2 = function (G) {
       camera.updateMatrixWorld(); const v1 = new THREE.Vector3(S.pos.x, S.pos.y + 1, S.pos.z).project(camera), v2 = new THREE.Vector3(pos2.x, pos2.y + 1, pos2.z).project(camera);
       check('Cámara compartida: encuadra a las dos y se abre hasta un límite', dLejos > dCerca + 3 && dLejos <= CAMD.max + 2 && Math.abs(v1.x) < 1 && Math.abs(v2.x) < 1 && v1.x < v2.x,
         JSON.stringify({ dCerca: dCerca.toFixed(1), dLejos: dLejos.toFixed(1), x1: v1.x.toFixed(2), x2: v2.x.toFixed(2) }));
+      // du3: la flecha y el haz de la guía de la misión no se ven mientras juegan dos (aunque hubiera un objetivo encendido)
+      if (G.fx && G.fx.guide) {
+        G.fx.guide({ x: S.pos.x + 14, z: S.pos.z + 6 }, 0); const flecha0 = G.fx.guideArrow.visible;
+        G.emit('render', 0.016);
+        check('du3: en el duelo de 2 no se ven la flecha ni el haz de la guía de la misión', !G.fx.guideArrow.visible && !G.fx.guideBeam.visible, JSON.stringify({ flechaAntes: flecha0 }));
+      }
       // 7. Salir: todo vuelve
       salir();
       const ev2 = tecla('keydown', 'ArrowUp', 'ArrowUp'); const vuelve = G.input.keys.has('arrowup'); tecla('keyup', 'ArrowUp', 'ArrowUp');

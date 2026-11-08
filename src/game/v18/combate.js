@@ -34,7 +34,7 @@ window.AVV18Combate = function (G) {
   'use strict';
   const alMenu = () => !!(G.menuModos && G.menuModos.desdeMenu && G.menuModos.desdeMenu()); /* se entró desde «¿Cómo quieres jugar?»: el botón del final lleva al menú */
   if (G.v18combate) return G.v18combate;
-  const H = G.v18hab, S = G.S, F = G.fisica, M = F.MOVE, scene = G.renderer.scene;
+  const H = G.v18hab, S = G.S, F = G.fisica, M = F.MOVE, R = G.renderer, scene = R.scene;
   const ALTURA = h => G.terreno.height(h.x, h.z);
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches); // QA-163: sin tecla G en táctil
   const ARENA_R = 12, SALIDA_R = 24, PLUMAS = 5;
@@ -495,18 +495,67 @@ window.AVV18Combate = function (G) {
     delete pl3d.update; if (pl3d.update !== upd0) pl3d.update = upd0; // la de la clase vuelve a mandar
     pl3d = upd0 = null;
   }
+  // du3 (8-nov): a distancia de ala, con la cámara de siempre (7,5 m detrás y 4,2 m arriba) Vittata tapaba a la Campeona.
+  // Mientras dura el duelo, la cámara se coloca algo más alta y más atrás (mira por encima de Vittata), y si la Campeona
+  // queda cerca y justo detrás de Vittata, al dibujar la cámara orbita un poco alrededor de Vittata (hasta ORBITA rad) para
+  // verla de lado: solo en el cuadro que se dibuja (camera.position vuelve después: el seguimiento de camara.js no cambia).
+  // Al salir vuelve lo que había (si nadie lo cambió entretanto). Solo se tocan dist y height de G.camara.CAM y su draw.
+  // Lo de antes se guarda en G (G.camDuelo0, con cuántos duelos la piden): una instancia de prueba del módulo (QA-163) con
+  // un duelo ya abierto no toma la cámara del duelo por la de siempre.
+  const CAM_DUELO = { dist: 8.6, height: 6.1 };
+  let camPedida = false, draw0 = null, miDraw = null, orb = 0, orbLado = 1;
+  const ORBITA = 0.45, camGuarda = new THREE.Vector3();
+  function orbitar(dt) {
+    const cam = R.camera, j = S.pos, rp = C.r && C.r.pos;
+    let quiere = 0;
+    if (cam && rp && C.fase === 'lucha') {
+      const cx = j.x - cam.position.x, cz = j.z - cam.position.z, rx = rp.x - j.x, rz = rp.z - j.z, dr = Math.hypot(rx, rz);
+      const a = Math.atan2(cx * rz - cz * rx, cx * rx + cz * rz); // ángulo de la rival vista desde la cámara (sin órbita)
+      if (Math.abs(a) > 0.05) orbLado = a > 0 ? 1 : -1; // casi en línea: sigue hacia el lado de antes (sin bailar)
+      const cerca = 1 - Math.min(1, Math.max(0, dr - 4.5) / 2.5); // de 4,5 a 7 m se apaga
+      if (Math.abs(a) < Math.PI / 2) quiere = (a - orbLado * Math.max(Math.abs(a), ORBITA)) * cerca;
+    }
+    orb += (quiere - orb) * Math.min(1, (dt || 0.016) * 4);
+    return orb;
+  }
+  // La envoltura guarda su draw de antes: si otra (duelo2.js) la envolvió a su vez y la devuelve más tarde, sigue sirviendo.
+  const envolverDraw = orig => Object.assign(function (dt) {
+    if (!camPedida) return orig.call(this, dt);
+    const cam = R.camera, f = Math.abs(orbitar(dt)) > 0.002 && cam;
+    if (f) {
+      camGuarda.copy(cam.position);
+      const dx = cam.position.x - S.pos.x, dz = cam.position.z - S.pos.z, c = Math.cos(orb), sn = Math.sin(orb);
+      cam.position.x = S.pos.x + dx * c - dz * sn; cam.position.z = S.pos.z + dx * sn + dz * c;
+    }
+    try { return orig.call(this, dt); } finally { if (f) cam.position.copy(camGuarda); }
+  }, { orig, duelo: true });
+  function alejarCamara() {
+    const K = G.camara && G.camara.CAM; if (!K || camPedida) return;
+    camPedida = true;
+    if (!draw0 && R && R.camera && typeof G.camara.draw === 'function') { const d = G.camara.draw; orb = 0;
+      draw0 = d.duelo ? d.orig : d; miDraw = envolverDraw(draw0); G.camara.draw = miDraw; } // una envoltura vieja que se quedó: se quita
+    if (G.camDuelo0) { G.camDuelo0.n++; return; }
+    G.camDuelo0 = { dist: K.dist, height: K.height, n: 1 }; Object.assign(K, CAM_DUELO);
+  }
+  function devolverCamara() {
+    const K = G.camara && G.camara.CAM, o = G.camDuelo0; if (!camPedida) return;
+    camPedida = false;
+    if (draw0) { if (G.camara.draw === miDraw) G.camara.draw = draw0; draw0 = miDraw = null; orb = 0; } if (!K || !o || --o.n > 0) return;
+    for (const k in CAM_DUELO) if (K[k] === CAM_DUELO[k]) K[k] = o[k]; // si alguien lo cambió entretanto, se respeta
+    G.camDuelo0 = null;
+  }
   function enganchar() {
     if (enganchado) return; enganchado = true;
     modo0 = G.interaccion.modo; G.interaccion.modo = modo;
     if (G.dones) { sostener0 = G.dones.sostener; G.dones.sostener = sostenerDuelo; }
-    addEventListener('keydown', tecla, true); if (G.input && G.input.keys) G.input.keys.delete('g'); envolverJugador();
+    addEventListener('keydown', tecla, true); if (G.input && G.input.keys) G.input.keys.delete('g'); envolverJugador(); alejarCamara();
     document.body.classList.add('v18-duelo-on');
   }
   function soltar() {
     if (!enganchado) return; enganchado = false;
     if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
     if (G.dones && G.dones.sostener === sostenerDuelo) G.dones.sostener = sostener0;
-    removeEventListener('keydown', tecla, true); sost = 0; soltarJugador();
+    removeEventListener('keydown', tecla, true); sost = 0; soltarJugador(); devolverCamara();
     document.body.classList.remove('v18-duelo-on');
   }
 
@@ -965,18 +1014,18 @@ window.AVV18Combate = function (G) {
     // Saltito de los quiebros (solo se ve: la posición de juego no sube)
     const salto = r.saltoDur > 0 ? 0.32 * Math.sin(Math.PI * Math.min(1, r.saltoT / r.saltoDur)) : 0;
     const hop = (ch.gait || 0) > 1.5 && !salto ? Math.abs(Math.sin(ch.ph || 0)) * 0.06 * Math.min(1, vel / 2.5) : 0; // saltitos al trotar
-    root.position.set(r.pos.x, r.pos.y + salto + hop, r.pos.z);
+    // du3: antes del aletazo retrocede un palmo (carga el golpe) y al soltarlo se lanza adelante (solo se ve)
+    const carga = prep === 'golpe_ala' ? -0.16 * Math.min(1, Math.max(0, r.prepDur - r.prepT) / 0.18) : r.golpeAnim > 0 ? 0.22 * Math.sin(Math.PI * Math.min(1, r.golpeAnim / 0.3)) : 0;
+    root.position.set(r.pos.x + Math.sin(r.yaw) * carga, r.pos.y + salto + hop, r.pos.z + Math.cos(r.yaw) * carga);
     root.rotation.y = r.yaw; // el rumbo ya gira con velocidad limitada (moverRival)
     const kz = Math.min(1, dt * 10);
     root.rotation.z = r.mareo > 0 ? Math.sin(now * (r.finMareo > 0 ? 9 : 14)) * (r.finMareo > 0 ? 0.32 : 0.25) : root.rotation.z + ((prep === 'semilla' ? 0.16 : 0) - root.rotation.z) * kz; // tambaleo del mareo; ladea la cabeza al apuntar
     root.rotation.x += ((prep === 'semilla' ? 0.14 : prep ? 0 : Math.min(0.1, vel * 0.02)) - root.rotation.x) * kz; // se inclina al correr y al apuntar
-    if (prep || marcaAviso) {
-      const m = avisoSprite(); m.visible = !!prep;
-      if (prep) { const s = (prep === 'golpe_ala' ? 0.62 : 0.46) * (1 + 0.12 * Math.sin(now * 18)); m.scale.set(s, s, 1); m.position.set(r.pos.x, r.pos.y + salto + 2.25, r.pos.z); m.material.color.set(prep === 'golpe_ala' ? '#ff9d2e' : '#ffe066'); }
-    }
-    if (sinAnimar) return; // CPU (móvil): colocada, pero sin animar el esqueleto este cuadro (ver dibujarQuieta)
+    if (sinAnimar) { ponerAviso(prep, now); return; } // CPU (móvil): colocada, pero sin animar el esqueleto este cuadro (ver dibujarQuieta)
     if (r.finMareo > 0 && azar() < dt * 5) fx('gold', r.pos.x, r.pos.y + 1.8, r.pos.z); // estrellitas del mareo final
-    r.agacha += ((prep === 'golpe_ala' ? 0.62 : prep === 'semilla' ? 0.18 : 0) - r.agacha) * Math.min(1, dt * 12); // se agacha para el golpe
+    // Se agacha para el golpe. du3: es la pose «agachada bajo un toldo» de character.js (con 1 se tumba a 0,81 m); con 0,62
+    // la Campeona quedaba casi tumbada en el suelo. Con 0,1 se inclina ~20° adelante y flexiona las patas (alas abiertas aparte).
+    r.agacha += ((prep === 'golpe_ala' ? AGACHA_ALA : prep === 'semilla' ? AGACHA_SEMILLA : 0) - r.agacha) * Math.min(1, dt * 12);
     const enAire = r.lift.dura > 0 || r.saltoDur > 0;
     // Andar de lado o deprisa: saltitos con las alas a medio abrir ('hop'); despacio y de frente, pasos
     const lado = vel > 0.7 && Math.sin(r.yaw) * r.v.x + Math.cos(r.yaw) * r.v.z < 0.5 * Math.hypot(r.v.x, r.v.z); // de lado o hacia atrás
@@ -987,6 +1036,20 @@ window.AVV18Combate = function (G) {
       mouth: r.picoT > 0 ? boca(r) : null, lookAt: lucha && C.j && !(r.mareo > 0) ? mirarA : null,
       emote: null, posado: '', agachada: enAire ? 0 : r.agacha, groundY: ALTURA(r.pos), groundAt: null });
     try { ch.update(dt); } catch (e) { /* animación */ }
+    // Altura real de la cabeza sobre los pies (sigue al saltito, a la carga y a la pose), para el «!»
+    const cab = ch.bones && ch.bones.cabeza;
+    if (cab) { cab.getWorldPosition(cabezaV); C.cabezaAlto = cabezaV.y - r.pos.y; }
+    ponerAviso(prep, now);
+  }
+  // «!» a ~0,4 m sobre la coronilla (el hueso de la cabeza está en su base, ~0,8 m más abajo; du3: antes iba fijo a 2,25 m de los pies, muy por encima de la Campeona, y más aún agachada)
+  const AGACHA_ALA = 0.1, AGACHA_SEMILLA = 0.03, AVISO_SOBRE = 0.9, cabezaV = new THREE.Vector3();
+  function ponerAviso(prep, now) {
+    if (!prep && !marcaAviso) return;
+    const m = avisoSprite(), r = C.r; m.visible = !!prep;
+    if (!prep) return;
+    const s = (prep === 'golpe_ala' ? 0.62 : 0.46) * (1 + 0.12 * Math.sin(now * 18));
+    m.scale.set(s, s, 1); m.position.set(r.pos.x, r.pos.y + (C.cabezaAlto || 1.5) + AVISO_SOBRE + s / 2, r.pos.z);
+    m.material.color.set(prep === 'golpe_ala' ? '#ff9d2e' : '#ffe066');
   }
   function pasoJugador(dt) {
     const j = C.j;
@@ -1203,7 +1266,7 @@ window.AVV18Combate = function (G) {
           if (C.fase !== 'lucha') break;
           const y1 = yawVis(); if (!(r.mareo > 0)) res.giroMax = Math.max(res.giroMax, Math.abs(giroPi(y1 - yaw0)) / dt); yaw0 = y1;
           if (r.prep && C.marcaAviso && C.marcaAviso.visible) res.marca = true;
-          if (C.ch && C.ch.agachada > 0.3) res.agacha = true;
+          if (C.ch && C.ch.agachada > 0.04) res.agacha = true;
           const vx = (r.pos.x - x0) / dt, vz = (r.pos.z - z0) / dt, v = Math.hypot(vx, vz);
           if ((quiebro || r.mov.t > 0) && !(r.kb.t > 0) && !(r.mareo > 0)) { res.quiebros++; if (C.ch && !C.ch.airborne) res.quiebrosSinSalto++; }
           if (sacudida || r.kb.t > 0 || r.mov.t > 0 || r.mareo > 0) { hist.length = 0; continue; }
@@ -1333,6 +1396,14 @@ window.AVV18Combate = function (G) {
           const tagsVis = !!document.querySelector('#v18-duelo-tags:not([hidden]) span:not([hidden])'), avA = modo.aviso();
           hud.q('bot').hidden = true; const avSin = TACTIL ? avA : modo.aviso(); hud.q('bot').hidden = false;
           const tgM = G.misiones && G.misiones.guideTarget ? G.misiones.guideTarget() : null; G.emit('render', 0.016);
+          const K = G.camara.CAM;
+          check('du3: en el duelo la cámara va más alta y más atrás (se ve a la Campeona por encima de Vittata)', K.dist === CAM_DUELO.dist && K.height === CAM_DUELO.height && !!G.camDuelo0 && G.camara.draw === miDraw, JSON.stringify({ d: K.dist, h: K.height }));
+          // Campeona a 2 m justo detrás de Vittata vista desde la cámara: la órbita la saca ~ORBITA rad; a 12 m, nada
+          { const cp = R.camera.position.clone(), rp0 = Object.assign({}, C.r.pos), o0 = orb;
+            R.camera.position.set(S.pos.x - 8, S.pos.y + 6, S.pos.z); C.r.pos.x = S.pos.x + 2; C.r.pos.z = S.pos.z; orb = 0; orbitar(1); const oCerca = orb;
+            C.r.pos.x = S.pos.x + 12; orb = 0; orbitar(1); const oLejos = orb;
+            R.camera.position.copy(cp); Object.assign(C.r.pos, rp0); orb = o0;
+            check('du3: con la Campeona cerca y tapada por Vittata la cámara orbita para verla (de lejos no)', Math.abs(Math.abs(oCerca) - ORBITA) < 0.02 && Math.abs(oLejos) < 0.01, JSON.stringify({ oCerca: oCerca.toFixed(3), oLejos: oLejos.toFixed(3) })); }
           check('du2: en el duelo no se ven la flecha ni el haz de la guía de la misión', !!G.fx && !G.fx.guideArrow.visible && !G.fx.guideBeam.visible, JSON.stringify({ objetivo: tgM }));
           check('du2: con los chips a la vista el aviso de abajo calla (sin chips vuelve el de siempre)', TACTIL ? avA === (tagsVis ? '' : TXT.avisoTactil) : (avA === '' && avSin === TXT.aviso), JSON.stringify({ avA, avSin, tagsVis }));
         }
@@ -1449,10 +1520,23 @@ window.AVV18Combate = function (G) {
         // le quita la pluma pero no la frena; el Grito sí la interrumpe.
         const prepara = () => { iniciar({ sinCuenta: true, especie: 'vittata' }); const r = C.r; r.pos.x = S.pos.x + 1.8; r.pos.z = S.pos.z; r.golpeT = 0; r.pensar = 0; r.poderT = 99; r.esquivaT = 99; r.tiroT = 99; C.j.inv = 0; cara(1); };
         const fija = () => { M.vx = M.vz = 0; C.r.poderT = 99; C.r.tiroT = 99; };
+        // du3: postura del aviso medida en el esqueleto: de pie (antes de anunciar) y agachada (en mitad del aviso)
+        // incl: inclinación del lomo (de la base de la espalda a la cabeza) respecto de la vertical, en grados
+        const postura = () => { const ch = C.ch, B = ch && ch.bones, b = B && B.cabeza, e = B && B.espalda1; if (!b || !e) return null;
+          const v = b.getWorldPosition(new THREE.Vector3()), q = e.getWorldPosition(new THREE.Vector3()), p = ch.root.position;
+          const dy = v.y - q.y, dh = Math.hypot(v.x - q.x, v.z - q.z); return { alto: v.y - p.y, incl: Math.atan2(dh, dy) * 180 / Math.PI, cabeza: v.y }; };
+        prepara(); C.r.golpeT = 99; C.r.pensar = 99; correr(0.6, fija); const dePie = postura();
         prepara(); paso(0.05);
         const avisa = C.r.prep === 'golpe_ala' && C.j.plumas === PLUMAS;
         correr(0.25, fija);
-        const aunNo = C.j.plumas === PLUMAS && C.r.prep === 'golpe_ala', vis = !!(C.marcaAviso && C.marcaAviso.visible), ag = !C.ch || C.ch.agachada > 0.3, alas = !C.ch || C.ch.wingMode === 'preflare';
+        const enAviso = postura(), marcaY = C.marcaAviso ? C.marcaAviso.position.y : 0;
+        if (dePie && enAviso) {
+          const di = enAviso.incl - dePie.incl, sobre = marcaY - enAviso.cabeza;
+          check('du3: en el aviso se inclina adelante con moderación (8–35°) y no se tumba (la cabeza sigue a más del 75 % de su altura)',
+            di >= 8 && di <= 35 && enAviso.alto > dePie.alto * 0.75, JSON.stringify({ dePie, enAviso, di: di.toFixed(1) }));
+          check('du3: el «!» va justo sobre la cabeza (su centro, 1,0–1,4 m sobre el hueso de la cabeza: ~0,4 m sobre la coronilla)', sobre >= 1.0 && sobre <= 1.4, sobre.toFixed(2));
+        }
+        const aunNo = C.j.plumas === PLUMAS && C.r.prep === 'golpe_ala', vis = !!(C.marcaAviso && C.marcaAviso.visible), ag = !C.ch || C.ch.agachada > 0.04, alas = !C.ch || C.ch.wingMode === 'preflare';
         correr(0.4, fija);
         check('Telegrafía: el golpe de ala se anuncia ~0,45 s (agachada, alas abiertas, «!») y luego llega', avisa && aunNo && vis && ag && alas && C.j.plumas === PLUMAS - 1 && !C.marcaAviso.visible,
           JSON.stringify({ avisa, aunNo, vis, ag, alas, plj: C.j.plumas }));
@@ -1563,6 +1647,7 @@ window.AVV18Combate = function (G) {
       check('QA-192: en el cap. 1 la oferta solo depende del estado del duelo', it.visible() === cap1oferta);
     } catch (e) { check('QA-192: fuera del cap. 1 no se ofrece el duelo', false, e && e.message); }
     try { salir(); } catch (e) { /* ya fuera */ }
+    { const K = G.camara.CAM; check('du3: al salir del duelo la cámara vuelve a su distancia, altura y dibujo de siempre', !G.camDuelo0 && K.dist !== CAM_DUELO.dist && K.height !== CAM_DUELO.height && !G.camara.draw.duelo, JSON.stringify({ d: K.dist, h: K.height })); }
     G.ui.toast = toast0;
     oyente.mudo = true; evs.length = 0; podEv.length = 0; // G.on no tiene «off»: los oyentes de la prueba se quedan mudos
     Object.assign(S.pos, pos0); S.facing = fac0; M.flying = fly0; M.vx = M.vz = 0;
