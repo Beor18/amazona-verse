@@ -104,6 +104,13 @@ window.AVV18Progreso = function (G) {
         datos(); guardar(); D = null; const c = datos(), crudoC = JSON.parse(localStorage.getItem(clave()));
         check('V18.2: una partida v1 migra a v2 sin perder nada y el evo de una v2 (niveles y alianzas) se conserva al guardar y recargar',
           okV1 && crudoC.v === 2 && c.evo.esp.agilis.xp === 1500 && c.evo.alianzas.viento_cruzado === 'disponible' && c.evo.alianzaSel === 'eco_protector' && c.evo.marcas.puente, JSON.stringify(c.evo));
+        // Duelos por etapa (combate.js): una partida vieja no los trae y sigue igual; los números se guardan sin cambiar la versión
+        localStorage.setItem(clave(), JSON.stringify({ v: 1, especies: {}, inv: {}, otorgados: { combate_1: true }, mundo: { duelos_ganados: 2 }, sel: null })); D = null;
+        const vieja = datos(), sinEtapas = vieja.v === 2 && vieja.mundo.duelos_ganados === 2 && [0, 1, 2, 3].every(i => mundo('duelos_ganados_e' + i) === null);
+        cambiarMundo('duelos_ganados_e2', 1); D = null;
+        const crudoE = JSON.parse(localStorage.getItem(clave()));
+        check('Duelos por etapa: una partida vieja migra sin ellos (null) y al ganar se guardan como número en el mismo mundo, versión 2',
+          sinEtapas && crudoE.v === 2 && crudoE.mundo.duelos_ganados_e2 === 1 && crudoE.mundo.duelos_ganados === 2 && mundo('duelos_ganados_e2') === 1, JSON.stringify(crudoE.mundo));
         borrar();
       }
       // QA-165: jugador nuevo, V18 se lee antes de que el creador haga el perfil; al crearlo, su especie entra elegible

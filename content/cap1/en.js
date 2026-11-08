@@ -2389,6 +2389,8 @@ window.AV_EN = {
  "Duelos ganados": "Duels won",
  "Ganaste con:": "You won with:",
  "Aún sin duelos ganados. ¡Reta a la Campeona!": "No duels won yet. Challenge the Champion!",
+ "Por etapa:": "By stage:",
+ "Aún sin duelos por etapa: se cuentan desde ahora.": "No duels by stage yet: they count from now on.",
  "Niveles de mis cotorras": "My parrots' levels",
  "Aún sin niveles. ¡Juega con tu cotorra para subir!": "No levels yet. Play with your parrot to level up!",
  "Aún sin alianzas. ¡Sube una cotorra al nivel 10!": "No alliances yet. Get a parrot to level 10!"
