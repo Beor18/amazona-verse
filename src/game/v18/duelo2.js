@@ -15,6 +15,11 @@
    - Reglas: las mismas del duelo contra la IA (habilidades.js: usar, paso, listo y recibir). Este archivo solo pone la
      entrada, la cámara, los efectos y el HUD.
    - Sin recompensa (para no farmear): no toca S.inv, ni G.v18, ni guarda la partida.
+   - Cómo se pelea (Kelvin 8-nov): el primer duelo de 2 empieza con un entreno de 3 pasos (aletazo, semilla, poder) con las
+     teclas de cada jugador; cada paso avanza cuando las dos lo hacen; nadie pierde plumas y se puede saltar. Se recuerda en
+     este navegador (localStorage 'av_v18_duelo2_entreno': no toca la partida ni G.v18) y luego sale con «¿Cómo se pelea?».
+     Chips de acción con tecla y recarga visual en el panel de cada jugador, y pistas breves por jugador que dejan de salir
+     al dominarlas.
    Prueba: AV.v18Duelo2Test(). */
 window.AVV18Duelo2 = function (G) {
   'use strict';
@@ -35,8 +40,17 @@ window.AVV18Duelo2 = function (G) {
     jugador1: 'Jugador 1:', jugador2: 'Jugador 2:', mover: 'mover', ala: 'ala', semillaMant: 'semilla (mantener: poder)', poder: 'poder', saltito: 'saltito',
     mando: 'Con un mando conectado, juega el Jugador 2: X ala · B semilla · Y poder · A saltito',
     aviso: 'Duelo de 2 jugadores · Esc para salir', gana1: '¡Gana el Jugador 1!', gana2: '¡Gana el Jugador 2!',
-    bloquea: '¡Bloqueado!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!'
+    bloquea: '¡Bloqueado!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!',
+    // Entreno y pistas (8-nov); las de Jugador 1 son las mismas del duelo contra la Campeona
+    chAla: 'Ala', chSemilla: 'Semilla', chPoder: 'Poder',
+    como: '¿Cómo se pelea?', saltarEnt: 'Saltar entreno', entPaso: n => 'Entreno · paso ' + n + ' de 3', bien: '¡Bien!', masCerca: '¡Más cerca!',
+    ent1: 'Acérquense y den un aletazo.', ent2: 'Ahora, cada una lanza una semilla.', ent3: 'Ahora, cada una usa su poder.',
+    entFin: '¡Ya saben pelear! Ahora, el duelo de verdad.',
+    pista1: { cerca: '¡Cerca! Aletazo (E)', lejos: 'Lejos: semilla (F)', poder: '¡Poder listo! (G)', golpe: '¡Te dieron! Muévete de lado para esquivar.', escudo: '¡Te dieron! Cúbrete con tu poder (G).' },
+    pista2: { cerca: '¡Cerca! Aletazo (.)', lejos: 'Lejos: semilla (,)', poder: '¡Poder listo! (-)', golpe: '¡Te dieron! Muévete de lado para esquivar.', escudo: '¡Te dieron! Cúbrete con tu poder (-).' }
   };
+  const TECLAS = { j1: ['E', 'F', 'G'], j2: ['.', ',', '-'] };
+  const DEFENSAS = new Set(['escudo_plumas', 'quiebro', 'capa_palma', 'pluma_rebote', 'hojas_envuelven', 'remolino']); // como en combate.js
   const ESPECIES = [
     { id: 'arausiaca', nombre: 'Cotorra de Dominica' },
     { id: 'ventralis', nombre: 'Cotorra de La Española' },
@@ -116,7 +130,7 @@ window.AVV18Duelo2 = function (G) {
     if (D.fase !== 'lucha' || !f) return { ok: false, motivo: 'fase' };
     const r = H.usar(f, id, ctxDe(f));
     if (r.ok && !H.get(id).basico) f.ultPoder = id; // Imitación (oratrix): el registro del último poder de cada una
-    if (r.ok) { D.stats[f === D.j1 ? 'usos1' : 'usos2']++; pintar(); }
+    if (r.ok) { D.stats[f === D.j1 ? 'usos1' : 'usos2']++; pintar(); alUsar(f, id, r); }
     return r;
   }
   const poderDe = f => f.poder;
@@ -295,19 +309,41 @@ window.AVV18Duelo2 = function (G) {
         '#v18-duelo2 .vd-fin{text-align:center;background:rgba(30,40,30,.82);border-radius:14px;padding:10px;margin-top:8px}#v18-duelo2 .vd-fin p{margin:0 0 8px;font-size:20px;font-weight:600}' +
         '#v18-duelo2 button{pointer-events:auto;font:inherit;font-size:15px;font-weight:600;min-height:44px;padding:6px 14px;border-radius:22px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 6px #0005;cursor:pointer}' +
         '.v18-d2 .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.v18-d2 .d2-teclas{font-size:14px;line-height:1.4;margin:8px 0}' +
-        '.v18-d2 .d2-fila{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:4px 0}.v18-d2 .d2-k{white-space:nowrap}.v18-d2 .d2-k kbd{margin-right:2px}';
+        '.v18-d2 .d2-fila{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:4px 0}.v18-d2 .d2-k{white-space:nowrap}.v18-d2 .d2-k kbd{margin-right:2px}' +
+        // Cómo se pelea (8-nov): chips con tecla y recarga, pistas por jugador y entreno
+        '#v18-duelo2 [data-icon="semilla"]{--icon:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M12 2c4 3 6 7 6 11a6 6 0 0 1-12 0c0-4 2-8 6-11z\'/%3E%3C/svg%3E")}' +
+        '#v18-duelo2 .vd-chips{display:flex;gap:4px;margin-top:5px}#v18-duelo2 .r .vd-chips{justify-content:flex-end}' +
+        '#v18-duelo2 .vd-chip{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:4px;padding:3px 6px 3px 7px;border-radius:14px;background:#fff3d6;color:#3b2a14;text-shadow:none;font-size:12px;font-weight:600;--icon-size:15px;transition:box-shadow .15s,opacity .15s}' +
+        '#v18-duelo2 .vd-chip kbd{font:700 13px/1 Fredoka,system-ui,sans-serif;min-width:18px;padding:3px 5px;border-radius:6px;background:#3b2a14;color:#fff3d6;text-align:center}' +
+        '#v18-duelo2 .vd-chip .vd-cdv{position:absolute;left:0;right:0;bottom:0;height:var(--cd,0%);background:rgba(40,30,20,.45)}' +
+        '#v18-duelo2 .vd-chip.listo{box-shadow:0 0 0 2px #8fe08a,0 0 10px #8fe08a99}#v18-duelo2 .vd-chip.sin{opacity:.55}' +
+        '#v18-duelo2 .vd-pista{margin-top:5px;display:inline-block;background:rgba(255,227,154,.95);color:#3b2a14;text-shadow:none;font-weight:600;font-size:13px;padding:3px 10px;border-radius:12px}#v18-duelo2 .vd-pista[hidden]{display:none}' +
+        '#v18-duelo2 button.vd-como{display:block;margin:6px auto 0;min-height:36px;padding:4px 12px;font-size:13px;background:#ffe39a;--icon-size:16px}#v18-duelo2 button.vd-como[hidden]{display:none}' +
+        '#v18-duelo2 .vd-ent{margin:8px auto 0;max-width:420px;background:rgba(255,248,234,.96);color:#3b2a14;text-shadow:none;border-radius:16px;padding:10px 12px;box-shadow:0 4px 14px #0006;text-align:center}#v18-duelo2 .vd-ent[hidden]{display:none}' +
+        '#v18-duelo2 .vd-ent-cab{font-size:13px;font-weight:600;opacity:.8}#v18-duelo2 .vd-ent-txt{font-size:18px;font-weight:600;margin:6px 0}' +
+        '#v18-duelo2 .vd-ent-js{display:flex;gap:10px;justify-content:center;margin-bottom:8px}#v18-duelo2 .vd-ent-j{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background:#3b2a1414;font-weight:600}' +
+        '#v18-duelo2 .vd-ent-j kbd{font:700 22px/1 Fredoka,system-ui,sans-serif;min-width:36px;padding:6px 8px;border-radius:9px;background:#3b2a14;color:#fff3d6;box-shadow:0 3px 0 #000a}' +
+        '#v18-duelo2 .vd-ent-j i{font-style:normal;color:#2e8b3e;font-size:20px;visibility:hidden}#v18-duelo2 .vd-ent-j.ya{background:#8fe08a66}#v18-duelo2 .vd-ent-j.ya i{visibility:visible}' +
+        '#v18-duelo2 .vd-ent button{min-height:40px;font-size:14px;background:#3b2a14;color:#fff3d6}';
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-duelo2'; el.hidden = true;
     const pl = () => Array.from({ length: PLUMAS }, () => '<i></i>').join('');
-    const lado = (c, n, k, tc) => `<div class="vd-lado ${c}"><div class="vd-nom">${n}</div><div class="vd-pod" data-k="p${k}"></div><div class="vd-pl" data-k="pl${k}">${pl()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en${k}"><b></b></div><div class="vd-tc">${tc}</div></div>`;
-    el.innerHTML = `<div class="vd-fila">${lado('j', TXT.j1, 1, 'W A S D · E · F · G')}${lado('r', TXT.j2, 2, '← ↑ → ↓ · . · , · -')}</div>` +
+    // Chips de acción (icono + tecla; .vd-cdv es la recarga) y una pista breve por jugador
+    const chips = (k, t) => [['golpe_ala', 'wing', TXT.chAla], ['semilla', 'semilla', TXT.chSemilla], ['poder', 'bolt', TXT.chPoder]].map(([a, ico, n], i) =>
+      `<span class="vd-chip" data-a="${a}" data-icon="${ico}"><span data-k="cn${k}-${a}">${n}</span><kbd>${esc(t[i])}</kbd><i class="vd-cdv"></i></span>`).join('');
+    const lado = (c, n, k, tc) => `<div class="vd-lado ${c}"><div class="vd-nom">${n}</div><div class="vd-pod" data-k="p${k}"></div><div class="vd-pl" data-k="pl${k}">${pl()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en${k}"><b></b></div><div class="vd-tc">${tc}</div><div class="vd-chips" data-k="ch${k}">${chips(k, TECLAS['j' + k])}</div><div class="vd-pista" data-k="pista${k}" hidden></div></div>`;
+    const fj = k => `<div class="vd-ent-j" data-k="entJ${k}"><span>${k === 1 ? TXT.j1 : TXT.j2}</span><kbd data-k="entK${k}"></kbd><i>✓</i></div>`;
+    el.innerHTML = `<div class="vd-fila">${lado('j', TXT.j1, 1, 'W A S D')}${lado('r', TXT.j2, 2, '← ↑ → ↓')}</div>` +
       `<div class="vd-centro" data-k="centro"></div>` +
+      `<div class="vd-ent" data-k="ent" hidden><div class="vd-ent-cab" data-k="entPaso"></div><div class="vd-ent-txt" data-k="entTxt"></div><div class="vd-ent-js">${fj(1)}${fj(2)}</div><button data-a="saltarEnt" type="button">${TXT.saltarEnt}</button></div>` +
+      `<button class="vd-como" data-a="como" data-k="como" type="button" data-icon="question">${TXT.como}</button>` +
       `<div class="vd-fin" data-k="fin" hidden><p data-k="finTxt"></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
     el.addEventListener('pointerdown', e => {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
-      if (b.dataset.a === 'otra') otraVezSiListo(); else salir();
+      const a = b.dataset.a;
+      if (a === 'como') iniciar({ forzar: true, entreno: true }); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else salir();
     });
     document.body.appendChild(el);
     hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
@@ -323,6 +359,77 @@ window.AVV18Duelo2 = function (G) {
     hud.q('en2').firstChild.style.width = Math.round(100 * D.j2.energia / D.j2.energiaMax) + '%';
     const texto = (k, t) => { const e = hud.q(k); if (e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } };
     texto('p1', (H.get(D.j1.poder) || {}).nombre || ''); texto('p2', (H.get(D.j2.poder) || {}).nombre || '');
+    texto('cn1-poder', (H.get(D.j1.poder) || {}).nombre || TXT.chPoder); texto('cn2-poder', (H.get(D.j2.poder) || {}).nombre || TXT.chPoder);
+    hud.q('como').hidden = !!ent;
+    pintarChips();
+  }
+  // Recarga visual: cada cuadro, pero solo escribe en el DOM cuando cambia (pasos de 5 %)
+  function pintarChips() {
+    if (!hud || !D.j1) return;
+    for (const [f, k] of [[D.j1, 'ch1'], [D.j2, 'ch2']]) for (const b of hud.q(k).children) {
+      const id = b.dataset.a === 'poder' ? f.poder : b.dataset.a, h = H.ver(f, H.get(id)) || {}, cd = f.cd[id] || 0;
+      const pct = Math.round(Math.max(0, Math.min(1, cd / (h.cooldown || 1))) * 20) * 5;
+      const st = D.fase === 'lucha' && H.listo(f, id).ok ? 'listo' : cd > 0 ? 'cd' : 'sin';
+      if (b._pct !== pct) { b._pct = pct; b.style.setProperty('--cd', pct + '%'); }
+      if (b._st !== st) { b._st = st; b.classList.toggle('listo', st === 'listo'); b.classList.toggle('cd', st === 'cd'); b.classList.toggle('sin', st === 'sin'); }
+    }
+  }
+
+  // ---------- Cómo se pelea: entreno de 3 pasos para las dos y pistas por jugador ----------
+  const ENT = ['golpe_ala', 'semilla', 'poder'], ENT_TXT = [TXT.ent1, TXT.ent2, TXT.ent3], CLAVE_ENT = 'av_v18_duelo2_entreno';
+  let ent = null; // { paso, j1, j2 (hecho en este paso), fin }
+  const entVisto = () => { try { return localStorage.getItem(CLAVE_ENT) === '1'; } catch (e) { return false; } };
+  const marcarEnt = () => { try { localStorage.setItem(CLAVE_ENT, '1'); } catch (e) { /* sin almacenamiento */ } };
+  const pistas = { j1: { t: 0, vis: 0, pl: 0, golpeado: false, dom: {} }, j2: { t: 0, vis: 0, pl: 0, golpeado: false, dom: {} } }; // dom: veces bien hecho (en memoria)
+  function pintarEntreno() {
+    if (!hud) return;
+    hud.q('ent').hidden = !ent; if (!ent) return;
+    const i = Math.min(ent.paso, 2), pon = (k, t) => { const e = hud.q(k); if (e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } };
+    pon('entPaso', TXT.entPaso(i + 1)); pon('entTxt', ENT_TXT[i]); pon('entK1', TECLAS.j1[i]); pon('entK2', TECLAS.j2[i]);
+    hud.q('entJ1').classList.toggle('ya', !!ent.j1); hud.q('entJ2').classList.toggle('ya', !!ent.j2);
+  }
+  function saltarEntreno() { if (!ent) return false; marcarEnt(); ent = null; return iniciar({ forzar: true, sinEntreno: true }); }
+  function alUsar(f, id, r) {
+    const k = f === D.j1 ? 'j1' : 'j2', otro = f === D.j1 ? D.j2 : D.j1, P = pistas[k], d = Math.hypot(f.pos.x - otro.pos.x, f.pos.z - otro.pos.z);
+    if (id === 'golpe_ala' && r.acierto) P.dom.cerca = (P.dom.cerca || 0) + 1;
+    if (id === 'semilla' && d > 4) P.dom.lejos = (P.dom.lejos || 0) + 1;
+    if (id === f.poder) P.dom.poder = (P.dom.poder || 0) + 1;
+    if (!ent || ent.fin > 0) return;
+    const quiere = ENT[ent.paso] === 'poder' ? f.poder : ENT[ent.paso];
+    if (id !== quiere || ent[k]) return;
+    if (quiere === 'golpe_ala' && !r.acierto) { flotante(TXT.masCerca, 1); return; }
+    ent[k] = true; sonar('ring', 1);
+    if (ent.j1 && ent.j2) {
+      ent.paso++; ent.j1 = ent.j2 = false; flotante(TXT.bien, 0.9);
+      for (const g of [D.j1, D.j2]) { g.cd = {}; g.energia = g.energiaMax; g.mareo = 0; g.inv = 0; }
+      if (ent.paso >= ENT.length) { ent.fin = 1.3; marcarEnt(); if (G.ui && G.ui.toast) G.ui.toast(TXT.entFin, 2600); }
+    }
+    pintarEntreno();
+  }
+  function pasoEntreno(dt) {
+    for (const g of [D.j1, D.j2]) { g.plumas = g.plumasMax; g.energia = g.energiaMax; }
+    if (ent.fin > 0) { ent.fin -= dt; if (ent.fin <= 0) { ent = null; iniciar({ forzar: true, sinEntreno: true }); } }
+  }
+  function pistaDe(k, t) {
+    const P = pistas[k], e = hud && hud.q(k === 'j1' ? 'pista1' : 'pista2'); if (!e) return;
+    if (t) { if (e.textContent !== t) e.textContent = t; e.hidden = false; P.vis = 2.4; } else { e.hidden = true; P.vis = 0; }
+  }
+  // Por jugador: una pista cada 4,5 s como mucho y solo las que aún no domina (dos veces bien hecho); la del golpe, una vez
+  function pasoPistas(dt) {
+    const d = Math.hypot(D.j1.pos.x - D.j2.pos.x, D.j1.pos.z - D.j2.pos.z), alaR = ((H.get('golpe_ala') || {}).alcance || 2.4) + 0.3;
+    for (const [k, f] of [['j1', D.j1], ['j2', D.j2]]) {
+      const P = pistas[k], T = k === 'j1' ? TXT.pista1 : TXT.pista2;
+      if (P.vis > 0 && (P.vis -= dt) <= 0) pistaDe(k, null);
+      if (f.plumas < P.pl && !P.golpeado) { P.golpeado = true; pistaDe(k, DEFENSAS.has(f.poder) ? T.escudo : T.golpe); P.vis = 3.2; P.t = 4.5; }
+      P.pl = f.plumas;
+      if ((P.t -= dt) > 0) continue;
+      const dom = n => (P.dom[n] || 0) >= 2;
+      let t = null;
+      if (!dom('poder') && f.energia >= f.energiaMax - 0.5 && H.listo(f, f.poder).ok) t = T.poder;
+      else if (!dom('cerca') && d <= alaR && H.listo(f, 'golpe_ala').ok) t = T.cerca;
+      else if (!dom('lejos') && d > 5.5 && H.listo(f, 'semilla').ok) t = T.lejos;
+      if (t) { pistaDe(k, t); P.t = 4.5; } else P.t = 0.3;
+    }
   }
 
   // ---------- Tarjeta: elegir la cotorra del Jugador 2 y ver las teclas ----------
@@ -362,11 +469,14 @@ window.AVV18Duelo2 = function (G) {
     quitarBalas(); D.timers.length = 0; D.trampas.length = 0;
     if (D.j1 && D.j1.wob && pl3d && pl3d.root) { pl3d.root.rotation.z -= D.j1.wob; D.j1.wob = 0; }
     nuevos(); D.resultado = null; D.stats = { usos1: 0, usos2: 0, golpes: 0 };
+    const conEntreno = !!o.entreno || (!o.sinCuenta && !o.sinEntreno && !entVisto()); // el primer duelo de 2 empieza con el entreno
+    ent = null; for (const k in pistas) { const P = pistas[k]; P.t = 2.5; P.pl = PLUMAS; P.golpeado = false; }
     colocar();
-    montarHud(); hud.el.hidden = false; hud.q('fin').hidden = true;
+    montarHud(); hud.el.hidden = false; hud.q('fin').hidden = true; pistaDe('j1', null); pistaDe('j2', null);
     enganchar(); sueltaTodo();
-    if (o.sinCuenta) { D.fase = 'lucha'; flotante(''); } else { D.fase = 'cuenta'; D.cuenta = 3; flotante('3', 1); }
-    pintar();
+    if (conEntreno) { D.fase = 'lucha'; ent = { paso: 0, j1: false, j2: false, fin: 0 }; flotante(''); }
+    else if (o.sinCuenta) { D.fase = 'lucha'; flotante(''); } else { D.fase = 'cuenta'; D.cuenta = 3; flotante('3', 1); }
+    pintarEntreno(); pintar();
     return true;
   }
   function terminar(quien) {
@@ -379,11 +489,11 @@ window.AVV18Duelo2 = function (G) {
     if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; flotante(''); }
     // Sin recompensa: ni inventario, ni G.v18, ni guardado
   }
-  function otraVez() { return iniciar({ forzar: true }); }
+  function otraVez() { return iniciar({ forzar: true, sinEntreno: true }); }
   function salir() {
     if (D.fase === 'nada') return false;
-    D.fase = 'nada'; quitarBalas(); D.timers.length = 0; D.trampas.length = 0; soltar();
-    if (hud) { flotante(''); hud.el.hidden = true; }
+    D.fase = 'nada'; quitarBalas(); D.timers.length = 0; D.trampas.length = 0; soltar(); ent = null;
+    if (hud) { flotante(''); hud.el.hidden = true; pintarEntreno(); }
     if (D.ch) D.ch.root.visible = false;
     return true;
   }
@@ -474,7 +584,8 @@ window.AVV18Duelo2 = function (G) {
       for (let i = D.timers.length - 1; i >= 0; i--) { const t = D.timers[i]; t.t -= dt; if (t.t <= 0) { D.timers.splice(i, 1); t.fn(); if (D.fase !== 'lucha') break; } }
       if (D.fase === 'lucha') pasoTrampas(dt);
       if (D.fase === 'lucha') pasoBalas(dt);
-      if (Math.random() < dt * 4) pintar();
+      if (D.fase === 'lucha' && ent) pasoEntreno(dt); else if (D.fase === 'lucha') pasoPistas(dt);
+      if (Math.random() < dt * 4) pintar(); else pintarChips();
     } else if (D.fase === 'fin') {
       for (const f of [D.j1, D.j2]) if (f.finMareo > 0) { f.finMareo = Math.max(0, f.finMareo - dt); f.mareo = f.finMareo; }
       if (D.j1.finMareo > 0) { M.vx *= 0.8; M.vz *= 0.8; }
@@ -558,6 +669,7 @@ window.AVV18Duelo2 = function (G) {
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, inv0 = JSON.stringify(S.inv || {}), esp0 = D.esp2;
     const P = G.v18, crudo = (() => { try { return localStorage.getItem(P.clave()); } catch (e) { return null; } })();
     const guardar0 = G.guardado && G.guardado.save; let guardados = 0;
+    const ent0 = (() => { try { return localStorage.getItem(CLAVE_ENT); } catch (e) { return null; } })(); // el entreno visto o no, como estaba
     if (G.guardado) { G.guardado.save = function (ya) { if (ya) guardados++; else if (guardar0) return guardar0.apply(this, arguments); }; }
     const evs = []; const oy = e => { if (!oy.mudo && e && e.duelo === 2) evs.push(e); }; G.on('v18combate', oy);
     const errores = []; const oyErr = e => errores.push(String(e && (e.message || e.reason) || e)); addEventListener('error', oyErr); addEventListener('unhandledrejection', oyErr);
@@ -580,10 +692,50 @@ window.AVV18Duelo2 = function (G) {
       const card = G.ui.$('card');
       const bv = card.querySelector('[data-d2sp="ventralis"]'); if (bv) bv.onclick();
       check('La tarjeta deja elegir la cotorra del Jugador 2 y enseña las teclas', G.ui.cardOpen && card.querySelectorAll('[data-d2sp]').length === ESPECIES.length && D.esp2 === 'ventralis' && /Jugador 2/.test(card.textContent));
+      marcarEnt(); // el entreno se mira aparte (abajo): aquí, la cuenta atrás de siempre
       G.ui.$('v18-d2-ok').onclick();
       check('«¡A jugar!» abre el duelo con cuenta atrás, HUD de Jugador 1 / Jugador 2 y 5 plumas por lado', D.fase === 'cuenta' && !G.ui.cardOpen && !hud.el.hidden &&
         hud.el.textContent.includes(TXT.j1) && hud.el.textContent.includes(TXT.j2) && hud.q('pl1').children.length === 5 && hud.q('pl2').children.length === 5 && !!hud.q('en1') && !!hud.q('en2'));
       check('La segunda cotorra es otra piel de las que hay, con su poder', !!D.ch && D.chEsp === 'ventralis' && D.j2.poder === H.poderDe('ventralis') && D.ch.root.parent === scene, D.j2.poder);
+      // Cómo se pelea (8-nov): entreno de 3 pasos con las teclas de cada jugador, chips y pistas
+      {
+        const pd = b => b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+        const toque = (key, code) => { tecla('keydown', key, code); tecla('keyup', key, code); };
+        try { localStorage.removeItem(CLAVE_ENT); } catch (e) { /* sin almacenamiento */ }
+        iniciar({ forzar: true });
+        check('Entreno de 2: el primer duelo empieza con el paso 1 (Jugador 1 E, Jugador 2 «.») sin cuenta atrás', !!ent && ent.paso === 0 && D.fase === 'lucha' && !hud.q('ent').hidden &&
+          hud.q('entK1').textContent === 'E' && hud.q('entK2').textContent === '.' && hud.q('entTxt').textContent === TXT.ent1 && hud.q('como').hidden, JSON.stringify({ ent, fase: D.fase }));
+        limpio(); cerca(7); toque('e', 'KeyE');
+        const lejosOk = !ent.j1 && hud.q('centro').textContent === TXT.masCerca;
+        limpio(); cerca(1.5); toque('e', 'KeyE');
+        const solo1 = ent.j1 && !ent.j2 && ent.paso === 0 && hud.q('entJ1').classList.contains('ya');
+        D.j1.inv = 0; toque('.', 'Period');
+        correr(0.1);
+        check('Entreno de 2: el paso avanza cuando las dos dan su aletazo (de lejos no cuenta) y nadie pierde plumas', lejosOk && solo1 && ent.paso === 1 && D.j1.plumas === PLUMAS && D.j2.plumas === PLUMAS &&
+          hud.q('entK1').textContent === 'F' && hud.q('entK2').textContent === ',', JSON.stringify({ lejosOk, solo1, paso: ent.paso }));
+        cerca(7); S.facing = { x: 1, z: 0 }; D.j2.yaw = -Math.PI / 2; toque('f', 'KeyF'); toque(',', 'Comma');
+        const p2 = ent.paso === 2 && hud.q('entK1').textContent === 'G' && hud.q('entK2').textContent === '-';
+        toque('g', 'KeyG'); toque('-', 'Slash');
+        const p3 = ent && ent.fin > 0 && entVisto();
+        correr(2);
+        check('Entreno de 2: semilla (F / «,») y poder (G / «-»); al terminar se recuerda y empieza el duelo con cuenta atrás', p2 && p3 && !ent && D.fase === 'cuenta' && hud.q('ent').hidden, JSON.stringify({ p2, p3, fase: D.fase }));
+        salir(); iniciar({ forzar: true });
+        check('Entreno de 2: no se repite solo', !ent && D.fase === 'cuenta' && !hud.q('como').hidden);
+        pd(hud.q('como')); const porBoton = !!ent && D.fase === 'lucha';
+        pd(hud.el.querySelector('[data-a="saltarEnt"]'));
+        check('Entreno de 2: «¿Cómo se pelea?» lo abre y «Saltar entreno» va al duelo', porBoton && !ent && D.fase === 'cuenta');
+        iniciar({ sinCuenta: true, forzar: true }); limpio(); cerca(1.5);
+        const kb = k => Array.from(hud.q(k).querySelectorAll('kbd')).map(e => e.textContent).join('');
+        usar(D.j2, 'semilla'); paso(0.05);
+        const c2 = hud.q('ch2').querySelector('[data-a="semilla"]');
+        check('Duelo de 2: chips con la tecla de cada jugador (E F G · . , -); el listo brilla y el que recarga lo enseña', kb('ch1') === 'EFG' && kb('ch2') === '.,-' &&
+          hud.q('ch1').querySelector('[data-a="golpe_ala"]').classList.contains('listo') && c2.classList.contains('cd') && (parseFloat(c2.style.getPropertyValue('--cd')) || 0) > 50, kb('ch1') + ' / ' + kb('ch2') + ' / ' + c2.className);
+        limpio(); cerca(1.5); for (const P of Object.values(pistas)) { P.t = 0; P.dom = {}; } D.j1.energia = D.j2.energia = 50; paso(0.05);
+        const pc1 = hud.q('pista1').hidden ? '' : hud.q('pista1').textContent, pc2 = hud.q('pista2').hidden ? '' : hud.q('pista2').textContent;
+        D.j1.plumas = PLUMAS - 1; paso(0.05); const pg1 = hud.q('pista1').textContent;
+        check('Duelo de 2: pistas por jugador con su tecla («¡Cerca! Aletazo (E)» / «(.)») y la del primer golpe', pc1 === TXT.pista1.cerca && pc2 === TXT.pista2.cerca && pg1 === TXT.pista1.golpe, JSON.stringify({ pc1, pc2, pg1 }));
+        salir();
+      }
       // 3. Entradas independientes: el J2 se mueve con flechas, el J1 no
       iniciar({ sinCuenta: true, especie2: 'arausiaca' });
       check('Con arausiaca, el Jugador 2 tiene Escudo de plumas', D.j2.poder === 'escudo_plumas' && D.ch && D.chEsp === 'arausiaca');
@@ -666,6 +818,7 @@ window.AVV18Duelo2 = function (G) {
     G.V18 = v18on0;
     oy.mudo = true; removeEventListener('error', oyErr); removeEventListener('unhandledrejection', oyErr);
     if (G.guardado) { if (guardar0) G.guardado.save = guardar0; else delete G.guardado.save; }
+    try { if (ent0 == null) localStorage.removeItem(CLAVE_ENT); else localStorage.setItem(CLAVE_ENT, ent0); } catch (e) { /* sin almacenamiento */ }
     D.esp2 = esp0;
     Object.assign(S.pos, pos0); S.facing = fac0; M.vx = M.vz = 0;
     if (JSON.stringify(S.inv || {}) !== inv0) { const o = JSON.parse(inv0); for (const k of Object.keys(S.inv)) if (!(k in o)) delete S.inv[k]; Object.assign(S.inv, o); }
@@ -675,6 +828,6 @@ window.AVV18Duelo2 = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18duelo2 = { disponible, abrirTarjeta, iniciar, salir, otraVez, usar, paso, estado: () => D, TXT, test };
+  G.v18duelo2 = { disponible, abrirTarjeta, iniciar, salir, otraVez, usar, paso, estado: () => D, entreno: () => ent, saltarEntreno, TXT, test };
   return G.v18duelo2;
 };
