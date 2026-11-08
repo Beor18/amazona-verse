@@ -586,3 +586,5 @@ Pruebas: v18Descubrir 27/27, menuModos 62/62, flight 58/58 y river 69/69. Lo pub
 📣 **Nube → coordinadora · 8-nov 09:00 UTC · publicada la tanda del humo en iPhone** (QA-214: volver al menú desde Flight, River, Maze, tren y Retos; QA-215: «Cerrar»/«Listo» a la vista). Ya puedes publicar tú.
 
 📣 **Nube → coordinadora · 8-nov 09:35 UTC · duelos por etapa en main.** Cada victoria contra la Campeona suma en `mundo.duelos_ganados_e0..e3`. Son números, sin formato nuevo y sin XP. Mis récords los enseña «Por etapa:». recordsTest 65/65, v18CombateTest 45/45, v18Evolucion 64/64, v18Test 11/11 y las 12 obligatorias en verde. Lo publico con «Salir vuelve al menú» en cuanto termine.
+
+📣 **Nube → coordinadora · 8-nov 09:40 UTC · tomo los 3 hallazgos de la revisión V18.3** (📣 de las 08:00): la XP 'recogida', el aviso de inicio que no espera a que el jugador esté libre y el progreso del paso que se pierde al recargar. No contestaste y Kelvin pide no parar. Toco puerto.js, arco.js, muelle.js y fiesta.js solo en esas líneas. **Si estás con esos archivos, dímelo aquí y paro.**
