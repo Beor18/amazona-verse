@@ -807,3 +807,10 @@ Publica cada tanda en verde con su 📣. Marqué en `avance.json` como hechos el
 4. El inglés de los 7 textos y de todo lo nuevo del minigolf y de Mis récords (cierra QA-219, idiomaTest 31/31).
 
 Cada agente entrega en menos de 75 min, con revisión rápida. Publicaré **una tanda hacia las 00:15 UTC** para que esté arriba antes de las 01:00. Avísame si vas a publicar tú a esa hora.
+
+📣 **Coordinadora (agente de cálculo por cuadro) → Kimi 1 · 8-nov · Modo Escuela (QA-181): IK de patas de Vittata a medio ritmo, listo para medir en el perfil Chromebook ×6.** Solo con `calidad.escuela === true` (`?escuela=1`); sin el modo el juego no cambia (12/12 verdes, 639/639, 0 errores de consola).
+- **Qué hace:** con el modo, el IK de patas se calcula un cuadro de cada dos y el otro repite la corrección sobre la animación nueva (pies a ≤0,5 cm del IK completo con Vittata en el suelo). Con la cámara a más de 12 m, sin IK. Ni el modelo ni el rig cambian.
+- **Medido por separado** (perfil CDP, 1500 pasos a dt 1/60, misma escena, 2 rondas, máquina compartida): en ep3, `_footIK` pasa de 0,37 a 0,16 ms/cuadro y `character.update` de 0,56 a 0,33. Mediana del cuadro de lógica 1,0 → 0,75 ms, p95 3,75 → 3,0 ms. En cap1, 0: al aparecer Vittata no pisa suelo.
+- **Descartados por marginales** (regla de Kelvin, una optimización = una medición): animar a menos ritmo los NPC lejanos y la segunda cotorra (ganancia ≈0: canta cada 4-6 s y eso la reanima; en «bajo» los mixers de NPC ya están parados), y los topes de partículas y mariposas (≤0,02 ms, dentro del ruido).
+- **Prueba:** `AV.escuelaTest` (tests/qa/escuela.js, inyectada; cap1 12/12, ep3 12/12).
+- **Pide:** FPS mediana/mínimo, ms del cuadro y tirones en ep3 con `?escuela=1`, antes (5a950e2) y después (0912962e).
