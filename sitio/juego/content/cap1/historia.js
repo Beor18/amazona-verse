@@ -389,8 +389,10 @@
         build = { parcel: k, gx: 0, gz: 0, valid: false, reason: '' };
         ghost.visible = true;
         toastHTML('Modo construcción: muévete y pulsa <b>Acción</b> para colocar. <button class="btn ghost" id="t-cancel" type="button">Cancelar</button>', 0);
-        const c = document.getElementById('t-cancel');
-        if (c) c.onclick = cancelBuild;
+        // Delegado en #toast: el aviso se re-pinta si una tarjeta lo aparta en el teléfono (ui.js, QA-93/QA-188) o si llega con
+        // algo que lo tapa, y un onclick puesto en el botón se perdía («Cancelar» no hacía nada al volver)
+        const tt = document.getElementById('toast');
+        if (tt && !tt.dataset.c1Cancel) { tt.dataset.c1Cancel = '1'; tt.addEventListener('click', e => { if (build && e.target && e.target.closest && e.target.closest('#t-cancel')) cancelBuild(); }); }
       }
       function cancelBuild() { build = null; ghost.visible = false; hideToast(); }
       function updateGhost() {

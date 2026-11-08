@@ -481,10 +481,10 @@ AVE.module('ambiente', function (G) {
       liberar(); await cuadros(2);
       const mem = () => Object.assign({}, R.renderer.info.memory, { programas: (R.renderer.info.programs || []).length });
       const m0 = mem();
-      for (let v = 0; v < 2; v++) { estado.forzar = true; await cuadros(3); liberar(); await cuadros(2); }
+      for (let v = 0; v < 4; v++) { estado.forzar = true; await cuadros(3); liberar(); await cuadros(2); }
       const m1 = mem();
-      // el streaming puede soltar piezas a la vez: lo que se mide es que no crezca
-      ok('0 fugas tras 2 vueltas (geometrías, texturas)', m1.geometries <= m0.geometries && m1.textures <= m0.textures, JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
+      // El streaming, la fauna y las partículas cargan y sueltan piezas a la vez (±2 geometrías); una fuga del ambiente sumaría al menos 1 por vuelta (4)
+      ok('0 fugas tras 4 vueltas (geometrías ±2 del mundo, texturas)', m1.geometries <= m0.geometries + 2 && m1.textures <= m0.textures, JSON.stringify(m0) + ' → ' + JSON.stringify(m1));
 
       // Luz de borde de actores.js (26-F): compila sobre un material Standard sin errores
       if (G.actores && G.actores.rim) {
