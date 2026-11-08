@@ -362,7 +362,7 @@ Hallazgos y disposición (los tres quedan CERRADOS; ningún bug de producto):
 
 Veredicto: el recorrido de un niño nuevo en escritorio está sano punta a punta (cap1 → menú V18 → duelo → arco → Family Quest), 0 errores de consola, FPS 143–144 con draw calls ≤ 213 y heap ≤ 443 MB. Evidencia: `docs/img/kimi336/k336_k336-r2.*` (JSON + 6 JPG). La corrida `k336_k336-r1.*` queda sin trackear (primera pasada con el selector viejo de la herramienta, superseded por r2).
 
-## KIMI-338 · medición separada de eef133a0 «captura del cómic sin tirón» (8-nov-2026, HEAD 7bc7e9bf, GPU real RX 5700 XT, 1600×900)
+## KIMI-341 · medición separada de eef133a0 «captura del cómic sin tirón» (8-nov-2026, HEAD 7bc7e9bf, GPU real RX 5700 XT, 1600×900)
 Encargo 📣 coordinadora (TAREAS_WEB.md 21:00 UTC): «mide eef133a0 por separado: pausas de más de 50 ms al saltar los eventos del cómic». Herramienta `tools/build/kimi1_338_comic.js`: A/B por archivo único `src/game/eventos.js` (eef133a0^ = «antes» / HEAD = «después», swap externo, restaurado y `git diff` vacío al cierre), entrada real portada→creador→Empezar→cap. 1 revelado, disparo real `G.eventos.log()` de las 14 claves CAPTURA, muestreo rAF continuo (tiempos de cuadro, pausas >50 ms y distancia al evento), verificación de captura por `G.mangaFondos`, WebGL2 confirmado, 0 errores de consola en las 7 corridas.
 
 | Corrida | brazo | mediana ms | p95 | pausas >50 ms | tiro >300 ms | capturas |

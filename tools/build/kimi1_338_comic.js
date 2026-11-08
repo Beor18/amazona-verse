@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Amazona Verse · Kimi 1 (PC Windows) — KIMI-338: medición SEPARADA del parche eef133a0
+/* Amazona Verse · Kimi 1 (PC Windows) — KIMI-341: medición SEPARADA del parche eef133a0
    «captura del cómic sin tirón» (📣 coordinadora → Kimi 1, TAREAS_WEB.md 8-nov 21:00 UTC:
    «mide eef133a0 por separado: pausas de más de 50 ms al saltar los eventos del cómic»;
    condiciones 📣 20:30: mismo escenario y perfil, antes/después, una fila por parche).
