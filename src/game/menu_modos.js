@@ -180,18 +180,22 @@
       }));
     }
     // ---------- Encima del menú: Mis cotorras, Álbum y Retos con amigos (tarjeta #card por encima de la portada) ----------
-    let origen = null;
+    // ui.js deja #card inerte mientras la portada está abierta: aquí la tarjeta se activa y la portada queda inerte detrás (como records.js)
+    let origen = null, portadaInerte = false;
     function encima(html) {
       G.ui.showCard(html); marcarEncima();
     }
     function marcarEncima() {
       const c = $('card'); if (!c || !portada || !portada.open) return;
-      c.classList.add('mm-encima'); origen = document.activeElement;
+      c.classList.add('mm-encima'); c.inert = false;
+      if (!portada.inert) { origen = document.activeElement; portada.inert = true; portadaInerte = true; }
       setTimeout(() => { const b = c.querySelector('button'); if (b && !c.hidden) b.focus({ preventScroll: true }); }, 0);
     }
     G.on('cardHidden', () => {
       const c = $('card'); if (!c || !c.classList.contains('mm-encima')) return;
       c.classList.remove('mm-encima');
+      if (portadaInerte) { portada.inert = false; portadaInerte = false; }
+      c.inert = !!(portada && portada.open);
       const o = origen; origen = null;
       if (o && portada && portada.open && document.contains(o)) setTimeout(() => { try { o.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
     });
@@ -471,7 +475,7 @@
           for (const m of SUB) {
             await elegir('amigos');
             const c = $('card'), bots = c.querySelectorAll('[data-amigo]');
-            if (m === SUB[0]) check('V18 · Retos con amigos: tarjeta encima del menú con Chispa, Moon y el Guardián', !c.hidden && c.classList.contains('mm-encima') && portada.open && bots.length === 3 && z(c) > z(portada), bots.length + ' botones, z ' + z(c) + '/' + z(portada));
+            if (m === SUB[0]) check('V18 · Retos con amigos: tarjeta encima del menú con Chispa, Moon y el Guardián', !c.hidden && c.classList.contains('mm-encima') && portada.open && bots.length === 3 && z(c) > z(portada) && !c.inert && portada.inert, bots.length + ' botones, z ' + z(c) + '/' + z(portada) + ', inerte ' + c.inert + '/' + portada.inert);
             const b = c.querySelector(`[data-amigo="${m}"]`); if (b) b.click();
             const okA = await hasta(() => enMarcha18(m), 60000), a = api18(m), s = a && (a.SITIO.salida || a.SITIO);
             check(`V18 · ${TX()[m][0]}: desde Retos con amigos lleva a Vittata a su sitio y empieza`, okA && !portada.open && c.hidden && s && cerca(s.x, s.z, 12), 'fase ' + fase18(a) + (s ? ', a ' + Math.hypot(S.pos.x - s.x, S.pos.z - s.z).toFixed(1) + ' m' : ''));
@@ -483,7 +487,7 @@
           check('V18 · Mis cotorras: encima del menú, cada cotorra con su poder, su nivel, su etapa y su XP', !cc.hidden && cc.classList.contains('mm-encima') && portada.open && sps.length >= 1 &&
             [...sps].every(b => b.querySelector('.v18-evo-f') && b.querySelector('.v18-evo-bar') && b.querySelector('.mm-xp') && /Poder|Power/.test(b.textContent)), sps.length + ' cotorras');
           check('V18 · Mis cotorras: las que faltan se ven, con candado y cómo llegan (el aviso de nuevas.js)', faltan.length >= pend.length && (!pend.length || (det && (sps.length >= 2 || det.open) && faltan[0].textContent.length > 20)), faltan.length + '/' + pend.length);
-          G.ui.hideCard(); check('V18 · Al cerrar Mis cotorras el menú sigue', cc.hidden && portada.open && !cc.classList.contains('mm-encima'));
+          G.ui.hideCard(); check('V18 · Al cerrar Mis cotorras el menú sigue (y vuelve a responder)', cc.hidden && portada.open && !cc.classList.contains('mm-encima') && !portada.inert && cc.inert);
         }
         if (G.album && G.album.html && G.album.html()) {
           await elegir('album');
