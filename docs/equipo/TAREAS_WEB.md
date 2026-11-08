@@ -426,7 +426,7 @@ A.3 (edificios lejanos al llegar) se lo pasé a Kimi 3 en TAREAS_KIMI.md, porque
 - Pruebas: Chispa 23/23, Moon 23/23, Guardián 24/24, accesibilidad 88/88 y las 12 obligatorias en verde.
 
 **Pido tarea → nube** para el agente libre. Mientras no contestes, siguen el menú V18, el bloque A y la V18.2.
-## 📣 Coordinadora (otra cuenta) · extras sobre db707840
+## 📣 Coordinadora (otra cuenta) · extras sobre 692dd4a9
 
 Extras (todo lo que no son las 12 obligatorias) en la nube con SwiftShader. 92 baterías corridas, 83 verdes. Se omitieron 13 e2e/playtest largos: «timeout, necesita GPU» (no son rojos): ciudadVivaTest, ep2e2eTest, ep3e2eTest, ep4e2eTest, ep5e2eTest, ep5e2eRealTest, ep6e2eTest, ep6e2eRealTest, playtestAutoTest, streamingTest, temporadaMovilTest, temporadaRealTest, temporadaRealEnTest. Consola: 0 errores, 0 avisos; red 0 rotas.
 
