@@ -60,7 +60,9 @@
     // al final desde el respaldo; se cuentan las pérdidas de contexto de la pestaña como evidencia.
     const GP = window.AV && window.AV.G, GV = GP && GP.guardado, suspPadre0 = !!(GV && GV.suspendido && GV.suspendido());
     if (GV && GV.suspender) GV.suspender(true);
-    const padre = { contextoPerdido: 0 }; let padreVivo = true; try { GP.on('contexto', ok => { if (padreVivo && !ok) padre.contextoPerdido++; }); } catch (e) { /* sin ganchos */ }
+    const padre = { contextoPerdido: 0 }; let padreVivo = true;
+    const alContextoPadre = ok => { if (padreVivo && !ok) padre.contextoPerdido++; };
+    try { GP.on('contexto', alContextoPadre); } catch (e) { /* sin ganchos */ }
     const fr = document.createElement('iframe');
     fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
     fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1024px;height:700px;border:0;';
@@ -669,6 +671,7 @@
       limpiar();
       try { for (const [k, v] of Object.entries(respaldo)) localStorage.setItem(k, v); } catch (e) { /* */ }
       padreVivo = false; if (GV && GV.suspender) GV.suspender(suspPadre0);
+      try { if (GP && GP.off) GP.off('contexto', alContextoPadre); } catch (e) { /* sin ganchos */ }
       // Informe por paso: tiempo real de cada tramo (suma de sus comprobaciones) y primer paso que falla. Va como una comprobación
       // más (informativa, siempre ok) para que salga en el informe de test.sh; el fallo en sí lo dan las comprobaciones rojas
       const porPaso = [], vistos = {};

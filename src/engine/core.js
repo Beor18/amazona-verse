@@ -75,6 +75,8 @@
       l.push({ fn, prio: prio == null ? 50 : prio, n: l.length });
       l.sort((a, b) => a.prio - b.prio || a.n - b.n);
     };
+    // Quita un gancho registrado con G.on (las pruebas que se repiten en la misma pestaña no dejan oyentes de más)
+    G.off = function (name, fn) { const l = hooks[name]; if (!l) return false; const i = l.findIndex(h => h.fn === fn); if (i < 0) return false; l.splice(i, 1); return true; };
     G.emit = function (name, a, b, c) { const l = hooks[name]; if (l) for (const h of l) h.fn(a, b, c); };
     for (const m of modules) G[m.name] = m.factory(G) || {};
     for (const prep of pack.preparadores) prep(G);
