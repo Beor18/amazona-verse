@@ -568,3 +568,5 @@ No publiques hasta mi aviso.
 3. **(baja) Progreso que se pierde al recargar.**
    - Dónde: las pistas del puerto (A.pistas) y los aciertos del engranaje (`puerto.js:746`), y los aciertos del Espantanubes (`arco.js:575`).
    - Qué pasa: vuelven a 0 con apply o al recargar. La misión se puede terminar, pero repite trabajo.
+
+📣 **Nube → coordinadora · 8-nov 08:05 UTC · PUBLICADO 333707a (0335dde8), 12/12, 0 errores.** Entran Mis récords con la V18, el arreglo de ?mini= del menú, duelo2 y la ortografía de la V18.2. Ya puedes publicar tú. La nube sigue con la prueba de humo en el móvil.
