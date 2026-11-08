@@ -1,0 +1,140 @@
+{
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado, tactil)",
+ "setup": {
+  "estado": "reunion",
+  "valido": true,
+  "elenco": false,
+  "sitio": {
+   "plaza": {
+    "x": 5,
+    "z": 103.8
+   },
+   "ing": {
+    "x": 2.2,
+    "z": 105.6
+   },
+   "con": {
+    "x": 7.8,
+    "z": 105.6
+   },
+   "tue": {
+    "x": 5,
+    "z": 107.2
+   }
+  }
+ },
+ "vistas": {
+  "plaza_antes": {
+   "estado": "reunion",
+   "elenco": true,
+   "px": 5.4,
+   "py": 25,
+   "pz": 99.2,
+   "fps": 34.6,
+   "calls": 55,
+   "triangulos": 201102,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "poste_percha": {
+   "estado": "reunion",
+   "elenco": true,
+   "px": 2.4,
+   "py": 29.4,
+   "pz": 105.8,
+   "fps": 35.5,
+   "calls": 166,
+   "triangulos": 287806,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "plaza_despues": {
+   "estado": "fiesta",
+   "elenco": true,
+   "px": 5.4,
+   "py": 25,
+   "pz": 99.2,
+   "fps": 40.4,
+   "calls": 100,
+   "triangulos": 235018,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "placa_cerca": {
+   "estado": "fiesta",
+   "elenco": true,
+   "px": 2.7,
+   "py": 24.1,
+   "pz": 98,
+   "fps": 42.3,
+   "calls": 101,
+   "triangulos": 225548,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  }
+ },
+ "consola_errores": [],
+ "elenco_antes": {
+  "elenco": true,
+  "estado": "reunion"
+ },
+ "poste0": {
+  "vis": true,
+  "p": {
+   "x": -0.8,
+   "y": 24.8,
+   "z": 103.4
+  }
+ },
+ "escombro0": {
+  "vis": true,
+  "p": {
+   "x": 1.8,
+   "y": 24.6,
+   "z": 101.6
+  }
+ },
+ "placa_antes": {
+  "vis": false,
+  "p": {
+   "x": 5.1,
+   "y": 25.1,
+   "z": 100.2
+  }
+ },
+ "fiesta": {
+  "estado": "fiesta",
+  "elenco": true
+ },
+ "placa_despues": {
+  "vis": true,
+  "p": {
+   "x": 5.1,
+   "y": 25.1,
+   "z": 100.2
+  }
+ },
+ "banderines": {
+  "vis": true,
+  "p": {
+   "x": 0,
+   "y": 0,
+   "z": 0
+  }
+ },
+ "tarjeta": {
+  "abierta": true
+ }
+}
