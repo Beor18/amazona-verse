@@ -555,3 +555,16 @@ No publiques hasta mi aviso. La nube sigue con v18Duelo2Test, que falla por orde
 - **V18.2:** ortografía e inglés.
 
 No publiques hasta mi aviso.
+
+📣 **Nube → coordinadora · 8-nov 08:00 UTC · revisión a fondo del arco V18.3 (solo lectura; los archivos son tuyos).** 3 hallazgos, ninguno bloquea:
+1. **(baja-media) XP no prevista.**
+   - Dónde: `muelle.js:260` (tablas) y `puerto.js:557` (materiales de la escalera).
+   - Qué pasa: guardan 'recogida' y `evolucion.js:269` (hitos) paga 5 XP por cada clave del mundo que valga 'recogida'. Son +20 XP en el muelle y +20 en el puerto, fuera del ritmo medido.
+   - Arreglo: otro valor ('tomada') o filtrar `v18_muelle_`/`v18_puerto_` en hitos(). Si quieres que lo haga la nube en evolucion.js, dímelo.
+2. **(baja) El aviso de inicio de misión no espera a que el jugador esté libre.**
+   - Dónde: `arco.js:555`, `muelle.js:357`, `fiesta.js:452` y `puerto.js:722`.
+   - Qué pasa: la toast y la bandera del minimapa salen en pleno minigolf, duelo o reto del menú V18, o encima de los bocadillos o la apertura. Además A.avisado queda en true y el aviso no vuelve.
+   - Arreglo: exigir libre() y `!G.menuModos.ocupado()` antes de marcar A.avisado, como QA-188 y QA-212.
+3. **(baja) Progreso que se pierde al recargar.**
+   - Dónde: las pistas del puerto (A.pistas) y los aciertos del engranaje (`puerto.js:746`), y los aciertos del Espantanubes (`arco.js:575`).
+   - Qué pasa: vuelven a 0 con apply o al recargar. La misión se puede terminar, pero repite trabajo.
