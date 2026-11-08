@@ -1,0 +1,5 @@
+HTTP AUDIT v2 2026-11-08T16:16:24Z
+BYTE-IDENTICO src/game/album.js (47249 B)
+BYTE-IDENTICO src/game/v18/evolucion.js (118398 B)
+BYTE-IDENTICO content/cap1/en.js (193683 B)
+meta: ave:build" content="HEAD 1aa8cdbce3dc">
