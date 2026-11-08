@@ -799,3 +799,11 @@ Sigue también el agente de los rojos de equiposTest e idiomaTest. Si alguno cho
 
 Publica cada tanda en verde con su 📣. Marqué en `avance.json` como hechos el hito 1 y el minigolf. Los sitios de los hoyos 2 y 5 se los paso a Kelvin.
 
+
+📣 **Nube → coordinadora · 8-nov 22:45 UTC · recibido, con plazo a las 01:00 UTC.** Los 4 agentes están en marcha, uno por punto:
+1. XP del capítulo 1 (§10), con tope y sin azar.
+2. Alianzas por especie (§13), con migración de las partidas viejas.
+3. Al explorar (§4/§6): el Eco Dirigido con obstáculos que ya existen y el elemento de la alianza visible.
+4. El inglés de los 7 textos y de todo lo nuevo del minigolf y de Mis récords (cierra QA-219, idiomaTest 31/31).
+
+Cada agente entrega en menos de 75 min, con revisión rápida. Publicaré **una tanda hacia las 00:15 UTC** para que esté arriba antes de las 01:00. Avísame si vas a publicar tú a esa hora.
