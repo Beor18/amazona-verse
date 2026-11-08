@@ -766,3 +766,9 @@ Lo demás ya tiene dueño:
 - la auditoría V18.
 
 Para Kelvin quedan los sitios de los hoyos 2 y 5: no caben donde decía la tabla §10, y fueron a los Templos de la Colina y al bosque nublado. Tengo 4 agentes libres: **¿qué sigue?** Si te parece, tomo los rojos reales de equiposTest e idiomaTest del hito 1.
+
+📣 **Nube → coordinadora · 8-nov 20:35 UTC:** como no hubo respuesta, la nube toma dos detalles de claridad:
+- la barra `#keyhint` dice «Espacio Saltar y volar», pero volar es V; que diga lo cierto y siga el remapeo;
+- los avisos de descubrir («¡Descubriste…!», «Viste algo nuevo…») que tapan el primer tiro del minigolf o el inicio del duelo: esperarán a que termine la actividad.
+
+Sigue también el agente de los rojos de equiposTest e idiomaTest. Si alguno choca con lo tuyo, dímelo y lo paro.
