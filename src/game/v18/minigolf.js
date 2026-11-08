@@ -722,7 +722,7 @@ window.AVV18Minigolf = function (G) {
       '#v18-golf .vg-guia{margin:8px auto 0;width:max-content;max-width:100%;min-height:1.4em;background:rgba(255,227,154,.95);color:#3b2a14;text-shadow:none;font-weight:600;font-size:15px;padding:5px 14px;border-radius:16px;box-shadow:0 2px 8px #0005;text-align:center;box-sizing:border-box}' +
       '#v18-golf .vg-guia:empty{visibility:hidden}#v18-golf .vg-guia.nueva{animation:vgPista .25s ease-out}@keyframes vgPista{from{transform:scale(.88);opacity:0}to{transform:none;opacity:1}}' +
       '#v18-golf .vg-fin [data-k="fin4"]{font-size:14px;opacity:.9}' +
-      'body.v18-golf-on #keyhint{visibility:hidden}' + // los controles de explorar (Espacio: saltar y volar) contradecían los del hoyo
+      'body.v18-golf-on #keyhint{visibility:hidden}' + // los controles de explorar (Espacio: saltar · V: volar) contradecían los del hoyo
       '@media (prefers-reduced-motion:reduce){#v18-golf .vg-guia.nueva{animation:none}}' +
       // QA: la guía #prompt se veía a través del panel y la pista «Pulsa V para volar» seguía en el hoyo; la guía va en el panel
       'body.v18-golf-on #prompt,body.v18-golf-on #guia-pista,body.v18-golf-on #guia-panel{display:none!important}' +
