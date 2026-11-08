@@ -1,0 +1,9 @@
+OK  src/game/v18/combate.js
+OK  src/game/v18/duelo2.js
+OK  src/game/album.js
+OK  src/game/v18/minigolf.js
+OK  src/game/v18/moon.js
+OK  src/game/v18/chispa.js
+OK  src/game/v18/guardian.js
+OK  src/game/records.js
+OK  src/game/menu_modos.js
