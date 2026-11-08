@@ -1,0 +1,27 @@
+· servidor http://127.0.0.1:58939 · Chrome en puerto DevTools (perfil C:\Users\kelvi\AppData\Local\Temp\kimi2-WJIFRY) · 375×812 dpr 3 · CPU ×4
+· jugador sembrado: ok: partida sembrada → Jugar (Estrella de la Bahía)
+  · selfTest: 108/108 (18 s)
+  · missionTest: 79/79 (6 s)
+  · accessoryTest: 13/13 (2 s)
+  · templateTest: 19/19 (3 s)
+  · rearranque preventivo del navegador antes de eduTest (--reinicia-cada 4, QA-111 residual)…
+  · stderr del navegador (rearranque preventivo): 
+  · Chrome rearrancado (perfil C:\Users\kelvi\AppData\Local\Temp\kimi2-Ma34Hu)
+· jugador sembrado: ok: partida sembrada → Jugar (Estrella de la Bahía)
+  · eduTest: 98/98 (15 s)
+  · maestroTest: 26/26 (4 s)
+  · recargando la página antes de criaderoTest (memoria GPU limpia, QA-111)
+  · reentrada: ok: partida sembrada → Jugar (Estrella de la Bahía)
+  · criaderoTest: 44/44 (5 s)
+  · movementTest: 52/52 (62 s)
+  · rearranque preventivo del navegador antes de saveTest (--reinicia-cada 4, QA-111 residual)…
+  · stderr del navegador (rearranque preventivo): 
+  · Chrome rearrancado (perfil C:\Users\kelvi\AppData\Local\Temp\kimi2-HPhBHD)
+· jugador sembrado: ok: partida sembrada → Jugar (Estrella de la Bahía)
+  · saveTest: 64/64 (2 s)
+  · comicTest: 67/67 (10 s)
+  · lookCapitulosTest: 13/13 (2 s)
+· jugador nuevo: ok: portada → creador → Empezar (Trueno Azul) → carga 4842 ms (listo) → intro saltada
+  · e2eTest: 29/32 · falla: 5 · Guardar a mitad del capítulo, recargar y todo persiste (perfil, paso, misiones, ruta de la gota, refugio, inventario, ropa, eventos, criadero) — {"distintos":["nombre","especie","accs","paso","misiones","edu","refugio","construcciones","inv","eventos","ropa","criadero"],"eventosNuevos":null,"antes":{"nombre":"Rayo Solar","especie":"violacea","accs":["sombrero","panuelo"],"paso":4,"misiones":"{\"m1\":true,\"educativa\":true,\"m3\":false}","edu":"{\"p1\":true,\"p2\":true,\"p3\":true,\"p4\":true,\"p5\":true,\"p6\":true,\"p7\":true,\"p8\":true | 4.7 · Guardián (tras recargar): hablar con él, reconoce el refugio y regala el banco de trabajo — {"paso":0,"banco":false,"cercano":"ninguno"} | ! · El recorrido no puede seguir tras 4.7 — etapa anterior fallida <<< (21 s)
+· errores de consola: []
+· informe en tools\build\salida\kimi2-k335\baterias.json
