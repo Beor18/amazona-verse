@@ -69,6 +69,14 @@ AVE.module('streaming', function (G) {
     histeresis: 30,                                // m de más para bajar de nivel
     bajarEspera: 1.5,                              // KIMI-038: s que una bajada de nivel/HD debe pedirse seguido antes de aplicarse (anti-flapping en vuelo)
     moverse: 2,                                    // m que anda el jugador antes de pedir modelos completos fuera de la precarga
+    // KIMI-246 (8-nov, 📣 nube/coordinadora): «edificios lejanos como ruinas al llegar». En el reveal, las zonas
+    // de 60-120 m enseñan su `_lejos` hasta que su borde entra en el radio de nivel 2 (medido: nunca, estando
+    // quieto). Mientras el jugador está a ≤ dist del punto de aparición, el radio de nivel 2 se amplía extra m:
+    // esas zonas piden su modelo completo durante la propia pantalla de carga (el radio de precargarZona ya lo
+    // cubre: max(cerca, hd) + histéresis ≥ cerca + extra en las tres calidades) y llegan detalladas al reveal.
+    // Al alejarse del punto de aparición el boost se apaga y caen con la bajada diferida de siempre (KIMI-038).
+    // En móvil/bajo el extra es la mitad: la carga móvil ya va al tope de segundos.
+    llegada: { dist: 180, extra: 60, extraMovil: 30 },
     lod: { bajo: 35, medio: 50, alto: 60 },        // m del centro de la instancia a la cámara: cerca → lejos
     lodH: 8,                                       // histéresis del LOD (m)
     // F2.1: 45/70/90 m eran el mínimo (Kelvin, 26-oct: no se recorta el kit), no el tope.
@@ -1779,10 +1787,15 @@ AVE.module('streaming', function (G) {
       const Rc = radioCerca(), Rl = alcanceZona(), H = CFG.histeresis;
       const anticipo = vueloAnticipo(x, z);
       const ahora = performance.now();
+      // KIMI-246: boost de llegada — cerca del punto de aparición el nivel 2 (modelo completo) llega extra m más
+      // allá del radio, para que los edificios de 60-120 m no se vean «como ruinas» al aparecer. Solo ensancha la
+      // frontera de subida; la de bajada y el resto de niveles quedan como estaban.
+      const RcLlegada = Rc + (inicio && Math.hypot(x - inicio[0], z - inicio[1]) <= CFG.llegada.dist
+        ? (MOVIL_C || nivelCal() === 'bajo' ? CFG.llegada.extraMovil : CFG.llegada.extra) : 0);
       for (const id in zonas) {
         const Z = zonas[id];
         Z.d = Math.max(0, Math.hypot(x - Z.cx, z - Z.cz) - Z.r);
-        const cerca = Z.forzada || (Z.nivel === 2 ? Z.d < Rc + H : Z.d < Rc);
+        const cerca = Z.forzada || (Z.nivel === 2 ? Z.d < RcLlegada + H : Z.d < RcLlegada);
         const lejos = Z.nivel >= 1 ? Z.d < Rl + H : Z.d < Rl;
         nivelZona(Z, cerca ? 2 : lejos ? 1 : 0);
         // La gran ciudad del tepuy: una referencia propia del kit, aparte del nivel. Así el _hd sigue cargado

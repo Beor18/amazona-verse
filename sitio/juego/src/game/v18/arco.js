@@ -20,7 +20,9 @@
    - Personajes: la Ingeniera y el Constructor con npc.js (tope de 2); Tuerca aparte, como en el puerto, con los datos de su fila
      de content/comun/personajes_v18.js y el modelo en caché de npc.js (cargarModelo).
    - XP V18.2: 120 al terminar, una sola vez (no se toca evolucion.js).
-   Solo con la bandera V18 (src/boot.js, después de puerto.js). Prueba: AV.v18ArcoTest(). */
+   - Después: la misión 3, «El muelle de la otra orilla» (muelle.js). Con los faroles encendidos, la Ingeniera y el Constructor se
+     mudan al Embarcadero de las Canoas (muelleTiene()); Tuerca se queda aquí con sus faroles.
+   Solo con la bandera V18 (src/boot.js, después de puerto.js). Prueba: AV.v18ArcoTest() (junta esta y la de muelle.js). */
 window.AVV18Arco = function (G) {
   'use strict';
   if (G.v18arco) return G.v18arco;
@@ -283,7 +285,9 @@ window.AVV18Arco = function (G) {
     ir(0);
   }
   // Acción sobre uno de los tres (puerto.js delega aquí la Ingeniera y el Constructor mientras están en las Atalayas)
+  const muelleTiene = () => { try { return !!(G.v18muelle && G.v18muelle.elenco && G.v18muelle.elenco()); } catch (e) { return false; } };
   function usar(id) {
+    if (id !== 'tuerca' && muelleTiene()) return G.v18muelle.usar(id);
     const e = estado();
     if (e === 'inicio') return reunion();
     if (e === 'encendido') {
@@ -321,7 +325,7 @@ window.AVV18Arco = function (G) {
     });
     gFaroles.forEach(f => { f.visible = ver && fin; });
     pintarMaquina(fin ? 'flor' : rango(e) >= rango('afinado') ? 'calma' : 'sopla');
-    if (ver) colocarElenco();
+    if (ver && !muelleTiene()) colocarElenco(); // con la misión 3 en marcha, los dos humanos están en el embarcadero (muelle.js)
     if (tue.raiz) vestirTue();
     if (rango(e) >= rango('afinado')) A.aciertos = 3;
     pagarXP();
@@ -793,7 +797,8 @@ window.AVV18Arco = function (G) {
     if (susp) susp(false);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
-  const mapa = () => (listo() && A.tengo && !hecho() ? { x: SITIO.plaza.x, z: SITIO.plaza.z, nombre: TXT.titulo } : null);
+  // con los faroles encendidos, el marcador sigue el arco: la misión 3 (muelle.js), si toca
+  const mapa = () => (listo() && A.tengo && !hecho() ? { x: SITIO.plaza.x, z: SITIO.plaza.z, nombre: TXT.titulo } : hecho() && G.v18muelle && G.v18muelle.mapa ? G.v18muelle.mapa() : null);
   G.v18arco = { ID, ESTADOS, estado, avanzar, aplicar, usar, etiqueta, usarPoder, encender, pagarXP, paso, SITIO, test, mapa, elenco: () => A.tengo,
     get torres() { return M.torres; }, get valido() { return M.valido; }, sesion: () => A };
   return G.v18arco;
