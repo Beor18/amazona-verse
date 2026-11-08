@@ -84,10 +84,10 @@ window.AVBanquete = function (G) {
       im.userData.sinCulling = true; im.userData.sinSolido = true;
       mallas[tipo] = im;
     }
-    const L = { lista: [], mallas, grupo: null, fase: Math.random() * 6 };
+    const L = { lista: [], mallas, grupo: null, fase: Math.random() * 6, n: { palma: 0, tabonuco: 0 } };
     L.dibujar = function (dt) {
       L.fase += dt;
-      const n = { palma: 0, tabonuco: 0 };
+      const n = L.n; n.palma = 0; n.tabonuco = 0;
       for (const fr of L.lista) {
         if (!fr.activo) continue;
         const im = mallas[fr.tipo], i = n[fr.tipo]++;
@@ -242,13 +242,16 @@ window.AVBanquete = function (G) {
     return true;
   }
   // Dónde se entregan: el nido del criadero si ya está en el mundo; si no, el refugio construido
-  function destino() {
+  // out (opcional): el objeto que se rellena en vez de crear uno nuevo (el update lo reutiliza cada cuadro)
+  function destino(out) {
     const it = G.interaccion.find('nido_criadero');
-    if (it && (!it.visible || it.visible())) return { x: it.x, z: it.z, que: 'nido' };
+    if (it && (!it.visible || it.visible())) return lugarDestino(out, it.x, it.z, 'nido');
     const r = S.refuge && S.refuge.parcel && MAPA && MAPA.lugares && MAPA.lugares[S.refuge.parcel];
-    if (r) return { x: r.x, z: r.z, que: 'refugio' };
+    if (r) return lugarDestino(out, r.x, r.z, 'refugio');
     return null;
   }
+  function lugarDestino(out, x, z, que) { if (!out) return { x, z, que }; out.x = x; out.z = z; out.que = que; return out; }
+  const _dest = { x: 0, z: 0, que: '' };
   let contador = 0;
   function entregar(forzado) {
     const d = forzado || destino(); if (!d || B.llevo <= 0) return 0;
@@ -299,7 +302,7 @@ window.AVBanquete = function (G) {
     const fr = mundo.cerca(S.pos.x, S.pos.y + 0.7, S.pos.z, itAccion.r, ALCANCE_Y * mVista);
     if (fr && M.flying) { recogerMundo(fr, false); itAccion.fr = null; }
     else { itAccion.fr = fr; if (fr) { itAccion.x = fr.x; itAccion.z = fr.z; } }
-    if (B.llevo > 0) { const d = destino(); if (d && Math.hypot(S.pos.x - d.x, S.pos.z - d.z) < 4.2 && S.pos.y - H(d.x, d.z) < 7) entregar(d); }
+    if (B.llevo > 0) { const d = destino(_dest); if (d && Math.hypot(S.pos.x - d.x, S.pos.z - d.z) < 4.2 && S.pos.y - H(d.x, d.z) < 7) entregar(d); }
   }, 87);
   G.on('render', dt => {
     if (!enRetos()) mundo.dibujar(dt);
@@ -424,10 +427,12 @@ window.AVBanquete = function (G) {
     ctx.seguirCamara(dt, 0.9);
     ctx.efectos.fovExtra += (0 - ctx.efectos.fovExtra) * (1 - Math.exp(-dt * 3));
   }
+  // AF1: solo lo que cambia (un texto igual también invalida la maqueta)
+  function ponTexto(el, v) { if (el.textContent !== v) el.textContent = v; }
   function dibujarJuego(dt) {
     if (J.fase === 'nada') return;
     juego.dibujar(dt);
-    const ui = ctx.ui, pon = (el, v) => { if (el.textContent !== v) el.textContent = v; }; // AF1: solo lo que cambia (un texto igual también invalida la maqueta)
+    const ui = ctx.ui, pon = ponTexto;
     pon(ui.tiempo, ctx.reloj(Math.max(0, T.dur - (J.fase === 'cuenta' ? 0 : J.t))));
     pon(ui.puntos, String(J.puntos));
     pon(ui.combo, J.combo >= 2 ? ' x' + J.combo : '');
