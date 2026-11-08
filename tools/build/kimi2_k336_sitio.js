@@ -2,14 +2,14 @@
 /* KIMI-336 · auditoría en vivo del sitio publicado: build servida + byte-identidad de los
    archivos del parche b3eb1ee (QA-218 en equipos.js + pul4 avisos descubrir en lugares.js /
    sorpresas.js / descubrir.js / fx.js / input.js), publicado en 277ec3b0 (21:30 UTC).
-   Compara byte a byte contra `git show b3eb1ee:<ruta>` (no contra el worktree: HEAD ya trae
-   235c3572, que la build servida NO lleva).
-   Uso: node tools/build/kimi2_k336_sitio.js [--url https://www.amazonaverse.com/juego/] */
+   Compara byte a byte contra `git show <ref>:<ruta>` (no contra el worktree).
+   KIMI-337: --ref configurable (default b3eb1ee) + eventos.js del parche eef133a0 (6913c95).
+   Uso: node tools/build/kimi2_k336_sitio.js [--url https://www.amazonaverse.com/juego/] [--ref 6913c95] */
 'use strict';
 const http = require('http'); const https = require('https');
 const { execSync } = require('child_process');
 const BASE = (process.argv.indexOf('--url') > 0 ? process.argv[process.argv.indexOf('--url') + 1] : 'https://www.amazonaverse.com/juego/').replace(/\/$/, '');
-const REF = 'b3eb1ee';
+const REF = process.argv.indexOf('--ref') > 0 ? process.argv[process.argv.indexOf('--ref') + 1] : 'b3eb1ee';
 function get(u) { return new Promise((re, mal) => { const m = u.startsWith('https') ? https : http; const r = m.get(u, { headers: { 'Accept-Encoding': 'identity', 'Cache-Control': 'no-cache' } }, res => { if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) return get(new URL(res.headers.location, u).href).then(re, mal); const b = []; res.on('data', d => b.push(d)); res.on('end', () => re({ codigo: res.statusCode, cuerpo: Buffer.concat(b) })); }); r.on('error', mal); r.setTimeout(30000, () => { r.destroy(new Error('timeout ' + u)); }); }); }
 const ARCHIVOS = [
   ['src/game/equipos.js', ['function cerrarCapa', 'Al cerrar la viñeta no queda su texto oculto', 'Listo cierra la pantalla de relevo y no deja su texto oculto']],
@@ -18,6 +18,7 @@ const ARCHIVOS = [
   ['src/game/lugares.js', ['const enV18 = () =>', 'pul4 (8-nov): el aviso']],
   ['src/game/sorpresas.js', ['pul4']],
   ['src/game/v18/descubrir.js', ['otraCosa']],
+  ['src/game/eventos.js', ['pedirCaptura', 'CM (8-nov): sin render extra ni lectura síncrona', 'fenceSync']],
 ];
 (async () => {
   const out = { base: BASE, hora_utc: new Date().toISOString(), ref: REF, indice: {}, archivos: {}, ok: true };

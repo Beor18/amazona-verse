@@ -1,0 +1,90 @@
+{
+ "base": "https://www.amazonaverse.com/juego",
+ "hora_utc": "2026-11-08T22:20:17.382Z",
+ "ref": "6913c95",
+ "indice": {
+  "codigo": 200,
+  "bytes": 39696,
+  "build_meta": "HEAD 6913c9523ab5"
+ },
+ "archivos": {
+  "src/game/equipos.js": {
+   "codigo": 200,
+   "bytes": 41552,
+   "marcadores_ok": 3,
+   "marcadores_total": 3,
+   "faltan": [],
+   "ref": {
+    "bytes": 41552,
+    "identico": true
+   }
+  },
+  "src/engine/fx.js": {
+   "codigo": 200,
+   "bytes": 21273,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 21273,
+    "identico": true
+   }
+  },
+  "src/engine/input.js": {
+   "codigo": 200,
+   "bytes": 35118,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 35118,
+    "identico": true
+   }
+  },
+  "src/game/lugares.js": {
+   "codigo": 200,
+   "bytes": 31809,
+   "marcadores_ok": 2,
+   "marcadores_total": 2,
+   "faltan": [],
+   "ref": {
+    "bytes": 31809,
+    "identico": true
+   }
+  },
+  "src/game/sorpresas.js": {
+   "codigo": 200,
+   "bytes": 11896,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 11896,
+    "identico": true
+   }
+  },
+  "src/game/v18/descubrir.js": {
+   "codigo": 200,
+   "bytes": 35285,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 35285,
+    "identico": true
+   }
+  },
+  "src/game/eventos.js": {
+   "codigo": 200,
+   "bytes": 10896,
+   "marcadores_ok": 3,
+   "marcadores_total": 3,
+   "faltan": [],
+   "ref": {
+    "bytes": 10896,
+    "identico": true
+   }
+  }
+ },
+ "ok": true
+}

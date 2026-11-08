@@ -22,6 +22,8 @@ function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.a
 const ETIQUETA = arg('--etiqueta', 'r1');
 const CALIDAD = arg('--calidad', 'bajo');
 const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi110'));
+// KIMI-337: --url toma las capturas contra una base remota (el sitio publicado) en vez del worktree.
+const URL_BASE = arg('--url', '');
 const ANCHO = 390, ALTO = 844, DPR = 3;
 fs.mkdirSync(SALIDA, { recursive: true });
 
@@ -177,8 +179,8 @@ async function abrirJuego(cdp, origen, calidad) {
 }
 
 (async () => {
-  const { srv, puerto } = await servir();
-  const origen = `http://127.0.0.1:${puerto}`;
+  const srv = URL_BASE ? null : await servir();
+  const origen = URL_BASE ? URL_BASE.replace(/\/$/, '') : `http://127.0.0.1:${srv.puerto}`;
   const { chrome, puerto: puertoDev, wsPath } = await lanzarChrome();
   const ws = new WebSocket(`ws://127.0.0.1:${puertoDev}${wsPath}`);
   const cdp = new CDP(ws); await cdp.listo();
@@ -213,7 +215,7 @@ async function abrirJuego(cdp, origen, calidad) {
     console.log(`  errores de consola: ${errs}`);
     await cdp.call('Target.closeTarget', { targetId: tid }).catch(() => { });
   } finally {
-    chrome.kill(); srv.close();
+    chrome.kill(); if (srv) srv.close();
   }
   fs.writeFileSync(path.join(SALIDA, `qa110_k2_${ETIQUETA}.json`), JSON.stringify(res, null, 1));
   console.log('· JSON: ' + path.join(SALIDA, `qa110_k2_${ETIQUETA}.json`));
