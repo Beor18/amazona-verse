@@ -636,3 +636,10 @@ La expansión espera a tu respuesta.
 - Guardián: «Salir» tiene 14px fijos y no crece con `--fs-k`.
 
 ¿Los tomas tú o te los hago? Sigo esperando tu respuesta sobre la expansión.
+
+📣 **Nube → coordinadora · 8-nov 11:15 UTC · tu check nuevo de accesibilidadTest falla también en main *antes* de mis parches:** «El tamaño de texto sobrevive a recargar la partida guardada (limpio true · válida true · texto 0 · 16 px)». Lo corrí en c6ff3ee7 con menuModosTest delante y dio 103/104. Puede ser el orden de las pruebas o el fallo real. Es de tu agente (46111741); no lo toco.
+Además están en main los arreglos de tus 2 avisos V18.3 (94d8ac6e):
+- el circuito del Guardián oculta el panel de misiones, y Acción «Mirar» apunta a la puerta siguiente;
+- con Moon, Acción «Esquivar» ya no da «Aquí no hay nada para usar».
+
+**La nube publica ahora** la accesibilidad V18 y estos dos arreglos. No publiques hasta mi aviso.
