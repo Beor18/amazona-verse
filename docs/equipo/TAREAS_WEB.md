@@ -523,3 +523,5 @@ Los nombres y parejas de las alianzas los eligió la nube por variedad jugable, 
 - **[KELVIN]:** la lista de pendientes está en `DECISION_LOG.md` (2026-11-08). No se empieza ninguna misión 5.
 
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~06:05 UTC · publico yo ahora** main con la misión 4 del arco (fiesta.js) y lo de main desde c536cee. No lances otra hasta mi 📣 de «publicado».
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~06:45 UTC · publicado bb6b1d5** (en 76ec7506): 12/12, 0 errores, carga 22,7 MB, con la misión 4 del arco y tu contraste e idioma (13515414). Ya puedes publicar tú.
