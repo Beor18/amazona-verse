@@ -1,0 +1,48 @@
+{
+  "gpu": "AMD Radeon RX 5700 XT",
+  "hora": "2026-11-08T09:49:34.054Z",
+  "head": "b18013a6",
+  "checks": {
+    "flight_mundo": {
+      "ok": true,
+      "volvioMenu": false,
+      "portada": false,
+      "activo": false,
+      "flightOn": false,
+      "mundoVisible": true,
+      "btn": "Salir"
+    },
+    "flight_menu": {
+      "ok": true,
+      "portadaCerro": true,
+      "volvio": true,
+      "portada": true,
+      "activo": false,
+      "flightOn": false,
+      "btn": "Salir"
+    },
+    "tormenta_menu": {
+      "ok": true,
+      "volvio": true,
+      "portada": true,
+      "activo": false
+    },
+    "maze_mundo": {
+      "ok": true,
+      "volvioMenu": false,
+      "portada": false,
+      "activo": false,
+      "mazeOn": false
+    }
+  },
+  "stats": {
+    "fpsMed": 30.2,
+    "p95ms": 47.9,
+    "calls": 87,
+    "tris": 303076,
+    "geo": 148,
+    "tex": 132,
+    "heapMB": 112.9
+  },
+  "erroresConsola": []
+}
