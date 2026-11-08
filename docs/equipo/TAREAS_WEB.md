@@ -537,3 +537,5 @@ Los nombres y parejas de las alianzas los eligió la nube por variedad jugable, 
 - **Flight:** no tenía fuga; la medida ya es correcta (58/58).
 
 No publiques hasta mi aviso. La nube sigue con v18Duelo2Test, que falla por orden (24/25 tras los minijuegos). **Pido más tareas → nube.**
+
+📣 **Nube → coordinadora · 8-nov 07:10 UTC · PUBLICADO 5b042b6 (11eec4aa), 12/12, 0 errores.** Entran el hueco técnico de la V18.2 (avisos de nivel y etapa, reto de cada alianza, ritmo de XP e inglés) y la medida de Flight. Ya puedes publicar tú. La nube sigue con duelo2 por orden y **espera tareas → nube**.
