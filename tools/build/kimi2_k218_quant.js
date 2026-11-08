@@ -148,6 +148,21 @@ function cuantizar(buf) {
     }
   }
 
+  // imágenes embebidas (y cualquier otra referencia a bufferViews fuera de accessors): se
+  // trasladan al final del BIN y se remapean sus índices (KIMI-225: antes quedaban apuntando
+  // a vistas de geometría o fuera de rango → «The source image could not be decoded»).
+  const remapVistas = new Map();
+  const imgs2 = (json.images || []).map(im => {
+    if (im.bufferView == null) return im;
+    if (remapVistas.has(im.bufferView)) return { ...im, bufferView: remapVistas.get(im.bufferView) };
+    const v0 = json.bufferViews[im.bufferView];
+    if (!v0) throw new Error('imagen con bufferView ' + im.bufferView + ' inexistente');
+    const bytes = bin.slice(v0.byteOffset || 0, (v0.byteOffset || 0) + v0.byteLength);
+    const bv = vistaDe(bytes, v0.target);
+    remapVistas.set(im.bufferView, bv);
+    return { ...im, bufferView: bv };
+  });
+
   // nodos con mesh: componen el dequant de ESE mesh (por su POSITION)
   for (const nd of json.nodes || []) {
     if (nd.mesh == null || !dqMesh.has(json.meshes[nd.mesh])) continue;
@@ -167,6 +182,7 @@ function cuantizar(buf) {
   const ext = new Set([...(json.extensionsUsed || []), 'KHR_mesh_quantization']);
   const req = new Set([...(json.extensionsRequired || []), 'KHR_mesh_quantization']);
   const json2 = { ...json, accessors, bufferViews: vistas, extensionsUsed: [...ext], extensionsRequired: [...req] };
+  if (json.images) json2.images = imgs2;
   delete json2.buffers;
   json2.buffers = [{ byteLength: cursor }];
 

@@ -1,0 +1,13 @@
+{
+ "etiqueta": "r1",
+ "head": "6e070722",
+ "url": "http://127.0.0.1:57039/index.html?pack=cap1&mapa=real&calidad=bajo&v18=1",
+ "paginas": [],
+ "cdpImg": [
+  "EXC InvalidStateError: The source image could not be decoded.",
+  "EXC InvalidStateError: The source image could not be decoded.",
+  "EXC InvalidStateError: The source image could not be decoded.",
+  "EXC InvalidStateError: The source image could not be decoded."
+ ],
+ "fatal": "WebSocket: error"
+}

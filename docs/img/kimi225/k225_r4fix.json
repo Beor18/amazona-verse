@@ -1,0 +1,101 @@
+{
+ "etiqueta": "r4fix",
+ "modo": "head",
+ "head": "4faf4346",
+ "url": "http://127.0.0.1:58344/index.html?pack=cap1&mapa=real&calidad=bajo&v18=1",
+ "paginas": [
+  {
+   "nombre": "larga",
+   "listo": true,
+   "entrada": "ok",
+   "tramos": [
+    {
+     "parada": "villa-spawn",
+     "stats": {
+      "calls": 51,
+      "tris": 227945
+     },
+     "domexAcum": 0,
+     "errAcum": 0,
+     "aveAcum": 0
+    },
+    {
+     "parada": "ciudad-plaza",
+     "stats": {
+      "calls": 77,
+      "tris": 184012
+     },
+     "domexAcum": 0,
+     "errAcum": 0,
+     "aveAcum": 0
+    },
+    {
+     "parada": "complejo-aereo",
+     "stats": {
+      "calls": 54,
+      "tris": 198774
+     },
+     "domexAcum": 0,
+     "errAcum": 0,
+     "aveAcum": 0
+    },
+    {
+     "parada": "vuelta-villa",
+     "stats": {
+      "calls": 73,
+      "tris": 365164
+     },
+     "domexAcum": 0,
+     "errAcum": 0,
+     "aveAcum": 0
+    },
+    {
+     "parada": "plaza-oeste",
+     "stats": {
+      "calls": 74,
+      "tris": 193564
+     },
+     "domexAcum": 0,
+     "errAcum": 0,
+     "aveAcum": 0
+    }
+   ],
+   "domex": [],
+   "consolaErr": [],
+   "consolaImg": [],
+   "aveErrores": []
+  },
+  {
+   "nombre": "corta",
+   "listo": true,
+   "entrada": "ok",
+   "tramos": [
+    {
+     "parada": "villa-spawn",
+     "stats": {
+      "calls": 51,
+      "tris": 227945
+     },
+     "domexAcum": 0,
+     "errAcum": 0,
+     "aveAcum": 0
+    },
+    {
+     "parada": "ciudad-plaza",
+     "stats": {
+      "calls": 71,
+      "tris": 179958
+     },
+     "domexAcum": 0,
+     "errAcum": 0,
+     "aveAcum": 0
+    }
+   ],
+   "domex": [],
+   "consolaErr": [],
+   "consolaImg": [],
+   "aveErrores": []
+  }
+ ],
+ "cdpImg": []
+}

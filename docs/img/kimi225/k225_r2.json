@@ -1,0 +1,184 @@
+{
+ "etiqueta": "r2",
+ "modo": "head",
+ "head": "4faf4346",
+ "url": "http://127.0.0.1:57334/index.html?pack=cap1&mapa=real&calidad=bajo&v18=1",
+ "paginas": [
+  {
+   "nombre": "larga",
+   "listo": true,
+   "entrada": "ok",
+   "tramos": [
+    {
+     "parada": "villa-spawn",
+     "stats": {
+      "calls": 51,
+      "tris": 232618
+     },
+     "domexAcum": 4,
+     "errAcum": 0,
+     "aveAcum": 0
+    },
+    {
+     "parada": "ciudad-plaza",
+     "stats": {
+      "calls": 71,
+      "tris": 179902
+     },
+     "domexAcum": 4,
+     "errAcum": 0,
+     "aveAcum": 0
+    },
+    {
+     "parada": "complejo-aereo",
+     "stats": {
+      "calls": 54,
+      "tris": 198742
+     },
+     "domexAcum": 4,
+     "errAcum": 0,
+     "aveAcum": 0
+    },
+    {
+     "parada": "vuelta-villa",
+     "stats": {
+      "calls": 71,
+      "tris": 364312
+     },
+     "domexAcum": 4,
+     "errAcum": 0,
+     "aveAcum": 0
+    },
+    {
+     "parada": "plaza-oeste",
+     "stats": {
+      "calls": 74,
+      "tris": 193484
+     },
+     "domexAcum": 4,
+     "errAcum": 0,
+     "aveAcum": 0
+    }
+   ],
+   "domex": [
+    {
+     "t": 1794097273464,
+     "msg": "The source image could not be decoded.",
+     "nombre": "InvalidStateError",
+     "stack": "InvalidStateError: The source image could not be decoded."
+    },
+    {
+     "t": 1794097273472,
+     "msg": "The source image could not be decoded.",
+     "nombre": "InvalidStateError",
+     "stack": "InvalidStateError: The source image could not be decoded."
+    },
+    {
+     "t": 1794097273630,
+     "msg": "The source image could not be decoded.",
+     "nombre": "InvalidStateError",
+     "stack": "InvalidStateError: The source image could not be decoded."
+    },
+    {
+     "t": 1794097273683,
+     "msg": "The source image could not be decoded.",
+     "nombre": "InvalidStateError",
+     "stack": "InvalidStateError: The source image could not be decoded."
+    }
+   ],
+   "consolaErr": [],
+   "consolaImg": [],
+   "aveErrores": []
+  },
+  {
+   "nombre": "corta",
+   "listo": true,
+   "entrada": "ok",
+   "tramos": [
+    {
+     "parada": "villa-spawn",
+     "stats": {
+      "calls": 50,
+      "tris": 227849
+     },
+     "domexAcum": 4,
+     "errAcum": 0,
+     "aveAcum": 0
+    },
+    {
+     "parada": "ciudad-plaza",
+     "stats": {
+      "calls": 77,
+      "tris": 183980
+     },
+     "domexAcum": 4,
+     "errAcum": 0,
+     "aveAcum": 0
+    }
+   ],
+   "domex": [
+    {
+     "t": 1794097338900,
+     "msg": "The source image could not be decoded.",
+     "nombre": "InvalidStateError",
+     "stack": "InvalidStateError: The source image could not be decoded."
+    },
+    {
+     "t": 1794097338905,
+     "msg": "The source image could not be decoded.",
+     "nombre": "InvalidStateError",
+     "stack": "InvalidStateError: The source image could not be decoded."
+    },
+    {
+     "t": 1794097339095,
+     "msg": "The source image could not be decoded.",
+     "nombre": "InvalidStateError",
+     "stack": "InvalidStateError: The source image could not be decoded."
+    },
+    {
+     "t": 1794097339168,
+     "msg": "The source image could not be decoded.",
+     "nombre": "InvalidStateError",
+     "stack": "InvalidStateError: The source image could not be decoded."
+    }
+   ],
+   "consolaErr": [],
+   "consolaImg": [],
+   "aveErrores": []
+  }
+ ],
+ "cdpImg": [
+  {
+   "t": 1794097273474,
+   "ex": "{\"exceptionId\":1,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:57334/index.html?pack=cap1&mapa=real&calidad=bajo&v18=1\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"objectId\":\"-5922894137485932421.2.1\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"overflow\":false,\"properties\":[{\"name\":\"stack\",\"type\":\"string\",\"value\":\"InvalidStateError: The source image could not be decoded.\"},{\"name\":\"code\",\"type\":\"number\",\"value\":\"11\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"InvalidStateError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"The source image could not be decoded.\"}]}},\"executionContextId\":2}"
+  },
+  {
+   "t": 1794097273475,
+   "ex": "{\"exceptionId\":2,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:57334/index.html?pack=cap1&mapa=real&calidad=bajo&v18=1\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"objectId\":\"-5922894137485932421.2.2\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"overflow\":false,\"properties\":[{\"name\":\"stack\",\"type\":\"string\",\"value\":\"InvalidStateError: The source image could not be decoded.\"},{\"name\":\"code\",\"type\":\"number\",\"value\":\"11\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"InvalidStateError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"The source image could not be decoded.\"}]}},\"executionContextId\":2}"
+  },
+  {
+   "t": 1794097273633,
+   "ex": "{\"exceptionId\":3,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:57334/index.html?pack=cap1&mapa=real&calidad=bajo&v18=1\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"objectId\":\"-5922894137485932421.2.3\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"overflow\":false,\"properties\":[{\"name\":\"stack\",\"type\":\"string\",\"value\":\"InvalidStateError: The source image could not be decoded.\"},{\"name\":\"code\",\"type\":\"number\",\"value\":\"11\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"InvalidStateError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"The source image could not be decoded.\"}]}},\"executionContextId\":2}"
+  },
+  {
+   "t": 1794097273687,
+   "ex": "{\"exceptionId\":4,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:57334/index.html?pack=cap1&mapa=real&calidad=bajo&v18=1\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"objectId\":\"-5922894137485932421.2.4\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"overflow\":false,\"properties\":[{\"name\":\"stack\",\"type\":\"string\",\"value\":\"InvalidStateError: The source image could not be decoded.\"},{\"name\":\"code\",\"type\":\"number\",\"value\":\"11\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"InvalidStateError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"The source image could not be decoded.\"}]}},\"executionContextId\":2}"
+  },
+  {
+   "t": 1794097338903,
+   "ex": "{\"exceptionId\":1,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:57334/index.html?pack=cap1&mapa=real&calidad=bajo&v18=1\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"objectId\":\"-4451068735064757131.2.1\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"overflow\":false,\"properties\":[{\"name\":\"stack\",\"type\":\"string\",\"value\":\"InvalidStateError: The source image could not be decoded.\"},{\"name\":\"code\",\"type\":\"number\",\"value\":\"11\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"InvalidStateError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"The source image could not be decoded.\"}]}},\"executionContextId\":2}"
+  },
+  {
+   "t": 1794097338906,
+   "ex": "{\"exceptionId\":2,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:57334/index.html?pack=cap1&mapa=real&calidad=bajo&v18=1\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"objectId\":\"-4451068735064757131.2.2\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"overflow\":false,\"properties\":[{\"name\":\"stack\",\"type\":\"string\",\"value\":\"InvalidStateError: The source image could not be decoded.\"},{\"name\":\"code\",\"type\":\"number\",\"value\":\"11\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"InvalidStateError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"The source image could not be decoded.\"}]}},\"executionContextId\":2}"
+  },
+  {
+   "t": 1794097339097,
+   "ex": "{\"exceptionId\":3,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:57334/index.html?pack=cap1&mapa=real&calidad=bajo&v18=1\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"objectId\":\"-4451068735064757131.2.3\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"overflow\":false,\"properties\":[{\"name\":\"stack\",\"type\":\"string\",\"value\":\"InvalidStateError: The source image could not be decoded.\"},{\"name\":\"code\",\"type\":\"number\",\"value\":\"11\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"InvalidStateError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"The source image could not be decoded.\"}]}},\"executionContextId\":2}"
+  },
+  {
+   "t": 1794097339172,
+   "ex": "{\"exceptionId\":4,\"text\":\"Uncaught (in promise)\",\"lineNumber\":0,\"columnNumber\":0,\"scriptId\":\"1\",\"url\":\"http://127.0.0.1:57334/index.html?pack=cap1&mapa=real&calidad=bajo&v18=1\",\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"DOMException\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"objectId\":\"-4451068735064757131.2.4\",\"preview\":{\"type\":\"object\",\"subtype\":\"error\",\"description\":\"InvalidStateError: The source image could not be decoded.\",\"overflow\":false,\"properties\":[{\"name\":\"stack\",\"type\":\"string\",\"value\":\"InvalidStateError: The source image could not be decoded.\"},{\"name\":\"code\",\"type\":\"number\",\"value\":\"11\"},{\"name\":\"name\",\"type\":\"string\",\"value\":\"InvalidStateError\"},{\"name\":\"message\",\"type\":\"string\",\"value\":\"The source image could not be decoded.\"}]}},\"executionContextId\":2}"
+  }
+ ]
+}
