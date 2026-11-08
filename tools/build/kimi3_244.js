@@ -14,7 +14,8 @@
    Salida: docs/img/kimi244/k244_<etiqueta>.json + capturas _*.jpg
 
    Uso: node tools/build/kimi3_244.js --etiqueta base-r1 [--escritorio] [--calidad bajo|medio|alto]
-        [--quieto-s 12] [--paseo-m 66] [--sin-paseo] [--url-extra "v18=1"] */
+        [--quieto-s 12] [--paseo-m 66] [--sin-paseo] [--url-extra "v18=1"]
+        [--url https://www.amazonaverse.com/juego/]  (sirve el sitio publicado en vez del worktree) */
 'use strict';
 const http = require('http');
 const fs = require('fs');
@@ -36,6 +37,7 @@ const VUELO = +arg('--vuelo', '0');
 const VUELO_S = +arg('--vuelo-s', '14');
 const ANTES = arg('--antes', '');
 const URL_EXTRA = arg('--url-extra', '');
+const URLBASE = arg('--url', '').replace(/\/+$/, '');
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi244');
 fs.mkdirSync(SALIDA, { recursive: true });
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
@@ -114,6 +116,8 @@ const ZONAS_JS = `(() => {
   try { const m = G.renderer.info.memory; out.mem = { geo: m.geometries, tex: m.textures }; } catch (e) {}
   try { out.heap = performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : 0; } catch (e) {}
   try { if (ST.transiciones) out.trans = ST.transiciones(); } catch (e) {}
+  try { out.cfgLlegada = (ST.CFG && ST.CFG.llegada) || null; } catch (e) {}
+  try { out.hdCiudadLimite = typeof ST.hdCiudadLimite === 'function' ? ST.hdCiudadLimite() : null; } catch (e) {}
   out.zonas = [];
   try {
     for (const Z of Object.values(ST.zonas)) {
@@ -157,10 +161,11 @@ function lanzarChrome() {
 }
 
 (async () => {
-  const { srv, puerto } = await servir();
-  const origen = `http://127.0.0.1:${puerto}`;
+  const srvP = URLBASE ? null : await servir();
+  const origen = URLBASE || `http://127.0.0.1:${srvP.puerto}`;
   const head = execSync('git rev-parse --short HEAD', { cwd: RAIZ, encoding: 'utf8' }).trim();
   const res = { etiqueta: ETIQUETA, tarea: 'KIMI-244 ruinas al llegar', herramienta: 'kimi3_244.js', head,
+    url: URLBASE || 'worktree-local',
     pantalla: ESCRITORIO ? 'escritorio 1600x900@1 cpuX1' : 'movil 390x844@3 cpuX4',
     calidadForzada: CALIDAD || null, inicio: new Date().toISOString(), fases: { quieto: [], paseo: [], vuelo: [] }, capturas: [], consolaErr: [],
     vueloM: VUELO, streamingServido: ANTES || 'HEAD' };
@@ -304,6 +309,6 @@ function lanzarChrome() {
     await new Promise(r => setTimeout(r, 1200));
     try { spawn('taskkill', ['/PID', String(chromeL.chrome.pid), '/T', '/F'], { stdio: 'ignore' }); } catch (e) {}
     try { fs.rmSync(chromeL.perf, { recursive: true, force: true }); } catch (e) {}
-    srv.close();
+    if (srvP) srvP.srv.close();
   }
 })().catch(e => { console.error('FALLO:', e.message); process.exit(1); });
