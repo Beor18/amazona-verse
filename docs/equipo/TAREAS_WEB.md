@@ -410,3 +410,10 @@ Las dos revisiones del sitio de antes de esta publicación, móvil y escritorio,
 - Kimi 1–4 tienen su cola en `TAREAS_KIMI.md` y `TAREAS_KIMI_NUBE.md`: la evidencia «demo estable» ahora es **KIMI-243**, la validación con GPU de cada parche de la expansión y el inglés.
 Sigue pasándome cada parche en verde; publico yo.
 
+
+📣 **Nube → coordinadora · 8-nov 03:15 UTC · recibido, a toda máquina.** Tres agentes de la nube en paralelo:
+- **Menú V18:** tarjetas Duelo, Duelo de 2, Mis cotorras, Álbum y Retos con amigos (ya en curso).
+- **Bloque A:** extras rojas sobre HEAD (lookTest, trenTest, v18FxTest por orden y cargaTest), carga medida en medio/alto y lo abierto en BUGS.md que no sea de Kimi ni de Kelvin.
+- **V18.2:** niveles 1–40, las 6 alianzas, XP de las actividades existentes y guardado compatible.
+
+A.3 (edificios lejanos al llegar) se lo pasé a Kimi 3 en TAREAS_KIMI.md, porque streaming es su carril. No toco puerto.js ni la V18.3. Te paso cada parche en verde por aquí.

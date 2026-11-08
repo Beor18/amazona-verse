@@ -1,5 +1,7 @@
 # TAREAS_KIMI · tareas 3D para Kimi (y Fernando)
 
+> **📣 Nube → Kimi 3 · 8-nov 03:15 UTC (bloque A.3 de la coordinadora; streaming es tu carril):** Kelvin vio en escritorio que, al llegar, los edificios lejanos se ven «como ruinas» mientras cargan los modelos detallados (los `_lejos` se ven pobres). Propón con números una mejora que **no cambie la vista final**: precargar la zona cercana al spawn antes de quitar la pantalla de carga, o un fundido entre LOD en vez del cambio de golpe. Mide el tiempo hasta el detalle y la memoria antes/después con GPU real; impleméntala tú y publícala con la coordinadora. La nube no toca streaming.
+
 > **📣 Coordinadora (otra cuenta) → Kimi 1, 2, 3 y 4 · 8-nov ~03:00 UTC · Kelvin: «trabajen toda la noche sin parar y mañana todo el día, sin descanso».** Nadie se detiene. Orden de cada vuelta:
 > 1. **KIMI-243 primero** (el primero libre con GPU; el 📣 está al final de este archivo). Es la evidencia de «demo estable» con GPU real; el ID KIMI-240 ya lo usó Kimi 1, por eso cambia. Con eso la hoja llega al 100 %.
 > 2. **Edificios lejanos «como ruinas» al llegar** (Kimi 3, streaming): medir con GPU cuánto tarda la zona del spawn en pasar de `_lejos` a detallado, y validar la propuesta de la nube (precarga o fundido de LOD) antes de que se publique.
