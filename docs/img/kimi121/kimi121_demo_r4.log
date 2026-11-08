@@ -1,0 +1,73 @@
+[04:16:40] lanzando Chrome 1920x1080 (GPU real) y entrando con ?v18=1...
+[04:16:43] juego listo, entrando...
+[04:16:58] esperando G.v18Reparar / G.v18amenaza...
+[04:17:02] puente roto; reparar en (168.1,145.8); maderas=2 piedras=2
+[04:17:02] materiales: {"maderas":[{"x":167.49721111754187,"z":148.7157878075805},{"x":172.31435896842288,"z":146.32865740838724}],"piedras":[{"x":167.62331197718947,"z":151.5242399672578},{"x":158.60384,"z":157.17440000000002}],"spawn":{"x":166.5,"z":151}}
+[04:17:02] MediaRecorder mime: video/mp4;codecs=avc1.42E01E
+[04:17:03] caminar: llegado a 1.6 m de (167.5,148.7)
+[04:17:04] +1 madera (1m/0p)
+[04:17:06] caminar: llegado a 1.7 m de (172.3,146.3)
+[04:17:07] +1 madera (2m/0p)
+[04:17:16] caminar: atascada a 5.7 m; esquivando con A
+[04:17:21] caminar: llegado a 1.1 m de (167.6,151.5)
+[04:17:22] +1 piedra (2m/1p)
+[04:17:22] inventario: 2 maderas, 1 piedras
+[04:17:25] caminar: atascada a 2.6 m; esquivando con A
+[04:17:28] caminar: atascada a 2.4 m; esquivando con D
+[04:17:31] caminar: atascada a 2.4 m; esquivando con A
+[04:17:34] caminar: atascada a 2.4 m; esquivando con D
+[04:17:35] caminar: retrocediendo 1,2 s y reintentando
+[04:17:37] caminar: 2.4 m, diff=0.12
+[04:17:38] caminar: atascada a 2.4 m; esquivando con A
+[04:17:40] caminar: atascada a 2.4 m; esquivando con D
+[04:17:42] caminar: atascada a 2.4 m; esquivando con A
+[04:17:44] caminar: atascada a 2.4 m; esquivando con D
+[04:17:46] caminar: retrocediendo 1,2 s y reintentando
+[04:17:48] caminar: atascada a 2.4 m; esquivando con A
+[04:17:50] caminar: atascada a 2.4 m; esquivando con D
+[04:17:52] caminar: 2.4 m, diff=0.12
+[04:17:53] caminar: atascada a 2.4 m; esquivando con A
+[04:17:55] caminar: atascada a 2.4 m; esquivando con D
+[04:17:56] caminar: retrocediendo 1,2 s y reintentando
+[04:17:58] caminar: atascada a 2.4 m; esquivando con A
+[04:18:01] caminar: atascada a 2.4 m; esquivando con D
+[04:18:03] caminar: atascada a 2.4 m; esquivando con A
+[04:18:05] caminar: atascada a 2.4 m; esquivando con D
+[04:18:06] caminar: retrocediendo 1,2 s y reintentando
+[04:18:08] caminar: 2.4 m, diff=0.12
+[04:18:09] caminar: atascada a 2.4 m; esquivando con A
+[04:18:11] caminar: atascada a 2.4 m; esquivando con D
+[04:18:13] caminar: atascada a 2.4 m; esquivando con A
+[04:18:15] caminar: atascada a 2.4 m; esquivando con D
+[04:18:17] caminar: retrocediendo 1,2 s y reintentando
+[04:18:19] caminar: atascada a 2.4 m; esquivando con A
+[04:18:21] caminar: atascada a 2.4 m; esquivando con D
+[04:18:23] caminar: 2.4 m, diff=0.12
+[04:18:24] caminar: atascada a 2.4 m; esquivando con A
+[04:18:26] caminar: atascada a 2.4 m; esquivando con D
+[04:18:27] caminar: retrocediendo 1,2 s y reintentando
+[04:18:29] caminar: atascada a 2.4 m; esquivando con A
+[04:18:32] caminar: atascada a 2.4 m; esquivando con D
+[04:18:34] caminar: atascada a 2.4 m; esquivando con A
+[04:18:36] caminar: atascada a 2.4 m; esquivando con D
+[04:18:37] caminar: retrocediendo 1,2 s y reintentando
+[04:18:39] caminar: 2.4 m, diff=-0.02
+[04:18:40] caminar: atascada a 2.4 m; esquivando con A
+[04:18:42] caminar: atascada a 2.4 m; esquivando con D
+[04:18:44] caminar: atascada a 2.4 m; esquivando con A
+[04:18:46] caminar: atascada a 2.4 m; esquivando con D
+[04:18:48] caminar: retrocediendo 1,2 s y reintentando
+[04:18:50] caminar: atascada a 2.4 m; esquivando con A
+[04:18:52] caminar: atascada a 2.4 m; esquivando con D
+[04:18:54] caminar: 2.4 m, diff=-0.02
+[04:18:54] caminar: atascada a 2.4 m; esquivando con A
+[04:18:57] caminar: atascada a 2.4 m; esquivando con D
+[04:18:58] caminar: retrocediendo 1,2 s y reintentando
+[04:19:00] caminar: atascada a 2.4 m; esquivando con A
+[04:19:03] caminar: atascada a 2.4 m; esquivando con D
+[04:19:04] caminar: sin llegar (tope de pasos)
+[04:19:06] ¡puente reparado! cruzando a pie...
+[04:19:35] cruce: 28.4 m, y=11.0, saltos=26
+[04:19:46] cruce: 9.4 m, y=5.0, saltos=32
+[04:20:03] cruce: llegado a 1.9 m (44 saltos)
+[04:20:03] buscando la pelea con la Sombra...

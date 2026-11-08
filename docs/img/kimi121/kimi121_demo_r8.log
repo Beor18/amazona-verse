@@ -1,0 +1,30 @@
+[04:34:11] lanzando Chrome 1920x1080 (GPU real) y entrando con ?v18=1...
+[04:34:13] juego listo, entrando...
+[04:34:23] esperando G.v18Reparar / G.v18amenaza...
+[04:34:26] puente roto; reparar en (168.1,145.8); maderas=2 piedras=2
+[04:34:26] materiales: {"maderas":[{"x":167.49721111754187,"z":148.7157878075805},{"x":172.31435896842288,"z":146.32865740838724}],"piedras":[{"x":167.62331197718947,"z":151.5242399672578},{"x":158.60384,"z":157.17440000000002}],"spawn":{"x":166.5,"z":151}}
+[04:34:26] MediaRecorder mime: video/mp4;codecs=avc1.42E01E
+[04:34:27] volando
+[04:34:29] aterrizada
+[04:34:30] caminar: llegado a 1.7 m de (167.5,148.7)
+[04:34:31] +1 madera (1m/0p)
+[04:34:31] volando
+[04:34:35] aterrizada
+[04:34:37] caminar: llegado a 1.1 m de (172.3,146.3)
+[04:34:38] +1 madera (2m/0p)
+[04:34:38] volando
+[04:34:41] aterrizada
+[04:34:41] caminar: llegado a 1.7 m de (167.6,151.5)
+[04:34:42] +1 piedra (2m/1p)
+[04:34:43] volando
+[04:34:43] inventario: 2 maderas, 1 piedras
+[04:34:46] aterrizada
+[04:34:48] caminar: atascada a 2.0 m; esquivando con A
+[04:34:54] caminar: atascada a 2.3 m; esquivando con D
+[04:34:56] caminar: atascada a 2.2 m; esquivando con A
+[04:34:58] caminar: 3.7 m, diff=-1.65
+[04:35:00] caminar: atascada a 2.3 m; esquivando con D
+[04:35:01] caminar: retrocediendo 1,2 s y reintentando
+[04:35:05] caminar: atascada a 5.3 m; esquivando con A
+[04:35:06] FALLO: WebSocket: error
+[04:35:07] evidencia en C:\Users\kelvi\amazonaversegame3\docs\img\kimi121

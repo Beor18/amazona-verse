@@ -1,0 +1,13 @@
+{
+ "etiqueta": "k163-r1",
+ "bandera": "v18=1",
+ "pantalla": "movil 390x844@3 cpuX4 (iPhone emulado)",
+ "head": null,
+ "pruebas": {
+  "nuevas": {
+   "esperadoMin": 1,
+   "erroresConsola": [],
+   "error": "WebSocket: error"
+  }
+ }
+}

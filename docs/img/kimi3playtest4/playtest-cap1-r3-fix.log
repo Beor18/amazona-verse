@@ -1,0 +1,91 @@
+· servidor http://127.0.0.1:55453 · 390×844 dpr 2 táctil · CPU ×1 · etiqueta r3-fix
+· juego listo, AV_E2E_LOG activado; inyectando ep_caminar.js + temporada_movil.js…
+· scripts listos · arranca temporadaMovilTest caps:[1] con el pulgar…
+[W17] ▶ capítulo 1
+[CG3] cap1 es · ▶ 0 · Portada, creador e inicio 9 s
+[CG3] cap1 es · ▶ 1 · Despega, vuela hasta Iguaca y pósate a su lado, en la copa del flamboyán de la plaza 16 s
+[CG3] cap1 es · vuelo 158 176 yMin 11.4 llegó true a 7 m sobre el suelo 19.2 ocupado false {"A":false,"B":false} [{"x":181,"z":136},{"x":77,"z":181}] queda 158.4 10.8 175.9 vuela false paso 0
+[CG3] cap1 es · vuelo 158 176 yMin 11.4 llegó true a 7 m sobre el suelo 24.7 ocupado false {"A":false,"B":false} [{"x":181,"z":136},{"x":77,"z":181}] queda 158.4 10.8 175.9 vuela false paso 0
+[CG3] cap1 es · atasco {"paso":0,"tramo":"1 · Despega, vuela hasta Iguaca y pósate a su lado, en la copa del flamboyán de la plaza","que":"Acción no hace nada","extra":"luma · Hablar con Iguaca · nada false · vuela false · y 10.8 · suelo 4"}
+[CG3] cap1 es · vuelo 158 176 yMin 11.4 llegó true a 7 m sobre el suelo 24.8 ocupado false {"A":false,"B":false} [{"x":181,"z":136},{"x":77,"z":181}] queda 158.4 10.8 175.9 vuela false paso 0
+[CG3] cap1 es · ▶ 2 · Revisa tu taller dañado 19 s
+[CG3] cap1 es · atasco {"paso":1,"tramo":"2 · Revisa tu taller dañado","que":"Acción no hace nada","extra":"maquina · Examinar la máquina experimental · nada false · vuela false · y 5.1 · suelo 5.1"}
+[CG3] cap1 es · ▶ 3 · Recolecta 4 madera, 2 piedras y 1 pieza de metal 20 s
+[CG3] cap1 es · atasco {"paso":2,"tramo":"3 · Recolecta 4 madera, 2 piedras y 1 pieza de metal","que":"a pie no llega: prueba volando","extra":"127.6 2.1 189.3 → 140 197 p4"}
+[CG3] cap1 es · vuelo 140 197 yMin - llegó true a 7 m sobre el suelo 10.9 ocupado false {"A":false,"B":false} [{"x":181,"z":136},{"x":77,"z":181}] queda 140.6 0.7 197.5 vuela false paso 2
+[CG3] cap1 es · atasco {"paso":2,"tramo":"3 · Recolecta 4 madera, 2 piedras y 1 pieza de metal","que":"al llegar, Acción no apunta a lo que señala la guía","extra":"null ≠ p4"}
+[CG3] cap1 es · atasco {"paso":2,"tramo":"3 · Recolecta 4 madera, 2 piedras y 1 pieza de metal","que":"Acción no hace nada","extra":"null ·  · nada false · vuela false · y 0.7 · suelo 0.7"}
+[CG3] cap1 es · ▶ 4 · La ruta de la gota: Predice: ¿de dónde vino el agua? 24 s
+[CG3] cap1 es · vuelo 146 92 yMin 14.3 llegó true a 7 m sobre el suelo 14.5 ocupado false {"A":false,"B":false} [{"x":181,"z":136},{"x":77,"z":181}] queda 145.8 13.9 91.8 vuela false paso 3
+[CG3] cap1 es · vuelo 171 80 yMin 16.1 llegó true a 7 m sobre el suelo 24.3 ocupado false {"A":false,"B":false} [{"x":181,"z":136},{"x":77,"z":181}] queda 171.4 15.7 79.8 vuela false paso 3
+[CG3] cap1 es · vuelo 171 80 yMin 16.1 llegó true a 7 m sobre el suelo 12.4 ocupado true {"A":false,"B":false} [{"x":181,"z":136},{"x":77,"z":181}] queda 171.4 20.1 79.8 vuela true paso 3
+[CG3] cap1 es · percha-vuelo percha_dosel k0 llego false pos 171.4 20.1 79.8 vuela true dxz 0.4 dy 4
+[CG3] cap1 es · vuelo 171 80 yMin 16.1 llegó true a 7 m sobre el suelo 32.4 ocupado false {"A":false,"B":false} [{"x":181,"z":136},{"x":77,"z":181}] queda 171.4 15.7 79.8 vuela false paso 3
+[CG3] cap1 es · percha-vuelo percha_dosel k1 llego true pos 171.4 15.7 79.8 vuela false dxz 0.4 dy -0.4
+[CG3] cap1 es · atasco {"paso":3,"tramo":"4 · La ruta de la gota: Predice: ¿de dónde vino el agua?","que":"al llegar, Acción no apunta a lo que señala la guía","extra":"null ≠ percha_dosel"}
+[CG3] cap1 es · percha percha_dosel pos 171.4 15.7 79.8 disco 0.4 dy -0.4 vuela false nb  posado true it.r 1.6
+[CG3] cap1 es · atasco {"paso":3,"tramo":"4 · La ruta de la gota: Predice: ¿de dónde vino el agua?","que":"Acción no hace nada","extra":"null ·  · nada false · vuela false · y 15.7 · suelo 7.7"}
+[CG3] cap1 es · percha-fin percha_dosel hizo false carta false avanzo false progreso 3|4|10|1|[{"p1":true,"p2":false,"p3":true,"p4":false,"p5":false,"p6":false,"p7":false,"p8":false},{"suelo":3,"sotobosque
+[CG3] cap1 es · vuelo 160 64 yMin 26 llegó true a 7 m sobre el suelo 21.8 ocupado false {"A":false,"B":false} [{"x":181,"z":136},{"x":77,"z":181}] queda 159.8 25.6 63.7 vuela false paso 3
+[CG3] cap1 es · vuelo 181 136 yMin 11.9 llegó true a 7 m sobre el suelo 35.6 ocupado false {"A":true,"B":false} [{"x":181,"z":136},{"x":77,"z":181}] queda 181.1 3.9 136.4 vuela false paso 3
+[CG3] cap1 es · atasco {"paso":3,"tramo":"4 · La ruta de la gota: Predice: ¿de dónde vino el agua?","que":"Acción no hace nada","extra":"null ·  · nada false · vuela false · y 3.9 · suelo 3.9"}
+[CG3] cap1 es · vuelo 77 181 yMin 34.5 llegó true a 7 m sobre el suelo 8.7 ocupado false {"A":true,"B":true} [{"x":181,"z":136},{"x":77,"z":181}] queda 76.6 34.9 181.2 vuela true paso 3
+[CG3] cap1 es · vuelo 77 181 yMin 34.5 llegó true a 7 m sobre el suelo 28.4 ocupado false {"A":true,"B":true} [{"x":181,"z":136},{"x":77,"z":181}] queda 76.6 26.5 181.2 vuela false paso 3
+[CG3] cap1 es · atasco {"paso":3,"tramo":"4 · La ruta de la gota: Predice: ¿de dónde vino el agua?","que":"Acción no hace nada","extra":"null ·  · nada false · vuela false · y 26.5 · suelo 26.5"}
+[CG3] cap1 es · atasco {"paso":3,"tramo":"4 · La ruta de la gota: Predice: ¿de dónde vino el agua?","que":"a pie no llega: prueba volando","extra":"114.2 7.8 158.9 → 187.8 115 "}
+[CG3] cap1 es · vuelo 187.8 115 yMin - llegó true a 7 m sobre el suelo 20.3 ocupado false {"A":true,"B":true} [{"x":181,"z":136},{"x":77,"z":181}] queda 187.9 2.5 114.9 vuela false paso 3
+[CG3] cap1 es · atasco {"paso":3,"tramo":"4 · La ruta de la gota: Predice: ¿de dónde vino el agua?","que":"Acción no hace nada","extra":"null ·  · nada true · vuela false · y 2.8 · suelo -0.6"}
+[CG3] cap1 es · sigue 0 d 16.6 y 2.8 gy 11.6 vuela false nada true mv {"l":false,"sp":6.727072258106758e-10} palo {"x":0,"y":0} false reloj 364.1 pos 187.9 114.9 {"actual":"p5","voluta":true,"vapor":0.04577032424841404,"gota":null,"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 10 d 6.1 y 29.5 gy 44.4 vuela true nada false mv {"l":false,"sp":1.270372309868134} palo {"x":-0.03113209160674005,"y":-0.2999797373858473} true reloj 380 pos 153.2 46.5 {"actual":"p5","voluta":true,"vapor":0.22885162124207048,"gota":null,"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 20 d 12 y 37.8 gy 34.4 vuela true nada false mv {"l":false,"sp":10.979546245131846} palo {"x":-0.2484943396450515,"y":-0.931375067298773} true reloj 393.4 pos 92.4 -42.3 {"actual":"p5","voluta":true,"vapor":0.5301729225441275,"gota":null,"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 30 d 0.2 y 57.5 gy 73.6 vuela true nada false mv {"l":false,"sp":0.0000023422572873333834} palo {"x":0,"y":0} false reloj 408 pos 51.6 -82.8 {"actual":"p5","voluta":true,"vapor":0.7075329290067298,"gota":null,"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 0 d 7.7 y 76.2 gy 90.5 vuela true nada false mv {"l":false,"sp":10.899837748956553} palo {"x":0,"y":0} false reloj 417.2 pos 36.9 -94.7 {"actual":"p5","voluta":true,"vapor":0.795259383816189,"gota":null,"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 0 d 0.5 y 105.2 gy 108.7 vuela true nada false mv {"l":false,"sp":5.111459634183358} palo {"x":0,"y":0} false reloj 426.4 pos -32.3 -150.2 {"actual":"p6","voluta":false,"vapor":0,"gota":{"tramo":0,"fase":"precipitacion","parada":false},"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 10 d 4.9 y 91.8 gy 76.6 vuela true nada false mv {"l":true,"sp":0.6966756429442246} palo {"x":0.27991157311799275,"y":-0.1122789437272322} true reloj 436.8 pos -13.7 -166.7 {"actual":"p6","voluta":false,"vapor":0,"gota":{"tramo":0,"fase":"precipitacion","parada":false},"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 20 d 15.3 y 67 gy 63.2 vuela true nada false mv {"l":true,"sp":5.786827049819768} palo {"x":0.7158806068162973,"y":0.6455415630350647} true reloj 447 pos 5.8 -187.8 {"actual":"p6","voluta":false,"vapor":0,"gota":{"tramo":2,"fase":"escorrentia","parada":false},"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 30 d 15.9 y 50.1 gy 47.7 vuela true nada false mv {"l":true,"sp":5.8576908973266555} palo {"x":0.5217243182227971,"y":0.8105631922289496} true reloj 457.3 pos 63 -170.1 {"actual":"p6","voluta":false,"vapor":0,"gota":{"tramo":2,"fase":"escorrentia","parada":false},"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 40 d 9.4 y 34.4 gy 30.9 vuela true nada false mv {"l":true,"sp":5.215767532613813} palo {"x":-0.4001928319290057,"y":0.8769576102036338} true reloj 467.8 pos 77.8 -131 {"actual":"p6","voluta":false,"vapor":0,"gota":{"tramo":2,"fase":"escorrentia","parada":false},"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 50 d 7 y 9.3 gy 6 vuela true nada false mv {"l":true,"sp":4.7813194125181955} palo {"x":-0.5007191918789194,"y":0.8237045852158089} true reloj 478.5 pos 67.6 -75.7 {"actual":"p6","voluta":false,"vapor":0,"gota":{"tramo":2,"fase":"escorrentia","parada":false},"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 0 d 9.8 y 5.7 gy 6 vuela true nada false mv {"l":false,"sp":11.150297635024947} palo {"x":0,"y":0} false reloj 484.7 pos 78 -14.1 {"actual":"p6","voluta":false,"vapor":0,"gota":{"tramo":2,"fase":"escorrentia","parada":false},"agua":3,"tarjeta":false} 
+[CG3] cap1 es · sigue 10 d 7.3 y 5.9 gy 6 vuela true nada false mv {"l":false,"sp":11.106342187173324} palo {"x":-0.30825578311012747,"y":0.9133385599002093} true reloj 495.4 pos 138.1 70.8 {"actual":"p6","voluta":false,"vapor":0,"gota":{"tramo":2,"fase":"escorrentia","parada":false},"agua":3,"tarjeta":false} 
+[CG3] cap1 es · vuelo 161.8 132 yMin 4 llegó true a 7 m sobre el suelo 10.6 ocupado true {"A":true,"B":true} [{"x":181,"z":136},{"x":77,"z":181}] queda 161.5 2.6 132.2 vuela false paso 3
+[CG3] cap1 es · atasco {"paso":3,"tramo":"4 · La ruta de la gota: Predice: ¿de dónde vino el agua?","que":"Acción no hace nada","extra":"null ·  · nada true · vuela false · y 2.8 · suelo 1.6"}
+[CG3] cap1 es · sigue 0 d 16 y 2.8 gy 4 vuela false nada true mv {"l":false,"sp":1.7097013240083074e-9} palo {"x":0,"y":0} false reloj 519 pos 161.5 132.2 {"actual":"p7","voluta":false,"vapor":0,"gota":{"tramo":0,"fase":"poza","parada":false},"agua":3.45,"tarjeta":false} 
+[CG3] cap1 es · vuelo 198.7 110.5 yMin 5.8 llegó true a 7 m sobre el suelo 21.9 ocupado false {"A":true,"B":true} [{"x":181,"z":136},{"x":77,"z":181}] queda 198.9 3.5 110.4 vuela false paso 3
+[CG3] cap1 es · ▶ 5 · Elige un terreno y construye el refugio 57 s
+[CG3] cap1 es · sigue 0 d 17.2 y 7.6 gy 4.3 vuela true nada false mv {"l":false,"sp":0.062098437428971504} palo {"x":0,"y":0} false reloj 563.3 pos 183.7 135.9 {"actual":null,"voluta":false,"vapor":0,"gota":null,"agua":3.2592567249139153,"tarjeta":false} tablas:flota,coqui:flota,hallazgo:flota|A|A
+[CG3] cap1 es · sigue 10 d 14.7 y 11.7 gy 10.8 vuela true nada false mv {"l":false,"sp":0} palo {"x":-0.7375380387600489,"y":0.6206823617627685} true reloj 575 pos 165.3 163.2 {"actual":null,"voluta":false,"vapor":0,"gota":null,"agua":5.0071488380432125,"tarjeta":false} tablas:flota,coqui:flota,hallazgo:flota|A|A
+[CG3] cap1 es · atasco {"paso":4,"tramo":"5 · Elige un terreno y construye el refugio","que":"a pie no llega: prueba volando","extra":"177.4 11.6 155.2 → 181.1 136.5 refuge"}
+[CG3] cap1 es · vuelo 181.1 136.5 yMin - llegó true a 7 m sobre el suelo 12.8 ocupado false {"A":true,"B":true} [{"x":181,"z":136},{"x":77,"z":181}] queda 181.6 3.9 134.1 vuela false paso 4
+[CG3] cap1 es · atasco {"paso":4,"tramo":"5 · Elige un terreno y construye el refugio","que":"a pie no llega: prueba volando","extra":"123.6 6.5 157.7 → 71.8 177 postB"}
+[CG3] cap1 es · vuelo 71.8 177 yMin - llegó true a 7 m sobre el suelo 0.1 ocupado false {"A":true,"B":true} [{"x":181,"z":136},{"x":77,"z":181}] queda 70.8 26.3 176.5 vuela false paso 4
+[CG3] cap1 es · sigue 0 d 2.7 y 30.2 gy 26.5 vuela true nada false mv {"l":false,"sp":0.062098437428971635} palo {"x":0,"y":0} false reloj 674.2 pos 79.7 180.9 {"actual":null,"voluta":false,"vapor":0,"gota":null,"agua":3.2592567249139153,"tarjeta":false} tablas:flota,coqui:flota,hallazgo:flota|B|AB
+[CG3] cap1 es · sigue 10 d 4.5 y 27.3 gy 26.5 vuela true nada false mv {"l":false,"sp":0.4537856959665796} palo {"x":-0.236415545561573,"y":-0.1872558137594572} true reloj 684.3 pos 81.3 182.3 {"actual":null,"voluta":false,"vapor":0,"gota":null,"agua":4.9486069969336235,"tarjeta":false} tablas:flota,coqui:flota,hallazgo:flota|B|AB
+[CG3] cap1 es · ▶ 6 · Repara y activa el transmisor 64 s
+[CG3] cap1 es · atasco {"paso":5,"tramo":"6 · Repara y activa el transmisor","que":"a pie no llega: prueba volando","extra":"132.1 16.4 119.7 → 141 104 coqui1"}
+[CG3] cap1 es · vuelo 141 104 yMin - llegó true a 7 m sobre el suelo 12.2 ocupado false {"A":true,"B":true} [{"x":181,"z":136},{"x":77,"z":181}] queda 141.6 11.1 102.9 vuela false paso 5
+[CG3] cap1 es · atasco {"paso":5,"tramo":"6 · Repara y activa el transmisor","que":"más de 30 s sin avanzar","extra":"Repara y activa el transmisor"}
+[CG3] cap1 es · atasco {"paso":5,"tramo":"6 · Repara y activa el transmisor","que":"a pie no llega: prueba volando","extra":"119.7 7.4 171.9 → 14 172 mirador"}
+[CG3] cap1 es · vuelo 14 172 yMin - llegó true a 7 m sobre el suelo -1.8 ocupado false {"A":true,"B":true} [{"x":181,"z":136},{"x":77,"z":181}] queda 14.7 39.1 172 vuela true paso 5
+[CG3] cap1 es · atasco {"paso":5,"tramo":"6 · Repara y activa el transmisor","que":"Acción no hace nada","extra":"mirador · Mirar el horizonte desde el mirador · nada false · vuela true · y 39.1 · suelo 34.6"}
+[CG3] cap1 es · ▶ Extra · Seguir explorando e «Iguaca te pregunta» 76 s
+[CG3] cap1 es · ✗ Diario · las 17 fichas de Ciencia del capítulo quedan ganadas al jugarlo cotorra_1975,coqui_bromelia,bambu
+[W17] ■ capítulo 1 21/22 72 s
+[W17] diag {"fin":false,"explorando":true,"abierta":false,"libre":false,"carta":false,"eventos":["ItemUnlocked","BuildingRepaired","CollectibleFound","InventionUnlocked","LocationDiscovered","ChapterCompleted"]}
+· temporadaMovilTest devolvió en 1 min
+· resultado: 28/29
+  ✗ Cap. 1 · ES · Diario · las 17 fichas de Ciencia del capítulo quedan ganadas al jugarlo :: cotorra_1975,coqui_bromelia,bambu
+  ### Capítulo 1 · español
+  | Paso | Juego (s) | Vuelo (s) | Metros | Usos | Líneas | Clics | Errores | Atascos |
+  |---|---|---|---|---|---|---|---|---|
+  | 0 · Portada, creador e inicio | 1.5 | 0 | 0 | 0 | 0 | 2 | 0 | — |
+  | 1 · Despega, vuela hasta Iguaca y pósate a su lado, en la copa del flamboyán de la plaza | 34.8 | 30.6 | 26 | 3 | 4 | 4 | 0 | Acción no hace nada |
+  | 2 · Revisa tu taller dañado | 6.6 | 0 | 23 | 2 | 0 | 0 | 0 | Acción no hace nada |
+  | 3 · Recolecta 4 madera, 2 piedras y 1 pieza de metal | 96.1 | 7.5 | 154 | 4 | 0 | 0 | 0 | a pie no llega: prueba volando; al llegar, Acción no apunta a lo que señala la guía; Acción no hace nada |
+  | 4 · La ruta de la gota: Predice: ¿de dónde vino el agua? | 412 | 325.5 | 1395 | 13 | 16 | 60 | 0 | al llegar, Acción no apunta a lo que señala la guía; Acción no hace nada; Acción no hace nada; Acción no hace nada; a pie no llega: prueba volando; Acción no hace nada; Acción no hace nada |
+  | 5 · Elige un terreno y construye el refugio | 145.7 | 88.2 | 374 | 4 | 0 | 2 | 0 | a pie no llega: prueba volando; a pie no llega: prueba volando |
+  | 6 · Repara y activa el transmisor | 208.4 | 116.5 | 411 | 7 | 6 | 18 | 0 | a pie no llega: prueba volando; más de 30 s sin avanzar; a pie no llega: prueba volando; Acción no hace nada |
+  | Extra · Seguir explorando e «Iguaca te pregunta» | 0.5 | 0.5 | 0 | 0 | 0 | 1 | 0 | — |
+· errores de consola capturados por el runner: 0
+· __aveErrores de la página: []
+· aviso: perfil temporal no se pudo borrar (se libera solo): C:\Users\kelvi\AppData\Local\Temp\kimi3pt4-iDHPRZ

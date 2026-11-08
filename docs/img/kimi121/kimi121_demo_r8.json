@@ -1,0 +1,11 @@
+{
+ "tarea": "KIMI-121",
+ "juego": "demo",
+ "etiqueta": "r8",
+ "pantalla": "1920x1080 dpr1 GPU real (RX 5700 XT), escritorio, CPU x1",
+ "entrada": "CDP Input.dispatchKeyEvent (input real)",
+ "v18": true,
+ "mime": "video/mp4;codecs=avc1.42E01E",
+ "recStarted": "2026-11-06T04:34:26.786Z",
+ "fallo": "WebSocket: error"
+}
