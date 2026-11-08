@@ -491,8 +491,8 @@ window.AVV18Evolucion = function (G) {
         '#v18-evo-carta h3{margin:0;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:#8a5a20}#v18-evo-carta b{display:block;font-size:24px;margin:2px 0 4px}#v18-evo-carta p{margin:0;font-size:14px;line-height:1.3}' +
         '#v18-evo-carta img{width:44px;height:44px;border-radius:50%;float:left;margin-right:8px;background:#fff8}' +
         '.v18-evo-f{display:block;font-size:12px;margin-top:3px}.v18-evo-bar{display:block;height:4px;border-radius:2px;background:#0003;overflow:hidden;margin:2px 6px}.v18-evo-bar b{display:block;height:100%;background:#e0a526}' +
-        '.v18-evo-m{display:block;font-size:11px;line-height:1.25;margin:1px 2px;opacity:.9}' +
-        '.v18-evo-et{display:inline-block;font-size:10px;padding:1px 5px;border-radius:8px;background:#ffe39a;color:#3b2a14;margin:2px 1px}.v18-evo-et.no{background:#0002;color:inherit;opacity:.6}' +
+        '.v18-evo-m{display:block;font-size:12px;line-height:1.25;margin:1px 2px;opacity:.9}' +
+        '.v18-evo-et{display:inline-block;font-size:12px;padding:2px 7px;border-radius:9px;background:#ffe39a;color:#3b2a14;margin:2px 1px}.v18-evo-et.no{background:#0003;color:inherit;opacity:.78}' +
         '.v18-evo-x{margin-top:8px;font-size:14px}.v18-evo-x .btn{min-height:44px}' +
         '#v18-evo-carta.mini{width:min(260px,calc(100vw - 32px));padding:6px 12px;border-radius:12px}#v18-evo-carta.mini h3{font-size:16px;letter-spacing:0;text-transform:none;color:#7a4a10}' +
         '#v18-evo-carta.mini b{font-size:14px;margin:0 0 2px}#v18-evo-carta.mini p{font-size:12px}' +
@@ -877,7 +877,8 @@ window.AVV18Evolucion = function (G) {
       reset(); prueba({ especie: 'vittata', xp: 370 }); evs.length = 0; toasts.length = 0;
       Cb.iniciar({ sinCuenta: true, especie: 'vittata', evoReal: true }); fresco();
       const nvAntes = C().j.nivel, hudNv = document.querySelector('#v18-duelo [data-k="nvN"]');
-      C().r.plumas = 1; quieta(1.2); cara(1, 0); Cb.usar(C().j, 'golpe_ala');
+      // Con una pluma menos: si nuevas.js ya está cargado (otra batería antes), una victoria perfecta sumaría +30 de su hito
+      C().j.plumas = C().j.plumasMax - 1; C().r.plumas = 1; quieta(1.2); cara(1, 0); Cb.usar(C().j, 'golpe_ala');
       const finXp = document.querySelector('#v18-duelo [data-k="finXp"]');
       check('Ganar a la Campeona con 370 XP: +40 XP y sube a nivel 10 con aviso, evento v18 {tipo:"evo"}, tarjeta «Eco Amplificado» y «+40 XP» en el panel',
         C().resultado === 'win' && info('vittata').nivel === 10 && info('vittata').xp === 410 && toasts.some(t => t === con(TXT.subeV, 10)) && evs.some(e => e.nivel === 10 && e.especie === 'vittata') &&

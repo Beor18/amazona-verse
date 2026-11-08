@@ -27,7 +27,7 @@
      (mundo.minigolf_villa: golpes y medalla), Chispa (carrera_chispa: mejor ms), Moon (entreno_moon: menos toques), Guardián
      (circuito_guardian: mejor vuelta en ms), duelos ganados (mundo.duelos_ganados y con qué cotorra: otorgados duelo_gana_<sp>),
      nivel de cada cotorra con su etapa (evo.esp, nivel desde la XP) y alianzas desbloqueadas (evo.alianzas). Sin datos: «Aún sin…».
-     Textos en ES aquí y en EN en content/cap1/en.js. El progreso no guarda duelos por etapa: se ve la etapa actual de cada cotorra.
+     Textos en ES aquí y en EN en content/cap1/en.js. Duelos por etapa: mundo.duelos_ganados_e0..e3 (combate.js); las partidas viejas no los tienen.
 
    COMPARTIR (sin subir nada a ningún servidor)
    - Puerta para adultos: «Pide ayuda a un adulto», una suma de dos cifras al azar con 3 opciones. Tres fallos cierran la puerta.
@@ -289,13 +289,15 @@
       // nuevas.js: duelos ganados contra la rival; partidas con la primera victoria ya pagada (combate_1) empiezan en 1
       const dg = ent(m.duelos_ganados, 9999) || (ot.combate_1 === true ? 1 : 0);
       const conQuien = Object.keys(ot).filter(k => ot[k] === true && /^duelo_gana_[a-z]{3,24}$/.test(k)).map(k => k.slice(11)).slice(0, 40);
+      // combate.js: duelos ganados por etapa de la cotorra (mundo.duelos_ganados_e0..e3); las partidas de antes no los tienen
+      const porEtapa = [0, 1, 2, 3].map(i => ent(m['duelos_ganados_e' + i], 9999));
       return {
         hay: ok,
         golf: { mejor: ent(g.mejor, 99) || null, medalla: MEDALLAS_RIO.includes(g.medalla) ? g.medalla : null },
         chispa: { mejor: num(ch.mejor), ganadas: ent(ch.ganadas), jugadas: ent(ch.jugadas) },
         moon: { mejor: toques, victorias: ent(mo.victorias), jugadas: ent(mo.jugadas) },
         guardian: { mejor: num(gu.mejor), vueltas: ent(gu.vueltas), jugadas: ent(gu.jugadas) },
-        duelos: { ganados: dg, con: conQuien },
+        duelos: { ganados: dg, con: conQuien, etapas: porEtapa },
         niveles: niveles.slice(0, 40), alianzas, alianzasTotal: Object.keys(nombresAli).length,
       };
     }
@@ -303,6 +305,10 @@
       const ev = G.v18evo;
       if (ev && Array.isArray(ev.ETAPAS_ESP) && typeof ev.etapaIdx === 'function') { const e = ev.ETAPAS_ESP[ev.etapaIdx(n)]; if (e && e.nombre) return e.nombre; }
       return (ETAPAS_V18.find(e => n >= e[0]) || ETAPAS_V18[3])[1];
+    }
+    function etapaV18Idx(i) {
+      const ev = G.v18evo, e = ev && Array.isArray(ev.ETAPAS_ESP) ? ev.ETAPAS_ESP[i] : null;
+      return e && e.nombre ? e.nombre : ETAPAS_V18[3 - i][1];
     }
     function especiesDeCrias(d) {
       const caps = esObj(d) && esObj(d.capsulas) ? d.capsulas : {}, out = [];
@@ -643,8 +649,11 @@
       const guardian = gu.mejor
         ? `<div class="rec-grande"><div><b class="rec-num">${reloj(gu.mejor / 1000)}</b><small>${esc(t18('Mejor vuelta'))}</small></div></div><dl>${dato(t18('Vueltas completadas'), gu.vueltas)}${dato(tx('jugadas'), gu.jugadas)}</dl>`
         : nada(t18('Aún sin vuelta. ¡Vuela el circuito!')) + jug(gu.jugadas);
+      const etapas = du.etapas.some(n => n > 0)
+        ? `<p>${esc(t18('Por etapa:'))}</p><dl class="rec-etapas">${du.etapas.map((n, i) => (n ? dato(t18(etapaV18Idx(i)), n) : '')).join('')}</dl>`
+        : `<p class="rec-etapas">${esc(t18('Aún sin duelos por etapa: se cuentan desde ahora.'))}</p>`;
       const duelos = du.ganados
-        ? `<div class="rec-grande"><div><b class="rec-num">${du.ganados}</b><small>${esc(t18('Duelos ganados'))}</small></div></div>${du.con.length ? `<p>${esc(t18('Ganaste con:'))}</p><ul class="rec-chips">${du.con.map(sp => `<li>${esc(nombreCotorra(sp))}</li>`).join('')}</ul>` : ''}`
+        ? `<div class="rec-grande"><div><b class="rec-num">${du.ganados}</b><small>${esc(t18('Duelos ganados'))}</small></div></div>${du.con.length ? `<p>${esc(t18('Ganaste con:'))}</p><ul class="rec-chips">${du.con.map(sp => `<li>${esc(nombreCotorra(sp))}</li>`).join('')}</ul>` : ''}${etapas}`
         : nada(t18('Aún sin duelos ganados. ¡Reta a la Campeona!'));
       const niveles = v.niveles.length
         ? `<ul class="rec-v18-niv">${v.niveles.map(n => `<li><span>${esc(nombreCotorra(n.id))}</span><b>${esc(t18('Nv {}', n.nivel))} · ${esc(t18(etapaV18(n.nivel)))}</b></li>`).join('')}</ul>`
@@ -1166,7 +1175,7 @@
         const vacia = plano(secV18()), tarjetas18 = ['golf', 'chispa', 'moon', 'guardian', 'duelos', 'niveles', 'alianzas'];
         check('V18 · Una partida vieja sin datos V18 enseña las 7 tarjetas con «Aún sin…»', !!secV18() && tarjetas18.every(k => /Aún sin/.test(tarjeta(k))) && (vacia.match(/Aún sin/g) || []).length === 7 && /Aventuras con mi bandada/.test(vacia), vacia.slice(0, 160));
         const v18Datos = { v: 2, especies: { arausiaca: 'seleccionable' }, inv: {}, otorgados: { combate_1: true, duelo_gana_vittata: true, duelo_gana_arausiaca: true }, sel: 'vittata',
-          mundo: { minigolf_villa: { mejor: 3, medalla: 'oro' }, carrera_chispa: { mejor: 41300, ganadas: 2, jugadas: 5, xp: true }, entreno_moon: { mejor: 0, victorias: 1, jugadas: 4, xp: true }, circuito_guardian: { mejor: 75250, vueltas: 3, jugadas: 3, xp: true }, duelos_ganados: 4, puente_villa: 'reparado' },
+          mundo: { minigolf_villa: { mejor: 3, medalla: 'oro' }, carrera_chispa: { mejor: 41300, ganadas: 2, jugadas: 5, xp: true }, entreno_moon: { mejor: 0, victorias: 1, jugadas: 4, xp: true }, circuito_guardian: { mejor: 75250, vueltas: 3, jugadas: 3, xp: true }, duelos_ganados: 4, duelos_ganados_e0: 3, duelos_ganados_e2: 1, puente_villa: 'reparado' },
           evo: { esp: { vittata: { xp: 553, nivel: 12, mejoras: {}, variante: null }, arausiaca: { xp: 1540, nivel: 21, mejoras: {}, variante: null }, agilis: { xp: 0, nivel: 1, mejoras: {}, variante: null } }, alianzas: { eco_protector: 'desbloqueada', lluvia_guiada: 'disponible' }, alianzaSel: 'eco_protector', marcas: {}, dia: { fecha: '', por: {} }, retro: true } };
         const crudo18 = JSON.stringify(v18Datos);
         localStorage.setItem(pruebas.v18, crudo18); pintar();
@@ -1177,13 +1186,15 @@
         const filasNiv = [...root.querySelectorAll('#rec-v18 .rec-v18-niv li')].map(plano);
         check('V18 · Duelos ganados (4) con quién, nivel más alto de cada cotorra con su etapa y alianzas logradas (1 de 6)', numero('duelos') === '4' && root.querySelectorAll('#rec-v18 [data-v18="duelos"] .rec-chips li').length === 2 &&
           filasNiv.length === 2 && /Nv 21 · Guardián/.test(filasNiv[0]) && /Vittata/.test(filasNiv[1]) && /Nv 12 · Despertar/.test(filasNiv[1]) && /1 de 6/.test(tarjeta('alianzas')) && /Eco Protector/.test(tarjeta('alianzas')) && !/Lluvia Guiada/.test(tarjeta('alianzas')), filasNiv.join(' | '));
+        const filasEt = [...root.querySelectorAll('#rec-v18 [data-v18="duelos"] .rec-etapas > div')].map(plano);
+        check('V18 · Duelos por etapa: solo las que hay (Aprendiz 3, Guardián 1)', filasEt.length === 2 && /Aprendiz\s*3/.test(filasEt[0]) && /Guardián\s*1/.test(filasEt[1]) && /Por etapa/.test(tarjeta('duelos')) && !/Aún sin/.test(tarjeta('duelos')), filasEt.join(' | '));
         // `<almacen>.v18` real no entra en la lista de intactos: progreso.js lo escribe solo con el juego en marcha. Aquí se mira la de prueba
         check('V18 · Sin rankings ni nada en línea, y la clave V18 no se toca al leer', !/ranking|online|en línea|leaderboard/i.test(lleno) && raw(pruebas.v18) === crudo18);
         const cajas18 = [...root.querySelectorAll('#rec-v18 .rec-card')];
         check('V18 · Las tarjetas no se desbordan a lo ancho y tienen título (h4) para el lector', cajas18.length === 7 && cajas18.every(c => c.scrollWidth <= c.clientWidth + 1 && c.querySelector('h4')) && secV18().getAttribute('aria-labelledby') === 'rec-h-v18', `${window.innerWidth} px`);
         localStorage.setItem(pruebas.v18, JSON.stringify({ v: 1, otorgados: { combate_1: true }, mundo: {}, especies: {}, inv: {}, sel: null })); pintar();
-        check('V18 · Partida v1 con la primera victoria ya pagada cuenta 1 duelo ganado', numero('duelos') === '1' && !/Aún sin/.test(tarjeta('duelos')) && /Aún sin/.test(tarjeta('golf')));
-        localStorage.setItem(pruebas.v18, JSON.stringify({ v: 2, mundo: { minigolf_villa: 'x', carrera_chispa: { mejor: -4 }, entreno_moon: { mejor: 99 }, circuito_guardian: null, duelos_ganados: '<b>' }, otorgados: [], evo: { esp: { '<x>': { xp: 9 }, vittata: 'nada' }, alianzas: 'todas' } })); pintar();
+        check('V18 · Partida v1 con la primera victoria ya pagada cuenta 1 duelo ganado (sin duelos por etapa: «Aún sin…»)', numero('duelos') === '1' && !/Aún sin duelos ganados/.test(tarjeta('duelos')) && /Aún sin duelos por etapa/.test(tarjeta('duelos')) && !root.querySelector('#rec-v18 [data-v18="duelos"] dl.rec-etapas') && /Aún sin/.test(tarjeta('golf')));
+        localStorage.setItem(pruebas.v18, JSON.stringify({ v: 2, mundo: { minigolf_villa: 'x', carrera_chispa: { mejor: -4 }, entreno_moon: { mejor: 99 }, circuito_guardian: null, duelos_ganados: '<b>', duelos_ganados_e1: 'recogida', duelos_ganados_e2: -3 }, otorgados: [], evo: { esp: { '<x>': { xp: 9 }, vittata: 'nada' }, alianzas: 'todas' } })); pintar();
         check('V18 · Datos dañados no rompen el panel y enseñan «Aún sin…»', !!secV18() && (plano(secV18()).match(/Aún sin/g) || []).length === 7 && !root.querySelector('#rec-v18 b:empty, #rec-v18 script'));
         localStorage.setItem(pruebas.v18, 'basura'); pintar();
         check('V18 · Un almacén V18 ilegible tampoco rompe nada', (plano(secV18()).match(/Aún sin/g) || []).length === 7);
@@ -1191,7 +1202,7 @@
           localStorage.setItem(pruebas.v18, crudo18);
           G.aula.aj.idioma = 'en'; pintar();
           const en18 = plano(secV18());
-          check('V18 · También en inglés (textos de content/cap1/en.js)', /Adventures with my flock/.test(en18) && /Villa Raíz Mini Golf/.test(en18) && /Strokes on your best hole/.test(en18) && /Gold/.test(en18) && /Duels won/.test(en18) && /Lv 21 · Guardian/.test(en18) && /Protective Echo/.test(en18) && /1 of 6/.test(en18) && !/Aún sin|Duelos|Golpes/.test(en18), en18.slice(0, 200));
+          check('V18 · También en inglés (textos de content/cap1/en.js)', /Adventures with my flock/.test(en18) && /Villa Raíz Mini Golf/.test(en18) && /Strokes on your best hole/.test(en18) && /Gold/.test(en18) && /Duels won/.test(en18) && /By stage:/.test(en18) && /Apprentice\s*3/.test(en18) && /Lv 21 · Guardian/.test(en18) && /Protective Echo/.test(en18) && /1 of 6/.test(en18) && !/Aún sin|Duelos|Golpes|Por etapa|Aprendiz/.test(en18), en18.slice(0, 200));
           localStorage.removeItem(pruebas.v18); pintar();
           check('V18 · En inglés, sin datos: «No … yet»', (plano(secV18()).match(/ yet/g) || []).length === 7, plano(secV18()).slice(0, 160));
           G.aula.aj.idioma = idiomaAntes; pintar();

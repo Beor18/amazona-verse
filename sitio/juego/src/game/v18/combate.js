@@ -598,6 +598,8 @@ window.AVV18Combate = function (G) {
     if (C.fase !== 'lucha') return;
     C.fase = 'fin'; C.resultado = res; C.finT = performance.now(); quitarBalas(); C.timers.length = 0;
     const gano = res === 'win';
+    // Antes del evento: la XP de esta victoria no cambia la etapa con la que se ganó
+    if (gano) sumarEtapa();
     emitir({ tipo: res, de: gano ? 'jugador' : 'rival', a: gano ? 'rival' : 'jugador', valor: gano ? C.j.plumas : C.r.plumas,
       // V18.2: para la XP
       especie: C.j.especie, dura: Math.round((C.tLucha || 0) * 10) / 10, interrupciones: C.stats.intJ, poderJ: C.stats.poderJ, quitadas: (C.r.plumasMax || PLUMAS) - C.r.plumas });
@@ -615,6 +617,21 @@ window.AVV18Combate = function (G) {
     if (G.ui && G.ui.toast) G.ui.toast(txt, 3200);
     if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').hidden = false; hud.q('bot').hidden = true; flotante(gano ? TXT.ganaste : TXT.perdiste, 1.6);
       try { hud.q('finXp').innerHTML = G.v18evo && G.v18evo.htmlFin ? G.v18evo.htmlFin() : ''; } catch (e) { /* sin evolución */ } }
+  }
+  // Duelos ganados por etapa (mundo.duelos_ganados_e0..e3: Aprendiz, Despertar, Guardián, Maestro), con el nivel de la cotorra
+  // con la que se gana. Son números: evolucion.js no los cuenta como hitos (solo mira 'recogida' y duelos_ganados).
+  function etapaGanadora() {
+    let n = Number(C.j.nivel) || 0;
+    try { if (!n && G.v18evo && G.v18evo.info && C.j.especie) n = Number(G.v18evo.info(C.j.especie).nivel) || 0; } catch (e) { /* sin evolución */ }
+    n = n || 1;
+    try { if (G.v18evo && G.v18evo.etapaIdx) return G.v18evo.etapaIdx(n); } catch (e) { /* sin evolución */ }
+    return n >= 30 ? 3 : n >= 20 ? 2 : n >= 10 ? 1 : 0;
+  }
+  function sumarEtapa() {
+    const V = G.v18; if (!V || !V.mundo || !V.cambiarMundo) return null;
+    const k = 'duelos_ganados_e' + etapaGanadora();
+    V.cambiarMundo(k, (Number(V.mundo(k)) || 0) + 1);
+    return k;
   }
   function pagar() {
     if (!S.inv) S.inv = {};
@@ -1028,6 +1045,7 @@ window.AVV18Combate = function (G) {
       if (save0) G.guardado.save = function (f) { qa162.n++; if (f === true) qa162.inm++; return save0.apply(this, arguments); };
       usar(C.j, 'golpe_ala');
       if (save0) G.guardado.save = save0;
+      const e0Gana = P.mundo('duelos_ganados_e0'), etapasGana = [1, 2, 3].map(i => P.mundo('duelos_ganados_e' + i));
       check('Sin plumas, la rival se marea: victoria con 2 maderas y 1 piedra', C.fase === 'fin' && C.resultado === 'win' && S.inv.madera === m0 + 2 && S.inv.piedra === p0 + 1 &&
         evs.some(e => e.tipo === 'win') && toasts.includes(TXT.gana) && C.r.finMareo > 0 && P.cuantos('pluma_rival') === 0,
         JSON.stringify({ fase: C.fase, m: S.inv.madera - m0, p: S.inv.piedra - p0, t: toasts }));
@@ -1039,8 +1057,18 @@ window.AVV18Combate = function (G) {
       check('«Otra vez» reinicia el duelo con 5 plumas', C.fase === 'cuenta' && C.r.plumas === PLUMAS && C.j.plumas === PLUMAS);
       C.fase = 'lucha'; C.r.plumas = 1; quieta(1.2); C.r.escudo = 0; usar(C.j, 'golpe_ala');
       check('Ganar otra vez no da los materiales de nuevo', C.resultado === 'win' && S.inv.madera === m0 + 2 && S.inv.piedra === p0 + 1 && toasts.includes(TXT.ganaOtra), S.inv.madera - m0);
+      check('Ganar suma un duelo por etapa (Aprendiz: duelos_ganados_e0 = 1, luego 2) y nada en las otras etapas',
+        e0Gana === 1 && etapasGana.every(v => v === null) && P.mundo('duelos_ganados_e0') === 2 && [1, 2, 3].every(i => P.mundo('duelos_ganados_e' + i) === null),
+        JSON.stringify({ e0Gana, etapasGana, ahora: P.mundo('duelos_ganados_e0') }));
+      if (G.v18evo && G.v18evo.revisarHitos && G.v18evo.info) {
+        G.v18evo.revisarHitos(true); const xpE = G.v18evo.info('vittata').xp;
+        P.cambiarMundo('duelos_ganados_e3', 7); P.cambiarMundo('duelos_ganados_e1', 3);
+        const nHito = G.v18evo.revisarHitos(true), marcasE = Object.keys((P.evo() || {}).marcas || {}).filter(k => /duelos_ganados_e/.test(k));
+        check('Los duelos por etapa no dan XP extra ni cuentan como hitos', nHito === 0 && G.v18evo.info('vittata').xp === xpE && !marcasE.length, JSON.stringify({ nHito, xpE, marcasE }));
+      }
       P.recargar();
       check('Tras recargar, la victoria sigue marcada como pagada', !P.otorgar('combate_1', 'victoria_duelo', 1));
+      check('Tras recargar, los duelos por etapa siguen guardados como números', P.mundo('duelos_ganados_e0') === 2);
       // 8. Derrota: mareo divertido, sin recompensa
       P.borrar(); const m1 = S.inv.madera;
       iniciar({ sinCuenta: true, especie: 'vittata' }); C.j.plumas = 1; C.r.pos.x = S.pos.x + 1.2; C.r.pos.z = S.pos.z; C.r.golpeT = 0; C.r.pensar = 0; C.r.mareo = 0; C.r.poderT = 99; evs.length = 0;

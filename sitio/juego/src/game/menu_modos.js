@@ -269,6 +269,38 @@
       guardian: '<svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><path d="M12 58V30" stroke="#5ac8fa" stroke-width="6" stroke-linecap="round" opacity=".75"/><path d="M28 58V18" stroke="var(--gold)" stroke-width="6" stroke-linecap="round" opacity=".8"/><path d="M44 58V28" stroke="#7ee08a" stroke-width="6" stroke-linecap="round" opacity=".8"/><path d="M6 24q10-14 22-6t22-6" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/><circle cx="54" cy="14" r="6" fill="var(--leaf)"/><path d="M57 13l5 1.5-5 1.5z" fill="var(--beak)"/></svg>'
     };
 
+    // ---------- Abierto desde el menú: al salir del modo (su «Salir» o el botón de salir del final) se vuelve al menú ----------
+    // lanzar y lanzar18 marcan el modo (desdeMenu); volver() quita la marca. Abierto desde el mundo (estación del minigolf, retos
+    // del mapa) no hay marca y se vuelve al mundo como siempre. Se vigila el estado del modo, no sus botones: vale cualquier salida.
+    let desdeMenu = null, vigiaMenu = 0;
+    const SIGUE = {
+      flight: () => document.body.classList.contains('flight-on'),
+      river: () => document.body.classList.contains('river-on'),
+      tren: () => document.body.classList.contains('tren-on'),
+      maze: () => document.body.classList.contains('maze-on'),
+      carreras: () => !!(G.retosApi && G.retosApi.activo) || document.body.classList.contains('retos-on'),
+      tormenta: () => !!(G.retosApi && G.retosApi.activo) || document.body.classList.contains('retos-on'),
+      banquete: () => !!(G.retosApi && G.retosApi.activo) || document.body.classList.contains('retos-on')
+    };
+    const sigueEn = m => (SIGUE[m] ? SIGUE[m]() : API18[m] ? enMarcha18(m) : false);
+    function marcarMenu(modo, p) {
+      clearInterval(vigiaMenu); vigiaMenu = 0;
+      desdeMenu = SIGUE[modo] || API18[modo] ? modo : null;
+      if (!desdeMenu) return;
+      const a0 = api18(modo), ultimo0 = a0 && a0.estado ? a0.estado().ultimo : undefined;
+      let visto = false, n = 0;
+      if (p) p.then(ok => { if (ok !== false && desdeMenu === modo && sigueEn(modo)) visto = true; }, () => {}); /* una salida antes del primer vistazo también cuenta */
+      vigiaMenu = setInterval(() => {
+        if (desdeMenu !== modo || (portada && portada.open)) { clearInterval(vigiaMenu); vigiaMenu = 0; if (desdeMenu === modo) desdeMenu = null; return; }
+        if (sigueEn(modo)) { visto = true; return; }
+        if (!visto) { if (++n > 150) { clearInterval(vigiaMenu); vigiaMenu = 0; desdeMenu = null; } return; }
+        clearInterval(vigiaMenu); vigiaMenu = 0;
+        const a = api18(modo), conFinal = !!(a && a.estado && a.estado().ultimo !== ultimo0);
+        /* Chispa, Moon y el Guardián terminan sin panel (aviso y bocadillo): se deja verlo antes de volver */
+        const ir = espera => { if (desdeMenu !== modo || (portada && portada.open) || (espera && ocupado18())) { if (desdeMenu === modo) desdeMenu = null; return; } volver(); };
+        if (conFinal && !G.quiet) setTimeout(() => ir(true), 3500); else ir(false);
+      }, 400);
+    }
     function lanzar(modo) {
       if (modo !== 'libre') salirLibre();
       let p;
@@ -290,6 +322,7 @@
       else if (modo === 'nido') p = G.criadero && G.criadero.abrir ? G.criadero.abrir() : Promise.resolve(false);
       else if (modo === 'records') p = cargar.records().then(r => r.abrir({ desde: 'portada' }));
       else p = Promise.resolve(false);
+      if (!ENCIMA.includes(modo)) marcarMenu(modo, p);
       lanzando = p.then(ok => { if (ok === false) fallo(); return ok; }, e => { console.error('menu_modos: no se pudo abrir ' + modo, e); fallo(); return false; });
       return lanzando;
     }
@@ -334,6 +367,7 @@
     }
     // Volver al menú desde el juego (pausa → «Cambiar de juego»)
     function volver() {
+      desdeMenu = null; clearInterval(vigiaMenu); vigiaMenu = 0;
       const r = G.retosApi; if (r) { try { r.salir(); } catch (e) { /* ya fuera */ } }
       const fv = G.flightApi; if (fv) { try { fv.salir(); } catch (e) { /* ya fuera */ } }
       const tv = G.trenApi; if (tv) { try { tv.salir(); } catch (e) { /* ya fuera */ } } // src/game/tren.js (C16)
@@ -392,7 +426,7 @@
           const ir = () => { if (miniPend !== m) return; if (libreYa() || (portada && portada.open && !G.ui.cardOpen)) { lanzar(m); return; } if (++n < 60) setTimeout(ir, 1000); };
           listo().then(() => setTimeout(ir, 1500));
         } else {
-          const probar = () => { if (miniPend !== m) return; if (!(portada && portada.open) && libreYa()) { miniPend = null; if (!enMarcha18(m)) lanzar18(m); return; } if (++n < 180) setTimeout(probar, 1000); }; /* espera a que se cierre la portada */
+          const probar = () => { if (miniPend !== m) return; if (!(portada && portada.open) && libreYa()) { miniPend = null; if (!enMarcha18(m)) marcarMenu(m, lanzar18(m)); return; } if (++n < 180) setTimeout(probar, 1000); }; /* espera a que se cierre la portada */
           setTimeout(probar, 1500);
         }
       }
@@ -473,6 +507,29 @@
         const okMaze = await hasta(() => G.mazeApi && G.mazeApi.activo, 15000);
         check('Amazona Maze: la tarjeta abre el laberinto y cierra la portada', okMaze && !portada.open);
         volver(); check('Vuelve al menú desde Amazona Maze', portada.open && !G.mazeApi.activo && !document.body.classList.contains('maze-on'));
+        // Humo iPhone: el «Salir» de cada modo (y el del final) vuelve al menú si se entró desde él; desde el mundo se queda en el mundo
+        const cerrarPortada = () => { if (portada.open) { portada.returnValue = ''; portada.close(); } };
+        const SALIDAS = [
+          ['flight', 'Amazona Flight', () => window.AV.flight(), () => G.flightApi.salir(), () => !!(G.flightApi && G.flightApi.activo)],
+          ['river', 'River Rush', () => window.AV.riverRush(), () => G.riverRushApi.salir(), () => !!(G.riverRushApi && G.riverRushApi.activo)],
+          ['tren', 'el tren', () => window.AV.tren(), () => G.trenApi.salir(), () => !!(G.trenApi && G.trenApi.activo)],
+          ['maze', 'Amazona Maze', () => window.AV.maze(), () => G.mazeApi.salir(), () => !!(G.mazeApi && G.mazeApi.activo)],
+          ['tormenta', 'Tormenta', () => retos.jugar('tormenta'), () => retos.salir(), () => retos.activo && retos.reto === 'tormenta'],
+          ['carreras', 'Carreras', () => retos.abrir(), () => retos.salir(), () => retos.fase === 'menu' && !retos.pruebas.ui().el.hidden]
+        ];
+        for (const [m, nom, abrirMundo, salirM, activoM] of SALIDAS) {
+          await elegir(m);
+          const dentro = await hasta(activoM, 15000);
+          salirM();
+          const alMenu = await hasta(() => portada.open, 8000);
+          check(`${nom}: abierto desde el menú, «Salir» vuelve al menú`, dentro && alMenu && !activoM() && desdeMenu === null, 'dentro ' + dentro + ', portada ' + portada.open + ', marca ' + desdeMenu + ', vigía ' + !!vigiaMenu + ', sigue ' + sigueEn(m) + ', ocupado ' + ocupado18());
+          volver(); cerrarPortada();
+          await abrirMundo();
+          const dentroM = await hasta(activoM, 15000);
+          salirM(); await espera(1200);
+          check(`${nom}: abierto desde el mundo, «Salir» deja en el mundo`, dentroM && !portada.open && !activoM(), 'dentro ' + dentroM + ', portada ' + portada.open);
+          volver();
+        }
         // V18 (Kelvin 8-nov: «¿dónde está lo divertido?»): cada tarjeta lleva a Vittata a su actividad y la empieza de verdad
         if (G.V18 && P.id === 'cap1') {
           const cerca = (x, z, r) => Math.hypot(S.pos.x - x, S.pos.z - z) < r;
@@ -493,6 +550,19 @@
             volver(); check('V18 · Vuelve al menú y sale del duelo de 2', portada.open && fase18(G.v18duelo2) === 'nada' && !tarjeta2Abierta());
           }
           const z = el => Number(getComputedStyle(el).zIndex) || 0;
+          // Las actividades V18: al salir o terminar, al menú si se entró desde él; desde el mundo (la estación del minigolf) siguen en el mundo
+          await elegir('golf'); const dGolf = await hasta(() => enMarcha18('golf'), 30000);
+          G.v18minigolf.salir(); const mGolf = await hasta(() => portada.open, 8000);
+          check('V18 · Minigolf abierto desde el menú: «Salir» vuelve al menú', dGolf && mGolf && !enMarcha18('golf'), 'dentro ' + dGolf + ', portada ' + portada.open + ', marca ' + desdeMenu + ', vigía ' + !!vigiaMenu + ', fase ' + fase18(G.v18minigolf) + ', ocupado ' + ocupado18());
+          volver(); cerrarPortada();
+          const dGolfM = !!G.v18minigolf.irYJugar() && await hasta(() => enMarcha18('golf'), 30000);
+          G.v18minigolf.salir(); await espera(1200);
+          check('V18 · Minigolf desde la estación del mundo: «Salir» deja en el mundo', dGolfM && !portada.open && !enMarcha18('golf'), 'dentro ' + dGolfM + ', portada ' + portada.open);
+          volver();
+          await elegir('chispa'); const dCh = await hasta(() => enMarcha18('chispa'), 60000);
+          G.v18chispa.cancelar('sale'); const mCh = await hasta(() => portada.open, 8000);
+          check('V18 · Chispa abierta desde el menú: al salir vuelve al menú', dCh && mCh && fase18(G.v18chispa) === 'nada', 'dentro ' + dCh + ', portada ' + portada.open + ', marca ' + desdeMenu + ', vigía ' + !!vigiaMenu + ', fase ' + fase18(G.v18chispa) + ', ocupado ' + ocupado18());
+          volver();
           for (const m of SUB) {
             await elegir('amigos'); await espera(30);
             const c = $('card'), bots = c.querySelectorAll('[data-amigo]');
