@@ -569,7 +569,7 @@
           }
           const z = el => Number(getComputedStyle(el).zIndex) || 0;
           // Las actividades V18: al salir o terminar, al menú si se entró desde él; desde el mundo (la estación del minigolf) siguen en el mundo
-          await elegir('golf'); const dGolf = await hasta(() => enMarcha18('golf'), 30000);
+          await elegir('golf'); const dGolf = await hasta(() => enMarcha18('golf'), 30000); await espera(600);
           G.v18minigolf.salir(); const mGolf = await hasta(() => portada.open, 8000);
           check('V18 · Minigolf abierto desde el menú: «Salir» vuelve al menú', dGolf && mGolf && !enMarcha18('golf'), 'dentro ' + dGolf + ', portada ' + portada.open + ', marca ' + desdeMenu + ', vigía ' + !!vigiaMenu + ', fase ' + fase18(G.v18minigolf) + ', ocupado ' + ocupado18());
           volver(); cerrarPortada();
@@ -577,7 +577,7 @@
           G.v18minigolf.salir(); await espera(1200);
           check('V18 · Minigolf desde la estación del mundo: «Salir» deja en el mundo', dGolfM && !portada.open && !enMarcha18('golf'), 'dentro ' + dGolfM + ', portada ' + portada.open);
           volver();
-          await elegir('chispa'); const dCh = await hasta(() => enMarcha18('chispa'), 60000);
+          await elegir('chispa'); const dCh = await hasta(() => enMarcha18('chispa'), 60000); await espera(600); /* la vigía la ve en marcha (mira cada 400 ms) */
           G.v18chispa.cancelar('sale'); const mCh = await hasta(() => portada.open, 8000);
           check('V18 · Chispa abierta desde el menú: al salir vuelve al menú', dCh && mCh && fase18(G.v18chispa) === 'nada', 'dentro ' + dCh + ', portada ' + portada.open + ', marca ' + desdeMenu + ', vigía ' + !!vigiaMenu + ', fase ' + fase18(G.v18chispa) + ', ocupado ' + ocupado18());
           volver();
