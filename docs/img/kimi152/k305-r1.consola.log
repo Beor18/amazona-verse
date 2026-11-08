@@ -1,0 +1,61 @@
+  [snap] #1 a los ~135s: gc + takeHeapSnapshot...
+  [snap] #1 listo: 1258741 nodos, self_size total 319.5 MB, 46543 constructores
+  [ab] ArrayBuffer ≥64 KB: 195.3 MB en 599 buffers
+    101.08 MB ×369  backing_store→ArrayBuffer  ‹  buffer→Float32Array
+    48.39 MB ×143  backing_store→ArrayBuffer  ‹  [4]→Float32Array
+    15.23 MB ×16  backing_store→ArrayBuffer  ‹  buffer→Uint32Array
+    12.75 MB ×7  backing_store→ArrayBuffer  ‹  [4]→Uint32Array
+    9.13 MB ×1  backing_store→ArrayBuffer  ‹  ·→Memory
+    6.53 MB ×43  backing_store→ArrayBuffer  ‹  buffer→Uint16Array
+    1.59 MB ×15  backing_store→ArrayBuffer  ‹  [4]→Uint16Array
+    0.32 MB ×2  backing_store→ArrayBuffer  ‹  [4]→Uint8Array
+    0.3 MB ×3  backing_store→ArrayBuffer  ‹  buffer→Int32Array
+  [snap] #2 a los ~165s: gc + takeHeapSnapshot...
+  [snap] #2 listo: 1213695 nodos, self_size total 365.3 MB, 46166 constructores
+  [ab] ArrayBuffer ≥64 KB: 240.4 MB en 767 buffers
+    138.04 MB ×516  backing_store→ArrayBuffer  ‹  buffer→Float32Array
+    48.39 MB ×143  backing_store→ArrayBuffer  ‹  [4]→Float32Array
+    21.65 MB ×21  backing_store→ArrayBuffer  ‹  buffer→Uint32Array
+    12.75 MB ×7  backing_store→ArrayBuffer  ‹  [4]→Uint32Array
+    9.13 MB ×1  backing_store→ArrayBuffer  ‹  ·→Memory
+    8.21 MB ×59  backing_store→ArrayBuffer  ‹  buffer→Uint16Array
+    1.59 MB ×15  backing_store→ArrayBuffer  ‹  [4]→Uint16Array
+    0.32 MB ×2  backing_store→ArrayBuffer  ‹  [4]→Uint8Array
+    0.3 MB ×3  backing_store→ArrayBuffer  ‹  buffer→Int32Array
+
+AB DIFF (dueños de ArrayBuffer que crecen, por cadena de retenedores):
+  +36.95 MB (369→516 buffers)  backing_store→ArrayBuffer  ‹  buffer→Float32Array
+  +6.41 MB (16→21 buffers)  backing_store→ArrayBuffer  ‹  buffer→Uint32Array
+  +1.68 MB (43→59 buffers)  backing_store→ArrayBuffer  ‹  buffer→Uint16Array
+
+SNAP DIFF (por constructor, self_size):
+  +48.3 MB  system / JSArrayBufferData  (245.45 → 293.75)
+RESULTADO 95 muestras en 175 s · GPU: n/d
+  t=0.6s heap=3.8 MB geo=null tex=null prog=0 calls=null zonas=? hd=? pos=null,null cal=null
+  t=9s heap=76.9 MB geo=20 tex=39 prog=0 calls=0 zonas=17/15c2l hd=0 pos=null,null cal=alto
+  t=23.5s heap=141.0 MB geo=114 tex=137 prog=57 calls=0 zonas=17/5c12l hd=4 pos=null,null cal=alto
+  t=35.9s heap=217.3 MB geo=193 tex=165 prog=77 calls=103 zonas=17/4c13l hd=25 pos=null,null cal=alto
+  t=48.5s heap=218.7 MB geo=214 tex=173 prog=115 calls=184 zonas=17/14c3l hd=25 pos=null,null cal=alto
+  t=80.2s heap=317.7 MB geo=279 tex=184 prog=131 calls=357 zonas=17/6c11l hd=19 pos=null,null cal=alto
+  t=92.2s heap=330.7 MB geo=304 tex=194 prog=134 calls=125 zonas=17/6c11l hd=19 pos=null,null cal=alto
+  t=113.4s heap=381.3 MB geo=474 tex=203 prog=153 calls=119 zonas=17/16c1l hd=23 pos=null,null cal=alto
+  t=129.5s heap=370.9 MB geo=523 tex=208 prog=157 calls=119 zonas=17/14c3l hd=34 pos=null,null cal=alto
+  t=161.2s heap=309.4 MB geo=525 tex=211 prog=157 calls=123 zonas=17/14c3l hd=50 pos=null,null cal=alto
+  t=166.4s heap=358.8 MB geo=525 tex=211 prog=157 calls=123 zonas=17/14c3l hd=50 pos=null,null cal=alto
+  heap máx: 381.3 MB · heap tras gc: 302.7 MB máx · red: 174.2 MB en 1596 recursos ({"css":1.0551948547363281,"png":6.754598617553711,"js":28.521931648254395,"html":0.3038349151611328,"?":0.0002880096435546875,"woff2":0.3531656265258789,"jpg":49.07324504852295,"glb":87.9460039138794,"json":0.021123886108398438,"webp":0.13817882537841797,"svg":0.010692596435546875})
+  top red:
+    5.25 MB  edificios/complejo_ruinas_hd400.glb
+    5.25 MB  edificios/complejo_ruinas_hd400.glb
+    5.16 MB  tex_hd/hd_savage.jpg
+    5.16 MB  tex_hd/hd_savage.jpg
+    4.13 MB  tex_hd/hd_ancient.jpg
+    4.13 MB  tex_hd/hd_ancient.jpg
+    3.46 MB  edificios/templo_mediano_h_hd.glb
+    2.54 MB  edificios/templo_grande_d_hd.glb
+    2.33 MB  edificios/templo_grande_hd.glb
+    2.33 MB  edificios/templo_grande_hd.glb
+    1.72 MB  tex_hd/hd_savage_n_lq.jpg
+    1.7 MB  edificios/templo_grande_f_hd.glb
+    1.7 MB  edificios/templo_grande_f_hd.glb
+    1.66 MB  tex_hd/hd_ancient_n_lq.jpg
+    1.6 MB  tex_hd/hd_savage_lq.jpg

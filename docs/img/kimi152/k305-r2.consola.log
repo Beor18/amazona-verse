@@ -1,0 +1,65 @@
+  [snap] #1 a los ~135s: gc + takeHeapSnapshot...
+  [snap] #1 listo: 1213312 nodos, self_size total 335.7 MB, 43114 constructores
+  [ab] ArrayBuffer ≥64 KB: 213.3 MB en 585 buffers
+    122.77 MB ×377  backing_store→ArrayBuffer  ‹  buffer→Float32Array
+    41.56 MB ×128  backing_store→ArrayBuffer  ‹  [4]→Float32Array
+    19.96 MB ×17  backing_store→ArrayBuffer  ‹  buffer→Uint32Array
+    10.14 MB ×6  backing_store→ArrayBuffer  ‹  [4]→Uint32Array
+    9.13 MB ×1  backing_store→ArrayBuffer  ‹  ·→Memory
+    7.81 MB ×38  backing_store→ArrayBuffer  ‹  buffer→Uint16Array
+    1.28 MB ×13  backing_store→ArrayBuffer  ‹  [4]→Uint16Array
+    0.32 MB ×2  backing_store→ArrayBuffer  ‹  [4]→Uint8Array
+    0.3 MB ×3  backing_store→ArrayBuffer  ‹  buffer→Int32Array
+  [snap] #2 a los ~165s: gc + takeHeapSnapshot...
+  [snap] #2 listo: 1419782 nodos, self_size total 347.7 MB, 49694 constructores
+  [ab] ArrayBuffer ≥64 KB: 208.5 MB en 564 buffers
+    112.7 MB ×323  backing_store→ArrayBuffer  ‹  buffer→Float32Array
+    44.78 MB ×151  backing_store→ArrayBuffer  ‹  [4]→Float32Array
+    19.69 MB ×18  backing_store→ArrayBuffer  ‹  buffer→Uint32Array
+    10.83 MB ×9  backing_store→ArrayBuffer  ‹  [4]→Uint32Array
+    9.13 MB ×1  backing_store→ArrayBuffer  ‹  ·→Memory
+    7.11 MB ×35  backing_store→ArrayBuffer  ‹  buffer→Uint16Array
+    1.65 MB ×16  backing_store→ArrayBuffer  ‹  [4]→Uint16Array
+    0.92 MB ×1  backing_store→ArrayBuffer  ‹  0→system / InstructionStream
+    0.63 MB ×4  backing_store→ArrayBuffer  ‹  [4]→Uint8Array
+    0.47 MB ×1  backing_store→ArrayBuffer  ‹  1→system / InstructionStream
+
+AB DIFF (dueños de ArrayBuffer que crecen, por cadena de retenedores):
+  +3.22 MB (128→151 buffers)  backing_store→ArrayBuffer  ‹  [4]→Float32Array
+  +0.92 MB (0→1 buffers)  backing_store→ArrayBuffer  ‹  0→system / InstructionStream
+  +0.69 MB (6→9 buffers)  backing_store→ArrayBuffer  ‹  [4]→Uint32Array
+  +0.47 MB (0→1 buffers)  backing_store→ArrayBuffer  ‹  1→system / InstructionStream
+  +0.37 MB (13→16 buffers)  backing_store→ArrayBuffer  ‹  [4]→Uint16Array
+  +0.32 MB (2→4 buffers)  backing_store→ArrayBuffer  ‹  [4]→Uint8Array
+
+SNAP DIFF (por constructor, self_size):
+  +6.5 MB  system / ExternalStringData  (16.05 → 22.55)
+  +2.24 MB  system / InstructionStream  (7.31 → 9.56)
+RESULTADO 88 muestras en 175 s · GPU: ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)
+  t=0.7s heap=3.8 MB geo=null tex=null prog=0 calls=null zonas=? hd=? pos=null,null cal=null
+  t=9.9s heap=55.6 MB geo=20 tex=36 prog=0 calls=0 zonas=17/14c3l hd=0 pos=null,null cal=alto
+  t=25.5s heap=105.1 MB geo=117 tex=134 prog=53 calls=0 zonas=17/5c12l hd=0 pos=null,null cal=alto
+  t=37.4s heap=185.8 MB geo=220 tex=154 prog=78 calls=88 zonas=17/5c12l hd=14 pos=null,null cal=alto
+  t=49.7s heap=178.7 MB geo=223 tex=164 prog=102 calls=106 zonas=17/4c13l hd=25 pos=null,null cal=alto
+  t=57.3s heap=247.3 MB geo=273 tex=178 prog=117 calls=87 zonas=17/14c3l hd=30 pos=null,null cal=alto
+  t=99.2s heap=283.2 MB geo=300 tex=192 prog=141 calls=74 zonas=17/5c12l hd=20 pos=null,null cal=alto
+  t=123s heap=311.6 MB geo=448 tex=200 prog=157 calls=348 zonas=17/9c8l hd=17 pos=null,null cal=alto
+  t=135.3s heap=326.6 MB geo=474 tex=200 prog=158 calls=122 zonas=17/16c1l hd=22 pos=null,null cal=alto
+  t=193.5s heap=320.0 MB geo=523 tex=203 prog=163 calls=120 zonas=17/14c3l hd=29 pos=null,null cal=alto
+  heap máx: 351.0 MB · heap tras gc: 290.1 MB máx · red: 136.1 MB en 1082 recursos ({"css":0.5931596755981445,"png":3.5995912551879883,"js":16.789377212524414,"html":0.18987751007080078,"?":0.0002880096435546875,"woff2":0.20180892944335938,"jpg":33.89327430725098,"glb":80.6562089920044,"json":0.008449554443359375,"webp":0.13817882537841797})
+  top red:
+    5.25 MB  edificios/complejo_ruinas_hd400.glb
+    5.25 MB  edificios/complejo_ruinas_hd400.glb
+    4.13 MB  tex_hd/hd_ancient.jpg
+    4.13 MB  tex_hd/hd_ancient.jpg
+    3.46 MB  edificios/templo_mediano_h_hd.glb
+    2.54 MB  edificios/templo_grande_d_hd.glb
+    2.33 MB  edificios/templo_grande_hd.glb
+    2.33 MB  edificios/templo_grande_hd.glb
+    1.72 MB  tex_hd/hd_savage_n_lq.jpg
+    1.7 MB  edificios/templo_grande_f_hd.glb
+    1.7 MB  edificios/templo_grande_f_hd.glb
+    1.66 MB  tex_hd/hd_ancient_n_lq.jpg
+    1.6 MB  tex_hd/hd_savage_lq.jpg
+    1.54 MB  edificios/templo_grande_e_hd.glb
+    1.54 MB  edificios/templo_grande_e_hd.glb
