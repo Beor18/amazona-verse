@@ -133,3 +133,31 @@ Código: `src/game/v18/evolucion.js` (el bloque de comentario de arriba document
 - **XP nueva:** hoyo de minigolf completo 40, oro 60, victoria perfecta 50 y 3 duelos ganados 60 (una vez). Las demás, igual que en el prototipo.
 - **Pruebas:** `AV.v18EvolucionTest` (curva 1–40, las 34 especies, secundarias medidas, las 6 alianzas en el duelo real y explorando, XP de cada actividad, migración, ficha) y `AV.v18Test` (v1 → v2 y conservación de `evo`).
 - **Para Kelvin (sin decidir):** los nombres de las 5 alianzas nuevas y sus parejas, sus nombres en inglés y qué elemento lleva cada una; si el desafío de las alianzas debe ser una misión propia en vez de «ganar usando tu poder 2 veces»; el equilibrio con personas (la Campeona actual pierde contra los bots en todos los niveles).
+
+## 12. Revisión de la directiva y hueco técnico (8-nov, sin publicar)
+Requisito por requisito (`docs/DIRECTIVA_V18_2.md`, §11 de este diseño). «Prueba» = `AV.v18EvolucionTest` (64/64) salvo que diga otra.
+
+| § | Requisito o entregable | Estado | Prueba o motivo |
+|---|---|---|---|
+| 1, 16 | Sin cambio de especie, sin híbridos, sin modelos nuevos | Hecho | Mismos modelos y rigs; la evolución solo cambia números y efectos (`ajustar`) |
+| 2 | 34 especies progresan; martinicana y violacea no | Hecho | «Las 34 especies del catálogo base…» (sin las dos históricas) |
+| 3 | Niveles 1–40 en 4 etapas, cada una perceptible | Hecho | Curva 1–40, etapas medidas en el duelo real, secundarias y destellos |
+| 4 | Vittata: Grito del Yunque → Eco Amplificado → Eco Dirigido → Grito Maestro | Hecho | Alcance, cono, empuje e interrupción medidos por etapa |
+| 5 | Cuatro familias técnicas como base, sin motor por especie | Hecho | La secundaria del Guardián va por técnica (PICO, OJOS, PLUMAS, ALAS) |
+| 6 | Elementos de fantasía que enriquecen, sin sustituir poderes | Hecho (prototipo) | Una alianza por elemento; los 6 nombres y su reparto son decisión de Kelvin |
+| 7–9 | Seis alianzas, coste, duración y recarga; la compañera como apoyo visual | Hecho | Las 6 alianzas en el duelo real y explorando |
+| 8 | Reto de desbloqueo claro | Hecho (8-nov) | Mis cotorras lista cada alianza conocida con ✓/○ (líder en nivel 10, compañera en tu bandada) y el reto con nombres; el panel de fin del duelo dice «llevas N de 2» o «¡logrado!» (prueba 19) |
+| 10 | XP de las actividades existentes, sin farmeo ni compras | Hecho | Topes diarios, 0 XP en duelos vacíos y de 2, hitos una vez |
+| 10, diseño §3 | Ritmo: nivel 10 en la 1.ª sesión, 20 en 2–3, 30 en semanas | Hecho (8-nov) | Sesión simulada con todas las fuentes (también Arco, Muelle, Puerto, Chispa, Moon y Guardián): 11 → 18 → 23 y nivel 30 en la 9.ª sesión. Antes daba 13 → 23 → 28 y nivel 40 hacia la 10.ª |
+| 11 | Motivación a largo plazo, habilidades no entregadas al inicio | Hecho | Etapas por nivel y alianzas por reto |
+| 12 | Nivel alto más capaz pero no invencible | Hecho | Equilibrio 55–75 % por etapa con la Campeona por etapa; topes del grito |
+| 13 | Guardado por especie, sin romper partidas | Hecho | Migración v1 → v2, prototipo → producto, vuelta atrás; `v18Test` |
+| 14.4 | Desbloqueo visible; avisos al jugar | Hecho (8-nov) | Tarjeta en cada subida de nivel, tarjeta de etapa, «+N XP» pequeña explorando, tarjeta al cobrar la XP de una partida vieja; esperan al cómic o al creador (prueba 18) |
+| 14.8 | Teclado y táctil | Hecho | H y botón `.vd-ali` ≥ 56 px que no tapa el Diario |
+| — | Inglés de todo lo nuevo | Hecho | Prueba de textos con `AV_EN`; `idiomaTest` 31/31 |
+| 15.3–4 | Video real de una subida de nivel y de Eco Protector | Necesita persona | Grabar con `AV.G.v18evo.prueba({ especie: 'vittata', xp: 360 })` y ganar un duelo |
+| 15.5 | Equilibrio con niños | Necesita persona | Los bots ya pasan; falta medir con personas |
+| 15.7 | Validación en un móvil real | Necesita persona | Solo hay táctil simulado |
+| 6, 9 | Nombres definitivos (ES/EN) de las alianzas y etapas, parejas, elementos | Decisión de Kelvin | Provisionales en `evolucion.js` y `en.js` |
+
+**XP nueva (8-nov):** duelo ganado 40 (mitad desde la 3.ª del día), perdido 15, tope 160/día en duelos y 300 en lo repetible; minigolf 15 (+15 récord), 3 nidos/día; especie 30, material 5, primera victoria con cada especie 60; Sombra 80, Serpiente 60, Sapo 60, reto de dos 60, desafío 50, hoyo completo 30, oro 30, victoria perfecta 30, 3 duelos 40; puente 120. La curva `T(n)` no cambia. Arco, Muelle, Puerto, Chispa, Moon y Guardián pagan sus propios números (no se tocaron).
