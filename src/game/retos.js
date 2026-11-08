@@ -766,9 +766,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     const subiendo = () => G.input.jumpHeld;
     const bajando = () => G.input.keys.has('c');
     function forzarVuelo() { M.flying = true; M.landing = false; M.takeoff = 0; M.swimming = false; M.grounded = false; }
+    const _fac = { x: 0, z: 1 };
     function colocarJugador(x, y, z, fx, fz) {
       S.pos.x = x; S.pos.y = y; S.pos.z = z; S.vy = 0; M.vx = M.vz = 0; M.dashT = 0;
-      const l = Math.hypot(fx, fz) || 1; S.facing = { x: fx / l, z: fz / l };
+      const l = Math.hypot(fx, fz) || 1; _fac.x = fx / l; _fac.z = fz / l; S.facing = _fac;
       forzarVuelo();
     }
     function chispasFx(dt) {
@@ -1081,7 +1082,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       out.vx = (p[j * 3] - p[i * 3]) / FANTASMA_DT; out.vz = (p[j * 3 + 2] - p[i * 3 + 2]) / FANTASMA_DT; out.fin = u >= f.n - 1;
       return out;
     }
-    const _qf = {};
+    const _qf = {}, _v3 = new THREE.Vector3();
+    // Estado de vuelo que lee el personaje (fantasma y rivales): se escribe campo a campo, sin un objeto nuevo por cuadro
+    function volador(ch, speed, legsDown, wingMode, groundY) {
+      ch.speed = speed; ch.gait = 0; ch.airborne = true; ch.flying = true; ch.legsDown = legsDown; ch.swimming = false; ch.diving = false;
+      ch.wingMode = wingMode; ch.expression = 'happy'; ch.mouth = null; ch.lookAt = null; ch.emote = null; ch.posado = ''; ch.agachada = 0; ch.groundY = groundY; ch.groundAt = null;
+    }
+    function distPuntoMin(Rr, s) { let m = Infinity; for (const p of Rr.puntos) { const d = Math.abs(p.s - s); if (d < m) m = d; } return m; }
     function dibujarFantasma(dt) {
       const f = C.fan; if (!f) return;
       const t = C.fase === 'cuenta' ? 0 : C.fase === 'fin' ? C.tiempo + C.finT : C.t;
@@ -1092,14 +1099,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const yawRate = dt > 0 ? giro(root.rotation.y - prevYaw) / dt : 0, quieto = _qf.fin || C.fase === 'cuenta';
       root.rotation.x += ((quieto ? 0.12 : 0.55) - root.rotation.x) * Math.min(1, dt * 5);
       root.rotation.z += (clamp(-yawRate * 0.5, -0.6, 0.6) - root.rotation.z) * Math.min(1, dt * 4);
-      Object.assign(f.ch, { speed: quieto ? 1 : sp, gait: 0, airborne: true, flying: true, legsDown: quieto ? 0.65 : 0, swimming: false, diving: false,
-        wingMode: quieto ? 'hover' : sp < 10 ? 'flap' : 'fly', expression: 'happy', mouth: null, lookAt: null, emote: null, posado: '', agachada: 0, groundY: superficie(_qf.x, _qf.z), groundAt: null });
+      volador(f.ch, quieto ? 1 : sp, quieto ? 0.65 : 0, quieto ? 'hover' : sp < 10 ? 'flap' : 'fly', superficie(_qf.x, _qf.z));
       f.ch.update(dt);
       if (f.tag) {
-        const cam = R.camera, v3 = new THREE.Vector3(_qf.x, _qf.y + 2.3, _qf.z).project(cam), d = Math.hypot(_qf.x - S.pos.x, _qf.y - S.pos.y, _qf.z - S.pos.z);
+        const cam = R.camera, v3 = _v3.set(_qf.x, _qf.y + 2.3, _qf.z).project(cam), d = Math.hypot(_qf.x - S.pos.x, _qf.y - S.pos.y, _qf.z - S.pos.z);
         const ver = v3.z < 1 && d < 90 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1;
-        f.tag.style.display = ver ? '' : 'none';
-        if (ver) f.tag.style.transform = `translate(${((v3.x + 1) / 2 * window.innerWidth).toFixed(0)}px, ${((1 - v3.y) / 2 * window.innerHeight).toFixed(0)}px) translate(-50%, -100%)`;
+        estilo(f.tag, 'display', ver ? '' : 'none');
+        if (ver) estilo(f.tag, 'transform', `translate(${((v3.x + 1) / 2 * window.innerWidth).toFixed(0)}px, ${((1 - v3.y) / 2 * window.innerHeight).toFixed(0)}px) translate(-50%, -100%)`);
       }
     }
     // Grabación: una muestra cada 0,1 s mientras corre el reloj de la carrera
@@ -1115,7 +1121,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       return Math.min(C.sJug, lim);
     }
     function progresoRival(r) { return r.llego ? ruta.R.largo + 1000 - r.tLlegada : r.s; }
-    function puestoActual() { const p = progresoJugador(); return 1 + C.rivales.filter(r => progresoRival(r) > p).length; }
+    function puestoActual() { const p = progresoJugador(); let n = 1; for (const r of C.rivales) if (progresoRival(r) > p) n++; return n; }
     function actualizarCarrera(dt) {
       const Rr = ruta.R; if (!Rr || C.fase === 'nada') return;
       const q = C.q;
@@ -1248,9 +1254,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const Rr = ruta.R; if (!Rr || C.fase === 'nada') return;
       const now = performance.now() / 1000;
       // Puntos: el siguiente late en dorado, los demás quedan tenues
-      C.objetos.forEach((o, i) => {
-        const u = o.userData, sig = i === C.sig, pasado = i < C.sig;
-        u.tela.material.color.set(pasado ? '#8fdc9c' : sig ? '#ffc23a' : '#b9dcff');
+      for (let i = 0; i < C.objetos.length; i++) {
+        const u = C.objetos[i].userData, sig = i === C.sig, pasado = i < C.sig;
+        const col = pasado ? '#8fdc9c' : sig ? '#ffc23a' : '#b9dcff'; if (u._col !== col) { u._col = col; u.tela.material.color.set(col); }
         u.banda.rotation.z = Math.sin(now * 3 + i) * 0.08; u.tela.rotation.y = Math.sin(now * 4.2 + i) * 0.25;
         if (!pasado) {
           const k = sig ? 1 + Math.sin(now * 5) * 0.08 : 0.75;
@@ -1259,16 +1265,16 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           u.haz.material.opacity = sig ? 0.13 + Math.sin(now * 3) * 0.04 : 0.03;
           const cp = R.camera.position; u.haz.visible = Math.hypot(cp.x - u.x, cp.z - u.z) > 5;
         }
-      });
+      }
       for (const c of C.corrientes) animarCorriente(c, dt);
       dibujarFantasma(dt);
       // Rivales
-      const cam = R.camera, w = window.innerWidth, h = window.innerHeight, v3 = new THREE.Vector3();
-      C.rivales.forEach((r, i) => {
-        const ch = r.ch, root = ch.root;
+      const cam = R.camera, w = window.innerWidth, h = window.innerHeight, v3 = _v3;
+      for (let i = 0; i < C.rivales.length; i++) {
+        const r = C.rivales[i], ch = r.ch, root = ch.root;
         const sR = r.llego ? Rr.largo : r.s;
         enRuta(sR, _q);
-        const env = 0.35 + 0.65 * Math.min(1, Math.min(...Rr.puntos.map(p => Math.abs(p.s - sR))) / 25);
+        const env = 0.35 + 0.65 * Math.min(1, distPuntoMin(Rr, sR) / 25);
         let lat = C.fase === 'cuenta' || r.s < 30 ? lerp(r.lat, 0, clamp((r.s - 4) / 26, 0, 1)) : 0;
         lat += r.def.amp * Math.sin(sR / r.def.lam + r.def.fase * 6.28) * env * clamp((r.s - 10) / 30, 0, 1);
         let x = _q.x - _q.tz * lat, z = _q.z + _q.tx * lat, y = _q.y + 0.9 * Math.sin(sR / 23 + r.def.fase * 9);
@@ -1283,8 +1289,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         root.rotation.x += ((r.llego || C.fase === 'cuenta' ? 0.12 : 0.55) - root.rotation.x) * Math.min(1, dt * 5);
         root.rotation.z += (clamp(-yawRate * 0.5, -0.6, 0.6) - root.rotation.z) * Math.min(1, dt * 4);
         const quieto = C.fase === 'cuenta' || r.llego;
-        Object.assign(ch, { speed: quieto ? 1 : r.v, gait: 0, airborne: true, flying: true, legsDown: quieto ? 0.65 : 0, swimming: false, diving: false,
-          wingMode: quieto ? 'hover' : r.boostT > 0 ? 'glide' : r.v < 10 ? 'flap' : 'fly', expression: 'happy', mouth: null, lookAt: null, emote: null, posado: '', agachada: 0, groundY: superficie(x, z), groundAt: null });
+        volador(ch, quieto ? 1 : r.v, quieto ? 0.65 : 0, quieto ? 'hover' : r.boostT > 0 ? 'glide' : r.v < 10 ? 'flap' : 'fly', superficie(x, z));
         ch.update(dt);
         // Nombre sobre la cabeza (DOM proyectado)
         const tag = C.tags[i];
@@ -1294,7 +1299,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           estilo(tag, 'display', ver ? '' : 'none');
           if (ver) estilo(tag, 'transform', `translate(${((v3.x + 1) / 2 * w).toFixed(0)}px, ${((1 - v3.y) / 2 * h).toFixed(0)}px) translate(-50%, -100%)`);
         }
-      });
+      }
       // HUD
       {
         const p = C.fase === 'fin' ? C.puesto : puestoActual();
@@ -1332,7 +1337,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     function desdePool(tipo, crear) { const l = pool[tipo]; const o = l.find(x => !x.userData.usado) || (l.push(sobreAgua(crear())), l[l.length - 1]); o.userData.usado = true; o.visible = true; if (!o.parent) TM.grupo.add(o); return o; }
     function soltar(o) { if (o) { o.userData.usado = false; o.visible = false; } }
     const nuevaSombra = () => { const s = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), lm(new THREE.MeshBasicMaterial({ map: texSombra(), transparent: true, depthWrite: false, fog: false }))); s.rotation.x = -Math.PI / 2; return s; };
-    const nuevoBrillo = () => { const s = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), aditivo(texBrillo(), '#fff2a0', 1)); s.rotation.x = -Math.PI / 2; const col = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.9, 1, 12, 1, true), aditivo(null, '#fff6c0', 0.2)); col.rotation.x = Math.PI / 2; col.name = 'col'; s.add(col); return s; };
+    const nuevoBrillo = () => { const s = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), aditivo(texBrillo(), '#fff2a0', 1)); s.rotation.x = -Math.PI / 2; const col = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.9, 1, 12, 1, true), aditivo(null, '#fff6c0', 0.2)); col.rotation.x = Math.PI / 2; col.name = 'col'; s.add(col); s.userData.col = col; return s; };
     const nuevoRayo = () => { const s = new THREE.Sprite(spriteMat(texRayo(), '#ffffff', true, 1)); s.center.set(0.5, 0); return s; };
     const nuevaSemilla = () => new THREE.Sprite(spriteMat(texSemilla(), '#ffffff', false, 1));
     function construirArena() {
@@ -1575,7 +1580,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           const k = z.fase === 'aviso' ? clamp(z.t / z.aviso, 0, 1) : 1;
           const parpadeo = 0.55 + 0.45 * Math.sin(now * (14 + k * 20));
           z.brillo.scale.setScalar(z.r * 2.4 * (0.5 + 0.5 * k)); z.brillo.material.opacity = (0.45 + 0.55 * k) * parpadeo;
-          const col = z.brillo.getObjectByName('col'); col.scale.set(1, 1, 24); col.position.set(0, 0, 12); col.material.opacity = 0.08 + 0.18 * k * parpadeo;
+          const col = z.brillo.userData.col || z.brillo.getObjectByName('col'); col.scale.set(1, 1, 24); col.position.set(0, 0, 12); col.material.opacity = 0.08 + 0.18 * k * parpadeo;
           if (z.rayo) z.rayo.material.opacity = 1 - z.t / 0.35;
         }
       }
