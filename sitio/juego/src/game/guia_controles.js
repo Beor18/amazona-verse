@@ -364,7 +364,9 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
 
   // ---------- Cada cuadro ----------
   // Minigolf V18 (minigolf.js): tiene sus propios controles; ni el panel «Así se juega» ni las pistas de explorar salen encima
-  const enMinijuego = () => !!document.body && document.body.classList.contains('v18-golf-on');
+  // Duelo (y su entreno), duelo de 2, carreras de la V18…: tampoco (du2, 8-nov: con partida nueva el panel salía en mitad de la
+  // cuenta atrás del duelo y tapaba el entreno). Sale después, cuando la actividad termina.
+  const enMinijuego = () => (!!document.body && document.body.classList.contains('v18-golf-on')) || !!(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado());
   function enJuego() {
     const t = $('title'), c = $('creator'), co = $('comic'), en = $('end');
     return !enMinijuego() && !(t && t.open) && !(c && !c.hidden) && !(co && !co.hidden) && !(en && !en.hidden) && !G.ui.busy() && !(G.pausa && G.pausa.activa());

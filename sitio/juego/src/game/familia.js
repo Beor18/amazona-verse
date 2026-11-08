@@ -23,7 +23,7 @@ window.AVFamilia = function (G) {
 
   const raiz = document.createElement('div');
   raiz.id = 'familia'; raiz.hidden = true;
-  raiz.innerHTML = '<div class="caja" role="dialog" aria-labelledby="fam-titulo"><h2 id="fam-titulo"></h2><p id="fam-texto"></p><div class="fila" id="fam-juegos"></div><div class="fila" id="fam-fila"></div><div id="fam-marca"></div><div class="fila"><button type="button" class="btn" id="fam-ok"></button><button type="button" class="btn ghost" id="fam-cerrar"></button></div></div>';
+  raiz.innerHTML = '<div class="caja" role="dialog" aria-labelledby="fam-titulo"><h2 id="fam-titulo"></h2><p id="fam-texto"></p><div class="fila" id="fam-juegos"></div><div class="fila" id="fam-fila"></div><div id="fam-marca"></div><div class="fila"><button type="button" class="btn magic" id="fam-aventuras"></button></div><div class="fila"><button type="button" class="btn" id="fam-ok"></button><button type="button" class="btn ghost" id="fam-cerrar"></button></div></div>';
   document.body.appendChild(raiz);
   const fin = document.createElement('button');
   fin.type = 'button'; fin.id = 'fam-fin'; fin.className = 'btn'; fin.hidden = true;
@@ -58,6 +58,7 @@ window.AVFamilia = function (G) {
   function refrescar() {
     const b = $('b-familia'); if (b) b.textContent = L('En familia', 'Family');
     $('fam-cerrar').textContent = L('Cerrar', 'Close');
+    $('fam-aventuras').textContent = L('Aventuras en familia', 'Family adventures');
     fin.textContent = L('Terminé mi turno', 'My turn is done');
     if (abierto && !enJuego) paso();
   }
@@ -120,6 +121,7 @@ window.AVFamilia = function (G) {
   function paso() {
     $('fam-titulo').textContent = L('En familia', 'Family');
     fin.hidden = !enJuego;
+    $('fam-aventuras').hidden = jugadores.length > 0; // Family Quest (familia_aventuras.js): solo en la primera pantalla
     if (!jugadores.length) {
       $('fam-texto').textContent = L('¿Cuántos juegan? De 2 a 4. Se pasan el control.', 'How many are playing? From 2 to 4. Pass the controller.');
       const fila = $('fam-fila'); fila.innerHTML = '';
@@ -216,6 +218,7 @@ window.AVFamilia = function (G) {
   }
   function cerrar() { enJuego = false; fin.hidden = true; abierto = false; raiz.hidden = true; jugadores = []; turno = 0; }
   $('fam-cerrar').addEventListener('click', cerrar);
+  $('fam-aventuras').addEventListener('click', () => { cerrar(); asegurar('familyQuest', 'src/game/familia_aventuras.js', 'AVFamiliaAventuras').then(f => f && f.abrir()); });
   // Escape cierra el panel como «Cerrar» (captura + stopPropagation: no abre la pausa debajo)
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && abierto && !raiz.hidden) { e.preventDefault(); e.stopImmediatePropagation(); cerrar(); } }, true);
   $('fam-ok').addEventListener('click', () => { listo = jugar(); });

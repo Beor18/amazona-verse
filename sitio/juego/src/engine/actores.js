@@ -10,9 +10,19 @@ AVE.module('actores', function (G) {
 
   // Sprites (renders oficiales como sustitutos)
   const loader = new THREE.TextureLoader();
-  function spriteFrom(url, scale) {
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: loader.load(url), transparent: true, alphaTest: 0.05 }));
+  // perezosa: la imagen no se pide al crear el sprite sino con cargarMapa() (los NPC, al hacerse visibles: carga inicial).
+  // Hasta que llega, la textura vacía de three (0,0,0,0) no pinta nada, como antes mientras TextureLoader bajaba la imagen.
+  function spriteFrom(url, scale, perezosa) {
+    const tex = perezosa ? new THREE.Texture() : loader.load(url);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, alphaTest: 0.05 }));
     sp.scale.set(scale, scale, 1);
+    if (perezosa) {
+      let pedida = false;
+      sp.userData.cargarMapa = () => {
+        if (pedida) return; pedida = true;
+        loader.load(url, t => { tex.image = t.image; tex.format = t.format; tex.needsUpdate = true; t.image = null; t.dispose(); });
+      };
+    }
     return sp;
   }
   function blob(radius) {
@@ -25,14 +35,17 @@ AVE.module('actores', function (G) {
   // NPC: sprite, sombra y collider; setVisible los oculta a la vez (el collider queda con radio 0)
   const npcs = {};
   function spawnNpc(def) {
-    const sp = spriteFrom(def.sprite, def.escala || 2); sp.position.set(def.x, H(def.x, def.z) + 1.0, def.z); scene.add(sp);
+    const sp = spriteFrom(def.sprite, def.escala || 2, true); sp.position.set(def.x, H(def.x, def.z) + 1.0, def.z); scene.add(sp);
     const sh = blob(0.55); sh.position.set(def.x, H(def.x, def.z) + 0.03, def.z); scene.add(sh);
     const collider = { x: def.x, z: def.z, r: 0.6, kind: 'npc', id: def.id };
     G.fisica.colliders.push(collider);
     const n = { def, sp, sh, collider, setVisible(show) { sp.visible = sh.visible = show; collider.r = show ? 0.6 : 0; }, get visible() { return sp.visible; } };
     npcs[def.id] = n;
+    if (aplicada) mapaSiVisible(n); // un NPC que un modo o un pack crea con la partida en marcha
     return n;
   }
+  let aplicada = false;
+  function mapaSiVisible(n) { if (n.sp.visible && n.sp.userData.cargarMapa) { n.sp.userData.cargarMapa(); delete n.sp.userData.cargarMapa; } }
 
   // Personaje del jugador real: aprendiz que acompaña al protagonista
   const portraitCanvas = document.createElement('canvas'); portraitCanvas.width = portraitCanvas.height = 256;
@@ -524,7 +537,11 @@ AVE.module('actores', function (G) {
     player.material.rotation = G.input.jumpHeld && S.vy < 0 ? Math.sin(t * 6) * 0.08 : 0;
     pShadow.position.set(S.pos.x, G.fisica.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.03, S.pos.z);
   }, 5);
-  G.on('render', (dt, t) => { for (const id in npcs) { const n = npcs[id]; if (n.def.flota) n.sp.position.y = H(n.def.x, n.def.z) + 1.0 + Math.sin(t * 2) * 0.05; } }, 10);
+  // Carga inicial: el retrato de un NPC se pide la primera vez que su sprite está visible: al aplicar la partida (con el
+  // mundo aún tapado por la portada o la carga, como antes) o en el cuadro en que aparece. El Guardián, la Abuela y el
+  // Papá del cap. 1 salen más tarde en la historia y no van en la descarga inicial.
+  G.on('apply', () => { aplicada = true; for (const id in npcs) mapaSiVisible(npcs[id]); }, 99);
+  G.on('render', (dt, t) => { for (const id in npcs) { const n = npcs[id]; mapaSiVisible(n); if (n.def.flota) n.sp.position.y = H(n.def.x, n.def.z) + 1.0 + Math.sin(t * 2) * 0.05; } }, 10);
   G.on('render', (dt, t, moving) => {
     if (!companion.visible) return;
     const tx = S.pos.x - S.facing.x * 1.8 + S.facing.z * 1.1, tz = S.pos.z - S.facing.z * 1.8 - S.facing.x * 1.1;

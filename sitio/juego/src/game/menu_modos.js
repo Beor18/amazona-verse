@@ -175,10 +175,14 @@
       if (!G.V18) return Promise.resolve(false);
       if (P.id !== 'cap1') { alCap1(modo); return Promise.resolve(true); }
       return listo().then(() => cargar18(modo)).then(() => new Promise(res => {
-        let n = 0, vigila = 0;
+        let n = 0, vigila = 0, carga = 0;
         const guardia = () => { sinApertura(); if (++vigila < 120 && enMarcha18(modo)) setTimeout(guardia, 500); };
         const t = () => {
-          sinApertura(); const a = api18(modo);
+          sinApertura();
+          // du2 (8-nov): con partida nueva la actividad (el duelo y su cuenta atrás) arrancaba debajo de la pantalla de carga y
+          // se quedaba congelada en «3»; además el sitio definitivo del duelo aún no estaba. Se espera a que la carga termine.
+          if (((G.carga && G.carga.activa) || G.cargaPendiente) && ++carga < 120) { setTimeout(t, 500); return; }
+          const a = api18(modo);
           if (a && enMarcha18(modo)) { guardia(); return res(true); } // ya estaba en marcha (?mini= o un toque anterior)
           let ok = false;
           if (a && !ocupado18()) {
@@ -559,6 +563,13 @@
           const okDuelo = await hasta(() => ['cuenta', 'lucha'].includes(fase18(G.v18combate)), 30000), sd = G.v18combate && G.v18combate.sitio;
           check('V18 · Duelo: la tarjeta lleva a Vittata a la explanada y empieza el duelo contra la Campeona', okDuelo && !portada.open && sd && cerca(sd.x, sd.z, 8), 'fase ' + fase18(G.v18combate) + (sd ? ', a ' + Math.hypot(S.pos.x - sd.x, S.pos.z - sd.z).toFixed(1) + ' m' : ''));
           volver(); check('V18 · Vuelve al menú y sale del duelo', portada.open && fase18(G.v18combate) === 'nada');
+          { // du2: con la pantalla de carga delante, el duelo no arranca debajo (su cuenta atrás se quedaba en «3»): espera y luego empieza
+            let antes = '', okC = false;
+            try { G.cargaPendiente = true; elegir('duelo'); await espera(1600); antes = fase18(G.v18combate); } finally { G.cargaPendiente = false; }
+            okC = await hasta(() => ['cuenta', 'lucha'].includes(fase18(G.v18combate)), 30000);
+            check('du2: el duelo espera a que termine la pantalla de carga y después empieza', antes === 'nada' && okC, 'durante la carga ' + antes + ', después ' + fase18(G.v18combate));
+            volver();
+          }
           if (seVe('duelo2')) {
             await elegir('duelo2');
             const ok2 = await hasta(tarjeta2Abierta, 30000);

@@ -682,7 +682,8 @@ AVE.module('accesibilidad', function (G) {
       // con alto contraste, el texto se lee (≥ 7:1 sobre su fondo)
       for (const [W, H] of [[375, 812], [390, 844], [320, 568]]) {
         const malosP = [];
-        for (let i = 0; i < NIVELES; i++) for (const contr of [false, true]) {
+        // 390×844 solo sin contraste (el contraste no depende del ancho; así la prueba no pasa de su tiempo en una máquina cargada)
+        for (let i = 0; i < NIVELES; i++) for (const contr of (W === 390 ? [false] : [false, true])) {
           const m = await maquetaPantallas(W, H, `${i ? 'a11y-t' + i : ''} ${contr ? 'a11y-contraste' : ''}`);
           try {
             for (const [pid, raizSel] of [['creator', '#creator'], ['card', '#card'], ['retos', '#retos .rt-menu']]) {
@@ -714,7 +715,7 @@ AVE.module('accesibilidad', function (G) {
       // texto, y con alto contraste el texto se lee (≥ 7:1). BM73: añade la portada (#title) y «Mis récords», también a 320×568
       {
         const malosO = []; let vistas = []; await prepararOtras();
-        for (const [W, H] of [[375, 812], [390, 844], [320, 568]]) for (let i = 0; i < NIVELES; i++) for (const contr of [false, true]) {
+        for (const [W, H] of [[375, 812], [390, 844], [320, 568]]) for (let i = 0; i < NIVELES; i++) for (const contr of (W === 390 ? [false] : [false, true])) {
           const m = await maquetaOtras(W, H, `${i ? 'a11y-t' + i : ''} ${contr ? 'a11y-contraste' : ''}`);
           if (!m || !m.d) { if (m && m.cerrar) m.cerrar(); continue; }
           try {

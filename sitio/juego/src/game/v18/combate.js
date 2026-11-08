@@ -443,7 +443,16 @@ window.AVV18Combate = function (G) {
   const FIN_PAUSA = 1200, finListo = () => performance.now() - (C.finT || 0) >= FIN_PAUSA;
   const otraVezSiListo = () => (finListo() ? otraVez() : false);
   const modo = { activo: () => C.fase === 'lucha' || C.fase === 'cuenta' || C.fase === 'fin', accion: () => { if (C.fase === 'fin') otraVezSiListo(); else usar(C.j, 'golpe_ala'); },
-    aviso: () => C.fase === 'fin' ? TXT.otra : (TACTIL ? TXT.avisoTactil : TXT.aviso), get verbo() { return C.fase === 'fin' ? TXT.otra : TXT.ala; } };
+    aviso: () => C.fase === 'fin' ? TXT.otra : controlesALaVista() ? '' : (TACTIL ? TXT.avisoTactil : TXT.aviso), get verbo() { return C.fase === 'fin' ? TXT.otra : TXT.ala; } };
+  // du2 (8-nov): con los chips (o, en táctil, las etiquetas de Acción e Impulso) a la vista, el aviso «Ala: E · Semilla: F ·
+  // Poder: G» de abajo repetía lo mismo: aviso vacío = interaccion.js no lo enseña. Sin chips ni etiquetas, vuelve el de siempre.
+  function controlesALaVista() {
+    if (!hud || hud.el.hidden) return false;
+    if (!TACTIL) return !hud.q('bot').hidden;
+    if (!hud.tags || hud.tags.hidden) return false;
+    for (const s of hud.tags.children) if (!s.hidden) return true;
+    return false;
+  }
   let modo0 = null, sostener0 = null, sost = 0, enganchado = false;
   function sostenerDuelo(on) {
     if (on) { sost = performance.now(); return; }
@@ -751,6 +760,9 @@ window.AVV18Combate = function (G) {
     C.stats = nuevasStats();
     const conEntreno = !!o.entreno || (!o.sinCuenta && !o.sinEntreno && !espForzada && !entrenoVisto()); // el primer duelo empieza con el entreno
     ent = null; pista.t = 2.5; pista.plj = C.j.plumas; pista.golpeado = false;
+    // du2: con partida nueva desde el menú el duelo empezaba antes de que el sitio definitivo (QA-174) se aplicara y se peleaba
+    // entre los árboles del sitio provisional; si está pendiente, se aplica antes de colocar a las dos
+    if (recolocar && C.fase === 'nada' && !retirada && enCap1() && !(G.v18duelo2 && G.v18duelo2.estado().fase !== 'nada')) moverSitio();
     colocar();
     montarHud(); hud.el.hidden = false; hud.q('fin').hidden = true; hud.q('bot').hidden = false; hud.q('finXp').textContent = ''; hud.q('apoyo').hidden = true; apoyoT = 0;
     enganchar(); ocultarPista();
@@ -1123,6 +1135,9 @@ window.AVV18Combate = function (G) {
     if (busy && C.fase !== 'nada') return;
     paso(Math.min(dt, 0.1));
   }, 70);
+  // du2 (8-nov): en el duelo no va la guía de la misión (fx.js): su flecha naranja flota sobre Vittata y, vista desde atrás,
+  // se leía como un disco color arena junto a la Campeona; el haz también sobra. Después del gancho de misiones (60).
+  G.on('render', () => { if (!retirada && C.fase !== 'nada' && G.fx && G.fx.guide) G.fx.guide(null, 0); }, 61);
   G.on('apply', () => { if (!retirada && C.fase !== 'nada') salir(); }, 47);
   // QA-174: cuando ya están la vegetación y el mundo, el sitio definitivo (fijo entre cargas); si hay un duelo abierto, al acabar
   let recolocar = false;
@@ -1287,6 +1302,23 @@ window.AVV18Combate = function (G) {
         const porBoton = !!ent && ent.paso === 0 && C.fase === 'lucha';
         pd(hud.el.querySelector('[data-a="saltarEnt"]'));
         check('Botón «¿Cómo se pelea?» abre el entreno; «Saltar entreno» va al duelo', porBoton && !ent && C.fase === 'cuenta', JSON.stringify({ porBoton, fase: C.fase }));
+        // du2: con partida nueva, la guía «¡Así se juega!» (guia_controles.js) salía en mitad de la cuenta atrás y tapaba el duelo
+        {
+          const GP = G.guiaControles && G.guiaControles.prueba;
+          if (GP) {
+            let raw0 = null; try { raw0 = localStorage.getItem(GP.CLAVE); } catch (e) { /* sin almacenamiento */ }
+            const est0 = GP.est, forz0 = GP.forzado, ses0 = GP.enSesion.panel;
+            GP.forzado = 'teclado'; GP.est = { hecho: {}, vistas: {} }; GP.enSesion.panel = 0; GP.cerrar();
+            const enCuenta = C.fase === 'cuenta';
+            for (let i = 0; i < 4; i++) GP.actualizar(0.5);
+            const durante = GP.panelAbierto;
+            salir(); for (let i = 0; i < 4; i++) GP.actualizar(0.5);
+            const despues = GP.panelAbierto;
+            GP.cerrar(); GP.forzado = forz0; GP.est = est0; GP.enSesion.panel = ses0;
+            try { if (raw0 == null) localStorage.removeItem(GP.CLAVE); else localStorage.setItem(GP.CLAVE, raw0); } catch (e) { /* sin almacenamiento */ }
+            check('du2: la guía «¡Así se juega!» no se abre durante la cuenta atrás del duelo; sale al terminar', enCuenta && !durante && despues, JSON.stringify({ enCuenta, durante, despues }));
+          }
+        }
         // Chips: icono + tecla, se iluminan cuando se puede y enseñan la recarga
         iniciar({ sinCuenta: true, especie: 'vittata' }); quieta(7); cara(1);
         const chipDe = a => hud.el.querySelector('.vd-chip[data-a="' + a + '"]');
@@ -1296,6 +1328,14 @@ window.AVV18Combate = function (G) {
         check('Chips: Ala E · Semilla F · Poder G con icono; el listo brilla y el que recarga enseña la recarga', teclas === 'EFG' && !!chipDe('golpe_ala').dataset.icon &&
           (TACTIL || (chipDe('golpe_ala').classList.contains('listo') && chipDe('semilla').classList.contains('cd') && cdS > 50)) && chipDe('poder').textContent.includes(H.get('grito_yunque').nombre) && chipDe('alianza').hidden,
           JSON.stringify({ teclas, cdS, cls: chipDe('semilla').className }));
+        // du2: con los chips (táctil: etiquetas) a la vista no sale el aviso repetido «Ala: E · Semilla: F · Poder: G»
+        {
+          const tagsVis = !!document.querySelector('#v18-duelo-tags:not([hidden]) span:not([hidden])'), avA = modo.aviso();
+          hud.q('bot').hidden = true; const avSin = TACTIL ? avA : modo.aviso(); hud.q('bot').hidden = false;
+          const tgM = G.misiones && G.misiones.guideTarget ? G.misiones.guideTarget() : null; G.emit('render', 0.016);
+          check('du2: en el duelo no se ven la flecha ni el haz de la guía de la misión', !!G.fx && !G.fx.guideArrow.visible && !G.fx.guideBeam.visible, JSON.stringify({ objetivo: tgM }));
+          check('du2: con los chips a la vista el aviso de abajo calla (sin chips vuelve el de siempre)', TACTIL ? avA === (tagsVis ? '' : TXT.avisoTactil) : (avA === '' && avSin === TXT.aviso), JSON.stringify({ avA, avSin, tagsVis }));
+        }
         // Pistas: cerca, lejos, poder listo; la del primer golpe; dejan de salir al dominarlas
         const pistaTras = (prep) => { ocultarPista(); pista.t = 0; prep(); paso(0.05); return hud.q('pista').hidden ? '' : hud.q('pistaTxt').textContent; };
         C.j.cd = {}; C.j.energia = 50;
@@ -1496,8 +1536,9 @@ window.AVV18Combate = function (G) {
           combT = window.AVV18Combate(G);
           combT.iniciar({ sinCuenta: true, especie: 'vittata' });
           const avisoT = (G.interaccion.modo && G.interaccion.modo.aviso) ? G.interaccion.modo.aviso() : null;
-          check('QA-163: en táctil el aviso del duelo nombra los botones y no pide la tecla G',
-            avisoT === TXT.avisoTactil && avisoT !== TXT.aviso && !/\bG\b/.test(avisoT), avisoT);
+          const tagsT = !!document.querySelector('#v18-duelo-tags:not([hidden]) span:not([hidden])'); // du2: con las etiquetas a la vista el aviso calla
+          check('QA-163: en táctil el aviso del duelo nombra los botones (o calla si las etiquetas de Acción e Impulso ya lo dicen) y no pide la tecla G',
+            avisoT === (tagsT ? '' : TXT.avisoTactil) && avisoT !== TXT.aviso && !/\bG\b/.test(avisoT), JSON.stringify({ avisoT, tagsT }));
           combT.iniciar({ entreno: true, especie: 'vittata' });
           const kT = document.querySelector('#v18-duelo [data-k="entK"]'), tagA = document.querySelector('#v18-duelo-tags [data-t="b-act"]'), tagD = document.querySelector('#v18-duelo-tags [data-t="b-dash"]');
           const comoT = document.querySelector('#v18-duelo [data-a="como"]');

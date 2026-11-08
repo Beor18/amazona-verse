@@ -1181,6 +1181,7 @@ AVE.module('criadero', function (G) {
   }
   function vestir(ch, info) {
     info = info || companero(); if (!info || !ch || !ch.bones) return null;
+    gagsConCria(); // src/game/gags.js (perezoso)
     const P = (etapaDef(info.etapa) || {}).proporciones || {};
     const k = { ch, holder: ch.root, base: 1, capId: info.id, f: {}, fNow: {}, fluff: crearPlumon(ch), extras: {}, etapa: info.etapa, yOff: 0 };
     for (const [b, v] of Object.entries(P.huesos || {})) if (ch.bones[b]) k.f[b] = v;
@@ -1566,7 +1567,9 @@ AVE.module('criadero', function (G) {
       try { if (bk.ls == null) localStorage.removeItem(KEY); else localStorage.setItem(KEY, bk.ls); } catch (e) { /* */ }
     },
   };
-  cargarGags().catch(() => { /* sin gags: la cría sigue a Vittata como siempre */ });
+  // Carga inicial: gags.js solo actúa con una cría en el mundo; se pide cuando actores.js la viste (vestir), no al arrancar.
+  // Sin compañero, G.gags no hace nada (forzar/empezar devuelven false), así que hasta entonces todo queda igual.
+  const gagsConCria = () => { cargarGags().catch(() => { /* sin gags: la cría sigue a Vittata como siempre */ }); };
   const exponerGags = n => { const AV = window.AV; if (AV && AV.G === G) { if (!AV.gagsTest) AV.gagsTest = o => cargarGags().then(m => m.test(o)); } else if (n > 0) setTimeout(() => exponerGags(n - 1), 500); };
   exponerGags(60);
   if (!RZ()) AVE.assets.script('src/game/rareza.js').then(() => { if (window.AVRareza) { window.AVRareza(G); if (open) pintar(); } }).catch(() => { /* sin rareza */ });

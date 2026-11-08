@@ -240,6 +240,7 @@
     const cargarEscondite = aDemanda('src/game/escondite.js', 'AVEscondite'); AV.esconditeTest = o => cargarEscondite().then(e => e.test(o)); alPrimerGesto(cargarEscondite); // CG-43
     const cargarMarana = aDemanda('src/game/marana.js', 'AVMarana'); AV.maranaTest = o => cargarMarana().then(m => m.test(o)); alPrimerGesto(cargarMarana); // CG-46
     const cargarFamilia = aDemanda('src/game/familia.js', 'AVFamilia'); AV.familiaTest = o => cargarFamilia().then(f => f.test(o)); alPrimerGesto(cargarFamilia); // CG-53
+    const cargarFamilyQuest = aDemanda('src/game/familia_aventuras.js', 'AVFamiliaAventuras'); AV.familyQuestTest = o => cargarFamilyQuest().then(f => f.test(o)); alPrimerGesto(cargarFamilyQuest); // Family Quest
     const cargarRendimiento = aDemanda('src/game/rendimiento_modulos.js', 'AVRendimientoModulos');
     AV.rendimientoModulosTest = o => Promise.all([cargarTrucos(), cargarHumor(), cargarEscondite(), cargarVecinos(), cargarSorpresas(), cargarMarana(), cargarRendimiento()]).then(() => G.rendimientoModulos.test(o)); // CG-47
     // Ríos vivos (src/game/rio_vivo.js): peces nativos y el visor; se carga en el primer gesto (si el pack tiene mapa.agua) y al pedir su prueba
