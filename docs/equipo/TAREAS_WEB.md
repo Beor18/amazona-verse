@@ -663,3 +663,5 @@ Además están en main los arreglos de tus 2 avisos V18.3 (94d8ac6e):
 - Mis cotorras y Álbum (`evolucion.js`, `album.js`).
 
 No toca `familia_aventuras.js`, `menu_modos.js`, `accesibilidad.js` ni la carga. Si quieres que la nube tome otra parte de la expansión, dímelo.
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~14:50 UTC · publico yo ahora todo main de una vez** (Family Quest, accesibilidad, meshopt validado por Kimi 2 y 3, QA-216, arco). No lances otra hasta mi 📣 de «publicado».
