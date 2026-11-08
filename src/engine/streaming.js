@@ -125,10 +125,12 @@ AVE.module('streaming', function (G) {
   // KIMI-177 avance 2: en «bajo» los GLB del kit de la ciudad no descargan su normal gigante embebida
   // (assets.js sustituye la URL por una normal plana 2×2); aquí se conecta el criterio de calidad del motor.
   if (G.assets && G.assets.setNormalPlanaBaja) G.assets.setNormalPlanaBaja(() => nivelCal() === 'bajo');
-  // KIMI-204: el difuso embebido que sí se sirve ligero en «bajo» es el 2048 en escritorio/tablet y el
-  // 1024 en el móvil pequeño (MOVIL_PEQ, mismo criterio que materialAtlas y reducirAtlas). El callback
-  // es perezoso: MOVIL_PEQ queda inicializado mucho antes de que se parseé el primer GLB.
-  if (G.assets && G.assets.setSufijoLQDifuso) G.assets.setSufijoLQDifuso(() => nivelCal() === 'bajo' ? (MOVIL_PEQ ? '_lq1024' : '_lq') : '_lq');
+  // KIMI-204/KIMI-250: el difuso embebido que sí se sirve ligero es el 2048 en escritorio/tablet y el
+  // 1024 en el móvil pequeño (MOVIL_PEQ: atlasMax = 1024² en cualquier calidad, mismo criterio que
+  // materialAtlas y reducirAtlas). El callback es perezoso: MOVIL_PEQ queda inicializado mucho antes de que
+  // se parseé el primer GLB. KIMI-250: el sufijo se usa en «bajo» (como siempre) y en medio/alto durante el
+  // arranque (hasta que el atlas real sube en background, ver setAtlasHDListo).
+  if (G.assets && G.assets.setSufijoLQDifuso) G.assets.setSufijoLQDifuso(() => MOVIL_PEQ ? '_lq1024' : '_lq');
   // KIMI-207 (QA-201): en «medio/alto» la normal del atlas se sirve horneada a 2048² (hd_<kit>_n_lq.jpg);
   // criterio complementario del de arriba (bajo = plana 2×2, medio/alto = LQ 2048²).
   if (G.assets && G.assets.setNormalLQMedia) G.assets.setNormalLQMedia(() => nivelCal() !== 'bajo');
@@ -327,8 +329,15 @@ AVE.module('streaming', function (G) {
     // El look no debe bajar este atlas: la celda de 1024 es el detalle del kit. La URL a veces queda en blob.
     marcarAtlas(m.map); marcarAtlas(m.normalMap);
     afilar(m.map); afilar(m.normalMap);
+    // KIMI-250: el parse del GLB trae el difuso que el URLModifier sirvió: el JPEG LQ de arranque mientras
+    // el kit no esté «listo» (en «bajo» siempre; en medio/alto hasta el barrido de los ~20 s). La marca hace
+    // que el barrido o el gancho 'calidad' lo suban al 4096 real solo donde el tope de calidad lo exige
+    // (atlasMax() === 0); avAtlasEsc corrige el lod del shader con el tamaño real del mapa (0,5 el 2048,
+    // 0,25 el 1024 del móvil pequeño, 1 el 4096).
+    const kitHD = m.name === 'AV_HD_Ancient' ? 'ancient' : 'savage';
+    m.userData.avLQDifuso = !(G.assets && G.assets.atlasHDListoEs && G.assets.atlasHDListoEs(kitHD));
     const A = HD.celdas * HD.celda, dentro = HD.celda - 2 * HD.margen, f = v => v.toFixed(6);
-    const esc = m.userData.avAtlasEsc = { value: 1 }; // tamaño del atlas / 4096 (reducirAtlas): corrige el lod sin recompilar
+    const esc = m.userData.avAtlasEsc = { value: m.userData.avLQDifuso ? (MOVIL_PEQ ? 0.25 : 0.5) : 1 };
     // F2.2 (carril B): en el atlas Savage, RoofThatched es la celda 4. Rojo teja, el uniforme lo apaga en Ancient.
     // G18 (carril C): el atlas Ancient es ocre; con vibrant_toon se ve dorado. La piedra pasa a crema mate.
     // Un solo programa (av-hd-atlas): cada uniforme actúa solo en su kit.
@@ -446,6 +455,22 @@ AVE.module('streaming', function (G) {
   }
   // KIMI-177: la normal 2×2 plana (data URI de assets.js) marca «estaba en bajo y no se descargó la real».
   const esNormalPlana = t => !!(t && t.image && t.image.width === 2 && t.image.height === 2);
+  // KIMI-250: sube el difuso del atlas al 4096 real (mismo swap para el gancho 'calidad' y para el barrido
+  // de los ~20 s). Al completarse, el kit queda «listo» (assets.js): los parses siguientes de los GLB piden
+  // el 4096 directo (caché HTTP, sin bytes nuevos de red) y los materiales nuevos nacen sin marca de LQ.
+  function subirAtlasA4096(k, m) {
+    const kit = /Ancient$/.test(k) ? 'ancient' : 'savage';
+    const map = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '.jpg', () => reducirAtlas(m));
+    map.encoding = THREE.sRGBEncoding;
+    map.flipY = false; marcarAtlas(map); afilar(map); // sin la marca, el look lo encogería al tope de la calidad
+    const viejo = m.map;
+    m.map = map;
+    if (viejo && viejo !== map) { try { viejo.dispose(); } catch (e) { /* r128 */ } }
+    m.userData.avLQDifuso = false;
+    m.userData.avAtlasEsc.value = 1; // el 4096 real: LOD del shader como en un arranque en alta
+    m.needsUpdate = true;
+    if (G.assets && G.assets.setAtlasHDListo) G.assets.setAtlasHDListo(kit, true);
+  }
   G.on('calidad', () => {
     for (const k in mats) if (/^AV_HD_/.test(k)) {
       const m = mats[k].mat;
@@ -461,24 +486,26 @@ AVE.module('streaming', function (G) {
         m.normalMap = nm;
         m.needsUpdate = true;
       }
-      // KIMI-202: el difuso pudo crearse en «bajo» con el JPEG ligero 2048² (hd_<kit>_lq.jpg); al subir se
-      // pide el 4096 real y se engancha al mismo material (el reducirAtlas —en el acto y al cargar— lo
-      // deja en el tope que corresponda a la nueva calidad, igual que con el mapa original).
-      if (m.userData.avLQDifuso && nivelCal() !== 'bajo') {
-        const kit = /Ancient$/.test(k) ? 'ancient' : 'savage';
-        const map = G.assets.tex(kitBase + 'tex_hd/hd_' + kit + '.jpg', () => reducirAtlas(m));
-        map.encoding = THREE.sRGBEncoding;
-        map.flipY = false; marcarAtlas(map); afilar(map); // ídem: el atlas nuevo no se encoge con el look
-        const viejo = m.map;
-        m.map = map;
-        if (viejo && viejo !== map) { try { viejo.dispose(); } catch (e) { /* r128 */ } }
-        m.userData.avLQDifuso = false;
-        m.userData.avAtlasEsc.value = 1; // el 4096 real: LOD del shader como en un arranque en alta
-        m.needsUpdate = true;
-      }
+      // KIMI-202/KIMI-250: el difuso pudo nacer con el JPEG ligero horneado (hd_<kit>_lq.jpg: en «bajo»
+      // como siempre, y desde KIMI-250 también en el arranque de medio/alto). Se sube al 4096 real solo
+      // donde el tope de calidad lo exige (atlasMax() === 0 = escritorio/tablet en medio/alto; en móvil y
+      // en bajo el LQ ya es el final y no se descarga nada, mismo criterio que la normal de arriba).
+      if (m.userData.avLQDifuso && atlasMax() === 0) subirAtlasA4096(k, m);
       reducirAtlas(m);
     }
   });
+  // KIMI-250 (QA-201/KIMI-244, tope 28 MB): barrido único a los ~20 s de la sesión (la ventana de carga ya
+  // está cerrada: medido red quieta ~2 s tras el reveal). Los materiales AV_HD_ que nacieron con el LQ de
+  // arranque suben al 4096 real donde el tope lo exige (atlasMax() === 0). Si un parse de GLB aterriza
+  // justo antes del barrido, su material ya está en mats y también lo sube; los posteriores nacen con el
+  // 4096 (kit «listo»). En móvil/bajo no se pide nada: la vista final queda idéntica en todas las calidades.
+  setTimeout(() => {
+    if (atlasMax() !== 0) return;
+    for (const k in mats) if (/^AV_HD_/.test(k)) {
+      const it = mats[k];
+      if (it && it.mat.userData.avLQDifuso) subirAtlasA4096(k, it.mat);
+    }
+  }, 20000);
   function material(src, fijo) {
     const k = src.name || src.uuid;
     let it = mats[k];
@@ -922,18 +949,22 @@ AVE.module('streaming', function (G) {
     function materialAtlas(kit) {
       const k = 'AV_HD_' + (kit === 'ancient' ? 'Ancient' : 'Savage');
       if (!mats[k]) {
-        // KIMI-202: en «bajo» el difuso del atlas baja a un JPEG 2048² horneado (tex_hd/hd_<kit>_lq.jpg,
-        // ~1,3-1,6 MB frente a 4,1-5,4 MB del 4096²): es la MISMA resolución que ya aplicaba reducirAtlas()
-        // por canvas al llegar el evento 'calidad' (atlasMax() = celdas*celda/2 en bajo), así que la vista
-        // de «bajo» no cambia; se ahorra la descarga y el pico de decodificación del 4096. Al subir de
-        // calidad el gancho 'calidad' de abajo pide el 4096 real y lo engancha al mismo material.
+        // KIMI-202/KIMI-250: el difuso del atlas SIEMPRE arranca con el JPEG 2048² horneado
+        // (tex_hd/hd_<kit>_lq.jpg, ~1,3-1,6 MB frente a 4,1-5,4 MB del 4096²): es la MISMA resolución que
+        // ya dejaba reducirAtlas() en «bajo» y en el móvil fuera de alta (atlasMax 2048/1024), así que esas
+        // vistas no cambian; se ahorra la descarga y el pico de decodificación del 4096. En medio/alto de
+        // escritorio (atlasMax() = 0) el 4096 real se pide en background a los ~20 s, fuera de la ventana
+        // de carga (KIMI-244: tope 28 MB incumplido, 61,4 MB medidos), con el mismo swap del gancho
+        // 'calidad': la vista final queda idéntica. Al subir de calidad el gancho pide el 4096 al momento.
         // KIMI-204: en el móvil de pantalla pequeña (MOVIL_PEQ) el tope de reducirAtlas ya es 1024²
         // (atlasMax = celdas*celda/4, decisión QA-110 de Kelvin), así que se sirve el JPEG horneado a
         // 1024 (hd_<kit>_lq1024.jpg, ~0,3-0,4 MB): los MISMOS píxeles que el canvas 1024 que reducirAtlas
         // haría del 2048, sin doble decodificación y con ~2,2 MB menos de descarga.
-        const lq = nivelCal() === 'bajo';
-        const lqMovil = lq && MOVIL_PEQ;
-        const map = G.assets.tex(base + 'tex_hd/hd_' + kit + (lqMovil ? '_lq1024' : lq ? '_lq' : '') + '.jpg');
+        const lqMovil = MOVIL_PEQ;
+        // KIMI-250: si el kit ya subió el 4096 real en background (barrido de los ~20 s), el material nuevo
+        // nace con el 4096; si no, con el LQ de arranque y la marca para subirlo después.
+        const listo = !!(G.assets && G.assets.atlasHDListoEs && G.assets.atlasHDListoEs(kit));
+        const map = G.assets.tex(base + 'tex_hd/hd_' + kit + (listo ? '' : lqMovil ? '_lq1024' : '_lq') + '.jpg');
         map.encoding = THREE.sRGBEncoding;
         map.flipY = false;
         // KIMI-177: en «bajo» la normal del atlas (JPEG de ~14 MB, las dos ~28 MB) no se descarga: a DPR 0,75 su relieve
@@ -947,13 +978,12 @@ AVE.module('streaming', function (G) {
         const normalMap = nivelCal() === 'bajo' ? null : G.assets.tex(base + 'tex_hd/hd_' + kit + '_n_lq.jpg');
         if (normalMap) normalMap.flipY = false;
         mats[k] = { mat: crearMaterial({ name: k, map, normalMap, side: THREE.DoubleSide }, k), refs: 0, fijo: false };
-        if (lq) {
-          mats[k].mat.userData.avLQDifuso = true;
-          // El shader del atlas corrige el LOD con avAtlasEsc (tamaño real / 4096): hay que fijarla ya con
-          // el JPEG horneado (0,5 para el 2048, 0,25 para el 1024 del móvil pequeño), no solo cuando pase
-          // reducirAtlas (puede que ningún evento 'calidad' llegue antes de la fusión).
-          mats[k].mat.userData.avAtlasEsc.value = lqMovil ? 0.25 : 0.5;
-        }
+        // El shader del atlas corrige el LOD con avAtlasEsc (tamaño real / 4096): hay que fijarla ya con
+        // el JPEG que se sirvió (0,5 para el 2048, 0,25 para el 1024 del móvil pequeño, 1 para el 4096),
+        // no solo cuando pase reducirAtlas (puede que ningún evento 'calidad' llegue antes de la fusión).
+        // El upgrade en background lo hacen el barrido de los ~20 s o el gancho 'calidad' (misma clave en mats).
+        mats[k].mat.userData.avLQDifuso = !listo;
+        mats[k].mat.userData.avAtlasEsc.value = listo ? 1 : lqMovil ? 0.25 : 0.5;
       }
       return mats[k].mat;
     }
