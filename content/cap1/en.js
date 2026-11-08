@@ -2683,7 +2683,7 @@ window.AV_EN = {
  "Siguiente hoyo": "Next hole",
  "Elegir hoyo": "Pick a hole",
  "Cerrado": "Locked",
- "Sin jugar": "Not played yet",
+ "Sin jugar": "Not played",
  "Hoyo {}": "Hole {}",
  "Hoyo {} · {}": "Hole {} · {}",
  "{} golpe (par {})": "{} stroke (par {})",

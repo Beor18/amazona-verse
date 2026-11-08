@@ -651,7 +651,7 @@
       const jug = n => (n ? `<dl>${dato(tx('jugadas'), n)}</dl>` : '');
       // mg27: los 6 hoyos, cada uno con su récord y su medalla, o «Sin jugar»
       const golf = (g.some(h => h.mejor) ? '' : nada(t18('Aún sin hoyo. ¡Juega al minigolf!'))) +
-        `<ul class="rec-golf">${g.map(h => `<li data-hoyo="${h.n}"><span>${esc(t18('Hoyo {} · {}', h.n, h.zona))}</span><b>${h.mejor
+        `<ul class="rec-golf">${g.map(h => `<li data-hoyo="${h.n}"><span>${esc(t18('Hoyo {} · {}', h.n, t18(h.zona)))}</span><b>${h.mejor
           ? `${medalla(h.medalla, h.medalla ? '★' : null)} ${esc(t18(h.mejor === 1 ? '{} golpe (par {})' : '{} golpes (par {})', h.mejor, h.par))}${h.medalla ? ' · ' + esc(tx(h.medalla)) : ''}`
           : esc(t18('Sin jugar'))}</b></li>`).join('')}</ul>`;
       const chispa = ch.mejor
@@ -1221,6 +1221,7 @@
           G.aula.aj.idioma = 'en'; pintar();
           const en18 = plano(secV18());
           check('V18 · También en inglés (textos de content/cap1/en.js)', /Adventures with my flock/.test(en18) && /Gold/.test(en18) && /Duels won/.test(en18) && /By stage:/.test(en18) && /Apprentice\s*3/.test(en18) && /Lv 21 · Guardian/.test(en18) && /Protective Echo/.test(en18) && /1 of 6/.test(en18) && !/Aún sin|Duelos|Golpes|Por etapa|Aprendiz/.test(en18), en18.slice(0, 200));
+          check('en7 (QA-219) · En inglés, los 6 hoyos con su zona traducida y sin «Hoyo», «Sin jugar» ni «golpes»', /Hole 2 · Hill Temples/.test(en18) && /Hole 5 · Cloud forest/.test(en18) && /Not played/.test(en18) && /strokes? \(par \d\)/.test(en18) && !/Hoyo|Sin jugar|golpes?\b|Templos/.test(en18), en18.slice(0, 240));
           localStorage.removeItem(pruebas.v18); pintar();
           check('V18 · En inglés, sin datos: «No … yet»', (plano(secV18()).match(/ yet/g) || []).length === 7, plano(secV18()).slice(0, 160));
           G.aula.aj.idioma = idiomaAntes; pintar();

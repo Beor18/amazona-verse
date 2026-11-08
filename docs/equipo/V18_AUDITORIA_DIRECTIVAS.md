@@ -49,6 +49,7 @@ Auditoría de `docs/DIRECTIVA_V18_1.txt` contra el código (no contra los docume
 | §9: «entiende por qué ganó» | Hecho **[CONSTRUIDO a181]** | `combate.js` `consejo()` y nodo `finTip` del panel final: al ganar dice por qué (y si ayudó el poder, con su nombre); al perder da un consejo según lo que pasó (no usó el poder → «usa tu poder» con su nombre y tecla o botón táctil; casi no le quitó plumas → aletazo de cerca y semilla de lejos; si no → apártate del «!») | `v18CombateTest` «V18.1 §9: al perder, el panel da un consejo…» |
 | §9: ronda con niños con permiso parental | No hecho (tarea humana) | — | Necesita a Kelvin y permiso parental; sin telemetría |
 | §5 D21/D30: prueba con el fundador, demo accesible | Parcial | Demo publicada con la bandera encendida por defecto | La prueba con Kelvin y la ronda observada quedan pendientes (humanas) |
+| Idioma (en7): los textos nuevos de V18.1 y del minigolf de 6 hoyos con su inglés | Hecho (en7, 8-nov) | `content/cap1/en.js` bloque «en7» al final (consejos `porGana`…`tEsquiva` de `combate.js:89-91`, `bloq` de `descubrir.js:40`, hoyos 2 a 6 de `minigolf.js:115-144`, «Mis récords» de `records.js:652-656`, que ahora traduce también la zona del hoyo); «La Mina» como nombre propio en `src/game/idioma.js:18` | `idiomaTest` 31/31 (sola y tras `v18MinigolfTest`); `v18MinigolfTest` «en7 · los hoyos 2 a 6 y «¿Qué hoyo quieres jugar?» tienen inglés…»; REC «V18 · También en inglés» |
 
 **Construido en esta tarea (a181):** 2 piezas pequeñas y sin canon nuevo: (1) consejo al terminar el duelo (§9); (2) cotorra descubierta pero sin desbloquear visible y apagada en «Mis cotorras», con la pista para conseguirla, y el botón de la pausa sale ya con ella (§2.2 y §2.8). Textos solo en español; Kelvin decide su traducción (no se tocó `content/cap1/en.js`).
 
@@ -56,7 +57,7 @@ Auditoría de `docs/DIRECTIVA_V18_1.txt` contra el código (no contra los docume
 
 **Resultados (Chrome sin GPU, 8-nov):** v18CombateTest 74/74 · v18DescubrirTest 28/28 · v18CicloTest 24/24 · selfTest 108/108 · missionTest 79/79 · e2eTest 49/49 · menuModosTest 84/84 sola (83/84 en la tanda tras e2eTest: «Amazona Flight abierto desde el mundo…», no toca V18; en main sin estos cambios también pasa sola) · 0 errores de consola.
 
-**Decisiones de Kelvin pendientes:** traducción de los 6 textos nuevos (`porGana`, `porGanaPoder`, `tPoder`, `tPoderT`, `tCerca`, `tEsquiva` en `combate.js`; `bloq` en `descubrir.js`); nombre definitivo «Batalla de Bandadas»; si se aprueban los 34 poderes de la matriz para producción (§8 pide aprobación antes de la producción masiva).
+**Decisiones de Kelvin pendientes:** ~~traducción de los textos nuevos~~ (hecho por en7, 8-nov: ver la fila «Idioma» de arriba); nombre definitivo «Batalla de Bandadas»; si se aprueban los 34 poderes de la matriz para producción (§8 pide aprobación antes de la producción masiva).
 
 ## V18.2
 

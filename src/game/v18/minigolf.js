@@ -112,7 +112,7 @@ window.AVV18Minigolf = function (G) {
     empate: '¡Empate!', sinPremios: 'En partidas por turnos no hay premios ni récord', tope: '¡10 golpes! Cuenta como terminado.',
     oroC: 'Oro', plataC: 'Plata', bronceC: 'Bronce',
     premio1: '¡Primer hoyo completado! Ganaste 3 fibras: sirven igual que la madera para reparar.', premioOro: '¡Primera medalla de oro! Ganaste 2 maderas.',
-    // Hoyos 2 a 6 (solo en español: Kelvin traduce)
+    // Hoyos 2 a 6 (inglés en content/cap1/en.js, bloque «en7»)
     eligeHoyo: '¿Qué hoyo quieres jugar?', eligeHoyoSub: 'Completa un hoyo para abrir el siguiente', siguiente: 'Siguiente hoyo', hoyos: 'Elegir hoyo',
     cerradoC: 'Cerrado', sinJugar: 'Sin jugar'
   };
