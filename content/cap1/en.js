@@ -2443,6 +2443,11 @@ window.AV_EN = {
  "Ver viñeta": "See panel",
  "{}: por jugar en familia": "{}: still to play as a family",
  "Recuerdos en familia {}/6": "Family memories {}/6",
+ "Descargar": "Download",
+ "No se pudo preparar la imagen. Prueben otra vez.": "The picture couldn't be made. Please try again.",
+ "¡Listo! Busquen la imagen en las descargas de este aparato.": "Done! Look for the picture in this device's downloads.",
+ "La imagen se abrió en otra pestaña: manténganla presionada y elijan «Guardar imagen».": "The picture opened in another tab: press and hold it, then choose “Save image”.",
+ "Mantengan presionada la imagen y elijan «Guardar imagen».": "Press and hold the picture, then choose “Save image”.",
  // V18.3 · misión 2 del arco, «Los faroles de las Atalayas» (src/game/v18/arco.js; filas nuevas de content/comun/personajes_v18.js)
  "Los faroles de las Atalayas": "The Lanterns of the Watchtowers",
  "En las Atalayas del Oeste algo zumba muy fuerte… La bandera verde del mapa te lleva.": "Something is buzzing very loudly at the Western Watchtowers… The green flag on the map will take you there.",

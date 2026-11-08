@@ -14,7 +14,9 @@
    de la partida: las partidas viejas no cambian y una clave rota o vieja se lee vacía. La foto es una captura del juego
    (JPEG 320×240); si no cabe, se guarda sin foto. Sin nombres ni datos personales.
    Inglés: content/cap1/en.js (sección Family Quest). El DOM lo traduce idioma.js; lo que se pinta en el lienzo (la página y
-   las viñetas) y los nombres de gestos se traducen aquí con G.idioma.tr.
+   las viñetas) y los nombres de gestos se traducen aquí con G.idioma.tr. «Descargar» (la página y cada viñeta, en
+   «Recuerdos en familia») guarda la imagen en el dispositivo: lienzo → blob → <a download>; en iOS se abre en otra pestaña
+   para guardarla. Sin red, sin cuentas, sin subir ni compartir nada.
    window.AVFamiliaAventuras(G) → G.familyQuest. Prueba: AV.familyQuestTest(). */
 window.AVFamiliaAventuras = function (G) {
   'use strict';
@@ -464,14 +466,57 @@ window.AVFamiliaAventuras = function (G) {
     try { if (P.limpiarCache && raiz.hidden) P.limpiarCache(); } catch (e) { /* */ }
     return cv;
   }
+  // ---------- Descargar (Kelvin 8-nov): la página o una viñeta, solo en este aparato ----------
+  // lienzo → blob PNG → URL de objeto → <a download>. Sin red, sin cuentas, sin subir ni compartir (tampoco Web Share).
+  // En iOS (Safari no guarda bien un <a download>) la imagen se abre en otra pestaña para mantenerla presionada y elegir
+  // Guardar; si el navegador no abre la pestaña, la imagen queda en el panel para lo mismo.
+  const esIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const pruebaDescarga = { ios: false };
+  let descarga = Promise.resolve(null);
+  const aBlob = cv => new Promise(r => { try { cv.toBlob(b => r(b), 'image/png'); } catch (e) { r(null); } });
+  function avisoDescarga(t) { const p = $('fq-descarga-msg'); if (p) p.textContent = t; }
+  function descargar(lienzo, nombre) {
+    const ios = pruebaDescarga.ios || esIOS();
+    let ventana = null; // en iOS la pestaña se abre ya, dentro del toque (después la bloquearía el navegador)
+    if (ios) { try { ventana = window.open('', '_blank'); } catch (e) { ventana = null; } }
+    descarga = (async () => {
+      const cv = await Promise.resolve(lienzo).catch(() => null);
+      const blob = cv && cv.width > 8 ? await aBlob(cv) : null;
+      if (!blob) { try { if (ventana) ventana.close(); } catch (e) { /* */ } avisoDescarga('No se pudo preparar la imagen. Prueben otra vez.'); return { blob: null, modo: 'error' }; }
+      const url = URL.createObjectURL(blob);
+      if (!ios) {
+        const a = document.createElement('a');
+        a.href = url; a.download = nombre; a.rel = 'noopener'; a.hidden = true;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        avisoDescarga('¡Listo! Busquen la imagen en las descargas de este aparato.');
+        return { blob, nombre, url, modo: 'enlace' };
+      }
+      if (ventana && !ventana.closed) {
+        ventana.location.href = url;
+        setTimeout(() => URL.revokeObjectURL(url), 120000);
+        avisoDescarga('La imagen se abrió en otra pestaña: manténganla presionada y elijan «Guardar imagen».');
+        return { blob, nombre, url, modo: 'pestaña' };
+      }
+      const img = document.createElement('img'); img.className = 'vineta'; img.src = url; img.alt = nombre;
+      const c = cuerpo().querySelector('canvas.vineta'); if (c) c.replaceWith(img); else cuerpo().appendChild(img);
+      avisoDescarga('Mantengan presionada la imagen y elijan «Guardar imagen».');
+      return { blob, nombre, url, modo: 'imagen' };
+    })();
+    return descarga;
+  }
+  const botonDescargar = (lienzo, nombre) => boton('Descargar', () => descargar(lienzo(), nombre()), 'secondary', 'fq-descargar');
+  const msgDescarga = () => { const p = texto(''); p.id = 'fq-descarga-msg'; p.setAttribute('role', 'status'); return p; };
   async function verPagina() {
     soltar();
     const c = document.createElement('canvas'); c.className = 'vineta pagina'; c.width = 8; c.height = 12;
     c.setAttribute('role', 'img'); c.setAttribute('aria-label', T('Nuestra aventura en familia: página del cómic'));
+    const listo = pagina(c).then(r => r.canvas).catch(() => null);
     pantalla('Nuestra página familiar',
       texto(cuenta() < 6 ? `Llevan ${cuenta()} de 6 viñetas. Las que faltan aparecen al jugar su aventura.` : '¡Página completa! Todo un cómic hecho en familia.'),
-      c, fila(boton('Volver', menu, '', 'fq-volver'), boton('Cerrar', cerrar, 'ghost')));
-    ultimaVineta = pagina(c).then(r => r.canvas).catch(() => null);
+      c, fila(botonDescargar(() => listo, () => (enIngles() ? 'our-family-adventure' : 'nuestra-aventura-en-familia') + '.png'), boton('Volver', menu, '', 'fq-volver'), boton('Cerrar', cerrar, 'ghost')),
+      msgDescarga());
+    ultimaVineta = listo;
     return ultimaVineta;
   }
   async function verVineta(id) {
@@ -480,9 +525,11 @@ window.AVFamiliaAventuras = function (G) {
     const c = document.createElement('canvas'); c.className = 'vineta'; c.width = 8; c.height = 5;
     c.setAttribute('role', 'img'); c.setAttribute('aria-label', T('Viñeta conmemorativa: ' + avDe(id).nombre));
     const h = estado.hechas[id];
+    const listo = vineta(id, c).catch(() => null);
     pantalla(avDe(id).nombre, texto(`Recuerdo en familia · ${fechaBonita(h.fecha)}${h.veces > 1 ? ` · jugada ${h.veces} veces` : ''}`), c,
-      fila(boton('Jugar otra vez', () => empezar(id), '', 'fq-otra-vez'), boton('Volver', menu, 'ghost')));
-    ultimaVineta = vineta(id, c).catch(() => null);
+      fila(boton('Jugar otra vez', () => empezar(id), '', 'fq-otra-vez'), botonDescargar(() => listo, () => (enIngles() ? 'family-panel-' : 'vineta-familia-') + id + '.png'), boton('Volver', menu, 'ghost')),
+      msgDescarga());
+    ultimaVineta = listo;
     return ultimaVineta;
   }
 
@@ -688,6 +735,49 @@ window.AVFamiliaAventuras = function (G) {
       verVineta('cuento'); await ultimaVineta;
       const cv = raiz.querySelector('canvas.vineta');
       ok('Viñeta: se ve en pantalla desde el recuerdo', !raiz.hidden && cv && cv.width > 300);
+
+      // Descargar (Kelvin 8-nov): la página y cada viñeta se guardan en el aparato; nada sale a la red ni se comparte.
+      // El clic del <a download> y window.open se interceptan: la prueba no deja archivos ni pestañas.
+      {
+        const red = [], llamadas = [], clics = [], abiertas = [];
+        const espera0 = Date.now(); let ult = performance.getEntriesByType('resource').length; // que la carga del mundo se calme antes de medir
+        while (Date.now() - espera0 < 4000) { await espera(400); const n = performance.getEntriesByType('resource').length; if (n === ult) break; ult = n; }
+        const po = window.PerformanceObserver ? new PerformanceObserver(l => { for (const e of l.getEntries()) if (!/^(blob|data):/.test(e.name)) red.push(e.name); }) : null;
+        try { if (po) po.observe({ type: 'resource' }); } catch (e) { /* */ }
+        const fetch0 = window.fetch, xhr0 = XMLHttpRequest.prototype.open, beacon0 = navigator.sendBeacon, click0 = HTMLAnchorElement.prototype.click, open0 = window.open, share0 = navigator.share;
+        window.fetch = function () { llamadas.push('fetch ' + arguments[0]); return fetch0.apply(this, arguments); };
+        XMLHttpRequest.prototype.open = function () { llamadas.push('xhr ' + arguments[1]); return xhr0.apply(this, arguments); };
+        if (beacon0) navigator.sendBeacon = function () { llamadas.push('beacon'); return false; };
+        HTMLAnchorElement.prototype.click = function () { clics.push({ href: this.href, download: this.download, enDoc: document.body.contains(this) }); };
+        try {
+          await verPagina();
+          const bp = $('fq-descargar');
+          ok('Descargar: la página familiar tiene el botón «Descargar» (44 px)', !!bp && bp.offsetParent !== null && /Descargar/.test(bp.textContent) && bp.getBoundingClientRect().height >= 43.5);
+          bp.click(); const d1 = await descarga;
+          ok('Descargar: la página sale como PNG (blob) y se guarda con <a download>', d1 && d1.modo === 'enlace' && d1.blob && d1.blob.type === 'image/png' && d1.blob.size > 20000 && clics.length === 1 && /^blob:/.test(clics[0].href) && clics[0].download === 'nuestra-aventura-en-familia.png' && clics[0].enDoc,
+            d1 ? d1.modo + ' · ' + (d1.blob ? d1.blob.type + ' ' + d1.blob.size + ' B' : 'sin blob') + ' · ' + JSON.stringify(clics) : 'sin descarga');
+          const sig = d1 && d1.blob ? new Uint8Array(await d1.blob.slice(0, 8).arrayBuffer()) : [];
+          ok('Descargar: el archivo es un PNG de verdad (firma)', sig[0] === 0x89 && sig[1] === 0x50 && sig[2] === 0x4e && sig[3] === 0x47);
+          ok('Descargar: avisa dónde buscarla', /descargas/.test(($('fq-descarga-msg') || {}).textContent || ''));
+          await verVineta('cuento'); $('fq-descargar').click(); const d2 = await descarga;
+          ok('Descargar: cada viñeta también se guarda (PNG)', d2 && d2.modo === 'enlace' && d2.blob && d2.blob.type === 'image/png' && clics.length === 2 && clics[1].download === 'vineta-familia-cuento.png', clics.map(c => c.download).join(', '));
+          // iOS: Safari no guarda bien un <a download>: abre la imagen en otra pestaña (abierta dentro del toque)
+          pruebaDescarga.ios = true;
+          window.open = function () { const w = { closed: false, location: { href: '' }, close() { this.closed = true; } }; abiertas.push(w); return w; };
+          $('fq-descargar').click();
+          const enToque = abiertas.length; const d3 = await descarga;
+          ok('Descargar en iOS: abre la imagen en otra pestaña para guardarla (sin <a download>)', enToque === 1 && d3 && d3.modo === 'pestaña' && /^blob:/.test(abiertas[0].location.href) && clics.length === 2, d3 && d3.modo);
+          window.open = () => null; $('fq-descargar').click(); const d4 = await descarga;
+          ok('Descargar en iOS sin pestaña: la imagen queda en el panel para mantenerla presionada', d4 && d4.modo === 'imagen' && !!raiz.querySelector('img.vineta') && /presionada/.test(($('fq-descarga-msg') || {}).textContent || ''));
+        } finally {
+          pruebaDescarga.ios = false;
+          window.fetch = fetch0; XMLHttpRequest.prototype.open = xhr0; if (beacon0) navigator.sendBeacon = beacon0; HTMLAnchorElement.prototype.click = click0; window.open = open0;
+        }
+        await espera(300);
+        try { if (po) { red.push(...po.takeRecords().map(e => e.name).filter(n => !/^(blob|data):/.test(n))); po.disconnect(); } } catch (e) { /* */ }
+        ok('Descargar: sin red (ninguna petición, fetch, XHR ni beacon), sin compartir (Web Share) y sin cuentas', !red.length && !llamadas.length && navigator.share === share0,
+          red.concat(llamadas).slice(0, 4).join(' | '));
+      }
 
       // Guardado: recargar
       const antes = JSON.stringify(estado.hechas);
