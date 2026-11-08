@@ -463,7 +463,7 @@ window.AVV18Puerto = function (G) {
   function descubrir() {
     if (estado() !== 'obra') return false;
     // si otra charla o un clear() cortaron la de la Ingeniera, su final no llega: con la caja cerrada se puede volver a empezar
-    if (A.descubriendo && G.dialogo && G.dialogo.activo && G.dialogo.activo()) return false;
+    if (A.descubriendo && G.dialogo && G.dialogo.open && G.dialogo.open()) return false; // QA-211: espera a una caja, no a los bocadillos (esos los corta)
     A.descubriendo = true;
     try { G.dialogo.cancelarLibre(); } catch (e) { /* QA-211: los bocadillos de llegada no siguen después de la caja, fuera de orden */ }
     N.decir('ingeniera', TXT.descubre, () => { A.descubriendo = false; if (avanzar('descubierto')) { quitarGuia(); aplicar(); } });

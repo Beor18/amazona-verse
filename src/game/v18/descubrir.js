@@ -412,15 +412,15 @@ window.AVV18Descubrir = function (G) {
       // QA-212: ni con una actividad V18 en marcha (la cuenta atrás del duelo, vista por G.menuModos.ocupado) ni con el menú de la portada
       // o la pausa abiertos; las dos pistas (la de inicio y «¿Oyes ese canto?») esperan
       {
-        const sapoBk = G.v18sapo, tit = document.getElementById('title'), titBk = !!(tit && tit.open);
+        const sapoBk = G.v18sapo, tit = document.getElementById('title'), titBk = !!(tit && tit.open), n0 = toasts.length;
         G.v18sapo = { estado: () => ({ fase: 'cuenta' }) }; // una actividad cualquiera de las que mira ocupado18(), en marcha
         const conDuelo = !!(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()), inicioDuelo = D.avisarInicio(); avisoInicio = false;
         const cercaDuelo = libre();
         if (sapoBk === undefined) delete G.v18sapo; else G.v18sapo = sapoBk;
         if (tit) tit.open = true; const inicioPortada = D.avisarInicio(); avisoInicio = false; const cercaPortada = libre(); if (tit) tit.open = titBk;
         check('QA-212 · Las pistas de la cotorra visitante esperan con una actividad V18 en marcha (G.menuModos.ocupado) y con el menú de la portada abierto',
-          (!G.menuModos || conDuelo) && inicioDuelo === false && !cercaDuelo && inicioPortada === false && !cercaPortada && !toasts.some(t => /Villa Raíz|canto/.test(t)) && libre(),
-          'ocupado ' + conDuelo + ' · inicio ' + inicioDuelo + '/' + inicioPortada + ' · cerca libre ' + cercaDuelo + '/' + cercaPortada + ' · ' + toasts.join(' | '));
+          (!G.menuModos || conDuelo) && inicioDuelo === false && !cercaDuelo && inicioPortada === false && !cercaPortada && !toasts.slice(n0).some(t => /Villa Raíz|canto/.test(t)) && libre(),
+          'ocupado ' + conDuelo + ' · inicio ' + inicioDuelo + '/' + inicioPortada + ' · cerca libre ' + cercaDuelo + '/' + cercaPortada + ' · ' + toasts.slice(n0).join(' | '));
       }
       avisoInicio = false;
       check('La pista de inicio sí sale en el cap. 1 con la historia libre', D.avisarInicio() === true && toasts.some(t => /Villa Raíz/.test(t)), toasts.join(' | ') + porQue());

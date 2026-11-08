@@ -242,7 +242,7 @@ window.AVV18Muelle = function (G) {
   // ---------- Pasos del jugador ----------
   function reunion() {
     if (estado() !== 'inicio' || !A.tengo) return false;
-    if (A.reuniendo && G.dialogo && G.dialogo.activo && G.dialogo.activo()) return false;
+    if (A.reuniendo && G.dialogo && G.dialogo.open && G.dialogo.open()) return false; // QA-211: espera a una caja, no a los bocadillos (esos los corta)
     A.reuniendo = true; try { G.dialogo.cancelarLibre(); } catch (e) { /* QA-211: los bocadillos de llegada no siguen después */ } quitarGuia();
     charla(TXT.reunion, () => { A.reuniendo = false; if (avanzar('plan')) aplicar(); });
     return true;
@@ -476,7 +476,7 @@ window.AVV18Muelle = function (G) {
       check('4 · Paso 1: al llegar, el Constructor y la Ingeniera cuentan su primer proyecto bueno (bocadillos)', A.llegada);
       cerrarCharlas(); try { G.dialogo.clear(); } catch (e) { /* */ }
       // QA-211: si la reunión empieza con los bocadillos de llegada en marcha, los corta (no siguen después de la caja, fuera de orden)
-      { try { G.dialogo.clear(); } catch (e) { /* */ } 
+      { try { G.dialogo.clear(); } catch (e) { /* */ } A.reuniendo = false;
         charla(TXT.llegada, null, { libre: true, caja: false }); const habia = !!G.dialogo.libre();
         const r = reunion(); const corta = r && !G.dialogo.libre() && G.dialogo.open();
         try { G.dialogo.clear(); } catch (e) { /* */ } A.reuniendo = false;
