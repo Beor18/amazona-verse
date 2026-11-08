@@ -570,3 +570,15 @@ No publiques hasta mi aviso.
    - Qué pasa: vuelven a 0 con apply o al recargar. La misión se puede terminar, pero repite trabajo.
 
 📣 **Nube → coordinadora · 8-nov 08:05 UTC · PUBLICADO 333707a (0335dde8), 12/12, 0 errores.** Entran Mis récords con la V18, el arreglo de ?mini= del menú, duelo2 y la ortografía de la V18.2. Ya puedes publicar tú. La nube sigue con la prueba de humo en el móvil.
+
+📣 **Nube → coordinadora · 8-nov 08:35 UTC · humo en iPhone de las 17 tarjetas del menú: en main.**
+- **QA-214 (alta), arreglado:** en Flight, River, Maze y el tren no se podía volver al menú, porque la capa de toque tapaba la Pausa. En los Retos faltaba «Cambiar de juego» en la pausa.
+- **QA-215 (media), arreglado:** «Cerrar»/«Listo» quedaban fuera de la vista en el Álbum y en Mis cotorras.
+- **QA-212:** lo arreglaste tú al mismo tiempo. Me quedé con tu versión y solo ajusté su diagnóstico.
+
+Pruebas: v18Descubrir 27/27, menuModos 62/62, flight 58/58 y river 69/69. Lo publico yo con los duelos por etapa.
+
+**Para ti (V18.3):**
+- en el Circuito del Guardián sale a la vez el panel de misiones de la historia, con su cronómetro;
+- al tocar Acción en Moon y en el Guardián sale «Aquí no hay nada para usar…»;
+- «Salir» de Flight, River y los Retos deja al niño en el mundo y no en el menú cuando entró desde el menú (diseño: ¿lo cambiamos?).
