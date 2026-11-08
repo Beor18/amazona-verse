@@ -361,3 +361,21 @@ Hallazgos y disposición (los tres quedan CERRADOS; ningún bug de producto):
 - **Family Quest:** el cuento en cadena se abre desde el diario, se completa con 4 clics y queda guardado (`hecha('cuento')` true).
 
 Veredicto: el recorrido de un niño nuevo en escritorio está sano punta a punta (cap1 → menú V18 → duelo → arco → Family Quest), 0 errores de consola, FPS 143–144 con draw calls ≤ 213 y heap ≤ 443 MB. Evidencia: `docs/img/kimi336/k336_k336-r2.*` (JSON + 6 JPG). La corrida `k336_k336-r1.*` queda sin trackear (primera pasada con el selector viejo de la herramienta, superseded por r2).
+
+## KIMI-338 · medición separada de eef133a0 «captura del cómic sin tirón» (8-nov-2026, HEAD 7bc7e9bf, GPU real RX 5700 XT, 1600×900)
+Encargo 📣 coordinadora (TAREAS_WEB.md 21:00 UTC): «mide eef133a0 por separado: pausas de más de 50 ms al saltar los eventos del cómic». Herramienta `tools/build/kimi1_338_comic.js`: A/B por archivo único `src/game/eventos.js` (eef133a0^ = «antes» / HEAD = «después», swap externo, restaurado y `git diff` vacío al cierre), entrada real portada→creador→Empezar→cap. 1 revelado, disparo real `G.eventos.log()` de las 14 claves CAPTURA, muestreo rAF continuo (tiempos de cuadro, pausas >50 ms y distancia al evento), verificación de captura por `G.mangaFondos`, WebGL2 confirmado, 0 errores de consola en las 7 corridas.
+
+| Corrida | brazo | mediana ms | p95 | pausas >50 ms | tiro >300 ms | capturas |
+|---|---|---|---|---|---|---|
+| k338-antes-r1 | eef133a0^ | 8,8 | 15,3 | 15 | 2 736 ms | 5/5 |
+| k338-antes-r2 | eef133a0^ | 15,6 | 23,7 | 17 | 2 836 ms | 5/5 |
+| k338-antes-r3 | eef133a0^ | 12,7 | 37,5 | 19 | 4 100 ms | 5/5 |
+| k338-post-r1 | eef133a0 | 13,5 | 34,2 | 5 | 3 174 ms | 5/5 |
+| k338-post-r2 | eef133a0 | 16,3 | 41,4 | 14 | 3 939 ms | 5/5 |
+| k338-post-r3 | eef133a0 | 13,4 | 33,0 | 9 | 3 758 ms | 5/5 |
+| k338-control-r1 | eef133a0, **sin eventos** | 11,0 | 32,9 | **0** | **ninguno** (máx 71 ms) | — |
+
+Veredicto (una fila por parche, método KIMI-326):
+- **El parche reduce a la mitad las pausas por evento pero no cumple la condición «pausas >50 ms».** Antes: ~15-19 pausas >50 ms por corrida (cada `log()` → un capture completo). Después: ~5-14 (dedup por momento + sin render extra). En GPU de escritorio el «antes» ya costaba solo ~65-140 ms por evento (un render extra + `drawImage` síncrono es barato en RX 5700 XT; los 3 569 ms del commit eran SwiftShader/CPU), así que el «después» (blits + PBO + JPEG) mide 50-90 ms por evento: empate práctico en este perfil. La mejora real del parche debe darse en GPU lenta/móvil; aquí no es medible.
+- **Hallazgo nuevo · QA-220: tiro de ~3-4 s al capturar el fondo «choque» (FirstHardLanding/FirstSplash), presente en AMBOS brazos (6/6 corridas con eventos, 0/1 control sin eventos).** Reproducible: con el mundo revelado en cap. 1, cada `G.eventos.log('FirstHardLanding'|'FirstSplash')` congela los cuadros 2,7-4,1 s. En el brazo viejo es un longtask de hilo (readback síncrono, p. ej. 4 082 ms en antes-r3). En el brazo nuevo NO hay longtask de 3 s durante la parada (el hilo sigue vivo: ticks cada 100 ms y el contador de renders avanza) → la parada es de producción de cuadros (GPU/ANGLE: la cadena `blitFramebuffer`×N + `readPixels` a PBO + `fenceSync` sincroniza la tubería de render). No es JavaScript lento del cómic. El parche no lo toca. Dueño probable: carril del cómic (eventos.js, «CM»). Repro: `node tools/build/kimi1_338_comic.js --etiqueta prueba` (o `--sin-eventos` para el control). Evidencia: `docs/img/kimi338/k338_k338-*.{json,jpg}`.
+- **Aviso de proceso · disco C: se llenó a 0 B durante la sesión (ENOSPC al escribir evidencia).** Causa principal medida: 68 procesos Chrome huérfanos acumulados de corridas headless de pruebas (árboles completos con caché del juego; `chrome.kill()` del arnés no reapa hijos en Windows). Matados filtrando por prefijo de perfil y el disco volvió a 9,8 GB libres. La herramienta de esta tarea ahora mata su árbol también en el camino de error. Los arneses de otras tareas convendría que hicieran lo mismo. Los `kimi336_k336-r1.*` siguen sin trackear a propósito (superseded, veredicto ya commiteado en la fila KIMI-336 de TAREAS_KIMI.md).
