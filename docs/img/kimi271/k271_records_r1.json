@@ -1,0 +1,67 @@
+{
+ "etiqueta": "r1",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "hora": "2026-11-08T08:12:00.126Z",
+ "perfiles": {
+  "movil": {
+   "perfil": "movil",
+   "gpu": "AMD Radeon RX 5700 XT",
+   "base": {
+    "claveV18": "amazonaverse.v18",
+    "abierto0": true,
+    "callsCerrado": 117,
+    "trisCerrado": 382092,
+    "geo": 145,
+    "tex": 138
+   },
+   "estados": {
+    "es_lleno": {
+     "abierto": true,
+     "tarjetas": 7,
+     "aunSin": 0,
+     "grande": 0,
+     "desborde": false,
+     "scrollW": 360,
+     "clientW": 360,
+     "innerW": 390,
+     "calls1": 138,
+     "calls2": 138,
+     "tris": 388702,
+     "fps": 26,
+     "titulo": "Aventuras con mi bandada Lo mejor de cada actividad."
+    },
+    "en_lleno": {
+     "abierto": true,
+     "tarjetas": 7,
+     "aunSin": 0,
+     "grande": 0,
+     "desborde": false,
+     "scrollW": 360,
+     "clientW": 360,
+     "innerW": 390,
+     "calls1": 132,
+     "calls2": 15,
+     "tris": 335550,
+     "fps": 11,
+     "titulo": "Adventures with my flock The best from each activity."
+    },
+    "es_vacio": {
+     "abierto": true,
+     "tarjetas": 7,
+     "aunSin": 6,
+     "grande": 0,
+     "desborde": false,
+     "scrollW": 360,
+     "clientW": 360,
+     "innerW": 390,
+     "calls1": 80,
+     "calls2": 90,
+     "tris": 166032,
+     "fps": 9,
+     "titulo": "Aventuras con mi bandada Lo mejor de cada actividad."
+    }
+   },
+   "erroresConsola": []
+  }
+ }
+}
