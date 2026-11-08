@@ -520,7 +520,7 @@ window.AVV18Fiesta = function (G) {
     const geos = () => (G.renderer.renderer && G.renderer.renderer.info.memory.geometries) || 0;
     const puntoPara = (cx, cz, r, id) => { for (const rr of [r, r * 0.6, r * 1.3]) for (let a = 0; a < 16; a++) { const x = cx + Math.cos(a * 0.3927) * rr, z = cz + Math.sin(a * 0.3927) * rr; ir(x, z, { x: cx, z: cz }); const n = G.interaccion.nearest(); if (n && n.id === id) return { x, z }; } return { x: cx, z: cz }; };
     // en un teléfono el botón tiene que verse y poder tocarse: en pantalla, ≥ 44 px y sin nada encima en su centro
-    const tocable = el => { if (!TACTIL) return true; const r = el.getBoundingClientRect(); if (r.width < 44 || r.height < 44 || r.right > innerWidth || r.bottom > innerHeight || r.left < 0 || r.top < 0) return false; const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!e && (e === el || el.contains(e)); };
+    const tocable = el => { if (!TACTIL) return true; const r = el.getBoundingClientRect(); if (el.offsetWidth < 44 || el.offsetHeight < 44 || r.right > innerWidth || r.bottom > innerHeight || r.left < 0 || r.top < 0) return false; const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!e && (e === el || el.contains(e)); };
     const posarse = p => { // llega volando encima del poste, deja de volar y cae con la física hasta la percha
       ir(p.x + 0.1, p.z + 0.1, null, p.top + 1.6); MV.flying = false; MV.grounded = false;
       for (let k = 0; k < 60 && !MV.grounded; k++) F.step(0.05, false);

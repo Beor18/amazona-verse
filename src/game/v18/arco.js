@@ -637,7 +637,7 @@ window.AVV18Arco = function (G) {
     const tocar = () => vigilar(() => G.input.actBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }))); // el botón Acción de la pantalla, como un dedo
     const tactil = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
     // en un teléfono el botón tiene que verse y poder tocarse: en pantalla, ≥ 44 px y sin nada encima (ni el panel de la misión) en su centro
-    const tocable = el => { if (!tactil) return true; const r = el.getBoundingClientRect(); if (r.width < 44 || r.height < 44 || r.right > innerWidth || r.bottom > innerHeight || r.left < 0 || r.top < 0) return false; const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!e && (e === el || el.contains(e)); };
+    const tocable = el => { if (!tactil) return true; const r = el.getBoundingClientRect(); if (el.offsetWidth < 44 || el.offsetHeight < 44 || r.right > innerWidth || r.bottom > innerHeight || r.left < 0 || r.top < 0) return false; const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return !!e && (e === el || el.contains(e)); };
     const cerrarCharlas = () => { for (let i = 0; i < 16 && G.dialogo.open(); i++) pulsar('e'); try { G.dialogo.cancelarLibre && G.dialogo.cancelarLibre(); } catch (e) { /* */ } };
     const geos = () => (G.renderer.renderer && G.renderer.renderer.info.memory.geometries) || 0;
     // un punto a r m de (cx, cz) donde lo más cercano para Acción es `id` (los tres y el invento están juntos en la plaza)
