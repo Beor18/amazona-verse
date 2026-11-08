@@ -476,6 +476,8 @@ window.AVV18Fiesta = function (G) {
   G.on('update', (dt, busy) => { if (!A.manual) paso(Math.min(dt, 0.1), busy); }, 76);
   G.on('apply', () => setTimeout(() => { A.reuniendo = false; soltarModo(); revisarElenco(); aplicar(); }, 0), 99);
   G.on('v18', ev => { if (ev && ev.tipo === 'mundo' && (ev.id === ID || /^v18_fiesta_/.test(ev.id || '') || ev.id === 'arco_muelle')) aplicar(); if (ev && ev.tipo === 'evo') pagarXP(); });
+  // la cotorra elegida cambió (Mis cotorras): el encuentro usa su poder, no el de la que había al empezar
+  G.on('v18', ev => { if (ev && ev.tipo === 'especie' && ev.estado === 'seleccionada' && A.j && !A.manual) A.j = nuevoJugador(); });
 
   function validar() {
     if (!T.mapa) return false;

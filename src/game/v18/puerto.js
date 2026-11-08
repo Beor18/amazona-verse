@@ -760,6 +760,8 @@ window.AVV18Puerto = function (G) {
   G.on('update', (dt, busy) => { if (!A.manual) paso(Math.min(dt, 0.1), busy); }, 73);
   G.on('apply', () => setTimeout(() => { restaurarPaso(); A.frenando = false; maq.mueve = null; soltarModo(); aplicar(); }, 0), 97);
   G.on('v18', ev => { if (!ev) return; if (ev.tipo === 'mundo' && (ev.id === ID || /^v18_puerto_/.test(ev.id || '') || ev.id === 'puente_villa')) aplicar(); if (ev.tipo === 'evo') pagarXP(); });
+  // la cotorra elegida cambió (Mis cotorras): el encuentro usa su poder, no el de la que había al empezar
+  G.on('v18', ev => { if (ev && ev.tipo === 'especie' && ev.estado === 'seleccionada' && A.j && !A.manual) A.j = nuevoJugador(); });
 
   // ---------- Arranque: el mundo real y el sitio medido ----------
   function validar() {
