@@ -23,6 +23,11 @@
    - Descubrimientos (CG-49), solo lectura de claves del dispositivo: `<almacen>.trucos` (mejor combo), `.escondite` (mejor
      tiempo en segundos), `.ciudadVisitas` (vistos, de 12), `.marana` (limpios, de 5), `.vecinos` (coquí, lagartijo, mariposa)
      y `.humor` (siestas). Insignias que se llenan. Sin compras ni cajas. «Nuevo estudiante» las borra en boot.js.
+   - Aventuras con mi bandada (V18), solo lectura de `<almacen>.v18` (progreso.js v2, sin formatos nuevos): minigolf
+     (mundo.minigolf_villa: golpes y medalla), Chispa (carrera_chispa: mejor ms), Moon (entreno_moon: menos toques), Guardián
+     (circuito_guardian: mejor vuelta en ms), duelos ganados (mundo.duelos_ganados y con qué cotorra: otorgados duelo_gana_<sp>),
+     nivel de cada cotorra con su etapa (evo.esp, nivel desde la XP) y alianzas desbloqueadas (evo.alianzas). Sin datos: «Aún sin…».
+     Textos en ES aquí y en EN en content/cap1/en.js. El progreso no guarda duelos por etapa: se ve la etapa actual de cada cotorra.
 
    COMPARTIR (sin subir nada a ningún servidor)
    - Puerta para adultos: «Pide ayuda a un adulto», una suma de dos cifras al azar con 3 opciones. Tres fallos cierran la puerta.
@@ -39,9 +44,11 @@
     if (G.recordsApi) return G.recordsApi;
     const S = G.S, $ = G.util.$;
     const ALM = (G.pack.meta && G.pack.meta.almacen) || G.pack.id;
-    // Claves del dispositivo (las pruebas las cambian un momento por claves `.prueba`)
+    // Claves del dispositivo (las pruebas las cambian un momento por claves `.prueba`). `.v18` es el progreso V18
+    // (src/game/v18/progreso.js): aquí solo se lee
     const CLAVE = { retos: ALM + '.retos', criadero: ALM + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero'), casa: ALM + '.records',
-      trucos: ALM + '.trucos', escondite: ALM + '.escondite', ciudad: ALM + '.ciudadVisitas', marana: ALM + '.marana', vecinos: ALM + '.vecinos', humor: ALM + '.humor' };
+      trucos: ALM + '.trucos', escondite: ALM + '.escondite', ciudad: ALM + '.ciudadVisitas', marana: ALM + '.marana', vecinos: ALM + '.vecinos', humor: ALM + '.humor',
+      v18: ALM + '.v18' };
     const MAX_CASA = 24; // cotorras distintas en el libro
     const PARTICIPANTES_MAX = 9;
     const esObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -228,6 +235,7 @@
         especies: { total: cat.vivas.length, vistas: ids.filter(id => vistas.has(id)).map(id => ({ id, nombre: nombreEspecie(id, cat) })) },
         casa: Object.entries(casa.jugadores).sort(ordenCasa).map(([nombre, e]) => ({ nombre, carrera: e.carrera, tormenta: e.tormenta })),
         descubrimientos: descubrimientosDe(),
+        v18: v18De(leerJSON(CLAVE.v18)),
       };
     }
     function idsDe(d, campo, tope) {
@@ -251,6 +259,50 @@
         vecinos: idsDe(ve, 'vistos', 3).filter(id => vecinosOk.includes(id)),
         siestas: hu ? ent(hu.siestas, 999) : 0,
       };
+    }
+    // V18 (solo lectura del progreso `<almacen>.v18`, el formato de progreso.js v2; nada nuevo): minigolf, Chispa, Moon,
+    // Guardián, duelos ganados, niveles y alianzas. Una partida sin V18 (o con datos dañados) da todo vacío y el panel dice «Aún sin…».
+    // Etapas y alianzas: las de G.v18evo si está cargado; si no, sus nombres (los mismos de evolucion.js, ETAPAS_ESP y ALIANZAS).
+    const ETAPAS_V18 = [[30, 'Maestro'], [20, 'Guardián'], [10, 'Despertar'], [1, 'Aprendiz']];
+    const ALIANZAS_V18 = { eco_protector: 'Eco Protector', lluvia_guiada: 'Lluvia Guiada', viento_cruzado: 'Viento Cruzado', destello_piton: 'Destello del Pitón', marea_lluvia: 'Marea de Lluvia', rafaga_volcan: 'Ráfaga Volcánica' };
+    const ID_V18 = /^[a-z][a-z0-9_]{1,31}$/;
+    function v18De(d) {
+      const ok = esObj(d), m = ok && esObj(d.mundo) ? d.mundo : {}, ot = ok && esObj(d.otorgados) ? d.otorgados : {}, evo = ok && esObj(d.evo) ? d.evo : {};
+      const obj = k => (esObj(m[k]) ? m[k] : {});
+      const g = obj('minigolf_villa'), ch = obj('carrera_chispa'), mo = obj('entreno_moon'), gu = obj('circuito_guardian');
+      // moon.js: el mejor es el mínimo de toques en un entreno ganado (0 vale)
+      const toques = Number.isInteger(mo.mejor) && mo.mejor >= 0 && mo.mejor <= 3 ? mo.mejor : null;
+      const ev = G.v18evo, nivelDe = ev && typeof ev.nivelDe === 'function' ? ev.nivelDe : null;
+      const esp = esObj(evo.esp) ? evo.esp : {}, niveles = [];
+      for (const [sp, r] of Object.entries(esp)) {
+        if (!ID_V18.test(sp) || !esObj(r)) continue;
+        const xp = Number.isFinite(r.xp) && r.xp > 0 ? Math.floor(r.xp) : 0;
+        // evolucion.js recalcula el nivel desde la XP; sin el módulo cargado, el nivel guardado
+        const nivel = nivelDe ? nivelDe(xp) : ent(r.nivel, 40);
+        if (xp > 0 && nivel >= 1) niveles.push({ id: sp, nivel });
+      }
+      niveles.sort((a, b) => b.nivel - a.nivel || a.id.localeCompare(b.id));
+      const nombresAli = Object.assign({}, ALIANZAS_V18), lista = ev && Array.isArray(ev.ALIANZAS) ? ev.ALIANZAS : null;
+      if (lista) for (const a of lista) if (a && ID_V18.test(a.id) && typeof a.nombre === 'string') nombresAli[a.id] = a.nombre;
+      const ali = esObj(evo.alianzas) ? evo.alianzas : {};
+      const alianzas = Object.keys(nombresAli).filter(id => ali[id] === 'desbloqueada').map(id => ({ id, nombre: nombresAli[id] }));
+      // nuevas.js: duelos ganados contra la rival; partidas con la primera victoria ya pagada (combate_1) empiezan en 1
+      const dg = ent(m.duelos_ganados, 9999) || (ot.combate_1 === true ? 1 : 0);
+      const conQuien = Object.keys(ot).filter(k => ot[k] === true && /^duelo_gana_[a-z]{3,24}$/.test(k)).map(k => k.slice(11)).slice(0, 40);
+      return {
+        hay: ok,
+        golf: { mejor: ent(g.mejor, 99) || null, medalla: MEDALLAS_RIO.includes(g.medalla) ? g.medalla : null },
+        chispa: { mejor: num(ch.mejor), ganadas: ent(ch.ganadas), jugadas: ent(ch.jugadas) },
+        moon: { mejor: toques, victorias: ent(mo.victorias), jugadas: ent(mo.jugadas) },
+        guardian: { mejor: num(gu.mejor), vueltas: ent(gu.vueltas), jugadas: ent(gu.jugadas) },
+        duelos: { ganados: dg, con: conQuien },
+        niveles: niveles.slice(0, 40), alianzas, alianzasTotal: Object.keys(nombresAli).length,
+      };
+    }
+    function etapaV18(n) {
+      const ev = G.v18evo;
+      if (ev && Array.isArray(ev.ETAPAS_ESP) && typeof ev.etapaIdx === 'function') { const e = ev.ETAPAS_ESP[ev.etapaIdx(n)]; if (e && e.nombre) return e.nombre; }
+      return (ETAPAS_V18.find(e => n >= e[0]) || ETAPAS_V18[3])[1];
     }
     function especiesDeCrias(d) {
       const caps = esObj(d) && esObj(d.capsulas) ? d.capsulas : {}, out = [];
@@ -422,6 +474,9 @@
 #records .rec-vecinos { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
 #records .rec-vecinos i { font-style: normal; padding: 1px 8px; border-radius: var(--r-pill); border: 1px solid #cfc7b4; color: var(--c-ink-muted); }
 #records .rec-vecinos i.llena { background: #e3f6e6; border-color: #3f9a55; color: var(--c-ink); }
+#records .rec-v18-niv { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+#records .rec-v18-niv li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px var(--sp-3); font-size: var(--fs-sm); color: var(--c-ink-muted); }
+#records .rec-v18-niv b { font: 700 var(--fs-sm)/1.3 var(--font-display); color: var(--c-ink); font-variant-numeric: tabular-nums; }
 #records .rec-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--sp-2) var(--sp-3); padding: var(--sp-3) var(--sp-5) max(var(--sp-3), env(safe-area-inset-bottom, 0px)); border-top: 3px dotted var(--c-paper-edge); }
 #records .rec-estado { flex: 1 1 200px; min-width: 0; margin: 0; font-size: var(--fs-sm); color: var(--c-ink-muted); }
 #records .rec-pie .btn[aria-disabled="true"] { filter: grayscale(.6); opacity: .6; }
@@ -555,12 +610,59 @@
         ${ins(u.siestas / 3, String(u.siestas), tx('siestas'), esc(u.siestas ? tx('siestasHechas') : tx('sinSiesta')))}
       </ul></section>`;
     }
+    // Textos de la sección V18: en español aquí y en inglés en content/cap1/en.js (el mismo diccionario de idioma.js); {} = dato
+    function t18(es) {
+      let s = es;
+      if (idioma() === 'en') { const d = window.AV_EN; if (d && typeof d[es] === 'string') s = d[es]; else if (G.idioma && G.idioma.tr) s = G.idioma.tr(es); }
+      const v = [].slice.call(arguments, 1); let i = 0;
+      return s.replace(/\{\}/g, () => { const x = v[i++]; return x == null ? '' : String(x); });
+    }
+    // La sección sale siempre, salvo con la bandera V18 apagada y sin nada que mostrar (?v18=0 o amazonaverse.v18on = '0', boot.js)
+    function v18Visible(d) {
+      if (G.v18 || d.v18.hay) return true;
+      let off = /[?&]v18=0(&|$)/.test(location.search);
+      try { off = off || localStorage.getItem('amazonaverse.v18on') === '0'; } catch (e) { /* sin almacén */ }
+      return !off;
+    }
+    // Como en los avisos de evolucion.js: Vittata por su nombre y las demás con su nombre común en mayúscula inicial
+    function nombreCotorra(id) { if (id === 'vittata') return 'Vittata'; const n = String(nombreEspecie(id, catalogo())); return n.charAt(0).toUpperCase() + n.slice(1); }
+    function htmlV18(d) {
+      if (!v18Visible(d)) return '';
+      const v = d.v18, g = v.golf, ch = v.chispa, mo = v.moon, gu = v.guardian, du = v.duelos;
+      const nada = txt => `<p>${esc(txt)}</p>`;
+      const jug = n => (n ? `<dl>${dato(tx('jugadas'), n)}</dl>` : '');
+      const golf = g.mejor
+        ? `<div class="rec-grande">${medalla(g.medalla, g.medalla ? '★' : null)}<div><b class="rec-num">${g.mejor}</b><small>${esc(t18('Golpes en su mejor hoyo (par 3)'))}${g.medalla ? ' · ' + esc(tx(g.medalla)) : ''}</small></div></div>`
+        : nada(t18('Aún sin hoyo. ¡Juega al minigolf!'));
+      const chispa = ch.mejor
+        ? `<div class="rec-grande"><div><b class="rec-num">${reloj(ch.mejor / 1000)}</b><small>${esc(tx('mejorTiempo'))}</small></div></div><dl>${dato(tx('ganadas'), ch.ganadas)}${dato(tx('jugadas'), ch.jugadas)}</dl>`
+        : nada(t18('Aún sin victoria. ¡Échale una carrera!')) + jug(ch.jugadas);
+      const moon = mo.mejor != null
+        ? `<div class="rec-grande"><div><b class="rec-num">${mo.mejor}</b><small>${esc(t18('Toques en su mejor entreno (menos es mejor)'))}</small></div></div><dl>${dato(t18('Entrenos ganados'), mo.victorias)}${dato(tx('jugadas'), mo.jugadas)}</dl>`
+        : nada(t18('Aún sin entreno ganado. ¡Prueba con Moon!')) + jug(mo.jugadas);
+      const guardian = gu.mejor
+        ? `<div class="rec-grande"><div><b class="rec-num">${reloj(gu.mejor / 1000)}</b><small>${esc(t18('Mejor vuelta'))}</small></div></div><dl>${dato(t18('Vueltas completadas'), gu.vueltas)}${dato(tx('jugadas'), gu.jugadas)}</dl>`
+        : nada(t18('Aún sin vuelta. ¡Vuela el circuito!')) + jug(gu.jugadas);
+      const duelos = du.ganados
+        ? `<div class="rec-grande"><div><b class="rec-num">${du.ganados}</b><small>${esc(t18('Duelos ganados'))}</small></div></div>${du.con.length ? `<p>${esc(t18('Ganaste con:'))}</p><ul class="rec-chips">${du.con.map(sp => `<li>${esc(nombreCotorra(sp))}</li>`).join('')}</ul>` : ''}`
+        : nada(t18('Aún sin duelos ganados. ¡Reta a la Campeona!'));
+      const niveles = v.niveles.length
+        ? `<ul class="rec-v18-niv">${v.niveles.map(n => `<li><span>${esc(nombreCotorra(n.id))}</span><b>${esc(t18('Nv {}', n.nivel))} · ${esc(t18(etapaV18(n.nivel)))}</b></li>`).join('')}</ul>`
+        : nada(t18('Aún sin niveles. ¡Juega con tu cotorra para subir!'));
+      const alianzas = v.alianzas.length
+        ? `<div class="rec-grande"><b class="rec-num">${v.alianzas.length} <small>${esc(tx('de'))} ${v.alianzasTotal}</small></b></div><ul class="rec-chips">${v.alianzas.map(a => `<li>${esc(t18(a.nombre))}</li>`).join('')}</ul>`
+        : nada(t18('Aún sin alianzas. ¡Sube una cotorra al nivel 10!'));
+      const card = (k, h, cuerpo) => `<article class="rec-card" data-v18="${k}"><h4>${esc(h)}</h4>${cuerpo}</article>`;
+      return `<section class="rec-sec" id="rec-v18" aria-labelledby="rec-h-v18"><h3 id="rec-h-v18">${esc(t18('Aventuras con mi bandada'))} <small>${esc(t18('Lo mejor de cada actividad.'))}</small></h3><div class="rec-grid">
+        ${card('golf', t18('Minigolf de Villa Raíz'), golf)}${card('chispa', t18('Carrera con Chispa'), chispa)}${card('moon', t18('Entrenamiento con Moon'), moon)}${card('guardian', t18('Circuito del Primer Vuelo'), guardian)}
+        ${card('duelos', t18('Duelos contra la Campeona'), duelos)}${card('niveles', t18('Niveles de mis cotorras'), niveles)}${card('alianzas', t18('Alianzas de bandada'), alianzas)}</div></section>`;
+    }
     function pintar() {
       if (!root) return;
       const d = leer(), hay = !!d.retos.carrera.mejor;
       root.querySelector('#rec-titulo').textContent = tx('titulo');
       root.querySelectorAll('[data-rec-cerrar]').forEach(b => { b.textContent = tx('cerrar'); });
-      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlDescubrimientos(d)}${G.retosDia ? G.retosDia.htmlRecords() : ''}${htmlRetos(d)}${htmlHistoria(d)}${G.marcador ? G.marcador.htmlRecords() : ''}${htmlCasa(d)}`;
+      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlDescubrimientos(d)}${G.retosDia ? G.retosDia.htmlRecords() : ''}${htmlRetos(d)}${htmlV18(d)}${htmlHistoria(d)}${G.marcador ? G.marcador.htmlRecords() : ''}${htmlCasa(d)}`;
       const b = root.querySelector('#rec-compartir');
       b.textContent = tx('compartirRecord'); b.setAttribute('aria-disabled', String(!hay));
       b.title = hay ? '' : tx('sinCarrera');
@@ -988,7 +1090,7 @@
       const antes = claves.map(raw), sAntes = comparable();
       const orig = Object.assign({}, CLAVE), idiomaAntes = G.aula && G.aula.aj ? G.aula.aj.idioma : null;
       const pruebas = { retos: orig.retos + '.prueba', criadero: orig.criadero + '.prueba', casa: orig.casa + '.prueba',
-        trucos: orig.trucos + '.prueba', escondite: orig.escondite + '.prueba', ciudad: orig.ciudad + '.prueba', marana: orig.marana + '.prueba', vecinos: orig.vecinos + '.prueba', humor: orig.humor + '.prueba' };
+        trucos: orig.trucos + '.prueba', escondite: orig.escondite + '.prueba', ciudad: orig.ciudad + '.prueba', marana: orig.marana + '.prueba', vecinos: orig.vecinos + '.prueba', humor: orig.humor + '.prueba', v18: orig.v18 + '.prueba' };
       const quitar = () => { for (const k of Object.values(pruebas)) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } delete mem[k]; } };
       const cerrarTodo = () => { if (puertaAbierta) cerrarPuerta(false); if (abierto) cerrar(); };
       const nuevoS = (nombre, extra) => Object.assign({ profile: { created: true, name: nombre, look: { species: 'oratrix' } }, complete: false, step: 2, clock: 600, events: [], field: [] }, extra);
@@ -999,7 +1101,12 @@
       const suma = () => { const m = /(\d+) \+ (\d+)/.exec(($('rp-q') || {}).textContent || ''); return m ? +m[1] + +m[2] : null; };
       const botonesPuerta = () => [...document.querySelectorAll('#rec-puerta [data-v]')];
       const acertar = async () => { await espera(() => puertaAbierta && suma() != null); const ok = botonesPuerta().find(b => +b.dataset.v === suma()); if (ok) ok.click(); return !!ok; };
-      let disp = null;
+      let disp = null, enCargado = false;
+      // content/cap1/en.js solo se descarga con el idioma EN: la prueba lo carga un momento si hace falta y luego lo quita
+      const cargarEN = () => (window.AV_EN ? Promise.resolve(true) : new Promise(res => {
+        const sc = document.createElement('script'); sc.src = 'content/cap1/en.js'; sc.dataset.recPrueba = '1';
+        sc.onload = () => { enCargado = true; res(!!window.AV_EN); }; sc.onerror = () => res(false); document.head.appendChild(sc);
+      }));
       const quieta = G.quiet; G.guardado.suspender(true); G.quiet = true; // el guardado automático no escribe mientras dura la prueba
       try {
         quitar(); simulada = { S: sFin };
@@ -1051,6 +1158,45 @@
         localStorage.setItem(pruebas.ciudad, JSON.stringify({ vistos: [1, 'fruta', 'fruta', '<script>'] }));
         pintar();
         check('Datos dañados de descubrimientos no rompen el panel', !!root.querySelector('#rec-descubrimientos') && /Aún sin combo/.test(root.textContent) && /1\/12/.test(root.querySelector('#rec-descubrimientos').textContent));
+        // ---------- Sección V18 (solo lectura de `<almacen>.v18`) ----------
+        const secV18 = () => root.querySelector('#rec-v18'), tarjeta = k => (root.querySelector(`#rec-v18 [data-v18="${k}"]`) || {}).textContent || '';
+        const plano = el => (el ? el.textContent.replace(/\s+/g, ' ') : '');
+        const numero = k => ((root.querySelector(`#rec-v18 [data-v18="${k}"] .rec-num`) || {}).textContent || '').trim();
+        localStorage.removeItem(pruebas.v18); pintar();
+        const vacia = plano(secV18()), tarjetas18 = ['golf', 'chispa', 'moon', 'guardian', 'duelos', 'niveles', 'alianzas'];
+        check('V18 · Una partida vieja sin datos V18 enseña las 7 tarjetas con «Aún sin…»', !!secV18() && tarjetas18.every(k => /Aún sin/.test(tarjeta(k))) && (vacia.match(/Aún sin/g) || []).length === 7 && /Aventuras con mi bandada/.test(vacia), vacia.slice(0, 160));
+        const v18Datos = { v: 2, especies: { arausiaca: 'seleccionable' }, inv: {}, otorgados: { combate_1: true, duelo_gana_vittata: true, duelo_gana_arausiaca: true }, sel: 'vittata',
+          mundo: { minigolf_villa: { mejor: 3, medalla: 'oro' }, carrera_chispa: { mejor: 41300, ganadas: 2, jugadas: 5, xp: true }, entreno_moon: { mejor: 0, victorias: 1, jugadas: 4, xp: true }, circuito_guardian: { mejor: 75250, vueltas: 3, jugadas: 3, xp: true }, duelos_ganados: 4, puente_villa: 'reparado' },
+          evo: { esp: { vittata: { xp: 553, nivel: 12, mejoras: {}, variante: null }, arausiaca: { xp: 1540, nivel: 21, mejoras: {}, variante: null }, agilis: { xp: 0, nivel: 1, mejoras: {}, variante: null } }, alianzas: { eco_protector: 'desbloqueada', lluvia_guiada: 'disponible' }, alianzaSel: 'eco_protector', marcas: {}, dia: { fecha: '', por: {} }, retro: true } };
+        const crudo18 = JSON.stringify(v18Datos);
+        localStorage.setItem(pruebas.v18, crudo18); pintar();
+        const lleno = plano(secV18());
+        check('V18 · Minigolf: mejor resultado (3 golpes) y su medalla de oro', numero('golf') === '3' && /Oro/.test(tarjeta('golf')) && !!root.querySelector('#rec-v18 [data-v18="golf"] .rec-m.oro'), tarjeta('golf').replace(/\s+/g, ' '));
+        check('V18 · Chispa, Moon (0 toques también es marca) y el Guardián con sus mejores marcas', /0:41\.3/.test(tarjeta('chispa')) && /Carreras ganadas\s*2/.test(tarjeta('chispa')) && numero('moon') === '0' && /Entrenos ganados\s*1/.test(tarjeta('moon')) && !/Aún sin/.test(tarjeta('moon')) && /1:15\.3/.test(tarjeta('guardian')) && /Vueltas completadas\s*3/.test(tarjeta('guardian')),
+          ['chispa', 'moon', 'guardian'].map(k => tarjeta(k).replace(/\s+/g, ' ')).join(' | '));
+        const filasNiv = [...root.querySelectorAll('#rec-v18 .rec-v18-niv li')].map(plano);
+        check('V18 · Duelos ganados (4) con quién, nivel más alto de cada cotorra con su etapa y alianzas logradas (1 de 6)', numero('duelos') === '4' && root.querySelectorAll('#rec-v18 [data-v18="duelos"] .rec-chips li').length === 2 &&
+          filasNiv.length === 2 && /Nv 21 · Guardián/.test(filasNiv[0]) && /Vittata/.test(filasNiv[1]) && /Nv 12 · Despertar/.test(filasNiv[1]) && /1 de 6/.test(tarjeta('alianzas')) && /Eco Protector/.test(tarjeta('alianzas')) && !/Lluvia Guiada/.test(tarjeta('alianzas')), filasNiv.join(' | '));
+        // `<almacen>.v18` real no entra en la lista de intactos: progreso.js lo escribe solo con el juego en marcha. Aquí se mira la de prueba
+        check('V18 · Sin rankings ni nada en línea, y la clave V18 no se toca al leer', !/ranking|online|en línea|leaderboard/i.test(lleno) && raw(pruebas.v18) === crudo18);
+        const cajas18 = [...root.querySelectorAll('#rec-v18 .rec-card')];
+        check('V18 · Las tarjetas no se desbordan a lo ancho y tienen título (h4) para el lector', cajas18.length === 7 && cajas18.every(c => c.scrollWidth <= c.clientWidth + 1 && c.querySelector('h4')) && secV18().getAttribute('aria-labelledby') === 'rec-h-v18', `${window.innerWidth} px`);
+        localStorage.setItem(pruebas.v18, JSON.stringify({ v: 1, otorgados: { combate_1: true }, mundo: {}, especies: {}, inv: {}, sel: null })); pintar();
+        check('V18 · Partida v1 con la primera victoria ya pagada cuenta 1 duelo ganado', numero('duelos') === '1' && !/Aún sin/.test(tarjeta('duelos')) && /Aún sin/.test(tarjeta('golf')));
+        localStorage.setItem(pruebas.v18, JSON.stringify({ v: 2, mundo: { minigolf_villa: 'x', carrera_chispa: { mejor: -4 }, entreno_moon: { mejor: 99 }, circuito_guardian: null, duelos_ganados: '<b>' }, otorgados: [], evo: { esp: { '<x>': { xp: 9 }, vittata: 'nada' }, alianzas: 'todas' } })); pintar();
+        check('V18 · Datos dañados no rompen el panel y enseñan «Aún sin…»', !!secV18() && (plano(secV18()).match(/Aún sin/g) || []).length === 7 && !root.querySelector('#rec-v18 b:empty, #rec-v18 script'));
+        localStorage.setItem(pruebas.v18, 'basura'); pintar();
+        check('V18 · Un almacén V18 ilegible tampoco rompe nada', (plano(secV18()).match(/Aún sin/g) || []).length === 7);
+        if (G.aula && G.aula.aj && await cargarEN()) {
+          localStorage.setItem(pruebas.v18, crudo18);
+          G.aula.aj.idioma = 'en'; pintar();
+          const en18 = plano(secV18());
+          check('V18 · También en inglés (textos de content/cap1/en.js)', /Adventures with my flock/.test(en18) && /Villa Raíz Mini Golf/.test(en18) && /Strokes on your best hole/.test(en18) && /Gold/.test(en18) && /Duels won/.test(en18) && /Lv 21 · Guardian/.test(en18) && /Protective Echo/.test(en18) && /1 of 6/.test(en18) && !/Aún sin|Duelos|Golpes/.test(en18), en18.slice(0, 200));
+          localStorage.removeItem(pruebas.v18); pintar();
+          check('V18 · En inglés, sin datos: «No … yet»', (plano(secV18()).match(/ yet/g) || []).length === 7, plano(secV18()).slice(0, 160));
+          G.aula.aj.idioma = idiomaAntes; pintar();
+        }
+        localStorage.removeItem(pruebas.v18);
         // ---------- La casa ----------
         check('Con una sola cotorra la casa explica que aquí saldrán las demás', /varias cotorras/.test(root.textContent) && !root.querySelector('.rec-casa'));
         const ana = nuevoS('Ana Luna'), beto = nuevoS('Beto Mar'), tel = nuevoS('Cielo 787 555 0123');
@@ -1163,6 +1309,7 @@
       } finally {
         cerrarTodo();
         Object.assign(CLAVE, orig); simulada = null; quitar();
+        if (enCargado) { delete window.AV_EN; document.querySelectorAll('script[data-rec-prueba]').forEach(el => el.remove()); }
         G.guardado.suspender(false); G.quiet = quieta;
         if (G.aula && G.aula.aj && idiomaAntes) G.aula.aj.idioma = idiomaAntes;
         etiquetas();

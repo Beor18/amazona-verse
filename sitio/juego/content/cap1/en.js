@@ -2372,5 +2372,24 @@ window.AV_EN = {
  "{}: mira a los escombros y pulsa Acción o G": "{}: face the rubble and press Action or G",
  "Toca Poder mirando a los escombros": "Tap Power while facing the rubble",
  "Ahora reparo con ustedes. ¡Esa es mi mejor obra!": "Now I fix things with you. That's my best work!",
- "Si ves algo roto en la isla, avísame: lo arreglamos juntos.": "If you see something broken on the island, tell me: we'll fix it together."
+ "Si ves algo roto en la isla, avísame: lo arreglamos juntos.": "If you see something broken on the island, tell me: we'll fix it together.",
+ // Mis récords · sección V18 (src/game/records.js, htmlV18)
+ "Aventuras con mi bandada": "Adventures with my flock",
+ "Lo mejor de cada actividad.": "The best from each activity.",
+ "Golpes en su mejor hoyo (par 3)": "Strokes on your best hole (par 3)",
+ "Aún sin hoyo. ¡Juega al minigolf!": "No hole yet. Play mini golf!",
+ "Aún sin victoria. ¡Échale una carrera!": "No win yet. Race her!",
+ "Toques en su mejor entreno (menos es mejor)": "Hits in your best training (fewer is better)",
+ "Entrenos ganados": "Trainings won",
+ "Aún sin entreno ganado. ¡Prueba con Moon!": "No training won yet. Try it with Moon!",
+ "Mejor vuelta": "Best lap",
+ "Vueltas completadas": "Laps completed",
+ "Aún sin vuelta. ¡Vuela el circuito!": "No lap yet. Fly the circuit!",
+ "Duelos contra la Campeona": "Duels against the Champion",
+ "Duelos ganados": "Duels won",
+ "Ganaste con:": "You won with:",
+ "Aún sin duelos ganados. ¡Reta a la Campeona!": "No duels won yet. Challenge the Champion!",
+ "Niveles de mis cotorras": "My parrots' levels",
+ "Aún sin niveles. ¡Juega con tu cotorra para subir!": "No levels yet. Play with your parrot to level up!",
+ "Aún sin alianzas. ¡Sube una cotorra al nivel 10!": "No alliances yet. Get a parrot to level 10!"
 };
