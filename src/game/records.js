@@ -624,7 +624,8 @@
       try { off = off || localStorage.getItem('amazonaverse.v18on') === '0'; } catch (e) { /* sin almacén */ }
       return !off;
     }
-    function nombreCotorra(id) { return id === 'vittata' ? 'Vittata' : nombreEspecie(id, catalogo()); }
+    // Como en los avisos de evolucion.js: Vittata por su nombre y las demás con su nombre común en mayúscula inicial
+    function nombreCotorra(id) { if (id === 'vittata') return 'Vittata'; const n = String(nombreEspecie(id, catalogo())); return n.charAt(0).toUpperCase() + n.slice(1); }
     function htmlV18(d) {
       if (!v18Visible(d)) return '';
       const v = d.v18, g = v.golf, ch = v.chispa, mo = v.moon, gu = v.guardian, du = v.duelos;
@@ -1085,7 +1086,7 @@
       const VOLATIL = ['clock', 'pos', 'vy', 'facing', 'water', 'event', 'marcador']; // marcador: el cronómetro sigue contando mientras corre la prueba
       const comparable = () => JSON.stringify(Object.fromEntries(Object.entries(S).filter(([k]) => !VOLATIL.includes(k))));
       const raw = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-      const claves = [G.guardado.KEY, G.guardado.KEY + '.tmp', G.guardado.KEY + '.prev', CLAVE.retos, CLAVE.criadero, CLAVE.casa, CLAVE.trucos, CLAVE.escondite, CLAVE.ciudad, CLAVE.marana, CLAVE.vecinos, CLAVE.humor, CLAVE.v18, G.pack.aula && G.pack.aula.clave].filter(Boolean);
+      const claves = [G.guardado.KEY, G.guardado.KEY + '.tmp', G.guardado.KEY + '.prev', CLAVE.retos, CLAVE.criadero, CLAVE.casa, CLAVE.trucos, CLAVE.escondite, CLAVE.ciudad, CLAVE.marana, CLAVE.vecinos, CLAVE.humor, G.pack.aula && G.pack.aula.clave].filter(Boolean);
       const antes = claves.map(raw), sAntes = comparable();
       const orig = Object.assign({}, CLAVE), idiomaAntes = G.aula && G.aula.aj ? G.aula.aj.idioma : null;
       const pruebas = { retos: orig.retos + '.prueba', criadero: orig.criadero + '.prueba', casa: orig.casa + '.prueba',
@@ -1176,6 +1177,7 @@
         const filasNiv = [...root.querySelectorAll('#rec-v18 .rec-v18-niv li')].map(plano);
         check('V18 · Duelos ganados (4) con quién, nivel más alto de cada cotorra con su etapa y alianzas logradas (1 de 6)', numero('duelos') === '4' && root.querySelectorAll('#rec-v18 [data-v18="duelos"] .rec-chips li').length === 2 &&
           filasNiv.length === 2 && /Nv 21 · Guardián/.test(filasNiv[0]) && /Vittata/.test(filasNiv[1]) && /Nv 12 · Despertar/.test(filasNiv[1]) && /1 de 6/.test(tarjeta('alianzas')) && /Eco Protector/.test(tarjeta('alianzas')) && !/Lluvia Guiada/.test(tarjeta('alianzas')), filasNiv.join(' | '));
+        // `<almacen>.v18` real no entra en la lista de intactos: progreso.js lo escribe solo con el juego en marcha. Aquí se mira la de prueba
         check('V18 · Sin rankings ni nada en línea, y la clave V18 no se toca al leer', !/ranking|online|en línea|leaderboard/i.test(lleno) && raw(pruebas.v18) === crudo18);
         const cajas18 = [...root.querySelectorAll('#rec-v18 .rec-card')];
         check('V18 · Las tarjetas no se desbordan a lo ancho y tienen título (h4) para el lector', cajas18.length === 7 && cajas18.every(c => c.scrollWidth <= c.clientWidth + 1 && c.querySelector('h4')) && secV18().getAttribute('aria-labelledby') === 'rec-h-v18', `${window.innerWidth} px`);
