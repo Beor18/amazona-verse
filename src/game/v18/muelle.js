@@ -216,8 +216,16 @@ window.AVV18Muelle = function (G) {
     gBoyas.forEach((g, i) => { g.visible = ver && (fin || rango(e) >= rango('plan')); g.getObjectByName('aura').visible = e === 'plan' && !boyaLista(i); });
     gTablas.forEach((g, i) => { g.visible = ver && e === 'medido' && !tablaLista(i); });
     if (ver) colocarElenco();
+    if (fin) despejar();
     pagarXP();
     return true;
+  }
+  // los árboles del pasillo del muelle (±1,6 m), solo con el muelle hecho (como la escalera del puerto, G.vegetacion.despejar)
+  function despejar() {
+    const Vg = G.vegetacion; if (M.despejado || !Vg || !Vg.despejar || !Vg.instancias || !Object.keys(Vg.instancias).length) return 0;
+    M.despejado = true;
+    const E = M.eje, enPaso = (x, z) => { const s = x - SITIO.a.x; return s > E.s0 - 1.5 && s < E.s1 + 0.5 && Math.abs(z - SITIO.a.z) < 1.6; };
+    return Vg.despejar(SITIO.a.x + E.s0 - 1.5, SITIO.a.z - 1.6, SITIO.a.x + E.s1 + 0.5, SITIO.a.z + 1.6, enPaso);
   }
   function revisarElenco() {
     const t = calcElenco();
@@ -368,6 +376,7 @@ window.AVV18Muelle = function (G) {
   }
   function iniciar() { if (M.valido) return true; M.valido = validar(); if (M.valido) { aplicar(); revisarElenco(); } return M.valido; }
   Promise.resolve(G.mundo && G.mundo.listo).then(iniciar, iniciar);
+  Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => { if (M.valido && hecho()) despejar(); }, () => {});
   if (G.v18evo) pagarXP();
 
   // =====================================================================================================================
@@ -429,6 +438,7 @@ window.AVV18Muelle = function (G) {
         }
       } finally { keys.delete('w'); G.camara.yaw = yaw0; }
       r.y = S.pos.y - E.cubierta; r.ok = r.ok && !r.nado && !r.volo;
+      r.cerca = (F.colliders || []).filter(c => (!c.when || c.when()) && Math.hypot(c.x - S.pos.x, c.z - S.pos.z) < (c.r || 0) + 1.5).map(c => (c.kind || '?') + '@' + c.x.toFixed(1) + ',' + c.z.toFixed(1)).slice(0, 4).join(' ');
       return r;
     };
     try {
@@ -498,7 +508,7 @@ window.AVV18Muelle = function (G) {
       const g0 = geos(); N.apariencia('constructor', 'supervisor'); N.apariencia('ingeniera', 'aprendiz'); const g1 = geos(); N.apariencia('constructor', 'maestro_obra'); N.apariencia('ingeniera', 'jefa_obra');
       check('8c · Cambiar de apariencia no crea geometría (un modelo, varias apariencias)', g0 === g1 && geos() === g0, g0 + ' → ' + g1);
       const cam = caminar(600);
-      check('8d · Se camina de la orilla al final del muelle, sobre el agua, sin nadar ni volar', cam.ok && Math.abs(cam.y) < 0.6, 's ' + cam.s.toFixed(1) + '/' + M.eje.s1.toFixed(1) + ' · Δy ' + cam.y.toFixed(2) + (cam.nado ? ' · nadó' : '') + (cam.volo ? ' · voló' : ''));
+      check('8d · Se camina de la orilla al final del muelle, sobre el agua, sin nadar ni volar', cam.ok && Math.abs(cam.y) < 0.6, 's ' + cam.s.toFixed(1) + '/' + M.eje.s1.toFixed(1) + ' · Δy ' + cam.y.toFixed(2) + (cam.nado ? ' · nadó' : '') + (cam.volo ? ' · voló' : '') + (cam.cerca ? ' · cerca: ' + cam.cerca : ''));
       { const c = N.instancia('constructor') || SITIO.con, p = puntoPara(c.x, c.z, 1.6, 'v18npc_constructor'); ir(p.x, p.z, c); }
       const nc = G.interaccion.nearest(); if (nc && nc.id === 'v18npc_constructor') pulsar('e');
       check('8e · El Constructor maestro de obra tiene diálogo nuevo', G.dialogo.open() && N.def('constructor').porEstado.maestro_obra.dialogo.indexOf((G.dialogo.actual() || {}).text) >= 0, (G.dialogo.actual() || {}).text);
