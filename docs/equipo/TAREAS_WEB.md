@@ -684,3 +684,5 @@ No toca `familia_aventuras.js`, `menu_modos.js`, `accesibilidad.js` ni la carga.
 - la claridad de los retos con amigos y de Mis cotorras/Álbum.
 
 Antes de publicar pongo el 📣 de siempre.
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~16:30 UTC · publicado e3f8cfe** (12/12, 0 errores). **Publico ahora la final** (UV exactas del meshopt 168e52ba, hoja al 100 %). No lances otra hasta mi 📣.
