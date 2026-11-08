@@ -461,7 +461,9 @@ window.AVLook = function (G) {
       const src = (img && (img.src || img.currentSrc)) || (imagenes.has(t) && imagenes.get(t).src) || '';
       const esAtlas = !!(t.userData && t.userData.avAtlas) || /\/tex_hd\/hd_/.test(src);
       if (w > 512) { grandes++; if (esAtlas) atlas++; else if (encogible(t, /^flora:/.test(o.name))) mundo++; }
-      const b = w * h * 4 * (t.generateMipmaps ? 4 / 3 : 1), k = esAtlas ? 'atlas_hd' : origen(src, o);
+      // «Texturas optimizadas»: una CompressedTexture (Basis transcodificado) ocupa lo que suman sus mipmaps, no 4 B/px
+      const comp = t.isCompressedTexture && Array.isArray(t.mipmaps) && t.mipmaps.length ? t.mipmaps.reduce((s, mm) => s + ((mm && mm.data && mm.data.byteLength) || 0), 0) : 0;
+      const b = comp || w * h * 4 * (t.generateMipmaps ? 4 / 3 : 1), k = esAtlas ? 'atlas_hd' : origen(src, o);
       bytes += b; por[k] = (por[k] || 0) + b;
       top.push([(src.split('/').pop() || t.name || o.name || '?').slice(0, 48), w + '×' + h, Math.round(b / 104857.6) / 10]);
     }); });

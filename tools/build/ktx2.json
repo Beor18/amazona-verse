@@ -1,0 +1,58 @@
+{
+ "_nota": "Generado por tools/build/ktx2_texturas.py --escribir: SHA256 de cada imagen de config.json ktx2.texturas y de su .ktx2 del repo.",
+ "basisu": "v1.15",
+ "texturas": {
+  "assets/models/edificios/tex_hd/hd_ancient_lq.jpg": {
+   "bytes_imagen": 1396380,
+   "bytes_ktx2": 881032,
+   "fuente": "00718f7532750da6684e95378e9600956c142c01f2b6ffde9d0ccdb705b38ed7",
+   "ktx2": "f079f6498948c204e3106e355c52fc80b4a8fdcf3d696f18b3fa89625becadef",
+   "modo": "etc1s",
+   "opciones": [
+    "-ktx2",
+    "-mipmap",
+    "-q",
+    "255"
+   ]
+  },
+  "assets/models/edificios/tex_hd/hd_ancient_lq1024.jpg": {
+   "bytes_imagen": 326746,
+   "bytes_ktx2": 248042,
+   "fuente": "74a61dd2f24f9e89de3ae08d70e5b2eba4eab91535e18c86f13c5c40bdcc9e9e",
+   "ktx2": "5f672c94dbcdf8fdce63c59cba811e8435fd55d6d227d07b9efc25c2cc2bf715",
+   "modo": "etc1s",
+   "opciones": [
+    "-ktx2",
+    "-mipmap",
+    "-q",
+    "255"
+   ]
+  },
+  "assets/models/edificios/tex_hd/hd_savage_lq.jpg": {
+   "bytes_imagen": 1677754,
+   "bytes_ktx2": 945064,
+   "fuente": "28ffe892a77a95371187792bed17f14adbfccf73f51c02efdf4562f7f5fc47c3",
+   "ktx2": "519326b3f5e6c4d9476a8450a7578991fb2386531fa4fcf1da91c08711eeb48b",
+   "modo": "etc1s",
+   "opciones": [
+    "-ktx2",
+    "-mipmap",
+    "-q",
+    "255"
+   ]
+  },
+  "assets/models/edificios/tex_hd/hd_savage_lq1024.jpg": {
+   "bytes_imagen": 406047,
+   "bytes_ktx2": 262070,
+   "fuente": "5c51c32d71fcfa2300dfa2b174683855c5c244ed20250d3b9ff902c7ac2fa22f",
+   "ktx2": "352d28dc277c4302dc1713a25e8b8da820d352bf1c39b3964fad45a59c4a1aa0",
+   "modo": "etc1s",
+   "opciones": [
+    "-ktx2",
+    "-mipmap",
+    "-q",
+    "255"
+   ]
+  }
+ }
+}

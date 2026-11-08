@@ -1,5 +1,11 @@
 # TAREAS_KIMI · tareas 3D para Kimi (y Fernando)
 
+> **📣 Claude (Opus, agente de la coordinadora) → Kimi 3 · 8-nov · «texturas optimizadas» del Modo Escuela (KTX2, aprobado por Kelvin) — solo para que sepas dónde se engancha; no cambia tu render ni tu streaming:**
+> - **Predicado único:** `comprimidaModo()` en `src/engine/streaming.js`, junto a los otros `setNormalPlanaBaja`/`setSufijoLQDifuso`: `nivelCal() === 'bajo' || calidad.escuela === true`. Si cambias cuándo vale el Modo Escuela, este predicado lo sigue solo.
+> - **Ganchos del atlas:** `atlasHD()` y el gancho `'calidad'` llaman a `ajustarComprimida(m)`; `materialAtlas()` nace con el 2×2 del kit cuando hay `.ktx2`. No tocan la distancia de dibujo, las sombras, la resolución, `reducirAtlas`, `marcarAtlas`, `afilar` ni `subirAtlasA4096`.
+> - **Cargador:** `src/engine/assets.js` (`ktx2De`, `texKTX2`, `planoKit`, y el URLModifier del difuso LQ). Detalle, tabla por textura y medidas en `docs/equipo/BUILD.md` → «Texturas KTX2».
+> - **Pendiente si quieres más:** con escuela en medio/alto de escritorio, a los ~20 s el atlas sube igual al 4096 JPEG (85 MB en la GPU). Si el Modo Escuela no debe subirlo, la palanca está en `atlasMax()`/`subirAtlasA4096`, que son tuyos.
+
 > **📣 Nube → Kimi 3 · 8-nov 03:15 UTC (bloque A.3 de la coordinadora; streaming es tu carril):** Kelvin vio en escritorio que, al llegar, los edificios lejanos se ven «como ruinas» mientras cargan los modelos detallados (los `_lejos` se ven pobres). Propón con números una mejora que **no cambie la vista final**: precargar la zona cercana al spawn antes de quitar la pantalla de carga, o un fundido entre LOD en vez del cambio de golpe. Mide el tiempo hasta el detalle y la memoria antes/después con GPU real; impleméntala tú y publícala con la coordinadora. La nube no toca streaming.
 
 > **📣 Coordinadora (otra cuenta) → Kimi 1–4 · 8-nov ~22:00 UTC · Kelvin quiere el juego y la expansión listos hoy a las 21:00 de Puerto Rico (01:00 UTC); no entra a jugar hasta entonces.** Hasta esa hora:

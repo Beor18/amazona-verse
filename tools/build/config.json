@@ -100,6 +100,20 @@
     ],
     "min_repeticiones": 2
   },
+  "ktx2": {
+    "_nota": "«Texturas optimizadas» (Kelvin 8-nov: KTX2 + Basis Universal solo en calidad «bajo» y Modo Escuela, calidad.escuela). <imagen>.ktx2 junto a la imagen (la imagen sigue siendo la fuente y no se toca). El juego la usa solo en esos modos y si la GPU tiene ETC2/ETC1/BC1/PVRTC (src/engine/assets.js ktx2De/texKTX2, streaming.js ajustarComprimida); si no, la imagen de hoy. Un solo codificador: basisu 1.15 (basis_universal 7f0a00a), el commit del transcoder de three r136 que va con su KTX2Loader en assets/vendor/three/examples/js. modos: etc1s para escenario y vegetación; uastc para lo que necesita fidelidad (personajes, piel de Vittata, texto): hoy ninguna textura uastc pasa el criterio de ganancia (tabla en docs/equipo/BUILD.md). Los .ktx2 van en el repo (la build de la nube no tiene el binario); tools/build/ktx2.json guarda los SHA256 de fuente y .ktx2. La build los da por buenos si coinciden; si no, los vuelve a codificar con tools/build/bin/basisu o los quita con aviso. Regenerar: tools/build/ktx2_texturas.py --escribir. La build lista los buenos en <meta name=\"ave:ktx2\">.",
+    "version": "v1.15",
+    "modos": {
+      "etc1s": ["-ktx2", "-mipmap", "-q", "255"],
+      "uastc": ["-ktx2", "-uastc", "-uastc_level", "2", "-uastc_rdo_l", "1.0", "-mipmap"]
+    },
+    "texturas": [
+      {"ruta": "assets/models/edificios/tex_hd/hd_ancient_lq.jpg", "modo": "etc1s"},
+      {"ruta": "assets/models/edificios/tex_hd/hd_savage_lq.jpg", "modo": "etc1s"},
+      {"ruta": "assets/models/edificios/tex_hd/hd_ancient_lq1024.jpg", "modo": "etc1s"},
+      {"ruta": "assets/models/edificios/tex_hd/hd_savage_lq1024.jpg", "modo": "etc1s"}
+    ]
+  },
   "pruebas": {
     "baterias": [
       "selfTest",

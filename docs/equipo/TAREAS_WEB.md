@@ -826,3 +826,17 @@ Cada agente entrega en menos de 75 min, con revisión rápida. Publicaré **una 
 - **Inglés** de los 7 textos, del minigolf de 6 hoyos y de Mis récords: idiomaTest 31/31, cierra QA-219.
 
 Vi lo de la animación de la Campeona: es tuya y no la toco. Nota para tu agente: en `combate.js` (~728) `pista.dom` no se reinicia entre pruebas, y v18CombateTest da 74/75 si corre detrás de v18EvolucionTest.
+
+📣 **Claude (Opus, agente de la coordinadora) → Kimi 1 y Kimi 2 · 8-nov · «texturas optimizadas» del Modo Escuela: KTX2 (Basis ETC1S) en «bajo» y con `calidad.escuela`, aprobado por Kelvin.** Es un commit propio, sin otras optimizaciones. Toca solo el difuso LQ del atlas de edificios: el resto de texturas no cambia, y medio y alto quedan igual. Tabla por textura, medidas y recomendación en `docs/equipo/BUILD.md` → «Texturas KTX2».
+- **Con SwiftShader (sin GPU) ya medido:**
+  - texturas en la GPU de la vista de arranque: 67,5 → 48,8 MB en escritorio bajo y bajo + escuela (atlas 21,3 → 2,7); 51,5 → 46,8 MB en el móvil 390×844 (atlas 5,3 → 0,7);
+  - medio y alto: idénticos (370,8 y 524,8 MB, mismos archivos pedidos);
+  - descarga: −0,63 MB en escritorio y +0,35 MB en el móvil por archivo (con `test.sh --solo-medir`, 21,76 → 22,47 MB);
+  - imagen: 0,8–4,5 % de píxeles con diferencia > 8, PSNR 38–45 dB.
+- **Falta con GPU real (ustedes):** FPS, tiempos de cuadro (mediana, p95, p99), cuadros de más de 50 ms (tirones al transcodificar o subir) y memoria de GPU. Con SwiftShader esos números no sirven (0,2–0,6 FPS). Cada medida por separado: menos memoria no quiere decir más FPS.
+- **Cómo reproducirlo:**
+  - después = la build del commit KTX2 (`git log -1 --format=%h -- tools/build/ktx2.json`); antes = la de su padre (`<sha>^`). Construye cada una con `tools/build/build.sh <ref> <carpeta>`. (Mis números son de `e407f49a` sin y con el cambio.)
+  - El mismo guion en los dos: perfil limpio → portada → Jugar → creador → Empezar → «Saltar intro» (el `preparar_js` de `config.json`); sin tocar nada, 45 s de cuadros desde Empezar; luego `AV.look.medir()` (`texturasMB`, `texturasPor.atlas_hd`).
+  - **Kimi 1 (perfil Chromebook, `kimi1_127.js`, CPU ×6, 1366×768):** `index.html?calidad=bajo` y `index.html?calidad=bajo&escuela=1`.
+  - **Kimi 2 (móvil, 390×844 táctil, o el iPhone):** `index.html?calidad=bajo`. En el móvil pequeño usa los `_lq1024`.
+  - Para comprobar que va el KTX2: en la red salen `hd_<kit>_lq.ktx2` (o `_lq1024.ktx2`) y `basis_transcoder.wasm`, y no los `hd_<kit>_lq.jpg`. En consola, `AV.look.medir().texturasPor.atlas_hd` vale ~2,7 (o ~0,7 en el móvil). Si la GPU no tiene ETC2, ETC1, BC1 ni PVRTC, se queda el JPEG (atlas_hd ~21,3): anoten qué extensiones da `AV.G.renderer.renderer.getContext().getSupportedExtensions()`.

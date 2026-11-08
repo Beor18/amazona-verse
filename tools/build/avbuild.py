@@ -918,6 +918,96 @@ def paso_limpiar(sitio, cfg, reg):
 
 
 MARCA_RE = re.compile(r'<meta\s+name="ave:(?:sin-glb|build)"[^>]*>\s*', re.I)
+KTX2_RE = re.compile(r'<meta\s+name="ave:ktx2"[^>]*>\s*', re.I)
+
+
+def basisu_exe(cfg):
+    """tools/build/bin/basisu si está y es la versión de config.json (ktx2.version); si no, None."""
+    exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', 'basisu')
+    if not os.path.exists(exe):
+        return None
+    try:
+        r = subprocess.run([exe, '-version'], capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return exe if (cfg.get('ktx2') or {}).get('version', '@') in (r.stdout + r.stderr) else None
+
+
+def ktx2_texturas(cfg):
+    """[(ruta, modo, opciones)] de config.json ktx2.texturas."""
+    C = cfg.get('ktx2') or {}
+    return [(t['ruta'], t['modo'], list((C.get('modos') or {})[t['modo']])) for t in C.get('texturas') or []]
+
+
+def codificar_ktx2(exe, opciones, src, dst):
+    """Codifica src → dst (.ktx2) con basisu, sin tocar src. Lanza RuntimeError si falla."""
+    with tempfile.TemporaryDirectory(prefix='avktx2-') as tmp:
+        out = os.path.join(tmp, 'o.ktx2')
+        r = subprocess.run([exe, '-file', src] + list(opciones) + ['-output_file', out], capture_output=True, text=True, timeout=900, cwd=tmp)
+        if r.returncode != 0 or not os.path.exists(out):
+            raise RuntimeError('basisu falló: ' + (r.stderr or r.stdout).strip()[-200:])
+        shutil.copyfile(out, dst)
+
+
+def paso_ktx2(sitio, cfg, reg, cache):
+    """«Texturas optimizadas» (bajo y Modo Escuela): deja junto a cada imagen de ktx2.texturas su <imagen>.ktx2 al día y
+    las lista en <meta name="ave:ktx2"> de index.html (el juego solo usa las listadas). Al día = el .ktx2 del repo con los
+    SHA256 de tools/build/ktx2.json, o uno nuevo de tools/build/bin/basisu (caché por SHA de la fuente y opciones); si no, se
+    quita con aviso y el juego usa la imagen. La imagen original nunca se modifica."""
+    C = cfg.get('ktx2') or {}
+    tex = ktx2_texturas(cfg)
+    if not tex:
+        return {'hecho': False}
+    try:
+        rec = json.loads(leer(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ktx2.json'), 'r')).get('texturas', {})
+    except (OSError, ValueError):
+        rec = {}
+    exe = basisu_exe(cfg)
+    listas, filas = [], []
+    for ruta, modo, opts in tex:
+        src = os.path.join(sitio, ruta)
+        dst = os.path.splitext(src)[0] + '.ktx2'
+        if not os.path.exists(src):
+            if os.path.exists(dst):
+                os.remove(dst)
+            continue
+        hs, r = sha256(leer(src)), rec.get(ruta) or {}
+        estado = None
+        if os.path.exists(dst) and r.get('fuente') == hs and r.get('opciones') == opts and sha256(leer(dst)) == r.get('ktx2'):
+            estado = 'repo'
+        elif exe:
+            clave = sha256(('%s %s %s' % (hs, C.get('version', ''), ' '.join(opts))).encode())
+            cp = os.path.join(cache, clave + '.ktx2') if cache else None
+            try:
+                if cp and os.path.exists(cp):
+                    shutil.copyfile(cp, dst)
+                else:
+                    codificar_ktx2(exe, opts, src, dst)
+                    if cp:
+                        os.makedirs(cache, exist_ok=True)
+                        shutil.copyfile(dst, cp)
+                estado = 'codificado'
+                reg.add('aviso', 'ktx2', '%s: el .ktx2 del repo no está al día; esta build lo codificó (actualiza el repo con tools/build/ktx2_texturas.py --escribir)' % ruta, archivo=ruta)
+            except (RuntimeError, OSError, subprocess.SubprocessError) as e:
+                reg.add('aviso', 'ktx2', '%s: %s' % (ruta, e), archivo=ruta)
+        if not estado:
+            if os.path.exists(dst):
+                os.remove(dst)
+            reg.add('aviso', 'ktx2', '%s: sin .ktx2 al día ni tools/build/bin/basisu %s: en bajo/escuela se usa la imagen' % (ruta, C.get('version', '')), archivo=ruta)
+            continue
+        listas.append(ruta)
+        filas.append({'imagen': ruta, 'modo': modo, 'bytes_imagen': os.path.getsize(src), 'bytes_ktx2': os.path.getsize(dst), 'origen': estado})
+    p = os.path.join(sitio, 'index.html')
+    if os.path.exists(p):
+        txt = KTX2_RE.sub('', leer(p).decode('utf-8'))
+        if listas:
+            m = re.search(r'<meta\s+charset=[^>]*>\s*', txt, re.I) or re.search(r'<head[^>]*>\s*', txt, re.I)
+            if m:
+                txt = txt[:m.end()] + '<meta name="ave:ktx2" content="%s">\n' % ' '.join(listas) + txt[m.end():]
+            else:
+                reg.add('error', 'ktx2', 'index.html sin <meta charset> ni <head>: no sé dónde poner ave:ktx2')
+        escribir(p, txt.encode('utf-8'))
+    return {'hecho': True, 'basisu': exe is not None, 'texturas': filas}
 
 
 def paso_marcar(sitio, ref, commit, reg):
@@ -1428,6 +1518,9 @@ def main():
     lim = paso_limpiar(sitio, cfg, reg)
     lim['marca'] = paso_marcar(sitio, a.ref, a.commit, reg)
     etapa('Sin .glb ni .blend (proceso manual de hoy)')
+    cache_k = None if a.sin_cache else os.path.join(os.environ.get('AV_BUILD_CACHE') or os.path.expanduser('~/Library/Caches/amazonaverse-build'), 'ktx2')
+    lim['ktx2'] = paso_ktx2(sitio, cfg, reg, cache_k)
+    etapa('Texturas KTX2 (bajo/escuela) al día')
     print('· validación de la export limpia', flush=True)
     reg_ini = Registro()  # la validación inicial queda en el JSON; el estado lo decide la final (lo que se publica)
     v0 = paso_validar(sitio, cfg, reg_ini, 'inicial', a.estricto)

@@ -6,7 +6,7 @@ const SHA = new URL(self.location.href).searchParams.get('b') || 'dev';
 const CACHE = 'av-modelos-' + SHA;
 
 function interesa(path) {
-  return /\/tex_hd\/hd_[a-z0-9_]+\.jpe?g$/i.test(path) || /_glb\.js$/i.test(path) || /\.glb$/i.test(path);
+  return /\/tex_hd\/hd_[a-z0-9_]+\.(jpe?g|ktx2)$/i.test(path) || /_glb\.js$/i.test(path) || /\.glb$/i.test(path);
 }
 
 self.addEventListener('install', () => { self.skipWaiting(); });
