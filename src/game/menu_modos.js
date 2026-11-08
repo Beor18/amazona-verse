@@ -584,6 +584,7 @@
           // El final del duelo (una derrota: sin premio): «Volver al menú» si se entró desde el menú; «Salir» desde el mundo
           const perder = () => { const C = G.v18combate.estado(); return hasta(() => {
             if (C.fase === 'fin') return true;
+            if (C.fase === 'cuenta') G.v18combate.paso(1); /* la cuenta 3-2-1 sin esperarla */
             if (C.fase !== 'lucha') return false;
             for (const f of [C.j, C.r]) { f.cd = {}; f.mareo = 0; f.inv = 0; f.escudo = 0; }
             C.j.plumas = Math.min(C.j.plumas, 1); C.r.pos.x = S.pos.x + 1.2; C.r.pos.z = S.pos.z; C.r.poderT = 99;
@@ -591,7 +592,7 @@
             return false;
           }, 20000); };
           const salirDuelo = () => { const f = G.v18combate.estado(), h = document.querySelector('#v18-duelo .vd-fin [data-a="salir"]'); return { fin: f.fase === 'fin' && f.resultado === 'loss', h }; };
-          await elegir('duelo'); const dDu = await hasta(() => fase18(G.v18combate) === 'lucha', 30000) && await perder();
+          await elegir('duelo'); const dDu = await hasta(() => ['cuenta', 'lucha'].includes(fase18(G.v18combate)), 30000) && await perder();
           const fDu = salirDuelo();
           check('V18 · Duelo abierto desde el menú: el botón del final dice «Volver al menú»', dDu && fDu.fin && textoEs(fDu.h, 'Volver al menú'), 'fase ' + fase18(G.v18combate) + ', botón ' + (fDu.h && fDu.h.textContent));
           volver(); cerrarPortada();
