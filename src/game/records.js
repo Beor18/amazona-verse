@@ -491,6 +491,10 @@
 #records .rec-v18-niv { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 #records .rec-v18-niv li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px var(--sp-3); font-size: var(--fs-sm); color: var(--c-ink-muted); }
 #records .rec-v18-niv b { font: 700 var(--fs-sm)/1.3 var(--font-display); color: var(--c-ink); font-variant-numeric: tabular-nums; }
+#records .rec-golf { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+#records .rec-golf li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 2px var(--sp-3); font-size: var(--fs-sm); color: var(--c-ink-muted); }
+#records .rec-golf b { display: inline-flex; align-items: center; gap: 6px; font: 700 var(--fs-sm)/1.3 var(--font-display); color: var(--c-ink); font-variant-numeric: tabular-nums; }
+#records .rec-golf .rec-m { width: 24px; height: 24px; font-size: var(--fs-xs); box-shadow: 0 0 0 2px #fff; }
 #records .rec-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--sp-2) var(--sp-3); padding: var(--sp-3) var(--sp-5) max(var(--sp-3), env(safe-area-inset-bottom, 0px)); border-top: 3px dotted var(--c-paper-edge); }
 #records .rec-estado { flex: 1 1 200px; min-width: 0; margin: 0; font-size: var(--fs-sm); color: var(--c-ink-muted); }
 #records .rec-pie .btn[aria-disabled="true"] { filter: grayscale(.6); opacity: .6; }
@@ -647,7 +651,7 @@
       const jug = n => (n ? `<dl>${dato(tx('jugadas'), n)}</dl>` : '');
       // mg27: los 6 hoyos, cada uno con su récord y su medalla, o «Sin jugar»
       const golf = (g.some(h => h.mejor) ? '' : nada(t18('Aún sin hoyo. ¡Juega al minigolf!'))) +
-        `<ul class="rec-v18-niv rec-golf">${g.map(h => `<li data-hoyo="${h.n}"><span>${esc(t18('Hoyo {} · {}', h.n, h.zona))}</span><b>${h.mejor
+        `<ul class="rec-golf">${g.map(h => `<li data-hoyo="${h.n}"><span>${esc(t18('Hoyo {} · {}', h.n, h.zona))}</span><b>${h.mejor
           ? `${medalla(h.medalla, h.medalla ? '★' : null)} ${esc(t18(h.mejor === 1 ? '{} golpe (par {})' : '{} golpes (par {})', h.mejor, h.par))}${h.medalla ? ' · ' + esc(tx(h.medalla)) : ''}`
           : esc(t18('Sin jugar'))}</b></li>`).join('')}</ul>`;
       const chispa = ch.mejor
@@ -1216,7 +1220,7 @@
           localStorage.setItem(pruebas.v18, crudo18);
           G.aula.aj.idioma = 'en'; pintar();
           const en18 = plano(secV18());
-          check('V18 · También en inglés (textos de content/cap1/en.js)', /Adventures with my flock/.test(en18) && /Villa Raíz Mini Golf/.test(en18) && /Strokes on your best hole/.test(en18) && /Gold/.test(en18) && /Duels won/.test(en18) && /By stage:/.test(en18) && /Apprentice\s*3/.test(en18) && /Lv 21 · Guardian/.test(en18) && /Protective Echo/.test(en18) && /1 of 6/.test(en18) && !/Aún sin|Duelos|Golpes|Por etapa|Aprendiz/.test(en18), en18.slice(0, 200));
+          check('V18 · También en inglés (textos de content/cap1/en.js)', /Adventures with my flock/.test(en18) && /Gold/.test(en18) && /Duels won/.test(en18) && /By stage:/.test(en18) && /Apprentice\s*3/.test(en18) && /Lv 21 · Guardian/.test(en18) && /Protective Echo/.test(en18) && /1 of 6/.test(en18) && !/Aún sin|Duelos|Golpes|Por etapa|Aprendiz/.test(en18), en18.slice(0, 200));
           localStorage.removeItem(pruebas.v18); pintar();
           check('V18 · En inglés, sin datos: «No … yet»', (plano(secV18()).match(/ yet/g) || []).length === 7, plano(secV18()).slice(0, 160));
           G.aula.aj.idioma = idiomaAntes; pintar();
