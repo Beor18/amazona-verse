@@ -24,22 +24,28 @@ const espera = ms => new Promise(r => setTimeout(r, ms));
   const { targetId } = await cdp.call('Target.createTarget', { url: 'about:blank' });
   const { sessionId: ses } = await cdp.call('Target.attachToTarget', { targetId, flatten: true });
   await cdp.call('Runtime.enable', {}, ses); await cdp.call('Page.enable', {}, ses);
-  const salida = { tarea: 'KIMI-320', sonda: 'escuela on/off', head: null, tomas: {} };
-  for (const esc of ['0', '1']) {
-    await cdp.call('Page.navigate', { url: origen + '/?escuela=' + esc }, ses);
-    const prep = await ev(cdp, ses, CFG.preparar_js, 120).catch(e => 'prep: ' + (e && e.message || e));
-    salida['prep_escuela_' + esc] = typeof prep === 'string' ? prep.slice(0, 120) : 'ok';
-    for (let i = 0; i < 60; i++) { const listo = await ev(cdp, ses, `!!(${CFG.listo_js}) && !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden())`).catch(() => false); if (listo) break; await espera(1000); }
-    await espera(9000); // asentado: streaming + vegetación + población
-    salida.tomas['escuela_' + esc] = await ev(cdp, ses, `(() => {
+  const salida = { tarea: 'KIMI-320', sonda: 'escuela A/B en misma página', head: null, tomas: {} };
+  await cdp.call('Page.navigate', { url: origen + '/?escuela=0' }, ses);
+  const prep = await ev(cdp, ses, CFG.preparar_js, 120).catch(e => 'prep: ' + (e && e.message || e));
+  salida.preparar = typeof prep === 'string' ? prep.slice(0, 120) : 'ok';
+  for (let i = 0; i < 60; i++) { const listo = await ev(cdp, ses, `!!(${CFG.listo_js}) && !(AV.G.ui && AV.G.ui.worldHidden && AV.G.ui.worldHidden())`).catch(() => false); if (listo) break; await espera(1000); }
+  await espera(9000); // asentado: streaming + vegetación + población
+  const LEER = `(() => {
       const G = AV.G, R = G.renderer, st = R.stats();
       const veg = G.vegetacion && G.vegetacion.stats ? G.vegetacion.stats() : null;
       const vec = G.vecinos && G.vecinos.estado ? G.vecinos.estado() : null;
-      const cv = G.ciudadViva ? (G.ciudadViva.cuantas ? G.ciudadViva.cuantas() : (G.ciudadViva.stats && G.ciudadViva.stats())) : null;
-      return { escuela: R.calidad.escuela, nivel: st.calidad, calls: st.calls, tris: st.triangulos, dpr: st.dpr, veg, vecinos: vec, ciudadViva: cv, heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null };
-    })()`, 30);
-    if (!salida.head) salida.head = await ev(cdp, ses, `(document.querySelector('meta[name=ave\\\\:build]')||{}).content || document.documentElement.getAttribute('data-build') || '?'`, 15).catch(() => '?');
-  }
+      return { escuela: R.calidad.escuela, nivel: st.calidad, calls: st.calls, tris: st.triangulos, dpr: st.dpr,
+        veg: veg && { dArbol: Math.round(veg.dArbol * 10) / 10, dLod: Math.round(veg.dLod * 10) / 10, arbolesMalla: veg.arbolesMalla, trisArboles: veg.trisArboles, impostores: veg.impostores, instanciasVisibles: veg.instanciasVisibles },
+        vecinos: vec, heapMB: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null };
+    })()`;
+  salida.tomas.off = await ev(cdp, ses, LEER, 30);
+  await ev(cdp, ses, `AV.G.renderer.setEscuela(true, true) && AV.G.vegetacion.actualizar(), 'on'`, 30);
+  await espera(2500);
+  salida.tomas.on = await ev(cdp, ses, LEER, 30);
+  await ev(cdp, ses, `AV.G.renderer.setEscuela(null, true) && AV.G.vegetacion.actualizar(), 'auto'`, 30);
+  await espera(2500);
+  salida.tomas.auto = await ev(cdp, ses, LEER, 30);
+  salida.head = await ev(cdp, ses, `(document.querySelector('meta[name=ave\\\\:build]')||{}).content || '?'`, 15).catch(() => '?');
   console.log(JSON.stringify(salida, null, 1));
   try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { }
   try { chrome.kill(); } catch (e) { }

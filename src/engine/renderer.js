@@ -922,7 +922,7 @@ AVE.module('renderer', function (G) {
     fpsM.bajo = (fps < OBJETIVO * 0.85 || tirones) && dprAlMinimo ? fpsM.bajo + 1 : 0;
     fpsM.alto = fps > Math.min(58, OBJETIVO * 1.6) && renderer.getPixelRatio() >= DPR_MAX - 0.01 ? fpsM.alto + 1 : 0;
     if (fpsM.bajo >= 3 && i > 0) { setCalidad(NIVELES[i - 1]); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }
-    else if (fpsM.bajo >= 8 && i === 0 && calidad.escuela !== true) { setEscuela(true); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }   // QA-181/KIMI-320: ya en «bajo» con DPR al mínimo y la media sigue baja ~8 s → Modo Escuela
+    else if (fpsM.bajo >= 8 && i === 0 && calidad.escuela == null) { setEscuela(true); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }   // QA-181/KIMI-320: ya en «bajo» con DPR al mínimo y la media sigue baja ~8 s → Modo Escuela (solo en «auto»: ?escuela=0 manual no se lo vuelve a encender, hallazgo de Kimi 1 en KIMI-318)
     else if (calidad.escuela === true && calidad.escuelaAuto && fpsM.alto >= 20 && !fpsM.bloqueo) { setEscuela(null); fpsM.alto = 0; }   // solo el auto lo apaga, y con el DPR otra vez arriba y ~20 s sobrados
     else if (fpsM.alto >= 12 && !fpsM.bloqueo && i < 2 && fpsM.subidas < 2 && !(PERFIL.techo && i >= NIVELES.indexOf(PERFIL.techo))) { setCalidad(NIVELES[i + 1]); fpsM.alto = 0; fpsM.subidas++; fpsM.bloqueo = 20000; fpsM.warm = 2500; }
   }

@@ -1,0 +1,59 @@
+{
+ "tarea": "KIMI-320",
+ "sonda": "escuela A/B en misma página",
+ "head": "?",
+ "tomas": {
+  "off": {
+   "escuela": false,
+   "nivel": "alto",
+   "calls": 174,
+   "tris": 1057292,
+   "dpr": 1,
+   "veg": {
+    "dArbol": 50.3,
+    "dLod": 82.4,
+    "arbolesMalla": 183,
+    "trisArboles": 299350,
+    "impostores": 5819,
+    "instanciasVisibles": 653
+   },
+   "vecinos": null,
+   "heapMB": 350
+  },
+  "on": {
+   "escuela": true,
+   "nivel": "alto",
+   "calls": 174,
+   "tris": 1043372,
+   "dpr": 1,
+   "veg": {
+    "dArbol": 50.3,
+    "dLod": 82.4,
+    "arbolesMalla": 183,
+    "trisArboles": 299350,
+    "impostores": 5819,
+    "instanciasVisibles": 610
+   },
+   "vecinos": null,
+   "heapMB": 358
+  },
+  "auto": {
+   "escuela": null,
+   "nivel": "alto",
+   "calls": 174,
+   "tris": 1057292,
+   "dpr": 1,
+   "veg": {
+    "dArbol": 50.3,
+    "dLod": 82.4,
+    "arbolesMalla": 183,
+    "trisArboles": 299350,
+    "impostores": 5819,
+    "instanciasVisibles": 653
+   },
+   "vecinos": null,
+   "heapMB": 362
+  }
+ },
+ "preparar": "ok: portada → creador → Empezar (Cielo Verde) → carga 10043 ms (listo) → intro saltada"
+}
