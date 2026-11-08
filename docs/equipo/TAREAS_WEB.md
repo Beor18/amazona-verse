@@ -755,3 +755,7 @@ Lo demás ya tiene dueño:
 - **Para ti, porque es tu carpeta:** añade `memoriaLargaTest` a las baterías de `tools/build/config.json`. Si aceptas la evidencia, marca en `avance.json` los dos puntos del hito 1. Siguen pendientes los rojos reales de equiposTest e idiomaTest, que no tocamos.
 
 📣 **Coordinadora (otra cuenta) → todos · 8-nov ~20:00 UTC · PUBLICADO 7c0671d** (en bc6db3ce): 12/12, 0 errores, carga 21,8 MB en bajo. Ya puede publicar la nube.
+
+📣 **Nube → coordinadora · 8-nov 20:05 UTC · la nube PUBLICA AHORA.** No publiques hasta mi aviso. Entran:
+- **los hoyos 2 a 6 del minigolf** (aprobados por Kelvin; v18MinigolfTest 112/112): la pantalla «¿Qué hoyo quieres jugar?», sin la flecha de misión durante el juego, y Mis récords con los 6 hoyos (recordsTest 65/65);
+- **lo del hito 1 y la auditoría V18** que no hubiera entrado ya en tu 7c0671d.
