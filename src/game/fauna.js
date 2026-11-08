@@ -431,8 +431,10 @@
       coqui: '<ellipse cx="30" cy="24" rx="14" ry="10"/><circle cx="24" cy="15" r="4"/><circle cx="36" cy="15" r="4"/><path d="M16 30 q-6 4 -8 8 M44 30 q6 4 8 8" stroke-width="3" fill="none"/>',
       boa: '<path d="M6 30 Q14 10 24 26 T42 24 T54 14" stroke-width="7" fill="none"/><ellipse cx="55" cy="13" rx="5" ry="3.5"/>',
     };
+    // Solo se publican las tarjetas verificadas (datos educativos con fuente); 'parcial' / 'por_verificar' quedan ocultas
+    const publicable = e => e.estado === 'verificado';
     function htmlAlbum() {
-      const v = vistos(), lista = especies(), A = D.album || {};
+      const v = vistos(), lista = especies().filter(publicable), A = D.album || {};
       const cards = lista.map(e => {
         const ok = v.includes(e.id), col = esc(e.color || '#6b5a3e');
         const svg = `<svg viewBox="0 0 60 40" width="60" height="40" aria-hidden="true" fill="${ok ? col : '#555'}" stroke="${ok ? col : '#555'}">${SILUETA[e.silueta] || ''}</svg>`;
@@ -595,16 +597,16 @@
         }
         for (const m of mallas) m.material.visible = true;
         ok('La fauna suma 5 draw calls o menos', dif <= 5 && mallas.length <= 5, nota);
-        // 7. Álbum: 4 tarjetas con «Fuente» y enlace
+        // 7. Álbum: tarjetas verificadas con «Fuente» y enlace
         S.fauna = especies().map(e => e.id);
         const div = document.createElement('div'); div.innerHTML = htmlAlbum();
         const tarjetas = Array.from(div.querySelectorAll('.fauna-tarjeta'));
-        ok('El álbum muestra 4 tarjetas con «Fuente» y enlace', tarjetas.length === especies().length && especies().length === (conBoa ? 4 : 3) &&
+        ok('El álbum muestra solo las tarjetas verificadas, con «Fuente» y enlace', tarjetas.length === especies().filter(publicable).length && tarjetas.length === (conBoa ? 2 : 1) &&
           tarjetas.every(t => /Fuente|Source/.test(t.textContent) && t.querySelector('a[href^="https://"]')), tarjetas.length + ' tarjetas');
         ok('Cada especie lleva texto, nombre científico, fuente y URL', especies().every(e => e.texto && e.cientifico && e.fuente && /^https:\/\//.test(e.url)));
         S.fauna = [];
         div.innerHTML = htmlAlbum();
-        ok('Sin observar, las tarjetas no muestran el texto (solo la pista)', div.querySelectorAll('.fauna-falta').length === especies().length && !div.querySelector('a'));
+        ok('Sin observar, las tarjetas no muestran el texto (solo la pista)', div.querySelectorAll('.fauna-falta').length === especies().filter(publicable).length && !div.querySelector('a'));
         ok('El álbum está en el Diario como sección propia', !!(G.diario && G.diario.seccion));
         ok('En las baterías (G.quiet) no se ve ningún animal', (() => { const q = G.quiet; G.quiet = true; F.prueba = false; paso(0.05, false); const n = [lagMesh, marCerca, marLejos, coqMesh].every(m => !m.visible) && !(BOA.mesh && BOA.mesh.visible); F.prueba = true; G.quiet = q; return n; })());
       } finally {

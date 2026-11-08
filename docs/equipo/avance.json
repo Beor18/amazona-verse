@@ -70,7 +70,8 @@
     "que": "Fichas educativas verificadas con fuente oficial (las que no, siguen ocultas)",
     "donde": "content/*/lecciones.js",
     "quien": "Nube",
-    "estado": "en curso"
+    "estado": "hecho",
+    "nota": "8-nov: 50 fichas del Diario verificadas con fuente (cap1 23, ep2 5, ep3 6, ep4 6, ep5 4, ep6 6) + 1 narrativa rotulada (zocos); 2 ocultas (ep5 marcas y treinta, narrativo_fuera). Criadero: 7 verificadas, 2 ocultas (huevo_blanco, aclimatacion). Fauna de El Yunque: 2 verificadas (coqui, boa con ficha USFWS), 2 ocultas (lagartijo y mariposa: solo Wikipedia, no se mostraban filtradas; ahora el album solo muestra las 'verificado'). Codigo e162016b; tests 13/13 baterias en verde + faunaTest 29/29"
    },
    {
     "que": "Bugs abiertos propios de cada capítulo",
