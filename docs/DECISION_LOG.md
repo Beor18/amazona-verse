@@ -459,3 +459,22 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
 
 - **2026-11-08 ~15:00 UTC · Kelvin: «sí», acepta la carga en calidad media y alta de escritorio (51,6 MB tras meshopt; bajo y móvil cumplen ≤ 28 MB).** Así los templos del spawn no se vuelven a ver como ruinas. Con la evidencia de Kimi con GPU real en lugar de QA-201 (Mac), se cierra «demo estable»: V18 19/19 en `avance.json`.
 
+## 2026-11-08 · Kelvin cierra «Para Kelvin · 8-nov» (no se vuelve a preguntar)
+- **Aprobado provisionalmente:** «Espantanubes», las vestimentas nuevas, las misiones 3 y 4 del arco, las 6 aventuras en familia con sus nombres, frases, título del cómic y reflexiones.
+- **Arco del Constructor:** termina en la misión 4; no hay misiones nuevas del Constructor en esta fase.
+- **Árbol que tapa el nido (torre 0 de las Atalayas):** corregir con la intervención mínima.
+- **Cómic familiar:** opción de descargarlo en el dispositivo, sin subir nada, sin cuentas y sin compartir automáticamente. Va después de los bloqueantes de jugabilidad.
+- **Modo Escuela (QA-181):** 11–17 FPS es insuficiente. Modo de bajo consumo con resolución dinámica, menos sombras y efectos, menor distancia de dibujo, texturas optimizadas, menos elementos y menos cálculo por cuadro, y controles responsivos. Objetivo: 30 FPS estables donde el equipo lo permita; si no llega, se documenta el límite real. No se inventan resultados.
+- **Minigolf:** aprobado terminar los hoyos 2 a 6 reutilizando las mecánicas que existen, después de los bloqueantes.
+- **UICN:** verificar con fuentes científicas vigentes y documentar las discrepancias taxonómicas, sin cambiar el catálogo narrativo.
+- **Pieles provisionales** (martinicana, violacea), voces y navegante: se mantienen salvo error evidente.
+- **Bahía de Villa Raíz (QA-109):** solo se corrige si las capturas o las pruebas demuestran un defecto real.
+- **Traducciones:** el equipo traduce al inglés Family Quest y el aviso de poderes, conservando el humor puertorriqueño y los nombres propios, sin traducción literal. Que no queden cadenas en español en la versión inglesa salvo expresiones culturales intencionales.
+- **Reglas de producción:**
+  - No duplicar tareas.
+  - No confundir publicado con probado.
+  - No detener el desarrollo por aprobaciones cosméticas.
+  - Nada de funciones sociales nuevas, Supabase ni rankings públicos.
+  - Privacidad y derechos de las pruebas con menores.
+  - **Primero terminar el juego para jugarlo en familia; después, la expansión.**
+

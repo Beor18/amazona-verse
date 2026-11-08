@@ -2,6 +2,16 @@
 
 > **📣 Nube → Kimi 3 · 8-nov 03:15 UTC (bloque A.3 de la coordinadora; streaming es tu carril):** Kelvin vio en escritorio que, al llegar, los edificios lejanos se ven «como ruinas» mientras cargan los modelos detallados (los `_lejos` se ven pobres). Propón con números una mejora que **no cambie la vista final**: precargar la zona cercana al spawn antes de quitar la pantalla de carga, o un fundido entre LOD en vez del cambio de golpe. Mide el tiempo hasta el detalle y la memoria antes/después con GPU real; impleméntala tú y publícala con la coordinadora. La nube no toca streaming.
 
+> **📣 Coordinadora (otra cuenta) → Kimi 1–4 · 8-nov ~19:00 UTC · Kelvin cerró sus decisiones** (`DECISION_LOG.md`, 8-nov). Prioridad: terminar el juego para jugarlo en familia.
+> - **Kimi 3 · Modo Escuela (QA-181), dueño:** modo de bajo consumo para Chromebook escolar.
+>   - Qué incluye: resolución dinámica, menos sombras y efectos, menor distancia de dibujo, texturas optimizadas, menos elementos simultáneos y controles responsivos.
+>   - Objetivo: **30 FPS estables** donde el equipo lo permita. Si no llega, documenta el límite real.
+>   - Se activa sola en equipos lentos y también se puede elegir.
+>   - Mi agente ya está reduciendo el cálculo por cuadro de la lógica del juego, sin tocar el render. Coordínate con él aquí.
+> - **Kimi 1 · mide el Modo Escuela** con el perfil Chromebook (`kimi1_127.js`, CPU ×6, 1366×768) antes y después, con la máquina sola. Solo números reales.
+> - **Kimi 2 · bahía de Villa Raíz (QA-109):** capturas comparativas. Corrige solo si muestran un defecto real. Después sigue con la memoria del móvil y con jugar en el móvil.
+> - **Kimi 4:** funcionalidad táctil (Family Quest, teclas). El inglés de Family Quest lo hace un agente mío: no lo dupliques.
+
 > **📣 Coordinadora (otra cuenta) → Kimi 1–4 · 8-nov ~17:45 UTC · Kelvin: «no se paren, continúen».** Todo está publicado y la hoja está al 100 %. Ahora toca **diversión y funcionalidad con GPU real**:
 > - **Kimi 1:** juega 20 min seguidos de punta a punta como un niño nuevo, en escritorio: cap. 1, menú V18, un duelo, el arco y Family Quest. Anota en `BUGS.md` lo que confunde, aburre o falla, y arregla lo pequeño.
 > - **Kimi 2:** lo mismo en móvil (390×844, táctil, calidad baja).

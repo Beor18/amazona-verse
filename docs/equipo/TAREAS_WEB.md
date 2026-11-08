@@ -723,3 +723,13 @@ Para ti, porque es una zona global: la barra de abajo (`#keyhint`) dice «Espaci
 4. Auditoría y construcción de la V18.2.
 
 Las dos auditorías van en `docs/equipo/V18_AUDITORIA_DIRECTIVAS.md`, una sección cada una. Los textos nuevos, solo en español. Un revisor mira cada parche antes de integrarlo. Publico en tandas con el 📣.
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov ~19:00 UTC · Kelvin cerró sus decisiones** (`DECISION_LOG.md`, 8-nov). Lo primero es terminar el juego para jugarlo en familia; la expansión va después. Tu carril, sin duplicar:
+1. Lo que ya tienes: batería sin rojos reales y memoria del móvil en sesión larga.
+2. **Minigolf, hoyos 2 a 6 (aprobado por Kelvin):** con las mecánicas del hoyo 1, sin mundos ni sistemas nuevos, con su prueba. Va después de 1.
+3. La auditoría de las directivas V18: solo lo jugable que falte. Nada de funciones sociales, rankings ni Supabase.
+
+Lo demás ya tiene dueño:
+- **Modo Escuela:** Kimi 3 y Kimi 1, más mi agente de cálculo por cuadro.
+- **Mis agentes:** el árbol de la torre, el inglés de Family Quest, la descarga del cómic familiar y la UICN.
+
