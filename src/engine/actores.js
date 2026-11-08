@@ -305,7 +305,9 @@ AVE.module('actores', function (G) {
       P.swimming = MOVE.swimming; P.diving = diving;
       P.swimRate = moving ? 1.3 : 0.55;
       // IK de patas: el suelo bajo cada pie (terreno, pisos y perchas)
-      P.groundY = MOVE.groundY; P.groundAt = MOVE.grounded ? groundAt : null;
+      // QA-181 (Modo Escuela): el IK va a medio ritmo de consultas de suelo (ikEscuela) y se apaga con la cámara lejos
+      const escP = escuela(); P.ikEscuela = escP;
+      P.groundY = MOVE.groundY; P.groundAt = MOVE.grounded && (!escP || ikCerca(root)) ? groundAt : null;
       if (MOVE.shake) { P.shakeT = 0.7; MOVE.shake = false; }
       // Habla y expresión en diálogos; si escucha a otro, lo mira y atiende con curiosidad
       // Kelvin 5-nov: «la cotorra nunca mueve el pico». Las líneas de la protagonista dicen «Vittata» (no el nombre que eligió
@@ -384,7 +386,8 @@ AVE.module('actores', function (G) {
     // Bebé: siempre a saltitos (patas juntas) y aleteando al saltar; juvenil y adulto caminan o corren
     C.gait = !moving || air ? 0 : etapa === 'bebe' || sp > (F.SPEED + F.RUN_SPEED) / 2 ? 2 : 1;
     C.wingMode = flying ? (sp < 2.5 ? 'hover' : 'fly') : air ? 'flap' : moving ? 'walk' : 'idle';
-    C.groundY = ground; C.groundAt = !air ? groundAt : null;
+    const escC = escuela(); C.ikEscuela = escC;   // QA-181 (Modo Escuela): como Vittata (sync3D)
+    C.groundY = ground; C.groundAt = !air && (!escC || ikCerca(C.root)) ? groundAt : null;
     // Mira a Vittata cuando ella habla; se alegra cuando ella recoge algo
     const enCharla = G.dialogo.open() || !!(G.dialogo.libre && G.dialogo.libre()), tk = G.dialogo.talk;
     C.talking = enCharla && tk.who === 'Aprendiz' && performance.now() < tk.until; // el aprendiz también mueve el pico al hablar
@@ -397,6 +400,15 @@ AVE.module('actores', function (G) {
   }
   // Suelo bajo un pie (terreno, pisos de una vía y perchas) para el IK de patas
   function groundAt(x, z) { return G.fisica.suelo(x, z, S.pos.y + 0.05); }
+  // QA-181 (Modo Escuela, solo con calidad.escuela === true): con la cámara a más de IK_LEJOS_ESC m del personaje, sin IK
+  // de patas (a esa distancia no se ve; la cámara normal va a 7,5-9,5 m). Sin el modo, siempre cerca.
+  const IK_LEJOS_ESC = 12;
+  const escuela = () => !!(G.renderer.calidad && G.renderer.calidad.escuela === true);
+  function ikCerca(o) {
+    if (!escuela() || !o) return true;
+    const c = G.renderer.camera.position, p = o.position, dx = c.x - p.x, dy = c.y - p.y, dz = c.z - p.z;
+    return dx * dx + dy * dy + dz * dz < IK_LEJOS_ESC * IK_LEJOS_ESC;
+  }
   // Dónde mirar en un diálogo: al NPC que habla (por nombre) o, si habla Vittata, al NPC visible más cercano (a menos de 7 m)
   const speakTarget = new THREE.Vector3();
   function esYo(who) { return who === J.nombre || who === 'Vittata'; }
@@ -559,6 +571,6 @@ AVE.module('actores', function (G) {
     player, pShadow, companion, cShadow, companionPos, npcs, npc: id => npcs[id], spawnNpc, spriteFrom, blob,
     get player3D() { return player3D; }, get companion3D() { return companion3D; }, get failed3D() { return failed3D; },
     init3D, applyWear, refreshCompanion, POSAR, get posa() { return Object.assign({}, posa); }, EMOTES, EMOTE_KEYS, emote, playEmote, stopEmote, modoFoto, get fotoModo() { return fotoModo; }, sync3D,
-    placePlayerSprite, snapCompanionSprite, flipSprite, rim, nombre: J.nombre, sprite: J.sprite, especie: J.especie,
+    placePlayerSprite, snapCompanionSprite, flipSprite, rim, nombre: J.nombre, sprite: J.sprite, especie: J.especie, ikCerca, IK_LEJOS_ESC,
   };
 });
