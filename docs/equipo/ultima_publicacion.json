@@ -1,14 +1,14 @@
 {
- "codigo": "3adad49a1962b8ab3e96edee048c7bcc5eec701c",
+ "codigo": "d50110c43bdb3fcf4a266e5a2d01e69334953c00",
  "sitio": null,
- "fecha": "2026-11-08T15:24:23Z",
+ "fecha": "2026-11-08T16:00:05Z",
  "nota": "pruebas obligatorias en la nube en verde",
  "pruebas": {
   "estado": "pasa",
-  "inicio": "2026-11-08T15:11:09+00:00",
-  "duracion_s": 789.8,
+  "inicio": "2026-11-08T15:46:53+00:00",
+  "duracion_s": 787.4,
   "chrome": "Chrome/153.0.8010.12",
-  "huella_build": "a49454435c98611099bf81c5b0cd04a7abe5017591cba749bc81821c655957d8",
+  "huella_build": "bde932cac4a0b4fbd72a653c9841657ec2ef6a7448a0859ee5f2b5edf16185ad",
   "requeridas_ok": 12,
   "requeridas": 12
  },
@@ -88,13 +88,11 @@
  },
  "consola": {
   "errores": 0,
-  "avisos": 0,
+  "avisos": 1,
   "muestras_error": []
  },
  "carga_inicial_mb": 21.75,
- "heap_mb": 100.4,
+ "heap_mb": 95.0,
  "fallas": [],
- "avisos": [
-  "[instancia 1] no se pudo capturar la pantalla de arranque"
- ]
+ "avisos": []
 }
