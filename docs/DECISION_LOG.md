@@ -432,3 +432,11 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
   5. Minigolf: el hoyo 1 se queda terminado y optimizado; los hoyos 2 a 6 esperan a que Kelvin lo juegue. No se vuelve a preguntar.
   6. Puerto y edificios: Kimi sigue con las mejoras; nada de edificios se publica sin el visto bueno de Kelvin.
   - Lo legal (D1–D6) sigue pendiente: esto no autoriza el lanzamiento público, ni Supabase, ni recursos sin derechos confirmados. Las decisiones 1, 2 y 4 no se reabren salvo error comprobable.
+
+## 2026-11-08 · Arco V18.3 (misiones 2 y 3): pendiente del visto bueno de Kelvin
+- **[KELVIN] Esperan tu sí o tu cambio**, sin frenar el trabajo:
+  - El nombre del invento de Tuerca, «Espantanubes».
+  - Las tres apariencias de la misión 2: Tuerca «aliado», el Constructor «vecino» y la Ingeniera «rescate».
+  - La misión 3, «El muelle de la otra orilla», en el Embarcadero de las Canoas, con dos apariencias nuevas: el Constructor «maestro de obra» y la Ingeniera «jefa de obra».
+
+  Todo usa los modelos que ya existen (`src/game/v18/arco.js`, `src/game/v18/muelle.js`, `content/comun/personajes_v18.js`).

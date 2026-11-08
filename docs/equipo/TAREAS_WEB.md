@@ -474,3 +474,16 @@ Los nombres y parejas de las alianzas los eligió la nube por variedad jugable, 
 ✅ **Nube · 8-nov · hecho (lo divertido de la V18 a la vista en el menú de inicio, sin publicar):** `menu_modos.js` y la portada de `index.html` tienen 5 tarjetas nuevas con el patrón del Minigolf: **Duelo** (contra la Campeona), **Duelo de 2** (solo con teclado), **Retos con amigos** (tarjeta encima del menú con Chispa, Moon y el Guardián), **Mis cotorras** (nivel, XP, etapa y poder de cada una y, con candado, las 33 que faltan con el aviso con que llegan, de `nuevas.js`/`descubrir.js`) y **Álbum** (el Álbum de las 36). Cada actividad lleva a Vittata a su sitio y empieza; desde otro capítulo abre el cap. 1 con `?mini=<modo>`. La apertura del cap. 1 queda de verdad para Aventura (carga.js la retrasaba más de 1,5 s y salía encima del minigolf y del duelo). menuModosTest 62/62 (abre cada actividad desde su tarjeta); v18 Combate/Descubrir/Chispa/Moon/Guardián en verde; 12 obligatorias en verde sobre b362276. idiomaTest 28/31 y accesibilidadTest 84/85 fallan igual en origin/main con la misma secuencia (no es de esto). Parche en `/home/user/.avt/parches_mv`; capturas en el scratchpad de la sesión (`menu_v18/`).
 
 📣 **Nube → coordinadora · 8-nov 04:25 UTC · Kelvin pidió publicar todo lo hecho: la nube publica ahora** el menú V18 (Duelo, Duelo de 2, Retos con amigos, Mis cotorras, Álbum; menuModosTest 62/62 y 12/12), junto con todo lo que está en main (Esc V18, bloque A, V18.2). No lances otra publicación hasta que te avise.
+
+📣 **V18.3 (otra cuenta) → coordinadora y Kimi · 8-nov · misión 3 del arco lista para validar con GPU.** «El muelle de la otra orilla» (`src/game/v18/muelle.js`) está en el Embarcadero de las Canoas y se juega tras los faroles de las Atalayas. Es la primera obra buena del Constructor con la Ingeniera: Vittata marca 3 boyas en el río, recupera 4 tablas y sostiene la primera mientras la clavan. El muelle queda guardado y se camina hasta el agua. Apariencias nuevas: Constructor «maestro de obra» e Ingeniera «jefa de obra». Tuerca se queda en las Atalayas.
+- **Commits:**
+  - `4df12253`: la misión.
+  - `2e2a819f`: el perfil de la orilla, para poder caminarlo.
+  - `7a37b4d1`: despeja los árboles del pasillo.
+  - `8d628c0b`: quita la copia `.conflicto.txt` de KIMI-144.
+- **Pruebas (VM sin GPU, build 7a37b4d1):**
+  - Las 12 baterías en verde: selfTest 108/108 · missionTest 79/79 · accessoryTest 13/13 · templateTest 19/19 · eduTest 98/98 · maestroTest 26/26 · criaderoTest 51/51 · movementTest 52/52 · saveTest 64/64 · comicTest 67/67 · e2eTest 49/49 · lookCapitulosTest 13/13.
+  - **v18ArcoTest 63/63** (ahora prueba las dos misiones) y **v18PuertoTest 47/47**.
+  - 0 errores y 0 404. Hubo 2 avisos «AVE edificios: Failed to fetch» del streaming de edificios, que no vienen de estos módulos.
+- **Para Kimi (GPU):** `AV.v18ArcoTest()` en el móvil, con capturas del muelle (−121, −4) y de las boyas.
+- **[KELVIN]:** lo pendiente está en `DECISION_LOG.md` (2026-11-08).

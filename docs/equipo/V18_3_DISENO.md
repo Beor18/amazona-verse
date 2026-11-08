@@ -133,3 +133,18 @@ Al llegar a `reparado`, si existe `G.v18evo` y `!V.otorgado('xp_puerto')`, se ej
 - **Un modelo, varias apariencias:** Tuerca operador → inventor (fin del puerto, ahora guardado como `personaje:tuerca`) → aliado (chaleco verde); el Constructor reparador → vecino (casco verde, camisa de explorador); la Ingeniera responsable → rescate (chaqueta roja, mochila amarilla). Todo en filas de `personajes_v18.js`; Tuerca se carga aparte (tope de 2 de npc.js) con el modelo en caché de `npc.js`.
 - **Prueba:** `AV.v18ArcoTest()` (registrada en `src/boot.js` y en la suite de `tools/build/kimi1_106.js`): cada paso con entrada real (E, G, botón Poder), guardado y recarga, partidas viejas, «Comenzar de cero», inglés y liberación lejos.
 - **Pendiente:** **[KELVIN]** capturas con GPU (los nidos van en lo alto de cada torre: si el techo de `torre_vigia` no es plano puede verse raro) y el visto bueno al nombre «Espantanubes» y a las apariencias.
+
+## 11. Misión 3 del arco: «El muelle de la otra orilla» (`src/game/v18/muelle.js` → `G.v18muelle`, 8-nov)
+- **Dónde:** Embarcadero de las Canoas, una ciudad que ya existe y es la «otra orilla» de `comunidades.js`. El muelle sale de la orilla oeste del río Amazonas, frente a la plaza (eje desde −125,5, −4,2 hacia el este). Queda a 7 m de las canoas que ya están y fuera de las zonas de los capítulos. Se mide al arrancar: agua a 6 m, cubierta 13,5 m y pendiente máxima 11°. Es la envolvente superior de la orilla, como la escalera del puerto, y al terminarlo se despejan los árboles de su pasillo.
+- **Cuándo:** con los faroles de las Atalayas encendidos. La Ingeniera y el Constructor se mudan al embarcadero cuando Vittata se aleja de las Atalayas (> 160 m) o llega al muelle (< 45 m). Antes de empezar, si vuelve a las Atalayas (< 60 m), están otra vez allí. Tuerca se queda con sus faroles. `arco.js` los cede con `muelleTiene()` y les pasa la charla. El marcador «Misión V18» sigue la cadena puerto → arco → muelle.
+- **Historia:** los vecinos del embarcadero pidieron un muelle. Es la primera obra buena del Constructor, con el plano de la Ingeniera.
+- **Pasos** (`G.v18.mundo.arco_muelle`: inicio → plan → medido → materiales → construido):
+  1. Llegada (bocadillos) y reunión (caja).
+  2. Marcar 3 boyas en el río, volando o nadando; con OJOS brillan más.
+  3. Recuperar 4 tablas río abajo, una de ellas en el agua.
+  4. Sostener la tabla 3 s mientras los dos la clavan con su animación `Reparar`; si Vittata se va, se suelta.
+  5. El muelle con faroles y banderines se camina hasta el agua. Se guarda antes de los efectos.
+  6. 100 XP una vez.
+- **Apariencias nuevas del mismo modelo:** el Constructor «maestro de obra» (vuelve el chaleco, ahora verde) y la Ingeniera «jefa de obra» (chaqueta turquesa, insignia).
+- **Prueba:** 24 checks dentro de `AV.v18ArcoTest()`. `src/boot.js` junta las dos misiones: 39 + 24 = 63.
+- **Pendiente:** **[KELVIN]** las dos apariencias y el nombre de la misión (en `DECISION_LOG.md`). Kimi: capturas con GPU del muelle y de las boyas.
