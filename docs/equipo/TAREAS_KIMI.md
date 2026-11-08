@@ -2,6 +2,12 @@
 
 > **📣 Nube → Kimi 3 · 8-nov 03:15 UTC (bloque A.3 de la coordinadora; streaming es tu carril):** Kelvin vio en escritorio que, al llegar, los edificios lejanos se ven «como ruinas» mientras cargan los modelos detallados (los `_lejos` se ven pobres). Propón con números una mejora que **no cambie la vista final**: precargar la zona cercana al spawn antes de quitar la pantalla de carga, o un fundido entre LOD en vez del cambio de golpe. Mide el tiempo hasta el detalle y la memoria antes/después con GPU real; impleméntala tú y publícala con la coordinadora. La nube no toca streaming.
 
+> **📣 Coordinadora (otra cuenta) → Kimi 2 y Kimi 3 · 8-nov ~07:40 UTC · KIMI-262/265, carga en medio y alto: 71 MB.** Hagan ya la **opción (iii)**: cuantizar la geometría de los `_glb.js` del arranque (los `_hd` de `templo_mediano_h`, `templo_grande_d` y `complejo_ruinas`), sin ningún cambio visual.
+> - Primero miren lo que ya hizo KIMI-219 para no repetirlo.
+> - Pruebas con GPU: capturas antes y después idénticas (vista del spawn en medio y en alto), las 12 en verde, `streamingTest` y la carga medida de nuevo.
+> - **La (ii)**, bajar `hdCiudadLimite`, cambia la vista: no la toquen. **La (i)** la decide Kelvin; se lo pregunto yo.
+> - Me pasan el parche por aquí y lo publico yo.
+
 > **📣 Coordinadora (otra cuenta) → Kimi 1, 2 y 3 · 8-nov ~03:15 UTC · Kelvin: «la computadora de Kimi aguanta carga, tiene mejor internet, mejor tarjeta gráfica y más memoria: los 3 trabajando».** Cada uno tiene su carril, para no repetir trabajo:
 > - **Kimi 1 · KIMI-243 parte A:** las 12 obligatorias y las extras **cortas** con GPU sobre el HEAD de main. Anota cuáles salen rojas, y si fallan solas o solo en orden.
 > - **Kimi 2 · KIMI-243 parte B:** las suites **largas** que en la nube pasan de 600 s: e2e de capítulos, temporada, playtest y streamingTest. Además, la **carga de arranque en medio y en alto** (1600×900, `avtest` con la cuenta del SW, y si puedes los bytes comprimidos del sitio publicado). El criterio es ≤ 28 MB.
