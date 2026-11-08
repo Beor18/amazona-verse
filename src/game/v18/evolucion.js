@@ -37,7 +37,8 @@
      interactuar (naturaleza), sopla un remolino (viento), revela los rastros de la Maraña (luz), lluvia y escudo (agua), chispas (fuego).
      Se consiguen: líder en nivel 10 + compañera en tu bandada → «disponible»; ganar a la Campeona con la líder usando su poder
      2 veces (Eco Protector: interrumpiéndola 2 veces) → «desbloqueada». Sin compras, sin azar, sin rankings.
-   - Formato: el mismo `evo` de v2 (alianzas: { <id>: estado }, alianzaSel: id | null). Una partida v1 o del prototipo carga igual.
+   - Formato: el mismo `evo` de v2. §13: las alianzas se guardan por especie (esp[sp].alianzas / esp[sp].alianzaSel, vAli 2);
+     `alianzas` y `alianzaSel` de arriba quedan como copia de lectura. Una partida v1, del prototipo o con alianzas globales carga igual.
    Solo con la bandera V18. Modo de prueba: AV.G.v18evo.prueba({ especie: 'vittata', nivel: 20, alianza: true }) / prueba(null).
    Prueba: AV.v18EvolucionTest(). */
 window.AVV18Evolucion = function (G) {
@@ -179,15 +180,46 @@ window.AVV18Evolucion = function (G) {
       // mejoras desbloqueadas (§13)
       for (const et of ETAPAS_ESP) if (et.desde > 1 && r.nivel >= et.desde) r.mejoras[et.id] = true;
     }
-    if (!e.alianzas || typeof e.alianzas !== 'object' || Array.isArray(e.alianzas)) e.alianzas = {};
-    for (const id of ALI_IDS) if (ESTADOS_ALI.indexOf(e.alianzas[id]) < 0) e.alianzas[id] = 'bloqueada';
-    if (ALI_IDS.indexOf(e.alianzaSel) < 0 || e.alianzas[e.alianzaSel] !== 'desbloqueada') e.alianzaSel = null;
+    sanearAlianzas(e);
     if (!e.marcas || typeof e.marcas !== 'object') e.marcas = {};
     if (!e.dia || typeof e.dia !== 'object' || typeof e.dia.fecha !== 'string' || !e.dia.por || typeof e.dia.por !== 'object') e.dia = { fecha: '', por: {} };
     for (const k of Object.keys(e.dia.por)) if (!Number.isFinite(e.dia.por[k]) || e.dia.por[k] < 0) e.dia.por[k] = 0;
     e.retro = !!e.retro;
     return e;
   }
+  /* §13 · Alianzas por especie (formato vAli 2): cada líder guarda las suyas en esp[sp].alianzas = { <id>: estado } y su
+     elección en esp[sp].alianzaSel (id | null). Al cambiar de cotorra se usa la de esa especie. `e.alianzas` y `e.alianzaSel`
+     quedan como copia de lectura (records.js y builds anteriores): el mapa de las 6 y la elección de la cotorra activa.
+     Migración: una partida sin vAli (alianzas globales) pasa cada estado y la elección guardada a su líder, que es la única
+     especie que puede usarla (Eco Protector → Vittata); no se pierde nada. */
+  const ALI_V = 2;
+  const activa = () => { try { return V.seleccionada() || perfil(); } catch (x) { return perfil(); } };
+  function sanearAlianzas(e) {
+    const vieja = e.vAli !== ALI_V, glob = e.alianzas && typeof e.alianzas === 'object' && !Array.isArray(e.alianzas) ? e.alianzas : {};
+    if (vieja) {
+      for (const a of ALIANZAS) {
+        const st = glob[a.id]; if (ESTADOS_ALI.indexOf(st) <= 0) continue;
+        const r = reg(e, a.lider); if (!r.alianzas || typeof r.alianzas !== 'object' || Array.isArray(r.alianzas)) r.alianzas = {};
+        if (ESTADOS_ALI.indexOf(st) > ESTADOS_ALI.indexOf(r.alianzas[a.id])) r.alianzas[a.id] = st;
+      }
+      const s0 = aliDe(e.alianzaSel); if (s0 && glob[s0.id] === 'desbloqueada') reg(e, s0.lider).alianzaSel = s0.id;
+      e.vAli = ALI_V;
+    }
+    const mapa = {};
+    for (const sp of Object.keys(e.esp)) {
+      const r = e.esp[sp], mias = ALIANZAS.filter(a => a.lider === sp).map(a => a.id);
+      if (!r.alianzas || typeof r.alianzas !== 'object' || Array.isArray(r.alianzas)) r.alianzas = {};
+      for (const id of Object.keys(r.alianzas)) if (mias.indexOf(id) < 0 || ESTADOS_ALI.indexOf(r.alianzas[id]) < 0) delete r.alianzas[id];
+      if (mias.indexOf(r.alianzaSel) < 0 || r.alianzas[r.alianzaSel] !== 'desbloqueada') r.alianzaSel = null;
+      for (const id of mias) if (r.alianzas[id]) mapa[id] = r.alianzas[id];
+    }
+    e.alianzas = {}; for (const id of ALI_IDS) e.alianzas[id] = mapa[id] || 'bloqueada';
+    const ra = e.esp[activa()]; e.alianzaSel = (ra && ra.alianzaSel) || null;
+  }
+  const aliSelDe = (e, sp) => (e.esp[sp] && e.esp[sp].alianzaSel) || null;
+  const aliSel = sp => aliSelDe(E(), sp || activa());
+  // Cambia el estado de una alianza en su líder (nunca en el mapa de copia)
+  function ponerAli(e, id, st) { const a = aliDe(id), r = reg(e, a.lider); if (!r.alianzas || typeof r.alianzas !== 'object') r.alianzas = {}; r.alianzas[id] = st; return r; }
   const E = () => sanear(V.evo());
   const reg = (e, sp) => e.esp[sp] || (e.esp[sp] = { xp: 0, nivel: 1, mejoras: {}, variante: null });
   const etapaIdx = n => (n >= 30 ? 3 : n >= 20 ? 2 : n >= 10 ? 1 : 0);
@@ -303,7 +335,7 @@ window.AVV18Evolucion = function (G) {
   function revisarAlianza() {
     const nuevas = ALIANZAS.filter(a => estadoAli(a.id) === 'bloqueada' && info(a.lider).nivel >= 10 && elegible(a.apoyo));
     if (!nuevas.length) return false;
-    V.cambiarEvo(e => { sanear(e); for (const a of nuevas) e.alianzas[a.id] = 'disponible'; });
+    V.cambiarEvo(e => { sanear(e); for (const a of nuevas) ponerAli(e, a.id, 'disponible'); sanear(e); });
     const a0 = nuevas[0];
     // después de los avisos del duelo
     clearTimeout(avisoTO); avisoTO = setTimeout(() => { if (estadoAli(a0.id) === 'disponible') toast(a0.id === ALI ? TXT.aliDisp : con(con(con(TXT.aliDispN, a0.nombre), nombre(a0.lider)), nombrePoder(a0.lider)), 5200); }, 3800);
@@ -313,7 +345,7 @@ window.AVV18Evolucion = function (G) {
     // firma del prototipo: desbloquearAlianza(silencio)
     if (typeof id !== 'string') { silencio = id; id = ALI; }
     const a = aliDe(id); if (!a || estadoAli(id) !== 'disponible') return false;
-    V.cambiarEvo(e => { sanear(e); e.alianzas[id] = 'desbloqueada'; e.alianzaSel = id; e.marcas[a.marca || ('desafio:' + id)] = true; });
+    V.cambiarEvo(e => { sanear(e); ponerAli(e, id, 'desbloqueada').alianzaSel = id; e.marcas[a.marca || ('desafio:' + id)] = true; sanear(e); });
     dar(a.lider, XP.desafio, 'desafio', { silencio });
     if (!silencio) { sonar('unlock'); carta(TXT.aliNueva, a.nombre, a.frase, a.apoyo, a.explora); }
     return true;
@@ -322,7 +354,7 @@ window.AVV18Evolucion = function (G) {
   function elegirAlianza(on, id) {
     if (!id) { const a = ALIANZAS.find(x => x.lider === V.seleccionada()); id = a ? a.id : ALI; }
     if (estadoAli(id) !== 'desbloqueada') return false;
-    V.cambiarEvo(e => { sanear(e); if (on) e.alianzaSel = id; else if (e.alianzaSel === id) e.alianzaSel = null; }); return true;
+    V.cambiarEvo(e => { sanear(e); const r = reg(e, aliDe(id).lider); if (on) r.alianzaSel = id; else if (r.alianzaSel === id) r.alianzaSel = null; sanear(e); }); return true;
   }
   function elegirVariante(v) {
     if (VARIANTES.indexOf(v) < 0 || info('vittata').nivel < (v === 'maestro' ? 30 : 20)) return false;
@@ -332,7 +364,7 @@ window.AVV18Evolucion = function (G) {
 
   // ---------- Lo que lee el duelo (combate.js) y el motor (habilidades.js) ----------
   function paraDuelo(sp) {
-    const r = info(sp), e = E(), o = { nivel: r.nivel, variante: r.variante, xp: r.xp }, a = aliDe(e.alianzaSel);
+    const r = info(sp), e = E(), o = { nivel: r.nivel, variante: r.variante, xp: r.xp }, a = aliDe(aliSelDe(e, sp)); // §13: la de ESA especie
     if (a && a.lider === sp && e.alianzas[a.id] === 'desbloqueada') o.alianza = a.id;
     if (sp === 'arausiaca' && r.nivel >= 20) o.bonusBloqueo = 15;
     return o;
@@ -481,7 +513,7 @@ window.AVV18Evolucion = function (G) {
   };
   function explorando(ev) {
     if (mudo || !ev || !ev.explorando || ev.de !== 'jugador' || ev.alianza) return null;
-    const sp = V.seleccionada() || perfil(), a = aliDe(E().alianzaSel);
+    const sp = V.seleccionada() || perfil(), a = aliDe(aliSelDe(E(), sp));
     if (!a || a.lider !== sp || E().alianzas[a.id] !== 'desbloqueada' || ev.id !== H.poderDe(sp)) return null;
     const p = ev.origen || (G.S && G.S.pos) || { x: 0, y: 0, z: 0 };
     let n = 0; try { n = EXPLORA[a.id](p); } catch (e) { /* sin efectos */ }
@@ -592,7 +624,7 @@ window.AVV18Evolucion = function (G) {
     }
     const a = ALIANZAS.find(x => x.lider === sel);
     if (a && e.alianzas[a.id] === 'desbloqueada') {
-      const on = e.alianzaSel === a.id;
+      const on = aliSelDe(e, sel) === a.id;
       h += `<div class="row v18-evo-x"><span>${esc(TXT.aliTit)}</span> <button class="btn${on ? '' : ' ghost'}" type="button" data-v18ali="${a.id}" aria-pressed="${on}">${retrato(a.apoyo, 28)}${esc(a.nombre)}</button> <span>${esc(on ? TXT.aliOn : TXT.aliOff)}</span></div>`;
       h += `<p class="v18-evo-x" style="opacity:.85">${esc(a.explora)}</p>`;
     }
@@ -626,7 +658,7 @@ window.AVV18Evolucion = function (G) {
     if (!card) return;
     const otra = () => setTimeout(() => { try { const c = G.ui.$('card'); if (G.v18descubrir && c && !c.hidden) G.v18descubrir.abrirSeleccion(); } catch (er) { /* tarjeta */ } }, 0);
     card.querySelectorAll('[data-v18var]').forEach(b => { b.onclick = () => { elegirVariante(b.getAttribute('data-v18var')); sonar('pickup', 2); otra(); }; });
-    card.querySelectorAll('[data-v18ali]').forEach(b => { b.onclick = () => { const id = aliDe(b.getAttribute('data-v18ali')) ? b.getAttribute('data-v18ali') : ALI; elegirAlianza(E().alianzaSel !== id, id); sonar('pickup', 3); otra(); }; });
+    card.querySelectorAll('[data-v18ali]').forEach(b => { b.onclick = () => { const id = aliDe(b.getAttribute('data-v18ali')) ? b.getAttribute('data-v18ali') : ALI; elegirAlianza(aliSelDe(E(), aliDe(id).lider) !== id, id); sonar('pickup', 3); otra(); }; });
   }
 
   // ---------- Modo de prueba documentado (para videos y equilibrio) ----------
@@ -634,16 +666,16 @@ window.AVV18Evolucion = function (G) {
   function prueba(o) {
     if (o === null) {
       const res = E().respaldo; if (!res) return false;
-      V.cambiarEvo(e => { const r = JSON.parse(res); e.esp = r.esp; e.alianzas = r.alianzas; e.alianzaSel = r.alianzaSel; delete e.respaldo; delete e.prueba; sanear(e); });
+      V.cambiarEvo(e => { const r = JSON.parse(res); e.esp = r.esp; e.alianzas = r.alianzas; e.alianzaSel = r.alianzaSel; if (r.vAli !== ALI_V) delete e.vAli; delete e.respaldo; delete e.prueba; sanear(e); });
       return true;
     }
     o = o || {}; const sp = o.especie || 'vittata';
     V.cambiarEvo(e0 => {
       const e = sanear(e0);
-      if (!e.respaldo) e.respaldo = JSON.stringify({ esp: e.esp, alianzas: e.alianzas, alianzaSel: e.alianzaSel });
+      if (!e.respaldo) e.respaldo = JSON.stringify({ esp: e.esp, alianzas: e.alianzas, alianzaSel: e.alianzaSel, vAli: e.vAli });
       const r = reg(e, sp); r.xp = Math.max(0, Math.min(XP_MAX, o.xp != null ? o.xp : T(Math.max(1, Math.min(NIVEL_MAX, o.nivel || 1)))));
       if (o.variante) r.variante = o.variante;
-      if (o.alianza) { const id = aliDe(o.alianza) ? o.alianza : ((ALIANZAS.find(x => x.lider === sp) || {}).id || ALI); e.alianzas[id] = 'desbloqueada'; e.alianzaSel = id; }
+      if (o.alianza) { const id = aliDe(o.alianza) ? o.alianza : ((ALIANZAS.find(x => x.lider === sp) || {}).id || ALI); ponerAli(e, id, 'desbloqueada').alianzaSel = id; }
       e.prueba = true; sanear(e);
     });
     try { console.info('[V18.2] ' + TXT.prueba + ': ' + JSON.stringify(info(sp))); } catch (e) { /* consola */ }
@@ -1051,7 +1083,7 @@ window.AVV18Evolucion = function (G) {
           prueba({ especie: a.lider, nivel: 10 }); revisarAlianza(); R.nv10 = estadoAli(a.id);
           const reto = a.reto === 'interrupciones' ? 'interrupciones' : 'poderJ';
           win({ especie: a.lider, [reto]: 1 }); R.reto1 = estadoAli(a.id); win({ especie: a.lider === 'arausiaca' ? 'vittata' : 'arausiaca', [reto]: 5 }); R.otra = estadoAli(a.id);
-          win({ especie: a.lider, [reto]: 2 }); R.reto2 = estadoAli(a.id); R.sel = E().alianzaSel === a.id && paraDuelo(a.lider).alianza === a.id && !paraDuelo(a.apoyo).alianza;
+          win({ especie: a.lider, [reto]: 2 }); R.reto2 = estadoAli(a.id); R.sel = aliSel(a.lider) === a.id && paraDuelo(a.lider).alianza === a.id && !paraDuelo(a.apoyo).alianza;
           const h = H.get(a.id); R.datos = h.coste === 60 && h.cooldown === 14 && h.dura <= 2 && h.bloquea !== 0;
           // Duelo real con la rival a 2 m delante
           mudo = true; Cb.iniciar({ sinCuenta: true, especie: a.lider, evo: { nivel: 10, alianza: a.id } }); fresco(); quieta(2); cara(1, 0); podEv.length = 0;
@@ -1099,12 +1131,43 @@ window.AVV18Evolucion = function (G) {
         const okP = info('vittata').nivel === 12 && info('vittata').xp === T(12) + 3 && e.alianzas.eco_protector === 'desbloqueada' && e.alianzaSel === 'eco_protector' && paraDuelo('vittata').alianza === 'eco_protector' &&
           ALI_IDS.filter(id => id !== ALI).every(id => e.alianzas[id] === 'bloqueada') && e.marcas.puente && e.esp.vittata.mejoras.eco_amplificado && e.esp.vittata.mejoras.despertar && rh === 0 && P.cuantos('pluma_rival') === 1;
         prueba({ especie: 'finschi', nivel: 31, alianza: 'rafaga_volcan' }); P.recargar();
-        const okR = info('finschi').nivel === 31 && estadoAli('rafaga_volcan') === 'desbloqueada' && E().alianzaSel === 'rafaga_volcan' && info('vittata').nivel === 12 && JSON.parse(localStorage.getItem(P.clave())).v === 2;
+        const okR = info('finschi').nivel === 31 && estadoAli('rafaga_volcan') === 'desbloqueada' && aliSel('finschi') === 'rafaga_volcan' && info('vittata').nivel === 12 && JSON.parse(localStorage.getItem(P.clave())).v === 2;
         localStorage.setItem(P.clave(), JSON.stringify({ v: 1, especies: { agilis: 'seleccionable' }, inv: {}, otorgados: {}, mundo: {}, sel: 'agilis' })); P.recargar();
         const okV1 = P.seleccionada() === 'agilis' && info('agilis').nivel === 1 && ALI_IDS.every(id => estadoAli(id) === 'bloqueada') && !paraDuelo('agilis').alianza;
         mudo = false;
         check('Migración: la partida del prototipo (Eco Protector, nivel 12, hitos cobrados) carga igual y suma las 5 alianzas nuevas bloqueadas; recargar conserva nivel y alianza; una v1 empieza en nivel 1 sin alianzas',
           okP && okR && okV1, JSON.stringify({ okP, okR, okV1, rh, evo: E().alianzas })); }
+      // 16b. §13 Alianzas por especie: una partida vieja (alianzas globales) migra a su líder sin perder nada; cada cotorra
+      // recuerda la suya; al cambiar de cotorra, Mis cotorras y el duelo (paraDuelo / combate real) usan la de la especie activa
+      { const vieja = { v: 2, especies: { vittata: 'seleccionable', agilis: 'seleccionable', arausiaca: 'seleccionable', farinosa: 'seleccionable' }, inv: { pluma_rival: 2 }, otorgados: {}, mundo: {}, sel: 'agilis',
+          evo: { esp: { vittata: { xp: T(12), nivel: 12, mejoras: {}, variante: null }, agilis: { xp: T(15), nivel: 15, mejoras: {}, variante: null } },
+            alianzas: { eco_protector: 'desbloqueada', viento_cruzado: 'desbloqueada', lluvia_guiada: 'disponible', destello_piton: 'bloqueada' }, alianzaSel: 'viento_cruzado',
+            marcas: { puente: true }, dia: { fecha: 'x', por: {} }, retro: true } };
+        localStorage.setItem(P.clave(), JSON.stringify(vieja)); P.recargar(); mudo = true;
+        const e = E(), es = e.esp, M = {};
+        M.mig = e.vAli === 2 && es.agilis.alianzas.viento_cruzado === 'desbloqueada' && es.agilis.alianzaSel === 'viento_cruzado' && es.vittata.alianzas.eco_protector === 'desbloqueada' &&
+          es.vittata.alianzaSel === null && es.barbadensis && es.barbadensis.alianzas.lluvia_guiada === 'disponible' && !es.guildingii && info('agilis').nivel === 15 && info('vittata').nivel === 12 &&
+          ALI_IDS.every(id => e.alianzas[id] === (vieja.evo.alianzas[id] || 'bloqueada')) && e.alianzaSel === 'viento_cruzado' && e.marcas.puente && P.cuantos('pluma_rival') === 2;
+        // Guardar (cualquier cambio) y recargar: el formato nuevo se conserva y no se vuelve a migrar
+        elegirAlianza(true, 'eco_protector'); P.recargar();
+        const crudo2 = JSON.parse(localStorage.getItem(P.clave())).evo;
+        M.guarda = crudo2.vAli === 2 && crudo2.esp.vittata.alianzaSel === 'eco_protector' && crudo2.esp.agilis.alianzaSel === 'viento_cruzado' && crudo2.alianzas.viento_cruzado === 'desbloqueada';
+        // Cada especie la suya: activar la de Vittata no apaga la de agilis, y apagar la de agilis no toca la de Vittata
+        M.porEsp = aliSel('vittata') === 'eco_protector' && aliSel('agilis') === 'viento_cruzado' && paraDuelo('vittata').alianza === 'eco_protector' && paraDuelo('agilis').alianza === 'viento_cruzado' && !paraDuelo('farinosa').alianza;
+        P.seleccionar('vittata'); M.cambio = E().alianzaSel === 'eco_protector' && aliSel() === 'eco_protector';
+        // El duelo real (sin forzar especie) lee la alianza de la especie activa
+        Cb.iniciar({ sinCuenta: true }); M.dueloV = C().j.especie === 'vittata' && C().j.alianza === 'eco_protector'; Cb.salir();
+        P.seleccionar('agilis'); Cb.iniciar({ sinCuenta: true }); M.dueloA = C().j.especie === 'agilis' && C().j.alianza === 'viento_cruzado' && E().alianzaSel === 'viento_cruzado'; Cb.salir();
+        elegirAlianza(false); Cb.iniciar({ sinCuenta: true }); M.dueloA0 = !C().j.alianza && aliSel('vittata') === 'eco_protector'; Cb.salir();
+        P.seleccionar('vittata'); Cb.iniciar({ sinCuenta: true }); M.dueloV2 = C().j.alianza === 'eco_protector'; Cb.salir();
+        // Mis cotorras: el botón de alianza de la cotorra activa refleja la suya
+        M.ficha = /aria-pressed="true"/.test(htmlExtra().split('data-v18ali="eco_protector"')[1] || '');
+        // prueba() y su vuelta atrás no pierden lo de cada especie
+        prueba({ especie: 'finschi', nivel: 12, alianza: 'rafaga_volcan' }); M.prueba = aliSel('finschi') === 'rafaga_volcan' && aliSel('vittata') === 'eco_protector';
+        prueba(null); M.vuelta = !E().esp.finschi && aliSel('vittata') === 'eco_protector' && estadoAli('viento_cruzado') === 'desbloqueada' && aliSel('agilis') === null;
+        mudo = false;
+        check('§13 Alianzas por especie: una partida vieja (alianzas globales) pasa cada alianza a su líder sin perder nada; cada cotorra recuerda la suya; al cambiar de cotorra el duelo y Mis cotorras usan la de la especie activa',
+          Object.keys(M).every(k => M[k]), JSON.stringify(M)); }
       // 17. Ficha (Mis cotorras): nivel, XP que falta, etapa, lo que mejora y la alianza, también para una especie que no es Vittata
       { reset(); P.desbloquear('agilis'); P.seleccionar('agilis'); prueba({ especie: 'agilis', nivel: 22 }); const f = document.createElement('div'); f.innerHTML = htmlFicha('agilis'); const t = f.textContent;
         const x = document.createElement('div'); x.innerHTML = htmlExtra(); const tx = x.textContent;
@@ -1180,7 +1243,7 @@ window.AVV18Evolucion = function (G) {
   }
 
   G.v18evo = { T, nivelDe, NIVEL_MAX, XP, TOPE, ETAPAS, TOPES_GRITO, info, etapaDe, paraDuelo, ajustar, lineaHud, htmlFin, htmlFicha, htmlExtra, enlazar,
-    dar, revisarHitos, revisarAlianza, desbloquearAlianza, elegirAlianza, elegirVariante, estadoAlianza: estadoAli, prueba, carta, test,
+    dar, revisarHitos, revisarAlianza, desbloquearAlianza, elegirAlianza, elegirVariante, estadoAlianza: estadoAli, aliSel, prueba, carta, test,
     ALIANZAS, ETAPAS_ESP, MEJORA, etapaIdx, mejoraDe, textoApoyo, explorando, ultimaExplora: () => ultimaExplora };
   return G.v18evo;
 };
