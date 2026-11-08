@@ -33,7 +33,7 @@ Cada punto lleva el commit que lo prueba.
 - [x] Rendimiento de las ruinas (150 draw calls) y memoria de texturas de edificios (81 MiB): KIMI-Task-001 (`b5bf103`) y 002 (`8586f72`).
 - [ ] Edificios: los `_hd` boca abajo ya están (KIMI-Task-009); quedan la Ciudad de los 36 y los edificios rotos (BM133 y BM134, en la Mac) y la flora en el mar o pegada a la montaña (KIMI-Task-006 y 008, en curso).
 - [x] Encender el mapa real en los caps. 5 y 6 (`cf88e2ab`, 3-nov).
-- [x] iPad en el tepuy del cap. 5: 6,9 M → 0,36 M triángulos en calidad baja y asentadas 37-58 FPS en emulación fiel a CPU ×4 (8-nov, KIMI-287 sobre el LOD KIMI-011/`33fb0e2`; prueba física con `#fps` en el iPad de Kelvin pendiente); el zoom en bucle no se reproduce (BM131, `24b1a26a`).
+- [x] iPad en el tepuy del cap. 5: 6,9 M → 0,36 M triángulos en calidad baja y asentadas 37-58 FPS en emulación fiel a CPU ×4 (8-nov, KIMI-288 sobre el LOD KIMI-011/`33fb0e2`; prueba física con `#fps` en el iPad de Kelvin pendiente); el zoom en bucle no se reproduce (BM131, `24b1a26a`).
 - [x] Revisar en una Mac los rojos que dependen del orden de las baterías (BM116, `6f4604e9`, 6-nov).
 
 **Con niños y familias**

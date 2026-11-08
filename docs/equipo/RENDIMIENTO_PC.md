@@ -715,7 +715,7 @@ medición emulada la sustituye hasta entonces, precedente KIMI-053). «Medio» d
 y `validSave` exige `v:1` (SAVE_VERSION = pack.guardado.version) — lo mismo que falló el intento
 ep5 de KIMI-111.
 
-## KIMI-287 · iPad emulado en el tepuy del cap. 5 — re-medición fresca y cierre del ítem ROADMAP (8-nov · Kimi 3)
+## KIMI-288 · iPad emulado en el tepuy del cap. 5 — re-medición fresca y cierre del ítem ROADMAP (8-nov · Kimi 3; nació como KIMI-287, renumerada al colisionar con la fila de Kimi 2)
 
 Encargo 📣 coordinadora 8-nov ~11:00 UTC: el pendiente `ROADMAP.md:36` («iPad en el tepuy del cap. 5:
 6,9 M triángulos en calidad baja, 31/16 FPS») con propuesta de mejora «sin cambiar la vista aprobada».
