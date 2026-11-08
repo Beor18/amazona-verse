@@ -2,7 +2,7 @@
 
 Prueba: `tests/qa/playtest10.js` (`AV.playtest10()`). Juega como un niño nuevo en un iframe con el almacenamiento vacío (la partida de la pestaña se respalda y se devuelve): menú de modos y creador, vuelo, coquí con neblina, coquí al atardecer, bahía de noche, comer un fruto, lluvia, «Save the Parrot», río y peces, edificios completos, foto para el cómic, paseo hasta completar 10 min y guardar y reabrir.
 
-Cómo correrla: inyectar el archivo (como `e2e.js`) y llamar a `AV.playtest10()`. Si se inyecta, también queda `AV.playtest10Test`. `test.sh` no lo inyecta. El resultado trae `tramos`, `bugs` y `md`.
+Cómo correrla: inyectar el archivo (como `e2e.js`) y llamar a `AV.playtest10()`. Si se inyecta, también queda `AV.playtest10Test`. `test.sh` lo inyecta (está en «inyectar» de `tools/build/config.json`) y con `--extra` lo corre. El resultado trae `tramos`, `bugs` y `md`.
 
 Corrida de este informe: build `g10-db2716d` (commit `db2716d`), Chrome con SwiftShader en esta VM, 26-oct-2026. **31/31 comprobaciones, 0 errores de consola.** La calidad de arranque salió «bajo»; el tramo de edificios la sube a «alto» para medir el kit completo y la devuelve.
 

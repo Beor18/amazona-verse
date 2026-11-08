@@ -115,7 +115,7 @@
       "e2eTest",
       "lookCapitulosTest"
     ],
-    "_nota_inyectar": "Se sirven en /__pruebas/ (fuera de la build) y se inyectan antes de las baterías: e2e.js expone AV.e2eTest. Se toman del commit de la build; si no está, de la copia de trabajo (con aviso). cg34_regresion.js es informativa y no está en las 12 de «baterias». cg34Test (iframes, QA-86..98) da 16/16 tras el arreglo de QA-98. Al inyectarse pisa AV.cg34Test de boot.js solo en esa sesión de prueba. AV.cg17Test queda el del juego.",
+    "_nota_inyectar": "Se sirven en /__pruebas/ (fuera de la build) y se inyectan antes de las baterías: e2e.js expone AV.e2eTest. Se toman del commit de la build; si no está, de la copia de trabajo (con aviso). cg34_regresion.js es informativa y no está en las 12 de «baterias». cg34Test (iframes, QA-86..98) da 16/16 tras el arreglo de QA-98. Al inyectarse pisa AV.cg34Test de boot.js solo en esa sesión de prueba. AV.cg17Test queda el del juego. ep4_guardado.js (AV.ep4GuardadoTest) y playtest10.js (AV.playtest10Test) son extras, no obligatorias: sin inyectarlas, --extra las daba por «no existe en esta build».",
     "inyectar": [
       "tests/qa/e2e.js",
       "tests/qa/ep2_e2e.js",
@@ -129,7 +129,9 @@
       "tests/qa/cg34_regresion.js",
       "tests/qa/temporada_real.js",
       "tests/qa/temporada_movil.js",
-      "tests/qa/playtest_auto.js"
+      "tests/qa/playtest_auto.js",
+      "tests/qa/ep4_guardado.js",
+      "tests/qa/playtest10.js"
     ],
     "listo_js": "window.AV && window.AV.G && window.AV.G.actores && (window.AV.G.actores.player3D || window.AV.G.actores.failed3D)",
     "_nota_preparar": "Flujo de jugador nuevo (perfil de Chrome vacío): Jugar en la portada, el creador se abre y sale con Empezar, y se espera a la pantalla de carga (src/ui/carga.js, tope 20 s). Luego pulsa «Saltar intro» (#c1-saltar) si la apertura del cap. 1 sigue en marcha, como un jugador: la apertura se salta con la primera tecla y se la comía (W21: con otro orden de baterías, la primera tecla de movementTest se la tragaba la intro y fallaba «Espacio sube…»; ahora ninguna batería depende de que otra la haya saltado antes). Si algo falla, la prueba falla. Debe devolver un texto que empiece por 'ok'.",
