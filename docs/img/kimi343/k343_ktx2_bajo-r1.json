@@ -1,0 +1,23 @@
+{
+  "head": "a0563c3b",
+  "url_extra": "calidad=bajo",
+  "cuando": "2026-11-08T23:52:11.978Z",
+  "calidad": "?",
+  "escuela": false,
+  "info": {
+    "geo": 139,
+    "tex": 107,
+    "prog": 77,
+    "calls": 109,
+    "tris": 346114
+  },
+  "texturas": {
+    "n": 92,
+    "mb": 43.3,
+    "comprimidas": 2,
+    "comprimidasMb": 5.3
+  },
+  "atlasLQ": [],
+  "heapMb": 106.1,
+  "errores": []
+}
