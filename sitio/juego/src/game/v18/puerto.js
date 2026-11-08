@@ -788,7 +788,7 @@ window.AVV18Puerto = function (G) {
   G.on('v18puerto', e => { if (evTest) evTest.push(e); });
   G.on('v18', e => { if (v18Test) v18Test(e); }, 10);
   const textos = () => {
-    const t = [TXT.aviso, TXT.ojos, TXT.senala, TXT.trabado, TXT.falla, TXT.espera, TXT.freno, TXT.frenoSuelta, TXT.tabla, TXT.cuerda, TXT.reparar, TXT.reparado, TXT.titulo, TXT.guiaT, TXT.guiaEscudo,
+    const t = [TXT.aviso, TXT.ojos, TXT.senala, TXT.trabado, TXT.falla, TXT.espera, TXT.noAhora, TXT.freno, TXT.frenoSuelta, TXT.tabla, TXT.cuerda, TXT.reparar, TXT.reparado, TXT.titulo, TXT.guiaT, TXT.guiaEscudo,
       'Hablar con la Ingeniera', 'Hablar con el Constructor', con(TXT.acierto, 1), con(TXT.frenoVa, 50), con(TXT.mas, 2), con(TXT.falta, 3), con(TXT.guia, 'Grito del Yunque'),
       TXT.obj.obra, con(TXT.obj.pistas, 1), con(TXT.obj.poder, 2), TXT.obj.investigado, con(TXT.obj.materiales, 3), TXT.obj.repara]
       .concat(TXT.descubre, TXT.investigado, TXT.desactivado, TXT.llegada.map(x => x[1]), TXT.fin.map(x => x[1]));

@@ -497,7 +497,7 @@ window.AVV18Fiesta = function (G) {
   let v18Test = null;
   G.on('v18', e => { if (v18Test) v18Test(e); }, 10);
   const textos = () => {
-    const t = [TXT.titulo, TXT.aviso, TXT.falla, TXT.espera, TXT.farol, TXT.empezar, TXT.fiesta, TXT.poder, TXT.guiaT, TXT.hablarTue, con(TXT.guia, 'Grito del Yunque'),
+    const t = [TXT.titulo, TXT.aviso, TXT.falla, TXT.espera, TXT.noAhora, TXT.farol, TXT.empezar, TXT.fiesta, TXT.poder, TXT.guiaT, TXT.hablarTue, con(TXT.guia, 'Grito del Yunque'),
       con(TXT.escombro, 1), con(TXT.farolN, 2), TXT.obj.inicio, con(TXT.obj.escombros, 1), con(TXT.obj.faroles, 2), TXT.obj.empezar,
       TXT.tarjeta.titulo, TXT.tarjeta.sub, TXT.tarjeta.nota, TXT.tarjeta.boton, ...TXT.tarjeta.m]
       .concat([TXT.llegada, TXT.reunion, TXT.limpio, TXT.faroles, TXT.fin].flatMap(l => l.map(x => x[1])));

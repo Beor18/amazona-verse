@@ -168,7 +168,7 @@ window.AVMinimapa = function (G) {
     // KIMI-154 (V18): el minigolf y la misión del puerto tienen marcador propio con nombre (Kelvin: «no veo el mini golf»);
     // la disponibilidad la decide cada módulo (mapa() → null cuando no toca). Sin la bandera V18, nada cambia.
     if (G.V18) {
-      try { const g = G.v18minigolf && G.v18minigolf.mapa && G.v18minigolf.mapa(); if (g) out.push({ tipo: 'v18golf', x: g.x, z: g.z, nombre: g.nombre }); } catch (e) { /* sin módulo */ }
+      try { const mg = G.v18minigolf, gs = mg && (mg.mapas ? mg.mapas() : mg.mapa ? [mg.mapa()] : []); for (const g of gs) if (g) out.push({ tipo: 'v18golf', x: g.x, z: g.z, nombre: g.nombre }); } catch (e) { /* sin módulo */ } // un banderín por hoyo abierto (minigolf.js mapas())
       try { const p = G.v18puerto && G.v18puerto.mapa && G.v18puerto.mapa(); if (p) out.push({ tipo: 'v18puerto', x: p.x, z: p.z, nombre: p.nombre }); } catch (e) { /* sin módulo */ }
       // V18.3 fase 5: la carrera con Chispa (rayo naranja en Chispa; en carrera, en el banderín siguiente; chispa.js mapa())
       try { const c = G.v18chispa && G.v18chispa.mapa && G.v18chispa.mapa(); if (c) out.push({ tipo: 'v18chispa', x: c.x, z: c.z, nombre: c.nombre }); } catch (e) { /* sin módulo */ }

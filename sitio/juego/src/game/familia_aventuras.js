@@ -13,13 +13,18 @@
    Guardado: en el dispositivo, clave <almacen>.familyquest = { v: 1, hechas: { id: { veces, fecha, datos } }, foto }, aparte
    de la partida: las partidas viejas no cambian y una clave rota o vieja se lee vacía. La foto es una captura del juego
    (JPEG 320×240); si no cabe, se guarda sin foto. Sin nombres ni datos personales.
-   Textos solo en español: el inglés lo hace Kelvin con sus herramientas (8-nov).
+   Inglés: content/cap1/en.js (sección Family Quest). El DOM lo traduce idioma.js; lo que se pinta en el lienzo (la página y
+   las viñetas) y los nombres de gestos se traducen aquí con G.idioma.tr. «Descargar» (la página y cada viñeta, en
+   «Recuerdos en familia») guarda la imagen en el dispositivo: lienzo → blob → <a download>; en iOS se abre en otra pestaña
+   para guardarla. Sin red, sin cuentas, sin subir ni compartir nada.
    window.AVFamiliaAventuras(G) → G.familyQuest. Prueba: AV.familyQuestTest(). */
 window.AVFamiliaAventuras = function (G) {
   'use strict';
   if (G.familyQuest) return G.familyQuest;
   const S = G.S;
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.familyquest';
+  const T = t => (G.idioma && G.idioma.tr ? G.idioma.tr(t) : t); // ES: igual; EN: content/cap1/en.js
+  const enIngles = () => !!(G.idioma && G.idioma.actual && G.idioma.actual() === 'en');
   const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   // ---------- Las seis aventuras (orden = viñeta de la página) ----------
@@ -73,6 +78,7 @@ window.AVFamiliaAventuras = function (G) {
   function hoy() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function fechaBonita(f) {
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(f || ''); if (!m) return '';
+    if (enIngles()) return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+m[2] - 1] + ' ' + (+m[3]) + ', ' + m[1];
     const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
     return (+m[3]) + ' ' + MES[+m[2] - 1] + ' ' + m[1];
   }
@@ -215,7 +221,7 @@ window.AVFamiliaAventuras = function (G) {
   }
 
   // ---------- 2. Copia mi gesto ----------
-  const nombreGesto = g => { const E = G.actores && G.actores.EMOTES; return (E && E[g] && E[g].label) || g; };
+  const nombreGesto = g => { const E = G.actores && G.actores.EMOTES; return T((E && E[g] && E[g].label) || g); };
   const gestos = () => GESTOS.filter(g => !(G.actores && G.actores.EMOTES) || G.actores.EMOTES[g]);
   function hacerGesto(g) { try { if (G.actores && G.actores.playEmote) G.actores.playEmote(g); } catch (e) { /* en el aire no hay gesto */ } }
   function espejoInicio() { const A = actual; A.ronda = 1; A.intentos = 0; espejoCrear(); }
@@ -396,7 +402,7 @@ window.AVFamiliaAventuras = function (G) {
     try { if (G.audio && G.audio.play && !G.quiet) G.audio.play('logro'); } catch (e) { /* */ }
     G.emit('familyQuest', { id, datos });
     const c = document.createElement('canvas'); c.className = 'vineta'; c.width = 8; c.height = 5;
-    c.setAttribute('aria-label', 'Viñeta conmemorativa: ' + avDe(id).nombre); c.setAttribute('role', 'img');
+    c.setAttribute('aria-label', T('Viñeta conmemorativa: ' + avDe(id).nombre)); c.setAttribute('role', 'img');
     pantalla('¡Viñeta conmemorativa!',
       texto(`${avDe(id).nombre}: ¡lo hicieron juntos! Su viñeta ya está en el Diario, en «Recuerdos en familia».`),
       c,
@@ -414,12 +420,12 @@ window.AVFamiliaAventuras = function (G) {
     const mmss = s => Math.floor(s / 60) + ':' + String(Math.round(s % 60)).padStart(2, '0');
     const base = { id, sceneImage: null, dialogueType: 'dialogo', effectId: null, recordValue: null, look: null };
     switch (id) {
-      case 'relevo': return Object.assign(base, { sceneTitle: 'Relevo de vuelo', dialogueText: '¡Te toca! ¡Vuela tú!', captionText: `Volamos hasta ${d.lugar || 'un lugar'} y de vuelta${d.segundos ? ' en ' + mmss(d.segundos) : ''}.`, pose: 'crucero', effectId: 'fuush' });
-      case 'espejo': return Object.assign(base, { sceneTitle: 'Copia mi gesto', dialogueText: '¡Igualito, igualito!', captionText: 'Inventamos gestos y nos copiamos por turnos.', pose: 'celebrar' });
-      case 'foto': return Object.assign(base, { sceneTitle: 'Foto en familia', dialogueText: MARCOS[d.marco] || MARCOS[0], captionText: 'Nuestra foto juntos en la isla.', pose: 'celebrar', sceneImage: img || null });
-      case 'duo': return Object.assign(base, { sceneTitle: 'Trucos a dúo', dialogueText: '¡Combo en equipo!', captionText: `Juntos hicimos ${d.trucos || META_TRUCOS} trucos en el aire.`, pose: 'impulso', effectId: 'fuush' });
-      case 'cuento': { const f = frasesDe(d); return Object.assign(base, { sceneTitle: 'Cuento en cadena', dialogueText: f[2] || '¡Qué cuento!', captionText: f[0] ? f[0] + ' ' + (f[3] || '') : 'Inventamos un cuento por turnos.', pose: 'posarse', dialogueType: 'pensamiento' }); }
-      case 'escondite': return Object.assign(base, { sceneTitle: 'Escondite en equipo', dialogueText: '¡Los encontramos!', captionText: `Hallamos los 3 pichones${d.segundos ? ' en ' + d.segundos + ' s' : ''}.`, pose: 'celebrar', effectId: 'bandera' });
+      case 'relevo': return Object.assign(base, { sceneTitle: T('Relevo de vuelo'), dialogueText: T('¡Te toca! ¡Vuela tú!'), captionText: T(`Volamos hasta ${d.lugar || 'un lugar'} y de vuelta${d.segundos ? ' en ' + mmss(d.segundos) : ''}.`), pose: 'crucero', effectId: 'fuush' });
+      case 'espejo': return Object.assign(base, { sceneTitle: T('Copia mi gesto'), dialogueText: T('¡Igualito, igualito!'), captionText: T('Inventamos gestos y nos copiamos por turnos.'), pose: 'celebrar' });
+      case 'foto': return Object.assign(base, { sceneTitle: T('Foto en familia'), dialogueText: T(MARCOS[d.marco] || MARCOS[0]), captionText: T('Nuestra foto juntos en la isla.'), pose: 'celebrar', sceneImage: img || null });
+      case 'duo': return Object.assign(base, { sceneTitle: T('Trucos a dúo'), dialogueText: T('¡Combo en equipo!'), captionText: T(`Juntos hicimos ${d.trucos || META_TRUCOS} trucos en el aire.`), pose: 'impulso', effectId: 'fuush' });
+      case 'cuento': { const f = frasesDe(d).map(T); return Object.assign(base, { sceneTitle: T('Cuento en cadena'), dialogueText: f[2] || T('¡Qué cuento!'), captionText: f[0] ? f[0] + ' ' + (f[3] || '') : T('Inventamos un cuento por turnos.'), pose: 'posarse', dialogueType: 'pensamiento' }); }
+      case 'escondite': return Object.assign(base, { sceneTitle: T('Escondite en equipo'), dialogueText: T('¡Los encontramos!'), captionText: T(`Hallamos los 3 pichones${d.segundos ? ' en ' + d.segundos + ' s' : ''}.`), pose: 'celebrar', effectId: 'bandera' });
     }
     return base;
   }
@@ -428,8 +434,8 @@ window.AVFamiliaAventuras = function (G) {
     if (estado.foto) img = await cargarImg(estado.foto).catch(() => null);
     const look = lookActual();
     return {
-      titulo: 'Nuestra aventura en familia', nombre: (S.profile && S.profile.name) || 'Vittata', look,
-      aprendi: 'Turnarse y esperar también es jugar en equipo.', ensenanza: 'Juntos, cualquier aventura es más divertida.', botones: false,
+      titulo: T('Nuestra aventura en familia'), nombre: (S.profile && S.profile.name) || 'Vittata', look,
+      aprendi: T('Turnarse y esperar también es jugar en equipo.'), ensenanza: T('Juntos, cualquier aventura es más divertida.'), botones: false,
       vinetas: IDS.map(id => hecha(id) ? Object.assign(datosVineta(id, img), { look }) : { id: null, falta: true, look: null, pose: 'celebrar' }),
     };
   }
@@ -460,25 +466,70 @@ window.AVFamiliaAventuras = function (G) {
     try { if (P.limpiarCache && raiz.hidden) P.limpiarCache(); } catch (e) { /* */ }
     return cv;
   }
+  // ---------- Descargar (Kelvin 8-nov): la página o una viñeta, solo en este aparato ----------
+  // lienzo → blob PNG → URL de objeto → <a download>. Sin red, sin cuentas, sin subir ni compartir (tampoco Web Share).
+  // En iOS (Safari no guarda bien un <a download>) la imagen se abre en otra pestaña para mantenerla presionada y elegir
+  // Guardar; si el navegador no abre la pestaña, la imagen queda en el panel para lo mismo.
+  const esIOS = () => /iP(hone|ad|od)/.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const pruebaDescarga = { ios: false };
+  let descarga = Promise.resolve(null);
+  const aBlob = cv => new Promise(r => { try { cv.toBlob(b => r(b), 'image/png'); } catch (e) { r(null); } });
+  function avisoDescarga(t) { const p = $('fq-descarga-msg'); if (p) p.textContent = t; }
+  function descargar(lienzo, nombre) {
+    const ios = pruebaDescarga.ios || esIOS();
+    let ventana = null; // en iOS la pestaña se abre ya, dentro del toque (después la bloquearía el navegador)
+    if (ios) { try { ventana = window.open('', '_blank'); } catch (e) { ventana = null; } }
+    descarga = (async () => {
+      const cv = await Promise.resolve(lienzo).catch(() => null);
+      const blob = cv && cv.width > 8 ? await aBlob(cv) : null;
+      if (!blob) { try { if (ventana) ventana.close(); } catch (e) { /* */ } avisoDescarga('No se pudo preparar la imagen. Prueben otra vez.'); return { blob: null, modo: 'error' }; }
+      const url = URL.createObjectURL(blob);
+      if (!ios) {
+        const a = document.createElement('a');
+        a.href = url; a.download = nombre; a.rel = 'noopener'; a.hidden = true;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        avisoDescarga('¡Listo! Busquen la imagen en las descargas de este aparato.');
+        return { blob, nombre, url, modo: 'enlace' };
+      }
+      if (ventana && !ventana.closed) {
+        ventana.location.href = url;
+        setTimeout(() => URL.revokeObjectURL(url), 120000);
+        avisoDescarga('La imagen se abrió en otra pestaña: manténganla presionada y elijan «Guardar imagen».');
+        return { blob, nombre, url, modo: 'pestaña' };
+      }
+      const img = document.createElement('img'); img.className = 'vineta'; img.src = url; img.alt = nombre;
+      const c = cuerpo().querySelector('canvas.vineta'); if (c) c.replaceWith(img); else cuerpo().appendChild(img);
+      avisoDescarga('Mantengan presionada la imagen y elijan «Guardar imagen».');
+      return { blob, nombre, url, modo: 'imagen' };
+    })();
+    return descarga;
+  }
+  const botonDescargar = (lienzo, nombre) => boton('Descargar', () => descargar(lienzo(), nombre()), 'secondary', 'fq-descargar');
+  const msgDescarga = () => { const p = texto(''); p.id = 'fq-descarga-msg'; p.setAttribute('role', 'status'); return p; };
   async function verPagina() {
     soltar();
     const c = document.createElement('canvas'); c.className = 'vineta pagina'; c.width = 8; c.height = 12;
-    c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Nuestra aventura en familia: página del cómic');
+    c.setAttribute('role', 'img'); c.setAttribute('aria-label', T('Nuestra aventura en familia: página del cómic'));
+    const listo = pagina(c).then(r => r.canvas).catch(() => null);
     pantalla('Nuestra página familiar',
       texto(cuenta() < 6 ? `Llevan ${cuenta()} de 6 viñetas. Las que faltan aparecen al jugar su aventura.` : '¡Página completa! Todo un cómic hecho en familia.'),
-      c, fila(boton('Volver', menu, '', 'fq-volver'), boton('Cerrar', cerrar, 'ghost')));
-    ultimaVineta = pagina(c).then(r => r.canvas).catch(() => null);
+      c, fila(botonDescargar(() => listo, () => (enIngles() ? 'our-family-adventure' : 'nuestra-aventura-en-familia') + '.png'), boton('Volver', menu, '', 'fq-volver'), boton('Cerrar', cerrar, 'ghost')),
+      msgDescarga());
+    ultimaVineta = listo;
     return ultimaVineta;
   }
   async function verVineta(id) {
     if (!hecha(id)) return null;
     soltar();
     const c = document.createElement('canvas'); c.className = 'vineta'; c.width = 8; c.height = 5;
-    c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Viñeta conmemorativa: ' + avDe(id).nombre);
+    c.setAttribute('role', 'img'); c.setAttribute('aria-label', T('Viñeta conmemorativa: ' + avDe(id).nombre));
     const h = estado.hechas[id];
+    const listo = vineta(id, c).catch(() => null);
     pantalla(avDe(id).nombre, texto(`Recuerdo en familia · ${fechaBonita(h.fecha)}${h.veces > 1 ? ` · jugada ${h.veces} veces` : ''}`), c,
-      fila(boton('Jugar otra vez', () => empezar(id), '', 'fq-otra-vez'), boton('Volver', menu, 'ghost')));
-    ultimaVineta = vineta(id, c).catch(() => null);
+      fila(boton('Jugar otra vez', () => empezar(id), '', 'fq-otra-vez'), botonDescargar(() => listo, () => (enIngles() ? 'family-panel-' : 'vineta-familia-') + id + '.png'), boton('Volver', menu, 'ghost')),
+      msgDescarga());
+    ultimaVineta = listo;
     return ultimaVineta;
   }
 
@@ -502,6 +553,85 @@ window.AVFamiliaAventuras = function (G) {
     else abrir();
   });
 
+  // ---------- Prueba en inglés (dentro de AV.familyQuestTest) ----------
+  // Recorre cada pantalla y cada HUD con EN puesto y junta lo que siga en español: los textos del panel que idioma.js
+  // (textosVisibles) también da por españoles. Los nombres y expresiones de la isla no cuentan (idioma.js, NOMBRES).
+  async function pruebaIngles(ok) {
+    const norm = t => String(t).replace(/\s+/g, ' ').trim();
+    const espera = ms => new Promise(r => setTimeout(r, ms));
+    const restos = new Set(), vistas = [];
+    const mirar = async nombre => {
+      await espera(20); // el MutationObserver de idioma.js traduce en el siguiente microtask
+      const mios = new Set();
+      for (const el of [raiz, hud]) {
+        if (el.hidden) continue;
+        const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        for (let n = w.nextNode(); n; n = w.nextNode()) if (/\p{L}/u.test(n.data)) mios.add(norm(n.data));
+        for (const a of el.querySelectorAll('[aria-label]')) if (/[ñ¿¡]|Viñeta|aventura|página|Dejar/.test(a.getAttribute('aria-label'))) restos.add(nombre + ': [aria-label] ' + a.getAttribute('aria-label'));
+      }
+      for (const t of G.idioma.textosVisibles()) if (mios.has(t)) restos.add(nombre + ': ' + t);
+      vistas.push(nombre);
+    };
+    await G.idioma.poner('en'); await G.idioma.listo;
+    ok('Inglés: el diccionario EN está puesto', G.idioma.actual() === 'en');
+    abrir(); await mirar('menú');
+    // 1. Relevo: elegir, ida (frío y caliente), pasar el mando, vuelta y viñeta
+    empezar('relevo'); await mirar('relevo');
+    $('fq-destino-0').click(); await mirar('relevo HUD');
+    const dest = actual.destino, sal = actual.salida;
+    S.pos.x = dest.x + 30; S.pos.z = dest.z; paso(0.3); S.pos.x = dest.x + 20; paso(0.3); await mirar('relevo caliente');
+    S.pos.x = dest.x + 40; paso(0.3); await mirar('relevo frío');
+    S.pos.x = dest.x + 3; paso(0.3); await mirar('relevo pasar');
+    $('fq-hud-ok').click(); await mirar('relevo vuelta');
+    S.pos.x = sal.x + 30; S.pos.z = sal.z; paso(0.3); S.pos.x = sal.x + 20; paso(0.3); await mirar('relevo vuelta caliente');
+    S.pos.x = sal.x; S.pos.z = sal.z; paso(0.3); await mirar('relevo viñeta');
+    // 2. Copia mi gesto: crear, copiar, «¡Casi!», «¡Igualito!» y la ronda 2
+    empezar('espejo'); await mirar('espejo');
+    const g3 = gestos().slice(0, 3); g3.forEach(g => $('fq-g-' + g).click()); await mirar('espejo serie');
+    $('fq-espejo-listo').click(); await mirar('espejo copiar');
+    $('fq-g-' + g3[1]).click(); await mirar('espejo casi');
+    g3.forEach(g => $('fq-g-' + g).click()); await mirar('espejo igualito');
+    $('fq-espejo-seguir').click(); await mirar('espejo ronda 2');
+    // 3. Foto: la pantalla, la cuenta atrás y la viñeta
+    empezar('foto'); await mirar('foto');
+    $('fq-foto-ya').click(); const cuenta3 = $('fq-hud-txt').textContent; // con G.quiet la cuenta dura 10 ms: se lee al ponerla
+    await actual.listo; await mirar('foto viñeta');
+    ok('Inglés: la cuenta atrás de la foto', G.idioma.tr(cuenta3) !== cuenta3 || /Photo/.test(cuenta3), cuenta3 + ' → ' + G.idioma.tr(cuenta3));
+    // 4. Trucos a dúo: explicar, HUD, pasar el mando y «¡Qué racha!»
+    empezar('duo'); await mirar('dúo');
+    $('fq-duo-ya').click(); G.emit('truco', 'tonel'); await mirar('dúo HUD');
+    for (let i = 0; i < 4; i++) G.emit('truco', 'tonel');
+    await mirar('dúo racha');
+    G.emit('truco', 'looping'); await mirar('dúo viñeta');
+    // 5. Cuento en cadena: los 4 turnos y la viñeta
+    empezar('cuento');
+    for (let i = 0; i < 4; i++) { await mirar('cuento ' + (i + 1)); $('fq-cuento-' + (i % 3)).click(); }
+    await mirar('cuento viñeta');
+    // 6. Escondite: explicar, HUD, encontrado y «¡Uy!»
+    await asegurar('escondite', 'src/game/escondite.js', 'AVEscondite');
+    empezar('escondite'); await mirar('escondite');
+    $('fq-esc-ya').click(); const sitios = await actual.listo; await mirar('escondite HUD');
+    if (sitios && sitios.length) { S.pos.x = sitios[0].x; S.pos.z = sitios[0].z; G.escondite.paso(0.2); paso(0.2); await mirar('escondite encontrado'); }
+    if (actual && actual.id === 'escondite') { paso(200); await mirar('escondite uy'); }
+    try { if (G.escondite && G.escondite.paso) G.escondite.paso(1000); } catch (e) { /* cierra la ronda */ }
+    // Página, viñeta del recuerdo y Diario
+    await verPagina(); await mirar('página');
+    await verVineta('cuento'); await mirar('viñeta del recuerdo');
+    abrir(); const dia = document.createElement('div'); dia.innerHTML = htmlDiario(); cuerpo().appendChild(dia); await mirar('Diario');
+    // Textos sueltos que no se pueden ver aquí: el escondite sin módulo y la fecha del recuerdo
+    for (const t of ['El escondite no está en este capítulo. Prueben otra aventura.', 'el árbol lejano', 'Foto en 2…']) if (G.idioma.tr(t) === t) restos.add('suelto: ' + t);
+    const fecha = fechaBonita('2026-01-08');
+    ok('Inglés: la fecha del recuerdo sale con el mes en inglés', fecha === 'Jan 8, 2026', fecha);
+    ok('Inglés: ninguna pantalla ni HUD de las aventuras queda en español (' + vistas.length + ' vistas)', !restos.size, [...restos].slice(0, 12).join(' | '));
+    // El lienzo (página y viñetas): todos los textos traducidos
+    const dp = await datosPagina();
+    cerrar();
+    await G.idioma.poner('es');
+    const datosES = await datosPagina(), txt = d => [d.titulo, d.aprendi, d.ensenanza].concat(...d.vinetas.filter(v => !v.falta).map(v => [v.sceneTitle, v.dialogueText, v.captionText]));
+    const es = txt(datosES), en = txt(dp), igual = en.filter((t, i) => t === es[i] || /[ñ¿¡]/.test(t));
+    ok('Inglés: título, lecciones y textos de las viñetas del cómic familiar en inglés', en.length === es.length && en.length === 3 + 3 * cuenta() && cuenta() >= 4 && !igual.length, igual.slice(0, 4).join(' | ') || en.slice(0, 4).join(' | '));
+  }
+
   // ---------- Prueba: AV.familyQuestTest() ----------
   async function test() {
     const out = [], ok = (name, pass, extra) => out.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
@@ -511,6 +641,7 @@ window.AVFamiliaAventuras = function (G) {
     const visibles = () => [...raiz.querySelectorAll('button'), ...hud.querySelectorAll('button')].filter(b => !b.hidden && b.offsetParent !== null);
     const medir = () => visibles().map(b => b.getBoundingClientRect()).filter(r => r.width && r.height);
     const pantallaTiene = re => re.test(raiz.textContent);
+    const idioma0 = G.idioma && G.idioma.actual ? G.idioma.actual() : null;
     try {
       G.quiet = true;
       try { localStorage.removeItem(CLAVE); } catch (e) { /* */ }
@@ -605,6 +736,49 @@ window.AVFamiliaAventuras = function (G) {
       const cv = raiz.querySelector('canvas.vineta');
       ok('Viñeta: se ve en pantalla desde el recuerdo', !raiz.hidden && cv && cv.width > 300);
 
+      // Descargar (Kelvin 8-nov): la página y cada viñeta se guardan en el aparato; nada sale a la red ni se comparte.
+      // El clic del <a download> y window.open se interceptan: la prueba no deja archivos ni pestañas.
+      {
+        const red = [], llamadas = [], clics = [], abiertas = [];
+        const espera0 = Date.now(); let ult = performance.getEntriesByType('resource').length; // que la carga del mundo se calme antes de medir
+        while (Date.now() - espera0 < 4000) { await espera(400); const n = performance.getEntriesByType('resource').length; if (n === ult) break; ult = n; }
+        const po = window.PerformanceObserver ? new PerformanceObserver(l => { for (const e of l.getEntries()) if (!/^(blob|data):/.test(e.name)) red.push(e.name); }) : null;
+        try { if (po) po.observe({ type: 'resource' }); } catch (e) { /* */ }
+        const fetch0 = window.fetch, xhr0 = XMLHttpRequest.prototype.open, beacon0 = navigator.sendBeacon, click0 = HTMLAnchorElement.prototype.click, open0 = window.open, share0 = navigator.share;
+        window.fetch = function () { llamadas.push('fetch ' + arguments[0]); return fetch0.apply(this, arguments); };
+        XMLHttpRequest.prototype.open = function () { llamadas.push('xhr ' + arguments[1]); return xhr0.apply(this, arguments); };
+        if (beacon0) navigator.sendBeacon = function () { llamadas.push('beacon'); return false; };
+        HTMLAnchorElement.prototype.click = function () { clics.push({ href: this.href, download: this.download, enDoc: document.body.contains(this) }); };
+        try {
+          await verPagina();
+          const bp = $('fq-descargar');
+          ok('Descargar: la página familiar tiene el botón «Descargar» (44 px)', !!bp && bp.offsetParent !== null && /Descargar/.test(bp.textContent) && bp.getBoundingClientRect().height >= 43.5);
+          bp.click(); const d1 = await descarga;
+          ok('Descargar: la página sale como PNG (blob) y se guarda con <a download>', d1 && d1.modo === 'enlace' && d1.blob && d1.blob.type === 'image/png' && d1.blob.size > 20000 && clics.length === 1 && /^blob:/.test(clics[0].href) && clics[0].download === 'nuestra-aventura-en-familia.png' && clics[0].enDoc,
+            d1 ? d1.modo + ' · ' + (d1.blob ? d1.blob.type + ' ' + d1.blob.size + ' B' : 'sin blob') + ' · ' + JSON.stringify(clics) : 'sin descarga');
+          const sig = d1 && d1.blob ? new Uint8Array(await d1.blob.slice(0, 8).arrayBuffer()) : [];
+          ok('Descargar: el archivo es un PNG de verdad (firma)', sig[0] === 0x89 && sig[1] === 0x50 && sig[2] === 0x4e && sig[3] === 0x47);
+          ok('Descargar: avisa dónde buscarla', /descargas/.test(($('fq-descarga-msg') || {}).textContent || ''));
+          await verVineta('cuento'); $('fq-descargar').click(); const d2 = await descarga;
+          ok('Descargar: cada viñeta también se guarda (PNG)', d2 && d2.modo === 'enlace' && d2.blob && d2.blob.type === 'image/png' && clics.length === 2 && clics[1].download === 'vineta-familia-cuento.png', clics.map(c => c.download).join(', '));
+          // iOS: Safari no guarda bien un <a download>: abre la imagen en otra pestaña (abierta dentro del toque)
+          pruebaDescarga.ios = true;
+          window.open = function () { const w = { closed: false, location: { href: '' }, close() { this.closed = true; } }; abiertas.push(w); return w; };
+          $('fq-descargar').click();
+          const enToque = abiertas.length; const d3 = await descarga;
+          ok('Descargar en iOS: abre la imagen en otra pestaña para guardarla (sin <a download>)', enToque === 1 && d3 && d3.modo === 'pestaña' && /^blob:/.test(abiertas[0].location.href) && clics.length === 2, d3 && d3.modo);
+          window.open = () => null; $('fq-descargar').click(); const d4 = await descarga;
+          ok('Descargar en iOS sin pestaña: la imagen queda en el panel para mantenerla presionada', d4 && d4.modo === 'imagen' && !!raiz.querySelector('img.vineta') && /presionada/.test(($('fq-descarga-msg') || {}).textContent || ''));
+        } finally {
+          pruebaDescarga.ios = false;
+          window.fetch = fetch0; XMLHttpRequest.prototype.open = xhr0; if (beacon0) navigator.sendBeacon = beacon0; HTMLAnchorElement.prototype.click = click0; window.open = open0;
+        }
+        await espera(300);
+        try { if (po) { red.push(...po.takeRecords().map(e => e.name).filter(n => !/^(blob|data):/.test(n))); po.disconnect(); } } catch (e) { /* */ }
+        ok('Descargar: sin red (ninguna petición, fetch, XHR ni beacon), sin compartir (Web Share) y sin cuentas', !red.length && !llamadas.length && navigator.share === share0,
+          red.concat(llamadas).slice(0, 4).join(' | '));
+      }
+
       // Guardado: recargar
       const antes = JSON.stringify(estado.hechas);
       estado = vacio(); estado = leer();
@@ -641,7 +815,12 @@ window.AVFamiliaAventuras = function (G) {
       const esc0 = escapes, diag = 'abierto ' + abierto + ' · oculto ' + raiz.hidden;
       document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
       ok('Escape cierra el panel', raiz.hidden && !abierto, diag + ' → ' + abierto + '/' + raiz.hidden + ' · escapes ' + (escapes - esc0));
+
+      // Inglés (Kelvin 8-nov): con EN puesto, ninguna pantalla de las aventuras queda en español; solo nombres y expresiones
+      // de la isla (Vittata, coquí, mangó, plena, Wepa), que idioma.js ya da por buenos
+      if (G.idioma && G.idioma.poner && G.idioma.textosVisibles) await pruebaIngles(ok);
     } catch (e) { ok('sin excepciones', false, e && (e.stack || e.message || e)); }
+    try { if (G.idioma && G.idioma.poner && idioma0 && G.idioma.actual() !== idioma0) await G.idioma.poner(idioma0); } catch (e) { /* */ }
     soltar(); cerrar();
     try { if (G.escondite && G.escondite.paso) G.escondite.paso(1000); } catch (e) { /* cierra la ronda */ }
     try { if (G.ui && G.ui.hideToast) G.ui.hideToast(); } catch (e) { /* */ }
