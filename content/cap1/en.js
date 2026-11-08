@@ -2453,5 +2453,12 @@ window.AV_EN = {
  "No se pudo publicar ahora. Tu marca sigue guardada; prueba más tarde.": "Couldn't post it right now. Your score is still saved; try again later.",
  "Parece que no hay conexión. Tu marca sigue guardada; prueba más tarde.": "Looks like there's no connection. Your score is still saved; try again later.",
  "Esa marca no se pudo validar. ¡Prueba otra partida!": "That score couldn't be checked. Try another round!",
- "Has publicado muchas veces. Vuelve un poco más tarde.": "You've posted a lot. Come back a little later."
+ "Has publicado muchas veces. Vuelve un poco más tarde.": "You've posted a lot. Come back a little later.",
+ "Volar (otra vez: aterrizar)": "Fly (again: land)",
+ "Impulso (mantenlo: tu poder)": "Boost (hold it: your power)",
+ "Abrir el mapa": "Open the map",
+ "Esa tecla ya se usaba. Las cambiamos: la otra acción ahora va con {}.": "That key was already in use. We swapped them: the other action now uses {}.",
+ ". Tocar para ampliar (tecla {})": ". Tap to enlarge ({} key)",
+ "Destino a {}. Tocar para ampliar (tecla {})": "Destination: {}. Tap to enlarge ({} key)",
+ "Cerrar el mapa ({})": "Close the map ({})"
 };
