@@ -23,6 +23,12 @@
    - V18.2 equilibrio (DIFICULTAD): la Campeona entrena a la altura de tu etapa (Aprendiz, Despertar, Guardián, Maestro).
      Cambian sus reflejos (cada cuánto decide y si esquiva o se escuda), cuánto usa su poder y cuántas plumas trae; sus golpes
      quitan lo mismo de siempre. Sin nivel del jugador (pruebas que fuerzan especie) juega la de siempre (CLASICA).
+   - Cómo se pelea (Kelvin 8-nov: «no se entiende cómo hacer los movimientos»): el primer duelo empieza con un entreno guiado
+     de 3 pasos (aletazo E, semilla F, poder G) que avanza cuando la jugadora lo hace; la Campeona se queda quieta (no se
+     llama a pasoIA) y nadie pierde plumas. Se puede saltar; se guarda en G.v18.mundo('entreno_duelo') y luego se abre con el
+     botón «¿Cómo se pelea?». Chips de acción con tecla y recarga visual (en táctil, etiquetas sobre Acción e Impulso) y
+     pistas breves («¡Cerca! Aletazo (E)»…, una cada 4,5 s como mucho) que dejan de salir al dominarlas
+     (G.v18.mundo('pistas_duelo'), máscara de bits); la del primer golpe recibido explica esquivar o cubrirse.
    Solo con la bandera V18. Prueba: AV.v18CombateTest(). */
 window.AVV18Combate = function (G) {
   'use strict';
@@ -37,14 +43,22 @@ window.AVV18Combate = function (G) {
   // poder: probabilidad de usarlo cuando puede; vel: velocidad al acercarse; plumas: las que trae (hoy, las 5 en todas).
   // aparta: se sale del alcance de tu ala mientras la suya espera; rehace: se aparta de un salto al recuperarse de un golpe;
   // leeGrito: se escuda al verte abrir el pico; cerca y tiroMin: distancias del ala y de la semilla. CLASICA es la de siempre.
+  // aviso y apunta: segundos que anuncia el golpe de ala y la semilla (telegrafía, 8-nov); el aviso se acorta con la etapa.
   // Números medidos con la jugadora «media» de AV.v18EvolucionTest (36 duelos por etapa, con semilla): gana del 55 al 75 %.
+  // 8-nov: con la telegrafía (que la deja comprometida y a tiro) y el rodeo fuera de tu alcance se reajustaron reflejos,
+  // semillas, velocidad y poder para volver a esa franja (antes, sin tocarlos, la jugadora media ganaba el 92–100 %).
   const CLASICA = { id: 'clasica', pensar: 0.25, ve: 5.5, calma: 2.4, esquiva: 0.55, escudo: 0.55, ala: 1.15, tiro: 2.4, poder: 0.3, vel: 4.2, plumas: PLUMAS };
   const DIFICULTAD = [
-    { id: 'aprendiz', pensar: 0.17, ve: 6.33, calma: 1.85, esquiva: 0.69, escudo: 0.69, ala: 0.9, tiro: 1.96, poder: 0.47, vel: 4.64, aparta: 0.33, rehace: 0.44, cerca: 2.36, leeGrito: 0.39, tiroMin: 4.63, plumas: PLUMAS },
-    { id: 'despertar', pensar: 0.14, ve: 6.63, calma: 1.65, esquiva: 0.74, escudo: 0.74, ala: 0.81, tiro: 1.8, poder: 0.52, vel: 4.8, aparta: 0.45, rehace: 0.6, cerca: 2.38, leeGrito: 0.52, tiroMin: 4.13, plumas: PLUMAS },
-    { id: 'guardian', pensar: 0.13, ve: 6.7, calma: 1.6, esquiva: 0.75, escudo: 0.75, ala: 0.79, tiro: 1.76, poder: 0.54, vel: 4.84, aparta: 0.48, rehace: 0.64, cerca: 2.38, leeGrito: 0.56, tiroMin: 4, plumas: PLUMAS },
-    { id: 'maestro', pensar: 0.11, ve: 6.93, calma: 1.45, esquiva: 0.79, escudo: 0.79, ala: 0.72, tiro: 1.64, poder: 0.59, vel: 4.96, aparta: 0.57, rehace: 0.76, cerca: 2.4, leeGrito: 0.66, tiroMin: 3.63, plumas: PLUMAS }
+    { id: 'aprendiz', pensar: 0.17, ve: 6.33, calma: 1.074, esquiva: 0.96, escudo: 0.96, ala: 0.9, tiro: 0.898, poder: 0.725, vel: 5.765, aparta: 0.825, rehace: 0.89, cerca: 2.36, leeGrito: 0.81, tiroMin: 4.63, aviso: 0.5, apunta: 0.3, plumas: PLUMAS },
+    { id: 'despertar', pensar: 0.14, ve: 6.63, calma: 1.308, esquiva: 0.89, escudo: 0.89, ala: 0.81, tiro: 1.288, poder: 0.625, vel: 5.245, aparta: 0.695, rehace: 0.89, cerca: 2.38, leeGrito: 0.73, tiroMin: 4.13, aviso: 0.45, apunta: 0.3, plumas: PLUMAS },
+    { id: 'guardian', pensar: 0.13, ve: 6.7, calma: 1.074, esquiva: 0.95, escudo: 0.95, ala: 0.79, tiro: 1.008, poder: 0.82, vel: 5.74, aparta: 0.86, rehace: 0.96, cerca: 2.38, leeGrito: 0.88, tiroMin: 4, aviso: 0.42, apunta: 0.3, plumas: PLUMAS },
+    { id: 'maestro', pensar: 0.11, ve: 6.93, calma: 1.15, esquiva: 0.93, escudo: 0.93, ala: 0.72, tiro: 1.18, poder: 0.76, vel: 5.49, aparta: 0.81, rehace: 0.95, cerca: 2.4, leeGrito: 0.87, tiroMin: 3.63, aviso: 0.38, apunta: 0.3, plumas: PLUMAS }
   ];
+
+
+  // Telegrafía: segundos que la rival anuncia su golpe de ala (se agacha y abre las alas) y su semilla (apunta). Cada etapa
+  // puede traer los suyos (aviso, apunta); si no, estos.
+  const AVISO_ALA = 0.45, AVISO_SEMILLA = 0.3, APARTA_ESPERA = 0.9; // y entre dos saltos atrás seguidos, para que no salte sin parar
   function dificultadDe(j) {
     if (!j || !j.nivel) return CLASICA;
     let i = j.nivel >= 30 ? 3 : j.nivel >= 20 ? 2 : j.nivel >= 10 ? 1 : 0;
@@ -61,7 +75,16 @@ window.AVV18Combate = function (G) {
     bloquea: '¡Bloqueado!', rompe: '¡Escudo roto!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!',
     ganaste: '¡Ganaste!', perdiste: '¡Casi!', bienvenida: '¡A jugar! Quítale sus 5 plumas a la Campeona.', apoyo: '¡La cotorra de Dominica te cubre!',
     capa: '¡Capa de palma: semilla devuelta!', rebote: '¡Rebote!', hojas: '¡Las hojas aguantaron el golpe!', avisoSelva: '¡Cuidado, va a atacar!',
-    avisoBandada: '¡Ojo de bandada: la rival va a usar su poder!', cuento: '¡La rival se queda escuchando el cuento!'
+    avisoBandada: '¡Ojo de bandada: la rival va a usar su poder!', cuento: '¡La rival se queda escuchando el cuento!',
+    // Entreno guiado, chips y pistas (cada texto es su propio nodo: el nombre del poder va aparte y se traduce solo)
+    como: '¿Cómo se pelea?', saltarEnt: 'Saltar entreno', entPaso: n => 'Entreno · paso ' + n + ' de 3',
+    e1: 'Acércate y pulsa E para dar un aletazo.', e2: 'Ahora pulsa F para lanzar una semilla.', e3: 'Pulsa G (o mantén F) para usar tu poder:',
+    t1: 'Acércate y toca Acción para dar un aletazo.', t2: 'Ahora toca Impulso para lanzar una semilla.', t3: 'Mantén Impulso para usar tu poder:',
+    bien: '¡Bien!', masCerca: '¡Más cerca!', entFin: '¡Ya sabes pelear! Ahora, el duelo de verdad.',
+    pCerca: '¡Cerca! Aletazo (E)', pLejos: 'Lejos: semilla (F)', pPoder: '¡Poder listo! (G)',
+    pCercaT: '¡Cerca! Aletazo (Acción)', pLejosT: 'Lejos: semilla (Impulso)', pPoderT: '¡Poder listo! (mantén Impulso)',
+    dGolpe: '¡Te dieron! Muévete de lado para esquivar.', dEscudo: '¡Te dieron! Para cubrirte, usa tu poder (G):', dEscudoT: '¡Te dieron! Para cubrirte, mantén Impulso:',
+    accion: 'Acción', impulso: 'Impulso', tagPoder: 'mantén: poder'
   };
   // Generador con semilla: la IA decide igual en cada prueba
   let semilla = 1;
@@ -200,7 +223,8 @@ window.AVV18Combate = function (G) {
     const sp = especieRival(especieJugador()), D = dif || CLASICA, pl = Math.max(1, Math.min(PLUMAS, D.plumas || PLUMAS));
     return H.luchador({ id: 'rival', nombre: TXT.rival, especie: sp, ia: true, pos: rivalPos, plumas: pl, plumasMax: pl, dif: D,
       kb: { x: 0, z: 0, t: 0 }, mov: { x: 0, z: 0, t: 0 }, lift: { alto: 0, t: 0, dura: 0 }, yaw: -Math.PI / 2,
-      pensar: 0.4, golpeT: 1, tiroT: 1.5, esquivaT: 0, poderT: 2.5, lado: 1, finMareo: 0 });
+      pensar: 0.4, golpeT: 1, tiroT: 1.5, esquivaT: 0, poderT: 2.5, lado: 1, finMareo: 0,
+      v: { x: 0, z: 0 }, ladoT: 3, apartaT: 0, prep: '', prepT: 0, prepDur: 0, avisoUsado: 0, golpeAnim: 0, saltoT: 0, saltoDur: 0, agacha: 0 });
   }
   // V18.2: nivel, variante y alianza del jugador (solo él). Las pruebas que fuerzan especie van sin evolución salvo que la pidan.
   function evoJugador(sp, o) {
@@ -253,6 +277,9 @@ window.AVV18Combate = function (G) {
       if (blanco.ia || !de.ia) flotante(TXT.reduce, 1.2);
     }
     if (rc.r !== 'ok') return false;
+    // La Campeona anunciando su golpe de ala aguanta un golpe normal (pierde la pluma, apenas se mueve y el golpe sale igual):
+    // ante el «!» hay que apartarse o escudarse; solo lo que interrumpe (el Grito y compañía) la corta.
+    if (blanco.ia && blanco.prep === 'golpe_ala' && !g.interrumpe && blanco.plumas > 0) { rc.mareo = 0; blanco.mareo = 0; rc.empuje *= 0.25; blanco.kb.x *= 0.25; blanco.kb.z *= 0.25; C.stats.aguanta = (C.stats.aguanta || 0) + 1; }
     const n = rc.n, empuje = rc.empuje, mareo = rc.mareo, parcial = rc.parcial;
     if (g.interrumpe) interrumpir(blanco, mareo, parcial);
     if (blanco.lift && empuje > 0) { blanco.lift.alto = n > 0 ? 0.45 : 0.25; blanco.lift.t = 0; blanco.lift.dura = 0.32; C.stats.reacciones++; } // saltito de sorpresa
@@ -401,6 +428,7 @@ window.AVV18Combate = function (G) {
     if (r.ok && !r.avisada && !f.ia && id === f.poder) C.stats.poderJ++;
     if (r.ok) pintar();
     else if (!f.ia && r.motivo === 'energia') pulso('en-j');
+    if (r.ok && !f.ia) alUsar(id, r); // entreno guiado y pistas dominadas
     return r;
   }
   function lanzar(b) {
@@ -511,7 +539,33 @@ window.AVV18Combate = function (G) {
       '#v18-duelo button.vd-ali[hidden]{display:none}#v18-duelo.tactil button.vd-ali{min-height:56px;font-size:15px}' +
       '#v18-duelo .vd-apoyo{display:flex;align-items:center;gap:6px;justify-content:center;margin-top:4px;font-weight:600;font-size:14px}' +
       '#v18-duelo .vd-apoyo[hidden]{display:none}#v18-duelo .vd-apoyo img{width:40px;height:40px;border-radius:50%;background:#fff3;box-shadow:0 0 10px #9fe6ff}' +
-      '#v18-duelo .vd-finxp{font-size:15px!important;color:#ffe39a}#v18-duelo .vd-finxp:empty{display:none}';
+      '#v18-duelo .vd-finxp{font-size:15px!important;color:#ffe39a}#v18-duelo .vd-finxp:empty{display:none}' +
+      // Cómo se pelea (8-nov): chips de acción (icono + tecla + recarga), entreno guiado, pistas y etiquetas táctiles
+      '#v18-duelo [data-icon="semilla"]{--icon:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M12 2c4 3 6 7 6 11a6 6 0 0 1-12 0c0-4 2-8 6-11z\'/%3E%3C/svg%3E")}' +
+      '#v18-duelo button.vd-chip{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:6px;padding:6px 10px 6px 12px;--icon-size:20px;transition:box-shadow .15s,opacity .15s,transform .15s}' +
+      '#v18-duelo .vd-chip kbd{font:700 14px/1 Fredoka,system-ui,sans-serif;min-width:24px;padding:4px 6px;border-radius:7px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center}' +
+      '#v18-duelo .vd-chip .vd-cdv{position:absolute;left:0;right:0;bottom:0;height:var(--cd,0%);background:rgba(40,30,20,.45);pointer-events:none}' +
+      '#v18-duelo .vd-chip.listo{box-shadow:0 0 0 3px #8fe08a,0 0 14px #8fe08a99;transform:translateY(-1px)}#v18-duelo .vd-chip.sin{opacity:.55}#v18-duelo .vd-chip.cd{opacity:.8}' +
+      '#v18-duelo .vd-chip[hidden]{display:none}#v18-duelo:not(.tactil) button.vd-ali{display:none}' +
+      // Los chips van abajo, encima del aviso de Acción: así no tapan a la cotorra ni a la rival en el centro de la pantalla
+      // El entreno, a la izquierda en el escritorio: el centro queda libre para ver a la Campeona y acercarse
+      '#v18-duelo:not(.tactil) .vd-ent{position:fixed;left:16px;top:calc(env(safe-area-inset-top,0px) + 270px);width:min(300px,calc(50vw - 210px));min-width:220px;margin:0}' +
+      '#v18-duelo:not(.tactil) .vd-bot{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 132px);margin:0;flex-wrap:nowrap;gap:8px}' +
+      '#v18-duelo button.vd-como{display:flex;align-items:center;gap:5px;margin:6px 0 0 auto;min-height:36px;padding:4px 10px;font-size:13px;background:#ffe39a;--icon-size:16px}#v18-duelo.tactil button.vd-como{min-height:56px;font-size:14px}' +
+      '#v18-duelo button.vd-como[hidden]{display:none!important}' +
+      '#v18-duelo .vd-pista{margin:6px auto 0;width:max-content;max-width:100%;background:rgba(255,227,154,.95);color:#3b2a14;text-shadow:none;font-weight:600;font-size:16px;padding:6px 14px;border-radius:18px;box-shadow:0 2px 8px #0005;text-align:center;animation:vdPista .25s ease-out}' +
+      '#v18-duelo .vd-pista[hidden]{display:none}#v18-duelo .vd-pista b:empty{display:none}@keyframes vdPista{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}' +
+      '#v18-duelo .vd-ent{margin-top:8px;background:rgba(255,248,234,.96);color:#3b2a14;text-shadow:none;border-radius:16px;padding:10px 12px;box-shadow:0 4px 14px #0006;text-align:center}' +
+      '#v18-duelo .vd-ent[hidden]{display:none}#v18-duelo .vd-ent-cab{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600;opacity:.8}' +
+      '#v18-duelo .vd-ent-pp{display:flex;gap:4px}#v18-duelo .vd-ent-pp i{width:10px;height:10px;border-radius:50%;background:#3b2a1433}#v18-duelo .vd-ent-pp i.ya{background:#4caf50}#v18-duelo .vd-ent-pp i.ahora{background:#f0a020}' +
+      '#v18-duelo .vd-ent-cuerpo{display:flex;align-items:center;gap:10px;justify-content:center;margin:8px 0}' +
+      '#v18-duelo .vd-ent kbd{font:700 26px/1 Fredoka,system-ui,sans-serif;min-width:46px;padding:8px 10px;border-radius:10px;background:#3b2a14;color:#fff3d6;box-shadow:0 3px 0 #000a;animation:vdTecla 1s ease-in-out infinite}' +
+      '#v18-duelo.tactil .vd-ent kbd{font-size:16px}@keyframes vdTecla{50%{transform:translateY(2px);box-shadow:0 1px 0 #000a}}' +
+      '#v18-duelo .vd-ent-txt{font-size:17px;font-weight:600;text-align:left;line-height:1.25}#v18-duelo .vd-ent-txt b{color:#1f6f3a}' +
+      '#v18-duelo .vd-ent button{min-height:40px;font-size:14px;background:#3b2a14;color:#fff3d6}#v18-duelo.tactil .vd-ent button{min-height:56px}' +
+      '#v18-duelo-tags{position:fixed;inset:0;pointer-events:none;z-index:39}#v18-duelo-tags[hidden]{display:none}' +
+      '#v18-duelo-tags span{position:absolute;transform:translate(-50%,-100%);background:#3b2a14;color:#fff3d6;font:700 13px/1.15 Fredoka,system-ui,sans-serif;padding:4px 8px;border-radius:10px;white-space:nowrap;text-align:center;box-shadow:0 2px 6px #0006}' +
+      '#v18-duelo-tags span[hidden]{display:none}#v18-duelo-tags small{display:block;font-size:11px;font-weight:600;opacity:.85}';
     document.head.appendChild(st);
   }
   function montarHud() {
@@ -519,20 +573,30 @@ window.AVV18Combate = function (G) {
     estilo();
     const el = document.createElement('div'); el.id = 'v18-duelo'; el.hidden = true; el.classList.toggle('tactil', TACTIL);
     const plumas = () => Array.from({ length: PLUMAS }, () => '<i></i>').join('');
+    // Chip de acción: icono + nombre + tecla; .vd-cdv es la recarga (alto = lo que falta) y .listo lo ilumina
+    const chip = (a, ico, n, k) => `<button class="vd-chip" data-a="${a}" data-icon="${ico}" type="button"${a === 'alianza' ? ' hidden' : ''}><span data-k="cn-${a}">${n}</span><kbd>${k}</kbd><i class="vd-cdv"></i></button>`;
     el.innerHTML = `<div class="vd-fila"><div class="vd-lado j"><div class="vd-nom">${TXT.tu}</div><div class="vd-pod" data-k="pj"></div><div class="vd-nv" data-k="nv" hidden><span data-k="nvN"></span> · <span data-k="nvE"></span></div><div class="vd-xp" data-k="xp" hidden><b></b></div><div class="vd-pl" data-k="plj">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-j"><b></b></div><button class="vd-ali" data-a="alianza" type="button" hidden></button></div>` +
-      `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div></div></div>` +
+      `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div><button class="vd-como" data-a="como" data-k="como" type="button" data-icon="question">${TXT.como}</button></div></div>` +
       `<div class="vd-centro" data-k="centro"></div><div class="vd-apoyo" data-k="apoyo" hidden><img src="assets/retratos/v18/arausiaca.png" alt=""><span>${TXT.apoyo}</span></div>` +
-      `<div class="vd-bot" data-k="bot"><button data-a="golpe_ala">${TXT.ala}</button><button data-a="semilla">${TXT.semilla}</button><button data-a="poder">${TXT.poder}</button></div>` +
+      `<div class="vd-pista" data-k="pista" hidden><span data-k="pistaTxt"></span> <b data-k="pistaPod"></b></div>` +
+      `<div class="vd-ent" data-k="ent" hidden><div class="vd-ent-cab"><span data-k="entPaso"></span><span class="vd-ent-pp" data-k="entPP"><i></i><i></i><i></i></span></div>` +
+      `<div class="vd-ent-cuerpo"><kbd data-k="entK"></kbd><div class="vd-ent-txt"><span data-k="entTxt"></span> <b data-k="entPod"></b></div></div><button data-a="saltarEnt" type="button">${TXT.saltarEnt}</button></div>` +
+      `<div class="vd-bot" data-k="bot">${chip('golpe_ala', 'wing', TXT.ala, 'E')}${chip('semilla', 'semilla', TXT.semilla, 'F')}${chip('poder', 'bolt', TXT.poder, 'G')}${chip('alianza', 'star', '', 'H')}</div>` +
       `<div class="vd-fin" data-k="fin" hidden><p class="vd-finxp" data-k="finXp"></p><p data-k="finTxt"></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
     el.addEventListener('pointerdown', e => {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
       const a = b.dataset.a;
-      if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (a === 'alianza') { if (C.j && C.j.alianza) usar(C.j, C.j.alianza); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
+      if (a === 'como') iniciar({ entreno: true }); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (a === 'alianza') { if (C.j && C.j.alianza) usar(C.j, C.j.alianza); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
     });
     const viejo = document.getElementById('v18-duelo'); if (viejo) viejo.remove(); // una instancia nueva del módulo (QA-163 en v18CombateTest) no deja dos #v18-duelo
     document.body.appendChild(el);
-    hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
+    // Táctil: etiquetas sobre los botones grandes que ya existen (Acción = Ala, Impulso = Semilla y, mantenido, el poder)
+    const tg = document.createElement('div'); tg.id = 'v18-duelo-tags'; tg.hidden = true;
+    tg.innerHTML = `<span data-t="b-act" hidden>${TXT.ala}</span><span data-t="b-dash" hidden>${TXT.semilla}<small>${TXT.tagPoder}</small></span>`;
+    const tv = document.getElementById('v18-duelo-tags'); if (tv) tv.remove();
+    document.body.appendChild(tg);
+    hud = { el, tags: tg, q: k => el.querySelector('[data-k="' + k + '"]') };
     return hud;
   }
   function pulso(k) { if (!hud) return; const e = hud.q(k); e.classList.add('pulso'); setTimeout(() => e.classList.remove('pulso'), 300); }
@@ -561,11 +625,109 @@ window.AVV18Combate = function (G) {
     const ali = hud.q('ali') || hud.el.querySelector('.vd-ali'), aliH = C.j.alianza && H.get(C.j.alianza);
     ali.hidden = !aliH;
     if (aliH) { if (ali.dataset.nom !== aliH.nombre) { ali.dataset.nom = aliH.nombre; ali.textContent = aliH.nombre; } ali.classList.toggle('cd', !H.listo(C.j, C.j.alianza).ok); }
+    texto('cn-poder', (H.get(C.j.poder) || {}).nombre || TXT.poder);
+    const chA = hud.el.querySelector('.vd-chip[data-a="alianza"]'); chA.hidden = !aliH; if (aliH) texto('cn-alianza', aliH.nombre);
+    hud.q('como').hidden = !!ent || C.fase === 'nada';
+    pintarChips(); ponerTags();
+  }
+  // Recarga visual de los chips: cada cuadro, pero solo escribe en el DOM cuando cambia (pasos de 5 %)
+  function pintarChips() {
+    if (!hud || !C.j || TACTIL) return;
     for (const b of hud.q('bot').children) {
-      const id = b.dataset.a === 'poder' ? C.j.poder : b.dataset.a;
-      b.classList.toggle('cd', !H.listo(C.j, id).ok);
-      if (b.dataset.a === 'poder') { const nom = (H.get(C.j.poder) || {}).nombre || TXT.poder; if (b.dataset.nom !== nom) { b.dataset.nom = nom; b.textContent = nom; } }
+      const a = b.dataset.a, id = a === 'poder' ? C.j.poder : a === 'alianza' ? C.j.alianza : a;
+      if (!id || b.hidden) continue;
+      const h = H.ver(C.j, H.get(id)) || {}, cd = C.j.cd[id] || 0, l = H.listo(C.j, id);
+      const pct = Math.round(Math.max(0, Math.min(1, cd / (h.cooldown || 1))) * 20) * 5;
+      const st = C.fase === 'lucha' && l.ok ? 'listo' : cd > 0 ? 'cd' : 'sin';
+      if (b._pct !== pct) { b._pct = pct; b.style.setProperty('--cd', pct + '%'); }
+      if (b._st !== st) { b._st = st; b.classList.toggle('listo', st === 'listo'); b.classList.toggle('cd', st === 'cd'); b.classList.toggle('sin', st === 'sin'); }
     }
+  }
+  function ponerTags() {
+    if (!hud || !hud.tags) return;
+    const on = TACTIL && !hud.el.hidden && C.fase !== 'fin' && C.fase !== 'nada'; hud.tags.hidden = !on; if (!on) return;
+    for (const s of hud.tags.children) {
+      const b = document.getElementById(s.dataset.t), r = b && b.getBoundingClientRect(), ver = !!(r && r.width > 0 && b.offsetParent);
+      s.hidden = !ver; if (ver) { s.style.left = Math.round(r.left + r.width / 2) + 'px'; s.style.top = Math.round(r.top - 6) + 'px'; }
+    }
+  }
+
+  // ---------- Cómo se pelea: entreno guiado de 3 pasos y pistas breves ----------
+  // El entreno va en fase 'lucha' (cuentan las recargas y vuelan las semillas) pero paso() no llama a pasoIA: la Campeona
+  // se queda quieta. Nadie pierde plumas (se reponen cada cuadro) y no hay fin de duelo. Al acabar o al saltarlo empieza el
+  // duelo de verdad con su cuenta atrás.
+  const ENT_PASOS = [
+    { id: 'golpe_ala', k: 'E', kt: TXT.accion, txt: TXT.e1, txtT: TXT.t1 },
+    { id: 'semilla', k: 'F', kt: TXT.impulso, txt: TXT.e2, txtT: TXT.t2 },
+    { id: 'poder', k: 'G', kt: TXT.impulso, txt: TXT.e3, txtT: TXT.t3 }];
+  let ent = null; // { paso, fin } mientras dura el entreno
+  const PISTA = { cerca: 2, lejos: 4, poder: 8, defensa: 16 }; // bits de G.v18.mundo('pistas_duelo'): pista ya dominada
+  const pista = { t: 0, vis: 0, plj: 0, golpeado: false, dom: { cerca: 0, lejos: 0, poder: 0 } };
+  const ALA_R = () => ((H.get('golpe_ala') || {}).alcance || 2.4) + 0.3;
+  const mundoN = k => { try { return Number(G.v18 && G.v18.mundo && G.v18.mundo(k)) || 0; } catch (e) { return 0; } };
+  const ponerMundo = (k, v) => { try { if (G.v18 && G.v18.cambiarMundo) G.v18.cambiarMundo(k, v); } catch (e) { /* sin progreso V18 */ } };
+  const entrenoVisto = () => mundoN('entreno_duelo') > 0;
+  function dominar(bit) { const m = mundoN('pistas_duelo'); if (!(m & bit)) ponerMundo('pistas_duelo', m | bit); }
+  const nombrePoder = () => (H.get(C.j && C.j.poder) || {}).nombre || TXT.poder;
+  function pintarEntreno() {
+    if (!hud) return;
+    const box = hud.q('ent'); box.hidden = !ent;
+    if (!ent) return;
+    const i = Math.min(ent.paso, ENT_PASOS.length - 1), P = ENT_PASOS[i];
+    const pon = (k, t) => { const e = hud.q(k); if (e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } };
+    pon('entPaso', TXT.entPaso(i + 1)); pon('entK', TACTIL ? P.kt : P.k); pon('entTxt', TACTIL ? P.txtT : P.txt); pon('entPod', P.id === 'poder' ? nombrePoder() : '');
+    Array.from(hud.q('entPP').children).forEach((d, n) => { d.classList.toggle('ya', n < ent.paso); d.classList.toggle('ahora', n === ent.paso); });
+  }
+  function avanzarEntreno() {
+    ent.paso++; sonar('ring', 1); flotante(TXT.bien, 0.9);
+    if (ent.paso >= ENT_PASOS.length) { ent.fin = 1.3; ponerMundo('entreno_duelo', 1); if (G.ui && G.ui.toast) G.ui.toast(TXT.entFin, 2600); }
+    C.j.cd = {}; C.j.energia = C.j.energiaMax; C.j.mareo = 0; C.j.inv = 0;
+    pintarEntreno(); pintar();
+  }
+  function saltarEntreno() { if (!ent) return false; ponerMundo('entreno_duelo', 1); ent = null; return iniciar({ sinEntreno: true }); }
+  function pasoEntreno(dt) {
+    C.r.plumas = C.r.plumasMax; C.j.plumas = C.j.plumasMax; C.j.energia = C.j.energiaMax;
+    C.r.mov.t = 1; C.r.mov.x = C.r.mov.z = 0; // quieta (un «movimiento» de velocidad 0: no se acerca; los empujones sí cuentan) y sin perder nada
+    if (ent.fin > 0) { ent.fin -= dt; if (ent.fin <= 0) { ent = null; iniciar({ sinEntreno: true }); } }
+  }
+  function alUsar(id, r) {
+    const d = Math.hypot(S.pos.x - C.r.pos.x, S.pos.z - C.r.pos.z);
+    if (id === 'golpe_ala' && r.acierto) pista.dom.cerca++;
+    if (id === 'semilla' && d > 4) pista.dom.lejos++;
+    if (id === C.j.poder) pista.dom.poder++;
+    for (const k in pista.dom) if (pista.dom[k] >= 2) dominar(PISTA[k]); // dos veces bien hecho: esa pista ya no sale
+    if (!ent || ent.fin > 0) return;
+    const P = ENT_PASOS[ent.paso];
+    if (id !== (P.id === 'poder' ? C.j.poder : P.id)) return;
+    if (P.id === 'golpe_ala' && !r.acierto) { flotante(TXT.masCerca, 1); return; }
+    avanzarEntreno();
+  }
+  function mostrarPista(t, pod) {
+    if (!hud) return;
+    const e = hud.q('pista'); hud.q('pistaTxt').textContent = t; hud.q('pistaPod').textContent = pod || '';
+    e.hidden = false; pista.vis = 2.4;
+  }
+  function ocultarPista() { pista.vis = 0; if (hud) hud.q('pista').hidden = true; }
+  // Una pista como mucho cada 4,5 s; solo las que aún no se dominan. La del primer golpe recibido, una vez por partida.
+  function pasoPistas(dt) {
+    if (pista.vis > 0) { pista.vis -= dt; if (pista.vis <= 0) ocultarPista(); }
+    const m = mundoN('pistas_duelo');
+    if (C.j.plumas < pista.plj && !pista.golpeado) {
+      pista.golpeado = true;
+      if (!(m & PISTA.defensa)) {
+        dominar(PISTA.defensa);
+        const def = DEFENSAS.has(C.j.poder);
+        mostrarPista(def ? (TACTIL ? TXT.dEscudoT : TXT.dEscudo) : TXT.dGolpe, def ? nombrePoder() : ''); pista.vis = 3.2; pista.t = 4.5;
+      }
+    }
+    pista.plj = C.j.plumas;
+    if ((pista.t -= dt) > 0) return;
+    const d = Math.hypot(S.pos.x - C.r.pos.x, S.pos.z - C.r.pos.z);
+    let t = null;
+    if (!(m & PISTA.poder) && C.j.energia >= C.j.energiaMax - 0.5 && H.listo(C.j, C.j.poder).ok) t = TACTIL ? TXT.pPoderT : TXT.pPoder;
+    else if (!(m & PISTA.cerca) && d <= ALA_R() && H.listo(C.j, 'golpe_ala').ok) t = TACTIL ? TXT.pCercaT : TXT.pCerca;
+    else if (!(m & PISTA.lejos) && d > 5.5 && H.listo(C.j, 'semilla').ok) t = TACTIL ? TXT.pLejosT : TXT.pLejos;
+    if (t) { mostrarPista(t, ''); pista.t = 4.5; } else pista.t = 0.3;
   }
 
   // ---------- Ciclo del duelo ----------
@@ -587,12 +749,15 @@ window.AVV18Combate = function (G) {
     if (C.ch && C.chEsp !== C.r.especie) { try { C.ch.applyLook({ species: C.r.especie, accessories: { eyes: { id: 'gafas', color: '#7fd3ff' } } }); C.chEsp = C.r.especie; } catch (e) { /* piel */ } }
     C.timers.length = 0; C.resultado = null; C.premio = false;
     C.stats = nuevasStats();
+    const conEntreno = !!o.entreno || (!o.sinCuenta && !o.sinEntreno && !espForzada && !entrenoVisto()); // el primer duelo empieza con el entreno
+    ent = null; pista.t = 2.5; pista.plj = C.j.plumas; pista.golpeado = false;
     colocar();
     montarHud(); hud.el.hidden = false; hud.q('fin').hidden = true; hud.q('bot').hidden = false; hud.q('finXp').textContent = ''; hud.q('apoyo').hidden = true; apoyoT = 0;
-    enganchar();
-    if (o.sinCuenta) { C.fase = 'lucha'; flotante(''); }
+    enganchar(); ocultarPista();
+    if (conEntreno) { C.fase = 'lucha'; ent = { paso: 0, fin: 0 }; flotante(''); }
+    else if (o.sinCuenta) { C.fase = 'lucha'; flotante(''); }
     else { C.fase = 'cuenta'; C.cuenta = 3; flotante('3', 1); if (G.ui && G.ui.toast) G.ui.toast(TXT.bienvenida, 2600); }
-    pintar();
+    pintarEntreno(); pintar();
     return true;
   }
   function terminar(res) {
@@ -640,11 +805,11 @@ window.AVV18Combate = function (G) {
     try { if (G.objetos && G.objetos.renderInv) G.objetos.renderInv(); } catch (e) { /* HUD */ }
     try { if (G.guardado && G.guardado.save) G.guardado.save(true); else if (G.guardado && G.guardado.autosave) G.guardado.autosave(); } catch (e) { /* guardado */ } // QA-162: al momento
   }
-  function otraVez() { return iniciar({}); }
+  function otraVez() { return iniciar({ sinEntreno: true }); }
   function salir(motivo) {
     if (C.fase === 'nada') return false;
-    C.fase = 'nada'; quitarBalas(); C.timers.length = 0; soltar();
-    if (hud) { flotante(''); hud.el.hidden = true; }
+    C.fase = 'nada'; quitarBalas(); C.timers.length = 0; soltar(); ent = null;
+    if (hud) { flotante(''); hud.el.hidden = true; ocultarPista(); pintarEntreno(); ponerTags(); }
     rivalPos.x = sitio.x + 4; rivalPos.z = sitio.z; rivalPos.y = ALTURA(rivalPos);
     if (C.r) { C.r.mareo = 0; C.r.finMareo = 0; C.r.lift.t = C.r.lift.dura = 0; }
     if (motivo && G.ui && G.ui.toast) G.ui.toast(motivo, 2600);
@@ -655,10 +820,20 @@ window.AVV18Combate = function (G) {
   function pasoIA(dt) {
     const r = C.r, j = C.j, D = r.dif || CLASICA, pp = D.poder;
     if (r.mareo > 0) r.tocada = true;
-    if (r.mareo > 0 || r.deslumbrada > 0) return; // deslumbrada por el Abanico de colores: 1 s sin hacer nada
-    if (r.distraida > 0) return; // Cuento: distraída escuchando — no ataca ni se defiende hasta que se le pasa
+    // Mareada, deslumbrada (Abanico de colores) o distraída (Cuento): no hace nada, y el ataque que anunciaba se pierde
+    if (r.mareo > 0 || r.deslumbrada > 0 || r.distraida > 0) { r.prep = ''; return; }
     const d = H.dirA(r, j), dist = d.d;
-    r.golpeT -= dt; r.tiroT -= dt; r.esquivaT -= dt; r.poderT -= dt; r.pensar -= dt;
+    r.golpeT -= dt; r.tiroT -= dt; r.esquivaT -= dt; r.poderT -= dt; r.pensar -= dt; r.apartaT -= dt;
+    // Telegrafía (Kelvin 8-nov): el golpe de ala y la semilla se anuncian (se agacha y abre las alas, o apunta, con «!»
+    // encima) y salen al acabar el aviso. Mientras avisa está comprometida: no esquiva ni cambia de idea.
+    if (r.prep) {
+      r.vioGrito = j.picoT > 0 ? 1 : 0;
+      if ((r.prepT -= dt) > 0) return;
+      const id = r.prep; r.prep = ''; r.avisoUsado = r.prepDur;
+      const u = usar(r, id); r.avisoUsado = 0;
+      if (id === 'golpe_ala' && u.ok) r.golpeAnim = 0.3;
+      return;
+    }
     // Reflejo al recuperarse de un golpe: se aparta de un salto en vez de quedarse a tiro (rompe las cadenas de golpes)
     if (r.tocada) { r.tocada = false; if (D.rehace && azar() < D.rehace) { saltoAtras(r, d, 0.3); return; } }
     // Reflejo ante el poder de la jugadora: lo ve venir (abre el pico) y se escuda si puede
@@ -670,7 +845,7 @@ window.AVV18Combate = function (G) {
     if (viene && r.esquivaT <= 0 && !(r.marcada > 0)) {
       r.esquivaT = D.calma;
       if (r.poder === 'escudo_plumas' && r.escudo <= 0 && H.listo(r, 'escudo_plumas').ok && azar() < D.escudo) { usar(r, 'escudo_plumas'); return; }
-      if (azar() < D.esquiva) { r.lado = azar() < 0.5 ? -1 : 1; r.mov.x = -d.z * r.lado * 9; r.mov.z = d.x * r.lado * 9; r.mov.t = 0.28; C.stats.esquivas++; return; }
+      if (azar() < D.esquiva) { const q = azar() < 0.5 ? -1 : 1; r.mov.x = -d.z * q * 9; r.mov.z = d.x * q * 9; r.mov.t = 0.28; saltito(r, 0.28); C.stats.esquivas++; return; }
     }
     if (r.pensar > 0) return;
     r.pensar = D.pensar;
@@ -687,53 +862,118 @@ window.AVV18Combate = function (G) {
       if (r.poder === 'vista_cumbre' && dist > 2.2 && dist < 3.6 && azar() < pp) { r.poderT = 4; usar(r, 'vista_cumbre'); return; } // la ventana donde su ala larga alcanza y el de la jugadora no
     }
     // Reflejo cuerpo a cuerpo: con el ala en espera y la jugadora encima, sale de su alcance
-    if (D.aparta && dist < 2.6 && r.golpeT > 0 && azar() < D.aparta) { saltoAtras(r, d, 0.24); return; }
-    if (dist < (D.cerca || 2.3) && r.golpeT <= 0) { r.golpeT = D.ala; usar(r, 'golpe_ala'); return; }
-    if (dist > (D.tiroMin || 6) && dist < 16 && r.tiroT <= 0 && r.energia > 40) { r.tiroT = D.tiro; usar(r, 'semilla'); return; }
+    if (D.aparta && dist < 2.6 && r.golpeT > 0 && r.apartaT <= 0 && azar() < D.aparta) { r.apartaT = APARTA_ESPERA; saltoAtras(r, d, 0.24); return; }
+    const aviso = D.aviso || AVISO_ALA, apunta = D.apunta || AVISO_SEMILLA;
+    if (dist < (D.cerca || 2.3) && r.golpeT <= 0) { r.golpeT = Math.max(D.ala, aviso + 0.6); preparar(r, 'golpe_ala', aviso); return; }
+    if (dist > (D.tiroMin || 6) && dist < 16 && r.tiroT <= 0 && r.energia > 40) { r.tiroT = D.tiro + apunta; preparar(r, 'semilla', apunta); return; }
   }
+  function preparar(r, id, t) {
+    r.prep = id; r.prepT = r.prepDur = t; C.stats.avisosIA = (C.stats.avisosIA || 0) + 1;
+    if (id === 'golpe_ala') fx('gold', r.pos.x, r.pos.y + 1.9, r.pos.z); // brillo sobre la cabeza al empezar el aviso
+  }
+  // Quiebro o salto atrás: un saltito con aleteo un poco más largo que el empujón (aterriza al acabar)
+  function saltito(r, t) { r.saltoT = 0; r.saltoDur = t + 0.08; }
   function saltoAtras(r, d, t) {
-    r.lado = azar() < 0.5 ? -1 : 1;
-    r.mov.x = (-d.x * 0.8 - d.z * r.lado * 0.6) * 9; r.mov.z = (-d.z * 0.8 + d.x * r.lado * 0.6) * 9; r.mov.t = t; C.stats.esquivas++;
+    const q = azar() < 0.5 ? -1 : 1;
+    r.mov.x = (-d.x * 0.8 - d.z * q * 0.6) * 9; r.mov.z = (-d.z * 0.8 + d.x * q * 0.6) * 9; r.mov.t = t; saltito(r, t); C.stats.esquivas++;
   }
+  // Movimiento (Kelvin 8-nov): la IA decide qué quiere (acercarse, rodear a distancia de ala, plantarse para atacar) y el
+  // cuerpo lo sigue con aceleración y frenado limitados; el rodeo cambia de sentido cada pocos segundos (o al llegar al borde)
+  // y el giro del cuerpo tiene velocidad angular máxima. Los quiebros y los empujones siguen siendo rápidos, pero con saltito.
+  const QUIERE = 2.0, LEJOS = 2.8, RODEO = 1.8, ACEL = 10, FRENO = 14, GIRO = 7, GIRO_ATAQUE = 10;
   function moverRival(dt) {
-    const r = C.r, j = C.j, d = H.dirA(r, j);
+    const r = C.r, j = C.j, d = H.dirA(r, j), V = r.v, D = r.dif || CLASICA;
     let vx = 0, vz = 0;
     if (r.kb.t > 0) { r.kb.t -= dt; vx += r.kb.x; vz += r.kb.z; r.kb.x *= 0.88; r.kb.z *= 0.88; }
-    if (r.mov.t > 0) { r.mov.t -= dt; vx += r.mov.x; vz += r.mov.z; }
-    else if (r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0) && !(r.distraida > 0)) {
-      const velK = r.pesada > 0 ? 0.45 : 1; // Plumas de manglar: pisar una pluma la deja más lenta
-      const ve = (r.dif || CLASICA).vel;
-      if (d.d > 2.0) { vx += d.x * ve * velK; vz += d.z * ve * velK; } // se acerca
-      else { vx += -d.z * r.lado * 1.6 * velK; vz += d.x * r.lado * 1.6 * velK; } // rodea
+    if (r.golpeAnim > 0) r.golpeAnim -= dt;
+    if (r.saltoDur > 0) { r.saltoT += dt; if (r.saltoT >= r.saltoDur) r.saltoDur = 0; }
+    if (r.mov.t > 0) { r.mov.t -= dt; vx += r.mov.x; vz += r.mov.z; V.x = r.mov.x * 0.25; V.z = r.mov.z * 0.25; } // sale del quiebro con algo de inercia
+    else {
+      let qx = 0, qz = 0; // velocidad que quiere
+      const libre = r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0) && !(r.distraida > 0);
+      if (libre && r.prep === 'golpe_ala' && d.d > 1.5) { qx = d.x * 1.6; qz = d.z * 1.6; } // agachada, se arrima despacio para el golpe
+      else if (libre && !r.prep) {
+        const ve = D.vel * (r.pesada > 0 ? 0.45 : 1); // Plumas de manglar: pisar una pluma la deja más lenta
+        const ox = r.pos.x - sitio.x, oz = r.pos.z - sitio.z, od = Math.hypot(ox, oz);
+        let tx = -d.z * r.lado, tz = d.x * r.lado;
+        r.ladoT -= dt;
+        // Cambia el sentido del rodeo de vez en cuando, o si el borde de la explanada le corta el paso
+        if (r.ladoT <= 0 || (od > ARENA_R - 2 && (tx * ox + tz * oz) > 0 && r.ladoT < 2.2)) { r.lado = -r.lado; r.ladoT = 2.6 + azar() * 2.4; tx = -tx; tz = -tz; }
+        const quiere = r.golpeT > 0.25 ? LEJOS : QUIERE; // con el ala en espera, rodea justo fuera de tu alcance; lista, se arrima
+        const rad = Math.max(-1, Math.min(1, (d.d - quiere) / 0.8)), cerca = 1 - Math.min(1, Math.max(0, d.d - quiere) / 3);
+        const k = rad * ve * (rad < 0 ? 0.6 : 1), o = RODEO * cerca * (r.pesada > 0 ? 0.45 : 1);
+        qx = d.x * k + tx * o; qz = d.z * k + tz * o;
+      }
+      const ax = qx - V.x, az = qz - V.z, a = Math.hypot(ax, az), paso = (qx * qx + qz * qz < V.x * V.x + V.z * V.z ? FRENO : ACEL) * dt;
+      if (a > paso) { V.x += ax / a * paso; V.z += az / a * paso; } else { V.x = qx; V.z = qz; }
+      vx += V.x; vz += V.z;
     }
     const x0 = r.pos.x, z0 = r.pos.z;
     r.pos.x += vx * dt; r.pos.z += vz * dt;
     // Dentro de la explanada
     const ox = r.pos.x - sitio.x, oz = r.pos.z - sitio.z, od = Math.hypot(ox, oz);
     if (od > ARENA_R - 0.5) { r.pos.x = sitio.x + ox / od * (ARENA_R - 0.5); r.pos.z = sitio.z + oz / od * (ARENA_R - 0.5); }
-    C.stats.movida += Math.hypot(r.pos.x - x0, r.pos.z - z0);
+    const movida = Math.hypot(r.pos.x - x0, r.pos.z - z0);
+    C.stats.movida += movida;
     let lift = 0;
     if (r.lift.dura > 0) { r.lift.t += dt; const k = r.lift.t / r.lift.dura; if (k >= 1) r.lift.dura = 0; else lift = r.lift.alto * Math.sin(Math.PI * k); }
     r.pos.y = ALTURA(r.pos) + lift;
-    if (C.fase === 'lucha' || C.fase === 'cuenta') r.yaw = Math.atan2(d.x, d.z);
-    return Math.hypot(vx, vz);
+    // Rumbo: mira a la jugadora (de cerca, al atacar y al rodear); de lejos y corriendo, hacia donde va. Giro limitado.
+    if (C.fase === 'lucha' || C.fase === 'cuenta') {
+      const sp = Math.hypot(V.x, V.z);
+      const obj = C.fase === 'lucha' && !r.prep && r.mov.t <= 0 && d.d > 4.5 && sp > 1.5 ? Math.atan2(V.x, V.z) : Math.atan2(d.x, d.z);
+      const g = (r.prep ? GIRO_ATAQUE : GIRO) * dt;
+      r.yaw += Math.max(-g, Math.min(g, giroPi(obj - r.yaw)));
+    }
+    return dt > 0 ? movida / dt : 0;
   }
   const giroPi = a => Math.atan2(Math.sin(a), Math.cos(a));
+  // «!» sobre la cabeza mientras anuncia un ataque: naranja y grande antes del ala, amarillo y más pequeño antes de la semilla
+  let marcaAviso = null;
+  function avisoSprite() {
+    if (marcaAviso) return marcaAviso;
+    const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+    const g = cv.getContext('2d');
+    g.fillStyle = '#ffffff'; g.strokeStyle = 'rgba(40,24,8,0.9)'; g.lineWidth = 14;
+    g.beginPath(); g.arc(128, 128, 104, 0, Math.PI * 2); g.fill(); g.stroke();
+    g.fillStyle = '#2a1a08'; g.beginPath(); g.moveTo(108, 52); g.lineTo(148, 52); g.lineTo(138, 152); g.lineTo(118, 152); g.closePath(); g.fill();
+    g.beginPath(); g.arc(128, 188, 17, 0, Math.PI * 2); g.fill();
+    const t = new THREE.CanvasTexture(cv);
+    marcaAviso = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthTest: false, depthWrite: false }));
+    marcaAviso.renderOrder = 20; marcaAviso.visible = false; marcaAviso.name = 'v18_aviso'; marcaAviso.frustumCulled = false;
+    scene.add(marcaAviso); C.marcaAviso = marcaAviso;
+    return marcaAviso;
+  }
+  const mirarA = new THREE.Vector3();
   function dibujarRival(dt, vel, sinAnimar) {
     const ch = C.ch; if (!ch) return;
-    const r = C.r, root = ch.root, now = performance.now() / 1000;
+    const r = C.r, root = ch.root, now = performance.now() / 1000, lucha = C.fase === 'lucha';
+    const prep = lucha ? r.prep : '';
     root.visible = true;
-    root.position.set(r.pos.x, r.pos.y, r.pos.z);
-    root.rotation.y += giroPi(r.yaw - root.rotation.y) * Math.min(1, dt * 8);
-    root.rotation.z = r.mareo > 0 ? Math.sin(now * (r.finMareo > 0 ? 9 : 14)) * (r.finMareo > 0 ? 0.32 : 0.25) : root.rotation.z * 0.8; // tambaleo del mareo
+    // Saltito de los quiebros (solo se ve: la posición de juego no sube)
+    const salto = r.saltoDur > 0 ? 0.32 * Math.sin(Math.PI * Math.min(1, r.saltoT / r.saltoDur)) : 0;
+    const hop = (ch.gait || 0) > 1.5 && !salto ? Math.abs(Math.sin(ch.ph || 0)) * 0.06 * Math.min(1, vel / 2.5) : 0; // saltitos al trotar
+    root.position.set(r.pos.x, r.pos.y + salto + hop, r.pos.z);
+    root.rotation.y = r.yaw; // el rumbo ya gira con velocidad limitada (moverRival)
+    const kz = Math.min(1, dt * 10);
+    root.rotation.z = r.mareo > 0 ? Math.sin(now * (r.finMareo > 0 ? 9 : 14)) * (r.finMareo > 0 ? 0.32 : 0.25) : root.rotation.z + ((prep === 'semilla' ? 0.16 : 0) - root.rotation.z) * kz; // tambaleo del mareo; ladea la cabeza al apuntar
+    root.rotation.x += ((prep === 'semilla' ? 0.14 : prep ? 0 : Math.min(0.1, vel * 0.02)) - root.rotation.x) * kz; // se inclina al correr y al apuntar
+    if (prep || marcaAviso) {
+      const m = avisoSprite(); m.visible = !!prep;
+      if (prep) { const s = (prep === 'golpe_ala' ? 0.62 : 0.46) * (1 + 0.12 * Math.sin(now * 18)); m.scale.set(s, s, 1); m.position.set(r.pos.x, r.pos.y + salto + 2.25, r.pos.z); m.material.color.set(prep === 'golpe_ala' ? '#ff9d2e' : '#ffe066'); }
+    }
     if (sinAnimar) return; // CPU (móvil): colocada, pero sin animar el esqueleto este cuadro (ver dibujarQuieta)
     if (r.finMareo > 0 && azar() < dt * 5) fx('gold', r.pos.x, r.pos.y + 1.8, r.pos.z); // estrellitas del mareo final
-    const enAire = r.lift.dura > 0;
-    Object.assign(ch, { speed: vel, gait: vel > 5 ? 1 : 0, airborne: enAire, flying: enAire, legsDown: enAire ? 0.6 : 1, swimming: false, diving: false,
-      wingMode: r.alasT > 0 ? 'land' : enAire ? 'flap' : r.mov.t > 0 ? 'takeoff' : vel > 0.5 ? 'walk' : 'idle',
-      expression: r.mareo > 0 ? 'surprised' : r.picoT > 0 ? 'fight' : 'happy',
-      mouth: r.picoT > 0 ? boca(r) : null, lookAt: null,
-      emote: null, posado: '', agachada: 0, groundY: ALTURA(r.pos), groundAt: null });
+    r.agacha += ((prep === 'golpe_ala' ? 0.62 : prep === 'semilla' ? 0.18 : 0) - r.agacha) * Math.min(1, dt * 12); // se agacha para el golpe
+    const enAire = r.lift.dura > 0 || r.saltoDur > 0;
+    // Andar de lado o deprisa: saltitos con las alas a medio abrir ('hop'); despacio y de frente, pasos
+    const lado = vel > 0.7 && Math.sin(r.yaw) * r.v.x + Math.cos(r.yaw) * r.v.z < 0.5 * Math.hypot(r.v.x, r.v.z); // de lado o hacia atrás
+    if (lucha && C.j) mirarA.set(C.j.pos.x, C.j.pos.y + 1.2, C.j.pos.z);
+    Object.assign(ch, { speed: vel, gait: vel > 3 || lado ? 2 : vel > 0.3 ? 1 : 0, airborne: enAire, flying: enAire, legsDown: enAire ? 0.6 : 1, swimming: false, diving: false,
+      wingMode: r.alasT > 0 ? 'land' : r.golpeAnim > 0 ? 'flap' : prep === 'golpe_ala' ? 'preflare' : enAire ? 'flap' : vel > 0.3 ? 'walk' : 'idle',
+      expression: r.mareo > 0 ? 'surprised' : r.picoT > 0 || prep ? 'fight' : 'happy',
+      mouth: r.picoT > 0 ? boca(r) : null, lookAt: lucha && C.j && !(r.mareo > 0) ? mirarA : null,
+      emote: null, posado: '', agachada: enAire ? 0 : r.agacha, groundY: ALTURA(r.pos), groundAt: null });
     try { ch.update(dt); } catch (e) { /* animación */ }
   }
   function pasoJugador(dt) {
@@ -840,12 +1080,14 @@ window.AVV18Combate = function (G) {
       C.tLucha = (C.tLucha || 0) + dt;
       H.paso(C.j, dt); H.paso(C.r, dt); pasoNuevos(C.j, dt); pasoNuevos(C.r, dt); pasoTrampas(dt);
       for (let i = C.timers.length - 1; i >= 0; i--) { const t = C.timers[i]; t.t -= dt; if (t.t <= 0) { C.timers.splice(i, 1); t.fn(); if (C.fase !== 'lucha') break; } }
-      if (C.fase === 'lucha') pasoIA(dt);
+      if (C.fase === 'lucha' && !ent) pasoIA(dt); // en el entreno la Campeona espera quieta
       if (C.fase === 'lucha') pasoBalas(dt);
       pasoEscudo(C.j, dt); pasoEscudo(C.r, dt);
       pasoJugador(dt);
       if (C.fase === 'lucha' && Math.hypot(S.pos.x - sitio.x, S.pos.z - sitio.z) > SALIDA_R) { salir(TXT.lejos); return; }
-      if (Math.random() < dt * 4) pintar();
+      if (C.fase === 'lucha' && ent) pasoEntreno(dt);
+      else if (C.fase === 'lucha') pasoPistas(dt);
+      if (Math.random() < dt * 4) pintar(); else pintarChips();
     } else if (C.fase === 'fin') {
       for (const f of [C.j, C.r]) if (f && f.finMareo > 0) { f.finMareo = Math.max(0, f.finMareo - dt); f.mareo = f.finMareo; }
       if (C.j && C.j.finMareo > 0) { M.vx *= 0.8; M.vz *= 0.8; if (azar() < dt * 5) fx('gold', S.pos.x, S.pos.y + 1.8, S.pos.z); }
@@ -866,7 +1108,7 @@ window.AVV18Combate = function (G) {
   function moverRivalQuieta(dt) {
     const r = C.r; r.pos.y = ALTURA(r.pos);
     const dx = S.pos.x - r.pos.x, dz = S.pos.z - r.pos.z;
-    if (dx * dx + dz * dz < 400) r.yaw = Math.atan2(dx, dz); // mira a quien se acerca
+    if (dx * dx + dz * dz < 400) { const g = 4 * dt; r.yaw += Math.max(-g, Math.min(g, giroPi(Math.atan2(dx, dz) - r.yaw))); } // mira a quien se acerca, girando poco a poco
     return 0;
   }
 
@@ -911,6 +1153,61 @@ window.AVV18Combate = function (G) {
     const correr = (s, antes) => { for (let t = 0; t < s && C.fase === 'lucha'; t += 0.05) { if (antes) antes(); paso(0.05); } };
     const quieta = (dx) => { C.r.pos.x = S.pos.x + dx; C.r.pos.z = S.pos.z; C.r.pensar = 99; C.r.esquivaT = 99; C.r.poderT = 99; C.r.mov.t = 0; };
     const cara = (x) => { S.facing = { x, z: 0 }; };
+    // Mide cómo se mueve la rival en un duelo de `seg` s contra una jugadora con guion (se acerca, se aleja y la rodea, tira
+    // semillas y golpea). Por cuadro: giro del cuerpo (rad/s), cambio de dirección del paso (sin contar empujones ni quiebros),
+    // andar de lado sin saltitos, velocidad de la animación frente a la real, y si sus ataques básicos llegan avisados.
+    function medirMovimiento(seg) {
+      iniciar({ sinCuenta: true, especie: 'vittata', dificultad: DIFICULTAD[DIFICULTAD.length - 1] }); // la más viva: Maestro
+      const r = C.r, j = C.j, dt = 0.05, res = { s: seg, giroMax: 0, bruscos: 0, inversiones: 0, lateral: 0, desfase: 0, quiebros: 0, quiebrosSinSalto: 0, alas: 0, alasAvisadas: 0, semillas: 0, semillasAvisadas: 0, marca: false, agacha: false };
+      const usar0 = H.usar;
+      H.usar = function (f, id) {
+        const o = usar0.apply(this, arguments);
+        if (f === C.r && o && o.ok && id === 'golpe_ala') { res.alas++; if ((f.avisoUsado || 0) >= 0.35) res.alasAvisadas++; }
+        if (f === C.r && o && o.ok && id === 'semilla') { res.semillas++; if ((f.avisoUsado || 0) >= 0.25) res.semillasAvisadas++; }
+        return o;
+      };
+      const yawVis = () => (C.ch ? C.ch.root.rotation.y : r.yaw);
+      let n = 0, mov = 0, lat = 0, des = 0, tiro = 0, golpe = 0, yaw0 = yawVis(), hist = [];
+      S.pos.x = sitio.x - 5; S.pos.z = sitio.z;
+      try {
+        for (let t = 0; t < seg && C.fase === 'lucha'; t += dt) {
+          // La jugadora: 0–3,5 s se acerca, 3,5–7 se aleja, 7–14 la rodea a 3 m (cambiando de sentido a los 10,5 s)
+          const fase = t < 3.5 ? 0 : t < 7 ? 1 : 2, dx = r.pos.x - S.pos.x, dz = r.pos.z - S.pos.z, d = Math.hypot(dx, dz) || 1;
+          let mx = 0, mz = 0;
+          if (fase === 0) { if (d > 1.6) { mx = dx / d; mz = dz / d; } } else if (fase === 1) { if (d < 7) { mx = -dx / d; mz = -dz / d; } }
+          else { const sg = t < 10.5 ? 1 : -1; mx = -dz / d * sg + (d - 3) / d * dx * 0.5; mz = dx / d * sg + (d - 3) / d * dz * 0.5; }
+          const mn = Math.hypot(mx, mz) || 1;
+          if (mx || mz) { S.pos.x += mx / mn * 4.2 * dt; S.pos.z += mz / mn * 4.2 * dt; }
+          const ox = S.pos.x - sitio.x, oz = S.pos.z - sitio.z, od = Math.hypot(ox, oz); if (od > 10) { S.pos.x = sitio.x + ox / od * 10; S.pos.z = sitio.z + oz / od * 10; }
+          S.facing = { x: dx / d, z: dz / d }; M.vx = M.vz = 0;
+          j.plumas = PLUMAS; r.plumas = PLUMAS;
+          if ((tiro -= dt) <= 0 && d > 3.5 && H.listo(j, 'semilla').ok) { usar(j, 'semilla'); tiro = 1.7; }
+          if ((golpe -= dt) <= 0 && d < 2.2 && H.listo(j, 'golpe_ala').ok) { usar(j, 'golpe_ala'); golpe = 1.1; }
+          const x0 = r.pos.x, z0 = r.pos.z, quiebro = r.mov.t > 0, sacudida = r.kb.t > 0 || quiebro || r.mareo > 0;
+          paso(dt);
+          if (C.fase !== 'lucha') break;
+          const y1 = yawVis(); if (!(r.mareo > 0)) res.giroMax = Math.max(res.giroMax, Math.abs(giroPi(y1 - yaw0)) / dt); yaw0 = y1;
+          if (r.prep && C.marcaAviso && C.marcaAviso.visible) res.marca = true;
+          if (C.ch && C.ch.agachada > 0.3) res.agacha = true;
+          const vx = (r.pos.x - x0) / dt, vz = (r.pos.z - z0) / dt, v = Math.hypot(vx, vz);
+          if ((quiebro || r.mov.t > 0) && !(r.kb.t > 0) && !(r.mareo > 0)) { res.quiebros++; if (C.ch && !C.ch.airborne) res.quiebrosSinSalto++; }
+          if (sacudida || r.kb.t > 0 || r.mov.t > 0 || r.mareo > 0) { hist.length = 0; continue; }
+          n++;
+          if (C.ch && Math.abs((C.ch.speed || 0) - v) > 0.5) des++;
+          const pv = hist.length ? hist[hist.length - 1] : null;
+          if (pv && v > 0.6 && pv.v > 0.6 && (vx * pv.x + vz * pv.z) / (v * pv.v) < Math.cos(Math.PI / 4)) res.bruscos++;
+          const p3 = hist.length >= 3 ? hist[hist.length - 3] : null;
+          if (p3 && v > 0.6 && p3.v > 0.6 && (vx * p3.x + vz * p3.z) / (v * p3.v) < -0.5) res.inversiones++;
+          hist.push({ x: vx, z: vz, v }); if (hist.length > 3) hist.shift();
+          if (v > 1) { mov++; const fy = y1; if (Math.abs(Math.sin(fy) * vx + Math.cos(fy) * vz) / v < 0.5 && !(C.ch && C.ch.gait > 1.5)) lat++; }
+        }
+      } finally { H.usar = usar0; }
+      res.bruscos = Math.round(100 * res.bruscos / seg) / 100; res.inversiones = Math.round(100 * res.inversiones / seg) / 100;
+      res.lateral = Math.round(100 * lat / Math.max(1, mov)) / 100; res.desfase = Math.round(100 * des / Math.max(1, n)) / 100; res.giroMax = Math.round(10 * res.giroMax) / 10;
+      res.cuadros = n; res.andando = mov;
+      salir();
+      return res;
+    }
     try {
       // 1. Poderes por especie y básicos
       const grito = H.get('grito_yunque'), esc = H.get('escudo_plumas');
@@ -957,6 +1254,66 @@ window.AVV18Combate = function (G) {
       }
       check('La rival es una cotorra con otra piel en la explanada', !!C.ch && C.r.especie !== especieJugador() && C.ch.root.parent === scene, C.r.especie);
       check('Hablar con la Campeona de la Explanada abre el duelo', it.visible() && it.label() === TXT.retar);
+      // Cómo se pelea (Kelvin 8-nov): entreno guiado de 3 pasos, chips con tecla y recarga, pistas breves
+      {
+        const pd = b => b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+        P.borrar(); toasts.length = 0;
+        iniciar({});
+        check('Entreno: el primer duelo empieza con el paso 1 (aletazo, tecla E) y sin cuenta atrás', !!ent && ent.paso === 0 && C.fase === 'lucha' && !hud.q('ent').hidden &&
+          hud.q('entK').textContent === (TACTIL ? TXT.accion : 'E') && hud.q('entTxt').textContent === (TACTIL ? TXT.t1 : TXT.e1) && hud.q('entPaso').textContent === TXT.entPaso(1) && hud.q('como').hidden,
+          JSON.stringify({ ent, fase: C.fase, k: hud.q('entK').textContent }));
+        salir(); iniciar({ entreno: true, especie: 'vittata' });
+        const r0 = { x: C.r.pos.x, z: C.r.pos.z }; correr(2);
+        check('Entreno: la Campeona se queda quieta y no ataca; nadie pierde plumas', Math.hypot(C.r.pos.x - r0.x, C.r.pos.z - r0.z) < 0.01 && C.stats.ataques === 0 && C.j.plumas === PLUMAS && C.r.plumas === C.r.plumasMax,
+          JSON.stringify({ d: Math.hypot(C.r.pos.x - r0.x, C.r.pos.z - r0.z), at: C.stats.ataques }));
+        cara(1); C.r.pos.x = S.pos.x + 7; C.r.pos.z = S.pos.z; usar(C.j, 'golpe_ala');
+        const lejosOk = ent.paso === 0 && hud.q('centro').textContent === TXT.masCerca;
+        C.j.cd = {}; C.r.inv = 0; C.r.escudo = 0; C.r.pos.x = S.pos.x + 1.5; usar(C.j, 'golpe_ala');
+        const p1 = ent.paso === 1 && hud.q('entK').textContent === 'F' && hud.q('entTxt').textContent === TXT.e2 && hud.q('entPP').querySelectorAll('i.ya').length === 1;
+        correr(0.1);
+        check('Entreno: el aletazo de lejos no cuenta («¡Más cerca!»); de cerca pasa al paso 2 (semilla, F) y la pluma vuelve', lejosOk && p1 && C.r.plumas === C.r.plumasMax, JSON.stringify({ lejosOk, p1, pl: C.r.plumas }));
+        usar(C.j, 'semilla');
+        const p2 = ent.paso === 2 && hud.q('entK').textContent === 'G' && hud.q('entPod').textContent === nombrePoder() && nombrePoder() === H.get('grito_yunque').nombre;
+        check('Entreno: la semilla pasa al paso 3 (poder G, con el nombre del poder de la especie)', p2, JSON.stringify({ paso: ent.paso, pod: hud.q('entPod').textContent }));
+        document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'g', code: 'KeyG', bubbles: true, cancelable: true }));
+        document.body.dispatchEvent(new KeyboardEvent('keyup', { key: 'g', code: 'KeyG', bubbles: true, cancelable: true }));
+        const p3 = ent && ent.paso === 3 && ent.fin > 0 && P.mundo('entreno_duelo') === 1 && toasts.includes(TXT.entFin);
+        correr(2);
+        check('Entreno: el poder (tecla G) lo termina, se guarda que ya se vio y empieza el duelo de verdad con cuenta atrás', p3 && !ent && C.fase === 'cuenta' && hud.q('ent').hidden,
+          JSON.stringify({ p3, fase: C.fase, mundo: P.mundo('entreno_duelo') }));
+        salir(); iniciar({});
+        check('Entreno: no se repite solo (el siguiente duelo va directo a la cuenta atrás)', !ent && C.fase === 'cuenta' && !hud.q('como').hidden);
+        pd(hud.q('como'));
+        const porBoton = !!ent && ent.paso === 0 && C.fase === 'lucha';
+        pd(hud.el.querySelector('[data-a="saltarEnt"]'));
+        check('Botón «¿Cómo se pelea?» abre el entreno; «Saltar entreno» va al duelo', porBoton && !ent && C.fase === 'cuenta', JSON.stringify({ porBoton, fase: C.fase }));
+        // Chips: icono + tecla, se iluminan cuando se puede y enseñan la recarga
+        iniciar({ sinCuenta: true, especie: 'vittata' }); quieta(7); cara(1);
+        const chipDe = a => hud.el.querySelector('.vd-chip[data-a="' + a + '"]');
+        const teclas = ['golpe_ala', 'semilla', 'poder'].map(a => chipDe(a) && chipDe(a).querySelector('kbd').textContent).join('');
+        usar(C.j, 'semilla'); paso(0.05);
+        const cdS = parseFloat(chipDe('semilla').style.getPropertyValue('--cd')) || 0;
+        check('Chips: Ala E · Semilla F · Poder G con icono; el listo brilla y el que recarga enseña la recarga', teclas === 'EFG' && !!chipDe('golpe_ala').dataset.icon &&
+          (TACTIL || (chipDe('golpe_ala').classList.contains('listo') && chipDe('semilla').classList.contains('cd') && cdS > 50)) && chipDe('poder').textContent.includes(H.get('grito_yunque').nombre) && chipDe('alianza').hidden,
+          JSON.stringify({ teclas, cdS, cls: chipDe('semilla').className }));
+        // Pistas: cerca, lejos, poder listo; la del primer golpe; dejan de salir al dominarlas
+        const pistaTras = (prep) => { ocultarPista(); pista.t = 0; prep(); paso(0.05); return hud.q('pista').hidden ? '' : hud.q('pistaTxt').textContent; };
+        C.j.cd = {}; C.j.energia = 50;
+        const pc = pistaTras(() => quieta(1.5)), pl = pistaTras(() => { quieta(8); C.j.cd = {}; C.j.energia = 50; }), pp = pistaTras(() => { quieta(8); C.j.energia = 100; C.j.cd = {}; });
+        const pista0 = pista.t;
+        C.j.inv = 0; C.j.plumas = PLUMAS - 1; ocultarPista(); paso(0.05); const pg = hud.q('pistaTxt').textContent;
+        check('Pistas: «¡Cerca! Aletazo (E)», «Lejos: semilla (F)», «¡Poder listo! (G)» y, al recibir el primer golpe, cómo esquivar; una cada 4,5 s',
+          pc === (TACTIL ? TXT.pCercaT : TXT.pCerca) && pl === (TACTIL ? TXT.pLejosT : TXT.pLejos) && pp === (TACTIL ? TXT.pPoderT : TXT.pPoder) && pista0 >= 4 && pg === TXT.dGolpe && (P.mundo('pistas_duelo') & PISTA.defensa),
+          JSON.stringify({ pc, pl, pp, pg }));
+        pista.dom.cerca = 0; for (let i = 0; i < 2; i++) { C.j.cd = {}; C.r.inv = 0; C.r.escudo = 0; quieta(1.5); usar(C.j, 'golpe_ala'); }
+        C.r.mareo = 0; C.j.energia = 50; const pc2 = pistaTras(() => { quieta(1.5); C.j.cd = {}; C.j.energia = 50; });
+        check('Pistas: tras dos aletazos buenos, la de «¡Cerca!» ya no sale (se guarda)', (P.mundo('pistas_duelo') & PISTA.cerca) && pc2 !== TXT.pCerca && pc2 !== TXT.pCercaT, JSON.stringify({ pc2, m: P.mundo('pistas_duelo') }));
+        // El panel no tapa el Diario ni el botón de pausa
+        iniciar({ entreno: true, especie: 'vittata' });
+        const rh = hud.el.getBoundingClientRect(), tapa = ['b-diary', 'b-menu'].filter(id => { const b = document.getElementById(id), r = b && b.getBoundingClientRect(); return r && r.width && b.offsetParent && !(r.right <= rh.left || r.left >= rh.right || r.bottom <= rh.top || r.top >= rh.bottom); });
+        check('El panel con el entreno no tapa el Diario ni la pausa', !tapa.length, tapa.join(','));
+        salir(); P.borrar();
+      }
       iniciar({ sinCuenta: true, especie: 'vittata' });
       check('Con Vittata: poder Grito del Yunque; la rival es arausiaca con Escudo de plumas', C.j.poder === 'grito_yunque' && C.r.especie === 'arausiaca' && C.r.poder === 'escudo_plumas', C.j.poder + ' / ' + C.r.poder);
       check('El duelo toma Acción e Impulso y muestra el HUD con 5 plumas por lado, energía aparte y sin botón de grito',
@@ -1039,6 +1396,44 @@ window.AVV18Combate = function (G) {
       correr(1.2, () => { quieta(7); });
       check('La semilla vuela y pega a distancia', C.r.plumas === plS - 1, C.r.plumas);
 
+      // 6b. Movimiento de la rival (Kelvin 8-nov: «no me gustó cómo se mueve el bot»): se mide cuadro a cuadro en un duelo
+      // de 14 s contra una jugadora que la rodea, se acerca y se aleja: giro del cuerpo, cambios bruscos de dirección,
+      // deslizarse de lado sin saltitos, y que cada golpe de ala y cada semilla vengan avisados.
+      {
+        const mv = medirMovimiento(14);
+        check('Movimiento: gira con velocidad limitada, sin temblores ni cambios bruscos de dirección', mv.giroMax <= 15 && mv.bruscos <= 0.3 && mv.inversiones <= 0.3, JSON.stringify(mv));
+        check('Movimiento: no se desliza de lado sin saltitos y anda a la velocidad que se mueve', mv.lateral <= 0.08 && mv.desfase <= 0.05, JSON.stringify(mv));
+        check('Telegrafía: cada golpe de ala y cada semilla de la rival vienen avisados (se agacha y abre las alas, o apunta, con «!» encima)',
+          mv.alas >= 1 && mv.alasAvisadas === mv.alas && mv.semillasAvisadas === mv.semillas && mv.marca && mv.agacha, JSON.stringify(mv));
+        // El aviso se puede leer: quieta, el golpe llega al acabar el aviso; apartándose a tiempo, falla; pegarle mientras avisa
+        // le quita la pluma pero no la frena; el Grito sí la interrumpe.
+        const prepara = () => { iniciar({ sinCuenta: true, especie: 'vittata' }); const r = C.r; r.pos.x = S.pos.x + 1.8; r.pos.z = S.pos.z; r.golpeT = 0; r.pensar = 0; r.poderT = 99; r.esquivaT = 99; r.tiroT = 99; C.j.inv = 0; cara(1); };
+        const fija = () => { M.vx = M.vz = 0; C.r.poderT = 99; C.r.tiroT = 99; };
+        prepara(); paso(0.05);
+        const avisa = C.r.prep === 'golpe_ala' && C.j.plumas === PLUMAS;
+        correr(0.25, fija);
+        const aunNo = C.j.plumas === PLUMAS && C.r.prep === 'golpe_ala', vis = !!(C.marcaAviso && C.marcaAviso.visible), ag = !C.ch || C.ch.agachada > 0.3, alas = !C.ch || C.ch.wingMode === 'preflare';
+        correr(0.4, fija);
+        check('Telegrafía: el golpe de ala se anuncia ~0,45 s (agachada, alas abiertas, «!») y luego llega', avisa && aunNo && vis && ag && alas && C.j.plumas === PLUMAS - 1 && !C.marcaAviso.visible,
+          JSON.stringify({ avisa, aunNo, vis, ag, alas, plj: C.j.plumas }));
+        prepara(); paso(0.05); correr(0.2, fija); S.pos.x = C.r.pos.x - 4.5; correr(0.5, fija);
+        check('Telegrafía: si te apartas al ver el «!», el golpe falla', C.j.plumas === PLUMAS, C.j.plumas);
+        prepara(); paso(0.05); C.j.cd.golpe_ala = 0; const pg = usar(C.j, 'golpe_ala'); const sigue = C.r.prep === 'golpe_ala' && C.r.plumas === PLUMAS - 1; correr(0.6, fija);
+        check('Telegrafía: pegarle mientras avisa le quita una pluma pero el golpe sale igual (hay que apartarse o escudarse)', pg.acierto && sigue && C.j.plumas === PLUMAS - 1, JSON.stringify({ acierto: pg.acierto, sigue, plj: C.j.plumas }));
+        prepara(); C.r.pos.x = S.pos.x + 8; C.r.golpeT = 99; C.r.tiroT = 0; C.r.energia = 100; paso(0.05);
+        const apunta = C.r.prep === 'semilla' && !C.balas.some(b => b.de === C.r);
+        correr(0.15, () => { M.vx = M.vz = 0; C.r.poderT = 99; });
+        const ladea = !C.ch || C.ch.root.rotation.z > 0.05, sinBala = !C.balas.some(b => b.de === C.r);
+        correr(0.25, () => { M.vx = M.vz = 0; C.r.poderT = 99; });
+        check('Telegrafía: antes de la semilla apunta ~0,3 s (ladea la cabeza, «!» pequeño) y luego tira', apunta && ladea && sinBala && C.balas.some(b => b.de === C.r), JSON.stringify({ apunta, ladea, sinBala }));
+        prepara(); C.r.golpeT = 99; C.r.pensar = 99; saltoAtras(C.r, H.dirA(C.r, C.j), 0.3); paso(0.05); paso(0.05);
+        const yR = C.ch ? C.ch.root.position.y - C.r.pos.y : 1, enAire = !C.ch || C.ch.airborne;
+        check('Movimiento: los quiebros y saltos atrás se ven como un saltito con aleteo', yR > 0.1 && enAire, JSON.stringify({ yR, enAire }));
+        prepara(); paso(0.05); C.j.cd.grito_yunque = 0; C.j.energia = 100; usar(C.j, 'grito_yunque'); correr(0.8, fija);
+        check('Telegrafía: el Grito sí la interrumpe y el golpe anunciado se pierde', !C.r.prep && C.j.plumas === PLUMAS && C.stats.interrupciones >= 1, JSON.stringify({ prep: C.r.prep, plj: C.j.plumas }));
+        salir();
+      }
+
       // 7. Victoria: 2 maderas y 1 piedra del inventario del juego, una sola vez
       P.borrar(); const m0 = S.inv.madera || 0, p0 = S.inv.piedra || 0;
       iniciar({ sinCuenta: true, especie: 'vittata' }); C.r.plumas = 1; quieta(1.2); C.r.escudo = 0; evs.length = 0; toasts.length = 0;
@@ -1103,11 +1498,18 @@ window.AVV18Combate = function (G) {
           const avisoT = (G.interaccion.modo && G.interaccion.modo.aviso) ? G.interaccion.modo.aviso() : null;
           check('QA-163: en táctil el aviso del duelo nombra los botones y no pide la tecla G',
             avisoT === TXT.avisoTactil && avisoT !== TXT.aviso && !/\bG\b/.test(avisoT), avisoT);
+          combT.iniciar({ entreno: true, especie: 'vittata' });
+          const kT = document.querySelector('#v18-duelo [data-k="entK"]'), tagA = document.querySelector('#v18-duelo-tags [data-t="b-act"]'), tagD = document.querySelector('#v18-duelo-tags [data-t="b-dash"]');
+          const comoT = document.querySelector('#v18-duelo [data-a="como"]');
+          check('Táctil: el entreno nombra los botones (Acción, Impulso), Acción e Impulso llevan etiqueta Ala / Semilla y «¿Cómo se pelea?» mide ≥ 56 px',
+            kT && kT.textContent === TXT.accion && tagA && tagA.textContent === TXT.ala && tagD && tagD.textContent.indexOf(TXT.semilla) === 0 && comoT && parseFloat(getComputedStyle(comoT).minHeight) >= 56,
+            JSON.stringify({ k: kT && kT.textContent, a: tagA && tagA.textContent, d: tagD && tagD.textContent, mh: comoT && getComputedStyle(comoT).minHeight }));
         } catch (e) { check('QA-163: en táctil el aviso del duelo nombra los botones y no pide la tecla G', false, e && e.message); }
         try { if (combT) combT.salir(); } catch (e) { /* ya fuera */ }
         window.matchMedia = mm;
         try { if (combT && combT.retirar) combT.retirar(); } catch (e) { /* ya fuera */ }
-        if (hud && hud.el && !hud.el.isConnected) document.body.appendChild(hud.el); // montarHud() de la instancia de prueba quitó este #v18-duelo
+        if (hud && hud.el && !hud.el.isConnected) document.body.appendChild(hud.el);
+        if (hud && hud.tags && !hud.tags.isConnected) document.body.appendChild(hud.tags); // montarHud() de la instancia de prueba quitó este #v18-duelo
         G.v18combate = orig; // deja la instancia de siempre (TACTIL según el dispositivo real), la misma que tienen los demás módulos
       }
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
@@ -1138,10 +1540,11 @@ window.AVV18Combate = function (G) {
   function retirar() {
     try { salir(); } catch (e) { /* ya fuera */ }
     retirada = true; const i = G.interaccion.list.indexOf(it); if (i >= 0) G.interaccion.list.splice(i, 1);
-    scene.remove(marca); const quitar = ch => { if (ch && ch.root) scene.remove(ch.root); };
+    scene.remove(marca); if (marcaAviso) scene.remove(marcaAviso); const quitar = ch => { if (ch && ch.root) scene.remove(ch.root); };
     quitar(C.ch); Promise.resolve(C.listo).then(quitar, () => {});
     if (hud && hud.el) hud.el.remove();
+    if (hud && hud.tags) hud.tags.remove();
   }
-  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, estado: () => C, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
+  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
   return G.v18combate;
 };

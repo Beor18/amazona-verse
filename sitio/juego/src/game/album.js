@@ -64,10 +64,13 @@ AVE.module('album', function (G) {
   function cuenta() { const v = Array.isArray(S.album) ? S.album : []; const n = vivas().filter(e => v.includes(e.id)).length; return { n, m: vivas().length }; }
 
   // Juego en familia (5-nov): en mitad de un duelo o frente a la Sombra (V18) el aviso tapaba el marcador; espera a que acabe.
-  const enDuelo = () => !!document.body && /\bv18-(duelo|amenaza)-on\b/.test(document.body.className);
+  // (el patrón es de módulo: un literal dentro de la flecha crea un RegExp nuevo cada vez, y con un aviso en espera es cada cuadro)
+  const RE_DUELO = /\bv18-(duelo|amenaza)-on\b/;
+  const enDuelo = () => !!document.body && RE_DUELO.test(document.body.className);
   let diferido = null;
   const avisar = (html, ms) => { if (enDuelo()) { diferido = [html, ms]; return; } G.ui.toastHTML(html, ms); };
-  G.on('update', () => { if (diferido && !enDuelo() && !G.quiet) { const d = diferido; diferido = null; try { G.ui.toastHTML(d[0], d[1]); } catch (err) { /* sin HUD */ } } }, 86);
+  function soltarDiferido() { if (diferido && !enDuelo() && !G.quiet) { const d = diferido; diferido = null; try { G.ui.toastHTML(d[0], d[1]); } catch (err) { /* sin HUD */ } } }
+  G.on('update', soltarDiferido, 86);
 
   // Ver una especie de cerca: la primera vez abre su tarjeta, avisa y guarda. Devuelve true si es nueva.
   function ver(id, fuente) {
@@ -346,6 +349,23 @@ AVE.module('album', function (G) {
       check('Después: «Mara» (martinicana) y «Vela» (violacea), con la especie ES y EN, científico y Extinta (EX)', okCard(tarjeta(hv, 'martinicana'), 'Mara', eMar) && okCard(tarjeta(hv, 'violacea'), 'Vela', eVio), hv.map(li => li.textContent).join(' | '));
       if (aj) aj.idioma = 'en'; hv = hist(); if (aj) aj.idioma = 'es';
       check('En inglés también: Mara y Vela, Martinique / Guadeloupe amazon', okCard(tarjeta(hv, 'martinicana'), 'Mara', eMar, 'en') && okCard(tarjeta(hv, 'violacea'), 'Vela', eVio, 'en'), hv.map(li => li.textContent).join(' | '));
+      { // Aviso en espera durante un duelo: cada cuadro solo mira la clase del body (sin RegExp nuevo, sin búsquedas en el DOM) y sale una vez al acabar
+        const cl = document.body.classList, tenia = cl.contains('v18-duelo-on'), q0 = G.quiet, th0 = G.ui.toastHTML, avisos = [], gid0 = document.getElementById, qs0 = Document.prototype.querySelector;
+        let dom = 0, reX = 0; const ex0 = RegExp.prototype.exec;
+        try {
+          G.quiet = false; G.ui.toastHTML = h => { avisos.push(h); }; cl.add('v18-duelo-on'); avisar('qa-perf', 100);
+          document.getElementById = function () { dom++; return gid0.apply(this, arguments); }; Document.prototype.querySelector = function () { dom++; return qs0.apply(this, arguments); };
+          for (let i = 0; i < 60; i++) soltarDiferido();
+          const enEspera = avisos.length === 0 && !!diferido;
+          cl.remove('v18-duelo-on'); soltarDiferido(); soltarDiferido();
+          RegExp.prototype.exec = function () { reX += this === RE_DUELO ? 0 : 1; return ex0.apply(this, arguments); }; cl.add('v18-duelo-on'); diferido = ['qa-perf2', 100]; for (let i = 0; i < 30; i++) soltarDiferido();
+          RegExp.prototype.exec = ex0;
+          check('Aviso diferido en un duelo: espera sin búsquedas en el DOM ni RegExp nuevos por cuadro y sale una sola vez', enEspera && avisos.length === 1 && avisos[0] === 'qa-perf' && !dom && !reX, JSON.stringify({ avisos: avisos.length, dom, reX }));
+        } finally {
+          RegExp.prototype.exec = ex0; document.getElementById = gid0; Document.prototype.querySelector = qs0; diferido = null;
+          if (!tenia) cl.remove('v18-duelo-on'); G.ui.toastHTML = th0; G.quiet = q0;
+        }
+      }
       check('Siguen sin poder «verse» vivas: ver() de una extinta no hace nada', ver('martinicana', 'x') === false && ver('violacea', 'x') === false);
       // guardar y recargar: lo revelado vive en la partida del cap. 1
       S.events = (S.events || []).filter(e => e.key !== 'VoicesRevealed'); regVacio();

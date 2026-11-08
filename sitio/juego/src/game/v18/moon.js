@@ -131,9 +131,12 @@ window.AVV18Moon = function (G) {
         '#v18-moon .vm-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-moon .vm-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-moon .vm-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd76a;text-shadow:0 2px 0 #6a4dc9}#v18-moon .vm-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
         'body:has(#v18-moon:not([hidden])) #toast{z-index:41}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto (W29a: estaba dentro de la regla de #v18-moon, anidada, y no llegaba a #toast)
+        // pul3 (QA V18.3): también en escritorio el panel de misiones de la historia no se ve durante el entreno; vuelve al salir (como en el Guardián)
+        'body.v18-moon-on #quest,body.v18-moon-on #quest-toggle{visibility:hidden}' +
+        // pul3 (accesibilidad): en el teléfono con texto grande el reloj ya no se sale del panel: la fila baja a dos líneas en vez de ir en una sola (antes nowrap)
         // W29a (móvil): el panel, centrado y de 300 px, tapaba el objetivo, los contadores y medio minimapa (Toques 0/3 bajo el mapa). Como en la carrera de Chispa:
         // el objetivo se oculta durante el entreno y el panel va a la izquierda, sin llegar al minimapa
-        '@media (max-width:760px){body.v18-moon-on #quest{display:none}#v18-moon{top:calc(env(safe-area-inset-top,0px) + 58px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}#v18-moon .vm-n{font-size:calc(30px * var(--fs-k,1));line-height:1}#v18-moon .vm-l{font-size:calc(14px * var(--fs-k,1));gap:6px;white-space:nowrap}}';
+        '@media (max-width:760px){body.v18-moon-on #quest{display:none}#v18-moon{top:calc(env(safe-area-inset-top,0px) + 58px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}#v18-moon .vm-n{font-size:calc(30px * var(--fs-k,1));line-height:1}#v18-moon .vm-l{font-size:calc(14px * var(--fs-k,1));flex-wrap:wrap;justify-content:center;column-gap:6px;row-gap:0}}';
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-moon'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
@@ -480,6 +483,20 @@ window.AVV18Moon = function (G) {
       const suelta = !(G.interaccion.modo && G.interaccion.modo.activo());
       check('17 · Acción durante el entreno no dice «Aquí no hay nada para usar»: esquiva con un impulso; al acabar se suelta Acción', !nada.length && esquiva && suelta,
         JSON.stringify({ nada, esquiva, verbo: G.interaccion.modo && G.interaccion.modo.verbo }));
+      cerrar();
+      // 18 · pul3 (QA V18.3): también en escritorio el panel de misiones de la historia (#quest) se oculta durante el entreno y vuelve al
+      // salir por cualquier vía: dejarlo (Salir/Esc) o acabar (quieta, Moon gana con 3 toques)
+      const qEl = document.getElementById('quest'), qVis = () => !!qEl && getComputedStyle(qEl).visibility !== 'hidden' && getComputedStyle(qEl).display !== 'none';
+      const q0 = qVis();
+      ir(SITIO.x + 9, SITIO.z); empezar({ forzar: true }); correr(0.1);
+      const qCuenta = qVis(); correr(CUENTA_S + 0.3);
+      const qDentro = qVis(); cancelar('sale');
+      const qSale = qVis();
+      ir(SITIO.x, SITIO.z); empezar({ forzar: true }); correr(CUENTA_S + 0.3);
+      for (let k = 0; k < 40 * 30 && A.fase !== 'nada'; k++) correr(1 / 30);
+      const qFin = qVis(), finOk = A.fase === 'nada';
+      check('18 · Durante el entreno (también en escritorio) no se ve el panel de misiones de la historia (#quest) y vuelve al salir o al acabar', !qCuenta && !qDentro && qSale === q0 && finOk && qFin === q0,
+        JSON.stringify({ ancho: innerWidth, q0, qCuenta, qDentro, qSale, qFin, finOk }));
       cerrar();
       for (const r of teclado()) out.push(r); // W35
       // 15 · textos
