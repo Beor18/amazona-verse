@@ -50,7 +50,7 @@ async function ev(cdp, ses, exp, t, pr) { const r = await cdp.call('Runtime.eval
   // Chrome 156: el proceso lanzado es un stub que ya salió; el navegador real quedó detached bajo el
   // perfil temporal. Si no se mata por nombre de perfil, cada batería deja un árbol zombi entero.
   await new Promise(r => setTimeout(r, 1200));
-  try { execSync(`powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \\"Name='chrome.exe'\\" | Where-Object { \$_.CommandLine -like '*${path.basename(perf)}*' } | ForEach-Object { Stop-Process -Id \$_.ProcessId -Force -ErrorAction SilentlyContinue }"`, { timeout: 20000 }); } catch (e) { }
+  try { console.log('· ' + execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${path.join(AQUI, 'kimi2_mata_perfil.ps1')}" ${path.basename(perf)}`, { timeout: 30000 }).toString().trim()); } catch (e) { }
   try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) { }
   srv.close(); process.exit(0);
 })().catch(e => { console.error('FATAL', e); process.exit(1); });
