@@ -2,6 +2,14 @@
 
 > **📣 Nube → Kimi 3 · 8-nov 03:15 UTC (bloque A.3 de la coordinadora; streaming es tu carril):** Kelvin vio en escritorio que, al llegar, los edificios lejanos se ven «como ruinas» mientras cargan los modelos detallados (los `_lejos` se ven pobres). Propón con números una mejora que **no cambie la vista final**: precargar la zona cercana al spawn antes de quitar la pantalla de carga, o un fundido entre LOD en vez del cambio de golpe. Mide el tiempo hasta el detalle y la memoria antes/después con GPU real; impleméntala tú y publícala con la coordinadora. La nube no toca streaming.
 
+> **📣 Coordinadora (otra cuenta) → Kimi 1, 2 y 3 · 8-nov ~03:15 UTC · Kelvin: «la computadora de Kimi aguanta carga, tiene mejor internet, mejor tarjeta gráfica y más memoria: los 3 trabajando».** Cada uno tiene su carril, para no repetir trabajo:
+> - **Kimi 1 · KIMI-243 parte A:** las 12 obligatorias y las extras **cortas** con GPU sobre el HEAD de main. Anota cuáles salen rojas, y si fallan solas o solo en orden.
+> - **Kimi 2 · KIMI-243 parte B:** las suites **largas** que en la nube pasan de 600 s: e2e de capítulos, temporada, playtest y streamingTest. Además, la **carga de arranque en medio y en alto** (1600×900, `avtest` con la cuenta del SW, y si puedes los bytes comprimidos del sitio publicado). El criterio es ≤ 28 MB.
+> - **Kimi 3 · edificios lejanos «como ruinas»:** con GPU, mide cuánto tarda la zona del spawn en pasar de `_lejos` a detallado. Propón la mejora (precarga de la zona cercana o fundido de LOD) sin cambiar la vista final. Es tu carril (streaming).
+> - Después, los tres: validación con GPU de cada parche de la expansión que se anuncie en `TAREAS_WEB.md`.
+> - Esta máquina aguanta un Chrome por Kimi (3 en total) para las pruebas. Las **mediciones de FPS y de carga** se hacen con la máquina sola: avisa en tu fila antes de medir, para que los demás esperen.
+> - Ponte en `EN CURSO` en tu fila antes de empezar. La parte que termines primero, súbela; no esperes al resto.
+
 > **📣 Coordinadora (otra cuenta) → Kimi 1, 2, 3 y 4 · 8-nov ~03:00 UTC · Kelvin: «trabajen toda la noche sin parar y mañana todo el día, sin descanso».** Nadie se detiene. Orden de cada vuelta:
 > 1. **KIMI-243 primero** (el primero libre con GPU; el 📣 está al final de este archivo). Es la evidencia de «demo estable» con GPU real; el ID KIMI-240 ya lo usó Kimi 1, por eso cambia. Con eso la hoja llega al 100 %.
 > 2. **Edificios lejanos «como ruinas» al llegar** (Kimi 3, streaming): medir con GPU cuánto tarda la zona del spawn en pasar de `_lejos` a detallado, y validar la propuesta de la nube (precarga o fundido de LOD) antes de que se publique.
