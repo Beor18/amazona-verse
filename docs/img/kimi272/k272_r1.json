@@ -1,0 +1,200 @@
+{
+ "etiqueta": "r1",
+ "hora": "2026-11-08T08:19:08.633Z",
+ "pantalla": "390x844@1 táctil (QA-213)",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "head": "worktree (HEAD local)",
+ "nuevo": {
+  "ok": true,
+  "et": {
+   "fontSize": "12px",
+   "opacity": "1",
+   "background": "rgb(255, 227, 154)",
+   "color": "rgb(59, 42, 20)",
+   "padding": "2px 7px",
+   "borderRadius": "9px",
+   "h": 30
+  },
+  "etNo": {
+   "fontSize": "12px",
+   "opacity": "0.78",
+   "background": "rgba(0, 0, 0, 0.2)",
+   "color": "rgb(42, 29, 16)",
+   "padding": "2px 7px",
+   "borderRadius": "9px",
+   "h": 30
+  },
+  "m": {
+   "fontSize": "12px",
+   "opacity": "0.9",
+   "background": "rgba(0, 0, 0, 0)",
+   "color": "rgb(42, 29, 16)",
+   "padding": "0px",
+   "borderRadius": "0px",
+   "h": 30
+  },
+  "card": {
+   "x": 16,
+   "y": 20,
+   "w": 358,
+   "h": 804
+  },
+  "botones": [
+   {
+    "sp": "vittata",
+    "x": 39,
+    "y": 243,
+    "w": 150,
+    "h": 347,
+    "visible": true
+   },
+   {
+    "sp": "agilis",
+    "x": 201,
+    "y": 183,
+    "w": 150,
+    "h": 467,
+    "visible": true
+   }
+  ],
+  "desborde": {
+   "scrollH": 1078,
+   "clientH": 1078
+  },
+  "chips": [
+   {
+    "no": false,
+    "texto": "Eco Amplificado"
+   },
+   {
+    "no": false,
+    "texto": "Eco Dirigido"
+   },
+   {
+    "no": true,
+    "texto": "Grito Maestro · Nivel 30"
+   },
+   {
+    "no": false,
+    "texto": "Eco Protector · Líder · Desbloqueada"
+   },
+   {
+    "no": false,
+    "texto": "Despertar"
+   },
+   {
+    "no": false,
+    "texto": "Guardián"
+   },
+   {
+    "no": true,
+    "texto": "Maestro · Nivel 30"
+   },
+   {
+    "no": true,
+    "texto": "Viento Cruzado · Líder · Bloqueada"
+   }
+  ],
+  "calls": null,
+  "tris": null,
+  "geo": null,
+  "tex": null
+ },
+ "viejo": {
+  "ok": true,
+  "et": {
+   "fontSize": "10px",
+   "opacity": "1",
+   "background": "rgb(255, 227, 154)",
+   "color": "rgb(59, 42, 20)",
+   "padding": "1px 5px",
+   "borderRadius": "8px",
+   "h": 13
+  },
+  "etNo": {
+   "fontSize": "10px",
+   "opacity": "0.6",
+   "background": "rgba(0, 0, 0, 0.133)",
+   "color": "rgb(42, 29, 16)",
+   "padding": "1px 5px",
+   "borderRadius": "8px",
+   "h": 24
+  },
+  "m": {
+   "fontSize": "11px",
+   "opacity": "0.9",
+   "background": "rgba(0, 0, 0, 0)",
+   "color": "rgb(42, 29, 16)",
+   "padding": "0px",
+   "borderRadius": "0px",
+   "h": 28
+  },
+  "card": {
+   "x": 16,
+   "y": 20,
+   "w": 358,
+   "h": 804
+  },
+  "botones": [
+   {
+    "sp": "vittata",
+    "x": 39,
+    "y": 236,
+    "w": 150,
+    "h": 312,
+    "visible": true
+   },
+   {
+    "sp": "agilis",
+    "x": 201,
+    "y": 183,
+    "w": 150,
+    "h": 419,
+    "visible": true
+   }
+  ],
+  "desborde": {
+   "scrollH": 1030,
+   "clientH": 1030
+  },
+  "chips": [
+   {
+    "no": false,
+    "texto": "Eco Amplificado"
+   },
+   {
+    "no": false,
+    "texto": "Eco Dirigido"
+   },
+   {
+    "no": true,
+    "texto": "Grito Maestro · Nivel 30"
+   },
+   {
+    "no": false,
+    "texto": "Eco Protector · Líder · Desbloqueada"
+   },
+   {
+    "no": false,
+    "texto": "Despertar"
+   },
+   {
+    "no": false,
+    "texto": "Guardián"
+   },
+   {
+    "no": true,
+    "texto": "Maestro · Nivel 30"
+   },
+   {
+    "no": true,
+    "texto": "Viento Cruzado · Líder · Bloqueada"
+   }
+  ],
+  "calls": null,
+  "tris": null,
+  "geo": null,
+  "tex": null
+ },
+ "erroresConsola": []
+}
