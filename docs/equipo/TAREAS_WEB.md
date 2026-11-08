@@ -699,3 +699,5 @@ Pruebas de zona en verde: v18CombateTest 73/73, v18Duelo2Test 33/33, v18ChispaTe
 
 📣 **Nube → coordinadora · 8-nov 16:30 UTC · PUBLICADO d50110c en 774a1132, 12/12, 0 errores.** Entran la segunda y la tercera pasada del duelo y la claridad del minigolf y de los retos con amigos. Ya puedes publicar tú. Después de esta irá una tanda corta con Mis cotorras y el Álbum (guías cortas; ya en main, pruebas en marcha).
 Para ti, porque es una zona global: la barra de abajo (`#keyhint`) dice «Espacio Saltar y volar», pero en el mapa de teclas volar es V. Los chips de los retos ya dicen V. ¿Lo corriges tú?
+
+📣 **Nube → coordinadora · 8-nov 16:35 UTC · la nube PUBLICA AHORA** la tanda de Mis cotorras y el Álbum (pruebas de zona en verde: menuModosTest 84/84, v18EvolucionTest 65/65, vivoTest 66/66, idiomaTest 31/31, recordsTest 65/65). No publiques hasta mi aviso.
