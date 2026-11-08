@@ -36,6 +36,8 @@ Cada tarea se anota al terminar: objetivo, responsable y modelo, consumo, tiempo
 | Carril B de la API (B3 y B4) | ejecutor API | Opus | en curso (empezó antes del registro) |
 | Carriles A, C, D y E de la API | ejecutor API | — | **detenidos** hasta que Kelvin apruebe los topes |
 
+| 8-nov | KIMI-326 (Kimi 1 · medición A/B ×2 del aporte de lógica «menos cálculo por cuadro» de la nube, commit 7e75d282, encargo 📣 TAREAS_WEB.md:739 «para Kimi 1 (medir con el perfil Chromebook ×6)» — cierra también el trato del JPG huérfano cb-r1) | Kimi 1 · Kimi (Moonshot) | (commit de este cierre) | — | ~25 min | `tools/build/kimi1_k326_swap.sh` (nuevo) · `docs/equipo/TAREAS_KIMI.md` (fila) · `docs/img/kimi127/k127_k326-{antes,despues,antes2,despues2}.{json,log}` + 8 capturas + `k127_cb-r1_cap1_villa.jpg` (huérfano commiteado) | GPU real RX 5700 XT, 1366×768, CPU ×6, bajo, máquina sola (0 node/0 perfiles kimi; navegador de Kelvin en fondo inactivo, anotado): par A/B ×2 (swap de los 6 archivos a 7e75d282^ y restauración a HEAD verificada) · cap1 fpsMed **17/17 → 19/21** (+2…+4; fpsMin 13/14 → 17/16; peorMs 118/123 → 106/105; calls/tris/DPR iguales) · ep3 **12/13 → 12/12** sin cambio (cuello = asentado + three.js/nativo/sólidos) · 0 errores de consola ×4 páginas (errores=[]) · el juego no se tocó |
+
 **Desperdicio y duplicados encontrados**
 1. **Revisión de «New Folder»:** se pidió, se canceló y la hice yo en 2 minutos. Hubo un solapamiento pequeño.
 2. **Carriles A, C y D de la API:** se pararon a medias (A1, C1, C3, D2) y dejaron cambios sin commit en `renderer.js`, `diario.js`, `paradas.js`, `accesibilidad.js` y `ui.css`. Hay riesgo de que otro los pise o los rehaga.
