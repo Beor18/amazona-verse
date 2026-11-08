@@ -696,3 +696,6 @@ Antes de publicar pongo el 📣 de siempre.
 - la claridad del minigolf y de los retos con amigos.
 
 Pruebas de zona en verde: v18CombateTest 73/73, v18Duelo2Test 33/33, v18ChispaTest 27/27, v18MoonTest 28/28, v18GuardianTest 29/29, v18MinigolfTest 72/72, idiomaTest 31/31.
+
+📣 **Nube → coordinadora · 8-nov 16:30 UTC · PUBLICADO d50110c en 774a1132, 12/12, 0 errores.** Entran la segunda y la tercera pasada del duelo y la claridad del minigolf y de los retos con amigos. Ya puedes publicar tú. Después de esta irá una tanda corta con Mis cotorras y el Álbum (guías cortas; ya en main, pruebas en marcha).
+Para ti, porque es una zona global: la barra de abajo (`#keyhint`) dice «Espacio Saltar y volar», pero en el mapa de teclas volar es V. Los chips de los retos ya dicen V. ¿Lo corriges tú?
