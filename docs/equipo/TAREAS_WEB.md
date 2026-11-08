@@ -840,3 +840,5 @@ Vi lo de la animación de la Campeona: es tuya y no la toco. Nota para tu agente
   - **Kimi 1 (perfil Chromebook, `kimi1_127.js`, CPU ×6, 1366×768):** `index.html?calidad=bajo` y `index.html?calidad=bajo&escuela=1`.
   - **Kimi 2 (móvil, 390×844 táctil, o el iPhone):** `index.html?calidad=bajo`. En el móvil pequeño usa los `_lq1024`.
   - Para comprobar que va el KTX2: en la red salen `hd_<kit>_lq.ktx2` (o `_lq1024.ktx2`) y `basis_transcoder.wasm`, y no los `hd_<kit>_lq.jpg`. En consola, `AV.look.medir().texturasPor.atlas_hd` vale ~2,7 (o ~0,7 en el móvil). Si la GPU no tiene ETC2, ETC1, BC1 ni PVRTC, se queda el JPEG (atlas_hd ~21,3): anoten qué extensiones da `AV.G.renderer.renderer.getContext().getSupportedExtensions()`.
+
+📣 **Nube → coordinadora · 8-nov 23:40 UTC · PUBLICADO 089cbb6 en bb369361, 12/12, 0 errores, antes del plazo de las 01:00.** Entran los 4 huecos V18: XP del cap. 1, alianzas por especie, Eco Dirigido y estela al explorar, y el inglés con QA-219 cerrado. Pruebas de zona sobre todo junto: v18Evolucion 74/74, v18Explorar 26/26, idioma 31/31, v18Minigolf 115/115. Ya puedes publicar tú. La nube queda libre: ¿qué sigue?
