@@ -134,7 +134,14 @@ window.AVV18Evolucion = function (G) {
     retoPoder: 'Reto: gana a la Campeona con {} usando {} 2 veces.', retoEco: 'Reto: gana a la Campeona con {} interrumpiéndola 2 veces con tu grito.',
     usarCon: 'Elige a {} en Mis cotorras para usarla.',
     aliDispN: '¡Nueva alianza disponible! {}: gana a la Campeona con {} usando {} 2 veces.',
-    retoFin: 'Reto de alianza {}: llevas {} de 2', retoFinLogrado: 'Reto de alianza {}: ¡logrado!'
+    retoFin: 'Reto de alianza {}: llevas {} de 2', retoFinLogrado: 'Reto de alianza {}: ¡logrado!',
+    // Guía corta de Mis cotorras (Kelvin 8-nov: «que se entienda solo en 20 segundos»): meta, cómo se sube y con qué tecla
+    guiaVacia: 'Aún no tienes cotorras aquí. Empieza la Aventura con Vittata y vuelve para ver su nivel.',
+    guiaElige: 'Toca una cotorra: su poder será el tuyo en el duelo.', guiaUna: 'Gana duelos y explora: llegarán más cotorras con otros poderes.',
+    guiaSube: 'Sube de nivel:', guiaDuelo: 'Gana un duelo +{} XP', guiaGolf: 'Minigolf +{} XP', guiaExplora: 'Explora y ayuda a la isla',
+    guiaEtapas: 'En los niveles 10, 20 y 30 tu poder mejora.', guiaTeclas: 'En el duelo:', guiaPoder: 'Poder', guiaAli: 'Alianza',
+    guiaTactil: 'En el duelo: toca el botón Poder (y el de la alianza, si la tienes).',
+    aliQue: 'Dos cotorras que se ayudan con un poder especial. Empieza con una cotorra en el nivel 10.'
   };
   // Retratos que existen en assets/retratos/v18 (sin retrato no se pide imagen: nada de errores 404 en la consola)
   const RETRATOS = new Set(['agilis', 'arausiaca', 'auropalliata', 'barbadensis', 'brasiliensis', 'collaria', 'diadema', 'dufresniana', 'farinosa', 'finschi', 'guildingii', 'tresmariae', 'versicolor', 'viridigenalis', 'xantholora']);
@@ -500,6 +507,10 @@ window.AVV18Evolucion = function (G) {
         '#v18-evo-carta.mini b{font-size:calc(14px * var(--fs-k,1));margin:0 0 2px}#v18-evo-carta.mini p{font-size:calc(12px * var(--fs-k,1))}' +
         '.v18-evo-ali{margin:6px 0;padding:6px 8px;border-radius:10px;background:#0001;text-align:left;font-size:calc(13px * var(--fs-k,1));line-height:1.3}.v18-evo-ali p{margin:3px 0 0}' +
         '.v18-evo-ali .si{color:#2f7a2f;font-weight:700}.v18-evo-ali .no{opacity:.8}.v18-evo-ali img{vertical-align:middle;border-radius:50%;margin-right:4px}' +
+        '.v18-evo-guia{margin:6px 0 8px;padding:8px 10px;border-radius:12px;background:#fff3c4;color:#3b2a14;text-align:left;font-size:calc(14px * var(--fs-k,1));line-height:1.35}' +
+        '.v18-evo-guia p{margin:3px 0}.v18-evo-guia .meta{font-weight:700}.v18-evo-guia .chip{display:inline-block;padding:2px 8px;margin:2px 2px 0 0;border-radius:9px;background:#ffe39a;font-size:calc(13px * var(--fs-k,1))}' +
+        '.v18-evo-guia kbd{display:inline-block;font:700 13px/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 5px;margin:0 3px 0 6px;border-radius:6px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center}' +
+        ':root.a11y-contraste .v18-evo-guia{background:#000;color:#fff;border:2px solid #fff}:root.a11y-contraste .v18-evo-guia .chip{background:#333;color:#fff}' +
         '@media (min-width:761px){#v18-evo-carta{top:calc(env(safe-area-inset-top,0px) + 96px)}}' + // en la computadora el aviso (#toast, capa superior) ocupa el borde de arriba
         '@keyframes v18evo{from{transform:translateY(-16px) scale(.9);opacity:0}to{transform:none;opacity:1}}';
       document.head.appendChild(st);
@@ -554,9 +565,24 @@ window.AVV18Evolucion = function (G) {
     if (r.alianza) { const a = aliDe(r.alianza); h += `<span class="v18-evo-et${r.alianzaEstado === 'desbloqueada' ? '' : ' no'}" data-v18ficha-ali="${a.id}"><span>${esc(a.nombre)}</span> · <span>${esc(r.rol === 'lider' ? TXT.aliLider : TXT.aliApoyo)}</span> · <span>${esc(estadoTxt(r.alianzaEstado))}</span></span>`; }
     return h;
   }
+  // Qué hacer aquí, cómo se sube y con qué tecla, en 3-4 líneas cortas (un texto por nodo para el traductor EN)
+  const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
+  function htmlGuia() {
+    const sel = V.seleccionada(), L = window.AV_ESPECIES, ids = ['vittata', 'arausiaca'].concat(L && Array.isArray(L.especies) ? L.especies.map(x => x && x.id) : []);
+    const n = ids.filter((sp, i) => sp && ids.indexOf(sp) === i && elegible(sp)).length;
+    const sp = sel || (elegible('vittata') ? 'vittata' : null);
+    let h = '<div class="v18-evo-guia" data-v18guia>';
+    if (!sp && !n) h += `<p class="meta" data-v18guia-vacia><span>${esc(TXT.guiaVacia)}</span></p>`;
+    else h += `<p class="meta"><span>${esc(n >= 2 ? TXT.guiaElige : TXT.guiaUna)}</span></p>`;
+    h += `<p><span>${esc(TXT.guiaSube)}</span> <span class="chip">${esc(con(TXT.guiaDuelo, XP.gana))}</span><span class="chip">${esc(con(TXT.guiaGolf, XP.golfNido))}</span><span class="chip">${esc(TXT.guiaExplora)}</span></p>`;
+    h += `<p><span>${esc(TXT.guiaEtapas)}</span></p>`;
+    h += TACTIL ? `<p data-v18guia-teclas><span>${esc(TXT.guiaTactil)}</span></p>`
+      : `<p data-v18guia-teclas><span>${esc(TXT.guiaTeclas)}</span><kbd>G</kbd><span>${esc(TXT.guiaPoder)}</span><kbd>H</kbd><span>${esc(TXT.guiaAli)}</span></p>`;
+    return h + '</div>';
+  }
   function htmlExtra() {
     const e = E(), v = info('vittata'), sel = V.seleccionada();
-    let h = '';
+    let h = htmlGuia();
     if (sel === 'vittata' && v.nivel >= 20) {
       const cur = v.variante || (v.nivel >= 30 ? 'maestro' : 'dirigido'), vs = VARIANTES.filter(x => x !== 'maestro' || v.nivel >= 30), et = { amplificado: 1, dirigido: 2, maestro: 3 };
       h += `<div class="row v18-evo-x"><span>${esc(TXT.varTit)}</span> ` + vs.map(x => `<button class="btn${cur === x ? '' : ' ghost'}" type="button" data-v18var="${x}" aria-pressed="${cur === x}">${esc(ETAPAS[et[x]].nombre)}</button>`).join(' ') + '</div>';
@@ -574,7 +600,7 @@ window.AVV18Evolucion = function (G) {
     const e = E(), sel = V.seleccionada(), vistas = ALIANZAS.filter(a => elegible(a.lider) || elegible(a.apoyo));
     const marca = ok => `<span class="${ok ? 'si' : 'no'}" aria-hidden="true">${ok ? '✓' : '○'}</span> `;
     const ret = sp => (RETRATOS.has(sp) ? retrato(sp, 24) : '');
-    let h = `<div class="v18-evo-x" data-v18alianzas><b>${esc(TXT.aliSec)}</b>`;
+    let h = `<div class="v18-evo-x" data-v18alianzas><b>${esc(TXT.aliSec)}</b><p style="margin:2px 0 4px;opacity:.85" data-v18ali-que><span>${esc(TXT.aliQue)}</span></p>`;
     for (const a of vistas) {
       const st = e.alianzas[a.id], nl = info(a.lider).nivel;
       h += `<div class="v18-evo-ali" data-v18ali-fila="${a.id}" data-estado="${st}">${ret(a.lider)}${ret(a.apoyo)}<b>${esc(a.nombre)}</b> · <span>${esc(estadoTxt(st))}</span>`;
@@ -1101,6 +1127,17 @@ window.AVV18Evolucion = function (G) {
         check('Mis cotorras: cada alianza conocida dice su estado y qué falta (líder en nivel 10, compañera en tu bandada) y su reto con la líder y su poder por su nombre; las que no conoces solo se cuentan; el panel de fin del duelo dice cómo va el reto',
           okLista && okCard && fin1.indexOf(con(con(TXT.retoFin, 'Eco Protector'), 1)) >= 0 && fin2.indexOf(con(TXT.retoFinLogrado, 'Eco Protector')) >= 0 && estadoAli(ALI) === 'desbloqueada',
           JSON.stringify({ okLista: !!okLista, okCard, fin1: fin1.replace(/<[^>]+>/g, ' ').slice(0, 90), fin2: fin2.replace(/<[^>]+>/g, ' ').slice(0, 90), lista: box.textContent.slice(0, 200) })); }
+      // 20. Se entiende solo (Kelvin 8-nov): guía corta arriba con la meta, cómo se sube (con la XP de verdad) y las teclas del duelo
+      { const guia = () => { const x = document.createElement('div'); x.innerHTML = htmlExtra(); return x.querySelector('[data-v18guia]'); };
+        reset(); const g1 = guia(); P.desbloquear('arausiaca'); const g2 = guia();
+        const prof = S.profile; let g0 = null; try { S.profile = null; P.borrar(); g0 = guia(); } finally { S.profile = prof; } reset();
+        const tec = g1 && g1.querySelector('[data-v18guia-teclas]'), kb = tec ? [...tec.querySelectorAll('kbd')].map(k => k.textContent).join('') : '';
+        const box = document.createElement('div'); box.innerHTML = htmlAlianzas();
+        check('Mis cotorras se entiende sola: guía arriba (corta) con la meta, «Gana un duelo +40 XP» y «Minigolf +15 XP», las teclas G y H (táctil: el botón Poder), «Toca una cotorra» con 2 o más, y sin cotorras dice que empieces la Aventura; las alianzas dicen qué son',
+          !!g1 && g1.textContent.length < 260 && g1.textContent.indexOf(TXT.guiaUna) >= 0 && g1.textContent.indexOf(con(TXT.guiaDuelo, XP.gana)) >= 0 && g1.textContent.indexOf(con(TXT.guiaGolf, XP.golfNido)) >= 0 &&
+          (TACTIL ? tec.textContent.indexOf(TXT.guiaTactil) >= 0 : kb === 'GH') && !!g2 && g2.textContent.indexOf(TXT.guiaElige) >= 0 &&
+          !!g0 && !!g0.querySelector('[data-v18guia-vacia]') && g0.textContent.indexOf(TXT.guiaVacia) >= 0 && !!box.querySelector('[data-v18ali-que]') && box.textContent.indexOf(TXT.aliQue) >= 0,
+          JSON.stringify({ g1: g1 && g1.textContent.slice(0, 200), kb, g2: !!g2 && g2.textContent.slice(0, 60), g0: !!g0 && g0.textContent.slice(0, 80) })); }
       // Los textos nuevos tienen su inglés en content/cap1/en.js (el traductor los busca tal cual)
       {
         const EN = window.AV_EN || {}, faltan = [];

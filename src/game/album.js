@@ -72,11 +72,12 @@ AVE.module('album', function (G) {
   function soltarDiferido() { if (diferido && !enDuelo() && !G.quiet) { const d = diferido; diferido = null; try { G.ui.toastHTML(d[0], d[1]); } catch (err) { /* sin HUD */ } } }
   G.on('update', soltarDiferido, 86);
 
+  let ultima = null; // la última que se abrió en esta sesión: lleva «¡Nueva!» en el Diario (no se guarda)
   // Ver una especie de cerca: la primera vez abre su tarjeta, avisa y guarda. Devuelve true si es nueva.
   function ver(id, fuente) {
     if (!id || !esViva(id) || !activo()) return false;
     const v = vistos(); if (v.includes(id)) return false;
-    v.push(id);
+    v.push(id); ultima = id;
     const e = vivas().find(x => x.id === id), c = cuenta();
     G.emit('album', { id, fuente: fuente || '' });
     if (!G.quiet) {
@@ -150,6 +151,13 @@ AVE.module('album', function (G) {
     '.album36 li i{font-size:calc(11px * var(--fs-k,1));opacity:.8}.album36 li.cerrada{background:#f4efe6;border-style:dashed;box-shadow:none}.album36 li.cerrada img.retrato{opacity:.9}' +
     '.album36 li.historica{background:#f6ecdc;border-color:rgba(160,120,60,.45)}.album36 li.historica.oculta{background:#f4efe6;border-style:dashed;box-shadow:none}.album36 li b.canon{font-size:calc(17px * var(--fs-k,1))}.album36 .uicn{font-weight:700}' +
     '.album-nota{margin:2px 0 6px;font-size:var(--fs-sm,14px);opacity:.85}' +
+    // Meta y pasos (Kelvin 8-nov: «que se entienda solo»): cuántas llevas, barra y 3 pasos cortos; «¡Nueva!» en la última abierta
+    '.album-meta{margin:4px 0 8px;padding:8px 10px;border-radius:12px;background:#fff3c4;color:#3b2a14;font-size:var(--fs-sm,14px);line-height:1.35}' +
+    '.album-meta b{font-size:calc(16px * var(--fs-k,1))}.album-bar{display:block;height:8px;border-radius:4px;background:rgba(107,82,54,.2);overflow:hidden;margin:4px 0 6px}.album-bar i{display:block;height:100%;background:#e0a526}' +
+    '.album-pasos{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}.album-pasos li{display:inline-flex;align-items:center;gap:5px;padding:3px 9px 3px 4px;border-radius:12px;background:#ffe39a}' +
+    '.album-pasos li span.n{display:inline-block;width:20px;height:20px;border-radius:50%;background:#3b2a14;color:#fff3d6;font-weight:700;text-align:center;line-height:20px;font-size:12px}' +
+    '.album36 li .album-nueva{align-self:center;margin-top:-2px;padding:1px 8px;border-radius:9px;background:#e0a526;color:#fff;font-weight:700;font-size:calc(12px * var(--fs-k,1))}' +
+    ':root.a11y-contraste .album-meta{background:#000;color:#fff;border:2px solid #fff}:root.a11y-contraste .album-pasos li{background:#333;color:#fff}' +
     ':root.a11y-contraste .album36 li{background:#000;border-color:#fff;color:#fff;opacity:1;box-shadow:none}:root.a11y-contraste .album36 li img.retrato{border-color:#fff}';
   if (!document.getElementById('estilo-album36')) { const st = document.createElement('style'); st.id = 'estilo-album36'; st.textContent = ESTILO; document.head.appendChild(st); }
 
@@ -161,7 +169,7 @@ AVE.module('album', function (G) {
         return `<li class="cerrada" data-album="${esc(e.id)}" aria-label="${esc(L('Cotorra por descubrir', 'Parrot still to find'))}">${retrato(e.id, 'cerrada')}<b>???</b><small>${esc(L('Por descubrir', 'Still to find'))}</small></li>`;
       }
       const s = estado(e);
-      return `<li class="abierta" data-album="${esc(e.id)}" lang="${l}">${retrato(e.id, 'abierta')}<b>${esc(nombre(e, l))}</b>` +
+      return `<li class="abierta" data-album="${esc(e.id)}" lang="${l}">${retrato(e.id, 'abierta')}${e.id === ultima ? `<span class="album-nueva">${esc(L('¡Nueva!', 'New!'))}</span>` : ''}<b>${esc(nombre(e, l))}</b>` +
         `<small lang="${otro}">${esc(nombre(e, otro))}</small><i lang="la">${esc(e.cientifico)}</i>` +
         `<small class="uicn">${s ? `${esc(s[l])} (${esc(s.cat)})` : esc(L('Estado por verificar', 'Status to be verified'))}</small></li>`;
     }).join('');
@@ -179,7 +187,10 @@ AVE.module('album', function (G) {
         `<small>${esc(L('Ya no vuela. Se conoce solo por relatos antiguos.', 'It no longer flies. It is known only from old accounts.'))}</small></li>`;
     }).join('');
     return `<div class="album-sec" data-no-tr><span class="lbl">${esc(L('Álbum de las 36', 'Album of the 36'))} ${c.n}/${c.m}</span>` +
-      `<p class="album-nota">${esc(L('Acércate a una cotorra y mírala un momento para guardarla en el álbum.', 'Get close to a parrot and watch it for a moment to add it to the album.'))}</p>` +
+      `<div class="album-meta" data-album-meta><b>${esc(L('Encontradas', 'Found'))}: ${c.n}/${c.m}</b><i class="album-bar" aria-hidden="true"><i style="width:${c.m ? Math.round(100 * c.n / c.m) : 0}%"></i></i>` +
+      `<ol class="album-pasos"><li><span class="n">1</span>${esc(L('Vuela cerca de una cotorra', 'Fly close to a parrot'))}</li><li><span class="n">2</span>${esc(L('Mírala 2 segundos', 'Watch it for 2 seconds'))}</li>` +
+      `<li><span class="n">3</span>${esc(L('¡Se guarda aquí!', 'It is saved here!'))}</li></ol>` +
+      `<p class="album-nota">${esc(L('Hay cotorras en la plaza, el río y la poza de Villa Raíz.', 'There are parrots in the plaza, the river and the pool of Villa Raíz.'))}</p></div>` +
       `<ul class="album36" aria-label="${esc(L('Especies vivas', 'Living species'))}">${tarjetas}</ul>` +
       (hist ? `<span class="lbl lbl-historicas">${esc(L('Las que ya no vuelan', 'The ones that no longer fly'))}</span><ul class="album36" aria-label="${esc(L('Especies extintas', 'Extinct species'))}">${hist}</ul>` : '') + '</div>';
   }
@@ -327,6 +338,12 @@ AVE.module('album', function (G) {
         /historia por descubrir/i.test(li.textContent) && esSilueta(li) && !/Mara|Vela|Martini|Guadalup|martinicana|violacea|Extint/i.test(li.textContent)), [...hi].map(li => li.textContent).join(' | '));
       check(`Cuenta «Álbum de las 36 ${S.album.length}/34»`, d.textContent.includes(`Álbum de las 36 ${S.album.length}/34`));
       check('Sin «undefined» ni «null»', !/undefined|null|\[object/.test(d.textContent));
+      { // Se entiende solo (Kelvin 8-nov): meta con cuántas llevas y barra, 3 pasos cortos, dónde buscar y «¡Nueva!» en la recién abierta
+        const m = d.querySelector('[data-album-meta]'), pasos = m ? m.querySelectorAll('.album-pasos li') : [], bar = m && m.querySelector('.album-bar i');
+        const nuevas = d.querySelectorAll('.album-nueva'), pct = Math.round(100 * cuenta().n / 34);
+        check('Álbum claro: meta «Encontradas: n/34» con barra, 3 pasos (vuela cerca, mírala 2 s, se guarda), dónde buscar y «¡Nueva!» solo en la recién abierta',
+          !!m && m.textContent.includes(`Encontradas: ${cuenta().n}/34`) && bar && bar.style.width === pct + '%' && pasos.length === 3 && /2 segundos/.test(pasos[1].textContent) &&
+          /Villa Raíz/.test(m.textContent) && nuevas.length === 1 && nuevas[0].closest(`[data-album="${sp}"]`) && m.textContent.length < 200, m && m.textContent); }
       if (aj) aj.idioma = 'en';
       d = document.createElement('div'); d.innerHTML = html();
       const sinLang = [...d.querySelectorAll('b, small, p, span.lbl, li')].filter(n => !n.closest('[lang=es]') && !n.closest('[lang=la]'));
@@ -458,7 +475,7 @@ AVE.module('album', function (G) {
       if (G.ui.hideToast) G.ui.hideToast();
       pruebaVoces = false;
       if (TP) { try { if (regBk == null) localStorage.removeItem(TP.KEY); else localStorage.setItem(TP.KEY, regBk); } catch (e) { /* sin almacén */ } }
-      SV.restaurar(snap); SV.suspender(false); G.quiet = quiet;
+      SV.restaurar(snap); SV.suspender(false); G.quiet = quiet; ultima = null;
     }
     check('El registro de temporada queda como estaba', !TP || leerReg() === regBk);
     check('G.S queda como estaba', JSON.stringify(SV.instantanea()) === JSON.stringify(snap));
