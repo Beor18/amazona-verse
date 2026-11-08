@@ -1,0 +1,64 @@
+{
+ "etiqueta": "r1",
+ "gpu": "AMD Radeon RX 5700 XT",
+ "head": "a8ba8e98",
+ "pantalla": "1280x800",
+ "base": {
+  "normal": {
+   "bg": "rgb(255, 250, 240)",
+   "color": "rgb(42, 29, 16)",
+   "border": "rgb(217, 191, 138)"
+  },
+  "pressed": {
+   "bg": "rgb(31, 111, 58)",
+   "color": "rgb(255, 255, 255)",
+   "border": "rgb(31, 111, 58)"
+  },
+  "htmlContraste": false
+ },
+ "alto": {
+  "normal": {
+   "bg": "rgb(0, 0, 0)",
+   "color": "rgb(255, 255, 255)",
+   "border": "rgb(255, 255, 255)"
+  },
+  "pressed": {
+   "bg": "rgb(255, 255, 255)",
+   "color": "rgb(0, 0, 0)",
+   "border": "rgb(0, 0, 0)"
+  },
+  "htmlContraste": true
+ },
+ "contraste": {
+  "baseNormal": 15.75,
+  "basePressed": 6.19,
+  "altoNormal": 21,
+  "altoPressed": 21
+ },
+ "esperado": {
+  "altoNormal": "21.00 (texto #fff sobre fondo #000)",
+  "altoPressed": "21.00 (texto #000 sobre fondo #fff)"
+ },
+ "render": {
+  "stats": {
+   "fps": 142,
+   "calls": 206,
+   "triangulos": 1358343,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+  },
+  "memoria": {
+   "geometries": 202,
+   "textures": 165
+  },
+  "heap": 209
+ },
+ "erroresConsola": [],
+ "capturas": [
+  "k255_ranking_r1_base.jpg",
+  "k255_ranking_r1_contraste.jpg"
+ ]
+}
