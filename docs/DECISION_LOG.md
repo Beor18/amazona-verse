@@ -446,3 +446,13 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
 
 - **2026-11-08 ~10:45 UTC · Kelvin autoriza instalar `gltfpack` (compresión meshopt de modelos) y, si hace falta, un decodificador en el motor**, para bajar la carga de medio/alto sin cambiar la vista de los templos del spawn. Se sigue publicando en el mismo sitio (main), no en otra URL. Después de terminar lo pendiente, fase de expansión con todos trabajando.
 
+
+## 2026-11-08 · Family Quest («Aventuras en familia»): pendiente del visto bueno de Kelvin
+- **[KELVIN] Esperan tu sí o tu cambio**, sin frenar el trabajo (`src/game/familia_aventuras.js`, prueba `AV.familyQuestTest`):
+  - El nombre «Aventuras en familia» y los de las 6 aventuras: «Relevo de vuelo», «Copia mi gesto», «Foto en familia», «Trucos a dúo», «Cuento en cadena» y «Escondite en equipo».
+  - Los jugadores se llaman «Jugador 1» y «Jugador 2» (sin nombres reales). ¿Prefieres otra forma, por ejemplo «Peque» y «Grande»?
+  - Los 4 letreros de la foto («¡Familia voladora!», «¡Equipo cotorra!», «¡Wepa, lo logramos!», «Juntos llegamos lejos.») y las 12 frases del cuento en cadena (iguana, coquí, mangó, plena, pícnic). Es un cuento inventado por la familia y no cambia el canon.
+  - La página del cómic familiar usa tu plantilla: título «Nuestra aventura en familia»; «¿Qué aprendí?»: «Turnarse y esperar también es jugar en equipo»; «Mi enseñanza de vida»: «Juntos, cualquier aventura es más divertida». La viñeta de cada aventura se recorta de esa página.
+  - Dónde se entra: el botón «Aventuras en familia» en el panel «En familia» de la pausa y la sección «Recuerdos en familia» del Diario.
+  - Los recuerdos se guardan en el dispositivo, aparte de la partida (`<almacen>.familyquest`), con la foto del juego en JPEG de 320×240. No guardan nombres ni se comparten. Todavía no hay botón para descargar la página familiar.
+  - Los textos están solo en español: el inglés lo haces tú con tus herramientas.
