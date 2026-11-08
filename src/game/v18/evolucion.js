@@ -589,7 +589,62 @@ window.AVV18Evolucion = function (G) {
     const quieta = (dx, dz) => { const r = C().r; r.pos.x = S.pos.x + dx; r.pos.z = S.pos.z + (dz || 0); r.pensar = 99; r.esquivaT = 99; r.poderT = 99; r.golpeT = 99; r.tiroT = 99; r.mov.t = 99; r.mov.x = r.mov.z = 0; r.kb.t = 0; r.kb.x = r.kb.z = 0; }; // mov.t > 0 con velocidad 0: no se acerca
     const cara = (x, z) => { const n = Math.hypot(x, z || 0) || 1; S.facing = { x: x / n, z: (z || 0) / n }; };
     const vaciar = () => { while (C().timers.length) C().timers.shift().fn(); };
+    // Jugadora automática «media» para el equilibrio (determinista: su propio generador con semilla)
+    const ETAPAS_EQ = [1, 10, 20, 30];
+    function dueloMedio(nivel, k, dif) {
+      let sem = 101 + k * 31; const rnd = () => { sem = (sem * 48271) % 2147483647; return (sem - 1) / 2147483646; };
+      const op = { sinCuenta: true, especie: 'vittata', evo: { nivel }, semilla: 3 + k * 17 }; if (dif) op.dificultad = dif;
+      Cb.iniciar(op);
+      const jug = {}; let t = 0, prox = 0, fase = 0, faseT = 0, lado = 1, aparta = 0, error = 0, vista = 0;
+      correr(180, () => {
+        t += 0.05; const c = C(), j = c.j, r = c.r, d = H.dirA(j, r), v = 5.5 * 0.05;
+        if (t >= faseT) { fase = rnd() < 0.5 ? 0 : 1; faseT = t + 3 + rnd() * 3; lado = rnd() < 0.5 ? -1 : 1; }
+        if (t >= vista) { error = (rnd() - 0.5) * 0.9; vista = t + 0.5; }
+        const ca = Math.cos(error), sa = Math.sin(error); cara(d.x * ca - d.z * sa, d.x * sa + d.z * ca);
+        const gH = H.listo(j, 'grito_yunque'), alcG = (ajustar(j, H.get('grito_yunque')) || {}).alcance || 7;
+        const quiere = fase === 0 ? 1.8 : Math.max(4, Math.min(8, alcG - 1.5));
+        let mx = 0, mz = 0;
+        if (aparta > 0) { aparta -= 0.05; mx = -d.z * lado; mz = d.x * lado; }
+        else if (d.d > quiere + 0.8) { mx = d.x; mz = d.z; } else if (d.d < quiere - 0.8) { mx = -d.x; mz = -d.z; }
+        const viene = c.balas.find(b => b.de === r && Math.hypot(b.m.position.x - S.pos.x, b.m.position.z - S.pos.z) < 6);
+        if (viene && aparta <= 0 && t >= prox && rnd() < 0.35) { aparta = 0.35; prox = t + 0.6; }
+        const ox = S.pos.x - Cb.sitio.x, oz = S.pos.z - Cb.sitio.z, od = Math.hypot(ox, oz) || 1;
+        if (od > 9.5 && (mx * ox + mz * oz) > 0) { const tx = -oz / od, tz = ox / od, sg = (tx * d.x + tz * d.z) > 0 ? -1 : 1; mx = tx * sg; mz = tz * sg; }
+        S.pos.x += mx * v; S.pos.z += mz * v;
+        const ox2 = S.pos.x - Cb.sitio.x, oz2 = S.pos.z - Cb.sitio.z, od2 = Math.hypot(ox2, oz2); if (od2 > 11) { S.pos.x = Cb.sitio.x + ox2 / od2 * 11; S.pos.z = Cb.sitio.z + oz2 / od2 * 11; }
+        if (j.mareo > 0 || t < prox) return;
+        if (rnd() < 0.3) { prox = t + 0.3; return; }
+        let u = null;
+        if (gH.ok && d.d < alcG && d.d > 2.4 && rnd() < 0.6) u = 'grito_yunque';
+        else if (d.d < 2.3 && H.listo(j, 'golpe_ala').ok) u = 'golpe_ala';
+        else if (d.d > 3.5 && j.energia >= 50 && H.listo(j, 'semilla').ok && rnd() < 0.5) u = 'semilla';
+        if (u) { const ru = Cb.usar(j, u); if (ru.ok) { prox = t + 0.6; jug[u] = (jug[u] || 0) + 1; if (ru.acierto) jug[u + '+'] = (jug[u + '+'] || 0) + 1; } }
+      });
+      const c = C(); return { gana: c.resultado === 'win', s: c.tLucha || 0, quitadas: (c.r.plumasMax || 5) - c.r.plumas, perdidas: 5 - c.j.plumas, st: Object.assign({}, c.stats, jug) };
+    }
+    function medirEquilibrio(q) {
+      q = q || {}; const N = q.n || 36, res = {};
+      for (const nivel of (q.niveles || ETAPAS_EQ)) {
+        let g = 0, dur = 0, pl = 0, pj = 0, primera = 0; const st = {};
+        const dif = q.dificultad ? q.dificultad[etapaIdx(nivel)] : null;
+        for (let k = 0; k < N; k++) { const r = dueloMedio(nivel, k, dif); if (r.gana) { g++; if (!primera) primera = k + 1; } dur += r.s; if (q.stats) for (const x in r.st) if (typeof r.st[x] === 'number') st[x] = (st[x] || 0) + r.st[x] / N; pl += r.quitadas; pj += r.perdidas; }
+        res['nv' + nivel] = { gana: g + '/' + N, pct: Math.round(100 * g / N), primera, s: Math.round(dur / N), quitadas: Math.round(10 * pl / N) / 10, perdidas: Math.round(10 * pj / N) / 10 };
+        if (q.stats) { for (const x in st) st[x] = Math.round(st[x] * 10) / 10; res['nv' + nivel].st = st; }
+      }
+      Cb.salir();
+      return res;
+    }
     const fresco = () => { const c = C(), j = c.j, r = c.r; j.cd = {}; j.energia = 100; j.escudo = 0; j.mareo = 0; j.inv = 0; r.mareo = 0; r.inv = 0; r.escudo = 0; r.interrumpida = 0; r.kb.t = 0; r.kb.x = r.kb.z = 0; r.plumas = 5; j.plumas = 5; };
+    if (o.barrido) {
+      mudo = true; oye = false; reset();
+      const filas = [];
+      try { for (const dif of o.barrido) filas.push({ dif: dif.map(d => d.id), res: medirEquilibrio({ n: o.n || 36, dificultad: dif, stats: o.stats }) }); } catch (e) { filas.push({ error: String(e && (e.stack || e.message)) }); }
+      mudo = false; hoyFijo = null; quitarCarta(); try { Cb.salir(); } catch (e) { /* ya fuera */ }
+      G.ui.toast = toast0; Object.assign(S.pos, pos0); S.facing = fac0;
+      try { if (crudo == null) localStorage.removeItem(P.clave()); else localStorage.setItem(P.clave(), crudo); } catch (e) { /* sin almacenamiento */ }
+      P.recargar();
+      return { passed: 1, total: 1, results: [{ name: 'barrido', ok: true, extra: JSON.stringify(filas) }] };
+    }
     try {
       // 10 (antes que nada). Sin la bandera no se carga nada: lo mide boot.js antes de pedir este módulo
       const antes = o.antes || {};
@@ -680,14 +735,15 @@ window.AVV18Evolucion = function (G) {
       // 6. En el duelo real: cada etapa cambia de verdad el grito (alcance, empuje y precisión MEDIDOS)
       mudo = true;
       const medir = (nivel, dist, ang) => {
-        Cb.iniciar({ sinCuenta: true, especie: 'vittata', evo: { nivel } }); fresco();
+        Cb.iniciar({ sinCuenta: true, especie: 'vittata', evo: { nivel }, dificultad: Cb.CLASICA }); fresco();
         const a = (ang || 0) * Math.PI / 180; quieta(Math.cos(a) * dist, Math.sin(a) * dist); cara(1, 0);
         const i0 = C().stats.intJ, x0 = C().r.pos.x; Cb.usar(C().j, 'grito_yunque');
         correr(1.0, () => { const r = C().r; r.pensar = 99; r.golpeT = 99; r.tiroT = 99; r.poderT = 99; r.esquivaT = 99; });
         return { da: C().stats.intJ > i0, empuje: Math.round((C().r.pos.x - x0) * 100) / 100, mareo: C().r.interrumpida || 0, plumas: C().r.plumas };
       };
       const M = {};
-      // (distancia entre las dos; la onda sale 0,5 m por delante del pico y alcanza hasta alcance + 0,6)
+      // (distancia entre las dos; la onda sale 0,5 m por delante del pico y alcanza hasta alcance + 0,6). La Campeona CLASICA:
+      // la de la etapa se aparta de un salto al salir del mareo y estropearía la medida del empuje
       for (const n of [1, 10, 20]) M[n] = { 7: medir(n, 7), 9: medir(n, 9), 11: medir(n, 11), 13: medir(n, 13), ang38: medir(n, 6.5, 38), ang30: medir(n, 6.5, 30) };
       const alc = n => [7, 9, 11, 13].filter(d => M[n][d].da).pop() || 0;
       check('Alcance medido: nv 1 acierta a 7 m y no a 9; nv 10 a 9 y no a 11; nv 20 a 11 y no a 13',
@@ -915,39 +971,16 @@ window.AVV18Evolucion = function (G) {
         check('Textos de la evolución y las alianzas con inglés (content/cap1/en.js)', !window.AV_EN || !faltan.length, window.AV_EN ? (faltan.slice(0, 6).join(' | ') || 'ok') : 'AV_EN sin cargar (solo se carga en EN)'); }
       P.seleccionar('vittata');
 
-      // Equilibrio (informativo, con números): dos jugadoras automáticas de ritmo humano (una acción cada 0,6 s como mucho), con la
-      // misma estrategia en nv 1, 10 y 20, contra la Campeona sin cambios. «cuerpo»: se pega y usa el ala; «distancia»: guarda la
-      // distancia del grito, grita y lanza semillas, sin ala (el estilo donde la etapa más se nota).
+      // Equilibrio con la Campeona (DIFICULTAD de combate.js): una jugadora automática «media», de ritmo de niño (una acción
+      // cada 0,6 s como mucho, reacciona tarde, deja pasar ocasiones, apunta con error y a veces se aparta de una semilla),
+      // juega N duelos por etapa (nv 1, 10, 20 y 30) contra la Campeona de su etapa. Todo con semilla: mismo resultado siempre.
       if (o.equilibrio !== false) {
-        const res = {}, N = o.n || 6;
-        for (const estilo of ['cuerpo', 'distancia']) for (const nivel of [1, 10, 20]) {
-          let g = 0, dur = 0, pl = 0, gr = 0, ac = 0;
-          for (let k = 0; k < N; k++) {
-            Cb.iniciar({ sinCuenta: true, especie: 'vittata', evo: { nivel }, semilla: 3 + k * 17 });
-            let t = 0, prox = 0; const i0 = () => C().stats.intJ; let int0 = i0();
-            correr(150, () => {
-              t += 0.05; const c = C(), j = c.j, r = c.r, d = H.dirA(j, r); cara(d.x, d.z);
-              const gH = H.listo(j, 'grito_yunque'), alcG = gH.h ? gH.h.alcance : (ajustar(j, gr0) || gr0).alcance, v = 5.5 * 0.05;
-              const quiere = estilo === 'cuerpo' ? 1.8 : Math.max(4, Math.min(9, alcG - 1));
-              let mx = 0, mz = 0; if (d.d > quiere + 0.8) { mx = d.x; mz = d.z; } else if (d.d < quiere - 0.8) { mx = -d.x; mz = -d.z; }
-              const ox = S.pos.x - Cb.sitio.x, oz = S.pos.z - Cb.sitio.z, od = Math.hypot(ox, oz) || 1;
-              if (od > 9.5 && (mx * ox + mz * oz) > 0) { const tx = -oz / od, tz = ox / od, sg = (tx * d.x + tz * d.z) > 0 ? -1 : 1; mx = tx * sg; mz = tz * sg; } // en el borde, rodea
-              S.pos.x += mx * v; S.pos.z += mz * v;
-              const ox2 = S.pos.x - Cb.sitio.x, oz2 = S.pos.z - Cb.sitio.z, od2 = Math.hypot(ox2, oz2); if (od2 > 11) { S.pos.x = Cb.sitio.x + ox2 / od2 * 11; S.pos.z = Cb.sitio.z + oz2 / od2 * 11; }
-              if (j.mareo > 0 || t < prox) return;
-              let u = null;
-              if (gH.ok && d.d < alcG + 0.3 && d.d > 2.4) u = 'grito_yunque';
-              else if (estilo === 'cuerpo' && d.d < 2.3 && H.listo(j, 'golpe_ala').ok) u = 'golpe_ala';
-              else if (estilo === 'distancia' && d.d > 3 && j.energia >= 50 && H.listo(j, 'semilla').ok) u = 'semilla';
-              if (u && Cb.usar(j, u).ok) { prox = t + 0.6; if (u === 'grito_yunque') gr++; }
-            });
-            if (C().resultado === 'win') g++; dur += C().tLucha || 0; pl += 5 - C().r.plumas; ac += C().stats.intJ - int0;
-          }
-          res[estilo + ' nv' + nivel] = { gana: g + '/' + N, pct: Math.round(100 * g / N), s: Math.round(dur / N), plumas: Math.round(10 * pl / N) / 10, gritos: Math.round(10 * gr / N) / 10, interrumpe: Math.round(10 * ac / N) / 10 };
-        }
-        Cb.salir();
-        const dif = e => res[e + ' nv20'].pct - res[e + ' nv1'].pct;
-        check('Equilibrio (2 estilos × 3 niveles × ' + N + ' duelos contra la Campeona): el nivel ayuda pero no decide (nv 20 − nv 1 ≤ 50 puntos)', dif('cuerpo') <= 50 && dif('distancia') <= 50, JSON.stringify(res));
+        mudo = true; const res = medirEquilibrio({ n: o.n || 36, dificultad: o.dificultad }); mudo = false;
+        const pcts = ETAPAS_EQ.map(n => res['nv' + n].pct), ok = pcts.every(x => x >= 55 && x <= 75);
+        check('Equilibrio: la jugadora media gana entre el 55 y el 75 % de los duelos en cada etapa (Aprendiz, Despertar, Guardián y Maestro)', ok, JSON.stringify(res));
+        check('Primera victoria posible en el nivel 1: la jugadora media gana alguno de sus 3 primeros duelos en el nivel 1', res.nv1.primera > 0 && res.nv1.primera <= 3, 'primera victoria en el duelo ' + res.nv1.primera);
+        check('La Campeona sube con la etapa: piensa antes y usa más su poder en Maestro que en Aprendiz (sin tocar lo que quita cada golpe)',
+          Cb.DIFICULTAD[3].pensar < Cb.DIFICULTAD[0].pensar && Cb.DIFICULTAD[3].poder > Cb.DIFICULTAD[0].poder && Cb.DIFICULTAD.every(d => d.plumas >= 3 && d.plumas <= 5), JSON.stringify(Cb.DIFICULTAD.map(d => d.id + ':' + d.pensar + '/' + d.poder + '/' + d.plumas)));
       }
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
     mudo = false; oye = false; hoyFijo = null; quitarCarta();
