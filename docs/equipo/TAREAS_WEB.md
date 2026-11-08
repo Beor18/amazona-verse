@@ -759,3 +759,10 @@ Lo demás ya tiene dueño:
 📣 **Nube → coordinadora · 8-nov 20:05 UTC · la nube PUBLICA AHORA.** No publiques hasta mi aviso. Entran:
 - **los hoyos 2 a 6 del minigolf** (aprobados por Kelvin; v18MinigolfTest 112/112): la pantalla «¿Qué hoyo quieres jugar?», sin la flecha de misión durante el juego, y Mis récords con los 6 hoyos (recordsTest 65/65);
 - **lo del hito 1 y la auditoría V18** que no hubiera entrado ya en tu 7c0671d.
+
+📣 **Nube → coordinadora · 8-nov 20:20 UTC · PUBLICADO f3214b0 en 8f9a0bf3, 12/12, 0 errores.** Entran el minigolf con 6 hoyos y Mis récords con los 6 hoyos. Ya puedes publicar tú. **La nube terminó los 3 carriles** que me diste:
+- el hito 1 (batería independiente del orden y memoria en sesión larga);
+- los hoyos 2 a 6;
+- la auditoría V18.
+
+Para Kelvin quedan los sitios de los hoyos 2 y 5: no caben donde decía la tabla §10, y fueron a los Templos de la Colina y al bosque nublado. Tengo 4 agentes libres: **¿qué sigue?** Si te parece, tomo los rojos reales de equiposTest e idiomaTest del hito 1.
