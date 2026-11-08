@@ -1061,6 +1061,10 @@ window.AVV18Minigolf = function (G) {
   montar(buscarSitio()); colocarFijos(); usar(0);
   G.on('update', (dt, busy) => { if (A.manual || (busy && A.fase !== 'nada')) return; paso(Math.min(dt, 0.25)); }, 75);
   G.on('apply', () => { if (A.fase !== 'nada') salir(); }, 51);
+  // mg27 (8-nov): mientras se juega un hoyo o está «¿Qué hoyo quieres jugar?», la guía de la misión (fx.js) no va: su flecha
+  // se veía como un triángulo color arena en medio del recorrido. Como en el duelo (combate.js): después del gancho de
+  // misiones (60) se apaga cada cuadro; al salir (fase 'nada') el gancho calla y la guía vuelve sola.
+  G.on('render', () => { if (A.fase !== 'nada' && G.fx && G.fx.guide) G.fx.guide(null, 0); }, 61);
   // El sitio definitivo, cuando ya están la vegetación, el mundo y la explanada del duelo (antes no hay troncos que esquivar)
   let recolocar = false;
   const pedirSitio = () => { recolocar = true; };
@@ -1286,15 +1290,23 @@ window.AVV18Minigolf = function (G) {
       HOYOS.every(h => recordDe(h) && recordDe(h).mejor === 1 && recordDe(h).medalla === 'oro') && mapas().length === 6 && new Set(mapas().map(m => m.nombre)).size === 6, JSON.stringify(mapas().map(m => m.nombre)));
     // Desde el menú con varios hoyos abiertos: primero «¿Qué hoyo quieres jugar?»; uno cerrado no se elige (y lo dice)
     V.borrar(); V.recargar(); V.cambiarMundo(HOYOS[0].id, { mejor: 4, medalla: 'plata' }); toasts.length = 0;
+    const guiaVis = () => !!G.fx && (G.fx.guideArrow.visible || G.fx.guideBeam.visible);
+    G.emit('render', 0.016); const guiaAntes = guiaVis();
     const irM = irYJugar();
+    const guiaG = { elige: null, hoyo: null, fuera: null };
+    if (G.fx && G.fx.guide) { G.fx.guide({ x: S.pos.x + 14, z: S.pos.z + 6 }, 0); G.emit('render', 0.016); guiaG.elige = A.eligeHoyo && !guiaVis(); }
     const pant = { ok: irM, hoyo: HOYO.n, elige: A.eligeHoyo, panel: !hud.q('hoyos').hidden, cerrados: [...hud.el.querySelectorAll('[data-k="hoyos"] [aria-disabled="true"]')].map(b => b.dataset.a).join(','),
       h1: hud.q('m-h1').textContent, foco: document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.a : '' };
     pulsar('h4'); const cerradoNo = A.eligeHoyo && HOYO.n === 2 && toasts.includes(cerradoTxt(4));
     pulsar('h2');
+    if (G.fx && G.fx.guide) { G.fx.guide({ x: S.pos.x + 14, z: S.pos.z + 6 }, 0); G.emit('render', 0.016); guiaG.hoyo = HOYO.n === 2 && A.fase !== 'nada' && !guiaVis(); }
     check('Con más de un hoyo abierto, «Minigolf» del menú abre «¿Qué hoyo quieres jugar?» en el primer hoyo sin completar; los cerrados se ven y dicen cómo se abren; elegir el 2 empieza el 2',
       pant.ok && pant.hoyo === 2 && pant.elige && pant.panel && pant.cerrados === 'h3,h4,h5,h6' && pant.h1 === TXT.plataC + ' · ' + recordTxt(4) && cerradoNo && HOYO.n === 2 && A.eligiendo && !A.eligeHoyo,
       JSON.stringify(Object.assign(pant, { cerradoNo })));
     salir();
+    if (G.fx && G.fx.guide) { G.emit('render', 0.016); guiaG.fuera = A.fase === 'nada' && guiaVis() === guiaAntes; }
+    check('mg27: en «¿Qué hoyo quieres jugar?» y jugando un hoyo no se ven la flecha ni el haz de la guía de la misión; al salir, la guía vuelve como estaba',
+      !!G.fx && guiaG.elige === true && guiaG.hoyo === true && guiaG.fuera === true, JSON.stringify(Object.assign(guiaG, { antes: guiaAntes })));
     // Por turnos: sin récord ni premios, pero si alguien llega al nido se abre el hoyo siguiente
     V.borrar(); V.recargar(); const m1 = mad();
     iniciar({ forzar, hoyo: 1 }); elegir(2);
