@@ -1,0 +1,153 @@
+{
+ "tarea": "KIMI-127",
+ "etiqueta": "k329-ik-antes-r2",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "packs": [
+  "ep3"
+ ],
+ "demo": false,
+ "head": "desconocido",
+ "capas": {
+  "ep3": {
+   "cargaListaS": 5.7,
+   "cargaEntradaS": 25.9,
+   "pos": [
+    172,
+    174
+   ],
+   "fpsPorSeg": [
+    5,
+    7,
+    10,
+    10,
+    7,
+    14,
+    15,
+    16,
+    17,
+    7,
+    8,
+    1
+   ],
+   "fpsMed": 10,
+   "fpsMin": 1,
+   "peorMs": 2352,
+   "medianaMs": 76,
+   "p95Ms": 224,
+   "p99Ms": 419,
+   "pausas50": 115,
+   "stats": [
+    {
+     "calls": 64,
+     "ktris": 196,
+     "fpsMedidor": 3,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 73
+    },
+    {
+     "calls": 77,
+     "ktris": 330,
+     "fpsMedidor": 7,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 66
+    },
+    {
+     "calls": 85,
+     "ktris": 347,
+     "fpsMedidor": 9,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 71
+    },
+    {
+     "calls": 90,
+     "ktris": 353,
+     "fpsMedidor": 10,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 97
+    },
+    {
+     "calls": 94,
+     "ktris": 359,
+     "fpsMedidor": 7,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 87
+    },
+    {
+     "calls": 94,
+     "ktris": 359,
+     "fpsMedidor": 16,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 76
+    },
+    {
+     "calls": 93,
+     "ktris": 359,
+     "fpsMedidor": 16,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 91
+    },
+    {
+     "calls": 93,
+     "ktris": 359,
+     "fpsMedidor": 18,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 80
+    },
+    {
+     "calls": 94,
+     "ktris": 363,
+     "fpsMedidor": 11,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 98
+    },
+    {
+     "calls": 102,
+     "ktris": 426,
+     "fpsMedidor": 8,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 133
+    },
+    {
+     "calls": 106,
+     "ktris": 713,
+     "fpsMedidor": 9,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 135
+    }
+   ],
+   "med": {
+    "calls": 106,
+    "triangulos": 712911,
+    "texturasMB": 77.1,
+    "geometrias": 222,
+    "heapMB": 136,
+    "fps": 9
+   },
+   "medErr": null,
+   "errores": []
+  }
+ }
+}
