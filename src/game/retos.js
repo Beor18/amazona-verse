@@ -57,6 +57,7 @@
     const rate = (k, dt) => 1 - Math.exp(-dt * k);
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
     const lerp = (a, b, k) => a + (b - a) * k;
+    const alMenu = () => !!(G.menuModos && G.menuModos.desdeMenu && G.menuModos.desdeMenu()); /* se entró desde «¿Cómo quieres jugar?»: «Salir» lleva al menú */
     const giro = a => Math.atan2(Math.sin(a), Math.cos(a));
     const H = (x, z) => G.terreno.height(x, z);
     const nivelAgua = (x, z) => { const w = G.agua.levelAt(x, z); return w > -1e8 ? w : -Infinity; };
@@ -599,7 +600,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       limpiarFx();
       document.body.classList.add('retos-on');
       if (!st.activo) G.camara.place(true);
-      ui.el.hidden = false; ui.fin.hidden = true; ui.menu.hidden = false;
+      ui.el.hidden = false; ui.fin.hidden = true; ui.menu.hidden = false; salirTxt();
       const rec = leerRec();
       const recD = conDones ? vistaDones(leerClave(claveDones())) : rec;
       const fuente = k => (conDones && DONES_RETOS.has(k) ? recD : rec);
@@ -736,9 +737,16 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui.descanso.hidden = !tocaDescanso(Date.now());
       const dr = datosRanking(reto, st.ultimo, rec); st.rankDatos = dr ? Object.assign(dr, { dur_ms: Date.now() - (st.t0 || Date.now()) }) : null; ui.rank.hidden = !(dr && G.RANKING_EN_LINEA === true); // L3: ranking en línea apagado
     }
+    /* El botón de salir del menú de retos y de los resultados: «Volver al menú» si se entró desde «¿Cómo quieres jugar?» */
+    function salirTxt() {
+      if (!ui) return;
+      const txt = alMenu() ? 'Volver al menú' : 'Volver a la historia';
+      ui.menu.querySelector('.rt-fila [data-salir]').textContent = txt; ui.menu.querySelector('.rt-x').setAttribute('aria-label', txt);
+      ui.fin.querySelector('[data-salir]').textContent = txt;
+    }
     function resultados(html) {
       ui.hud.hidden = true; ui.flecha.hidden = true; ui.tags.textContent = '';
-      ui.fin.hidden = false; st.fase = 'fin';
+      ui.fin.hidden = false; st.fase = 'fin'; salirTxt();
       G.pausa.set('retos', true);
       html(); pintarGanchos();
       const b = ui.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });

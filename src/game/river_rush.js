@@ -90,6 +90,7 @@
     const medallaPuntos = p => { let m = null; for (const [n, v] of MEDALLAS_P) if (p >= v) m = n; return m; };
     const relojTxt = t => { const d = Math.max(0, Math.round(t * 10)); return Math.floor(d / 600) + ':' + String(Math.floor(d / 10) % 60).padStart(2, '0') + '.' + (d % 10); };
     const ingles = () => !!(G.idioma && G.idioma.actual && G.idioma.actual() === 'en');
+    const alMenu = () => !!(G.menuModos && G.menuModos.desdeMenu && G.menuModos.desdeMenu()); /* se entró desde «¿Cómo quieres jugar?»: «Salir» lleva al menú */
     const dec = x => (Math.round(x * 10) / 10).toString().replace('.', ingles() ? '.' : ',');
     const esReloj = () => st.modo !== 'puntos';
 
@@ -789,6 +790,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
       const ls = metaLineas(); u.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join(''); u.meta.hidden = !ls.length;
       u.rank.hidden = !(G.RANKING_EN_LINEA === true && !reloj && J.nuevo && claveRec === ALMACEN && J.puntos > 0); // L3: ranking en línea apagado. El ranking global es del clásico (reto rio_rush, por puntos)
       pintarModos();
+      u.fin.querySelector('[data-salir]').textContent = alMenu() ? 'Volver al menú' : 'Volver a la historia'; /* entró desde «¿Cómo quieres jugar?»: el botón lleva al menú */
       u.fin.hidden = false;
       const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }

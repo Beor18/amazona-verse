@@ -1092,6 +1092,7 @@ window.AV_EN = {
  "Volar (o 3.er salto en el aire)": "Fly (or 3rd jump in the air)",
  "Volará al bosque como las cotorras de los aviarios. Seguirá en tu álbum y tu próxima cápsula la puedes incubar.": "It will fly to the forest like the aviary parrots. It stays in your album and you can incubate your next capsule.",
  "Volver a la historia": "Back to the story",
+ "Volver al menú": "Back to menu",
  "Volé tan rápido que el viento me pidió que esperara.": "I flew so fast the wind asked me to wait.",
  "Vuela bajo sobre el río o quédate quieta en la orilla y mira con el visor.": "Fly low over the river or stay still on the bank and look through the viewer.",
  "Vuela bajo, siguiendo el cauce, por las flores y los banderines hasta la desembocadura. Sin rivales: solo tú, el reloj y tu fantasma.": "Fly low, following the riverbed, past the flowers and flags to the river mouth. No rivals: just you, the clock and your ghost.",
