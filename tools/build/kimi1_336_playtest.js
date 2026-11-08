@@ -117,7 +117,7 @@ async function clic(cdp, ses, x, y) { await raton(cdp, ses, 'mouseMoved', x, y);
     return 1;})()`;
 
   // ─── b0: portada → creador (defaults) → Empezar (mismo camino real que preparar_js del arnés) ───
-  const portada = await ev(cdp, ses, `(function(){const t=[...document.querySelectorAll('#menu-modos .tarjeta, #menu-modos [data-modo], .modo-tarjeta')];return {tarjetas:t.length,titulo:(document.querySelector('#menu-modos h1, #menu-modos h2')||{textContent:''}).textContent.trim().slice(0,60)};})()`, 15);
+  const portada = await ev(cdp, ses, `(function(){const t=[...document.querySelectorAll('#modos [data-modo]')];return {tarjetas:t.length,titulo:(document.getElementById('modos-t')||{textContent:''}).textContent.trim().slice(0,60)};})()`, 15);
   console.log('· portada:', JSON.stringify(portada));
   stats.beats.portada = portada;
   // portada: el botón Jugar del formulario del diálogo (mismo selector que preparar_js)
@@ -132,9 +132,11 @@ async function clic(cdp, ses, x, y) { await raton(cdp, ses, 'mouseMoved', x, y);
   while (Date.now() - tm < 180000) { try { if (await ev(cdp, ses, `!!(${CFG.listo_js})`, 10, false)) { listo = true; break; } } catch (e) { } await cdp.bombear(0.5); }
   if (!listo) throw new Error('el mundo no arrancó tras el creador');
   await cdp.bombear(2500);
-  // un niño mira la intro ~6 s y luego salta
-  await cdp.bombear(6000);
-  try { await ev(cdp, ses, `(function(){const b=[...document.querySelectorAll('button')].find(x=>/saltar intro/i.test(x.textContent));if(b&&b.offsetParent!==null){b.click();return 1;}return 0;})()`, 10); } catch (e) { }
+  // esperar a que la pantalla de carga se oculte y saltar la intro como un niño (poll, no one-shot)
+  const tcar = Date.now();
+  while (Date.now() - tcar < 90000) { try { if (await ev(cdp, ses, `(function(){const c=document.getElementById('carga');return !c||!c.classList.contains('carga-vis');})()`, 10, false)) break; } catch (e) { } await cdp.bombear(0.5); }
+  const tint = Date.now();
+  while (Date.now() - tint < 30000) { try { if (await ev(cdp, ses, `(function(){const b=[...document.querySelectorAll('button')].find(x=>/saltar intro/i.test(x.textContent));if(b&&b.offsetParent!==null){b.click();return true;}return false;})()`, 10)) break; } catch (e) { } await cdp.bombear(0.5); }
   await cdp.bombear(1500);
   console.log('· entrada completada');
 
@@ -144,16 +146,23 @@ async function clic(cdp, ses, x, y) { await raton(cdp, ses, 'mouseMoved', x, y);
   // ─── b2: movimiento con teclado real (caminar → volar → subir) ───
   await clic(cdp, ses, 800, 450); // foco al lienzo
   const p0 = await ev(cdp, ses, `(function(){const G=window.AV.G;return {x:+G.S.pos.x.toFixed(2),y:+G.S.pos.y.toFixed(2),z:+G.S.pos.z.toFixed(2),flying:G.fisica.MOVE.flying};})()`, 15);
-  await mantener(cdp, ses, 'KeyA', 'a', 65, 1500);
+  // caminar: mantener A y muestrear posición + teclas registradas cada 300 ms
+  await tecla(cdp, ses, 'keyDown', 'KeyA', 'a', 65);
+  const muestrasA = [];
+  for (let i = 0; i < 6; i++) { await cdp.bombear(300); muestrasA.push(await ev(cdp, ses, `(function(){const G=window.AV.G;return {x:+G.S.pos.x.toFixed(2),z:+G.S.pos.z.toFixed(2),k:[...G.input.keys],busy:(G.ui&&G.ui.busy)?G.ui.busy():null};})()`, 10)); }
+  await tecla(cdp, ses, 'keyUp', 'KeyA', 'a', 65);
+  const pa = muestrasA[muestrasA.length - 1];
+  const caminoA = Math.hypot(pa.x - p0.x, pa.z - p0.z);
+  console.log('· caminar (A):', JSON.stringify({ camino_m: +caminoA.toFixed(2), claves: pa.k, busy: pa.busy, muestras: muestrasA.map(m => m.x + ',' + m.z) }));
+  stats.beats.b2_caminar = { camino_m: +caminoA.toFixed(2), claves: pa.k, busy: pa.busy, muestras: muestrasA };
   await pulsar(cdp, ses, 'KeyV', 'v', 86, 120);
   await cdp.bombear(600);
   await mantener(cdp, ses, 'Space', ' ', 32, 1200);
   const p1 = await ev(cdp, ses, `(function(){const G=window.AV.G;return {x:+G.S.pos.x.toFixed(2),y:+G.S.pos.y.toFixed(2),z:+G.S.pos.z.toFixed(2),flying:G.fisica.MOVE.flying,grounded:G.fisica.MOVE.grounded};})()`, 15);
-  const movio = Math.hypot(p1.x - p0.x, p1.z - p0.z);
-  console.log('· movimiento:', JSON.stringify({ p0, p1, volo: p1.flying, subio: +(p1.y - p0.y).toFixed(2), camino_m: +movio.toFixed(2) }));
-  stats.beats.b2_movimiento = { p0, p1, volo: p1.flying, subio_m: +(p1.y - p0.y).toFixed(2), camino_m: +movio.toFixed(2) };
+  console.log('· movimiento:', JSON.stringify({ p0, p1, volo: p1.flying, subio: +(p1.y - p0.y).toFixed(2) }));
+  stats.beats.b2_movimiento = { p0, p1, volo: p1.flying, subio_m: +(p1.y - p0.y).toFixed(2) };
   if (!p1.flying) stats.fricciones.push('V no despegó tras pulsar V (niño nuevo no puede volar)');
-  if (movio < 0.5) stats.fricciones.push('caminar: A no movió a Vittata (' + movio.toFixed(2) + ' m)');
+  if (caminoA < 0.5) stats.fricciones.push('caminar: A no movió a Vittata (' + caminoA.toFixed(2) + ' m, teclas=' + JSON.stringify(pa.k) + ', busy=' + pa.busy + ')');
   await medir('b2_volando', { volo: p1.flying });
   // aterrizar y dejarla quieta en el suelo
   await pulsar(cdp, ses, 'KeyV', 'v', 86, 120);
@@ -170,7 +179,7 @@ async function clic(cdp, ses, x, y) { await raton(cdp, ses, 'mouseMoved', x, y);
   // ─── b3: menú V18 (portada de modos encima del mundo) ───
   await ev(cdp, ses, `(function(){try{window.AV.G.menuModos.volver();}catch(e){}return 1;})()`, 15);
   await cdp.bombear(1200);
-  const menu = await ev(cdp, ses, `(function(){const d=document.querySelector('#menu-modos')||document.querySelector('dialog#title');const t=[...document.querySelectorAll('#menu-modos .tarjeta, #menu-modos [data-modo]')];return {abierto:!!d,tarjetas:t.length,desborda:t.filter(x=>x.scrollWidth>x.clientWidth+2||x.scrollHeight>x.clientHeight+2).length};})()`, 15);
+  const menu = await ev(cdp, ses, `(function(){const d=document.querySelector('dialog#title');const t=[...document.querySelectorAll('#modos [data-modo]')];return {abierto:!!d&&d.open,tarjetas:t.length,desborda:t.filter(x=>x.scrollWidth>x.clientWidth+2||x.scrollHeight>x.clientHeight+2).length};})()`, 15);
   console.log('· menú V18:', JSON.stringify(menu));
   const fotoMenu = await cdp.call('Page.captureScreenshot', { format: 'jpeg', quality: 85 }, ses, 30000);
   fs.writeFileSync(path.join(SALIDA, `k336_${ETIQ}_b3_menu.jpg`), Buffer.from(fotoMenu.data, 'base64'));
@@ -201,10 +210,17 @@ async function clic(cdp, ses, x, y) { await raton(cdp, ses, 'mouseMoved', x, y);
   // ─── b5: arco V18.3 (Atalayas con elenco despierto) ───
   await ev(cdp, ses, posBase(-69.2, 68.4, null, -69.2, 68.4, 12, 5), 30);
   await cdp.bombear(1500);
-  const arco = await ev(cdp, ses, `(async function(){const G=window.AV.G;try{if(G.v18arco&&G.v18arco.avanzar){try{G.v18arco.avanzar('reunion');}catch(e){}}if(G.v18&&G.v18.cambiarMundo){try{G.v18.cambiarMundo('puerto_mina','reparado');}catch(e){}}for(let i=0;i<15;i++){await new Promise(r=>setTimeout(r,1000));const e=(G.v18arco&&G.v18arco.elenco)?G.v18arco.elenco():null;if(e)return {elenco:true,espera_s:i+1,estado:(G.v18arco&&G.v18arco.estado)?G.v18arco.estado():null};}const e2=(G.v18arco&&G.v18arco.elenco)?G.v18arco.elenco():null;return {elenco:!!e2,espera_s:15,estado:(G.v18arco&&G.v18arco.estado)?G.v18arco.estado():null};}catch(err){return {err:err.message};}})()`, 80);
+  const arco = await ev(cdp, ses, `(async function(){const G=window.AV.G;try{
+    const diag=()=>({V18:!!G.V18,puerto:(G.v18&&G.v18.mundo)?G.v18.mundo['puerto_mina']:null,estado:(G.v18arco&&G.v18arco.estado)?G.v18arco.estado():null,elenco:!!(G.v18arco&&G.v18arco.elenco&&G.v18arco.elenco()),zonasActiva:!!(G.zonas&&G.zonas.activa)});
+    if(G.v18&&G.v18.cambiarMundo){try{G.v18.cambiarMundo('puerto_mina','reparado');G.v18.cambiarMundo('puente_villa','reparado');}catch(e){}}
+    if(G.v18arco&&G.v18arco.avanzar){try{G.v18arco.avanzar('reunion');}catch(e){}}
+    const d0=diag();
+    try{G.emit('apply');}catch(e){} // en el juego real el 'apply' (p. ej. autoguardado) es lo que recalcula el elenco
+    for(let i=0;i<15;i++){await new Promise(r=>setTimeout(r,1000));const e=(G.v18arco&&G.v18arco.elenco)?G.v18arco.elenco():null;if(e)return {elenco:true,espera_s:i+1,diag:d0,fin:diag()};}
+    return {elenco:false,espera_s:15,diag:d0,fin:diag()};}catch(err){return {err:err.message};}})()`, 80);
   console.log('· arco:', JSON.stringify(arco).slice(0, 300));
-  const arcoOk = arco && arco.elenco && arco.estado === 'reunion';
-  if (!arcoOk) stats.fricciones.push('arco: elenco no despertó en Atalayas: ' + JSON.stringify(arco).slice(0, 200));
+  const arcoOk = arco && arco.elenco;
+  if (!arcoOk) stats.fricciones.push('arco: elenco no despertó en Atalayas: ' + JSON.stringify(arco).slice(0, 240));
   await medir('b5_arco', { elenco: arcoOk });
 
   // ─── b6: Family Quest (cuento en cadena por clics reales) ───

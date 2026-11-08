@@ -1,0 +1,246 @@
+{
+ "perfil": "escritorio 1600x900@1 (niño nuevo, ?v18=1)",
+ "etiqueta": "k336-r2",
+ "head": "31755a11",
+ "beats": {
+  "portada": {
+   "tarjetas": 17,
+   "titulo": "¿Cómo quieres jugar?"
+  },
+  "b1_spawn": {
+   "px": 134,
+   "py": 5.2,
+   "pz": 182.5,
+   "fps": 144,
+   "calls": 174,
+   "triangulos": 1009114,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "escuela": false,
+   "geo": 189,
+   "tex": 162,
+   "prog": 76,
+   "heap": 372,
+   "fps_med": 143.9,
+   "fps_p10": 121,
+   "fps_watchdog": false,
+   "hud": {
+    "quest": {
+     "vis": true,
+     "x": 12,
+     "y": 12,
+     "w": 330,
+     "h": 270,
+     "txt": "Capítulo 1 · Villa Raíz\n    El día que el cielo se rompió\n    Despega, vuela has",
+     "overflow": false
+    },
+    "acts": 7,
+    "stick": true,
+    "minimapa": null,
+    "keyhint": "WASD MoverteEspacio SaltarV VolarE Acción"
+   }
+  },
+  "b2_caminar": {
+   "camino_m": 0,
+   "claves": [],
+   "busy": false,
+   "muestras": [
+    {
+     "x": 134,
+     "z": 182.5,
+     "k": [],
+     "busy": false
+    },
+    {
+     "x": 134,
+     "z": 182.5,
+     "k": [],
+     "busy": false
+    },
+    {
+     "x": 134,
+     "z": 182.5,
+     "k": [],
+     "busy": false
+    },
+    {
+     "x": 134,
+     "z": 182.5,
+     "k": [],
+     "busy": false
+    },
+    {
+     "x": 134,
+     "z": 182.5,
+     "k": [],
+     "busy": false
+    },
+    {
+     "x": 134,
+     "z": 182.5,
+     "k": [],
+     "busy": false
+    }
+   ]
+  },
+  "b2_movimiento": {
+   "p0": {
+    "x": 134,
+    "y": 5.24,
+    "z": 182.5,
+    "flying": false
+   },
+   "p1": {
+    "x": 134,
+    "y": 14.92,
+    "z": 182.5,
+    "flying": true,
+    "grounded": false
+   },
+   "volo": true,
+   "subio_m": 9.68
+  },
+  "b2_volando": {
+   "px": 134,
+   "py": 15,
+   "pz": 182.5,
+   "fps": 144,
+   "calls": 213,
+   "triangulos": 2210005,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "escuela": false,
+   "geo": 272,
+   "tex": 174,
+   "prog": 93,
+   "heap": 435,
+   "fps_med": 143.4,
+   "fps_p10": 140,
+   "fps_watchdog": false,
+   "hud": {
+    "quest": {
+     "vis": true,
+     "x": 12,
+     "y": 12,
+     "w": 330,
+     "h": 270,
+     "txt": "Capítulo 1 · Villa Raíz\n    El día que el cielo se rompió\n    Despega, vuela has",
+     "overflow": false
+    },
+    "acts": 7,
+    "stick": true,
+    "minimapa": {
+     "w": 118
+    },
+    "keyhint": "WASD MoverteEspacio SaltarV VolarE Acción"
+   },
+   "volo": true
+  },
+  "b3_menu": {
+   "abierto": true,
+   "tarjetas": 17,
+   "desborda": 0
+  },
+  "b4_duelo": {
+   "px": 177,
+   "py": 4,
+   "pz": 172,
+   "fps": 144,
+   "calls": 188,
+   "triangulos": 1037657,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "escuela": false,
+   "geo": 275,
+   "tex": 176,
+   "prog": 94,
+   "heap": 408,
+   "fps_med": 144,
+   "fps_p10": 143.9,
+   "fps_watchdog": false,
+   "hud": {
+    "quest": {
+     "vis": false,
+     "x": 12,
+     "y": 12,
+     "w": 330,
+     "h": 270,
+     "txt": "Capítulo 1 · Villa Raíz\n    El día que el cielo se rompió\n    Despega, vuela has",
+     "overflow": false
+    },
+    "acts": 7,
+    "stick": true,
+    "minimapa": {
+     "w": 118
+    },
+    "keyhint": "WASD MoverteEspacio SaltarV VolarE Acción"
+   },
+   "fase": "lucha"
+  },
+  "b5_arco": {
+   "px": -69.2,
+   "py": 16.4,
+   "pz": 68.4,
+   "fps": 144,
+   "calls": 188,
+   "triangulos": 1037657,
+   "calidad": "alto",
+   "dpr": 1,
+   "post": true,
+   "sombras": true,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "escuela": false,
+   "geo": 275,
+   "tex": 176,
+   "prog": 94,
+   "heap": 408,
+   "fps_med": 144,
+   "fps_p10": 143.7,
+   "fps_watchdog": false,
+   "hud": {
+    "quest": {
+     "vis": true,
+     "x": 12,
+     "y": 12,
+     "w": 330,
+     "h": 270,
+     "txt": "Capítulo 1 · Villa Raíz\n    El día que el cielo se rompió\n    Despega, vuela has",
+     "overflow": false
+    },
+    "acts": 7,
+    "stick": true,
+    "minimapa": {
+     "w": 118
+    },
+    "keyhint": "WASD MoverteEspacio SaltarV VolarE Acción"
+   },
+   "elenco": true
+  },
+  "b6_family": {
+   "abrio": true,
+   "cuento": {
+    "ok": true,
+    "hecha": true
+   }
+  }
+ },
+ "fricciones": [
+  "caminar: A no movió a Vittata (0.00 m, teclas=[], busy=false)"
+ ],
+ "consola_errores": [],
+ "final": {
+  "calls": 188,
+  "heap": 414,
+  "geo": 275,
+  "tex": 176
+ }
+}
