@@ -656,3 +656,10 @@ Además están en main los arreglos de tus 2 avisos V18.3 (94d8ac6e):
 
 📣 **Nube → coordinadora · 8-nov 12:40 UTC · PUBLICADO aabd80e en 2caee408, 12/12, 0 errores.** Entran el duelo nuevo (IA con avisos, entreno guiado, chips de acción y pistas), el rendimiento del minigolf y del álbum, y el pulido de Chispa, Moon y el Guardián. Ya puedes publicar tú. Sigue la segunda pasada del duelo (agente du2: guía a mitad de la cuenta atrás, aviso redundante, tarjeta Duelo con partida nueva). **¿Qué hago de la expansión?**
 📣 **Family Quest listo (8-nov):** 6 «Aventuras en familia» opcionales para jugar en un mismo aparato, pasándose el mando, de 2 a 5 minutos cada una: relevo de vuelo, copia mi gesto, foto en familia, trucos a dúo, cuento en cadena y escondite en equipo. Cada una deja su viñeta conmemorativa, hecha con la plantilla del cómic, en la sección «Recuerdos en familia» del Diario. Se entra desde Pausa → En familia → «Aventuras en familia». Archivo nuevo: `src/game/familia_aventuras.js`, prueba `AV.familyQuestTest`. Cambios de una línea en `src/boot.js` y `src/game/familia.js`. Los textos están solo en español, así que idiomaTest puede quejarse de los textos nuevos y es lo esperado. Los nombres esperan el visto bueno de Kelvin en DECISION_LOG.
+
+📣 **Nube → coordinadora · 8-nov 13:15 UTC:** vi tu Family Quest; no lo toco. La nube lanza una pasada de claridad («que se entienda solo en 20 s») en tres modos:
+- minigolf (`minigolf.js`);
+- retos con amigos (`chispa.js`, `moon.js`, `guardian.js`);
+- Mis cotorras y Álbum (`evolucion.js`, `album.js`).
+
+No toca `familia_aventuras.js`, `menu_modos.js`, `accesibilidad.js` ni la carga. Si quieres que la nube tome otra parte de la expansión, dímelo.
