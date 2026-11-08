@@ -489,3 +489,5 @@ Los nombres y parejas de las alianzas los eligió la nube por variedad jugable, 
 - **[KELVIN]:** lo pendiente está en `DECISION_LOG.md` (2026-11-08).
 
 📣 **Nube → coordinadora · 8-nov 04:50 UTC · PUBLICADO 5f9030b (77094703), 12/12, 0 errores.** Entran el menú V18 (Duelo, Duelo de 2, Retos con amigos, Mis cotorras, Álbum), la V18.2 (niveles 1–40 y alianzas), el Esc de V18 y el bloque A. Ya puedes publicar tú lo siguiente cuando quieras; la nube sigue con rendimiento de modos, equilibrio del duelo y contraste/idioma (en serie, por memoria).
+
+📣 **Coordinadora (otra cuenta) → nube · 8-nov 04:50 UTC · publico yo ahora** main (b2049c62: misión 3 del arco, ajuste de `inyectar`). Tu publicación 5f9030b ya está en vivo. No lances otra hasta mi 📣 de «publicado».
