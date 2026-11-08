@@ -1,0 +1,4 @@
+· preparar: ok: portada → creador → Empezar (Nube Azul) → carga 10633 ms (listo) → intro saltada
+FATAL Error: {"exceptionId":1,"text":"Uncaught","lineNumber":0,"columnNumber":10,"scriptId":"88","stackTrace":{"callFrames":[{"functionName":"","scriptId":"88","url":"","lineNumber":0,"columnNumber":10}]},"exception":{"type":"object","subtype":"error","className":"TypeError","description":"TypeError: window.AV.calidadTest is not a function\n    at <anonymous>:1:11","objectId":"-1107566320991986630.2.2"}}
+    at ev (C:\Users\kelvi\amazonaversegame3\tools\build\kimi2_una_bateria.js:16:212)
+    at async C:\Users\kelvi\amazonaversegame3\tools\build\kimi2_una_bateria.js:47:15
