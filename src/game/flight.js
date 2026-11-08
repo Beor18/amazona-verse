@@ -830,7 +830,9 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           raiz.traverse(o => { if (o.geometry) propios.add(o.geometry); const m = o.material; if (m) { propios.add(m); for (const k of ['map', 'normalMap']) if (m[k]) propios.add(m[k]); } });
           const alLiberar = ev => liberados.add(ev.target);
           for (const x of propios) x.addEventListener('dispose', alLiberar);
+          const mPre = mem();
           salir();
+          const mPost = mem();
           for (const x of propios) x.removeEventListener('dispose', alLiberar);
           check('Al salir S.facing vuelve a ser un objeto propio de la partida (no el rumbo reutilizado del vuelo)', S.facing !== _fac && !!S.facing && typeof S.facing.x === 'number');
           check('Al salir se quitan las envolturas y la cámara vuelve', G.ui.busy === busy0 && F.step === step0 && G.camara.follow === follow0 && G.camara.draw === draw0 && R.camera.fov === fov0 && !document.body.classList.contains('flight-on') && !document.body.classList.contains('retos-on'));
@@ -850,7 +852,9 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           check('Nada del vuelo queda en la escena: pool liberado, sin instancias vivas', raiz.visible === false && !raiz.parent && Object.keys(pool).length === 0 && vivas() === 0 && obst.length === 0 && decor.length === 0, vivas() + ' vivas · ' + obst.length + ' obst · ' + decor.length + ' decor · ' + Object.keys(pool).map(t => t + ':' + pool[t].libres.length + '/' + CAP[t]).join(' '));
           await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
           const m2 = mem();
-          check('Al salir se liberan todas las geometrías, materiales y texturas del vuelo y las geometrías del renderer bajan de las de la partida (las texturas, ±12 por el streaming del mundo)', liberados.size === propios.size && m2.g < m0.g && m2.t <= m0.t + 12, liberados.size + '/' + propios.size + ' liberados · ' + JSON.stringify(m0) + ' → ' + JSON.stringify(m2));
+          // Se compara justo antes y justo después de salir(), sin cuadros por medio: tras volver la cámara a Vittata el renderer dibuja otro trozo
+          // del mundo (sus geometrías no son del vuelo y pueden sumar más de las que el vuelo libera)
+          check('Al salir se liberan todas las geometrías, materiales y texturas del vuelo y las del renderer bajan en ese momento', liberados.size === propios.size && mPost.g < mPre.g && mPost.t <= mPre.t, liberados.size + '/' + propios.size + ' liberados · ' + JSON.stringify(mPre) + ' → ' + JSON.stringify(mPost) + ' · con el mundo de vuelta ' + JSON.stringify(m2));
         } catch (e) {
           check('Sin excepciones', false, (e && e.stack) || String(e));
           try { salir(); } catch (e2) { /* ya fuera */ }
