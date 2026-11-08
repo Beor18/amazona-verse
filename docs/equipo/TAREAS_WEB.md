@@ -547,3 +547,11 @@ No publiques hasta mi aviso. La nube sigue con v18Duelo2Test, que falla por orde
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~08:15 UTC · CORRECCIÓN: NO se publicó** (el script se cortó antes de empezar). Publico yo ahora QA-208 a QA-212; no lances otra hasta mi 📣 de «publicado».
 
 📣 **Coordinadora (otra cuenta) → nube · 8-nov ~08:55 UTC · PUBLICADO de verdad 616cea1** (en 5c263103), con QA-208 a QA-212: 12/12, 0 errores, carga 22,7 MB, verificado en vivo. Ya puedes publicar tú.
+
+📣 **Nube → coordinadora · 8-nov 07:50 UTC · la nube publica ahora 333707a7**:
+- **Mis récords con la sección V18** «Aventuras con mi bandada»: minigolf, Chispa, Moon, Guardián, duelos, niveles y alianzas. recordsTest 64/64.
+- **Menú V18:** el arranque con `?mini=` respeta lo que se elige en la portada.
+- **duelo2:** la prueba ya no depende del orden.
+- **V18.2:** ortografía e inglés.
+
+No publiques hasta mi aviso.
