@@ -1,0 +1,15 @@
+[03:49:12] servidor http://127.0.0.1:64169
+[03:49:12] A/B: precarga desactivada en memoria (precargaVueloMin/precargaPieMin=9999)
+[03:49:39] entrar='ok' en 27.0s
+[03:49:47] asentado={"ms":7115,"tope":false,"pendientes":null}
+[03:49:53] base: info={"geo":274,"tex":117} objetos=715 recursos=123
+[03:49:53] paseo ini 'ok -8,-2'
+[03:50:04] paso 30: info.geometries=397
+[03:50:15] paso 60: info.geometries=585
+[03:50:25] paso 90: info.geometries=601
+[03:50:35] paso 120: info.geometries=597
+[03:50:35] paseoFin: info={"geo":597,"tex":120} recursos=122
+[03:50:38] vuelta 'ok' asentado2={"ms":2579,"tope":false,"pendientes":null}
+[03:50:53] liberar: info={"geo":606,"tex":120} recursos=124
+[03:50:53] errores=[]
+[03:50:53] fin

@@ -1,0 +1,14 @@
+[03:46:30] servidor http://127.0.0.1:64034
+[03:46:55] entrar='ok' en 25.0s
+[03:47:01] asentado={"ms":4808,"tope":false,"pendientes":null}
+[03:47:07] base: info={"geo":363,"tex":119} objetos=716 recursos=123
+[03:47:07] paseo ini 'ok -8,-2'
+[03:47:17] paso 30: info.geometries=603
+[03:47:27] paso 60: info.geometries=606
+[03:47:37] paso 90: info.geometries=604
+[03:47:47] paso 120: info.geometries=600
+[03:47:47] paseoFin: info={"geo":600,"tex":120} recursos=122
+[03:47:47] vuelta 'ok' asentado2={"ms":12,"tope":false,"pendientes":null}
+[03:48:02] liberar: info={"geo":611,"tex":120} recursos=126
+[03:48:02] errores=[]
+[03:48:03] fin
