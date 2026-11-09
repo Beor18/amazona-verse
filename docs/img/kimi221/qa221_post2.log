@@ -1,0 +1,7 @@
+[05:12:37] navegando a la portada (almacén limpio, niño nuevo)
+[05:12:50] entrada: ok
+[05:13:04] apertura en curso: #c1-saltar visible
+[05:13:06] medida con Diario: zBoton=9 zCard=10 zDialog=10 solape={"x":12,"y":116,"w":129,"h":44} botonTapado=false
+[05:13:08] tras cerrar: {"cerrado":{"boton":{"x":12,"y":116,"w":129,"h":44},"puntos":[{"pt":[76,138],"el":"c1-saltar","esBoton":true},{"pt":[44,138],"el":"c1-saltar","esBoton":true}]}}
+[05:13:15] veredicto: OK {"zBajoPaneles":true,"sinTaparConDiario":true,"haySolapeGeometrico":true,"botonUsableTrasCerrar":true}
+[05:13:15] json: C:\Users\kelvi\amazonaversegame\docs\img\kimi221\qa221_post2.json

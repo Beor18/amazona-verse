@@ -1,0 +1,171 @@
+{
+ "tarea": "QA-221",
+ "etiqueta": "pre1",
+ "pantalla": "iphone 390x844@3 tactil",
+ "head": "82bbea74",
+ "medida": {
+  "boton": {
+   "x": 12,
+   "y": 116,
+   "w": 129,
+   "h": 44
+  },
+  "zBoton": 11,
+  "zCard": 10,
+  "zDialog": 10,
+  "fade": true,
+  "botonVisible": true,
+  "cerrado": {
+   "p0": {
+    "pt": [
+     77,
+     138
+    ],
+    "el": "c1-saltar",
+    "esBoton": true
+   },
+   "p1": {
+    "pt": [
+     44,
+     138
+    ],
+    "el": "c1-saltar",
+    "esBoton": true
+   }
+  },
+  "abierto": {
+   "card": {
+    "x": 11,
+    "y": 17,
+    "w": 368,
+    "h": 808
+   },
+   "solape": {
+    "x": 12,
+    "y": 116,
+    "w": 129,
+    "h": 44
+   },
+   "puntos": [
+    {
+     "pt": [
+      44,
+      127
+     ],
+     "el": "c1-saltar",
+     "esBoton": true,
+     "enCard": false
+    },
+    {
+     "pt": [
+      44,
+      138
+     ],
+     "el": "c1-saltar",
+     "esBoton": true,
+     "enCard": false
+    },
+    {
+     "pt": [
+      44,
+      149
+     ],
+     "el": "c1-saltar",
+     "esBoton": true,
+     "enCard": false
+    },
+    {
+     "pt": [
+      77,
+      127
+     ],
+     "el": "c1-saltar",
+     "esBoton": true,
+     "enCard": false
+    },
+    {
+     "pt": [
+      77,
+      138
+     ],
+     "el": "c1-saltar",
+     "esBoton": true,
+     "enCard": false
+    },
+    {
+     "pt": [
+      77,
+      149
+     ],
+     "el": "c1-saltar",
+     "esBoton": true,
+     "enCard": false
+    },
+    {
+     "pt": [
+      109,
+      127
+     ],
+     "el": "c1-saltar",
+     "esBoton": true,
+     "enCard": false
+    },
+    {
+     "pt": [
+      109,
+      138
+     ],
+     "el": "c1-saltar",
+     "esBoton": true,
+     "enCard": false
+    },
+    {
+     "pt": [
+      109,
+      149
+     ],
+     "el": "c1-saltar",
+     "esBoton": true,
+     "enCard": false
+    }
+   ],
+   "botonTapado": true
+  }
+ },
+ "cierre": {
+  "cerrado": {
+   "boton": {
+    "x": 12,
+    "y": 116,
+    "w": 129,
+    "h": 44
+   },
+   "puntos": [
+    {
+     "pt": [
+      76,
+      138
+     ],
+     "el": "c1-saltar",
+     "esBoton": true
+    },
+    {
+     "pt": [
+      44,
+      138
+     ],
+     "el": "c1-saltar",
+     "esBoton": true
+    }
+   ]
+  }
+ },
+ "errores": [],
+ "checks": {
+  "zBajoPaneles": false,
+  "sinTaparConDiario": false,
+  "haySolapeGeometrico": true,
+  "botonUsableTrasCerrar": true
+ },
+ "ok": false
+}

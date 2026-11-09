@@ -117,17 +117,21 @@ const CERRAR_Y_MEDIR_JS = `(async () => { try { return await (async () => {
     await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA }, ses);
     log('navegando a la portada (almacén limpio, niño nuevo)');
     await cdp.call('Page.navigate', { url: origen + '/index.html' }, ses);
-    await espera(cdp, ses, `!!(document.getElementById('title') || document.getElementById('creator'))`, 90);
+    if (!await espera(cdp, ses, `(() => { const t = document.getElementById('title'); return t && t.open; })()`, 120)) throw new Error('la portada no abrió en 120 s');
     const prep = await evaluar(cdp, ses, `(async () => { const sleep = ms => new Promise(r => setTimeout(r, ms)), $ = id => document.getElementById(id);
       const espera = async (f, ms) => { const t0 = performance.now(); while (performance.now() - t0 < ms) { try { if (f()) return true; } catch (e) {} await sleep(100); } return false; };
       const t = $('title');
       if (t && t.open) { const b = t.querySelector('form[method=dialog] button'); if (!b) return 'la portada no tiene Jugar'; b.click(); if (!await espera(() => !t.open, 5000)) return 'la portada sigue abierta'; }
+      if (!await espera(() => { const cr = $('creator'); return cr && !cr.hidden; }, 15000)) return 'el creador no apareció';
       const cr = $('creator');
-      if (cr && !cr.hidden) { await espera(() => $('p-stage-status') && $('p-stage-status').hidden, 30000); const s = $('p-save'); if (!s) return 'el creador no tiene Empezar'; s.click(); if (!await espera(() => cr.hidden, 8000)) return 'Empezar no cerró el creador'; }
-      return 'ok'; })()`, 90);
+      await espera(() => $('p-stage-status') && $('p-stage-status').hidden, 30000);
+      const s = $('p-save'); if (!s) return 'el creador no tiene Empezar';
+      s.click(); if (!await espera(() => cr.hidden, 8000)) return 'Empezar no cerró el creador';
+      if (!await espera(() => window.AV && AV.state && AV.state.profile && AV.state.profile.created, 10000)) return 'sin perfil creado';
+      return 'ok'; })()`, 120);
     log('entrada: ' + prep);
     if (prep !== 'ok') throw new Error('entrada: ' + prep);
-    if (!await espera(cdp, ses, `!!document.getElementById('c1-saltar')`, 60)) throw new Error('#c1-saltar no apareció en 60 s (la apertura no arrancó)');
+    if (!await espera(cdp, ses, `!!document.getElementById('c1-saltar')`, 90)) throw new Error('#c1-saltar no apareció en 90 s (la apertura no arrancó)');
     log('apertura en curso: #c1-saltar visible');
     await cdp.bombear(1.2);
     const m = await evaluar(cdp, ses, MEDIR_JS, 60);
