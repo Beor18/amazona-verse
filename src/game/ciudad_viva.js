@@ -445,6 +445,18 @@ window.AVCiudadViva = function (G) {
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, quiet0 = G.quiet, cal0 = nivel(), man0 = !!(G.renderer.calidad && G.renderer.calidad.manual), yaw0 = G.camara.yaw, Rd = G.renderer;
     const T = G.pruebas, Rs = () => G.residentes;
     R.pausa = true;
+    // «No se crea ninguna malla nueva» (independiente del orden de las baterías): se espía Object3D.add solo mientras corre el
+    // código de la ciudad viva (paso, pintar, ajustar, quitar, la multitud) y el dibujo en las mallas de la bandada. Lo que otros
+    // módulos añadan a la escena en el mismo intervalo (V18 a demanda, streaming, fx) no cuenta; lo que añada la ciudad viva, a
+    // cualquier padre y en cualquier momento de la prueba, sí.
+    const O3 = THREE.Object3D.prototype, add0 = O3.add, attach0 = O3.attach, espia = { dentro: 0, nuevos: [] };
+    O3.add = function (...objs) { if (espia.dentro > 0) for (const o of objs) if (o && o !== this) espia.nuevos.push((o.name || o.type) + '→' + (this.name || this.type)); return add0.apply(this, objs); };
+    if (attach0) O3.attach = function (o) { if (espia.dentro > 0 && o) espia.nuevos.push((o.name || o.type) + '→' + (this.name || this.type)); return attach0.call(this, o); };
+    const cvEn = f => (...a) => { espia.dentro++; try { return f(...a); } finally { espia.dentro--; } };
+    const cvPaso = cvEn(paso), cvPintar = cvEn(pintar), cvAjustar = cvEn(ajustar), cvQuitar = cvEn(quitar), cvApagar = cvEn(apagar);
+    const cvDibujar = cvEn(() => G.bandada.dibujar()), cvMT = { reiniciar: cvEn(() => api.multitud.reiniciar()), fijar: cvEn(k => api.multitud.fijar(k)) };
+    { const g = new THREE.Group(), o = new THREE.Object3D(); cvEn(() => g.add(o))(); g.remove(o); espia.sano = espia.nuevos.length === 1; espia.nuevos.length = 0; }
+    const mallas0 = G.bandada && G.bandada.meshes ? G.bandada.meshes.slice() : [];
     try {
       const B = G.bandada;
       if (B && B.residentes) await B.residentes;
@@ -465,7 +477,7 @@ window.AVCiudadViva = function (G) {
       check('Hay edificios con sólido para probar las aves', conSolido() >= 8, conSolido() + '/' + s.ins.length + ' con sólido en ' + Math.round((performance.now() - t0) / 1000) + ' s');
       R.prueba = true; R.horaPrueba = 12; R.P = null; R.sitio = null; sitio();
       if (Rd.setCalidad) Rd.setCalidad('alto', true); else Rd.calidad.nivel = 'alto';
-      paso(0.05, true);
+      cvPaso(0.05, true);
       const P = perchas();
       check('Hay tejados y balcones donde posarse', P.alto.length >= 6 && P.alto.filter(p => p.tipo === 'tejado').length >= 3,
         P.alto.length + ' altas (' + P.alto.filter(p => p.tipo === 'tejado').length + ' tejados, ' + P.alto.filter(p => p.tipo === 'balcon').length + ' balcones) · ' + P.suelo.length + ' en la plaza');
@@ -482,7 +494,7 @@ window.AVCiudadViva = function (G) {
           if (dentro(a)) { malEdif++; peor = a.est + '/' + a.accion + '@' + a.x.toFixed(1) + ',' + a.y.toFixed(1) + ',' + a.z.toFixed(1) + ' tope ' + tope(a.x, a.z).toFixed(1); }
         }
       };
-      for (let i = 0; i < 1800; i++) { paso(0.05, 'todo'); revisar(); }
+      for (let i = 0; i < 1800; i++) { cvPaso(0.05, 'todo'); revisar(); }
       check('Vuelan de torre en torre', !!vistos.vuela);
       check('Rutinas de día: conversan, buscan comida, arreglan y juegan', vistos.charla && vistos.come && (vistos.arregla || vistos.recoge) && (vistos.juega || reducido()), Object.keys(vistos).join(','));
       check('De día cruzan el cielo de la ciudad en bandada', !!vistos.bandada, Object.keys(vistos).join(','));
@@ -490,20 +502,20 @@ window.AVCiudadViva = function (G) {
       check('Nadie atraviesa un edificio', malEdif === 0, malEdif + ' ' + peor);
       // de noche: a dormir en las perchas altas
       R.horaPrueba = 22;
-      for (let i = 0; i < 900; i++) { paso(0.05, 'todo'); revisar(); }
+      for (let i = 0; i < 900; i++) { cvPaso(0.05, 'todo'); revisar(); }
       const duermen = R.aves.filter(a => a.est === 'posada' && (a.accion === 'duerme' || a.accion === 'vela'));
       check('De noche duermen en perchas (en alto)', duermen.length === R.aves.length && duermen.filter(a => a.accion === 'duerme').every(a => a.perch.tipo !== 'suelo' || !P.alto.length),
         duermen.length + '/' + R.aves.length + ' · ' + duermen.filter(a => a.accion === 'vela').length + ' junto a un farol');
       check('Y siguen sin atravesar nada de noche', malSuelo === 0 && malEdif === 0, malSuelo + '/' + malEdif + ' ' + peor);
       R.horaPrueba = 12;
-      for (let i = 0; i < 200; i++) paso(0.05, 'todo');
+      for (let i = 0; i < 200; i++) cvPaso(0.05, 'todo');
       check('Al amanecer vuelven a sus cosas', R.aves.some(a => a.accion !== 'duerme'), R.aves.filter(a => a.accion === 'duerme').length + ' aún dormidas');
       // calidad: menos en medio y en bajo
       const cuenta = c => { Rd.calidad.nivel = c; G.emit('calidad', Rd.calidad); return R.aves.length; };
       const nm = cuenta('medio'), nb = cuenta('bajo'), na = cuenta('alto');
       check('Menos cotorras con menos calidad: bajo ' + N.bajo + ', medio ' + N.medio + ', alto ' + N.alto, nb === N.bajo && nm === N.medio && na === N.alto, 'bajo ' + nb + ' · medio ' + nm + ' · alto ' + na);
       // actualización por distancia: de cerca cada cuadro, lejos cada 6
-      const ritmo = () => { R.stats.pasos = 0; R.stats.cuadros = 0; for (let i = 0; i < 60; i++) paso(1 / 60); return R.stats.pasos / Math.max(1, R.stats.cuadros) / R.aves.length; };
+      const ritmo = () => { R.stats.pasos = 0; R.stats.cuadros = 0; for (let i = 0; i < 60; i++) cvPaso(1 / 60); return R.stats.pasos / Math.max(1, R.stats.cuadros) / R.aves.length; };
       G.camara.place(true);
       const cam = Rd.camera.position, c0 = cam.clone();
       const rCerca = ritmo();
@@ -526,11 +538,11 @@ window.AVCiudadViva = function (G) {
       let okDC = true;
       for (const cal of ['medio', 'alto']) {
         if (Rd.setCalidad) Rd.setCalidad(cal, true); else Rd.calidad.nivel = cal;
-        ajustar(); paso(0.05, 'todo');
-        quitar(); B.EXTRA.length = 0; B.dibujar(); const sin = medir();
+        cvAjustar(); cvPaso(0.05, 'todo');
+        cvQuitar(); B.EXTRA.length = 0; cvDibujar(); const sin = medir();
         if (res && Rs().poblar) { Rs().prueba(true); Rs().poblar(res, Rs().N[cal]); for (const a of res.aves) B.EXTRA.push({ x: a.x, y: a.y, z: a.z, yaw: a.yaw, pitch: 0, roll: 0, esc: a.esc, c: a.k.c, a: a.k.a, cob: a.k.cob, fase: 0, ala: 0, cab: 0, gir: 0 }); }
-        B.dibujar(); const antes = medir();
-        pintar(); B.dibujar(); const despues = medir();
+        cvDibujar(); const antes = medir();
+        cvPintar(); cvDibujar(); const despues = medir();
         if (!(despues.c - sin.c <= 2 && despues.c - antes.c <= 2)) okDC = false;
         medidas.push(cal + ': sin cotorras ' + sin.c + ' calls/' + sin.t + ' tris · antes (' + (res ? res.aves.length : 0) + ' residentes) ' + antes.c + '/' + antes.t +
           ' · después (+' + R.aves.length + ' de la ciudad viva) ' + despues.c + '/' + despues.t + ' (+' + (despues.c - antes.c) + ' calls, +' + (despues.t - antes.t) + ' tris)');
@@ -541,10 +553,10 @@ window.AVCiudadViva = function (G) {
       for (const [cal, esc] of [['alto', false], ['medio', true], ['bajo', true]]) {
         if (Rd.setCalidad) Rd.setCalidad(cal, true); else Rd.calidad.nivel = cal;
         if (Rd.setEscuela) Rd.setEscuela(esc ? true : false, true);
-        ajustar(); MT.reiniciar(); paso(0.05, 'todo');
-        pintar(); B.dibujar(); const lleno = medir(), nLleno = MT.visibles();
-        MT.fijar(MT.piso()); pintar(); B.dibujar(); const red = medir(), nRed = MT.visibles();
-        MT.reiniciar(); pintar(); B.dibujar();
+        cvAjustar(); cvMT.reiniciar(); cvPaso(0.05, 'todo');
+        cvPintar(); cvDibujar(); const lleno = medir(), nLleno = MT.visibles();
+        cvMT.fijar(MT.piso()); cvPintar(); cvDibujar(); const red = medir(), nRed = MT.visibles();
+        cvMT.reiniciar(); cvPintar(); cvDibujar();
         if (!(red.c <= lleno.c && red.t <= lleno.t && nRed < nLleno)) okMult = false;
         mMult.push(cal + (esc ? '+escuela' : '') + ': completa ' + nLleno + ' aves ' + lleno.c + ' calls/' + lleno.t + ' tris · reducida ' + nRed + ' aves ' + red.c + '/' + red.t +
           ' (' + (red.c - lleno.c) + ' calls, ' + (red.t - lleno.t) + ' tris)');
@@ -553,21 +565,26 @@ window.AVCiudadViva = function (G) {
       { // QA-nuevo-br3-1: una que juega, quitada por la multitud y devuelta con reiniciar() (sin encender), no rompe el paso
         const [ja, jb] = R.aves.filter(a => !protegida(a)).slice(0, 2), g = { p: perchas().alto[0] || { x: s.x, y: H(s.x, s.z), z: s.z }, ang: 0, t: 0, dur: 8, aves: [ja, jb] };
         for (const c of g.aves) { c.est = 'juega'; c.juego = g; c.accion = ''; } ja.lider = true; jb.lider = false;
-        apagar(ja); MT.reiniciar();
+        cvApagar(ja); cvMT.reiniciar();
         let err = '';
-        try { for (let i = 0; i < 5; i++) paso(0.05, 'todo'); } catch (e) { err = String(e && e.message || e); }
+        try { for (let i = 0; i < 5; i++) cvPaso(0.05, 'todo'); } catch (e) { err = String(e && e.message || e); }
         check('QA-nuevo-br3-1 · la que jugaba y fue quitada por la multitud vuelve sin romper el paso', !err && ja.est !== 'juega' && jb.est === 'juega', err || ('estados ' + ja.est + ' / ' + jb.est));
       }
       check('Multitud adaptativa en la plaza: la reducida no suma draw calls y dibuja menos triángulos', okMult, mMult.join(' || '));
       if (ST && ST.terminar) { await ST.terminar().catch(() => {}); await dormir(3000); if (ST && ST.terminar) await ST.terminar().catch(() => {}); } // mismo estado asentado (y sin bandas de flora perezosas a medias) que al capturar «hijos»
       check('Antes y después en la ciudad: 2 draw calls extra o menos', okDC, medidas.join(' || '));
-      check('No se crea ninguna malla nueva', sc.children.filter(o => !floraLazy(o) && !churn(o)).length === hijos && B.meshes.every(m => m.isInstancedMesh && !m.castShadow));
+      // Solo lo que crea la ciudad viva (espía de arriba): el total de la escena dependía del orden (módulos V18 cargados a demanda
+      // por las baterías anteriores y el streaming añaden hijos en el mismo intervalo). Además, la bandada sigue con sus mismas mallas.
+      const hijosAhora = sc.children.filter(o => !floraLazy(o) && !churn(o)).length;
+      check('No se crea ninguna malla nueva', espia.sano && espia.nuevos.length === 0 && B.meshes.length === mallas0.length && B.meshes.every((m, i) => m === mallas0[i] && m.parent && m.isInstancedMesh && !m.castShadow),
+        'la ciudad viva añadió ' + espia.nuevos.length + (espia.nuevos.length ? ' (' + espia.nuevos.slice(0, 6).join(', ') + ')' : '') + ' · espía ' + (espia.sano ? 'ok' : 'roto') +
+        ' · mallas de la bandada ' + B.meshes.length + ' · hijos de la escena (informativo, incluye otros módulos) ' + hijos + '→' + hijosAhora);
       check('Caben en las mallas de la bandada', B.MAXN >= 20 + 26 + N.alto, 'MAXN ' + B.MAXN);
       // fuera de rango: apagadas
-      R.prueba = true; T.teleport(s.x + 260, s.z + 260); T.tick(0.05); paso(0.05);
+      R.prueba = true; T.teleport(s.x + 260, s.z + 260); T.tick(0.05); cvPaso(0.05);
       check('Fuera de rango se apagan (sin trabajo ni dibujo)', R.aves.length === 0 && !R.on);
       T.teleport(s.x + 16, s.z + 16); T.tick(0.05);
-      R.prueba = false; G.quiet = true; paso(0.05);
+      R.prueba = false; G.quiet = true; cvPaso(0.05);
       check('Con G.quiet (baterías) no salen', R.aves.length === 0);
     } catch (e) {
       check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 500));
@@ -576,7 +593,8 @@ window.AVCiudadViva = function (G) {
       if (Rs() && Rs().prueba) { Rs().prueba(false); if (Rs().reiniciar) Rs().reiniciar(); }
       if (Rd.setCalidad) { Rd.setCalidad(cal0); Rd.calidad.manual = man0; } else Rd.calidad.nivel = cal0;
       T.teleport(pos0.x, pos0.z); S.pos.y = pos0.y; G.camara.yaw = yaw0;
-      quitar(); if (G.bandada && G.bandada.dibujar) G.bandada.dibujar();
+      cvQuitar(); if (G.bandada && G.bandada.dibujar) G.bandada.dibujar();
+      O3.add = add0; if (attach0) O3.attach = attach0;
     }
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
