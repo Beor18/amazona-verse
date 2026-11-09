@@ -1,0 +1,753 @@
+{
+ "tarea": "KIMI-367",
+ "etiqueta": "k367-plaza-on-r1",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "urlExtra": "escuela=1",
+ "secs": 36,
+ "head": "desconocido",
+ "cargaListaS": 4.67,
+ "cargaEntradaS": 25.79,
+ "plaza": {
+  "poi": [
+   -4,
+   -131
+  ],
+  "pos": [
+   23.7,
+   -108.9
+  ],
+  "fpsPorSeg": [
+   24,
+   24,
+   20,
+   20,
+   19,
+   26,
+   27,
+   27,
+   28,
+   29,
+   24,
+   25,
+   28,
+   29,
+   28,
+   29,
+   29,
+   29,
+   27,
+   27,
+   29,
+   28,
+   28,
+   30,
+   29,
+   29,
+   30,
+   28,
+   29,
+   30,
+   25,
+   30,
+   30,
+   27,
+   30,
+   29
+  ],
+  "fpsMed": 27,
+  "fpsMin": 19,
+  "peorMs": 290,
+  "medianaMs": 34,
+  "p95Ms": 53,
+  "p99Ms": 74,
+  "pausas50": 72,
+  "stats": [
+   {
+    "calls": 65,
+    "ktris": 265,
+    "fpsMedidor": 22,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 189,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 66,
+    "ktris": 266,
+    "fpsMedidor": 25,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 176,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 66,
+    "ktris": 266,
+    "fpsMedidor": 18,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 180,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 264,
+    "fpsMedidor": 18,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 183,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 264,
+    "fpsMedidor": 23,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 196,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 66,
+    "ktris": 265,
+    "fpsMedidor": 27,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 178,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 265,
+    "fpsMedidor": 25,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 191,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 265,
+    "fpsMedidor": 27,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 175,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 66,
+    "ktris": 266,
+    "fpsMedidor": 27,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 190,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 265,
+    "fpsMedidor": 29,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 205,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 68,
+    "ktris": 269,
+    "fpsMedidor": 19,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 184,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 68,
+    "ktris": 269,
+    "fpsMedidor": 27,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 199,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 66,
+    "ktris": 267,
+    "fpsMedidor": 28,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 182,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 267,
+    "fpsMedidor": 28,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 196,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 265,
+    "fpsMedidor": 28,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 179,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 264,
+    "fpsMedidor": 29,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 194,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 265,
+    "fpsMedidor": 28,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 177,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 265,
+    "fpsMedidor": 29,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 192,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 68,
+    "ktris": 267,
+    "fpsMedidor": 23,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 205,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 69,
+    "ktris": 268,
+    "fpsMedidor": 27,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 188,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 267,
+    "fpsMedidor": 29,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 203,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 267,
+    "fpsMedidor": 27,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 186,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 64,
+    "ktris": 266,
+    "fpsMedidor": 28,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 201,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 267,
+    "fpsMedidor": 30,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 184,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 64,
+    "ktris": 266,
+    "fpsMedidor": 30,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 199,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 64,
+    "ktris": 266,
+    "fpsMedidor": 30,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 182,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 66,
+    "ktris": 266,
+    "fpsMedidor": 29,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 196,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 265,
+    "fpsMedidor": 30,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 179,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 66,
+    "ktris": 262,
+    "fpsMedidor": 30,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 194,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 67,
+    "ktris": 263,
+    "fpsMedidor": 27,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 207,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 260,
+    "fpsMedidor": 30,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 190,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 65,
+    "ktris": 260,
+    "fpsMedidor": 31,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 205,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 64,
+    "ktris": 259,
+    "fpsMedidor": 27,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 186,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 64,
+    "ktris": 259,
+    "fpsMedidor": 30,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 201,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   },
+   {
+    "calls": 64,
+    "ktris": 259,
+    "fpsMedidor": 30,
+    "calidad": "bajo",
+    "dpr": 0.75,
+    "escuela": true,
+    "heapMB": 184,
+    "mult": {
+     "activa": true,
+     "objetivo": 6,
+     "visibles": 6,
+     "aves": 10,
+     "cuenta": {
+      "bajadas": 2,
+      "subidas": 0
+     }
+    }
+   }
+  ],
+  "multFinal": {
+   "activa": true,
+   "objetivo": 6,
+   "visibles": 6,
+   "aves": 10,
+   "cuenta": {
+    "bajadas": 2,
+    "subidas": 0
+   }
+  },
+  "med": {
+   "calls": 64,
+   "triangulos": 259281,
+   "texturasMB": 95.2,
+   "geometrias": 505,
+   "heapMB": 185,
+   "fps": 30
+  },
+  "medErr": null,
+  "errores": []
+ }
+}
