@@ -219,7 +219,7 @@ window.AVJuice = function (G) {
       reset(); let a0 = oidosN(); const r0 = G.fx.list.length;
       correr(3.2, { alto: 0.6, agua: true, sup: 2, y: 2.6 });
       ok('Rasante: a < 1 m del agua y 12 m/s, el chip dice «Rasante ×4» tras 3,2 s', !chip.hidden && chip.textContent.replace(/\s+/g, ' ').trim() === 'Rasante ×4', chip.textContent);
-      ok('Rasante: suena una nota por cada «×N»', audioLog().slice(a0).filter(n => n === 'rasante').length >= 4);
+      ok('Rasante: suena una nota por cada «×N»', audioLog().slice(Math.max(0, a0 - oidosBase)).filter(n => n === 'rasante').length >= 4);
       ok('Rasante: la estela se ve (dos colas de puntos aditivos)', estela.visible && mat.blending === THREE.AdditiveBlending && edadA.some(e => e < 0.3));
       ok('Rasante: sobre el agua deja ondas', G.fx.list.length > r0);
       ok('Rasante: cuenta segundos y el mejor ×N', stats.rasanteMax >= 4 && stats.rasanteSeg >= 3, JSON.stringify({ max: stats.rasanteMax, seg: +stats.rasanteSeg.toFixed(1) }));

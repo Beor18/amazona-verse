@@ -228,7 +228,7 @@ window.AVV18Combate = function (G) {
     return H.luchador({ id: 'rival', nombre: TXT.rival, especie: sp, ia: true, pos: rivalPos, plumas: pl, plumasMax: pl, dif: D,
       kb: { x: 0, z: 0, t: 0 }, mov: { x: 0, z: 0, t: 0 }, lift: { alto: 0, t: 0, dura: 0 }, yaw: -Math.PI / 2,
       pensar: 0.4, golpeT: 1, tiroT: 1.5, esquivaT: 0, poderT: 2.5, lado: 1, finMareo: 0,
-      v: { x: 0, z: 0 }, ladoT: 3, apartaT: 0, prep: '', prepT: 0, prepDur: 0, avisoUsado: 0, golpeAnim: 0, saltoT: 0, saltoDur: 0, agacha: 0 });
+      v: { x: 0, z: 0 }, ladoT: 3, apartaT: 0, prep: '', prepT: 0, prepDur: 0, avisoUsado: 0, avisoSelva: '', golpeAnim: 0, saltoT: 0, saltoDur: 0, agacha: 0 });
   }
   // V18.2: nivel, variante y alianza del jugador (solo él). Las pruebas que fuerzan especie van sin evolución salvo que la pidan.
   function evoJugador(sp, o) {
@@ -417,7 +417,9 @@ window.AVV18Combate = function (G) {
     if (f.vista > 0 && !f.avisada && !DEFENSAS.has(id)) {
       const l = H.listo(f, id); if (!l.ok) return l;
       f.avisada = true; flotante(TXT.avisoSelva, 0.9); fx('gold', f.pos.x, f.pos.y + 1.6, f.pos.z); sonar('ring', 1);
-      C.timers.push({ t: (H.get('ojo_selva') || {}).aviso || 0.6, fn: () => usar(f, id) });
+      // QA-227: mientras espera el ataque anunciado está comprometida (como en la telegrafía): no se aparta a 2,8 m y el golpe llega
+      f.avisoSelva = id;
+      C.timers.push({ t: (H.get('ojo_selva') || {}).aviso || 0.6, fn: () => { f.avisoSelva = ''; usar(f, id); } });
       return { ok: true, id, avisada: true };
     }
     const r = H.usar(f, id, ctxDe(f));
@@ -966,8 +968,9 @@ window.AVV18Combate = function (G) {
     else {
       let qx = 0, qz = 0; // velocidad que quiere
       const libre = r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0) && !(r.distraida > 0);
-      if (libre && r.prep === 'golpe_ala' && d.d > 1.5) { qx = d.x * 1.6; qz = d.z * 1.6; } // agachada, se arrima despacio para el golpe
-      else if (libre && !r.prep) {
+      const selva = r.avisoSelva && C.timers.length ? r.avisoSelva : ''; // Ojo de selva: el ataque anunciado también la compromete
+      if (libre && (r.prep === 'golpe_ala' || selva === 'golpe_ala') && d.d > 1.5) { qx = d.x * 1.6; qz = d.z * 1.6; } // agachada, se arrima despacio para el golpe
+      else if (libre && !r.prep && !selva) {
         const ve = D.vel * (r.pesada > 0 ? 0.45 : 1); // Plumas de manglar: pisar una pluma la deja más lenta
         const ox = r.pos.x - sitio.x, oz = r.pos.z - sitio.z, od = Math.hypot(ox, oz);
         let tx = -d.z * r.lado, tz = d.x * r.lado;
@@ -1324,6 +1327,9 @@ window.AVV18Combate = function (G) {
     salir(); // la prueba empieza con la rival esperando, aunque hubiera un duelo abierto
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M.flying, inv0 = Object.assign({}, S.inv);
     const P = G.v18, crudo = (() => { try { return localStorage.getItem(P.clave()); } catch (e) { return null; } })();
+    // QA-228: los contadores de pistas dominadas viven en memoria; tras otros duelos (v18NuevasTest) ya pasaban de 2 y las Pistas no
+    // salían. La prueba empieza de cero y los deja como estaban
+    const dom0 = Object.assign({}, pista.dom); for (const k in pista.dom) pista.dom[k] = 0;
     const evs = [], podEv = [];
     const oyente = e => { if (!oyente.mudo) evs.push(e); }; G.on('v18combate', oyente);
     const oyenteP = e => { if (!oyente.mudo) podEv.push(e); }; G.on('v18poder', oyenteP);
@@ -1508,6 +1514,7 @@ window.AVV18Combate = function (G) {
           check('du2: con los chips a la vista el aviso de abajo calla (sin chips vuelve el de siempre)', TACTIL ? avA === (tagsVis ? '' : TXT.avisoTactil) : (avA === '' && avSin === TXT.aviso), JSON.stringify({ avA, avSin, tagsVis }));
         }
         // Pistas: cerca, lejos, poder listo; la del primer golpe; dejan de salir al dominarlas
+        for (const k in pista.dom) pista.dom[k] = 0; ponerMundo('pistas_duelo', 0); // sin pistas dominadas antes (el almacén se restaura al final)
         const pistaTras = (prep) => { ocultarPista(); pista.t = 0; prep(); paso(0.05); return hud.q('pista').hidden ? '' : hud.q('pistaTxt').textContent; };
         C.j.cd = {}; C.j.energia = 50;
         const pc = pistaTras(() => quieta(1.5)), pl = pistaTras(() => { quieta(8); C.j.cd = {}; C.j.energia = 50; }), pp = pistaTras(() => { quieta(8); C.j.energia = 100; C.j.cd = {}; });
@@ -1843,7 +1850,7 @@ window.AVV18Combate = function (G) {
     for (const k of Object.keys(S.inv)) if (!(k in inv0)) delete S.inv[k];
     Object.assign(S.inv, inv0); try { if (G.objetos && G.objetos.renderInv) G.objetos.renderInv(); } catch (e) { /* HUD */ }
     try { if (crudo == null) localStorage.removeItem(P.clave()); else localStorage.setItem(P.clave(), crudo); } catch (e) { /* sin almacenamiento */ }
-    P.recargar();
+    P.recargar(); Object.assign(pista.dom, dom0);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
   // Vista de cumbre: posición de la rival para el minimapa mientras la jugadora la «ve desde la cumbre» (lee minimapa.js)
