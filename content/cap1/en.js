@@ -2736,7 +2736,7 @@ window.AV_EN = {
  "Bronce · Récord: {}": "Bronze · Best: {}",
  "Juega el capítulo para descubrir lo que aprendiste.": "Play the chapter to discover what you learned.",
  "Tu enseñanza aparecerá al jugar.": "Your lesson will appear as you play.",
- // Expansión · minijuego de pesca en el río (src/game/v18/pesca.js), solo con ?expansion=1
+ // Expansión · minijuego de pesca en el río (src/game/v18/pesca.js), encendido para todos (G.PESCA; ?pesca=0 lo apaga)
  "¡A pescar! Mantén pulsado para lanzar y suelta. Tienes 2 minutos y medio.": "Let's fish! Hold to cast and let go. You have two and a half minutes.",
  "Mantén Espacio y suelta para lanzar · ← → apuntar": "Hold Space and let go to cast · ← → aim",
  "Mantén Lanzar y suelta · ◀ ▶ apuntar": "Hold Cast and let go · ◀ ▶ aim",
@@ -2789,7 +2789,7 @@ window.AV_EN = {
  "Es una cazadora nativa de los ríos de Puerto Rico y puede medir hasta 60 cm. Los pescadores de la isla la buscan mucho.": "It is a native hunter of Puerto Rico's rivers and can grow up to 60 cm. The island's anglers love to catch it.",
  "Vive en los ríos de Puerto Rico, pero nace en el mar de los Sargazos, en medio del Atlántico. Necesita protección.": "It lives in Puerto Rico's rivers, but it is born in the Sargasso Sea, in the middle of the Atlantic. It needs protection.",
  "Tiene el cuerpo cubierto de placas, como una armadura. Cava túneles en las orillas para poner sus huevos y las desmorona. Ya vive en ríos y embalses de Puerto Rico.": "Its body is covered in plates, like armor. It digs tunnels in riverbanks to lay its eggs, and the banks crumble. It already lives in Puerto Rico's rivers and reservoirs.",
- // Construir libre (src/game/construir.js, expansión tras ?expansion=1)
+ // Construir libre (src/game/construir.js, encendido para todos)
  "Tu nido, tu refugio y decoración": "Your nest, your shelter and decorations",
  "Nido de ramitas": "Twig nest",
  "Techo de hojas": "Leaf roof",

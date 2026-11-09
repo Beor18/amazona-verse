@@ -1,4 +1,4 @@
-/* Content pack cap1 · Especies invasoras de Puerto Rico (expansión, detrás de la bandera ?expansion=1; lo usa src/game/invasoras.js,
+/* Content pack cap1 · Especies invasoras de Puerto Rico (expansión, encendida para todos; lo usa src/game/invasoras.js,
    que carga este archivo al pedirlo). Aprobado para la expansión por Kelvin (ROADMAP «Después de la temporada 1», 8 y 9-nov):
    fichas del Diario y una actividad de observación, NUNCA como enemigos (nada se ataca ni se caza en el juego).
    Cada texto sale literal de su fuente oficial (consultadas el 9-nov-2026); lo que la fuente no dice no está en el texto.

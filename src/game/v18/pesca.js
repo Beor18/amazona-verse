@@ -1,12 +1,13 @@
 /* Juego · Expansión · Minijuego de pesca, «Pesca en el río» (G.v18pesca). Kelvin, 8-nov (ROADMAP, «Después de la temporada 1»:
    minijuego de pesca para la expansión) y 9-nov: «Debe ser en río, no en el mar». Diversión primero: lanzar, esperar el pique,
    recoger y soltar. Sin monedas, tienda ni azar de pago: los puntos solo cuentan en la ronda y el récord es local.
-   - Bandera: SOLO con ?expansion=1 (o localStorage amazonaverse.expansion = '1'; G.EXPANSION en boot.js). Apagada por defecto:
-     sin tarjeta en el menú, sin botón en la Pausa, sin piezas y sin carga del script. Nada se publica sin el visto bueno de Kelvin.
+   - Bandera: ENCENDIDA para todos (Kelvin 9-nov: «Me encanta la pesca, buenísimo»). Bandera propia G.PESCA (boot.js), ?pesca=0 la
+     apaga: sin tarjeta en el menú, sin botón en la Pausa y sin piezas. La tarjeta (menu_modos.js) y el botón de la Pausa (boot.js) no
+     necesitan este script: se carga solo al entrar a pescar.
    - Dónde: SITIO, una orilla del Río Amazonas cerca de Villa Raíz (polilínea agua.rio del mapa), medida en el juego con el streaming
      cargado: tierra seca y llana a poca altura sobre el agua, río abierto delante, sin edificios ni árboles encima, lejos del puente, del
      Terreno A y del hoyo 4 del minigolf. No se añade nada al mundo: la caña, el sedal, el corcho, la onda y el pez son piezas simples
-     (primitivas de Three.js, flatShading), visibles solo mientras se pesca.
+     (primitivas de Three.js, Lambert), visibles solo mientras se pesca.
    - Cómo se juega (una ronda de 2 min 30 s):
        1 Lanzar: mantener Espacio (o el botón Lanzar) y soltar; la fuerza sube y baja: más fuerza, más lejos (D_MIN a D_MAX, el ancho
          del río delante de la orilla). ← → apuntan.
@@ -115,7 +116,7 @@ window.AVV18Pesca = function (G) {
   const suelo = (x, z) => { try { const h = G.terreno.height(x, z); return G.terreno.surfaceY ? G.terreno.surfaceY(x, z, h + 1.5) : h; } catch (e) { return 0; } };
   // el agua donde cae algo (si es orilla, el suelo): el río no está a nivel 0 como el mar
   const aguaO = (x, z) => { const l = nivelAgua(x, z); return isFinite(l) && l > -1e6 ? l : suelo(x, z); };
-  const disponible = () => !!G.EXPANSION && !!(G.pack && G.pack.id === 'cap1');
+  const disponible = () => G.PESCA !== false && !!(G.pack && G.pack.id === 'cap1');
   // Semilla propia (la prueba la fija): qué pez pica, cuándo y cómo se mueve
   let semilla = (Date.now() % 2147483646) + 1;
   const azar = () => { semilla = semilla * 16807 % 2147483647; return (semilla - 1) / 2147483646; };
@@ -125,7 +126,7 @@ window.AVV18Pesca = function (G) {
   function piezas() {
     if (P) return P;
     const T = window.THREE, g = new T.Group(); g.name = 'pesca:rio'; g.visible = false;
-    const lam = c => new T.MeshLambertMaterial({ color: c, flatShading: true });
+    const lam = c => new T.MeshLambertMaterial({ color: c }); // r128: Lambert no tiene flatShading (avisaba en consola)
     const cana = new T.Mesh(new T.CylinderGeometry(0.022, 0.045, 2.6, 6), lam('#7a5230')); cana.name = 'pesca:caña';
     const mango = new T.Mesh(new T.CylinderGeometry(0.045, 0.045, 0.4, 6), lam('#2f2a26')); mango.position.y = -1.1; cana.add(mango);
     const carrete = new T.Mesh(new T.CylinderGeometry(0.07, 0.07, 0.06, 10), lam('#d8d2c4')); carrete.rotation.z = Math.PI / 2; carrete.position.set(0.07, -0.8, 0); cana.add(carrete);
@@ -691,30 +692,14 @@ window.AVV18Pesca = function (G) {
     if (!disponible() || A.fase !== 'nada' || otroActivo()) return false;
     return iniciar({ forzar: true });
   }
-  {
-    let tile = null;
-    const menu = G.ui.$ && G.ui.$('pause');
-    if (menu) menu.addEventListener('beforetoggle', e => {
-      if (e.newState !== 'open') return;
-      const grid = menu.querySelector('.pause-grid'); if (!grid) return;
-      if (!tile && disponible()) {
-        tile = document.createElement('button');
-        tile.className = 'btn tile'; tile.id = 'b-v18-pesca'; tile.type = 'button';
-        tile.setAttribute('data-icon', 'star'); tile.setAttribute('popovertarget', 'pause'); tile.setAttribute('popovertargetaction', 'hide');
-        tile.textContent = 'Pesca';
-        tile.addEventListener('click', () => setTimeout(irYJugar, 0));
-        grid.appendChild(tile);
-      }
-      if (tile) tile.hidden = !(disponible() && A.fase === 'nada' && !otroActivo());
-    });
-  }
+  // El botón «Pesca» de la Pausa lo pone boot.js (se ve sin cargar este script; al pulsarlo lo carga y llama a irYJugar)
 
   // ---------- Prueba ----------
   async function test(o) {
     o = o || {};
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const antes = o.antes || {};
-    const exp0 = G.EXPANSION, semilla0 = semilla, pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M && M.flying, yaw0 = G.camara.yaw;
+    const exp0 = G.PESCA, semilla0 = semilla, pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M && M.flying, yaw0 = G.camara.yaw;
     const CAM = G.camara.CAM, cam00 = CAM ? { height: CAM.height, dist: CAM.dist } : null;
     const toasts = [], toast0 = G.ui.toast; G.ui.toast = t => { toasts.push(String(t)); };
     const errores = [], cerr0 = console.error; console.error = function () { errores.push([...arguments].map(String).join(' ').slice(0, 200)); return cerr0.apply(console, arguments); };
@@ -734,22 +719,25 @@ window.AVV18Pesca = function (G) {
     const recogerCon = (bajar, subir, s) => { let abajo = false; for (let t = 0; t < (s || 30) && A.fase === 'tira'; t += 1 / 60) { const q = A.marca < A.zona - 0.03 || (A.marca < A.zona + 0.03 && A.vmarca < 0); if (q && !abajo) { bajar(); abajo = true; } else if (!q && abajo) { subir(); abajo = false; } paso(1 / 60); } if (abajo) subir(); return A.fase; };
     const ficha = () => hud && !hud.q('ficha').hidden ? { n: hud.q('fn').textContent, c: hud.q('fc').textContent, d: hud.q('fd').textContent, f: hud.q('ff').textContent, b: hud.q('t-soltar').textContent } : null;
     try {
-      // 0. Bandera apagada: nada a la vista
+      // 0. Encendida para todos (Kelvin 9-nov): sin bandera la tarjeta y el botón de la Pausa se ven; ?pesca=0 (G.PESCA = false) lo esconde todo
       const tarjeta = document.querySelector('#modos [data-modo="pesca"]');
-      if (!antes.exp) {
-        check('Bandera apagada (sin ?expansion=1): el script no se había cargado antes de la prueba', antes.cargado === false, JSON.stringify(antes));
-        try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* sin menú */ }
-        check('Bandera apagada: la tarjeta «Pesca» del menú está oculta', !!tarjeta && tarjeta.hidden && getComputedStyle(tarjeta).display === 'none', tarjeta ? 'hidden ' + tarjeta.hidden : 'sin tarjeta');
-        G.EXPANSION = false;
-        check('Bandera apagada: no se puede empezar (irYJugar y iniciar forzado dicen que no) y no hay HUD', irYJugar() === false && iniciar({ forzar: true }) === false && A.fase === 'nada' && !(hud && !hud.el.hidden) && !document.body.classList.contains('v18-pesca-on'));
-        check('Bandera apagada: ninguna pieza de la pesca en la escena a la vista', !P || !P.g.visible);
-        check('Bandera apagada: sin botón «Pesca» en la Pausa', !document.getElementById('b-v18-pesca') || document.getElementById('b-v18-pesca').hidden);
-      } else check('Bandera encendida en esta sesión (?expansion=1): las comprobaciones de «apagada» no aplican', true, 'G.EXPANSION = true');
-      // 1. Con la bandera: la tarjeta del menú se ve y la partida empieza en la orilla del río
-      G.EXPANSION = true;
+      const botonP = () => (G.pescaBotonPausa ? G.pescaBotonPausa() : document.getElementById('b-v18-pesca'));
+      check('Disponible sin bandera : G.PESCA encendida y el script no se cargó al arrancar (se carga al entrar)', antes.pesca === true && antes.cargado === false, JSON.stringify(antes));
       try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* sin menú */ }
-      check('Con la bandera la tarjeta «Pesca» del menú se ve', !!tarjeta && !tarjeta.hidden);
-      if (G.EXPANSION && !antes.exp) { G.EXPANSION = false; try { G.menuModos.mostrar(); } catch (e) { /* */ } G.EXPANSION = true; }
+      check('Disponible sin bandera: la tarjeta «Pesca» de «¿Cómo quieres jugar?» se ve', !!tarjeta && !tarjeta.hidden && getComputedStyle(tarjeta).display !== 'none', tarjeta ? 'hidden ' + tarjeta.hidden : 'sin tarjeta');
+      const bp1 = botonP();
+      check('Disponible sin bandera: botón «Pesca» en la Pausa', !!bp1 && !bp1.hidden && !!bp1.closest('#pause'), bp1 ? 'hidden ' + bp1.hidden : 'sin botón');
+      G.PESCA = false;
+      try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* sin menú */ }
+      check('Con ?pesca=0: la tarjeta «Pesca» del menú está oculta', !!tarjeta && tarjeta.hidden && getComputedStyle(tarjeta).display === 'none', tarjeta ? 'hidden ' + tarjeta.hidden : 'sin tarjeta');
+      check('Con ?pesca=0: no se puede empezar (irYJugar y iniciar forzado dicen que no) y no hay HUD', irYJugar() === false && iniciar({ forzar: true }) === false && A.fase === 'nada' && !(hud && !hud.el.hidden) && !document.body.classList.contains('v18-pesca-on'));
+      check('Con ?pesca=0: ninguna pieza de la pesca en la escena a la vista', !P || !P.g.visible);
+      const bp0 = botonP();
+      check('Con ?pesca=0: sin botón «Pesca» en la Pausa', !bp0 || bp0.hidden);
+      // 1. Encendida: la partida empieza en la orilla del río
+      G.PESCA = true;
+      try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* sin menú */ }
+      botonP();
       check('Los peces de río: 4 nativos (olivo, dajao, guavina, anguila) y 2 invasores (tilapia, pleco), cada uno con nombre, nombre científico, dato y fuente', PECES.length === 6 && PECES.filter(p => p.invasora).map(p => p.id).join() === 'tilapia,pleco' && PECES.every(p => p.nombre && /^[A-Z][a-z]+ ([a-z]+|spp\.)$/.test(p.cient) && p.dato.length > 30 && p.fuente.length >= 1 && p.fuente.every(f => f.length > 10)));
       const sueloM = G.terreno.height(SITIO.x, SITIO.z), lvR = nivelAgua(SITIO.rio.x, SITIO.rio.z), d0 = { x: -Math.sin(SITIO.yaw), z: -Math.cos(SITIO.yaw) };
       const secos = []; for (let k = D_MIN; k <= D_MAX + 1e-6; k += 0.5) { const x = SITIO.x + d0.x * k, z = SITIO.z + d0.z * k; if (!(nivelAgua(x, z) > G.terreno.height(x, z) + 0.1)) secos.push(k); }
@@ -893,7 +881,7 @@ window.AVV18Pesca = function (G) {
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
     try { if (A.fase !== 'nada') salir(); } catch (e) { /* ya fuera */ }
     A.manual = false; semilla = semilla0; A.forzar = null; recordSesion = 0;
-    G.EXPANSION = exp0; try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* */ }
+    G.PESCA = exp0; try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* */ }
     G.ui.toast = toast0; console.error = cerr0; removeEventListener('error', onErr);
     try { G.off && G.off('v18pesca', oye); G.off && G.off('expansion:invasora', oyeInv); } catch (e) { /* */ }
     S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.facing = fac0; if (M) { M.flying = fly0; M.vx = M.vz = 0; } G.camara.yaw = yaw0;

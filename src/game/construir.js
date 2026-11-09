@@ -2,7 +2,7 @@
    Amplía el modo construir del cap. 1 (hoy solo el refugio: content/cap1/historia.js «Modo construir» y el fantasma de
    content/cap1/mundo.js) a un rincón propio: nido, techo de hojas y decoración. Mismo gesto que el refugio: un fantasma delante de
    Vittata (verde si cabe, rojo si no), Acción coloca y suena el martillo (G.audio.martillar).
-   ENCENDIDO PARA TODOS (Kelvin 9-nov: «Piezas aprobadas»): ya no depende de ?expansion=1 (G.EXPANSION sigue solo para la pesca).
+   ENCENDIDO PARA TODOS (Kelvin 9-nov: «Piezas aprobadas»): ya no depende de ?expansion=1 (esa bandera ya no existe).
    Bandera propia G.CONSTRUIR (boot.js): encendida por defecto, ?construir=0 la apaga; boot.js carga este archivo al arrancar.
    Piezas: 7 tipos procedurales y estilizados (sin modelos nuevos). Cada tipo es UNA geometría fundida con colores de vértice y un
    InstancedMesh: 7 llamadas de dibujo como mucho, con 40 piezas o con 1. Presupuesto: 40 piezas (24 en calidad «bajo» y Modo Escuela);
@@ -420,13 +420,12 @@
       const espera = ms => new Promise(r => setTimeout(r, ms));
       const antes = { construir: S.construir ? JSON.parse(JSON.stringify(S.construir)) : S.construir, pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing),
         modo: G.interaccion.modo, quiet: G.quiet, forzado, nivel: G.renderer.calidad && G.renderer.calidad.nivel };
-      const conBandera = !!G.EXPANSION, sinApagar = G.CONSTRUIR !== false;
+      const sinApagar = G.CONSTRUIR !== false;
       const enEscena = () => { let n = 0; G.renderer.scene.traverse(o => { if (o.name && o.name.indexOf('construir') === 0) n++; }); return n; };
       try {
         G.quiet = true;
         // 1. Encendido para todos (Kelvin 9-nov): sin ?expansion=1 ya están la tarjeta del menú, el botón junto a Pausa y la tecla B
-        if (!conBandera) check('Sin ?expansion=1 (G.EXPANSION apagada) Construir está encendido', !G.EXPANSION && sinApagar && habilitado(), 'EXPANSION ' + G.EXPANSION + ' · CONSTRUIR ' + G.CONSTRUIR);
-        else check('Con ?expansion=1 Construir también está encendido', sinApagar && habilitado(), 'CONSTRUIR ' + G.CONSTRUIR);
+        check('Sin bandera (sin ?expansion=1) Construir está encendido', sinApagar && habilitado(), 'CONSTRUIR ' + G.CONSTRUIR);
         const tj = $('b-construir-menu'), bh = $('b-construir'), sysEl = $('sys');
         check('Sin bandera: tarjeta «Construir» en «¿Cómo quieres jugar?»', !!tj && !!tj.closest('#modos') && !tj.hidden, tj ? tj.textContent : 'sin tarjeta');
         check('Sin bandera: botón del martillo junto a Pausa', !!bh && !!sysEl && bh.parentNode === sysEl && !bh.hidden);

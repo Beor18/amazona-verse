@@ -83,7 +83,7 @@
       // peces: ids de los peces observados con el visor (src/game/rio_vivo.js); las partidas viejas la reciben vacía.
       // album: ids de las especies vistas de cerca para el Álbum de las 36 (src/game/album.js); las partidas viejas la reciben vacía.
       // dones: ids aprendidos con una mentora (src/game/dones.js). Vacío en las partidas viejas: la Llamada espera a Iguaca.
-      // construir: rincón de Construir libre { v: 1, piezas } (src/game/construir.js, expansión tras ?expansion=1); null en las partidas viejas.
+      // construir: rincón de Construir libre { v: 1, piezas } (src/game/construir.js, encendido para todos); null en las partidas viejas.
       claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'guardianIntro', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'gearRoof', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces', 'album', 'dones', 'construir'],
       estado: () => ({
         examined: { maquina: false, transmisor: false }, evaluated: { A: false, B: false },

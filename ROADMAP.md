@@ -72,9 +72,9 @@ Cada episodio reutiliza el motor, el personaje, el ropero, el criadero, el guard
 - Peces invasores reales de Puerto Rico (pez león en los arrecifes; tilapia y pleco en los ríos), con fuente verificada (NOAA, USGS, DRNA): fichas del Diario y una actividad de observación, nunca como enemigos (Kelvin, 8-nov: para la expansión).
 - Iguana verde (especie invasora en Puerto Rico): ficha del Diario y observación con fuente verificada (DRNA, USFWS), nunca como enemigo (Kelvin, 9-nov).
 - **Patrulla invasora en marcha para todos** (9-nov, Kelvin la aprobó, iguana caricatura incluida): iguana verde, tilapia, pleco y pez león para observar y reportar a la Estación de Conservación de Villa Raíz, con ficha y fuente en el Diario (src/game/invasoras.js).
-- Construir libre: **en marcha para todos** (9-nov, Kelvin: «Piezas aprobadas»). Nido, techo de hojas y decoración: tarjeta «Construir» en «¿Cómo quieres jugar?», botón del martillo junto a Pausa y tecla B. Todas las piezas desde el principio (sin recolectar), 40 piezas (24 en calidad «bajo» y Modo Escuela). La pesca sigue tras `?expansion=1`.
+- Construir libre: **en marcha para todos** (9-nov, Kelvin: «Piezas aprobadas»). Nido, techo de hojas y decoración: tarjeta «Construir» en «¿Cómo quieres jugar?», botón del martillo junto a Pausa y tecla B. Todas las piezas desde el principio (sin recolectar), 40 piezas (24 en calidad «bajo» y Modo Escuela).
 - Grito del Yunque: sonido más largo y profundo (Kelvin, 9-nov: «por ahora está bien»).
-- Minijuego de pesca (Kelvin, 8-nov: para la expansión; la lista completa la da Kelvin después del cierre).
+- Minijuego de pesca: **en marcha para todos** (9-nov, Kelvin: «Me encanta la pesca, buenísimo»). Pesca en el río cerca de Villa Raíz con Iguaca y Chispa: tarjeta «Pesca» en «¿Cómo quieres jugar?» y botón en la Pausa; el script se carga al entrar a pescar. `?pesca=0` la apaga.
 - Empaquetado para tiendas (Capacitor) si hace falta.
 - Cotorras en línea (Kelvin, 9-nov: aprobado para la expansión): salas por código con el Realtime de Supabase, solo especie, posición, vuelo y gestos con un id al azar; sin nombres, chat ni cuentas. Primera versión en `src/game/en_linea.js` (botón «Jugar en línea» de la pausa); falta probarla en familia antes de anunciarla.
 - Temporadas 2 a 6, según `docs/STORY_BIBLE.md`.
