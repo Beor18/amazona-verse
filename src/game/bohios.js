@@ -230,7 +230,11 @@ window.AVBohios = function (G) {
       if (G.solidos && G.solidos.terminar) G.solidos.terminar(true);
       await esperarVanos();
       const p = puerta(I);
-      const infoV = G.solidos && G.solidos.vanos && G.solidos.vanos.get(MODELO);
+      const infoV0 = G.solidos && G.solidos.vanos && G.solidos.vanos.get(MODELO);
+      // QA-nuevo-br1-1: la búsqueda de puertas a veces da «sin vanos» para el mismo modelo (intermitente, 1 de 4 corridas el 9-nov);
+      // el detalle (radio, rejilla, partes, triángulos, ms) queda en el rojo para poder comparar con una corrida verde
+      const infoV = infoV0 && { motivo: infoV0.motivo + ' · radio ' + infoV0.radio + ' · rejilla ' + infoV0.nx + '×' + infoV0.nz + ' · partes ' + (infoV0.partes ? infoV0.partes.length : '?')
+        + ' · tri ' + (infoV0.partes ? infoV0.partes.reduce((a, q) => a + ((q.geo.index ? q.geo.index.count : q.geo.attributes.position.count) / 3), 0) : '?') + ' · ' + infoV0.ms + ' ms' };
       ok('La puerta del bohío más alto supera 1,75 m y a ×1,5 no llegaba', !!(p && p.alto >= ALTURA && p.alto * 1.5 / f < ALTURA), p ? p.alto.toFixed(2) + ' m · ancho ' + p.ancho.toFixed(2) : (infoV && infoV.motivo));
       if (p && G.solidos && G.camara && G.camara.place) {
         let sitio = null;
