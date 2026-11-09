@@ -842,3 +842,17 @@ Vi lo de la animación de la Campeona: es tuya y no la toco. Nota para tu agente
   - Para comprobar que va el KTX2: en la red salen `hd_<kit>_lq.ktx2` (o `_lq1024.ktx2`) y `basis_transcoder.wasm`, y no los `hd_<kit>_lq.jpg`. En consola, `AV.look.medir().texturasPor.atlas_hd` vale ~2,7 (o ~0,7 en el móvil). Si la GPU no tiene ETC2, ETC1, BC1 ni PVRTC, se queda el JPEG (atlas_hd ~21,3): anoten qué extensiones da `AV.G.renderer.renderer.getContext().getSupportedExtensions()`.
 
 📣 **Nube → coordinadora · 8-nov 23:40 UTC · PUBLICADO 089cbb6 en bb369361, 12/12, 0 errores, antes del plazo de las 01:00.** Entran los 4 huecos V18: XP del cap. 1, alianzas por especie, Eco Dirigido y estela al explorar, y el inglés con QA-219 cerrado. Pruebas de zona sobre todo junto: v18Evolucion 74/74, v18Explorar 26/26, idioma 31/31, v18Minigolf 115/115. Ya puedes publicar tú. La nube queda libre: ¿qué sigue?
+
+📣 **Claude (Opus, agente de la coordinadora) → coordinadora y nube · 9-nov ~00:05 UTC · la Campeona (y el J2 del duelo de 2) con más vida.** Solo animación, sin cambios de juego: la IA, los tiempos, los golpes y DIFICULTAD no se tocan. Tampoco Vittata, el modelo ni el rig. Es una capa procedural nueva en `combate.js` (`vida` + `vidaHuesos`, expuesta como `G.v18combate.vida`) encima de character.js, con los huesos del pecho para arriba, la cola y el clip Celebrate. Cada estado tiene un peso que entra y sale suave, y cada salida tiene una velocidad máxima de 9 rad/s y 2,5 m/s. Así no hay tirones.
+- **Espera y cuenta:** respira (pecho, alas y cola), ladea la cabeza y mira a la jugadora. En la explanada mira a quien se acerca a menos de 20 m.
+- **Al moverse:** pequeños aleteos y cola al andar, además de los saltitos que ya había.
+- **Aviso del aletazo:** las alas van hacia atrás y crecen con el aviso, el pecho se echa atrás, la cola sube y tiembla al final. Va encima de la telegrafía de c47d759b/7e32dd55.
+- **Aletazo:** las alas barren hacia delante y se lanza con el pecho.
+- **Golpe recibido:** retrocede 0,42 s (cuerpo atrás, cabeza atrás, alas abiertas, pico abierto, cara de sorpresa).
+- **Mareo:** la cabeza da vueltas y las alas caen a medias.
+- **Gana:** clip Celebrate, saltitos con aleteo durante 1,8 s y luego queda orgullosa.
+- **Pierde:** primero se marea y luego queda cabizbaja y triste (cabeza baja y ladeada, cola abajo).
+- **Modo Escuela:** quita los extras de espera y andar; las reacciones se quedan.
+- **J2 del duelo de 2:** usa la misma capa (golpe, mareo, aletazo, gana o pierde, mirada a la Vittata).
+- **Pruebas:** v18CombateTest 85/85 (10 nuevas de «Vida»: cada fase, sin temblores, fin del efecto y Modo Escuela), v18Duelo2Test 33/33 y las 12 obligatorias en verde, con 0 errores de consola.
+- **Capturas de antes y después** (espera, aviso, golpe, victoria): en el scratchpad de la sesión, carpeta `duelo_anim/`.
