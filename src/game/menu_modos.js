@@ -277,7 +277,7 @@
     // lanzar y lanzar18 marcan el modo (desdeMenu); volver() quita la marca. Cada modo la lee con G.menuModos.desdeMenu() al pintar
     // su final, para que el botón de salir diga «Volver al menú» (y no «Volver a la historia»). Abierto desde el mundo (estación del minigolf, retos
     // del mapa) no hay marca y se vuelve al mundo como siempre. Se vigila el estado del modo, no sus botones: vale cualquier salida.
-    let desdeMenu = null, vigiaMenu = 0, sinMarca = ''; /* sinMarca: por qué se quitó la marca la última vez (lo cuenta menuModosTest si falla) */
+    let desdeMenu = null, vigiaMenu = 0;
     const SIGUE = {
       flight: () => document.body.classList.contains('flight-on'),
       river: () => document.body.classList.contains('river-on'),
@@ -296,13 +296,13 @@
       let visto = false, n = 0;
       if (p) p.then(ok => { if (ok !== false && desdeMenu === modo && sigueEn(modo)) visto = true; }, () => {}); /* una salida antes del primer vistazo también cuenta */
       vigiaMenu = setInterval(() => {
-        if (desdeMenu !== modo || (portada && portada.open)) { clearInterval(vigiaMenu); vigiaMenu = 0; if (desdeMenu === modo) { desdeMenu = null; sinMarca = modo + ': portada abierta'; } return; }
+        if (desdeMenu !== modo || (portada && portada.open)) { clearInterval(vigiaMenu); vigiaMenu = 0; if (desdeMenu === modo) desdeMenu = null; return; }
         if (sigueEn(modo)) { visto = true; return; }
-        if (!visto) { if (++n > 150) { clearInterval(vigiaMenu); vigiaMenu = 0; desdeMenu = null; sinMarca = modo + ': nunca se vio en marcha'; } return; }
+        if (!visto) { if (++n > 150) { clearInterval(vigiaMenu); vigiaMenu = 0; desdeMenu = null; } return; }
         clearInterval(vigiaMenu); vigiaMenu = 0;
         const a = api18(modo), conFinal = !!(a && a.estado && a.estado().ultimo !== ultimo0);
         /* Chispa, Moon y el Guardián terminan sin panel (aviso y bocadillo): se deja verlo antes de volver */
-        const ir = espera => { if (desdeMenu !== modo || (portada && portada.open) || (espera && ocupado18())) { if (desdeMenu === modo) { desdeMenu = null; sinMarca = modo + ': salida sin volver'; } return; } volver(); sinMarca = modo + ': salió del modo'; };
+        const ir = espera => { if (desdeMenu !== modo || (portada && portada.open) || (espera && ocupado18())) { if (desdeMenu === modo) desdeMenu = null; return; } volver(); };
         if (conFinal && !G.quiet) setTimeout(() => ir(true), 3500); else ir(false);
       }, 400);
     }
@@ -373,7 +373,6 @@
     }
     // Volver al menú desde el juego (pausa → «Cambiar de juego»)
     function volver() {
-      if (desdeMenu) sinMarca = desdeMenu + ': volver() ' + String(new Error().stack || '').split('\n').slice(2, 4).map(x => x.trim()).join(' < ');
       desdeMenu = null; clearInterval(vigiaMenu); vigiaMenu = 0;
       const r = G.retosApi; if (r) { try { r.salir(); } catch (e) { /* ya fuera */ } }
       const fv = G.flightApi; if (fv) { try { fv.salir(); } catch (e) { /* ya fuera */ } }
@@ -547,7 +546,7 @@
           await elegir(m);
           const dentro = await hasta(activoM, 15000);
           if (m === 'flight') { const marca0 = desdeMenu, okFin = dentro && await finFlight('Volver al menú');
-            check('Amazona Flight abierto desde el menú: el botón del final dice «Volver al menú»', okFin, (G.flightApi._dev.st.ui && G.flightApi._dev.st.ui.fin.querySelector('[data-salir]').textContent) + ' · dentro ' + dentro + ', marca antes ' + marca0 + ', ahora ' + desdeMenu + ', portada ' + portada.open + ', vigía ' + !!vigiaMenu + ', se quitó: ' + (sinMarca || '—') + ' · ' + finInfo); }
+            check('Amazona Flight abierto desde el menú: el botón del final dice «Volver al menú»', okFin, (G.flightApi._dev.st.ui && G.flightApi._dev.st.ui.fin.querySelector('[data-salir]').textContent) + ' · dentro ' + dentro + ', marca antes ' + marca0 + ', ahora ' + desdeMenu + ', portada ' + portada.open + ', vigía ' + !!vigiaMenu + ' · ' + finInfo); }
           if (m === 'carreras') check('Carreras abierto desde el menú: el botón de salir dice «Volver al menú»', dentro && salirCarreras('Volver al menú'));
           salirM();
           const alMenu = await hasta(() => portada.open, 8000);
