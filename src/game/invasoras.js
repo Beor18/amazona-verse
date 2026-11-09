@@ -10,13 +10,219 @@
    - Guardado en el dispositivo, aparte de la partida: <almacen>.invasoras = { v: 1, vistos: [ids], completa }.
    - Datos y fuentes: content/cap1/invasoras.js (USGS NAS y DRNA; literales anotados allí). Nada inventado.
    - Bajo el agua: de lejos el agua los tapa; a menos de 1,6 radios se ven claros a través de ella («visor», como rio_vivo.js).
-   - Arte: mallas estilizadas hechas aquí con primitivas (sin modelos 3D nuevos); 4 InstancedMesh, 4 draw calls como mucho, sin sombras,
+   - Arte: mallas hechas aquí, sin modelos 3D nuevos (la iguana, suave y animada: ver iguanaVerde; los peces, con primitivas);
+     4 InstancedMesh, 4 draw calls como mucho, sin sombras,
      apagadas a más de 70 m. Con la bandera apagada boot.js NO carga este archivo; si se carga para la prueba, nada se ve y la sección
      del Diario queda vacía mientras G.expansion no sea true. Nada se ve en las baterías (G.quiet) salvo dentro de su propia prueba.
    [KELVIN] Todo esto necesita su visto bueno con capturas antes de salir sin bandera (regla: nada 3D nuevo sin su OK).
    window.AVInvasoras(G) → Promise de G.invasoras = { estado, activo, avistar, paso, test, … }. Prueba: AV.invasorasTest(). */
 (function () {
   'use strict';
+  // ===== IGUANA-INICIO · Iguana verde (Iguana iguana): malla suave hecha aquí, sin modelos nuevos =====
+  // Cuerpo y cola: un tubo sobre una columna CatmullRom (marcos de transporte paralelo); cabeza, ojos, papada y escama subtimpánica:
+  // esferas esculpidas con normales suaves calculadas sobre la deformación; patas: tubos con codo/rodilla; cresta, dedos y uñas: conos.
+  // Origen en el suelo, +Z hacia delante, +Y arriba; ≈ 1,3 m con la cola. Un solo InstancedMesh (1 draw call), ≈ 3,6k triángulos, sin
+  // sombras. Color por vértice (vientre claro, bandas oscuras de la cola, iris dorado…) × textura de escamas dibujada en un canvas (y
+  // como relieve). Vida en el vertex shader según aMarca: 0 cuerpo (respira; el cuello sigue a la cabeza), 1 cabeza (cabeceo de iguana
+  // en ráfagas y mirada lenta), 2 cola (vaivén lento), 3 párpados (parpadeo), 4 papada (se abre al cabecear), 5 patas (quietas).
+  function iguanaVerde(uT) {
+    const V = (x, y, z) => new THREE.Vector3(x, y, z), C = h => new THREE.Color(h).convertSRGBToLinear();
+    const mez = (a, b, t) => a.clone().lerp(b, Math.max(0, Math.min(1, t)));
+    const suave = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+    const pos = [], nor = [], uvs = [], col = [], mk = [], esc = [], idx = [];
+    const vert = (p, n, u, v, c, m, e) => { pos.push(p.x, p.y, p.z); nor.push(n.x, n.y, n.z); uvs.push(u, v); col.push(c.r, c.g, c.b); mk.push(m); esc.push(e); return pos.length / 3 - 1; };
+    const perp = n => (Math.abs(n.y) < 0.9 ? V(0, 1, 0) : V(1, 0, 0)).cross(n).normalize();
+    // Pieza: geometría base deformada por f(q) (q = vértice original); la normal sale de la deformación (sin costuras ni facetas)
+    function pieza(g, f, color, marca, e, uvK) {
+      const p = g.attributes.position, n = g.attributes.normal, u = g.attributes.uv, base = pos.length / 3, eps = 1e-3;
+      for (let i = 0; i < p.count; i++) {
+        const q = V(p.getX(i), p.getY(i), p.getZ(i)), n0 = V(n.getX(i), n.getY(i), n.getZ(i)).normalize(), e1 = perp(n0), e2 = n0.clone().cross(e1);
+        const r = f(q), a = f(q.clone().addScaledVector(e1, eps)).sub(r), b = f(q.clone().addScaledVector(e2, eps)).sub(r);
+        let nn = a.cross(b); if (nn.lengthSq() < 1e-14) nn = f(q.clone().addScaledVector(n0, eps)).sub(r);
+        nn.normalize(); if (nn.dot(f(q.clone().addScaledVector(n0, eps)).sub(r)) < 0) nn.negate();
+        vert(r, nn, uvK ? u.getX(i) * uvK[0] : 0, uvK ? u.getY(i) * uvK[1] : 0, typeof color === 'function' ? color(q, r) : color, typeof marca === 'function' ? marca(r) : marca, e);
+      }
+      const ix = g.index; for (let i = 0; i < ix.count; i++) idx.push(base + ix.getX(i));
+    }
+    const esf = (w, h) => new THREE.SphereGeometry(1, w, h), cono = () => new THREE.ConeGeometry(1, 1, 4, 1, true);
+    // Tubo a lo largo de una curva. perfil(s, d) → [w, h] semiejes lateral/vertical (s 0..1, d en metros); color(s, d, ang, p)
+    function tubo(puntos, nSeg, nRad, perfil, color, marca, e, uvK, arriba, panza) {
+      const curva = new THREE.CatmullRomCurve3(puntos, false, 'centripetal'), L = curva.getLength(), P = curva.getSpacedPoints(nSeg), T = [];
+      for (let i = 0; i <= nSeg; i++) T.push(curva.getTangentAt(i / nSeg).normalize());
+      const N = [], B = [], W = [];
+      let n = (arriba || V(0, 1, 0)).clone(); n.addScaledVector(T[0], -n.dot(T[0])).normalize();
+      const grid = [];
+      for (let i = 0; i <= nSeg; i++) {
+        if (i) { const ax = T[i - 1].clone().cross(T[i]), sa = ax.length(); if (sa > 1e-7) n.applyAxisAngle(ax.normalize(), Math.atan2(sa, T[i - 1].dot(T[i]))); n.addScaledVector(T[i], -n.dot(T[i])).normalize(); }
+        const b = T[i].clone().cross(n).normalize(), s = i / nSeg, wh = perfil(s, s * L); N.push(n.clone()); B.push(b); W.push(wh);
+        const fila = [];
+        for (let j = 0; j <= nRad; j++) { const a = (j / nRad) * Math.PI * 2, sn = Math.sin(a); fila.push(P[i].clone().addScaledVector(b, Math.cos(a) * wh[0]).addScaledVector(n, sn * wh[1] * (sn < 0 ? (panza || 1) : 1))); }
+        grid.push(fila);
+      }
+      const base = pos.length / 3;
+      for (let i = 0; i <= nSeg; i++) for (let j = 0; j <= nRad; j++) {
+        const jj = j % nRad, ga = grid[i][(jj + 1) % nRad].clone().sub(grid[i][(jj + nRad - 1) % nRad]);
+        const gs = grid[Math.min(nSeg, i + 1)][j].clone().sub(grid[Math.max(0, i - 1)][j]), rad = grid[i][j].clone().sub(P[i]);
+        let nn = ga.cross(gs); if (nn.lengthSq() < 1e-16) nn = rad.clone(); if (nn.lengthSq() < 1e-16) nn = T[i].clone();
+        nn.normalize(); if (nn.dot(rad) < 0) nn.negate();
+        const a = (j / nRad) * Math.PI * 2, s = i / nSeg, p = grid[i][j];
+        vert(p, nn, (j / nRad) * uvK[0], s * L * uvK[1], color(s, s * L, a, p), typeof marca === 'function' ? marca(p) : marca, e);
+      }
+      // sentido de los triángulos hacia fuera
+      const g0 = grid[1][0], g1 = grid[1][1], g2 = grid[2][0], cara = g1.clone().sub(g0).cross(g2.clone().sub(g0)), fuera = cara.dot(g0.clone().sub(P[1])) > 0;
+      for (let i = 0; i < nSeg; i++) for (let j = 0; j < nRad; j++) {
+        const a = base + i * (nRad + 1) + j, b = a + 1, c = a + nRad + 1, d = c + 1;
+        if (fuera) idx.push(a, b, c, b, d, c); else idx.push(a, c, b, b, c, d);
+      }
+      return { P, T, N, B, W, L, nSeg };
+    }
+    const interp = (tabla, d) => { // tabla [[d, ...valores]] lineal suavizada
+      if (d <= tabla[0][0]) return tabla[0].slice(1);
+      for (let i = 1; i < tabla.length; i++) if (d <= tabla[i][0]) { const a = tabla[i - 1], b = tabla[i], t = (d - a[0]) / (b[0] - a[0]), k = t * t * (3 - 2 * t); return a.slice(1).map((v, j) => v + (b[j + 1] - v) * k); }
+      return tabla[tabla.length - 1].slice(1);
+    };
+    // ---- Paleta (verde iguana con tonos gris y naranja; bandas casi negras en la cola) ----
+    const K = { lomo: C('#3b7322'), flanco: C('#548f32'), vientre: C('#a3bb6a'), raya: C('#46722a'), banda: C('#2e3622'), colaClara: C('#948f58'),
+      naranja: C('#c98b3e'), cabeza: C('#457e27'), labio: C('#a6b874'), escudo: C('#a3b585'), borde: C('#6f8f4a'), tímpano: C('#56663c'),
+      iris: C('#d9a441'), pupila: C('#0d0d0b'), anillo: C('#2a2c1c'), brillo: C('#ffffff'), papada: C('#6a9a40'), papadaBorde: C('#b3bf78'),
+      espina: C('#4f7f2e'), punta: C('#aab56c'), pata: C('#4b7e2d'), uña: C('#2b2820'), boca: C('#3d5226') };
+    const mancha = (c, p) => { const r = Math.sin(p.x * 91.7 + p.y * 47.3 + p.z * 133.1) * 43758.5453, f = r - Math.floor(r); return c.clone().multiplyScalar(0.9 + 0.13 * f); }; // variación orgánica
+    // ---- Cuerpo + cola (de la nuca a la punta de la cola) ----
+    const columna = [V(0, 0.146, 0.280), V(0, 0.124, 0.200), V(0, 0.088, 0.100), V(0, 0.074, -0.020), V(0, 0.068, -0.150), V(0.025, 0.048, -0.280),
+      V(0.090, 0.032, -0.420), V(0.170, 0.024, -0.560), V(0.200, 0.020, -0.720), V(0.140, 0.016, -0.870), V(0.020, 0.013, -0.980), V(-0.090, 0.011, -1.040)];
+    const PERFIL = [[0, 0.032, 0.034], [0.08, 0.042, 0.050], [0.17, 0.058, 0.070], [0.28, 0.070, 0.082], [0.38, 0.066, 0.076], [0.45, 0.050, 0.058],
+      [0.52, 0.038, 0.046], [0.70, 0.026, 0.033], [0.95, 0.015, 0.019], [1.20, 0.007, 0.009], [1.36, 0.002, 0.002]];
+    const COLA = 0.47; // d donde empieza la cola
+    const cuerpo = tubo(columna, 56, 12, (s, d) => interp(PERFIL, d), (s, d, a, p) => {
+      const sn = Math.sin(a), lado = Math.abs(Math.cos(a));
+      let c = mez(K.flanco, K.lomo, suave(0.15, 0.85, sn));
+      c = mez(c, K.vientre, suave(-0.15, -0.75, sn));
+      if (d > 0.10 && d < COLA) { const f = (d / 0.075) % 1; c = mez(c, K.raya, 0.55 * (1 - suave(0.0, 0.35, Math.abs(f - 0.5) * 2)) * suave(-0.35, 0.1, sn) * lado); } // rayas verticales tenues
+      if (d < 0.20) c = mez(c, K.naranja, 0.18 * suave(-0.2, -0.8, sn)); // garganta y pecho algo naranja
+      if (d > COLA) { // cola: verde → gris tostado, con anillos oscuros
+        const t = (d - COLA) / 0.9; c = mez(c, K.colaClara, t * 0.85);
+        const f = ((d - COLA) / 0.085) % 1, anillo = 1 - suave(0.18, 0.32, Math.abs(f - 0.3) * 2);
+        c = mez(c, K.banda, anillo * (0.55 + 0.4 * suave(0, 0.3, t)) * (sn < -0.4 ? 0.55 : 1));
+      }
+      return mancha(c, p);
+    }, p => (p.z < -0.22 ? 2 : 0), 1, [6, 13], V(0, 1, 0), 0.72);
+    // ---- Cabeza (esfera esculpida: cráneo plano, mejillas anchas, hocico redondeado) ----
+    const ojo = V(), CAB = V(0, 0.152, 0.300), rot = new THREE.Matrix4().makeRotationX(0.13);
+    const enCab = (x, y, z) => V(x, y, z).applyMatrix4(rot).add(CAB);
+    const forma = q => {
+      const k = (q.z + 1) / 2, w = 0.049 * (1 - 0.42 * Math.pow(k, 1.6)), h = 0.042 * (1 - 0.30 * k);
+      let x = q.x * w, y = q.y * h; const z = q.z * 0.076;
+      if (q.y > 0) { y *= 0.80; x *= 1 - 0.18 * q.y * q.y; }                    // cráneo plano, lados casi rectos
+      if (q.y < 0) x *= 1 + 0.22 * (1 - k) * -q.y;
+      y -= 0.006 * k * k;
+      return enCab(x, y, z);
+    };
+    pieza(esf(18, 12), forma, q => {
+      let c = mez(K.flanco, K.cabeza, suave(-0.1, 0.6, q.y));
+      c = mez(c, K.labio, suave(-0.28, -0.5, q.y) * suave(-0.6, 0.0, q.z));
+      c = mez(c, K.boca, 0.75 * (1 - suave(0.0, 0.06, Math.abs(q.y + 0.259))) * suave(-0.75, -0.2, q.z)); // comisura de la boca
+      return mancha(mez(c, K.vientre, suave(-0.55, -0.9, q.y)), q);
+    }, 1, 1, [6, 3]);
+    const sup = (x, y, z) => forma(V(x, y, z).normalize()), radial = p => { const a = CAB.clone().sub(p); a.y *= 0.6; return a.negate().normalize(); };
+    const disco = (p, n, r, grosor) => { const qn = new THREE.Quaternion().setFromUnitVectors(V(1, 0, 0), n); return q => V(q.x * grosor, q.y * r, q.z * r).applyQuaternion(qn).add(p); };
+    for (const s of [1, -1]) {
+      // ojo: polo de la esfera hacia fuera → anillos nítidos de pupila e iris; medio hundido en la cabeza
+      const pO = sup(s * 0.80, 0.42, 0.30), dir = radial(pO).add(V(0, 0.12, 0.22)).normalize(), cO = pO.clone().addScaledVector(dir, -0.0052);
+      const qO = new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), dir);
+      if (s > 0) ojo.copy(cO);
+      pieza(esf(10, 8), q => q.clone().applyQuaternion(qO).multiplyScalar(0.0108).add(cO), q => (q.y > 0.88 ? K.pupila : q.y > 0.5 ? K.iris : K.anillo), 1, 0);
+      pieza(esf(4, 3), q => q.clone().multiplyScalar(0.0021).add(cO).addScaledVector(dir, 0.0098).add(V(0, 0.0035, 0.002)), K.brillo, 1, 0); // brillo del ojo
+      pieza(esf(8, 6), q => q.clone().multiplyScalar(0.0122).add(cO), K.cabeza, 3, 1, [1, 1]);                                   // párpado (crece al parpadear)
+      const pC = sup(s * 0.62, 0.78, 0.30); pieza(esf(6, 4), q => enCab(q.x * 0.007, q.y * 0.003, q.z * 0.016).sub(CAB).add(pC).addScaledVector(radial(pC), -0.0012), K.cabeza, 1, 1, [1, 1]); // ceja
+      const pT = sup(s * 0.86, 0.22, -0.60); pieza(esf(6, 4), disco(pT.clone().addScaledVector(radial(pT), -0.001), radial(pT), 0.0085, 0.0018), K.tímpano, 1, 0); // tímpano
+      const pE = sup(s * 0.90, -0.40, -0.22), nE = V(s, -0.12, 0.08).applyMatrix4(new THREE.Matrix4().extractRotation(rot)).normalize(); // escama subtimpánica: disco grande y claro, casi a ras
+      pieza(esf(10, 6), disco(pE.clone().addScaledVector(nE, -0.0019), nE, 0.0165, 0.0028), q => mez(K.escudo, K.borde, suave(0.55, 0.95, Math.hypot(q.y, q.z))), 1, 0);
+      const pN = sup(s * 0.40, 0.40, 0.94); pieza(esf(4, 3), disco(pN, radial(pN), 0.0024, 0.0012), K.pupila, 1, 0); // narina
+    }
+    // ---- Papada (abanico fino bajo la barbilla) con espinitas en el borde delantero ----
+    const fondo = []; for (let i = 0; i <= 16; i++) { const qz = -1 + i / 8, p = forma(V(0, -Math.sqrt(Math.max(0, 1 - qz * qz)), qz)); fondo.push([p.z, p.y]); } // barbilla y quijada
+    const PZ0 = 0.175, PZ1 = fondo[15][0], papY = z => (z < fondo[2][0] ? 0.090 + (fondo[2][1] + 0.004 - 0.090) * suave(PZ0, fondo[2][0], z) : interp(fondo, z)[0] + 0.004);
+    const papHondo = u => { u = Math.max(0, Math.min(1, u)); return 0.046 * Math.pow(Math.max(0, Math.sin(Math.PI * Math.pow(u, 1.15))), 0.9); };
+    pieza(esf(12, 8), q => {
+      const z = (PZ0 + PZ1) / 2 + q.z * (PZ1 - PZ0) / 2, u = (z - PZ0) / (PZ1 - PZ0), v = (q.y + 1) / 2;
+      return V(q.x * 0.0045 * (0.35 + 0.65 * v), papY(z) - (1 - v) * papHondo(u), z);
+    }, q => mez(K.papada, K.papadaBorde, suave(-0.55, -0.95, q.y)), 4, 0.7, [4, 3]);
+    for (let i = 0; i < 5; i++) {
+      const u = 0.62 + i * 0.07, z = PZ0 + u * (PZ1 - PZ0), b = V(0, papY(z) - papHondo(u) + 0.004, z), dir = V(0, -0.45, 1).normalize();
+      pieza(cono(), q => { const t = q.y + 0.5; return b.clone().addScaledVector(dir, 0.012 * t).add(V(q.x * 0.0015, 0, q.z * 0.003)); }, q => mez(K.papadaBorde, K.punta, q.y + 0.5), 4, 0);
+    }
+    // ---- Cresta dorsal: espinas en láminas, altas en la nuca, menguan por el lomo y siguen en la primera parte de la cola ----
+    for (let d = 0.02; d < 0.95; d += d < 0.45 ? 0.028 : 0.042) {
+      const i = Math.round((d / cuerpo.L) * cuerpo.nSeg), P = cuerpo.P[i], T = cuerpo.T[i], N = cuerpo.N[i], Bv = cuerpo.B[i], hT = cuerpo.W[i][1];
+      const alto = 0.011 + 0.034 * (1 - suave(0.05, 0.55, d)) * suave(-0.04, 0.06, d) + 0.006 * (1 - suave(0.45, 0.9, d)), base = P.clone().addScaledVector(N, hT * 0.9);
+      const dir = N.clone().addScaledVector(T, 0.55).normalize(), lb = 0.007 + 0.004 * (1 - suave(0.3, 0.8, d));
+      pieza(cono(), q => { const t = q.y + 0.5; return base.clone().addScaledVector(dir, alto * t).addScaledVector(T, q.z * lb).addScaledVector(Bv, q.x * 0.0016); },
+        q => mez(K.espina, K.punta, (q.y + 0.5) * 1.1), d > COLA - 0.12 ? 2 : 0, 0);
+    }
+    // ---- Patas: hombro/cadera → codo/rodilla → muñeca/tobillo, abiertas a los lados; mano y pie de 5 dedos largos con uñas ----
+    const pata = (pts, r0, r1, r2) => tubo(pts, 8, 6, s => { const r = s < 0.5 ? r0 + (r1 - r0) * s * 2 : r1 + (r2 - r1) * (s - 0.5) * 2; return [r, r]; },
+      (s, d, a) => mez(mez(K.pata, K.lomo, suave(0.2, 0.9, Math.sin(a))), K.vientre, 0.35 * suave(-0.3, -0.9, Math.sin(a))), 5, 1, [3, 24], V(0, 0, 1));
+    const dedos = (c, rumbo, largos, abre, grosor) => {
+      for (let k = 0; k < 5; k++) {
+        const ang = rumbo + (k - 2) * abre, dir = V(Math.sin(ang), -0.12, Math.cos(ang)).normalize(), lado = V(Math.cos(ang), 0, -Math.sin(ang)), L = largos[k];
+        pieza(cono(), q => { const t = q.y + 0.5; return c.clone().addScaledVector(dir, L * t).addScaledVector(lado, q.x * grosor).add(V(0, q.z * grosor * 0.7 + 0.004 * Math.sin(Math.PI * t), 0)); },
+          q => (q.y > 0.22 ? K.uña : K.pata), 5, 0);
+      }
+      pieza(esf(6, 4), q => V(c.x + q.x * grosor * 2.2, c.y + q.y * 0.006, c.z + q.z * grosor * 2.2), K.pata, 5, 1, [1, 1]);
+    };
+    for (const s of [1, -1]) {
+      pata([V(s * 0.035, 0.076, 0.085), V(s * 0.080, 0.078, 0.090), V(s * 0.108, 0.062, 0.100), V(s * 0.118, 0.030, 0.115), V(s * 0.120, 0.011, 0.125)], 0.020, 0.014, 0.009);
+      dedos(V(s * 0.121, 0.008, 0.129), s * 0.55, [0.014, 0.020, 0.025, 0.027, 0.017], 0.38, 0.0035);
+      pata([V(s * 0.040, 0.064, -0.150), V(s * 0.095, 0.072, -0.140), V(s * 0.130, 0.056, -0.150), V(s * 0.142, 0.028, -0.185), V(s * 0.145, 0.011, -0.200)], 0.026, 0.017, 0.010);
+      dedos(V(s * 0.146, 0.008, -0.205), s * 2.05, [0.026, 0.046, 0.034, 0.026, 0.018], 0.30, 0.0038);
+    }
+    // ---- Geometría ----
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.setAttribute('aMarca', new THREE.Float32BufferAttribute(mk, 1));
+    g.setAttribute('aEsc', new THREE.Float32BufferAttribute(esc, 1));
+    g.setIndex(idx); g.computeBoundingSphere();
+    // ---- Textura de escamas (canvas 128 px: escamas redondas en filas alternas; también como relieve) ----
+    const cv = document.createElement('canvas'); cv.width = cv.height = 128; const x2 = cv.getContext('2d');
+    x2.fillStyle = '#cbcbcb'; x2.fillRect(0, 0, 128, 128);
+    for (let fy = 0; fy < 8; fy++) for (let fx = 0; fx < 8; fx++) for (const ox of [-128, 0, 128]) for (const oy of [-128, 0, 128]) {
+      const cx = fx * 16 + (fy % 2 ? 8 : 0) + ox, cy = fy * 16 + 8 + oy, gr = x2.createRadialGradient(cx - 2, cy - 3, 1, cx, cy, 9.5);
+      gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.6, '#f4f4f4'); gr.addColorStop(1, '#d2d2d2');
+      x2.fillStyle = gr; x2.beginPath(); x2.ellipse(cx, cy, 8.8, 9.4, 0, 0, Math.PI * 2); x2.fill();
+    }
+    const tex = new THREE.CanvasTexture(cv); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.encoding = THREE.sRGBEncoding; tex.anisotropy = 4;
+    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, map: tex, roughness: 0.55, metalness: 0, transparent: true, opacity: 1 });
+    mat.onBeforeCompile = sh => {
+      sh.uniforms.uT = uT;
+      sh.vertexShader = 'uniform float uT;\nattribute float aMarca;\nattribute float iFase;\nattribute float aEsc;\nvarying float vEsc;\n' +
+        'mat3 rX(float a){ float c = cos(a), s = sin(a); return mat3(1.0, 0.0, 0.0, 0.0, c, s, 0.0, -s, c); }\n' +
+        'mat3 rY(float a){ float c = cos(a), s = sin(a); return mat3(c, 0.0, -s, 0.0, 1.0, 0.0, s, 0.0, c); }\n' +
+        'vec3 iguana(vec3 p, inout vec3 n) {\n' +
+        '  float t = uT + iFase;\n' +
+        '  float c = mod(t, 7.3), bob = c < 2.1 ? pow(abs(sin(c * 4.488)), 1.4) * (1.0 - c / 2.6) : 0.0;\n' + // ráfaga de 3 cabeceos y pausa
+        '  if (aMarca > 3.5 && aMarca < 4.5) { float hon = 1.0 + 0.35 * bob; p.y = 0.118 + (p.y - 0.118) * hon; }\n' + // la papada se despliega
+        `  if (aMarca > 2.5 && aMarca < 3.5) { float b = mod(t + 1.7, 4.9); float cierra = 1.0 - smoothstep(0.0, 0.07, abs(b - 0.12)); vec3 cO = vec3(sign(p.x) * ${ojo.x.toFixed(4)}, ${ojo.y.toFixed(4)}, ${ojo.z.toFixed(4)});\n` +
+        '    p = cO + (p - cO) * mix(0.84, 1.04, cierra); }\n' +
+        '  if (aMarca < 0.5) { float tor = smoothstep(-0.24, -0.12, p.z) * (1.0 - smoothstep(0.05, 0.14, p.z)); float r = 0.5 + 0.5 * sin(t * 1.5);\n' +
+        '    p.x *= 1.0 + 0.045 * r * tor; p.y = 0.08 + (p.y - 0.08) * (1.0 + 0.025 * r * tor); }\n' +
+        '  if (aMarca > 1.5 && aMarca < 2.5) { float k = clamp((-p.z - 0.25) / 0.75, 0.0, 1.0); p.x += sin(t * 0.8 + p.z * 2.6) * 0.07 * k * k; p.z += sin(t * 0.8 + p.z * 2.6 + 1.2) * 0.012 * k * k; }\n' +
+        '  float w = (aMarca > 0.5 && aMarca < 1.5) || (aMarca > 2.5 && aMarca < 4.5) ? 1.0 : (aMarca < 0.5 ? smoothstep(0.12, 0.23, p.z) : 0.0);\n' +
+        '  if (w > 0.0) { mat3 R = rY(0.32 * sin(t * 0.21) * w) * rX(-0.15 * bob * w); vec3 pv = vec3(0.0, 0.115, 0.18); p = pv + R * (p - pv); n = R * n; }\n' +
+        '  return p;\n}\n' +
+        sh.vertexShader
+          .replace('#include <beginnormal_vertex>', 'vec3 objectNormal = vec3(normal);\nvec3 iguP = iguana(vec3(position), objectNormal);\nvEsc = aEsc;')
+          .replace('#include <begin_vertex>', 'vec3 transformed = iguP;');
+      sh.fragmentShader = 'varying float vEsc;\n' + sh.fragmentShader.replace('#include <map_fragment>',
+        '#ifdef USE_MAP\n vec4 texelColor = mapTexelToLinear(texture2D(map, vUv));\n diffuseColor.rgb *= mix(vec3(1.0), texelColor.rgb, vEsc);\n#endif');
+
+    };
+    mat.customProgramCacheKey = () => 'invasoras:iguana-v2';
+    return { geo: g, mat, tris: idx.length / 3 };
+  }
+  // ===== IGUANA-FIN =====
   window.AVInvasoras = function (G) {
     if (G.invasoras) return Promise.resolve(G.invasoras);
     const datos = window.AV_INVASORAS ? Promise.resolve() : window.AVE.assets.script('content/cap1/invasoras.js');
@@ -75,29 +281,8 @@
     const esfera = (w, h) => new THREE.SphereGeometry(1, w || 10, h || 8);
     const cola = z => (z < 0 ? 2 : 0);
 
-    // Iguana (≈ 1,3 m con la cola). +Z hacia delante, +Y arriba. Verde con bandas oscuras en la cola, cresta de espinas y papada.
-    const geoIguana = (() => {
-      const b = Constructor(), verde = '#5f9a3a', claro = '#8cc152', oscuro = '#33562a';
-      b.geo(esfera(), verde, 0, elip(0.11, 0.08, 0.26, 0, 0.11, 0.02));                      // cuerpo
-      b.geo(esfera(), claro, 0, elip(0.085, 0.05, 0.2, 0, 0.075, 0.02));                     // vientre
-      b.geo(esfera(), verde, 1, elip(0.065, 0.06, 0.1, 0, 0.17, 0.3));                       // cabeza
-      b.geo(esfera(6, 4), '#e7d45a', 1, elip(0.03, 0.03, 0.03, 0, 0.13, 0.27));              // escama redonda bajo la oreja (subtimpánica)
-      b.geo(esfera(6, 4), '#141414', 1, elip(0.012, 0.012, 0.012, 0.05, 0.19, 0.33)).geo(esfera(6, 4), '#141414', 1, elip(0.012, 0.012, 0.012, -0.05, 0.19, 0.33));
-      // papada: un triángulo bajo la barbilla
-      b.tri([0, 0.12, 0.36], [0, 0.04, 0.3], [0, 0.11, 0.22], claro, 1).tri([0, 0.11, 0.22], [0, 0.04, 0.3], [0, 0.12, 0.36], claro, 1);
-      // cresta: espinas del cuello a la cola
-      for (let i = 0; i < 11; i++) { const z = 0.3 - i * 0.065, h = 0.05 - i * 0.003, y = (z > 0.2 ? 0.22 : 0.18) - Math.max(0, -z) * 0.15;
-        b.geo(new THREE.ConeGeometry(0.012, h, 4), oscuro, z > 0.2 ? 1 : cola(z), (x, yy, zz) => [x, yy + y + h / 2, zz + z]); }
-      // cola larga con bandas
-      const nB = 8;
-      for (let i = 0; i < nB; i++) {
-        const z0 = -0.2 - i * 0.09, r = 0.055 * (1 - i / nB) + 0.01;
-        b.geo(new THREE.CylinderGeometry(r * 0.85, r, 0.095, 7, 1, true), i % 2 ? oscuro : verde, 2, (x, y, z) => [x, z + 0.1 - (z0 + 0.2) * 0.25, -y + z0]);
-      }
-      // patas
-      for (const [sx, sz] of [[1, 0.17], [-1, 0.17], [1, -0.14], [-1, -0.14]]) b.geo(new THREE.BoxGeometry(0.14, 0.035, 0.04), verde, 0, (x, y, z) => [x + sx * 0.12, y + 0.04, z + sz]);
-      return b.fin();
-    })();
+    // Iguana: malla suave propia (iguanaVerde, arriba), con su material y su animación
+    const iguana = iguanaVerde(uT);
 
     // Pez genérico: cuerpo fusiforme a partir de una esfera (+Z hacia delante); bandas(z) da el color.
     function cuerpoPez(b, largo, ancho, alto, color, aplana) {
@@ -163,7 +348,7 @@
       im.userData.sinCulling = true; im.userData.sinSolido = true;
       scene.add(im); mallas[id] = im; return im;
     }
-    instanciada('iguana', geoIguana, material('iguana', 0.04, 1.3, 0.03));
+    instanciada('iguana', iguana.geo, iguana.mat);
     instanciada('tilapia', geoTilapia, material('tilapia', 0.03, 8.0, 0));
     instanciada('pleco', geoPleco, material('pleco', 0.015, 3.0, 0));
     instanciada('pezleon', geoLeon, material('pezleon', 0.012, 2.0, 0));
@@ -221,7 +406,7 @@
       const t = F.t;
       for (let i = 0; i < h.individuos.length; i++) {
         const v = h.individuos[i];
-        if (id === 'iguana') { v.x = h.x; v.z = h.z; v.y = h.y + 0.02; v.yaw = h.yaw + Math.sin(t * 0.2) * 0.15; }
+        if (id === 'iguana') { v.x = h.x; v.z = h.z; v.y = h.y - 0.035; v.yaw = h.yaw; } // tomando el sol: quieta (la vida va en su shader)
         else if (id === 'tilapia') { // nadan en grupo, en círculo lento
           const a = v.a + t * 0.35, r = 0.9 + 0.25 * Math.sin(t * 0.5 + v.fase);
           v.x = h.x + Math.cos(a) * r; v.z = h.z + Math.sin(a) * r; v.y = Math.max(H(v.x, v.z) + 0.15, h.agua - 0.3 - 0.08 * i);
