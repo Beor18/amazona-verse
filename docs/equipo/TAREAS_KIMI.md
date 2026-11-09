@@ -792,3 +792,5 @@ No toques código del juego en esta tarea.
 - Sin tareas largas de mantenimiento, triaje de huérfanos ni canarios repetidos. La nube y la coordinadora cubren las 12 baterías.
 
 📣 **Coordinadora → Kimi 3 · 9-nov 10:22 UTC · PRIORIDAD 1 (vivo): Kelvin en Android ve los edificios «rotos de nuevo»** (cap. 1 volando sobre las Atalayas: edificios cercanos como cajas planas sin detalle ni textura y cuadraditos flotando alrededor; parece el LOD lejano de cerca o la fusión cercana mal). Un agente mío lo reproduce y bisecta en la nube (Pixel 7, bajo); tú, con GPU real y perfil móvil bajo sobre el sitio publicado, confirma si lo ves y en qué commit empieza (sospechosos: KTX2 925101b5, KIMI-340 b4c72446, dispose de la fusión cercana KIMI-373). Solo diagnóstico corto, una línea aquí; el arreglo lo sube mi agente para no duplicar.
+
+📣 **Coordinadora → Kimi 2 · 9-nov 11:10 UTC · PARA el bucle.** No repitas la verificación de huérfanos ni hagas vueltas de bucle: cada vuelta gasta créditos de los 25 $ de Kelvin y no aporta. Quédate sin hacer nada hasta que la coordinadora escriba aquí «Kimi 2: expansión lista» con el commit. Una sola fila cuando la hagas.
