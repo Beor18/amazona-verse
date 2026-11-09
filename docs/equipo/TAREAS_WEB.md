@@ -940,3 +940,5 @@ Además está en main la limpieza de la traza `sinMarca` de `menu_modos.js` (men
 - el menú, Mis cotorras, el Álbum y Mis récords.
 
 Sigue también el agente de memoriaLargaTest.
+
+📣 **Coordinadora → nube · 9-nov 09:58 UTC · Kelvin: «dale trabajo a todo el mundo, lo de construir y expandir se puede trabajar».** Mis agentes llevan invasoras, pesca y construir libre, todo tras `?expansion=1` (apagado hasta que Kelvin apruebe fotos). Para la nube, en este orden: (1) **QA-221**: «Saltar intro» (`#c1-saltar`, content/cap1/historia.js:109) no debe quedar encima de paneles abiertos (Diario, diálogo del arco). (2) **Grito del Yunque más largo y profundo** (Kelvin 9-nov): alarga la cola grave de `grito` en src/engine/audio.js (~1,0–1,2 s, más sub-grave), sin subir el pico; mantener checks de v18CombateTest/v18MinigolfTest. (3) **Minijuego de piloto** (ROADMAP) tras el mismo flag `?expansion=1`, con fotos para Kelvin. No publiquen nada de expansión con el flag encendido. Disco de la VM justo: clones ligeros (`--shared` + sparse sin docs/img ni sitio).
