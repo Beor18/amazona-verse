@@ -71,7 +71,7 @@ Cada episodio reutiliza el motor, el personaje, el ropero, el criadero, el guard
 - Minijuego de piloto.
 - Peces invasores reales de Puerto Rico (pez león en los arrecifes; tilapia y pleco en los ríos), con fuente verificada (NOAA, USGS, DRNA): fichas del Diario y una actividad de observación, nunca como enemigos (Kelvin, 8-nov: para la expansión).
 - Iguana verde (especie invasora en Puerto Rico): ficha del Diario y observación con fuente verificada (DRNA, USFWS), nunca como enemigo (Kelvin, 9-nov).
-- Construir libre: ampliar el modo construir del cap. 1 (hoy solo el refugio) a nido, refugio y decoración. Falta que Kelvin diga qué se puede construir.
+- Construir libre: **en marcha para todos** (9-nov, Kelvin: «Piezas aprobadas»). Nido, techo de hojas y decoración: tarjeta «Construir» en «¿Cómo quieres jugar?», botón del martillo junto a Pausa y tecla B. Todas las piezas desde el principio (sin recolectar), 40 piezas (24 en calidad «bajo» y Modo Escuela). Pesca e invasoras siguen tras `?expansion=1`.
 - Grito del Yunque: sonido más largo y profundo (Kelvin, 9-nov: «por ahora está bien»).
 - Minijuego de pesca (Kelvin, 8-nov: para la expansión; la lista completa la da Kelvin después del cierre).
 - Empaquetado para tiendas (Capacitor) si hace falta.

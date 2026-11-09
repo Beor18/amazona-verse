@@ -498,3 +498,6 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
 
 2026-11-09 · [KELVIN] «Es sentido común que se hagan algunas decisiones, no deberías detenerte por mí.» El equipo decide solo lo técnico, de jugabilidad, interfaz y rendimiento con sentido común, y lo anota aquí en una línea. Siguen siendo de Kelvin: canon e historia, dinero, legal, y la aprobación por fotos de modelos y edificios nuevos antes de encenderlos para los jugadores.
 2026-11-09 · [KELVIN] Android: resolución mínima como en iPhone («Aprobado lo del android»). Teléfonos Android (UA con «Android» y «Mobile»): en «bajo» la resolución no baja de 1,0 (antes 0,75), máximo 1,5 (1,75 con > 4 GB y > 4 núcleos), sin Modo Escuela automático (solo ?escuela=1). Tabletas, Chromebook y escritorio sin cambios. AND-1, src/engine/renderer.js.
+
+
+2026-11-09 · [KELVIN] Construir libre: piezas aprobadas («Piezas aprobadas»); se enciende para todos. Materiales: todas las piezas desde el principio (sin recolectar) hasta que Kelvin diga otra cosa.
