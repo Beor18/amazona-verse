@@ -482,6 +482,7 @@ window.AV_EN = {
  "Jicotea": "Jicotea (slider turtle)",
  "Jugando": "Playing",
  "Jugar": "Play",
+ "Jugar en línea": "Play online",
  "Junto al río": "By the river",
  "Juvenil": "Juvenile",
  "La Gran Ruptura dañó el taller de Vittata, pero entre los restos vimos posibilidades.": "The Great Rupture damaged Vittata's workshop, but among the wreckage we saw possibilities.",
