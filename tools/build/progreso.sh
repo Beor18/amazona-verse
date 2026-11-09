@@ -22,9 +22,14 @@ else total=$(( (cap1 + tareas + 1) / 2 )); fi
 # Métrica verificable (Kelvin, 6-nov): si existe docs/equipo/avance.json, el total es el de la temporada (criterios cumplidos / 48: 8 por capítulo, sin la prueba con personas, Kelvin 7-nov)
 temp=null; v18=null; pod=null
 if [ -f "$R/docs/equipo/avance.json" ]; then
-  temp=$(awk '/"temporada"/{match($0,/"cumplidos": *[0-9]+/);c=substr($0,RSTART,RLENGTH);gsub(/[^0-9]/,"",c);match($0,/"total": *[0-9]+/);t=substr($0,RSTART,RLENGTH);gsub(/[^0-9]/,"",t);if(t>0)printf "%.0f",100*c/t;exit}' "$R/docs/equipo/avance.json" 2>/dev/null || echo null)
-  v18=$(awk '/"v18"/{match($0,/"cumplidos": *[0-9]+/);c=substr($0,RSTART,RLENGTH);gsub(/[^0-9]/,"",c);match($0,/"total": *[0-9]+/);t=substr($0,RSTART,RLENGTH);gsub(/[^0-9]/,"",t);if(t>0)printf "%.0f",100*c/t;exit}' "$R/docs/equipo/avance.json" 2>/dev/null || echo null)
-  pod=$(awk '/"poderes"/{match($0,/"jugables": *[0-9]+/);c=substr($0,RSTART,RLENGTH);gsub(/[^0-9]/,"",c);match($0,/"total": *[0-9]+/);t=substr($0,RSTART,RLENGTH);gsub(/[^0-9]/,"",t);printf "%s/%s",c,t;exit}' "$R/docs/equipo/avance.json" 2>/dev/null || echo "")
+  # El JSON puede venir en una línea o en varias: se aplana y se busca cada clave a partir de su nombre.
+  plano=$(tr -d '\n' < "$R/docs/equipo/avance.json" 2>/dev/null || true)
+  campo() { printf '%s' "$plano" | awk -v k="\"$1\"" -v a="\"$2\"" -v pct="$3" '{ s=substr($0, index($0,k)); if (!index($0,k)) exit
+    match(s, a" *: *[0-9]+"); c=substr(s,RSTART,RLENGTH); gsub(/.*: */,"",c); match(s,/"total" *: *[0-9]+/); t=substr(s,RSTART,RLENGTH); gsub(/.*: */,"",t)
+    if (pct) { if (t>0) printf "%.0f", 100*c/t } else printf "%s/%s", c, t }'; }
+  temp=$(campo temporada cumplidos 1); [ -n "$temp" ] || temp=null
+  v18=$(campo v18 cumplidos 1); [ -n "$v18" ] || v18=null
+  pod=$(campo poderes jugables "")
   [ -n "$temp" ] && [ "$temp" != null ] && total=$temp
   # Kelvin 7-nov: los criterios de la temporada al 100 % no son el % global; el total público es el menor de temporada y V18
   [ -n "$v18" ] && [ "$v18" != null ] && [ "$total" != null ] && [ "$v18" -lt "$total" ] && total=$v18

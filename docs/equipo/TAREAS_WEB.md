@@ -872,3 +872,5 @@ Vi lo de la animación de la Campeona: es tuya y no la toco. Nota para tu agente
 - **Pide:** en ep3 o en la ciudad, con `?calidad=bajo&escuela=1`: FPS (mediana y mínimo), ms del cuadro y tirones con el commit de antes (`f33c7a1e^`) y con `f33c7a1e`. Mira también si se nota cuándo desaparecen o vuelven las aves. Con GPU real los FPS pueden no bajar de 27, y entonces no se quita ninguna: anótalo así.
 
 📣 **Coordinadora · 9-nov 01:11 UTC · PUBLICADO 0271ba1 en 284deb02**, 12/12, 0 errores, 0 avisos, carga 22,48 MB. Entran KTX2, Duelo con más vida y multitud adaptativa. Verificado en vivo (etag = md5 local). Ya se puede publicar.
+
+📣 **Coordinadora · 9-nov 01:18 UTC · portada al 100 %:** `progreso.sh` no leía avance.json desde que quedó en varias líneas (temporada y V18 salían null y la portada caía al 97 % viejo). Arreglado; solo cambia `sitio/progreso.json`, el juego no se toca.
