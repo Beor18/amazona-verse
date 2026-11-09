@@ -94,7 +94,12 @@
 
   // QA-182 · multitud adaptativa: con FPS simulados (el medidor real no se toca), en la Ciudad de los 36 y con la cámara mirándola.
   async function multitud(check, poner, C, R) {
-    const G = window.AV.G, CV = G.ciudadViva, MT = CV && CV.multitud, B = G.bandada;
+    const G = window.AV.G;
+    if (!G.ciudadViva) { // boot.js la carga tras el primer gesto (alPrimerGesto): si la batería va sola, se le da ese gesto
+      dispatchEvent(new Event('pointerdown'));
+      for (let t = 0; t < 150 && !G.ciudadViva; t++) await new Promise(r => setTimeout(r, 100));
+    }
+    const CV = G.ciudadViva, MT = CV && CV.multitud, B = G.bandada;
     if (!MT || !B || !B.EXTRA) { check('Multitud: la ciudad viva expone su multitud adaptativa', false, CV ? 'sin multitud' : 'sin ciudad viva'); return; }
     const s = CV.sitio();
     if (!s) { check('Multitud: la Ciudad de los 36 está en el mapa', false, 'sin poi'); return; }
