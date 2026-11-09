@@ -687,10 +687,19 @@ AVE.module('renderer', function (G) {
   function objPendienteP(o) { return !!o && !pantallaObjetos.has(o); }
   // KIMI-360: un InstancedMesh con count===0 no dibuja nada, así que su variante de pantalla no hace
   // falta ahora; calentarlo (warmUno fuerza count 0→1) solo subiría a la GPU una geometría que puede
-  // no dibujarse nunca (~590 en la villa, medido en KIMI-356/357). Se salta pero se DEJA pendiente:
-  // en cuanto reciba instancias (p. ej. al activarse una zona) el pase lo calienta ese mismo cuadro,
-  // así una foto directa del cómic solo compilaría de golpe si cae en el cuadro exacto de la activación.
-  function aptoPantalla(o) { return !(o.isInstancedMesh && o.count === 0); }
+  // no dibujarse nunca (~590 en la villa, medido en KIMI-356/357). KIMI-373 (QA-nuevo-br3-2): lo
+  // mismo vale para un dibujable INVISIBLE (él o un ancestro): warmUno fuerza visible=true en toda
+  // la cadena y sube su geometría aunque jamás se dibuje en la partida (fantasmas del golf con un
+  // jugador, piezas de la tormenta y los retos cerrados, accesorios no equipados…): contaban como
+  // crecimiento en memoriaLargaTest (v18_golf_fantasma1-4, retos/tormenta, acc_gafas). Se saltan y
+  // se DEJAN pendientes: en el cuadro en que se vuelven visibles el pase los calienta antes del
+  // dibujo real (mismo mecanismo que los count===0), así una foto directa del cómic solo compilaría
+  // de golpe si cae en el cuadro exacto de la activación.
+  function aptoPantalla(o) {
+    if (o.isInstancedMesh && o.count === 0) return false;
+    for (let x = o; x && x !== scene; x = x.parent) if (x.visible === false) return false;
+    return true;
+  }
   // Dibujables del cuadro: la escena se recorre una vez por cuadro y la lista se reutiliza en el
   // precalentado y en el ocultado (antes se recorría entera por cada objeto calentado y por cada
   // dibujo; con el mundo cargado son miles de nodos y varios recorridos por cuadro).
@@ -808,10 +817,10 @@ AVE.module('renderer', function (G) {
     // QA-220: la variante de pantalla (sRGB) de cada OBJETO, con el hueco reservado arriba (1 por
     // cuadro cuando hay lineales pendientes; todo el tope cuando no). Cada dibujable se dibuja una
     // vez al lienzo y queda compilada su configuración real; las fotos directas del cómic encuentran
-    // el programa ya enlazado y no hay tirón de ~2,7 s en la primera foto. KIMI-360: se saltan los
-    // InstancedMesh con count===0 (ver aptoPantalla): sin instancias no dibujan nada y calentarlos
-    // solo subiría geometría que puede no usarse nunca; quedan pendientes y se calientan en cuanto
-    // reciben instancias.
+    // el programa ya enlazado y no hay tirón de ~2,7 s en la primera foto. KIMI-360/KIMI-373: se
+    // saltan los que ahora no pueden dibujarse —InstancedMesh con count===0 y dibujables invisibles
+    // (ver aptoPantalla)—: calentarlos subiría geometría que puede no usarse nunca; quedan pendientes
+    // y se calientan en cuanto reciben instancias o se vuelven visibles.
     for (const o of dibujables()) {
       if (n >= maxN || performance.now() - t0 > ms) break;
       if (!objPendienteP(o) || !aptoPantalla(o)) continue;

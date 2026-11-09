@@ -177,7 +177,7 @@
     return (soporteKTX2 = c.etc2Supported || c.etc1Supported || c.dxtSupported || c.pvrtcSupported ? c : null);
   }
   function ktx2De(url) {
-    if (!url || !comprimidaActiva() || !configKTX2()) return null;
+    if (!url || ktx2Roto || !comprimidaActiva() || !configKTX2()) return null;
     if (!registroKTX2) {
       const m = document.querySelector('meta[name="ave:ktx2"]');
       registroKTX2 = new Set(((m && m.getAttribute('content')) || '').split(/\s+/).filter(Boolean).map(absURL));
@@ -188,19 +188,75 @@
   // Carga el .ktx2 de una imagen registrada: ok(CompressedTexture) o falla(error). A los 15 s sin cargas pendientes se
   // sueltan el loader y su worker (el wasm no se queda en memoria; los dos kits llegan con segundos de diferencia y
   // comparten el mismo transcoder; si hace falta otra vez, sale de la caché HTTP).
+  // QA-nuevo-edif-android (9-nov, Kelvin en Android: «los edificios se ven rotos de nuevo», cajas beige planas): mientras
+  // el .ktx2 no llega, el atlas es el 2×2 del color del kit (PLANO_KIT) y los edificios se ven lisos. Antes cada material
+  // nuevo del atlas (al soltarse la última zona que lo usaba y volver a entrar en otra, o el kit Ancient al llegar volando a
+  // las Atalayas) esperaba otra vez transcoder + worker + transcodificación, y si el worker no contestaba nunca (wasm o
+  // worker caídos en el móvil: WorkerPool de r136 no tiene onerror) se quedaba plano para siempre, sin el JPEG de respaldo.
+  // Ahora: (1) la textura transcodificada se guarda por URL (≈0,7 MB de CPU por kit; la GPU la vuelve a subir si un
+  // material la soltó) y ktx2Listo(url) la da al momento; (2) peticiones simultáneas de la misma URL comparten una;
+  // (3) a los KTX2_ESPERA ms sin respuesta, falla (el streaming pone el JPEG) y la sesión deja el KTX2 (ktx2De → null);
+  // (4) y si la GPU no lo muestra bien, igual (ktx2Correcto, abajo).
+  const KTX2_ESPERA = 12000;
+  const listosKTX2 = new Map(), enCursoKTX2 = new Map();
+  let ktx2Roto = false, ultimaKTX2 = null;
   const planoKit = kit => PLANO_KIT[kit] || PLANO_KIT.ancient;
+  // (4) Comprobación en la GPU del equipo: se dibuja el último mip del .ktx2 (el color medio del atlas) en un píxel y se lee.
+  // Si no se parece a la media del kit (formato que la GPU no muestra, cadena de mips incompleta → negro o basura), el .ktx2
+  // se descarta igual que si hubiera fallado: JPEG y la sesión sin KTX2. La media de cada kit es la del JPEG LQ (= PLANO_KIT).
+  const MEDIA_KIT = { ancient: [157, 136, 102], savage: [96, 82, 67] };
+  function ktx2Correcto(t, k) {
+    const r = typeof rendererKTX2 === 'function' ? rendererKTX2() : rendererKTX2, m = /hd_(ancient|savage)_/.exec(k), media = m && MEDIA_KIT[m[1]];
+    if (!r || !media || !r.readRenderTargetPixels || !(r.capabilities && r.capabilities.isWebGL2)) return { ok: true }; // WebGL1: sin textureLod
+    let rt = null, geo = null, mat = null;
+    try {
+      if (r.getContext && r.getContext().isContextLost && r.getContext().isContextLost()) return { ok: true };
+      rt = new THREE.WebGLRenderTarget(1, 1, { depthBuffer: false, stencilBuffer: false });
+      geo = new THREE.PlaneGeometry(2, 2);
+      mat = new THREE.ShaderMaterial({ uniforms: { t: { value: t } }, depthTest: false, depthWrite: false,
+        vertexShader: 'void main() { gl_Position = vec4( position.xy, 0.0, 1.0 ); }',
+        fragmentShader: 'uniform sampler2D t; void main() { gl_FragColor = vec4( textureLod( t, vec2( 0.5 ), 20.0 ).rgb, 1.0 ); }' });
+      const sc = new THREE.Scene(), cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1), malla = new THREE.Mesh(geo, mat);
+      malla.frustumCulled = false; sc.add(malla);
+      const antes = r.getRenderTarget(), px = new Uint8Array(4);
+      r.setRenderTarget(rt); r.render(sc, cam); r.readRenderTargetPixels(rt, 0, 0, 1, 1, px); r.setRenderTarget(antes);
+      const dif = Math.max(Math.abs(px[0] - media[0]), Math.abs(px[1] - media[1]), Math.abs(px[2] - media[2]));
+      return { ok: dif <= 48, px: Array.from(px.slice(0, 3)), dif };
+    } catch (e) { return { ok: true, error: e && e.message }; } finally { if (rt) rt.dispose(); if (geo) geo.dispose(); if (mat) mat.dispose(); }
+  }
+  const estadoKTX2 = () => ({ roto: ktx2Roto, listos: listosKTX2.size, ultima: ultimaKTX2 });
+  function ktx2Listo(url) { const k = ktx2De(url); return (k && listosKTX2.get(k)) || null; }
   function texKTX2(url, ok, falla) {
     const k = ktx2De(url);
     if (!k) { falla(new Error('sin variante .ktx2: ' + url)); return; }
+    const hecha = listosKTX2.get(k);
+    if (hecha) { ok(hecha); return; }
+    const espera = enCursoKTX2.get(k);
+    if (espera) { espera.push({ ok, falla }); return; }
+    const lista = [{ ok, falla }];
+    enCursoKTX2.set(k, lista);
     ktx2Pend++;
     clearTimeout(soltarKTX2);
+    let cerrada = false;
     const fin = () => { if (--ktx2Pend === 0) soltarKTX2 = setTimeout(() => { if (ktx2Pend === 0 && ktx2Loader) { try { ktx2Loader.dispose(); } catch (e) { /* ya suelto */ } ktx2Loader = null; } }, 15000); };
+    const cerrar = (t, e) => {
+      if (cerrada) { if (t) { try { t.dispose(); } catch (er) { /* r128 */ } } return; }
+      cerrada = true; clearTimeout(reloj); enCursoKTX2.delete(k); fin();
+      if (t) {
+        const v = ktx2Correcto(t, k);
+        ultimaKTX2 = Object.assign({ url: k }, v);
+        if (v.ok) listosKTX2.set(k, t);
+        else { ktx2Roto = true; try { t.dispose(); } catch (er) { /* r128 */ } e = new Error('el .ktx2 no se ve bien en esta GPU (media ' + v.px + ', dif ' + v.dif + '): ' + k); t = null; }
+      }
+      for (const c of lista) { try { t ? c.ok(t) : c.falla(e); } catch (er) { console.warn('AVE assets: ktx2', er && er.message || er); } }
+    };
+    const reloj = setTimeout(() => { ktx2Roto = true; cerrar(null, new Error('el .ktx2 no llegó en ' + KTX2_ESPERA / 1000 + ' s: ' + k)); }, KTX2_ESPERA);
     script('assets/vendor/three/examples/js/utils/WorkerPool.js')
       .then(() => script('assets/vendor/three/examples/js/loaders/KTX2Loader.js'))
       .then(() => {
         if (!ktx2Loader) { ktx2Loader = new THREE.KTX2Loader(); ktx2Loader.setTranscoderPath(KTX2_DIR).setWorkerLimit(1); ktx2Loader.workerConfig = configKTX2(); }
-        ktx2Loader.load(k, t => { fin(); ok(t); }, undefined, e => { fin(); falla(e); });
-      }).catch(e => { fin(); falla(e); });
+        ktx2Loader.load(k, t => cerrar(t), undefined, e => cerrar(null, e));
+      }).catch(e => cerrar(null, e));
   }
   function setNormalPlanaBaja(f) { normalPlanaBaja = typeof f === 'function' ? f : () => !!f; }
   function setSufijoLQDifuso(f) { sufijoLQDifuso = typeof f === 'function' ? f : () => String(f || '_lq'); }
@@ -283,7 +339,7 @@
   registrarCache();
 
   window.AVE = window.AVE || {};
-  AVE.assets = { script, loadGLB, image, imagenRetenida: retenida, setNormalPlanaBaja, setSufijoLQDifuso, setNormalLQMedia, setComprimida, ktx2De, texKTX2, planoKit };
+  AVE.assets = { script, loadGLB, image, imagenRetenida: retenida, setNormalPlanaBaja, setSufijoLQDifuso, setNormalLQMedia, setComprimida, ktx2De, texKTX2, ktx2Listo, estadoKTX2, planoKit };
 
   AVE.module('assets', function () {
     const loader = new THREE.TextureLoader();
@@ -293,6 +349,6 @@
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
       return t;
     }
-    return { script, loadGLB, image, tex, loader, setNormalPlanaBaja, setSufijoLQDifuso, setNormalLQMedia, setAtlasHDListo, atlasHDListoEs, setComprimida, ktx2De, texKTX2, planoKit };
+    return { script, loadGLB, image, tex, loader, setNormalPlanaBaja, setSufijoLQDifuso, setNormalLQMedia, setAtlasHDListo, atlasHDListoEs, setComprimida, ktx2De, texKTX2, ktx2Listo, estadoKTX2, planoKit };
   });
 })();
