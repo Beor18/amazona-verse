@@ -1,0 +1,207 @@
+{
+ "tarea": "KIMI-347",
+ "modo": "adapt",
+ "etiqueta": "k347-adapt-r2",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "urlExtra": "escuela=1",
+ "packs": [
+  "cap1"
+ ],
+ "head": "desconocido",
+ "prep": {
+  "sitio": {
+   "x": -4,
+   "z": -131,
+   "r": 49
+  },
+  "esperadas": 10,
+  "aves": 10,
+  "extra": 6
+ },
+ "adaptacion": {
+  "segundos": 4.9,
+  "visibles": 6,
+  "objetivo": 6,
+  "cuenta": {
+   "bajadas": 2,
+   "subidas": 0
+  },
+  "activa": true,
+  "tray": [
+   {
+    "t": 0,
+    "v": 6,
+    "o": 6
+   }
+  ]
+ },
+ "adapt": {
+  "fpsPorSeg": [
+   14,
+   15,
+   18,
+   18,
+   16,
+   18,
+   20,
+   22,
+   20,
+   15,
+   17,
+   21
+  ],
+  "fpsMed": 18,
+  "fpsMin": 14,
+  "peorMs": 125,
+  "medianaMs": 51,
+  "p95Ms": 86,
+  "p99Ms": 115,
+  "pausas50": 118,
+  "stats": [
+   {
+    "calls": 110,
+    "ktris": 408,
+    "fpsMedidor": 13,
+    "dpr": 0.75,
+    "escuela": true,
+    "cv": 6,
+    "heapMB": 182
+   },
+   {
+    "calls": 110,
+    "ktris": 408,
+    "fpsMedidor": 13,
+    "dpr": 0.75,
+    "escuela": true,
+    "cv": 6,
+    "heapMB": 175
+   },
+   {
+    "calls": 110,
+    "ktris": 408,
+    "fpsMedidor": 18,
+    "dpr": 0.75,
+    "escuela": true,
+    "cv": 6,
+    "heapMB": 184
+   },
+   {
+    "calls": 110,
+    "ktris": 407,
+    "fpsMedidor": 18,
+    "dpr": 0.75,
+    "escuela": true,
+    "cv": 6,
+    "heapMB": 194
+   },
+   {
+    "calls": 110,
+    "ktris": 407,
+    "fpsMedidor": 18,
+    "dpr": 0.75,
+    "escuela": true,
+    "cv": 6,
+    "heapMB": 181
+   },
+   {
+    "calls": 81,
+    "ktris": 390,
+    "fpsMedidor": 19,
+    "dpr": 0.75,
+    "escuela": true,
+    "cv": 6,
+    "heapMB": 190
+   },
+   {
+    "calls": 70,
+    "ktris": 306,
+    "fpsMedidor": 21,
+    "dpr": 0.75,
+    "escuela": true,
+    "cv": 6,
+    "heapMB": 198
+   },
+   {
+    "calls": 70,
+    "ktris": 306,
+    "fpsMedidor": 23,
+    "dpr": 0.75,
+    "escuela": true,
+    "cv": 6,
+    "heapMB": 176
+   },
+   {
+    "calls": 70,
+    "ktris": 307,
+    "fpsMedidor": 17,
+    "dpr": 0.75,
+    "escuela": true,
+    "cv": 6,
+    "heapMB": 187
+   },
+   {
+    "calls": 70,
+    "ktris": 307,
+    "fpsMedidor": 14,
+    "dpr": 0.75,
+    "escuela": true,
+    "cv": 6,
+    "heapMB": 179
+   },
+   {
+    "calls": 71,
+    "ktris": 306,
+    "fpsMedidor": 19,
+    "dpr": 0.75,
+    "escuela": true,
+    "cv": 6,
+    "heapMB": 190
+   }
+  ],
+  "aves": 10,
+  "extra": 6,
+  "statsCV": {
+   "pasos": 2066,
+   "cuadros": 390
+  },
+  "med": {
+   "calls": 71,
+   "triangulos": 306036,
+   "texturasMB": 95.2,
+   "geometrias": 428,
+   "heapMB": 191
+  },
+  "medErr": null,
+  "errores": []
+ },
+ "resumen": {
+  "aves": 10,
+  "extra": 6,
+  "visibles": 6,
+  "objetivo": 6,
+  "cuenta": {
+   "bajadas": 2,
+   "subidas": 0
+  },
+  "callsMed": {
+   "adapt": 71
+  },
+  "trisMed": {
+   "adapt": 306036
+  },
+  "fpsMed": {
+   "adapt": 18
+  },
+  "medianaMs": {
+   "adapt": 51
+  },
+  "p95Ms": {
+   "adapt": 86
+  },
+  "pausas50": {
+   "adapt": 118
+  }
+ },
+ "erroresConsola": []
+}

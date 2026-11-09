@@ -10,19 +10,22 @@ const fs = require('fs'), http = require('http'), os = require('os'), path = req
 const { spawn } = require('child_process');
 const WebSocket = (() => { try { return require('ws'); } catch (e) { return global.WebSocket; } })();
 const RAIZ = path.resolve(__dirname, '../..');
-const SALIDA = path.join(RAIZ, 'docs/img/kimi345');
 const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; }
 const ETIQUETA = arg('--etiqueta', 'k343-r1');
 const CPU = parseInt(arg('--cpu', '6'), 10);
 const SECS = parseInt(arg('--secs', '12'), 10);
+const DIR = arg('--dir', 'kimi345'); // KIMI-347: carpeta de evidencia
+const PREF = arg('--pref', 'k345'); // KIMI-347: prefijo de los archivos de evidencia
+const MODO = arg('--modo', 'ab'); // KIMI-347: 'adapt' = medir solo la fase adaptativa tras converger la multitud
+const SALIDA = path.join(RAIZ, 'docs/img', DIR);
 const ANCHO = 1366, ALTO = 768, DPR = 1, CALIDAD = 'bajo', URL_EXTRA = 'escuela=1';
 fs.mkdirSync(SALIDA, { recursive: true });
-const LOG = path.join(SALIDA, `k345_${ETIQUETA}.log`);
+const LOG = path.join(SALIDA, `${PREF}_${ETIQUETA}.log`);
 const log = m => { const l = `[${new Date().toISOString().slice(11, 19)}] ${m}`; try { fs.appendFileSync(LOG, l + '\n'); } catch (e) { } console.log(l); };
-const res = { tarea: 'KIMI-343', etiqueta: ETIQUETA, pantalla: `chromebook ${ANCHO}x${ALTO}@${DPR} cpuX${CPU}`, calidad: CALIDAD, urlExtra: URL_EXTRA, packs: ['cap1'], head: null };
-function guardar() { try { fs.writeFileSync(path.join(SALIDA, `k345_${ETIQUETA}.json`), JSON.stringify(res, null, 1)); } catch (e) { } }
+const res = { tarea: 'KIMI-347', modo: MODO, etiqueta: ETIQUETA, pantalla: `chromebook ${ANCHO}x${ALTO}@${DPR} cpuX${CPU}`, calidad: CALIDAD, urlExtra: URL_EXTRA, packs: ['cap1'], head: null };
+function guardar() { try { fs.writeFileSync(path.join(SALIDA, `${PREF}_${ETIQUETA}.json`), JSON.stringify(res, null, 1)); } catch (e) { } }
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon', '.wasm': 'application/wasm' };
 function servir() {
@@ -124,6 +127,7 @@ const MUESTRA_JS = `(async (durSec) => { try { return await (async () => {
     try { const st = G.renderer.stats(); const m = performance.memory;
       stats.push({ calls: st.calls, ktris: st.triangulos != null ? Math.round(st.triangulos / 1000) : null,
         fpsMedidor: st.fps, dpr: st.dpr, escuela: st.escuela === true,
+        cv: (G.ciudadViva && G.ciudadViva.multitud) ? G.ciudadViva.multitud.visibles() : undefined,
         heapMB: m ? Math.round(m.usedJSHeapSize / 1048576) : null }); } catch (e) { stats.push(null); }
   }
   vivo = false; deltas.shift();
@@ -156,6 +160,22 @@ const ON_JS = `(() => { try { const G = AV.G;
   G.ciudadViva.pausa(false);
   return JSON.stringify({ aves: G.ciudadViva.aves().length, extra: G.bandada.EXTRA.length });
 } catch (e) { return 'ERR ' + e; } })()`;
+
+// KIMI-347: esperar a que la multitud adaptativa (QA-182) converja: visibles estable ~4 s; reporta la trayectoria
+const CONVERGER_JS = `(async () => { try { return await (async () => {
+  const G = AV.G, sleep = ms => new Promise(r => setTimeout(r, ms));
+  const M = G.ciudadViva && G.ciudadViva.multitud;
+  if (!M) return JSON.stringify({ sinMultitud: true });
+  const tray = []; let ult = -1, estables = 0; const t0 = performance.now();
+  while (performance.now() - t0 < 45000) {
+    const v = M.visibles(), o = M.objetivo();
+    if (v !== ult) { ult = v; estables = 0; tray.push({ t: Math.round(performance.now() - t0), v, o }); }
+    else { estables++; if (estables >= 8 && tray.length) break; }
+    await sleep(500);
+  }
+  return JSON.stringify({ segundos: Math.round((performance.now() - t0) / 100) / 10, visibles: M.visibles(),
+    objetivo: M.objetivo(), cuenta: M.cuenta(), activa: M.activa(), tray: tray.slice(0, 40) });
+})(); } catch (e) { return 'ERR ' + (e && e.stack || e); } })()`;
 
 async function lanzarChrome() {
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi1k345-'));
@@ -190,13 +210,13 @@ function mataPorPerfil() {
   let tid = null; let ses = null;
   async function shot(nombre) {
     const s = await cdp.call('Page.captureScreenshot', { format: 'jpeg', quality: 85 }, ses, 60000);
-    fs.writeFileSync(path.join(SALIDA, `k345_${ETIQUETA}_${nombre}.jpg`), Buffer.from(s.data, 'base64'));
+    fs.writeFileSync(path.join(SALIDA, `${PREF}_${ETIQUETA}_${nombre}.jpg`), Buffer.from(s.data, 'base64'));
   }
   async function medir(nombre, durSec) {
     log(`midiendo ${nombre} (${durSec}s)...`);
     const m = JSON.parse(await evaluar(cdp, ses, `(${MUESTRA_JS})(${durSec})`, durSec + 90));
     await shot(nombre);
-    res[fases[nombre]] = m;
+    res[fases[nombre] || nombre] = m;
     guardar();
     log(`${nombre}: fpsMed=${m.fpsMed} min=${m.fpsMin} peorMs=${m.peorMs} mediana=${m.medianaMs} p95=${m.p95Ms} p99=${m.p99Ms} pausas50=${m.pausas50} aves=${m.aves} extra=${m.extra} med=${m.med ? m.med.calls + ' calls/' + (m.med.triangulos / 1e6).toFixed(2) + 'M/' + m.med.texturasMB + ' MB' : m.medErr || 'sin med'} errores=${JSON.stringify(m.errores || [])}`);
     return m;
@@ -225,7 +245,22 @@ function mataPorPerfil() {
     if (prep.sitio) { res.prep = prep; log(`plaza: sitio=${prep.sitio.x},${prep.sitio.z} r${prep.sitio.r} aves=${prep.aves} extra=${prep.extra} (esperadas ${prep.esperadas})`); }
     else throw new Error('prep: ' + JSON.stringify(prep));
 
-    const on = await medir('on', SECS);
+    if (MODO === 'adapt') { // KIMI-347: medir la fase adaptativa una vez convergida
+      const conv = await evaluar(cdp, ses, CONVERGER_JS, 90);
+      res.adaptacion = JSON.parse(conv);
+      log('adaptación: ' + conv);
+      await cdp.bombear(1);
+      const adapt = await medir('adapt', SECS);
+      res.resumen = {
+        aves: adapt.aves, extra: adapt.extra, visibles: res.adaptacion.visibles,
+        objetivo: res.adaptacion.objetivo, cuenta: res.adaptacion.cuenta,
+        callsMed: { adapt: adapt.med && adapt.med.calls },
+        trisMed: { adapt: adapt.med && adapt.med.triangulos },
+        fpsMed: { adapt: adapt.fpsMed }, medianaMs: { adapt: adapt.medianaMs },
+        p95Ms: { adapt: adapt.p95Ms }, pausas50: { adapt: adapt.pausas50 }
+      };
+    } else {
+      const on = await medir('on', SECS);
     const off0 = await evaluar(cdp, ses, OFF_JS, 20);
     log('OFF aplicado: ' + off0);
     await cdp.bombear(1.5);
@@ -246,6 +281,7 @@ function mataPorPerfil() {
       p95Ms: { on: on.p95Ms, off: off.p95Ms, on2: on2.p95Ms },
       pausas50: { on: on.pausas50, off: off.pausas50, on2: on2.pausas50 }
     };
+    }
     res.erroresConsola = await evaluar(cdp, ses, `(window.__erroresConsola || []).slice(0, 30)`, 15);
     log('errores de consola: ' + JSON.stringify(res.erroresConsola));
     guardar();
@@ -260,7 +296,7 @@ function mataPorPerfil() {
     try { chrome.kill(); } catch (e) { }
     mataPorPerfil();
     srv.close();
-    console.log('· JSON: ' + path.join(SALIDA, `k345_${ETIQUETA}.json`));
+    console.log('· JSON: ' + path.join(SALIDA, `${PREF}_${ETIQUETA}.json`));
     process.exit(res.error ? 1 : 0);
   }
 })().catch(e => { console.error('FALLO:', e.message); try { mataPorPerfil(); } catch (e2) { } process.exit(1); });
