@@ -1,0 +1,16 @@
+AUDITORIA HTTP · 2026-11-09T01:18:22Z · sitio https://www.amazonaverse.com/juego
+meta ave:build servido: ave:build" content="HEAD 0271ba1de1de"
+
+== byte-identidad vs git 0271ba1de1de ==
+DIFIERE      index.html  (remota=3a758041214ed76c690ccce4b501fb0464ad0b49d6cdb3d33bcbc6f82fc17e49 local=c9972d81f933c94a839c4c9b129705bd24c4bd27444009db12ff2de71cca394c)
+OK-IDENTICO  src/engine/streaming.js
+OK-IDENTICO  src/engine/assets.js
+OK-IDENTICO  src/engine/renderer.js
+OK-IDENTICO  assets/models/edificios/tex_hd/hd_ancient_lq.ktx2
+OK-IDENTICO  assets/models/edificios/tex_hd/hd_savage_lq.ktx2
+OK-IDENTICO  assets/models/edificios/tex_hd/hd_ancient_lq1024.ktx2
+OK-IDENTICO  assets/models/edificios/tex_hd/hd_savage_lq1024.ktx2
+OK-IDENTICO  assets/vendor/three/examples/js/libs/basis/basis_transcoder.wasm
+OK-IDENTICO  assets/vendor/three/examples/js/libs/basis/basis_transcoder.js
+OK-IDENTICO  assets/models/edificios/tex_hd/hd_ancient_lq.jpg
+OK-IDENTICO  assets/models/edificios/tex_hd/hd_savage_lq.jpg

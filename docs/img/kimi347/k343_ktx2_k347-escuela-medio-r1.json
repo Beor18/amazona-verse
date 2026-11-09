@@ -1,0 +1,348 @@
+{
+  "head": "11dab192",
+  "url_base": "https://www.amazonaverse.com/juego",
+  "url_extra": "calidad=medio&escuela=1",
+  "cuando": "2026-11-09T01:23:09.695Z",
+  "calidad": "medio",
+  "escuela": true,
+  "info": {
+    "geo": 168,
+    "tex": 161,
+    "prog": 74,
+    "calls": 1,
+    "tris": 1
+  },
+  "texturas": {
+    "n": 129,
+    "mb": 337.2,
+    "comprimidas": 0,
+    "comprimidasMb": 0
+  },
+  "atlasLQ": [],
+  "atlasHD": [
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    }
+  ],
+  "heapMb": 493,
+  "errores": []
+}

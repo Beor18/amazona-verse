@@ -5,7 +5,9 @@
    no existe, así que este servidor la inyecta (mismo formato que avbuild paso_ktx2) para
    ejercitar el camino real: KTX2Loader + transcoder Basis → CompressedTexture en la GPU.
    No toca ningún archivo del repo: la inyección va en el HTML servido.
-   Uso: node tools/build/kimi3_343_ktx2.js [--url-extra "calidad=bajo"] [--etiqueta r1] */
+   KIMI-347: --url <base> mide contra una base remota (p. ej. el sitio publicado, que ya
+   sirve la meta ave:ktx2) en vez del worktree local: sin inyección ni servidor local.
+   Uso: node tools/build/kimi3_343_ktx2.js [--url https://www.amazonaverse.com/juego] [--url-extra "calidad=bajo"] [--espera 25] [--etiqueta r1] */
 'use strict';
 const http = require('http'); const fs = require('fs'); const path = require('path'); const os = require('os'); const { spawn, execSync } = require('child_process');
 const AQUI = __dirname, RAIZ = path.resolve(AQUI, '..', '..');
@@ -15,8 +17,9 @@ const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Applica
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
 const URL_EXTRA = arg('--url-extra', 'calidad=bajo');
 const ESPERA = parseInt(arg('--espera', '0'), 10); // s extra tras asentar (para pasar el barrido de atlas ~20 s)
+const URL_BASE = arg('--url', ''); // KIMI-347: base remota (producción ya sirve ave:ktx2): sin servidor ni inyección
 const ETIQUETA = arg('--etiqueta', 'r1');
-const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi343');
+const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi343'));
 fs.mkdirSync(SALIDA, { recursive: true });
 const LOGF = path.join(SALIDA, `k343_ktx2_${ETIQUETA}.log`);
 fs.writeFileSync(LOGF, '');
@@ -61,8 +64,7 @@ async function ev(cdp, ses, exp, t, pr) {
   return r.result ? r.result.value : undefined;
 }
 (async () => {
-  const { srv, puerto } = await servir();
-  const origen = `http://127.0.0.1:${puerto}`;
+  const srv = URL_BASE ? null : await servir(); const origen = URL_BASE ? URL_BASE.replace(/\/$/, '') : `http://127.0.0.1:${srv.puerto}`;
   const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi3k343-'));
   const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + perf, '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run', '--mute-audio', '--window-size=1280,800'], { stdio: ['ignore', 'ignore', 'pipe'] });
   let err = ''; chrome.stderr.on('data', d => { err += d; });
@@ -112,12 +114,12 @@ async function ev(cdp, ses, exp, t, pr) {
   const res = await ev(cdp, ses, MEDIR, 60);
   const png = await cdp.call('Page.captureScreenshot', { format: 'jpeg', quality: 82 }, ses);
   if (png && png.data) fs.writeFileSync(path.join(SALIDA, `k343_ktx2_${ETIQUETA}.jpg`), Buffer.from(png.data, 'base64'));
-  fs.writeFileSync(path.join(SALIDA, `k343_ktx2_${ETIQUETA}.json`), JSON.stringify({ head: execSync('git rev-parse --short=8 HEAD').toString().trim(), url_extra: URL_EXTRA, cuando: new Date().toISOString(), ...res }, null, 2));
+  fs.writeFileSync(path.join(SALIDA, `k343_ktx2_${ETIQUETA}.json`), JSON.stringify({ head: execSync('git rev-parse --short=8 HEAD').toString().trim(), url_base: URL_BASE || 'worktree-local', url_extra: URL_EXTRA, cuando: new Date().toISOString(), ...res }, null, 2));
   log('· medida: ' + JSON.stringify(res));
   try { await cdp.call('Browser.close', {}, undefined, 5000); } catch (e) { }
   try { chrome.kill(); } catch (e) { }
   await new Promise(r => setTimeout(r, 1200));
   try { console.log('· ' + execSync(`powershell -NoProfile -ExecutionPolicy Bypass -File "${path.join(AQUI, 'kimi2_mata_perfil.ps1')}" ${path.basename(perf)}`, { timeout: 30000 }).toString().trim()); } catch (e) { }
   try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) { }
-  srv.close(); process.exit(0);
+  if (srv) srv.close(); process.exit(0);
 })().catch(e => { console.error('FATAL', e); process.exit(1); });
