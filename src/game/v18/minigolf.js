@@ -1494,7 +1494,10 @@ window.AVV18Minigolf = function (G) {
       colocar(TEE.u, 0); apuntaLocal(TEE.u + 5, 0); tirar(0.15); correr(0.4);
       const sp0 = Math.hypot(B.vx, B.vz), poderes = []; const oy = e => { if (!oy.mudo) poderes.push(e); }; G.on('v18poder', oy);
       apuntaLocal(enLocal().u + 4, enLocal().v + 1.2); const dG = dir(); seguir(0, true);
-      const rg = grito(); correr(0.3); oy.mudo = true;
+      const oidosG = [], play0 = G.audio.play; G.audio.play = (n, x) => { oidosG.push(n); return play0(n, x); }; // Kelvin 9-nov: el Grito suena
+      let rg; try { rg = grito(); } finally { G.audio.play = play0; }
+      correr(0.3); oy.mudo = true;
+      check('Grito del Yunque: suena su propio sonido («grito»: graznido + ondas)', oidosG.includes('grito') && G.audio.log.slice(-6).includes('grito'), JSON.stringify(oidosG));
       const sp1 = Math.hypot(B.vx, B.vz), al = (B.vx * dG.x + B.vz * dG.z) / (sp1 || 1);
       check('Grito del Yunque (el poder de Vittata): empuja la semilla hacia donde apuntas', rg.ok && A.grito && sp1 > sp0 + 2 && al > 0.95 && poderes.some(e => e.id === 'grito_yunque'),
         JSON.stringify({ antes: +sp0.toFixed(2), despues: +sp1.toFixed(2), alineado: +al.toFixed(3) }));
