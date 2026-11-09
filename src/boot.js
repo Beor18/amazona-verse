@@ -143,6 +143,10 @@
     // Expansión · minijuego de pesca en el muelle de Villa Raíz (src/game/v18/pesca.js). Con la bandera apagada no se carga nada.
     const pesca18 = aDemanda('src/game/v18/pesca.js', 'AVV18Pesca'), cargarV18Pesca = () => cargarV18().catch(() => null).then(pesca18);
     AV.v18PescaTest = o => { const antes = { exp: !!G.EXPANSION, cargado: !!window.AVV18Pesca }; return cargarV18Pesca().then(x => x.test(Object.assign({ antes }, o))); }; if (G.EXPANSION) alPrimerGesto(cargarV18Pesca);
+    // Expansión · Construir libre (src/game/construir.js): nido, techo de hojas y decoración. Con la bandera apagada no se carga; AV.construirTest()
+    // lo carga para comprobar que sin ella no se ve nada. Con la bandera se carga al arrancar (pone su tarjeta en «¿Cómo quieres jugar?»).
+    const cargarConstruir = aDemanda('src/game/construir.js', 'AVConstruir'); AV.construir = () => cargarConstruir().then(c => c.empezar()); AV.construirTest = o => cargarConstruir().then(c => c.test(o));
+    if (G.EXPANSION) cargarConstruir().catch(e => console.warn('construir', e));
     // V18.3 · personajes históricos (sistema único src/game/v18/npc.js, datos content/comun/personajes_v18.js) y su primera misión en Puerto de La Mina (src/game/v18/puerto.js)
     const NPC18_SRC = 'src/game/v18/npc.js', npc18 = aDemanda(NPC18_SRC, 'AVV18Npc'), puerto18 = aDemanda('src/game/v18/puerto.js', 'AVV18Puerto'), cargarV18Puerto = () => Promise.all([cargarV18(), hab18(), cargarV18Fx(), AVE.assets.script('content/comun/personajes_v18.js')]).then(npc18).then(puerto18);
     AV.v18PuertoTest = o => { const antes = { v18: G.V18, npc: !!window.AVV18Npc, puerto: !!window.AVV18Puerto, glb: (performance.getEntriesByType('resource') || []).filter(r => /models\/personajes\//.test(r.name)).length }; return cargarV18Puerto().then(p => p.test(Object.assign({ antes }, o))); }; if (v18On) cuandoToque(() => mundoV18('puente_villa', 'reparado'), cargarV18Puerto); // W32: antes de reparar el puente no sale nada (su check 2)

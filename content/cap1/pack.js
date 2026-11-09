@@ -83,11 +83,12 @@
       // peces: ids de los peces observados con el visor (src/game/rio_vivo.js); las partidas viejas la reciben vacía.
       // album: ids de las especies vistas de cerca para el Álbum de las 36 (src/game/album.js); las partidas viejas la reciben vacía.
       // dones: ids aprendidos con una mentora (src/game/dones.js). Vacío en las partidas viejas: la Llamada espera a Iguaca.
-      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'guardianIntro', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'gearRoof', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces', 'album', 'dones'],
+      // construir: rincón de Construir libre { v: 1, piezas } (src/game/construir.js, expansión tras ?expansion=1); null en las partidas viejas.
+      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'guardianIntro', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'gearRoof', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces', 'album', 'dones', 'construir'],
       estado: () => ({
         examined: { maquina: false, transmisor: false }, evaluated: { A: false, B: false },
         refuge: null, builds: [], guardianMet: false, guardianIntro: false, benchUnlocked: false, transmitterOn: false, boatPlan: false, gearRoof: false,
-        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [], lugares: [], marcador: null, rescates: 0, fauna: [], peces: [], album: [], dones: [],
+        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [], lugares: [], marcador: null, rescates: 0, fauna: [], peces: [], album: [], dones: [], construir: null,
         edu: {
           hecho: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false, p7: false, p8: false },
           inicio: null, fin: null, pred1: null, pred2: null, perchas: {}, cadena: 0, vista: 0, vistos: { A: false, B: false },
