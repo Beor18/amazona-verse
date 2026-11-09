@@ -1,6 +1,10 @@
 /* Juego · Expansión · Minijuego de pesca, «Pesca en el río» (G.v18pesca). Kelvin, 8-nov (ROADMAP, «Después de la temporada 1»:
    minijuego de pesca para la expansión) y 9-nov: «Debe ser en río, no en el mar». Diversión primero: lanzar, esperar el pique,
-   recoger y soltar. Sin monedas, tienda ni azar de pago: los puntos solo cuentan en la ronda y el récord es local.
+   recoger y soltar. Los puntos solo cuentan en la ronda y el récord es local.
+   - Conchitas (Kelvin 9-nov, idea de su hija: «con esos peces el premio sea comprar más ropa y más cosas»): cada pez de la foto paga
+     conchitas, la moneda del juego del Mercadito del río (src/game/tienda.js, que fija los pagos): olivo 5, dajao 10, guavina 15,
+     anguila 15 y las invasoras 5; reportar una invasora al DRNA da 10 más (premio de conservación). El pez que se suelta paga igual:
+     es un premio por la foto. Pago fijo por especie, sin dinero real ni azar; los resultados dicen cuántas se ganaron y llevan al Mercadito.
    - Bandera: ENCENDIDA para todos (Kelvin 9-nov: «Me encanta la pesca, buenísimo»). Bandera propia G.PESCA (boot.js), ?pesca=0 la
      apaga: sin tarjeta en el menú, sin botón en la Pausa y sin piezas. La tarjeta (menu_modos.js) y el botón de la Pausa (boot.js) no
      necesitan este script: se carga solo al entrar a pescar.
@@ -96,13 +100,19 @@ window.AVV18Pesca = function (G) {
     alAgua: '¡Al río! Nada feliz otra vez.', reportado: '¡Gracias! Las invasoras no se devuelven al agua: avisar al DRNA ayuda a los peces nativos.',
     invasoraNo: 'Las especies invasoras no se devuelven al agua. Repórtala al DRNA.',
     fin: '¡Se acabó el tiempo!', nuevo: '¡Nuevo récord!', album: 'Tu álbum de hoy', nada: 'Hoy no picó nada. ¡Otra ronda!',
-    sale: '¡Hasta luego! El río te espera cerca de Villa Raíz.', cerrado: 'La pesca todavía no está abierta.'
+    sale: '¡Hasta luego! El río te espera cerca de Villa Raíz.', cerrado: 'La pesca todavía no está abierta.',
+    tienda: 'Mercadito', tiendaL: 'Abrir el Mercadito del río'
   };
   const tiempoTxt = s => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
   const pecesTxt = n => 'Peces: ' + n, puntosTxt = n => 'Puntos: ' + n, recordTxt = n => 'Récord: ' + n, tiempoEt = s => 'Tiempo: ' + tiempoTxt(s);
   const masTxt = n => '+' + n + ' puntos', finTxt = (n, p) => (n === 1 ? '1 pez' : n + ' peces') + ' · ' + p + ' puntos';
   const fuenteTxt = f => 'Fuente: ' + f.join(' · ');
   const atrapado = nom => '¡Atrapaste: ' + nom + '!';
+  const conchasTxt = n => '+' + n + ' conchitas', bonoTxt = n => TXT.reportado + ' Premio de conservación: +' + n + ' conchitas.';
+  const finConchas = (g, t) => 'Conchitas de hoy: +' + g + ' · Tienes ' + t;
+  // Conchitas del Mercadito (src/game/tienda.js pone el pago fijo de cada especie); sin la tienda, la pesca sigue igual
+  const tienda = () => (G.tienda && G.tienda.disponible && G.tienda.disponible() ? G.tienda : null);
+  const pagar = (p, como) => { const T = tienda(); if (!T) return 0; let n = 0; try { n = T.pagarPez(p.id, como) || 0; } catch (e) { n = 0; } A.conchitas += n; return n; };
 
   // ---------- Utilidades ----------
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
@@ -233,7 +243,7 @@ window.AVV18Pesca = function (G) {
   // ---------- Estado ----------
   const A = { fase: 'nada', manual: false, tiempo: RONDA, t: 0, carga: 0, cargaT: 0, cargando: false, giro: 0, ang: 0, dist: 0, esperaT: 0, mordT: 0, picaT: 0,
     corcho: { x: 0, y: 0, z: 0, x0: 0, z0: 0 }, vuelo: 0, pez: null, forzar: null, marca: 0.2, vmarca: 0, zona: 0.5, zonaV: 0, zonaObj: 0.5, prog: 0, tiraT: 0, cansado: false,
-    sosteniendo: false, peces: 0, puntos: 0, album: {}, record: 0, nuevo: false, ultimo: null, aviso: '', fotoT: 0, sueltaT: 0, desdeMenu: false };
+    sosteniendo: false, peces: 0, puntos: 0, conchitas: 0, album: {}, record: 0, nuevo: false, ultimo: null, aviso: '', fotoT: 0, sueltaT: 0, desdeMenu: false };
   let recordSesion = 0;
   const recordGuardado = () => { const v = V(); const r = v && v.mundo ? v.mundo(ID) : null; return r && typeof r === 'object' && r.mejor > 0 ? r.mejor : 0; };
   const recordVer = () => Math.max(recordSesion, recordGuardado());
@@ -289,7 +299,7 @@ window.AVV18Pesca = function (G) {
     return true;
   }
   function nuevaRonda() {
-    Object.assign(A, { fase: 'listo', tiempo: RONDA, t: 0, carga: 0, cargaT: 0, cargando: false, sosteniendo: false, pez: null, prog: 0, peces: 0, puntos: 0, album: {}, nuevo: false, aviso: '', resultado: null, pistaTxt: '', sueltaT: 0 });
+    Object.assign(A, { fase: 'listo', tiempo: RONDA, t: 0, carga: 0, cargaT: 0, cargando: false, sosteniendo: false, pez: null, prog: 0, peces: 0, puntos: 0, conchitas: 0, album: {}, nuevo: false, aviso: '', resultado: null, pistaTxt: '', sueltaT: 0 });
     A.record = recordVer();
     if (P) { P.pez.visible = false; P.onda.visible = false; }
   }
@@ -357,14 +367,15 @@ window.AVV18Pesca = function (G) {
   function atrapa() {
     const p = A.pez; A.fase = 'foto'; A.fotoT = 0; A.peces++; A.puntos += p.pts; A.album[p.id] = (A.album[p.id] || 0) + 1; A.sosteniendo = false;
     vestirPez(p); P.pez.visible = true; flash(); celebrar();
-    sonar('unlock'); toast(atrapado(p.nombre) + ' ' + masTxt(p.pts), 2200);
+    const c = pagar(p, 'foto');
+    sonar('unlock'); toast(atrapado(p.nombre) + ' ' + masTxt(p.pts) + (c ? ' · ' + conchasTxt(c) : ''), 2200);
     emitir({ tipo: 'atrapa', pez: p.id, puntos: A.puntos }); hud.vista = null; paneles(); pintar(true);
   }
   function soltarPez() {
     if (A.fase !== 'foto') return false;
     const p = A.pez;
     if (p.invasora) {
-      toast(TXT.reportado, 3600); sonar('descubrir');
+      const b = pagar(p, 'drna'); toast(b ? bonoTxt(b) : TXT.reportado, 3600); sonar('descubrir');
       try { G.emit('expansion:invasora', { id: p.id, cient: p.cient, origen: 'pesca', accion: 'reportar' }); } catch (e) { /* sin oyentes */ }
       P.pez.visible = false; emitir({ tipo: 'reporta', pez: p.id });
     } else {
@@ -380,7 +391,7 @@ window.AVV18Pesca = function (G) {
     const prev = recordVer();
     A.nuevo = A.puntos > 0 && A.puntos > prev;
     recordSesion = Math.max(recordSesion, A.puntos); if (A.puntos > 0) guardarRecord(A.puntos);
-    A.record = recordVer(); A.ultimo = A.resultado = { peces: A.peces, puntos: A.puntos, nuevo: A.nuevo, album: Object.assign({}, A.album) };
+    A.record = recordVer(); A.ultimo = A.resultado = { peces: A.peces, puntos: A.puntos, conchitas: A.conchitas, nuevo: A.nuevo, album: Object.assign({}, A.album) };
     sonar(A.peces ? 'unlock' : 'tick'); toast(TXT.fin, 2400);
     emitir({ tipo: 'fin', peces: A.peces, puntos: A.puntos, nuevo: A.nuevo }); hud.vista = null; paneles(); pintar(true);
     return true;
@@ -487,13 +498,13 @@ window.AVV18Pesca = function (G) {
 
   // ---------- Entrada ----------
   const modo = { activo: () => A.fase !== 'nada', accion: () => { if (A.fase === 'fin') otraRonda(); else if (!A.sosteniendo) { apretar(); if (A.fase !== 'tira') aflojar(); } }, aviso: () => '', get verbo() { return verboPrincipal(); } };
-  const TRAGAR = new Set(['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's', ' ', 'e', 'enter', 'escape', 'r', 'g', 'f', 'v', 'x', 'c', 'q']);
+  const TRAGAR = new Set(['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's', ' ', 'e', 'enter', 'escape', 'r', 'g', 'f', 'v', 'x', 'c', 'q', 't']);
   const pausa = () => !!(G.pausa && G.pausa.activa && G.pausa.activa());
   let enganchado = false, modo0 = null, teclasGiro = { izq: false, der: false }, cam0 = null;
   const giroTeclas = () => { A.giro = (teclasGiro.izq ? 1 : 0) - (teclasGiro.der ? 1 : 0); };
   const CAM_PESCA = { height: 4.4, dist: 6.4 };
   function teclaAbajo(e) {
-    if (!enganchado || pausa() || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
+    if (!enganchado || pausa() || (G.ui && G.ui.cardOpen) || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
     const k = (e.key || '').toLowerCase(); if (!TRAGAR.has(k)) return;
     // Enter o Espacio sobre un botón del panel con el foco (Otra ronda, Salir, Soltar…) lo pulsa como cualquier botón
     const bf = e.target && e.target.closest && hud && hud.el.contains(e.target) ? e.target.closest('button[data-a]') : null;
@@ -503,7 +514,7 @@ window.AVV18Pesca = function (G) {
     else if (k === 'arrowright' || k === 'd') { teclasGiro.der = true; giroTeclas(); }
     if (e.repeat) return;
     if (k === 'escape') salir(TXT.sale);
-    else if (A.fase === 'fin') { if (k === 'r' || k === ' ' || k === 'enter' || k === 'e') otraRonda(); }
+    else if (A.fase === 'fin') { if (k === 'r' || k === ' ' || k === 'enter' || k === 'e') otraRonda(); else if (k === 't') abrirTienda(); }
     else if (k === ' ' || k === 'e' || k === 'enter') apretar();
   }
   function teclaArriba(e) {
@@ -560,6 +571,7 @@ window.AVV18Pesca = function (G) {
       '#v18-pesca.tactil button kbd{display:none}' +
       '#v18-pesca .vp-guia{margin:8px auto 0;width:max-content;max-width:100%;min-height:1.4em;background:rgba(255,227,154,.95);color:#3b2a14;text-shadow:none;font-weight:600;font-size:15px;padding:5px 14px;border-radius:16px;text-align:center;box-sizing:border-box}' +
       '#v18-pesca .vp-guia:empty{visibility:hidden}' +
+      '#v18-pesca .vp-conchas{font-weight:700;color:#ffe39a}#v18-pesca .vp-fin{text-align:center}' +
       '#v18-pesca .vp-ficha,#v18-pesca .vp-fin{text-align:center}#v18-pesca .vp-ficha p,#v18-pesca .vp-fin p{margin:3px 0}' +
       '#v18-pesca .vp-ficha .vp-t{font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#ffe39a}#v18-pesca .vp-ficha .vp-n{font-size:22px;font-weight:700}' +
       '#v18-pesca .vp-ficha .vp-c{font-style:italic;font-size:14px;opacity:.9}#v18-pesca .vp-ficha .vp-d{font-size:15px;line-height:1.3}' +
@@ -594,6 +606,7 @@ window.AVV18Pesca = function (G) {
       if (a === 'salir') salir(TXT.sale);
       else if (a === 'otra') otraRonda();
       else if (a === 'soltar') soltarPez();
+      else if (a === 'tienda') abrirTienda();
       else if (a === 'accion') { apretar(); aflojar(); }
     };
     el.addEventListener('click', e => { const b = boton(e); if (!b || e.detail !== 0) return; e.preventDefault(); accion(b.dataset.a); });
@@ -624,7 +637,9 @@ window.AVV18Pesca = function (G) {
       `<p><span class="vp-chapa" data-k="fchapa"></span></p><p class="vp-d" data-k="fd"></p><p class="vp-f" data-k="ff" data-no-tr></p><p class="vp-k" data-k="fk"></p>` +
       `<div class="vp-bot2" style="grid-template-columns:1fr">${b('soltar', TXT.soltarPez, 'Espacio', ' class="vp-principal"')}</div></div>` +
       `<div class="vp-fin" data-k="fin" role="status" hidden><p class="vp-g" data-k="fin1"></p><p data-k="fin2"></p><p class="vp-nuevo" data-k="fin3"></p><p class="vp-et" data-k="fin4">${TXT.album}</p><div class="vp-alb" data-k="alb"></div>` +
-      `<div class="vp-bot2">${b('otra', TXT.otra, 'R')}<button type="button" data-a="salir"><span data-k="t-bsalir">${TXT.salir}</span>${k('Esc')}</button></div></div></div>`;
+      `<p class="vp-conchas" data-k="fin5" hidden></p>` +
+      `<div class="vp-bot2">${b('otra', TXT.otra, 'R')}<button type="button" data-a="salir"><span data-k="t-bsalir">${TXT.salir}</span>${k('Esc')}</button></div>` +
+      (tienda() ? `<div class="vp-bot2" style="grid-template-columns:1fr">${b('tienda', TXT.tienda, 'T', ` aria-label="${TXT.tiendaL}" class="vp-tienda"`)}</div>` : '') + '</div></div>';
     for (const kq in hud.qs) delete hud.qs[kq];
     hud.lleno = true; PK.firma = '';
   }
@@ -656,6 +671,7 @@ window.AVV18Pesca = function (G) {
       if (!ks.length) { const s = document.createElement('span'); s.textContent = TXT.nada; hud.q('alb').appendChild(s); }
       for (const id of ks) { const s = document.createElement('span'), n = document.createElement('b'), c = document.createElement('i'); n.textContent = PEZ[id].nombre; c.textContent = ' × ' + r.album[id]; c.setAttribute('data-no-tr', ''); s.append(n, c); hud.q('alb').appendChild(s); }
       texto('t-bsalir', A.desdeMenu ? TXT.menu : TXT.salir);
+      const T = tienda(), f5 = hud.q('fin5'); if (f5) { f5.hidden = !T; if (T) texto('fin5', finConchas(r.conchitas || 0, T.saldo())); }
     }
     enfocar(foto ? 'soltar' : fin ? 'otra' : 'accion');
   }
@@ -687,6 +703,10 @@ window.AVV18Pesca = function (G) {
     if (forzar || !A.pistaTxt) { if (A.fase === 'listo' && (!A.pistaTxt || forzar && ![TXT.tierra, TXT.escapo, TXT.seFue].includes(A.pistaTxt))) A.pistaTxt = tt ? TXT.guiaT : TXT.guia; texto('guia', A.pistaTxt || ''); }
   }
 
+  // Mercadito del río desde los resultados (botón o T): la tarjeta va encima del panel; al cerrarla se vuelve a los resultados
+  function abrirTienda() { const T = tienda(); if (!T || A.fase !== 'fin') return false; return T.abrir('pesca'); }
+  G.on('tienda', () => { if (A.fase === 'fin' && hud && hud.lleno && A.resultado) { const T = tienda(); if (T) texto('fin5', finConchas(A.resultado.conchitas || 0, T.saldo())); } });
+
   // ---------- Entrar desde el menú o la Pausa ----------
   function irYJugar() {
     if (!disponible() || A.fase !== 'nada' || otroActivo()) return false;
@@ -717,6 +737,8 @@ window.AVV18Pesca = function (G) {
     const toque = (b, tipo, id) => { const r = b.getBoundingClientRect(); b.dispatchEvent(new PointerEvent(tipo, { bubbles: true, cancelable: true, pointerId: id || 41, pointerType: 'touch', isPrimary: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); };
     // Recoger como un jugador: mantener cuando el anzuelo está por debajo de la zona y soltar cuando está por encima
     const recogerCon = (bajar, subir, s) => { let abajo = false; for (let t = 0; t < (s || 30) && A.fase === 'tira'; t += 1 / 60) { const q = A.marca < A.zona - 0.03 || (A.marca < A.zona + 0.03 && A.vmarca < 0); if (q && !abajo) { bajar(); abajo = true; } else if (!q && abajo) { subir(); abajo = false; } paso(1 / 60); } if (abajo) subir(); return A.fase; };
+    // Conchitas: la prueba gana conchitas de verdad en G.S; al terminar se deja S.tienda como estaba
+    const TI = tienda(), tienda0 = S.tienda ? JSON.parse(JSON.stringify(S.tienda)) : S.tienda, saldo0 = TI ? TI.saldo() : 0, pago = id => (TI ? TI.PAGO_PEZ[id] : 0);
     const ficha = () => hud && !hud.q('ficha').hidden ? { n: hud.q('fn').textContent, c: hud.q('fc').textContent, d: hud.q('fd').textContent, f: hud.q('ff').textContent, b: hud.q('t-soltar').textContent } : null;
     try {
       // 0. Encendida para todos (Kelvin 9-nov): sin bandera la tarjeta y el botón de la Pausa se ven; ?pesca=0 (G.PESCA = false) lo esconde todo
@@ -772,6 +794,7 @@ window.AVV18Pesca = function (G) {
       const pez1 = A.pez, fin1 = recogerCon(() => tecla('keydown', ' '), () => tecla('keyup', ' '), 40);
       const f1 = ficha();
       check('Teclado: manteniendo el anzuelo en la zona verde se atrapa el pez y sale su ficha (nombre, nombre científico, dato y fuente)', fin1 === 'foto' && A.peces === 1 && A.puntos === pez1.pts && f1 && f1.n === pez1.nombre && f1.c === pez1.cient && f1.d === pez1.dato && /^Fuente: /.test(f1.f), JSON.stringify({ fase: fin1, pez: pez1 && pez1.id, ficha: f1 }));
+      check('Conchitas: el pez de la foto paga lo fijo de su especie (olivo 5, dajao 10, guavina 15, anguila 15) y el aviso lo dice', !!TI && fin1 === 'foto' && pago(pez1.id) > 0 && A.conchitas === pago(pez1.id) && TI.saldo() === saldo0 + pago(pez1.id) && toasts.some(t => t.endsWith(' · ' + conchasTxt(pago(pez1.id)))) && JSON.stringify(TI.PAGO_PEZ) === JSON.stringify({ olivo: 5, dajao: 10, guavina: 15, anguila: 15, tilapia: 5, pleco: 5 }), pez1.id + ' · ' + A.conchitas + ' · saldo ' + (TI && TI.saldo()));
       { const ch = AMIGOS.chispa; correr(0.2);
         check('Al atrapar, los amigos celebran: Iguaca da saltitos y Chispa hace «Celebrar»; luego vuelven a Idle', AMIGOS.saltoT > 0 && AMIGOS.iguaca.sp.position.y > AMIGOS.iguaca.y + 1.05 && (!ch || !ch.mixer || ch.anim === 'Celebrar'),
           JSON.stringify({ salto: +AMIGOS.saltoT.toFixed(2), anim: ch && ch.anim })); }
@@ -781,6 +804,7 @@ window.AVV18Pesca = function (G) {
       check('Con la ficha abierta el reloj de la ronda se para', A.tiempo === t0);
       tecla('keydown', ' '); tecla('keyup', ' ');
       check('Teclado: «Soltarlo» devuelve el pez al agua y se vuelve a lanzar', A.fase === 'listo' && A.album[pez1.id] === 1 && eventos.some(e => e.tipo === 'suelta' && e.pez === pez1.id) && toasts.includes(TXT.alAgua));
+      check('Soltarlo no cambia las conchitas: ya se pagaron por la foto', A.conchitas === pago(pez1.id) && TI.saldo() === saldo0 + pago(pez1.id));
       correr(1.2);
       check('El pez salta de vuelta al agua y desaparece', !P.pez.visible);
       // 3. Un pique que no se clava: el pez se va
@@ -794,11 +818,14 @@ window.AVV18Pesca = function (G) {
       const cerca = cuenta(D_MIN), lejos = cuenta(D_MAX);
       check('En medio del río pican más dajaos y guavinas; cerca de la orilla, más olivos y anguilas', (lejos.guavina || 0) > (cerca.guavina || 0) * 2 && (lejos.dajao || 0) > (cerca.dajao || 0) && (cerca.olivo || 0) > (lejos.olivo || 0) * 2 && (cerca.anguila || 0) > (lejos.anguila || 0), JSON.stringify({ cerca, lejos }));
       // 6. Invasora: no se suelta, se reporta al DRNA
+      const cAntes = A.conchitas, sAntes = TI.saldo();
       A.forzar = 'tilapia'; lanzar(0.5); hasta(() => A.fase === 'pica', 10); clavar(); recogerCon(() => apretar(), () => aflojar(), 40);
       const f2 = ficha();
       check('Invasora (tilapia de Mozambique): ficha «Especie invasora» y el botón dice «Reportar al DRNA»', A.fase === 'foto' && A.pez.id === 'tilapia' && f2 && f2.b === TXT.reportar && hud.q('fchapa').textContent === TXT.invasora && hud.q('fk').textContent === TXT.invasoraNo, JSON.stringify(f2));
+      const cFoto = A.conchitas;
       soltarPez();
-      check('Al reportarla no vuelve al agua: aviso de gracias y evento para el módulo de invasoras', A.fase === 'listo' && !P.pez.visible && toasts.includes(TXT.reportado) && invasoras.length === 1 && invasoras[0].id === 'tilapia' && !eventos.some(e => e.tipo === 'suelta' && e.pez === 'tilapia'));
+      check('Conchitas: la invasora paga 5 por la foto y reportarla al DRNA da 10 más (premio de conservación, dicho en el aviso)', cFoto === cAntes + 5 && A.conchitas === cAntes + 5 + TI.BONO_DRNA && TI.BONO_DRNA === 10 && TI.saldo() === sAntes + 15 && toasts.includes(bonoTxt(10)), cFoto + ' → ' + A.conchitas);
+      check('Al reportarla no vuelve al agua: aviso de gracias y evento para el módulo de invasoras', A.fase === 'listo' && !P.pez.visible && toasts.some(t => t.indexOf(TXT.reportado) === 0) && invasoras.length === 1 && invasoras[0].id === 'tilapia' && !eventos.some(e => e.tipo === 'suelta' && e.pez === 'tilapia'));
       A.forzar = 'pleco'; lanzar(0.2); hasta(() => A.fase === 'pica', 10); clavar(); recogerCon(() => apretar(), () => aflojar(), 40);
       const f3 = ficha();
       check('Invasor (pleco): ficha «Especie invasora», «Reportar al DRNA» y al reportarlo el mismo evento, sin volver al río', A.fase === 'foto' && A.pez.id === 'pleco' && f3 && f3.b === TXT.reportar && f3.c === 'Pterygoplichthys multiradiatus' && soltarPez() && invasoras.length === 2 && invasoras[1].id === 'pleco' && invasoras[1].accion === 'reportar' && !eventos.some(e => e.tipo === 'suelta' && e.pez === 'pleco'), JSON.stringify(f3));
@@ -807,6 +834,12 @@ window.AVV18Pesca = function (G) {
       const r1 = { fin1: hud.q('fin1').textContent, fin2: hud.q('fin2').textContent, fin3: hud.q('fin3').textContent, alb: hud.q('alb').textContent };
       check('Se acaba el tiempo: resultados con peces, puntos, récord y el álbum de hoy', A.fase === 'fin' && !hud.q('fin').hidden && hud.q('juego').hidden && r1.fin1 === TXT.fin && r1.fin2 === finTxt(3, pts) && r1.fin3 === TXT.nuevo && r1.alb.includes('Tilapia de Mozambique') && r1.alb.includes('Pleco') && r1.alb.includes(pez1.nombre), JSON.stringify(r1));
       const g = v && v.mundo ? v.mundo(ID) : null;
+      check('Resultados: conchitas de la ronda y las que tienes, y el botón del Mercadito', A.resultado.conchitas === A.conchitas && A.conchitas === pago(pez1.id) + 15 + 15 && !hud.q('fin5').hidden && hud.q('fin5').textContent === finConchas(A.conchitas, TI.saldo()) && !!bot('tienda') && bot('tienda').getClientRects().length > 0, hud.q('fin5').textContent);
+      tecla('keydown', 't');
+      const tAbre = G.ui.cardOpen && !!document.getElementById('tienda');
+      tecla('keydown', 'r'); const sigueFin = A.fase === 'fin';
+      G.ui.hideCard();
+      check('T (o el botón) abre el Mercadito encima de los resultados; con él abierto la pesca no se queda las teclas y al cerrarlo sigue en los resultados', tAbre && sigueFin && A.fase === 'fin' && !G.ui.cardOpen);
       check('El récord queda en la sesión y en el progreso (pesca_rio: mejor y especies vistas)', recordVer() === pts && (!v || (g && g.mejor === pts && g.vistos.includes('tilapia'))), JSON.stringify(g));
       tecla('keydown', 'r'); tecla('keyup', 'r');
       check('Teclado: R empieza otra ronda (2:30, 0 peces, récord a la vista)', A.fase === 'listo' && A.tiempo === RONDA && A.peces === 0 && hud.q('record').textContent === recordTxt(pts));
@@ -874,13 +907,14 @@ window.AVV18Pesca = function (G) {
         const ver = s => { if (!en.includes(JSON.stringify(s))) falta.push(s); };
         for (const k in TXT) ver(TXT[k]);
         for (const p of PECES) { ver(p.nombre); ver(p.dato); }
-        for (const s of ['Tiempo: {}', 'Peces: {}', 'Puntos: {}', 'Récord: {}', '+{} puntos', '¡Atrapaste: {}!', '{} peces · {} puntos', '1 pez · {} puntos', 'Pesca', 'Lanza, espera el pique y suelta el pez']) ver(s);
+        for (const s of ['Tiempo: {}', 'Peces: {}', 'Puntos: {}', 'Récord: {}', '+{} puntos', '¡Atrapaste: {}!', '{} peces · {} puntos', '1 pez · {} puntos', 'Pesca', 'Lanza, espera el pique y suelta el pez', '¡Atrapaste: {}! +{} puntos · +{} conchitas', TXT.reportado + ' Premio de conservación: +{} conchitas.', 'Conchitas de hoy: +{} · Tienes {}']) ver(s);
         check('Inglés: todos los textos del minijuego están en content/cap1/en.js', !falta.length, falta.slice(0, 6).join(' | '));
       } catch (e) { check('Inglés: se pudo leer content/cap1/en.js', false, e); }
       check('Sin errores de consola durante la prueba', !errores.length, errores.slice(0, 3).join(' | '));
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
     try { if (A.fase !== 'nada') salir(); } catch (e) { /* ya fuera */ }
     A.manual = false; semilla = semilla0; A.forzar = null; recordSesion = 0;
+    S.tienda = tienda0; try { G.emit('tienda', { tipo: 'prueba' }); } catch (e) { /* */ }
     G.PESCA = exp0; try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* */ }
     G.ui.toast = toast0; console.error = cerr0; removeEventListener('error', onErr);
     try { G.off && G.off('v18pesca', oye); G.off && G.off('expansion:invasora', oyeInv); } catch (e) { /* */ }
@@ -893,6 +927,6 @@ window.AVV18Pesca = function (G) {
   }
 
   G.v18pesca = { ID, SITIO, PECES, RONDA, irYJugar, iniciar, salir, otraRonda, apretar, aflojar, lanzar, clavar, soltarPez, terminar, paso, disponible,
-    estado: () => A, record: recordVer, amigos: () => AMIGOS, test };
+    estado: () => A, record: recordVer, amigos: () => AMIGOS, abrirTienda, test };
   return G.v18pesca;
 };

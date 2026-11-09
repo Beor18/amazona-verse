@@ -419,5 +419,5 @@ AVE.module('creador', function (G) {
     return { ok: R.every(r => r.ok), passed: R.filter(r => r.ok).length, total: R.length, results: R };
   }
 
-  return { PRESETS, OUTFITS, NAME_OK, profileLook, legacyFields, drawPortrait, open, close, saveCharacter, portraitCanvasFor, renderSlots, textoSeguro, NOMBRES, esNombreDeLista, nombreAzar, nombreElegido, pintarNombre, filtroNombreLibre, debeReemplazarNombre, opcionesEspecie, test };
+  return { PRESETS, OUTFITS, NAME_OK, profileLook, legacyFields, drawPortrait, open, close, saveCharacter, portraitCanvasFor, renderSlots, accessoryThumb, textoSeguro, NOMBRES, esNombreDeLista, nombreAzar, nombreElegido, pintarNombre, filtroNombreLibre, debeReemplazarNombre, opcionesEspecie, test };
 });

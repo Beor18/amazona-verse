@@ -505,3 +505,5 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
 2026-11-09 · [KELVIN] Patrulla invasora aprobada (iguana caricatura incluida: «me gusta cómo se ve»); se enciende para todos.
 
 2026-11-09 · [KELVIN] Pesca en el río aprobada («Me encanta la pesca, buenísimo»); se enciende para todos.
+
+2026-11-09 · [KELVIN, idea de su hija] Los peces dan monedas del juego para comprar ropa y piezas; sin dinero real ni azar. Moneda: conchitas (S.tienda, solo se ganan pescando). Pago fijo por especie: olivo 5, dajao 10, guavina 15, anguila 15, invasoras 5 + 10 por reportarlas al DRNA (el pez soltado paga igual). Mercadito del río (resultados de la pesca, Pausa, Mi personaje y barra de Construir): 6 colores nuevos de ropa (traje «Pescador del río» de 4 piezas = 200, unas 3 rondas; lentes 30; traje de Guardián azul río 120) y 6 piezas nuevas de Construir (25–70). Lo ya ganado no se bloquea ni se vende; precio fijo a la vista, sin relojes ni ofertas · subagente de la coordinadora (Opus 5.5)

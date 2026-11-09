@@ -81,8 +81,11 @@ AVE.module('misiones', function (G) {
     return got;
   }
   // Pieza bloqueada para el creador: pieza entera, pieza:estilo o pieza:color (devuelve la recompensa que la libera)
+  // Los colores del Mercadito del río (pack.tienda.ropa, src/game/tienda.js) se liberan al comprarlos: la pista dice dónde y cuánto.
+  const TIENDA = (G.pack.tienda && G.pack.tienda.ropa) || [];
   function lockOf(id, style, color) {
     for (const k of [id, id + ':' + style, id + ':' + color]) if (UNLOCK_KEYS.includes(k) && !S.unlocked.includes(k)) return unlocks.find(u => u.clave === k);
+    for (const k of [id + ':' + color]) { const t = TIENDA.find(u => u.clave === k); if (t && !S.unlocked.includes(k)) return { clave: k, nombre: t.nombre, tienda: t.id, pista: 'el Mercadito del río (' + t.precio + ' conchitas)' }; }
     return null;
   }
 
