@@ -39,6 +39,7 @@ const PACKS = arg('--packs', IPHONE ? 'cap1' : 'cap1,ep2,ep3,ep4,ep5,ep6').split
 const CON_DEMO = !process.argv.includes('--sin-demo');
 const CALIDAD = arg('--calidad', 'bajo'); // KIMI-165: la demo se pidió en «bajo» y «medio»
 const URL_EXTRA = arg('--url-extra', ''); // KIMI-318: p. ej. el parámetro del Modo Escuela cuando Kimi 3 lo aterrice
+const RAIZ_SERVIR = arg('--raiz', ''); // KIMI-375: servir otra raíz (p. ej. la build publicada: --raiz sitio/juego)
 const SALIDA = arg('--salida', path.join(RAIZ, 'docs', 'img', 'kimi127'));
 fs.mkdirSync(SALIDA, { recursive: true });
 const LOGF = path.join(SALIDA, `k127_${ETIQUETA}.log`);
@@ -55,11 +56,12 @@ for (const d of fs.readdirSync(os.tmpdir())) {
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon' };
 function servir() {
+  const base = RAIZ_SERVIR ? path.resolve(RAIZ, RAIZ_SERVIR) : RAIZ; // KIMI-375: --raiz sirve otra build (la publicada)
   const srv = http.createServer((req, res) => {
     let p; try { p = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res.writeHead(400); return res.end(); }
     if (p.endsWith('/')) p += 'index.html';
-    const f = path.join(RAIZ, p);
-    if (!f.startsWith(RAIZ) || req.method !== 'GET') { res.writeHead(403); return res.end(); }
+    const f = path.join(base, p);
+    if (!f.startsWith(base) || req.method !== 'GET') { res.writeHead(403); return res.end(); }
     fs.readFile(f, (e, d) => { if (e) { res.writeHead(404); return res.end('404'); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' }); res.end(d); });
   });
   return new Promise(r => srv.listen(0, '127.0.0.1', () => r({ srv, puerto: srv.address().port })));
