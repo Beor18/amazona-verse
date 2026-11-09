@@ -1491,6 +1491,20 @@ AVE.module('renderer', function (G) {
       calidad.escuelaAuto = auto0;
       check('Modo Escuela: capa independiente del nivel (manual/auto, sin tocar preset ni post)', enc && apag && autoOn && autoOff, 'escuela ' + String(esc0) + ' → on/off/auto ok');
     }
+    // QA-nuevo-br3-2: el precalentado de pantalla (QA-220) salta lo oculto (el objeto o un padre) y lo deja pendiente;
+    // en cuanto se ve, vuelve a ser apto. No se dibuja nada: solo se mira la lista del cuadro.
+    {
+      const grupo = new THREE.Group(), malla = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial());
+      grupo.visible = false; grupo.add(malla); scene.add(grupo);
+      let oculto = null, visto = null, solo = null;
+      try {
+        listaMarco = -1; dibujables(); oculto = aptoPantalla(malla);
+        grupo.visible = true; listaMarco = -1; dibujables(); visto = aptoPantalla(malla);
+        malla.visible = false; listaMarco = -1; dibujables(); solo = aptoPantalla(malla);
+      } finally { scene.remove(grupo); listaMarco = -1; malla.geometry.dispose(); malla.material.dispose(); }
+      check('Precalentado de pantalla: lo oculto (o con un padre oculto) espera y sigue pendiente; lo visible es apto (br3-2)',
+        oculto === false && visto === true && solo === false && objPendienteP(malla), 'padre oculto ' + oculto + ' · visible ' + visto + ' · oculto ' + solo);
+    }
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
 
