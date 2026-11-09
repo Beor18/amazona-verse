@@ -137,14 +137,14 @@
     const serpiente18 = aDemanda('src/game/v18/serpiente.js', 'AVV18Serpiente'), cargarV18Serpiente = () => Promise.all([cargarV18(), cargarMarana()]).then(serpiente18); AV.v18SerpienteTest = o => cargarV18Serpiente().then(x => x.test(o)); if (v18On) cuandoToque(() => mundoV18('sombra_tormenta', 'dispersa') && !mundoV18('serpiente_marana', 'deshecha'), cargarV18Serpiente); // W32: sale tras la Sombra y hasta deshacerla
     const sapo18 = aDemanda('src/game/v18/sapo.js', 'AVV18Sapo'), cargarV18Sapo = () => cargarV18().then(sapo18); AV.v18SapoTest = o => cargarV18Sapo().then(x => x.test(o)); if (v18On) cuandoToque(() => mundoV18('serpiente_marana', 'deshecha') && !mundoV18('sapo_encantado', 'despierto'), cargarV18Sapo); // W32: sale tras la Serpiente y hasta despertarlo
     const golf18 = aDemanda('src/game/v18/minigolf.js', 'AVV18Minigolf'), cargarV18Golf = () => Promise.all([cargarV18(), hab18(), cargarV18Fx()]).then(golf18); AV.v18MinigolfTest = o => cargarV18Golf().then(x => x.test(o)); if (v18On) alPrimerGesto(cargarV18Golf); // V18.1 Amazona Mini Golf: un hoyo en Villa Raíz (docs/DIRECTIVA_MINIGOLF_V18_1.md)
-    // Expansión (Kelvin 9-nov: «construir y expandir se puede trabajar»): lo nuevo de la expansión (pesca, invasoras) va tras G.EXPANSION, apagada por
+    // Expansión (Kelvin 9-nov: «construir y expandir se puede trabajar»): lo que queda de la expansión (la pesca) va tras G.EXPANSION, apagada por
     // defecto; se enciende con ?expansion=1 o localStorage amazonaverse.expansion = '1' (?expansion=0 la apaga). Nada se publica sin las fotos aprobadas por Kelvin.
     if (G.EXPANSION == null) G.EXPANSION = (() => { const q = /[?&]expansion=([01])\b/.exec(location.search); if (q) return q[1] === '1'; try { return localStorage.getItem('amazonaverse.expansion') === '1'; } catch (e) { return false; } })();
     // Expansión · minijuego de pesca en el muelle de Villa Raíz (src/game/v18/pesca.js). Con la bandera apagada no se carga nada.
     const pesca18 = aDemanda('src/game/v18/pesca.js', 'AVV18Pesca'), cargarV18Pesca = () => cargarV18().catch(() => null).then(pesca18);
     AV.v18PescaTest = o => { const antes = { exp: !!G.EXPANSION, cargado: !!window.AVV18Pesca }; return cargarV18Pesca().then(x => x.test(Object.assign({ antes }, o))); }; if (G.EXPANSION) alPrimerGesto(cargarV18Pesca);
     // Construir libre (src/game/construir.js): nido, techo de hojas y decoración. Encendido para todos (Kelvin 9-nov: «Piezas aprobadas»),
-    // sin depender de G.EXPANSION (esa bandera sigue solo para pesca e invasoras). Bandera propia G.CONSTRUIR: encendida por defecto,
+    // sin depender de G.EXPANSION (esa bandera sigue solo para la pesca). Bandera propia G.CONSTRUIR: encendida por defecto,
     // ?construir=0 la apaga. Se carga al arrancar porque pone su tarjeta en «¿Cómo quieres jugar?», el botón junto a Pausa y la tecla B.
     if (G.CONSTRUIR == null) G.CONSTRUIR = !/[?&]construir=0\b/.test(location.search);
     const cargarConstruir = aDemanda('src/game/construir.js', 'AVConstruir'); AV.construir = () => cargarConstruir().then(c => c.empezar()); AV.construirTest = o => cargarConstruir().then(c => c.test(o));
@@ -259,11 +259,12 @@
     const cargarHumor = aDemanda('src/game/humor.js', 'AVHumor'); AV.humorTest = o => cargarHumor().then(h => h.test(o)); alPrimerGesto(cargarHumor); // CG-42
     const cargarEscondite = aDemanda('src/game/escondite.js', 'AVEscondite'); AV.esconditeTest = o => cargarEscondite().then(e => e.test(o)); alPrimerGesto(cargarEscondite); // CG-43
     const cargarMarana = aDemanda('src/game/marana.js', 'AVMarana'); AV.maranaTest = o => cargarMarana().then(m => m.test(o)); alPrimerGesto(cargarMarana); // CG-46
-    // Expansión «Patrulla invasora» (src/game/invasoras.js): APAGADA por defecto. Solo con ?expansion=1 o localStorage amazonaverse.expansion = '1'
-    // (?expansion=0 la apaga). Apagada no se carga nada; su prueba la carga y comprueba que no se vea. Pendiente del OK de Kelvin con capturas.
-    G.expansion = (() => { const q = /[?&]expansion=([01])\b/.exec(location.search); if (q) return q[1] === '1'; try { return localStorage.getItem('amazonaverse.expansion') === '1'; } catch (e) { return false; } })();
+    // Patrulla invasora (src/game/invasoras.js): ENCENDIDA para todos (Kelvin 9-nov: aprobada, «me gusta cómo se ve»), sin depender de
+    // G.EXPANSION (una sola bandera de expansión, definida arriba; ya solo la usa la pesca). Bandera propia G.INVASORAS: encendida por
+    // defecto, ?invasoras=0 la apaga. Se carga al primer gesto si el mapa tiene agua; G.invasorasAuto lo anota para su prueba.
+    if (G.INVASORAS == null) G.INVASORAS = !/[?&]invasoras=0\b/.test(location.search);
     const cargarInvasoras = aDemanda('src/game/invasoras.js', 'AVInvasoras'); AV.invasorasTest = o => cargarInvasoras().then(m => m.test(o));
-    if (G.expansion && G.terreno.mapa && G.terreno.mapa.agua) { G.expansionAuto = true; alPrimerGesto(cargarInvasoras); }
+    if (G.INVASORAS && G.terreno.mapa && G.terreno.mapa.agua) { G.invasorasAuto = true; alPrimerGesto(cargarInvasoras); }
     const cargarFamilia = aDemanda('src/game/familia.js', 'AVFamilia'); AV.familiaTest = o => cargarFamilia().then(f => f.test(o)); alPrimerGesto(cargarFamilia); // CG-53
     const cargarFamilyQuest = aDemanda('src/game/familia_aventuras.js', 'AVFamiliaAventuras'); AV.familyQuestTest = o => cargarFamilyQuest().then(f => f.test(o)); alPrimerGesto(cargarFamilyQuest); // Family Quest
     const cargarRendimiento = aDemanda('src/game/rendimiento_modulos.js', 'AVRendimientoModulos');

@@ -2,7 +2,7 @@
    Amplía el modo construir del cap. 1 (hoy solo el refugio: content/cap1/historia.js «Modo construir» y el fantasma de
    content/cap1/mundo.js) a un rincón propio: nido, techo de hojas y decoración. Mismo gesto que el refugio: un fantasma delante de
    Vittata (verde si cabe, rojo si no), Acción coloca y suena el martillo (G.audio.martillar).
-   ENCENDIDO PARA TODOS (Kelvin 9-nov: «Piezas aprobadas»): ya no depende de ?expansion=1 (G.EXPANSION sigue solo para pesca e invasoras).
+   ENCENDIDO PARA TODOS (Kelvin 9-nov: «Piezas aprobadas»): ya no depende de ?expansion=1 (G.EXPANSION sigue solo para la pesca).
    Bandera propia G.CONSTRUIR (boot.js): encendida por defecto, ?construir=0 la apaga; boot.js carga este archivo al arrancar.
    Piezas: 7 tipos procedurales y estilizados (sin modelos nuevos). Cada tipo es UNA geometría fundida con colores de vértice y un
    InstancedMesh: 7 llamadas de dibujo como mucho, con 40 piezas o con 1. Presupuesto: 40 piezas (24 en calidad «bajo» y Modo Escuela);

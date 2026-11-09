@@ -1,4 +1,4 @@
-/* Juego · Patrulla invasora (EXPANSIÓN, detrás de la bandera: solo con ?expansion=1 o localStorage amazonaverse.expansion = '1').
+/* Juego · Patrulla invasora (ENCENDIDA para todos desde el 9-nov, Kelvin la aprobó; bandera propia G.INVASORAS, ?invasoras=0 la apaga).
    Cuatro especies invasoras reales de Puerto Rico en su hábitat del mapa del cap. 1: la iguana verde tomando el sol en la orilla del
    río junto al puente de Villa Raíz, un grupo de tilapias en el río junto a la villa, dos plecos pegados al fondo río arriba y dos peces
    león en el arrecife de la playa. NUNCA son enemigos: no se atacan, no se cazan, no se tocan. Se observan y se reportan a la Estación
@@ -12,9 +12,10 @@
    - Bajo el agua: de lejos el agua los tapa; a menos de 1,6 radios se ven claros a través de ella («visor», como rio_vivo.js).
    - Arte: mallas hechas aquí, sin modelos 3D nuevos (la iguana, suave y animada: ver iguanaVerde; los peces, con primitivas);
      4 InstancedMesh, 4 draw calls como mucho, sin sombras,
-     apagadas a más de 70 m. Con la bandera apagada boot.js NO carga este archivo; si se carga para la prueba, nada se ve y la sección
-     del Diario queda vacía mientras G.expansion no sea true. Nada se ve en las baterías (G.quiet) salvo dentro de su propia prueba.
-   [KELVIN] Todo esto necesita su visto bueno con capturas antes de salir sin bandera (regla: nada 3D nuevo sin su OK).
+     apagadas a más de 70 m. boot.js la carga al primer gesto sin ?expansion=1 (ya no depende de G.EXPANSION). Con ?invasoras=0
+     (G.INVASORAS = false) no se carga; si se carga igual, nada se ve y la sección del Diario queda vacía. Nada se ve en las baterías
+     (G.quiet) salvo dentro de su propia prueba.
+   [KELVIN] 9-nov: aprobada con capturas (iguana caricatura incluida: «me gusta cómo se ve»); se enciende para todos.
    window.AVInvasoras(G) → Promise de G.invasoras = { estado, activo, avistar, paso, test, … }. Prueba: AV.invasorasTest(). */
 (function () {
   'use strict';
@@ -244,7 +245,7 @@
     G.on('aprendizaje', d => { if (oyenteTest) oyenteTest(d); });
 
     // ---------- Bandera y guardado ----------
-    const activo = () => G.expansion === true || F.prueba;
+    const activo = () => G.INVASORAS !== false || F.prueba;
     let mem = { v: 1, vistos: [], completa: false };
     function leer() { try { const d = JSON.parse(localStorage.getItem(CLAVE) || 'null'); if (d && Array.isArray(d.vistos)) mem = { v: 1, vistos: d.vistos.filter(x => typeof x === 'string'), completa: !!d.completa }; } catch (e) { /* sin almacén */ } }
     function guardar() { if (F.prueba) return; try { localStorage.setItem(CLAVE, JSON.stringify(mem)); } catch (e) { /* sin almacén */ } }
@@ -529,7 +530,7 @@
     async function test() {
       const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
       const cuadros = n => new Promise(r => { const f = () => (--n <= 0 ? r() : requestAnimationFrame(f)); requestAnimationFrame(f); });
-      const g0 = { pos: Object.assign({}, S.pos), vy: S.vy, speed: M.speed, flying: M.flying, posado: M.posado, exp: G.expansion, mem: JSON.parse(JSON.stringify(mem)), quiet: G.quiet };
+      const g0 = { pos: Object.assign({}, S.pos), vy: S.vy, speed: M.speed, flying: M.flying, posado: M.posado, exp: G.INVASORAS, mem: JSON.parse(JSON.stringify(mem)), quiet: G.quiet };
       let crudo = null; try { crudo = localStorage.getItem(CLAVE); } catch (e) { /* */ }
       const toast0 = G.ui.toast, textos = []; G.ui.toast = t => { textos.push(String(t)); };
       const idioma0 = G.aula && G.aula.aj && G.aula.aj.idioma;
@@ -539,11 +540,12 @@
       const simular = seg => { for (let t = 0; t < seg - 1e-6; t += 0.1) paso(0.1, false); };
       const visibles = () => Object.values(mallas).filter(m => m.visible).length;
       try {
-        // 1. Bandera apagada: boot.js no carga el módulo, nada se ve, sección del Diario vacía, nada se avista
-        ok('Bandera apagada por defecto: sin ?expansion=1 boot.js no carga la patrulla', G.expansionAuto !== true || G.expansion === true, 'expansion ' + G.expansion + ' · cargada al arrancar ' + !!G.expansionAuto);
-        G.expansion = false; F.prueba = false; mem = { v: 1, vistos: [], completa: false };
+        // 1. Encendida para todos (Kelvin 9-nov): sin ?expansion=1 boot.js la carga y está activa; con ?invasoras=0 (G.INVASORAS = false) nada se ve
+        ok('Disponible sin bandera: sin ?expansion=1 boot.js carga la patrulla y está activa', g0.exp !== false && G.invasorasAuto === true && activo(),
+          'EXPANSION ' + G.EXPANSION + ' · INVASORAS ' + G.INVASORAS + ' · cargada al arrancar ' + !!G.invasorasAuto);
+        G.INVASORAS = false; F.prueba = false; mem = { v: 1, vistos: [], completa: false };
         const h0 = hogar.iguana; if (h0) quietaEn(h0.x + 1, h0.z); G.quiet = false; paso(0.1, false); simular(2.5); G.quiet = g0.quiet;
-        ok('Bandera apagada: ninguna malla visible, sección del Diario vacía, nada se avista ni se avisa', visibles() === 0 && htmlAlbum() === '' && !mem.vistos.length && !textos.length && !avistar('iguana'),
+        ok('Apagada a mano (?invasoras=0): ninguna malla visible, sección del Diario vacía, nada se avista ni se avisa', visibles() === 0 && htmlAlbum() === '' && !mem.vistos.length && !textos.length && !avistar('iguana'),
           visibles() + ' visibles · ' + mem.vistos.length + ' vistos · ' + textos.length + ' avisos');
         // 2. Datos: 4 especies verificadas, ES + EN, fuente oficial con URL https
         const oficial = /^https:\/\/([a-z0-9-]+\.)*(usgs\.gov|drna\.pr\.gov|noaa\.gov|fws\.gov)\//;
@@ -556,7 +558,7 @@
         const hi = hogar.iguana, ht = hogar.tilapia, hp = hogar.pleco, hl = hogar.pezleon;
         ok('Cada especie tiene su sitio en el mapa', !!(hi && ht && hp && hl), Object.keys(hogar).join(','));
         if (hi && ht && hp && hl) {
-          F.prueba = true; G.expansion = true; simular(0.3);
+          F.prueba = true; G.INVASORAS = true; simular(0.3);
           const lI = nivelAgua(hi.x, hi.z);
           ok('Iguana en tierra seca junto al río (a 18 m o menos de un punto del cauce)', !(lI > hi.y + 0.1) && RIO.some(p => Math.hypot(p[0] - hi.x, p[1] - hi.z) < 18 + p[3]), 'y ' + hi.y.toFixed(2) + ' · agua ' + lI);
           const bajo = (h, v) => v.y < nivelAgua(v.x, v.z) - 0.05 && v.y >= H(v.x, v.z) - 0.01;
@@ -609,7 +611,7 @@
         }
       } finally {
         oyenteTest = null; G.ui.toast = toast0; if (G.aula && G.aula.aj && idioma0 !== undefined) G.aula.aj.idioma = idioma0;
-        F.prueba = false; G.expansion = g0.exp; G.quiet = g0.quiet; mem = g0.mem; F.cerca = {}; F.pistas = {};
+        F.prueba = false; G.INVASORAS = g0.exp; G.quiet = g0.quiet; mem = g0.mem; F.cerca = {}; F.pistas = {};
         Object.assign(S.pos, g0.pos); S.vy = g0.vy; M.speed = g0.speed; M.flying = g0.flying; M.posado = g0.posado;
         try { if (crudo == null) localStorage.removeItem(CLAVE); else localStorage.setItem(CLAVE, crudo); } catch (e) { /* */ }
         paso(0.01, false);
