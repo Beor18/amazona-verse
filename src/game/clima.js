@@ -173,7 +173,19 @@ window.AVClima = function (G) {
   const HOJAS_N = 90, hojaPos = new Float32Array(HOJAS_N * 3), hojaFase = new Float32Array(HOJAS_N * 2);
   for (let i = 0; i < HOJAS_N; i++) { hojaFase[i * 2] = Math.random() * Math.PI * 2; hojaFase[i * 2 + 1] = Math.random(); }
   const hojaGeo = new THREE.BufferGeometry(); hojaGeo.setAttribute('position', new THREE.BufferAttribute(hojaPos, 3));
-  const hojas = new THREE.Points(hojaGeo, new THREE.PointsMaterial({ color: '#6f9a3a', size: 0.4, transparent: true, opacity: 0.9, depthWrite: false }));
+  // QA-nuevo-edif-android (Kelvin 9-nov: «cuadraditos flotando» junto a los edificios): sin mapa, cada punto se dibujaba como un
+  // cuadrado liso. Ahora con la silueta de una hoja (lienzo 32², blanco teñido por el color) y alphaTest: hojas, no cuadros.
+  const hojaTex = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 32;
+    const x = c.getContext('2d');
+    if (x) {
+      x.translate(16, 16); x.rotate(-0.6); x.fillStyle = '#ffffff';
+      x.beginPath(); x.moveTo(0, -13); x.quadraticCurveTo(9, -3, 0, 13); x.quadraticCurveTo(-9, -3, 0, -13); x.fill();
+      x.strokeStyle = 'rgba(160,190,120,0.9)'; x.lineWidth = 1.2; x.beginPath(); x.moveTo(0, -10); x.lineTo(0, 12); x.stroke();
+    }
+    return new THREE.CanvasTexture(c);
+  })();
+  const hojas = new THREE.Points(hojaGeo, new THREE.PointsMaterial({ color: '#6f9a3a', map: hojaTex, alphaTest: 0.35, size: 0.55, transparent: true, opacity: 0.9, depthWrite: false }));
   hojas.name = 'clima-hojas'; hojas.visible = false; hojas.frustumCulled = false; scene.add(hojas);
   let hojasN = 0, hojasLibres = true, hojasT = 0;
   function moverLlovizna(dt) {

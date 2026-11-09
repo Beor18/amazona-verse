@@ -500,6 +500,13 @@ AVE.module('streaming', function (G) {
     const aJPEG = () => { if (m.map && (m.map.isCompressedTexture || (m.map.image && m.map.image.width === 2))) mapaAtlas(m, G.assets.tex(url, () => reducirAtlas(m)), m.map); };
     if (G.assets.ktx2De(url)) {
       if (comp) return;
+      // QA-nuevo-edif-android: con el .ktx2 ya transcodificado (otro material del kit lo usó antes), al momento: sin la
+      // ventana del 2×2 beige (cajas lisas) al volver a entrar en una zona. Y se pide ya el del otro kit, para que el
+      // primer material Ancient/Savage que nazca más tarde (llegar volando a las Atalayas) lo encuentre listo.
+      const listo = G.assets.ktx2Listo && G.assets.ktx2Listo(url);
+      if (listo) { mapaAtlas(m, listo, m.map); return; }
+      const otro = kitBase + 'tex_hd/hd_' + (kit === 'ancient' ? 'savage' : 'ancient') + (MOVIL_PEQ ? '_lq1024' : '_lq') + '.jpg';
+      if (G.assets.ktx2Listo && !G.assets.ktx2Listo(otro)) G.assets.texKTX2(otro, () => {}, () => {});
       ud.avKTX2Pend = true;
       G.assets.texKTX2(url, t => {
         ud.avKTX2Pend = false;
@@ -2499,6 +2506,26 @@ AVE.module('streaming', function (G) {
         check('Fuera de su rango, la ciudad del tepuy suelta el kit de la vista aérea', !ZC.ciudad && ZC.nivel < 2, 'ciudad ' + !!ZC.ciudad + ' · nivel ' + ZC.nivel + ' · d ' + Math.round(ZC.d) + ' · ' + nivelCal());
         await ir(x0, z0); ST.liberarYa(); dibujar();
         check('En bajo, el spawn no carga la ciudad del tepuy (memoria de móvil)', !ZC.ciudad, 'ciudad ' + !!ZC.ciudad + ' · d ' + Math.round(ZC.d) + ' · ' + nivelCal());
+        { // QA-nuevo-edif-android (9-nov, Kelvin en Android, «bajo»: edificios de las Atalayas como cajas beige lisas): en «bajo»
+          // (texturas KTX2) los edificios cercanos, al llegar volando, son el modelo completo con el atlas, no el 2×2 del color
+          // del kit; y al volver a entrar (material del kit soltado en el spawn y creado otra vez) la textura está al momento.
+          const planos = () => { let n = 0, t = 0; scene.traverseVisible(o => { if (!o.isMesh || !o.material) return; for (const m of Array.isArray(o.material) ? o.material : [o.material]) if (m && /^AV_HD_/.test(m.name)) { t++; if (m.map && m.map.image && m.map.image.width === 2) n++; } }); return { n, t }; }; // fusiones: material = [mat]
+          const ktx = !!(G.assets && G.assets.ktx2De && G.assets.ktx2De(kitBase + 'tex_hd/hd_ancient' + (MOVIL_PEQ ? '_lq1024' : '_lq') + '.jpg'));
+          const llegar = async () => { await ir(ZC.cx, ZC.cz + Math.min(ZC.r, 40), 0, -1); S.pos.y += 35; dibujar(2); };
+          await llegar();
+          let p1 = planos(); const tE = performance.now();
+          while (p1.n && performance.now() - tE < 15000) { await new Promise(r => setTimeout(r, 250)); dibujar(1); p1 = planos(); }
+          const se1 = ST.stats(), sil = !!(ZC.malla && ZC.malla.visible);
+          check('QA-nuevo-edif-android · En bajo, al llegar volando, los edificios cercanos son el modelo completo y con textura (no cajas beige)',
+            ZC.nivel === 2 && se1.visiblesCerca > 0 && !sil && p1.t > 0 && p1.n === 0,
+            'nivel ' + ZC.nivel + ' · cerca ' + se1.visiblesCerca + ' · lejos ' + se1.visiblesLejos + ' · silueta ' + sil + ' · mallas atlas ' + p1.t + ', sin textura ' + p1.n + ' · ktx2 ' + ktx + ' ' + JSON.stringify(G.assets.estadoKTX2 ? G.assets.estadoKTX2() : null) + ' · ' + Math.round(performance.now() - tE) + ' ms');
+          await ir(x0, z0); ST.liberarYa(); dibujar();
+          await llegar();
+          const p2 = planos();
+          check('QA-nuevo-edif-android · Al volver a entrar, el atlas KTX2 ya transcodificado se pone al momento (sin cuadros beige)', p2.t > 0 && p2.n === 0,
+            'mallas atlas ' + p2.t + ', sin textura ' + p2.n + ' · ktx2 ' + ktx);
+          await ir(x0, z0); ST.liberarYa(); dibujar();
+        }
         if (R.setCalidad) { R.setCalidad('alto', true); ST.revisar(); }
       }
     } catch (e) {
