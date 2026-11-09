@@ -83,11 +83,14 @@ AVE.module('audio', function (G) {
     if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, t0 + dur);
     env(g, t0, dur, o.gain || 0.2); osc.connect(g); g.connect(o.bus === 'voice' ? voiceBus : o.bus || salida); osc.start(t0); osc.stop(t0 + dur + 0.03);
   }
+  function ruido() {
+    if (!noiseBuf) { noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    return noiseBuf;
+  }
   function noise(t0, dur, o) {
     o = o || {};
-    if (!noiseBuf) { noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
     const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
-    src.buffer = noiseBuf; f.type = o.type || 'bandpass'; f.Q.value = o.q || 1;
+    src.buffer = ruido(); f.type = o.type || 'bandpass'; f.Q.value = o.q || 1;
     f.frequency.setValueAtTime(o.freq || 1200, t0); if (o.to) f.frequency.exponentialRampToValueAtTime(o.to, t0 + dur);
     env(g, t0, dur, o.gain || 0.25); src.connect(f); f.connect(g); g.connect(salida); src.start(t0, Math.random() * 0.5); src.stop(t0 + dur + 0.03);
   }
@@ -99,18 +102,35 @@ AVE.module('audio', function (G) {
     f.type = 'bandpass'; f.Q.value = 2.2; f.frequency.setValueAtTime(f1 * 1.6, t0); f.frequency.exponentialRampToValueAtTime(f2 * 1.8, t0 + dur);
     env(g, t0, dur, gain); osc.connect(f); f.connect(g); g.connect(salida); osc.start(t0); osc.stop(t0 + dur + 0.03);
   }
-  // Grito del Yunque (y los gritos con onda): un graznido corto (~0,25 s) y luego 3 pulsos graves de onda, uno por anillo
-  // visible, mientras la onda viaja (7 m a 16 m/s, unos 0,45 s). arg = tono (1 = Vittata; >1 más agudo, <1 más grave).
+  // Grito del Yunque (y los gritos con onda), ~1,2 s: graznido (~0,3 s), luego la «ola» que acompaña a los 3 anillos visibles
+  // mientras viajan (7 m a 16 m/s, unos 0,45 s): un «whoom» por anillo y un soplo de viento que crece y se apaga; al final, el eco
+  // del graznido en el monte. La energía va en 200 Hz-3 kHz, lo que suenan los altavoces de portátil y de móvil (Kelvin 9-nov: «en la
+  // computadora no se escuchó»; el de antes era casi todo 85-170 Hz). El subgrave es solo un extra para auriculares y altavoces buenos.
+  // Volumen parecido a «dash» y «ring», sin golpes más fuertes que ellos. arg = tono (1 = Vittata; >1 más agudo, <1 más grave).
+  function ola(t0, dur, o) { // ruido filtrado con envolvente que crece (subida) y se apaga, no un golpe seco
+    const src = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain(), sube = t0 + dur * (o.subida || 0.35);
+    src.buffer = ruido(); src.loop = true; f.type = o.type || 'lowpass'; f.Q.value = o.q || 0.7;
+    f.frequency.setValueAtTime(o.freq, t0); f.frequency.exponentialRampToValueAtTime(o.to, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(o.gain, sube); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.connect(f); f.connect(g); g.connect(salida); src.start(t0, Math.random() * 0.5); src.stop(t0 + dur + 0.03);
+  }
   function grito(t, k) {
     k = k > 0 ? k : 1;
-    chillido(1250 * k, 1900 * k, 980 * k, t, 0.24, 0.2);
-    tone(1900 * k, t + 0.01, 0.12, { type: 'square', to: 1300 * k, gain: 0.025 }); // armónico: el «raspado» de la cotorra
-    noise(t, 0.09, { freq: 2600 * k, q: 1.4, gain: 0.07 });
-    for (let i = 0; i < 3; i++) {
-      const t0 = t + 0.14 + i * 0.15, a = 1 - i * 0.25;
-      tone(170 / Math.sqrt(k), t0, 0.3, { type: 'sine', to: 85 / Math.sqrt(k), gain: 0.16 * a }); // «wub» de la onda
-      noise(t0, 0.3, { type: 'lowpass', freq: 900, to: 220, q: 0.7, gain: 0.12 * a });
+    const kg = Math.sqrt(k); // la ola cambia menos de tono que el graznido
+    chillido(1100 * k, 1700 * k, 850 * k, t, 0.3, 0.22);
+    tone(1700 * k, t + 0.01, 0.16, { type: 'square', to: 1150 * k, gain: 0.03 }); // armónico: el «raspado» de la cotorra
+    noise(t, 0.1, { freq: 2300 * k, q: 1.4, gain: 0.08 });
+    for (let i = 0; i < 3; i++) { // un «whoom» por anillo
+      const t0 = t + 0.2 + i * 0.16, a = 1 - i * 0.2;
+      tone(480 / kg, t0, 0.34, { type: 'triangle', to: 230 / kg, gain: 0.13 * a }); // cuerpo de la onda: se oye en cualquier altavoz
+      tone(960 / kg, t0, 0.2, { type: 'sine', to: 460 / kg, gain: 0.03 * a }); // su brillo, para que se note en portátil
+      tone(110 / kg, t0, 0.42, { type: 'sine', to: 50 / kg, gain: 0.035 * a }); // subgrave: extra con auriculares
     }
+    ola(t + 0.16, 0.9, { type: 'bandpass', freq: 1100, to: 300, q: 0.8, gain: 0.12, subida: 0.4 }); // soplo de la onda que crece y se va
+    ola(t + 0.16, 0.95, { freq: 700, to: 220, gain: 0.04, subida: 0.4 }); // y su rumor grave
+    chillido(1060 * k, 1620 * k, 820 * k, t + 0.66, 0.24, 0.06); // eco del graznido en el monte, y otro más lejos
+    chillido(1030 * k, 1560 * k, 800 * k, t + 0.94, 0.22, 0.025);
+    tone(300 / kg, t + 0.78, 0.45, { type: 'triangle', to: 180 / kg, gain: 0.03 }); // cola
   }
   const PENTA = [0, 2, 4, 7, 9]; // pentatónica mayor: el combo sube la nota
   const pent = (i, base) => base * Math.pow(2, (PENTA[i % 5] + 12 * Math.floor(i / 5)) / 12);
