@@ -2733,5 +2733,7 @@ window.AV_EN = {
  "¡Hoyo 6 abierto! Está en la Ciudad de los 36.": "Hole 6 unlocked! You'll find it in the City of the 36.",
  "Oro · Récord: {}": "Gold · Best: {}",
  "Plata · Récord: {}": "Silver · Best: {}",
- "Bronce · Récord: {}": "Bronze · Best: {}"
+ "Bronce · Récord: {}": "Bronze · Best: {}",
+ "Juega el capítulo para descubrir lo que aprendiste.": "Play the chapter to discover what you learned.",
+ "Tu enseñanza aparecerá al jugar.": "Your lesson will appear as you play."
 };
