@@ -2384,6 +2384,13 @@ AVE.module('streaming', function (G) {
       }
       check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ' (giro ' + r2(st.yaw) + '): ' + st.calls + ' draw calls, edificios ' + st.edif +
         ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal() + aviso + ' · ' + st.diag);
+      { // QA-nuevo-br1-3: los personajes V18 (Arausiaca, la rival del duelo, los NPC de v18npc) a más de 60 m no se dibujan; tras
+        // pasar por sus sitios (juiceTest carga los módulos a demanda) sumaban ~47 draw calls en esta vista
+        const esV18 = h => /^(v18_arausiaca|v18_rival|v18npc:)/.test(h.name || ''), v18 = scene.children.filter(esV18);
+        const dV18 = h => Math.hypot(h.position.x - S.pos.x, h.position.z - S.pos.z), lejosV = v18.filter(h => h.visible && dV18(h) > 60.5);
+        check('QA-nuevo-br1-3 · En la vista más cargada no se dibujan los personajes V18 lejanos (> 60 m)', lejosV.length === 0,
+          v18.length + ' en la escena: ' + (v18.map(h => h.name + ' ' + Math.round(dV18(h)) + ' m ' + (h.visible ? 'visible' : 'oculto')).join(', ') || 'ninguno cargado'));
+      }
       const lejosM = [];
       scene.traverse(o => { if (o.name && o.name.indexOf(':lejos') >= 0) lejosM.push(o); });
       check('El lejano recibe la sombra del sol y no la proyecta', lejosM.length > 0 && lejosM.every(o => o.receiveShadow && !o.castShadow),

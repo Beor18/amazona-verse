@@ -595,6 +595,13 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       for (const f of fakes) { const i = G.interaccion.list.indexOf(f); if (i >= 0) G.interaccion.list.splice(i, 1); }
       check('Una misión o parada oculta (no visible) no sale', !marcadores().some(m => /mmtest|^parada_mmtest/.test(m.id || '')));
 
+      // KIMI-370: si la apertura del cap. 1 aún está activa, su salto (historia.js alTeclear, fase captura)
+      // se come la primera tecla sintética de esta sección (la usa para saltar la intro, preventDefault
+      // + stopPropagation). Es una carrera de timing: el producto es correcto, la prueba debe ser
+      // determinista. Se termina la apertura por su botón antes de medir el teclado.
+      const saltarIntro = doc.getElementById('c1-saltar');
+      if (saltarIntro && saltarIntro.isConnected) saltarIntro.click();
+
       // 4. Mapa grande: abre y cierra (botón, tecla M, Esc) y pausa el mundo
       const abre = abrir();
       check('El mapa grande abre con un toque y pausa el mundo', abre && abierto && !elG.hidden && G.pausa.motivos.has('mapa') && !visible(elC));

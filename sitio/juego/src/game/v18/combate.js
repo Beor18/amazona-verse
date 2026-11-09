@@ -713,7 +713,20 @@ window.AVV18Combate = function (G) {
     const on = TACTIL && !hud.el.hidden && C.fase !== 'fin' && C.fase !== 'nada'; hud.tags.hidden = !on; if (!on) return;
     for (const s of hud.tags.children) {
       const b = document.getElementById(s.dataset.t), r = b && b.getBoundingClientRect(), ver = !!(r && r.width > 0 && b.offsetParent);
-      s.hidden = !ver; if (ver) { s.style.left = Math.round(r.left + r.width / 2) + 'px'; s.style.top = Math.round(r.top - 6) + 'px'; }
+      // QA-221: en el grid #acts el botón Acción vive justo debajo de Impulso (misma columna,
+      // ~10 px de hueco): la etiqueta colgada sobre su borde se montaba sobre el texto del botón
+      // de arriba. Además es redundante mientras el propio botón lleve el mismo texto
+      // (interaccion.js le pone el verbo del modo —en el duelo, «Ala»). Se oculta en ese caso;
+      // la de Impulso→Semilla sigue, nunca fuera de pantalla (texto grande a11y).
+      const redundante = ver && s.dataset.t === 'b-act' && b.textContent.trim() === TXT.ala;
+      s.hidden = !ver || redundante;
+      if (ver && !redundante) {
+        const w = s.offsetWidth, h = s.offsetHeight, vw = window.innerWidth;
+        const L = Math.max(4, Math.min(vw - 4 - w, Math.round(r.left + r.width / 2 - w / 2)));
+        s.style.transform = 'none';
+        s.style.left = L + 'px';
+        s.style.top = Math.round(r.top - 6 - h) + 'px';
+      }
     }
   }
 
@@ -1301,6 +1314,22 @@ window.AVV18Combate = function (G) {
     if (busy && C.fase !== 'nada') return;
     paso(Math.min(dt, 0.1));
   }, 70);
+  // QA-nuevo-br1-3: fuera del duelo y de lejos (> 60 m, el R_VIVO de npc.js, donde ya no se anima) la rival no se dibuja: sus
+  // ~14 mallas sumaban draw calls en toda la isla (p. ej. junto a las ruinas). Solo la visibilidad de su raíz, después de paso()
+  // (dibujarRival la enciende cada cuadro); pose, animación e IA no cambian. Se mira cada 0,5 s o si Vittata salta > 20 m.
+  const OCULTA_R = 60, ocu = { t: 0, x: 1e9, z: 1e9, lejos: false };
+  G.on('update', dt => {
+    if (retirada || !C.ch) return;
+    if (C.fase !== 'nada') { ocu.lejos = false; return; }
+    ocu.t += dt || 0;
+    if (ocu.t >= 0.5 || Math.abs(S.pos.x - ocu.x) + Math.abs(S.pos.z - ocu.z) >= 20) {
+      ocu.t = 0; ocu.x = S.pos.x; ocu.z = S.pos.z;
+      const lejos = Math.hypot(S.pos.x - C.r.pos.x, S.pos.z - C.r.pos.z) > OCULTA_R;
+      if (ocu.lejos && !lejos) C.ch.root.visible = true; // al volver, aunque este cuadro no pase por dibujarRival
+      ocu.lejos = lejos;
+    }
+    if (ocu.lejos && C.ch.root.visible) C.ch.root.visible = false;
+  }, 70.5);
   // du2 (8-nov): en el duelo no va la guía de la misión (fx.js): su flecha naranja flota sobre Vittata y, vista desde atrás,
   // se leía como un disco color arena junto a la Campeona; el haz también sobra. Después del gancho de misiones (60).
   G.on('render', () => { if (!retirada && C.fase !== 'nada' && G.fx && G.fx.guide) G.fx.guide(null, 0); }, 61);

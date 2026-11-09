@@ -129,7 +129,19 @@ window.AVV18Descubrir = function (G) {
   const perchaAire = (x, z) => ({ x, z, y: G.terreno.height(x, z) + 8, arbol: false });
 
   // ---------- La cotorra ----------
-  const B = { ch: null, listo: null, pos: { x: 0, y: 0, z: 0 }, yaw: 0, vuelo: null, cantaT: 2, bocaT: 0, k: 0 };
+  const B = { ch: null, listo: null, pos: { x: 0, y: 0, z: 0 }, yaw: 0, vuelo: null, cantaT: 2, bocaT: 0, k: 0, oculta: false };
+  // QA-nuevo-br1-3: de lejos (> 60 m, el R_VIVO de npc.js, donde ya no se anima) y sin reto ni vuelo, Arausiaca no se dibuja
+  // (sus ~15 mallas sumaban draw calls en toda la isla, p. ej. junto a las ruinas). Solo visibilidad; se mira cada 0,5 s o al
+  // saltar Vittata más de 20 m (teleport), sin asignaciones.
+  const OCULTA_R = 60, ocu = { t: 0, x: 1e9, z: 1e9 };
+  function revisarLejos(dt) {
+    const s = S(); if (!s || !s.pos) return;
+    ocu.t += dt || 0;
+    if (ocu.t < 0.5 && Math.abs(s.pos.x - ocu.x) + Math.abs(s.pos.z - ocu.z) < 20) return;
+    ocu.t = 0; ocu.x = s.pos.x; ocu.z = s.pos.z;
+    B.oculta = !R.activo && !B.vuelo && distXZ(s.pos, B.pos) > OCULTA_R;
+    if (B.ch && B.ch.root.visible === B.oculta) { B.ch.root.visible = !B.oculta; if (!B.oculta) colocar(0); }
+  }
   function crearCotorra() {
     if (B.listo) return B.listo;
     if (!window.AVCharacter || !window.AVCharacter.create) return (B.listo = Promise.resolve(null));
@@ -170,7 +182,9 @@ window.AVV18Descubrir = function (G) {
   function colocar(dt) {
     const ch = B.ch; if (!ch) return;
     const root = ch.root, vuela = !!B.vuelo;
-    root.visible = true;
+    const oculta = B.oculta && !vuela && !R.activo; // QA-nuevo-br1-3: lejos de Vittata no se dibuja (revisarLejos)
+    root.visible = !oculta;
+    if (oculta) return;
     root.position.set(B.pos.x, B.pos.y, B.pos.z);
     const s = S(), dJ = s && s.pos ? distXZ(s.pos, B.pos) : 0;
     if (!vuela && s && s.pos && dJ < 40) B.yaw = Math.atan2(s.pos.x - B.pos.x, s.pos.z - B.pos.z); // mira a Vittata
@@ -367,6 +381,7 @@ window.AVV18Descubrir = function (G) {
   Promise.resolve(G.vegetacion && G.vegetacion.listo).then(() => setTimeout(reelegirPerchas, 0), () => {});
   G.on('terrenoTrozo', () => setTimeout(reelegirPerchas, 0));
   G.on('update', (dt, busy) => { if (!busy && montado) paso(dt); }, 47);
+  G.on('update', dt => { if (montado) revisarLejos(dt); }, 47.5); // también con la interfaz ocupada (un teleport no deja a la cotorra a la vista)
   G.on('apply', () => { R.activo = false; setTimeout(() => { if (montado) { posar(0); pintarBoton(); } }, 0); }, 96);
   G.on('v18', ev => { if (ev && ev.tipo === 'especie') pintarBoton(); });
 
@@ -486,6 +501,16 @@ window.AVV18Descubrir = function (G) {
       V.borrar(); V.recargar();
       const sp = (s.profile && ((s.profile.look && s.profile.look.species) || s.profile.species)) || 'vittata';
       check('Partida vieja: la especie del perfil es elegible y la de Dominica empieza sin descubrir', seleccionables().indexOf(sp) >= 0 && estado() === 'no_descubierta' && (!G.ui.$('pause') || pintarBoton().hidden));
+      { // QA-nuevo-br1-3: lejos (> 60 m) no se dibuja, ni aunque su paso la vuelva a colocar; al volver, otra vez a la vista
+        R.activo = false; posar(0);
+        const root = B.ch && B.ch.root, cerca = { x: B.pos.x + 6, y: B.pos.y, z: B.pos.z }, lejos = { x: B.pos.x + 90, y: B.pos.y, z: B.pos.z + 40 };
+        ir(lejos); revisarLejos(0.05); paso(0.1); const ocultaLejos = !!root && !root.visible && B.oculta;
+        ir(cerca); revisarLejos(0.05); const vuelve = !!root && root.visible && !B.oculta; paso(0.1);
+        ir(lejos); revisarLejos(0.05); empezarReto(); paso(0.1); const enReto = !!root && root.visible; R.activo = false; B.vuelo = null; posar(0);
+        check('QA-nuevo-br1-3 · Lejos de Vittata (> 60 m) Arausiaca no se dibuja; al volver, sí (y en su reto, siempre)', ocultaLejos && vuelve && enReto && !!root.parent,
+          'lejos ' + ocultaLejos + ' · de vuelta ' + vuelve + ' · en el reto ' + enReto);
+        ir(cerca); revisarLejos(0.05);
+      }
     } catch (e) { check('Sin excepciones', false, e && e.stack); }
     G.ui.toast = toastOrig;
     try { if (G.ui.cardOpen) G.ui.hideCard(); } catch (e) { /* sin tarjeta */ }
