@@ -192,19 +192,19 @@
 
     // ---------- Enviar (throttle) ----------
     // Con el juego en pausa no hay cuadros: un latido de 1 s mantiene viva a esta cotorra para las demás (si no, a los 5 s se iría)
-    let acumEnvio = 0, ultimoEnvio = null, desdeUltimo = 0, ultimoMs = 0;
-    setInterval(() => { if (E.fase === 'dentro' && performance.now() - ultimoMs > 1000 / HZ_QUIETA) enviarAhora(); }, 1000);
+    let ultimoEnvio = null, desdeUltimo = 0, ultimoMs = 0;
+    // El envío va con su propio reloj (no con los cuadros: en un equipo lento o con la pestaña oculta hay pocos)
+    setInterval(() => { try { tickEnvio(); } catch (e) { /* nunca rompe el juego */ } }, 1000 / HZ);
     function enviarAhora() {
       if (!E.canal || E.fase !== 'dentro') return false;
       const p = miPayload();
       if (E.canal.enviar('p', p)) { E.enviados++; E.ultimoPayload = p; ultimoEnvio = p; desdeUltimo = 0; ultimoMs = performance.now(); return true; }
       return false;
     }
-    function tickEnvio(dt) {
+    function tickEnvio() {
       if (E.fase !== 'dentro') return;
-      acumEnvio += dt; desdeUltimo += dt;
-      if (acumEnvio < 1 / HZ) return; acumEnvio = 0;
-      if (document.hidden) return;
+      if (document.hidden) { if (performance.now() - ultimoMs > 1000 / HZ_QUIETA) enviarAhora(); return; }
+      desdeUltimo = (performance.now() - ultimoMs) / 1000;
       const p = miPayload(), u = ultimoEnvio;
       const cambio = !u || Math.abs(p.x - u.x) + Math.abs(p.y - u.y) + Math.abs(p.z - u.z) > 0.02 || Math.abs(p.rumbo - u.rumbo) > 0.02 || p.vuela !== u.vuela || p.gesto !== u.gesto || p.esp !== u.esp || p.mundo !== u.mundo;
       if (cambio || desdeUltimo >= 1 / HZ_QUIETA) enviarAhora();
@@ -241,14 +241,17 @@
         ch.root.scale.setScalar(alto / ch.height); ch.root.rotation.order = 'YXZ'; ch.root.name = 'en_linea_' + q.id;
         ch.root.userData.enLinea = true; ch.play('Idle');
         if (!geoMarca) geoMarca = new THREE.TorusGeometry(0.2, 0.045, 6, 18);
+        // Anillo de color sobre la cabeza, hijo del modelo (lo sigue en todo); se compensa la escala del modelo
         const marca = new THREE.Mesh(geoMarca, new THREE.MeshBasicMaterial({ color: colorDe(q.id), depthWrite: false }));
-        marca.name = 'en_linea_marca'; marca.userData.enLinea = true;
-        scene.add(ch.root); scene.add(marca); q.ch = ch; q.marca = marca;
+        const k = 1 / ch.root.scale.x; marca.scale.setScalar(k); marca.position.y = 2.3 * k; marca.rotation.x = Math.PI / 2; // plano: se lee como anillo desde cualquier lado
+        marca.name = 'en_linea_marca'; marca.userData.enLinea = true; ch.root.add(marca);
+        const s = q.snaps[q.snaps.length - 1]; if (s) { ch.root.position.set(s.x, s.y, s.z); ch.root.rotation.y = s.r; }
+        scene.add(ch.root); q.ch = ch; q.marca = marca;
       }).catch(() => { q.cargando = false; });
     }
     function quitarModelo(q) {
+      if (q.marca) { if (q.marca.parent) q.marca.parent.remove(q.marca); q.marca.material.dispose(); q.marca = null; }
       if (q.ch) { scene.remove(q.ch.root); try { window.AVCharacter.disposeObject(q.ch.root, true); } catch (e) { /* nada */ } try { q.ch.mixer && q.ch.mixer.stopAllAction(); } catch (e) { /* nada */ } q.ch = null; }
-      if (q.marca) { scene.remove(q.marca); q.marca.material.dispose(); q.marca = null; }
     }
     function quitarPar(id) { const q = pares.get(id); if (!q) return; quitarModelo(q); pares.delete(id); }
     function limpiarPares() { for (const id of [...pares.keys()]) quitarPar(id); }
@@ -284,7 +287,7 @@
         const vel = dt > 0 ? Math.hypot(m.x - px, m.z - pz) / dt : 0; q.vel += (Math.min(vel, 30) - q.vel) * Math.min(1, dt * 6);
         const lejos = (m.x - _cam.x) ** 2 + (m.z - _cam.z) ** 2 > LEJOS * LEJOS;
         root.visible = true;
-        if (q.marca) { q.marca.position.set(m.x, m.y + 2.35 + Math.sin(ahora / 400 + i) * 0.06, m.z); q.marca.rotation.y = ahora / 700; q.marca.visible = true; }
+        if (q.marca) { q.marca.position.y = (2.3 + Math.sin(ahora / 400 + i) * 0.06) / root.scale.x; }
         if (lejos) return;
         q.acum += dt; if (baja && q.acum < 1 / 30) return; // «bajo»/Escuela: esqueleto a ~30 Hz como mucho
         const dta = q.acum; q.acum = 0;
@@ -297,7 +300,9 @@
         try { ch.update(dta); } catch (e) { /* animación */ }
       });
     }
-    const alRender = (dt) => { const d = Math.min(0.1, dt || 0); try { tickEnvio(d); if (pares.size) tickPares(d); } catch (e) { /* nunca rompe el cuadro */ } };
+    // Reloj de pared (no el dt del juego, que vale 0 con la pausa o el hit-stop): las demás siguen moviéndose y esta sigue enviando
+    let tPrev = 0;
+    const alRender = () => { const now = performance.now(), d = tPrev ? Math.min(0.1, (now - tPrev) / 1000) : 0; tPrev = now; try { if (pares.size) tickPares(d); } catch (e) { /* nunca rompe el cuadro */ } };
     G.on('render', alRender, 70);
 
     // ---------- Panel (encima del juego, con la pausa puesta) ----------
@@ -398,11 +403,13 @@
         const mueve = setInterval(() => { paso++; const a = paso * 0.15; bot.enviar('p', { id: botId, esp: especieBot, x: base.x + Math.cos(a) * 2, y: S.pos.y + 1.5, z: base.z + Math.sin(a) * 2, rumbo: a, vuela: 1, gesto: '', mundo: mundoActual() }); }, 1000 / HZ);
         const visto = await espera(() => { const q = pares.get(botId); return q && q.ch && q.ch.root.parent === scene; }, 15000);
         const q = pares.get(botId);
-        check('Aquí se ve a la otra cotorra (modelo en la escena, con su especie y anillo)', visto && q.esp === especieBot && !!q.marca && q.marca.parent === scene, q ? q.esp : 'no llegó');
+        check('Aquí se ve a la otra cotorra (modelo en la escena, con su especie y anillo)', visto && q.esp === especieBot && !!q.marca && q.marca.parent === q.ch.root, q ? q.esp : 'no llegó');
+        // (con tickPares a mano: en Chrome sin GPU hay muy pocos cuadros por segundo)
+        await sleep(400); tickPares(0.016);
         const p0 = q && q.ch ? q.ch.root.position.clone() : null;
-        await sleep(700);
+        await sleep(700); tickPares(0.016);
         const p1 = q && q.ch ? q.ch.root.position.clone() : null;
-        check('Y se mueve, interpolada', p0 && p1 && p0.distanceTo(p1) > 0.3 && q.ch.flying, p0 && p1 ? p0.distanceTo(p1).toFixed(2) + ' m en 0,7 s' : '');
+        check('Y se mueve, interpolada', p0 && p1 && p0.distanceTo(p1) > 0.3 && p0.distanceTo(p1) < 6 && q.ch.flying, p0 && p1 ? p0.distanceTo(p1).toFixed(2) + ' m en 0,7 s' : '');
         // 3. El bot ve a este juego moverse
         const n0 = botRecibe.length;
         S.pos.x += 1.5; await sleep(600); S.pos.x += 1.5; await sleep(600);
