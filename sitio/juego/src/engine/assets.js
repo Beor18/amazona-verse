@@ -148,6 +148,60 @@
   // la carga de arranque medidos con GPU real, KIMI-244, tope 28 incumplido); al subir el real en background
   // (~20 s) el flag por kit devuelve el 4096 a los parses siguientes (caché HTTP, sin bytes nuevos).
   const TEX_HD_DIFUSO = /\/tex_hd\/hd_(ancient|savage)\.jpg([?#].*)?$/;
+  // «Texturas optimizadas» (Modo Escuela, QA-181; memoria del iPhone, QA-110; Kelvin 8-nov: KTX2 solo en «bajo» y con
+  // calidad.escuela). El difuso LQ del atlas (hd_<kit>_lq.jpg / _lq1024.jpg, 21 MB de GPU el 2048²) se usa como KTX2 Basis
+  // ETC1S (.ktx2 junto al JPEG, que sigue siendo la fuente) y la GPU lo recibe ya comprimido (ETC2/ETC1/BC1/PVRTC: 0,5 B/px,
+  // ~2,7 MB con mipmaps). KTX2Loader y WorkerPool de three r136 (los últimos examples/js clásicos; compatibles con el núcleo
+  // r128) y su transcoder (basis_universal 7f0a00a = el basisu 1.15 de la build). docs/equipo/BUILD.md, tabla por textura.
+  // La build lista en <meta name="ave:ktx2"> los JPEG con .ktx2 al día; sin la marca (desarrollo), sin formato de GPU útil o
+  // si el transcoder falla, se queda el JPEG de hoy. El transcoder (~0,55 MB) se carga solo en esos modos. Mientras llega, el
+  // parse del GLB recibe un 2×2 del color medio del kit en vez del JPEG (no se baja dos veces) y streaming.js
+  // (ajustarComprimida) pone el KTX2 al llegar, o el JPEG si algo falla. Medio/alto sin escuela: exactamente como antes.
+  const KTX2_DIR = 'assets/vendor/three/examples/js/libs/basis/';
+  const PLANO_KIT = {
+    ancient: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR42mOc25HGwMDAxMDAwMDAAAAS5QGP7xo2eAAAAABJRU5ErkJggg==',
+    savage: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR42mNMCHJmYGBgYmBgYGBgAAALwwD5xvKY5wAAAABJRU5ErkJggg=='
+  };
+  let comprimidaActiva = () => false, rendererKTX2 = null, soporteKTX2, registroKTX2 = null, ktx2Loader = null, ktx2Pend = 0, soltarKTX2 = 0;
+  const absURL = u => { try { return new URL(u, document.baseURI).href; } catch (e) { return String(u); } };
+  function setComprimida(f, renderer) { comprimidaActiva = typeof f === 'function' ? f : () => !!f; if (renderer) rendererKTX2 = renderer; }
+  // Formatos de GPU a los que el transcoder lleva ETC1S (por orden: ETC2, ETC1, BC1, PVRTC). BC7 se descarta para ETC1S
+  // (1 B/px, el doble que BC1 sin ganar calidad). Sin ninguno, se queda el JPEG: transcodificar a RGBA32 no ahorra memoria.
+  function configKTX2() {
+    if (soporteKTX2 !== undefined) return soporteKTX2;
+    const r = typeof rendererKTX2 === 'function' ? rendererKTX2() : rendererKTX2; if (!r || !r.extensions) return null;
+    const has = e => { try { return !!r.extensions.has(e); } catch (er) { return false; } };
+    const c = { astcSupported: has('WEBGL_compressed_texture_astc'), bptcSupported: false,
+      etc2Supported: has('WEBGL_compressed_texture_etc'), etc1Supported: has('WEBGL_compressed_texture_etc1') && !(r.capabilities && r.capabilities.isWebGL2),
+      dxtSupported: has('WEBGL_compressed_texture_s3tc'), pvrtcSupported: has('WEBGL_compressed_texture_pvrtc') || has('WEBKIT_WEBGL_compressed_texture_pvrtc') };
+    return (soporteKTX2 = c.etc2Supported || c.etc1Supported || c.dxtSupported || c.pvrtcSupported ? c : null);
+  }
+  function ktx2De(url) {
+    if (!url || !comprimidaActiva() || !configKTX2()) return null;
+    if (!registroKTX2) {
+      const m = document.querySelector('meta[name="ave:ktx2"]');
+      registroKTX2 = new Set(((m && m.getAttribute('content')) || '').split(/\s+/).filter(Boolean).map(absURL));
+    }
+    const a = absURL(url).replace(/[?#].*$/, '');
+    return registroKTX2.has(a) ? a.replace(/\.(jpe?g|png|webp)$/i, '.ktx2') : null;
+  }
+  // Carga el .ktx2 de una imagen registrada: ok(CompressedTexture) o falla(error). A los 15 s sin cargas pendientes se
+  // sueltan el loader y su worker (el wasm no se queda en memoria; los dos kits llegan con segundos de diferencia y
+  // comparten el mismo transcoder; si hace falta otra vez, sale de la caché HTTP).
+  const planoKit = kit => PLANO_KIT[kit] || PLANO_KIT.ancient;
+  function texKTX2(url, ok, falla) {
+    const k = ktx2De(url);
+    if (!k) { falla(new Error('sin variante .ktx2: ' + url)); return; }
+    ktx2Pend++;
+    clearTimeout(soltarKTX2);
+    const fin = () => { if (--ktx2Pend === 0) soltarKTX2 = setTimeout(() => { if (ktx2Pend === 0 && ktx2Loader) { try { ktx2Loader.dispose(); } catch (e) { /* ya suelto */ } ktx2Loader = null; } }, 15000); };
+    script('assets/vendor/three/examples/js/utils/WorkerPool.js')
+      .then(() => script('assets/vendor/three/examples/js/loaders/KTX2Loader.js'))
+      .then(() => {
+        if (!ktx2Loader) { ktx2Loader = new THREE.KTX2Loader(); ktx2Loader.setTranscoderPath(KTX2_DIR).setWorkerLimit(1); ktx2Loader.workerConfig = configKTX2(); }
+        ktx2Loader.load(k, t => { fin(); ok(t); }, undefined, e => { fin(); falla(e); });
+      }).catch(e => { fin(); falla(e); });
+  }
   function setNormalPlanaBaja(f) { normalPlanaBaja = typeof f === 'function' ? f : () => !!f; }
   function setSufijoLQDifuso(f) { sufijoLQDifuso = typeof f === 'function' ? f : () => String(f || '_lq'); }
   function setNormalLQMedia(f) { normalLQMedia = typeof f === 'function' ? f : () => !!f; }
@@ -160,7 +214,10 @@
         return url;
       }
       const mD = TEX_HD_DIFUSO.exec(url);
-      if (mD && (normalPlanaBaja() || !atlasHDListo[mD[1]])) return url.replace(/hd_(ancient|savage)\.jpg/, 'hd_$1' + sufijoLQDifuso() + '.jpg');
+      if (mD && (normalPlanaBaja() || !atlasHDListo[mD[1]])) {
+        const lq = url.replace(/hd_(ancient|savage)\.jpg/, 'hd_$1' + sufijoLQDifuso() + '.jpg');
+        return ktx2De(lq) ? PLANO_KIT[mD[1]] : lq; // «texturas optimizadas»: el .ktx2 lo pone streaming.js
+      }
       return url;
     });
     const L = new THREE.GLTFLoader(mgr);
@@ -226,7 +283,7 @@
   registrarCache();
 
   window.AVE = window.AVE || {};
-  AVE.assets = { script, loadGLB, image, imagenRetenida: retenida, setNormalPlanaBaja, setSufijoLQDifuso, setNormalLQMedia };
+  AVE.assets = { script, loadGLB, image, imagenRetenida: retenida, setNormalPlanaBaja, setSufijoLQDifuso, setNormalLQMedia, setComprimida, ktx2De, texKTX2, planoKit };
 
   AVE.module('assets', function () {
     const loader = new THREE.TextureLoader();
@@ -236,6 +293,6 @@
       t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
       return t;
     }
-    return { script, loadGLB, image, tex, loader, setNormalPlanaBaja, setSufijoLQDifuso, setNormalLQMedia, setAtlasHDListo, atlasHDListoEs };
+    return { script, loadGLB, image, tex, loader, setNormalPlanaBaja, setSufijoLQDifuso, setNormalLQMedia, setAtlasHDListo, atlasHDListoEs, setComprimida, ktx2De, texKTX2, planoKit };
   });
 })();

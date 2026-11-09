@@ -518,7 +518,7 @@ window.AVV18Duelo2 = function (G) {
     pos2.y = ALTURA(pos2) + lift;
     j.vel = Math.hypot(vx, vz);
   }
-  const giro = a => Math.atan2(Math.sin(a), Math.cos(a));
+  const giro = a => Math.atan2(Math.sin(a), Math.cos(a)), mira2 = new THREE.Vector3();
   function dibujar2(dt) {
     const ch = D.ch; if (!ch) return;
     const j = D.j2, root = ch.root, now = performance.now() / 1000;
@@ -529,9 +529,16 @@ window.AVV18Duelo2 = function (G) {
     // QA-205: campos sueltos en vez de un literal nuevo por cuadro (mismo orden)
     ch.speed = vel; ch.gait = vel > 7 ? 1 : 0; ch.airborne = enAire; ch.flying = enAire; ch.legsDown = enAire ? 0.6 : 1; ch.swimming = false; ch.diving = false;
     ch.wingMode = j.alasT > 0 ? 'land' : enAire ? 'flap' : vel > 0.5 ? 'walk' : 'idle';
-    ch.expression = j.mareo > 0 ? 'surprised' : j.picoT > 0 ? 'fight' : 'happy'; ch.mouth = j.picoT > 0 ? Math.min(1, j.picoT / 0.15) : null; ch.lookAt = null;
+    // Vida (9-nov, la misma capa que la Campeona: combate.js): mira a la Vittata, aletazo al golpear, retrocede al recibir,
+    // se bambolea mareado, celebra al ganar y se queda cabizbajo al perder
+    const fin = D.fase === 'fin' ? (D.resultado === 'j2' ? 'gana' : 'pierde') : '';
+    const mira = !(j.mareo > 0) && fin !== 'pierde' && D.fase !== 'nada';
+    if (mira) mira2.set(S.pos.x, S.pos.y + 1.2, S.pos.z);
+    ch.expression = j.mareo > 0 ? 'surprised' : j.picoT > 0 ? 'fight' : 'happy'; ch.mouth = j.picoT > 0 ? Math.min(1, j.picoT / 0.15) : null; ch.lookAt = mira ? mira2 : null;
     ch.emote = null; ch.posado = ''; ch.agachada = 0; ch.groundY = ALTURA(pos2); ch.groundAt = null;
-    try { ch.update(dt); } catch (e) { /* animación */ }
+    const cdA = (j.cd && j.cd.golpe_ala) || 0; if (cdA > (j.cdAla0 || 0) + 0.2) j.aletazo = 0.3; j.cdAla0 = cdA; if (j.aletazo > 0) j.aletazo -= dt;
+    const Vi = Cb.vida, V = Vi ? Vi.antes(ch, j, { ataque: j.aletazo > 0, salto: enAire, vel, fin }, dt) : null;
+    try { ch.update(dt); if (V) Vi.huesos(ch, V); } catch (e) { /* animación */ }
   }
   function pasoJ1(dt) {
     const j = D.j1;

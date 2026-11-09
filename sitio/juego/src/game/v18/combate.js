@@ -1020,6 +1020,87 @@ window.AVV18Combate = function (G) {
     return marcaAviso;
   }
   const mirarA = new THREE.Vector3();
+  // ---------- Vida (Kelvin 9-nov: «la otra cotorra tiene poca animación») ----------
+  // Capa procedural encima de character.js, solo con lo que ya trae el rig (huesos, clip Celebrate, wingMode, expresiones; el
+  // modelo y el rig no se tocan): respira y mira a la jugadora en espera, aletea al moverse, carga el golpe (alas atrás, pecho
+  // atrás, cola arriba y un temblor al final del aviso), da el aletazo hacia delante, retrocede al recibir un golpe, se
+  // bambolea mareada, celebra al ganar y se queda cabizbaja al perder. Cada estado tiene un peso que entra y sale suave y
+  // cada salida tiene una velocidad máxima (VIDA_VEL): sin saltos ni temblores. Solo se ve: no cambia nada del juego.
+  // Modo Escuela: sin los extras de espera y de andar (respirar, mirar curiosa, aleteos al andar); las reacciones quedan.
+  // También la usa el Jugador 2 del duelo de 2 (duelo2.js, con G.v18combate.vida).
+  const VIDA_EST = ['espera', 'mueve', 'esquiva', 'carga', 'apunta', 'ataque', 'golpe', 'mareo', 'gana', 'pierde'];
+  const VIDA_SAL = ['pecho', 'pechoZ', 'cabX', 'cabY', 'cabZ', 'alas', 'alasX', 'cola', 'pico', 'alto', 'atras'];
+  const VIDA_VEL = 9, VIDA_VEL_M = 2.5, VIDA_GOLPE = 0.42, VIDA_EXTRA = { espera: 1, mueve: 1 };
+  // o: { prep, prepK (0..1 del aviso), ataque, salto, vel, fin ('gana' | 'pierde' | '') }
+  function vida(ch, f, o, dt) {
+    const V = f.anima || (f.anima = { estado: '', t: 0, finT: 0, golpeT: 0, plumas0: f.plumas, kb0: 0, w: {}, s: {}, maxPaso: 0, maxPasoM: 0, celebra: 0, vistos: {} });
+    const esc = !!(G.renderer && G.renderer.calidad && G.renderer.calidad.escuela);
+    V.t += dt;
+    // Golpe recibido: pierde una pluma o le llega un empujón nuevo (no cuenta el de sus propios saltos)
+    if (f.plumas < V.plumas0 || (f.kb && f.kb.t > 0 && !(V.kb0 > 0) && Math.hypot(f.kb.x, f.kb.z) > 2)) V.golpeT = VIDA_GOLPE;
+    V.plumas0 = f.plumas; V.kb0 = f.kb ? f.kb.t : 0;
+    if (V.golpeT > 0) V.golpeT = Math.max(0, V.golpeT - dt);
+    const fin = o.fin || '';
+    if (fin) V.finT += dt; else V.finT = 0;
+    const est = V.golpeT > 0 ? 'golpe' : f.mareo > 0 ? 'mareo' : fin ? fin : o.prep === 'golpe_ala' ? 'carga' : o.prep === 'semilla' ? 'apunta'
+      : o.ataque ? 'ataque' : o.salto ? 'esquiva' : o.vel > 0.4 ? 'mueve' : 'espera';
+    if (est !== V.estado) { V.estado = est; V.vistos[est] = (V.vistos[est] || 0) + 1; }
+    // Al ganar: el clip Celebrate del modelo, una vez por victoria (luego vuelve solo a Idle)
+    if (fin === 'gana' && !V.celebra) { V.celebra = 1; try { ch.play('Celebrate', true); } catch (e) { /* sin clip */ } }
+    if (!fin) V.celebra = 0;
+    const W = V.w, kw = 1 - Math.exp(-dt * 10);
+    for (const s of VIDA_EST) {
+      const on = s === est && !(esc && VIDA_EXTRA[s]) ? 1 : 0;
+      W[s] = s === 'golpe' ? on : (W[s] || 0) + (on - (W[s] || 0)) * kw; // el golpe entra de golpe: su curva ya empieza en 0
+    }
+    const T = V.t, q = {}; for (const k of VIDA_SAL) q[k] = 0;
+    const add = (w, o2) => { if (w < 0.002) return; for (const k in o2) q[k] += o2[k] * w; };
+    const b = Math.sin(T * 2.6);
+    add(W.espera, { pecho: 0.035 * b, alas: 0.03 * (0.5 + 0.5 * b), cola: 0.05 * Math.sin(T * 2.6 + 1), cabZ: 0.12 * Math.sin(T * 0.7), pechoZ: 0.035 * Math.sin(T * 0.9) });
+    add(W.mueve, { alas: 0.12 * Math.max(0, Math.sin(T * 8)), cola: 0.08 * Math.sin(T * 8) });
+    add(W.esquiva, { alas: 0.35, cola: 0.3, cabX: -0.1 });
+    { const k = Math.min(1, Math.max(0, o.prepK || 0)), tiembla = k > 0.6 ? Math.sin(T * 40) * 0.03 * (k - 0.6) / 0.4 : 0;
+      add(W.carga, { alasX: 0.4 * k, alas: 0.15 * k, pecho: -0.1 * k, cabX: 0.12, cola: 0.4 * k, pechoZ: tiembla, pico: 0.06 }); }
+    add(W.apunta, { cabZ: 0.18, cabX: -0.06, pico: 0.05 });
+    add(W.ataque, { alasX: -0.55, pecho: 0.18, pico: 0.16, cola: -0.15 });
+    { const p = 1 - V.golpeT / VIDA_GOLPE, env = V.golpeT > 0 ? (p < 0.18 ? p / 0.18 : (1 - p) / 0.82) : 0;
+      add(W.golpe, { pecho: -0.32 * env, cabX: -0.3 * env, alas: 0.5 * env, cola: 0.4 * env, pico: 0.2 * env, atras: 0.16 * env, alto: 0.05 * env }); }
+    add(W.mareo, { cabY: 0.25 * Math.sin(T * 5), cabZ: 0.2 * Math.cos(T * 5), alas: 0.3 + 0.08 * Math.sin(T * 7), pecho: 0.08, pico: 0.1 });
+    { const tg = V.finT, salta = tg < 1.8 ? Math.abs(Math.sin(Math.PI * tg / 0.6)) * (1 - tg / 2.2) : 0;
+      add(W.gana, { alto: 0.2 * salta, alas: 0.25 + (tg < 1.8 ? 0.35 * Math.max(0, Math.sin(T * 16)) : 0.1 * Math.max(0, Math.sin(T * 3))), pecho: -0.12, cabX: -0.15, cola: 0.25 + 0.1 * Math.sin(T * 6), pico: 0.12 * Math.max(0, Math.sin(T * 4)) }); }
+    add(W.pierde, { pecho: 0.22 + 0.04 * Math.sin(T * 1.6), cabX: 0.35, cabZ: 0.18, alasX: 0.18, cola: -0.3 });
+    // Velocidad máxima por salida (rad/s; alto y atras en m/s): lo que pida un estado nuevo llega en unos cuadros, sin saltos
+    const S2 = V.s;
+    for (const k of VIDA_SAL) {
+      const m = k === 'alto' || k === 'atras', lim = (m ? VIDA_VEL_M : VIDA_VEL) * dt, a = S2[k] || 0, d = Math.max(-lim, Math.min(lim, q[k] - a));
+      S2[k] = a + d;
+      if (dt > 0) { const v = Math.abs(d) / dt; if (m) V.maxPasoM = Math.max(V.maxPasoM, v); else V.maxPaso = Math.max(V.maxPaso, v); }
+    }
+    // Lo que va antes de update: expresión, alas y un desplazamiento del cuerpo (atrás al recibir, arriba en los saltitos)
+    if (est === 'golpe') ch.expression = 'surprised';
+    else if (est === 'gana') ch.expression = 'happy';
+    else if (est === 'pierde') ch.expression = 'sad';
+    if (est === 'gana' && V.finT < 1.8 && !ch.airborne) ch.wingMode = 'flap';
+    else if (est === 'pierde' || est === 'gana') ch.wingMode = 'idle';
+    const root = ch.root, yaw = root.rotation.y;
+    root.position.x -= Math.sin(yaw) * S2.atras; root.position.z -= Math.cos(yaw) * S2.atras; root.position.y += S2.alto;
+    return V;
+  }
+  // Después de update (los giros con ch.rot se deshacen solos al empezar el cuadro siguiente). Solo huesos del pecho para
+  // arriba y la cola: el IK de patas ya está hecho y no se mueve.
+  function vidaHuesos(ch, V) {
+    const B = ch.bones, s = V && V.s; if (!B || !s) return;
+    const ps = (ch.headSign && ch.headSign.pitch) || 1;
+    if (B.espalda2) { if (s.pecho) ch.rot(B.espalda2, 'x', s.pecho); if (s.pechoZ) ch.rot(B.espalda2, 'z', s.pechoZ); }
+    if (B.cabeza) { if (s.cabX) ch.rot(B.cabeza, 'x', s.cabX * ps); if (s.cabY) ch.rot(B.cabeza, 'y', s.cabY); if (s.cabZ) ch.rot(B.cabeza, 'z', s.cabZ); }
+    if (B.armL1 && B.armL1001) {
+      if (s.alas) { ch.rot(B.armL1, 'z', s.alas); ch.rot(B.armL1001, 'z', -s.alas); }
+      if (s.alasX) { ch.rot(B.armL1, 'x', s.alasX); ch.rot(B.armL1001, 'x', s.alasX); }
+    }
+    if (B.espalda1001 && s.cola) ch.rot(B.espalda1001, 'x', s.cola);
+    if (B.pico && s.pico) ch.rot(B.pico, 'x', s.pico);
+  }
+  const vidaApi = { antes: vida, huesos: vidaHuesos, ESTADOS: VIDA_EST, VEL: VIDA_VEL };
   function dibujarRival(dt, vel, sinAnimar) {
     const ch = C.ch; if (!ch) return;
     const r = C.r, root = ch.root, now = performance.now() / 1000, lucha = C.fase === 'lucha';
@@ -1043,13 +1124,18 @@ window.AVV18Combate = function (G) {
     const enAire = r.lift.dura > 0 || r.saltoDur > 0;
     // Andar de lado o deprisa: saltitos con las alas a medio abrir ('hop'); despacio y de frente, pasos
     const lado = vel > 0.7 && Math.sin(r.yaw) * r.v.x + Math.cos(r.yaw) * r.v.z < 0.5 * Math.hypot(r.v.x, r.v.z); // de lado o hacia atrás
-    if (lucha && C.j) mirarA.set(C.j.pos.x, C.j.pos.y + 1.2, C.j.pos.z);
+    // Mira a la jugadora: en la cuenta, en la lucha, al ganar y, esperando en la explanada, a quien se acerca (< 20 m)
+    const fin = C.fase === 'fin' ? (C.resultado === 'win' ? 'pierde' : 'gana') : '';
+    const cerca = C.fase === 'nada' && (S.pos.x - r.pos.x) ** 2 + (S.pos.z - r.pos.z) ** 2 < 400;
+    const mira = !(r.mareo > 0) && fin !== 'pierde' && (lucha || C.fase === 'cuenta' || fin === 'gana' || cerca);
+    if (mira) { if (C.fase === 'nada' || !C.j) mirarA.set(S.pos.x, S.pos.y + 1.2, S.pos.z); else mirarA.set(C.j.pos.x, C.j.pos.y + 1.2, C.j.pos.z); }
     Object.assign(ch, { speed: vel, gait: vel > 3 || lado ? 2 : vel > 0.3 ? 1 : 0, airborne: enAire, flying: enAire, legsDown: enAire ? 0.6 : 1, swimming: false, diving: false,
       wingMode: r.alasT > 0 ? 'land' : r.golpeAnim > 0 ? 'flap' : prep === 'golpe_ala' ? 'preflare' : enAire ? 'flap' : vel > 0.3 ? 'walk' : 'idle',
       expression: r.mareo > 0 ? 'surprised' : r.picoT > 0 || prep ? 'fight' : 'happy',
-      mouth: r.picoT > 0 ? boca(r) : null, lookAt: lucha && C.j && !(r.mareo > 0) ? mirarA : null,
+      mouth: r.picoT > 0 ? boca(r) : null, lookAt: mira ? mirarA : null,
       emote: null, posado: '', agachada: enAire ? 0 : r.agacha, groundY: ALTURA(r.pos), groundAt: null });
-    try { ch.update(dt); } catch (e) { /* animación */ }
+    const V = vida(ch, r, { prep, prepK: prep && r.prepDur > 0 ? 1 - r.prepT / r.prepDur : 0, ataque: r.golpeAnim > 0, salto: r.saltoDur > 0 || r.mov.t > 0, vel, fin }, dt);
+    try { ch.update(dt); vidaHuesos(ch, V); } catch (e) { /* animación */ }
     // Altura real de la cabeza sobre los pies (sigue al saltito, a la carga y a la pose), para el «!»
     const cab = ch.bones && ch.bones.cabeza;
     if (cab) { cab.getWorldPosition(cabezaV); C.cabezaAlto = cabezaV.y - r.pos.y; }
@@ -1572,6 +1658,86 @@ window.AVV18Combate = function (G) {
         salir();
       }
 
+      // 6c. Vida (Kelvin 9-nov: «la otra cotorra tiene poca animación»): cada fase del duelo pone su estado de animación
+      // (espera, mueve, carga, ataque, golpe, mareo, gana, pierde), cada salida cambia con velocidad limitada por cuadro (sin
+      // temblores) y el efecto se acaba (al salir vuelve a la espera, sin desplazamientos). Modo Escuela: sin extras, con reacciones.
+      if (C.ch) {
+        const A = () => C.r.anima || { estado: '', s: {}, w: {}, vistos: {}, maxPaso: 0, maxPasoM: 0 };
+        const fija = () => { M.vx = M.vz = 0; const r = C.r; r.poderT = 99; r.tiroT = 99; r.esquivaT = 99; };
+        const vio = (est, s, antes) => { let n = 0; const ests = []; for (let t = 0; t < s; t += 0.05) { if (antes) antes(); paso(0.05); const e = A().estado; ests.push(e); if (e === est) n++; } return { n, ests }; };
+        const resumen = () => { const a = A(); return { estado: a.estado, maxPaso: +a.maxPaso.toFixed(2), maxPasoM: +a.maxPasoM.toFixed(2), s: Object.fromEntries(Object.entries(a.s).map(([k, v]) => [k, +v.toFixed(3)])) }; };
+        const pasos = [];
+        // Espera (cuenta 3-2-1): respira, mira a la jugadora
+        iniciar({ especie: 'vittata' }); C.r.anima = null; C.r.pos.x = S.pos.x + 3; C.r.pos.z = S.pos.z;
+        let pMin = 9, pMax = -9; const esp = vio('espera', 1.2, () => { M.vx = M.vz = 0; const v = A().s.pecho || 0; pMin = Math.min(pMin, v); pMax = Math.max(pMax, v); });
+        const escYa = !!(G.renderer && G.renderer.calidad && G.renderer.calidad.escuela); // con el Modo Escuela puesto no respira (extra)
+        check('Vida: en la espera respira (el pecho sube y baja) y mira a la jugadora', esp.n >= 20 && (escYa || pMax - pMin > 0.03) && C.ch.lookAt === mirarA, JSON.stringify({ n: esp.n, resp: +(pMax - pMin).toFixed(3), mira: C.ch.lookAt === mirarA }));
+        pasos.push(A().maxPaso);
+        // Se mueve: se acerca desde lejos, aleteando
+        iniciar({ sinCuenta: true, especie: 'vittata' }); C.r.anima = null; C.r.pos.x = S.pos.x + 9; C.r.pos.z = S.pos.z; C.r.golpeT = 99; C.r.pensar = 99;
+        const mv = vio('mueve', 0.8, fija);
+        check('Vida: al moverse pasa a «mueve» (aleteos al andar y saltitos)', mv.n >= 5, JSON.stringify({ n: mv.n }));
+        pasos.push(A().maxPaso);
+        // Carga el golpe (aviso) y lo suelta (ataque)
+        iniciar({ sinCuenta: true, especie: 'vittata' }); C.r.anima = null; C.r.pos.x = S.pos.x + 1.8; C.r.pos.z = S.pos.z; C.r.golpeT = 0; C.r.pensar = 0; C.j.inv = 0; cara(1);
+        paso(0.05); const alasX0 = A().s.alasX || 0; let alasXMax = 0;
+        const cg = vio('carga', 0.3, () => { fija(); alasXMax = Math.max(alasXMax, A().s.alasX || 0); });
+        const at = vio('ataque', 0.5, fija);
+        check('Vida: el aviso del aletazo es una carga visible (alas atrás que crecen con el aviso) y al soltarlo da el aletazo',
+          cg.n >= 4 && alasXMax > alasX0 + 0.15 && at.n >= 2, JSON.stringify({ carga: cg.n, alasX0: +alasX0.toFixed(3), alasXMax: +alasXMax.toFixed(3), ataque: at.n }));
+        pasos.push(A().maxPaso);
+        // Recibe un golpe: retrocede y se acaba
+        iniciar({ sinCuenta: true, especie: 'vittata' }); C.r.anima = null; quieta(1.2); C.r.escudo = 0; C.r.golpeT = 99; cara(1); paso(0.05);
+        C.j.cd.golpe_ala = 0; const ug = usar(C.j, 'golpe_ala'); let atrasMax = 0;
+        const gp = vio('golpe', 0.3, () => { fija(); C.r.pensar = 99; C.r.mov.t = 0; atrasMax = Math.max(atrasMax, A().s.atras || 0); });
+        vio('', 0.6, () => { fija(); C.r.pensar = 99; C.r.mov.t = 0; });
+        const trasG = A();
+        check('Vida: al recibir un golpe retrocede (pecho y cabeza atrás, alas abiertas) y el efecto se acaba',
+          ug.acierto && gp.n >= 3 && atrasMax > 0.06 && trasG.estado !== 'golpe' && Math.abs(trasG.s.atras || 0) < 0.005, JSON.stringify({ acierto: ug.acierto, n: gp.n, atrasMax: +atrasMax.toFixed(3), ...resumen() }));
+        pasos.push(A().maxPaso);
+        // Mareada: bambolea la cabeza
+        C.r.mareo = 1; let cyMin = 9, cyMax = -9;
+        const mr = vio('mareo', 0.8, () => { fija(); C.r.mareo = Math.max(C.r.mareo, 0.5); const v = A().s.cabY || 0; cyMin = Math.min(cyMin, v); cyMax = Math.max(cyMax, v); });
+        C.r.mareo = 0;
+        check('Vida: mareada bambolea la cabeza en círculos', mr.n >= 12 && cyMax - cyMin > 0.2, JSON.stringify({ n: mr.n, cabY: +(cyMax - cyMin).toFixed(3) }));
+        pasos.push(A().maxPaso);
+        // Gana la Campeona: celebra (clip Celebrate y saltitos con aleteo) y se calma
+        iniciar({ sinCuenta: true, especie: 'vittata' }); C.r.anima = null; C.r.pos.x = S.pos.x + 1.3; C.r.pos.z = S.pos.z; C.r.pensar = 99; C.r.golpeT = 99; paso(0.05);
+        C.j.plumas = 1; C.j.inv = 0; C.j.escudo = 0; C.r.cd.golpe_ala = 0; C.r.energia = 100; C.r.yaw = Math.atan2(S.pos.x - C.r.pos.x, S.pos.z - C.r.pos.z);
+        usar(C.r, 'golpe_ala'); let altoMax = 0, flap = 0;
+        const gn = vio('gana', 1.4, () => { altoMax = Math.max(altoMax, A().s.alto || 0); if (C.ch.wingMode === 'flap') flap++; });
+        vio('gana', 1.4); const ganaFin = A();
+        check('Vida: al ganar la Campeona celebra (clip Celebrate, saltitos con aleteo, contenta) y luego se calma',
+          C.fase === 'fin' && C.resultado === 'loss' && gn.n >= 20 && ganaFin.celebra === 1 && altoMax > 0.08 && flap >= 5 && Math.abs(ganaFin.s.alto || 0) < 0.01 && C.ch.expression === 'happy',
+          JSON.stringify({ fase: C.fase, res: C.resultado, n: gn.n, altoMax: +altoMax.toFixed(3), flap, alto: ganaFin.s.alto, ex: C.ch.expression }));
+        pasos.push(A().maxPaso);
+        // Pierde la Campeona: primero mareada y luego cabizbaja y triste
+        iniciar({ sinCuenta: true, especie: 'vittata' }); C.r.anima = null; C.r.plumas = 1; quieta(1.2); C.r.escudo = 0; cara(1); paso(0.05); C.j.cd.golpe_ala = 0; usar(C.j, 'golpe_ala');
+        const pr = vio('pierde', 3.2);
+        check('Vida: al perder se marea y después se queda cabizbaja y triste (cabeza baja, cola abajo)',
+          C.fase === 'fin' && C.resultado === 'win' && pr.ests.includes('mareo') && pr.n >= 5 && A().estado === 'pierde' && (A().s.cabX || 0) > 0.2 && (A().s.cola || 0) < -0.15 && C.ch.expression === 'sad',
+          JSON.stringify({ ...resumen(), ex: C.ch.expression, mareo: pr.ests.includes('mareo') }));
+        pasos.push(A().maxPaso);
+        // El efecto se acaba: al salir vuelve a la espera y suelta todo
+        salir(); vio('', 1.2); const tras = A();
+        const resto = Object.entries(tras.w).filter(([k, w]) => k !== 'espera' && w > 0.02);
+        check('Vida: al salir del duelo el efecto se acaba (vuelve a la espera, sin desplazamientos ni pesos de otros estados)',
+          tras.estado === 'espera' && !resto.length && Math.abs(tras.s.alto || 0) < 0.005 && Math.abs(tras.s.atras || 0) < 0.005, JSON.stringify({ estado: tras.estado, resto, alto: tras.s.alto, atras: tras.s.atras }));
+        check('Vida: sin temblores (cada salida cambia como mucho ' + VIDA_VEL + ' rad/s y ' + VIDA_VEL_M + ' m/s por cuadro)',
+          pasos.every(v => v <= VIDA_VEL + 1e-6) && tras.maxPaso <= VIDA_VEL + 1e-6 && tras.maxPasoM <= VIDA_VEL_M + 1e-6, JSON.stringify(pasos.map(v => +v.toFixed(2))));
+        // Modo Escuela: sin los extras de la espera, pero el golpe recibido sigue
+        const cal = G.renderer && G.renderer.calidad, esc0 = cal ? cal.escuela : undefined;
+        if (cal) {
+          cal.escuela = true;
+          try {
+            iniciar({ especie: 'vittata' }); C.r.anima = null; vio('espera', 0.8, () => { M.vx = M.vz = 0; }); const we = A().w.espera || 0;
+            C.fase = 'lucha'; quieta(1.2); C.r.escudo = 0; C.r.golpeT = 99; cara(1); C.j.cd.golpe_ala = 0; usar(C.j, 'golpe_ala');
+            let am = 0; const ge = vio('golpe', 0.3, () => { fija(); C.r.pensar = 99; C.r.mov.t = 0; am = Math.max(am, A().s.atras || 0); });
+            check('Vida, Modo Escuela: sin respirar ni mirar curiosa en la espera, pero el retroceso al recibir un golpe sigue', we < 0.02 && ge.n >= 3 && am > 0.06, JSON.stringify({ we: +we.toFixed(3), golpe: ge.n, am: +am.toFixed(3) }));
+          } finally { cal.escuela = esc0; salir(); }
+        }
+      }
+
       // 7. Victoria: 2 maderas y 1 piedra del inventario del juego, una sola vez
       P.borrar(); const m0 = S.inv.madera || 0, p0 = S.inv.piedra || 0;
       iniciar({ sinCuenta: true, especie: 'vittata' }); C.r.plumas = 1; quieta(1.2); C.r.escudo = 0; evs.length = 0; toasts.length = 0;
@@ -1692,6 +1858,6 @@ window.AVV18Combate = function (G) {
     if (hud && hud.el) hud.el.remove();
     if (hud && hud.tags) hud.tags.remove();
   }
-  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
+  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, vida: vidaApi, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
   return G.v18combate;
 };

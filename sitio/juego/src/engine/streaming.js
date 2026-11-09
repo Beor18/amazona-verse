@@ -134,6 +134,10 @@ AVE.module('streaming', function (G) {
   // KIMI-207 (QA-201): en «medio/alto» la normal del atlas se sirve horneada a 2048² (hd_<kit>_n_lq.jpg);
   // criterio complementario del de arriba (bajo = plana 2×2, medio/alto = LQ 2048²).
   if (G.assets && G.assets.setNormalLQMedia) G.assets.setNormalLQMedia(() => nivelCal() !== 'bajo');
+  // «Texturas optimizadas» (Modo Escuela, QA-181/QA-110): en «bajo» y con calidad.escuela el difuso LQ del atlas va en
+  // KTX2 Basis ETC1S (assets.js ktx2De/texKTX2; el cambio de mapa lo hace ajustarComprimida). Medio/alto sin escuela: como antes.
+  const comprimidaModo = () => nivelCal() === 'bajo' || !!(R.calidad && R.calidad.escuela === true);
+  if (G.assets && G.assets.setComprimida) G.assets.setComprimida(comprimidaModo, () => R.renderer);
   // QA-107 (iPhone, 3-nov): en el móvil, en «medio», la ciudad del tepuy cargaba su kit desde el punto de aparición (420 m) y el
   // _hd hasta 150 m; al despegar subían de golpe los atlas y las fusiones y Safari cerraba la pestaña. En el móvil, la ciudad
   // (vista, malla, _hd y tope de triángulos) usa los valores de «bajo» fuera de «alto». El escritorio no cambia.
@@ -421,6 +425,7 @@ AVE.module('streaming', function (G) {
     m.customProgramCacheKey = () => 'av-hd-atlas';
     reducirAtlas(m);
     subirEnCola(m);
+    ajustarComprimida(m);
   }
   // BJ1 (QA-52, QA-53): cada atlas de 4096 (difusa y normales) ocupa 85 MB en la GPU; en el móvil, el de la casa junto al punto
   // de aparición llevaba el cap. 1 a 250 MB y subirlo al pulsar «Empezar» congelaba la pantalla. En calidad baja, y en el móvil
@@ -469,6 +474,35 @@ AVE.module('streaming', function (G) {
   }
   // KIMI-177: la normal 2×2 plana (data URI de assets.js) marca «estaba en bajo y no se descargó la real».
   const esNormalPlana = t => !!(t && t.image && t.image.width === 2 && t.image.height === 2);
+  // «Texturas optimizadas» (Modo Escuela/bajo): el difuso LQ del atlas pasa a su .ktx2 (Basis ETC1S, comprimido en la GPU) y,
+  // fuera de ese modo o si el .ktx2 falla, vuelve al JPEG LQ. Solo mientras el mapa sea el LQ (avLQDifuso): en escritorio
+  // medio/alto subirAtlasA4096 lo cambia después al 4096 como siempre. El 2×2 de assets.js (el GLB no bajó el JPEG) se
+  // reconoce por su tamaño. Gancho para el Modo Escuela de Kimi 3: comprimidaModo() de arriba.
+  function mapaAtlas(m, t, viejo) {
+    if (viejo && viejo.wrapS !== undefined) { t.wrapS = viejo.wrapS; t.wrapT = viejo.wrapT; }
+    t.flipY = false; t.encoding = THREE.sRGBEncoding; marcarAtlas(t); afilar(t);
+    m.map = t;
+    if (viejo && viejo !== t) { try { viejo.dispose(); } catch (e) { /* r128 */ } }
+    reducirAtlas(m);
+  }
+  function ajustarComprimida(m) {
+    const ud = m.userData;
+    if (!ud.avLQDifuso || !ud.avAtlasEsc || ud.avKTX2Pend || !G.assets || !G.assets.ktx2De) return;
+    const kit = m.name === 'AV_HD_Ancient' ? 'ancient' : 'savage';
+    const url = kitBase + 'tex_hd/hd_' + kit + (MOVIL_PEQ ? '_lq1024' : '_lq') + '.jpg';
+    const t0 = m.map, comp = !!(t0 && t0.isCompressedTexture), plano = !!(t0 && t0.image && t0.image.width === 2);
+    const aJPEG = () => { if (m.map && (m.map.isCompressedTexture || (m.map.image && m.map.image.width === 2))) mapaAtlas(m, G.assets.tex(url, () => reducirAtlas(m)), m.map); };
+    if (G.assets.ktx2De(url)) {
+      if (comp) return;
+      ud.avKTX2Pend = true;
+      G.assets.texKTX2(url, t => {
+        ud.avKTX2Pend = false;
+        if (!mats[m.name] || mats[m.name].mat !== m) { t.dispose(); return; } // la zona se descargó mientras tanto
+        if (!ud.avLQDifuso || !G.assets.ktx2De(url)) { t.dispose(); aJPEG(); return; }
+        mapaAtlas(m, t, m.map);
+      }, e => { ud.avKTX2Pend = false; console.warn('AVE streaming: atlas .ktx2, se usa el JPEG', e && e.message || e); aJPEG(); });
+    } else if (comp || plano) aJPEG();
+  }
   // KIMI-250: sube el difuso del atlas al 4096 real (mismo swap para el gancho 'calidad' y para el barrido
   // de los ~20 s). Al completarse, el kit queda «listo» (assets.js): los parses siguientes de los GLB piden
   // el 4096 directo (caché HTTP, sin bytes nuevos de red) y los materiales nuevos nacen sin marca de LQ.
@@ -505,6 +539,7 @@ AVE.module('streaming', function (G) {
       // donde el tope de calidad lo exige (atlasMax() === 0 = escritorio/tablet en medio/alto; en móvil y
       // en bajo el LQ ya es el final y no se descarga nada, mismo criterio que la normal de arriba).
       if (m.userData.avLQDifuso && atlasMax() === 0) subirAtlasA4096(k, m);
+      ajustarComprimida(m);
       reducirAtlas(m);
     }
   });
@@ -978,7 +1013,11 @@ AVE.module('streaming', function (G) {
         // KIMI-250: si el kit ya subió el 4096 real en background (barrido de los ~20 s), el material nuevo
         // nace con el 4096; si no, con el LQ de arranque y la marca para subirlo después.
         const listo = !!(G.assets && G.assets.atlasHDListoEs && G.assets.atlasHDListoEs(kit));
-        const map = G.assets.tex(base + 'tex_hd/hd_' + kit + (listo ? '' : lqMovil ? '_lq1024' : '_lq') + '.jpg');
+        // «Texturas optimizadas» (bajo/Modo Escuela): con .ktx2 disponible, el material nace con el 2×2 del color del kit
+        // (no se baja el JPEG) y atlasHD → ajustarComprimida le pone el KTX2 al llegar (o el JPEG si falla).
+        const lqUrl = base + 'tex_hd/hd_' + kit + (lqMovil ? '_lq1024' : '_lq') + '.jpg';
+        const conKTX2 = !listo && G.assets.ktx2De && G.assets.ktx2De(lqUrl);
+        const map = G.assets.tex(conKTX2 ? G.assets.planoKit(kit) : listo ? base + 'tex_hd/hd_' + kit + '.jpg' : lqUrl);
         map.encoding = THREE.sRGBEncoding;
         map.flipY = false;
         // KIMI-177: en «bajo» la normal del atlas (JPEG de ~14 MB, las dos ~28 MB) no se descarga: a DPR 0,75 su relieve
@@ -1500,7 +1539,7 @@ AVE.module('streaming', function (G) {
       quitarCercaZona(Z);
       if (!modelos.size) return;
       Z.cercaFundiendo = true;
-      Z.cercaF = { i: 0, modelos, grupos: new Map(), temporales: [], ms: [] };
+      Z.cercaF = { i: 0, g: 0, modelos, grupos: new Map(), temporales: [], ms: [] }; // g: contador de grupos (igual que hdF; sin él gruposL[undefined] cerraba la fusión con 0 mallas, KIMI-341)
       encolar(() => fundirCercaPaso(Z), 'fundirCerca:' + Z.id);
     }
     // KIMI-Task-017: en tandas de ~6 ms por trabajo (el fundido entero eran hasta ~150 ms de CPU seguidos).
@@ -1868,13 +1907,18 @@ AVE.module('streaming', function (G) {
           if (rh && rh.estado === 'cola') rh.prio = distModelo(Z, n);
         }
         // KIMI-Task-017: precarga hacia adelante (lejos de las zonas a las que se acerca; kit de la gran ciudad)
+        // KIMI-340: también el modelo detallado (cerca) de la zona a la que se vuela. El «efecto ruinas» medido
+        // al llegar era el _lejos quedándose a la vista ~0,5-1,5 s mientras el cerca bajaba al cruzar la frontera;
+        // con el cerca ya 'listo' al cruzar, el colocado es inmediato (aplicarNivel) y no hay ventana pobre.
         if (anticipo > 0) {
           if (Z.nivel === 0 && Z.d < Rl + anticipo) for (const n of Z.modelos) prePedir(Z, n, 'lejos', Z.d + 1);
+          if (Z.nivel === 1 && Z.d < RcLlegada + anticipo) for (const n of Z.modelos) prePedir(Z, n, 'cerca', Z.d);
           if (esCiudad(Z.id) && !Z.ciudad && Z.d < CFG.ciudadVista[nivelCiudad()] + anticipo) for (const n of Z.modelos) prePedir(Z, n, 'cerca', Z.d);
         }
         if (Z.pre) {
           const dentroL = Z.nivel === 0 && Z.d < Rl + anticipo + 60;
-          const dentroC = !Z.ciudad && Z.d < CFG.ciudadVista[nivelCiudad()] + anticipo + 60;
+          const dentroC = esCiudad(Z.id) ? !Z.ciudad && Z.d < CFG.ciudadVista[nivelCiudad()] + anticipo + 60
+                                         : Z.nivel === 1 && Z.d < RcLlegada + anticipo + 60;
           for (const k in Z.pre) {
             const i = k.indexOf(':'), tipo = k.slice(0, i);
             if (!(tipo === 'lejos' ? dentroL : dentroC)) { soltar(res(k.slice(i + 1), tipo)); delete Z.pre[k]; }
