@@ -38,7 +38,7 @@ window.AVJuice = function (G) {
     A.define('petalos', (t, a, X) => { X.tone(1318.5, t, 0.3, { type: 'sine', gain: 0.04 }); X.tone(1760, t + 0.07, 0.35, { type: 'sine', gain: 0.03 }); X.noise(t, 0.4, { freq: 3000, q: 0.8, gain: 0.03 }); });
   }
   const oidos = []; // lo que este módulo pidió sonar (la prueba lo lee; G.audio.log se recorta a 40)
-  // QA-nuevo-br1-5: al recortar, oidosBase guarda cuántos se quitaron; la prueba mide con índices absolutos (antes, un recorte a mitad
+  // QA-nuevo-br1-5 (latente): al recortar, oidosBase guarda cuántos se quitaron; la prueba mide con índices absolutos (antes, un recorte a mitad
   // de un paso desplazaba los índices y «suena un brillo» salía en rojo según cuántos sonidos hubieran pedido las baterías anteriores)
   let oidosBase = 0;
   const oidosN = () => oidosBase + oidos.length;
@@ -268,6 +268,9 @@ window.AVJuice = function (G) {
       else await new Promise(res => setTimeout(res, 2000));
       ok('En pausa (sin cuadros) el chip y el pop no se quedan encima del menú', antesPausa && chip.hidden && pop.hidden);
       // 8. Pétalos al cruzar un flamboyán (copa de prueba) con espera por árbol
+      // QA-nuevo-br1-5: tras selfTest quedaban 200/200 partículas vivas (sin cuadros entre baterías no caducan) y el tope no dejaba
+      // soltar pétalos. Se dejan terminar las de antes (mismo patrón que lugares.js/maravillas.js) antes de medir.
+      for (let i = 0; i < 8 && G.fx.live > G.fx.MAX_PARTICLES - 16 && G.fx.update; i++) G.fx.update(0.5);
       reset(); copasExtra = [[S.pos.x, 10, S.pos.z, 4, 'prueba']]; copasT = -1; a0 = oidosN(); const vivos0 = G.fx.live;
       correr(0.2, { y: 9.5, alto: 7 });
       ok('Pétalos: al cruzar la copa de un flamboyán caen pétalos (rojo y anaranjado) y suena un brillo', (G.fx.juicy.petalos || 0) === p0 + 1 && G.fx.live > vivos0 && sono('petalos', a0) && !!G.fx.PALETTE.petals, ((G.fx.juicy.petalos || 0) - p0) + ' · partículas ' + vivos0 + '→' + G.fx.live + '/' + G.fx.MAX_PARTICLES + ' · sonó ' + sono('petalos', a0));
