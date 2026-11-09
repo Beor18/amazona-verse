@@ -2842,7 +2842,7 @@ window.AV_EN = {
  "Sombrero de pescador verde río": "River-green fishing hat",
  "Chaleco explorador color arena": "Sand explorer vest",
  "Pantalón cargo color arena": "Sand cargo shorts",
- "Botas de aventura color coral": "Coral adventure boots",
+ "Tenis color coral": "Coral sneakers",
  "Lentes redondos turquesa": "Turquoise round glasses",
  "Traje de Guardián azul río": "River-blue Guardian suit",
  "Traje «Pescador del río»": "«River Angler» outfit",

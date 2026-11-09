@@ -66,7 +66,7 @@
         { id: 'sombrero_rio', clave: 'sombrero2:#2e8b7a', precio: 40, conjunto: 'pescador', nombre: 'Sombrero de pescador verde río', viste: { slot: 'head', id: 'sombrero2', color: '#2e8b7a', style: 'pescador' } },
         { id: 'chaleco_arena', clave: 'camisa:#cbb48a', precio: 60, conjunto: 'pescador', nombre: 'Chaleco explorador color arena', viste: { slot: 'torso', id: 'camisa', color: '#cbb48a', style: 'chaleco' } },
         { id: 'pantalon_arena', clave: 'pantalon:#cbb48a', precio: 50, conjunto: 'pescador', nombre: 'Pantalón cargo color arena', viste: { slot: 'legs', id: 'pantalon', color: '#cbb48a', style: 'cargo' } },
-        { id: 'botas_coral', clave: 'botas:#ff7a5c', precio: 50, conjunto: 'pescador', nombre: 'Botas de aventura color coral', viste: { slot: 'feet', id: 'botas', color: '#ff7a5c', style: 'aventura' } },
+        { id: 'botas_coral', clave: 'botas:#ff7a5c', precio: 50, conjunto: 'pescador', nombre: 'Tenis color coral', viste: { slot: 'feet', id: 'botas', color: '#ff7a5c', style: 'tenis' } },
         { id: 'lentes_turquesa', clave: 'lentes:#1fb5b0', precio: 30, nombre: 'Lentes redondos turquesa', viste: { slot: 'eyes', id: 'lentes', color: '#1fb5b0', style: 'redondas' } },
         { id: 'traje_rio', clave: 'traje:#1c6e8c', precio: 120, nombre: 'Traje de Guardián azul río', viste: { slot: 'torso', id: 'traje', color: '#1c6e8c' } },
       ],
