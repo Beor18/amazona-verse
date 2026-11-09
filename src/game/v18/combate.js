@@ -228,7 +228,7 @@ window.AVV18Combate = function (G) {
     return H.luchador({ id: 'rival', nombre: TXT.rival, especie: sp, ia: true, pos: rivalPos, plumas: pl, plumasMax: pl, dif: D,
       kb: { x: 0, z: 0, t: 0 }, mov: { x: 0, z: 0, t: 0 }, lift: { alto: 0, t: 0, dura: 0 }, yaw: -Math.PI / 2,
       pensar: 0.4, golpeT: 1, tiroT: 1.5, esquivaT: 0, poderT: 2.5, lado: 1, finMareo: 0,
-      v: { x: 0, z: 0 }, ladoT: 3, apartaT: 0, prep: '', prepT: 0, prepDur: 0, avisoUsado: 0, golpeAnim: 0, saltoT: 0, saltoDur: 0, agacha: 0 });
+      v: { x: 0, z: 0 }, ladoT: 3, apartaT: 0, prep: '', prepT: 0, prepDur: 0, avisoUsado: 0, avisoSelva: '', golpeAnim: 0, saltoT: 0, saltoDur: 0, agacha: 0 });
   }
   // V18.2: nivel, variante y alianza del jugador (solo él). Las pruebas que fuerzan especie van sin evolución salvo que la pidan.
   function evoJugador(sp, o) {
@@ -417,7 +417,9 @@ window.AVV18Combate = function (G) {
     if (f.vista > 0 && !f.avisada && !DEFENSAS.has(id)) {
       const l = H.listo(f, id); if (!l.ok) return l;
       f.avisada = true; flotante(TXT.avisoSelva, 0.9); fx('gold', f.pos.x, f.pos.y + 1.6, f.pos.z); sonar('ring', 1);
-      C.timers.push({ t: (H.get('ojo_selva') || {}).aviso || 0.6, fn: () => usar(f, id) });
+      // QA-227: mientras espera el ataque anunciado está comprometida (como en la telegrafía): no se aparta a 2,8 m y el golpe llega
+      f.avisoSelva = id;
+      C.timers.push({ t: (H.get('ojo_selva') || {}).aviso || 0.6, fn: () => { f.avisoSelva = ''; usar(f, id); } });
       return { ok: true, id, avisada: true };
     }
     const r = H.usar(f, id, ctxDe(f));
@@ -966,8 +968,9 @@ window.AVV18Combate = function (G) {
     else {
       let qx = 0, qz = 0; // velocidad que quiere
       const libre = r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0) && !(r.distraida > 0);
-      if (libre && r.prep === 'golpe_ala' && d.d > 1.5) { qx = d.x * 1.6; qz = d.z * 1.6; } // agachada, se arrima despacio para el golpe
-      else if (libre && !r.prep) {
+      const selva = r.avisoSelva && C.timers.length ? r.avisoSelva : ''; // Ojo de selva: el ataque anunciado también la compromete
+      if (libre && (r.prep === 'golpe_ala' || selva === 'golpe_ala') && d.d > 1.5) { qx = d.x * 1.6; qz = d.z * 1.6; } // agachada, se arrima despacio para el golpe
+      else if (libre && !r.prep && !selva) {
         const ve = D.vel * (r.pesada > 0 ? 0.45 : 1); // Plumas de manglar: pisar una pluma la deja más lenta
         const ox = r.pos.x - sitio.x, oz = r.pos.z - sitio.z, od = Math.hypot(ox, oz);
         let tx = -d.z * r.lado, tz = d.x * r.lado;

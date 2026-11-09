@@ -437,8 +437,10 @@ window.AVV18Nuevas = function (G) {
         check('Ojo de selva: la rival brilla en dorado 4 s y no le quita plumas', rk.ok && C.r.vista > 2.9 && C.r.plumas === C.r.plumasMax && oro1 >= 3, 'vista ' + (C.r.vista || 0).toFixed(2) + ' s, destellos ' + oro1);
         C.r.cd = {}; C.r.energia = 100; C.j.inv = 0; quieta(1.5); const pk = C.j.plumas, ga1 = B.usar(C.r, 'golpe_ala');
         const celC = document.querySelector('#v18-duelo [data-k="centro"]'), avisoTxt = celC ? celC.textContent : '', antes = C.j.plumas; corre(0.7);
-        check('...su siguiente ataque se anuncia («¡Cuidado, va a atacar!») y llega un momento después', ga1.ok && ga1.avisada && /Cuidado/.test(avisoTxt) && antes === pk && C.j.plumas === pk - 1,
-          'aviso «' + avisoTxt + '», plumas ' + pk + '→' + antes + '→' + C.j.plumas);
+        // QA-227: mientras espera el golpe anunciado la rival no se aparta fuera de su alcance (desde c47d759b se iba a 2,8 m y fallaba)
+        const dSelva = Math.hypot(C.r.pos.x - S.pos.x, C.r.pos.z - S.pos.z);
+        check('...su siguiente ataque se anuncia («¡Cuidado, va a atacar!») y llega un momento después', ga1.ok && ga1.avisada && /Cuidado/.test(avisoTxt) && antes === pk && C.j.plumas === pk - 1 && dSelva < 2.4,
+          'aviso «' + avisoTxt + '», plumas ' + pk + '→' + antes + '→' + C.j.plumas + ', rival a ' + dSelva.toFixed(2) + ' m');
         C.r.cd = {}; C.j.inv = 0; quieta(1.5); const pk2 = C.j.plumas, ga2 = B.usar(C.r, 'golpe_ala');
         check('...solo el siguiente: el otro sale al momento', ga2.ok && !ga2.avisada && ga2.acierto && C.j.plumas === pk2 - 1);
         C.j.cd = {}; C.j.inv = 0; poder('ojo_selva'); C.r.cd = {}; C.r.energia = 100; quieta(1.5); const pk3 = C.j.plumas, ga3 = B.usar(C.r, 'golpe_ala');
@@ -528,7 +530,8 @@ window.AVV18Nuevas = function (G) {
         check('...y desde 12 m (más de su alcance de 11 m) no llega', !(C.r.kb.t > 0) && C.r.plumas === pchi, 'plumas ' + pchi + '→' + C.r.plumas);
         B.salir();
         // Ráfaga: dos impulsos hacia delante (~5–6 m); el segundo empuja y quita 1 pluma si toca a la rival
-        B.iniciar({ sinCuenta: true, especie: 'finschi' }); quieta(6); listo(); S.facing = { x: 1, z: 0 };
+        // La rival, quieta a 4,5 m (desde c47d759b acelera desde parada: ya no se planta de golpe a 4,5 m viniendo de 6)
+        B.iniciar({ sinCuenta: true, especie: 'finschi' }); quieta(4.5); C.r.v.x = C.r.v.z = 0; listo(); S.facing = { x: 1, z: 0 };
         const px0 = S.pos.x, prf = C.r.plumas;
         const rraf = B.usar(C.j, 'rafaga');
         for (let k = 0; k < 60; k++) B.paso(1 / 30);
@@ -663,14 +666,18 @@ window.AVV18Nuevas = function (G) {
         C.trampas.push({ x: C.r.pos.x - 0.5, z: C.r.pos.z, t: 10, de: C.j }); // una pluma justo delante de ella
         B.paso(1 / 30);
         const peso = C.r.pesada, quedan = C.trampas.length;
-        C.r.pesada = 0; C.trampas.length = 0; const cxN = C.r.pos.x;
-        for (let k = 0; k < 45; k++) B.paso(1 / 30);
-        const avanzaNormal = cxN - C.r.pos.x;
-        C.r.pos.x = cxN; C.r.pos.y = G.terreno.height(C.r.pos.x, C.r.pos.z); C.r.pesada = 2.8;
-        for (let k = 0; k < 45; k++) B.paso(1 / 30);
-        const avanzaLenta = cxN - C.r.pos.x;
+        C.r.pesada = 0; C.trampas.length = 0; const cxN = S.pos.x + 8;
+        // Desde c47d759b la rival acelera y frena con inercia y se para a 2,8 m: las dos marchas salen de parada en el mismo
+        // sitio, 0,5 s para coger su paso y se mide el siguiente 0,5 s (lejos aún de la jugadora)
+        const marcha = pesada => {
+          Object.assign(C.r.pos, { x: cxN, z: S.pos.z }); C.r.pos.y = G.terreno.height(C.r.pos.x, C.r.pos.z); C.r.v.x = C.r.v.z = 0; C.r.mov.t = 0; C.r.kb.t = 0; C.r.pesada = pesada;
+          for (let k = 0; k < 15; k++) B.paso(1 / 30);
+          const x1 = C.r.pos.x; for (let k = 0; k < 15; k++) B.paso(1 / 30);
+          return x1 - C.r.pos.x;
+        };
+        const avanzaNormal = marcha(0), avanzaLenta = marcha(2.8);
         check('...la rival que pisa una queda lenta ~2,8 s (se gasta la pluma) y anda menos de la mitad',
-          peso > 2.5 && quedan === 3 && avanzaLenta > 0.5 && avanzaLenta < 0.5 * avanzaNormal,
+          peso > 2.5 && quedan === 3 && avanzaLenta > 0.5 && avanzaNormal > 1.5 && avanzaLenta < 0.5 * avanzaNormal,
           'pesada ' + peso.toFixed(1) + ' s, pluma gastada (' + quedan + ' quedan), paso ' + avanzaLenta.toFixed(2) + ' m vs ' + avanzaNormal.toFixed(2) + ' m');
         B.salir();
         // Vuelo de niebla: atraviesa a la rival y al pasar le quita 1 pluma; si falla, queda detrás y cansada
