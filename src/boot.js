@@ -257,6 +257,11 @@
     const cargarHumor = aDemanda('src/game/humor.js', 'AVHumor'); AV.humorTest = o => cargarHumor().then(h => h.test(o)); alPrimerGesto(cargarHumor); // CG-42
     const cargarEscondite = aDemanda('src/game/escondite.js', 'AVEscondite'); AV.esconditeTest = o => cargarEscondite().then(e => e.test(o)); alPrimerGesto(cargarEscondite); // CG-43
     const cargarMarana = aDemanda('src/game/marana.js', 'AVMarana'); AV.maranaTest = o => cargarMarana().then(m => m.test(o)); alPrimerGesto(cargarMarana); // CG-46
+    // Expansión «Patrulla invasora» (src/game/invasoras.js): APAGADA por defecto. Solo con ?expansion=1 o localStorage amazonaverse.expansion = '1'
+    // (?expansion=0 la apaga). Apagada no se carga nada; su prueba la carga y comprueba que no se vea. Pendiente del OK de Kelvin con capturas.
+    G.expansion = (() => { const q = /[?&]expansion=([01])\b/.exec(location.search); if (q) return q[1] === '1'; try { return localStorage.getItem('amazonaverse.expansion') === '1'; } catch (e) { return false; } })();
+    const cargarInvasoras = aDemanda('src/game/invasoras.js', 'AVInvasoras'); AV.invasorasTest = o => cargarInvasoras().then(m => m.test(o));
+    if (G.expansion && G.terreno.mapa && G.terreno.mapa.agua) { G.expansionAuto = true; alPrimerGesto(cargarInvasoras); }
     const cargarFamilia = aDemanda('src/game/familia.js', 'AVFamilia'); AV.familiaTest = o => cargarFamilia().then(f => f.test(o)); alPrimerGesto(cargarFamilia); // CG-53
     const cargarFamilyQuest = aDemanda('src/game/familia_aventuras.js', 'AVFamiliaAventuras'); AV.familyQuestTest = o => cargarFamilyQuest().then(f => f.test(o)); alPrimerGesto(cargarFamilyQuest); // Family Quest
     const cargarRendimiento = aDemanda('src/game/rendimiento_modulos.js', 'AVRendimientoModulos');
