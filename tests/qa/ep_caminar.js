@@ -474,7 +474,8 @@
       await mirarEN();
       const bj = t && t.querySelector('form[method=dialog] button'); if (bj) { bj.click(); tr.clics++; }
       const cr = $('creator');
-      check('Jugar abre el creador', !!await until(() => cr && !cr.hidden, 8000));
+      { const detras = !!cr && !cr.hidden, t0c = performance.now(), abre = !!await until(() => cr && !cr.hidden, 40000), msC = Math.round(performance.now() - t0c); // QA-229: dice cuánto tardó y si esperaba detrás de la portada
+        check('Jugar abre el creador', abre && msC <= 8000, msC + ' ms' + (detras ? ' (ya esperaba detrás de la portada)' : ' (no estaba detrás de la portada)')); }
       await until(() => $('p-stage-status') && $('p-stage-status').hidden, 30000);
       await mirarEN();
       if ($('p-save')) { $('p-save').click(); tr.clics++; }

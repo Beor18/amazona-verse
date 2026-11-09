@@ -86,6 +86,9 @@
     G.renderer.linearize(G.renderer.scene); // antes de aplicar el mundo: los looks ya escriben colores en lineal
     G.actores.init3D();
     if (!G.guardado.load(true)) G.guardado.arrancarVacio(); // sin partida legible: una nueva, sin borrar lo guardado (ver guardado.js)
+    // QA-229: una partida guardada antes de crear la cotorra (p. ej. se entró en el capítulo y se salió en el creador): como en
+    // arrancarVacio, el creador espera detrás de la portada (si no, salía 4–12 s después de pulsar Jugar, al cerrarse la portada)
+    else if (!(G.S.profile && G.S.profile.created)) G.creador.open(true);
     G.camara.place(true);
     G.renderer.start();
     return G;
