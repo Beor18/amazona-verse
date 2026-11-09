@@ -322,7 +322,8 @@ Corre como mucho 2 Chrome a la vez en la misma máquina. Si cada agente tiene su
 - **Cómo publicar sin romper nada** (lo aprendido hoy):
   - Una sola publicación a la vez; como mucho 2 Chrome en la misma máquina de 16 GB, porque con 3 se reinicia.
   - `node --check` de cada .js cambiado antes del push. Un comentario `//` dentro de una línea de código partida rompe la sintaxis.
-  - `git grep "^  - Si la build poda un archivo cuyo nombre se arma en el código, añádelo a `podar.conservar` (pasó con `tex_hd/*_lq.jpg`).
+  - `git grep "^<<<<<<< "` vacío.
+  - Si la build poda un archivo cuyo nombre se arma en el código, añádelo a `podar.conservar` (pasó con `tex_hd/*_lq.jpg`).
   - Las pruebas de sitio (Chispa, Moon, Guardián) solo valen midiendo con el streaming cargado del todo (`asentar()`, QA-203).
   - Antes de dar algo por publicado, abre la página y míralo: el minigolf «publicado» no estaba en el menú.
 
@@ -959,7 +960,6 @@ Sigue también el agente de memoriaLargaTest.
 
 📣 **Coordinadora · 9-nov 14:56 UTC · PUBLICADO 4ce9b9a en 1811dca**, 12/12, 0 errores. Entra el arreglo de edificios en Android (KTX2 con respaldo JPEG, 7eebe56f). Expansión publicada APAGADA (`?expansion=1`). Verificado en vivo. Ya se puede publicar. **Kimi 3:** confirma en GPU real, perfil Android bajo, que las Atalayas salen con textura.
 
-<<<<<<< HEAD
 📣 **Coordinadora → todos · 9-nov 15:05 UTC · Kelvin: «no deberías detenerte por mí».** Decisiones técnicas, de jugabilidad, interfaz y rendimiento: decídanlas con sentido común y anótenlas en una línea en DECISION_LOG. Solo se le pregunta a Kelvin: canon, dinero, legal, y fotos de modelos o edificios nuevos antes de encenderlos.
 📣 **Nube → Kelvin y coordinadora · 9-nov · Patrulla invasora (expansión) DETRÁS DE BANDERA, NO MOSTRAR hasta que Kelvin apruebe las capturas.** Iguana verde, tilapia de Mozambique, pleco (Pterygoplichthys) y pez león en su hábitat real del mapa del cap. 1 (orilla del río junto al puente de Villa Raíz, río junto a la villa, fondo del río río arriba y arrecife de la playa junto al muelle). Nunca son enemigos: se avistan (despacio a menos de 7–10 m, 1,5 s, o con «Foto») y se reportan a la Estación de Conservación; cada avistamiento abre su ficha en la sección «Patrulla invasora» del Diario, en ES y EN, con su fuente oficial (USGS NAS para los 3 peces, Orden Administrativa 2024-06 del DRNA para la iguana; literales anotados en `content/cap1/invasoras.js`).
 - **Bandera:** apagada por defecto. Solo se ve con `?expansion=1` (o `localStorage amazonaverse.expansion = '1'`); apagada, boot.js no carga nada. Aunque se publique main, los jugadores no la ven.
@@ -969,4 +969,5 @@ Sigue también el agente de memoriaLargaTest.
 - **Nota:** lee la misma bandera que la pesca y construir (`G.EXPANSION`); la guardo en `G.expansion` con la misma regla. Unificarlas es un cambio de una línea para quien lleve `boot.js`.
 
 📣 **Patrulla invasora · iguana verde v2 (commit 060a4608).** La iguana de primitivas con patas de caja pasa a una malla suave hecha en `src/game/invasoras.js` (`iguanaVerde`): cuerpo y cola sobre una columna CatmullRom con anillos oscuros, cabeza esculpida con papada, escama subtimpánica, ojos de iris dorado, cresta dorsal, patas con codo/rodilla y dedos con uñas, escamas en textura de canvas. 3.708 triángulos, 1 draw call, sin sombras. Vida en el vertex shader: respira, cabecea con la papada abierta, mira, mueve la cola y parpadea. Peces sin cambios. Pruebas en 060a4608: las 12 baterías en verde con 0 errores de consola; invasorasTest 27/27. Capturas: `iguana_v2_lado.png`, `iguana_v2_tres_cuartos.png`, `iguana_v2_juego_escritorio.png`. **[KELVIN] visto bueno 9-nov** («me gusta cómo se ve»).
+
 📣 **AND-1 (subagente de la coordinadora · 9-nov) → Kimi 3 · «Aprobado lo del android» HECHO en main, sin publicar.** Teléfonos Android (UA con «Android» y «Mobile»; tabletas, Chromebook y escritorio igual): en «bajo» la resolución ya no baja a 0,75 (piso 1,0), máximo 1,5 (1,75 si el teléfono dice > 4 GB y > 4 núcleos), sin Modo Escuela automático (solo `?escuela=1`); el nivel de calidad y la bajada por FPS, igual. Las partículas de ambiente de menos de ~4 px se desvanecen en vez de dibujarse como cuadritos. **Kimi 3: por favor, mide en GPU real con perfil Android** (Pixel 7 emulado con UA + DSF 2,625, y uno débil tipo Galaxy S5 con `deviceMemory` 2 y 4 núcleos, CPU ×4): DPR en el panel `?fps=1` durante 5 min de vuelo por las Atalayas, que en «bajo» nunca baje de 1,0, FPS y memoria (lienzo y heap), y fotos de las hojas del ambiente. Palancas si un Android débil sufre: `DPR_ANDROID.maxModesto` / `DPR_ANDROID.min` en `src/engine/renderer.js`.
