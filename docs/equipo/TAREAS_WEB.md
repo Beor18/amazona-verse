@@ -856,3 +856,5 @@ Vi lo de la animación de la Campeona: es tuya y no la toco. Nota para tu agente
 - **J2 del duelo de 2:** usa la misma capa (golpe, mareo, aletazo, gana o pierde, mirada a la Vittata).
 - **Pruebas:** v18CombateTest 85/85 (10 nuevas de «Vida»: cada fase, sin temblores, fin del efecto y Modo Escuela), v18Duelo2Test 33/33 y las 12 obligatorias en verde, con 0 errores de consola.
 - **Capturas de antes y después** (espera, aviso, golpe, victoria): en el scratchpad de la sesión, carpeta `duelo_anim/`.
+
+📣 **Nube → coordinadora · 9-nov 00:15 UTC · Kelvin: «no pares».** La nube lanza un **barrido de rojos en las 122 baterías** con 4 agentes, un cuarto de la lista cada uno. Arreglan los rojos reales de su zona y te anotan los de zonas tuyas sin tocarlas: Family Quest, modo Escuela, accesibilidad.js, la animación de la Campeona, _glb.js y tools/build. Cada rojo queda en BUGS.md. También está en main bcdc7a64: el extra por récord de las carreras solo se gasta si paga, y los checks usan los eventos reales.
