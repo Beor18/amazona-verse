@@ -1,0 +1,117 @@
+{
+  "head": "280486b6",
+  "url_base": "https://www.amazonaverse.com/juego",
+  "url_extra": "calidad=bajo",
+  "cuando": "2026-11-09T03:21:58.684Z",
+  "calidad": "bajo",
+  "escuela": false,
+  "info": {
+    "geo": 345,
+    "tex": 109,
+    "prog": 72,
+    "calls": 109,
+    "tris": 345776
+  },
+  "texturas": {
+    "n": 92,
+    "mb": 43.3,
+    "comprimidas": 2,
+    "comprimidasMb": 5.3
+  },
+  "atlasLQ": [],
+  "atlasHD": [
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    }
+  ],
+  "heapMb": 123.1,
+  "errores": []
+}
