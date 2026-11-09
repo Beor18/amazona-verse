@@ -1,0 +1,7 @@
+· calidad=bajo:
+  villa: texturas=51.2 MB gen=44.8 MB flora=20.4 MB calls=54 tris=225987 heap=242 MB
+  ciudad: texturas=51.2 MB gen=44.8 MB flora=20.4 MB calls=44 tris=268367 heap=278 MB
+  corteza: {"d":3,"pos":[-39.3,-137.8]}
+  pasto: {"pos":[-39.3,-137.8]}
+  errores de consola: 0
+· JSON: C:\Users\kelvi\amazonaversegame2\docs\img\kimi110\qa110_k2_k347-ktx2-vivo-r1.json

@@ -1,0 +1,230 @@
+{
+ "base": "https://www.amazonaverse.com/juego",
+ "hora_utc": "2026-11-09T01:20:53.262Z",
+ "ref": "0271ba1d",
+ "indice": {
+  "codigo": 200,
+  "bytes": 39931,
+  "build_meta": "HEAD 0271ba1de1de",
+  "ktx2_meta": "assets/models/edificios/tex_hd/hd_ancient_lq.jpg assets/models/edificios/tex_hd/hd_savage_lq.jpg assets/models/edificios/tex_hd/hd_ancient_lq1024.jpg assets/models/edificios/tex_hd/hd_savage_lq1024.jpg"
+ },
+ "archivos": {
+  "src/engine/assets.js": {
+   "codigo": 200,
+   "bytes": 18848,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 3,
+   "marcadores_total": 3,
+   "faltan": [],
+   "ref": {
+    "bytes": 18848,
+    "identico": true
+   }
+  },
+  "src/engine/streaming.js": {
+   "codigo": 200,
+   "bytes": 176655,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 2,
+   "marcadores_total": 2,
+   "faltan": [],
+   "ref": {
+    "bytes": 176655,
+    "identico": true
+   }
+  },
+  "src/game/look.js": {
+   "codigo": 200,
+   "bytes": 60368,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 60368,
+    "identico": true
+   }
+  },
+  "src/game/v18/combate.js": {
+   "codigo": 200,
+   "bytes": 158182,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 2,
+   "marcadores_total": 2,
+   "faltan": [],
+   "ref": {
+    "bytes": 158182,
+    "identico": true
+   }
+  },
+  "src/game/v18/duelo2.js": {
+   "codigo": 200,
+   "bytes": 66935,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 66935,
+    "identico": true
+   }
+  },
+  "src/game/ciudad_viva.js": {
+   "codigo": 200,
+   "bytes": 44396,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 2,
+   "marcadores_total": 2,
+   "faltan": [],
+   "ref": {
+    "bytes": 44396,
+    "identico": true
+   }
+  },
+  "src/game/equipos.js": {
+   "codigo": 200,
+   "bytes": 41552,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 3,
+   "marcadores_total": 3,
+   "faltan": [],
+   "ref": {
+    "bytes": 41552,
+    "identico": true
+   }
+  },
+  "src/engine/fx.js": {
+   "codigo": 200,
+   "bytes": 21273,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 21273,
+    "identico": true
+   }
+  },
+  "src/engine/input.js": {
+   "codigo": 200,
+   "bytes": 35118,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 35118,
+    "identico": true
+   }
+  },
+  "src/game/lugares.js": {
+   "codigo": 200,
+   "bytes": 31809,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 2,
+   "marcadores_total": 2,
+   "faltan": [],
+   "ref": {
+    "bytes": 31809,
+    "identico": true
+   }
+  },
+  "src/game/sorpresas.js": {
+   "codigo": 200,
+   "bytes": 11896,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 11896,
+    "identico": true
+   }
+  },
+  "src/game/v18/descubrir.js": {
+   "codigo": 200,
+   "bytes": 35285,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 35285,
+    "identico": true
+   }
+  },
+  "src/game/eventos.js": {
+   "codigo": 200,
+   "bytes": 10896,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 3,
+   "marcadores_total": 3,
+   "faltan": [],
+   "ref": {
+    "bytes": 10896,
+    "identico": true
+   }
+  },
+  "assets/models/edificios/tex_hd/hd_ancient_lq.ktx2": {
+   "codigo": 200,
+   "bytes": 881032,
+   "tipo": "image/ktx2",
+   "marcadores_ok": 0,
+   "marcadores_total": 0,
+   "faltan": [],
+   "ref": {
+    "bytes": 881032,
+    "identico": true
+   }
+  },
+  "assets/models/edificios/tex_hd/hd_savage_lq.ktx2": {
+   "codigo": 200,
+   "bytes": 945064,
+   "tipo": "image/ktx2",
+   "marcadores_ok": 0,
+   "marcadores_total": 0,
+   "faltan": [],
+   "ref": {
+    "bytes": 945064,
+    "identico": true
+   }
+  },
+  "assets/models/edificios/tex_hd/hd_ancient_lq1024.ktx2": {
+   "codigo": 200,
+   "bytes": 248042,
+   "tipo": "image/ktx2",
+   "marcadores_ok": 0,
+   "marcadores_total": 0,
+   "faltan": [],
+   "ref": {
+    "bytes": 248042,
+    "identico": true
+   }
+  },
+  "assets/models/edificios/tex_hd/hd_savage_lq1024.ktx2": {
+   "codigo": 200,
+   "bytes": 262070,
+   "tipo": "image/ktx2",
+   "marcadores_ok": 0,
+   "marcadores_total": 0,
+   "faltan": [],
+   "ref": {
+    "bytes": 262070,
+    "identico": true
+   }
+  },
+  "sw.js": {
+   "codigo": 200,
+   "bytes": 1783,
+   "tipo": "application/javascript; charset=utf-8",
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 1783,
+    "identico": true
+   }
+  }
+ },
+ "ok": true
+}

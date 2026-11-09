@@ -44,7 +44,7 @@ const ARCHIVOS = [
   const mb = txt.match(/ave:build[^>]*content="([^"]+)"/i);
   const mk = txt.match(/ave:ktx2[^>]*content="([^"]+)"/i);
   out.indice = { codigo: idx.codigo, bytes: idx.cuerpo.length, build_meta: mb ? mb[1] : '(no encontrado)', ktx2_meta: mk ? mk[1] : '(no encontrado)' };
-  if (idx.codigo !== 200 || !mb || mb[1].indexOf(REF.slice(0, 7)) !== 0) out.ok = false;
+  if (idx.codigo !== 200 || !mb || !mb[1].includes(REF.slice(0, 7))) out.ok = false;
   for (const [ruta, marks] of ARCHIVOS) {
     const r = await get(BASE + '/' + ruta + '?v=' + Date.now()).catch(e => ({ codigo: 0, cuerpo: Buffer.alloc(0), error: String(e) }));
     const cuerpo = r.cuerpo.toString('utf8');
