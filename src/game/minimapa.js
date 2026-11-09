@@ -533,7 +533,12 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       S.facing = { x: 0, z: 1 }; const aS = anguloFlecha();
       S.facing = { x: -1, z: 0 }; const aO = anguloFlecha();
       check('La flecha apunta al norte, este, sur y oeste según el rumbo', Math.abs(aN) < 1e-6 && Math.abs(aE - Math.PI / 2) < 1e-6 && Math.abs(Math.abs(aS) - Math.PI) < 1e-6 && Math.abs(aO + Math.PI / 2) < 1e-6, [aN, aE, aS, aO].map(a => a.toFixed(2)));
-      tick.forzar = true; G.quiet = false; elC.hidden = false;
+      tick.forzar = true; G.quiet = false;
+      // QA-nuevo-br1-2: si otra batería dejó el compacto oculto (p. ej. maestroTest), el ResizeObserver guarda ancho 0 hasta que vuelve
+      // a medir y pintar() no dibuja. Se reproduce aquí (oculto → visible) y se espera la medida: la prueba no depende del orden.
+      elC.hidden = true; await espera(120); elC.hidden = false;
+      for (let i = 0; i < 40 && anchoC === 0; i++) await espera(50);
+      check('Al volver a mostrarse, el minimapa se mide de nuevo (ancho > 0)', anchoC !== 0, anchoC);
       S.facing = { x: 1, z: 0 }; tUlt = -1e9; tick(performance.now());
       check('El dibujo usa el rumbo actual', !!ultimo && Math.abs(ultimo.ang - Math.PI / 2) < 1e-6);
       // Pintado real: la flecha blanca está en el centro del compacto
