@@ -40,8 +40,19 @@ AVE.module('renderer', function (G) {
   // ~40 B/px) en 390×844 pasa de ~30 MB (1,5) a ~40 MB (1,75) como máximo; los KTX2 del atlas en «bajo» ahorraron ~18 MB.
   const IPHONE = /iPhone|iPod/.test(navigator.userAgent || '');
   const DPR_IPHONE = { max: 1.75, min: 1.25 };
-  const DPR_MAX = IPHONE ? Math.min(DEVICE_DPR, DPR_IPHONE.max) : Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2);
-  const DPR_MIN = IPHONE ? Math.min(DPR_IPHONE.min, DPR_MAX) : Math.min(1, DPR_MAX);
+  // AND-1 (9-nov, Kelvin: «Aprobado lo del android»): el mismo trato para los teléfonos Android. En «bajo» la resolución dinámica
+  // bajaba a 0,75 y las hojas del ambiente salían como cuadros flotando y todo pixelado. Android va de muy débil a muy potente,
+  // así que el piso es más bajo que en el iPhone: 1,0 (no baja de ahí en «bajo»; con ?escuela=1 sí). Máximo 1,75 si el
+  // teléfono dice > 4 GB y > 4 núcleos; si no (o no lo dice), 1,5 como antes. Sin Modo Escuela automático (solo ?escuela=1).
+  // Teléfono = UA con «Android» y «Mobile» (las tabletas Android no llevan «Mobile»); Chromebook (CrOS), tabletas y escritorio, igual.
+  // Lienzo (MSAA 4× + profundidad, ~40 B/px) en 412×915: 1,5 → ~34 MB, 1,75 → ~46 MB (solo equipos > 4 GB); el piso de 1,0 → ~15 MB.
+  const UA = navigator.userAgent || '';
+  const ANDROID_TEL = /Android/.test(UA) && /Mobile/.test(UA) && !/CrOS/.test(UA) && !IPHONE;
+  const ANDROID_FUERTE = (navigator.deviceMemory || 0) > 4 && (navigator.hardwareConcurrency || 0) > 4;
+  const DPR_ANDROID = { max: 1.75, maxModesto: 1.5, min: 1 };
+  const DPR_MAX = IPHONE ? Math.min(DEVICE_DPR, DPR_IPHONE.max) : ANDROID_TEL ? Math.min(DEVICE_DPR, ANDROID_FUERTE ? DPR_ANDROID.max : DPR_ANDROID.maxModesto)
+    : Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2);
+  const DPR_MIN = IPHONE ? Math.min(DPR_IPHONE.min, DPR_MAX) : ANDROID_TEL ? Math.min(DPR_ANDROID.min, DPR_MAX) : Math.min(1, DPR_MAX);
   renderer.setPixelRatio(DPR_MAX);
   const dyn = { ms: 16.7, t: 0, slow: 0, fast: 0, lock: 0, v: new Float32Array(120), n: 0, i: 0, p95: 0 };
   // RN1: en móviles y Chromebooks (objetivo 30 FPS) la media no ve los tirones: se vigila también el p95 de los últimos 120
@@ -67,7 +78,7 @@ AVE.module('renderer', function (G) {
     dyn.fast = dyn.ms < 17.6 && dyn.p95 < 24 ? dyn.fast + 1 : 0;   // a tope de refresco y sin tirones
     const pr = renderer.getPixelRatio();
     let piso = (!MOBILE && calidad.nivel === 'alto') ? Math.min(1.5, DPR_MAX) : DPR_MIN;   // BM14: en alto de escritorio no baja de 1,5 (bajar la resolución se ve pixelado; se reduce el costo de la escena)
-    if (calidad.nivel === 'bajo' && !IPHONE || calidad.escuela) piso = Math.min(0.75, piso);   // IPH-1: el iPhone en «bajo» no baja de DPR_MIN (1,25); con ?escuela=1 sí   // QA-181/KIMI-320: último nivel del escalón — «bajo» o Modo Escuela; si ni a mínimo de resolución se llega al objetivo (Chromebook a 11-21 fps: los cuadros de ~53 ms no disparan el escalón de emergencia ≥200 ms), la resolución dinámica puede bajar de DPR_MIN a 0,75; sube de vuelta sola cuando sobra margen
+    if (calidad.nivel === 'bajo' && !IPHONE && !ANDROID_TEL || calidad.escuela) piso = Math.min(0.75, piso);   // IPH-1/AND-1: el iPhone (1,25) y el teléfono Android (1,0) en «bajo» no bajan de DPR_MIN; con ?escuela=1 sí   // QA-181/KIMI-320: último nivel del escalón — «bajo» o Modo Escuela; si ni a mínimo de resolución se llega al objetivo (Chromebook a 11-21 fps: los cuadros de ~53 ms no disparan el escalón de emergencia ≥200 ms), la resolución dinámica puede bajar de DPR_MIN a 0,75; sube de vuelta sola cuando sobra margen
     if ((dyn.slow >= 2 || grave) && pr > piso) { renderer.setPixelRatio(Math.max(piso, pr - (grave ? 0.5 : 0.25))); dyn.slow = 0; dyn.lock = 20000; dyn.n = 0; }
     else if (dyn.fast >= 6 && !dyn.lock && pr < DPR_MAX) { renderer.setPixelRatio(Math.min(DPR_MAX, pr + 0.25)); dyn.fast = 0; dyn.lock = 6000; dyn.n = 0; }
     else return;
@@ -112,6 +123,7 @@ AVE.module('renderer', function (G) {
   // Equipo modesto (A3): GPU, núcleos y memoria. Lo que el navegador no dice (Safari no da deviceMemory) no cuenta; un equipo
   // potente (GPU dedicada o Apple M, ≥ 6 núcleos, ≥ 8 GB) sigue en alto.
   function perfilEquipo(e) {
+    if (e.android) { const r = perfilEquipo(Object.assign({}, e, { android: false })); return Object.assign(r, { perfil: 'android', escuelaAuto: false }); }   // AND-1: teléfono Android — el nivel sale igual que antes (núcleos y memoria); solo cambia la resolución (DPR_ANDROID) y sin Modo Escuela automático
     const n = e.nucleos > 0 ? e.nucleos : 0, m = e.memoria > 0 ? e.memoria : 0, motivos = [];
     if (e.software) motivos.push('GPU por software');
     if (n && n <= 2) motivos.push(n + ' núcleos');
@@ -135,7 +147,7 @@ AVE.module('renderer', function (G) {
     if (fps < objetivo * 0.5) return 'bajo';
     return fps < objetivo * 0.85 ? NIVELES[i - 1] : nivel;
   }
-  const EQUIPO = { gpu: GPU, software: SOFTWARE, modesto: MODEST, movil: MOBILE, chromeos: CHROMEOS, iphone: IPHONE, nucleos: navigator.hardwareConcurrency || 0, memoria: navigator.deviceMemory || 0 };
+  const EQUIPO = { gpu: GPU, software: SOFTWARE, modesto: MODEST, movil: MOBILE, chromeos: CHROMEOS, iphone: IPHONE, android: ANDROID_TEL, nucleos: navigator.hardwareConcurrency || 0, memoria: navigator.deviceMemory || 0 };
   const PERFIL = perfilEquipo(EQUIPO);
   const fromUrl = new URLSearchParams(location.search).get('calidad');
   const inicial = NIVELES.includes(fromUrl) ? fromUrl : PERFIL.nivel;
@@ -1415,7 +1427,7 @@ AVE.module('renderer', function (G) {
   // ---------- Prueba de calidad automática (A3): equipos simulados, sin tocar la calidad real; también corre en contextTest ----------
   function calidadTest() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
-    const p = e => perfilEquipo(Object.assign({ software: false, modesto: false, movil: false, chromeos: false, iphone: false, nucleos: 0, memoria: 0 }, e));
+    const p = e => perfilEquipo(Object.assign({ software: false, modesto: false, movil: false, chromeos: false, iphone: false, android: false, nucleos: 0, memoria: 0 }, e));
     const casos = [
       ['Equipo potente (GPU dedicada, 12 núcleos, 8 GB) sigue en alto', { nucleos: 12, memoria: 8 }, 'alto'],
       ['Navegador que no dice núcleos ni memoria y GPU buena: alto', {}, 'alto'],
@@ -1435,8 +1447,15 @@ AVE.module('renderer', function (G) {
     check('iPhone (IPH-1): perfil propio sin Modo Escuela automático; móvil y Chromebook en bajo como antes', ip.perfil === 'iphone' && ip.escuelaAuto === false &&
       otros.every(o => o.nivel === 'bajo' && !o.perfil && o.escuelaAuto !== false), ip.perfil + ' · escuelaAuto ' + ip.escuelaAuto);
     check('iPhone (IPH-1): resolución entre 1,25 y 1,75 (antes 0,75–1,5); el resto de equipos igual', DPR_IPHONE.min === 1.25 && DPR_IPHONE.max === 1.75 &&
-      (IPHONE ? DPR_MAX === Math.min(DEVICE_DPR, 1.75) && DPR_MIN === Math.min(1.25, DPR_MAX) : DPR_MAX === Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2) && DPR_MIN === Math.min(1, DPR_MAX)),
+      (IPHONE ? DPR_MAX === Math.min(DEVICE_DPR, 1.75) && DPR_MIN === Math.min(1.25, DPR_MAX) : ANDROID_TEL ? true : DPR_MAX === Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2) && DPR_MIN === Math.min(1, DPR_MAX)),
       (IPHONE ? 'iPhone' : 'no iPhone') + ' · DPR ' + DPR_MIN + '–' + DPR_MAX);
+    const ad = p({ movil: true, modesto: true, android: true, nucleos: 4, memoria: 2 }), af = p({ movil: true, modesto: true, android: true, nucleos: 8, memoria: 8 });
+    check('Android (AND-1): perfil propio sin Modo Escuela automático; el nivel sale igual (débil en bajo, 8 GB en medio); Chromebook y tableta sin perfil',
+      ad.perfil === 'android' && af.perfil === 'android' && ad.escuelaAuto === false && af.escuelaAuto === false && ad.nivel === 'bajo' && af.nivel === 'medio' && !af.techo &&
+      otros.every(o => !o.perfil), ad.nivel + '/' + af.nivel + ' · ' + ad.perfil + ' · escuelaAuto ' + ad.escuelaAuto);
+    check('Android (AND-1): resolución entre 1,0 y 1,5 (1,75 con > 4 GB y > 4 núcleos); en «bajo» ya no baja a 0,75', DPR_ANDROID.min === 1 && DPR_ANDROID.max === 1.75 && DPR_ANDROID.maxModesto === 1.5 &&
+      (ANDROID_TEL ? DPR_MAX === Math.min(DEVICE_DPR, ANDROID_FUERTE ? 1.75 : 1.5) && DPR_MIN === Math.min(1, DPR_MAX) : true),
+      (ANDROID_TEL ? 'Android ' + (ANDROID_FUERTE ? 'fuerte' : 'modesto') : 'no Android') + ' · DPR ' + DPR_MIN + '–' + DPR_MAX);
     const d = (fps, n) => decidirArranque(fps, n, 55);
     check('Arranque: a 60 FPS no cambia la calidad', d(60, 'alto') === 'alto' && d(60, 'medio') === 'medio');
     check('Arranque: a 40 FPS baja un nivel', d(40, 'alto') === 'medio' && d(40, 'medio') === 'bajo');
