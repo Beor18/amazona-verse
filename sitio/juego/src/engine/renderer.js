@@ -33,7 +33,15 @@ AVE.module('renderer', function (G) {
   // al pulsar «Empezar» (~65 programas, un cuadro de unos 6 s). Sin el chequeo el enlace no
   // espera ese registro. ?shaders=1 lo vuelve a encender para ver un shader roto.
   if (!/[?&]shaders=1(?:&|$)/.test(location.search)) renderer.debug.checkShaderErrors = false;
-  const DPR_MAX = Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2), DPR_MIN = Math.min(1, DPR_MAX);
+  // IPH-1 (9-nov, Kelvin: «en el iPhone corre bien pero se ve muy feo»): perfil propio del iPhone/iPod. Sigue en «bajo»
+  // (mismo presupuesto de memoria de QA-107: texturas, geometría, streaming y flora de «bajo», sin sombras ni post), pero la
+  // resolución ya no se hunde: DPR entre 1,25 y 1,75 (antes 0,75–1,5, y en la práctica se quedaba en 0,75 a 30 FPS o con
+  // Ahorro de batería) y el Modo Escuela no se enciende solo (solo con ?escuela=1). El búfer del lienzo (MSAA 4× + profundidad,
+  // ~40 B/px) en 390×844 pasa de ~30 MB (1,5) a ~40 MB (1,75) como máximo; los KTX2 del atlas en «bajo» ahorraron ~18 MB.
+  const IPHONE = /iPhone|iPod/.test(navigator.userAgent || '');
+  const DPR_IPHONE = { max: 1.75, min: 1.25 };
+  const DPR_MAX = IPHONE ? Math.min(DEVICE_DPR, DPR_IPHONE.max) : Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2);
+  const DPR_MIN = IPHONE ? Math.min(DPR_IPHONE.min, DPR_MAX) : Math.min(1, DPR_MAX);
   renderer.setPixelRatio(DPR_MAX);
   const dyn = { ms: 16.7, t: 0, slow: 0, fast: 0, lock: 0, v: new Float32Array(120), n: 0, i: 0, p95: 0 };
   // RN1: en móviles y Chromebooks (objetivo 30 FPS) la media no ve los tirones: se vigila también el p95 de los últimos 120
@@ -59,7 +67,7 @@ AVE.module('renderer', function (G) {
     dyn.fast = dyn.ms < 17.6 && dyn.p95 < 24 ? dyn.fast + 1 : 0;   // a tope de refresco y sin tirones
     const pr = renderer.getPixelRatio();
     let piso = (!MOBILE && calidad.nivel === 'alto') ? Math.min(1.5, DPR_MAX) : DPR_MIN;   // BM14: en alto de escritorio no baja de 1,5 (bajar la resolución se ve pixelado; se reduce el costo de la escena)
-    if (calidad.nivel === 'bajo' || calidad.escuela) piso = Math.min(0.75, piso);   // QA-181/KIMI-320: último nivel del escalón — «bajo» o Modo Escuela; si ni a mínimo de resolución se llega al objetivo (Chromebook a 11-21 fps: los cuadros de ~53 ms no disparan el escalón de emergencia ≥200 ms), la resolución dinámica puede bajar de DPR_MIN a 0,75; sube de vuelta sola cuando sobra margen
+    if (calidad.nivel === 'bajo' && !IPHONE || calidad.escuela) piso = Math.min(0.75, piso);   // IPH-1: el iPhone en «bajo» no baja de DPR_MIN (1,25); con ?escuela=1 sí   // QA-181/KIMI-320: último nivel del escalón — «bajo» o Modo Escuela; si ni a mínimo de resolución se llega al objetivo (Chromebook a 11-21 fps: los cuadros de ~53 ms no disparan el escalón de emergencia ≥200 ms), la resolución dinámica puede bajar de DPR_MIN a 0,75; sube de vuelta sola cuando sobra margen
     if ((dyn.slow >= 2 || grave) && pr > piso) { renderer.setPixelRatio(Math.max(piso, pr - (grave ? 0.5 : 0.25))); dyn.slow = 0; dyn.lock = 20000; dyn.n = 0; }
     else if (dyn.fast >= 6 && !dyn.lock && pr < DPR_MAX) { renderer.setPixelRatio(Math.min(DPR_MAX, pr + 0.25)); dyn.fast = 0; dyn.lock = 6000; dyn.n = 0; }
     else return;
@@ -111,7 +119,8 @@ AVE.module('renderer', function (G) {
     if (motivos.length) return { nivel: 'bajo', motivos };
     // QA-107 (3-nov): en el iPhone, en medio, Safari cerraba la pestaña por memoria al volar en el cap. 1 (en bajo no).
     // Safari no da la memoria ni el modelo: todo iPhone/iPod arranca en bajo y la subida por FPS no lo saca de ahí (techo).
-    if (e.iphone) return { nivel: 'bajo', motivos: ['iPhone (memoria de Safari)'], techo: 'bajo' };
+    // IPH-1: perfil 'iphone' — mismo «bajo» de memoria, más resolución (DPR_IPHONE) y sin Modo Escuela automático.
+    if (e.iphone) return { nivel: 'bajo', motivos: ['iPhone (memoria de Safari)'], techo: 'bajo', perfil: 'iphone', escuelaAuto: false };
     if ((e.movil || e.chromeos) && (n && n <= 4 || m && m <= 4)) return { nivel: 'bajo', motivos: [(e.chromeos ? 'Chromebook' : 'móvil') + ' con ' + (n || '?') + ' núcleos y ' + (m || '?') + ' GB'] };
     if (e.modesto) motivos.push(e.movil ? 'móvil' : e.chromeos ? 'Chromebook' : 'GPU integrada');
     if (n && n <= 4) motivos.push(n + ' núcleos');
@@ -126,7 +135,6 @@ AVE.module('renderer', function (G) {
     if (fps < objetivo * 0.5) return 'bajo';
     return fps < objetivo * 0.85 ? NIVELES[i - 1] : nivel;
   }
-  const IPHONE = /iPhone|iPod/.test(navigator.userAgent || '');
   const EQUIPO = { gpu: GPU, software: SOFTWARE, modesto: MODEST, movil: MOBILE, chromeos: CHROMEOS, iphone: IPHONE, nucleos: navigator.hardwareConcurrency || 0, memoria: navigator.deviceMemory || 0 };
   const PERFIL = perfilEquipo(EQUIPO);
   const fromUrl = new URLSearchParams(location.search).get('calidad');
@@ -624,6 +632,14 @@ AVE.module('renderer', function (G) {
   // las familias CON luz). Mismo resultado, sin asignaciones por cuadro.
   let genCalor = 1, rtCalor = null, postCalor = false;
   const calorHecho = new Set();
+  // QA-220: variantes de PANTALLA (salida sRGB) de cada OBJETO dibujable, calentadas dibujándolo al
+  // lienzo (ver warmUno). Las fotos del cómic dibujan directo al lienzo (snapshot/fotoPosada) y three
+  // compila una variante del programa por codificación de salida: sin precalentarla, la primera foto
+  // enlazaba de golpe todos los programas de la escena (~2,7 s de hilo). Se calienta objeto a objeto
+  // (no por familia): la misma familia da varios programas (vertexColors, instancia, lado, mapas) y
+  // solo dibujando cada objeto se compila su configuración real.
+  const pantallaObjetos = new WeakSet();
+  let pantallaN = 0;
   function dibujable(o) { return !!(o && (o.isMesh || o.isPoints || o.isSprite || o.isLine)); }
   const claveCache = new WeakMap();
   function cacheDe(m) {
@@ -665,6 +681,10 @@ AVE.module('renderer', function (G) {
     for (let i = 0; i < m.length; i++) if (m[i] && !calorHecho.has(idCalor(o, m[i]))) return true;
     return false;
   }
+  // QA-220: la variante de pantalla se calienta por OBJETO (WeakSet): cada dibujable se dibuja una
+  // vez al lienzo y queda compilada su configuración real (la clave de familia idCalor es más gruesa
+  // que la del programa: una misma familia da varios programas según vertexColors/instancia/lado…).
+  function objPendienteP(o) { return !!o && !pantallaObjetos.has(o); }
   // Dibujables del cuadro: la escena se recorre una vez por cuadro y la lista se reutiliza en el
   // precalentado y en el ocultado (antes se recorría entera por cada objeto calentado y por cada
   // dibujo; con el mundo cargado son miles de nodos y varios recorridos por cuadro).
@@ -679,7 +699,12 @@ AVE.module('renderer', function (G) {
     for (const o of dibujables()) if (objPendiente(o)) return o;
     return null;
   }
+  function siguienteCalorP() {
+    for (const o of dibujables()) if (objPendienteP(o)) return o;
+    return null;
+  }
   function marcarCalor(o) { for (const m of matsDe(o)) if (m) calorHecho.add(idCalor(o, m)); }
+  function marcarCalorP(o) { if (!pantallaObjetos.has(o)) { pantallaObjetos.add(o); pantallaN++; } }
   function ocultarPendientes() {
     const guard = [];
     for (const o of dibujables()) {
@@ -707,8 +732,10 @@ AVE.module('renderer', function (G) {
     try { fn(); }
     finally { renderer.render = w; }
   }
-  // Dibuja solo este objeto (32×32, con las luces y las sombras de verdad) para enlazar su programa.
-  function warmUno(o) {
+  // Dibuja solo este objeto (con las luces y las sombras de verdad) para enlazar su programa.
+  // pantalla=false: a un target 32×32 lineal (el juego con post dibuja a un target lineal);
+  // pantalla=true: al lienzo (salida sRGB), la variante que usan las fotos directas del cómic (QA-220).
+  function warmUno(o, pantalla) {
     const objs = dibujables();
     const guard = objs.map(obj => [obj, obj.visible, obj.frustumCulled, obj.isInstancedMesh ? obj.count : null]);
     const padres = [];
@@ -716,15 +743,25 @@ AVE.module('renderer', function (G) {
     for (const obj of objs) obj.visible = false;
     o.visible = true; o.frustumCulled = false;
     if (o.isInstancedMesh && o.count === 0) o.count = 1;
-    if (!rtCalor) rtCalor = new THREE.WebGLRenderTarget(32, 32);
     try {
-      sinCuenta(() => conCapa31(() => { scene.updateMatrixWorld(); renderer.setRenderTarget(rtCalor); renderer.render(scene, camera); }));
+      if (pantalla) {
+        // QA-220: variante de PANTALLA (salida sRGB). En three r128 solo el lienzo (target null) mete
+        // renderer.outputEncoding en la clave del programa; un target de render va a lineal aunque su
+        // textura diga sRGB (por eso un target 32×32 sRGB no basta). Dibujar al lienzo aquí es seguro:
+        // este calentado corre antes del dibujo del cuadro (render()) o con el mundo oculto (carga/
+        // creador), y el dibujo real borra y redibuja encima. Sin esto la primera foto directa del cómic
+        // (snapshot/fotoPosada) compilaba ~100 programas de golpe: ~2,7 s de hilo congelado (QA-220).
+        sinCuenta(() => conCapa31(() => { scene.updateMatrixWorld(); renderer.setRenderTarget(null); renderer.render(scene, camera); }));
+      } else {
+        if (!rtCalor) rtCalor = new THREE.WebGLRenderTarget(32, 32);
+        sinCuenta(() => conCapa31(() => { scene.updateMatrixWorld(); renderer.setRenderTarget(rtCalor); renderer.render(scene, camera); }));
+      }
     } catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     finally {
       for (const [obj, vis, fc, n] of guard) { obj.visible = vis; obj.frustumCulled = fc; if (n != null) obj.count = n; }
       for (const [p, vis] of padres) p.visible = vis;
     }
-    marcarCalor(o);
+    if (pantalla) marcarCalorP(o); else marcarCalor(o);
   }
   function warmPost() {
     if (!post.composer) return;
@@ -750,13 +787,26 @@ AVE.module('renderer', function (G) {
     const t0 = performance.now();
     const vistos = new Set();
     let n = 0;
+    // QA-220: con la variante de pantalla pendiente se reserva 1 enlace por cuadro para ella (tope
+    // lineal maxN-1): si el lado lineal nunca se vacía del todo (streaming de fondo), la de pantalla
+    // avanza igual y la primera foto directa del cómic no compila de golpe (~2,7 s de hilo).
+    const topeLineal = (maxN > 1 && siguienteCalorP()) ? maxN - 1 : maxN;
     for (const o of dibujables()) {
-      if (n >= maxN || performance.now() - t0 > ms) break;
+      if (n >= topeLineal || performance.now() - t0 > ms) break;
       const claves = [];
       for (const m of matsDe(o)) { if (m) { const k = idCalor(o, m); if (!calorHecho.has(k)) claves.push(k); } }
       if (!claves.length || claves.every(k => vistos.has(k))) continue;
-      warmUno(o); n++;
+      warmUno(o, false); n++;
       for (const k of claves) vistos.add(k);
+    }
+    // QA-220: la variante de pantalla (sRGB) de cada OBJETO, con el hueco reservado arriba (1 por
+    // cuadro cuando hay lineales pendientes; todo el tope cuando no). Cada dibujable se dibuja una
+    // vez al lienzo y queda compilada su configuración real; las fotos directas del cómic encuentran
+    // el programa ya enlazado y no hay tirón de ~2,7 s en la primera foto.
+    for (const o of dibujables()) {
+      if (n >= maxN || performance.now() - t0 > ms) break;
+      if (!objPendienteP(o)) continue;
+      warmUno(o, true); n++;
     }
     // El post se enlaza en cuanto queda presupuesto en un cuadro (no espera a agotar la escena):
     // si no, el primer dibujo de verdad —el cuadro de «Empezar»— compilaría bloom/gradación allí.
@@ -789,7 +839,7 @@ AVE.module('renderer', function (G) {
   }
   function warmOtraUno(o) {
     const on = sun.castShadow;
-    try { sun.castShadow = !on; warmUno(o); } // compila/enlaza la variante contraria (queda en la caché de three)
+    try { sun.castShadow = !on; warmUno(o, false); } // compila/enlaza la variante contraria (queda en la caché de three)
     finally { sun.castShadow = on; }
     for (const m of matsDe(o)) if (m && conLuz(m)) calorOtra.add(idCalorOtra(o, m));
   }
@@ -922,7 +972,7 @@ AVE.module('renderer', function (G) {
     fpsM.bajo = (fps < OBJETIVO * 0.85 || tirones) && dprAlMinimo ? fpsM.bajo + 1 : 0;
     fpsM.alto = fps > Math.min(58, OBJETIVO * 1.6) && renderer.getPixelRatio() >= DPR_MAX - 0.01 ? fpsM.alto + 1 : 0;
     if (fpsM.bajo >= 3 && i > 0) { setCalidad(NIVELES[i - 1]); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }
-    else if (fpsM.bajo >= 8 && i === 0 && calidad.escuela == null) { setEscuela(true); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }   // QA-181/KIMI-320: ya en «bajo» con DPR al mínimo y la media sigue baja ~8 s → Modo Escuela (solo en «auto»: ?escuela=0 manual no se lo vuelve a encender, hallazgo de Kimi 1 en KIMI-318)
+    else if (fpsM.bajo >= 8 && i === 0 && calidad.escuela == null && PERFIL.escuelaAuto !== false) { setEscuela(true); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }   // QA-181/KIMI-320: ya en «bajo» con DPR al mínimo y la media sigue baja ~8 s → Modo Escuela (solo en «auto»: ?escuela=0 manual no se lo vuelve a encender, hallazgo de Kimi 1 en KIMI-318)
     else if (calidad.escuela === true && calidad.escuelaAuto && fpsM.alto >= 20 && !fpsM.bloqueo) { setEscuela(null); fpsM.alto = 0; }   // solo el auto lo apaga, y con el DPR otra vez arriba y ~20 s sobrados
     else if (fpsM.alto >= 12 && !fpsM.bloqueo && i < 2 && fpsM.subidas < 2 && !(PERFIL.techo && i >= NIVELES.indexOf(PERFIL.techo))) { setCalidad(NIVELES[i + 1]); fpsM.alto = 0; fpsM.subidas++; fpsM.bloqueo = 20000; fpsM.warm = 2500; }
   }
@@ -1104,7 +1154,7 @@ AVE.module('renderer', function (G) {
     // compilación en varios cuadros en vez de un tirón de 100–600 ms en el primero.
     const f2 = FASES ? performance.now() : 0;
     let warmMs = 0;
-    if (puedeCalentar && siguienteCalor()) {
+    if (puedeCalentar && (siguienteCalor() || siguienteCalorP())) {
       const w0 = performance.now();
       const muchos = programasPendientes() > 12;
       calentarPresupuesto(muchos ? 6 : 2, muchos ? 12 : 6);
@@ -1363,6 +1413,12 @@ AVE.module('renderer', function (G) {
     for (const [nombre, e, nivel] of casos) { const r = p(e); check(nombre, r.nivel === nivel, r.nivel + (r.motivos.length ? ' (' + r.motivos.join(', ') + ')' : '')); }
     const ip = p({ movil: true, modesto: true, iphone: true, nucleos: 6 });
     check('iPhone: la subida por FPS no pasa de bajo (techo, QA-107)', ip.techo === 'bajo' && !p({ movil: true, modesto: true, nucleos: 8, memoria: 8 }).techo, ip.techo);
+    const otros = [{ movil: true, modesto: true, nucleos: 8, memoria: 4 }, { chromeos: true, modesto: true, nucleos: 4, memoria: 4 }].map(p);
+    check('iPhone (IPH-1): perfil propio sin Modo Escuela automático; móvil y Chromebook en bajo como antes', ip.perfil === 'iphone' && ip.escuelaAuto === false &&
+      otros.every(o => o.nivel === 'bajo' && !o.perfil && o.escuelaAuto !== false), ip.perfil + ' · escuelaAuto ' + ip.escuelaAuto);
+    check('iPhone (IPH-1): resolución entre 1,25 y 1,75 (antes 0,75–1,5); el resto de equipos igual', DPR_IPHONE.min === 1.25 && DPR_IPHONE.max === 1.75 &&
+      (IPHONE ? DPR_MAX === Math.min(DEVICE_DPR, 1.75) && DPR_MIN === Math.min(1.25, DPR_MAX) : DPR_MAX === Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2) && DPR_MIN === Math.min(1, DPR_MAX)),
+      (IPHONE ? 'iPhone' : 'no iPhone') + ' · DPR ' + DPR_MIN + '–' + DPR_MAX);
     const d = (fps, n) => decidirArranque(fps, n, 55);
     check('Arranque: a 60 FPS no cambia la calidad', d(60, 'alto') === 'alto' && d(60, 'medio') === 'medio');
     check('Arranque: a 40 FPS baja un nivel', d(40, 'alto') === 'medio' && d(40, 'medio') === 'bajo');
@@ -1527,7 +1583,7 @@ AVE.module('renderer', function (G) {
 
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, leerLienzo: fotoLeer, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, setEscuela, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
-    _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; }, get otra() { return calorOtra.size; } },
+    _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; }, get otra() { return calorOtra.size; }, get pantalla() { return pantallaN; } },
     _dyn: dyn, // QA-176: las pruebas de imagen (lookTest) lo usan para fijar la resolución dinámica; el juego no lo toca
     fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, esperas: FOTOS.esperas, caidas: FOTOS.caidas, errPBO: FOTOS.errPBO, cola: FOTOS.cola.length }),
     precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas, marcaGPU },

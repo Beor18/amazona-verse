@@ -112,6 +112,7 @@ AVE.module('streaming', function (G) {
     colaGrande: (() => { try { const v = parseInt(new URLSearchParams(location.search).get('colagrande'), 10); return v > 0 ? v : 2500; } catch (e) { return 2500; } })(),
     msRecuperacion: 12,
     precargaVuelo: 2.5, precargaVueloMax: 120, precargaVueloMin: 15, // KIMI-Task-017: anticipo (s × velocidad), tope en m y velocidad mínima (m/s): solo en vuelo rápido, no a pie (los gags del cómic capturan a velocidad baja)
+    precargaPie: 4, precargaPieMin: 5,                        // KIMI-348: a pie (caminar ~6,5 m/s) también se anticipa la zona hacia la que se va, con ventana mayor (4 s ≈ 26 m antes del cruce); por debajo de 5 m/s (quieto/posando, momentos de cómic) sigue sin precargar
     descargas: 2, descargasArranque: 3,            // descargas a la vez (KIMI-017: 2 en caliente; los picos al teleport lejos del spawn eran N GLB con 1 descarga a la vez)
     revisar: 0.3,                                  // s entre revisiones de niveles
     margenSombra: 4,
@@ -436,8 +437,12 @@ AVE.module('streaming', function (G) {
   // móvil de pantalla pequeña (táctil y lado corto < 600 px: iPhone y Android, no tablets) el atlas baja a 1024 al cargar, antes
   // de subirlo (celda 256, 5,3 MB por textura; los cuatro, 21 MB en vez de 85), en cualquier calidad. Tablet y escritorio, como antes.
   const MOVIL_PEQ = MOVIL && Math.min(screen.width || 0, screen.height || 0) > 0 && Math.min(screen.width, screen.height) < 600;
+  // Modo Escuela (QA-181, 📣 coordinadora 8-nov): con calidad.escuela el atlas NO sube al 4096 JPEG (~85 MB en la GPU)
+  // ni en el barrido de los ~20 s ni al subir de calidad: se queda en el LQ final (KTX2 comprimido en escuela, JPEG
+  // 2048 en «bajo»), mismo criterio de consumo bajo que el móvil. Sin escuela nada cambia. Al apagar el Modo Escuela
+  // en caliente, el gancho 'calidad' vuelve a pedir el 4096 (atlasMax() === 0 otra vez) como un arranque normal.
   const atlasMax = () => MOVIL_PEQ ? HD.celdas * HD.celda / 4
-    : nivelCal() === 'bajo' || (MOVIL && nivelCal() !== 'alto') ? HD.celdas * HD.celda / 2 : 0;
+    : comprimidaModo() || (MOVIL && nivelCal() !== 'alto') ? HD.celdas * HD.celda / 2 : 0;
   // QA-110: las texturas del atlas se suben a la GPU de una en una, cada 300 ms (renderer.initTexture), en cuanto se crea el
   // material y antes de que la ciudad se vea; así no llegan las cuatro en el mismo cuadro al despegar. Una imagen que aún no
   // ha cargado espera su turno de nuevo (hasta ~30 s); si la escena la dibuja antes, three la sube allí, como antes.
@@ -1851,8 +1856,12 @@ AVE.module('streaming', function (G) {
       let v = 0;
       if (vueloUlt) { const dt = (ahora - vueloUlt.t) / 1000; if (dt > 0.05) v = Math.hypot(x - vueloUlt.x, z - vueloUlt.z) / dt; }
       vueloUlt = { x, z, t: ahora };
-      if (v < (CFG.precargaVueloMin || 0)) return 0; // a pie o posado no se precarga: no molestar al cómic ni gastar red
-      return Math.min(CFG.precargaVueloMax || 120, v * CFG.precargaVuelo);
+      if (v >= (CFG.precargaVueloMin || 0)) return Math.min(CFG.precargaVueloMax || 120, v * CFG.precargaVuelo);
+      // KIMI-348: a pie (caminar ~6,5 m/s) también se precarga la zona hacia la que se camina; por debajo del
+      // mínimo (quieto/posado, momentos de cómic) sigue en 0, como antes. El «pop de ruinas» medido en KIMI-340
+      // al cruzar a pie era el cerca pidiéndose EN la frontera; con 4 s × velocidad ya está bajando ~26 m antes.
+      if (v >= (CFG.precargaPieMin || 0)) return Math.min(CFG.precargaVueloMax || 120, v * CFG.precargaPie);
+      return 0;
     }
     function prePedir(Z, n, tipo, prio) {
       const k = tipo + ':' + n;
