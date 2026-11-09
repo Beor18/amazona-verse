@@ -530,11 +530,15 @@
         // El botón de salir del final dice «Volver al menú» si se entró desde el menú, y como siempre si se entró desde el mundo
         const CLAVE_RET = ((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.retos';
         const textoEs = (el, s) => !!el && [s, G.idioma && G.idioma.tr ? G.idioma.tr(s) : s].includes(el.textContent.trim());
+        let finInfo = '';
         async function finFlight(s) {
           const fa = G.flightApi, d = fa && fa._dev; if (!d) return false;
           let rec0 = null; try { rec0 = localStorage.getItem(CLAVE_RET); } catch (e) { /* sin almacén */ }
+          // 12 s y no 3: el choque emite retosResultado (XP, foto del momento) y en la nube el hilo se para segundos (QA-220); con 3 s
+          // la espera vencía antes de que saltara el temporizador de 350 ms de resultados() y se leía el texto viejo del botón (QA-223b)
           d.vaciar(); d.st.fase = 'juego'; d.J.dist = 30; d.J.y = fa.P.yMin - 0.1; d.J.vy = -1; d.paso(1 / 60);
-          const ok = await hasta(() => !!(d.st.ui && !d.st.ui.fin.hidden), 3000) && textoEs(d.st.ui.fin.querySelector('[data-salir]'), s);
+          const t0 = performance.now(), visto = await hasta(() => !!(d.st.ui && !d.st.ui.fin.hidden), 12000); finInfo = 'final ' + (visto ? 'a los ' : 'no salió en ') + Math.round(performance.now() - t0) + ' ms, fase ' + d.st.fase + ', puntos ' + d.J.puntos;
+          const ok = visto && textoEs(d.st.ui.fin.querySelector('[data-salir]'), s);
           try { if (rec0 == null) localStorage.removeItem(CLAVE_RET); else localStorage.setItem(CLAVE_RET, rec0); } catch (e) { /* sin almacén */ }
           return ok;
         }
@@ -543,7 +547,7 @@
           await elegir(m);
           const dentro = await hasta(activoM, 15000);
           if (m === 'flight') { const marca0 = desdeMenu, okFin = dentro && await finFlight('Volver al menú');
-            check('Amazona Flight abierto desde el menú: el botón del final dice «Volver al menú»', okFin, (G.flightApi._dev.st.ui && G.flightApi._dev.st.ui.fin.querySelector('[data-salir]').textContent) + ' · dentro ' + dentro + ', marca antes ' + marca0 + ', ahora ' + desdeMenu + ', portada ' + portada.open + ', vigía ' + !!vigiaMenu + ', se quitó: ' + (sinMarca || '—')); }
+            check('Amazona Flight abierto desde el menú: el botón del final dice «Volver al menú»', okFin, (G.flightApi._dev.st.ui && G.flightApi._dev.st.ui.fin.querySelector('[data-salir]').textContent) + ' · dentro ' + dentro + ', marca antes ' + marca0 + ', ahora ' + desdeMenu + ', portada ' + portada.open + ', vigía ' + !!vigiaMenu + ', se quitó: ' + (sinMarca || '—') + ' · ' + finInfo); }
           if (m === 'carreras') check('Carreras abierto desde el menú: el botón de salir dice «Volver al menú»', dentro && salirCarreras('Volver al menú'));
           salirM();
           const alMenu = await hasta(() => portada.open, 8000);
