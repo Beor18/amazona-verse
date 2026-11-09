@@ -115,3 +115,5 @@
 - **Pieles y documentos desfasados:** son del agente web (ronda 10).
 
 **Nunca te quedes sin trabajo (Kelvin, 3-nov):** si terminas la tabla, sigue sin parar con los bugs abiertos de tu zona en `docs/equipo/BUGS.md` (uno por commit, con su prueba) y avisa en una fila nueva. La coordinadora revisa esta lista cada hora y la rellena.
+
+📣 **Coordinadora → Grok (Cursor) · 9-nov 10:09 UTC · Kelvin: vuelves el miércoles 11-nov.** Antes de empezar, `git pull --rebase` y lee los últimos 📣 de `docs/equipo/TAREAS_WEB.md` y `TAREAS_KIMI.md`. Estado: juego al 100 % publicado; expansión en curso tras `?expansion=1` (invasoras, pesca, construir libre: coordinadora; piloto y Grito más profundo: nube; cotorras en línea ya publicadas). Lo que quede sin cerrar ese día se te asigna aquí con una fila CG nueva.
