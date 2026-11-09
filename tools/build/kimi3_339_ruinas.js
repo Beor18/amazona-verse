@@ -12,6 +12,7 @@ const AQUI = __dirname, RAIZ = path.resolve(AQUI, '..', '..');
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
 const ETIQUETA = arg('--etiqueta', 'r1');
+const MODO = arg('--modo', 'teleport'); // teleport | vuelo — vuelo: acercarse volando a 17 m/s y medir el swap _lejos → cerca al cruzar la frontera
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi339');
 fs.mkdirSync(SALIDA, { recursive: true });
 const LOGF = path.join(SALIDA, `k339_${ETIQUETA}.log`);
@@ -102,6 +103,28 @@ const TELEPORT_JS = `(async () => { try { const AV = window.AV, G = AV.G, S = AV
   S.pos.x = best.cx; S.pos.z = best.cz; S.pos.y = 30;
   return best.id + ' @' + Math.round(bd) + 'm'; } catch (e) { return 'ERR ' + (e && e.message || e); } })()`;
 
+// Fase 2 en modo vuelo: colocarse a 420 m de la zona NO-ciudad con edificios más cercana (a 150 m +) y
+// acercarse en línea recta a 17 m/s a y=35: mide el pop `_lejos` → `cerca` al cruzar la frontera, que es
+// el escenario real de «edificios lejanos como ruinas» (la precarga hacia adelante solo dispara en vuelo).
+const CIUDADES = `['kelvin_ruinas_yunque','kelvin_ruinas_yunque_2','kelvin_aldea_rio_este_2','kelvin_aldea_colina']`;
+const FLY_JS = `(async () => { try { const AV = window.AV, G = AV.G, S = AV.state, ST = G.mundo.streaming;
+  const ciudades = new Set(${CIUDADES});
+  const zonas = ST.zonas, px = S.pos.x, pz = S.pos.z;
+  let best = null, bd = 1e9;
+  for (const id in zonas) { const Z = zonas[id]; if (!Z.modelos || !Z.modelos.size || ciudades.has(id)) continue; const d = Math.hypot(Z.cx - px, Z.cz - pz); if (d > 150 && d < bd) { bd = d; best = Z; } }
+  if (!best) return 'sin zona';
+  const dx = (best.cx - px) / bd, dz = (best.cz - pz) / bd;
+  S.pos.x = best.cx - dx * 420; S.pos.z = best.cz - dz * 420; S.pos.y = 35;
+  if (G.fisica && G.fisica.MOVE) G.fisica.MOVE.flying = true;
+  window.__fly = { id: best.id, dx, dz, t0: performance.now() };
+  return best.id + ' @' + Math.round(bd) + 'm'; } catch (e) { return 'ERR ' + (e && e.message || e); } })()`;
+const FLY_PASO_JS = `(() => { try { const AV = window.AV, S = AV.state, f = window.__fly;
+  if (!f) return -1;
+  S.pos.x += f.dx * 5.1; S.pos.z += f.dz * 5.1; S.pos.y = 35;
+  if (AV.G.fisica && AV.G.fisica.MOVE) AV.G.fisica.MOVE.flying = true;
+  const Z = AV.G.mundo.streaming.zonas[f.id];
+  return Math.round(Math.hypot(Z.cx - S.pos.x, Z.cz - S.pos.z)); } catch (e) { return -1; } })()`;
+
 (async () => {
   const res = { etiqueta: ETIQUETA, cuando: new Date().toISOString(), pantalla: '1600x900 dpr1', calidad: 'auto (sin flags)', cpu: 'x1', gpu: 'PC real (ANGLE/D3D11)', muestras: [], llegada: null, asentado: null, errores: null };
   const { srv, puerto } = await servir();
@@ -155,10 +178,31 @@ const TELEPORT_JS = `(async () => { try { const AV = window.AV, G = AV.G, S = AV
       }
       await new Promise(r => setTimeout(r, 300));
     }
-    // Fase 2: acercarse a la zona edificada más cercana y medir el swap _lejos → cerca (el pop de «ruinas»).
+    // Fase 2: acercarse a una zona edificada y medir el swap _lejos → cerca (el pop de «ruinas»).
+    if (MODO === 'vuelo') {
+      const tz = await ev(cdp, ses, FLY_JS, 30);
+      log(`vuelo destino='${tz}'`);
+      res.acercamiento = { destino: tz, modo: 'vuelo 17 m/s desde 420 m a y=35', muestras: [] };
+      const tZ = Date.now();
+      let shotZ = false;
+      for (let paso = 0; paso < 90; paso++) {
+        const d = await ev(cdp, ses, FLY_PASO_JS, 15);
+        const m = await ev(cdp, ses, MUESTRA_JS, 15);
+        m.t = Date.now() - tZ; m.d = d;
+        res.acercamiento.muestras.push(m);
+        if (!shotZ && m.d >= 0 && m.d <= 130) {
+          const s2 = await cdp.call('Page.captureScreenshot', { format: 'jpeg', quality: 82 }, ses, 30000);
+          fs.writeFileSync(path.join(SALIDA, `k339_${ETIQUETA}_vuelo_cruseRc.jpg`), Buffer.from(s2.data, 'base64'));
+          log(`captura vuelo al cruzar Rc (d=${m.d})`);
+          shotZ = true;
+        }
+        if (d >= 0 && d < 35) break;
+        await new Promise(r => setTimeout(r, 300));
+      }
+    } else {
     const tz = await ev(cdp, ses, TELEPORT_JS, 30);
     log(`teleport='${tz}'`);
-    res.acercamiento = { destino: tz, muestras: [] };
+    res.acercamiento = { destino: tz, modo: 'teleport', muestras: [] };
     const tZ = Date.now();
     let shotZ = false;
     while (Date.now() - tZ < 9000) {
@@ -172,6 +216,7 @@ const TELEPORT_JS = `(async () => { try { const AV = window.AV, G = AV.G, S = AV
         shotZ = true;
       }
       await new Promise(r => setTimeout(r, 300));
+    }
     }
     // Asentado completo (cola vacía): cuánto tarda el detalle total.
     const a = await ev(cdp, ses, ASENTAR_JS, 150);

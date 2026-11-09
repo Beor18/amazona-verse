@@ -1907,13 +1907,18 @@ AVE.module('streaming', function (G) {
           if (rh && rh.estado === 'cola') rh.prio = distModelo(Z, n);
         }
         // KIMI-Task-017: precarga hacia adelante (lejos de las zonas a las que se acerca; kit de la gran ciudad)
+        // KIMI-340: también el modelo detallado (cerca) de la zona a la que se vuela. El «efecto ruinas» medido
+        // al llegar era el _lejos quedándose a la vista ~0,5-1,5 s mientras el cerca bajaba al cruzar la frontera;
+        // con el cerca ya 'listo' al cruzar, el colocado es inmediato (aplicarNivel) y no hay ventana pobre.
         if (anticipo > 0) {
           if (Z.nivel === 0 && Z.d < Rl + anticipo) for (const n of Z.modelos) prePedir(Z, n, 'lejos', Z.d + 1);
+          if (Z.nivel === 1 && Z.d < RcLlegada + anticipo) for (const n of Z.modelos) prePedir(Z, n, 'cerca', Z.d);
           if (esCiudad(Z.id) && !Z.ciudad && Z.d < CFG.ciudadVista[nivelCiudad()] + anticipo) for (const n of Z.modelos) prePedir(Z, n, 'cerca', Z.d);
         }
         if (Z.pre) {
           const dentroL = Z.nivel === 0 && Z.d < Rl + anticipo + 60;
-          const dentroC = !Z.ciudad && Z.d < CFG.ciudadVista[nivelCiudad()] + anticipo + 60;
+          const dentroC = esCiudad(Z.id) ? !Z.ciudad && Z.d < CFG.ciudadVista[nivelCiudad()] + anticipo + 60
+                                         : Z.nivel === 1 && Z.d < RcLlegada + anticipo + 60;
           for (const k in Z.pre) {
             const i = k.indexOf(':'), tipo = k.slice(0, i);
             if (!(tipo === 'lejos' ? dentroL : dentroC)) { soltar(res(k.slice(i + 1), tipo)); delete Z.pre[k]; }

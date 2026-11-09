@@ -1,0 +1,12 @@
+[00:37:56] servidor http://127.0.0.1:54875
+[00:38:17] entrar='ok' en 19.9s
+[00:38:17] captura t=200
+[00:38:18] captura t=1000
+[00:38:19] captura t=2000
+[00:38:21] captura t=4000
+[00:38:25] captura t=8000
+[00:38:27] vuelo destino='kelvin_aldea_rio_este @156m'
+[00:38:45] captura vuelo al cruzar Rc (d=129)
+[00:38:52] asentado={"ms":949,"tope":false,"pendientes":null}
+[00:38:52] errores=[]
+[00:38:52] fin
