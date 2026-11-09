@@ -1,0 +1,50 @@
+      "otros": 3,
+      "personajes": 12,
+      "flora": 20.4,
+      "atlas_hd": 5.3
+     }
+    },
+    "medErr": "",
+    "info": null,
+    "heapMB": 133
+   },
+   "escuelaLate": [
+    {
+     "escuela": true,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": true,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": true,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": true,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": true,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    }
+   ],
+   "erroresConsola": 0
+  }
+ },
+ "ok": true,
+ "chequeos": {
+  "auto_calidad_bajo": true,
+  "auto_dpr_125_175": true,
+  "auto_dpr_subio_solo": true,
+  "auto_escuela_nunca": true,
+  "sin_errores_consola": true,
+  "escuela_url_entra": true
+ }
+}
