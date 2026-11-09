@@ -16,7 +16,7 @@ if (!process.execArgv.some(a => a.startsWith('--max-old-space-size'))) {
   const r = require('child_process').spawnSync(process.execPath, ['--max-old-space-size=6144', __filename, ...process.argv.slice(2)], { stdio: 'inherit' });
   process.exit(r.status == null ? 1 : r.status);
 }
-const http = require('http'); const fs = require('fs'); const path = require('path'); const os = require('os'); const { spawn, execFileSync } = require('child_process');
+const http = require('http'); const fs = require('fs'); const path = require('path'); const os = require('os'); const { spawn, spawnSync, execFileSync } = require('child_process');
 const AQUI = __dirname, RAIZ = path.resolve(AQUI, '..', '..');
 const ETIQ = (process.argv.indexOf('--etiqueta') > 0 ? process.argv[process.argv.indexOf('--etiqueta') + 1] : 'k356-heap-r1');
 const REF = (process.argv.indexOf('--ref') > 0 ? process.argv[process.argv.indexOf('--ref') + 1] : '');
@@ -103,9 +103,9 @@ function analiza(snap) {
   const tIni = Date.now();
   const L = s => { const l = '+' + Math.round((Date.now() - tIni) / 1000) + 's ' + s; log.push(l); console.log(l); };
   let dirRaiz = RAIZ, tmpRef = null;
-  if (REF) { tmpRef = fs.mkdtempSync(path.join(os.tmpdir(), 'k356ref-')); const tar = require('child_process').spawnSync('tar', ['-x', '-C', tmpRef], { cwd: RAIZ, input: execFileSync('git', ['archive', REF], { cwd: RAIZ, maxBuffer: 1 << 30 }) }); if (tar.status) throw new Error('git archive/tar falló'); dirRaiz = tmpRef; L('sirviendo --ref ' + REF + ' desde ' + tmpRef); }
+  if (REF) { tmpRef = fs.mkdtempSync(path.join(os.tmpdir(), 'k356ref-')); const tarPath = path.join(tmpRef, 'ref.tar'); const arch = spawnSync('git', ['archive', '-o', tarPath, REF, '--', 'index.html', 'sw.js', 'src', 'content', 'assets'], { cwd: RAIZ, maxBuffer: 1 << 24 }); if (arch.status) throw new Error('git archive falló: ' + String(arch.stderr).slice(0, 200)); const tar = spawnSync('tar', ['--force-local', '-xf', tarPath, '-C', tmpRef], { maxBuffer: 1 << 24 }); if (tar.status) throw new Error('tar falló: ' + String(tar.stderr).slice(0, 200)); fs.rmSync(tarPath, { force: true }); dirRaiz = tmpRef; L('sirviendo --ref ' + REF + ' desde ' + tmpRef); }
   const srv = await servir(dirRaiz);
-  const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'kimi1h-'));
+  const perf = fs.mkdtempSync(path.join(os.tmpdir(), 'k1heap-')); // sin «kimi» en la ruta: el mata-zombis ajeno (Temp.kimi) lo fusilaba a mitad de corrida
   const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=0', '--user-data-dir=' + perf,
     '--enable-gpu', '--ignore-gpu-blocklist', '--no-first-run', '--no-default-browser-check', '--disable-extensions',
     '--mute-audio', '--disable-sync', '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
@@ -132,6 +132,7 @@ function analiza(snap) {
       await new Promise(r => setTimeout(r, 3500));
       const prepP = await ev(cdp, ses, ENTRAR_PORTADA, 120);
       L('entrar (portada): ' + prepP);
+      if (!chromeVivo) throw new Error('chrome matado externamente durante la entrada (mata-zombis ajeno)');
       if (!/^ok/.test(prepP)) throw new Error('entrada portada: ' + prepP);
     } else {
       await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA }, ses);
@@ -157,6 +158,7 @@ function analiza(snap) {
     const chunks = [];
     cdp.onevt = d => { if (d.method === 'HeapProfiler.addHeapSnapshotChunk') chunks.push(d.params.chunk); };
     const t0 = Date.now();
+    if (!chromeVivo) throw new Error('chrome matado externamente antes del snapshot (mata-zombis ajeno)');
     await cdp.call('HeapProfiler.takeHeapSnapshot', { reportProgress: false }, ses, 420000);
     cdp.onevt = null;
     L('snapshot recibido en ' + Math.round((Date.now() - t0) / 1000) + ' s · ' + chunks.length + ' chunks · ' + (chunks.reduce((a, c) => a + c.length, 0) / 1048576).toFixed(1) + ' MB de JSON');
@@ -168,7 +170,7 @@ function analiza(snap) {
     L('nodos ' + out.analisis.nodos + ' · edges ' + out.analisis.edges + ' · trace vacío ' + out.analisis.traceVacio);
     L('top porNombre: ' + out.analisis.porNombre.slice(0, 12).map(x => x.nombre + ' ' + x.MB + ' MB (' + x.n + ')').join(' · '));
   } catch (e) { out.ok = false; out.error = String(e && e.message || e).slice(0, 400); L('ERROR: ' + out.error); }
-  try { await cdp.call('Browser.close', {}, ses); } catch (e) { chrome.kill(); }
+  try { await cdp.call('Browser.close', {}, ses, 8000); } catch (e) { chrome.kill(); }
   await new Promise(r => setTimeout(r, 800));
   try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) {}
   if (tmpRef) try { fs.rmSync(tmpRef, { recursive: true, force: true }); } catch (e) {}
