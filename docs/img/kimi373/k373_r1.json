@@ -1,0 +1,140 @@
+{
+ "cuando": "2026-11-09T06:57:44.801Z",
+ "head": "4f829e3b",
+ "ciclos": 5,
+ "seg": 20,
+ "segsDuracion": 30,
+ "res": {
+  "passed": 9,
+  "total": 11,
+  "results": [
+   {
+    "name": "Simula 2 min de juego en 390×844 y calidad baja sin errores (5 ciclos)",
+    "ok": true,
+    "extra": ""
+   },
+   {
+    "name": "Cada ciclo juega un duelo V18 y abre minigolf, Retos, Mis cotorras y el Álbum",
+    "ok": true,
+    "extra": "duelos 5/5 · {\"golf\":5,\"retos\":5,\"tormenta\":5,\"cotorras\":5,\"album\":5}"
+   },
+   {
+    "name": "Geometrías estables tras calentar (≤ +6, pendiente ≈ 0)",
+    "ok": false,
+    "extra": "427→433→435→437→441 · pendiente 3/ciclo · subidas tras calentar y vivas: geo (fuera) retos/tormenta ×4, geo edificiosZonaCerca:colina:AV_HD_Savage ×1, geo edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage ×1, geo (fuera) CylinderGeometry 40v ×1, geo (fuera) PlaneGeometry 4v ×1, geo BufferGeometry 6226v ×1, geo BufferGeometry 347665v ×1, geo BufferGeometry 43261v ×1, geo BufferGeometry 396v ×1"
+   },
+   {
+    "name": "Texturas estables tras calentar (≤ +2, pendiente ≈ 0)",
+    "ok": true,
+    "extra": "141→142→142→142→142 · pendiente 0/ciclo"
+   },
+   {
+    "name": "Programas de shader estables (≤ +2)",
+    "ok": true,
+    "extra": "182→183→183→183→183"
+   },
+   {
+    "name": "Objetos de la escena estables (≤ +10; sin los edificios por zonas, que vigila streamingTest)",
+    "ok": true,
+    "extra": "977→977→977→977→977 · con edificios 1161→1174→1174→1174→1174 · mallas 680→693→693→693→693"
+   },
+   {
+    "name": "Oyentes de eventos: no se acumulan (≤ +1 tras calentar)",
+    "ok": false,
+    "extra": "280→368→484→584→656 · load +43, progress +43, error +43, abort +43"
+   },
+   {
+    "name": "Intervalos y rAF: ninguno se acumula",
+    "ok": true,
+    "extra": "intervalos 0→0→0→0→0 · raf 1→1→1→1→1"
+   },
+   {
+    "name": "Nodos del DOM: sin huérfanos que crecen (≤ +20)",
+    "ok": true,
+    "extra": "1597→1597→1597→1597→1597"
+   },
+   {
+    "name": "Heap JS estable tras calentar (GC forzado: ≤ +6 MB y pendiente ≤ 1,5 MB/ciclo)",
+    "ok": true,
+    "extra": "144.8→162.3→165.1→167.4→169.4 MB · pendiente 2.2 MB/ciclo (gc)"
+   },
+   {
+    "name": "Sin errores de consola",
+    "ok": true,
+    "extra": ""
+   }
+  ],
+  "medidas": [
+   {
+    "t": 27,
+    "geo": 427,
+    "tex": 141,
+    "prog": 182,
+    "objs": 1161,
+    "objsMundo": 977,
+    "mallas": 680,
+    "oyentes": 280,
+    "intervalos": 0,
+    "raf": 1,
+    "nodos": 1597,
+    "heapMB": 144.8
+   },
+   {
+    "t": 54,
+    "geo": 433,
+    "tex": 142,
+    "prog": 183,
+    "objs": 1174,
+    "objsMundo": 977,
+    "mallas": 693,
+    "oyentes": 368,
+    "intervalos": 0,
+    "raf": 1,
+    "nodos": 1597,
+    "heapMB": 162.3
+   },
+   {
+    "t": 81,
+    "geo": 435,
+    "tex": 142,
+    "prog": 183,
+    "objs": 1174,
+    "objsMundo": 977,
+    "mallas": 693,
+    "oyentes": 484,
+    "intervalos": 0,
+    "raf": 1,
+    "nodos": 1597,
+    "heapMB": 165.1
+   },
+   {
+    "t": 108,
+    "geo": 437,
+    "tex": 142,
+    "prog": 183,
+    "objs": 1174,
+    "objsMundo": 977,
+    "mallas": 693,
+    "oyentes": 584,
+    "intervalos": 0,
+    "raf": 1,
+    "nodos": 1597,
+    "heapMB": 167.4
+   },
+   {
+    "t": 135,
+    "geo": 441,
+    "tex": 142,
+    "prog": 183,
+    "objs": 1174,
+    "objsMundo": 977,
+    "mallas": 693,
+    "oyentes": 656,
+    "intervalos": 0,
+    "raf": 1,
+    "nodos": 1597,
+    "heapMB": 169.4
+   }
+  ]
+ }
+}

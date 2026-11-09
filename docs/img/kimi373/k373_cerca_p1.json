@@ -1,0 +1,326 @@
+{
+ "cuando": "2026-11-09T07:04:52.017Z",
+ "head": "073dc787",
+ "res": {
+  "fases": [
+   {
+    "fase": 1,
+    "detalle": null,
+    "geo": 353,
+    "tex": 164,
+    "cerca": {
+     "colina": [],
+     "kelvin_aldea_rio_este_3": [
+      {
+       "mesh": "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage",
+       "uuid": "01797EFF",
+       "v": 138397,
+       "up": "pre"
+      }
+     ]
+    },
+    "cercaVivas": [
+     "edificiosZonaCerca:villa:AV_HD_Savage:0D70C350v6226uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Ancient:E3829DF2v28297uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Savage:21AB635Cv41609uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este:AV_HD_Savage:A5FD737Dv120382uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage:01797EFFv138397uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Ancient:1855BB2Cv14964up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_Restaurado_Huecos:BED6D652v396up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Savage:DB0C1066v33936up1"
+    ]
+   },
+   {
+    "fase": 2,
+    "detalle": {
+     "id": "colina",
+     "nivel": 2,
+     "cercaMallas": 1,
+     "cercaF": false
+    },
+    "geo": 428,
+    "tex": 165,
+    "cerca": {
+     "colina": [
+      {
+       "mesh": "edificiosZonaCerca:colina:AV_HD_Savage",
+       "uuid": "91FB04B5",
+       "v": 7115,
+       "up": 2
+      }
+     ],
+     "kelvin_aldea_rio_este_3": [
+      {
+       "mesh": "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage",
+       "uuid": "01797EFF",
+       "v": 138397,
+       "up": "pre"
+      }
+     ]
+    },
+    "cercaVivas": [
+     "edificiosZonaCerca:villa:AV_HD_Savage:0D70C350v6226uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Ancient:E3829DF2v28297uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Savage:21AB635Cv41609uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este:AV_HD_Savage:A5FD737Dv120382uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage:01797EFFv138397uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Ancient:1855BB2Cv14964up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_Restaurado_Huecos:BED6D652v396up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Savage:DB0C1066v33936up1",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Ancient:AD2F6B56v30080up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:canoa:4EED0D07v4410up2",
+     "edificiosZonaCerca:colina:AV_HD_Savage:91FB04B5v7115up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_Restaurado_Huecos:F924A467v216up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:AV_HD_Savage:1CCF25B4v37049up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Ancient:F410B6EAv69108up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Savage:E1C8DBB2v1211up2",
+     "edificiosZonaCerca:kelvin_aldea_lomas:AV_HD_Savage:79FDEF94v118401up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_Restaurado_Huecos:1B6854ABv1008up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Savage:148E1B25v2422up2",
+     "edificiosZonaCerca:lomas:AV_HD_Savage:82B898AAv4036up2"
+    ]
+   },
+   {
+    "fase": 3,
+    "detalle": null,
+    "geo": 426,
+    "tex": 165,
+    "cerca": {
+     "colina": [
+      {
+       "mesh": "edificiosZonaCerca:colina:AV_HD_Savage",
+       "uuid": "91FB04B5",
+       "v": 7115,
+       "up": 2
+      }
+     ],
+     "kelvin_aldea_rio_este_3": [
+      {
+       "mesh": "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage",
+       "uuid": "01797EFF",
+       "v": 138397,
+       "up": "pre"
+      }
+     ]
+    },
+    "cercaVivas": [
+     "edificiosZonaCerca:villa:AV_HD_Savage:0D70C350v6226uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Ancient:E3829DF2v28297uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Savage:21AB635Cv41609uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este:AV_HD_Savage:A5FD737Dv120382uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage:01797EFFv138397uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Ancient:1855BB2Cv14964up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_Restaurado_Huecos:BED6D652v396up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Savage:DB0C1066v33936up1",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Ancient:AD2F6B56v30080up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:canoa:4EED0D07v4410up2",
+     "edificiosZonaCerca:colina:AV_HD_Savage:91FB04B5v7115up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_Restaurado_Huecos:F924A467v216up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:AV_HD_Savage:1CCF25B4v37049up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Ancient:F410B6EAv69108up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Savage:E1C8DBB2v1211up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_Restaurado_Huecos:1B6854ABv1008up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Savage:148E1B25v2422up2"
+    ]
+   },
+   {
+    "fase": 4,
+    "detalle": {
+     "id": "colina",
+     "nivel": 2,
+     "cercaMallas": 1,
+     "cercaF": false
+    },
+    "geo": 427,
+    "tex": 165,
+    "cerca": {
+     "colina": [
+      {
+       "mesh": "edificiosZonaCerca:colina:AV_HD_Savage",
+       "uuid": "91FB04B5",
+       "v": 7115,
+       "up": 2
+      }
+     ],
+     "kelvin_aldea_rio_este_3": [
+      {
+       "mesh": "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage",
+       "uuid": "01797EFF",
+       "v": 138397,
+       "up": "pre"
+      }
+     ]
+    },
+    "cercaVivas": [
+     "edificiosZonaCerca:villa:AV_HD_Savage:0D70C350v6226uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Ancient:E3829DF2v28297uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Savage:21AB635Cv41609uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este:AV_HD_Savage:A5FD737Dv120382uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage:01797EFFv138397uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Ancient:1855BB2Cv14964up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_Restaurado_Huecos:BED6D652v396up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Savage:DB0C1066v33936up1",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Ancient:AD2F6B56v30080up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:canoa:4EED0D07v4410up2",
+     "edificiosZonaCerca:colina:AV_HD_Savage:91FB04B5v7115up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_Restaurado_Huecos:F924A467v216up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:AV_HD_Savage:1CCF25B4v37049up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Ancient:F410B6EAv69108up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Savage:E1C8DBB2v1211up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_Restaurado_Huecos:1B6854ABv1008up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Savage:148E1B25v2422up2",
+     "edificiosZonaCerca:kelvin_aldea_lomas:AV_HD_Savage:68E642A9v118401up4",
+     "edificiosZonaCerca:lomas:AV_HD_Savage:A4594325v4036up4"
+    ]
+   },
+   {
+    "fase": 5,
+    "detalle": null,
+    "geo": 426,
+    "tex": 165,
+    "cerca": {
+     "colina": [
+      {
+       "mesh": "edificiosZonaCerca:colina:AV_HD_Savage",
+       "uuid": "91FB04B5",
+       "v": 7115,
+       "up": 2
+      }
+     ],
+     "kelvin_aldea_rio_este_3": [
+      {
+       "mesh": "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage",
+       "uuid": "01797EFF",
+       "v": 138397,
+       "up": "pre"
+      }
+     ]
+    },
+    "cercaVivas": [
+     "edificiosZonaCerca:villa:AV_HD_Savage:0D70C350v6226uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Ancient:E3829DF2v28297uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Savage:21AB635Cv41609uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este:AV_HD_Savage:A5FD737Dv120382uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage:01797EFFv138397uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Ancient:1855BB2Cv14964up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_Restaurado_Huecos:BED6D652v396up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Savage:DB0C1066v33936up1",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Ancient:AD2F6B56v30080up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:canoa:4EED0D07v4410up2",
+     "edificiosZonaCerca:colina:AV_HD_Savage:91FB04B5v7115up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_Restaurado_Huecos:F924A467v216up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:AV_HD_Savage:1CCF25B4v37049up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Ancient:F410B6EAv69108up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Savage:E1C8DBB2v1211up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_Restaurado_Huecos:1B6854ABv1008up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Savage:148E1B25v2422up2"
+    ]
+   },
+   {
+    "fase": 6,
+    "detalle": {
+     "id": "kelvin_aldea_rio_este_3",
+     "nivel": 2,
+     "cercaMallas": 1,
+     "cercaF": false
+    },
+    "geo": 471,
+    "tex": 170,
+    "cerca": {
+     "colina": [
+      {
+       "mesh": "edificiosZonaCerca:colina:AV_HD_Savage",
+       "uuid": "91FB04B5",
+       "v": 7115,
+       "up": 2
+      }
+     ],
+     "kelvin_aldea_rio_este_3": [
+      {
+       "mesh": "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage",
+       "uuid": "01797EFF",
+       "v": 138397,
+       "up": "pre"
+      }
+     ]
+    },
+    "cercaVivas": [
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Ancient:E3829DF2v28297uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Savage:21AB635Cv41609uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este:AV_HD_Savage:A5FD737Dv120382uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage:01797EFFv138397uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Ancient:1855BB2Cv14964up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_Restaurado_Huecos:BED6D652v396up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Savage:DB0C1066v33936up1",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Ancient:AD2F6B56v30080up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:canoa:4EED0D07v4410up2",
+     "edificiosZonaCerca:colina:AV_HD_Savage:91FB04B5v7115up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_Restaurado_Huecos:F924A467v216up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:AV_HD_Savage:1CCF25B4v37049up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Ancient:F410B6EAv69108up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Savage:E1C8DBB2v1211up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_Restaurado_Huecos:1B6854ABv1008up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Savage:148E1B25v2422up2",
+     "edificiosZonaCerca:kelvin_aldea_rio_oeste:canoa:38EC1535v3969up6",
+     "edificiosZonaCerca:kelvin_aldea_mina:canoa:297AFB84v3528up6",
+     "edificiosZonaCerca:kelvin_aldea_mina_2:canoa:4E3075A0v3087up6",
+     "edificiosZonaCerca:kelvin_aldea_meandros_2:AV_HD_Savage:D3153CDBv49033up6",
+     "edificiosZonaCerca:kelvin_aldea_mina:AV_HD_Ancient:52A12B0Av2736up6",
+     "edificiosZonaCerca:kelvin_aldea_mina:AV_Restaurado_Huecos:3FA838B8v108up6",
+     "edificiosZonaCerca:kelvin_aldea_rio_oeste:AV_HD_Savage:2C230C4Av62714up6",
+     "edificiosZonaCerca:kelvin_aldea_mina:AV_HD_Savage:0E45A9CCv33320up6",
+     "edificiosZonaCerca:kelvin_aldea_mina_2:AV_HD_Savage:83D9A2D1v94294up6",
+     "edificiosZonaCerca:kelvin_aldea_lomas:AV_HD_Savage:179302FDv118401up6",
+     "edificiosZonaCerca:kelvin_aldea_yunque:canoa:C16D62C3v441up6",
+     "edificiosZonaCerca:kelvin_aldea_yunque:AV_HD_Savage:16EA58F1v67748up6"
+    ]
+   },
+   {
+    "fase": 7,
+    "detalle": null,
+    "geo": 459,
+    "tex": 165,
+    "cerca": {
+     "colina": [
+      {
+       "mesh": "edificiosZonaCerca:colina:AV_HD_Savage",
+       "uuid": "91FB04B5",
+       "v": 7115,
+       "up": 2
+      }
+     ],
+     "kelvin_aldea_rio_este_3": [
+      {
+       "mesh": "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage",
+       "uuid": "01797EFF",
+       "v": 138397,
+       "up": "pre"
+      }
+     ]
+    },
+    "cercaVivas": [
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Ancient:E3829DF2v28297uppre",
+     "edificiosZonaCerca:kelvin_aldea_colina:AV_HD_Savage:21AB635Cv41609uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este:AV_HD_Savage:A5FD737Dv120382uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_3:AV_HD_Savage:01797EFFv138397uppre",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Ancient:1855BB2Cv14964up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_Restaurado_Huecos:BED6D652v396up1",
+     "edificiosZonaCerca:kelvin_aldea_rio_este_2:AV_HD_Savage:DB0C1066v33936up1",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Ancient:AD2F6B56v30080up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:canoa:4EED0D07v4410up2",
+     "edificiosZonaCerca:colina:AV_HD_Savage:91FB04B5v7115up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_Restaurado_Huecos:F924A467v216up2",
+     "edificiosZonaCerca:kelvin_aldea_meandros:AV_HD_Savage:1CCF25B4v37049up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Ancient:F410B6EAv69108up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque_2:AV_HD_Savage:E1C8DBB2v1211up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_Restaurado_Huecos:1B6854ABv1008up2",
+     "edificiosZonaCerca:kelvin_ruinas_yunque:AV_HD_Savage:148E1B25v2422up2",
+     "edificiosZonaCerca:kelvin_aldea_mina_2:canoa:4E3075A0v3087up6",
+     "edificiosZonaCerca:kelvin_aldea_mina_2:AV_HD_Savage:83D9A2D1v94294up6",
+     "edificiosZonaCerca:villa:AV_HD_Savage:ADC7211Av6226up7"
+    ]
+   }
+  ],
+  "totalGeo": 459
+ }
+}
