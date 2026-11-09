@@ -107,7 +107,7 @@
       if (!G.quiet) {
         addEventListener('keydown', alTeclear, true);
         btn = document.createElement('button'); btn.type = 'button'; btn.id = 'c1-saltar'; btn.className = 'btn ghost'; btn.textContent = 'Saltar intro'; // «Saltar» a secas es el botón de saltar (Jump)
-        btn.style.cssText = 'position:fixed;left:12px;top:calc(env(safe-area-inset-top,0px) + 116px);z-index:11;min-width:44px;min-height:44px;pointer-events:auto'; // a la izquierda bajo el joystick: abajo a la derecha pisaba «Acción» (BM55), arriba al centro pisaba el objetivo #quest (QA-217) y rozaba el minimapa
+        btn.style.cssText = 'position:fixed;left:12px;top:calc(env(safe-area-inset-top,0px) + 116px);z-index:9;min-width:44px;min-height:44px;pointer-events:auto'; // a la izquierda bajo el joystick: abajo a la derecha pisaba «Acción» (BM55), arriba al centro pisaba el objetivo #quest (QA-217) y rozaba el minimapa. z 9 = nivel de las capas de apertura (#c1-fade) y por debajo de la tarjeta/diálogo (z 10): con un panel abierto el panel lo tapa (QA-221); sobre el negro sigue visible porque es posterior en el DOM que #c1-fade
         btn.onclick = () => terminar(true); document.body.appendChild(btn);
         // QA-221: con z-index 11 el botón quedaba por encima de los paneles que se abren durante la
         // apertura (Diario #card, diálogo #dialog, overlays, z 10-20) y los tapaba; mientras uno está
