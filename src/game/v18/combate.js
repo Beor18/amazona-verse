@@ -1327,6 +1327,9 @@ window.AVV18Combate = function (G) {
     salir(); // la prueba empieza con la rival esperando, aunque hubiera un duelo abierto
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M.flying, inv0 = Object.assign({}, S.inv);
     const P = G.v18, crudo = (() => { try { return localStorage.getItem(P.clave()); } catch (e) { return null; } })();
+    // QA-228: los contadores de pistas dominadas viven en memoria; tras otros duelos (v18NuevasTest) ya pasaban de 2 y las Pistas no
+    // salían. La prueba empieza de cero y los deja como estaban
+    const dom0 = Object.assign({}, pista.dom); for (const k in pista.dom) pista.dom[k] = 0;
     const evs = [], podEv = [];
     const oyente = e => { if (!oyente.mudo) evs.push(e); }; G.on('v18combate', oyente);
     const oyenteP = e => { if (!oyente.mudo) podEv.push(e); }; G.on('v18poder', oyenteP);
@@ -1511,6 +1514,7 @@ window.AVV18Combate = function (G) {
           check('du2: con los chips a la vista el aviso de abajo calla (sin chips vuelve el de siempre)', TACTIL ? avA === (tagsVis ? '' : TXT.avisoTactil) : (avA === '' && avSin === TXT.aviso), JSON.stringify({ avA, avSin, tagsVis }));
         }
         // Pistas: cerca, lejos, poder listo; la del primer golpe; dejan de salir al dominarlas
+        for (const k in pista.dom) pista.dom[k] = 0; ponerMundo('pistas_duelo', 0); // sin pistas dominadas antes (el almacén se restaura al final)
         const pistaTras = (prep) => { ocultarPista(); pista.t = 0; prep(); paso(0.05); return hud.q('pista').hidden ? '' : hud.q('pistaTxt').textContent; };
         C.j.cd = {}; C.j.energia = 50;
         const pc = pistaTras(() => quieta(1.5)), pl = pistaTras(() => { quieta(8); C.j.cd = {}; C.j.energia = 50; }), pp = pistaTras(() => { quieta(8); C.j.energia = 100; C.j.cd = {}; });
@@ -1846,7 +1850,7 @@ window.AVV18Combate = function (G) {
     for (const k of Object.keys(S.inv)) if (!(k in inv0)) delete S.inv[k];
     Object.assign(S.inv, inv0); try { if (G.objetos && G.objetos.renderInv) G.objetos.renderInv(); } catch (e) { /* HUD */ }
     try { if (crudo == null) localStorage.removeItem(P.clave()); else localStorage.setItem(P.clave(), crudo); } catch (e) { /* sin almacenamiento */ }
-    P.recargar();
+    P.recargar(); Object.assign(pista.dom, dom0);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
   // Vista de cumbre: posición de la rival para el minimapa mientras la jugadora la «ve desde la cumbre» (lee minimapa.js)
