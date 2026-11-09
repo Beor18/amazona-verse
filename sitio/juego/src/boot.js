@@ -199,6 +199,13 @@
       const b = document.getElementById(id);
       if (b) b.addEventListener('click', () => cargarRecords().then(r => (accion === 'abrir' ? conBandada(r) : Promise.resolve(r)).then(x => x[accion](o)), () => G.ui.toast('No se pudo cargar. Prueba otra vez.', 3000)));
     }
+    // «Cotorras en línea» (Kelvin 9-nov; src/game/en_linea.js): salas por código con el Realtime de Supabase. Apagado por defecto:
+    // ni el módulo ni su config se piden (ni se abre ninguna conexión) hasta pulsar «Jugar en línea» en la pausa.
+    let enLinea = null;
+    const cargarEnLinea = () => enLinea || (enLinea = AVE.assets.script('src/game/en_linea_config.js').then(() => AVE.assets.script('src/game/en_linea.js')).then(() => window.AVEnLinea(G), e => { enLinea = null; throw e; }));
+    AV.enLinea = () => cargarEnLinea().then(m => (m.abrir(), m), () => G.ui.toast(G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Could not open. Try again.' : 'No se pudo abrir. Prueba otra vez.', 3000));
+    AV.enLineaTest = o => cargarEnLinea().then(m => m.test(o));
+    { const b = document.getElementById('b-en-linea'); if (b) b.addEventListener('click', () => { AV.enLinea(); }); }
     // Modo Retos (src/game/retos.js): se carga al pedirlo (botón «Retos» de la portada o de la pausa), no en la descarga inicial
     let retos = null;
     const cargarRetos = () => retos || (retos = AVE.assets.script('src/game/retos.js').then(() => { cargarRecords().catch(() => {}); return window.AVRetos(G); }, e => { retos = null; throw e; }));

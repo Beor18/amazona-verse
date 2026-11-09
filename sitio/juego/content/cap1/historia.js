@@ -93,8 +93,8 @@
       al(rupt[0], () => { G.camara.shake(0.6, 1.2); G.audio.play('zzzt'); if (A) A.ruptura(); });
       al(rupt[1], () => { G.audio.play('onda'); if (A) A.negro(900); });
       // AP1: la apertura se salta con cualquier tecla o con el botón «Saltar» (táctil, 44 px); el final es el mismo en los dos casos
-      let hecho = false, btn = null;
-      const soltar = () => { removeEventListener('keydown', alTeclear, true); if (btn) btn.remove(); btn = null; };
+      let hecho = false, btn = null, finVigia = null;
+      const soltar = () => { removeEventListener('keydown', alTeclear, true); if (finVigia) { finVigia(); finVigia = null; } if (btn) btn.remove(); btn = null; };
       const terminar = (saltada) => {
         if (hecho) return; hecho = true; soltar();
         if (saltada) { G.dialogo.cancelarLibre(); if (A) A.fin(); } else if (A) A.claro(2200);
@@ -107,8 +107,14 @@
       if (!G.quiet) {
         addEventListener('keydown', alTeclear, true);
         btn = document.createElement('button'); btn.type = 'button'; btn.id = 'c1-saltar'; btn.className = 'btn ghost'; btn.textContent = 'Saltar intro'; // «Saltar» a secas es el botón de saltar (Jump)
-        btn.style.cssText = 'position:fixed;left:12px;top:calc(env(safe-area-inset-top,0px) + 116px);z-index:11;min-width:44px;min-height:44px;pointer-events:auto'; // a la izquierda bajo el joystick: abajo a la derecha pisaba «Acción» (BM55), arriba al centro pisaba el objetivo #quest (QA-217) y rozaba el minimapa
+        btn.style.cssText = 'position:fixed;left:12px;top:calc(env(safe-area-inset-top,0px) + 116px);z-index:9;min-width:44px;min-height:44px;pointer-events:auto'; // a la izquierda bajo el joystick: abajo a la derecha pisaba «Acción» (BM55), arriba al centro pisaba el objetivo #quest (QA-217) y rozaba el minimapa. z 9 = nivel de las capas de apertura (#c1-fade) y por debajo de la tarjeta/diálogo (z 10): con un panel abierto el panel lo tapa (QA-221); sobre el negro sigue visible porque es posterior en el DOM que #c1-fade
         btn.onclick = () => terminar(true); document.body.appendChild(btn);
+        // QA-221: con z-index 11 el botón quedaba por encima de los paneles que se abren durante la
+        // apertura (Diario #card, diálogo #dialog, overlays, z 10-20) y los tapaba; mientras uno está
+        // abierto se esconde y vuelve al cerrarse. Los bocadillos libres del narrador no lo ocultan.
+        const tapaPanel = () => { const v = id => { const e = document.getElementById(id); return !!e && !e.hidden; }; return v('card') || v('dialog') || v('end') || v('comic') || v('creator'); };
+        const vigia = () => { if (!btn || !btn.isConnected) { G.off('update', vigia); return; } const t = tapaPanel(); if ((btn.style.display === 'none') !== t) btn.style.display = t ? 'none' : ''; };
+        G.on('update', vigia, 87); finVigia = () => G.off('update', vigia);
       }
       G.dialogo.say([...cap, ...tal, ...rupt], () => terminar(false), { libre: true });
       return { saltar: () => terminar(true) }; // para las pruebas
