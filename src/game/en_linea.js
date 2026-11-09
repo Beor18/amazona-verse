@@ -409,7 +409,7 @@
         const p0 = q && q.ch ? q.ch.root.position.clone() : null;
         await sleep(700); tickPares(0.016);
         const p1 = q && q.ch ? q.ch.root.position.clone() : null;
-        check('Y se mueve, interpolada', p0 && p1 && p0.distanceTo(p1) > 0.3 && p0.distanceTo(p1) < 6 && q.ch.flying, p0 && p1 ? p0.distanceTo(p1).toFixed(2) + ' m en 0,7 s' : '');
+        check('Y se mueve, interpolada', p0 && p1 && p0.distanceTo(p1) > 0.3 && p0.distanceTo(p1) < 6 && q.snaps[q.snaps.length - 1].v === 1, p0 && p1 ? p0.distanceTo(p1).toFixed(2) + ' m en 0,7 s' : '');
         // 3. El bot ve a este juego moverse
         const n0 = botRecibe.length;
         S.pos.x += 1.5; await sleep(600); S.pos.x += 1.5; await sleep(600);
