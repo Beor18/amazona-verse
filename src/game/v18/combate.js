@@ -713,7 +713,20 @@ window.AVV18Combate = function (G) {
     const on = TACTIL && !hud.el.hidden && C.fase !== 'fin' && C.fase !== 'nada'; hud.tags.hidden = !on; if (!on) return;
     for (const s of hud.tags.children) {
       const b = document.getElementById(s.dataset.t), r = b && b.getBoundingClientRect(), ver = !!(r && r.width > 0 && b.offsetParent);
-      s.hidden = !ver; if (ver) { s.style.left = Math.round(r.left + r.width / 2) + 'px'; s.style.top = Math.round(r.top - 6) + 'px'; }
+      // QA-221: en el grid #acts el botón Acción vive justo debajo de Impulso (misma columna,
+      // ~10 px de hueco): la etiqueta colgada sobre su borde se montaba sobre el texto del botón
+      // de arriba. Además es redundante mientras el propio botón lleve el mismo texto
+      // (interaccion.js le pone el verbo del modo —en el duelo, «Ala»). Se oculta en ese caso;
+      // la de Impulso→Semilla sigue, nunca fuera de pantalla (texto grande a11y).
+      const redundante = ver && s.dataset.t === 'b-act' && b.textContent.trim() === TXT.ala;
+      s.hidden = !ver || redundante;
+      if (ver && !redundante) {
+        const w = s.offsetWidth, h = s.offsetHeight, vw = window.innerWidth;
+        const L = Math.max(4, Math.min(vw - 4 - w, Math.round(r.left + r.width / 2 - w / 2)));
+        s.style.transform = 'none';
+        s.style.left = L + 'px';
+        s.style.top = Math.round(r.top - 6 - h) + 'px';
+      }
     }
   }
 
