@@ -140,6 +140,9 @@ AVE.module('ambiente', function (G) {
       gl_Position = projectionMatrix * mv;
       gl_PointSize = tipo < 0.0 ? 0.0 : clamp(tam * uEscala / max(-mv.z, 0.1), 0.0, 48.0);
       alfa *= smoothstep(0.4, 1.4, -mv.z); // no tapa la cámara
+      // AND-1 (Kelvin 9-nov, Android en «bajo»: «cuadros flotando»): un punto de 1-3 px del búfer no cabe la silueta del atlas y
+      // se dibuja como un cuadrito lleno (y con la resolución baja, el navegador lo agranda). Por debajo de ~4 px se desvanece.
+      alfa *= smoothstep(2.0, 4.0, gl_PointSize);
       vColor = vec4(col, alfa);
       vAtlas = vec2(mod(max(tipo, 0.0), 2.0), floor(max(tipo, 0.0) / 2.0)) * 0.5;
       vGiro = tipo == 2.0 ? t * (0.8 + r) + fase : 0.0;
@@ -149,7 +152,7 @@ AVE.module('ambiente', function (G) {
     void main() {
       vec2 p = gl_PointCoord - 0.5; float c = cos(vGiro), s = sin(vGiro);
       p = vec2(c * p.x - s * p.y, s * p.x + c * p.y) + 0.5;
-      vec4 tx = texture2D(tAtlas, vec2(vAtlas.x, 0.5 - vAtlas.y) + vec2(p.x, 1.0 - p.y) * 0.5);
+      vec4 tx = texture2D(tAtlas, vec2(vAtlas.x, 0.5 - vAtlas.y) + vec2(p.x, 1.0 - p.y) * 0.5, -1.0); // AND-1: un mip más nítido (en sprites pequeños el mip alto mezcla la hoja con su celda vecina y sale una mancha cuadrada)
       float a = tx.a * vColor.a;
       if (a < 0.02) discard;
       gl_FragColor = vec4(vColor.rgb * tx.rgb, a);

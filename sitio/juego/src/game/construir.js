@@ -2,8 +2,8 @@
    Amplía el modo construir del cap. 1 (hoy solo el refugio: content/cap1/historia.js «Modo construir» y el fantasma de
    content/cap1/mundo.js) a un rincón propio: nido, techo de hojas y decoración. Mismo gesto que el refugio: un fantasma delante de
    Vittata (verde si cabe, rojo si no), Acción coloca y suena el martillo (G.audio.martillar).
-   BANDERA: todo va tras ?expansion=1 (G.EXPANSION, boot.js; la comparte toda la expansión), apagada por defecto. Sin la bandera este archivo no se carga en el juego
-   (solo AV.construirTest lo pide) y no pinta nada. Ninguna pieza sale al público sin el visto bueno de Kelvin con fotos.
+   ENCENDIDO PARA TODOS (Kelvin 9-nov: «Piezas aprobadas»): ya no depende de ?expansion=1 (G.EXPANSION sigue solo para la pesca).
+   Bandera propia G.CONSTRUIR (boot.js): encendida por defecto, ?construir=0 la apaga; boot.js carga este archivo al arrancar.
    Piezas: 7 tipos procedurales y estilizados (sin modelos nuevos). Cada tipo es UNA geometría fundida con colores de vértice y un
    InstancedMesh: 7 llamadas de dibujo como mucho, con 40 piezas o con 1. Presupuesto: 40 piezas (24 en calidad «bajo» y Modo Escuela);
    sin compras, sin cajas sorpresa: todas las piezas desde el principio.
@@ -26,7 +26,7 @@
     const bajo = () => { const c = G.renderer && G.renderer.calidad; return !!c && (c.nivel === 'bajo' || c.escuela === true); };
     const presupuesto = () => (bajo() ? PRESUPUESTO_BAJO : CAPACIDAD);
     let forzado = false;
-    const habilitado = () => !!G.EXPANSION || forzado;
+    const habilitado = () => G.CONSTRUIR !== false || forzado;
     const sonar = (n, a) => { if (G.quiet || !G.audio) return; try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
     const aviso = (t, ms) => { if (!G.quiet && G.ui) G.ui.toast(t, ms || 2600); };
 
@@ -292,6 +292,8 @@
     G.on('apply', () => { if (activo) salir(); aplicar(S.construir); }, 60);
 
     // ---------- Teclado (captura: mientras se construye, estas teclas no hacen su otra función) ----------
+    // B no es de fábrica de nadie, pero el remapeo (src/engine/input.js) deja ponerla a volar, aterrizar…: entonces B es de esa acción
+    const bOcupada = () => { try { const m = G.input && G.input.mapa; return !!m && Object.keys(m).some(a => m[a] === 'b'); } catch (e) { return false; } };
     addEventListener('keydown', e => {
       if (!habilitado() || e.ctrlKey || e.metaKey || e.altKey) return;
       const tg = e.target; if (tg && (tg.tagName === 'INPUT' || tg.tagName === 'SELECT' || tg.tagName === 'TEXTAREA')) return;
@@ -299,7 +301,7 @@
       const portada = $('title'); if (portada && portada.open) return;
       const k = e.key.toLowerCase();
       let hecho = true;
-      if (k === 'b' && !e.repeat) { if (activo) salir(); else empezar(); }
+      if (k === 'b' && !e.repeat && !bOcupada()) { if (activo) salir(); else empezar(); }
       else if (!activo) hecho = false;
       else if (/^[1-7]$/.test(k)) elegir(ORDEN[+k - 1]);
       else if (k === 'r') girar(1);
@@ -404,7 +406,7 @@
 
     // ---------- Arranque ----------
     function encender() { asegurarEscena(); aplicar(S.construir); entradas(true); }
-    if (G.EXPANSION) encender();
+    if (G.CONSTRUIR !== false) encender();
     function forzar(v) {
       forzado = !!v;
       if (habilitado()) encender();
@@ -418,19 +420,24 @@
       const espera = ms => new Promise(r => setTimeout(r, ms));
       const antes = { construir: S.construir ? JSON.parse(JSON.stringify(S.construir)) : S.construir, pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing),
         modo: G.interaccion.modo, quiet: G.quiet, forzado, nivel: G.renderer.calidad && G.renderer.calidad.nivel };
-      const conBandera = !!G.EXPANSION;
+      const conBandera = !!G.EXPANSION, sinApagar = G.CONSTRUIR !== false;
       const enEscena = () => { let n = 0; G.renderer.scene.traverse(o => { if (o.name && o.name.indexOf('construir') === 0) n++; }); return n; };
       try {
         G.quiet = true;
-        // 1. Bandera apagada: no hay nada a la vista
-        if (!conBandera) {
-          check('Sin ?expansion=1: G.EXPANSION apagada', !G.EXPANSION, String(G.EXPANSION));
-          check('Sin la bandera no hay barra, botón del HUD ni tarjeta del menú', !$('cl-hud') && !$('b-construir') && !$('b-construir-menu'));
-          check('Sin la bandera no hay piezas ni fantasma en la escena', enEscena() === 0, enEscena());
-          check('Sin la bandera empezar() no hace nada y no toma la acción', empezar() === false && !activo && G.interaccion.modo === antes.modo);
+        // 1. Encendido para todos (Kelvin 9-nov): sin ?expansion=1 ya están la tarjeta del menú, el botón junto a Pausa y la tecla B
+        if (!conBandera) check('Sin ?expansion=1 (G.EXPANSION apagada) Construir está encendido', !G.EXPANSION && sinApagar && habilitado(), 'EXPANSION ' + G.EXPANSION + ' · CONSTRUIR ' + G.CONSTRUIR);
+        else check('Con ?expansion=1 Construir también está encendido', sinApagar && habilitado(), 'CONSTRUIR ' + G.CONSTRUIR);
+        const tj = $('b-construir-menu'), bh = $('b-construir'), sysEl = $('sys');
+        check('Sin bandera: tarjeta «Construir» en «¿Cómo quieres jugar?»', !!tj && !!tj.closest('#modos') && !tj.hidden, tj ? tj.textContent : 'sin tarjeta');
+        check('Sin bandera: botón del martillo junto a Pausa', !!bh && !!sysEl && bh.parentNode === sysEl && !bh.hidden);
+        check('Sin bandera: la tecla B está libre en el mapa de teclas (ninguna acción la usa de fábrica)', !Object.values((G.input && G.input.DEFECTO) || {}).includes('b') && !bOcupada(), JSON.stringify(G.input && G.input.mapa));
+        const portada0 = $('title'), libreB = !(portada0 && portada0.open) && !G.ui.busy() && !(G.pausa && G.pausa.activa());
+        if (libreB) {
           dispatchEvent(new KeyboardEvent('keydown', { key: 'b', bubbles: true })); dispatchEvent(new KeyboardEvent('keyup', { key: 'b', bubbles: true }));
-          check('Sin la bandera la tecla B no abre nada', !activo && !$('cl-hud'));
-        } else check('Con ?expansion=1 (la parte «bandera apagada» se prueba sin ella)', true, 'expansion=1');
+          const abre = activo && !!hudEl && !hudEl.hidden;
+          dispatchEvent(new KeyboardEvent('keydown', { key: 'b', bubbles: true })); dispatchEvent(new KeyboardEvent('keyup', { key: 'b', bubbles: true }));
+          check('Sin bandera: la tecla B abre Construir y otra B lo cierra', abre && !activo && G.interaccion.modo === antes.modo);
+        } else check('Tecla B (no se prueba: hay una pantalla encima)', true, 'portada/ocupado');
         // 2. Encendida a la fuerza (solo la prueba): escena, entradas y modo
         forzar(true);
         S.construir = null; aplicar(null);
@@ -506,7 +513,7 @@
         forzar(antes.forzado); aplicar(S.construir); G.interaccion.modo = antes.modo;
         G.quiet = antes.quiet;
       }
-      if (!conBandera) check('Limpieza: sin la bandera no queda nada en la escena ni en pantalla', enEscena() === 0 && !$('cl-hud') && !$('b-construir') && !$('b-construir-menu'), enEscena());
+      if (sinApagar) check('Limpieza: la tarjeta y el botón siguen ahí (encendido para todos)', !!$('b-construir') && !!$('b-construir-menu') && !activo);
       check('Limpieza: la partida queda como estaba', JSON.stringify(S.construir) === JSON.stringify(antes.construir));
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
