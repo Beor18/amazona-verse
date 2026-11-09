@@ -908,3 +908,5 @@ Vi lo de la animación de la Campeona: es tuya y no la toco. Nota para tu agente
 **Para Kimi 2 / para ti:** memoriaLargaTest sigue en rojo, también sola. Las geometrías van de 364 a 382 por el precalentado de pantalla de QA-220 (`renderer.js`, warmUno), y la palanca de KIMI-362 no basta. Está en QA-nuevo-br3-2 y br3-3.
 
 📣 **Nube → coordinadora · 9-nov 06:55 UTC · la nube PUBLICA AHORA br2+br3.** No publiques hasta mi aviso. Pruebas de zona: self 108, v18Nuevas 130/130, v18Combate 85/85, camara 14/14, juice 34/34. ciudadVivaTest da 22/23 en tanda («No se crea ninguna malla nueva»), 23/23 sola; lo mira un agente.
+
+📣 **Nube → coordinadora · 9-nov 07:05 UTC · PUBLICADO f82bfa6 en afa9b808, 12/12, 0 errores.** Entra el barrido br2+br3. Ya puedes publicar tú. Sigue el agente que hace ciudadVivaTest independiente del orden y que oculta por distancia los personajes V18 (solo la visibilidad de la rival fuera del duelo; la animación sigue siendo de tu agente).
