@@ -1548,7 +1548,9 @@ window.AVV18Combate = function (G) {
 
       // 3. Grito del Yunque: empuja, interrumpe, sin quitar plumas; hay que apuntar; recuperación
       quieta(4); cara(1); C.r.escudo = 0; evs.length = 0; podEv.length = 0;
-      const rg = usar(C.j, 'grito_yunque');
+      const oidosG = [], play0 = G.audio.play; G.audio.play = (n, x) => { oidosG.push(n); return play0(n, x); }; // Kelvin 9-nov: el Grito suena
+      let rg; try { rg = usar(C.j, 'grito_yunque'); } finally { G.audio.play = play0; }
+      check('Grito: suena su propio sonido («grito»: graznido + ondas), no el genérico', G.audio.has('grito') && oidosG.includes('grito') && !oidosG.includes('dash') && G.audio.log.slice(-6).includes('grito'), JSON.stringify(oidosG));
       const picoAbierto = C.j.picoT > 0;
       let bocaModelo = null;
       if (pl3d) { try { pl3d.update(0.016); bocaModelo = pl3d.mouth; } catch (e) { bocaModelo = 'error ' + e.message; } }

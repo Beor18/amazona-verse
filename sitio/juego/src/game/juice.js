@@ -38,7 +38,11 @@ window.AVJuice = function (G) {
     A.define('petalos', (t, a, X) => { X.tone(1318.5, t, 0.3, { type: 'sine', gain: 0.04 }); X.tone(1760, t + 0.07, 0.35, { type: 'sine', gain: 0.03 }); X.noise(t, 0.4, { freq: 3000, q: 0.8, gain: 0.03 }); });
   }
   const oidos = []; // lo que este módulo pidió sonar (la prueba lo lee; G.audio.log se recorta a 40)
-  const sonar = (n, a) => { oidos.push(n); if (oidos.length > 200) oidos.splice(0, 100); sonarYa(n, a); };
+  // QA-nuevo-br1-5 (latente): al recortar, oidosBase guarda cuántos se quitaron; la prueba mide con índices absolutos (antes, un recorte a mitad
+  // de un paso desplazaba los índices y «suena un brillo» salía en rojo según cuántos sonidos hubieran pedido las baterías anteriores)
+  let oidosBase = 0;
+  const oidosN = () => oidosBase + oidos.length;
+  const sonar = (n, a) => { oidos.push(n); if (oidos.length > 200) { oidos.splice(0, 100); oidosBase += 100; } sonarYa(n, a); };
   const sonarYa = (n, a) => { try { A.play(n, a); } catch (e) { /* sin audio */ } };
 
   // ---------- HUD: chip «Rasante ×N» y pop central ----------
@@ -202,7 +206,7 @@ window.AVJuice = function (G) {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
     const g0 = { quiet: G.quiet, fov: cam.fovPicado, stats: Object.assign({}, stats) };
     const audioLog = () => oidos.slice();
-    const sono = (n, desde) => audioLog().slice(desde).indexOf(n) >= 0;
+    const sono = (n, desde) => audioLog().slice(Math.max(0, desde - oidosBase)).indexOf(n) >= 0;
     const base = o => Object.assign({ x: S.pos.x, y: 10, z: S.pos.z, vy: 0, speed: 12, flying: true, landing: false, takeoff: 0, sube: false, alto: 8, agua: false, sup: 2, hondo: false, suelo: 2 }, o);
     const correr = (seg, o, dt) => { dt = dt || 1 / 30; simulado = base(o); for (let t = 0; t < seg - 1e-6; t += dt) paso(dt); };
     const reset = () => { simulado = null; limpiar(); for (let i = 0; i < 40; i++) paso(0.1); };
@@ -212,7 +216,7 @@ window.AVJuice = function (G) {
       // 1. Sonidos definidos
       ok('Sonidos: rasante, picado, remonte, aterrizaje perfecto y pétalos (sintetizados)', ['rasante', 'picado', 'remonte', 'aterrizaje_perfecto', 'petalos'].every(n => G.audio.has(n)));
       // 2. Rasante sobre el río: estela, onda, chip que cuenta por segundo, nota que sube
-      reset(); let a0 = oidos.length; const r0 = G.fx.list.length;
+      reset(); let a0 = oidosN(); const r0 = G.fx.list.length;
       correr(3.2, { alto: 0.6, agua: true, sup: 2, y: 2.6 });
       ok('Rasante: a < 1 m del agua y 12 m/s, el chip dice «Rasante ×4» tras 3,2 s', !chip.hidden && chip.textContent.replace(/\s+/g, ' ').trim() === 'Rasante ×4', chip.textContent);
       ok('Rasante: suena una nota por cada «×N»', audioLog().slice(a0).filter(n => n === 'rasante').length >= 4);
@@ -234,10 +238,10 @@ window.AVJuice = function (G) {
       ok('Inglés: el chip dice «Skim ×3»', chip.textContent.replace(/\s+/g, ' ').trim() === 'Skim ×3', chip.textContent);
       idiomaForzado = 'es';
       // 6. Picado: FOV hasta +7 y viento; remonte sin aletear
-      reset(); a0 = oidos.length; correr(1.2, { vy: -7, alto: 12 });
+      reset(); a0 = oidosN(); correr(1.2, { vy: -7, alto: 12 });
       const fovPic = cam.fovPicado;
       ok('Picado: el campo de visión se abre (+5 a +7°) y suena el viento', fovPic > 5 && fovPic <= J.picadoFov + 0.01 && sono('picado', a0), fovPic.toFixed(2));
-      a0 = oidos.length; correr(0.1, { vy: -0.4, alto: 6 });
+      a0 = oidosN(); correr(0.1, { vy: -0.4, alto: 6 });
       ok('Remonte: nivelar tras el picado sin pedir subir da «¡Remonte!», golpe de aire y pulso de FOV', !pop.hidden && pop.textContent === '¡Remonte!' && sono('remonte', a0) && E.pulso > 0.8);
       correr(3, { vy: 0, alto: 6 });
       ok('Picado: el FOV vuelve a 0 al nivelar', cam.fovPicado === 0, cam.fovPicado);
@@ -246,7 +250,7 @@ window.AVJuice = function (G) {
       reset(); correr(0.3, { vy: -7, alto: 12 }); correr(0.1, { vy: 0, alto: 8 });
       ok('Remonte: un picado corto (< 0,6 s) no cuenta', stats.remontes === rem0);
       // 7. Aterrizaje perfecto
-      reset(); a0 = oidos.length; const pf0 = stats.perfectos;
+      reset(); a0 = oidosN(); const pf0 = stats.perfectos;
       const lento2 = alAterrizar(base({ flying: false, speed: 1.1, vy: -1.3, y: 2, suelo: 2 }));
       ok('Aterrizaje perfecto: a 1,7 m/s sale «¡Aterrizaje perfecto!» con acorde', lento2 && !pop.hidden && pop.textContent === '¡Aterrizaje perfecto!' && sono('aterrizaje_perfecto', a0) && stats.perfectos === pf0 + 1);
       ok('Aterrizaje perfecto: el pop se anima (escala con rebote)', pop.classList.contains('anim'));
@@ -264,9 +268,12 @@ window.AVJuice = function (G) {
       else await new Promise(res => setTimeout(res, 2000));
       ok('En pausa (sin cuadros) el chip y el pop no se quedan encima del menú', antesPausa && chip.hidden && pop.hidden);
       // 8. Pétalos al cruzar un flamboyán (copa de prueba) con espera por árbol
-      reset(); copasExtra = [[S.pos.x, 10, S.pos.z, 4, 'prueba']]; copasT = -1; a0 = oidos.length; const vivos0 = G.fx.live;
+      // QA-nuevo-br1-5: tras selfTest quedaban 200/200 partículas vivas (sin cuadros entre baterías no caducan) y el tope no dejaba
+      // soltar pétalos. Se dejan terminar las de antes (mismo patrón que lugares.js/maravillas.js) antes de medir.
+      for (let i = 0; i < 8 && G.fx.live > G.fx.MAX_PARTICLES - 16 && G.fx.update; i++) G.fx.update(0.5);
+      reset(); copasExtra = [[S.pos.x, 10, S.pos.z, 4, 'prueba']]; copasT = -1; a0 = oidosN(); const vivos0 = G.fx.live;
       correr(0.2, { y: 9.5, alto: 7 });
-      ok('Pétalos: al cruzar la copa de un flamboyán caen pétalos (rojo y anaranjado) y suena un brillo', (G.fx.juicy.petalos || 0) === p0 + 1 && G.fx.live > vivos0 && sono('petalos', a0) && !!G.fx.PALETTE.petals, (G.fx.juicy.petalos || 0) - p0);
+      ok('Pétalos: al cruzar la copa de un flamboyán caen pétalos (rojo y anaranjado) y suena un brillo', (G.fx.juicy.petalos || 0) === p0 + 1 && G.fx.live > vivos0 && sono('petalos', a0) && !!G.fx.PALETTE.petals, ((G.fx.juicy.petalos || 0) - p0) + ' · partículas ' + vivos0 + '→' + G.fx.live + '/' + G.fx.MAX_PARTICLES + ' · sonó ' + sono('petalos', a0));
       correr(0.6, { y: 9.5, alto: 7 });
       ok('Pétalos: el mismo árbol espera 1,2 s antes de soltar más', (G.fx.juicy.petalos || 0) === p0 + 1);
       correr(1, { y: 9.5, alto: 7 });

@@ -212,9 +212,13 @@ window.AVMaravillas = function (G) {
       G.quiet = true; S.pos.x = B.x; S.pos.z = B.z; vistos.noche = false;
       aviso('noche');
       ok('En las baterías no sale el aviso', vistos.noche === false);
+      // Sola en una página nueva el creador sigue abierto (sin cotorra) y ui.js guarda el aviso para después (QA-93): se aparta
+      // un momento lo que lo taparía (creador, cómic) para ver el aviso y se deja como estaba
+      const tapan = ['creator', 'comic'].map(id => document.getElementById(id)).filter(e => e && !e.hidden); tapan.forEach(e => { e.hidden = true; });
       G.quiet = false; vistos.noche = false; aviso('noche');
+      tapan.forEach(e => { e.hidden = false; });
       const toast = document.getElementById('toast');
-      ok('Cerca y de noche, el aviso cuenta el dato y la fuente', !!(toast && !toast.hidden && /Pyrodinium bahamense/.test(toast.textContent) && /NOAA/.test(toast.textContent)));
+      ok('Cerca y de noche, el aviso cuenta el dato y la fuente', !!(toast && !toast.hidden && /Pyrodinium bahamense/.test(toast.textContent) && /NOAA/.test(toast.textContent)), tapan.length ? 'apartados: ' + tapan.map(e => e.id).join(', ') : '');
       // BM21: toques en el agua
       const Ub = G.agua && G.agua.uniforms && G.agua.uniforms.uBio;
       ok('El agua tiene el tinte de la caleta (uBio, 4 toques)', !!Ub && Ub.value.length === 4);

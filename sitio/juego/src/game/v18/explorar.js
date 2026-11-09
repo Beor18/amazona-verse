@@ -169,7 +169,7 @@ window.AVV18Explorar = function (G) {
       try { if (G.v18fx) G.v18fx.onda(null, null, h.alcance || 9); } catch (e) { /* sin fx */ }
       // V18.2 §4: el Eco Dirigido (nv 20) y el Grito Maestro (nv 30) apartan la flora pequeña de su cono; si no hay, iluminan lo cercano
       if (h.desvia) { let n = 0; try { n = apartar(h); } catch (e) { /* sin flora */ } if (!n) revelar(h); }
-      sonar('dash');
+      sonar('grito'); // graznido + ondas (audio.js)
       return true;
     },
     // Escudo de plumas: círculo de luz alrededor de Vittata unos segundos

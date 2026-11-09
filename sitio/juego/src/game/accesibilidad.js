@@ -79,6 +79,7 @@ AVE.module('accesibilidad', function (G) {
     estatica: { ms: 2200, es: '[Estática de radio]', en: '[Radio static]' },
     parpadeo: { ms: 2200, es: '[Una campanita suena con cada destello]', en: '[A little bell chimes with each flash]' },
     guiro: { ms: 2000, es: '[Suena un güiro]', en: '[A güiro rasps]' },
+    grito: { ms: 1800, es: '[¡Grito de cotorra! Ondas de sonido]', en: '[Parrot shout! Sound waves]' }, // el Grito del Yunque y los gritos con onda (v18/habilidades.js)
     // CG-54. El pío del escondite trae la cercanía (0 lejos … 1 encima) en el argumento de G.audio.play.
     pio_escondite: { ms: 1600, umbral: 0.55, es: '[¡Pío!]', en: '[Peep!]', cercaEs: '[¡Pío cerca!]', cercaEn: '[Peep nearby!]' },
     vecino_coqui: { ms: 2200, es: '[¡Coquí!]', en: '[Coquí!]' },

@@ -1,6 +1,6 @@
 /* AVE · audio
    Sonido sintético con WebAudio (sin archivos): buses master / efectos / voz, volumen guardado y registro para probar sin altavoces.
-   Sonidos base del motor: pickup, ring, dash, splash, jump, land, unlock, tick, wrong, descubrir.
+   Sonidos base del motor: pickup, ring, dash, splash, jump, land, unlock, tick, wrong, descubrir, grito (graznido + ondas del Grito).
    Un pack añade los suyos con G.audio.define(nombre, (t, arg, A) => ...), donde A = { tone, noise, pent }
    y la opción { bus: 'voice' } manda un tono al bus de voz.
    Muestras en archivo (assets/audio/, sintetizadas con tools/audio/juego.py; tabla en assets/audio/sonidos.json):
@@ -91,6 +91,27 @@ AVE.module('audio', function (G) {
     f.frequency.setValueAtTime(o.freq || 1200, t0); if (o.to) f.frequency.exponentialRampToValueAtTime(o.to, t0 + dur);
     env(g, t0, dur, o.gain || 0.25); src.connect(f); f.connect(g); g.connect(salida); src.start(t0, Math.random() * 0.5); src.stop(t0 + dur + 0.03);
   }
+  // Chillido de cotorra: sierra con barrido rápido de tono (sube y cae) por un filtro de banda que hace de «pico»
+  function chillido(f0, f1, f2, t0, dur, gain) {
+    const osc = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    osc.type = 'sawtooth'; osc.frequency.setValueAtTime(f0, t0);
+    osc.frequency.linearRampToValueAtTime(f1, t0 + dur * 0.3); osc.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
+    f.type = 'bandpass'; f.Q.value = 2.2; f.frequency.setValueAtTime(f1 * 1.6, t0); f.frequency.exponentialRampToValueAtTime(f2 * 1.8, t0 + dur);
+    env(g, t0, dur, gain); osc.connect(f); f.connect(g); g.connect(salida); osc.start(t0); osc.stop(t0 + dur + 0.03);
+  }
+  // Grito del Yunque (y los gritos con onda): un graznido corto (~0,25 s) y luego 3 pulsos graves de onda, uno por anillo
+  // visible, mientras la onda viaja (7 m a 16 m/s, unos 0,45 s). arg = tono (1 = Vittata; >1 más agudo, <1 más grave).
+  function grito(t, k) {
+    k = k > 0 ? k : 1;
+    chillido(1250 * k, 1900 * k, 980 * k, t, 0.24, 0.2);
+    tone(1900 * k, t + 0.01, 0.12, { type: 'square', to: 1300 * k, gain: 0.025 }); // armónico: el «raspado» de la cotorra
+    noise(t, 0.09, { freq: 2600 * k, q: 1.4, gain: 0.07 });
+    for (let i = 0; i < 3; i++) {
+      const t0 = t + 0.14 + i * 0.15, a = 1 - i * 0.25;
+      tone(170 / Math.sqrt(k), t0, 0.3, { type: 'sine', to: 85 / Math.sqrt(k), gain: 0.16 * a }); // «wub» de la onda
+      noise(t0, 0.3, { type: 'lowpass', freq: 900, to: 220, q: 0.7, gain: 0.12 * a });
+    }
+  }
   const PENTA = [0, 2, 4, 7, 9]; // pentatónica mayor: el combo sube la nota
   const pent = (i, base) => base * Math.pow(2, (PENTA[i % 5] + 12 * Math.floor(i / 5)) / 12);
   const A = { tone, noise, pent };
@@ -106,6 +127,7 @@ AVE.module('audio', function (G) {
     martillo: (t, v) => { const k = 1 + 0.06 * ((v || 0) % 3); tone(210 * k, t, 0.09, { type: 'square', to: 130 * k, gain: 0.07 }); noise(t, 0.07, { type: 'bandpass', freq: 1500, q: 1.2, gain: 0.2 }); }, // BM34: golpe de martillo en madera
     tick: t => tone(880, t, 0.06, { type: 'sine', gain: 0.05 }),
     wrong: t => tone(300, t, 0.28, { type: 'triangle', to: 190, gain: 0.14 }),
+    grito, // Grito del Yunque: graznido + ondas (src/game/v18/habilidades.js, explorar.js)
     descubrir: t => { [0, 4, 7, 12].forEach((n, k) => tone(392 * Math.pow(2, n / 12), t + k * 0.05, 0.9 - k * 0.1, { type: 'sine', gain: 0.1 })); noise(t + 0.1, 0.8, { freq: 7000, q: 0.6, gain: 0.04 }); }, // acorde corto al descubrir un lugar (fx.js)
   };
   for (const n of Object.keys(MUESTRAS)) SOUNDS[n] = t => muestra(n, t);

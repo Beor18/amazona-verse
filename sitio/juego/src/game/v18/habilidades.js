@@ -72,7 +72,7 @@ window.AVV18Habilidades = function (G) {
       const vel = h.vel * (yo.lenta > 0 ? ((get('mirada_piton') || {}).lento || 0.5) : 1); // Mirada del Pitón: la onda va más lenta
       const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
       yo.picoT = h.pico; yo.cara = 'fight'; // abre el pico (hueso «pico» del rig, vía mouth) mientras grita
-      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
+      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('grito'); // graznido + ondas: suena como se ve (audio.js)
       if (h.desvia) ctx.desviar(origen, dir, h.alcance, h.cono); // V18.2 Eco Dirigido: aparta las semillas rivales del cono
       ctx.poder({ id: h.id, de: yo.id, origen, direccion: { x: dir.x, y: 0, z: dir.z }, alcance: h.alcance });
       const alcanza = () => {
@@ -271,7 +271,7 @@ window.AVV18Habilidades = function (G) {
       ctx.poder({ id: h.id, de: yo.id, origen: { x: yo.pos.x, y: yo.pos.y + 1.0, z: yo.pos.z }, direccion: { x: dir.x, y: 0, z: dir.z }, carga: h.carga });
       ctx.despues(h.carga, () => {
         const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
-        ctx.onda(origen, dir, h.alcance, h.vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
+        ctx.onda(origen, dir, h.alcance, h.vel); ctx.sonar('grito', 0.75); // voz grave de volcán
         const alcanza = () => {
           const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
           if (d > h.alcance + 0.6) return false;
@@ -320,7 +320,7 @@ window.AVV18Habilidades = function (G) {
       const vel = h.vel * (yo.lenta > 0 ? ((get('mirada_piton') || {}).lento || 0.5) : 1); // Mirada del Pitón: la onda va más lenta
       const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
       yo.picoT = h.pico; yo.cara = 'fight'; // abre el pico (como el Grito)
-      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
+      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('grito', 1.15); // chillido más agudo
       ctx.poder({ id: h.id, de: yo.id, origen, direccion: { x: dir.x, y: 0, z: dir.z }, alcance: h.alcance });
       const alcanza = () => {
         const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
@@ -367,7 +367,7 @@ window.AVV18Habilidades = function (G) {
       const vel = h.vel * (yo.lenta > 0 ? ((get('mirada_piton') || {}).lento || 0.5) : 1); // Mirada del Pitón: la onda va más lenta
       const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
       yo.picoT = h.pico; yo.cara = 'fight';
-      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
+      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('grito', 0.92);
       ctx.poder({ id: h.id, de: yo.id, origen, direccion: { x: dir.x, y: 0, z: dir.z }, alcance: h.alcance });
       const alcanza = () => {
         const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
@@ -414,7 +414,7 @@ window.AVV18Habilidades = function (G) {
       const vel = h.vel * (yo.lenta > 0 ? ((get('mirada_piton') || {}).lento || 0.5) : 1); // Mirada del Pitón: la onda va más lenta
       const origen = { x: yo.pos.x + dir.x * 0.5, y: yo.pos.y + 1.0, z: yo.pos.z + dir.z * 0.5 };
       yo.picoT = h.pico; yo.cara = 'fight';
-      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('dash'); ctx.sonar('ring', 3);
+      ctx.onda(origen, dir, h.alcance, vel); ctx.sonar('grito', 1.07);
       ctx.poder({ id: h.id, de: yo.id, origen, direccion: { x: dir.x, y: 0, z: dir.z }, alcance: h.alcance });
       const alcanza = () => {
         const dx = otro.pos.x - origen.x, dz = otro.pos.z - origen.z, d = Math.hypot(dx, dz);
