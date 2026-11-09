@@ -1,0 +1,100 @@
+[07:02:06] HEAD 073dc787 · 6 rondas de la tanda selfTest→ambienteTest→vanos→bohiosTest
+[07:02:06] ronda 1/6: navegando…
+[07:02:11] …latido
+[07:02:16] …latido
+[07:02:21] …latido
+[07:02:26] …latido
+[07:02:31] …latido
+[07:02:36] …latido
+[07:02:39] ronda 1: entrada=ok
+[07:02:41] …latido
+[07:02:46] …latido
+[07:02:51] …latido
+[07:02:56] …latido
+[07:03:01] …latido
+[07:03:06] …latido
+[07:03:11] …latido
+[07:03:16] …latido
+[07:03:18] ronda 1: self 108/108 · amb 25/25 · vanos {"listo":true,"motivo":"vanos","radio":0.45,"rejilla":"65x65","partes":3,"tri":3282,"ms":13,"esperaMs":0} · bohios 27/27 VERDE · errores 0 · 39s
+[07:03:18] ronda 2/6: navegando…
+[07:03:21] …latido
+[07:03:26] …latido
+[07:03:31] …latido
+[07:03:36] …latido
+[07:03:41] …latido
+[07:03:46] …latido
+[07:03:50] ronda 2: entrada=ok
+[07:03:51] …latido
+[07:03:56] …latido
+[07:04:01] …latido
+[07:04:06] …latido
+[07:04:11] …latido
+[07:04:16] …latido
+[07:04:21] …latido
+[07:04:24] ronda 2: self 108/108 · amb 25/25 · vanos {"listo":true,"motivo":"vanos","radio":0.45,"rejilla":"65x65","partes":3,"tri":3282,"ms":13,"esperaMs":0} · bohios 27/27 VERDE · errores 0 · 34s
+[07:04:24] ronda 3/6: navegando…
+[07:04:26] …latido
+[07:04:31] …latido
+[07:04:36] …latido
+[07:04:41] …latido
+[07:04:46] …latido
+[07:04:51] …latido
+[07:04:56] …latido
+[07:04:57] ronda 3: entrada=ok
+[07:05:01] …latido
+[07:05:06] …latido
+[07:05:11] …latido
+[07:05:16] …latido
+[07:05:21] …latido
+[07:05:26] …latido
+[07:05:28] ronda 3: self 108/108 · amb 25/25 · vanos {"listo":true,"motivo":"vanos","radio":0.45,"rejilla":"65x65","partes":3,"tri":3282,"ms":16,"esperaMs":0} · bohios 27/27 VERDE · errores 0 · 32s
+[07:05:28] ronda 4/6: navegando…
+[07:05:31] …latido
+[07:05:36] …latido
+[07:05:41] …latido
+[07:05:46] …latido
+[07:05:51] …latido
+[07:05:56] …latido
+[07:06:01] ronda 4: entrada=ok
+[07:06:01] …latido
+[07:06:06] …latido
+[07:06:11] …latido
+[07:06:16] …latido
+[07:06:21] …latido
+[07:06:26] …latido
+[07:06:31] …latido
+[07:06:36] …latido
+[07:06:37] ronda 4: self 108/108 · amb 25/25 · vanos {"listo":true,"motivo":"vanos","radio":0.45,"rejilla":"65x65","partes":3,"tri":3282,"ms":14,"esperaMs":0} · bohios 27/27 VERDE · errores 0 · 36s
+[07:06:37] ronda 5/6: navegando…
+[07:06:41] …latido
+[07:06:46] …latido
+[07:06:51] …latido
+[07:06:56] …latido
+[07:07:01] …latido
+[07:07:06] …latido
+[07:07:09] ronda 5: entrada=ok
+[07:07:11] …latido
+[07:07:16] …latido
+[07:07:21] …latido
+[07:07:26] …latido
+[07:07:31] …latido
+[07:07:36] …latido
+[07:07:41] ronda 5: self 108/108 · amb 25/25 · vanos {"listo":true,"motivo":"vanos","radio":0.45,"rejilla":"65x65","partes":3,"tri":3282,"ms":16,"esperaMs":0} · bohios 27/27 VERDE · errores 0 · 32s
+[07:07:41] ronda 6/6: navegando…
+[07:07:41] …latido
+[07:07:46] …latido
+[07:07:51] …latido
+[07:07:56] …latido
+[07:08:01] …latido
+[07:08:06] …latido
+[07:08:11] …latido
+[07:08:13] ronda 6: entrada=ok
+[07:08:16] …latido
+[07:08:21] …latido
+[07:08:26] …latido
+[07:08:31] …latido
+[07:08:36] …latido
+[07:08:41] …latido
+[07:08:45] ronda 6: self 108/108 · amb 25/25 · vanos {"listo":true,"motivo":"vanos","radio":0.45,"rejilla":"65x65","partes":3,"tri":3282,"ms":13,"esperaMs":0} · bohios 27/27 VERDE · errores 0 · 32s
+[07:08:45] RESUMEN {"rondas":6,"bohiosVerde":6,"bohiosRojo":0,"erroresConsola":0}
+[07:08:48] fin (perfil kimi1k374-c3sMKf limpiado)

@@ -1,0 +1,194 @@
+{
+ "tarea": "KIMI-374",
+ "etiqueta": "k374-r1",
+ "pantalla": "escritorio 1600x900@1 cpuX1",
+ "rondas": [
+  {
+   "self": {
+    "p": 108,
+    "t": 108,
+    "mal": []
+   },
+   "amb": {
+    "p": 25,
+    "t": 25,
+    "mal": []
+   },
+   "vanos": {
+    "listo": true,
+    "motivo": "vanos",
+    "radio": 0.45,
+    "rejilla": "65x65",
+    "partes": 3,
+    "tri": 3282,
+    "ms": 13,
+    "esperaMs": 0
+   },
+   "bohios": {
+    "p": 27,
+    "t": 27,
+    "mal": []
+   },
+   "errores": [],
+   "ronda": 1,
+   "durSec": 39
+  },
+  {
+   "self": {
+    "p": 108,
+    "t": 108,
+    "mal": []
+   },
+   "amb": {
+    "p": 25,
+    "t": 25,
+    "mal": []
+   },
+   "vanos": {
+    "listo": true,
+    "motivo": "vanos",
+    "radio": 0.45,
+    "rejilla": "65x65",
+    "partes": 3,
+    "tri": 3282,
+    "ms": 13,
+    "esperaMs": 0
+   },
+   "bohios": {
+    "p": 27,
+    "t": 27,
+    "mal": []
+   },
+   "errores": [],
+   "ronda": 2,
+   "durSec": 34
+  },
+  {
+   "self": {
+    "p": 108,
+    "t": 108,
+    "mal": []
+   },
+   "amb": {
+    "p": 25,
+    "t": 25,
+    "mal": []
+   },
+   "vanos": {
+    "listo": true,
+    "motivo": "vanos",
+    "radio": 0.45,
+    "rejilla": "65x65",
+    "partes": 3,
+    "tri": 3282,
+    "ms": 16,
+    "esperaMs": 0
+   },
+   "bohios": {
+    "p": 27,
+    "t": 27,
+    "mal": []
+   },
+   "errores": [],
+   "ronda": 3,
+   "durSec": 32
+  },
+  {
+   "self": {
+    "p": 108,
+    "t": 108,
+    "mal": []
+   },
+   "amb": {
+    "p": 25,
+    "t": 25,
+    "mal": []
+   },
+   "vanos": {
+    "listo": true,
+    "motivo": "vanos",
+    "radio": 0.45,
+    "rejilla": "65x65",
+    "partes": 3,
+    "tri": 3282,
+    "ms": 14,
+    "esperaMs": 0
+   },
+   "bohios": {
+    "p": 27,
+    "t": 27,
+    "mal": []
+   },
+   "errores": [],
+   "ronda": 4,
+   "durSec": 36
+  },
+  {
+   "self": {
+    "p": 108,
+    "t": 108,
+    "mal": []
+   },
+   "amb": {
+    "p": 25,
+    "t": 25,
+    "mal": []
+   },
+   "vanos": {
+    "listo": true,
+    "motivo": "vanos",
+    "radio": 0.45,
+    "rejilla": "65x65",
+    "partes": 3,
+    "tri": 3282,
+    "ms": 16,
+    "esperaMs": 0
+   },
+   "bohios": {
+    "p": 27,
+    "t": 27,
+    "mal": []
+   },
+   "errores": [],
+   "ronda": 5,
+   "durSec": 32
+  },
+  {
+   "self": {
+    "p": 108,
+    "t": 108,
+    "mal": []
+   },
+   "amb": {
+    "p": 25,
+    "t": 25,
+    "mal": []
+   },
+   "vanos": {
+    "listo": true,
+    "motivo": "vanos",
+    "radio": 0.45,
+    "rejilla": "65x65",
+    "partes": 3,
+    "tri": 3282,
+    "ms": 13,
+    "esperaMs": 0
+   },
+   "bohios": {
+    "p": 27,
+    "t": 27,
+    "mal": []
+   },
+   "errores": [],
+   "ronda": 6,
+   "durSec": 32
+  }
+ ],
+ "head": "073dc787",
+ "resumen": {
+  "rondas": 6,
+  "bohiosVerde": 6,
+  "bohiosRojo": 0,
+  "erroresConsola": 0
+ }
+}
