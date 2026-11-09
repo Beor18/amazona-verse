@@ -654,7 +654,8 @@ window.AVBanquete = function (G) {
       G.quiet = guard.quiet; console.error = ce;
       apartados.forEach(id => { $(id).hidden = false; });
     }
-    check('La partida de la historia (G.S) queda intacta (el Banquete no escribe en ella)', comparable(S) === sAntes, volatiles.size ? 'otros módulos escriben solos en: ' + [...volatiles].join(', ') + ' (guardadas y restauradas)' : 'ninguna clave cambia sola');
+    { const ant = JSON.parse(sAntes), dif = SV.KEYS.filter(k => !volatiles.has(k) && JSON.stringify(S[k]) !== JSON.stringify(ant[k])); /* qué clave cambió, para diagnosticar el rojo */
+      check('La partida de la historia (G.S) queda intacta (el Banquete no escribe en ella)', comparable(S) === sAntes, (dif.length ? 'cambian: ' + dif.map(k => k + ' ' + String(JSON.stringify(ant[k])).slice(0, 80) + ' → ' + String(JSON.stringify(S[k])).slice(0, 80)).join('; ') + ' · ' : '') + (volatiles.size ? 'otros módulos escriben solos en: ' + [...volatiles].join(', ') + ' (guardadas y restauradas)' : 'ninguna clave cambia sola')); }
     check('El almacén de la partida no se escribió', claves.every((k, i) => leer(k) === realAntes[i]));
     check('El mundo no queda en pausa', G.pausa.activa() === guard.pausa);
     const nuevos = (window.__aveErrores || []).slice(errores0);
