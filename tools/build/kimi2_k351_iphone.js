@@ -6,11 +6,12 @@
      B) ?escuela=1                 → el Modo Escuela sí entra por URL (escape hatch IPH-1).
    Mide tras asentar: stats() (fps/calls/tris/calidad/dpr/escuela), devicePixelRatio,
    AV.look.medir() (texturasMB, heapMB) y renderer.info.memory.
-   Uso: node tools/build/kimi2_k351_iphone.js [--etiqueta k351-iphone-r1] */
+   Uso: node tools/build/kimi2_k351_iphone.js [--etiqueta k351-iphone-r1] [--url https://www.amazonaverse.com/juego] */
 'use strict';
 const http = require('http'); const fs = require('fs'); const path = require('path'); const os = require('os'); const { spawn } = require('child_process');
 const AQUI = __dirname, RAIZ = path.resolve(AQUI, '..', '..');
 const ETIQ = (process.argv.indexOf('--etiqueta') > 0 ? process.argv[process.argv.indexOf('--etiqueta') + 1] : 'k351-iphone-r1');
+const URLBASE = (process.argv.indexOf('--url') > 0 ? process.argv[process.argv.indexOf('--url') + 1].replace(/\/$/, '') : '');
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.glb': 'model/gltf-binary', '.bin': 'application/octet-stream', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.wav': 'audio/wav', '.mp3': 'audio/mpeg' };
@@ -33,7 +34,7 @@ async function pagina(srv, extra) {
   const { sessionId: ses } = await cdp.call('Target.attachToTarget', { targetId, flatten: true });
   await cdp.call('Page.enable', {}, ses);
   await cdp.call('Runtime.enable', {}, ses);
-  await cdp.call('Page.navigate', { url: `http://127.0.0.1:${srv.puerto}/?fps=1${extra}` }, ses);
+  await cdp.call('Page.navigate', { url: URLBASE ? `${URLBASE}/?fps=1${extra}` : `http://127.0.0.1:${srv.puerto}/?fps=1${extra}` }, ses);
   await new Promise(r => setTimeout(r, 3500));
   const prep = await ev(cdp, ses, PREPARAR, 90);
   await new Promise(r => setTimeout(r, 9000)); // asentar: que corra la calidad automática y la resolución dinámica
@@ -54,8 +55,8 @@ async function pagina(srv, extra) {
   return { prep, muestra, escuelaLate, erroresConsola: consola };
 }
 (async () => {
-  const srv = await servir();
-  const out = { etiqueta: ETIQ, hora_utc: new Date().toISOString(), head: null, paginas: {}, ok: true };
+  const srv = URLBASE ? { srv: { close() {} }, puerto: 0 } : await servir();
+  const out = { etiqueta: ETIQ, hora_utc: new Date().toISOString(), base: URLBASE || 'local', head: null, paginas: {}, ok: true };
   try { out.head = require('child_process').execSync('git rev-parse --short=8 HEAD', { cwd: RAIZ }).toString().trim(); } catch (e) {}
   try { out.paginas.auto = await pagina(srv, ''); } catch (e) { out.paginas.auto = { error: String(e).slice(0, 300) }; out.ok = false; }
   try { out.paginas.escuela = await pagina(srv, '&escuela=1'); } catch (e) { out.paginas.escuela = { error: String(e).slice(0, 300) }; out.ok = false; }
