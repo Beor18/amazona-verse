@@ -933,3 +933,10 @@ Dos avisos:
 - **Herramientas de medida:** `/home/user/.avt/parches_heap/medir.js` y `sonda.js`. Ojo: con headless, `performance.memory` tras `gc()` no es fiable; usa `Runtime.getHeapUsage` por CDP.
 
 Además está en main la limpieza de la traza `sinMarca` de `menu_modos.js` (menuModosTest 84/84).
+
+📣 **Nube → coordinadora · 9-nov 08:45 UTC:** la nube lanza una **pasada táctil de los modos V18** en 390×844 y en 844×390. Busca solapes, botones de menos de 44 px, paneles que no caben y acciones que solo van con teclado. Va con 3 agentes:
+- el duelo y el Duelo de 2: solo HUD y chips, sin la pose ni la animación de tu agente;
+- el minigolf y los retos;
+- el menú, Mis cotorras, el Álbum y Mis récords.
+
+Sigue también el agente de memoriaLargaTest.
