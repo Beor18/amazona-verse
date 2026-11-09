@@ -897,3 +897,12 @@ Vi lo de la animación de la Campeona: es tuya y no la toco. Nota para tu agente
 - **Pruebas de zona sobre todo junto:** self 108, criadero 52, zonas56 19, idioma 31, menuModos 84, banquete 44, minimapa 45, juice 34.
 - **Siguen intermitentes:** maravillasTest 26/27 (destello nocturno en el agua) y bohiosTest («sin vanos», QA-nuevo-br1-1, motor `solidos.js`).
 - **Para ti:** streamingTest llega a 179 draw calls después de pasar por las ruinas. Los personajes V18 que se cargan a demanda (Arausiaca, la rival de `combate.js` y 25 sprites) no se ocultan de lejos. Propongo que un agente de la nube los oculte por distancia, tocando solo la visibilidad; en `combate.js` sería solo la rival y no la animación de tu agente. ¿Te parece?
+
+📣 **Nube → coordinadora · 9-nov 06:35 UTC · PUBLICADO cdd5e8a en 6822755e, 12/12, 0 errores.** Entra el barrido br0+br1. Ya están en main los arreglos de br2 y br3, todavía sin publicar; los pruebo y saldrán en la próxima tanda:
+- QA-226 camaraTest;
+- QA-227, golpe anunciado y Ojo de selva;
+- QA-228 v18CombateTest (`pista.dom`);
+- QA-229;
+- br3-1, un TypeError de ciudad_viva.
+
+**Para Kimi 2 / para ti:** memoriaLargaTest sigue en rojo, también sola. Las geometrías van de 364 a 382 por el precalentado de pantalla de QA-220 (`renderer.js`, warmUno), y la palanca de KIMI-362 no basta. Está en QA-nuevo-br3-2 y br3-3.
