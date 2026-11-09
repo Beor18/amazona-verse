@@ -1365,10 +1365,20 @@ AVE.module('criadero', function (G) {
     vivo.textContent = m.textContent;
     return true;
   }
+  // Caps. 2-6 en el mapa real (zonas.js activa): los POI «estacion»/«plaza» del mapa son los de Villa Raíz (cap. 1), fuera de la
+  // zona del capítulo; el nido salía allí, lejos y tras el viento que cierra la zona. Solo vale un sitio dentro de la zona del capítulo
+  // (con 4 m de margen); si no, cerca de la aparición. Sin zonas activas (cap. 1, mundo pequeño) todo vale como siempre.
+  function enZonaCap(q, Z) {
+    Z = Z || G.zonas; const c = Z && Z.activa && Z.ZONAS && G.pack.meta && Z.ZONAS[G.pack.meta.capitulo];
+    if (!c) return true;
+    if (Math.hypot(q.x - c.x, q.z - c.z) <= c.r - 4) return true;
+    for (const k of c.mas || []) if (Math.hypot(q.x - k[0], q.z - k[1]) <= k[2] - 4) return true;
+    return false;
+  }
   function sitioNido() {
     const T = G.terreno, cfg = G.pack.criadero || {};
-    if (cfg.nido && T.poi) { const p = T.poi(cfg.nido); if (p) return { x: p.x, z: p.z }; }
-    for (const id of ['nido_criadero', 'estacion', 'plaza']) { const p = T.poi && T.poi(id); if (p) return { x: p.x + 2.8, z: p.z + 1.4, donde: id }; }
+    if (cfg.nido && T.poi) { const p = T.poi(cfg.nido); if (p && enZonaCap(p)) return { x: p.x, z: p.z }; }
+    for (const id of ['nido_criadero', 'estacion', 'plaza']) { const p = T.poi && T.poi(id); if (p && enZonaCap(p)) return { x: p.x + 2.8, z: p.z + 1.4, donde: id }; }
     const sp = (G.pack.jugador && G.pack.jugador.aparicion) || { x: 0, z: 0 };
     return { x: sp.x + 3, z: sp.z + 2 };
   }
@@ -1379,7 +1389,7 @@ AVE.module('criadero', function (G) {
     const otros = (G.interaccion.list || []).filter(it => it.id !== 'nido_criadero' && typeof it.x === 'number');
     const cols = ((G.fisica && G.fisica.colliders) || []).filter(c => c.id !== 'nido_criadero' && typeof c.x === 'number' && c.r > 0 && !/^(arbol|tree)$/.test(c.kind || ''));
     const seco = !(G.agua && G.agua.levelAt && G.terreno.height) || G.agua.levelAt(q.x, q.z) < G.terreno.height(q.x, q.z) - 0.05;
-    return seco && otros.every(it => Math.hypot(it.x - q.x, it.z - q.z) >= 5) && cols.every(c => Math.hypot(c.x - q.x, c.z - q.z) >= c.r + 1.4) && sinCopa(q);
+    return seco && enZonaCap(q) && otros.every(it => Math.hypot(it.x - q.x, it.z - q.z) >= 5) && cols.every(c => Math.hypot(c.x - q.x, c.z - q.z) >= c.r + 1.4) && sinCopa(q);
   }
   // Lejos de las copas de los árboles (posiciones fijas de G.vegetacion): que la cámara no quede dentro de las hojas
   const ARBOLES = ['palma_sierra', 'yagrumo', 'tabonuco', 'helecho_arboreo', 'ceiba', 'flamboyan', 'bambu'];
@@ -1745,6 +1755,8 @@ AVE.module('criadero', function (G) {
           const fijo = c => !/^(arbol|tree)$/.test(c.kind || '');
           const fuera = ((G.fisica && G.fisica.colliders) || []).filter(c => c.id !== 'nido_criadero' && typeof c.x === 'number' && c.r > 0 && fijo(c)).every(c => Math.hypot(c.x - nidoIt.x, c.z - nidoIt.z) >= c.r + 1);
           check('El nido queda a 5 m o más de otros interactuables, fuera de edificios y de copas de árboles', lejos && fuera && sinCopa({ x: nidoIt.x, z: nidoIt.z }));
+          { const Zf = { activa: true, ZONAS: { [G.pack.meta && G.pack.meta.capitulo]: { x: nidoIt.x, z: nidoIt.z, r: 20, mas: [[nidoIt.x + 100, nidoIt.z, 10]] } } };
+            check('Con zonas activas (caps. 2-6 en el mapa real) el nido solo vale dentro de la zona del capítulo', enZonaCap(nidoIt, Zf) && enZonaCap({ x: nidoIt.x + 103, z: nidoIt.z }, Zf) && !enZonaCap({ x: nidoIt.x + 60, z: nidoIt.z }, Zf) && (G.zonas && G.zonas.activa ? enZonaCap(nidoIt) : enZonaCap({ x: nidoIt.x + 500, z: nidoIt.z }))); }
           check('Botón Nido visible en el HUD', !!btn && !btn.hidden);
           await nidoIt.use();
           check('Se abre desde el nido del mundo', open); cerrar();
