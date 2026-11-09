@@ -1,0 +1,12 @@
+[02:14:32] servidor http://127.0.0.1:59213
+[02:14:51] entrar='ok' en 17.7s
+[02:14:51] captura t=200
+[02:14:52] captura t=1000
+[02:14:53] captura t=2000
+[02:14:55] captura t=4000
+[02:14:59] captura t=8000
+[02:15:01] pie destino='villa @255m'
+[02:15:47] captura pie al cruzar Rc (d=129)
+[02:16:03] asentado={"ms":1,"tope":false,"pendientes":null}
+[02:16:03] errores=[]
+[02:16:03] fin

@@ -1,0 +1,7288 @@
+{
+ "etiqueta": "k348-antes-r2",
+ "cuando": "2026-11-09T02:04:22.202Z",
+ "pantalla": "1600x900 dpr1",
+ "calidad": "auto (sin flags)",
+ "cpu": "x1",
+ "gpu": "PC real (ANGLE/D3D11)",
+ "muestras": [
+  {
+   "calls": 0,
+   "ktris": 0,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 774,
+    "tex": 171,
+    "prog": 111
+   },
+   "heap": 508,
+   "st": {
+    "vCerca": 1,
+    "vLejos": 0,
+    "vHD": 6,
+    "drawEd": 7,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 11,
+    "kbGeo": 191612
+   },
+   "t": 960
+  },
+  {
+   "calls": 92,
+   "ktris": 812,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 777,
+    "tex": 171,
+    "prog": 116
+   },
+   "heap": 504,
+   "st": {
+    "vCerca": 13,
+    "vLejos": 2,
+    "vHD": 8,
+    "drawEd": 15,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 18,
+    "kbGeo": 209391
+   },
+   "t": 1418
+  },
+  {
+   "calls": 88,
+   "ktris": 807,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 781,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 547,
+   "st": {
+    "vCerca": 10,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 14,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 9,
+    "kbGeo": 254490
+   },
+   "t": 2004
+  },
+  {
+   "calls": 87,
+   "ktris": 812,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 783,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 606,
+   "st": {
+    "vCerca": 6,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 14,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 16,
+    "kbGeo": 254490
+   },
+   "t": 2465
+  },
+  {
+   "calls": 87,
+   "ktris": 808,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 787,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 615,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 14,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 16,
+    "kbGeo": 289515
+   },
+   "t": 2779
+  },
+  {
+   "calls": 87,
+   "ktris": 809,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 788,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 644,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 14,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 12,
+    "kbGeo": 298979
+   },
+   "t": 3092
+  },
+  {
+   "calls": 86,
+   "ktris": 809,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 787,
+    "tex": 171,
+    "prog": 117
+   },
+   "heap": 673,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 14,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 12,
+    "kbGeo": 298979
+   },
+   "t": 3400
+  },
+  {
+   "calls": 87,
+   "ktris": 809,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 788,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 679,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 14,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 12,
+    "kbGeo": 298979
+   },
+   "t": 3715
+  },
+  {
+   "calls": 87,
+   "ktris": 808,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 789,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 737,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 14,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 12,
+    "kbGeo": 305439
+   },
+   "t": 4033
+  },
+  {
+   "calls": 86,
+   "ktris": 808,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 788,
+    "tex": 171,
+    "prog": 117
+   },
+   "heap": 767,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 14,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 12,
+    "kbGeo": 305439
+   },
+   "t": 4419
+  },
+  {
+   "calls": 87,
+   "ktris": 808,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 789,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 892,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 14,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 4,
+    "kbGeo": 305439
+   },
+   "t": 4733
+  },
+  {
+   "calls": 87,
+   "ktris": 808,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 790,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 885,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 14,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 3,
+    "kbGeo": 349289
+   },
+   "t": 5053
+  },
+  {
+   "calls": 87,
+   "ktris": 808,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 790,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 897,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 14,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 3,
+    "kbGeo": 349289
+   },
+   "t": 5367
+  },
+  {
+   "calls": 90,
+   "ktris": 820,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 791,
+    "tex": 171,
+    "prog": 117
+   },
+   "heap": 892,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 18,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 11,
+    "kbGeo": 388045
+   },
+   "t": 5886
+  },
+  {
+   "calls": 86,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 793,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 904,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 2,
+    "kbGeo": 388102
+   },
+   "t": 6193
+  },
+  {
+   "calls": 86,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 794,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 895,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 1,
+    "kbGeo": 461950
+   },
+   "t": 6507
+  },
+  {
+   "calls": 85,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 793,
+    "tex": 171,
+    "prog": 117
+   },
+   "heap": 886,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 1,
+    "kbGeo": 461950
+   },
+   "t": 6812
+  },
+  {
+   "calls": 86,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 795,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 908,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 1,
+    "kbGeo": 591154
+   },
+   "t": 7130
+  },
+  {
+   "calls": 86,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 796,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 919,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 1,
+    "kbGeo": 602961
+   },
+   "t": 7438
+  },
+  {
+   "calls": 86,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 796,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 920,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 1,
+    "kbGeo": 602961
+   },
+   "t": 7753
+  },
+  {
+   "calls": 85,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 795,
+    "tex": 171,
+    "prog": 117
+   },
+   "heap": 935,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 1,
+    "kbGeo": 602961
+   },
+   "t": 8071
+  },
+  {
+   "calls": 86,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 796,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 925,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 1,
+    "kbGeo": 602961
+   },
+   "t": 8471
+  },
+  {
+   "calls": 86,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 796,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 932,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 1,
+    "kbGeo": 602961
+   },
+   "t": 8787
+  },
+  {
+   "calls": 85,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 795,
+    "tex": 171,
+    "prog": 117
+   },
+   "heap": 920,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 1,
+    "kbGeo": 602961
+   },
+   "t": 9101
+  },
+  {
+   "calls": 86,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 796,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 932,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 1,
+    "kbGeo": 602961
+   },
+   "t": 9421
+  },
+  {
+   "calls": 86,
+   "ktris": 810,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 797,
+    "tex": 171,
+    "prog": 118
+   },
+   "heap": 938,
+   "st": {
+    "vCerca": 5,
+    "vLejos": 0,
+    "vHD": 8,
+    "drawEd": 13,
+    "modCerca": 63,
+    "modLejos": 63,
+    "modHD": 50,
+    "cola": 0,
+    "trabajos": 0,
+    "kbGeo": 866595
+   },
+   "t": 9773
+  },
+  {
+   "calls": 107,
+   "ktris": 2786,
+   "calidad": "alto",
+   "dpr": 1,
+   "sombras": true,
+   "mem": {
+    "geo": 632,
+    "tex": 165,
+    "prog": 120
+   },
+   "heap": 577,
+   "st": {
+    "vCerca": 45,
+    "vLejos": 0,
+    "vHD": 42,
+    "drawEd": 20,
+    "modCerca": 48,
+    "modLejos": 63,
+    "modHD": 25,
+    "cola": 0,
+    "trabajos": 0,
+    "kbGeo": 385100
+   },
+   "t": "final"
+  }
+ ],
+ "llegada": null,
+ "asentado": {
+  "ms": 0,
+  "tope": false,
+  "pendientes": null
+ },
+ "errores": [],
+ "chromePid": 21524,
+ "acercamiento": {
+  "destino": "villa @255m",
+  "modo": "pie 6,5 m/s desde 420 m a y=35 (la puerta del anticipo es la velocidad, no la altura)",
+  "muestras": [
+   {
+    "calls": 86,
+    "ktris": 810,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 797,
+     "tex": 171,
+     "prog": 118
+    },
+    "heap": 933,
+    "st": {
+     "vCerca": 5,
+     "vLejos": 0,
+     "vHD": 8,
+     "drawEd": 13,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 866595
+    },
+    "t": 2,
+    "d": 418,
+    "z": {
+     "nivel": 1,
+     "d": 407,
+     "pre": 0,
+     "v": 0,
+     "fz": false
+    }
+   },
+   {
+    "calls": 72,
+    "ktris": 1183,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 956,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 10,
+     "drawEd": 4,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 868301
+    },
+    "t": 418,
+    "d": 416,
+    "z": {
+     "nivel": 1,
+     "d": 407,
+     "pre": 0,
+     "v": 5.7,
+     "fz": false
+    }
+   },
+   {
+    "calls": 72,
+    "ktris": 1192,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 800,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 928,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 10,
+     "drawEd": 4,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 764,
+    "d": 414,
+    "z": {
+     "nivel": 1,
+     "d": 405,
+     "pre": 0,
+     "v": 5.8,
+     "fz": false
+    }
+   },
+   {
+    "calls": 74,
+    "ktris": 1205,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 800,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 928,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 11,
+     "drawEd": 4,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 1084,
+    "d": 412,
+    "z": {
+     "nivel": 1,
+     "d": 403,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 74,
+    "ktris": 1211,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 800,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 947,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 11,
+     "drawEd": 4,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 1396,
+    "d": 410,
+    "z": {
+     "nivel": 1,
+     "d": 401,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 71,
+    "ktris": 644,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 786,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 1099,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 12,
+     "drawEd": 6,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 2,
+     "kbGeo": 413399
+    },
+    "t": 1718,
+    "d": 408,
+    "z": {
+     "nivel": 1,
+     "d": 399,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 71,
+    "ktris": 646,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 787,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 684,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 13,
+     "drawEd": 6,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 2,
+     "kbGeo": 419858
+    },
+    "t": 2040,
+    "d": 406,
+    "z": {
+     "nivel": 1,
+     "d": 397,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 71,
+    "ktris": 643,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 787,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 694,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 13,
+     "drawEd": 6,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 2,
+     "kbGeo": 419858
+    },
+    "t": 2358,
+    "d": 404,
+    "z": {
+     "nivel": 1,
+     "d": 395,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 72,
+    "ktris": 663,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 790,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 689,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 15,
+     "drawEd": 7,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 453115
+    },
+    "t": 2676,
+    "d": 402,
+    "z": {
+     "nivel": 1,
+     "d": 393,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 71,
+    "ktris": 637,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 790,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 695,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 14,
+     "drawEd": 7,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 453115
+    },
+    "t": 3006,
+    "d": 400,
+    "z": {
+     "nivel": 1,
+     "d": 390,
+     "pre": 0,
+     "v": 7.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 71,
+    "ktris": 643,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 790,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 709,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 16,
+     "drawEd": 7,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 453115
+    },
+    "t": 3326,
+    "d": 398,
+    "z": {
+     "nivel": 1,
+     "d": 388,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 72,
+    "ktris": 659,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 790,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 708,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 14,
+     "drawEd": 7,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 453115
+    },
+    "t": 3642,
+    "d": 396,
+    "z": {
+     "nivel": 1,
+     "d": 386,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 77,
+    "ktris": 1371,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 791,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 694,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 14,
+     "drawEd": 5,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 626168
+    },
+    "t": 3959,
+    "d": 394,
+    "z": {
+     "nivel": 1,
+     "d": 384,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 68,
+    "ktris": 1249,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 791,
+     "tex": 171,
+     "prog": 117
+    },
+    "heap": 694,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 15,
+     "drawEd": 6,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 626168
+    },
+    "t": 4277,
+    "d": 392,
+    "z": {
+     "nivel": 1,
+     "d": 382,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 162,
+    "ktris": 4092,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 791,
+     "tex": 171,
+     "prog": 121
+    },
+    "heap": 711,
+    "st": {
+     "vCerca": 22,
+     "vLejos": 1,
+     "vHD": 60,
+     "drawEd": 47,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 626168
+    },
+    "t": 4599,
+    "d": 390,
+    "z": {
+     "nivel": 1,
+     "d": 380,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 124,
+    "ktris": 1926,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 771,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 702,
+    "st": {
+     "vCerca": 17,
+     "vLejos": 1,
+     "vHD": 22,
+     "drawEd": 17,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 4921,
+    "d": 388,
+    "z": {
+     "nivel": 1,
+     "d": 378,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 76,
+    "ktris": 1456,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 705,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 15,
+     "drawEd": 6,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 5243,
+    "d": 385,
+    "z": {
+     "nivel": 1,
+     "d": 376,
+     "pre": 0,
+     "v": 7.7,
+     "fz": false
+    }
+   },
+   {
+    "calls": 86,
+    "ktris": 1710,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 709,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 16,
+     "drawEd": 10,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 5565,
+    "d": 383,
+    "z": {
+     "nivel": 1,
+     "d": 374,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 77,
+    "ktris": 1412,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 694,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 14,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 5884,
+    "d": 381,
+    "z": {
+     "nivel": 1,
+     "d": 372,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 77,
+    "ktris": 1410,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 698,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 15,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 6201,
+    "d": 379,
+    "z": {
+     "nivel": 1,
+     "d": 370,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 78,
+    "ktris": 1414,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 692,
+    "st": {
+     "vCerca": 0,
+     "vLejos": 0,
+     "vHD": 15,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 6507,
+    "d": 377,
+    "z": {
+     "nivel": 1,
+     "d": 368,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 78,
+    "ktris": 1421,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 693,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 13,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 6820,
+    "d": 376,
+    "z": {
+     "nivel": 1,
+     "d": 366,
+     "pre": 0,
+     "v": 4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 78,
+    "ktris": 1604,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 688,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 15,
+     "drawEd": 6,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 7125,
+    "d": 374,
+    "z": {
+     "nivel": 1,
+     "d": 364,
+     "pre": 0,
+     "v": 6.6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 127,
+    "ktris": 1889,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 693,
+    "st": {
+     "vCerca": 28,
+     "vLejos": 0,
+     "vHD": 37,
+     "drawEd": 20,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 7445,
+    "d": 372,
+    "z": {
+     "nivel": 1,
+     "d": 362,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 105,
+    "ktris": 2395,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 696,
+    "st": {
+     "vCerca": 17,
+     "vLejos": 1,
+     "vHD": 37,
+     "drawEd": 31,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 7759,
+    "d": 369,
+    "z": {
+     "nivel": 1,
+     "d": 360,
+     "pre": 0,
+     "v": 10.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 77,
+    "ktris": 1611,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 701,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 16,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 8078,
+    "d": 367,
+    "z": {
+     "nivel": 1,
+     "d": 357,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 78,
+    "ktris": 1538,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 705,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 15,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 8396,
+    "d": 365,
+    "z": {
+     "nivel": 1,
+     "d": 355,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 78,
+    "ktris": 1543,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 701,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 14,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 8715,
+    "d": 363,
+    "z": {
+     "nivel": 1,
+     "d": 353,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 78,
+    "ktris": 1539,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 695,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 14,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 9029,
+    "d": 361,
+    "z": {
+     "nivel": 1,
+     "d": 351,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 78,
+    "ktris": 1539,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 689,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 15,
+     "drawEd": 6,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 9348,
+    "d": 359,
+    "z": {
+     "nivel": 1,
+     "d": 349,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 78,
+    "ktris": 1540,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 708,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 15,
+     "drawEd": 6,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 9667,
+    "d": 357,
+    "z": {
+     "nivel": 1,
+     "d": 347,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 78,
+    "ktris": 1535,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 701,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 14,
+     "drawEd": 6,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 9986,
+    "d": 355,
+    "z": {
+     "nivel": 1,
+     "d": 345,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 79,
+    "ktris": 1556,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 695,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 14,
+     "drawEd": 6,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 10307,
+    "d": 353,
+    "z": {
+     "nivel": 1,
+     "d": 343,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 79,
+    "ktris": 1556,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 688,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 16,
+     "drawEd": 7,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 10620,
+    "d": 351,
+    "z": {
+     "nivel": 1,
+     "d": 339,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 79,
+    "ktris": 1468,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 707,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 15,
+     "drawEd": 7,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 10938,
+    "d": 349,
+    "z": {
+     "nivel": 1,
+     "d": 339,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 79,
+    "ktris": 1468,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 689,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 16,
+     "drawEd": 7,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 11257,
+    "d": 347,
+    "z": {
+     "nivel": 1,
+     "d": 337,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 80,
+    "ktris": 1554,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 696,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 16,
+     "drawEd": 6,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 11576,
+    "d": 345,
+    "z": {
+     "nivel": 1,
+     "d": 335,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 80,
+    "ktris": 1625,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 689,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 17,
+     "drawEd": 6,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 11896,
+    "d": 343,
+    "z": {
+     "nivel": 1,
+     "d": 333,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 80,
+    "ktris": 1624,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 772,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 708,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 17,
+     "drawEd": 6,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 587744
+    },
+    "t": 12211,
+    "d": 341,
+    "z": {
+     "nivel": 1,
+     "d": 331,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 79,
+    "ktris": 1160,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 773,
+     "tex": 169,
+     "prog": 122
+    },
+    "heap": 726,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 16,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 43,
+     "cola": 0,
+     "trabajos": 3,
+     "kbGeo": 588549
+    },
+    "t": 12535,
+    "d": 339,
+    "z": {
+     "nivel": 1,
+     "d": 329,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 79,
+    "ktris": 1161,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 784,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 780,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 16,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 45,
+     "cola": 1,
+     "trabajos": 12,
+     "kbGeo": 598392
+    },
+    "t": 12858,
+    "d": 337,
+    "z": {
+     "nivel": 1,
+     "d": 327,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 78,
+    "ktris": 1168,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 786,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 757,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 18,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 47,
+     "cola": 0,
+     "trabajos": 10,
+     "kbGeo": 624093
+    },
+    "t": 13206,
+    "d": 335,
+    "z": {
+     "nivel": 1,
+     "d": 325,
+     "pre": 0,
+     "v": 5.8,
+     "fz": false
+    }
+   },
+   {
+    "calls": 79,
+    "ktris": 1186,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 787,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 895,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 18,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 47,
+     "cola": 0,
+     "trabajos": 10,
+     "kbGeo": 624093
+    },
+    "t": 13524,
+    "d": 333,
+    "z": {
+     "nivel": 1,
+     "d": 323,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 79,
+    "ktris": 1186,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 787,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 901,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 17,
+     "drawEd": 4,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 47,
+     "cola": 0,
+     "trabajos": 2,
+     "kbGeo": 624093
+    },
+    "t": 13841,
+    "d": 331,
+    "z": {
+     "nivel": 1,
+     "d": 321,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 78,
+    "ktris": 1186,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 788,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 890,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 17,
+     "drawEd": 4,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 47,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 652632
+    },
+    "t": 14162,
+    "d": 329,
+    "z": {
+     "nivel": 1,
+     "d": 319,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 77,
+    "ktris": 1197,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 789,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 884,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 18,
+     "drawEd": 3,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 47,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 565235
+    },
+    "t": 14490,
+    "d": 327,
+    "z": {
+     "nivel": 1,
+     "d": 317,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 76,
+    "ktris": 1202,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 789,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 898,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 18,
+     "drawEd": 3,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 47,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 565235
+    },
+    "t": 14821,
+    "d": 325,
+    "z": {
+     "nivel": 1,
+     "d": 315,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 77,
+    "ktris": 1203,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 793,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 899,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 18,
+     "drawEd": 3,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 2,
+     "kbGeo": 567094
+    },
+    "t": 15145,
+    "d": 323,
+    "z": {
+     "nivel": 1,
+     "d": 313,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 76,
+    "ktris": 1202,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 793,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 921,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 4,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 2,
+     "kbGeo": 567094
+    },
+    "t": 15488,
+    "d": 321,
+    "z": {
+     "nivel": 1,
+     "d": 311,
+     "pre": 0,
+     "v": 5.8,
+     "fz": false
+    }
+   },
+   {
+    "calls": 76,
+    "ktris": 1208,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 794,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 933,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 4,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 3,
+     "kbGeo": 581462
+    },
+    "t": 15810,
+    "d": 319,
+    "z": {
+     "nivel": 1,
+     "d": 309,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 77,
+    "ktris": 1209,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 794,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 935,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 20,
+     "drawEd": 3,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 581462
+    },
+    "t": 16141,
+    "d": 317,
+    "z": {
+     "nivel": 1,
+     "d": 307,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 75,
+    "ktris": 1224,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 794,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 921,
+    "st": {
+     "vCerca": 2,
+     "vLejos": 0,
+     "vHD": 20,
+     "drawEd": 3,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 2,
+     "kbGeo": 581462
+    },
+    "t": 16465,
+    "d": 315,
+    "z": {
+     "nivel": 1,
+     "d": 305,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 76,
+    "ktris": 1229,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 794,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 961,
+    "st": {
+     "vCerca": 3,
+     "vLejos": 0,
+     "vHD": 20,
+     "drawEd": 4,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 2,
+     "kbGeo": 581462
+    },
+    "t": 16787,
+    "d": 313,
+    "z": {
+     "nivel": 1,
+     "d": 303,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 76,
+    "ktris": 1229,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 796,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 953,
+    "st": {
+     "vCerca": 3,
+     "vLejos": 0,
+     "vHD": 20,
+     "drawEd": 4,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 595052
+    },
+    "t": 17113,
+    "d": 311,
+    "z": {
+     "nivel": 1,
+     "d": 301,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 76,
+    "ktris": 1229,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 796,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 941,
+    "st": {
+     "vCerca": 3,
+     "vLejos": 0,
+     "vHD": 20,
+     "drawEd": 4,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 595052
+    },
+    "t": 17432,
+    "d": 309,
+    "z": {
+     "nivel": 1,
+     "d": 299,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 76,
+    "ktris": 1229,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 796,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 953,
+    "st": {
+     "vCerca": 3,
+     "vLejos": 0,
+     "vHD": 20,
+     "drawEd": 4,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 9,
+     "kbGeo": 595052
+    },
+    "t": 17768,
+    "d": 307,
+    "z": {
+     "nivel": 1,
+     "d": 297,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 90,
+    "ktris": 1240,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 796,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 952,
+    "st": {
+     "vCerca": 4,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 9,
+     "kbGeo": 595052
+    },
+    "t": 18087,
+    "d": 305,
+    "z": {
+     "nivel": 1,
+     "d": 295,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 95,
+    "ktris": 1216,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 796,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 949,
+    "st": {
+     "vCerca": 4,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 5,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 9,
+     "kbGeo": 595052
+    },
+    "t": 18398,
+    "d": 303,
+    "z": {
+     "nivel": 1,
+     "d": 293,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 95,
+    "ktris": 1234,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 797,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 944,
+    "st": {
+     "vCerca": 5,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 7,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 858686
+    },
+    "t": 18751,
+    "d": 301,
+    "z": {
+     "nivel": 1,
+     "d": 293,
+     "pre": 0,
+     "v": 5.6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 95,
+    "ktris": 1233,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 797,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 939,
+    "st": {
+     "vCerca": 5,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 7,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 858686
+    },
+    "t": 19063,
+    "d": 299,
+    "z": {
+     "nivel": 1,
+     "d": 289,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 96,
+    "ktris": 1211,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 797,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 958,
+    "st": {
+     "vCerca": 6,
+     "vLejos": 0,
+     "vHD": 18,
+     "drawEd": 8,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 858686
+    },
+    "t": 19368,
+    "d": 297,
+    "z": {
+     "nivel": 1,
+     "d": 287,
+     "pre": 0,
+     "v": 6.6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 96,
+    "ktris": 1211,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 797,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 954,
+    "st": {
+     "vCerca": 6,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 9,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 858686
+    },
+    "t": 19674,
+    "d": 295,
+    "z": {
+     "nivel": 1,
+     "d": 285,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 97,
+    "ktris": 1214,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 797,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 949,
+    "st": {
+     "vCerca": 6,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 10,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 858686
+    },
+    "t": 19987,
+    "d": 293,
+    "z": {
+     "nivel": 1,
+     "d": 283,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 96,
+    "ktris": 1172,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 797,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 943,
+    "st": {
+     "vCerca": 8,
+     "vLejos": 0,
+     "vHD": 17,
+     "drawEd": 9,
+     "modCerca": 62,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 858686
+    },
+    "t": 20293,
+    "d": 291,
+    "z": {
+     "nivel": 1,
+     "d": 281,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 96,
+    "ktris": 1184,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 800,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 944,
+    "st": {
+     "vCerca": 8,
+     "vLejos": 0,
+     "vHD": 18,
+     "drawEd": 9,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 858901
+    },
+    "t": 20616,
+    "d": 289,
+    "z": {
+     "nivel": 1,
+     "d": 279,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 96,
+    "ktris": 1181,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 798,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 988,
+    "st": {
+     "vCerca": 8,
+     "vLejos": 0,
+     "vHD": 18,
+     "drawEd": 9,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 9,
+     "kbGeo": 831201
+    },
+    "t": 20935,
+    "d": 287,
+    "z": {
+     "nivel": 1,
+     "d": 277,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 96,
+    "ktris": 1180,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1001,
+    "st": {
+     "vCerca": 8,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 10,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 21250,
+    "d": 285,
+    "z": {
+     "nivel": 1,
+     "d": 275,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 97,
+    "ktris": 1202,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 995,
+    "st": {
+     "vCerca": 8,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 10,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 21563,
+    "d": 283,
+    "z": {
+     "nivel": 1,
+     "d": 273,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 97,
+    "ktris": 1202,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1003,
+    "st": {
+     "vCerca": 8,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 10,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 21882,
+    "d": 281,
+    "z": {
+     "nivel": 1,
+     "d": 271,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 99,
+    "ktris": 1219,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 997,
+    "st": {
+     "vCerca": 8,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 10,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 22201,
+    "d": 279,
+    "z": {
+     "nivel": 1,
+     "d": 269,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 100,
+    "ktris": 1219,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 992,
+    "st": {
+     "vCerca": 8,
+     "vLejos": 0,
+     "vHD": 20,
+     "drawEd": 11,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 22521,
+    "d": 277,
+    "z": {
+     "nivel": 1,
+     "d": 267,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 100,
+    "ktris": 1221,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1005,
+    "st": {
+     "vCerca": 8,
+     "vLejos": 0,
+     "vHD": 20,
+     "drawEd": 11,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 22841,
+    "d": 275,
+    "z": {
+     "nivel": 1,
+     "d": 265,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 100,
+    "ktris": 1221,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 998,
+    "st": {
+     "vCerca": 8,
+     "vLejos": 0,
+     "vHD": 20,
+     "drawEd": 11,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 23153,
+    "d": 273,
+    "z": {
+     "nivel": 1,
+     "d": 263,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 101,
+    "ktris": 1223,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 993,
+    "st": {
+     "vCerca": 9,
+     "vLejos": 0,
+     "vHD": 20,
+     "drawEd": 12,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 23472,
+    "d": 271,
+    "z": {
+     "nivel": 1,
+     "d": 261,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 104,
+    "ktris": 1240,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1012,
+    "st": {
+     "vCerca": 10,
+     "vLejos": 0,
+     "vHD": 21,
+     "drawEd": 15,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 23778,
+    "d": 269,
+    "z": {
+     "nivel": 1,
+     "d": 259,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 107,
+    "ktris": 1234,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1006,
+    "st": {
+     "vCerca": 13,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 17,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 24097,
+    "d": 267,
+    "z": {
+     "nivel": 1,
+     "d": 257,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 106,
+    "ktris": 1228,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1000,
+    "st": {
+     "vCerca": 13,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 17,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 24418,
+    "d": 265,
+    "z": {
+     "nivel": 1,
+     "d": 255,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 107,
+    "ktris": 1227,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 993,
+    "st": {
+     "vCerca": 13,
+     "vLejos": 0,
+     "vHD": 20,
+     "drawEd": 18,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 24731,
+    "d": 263,
+    "z": {
+     "nivel": 1,
+     "d": 253,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 108,
+    "ktris": 1225,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 990,
+    "st": {
+     "vCerca": 15,
+     "vLejos": 0,
+     "vHD": 19,
+     "drawEd": 19,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 25049,
+    "d": 261,
+    "z": {
+     "nivel": 1,
+     "d": 251,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 109,
+    "ktris": 1221,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1010,
+    "st": {
+     "vCerca": 15,
+     "vLejos": 1,
+     "vHD": 18,
+     "drawEd": 20,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 25362,
+    "d": 259,
+    "z": {
+     "nivel": 1,
+     "d": 249,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 109,
+    "ktris": 1223,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1005,
+    "st": {
+     "vCerca": 16,
+     "vLejos": 1,
+     "vHD": 18,
+     "drawEd": 20,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 25668,
+    "d": 257,
+    "z": {
+     "nivel": 1,
+     "d": 247,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 110,
+    "ktris": 1062,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 999,
+    "st": {
+     "vCerca": 17,
+     "vLejos": 1,
+     "vHD": 18,
+     "drawEd": 21,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 25987,
+    "d": 255,
+    "z": {
+     "nivel": 1,
+     "d": 245,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 108,
+    "ktris": 943,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 993,
+    "st": {
+     "vCerca": 19,
+     "vLejos": 2,
+     "vHD": 16,
+     "drawEd": 19,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 26299,
+    "d": 253,
+    "z": {
+     "nivel": 1,
+     "d": 243,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 109,
+    "ktris": 953,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 801,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 989,
+    "st": {
+     "vCerca": 20,
+     "vLejos": 2,
+     "vHD": 17,
+     "drawEd": 21,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 870015
+    },
+    "t": 26624,
+    "d": 251,
+    "z": {
+     "nivel": 1,
+     "d": 241,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 110,
+    "ktris": 957,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 999,
+    "st": {
+     "vCerca": 20,
+     "vLejos": 2,
+     "vHD": 18,
+     "drawEd": 21,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 868301
+    },
+    "t": 26951,
+    "d": 249,
+    "z": {
+     "nivel": 1,
+     "d": 239,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 111,
+    "ktris": 952,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 994,
+    "st": {
+     "vCerca": 21,
+     "vLejos": 3,
+     "vHD": 18,
+     "drawEd": 22,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 868301
+    },
+    "t": 27271,
+    "d": 247,
+    "z": {
+     "nivel": 1,
+     "d": 237,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 110,
+    "ktris": 949,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 988,
+    "st": {
+     "vCerca": 20,
+     "vLejos": 4,
+     "vHD": 18,
+     "drawEd": 21,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 868301
+    },
+    "t": 27584,
+    "d": 245,
+    "z": {
+     "nivel": 1,
+     "d": 235,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 111,
+    "ktris": 961,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1010,
+    "st": {
+     "vCerca": 21,
+     "vLejos": 4,
+     "vHD": 18,
+     "drawEd": 22,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 868301
+    },
+    "t": 27903,
+    "d": 243,
+    "z": {
+     "nivel": 1,
+     "d": 233,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 112,
+    "ktris": 967,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 997,
+    "st": {
+     "vCerca": 20,
+     "vLejos": 5,
+     "vHD": 20,
+     "drawEd": 23,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 868301
+    },
+    "t": 28223,
+    "d": 241,
+    "z": {
+     "nivel": 1,
+     "d": 231,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 112,
+    "ktris": 987,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 992,
+    "st": {
+     "vCerca": 19,
+     "vLejos": 6,
+     "vHD": 21,
+     "drawEd": 23,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 868301
+    },
+    "t": 28537,
+    "d": 239,
+    "z": {
+     "nivel": 1,
+     "d": 227,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 110,
+    "ktris": 1003,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1012,
+    "st": {
+     "vCerca": 12,
+     "vLejos": 0,
+     "vHD": 24,
+     "drawEd": 21,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 868301
+    },
+    "t": 28855,
+    "d": 237,
+    "z": {
+     "nivel": 1,
+     "d": 227,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 109,
+    "ktris": 1015,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1000,
+    "st": {
+     "vCerca": 12,
+     "vLejos": 0,
+     "vHD": 26,
+     "drawEd": 20,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 868301
+    },
+    "t": 29160,
+    "d": 235,
+    "z": {
+     "nivel": 1,
+     "d": 225,
+     "pre": 0,
+     "v": 6.6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 109,
+    "ktris": 1013,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 994,
+    "st": {
+     "vCerca": 12,
+     "vLejos": 0,
+     "vHD": 27,
+     "drawEd": 21,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 51,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 868301
+    },
+    "t": 29479,
+    "d": 233,
+    "z": {
+     "nivel": 1,
+     "d": 223,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 110,
+    "ktris": 1019,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 798,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1016,
+    "st": {
+     "vCerca": 12,
+     "vLejos": 0,
+     "vHD": 32,
+     "drawEd": 21,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 866595
+    },
+    "t": 29801,
+    "d": 231,
+    "z": {
+     "nivel": 1,
+     "d": 221,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 110,
+    "ktris": 1074,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 798,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1026,
+    "st": {
+     "vCerca": 13,
+     "vLejos": 0,
+     "vHD": 33,
+     "drawEd": 21,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 866595
+    },
+    "t": 30122,
+    "d": 229,
+    "z": {
+     "nivel": 1,
+     "d": 219,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 110,
+    "ktris": 1095,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1036,
+    "st": {
+     "vCerca": 13,
+     "vLejos": 0,
+     "vHD": 33,
+     "drawEd": 21,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 30431,
+    "d": 227,
+    "z": {
+     "nivel": 1,
+     "d": 217,
+     "pre": 0,
+     "v": 6.6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 111,
+    "ktris": 1096,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1030,
+    "st": {
+     "vCerca": 14,
+     "vLejos": 0,
+     "vHD": 33,
+     "drawEd": 22,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 30750,
+    "d": 225,
+    "z": {
+     "nivel": 1,
+     "d": 215,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 111,
+    "ktris": 1078,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1024,
+    "st": {
+     "vCerca": 17,
+     "vLejos": 0,
+     "vHD": 32,
+     "drawEd": 22,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 31063,
+    "d": 223,
+    "z": {
+     "nivel": 1,
+     "d": 213,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 109,
+    "ktris": 1068,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1043,
+    "st": {
+     "vCerca": 18,
+     "vLejos": 0,
+     "vHD": 30,
+     "drawEd": 20,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 31368,
+    "d": 221,
+    "z": {
+     "nivel": 1,
+     "d": 211,
+     "pre": 0,
+     "v": 6.6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 115,
+    "ktris": 1066,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1037,
+    "st": {
+     "vCerca": 17,
+     "vLejos": 2,
+     "vHD": 30,
+     "drawEd": 25,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 31674,
+    "d": 219,
+    "z": {
+     "nivel": 1,
+     "d": 209,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 114,
+    "ktris": 1069,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1033,
+    "st": {
+     "vCerca": 17,
+     "vLejos": 4,
+     "vHD": 30,
+     "drawEd": 26,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 31998,
+    "d": 217,
+    "z": {
+     "nivel": 1,
+     "d": 207,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 115,
+    "ktris": 1100,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1025,
+    "st": {
+     "vCerca": 17,
+     "vLejos": 4,
+     "vHD": 31,
+     "drawEd": 26,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 32327,
+    "d": 215,
+    "z": {
+     "nivel": 1,
+     "d": 205,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 113,
+    "ktris": 1103,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1044,
+    "st": {
+     "vCerca": 18,
+     "vLejos": 4,
+     "vHD": 31,
+     "drawEd": 24,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 32641,
+    "d": 213,
+    "z": {
+     "nivel": 1,
+     "d": 203,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 114,
+    "ktris": 1099,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1039,
+    "st": {
+     "vCerca": 18,
+     "vLejos": 5,
+     "vHD": 31,
+     "drawEd": 25,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 32960,
+    "d": 211,
+    "z": {
+     "nivel": 1,
+     "d": 201,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 114,
+    "ktris": 1099,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1033,
+    "st": {
+     "vCerca": 20,
+     "vLejos": 5,
+     "vHD": 31,
+     "drawEd": 25,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 33277,
+    "d": 209,
+    "z": {
+     "nivel": 1,
+     "d": 199,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 115,
+    "ktris": 1094,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1028,
+    "st": {
+     "vCerca": 19,
+     "vLejos": 7,
+     "vHD": 31,
+     "drawEd": 26,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 33583,
+    "d": 207,
+    "z": {
+     "nivel": 1,
+     "d": 197,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 115,
+    "ktris": 1099,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1034,
+    "st": {
+     "vCerca": 19,
+     "vLejos": 7,
+     "vHD": 31,
+     "drawEd": 26,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 33903,
+    "d": 205,
+    "z": {
+     "nivel": 1,
+     "d": 195,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 115,
+    "ktris": 1101,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1031,
+    "st": {
+     "vCerca": 20,
+     "vLejos": 7,
+     "vHD": 31,
+     "drawEd": 26,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 34216,
+    "d": 203,
+    "z": {
+     "nivel": 1,
+     "d": 193,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 109,
+    "ktris": 1102,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 942,
+    "st": {
+     "vCerca": 18,
+     "vLejos": 2,
+     "vHD": 31,
+     "drawEd": 20,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 34522,
+    "d": 201,
+    "z": {
+     "nivel": 1,
+     "d": 191,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 114,
+    "ktris": 1112,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 936,
+    "st": {
+     "vCerca": 22,
+     "vLejos": 2,
+     "vHD": 30,
+     "drawEd": 22,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 34841,
+    "d": 199,
+    "z": {
+     "nivel": 1,
+     "d": 189,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 115,
+    "ktris": 1124,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 956,
+    "st": {
+     "vCerca": 25,
+     "vLejos": 3,
+     "vHD": 30,
+     "drawEd": 22,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 35161,
+    "d": 197,
+    "z": {
+     "nivel": 1,
+     "d": 187,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 96,
+    "ktris": 1124,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 948,
+    "st": {
+     "vCerca": 28,
+     "vLejos": 3,
+     "vHD": 30,
+     "drawEd": 22,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 35475,
+    "d": 195,
+    "z": {
+     "nivel": 1,
+     "d": 185,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 96,
+    "ktris": 1125,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 941,
+    "st": {
+     "vCerca": 31,
+     "vLejos": 3,
+     "vHD": 29,
+     "drawEd": 23,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 35794,
+    "d": 193,
+    "z": {
+     "nivel": 1,
+     "d": 183,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 96,
+    "ktris": 1125,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 799,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 959,
+    "st": {
+     "vCerca": 33,
+     "vLejos": 3,
+     "vHD": 28,
+     "drawEd": 28,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 883490
+    },
+    "t": 36120,
+    "d": 191,
+    "z": {
+     "nivel": 1,
+     "d": 181,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 101,
+    "ktris": 1126,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 798,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 953,
+    "st": {
+     "vCerca": 33,
+     "vLejos": 3,
+     "vHD": 28,
+     "drawEd": 28,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 867059
+    },
+    "t": 36432,
+    "d": 189,
+    "z": {
+     "nivel": 1,
+     "d": 179,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 101,
+    "ktris": 1119,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 798,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 947,
+    "st": {
+     "vCerca": 35,
+     "vLejos": 4,
+     "vHD": 26,
+     "drawEd": 28,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 867059
+    },
+    "t": 36750,
+    "d": 187,
+    "z": {
+     "nivel": 1,
+     "d": 177,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 102,
+    "ktris": 1126,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 798,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 942,
+    "st": {
+     "vCerca": 37,
+     "vLejos": 4,
+     "vHD": 25,
+     "drawEd": 28,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 867059
+    },
+    "t": 37075,
+    "d": 185,
+    "z": {
+     "nivel": 1,
+     "d": 175,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 102,
+    "ktris": 1124,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 793,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 982,
+    "st": {
+     "vCerca": 38,
+     "vLejos": 4,
+     "vHD": 24,
+     "drawEd": 27,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 9,
+     "kbGeo": 827166
+    },
+    "t": 37411,
+    "d": 183,
+    "z": {
+     "nivel": 1,
+     "d": 171,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 110,
+    "ktris": 1177,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 795,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 1004,
+    "st": {
+     "vCerca": 38,
+     "vLejos": 4,
+     "vHD": 24,
+     "drawEd": 36,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 864713
+    },
+    "t": 37766,
+    "d": 181,
+    "z": {
+     "nivel": 1,
+     "d": 171,
+     "pre": 0,
+     "v": 5.6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 101,
+    "ktris": 1124,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 794,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 999,
+    "st": {
+     "vCerca": 38,
+     "vLejos": 4,
+     "vHD": 24,
+     "drawEd": 27,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 853187
+    },
+    "t": 38084,
+    "d": 179,
+    "z": {
+     "nivel": 1,
+     "d": 169,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 100,
+    "ktris": 1124,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 794,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 992,
+    "st": {
+     "vCerca": 39,
+     "vLejos": 4,
+     "vHD": 23,
+     "drawEd": 27,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 853187
+    },
+    "t": 38389,
+    "d": 177,
+    "z": {
+     "nivel": 1,
+     "d": 167,
+     "pre": 0,
+     "v": 6.6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 101,
+    "ktris": 1132,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 794,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 986,
+    "st": {
+     "vCerca": 38,
+     "vLejos": 5,
+     "vHD": 23,
+     "drawEd": 28,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 853187
+    },
+    "t": 38709,
+    "d": 175,
+    "z": {
+     "nivel": 1,
+     "d": 165,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 104,
+    "ktris": 1168,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 794,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 980,
+    "st": {
+     "vCerca": 37,
+     "vLejos": 6,
+     "vHD": 24,
+     "drawEd": 30,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 50,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 853187
+    },
+    "t": 39029,
+    "d": 173,
+    "z": {
+     "nivel": 1,
+     "d": 163,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 103,
+    "ktris": 1175,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 792,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 984,
+    "st": {
+     "vCerca": 37,
+     "vLejos": 6,
+     "vHD": 25,
+     "drawEd": 29,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 48,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 850256
+    },
+    "t": 39347,
+    "d": 171,
+    "z": {
+     "nivel": 1,
+     "d": 161,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 132,
+    "ktris": 1183,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 789,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 994,
+    "st": {
+     "vCerca": 37,
+     "vLejos": 9,
+     "vHD": 23,
+     "drawEd": 29,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 48,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 530966
+    },
+    "t": 39676,
+    "d": 169,
+    "z": {
+     "nivel": 1,
+     "d": 159,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 137,
+    "ktris": 1218,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 790,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 1232,
+    "st": {
+     "vCerca": 36,
+     "vLejos": 14,
+     "vHD": 24,
+     "drawEd": 34,
+     "modCerca": 63,
+     "modLejos": 63,
+     "modHD": 48,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 542773
+    },
+    "t": 39999,
+    "d": 167,
+    "z": {
+     "nivel": 1,
+     "d": 157,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 139,
+    "ktris": 1259,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 786,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 835,
+    "st": {
+     "vCerca": 34,
+     "vLejos": 17,
+     "vHD": 25,
+     "drawEd": 34,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 48,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 542680
+    },
+    "t": 40330,
+    "d": 165,
+    "z": {
+     "nivel": 1,
+     "d": 155,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 138,
+    "ktris": 1261,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 786,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 827,
+    "st": {
+     "vCerca": 35,
+     "vLejos": 18,
+     "vHD": 24,
+     "drawEd": 35,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 48,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 542680
+    },
+    "t": 40655,
+    "d": 163,
+    "z": {
+     "nivel": 1,
+     "d": 153,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 139,
+    "ktris": 1266,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 786,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 838,
+    "st": {
+     "vCerca": 33,
+     "vLejos": 20,
+     "vHD": 25,
+     "drawEd": 34,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 48,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 542680
+    },
+    "t": 40981,
+    "d": 161,
+    "z": {
+     "nivel": 1,
+     "d": 151,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 138,
+    "ktris": 1275,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 784,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 835,
+    "st": {
+     "vCerca": 34,
+     "vLejos": 21,
+     "vHD": 25,
+     "drawEd": 35,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 46,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 536677
+    },
+    "t": 41310,
+    "d": 159,
+    "z": {
+     "nivel": 1,
+     "d": 149,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 139,
+    "ktris": 1270,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 784,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 829,
+    "st": {
+     "vCerca": 34,
+     "vLejos": 21,
+     "vHD": 24,
+     "drawEd": 34,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 46,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 536677
+    },
+    "t": 41627,
+    "d": 157,
+    "z": {
+     "nivel": 1,
+     "d": 147,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 138,
+    "ktris": 1274,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 784,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 827,
+    "st": {
+     "vCerca": 34,
+     "vLejos": 21,
+     "vHD": 25,
+     "drawEd": 34,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 46,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 536677
+    },
+    "t": 41950,
+    "d": 155,
+    "z": {
+     "nivel": 1,
+     "d": 145,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 137,
+    "ktris": 1281,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 784,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 837,
+    "st": {
+     "vCerca": 36,
+     "vLejos": 21,
+     "vHD": 25,
+     "drawEd": 33,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 46,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 536677
+    },
+    "t": 42278,
+    "d": 153,
+    "z": {
+     "nivel": 1,
+     "d": 143,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 136,
+    "ktris": 1219,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 783,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 821,
+    "st": {
+     "vCerca": 36,
+     "vLejos": 21,
+     "vHD": 25,
+     "drawEd": 32,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 46,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 750522
+    },
+    "t": 42593,
+    "d": 151,
+    "z": {
+     "nivel": 1,
+     "d": 141,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 137,
+    "ktris": 1244,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 758,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 836,
+    "st": {
+     "vCerca": 35,
+     "vLejos": 22,
+     "vHD": 27,
+     "drawEd": 34,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 742542
+    },
+    "t": 42911,
+    "d": 149,
+    "z": {
+     "nivel": 1,
+     "d": 139,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 137,
+    "ktris": 1241,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 758,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 831,
+    "st": {
+     "vCerca": 35,
+     "vLejos": 24,
+     "vHD": 26,
+     "drawEd": 34,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 742542
+    },
+    "t": 43230,
+    "d": 147,
+    "z": {
+     "nivel": 1,
+     "d": 137,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 137,
+    "ktris": 1237,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 758,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 825,
+    "st": {
+     "vCerca": 32,
+     "vLejos": 28,
+     "vHD": 26,
+     "drawEd": 34,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 742542
+    },
+    "t": 43550,
+    "d": 145,
+    "z": {
+     "nivel": 1,
+     "d": 135,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 138,
+    "ktris": 1233,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 758,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 825,
+    "st": {
+     "vCerca": 32,
+     "vLejos": 28,
+     "vHD": 26,
+     "drawEd": 34,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 742542
+    },
+    "t": 43869,
+    "d": 143,
+    "z": {
+     "nivel": 2,
+     "d": 133,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 139,
+    "ktris": 1251,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 758,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 819,
+    "st": {
+     "vCerca": 30,
+     "vLejos": 30,
+     "vHD": 27,
+     "drawEd": 36,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 742542
+    },
+    "t": 44183,
+    "d": 141,
+    "z": {
+     "nivel": 2,
+     "d": 131,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 139,
+    "ktris": 1249,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 758,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 839,
+    "st": {
+     "vCerca": 29,
+     "vLejos": 31,
+     "vHD": 27,
+     "drawEd": 36,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 742542
+    },
+    "t": 44501,
+    "d": 139,
+    "z": {
+     "nivel": 2,
+     "d": 129,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 142,
+    "ktris": 1265,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 758,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 834,
+    "st": {
+     "vCerca": 28,
+     "vLejos": 33,
+     "vHD": 29,
+     "drawEd": 39,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 742542
+    },
+    "t": 44806,
+    "d": 137,
+    "z": {
+     "nivel": 2,
+     "d": 127,
+     "pre": 0,
+     "v": 6.6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 142,
+    "ktris": 1254,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 758,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 837,
+    "st": {
+     "vCerca": 27,
+     "vLejos": 35,
+     "vHD": 31,
+     "drawEd": 39,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 742542
+    },
+    "t": 45126,
+    "d": 135,
+    "z": {
+     "nivel": 2,
+     "d": 125,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 140,
+    "ktris": 1263,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 758,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 832,
+    "st": {
+     "vCerca": 25,
+     "vLejos": 38,
+     "vHD": 33,
+     "drawEd": 38,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 742542
+    },
+    "t": 45440,
+    "d": 133,
+    "z": {
+     "nivel": 2,
+     "d": 123,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 139,
+    "ktris": 1265,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 758,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 826,
+    "st": {
+     "vCerca": 24,
+     "vLejos": 39,
+     "vHD": 34,
+     "drawEd": 37,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 742542
+    },
+    "t": 45759,
+    "d": 131,
+    "z": {
+     "nivel": 2,
+     "d": 119,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 142,
+    "ktris": 1256,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 754,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 879,
+    "st": {
+     "vCerca": 26,
+     "vLejos": 40,
+     "vHD": 35,
+     "drawEd": 38,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 9,
+     "kbGeo": 702852
+    },
+    "t": 46088,
+    "d": 129,
+    "z": {
+     "nivel": 2,
+     "d": 119,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 138,
+    "ktris": 1245,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 757,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 869,
+    "st": {
+     "vCerca": 26,
+     "vLejos": 40,
+     "vHD": 36,
+     "drawEd": 36,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 738198
+    },
+    "t": 46494,
+    "d": 127,
+    "z": {
+     "nivel": 2,
+     "d": 117,
+     "pre": 0,
+     "v": 5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 139,
+    "ktris": 1260,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 757,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 863,
+    "st": {
+     "vCerca": 27,
+     "vLejos": 42,
+     "vHD": 40,
+     "drawEd": 36,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 738198
+    },
+    "t": 46806,
+    "d": 125,
+    "z": {
+     "nivel": 2,
+     "d": 115,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 138,
+    "ktris": 1260,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 757,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 882,
+    "st": {
+     "vCerca": 27,
+     "vLejos": 42,
+     "vHD": 40,
+     "drawEd": 36,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 738198
+    },
+    "t": 47120,
+    "d": 123,
+    "z": {
+     "nivel": 2,
+     "d": 113,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 138,
+    "ktris": 1240,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 757,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 876,
+    "st": {
+     "vCerca": 26,
+     "vLejos": 45,
+     "vHD": 39,
+     "drawEd": 36,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 738198
+    },
+    "t": 47438,
+    "d": 121,
+    "z": {
+     "nivel": 2,
+     "d": 111,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 138,
+    "ktris": 1246,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 757,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 872,
+    "st": {
+     "vCerca": 27,
+     "vLejos": 46,
+     "vHD": 41,
+     "drawEd": 38,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 738198
+    },
+    "t": 47766,
+    "d": 119,
+    "z": {
+     "nivel": 2,
+     "d": 109,
+     "pre": 0,
+     "v": 5.9,
+     "fz": false
+    }
+   },
+   {
+    "calls": 140,
+    "ktris": 1267,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 757,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 880,
+    "st": {
+     "vCerca": 27,
+     "vLejos": 46,
+     "vHD": 42,
+     "drawEd": 38,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 738198
+    },
+    "t": 48086,
+    "d": 117,
+    "z": {
+     "nivel": 2,
+     "d": 107,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 136,
+    "ktris": 1227,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 757,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 874,
+    "st": {
+     "vCerca": 28,
+     "vLejos": 22,
+     "vHD": 41,
+     "drawEd": 34,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 738198
+    },
+    "t": 48404,
+    "d": 115,
+    "z": {
+     "nivel": 2,
+     "d": 105,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 138,
+    "ktris": 1714,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 757,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 867,
+    "st": {
+     "vCerca": 29,
+     "vLejos": 22,
+     "vHD": 45,
+     "drawEd": 36,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 738198
+    },
+    "t": 48711,
+    "d": 113,
+    "z": {
+     "nivel": 2,
+     "d": 103,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 125,
+    "ktris": 1697,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 757,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 860,
+    "st": {
+     "vCerca": 25,
+     "vLejos": 0,
+     "vHD": 45,
+     "drawEd": 23,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 738198
+    },
+    "t": 49030,
+    "d": 111,
+    "z": {
+     "nivel": 2,
+     "d": 101,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 126,
+    "ktris": 1742,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 757,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 880,
+    "st": {
+     "vCerca": 26,
+     "vLejos": 0,
+     "vHD": 54,
+     "drawEd": 23,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 738198
+    },
+    "t": 49358,
+    "d": 109,
+    "z": {
+     "nivel": 2,
+     "d": 99,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 124,
+    "ktris": 1834,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 757,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 873,
+    "st": {
+     "vCerca": 29,
+     "vLejos": 0,
+     "vHD": 62,
+     "drawEd": 25,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 738198
+    },
+    "t": 49682,
+    "d": 107,
+    "z": {
+     "nivel": 2,
+     "d": 97,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 126,
+    "ktris": 2293,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 752,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 901,
+    "st": {
+     "vCerca": 29,
+     "vLejos": 0,
+     "vHD": 63,
+     "drawEd": 27,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 700040
+    },
+    "t": 50009,
+    "d": 105,
+    "z": {
+     "nivel": 2,
+     "d": 95,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 123,
+    "ktris": 2301,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 755,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 908,
+    "st": {
+     "vCerca": 29,
+     "vLejos": 0,
+     "vHD": 64,
+     "drawEd": 24,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 732361
+    },
+    "t": 50334,
+    "d": 103,
+    "z": {
+     "nivel": 2,
+     "d": 93,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 123,
+    "ktris": 2320,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 755,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 901,
+    "st": {
+     "vCerca": 30,
+     "vLejos": 0,
+     "vHD": 65,
+     "drawEd": 24,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 732361
+    },
+    "t": 50660,
+    "d": 101,
+    "z": {
+     "nivel": 2,
+     "d": 91,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 125,
+    "ktris": 2315,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 755,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 919,
+    "st": {
+     "vCerca": 30,
+     "vLejos": 0,
+     "vHD": 65,
+     "drawEd": 24,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 732361
+    },
+    "t": 50973,
+    "d": 99,
+    "z": {
+     "nivel": 2,
+     "d": 89,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 126,
+    "ktris": 2326,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 755,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 912,
+    "st": {
+     "vCerca": 30,
+     "vLejos": 0,
+     "vHD": 66,
+     "drawEd": 25,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 732361
+    },
+    "t": 51292,
+    "d": 97,
+    "z": {
+     "nivel": 2,
+     "d": 87,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 128,
+    "ktris": 2324,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 755,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 906,
+    "st": {
+     "vCerca": 29,
+     "vLejos": 1,
+     "vHD": 66,
+     "drawEd": 27,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 732361
+    },
+    "t": 51612,
+    "d": 95,
+    "z": {
+     "nivel": 2,
+     "d": 85,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 132,
+    "ktris": 2316,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 750,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 908,
+    "st": {
+     "vCerca": 31,
+     "vLejos": 2,
+     "vHD": 64,
+     "drawEd": 32,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 690471
+    },
+    "t": 51936,
+    "d": 93,
+    "z": {
+     "nivel": 2,
+     "d": 83,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 135,
+    "ktris": 2308,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 751,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 958,
+    "st": {
+     "vCerca": 30,
+     "vLejos": 3,
+     "vHD": 63,
+     "drawEd": 34,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 696931
+    },
+    "t": 52251,
+    "d": 91,
+    "z": {
+     "nivel": 2,
+     "d": 81,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 134,
+    "ktris": 2303,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 754,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 952,
+    "st": {
+     "vCerca": 29,
+     "vLejos": 4,
+     "vHD": 64,
+     "drawEd": 31,
+     "modCerca": 61,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 726142
+    },
+    "t": 52570,
+    "d": 89,
+    "z": {
+     "nivel": 2,
+     "d": 79,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 134,
+    "ktris": 2300,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 749,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 945,
+    "st": {
+     "vCerca": 29,
+     "vLejos": 4,
+     "vHD": 64,
+     "drawEd": 31,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 725944
+    },
+    "t": 52883,
+    "d": 87,
+    "z": {
+     "nivel": 2,
+     "d": 77,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 134,
+    "ktris": 2286,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 749,
+     "tex": 171,
+     "prog": 120
+    },
+    "heap": 938,
+    "st": {
+     "vCerca": 30,
+     "vLejos": 5,
+     "vHD": 62,
+     "drawEd": 31,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 725944
+    },
+    "t": 53202,
+    "d": 85,
+    "z": {
+     "nivel": 2,
+     "d": 75,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 136,
+    "ktris": 2284,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 747,
+     "tex": 171,
+     "prog": 121
+    },
+    "heap": 758,
+    "st": {
+     "vCerca": 31,
+     "vLejos": 6,
+     "vHD": 62,
+     "drawEd": 31,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 691362
+    },
+    "t": 53614,
+    "d": 83,
+    "z": {
+     "nivel": 2,
+     "d": 73,
+     "pre": 0,
+     "v": 4.7,
+     "fz": false
+    }
+   },
+   {
+    "calls": 134,
+    "ktris": 2744,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 744,
+     "tex": 171,
+     "prog": 121
+    },
+    "heap": 785,
+    "st": {
+     "vCerca": 30,
+     "vLejos": 7,
+     "vHD": 62,
+     "drawEd": 31,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 696131
+    },
+    "t": 53956,
+    "d": 81,
+    "z": {
+     "nivel": 2,
+     "d": 71,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 133,
+    "ktris": 2732,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 744,
+     "tex": 171,
+     "prog": 121
+    },
+    "heap": 834,
+    "st": {
+     "vCerca": 29,
+     "vLejos": 8,
+     "vHD": 63,
+     "drawEd": 29,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 696013
+    },
+    "t": 54290,
+    "d": 79,
+    "z": {
+     "nivel": 2,
+     "d": 69,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 137,
+    "ktris": 2736,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 747,
+     "tex": 171,
+     "prog": 121
+    },
+    "heap": 837,
+    "st": {
+     "vCerca": 29,
+     "vLejos": 8,
+     "vHD": 64,
+     "drawEd": 26,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 723789
+    },
+    "t": 54614,
+    "d": 77,
+    "z": {
+     "nivel": 2,
+     "d": 67,
+     "pre": 0,
+     "v": 6.2,
+     "fz": false
+    }
+   },
+   {
+    "calls": 137,
+    "ktris": 2733,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 747,
+     "tex": 171,
+     "prog": 121
+    },
+    "heap": 831,
+    "st": {
+     "vCerca": 28,
+     "vLejos": 9,
+     "vHD": 63,
+     "drawEd": 26,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 723789
+    },
+    "t": 54931,
+    "d": 75,
+    "z": {
+     "nivel": 2,
+     "d": 65,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 141,
+    "ktris": 2732,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 747,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 822,
+    "st": {
+     "vCerca": 28,
+     "vLejos": 9,
+     "vHD": 63,
+     "drawEd": 26,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 723789
+    },
+    "t": 55237,
+    "d": 73,
+    "z": {
+     "nivel": 2,
+     "d": 63,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 142,
+    "ktris": 2740,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 747,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 817,
+    "st": {
+     "vCerca": 28,
+     "vLejos": 9,
+     "vHD": 65,
+     "drawEd": 27,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 723789
+    },
+    "t": 55552,
+    "d": 71,
+    "z": {
+     "nivel": 2,
+     "d": 61,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 152,
+    "ktris": 2868,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 745,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 532,
+    "st": {
+     "vCerca": 24,
+     "vLejos": 15,
+     "vHD": 64,
+     "drawEd": 37,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 374801
+    },
+    "t": 55886,
+    "d": 69,
+    "z": {
+     "nivel": 2,
+     "d": 59,
+     "pre": 0,
+     "v": 5.9,
+     "fz": false
+    }
+   },
+   {
+    "calls": 154,
+    "ktris": 2874,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 745,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 550,
+    "st": {
+     "vCerca": 24,
+     "vLejos": 15,
+     "vHD": 64,
+     "drawEd": 37,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 374801
+    },
+    "t": 56209,
+    "d": 67,
+    "z": {
+     "nivel": 2,
+     "d": 57,
+     "pre": 0,
+     "v": 6.1,
+     "fz": false
+    }
+   },
+   {
+    "calls": 156,
+    "ktris": 2875,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 743,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 554,
+    "st": {
+     "vCerca": 23,
+     "vLejos": 16,
+     "vHD": 66,
+     "drawEd": 38,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 367806
+    },
+    "t": 56545,
+    "d": 65,
+    "z": {
+     "nivel": 2,
+     "d": 53,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 157,
+    "ktris": 3085,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 737,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 577,
+    "st": {
+     "vCerca": 23,
+     "vLejos": 16,
+     "vHD": 67,
+     "drawEd": 41,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 10,
+     "kbGeo": 332702
+    },
+    "t": 56883,
+    "d": 63,
+    "z": {
+     "nivel": 2,
+     "d": 53,
+     "pre": 0,
+     "v": 6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 158,
+    "ktris": 3091,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 737,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 571,
+    "st": {
+     "vCerca": 23,
+     "vLejos": 16,
+     "vHD": 67,
+     "drawEd": 41,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 10,
+     "kbGeo": 332702
+    },
+    "t": 57221,
+    "d": 61,
+    "z": {
+     "nivel": 2,
+     "d": 51,
+     "pre": 0,
+     "v": 5.9,
+     "fz": false
+    }
+   },
+   {
+    "calls": 155,
+    "ktris": 2726,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 741,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 563,
+    "st": {
+     "vCerca": 23,
+     "vLejos": 16,
+     "vHD": 66,
+     "drawEd": 36,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 443588
+    },
+    "t": 57545,
+    "d": 59,
+    "z": {
+     "nivel": 2,
+     "d": 49,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 155,
+    "ktris": 2959,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 733,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 567,
+    "st": {
+     "vCerca": 24,
+     "vLejos": 16,
+     "vHD": 66,
+     "drawEd": 36,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 1,
+     "kbGeo": 398928
+    },
+    "t": 57861,
+    "d": 57,
+    "z": {
+     "nivel": 2,
+     "d": 47,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 151,
+    "ktris": 2958,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 736,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 596,
+    "st": {
+     "vCerca": 24,
+     "vLejos": 16,
+     "vHD": 66,
+     "drawEd": 33,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 421153
+    },
+    "t": 58175,
+    "d": 55,
+    "z": {
+     "nivel": 2,
+     "d": 45,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 122,
+    "ktris": 2984,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 736,
+     "tex": 171,
+     "prog": 122
+    },
+    "heap": 590,
+    "st": {
+     "vCerca": 24,
+     "vLejos": 16,
+     "vHD": 67,
+     "drawEd": 33,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 42,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 421153
+    },
+    "t": 58487,
+    "d": 53,
+    "z": {
+     "nivel": 2,
+     "d": 43,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 121,
+    "ktris": 2974,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 659,
+     "tex": 167,
+     "prog": 122
+    },
+    "heap": 593,
+    "st": {
+     "vCerca": 27,
+     "vLejos": 16,
+     "vHD": 64,
+     "drawEd": 32,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 28,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 388515
+    },
+    "t": 58806,
+    "d": 51,
+    "z": {
+     "nivel": 2,
+     "d": 41,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 122,
+    "ktris": 2967,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 659,
+     "tex": 167,
+     "prog": 122
+    },
+    "heap": 587,
+    "st": {
+     "vCerca": 35,
+     "vLejos": 18,
+     "vHD": 54,
+     "drawEd": 34,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 28,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 388515
+    },
+    "t": 59139,
+    "d": 49,
+    "z": {
+     "nivel": 2,
+     "d": 39,
+     "pre": 0,
+     "v": 5.9,
+     "fz": false
+    }
+   },
+   {
+    "calls": 123,
+    "ktris": 2884,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 658,
+     "tex": 167,
+     "prog": 122
+    },
+    "heap": 579,
+    "st": {
+     "vCerca": 35,
+     "vLejos": 18,
+     "vHD": 54,
+     "drawEd": 34,
+     "modCerca": 59,
+     "modLejos": 63,
+     "modHD": 27,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 387428
+    },
+    "t": 59460,
+    "d": 47,
+    "z": {
+     "nivel": 2,
+     "d": 37,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 109,
+    "ktris": 2856,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 638,
+     "tex": 167,
+     "prog": 122
+    },
+    "heap": 597,
+    "st": {
+     "vCerca": 30,
+     "vLejos": 0,
+     "vHD": 53,
+     "drawEd": 20,
+     "modCerca": 50,
+     "modLejos": 63,
+     "modHD": 27,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 386561
+    },
+    "t": 59772,
+    "d": 45,
+    "z": {
+     "nivel": 2,
+     "d": 35,
+     "pre": 0,
+     "v": 6.5,
+     "fz": false
+    }
+   },
+   {
+    "calls": 110,
+    "ktris": 2838,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 638,
+     "tex": 167,
+     "prog": 122
+    },
+    "heap": 590,
+    "st": {
+     "vCerca": 33,
+     "vLejos": 0,
+     "vHD": 50,
+     "drawEd": 21,
+     "modCerca": 50,
+     "modLejos": 63,
+     "modHD": 27,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 386561
+    },
+    "t": 60091,
+    "d": 43,
+    "z": {
+     "nivel": 2,
+     "d": 33,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 106,
+    "ktris": 2818,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 638,
+     "tex": 167,
+     "prog": 122
+    },
+    "heap": 582,
+    "st": {
+     "vCerca": 36,
+     "vLejos": 0,
+     "vHD": 48,
+     "drawEd": 18,
+     "modCerca": 50,
+     "modLejos": 63,
+     "modHD": 27,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 386561
+    },
+    "t": 60410,
+    "d": 41,
+    "z": {
+     "nivel": 2,
+     "d": 31,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 102,
+    "ktris": 2815,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 638,
+     "tex": 167,
+     "prog": 122
+    },
+    "heap": 600,
+    "st": {
+     "vCerca": 37,
+     "vLejos": 0,
+     "vHD": 48,
+     "drawEd": 16,
+     "modCerca": 50,
+     "modLejos": 63,
+     "modHD": 27,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 386561
+    },
+    "t": 60724,
+    "d": 39,
+    "z": {
+     "nivel": 2,
+     "d": 29,
+     "pre": 0,
+     "v": 6.4,
+     "fz": false
+    }
+   },
+   {
+    "calls": 107,
+    "ktris": 2803,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 632,
+     "tex": 165,
+     "prog": 120
+    },
+    "heap": 592,
+    "st": {
+     "vCerca": 40,
+     "vLejos": 0,
+     "vHD": 46,
+     "drawEd": 21,
+     "modCerca": 48,
+     "modLejos": 63,
+     "modHD": 25,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 385100
+    },
+    "t": 61029,
+    "d": 37,
+    "z": {
+     "nivel": 2,
+     "d": 27,
+     "pre": 0,
+     "v": 6.6,
+     "fz": false
+    }
+   },
+   {
+    "calls": 107,
+    "ktris": 2792,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 632,
+     "tex": 165,
+     "prog": 120
+    },
+    "heap": 585,
+    "st": {
+     "vCerca": 42,
+     "vLejos": 0,
+     "vHD": 45,
+     "drawEd": 20,
+     "modCerca": 48,
+     "modLejos": 63,
+     "modHD": 25,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 385100
+    },
+    "t": 61349,
+    "d": 35,
+    "z": {
+     "nivel": 2,
+     "d": 25,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   },
+   {
+    "calls": 107,
+    "ktris": 2786,
+    "calidad": "alto",
+    "dpr": 1,
+    "sombras": true,
+    "mem": {
+     "geo": 632,
+     "tex": 165,
+     "prog": 120
+    },
+    "heap": 577,
+    "st": {
+     "vCerca": 44,
+     "vLejos": 0,
+     "vHD": 43,
+     "drawEd": 20,
+     "modCerca": 48,
+     "modLejos": 63,
+     "modHD": 25,
+     "cola": 0,
+     "trabajos": 0,
+     "kbGeo": 385100
+    },
+    "t": 61667,
+    "d": 33,
+    "z": {
+     "nivel": 2,
+     "d": 23,
+     "pre": 0,
+     "v": 6.3,
+     "fz": false
+    }
+   }
+  ]
+ }
+}
