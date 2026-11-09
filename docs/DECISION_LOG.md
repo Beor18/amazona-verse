@@ -493,3 +493,5 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
 
   Los ajustes técnicos reversibles dentro de este alcance ya no necesitan otra aprobación. **Objetivo:** que funcione fluido en Chromebooks e iPhone, sin perder la identidad visual vibrante ni la jugabilidad.
 
+
+2026-11-09 · [KELVIN] Cotorras en línea con Supabase: «adelante con ese modelo». Proyecto nuevo en la cuenta de Kelvin (org Smarlin), solo Realtime: salas por código, se envía solo especie, posición, vuelo y gestos con un id al azar por partida; sin nombres, chat, fotos, cuentas ni correos. Va en la expansión. Kelvin pide que lo monte la coordinadora.
