@@ -17,9 +17,11 @@ const ARCHIVOS = [
   // IPH-1 (710dfbee): perfil iPhone, DPR 1,25–1,75, sin Modo Escuela automático
   // QA-220 (c6786974, calentado de la variante sRGB del lienzo; calentarPresupuesto)
   ['src/engine/renderer.js', ['DPR_IPHONE = { max: 1.75, min: 1.25 }', 'IPH-1: el iPhone en «bajo» no baja de DPR_MIN', 'calentarPresupuesto']],
-  // KIMI-348 (prefetch a pie, 5141d2ae): CFG.precargaPie + rama en vueloAnticipo
-  // KIMI-346 (atlas escuela, 808937dc): tope LQ también con comprimidaModo()
-  ['src/engine/streaming.js', ['precargaPie', 'precargaPieMin', 'comprimidaModo() || (MOVIL && nivelCal()']],
+  // KIMI-346 (atlas escuela, 808937dc, SÍ en 63c7d914): tope LQ también con comprimidaModo()
+  // NOTA: el prefetch a pie KIMI-348 (5141d2ae, precargaPie) quedó FUERA de 63c7d914
+  // (verificado `git merge-base --is-ancestor` en el sanity check de KIMI-353): NO se exige aquí;
+  // se validará en la siguiente publicación que lo incluya.
+  ['src/engine/streaming.js', ['comprimidaModo() || (MOVIL && nivelCal()']],
   // KTX2 (925101b5, arrastre): cargador + ganchos del atlas
   ['src/engine/assets.js', ['function ktx2De(url)', 'function texKTX2(url, ok, falla)']],
   // QA-220 (eventos eef133a0, arrastre)

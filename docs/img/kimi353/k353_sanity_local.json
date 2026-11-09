@@ -1,0 +1,135 @@
+{
+ "base": "http://127.0.0.1:8931",
+ "hora_utc": "2026-11-09T03:11:51.037Z",
+ "ref": "HEAD",
+ "indice": {
+  "codigo": 200,
+  "bytes": 39606,
+  "build_meta": "(no encontrado)",
+  "ktx2_meta": "(no encontrado)"
+ },
+ "archivos": {
+  "src/engine/renderer.js": {
+   "codigo": 200,
+   "bytes": 114289,
+   "marcadores_ok": 3,
+   "marcadores_total": 3,
+   "faltan": [],
+   "ref": {
+    "bytes": 114289,
+    "identico": true
+   }
+  },
+  "src/engine/streaming.js": {
+   "codigo": 200,
+   "bytes": 177786,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 177786,
+    "identico": true
+   }
+  },
+  "src/engine/assets.js": {
+   "codigo": 200,
+   "bytes": 18848,
+   "marcadores_ok": 2,
+   "marcadores_total": 2,
+   "faltan": [],
+   "ref": {
+    "bytes": 18848,
+    "identico": true
+   }
+  },
+  "src/game/eventos.js": {
+   "codigo": 200,
+   "bytes": 10896,
+   "marcadores_ok": 2,
+   "marcadores_total": 2,
+   "faltan": [],
+   "ref": {
+    "bytes": 10896,
+    "identico": true
+   }
+  },
+  "assets/models/edificios/tex_hd/hd_ancient_lq.ktx2": {
+   "codigo": 200,
+   "bytes": 881032,
+   "marcadores_ok": 0,
+   "marcadores_total": 0,
+   "faltan": [],
+   "ref": {
+    "bytes": 881032,
+    "identico": true
+   }
+  },
+  "assets/models/edificios/tex_hd/hd_savage_lq.ktx2": {
+   "codigo": 200,
+   "bytes": 945064,
+   "marcadores_ok": 0,
+   "marcadores_total": 0,
+   "faltan": [],
+   "ref": {
+    "bytes": 945064,
+    "identico": true
+   }
+  },
+  "assets/models/edificios/tex_hd/hd_ancient_lq1024.ktx2": {
+   "codigo": 200,
+   "bytes": 248042,
+   "marcadores_ok": 0,
+   "marcadores_total": 0,
+   "faltan": [],
+   "ref": {
+    "bytes": 248042,
+    "identico": true
+   }
+  },
+  "assets/models/edificios/tex_hd/hd_savage_lq1024.ktx2": {
+   "codigo": 200,
+   "bytes": 262070,
+   "marcadores_ok": 0,
+   "marcadores_total": 0,
+   "faltan": [],
+   "ref": {
+    "bytes": 262070,
+    "identico": true
+   }
+  },
+  "assets/vendor/three/examples/js/libs/basis/basis_transcoder.wasm": {
+   "codigo": 200,
+   "bytes": 499935,
+   "marcadores_ok": 0,
+   "marcadores_total": 0,
+   "faltan": [],
+   "ref": {
+    "bytes": 499935,
+    "identico": true
+   }
+  },
+  "assets/vendor/three/examples/js/libs/basis/basis_transcoder.js": {
+   "codigo": 200,
+   "bytes": 62337,
+   "marcadores_ok": 0,
+   "marcadores_total": 0,
+   "faltan": [],
+   "ref": {
+    "bytes": 62337,
+    "identico": true
+   }
+  },
+  "sw.js": {
+   "codigo": 200,
+   "bytes": 1783,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "ref": {
+    "bytes": 1783,
+    "identico": true
+   }
+  }
+ },
+ "ok": false
+}
