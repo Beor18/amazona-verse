@@ -1,0 +1,144 @@
+{
+ "etiqueta": "k351-iphone-r2",
+ "hora_utc": "2026-11-09T02:48:17.918Z",
+ "head": "7f3ba7a0",
+ "paginas": {
+  "auto": {
+   "prep": "ok carga 5014 ms",
+   "muestra": {
+    "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHT",
+    "nucleos": 16,
+    "dpr": 3,
+    "fpsMed": 144,
+    "stats": {
+     "fps": 144,
+     "calls": 90,
+     "triangulos": 299901,
+     "calidad": "bajo",
+     "dpr": 1.5,
+     "post": false,
+     "sombras": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "escuela": false
+    },
+    "med": {
+     "texturasMB": 88.8,
+     "calls": 90,
+     "triangulos": 299901,
+     "heapMB": 86,
+     "texturasPor": {
+      "generadas": 10.8,
+      "otros": 3,
+      "personajes": 12,
+      "flora": 20.4,
+      "atlas_hd": 42.7
+     }
+    },
+    "medErr": "",
+    "info": null,
+    "heapMB": 86
+   },
+   "escuelaLate": [
+    {
+     "escuela": false,
+     "dpr": 1.5,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": false,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": false,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": false,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": false,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    }
+   ],
+   "erroresConsola": 0
+  },
+  "escuela": {
+   "prep": "ok carga 5050 ms",
+   "muestra": {
+    "ua": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHT",
+    "nucleos": 16,
+    "dpr": 3,
+    "fpsMed": 144,
+    "stats": {
+     "fps": 144,
+     "calls": 88,
+     "triangulos": 294777,
+     "calidad": "bajo",
+     "dpr": 1.25,
+     "post": false,
+     "sombras": false,
+     "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+     "escuela": true
+    },
+    "med": {
+     "texturasMB": 88.8,
+     "calls": 88,
+     "triangulos": 294777,
+     "heapMB": 82,
+     "texturasPor": {
+      "generadas": 10.8,
+      "otros": 3,
+      "personajes": 12,
+      "flora": 20.4,
+      "atlas_hd": 42.7
+     }
+    },
+    "medErr": "",
+    "info": null,
+    "heapMB": 82
+   },
+   "escuelaLate": [
+    {
+     "escuela": true,
+     "dpr": 1.25,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": true,
+     "dpr": 1.5,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": true,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": true,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    },
+    {
+     "escuela": true,
+     "dpr": 1.75,
+     "calidad": "bajo"
+    }
+   ],
+   "erroresConsola": 0
+  }
+ },
+ "ok": true,
+ "chequeos": {
+  "auto_calidad_bajo": true,
+  "auto_dpr_125_175": true,
+  "auto_dpr_subio_solo": true,
+  "auto_escuela_nunca": true,
+  "sin_errores_consola": true,
+  "escuela_url_entra": true
+ }
+}

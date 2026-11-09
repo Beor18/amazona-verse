@@ -1,0 +1,65 @@
+{
+ "base": "https://www.amazonaverse.com/juego",
+ "hora_utc": "2026-11-09T02:37:13.318Z",
+ "ref": "63c7d914",
+ "indice": {
+  "codigo": 200,
+  "bytes": 39931,
+  "build_meta": "HEAD 0271ba1de1de"
+ },
+ "archivos": {
+  "src/engine/renderer.js": {
+   "codigo": 200,
+   "bytes": 109058,
+   "marcadores_ok": 1,
+   "marcadores_total": 4,
+   "faltan": [
+    "DPR_IPHONE",
+    "IPH-1",
+    "perfil: 'iphone'"
+   ],
+   "presentes_no_deseados": [],
+   "ref": {
+    "bytes": 114289,
+    "identico": false
+   }
+  },
+  "src/engine/streaming.js": {
+   "codigo": 200,
+   "bytes": 176655,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "presentes_no_deseados": [],
+   "ref": {
+    "bytes": 177124,
+    "identico": false
+   }
+  },
+  "src/engine/assets.js": {
+   "codigo": 200,
+   "bytes": 18848,
+   "marcadores_ok": 2,
+   "marcadores_total": 2,
+   "faltan": [],
+   "presentes_no_deseados": [],
+   "ref": {
+    "bytes": 18848,
+    "identico": true
+   }
+  },
+  "sw.js": {
+   "codigo": 200,
+   "bytes": 1783,
+   "marcadores_ok": 1,
+   "marcadores_total": 1,
+   "faltan": [],
+   "presentes_no_deseados": [],
+   "ref": {
+    "bytes": 1783,
+    "identico": true
+   }
+  }
+ },
+ "ok": false
+}
