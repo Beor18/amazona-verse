@@ -1,84 +1,102 @@
-/* Juego · Expansión · Minijuego de pesca, «Pesca en el muelle» (G.v18pesca). Kelvin, 8-nov (ROADMAP, «Después de la temporada 1»:
-   minijuego de pesca para la expansión). Diversión primero: lanzar, esperar el pique, recoger y soltar. Sin monedas, tienda ni azar
-   de pago: los puntos solo cuentan en la ronda y el récord es local.
-   - Bandera: SOLO con ?expansion=1 (o localStorage amazonaverse.expansion = '1'; G.EXPANSION en boot.js). Apagada por defecto:
-     sin tarjeta en el menú, sin botón en la Pausa, sin piezas y sin carga del script. Nada se publica sin el visto bueno de Kelvin.
-   - Dónde: al final del muelle de Villa Raíz (lugar «muelle» del mapa; pieza propia del mapa, piso a 1,3 m de z ≈ 200 a 232), mirando
-     a la bahía (agua a nivel 0 desde z ≈ 206). Medido en el juego con el streaming cargado. No se añade ningún edificio: la caña, el
-     sedal, el corcho, la onda y el pez son piezas simples (primitivas de Three.js, flatShading), visibles solo mientras se pesca.
+/* Juego · Expansión · Minijuego de pesca, «Pesca en el río» (G.v18pesca). Kelvin, 8-nov (ROADMAP, «Después de la temporada 1»:
+   minijuego de pesca para la expansión) y 9-nov: «Debe ser en río, no en el mar». Diversión primero: lanzar, esperar el pique,
+   recoger y soltar. Sin monedas, tienda ni azar de pago: los puntos solo cuentan en la ronda y el récord es local.
+   - Bandera: ENCENDIDA para todos (Kelvin 9-nov: «Me encanta la pesca, buenísimo»). Bandera propia G.PESCA (boot.js), ?pesca=0 la
+     apaga: sin tarjeta en el menú, sin botón en la Pausa y sin piezas. La tarjeta (menu_modos.js) y el botón de la Pausa (boot.js) no
+     necesitan este script: se carga solo al entrar a pescar.
+   - Dónde: SITIO, una orilla del Río Amazonas cerca de Villa Raíz (polilínea agua.rio del mapa), medida en el juego con el streaming
+     cargado: tierra seca y llana a poca altura sobre el agua, río abierto delante, sin edificios ni árboles encima, lejos del puente, del
+     Terreno A y del hoyo 4 del minigolf. No se añade nada al mundo: la caña, el sedal, el corcho, la onda y el pez son piezas simples
+     (primitivas de Three.js, Lambert), visibles solo mientras se pesca.
    - Cómo se juega (una ronda de 2 min 30 s):
-       1 Lanzar: mantener Espacio (o el botón Lanzar) y soltar; la fuerza sube y baja: más fuerza, más lejos (5 a 16 m). ← → apuntan.
-       2 Esperar: el corcho flota; a veces solo pican de lado (tiembla). Cuando se hunde: «¡Pica!».
+       1 Lanzar: mantener Espacio (o el botón Lanzar) y soltar; la fuerza sube y baja: más fuerza, más lejos (D_MIN a D_MAX, el ancho
+         del río delante de la orilla). ← → apuntan.
+       2 Esperar: el corcho flota; a veces solo mordisquean (tiembla). Cuando se hunde: «¡Pica!».
        3 Clavar: pulsar en el momento (1,6 s de margen). Si no, el pez se va y se vuelve a lanzar.
        4 Recoger: mantener para subir el anzuelo y soltar para que baje; dentro de la zona verde (el pez) se llena la barra. Si el pez se
          cansa (12 s), la zona se agranda: nadie se queda atascado.
-       5 Foto y soltar: la ficha del pez (nombre, nombre científico, un dato y su fuente) y «Soltar» (vuelve al agua). Las invasoras no
-         se sueltan: «Reportar al DRNA» (sin matar a nadie; aviso G.emit('expansion:invasora') por si el módulo de invasoras escucha).
+       5 Foto y soltar: la ficha del pez (nombre, nombre científico, un dato y su fuente) y «Soltarlo» (vuelve al río). Las invasoras
+         (tilapia, pleco) no se sueltan: «Reportar al DRNA» (sin matar a nadie; aviso G.emit('expansion:invasora') por si el módulo de
+         invasoras escucha).
      Computadora: Espacio / E / Intro (mantener y soltar) · ← → apuntar · Esc salir · R otra ronda (al final).
-     Táctil: botón grande (Lanzar / Recoger / Soltar), ◀ ▶ y Salir (≥ 52 px).
-   - Peces (datos verificables, ver FUENTES): pargo prieto, róbalo, anguila americana y sábalo (nativos de la costa y los estuarios de
-     Puerto Rico) y la tilapia de Mozambique (invasora). Lejos se pican más los grandes (sábalo, róbalo); cerca, el pargo y la anguila.
+     Táctil: botón grande (Lanzar / ¡Clava! / ¡Recoge! / Soltarlo), ◀ ▶ y Salir (≥ 44 px).
+   - Peces de río (datos verificables, ver FUENTES): dajao, guavina, olivo y anguila americana (nativos de los ríos de Puerto Rico) y
+     tilapia de Mozambique y pleco (invasores). Cerca de la orilla pican más el olivo, la anguila y el pleco; en medio del río, el dajao
+     y la guavina.
    - Modo Escuela / calidad «baja»: sin onda en el agua ni burbujas; el resto igual.
-   - Récord: por sesión y el mejor en el progreso V18 (G.v18.mundo('pesca_muelle') = { mejor, vistos }) si está cargado.
+   - Récord: por sesión y el mejor en el progreso V18 (G.v18.mundo('pesca_rio') = { mejor, vistos }) si está cargado.
    API: irYJugar(), iniciar(o), salir(), estado(), paso(dt), PECES, SITIO, disponible(), test(o). Prueba: AV.v18PescaTest(). */
 window.AVV18Pesca = function (G) {
   'use strict';
   if (G.v18pesca) return G.v18pesca;
   const S = G.S, F = G.fisica, M = F && F.MOVE, scene = G.renderer.scene;
   const V = () => G.v18 || null;
-  const ID = 'pesca_muelle';
-  // Final del muelle de Villa Raíz (medido: piso a 1,3 m hasta z ≈ 232; agua a nivel 0 delante)
-  const SITIO = { x: 150, z: 229, yaw: Math.PI };
-  const RONDA = 150, VENTANA = 1.6, CANSADO = 12, D_MIN = 5, D_MAX = 16, GIRO_MAX = 0.6, PING = 1.2;
+  const ID = 'pesca_rio';
+  // Orilla oeste del Río Amazonas, río abajo del puente de Villa Raíz (tramo 322 de agua.rio, nivel 2–3 m), elegida el 9-nov entre las
+  // 32 orillas medidas (suelo seco a 0,2–2,2 m sobre el agua, río abierto en todo el abanico de lanzamiento): la de menos plantas en el
+  // pasillo de la cámara (3; ni árboles ni sólidos a los pies) para que se vea el río y la otra orilla. A ~30 m del hoyo 4 del
+  // minigolf (orilla este), lejos del puente, del Terreno A y de la plaza. rio = un punto del agua delante.
+  const SITIO = { x: 202.7, z: 140.6, rio: { x: 207.7, z: 140.6 } };
+  SITIO.yaw = Math.atan2(-(SITIO.rio.x - SITIO.x), -(SITIO.rio.z - SITIO.z)); // la cámara mira al río
+  const RONDA = 150, VENTANA = 1.6, CANSADO = 12, D_MIN = 2.5, D_MAX = 9, GIRO_MAX = 0.3, PING = 1.2;
   // Fuentes (consultadas el 9-nov-2026; el texto corto de cada una sale en la ficha):
-  //   flmnh    floridamuseum.ufl.edu/discover-fish/species-profiles/ (lutjanus-griseus, common-snook, tarpon): hábitat del pargo prieto,
-  //            vejiga natatoria del sábalo que se llena de aire tragado en la superficie
-  //   fao      fao.org/docrep/pdf/009/ac481e/ac481e24.pdf: «Pargo prieto», nombre local de Lutjanus griseus en Puerto Rico
-  //   mote     mote.org/animal-encyclopedia/common-snook/: el róbalo es hermafrodita protándrico (de macho a hembra)
+  //   usfws18  fws.gov/rivers/sites/default/files/documents/caribbean-fish-spanish.pdf (USFWS, «Peces de agua dulce del Caribe», 2018):
+  //            peces nativos que migran entre el río y el mar (las larvas bajan al mar, los juveniles suben el río); olivo (Sicydium spp.)
+  //            trepa superficies empinadas con las aletas pélvicas en ventosa; sus larvas son el cetí; la anguila americana vive en los
+  //            ríos y se reproduce en el mar; olivo y anguila, «alta necesidad de conservación»; tilapias y otros cíclidos, amenaza
+  //   usgs     usgs.gov/publications/a-capture-recapture-model-amphidromous-fish-dispersal (Smith y Kwak 2014, J. Fish Biology, río
+  //            Mameyes): dajao (Agonostomus monticola) y guavina, anfídromos; adultos sedentarios, de tramo corto
+  //   gcr      aquila.usm.edu/gcr/vol26/iss1/3 (Lochmann, Adelsberger y Neal 2015, Gulf and Caribbean Research): la guavina (Gobiomorus
+  //            dormitor) es nativa de los ríos de Puerto Rico y un pez deportivo popular entre los pescadores locales
+  //   fao      fao.org/4/y4162e/y4162e47.pdf: Gobiomorus dormitor, hasta 60 cm (común 36 cm), aguas dulces y salobres
   //   usfws    fws.gov/species/american-eel-anguilla-rostrata: la anguila americana nace en el mar de los Sargazos
-  //   usfws18  fws.gov/rivers/sites/default/files/documents/caribbean-fish-spanish.pdf: anguila y olivo, «alta necesidad de conservación»
-  //   seagrant repository.library.noaa.gov/view/noaa/56567: DRNA (feb-2004), el sábalo pescado se devuelve al agua (obligatorio); foto con el
-  //            pez en el agua y poco tiempo fuera (consejo de la ficha)
-  //   nemesis  invasions.si.edu/nemesis/species_summary/170015: tilapia de Mozambique llevada a PR en 1958; en 1988, la más abundante en tres estuarios
-  // Peces. peso: cuánto pica (cerca / lejos); dif: zona del pez en la barra (más estrecha, más difícil); vel: lo que se mueve
+  //   nemesis  invasions.si.edu/nemesis/species_summary/170015: tilapia de Mozambique llevada a PR en 1958 para limpiar de algas los
+  //            canales de riego de la caña; en 1988, la más abundante en tres estuarios
+  //   erss     USFWS, Ecological Risk Screening Summary, Orinoco Sailfin Catfish (Pterygoplichthys multiradiatus), feb-2024, rev. ene-2025:
+  //            «established itself in dams and rivers in Puerto Rico»; placas óseas que forman una armadura; cava túneles en las
+  //            orillas para desovar, con erosión de la orilla
+  //   Consejo de la ficha (foto rápida, pez cerca del agua): Neal, Allen y Correa, Sea Grant/NOAA, informe de captura y suelta en PR.
+  // Peces. peso: cuánto pica (cerca de la orilla / en medio); zona: ancho de la zona del pez en la barra (más estrecha, más difícil); vel: lo que se mueve
   const FUENTES = {
-    flmnh: 'Florida Museum of Natural History, Discover Fishes',
-    fao: 'FAO, guía de especies del Atlántico centro-occidental',
-    mote: 'Mote Marine Laboratory, Common snook',
-    usfws: 'U.S. Fish & Wildlife Service, American eel',
     usfws18: 'USFWS, «Peces de agua dulce del Caribe» (2018)',
-    seagrant: 'Neal, Allen y Correa, Sea Grant / NOAA, «Response of Atlantic Tarpon to catch-and-release angling in Puerto Rico»',
-    nemesis: 'Smithsonian Environmental Research Center, NEMESIS, Oreochromis mossambicus'
+    usgs: 'Smith y Kwak (2014), USGS / Journal of Fish Biology',
+    gcr: 'Lochmann, Adelsberger y Neal (2015), Gulf and Caribbean Research',
+    fao: 'FAO, guía de especies del Atlántico centro-occidental',
+    usfws: 'U.S. Fish & Wildlife Service, American eel',
+    nemesis: 'Smithsonian Environmental Research Center, NEMESIS, Oreochromis mossambicus',
+    erss: 'USFWS, Ecological Risk Screening Summary: Orinoco Sailfin Catfish (2024)'
   };
   const PECES = [
-    { id: 'pargo', nombre: 'Pargo prieto', cient: 'Lutjanus griseus', pts: 10, peso: [5, 2], zona: 0.34, vel: 0.6, color: '#8a6a5a', panza: '#d9b8a0', largo: 0.5,
-      dato: 'De pequeño crece entre las yerbas marinas y los mangles; de grande se va a canales más hondos.', fuente: [FUENTES.flmnh, FUENTES.fao] },
-    { id: 'robalo', nombre: 'Róbalo', cient: 'Centropomus undecimalis', pts: 20, peso: [2, 4], zona: 0.28, vel: 0.9, color: '#b8c4b0', panza: '#f2f2e6', largo: 0.75, raya: true,
-      dato: 'Vive en los mangles y la orilla. Muchos róbalos nacen machos y de grandes se vuelven hembras.', fuente: [FUENTES.mote, FUENTES.flmnh] },
-    { id: 'anguila', nombre: 'Anguila americana', cient: 'Anguilla rostrata', pts: 20, peso: [3, 1], zona: 0.28, vel: 1.1, color: '#6b6a3a', panza: '#c9c08a', largo: 0.85, anguila: true,
-      dato: 'Nace en el mar de los Sargazos, en medio del Atlántico, y sus larvas llegan con las corrientes. En Puerto Rico necesita protección.', fuente: [FUENTES.usfws, FUENTES.usfws18] },
-    { id: 'sabalo', nombre: 'Sábalo', cient: 'Megalops atlanticus', pts: 40, peso: [1, 3], zona: 0.22, vel: 1.3, color: '#9fb6c8', panza: '#eef4f8', largo: 1.1,
-      dato: 'Traga aire en la superficie y lo guarda en su vejiga natatoria, como un pulmón. En Puerto Rico, desde 2004, todo sábalo pescado se devuelve al agua.', fuente: [FUENTES.flmnh, FUENTES.seagrant] },
-    { id: 'tilapia', nombre: 'Tilapia de Mozambique', cient: 'Oreochromis mossambicus', pts: 15, peso: [1.5, 0.8], zona: 0.32, vel: 0.7, color: '#5c6b5a', panza: '#a8b09a', largo: 0.45, invasora: true,
-      dato: 'La trajeron a Puerto Rico en 1958 para limpiar de algas los canales de riego. En 1988 ya era el pez más abundante en tres estuarios de la isla.', fuente: [FUENTES.nemesis] }
+    { id: 'olivo', nombre: 'Olivo', cient: 'Sicydium spp.', pts: 10, peso: [5, 1.5], zona: 0.34, vel: 0.6, color: '#7c7a52', panza: '#d6cfa4', largo: 0.32,
+      dato: 'Sus aletas de abajo forman una ventosa: con ella trepa por las rocas mojadas, río arriba. Sus crías se llaman cetí.', fuente: [FUENTES.usfws18] },
+    { id: 'dajao', nombre: 'Dajao', cient: 'Agonostomus monticola', pts: 20, peso: [1.5, 4.5], zona: 0.28, vel: 1.0, color: '#7f97a6', panza: '#e6edf0', largo: 0.5,
+      dato: 'Sus crías bajan con la corriente hasta el mar y de jóvenes vuelven a subir el río. De adulto se queda casi siempre en el mismo tramo.', fuente: [FUENTES.usfws18, FUENTES.usgs] },
+    { id: 'guavina', nombre: 'Guavina', cient: 'Gobiomorus dormitor', pts: 30, peso: [1, 3.5], zona: 0.24, vel: 1.2, color: '#6e5a3c', panza: '#d8c39c', largo: 0.8,
+      dato: 'Es una cazadora nativa de los ríos de Puerto Rico y puede medir hasta 60 cm. Los pescadores de la isla la buscan mucho.', fuente: [FUENTES.gcr, FUENTES.fao] },
+    { id: 'anguila', nombre: 'Anguila americana', cient: 'Anguilla rostrata', pts: 30, peso: [3, 1], zona: 0.26, vel: 1.1, color: '#6b6a3a', panza: '#c9c08a', largo: 0.85, anguila: true,
+      dato: 'Vive en los ríos de Puerto Rico, pero nace en el mar de los Sargazos, en medio del Atlántico. Necesita protección.', fuente: [FUENTES.usfws, FUENTES.usfws18] },
+    { id: 'tilapia', nombre: 'Tilapia de Mozambique', cient: 'Oreochromis mossambicus', pts: 15, peso: [1.5, 1.5], zona: 0.32, vel: 0.7, color: '#5c6b5a', panza: '#a8b09a', largo: 0.45, invasora: true,
+      dato: 'La trajeron a Puerto Rico en 1958 para limpiar de algas los canales de riego. En 1988 ya era el pez más abundante en tres estuarios de la isla.', fuente: [FUENTES.nemesis] },
+    { id: 'pleco', nombre: 'Pleco', cient: 'Pterygoplichthys multiradiatus', pts: 15, peso: [2, 0.8], zona: 0.32, vel: 0.6, color: '#4a4436', panza: '#8c8068', largo: 0.6, invasora: true, pleco: true,
+      dato: 'Tiene el cuerpo cubierto de placas, como una armadura. Cava túneles en las orillas para poner sus huevos y las desmorona. Ya vive en ríos y embalses de Puerto Rico.', fuente: [FUENTES.erss] }
   ];
   const PEZ = {}; for (const p of PECES) PEZ[p.id] = p;
   const TXT = {
-    nombre: 'Pesca en el muelle', label: 'Pescar en el muelle',
+    nombre: 'Pesca en el río', label: 'Pescar en el río',
     empieza: '¡A pescar! Mantén pulsado para lanzar y suelta. Tienes 2 minutos y medio.',
     guia: 'Mantén Espacio y suelta para lanzar · ← → apuntar', guiaT: 'Mantén Lanzar y suelta · ◀ ▶ apuntar',
     pEspera: 'Espera a que el corcho se hunda…', pMordisco: 'Solo está mordisqueando… espera.', pPronto: '¡Muy pronto! Espera a que se hunda del todo.',
     pPica: '¡Pica! ¡Ahora!', pTira: 'Mantén para subir el anzuelo y suelta para bajarlo: quédate en la zona verde.', pCansado: 'El pez se está cansando: ¡ya casi!',
-    escapo: 'Se llevó la carnada… ¡lanza otra vez!', seFue: '¡Se escapó! Ya volverá. Lanza otra vez.', tierra: 'Muy cerca: lanza con más fuerza.',
+    escapo: 'Se llevó la carnada… ¡lanza otra vez!', seFue: '¡Se escapó! Ya volverá. Lanza otra vez.', tierra: 'Cayó en la orilla: lanza hacia el agua.',
     lanzar: 'Lanzar', soltarB: 'Soltar', recoger: '¡Recoge!', clavar: '¡Clava!', esperarB: 'Esperar', soltarPez: 'Soltarlo', reportar: 'Reportar al DRNA',
     salir: 'Salir', otra: 'Otra ronda', menu: 'Volver al menú', seguir: 'Seguir explorando', izq: 'Apuntar a la izquierda', der: 'Apuntar a la derecha',
     fuerza: 'Fuerza', tiempo: 'Tiempo', peces: 'Peces', puntos: 'Puntos', record: 'Récord',
     foto: '¡Foto para tu álbum!', fuente: 'Fuente', nativo: 'Nativo de Puerto Rico', invasora: 'Especie invasora',
     consejo: 'Consejo de pescador: la foto, rápida y con el pez cerca del agua.',
-    alAgua: '¡Al agua! Nada feliz otra vez.', reportado: '¡Gracias! Las invasoras no se devuelven al agua: avisar al DRNA ayuda a los peces nativos.',
+    alAgua: '¡Al río! Nada feliz otra vez.', reportado: '¡Gracias! Las invasoras no se devuelven al agua: avisar al DRNA ayuda a los peces nativos.',
     invasoraNo: 'Las especies invasoras no se devuelven al agua. Repórtala al DRNA.',
     fin: '¡Se acabó el tiempo!', nuevo: '¡Nuevo récord!', album: 'Tu álbum de hoy', nada: 'Hoy no picó nada. ¡Otra ronda!',
-    sale: '¡Hasta luego! El muelle te espera en Villa Raíz.', cerrado: 'La pesca todavía no está abierta.'
+    sale: '¡Hasta luego! El río te espera cerca de Villa Raíz.', cerrado: 'La pesca todavía no está abierta.'
   };
   const tiempoTxt = s => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
   const pecesTxt = n => 'Peces: ' + n, puntosTxt = n => 'Puntos: ' + n, recordTxt = n => 'Récord: ' + n, tiempoEt = s => 'Tiempo: ' + tiempoTxt(s);
@@ -95,8 +113,10 @@ window.AVV18Pesca = function (G) {
   let _mmF = null, _mm = null;
   const tactil = () => { const f = window.matchMedia; if (!f) return false; if (f !== _mmF) { _mmF = f; _mm = matchMedia('(pointer: coarse)'); } return !!(_mm && _mm.matches); };
   const nivelAgua = (x, z) => { let l = -Infinity; try { if (G.agua && G.agua.levelAt) l = G.agua.levelAt(x, z); } catch (e) { /* sin agua */ } return l; };
-  const suelo = (x, z) => { try { return G.terreno.surfaceY ? G.terreno.surfaceY(x, z, 5) : G.terreno.height(x, z); } catch (e) { return 0; } };
-  const disponible = () => !!G.EXPANSION && !!(G.pack && G.pack.id === 'cap1');
+  const suelo = (x, z) => { try { const h = G.terreno.height(x, z); return G.terreno.surfaceY ? G.terreno.surfaceY(x, z, h + 1.5) : h; } catch (e) { return 0; } };
+  // el agua donde cae algo (si es orilla, el suelo): el río no está a nivel 0 como el mar
+  const aguaO = (x, z) => { const l = nivelAgua(x, z); return isFinite(l) && l > -1e6 ? l : suelo(x, z); };
+  const disponible = () => G.PESCA !== false && !!(G.pack && G.pack.id === 'cap1');
   // Semilla propia (la prueba la fija): qué pez pica, cuándo y cómo se mueve
   let semilla = (Date.now() % 2147483646) + 1;
   const azar = () => { semilla = semilla * 16807 % 2147483647; return (semilla - 1) / 2147483646; };
@@ -105,18 +125,18 @@ window.AVV18Pesca = function (G) {
   let P = null;
   function piezas() {
     if (P) return P;
-    const T = window.THREE, g = new T.Group(); g.name = 'pesca:muelle'; g.visible = false;
-    const lam = c => new T.MeshLambertMaterial({ color: c, flatShading: true });
-    const cana = new T.Mesh(new T.CylinderGeometry(0.018, 0.035, 2.4, 6), lam('#7a5230')); cana.name = 'pesca:caña';
-    const mango = new T.Mesh(new T.CylinderGeometry(0.045, 0.045, 0.4, 6), lam('#2f2a26')); mango.position.y = -1.0; cana.add(mango);
-    const carrete = new T.Mesh(new T.CylinderGeometry(0.07, 0.07, 0.06, 10), lam('#d8d2c4')); carrete.rotation.z = Math.PI / 2; carrete.position.set(0.06, -0.7, 0); cana.add(carrete);
+    const T = window.THREE, g = new T.Group(); g.name = 'pesca:rio'; g.visible = false;
+    const lam = c => new T.MeshLambertMaterial({ color: c }); // r128: Lambert no tiene flatShading (avisaba en consola)
+    const cana = new T.Mesh(new T.CylinderGeometry(0.022, 0.045, 2.6, 6), lam('#7a5230')); cana.name = 'pesca:caña';
+    const mango = new T.Mesh(new T.CylinderGeometry(0.045, 0.045, 0.4, 6), lam('#2f2a26')); mango.position.y = -1.1; cana.add(mango);
+    const carrete = new T.Mesh(new T.CylinderGeometry(0.07, 0.07, 0.06, 10), lam('#d8d2c4')); carrete.rotation.z = Math.PI / 2; carrete.position.set(0.07, -0.8, 0); cana.add(carrete);
     const N = 14, posL = new Float32Array(N * 3), lg = new T.BufferGeometry(); lg.setAttribute('position', new T.BufferAttribute(posL, 3));
     const sedal = new T.Line(lg, new T.LineBasicMaterial({ color: '#ffffff' })); sedal.frustumCulled = false; sedal.name = 'pesca:sedal';
     const corcho = new T.Group(); corcho.name = 'pesca:corcho';
-    const arriba = new T.Mesh(new T.SphereGeometry(0.12, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), lam('#e8402e'));
+    const arriba = new T.Mesh(new T.SphereGeometry(0.12, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), new T.MeshBasicMaterial({ color: '#ff4a2e' })); // sin luz: rojo vivo aunque esté a la sombra
     const abajo = new T.Mesh(new T.SphereGeometry(0.12, 12, 6, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), lam('#f7f3ea'));
-    const palito = new T.Mesh(new T.CylinderGeometry(0.012, 0.012, 0.14, 5), lam('#ffd84a')); palito.position.y = 0.17;
-    corcho.add(arriba, abajo, palito); corcho.scale.setScalar(1.7);
+    const palito = new T.Mesh(new T.CylinderGeometry(0.014, 0.014, 0.16, 5), new T.MeshBasicMaterial({ color: '#ffe14a' })); palito.position.y = 0.17;
+    corcho.add(arriba, abajo, palito); corcho.scale.setScalar(3); // grande y rojo: se ve desde la orilla
     const onda = new T.Mesh(new T.RingGeometry(0.22, 0.3, 24), new T.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, depthWrite: false }));
     onda.rotation.x = -Math.PI / 2; onda.name = 'pesca:onda';
     // Pez estilizado: cuerpo (esfera estirada), cola y aleta; se recolorea según la especie
@@ -131,7 +151,7 @@ window.AVV18Pesca = function (G) {
     pez.add(cuerpo, panza, cola, aleta, ojo, ojo2);
     g.add(cana, sedal, corcho, onda, pez);
     scene.add(g);
-    P = { g, cana, sedal, posL, N, corcho, onda, pez, cuerpo, cola, aleta, cuerpoM, panzaM, punta: new T.Vector3() };
+    P = { g, cana, sedal, posL, N, corcho, onda, pez, cuerpo, cola, aleta, cuerpoM, panzaM, punta: new T.Vector3(), rd: new T.Vector3(), UP: new T.Vector3(0, 1, 0) };
     return P;
   }
   function vestirPez(p) {
@@ -139,6 +159,75 @@ window.AVV18Pesca = function (G) {
     Q.cuerpoM.color.set(p.color); Q.panzaM.color.set(p.panza);
     const L = p.largo; Q.pez.scale.set(L, L * (p.anguila ? 0.45 : 1), L);
     Q.cuerpo.scale.set(p.anguila ? 1.6 : 1, 0.42, 0.22); Q.aleta.visible = !p.anguila;
+  }
+
+  // ---------- Amigos en la orilla (coordinadora, 9-nov): Iguaca y Chispa miran y celebran cada pez ----------
+  // Iguaca: el mismo sprite 2D del cap. 1 (assets/luma.png, G.actores.spriteFrom, escala de mundo.js); da saltitos al atrapar.
+  // Chispa: un clon propio del .glb de su fila (content/comun/personajes_v18.js, G.v18npc.cargarModelo: caché compartida con
+  // chispa.js; NO se usa colocar(), así su carrera y su sitio en los Portales no cambian). Idle y «Celebrar» (1,6 s) al atrapar.
+  // Calidad «bajo» o Modo Escuela: solo Iguaca (sprite, sin coste de animación); Chispa ni se pide. Sin diálogo.
+  const AMIGOS = { iguaca: null, chispa: null, pidiendo: false, saltoT: 0, celebraT: 0 };
+  function amigosSitio() {
+    const d0 = { x: -Math.sin(SITIO.yaw), z: -Math.cos(SITIO.yaw) }, l0 = { x: -d0.z, z: d0.x };
+    // un poco por delante de Vittata (por encima del panel en pantalla), en tierra seca: si cae en el agua, un paso atrás
+    const seco = (lad, del) => { for (let k = 0; k < 8; k++, del -= 0.4) { const x = SITIO.x + l0.x * lad + d0.x * del, z = SITIO.z + l0.z * lad + d0.z * del; if (!(nivelAgua(x, z) > G.terreno.height(x, z) - 0.05)) return { x, z }; } return { x: SITIO.x + l0.x * lad, z: SITIO.z + l0.z * lad }; };
+    // los dos a la izquierda: a la derecha está la caña (y en esta orilla, un coquí del capítulo que tapaba a Chispa)
+    return { d0, l0, iguaca: seco(-1.6, 0.8), chispa: seco(-3.4, 0.2) };
+  }
+  function amigos(on) {
+    if (!P) return;
+    if (!on) { if (AMIGOS.iguaca) AMIGOS.iguaca.g.visible = false; if (AMIGOS.chispa) AMIGOS.chispa.g.visible = false; return; }
+    const T = window.THREE, sit = amigosSitio(), ac = G.actores;
+    if (!AMIGOS.iguaca && ac && ac.spriteFrom) {
+      const g = new T.Group(); g.name = 'pesca:iguaca';
+      const sp = ac.spriteFrom('assets/luma.png', 2.0, true); if (sp.userData.cargarMapa) sp.userData.cargarMapa();
+      const sh = ac.blob ? ac.blob(0.5) : null; g.add(sp); if (sh) g.add(sh);
+      P.g.add(g); AMIGOS.iguaca = { g, sp, sh };
+    }
+    if (AMIGOS.iguaca) {
+      const p = sit.iguaca, y = G.terreno.height(p.x, p.z); AMIGOS.iguaca.g.visible = true; AMIGOS.iguaca.y = y;
+      AMIGOS.iguaca.sp.position.set(p.x, y + 1.0, p.z); if (AMIGOS.iguaca.sh) AMIGOS.iguaca.sh.position.set(p.x, y + 0.03, p.z);
+    }
+    if (barato()) { if (AMIGOS.chispa) AMIGOS.chispa.g.visible = false; return; }
+    if (AMIGOS.chispa) { colocarChispa(sit); return; }
+    const N = G.v18npc; if (AMIGOS.pidiendo || !N || !N.cargarModelo || !N.def || !N.def('chispa')) return;
+    AMIGOS.pidiendo = true;
+    N.cargarModelo('chispa').then(m => {
+      AMIGOS.pidiendo = false; if (!m || AMIGOS.chispa || !P) return;
+      const g = new T.Group(); g.name = 'pesca:chispa';
+      const modelo = m.raiz.clone(true); modelo.scale.multiplyScalar(N.def('chispa').alto || 1);
+      modelo.traverse(o => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = false; } });
+      g.add(modelo);
+      let mixer = null; const acc = {};
+      if (m.clips && m.clips.length) { mixer = new T.AnimationMixer(modelo); for (const c of m.clips) acc[c.name] = mixer.clipAction(c); }
+      AMIGOS.chispa = { g, modelo, mixer, acc, anim: null };
+      P.g.add(g); animChispa('Idle'); if (mixer) mixer.update(0.001);
+      colocarChispa(amigosSitio()); g.visible = A.fase !== 'nada' && !barato();
+    }, () => { AMIGOS.pidiendo = false; });
+  }
+  function colocarChispa(sit) {
+    const c = AMIGOS.chispa; if (!c) return;
+    const p = sit.chispa; c.g.position.set(p.x, G.terreno.height(p.x, p.z), p.z);
+    c.g.rotation.y = Math.atan2(SITIO.x - p.x, SITIO.z - p.z) - 0.5; // mira a Vittata y un poco al río
+    c.g.visible = A.fase !== 'nada';
+  }
+  function animChispa(nom) {
+    const c = AMIGOS.chispa; if (!c || !c.mixer || c.anim === nom) return;
+    const a = c.acc[nom]; if (!a) return; const prev = c.anim && c.acc[c.anim];
+    a.reset().setEffectiveWeight(1).play(); if (prev) prev.crossFadeTo(a, 0.25, false); c.anim = nom;
+  }
+  function celebrar() { AMIGOS.saltoT = 0.9; AMIGOS.celebraT = 1.6; animChispa('Celebrar'); }
+  function amigosPaso(dt) {
+    const ig = AMIGOS.iguaca;
+    if (ig && ig.g.visible) {
+      let h = 0; if (AMIGOS.saltoT > 0) { AMIGOS.saltoT = Math.max(0, AMIGOS.saltoT - dt); const u = (0.9 - AMIGOS.saltoT) / 0.45; h = 0.45 * Math.abs(Math.sin(u * Math.PI)); }
+      ig.sp.position.y = ig.y + 1.0 + h;
+    }
+    const c = AMIGOS.chispa;
+    if (c && c.g.visible) {
+      if (AMIGOS.celebraT > 0 && (AMIGOS.celebraT -= dt) <= 0) animChispa('Idle');
+      if (c.mixer && !barato()) c.mixer.update(dt);
+    }
   }
 
   // ---------- Estado ----------
@@ -154,7 +243,7 @@ window.AVV18Pesca = function (G) {
     for (const k in A.album) if (!vistos.includes(k)) vistos.push(k);
     try { v.cambiarMundo(ID, { mejor: Math.max(p, recordGuardado()), vistos }); } catch (e) { /* sin progreso */ }
   }
-  // Hacia dónde se lanza: la mirada de la cámara, con ← → (o arrastrar) hasta ±0,6 rad del frente del muelle
+  // Hacia dónde se lanza: la mirada de la cámara, con ← → hasta ±0,3 rad del frente de la orilla
   // SESGO: el lanzamiento sale un poco a la derecha de la cámara para que Vittata no tape el corcho
   const SESGO = -0.2, dirLanzar = () => { const y = SITIO.yaw + A.ang + SESGO; return { x: -Math.sin(y), z: -Math.cos(y) }; };
   const pie = () => ({ x: SITIO.x, y: suelo(SITIO.x, SITIO.z), z: SITIO.z });
@@ -192,7 +281,7 @@ window.AVV18Pesca = function (G) {
     nuevaRonda();
     focoPrevio = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;
     enganchar(); montarHud(); llenarHud(); hud.el.hidden = false; hud.vista = null;
-    piezas().g.visible = true; P.pez.visible = false; P.onda.visible = false;
+    piezas().g.visible = true; P.pez.visible = false; P.onda.visible = false; amigos(true);
     try { G.camara.place(true); } catch (e) { /* cámara */ }
     paneles(); pintar(true);
     toast(TXT.empieza, 3600);
@@ -214,7 +303,7 @@ window.AVV18Pesca = function (G) {
       vaciarHud();
     }
     focoPrevio = null;
-    if (P) { P.g.visible = false; P.pez.visible = false; P.onda.visible = false; }
+    if (P) { P.g.visible = false; P.pez.visible = false; P.onda.visible = false; } amigos(false); AMIGOS.saltoT = AMIGOS.celebraT = 0;
     if (motivo) toast(motivo, 2600);
     emitir({ tipo: 'sale' });
     return true;
@@ -252,7 +341,7 @@ window.AVV18Pesca = function (G) {
   }
   function cae() {
     const c = A.corcho, lv = nivelAgua(c.x, c.z);
-    if (!(lv > suelo(c.x, c.z) - 0.05)) { A.fase = 'listo'; pista(TXT.tierra); emitir({ tipo: 'tierra' }); pintar(true); return; } // no cayó al agua
+    if (!(lv > G.terreno.height(c.x, c.z) + 0.1)) { A.fase = 'listo'; pista(TXT.tierra); emitir({ tipo: 'tierra' }); pintar(true); return; } // no cayó al agua
     c.y = lv; A.fase = 'espera'; A.esperaT = 1.8 + azar() * 3.2; A.mordT = 0.6 + azar() * 1.2; A.pez = elegirPez();
     sonar('splash', 0.4); fx('bubbles', c.x, lv + 0.05, c.z, 6); ondear(1);
     pista(TXT.pEspera); emitir({ tipo: 'cae', x: +c.x.toFixed(2), z: +c.z.toFixed(2) }); pintar(true);
@@ -267,7 +356,7 @@ window.AVV18Pesca = function (G) {
   function escapa(txt, tipo) { A.fase = 'listo'; A.pez = null; A.sosteniendo = false; pista(txt); sonar('wrong'); emitir({ tipo }); pintar(true); }
   function atrapa() {
     const p = A.pez; A.fase = 'foto'; A.fotoT = 0; A.peces++; A.puntos += p.pts; A.album[p.id] = (A.album[p.id] || 0) + 1; A.sosteniendo = false;
-    vestirPez(p); P.pez.visible = true; flash();
+    vestirPez(p); P.pez.visible = true; flash(); celebrar();
     sonar('unlock'); toast(atrapado(p.nombre) + ' ' + masTxt(p.pts), 2200);
     emitir({ tipo: 'atrapa', pez: p.id, puntos: A.puntos }); hud.vista = null; paneles(); pintar(true);
   }
@@ -320,7 +409,7 @@ window.AVV18Pesca = function (G) {
     }
     if (A.mord > 0) A.mord = Math.max(0, A.mord - dt);
     if (A.tiempo <= 0 && (A.fase === 'listo' || A.fase === 'carga' || A.fase === 'vuela' || A.fase === 'espera' || A.fase === 'pica')) terminar();
-    dibujar(dt);
+    dibujar(dt); amigosPaso(dt);
     if (hud && !hud.el.hidden) pintar();
   }
   // Recoger: la marca (el anzuelo) sube mientras se mantiene y baja al soltar; la zona del pez se mueve sola
@@ -344,19 +433,21 @@ window.AVV18Pesca = function (G) {
     // la caña sale junto a Vittata (a su derecha), inclinada hacia el agua
     const base = { x: q.x + lado.x * 0.45 + d.x * 0.2, y: q.y + 0.75, z: q.z + lado.z * 0.45 + d.z * 0.2 };
     const tira = A.fase === 'tira', cab = tira ? 0.25 + 0.2 * Math.sin(A.t * 9) * (A.sosteniendo ? 1 : 0.4) : 0;
-    const inc = 0.95 - cab; // de vertical (0) hacia delante
-    P.cana.position.set(base.x + d.x * Math.sin(inc) * 1.2, base.y + Math.cos(inc) * 1.2, base.z + d.z * Math.sin(inc) * 1.2);
-    P.cana.rotation.set(0, 0, 0); P.cana.rotateY(Math.atan2(d.x, d.z)); P.cana.rotateX(inc);
-    P.punta.set(base.x + d.x * Math.sin(inc) * 2.4, base.y + Math.cos(inc) * 2.4, base.z + d.z * Math.sin(inc) * 2.4);
+    // inclinada hacia el agua Y hacia la derecha: desde la cámara (detrás de Vittata) se lee en diagonal, como una caña, no como un palo
+    const inc = 1.0 - cab, fw = Math.sin(inc) * 0.8, lat = 0.6, up = Math.cos(inc), n = Math.hypot(fw, lat, up);
+    P.rd.set((d.x * fw + lado.x * lat) / n, up / n, (d.z * fw + lado.z * lat) / n);
+    P.cana.quaternion.setFromUnitVectors(P.UP, P.rd);
+    P.cana.position.set(base.x + P.rd.x * 1.3, base.y + P.rd.y * 1.3, base.z + P.rd.z * 1.3);
+    P.punta.set(base.x + P.rd.x * 2.6, base.y + P.rd.y * 2.6, base.z + P.rd.z * 2.6);
     // el corcho
     const c = A.corcho; let cx, cy, cz, vis = true;
     if (A.fase === 'vuela') {
       const u = Math.min(1, A.vuelo); cx = c.x0 + (c.x - c.x0) * u; cz = c.z0 + (c.z - c.z0) * u;
-      const y1 = Math.max(0, nivelAgua(c.x, c.z)); cy = P.punta.y + (y1 - P.punta.y) * u + Math.sin(u * Math.PI) * (1.5 + A.dist * 0.18);
+      const y1 = aguaO(c.x, c.z); cy = P.punta.y + (y1 - P.punta.y) * u + Math.sin(u * Math.PI) * (1.5 + A.dist * 0.18);
     } else if (['espera', 'pica', 'tira'].includes(A.fase)) {
       cx = c.x; cz = c.z; const lv = nivelAgua(c.x, c.z); cy = (isFinite(lv) ? lv : 0) + 0.04 * Math.sin(A.t * 2.2);
-      if (A.mord > 0) cy -= 0.05 * Math.sin(A.mord * 40);
-      if (A.fase === 'pica') cy -= 0.16 + 0.04 * Math.sin(A.t * 30);
+      if (A.mord > 0) cy -= 0.08 * Math.sin(A.mord * 40);
+      if (A.fase === 'pica') cy -= 0.3 + 0.05 * Math.sin(A.t * 30);
       if (tira) { const s = (A.zona - 0.5) * 2.4; cx += lado.x * s; cz += lado.z * s; cy -= 0.12; const ac = 1 - A.prog * 0.6; cx = q.x + (cx - q.x) * ac; cz = q.z + (cz - q.z) * ac; }
     } else { cx = P.punta.x; cy = P.punta.y - 0.5; cz = P.punta.z; vis = A.fase === 'listo' || A.fase === 'carga'; }
     P.corcho.position.set(cx, cy, cz); P.corcho.visible = vis;
@@ -383,7 +474,7 @@ window.AVV18Pesca = function (G) {
       P.cola.rotation.y = 0.5 * Math.sin(A.t * 12);
     } else if (A.sueltaT > 0 && A.pez && P.pez.visible) {
       A.sueltaT -= dt; const u = 1 - Math.max(0, A.sueltaT) / 0.9;
-      const x0 = q.x - lado.x * 1.1 + d.x * 0.4, z0 = q.z - lado.z * 1.1 + d.z * 0.4, x1 = q.x - lado.x * 2 + d.x * 4, z1 = q.z - lado.z * 2 + d.z * 4, y1 = Math.max(0, nivelAgua(x1, z1));
+      const x0 = q.x - lado.x * 1.1 + d.x * 0.4, z0 = q.z - lado.z * 1.1 + d.z * 0.4, x1 = q.x + d.x * (D_MIN + 1), z1 = q.z + d.z * (D_MIN + 1), y1 = aguaO(x1, z1);
       P.pez.position.set(x0 + (x1 - x0) * u, q.y + 1.9 + (y1 - q.y - 1.9) * u + Math.sin(u * Math.PI) * 1.2, z0 + (z1 - z0) * u);
       P.pez.rotation.z = -1.2 * u;
       if (A.sueltaT <= 0) { P.pez.visible = false; sonar('splash', 0.6); fx('bubbles', x1, y1 + 0.05, z1, 10); A.corcho.x = x1; A.corcho.z = z1; A.corcho.y = y1; ondear(1.2); if (A.fase === 'listo') A.pez = null; }
@@ -601,35 +692,21 @@ window.AVV18Pesca = function (G) {
     if (!disponible() || A.fase !== 'nada' || otroActivo()) return false;
     return iniciar({ forzar: true });
   }
-  {
-    let tile = null;
-    const menu = G.ui.$ && G.ui.$('pause');
-    if (menu) menu.addEventListener('beforetoggle', e => {
-      if (e.newState !== 'open') return;
-      const grid = menu.querySelector('.pause-grid'); if (!grid) return;
-      if (!tile && disponible()) {
-        tile = document.createElement('button');
-        tile.className = 'btn tile'; tile.id = 'b-v18-pesca'; tile.type = 'button';
-        tile.setAttribute('data-icon', 'star'); tile.setAttribute('popovertarget', 'pause'); tile.setAttribute('popovertargetaction', 'hide');
-        tile.textContent = 'Pesca';
-        tile.addEventListener('click', () => setTimeout(irYJugar, 0));
-        grid.appendChild(tile);
-      }
-      if (tile) tile.hidden = !(disponible() && A.fase === 'nada' && !otroActivo());
-    });
-  }
+  // El botón «Pesca» de la Pausa lo pone boot.js (se ve sin cargar este script; al pulsarlo lo carga y llama a irYJugar)
 
   // ---------- Prueba ----------
   async function test(o) {
     o = o || {};
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const antes = o.antes || {};
-    const exp0 = G.EXPANSION, semilla0 = semilla, pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M && M.flying, yaw0 = G.camara.yaw;
+    const exp0 = G.PESCA, semilla0 = semilla, pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M && M.flying, yaw0 = G.camara.yaw;
     const CAM = G.camara.CAM, cam00 = CAM ? { height: CAM.height, dist: CAM.dist } : null;
     const toasts = [], toast0 = G.ui.toast; G.ui.toast = t => { toasts.push(String(t)); };
     const errores = [], cerr0 = console.error; console.error = function () { errores.push([...arguments].map(String).join(' ').slice(0, 200)); return cerr0.apply(console, arguments); };
     const onErr = e => errores.push('error: ' + (e.message || e)); addEventListener('error', onErr);
     const susp = G.guardado && G.guardado.suspender; if (susp) susp(true);
+    // la prueba corre en «medio» (un equipo lento arranca en «bajo» y Chispa no saldría); la parte de «bajo» lo pone ella misma
+    const calP = G.renderer.calidad, nivP = calP && calP.nivel; if (calP) calP.nivel = 'medio';
     const v = V(); let crudo = null; try { crudo = v && v.clave ? localStorage.getItem(v.clave()) : null; } catch (e) { /* */ }
     const eventos = []; const oye = ev => eventos.push(ev); G.on('v18pesca', oye);
     const invasoras = []; const oyeInv = ev => invasoras.push(ev); G.on('expansion:invasora', oyeInv);
@@ -642,38 +719,49 @@ window.AVV18Pesca = function (G) {
     const recogerCon = (bajar, subir, s) => { let abajo = false; for (let t = 0; t < (s || 30) && A.fase === 'tira'; t += 1 / 60) { const q = A.marca < A.zona - 0.03 || (A.marca < A.zona + 0.03 && A.vmarca < 0); if (q && !abajo) { bajar(); abajo = true; } else if (!q && abajo) { subir(); abajo = false; } paso(1 / 60); } if (abajo) subir(); return A.fase; };
     const ficha = () => hud && !hud.q('ficha').hidden ? { n: hud.q('fn').textContent, c: hud.q('fc').textContent, d: hud.q('fd').textContent, f: hud.q('ff').textContent, b: hud.q('t-soltar').textContent } : null;
     try {
-      // 0. Bandera apagada: nada a la vista
+      // 0. Encendida para todos (Kelvin 9-nov): sin bandera la tarjeta y el botón de la Pausa se ven; ?pesca=0 (G.PESCA = false) lo esconde todo
       const tarjeta = document.querySelector('#modos [data-modo="pesca"]');
-      if (!antes.exp) {
-        check('Bandera apagada (sin ?expansion=1): el script no se había cargado antes de la prueba', antes.cargado === false, JSON.stringify(antes));
-        try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* sin menú */ }
-        check('Bandera apagada: la tarjeta «Pesca» del menú está oculta', !!tarjeta && tarjeta.hidden && getComputedStyle(tarjeta).display === 'none', tarjeta ? 'hidden ' + tarjeta.hidden : 'sin tarjeta');
-        G.EXPANSION = false;
-        check('Bandera apagada: no se puede empezar (irYJugar y iniciar forzado dicen que no) y no hay HUD', irYJugar() === false && iniciar({ forzar: true }) === false && A.fase === 'nada' && !(hud && !hud.el.hidden) && !document.body.classList.contains('v18-pesca-on'));
-        check('Bandera apagada: ninguna pieza de la pesca en la escena a la vista', !P || !P.g.visible);
-        check('Bandera apagada: sin botón «Pesca» en la Pausa', !document.getElementById('b-v18-pesca') || document.getElementById('b-v18-pesca').hidden);
-      } else check('Bandera encendida en esta sesión (?expansion=1): las comprobaciones de «apagada» no aplican', true, 'G.EXPANSION = true');
-      // 1. Con la bandera: la tarjeta del menú se ve y la partida empieza en el muelle
-      G.EXPANSION = true;
+      const botonP = () => (G.pescaBotonPausa ? G.pescaBotonPausa() : document.getElementById('b-v18-pesca'));
+      check('Disponible sin bandera : G.PESCA encendida y el script no se cargó al arrancar (se carga al entrar)', antes.pesca === true && antes.cargado === false, JSON.stringify(antes));
       try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* sin menú */ }
-      check('Con la bandera la tarjeta «Pesca» del menú se ve', !!tarjeta && !tarjeta.hidden);
-      if (G.EXPANSION && !antes.exp) { G.EXPANSION = false; try { G.menuModos.mostrar(); } catch (e) { /* */ } G.EXPANSION = true; }
-      check('Los peces: 4 nativos y 1 invasora, cada uno con nombre, nombre científico, dato y fuente', PECES.length === 5 && PECES.filter(p => p.invasora).length === 1 && PECES.every(p => p.nombre && /^[A-Z][a-z]+ [a-z]+$/.test(p.cient) && p.dato.length > 30 && p.fuente.length >= 1 && p.fuente.every(f => f.length > 10)));
-      const lv = nivelAgua(SITIO.x, SITIO.z + 8), sueloM = suelo(SITIO.x, SITIO.z);
-      check('El sitio es el final del muelle de Villa Raíz: piso del muelle sobre el agua y agua delante', sueloM > 0.8 && sueloM < 2 && lv > suelo(SITIO.x, SITIO.z + 8) - 0.05, JSON.stringify({ suelo: +sueloM.toFixed(2), agua: lv }));
+      check('Disponible sin bandera: la tarjeta «Pesca» de «¿Cómo quieres jugar?» se ve', !!tarjeta && !tarjeta.hidden && getComputedStyle(tarjeta).display !== 'none', tarjeta ? 'hidden ' + tarjeta.hidden : 'sin tarjeta');
+      const bp1 = botonP();
+      check('Disponible sin bandera: botón «Pesca» en la Pausa', !!bp1 && !bp1.hidden && !!bp1.closest('#pause'), bp1 ? 'hidden ' + bp1.hidden : 'sin botón');
+      G.PESCA = false;
+      try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* sin menú */ }
+      check('Con ?pesca=0: la tarjeta «Pesca» del menú está oculta', !!tarjeta && tarjeta.hidden && getComputedStyle(tarjeta).display === 'none', tarjeta ? 'hidden ' + tarjeta.hidden : 'sin tarjeta');
+      check('Con ?pesca=0: no se puede empezar (irYJugar y iniciar forzado dicen que no) y no hay HUD', irYJugar() === false && iniciar({ forzar: true }) === false && A.fase === 'nada' && !(hud && !hud.el.hidden) && !document.body.classList.contains('v18-pesca-on'));
+      check('Con ?pesca=0: ninguna pieza de la pesca en la escena a la vista', !P || !P.g.visible);
+      const bp0 = botonP();
+      check('Con ?pesca=0: sin botón «Pesca» en la Pausa', !bp0 || bp0.hidden);
+      // 1. Encendida: la partida empieza en la orilla del río
+      G.PESCA = true;
+      try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* sin menú */ }
+      botonP();
+      check('Los peces de río: 4 nativos (olivo, dajao, guavina, anguila) y 2 invasores (tilapia, pleco), cada uno con nombre, nombre científico, dato y fuente', PECES.length === 6 && PECES.filter(p => p.invasora).map(p => p.id).join() === 'tilapia,pleco' && PECES.every(p => p.nombre && /^[A-Z][a-z]+ ([a-z]+|spp\.)$/.test(p.cient) && p.dato.length > 30 && p.fuente.length >= 1 && p.fuente.every(f => f.length > 10)));
+      const sueloM = G.terreno.height(SITIO.x, SITIO.z), lvR = nivelAgua(SITIO.rio.x, SITIO.rio.z), d0 = { x: -Math.sin(SITIO.yaw), z: -Math.cos(SITIO.yaw) };
+      const secos = []; for (let k = D_MIN; k <= D_MAX + 1e-6; k += 0.5) { const x = SITIO.x + d0.x * k, z = SITIO.z + d0.z * k; if (!(nivelAgua(x, z) > G.terreno.height(x, z) + 0.1)) secos.push(k); }
+      check('El sitio es una orilla del Río Amazonas: tierra seca un poco por encima del agua y río abierto delante en todo el alcance del lanzamiento',
+        !(nivelAgua(SITIO.x, SITIO.z) > sueloM - 0.05) && sueloM - lvR > 0.1 && sueloM - lvR < 2 && !secos.length, JSON.stringify({ suelo: +sueloM.toFixed(2), agua: lvR, secos }));
       A.manual = true; semilla = 12345;
       const forzar = !libre() || otroActivo();
       const empezo = forzar ? iniciar({ forzar: true }) : irYJugar();
       check('Empieza: Vittata en el muelle, HUD de la pesca, 2:30 de ronda y controles propios', empezo && A.fase === 'listo' && A.tiempo === RONDA && hud && !hud.el.hidden && document.body.classList.contains('v18-pesca-on') &&
         G.interaccion.modo === modo && Math.hypot(S.pos.x - SITIO.x, S.pos.z - SITIO.z) < 0.05 && P.g.visible && toasts.includes(TXT.empieza), forzar ? 'forzado (había un diálogo o tarjeta abiertos)' : '');
+      for (let k = 0; k < 100 && !AMIGOS.chispa && !barato(); k++) await new Promise(r => setTimeout(r, 100)); // el .glb de Chispa (caché de npc.js)
+      { const ig = AMIGOS.iguaca, ch = AMIGOS.chispa, sit = amigosSitio();
+        check('Amigos en la orilla: Iguaca (sprite del cap. 1) y Chispa (su modelo, en Idle) junto a Vittata, en tierra seca; en «bajo», solo Iguaca',
+          !!ig && ig.g.visible && Math.hypot(ig.sp.position.x - sit.iguaca.x, ig.sp.position.z - sit.iguaca.z) < 0.01 && !(nivelAgua(sit.iguaca.x, sit.iguaca.z) > G.terreno.height(sit.iguaca.x, sit.iguaca.z)) &&
+          (barato() ? !ch || !ch.g.visible : !!ch && ch.g.visible && (!ch.mixer || ch.anim === 'Idle') && !(nivelAgua(sit.chispa.x, sit.chispa.z) > G.terreno.height(sit.chispa.x, sit.chispa.z))),
+          JSON.stringify({ iguaca: !!ig, chispa: !!ch, anim: ch && ch.anim, bajo: barato(), clips: ch ? Object.keys(ch.acc) : null })); }
       const evW = tecla('keydown', 'w'); const tieneW = !!(G.input && G.input.keys && G.input.keys.has('w')); tecla('keyup', 'w');
       check('Mientras se pesca, las teclas de mover no llegan al juego', evW.defaultPrevented && !tieneW);
       // 2. Ronda con teclado: lanzar, esperar, clavar, recoger, foto y soltar
-      A.forzar = 'pargo'; tecla('keydown', ' '); const cargando = A.fase === 'carga'; correr(0.9); const c1 = A.carga; tecla('keyup', ' ');
+      A.forzar = 'dajao'; tecla('keydown', ' '); const cargando = A.fase === 'carga'; correr(0.9); const c1 = A.carga; tecla('keyup', ' ');
       check('Teclado: mantener Espacio carga la fuerza (sube y baja) y al soltar se lanza', cargando && c1 > 0.5 && A.fase === 'vuela' && A.dist > D_MIN, JSON.stringify({ carga: +c1.toFixed(2), dist: +A.dist.toFixed(2) }));
       hasta(() => A.fase !== 'vuela', 2);
       const enAgua = A.fase === 'espera' && Math.abs(P.corcho.position.y - nivelAgua(A.corcho.x, A.corcho.z)) < 0.2;
-      check('El corcho cae al agua delante del muelle y flota', enAgua, JSON.stringify({ fase: A.fase, y: +P.corcho.position.y.toFixed(2), z: +A.corcho.z.toFixed(1) }));
+      check('El corcho cae al río delante de la orilla y flota', enAgua, JSON.stringify({ fase: A.fase, y: +P.corcho.position.y.toFixed(2), z: +A.corcho.z.toFixed(1) }));
       tecla('keydown', ' '); tecla('keyup', ' ');
       check('Pulsar antes del pique solo da una pista («¡Muy pronto!») y se sigue esperando', A.fase === 'espera' && A.pistaTxt === TXT.pPronto);
       hasta(() => A.fase === 'pica', 8);
@@ -684,7 +772,12 @@ window.AVV18Pesca = function (G) {
       const pez1 = A.pez, fin1 = recogerCon(() => tecla('keydown', ' '), () => tecla('keyup', ' '), 40);
       const f1 = ficha();
       check('Teclado: manteniendo el anzuelo en la zona verde se atrapa el pez y sale su ficha (nombre, nombre científico, dato y fuente)', fin1 === 'foto' && A.peces === 1 && A.puntos === pez1.pts && f1 && f1.n === pez1.nombre && f1.c === pez1.cient && f1.d === pez1.dato && /^Fuente: /.test(f1.f), JSON.stringify({ fase: fin1, pez: pez1 && pez1.id, ficha: f1 }));
+      { const ch = AMIGOS.chispa; correr(0.2);
+        check('Al atrapar, los amigos celebran: Iguaca da saltitos y Chispa hace «Celebrar»; luego vuelven a Idle', AMIGOS.saltoT > 0 && AMIGOS.iguaca.sp.position.y > AMIGOS.iguaca.y + 1.05 && (!ch || !ch.mixer || ch.anim === 'Celebrar'),
+          JSON.stringify({ salto: +AMIGOS.saltoT.toFixed(2), anim: ch && ch.anim })); }
       const t0 = A.tiempo; correr(1);
+      correr(0.6); // «Celebrar» dura 1,6 s (el reloj de la ronda sigue parado: la ficha está abierta)
+      check('…y Chispa vuelve a Idle', !AMIGOS.chispa || !AMIGOS.chispa.mixer || AMIGOS.chispa.anim === 'Idle');
       check('Con la ficha abierta el reloj de la ronda se para', A.tiempo === t0);
       tecla('keydown', ' '); tecla('keyup', ' ');
       check('Teclado: «Soltarlo» devuelve el pez al agua y se vuelve a lanzar', A.fase === 'listo' && A.album[pez1.id] === 1 && eventos.some(e => e.tipo === 'suelta' && e.pez === pez1.id) && toasts.includes(TXT.alAgua));
@@ -696,22 +789,25 @@ window.AVV18Pesca = function (G) {
       // 4. Si no se recoge, el pez se escapa
       lanzar(0.6); hasta(() => A.fase === 'pica', 10); clavar(); A.sosteniendo = false; hasta(() => A.fase !== 'tira', 20);
       check('Si no se recoge, el pez se escapa (sin castigo: se vuelve a lanzar)', A.fase === 'listo' && A.peces === 1 && A.pistaTxt === TXT.seFue);
-      // 5. Lejos pican más los grandes (sábalo y róbalo); cerca, el pargo y la anguila
+      // 5. En medio del río pican más el dajao y la guavina; cerca de la orilla, el olivo, la anguila y el pleco
       const cuenta = d => { const r = {}; A.dist = d; for (let i = 0; i < 400; i++) { const p = elegirPez(); r[p.id] = (r[p.id] || 0) + 1; } return r; };
       const cerca = cuenta(D_MIN), lejos = cuenta(D_MAX);
-      check('Lejos pican más sábalos y róbalos; cerca, más pargos y anguilas', (lejos.sabalo || 0) > (cerca.sabalo || 0) * 2 && (cerca.pargo || 0) > (lejos.pargo || 0), JSON.stringify({ cerca, lejos }));
+      check('En medio del río pican más dajaos y guavinas; cerca de la orilla, más olivos y anguilas', (lejos.guavina || 0) > (cerca.guavina || 0) * 2 && (lejos.dajao || 0) > (cerca.dajao || 0) && (cerca.olivo || 0) > (lejos.olivo || 0) * 2 && (cerca.anguila || 0) > (lejos.anguila || 0), JSON.stringify({ cerca, lejos }));
       // 6. Invasora: no se suelta, se reporta al DRNA
       A.forzar = 'tilapia'; lanzar(0.5); hasta(() => A.fase === 'pica', 10); clavar(); recogerCon(() => apretar(), () => aflojar(), 40);
       const f2 = ficha();
       check('Invasora (tilapia de Mozambique): ficha «Especie invasora» y el botón dice «Reportar al DRNA»', A.fase === 'foto' && A.pez.id === 'tilapia' && f2 && f2.b === TXT.reportar && hud.q('fchapa').textContent === TXT.invasora && hud.q('fk').textContent === TXT.invasoraNo, JSON.stringify(f2));
       soltarPez();
       check('Al reportarla no vuelve al agua: aviso de gracias y evento para el módulo de invasoras', A.fase === 'listo' && !P.pez.visible && toasts.includes(TXT.reportado) && invasoras.length === 1 && invasoras[0].id === 'tilapia' && !eventos.some(e => e.tipo === 'suelta' && e.pez === 'tilapia'));
+      A.forzar = 'pleco'; lanzar(0.2); hasta(() => A.fase === 'pica', 10); clavar(); recogerCon(() => apretar(), () => aflojar(), 40);
+      const f3 = ficha();
+      check('Invasor (pleco): ficha «Especie invasora», «Reportar al DRNA» y al reportarlo el mismo evento, sin volver al río', A.fase === 'foto' && A.pez.id === 'pleco' && f3 && f3.b === TXT.reportar && f3.c === 'Pterygoplichthys multiradiatus' && soltarPez() && invasoras.length === 2 && invasoras[1].id === 'pleco' && invasoras[1].accion === 'reportar' && !eventos.some(e => e.tipo === 'suelta' && e.pez === 'pleco'), JSON.stringify(f3));
       // 7. Fin de la ronda: resultados, récord y álbum
       const pts = A.puntos; A.tiempo = 0.05; correr(0.2);
       const r1 = { fin1: hud.q('fin1').textContent, fin2: hud.q('fin2').textContent, fin3: hud.q('fin3').textContent, alb: hud.q('alb').textContent };
-      check('Se acaba el tiempo: resultados con peces, puntos, récord y el álbum de hoy', A.fase === 'fin' && !hud.q('fin').hidden && hud.q('juego').hidden && r1.fin1 === TXT.fin && r1.fin2 === finTxt(2, pts) && r1.fin3 === TXT.nuevo && r1.alb.includes('Tilapia de Mozambique') && r1.alb.includes(pez1.nombre), JSON.stringify(r1));
+      check('Se acaba el tiempo: resultados con peces, puntos, récord y el álbum de hoy', A.fase === 'fin' && !hud.q('fin').hidden && hud.q('juego').hidden && r1.fin1 === TXT.fin && r1.fin2 === finTxt(3, pts) && r1.fin3 === TXT.nuevo && r1.alb.includes('Tilapia de Mozambique') && r1.alb.includes('Pleco') && r1.alb.includes(pez1.nombre), JSON.stringify(r1));
       const g = v && v.mundo ? v.mundo(ID) : null;
-      check('El récord queda en la sesión y en el progreso (pesca_muelle: mejor y especies vistas)', recordVer() === pts && (!v || (g && g.mejor === pts && g.vistos.includes('tilapia'))), JSON.stringify(g));
+      check('El récord queda en la sesión y en el progreso (pesca_rio: mejor y especies vistas)', recordVer() === pts && (!v || (g && g.mejor === pts && g.vistos.includes('tilapia'))), JSON.stringify(g));
       tecla('keydown', 'r'); tecla('keyup', 'r');
       check('Teclado: R empieza otra ronda (2:30, 0 peces, récord a la vista)', A.fase === 'listo' && A.tiempo === RONDA && A.peces === 0 && hud.q('record').textContent === recordTxt(pts));
       tecla('keydown', 'Escape');
@@ -766,11 +862,11 @@ window.AVV18Pesca = function (G) {
       if (A.fase !== 'nada') salir();
       // 9. Limpieza al salir
       const evW2 = tecla('keydown', 'w'); tecla('keyup', 'w');
-      check('Al salir todo se limpia: HUD oculto y vacío, piezas ocultas, controles y cámara de siempre', A.fase === 'nada' && hud.el.hidden && !/\p{L}/u.test(hud.el.textContent) && !P.g.visible && !document.body.classList.contains('v18-pesca-on') &&
+      check('Al salir todo se limpia: HUD oculto y vacío, piezas ocultas, controles y cámara de siempre', A.fase === 'nada' && hud.el.hidden && !/\p{L}/u.test(hud.el.textContent) && !P.g.visible && !document.body.classList.contains('v18-pesca-on') && !(AMIGOS.iguaca && AMIGOS.iguaca.g.visible) && !(AMIGOS.chispa && AMIGOS.chispa.g.visible) &&
         G.interaccion.modo !== modo && !evW2.defaultPrevented && (!cam00 || (CAM.height === cam00.height && CAM.dist === cam00.dist)), JSON.stringify({ texto: hud.el.textContent.slice(0, 40), cam: CAM && [CAM.height, CAM.dist] }));
       // 10. Calidad baja / Modo Escuela: sin onda
       const cal = G.renderer.calidad, niv0 = cal && cal.nivel;
-      if (cal) { cal.nivel = 'bajo'; iniciar({ forzar: true }); lanzar(0.5); hasta(() => A.fase !== 'vuela', 2); const sinOnda = !P.onda.visible; salir(); cal.nivel = niv0; check('Calidad baja / Modo Escuela: sin onda ni burbujas al caer el corcho', sinOnda); }
+      if (cal) { cal.nivel = 'bajo'; iniciar({ forzar: true }); lanzar(0.5); hasta(() => A.fase !== 'vuela', 2); const sinOnda = !P.onda.visible, soloIguaca = !!AMIGOS.iguaca && AMIGOS.iguaca.g.visible && !(AMIGOS.chispa && AMIGOS.chispa.g.visible); salir(); cal.nivel = niv0; check('Calidad baja / Modo Escuela: sin onda ni burbujas al caer el corcho y solo Iguaca en la orilla (Chispa no se dibuja ni se anima)', sinOnda && soloIguaca); }
       // 11. Inglés: cada texto del minijuego tiene su entrada en content/cap1/en.js
       try {
         const en = await (await fetch('content/cap1/en.js', { cache: 'no-store' })).text();
@@ -785,17 +881,18 @@ window.AVV18Pesca = function (G) {
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }
     try { if (A.fase !== 'nada') salir(); } catch (e) { /* ya fuera */ }
     A.manual = false; semilla = semilla0; A.forzar = null; recordSesion = 0;
-    G.EXPANSION = exp0; try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* */ }
+    G.PESCA = exp0; try { if (G.menuModos && G.menuModos.mostrar) G.menuModos.mostrar(); } catch (e) { /* */ }
     G.ui.toast = toast0; console.error = cerr0; removeEventListener('error', onErr);
     try { G.off && G.off('v18pesca', oye); G.off && G.off('expansion:invasora', oyeInv); } catch (e) { /* */ }
     S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.facing = fac0; if (M) { M.flying = fly0; M.vx = M.vz = 0; } G.camara.yaw = yaw0;
     try { G.camara.place(true); } catch (e) { /* cámara */ }
     try { if (v && v.clave) { if (crudo == null) localStorage.removeItem(v.clave()); else localStorage.setItem(v.clave(), crudo); if (v.recargar) v.recargar(); } } catch (e) { /* */ }
+    if (calP) calP.nivel = nivP;
     if (susp) susp(false);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
   G.v18pesca = { ID, SITIO, PECES, RONDA, irYJugar, iniciar, salir, otraRonda, apretar, aflojar, lanzar, clavar, soltarPez, terminar, paso, disponible,
-    estado: () => A, record: recordVer, test };
+    estado: () => A, record: recordVer, amigos: () => AMIGOS, test };
   return G.v18pesca;
 };

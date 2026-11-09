@@ -12,7 +12,7 @@
    - Bajo el agua: de lejos el agua los tapa; a menos de 1,6 radios se ven claros a través de ella («visor», como rio_vivo.js).
    - Arte: mallas hechas aquí, sin modelos 3D nuevos (la iguana, suave y animada: ver iguanaVerde; los peces, con primitivas);
      4 InstancedMesh, 4 draw calls como mucho, sin sombras,
-     apagadas a más de 70 m. boot.js la carga al primer gesto sin ?expansion=1 (ya no depende de G.EXPANSION). Con ?invasoras=0
+     apagadas a más de 70 m. boot.js la carga al primer gesto sin ?expansion=1 (ya no hay bandera de expansión). Con ?invasoras=0
      (G.INVASORAS = false) no se carga; si se carga igual, nada se ve y la sección del Diario queda vacía. Nada se ve en las baterías
      (G.quiet) salvo dentro de su propia prueba.
    [KELVIN] 9-nov: aprobada con capturas (iguana caricatura incluida: «me gusta cómo se ve»); se enciende para todos.
@@ -542,7 +542,7 @@
       try {
         // 1. Encendida para todos (Kelvin 9-nov): sin ?expansion=1 boot.js la carga y está activa; con ?invasoras=0 (G.INVASORAS = false) nada se ve
         ok('Disponible sin bandera: sin ?expansion=1 boot.js carga la patrulla y está activa', g0.exp !== false && G.invasorasAuto === true && activo(),
-          'EXPANSION ' + G.EXPANSION + ' · INVASORAS ' + G.INVASORAS + ' · cargada al arrancar ' + !!G.invasorasAuto);
+          'INVASORAS ' + G.INVASORAS + ' · cargada al arrancar ' + !!G.invasorasAuto);
         G.INVASORAS = false; F.prueba = false; mem = { v: 1, vistos: [], completa: false };
         const h0 = hogar.iguana; if (h0) quietaEn(h0.x + 1, h0.z); G.quiet = false; paso(0.1, false); simular(2.5); G.quiet = g0.quiet;
         ok('Apagada a mano (?invasoras=0): ninguna malla visible, sección del Diario vacía, nada se avista ni se avisa', visibles() === 0 && htmlAlbum() === '' && !mem.vistos.length && !textos.length && !avistar('iguana'),

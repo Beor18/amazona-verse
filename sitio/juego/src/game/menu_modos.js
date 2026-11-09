@@ -34,7 +34,8 @@
     // las tres de los amigos (SUB); Mis cotorras, el Álbum y Retos con amigos se abren encima del menú, como Mi nido (ENCIMA).
     const SUB = ['chispa', 'moon', 'guardian'], ENCIMA = ['nido', 'records', 'cotorras', 'album', 'amigos'];
     const V18M = ['golf', 'duelo', 'duelo2', 'amigos', 'cotorras', 'chispa', 'moon', 'guardian'];
-    // Expansión (solo con G.EXPANSION: ?expansion=1; apagada por defecto hasta que Kelvin apruebe las fotos): pesca → src/game/v18/pesca.js
+    // Pesca en el río (src/game/v18/pesca.js): encendida para todos (Kelvin 9-nov); bandera propia G.PESCA, ?pesca=0 la apaga. Su script
+    // se carga al entrar (cargar18), no al arrancar.
     const EXP = ['pesca'];
     const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
     const TX = () => ({
@@ -42,7 +43,7 @@
       listo: L('¡A jugar!', 'Let’s play!'), cambiar: L('Cambiar de juego', 'Change game'),
       aventura: [L('Aventura', 'Adventure'), subAventura()],
       golf: [L('Minigolf', 'Mini golf'), L('Lleva la semilla gigante hasta el nido', 'Take the giant seed to the nest')], // V18 (Kelvin 7-nov: a la vista en el menú)
-      pesca: [L('Pesca', 'Fishing'), L('Lanza, espera el pique y suelta el pez', 'Cast, wait for the bite and release the fish')], // expansión (src/game/v18/pesca.js)
+      pesca: [L('Pesca', 'Fishing'), L('Lanza, espera el pique y suelta el pez', 'Cast, wait for the bite and release the fish')], // src/game/v18/pesca.js
       duelo: [L('Duelo', 'Duel'), L('Uno a uno contra la Campeona', 'One-on-one against the Champion')], // src/game/v18/combate.js
       duelo2: [L('Duelo de 2', '2-player duel'), L('Dos jugadores en la misma computadora', 'Two players on the same computer')], // src/game/v18/duelo2.js
       amigos: [L('Retos con amigos', 'Challenges with friends'), L('Chispa, Moon y el Guardián', 'Chispa, Moon and the Guardian')],
@@ -94,7 +95,7 @@
     function tarjetas() { return form ? [...form.querySelectorAll('[data-modo]')] : []; }
     const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
     // Las de la V18 solo con la bandera encendida; el Duelo de 2 necesita teclado (duelo2.js no se carga en táctil)
-    const seVe = m => (EXP.includes(m) ? !!G.EXPANSION : !V18M.includes(m) || (!!G.V18 && (m !== 'duelo2' || !tactil())));
+    const seVe = m => (EXP.includes(m) ? G.PESCA !== false : !V18M.includes(m) || (!!G.V18 && (m !== 'duelo2' || !tactil())));
     function mostrar() {
       if (!form) return;
       const T = TX(), u = ultimo();
@@ -176,7 +177,7 @@
       const c = $('card'); if (G.ui.cardOpen && c && (tarjeta2Abierta() || c.classList.contains('mm-encima'))) G.ui.hideCard();
     }
     function lanzar18(modo) {
-      if (!(EXP.includes(modo) ? G.EXPANSION : G.V18)) return Promise.resolve(false);
+      if (!(EXP.includes(modo) ? G.PESCA !== false : G.V18)) return Promise.resolve(false);
       if (P.id !== 'cap1') { alCap1(modo); return Promise.resolve(true); }
       return listo().then(() => cargar18(modo)).then(() => new Promise(res => {
         let n = 0, vigila = 0, carga = 0;
