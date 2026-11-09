@@ -1,0 +1,483 @@
+{
+ "tarea": "KIMI-356",
+ "etiqueta": "k356-heap-r7",
+ "hora_utc": "2026-11-09T03:48:46.527Z",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "pack": "cap1",
+ "modo": "portada",
+ "ref": null,
+ "head": "0c578000",
+ "heap": {
+  "naturalMB": 94,
+  "trasGC_MB": 80
+ },
+ "juego": {
+  "stats": {
+   "fps": 142,
+   "calls": 110,
+   "triangulos": 346004,
+   "calidad": "bajo",
+   "dpr": 0.75,
+   "post": false,
+   "sombras": false,
+   "gpu": "ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+   "escuela": false
+  },
+  "geo": null,
+  "tex": null,
+  "programas": null,
+  "texturasMB": 88.8,
+  "heapMB": 80,
+  "calls": 110,
+  "triangulos": 346004
+ },
+ "analisis": {
+  "nodos": 566038,
+  "edges": 2061372,
+  "porTipo": [
+   {
+    "nombre": "native",
+    "n": 100507,
+    "MB": 65.7
+   },
+   {
+    "nombre": "code",
+    "n": 57240,
+    "MB": 8.22
+   },
+   {
+    "nombre": "object",
+    "n": 177965,
+    "MB": 6.54
+   },
+   {
+    "nombre": "array",
+    "n": 24331,
+    "MB": 3.12
+   },
+   {
+    "nombre": "string",
+    "n": 23158,
+    "MB": 1
+   },
+   {
+    "nombre": "object shape",
+    "n": 15074,
+    "MB": 0.76
+   },
+   {
+    "nombre": "number",
+    "n": 52031,
+    "MB": 0.6
+   },
+   {
+    "nombre": "closure",
+    "n": 12794,
+    "MB": 0.37
+   },
+   {
+    "nombre": "concatenated string",
+    "n": 4665,
+    "MB": 0.09
+   },
+   {
+    "nombre": "regexp",
+    "n": 55,
+    "MB": 0
+   },
+   {
+    "nombre": "sliced string",
+    "n": 9,
+    "MB": 0
+   },
+   {
+    "nombre": "symbol",
+    "n": 6,
+    "MB": 0
+   }
+  ],
+  "porNombre": [
+   {
+    "nombre": "system / JSArrayBufferData",
+    "n": 34707,
+    "MB": 53.7
+   },
+   {
+    "nombre": "system / ExternalStringData",
+    "n": 1019,
+    "MB": 5.94
+   },
+   {
+    "nombre": "system / InstructionStream",
+    "n": 2488,
+    "MB": 4.4
+   },
+   {
+    "nombre": "(object elements)",
+    "n": 22136,
+    "MB": 2.12
+   },
+   {
+    "nombre": "ArrayBuffer",
+    "n": 37995,
+    "MB": 1.98
+   },
+   {
+    "nombre": "Object",
+    "n": 54023,
+    "MB": 1.38
+   },
+   {
+    "nombre": "Uint32Array",
+    "n": 23173,
+    "MB": 1.33
+   },
+   {
+    "nombre": "system / TrustedByteArray",
+    "n": 5561,
+    "MB": 1.02
+   },
+   {
+    "nombre": "system / BytecodeArray",
+    "n": 2777,
+    "MB": 0.75
+   },
+   {
+    "nombre": "heap number",
+    "n": 52031,
+    "MB": 0.6
+   },
+   {
+    "nombre": "<array>",
+    "n": 1841,
+    "MB": 0.59
+   },
+   {
+    "nombre": "system / Map",
+    "n": 11473,
+    "MB": 0.44
+   },
+   {
+    "nombre": "(object properties)",
+    "n": 518,
+    "MB": 0.41
+   },
+   {
+    "nombre": "Array",
+    "n": 20920,
+    "MB": 0.32
+   },
+   {
+    "nombre": "system / FeedbackVector",
+    "n": 1730,
+    "MB": 0.3
+   },
+   {
+    "nombre": "system / ProtectedFixedArray",
+    "n": 1352,
+    "MB": 0.28
+   },
+   {
+    "nombre": "system / DescriptorArray",
+    "n": 2335,
+    "MB": 0.27
+   },
+   {
+    "nombre": "system / FunctionTemplateInfo",
+    "n": 4193,
+    "MB": 0.26
+   },
+   {
+    "nombre": "Int8Array",
+    "n": 4204,
+    "MB": 0.24
+   },
+   {
+    "nombre": "Int16Array",
+    "n": 4204,
+    "MB": 0.24
+   },
+   {
+    "nombre": "Float32Array",
+    "n": 2457,
+    "MB": 0.21
+   },
+   {
+    "nombre": "blink::ScriptResource",
+    "n": 69,
+    "MB": 0.2
+   },
+   {
+    "nombre": "Uint8Array",
+    "n": 3293,
+    "MB": 0.19
+   },
+   {
+    "nombre": "system / WeakArrayList",
+    "n": 2199,
+    "MB": 0.19
+   },
+   {
+    "nombre": "system / Code",
+    "n": 2488,
+    "MB": 0.17
+   },
+   {
+    "nombre": "(constant pool)",
+    "n": 2611,
+    "MB": 0.16
+   },
+   {
+    "nombre": "<closure>",
+    "n": 5523,
+    "MB": 0.16
+   },
+   {
+    "nombre": "system / ScopeInfo",
+    "n": 3105,
+    "MB": 0.16
+   },
+   {
+    "nombre": "blink::GridSizingTrackCollection",
+    "n": 94,
+    "MB": 0.16
+   },
+   {
+    "nombre": "CanvasRenderingContext2D",
+    "n": 95,
+    "MB": 0.15
+   },
+   {
+    "nombre": "blink::ImmutableCSSPropertyValueSet",
+    "n": 1177,
+    "MB": 0.15
+   },
+   {
+    "nombre": "blink::ImageResource",
+    "n": 44,
+    "MB": 0.12
+   },
+   {
+    "nombre": "WebGLBuffer",
+    "n": 1522,
+    "MB": 0.12
+   },
+   {
+    "nombre": "system / PropertyArray",
+    "n": 4384,
+    "MB": 0.12
+   },
+   {
+    "nombre": "blink::StyleRule",
+    "n": 1509,
+    "MB": 0.11
+   },
+   {
+    "nombre": "system / FeedbackMetadata",
+    "n": 2682,
+    "MB": 0.11
+   },
+   {
+    "nombre": "Lt",
+    "n": 4812,
+    "MB": 0.11
+   },
+   {
+    "nombre": "blink::ComputedStyleBase::StyleSurroundData",
+    "n": 352,
+    "MB": 0.1
+   },
+   {
+    "nombre": "system / ArrayList",
+    "n": 216,
+    "MB": 0.1
+   },
+   {
+    "nombre": "blink::ComputedStyleBase::StyleMisc2Data",
+    "n": 299,
+    "MB": 0.1
+   },
+   {
+    "nombre": "WebGLUniformLocation",
+    "n": 1814,
+    "MB": 0.1
+   },
+   {
+    "nombre": "system / FeedbackCell",
+    "n": 5897,
+    "MB": 0.09
+   },
+   {
+    "nombre": "blink::CSSVariableData",
+    "n": 1223,
+    "MB": 0.09
+   },
+   {
+    "nombre": "(concatenated string)",
+    "n": 4665,
+    "MB": 0.09
+   },
+   {
+    "nombre": "Text",
+    "n": 1013,
+    "MB": 0.08
+   }
+  ],
+  "topRetenidos": [
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 1.93,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 1.93,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 1.38,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 1.38,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 1.28,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 1.28,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 1.19,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Uint32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.92,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.92,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.92,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Uint32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.83,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Uint32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.8,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.8,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.78,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Uint32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.62,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.53,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.5,
+    "retentor": "ArrayBuffer · (Builtins)",
+    "retentor2": "ArrayBuffer"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.5,
+    "retentor": "ArrayBuffer · (Builtins)",
+    "retentor2": "ArrayBuffer"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.49,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Uint32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.48,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.48,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.47,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.45,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.45,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   },
+   {
+    "clase": "system / JSArrayBufferData",
+    "MB": 0.45,
+    "retentor": "ArrayBuffer · buffer",
+    "retentor2": "Float32Array"
+   }
+  ],
+  "traceVacio": true
+ },
+ "ok": true,
+ "erroresConsola": 0
+}

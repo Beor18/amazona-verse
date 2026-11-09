@@ -1,0 +1,15 @@
+{
+ "tarea": "KIMI-356",
+ "etiqueta": "k356-heap-r4",
+ "hora_utc": "2026-11-09T03:42:02.555Z",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "pack": "cap1",
+ "ref": null,
+ "head": "0c578000",
+ "heap": {},
+ "juego": null,
+ "analisis": null,
+ "ok": false,
+ "error": "chrome murió durante la carga; stderr: "
+}

@@ -1,0 +1,5 @@
+preparar: ok carga 20095 ms
+heap natural 81 MB · tras GC 77 MB
+juego: {"error":"Error: {\"exceptionId\":1,\"text\":\"Uncaught\",\"lineNumber\":0,\"columnNumber\":250,\"scriptId\":\"82\",\"stackTrace\":{\"callFrames\":[{\"functionName\":\"\",\"scriptId\":\"82\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":250},{"}
+snapshot recibido en 13 s · 44 chunks · 43.0 MB de JSON
+ERROR: Cannot read properties of undefined (reading 'length')

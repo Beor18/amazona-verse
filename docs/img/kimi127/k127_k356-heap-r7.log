@@ -1,0 +1,7 @@
++0s DevTools puerto 64125 · target listo
++10s entrar (portada): ok carga 5312 ms
++27s heap natural 94 MB · tras GC 80 MB
++27s juego: {"stats":{"fps":142,"calls":110,"triangulos":346004,"calidad":"bajo","dpr":0.75,"post":false,"sombras":false,"gpu":"ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)","escuela":false},"geo":null,"tex":null,"programas":null,"texturasMB":88.8,"heapMB":80,"calls":110,"triangulos":346004}
++29s snapshot recibido en 2 s · 45 chunks · 44.7 MB de JSON
++29s nodos 566038 · edges 2061372 · trace vacío true
++29s top porNombre: system / JSArrayBufferData 53.7 MB (34707) · system / ExternalStringData 5.94 MB (1019) · system / InstructionStream 4.4 MB (2488) · (object elements) 2.12 MB (22136) · ArrayBuffer 1.98 MB (37995) · Object 1.38 MB (54023) · Uint32Array 1.33 MB (23173) · system / TrustedByteArray 1.02 MB (5561) · system / BytecodeArray 0.75 MB (2777) · heap number 0.6 MB (52031) · <array> 0.59 MB (1841) · system / Map 0.44 MB (11473)

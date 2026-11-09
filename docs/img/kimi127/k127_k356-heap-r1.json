@@ -1,0 +1,20 @@
+{
+ "tarea": "KIMI-356",
+ "etiqueta": "k356-heap-r1",
+ "hora_utc": "2026-11-09T03:30:55.437Z",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "pack": "cap1",
+ "ref": null,
+ "head": "cee4e18a",
+ "heap": {
+  "naturalMB": 81,
+  "trasGC_MB": 77
+ },
+ "juego": {
+  "error": "Error: {\"exceptionId\":1,\"text\":\"Uncaught\",\"lineNumber\":0,\"columnNumber\":250,\"scriptId\":\"82\",\"stackTrace\":{\"callFrames\":[{\"functionName\":\"\",\"scriptId\":\"82\",\"url\":\"\",\"lineNumber\":0,\"columnNumber\":250},{"
+ },
+ "analisis": null,
+ "ok": false,
+ "error": "Cannot read properties of undefined (reading 'length')"
+}
