@@ -70,6 +70,9 @@ Cada episodio reutiliza el motor, el personaje, el ropero, el criadero, el guard
 - Family Quest: actividades opcionales en familia y viñeta conmemorativa.
 - Minijuego de piloto.
 - Peces invasores reales de Puerto Rico (pez león en los arrecifes; tilapia y pleco en los ríos), con fuente verificada (NOAA, USGS, DRNA): fichas del Diario y una actividad de observación, nunca como enemigos (Kelvin, 8-nov: para la expansión).
+- Iguana verde (especie invasora en Puerto Rico): ficha del Diario y observación con fuente verificada (DRNA, USFWS), nunca como enemigo (Kelvin, 9-nov).
+- Construir libre: ampliar el modo construir del cap. 1 (hoy solo el refugio) a nido, refugio y decoración. Falta que Kelvin diga qué se puede construir.
+- Grito del Yunque: sonido más largo y profundo (Kelvin, 9-nov: «por ahora está bien»).
 - Minijuego de pesca (Kelvin, 8-nov: para la expansión; la lista completa la da Kelvin después del cierre).
 - Empaquetado para tiendas (Capacitor) si hace falta.
 - Cotorras en línea (Kelvin, 9-nov: aprobado para la expansión): salas por código con el Realtime de Supabase, solo especie, posición, vuelo y gestos con un id al azar; sin nombres, chat ni cuentas. Primera versión en `src/game/en_linea.js` (botón «Jugar en línea» de la pausa); falta probarla en familia antes de anunciarla.
