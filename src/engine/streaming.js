@@ -2334,6 +2334,9 @@ AVE.module('streaming', function (G) {
       // desglose imposible en HEAD verde: 28/44/7 frente a 69/34/6; mismo mecanismo que QA-160). Si tras los
       // reintentos no asienta, se mide igualmente pero el extra lo dice.
       let st = null, hdMax = 0, aviso = '';
+      // QA-nuevo-br1-3: mallas visibles (con visibilidad heredada) por hijo directo de la escena, las 8 que más tienen
+      const porGrupo = () => { const n = {}; for (const h of scene.children) { if (!h.visible) continue; let k = 0; h.traverseVisible(o => { if (o.isMesh || o.isPoints || o.isLine || o.isSprite) k++; }); if (k) n[h.name || h.type] = (n[h.name || h.type] || 0) + k; }
+        return Object.entries(n).sort((a, b) => b[1] - a[1]).slice(0, 8).map(e => e[0] + ' ' + e[1]).join(', '); };
       for (const yaw of [0, Math.PI / 2, Math.PI, Math.PI * 1.5]) {
         for (let intento = 0; intento < 4; intento++) {
           if (Math.hypot(S.pos.x - ZM.cx, S.pos.z - bzM) > 3) await ir(ZM.cx, bzM, 0, -1);
@@ -2345,7 +2348,14 @@ AVE.module('streaming', function (G) {
         if (se0.trabajos || se0.descargando || Math.hypot(S.pos.x - ZM.cx, S.pos.z - bzM) > 3) aviso = ' · toma sin asentar (QA concurrente)';
         G.camara.yaw = yaw; dibujar(2);
         const c = contar(), se = ST.stats();
-        if (!st || c > st.calls) st = { calls: c, yaw, edif: se.drawEdificios, cerca: se.visiblesCerca, lejos: se.visiblesLejos, hd: se.visiblesHD, zonas: se.zonasFundidas };
+        if (!st || c > st.calls) {
+          // QA-nuevo-br1-3: diagnóstico de la toma (sola 132 calls con 22 cerca/32 _hd; tras ep4e2e…juiceTest 181 con 50/82)
+          const cp = R.camera.position, Cq = R.calidad || {};
+          st = { calls: c, yaw, edif: se.drawEdificios, cerca: se.visiblesCerca, lejos: se.visiblesLejos, hd: se.visiblesHD, zonas: se.zonasFundidas,
+            diag: 'cám ' + [cp.x - S.pos.x, cp.y - S.pos.y, cp.z - S.pos.z].map(r2).join(',') + ' fov ' + r2(R.camera.fov) + ' asp ' + r2(R.camera.aspect) + ' · alcance ' + r2(alcance()) + ' niebla ' + r2(alcanceNiebla())
+              + ' · sombras ' + (Cq.sombras || 0) + '/' + (Cq.sombraRadio || 0) + ' esc ' + !!Cq.escuela + ' · inst ' + se.instancias + ' colocadas ' + se.colocadas + ' zonasCerca ' + se.zonasCerca + ' · ZM ' + ZM.inst.length
+              + ' · mallas visibles por grupo: ' + porGrupo() };
+        }
         hdMax = Math.max(hdMax, se.visiblesHD);
       }
       G.camara.yaw = yaw0;
@@ -2373,7 +2383,7 @@ AVE.module('streaming', function (G) {
       }
       }
       check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ' (giro ' + r2(st.yaw) + '): ' + st.calls + ' draw calls, edificios ' + st.edif +
-        ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal() + aviso);
+        ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal() + aviso + ' · ' + st.diag);
       const lejosM = [];
       scene.traverse(o => { if (o.name && o.name.indexOf(':lejos') >= 0) lejosM.push(o); });
       check('El lejano recibe la sombra del sol y no la proyecta', lejosM.length > 0 && lejosM.every(o => o.receiveShadow && !o.castShadow),
