@@ -1,0 +1,398 @@
+{
+  "etiqueta": "r3",
+  "cuando": "2026-11-09T06:31:53.109Z",
+  "gpu": "PC real (ANGLE/D3D11)",
+  "fases": {
+    "control": {
+      "zm": "kelvin_ruinas_yunque",
+      "tomas": [
+        {
+          "yaw": 0,
+          "calls": 79
+        },
+        {
+          "yaw": 1.6,
+          "calls": 107
+        },
+        {
+          "yaw": 3.1,
+          "calls": 113
+        },
+        {
+          "yaw": 4.7,
+          "calls": 108
+        }
+      ],
+      "npc": [],
+      "st": {
+        "calls": 113,
+        "yaw": 3.1,
+        "edif": 23,
+        "cerca": 21,
+        "hd": 31,
+        "lejos": 6,
+        "zonas": 17,
+        "grupo": "Group 67, v18npc:guardian 18, Mesh 10, personaje 6, m3:arbusto 3, edu:marcador 3, cielo 1, cielo-nubes 1, fondoMarino 1, mar 1"
+      }
+    },
+    "prelude_selfTest": "{\"passed\":108,\"total\":108,\"results\":[{\"name\":\"Nombre vacío se rechaza\",\"ok\":true,\"extra\":\"\"},{\"name\":\"Nombre con símbolos raros se rechaza\",\"ok\":true,\"extra\":\"\"},{\"name\":\"Nombre con números, correo o ",
+    "prelude_criaderoTest": "{\"ok\":true,\"pasan\":52,\"total\":52,\"checks\":[{\"name\":\"Datos: 9 cápsulas y 4 etapas\",\"ok\":true,\"info\":\"clasico,tropical,playa,bosque,pr,espacial,dorado,cristal,rescatado\"},{\"name\":\"Datos: niveles crecien",
+    "prelude_idiomaTest": "{\"ok\":true,\"passed\":31,\"total\":31,\"results\":[{\"name\":\"El diccionario EN carga y tiene más de 700 textos\",\"ok\":true,\"extra\":\"2718\"},{\"name\":\"Ninguna traducción está vacía\",\"ok\":true,\"extra\":\"\"},{\"name\"",
+    "prelude_menuModosTest": "{\"passed\":84,\"total\":84,\"results\":[{\"name\":\"Una tarjeta por modo (con Amazona Flight, el tren, River Rush, Amazona Maze y las de la V18)\",\"ok\":true},{\"name\":\"La primera tarjeta es Aventura y es submit",
+    "prelude_banqueteTest": "{\"passed\":44,\"total\":44,\"results\":[{\"name\":\"Hay árboles con frutos en el mapa (palma de sierra y tabonuco reales)\",\"ok\":true,\"extra\":\"60 árboles, 136 frutos en alto\"},{\"name\":\"Hay palmas de sierra con",
+    "prelude_minimapaTest": "{\"passed\":45,\"total\":45,\"results\":[{\"name\":\"El relieve se precalcula (192×192) y se carga solo al hacer falta\",\"ok\":true,\"extra\":\"\"},{\"name\":\"El mapa distingue la tierra del mar\",\"ok\":true,\"extra\":\"ti",
+    "juice": {
+      "passed": 34,
+      "total": 34,
+      "results": [
+        {
+          "name": "Sonidos: rasante, picado, remonte, aterrizaje perfecto y pétalos (sintetizados)",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Rasante: a < 1 m del agua y 12 m/s, el chip dice «Rasante ×4» tras 3,2 s",
+          "ok": true,
+          "extra": "Rasante ×4"
+        },
+        {
+          "name": "Rasante: suena una nota por cada «×N»",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Rasante: la estela se ve (dos colas de puntos aditivos)",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Rasante: sobre el agua deja ondas",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Rasante: cuenta segundos y el mejor ×N",
+          "ok": true,
+          "extra": "{\"max\":4,\"seg\":3.2}"
+        },
+        {
+          "name": "Rasante: sobre la hierba también («×2» a 1,2 s; estela verde clara)",
+          "ok": true,
+          "extra": "Rasante ×2"
+        },
+        {
+          "name": "Rasante: no cuenta lento (< 6 m/s), alto (> 1 m) ni aterrizando",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Rasante: al subir el chip se queda un momento y se va solo",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Inglés: el chip dice «Skim ×3»",
+          "ok": true,
+          "extra": "Skim ×3"
+        },
+        {
+          "name": "Picado: el campo de visión se abre (+5 a +7°) y suena el viento",
+          "ok": true,
+          "extra": "6.99"
+        },
+        {
+          "name": "Remonte: nivelar tras el picado sin pedir subir da «¡Remonte!», golpe de aire y pulso de FOV",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Picado: el FOV vuelve a 0 al nivelar",
+          "ok": true,
+          "extra": "0"
+        },
+        {
+          "name": "Remonte: subiendo con las alas (salto) no cuenta como remonte",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Remonte: un picado corto (< 0,6 s) no cuenta",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Aterrizaje perfecto: a 1,7 m/s sale «¡Aterrizaje perfecto!» con acorde",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Aterrizaje perfecto: el pop se anima (escala con rebote)",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Aterrizaje: a 5 m/s, en el agua honda o en el aire no hay pop (sin castigo: no pasa nada)",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Inglés: «Perfect landing!»",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Aterrizaje perfecto: el pop se va solo",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "En pausa (sin cuadros) el chip y el pop no se quedan encima del menú",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Pétalos: al cruzar la copa de un flamboyán caen pétalos (rojo y anaranjado) y suena un brillo",
+          "ok": true,
+          "extra": "1 · partículas 58→74/200 · sonó true"
+        },
+        {
+          "name": "Pétalos: el mismo árbol espera 1,2 s antes de soltar más",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Pétalos: pasada la espera vuelven a caer",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Pétalos: el mapa tiene flamboyanes en la flora para cruzar",
+          "ok": true,
+          "extra": "true"
+        },
+        {
+          "name": "Reducir movimiento: sin FOV, sin estela ni pétalos; chip y pop sin animación",
+          "ok": true,
+          "extra": "{\"sinEstela\":true,\"chipR\":true,\"fovR\":0,\"pet\":0}"
+        },
+        {
+          "name": "Con G.quiet (baterías) y en un minijuego no hace nada",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Cámara: fovPicado abre el FOV (+6) y se apaga con la cámara sin vida",
+          "ok": true,
+          "extra": "{\"f0\":55,\"con\":61,\"sinVida\":55}"
+        },
+        {
+          "name": "Cámara: el FOV del picado no se suma al del vuelo (el mayor de los dos, más fovBonus)",
+          "ok": true,
+          "extra": "{\"vuelo\":4,\"fov\":60.95}"
+        },
+        {
+          "name": "Cámara: con saltos seguidos el dolly del aterrizaje no late (≤ 3 en 3 s con 6 aterrizajes)",
+          "ok": true,
+          "extra": "2"
+        },
+        {
+          "name": "Cámara junto a una pared, en táctil: distancia estable ±5 % durante 3 s con toques (bug del iPad)",
+          "ok": true,
+          "extra": "{\"q\":0.04,\"con\":{\"var\":0,\"mn\":0.35,\"mx\":0.35,\"giro\":0},\"sinHisteresis\":{\"var\":1.2075547937390276,\"mn\":0.35,\"mx\":1.4,\"giro\":0}}"
+        },
+        {
+          "name": "Táctil: un pellizco con dos dedos no gira ni inclina la cámara",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Táctil: arrastrar con un dedo sí gira la cámara",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Estado real: volando a 0,5 m del suelo a 12 m/s es rasante",
+          "ok": true,
+          "extra": "{\"alto\":0.5,\"agua\":false}"
+        }
+      ]
+    },
+    "post": {
+      "zm": "kelvin_ruinas_yunque",
+      "tomas": [
+        {
+          "yaw": 0,
+          "calls": 96
+        },
+        {
+          "yaw": 1.6,
+          "calls": 121
+        },
+        {
+          "yaw": 3.1,
+          "calls": 138
+        },
+        {
+          "yaw": 4.7,
+          "calls": 125
+        }
+      ],
+      "npc": [
+        "v18_golf_semilla @(-42.1,-116.9) mallas 2 dist 49.8",
+        "v18_golf_troncos_6 @(0,0) mallas 1 dist 84.9",
+        "v18_golf_nido_6 @(-28.2,-124.9) mallas 4 dist 46.9",
+        "v18_golf_salida_6 @(-42.1,-116.9) mallas 1 dist 49.8",
+        "v18_rival @(186,172) mallas 14 dist 319.4",
+        "v18_arausiaca @(114.6,183.3) mallas 15 dist 293.2"
+      ],
+      "st": {
+        "calls": 138,
+        "yaw": 3.1,
+        "edif": 23,
+        "cerca": 21,
+        "hd": 31,
+        "lejos": 6,
+        "zonas": 17,
+        "grupo": "Group 67, v18npc:guardian 18, v18_arausiaca 15, v18_rival 14, Mesh 10, bohio-interior@kelvin_aldea_meandros 7, bohio-interior@kelvin_aldea_mina 7, bohio-interior 7, personaje 6, v18_golf_nido_6 4"
+      }
+    },
+    "aislar": {
+      "base": 136,
+      "deltas": {
+        "v18_golf_semilla": 0,
+        "v18_golf_troncos_6": 1,
+        "v18_golf_nido_6": 0,
+        "v18_golf_salida_6": 1,
+        "v18_rival": 2,
+        "v18_arausiaca": 3
+      },
+      "check": 136
+    },
+    "streamingTest": {
+      "passed": 24,
+      "total": 24,
+      "results": [
+        {
+          "name": "Lo de cerca del inicio está cargado y con colisiones",
+          "ok": true,
+          "extra": "villa:1/1 kelvin_aldea_rio_este:46/46 kelvin_aldea_colina:25/25"
+        },
+        {
+          "name": "La fusión global HD solo se dibuja con una zona HD visible",
+          "ok": true,
+          "extra": "1 zonas HD visibles · mallas globales: ninguna"
+        },
+        {
+          "name": "En calidad media se pide el edificio completo",
+          "ok": true,
+          "extra": "medio 90 m"
+        },
+        {
+          "name": "En calidad baja, junto al edificio, también",
+          "ok": true,
+          "extra": "bajo 45 m"
+        },
+        {
+          "name": "F2.1: el detalle llega a 90 m en media y a 120 m en alta; en baja el kit sigue a 45 m",
+          "ok": true,
+          "extra": "bajo 45 · medio 90 · alto 120"
+        },
+        {
+          "name": "Cerca, los edificios con versión de alta fidelidad la cargan y la dibujan",
+          "ok": true,
+          "extra": "kelvin_ruinas_yunque: 17/17 modelos _hd, hasta 60 instancias _hd a la vista"
+        },
+        {
+          "name": "El _hd mide lo mismo que el ligero (de donde salen las colisiones)",
+          "ok": true,
+          "extra": "17 modelos; pendientes: templo_grande 0.00, templo_grande_f 0.00, ruina_mirador 0.05"
+        },
+        {
+          "name": "Draw calls de la vista más cargada ≤ 150",
+          "ok": true,
+          "extra": "kelvin_ruinas_yunque (giro 3.1): 138 draw calls, edificios 23 (21 instancias cerca, 31 _hd, 6 lejos sueltas, 17 zonas fundidas) · alto · cám 0,6.2,-7.5 fov 55 asp 1.9 · alcance 320 niebla 5330 · sombras 2048/30 esc false · inst 422 colocadas 422 zonasCerca 9 · ZM 61 · mallas visibles por grupo: Group 67, v18npc:guardian 18, v18_arausiaca 15, v18_rival 14, Mesh 10, bohio-interior@kelvin_aldea_meandros 7, bohio-interior@kelvin_aldea_mina 7, bohio-interior 7"
+        },
+        {
+          "name": "El lejano recibe la sombra del sol y no la proyecta",
+          "ok": true,
+          "extra": "87 mallas"
+        },
+        {
+          "name": "Al entrar, la zona carga sus modelos y coloca sus instancias",
+          "ok": true,
+          "extra": "kelvin_aldea_rio_oeste_2: 21 instancias, 5 modelos · reintento ×1"
+        },
+        {
+          "name": "Las colisiones de sus edificios están activas al cargar",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Se dibujan instancias de la zona",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Al salir de su radio, la zona suelta el modelo completo (geometría, texturas, mallas)",
+          "ok": true,
+          "extra": "nivel 1 · geometrías 786→736 · texturas 210→206 · campamento_f,campamento_a"
+        },
+        {
+          "name": "Fuera de la vista, la zona se libera del todo (nivel 0, sin LOD lejano)",
+          "ok": true,
+          "extra": "nivel 0 · geometrías 704"
+        },
+        {
+          "name": "La cadena base64 no queda en memoria",
+          "ok": true,
+          "extra": ""
+        },
+        {
+          "name": "Las colisiones siguen activas tras liberar",
+          "ok": true,
+          "extra": "colliders 18→18 · sólido 23.5→23.5 m"
+        },
+        {
+          "name": "Sin fugas tras ir y volver dos veces (memoria de edificios estable; heap con gc ≤ +8 MB)",
+          "ok": true,
+          "extra": "KB 374105→374105 · materiales 36→36 · modelos 136→136 · heap 514.1→532.2 MB (sin gc: no se exige) · three geo 720→720, tex 206→206 · asentado descargando 0/trabajos 0 · 7 pasadas | descargando 0/trabajos 0 · 5 pasadas"
+        },
+        {
+          "name": "La ciudad del tepuy, desde el aire, usa el kit con textura y no la silueta beige",
+          "ok": true,
+          "extra": "hd 19 · cerca 0 · lejos 0 · ciudad true · silueta false"
+        },
+        {
+          "name": "Las torres F de la ciudad están erguidas (el export las tumbaba y se leían como ganchos)",
+          "ok": true,
+          "extra": "ruina_torre_f@kelvin_ruinas_yunque#0, ruina_torre_f@kelvin_ruinas_yunque#1, ruina_torre_f@kelvin_ruinas_yunque#2"
+        },
+        {
+          "name": "El conjunto de torres de la izquierda usa el kit en la vista aérea",
+          "ok": true,
+          "extra": "ciudad true · nivel 1 · d 223"
+        },
+        {
+          "name": "La piedra Ancient del kit es crema mate (sin brillo especular)",
+          "ok": true,
+          "extra": "av-hd-atlas|look:vibrant_toon"
+        },
+        {
+          "name": "El atlas de las fusiones conserva la codificación sRGB del original",
+          "ok": true,
+          "extra": "AV_HD_Savage=3001, AV_HD_Ancient=3001, AV_HD_Savage=3001, AV_HD_Savage=3001, AV_HD_Ancient=3001, AV_HD_Savage=3001, AV_HD_Savage=3001, AV_HD_Savage=3001, AV_HD_Savage=3001"
+        },
+        {
+          "name": "Fuera de su rango, la ciudad del tepuy suelta el kit de la vista aérea",
+          "ok": true,
+          "extra": "ciudad false · nivel 1 · d 298 · bajo"
+        },
+        {
+          "name": "En bajo, el spawn no carga la ciudad del tepuy (memoria de móvil)",
+          "ok": true,
+          "extra": "ciudad false · d 228 · bajo"
+        }
+      ]
+    }
+  }
+}
