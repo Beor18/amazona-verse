@@ -1,0 +1,283 @@
+{
+ "tarea": "KIMI-127",
+ "etiqueta": "k3esc-flora-r1",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "packs": [
+  "ep3",
+  "ep4"
+ ],
+ "demo": false,
+ "head": "desconocido",
+ "capas": {
+  "ep3": {
+   "cargaListaS": 4.4,
+   "cargaEntradaS": 19.4,
+   "pos": [
+    172,
+    174
+   ],
+   "fpsPorSeg": [
+    10,
+    14,
+    14,
+    21,
+    18,
+    17,
+    11,
+    3,
+    29,
+    29
+   ],
+   "fpsMed": 17,
+   "fpsMin": 3,
+   "peorMs": 2042,
+   "medianaMs": 43,
+   "p95Ms": 146,
+   "p99Ms": 322,
+   "pausas50": 68,
+   "stats": [
+    {
+     "calls": 63,
+     "ktris": 287,
+     "fpsMedidor": 9,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 74
+    },
+    {
+     "calls": 74,
+     "ktris": 302,
+     "fpsMedidor": 16,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 113
+    },
+    {
+     "calls": 79,
+     "ktris": 308,
+     "fpsMedidor": 12,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 91
+    },
+    {
+     "calls": 79,
+     "ktris": 308,
+     "fpsMedidor": 19,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 97
+    },
+    {
+     "calls": 79,
+     "ktris": 309,
+     "fpsMedidor": 25,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 93
+    },
+    {
+     "calls": 81,
+     "ktris": 328,
+     "fpsMedidor": 16,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 129
+    },
+    {
+     "calls": 68,
+     "ktris": 375,
+     "fpsMedidor": 11,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 134
+    },
+    {
+     "calls": 71,
+     "ktris": 662,
+     "fpsMedidor": 9,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 137
+    },
+    {
+     "calls": 61,
+     "ktris": 528,
+     "fpsMedidor": 28,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 159
+    },
+    {
+     "calls": 61,
+     "ktris": 528,
+     "fpsMedidor": 28,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 147
+    }
+   ],
+   "med": {
+    "calls": 61,
+    "triangulos": 527906,
+    "texturasMB": 98.5,
+    "geometrias": 231,
+    "heapMB": 147,
+    "fps": 28
+   },
+   "medErr": null,
+   "errores": []
+  },
+  "ep4": {
+   "cargaListaS": 4.3,
+   "cargaEntradaS": 19,
+   "pos": [
+    191.1,
+    165
+   ],
+   "fpsPorSeg": [
+    9,
+    16,
+    23,
+    26,
+    7,
+    10,
+    16,
+    27,
+    29,
+    31,
+    30,
+    31
+   ],
+   "fpsMed": 21,
+   "fpsMin": 7,
+   "peorMs": 411,
+   "medianaMs": 35,
+   "p95Ms": 133,
+   "p99Ms": 152,
+   "pausas50": 45,
+   "stats": [
+    {
+     "calls": 77,
+     "ktris": 257,
+     "fpsMedidor": 10,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 104
+    },
+    {
+     "calls": 96,
+     "ktris": 324,
+     "fpsMedidor": 15,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 111
+    },
+    {
+     "calls": 97,
+     "ktris": 324,
+     "fpsMedidor": 23,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 109
+    },
+    {
+     "calls": 102,
+     "ktris": 341,
+     "fpsMedidor": 26,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 133
+    },
+    {
+     "calls": 109,
+     "ktris": 402,
+     "fpsMedidor": 10,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 127
+    },
+    {
+     "calls": 101,
+     "ktris": 708,
+     "fpsMedidor": 10,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 167
+    },
+    {
+     "calls": 88,
+     "ktris": 563,
+     "fpsMedidor": 26,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 175
+    },
+    {
+     "calls": 88,
+     "ktris": 563,
+     "fpsMedidor": 27,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 165
+    },
+    {
+     "calls": 88,
+     "ktris": 563,
+     "fpsMedidor": 29,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 152
+    },
+    {
+     "calls": 88,
+     "ktris": 563,
+     "fpsMedidor": 29,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 170
+    },
+    {
+     "calls": 88,
+     "ktris": 563,
+     "fpsMedidor": 30,
+     "calidad": "bajo",
+     "dpr": 0.75,
+     "escuela": true,
+     "heapMB": 156
+    }
+   ],
+   "med": {
+    "calls": 88,
+    "triangulos": 563496,
+    "texturasMB": 97.6,
+    "geometrias": 248,
+    "heapMB": 156,
+    "fps": 30
+   },
+   "medErr": null,
+   "errores": []
+  }
+ }
+}

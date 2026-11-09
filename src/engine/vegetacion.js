@@ -947,7 +947,7 @@ AVE.module('vegetacion', function (G) {
   const ULT = {};
   let dTope = new Float32Array(0), tTope = new Float32Array(0), iTope = new Uint32Array(0);
   function topeArbol(cx, cz, maxD, tope0, topeT0, fTris) {
-    const tope = tope0 || (C.escuela ? Math.round(TOPE_ARBOLES[C.nivel] * 0.5) : TOPE_ARBOLES[C.nivel]), topeT = topeT0 || TOPE_TRIS[C.nivel] || Infinity, ft = fTris || 1;   // KIMI-320: en Modo Escuela, la mitad de árboles en malla (el resto va a impostor, que sigue dibujándose)
+    const tope = tope0 || (C.escuela ? Math.round(TOPE_ARBOLES[C.nivel] * 0.35) : TOPE_ARBOLES[C.nivel]), topeT = topeT0 || TOPE_TRIS[C.nivel] || Infinity, ft = fTris || 1;   // KIMI-320/375: en Modo Escuela, 0,35× árboles en malla (KIMI-320 era la mitad; el resto va a impostor, que sigue dibujándose)
     if (!(tope > 0)) return maxD;
     if (dTope.length < total) { dTope = new Float32Array(total); tTope = new Float32Array(total); iTope = new Uint32Array(total); }
     let n = 0, tris = 0;

@@ -1,0 +1,22 @@
+[10:28:21] pack ep3: navegando...
+[10:28:26] …latido
+[10:28:31] …latido
+[10:28:36] …latido
+[10:28:41] pack ep3: listo en 4.416s, entrada en 19.382s; muestreo 12s en el spawn
+[10:28:41] …latido
+[10:28:46] …latido
+[10:28:51] …latido
+[10:28:56] …latido
+[10:28:58] pack ep3: fpsMed=17 min=3 peorMs=2042 calls=72 ktris=394 medL=61 calls/0.53M errores=[]
+[10:28:58] pack ep4: navegando...
+[10:29:01] …latido
+[10:29:06] …latido
+[10:29:11] …latido
+[10:29:16] …latido
+[10:29:17] pack ep4: listo en 4.333s, entrada en 18.993s; muestreo 12s en el spawn
+[10:29:21] …latido
+[10:29:26] …latido
+[10:29:31] …latido
+[10:29:36] …latido
+[10:29:36] pack ep4: fpsMed=21 min=7 peorMs=411 calls=93 ktris=470 medL=88 calls/0.56M errores=[]
+[10:29:37] evidencia: docs\img\kimi375\k127_k3esc-flora-r1.json
