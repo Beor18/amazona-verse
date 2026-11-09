@@ -1,0 +1,347 @@
+{
+  "head": "0271ba1d",
+  "url_extra": "calidad=medio",
+  "cuando": "2026-11-09T01:05:09.006Z",
+  "calidad": "medio",
+  "escuela": false,
+  "info": {
+    "geo": 168,
+    "tex": 162,
+    "prog": 74,
+    "calls": 1,
+    "tris": 1
+  },
+  "texturas": {
+    "n": 129,
+    "mb": 337.2,
+    "comprimidas": 0,
+    "comprimidasMb": 0
+  },
+  "atlasLQ": [],
+  "atlasHD": [
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": false,
+      "w": 4096,
+      "lq": false,
+      "src": ""
+    }
+  ],
+  "heapMb": 404.1,
+  "errores": []
+}

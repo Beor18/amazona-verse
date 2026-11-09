@@ -1,0 +1,116 @@
+{
+  "head": "0271ba1d",
+  "url_extra": "calidad=bajo",
+  "cuando": "2026-11-09T01:04:25.569Z",
+  "calidad": "bajo",
+  "escuela": false,
+  "info": {
+    "geo": 140,
+    "tex": 108,
+    "prog": 77,
+    "calls": 109,
+    "tris": 345776
+  },
+  "texturas": {
+    "n": 92,
+    "mb": 43.3,
+    "comprimidas": 2,
+    "comprimidasMb": 5.3
+  },
+  "atlasLQ": [],
+  "atlasHD": [
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    }
+  ],
+  "heapMb": 98.2,
+  "errores": []
+}

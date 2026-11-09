@@ -1,0 +1,347 @@
+{
+  "head": "0271ba1d",
+  "url_extra": "escuela=1&calidad=medio",
+  "cuando": "2026-11-09T01:03:17.706Z",
+  "calidad": "medio",
+  "escuela": true,
+  "info": {
+    "geo": 187,
+    "tex": 161,
+    "prog": 74,
+    "calls": 1,
+    "tris": 1
+  },
+  "texturas": {
+    "n": 129,
+    "mb": 171.9,
+    "comprimidas": 2,
+    "comprimidasMb": 5.3
+  },
+  "atlasLQ": [],
+  "atlasHD": [
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Savage",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    },
+    {
+      "material": "AV_HD_Ancient",
+      "ktx2": true,
+      "w": 2048,
+      "lq": true,
+      "src": ""
+    }
+  ],
+  "heapMb": 441.2,
+  "errores": []
+}

@@ -14,6 +14,7 @@ const KTX2CFG = JSON.parse(fs.readFileSync(path.join(AQUI, 'config.json'), 'utf8
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
 const URL_EXTRA = arg('--url-extra', 'calidad=bajo');
+const ESPERA = parseInt(arg('--espera', '0'), 10); // s extra tras asentar (para pasar el barrido de atlas ~20 s)
 const ETIQUETA = arg('--etiqueta', 'r1');
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi343');
 fs.mkdirSync(SALIDA, { recursive: true });
@@ -85,7 +86,9 @@ async function ev(cdp, ses, exp, t, pr) {
   // asentar: ST.terminar() con tope
   try { log('· asentar: ' + await ev(cdp, ses, `(async () => { const ST = AV.G.mundo.streaming; const t0 = performance.now(); const r = await ST.terminar({ topeMs: 120000 }); return 'ok ' + Math.round(performance.now() - t0) + ' ms · tope ' + !!(r && r.tope); })()`, 150)); } catch (e) { log('· asentar (fallo suave): ' + e.message); }
   await cdp.bombear(2);
+  if (ESPERA > 0) { log('· espera ' + ESPERA + ' s (barrido de atlas ~20 s)'); await cdp.bombear(ESPERA); }
   const MEDIR = `(async () => {
+    await new Promise(r => requestAnimationFrame(r));
     const G = AV.G, R = G.renderer, r = R.renderer;
     const vistos = new Set(); let texN = 0, bytes = 0, comprN = 0, comprBytes = 0;
     R.scene.traverse(o => {
@@ -101,7 +104,10 @@ async function ev(cdp, ses, exp, t, pr) {
     // ¿el atlas LQ (difuso del kit en bajo) llegó como KTX2?
     const atlas = [];
     R.scene.traverse(o => { if (!o.material) return; const ms = Array.isArray(o.material) ? o.material : [o.material]; for (const m of ms) { const t = m.map; if (!t) continue; const nom = (t.source && t.source.data && t.source.data.src || '') + '|' + (m.name || ''); if (/lq(_1024)?\\.(jpg|jpeg)/i.test(nom) || /lq1024/i.test(nom)) atlas.push({ material: m.name, ktx2: !!t.isCompressedTexture, w: (t.mipmaps && t.mipmaps[0] && t.mipmaps[0].width) || (t.image && t.image.width) || 0 }); } });
-    return { calidad: G.nivelCal ? G.nivelCal() : '?', escuela: !!(G.calidad && G.calidad.escuela), info: { geo: r.info.memory.geometries, tex: r.info.memory.textures, prog: r.info.programs.length, calls: r.info.render.calls, tris: r.info.render.triangles }, texturas: { n: texN, mb: Math.round(bytes / 1048576 * 10) / 10, comprimidas: comprN, comprimidasMb: Math.round(comprBytes / 1048576 * 10) / 10 }, atlasLQ: atlas.slice(0, 6), heapMb: Math.round((performance.memory ? performance.memory.usedJSHeapSize / 1048576 : 0) * 10) / 10, errores: (window.__k343err || []).slice(0, 12) };
+    // estado del difuso de TODOS los materiales de atlas HD (¿4096 real o LQ/KTX2?)
+    const atlasHD = [];
+    R.scene.traverse(o => { if (!o.material) return; const ms = Array.isArray(o.material) ? o.material : [o.material]; for (const m of ms) { if (!/^AV_HD_/.test(m.name || '')) continue; const t = m.map; if (!t) continue; atlasHD.push({ material: m.name, ktx2: !!t.isCompressedTexture, w: (t.mipmaps && t.mipmaps[0] && t.mipmaps[0].width) || (t.image && t.image.width) || 0, lq: !!m.userData.avLQDifuso, src: String((t.source && t.source.data && (t.source.data.src || t.source.data.currentSrc) || '')).split('/').pop() }); } });
+    return { calidad: (G.renderer.calidad && G.renderer.calidad.nivel) || '?', escuela: !!(G.renderer.calidad && G.renderer.calidad.escuela), info: { geo: r.info.memory.geometries, tex: r.info.memory.textures, prog: r.info.programs.length, calls: r.info.render.calls, tris: r.info.render.triangles }, texturas: { n: texN, mb: Math.round(bytes / 1048576 * 10) / 10, comprimidas: comprN, comprimidasMb: Math.round(comprBytes / 1048576 * 10) / 10 }, atlasLQ: atlas.slice(0, 6), atlasHD, heapMb: Math.round((performance.memory ? performance.memory.usedJSHeapSize / 1048576 : 0) * 10) / 10, errores: (window.__k343err || []).slice(0, 12) };
   })()`;
   const res = await ev(cdp, ses, MEDIR, 60);
   const png = await cdp.call('Page.captureScreenshot', { format: 'jpeg', quality: 82 }, ses);

@@ -436,8 +436,12 @@ AVE.module('streaming', function (G) {
   // móvil de pantalla pequeña (táctil y lado corto < 600 px: iPhone y Android, no tablets) el atlas baja a 1024 al cargar, antes
   // de subirlo (celda 256, 5,3 MB por textura; los cuatro, 21 MB en vez de 85), en cualquier calidad. Tablet y escritorio, como antes.
   const MOVIL_PEQ = MOVIL && Math.min(screen.width || 0, screen.height || 0) > 0 && Math.min(screen.width, screen.height) < 600;
+  // Modo Escuela (QA-181, 📣 coordinadora 8-nov): con calidad.escuela el atlas NO sube al 4096 JPEG (~85 MB en la GPU)
+  // ni en el barrido de los ~20 s ni al subir de calidad: se queda en el LQ final (KTX2 comprimido en escuela, JPEG
+  // 2048 en «bajo»), mismo criterio de consumo bajo que el móvil. Sin escuela nada cambia. Al apagar el Modo Escuela
+  // en caliente, el gancho 'calidad' vuelve a pedir el 4096 (atlasMax() === 0 otra vez) como un arranque normal.
   const atlasMax = () => MOVIL_PEQ ? HD.celdas * HD.celda / 4
-    : nivelCal() === 'bajo' || (MOVIL && nivelCal() !== 'alto') ? HD.celdas * HD.celda / 2 : 0;
+    : comprimidaModo() || (MOVIL && nivelCal() !== 'alto') ? HD.celdas * HD.celda / 2 : 0;
   // QA-110: las texturas del atlas se suben a la GPU de una en una, cada 300 ms (renderer.initTexture), en cuanto se crea el
   // material y antes de que la ciudad se vea; así no llegan las cuatro en el mismo cuadro al despegar. Una imagen que aún no
   // ha cargado espera su turno de nuevo (hasta ~30 s); si la escena la dibuja antes, three la sube allí, como antes.
