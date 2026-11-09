@@ -1,0 +1,26 @@
+[23:59:45] pack cap1: navegando...
+[23:59:50] …latido
+[23:59:55] …latido
+[00:00:00] …latido
+[00:00:05] …latido
+[00:00:10] …latido
+[00:00:12] pack cap1: listo en 4.712s, entrada en 26.744s; muestreo 12s en el spawn
+[00:00:15] …latido
+[00:00:20] …latido
+[00:00:25] …latido
+[00:00:30] …latido
+[00:00:35] …latido
+[00:00:40] …latido
+[00:00:45] …latido
+[00:00:50] …latido
+[00:00:50] pack cap1: fpsMed=27 min=25 peorMs=66 calls=69 ktris=323 medL=69 calls/0.32M errores=[]
+[00:00:50] pack ep3: navegando...
+[00:00:55] …latido
+[00:01:00] …latido
+[00:01:05] …latido
+[00:01:07] pack ep3: listo en 4.417s, entrada en 17.409s; muestreo 12s en el spawn
+[00:01:10] …latido
+[00:01:15] …latido
+[00:01:20] …latido
+[00:01:25] pack ep3: fpsMed=16 min=3 peorMs=1982 calls=84 ktris=442 medL=73 calls/0.58M errores=[]
+[00:01:25] evidencia: C:\Users\kelvi\amazonaversegame\docs\img\kimi127\k127_k329-ktx2-antes-r1.json

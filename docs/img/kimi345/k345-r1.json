@@ -1,0 +1,22 @@
+{
+ "tarea": "KIMI-343",
+ "etiqueta": "k343-r1",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "urlExtra": "escuela=1",
+ "packs": [
+  "cap1"
+ ],
+ "head": "desconocido",
+ "prep": {
+  "sitio": {
+   "x": -4,
+   "z": -131,
+   "r": 49
+  },
+  "esperadas": 10,
+  "aves": 10,
+  "extra": 10
+ },
+ "error": "JS@28:126: \"TypeError: (intermediate value)(...) is not a function\\n    at <anonymous>:29:127\""
+}
