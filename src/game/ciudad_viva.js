@@ -15,6 +15,15 @@
      Cuántas: bajo 20, medio 32, alto 48 (KIMI-081: la población que aguanta cada calidad, medido en KIMI-067 — las aves
      cuestan ~0: mismas 2 mallas instanciadas, +0 draw calls; antes 12/16/20). Se actualizan cada cuadro a menos de 45 m de la
      cámara, cada 3 cuadros hasta 100 m y cada 6 más lejos; a más de 170 m del centro de la ciudad se apagan (sin trabajo ni dibujo).
+   - Multitud adaptativa (QA-182, Kelvin: «cuando haya más gente se puede ir eliminando»): solo con el Modo Escuela
+     (calidad.escuela) o con el auto en «bajo» (equipo lento detectado; un «bajo» elegido a mano no cuenta). Lee los FPS del
+     medidor que ya tiene el renderer (stats().fps), sin otro medidor. Con <27 FPS sostenidos 2 s quita un escalón (15 % de la
+     población, 2 como mínimo); con >33 FPS sostenidos 4 s devuelve uno; entre 27 y 33 no cambia nada. Primero las que están
+     fuera de cámara (desaparecen sin verse) y luego las más lejanas, que se apagan encogiéndose en 0,6 s (nunca de golpe en
+     pantalla); al volver reaparecen en una percha. Piso duro: max(6, 40 %) de la población (la ciudad nunca queda vacía), y la
+     vittata (la primera) nunca se quita. Solo toca a estas cotorras anónimas del ambiente: los personajes del juego (misiones,
+     diálogos, el arco, el rival, residentes y comunidades) no pasan por aquí, y un ave marcada «clave» tampoco se quitaría.
+     Sin el modo y en un equipo bueno, todo como antes. Prueba: AV.escuelaTest (tests/qa/escuela.js) y la medida de ciudadVivaTest.
    - Nada en las baterías (G.quiet) ni antes de crear el personaje. Prueba: AV.ciudadVivaTest(). */
 window.AVCiudadViva = function (G) {
   'use strict';
@@ -127,7 +136,7 @@ window.AVCiudadViva = function (G) {
     const off = ocupar(p, null);
     return { i, sp, slot: off[2], k: piel(sp), x: p.x + off[0], y: p.y, z: p.z + off[1], yaw: rnd(0, 6.28), est: 'posada', accion: 'mira', t: 0, dur: rnd(3, 8),
       perch: p, ala: 0, cab: 0, gir: 0, giroObj: 0, pitch: -0.4, roll: 0, fase: rnd(0, 6.28), esc: ESC * rnd(0.92, 1.06), prox: rnd(0.5, 2),
-      acum: 0, cada: 1, grupo: null, bando: null, bAng: 0, bR: 0, viajes: 0, vx: 0, vy: 0, vz: 0, lejos: false };
+      acum: 0, cada: 1, grupo: null, bando: null, bAng: 0, bR: 0, viajes: 0, vx: 0, vy: 0, vz: 0, lejos: false, vis: 1, quiere: true, oculta: false };
   }
   // Varias en la misma percha: cada una en su sitio (a 0,55 m o más, sin montarse) y siempre sobre la superficie de la percha
   function ocupar(p, a) {
@@ -169,7 +178,7 @@ window.AVCiudadViva = function (G) {
     a.accion = a.alLlegar || (p.tipo === 'suelo' ? 'come' : 'mira'); a.alLlegar = ''; a.vx = a.vy = a.vz = 0; a.roll = 0;
     if (a.accion === 'duerme' || a.accion === 'vela') a.dur = 1e9;
   }
-  const libres = a => R.aves.filter(b => b !== a && b.est === 'posada' && !b.grupo && b.t > 2 && b.accion !== 'duerme');
+  const libres = a => R.aves.filter(b => b !== a && !b.oculta && b.quiere !== false && b.est === 'posada' && !b.grupo && b.t > 2 && b.accion !== 'duerme');
   // Rutinas de día: volar a otra torre, conversar, comer en la plaza en grupo, arreglar, jugar, cruzar el cielo en bandada
   function decidir(a) {
     const P = perchas(), A = P.alto, Sx = P.suelo, r = Math.random();
@@ -317,10 +326,10 @@ window.AVCiudadViva = function (G) {
     quitar();
     let n = 0;
     for (const a of R.aves) {
-      if (a.lejos) continue;
+      if (a.lejos || a.oculta || a.vis <= 0.001) continue;
       const posada = a.est === 'posada';
       const e = a.extra || (a.extra = { ciudad: 1 }); // objeto persistente: bandada solo lee campos en el cuadro (CG-67)
-      e.x = a.x; e.y = a.y + (posada ? 0.13 * a.esc : 0); e.z = a.z; e.yaw = a.yaw; e.pitch = a.pitch; e.roll = a.roll || 0; e.esc = a.esc;
+      e.x = a.x; e.y = a.y + (posada ? 0.13 * a.esc : 0); e.z = a.z; e.yaw = a.yaw; e.pitch = a.pitch; e.roll = a.roll || 0; e.esc = a.vis >= 1 ? a.esc : a.esc * a.vis * a.vis * (3 - 2 * a.vis); // QA-182: se apaga encogiéndose
       e.c = a.k.c; e.a = a.k.a; e.cob = a.k.cob || 0; e.fase = a.fase; e.ala = a.ala; e.cab = posada ? a.cab : 0; e.gir = posada ? a.gir : 0;
       B.EXTRA.push(e);
       n++;
@@ -338,6 +347,7 @@ window.AVCiudadViva = function (G) {
     const cam = G.renderer.camera.position;
     R.stats.cuadros++;
     for (const a of R.aves) {
+      if (a.oculta) continue; // QA-182: quitada por la multitud adaptativa: sin trabajo ni dibujo
       const dc = Math.hypot(a.x - cam.x, a.y - cam.y, a.z - cam.z);
       a.lejos = dc > ACTIVA + 40;
       let cada = LOD[LOD.length - 1][1];
@@ -348,9 +358,84 @@ window.AVCiudadViva = function (G) {
     }
     return R.aves.length;
   }
-  G.on('update', dt => { if (R.pausa) return; const n = paso(dt); if (n) pintar(); else if (R.aves.length === 0) quitar(); }, 87.5);
+  // ---------- Multitud adaptativa (QA-182): menos cotorras con pocos FPS, solo en Modo Escuela o en un equipo lento ----------
+  const MU = { FPS_BAJO: 27, FPS_ALTO: 33, T_BAJO: 2, T_ALTO: 4, FUNDIDO: 0.6, LEE: 0.25 };
+  const M = { objetivo: null, bajoT: 0, altoT: 0, leeT: 0, fps: 0, fpsPrueba: null, bajadas: 0, subidas: 0, fr: null, m4: null, v3: null };
+  const multitudActiva = () => { const C = G.renderer && G.renderer.calidad; return !!C && (C.escuela === true || (C.nivel === 'bajo' && !C.manual)); };
+  const pisoDe = n => Math.min(n, Math.max(6, Math.ceil(n * 0.4)));
+  const escalonDe = n => Math.max(2, Math.ceil(n * 0.15));
+  const protegida = a => a.i === 0 || !!a.clave; // la vittata de la ciudad, y cualquiera que el juego marque como necesaria
+  function leerFps(dt) {
+    if (M.fpsPrueba != null) return M.fpsPrueba;
+    M.leeT -= dt; if (M.leeT > 0) return M.fps;
+    M.leeT = MU.LEE;
+    const st = G.renderer && G.renderer.stats ? G.renderer.stats() : null; // el medidor del renderer (se rehace cada 0,5 s)
+    return (M.fps = st && st.fps > 0 ? st.fps : 0);
+  }
+  function fueraDeCamara() { // fuera del encuadre de la cámara (con 1,5 m de margen): ahí se quitan y vuelven sin verse
+    const cam = G.renderer.camera;
+    if (!M.fr) { M.fr = new THREE.Frustum(); M.m4 = new THREE.Matrix4(); M.v3 = new THREE.Sphere(new THREE.Vector3(), 1.5); }
+    cam.updateMatrixWorld(); M.m4.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse); M.fr.setFromProjectionMatrix(M.m4);
+    return a => { M.v3.center.set(a.x, a.y, a.z); return !M.fr.intersectsSphere(M.v3); };
+  }
+  function apagar(a) { // ya no se ve: fuera de grupos, bandadas y juegos, y sin trabajo
+    if (a.grupo) salirGrupo(a);
+    if (a.bando) salirBando(a);
+    if (a.juego) { const g = a.juego; g.aves = g.aves.filter(b => b !== a); for (const b of g.aves) b.lider = true; a.juego = null; }
+    a.oculta = true; a.vis = 0;
+  }
+  function encender(a, fuera) { // vuelve posada en una percha, como recién llegada
+    if (a.oculta) {
+      const P = perchas(), l = P.alto.length ? P.alto : P.suelo;
+      if (l.length) { const p = azar(l), off = ocupar(p, a); a.perch = p; a.slot = off[2]; a.x = p.x + off[0]; a.z = p.z + off[1]; a.y = Math.max(p.y, tope(a.x, a.z)); }
+      a.est = 'posada'; a.accion = 'mira'; a.t = 0; a.dur = rnd(2, 5); a.prox = rnd(0.5, 2); a.ala = 0; a.vx = a.vy = a.vz = 0; a.roll = 0; a.acum = 0;
+      a.oculta = false; a.vis = fuera(a) ? 1 : 0;
+    }
+    a.quiere = true;
+  }
+  function repartir(snap) {
+    let nq = 0; for (const a of R.aves) if (a.quiere !== false) nq++;
+    const meta = M.objetivo;
+    if (nq === meta) return; // lo normal: sin trabajo
+    const quieren = R.aves.filter(a => a.quiere !== false);
+    const fuera = fueraDeCamara(), cam = G.renderer.camera.position, d = a => Math.hypot(a.x - cam.x, a.y - cam.y, a.z - cam.z);
+    if (quieren.length > meta) { // quitar: primero fuera de cámara, luego la más lejana
+      const cand = quieren.filter(a => !protegida(a)).map(a => ({ a, f: fuera(a) ? 1 : 0, d: d(a) })).sort((p, q) => q.f - p.f || q.d - p.d);
+      for (const c of cand.slice(0, quieren.length - meta)) { c.a.quiere = false; if (c.f || snap) apagar(c.a); }
+    } else { // devolver: primero las que aún se estaban apagando (vuelven a crecer), luego las demás; reaparecen en una percha (sin verse si cae fuera de cámara)
+      const cand = R.aves.filter(a => a.quiere === false).map(a => ({ a, f: a.oculta ? 0 : 1, d: d(a) })).sort((p, q) => q.f - p.f || p.d - q.d);
+      for (const c of cand.slice(0, meta - quieren.length)) { encender(c.a, fuera); if (snap) c.a.vis = 1; }
+    }
+  }
+  function fundir(dt) {
+    const k = dt / MU.FUNDIDO;
+    for (const a of R.aves) {
+      if (a.oculta) continue;
+      if (a.quiere === false) { a.vis = Math.max(0, a.vis - k); if (a.vis <= 0) apagar(a); }
+      else if (a.vis < 1) a.vis = Math.min(1, a.vis + k);
+    }
+  }
+  function multitud(dt, fpsForzado) {
+    const n = R.aves.length;
+    if (!n) { M.bajoT = M.altoT = 0; return null; }
+    if (!multitudActiva()) { M.objetivo = n; M.bajoT = M.altoT = 0; }   // modo normal en un equipo bueno: todas
+    else {
+      if (M.objetivo == null) M.objetivo = n;
+      const fps = fpsForzado != null ? fpsForzado : leerFps(dt);
+      if (fps > 0) { // histéresis: solo cuenta lo sostenido; en la banda 27-33 se queda como está
+        if (fps < MU.FPS_BAJO) { M.bajoT += dt; M.altoT = 0; } else if (fps > MU.FPS_ALTO) { M.altoT += dt; M.bajoT = 0; } else M.bajoT = M.altoT = 0;
+      }
+      const piso = pisoDe(n), esc = escalonDe(n);
+      M.objetivo = Math.max(piso, Math.min(n, M.objetivo));
+      if (M.bajoT >= MU.T_BAJO) { M.bajoT = 0; if (M.objetivo > piso) { M.objetivo = Math.max(piso, M.objetivo - esc); M.bajadas++; } }
+      else if (M.altoT >= MU.T_ALTO) { M.altoT = 0; if (M.objetivo < n) { M.objetivo = Math.min(n, M.objetivo + esc); M.subidas++; } }
+    }
+    repartir(false); fundir(dt);
+    return M.objetivo;
+  }
+  G.on('update', dt => { if (R.pausa) return; const n = paso(dt); if (n) { multitud(Math.min(Math.max(dt || 0, 0), 0.1)); pintar(); } else if (R.aves.length === 0) quitar(); }, 87.5);
   // Para el álbum (residentes.js): las que están a menos de VER_R de Vittata
-  const cerca = (px, py, pz) => R.aves.filter(a => Math.hypot(a.x - px, a.y - py, a.z - pz) < VER_R);
+  const cerca = (px, py, pz) => R.aves.filter(a => !a.oculta && Math.hypot(a.x - px, a.y - py, a.z - pz) < VER_R);
 
   // ---------- Prueba: AV.ciudadVivaTest() ----------
   async function test(o) {
@@ -448,6 +533,22 @@ window.AVCiudadViva = function (G) {
         medidas.push(cal + ': sin cotorras ' + sin.c + ' calls/' + sin.t + ' tris · antes (' + (res ? res.aves.length : 0) + ' residentes) ' + antes.c + '/' + antes.t +
           ' · después (+' + R.aves.length + ' de la ciudad viva) ' + despues.c + '/' + despues.t + ' (+' + (despues.c - antes.c) + ' calls, +' + (despues.t - antes.t) + ' tris)');
       }
+      // QA-182: multitud adaptativa en la misma plaza: población completa frente a la reducida al piso (la que deja con FPS bajos)
+      const esc0 = Rd.calidad.escuela, escA0 = Rd.calidad.escuelaAuto, MT = api.multitud, mMult = [];
+      let okMult = true;
+      for (const [cal, esc] of [['alto', false], ['medio', true], ['bajo', true]]) {
+        if (Rd.setCalidad) Rd.setCalidad(cal, true); else Rd.calidad.nivel = cal;
+        if (Rd.setEscuela) Rd.setEscuela(esc ? true : false, true);
+        ajustar(); MT.reiniciar(); paso(0.05, 'todo');
+        pintar(); B.dibujar(); const lleno = medir(), nLleno = MT.visibles();
+        MT.fijar(MT.piso()); pintar(); B.dibujar(); const red = medir(), nRed = MT.visibles();
+        MT.reiniciar(); pintar(); B.dibujar();
+        if (!(red.c <= lleno.c && red.t <= lleno.t && nRed < nLleno)) okMult = false;
+        mMult.push(cal + (esc ? '+escuela' : '') + ': completa ' + nLleno + ' aves ' + lleno.c + ' calls/' + lleno.t + ' tris · reducida ' + nRed + ' aves ' + red.c + '/' + red.t +
+          ' (' + (red.c - lleno.c) + ' calls, ' + (red.t - lleno.t) + ' tris)');
+      }
+      if (Rd.setEscuela) { Rd.setEscuela(esc0, true); Rd.calidad.escuelaAuto = escA0; }
+      check('Multitud adaptativa en la plaza: la reducida no suma draw calls y dibuja menos triángulos', okMult, mMult.join(' || '));
       if (ST && ST.terminar) { await ST.terminar().catch(() => {}); await dormir(3000); if (ST && ST.terminar) await ST.terminar().catch(() => {}); } // mismo estado asentado (y sin bandas de flora perezosas a medias) que al capturar «hijos»
       check('Antes y después en la ciudad: 2 draw calls extra o menos', okDC, medidas.join(' || '));
       check('No se crea ninguna malla nueva', sc.children.filter(o => !floraLazy(o) && !churn(o)).length === hijos && B.meshes.every(m => m.isInstancedMesh && !m.castShadow));
@@ -471,7 +572,14 @@ window.AVCiudadViva = function (G) {
   }
 
   const api = { N, paso, pintar, perchas, sitio, aves: () => R.aves, cerca, test, noche,
-    prueba: on => { R.prueba = !!on; }, hora: h => { R.horaPrueba = h; }, pausa: v => { R.pausa = !!v; }, stats: () => R.stats };
+    prueba: on => { R.prueba = !!on; }, hora: h => { R.horaPrueba = h; }, pausa: v => { R.pausa = !!v; }, stats: () => R.stats,
+    // QA-182: la multitud adaptativa (las pruebas la mueven con FPS simulados; el juego, con stats().fps del renderer)
+    multitud: { MU, activa: multitudActiva, piso: () => pisoDe(R.aves.length), escalon: () => escalonDe(R.aves.length), paso: multitud,
+      objetivo: () => M.objetivo, cuenta: () => ({ bajadas: M.bajadas, subidas: M.subidas }), protegida,
+      fps: v => { M.fpsPrueba = v == null ? null : +v; },
+      reiniciar: () => { M.objetivo = null; M.bajoT = M.altoT = 0; M.bajadas = M.subidas = 0; for (const a of R.aves) { a.quiere = true; a.oculta = false; a.vis = 1; } },
+      fijar: k => { M.objetivo = Math.max(0, Math.min(R.aves.length, k)); repartir(true); for (const a of R.aves) if (a.quiere === false) apagar(a); },
+      visibles: () => R.aves.filter(a => !a.oculta && a.vis > 0).length, quieren: () => R.aves.filter(a => a.quiere !== false).length, fuera: () => fueraDeCamara() } };
   G.ciudadViva = api;
   if (window.AV) window.AV.ciudadVivaTest = o => Promise.resolve(api.test(o));
   return api;
