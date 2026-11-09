@@ -685,6 +685,12 @@ AVE.module('renderer', function (G) {
   // vez al lienzo y queda compilada su configuración real (la clave de familia idCalor es más gruesa
   // que la del programa: una misma familia da varios programas según vertexColors/instancia/lado…).
   function objPendienteP(o) { return !!o && !pantallaObjetos.has(o); }
+  // KIMI-360: un InstancedMesh con count===0 no dibuja nada, así que su variante de pantalla no hace
+  // falta ahora; calentarlo (warmUno fuerza count 0→1) solo subiría a la GPU una geometría que puede
+  // no dibujarse nunca (~590 en la villa, medido en KIMI-356/357). Se salta pero se DEJA pendiente:
+  // en cuanto reciba instancias (p. ej. al activarse una zona) el pase lo calienta ese mismo cuadro,
+  // así una foto directa del cómic solo compilaría de golpe si cae en el cuadro exacto de la activación.
+  function aptoPantalla(o) { return !(o.isInstancedMesh && o.count === 0); }
   // Dibujables del cuadro: la escena se recorre una vez por cuadro y la lista se reutiliza en el
   // precalentado y en el ocultado (antes se recorría entera por cada objeto calentado y por cada
   // dibujo; con el mundo cargado son miles de nodos y varios recorridos por cuadro).
@@ -700,7 +706,7 @@ AVE.module('renderer', function (G) {
     return null;
   }
   function siguienteCalorP() {
-    for (const o of dibujables()) if (objPendienteP(o)) return o;
+    for (const o of dibujables()) if (objPendienteP(o) && aptoPantalla(o)) return o;
     return null;
   }
   function marcarCalor(o) { for (const m of matsDe(o)) if (m) calorHecho.add(idCalor(o, m)); }
@@ -802,10 +808,13 @@ AVE.module('renderer', function (G) {
     // QA-220: la variante de pantalla (sRGB) de cada OBJETO, con el hueco reservado arriba (1 por
     // cuadro cuando hay lineales pendientes; todo el tope cuando no). Cada dibujable se dibuja una
     // vez al lienzo y queda compilada su configuración real; las fotos directas del cómic encuentran
-    // el programa ya enlazado y no hay tirón de ~2,7 s en la primera foto.
+    // el programa ya enlazado y no hay tirón de ~2,7 s en la primera foto. KIMI-360: se saltan los
+    // InstancedMesh con count===0 (ver aptoPantalla): sin instancias no dibujan nada y calentarlos
+    // solo subiría geometría que puede no usarse nunca; quedan pendientes y se calientan en cuanto
+    // reciben instancias.
     for (const o of dibujables()) {
       if (n >= maxN || performance.now() - t0 > ms) break;
-      if (!objPendienteP(o)) continue;
+      if (!objPendienteP(o) || !aptoPantalla(o)) continue;
       warmUno(o, true); n++;
     }
     // El post se enlaza en cuanto queda presupuesto en un cuadro (no espera a agotar la escena):

@@ -1,0 +1,7 @@
+[04:26:12] A/B base: renderer.js de HEAD (sin palanca KIMI-360)
+[04:26:12] servidor http://127.0.0.1:49633 base=true
+[04:26:26] entrar='ok' en 14.1s
+[04:26:30] asentado={"ms":3408,"tope":false,"pendientes":null}
+[04:26:40] censo: {"info":{"geo":797,"tex":171},"objetosConGeo":949,"instVacio":447,"soloVacio":422,"bytesSoloVacio":128361514,"vertsSoloVacio":2792629,"heap":976,"errores":0}
+[04:26:40] errores=[]
+[04:26:41] fin

@@ -1,0 +1,29 @@
+{
+ "etiqueta": "post-r1",
+ "cuando": "2026-11-09T04:26:55.347Z",
+ "base": false,
+ "gpu": "PC real (ANGLE/D3D11)",
+ "fases": {
+  "base": {
+   "info": {
+    "geo": 387,
+    "tex": 171
+   },
+   "objetosConGeo": 949,
+   "instVacio": 447,
+   "soloVacio": 422,
+   "bytesSoloVacio": 128361514,
+   "vertsSoloVacio": 2792629,
+   "heap": 929,
+   "errores": 0
+  }
+ },
+ "error": null,
+ "errores": [],
+ "chromePid": 32516,
+ "asentado": {
+  "ms": 3369,
+  "tope": false,
+  "pendientes": null
+ }
+}
