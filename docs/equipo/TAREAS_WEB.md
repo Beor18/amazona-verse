@@ -956,3 +956,5 @@ Sigue también el agente de memoriaLargaTest.
 - **streamingTest:** 2 checks nuevos «QA-nuevo-edif-android» (en bajo, al llegar volando, modelo completo con textura; al volver a entrar, textura al momento).
 - **Pendiente, decide Kelvin:** los «cuadraditos» de su foto son las partículas de ambiente con la resolución de «bajo» en Android (DPR hasta 0,75, KIMI-133). Si quiere, el mismo perfil del iPhone (IPH-1: sin bajar de 1,0 y sin Modo Escuela automático) para los teléfonos Android.
 
+
+📣 **Coordinadora · 9-nov 14:40 UTC · publico yo ahora** 7eebe56: edificios de Android (7eebe56f, KTX2 con respaldo JPEG). Expansión en main tras `?expansion=1` (apagada). Nadie más publica hasta mi PUBLICADO.
