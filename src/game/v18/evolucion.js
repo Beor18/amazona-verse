@@ -719,9 +719,12 @@ window.AVV18Evolucion = function (G) {
   // §10: carreras del capítulo 1 (gancho retosResultado de flight.js, river_rush.js y tren.js). Las partidas de prueba no pagan
   function carrera(ev) {
     if (!ev || ev.prueba || !CARRERAS[ev.modo] || !(ev.llego || ev.puntos > 0)) return 0;
-    const k = 'carrera:' + ev.modo, kr = 'carreraRec:' + ev.modo; let rec = 0;
-    if (ev.nuevo || ev.medalla === 'oro') V.cambiarEvo(e0 => { const d = dia(sanear(e0)); const c = d.por[kr] || 0; if ((d.por[k] || 0) < TOPE.carrerasDia && c < TOPE.recordDia) { d.por[kr] = c + 1; rec = XP.carreraRecord; } });
-    return dar(V.seleccionada() || perfil(), XP.carrera + rec, 'carrera', { repetible: true, cuenta: k, max: TOPE.carrerasDia });
+    const k = 'carrera:' + ev.modo, kr = 'carreraRec:' + ev.modo, d0 = E().dia || {}, por = d0.fecha === hoy() ? d0.por || {} : {};
+    const rec = (ev.nuevo || ev.medalla === 'oro') && (por[k] || 0) < TOPE.carrerasDia && (por[kr] || 0) < TOPE.recordDia ? XP.carreraRecord : 0;
+    const dado = dar(V.seleccionada() || perfil(), XP.carrera + rec, 'carrera', { repetible: true, cuenta: k, max: TOPE.carrerasDia });
+    // El extra por récord gasta uno de los 2 del día solo si se pagó algo de él (el tope global de lo repetible puede dejarlo en 0)
+    if (rec && dado > XP.carrera) V.cambiarEvo(e0 => { const d = dia(sanear(e0)); d.por[kr] = (d.por[kr] || 0) + 1; });
+    return dado;
   }
   G.on('retosResultado', ev => { if (!mudo) carrera(ev); });
   G.on('aprendizaje', ev => { if (!mudo && ev && ev.tipo === 'mision') revisarHitos(); });
@@ -930,6 +933,42 @@ window.AVV18Evolucion = function (G) {
           for (const id of Object.keys(SS.missions)) if (!(id in ms0)) delete SS.missions[id]; Object.assign(SS.missions, ms0);
         } else check('§10 Misiones del capítulo 1 pagan 40 una vez', false, 'sin pack cap1 o sin misiones');
         mudo = false; }
+      // §10: el extra por récord no se gasta si el tope global de lo repetible no deja pagar nada
+      { reset(); mudo = true; hoyFijo = 'carreras-6'; const xp = () => info('vittata').xp, corre = ev => { const a = xp(); carrera(ev); return xp() - a; }, recs = () => (E().dia.por['carreraRec:flight'] || 0);
+        P.cambiarEvo(e => { dia(sanear(e)).por.total = TOPE.repetibleDia; }); const t0 = corre({ modo: 'flight', puntos: 9, nuevo: true }), c0 = recs();
+        P.cambiarEvo(e => { dia(sanear(e)).por.total = 0; }); const t1 = [1, 2, 3].map(() => corre({ modo: 'flight', puntos: 9, nuevo: true }));
+        check('§10 Carreras: un récord que el tope global deja en 0 no gasta uno de los 2 extras del día (0 y luego 20, 20, 0)', t0 === 0 && c0 === 0 && t1.join(',') === '20,20,0' && recs() === 2, [t0, c0, t1.join(','), recs()].join(' · '));
+        mudo = false; }
+      // §10: los eventos reales llegan. Mismos objetos que mandan flight.js, river_rush.js y tren.js (G.emit('retosResultado', …))
+      // y misiones.js (G.emit('aprendizaje', { tipo: 'mision', id }) con S.missions[id] ya puesto). Se aíslan los demás oyentes:
+      // G.quiet (criadero, bandada), el primer récord del cómic (momentos.js), S.marcador y lo que «Mis récords» guarde en localStorage
+      { reset(); mudo = false; oye = false;
+        const q0 = G.quiet, had0 = G.eventos && G.eventos.had, marc0 = S.marcador === undefined ? undefined : JSON.stringify(S.marcador), ls0 = {}, ms0 = Object.assign({}, S.missions || {});
+        try { for (let i = 0; i < localStorage.length; i++) { const kk = localStorage.key(i); if (kk !== P.clave()) ls0[kk] = localStorage.getItem(kk); } } catch (e) { /* sin almacenamiento */ }
+        G.quiet = true; if (had0) G.eventos.had = kk => kk === 'FirstChallengeRecord' || had0.call(G.eventos, kk);
+        try {
+          const xp = () => info('vittata').xp, emite = (n, d) => { const a = xp(); G.emit(n, d); return xp() - a; };
+          const reales = pr => [{ modo: 'flight', puntos: 14, nuevo: true, prueba: pr },
+            { modo: 'rio_rush', puntos: 160, metros: 900, racimos: 7, llego: true, nuevo: false, medalla: 'plata', prueba: pr },
+            { modo: 'rio_rush', reloj: true, ms: 41000, medalla: 'oro', choques: 0, racimos: 5, llego: true, fantasma: false, nuevo: true, prueba: pr },
+            { modo: 'tren', puntos: 330, nuevo: false, prueba: pr }];
+          hoyFijo = 'reales-1'; const rp = reales(true).map(d => emite('retosResultado', d)), rr = reales(false).map(d => emite('retosResultado', d));
+          check('§10 Eventos reales: retosResultado de Flight, River Rush (puntos y reloj) y el tren paga 20, 10, 20, 10; la partida de prueba (prueba: true) paga 0',
+            rp.join(',') === '0,0,0,0' && rr.join(',') === '20,10,20,10', 'prueba ' + rp.join(',') + ' · real ' + rr.join(','));
+          const ids = ((G.pack && G.pack.misiones) || []).map(m => m.id).filter(id => id && !ms0[id]);
+          if (G.pack && G.pack.id === 'cap1' && ids.length && S.missions) {
+            hoyFijo = 'reales-2'; const sin = emite('aprendizaje', { tipo: 'mision', id: ids[0] }); // sin terminarla (S.missions sin marcar): 0
+            S.missions[ids[0]] = true; const m1 = emite('aprendizaje', { tipo: 'mision', id: ids[0] }), m2 = emite('aprendizaje', { tipo: 'mision', id: ids[0] }), otro = emite('aprendizaje', { tipo: 'hallazgo', id: 'x' });
+            check('§10 Eventos reales: aprendizaje { tipo: mision } de misiones.js paga 40 una vez (repetido 0; sin terminarla 0)', sin === 0 && m1 === 40 && m2 === 0 && otro === 0, [sin, m1, m2, otro].join(','));
+          } else check('§10 Eventos reales: aprendizaje de misión paga 40', false, 'sin pack cap1 o sin misiones por terminar');
+        } finally {
+          G.quiet = q0; if (had0) G.eventos.had = had0;
+          if (S.missions) { for (const id of Object.keys(S.missions)) if (!(id in ms0)) delete S.missions[id]; Object.assign(S.missions, ms0); }
+          if (marc0 !== undefined) S.marcador = JSON.parse(marc0);
+          try { for (let i = localStorage.length - 1; i >= 0; i--) { const kk = localStorage.key(i); if (kk !== P.clave() && !(kk in ls0)) localStorage.removeItem(kk); }
+            for (const kk of Object.keys(ls0)) if (localStorage.getItem(kk) !== ls0[kk]) localStorage.setItem(kk, ls0[kk]); } catch (e) { /* sin almacenamiento */ }
+          quitarCarta(); mudo = false;
+        } }
       oye = true;
 
       // 5. Etapas: ajustar() devuelve los números de cada etapa, sin nivel devuelve el mismo objeto, topes en todas
