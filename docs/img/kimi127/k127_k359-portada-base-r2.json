@@ -1,0 +1,16 @@
+{
+ "tarea": "KIMI-356",
+ "etiqueta": "k359-portada-base-r2",
+ "hora_utc": "2026-11-09T04:25:47.114Z",
+ "pantalla": "chromebook 1366x768@1 cpuX6",
+ "calidad": "bajo",
+ "pack": "cap1",
+ "modo": "portada",
+ "ref": "9ca12739",
+ "head": "0e601530",
+ "heap": {},
+ "juego": null,
+ "analisis": null,
+ "ok": false,
+ "error": "chrome matado externamente durante la entrada (mata-zombis ajeno)"
+}

@@ -1,0 +1,9 @@
++6s sirviendo --ref 9ca12739 desde C:\Users\kelvi\AppData\Local\Temp\k356ref-fnBwsM
++7s chrome SALIO cod=0 sen=null · stderr: 
++7s DevTools puerto 50270 · target listo
++21s entrar (portada): ok carga 10039 ms
++38s heap natural 64 MB · tras GC 62 MB
++38s juego: {"stats":{"fps":144,"calls":115,"triangulos":338498,"calidad":"bajo","dpr":0.75,"post":false,"sombras":false,"gpu":"ANGLE (AMD, AMD Radeon RX 5700 XT (0x0000731F) Direct3D11 vs_5_0 ps_5_0, D3D11)","escuela":false},"geo":null,"tex":null,"programas":null,"texturasMB":67.5,"heapMB":62,"calls":115,"triangulos":338498}
++41s snapshot recibido en 3 s · 43 chunks · 42.8 MB de JSON
++41s nodos 544809 · edges 1969082 · trace vacío true
++41s top porNombre: system / JSArrayBufferData 36.33 MB (34668) · system / ExternalStringData 5.87 MB (1006) · system / InstructionStream 4.35 MB (2445) · (object elements) 1.95 MB (20860) · ArrayBuffer 1.93 MB (37965) · Uint32Array 1.33 MB (23171) · Object 1.15 MB (45510) · system / TrustedByteArray 1.01 MB (5458) · system / BytecodeArray 0.74 MB (2726) · heap number 0.57 MB (50110) · <array> 0.54 MB (1629) · system / Map 0.44 MB (11377)

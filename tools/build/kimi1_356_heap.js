@@ -111,7 +111,12 @@ function analiza(snap) {
     '--mute-audio', '--disable-sync', '--disable-background-timer-throttling', '--disable-renderer-backgrounding',
     '--disable-backgrounding-occluded-windows', '--disable-component-update', '--enable-precise-memory-info',
     '--window-size=1366,768', '--force-device-scale-factor=1', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
-  let chromeVivo = true; chrome.on('exit', () => { chromeVivo = false; });
+  let chromeVivo = true; chrome.on('exit', (cod, sen) => { chromeVivo = false; L('chrome SALIO cod=' + cod + ' sen=' + sen + ' · stderr: ' + err.slice(-400)); });
+  // OJO: con --headless=new el lanzador (pid spawneado) hace handoff y sale cod=0 en ~1 s,
+  // pero el árbol del navegador sigue vivo (KIMI-359 probe: DevTools responde 45 s+). La
+  // vida real se comprueba por el WS CDP (readyState 1) o por el puerto DevTools; NUNCA por
+  // el exit del lanzador (falso positivo que abortó los brazos base anteriores).
+  const navegadorVivo = () => ws.readyState === 1;
   let err = ''; chrome.stderr.on('data', d => { err += d; });
   const pf = path.join(perf, 'DevToolsActivePort');
   let puertoDev, wsPath;
@@ -132,13 +137,13 @@ function analiza(snap) {
       await new Promise(r => setTimeout(r, 3500));
       const prepP = await ev(cdp, ses, ENTRAR_PORTADA, 120);
       L('entrar (portada): ' + prepP);
-      if (!chromeVivo) throw new Error('chrome matado externamente durante la entrada (mata-zombis ajeno)');
+      if (!navegadorVivo()) throw new Error('navegador caido durante la entrada (WS cerrado) · stderr: ' + err.slice(-300));
       if (!/^ok/.test(prepP)) throw new Error('entrada portada: ' + prepP);
     } else {
       await cdp.call('Page.addScriptToEvaluateOnNewDocument', { source: SEMILLA }, ses);
       await cdp.call('Page.navigate', { url: `http://127.0.0.1:${srv.puerto}/index.html?pack=cap1&mapa=real&calidad=bajo&fps=1` }, ses);
       let listo = false;
-      for (let i = 0; i < 240; i++) { if (!chromeVivo) throw new Error('chrome murió durante la carga; stderr: ' + err.slice(-300)); try { if (await ev(cdp, ses, LISTO_JS, 8)) { listo = true; break; } } catch (e) {} await new Promise(r => setTimeout(r, 1000)); }
+      for (let i = 0; i < 240; i++) { if (!navegadorVivo()) throw new Error('navegador caido durante la carga (WS cerrado); stderr: ' + err.slice(-300)); try { if (await ev(cdp, ses, LISTO_JS, 8)) { listo = true; break; } } catch (e) {} await new Promise(r => setTimeout(r, 1000)); }
       if (!listo) throw new Error('el juego no arrancó (listo_js en 240 s)');
       try { await cdp.call('Emulation.setCPUThrottlingRate', { rate: 6 }, ses); } catch (e) {} // tras la carga: el throttle ×6 en la fase más pesada colgaba/mataba el headless nuevo
       const prep = await ev(cdp, ses, ENTRAR, 150);
@@ -158,7 +163,7 @@ function analiza(snap) {
     const chunks = [];
     cdp.onevt = d => { if (d.method === 'HeapProfiler.addHeapSnapshotChunk') chunks.push(d.params.chunk); };
     const t0 = Date.now();
-    if (!chromeVivo) throw new Error('chrome matado externamente antes del snapshot (mata-zombis ajeno)');
+    if (!navegadorVivo()) throw new Error('navegador caido antes del snapshot (WS cerrado) · stderr: ' + err.slice(-300));
     await cdp.call('HeapProfiler.takeHeapSnapshot', { reportProgress: false }, ses, 420000);
     cdp.onevt = null;
     L('snapshot recibido en ' + Math.round((Date.now() - t0) / 1000) + ' s · ' + chunks.length + ' chunks · ' + (chunks.reduce((a, c) => a + c.length, 0) / 1048576).toFixed(1) + ' MB de JSON');
@@ -170,7 +175,12 @@ function analiza(snap) {
     L('nodos ' + out.analisis.nodos + ' · edges ' + out.analisis.edges + ' · trace vacío ' + out.analisis.traceVacio);
     L('top porNombre: ' + out.analisis.porNombre.slice(0, 12).map(x => x.nombre + ' ' + x.MB + ' MB (' + x.n + ')').join(' · '));
   } catch (e) { out.ok = false; out.error = String(e && e.message || e).slice(0, 400); L('ERROR: ' + out.error); }
-  try { await cdp.call('Browser.close', {}, ses, 8000); } catch (e) { chrome.kill(); }
+  try { await cdp.call('Browser.close', {}, ses, 8000); } catch (e) {
+    // Browser.close falló (WS caido): el lanzador ya salio, asi que hay que matar el
+    // árbol del navegador por perfil (KIMI-359: sin esto quedaban chrome huérfanos).
+    try { spawnSync('powershell', ['-NoProfile', '-Command', "Get-CimInstance Win32_Process -Filter \\\"Name='chrome.exe'\\\" | Where-Object { $_.CommandLine -like '*" + perf.replace(/'/g, '') + "*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"]); } catch (e2) { }
+    try { chrome.kill(); } catch (e2) { }
+  }
   await new Promise(r => setTimeout(r, 800));
   try { fs.rmSync(perf, { recursive: true, force: true }); } catch (e) {}
   if (tmpRef) try { fs.rmSync(tmpRef, { recursive: true, force: true }); } catch (e) {}
