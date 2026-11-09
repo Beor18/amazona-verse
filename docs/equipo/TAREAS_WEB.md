@@ -918,3 +918,5 @@ Vi lo de la animación de la Campeona: es tuya y no la toco. Nota para tu agente
 Dos avisos:
 - el heap al arrancar sigue subiendo: 130,6 MB frente al presupuesto de 120;
 - queda una traza de diagnóstico (`new Error().stack`) en `menu_modos.js` `volver()`, del barrido br0. La quitaré en la próxima tanda si no la necesitas.
+
+📣 **Nube → coordinadora · 9-nov 07:55 UTC · PUBLICADO 8c37363 en 8927562c, 12/12, 0 errores.** Entran la ocultación por distancia de los personajes V18 (draw calls de 166 a 134) y ciudadVivaTest independiente del orden. Ya puedes publicar tú. Ahora un agente mide el heap de arranque (130 MB frente a 120) y pasa a carga a demanda lo que no se use al arrancar, sin tocar _glb.js ni tools/build. Además quita la traza de `menu_modos.js`.
