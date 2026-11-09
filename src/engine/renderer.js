@@ -624,6 +624,14 @@ AVE.module('renderer', function (G) {
   // las familias CON luz). Mismo resultado, sin asignaciones por cuadro.
   let genCalor = 1, rtCalor = null, postCalor = false;
   const calorHecho = new Set();
+  // QA-220: variantes de PANTALLA (salida sRGB) de cada OBJETO dibujable, calentadas dibujándolo al
+  // lienzo (ver warmUno). Las fotos del cómic dibujan directo al lienzo (snapshot/fotoPosada) y three
+  // compila una variante del programa por codificación de salida: sin precalentarla, la primera foto
+  // enlazaba de golpe todos los programas de la escena (~2,7 s de hilo). Se calienta objeto a objeto
+  // (no por familia): la misma familia da varios programas (vertexColors, instancia, lado, mapas) y
+  // solo dibujando cada objeto se compila su configuración real.
+  const pantallaObjetos = new WeakSet();
+  let pantallaN = 0;
   function dibujable(o) { return !!(o && (o.isMesh || o.isPoints || o.isSprite || o.isLine)); }
   const claveCache = new WeakMap();
   function cacheDe(m) {
@@ -665,6 +673,10 @@ AVE.module('renderer', function (G) {
     for (let i = 0; i < m.length; i++) if (m[i] && !calorHecho.has(idCalor(o, m[i]))) return true;
     return false;
   }
+  // QA-220: la variante de pantalla se calienta por OBJETO (WeakSet): cada dibujable se dibuja una
+  // vez al lienzo y queda compilada su configuración real (la clave de familia idCalor es más gruesa
+  // que la del programa: una misma familia da varios programas según vertexColors/instancia/lado…).
+  function objPendienteP(o) { return !!o && !pantallaObjetos.has(o); }
   // Dibujables del cuadro: la escena se recorre una vez por cuadro y la lista se reutiliza en el
   // precalentado y en el ocultado (antes se recorría entera por cada objeto calentado y por cada
   // dibujo; con el mundo cargado son miles de nodos y varios recorridos por cuadro).
@@ -679,7 +691,12 @@ AVE.module('renderer', function (G) {
     for (const o of dibujables()) if (objPendiente(o)) return o;
     return null;
   }
+  function siguienteCalorP() {
+    for (const o of dibujables()) if (objPendienteP(o)) return o;
+    return null;
+  }
   function marcarCalor(o) { for (const m of matsDe(o)) if (m) calorHecho.add(idCalor(o, m)); }
+  function marcarCalorP(o) { if (!pantallaObjetos.has(o)) { pantallaObjetos.add(o); pantallaN++; } }
   function ocultarPendientes() {
     const guard = [];
     for (const o of dibujables()) {
@@ -707,8 +724,10 @@ AVE.module('renderer', function (G) {
     try { fn(); }
     finally { renderer.render = w; }
   }
-  // Dibuja solo este objeto (32×32, con las luces y las sombras de verdad) para enlazar su programa.
-  function warmUno(o) {
+  // Dibuja solo este objeto (con las luces y las sombras de verdad) para enlazar su programa.
+  // pantalla=false: a un target 32×32 lineal (el juego con post dibuja a un target lineal);
+  // pantalla=true: al lienzo (salida sRGB), la variante que usan las fotos directas del cómic (QA-220).
+  function warmUno(o, pantalla) {
     const objs = dibujables();
     const guard = objs.map(obj => [obj, obj.visible, obj.frustumCulled, obj.isInstancedMesh ? obj.count : null]);
     const padres = [];
@@ -716,15 +735,25 @@ AVE.module('renderer', function (G) {
     for (const obj of objs) obj.visible = false;
     o.visible = true; o.frustumCulled = false;
     if (o.isInstancedMesh && o.count === 0) o.count = 1;
-    if (!rtCalor) rtCalor = new THREE.WebGLRenderTarget(32, 32);
     try {
-      sinCuenta(() => conCapa31(() => { scene.updateMatrixWorld(); renderer.setRenderTarget(rtCalor); renderer.render(scene, camera); }));
+      if (pantalla) {
+        // QA-220: variante de PANTALLA (salida sRGB). En three r128 solo el lienzo (target null) mete
+        // renderer.outputEncoding en la clave del programa; un target de render va a lineal aunque su
+        // textura diga sRGB (por eso un target 32×32 sRGB no basta). Dibujar al lienzo aquí es seguro:
+        // este calentado corre antes del dibujo del cuadro (render()) o con el mundo oculto (carga/
+        // creador), y el dibujo real borra y redibuja encima. Sin esto la primera foto directa del cómic
+        // (snapshot/fotoPosada) compilaba ~100 programas de golpe: ~2,7 s de hilo congelado (QA-220).
+        sinCuenta(() => conCapa31(() => { scene.updateMatrixWorld(); renderer.setRenderTarget(null); renderer.render(scene, camera); }));
+      } else {
+        if (!rtCalor) rtCalor = new THREE.WebGLRenderTarget(32, 32);
+        sinCuenta(() => conCapa31(() => { scene.updateMatrixWorld(); renderer.setRenderTarget(rtCalor); renderer.render(scene, camera); }));
+      }
     } catch (e) { console.warn('AVE precalentar:', e && e.message || e); }
     finally {
       for (const [obj, vis, fc, n] of guard) { obj.visible = vis; obj.frustumCulled = fc; if (n != null) obj.count = n; }
       for (const [p, vis] of padres) p.visible = vis;
     }
-    marcarCalor(o);
+    if (pantalla) marcarCalorP(o); else marcarCalor(o);
   }
   function warmPost() {
     if (!post.composer) return;
@@ -750,13 +779,26 @@ AVE.module('renderer', function (G) {
     const t0 = performance.now();
     const vistos = new Set();
     let n = 0;
+    // QA-220: con la variante de pantalla pendiente se reserva 1 enlace por cuadro para ella (tope
+    // lineal maxN-1): si el lado lineal nunca se vacía del todo (streaming de fondo), la de pantalla
+    // avanza igual y la primera foto directa del cómic no compila de golpe (~2,7 s de hilo).
+    const topeLineal = (maxN > 1 && siguienteCalorP()) ? maxN - 1 : maxN;
     for (const o of dibujables()) {
-      if (n >= maxN || performance.now() - t0 > ms) break;
+      if (n >= topeLineal || performance.now() - t0 > ms) break;
       const claves = [];
       for (const m of matsDe(o)) { if (m) { const k = idCalor(o, m); if (!calorHecho.has(k)) claves.push(k); } }
       if (!claves.length || claves.every(k => vistos.has(k))) continue;
-      warmUno(o); n++;
+      warmUno(o, false); n++;
       for (const k of claves) vistos.add(k);
+    }
+    // QA-220: la variante de pantalla (sRGB) de cada OBJETO, con el hueco reservado arriba (1 por
+    // cuadro cuando hay lineales pendientes; todo el tope cuando no). Cada dibujable se dibuja una
+    // vez al lienzo y queda compilada su configuración real; las fotos directas del cómic encuentran
+    // el programa ya enlazado y no hay tirón de ~2,7 s en la primera foto.
+    for (const o of dibujables()) {
+      if (n >= maxN || performance.now() - t0 > ms) break;
+      if (!objPendienteP(o)) continue;
+      warmUno(o, true); n++;
     }
     // El post se enlaza en cuanto queda presupuesto en un cuadro (no espera a agotar la escena):
     // si no, el primer dibujo de verdad —el cuadro de «Empezar»— compilaría bloom/gradación allí.
@@ -789,7 +831,7 @@ AVE.module('renderer', function (G) {
   }
   function warmOtraUno(o) {
     const on = sun.castShadow;
-    try { sun.castShadow = !on; warmUno(o); } // compila/enlaza la variante contraria (queda en la caché de three)
+    try { sun.castShadow = !on; warmUno(o, false); } // compila/enlaza la variante contraria (queda en la caché de three)
     finally { sun.castShadow = on; }
     for (const m of matsDe(o)) if (m && conLuz(m)) calorOtra.add(idCalorOtra(o, m));
   }
@@ -1104,7 +1146,7 @@ AVE.module('renderer', function (G) {
     // compilación en varios cuadros en vez de un tirón de 100–600 ms en el primero.
     const f2 = FASES ? performance.now() : 0;
     let warmMs = 0;
-    if (puedeCalentar && siguienteCalor()) {
+    if (puedeCalentar && (siguienteCalor() || siguienteCalorP())) {
       const w0 = performance.now();
       const muchos = programasPendientes() > 12;
       calentarPresupuesto(muchos ? 6 : 2, muchos ? 12 : 6);
@@ -1527,7 +1569,7 @@ AVE.module('renderer', function (G) {
 
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, leerLienzo: fotoLeer, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, setEscuela, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
-    _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; }, get otra() { return calorOtra.size; } },
+    _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; }, get otra() { return calorOtra.size; }, get pantalla() { return pantallaN; } },
     _dyn: dyn, // QA-176: las pruebas de imagen (lookTest) lo usan para fijar la resolución dinámica; el juego no lo toca
     fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, esperas: FOTOS.esperas, caidas: FOTOS.caidas, errPBO: FOTOS.errPBO, cola: FOTOS.cola.length }),
     precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas, marcaGPU },
