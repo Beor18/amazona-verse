@@ -72,6 +72,7 @@ Cada episodio reutiliza el motor, el personaje, el ropero, el criadero, el guard
 - Peces invasores reales de Puerto Rico (pez león en los arrecifes; tilapia y pleco en los ríos), con fuente verificada (NOAA, USGS, DRNA): fichas del Diario y una actividad de observación, nunca como enemigos (Kelvin, 8-nov: para la expansión).
 - Minijuego de pesca (Kelvin, 8-nov: para la expansión; la lista completa la da Kelvin después del cierre).
 - Empaquetado para tiendas (Capacitor) si hace falta.
+- Cotorras en línea (Kelvin, 9-nov: aprobado para la expansión): salas por código con el Realtime de Supabase, solo especie, posición, vuelo y gestos con un id al azar; sin nombres, chat ni cuentas. Primera versión en `src/game/en_linea.js` (botón «Jugar en línea» de la pausa); falta probarla en familia antes de anunciarla.
 - Temporadas 2 a 6, según `docs/STORY_BIBLE.md`.
 
 ## Ritmo y límites
