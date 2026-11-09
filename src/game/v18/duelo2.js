@@ -505,13 +505,17 @@ window.AVV18Duelo2 = function (G) {
     let ix = (t2.right ? 1 : 0) - (t2.left ? 1 : 0), iz = (t2.down ? 1 : 0) - (t2.up ? 1 : 0), corre = t2.correr;
     if (mando && (mando.x || mando.y)) { ix = mando.x; iz = mando.y; corre = corre || mando.correr; }
     const n = Math.hypot(ix, iz);
-    let vx = 0, vz = 0;
+    let vx = 0, vz = 0, tx = 0, tz = 0;
     if (j.kb.t > 0) { j.kb.t -= dt; vx += j.kb.x; vz += j.kb.z; j.kb.x *= 0.88; j.kb.z *= 0.88; }
     if (n > 0.01 && D.fase === 'lucha') {
       const v = (corre ? VEL().correr : VEL().andar) * Math.min(1, n) * (j.mareo > 0 ? 0.25 : 1) * (j.pesada > 0 ? 0.45 : 1); // Plumas de manglar: pisar una pluma va más lento
-      vx += ix / n * v; vz += iz / n * v;
-      if (j.mareo <= 0) j.yaw = Math.atan2(ix, iz);
+      tx = ix / n * v; tz = iz / n * v;
+      if (j.mareo <= 0) j.yaw = Math.atan2(ix, iz); // la puntería sigue al mando al instante (el cuerpo gira suave en dibujar2)
     }
+    // 9-nov: arranca y frena con las mismas tasas que Vittata en el suelo (fisica.js: 18 al arrancar, 22 al frenar o dar
+    // media vuelta; el 90 % en ~0,13 s), no de 0 a 6,5 m/s en un cuadro
+    const vv = j.v || (j.v = { x: 0, z: 0 }), kv = 1 - Math.exp(-dt * (!(tx || tz) || vv.x * tx + vv.z * tz < 0 ? 22 : 18));
+    vv.x += (tx - vv.x) * kv; vv.z += (tz - vv.z) * kv; vx += vv.x; vz += vv.z;
     pos2.x += vx * dt; pos2.z += vz * dt; dentro(pos2);
     let lift = 0;
     if (j.lift.dura > 0) { j.lift.t += dt; const k = j.lift.t / j.lift.dura; if (k >= 1) j.lift.dura = 0; else lift = j.lift.alto * Math.sin(Math.PI * k); }
@@ -522,24 +526,34 @@ window.AVV18Duelo2 = function (G) {
   function dibujar2(dt) {
     const ch = D.ch; if (!ch) return;
     const j = D.j2, root = ch.root, now = performance.now() / 1000;
-    root.visible = true; root.position.set(pos2.x, pos2.y, pos2.z);
-    root.rotation.y += giro(j.yaw - root.rotation.y) * Math.min(1, dt * 10);
-    root.rotation.z = j.mareo > 0 ? Math.sin(now * (j.finMareo > 0 ? 9 : 14)) * (j.finMareo > 0 ? 0.32 : 0.25) : root.rotation.z * 0.8;
-    const enAire = j.lift.dura > 0, vel = j.vel || 0;
+    root.visible = true;
+    // Andar (9-nov, el mismo de la Campeona: combate.js): cuerpo con muelle, giro limitado, pasos con el clip Walk a la
+    // cadencia de su velocidad (antes, a 6,5 m/s, gait 0: se deslizaba con las patas quietas) y saltitos si va de lado
+    const Vi = Cb.vida, A = Vi && Vi.andar, enAire = j.lift.dura > 0;
+    const fin = D.fase === 'fin' ? (D.resultado === 'j2' ? 'gana' : 'pierde') : '';
+    const O = A ? A(j, { x: pos2.x, z: pos2.z, yaw: j.yaw, aire: enAire || j.kb.t > 0 }, dt) : null;
+    if (O) { root.position.set(O.x, pos2.y + O.alto, O.z); root.rotation.y = O.yaw; }
+    else { root.position.set(pos2.x, pos2.y, pos2.z); root.rotation.y += giro(j.yaw - root.rotation.y) * Math.min(1, dt * 10); }
+    const kz = Math.min(1, dt * 10);
+    root.rotation.z = j.mareo > 0 ? Math.sin(now * (j.finMareo > 0 ? 9 : 14)) * (j.finMareo > 0 ? 0.32 : 0.25) : root.rotation.z + ((O ? O.bank : 0) - root.rotation.z) * kz;
+    if (O) root.rotation.x += (O.lean - root.rotation.x) * kz;
+    const vel = O ? O.speed : j.vel || 0, esc = !!(G.renderer && G.renderer.calidad && G.renderer.calidad.escuela);
     // QA-205: campos sueltos en vez de un literal nuevo por cuadro (mismo orden)
-    ch.speed = vel; ch.gait = vel > 7 ? 1 : 0; ch.airborne = enAire; ch.flying = enAire; ch.legsDown = enAire ? 0.6 : 1; ch.swimming = false; ch.diving = false;
-    ch.wingMode = j.alasT > 0 ? 'land' : enAire ? 'flap' : vel > 0.5 ? 'walk' : 'idle';
+    if (O) Vi.andarAplicar(ch, O, j, !fin); else { ch.speed = vel; ch.gait = vel > 0.5 ? 1 : 0; }
+    const aire = enAire || !!(O && O.airborne);
+    ch.airborne = aire; ch.flying = false; ch.legsDown = 0; ch.swimming = false; ch.diving = false;
+    ch.wingMode = j.alasT > 0 ? 'land' : enAire ? 'flap' : ch.gait ? 'walk' : 'idle';
     // Vida (9-nov, la misma capa que la Campeona: combate.js): mira a la Vittata, aletazo al golpear, retrocede al recibir,
     // se bambolea mareado, celebra al ganar y se queda cabizbajo al perder
-    const fin = D.fase === 'fin' ? (D.resultado === 'j2' ? 'gana' : 'pierde') : '';
     const mira = !(j.mareo > 0) && fin !== 'pierde' && D.fase !== 'nada';
     if (mira) mira2.set(S.pos.x, S.pos.y + 1.2, S.pos.z);
     ch.expression = j.mareo > 0 ? 'surprised' : j.picoT > 0 ? 'fight' : 'happy'; ch.mouth = j.picoT > 0 ? Math.min(1, j.picoT / 0.15) : null; ch.lookAt = mira ? mira2 : null;
-    ch.emote = null; ch.posado = ''; ch.agachada = 0; ch.groundY = ALTURA(pos2); ch.groundAt = null;
+    ch.emote = null; ch.posado = ''; ch.agachada = 0; ch.groundY = ALTURA(pos2); ch.groundAt = esc ? null : sueloJ2; ch.ikEscuela = esc;
     const cdA = (j.cd && j.cd.golpe_ala) || 0; if (cdA > (j.cdAla0 || 0) + 0.2) j.aletazo = 0.3; j.cdAla0 = cdA; if (j.aletazo > 0) j.aletazo -= dt;
-    const Vi = Cb.vida, V = Vi ? Vi.antes(ch, j, { ataque: j.aletazo > 0, salto: enAire, vel, fin }, dt) : null;
-    try { ch.update(dt); if (V) Vi.huesos(ch, V); } catch (e) { /* animación */ }
+    const V = Vi ? Vi.antes(ch, j, { ataque: j.aletazo > 0, salto: enAire, vel: O && O.modo === 'quieta' ? 0 : vel, fin }, dt) : null;
+    try { ch.update(dt); if (V) Vi.huesos(ch, V); if (O && Vi.andarHuesos) Vi.andarHuesos(ch, O); } catch (e) { /* animación */ }
   }
+  const sueloJ2 = (x, z) => G.terreno.height(x, z);
   function pasoJ1(dt) {
     const j = D.j1;
     if (j.kb.t > 0) { j.kb.t -= dt; S.pos.x += j.kb.x * dt; S.pos.z += j.kb.z * dt; j.kb.x *= 0.88; j.kb.z *= 0.88; }
@@ -752,10 +766,21 @@ window.AVV18Duelo2 = function (G) {
       const s1 = { x: S.pos.x, z: S.pos.z }, s2 = { x: pos2.x, z: pos2.z };
       const ev = tecla('keydown', 'ArrowUp', 'ArrowUp');
       const keysJ1 = G.input.keys.has('arrowup');
-      for (let i = 0; i < 10; i++) { F.step(0.05, false); G.emit('update', 0.05, false, false); }
+      // 9-nov (Kelvin: «no me gusta el movimiento»): andando, el J2 da pasos (gait 1 con el clip Walk, cadencia de su velocidad)
+      // y arranca sin saltar de 0 a 6,5 m/s en un cuadro
+      const anda = { gait1: 0, n: 0, dvMax: 0, v0: 0, clip: '' };
+      for (let i = 0; i < 10; i++) {
+        const z0 = pos2.z; F.step(0.05, false); G.emit('update', 0.05, false, false);
+        const v = Math.abs(pos2.z - z0) / 0.05; anda.dvMax = Math.max(anda.dvMax, Math.abs(v - anda.v0)); anda.v0 = v;
+        if (i >= 5 && D.ch) { anda.n++; if (D.ch.gait === 1 && !D.ch.airborne && Math.abs(D.ch.speed / ((Cb.vida && Cb.vida.AND && Cb.vida.AND.paso) || 1) - v) < 1) anda.gait1++; }
+      }
+      anda.clip = D.j2.clipAnda || '';
       tecla('keyup', 'ArrowUp', 'ArrowUp');
       check('Flecha arriba mueve al Jugador 2 y no llega al Jugador 1 (ni a input.js)', !keysJ1 && ev.defaultPrevented && s2.z - pos2.z > 1.5 &&
         Math.hypot(S.pos.x - s1.x, S.pos.z - s1.z) < 0.3, JSON.stringify({ dz2: (s2.z - pos2.z).toFixed(2), d1: Math.hypot(S.pos.x - s1.x, S.pos.z - s1.z).toFixed(2), keysJ1 }));
+      check('Movimiento del Jugador 2: anda a pasos con el clip Walk a la velocidad que lleva y arranca sin tirón (como Vittata)',
+        anda.gait1 === anda.n && anda.clip === 'Walk' && anda.dvMax < 5, JSON.stringify(anda));
+      for (let i = 0; i < 8; i++) { F.step(0.05, false); G.emit('update', 0.05, false, false); } // frena (como Vittata, en ~0,1 s)
       const a1 = { x: S.pos.x, z: S.pos.z }, a2 = { x: pos2.x, z: pos2.z };
       tecla('keydown', 'd', 'KeyD');
       for (let i = 0; i < 10; i++) { F.step(0.05, false); G.emit('update', 0.05, false, false); }
