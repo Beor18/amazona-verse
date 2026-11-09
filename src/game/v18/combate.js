@@ -1314,6 +1314,22 @@ window.AVV18Combate = function (G) {
     if (busy && C.fase !== 'nada') return;
     paso(Math.min(dt, 0.1));
   }, 70);
+  // QA-nuevo-br1-3: fuera del duelo y de lejos (> 60 m, el R_VIVO de npc.js, donde ya no se anima) la rival no se dibuja: sus
+  // ~14 mallas sumaban draw calls en toda la isla (p. ej. junto a las ruinas). Solo la visibilidad de su raíz, después de paso()
+  // (dibujarRival la enciende cada cuadro); pose, animación e IA no cambian. Se mira cada 0,5 s o si Vittata salta > 20 m.
+  const OCULTA_R = 60, ocu = { t: 0, x: 1e9, z: 1e9, lejos: false };
+  G.on('update', dt => {
+    if (retirada || !C.ch) return;
+    if (C.fase !== 'nada') { ocu.lejos = false; return; }
+    ocu.t += dt || 0;
+    if (ocu.t >= 0.5 || Math.abs(S.pos.x - ocu.x) + Math.abs(S.pos.z - ocu.z) >= 20) {
+      ocu.t = 0; ocu.x = S.pos.x; ocu.z = S.pos.z;
+      const lejos = Math.hypot(S.pos.x - C.r.pos.x, S.pos.z - C.r.pos.z) > OCULTA_R;
+      if (ocu.lejos && !lejos) C.ch.root.visible = true; // al volver, aunque este cuadro no pase por dibujarRival
+      ocu.lejos = lejos;
+    }
+    if (ocu.lejos && C.ch.root.visible) C.ch.root.visible = false;
+  }, 70.5);
   // du2 (8-nov): en el duelo no va la guía de la misión (fx.js): su flecha naranja flota sobre Vittata y, vista desde atrás,
   // se leía como un disco color arena junto a la Campeona; el haz también sobra. Después del gancho de misiones (60).
   G.on('render', () => { if (!retirada && C.fase !== 'nada' && G.fx && G.fx.guide) G.fx.guide(null, 0); }, 61);

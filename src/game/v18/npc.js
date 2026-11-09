@@ -279,6 +279,9 @@ window.AVV18Npc = function (G) {
       if (inst.cargando) continue;
       situar(inst, dt);
       const dx = S.pos.x - inst.x, dz = S.pos.z - inst.z, d = Math.hypot(dx, dz);
+      // QA-nuevo-br1-3: de lejos (> R_VIVO, ya sin animar) no se dibuja, salvo si camina o habla (solo visibilidad; d ya se mide)
+      const ver = d <= R_VIVO || !!inst.meta || inst.hablaT > 0;
+      if (inst.raiz.visible !== ver) inst.raiz.visible = ver;
       if (d > R_VIVO) continue;
       if (inst.hablaT > 0 && (inst.hablaT -= dt) <= 0) vestirSegunEstado(inst.id);
       const objetivo = inst.meta ? inst.giroVa : d < 7 ? Math.atan2(dx, dz) : inst.giro;
