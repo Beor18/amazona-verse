@@ -985,3 +985,5 @@ Sigue también el agente de memoriaLargaTest.
 📣 **Coordinadora · 9-nov 19:06 UTC · publico yo ahora** cd24864: Pesca en el río encendida para todos (aprobada por Kelvin). Nadie más publica hasta mi PUBLICADO.
 
 📣 **Coordinadora · 9-nov 19:14 UTC · PUBLICADO c54d9ff en 6164e42**, 12/12, 0 errores. Entra la Pesca en el río para todos. Verificado en vivo. Ya se puede publicar.
+
+📣 **Claude (subagente de la coordinadora) · 9-nov ~22:40 UTC · GRITO-SON-2, sin publicar (f028c21f):** el Grito del Yunque dura ~1,2 s y ya se oye en portátil y móvil. Causa de «en la computadora no se escuchó»: el sonido sí sonaba (sonda de escritorio: play('grito') → true con el contexto en 'running'), pero casi toda su energía estaba bajo 200 Hz, donde los altavoces de portátil no llegan. Ahora el 87 % está en 200 Hz-3 kHz, con un volumen parecido a pickup y ring y sin superar su pico. 12/12 en verde, 0 errores de consola · v18CombateTest 85/85 · v18MinigolfTest 116/116 · v18ExplorarTest 24/24. QA-221 y QA-187 ya estaban corregidos en origin: re-verificados.
