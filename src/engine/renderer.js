@@ -33,7 +33,15 @@ AVE.module('renderer', function (G) {
   // al pulsar «Empezar» (~65 programas, un cuadro de unos 6 s). Sin el chequeo el enlace no
   // espera ese registro. ?shaders=1 lo vuelve a encender para ver un shader roto.
   if (!/[?&]shaders=1(?:&|$)/.test(location.search)) renderer.debug.checkShaderErrors = false;
-  const DPR_MAX = Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2), DPR_MIN = Math.min(1, DPR_MAX);
+  // IPH-1 (9-nov, Kelvin: «en el iPhone corre bien pero se ve muy feo»): perfil propio del iPhone/iPod. Sigue en «bajo»
+  // (mismo presupuesto de memoria de QA-107: texturas, geometría, streaming y flora de «bajo», sin sombras ni post), pero la
+  // resolución ya no se hunde: DPR entre 1,25 y 1,75 (antes 0,75–1,5, y en la práctica se quedaba en 0,75 a 30 FPS o con
+  // Ahorro de batería) y el Modo Escuela no se enciende solo (solo con ?escuela=1). El búfer del lienzo (MSAA 4× + profundidad,
+  // ~40 B/px) en 390×844 pasa de ~30 MB (1,5) a ~40 MB (1,75) como máximo; los KTX2 del atlas en «bajo» ahorraron ~18 MB.
+  const IPHONE = /iPhone|iPod/.test(navigator.userAgent || '');
+  const DPR_IPHONE = { max: 1.75, min: 1.25 };
+  const DPR_MAX = IPHONE ? Math.min(DEVICE_DPR, DPR_IPHONE.max) : Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2);
+  const DPR_MIN = IPHONE ? Math.min(DPR_IPHONE.min, DPR_MAX) : Math.min(1, DPR_MAX);
   renderer.setPixelRatio(DPR_MAX);
   const dyn = { ms: 16.7, t: 0, slow: 0, fast: 0, lock: 0, v: new Float32Array(120), n: 0, i: 0, p95: 0 };
   // RN1: en móviles y Chromebooks (objetivo 30 FPS) la media no ve los tirones: se vigila también el p95 de los últimos 120
@@ -59,7 +67,7 @@ AVE.module('renderer', function (G) {
     dyn.fast = dyn.ms < 17.6 && dyn.p95 < 24 ? dyn.fast + 1 : 0;   // a tope de refresco y sin tirones
     const pr = renderer.getPixelRatio();
     let piso = (!MOBILE && calidad.nivel === 'alto') ? Math.min(1.5, DPR_MAX) : DPR_MIN;   // BM14: en alto de escritorio no baja de 1,5 (bajar la resolución se ve pixelado; se reduce el costo de la escena)
-    if (calidad.nivel === 'bajo' || calidad.escuela) piso = Math.min(0.75, piso);   // QA-181/KIMI-320: último nivel del escalón — «bajo» o Modo Escuela; si ni a mínimo de resolución se llega al objetivo (Chromebook a 11-21 fps: los cuadros de ~53 ms no disparan el escalón de emergencia ≥200 ms), la resolución dinámica puede bajar de DPR_MIN a 0,75; sube de vuelta sola cuando sobra margen
+    if (calidad.nivel === 'bajo' && !IPHONE || calidad.escuela) piso = Math.min(0.75, piso);   // IPH-1: el iPhone en «bajo» no baja de DPR_MIN (1,25); con ?escuela=1 sí   // QA-181/KIMI-320: último nivel del escalón — «bajo» o Modo Escuela; si ni a mínimo de resolución se llega al objetivo (Chromebook a 11-21 fps: los cuadros de ~53 ms no disparan el escalón de emergencia ≥200 ms), la resolución dinámica puede bajar de DPR_MIN a 0,75; sube de vuelta sola cuando sobra margen
     if ((dyn.slow >= 2 || grave) && pr > piso) { renderer.setPixelRatio(Math.max(piso, pr - (grave ? 0.5 : 0.25))); dyn.slow = 0; dyn.lock = 20000; dyn.n = 0; }
     else if (dyn.fast >= 6 && !dyn.lock && pr < DPR_MAX) { renderer.setPixelRatio(Math.min(DPR_MAX, pr + 0.25)); dyn.fast = 0; dyn.lock = 6000; dyn.n = 0; }
     else return;
@@ -111,7 +119,8 @@ AVE.module('renderer', function (G) {
     if (motivos.length) return { nivel: 'bajo', motivos };
     // QA-107 (3-nov): en el iPhone, en medio, Safari cerraba la pestaña por memoria al volar en el cap. 1 (en bajo no).
     // Safari no da la memoria ni el modelo: todo iPhone/iPod arranca en bajo y la subida por FPS no lo saca de ahí (techo).
-    if (e.iphone) return { nivel: 'bajo', motivos: ['iPhone (memoria de Safari)'], techo: 'bajo' };
+    // IPH-1: perfil 'iphone' — mismo «bajo» de memoria, más resolución (DPR_IPHONE) y sin Modo Escuela automático.
+    if (e.iphone) return { nivel: 'bajo', motivos: ['iPhone (memoria de Safari)'], techo: 'bajo', perfil: 'iphone', escuelaAuto: false };
     if ((e.movil || e.chromeos) && (n && n <= 4 || m && m <= 4)) return { nivel: 'bajo', motivos: [(e.chromeos ? 'Chromebook' : 'móvil') + ' con ' + (n || '?') + ' núcleos y ' + (m || '?') + ' GB'] };
     if (e.modesto) motivos.push(e.movil ? 'móvil' : e.chromeos ? 'Chromebook' : 'GPU integrada');
     if (n && n <= 4) motivos.push(n + ' núcleos');
@@ -126,7 +135,6 @@ AVE.module('renderer', function (G) {
     if (fps < objetivo * 0.5) return 'bajo';
     return fps < objetivo * 0.85 ? NIVELES[i - 1] : nivel;
   }
-  const IPHONE = /iPhone|iPod/.test(navigator.userAgent || '');
   const EQUIPO = { gpu: GPU, software: SOFTWARE, modesto: MODEST, movil: MOBILE, chromeos: CHROMEOS, iphone: IPHONE, nucleos: navigator.hardwareConcurrency || 0, memoria: navigator.deviceMemory || 0 };
   const PERFIL = perfilEquipo(EQUIPO);
   const fromUrl = new URLSearchParams(location.search).get('calidad');
@@ -964,7 +972,7 @@ AVE.module('renderer', function (G) {
     fpsM.bajo = (fps < OBJETIVO * 0.85 || tirones) && dprAlMinimo ? fpsM.bajo + 1 : 0;
     fpsM.alto = fps > Math.min(58, OBJETIVO * 1.6) && renderer.getPixelRatio() >= DPR_MAX - 0.01 ? fpsM.alto + 1 : 0;
     if (fpsM.bajo >= 3 && i > 0) { setCalidad(NIVELES[i - 1]); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }
-    else if (fpsM.bajo >= 8 && i === 0 && calidad.escuela == null) { setEscuela(true); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }   // QA-181/KIMI-320: ya en «bajo» con DPR al mínimo y la media sigue baja ~8 s → Modo Escuela (solo en «auto»: ?escuela=0 manual no se lo vuelve a encender, hallazgo de Kimi 1 en KIMI-318)
+    else if (fpsM.bajo >= 8 && i === 0 && calidad.escuela == null && PERFIL.escuelaAuto !== false) { setEscuela(true); fpsM.bajo = 0; fpsM.bloqueo = 60000; fpsM.warm = 2500; }   // QA-181/KIMI-320: ya en «bajo» con DPR al mínimo y la media sigue baja ~8 s → Modo Escuela (solo en «auto»: ?escuela=0 manual no se lo vuelve a encender, hallazgo de Kimi 1 en KIMI-318)
     else if (calidad.escuela === true && calidad.escuelaAuto && fpsM.alto >= 20 && !fpsM.bloqueo) { setEscuela(null); fpsM.alto = 0; }   // solo el auto lo apaga, y con el DPR otra vez arriba y ~20 s sobrados
     else if (fpsM.alto >= 12 && !fpsM.bloqueo && i < 2 && fpsM.subidas < 2 && !(PERFIL.techo && i >= NIVELES.indexOf(PERFIL.techo))) { setCalidad(NIVELES[i + 1]); fpsM.alto = 0; fpsM.subidas++; fpsM.bloqueo = 20000; fpsM.warm = 2500; }
   }
@@ -1405,6 +1413,12 @@ AVE.module('renderer', function (G) {
     for (const [nombre, e, nivel] of casos) { const r = p(e); check(nombre, r.nivel === nivel, r.nivel + (r.motivos.length ? ' (' + r.motivos.join(', ') + ')' : '')); }
     const ip = p({ movil: true, modesto: true, iphone: true, nucleos: 6 });
     check('iPhone: la subida por FPS no pasa de bajo (techo, QA-107)', ip.techo === 'bajo' && !p({ movil: true, modesto: true, nucleos: 8, memoria: 8 }).techo, ip.techo);
+    const otros = [{ movil: true, modesto: true, nucleos: 8, memoria: 4 }, { chromeos: true, modesto: true, nucleos: 4, memoria: 4 }].map(p);
+    check('iPhone (IPH-1): perfil propio sin Modo Escuela automático; móvil y Chromebook en bajo como antes', ip.perfil === 'iphone' && ip.escuelaAuto === false &&
+      otros.every(o => o.nivel === 'bajo' && !o.perfil && o.escuelaAuto !== false), ip.perfil + ' · escuelaAuto ' + ip.escuelaAuto);
+    check('iPhone (IPH-1): resolución entre 1,25 y 1,75 (antes 0,75–1,5); el resto de equipos igual', DPR_IPHONE.min === 1.25 && DPR_IPHONE.max === 1.75 &&
+      (IPHONE ? DPR_MAX === Math.min(DEVICE_DPR, 1.75) && DPR_MIN === Math.min(1.25, DPR_MAX) : DPR_MAX === Math.min(DEVICE_DPR, MOBILE ? 1.5 : 2) && DPR_MIN === Math.min(1, DPR_MAX)),
+      (IPHONE ? 'iPhone' : 'no iPhone') + ' · DPR ' + DPR_MIN + '–' + DPR_MAX);
     const d = (fps, n) => decidirArranque(fps, n, 55);
     check('Arranque: a 60 FPS no cambia la calidad', d(60, 'alto') === 'alto' && d(60, 'medio') === 'medio');
     check('Arranque: a 40 FPS baja un nivel', d(40, 'alto') === 'medio' && d(40, 'medio') === 'bajo');
