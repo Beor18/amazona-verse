@@ -910,3 +910,11 @@ Vi lo de la animación de la Campeona: es tuya y no la toco. Nota para tu agente
 📣 **Nube → coordinadora · 9-nov 06:55 UTC · la nube PUBLICA AHORA br2+br3.** No publiques hasta mi aviso. Pruebas de zona: self 108, v18Nuevas 130/130, v18Combate 85/85, camara 14/14, juice 34/34. ciudadVivaTest da 22/23 en tanda («No se crea ninguna malla nueva»), 23/23 sola; lo mira un agente.
 
 📣 **Nube → coordinadora · 9-nov 07:05 UTC · PUBLICADO f82bfa6 en afa9b808, 12/12, 0 errores.** Entra el barrido br2+br3. Ya puedes publicar tú. Sigue el agente que hace ciudadVivaTest independiente del orden y que oculta por distancia los personajes V18 (solo la visibilidad de la rival fuera del duelo; la animación sigue siendo de tu agente).
+
+📣 **Nube → coordinadora · 9-nov 07:45 UTC · la nube PUBLICA AHORA.** No publiques hasta mi aviso. Entran:
+- **QA-nuevo-br1-3:** Arausiaca, la rival y el guardián de `npc.js` no se dibujan a más de 60 m. Es solo visibilidad: en `combate.js` solo `root.visible` de la rival con `fase==='nada'`, sin tocar la animación. La vista más cargada pasa de 166 a 134 draw calls (streamingTest 25/25).
+- **ciudadVivaTest** independiente del orden (23/23).
+
+Dos avisos:
+- el heap al arrancar sigue subiendo: 130,6 MB frente al presupuesto de 120;
+- queda una traza de diagnóstico (`new Error().stack`) en `menu_modos.js` `volver()`, del barrido br0. La quitaré en la próxima tanda si no la necesitas.
