@@ -12,7 +12,7 @@ const AQUI = __dirname, RAIZ = path.resolve(AQUI, '..', '..');
 const CHROME = process.env.CHROME || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
 function arg(n, d) { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; }
 const ETIQUETA = arg('--etiqueta', 'r1');
-const MODO = arg('--modo', 'teleport'); // teleport | vuelo — vuelo: acercarse volando a 17 m/s y medir el swap _lejos → cerca al cruzar la frontera
+const MODO = arg('--modo', 'teleport'); // teleport | vuelo | pie — vuelo: acercarse volando a 17 m/s; pie: misma trayectoria a 6,5 m/s (la puerta del anticipo es la velocidad, no la altura)
 const SALIDA = path.join(RAIZ, 'docs', 'img', 'kimi339');
 fs.mkdirSync(SALIDA, { recursive: true });
 const LOGF = path.join(SALIDA, `k339_${ETIQUETA}.log`);
@@ -110,8 +110,14 @@ const CIUDADES = `['kelvin_ruinas_yunque','kelvin_ruinas_yunque_2','kelvin_aldea
 const FLY_JS = `(async () => { try { const AV = window.AV, G = AV.G, S = AV.state, ST = G.mundo.streaming;
   const ciudades = new Set(${CIUDADES});
   const zonas = ST.zonas, px = S.pos.x, pz = S.pos.z;
+  const cands = [];
+  for (const id in zonas) { const Z = zonas[id]; if (!Z.modelos || !Z.modelos.size || ciudades.has(id)) continue; const d = Math.hypot(Z.cx - px, Z.cz - pz); cands.push([Math.round(d), id]); }
+  cands.sort((a, b) => b[0] - a[0]);
   let best = null, bd = 1e9;
-  for (const id in zonas) { const Z = zonas[id]; if (!Z.modelos || !Z.modelos.size || ciudades.has(id)) continue; const d = Math.hypot(Z.cx - px, Z.cz - pz); if (d > 150 && d < bd) { bd = d; best = Z; } }
+  for (const c of cands) if (c[0] > 300 && c[0] < bd) { bd = c[0]; best = zonas[c[1]]; }
+  if (!best && cands.length) { best = zonas[cands[0][1]]; bd = cands[0][0]; } // fuera del boost no hay zona: usar la más lejana
+  window.__cands = cands.slice(0, 5);
+  if (!best) return 'sin zona top5=' + JSON.stringify(cands.slice(0, 5));
   if (!best) return 'sin zona';
   const dx = (best.cx - px) / bd, dz = (best.cz - pz) / bd;
   S.pos.x = best.cx - dx * 420; S.pos.z = best.cz - dz * 420; S.pos.y = 35;
@@ -124,6 +130,22 @@ const FLY_PASO_JS = `(() => { try { const AV = window.AV, S = AV.state, f = wind
   if (AV.G.fisica && AV.G.fisica.MOVE) AV.G.fisica.MOVE.flying = true;
   const Z = AV.G.mundo.streaming.zonas[f.id];
   return Math.round(Math.hypot(Z.cx - S.pos.x, Z.cz - S.pos.z)); } catch (e) { return -1; } })()`;
+// KIMI-348: paso a pie — 2,0 m por muestra de 300 ms ≈ 6,5 m/s (velocidad de caminar; bajo el mínimo de vuelo 15 m/s)
+const PIE_PASO_JS = `(() => { try { const AV = window.AV, S = AV.state, f = window.__fly;
+  if (!f) return -1;
+  S.pos.x += f.dx * 2.0; S.pos.z += f.dz * 2.0; S.pos.y = 35;
+  if (AV.G.fisica && AV.G.fisica.MOVE) AV.G.fisica.MOVE.flying = true;
+  const Z = AV.G.mundo.streaming.zonas[f.id];
+  return Math.round(Math.hypot(Z.cx - S.pos.x, Z.cz - S.pos.z)); } catch (e) { return -1; } })()`;
+// KIMI-348: estado de la zona destino en cada muestra (nivel, d real al borde, refs de precarga pedidas,
+// velocidad aproximada vista desde la página y si la zona está forzada a nivel 2)
+const ZONA_JS = `(() => { try { const AV = window.AV, f = window.__fly; if (!f) return null; const Z = AV.G.mundo.streaming.zonas[f.id];
+  const t = performance.now(), px = AV.state.pos.x, pz = AV.state.pos.z;
+  if (!window.__spd) window.__spd = { t, px, pz, v: 0 };
+  const s = window.__spd, dt = (t - s.t) / 1000;
+  if (dt > 0.1) { s.v = Math.hypot(px - s.px, pz - s.pz) / dt; s.t = t; s.px = px; s.pz = pz; }
+  return { nivel: Z.nivel, d: Math.round(Z.d), pre: Z.pre ? Object.keys(Z.pre).length : 0, v: Math.round(s.v * 10) / 10, fz: !!Z.forzada };
+} catch (e) { return null; } })()`;
 
 (async () => {
   const res = { etiqueta: ETIQUETA, cuando: new Date().toISOString(), pantalla: '1600x900 dpr1', calidad: 'auto (sin flags)', cpu: 'x1', gpu: 'PC real (ANGLE/D3D11)', muestras: [], llegada: null, asentado: null, errores: null };
@@ -179,21 +201,24 @@ const FLY_PASO_JS = `(() => { try { const AV = window.AV, S = AV.state, f = wind
       await new Promise(r => setTimeout(r, 300));
     }
     // Fase 2: acercarse a una zona edificada y medir el swap _lejos → cerca (el pop de «ruinas»).
-    if (MODO === 'vuelo') {
+    if (MODO === 'vuelo' || MODO === 'pie') {
+      const pasoJs = MODO === 'pie' ? PIE_PASO_JS : FLY_PASO_JS;
+      const maxPasos = MODO === 'pie' ? 240 : 90; // pie: 420 m a 2,0 m/paso ≈ 210 pasos
+      const clave = MODO; // prefijo de las capturas
       const tz = await ev(cdp, ses, FLY_JS, 30);
-      log(`vuelo destino='${tz}'`);
-      res.acercamiento = { destino: tz, modo: 'vuelo 17 m/s desde 420 m a y=35', muestras: [] };
+      log(`${MODO} destino='${tz}'`);
+      res.acercamiento = { destino: tz, modo: MODO === 'pie' ? 'pie 6,5 m/s desde 420 m a y=35 (la puerta del anticipo es la velocidad, no la altura)' : 'vuelo 17 m/s desde 420 m a y=35', muestras: [] };
       const tZ = Date.now();
       let shotZ = false;
-      for (let paso = 0; paso < 90; paso++) {
-        const d = await ev(cdp, ses, FLY_PASO_JS, 15);
+      for (let paso = 0; paso < maxPasos; paso++) {
+        const d = await ev(cdp, ses, pasoJs, 15);
         const m = await ev(cdp, ses, MUESTRA_JS, 15);
-        m.t = Date.now() - tZ; m.d = d;
+        m.t = Date.now() - tZ; m.d = d; m.z = await ev(cdp, ses, ZONA_JS, 10, false);
         res.acercamiento.muestras.push(m);
         if (!shotZ && m.d >= 0 && m.d <= 130) {
           const s2 = await cdp.call('Page.captureScreenshot', { format: 'jpeg', quality: 82 }, ses, 30000);
-          fs.writeFileSync(path.join(SALIDA, `k339_${ETIQUETA}_vuelo_cruseRc.jpg`), Buffer.from(s2.data, 'base64'));
-          log(`captura vuelo al cruzar Rc (d=${m.d})`);
+          fs.writeFileSync(path.join(SALIDA, `k339_${ETIQUETA}_${clave}_cruseRc.jpg`), Buffer.from(s2.data, 'base64'));
+          log(`captura ${MODO} al cruzar Rc (d=${m.d})`);
           shotZ = true;
         }
         if (d >= 0 && d < 35) break;
