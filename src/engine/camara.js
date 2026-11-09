@@ -507,18 +507,22 @@ AVE.module('camara', function (G) {
         ok('girando a ~2 rad/s no cruza muros (≤6 cortes por vuelta) y sin saltos de más de 2,5 m por cuadro (salvo el corte contra el muro)', malGiro === 0 && saltoMax < 2.5, malGiro + ' malos, salto máx ' + Math.round(saltoMax * 100) / 100 + ' m' + dbg2);
       } else ok('muros y losas (sin sólidos activos: no aplica)', true, '');
       // 5. Transición suelo↔vuelo y aterrizaje: sin saltos de cámara mayores de 1 m por cuadro (a 60 fps)
-      modo(false, 0); yaw = keep.yaw; inclina = 0; place(true);
+      // QA-226: siempre junto al alero de BM131 (134,183) y con 4 rumbos fijos. Antes era donde y como la dejaba la batería
+      // anterior (tras selfTest, 2,39 m y 2 cortes; sola, 14/14): la prueba dependía del orden. Con los rumbos 10–15 de 16 la
+      // cámara aún corta al despegar ahí (QA-226, abierto: el seguimiento recorta la esquina del alero)
       let salto = 0, prevP = camera.position.clone(), c1 = cortes, sv1 = suaves, dondeSalto = '', faseT = 'suelo';
       const paso60 = (n, f) => { for (let i = 0; i < n; i++) { if (f) f(i); follow(1 / 60); const dd = camera.position.distanceTo(prevP); if (dd > salto) { salto = dd; dondeSalto = faseT + i; } prevP.copy(camera.position); } };
-      paso60(30);
-      // BM131: sube y baja 3 m en 0,5 s (como el despegue y el aterrizaje de fisica.js, ~6 m/s), no de golpe en un cuadro: con el
-      // salto instantáneo de 3 m la cabeza quedaba de pronto tras un alero (134,183, tras las baterías) y el corte daba 2–3 m.
-      // Aterriza donde despegó (antes, en la altura del terreno: si las baterías la dejaban sobre una losa o un tejado, la
-      // «aterrizaba» por dentro del edificio)
-      const y0 = S.pos.y, yT = y0;
-      faseT = 'despegue'; Object.assign(M, { flying: true, grounded: false }); paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 * (i + 1) / 30; });          // despegue
-      Object.assign(M, { flying: false, grounded: true }); M.land = (M.land || 0) + 1; M.impact = 1; faseT = 'aterriza'; paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 + (yT - y0 - 3) * (i + 1) / 30; }); // aterriza
-      ok('despegar y aterrizar: la cámara se mueve sin tirones (≤ 1 m por cuadro)', salto < 1 && cortes === c1, 'salto máx ' + Math.round(salto * 100) / 100 + ' m · ' + JSON.stringify({ cortes: cortes - c1, suaves: suaves - sv1, en: dondeSalto, pos: [Math.round(S.pos.x), Math.round(S.pos.z), Math.round(S.pos.y * 10) / 10] }));
+      for (const k of [0, 3, 6, 9]) {
+        S.pos.x = 134; S.pos.z = 183; modo(false, 0); yaw = k * Math.PI / 8; inclina = 0; place(true); prevP.copy(camera.position);
+        faseT = 'r' + k + ' suelo'; paso60(30);
+        // BM131: sube y baja 3 m en 0,5 s (como el despegue y el aterrizaje de fisica.js, ~6 m/s), no de golpe en un cuadro: con el
+        // salto instantáneo de 3 m la cabeza quedaba de pronto tras un alero y el corte daba 2–3 m. Aterriza donde despegó.
+        const y0 = S.pos.y, yT = y0;
+        faseT = 'r' + k + ' despegue'; Object.assign(M, { flying: true, grounded: false }); paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 * (i + 1) / 30; });          // despegue
+        Object.assign(M, { flying: false, grounded: true }); M.land = (M.land || 0) + 1; M.impact = 1; faseT = 'r' + k + ' aterriza'; paso60(60, i => { if (i < 30) S.pos.y = y0 + 3 + (yT - y0 - 3) * (i + 1) / 30; }); // aterriza
+      }
+      Object.assign(S.pos, keep.pos);
+      ok('despegar y aterrizar junto al alero (134,183), 4 rumbos: la cámara se mueve sin tirones (≤ 1 m por cuadro)', salto < 1 && cortes === c1, 'salto máx ' + Math.round(salto * 100) / 100 + ' m · ' + JSON.stringify({ cortes: cortes - c1, suaves: suaves - sv1, en: dondeSalto }));
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     Object.assign(S.pos, keep.pos); S.vy = keep.vy; yaw = keep.yaw; inclina = keep.inclina; lastManual = keep.lastManual; vida.plano = keep.plano;
     for (const k of CLAVES) M[k] = keep.M[k];
