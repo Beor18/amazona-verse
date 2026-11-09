@@ -140,8 +140,9 @@
     // Expansión (Kelvin 9-nov: «construir y expandir se puede trabajar»): lo que queda de la expansión (la pesca) va tras G.EXPANSION, apagada por
     // defecto; se enciende con ?expansion=1 o localStorage amazonaverse.expansion = '1' (?expansion=0 la apaga). Nada se publica sin las fotos aprobadas por Kelvin.
     if (G.EXPANSION == null) G.EXPANSION = (() => { const q = /[?&]expansion=([01])\b/.exec(location.search); if (q) return q[1] === '1'; try { return localStorage.getItem('amazonaverse.expansion') === '1'; } catch (e) { return false; } })();
-    // Expansión · minijuego de pesca en el muelle de Villa Raíz (src/game/v18/pesca.js). Con la bandera apagada no se carga nada.
-    const pesca18 = aDemanda('src/game/v18/pesca.js', 'AVV18Pesca'), cargarV18Pesca = () => cargarV18().catch(() => null).then(pesca18);
+    // Expansión · minijuego de pesca en una orilla del río (src/game/v18/pesca.js). Con la bandera apagada no se carga nada. Con npc.js y la
+    // fila de Chispa (personajes_v18.js) para los amigos de la orilla; el .glb de Chispa solo se pide al empezar a pescar (y no en «bajo»).
+    const pesca18 = aDemanda('src/game/v18/pesca.js', 'AVV18Pesca'), cargarV18Pesca = () => Promise.all([cargarV18().catch(() => null), AVE.assets.script('content/comun/personajes_v18.js'), AVE.assets.script(NPC18_SRC)]).then(() => npc18()).catch(() => null).then(pesca18);
     AV.v18PescaTest = o => { const antes = { exp: !!G.EXPANSION, cargado: !!window.AVV18Pesca }; return cargarV18Pesca().then(x => x.test(Object.assign({ antes }, o))); }; if (G.EXPANSION) alPrimerGesto(cargarV18Pesca);
     // Construir libre (src/game/construir.js): nido, techo de hojas y decoración. Encendido para todos (Kelvin 9-nov: «Piezas aprobadas»),
     // sin depender de G.EXPANSION (esa bandera sigue solo para la pesca). Bandera propia G.CONSTRUIR: encendida por defecto,
