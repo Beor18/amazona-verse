@@ -1,0 +1,45 @@
+{
+ "ok": false,
+ "etiqueta": "antes-r1",
+ "base": {
+  "boton": {
+   "x": 12,
+   "y": 116,
+   "w": 129,
+   "h": 44
+  },
+  "z": "11",
+  "punto": "carga",
+  "fade": true
+ },
+ "conCard": {
+  "boton": {
+   "x": 12,
+   "y": 116,
+   "w": 129,
+   "h": 44
+  },
+  "card": {
+   "x": 12,
+   "y": 20,
+   "w": 366,
+   "h": 804
+  },
+  "solape": true,
+  "displayBtn": "flex",
+  "punto": "carga"
+ },
+ "conDialog": {
+  "displayForzado": "flex",
+  "displayRestaurado": "flex"
+ },
+ "trasCerrar": {
+  "boton": true,
+  "display": "flex",
+  "conectado": true
+ },
+ "capturas": [
+  "docs/img/kimi364/qa221_antes-r1_card.jpg",
+  "docs/img/kimi364/qa221_antes-r1_tras-cerrar.jpg"
+ ]
+}

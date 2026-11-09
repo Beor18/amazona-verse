@@ -1,0 +1,45 @@
+{
+ "ok": true,
+ "etiqueta": "post-r1",
+ "base": {
+  "boton": {
+   "x": 12,
+   "y": 116,
+   "w": 129,
+   "h": 44
+  },
+  "z": "11",
+  "punto": "carga",
+  "fade": true
+ },
+ "conCard": {
+  "boton": {
+   "x": 0,
+   "y": 0,
+   "w": 0,
+   "h": 0
+  },
+  "card": {
+   "x": 12,
+   "y": 20,
+   "w": 366,
+   "h": 804
+  },
+  "solape": false,
+  "displayBtn": "none",
+  "punto": "carga"
+ },
+ "conDialog": {
+  "displayForzado": "none",
+  "displayRestaurado": "none"
+ },
+ "trasCerrar": {
+  "boton": true,
+  "display": "flex",
+  "conectado": true
+ },
+ "capturas": [
+  "docs/img/kimi364/qa221_post-r1_card.jpg",
+  "docs/img/kimi364/qa221_post-r1_tras-cerrar.jpg"
+ ]
+}

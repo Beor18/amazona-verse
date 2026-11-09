@@ -437,6 +437,15 @@
     const pisa = bS && ['acts', 'sys', 'stick', 'top'].map(id => document.getElementById(id)).filter(e => e && e.offsetParent).flatMap(e => [...e.querySelectorAll('button')].concat(e.tagName === 'BUTTON' ? [e] : []))
       .filter(b => b.offsetParent).map(b => b.getBoundingClientRect()).some(r => r.width && r.left < rS.right && rS.left < r.right && r.top < rS.bottom && rS.top < r.bottom);
     check('Apertura: «Saltar» no pisa ningún botón del HUD (Acción, sistema, joystick)', bS && !pisa);
+    // QA-221: el botón va a z-index 11, por encima de #card/#dialog (z 10): mientras un panel está
+    // abierto durante la apertura se esconde y vuelve al cerrarse (los bocadillos libres no lo ocultan)
+    const cardEl = $('card'), htmlPrevio = cardEl.innerHTML;
+    cardEl.innerHTML = '<p>QA-221</p>'; cardEl.hidden = false; tick(0.05);
+    const ocultoConPanel = bS && getComputedStyle(bS).display === 'none';
+    cardEl.hidden = true; tick(0.05);
+    const vuelveSinPanel = bS && getComputedStyle(bS).display !== 'none';
+    cardEl.innerHTML = htmlPrevio;
+    check('Apertura (QA-221): «Saltar» se esconde mientras un panel está encima y vuelve al cerrarlo', !!ocultoConPanel && !!vuelveSinPanel, 'con panel: ' + (ocultoConPanel ? 'oculto' : 'visible') + ' · sin panel: ' + (vuelveSinPanel ? 'vuelve' : 'no vuelve'));
     dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
     check('Apertura: cualquier tecla la salta: sin bocadillos, sin capas, sin botón y con el aviso de Iguaca', !G.dialogo.activo() && !fade() && !document.getElementById('c1-ruptura') && !document.getElementById('c1-saltar') && !!ap1 && /Iguaca te llama/.test($('toast').textContent));
     G.quiet = true; G.c.apertura.fin();
