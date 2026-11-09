@@ -1,0 +1,26 @@
+[10:21:17] pack ep3: navegando...
+[10:21:22] …latido
+[10:21:27] …latido
+[10:21:32] …latido
+[10:21:37] …latido
+[10:21:41] pack ep3: listo en 5.866s, entrada en 23.302s; muestreo 12s en el spawn
+[10:21:42] …latido
+[10:21:47] …latido
+[10:21:52] …latido
+[10:21:57] …latido
+[10:22:00] pack ep3: fpsMed=10 min=1 peorMs=2363 calls=75 ktris=352 medL=71 calls/0.66M errores=[]
+[10:22:00] pack ep4: navegando...
+[10:22:02] …latido
+[10:22:07] …latido
+[10:22:12] …latido
+[10:22:17] …latido
+[10:22:22] …latido
+[10:22:23] pack ep4: listo en 5.305s, entrada en 22.935s; muestreo 12s en el spawn
+[10:22:27] …latido
+[10:22:32] …latido
+[10:22:37] …latido
+[10:22:42] …latido
+[10:22:47] …latido
+[10:22:52] …latido
+[10:22:52] pack ep4: fpsMed=26 min=18 peorMs=160 calls=88 ktris=563 medL=88 calls/0.56M errores=[]
+[10:22:53] evidencia: docs\img\kimi375\k127_k3esc-dist-r1.json

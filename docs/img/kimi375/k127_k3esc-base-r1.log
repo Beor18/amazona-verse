@@ -1,0 +1,106 @@
+[10:12:56] pack cap1: navegando...
+[10:13:01] …latido
+[10:13:06] …latido
+[10:13:11] …latido
+[10:13:16] …latido
+[10:13:21] …latido
+[10:13:22] pack cap1: listo en 5.071s, entrada en 26.199s; muestreo 12s en el spawn
+[10:13:26] …latido
+[10:13:31] …latido
+[10:13:36] …latido
+[10:13:41] …latido
+[10:13:46] …latido
+[10:13:51] …latido
+[10:13:56] …latido
+[10:14:00] pack cap1: fpsMed=23 min=17 peorMs=302 calls=64 ktris=259 medL=63 calls/0.26M errores=[]
+[10:14:00] pack ep2: navegando...
+[10:14:01] …latido
+[10:14:06] …latido
+[10:14:11] …latido
+[10:14:16] …latido
+[10:14:21] …latido
+[10:14:25] pack ep2: listo en 4.284s, entrada en 25.267s; muestreo 12s en el spawn
+[10:14:26] …latido
+[10:14:31] …latido
+[10:14:36] …latido
+[10:14:41] …latido
+[10:14:46] …latido
+[10:14:51] …latido
+[10:14:56] …latido
+[10:14:57] pack ep2: fpsMed=34 min=28 peorMs=123 calls=57 ktris=262 medL=57 calls/0.26M errores=[]
+[10:14:57] pack ep3: navegando...
+[10:15:01] …latido
+[10:15:06] …latido
+[10:15:11] …latido
+[10:15:14] pack ep3: listo en 4.517s, entrada en 17.106s; muestreo 12s en el spawn
+[10:15:16] …latido
+[10:15:21] …latido
+[10:15:26] …latido
+[10:15:31] …latido
+[10:15:32] pack ep3: fpsMed=14 min=1 peorMs=1980 calls=82 ktris=409 medL=71 calls/0.54M errores=[]
+[10:15:32] pack ep4: navegando...
+[10:15:36] …latido
+[10:15:41] …latido
+[10:15:46] …latido
+[10:15:50] pack ep4: listo en 4.342s, entrada en 18.607s; muestreo 12s en el spawn
+[10:15:51] …latido
+[10:15:56] …latido
+[10:16:01] …latido
+[10:16:06] …latido
+[10:16:09] pack ep4: fpsMed=19 min=5 peorMs=998 calls=95 ktris=473 medL=88 calls/0.56M errores=[]
+[10:16:09] pack ep5: navegando...
+[10:16:11] …latido
+[10:16:16] …latido
+[10:16:21] …latido
+[10:16:26] …latido
+[10:16:31] …latido
+[10:16:34] pack ep5: listo en 4.843s, entrada en 24.77s; muestreo 12s en el spawn
+[10:16:36] …latido
+[10:16:41] …latido
+[10:16:46] …latido
+[10:16:51] …latido
+[10:16:56] …latido
+[10:17:01] …latido
+[10:17:04] pack ep5: fpsMed=33 min=21 peorMs=116 calls=63 ktris=215 medL=63 calls/0.21M errores=[]
+[10:17:04] pack ep6: navegando...
+[10:17:06] …latido
+[10:17:11] …latido
+[10:17:16] …latido
+[10:17:21] …latido
+[10:17:26] …latido
+[10:17:28] pack ep6: listo en 4.362s, entrada en 23.906s; muestreo 12s en el spawn
+[10:17:31] …latido
+[10:17:36] …latido
+[10:17:41] …latido
+[10:17:46] …latido
+[10:17:51] …latido
+[10:17:56] …latido
+[10:17:58] pack ep6: fpsMed=32 min=18 peorMs=95 calls=84 ktris=212 medL=84 calls/0.21M errores=[]
+[10:17:58] demo: navegando con ?v18=1...
+[10:18:01] …latido
+[10:18:06] …latido
+[10:18:11] …latido
+[10:18:16] …latido
+[10:18:21] …latido
+[10:18:26] demo: midiendo base...
+[10:18:26] …latido
+[10:18:31] …latido
+[10:18:36] …latido
+[10:18:41] …latido
+[10:18:42] demo/base: fpsMed=8 min=0 peorMs=8125 calls=119 ktris=449
+[10:18:42] demo: midiendo duelo...
+[10:18:47] …latido
+[10:18:52] …latido
+[10:18:55] demo/duelo: fpsMed=18 min=15 peorMs=132 calls=89 ktris=220
+[10:18:55] demo: midiendo sombra...
+[10:18:57] …latido
+[10:19:02] …latido
+[10:19:07] …latido
+[10:19:10] demo/sombra: fpsMed=17 min=14 peorMs=109 calls=84 ktris=208
+[10:19:10] demo: midiendo puente...
+[10:19:12] …latido
+[10:19:17] …latido
+[10:19:22] …latido
+[10:19:25] demo/puente: fpsMed=25 min=20 peorMs=90 calls=87 ktris=218
+[10:19:25] demo: errores de consola: []
+[10:19:26] evidencia: docs\img\kimi375\k127_k3esc-base-r1.json

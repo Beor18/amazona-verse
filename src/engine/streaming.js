@@ -158,11 +158,12 @@ AVE.module('streaming', function (G) {
     const f = scene.fog; if (!f) return Infinity;
     return f.near < 0 ? -f.near + f.far * 3.5 : f.far; // atmosférica (near negativo): por debajo de ~3 % de visibilidad
   }
-  // KIMI-320 (Modo Escuela, QA-181): «menor distancia de dibujo» — los edificios sueltos se recortan ~25 %
-  // antes (bajo 150→112 m · medio 190→142 · alto 320→240). El horizonte lo siguen cubriendo las zonas
-  // fundidas (zonaLejos 650 m, alcanceZona), igual que en «bajo» a 150-650 m: la isla no se queda sin
-  // edificios, solo cae antes el detalle por instancia (menos draw calls y submit por cuadro).
-  const alcance = () => Math.min((CFG.dibujo[nivelCal()] || 190) * ((R.calidad && R.calidad.escuela === true) ? 0.75 : 1), alcanceNiebla());
+  // KIMI-320/375 (Modo Escuela, QA-181): «menor distancia de dibujo» — los edificios sueltos se recortan
+  // ~45 % antes (bajo 150→82 m · medio 190→104 · alto 320→176; en KIMI-320 era 0,75, quedaba corto en
+  // el Chromebook a ×6: ep3 14 / ep4 19 fps con 82-95 calls). El horizonte lo siguen cubriendo las zonas
+  // fundidas (zonaLejos 650 m, alcanceZona), igual que en «bajo»: la isla no se queda sin edificios,
+  // solo cae antes el detalle por instancia (menos draw calls y submit por cuadro).
+  const alcance = () => Math.min((CFG.dibujo[nivelCal()] || 190) * ((R.calidad && R.calidad.escuela === true) ? 0.55 : 1), alcanceNiebla());
   const radioCerca = () => Math.min(CFG.cerca[nivelCal()] || 110, alcance());
   const alcanceZona = () => Math.min(Math.max(CFG.zonaLejos[nivelCal()] || 0, alcance()), alcanceNiebla());
 
