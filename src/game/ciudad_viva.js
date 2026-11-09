@@ -300,6 +300,8 @@ window.AVCiudadViva = function (G) {
         a.ala = 1; a.cab = 0;
         a.roll = 0.4 * (b.w > 0 ? 1 : -1) + Math.sin(R.t * 1.7 + a.fase) * 0.1; // se inclinan hacia el centro del círculo
       }
+    } else if (a.est === 'juega' && !a.juego) { // QA-nuevo-br3-1: apagada por la multitud a mitad de un juego y vuelta sin encender(): a posarse
+      a.est = 'posada'; a.accion = 'mira'; a.t = 0; a.dur = rnd(2, 5);
     } else if (a.est === 'juega') {
       const g = a.juego, p = g.p; g.t += a.lider ? dt : 0;
       const ang = g.ang + g.t * 1.8 - (a.lider ? 0 : 0.6), rr = 3.5 + Math.sin(g.t * 0.8) * 1.2;
@@ -548,6 +550,14 @@ window.AVCiudadViva = function (G) {
           ' (' + (red.c - lleno.c) + ' calls, ' + (red.t - lleno.t) + ' tris)');
       }
       if (Rd.setEscuela) { Rd.setEscuela(esc0, true); Rd.calidad.escuelaAuto = escA0; }
+      { // QA-nuevo-br3-1: una que juega, quitada por la multitud y devuelta con reiniciar() (sin encender), no rompe el paso
+        const [ja, jb] = R.aves.filter(a => !protegida(a)).slice(0, 2), g = { p: perchas().alto[0] || { x: s.x, y: H(s.x, s.z), z: s.z }, ang: 0, t: 0, dur: 8, aves: [ja, jb] };
+        for (const c of g.aves) { c.est = 'juega'; c.juego = g; c.accion = ''; } ja.lider = true; jb.lider = false;
+        apagar(ja); MT.reiniciar();
+        let err = '';
+        try { for (let i = 0; i < 5; i++) paso(0.05, 'todo'); } catch (e) { err = String(e && e.message || e); }
+        check('QA-nuevo-br3-1 · la que jugaba y fue quitada por la multitud vuelve sin romper el paso', !err && ja.est !== 'juega' && jb.est === 'juega', err || ('estados ' + ja.est + ' / ' + jb.est));
+      }
       check('Multitud adaptativa en la plaza: la reducida no suma draw calls y dibuja menos triángulos', okMult, mMult.join(' || '));
       if (ST && ST.terminar) { await ST.terminar().catch(() => {}); await dormir(3000); if (ST && ST.terminar) await ST.terminar().catch(() => {}); } // mismo estado asentado (y sin bandas de flora perezosas a medias) que al capturar «hijos»
       check('Antes y después en la ciudad: 2 draw calls extra o menos', okDC, medidas.join(' || '));
