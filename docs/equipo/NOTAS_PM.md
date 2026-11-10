@@ -2,6 +2,17 @@
 
 ## TRASPASO
 
+### Dev 1 · 10-nov 07:15 AST · CG-113 hecha
+- **Tarea:** casa editable del bohío de Villa Raíz. Cerrada. El video queda pendiente para Kelvin, como el de CG-108.
+- **Commits:** `90f6d3ca` (entrar, guardar, vano) y `36d42638` (Acción pone y mueve). EN CURSO fue `55c21b65`.
+- **Archivos:** `src/game/bohios.js`, `content/comun/interiores.js`. No toqué `boot.js`, `streaming.js`, el modelo de Vittata ni textos educativos.
+- **Qué falta:** el video en `docs/img/cg113/`. Aquí no se puede grabar.
+- **Cómo lo ve Kelvin:** abre el juego con `?interiores=1`. Ve al bohío amueblado de Villa Raíz (el más alto, junto al inicio). En la puerta, Acción dice **Entrar** y Vittata queda dentro de la misma casa, sin otro cuarto. Dentro, Acción dice **Poner banco**: aparece un banco y queda en la partida. Acción **Mover** lo cambia de sitio. Acción **Salir** la deja en la puerta. Si vuelve a entrar, el banco sigue. El hueco de la puerta deja pasar el cuerpo (0,64 m) y la malla de fuera no cambia.
+- **Lo confirma:** bohiosTest 38/38. Build `cg-113-36d42638`: las 12 en verde, 0 errores y 0 avisos.
+
+### Dev 1 · 10-nov 07:15 AST · pido más tareas
+No queda CG libre. CG-117 y CG-116 ya están hechas. CG-118 la tiene Dev 4. CG-119 espera a Kelvin. QA-234 la tiene Dev 3. QA-232 y QA-233 quedaron para Dev 2. Vi el cambio de prioridad: no abro un frente nuevo. Claude: cuando salga la auditoría, deja las filas de «todo a la vista» en `TAREAS_CURSOR_GROK.md`.
+
 ### Dev 3 · 10-nov 07:15 AST · ronda 6, reparto
 - **Para Dev 2:** QA-233 (Patrulla tapa el objetivo) y QA-232 (opcionesTest en inglés). En `BUGS.md` dicen «asignado: Dev 2».
 - **Rama:** `dev3/ronda6-patrulla-opciones`, commit `c9adc9f2`. No está en main. No pasaron las 12.
@@ -117,13 +128,8 @@
 - **Qué falta:** arreglarlos en ese orden. El texto de QA ya está en las filas. QA-230 a QA-233 no estaban libres. Cada uno con las 12 en verde y 0 errores.
 - **Archivos:** `docs/equipo/BUGS.md`. No toqué `streaming.js`, el modelo de Vittata ni textos educativos.
 
-### Dev 1 · 10-nov 06:30 AST · CG-113 en curso
-- **Tarea:** casa editable del bohío de Villa Raíz. Fila EN CURSO. Todavía sin código.
-- **Commit:** `55c21b65` (solo la fila).
-- **Archivos:** `src/game/bohios.js` y `content/comun/interiores.js`. No toco `solidos.js` (CG-116 sigue libre), `streaming.js`, el modelo de Vittata ni textos educativos.
-- **Qué falta:** con `?interiores=1`, entrar en el sitio (sin transición), colocar y mover una pieza, guardarla en `S.interiores`, salir y verla al volver. Ensanchar el vano de 0,62 m a 0,64 m sin cambiar la malla exterior. Video en `docs/img/cg113/`.
-- **Cómo probarlo:** `AV.bohiosTest()` con el caso nuevo, y las 12.
-- **Lo confirma:** todavía no. El núcleo de CG-110 ya está en `a8bfd36c`.
+### Dev 1 · 10-nov 06:30 AST · CG-113
+Cerrada en el bloque de las 07:15. Commits `90f6d3ca` y `36d42638`.
 
 ### Dev 1 · 10-nov 06:27 AST · CG-110 hecha
 - **Tarea:** núcleo de interiores. Cerrada. `content/comun/interiores.js` lo sigue Dev 1 en CG-113.
