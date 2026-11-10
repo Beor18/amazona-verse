@@ -229,12 +229,28 @@
       const red0 = A ? A.reducido : null;
       const ls0 = localStorage.getItem(CLAVE);
       const abierto = pause && pause.matches && pause.matches(':popover-open');
+      const idioma0 = G.aula && G.aula.aj ? G.aula.aj.idioma : null;
+      const ambos = (lee) => {
+        const vistos = [];
+        for (const lang of ['es', 'en']) {
+          if (G.aula && G.aula.aj) G.aula.aj.idioma = lang;
+          rotular();
+          vistos.push(lang + ':' + lee());
+        }
+        if (G.aula && G.aula.aj) G.aula.aj.idioma = idioma0;
+        rotular();
+        return vistos.every(s => s === 'es:1' || s === 'en:1') ? '' : vistos.join(' ');
+      };
       try {
-        check('La pausa tiene imagen, movimiento, efectos y voces, y avisa de la música', !!$('opt-cal-nota') && !!$('opt-mov') && !!$('opt-sfx') && !!$('opt-voz') && /música/.test($('opt-son-nota').textContent));
+        const hay = !!$('opt-cal-nota') && !!$('opt-mov') && !!$('opt-sfx') && !!$('opt-voz');
+        const mus = ambos(() => /música|music/i.test($('opt-son-nota').textContent) ? '1' : $('opt-son-nota').textContent);
+        check('La pausa tiene imagen, movimiento, efectos y voces, y avisa de la música', hay && !mus, mus);
         sec.querySelector('[data-opt-cal="bajo"]').click();
-        check('Baja deja la calidad en bajo, a mano, y dice qué cambia', R.calidad.nivel === 'bajo' && R.calidad.manual === true && /plantas/.test($('opt-cal-nota').textContent), $('opt-cal-nota').textContent);
+        const bajo = ambos(() => (R.calidad.nivel === 'bajo' && R.calidad.manual === true && /plantas|plants/i.test($('opt-cal-nota').textContent)) ? '1' : $('opt-cal-nota').textContent);
+        check('Baja deja la calidad en bajo, a mano, y dice qué cambia', !bajo, bajo);
         sec.querySelector('[data-opt-cal="auto"]').click();
-        check('Auto vuelve a dejar que el juego elija', R.calidad.manual === false && $('opt-cal-nota').textContent === FRASE.auto[0]);
+        const auto = ambos(() => (R.calidad.manual === false && ($('opt-cal-nota').textContent === FRASE.auto[0] || $('opt-cal-nota').textContent === FRASE.auto[1])) ? '1' : $('opt-cal-nota').textContent);
+        check('Auto vuelve a dejar que el juego elija', !auto, auto);
         $('opt-sfx').value = 40; $('opt-sfx').dispatchEvent(new Event('change', { bubbles: true }));
         $('opt-voz').value = 20; $('opt-voz').dispatchEvent(new Event('change', { bubbles: true }));
         let guard = null;
@@ -244,7 +260,6 @@
         check('Reducir movimiento se enciende, se guarda y se apaga con otro toque', document.documentElement.classList.contains('mov-reducido') && A.reducido === true && leer().movimiento === true);
         $('opt-mov').click();
         check('Apagar reducir movimiento lo deja guardado en no', !document.documentElement.classList.contains('mov-reducido') && A.reducido === false && leer().movimiento === false);
-        const idioma0 = G.aula && G.aula.aj ? G.aula.aj.idioma : null;
         if (G.aula && G.aula.aj) G.aula.aj.idioma = 'en';
         rotular();
         check('En inglés los nombres se entienden', $('opt-lbl-sfx').textContent === 'Effects' && $('opt-mov').textContent === 'Reduce motion' && /chooses by itself/.test($('opt-cal-nota').textContent), $('opt-cal-nota').textContent);
