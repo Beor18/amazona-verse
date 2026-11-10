@@ -30,7 +30,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | GT-10 | hecha (Chrome↔Chrome) · se ven en 1,3 s, mensajes cada ~253 ms, salida vista en 2,4 s, 0 errores; Safari↔Chrome sin concluir | **Cotorras en línea reales:** Chrome y Safari (o dos ventanas) en la misma sala; moverse, saludar, gritar (¿se ve el pico?), salir; latencia aproximada y 0 errores. |
 | GT-11 | hecha · los 6 caps arrancan, se juegan a 59-60 fps y guardan en el sitio publicado, 0 errores; avance completo = temporadaMovilTest 172/173 en local | **Recorrido de los 6 capítulos** en el sitio publicado con GPU real (con `AV.temporadaMovilTest` si existe, o a mano lo esencial de cada capítulo): que cada capítulo arranque, se avance y se guarde. Un renglón por capítulo. |
 | GT-12 | hecha · 20 min: memoria estable (heap ~460-470 MB, 456 geometrías, 184 texturas desde el min 3), 60 fps de principio a fin, 0 errores | **Sesión larga de 20 min** con GPU real (volar, pesca, Construir, duelo, Patrulla): memoria del heap y de la GPU al minuto 1, 10 y 20 (`performance.memory`, `?fps=1`), FPS al principio y al final. ¿Crece sin parar? |
-| GT-13 | libre | **Solo teclado y lector de pantalla** (VoiceOver en Mac): menú, pausa, opciones, pesca, Construir, Mercadito; anotar lo que no se puede usar. |
+| GT-13 | parcial · teclado: accesibilidadTest 97/97 y controlesTest en verde en el sitio; VoiceOver pendiente (necesita a Kelvin delante) | **Solo teclado y lector de pantalla** (VoiceOver en Mac): menú, pausa, opciones, pesca, Construir, Mercadito; anotar lo que no se puede usar. |
 | GT-14 | libre | **Carga real** desde tu red: tiempo hasta poder jugar (primera vez y con caché), MB descargados (DevTools → Network), en computadora y emulando 4G lenta. |
 | GT-15 | continua | **Cuando la cola esté vacía:** cada vez que llegue un commit «CG-… hecha» de Grok en `TAREAS_CURSOR_GROK.md`, prueba rápida de esa función con GPU real (abrir, usar, 0 errores) y una línea aquí. Así nunca te quedas sin trabajo. |
 
@@ -190,4 +190,13 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 - El heap de ~460 MB en escritorio «alto» coincide con los avisos de presupuesto de GT-02 (QA-239).
 
 📣 Terminal → coordinadora · 10-nov 13:11 AST · GT-12 hecha · 20 min sin fuga: heap 459-477 MB, 456 geometrías y 184 texturas estables desde el min 3, 60 fps de principio a fin, 0 errores; pesca y Construir repetidas en la misma partida bajan a 57/59 y 55/59 (efecto de la prueba) · siguiente: GT-13
+
+**GT-13 · solo teclado y lector de pantalla (10-nov ~14:15-14:25 AST, sitio `0095a89`)** · **parcial**
+- Teclado, con las pruebas del propio juego (menú, pausa, opciones, foco, teclas reasignables, minijuegos con teclado):
+  - Escritorio 1440×900: `accesibilidadTest` 97/97 · `controlesTest` 22/22 · 0 errores.
+  - Móvil 390×844: `accesibilidadTest` 97/97 · `controlesTest` 3/3 · 0 errores.
+- Ojo, en HEAD (`199922ea`, GT-08) la misma prueba ya tiene 108 comprobaciones y falla W35, el minigolf con teclado → QA-240. Saldrá en la próxima publicación si no se arregla antes.
+- **VoiceOver: no lo hice.** Habla en voz alta y toma el control del teclado y la pantalla del Mac de Kelvin; no lo activo sin él delante. Queda pendiente: recorrer con VoiceOver en Safari el menú, la pausa, las opciones, la pesca, Construir y el Mercadito, y anotar qué no se anuncia o no se puede usar.
+
+📣 Terminal → coordinadora · 10-nov 13:12 AST · GT-13 parcial · teclado en el sitio: accesibilidadTest 97/97 y controlesTest 22/22 en escritorio y 3/3 en móvil, 0 errores; HEAD ya trae el rojo de W35 en el minigolf (QA-240); VoiceOver pendiente de hacerlo con Kelvin delante · siguiente: GT-14
 
