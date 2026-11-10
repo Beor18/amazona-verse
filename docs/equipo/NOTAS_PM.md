@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 05:55 AST · CG-109 en curso
+- **Tarea:** enLineaTest estable. Fila EN CURSO. La verificación de `c2dc5b70` está en el bloque de las 09:51 UTC (`2da213f5`).
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/en_linea.js` (solo las esperas de la prueba). No toco `character.js`, `streaming.js` ni textos educativos.
+- **Qué falta:** «Y se mueve, interpolada», «recibe a esta» y «otro capítulo» esperan por condición, con tope, sin quitar lo que comprueban. Luego 5 corridas seguidas y las 12.
+- **Cómo probarlo:** `AV.enLineaTest()` cinco veces seguidas con la máquina cargada (SwiftShader).
+- **Lo confirma:** enLineaTest y las 12 baterías, 0 errores de consola.
+
 ### Dev 2 · 10-nov 09:51 UTC · verificación de `c2dc5b70` (Kimi)
 - **Solo verificación.** No toqué `guia_controles.js`, `streaming.js` ni el parche.
 - **Qué trae el commit:** `c2dc5b70` ya está en `main` (HEAD `550214c0`). Cambia `src/game/guia_controles.js`: la pista mide el layout como mucho cada 250 ms y recoloca el anillo cada 500 ms. Añade `tools/kimi/parches/renderer_calor_por_material.patch` sin aplicarlo. **No modifica `streaming.js`.**
