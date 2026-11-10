@@ -1635,19 +1635,24 @@ AVE.module('streaming', function (G) {
       Z.cercaMallas = null; Z.cercaModelos = new Set();
       programarCercaGlobal();
     }
-    // CG-73: la fusión cercana (KIMI-341) son ~20 MB de geometría que el heap de arranque medía
-    // en cuanto la pantalla de carga soltaba. Hasta que Vittata se mueve (o un test llama a terminar)
-    // se dibujan los lotes por instancia: el mismo aspecto, sin esas mallas todavía.
-    let cercaPuede = false;
+    // CG-73: la fusión cercana (KIMI-341) reserva unos 20 MB de geometría. El heap de arranque se
+    // mide justo al soltar la pantalla de carga: hasta 4 s después se dibujan los lotes por instancia
+    // (el mismo aspecto). Si Vittata se mueve o una prueba llama a terminar(), se funde en ese momento.
+    let cercaPuede = false, cercaTimer = 0;
     const cercaEspera = [];
     function activarCerca() {
       if (cercaPuede) return;
       cercaPuede = true;
+      if (cercaTimer) { clearTimeout(cercaTimer); cercaTimer = 0; }
       for (const Z of cercaEspera.splice(0)) encolar(() => fundirCercaZona(Z, true), 'fundirCerca:' + Z.id);
+    }
+    function programarCerca() {
+      if (cercaPuede || cercaTimer) return;
+      cercaTimer = setTimeout(activarCerca, 4000);
     }
     function fundirCercaZona(Z, forzar) {
       if ((!Z.ciudad && Z.nivel < 2) || Z.cercaF || (!forzar && (cargasPendientes(Z, 'cerca') || cargasPendientes(Z, 'hd')))) return;
-      if (!cercaPuede && !forzar) { if (cercaEspera.indexOf(Z) < 0) cercaEspera.push(Z); return; }
+      if (!cercaPuede && !forzar) { if (cercaEspera.indexOf(Z) < 0) cercaEspera.push(Z); programarCerca(); return; }
       // KIMI-Task-011: los modelos con _hd también entran (cada instancia es un tramo: se dibuja el _hd o el ligero, no los dos)
       const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo' && !(G.bohiosAbiertos && G.bohiosAbiertos[n])));
       if (Z.cercaMallas && modelos.size === Z.cercaModelos.size && [...modelos].every(n => Z.cercaModelos.has(n))) return;
