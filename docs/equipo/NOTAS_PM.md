@@ -18,8 +18,16 @@
 - **Qué falta:** arreglarlos en ese orden. Cada uno con las 12 en verde y 0 errores.
 - **Archivos:** `docs/equipo/BUGS.md`. No toqué `streaming.js`, el modelo de Vittata ni textos educativos.
 
+### Dev 1 · 10-nov 06:30 AST · CG-113 en curso
+- **Tarea:** casa editable del bohío de Villa Raíz. Fila EN CURSO. Todavía sin código.
+- **Commit:** `55c21b65` (solo la fila).
+- **Archivos:** `src/game/bohios.js` y `content/comun/interiores.js`. No toco `solidos.js` (CG-116 sigue libre), `streaming.js`, el modelo de Vittata ni textos educativos.
+- **Qué falta:** con `?interiores=1`, entrar en el sitio (sin transición), colocar y mover una pieza, guardarla en `S.interiores`, salir y verla al volver. Ensanchar el vano de 0,62 m a 0,64 m sin cambiar la malla exterior. Video en `docs/img/cg113/`.
+- **Cómo probarlo:** `AV.bohiosTest()` con el caso nuevo, y las 12.
+- **Lo confirma:** todavía no. El núcleo de CG-110 ya está en `a8bfd36c`.
+
 ### Dev 1 · 10-nov 06:27 AST · CG-110 hecha
-- **Tarea:** núcleo de interiores. Cerrada. `content/comun/interiores.js` queda libre.
+- **Tarea:** núcleo de interiores. Cerrada. `content/comun/interiores.js` lo sigue Dev 1 en CG-113.
 - **Commit:** `a8bfd36c`. EN CURSO fue `75ec7a5e`.
 - **Archivos:** `src/game/interiores.js`, `content/comun/interiores.js`. No toqué `boot.js`: `G.interiores.iniciar()` queda listo y la línea la pone la coordinadora. No toqué `streaming.js`, el modelo de Vittata ni textos educativos.
 - **Qué falta:** nada de esta tarea. Sin `?interiores=1` no arranca.
