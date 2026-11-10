@@ -1132,7 +1132,7 @@ window.AVV18Combate = function (G) {
       if (s.alasX) { ch.rot(B.armL1, 'x', s.alasX); ch.rot(B.armL1001, 'x', s.alasX); }
     }
     if (B.espalda1001 && s.cola) ch.rot(B.espalda1001, 'x', s.cola);
-    if (B.pico && s.pico) ch.rot(B.pico, 'x', s.pico);
+    if (B.pico && s.pico) ch.rot(B.pico, 'x', -s.pico);
   }
   // ---------- Andar (Kelvin 9-nov: «no me gusta el movimiento del bot de la cotorra del duelo») ----------
   // Cómo se mueve el cuerpo que se ve; la posición de juego (r.pos), la IA, sus tiempos y sus golpes no cambian.
