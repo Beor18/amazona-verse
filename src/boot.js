@@ -178,6 +178,14 @@
     const cargarKit = aDemanda('src/game/interiores_kit.js', 'AVInterioresKit');
     AV.interioresKitTest = o => cargarKit().then(k => k.test(o));
     if (/[?&]interiores=1\b/.test(location.search)) cargarKit().catch(e => console.warn('interiores kit', e));
+    // V18.4 · CG-110: núcleo de interiores (entrar/salir en el sitio o por transición). Solo con ?interiores=1 hasta que Kelvin
+    // apruebe; sin la bandera no se baja nada. La prueba carga el módulo a demanda.
+    const cargarInteriores = aDemanda('src/game/interiores.js', 'AVInteriores');
+    AV.interioresTest = o => cargarInteriores().then(m => m.test(o));
+    if (/[?&]interiores=1\b/.test(location.search)) {
+      (window.AV_INTERIORES ? Promise.resolve() : AVE.assets.script('content/comun/interiores.js'))
+        .then(() => cargarInteriores()).then(m => m.iniciar()).catch(e => console.warn('interiores', e));
+    }
     // Mercadito del río (src/game/tienda.js). CG-92: no va en la descarga de antes de jugar. El botón se ve igual (Pausa y Mi personaje);
     // el script, las miniaturas y el saldo entran al abrirlo, al pescar, al empezar un hoyo o un reto, o si la partida ya tiene compras
     // (la ropa comprada tiene que estar puesta al entrar).
