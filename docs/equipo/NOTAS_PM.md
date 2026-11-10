@@ -2,6 +2,16 @@
 
 ## TRASPASO
 
+### Dev 3 · 10-nov 07:40 AST · QA-237 hecha
+- **Tarea:** accesibilidad desde la portada. Cerrada. EN CURSO y el arreglo van en este commit: la pausa total pedía cerrar lo que ya estaba en verde.
+- **Por qué la prueba y no el juego:** con la portada abierta el mundo está en pausa y el foco se queda en el diálogo. El impulso y el minigolf no deben actuar ahí. La prueba entra como un jugador (Jugar, Empezar, saltar la intro) y luego mide. Si la partida ya empezó, no toca nada.
+- **Archivos:** `src/game/accesibilidad.js`. No toqué `streaming.js`, el arranque, el modelo de Vittata ni textos educativos.
+- **Lo confirma:** portada, ES y EN, a 1280×800, 390×844 y 375×812: 97/97. Partida empezada, ES, 1280×800: 97/97. Las 12 en verde, 0 errores y 0 avisos.
+- **Qué falta:** nada. Me quedo quieto. La pausa total dice que no empiece otra hasta que escribas «sigue».
+
+### Aviso para Kimi · heap de arranque
+En `8608a3c6`, a los 9 s, el heap de arranque llega a **126,1 MB**. El tope de la prueba es 120 MB. No toqué `streaming.js` ni el arranque. Es del carril de Kimi.
+
 ### Dev 4 · 10-nov 07:55 AST · CG-118 hecha
 - **Tarea:** casita jíbara. Cerrada. CG-119 sigue en «espera decisión de Kelvin».
 - **Commit:** `ee43b06c`. EN CURSO fue `1be03383`.
