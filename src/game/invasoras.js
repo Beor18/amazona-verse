@@ -454,12 +454,12 @@
       flash();
       animarReporte(n, total);
       pintarCuenta();
-      avisar(L(`¡Avistamiento! ${e.nombre}: reporte enviado a la Estación de Conservación (${n}/${total}). Mira su ficha en el Diario.`,
-        `Sighting! ${e.nombreEn}: report sent to the Conservation Station (${n}/${total}). See its card in the Journal.`), 4200);
+      avisar(L(`¡La viste! ${e.nombre}: reporte enviado a la Estación de Conservación (${n}/${total}). Su ficha está en el Diario.`,
+        `You saw it! ${e.nombreEn}: report sent to the Conservation Station (${n}/${total}). Its card is in the Journal.`), 4200);
       if (n >= total && !mem.completa) {
         mem.completa = true;
-        const fin = () => avisar(L('¡Patrulla completa! La Estación ya sabe dónde buscar a las 4 especies. ¡Gracias, guardiana!',
-          'Patrol complete! The Station now knows where to look for all 4 species. Thank you, guardian!'), 4800);
+        const fin = () => avisar(L('¡Patrulla completa! La Estación ya sabe dónde buscar a las 4. ¡Gracias!',
+          'Patrol complete! The Station now knows where to look for all 4. Thank you!'), 4800);
         if (F.prueba) fin(); else setTimeout(fin, 4300);
       }
       guardar();
@@ -474,7 +474,7 @@
         const d = distA(e.id), alto = S.pos.y - hogar[e.id].y;
         if (d < PISTA_R && !F.pistas[e.id] && libre) {
           F.pistas[e.id] = true;
-          avisar(L(`Algo se mueve por aquí… ${e.pista} Acércate despacio para avistarla.`, `Something is moving around here… ${e.pistaEn} Get closer slowly to spot it.`), 3800);
+          avisar(L(`Algo se mueve por aquí… ${e.pista} Acércate despacito para verla.`, `Something is moving around here… ${e.pistaEn} Come closer slowly to see it.`), 3800);
         }
         F.cerca[e.id] = d < (e.radio || 8) && alto < 12 && lenta() && libre ? (F.cerca[e.id] || 0) + dt : 0;
         if (F.cerca[e.id] >= OBS_T) avistar(e.id);
@@ -537,7 +537,7 @@
         id: 'invzona_' + e.id, x: z.x, z: z.z, r: 5,
         visible: () => (activo() && (!G.quiet || F.prueba) && !mem.vistos.includes(e.id)),
         label: () => L('Buscar en esta zona', 'Search this area'),
-        use: () => avisar(L(`${e.pista} No es el sitio exacto: mira alrededor.`, `${e.pistaEn} This is not the exact spot: look around.`), 3600),
+        use: () => avisar(L(`${e.pista} No es el sitio exacto: mira por ahí.`, `${e.pistaEn} This is not the exact spot: look around there.`), 3600),
       });
     }
     function cuentaEl() {

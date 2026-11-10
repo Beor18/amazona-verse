@@ -21,10 +21,10 @@
   window.AV_INVASORAS = {
     album: {
       titulo: 'Patrulla invasora', tituloEn: 'Invasive species patrol',
-      intro: 'Busca 4 especies que llegaron de lejos y avísale a la Estación de Conservación. Se miran de lejos: ¡nunca se tocan!',
-      introEn: 'Find 4 species that came from far away and report them to the Conservation Station. Look from a distance: never touch!',
-      nota: 'En el juego solo se observan y se reportan: nadie las persigue ni les hace daño.',
-      notaEn: 'In the game you only watch and report them: nobody chases or hurts them.',
+      intro: 'Busca 4 animales que no son de aquí y avísale a la Estación de Conservación. Míralos de lejos: ¡nunca se tocan!',
+      introEn: 'Find 4 animals that are not from here and tell the Conservation Station. Watch them from far away: never touch!',
+      nota: 'Aquí solo se miran y se avisan. Nadie los persigue ni les hace daño.',
+      notaEn: 'Here you only watch and report them. Nobody chases them or hurts them.',
     },
     especies: [
       { id: 'iguana', nombre: 'Iguana verde', nombreEn: 'Green iguana', cientifico: 'Iguana iguana', donde: 'orilla', cerca: { x: 149, z: 145 }, radio: 7,
