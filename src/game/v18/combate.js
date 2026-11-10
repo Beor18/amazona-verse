@@ -1293,10 +1293,10 @@ window.AVV18Combate = function (G) {
       // con la onda) → aguanta con tres empujones al ritmo de los «whoom» del sonido (0,2 / 0,36 / 0,52 s; audio.js) → recupera
       grito: curva([[0, { pecho: -0.3, cabX: -0.5, alaL: 0.15, alaR: 0.15, sy: -0.07, sx: 0.045, pico: 0.35, cola: -0.12 }],
         [0.07, { pecho: -0.32, cabX: -0.55, alaL: 0.2, alaR: 0.2, sy: -0.08, sx: 0.05, pico: 0.4, cola: -0.14 }],
-        [0.13, { pecho: 0.24, cabX: 0.42, alaL: 0.78, alaR: 0.78, alaXL: 0.25, alaXR: 0.25, abreL: 1, abreR: 1, pico: 1, sy: 0.075, sx: -0.04, adel: 0.1, cola: 0.45 }, 'sale'],
-        [0.62, { pecho: 0.2, cabX: 0.32, alaL: 0.68, alaR: 0.68, alaXL: 0.2, alaXR: 0.2, abreL: 0.9, abreR: 0.9, pico: 0.9, sy: 0.05, adel: 0.08, cola: 0.35 }],
+        [0.13, { pecho: 0.3, cabX: 0.12, alaL: 0.95, alaR: 0.95, alaXL: 0.25, alaXR: 0.25, abreL: 1, abreR: 1, pico: 1, sy: 0.075, sx: -0.04, adel: 0.12, cola: 0.45 }, 'sale'],
+        [0.62, { pecho: 0.25, cabX: 0.06, alaL: 0.85, alaR: 0.85, alaXL: 0.2, alaXR: 0.2, abreL: 0.9, abreR: 0.9, pico: 0.9, sy: 0.05, adel: 0.09, cola: 0.35 }],
         [0.82, { pecho: 0.05, cabX: 0.08, alaL: 0.2, alaR: 0.2, pico: 0.2, sy: -0.03, sx: 0.02, cola: 0.1 }], [1.05, {}]], 0.13, 1.05,
-        (u, p) => { for (const tc of [0.2, 0.36, 0.52]) { const b = Math.exp(-(((u - tc) / 0.035) ** 2)); p[I.cabX] += 0.1 * b; p[I.adel] += 0.035 * b; p[I.sy] += 0.025 * b; p[I.pico] = Math.min(1, p[I.pico] + 0.15 * b); } }),
+        (u, p) => { for (const tc of [0.2, 0.36, 0.52]) { const b = Math.exp(-(((u - tc) / 0.035) ** 2)); p[I.cabX] += 0.06 * b; p[I.pecho] += 0.05 * b; p[I.adel] += 0.035 * b; p[I.sy] += 0.025 * b; p[I.pico] = Math.min(1, p[I.pico] + 0.15 * b); } }),
       // PICO · canto: hincha el pecho y canta: cabeza que se mece al compás y el pico que abre y cierra con las notas
       canto: curva([[0, { pecho: -0.05, sy: -0.03, pico: 0.2 }], [0.12, { pecho: -0.2, sx: 0.055, sy: 0.025, cabX: -0.14, alaL: 0.14, alaR: 0.14, cola: 0.22, pico: 0.3 }, 'sale'],
         [1.3, { pecho: -0.2, sx: 0.055, sy: 0.025, cabX: -0.14, alaL: 0.14, alaR: 0.14, cola: 0.22, pico: 0.3 }], [1.6, {}]], 0.12, 1.6,
@@ -1538,14 +1538,16 @@ window.AVV18Combate = function (G) {
       }
     }
     // ---- Después de ch.update: cada grupo manda sobre sus huesos (quita su parte de lo procedural) y se pone la pose ----
-    // [hueso, ejes, grupo, fracción]: de la cabeza, el giro (Y) solo a medias, para que siga mirando a la rival
-    const EJES = [['espalda2', ['x', 'y', 'z'], 0], ['cabeza', ['x', 'z'], 1], ['cabeza', ['y'], 1, 0.5], ['armL1', ['x', 'z'], 2], ['armL1001', ['x', 'z'], 2], ['espalda1001', ['x', 'z'], 3]];
+    // [hueso, ejes, grupo, fracción, solo la primera]: de la cabeza, el giro (Y) solo a medias, para que siga mirando a la
+    // rival. De los hombros solo se quita la primera entrada (el aleteo de wingMode, lo primero de update()): el abanico de
+    // ch.alas() (hombro, codo y plumas) se queda entero.
+    const EJES = [['espalda2', ['x', 'y', 'z'], 0], ['cabeza', ['x', 'z'], 1], ['cabeza', ['y'], 1, 0.5], ['armL1', ['x', 'z'], 2, 1, true], ['armL1001', ['x', 'z'], 2, 1, true], ['espalda1001', ['x', 'z'], 3]];
     function huesos(ch, A) {
       const B = ch.bones; if (!B || !A) return;
       const t0 = performance.now(), out = A.out, m = A.manda, ofs = ch.ofs || [], n0 = ofs.length;
-      for (const [nb, ejes, g, fr] of EJES) {
+      for (const [nb, ejes, g, fr, primera] of EJES) {
         const b = B[nb], w = m[g] * (fr || 1); if (!b || w < 0.01) continue;
-        for (const ax of ejes) { let s = 0; for (let i = 0; i < n0; i++) { const e = ofs[i]; if (e[0] === b && e[1] === ax) s += e[2]; } if (s) ch.rot(b, ax, -s * w); }
+        for (const ax of ejes) { let s = 0; for (let i = 0; i < n0; i++) { const e = ofs[i]; if (e[0] === b && e[1] === ax) { s += e[2]; if (primera) break; } } if (s) ch.rot(b, ax, -s * w); }
       }
       const ps = (ch.headSign && ch.headSign.pitch) || 1;
       if (B.espalda2) { if (out[I.pecho]) ch.rot(B.espalda2, 'x', out[I.pecho]); if (out[I.pechoZ]) ch.rot(B.espalda2, 'z', out[I.pechoZ]); if (out[I.pechoY]) ch.rot(B.espalda2, 'y', out[I.pechoY]); }
@@ -2455,7 +2457,7 @@ window.AVV18Combate = function (G) {
       ver(0.5, frena, () => { const a = A2(C.j); picoJ = Math.max(picoJ, a.pico || 0); if (a.sub === 'grito') { cabMin = Math.min(cabMin, a.out[C2.I.cabX]); cabMax = Math.max(cabMax, a.out[C2.I.cabX]); }
         if (pl3d && pl3d.estadoCara) picoM = Math.max(picoM, pl3d.estadoCara().pico || 0); else if (pl3d) picoM = Math.max(picoM, pl3d.picoT || 0); });
       check('C2: Grito → se echa atrás y lanza la cabeza (arco), pico abierto del todo en el modelo (ch.pico) y anillos que salen del pico',
-        ug2.ok && picoJ > 0.95 && (!pl3d || picoM > 0.9) && cabMin < -0.05 && cabMax > 0.25 && (!G.v18fx || an1 - an0 >= 2), JSON.stringify({ picoJ: +picoJ.toFixed(2), picoM: +picoM.toFixed(2), cabX: [+cabMin.toFixed(2), +cabMax.toFixed(2)], anillos: an1 - an0 }));
+        ug2.ok && picoJ > 0.95 && (!pl3d || picoM > 0.9) && cabMin < -0.05 && cabMax - cabMin > 0.3 && (!G.v18fx || an1 - an0 >= 2), JSON.stringify({ picoJ: +picoJ.toFixed(2), picoM: +picoM.toFixed(2), cabX: [+cabMin.toFixed(2), +cabMax.toFixed(2)], anillos: an1 - an0 }));
       // Familias de poder: cada poder registrado cae en una de las 7 familias con cuerpo propio
       const fams = new Set(Object.keys(C2.FAM)), malas = H.lista().filter(h => !fams.has(C2.famDe(h.id))).map(h => h.id);
       const porFam = {}; for (const h of H.lista()) porFam[C2.famDe(h.id)] = (porFam[C2.famDe(h.id)] || 0) + 1;
