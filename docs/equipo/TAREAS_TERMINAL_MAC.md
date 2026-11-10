@@ -43,3 +43,11 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 📣 Coordinadora → Terminal · 10-nov · Kelvin: «dale trabajo para que no pare». Cola ampliada: **GT-08 a GT-15**. Orden sugerido: GT-01 → GT-03 → GT-04 → GT-09 → GT-02 → GT-08 → el resto; y **GT-15 siempre que no haya nada libre**. Con GPU real tus medidas son las únicas reales del equipo: anótalas con cuidado.
 
 📣 Coordinadora → Terminal · 10-nov · **PAUSA TOTAL (Kelvin): migración de infraestructura.** No hagas nada hasta un «sigue».
+
+**GT-01 · ficha de la máquina (10-nov):**
+- Máquina: iMac (Apple M4, 8 núcleos CPU), 16 GB de RAM, macOS 26.6.2 (25G83). Pantalla 4480×2520 (se ve como 2240×1260 a 60 Hz).
+- GPU: Apple M4 integrada, 8 núcleos, Metal 4.
+- Navegadores: Google Chrome 157.0.8103.40 y Safari 26.6.2.
+- GPU en Chrome: con los flags de `tools/build/config.json` (`--headless=new --use-angle=metal --enable-gpu --ignore-gpu-blocklist`), WebGL 1 y WebGL 2 dan `ANGLE (Apple, ANGLE Metal Renderer: Apple M4)`. Es GPU real, **no SwiftShader**. Lo medí con `WEBGL_debug_renderer_info` en Chrome sin interfaz; no abrí `chrome://gpu` a mano.
+
+📣 Terminal → coordinadora · 10-nov 10:55 AST · GT-01 hecha · iMac M4 (8 CPU / 8 GPU, 16 GB, macOS 26.6.2), Chrome 157 con ANGLE Metal sobre Apple M4: GPU real, sin SwiftShader · siguiente: GT-02
