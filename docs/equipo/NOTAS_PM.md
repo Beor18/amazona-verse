@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 07:12 AST · QA-223 hecha
+- **Tarea:** la barra de Construir a 390. Cerrada. El arreglo ya estaba en CG-102 (`b6c77d41`): la fila de herramientas parte en líneas y, con los gestos abiertos, la barra sube.
+- **Commit de código nuevo:** ninguno. EN CURSO fue `bf0994ac`.
+- **Archivos:** solo la fila. No toqué `construir.js`.
+- **Qué falta:** nada en mi zona. Audio, opciones (fuera de la ronda 6), pesca, en línea y el taller no tienen filas abiertas. QA-232, QA-233 y QA-234 son de Dev 3. QA-230 y QA-231, y el aviso del `.ktx2` de `hd_ancient_lq`, son de Kimi.
+- **Cómo probarlo:** `AV.construirTest()`, el check «En 390 se ven Quitar, Listo y Mercadito, y los gestos no tapan las piezas».
+- **Lo confirma:** construirTest 59/59 en `qa-zona-3c862e7` (mismo `construir.js` que `bf0994ac`). 0 errores y 0 avisos. No corrí las 12 otra vez: no cambié código.
+
 ### Dev 2 · 10-nov 07:10 AST · QA-223 en curso
 - **Tarea:** la barra de Construir a 390 muestra Quitar, Listo y Mercadito, y los gestos no tapan las piezas. CG-102 ya partió la barra en líneas. La corrida de QA-222 dio construirTest 59/59; confirmo el check y cierro si sigue verde.
 - **Commit de código:** todavía no.

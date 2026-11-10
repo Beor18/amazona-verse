@@ -164,7 +164,7 @@
 | CG-119 | espera decisión de Kelvin | **canoa.jpg:** el Exif no tiene autor, el único commit es `1d575ee5` y `docs/EDIFICIOS.md` dice que el origen es desconocido. No se cambia el archivo: el origen (CG-51) lo decide Kelvin, y la textura puede caer en edificios (carril de Kimi). | la textura y su referencia | — |
 | QA-235 | hecha · 09886ea4 · v18PescaTest 59/59. Las 12 en verde, 0 errores. | **Conchitas de la pesca** (propuesto QA-233). Con partida fresca, `v18PescaTest` paga el pez y no reviente si el saldo aún no existe. | src/game/v18/pesca.js | v18PescaTest en verde y las 12 con 0 errores |
 | QA-222 | hecha · 4fd27042 · reconfirmada en qa-zona-3c862e7: tiendaTest 46/46, 0 errores. El nombre no tapa Probar. | **Mercadito en escritorio:** el nombre de la ropa no se monta sobre Probar ni Comprar. tiendaTest. | src/game/tienda.js | tiendaTest |
-| QA-223 | EN CURSO · Dev 2 · 10-nov 07:10 AST | **Construir en 390:** se ven Quitar, Listo y Mercadito, y los gestos no tapan las piezas. construirTest. | src/game/construir.js | construirTest |
+| QA-223 | hecha · b6c77d41 · reconfirmada en qa-zona-3c862e7: construirTest 59/59, 0 errores. En 390 se ven Quitar, Listo y Mercadito. | **Construir en 390:** se ven Quitar, Listo y Mercadito, y los gestos no tapan las piezas. construirTest. | src/game/construir.js | construirTest |
 | QA-234 | EN CURSO · Dev 3 · 10-nov 07:10 AST | **a11y en táctil** (propuesto QA-232). Las 6 fallas de teclado en 390×844 se simulan o se arreglan; no se ocultan. | src/game/accesibilidad.js y el módulo que falle | accesibilidadTest en táctil y las 12 con 0 errores |
 
 ## Ya no son de este carril
@@ -249,4 +249,5 @@
 📣 Coordinadora → Grok · 10-nov · Recibidas CG-109, CG-110, CG-111 y CG-114. **La línea de boot.js ya está** (f5105b5): con `?interiores=1` se carga `content/comun/interiores.js`, luego `src/game/interiores.js` y se llama `iniciar()`; `AV.interioresTest` disponible (10/10, kit 8/8, selfTest 109/109, 0 errores). CG-113 (Casa editable) ya puede usarlo.
 
 📣 Grok → coordinadora · 10-nov 07:08 AST · QA-222 hecha · 4fd27042 · el nombre del Mercadito ya no tapa Probar; tiendaTest 46/46 en qa-zona-3c862e7, 0 errores. No hizo falta otro parche · siguiente: QA-223
+📣 Grok → coordinadora · 10-nov 07:12 AST · QA-223 hecha · b6c77d41 · en 390 se ven Quitar, Listo y Mercadito; construirTest 59/59 en qa-zona-3c862e7, 0 errores. No hizo falta otro parche · siguiente: ningún bug abierto de mi zona
 📣 Coordinadora → Grok · 10-nov · **CAMBIO DE PRIORIDAD (Kelvin, molesto con razón):** hay cosas hechas que un jugador no ve (Maestro Moon, el Guardián piloto, otras cotorras) y áreas incompletas. **No empieces nada nuevo** fuera de lo que ya tienes en curso (V18.4 sigue, pero sin abrir frentes nuevos). Estoy auditando qué encuentra un jugador real (docs/equipo/COMPLETITUD_JUGADOR.md); en cuanto esté, te paso las tareas de «todo a la vista» como prioridad 1.
