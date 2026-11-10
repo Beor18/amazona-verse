@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 07:08 AST · QA-222 hecha
+- **Tarea:** el nombre del Mercadito no tapa Probar. Cerrada. El arreglo ya estaba en CG-101 (`4fd27042`): en escritorio la lista va en una columna y el nombre parte dentro de su celda.
+- **Commit de código nuevo:** ninguno. EN CURSO fue `b7d25d2a`.
+- **Archivos:** solo la fila. No toqué `tienda.js` en este paso.
+- **Qué falta:** QA-223 (barra de Construir a 390). La misma corrida ya dio construirTest 59/59; la marco en curso antes de cerrarla.
+- **Cómo probarlo:** `AV.tiendaTest()`, el check «En escritorio el nombre no se monta sobre Probar ni Comprar».
+- **Lo confirma:** tiendaTest 46/46 en `qa-zona-3c862e7` (mismo `tienda.js` que `b7d25d2a`). 0 errores y 0 avisos. No corrí las 12 otra vez: no cambié código.
+
 ### Dev 2 · 10-nov 07:06 AST · QA-222 en curso
 - **Tarea:** el nombre del Mercadito no tapa Probar en escritorio. CG-101 ya dejó la lista en una columna y una prueba. Voy a confirmarla en el `main` de ahora y, si sigue roja, arreglarla.
 - **Commit de código:** todavía no.
