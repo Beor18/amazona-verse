@@ -34,14 +34,26 @@
 - **Cómo probarlo:** build de HEAD, SwiftShader, `AV.memoriaLargaTest()` (corta) y `{ largo: true }` (30 min simulados). Tras calentar, geometrías, texturas, oyentes y nodos con pendiente ≈ 0.
 - **Lo confirma:** `memoriaLargaTest` y las 12 de `tools/build/config.json`.
 
-### Dev 1 · 10-nov · CG-71 en curso
-- **Tarea:** CG-71, validar Combate 2.0. Fila EN CURSO en `56b39bf6`. No cerrada: esta máquina es llvmpipe, no GPU real, y el FPS no vale.
-- **Código del combate:** no lo toqué. `combate.js`, `duelo2.js` y `fx_poderes.js` no cambian desde `e97e45b5`.
-- **Qué falta:** duelo en escritorio y en móvil con `?combate2=1`, FPS y peor cuadro con y sin la bandera, Modo Escuela, y capturas en `docs/img/cg71/`. Hace falta una GPU real.
-- **Cómo probarlo:** abrir el juego publicado con `?combate2=1`, jugar un duelo entero en las dos ventanas, repetir sin la bandera y con Escuela, y guardar las capturas.
-- **Lo que ya pasó aquí:** `v18CombateTest` 102/102 y `v18Duelo2Test` 35/35 en la build `cg-107-55688e20`, 0 errores de consola. Eso no sustituye el FPS.
-- **CG-107:** cerrada en `e97e45b5` (cierre `e7593be4`). `invasorasTest` 32/32 y las 12 en verde.
-- **Percha del capítulo 1:** mi arreglo `2897f7f9` no se subió. Dev 3 la cerró en CG-105 (`eb5d7ef1`). No la retomé.
+### Dev 1 · 10-nov · CG-71 en curso, la mide Kelvin
+CG-71 no se cierra. En esta máquina (sin tarjeta gráfica) ya pasaron `v18CombateTest` 102/102 y `v18Duelo2Test` 35/35, con 0 errores y sin tocar el código del combate. El FPS de aquí no vale. Kelvin mide lo que falta, en su computadora y en su teléfono.
+
+**Cómo abrir el duelo.** Abre esta dirección: `https://www.amazonaverse.com/juego/?fps=1&combate2=1`. Pulsa Jugar. Si sale el creador, pulsa Empezar. En «¿Cómo quieres jugar?» elige la tarjeta **Duelo** (uno a uno contra la Campeona). Espera la cuenta 3, 2, 1 y pelea hasta el final (hasta que una se marea y sale el letrero).
+
+**Cómo ver el FPS y el peor cuadro.** Arriba a la derecha sale un recuadro oscuro. Solo aparece si la dirección lleva `fps=1`. La primera línea dice, por ejemplo, `32 FPS · mín 28`. El primer número es lo fluido que va ese segundo. El número después de «mín» es el peor momento de ese segundo: el cuadro más lento, contado también en cuadros por segundo. Anota el primer número más bajo y el «mín» más bajo que veas **mientras pelean**, no en el menú. Para repetir sin Combate 2.0, abre `https://www.amazonaverse.com/juego/?fps=1` (quita `combate2=1`) y haz el mismo duelo.
+
+**Aprobado en la computadora.** Con la bandera y sin ella: el primer número no baja de **30** y el «mín» no baja de **24**. En la consola del navegador (clic derecho, Inspeccionar, Consola) no hay líneas rojas.
+
+**El teléfono.** Abre las mismas dos direcciones en el teléfono y pelea igual. Anota los dos números. Aprobado si, con y sin la bandera, el primero no baja de **24** y el «mín» no baja de **20**.
+
+**Modo Escuela.** En el teléfono abre `https://www.amazonaverse.com/juego/?fps=1&combate2=1&calidad=bajo&escuela=1`. El recuadro debe decir `bajo` y el mundo se ve más simple. Pelea el duelo. Aprobado si el primer número no baja de **30** y el «mín» no baja de **20**. Repite sin la bandera: `https://www.amazonaverse.com/juego/?fps=1&calidad=bajo&escuela=1`, con el mismo aprobado.
+
+**Capturas.** Cuatro fotos, con el recuadro legible y las dos cotorras peleando. Van en `docs/img/cg71/`:
+1. `escritorio-con-combate2.png`
+2. `escritorio-sin-combate2.png`
+3. `movil-escuela-con-combate2.png`
+4. `movil-escuela-sin-combate2.png`
+
+**CG-107** quedó cerrada en `e97e45b5`. La percha del capítulo 1 no se subió (`2897f7f9`); Dev 3 la cerró en CG-105 (`eb5d7ef1`).
 
 **Pausa por créditos (4-nov, Dev 1).** QA-148 confirmado: el capítulo 2 sale del paso 1 en 27,9 s (playtest CG-58, 390×844, guía 0). Pendiente: CG-62. El capítulo 1 no se tocó (el niño no sale del paso 1; no es solo lentitud). K35 B (el Guardián sigue llegando al construir). K36 B (la medalla espera arte). La fuente de la canoa (CG-51). El aviso del heap (151,4 MB frente a 120; no falla la suite).
 
