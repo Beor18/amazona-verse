@@ -42,7 +42,7 @@ AVE.module('criadero', function (G) {
     nacio: { es: '¡Nació tu pichón!', en: 'Your chick hatched!' }, crecio: { es: '¡Creció!', en: 'It grew!' },
     liberar: { es: 'Lección de la liberación', en: 'Release lesson' }, siguiente: { es: 'Siguiente', en: 'Next' },
     demo: { es: 'Simular aprendizaje (prototipo)', en: 'Simulate learning (prototype)' }, posturas: { es: 'Posturas', en: 'Poses' },
-    ganada: { es: '¡Ganaste una cápsula!', en: 'You earned a capsule!' }, nada: { es: 'Gana tu primera cápsula abriendo el criadero.', en: 'Earn your first capsule by opening the hatchery.' },
+    ganada: { es: '¡Ganaste una cápsula!', en: 'You earned a capsule!' }, nada: { es: 'Toca una cápsula de abajo. Si dice Por ganar, ahí lees cómo conseguirla. Si ya es tuya, ponla en el nido.', en: 'Tap a capsule below. If it says To earn, that is how you get it. If it is already yours, place it in the nest.' },
     libre: { es: 'Libre en el bosque', en: 'Free in the forest' }, xpSig: { es: 'para el nivel', en: 'to level' }, max: { es: 'Nivel máximo', en: 'Max level' },
     proxima: { es: 'Próxima etapa', en: 'Next stage' }, cargando: { es: 'Preparando el nido…', en: 'Preparing the nest…' },
   };
@@ -267,7 +267,10 @@ AVE.module('criadero', function (G) {
     const c = st.vista && st.capsulas[st.vista], h = c && huevoDef(st.vista), et = etapaDe(c);
     // --- Ficha de la cría ---
     const pet = root.querySelector('.cr-pet');
-    if (!c) pet.innerHTML = `<p class="cr-empty">${esc(u('nada'))}</p>`;
+    if (!c) {
+      const como = st.vista && huevoDef(st.vista);
+      pet.innerHTML = `<p class="cr-empty">${esc(como ? t(como.obtener.texto) : u('nada'))}</p>`;
+    }
     else {
       const chips = ['huevo', 'bebe', 'juvenil', 'adulto'].map(id => {
         const e = etapaDef(id), on = id === et, done = ['huevo', 'bebe', 'juvenil', 'adulto'].indexOf(id) < ['huevo', 'bebe', 'juvenil', 'adulto'].indexOf(et);
@@ -1662,7 +1665,12 @@ AVE.module('criadero', function (G) {
       // Vista y eclosión
       await abrir();
       check('El overlay abre y pausa el mundo', open && !root.hidden && (!G.pausa || G.pausa.activa()));
+      st.vista = null; pintar();
+      check('Sin cápsula elegida, el nido dice el siguiente paso', root.querySelector('.cr-empty') && root.querySelector('.cr-empty').textContent === u('nada'));
+      const bloqueada = D().huevos.find(h => !st.capsulas[h.id]);
+      if (bloqueada) { st.vista = bloqueada.id; pintar(); check('Una cápsula por ganar explica cómo se consigue, sin pantalla vacía', root.querySelector('.cr-empty') && root.querySelector('.cr-empty').textContent === t(bloqueada.obtener.texto)); }
       st.vista = 'clasico'; construirNido(); pintar();
+      check('Lista para nacer: el criadero pide ver la eclosión', root.querySelector('.cr-hint') && root.querySelector('.cr-hint').textContent === u('eclosion'));
       check('Huevo PR: la cápsula boricua lleva bandera en asta, no estirada', huevoDef('pr').aspecto.bandera === true && huevoDef('pr').aspecto.patron === 'estrellas');
       const okHatch = iniciarEclosion();
       for (let i = 0; i < 160 && hatch.on; i++) { paso(1 / 15); await new Promise(r => setTimeout(r, 0)); }
@@ -1781,7 +1789,8 @@ AVE.module('criadero', function (G) {
     }
     const ok = checks.every(c => c.ok);
     console[ok ? 'log' : 'warn']('criaderoTest', ok ? 'OK' : 'FALLA', checks.filter(c => !c.ok));
-    return { ok, pasan: checks.filter(c => c.ok).length, total: checks.length, checks };
+    const pasan = checks.filter(c => c.ok).length;
+    return { ok, pasan, total: checks.length, checks, passed: pasan, results: checks.map(c => ({ name: c.name, ok: c.ok, extra: c.info })) };
   }
 
   avisarCompanero(); // primera lectura (no emite)

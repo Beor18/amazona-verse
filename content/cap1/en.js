@@ -430,6 +430,7 @@ window.AV_EN = {
  "Fábrica": "Factory",
  "Gafas de inventor": "Inventor goggles",
  "Gana tu primera cápsula abriendo el criadero.": "Earn your first capsule by opening the nursery.",
+ "Toca una cápsula de abajo. Si dice Por ganar, ahí lees cómo conseguirla. Si ya es tuya, ponla en el nido.": "Tap a capsule below. If it says To earn, that is how you get it. If it is already yours, place it in the nest.",
  "Gentil": "Gentle",
  "Girar la cámara": "Turn the camera",
  "Gobio nativo de nuestros ríos. Un estudio del USGS en Puerto Rico halló que la mayoría pasa su primera etapa en el mar o en el estuario y después vuelve a vivir en el río.": "A goby native to our rivers. A USGS study in Puerto Rico found that most spend their first stage in the sea or estuary and then return to live in the river.",
