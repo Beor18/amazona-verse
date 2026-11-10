@@ -91,13 +91,13 @@ Pasos para reproducirlo:
 - **Cómo probarlo:** niño nuevo, saltar intro, volar a la copa y pulsar Acción un poco por encima. Desde el suelo no se le habla.
 - **Lo confirma:** selfTest 109/109 (caso «CG-105 · a 2 m sobre la copa»), missionTest 80/80, e2eTest 49/49. Build `cg-105-4ca8ce19` (mismo código): las 12 en verde, 0 errores de consola. Un aviso ajeno de `streaming.js` («reading '0'»).
 
-### Dev 4 · 10-nov 06:25 AST · CG-112 en curso
-- **Tarea:** guardado de interiores. Fila EN CURSO. QA-231 ya está en `96bd84ea`.
-- **Commit de código:** todavía no.
-- **Archivos:** `content/cap1/pack.js` (versión 7) y `src/engine/guardado.js` (solo la validación y saveTest). No toco `interiores.js` (CG-110, Dev 1), `interiores_kit.js` (CG-111, Dev 2), `streaming.js` ni textos educativos.
-- **Qué falta:** `S.interiores = { v:1, edificios:{ id:{ piezas, estado } } }`, partidas viejas → `null`, datos rotos descartados, tope de piezas, y los casos en saveTest.
-- **Cómo probarlo:** `AV.saveTest()` y las 12 baterías.
-- **Lo confirma:** saveTest y las 12, 0 errores de consola.
+### Dev 4 · 10-nov 06:30 AST · CG-112 hecha
+- **Tarea:** guardado de interiores. Cerrada.
+- **Commit:** `4bf5cb64` (mismo parche que `f6b55cd9`, el de la build). EN CURSO fue `c92c433b`. QA-231 está en `96bd84ea`.
+- **Archivos:** `content/cap1/pack.js` (versión 7) y `src/engine/guardado.js` (validación y saveTest). No toqué `interiores.js`, `interiores_kit.js`, `streaming.js` ni textos educativos.
+- **Qué falta:** nada de esta tarea. CG-110 sigue armando el cuarto.
+- **Cómo probarlo:** `AV.saveTest()`. Una partida vieja queda con `interiores` en null. Una pieza válida vuelve; una rota o un `v` distinto no.
+- **Lo confirma:** saveTest 73/73. Build `cg-112-f6b55cd9`: las 12 en verde, 0 errores de consola. Dos avisos ajenos de `streaming.js` (QA-230).
 
 ### Dev 4 · 10-nov · aviso de heap para Kimi
 - **Tarea:** anotar el heap de la sesión larga. Sin código.
