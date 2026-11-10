@@ -2,6 +2,12 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 07:05 AST · aviso para Kimi · atlas ktx2
+- **No es un bug mío.** En la build `cg-117-573cc74` (código `f341a1e8`), las 12 baterías con SwiftShader: 0 errores y 1 aviso.
+- **Texto:** `AVE streaming: atlas .ktx2, se usa el JPEG el .ktx2 no llegó en 12 s: http://127.0.0.1:36467/assets/models/edificios/tex_hd/hd_ancient_lq.ktx2`
+- **Dueño:** Kimi (`streaming.js` y las texturas). No toqué `streaming.js`, `assets.js` ni los `.ktx2`. No es el QA-230 (`reading '0'`).
+- **Cómo reproducirlo:** build de `f341a1e8` y las 12 baterías. El informe está en `tools/build/salida/cg-117-573cc74/reporte-test.json` (esa carpeta es local de la corrida).
+
 ### Dev 2 · 10-nov 07:00 AST · CG-117 hecha
 - **Tarea:** taller de Tuerca en k300. Cerrada. No había ningún bug EN CURSO.
 - **Commit:** `c5461044` y `f341a1e8` (el mismo taller que la build `cg-117-573cc74`). EN CURSO fue `2578d5b9`. La primera corrida dio tallerTuercaTest 5/7: el núcleo ya registraba la puerta y Reparar no se añadía. El segundo commit lo añade y quita la máquina al salir.
