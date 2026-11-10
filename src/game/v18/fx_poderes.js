@@ -259,14 +259,25 @@ window.AVV18Fx = function (G) {
     eco: { cols: ['#ffcf5e', '#fff3b0', '#a8ffb8'], abre: 1.3, sube: 0.1, grav: 0, vida: 0.8, esc: 0.3 }
   };
   const ELEM_IDS = Object.keys(ELEM);
-  for (const k of ELEM_IDS) ELEM[k].cols = ELEM[k].cols.map(h => new THREE.Color(h));
+  // Combate 2.0 (?combate2=1): ráfagas de los combos con las mismas tarjetas (combo(tipo, x, y, z, n), combate.js). Mismo
+  // mecanismo que la estela; los colores van con cada combo (la Bomba Boricua, rojo, blanco y azul).
+  const COMBO_FX = {
+    abanico: { cols: ['#fff6c8', '#ffd84a', '#9fe6ff'], abre: 2.2, sube: 0.6, grav: 0.8, vida: 0.7, esc: 0.34 },
+    polvo: { cols: ['#d9c9a3', '#c9b48a', '#fff3d6'], abre: 1.6, sube: 0.9, grav: 2.2, vida: 0.6, esc: 0.3 },
+    chispas: { cols: ['#ffd84a', '#ff9d2e', '#fff3b0'], abre: 1.8, sube: 1.4, grav: 2.5, vida: 0.55, esc: 0.26, brilla: 1 },
+    remolino: { cols: ['#7fd38f', '#2f8f4e', '#d6403a', '#3d8fb0'], abre: 1.5, sube: 0.8, grav: 0, vida: 0.9, esc: 0.34, gira: 7 },
+    brinco: { cols: ['#a3c94a', '#e9ffb8', '#6fb84a'], abre: 1.9, sube: 1.6, grav: 3, vida: 0.7, esc: 0.32 },
+    bomba: { cols: ['#d6403a', '#ffffff', '#0a50a1', '#ffd84a'], abre: 2.4, sube: 2, grav: 2.2, vida: 0.9, esc: 0.36, brilla: 1 }
+  };
+  const FX_IDS = ELEM_IDS.concat(Object.keys(COMBO_FX)), FX_P = Object.assign({}, ELEM, COMBO_FX);
+  for (const k of FX_IDS) FX_P[k].cols = FX_P[k].cols.map(h => new THREE.Color(h));
   const eX = new Float32Array(NE * 3), eV = new Float32Array(NE * 3), eT = new Float32Array(NE).fill(-1), eE = new Uint8Array(NE);
   let eSig = 0, eVivas = 0;
   function estela(elemento, x, y, z, n) {
-    const P = ELEM[elemento];
+    const P = FX_P[elemento];
     if (!P || reducido()) return { ok: false, n: 0 };
     n = Math.max(1, Math.min(NE, n | 0 || 1));
-    const ei = ELEM_IDS.indexOf(elemento);
+    const ei = FX_IDS.indexOf(elemento);
     for (let k = 0; k < n; k++) {
       const i = eSig; eSig = (eSig + 1) % NE;
       const a = Math.random() * 6.283, r = P.abre * (0.5 + Math.random() * 0.5);
@@ -282,7 +293,7 @@ window.AVV18Fx = function (G) {
     for (let i = 0; i < NE; i++) {
       const idx = E0 + i;
       if (eT[i] < 0) continue;
-      const P = ELEM[ELEM_IDS[eE[i]]], t = tFx - eT[i], p = t / P.vida;
+      const P = FX_P[FX_IDS[eE[i]]], t = tFx - eT[i], p = t / P.vida;
       if (p >= 1 || p < 0) { eT[i] = -1; pPos[idx * 3 + 1] = -1e4; _m.makeScale(0, 0, 0); plumas.setMatrixAt(idx, _m); plumas.setColorAt(idx, NEGRO); continue; }
       vivas++;
       let vx = eV[i * 3], vz = eV[i * 3 + 2];
@@ -526,6 +537,12 @@ window.AVV18Fx = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18fx = { onda, escudo, dispersar, apagar, estela, anillosPico, estrellas, notas, ELEMENTOS: ELEM_IDS, paso, estado, test, _interno: { ranillos, escudos, rings, plumas, pPos, efectos, mEstrellas, mNotas } };
+  // Ráfaga de un combo (en calidad baja / Escuela, la mitad; con «Reducir movimiento», nada: { ok: false })
+  function combo(tipo, x, y, z, n) {
+    if (!COMBO_FX[tipo]) return { ok: false, n: 0 };
+    const bajo = nivel() === 'bajo' || !!(G.renderer.calidad && G.renderer.calidad.escuela);
+    return estela(tipo, x, y, z, Math.max(1, Math.round((n || 8) * (bajo ? 0.5 : 1))));
+  }
+  G.v18fx = { onda, escudo, dispersar, apagar, estela, combo, COMBOS: Object.keys(COMBO_FX), anillosPico, estrellas, notas, ELEMENTOS: ELEM_IDS, paso, estado, test, _interno: { ranillos, escudos, rings, plumas, pPos, efectos, mEstrellas, mNotas } };
   return G.v18fx;
 };

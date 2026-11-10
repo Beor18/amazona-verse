@@ -77,7 +77,11 @@ window.AVV18Combate = function (G) {
     capa: '¡Capa de palma: semilla devuelta!', rebote: '¡Rebote!', hojas: '¡Las hojas aguantaron el golpe!', avisoSelva: '¡Cuidado, va a atacar!',
     avisoBandada: '¡Ojo de bandada: la rival va a usar su poder!', cuento: '¡La rival se queda escuchando el cuento!',
     // Entreno guiado, chips y pistas (cada texto es su propio nodo: el nombre del poder va aparte y se traduce solo)
-    como: '¿Cómo se pelea?', saltarEnt: 'Saltar entreno', entPaso: n => 'Entreno · paso ' + n + ' de 3',
+    como: '¿Cómo se pelea?', saltarEnt: 'Saltar entreno', entPaso: (n, de) => 'Entreno · paso ' + n + ' de ' + (de || 3),
+    // Combate 2.0 (?combate2=1): extremidades y combos
+    combos: 'Combos', comboRival: 'Campeona', sinPrisa: 'Combos sin prisa: más tiempo entre toque y toque', aPelear: '¡A pelear!',
+    unCombo: 'un combo', tuPoder: 'tu poder', e4: 'Combo: ala izquierda y luego ala derecha.', e5: 'Combo: pata izquierda y luego pata derecha.',
+    t4: 'Combo: toca Ala izq. y luego Ala der.', t5: 'Combo: toca Pata izq. y luego Pata der.',
     e1: 'Acércate y pulsa E para dar un aletazo.', e2: 'Ahora pulsa F para lanzar una semilla.', e3: 'Pulsa G (o mantén F) para usar tu poder:',
     t1: 'Acércate y toca Acción para dar un aletazo.', t2: 'Ahora toca Impulso para lanzar una semilla.', t3: 'Mantén Impulso para usar tu poder:',
     bien: '¡Bien!', masCerca: '¡Más cerca!', entFin: '¡Ya sabes pelear! Ahora, el duelo de verdad.',
@@ -429,8 +433,10 @@ window.AVV18Combate = function (G) {
       C.timers.push({ t: (H.get('ojo_selva') || {}).aviso || 0.6, fn: () => { f.avisoSelva = ''; usar(f, id); } });
       return { ok: true, id, avisada: true };
     }
+    if (c2On() && EXM.bloquea(f, id)) return { ok: false, motivo: 'recupera' }; // Combate 2.0: recuperándose de un combo
     enUso = f; let r; try { r = H.usar(f, id, ctxDe(f)); } finally { enUso = null; }
     if (r.ok && !r.avisada) C2.accion(f, id); // Combate 2.0 (solo con la bandera): la pose de la acción, en este mismo cuadro
+    if (r.ok && !r.avisada && c2On()) EXM.alPoder(f, id); // el poder justo después de un combo: «¡Bomba Boricua!»
     if (r.ok && !r.avisada && !H.get(id).basico) f.ultPoder = id; // Imitación: cada una recuerda lo último que usó (lo lee la otra)
     if (r.ok && f.ia && C.j && C.j.ojobandada > 0 && !H.get(id).basico) { // Ojo de bandada: la jugadora ve venir el poder de la rival
       C.stats.avisos = (C.stats.avisos || 0) + 1;
@@ -479,6 +485,15 @@ window.AVV18Combate = function (G) {
   // V18.2: la H (poder de alianza) igual, pero solo si hay alianza elegida; si no, H sigue libre.
   function tecla(e) {
     const k = (e.key || '').toLowerCase();
+    if (enganchado && c2On() && k.length === 1) { // Combate 2.0: las 4 extremidades (U O J L de fábrica, cambiables en «Teclas»)
+      const a = EXT_K.find(x => teclaExt(x) === k);
+      if (a && !(e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) {
+        e.stopImmediatePropagation(); e.preventDefault();
+        if (G.pausa && G.pausa.activa && G.pausa.activa()) return;
+        if (!e.repeat) usarExtJ(a);
+        return;
+      }
+    }
     if (!enganchado || (k !== 'g' && k !== 'h') || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
     if (k === 'h' && !(C.j && C.j.alianza)) return;
     e.stopImmediatePropagation();
@@ -670,7 +685,7 @@ window.AVV18Combate = function (G) {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
       const a = b.dataset.a;
-      if (a === 'como') iniciar({ entreno: true }); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (a === 'alianza') { if (C.j && C.j.alianza) usar(C.j, C.j.alianza); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
+      if (a === 'combos') abrirCombos(!cartaC); else if (a === 'cerrarCombos') abrirCombos(false); else if (a === 'como') iniciar({ entreno: true }); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (a === 'alianza') { if (C.j && C.j.alianza) usar(C.j, C.j.alianza); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
     });
     const viejo = document.getElementById('v18-duelo'); if (viejo) viejo.remove(); // una instancia nueva del módulo (QA-163 en v18CombateTest) no deja dos #v18-duelo
     document.body.appendChild(el);
@@ -711,7 +726,7 @@ window.AVV18Combate = function (G) {
     texto('cn-poder', (H.get(C.j.poder) || {}).nombre || TXT.poder);
     const chA = hud.el.querySelector('.vd-chip[data-a="alianza"]'); chA.hidden = !aliH; if (aliH) texto('cn-alianza', aliH.nombre);
     hud.q('como').hidden = !!ent || C.fase === 'nada';
-    pintarChips(); ponerTags();
+    pintarChips(); ponerTags(); if (hud.ext || c2On()) pintarExt();
   }
   // Recarga visual de los chips: cada cuadro, pero solo escribe en el DOM cuando cambia (pasos de 5 %)
   function pintarChips() {
@@ -756,6 +771,11 @@ window.AVV18Combate = function (G) {
     { id: 'golpe_ala', k: 'E', kt: TXT.accion, txt: TXT.e1, txtT: TXT.t1 },
     { id: 'semilla', k: 'F', kt: TXT.impulso, txt: TXT.e2, txtT: TXT.t2 },
     { id: 'poder', k: 'G', kt: TXT.impulso, txt: TXT.e3, txtT: TXT.t3 }];
+  // Combate 2.0: dos pasos más, dos combos (¡Abanicazo! y ¡Patita Sabrosa!); sin la bandera, los 3 de siempre
+  const ENT_COMBO = [
+    { id: 'combo:abanicazo', k: () => teclaExt('alaIzq').toUpperCase() + ' → ' + teclaExt('alaDer').toUpperCase(), kt: 'Ala izq. → Ala der.', txt: TXT.e4, txtT: TXT.t4, nom: '¡Abanicazo!' },
+    { id: 'combo:patita', k: () => teclaExt('pataIzq').toUpperCase() + ' → ' + teclaExt('pataDer').toUpperCase(), kt: 'Pata izq. → Pata der.', txt: TXT.e5, txtT: TXT.t5, nom: '¡Patita Sabrosa!' }];
+  const pasosEnt = () => (c2On() ? ENT_PASOS.concat(ENT_COMBO) : ENT_PASOS);
   let ent = null; // { paso, fin } mientras dura el entreno
   const PISTA = { cerca: 2, lejos: 4, poder: 8, defensa: 16 }; // bits de G.v18.mundo('pistas_duelo'): pista ya dominada
   const pista = { t: 0, vis: 0, plj: 0, golpeado: false, dom: { cerca: 0, lejos: 0, poder: 0 } };
@@ -769,14 +789,15 @@ window.AVV18Combate = function (G) {
     if (!hud) return;
     const box = hud.q('ent'); box.hidden = !ent;
     if (!ent) return;
-    const i = Math.min(ent.paso, ENT_PASOS.length - 1), P = ENT_PASOS[i];
+    const L = pasosEnt(), i = Math.min(ent.paso, L.length - 1), P = L[i];
     const pon = (k, t) => { const e = hud.q(k); if (e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } };
-    pon('entPaso', TXT.entPaso(i + 1)); pon('entK', TACTIL ? P.kt : P.k); pon('entTxt', TACTIL ? P.txtT : P.txt); pon('entPod', P.id === 'poder' ? nombrePoder() : '');
-    Array.from(hud.q('entPP').children).forEach((d, n) => { d.classList.toggle('ya', n < ent.paso); d.classList.toggle('ahora', n === ent.paso); });
+    pon('entPaso', TXT.entPaso(i + 1, L.length)); pon('entK', TACTIL ? P.kt : typeof P.k === 'function' ? P.k() : P.k); pon('entTxt', TACTIL ? P.txtT : P.txt); pon('entPod', P.id === 'poder' ? nombrePoder() : P.nom || '');
+    const pp = hud.q('entPP'); while (pp.children.length < L.length) pp.appendChild(document.createElement('i')); while (pp.children.length > L.length) pp.lastChild.remove();
+    Array.from(pp.children).forEach((d, n) => { d.classList.toggle('ya', n < ent.paso); d.classList.toggle('ahora', n === ent.paso); });
   }
   function avanzarEntreno() {
     ent.paso++; sonar('ring', 1); flotante(TXT.bien, 0.9);
-    if (ent.paso >= ENT_PASOS.length) { ent.fin = 1.3; ponerMundo('entreno_duelo', 1); if (G.ui && G.ui.toast) G.ui.toast(TXT.entFin, 2600); }
+    if (ent.paso >= pasosEnt().length) { ent.fin = 1.3; ponerMundo('entreno_duelo', 1); if (G.ui && G.ui.toast) G.ui.toast(TXT.entFin, 2600); }
     C.j.cd = {}; C.j.energia = C.j.energiaMax; C.j.mareo = 0; C.j.inv = 0;
     pintarEntreno(); pintar();
   }
@@ -793,8 +814,8 @@ window.AVV18Combate = function (G) {
     if (id === C.j.poder) pista.dom.poder++;
     for (const k in pista.dom) if (pista.dom[k] >= 2) dominar(PISTA[k]); // dos veces bien hecho: esa pista ya no sale
     if (!ent || ent.fin > 0) return;
-    const P = ENT_PASOS[ent.paso];
-    if (id !== (P.id === 'poder' ? C.j.poder : P.id)) return;
+    const P = pasosEnt()[ent.paso];
+    if (!P || id !== (P.id === 'poder' ? C.j.poder : P.id)) return;
     if (P.id === 'golpe_ala' && !r.acierto) { flotante(TXT.masCerca, 1); return; }
     avanzarEntreno();
   }
@@ -843,7 +864,7 @@ window.AVV18Combate = function (G) {
     C.j = nuevoJugador(o); const ch = C.ch; C.r = nuevoRival(o.dificultad || dificultadDe(C.j)); C.ch = ch; C.tLucha = 0;
     C.j.ultPoder = null; C.r.ultPoder = null; // Imitación: duelo nuevo, nada que copiar todavía
     if (C.ch && C.chEsp !== C.r.especie) { try { C.ch.applyLook({ species: C.r.especie, accessories: { eyes: { id: 'gafas', color: '#7fd3ff' } } }); C.chEsp = C.r.especie; } catch (e) { /* piel */ } }
-    C.timers.length = 0; C.resultado = null; C.premio = false;
+    C.timers.length = 0; C.resultado = null; C.premio = false; C.sinExtIA = !!o.sinExtIA; cartaC = false;
     C.stats = nuevasStats();
     const conEntreno = !!o.entreno || (!o.sinCuenta && !o.sinEntreno && !espForzada && !entrenoVisto()); // el primer duelo empieza con el entreno
     ent = null; pista.t = 2.5; pista.plj = C.j.plumas; pista.golpeado = false;
@@ -916,8 +937,8 @@ window.AVV18Combate = function (G) {
   function otraVez() { return iniciar({ sinEntreno: true }); }
   function salir(motivo) {
     if (C.fase === 'nada') return false;
-    C.fase = 'nada'; quitarBalas(); C.timers.length = 0; soltar(); ent = null;
-    if (hud) { flotante(''); hud.el.hidden = true; ocultarPista(); pintarEntreno(); ponerTags(); }
+    C.fase = 'nada'; quitarBalas(); C.timers.length = 0; soltar(); ent = null; cartaC = false; comboVis = 0;
+    if (hud) { flotante(''); hud.el.hidden = true; ocultarPista(); pintarEntreno(); ponerTags(); if (hud.ext) { hud.ext.carta.hidden = true; hud.ext.nom.hidden = true; pintarExt(); } }
     rivalPos.x = sitio.x + 4; rivalPos.z = sitio.z; rivalPos.y = ALTURA(rivalPos);
     if (C.r) { C.r.mareo = 0; C.r.finMareo = 0; C.r.lift.t = C.r.lift.dura = 0; }
     if (motivo && G.ui && G.ui.toast) G.ui.toast(motivo, 2600);
@@ -929,7 +950,9 @@ window.AVV18Combate = function (G) {
     const r = C.r, j = C.j, D = r.dif || CLASICA, pp = D.poder;
     if (r.mareo > 0) r.tocada = true;
     // Mareada, deslumbrada (Abanico de colores) o distraída (Cuento): no hace nada, y el ataque que anunciaba se pierde
-    if (r.mareo > 0 || r.deslumbrada > 0 || r.distraida > 0) { r.prep = ''; return; }
+    if (r.mareo > 0 || r.deslumbrada > 0 || r.distraida > 0) { r.prep = ''; if (r.ext) r.ext.plan.length = 0; return; }
+    // Combate 2.0: siguiendo un combo que empezó (cada entrada a su ritmo; el motor la pone en cola si aún no puede)
+    if (r.ext && r.ext.plan.length) { const p = r.ext.plan[0]; if ((p.t -= dt) <= 0) { r.ext.plan.shift(); EXM.usar(r, p.k); } return; }
     const d = H.dirA(r, j), dist = d.d;
     r.golpeT -= dt; r.tiroT -= dt; r.esquivaT -= dt; r.poderT -= dt; r.pensar -= dt; r.apartaT -= dt;
     // Telegrafía (Kelvin 8-nov): el golpe de ala y la semilla se anuncian (se agacha y abre las alas, o apunta, con «!»
@@ -938,6 +961,12 @@ window.AVV18Combate = function (G) {
       r.vioGrito = j.picoT > 0 ? 1 : 0;
       if ((r.prepT -= dt) > 0) return;
       const id = r.prep; r.prep = ''; r.avisoUsado = r.prepDur;
+      if (id.indexOf('ext:') === 0) { // Combate 2.0: una extremidad; si entra, a veces sigue con un combo (según su etapa)
+        const k = id.slice(4), u = EXM.usar(r, k); r.avisoUsado = 0;
+        if (u.ok) r.golpeAnim = 0.3;
+        if (u.ok && u.acierto && azar() < (EXT_IA[D.id] || EXT_IA.clasica).combo) planCombo(r, k);
+        return;
+      }
       const u = usar(r, id); r.avisoUsado = 0;
       if (id === 'golpe_ala' && u.ok) r.golpeAnim = 0.3;
       return;
@@ -972,8 +1001,23 @@ window.AVV18Combate = function (G) {
     // Reflejo cuerpo a cuerpo: con el ala en espera y la jugadora encima, sale de su alcance
     if (D.aparta && dist < 2.6 && r.golpeT > 0 && r.apartaT <= 0 && azar() < D.aparta) { r.apartaT = APARTA_ESPERA; saltoAtras(r, d, 0.24); return; }
     const aviso = D.aviso || AVISO_ALA, apunta = D.apunta || AVISO_SEMILLA;
-    if (dist < (D.cerca || 2.3) && r.golpeT <= 0) { r.golpeT = Math.max(D.ala, aviso + 0.6); preparar(r, 'golpe_ala', aviso); return; }
+    if (dist < (D.cerca || 2.3) && r.golpeT <= 0) {
+      // Combate 2.0: a veces, en vez del aletazo de siempre, un ala o una pata (también anunciada, algo más corta y sin aguantar golpes)
+      const XI = c2On() && !C.sinExtIA ? (EXT_IA[D.id] || EXT_IA.clasica) : null;
+      if (XI && dist < 2.2 && azar() < XI.usa) {
+        const pata = dist < 1.6 && azar() < 0.5, izq = azar() < 0.5, k = (pata ? 'pata' : 'ala') + (izq ? 'Izq' : 'Der');
+        r.golpeT = Math.max(D.ala, XI.aviso + 0.6); preparar(r, 'ext:' + k, XI.aviso); return;
+      }
+      r.golpeT = Math.max(D.ala, aviso + 0.6); preparar(r, 'golpe_ala', aviso); return;
+    }
     if (dist > (D.tiroMin || 6) && dist < 16 && r.tiroT <= 0 && r.energia > 40) { r.tiroT = D.tiro + apunta; preparar(r, 'semilla', apunta); return; }
+  }
+  // Combate 2.0: la Campeona sigue con un combo que empiece por la extremidad que acaba de entrar (lo elige con azar())
+  function planCombo(r, k) {
+    const ops = []; for (const c of COMBOS) if (c.sec) for (const q of c.sec) if (q[0] === k) ops.push(q);
+    if (!ops.length) return;
+    const q = ops[Math.min(ops.length - 1, Math.floor(azar() * ops.length))];
+    r.ext.plan = q.slice(1).map(x => ({ k: x, t: 0.24 }));
   }
   function preparar(r, id, t) {
     r.prep = id; r.prepT = r.prepDur = t; C.stats.avisosIA = (C.stats.avisosIA || 0) + 1;
@@ -1257,12 +1301,16 @@ window.AVV18Combate = function (G) {
   const C2_URL = /[?&]combate2=1\b/.test(location.search);
   const c2On = () => (G.combate2 != null ? !!G.combate2 : C2_URL);
   const C2 = (() => {
-    const K = ['pecho', 'pechoZ', 'pechoY', 'cabX', 'cabY', 'cabZ', 'alaL', 'alaR', 'alaXL', 'alaXR', 'cola', 'colaZ', 'pico', 'abreL', 'abreR', 'sx', 'sy', 'alto', 'adel'];
+    // Extremidades (10-nov, Kelvin: «mover ala izquierda, ala derecha, pierna izquierda, pierna derecha»): piernaL/R gira la
+    // cadera (−X adelanta el muslo), rodL/R la rodilla (−X la dobla), pies abre las dos patas (Z, plantada más ancha) y agacha
+    // baja el peso con la pose «agachada» de character.js (0..1; se suma a la que ya traiga).
+    const K = ['pecho', 'pechoZ', 'pechoY', 'cabX', 'cabY', 'cabZ', 'alaL', 'alaR', 'alaXL', 'alaXR', 'cola', 'colaZ', 'pico', 'abreL', 'abreR', 'sx', 'sy', 'alto', 'adel',
+      'piernaL', 'piernaR', 'rodL', 'rodR', 'pies', 'agacha'];
     const N = K.length, I = {}; K.forEach((k, i) => { I[k] = i; });
-    const ANG = K.filter(k => !/^(pico|abreL|abreR|sx|sy|alto|adel)$/.test(k)).map(k => I[k]); // canales en radianes (prueba de saltos)
+    const ANG = K.filter(k => !/^(pico|abreL|abreR|sx|sy|alto|adel|agacha)$/.test(k)).map(k => I[k]); // canales en radianes (prueba de saltos)
     const pose = o => { const p = new Float32Array(N); for (const k in o) p[I[k]] = o[k]; return p; };
     // Espejo izquierda ↔ derecha (los aletazos alternan de ala: combos con variación)
-    const PAR = [['alaL', 'alaR'], ['alaXL', 'alaXR'], ['abreL', 'abreR']].map(([a, b]) => [I[a], I[b]]), NEG = ['pechoZ', 'pechoY', 'cabY', 'cabZ', 'colaZ'].map(k => I[k]);
+    const PAR = [['alaL', 'alaR'], ['alaXL', 'alaXR'], ['abreL', 'abreR'], ['piernaL', 'piernaR'], ['rodL', 'rodR']].map(([a, b]) => [I[a], I[b]]), NEG = ['pechoZ', 'pechoY', 'cabY', 'cabZ', 'colaZ'].map(k => I[k]);
     const espejo = p => { for (const [a, b] of PAR) { const x = p[a]; p[a] = p[b]; p[b] = x; } for (const i of NEG) p[i] = -p[i]; return p; };
     // Curva de poses clave: [t, pose, llegada] ('sale' = rápida al principio, para golpes; 'entra'; por defecto suave)
     const EASE = { sale: x => 1 - (1 - x) * (1 - x) * (1 - x), entra: x => x * x * x, suave: x => x * x * (3 - 2 * x) };
@@ -1287,8 +1335,8 @@ window.AVV18Combate = function (G) {
         [0.44, {}]], 0.045, 0.44),
       // PICO · tiro (semillas): cabeza atrás → picotazo adelante con el pico abierto → vuelve
       tiro: curva([[0, { cabX: -0.28, pecho: -0.1, sy: -0.03, pico: 0.15 }],
-        [0.05, { cabX: 0.38, pecho: 0.16, pico: 0.95, adel: 0.06, sy: 0.045, sx: -0.02, cola: 0.22 }, 'sale'],
-        [0.17, { cabX: 0.2, pico: 0.4, pecho: 0.08, cola: 0.1 }], [0.4, {}]], 0.05, 0.4),
+        [0.05, { cabX: 0.38, pecho: 0.16, pico: 0.95, adel: 0.06, sy: 0.045, sx: -0.02, cola: 0.22, alaL: 0.32, alaR: 0.32, abreL: 0.55, abreR: 0.55 }, 'sale'],
+        [0.17, { cabX: 0.2, pico: 0.4, pecho: 0.08, cola: 0.1, alaL: 0.18, alaR: 0.18, abreL: 0.3, abreR: 0.3 }], [0.4, {}]], 0.05, 0.4),
       // PICO · grito (la onda tarda ≥ 0,15 s en llegar: la pose de lanzar va antes del golpe): se echa atrás → lanza la cabeza con el pico abierto del todo y las alas abiertas en abanico (impacto,
       // con la onda) → aguanta con tres empujones al ritmo de los «whoom» del sonido (0,2 / 0,36 / 0,52 s; audio.js) → recupera
       grito: curva([[0, { pecho: -0.3, cabX: -0.5, alaL: 0.15, alaR: 0.15, sy: -0.07, sx: 0.045, pico: 0.35, cola: -0.12 }],
@@ -1315,6 +1363,50 @@ window.AVV18Combate = function (G) {
       alas: curva([[0, { alaL: 1.0, alaR: 1.0, alaXL: 0.22, alaXR: 0.22, sy: -0.08, sx: 0.05, pecho: -0.1, abreL: 1, abreR: 1, cabX: -0.1 }],
         [0.1, { alaL: -0.05, alaR: -0.05, alaXL: -0.36, alaXR: -0.36, sy: 0.09, sx: -0.05, pecho: 0.2, alto: 0.12, abreL: 0.7, abreR: 0.7, cola: 0.42, pico: 0.5 }, 'sale'],
         [0.24, { alaL: 0.6, alaR: 0.6, sy: 0.02, alto: 0.08, abreL: 0.9, abreR: 0.9, cola: 0.2 }], [0.52, {}]], 0.1, 0.52),
+      // ---- Extremidades y combos (10-nov). Las poses son del lado IZQUIERDO; el derecho es su espejo (lado −1) ----
+      // Ala sola: el ala se abre de lado y barre por delante (aletazo de lado) mientras el cuerpo gira hacia el otro lado
+      ext_ala: curva([[0, { alaL: 0.7, alaXL: 0.2, abreL: 0.6, alaR: -0.05, abreR: 0 }],
+        [0.035, { alaL: 1.15, alaXL: 0.45, abreL: 1, pechoY: 0.36, pechoZ: -0.1, sy: -0.04, sx: 0.025, cabZ: 0.1, alaR: -0.08, abreR: 0 }, 'sale'],
+        [0.08, { alaL: 0.95, alaXL: -1.25, abreL: 1, pechoY: -0.45, pechoZ: 0.1, pecho: 0.12, cabX: 0.08, pico: 0.55, sy: 0.06, sx: -0.03, adel: 0.08, cola: 0.22, colaZ: -0.25, alaR: -0.05, abreR: 0 }, 'sale'],
+        [0.22, { alaL: 0.55, alaXL: -1.0, abreL: 0.75, pechoY: -0.42, pecho: 0.14, pico: 0.25, adel: 0.06, cola: 0.3, colaZ: -0.12 }],
+        [0.44, {}]], 0.08, 0.44),
+      // Pata sola: recoge la pata (rodilla arriba) → patadita/arañazo adelante con las alas abiertas de equilibrio → vuelve
+      ext_pata: curva([[0, { piernaL: -0.3, rodL: -0.5, alaL: 0.25, alaR: 0.25, abreL: 0.4, abreR: 0.4 }],
+        [0.035, { piernaL: -0.6, rodL: -1.15, pecho: -0.12, alaL: 0.4, alaR: 0.4, abreL: 0.6, abreR: 0.6, sy: -0.03, alto: 0.03, cola: 0.2 }, 'sale'],
+        [0.08, { piernaL: -1.3, rodL: -0.1, pecho: -0.26, cabX: 0.06, alaL: 0.6, alaR: 0.6, abreL: 0.85, abreR: 0.85, sy: 0.05, alto: 0.07, adel: 0.1, cola: 0.42, pico: 0.4, pechoZ: 0.06 }, 'sale'],
+        [0.18, { piernaL: -0.7, rodL: -0.6, alaL: 0.42, alaR: 0.42, abreL: 0.6, abreR: 0.6, alto: 0.04, adel: 0.06, cola: 0.26, pecho: -0.1 }],
+        [0.4, {}]], 0.08, 0.4),
+      // ¡Abanicazo! (ala + la otra ala): las dos alas arriba y atrás → palmada adelante con las dos (impacto) → asienta
+      combo_abanicazo: curva([[0, { alaL: 1.0, alaR: 1.0, alaXL: 0.5, alaXR: 0.5, abreL: 1, abreR: 1, pecho: -0.25, cabX: -0.3, sy: -0.06, sx: 0.04, cola: 0.3, pico: 0.4 }],
+        [0.14, { alaL: 1.12, alaR: 1.12, alaXL: 0.68, alaXR: 0.68, abreL: 1, abreR: 1, pecho: -0.3, cabX: -0.34, sy: -0.08, sx: 0.05, cola: 0.36, pico: 0.5, alto: 0.05 }],
+        [0.2, { alaL: 0.42, alaR: 0.42, alaXL: -1.1, alaXR: -1.1, abreL: 1, abreR: 1, pecho: 0.28, cabX: 0.14, sy: 0.08, sx: -0.04, adel: 0.14, cola: 0.45, pico: 0.9, alto: 0.08 }, 'sale'],
+        [0.42, { alaL: 0.3, alaR: 0.3, alaXL: -0.8, alaXR: -0.8, abreL: 0.7, abreR: 0.7, pecho: 0.2, adel: 0.1, cola: 0.3, pico: 0.4 }],
+        [0.7, {}]], 0.2, 0.7),
+      // ¡Patita Sabrosa! (pata + la otra pata): saltito y tijera de patadas, una y otra (impacto con la segunda)
+      combo_patita: curva([[0, { agacha: 0.25, sy: -0.08, sx: 0.05, alaL: 0.5, alaR: 0.5, abreL: 0.7, abreR: 0.7, cola: 0.3 }],
+        [0.09, { alto: 0.22, piernaL: -1.0, rodL: -0.2, piernaR: -0.2, rodR: -0.9, alaL: 0.9, alaR: 0.9, abreL: 1, abreR: 1, pecho: -0.2, sy: 0.06, cola: 0.45, pico: 0.5 }, 'sale'],
+        [0.24, { alto: 0.26, piernaL: -0.2, rodL: -0.9, piernaR: -1.05, rodR: -0.15, alaL: 0.8, alaR: 0.8, abreL: 1, abreR: 1, pecho: -0.22, adel: 0.12, sy: 0.05, cola: 0.5, pico: 0.8 }, 'sale'],
+        [0.42, { alto: 0.04, agacha: 0.2, sy: -0.07, sx: 0.04, alaL: 0.4, alaR: 0.4, cola: 0.2 }],
+        [0.66, {}]], 0.24, 0.66),
+      // ¡Cruzaíto! (ala de un lado + pata del otro): aletazo y patada cruzados a la vez, con el cuerpo torcido
+      combo_cruzaito: curva([[0, { alaL: 0.95, alaXL: 0.45, abreL: 1, piernaR: -0.5, rodR: -1.0, pechoY: 0.4, sy: -0.04, cola: 0.2, alaR: 0.3 }],
+        [0.16, { alaL: 0.5, alaXL: -1.05, abreL: 1, piernaR: -1.05, rodR: -0.15, pechoY: -0.5, pecho: 0.1, alto: 0.08, adel: 0.12, sy: 0.06, pico: 0.7, cola: 0.4, colaZ: 0.3, alaR: 0.5, abreR: 0.7 }, 'sale'],
+        [0.36, { alaL: 0.3, alaXL: -0.7, piernaR: -0.5, rodR: -0.5, pechoY: -0.35, alto: 0.04, adel: 0.08, cola: 0.25, alaR: 0.3 }],
+        [0.6, {}]], 0.16, 0.6),
+      // ¡Revolú de Plumas! (la misma ala dos veces + pata): molinete de alas con el cuerpo que se retuerce → patada final
+      combo_revolu: curva([[0, { alaL: 0.9, alaR: 0.9, abreL: 1, abreR: 1, sy: -0.04, cola: 0.35, pico: 0.5 }],
+        [0.34, { alaL: 0.8, alaR: 0.8, abreL: 1, abreR: 1, piernaL: -0.95, rodL: -0.2, alto: 0.12, adel: 0.12, pico: 0.85, cola: 0.45 }, 'sale'],
+        [0.56, { alaL: 0.4, alaR: 0.4, abreL: 0.8, abreR: 0.8, piernaL: -0.4, rodL: -0.5, alto: 0.04, adel: 0.06, cola: 0.3 }],
+        [0.85, {}]], 0.34, 0.85,
+        (u, p) => { const on = Math.max(0, Math.min(1, u / 0.06)) * Math.max(0, Math.min(1, (0.62 - u) / 0.2)), w = Math.PI * 2 * 3 * u, s1 = Math.sin(w);
+          p[I.pechoY] += 0.42 * s1 * on; p[I.alaXL] += 0.7 * s1 * on; p[I.alaXR] -= 0.7 * s1 * on; p[I.colaZ] += 0.32 * Math.sin(w + 1) * on; p[I.cabY] -= 0.18 * s1 * on; p[I.alto] += 0.05 * Math.abs(s1) * on; }),
+      // ¡Brinco Coquí! (la misma pata dos veces + ala): se agacha, brinca alto con las patas recogidas y cae con un alazo doble
+      combo_coqui: curva([[0, { agacha: 0.35, sy: -0.1, sx: 0.06, alaL: 0.3, alaR: 0.3, cola: 0.2, cabX: -0.15 }],
+        [0.12, { agacha: 0.4, sy: -0.12, sx: 0.07, alaL: 0.5, alaR: 0.5, abreL: 0.6, abreR: 0.6, cola: 0.25, cabX: -0.2 }],
+        [0.24, { alto: 0.42, piernaL: -0.8, piernaR: -0.8, rodL: -1.1, rodR: -1.1, alaL: 1.1, alaR: 1.1, alaXL: 0.3, alaXR: 0.3, abreL: 1, abreR: 1, sy: 0.1, sx: -0.06, pecho: -0.2, cabX: -0.25, pico: 0.7, cola: 0.5 }, 'sale'],
+        [0.36, { alto: 0.12, piernaL: -0.3, piernaR: -0.3, rodL: -0.4, rodR: -0.4, alaL: 0.2, alaR: 0.2, alaXL: -0.9, alaXR: -0.9, abreL: 1, abreR: 1, pecho: 0.3, cabX: 0.2, adel: 0.14, sy: -0.04, pico: 0.9, cola: 0.45 }, 'entra'],
+        [0.5, { agacha: 0.3, sy: -0.1, sx: 0.06, alaL: 0.3, alaR: 0.3, alaXL: -0.5, alaXR: -0.5, pecho: 0.2, adel: 0.1, cola: 0.3 }],
+        [0.9, {}]], 0.36, 0.9),
       // Esquiva (quiebro propio, saltos de la Campeona): se tumba de lado con las alas arriba → cae y amortigua → asienta
       esquiva: curva([[0, { pechoZ: 0.36, alaL: 0.62, alaR: 0.62, abreL: 0.8, abreR: 0.8, sy: 0.05, sx: -0.03, cola: 0.3, colaZ: -0.3, cabZ: -0.15 }],
         [0.28, { pechoZ: 0.2, alaL: 0.4, alaR: 0.4, sy: -0.06, sx: 0.045, cola: 0.15 }], [0.5, {}]], 0, 0.5)
@@ -1322,12 +1414,15 @@ window.AVV18Combate = function (G) {
     // Reacciones (sin acción propia)
     const REAC = {
       // Impacto recibido: se dobla hacia atrás con todo abierto (alas, abanico, pico), aplastada → rebota → asienta
-      impacto: curva([[0, { pecho: -0.4, cabX: -0.42, alaL: 0.68, alaR: 0.68, abreL: 1, abreR: 1, pico: 0.8, sy: -0.12, sx: 0.08, adel: -0.12, cola: 0.5 }],
-        [0.1, { pecho: -0.28, cabX: -0.2, alaL: 0.45, alaR: 0.45, abreL: 0.7, abreR: 0.7, pico: 0.5, sy: 0.05, sx: -0.03, adel: -0.18, cola: 0.32 }],
+      impacto: curva([[0, { pecho: -0.4, cabX: -0.42, alaL: 0.92, alaR: 0.92, alaXL: 0.25, alaXR: 0.25, abreL: 1, abreR: 1, pico: 0.8, sy: -0.12, sx: 0.08, adel: -0.12, cola: 0.5, piernaL: -0.25, rodL: -0.4 }],
+        [0.1, { pecho: -0.28, cabX: -0.2, alaL: 0.62, alaR: 0.62, alaXL: 0.12, alaXR: 0.12, abreL: 0.8, abreR: 0.8, pico: 0.5, sy: 0.05, sx: -0.03, adel: -0.18, cola: 0.32, piernaL: -0.1, rodL: -0.15 }],
         [0.45, {}]], 0, 0.45),
       // El escudo para el golpe: se encoge un poco tras las alas y aguanta
       bloquea: curva([[0, { pecho: 0.12, cabX: 0.15, alaL: 0.5, alaR: 0.5, alaXL: -0.5, alaXR: -0.5, abreL: 1, abreR: 1, sy: -0.07, sx: 0.05, adel: -0.05 }],
         [0.32, {}]], 0, 0.32),
+      // Asienta al pararse o al aterrizar (10-nov: sin frenazo rígido): baja el peso, abre un poco las alas y la cola sube → vuelve
+      asienta: curva([[0, { agacha: 0.16, sy: -0.07, sx: 0.04, pecho: 0.12, cabX: 0.08, alaL: 0.3, alaR: 0.3, abreL: 0.5, abreR: 0.5, cola: 0.28, pies: 0.04 }],
+        [0.12, { agacha: 0.05, sy: 0.02, sx: -0.01, pecho: -0.05, cabX: -0.06, alaL: 0.14, alaR: 0.14, abreL: 0.3, abreR: 0.3, cola: 0.06 }], [0.34, {}]], 0, 0.34),
       // Se recupera del mareo: sacude la cabeza y las plumas
       recupera: curva([[0, { sy: 0.035, sx: -0.02, abreL: 0.7, abreR: 0.7, alaL: 0.3, alaR: 0.3 }], [0.42, {}]], 0, 0.42,
         (u, p) => { const e = Math.max(0, 1 - u / 0.42), w = Math.PI * 2 * 6.5 * u; p[I.cabY] += 0.38 * Math.sin(w) * e; p[I.cabZ] += 0.12 * Math.sin(w + 1) * e; p[I.colaZ] += 0.2 * Math.sin(w * 1.08) * e; })
@@ -1350,19 +1445,21 @@ window.AVV18Combate = function (G) {
     const reducido = () => !!(G.renderer && G.renderer.REDUCED);
     const fxOk = n => G.v18fx && typeof G.v18fx[n] === 'function';
     const altoDe = ch => (ch.height || 1) * (ch.root ? ch.root.scale.y : 1) * 1.02; // coronilla, en metros sobre los pies
+    const TMP = new Float32Array(N);
     function estadoDe(f) {
       return f.anima2 || (f.anima2 = { estado: '', sub: '', t: 0, u: 0, acc: null, golpeT: -1, golpeK: 1, bloqT: -1, recT: -1, mareo0: 0, esqT: -1, finT: 0, fin: '', lado: 1,
-        out: new Float32Array(N), desde: new Float32Array(N), meta: new Float32Array(N), fade: 1, fadeDur: 0.2, manda: new Float32Array(4), mandaDesde: new Float32Array(4),
+        asT: -1, asK: 0, vel0: 0, aire0: false, out: new Float32Array(N), desde: new Float32Array(N), meta: new Float32Array(N), fade: 1, fadeDur: 0.2, manda: new Float32Array(4), mandaDesde: new Float32Array(4),
         sp: new Float32Array(N), spV: new Float32Array(N), spDt: 0, spIni: false, par: false, sx: 1, sy: 1, pend: false, vistos: {}, saltoMax: 0, saltoEsc: 0, historial: [], suspiro: -1, pico: 0, picoMax: 0, prev: null, prevSy: 1 });
     }
     // ---- Eventos (los llama el duelo: usar y golpear) ----
-    function accion(f, id) {
+    // o (extremidades y combos): { fam, lado (1 izquierda, −1 derecha: espejo), imp (empieza en la pose de impacto) }
+    function accion(f, id, o) {
       if (!c2On() || !f) return;
-      const A = estadoDe(f), fam = famDe(id), c = FAM[fam];
+      const A = estadoDe(f), fam = (o && o.fam && FAM[o.fam]) ? o.fam : famDe(id), c = FAM[fam];
       if (fam === 'ala') A.lado = -A.lado; // alterna de ala
       // Desde la anticipación (telegrafía de la Campeona) o si el golpe ya conectó en esta misma llamada: entra en el impacto
-      const u0 = A.pend || A.estado === 'anticipa' ? c.imp : 0; A.pend = false;
-      A.acc = { id, fam, u: u0, c, lado: fam === 'ala' ? A.lado : 1 };
+      const u0 = (o && o.imp) || A.pend || A.estado === 'anticipa' ? c.imp : 0; A.pend = false;
+      A.acc = { id, fam, u: u0, c, lado: o && o.lado ? o.lado : fam === 'ala' ? A.lado : 1, ext: !!(o && o.fam) };
       const ch = A.ch; if (!ch || !ch.root) return;
       try {
         if (fam === 'grito' && fxOk('anillosPico')) { const y = ch.root.rotation.y; G.v18fx.anillosPico((ch.anchors && ch.anchors.pico) || ch.root, { x: Math.sin(y), z: Math.cos(y) }, [0.12, 0.2, 0.36, 0.52]); }
@@ -1388,13 +1485,20 @@ window.AVV18Combate = function (G) {
     //      escalaAbs (quien la mueve pone la escala de la raíz cada cuadro: Vittata, actores.js) }
     function antes(ch, f, o, dtReal) {
       const t0 = performance.now();
-      const A = estadoDe(f), dt = dtVis(dtReal), root = ch.root;
+      // Extremidades y combos: la preparación hasta la pose de golpe va a tiempo real aunque haya hit-stop (si no, la pausa del
+      // golpe congelaba la pose de antes y la patada no se veía); al llegar al golpe, se congela como todo.
+      const A = estadoDe(f), libre = !!(A.acc && A.acc.ext && A.acc.u < A.acc.c.imp), dt = libre ? dtReal : dtVis(dtReal), root = ch.root;
       A.t += dt; A.ch = ch;
       if (A.golpeT >= 0) { A.golpeT += dt; if (A.golpeT > REAC.impacto.dur) A.golpeT = -1; }
       if (A.bloqT >= 0) { A.bloqT += dt; if (A.bloqT > REAC.bloquea.dur) A.bloqT = -1; }
       if (A.mareo0 && !(f.mareo > 0) && !o.fin) A.recT = 0;
       A.mareo0 = f.mareo > 0 ? 1 : 0;
       if (A.recT >= 0) { A.recT += dt; if (A.recT > REAC.recupera.dur) A.recT = -1; }
+      // Asienta (10-nov): al pararse de golpe o al tocar suelo tras un salto, un asentarse corto (no un frenazo rígido)
+      { const v = o.vel || 0, aire = !!(ch.airborne || o.salto);
+        if ((A.vel0 > 1.2 && v < 0.4) || (A.aire0 && !aire)) { A.asT = 0; A.asK = A.aire0 && !aire ? 1 : 0.65; }
+        A.vel0 = v; A.aire0 = aire;
+        if (A.asT >= 0) { A.asT += dt; if (A.asT > REAC.asienta.dur) A.asT = -1; } }
       if (A.acc) {
         A.acc.u += dt;
         const hold = A.acc.fam === 'canto' && f.picoT > 0.3 ? 1.3 : A.acc.fam === 'grito' && f.picoT > 0.12 ? 0.62 : 0; // aguanta mientras dura el poder
@@ -1431,6 +1535,7 @@ window.AVV18Combate = function (G) {
       else if (est === 'recupera') { evalua(REAC.recupera, A.recT, P); REAC.recupera.extra(A.recT, P); }
       else if (est === 'esquiva') { evalua(FAM.esquiva, A.esqT, P); if ((f.lado || 1) < 0) espejo(P); }
       else poseSuelta(est, A, f, o, P);
+      if (A.asT >= 0 && (est === 'espera' || est === 'mueve' || est === 'defensa')) { evalua(REAC.asienta, A.asT, TMP); for (let j = 0; j < N; j++) P[j] += TMP[j] * A.asK; }
       // Fundido entre estados (sin cortes)
       A.fade = Math.min(1, A.fade + dt / Math.max(1e-3, A.fadeDur));
       const x = A.fade * A.fade * (3 - 2 * A.fade), out = A.out;
@@ -1451,6 +1556,9 @@ window.AVV18Combate = function (G) {
       // Velocidad máxima de cada giro (VMAX rad/s): rápido para que los golpes tengan chispa, sin saltos de un cuadro a otro
       if (A.lim) { const lm = VMAX * Math.max(dt, 1e-4); for (const j of ANG) { const d = out[j] - A.lim[j]; if (d > lm) out[j] = A.lim[j] + lm; else if (d < -lm) out[j] = A.lim[j] - lm; } A.lim.set(out); }
       else A.lim = Float32Array.from(out);
+      // Peso abajo: la pose «agachada» de character.js (patas flexionadas y el cuerpo algo adelante; el IK de patas la apoya)
+      const ag = Math.max(0, Math.min(0.5, out[I.agacha]));
+      if (ag > 0.002 && !ch.airborne) { ch.agachada = Math.max(ch.agachada || 0, ag); A.agacho = true; }
       // Raíz: estirar y aplastar (moderado; con «Reducir movimiento», la mitad) y desplazamiento (adelante/atrás, arriba)
       const kr = reducido() ? 0.5 : 1, sx = 1 + Math.max(-0.15, Math.min(0.15, out[I.sx] * kr)), sy = 1 + Math.max(-0.22, Math.min(0.15, out[I.sy] * kr));
       const E = ch._c2esc || (ch._c2esc = { sx: 1, sy: 1 }); // la escala que puso esta capa (en el personaje: el luchador cambia en cada duelo)
@@ -1485,27 +1593,40 @@ window.AVV18Combate = function (G) {
         // Guardia que respira y bota (3,4 s) → curiosa (ladea la cabeza y hace «clic») → guardia → se sacude las plumas. Sin azar.
         const ciclo = [3.4, 2.2, 3.0, 1.7], q = T % 10.3; let v = 0, a = 0;
         for (let i = 0, s = 0; i < 4; i++) { if (q < s + ciclo[i]) { v = i; a = (q - s) / ciclo[i]; break; } s += ciclo[i]; }
-        const b = Math.sin(T * 2.6), bota = Math.abs(Math.sin(T * Math.PI * 1.5));
-        p[I.pecho] = 0.04 * b; p[I.sy] = 0.014 * b - 0.012 * bota; p[I.sx] = 0.006 * bota; p[I.alaL] = p[I.alaR] = 0.05 + 0.03 * (0.5 + 0.5 * b);
-        p[I.cola] = 0.06 * Math.sin(T * 2.6 + 1); p[I.cabZ] = 0.1 * Math.sin(T * 0.7); p[I.pechoZ] = 0.035 * Math.sin(T * 0.9);
+        // Guardia (Kelvin 10-nov: «mejorar su posición cuando se pare»): peso bajo y algo adelante (agachada leve), pecho
+        // arriba, cabeza alta y atenta, alas algo separadas del cuerpo y un poco abiertas, cola que equilibra, patas más
+        // abiertas; bota suave al ritmo de la respiración.
+        const b = Math.sin(T * 2.6), bota = Math.abs(Math.sin(T * Math.PI * 1.5)), ab = 0.5 + 0.5 * Math.sin(T * 1.3);
+        p[I.agacha] = 0.035 + 0.012 * bota; p[I.pies] = 0.08; p[I.pecho] = -0.1 + 0.035 * b; p[I.cabX] = -0.12;
+        p[I.sy] = 0.012 * b - 0.014 * bota; p[I.sx] = 0.006 * bota; p[I.alaL] = p[I.alaR] = 0.17 + 0.06 * (0.5 + 0.5 * b);
+        p[I.alaXL] = p[I.alaXR] = -0.1; p[I.abreL] = p[I.abreR] = 0.26 + 0.1 * ab;
+        p[I.cola] = 0.1 + 0.06 * Math.sin(T * 2.6 + 1); p[I.cabZ] = 0.1 * Math.sin(T * 0.7); p[I.pechoZ] = 0.035 * Math.sin(T * 0.9);
         const env = Math.sin(Math.PI * a) ** 2; A.idle = v === 1 ? 1 : v === 3 ? 2 : 0;
         if (v === 1) { p[I.cabZ] += 0.32 * env; p[I.cabX] -= 0.1 * env; p[I.pico] = 0.18 * Math.max(0, Math.sin(Math.PI * 4 * a)) * env; }
-        if (v === 3) { p[I.abreL] = p[I.abreR] = 0.85 * env; p[I.alaL] += (0.22 + 0.08 * Math.sin(T * 30)) * env; p[I.alaR] += (0.22 + 0.08 * Math.sin(T * 30 + 0.6)) * env;
+        if (v === 3) { p[I.abreL] = p[I.abreR] = Math.max(p[I.abreL], 0.85 * env); p[I.alaL] += (0.22 + 0.08 * Math.sin(T * 30)) * env; p[I.alaR] += (0.22 + 0.08 * Math.sin(T * 30 + 0.6)) * env;
           p[I.sx] += 0.045 * env; p[I.colaZ] = 0.22 * Math.sin(T * 18) * env; p[I.cabY] = 0.12 * Math.sin(T * 14) * env; }
       } else if (est === 'mueve') {
-        p[I.alaL] = p[I.alaR] = 0.1 * Math.max(0, Math.sin(T * 8)); p[I.cola] = 0.08 * Math.sin(T * 8);
+        // Al moverse, las alas acompañan cada paso (abiertas un poco, sin pegarse al cuerpo)
+        p[I.alaL] = 0.18 + 0.2 * Math.max(0, Math.sin(T * 8)); p[I.alaR] = 0.18 + 0.2 * Math.max(0, Math.sin(T * 8 + 0.5)); p[I.abreL] = p[I.abreR] = 0.38;
+        p[I.cola] = 0.08 * Math.sin(T * 8); p[I.pecho] = -0.05; p[I.cabX] = -0.08; p[I.agacha] = 0.02;
       } else if (est === 'anticipa') {
         const k = Math.min(1, Math.max(0, o.prepK || 0)), tiembla = k > 0.6 ? Math.sin(T * 42) * 0.04 * (k - 0.6) / 0.4 : 0;
         if (o.prep === 'golpe_ala') { // el ala del siguiente aletazo (alterna; ver FAM.ala) se carga atrás y el cuerpo se tuerce
           const L = -A.lado, a1 = L > 0 ? I.alaL : I.alaR, x1 = L > 0 ? I.alaXL : I.alaXR, a2 = L > 0 ? I.alaR : I.alaL, x2 = L > 0 ? I.alaXR : I.alaXL;
           p[a1] = 0.62 * k; p[x1] = 0.72 * k; p[a2] = 0.32 * k; p[x2] = 0.35 * k; p[I.abreL] = p[I.abreR] = 0.7 * k;
           p[I.pechoY] = 0.3 * k * L; p[I.pecho] = -0.12 * k + tiembla; p[I.sy] = -0.075 * k; p[I.sx] = 0.045 * k; p[I.cola] = 0.45 * k; p[I.cabX] = 0.12; p[I.pico] = 0.15 + 0.1 * k;
+        } else if (o.prep && o.prep.indexOf('ext:') === 0) { // una extremidad (Combate 2.0): el ala se abre atrás, o la pata se recoge
+          const q = o.prep.slice(4), izq = /Izq$/.test(q);
+          if (/^ala/.test(q)) { p[izq ? I.alaL : I.alaR] = 0.9 * k; p[izq ? I.alaXL : I.alaXR] = 0.45 * k; p[izq ? I.abreL : I.abreR] = k; p[I.pechoY] = (izq ? 0.32 : -0.32) * k; }
+          else { p[izq ? I.piernaL : I.piernaR] = -0.5 * k; p[izq ? I.rodL : I.rodR] = -1.0 * k; p[I.alaL] = p[I.alaR] = 0.35 * k; p[I.abreL] = p[I.abreR] = 0.5 * k; p[I.pecho] = -0.12 * k; }
+          p[I.sy] = -0.05 * k + tiembla * 0.5; p[I.sx] = 0.03 * k; p[I.cola] = 0.3 * k; p[I.pico] = 0.15; p[I.cabX] = 0.06;
         } else { p[I.cabX] = -0.26 * k; p[I.pecho] = -0.08 * k; p[I.pico] = 0.12; p[I.cabZ] = 0.18; p[I.sy] = -0.03 * k; p[I.cola] = 0.2 * k; }
       } else if (est === 'defensa') {
         const b = Math.sin(T * 3);
         p[I.sx] = 0.05; p[I.sy] = -0.01 + 0.01 * b; p[I.alaL] = p[I.alaR] = 0.45 + 0.03 * b; p[I.alaXL] = p[I.alaXR] = -0.4; p[I.abreL] = p[I.abreR] = 0.8; p[I.cabX] = 0.12; p[I.pecho] = 0.08; p[I.cola] = 0.2;
       } else if (est === 'aturdido') {
-        p[I.cabY] = 0.3 * Math.sin(T * 5); p[I.cabZ] = 0.25 * Math.cos(T * 5); p[I.alaL] = 0.35 + 0.1 * Math.sin(T * 7); p[I.alaR] = 0.35 + 0.1 * Math.sin(T * 7 + 1);
+        p[I.cabY] = 0.3 * Math.sin(T * 5); p[I.cabZ] = 0.25 * Math.cos(T * 5); p[I.alaL] = 0.45 + 0.18 * Math.sin(T * 7); p[I.alaR] = 0.45 + 0.18 * Math.sin(T * 7 + 1);
+        p[I.abreL] = 0.4 + 0.3 * Math.max(0, Math.sin(T * 7)); p[I.abreR] = 0.4 + 0.3 * Math.max(0, Math.sin(T * 7 + 1));
         p[I.pico] = 0.3; p[I.pecho] = 0.12; p[I.sy] = -0.03 + 0.02 * Math.sin(T * 10); p[I.cola] = -0.1;
       } else if (est === 'gana') {
         // Celebra: saltitos con las alas abiertas en abanico y el pico abierto (1,8 s) → orgullosa, pecho fuera, cabeceando
@@ -1558,6 +1679,13 @@ window.AVV18Combate = function (G) {
         if (out[I.alaXR]) ch.rot(B.armL1001, 'x', out[I.alaXR]);
       }
       if (B.espalda1001) { if (out[I.cola]) ch.rot(B.espalda1001, 'x', out[I.cola]); if (out[I.colaZ]) ch.rot(B.espalda1001, 'z', out[I.colaZ]); }
+      // Patas (extremidades): después del IK, así que la que patea se despega del suelo y la de apoyo sigue plantada. «pies»
+      // las abre un poco (Z, como el ajuste de las aletas de character.js): pocos grados, el pie casi no sube.
+      if (B.pieL1 && B.pieL1001) {
+        if (out[I.piernaL]) ch.rot(B.pieL1, 'x', out[I.piernaL]); if (out[I.piernaR]) ch.rot(B.pieL1001, 'x', out[I.piernaR]);
+        if (out[I.rodL] && B.pieL2) ch.rot(B.pieL2, 'x', out[I.rodL]); if (out[I.rodR] && B.pieL2001) ch.rot(B.pieL2001, 'x', out[I.rodR]);
+        if (out[I.pies]) { ch.rot(B.pieL1, 'z', out[I.pies]); ch.rot(B.pieL1001, 'z', -out[I.pies]); }
+      }
       // Sin la API de character.js: el hueso del pico a mano (−X abre: AUDITORIA_ANIMACION_COMBATE.md §4)
       if (!A.picoApi && B.pico && A.pico > 0.01) ch.rot(B.pico, 'x', -0.55 * A.pico);
       medir(t0);
@@ -1570,6 +1698,7 @@ window.AVV18Combate = function (G) {
       if (!A) return;
       if (ch && typeof ch.pico === 'function') try { ch.pico(0); } catch (e) { /* api */ }
       if (ch && typeof ch.alas === 'function') try { ch.alas(null); } catch (e) { /* api */ }
+      if (ch && A.agacho) ch.agachada = 0;
       f.anima2 = null;
     }
     function medir(t0) {
@@ -1580,7 +1709,307 @@ window.AVV18Combate = function (G) {
     const perfApi = () => ({ ms: +perf.ms.toFixed(3), llamadas: perf.n, cuadros: perf.cuadros, msPorCuadro: perf.cuadros ? +(perf.ms / perf.cuadros).toFixed(4) : null, reiniciar() { perf.ms = perf.n = perf.cuadros = 0; } });
     return { on: c2On, antes, huesos, soltar, accion, golpe, dtVis, pasoReloj, despues, famDe, estadoDe, ESTADOS, FAM, REAC, I, K, perf: perfApi, get parada() { return paradaT; } };
   })();
-  const vidaApi = { antes: vida, huesos: vidaHuesos, andar, andarAplicar, andarHuesos, AND, ESTADOS: VIDA_EST, VEL: VIDA_VEL, c2: C2 };
+  // ---------- Combate 2.0 · las 4 extremidades y los combos (Kelvin 10-nov: «añadir más controles para mover ala izquierda,
+  // ala derecha, pierna izquierda, pierna derecha y poder crear combos») · solo con ?combate2=1 ----------
+  // - Cada extremidad tiene su golpe corto con pose propia: aletazo de lado (el ala izquierda barre hacia la derecha y empuja
+  //   a la otra hacia ese lado; la derecha, al revés: alternar sirve para colocarse) y patadita (más corta y más rápida).
+  // - Reglas de plumas de siempre (H.recibir de habilidades.js: escudo, invulnerabilidad, mareo y empujón): un golpe que entra
+  //   quita 1 pluma y la otra queda mareada e invulnerable un momento. Mientras siga invulnerable, los golpes siguientes (los de
+  //   una cadena y el remate de un combo) no quitan plumas: la empujan y la sujetan, pero la sueltan ESCAPE s antes de que deje
+  //   de ser invulnerable (el mismo hueco para escapar que deja hoy el aletazo): sin cadenas infinitas.
+  // - Combos: entradas seguidas con menos de VENTANA s entre una y otra (con «Combos sin prisa», VENTANA_LENTA). El remate
+  //   sale con su animación, efecto, sonido y su nombre grande en pantalla, empuja más y carga energía (+energia, para el
+  //   poder); si nada de la cadena había entrado, quita la pluma. Luego quien lo hizo queda RECUPERANDO (rec: no hace nada
+  //   salvo su poder): la rival lo puede castigar. Así un combo quita lo mismo que un golpe: lo que da es empuje, sitio y poder.
+  // - «¡Bomba Boricua!»: el remate de remates. Justo después de un combo, el poder de la especie (Grito, Canto…) sale como
+  //   siempre (su coste, su espera y su efecto) y además con nombre, efecto y sonido de remate.
+  // - La IA (combate.js) usa extremidades y combos según su etapa (EXT_IA): Aprendiz casi nunca, Maestro más; telegrafiados.
+  // Equilibrio y tiempos medidos en AV.v18CombateTest («C2 · extremidades…»).
+  const EXT_K = ['alaIzq', 'alaDer', 'pataIzq', 'pataDer'];
+  const EXT = {
+    alaIzq: { tipo: 'ala', lado: 1, alcance: 2.3, empuje: 6, mareo: 0.7, cd: 0.5, nombre: 'Ala izquierda', corto: 'Ala izq.' },
+    alaDer: { tipo: 'ala', lado: -1, alcance: 2.3, empuje: 6, mareo: 0.7, cd: 0.5, nombre: 'Ala derecha', corto: 'Ala der.' },
+    pataIzq: { tipo: 'pata', lado: 1, alcance: 1.75, empuje: 4, mareo: 0.7, cd: 0.42, nombre: 'Pata izquierda', corto: 'Pata izq.' },
+    pataDer: { tipo: 'pata', lado: -1, alcance: 1.75, empuje: 4, mareo: 0.7, cd: 0.42, nombre: 'Pata derecha', corto: 'Pata der.' }
+  };
+  const EXT_BLOQUEO = 0.2, VENTANA = 0.6, VENTANA_LENTA = 1.2, ESCAPE = 0.25; // ESCAPE: el hueco de inv + 0,25 de H.recibir
+  // sec: cada forma de hacerlo (la cola de las entradas). imp: segundo del golpe del remate; rec: lo que tarda en poder volver
+  // a hacer algo (cuenta desde la entrada); energia: la que carga para el poder.
+  const COMBOS = [
+    { id: 'abanicazo', nombre: '¡Abanicazo!', sec: [['alaIzq', 'alaDer'], ['alaDer', 'alaIzq']], energia: 15, imp: 0.2, rec: 0.75, empuje: 9, mareo: 0.9, alcance: 2.5, fx: 'abanico', como: 'Las dos alas, una y otra' },
+    { id: 'patita', nombre: '¡Patita Sabrosa!', sec: [['pataIzq', 'pataDer'], ['pataDer', 'pataIzq']], energia: 15, imp: 0.24, rec: 0.75, empuje: 7, mareo: 0.9, alcance: 2.0, fx: 'polvo', como: 'Las dos patas, una y otra' },
+    { id: 'cruzaito', nombre: '¡Cruzaíto!', sec: [['alaIzq', 'pataDer'], ['alaDer', 'pataIzq']], energia: 15, imp: 0.16, rec: 0.7, empuje: 8, mareo: 0.9, alcance: 2.3, fx: 'chispas', como: 'Un ala y la pata del otro lado' },
+    { id: 'revolu', nombre: '¡Revolú de Plumas!', sec: [['alaIzq', 'alaIzq', 'pataIzq'], ['alaIzq', 'alaIzq', 'pataDer'], ['alaDer', 'alaDer', 'pataIzq'], ['alaDer', 'alaDer', 'pataDer']], energia: 20, imp: 0.34, rec: 1.0, empuje: 11, mareo: 1.0, alcance: 2.6, fx: 'remolino', como: 'La misma ala dos veces y una pata' },
+    { id: 'coqui', nombre: '¡Brinco Coquí!', sec: [['pataIzq', 'pataIzq', 'alaIzq'], ['pataIzq', 'pataIzq', 'alaDer'], ['pataDer', 'pataDer', 'alaIzq'], ['pataDer', 'pataDer', 'alaDer']], energia: 20, imp: 0.36, rec: 1.05, empuje: 10, mareo: 1.0, alcance: 2.6, fx: 'brinco', como: 'La misma pata dos veces y un ala' },
+    { id: 'bomba', nombre: '¡Bomba Boricua!', remate: true, fx: 'bomba', como: 'Después de un combo, ¡tu poder!' }
+  ];
+  const COMBO = {}; COMBOS.forEach((c, i) => { c.n = i; COMBO[c.id] = c; });
+  // Cuánto usa la Campeona sus extremidades según su etapa: usa = en vez del aletazo de siempre; combo = sigue con un combo
+  // si la primera entra; aviso = su telegrafía (s). Aprendiz casi nunca; Maestro más.
+  const EXT_IA = { aprendiz: { usa: 0.12, combo: 0.08, aviso: 0.4 }, despertar: { usa: 0.22, combo: 0.18, aviso: 0.36 }, guardian: { usa: 0.32, combo: 0.32, aviso: 0.34 },
+    maestro: { usa: 0.42, combo: 0.45, aviso: 0.32 }, clasica: { usa: 0.2, combo: 0.15, aviso: 0.4 } };
+  const VENTANA_CLAVE = 'av_combos_sin_prisa';
+  const sinPrisa = () => { try { return localStorage.getItem(VENTANA_CLAVE) === '1'; } catch (e) { return false; } };
+  const ventanaCombo = () => (sinPrisa() ? VENTANA_LENTA : VENTANA);
+  function ponerSinPrisa(on) { try { if (on) localStorage.setItem(VENTANA_CLAVE, '1'); else localStorage.removeItem(VENTANA_CLAVE); } catch (e) { /* sin almacenamiento */ } }
+  function buscarCombo(cad) {
+    let mejor = null;
+    for (const c of COMBOS) if (c.sec) for (const q of c.sec) {
+      if (q.length > cad.length || (mejor && q.length <= mejor.largo)) continue;
+      let ok = true; for (let i = 0; i < q.length; i++) if (cad[cad.length - q.length + i] !== q[i]) { ok = false; break; }
+      if (ok) mejor = { c, largo: q.length, q };
+    }
+    return mejor;
+  }
+  // Motor de extremidades (uno por duelo: este y el de 2 jugadores). cfg: { lucha(), otro(f), golpear(de, blanco, g),
+  // despues(s, fn), t(), anunciar(f, combo), fx, sonar, alUsar(f, k, r) }
+  function crearExt(cfg) {
+    const st = f => f.ext || (f.ext = { cad: [], ultT: -9, bloq: 0, rec: 0, buf: '', bufT: 0, cd: {}, conecto: -9, combo: null, comboT: -9, usos: 0, combos: {}, remates: 0, plan: [], ultimo: '' });
+    const lado = d => ({ x: -d.z, z: d.x }); // la derecha de quien mira hacia d
+    // Quien recupera de un combo no hace nada (ni ala, ni semilla), salvo su poder justo después (el remate)
+    function bloquea(f, id) { const X = f && f.ext; return !!(X && X.rec > 0 && !(id && id === f.poder && X.combo)); }
+    function usar(f, k, o) {
+      if (!c2On() || !f || !EXT[k] || !cfg.lucha()) return { ok: false, motivo: 'fase' };
+      if (f.mareo > 0 || f.deslumbrada > 0) return { ok: false, motivo: 'mareo' };
+      const X = st(f);
+      if (X.rec > 0) return { ok: false, motivo: 'recupera' };
+      if (X.bloq > 0 || (X.cd[k] || 0) > 0) { X.buf = k; X.bufT = 0.35; return { ok: true, buffer: true, k }; } // en cola: sale en cuanto pueda
+      return hacer(f, k, o);
+    }
+    function hacer(f, k, o) {
+      const X = st(f), E = EXT[k], otro = cfg.otro(f), now = cfg.t(), W = cfg.ventana(f);
+      if (now - X.ultT > W) X.cad.length = 0;
+      X.cad.push(k); if (X.cad.length > 4) X.cad.shift();
+      X.ultT = now; X.bloq = EXT_BLOQUEO; X.cd[k] = E.cd; X.usos++; X.ultimo = k;
+      const m = buscarCombo(X.cad);
+      if (m) return remate(f, k, m.c, otro, m.q);
+      C2.accion(f, 'ext_' + E.tipo, { fam: 'ext_' + E.tipo, lado: E.lado });
+      cfg.sonar(E.tipo === 'ala' ? 'ext_ala' : 'ext_pata', E.lado);
+      const r = { ok: true, k, acierto: false, combo: null };
+      if (otro && H.dist(f, otro) <= E.alcance) {
+        const d = H.dirA(f, otro), l = lado(d), s = E.tipo === 'ala' ? E.lado : 0; // ala izquierda → empuja a su derecha
+        const dir = { x: d.x * 0.55 + l.x * s * 0.85, z: d.z * 0.55 + l.z * s * 0.85 }, n = Math.hypot(dir.x, dir.z) || 1; dir.x /= n; dir.z /= n;
+        const g = conInv(otro, { plumas: 1, empuje: E.empuje, mareo: Math.max(E.mareo, f.ia ? 0 : Math.min(1.1, W * 0.9)), dir }, 2.5);
+        r.acierto = !!cfg.golpear(f, otro, g); r.sujeta = !g.plumas;
+        if (r.acierto) X.conecto = now;
+      }
+      if (cfg.alUsar) cfg.alUsar(f, k, r);
+      return r;
+    }
+    // Mientras la otra sigue invulnerable por un golpe anterior: sin plumas, empuje propio y sujeta solo hasta ESCAPE s antes
+    // de que se le pase la invulnerabilidad (forzar: si no, H.recibir no la empuja). Si no, el golpe tal cual (1 pluma).
+    function conInv(otro, g, empuje) {
+      if (!(otro.inv > 0)) return g;
+      return { plumas: 0, empuje, mareo: Math.max(0, Math.min(g.mareo, otro.inv - ESCAPE)), forzar: true, dir: g.dir, combo: g.combo };
+    }
+    function remate(f, k, cb, otro, q) {
+      const X = st(f), now = cfg.t();
+      X.cad.length = 0; X.rec = cb.rec; X.buf = ''; X.combo = cb; X.comboT = now; X.combos[cb.id] = (X.combos[cb.id] || 0) + 1;
+      f.energia = Math.min(f.energiaMax || 100, f.energia + (cb.energia || 0)); // el combo carga el poder
+      // Hacia qué lado va la pose: el Cruzaíto y el Revolú siguen al ala con que empiezan (la izquierda es la pose; la derecha, su espejo)
+      const lado = (cb.id === 'cruzaito' || cb.id === 'revolu') && q ? EXT[q[0]].lado : 1;
+      C2.accion(f, 'combo_' + cb.id, { fam: 'combo_' + cb.id, lado });
+      cfg.anunciar(f, cb); cfg.sonar('combo', cb.n); cfg.fxCombo(f, cb, 0);
+      // Si la tiene a tiro y sin escudo, la sujeta mientras carga el remate (con el mismo hueco para escapar de siempre)
+      if (otro && !(otro.escudo > 0) && H.dist(f, otro) <= cb.alcance + 0.4) {
+        const quiere = cb.imp + 0.12, m = otro.inv > 0 ? Math.min(quiere, otro.inv - ESCAPE) : quiere;
+        if (m > 0) otro.mareo = Math.max(otro.mareo || 0, m);
+      }
+      cfg.despues(cb.imp, () => {
+        if (!cfg.lucha() || f.mareo > 0) return; // la cortaron antes del golpe
+        cfg.fxCombo(f, cb, 1);
+        if (!otro || H.dist(f, otro) > cb.alcance) return;
+        const d = H.dirA(f, otro), g = conInv(otro, { plumas: 1, empuje: cb.empuje, mareo: cb.mareo, dir: { x: d.x, z: d.z }, combo: cb.id }, cb.empuje);
+        if (cfg.golpear(f, otro, g)) { X.conecto = cfg.t(); X.remates = (X.remates || 0) + 1; }
+      });
+      const r = { ok: true, k, acierto: false, combo: cb.id };
+      if (cfg.alUsar) cfg.alUsar(f, k, r);
+      return r;
+    }
+    // El poder justo después de un combo: «¡Bomba Boricua!» (el poder es el de siempre; esto es solo el remate que se ve)
+    function alPoder(f, id) {
+      const X = f && f.ext; if (!c2On() || !X || !X.combo || id !== f.poder) return false;
+      if (cfg.t() - X.comboT > X.combo.rec + cfg.ventana(f)) { X.combo = null; return false; }
+      const cb = COMBO.bomba; X.combo = null; X.rec = 0; X.combos.bomba = (X.combos.bomba || 0) + 1;
+      cfg.anunciar(f, cb); cfg.sonar('combo', cb.n); cfg.fxCombo(f, cb, 1);
+      if (cfg.alUsar) cfg.alUsar(f, 'poder', { ok: true, combo: 'bomba' });
+      return true;
+    }
+    function paso(f, dt) {
+      const X = f && f.ext; if (!X) return;
+      X.bloq = Math.max(0, X.bloq - dt); X.rec = Math.max(0, X.rec - dt); X.bufT = Math.max(0, X.bufT - dt);
+      for (const k in X.cd) X.cd[k] = Math.max(0, X.cd[k] - dt);
+      if (X.combo && cfg.t() - X.comboT > X.combo.rec + cfg.ventana(f)) X.combo = null;
+      if (X.buf && !X.bufT) X.buf = '';
+      if (X.buf && X.bloq <= 0 && !((X.cd[X.buf] || 0) > 0) && X.rec <= 0 && !(f.mareo > 0) && cfg.lucha()) { const k = X.buf; X.buf = ''; hacer(f, k); }
+    }
+    return { usar, paso, bloquea, alPoder, st };
+  }
+  // ---- Este duelo (contra la Campeona): el motor de extremidades, su HUD, sus sonidos y sus efectos ----
+  const EXT_TECLA = { alaIzq: 'u', alaDer: 'o', pataIzq: 'j', pataDer: 'l' }; // de fábrica (input.js las deja cambiar en «Teclas»)
+  const teclaExt = a => { try { const m = G.input && G.input.mapa; if (m && m[a]) return m[a]; } catch (e) { /* sin mapa */ } return EXT_TECLA[a]; };
+  const EXM = crearExt({
+    lucha: () => C.fase === 'lucha' && !combosAbierta(),
+    otro: f => (f === C.j ? C.r : C.j),
+    golpear: (de, bl, g) => golpear(de, bl, g),
+    despues: (s, fn) => C.timers.push({ t: s, fn }),
+    t: () => C.tLucha || 0,
+    ventana: f => (f && f.ia ? VENTANA : ventanaCombo()),
+    anunciar: (f, cb) => anunciarCombo(f, cb),
+    fxCombo: (f, cb, fase) => { const o = f === C.j ? C.r : C.j; fxCombo(f, cb, fase, o, f === C.j || o === C.j); },
+    sonar,
+    alUsar: (f, k, r) => { const s = C.stats; s[f.ia ? 'extIA' : 'extJ'] = (s[f.ia ? 'extIA' : 'extJ'] || 0) + (k === 'poder' ? 0 : 1); if (r.combo) s[f.ia ? 'combosIA' : 'combosJ'] = (s[f.ia ? 'combosIA' : 'combosJ'] || 0) + 1; if (!f.ia) alUsarExt(k, r); }
+  });
+  // Sonidos procedurales (G.audio.define: audio.js no cambia). ext_ala: soplo de ala; ext_pata: golpecito; combo (n = combo):
+  // arpegio que sube y un «¡fiu!»; la Bomba Boricua, tres golpes de barril de bomba y el arpegio arriba.
+  if (G.audio && G.audio.define && !(G.audio.has && G.audio.has('combo'))) {
+    G.audio.define('ext_ala', (t, l, A) => { A.noise(t, 0.16, { type: 'bandpass', freq: 1500, to: 340, q: 0.9, gain: 0.16 }); A.noise(t + 0.05, 0.09, { type: 'lowpass', freq: 620, gain: 0.08 }); });
+    G.audio.define('ext_pata', (t, l, A) => { A.tone(175, t, 0.1, { type: 'triangle', to: 82, gain: 0.17 }); A.noise(t, 0.05, { type: 'bandpass', freq: 2600, q: 1.5, gain: 0.08 }); });
+    G.audio.define('combo', (t, n, A) => {
+      n = n | 0; const base = 392 * (1 + 0.05 * n);
+      if (n === 5) { [0, 0.16, 0.24].forEach((d, k) => { A.tone(k === 1 ? 150 : 104, t + d, 0.2, { type: 'sine', to: 70, gain: 0.2 }); A.noise(t + d, 0.06, { type: 'bandpass', freq: 1800, q: 1.2, gain: 0.12 }); }); t += 0.34; }
+      [0, 2, 4, 7].forEach((i, k) => A.tone(A.pent(i + n, base), t + k * 0.055, 0.2, { type: 'square', gain: 0.045 }));
+      A.tone(A.pent(9 + n, base), t + 0.24, 0.42, { type: 'triangle', gain: 0.12 }); A.tone(760, t + 0.24, 0.3, { type: 'sine', to: 1520, gain: 0.05 });
+      A.noise(t, 0.3, { freq: 700, to: 2800, q: 0.8, gain: 0.1 });
+    });
+  }
+  // Efectos de cada combo: al empezar (fase 0) un brillo; en el golpe (fase 1), su ráfaga (fx.js y fx_poderes.js) y un temblor
+  function fxCombo(f, cb, fase, o, cam) {
+    const p = f.pos, q = o ? o.pos : p, mx = (p.x + q.x) / 2, mz = (p.z + q.z) / 2, y = p.y + 1;
+    const v18 = (t, x, yy, z, n) => { try { if (G.v18fx && G.v18fx.combo) G.v18fx.combo(t, x, yy, z, n); } catch (e) { /* efecto */ } };
+    if (fase === 0) { fx('gold', p.x, p.y + 1.7, p.z); v18(cb.fx, p.x, p.y + 0.9, p.z, 5); return; }
+    const tipos = { abanico: ['feathers', 'ring'], polvo: ['dust', 'leaves'], chispas: ['gold', 'feathers'], remolino: ['feathers', 'leaves'], brinco: ['dust', 'leaves'], bomba: ['stars', 'gold'] }[cb.fx] || ['feathers'];
+    for (const t of tipos) fx(t, t === 'ring' ? mx : q.x, t === 'ring' ? p.y + 0.3 : y, t === 'ring' ? mz : q.z);
+    if (cb.fx === 'bomba' || cb.fx === 'brinco') fx('ring', p.x, p.y + 0.2, p.z);
+    v18(cb.fx, mx, y, mz, 10);
+    if (cam && G.camara && G.camara.shake && !(R && R.REDUCED)) G.camara.shake(0.07, 0.18);
+  }
+  // Nombre grande del combo en pantalla (1,3 s; el de la Campeona, más pequeño y azul)
+  let comboVis = 0, comboTO = 0;
+  function anunciarCombo(f, cb) {
+    if (!hud) return; hudExt(); const e = hud.q('combo'); if (!e) return;
+    e.textContent = ''; const b = document.createElement('b'); b.textContent = cb.nombre; e.appendChild(b);
+    if (f.ia) { const s = document.createElement('small'); s.textContent = TXT.comboRival; e.appendChild(s); }
+    e.className = 'vd-combo c-' + cb.id + (f.ia ? ' rival' : ''); e.hidden = false; void e.offsetWidth; e.classList.add('sale');
+    e.dataset.id = cb.id; comboVis = 1.3; clearTimeout(comboTO); comboTO = setTimeout(() => { if (comboVis > 0 && hud) { comboVis = 0; e.hidden = true; } }, 2200);
+  }
+  function usarExtJ(k) {
+    if (C.fase !== 'lucha' || !C.j || combosAbierta()) return { ok: false, motivo: 'fase' };
+    const r = EXM.usar(C.j, k); pintarExt(); return r;
+  }
+  // HUD de las extremidades (solo con la bandera; se crea la primera vez que hace falta): chips con su tecla en el escritorio,
+  // un 2×2 de botones en táctil (arriba las alas, abajo las patas; izquierda y derecha como en la cotorra, ≥ 48 px) que se
+  // coloca encima de los botones grandes (Acción, Impulso, Saltar, Volar) sin tapar ninguno, el nombre del combo y la carta
+  // «Combos» (lista, «Combos sin prisa» y pausa del duelo mientras está abierta).
+  let cartaC = false;
+  const combosAbierta = () => cartaC;
+  function secHtml(c) {
+    const k = a => `<kbd class="vd-k-${EXT[a].tipo}${EXT[a].lado < 0 ? ' der' : ''}">${TACTIL ? EXT[a].corto : teclaExt(a).toUpperCase() + ' · ' + EXT[a].corto}</kbd>`;
+    return c.sec ? c.sec[0].map(k).join('<i>→</i>') : `<kbd class="vd-k-combo">${TXT.unCombo}</kbd><i>→</i><kbd class="vd-k-poder">${TXT.tuPoder}</kbd>`;
+  }
+  // Estilos del HUD de extremidades y combos (también los usa el nombre del combo del duelo de 2: #v18-duelo2)
+  function cssExt() {
+    if (document.getElementById('v18-duelo-ext-css')) return;
+    const st = document.createElement('style'); st.id = 'v18-duelo-ext-css';
+    st.textContent = '#v18-duelo .vd-ext{display:inline-flex;gap:6px;margin-left:6px}#v18-duelo .vd-ext[hidden]{display:none}' +
+      '#v18-duelo button.vd-x{padding:6px 8px 6px 10px}#v18-duelo .vd-x-der::before,#v18-duelo-ext .der::before{transform:scaleX(-1)}' +
+      '#v18-duelo button.vd-combos-b{display:flex;align-items:center;gap:5px;margin:6px 0 0 auto;min-height:36px;padding:4px 10px;font-size:13px;background:#ffd6f0;--icon-size:16px}#v18-duelo.tactil button.vd-combos-b{min-height:48px;font-size:14px}#v18-duelo button.vd-combos-b[hidden]{display:none!important}' +
+      ':is(#v18-duelo,#v18-duelo2) .vd-combo{position:fixed;left:0;right:0;top:34%;text-align:center;pointer-events:none;z-index:42}:is(#v18-duelo,#v18-duelo2) .vd-combo[hidden]{display:none}' +
+      ':is(#v18-duelo,#v18-duelo2) .vd-combo b{display:inline-block;font:700 clamp(34px,9vw,64px)/1.05 Fredoka,system-ui,sans-serif;color:#fff6c8;-webkit-text-stroke:2px #7a3b00;paint-order:stroke;text-shadow:0 4px 0 #b4560a,0 8px 18px #0008;letter-spacing:.5px;padding:0 12px}' +
+      ':is(#v18-duelo,#v18-duelo2) .vd-combo small{display:block;font-size:18px;font-weight:700;color:#cfeeff;text-shadow:0 2px 4px #000a}' +
+      ':is(#v18-duelo,#v18-duelo2) .vd-combo.rival b{font-size:clamp(24px,6vw,40px);color:#dff4ff;-webkit-text-stroke:2px #0b3d66;text-shadow:0 3px 0 #1d6fa8,0 6px 14px #0008}' +
+      ':is(#v18-duelo,#v18-duelo2) .vd-combo.c-bomba b{color:#ffffff;-webkit-text-stroke:2px #8a1010;text-shadow:0 4px 0 #d6403a,0 8px 0 #0a50a1,0 12px 20px #0008}' +
+      ':is(#v18-duelo,#v18-duelo2) .vd-combo.c-revolu b{color:#d9ffe0;-webkit-text-stroke:2px #1f6a37}:is(#v18-duelo,#v18-duelo2) .vd-combo.c-coqui b{color:#e9ffb8;-webkit-text-stroke:2px #3a6a10}' +
+      ':is(#v18-duelo,#v18-duelo2) .vd-combo.sale b{animation:vdCombo .5s cubic-bezier(.2,1.6,.4,1)}@keyframes vdCombo{0%{transform:scale(.3) rotate(-6deg);opacity:0}60%{transform:scale(1.12) rotate(2deg);opacity:1}100%{transform:none}}' +
+      '@media (prefers-reduced-motion: reduce){:is(#v18-duelo,#v18-duelo2) .vd-combo.sale b{animation:none}}' +
+      '#v18-duelo .vd-cc{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 70px);margin:auto;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 120px);overflow:auto;background:rgba(255,248,234,.97);color:#3b2a14;text-shadow:none;border-radius:18px;padding:12px 14px;box-shadow:0 6px 20px #0007;pointer-events:auto;z-index:43}' +
+      '#v18-duelo .vd-cc[hidden]{display:none}#v18-duelo .vd-cc h3{margin:0 0 6px;font-size:22px}#v18-duelo .vd-cc ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}' +
+      '#v18-duelo .vd-cc li{background:#fff;border-radius:12px;padding:6px 10px;box-shadow:0 1px 3px #0002}#v18-duelo .vd-cc li b{display:block;font-size:17px;color:#7a3b00}' +
+      '#v18-duelo .vd-cc li span{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:3px 0}#v18-duelo .vd-cc li small{font-size:13px;opacity:.85}' +
+      '#v18-duelo .vd-cc kbd{font:700 13px/1 Fredoka,system-ui,sans-serif;padding:5px 8px;border-radius:8px;background:#3b2a14;color:#fff3d6}#v18-duelo .vd-cc kbd.vd-k-pata{background:#6b3f12}#v18-duelo .vd-cc kbd.vd-k-poder,#v18-duelo .vd-cc kbd.vd-k-combo{background:#8a1f6a}' +
+      '#v18-duelo .vd-cc i{font-style:normal;font-weight:700}#v18-duelo .vd-cc label{display:flex;gap:8px;align-items:center;margin:8px 0;font-size:15px;font-weight:600;min-height:44px}#v18-duelo .vd-cc input{width:24px;height:24px}' +
+      '#v18-duelo .vd-cc button{background:#3b2a14;color:#fff3d6;width:100%}' +
+      '#v18-duelo-ext{position:fixed;z-index:39;display:grid;grid-template-columns:repeat(2,58px);grid-template-rows:repeat(2,58px);gap:8px;pointer-events:none}#v18-duelo-ext[hidden]{display:none}' +
+      '#v18-duelo-ext button{pointer-events:auto;width:58px;height:58px;border-radius:18px;border:0;padding:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font:700 11px/1 Fredoka,system-ui,sans-serif;color:#3b2a14;background:#fff3d6;box-shadow:0 3px 0 #a98a5a,0 4px 10px #0005;--icon-size:24px;touch-action:none;-webkit-user-select:none;user-select:none}' +
+      '#v18-duelo-ext button.pata{background:#ffe0b8}#v18-duelo-ext button:active,#v18-duelo-ext button.pulsa{transform:translateY(2px);box-shadow:0 1px 0 #a98a5a}#v18-duelo-ext button.cd{opacity:.6}';
+    document.head.appendChild(st);
+  }
+  function hudExt() {
+    if (!hud || hud.ext) return hud && hud.ext;
+    cssExt();
+    const el = hud.el, bot = hud.q('bot');
+    const grupo = document.createElement('span'); grupo.className = 'vd-ext'; grupo.dataset.k = 'ext'; grupo.hidden = true;
+    grupo.innerHTML = EXT_K.map(a => `<button class="vd-chip vd-x${EXT[a].lado < 0 ? ' vd-x-der' : ''}" data-x="${a}" data-icon="${EXT[a].tipo === 'ala' ? 'wing' : 'paw'}" type="button"><span>${EXT[a].corto}</span><kbd data-xk="${a}"></kbd><i class="vd-cdv"></i></button>`).join('');
+    bot.appendChild(grupo);
+    const cb = document.createElement('button'); cb.className = 'vd-combos-b'; cb.type = 'button'; cb.dataset.a = 'combos'; cb.dataset.k = 'combosB'; cb.dataset.icon = 'star'; cb.textContent = TXT.combos; cb.hidden = true;
+    const como = hud.q('como'); como.after(cb);
+    const nom = document.createElement('div'); nom.className = 'vd-combo'; nom.dataset.k = 'combo'; nom.hidden = true; nom.setAttribute('aria-live', 'polite');
+    hud.q('centro').after(nom);
+    const carta = document.createElement('div'); carta.className = 'vd-cc'; carta.dataset.k = 'cc'; carta.hidden = true; carta.setAttribute('role', 'dialog'); carta.setAttribute('aria-label', TXT.combos);
+    el.appendChild(carta);
+    carta.addEventListener('change', e => { if (e.target && e.target.dataset.a === 'sinPrisa') ponerSinPrisa(e.target.checked); });
+    const pad = document.createElement('div'); pad.id = 'v18-duelo-ext'; pad.hidden = true;
+    pad.innerHTML = EXT_K.map(a => `<button type="button" data-x="${a}" class="${EXT[a].tipo}${EXT[a].lado < 0 ? ' der' : ''}" data-icon="${EXT[a].tipo === 'ala' ? 'wing' : 'paw'}" aria-label="${EXT[a].nombre}">${EXT[a].corto}</button>`).join('');
+    pad.addEventListener('pointerdown', e => {
+      const b = e.target.closest && e.target.closest('button[data-x]'); if (!b) return;
+      e.preventDefault(); e.stopPropagation(); b.classList.add('pulsa'); setTimeout(() => b.classList.remove('pulsa'), 120);
+      usarExtJ(b.dataset.x);
+    });
+    const viejo = document.getElementById('v18-duelo-ext'); if (viejo) viejo.remove();
+    document.body.appendChild(pad);
+    el.addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('button[data-x]'); if (!b || !el.contains(b)) return; e.preventDefault(); e.stopPropagation(); usarExtJ(b.dataset.x); }, true);
+    hud.ext = { grupo, combosB: cb, nom, carta, pad };
+    return hud.ext;
+  }
+  function abrirCombos(on) {
+    const X = hudExt(); if (!X) return false;
+    cartaC = !!on && c2On() && C.fase !== 'nada';
+    if (cartaC) {
+      X.carta.innerHTML = `<h3>${TXT.combos}</h3><ul>${COMBOS.map(c => `<li class="c-${c.id}"><b>${c.nombre}</b><span>${secHtml(c)}</span><small>${c.como}</small></li>`).join('')}</ul>` +
+        `<label><input type="checkbox" data-a="sinPrisa"${sinPrisa() ? ' checked' : ''}> ${TXT.sinPrisa}</label><button type="button" data-a="cerrarCombos">${TXT.aPelear}</button>`;
+    }
+    X.carta.hidden = !cartaC; return cartaC;
+  }
+  // Cada cuadro (barato): qué se ve, teclas, recargas y dónde va el 2×2 táctil (encima de los botones grandes)
+  function pintarExt() {
+    if (!hud || !hud.ext) { if (hud && c2On() && C.fase !== 'nada') hudExt(); if (!hud || !hud.ext) return; }
+    const X = hud.ext, on = c2On() && !hud.el.hidden && (C.fase === 'lucha' || C.fase === 'cuenta');
+    X.grupo.hidden = !on || TACTIL; X.combosB.hidden = !on || !!ent;
+    if (!on && cartaC) abrirCombos(false);
+    const verPad = on && TACTIL && !cartaC; X.pad.hidden = !verPad;
+    if (!on) { if (comboVis > 0) { comboVis = 0; X.nom.hidden = true; } return; }
+    const f = C.j, E = f && f.ext;
+    if (!TACTIL) for (const b of X.grupo.children) {
+      const a = b.dataset.x, kb = b.querySelector('kbd'), t = teclaExt(a).toUpperCase(); if (kb.textContent !== t) kb.textContent = t;
+      const cd = E ? Math.max(E.rec > 0 ? 1 : 0, (E.cd[a] || 0) / EXT[a].cd) : 0, pct = Math.round(Math.min(1, cd) * 20) * 5;
+      if (b._pct !== pct) { b._pct = pct; b.style.setProperty('--cd', pct + '%'); b.classList.toggle('cd', pct > 0); }
+    }
+    if (verPad) {
+      for (const b of X.pad.children) { const a = b.dataset.x, c = !!(E && (E.rec > 0 || (E.cd[a] || 0) > 0)); if (b._cd !== c) { b._cd = c; b.classList.toggle('cd', c); } }
+      const acts = document.getElementById('acts'), r = acts && acts.getBoundingClientRect();
+      if (r && r.width > 0) {
+        const tag = hud.tags && hud.tags.querySelector('[data-t="b-dash"]'), tr = tag && !tag.hidden ? tag.getBoundingClientRect() : null;
+        const s = sitioPad(r, tr && tr.height ? tr.top : r.top, innerWidth, X.pad.offsetWidth || 124, X.pad.offsetHeight || 124);
+        X.pad.style.left = s.left + 'px'; X.pad.style.top = s.top + 'px';
+      }
+    }
+  }
+  // Dónde va el 2×2: encima de los botones grandes (#acts) y de la etiqueta de Impulso, pegado al borde de fuera (a la
+  // derecha; en modo zurdo, a la izquierda), sin salirse de la pantalla. r: caja de #acts; arriba: lo más alto de lo que hay
+  // encima (etiqueta de Impulso o el propio #acts); w, h: tamaño del 2×2.
+  function sitioPad(r, arriba, vw, w, h) {
+    const zurdo = r.left + r.width / 2 < vw / 2;
+    const left = zurdo ? Math.max(8, r.left) : Math.min(vw - 8 - w, r.right - w);
+    return { left: Math.round(left), top: Math.round(Math.max(8, Math.min(r.top, arriba) - 12 - h)), zurdo };
+  }
+  // Entreno (con la bandera): después del poder, dos combos (¡Abanicazo! y ¡Patita Sabrosa!)
+  function alUsarExt(k, r) {
+    if (!ent || ent.fin > 0) return;
+    const P = pasosEnt()[ent.paso]; if (!P || P.id.indexOf('combo:') !== 0) return;
+    if (r.combo === P.id.slice(6)) avanzarEntreno();
+  }
+  const vidaApi = { antes: vida, huesos: vidaHuesos, andar, andarAplicar, andarHuesos, AND, ESTADOS: VIDA_EST, VEL: VIDA_VEL, c2: C2,
+    ext: { crear: crearExt, css: cssExt, fxCombo, EXT, EXT_K, COMBOS, COMBO, buscarCombo, VENTANA, VENTANA_LENTA, EXT_TECLA, teclaExt, ventana: ventanaCombo, sinPrisa, ponerSinPrisa, motor: EXM } };
   function dibujarRival(dt, vel, sinAnimar) {
     const ch = C.ch; if (!ch) return;
     const r = C.r, root = ch.root, now = performance.now() / 1000, lucha = C.fase === 'lucha';
@@ -1642,9 +2071,10 @@ window.AVV18Combate = function (G) {
     if (!prep && !marcaAviso) return;
     const m = avisoSprite(), r = C.r; m.visible = !!prep;
     if (!prep) return;
-    const s = (prep === 'golpe_ala' ? 0.62 : 0.46) * (1 + 0.12 * Math.sin(now * 18));
+    const ala = prep === 'golpe_ala' || prep.indexOf('ext:') === 0; // las extremidades de la Campeona se anuncian como su aletazo
+    const s = (ala ? (prep === 'golpe_ala' ? 0.62 : 0.55) : 0.46) * (1 + 0.12 * Math.sin(now * 18));
     m.scale.set(s, s, 1); m.position.set(r.pos.x, r.pos.y + (C.cabezaAlto || 1.5) + AVISO_SOBRE + s / 2, r.pos.z);
-    m.material.color.set(prep === 'golpe_ala' ? '#ff9d2e' : '#ffe066');
+    m.material.color.set(ala ? '#ff9d2e' : '#ffe066');
   }
   function pasoJugador(dt) {
     const j = C.j;
@@ -1747,9 +2177,11 @@ window.AVV18Combate = function (G) {
       if (hud) hud.q('centro').textContent = C.cuenta > 0 ? String(n) : TXT.ya;
       if (C.cuenta <= 0) { C.fase = 'lucha'; centroT = 0.7; }
     }
+    if (comboVis > 0) { comboVis -= dt; if (comboVis <= 0 && hud && hud.ext) hud.ext.nom.hidden = true; }
+    if (C.fase === 'lucha' && cartaC) { pintarExt(); return; } // la carta «Combos» abierta: el duelo espera
     if (C.fase === 'lucha') {
       C.tLucha = (C.tLucha || 0) + dt;
-      H.paso(C.j, dt); H.paso(C.r, dt); pasoNuevos(C.j, dt); pasoNuevos(C.r, dt); pasoTrampas(dt);
+      H.paso(C.j, dt); H.paso(C.r, dt); if (c2On()) { EXM.paso(C.j, dt); EXM.paso(C.r, dt); } pasoNuevos(C.j, dt); pasoNuevos(C.r, dt); pasoTrampas(dt);
       for (let i = C.timers.length - 1; i >= 0; i--) { const t = C.timers[i]; t.t -= dt; if (t.t <= 0) { C.timers.splice(i, 1); t.fn(); if (C.fase !== 'lucha') break; } }
       if (C.fase === 'lucha' && !ent) pasoIA(dt); // en el entreno la Campeona espera quieta
       if (C.fase === 'lucha') pasoBalas(dt);
@@ -1758,7 +2190,7 @@ window.AVV18Combate = function (G) {
       if (C.fase === 'lucha' && Math.hypot(S.pos.x - sitio.x, S.pos.z - sitio.z) > SALIDA_R) { salir(TXT.lejos); return; }
       if (C.fase === 'lucha' && ent) pasoEntreno(dt);
       else if (C.fase === 'lucha') pasoPistas(dt);
-      if (Math.random() < dt * 4) pintar(); else pintarChips();
+      if (Math.random() < dt * 4) pintar(); else { pintarChips(); if (c2On()) pintarExt(); }
     } else if (C.fase === 'fin') {
       for (const f of [C.j, C.r]) if (f && f.finMareo > 0) { f.finMareo = Math.max(0, f.finMareo - dt); f.mareo = f.finMareo; }
       if (C.j && C.j.finMareo > 0) { M.vx *= 0.8; M.vz *= 0.8; if (azar() < dt * 5) fx('gold', S.pos.x, S.pos.y + 1.8, S.pos.z); }
@@ -2415,7 +2847,7 @@ window.AVV18Combate = function (G) {
         !!C.r.anima && !C.r.anima2 && !(C.j && C.j.anima2) && (!ch || Math.abs(ch.root.scale.y - raiz0) < 1e-6), JSON.stringify({ anima: !!C.r.anima, anima2: !!C.r.anima2 }));
       // Equilibrio: el mismo duelo con guion y semilla, con y sin la bandera, da lo mismo (IA, tiempos, daño y resultado)
       const duelo = on => {
-        G.combate2 = on; iniciar({ sinCuenta: true, especie: 'vittata', semilla: 11, dificultad: DIFICULTAD[1] });
+        G.combate2 = on; iniciar({ sinCuenta: true, especie: 'vittata', semilla: 11, dificultad: DIFICULTAD[1], sinExtIA: true }); // la capa visual sola (las extremidades de la IA, en «C2 · …»)
         S.pos.x = sitio.x - 4; S.pos.z = sitio.z; let n = 0;
         for (let t = 0; t < 30 && C.fase === 'lucha'; t += dt, n++) {
           const r = C.r, dx = r.pos.x - S.pos.x, dz = r.pos.z - S.pos.z, d = Math.hypot(dx, dz) || 1; S.facing = { x: dx / d, z: dz / d }; M.vx = M.vz = 0;
@@ -2448,7 +2880,7 @@ window.AVV18Combate = function (G) {
       C.r.mareo = 0.8; const subsM = []; ver(1.5, frena, () => { const s = A2(C.r).sub; if (subsM[subsM.length - 1] !== s) subsM.push(s); });
       check('C2: mareada pasa a «aturdido» (con estrellitas) y al pasarse se recupera (sacude la cabeza) antes de volver', subsM.indexOf('aturdido') >= 0 && subsM.indexOf('recupera') > subsM.indexOf('aturdido'), JSON.stringify(subsM));
       // Telegrafía de la Campeona: anticipación que crece y, al soltar el aletazo, la acción entra directa en su impacto
-      quieta(1.8); C.j.inv = 0; C.r.golpeT = 0; C.r.pensar = 0; C.r.tiroT = 99; C.r.esquivaT = 99; C.r.poderT = 99; const subsA = []; let alaAnt = 0;
+      quieta(1.8); C.sinExtIA = true; C.j.inv = 0; C.r.golpeT = 0; C.r.pensar = 0; C.r.tiroT = 99; C.r.esquivaT = 99; C.r.poderT = 99; const subsA = []; let alaAnt = 0;
       ver(1.0, () => { M.vx = M.vz = 0; C.r.esquivaT = 99; C.r.poderT = 99; C.r.tiroT = 99; }, () => { const a = A2(C.r); if (subsA[subsA.length - 1] !== a.sub) subsA.push(a.sub); if (a.sub === 'anticipa') alaAnt = Math.max(alaAnt, Math.abs(a.out[C2.I.alaXL]) + Math.abs(a.out[C2.I.alaXR])); });
       check('C2: la Campeona anticipa su aletazo (ala atrás que crece con el aviso) y luego golpea (anticipa → ala)', subsA.indexOf('anticipa') >= 0 && subsA.indexOf('ala') > subsA.indexOf('anticipa') && alaAnt > 0.4, JSON.stringify({ subsA, alaAnt: +alaAnt.toFixed(2) }));
       // Grito: se echa atrás y lanza la cabeza con el pico abierto del todo (el del modelo también: ch.pico) y anillos del pico
@@ -2490,6 +2922,121 @@ window.AVV18Combate = function (G) {
       check('C2: al apagar la bandera la escala de la Campeona vuelve y retoma la capa de siempre', !ch || (Math.abs(ch.root.scale.y - raiz0) < 1e-6 && Math.abs(ch.root.scale.x - raiz0) < 1e-6 && !C.r.anima2), JSON.stringify({ sy: ch && ch.root.scale.y, raiz0 }));
     } catch (e) { check('C2: sin excepciones', false, e && (e.stack || e.message)); }
     finally { G.combate2 = c2Prueba0; try { salir(); } catch (e) { /* ya fuera */ } }
+    // ---------- Combate 2.0 · extremidades y combos (?combate2=1; Kelvin 10-nov: «controles para ala izquierda, ala derecha,
+    // pierna izquierda, pierna derecha y poder crear combos») ----------
+    const prisa0 = vidaApi.ext.sinPrisa();
+    try {
+      const dt = 1 / 30, A2 = f => f.anima2 || {}, X = vidaApi.ext, I2 = C2.I;
+      const ver = (s, antes, cada) => { for (let t = 0; t < s; t += dt) { if (antes) antes(); paso(dt); if (pl3d) pl3d.update(dt); if (cada) cada(); } };
+      const quieta2 = dx => { const r = C.r; r.pos.x = S.pos.x + (dx || 1.2); r.pos.z = S.pos.z; r.pensar = 99; r.esquivaT = 99; r.poderT = 99; r.golpeT = 99; r.tiroT = 99; r.mov.t = 0; r.kb.t = 0; r.kb.x = r.kb.z = 0; r.prep = ''; M.vx = M.vz = 0; S.facing = { x: 1, z: 0 }; };
+      const fresca = () => { C.j.ext = null; C.j.cd = {}; C.j.energia = 100; C.j.mareo = 0; C.j.inv = 0; C.r.inv = 0; C.r.mareo = 0; C.r.escudo = 0; C.r.plumas = C.r.plumasMax; C.j.plumas = C.j.plumasMax; C.timers.length = 0; };
+      const tecla = (k, tipo) => { const e = new KeyboardEvent(tipo || 'keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(e); return e; };
+      // 1. Sin la bandera: ni teclas nuevas, ni botones, ni chips, ni «Combos»
+      G.combate2 = false; iniciar({ sinCuenta: true, especie: 'vittata' }); quieta2();
+      const evU = tecla('u'); tecla('u', 'keyup');
+      const vis = q => !!document.querySelector(q);
+      const sinUrl = !/[?&]combate2=1\b/.test(location.search), u0 = X.motor.usar(C.j, 'alaIzq');
+      check('C2 · extremidades: sin la bandera, U no hace nada, no hay botones táctiles, chips ni «Combos» y el mapa de teclas es el de siempre',
+        !C.j.ext && !evU.defaultPrevented && !vis('#v18-duelo-ext:not([hidden])') && !vis('#v18-duelo .vd-ext:not([hidden])') && !vis('#v18-duelo .vd-combos-b:not([hidden])') && u0.ok === false && (!sinUrl || !(G.input && G.input.ACCIONES.includes('alaIzq'))),
+        JSON.stringify({ ext: !!C.j.ext, prevenida: evU.defaultPrevented, u0, acciones: G.input && G.input.ACCIONES.length }));
+      // 2. Cada extremidad con su tecla (U O J L) sale con su pose (ala de ese lado arriba y barriendo; pata de ese lado adelante)
+      G.combate2 = true; iniciar({ sinCuenta: true, especie: 'vittata', sinExtIA: true }); quieta2(); ver(0.3, () => quieta2());
+      const poses = {}; let posesOk = true;
+      for (const k of X.EXT_K) {
+        fresca(); quieta2(); ver(0.6, () => quieta2());
+        const ev = tecla(X.teclaExt(k)); tecla(X.teclaExt(k), 'keyup');
+        const E = X.EXT[k], izq = E.lado > 0; let ala = 0, barre = 0, pierna = 0, otra = 0; const h0 = (A2(C.j).historial || []).length;
+        ver(0.3, () => quieta2(), () => { const o = A2(C.j).out; if (!o) return; ala = Math.max(ala, o[izq ? I2.alaL : I2.alaR]); barre = Math.min(barre, o[izq ? I2.alaXL : I2.alaXR]); pierna = Math.min(pierna, o[izq ? I2.piernaL : I2.piernaR]); otra = Math.min(otra, o[izq ? I2.piernaR : I2.piernaL]); });
+        const subs = (A2(C.j).historial || []).slice(h0), fam = 'ext_' + E.tipo;
+        const ok = ev.defaultPrevented && C.j.ext && C.j.ext.usos === 1 && subs.indexOf(fam) >= 0 && C.r.plumas === C.r.plumasMax - 1 &&
+          (E.tipo === 'ala' ? ala > 0.8 && barre < -0.8 : pierna < -0.9 && otra > -0.4);
+        poses[k] = { ok, fam: subs.join('>'), ala: +ala.toFixed(2), barre: +barre.toFixed(2), pierna: +pierna.toFixed(2), otra: +otra.toFixed(2), pl: C.r.plumas };
+        posesOk = posesOk && ok;
+      }
+      check('C2 · extremidades: U, O, J y L dan su golpe con su pose (ala izquierda/derecha arriba y barriendo; pata izquierda/derecha adelante y la otra quieta) y quitan 1 pluma', posesOk, JSON.stringify(poses));
+      // 3. Cada combo sale con su secuencia (y su nombre grande), y no con las equivocadas ni fuera de tiempo
+      const prueba = (ks, gap) => { fresca(); quieta2(); ver(0.4, () => quieta2()); for (const k of ks) { if (k === 'poder') usar(C.j, C.j.poder); else usarExtJ(k); ver(gap, () => quieta2()); } return Object.keys((C.j.ext && C.j.ext.combos) || {}).join(','); };
+      const vistos = {}; let combosOk = true;
+      for (const c of X.COMBOS) if (c.sec) for (const q of c.sec) { const r = prueba(q, 0.25), nom = hud.q('combo'); const ok = r === c.id && nom && nom.dataset.id === c.id; vistos[q.join('+')] = r + (ok ? '' : ' ✗'); combosOk = combosOk && ok; ver(1.2, () => quieta2()); }
+      check('C2 · combos: cada combo sale de su secuencia (las 14 formas: ¡Abanicazo!, ¡Patita Sabrosa!, ¡Cruzaíto!, ¡Revolú de Plumas! y ¡Brinco Coquí!) con su nombre en pantalla', combosOk, JSON.stringify(vistos));
+      const malas = { 'alaIzq+alaIzq': prueba(['alaIzq', 'alaIzq'], 0.25), 'pataIzq+alaDer': prueba(['pataIzq', 'alaDer'], 0.25), 'alaDer+pataDer': prueba(['alaDer', 'pataDer'], 0.25),
+        'pataDer+alaDer': prueba(['pataDer', 'alaDer'], 0.25), 'tarde': (fresca(), quieta2(), ver(0.4, () => quieta2()), usarExtJ('alaIzq'), ver(0.85, () => quieta2()), usarExtJ('alaDer'), ver(0.3, () => quieta2()), Object.keys(C.j.ext.combos).join(',')) };
+      check('C2 · combos: las secuencias equivocadas no hacen combo, ni las entradas con más de 0,6 s entre una y otra', Object.values(malas).every(v => v === ''), JSON.stringify(malas));
+      X.ponerSinPrisa(true); const lento = prueba(['alaIzq', 'alaDer'], 1.0), lento3 = prueba(['pataIzq', 'pataIzq', 'alaIzq'], 1.0); X.ponerSinPrisa(false); const normal = prueba(['alaIzq', 'alaDer'], 1.0);
+      check('C2 · combos: con «Combos sin prisa» salen tocando despacio (1 s entre toques); sin la opción, no', lento === 'abanicazo' && lento3 === 'coqui' && normal === '', JSON.stringify({ lento, lento3, normal, ventanas: [X.VENTANA, X.VENTANA_LENTA] }));
+      // 4. ¡Bomba Boricua!: el poder justo después de un combo (y no sin combo)
+      const bomba = prueba(['alaIzq', 'alaDer', 'poder'], 0.4), nomB = hud.q('combo') && hud.q('combo').dataset.id, bombaSola = prueba(['poder'], 0.3);
+      check('C2 · combos: ¡Bomba Boricua! remata con el poder justo después de un combo (con su nombre); el poder solo no la hace', /bomba/.test(bomba) && nomB === 'bomba' && bombaSola === '', JSON.stringify({ bomba, nomB, bombaSola }));
+      // 5. Reglas: un combo quita lo mismo que un golpe (1 pluma), suelta a la rival antes de que deje de ser invulnerable y
+      // deja a quien lo hizo recuperando (se le puede castigar)
+      fresca(); quieta2(); ver(0.3, () => quieta2());
+      usarExtJ('alaIzq'); ver(0.2, () => quieta2()); const rc = usarExtJ('alaDer');
+      const bloq = { ala: usar(C.j, 'golpe_ala').motivo, ext: X.motor.usar(C.j, 'pataIzq').motivo }; let hueco = 0, libreT = -1;
+      ver(1.6, () => quieta2(), () => { if (C.r.mareo <= 0 && C.r.inv > 0) hueco = Math.max(hueco, C.r.inv); if (libreT < 0 && C.j.ext.rec <= 0) libreT = C.tLucha; });
+      check('C2 · combos: el combo quita 1 pluma como un golpe, suelta a la rival con su hueco para escapar (≥ 0,2 s antes de que acabe su invulnerabilidad) y deja a Vittata recuperando (ni ala ni extremidades)',
+        rc.combo === 'abanicazo' && C.r.plumas === C.r.plumasMax - 1 && hueco >= 0.2 && bloq.ala === 'recupera' && bloq.ext === 'recupera' && libreT > 0,
+        JSON.stringify({ combo: rc.combo, plumas: C.r.plumas, hueco: +hueco.toFixed(2), bloq }));
+      // 6. Entreno: con la bandera, 5 pasos; los dos últimos enseñan ¡Abanicazo! y ¡Patita Sabrosa!
+      iniciar({ entreno: true, especie: 'vittata', sinExtIA: true }); quieta2(); ent.paso = 3; pintarEntreno();
+      const e4 = { paso: hud.q('entPaso').textContent, txt: hud.q('entTxt').textContent, k: hud.q('entK').textContent, puntos: hud.q('entPP').children.length };
+      C.j.ext = null; usarExtJ('alaIzq'); ver(0.25, () => quieta2()); usarExtJ('alaDer'); const p4 = ent && ent.paso; ver(1.4, () => quieta2());
+      usarExtJ('pataIzq'); ver(0.25, () => quieta2()); usarExtJ('pataDer'); const fin5 = !!(ent && ent.fin > 0);
+      check('C2 · entreno: 5 pasos con la bandera y los dos últimos enseñan 2 combos (¡Abanicazo! y ¡Patita Sabrosa!)', pasosEnt().length === 5 && e4.paso === TXT.entPaso(4, 5) && e4.txt === (TACTIL ? TXT.t4 : TXT.e4) && e4.puntos === 5 && p4 === 4 && fin5, JSON.stringify({ e4, p4, fin5 }));
+      salir();
+      // 7. La IA usa extremidades y combos según su etapa (Aprendiz casi nunca; Maestro más)
+      const iaUsa = dif => { let ext = 0, cmb = 0, s = 0; for (let k = 0; k < 3; k++) { iniciar({ sinCuenta: true, especie: 'vittata', dificultad: dif, semilla: 5 + k * 13 }); S.pos.x = sitio.x - 2; S.pos.z = sitio.z;
+        for (let t = 0; t < 25 && C.fase === 'lucha'; t += 0.05) { const d = H.dirA(C.j, C.r); S.facing = { x: d.x, z: d.z }; if (d.d > 1.7) { S.pos.x += d.x * 4 * 0.05; S.pos.z += d.z * 4 * 0.05; } C.j.plumas = 5; paso(0.05); s += 0.05; }
+        ext += C.stats.extIA || 0; cmb += C.stats.combosIA || 0; } return { ext, cmb, s: Math.round(s) }; };
+      const iaA = iaUsa(DIFICULTAD[0]), iaM = iaUsa(DIFICULTAD[3]);
+      check('C2 · IA: la Campeona también usa alas, patas y combos según su etapa (Aprendiz pocas veces; Maestro más, con combos)', iaM.ext > iaA.ext && iaM.cmb >= 1 && iaA.ext >= 1, JSON.stringify({ aprendiz: iaA, maestro: iaM }));
+      // 8. Equilibrio: daño por segundo de la «mejor jugada» (siempre a tiro, sin fallos, esquiva los avisos) con y sin
+      // extremidades y combos, contra la misma Campeona (con sus extremidades): dentro de ±10 %
+      const SEQS = [['alaIzq', 'alaDer'], ['pataIzq', 'pataDer'], ['alaIzq', 'pataDer'], ['alaDer', 'alaDer', 'pataIzq'], ['pataDer', 'pataDer', 'alaIzq']];
+      const mejor = (conExt, dif, sem) => {
+        iniciar({ sinCuenta: true, especie: 'vittata', dificultad: dif, semilla: sem }); S.pos.x = sitio.x - 4; S.pos.z = sitio.z;
+        let n = 0, plan = [];
+        for (let t = 0; t < 120 && C.fase === 'lucha'; t += 0.05) {
+          const r = C.r, j = C.j, d = H.dirA(j, r); S.facing = { x: d.x, z: d.z }; let mx = 0, mz = 0;
+          if (d.d > 1.6) { mx += d.x; mz += d.z; }
+          if (r.prep && (r.prep === 'golpe_ala' || r.prep.indexOf('ext:') === 0) && d.d < 2.7) { mx = -d.x; mz = -d.z; }
+          if (C.balas.find(b => b.de === r && Math.hypot(b.m.position.x - S.pos.x, b.m.position.z - S.pos.z) < 4)) { mx = -d.z; mz = d.x; }
+          S.pos.x += mx * 5.5 * 0.05; S.pos.z += mz * 5.5 * 0.05;
+          const ox = S.pos.x - sitio.x, oz = S.pos.z - sitio.z, od = Math.hypot(ox, oz); if (od > 10.5) { S.pos.x = sitio.x + ox / od * 10.5; S.pos.z = sitio.z + oz / od * 10.5; }
+          if (!(j.mareo > 0)) {
+            if (plan.length) { if (--plan[0].w <= 0) usarExtJ(plan.shift().k); }
+            else if (H.listo(j, j.poder).ok && d.d > 2.2 && d.d < 6) usar(j, j.poder);
+            else if (conExt && d.d < 2.15 && !(r.inv > 0) && !(j.ext && j.ext.rec > 0)) { const q = SEQS[n++ % SEQS.length]; usarExtJ(q[0]); plan = q.slice(1).map(k => ({ k, w: 5 })); }
+            else if (d.d < 2.3 && !(r.inv > 0) && H.listo(j, 'golpe_ala').ok) usar(j, 'golpe_ala');
+            else if (d.d > 3.5 && j.energia >= 30 && H.listo(j, 'semilla').ok) usar(j, 'semilla');
+          }
+          paso(0.05);
+        }
+        return { q: (C.r.plumasMax || 5) - C.r.plumas, t: C.tLucha || 0 };
+      };
+      const dps = conExt => { let q = 0, t = 0; for (const di of [1, 3]) for (let k = 0; k < 4; k++) { const r = mejor(conExt, DIFICULTAD[di], 3 + k * 17); q += r.q; t += r.t; } return q / Math.max(1e-3, t); };
+      const dA = dps(false), dB = dps(true), rel = dB / dA - 1;
+      check('C2 · equilibrio: con extremidades y combos, la mejor jugada quita plumas al mismo ritmo (±10 %) que con lo de siempre',
+        Math.abs(rel) <= 0.1, JSON.stringify({ siempre: +dA.toFixed(3), conCombos: +dB.toFixed(3), cambio: Math.round(rel * 1000) / 10 + ' %' }));
+      // 9. Táctil a 390 × 844: el 2×2 cabe, sus botones miden ≥ 48 px y no tapa Acción, Impulso (con su etiqueta), Saltar ni Volar
+      {
+        const acts = { left: 390 - 20 - 182, right: 370, top: 844 - 28 - 170, bottom: 816, width: 182 }, tagTop = acts.top - 40;
+        const hx = hudExt(), b = hx && hx.pad.querySelector('button'), cs = b && getComputedStyle(b), w = 2 * parseFloat(cs.width) + 8, h = 2 * parseFloat(cs.height) + 8;
+        const sp = sitioPad(acts, tagTop, 390, w, h), z = sitioPad(Object.assign({}, acts, { left: 20, right: 202 }), tagTop, 390, w, h);
+        const dentro = q => q.left >= 8 && q.left + w <= 382 && q.top >= 8 && q.top + h <= 844;
+        const choca = (q, r) => !(q.left + w <= r.left || q.left >= r.right || q.top + h <= r.top || q.top >= r.bottom);
+        const ok = parseFloat(cs.width) >= 48 && parseFloat(cs.height) >= 48 && dentro(sp) && dentro(z) && !choca(sp, { left: acts.left, right: acts.right, top: tagTop, bottom: acts.bottom }) && !choca(z, { left: 20, right: 202, top: tagTop, bottom: acts.bottom }) && !sp.zurdo && z.zurdo && sp.top > 66 + 140;
+        check('C2 · táctil (390 × 844): el 2×2 de alas y patas cabe, mide ≥ 48 px y va encima de los botones grandes sin taparlos (también en modo zurdo)', ok, JSON.stringify({ boton: [cs.width, cs.height], sp, z }));
+      }
+      // 10. «Reducir movimiento»: el combo no sacude la cámara ni lanza partículas de fx_poderes; sin cortes bruscos en las poses
+      const RD = R.REDUCED, J = G.camara && G.camara.juice;
+      try { R.REDUCED = true; iniciar({ sinCuenta: true, especie: 'vittata', sinExtIA: true }); quieta2(); ver(0.2, () => quieta2()); if (J) { J.shake = 0; J.amp = 0; }
+        const r1 = prueba(['alaIzq', 'alaDer'], 0.3), sh = J ? J.shake : 0, pf = G.v18fx && G.v18fx.combo ? G.v18fx.combo('abanico', 0, 50, 0, 4).ok : false;
+        check('C2 · combos: con «Reducir movimiento» no sacuden la cámara ni lanzan partículas extra', r1 === 'abanicazo' && !(sh > 0) && pf === false, JSON.stringify({ r1, sh, pf })); }
+      finally { R.REDUCED = RD; }
+      const sm = A2(C.j).saltoMax || 0, se = A2(C.j).saltoEsc || 0;
+      check('C2 · extremidades y combos sin cortes bruscos (a 30 fps, ≤ 0,5 rad por giro y ≤ 0,12 de escala por cuadro)', sm > 0 && sm < 0.5 && se < 0.12, JSON.stringify({ giro: +sm.toFixed(3), escala: +se.toFixed(3), donde: A2(C.j).saltoK }));
+    } catch (e) { check('C2 · extremidades: sin excepciones', false, e && (e.stack || e.message)); }
+    finally { G.combate2 = c2Prueba0; vidaApi.ext.ponerSinPrisa(prisa0); try { salir(); } catch (e) { /* ya fuera */ } }
     // QA-192: fuera del cap. 1 el duelo no se ofrece aunque la rival exista; la marca usa la misma guarda
     try {
       const cap1oferta = C.fase === 'nada' && !!C.ch; // lo que se ofrecería en cap1
@@ -2522,6 +3069,7 @@ window.AVV18Combate = function (G) {
     quitar(C.ch); Promise.resolve(C.listo).then(quitar, () => {});
     if (hud && hud.el) hud.el.remove();
     if (hud && hud.tags) hud.tags.remove();
+    if (hud && hud.ext && hud.ext.pad) hud.ext.pad.remove();
   }
   G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, vida: vidaApi, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
   return G.v18combate;

@@ -25,14 +25,20 @@ AVE.module('input', function (G) {
   const paused = () => !!(G.pausa && G.pausa.activa());
 
   // ---------- Mapa de teclas ----------
-  const ACCIONES = ['arriba', 'abajo', 'izquierda', 'derecha', 'volar', 'aterrizar', 'accion', 'poder', 'mapa'];
-  const DEFECTO = { arriba: 'w', abajo: 's', izquierda: 'a', derecha: 'd', volar: 'v', aterrizar: 'x', accion: 'e', poder: 'f', mapa: 'm' };
+  // Combate 2.0 (?combate2=1, src/game/v18/combate.js y duelo2.js): las 4 extremidades del duelo (ala izquierda U, ala
+  // derecha O, pata izquierda J, pata derecha L; arriba las alas, abajo las patas). Solo con la bandera: sin ella el mapa,
+  // lo guardado y la sección «Teclas» quedan como siempre. Fuera de un duelo estas teclas no hacen nada.
+  const EXT_DUELO = /[?&]combate2=1\b/.test(location.search) || G.combate2 === true;
+  const ACCIONES = ['arriba', 'abajo', 'izquierda', 'derecha', 'volar', 'aterrizar', 'accion', 'poder', 'mapa'].concat(EXT_DUELO ? ['alaIzq', 'alaDer', 'pataIzq', 'pataDer'] : []);
+  const DEFECTO = Object.assign({ arriba: 'w', abajo: 's', izquierda: 'a', derecha: 'd', volar: 'v', aterrizar: 'x', accion: 'e', poder: 'f', mapa: 'm' },
+    EXT_DUELO ? { alaIzq: 'u', alaDer: 'o', pataIzq: 'j', pataDer: 'l' } : {});
   // Lo que se mantiene pulsado y otros leen en `keys`: fisica.js (mover) y guia_controles.js (impulso, 'f')
   const CANON = { arriba: 'w', abajo: 's', izquierda: 'a', derecha: 'd', poder: 'f' };
   // Textos en español; el inglés está en content/cap1/en.js
   const NOMBRES = { arriba: 'Avanzar', abajo: 'Retroceder', izquierda: 'Izquierda', derecha: 'Derecha',
     volar: 'Volar (otra vez: aterrizar)', aterrizar: 'Aterrizar', accion: 'Acción: hablar, examinar, usar',
-    poder: 'Impulso (mantenlo: tu poder)', mapa: 'Abrir el mapa' };
+    poder: 'Impulso (mantenlo: tu poder)', mapa: 'Abrir el mapa',
+    alaIzq: 'Duelo: ala izquierda', alaDer: 'Duelo: ala derecha', pataIzq: 'Duelo: pata izquierda', pataDer: 'Duelo: pata derecha' };
   // Fijas: Espacio, C, P (pausa, ui.js), Q, R, T, G, H y los gestos 1–7 ya tienen función (G y H son el poder y la alianza de
   // los duelos V18); las teclas con nombre (flechas, Enter, Shift, Esc…) tampoco
   const RESERVADAS = new Set([' ', 'c', 'p', 'q', 'r', 't', 'g', 'h', '1', '2', '3', '4', '5', '6', '7']);
@@ -52,7 +58,7 @@ AVE.module('input', function (G) {
     for (const a of ACCIONES) {
       if (r[a] != null) continue;
       const usadas = new Set(Object.values(r));
-      r[a] = usadas.has(DEFECTO[a]) ? [...'bjklnopuyz'].find(k => !usadas.has(k)) : DEFECTO[a];
+      r[a] = usadas.has(DEFECTO[a]) ? [...'bjklnopuyz'].find(k => !usadas.has(k) && asignable(k)) : DEFECTO[a]; // la P es la pausa: no vale
     }
     return r;
   }
