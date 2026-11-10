@@ -140,7 +140,7 @@
 | CG-95 | libre | **«Hay una versión nueva»:** cuando se publica, el juego abierto avisa amable «Hay novedades: toca para actualizar» (service worker), sin perder la partida; así Kelvin no tiene que cerrar la pestaña. Probar el cambio de versión en local. | sw.js, src/boot.js (solo el aviso) | — |
 | CG-96 | EN CURSO · Grok · 9-nov 23:58 AST | **Cómic con lo nuevo:** plantillas/pegatinas de pesca, Construir y Patrulla para las viñetas del cómic; mismas reglas (local, sin subir). comicTest en verde. | módulos del cómic (src/game/comic* ) | — |
 | CG-97 | EN CURSO · Grok · 9-nov 23:58 AST | **Minijuegos V18 con chispa:** Maestro Moon, sapo, serpiente, Guardián, carreras de Chispa: pistas en 20 s, celebración clara al ganar, sin pantallas de espera; balance igual. Pruebas V18 de cada uno en verde. | src/game/v18/moon.js, sapo.js, serpiente.js, guardian.js, chispa.js, descubrir.js | — |
-| CG-98 | libre | **Criadero y huevos más claros:** qué hacer en cada paso, celebración al nacer, nada de pantallas vacías. criaderoTest en verde. | módulos del criadero | — |
+| CG-98 | EN CURSO · Grok · 10-nov 00:08 AST | **Criadero y huevos más claros:** qué hacer en cada paso, celebración al nacer, nada de pantallas vacías. criaderoTest en verde. | módulos del criadero | — |
 
 ## Ya no son de este carril
 - **Modo creador de mundos:** espera a que el juego esté terminado (Kelvin, 2-nov).
