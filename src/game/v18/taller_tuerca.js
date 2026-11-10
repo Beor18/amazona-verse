@@ -53,10 +53,17 @@
       if (r && r.ok) hechos++;
       return r;
     }
+    function alSalir(sale) {
+      if (!sale || sale._taller) return;
+      const prev = sale.use;
+      sale.use = () => { const r = prev ? prev() : G.interiores.salir(ED); desmontar(); return r; };
+      sale._taller = true;
+    }
     function preparar() {
       if (!encendido() || !G.interiores || !G.interaccion) return false;
       if (!asegurarLista()) return false;
       if (G.interiores.iniciar) G.interiores.iniciar();
+      // iniciar() ya deja Entrar y Salir si el edificio está en la lista. Reparar es de este taller.
       if (!G.interaccion.find('int_taller_k300')) {
         G.interaccion.add({
           id: 'int_taller_k300', x: ED.puerta.x, z: ED.puerta.z, r: ED.puerta.r,
@@ -64,12 +71,14 @@
           label: () => 'Entrar',
           use: () => G.interiores.entrar(ED),
         });
-        G.interaccion.add({
+        alSalir(G.interaccion.add({
           id: 'int_salir_taller_k300', x: ED.cuarto.x, z: ED.cuarto.z, r: 2.4,
           visible: () => G.interiores.activo() === ED.id,
           label: () => 'Salir',
           use: () => G.interiores.salir(ED),
-        });
+        }));
+      } else alSalir(G.interaccion.find('int_salir_taller_k300'));
+      if (!G.interaccion.find('v18_taller_reparar')) {
         G.interaccion.add({
           id: 'v18_taller_reparar', x: ED.cuarto.x + 0.4, z: ED.cuarto.z - 0.2, r: 2.2,
           visible: () => encendido() && G.interiores.activo() === ED.id && hechos < 3,
@@ -111,11 +120,12 @@
         if (!G.v18arco) { G.v18arco = {}; creeArco = true; }
         G.v18arco.usarPoder = () => { llamadas++; return { ok: true }; };
         const r1 = G.interaccion.find('v18_taller_reparar');
-        ok('Reparar llama al poder de arco.js', !!(r1 && r1.visible() && r1.use() && llamadas === 1));
-        r1.use(); r1.use();
-        ok('A los 3 aciertos ya no se ofrece otra reparación', llamadas === 3 && hechos === 3 && r1.visible() === false);
-        G.interaccion.find('int_salir_taller_k300').use();
-        ok('Salir devuelve a la torre y quita el taller', !G.interiores.activo() && !grupo && Math.hypot(G.S.pos.x - ED.fuera.x, G.S.pos.z - ED.fuera.z) < 0.3);
+        ok('Reparar llama al poder de arco.js', !!(r1 && r1.visible() && r1.use() && llamadas === 1), r1 ? '' : 'sin interacción');
+        if (r1) { r1.use(); r1.use(); }
+        ok('A los 3 aciertos ya no se ofrece otra reparación', !!(r1 && llamadas === 3 && hechos === 3 && r1.visible() === false));
+        const sale = G.interaccion.find('int_salir_taller_k300');
+        if (sale) sale.use();
+        ok('Salir devuelve a la torre y quita el taller', !!(sale && !G.interiores.activo() && !grupo && Math.hypot(G.S.pos.x - ED.fuera.x, G.S.pos.z - ED.fuera.z) < 0.3));
       } catch (e) {
         ok('La prueba termina sin excepciones', false, String(e && e.message || e));
       } finally {
