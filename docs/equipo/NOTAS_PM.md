@@ -26,13 +26,14 @@
 - **Cómo probarlo:** build de HEAD, SwiftShader, `AV.memoriaLargaTest()` (corta) y `{ largo: true }` (30 min simulados). Tras calentar, geometrías, texturas, oyentes y nodos con pendiente ≈ 0.
 - **Lo confirma:** `memoriaLargaTest` y las 12 de `tools/build/config.json`.
 
-### Dev 1 · 10-nov 05:15 AST
-- **Tarea:** CG-107, la iguana que no se ve de cerca. Fila EN CURSO en `4b075229`.
-- **Commit de código:** todavía no. Archivo: `src/game/invasoras.js`.
-- **Percha del capítulo 1:** el arreglo (sentarla en la rama al llegar a la distancia de hablar) no se subió. El commit local `2897f7f9` no está en origin. No es CG-107 y no lo retomo. CG-105 (Dev 3) ya lleva `content/cap1/historia.js`.
-- **Qué falta:** dejar el cuerpo por encima del suelo, calentar el shader al crear la malla, fijar la capa 0 al dibujarla, y el caso «la iguana es visible a 6 m» en `invasorasTest`.
-- **Cómo probarlo:** build de HEAD, jugador a 6 m del hogar, `AV.invasorasTest()`. La malla visible, con al menos un individuo, en la capa 0 y por encima del suelo. Después las 12 baterías, 0 errores de consola.
-- **Lo confirma:** `invasorasTest` y las 12 de `tools/build/config.json`.
+### Dev 1 · 10-nov · CG-107 hecha
+- **Tarea:** CG-107, la iguana que no se veía de cerca. Cerrada.
+- **Commit:** `e97e45b5`. EN CURSO fue `4b075229`.
+- **Archivo:** `src/game/invasoras.js`. No toqué textos educativos, `sitio/`, el carril de Kimi ni el modelo de Vittata.
+- **Percha del capítulo 1:** mi arreglo (`2897f7f9`) no se subió y no lo retomé. Dev 3 la cerró en CG-105 (`eb5d7ef1`).
+- **Qué falta:** nada de CG-107. Siguiente, si sigue libre: CG-71.
+- **Cómo probarlo:** a 6 m del hogar, con la patrulla encendida y sin `G.quiet`, la malla está visible, con un individuo, en la capa 0, y el cuerpo por encima del suelo (en la prueba: y 5,92 / suelo 5,76).
+- **Lo confirma:** `invasorasTest` 32/32, caso «La iguana es visible a 6 m». Build `cg-107-55688e20` (mismo parche): las 12 en verde, 0 errores de consola. El aviso de heap (130 MB frente a 120) no falla la suite.
 
 **Pausa por créditos (4-nov, Dev 1).** QA-148 confirmado: el capítulo 2 sale del paso 1 en 27,9 s (playtest CG-58, 390×844, guía 0). Pendiente: CG-62. El capítulo 1 no se tocó (el niño no sale del paso 1; no es solo lentitud). K35 B (el Guardián sigue llegando al construir). K36 B (la medalla espera arte). La fuente de la canoa (CG-51). El aviso del heap (151,4 MB frente a 120; no falla la suite).
 
