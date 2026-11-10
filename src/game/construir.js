@@ -365,7 +365,7 @@
       sonar('tick'); actualizar(); pintarHud();
       return rejilla;
     }
-    function foto() {
+    async function foto() {
       if (!G.renderer || !G.renderer.snapshot) { aviso('Ahora no se puede hacer la foto'); return null; }
       let x = S.pos.x, z = S.pos.z;
       if (lista.length) { x = 0; z = 0; for (const p of lista) { x += p.x; z += p.z; } x /= lista.length; z /= lista.length; }
