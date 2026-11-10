@@ -174,6 +174,10 @@
     if (G.CONSTRUIR == null) G.CONSTRUIR = !/[?&]construir=0\b/.test(location.search);
     const cargarConstruir = aDemanda('src/game/construir.js', 'AVConstruir'); AV.construir = () => cargarConstruir().then(c => c.empezar()); AV.construirTest = o => cargarConstruir().then(c => c.test(o));
     if (G.CONSTRUIR) cargarConstruir().catch(e => console.warn('construir', e));
+    // CG-111: kit de interior. No se baja hasta la prueba o hasta ?interiores=1. No pone nada en el mundo por sí solo.
+    const cargarKit = aDemanda('src/game/interiores_kit.js', 'AVInterioresKit');
+    AV.interioresKitTest = o => cargarKit().then(k => k.test(o));
+    if (/[?&]interiores=1\b/.test(location.search)) cargarKit().catch(e => console.warn('interiores kit', e));
     // Mercadito del río (src/game/tienda.js). CG-92: no va en la descarga de antes de jugar. El botón se ve igual (Pausa y Mi personaje);
     // el script, las miniaturas y el saldo entran al abrirlo, al pescar, al empezar un hoyo o un reto, o si la partida ya tiene compras
     // (la ropa comprada tiene que estar puesta al entrar).
