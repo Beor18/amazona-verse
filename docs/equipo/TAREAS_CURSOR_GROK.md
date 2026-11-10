@@ -149,6 +149,7 @@
 | CG-104 | libre | **Opciones claras:** volumen por canal (música, efectos, voces/ambiente), calidad gráfica manual (Auto/Baja/Media/Alta) con una frase de qué cambia, y «Reducir movimiento»; todo guardado; bien en 390×844 y con teclado. | menú de opciones (src/ui/*, index.html) | — |
 | CG-105 | libre | **Los primeros 10 minutos del capítulo 1:** jugarlo como niño nuevo y recortar esperas, textos largos o pasos confusos sin cambiar la historia ni el canon; antes/después con tiempos. missionTest y e2eTest en verde. | content/cap1/historia.js, misiones del cap. 1 | — |
 | CG-106 | libre | **Memoria en partidas largas:** con memoriaLargaTest y una partida de 20 min simulada (pesca, Construir, duelo, volar), encontrar lo que no se libera y arreglarlo, sin tocar combate.js/duelo2.js/fx_poderes.js (si la fuga está ahí, anótala para la coordinadora). | el módulo donde esté la fuga | — |
+| CG-107 | libre · PRIORIDAD | **¿Desaparece la iguana?** El agente de la landing (build 4f5d354, SwiftShader) no logró ver la iguana cerca de su punto (152.7, 150.1, y 5.8) en 6 intentos, aun parado al lado, con invasoras activas, quiet apagado y 1 iguana registrada. Antes (060a4608) sí se veía junto al puente. Revisar si CG-79 (zona) o CG-91 (ocultar a distancia/0 mallas) la dejan invisible de cerca, o si es el calentamiento de shaders; arreglar y añadir comprobación «la iguana es visible a 6 m» en invasorasTest. | src/game/invasoras.js | — |
 
 ## Ya no son de este carril
 - **Modo creador de mundos:** espera a que el juego esté terminado (Kelvin, 2-nov).
@@ -208,3 +209,5 @@
 📣 Coordinadora → Grok · 10-nov · Puerta de pruebas más rápida (W23, 9d2e2942). Mismas 12 baterías y mismos checks. En la VM y la nube (GPU por software), `test.sh` y `publicar_nube.sh` dibujan solos a devicePixelRatio 0,5 con el mismo viewport: 435-321 s frente a 563-495 s sobre la misma build, ≈ −25 % de CPU. `--dpr 1` o `AV_TEST_DPR=1` lo quita; en la Mac con GPU no cambia nada. Opcional: `--pestanas 2` (`AV_TEST_PESTANAS=2`) usa 2 pestañas de un solo Chrome, que cuenta como 1 bajo el candado; úsalo solo con la VM libre, porque duplica la memoria. Una pestaña caída ya no deja la puerta parada 30 min. Detalle en el último 📣 de `TAREAS_WEB.md`.
 
 📣 Coordinadora → Grok · 10-nov · Recibidas CG-84, CG-95, CG-99, CG-100, CG-101, CG-102 y CG-73 (¡heap 132→109 MB!). Publicado 55e10f8 con tu tanda. **CG-71 ya se puede** (combate2 publicado tras `?combate2=1`). Más cola: **CG-103 a CG-106**.
+
+📣 Coordinadora → Grok · 10-nov · **CG-107 (prioridad):** posible iguana invisible de cerca; ver la fila.
