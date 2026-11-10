@@ -490,7 +490,9 @@
         'body:has(#title[open]) #cl-hud,body:has(#creator:not([hidden])) #cl-hud{visibility:hidden}' +
         '@media (max-width:700px),(pointer:coarse){#cl-hud{left:12px;transform:none;align-items:flex-start;top:calc(env(safe-area-inset-top,0px) + 226px);max-width:calc(100vw - 84px)}' +
         '#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{min-width:44px;min-height:44px;padding:2px}#cl-hud svg{width:26px;height:26px}' +
-        '#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-cuenta{font-size:12px;padding:0 4px}}' +
+        '#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-cuenta{font-size:12px;padding:0 4px}' +
+        '#cl-hud .cl-herr{flex-wrap:wrap;overflow:visible}' +
+        'body:has(#emotes:not([hidden])) #cl-hud{top:calc(env(safe-area-inset-top,0px) + 72px);max-width:calc(100vw - 24px)}}' +
         '@media (prefers-reduced-motion:reduce){#cl-hud,#cl-hud *{animation:none;transition:none}}';
       document.head.appendChild(estilo);
     }
@@ -644,6 +646,31 @@
         check('La barra de piezas se ve con las 7 de siempre (y las compradas) y la cuenta', !!hudEl && !hudEl.hidden && BASE.every(t => hudEl.querySelector('[data-cl-tipo="' + t + '"]')) && hudEl.querySelectorAll('[data-cl-tipo]').length === disponibles().length && /Piezas: 0\/\d+/.test(hudEl.querySelector('.cl-cuenta').textContent), hudEl && hudEl.querySelector('.cl-cuenta').textContent);
         const botonesA = [...hudEl.querySelectorAll('button')], hojaA = (document.getElementById('cl-estilo') || {}).textContent || '';
         check('Cada botón tiene nombre para el lector, mide 44 px y el foco se ve', botonesA.length >= 8 && botonesA.every(b => (b.getAttribute('aria-label') || '').trim().length > 1 && parseFloat(getComputedStyle(b).minWidth) >= 44 && parseFloat(getComputedStyle(b).minHeight) >= 44) && /:focus-visible/.test(hojaA) && /prefers-reduced-motion/.test(hojaA), botonesA.map(b => b.getAttribute('aria-label')).join(','));
+        {
+          const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+          fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:390px;height:844px;border:0';
+          const emotes = '#emotes{position:fixed;top:50%;right:72px;transform:translateY(-50%);width:min(280px,calc(100vw - 96px));height:220px;background:#123}';
+          fr.srcdoc = `<!doctype html><html><head><style>${hojaA}body{margin:0}${emotes}</style></head><body>${hudEl.outerHTML}<div id="emotes" hidden></div></body></html>`;
+          document.body.appendChild(fr);
+          await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 2500); });
+          const doc = fr.contentDocument, mal = [];
+          const dentro = (sel) => {
+            const b = doc && doc.querySelector(sel); if (!b) { mal.push('falta ' + sel); return; }
+            const r = b.getBoundingClientRect();
+            if (r.right > 390 || r.left < 0 || r.bottom > 844 || r.top < 0) mal.push(`${sel} ${Math.round(r.left)},${Math.round(r.top)}–${Math.round(r.right)},${Math.round(r.bottom)}`);
+          };
+          const sels = ['[aria-label="Quitar"]', '[aria-label="Listo"]', '[aria-label="Cuadritos"]'].concat(hudEl.querySelector('[aria-label="Mercadito"]') ? ['[aria-label="Mercadito"]'] : []);
+          sels.forEach(dentro);
+          const emo = doc && doc.getElementById('emotes'), piezas = doc && doc.querySelector('.cl-piezas');
+          if (emo && piezas) {
+            emo.hidden = false;
+            const a = piezas.getBoundingClientRect(), c = emo.getBoundingClientRect();
+            const choca = a.right > c.left + 1 && a.bottom > c.top + 1 && a.top < c.bottom - 1 && a.left < c.right - 1;
+            if (choca) mal.push('gestos tapan las piezas');
+          }
+          fr.remove();
+          check('En 390 se ven Quitar, Listo y Mercadito, y los gestos no tapan las piezas', !mal.length, mal.join(' · '));
+        }
         elegir('nido'); actualizar();
         check('Fantasma visible y verde donde cabe', fantasma.visible && est.valido && matF.color.g > matF.color.r, est.motivo);
         // 3. Colocar, girar, deshacer y quitar
