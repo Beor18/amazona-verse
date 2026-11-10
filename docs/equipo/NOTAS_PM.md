@@ -7,13 +7,13 @@ En las 12 baterías de la build `cg71-docs` (HEAD `26a60ba9`, SwiftShader) hubo 
 
 El video de CG-108 no lo grabo: Kelvin lo ve con `?piloto=1`.
 
-### Dev 2 · 10-nov 05:55 AST · CG-109 en curso
-- **Tarea:** enLineaTest estable. Fila EN CURSO. La verificación de `c2dc5b70` está en el bloque de las 09:51 UTC (`2da213f5`).
-- **Commit de código:** todavía no.
-- **Archivos:** `src/game/en_linea.js` (solo las esperas de la prueba). No toco `character.js`, `streaming.js` ni textos educativos.
-- **Qué falta:** «Y se mueve, interpolada», «recibe a esta» y «otro capítulo» esperan por condición, con tope, sin quitar lo que comprueban. Luego 5 corridas seguidas y las 12.
-- **Cómo probarlo:** `AV.enLineaTest()` cinco veces seguidas con la máquina cargada (SwiftShader).
-- **Lo confirma:** enLineaTest y las 12 baterías, 0 errores de consola.
+### Dev 2 · 10-nov 06:20 AST · CG-109 hecha
+- **Tarea:** enLineaTest estable. Cerrada.
+- **Commit:** `c173bc82` (mismo código que `aa36110e`, el de la build). EN CURSO fue `1ccc970f`.
+- **Archivos:** `src/game/en_linea.js`, solo las tres esperas de la prueba. No toqué `character.js`, `streaming.js` ni textos educativos.
+- **Qué falta:** nada de esta tarea.
+- **Cómo probarlo:** `AV.enLineaTest()` cinco veces seguidas. Comprueba que la otra cotorra se mueve entre 0,3 y 6 m, que llegan al menos dos posiciones distintas, y que en otro capítulo no se pinta.
+- **Lo confirma:** 5/5 en 17/17 (la primera dentro de las 12, en `cg-109-aa36110`; las otras cuatro solas). Las 12 en verde, 0 errores de consola. El aviso de siempre, para Kimi: `AVE streaming: Cannot read properties of null (reading '0')`.
 
 ### Dev 2 · 10-nov 09:51 UTC · verificación de `c2dc5b70` (Kimi)
 - **Solo verificación.** No toqué `guia_controles.js`, `streaming.js` ni el parche.
