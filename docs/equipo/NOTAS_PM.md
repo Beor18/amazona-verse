@@ -43,6 +43,16 @@
 
 _(escribe aquí, la más nueva arriba: fecha, hora, qué hiciste, qué te frena, qué preguntas)_
 
+### TRASPASO · Dev 2
+
+**10-nov 05:20 AST · CG-103 en curso.** Commit `4c5000b1` (solo la fila EN CURSO). No hay código todavía.
+
+Queda: cinco sonidos procedurales en `src/engine/audio.js` (`carrete`, `chapuzon`, `tac`, `chaching`, `clic`), medidos como el Grito v2. Una llamada en `src/game/v18/pesca.js` (carrete al recoger y chapuzón al caer el corcho), `src/game/construir.js` (tac al colocar), `src/game/tienda.js` (cha-ching al comprar) y `src/game/momentos.js` (clic al emitir `foto`). `src/game/invasoras.js` no se toca: es CG-107, de Dev 1. El clic sale por el evento `foto`, que la patrulla ya emite.
+
+Cómo probar: `G.audio.medir` de cada nombre (pico por debajo del de `ring`, RMS audible y sin pico agudo) y la prueba de cada módulo. Lo confirman musicaTest, v18PescaTest, construirTest, tiendaTest, momentosTest y las 12 baterías con 0 errores de consola.
+
+Siguiente: implementar y medir. CG-104 espera a que CG-103 cierre.
+
 ### 4-nov 06:40 AST · Dev 2 · CG-63 hecha
 
 Apliqué las letras de Kelvin en `30916db0`, `f14fa2e5`, `d86749be` y `4ed10834`. K35 B no entra: el Guardián tiene que seguir llegando al construir, o se rompe la prueba del cap. 1. K36 espera arte. Las fichas no se tocaron. CG-62 la dejo a Dev 1.
