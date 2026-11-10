@@ -190,6 +190,13 @@
     const cargarTaller = aDemanda('src/game/v18/taller_tuerca.js', 'AVTallerTuerca');
     AV.tallerTuercaTest = o => cargarTaller().then(m => m.test(o));
     if (/[?&]interiores=1\b/.test(location.search)) cargarTaller().then(m => m.preparar()).catch(e => console.warn('taller tuerca', e));
+    // CG-118: casita por transición. No toca la fachada ni el bloque de CG-117. Solo con ?interiores=1.
+    const cargarCasita = () => (window.AV_CASITA ? Promise.resolve() : AVE.assets.script('content/cap1/casita_historica.js'));
+    const cargarHistorico = aDemanda('src/game/historico.js', 'AVHistorico');
+    AV.historicoTest = o => cargarCasita().then(cargarHistorico).then(m => m.test(o));
+    if (/[?&]interiores=1\b/.test(location.search)) {
+      cargarCasita().then(cargarHistorico).then(m => m.iniciar()).catch(e => console.warn('historico', e));
+    }
     // Mercadito del río (src/game/tienda.js). CG-92: no va en la descarga de antes de jugar. El botón se ve igual (Pausa y Mi personaje);
     // el script, las miniaturas y el saldo entran al abrirlo, al pescar, al empezar un hoyo o un reto, o si la partida ya tiene compras
     // (la ropa comprada tiene que estar puesta al entrar).
