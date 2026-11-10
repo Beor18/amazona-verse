@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 4 · 10-nov 06:35 AST · CG-115 en curso
+- **Tarea:** Construir dentro. Fila EN CURSO. CG-113 la lleva Dev 1 (`bohios.js`). Yo solo toco `construir.js`.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/construir.js`. No toco `interiores.js`, `bohios.js`, `camara.js`, `streaming.js` ni textos educativos.
+- **Qué falta:** contexto de zona, objetos protegidos, piso del cuarto, rehacer y habitaciones prediseñadas. construirTest ampliado.
+- **Cómo probarlo:** `AV.construirTest()`.
+- **Lo confirma:** construirTest y las 12 baterías, 0 errores de consola.
+
 ### Dev 3 · 10-nov 06:30 AST · IDs de la ronda 6
 - **Tarea:** numerar los 4 bugs. Sin código.
 - **Commit:** este. QA-230 y QA-231 no se tocaron (aviso de streaming de Dev 2 y heap de Dev 4, los dos para Kimi).
