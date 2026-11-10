@@ -10,13 +10,13 @@
 - **Cómo probarlo:** `AV.solidosTest()` y las 12.
 - **Lo confirma:** solidosTest y las 12 baterías, 0 errores.
 
-### Dev 4 · 10-nov 06:35 AST · CG-115 en curso
-- **Tarea:** Construir dentro. Fila EN CURSO. CG-113 la lleva Dev 1 (`bohios.js`). Yo solo toco `construir.js`.
-- **Commit de código:** todavía no.
-- **Archivos:** `src/game/construir.js`. No toco `interiores.js`, `bohios.js`, `camara.js`, `streaming.js` ni textos educativos.
-- **Qué falta:** contexto de zona, objetos protegidos, piso del cuarto, rehacer y habitaciones prediseñadas. construirTest ampliado.
-- **Cómo probarlo:** `AV.construirTest()`.
-- **Lo confirma:** construirTest y las 12 baterías, 0 errores de consola.
+### Dev 4 · 10-nov 06:40 AST · CG-115 hecha
+- **Tarea:** Construir dentro. Cerrada.
+- **Commit:** `0059e5ed` y `f9355cf9` (mismo parche que `833482ce`, el de la build). EN CURSO fue `bac8f534`.
+- **Archivos:** `src/game/construir.js`. No toqué `bohios.js` (CG-113, Dev 1), `interiores.js`, `streaming.js` ni textos educativos.
+- **Qué falta:** nada de esta tarea. Fuera del cuarto, Construir sigue igual.
+- **Cómo probarlo:** `G.construir.contexto({ id, zona, piso, protegidos, ox, oz })`, colocar, `rehacer()` y `habitacion('descanso')`. `contexto(null)` vuelve al rincón.
+- **Lo confirma:** construirTest 59/59. Build `cg-115-833482ce`: las 12 en verde, 0 errores de consola. Los avisos son el de streaming (QA-230).
 
 ### Dev 3 · 10-nov 06:45 AST · CG-105 medida
 - **Tarea:** playtest del primer paso, 6 intentos, después del asiento (`f71173a9`).
