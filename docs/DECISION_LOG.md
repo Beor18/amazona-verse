@@ -510,3 +510,4 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
 
 2026-11-10 · [KELVIN] «No hay más créditos de Kimi hasta nuevo aviso; no voy a gastar más dinero en este juego.» Kimi 1–4 en pausa. Nada de gastos nuevos (servicios, créditos, compras); seguimos solo con lo que ya está pagado.
 2026-11-10 · [KELVIN] Mercadito del río aprobado («Sí apruebo la tienda»), con sus 6 piezas nuevas de Construir.
+2026-11-10 · [KELVIN] Pausa del cierre 1.0: Amazona Combat Animation 2.0 es prioridad (cotorras de duelo rígidas, sin pico, ataques sin energía). Sin contenido nuevo.
