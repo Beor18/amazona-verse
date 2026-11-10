@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 07:42 AST · QA-236 en curso
+- **Tarea:** en la sesión corta, Construir no arranca (9/11). Ronda 7 sobre `8608a3c6`. El id libre era QA-236 (el más alto era QA-235).
+- **Commit de código:** todavía no.
+- **Archivos:** `src/pruebas/memoria.js` y, si la culpa es del juego, `src/game/construir.js`. No toco `streaming.js` ni los textos educativos.
+- **Qué falta:** que `AV.memoriaLargaTest()` dé 11/11 y que las geometrías sigan estables.
+- **Cómo probarlo:** `AV.memoriaLargaTest()` (la corta, 5 ciclos).
+- **Lo confirma:** memoriaLargaTest 11/11 y las 12, 0 errores.
+
 ### Dev 2 · 10-nov 07:35 AST · QA-232 hecha
 - **Tarea:** opcionesTest en inglés. Cerrada. No cambié el juego: solo la prueba.
 - **Commit:** `210bdb21`. EN CURSO fue `a463c712`.
