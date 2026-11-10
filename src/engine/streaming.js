@@ -1635,8 +1635,19 @@ AVE.module('streaming', function (G) {
       Z.cercaMallas = null; Z.cercaModelos = new Set();
       programarCercaGlobal();
     }
+    // CG-73: la fusión cercana (KIMI-341) son ~20 MB de geometría que el heap de arranque medía
+    // en cuanto la pantalla de carga soltaba. Hasta que Vittata se mueve (o un test llama a terminar)
+    // se dibujan los lotes por instancia: el mismo aspecto, sin esas mallas todavía.
+    let cercaPuede = false;
+    const cercaEspera = [];
+    function activarCerca() {
+      if (cercaPuede) return;
+      cercaPuede = true;
+      for (const Z of cercaEspera.splice(0)) encolar(() => fundirCercaZona(Z, true), 'fundirCerca:' + Z.id);
+    }
     function fundirCercaZona(Z, forzar) {
       if ((!Z.ciudad && Z.nivel < 2) || Z.cercaF || (!forzar && (cargasPendientes(Z, 'cerca') || cargasPendientes(Z, 'hd')))) return;
+      if (!cercaPuede && !forzar) { if (cercaEspera.indexOf(Z) < 0) cercaEspera.push(Z); return; }
       // KIMI-Task-011: los modelos con _hd también entran (cada instancia es un tramo: se dibuja el _hd o el ligero, no los dos)
       const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo' && !(G.bohiosAbiertos && G.bohiosAbiertos[n])));
       if (Z.cercaMallas && modelos.size === Z.cercaModelos.size && [...modelos].every(n => Z.cercaModelos.has(n))) return;
@@ -1978,7 +1989,7 @@ AVE.module('streaming', function (G) {
     function revisar(x, z) {
       if (x == null) { const S = G.S; x = S.pos ? S.pos.x : 0; z = S.pos ? S.pos.z : 0; }
       if (!inicio) inicio = [x, z];
-      else if (quieto && Math.hypot(x - inicio[0], z - inicio[1]) > CFG.moverse) { quieto = false; siguiente(); }
+      else if (quieto && Math.hypot(x - inicio[0], z - inicio[1]) > CFG.moverse) { quieto = false; siguiente(); activarCerca(); }
       const Rc = radioCerca(), Rl = alcanceZona(), H = CFG.histeresis;
       const anticipo = vueloAnticipo(x, z);
       const ahora = performance.now();
@@ -2304,6 +2315,7 @@ AVE.module('streaming', function (G) {
       // helada. Así el hilo queda vivo, el topeMs puede disparar y las descargas van más en paralelo.
       terminar(o) {
         o = o || {};
+        activarCerca(); // las pruebas asientan el mundo aquí: la fusión cercana tiene que estar hecha antes de medir
         const topeMs = Math.max(0, o.topeMs || 0), t0 = performance.now();
         aplicarBajasPendientes(); // KIMI-038: el asentado exige el estado aplicado (las bajadas diferidas no esperan al temporizador)
         // Lo que ya se está bajando, más los trabajos y la colocación. La cola que el modo quieto
