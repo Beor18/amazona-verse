@@ -26,9 +26,9 @@ AVE.module('input', function (G) {
 
   // ---------- Mapa de teclas ----------
   // Combate 2.0 (?combate2=1, src/game/v18/combate.js y duelo2.js): las 4 extremidades del duelo (ala izquierda U, ala
-  // derecha O, pata izquierda J, pata derecha L; arriba las alas, abajo las patas). Solo con la bandera: sin ella el mapa,
-  // lo guardado y la sección «Teclas» quedan como siempre. Fuera de un duelo estas teclas no hacen nada.
-  const EXT_DUELO = /[?&]combate2=1\b/.test(location.search) || G.combate2 === true;
+  // derecha O, pata izquierda J, pata derecha L; arriba las alas, abajo las patas). Para todos; ?combate2=0 las quita (el mapa,
+  // lo guardado y la sección «Teclas» quedan como antes). Fuera de un duelo estas teclas no hacen nada.
+  const EXT_DUELO = !/[?&]combate2=0\b/.test(location.search) && G.combate2 !== false; // encendido para todos (Kelvin 10-nov)
   const ACCIONES = ['arriba', 'abajo', 'izquierda', 'derecha', 'volar', 'aterrizar', 'accion', 'poder', 'mapa'].concat(EXT_DUELO ? ['alaIzq', 'alaDer', 'pataIzq', 'pataDer'] : []);
   const DEFECTO = Object.assign({ arriba: 'w', abajo: 's', izquierda: 'a', derecha: 'd', volar: 'v', aterrizar: 'x', accion: 'e', poder: 'f', mapa: 'm' },
     EXT_DUELO ? { alaIzq: 'u', alaDer: 'o', pataIzq: 'j', pataDer: 'l' } : {});

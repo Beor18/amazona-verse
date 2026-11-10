@@ -27,7 +27,7 @@ window.AVV18Duelo2 = function (G) {
   if (G.v18duelo2) return G.v18duelo2;
   const H = G.v18hab, Cb = G.v18combate, S = G.S, F = G.fisica, M = F.MOVE, R = G.renderer, scene = R.scene, camera = R.camera;
   const sitio = Cb.sitio, ARENA_R = 12, PLUMAS = 5;
-  // Combate 2.0 (?combate2=1, combate.js → vida.c2): la misma máquina de estados para Vittata (J1) y el J2; sin la bandera, lo de siempre
+  // Combate 2.0 (para todos; ?combate2=0 lo apaga; combate.js → vida.c2): la misma máquina de estados para Vittata (J1) y el J2; sin la bandera, lo de siempre
   const C2 = Cb.vida && Cb.vida.c2, c2On = () => !!(C2 && C2.on()); let enUso = null;
   // Combate 2.0 · extremidades y combos (combate.js → vida.ext, el mismo motor). J1: U O J L (las del mapa de input.js);
   // J2: teclado numérico 7 9 4 6 (alas arriba, patas abajo) o mando LB RB LT RT. Sin la bandera no se toma ninguna tecla.
@@ -898,7 +898,7 @@ window.AVV18Duelo2 = function (G) {
         G.emit('render', 0.016);
         check('du3: en el duelo de 2 no se ven la flecha ni el haz de la guía de la misión', !G.fx.guideArrow.visible && !G.fx.guideBeam.visible, JSON.stringify({ flechaAntes: flecha0 }));
       }
-      // Combate 2.0 (?combate2=1): el J2 y Vittata con la máquina de estados de combate.js; sin la bandera, la capa de siempre
+      // Combate 2.0 (para todos; ?combate2=0 lo apaga): el J2 y Vittata con la máquina de estados de combate.js; sin la bandera, la capa de siempre
       if (C2) {
         const c2_0 = G.combate2;
         try {

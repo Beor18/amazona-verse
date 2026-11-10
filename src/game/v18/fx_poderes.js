@@ -259,7 +259,7 @@ window.AVV18Fx = function (G) {
     eco: { cols: ['#ffcf5e', '#fff3b0', '#a8ffb8'], abre: 1.3, sube: 0.1, grav: 0, vida: 0.8, esc: 0.3 }
   };
   const ELEM_IDS = Object.keys(ELEM);
-  // Combate 2.0 (?combate2=1): ráfagas de los combos con las mismas tarjetas (combo(tipo, x, y, z, n), combate.js). Mismo
+  // Combate 2.0 (para todos; ?combate2=0 lo apaga): ráfagas de los combos con las mismas tarjetas (combo(tipo, x, y, z, n), combate.js). Mismo
   // mecanismo que la estela; los colores van con cada combo (la Bomba Boricua, rojo, blanco y azul).
   const COMBO_FX = {
     abanico: { cols: ['#fff6c8', '#ffd84a', '#9fe6ff'], abre: 2.2, sube: 0.6, grav: 0.8, vida: 0.7, esc: 0.34 },
@@ -306,7 +306,7 @@ window.AVV18Fx = function (G) {
     return vivas;
   }
 
-  // ---------- Combate 2.0 (?combate2=1, combate.js): anillos del pico, notas del canto y estrellitas del mareo ----------
+  // ---------- Combate 2.0 (para todos; ?combate2=0 lo apaga; combate.js): anillos del pico, notas del canto y estrellitas del mareo ----------
   // Tarjetas mirando a cámara en DOS InstancedMesh pequeños (estrellas y notas; textura canvas 64×64 cada una): 1 draw call
   // por tipo solo mientras hay alguna. Los anillos del pico usan el InstancedMesh de los anillos del Grito (sin draw call
   // nueva). Actor: Object3D raíz de la cotorra (su position es la del mundo) + alto (m) de su cabeza. Calidad baja / Modo

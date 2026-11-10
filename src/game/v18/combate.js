@@ -78,7 +78,7 @@ window.AVV18Combate = function (G) {
     avisoBandada: '¡Ojo de bandada: la rival va a usar su poder!', cuento: '¡La rival se queda escuchando el cuento!',
     // Entreno guiado, chips y pistas (cada texto es su propio nodo: el nombre del poder va aparte y se traduce solo)
     como: '¿Cómo se pelea?', saltarEnt: 'Saltar entreno', entPaso: (n, de) => 'Entreno · paso ' + n + ' de ' + (de || 3),
-    // Combate 2.0 (?combate2=1): extremidades y combos
+    // Combate 2.0 (para todos; ?combate2=0 lo apaga): extremidades y combos
     combos: 'Combos', comboRival: 'Campeona', sinPrisa: 'Combos sin prisa: más tiempo entre toque y toque', aPelear: '¡A pelear!',
     unCombo: 'un combo', tuPoder: 'tu poder', e4: 'Combo: ala izquierda y luego ala derecha.', e5: 'Combo: pata izquierda y luego pata derecha.',
     t4: 'Combo: toca Ala izq. y luego Ala der.', t5: 'Combo: toca Pata izq. y luego Pata der.',
@@ -1285,7 +1285,7 @@ window.AVV18Combate = function (G) {
     const B = ch.bones; if (!B || !O || !(O.alas > 0.01) || !B.armL1 || !B.armL1001) return;
     ch.rot(B.armL1, 'z', 0.35 * O.alas); ch.rot(B.armL1001, 'z', -0.35 * O.alas);
   }
-  // ---------- Combate 2.0 (Kelvin 10-nov: «las cotorras en los duelos parecen zombis») · bandera ?combate2=1 ----------
+  // ---------- Combate 2.0 (Kelvin 10-nov: «las cotorras en los duelos parecen zombis») · para todos desde el 10-nov (?combate2=0 lo apaga) ----------
   // Capa visual nueva para la Campeona, Vittata (jugadora) y el Jugador 2 (duelo2.js), con su propia máquina de estados:
   // espera viva (3 variaciones), anticipación, ataque, impacto, defensa, esquiva, mareo, recuperación, victoria y derrota
   // caricaturesca. Cada estado es una curva de poses clave (anticipa → golpe → seguimiento → asienta) y manda sobre sus
@@ -1298,7 +1298,9 @@ window.AVV18Combate = function (G) {
   // IA, no usa azar() y la acción de la jugadora sale en el mismo cuadro (la pose de golpe coincide con el efecto).
   // Sin la bandera todo sigue con vida()/vidaHuesos() de siempre. Modo Escuela / calidad baja: muelles a medio ritmo y
   // menos partículas. Prueba: dentro de AV.v18CombateTest («C2: …»); coste en G.v18combate.vida.c2.perf().
-  const C2_URL = /[?&]combate2=1\b/.test(location.search);
+  // 10-nov (Kelvin: «no me sigas escondiendo las cosas… ponme todo en el main»): encendido para todos; ?combate2=0 lo apaga
+  // (solo para depurar o comparar). G.combate2 = true / false lo fuerza (pruebas).
+  const C2_URL = !/[?&]combate2=0\b/.test(location.search);
   const c2On = () => (G.combate2 != null ? !!G.combate2 : C2_URL);
   const C2 = (() => {
     // Extremidades (10-nov, Kelvin: «mover ala izquierda, ala derecha, pierna izquierda, pierna derecha»): piernaL/R gira la
@@ -1710,7 +1712,7 @@ window.AVV18Combate = function (G) {
     return { on: c2On, antes, huesos, soltar, accion, golpe, dtVis, pasoReloj, despues, famDe, estadoDe, ESTADOS, FAM, REAC, I, K, perf: perfApi, get parada() { return paradaT; } };
   })();
   // ---------- Combate 2.0 · las 4 extremidades y los combos (Kelvin 10-nov: «añadir más controles para mover ala izquierda,
-  // ala derecha, pierna izquierda, pierna derecha y poder crear combos») · solo con ?combate2=1 ----------
+  // ala derecha, pierna izquierda, pierna derecha y poder crear combos») · para todos (?combate2=0 lo apaga) ----------
   // - Cada extremidad tiene su golpe corto con pose propia: aletazo de lado (el ala izquierda barre hacia la derecha y empuja
   //   a la otra hacia ese lado; la derecha, al revés: alternar sirve para colocarse) y patadita (más corta y más rápida).
   // - Reglas de plumas de siempre (H.recibir de habilidades.js: escudo, invulnerabilidad, mareo y empujón): un golpe que entra
@@ -1929,9 +1931,10 @@ window.AVV18Combate = function (G) {
       '#v18-duelo .vd-cc kbd{font:700 13px/1 Fredoka,system-ui,sans-serif;padding:5px 8px;border-radius:8px;background:#3b2a14;color:#fff3d6}#v18-duelo .vd-cc kbd.vd-k-pata{background:#6b3f12}#v18-duelo .vd-cc kbd.vd-k-poder,#v18-duelo .vd-cc kbd.vd-k-combo{background:#8a1f6a}' +
       '#v18-duelo .vd-cc i{font-style:normal;font-weight:700}#v18-duelo .vd-cc label{display:flex;gap:8px;align-items:center;margin:8px 0;font-size:15px;font-weight:600;min-height:44px}#v18-duelo .vd-cc input{width:24px;height:24px}' +
       '#v18-duelo .vd-cc button{background:#3b2a14;color:#fff3d6;width:100%}' +
-      '#v18-duelo-ext{position:fixed;z-index:39;display:grid;grid-template-columns:repeat(2,58px);grid-template-rows:repeat(2,58px);gap:8px;pointer-events:none}#v18-duelo-ext[hidden]{display:none}' +
-      '#v18-duelo-ext button{pointer-events:auto;width:58px;height:58px;border-radius:18px;border:0;padding:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font:700 11px/1 Fredoka,system-ui,sans-serif;color:#3b2a14;background:#fff3d6;box-shadow:0 3px 0 #a98a5a,0 4px 10px #0005;--icon-size:24px;touch-action:none;-webkit-user-select:none;user-select:none}' +
-      '#v18-duelo-ext button.pata{background:#ffe0b8}#v18-duelo-ext button:active,#v18-duelo-ext button.pulsa{transform:translateY(2px);box-shadow:0 1px 0 #a98a5a}#v18-duelo-ext button.cd{opacity:.6}';
+      '#v18-duelo-ext{position:fixed;z-index:39;display:grid;grid-template-columns:repeat(2,60px);grid-template-rows:repeat(2,60px);gap:8px;pointer-events:none}#v18-duelo-ext[hidden]{display:none}' +
+      // Kelvin 10-nov («no encontraban los botones»): alto contraste, fondo oscuro semiopaco, borde claro, icono y nombre corto
+      '#v18-duelo-ext button{pointer-events:auto;width:60px;height:60px;border-radius:18px;border:3px solid #fff3d6;padding:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:700 12px/1 Fredoka,system-ui,sans-serif;color:#fff;background:rgba(20,70,40,.82);box-shadow:0 3px 0 #0b2a17,0 4px 12px #0007;text-shadow:0 1px 2px #000;--icon-size:26px;touch-action:none;-webkit-user-select:none;user-select:none}' +
+      '#v18-duelo-ext button.pata{background:rgba(110,55,10,.85)}#v18-duelo-ext button::before{background:#fff}#v18-duelo-ext button:active,#v18-duelo-ext button.pulsa{transform:translateY(2px);box-shadow:0 1px 0 #0b2a17;background:#2e8b3e}#v18-duelo-ext button.cd{opacity:.65}';
     document.head.appendChild(st);
   }
   function hudExt() {
@@ -2266,7 +2269,7 @@ window.AVV18Combate = function (G) {
   async function test() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     salir(); // la prueba empieza con la rival esperando, aunque hubiera un duelo abierto
-    const c2Prueba0 = G.combate2; G.combate2 = false; // lo de siempre se prueba sin Combate 2.0 (?combate2=1); su parte va al final
+    const c2Prueba0 = G.combate2; G.combate2 = false; // lo de siempre se prueba sin Combate 2.0 (para todos; ?combate2=0 lo apaga); su parte va al final
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M.flying, inv0 = Object.assign({}, S.inv);
     const P = G.v18, crudo = (() => { try { return localStorage.getItem(P.clave()); } catch (e) { return null; } })();
     // QA-228: los contadores de pistas dominadas viven en memoria; tras otros duelos (v18NuevasTest) ya pasaban de 2 y las Pistas no
@@ -2835,7 +2838,7 @@ window.AVV18Combate = function (G) {
         G.v18combate = orig; // deja la instancia de siempre (TACTIL según el dispositivo real), la misma que tienen los demás módulos
       }
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
-    // ---------- Combate 2.0 (?combate2=1): máquina de estados, pico, impacto, hit-stop y equilibrio intacto ----------
+    // ---------- Combate 2.0 (para todos; ?combate2=0 lo apaga): máquina de estados, pico, impacto, hit-stop y equilibrio intacto ----------
     try {
       const dt = 1 / 30, A2 = f => f.anima2 || {}, ch = C.ch, raiz0 = ch ? ch.root.scale.y : 0;
       const ver = (s, antes, cada) => { for (let t = 0; t < s; t += dt) { if (antes) antes(); paso(dt); if (pl3d) pl3d.update(dt); if (cada) cada(); } };
@@ -2922,7 +2925,7 @@ window.AVV18Combate = function (G) {
       check('C2: al apagar la bandera la escala de la Campeona vuelve y retoma la capa de siempre', !ch || (Math.abs(ch.root.scale.y - raiz0) < 1e-6 && Math.abs(ch.root.scale.x - raiz0) < 1e-6 && !C.r.anima2), JSON.stringify({ sy: ch && ch.root.scale.y, raiz0 }));
     } catch (e) { check('C2: sin excepciones', false, e && (e.stack || e.message)); }
     finally { G.combate2 = c2Prueba0; try { salir(); } catch (e) { /* ya fuera */ } }
-    // ---------- Combate 2.0 · extremidades y combos (?combate2=1; Kelvin 10-nov: «controles para ala izquierda, ala derecha,
+    // ---------- Combate 2.0 · extremidades y combos (para todos; Kelvin 10-nov: «controles para ala izquierda, ala derecha,
     // pierna izquierda, pierna derecha y poder crear combos») ----------
     const prisa0 = vidaApi.ext.sinPrisa();
     try {
@@ -2935,8 +2938,8 @@ window.AVV18Combate = function (G) {
       G.combate2 = false; iniciar({ sinCuenta: true, especie: 'vittata' }); quieta2();
       const evU = tecla('u'); tecla('u', 'keyup');
       const vis = q => !!document.querySelector(q);
-      const sinUrl = !/[?&]combate2=1\b/.test(location.search), u0 = X.motor.usar(C.j, 'alaIzq');
-      check('C2 · extremidades: sin la bandera, U no hace nada, no hay botones táctiles, chips ni «Combos» y el mapa de teclas es el de siempre',
+      const sinUrl = /[?&]combate2=0\b/.test(location.search), u0 = X.motor.usar(C.j, 'alaIzq'); // el mapa de teclas solo cambia con ?combate2=0 al cargar
+      check('C2 · extremidades: apagado (G.combate2 = false o ?combate2=0), U no hace nada, no hay botones táctiles, chips ni «Combos» y el mapa de teclas es el de siempre',
         !C.j.ext && !evU.defaultPrevented && !vis('#v18-duelo-ext:not([hidden])') && !vis('#v18-duelo .vd-ext:not([hidden])') && !vis('#v18-duelo .vd-combos-b:not([hidden])') && u0.ok === false && (!sinUrl || !(G.input && G.input.ACCIONES.includes('alaIzq'))),
         JSON.stringify({ ext: !!C.j.ext, prevenida: evU.defaultPrevented, u0, acciones: G.input && G.input.ACCIONES.length }));
       // 2. Cada extremidad con su tecla (U O J L) sale con su pose (ala de ese lado arriba y barriendo; pata de ese lado adelante)
@@ -3019,13 +3022,13 @@ window.AVV18Combate = function (G) {
         Math.abs(rel) <= 0.1, JSON.stringify({ siempre: +dA.toFixed(3), conCombos: +dB.toFixed(3), cambio: Math.round(rel * 1000) / 10 + ' %' }));
       // 9. Táctil a 390 × 844: el 2×2 cabe, sus botones miden ≥ 48 px y no tapa Acción, Impulso (con su etiqueta), Saltar ni Volar
       {
-        const acts = { left: 390 - 20 - 182, right: 370, top: 844 - 28 - 170, bottom: 816, width: 182 }, tagTop = acts.top - 40;
+        const acts = { left: 390 - 20 - 182, right: 370, top: 844 - 28 - 170, bottom: 816, width: 182 }, tagTop = acts.top - 40; // ≥ 56 px (Kelvin)
         const hx = hudExt(), b = hx && hx.pad.querySelector('button'), cs = b && getComputedStyle(b), w = 2 * parseFloat(cs.width) + 8, h = 2 * parseFloat(cs.height) + 8;
         const sp = sitioPad(acts, tagTop, 390, w, h), z = sitioPad(Object.assign({}, acts, { left: 20, right: 202 }), tagTop, 390, w, h);
         const dentro = q => q.left >= 8 && q.left + w <= 382 && q.top >= 8 && q.top + h <= 844;
         const choca = (q, r) => !(q.left + w <= r.left || q.left >= r.right || q.top + h <= r.top || q.top >= r.bottom);
-        const ok = parseFloat(cs.width) >= 48 && parseFloat(cs.height) >= 48 && dentro(sp) && dentro(z) && !choca(sp, { left: acts.left, right: acts.right, top: tagTop, bottom: acts.bottom }) && !choca(z, { left: 20, right: 202, top: tagTop, bottom: acts.bottom }) && !sp.zurdo && z.zurdo && sp.top > 66 + 140;
-        check('C2 · táctil (390 × 844): el 2×2 de alas y patas cabe, mide ≥ 48 px y va encima de los botones grandes sin taparlos (también en modo zurdo)', ok, JSON.stringify({ boton: [cs.width, cs.height], sp, z }));
+        const ok = parseFloat(cs.width) >= 56 && parseFloat(cs.height) >= 56 && dentro(sp) && dentro(z) && !choca(sp, { left: acts.left, right: acts.right, top: tagTop, bottom: acts.bottom }) && !choca(z, { left: 20, right: 202, top: tagTop, bottom: acts.bottom }) && !sp.zurdo && z.zurdo && sp.top > 66 + 140;
+        check('C2 · táctil (390 × 844): el 2×2 de alas y patas cabe, mide ≥ 56 px y va encima de los botones grandes sin taparlos (también en modo zurdo)', ok, JSON.stringify({ boton: [cs.width, cs.height], sp, z }));
       }
       // 10. «Reducir movimiento»: el combo no sacude la cámara ni lanza partículas de fx_poderes; sin cortes bruscos en las poses
       const RD = R.REDUCED, J = G.camara && G.camara.juice;
