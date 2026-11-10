@@ -121,6 +121,10 @@
     const hab18 = aDemanda('src/game/v18/habilidades.js', 'AVV18Habilidades'), comb18 = aDemanda('src/game/v18/combate.js', 'AVV18Combate');
     const cargarCombate = () => cargarV18().then(hab18).then(comb18);
     AV.v18CombateTest = o => cargarCombate().then(c => c.test(o));
+    const cargarPiloto = aDemanda('src/game/v18/piloto.js', 'AVV18Piloto');
+    AV.pilotoTest = o => cargarPiloto().then(p => p.test(o));
+    AV.pilotoCargar = cargarPiloto;
+    if (/[?&]piloto=1\b/.test(location.search)) alPrimerGesto(cargarPiloto);
     if (v18On) alPrimerGesto(cargarCombate);
     const descubrir18 = aDemanda('src/game/v18/descubrir.js', 'AVV18Descubrir'), cargarV18Descubrir = () => cargarV18().then(descubrir18); AV.v18DescubrirTest = o => cargarV18Descubrir().then(d => d.test(o)); if (v18On) alPrimerGesto(cargarV18Descubrir); // frente C: descubrir, desbloquear y elegir la cotorra de Dominica
     const reparar18 = aDemanda('src/game/v18/reparar.js', 'AVV18Reparar'), cargarV18Reparar = () => cargarV18().then(reparar18); AV.v18RepararTest = o => cargarV18Reparar().then(r => r.test(o)); if (v18On) alPrimerGesto(cargarV18Reparar); // frente B: puente colgante roto → reparado
