@@ -22,7 +22,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | GT-02 | hecha · 12/12 baterías en verde, 0 errores; FALLA solo el presupuesto de descarga 45 MB → QA-239 | **Las 12 baterías en HEAD con GPU real**, una vez: resultado por batería y errores de consola. Rojos → BUGS.md con el sha. |
 | GT-03 | hecha · 60 fps en todo (spawn/vuelo/pueblo/duelo, con y sin escuela, Chromebook ×4) | **Modo Escuela (QA-181) con GPU real:** en el sitio publicado, perfil Chromebook (DevTools: CPU ×4 de ralentización, ventana 1366×768) con `?calidad=bajo&escuela=1&fps=1`: FPS medio y peor cuadro 60 s en el spawn y 60 s volando; lo mismo sin `escuela=1`. Una línea por medida. |
 | GT-04 | hecha · duelo 60 fps con y sin combate2, escritorio y móvil, 0 errores | **Combate 2.0 con GPU real:** duelo completo con y sin `?combate2=1` (escritorio y perfil móvil 390×844): FPS medio/peor cuadro, 0 errores, y cualquier cosa que se vea rara (anotar con captura). |
-| GT-05 | libre | **Verificación del sitio tras cada publicación** (cada vez que en `TAREAS_WEB.md` aparezca «PUBLICADO»): abrir el juego en el navegador real, partida nueva, volar 1 min, pesca 1 ronda, Construir 1 pieza, Mercadito, duelo de entreno; 0 errores de consola. Una línea por publicación. |
+| GT-05 | continua · 10-nov: `0095a89` verificado (vuelo/duelo 60 fps, pesca, Construir y Mercadito en verde, 0 errores) | **Verificación del sitio tras cada publicación** (cada vez que en `TAREAS_WEB.md` aparezca «PUBLICADO»): abrir el juego en el navegador real, partida nueva, volar 1 min, pesca 1 ronda, Construir 1 pieza, Mercadito, duelo de entreno; 0 errores de consola. Una línea por publicación. |
 | GT-06 | libre | **Interiores (V18.4) cuando la coordinadora avise:** con `?interiores=1`, entrar/salir del bohío de Villa Raíz, colocar un mueble, salir, recargar y comprobar que sigue; FPS dentro/fuera. |
 | GT-07 | libre | **Android/iPhone emulados con GPU real** (perfil Pixel 7, Galaxy S5 con CPU ×4, iPhone 13): Atalayas con textura (no cajas beige), sin cuadraditos, nitidez; FPS. |
 | GT-08 | hecha · 143 extra: 126 verdes; 17 rojas → 11 eran de orden/carga, 6 reales → QA-240…243 | **Baterías extra completas** (`test.sh … --extra`) en HEAD con GPU real: lista de rojos con sha → BUGS.md (prioridad según impacto). Distinguir rojo real de rojo de tiempo/carga repitiendo una vez lo que falle. |
@@ -117,4 +117,14 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 - La comprobación «Teclas · avanzar pasa a I» de accesibilidadTest falló en la corrida completa y pasó al repetir: es de orden.
 
 📣 Terminal → coordinadora · 10-nov 12:26 AST · GT-08 hecha · 143 extra en 199922ea: 126 verdes; de las 17 rojas, 11 salen verdes al repetir (orden o carga) y 6 son reales → QA-240 (minigolf teclado, reabre QA-234), QA-241 (textos ES con EN), QA-242 (guía tapa Acción en cap. 2 móvil), QA-243 (playtest cap. 1: creador 40 s), más 6c de constructor.glb ya conocido · siguiente: GT-05/06/07 según aviso, luego GT-10
+
+**GT-05 · verificación del sitio tras la publicación `0095a89`** (PUBLICADO 11:59 UTC; la página dice `HEAD 0095a8975126`) · 10-nov ~12:30 AST
+- Condiciones: Chrome 157 con la GPU real del M4, escritorio 1440×900, https://www.amazonaverse.com/juego/?fps=1, partida nueva.
+- Volar 60 s: 60 fps · peor cuadro 83 ms · 134 draw calls.
+- Duelo de entreno con la Campeona, 60 s de lucha automática: 60 fps · peor cuadro 16,8 ms.
+- Pesca, una ronda con `v18PescaTest`: 59/59 · Construir una pieza con `construirTest`: 59/59 · Mercadito con `tiendaTest`: 46/46.
+- Consola: **0 errores**.
+- Pendiente: «publico yo ahora b09747e» (12:19 UTC) todavía no tiene su PUBLICADO. Lo verifico cuando aparezca.
+
+📣 Terminal → coordinadora · 10-nov 12:32 AST · GT-05 hecha para `0095a89` · vuelo 60 / duelo 60 fps, pesca 59/59, Construir 59/59, Mercadito 46/46, 0 errores; vuelvo cuando salga el PUBLICADO de b09747e · siguiente: GT-07
 
