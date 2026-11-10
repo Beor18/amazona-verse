@@ -268,7 +268,12 @@ kbd {
 .pause-head h2 { margin: 0; font: 700 var(--fs-2xl)/1 var(--font-display); color: var(--c-text); display: flex; align-items: center; gap: var(--sp-3); }
 .pause-head h2 .eyebrow { display: block; margin-bottom: 4px; }
 .pause-resume { width: 100%; }
-.pause-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: var(--sp-3); }
+.pause-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: var(--sp-3); }
+.pause-grupo { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin: 6px 0 0; min-height: 28px;
+  font: 700 var(--fs-xs)/1.2 var(--font-body); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-eyebrow); }
+.pause-grupo::before { content: ""; width: 18px; height: 18px; flex: none; background: currentColor;
+  -webkit-mask: var(--icon, var(--i-play)) center / contain no-repeat; mask: var(--icon, var(--i-play)) center / contain no-repeat; }
+#pause .pause-grid > .btn { min-width: 0; white-space: normal; line-height: 1.15; }
 #b-sound[aria-pressed="false"] { --icon: var(--i-mute); --btn-ink: var(--c-text-muted); }
 .tile.warn { --btn-ink: #ffc9bf; --btn-border: rgba(255, 140, 120, 0.45); }
 .pause-help { padding: var(--sp-4); border-radius: var(--r-lg); background: rgba(244, 247, 241, 0.05); border: 1px solid rgba(244, 247, 241, 0.1); }
@@ -289,7 +294,7 @@ kbd {
 #confirm-reset p { margin: 0 0 var(--sp-5); color: var(--c-ink-muted); }
 /* Navegadores sin popover: los botones vuelven a la fila del HUD */
 @supports not selector(:popover-open) {
-  #b-menu, .pause-head, .pause-resume, .pause-help, [popovertarget="confirm-reset"], #confirm-reset h2, #confirm-reset p, #confirm-reset .btn.ghost { display: none; }
+  #b-menu, .pause-head, .pause-resume, .pause-help, .pause-grupo, [popovertarget="confirm-reset"], #confirm-reset h2, #confirm-reset p, #confirm-reset .btn.ghost { display: none; }
   #pause, .pause-grid, #confirm-reset, #confirm-reset .row { display: contents; }
 }
 
