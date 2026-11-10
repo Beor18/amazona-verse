@@ -10,6 +10,14 @@
 - **Playtest CG-105:** ya medido sobre `f71173a9` (posterior a `eb5d7ef1`), build `b676fee4`, commit del informe `e2a6b1ae`. 6/6 pasan. Guía 0. Cada uno 1222,3 s de juego (pared 171, 168, 168, 164, 171 y 169 s).
 - **Qué falta:** ninguna CG libre. QA-232 y QA-233 son de Dev 2 (QA-233 ya EN CURSO). QA-230 y QA-231 son de Kimi. Me quedo quieto hasta la auditoría.
 
+### Dev 2 · 10-nov 07:25 AST · QA-233 hecha
+- **Tarea:** la pastilla de la Patrulla no tapa el objetivo. Cerrada. Partí de `c9adc9f2` y la prueba pide que la pastilla sea `position: relative`, para no dar verde si el estilo no carga.
+- **Commit:** `2d6ee085` (el mismo `invasoras.js` que la build `qa-233-3bb7045`). EN CURSO fue `0d9417bc`.
+- **Archivos:** `src/game/invasoras.js`. `#inv-cuenta` va dentro de `#top`, en su propia fila. No toqué `ui.js` (QA-232), ni QA-234, ni QA-235.
+- **Qué falta:** QA-232, opcionesTest en inglés.
+- **Cómo probarlo:** `AV.invasorasTest()`. El check mira 1280×800 y 390×844 con el texto «Vuela y pósate junto a Iguaca».
+- **Lo confirma:** invasorasTest 33/33. Las 12 en verde, 0 errores. El aviso de streaming (QA-230) volvió; es de Kimi.
+
 ### Dev 2 · 10-nov 07:12 AST · QA-233 en curso
 - **Tarea:** la pastilla «Patrulla 0/4» no tapa el objetivo del capítulo 1. Parto de `dev3/ronda6-patrulla-opciones` (`c9adc9f2`). QA-232 espera. QA-234 y QA-235 no las toco.
 - **Commit de código:** todavía no.
