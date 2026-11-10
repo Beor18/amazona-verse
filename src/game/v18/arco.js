@@ -31,7 +31,7 @@ window.AVV18Arco = function (G) {
   const S = G.S, T = G.terreno, scene = G.renderer.scene;
   const ID = 'arco_atalayas';
   const ESTADOS = ['inicio', 'reunion', 'nidos', 'afinado', 'encendido'];
-  const XP_FIN = 120, R_VISTA = 220, R_REUNION = 9, R_LLEGADA = 30, R_ENCUENTRO = 14, R_HUD = 40, R_AVISO = 45, R_CEDE = 160, R_DEVUELVE = 140, RAFAGA_S = 5;
+  const XP_FIN = 120, CONCHAS = 15, R_VISTA = 220, R_REUNION = 9, R_LLEGADA = 30, R_ENCUENTRO = 14, R_HUD = 40, R_AVISO = 45, R_CEDE = 160, R_DEVUELVE = 140, RAFAGA_S = 5;
   const ALTO_TORRE = 7.9; // alto de torre_vigia.glb (kit de madera) a escala 1
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const PUERTO = { x: 73.6, z: -75.2 };
@@ -43,8 +43,7 @@ window.AVV18Arco = function (G) {
     titulo: 'Los faroles de las Atalayas',
     aviso: 'En las Atalayas del Oeste algo zumba muy fuerte… La bandera verde del mapa te lleva.',
     llegada: [['tuerca', '¡Les presento mi Espantanubes! Sopla tan fuerte que aleja las tormentas.'], ['ingeniera', 'Tuerca… también despeinó los nidos de las torres.'], ['constructor', 'Eso me suena. Yo también hacía cosas sin mirar.']],
-    reunion: [['constructor', '¡Hola, Vittata! Esta vez lo hacemos bien: primero miramos, luego arreglamos.'], ['tuerca', 'Mi invento quería ayudar… pero asustó a las cotorras de las torres.'],
-      ['ingeniera', 'Me pongo mi equipo de rescate. ¡Hay tres nidos revueltos arriba de las torres!'], ['ingeniera', 'Tú vuelas, Vittata. ¿Los acomodas?']],
+    reunion: [['constructor', '¡Hola, Vittata! Esta vez lo hacemos bien: primero miramos, luego arreglamos.'], ['ingeniera', 'Tú vuelas, Vittata. ¿Los acomodas?']],
     nido: 'Acomodar el nido', nidoN: '¡Nido acomodado! ({}/3)',
     nidos: ['Ramitas en su sitio. ¡Qué nido tan cómodo!', 'Una pluma verde en el nido: aquí vive alguien.', 'Desde aquí se ve casi toda la isla. ¡Qué vista!'],
     ojos: 'Tus ojos ven los nidos desde lejos: brillan arriba de las torres.',
@@ -451,7 +450,15 @@ window.AVV18Arco = function (G) {
   }
 
   // ---------- XP V18.2 (una vez; también si evolucion.js llega después) ----------
+  function pagarConchas() {
+    if (!hecho() || !G.tienda || !G.tienda.ganar || V.otorgado('conchas_atalayas')) return 0;
+    if (!V.otorgar('conchas_atalayas', 'conchas_atalayas', 1)) return 0;
+    const n = G.tienda.ganar(CONCHAS, 'mision') || 0;
+    if (n) toast('+' + n + ' conchitas', 3200);
+    return n;
+  }
   function pagarXP() {
+    pagarConchas();
     if (!hecho() || !G.v18evo || !G.v18evo.dar || V.otorgado('xp_atalayas')) return 0;
     if (!V.otorgar('xp_atalayas', 'xp_atalayas', 1)) return 0;
     return G.v18evo.dar(V.seleccionada() || 'vittata', XP_FIN, 'atalayas') || 0;
@@ -830,7 +837,7 @@ window.AVV18Arco = function (G) {
       V.recargar(); G.emit('apply'); await esperar(60); correr(0.2);
       check('12 · Paso 9: tras recargar siguen los faroles, los banderines, el invento verde, los nidos y las tres apariencias nuevas', hecho() && gFaroles.every(f => f.visible) && gBander.visible && maq.pintada === 'flor' && nidosListos() === 3
         && N.estado('constructor') === 'vecino' && N.estado('tuerca') === 'aliado' && N.estado('ingeniera') === 'rescate' && tue.apariencia === 'aliado' && N.instancia('constructor') && N.instancia('constructor').apariencia === 'vecino');
-      check('12b · Tras recargar, ni el premio ni la XP se repiten; el marcador de la misión desaparece', !V.otorgar('arco_atalayas', 'arco_atalayas', 1) && pagarXP() === 0 && mapa() === null);
+      check('12b · Tras recargar, ni el premio ni la XP ni las conchitas se repiten; el marcador de la misión desaparece', !V.otorgar('arco_atalayas', 'arco_atalayas', 1) && pagarXP() === 0 && pagarConchas() === 0 && mapa() === null);
       // 13 · partidas viejas y valores raros
       localStorage.setItem(V.clave(), JSON.stringify({ v: 2, especies: {}, inv: {}, otorgados: {}, mundo: { puente_villa: 'reparado', puerto_mina: 'reparado' }, sel: null, evo: {} }));
       V.recargar(); G.emit('apply'); await esperar(60); correr(0.1);
