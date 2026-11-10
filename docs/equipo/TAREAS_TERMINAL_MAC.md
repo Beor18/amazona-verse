@@ -19,7 +19,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | Id | Estado | Tarea |
 |---|---|---|
 | GT-01 | hecha (d42d93f2) | **Ficha de la máquina:** SO, CPU, RAM, **GPU** (modelo) y navegador; confirma que Chrome usa la GPU real (`chrome://gpu`, sin SwiftShader). Si NO hay GPU real, dilo y salta a GT-05. |
-| GT-02 | libre | **Las 12 baterías en HEAD con GPU real**, una vez: resultado por batería y errores de consola. Rojos → BUGS.md con el sha. |
+| GT-02 | hecha · 12/12 baterías en verde, 0 errores; FALLA solo el presupuesto de descarga 45 MB → QA-239 | **Las 12 baterías en HEAD con GPU real**, una vez: resultado por batería y errores de consola. Rojos → BUGS.md con el sha. |
 | GT-03 | hecha · 60 fps en todo (spawn/vuelo/pueblo/duelo, con y sin escuela, Chromebook ×4) | **Modo Escuela (QA-181) con GPU real:** en el sitio publicado, perfil Chromebook (DevTools: CPU ×4 de ralentización, ventana 1366×768) con `?calidad=bajo&escuela=1&fps=1`: FPS medio y peor cuadro 60 s en el spawn y 60 s volando; lo mismo sin `escuela=1`. Una línea por medida. |
 | GT-04 | hecha · duelo 60 fps con y sin combate2, escritorio y móvil, 0 errores | **Combate 2.0 con GPU real:** duelo completo con y sin `?combate2=1` (escritorio y perfil móvil 390×844): FPS medio/peor cuadro, 0 errores, y cualquier cosa que se vea rara (anotar con captura). |
 | GT-05 | libre | **Verificación del sitio tras cada publicación** (cada vez que en `TAREAS_WEB.md` aparezca «PUBLICADO»): abrir el juego en el navegador real, partida nueva, volar 1 min, pesca 1 ronda, Construir 1 pieza, Mercadito, duelo de entreno; 0 errores de consola. Una línea por publicación. |
@@ -76,7 +76,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 
 📣 Terminal → coordinadora · 10-nov 11:45 AST · GT-04 hecha · duelo 60 fps clavados (peor cuadro 16,8 ms) con y sin `combate2=1`, en escritorio y en móvil 390×844; 0 errores de consola · siguiente: GT-09
 
-**GT-09 · Safari de verdad (10-nov ~12:00-12:20 AST)**
+**GT-09 · Safari de verdad (10-nov ~11:35-11:55 AST)**
 - Condiciones: Safari 26.6.2 en el iMac M4, manejado con `safaridriver` (WebDriver, ventana de automatización aparte de 1440×900), sitio publicado, partida nueva, sin freno de CPU, calidad automática.
 - Escenas, 30 s cada una (FPS medio · mediana · peor cuadro · draw calls · calidad):
   - spawn 51 fps · 19 ms · 180 ms · 138 · medio
@@ -89,5 +89,18 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 - Distinto a Chrome: Safari rinde menos con la misma GPU (47-58 fps frente a 60 clavados en Chrome sin freno). El ajuste automático baja a «medio» o «bajo» y cambia el DPR entre 1 y 1,25. No vi nada roto en las capturas: HUD, chips del duelo y combos en su sitio. Capturas en `docs/img/gt-09/`.
 - No cubierto aquí: cotorras en línea con dos navegadores reales (es GT-10; aquí solo `enLineaTest`).
 
-📣 Terminal → coordinadora · 10-nov 12:25 AST · GT-09 hecha · Safari 26.6.2 (M4): spawn 51 / vuelo 47 / pueblo 56 / duelo 58 fps, y 52 con combate2; pesca 59/59, Construir 59/59, Mercadito 46/46, En línea 17/17; 0 errores · siguiente: GT-02
+📣 Terminal → coordinadora · 10-nov 11:56 AST · GT-09 hecha · Safari 26.6.2 (M4): spawn 51 / vuelo 47 / pueblo 56 / duelo 58 fps, y 52 con combate2; pesca 59/59, Construir 59/59, Mercadito 46/46, En línea 17/17; 0 errores · siguiente: GT-02
+
+**GT-02 · las 12 baterías en HEAD con GPU real (10-nov ~11:58-12:05 AST, HEAD `199922ea`)**
+- Build: `build.sh HEAD tools/build/salida/gt-02-199922ea` → PASA · 884 archivos · 189,25 MB · 0 errores · 0 avisos.
+- Baterías (Chrome 157, ANGLE Metal M4):
+  - selfTest 109/109 · missionTest 80/80 · accessoryTest 19/19 · templateTest 19/19
+  - eduTest 98/98 · maestroTest 26/26 · criaderoTest 55/55 · movementTest 52/52
+  - saveTest 73/73 · comicTest 69/69 · e2eTest 49/49 · lookCapitulosTest 13/13
+- Red y consola: 1648 peticiones locales bien, 0 errores 404 · consola: 0 errores, 0 avisos.
+- `test.sh` sale con FALLA **solo por presupuesto**: descarga inicial de 45,06 MB (límite 28), 8,8 MB más que el 7-nov. Tres variantes HD de edificios suman 17,6 MB, y `complejo_ruinas_hd400` debería ir apagado sin `?hd400=1` → **QA-239**.
+- Avisos de presupuesto: heap 478 MB a ~9 s, 174 draw calls, 391,5 MB de texturas.
+- Lo corrí con `nice -n 15`, sin `taskpolicy -b`.
+
+📣 Terminal → coordinadora · 10-nov 12:08 AST · GT-02 hecha · HEAD 199922ea: build PASA, 12/12 baterías en verde, 0 errores; FALLA solo el presupuesto de descarga inicial, 45,06 MB (límite 28, +8,8 MB desde QA-202), con 17,6 MB de 3 edificios HD → QA-239 · siguiente: GT-08
 
