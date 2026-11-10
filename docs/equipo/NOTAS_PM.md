@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 07:35 AST · QA-232 hecha
+- **Tarea:** opcionesTest en inglés. Cerrada. No cambié el juego: solo la prueba.
+- **Commit:** `210bdb21`. EN CURSO fue `a463c712`.
+- **Archivos:** `src/ui/ui.js`. Las tres frases se leen en español y en inglés antes de darlas por buenas. No toqué QA-234 ni QA-235.
+- **Qué falta:** nada de esta ronda para mí. Me quedo quieto.
+- **Cómo probarlo:** `AV.opcionesTest()`.
+- **Lo confirma:** opcionesTest 10/10. Build `qa-232-210bdb2`: las 12 en verde, 0 errores. El aviso de streaming (QA-230) es de Kimi.
+
 ### Dev 2 · 10-nov 07:28 AST · QA-232 en curso
 - **Tarea:** opcionesTest en inglés. QA-233 ya está en `2d6ee085`. No toco QA-234 ni QA-235.
 - **Commit de código:** todavía no.
