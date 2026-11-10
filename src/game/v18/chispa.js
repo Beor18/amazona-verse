@@ -174,6 +174,11 @@ window.AVV18Chispa = function (G) {
     if (pista.vis > 0 && (pista.vis -= dt) <= 0) hud.pi.hidden = true;
     if (A.fase !== 'carrera') return;
     pista.sinBand += dt;
+    if (A.t >= 20 && A.sig === 0 && !(pista.vistas & 4)) {
+      pista.vistas |= 4;
+      const tecla20 = (k => (k === ' ' ? 'Espacio' : String(k || 'v').toUpperCase()))(((G.input && G.input.mapa) || {}).volar);
+      mostrarPista(TACTIL ? TXT.pDelanteT : TXT.pDelante.replace('{}', tecla20));
+    }
     if ((pista.t -= dt) > 0) return;
     const tecla = (k => (k === ' ' ? 'Espacio' : String(k || 'v').toUpperCase()))(((G.input && G.input.mapa) || {}).volar);
     if (!(pista.vistas & 1) && A.ci > A.sig && A.t > 3 && !F.MOVE.flying) { pista.vistas |= 1; mostrarPista(TACTIL ? TXT.pDelanteT : TXT.pDelante.replace('{}', tecla)); }
@@ -257,7 +262,7 @@ window.AVV18Chispa = function (G) {
     // Chispa vuelve andando a su sitio (si ganó, ya está en la meta: celebra)
     ponerChispa();
     N.colocar(NPC, { x: SITIO.salida.x, z: SITIO.salida.z, rotY: SITIO.salida.rotY, caminar: true, comenta: true, anim: undefined });
-    if (gana) { sonar('unlock'); fx('gold', S.pos.x, S.pos.y + 1.2, S.pos.z, 14); if (nuevo) toast(TXT.nuevo.replace('{}', reloj(ms / 1000)), 3000); }
+    if (gana) { sonar('unlock'); fx('gold', S.pos.x, S.pos.y + 1.2, S.pos.z, 14); fx('stars', S.pos.x, S.pos.y + 1.8, S.pos.z, 16); toast(TXT.fGana, 2400); if (nuevo) toast(TXT.nuevo.replace('{}', reloj(ms / 1000)), 3000); }
     else { sonar('ring'); N.animar(NPC, 'celebrar'); fx('stars', A.cx, H(A.cx, A.cz) + 1.4, A.cz, 10); }
     if (gana) pagarXP();
     emitir({ tipo: 'fin', gana, ms, nuevo });

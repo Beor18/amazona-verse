@@ -229,6 +229,9 @@ window.AVV18Guardian = function (G) {
     if (A.fase !== 'circuito' || A.sig >= SITIO.puertas.length) return;
     const M = F.MOVE, gp = SITIO.puertas[A.sig];
     pista.suelo = M.flying ? 0 : pista.suelo + dt;
+    if (pista.sig !== A.sig) { pista.sig = A.sig; pista.puertaT = 0; pista.visto20 = false; }
+    pista.puertaT = (pista.puertaT || 0) + dt;
+    if (!pista.visto20 && pista.puertaT >= 20) { pista.visto20 = true; mostrarPista(A.sig < SITIO.puertas.length ? TXT.metaCol[A.sig] : TXT.metaFin); }
     if ((pista.t -= dt) > 0) return;
     const d = Math.hypot(S.pos.x - gp.x, S.pos.z - gp.z), dy = S.pos.y + 0.6 - gy(gp);
     if (!M.flying) { if (pista.suelo > 1.5) mostrarPista(TACTIL ? TXT.pVolarT : TXT.pVolar.replace('{}', teclaDe('volar', 'v'))); } // en el suelo, primero despegar
@@ -338,7 +341,8 @@ window.AVV18Guardian = function (G) {
     pintarHud(); pintarPuertas(0); mostrarFin(ms);
     ponerGuardian();
     N.colocar(NPC, { x: SITIO.salida.x, z: SITIO.salida.z, rotY: SITIO.salida.rotY, comenta: true, anim: undefined });
-    sonar('unlock'); fx('gold', S.pos.x, S.pos.y + 1.2, S.pos.z, 14);
+    sonar('unlock'); fx('gold', S.pos.x, S.pos.y + 1.2, S.pos.z, 14); fx('stars', S.pos.x, S.pos.y + 1.8, S.pos.z, 16);
+    toast(TXT.fGana, 2400);
     if (nuevo) toast(TXT.nuevo.replace('{}', reloj(ms / 1000)), 3000);
     pagarXP();
     emitir({ tipo: 'fin', gana: true, ms, nuevo });
