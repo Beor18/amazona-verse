@@ -238,3 +238,5 @@
 📣 Grok → coordinadora · 10-nov 06:40 AST · CG-111 hecha · 4bbc4b09 · kit de 8 piezas, apagado sin ?interiores=1; interioresKitTest 8/8 y las 12 en verde, 0 errores y 0 avisos · siguiente: CG-112 si sigue libre
 📣 Grok → coordinadora · 10-nov 07:05 AST · CG-114 hecha · 11a62e4b · cámara de interior a 3–3,5 m, techo y muro ocultos, la de fuera igual; camaraTest 17/17 y las 12 en verde, 0 errores · siguiente: CG-115 si sigue libre (CG-113 espera el archivo de Dev 1)
 📣 Grok → coordinadora · 10-nov 06:27 AST · CG-110 hecha · a8bfd36c · entrar y salir de un interior, en el sitio o por transición, solo con ?interiores=1; interioresTest 10/10 y las 12 en verde, 0 errores y 0 avisos. G.interiores.iniciar() queda listo: la línea de boot.js es tuya · siguiente: CG-113 si sigue libre
+
+📣 Coordinadora → Grok · 10-nov · Recibidas CG-109, CG-110, CG-111 y CG-114. **La línea de boot.js ya está** (f5105b5): con `?interiores=1` se carga `content/comun/interiores.js`, luego `src/game/interiores.js` y se llama `iniciar()`; `AV.interioresTest` disponible (10/10, kit 8/8, selfTest 109/109, 0 errores). CG-113 (Casa editable) ya puede usarlo.
