@@ -1226,6 +1226,11 @@
             const g = await A.medir('grito', 1.5), ring = await A.medir('ring', 0.8), splash = await A.medir('splash', 0.7);
             check('Grito v2 se queda: su RMS de 300 ms está en la banda medida y su pico no pasa al de «ring»', !!(g && ring && splash) && g.rms > 0.008 && g.rms < 0.04 && g.pico < ring.pico && g.pico < 0.2 && splash.pico < 0.45,
               g && ring && splash ? `grito rms ${g.rms.toFixed(3)} pico ${g.pico.toFixed(3)} · ring ${ring.pico.toFixed(3)} · splash ${splash.pico.toFixed(3)}` : 'sin medida');
+            const nuevos = ['carrete', 'chapuzon', 'tac', 'chaching', 'clic'];
+            const med = {}; for (const n of nuevos) med[n] = await A.medir(n, 0.8);
+            const flojo = nuevos.filter(n => { const v = med[n]; return !(v && v.rms > 0.002 && v.rms < 0.05 && v.pico > 0.02 && v.pico < 0.22 && v.pico < ring.pico); });
+            check('Carrete, chapuzón, tac, cha-ching y clic se oyen en portátil y no pican más que «ring»', !flojo.length,
+              flojo.length ? flojo.map(n => `${n} rms ${(med[n] && med[n].rms || 0).toFixed(3)} pico ${(med[n] && med[n].pico || 0).toFixed(3)}`).join(' · ') : nuevos.map(n => `${n} ${med[n].rms.toFixed(3)}/${med[n].pico.toFixed(3)}`).join(' · ') + ` · ring ${ring.pico.toFixed(3)}`);
           }
         }
 

@@ -365,7 +365,7 @@ window.AVTienda = function (G) {
         if (r.ok) {
           msg = it.tipo === 'ropa' ? TXT.compraRopa : TXT.compraPieza; msgFalta = null; recien = id; probando = '';
           if (it.tipo === 'ropa') { anclar(false); pintarCotorra(S.wear, true); }
-          sonar('unlock');
+          sonar('chaching');
           try { if (!G.quiet && G.fx && G.fx.burst && G.S.pos) G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 10); } catch (e) { /* */ }
         } else { msg = ''; msgFalta = r.motivo === 'faltan' ? r.faltan : null; sonar('wrong'); }
         pintar(r.ok ? `[data-tn="vestir"][data-id="${id}"],[data-tn="conjunto"],[data-tn="cerrar"]` : null);
@@ -508,7 +508,7 @@ window.AVTienda = function (G) {
       check('Lo que alcanza tiene «Comprar · precio»; lo que no, «Te faltan N» (sin botón)', !!bHel && bHel.textContent.trim() === comprarTxt(25) && sinBoton && $('tienda').querySelector('[data-id="traje_rio"] .tn-falta').textContent === faltanTxt(45), bHel && bHel.textContent);
       bHel.click();
       check('El botón compra: 75 − 25 = 50, la fila pasa a «Ya es tuya» y lo anuncia', saldo() === 50 && tiene('helecho') && !!$('tienda').querySelector('li.tuya[data-id="helecho"]') && $('tienda').querySelector('.tn-msg').textContent === TXT.compraPieza);
-      check('Comprar suena y anima la fila', ultimoSonido === 'unlock' && $('tienda').querySelector('li[data-id="helecho"]').classList.contains('tn-nueva'));
+      check('Comprar suena un cha-ching suave y anima la fila', ultimoSonido === 'chaching' && $('tienda').querySelector('li[data-id="helecho"]').classList.contains('tn-nueva'));
       // maqueta a 390 × 844 con las hojas reales
       const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
       fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:390px;height:844px;border:0';

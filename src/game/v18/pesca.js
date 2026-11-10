@@ -356,7 +356,7 @@ window.AVV18Pesca = function (G) {
     // El ritmo sale de la velocidad que ya tiene cada especie: no se cambian los datos. La guavina pica antes; el olivo, más tarde.
     A.ritmo = ritmoPicada(A.pez);
     A.esperaT = (1.8 + azar() * 3.2) * A.ritmo; A.mordT = (0.6 + azar() * 1.2) * A.ritmo;
-    sonar('splash', 0.4); fx('bubbles', c.x, lv + 0.05, c.z, 6); ondear(1);
+    sonar('chapuzon'); fx('bubbles', c.x, lv + 0.05, c.z, 6); ondear(1);
     pista(TXT.pEspera); emitir({ tipo: 'cae', x: +c.x.toFixed(2), z: +c.z.toFixed(2) }); pintar(true);
   }
   function ritmoPicada(p) {
@@ -438,6 +438,7 @@ window.AVV18Pesca = function (G) {
     if (!A.cansado && A.tiraT > CANSADO) { A.cansado = true; pista(TXT.pCansado); }
     if (A.cansado) A.ancho = Math.min(0.6, A.ancho + 0.03 * dt);
     A.vmarca += (A.sosteniendo ? 2.4 : -2.0) * dt; A.vmarca = Math.max(-1.1, Math.min(1.1, A.vmarca));
+    if (A.sosteniendo) { A.carreteT = (A.carreteT || 0) - dt; if (A.carreteT <= 0) { sonar('carrete'); A.carreteT = 0.22; } } else A.carreteT = 0;
     A.marca += A.vmarca * dt; if (A.marca < 0) { A.marca = 0; A.vmarca = Math.max(0, -A.vmarca * 0.3); } if (A.marca > 1) { A.marca = 1; A.vmarca = Math.min(0, -A.vmarca * 0.3); }
     if (Math.abs(A.zonaObj - A.zona) < 0.03 || azar() < dt * 0.5) A.zonaObj = A.ancho / 2 + azar() * (1 - A.ancho);
     A.zonaV += ((A.zonaObj - A.zona) * 3 - A.zonaV * 2.2) * dt * p.vel * (A.cansado ? 0.5 : 1); A.zona = Math.max(A.ancho / 2, Math.min(1 - A.ancho / 2, A.zona + A.zonaV * dt));
@@ -810,6 +811,7 @@ window.AVV18Pesca = function (G) {
       hasta(() => A.fase !== 'vuela', 2);
       const enAgua = A.fase === 'espera' && Math.abs(P.corcho.position.y - nivelAgua(A.corcho.x, A.corcho.z)) < 0.2;
       check('El corcho cae al río delante de la orilla y flota', enAgua, JSON.stringify({ fase: A.fase, y: +P.corcho.position.y.toFixed(2), z: +A.corcho.z.toFixed(1) }));
+      check('Al caer al agua suena el chapuzón', !!(G.audio && G.audio.log && G.audio.log.includes('chapuzon')));
       tecla('keydown', ' '); tecla('keyup', ' ');
       check('Pulsar antes del pique solo da una pista («¡Muy pronto!») y se sigue esperando', A.fase === 'espera' && A.pistaTxt === TXT.pPronto);
       hasta(() => A.fase === 'pica', 8);
@@ -818,6 +820,8 @@ window.AVV18Pesca = function (G) {
       check('Al picar, el pez forcejea en el agua y sale una onda (en calidad baja, sin onda)', A.fase === 'pica' && P.pez.visible && (barato() || P.onda.visible));
       tecla('keydown', ' ');
       check('Teclado: pulsar a tiempo clava el anzuelo y empieza a recoger (barra con la zona del pez)', A.fase === 'tira' && !hud.q('tiraW').hidden);
+      paso(1 / 60);
+      check('Al recoger suena el carrete', !!(G.audio && G.audio.log && G.audio.log.includes('carrete')));
       tecla('keyup', ' ');
       const pez1 = A.pez, fin1 = recogerCon(() => tecla('keydown', ' '), () => tecla('keyup', ' '), 40);
       const f1 = ficha();

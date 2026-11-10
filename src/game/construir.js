@@ -1,7 +1,7 @@
 /* Juego · Construir libre (expansión tras la temporada 1; ROADMAP «Después de la temporada 1», Kelvin 9-nov)
    Amplía el modo construir del cap. 1 (hoy solo el refugio: content/cap1/historia.js «Modo construir» y el fantasma de
    content/cap1/mundo.js) a un rincón propio: nido, techo de hojas y decoración. Mismo gesto que el refugio: un fantasma delante de
-   Vittata (verde si cabe, rojo si no), Acción coloca y suena el martillo (G.audio.martillar).
+   Vittata (verde si cabe, rojo si no), Acción coloca y suena un tac de madera (G.audio «tac»).
    ENCENDIDO PARA TODOS (Kelvin 9-nov: «Piezas aprobadas»): ya no depende de ?expansion=1 (esa bandera ya no existe).
    Bandera propia G.CONSTRUIR (boot.js): encendida por defecto, ?construir=0 la apaga; boot.js carga este archivo al arrancar.
    Piezas: 7 tipos procedurales y estilizados (sin modelos nuevos), de todos desde el principio, y 6 más del Mercadito del río
@@ -352,7 +352,7 @@
       const p = { t: tipo, x, z, r: giro };
       lista.push(p); historial.push({ op: '+', p });
       pintar(); guardar(); pintarHud();
-      if (G.audio && G.audio.martillar && !G.quiet) G.audio.martillar(lista.length === 1 ? 3 : 1);
+      if (G.audio && G.audio.play) { try { G.audio.play('tac'); } catch (e) { /* sin audio */ } }
       if (G.fx && G.fx.burst && !G.quiet && !bajo()) try { G.fx.burst(p.x, H(p.x, p.z) + 0.6, p.z, 'feathers', 8); } catch (e) { /* sin fx */ }
       return true;
     }
@@ -688,6 +688,7 @@
         check('La tecla 6 elige el tronco', tipo === 'tronco');
         S.facing = { x: -S.facing.x, z: -S.facing.z }; actualizar();
         check('Coloca un tronco girado', colocar() && lista.length === 2 && lista[1].r === 2 && mallas.tronco.count === 1, est.motivo);
+        check('Colocar suena un tac de madera', !!(G.audio && G.audio.log && G.audio.log.includes('tac')));
         check('El tronco queda al ras del suelo', Math.abs(new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().fromArray(mallas.tronco.instanceMatrix.array, 0)).y - H(lista[1].x, lista[1].z)) < 1e-3);
         check('Deshacer quita el último (Z)', (dispatchEvent(new KeyboardEvent('keydown', { key: 'z', bubbles: true })), lista.length === 1 && mallas.tronco.count === 0 && !mallas.tronco.visible));
         S.facing = { x: -S.facing.x, z: -S.facing.z }; actualizar();
