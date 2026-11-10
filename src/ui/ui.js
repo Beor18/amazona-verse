@@ -37,7 +37,7 @@
     function start() {
       full = text.textContent || ''; i = 0; budget = 0; last = 0;
       cancelAnimationFrame(raf); raf = 0;
-      if (reduce.matches || !full) { finish(); return; }
+      if (reduce.matches || document.documentElement.classList.contains('mov-reducido') || !full) { finish(); return; }
       dialog.classList.add('is-typing'); render(); raf = requestAnimationFrame(step);
     }
     new MutationObserver(start).observe(text, { childList: true, characterData: true, subtree: true });
@@ -142,8 +142,136 @@
     for (const id of ['i-madera', 'i-piedra', 'i-componente', 'b-diary']) {
       const el = $(id); if (!el) continue;
       let prev = el.textContent;
-      new MutationObserver(() => { if (el.textContent !== prev) { prev = el.textContent; bump(el); } })
+      new MutationObserver(() => { if (document.documentElement.classList.contains('mov-reducido')) return; if (el.textContent !== prev) { prev = el.textContent; bump(el); } })
         .observe(el, { childList: true, characterData: true, subtree: true });
     }
+  }
+
+  // ---------- 6. Opciones claras (CG-104): imagen, movimiento, efectos y voces. La música y el ambiente ya están en musica.js. ----------
+  const G = window.AV && window.AV.G;
+  const sec = $('pause-opciones');
+  if (G && sec) {
+    const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
+    const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'ave') + '.opciones';
+    const FRASE = {
+      auto: ['El juego elige solo, según cómo vaya en tu equipo.', 'The game chooses by itself, based on how it runs on your device.'],
+      bajo: ['Menos plantas, sin sombras y el agua simple, para que vaya fluido.', 'Fewer plants, no shadows and simple water, so it stays smooth.'],
+      medio: ['Sombras suaves y más plantas.', 'Soft shadows and more plants.'],
+      alto: ['Sombras grandes, más plantas y el agua con más detalle.', 'Large shadows, more plants and more detailed water.'],
+    };
+    const leer = () => { try { const v = JSON.parse(localStorage.getItem(CLAVE) || 'null'); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } };
+    const guardar = p => { try { localStorage.setItem(CLAVE, JSON.stringify(Object.assign(leer(), p))); } catch (e) { /* sin almacenamiento */ } };
+    const sistema = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    function ponerMov(on) {
+      document.documentElement.classList.toggle('mov-reducido', !!on);
+      if (G.audio) G.audio.reducido = !!on;
+      if (G.renderer) G.renderer.REDUCED = !!on || sistema();
+    }
+    function ponerCalidad(id) {
+      const R = G.renderer; if (!R || !R.calidad) return;
+      if (id === 'auto') R.calidad.manual = false;
+      else if (R.setCalidad && R.PRESETS && R.PRESETS[id]) { R.calidad.manual = false; R.setCalidad(id, true); }
+    }
+    function ponerVol(k, n) {
+      const A = G.audio; if (!A || !A.vol) return;
+      A.vol[k] = Math.max(0, Math.min(1, n / 100));
+      if (A.apply) A.apply();
+    }
+    function rotular() {
+      sec.querySelector('#opt-titulo').textContent = L('Opciones', 'Options');
+      sec.querySelector('#opt-lbl-cal').textContent = L('Imagen', 'Picture');
+      const nom = { auto: ['Auto', 'Auto'], bajo: ['Baja', 'Low'], medio: ['Media', 'Medium'], alto: ['Alta', 'High'] };
+      sec.querySelectorAll('[data-opt-cal]').forEach(b => { const n = nom[b.dataset.optCal]; b.textContent = L(n[0], n[1]); });
+      $('opt-mov').textContent = L('Reducir movimiento', 'Reduce motion');
+      $('opt-lbl-sfx').textContent = L('Efectos', 'Effects');
+      $('opt-lbl-voz').textContent = L('Voces', 'Voices');
+      $('opt-son-nota').textContent = L('La música y el ambiente están en su sección.', 'Music and ambience are in their own section.');
+      pintar();
+    }
+    function pintar() {
+      const R = G.renderer, id = R && R.calidad && R.calidad.manual ? R.calidad.nivel : 'auto';
+      sec.querySelectorAll('[data-opt-cal]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.optCal === id)));
+      const f = FRASE[id] || FRASE.auto;
+      $('opt-cal-nota').textContent = L(f[0], f[1]);
+      const mov = !!(G.audio && G.audio.reducido) || document.documentElement.classList.contains('mov-reducido');
+      $('opt-mov').setAttribute('aria-pressed', String(mov));
+      if (G.audio && G.audio.vol) {
+        const s = Math.round(G.audio.vol.sfx * 100), v = Math.round(G.audio.vol.voice * 100);
+        $('opt-sfx').value = s; $('opt-sfx-v').textContent = s; $('opt-sfx').setAttribute('aria-valuetext', s + L(' por ciento', ' percent'));
+        $('opt-voz').value = v; $('opt-voz-v').textContent = v; $('opt-voz').setAttribute('aria-valuetext', v + L(' por ciento', ' percent'));
+      }
+    }
+    const guardado = leer();
+    if (guardado.calidad) ponerCalidad(guardado.calidad);
+    if (typeof guardado.movimiento === 'boolean') ponerMov(guardado.movimiento);
+    rotular();
+    sec.addEventListener('click', e => {
+      const b = e.target.closest && e.target.closest('button'); if (!b || !sec.contains(b)) return;
+      if (b.dataset.optCal) { ponerCalidad(b.dataset.optCal); guardar({ calidad: b.dataset.optCal }); }
+      else if (b.id === 'opt-mov') { const on = b.getAttribute('aria-pressed') !== 'true'; ponerMov(on); guardar({ movimiento: on }); }
+      pintar();
+    });
+    const alSoltar = e => {
+      const i = e.target; if (!i || !i.id) return;
+      if (i.id === 'opt-sfx') { ponerVol('sfx', +i.value); if (G.audio && G.audio.save) G.audio.save(); }
+      if (i.id === 'opt-voz') { ponerVol('voice', +i.value); if (G.audio && G.audio.save) G.audio.save(); }
+      pintar();
+    };
+    sec.addEventListener('input', alSoltar);
+    sec.addEventListener('change', alSoltar);
+    if (G.on) G.on('aula', k => { if (k === 'idioma') rotular(); });
+    window.AV.opcionesTest = function () {
+      const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+      const R = G.renderer, A = G.audio, pause = $('pause');
+      const cal0 = R && R.calidad ? { nivel: R.calidad.nivel, manual: R.calidad.manual } : null;
+      const vol0 = A && A.vol ? { sfx: A.vol.sfx, voice: A.vol.voice } : null;
+      const mov0 = document.documentElement.classList.contains('mov-reducido');
+      const red0 = A ? A.reducido : null;
+      const ls0 = localStorage.getItem(CLAVE);
+      const abierto = pause && pause.matches && pause.matches(':popover-open');
+      try {
+        check('La pausa tiene imagen, movimiento, efectos y voces, y avisa de la música', !!$('opt-cal-nota') && !!$('opt-mov') && !!$('opt-sfx') && !!$('opt-voz') && /música/.test($('opt-son-nota').textContent));
+        sec.querySelector('[data-opt-cal="bajo"]').click();
+        check('Baja deja la calidad en bajo, a mano, y dice qué cambia', R.calidad.nivel === 'bajo' && R.calidad.manual === true && /plantas/.test($('opt-cal-nota').textContent), $('opt-cal-nota').textContent);
+        sec.querySelector('[data-opt-cal="auto"]').click();
+        check('Auto vuelve a dejar que el juego elija', R.calidad.manual === false && $('opt-cal-nota').textContent === FRASE.auto[0]);
+        $('opt-sfx').value = 40; $('opt-sfx').dispatchEvent(new Event('change', { bubbles: true }));
+        $('opt-voz').value = 20; $('opt-voz').dispatchEvent(new Event('change', { bubbles: true }));
+        let guard = null;
+        for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.endsWith('.audio')) { try { guard = JSON.parse(localStorage.getItem(k)); } catch (e) { /* */ } } }
+        check('Efectos y voces se guardan por separado', A.vol.sfx === 0.4 && A.vol.voice === 0.2 && guard && guard.sfx === 0.4 && guard.voice === 0.2, JSON.stringify({ sfx: A.vol.sfx, voice: A.vol.voice, guard }));
+        $('opt-mov').click();
+        check('Reducir movimiento se enciende, se guarda y se apaga con otro toque', document.documentElement.classList.contains('mov-reducido') && A.reducido === true && leer().movimiento === true);
+        $('opt-mov').click();
+        check('Apagar reducir movimiento lo deja guardado en no', !document.documentElement.classList.contains('mov-reducido') && A.reducido === false && leer().movimiento === false);
+        const idioma0 = G.aula && G.aula.aj ? G.aula.aj.idioma : null;
+        if (G.aula && G.aula.aj) G.aula.aj.idioma = 'en';
+        rotular();
+        check('En inglés los nombres se entienden', $('opt-lbl-sfx').textContent === 'Effects' && $('opt-mov').textContent === 'Reduce motion' && /chooses by itself/.test($('opt-cal-nota').textContent), $('opt-cal-nota').textContent);
+        if (G.aula && G.aula.aj) G.aula.aj.idioma = idioma0;
+        rotular();
+        if (pause && pause.showPopover) pause.showPopover();
+        pause.style.width = '390px';
+        const caja = sec.getBoundingClientRect();
+        const sale = [];
+        sec.querySelectorAll('*').forEach(e => { const r = e.getBoundingClientRect(); if (r.width > 0 && (r.right > caja.right + 1 || r.left < caja.left - 1)) sale.push(e.id || e.tagName); });
+        check('A 390 px la sección cabe en la pausa', caja.width > 0 && caja.width <= 390 && !sale.length, sale.join(',') || Math.round(caja.width) + ' px');
+        $('opt-sfx').focus();
+        check('El volumen de efectos se enfoca con teclado', document.activeElement === $('opt-sfx'));
+        sec.querySelector('[data-opt-cal="medio"]').focus();
+        check('La calidad se elige con teclado', document.activeElement === sec.querySelector('[data-opt-cal="medio"]'));
+      } catch (e) {
+        check('La prueba termina sin excepciones', false, String(e && e.stack || e).slice(0, 240));
+      } finally {
+        if (cal0 && R.setCalidad) { R.calidad.manual = false; R.setCalidad(cal0.nivel, !!cal0.manual); }
+        if (vol0 && A) { A.vol.sfx = vol0.sfx; A.vol.voice = vol0.voice; if (A.save) A.save(); if (A.apply) A.apply(); }
+        ponerMov(mov0); if (A) A.reducido = red0;
+        if (ls0 == null) localStorage.removeItem(CLAVE); else localStorage.setItem(CLAVE, ls0);
+        if (pause) pause.style.width = '';
+        if (pause && !abierto && pause.hidePopover) { try { pause.hidePopover(); } catch (e) { /* ya cerrada */ } }
+        rotular();
+      }
+      return out;
+    };
   }
 })();

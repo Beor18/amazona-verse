@@ -168,6 +168,23 @@
       <a class="btn tile" id="b-web" href="../" data-icon="feather">La página del juego</a>
       <button class="btn tile warn" type="button" data-icon="reset" popovertarget="confirm-reset">Comenzar de cero</button>
     </div>
+    <section class="pause-opciones" id="pause-opciones" data-no-tr aria-labelledby="opt-titulo">
+      <h3 id="opt-titulo">Opciones</h3>
+      <div class="opt-fila">
+        <span id="opt-lbl-cal">Imagen</span>
+        <div class="opt-chips" role="group" aria-labelledby="opt-lbl-cal">
+          <button class="chip" type="button" data-opt-cal="auto">Auto</button>
+          <button class="chip" type="button" data-opt-cal="bajo">Baja</button>
+          <button class="chip" type="button" data-opt-cal="medio">Media</button>
+          <button class="chip" type="button" data-opt-cal="alto">Alta</button>
+        </div>
+      </div>
+      <p class="note" id="opt-cal-nota"></p>
+      <button class="chip" id="opt-mov" type="button" aria-pressed="false">Reducir movimiento</button>
+      <div class="opt-fila"><label id="opt-lbl-sfx" for="opt-sfx">Efectos</label><input id="opt-sfx" type="range" min="0" max="100" step="5" value="80"><output id="opt-sfx-v" for="opt-sfx">80</output></div>
+      <div class="opt-fila"><label id="opt-lbl-voz" for="opt-voz">Voces</label><input id="opt-voz" type="range" min="0" max="100" step="5" value="90"><output id="opt-voz-v" for="opt-voz">90</output></div>
+      <p class="note" id="opt-son-nota">La música y el ambiente están en su sección.</p>
+    </section>
     <section class="pause-help" aria-labelledby="help-title">
       <h3 id="help-title">Controles</h3>
       <dl class="keys help-keys">

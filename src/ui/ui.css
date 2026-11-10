@@ -285,6 +285,18 @@ kbd {
 .help-touch { display: none; }
 @media (hover: none), (pointer: coarse) { .help-keys { display: none; } .help-touch { display: grid; } }
 .pause-help .note { margin: 0; }
+/* CG-104: imagen, movimiento y volumen de efectos y voces. La música y el ambiente siguen en .pause-musica. */
+.pause-opciones { padding: var(--sp-4); border-radius: var(--r-lg); background: rgba(244, 247, 241, 0.05); border: 1px solid rgba(244, 247, 241, 0.1); display: flex; flex-direction: column; gap: var(--sp-2); min-width: 0; }
+.pause-opciones h3 { margin: 0; font: 700 var(--fs-xs)/1.2 var(--font-body); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--c-eyebrow); }
+.opt-fila { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); min-width: 0; }
+.opt-fila > span, .opt-fila > label { flex: 0 0 5.5rem; font-size: var(--fs-sm); color: var(--c-text-muted); }
+.opt-chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); min-width: 0; }
+.pause-opciones .chip { min-height: 44px; }
+.pause-opciones .chip[aria-pressed="true"] { outline: 3px solid var(--c-primary); outline-offset: 2px; }
+.pause-opciones input[type=range] { flex: 1 1 6rem; min-width: 0; min-height: 44px; margin: 0; accent-color: var(--beak); }
+.pause-opciones output { flex: 0 0 3.2ch; text-align: right; font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
+.pause-opciones .note { margin: 0; }
+html.mov-reducido *, html.mov-reducido *::before, html.mov-reducido *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 /* Remapeo (input.js): al cambiar una tecla que ya se usaba, la otra fila se marca un momento para que se vea el intercambio */
 .pause-teclas .chip.tecla-cambiada { outline: 3px solid var(--c-primary); outline-offset: 2px; }
 #confirm-reset { width: min(420px, calc(100vw - 32px)); margin: auto; padding: var(--sp-6); text-align: center; }
@@ -294,7 +306,7 @@ kbd {
 #confirm-reset p { margin: 0 0 var(--sp-5); color: var(--c-ink-muted); }
 /* Navegadores sin popover: los botones vuelven a la fila del HUD */
 @supports not selector(:popover-open) {
-  #b-menu, .pause-head, .pause-resume, .pause-help, .pause-grupo, [popovertarget="confirm-reset"], #confirm-reset h2, #confirm-reset p, #confirm-reset .btn.ghost { display: none; }
+  #b-menu, .pause-head, .pause-resume, .pause-help, .pause-opciones, .pause-grupo, [popovertarget="confirm-reset"], #confirm-reset h2, #confirm-reset p, #confirm-reset .btn.ghost { display: none; }
   #pause, .pause-grid, #confirm-reset, #confirm-reset .row { display: contents; }
 }
 
