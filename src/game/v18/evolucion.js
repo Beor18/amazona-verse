@@ -599,7 +599,7 @@ window.AVV18Evolucion = function (G) {
     const r = info(sp), L = lineaHud({ especie: sp, nivel: r.nivel, variante: r.variante, poder: H.poderDe(sp) });
     let h = `<span class="v18-evo-f"><span>${esc(L.nivel)}</span> · <span>${esc(L.etapa)}</span></span><i class="v18-evo-bar"><b style="width:${Math.round(L.frac * 100)}%"></b></i>`;
     const etapas = sp === 'vittata' ? ETAPAS : ETAPAS_ESP, sigEt = etapas.find(et => et.desde > r.nivel);
-    h += `<span class="v18-evo-sig" data-v18-siguiente>${retrato(sp, 28)}`;
+    h += `<span class="v18-evo-sig" data-v18-siguiente>${imgLogro(sp)}`;
     h += sigEt ? `<span>${esc(sigEt.nombre)}</span> · <span>${esc(con(TXT.nivel, sigEt.desde))}</span> · <span>${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span>` : `<span>${esc(TXT.max)}</span>`;
     h += '</span>';
     h += `<span class="v18-evo-m">${r.sig == null ? `<span>${esc(TXT.max)}</span>` : `<span>${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span>`}</span>`;
@@ -643,14 +643,16 @@ window.AVV18Evolucion = function (G) {
     return h + htmlAlianzas();
   }
   // Logros ya conseguidos, cada uno con retrato. Si todavía no hay, una frase y el retrato: la pantalla no queda vacía.
+  const MEDALLA = '<svg class="v18-evo-med" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="#e0a526"/><circle cx="16" cy="16" r="7" fill="#fff3c4"/></svg>';
+  const imgLogro = sp => (RETRATOS.has(sp) ? retrato(sp, 28) : MEDALLA);
   function htmlLogros() {
     try { css(); } catch (e) { /* sin documento */ }
     const marcas = (E().marcas) || {}, hechos = Object.keys(marcas).filter(k => marcas[k]).slice(0, 6);
     const etiq = k => (k.indexOf('esp:') === 0 ? nombre(k.slice(4)) : k.indexOf('gana:') === 0 ? nombre(k.slice(5)) : TXT.guiaExplora);
-    const foto = k => (k.indexOf('esp:') === 0 || k.indexOf('gana:') === 0) ? k.slice(k.indexOf(':') + 1) : 'vittata';
+    const foto = k => (k.indexOf('esp:') === 0 || k.indexOf('gana:') === 0) ? k.slice(k.indexOf(':') + 1) : '';
     let h = '<div class="v18-evo-logros" data-v18logros>';
-    if (!hechos.length) h += retrato('vittata', 28) + `<span>${esc(TXT.guiaExplora)}</span>`;
-    else h += hechos.map(k => `<span class="v18-evo-logro">${retrato(RETRATOS.has(foto(k)) ? foto(k) : 'vittata', 28)}<span>${esc(etiq(k))}</span></span>`).join('');
+    if (!hechos.length) h += imgLogro('') + `<span>${esc(TXT.guiaExplora)}</span>`;
+    else h += hechos.map(k => `<span class="v18-evo-logro">${imgLogro(foto(k))}<span>${esc(etiq(k))}</span></span>`).join('');
     return h + '</div>';
   }
   // Las alianzas de bandada que ya conoces (la líder o la compañera está en tu bandada): estado, qué falta y el reto, uno por uno
@@ -1278,9 +1280,9 @@ window.AVV18Evolucion = function (G) {
         vacio.innerHTML = htmlLogros();
         P.cambiarEvo(e => { for (const h of hitos()) e.marcas[h[0]] = true; });
         check('CG-83: la siguiente etapa sale con retrato y lo que falta, y los logros llevan imagen (si no hay, una frase, nunca una pantalla vacía)',
-          !!sig && !!sig.querySelector('img') && /Maestro/.test(sig.textContent) && /Nivel 30/.test(sig.textContent) && /Faltan \d+ XP/.test(sig.textContent) &&
-          !!logs && logs.querySelectorAll('img').length >= 1 && logs.textContent.trim().length > 4 &&
-          !!vacio.querySelector('img') && vacio.textContent.indexOf(TXT.guiaExplora) >= 0 && vacio.textContent.trim().length > 8,
+          !!sig && !!sig.querySelector('img, svg') && /Maestro/.test(sig.textContent) && /Nivel 30/.test(sig.textContent) && /Faltan \d+ XP/.test(sig.textContent) &&
+          !!logs && logs.querySelectorAll('img, svg').length >= 1 && logs.textContent.trim().length > 4 &&
+          !!vacio.querySelector('svg') && vacio.textContent.indexOf(TXT.guiaExplora) >= 0 && vacio.textContent.trim().length > 8,
           (sig && sig.textContent || '') + ' | ' + (vacio.textContent || '').slice(0, 80)); }
       // 18. Avisos al jugar (no solo en la ficha): tarjeta de nivel en cada subida, «+N XP» pequeña al ganar XP explorando,
       // una tarjeta grande no la pisa una pequeña y, con el cómic encima, la tarjeta espera a que se cierre
