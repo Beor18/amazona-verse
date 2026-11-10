@@ -28,7 +28,7 @@
 - **Commit:** este. QA-230 y QA-231 no se tocaron (aviso de streaming de Dev 2 y heap de Dev 4, los dos para Kimi).
 - **IDs:** opciones en inglés = **QA-232** (QA: propuesto QA-230). Patrulla tapa objetivo = **QA-233** (QA: propuesto QA-231). a11y móvil = **QA-234** (QA: propuesto QA-232). Conchitas = **QA-235** (QA: propuesto QA-233).
 - **Orden de arreglo:** 1 Conchitas (QA-235), 2 a11y móvil (QA-234), 3 Patrulla (QA-233), 4 opciones en inglés (QA-232).
-- **Qué falta:** arreglarlos en ese orden. Cada uno con las 12 en verde y 0 errores.
+- **Qué falta:** arreglarlos en ese orden. El texto de QA ya está en las filas. QA-230 a QA-233 no estaban libres. Cada uno con las 12 en verde y 0 errores.
 - **Archivos:** `docs/equipo/BUGS.md`. No toqué `streaming.js`, el modelo de Vittata ni textos educativos.
 
 ### Dev 1 · 10-nov 06:30 AST · CG-113 en curso
