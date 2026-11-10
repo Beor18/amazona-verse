@@ -323,6 +323,18 @@ window.AVBohios = function (G) {
       label: () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Exit' : 'Salir'),
       use: () => salir(),
     });
+    G.interaccion.add({
+      id: 'casa-poner', x: p.dentroX, z: p.dentroZ, r: 2.2,
+      visible: () => dentroCasa && piezasGuardadas().length === 0,
+      label: () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Place bench' : 'Poner banco'),
+      use: () => colocar('banco', 0.4, 0.2, 1),
+    });
+    G.interaccion.add({
+      id: 'casa-mover', x: p.dentroX, z: p.dentroZ, r: 2.2,
+      visible: () => dentroCasa && piezasGuardadas().length > 0,
+      label: () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Move' : 'Mover'),
+      use: () => { const a = piezasGuardadas()[0]; if (a) mover(0, a.x > 0 ? -0.3 : 0.4, a.x > 0 ? 0.5 : 0.2, a.x > 0 ? 2 : 1); },
+    });
     return true;
   }
 
@@ -449,10 +461,12 @@ window.AVBohios = function (G) {
         const pCasa = puerta(casa);
         ok('Entrar deja a Vittata dentro del mismo bohío', !!(pCasa && entrar() && Math.hypot(S.pos.x - pCasa.dentroX, S.pos.z - pCasa.dentroZ) < 0.25 && Math.hypot(S.pos.x - I.pos[0], S.pos.z - I.pos[2]) < 4 && Math.abs(S.pos.y - I.pos[1]) < 4));
         ok('En la puerta, Acción dice Entrar', listoCasa() && G.interaccion.find('casa-entrar').label() === 'Entrar');
-        ok('Colocar un banco lo guarda en S.interiores', colocar('banco', 0.4, 0.2, 1) && S.interiores.edificios.bohio_villa.piezas[0].t === 'banco' && S.interiores.edificios.bohio_villa.piezas[0].r === 1);
+        const poner = G.interaccion.find('casa-poner');
+        ok('Dentro, Acción pone el banco y lo guarda', !!(poner && poner.visible() && poner.label() === 'Poner banco' && (poner.use(), S.interiores && S.interiores.edificios.bohio_villa.piezas[0].t === 'banco' && S.interiores.edificios.bohio_villa.piezas[0].r === 1)));
         const m0 = dibujo.children[0];
         ok('La pieza queda dentro de la casa', !!(m0 && Math.hypot(m0.position.x - I.pos[0], m0.position.z - I.pos[2]) < 3));
-        ok('Mover el banco cambia el sitio guardado', mover(0, -0.3, 0.5, 2) && S.interiores.edificios.bohio_villa.piezas[0].x === -0.3 && S.interiores.edificios.bohio_villa.piezas[0].r === 2);
+        const mov = G.interaccion.find('casa-mover');
+        ok('Acción Mover cambia el sitio guardado', !!(mov && mov.visible() && (mov.use(), S.interiores.edificios.bohio_villa.piezas[0].x === -0.3 && S.interiores.edificios.bohio_villa.piezas[0].r === 2)));
         salir();
         while (dibujo.children.length) dibujo.remove(dibujo.children[0]);
         ok('Salir la deja en la puerta, sin otro cuarto', Math.hypot(S.pos.x - pCasa.x, S.pos.z - pCasa.z) < 0.25 && !dentroCasa);
