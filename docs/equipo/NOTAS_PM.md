@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 3 · 10-nov 06:30 AST · IDs de la ronda 6
+- **Tarea:** numerar los 4 bugs. Sin código.
+- **Commit:** este. QA-230 y QA-231 no se tocaron (aviso de streaming de Dev 2 y heap de Dev 4, los dos para Kimi).
+- **IDs:** opciones en inglés = **QA-232** (QA: propuesto QA-230). Patrulla tapa objetivo = **QA-233** (QA: propuesto QA-231). a11y móvil = **QA-234** (QA: propuesto QA-232). Conchitas = **QA-235** (QA: propuesto QA-233).
+- **Orden de arreglo:** 1 Conchitas (QA-235), 2 a11y móvil (QA-234), 3 Patrulla (QA-233), 4 opciones en inglés (QA-232).
+- **Qué falta:** arreglarlos en ese orden. Cada uno con las 12 en verde y 0 errores.
+- **Archivos:** `docs/equipo/BUGS.md`. No toqué `streaming.js`, el modelo de Vittata ni textos educativos.
+
 ### Dev 1 · 10-nov 06:27 AST · CG-110 hecha
 - **Tarea:** núcleo de interiores. Cerrada. `content/comun/interiores.js` queda libre.
 - **Commit:** `a8bfd36c`. EN CURSO fue `75ec7a5e`.
