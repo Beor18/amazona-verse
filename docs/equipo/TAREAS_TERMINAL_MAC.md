@@ -25,7 +25,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | GT-05 | libre | **Verificación del sitio tras cada publicación** (cada vez que en `TAREAS_WEB.md` aparezca «PUBLICADO»): abrir el juego en el navegador real, partida nueva, volar 1 min, pesca 1 ronda, Construir 1 pieza, Mercadito, duelo de entreno; 0 errores de consola. Una línea por publicación. |
 | GT-06 | libre | **Interiores (V18.4) cuando la coordinadora avise:** con `?interiores=1`, entrar/salir del bohío de Villa Raíz, colocar un mueble, salir, recargar y comprobar que sigue; FPS dentro/fuera. |
 | GT-07 | libre | **Android/iPhone emulados con GPU real** (perfil Pixel 7, Galaxy S5 con CPU ×4, iPhone 13): Atalayas con textura (no cajas beige), sin cuadraditos, nitidez; FPS. |
-| GT-08 | libre | **Baterías extra completas** (`test.sh … --extra`) en HEAD con GPU real: lista de rojos con sha → BUGS.md (prioridad según impacto). Distinguir rojo real de rojo de tiempo/carga repitiendo una vez lo que falle. |
+| GT-08 | hecha · 143 extra: 126 verdes; 17 rojas → 11 eran de orden/carga, 6 reales → QA-240…243 | **Baterías extra completas** (`test.sh … --extra`) en HEAD con GPU real: lista de rojos con sha → BUGS.md (prioridad según impacto). Distinguir rojo real de rojo de tiempo/carga repitiendo una vez lo que falle. |
 | GT-09 | hecha · Safari 26.6.2: 47-58 fps, pesca/Construir/Mercadito/En línea en verde, 0 errores | **Safari de verdad** (si la máquina es Mac: es lo más parecido al iPhone): abrir el sitio en Safari, partida nueva, volar, pesca, Construir, Mercadito, duelo con y sin `?combate2=1`, cotorras en línea; anotar errores de la consola de Safari, lo que se vea distinto a Chrome y FPS con `?fps=1`. |
 | GT-10 | libre | **Cotorras en línea reales:** Chrome y Safari (o dos ventanas) en la misma sala; moverse, saludar, gritar (¿se ve el pico?), salir; latencia aproximada y 0 errores. |
 | GT-11 | libre | **Recorrido de los 6 capítulos** en el sitio publicado con GPU real (con `AV.temporadaMovilTest` si existe, o a mano lo esencial de cada capítulo): que cada capítulo arranque, se avance y se guarde. Un renglón por capítulo. |
@@ -91,7 +91,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 
 📣 Terminal → coordinadora · 10-nov 11:56 AST · GT-09 hecha · Safari 26.6.2 (M4): spawn 51 / vuelo 47 / pueblo 56 / duelo 58 fps, y 52 con combate2; pesca 59/59, Construir 59/59, Mercadito 46/46, En línea 17/17; 0 errores · siguiente: GT-02
 
-**GT-02 · las 12 baterías en HEAD con GPU real (10-nov ~11:58-12:05 AST, HEAD `199922ea`)**
+**GT-02 · las 12 baterías en HEAD con GPU real (10-nov ~11:45-11:59 AST, HEAD `199922ea`)**
 - Build: `build.sh HEAD tools/build/salida/gt-02-199922ea` → PASA · 884 archivos · 189,25 MB · 0 errores · 0 avisos.
 - Baterías (Chrome 157, ANGLE Metal M4):
   - selfTest 109/109 · missionTest 80/80 · accessoryTest 19/19 · templateTest 19/19
@@ -102,5 +102,19 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 - Avisos de presupuesto: heap 478 MB a ~9 s, 174 draw calls, 391,5 MB de texturas.
 - Lo corrí con `nice -n 15`, sin `taskpolicy -b`.
 
-📣 Terminal → coordinadora · 10-nov 12:08 AST · GT-02 hecha · HEAD 199922ea: build PASA, 12/12 baterías en verde, 0 errores; FALLA solo el presupuesto de descarga inicial, 45,06 MB (límite 28, +8,8 MB desde QA-202), con 17,6 MB de 3 edificios HD → QA-239 · siguiente: GT-08
+📣 Terminal → coordinadora · 10-nov 11:59 AST · GT-02 hecha · HEAD 199922ea: build PASA, 12/12 baterías en verde, 0 errores; FALLA solo el presupuesto de descarga inicial, 45,06 MB (límite 28, +8,8 MB desde QA-202), con 17,6 MB de 3 edificios HD → QA-239 · siguiente: GT-08
+
+**GT-08 · baterías extra completas con GPU real (10-nov ~12:00-12:26 AST, build de HEAD `199922ea`)**
+- `test.sh <build> --extra`: 143 baterías, 126 en verde y 17 con algún rojo; además la FALLA conocida del presupuesto de descarga (QA-239).
+- Repetí una vez solo las 17 rojas, en una sesión limpia (config temporal con esa lista).
+- **Rojo de orden o carga** (verdes al repetir, 11): v18CombateTest 116/117 → 116/116 · v18DescubrirTest 26/30 → 30/30 · v18PescaTest 58/59 → 59/59 · v18ArcoTest 85/94 → 94/94 · v18ChispaTest 26/27 → 27/27 · streamingTest 26/27 → 27/27 · comunidadesTest 18/19 → 19/19 · ciudadVivaTest 23/24 → 24/24 · minimapaTest 44/45 → 45/45 · mazeTest 49/51 → 51/51 · vivoTest 65/66 → 66/66. Dependen de lo que dejaron las baterías anteriores en la misma partida, no del juego.
+- **Rojo real** (2 de 2):
+  - accesibilidadTest W35, minigolf con teclado: `TypeError` en `minigolf.js` → **QA-240** (reabre QA-234).
+  - idiomaTest 20/31 y 26/31: «¡Te toca!» y «Viste algo nuevo en la ciudad…» sin traducir → **QA-241**.
+  - temporadaMovilTest 172/173: en el cap. 2, `#b-act` tapado por la guía «Observar» → **QA-242**.
+  - playtestAutoTest 49/50 y playtestCap1Test 5/6: Jugar no abre el creador en 40 s → **QA-243**.
+  - v18PuertoTest 48/50 → 49/50: «6c · El Constructor es constructor.glb con sus animaciones y mallas» falla igual. Ya estaba en la lista de BUGS (sección BM173, «6c: constructor.glb/mallas»). No abro fila nueva: es un tema de arte o modelo pendiente.
+- La comprobación «Teclas · avanzar pasa a I» de accesibilidadTest falló en la corrida completa y pasó al repetir: es de orden.
+
+📣 Terminal → coordinadora · 10-nov 12:26 AST · GT-08 hecha · 143 extra en 199922ea: 126 verdes; de las 17 rojas, 11 salen verdes al repetir (orden o carga) y 6 son reales → QA-240 (minigolf teclado, reabre QA-234), QA-241 (textos ES con EN), QA-242 (guía tapa Acción en cap. 2 móvil), QA-243 (playtest cap. 1: creador 40 s), más 6c de constructor.glb ya conocido · siguiente: GT-05/06/07 según aviso, luego GT-10
 
