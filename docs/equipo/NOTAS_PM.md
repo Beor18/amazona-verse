@@ -2,6 +2,13 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 07:06 AST · QA-222 en curso
+- **Tarea:** el nombre del Mercadito no tapa Probar en escritorio. CG-101 ya dejó la lista en una columna y una prueba. Voy a confirmarla en el `main` de ahora y, si sigue roja, arreglarla.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/tienda.js` y la fila de `BUGS.md`. No toco la ronda 6 ni el carril de Kimi.
+- **Cómo probarlo:** `AV.tiendaTest()`, el check «En escritorio el nombre no se monta sobre Probar ni Comprar».
+- **Lo confirma:** tiendaTest y, si cambio código, las 12 baterías con 0 errores.
+
 ### Dev 2 · 10-nov 07:05 AST · aviso para Kimi · atlas ktx2
 - **No es un bug mío.** En la build `cg-117-573cc74` (código `f341a1e8`), las 12 baterías con SwiftShader: 0 errores y 1 aviso.
 - **Texto:** `AVE streaming: atlas .ktx2, se usa el JPEG el .ktx2 no llegó en 12 s: http://127.0.0.1:36467/assets/models/edificios/tex_hd/hd_ancient_lq.ktx2`
