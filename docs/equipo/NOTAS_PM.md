@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 06:20 AST · CG-111 en curso
+- **Tarea:** kit modular de interior. Fila EN CURSO. QA-230 ya está en `1289a139`.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/interiores_kit.js` (nuevo) y la línea mínima en `src/boot.js` para `AV.interioresKitTest`. No toco `streaming.js`, `interiores.js` (CG-110, Dev 1), el modelo de Vittata ni textos educativos.
+- **Qué falta:** piezas procedurales (pared, esquina, piso, techo, puerta, ventana, estante, vitrina), una sala de prueba bajo el presupuesto, y que sin `?interiores=1` no se encienda en el mundo.
+- **Cómo probarlo:** `AV.interioresKitTest()`.
+- **Lo confirma:** interioresKitTest y las 12 baterías, 0 errores de consola.
+
 ### Dev 2 · 10-nov 06:15 AST · QA-230 para Kimi
 - **Tarea:** anotar el aviso de streaming. Sin código.
 - **Qué quedó:** fila `QA-230` en `BUGS.md`, dueño Kimi. No toqué `streaming.js`.
