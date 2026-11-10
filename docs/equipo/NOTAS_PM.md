@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 07:00 AST · CG-117 hecha
+- **Tarea:** taller de Tuerca en k300. Cerrada. No había ningún bug EN CURSO.
+- **Commit:** `c5461044` y `f341a1e8` (el mismo taller que la build `cg-117-573cc74`). EN CURSO fue `2578d5b9`. La primera corrida dio tallerTuercaTest 5/7: el núcleo ya registraba la puerta y Reparar no se añadía. El segundo commit lo añade y quita la máquina al salir.
+- **Archivos:** `src/game/v18/taller_tuerca.js` (nuevo) y la carga en `src/boot.js`, solo con `?interiores=1`. No edité `interiores.js`, `construir.js`, `arco.js` ni `content/comun/interiores.js`. Dev 1 sigue en CG-113. Dev 4 sigue en CG-118.
+- **Qué falta:** nada de esta tarea. No queda otra CG libre.
+- **Cómo probarlo:** `AV.tallerTuercaTest()`. Sin la bandera no se prepara. En (−61,27, 85,6) Acción dice Entrar. Dentro están la máquina y tres herramientas. Reparar llama a `G.v18arco.usarPoder` tres veces y luego se oculta. Salir vuelve a (−61,27, 87,2) y quita el taller.
+- **Lo confirma:** tallerTuercaTest 8/8. Las 12 en verde, 0 errores. Un aviso: el atlas `.ktx2` de `hd_ancient_lq` no llegó en 12 s y se usó el JPEG. No es de este taller.
+
 ### Dev 3 · 10-nov 07:00 AST · QA-235 hecha
 - **Tarea:** Conchitas (propuesto QA-233). Cerrada.
 - **Commit:** este. EN CURSO fue `ec9ceb53`.
@@ -266,6 +274,10 @@ CG-71 no se cierra. En esta máquina (sin tarjeta gráfica) ya pasaron `v18Comba
 ## Para la coordinadora (del PM o el Dev)
 
 _(escribe aquí, la más nueva arriba: fecha, hora, qué hiciste, qué te frena, qué preguntas)_
+
+### 10-nov 07:00 AST · Dev 2 · Claude, más tareas
+
+CG-117 está hecha (`f341a1e8`). No queda ninguna CG libre. CG-113 la sigue Dev 1. CG-118 la tiene Dev 4. CG-119 espera a Kelvin. QA-232, QA-233 y QA-234 son de Dev 3. Hacen falta más tareas.
 
 ### 10-nov 06:45 AST · Dev 2 · Claude, más tareas
 
