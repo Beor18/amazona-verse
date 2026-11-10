@@ -27,6 +27,8 @@ window.AVV18Duelo2 = function (G) {
   if (G.v18duelo2) return G.v18duelo2;
   const H = G.v18hab, Cb = G.v18combate, S = G.S, F = G.fisica, M = F.MOVE, R = G.renderer, scene = R.scene, camera = R.camera;
   const sitio = Cb.sitio, ARENA_R = 12, PLUMAS = 5;
+  // Combate 2.0 (?combate2=1, combate.js → vida.c2): la misma máquina de estados para Vittata (J1) y el J2; sin la bandera, lo de siempre
+  const C2 = Cb.vida && Cb.vida.c2, c2On = () => !!(C2 && C2.on()); let enUso = null;
   const ALTURA = p => G.terreno.height(p.x, p.z);
   const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const TXT = {
@@ -94,7 +96,7 @@ window.AVV18Duelo2 = function (G) {
     if (rc.escudo) {
       if (v18fx('dispersar')) try { G.v18fx.dispersar(blanco); } catch (e) { /* efecto */ }
       fx('feathers', blanco.pos.x, blanco.pos.y + 1, blanco.pos.z);
-      if (rc.r === 'bloqueado') { sonar('land'); flotante(TXT.bloquea); emitir({ tipo: 'hit', de: de.id, a: blanco.id, valor: 0, bloqueado: true }); return false; }
+      if (rc.r === 'bloqueado') { sonar('land'); flotante(TXT.bloquea); emitir({ tipo: 'hit', de: de.id, a: blanco.id, valor: 0, bloqueado: true }); if (C2) C2.golpe(de, blanco, { bloqueado: true, directo: de === enUso, camara: true }); return false; }
       flotante(TXT.reduce, 1.2);
     }
     if (rc.r !== 'ok') return false;
@@ -104,11 +106,13 @@ window.AVV18Duelo2 = function (G) {
     D.stats.golpes++;
     emitir({ tipo: 'hit', de: de.id, a: blanco.id, valor: rc.n, reducido: rc.parcial || undefined, interrumpe: !!g.interrumpe || undefined });
     if (rc.n > 0) emitir({ tipo: 'damage', de: de.id, a: blanco.id, valor: blanco.plumas });
+    if (C2) C2.golpe(de, blanco, { n: rc.n, directo: de === enUso, camara: true }); // Combate 2.0 (solo con la bandera)
     pintar();
     if (blanco.plumas <= 0) terminar(blanco === D.j2 ? 'j1' : 'j2');
     return true;
   }
   function onda(origen, dir, alcance) {
+    if (v18fx('onda') && c2On()) { C2.despues(0.12, () => G.v18fx.onda(origen, { x: dir.x, y: 0, z: dir.z }, alcance)); return; } // Combate 2.0: con la pose de lanzar
     if (v18fx('onda')) { try { G.v18fx.onda(origen, { x: dir.x, y: 0, z: dir.z }, alcance); return; } catch (e) { /* cae al anillo */ } }
     try { if (G.fx && G.fx.ringFx) G.fx.ringFx(origen.x + dir.x * 2, origen.y, origen.z + dir.z * 2, 5, 0.6, 0.8); } catch (e) { /* efecto */ }
   }
@@ -128,7 +132,8 @@ window.AVV18Duelo2 = function (G) {
   }
   function usar(f, id) {
     if (D.fase !== 'lucha' || !f) return { ok: false, motivo: 'fase' };
-    const r = H.usar(f, id, ctxDe(f));
+    enUso = f; let r; try { r = H.usar(f, id, ctxDe(f)); } finally { enUso = null; }
+    if (r.ok && C2) C2.accion(f, id); // Combate 2.0 (solo con la bandera): la pose de la acción, en este mismo cuadro
     if (r.ok && !H.get(id).basico) f.ultPoder = id; // Imitación (oratrix): el registro del último poder de cada una
     if (r.ok) { D.stats[f === D.j1 ? 'usos1' : 'usos2']++; pintar(); alUsar(f, id, r); }
     return r;
@@ -226,10 +231,19 @@ window.AVV18Duelo2 = function (G) {
   function envolver() {
     const ch = G.actores && G.actores.player3D; if (!ch || pl3d) return;
     pl3d = ch; upd0 = ch.update;
-    ch.update = function (dt) { try { pose(this, D.j1); } catch (e) { /* pose */ } return upd0.call(this, dt); };
+    ch.update = function (dt) {
+      let V2 = null;
+      try { pose(this, D.j1); if (c2On() && D.j1 && D.fase !== 'nada') V2 = C2.antes(this, D.j1, oJ1(), dt); } catch (e) { /* pose */ }
+      const res = upd0.call(this, V2 ? C2.dtVis(dt) : dt);
+      if (V2) try { C2.huesos(this, V2); } catch (e) { /* pose */ }
+      return res;
+    };
   }
+  const oJ = { fin: '', vel: 0, escalaAbs: true };
+  function oJ1() { oJ.fin = D.fase === 'fin' ? (D.resultado === 'j1' ? 'gana' : 'pierde') : ''; oJ.vel = Math.hypot(M.vx || 0, M.vz || 0); return oJ; }
   function soltarVittata() {
     if (!pl3d) return;
+    if (C2 && D.j1) C2.soltar(pl3d, D.j1, true);
     if (D.j1 && D.j1.wob && pl3d.root) { pl3d.root.rotation.z -= D.j1.wob; D.j1.wob = 0; }
     delete pl3d.update; if (pl3d.update !== upd0) pl3d.update = upd0;
     pl3d = upd0 = null;
@@ -550,7 +564,14 @@ window.AVV18Duelo2 = function (G) {
     ch.expression = j.mareo > 0 ? 'surprised' : j.picoT > 0 ? 'fight' : 'happy'; ch.mouth = j.picoT > 0 ? Math.min(1, j.picoT / 0.15) : null; ch.lookAt = mira ? mira2 : null;
     ch.emote = null; ch.posado = ''; ch.agachada = 0; ch.groundY = ALTURA(pos2); ch.groundAt = esc ? null : sueloJ2; ch.ikEscuela = esc;
     const cdA = (j.cd && j.cd.golpe_ala) || 0; if (cdA > (j.cdAla0 || 0) + 0.2) j.aletazo = 0.3; j.cdAla0 = cdA; if (j.aletazo > 0) j.aletazo -= dt;
-    const V = Vi ? Vi.antes(ch, j, { ataque: j.aletazo > 0, salto: enAire, vel: O && O.modo === 'quieta' ? 0 : vel, fin }, dt) : null;
+    const oV = { ataque: j.aletazo > 0, salto: enAire, vel: O && O.modo === 'quieta' ? 0 : vel, fin };
+    if (c2On()) { // Combate 2.0: su máquina de estados en vez de vida()
+      const V2 = C2.antes(ch, j, oV, dt);
+      try { ch.update(C2.dtVis(dt)); C2.huesos(ch, V2); if (O && Vi.andarHuesos) Vi.andarHuesos(ch, O); } catch (e) { /* animación */ }
+      return;
+    }
+    if (C2 && ch._c2esc) C2.soltar(ch, j); // la bandera se apagó (pruebas): la escala vuelve
+    const V = Vi ? Vi.antes(ch, j, oV, dt) : null;
     try { ch.update(dt); if (V) Vi.huesos(ch, V); if (O && Vi.andarHuesos) Vi.andarHuesos(ch, O); } catch (e) { /* animación */ }
   }
   const sueloJ2 = (x, z) => G.terreno.height(x, z);
@@ -592,6 +613,7 @@ window.AVV18Duelo2 = function (G) {
   }
   function paso(dt) {
     if (D.fase === 'nada') return;
+    if (C2) C2.pasoReloj(dt); // hit-stop visual de Combate 2.0 (mientras dura este duelo, combate.js no lo lleva)
     if (centroT > 0) { centroT -= dt; if (centroT <= 0 && hud && D.fase !== 'cuenta') hud.q('centro').textContent = ''; }
     const mando = leerMando();
     if (D.fase === 'cuenta') {
@@ -839,6 +861,20 @@ window.AVV18Duelo2 = function (G) {
         G.fx.guide({ x: S.pos.x + 14, z: S.pos.z + 6 }, 0); const flecha0 = G.fx.guideArrow.visible;
         G.emit('render', 0.016);
         check('du3: en el duelo de 2 no se ven la flecha ni el haz de la guía de la misión', !G.fx.guideArrow.visible && !G.fx.guideBeam.visible, JSON.stringify({ flechaAntes: flecha0 }));
+      }
+      // Combate 2.0 (?combate2=1): el J2 y Vittata con la máquina de estados de combate.js; sin la bandera, la capa de siempre
+      if (C2) {
+        const c2_0 = G.combate2;
+        try {
+          G.combate2 = false; iniciar({ forzar: true, sinCuenta: true, sinEntreno: true }); cerca(1.5); limpio(); correr(0.3);
+          const sinC2 = !D.j2.anima2 && !D.j1.anima2 && !!D.j2.anima;
+          G.combate2 = true; iniciar({ forzar: true, sinCuenta: true, sinEntreno: true }); cerca(1.5); limpio(); S.facing = { x: 1, z: 0 }; correr(0.2);
+          const u = usar(D.j1, 'golpe_ala'), acc = D.j1.anima2 && D.j1.anima2.acc, subs = []; let imp = 0;
+          correr(0.7, () => { const a = D.j2.anima2 || {}; if (a.sub === 'impacto') imp++; if (subs[subs.length - 1] !== a.sub) subs.push(a.sub); });
+          check('Combate 2.0 (duelo de 2): con la bandera, el aletazo de Vittata sale en su pose de impacto y el J2 lo encaja (impacto → vuelve); sin ella, la capa de siempre',
+            sinC2 && u.acierto && acc && acc.fam === 'ala' && acc.u >= C2.FAM.ala.imp - 1e-6 && imp >= 3 && subs.indexOf('impacto') >= 0 && subs[subs.length - 1] !== 'impacto',
+            JSON.stringify({ sinC2, acierto: u.acierto, acc: acc && { fam: acc.fam, u: +acc.u.toFixed(3) }, imp, subs }));
+        } finally { G.combate2 = c2_0; salir(); }
       }
       // 7. Salir: todo vuelve
       salir();

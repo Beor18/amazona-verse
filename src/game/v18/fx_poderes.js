@@ -295,9 +295,103 @@ window.AVV18Fx = function (G) {
     return vivas;
   }
 
+  // ---------- Combate 2.0 (?combate2=1, combate.js): anillos del pico, notas del canto y estrellitas del mareo ----------
+  // Tarjetas mirando a cámara en DOS InstancedMesh pequeños (estrellas y notas; textura canvas 64×64 cada una): 1 draw call
+  // por tipo solo mientras hay alguna. Los anillos del pico usan el InstancedMesh de los anillos del Grito (sin draw call
+  // nueva). Actor: Object3D raíz de la cotorra (su position es la del mundo) + alto (m) de su cabeza. Calidad baja / Modo
+  // Escuela: menos tarjetas. Sin azar: posiciones deterministas.
+  const NC = 12;
+  function texCarta(dibuja) {
+    const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d'); dibuja(x);
+    const t = new THREE.CanvasTexture(c); t.minFilter = THREE.LinearFilter; t.generateMipmaps = false; return t;
+  }
+  const TEX_ESTRELLA = texCarta(x => {
+    const g = x.createRadialGradient(32, 32, 2, 32, 32, 30); g.addColorStop(0, 'rgba(255,250,200,0.55)'); g.addColorStop(1, 'rgba(255,250,200,0)');
+    x.fillStyle = g; x.fillRect(0, 0, 64, 64);
+    x.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 9 : 22; x.lineTo(32 + Math.cos(a) * r, 32 + Math.sin(a) * r); } x.closePath();
+    x.fillStyle = '#fff6b0'; x.fill(); x.lineWidth = 3; x.strokeStyle = 'rgba(255,190,60,0.95)'; x.stroke();
+  });
+  const TEX_NOTA = texCarta(x => {
+    x.fillStyle = '#ffffff'; x.strokeStyle = '#ffffff'; x.lineWidth = 5;
+    x.beginPath(); x.ellipse(22, 46, 10, 7.5, -0.4, 0, Math.PI * 2); x.fill();
+    x.beginPath(); x.moveTo(31, 44); x.lineTo(31, 10); x.quadraticCurveTo(44, 16, 50, 26); x.stroke();
+  });
+  const cartaGeo = new THREE.PlaneGeometry(0.34, 0.34);
+  function mallaCartas(tex) {
+    const m = new THREE.InstancedMesh(cartaGeo, new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }), NC);
+    m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); m.frustumCulled = false; m.visible = false; m.renderOrder = 7;
+    for (let i = 0; i < NC; i++) { _m.makeScale(0, 0, 0); m.setMatrixAt(i, _m); m.setColorAt(i, NEGRO); }
+    scene.add(m); return m;
+  }
+  const mEstrellas = mallaCartas(TEX_ESTRELLA), mNotas = mallaCartas(TEX_NOTA);
+  const efectos = []; // { tipo: 'estrellas' | 'notas', actor, alto, t0, dur, n }
+  const COL_NOTA = ['#ffe680', '#a8ffb8', '#9fdcff'].map(h => new THREE.Color(h)), COL_EST = new THREE.Color('#fff2a8');
+  const actorDe = a => (a && a.isObject3D ? a : null);
+  function ponerEfecto(tipo, actor, segundos, alto) {
+    const o = actorDe(actor); if (!o) return { ok: false };
+    const viejo = efectos.find(e => e.tipo === tipo && e.actor === o); if (viejo) efectos.splice(efectos.indexOf(viejo), 1);
+    const bajo = nivel() === 'bajo' || !!(G.renderer.calidad && G.renderer.calidad.escuela);
+    const e = { tipo, actor: o, alto: +alto || 1.7, t0: tFx, dur: Math.min(8, Math.max(0.3, +segundos || 1)), n: tipo === 'estrellas' ? (bajo ? 3 : 5) : (bajo ? 3 : 6) };
+    efectos.push(e); if (efectos.length > 4) efectos.shift();
+    return { ok: true, n: e.n, dur: e.dur };
+  }
+  // Estrellitas que giran sobre la cabeza (mareo y derrota)
+  const estrellas = (actor, segundos, alto) => ponerEfecto('estrellas', actor, segundos, alto);
+  // Notas que salen del pico y suben meciéndose (canto)
+  const notas = (actor, segundos, alto) => ponerEfecto('notas', actor, segundos, alto);
+  // Anillos pequeños que salen del pico al ritmo del sonido del grito (desfases en s; por defecto, los del «grito» de audio.js)
+  function anillosPico(origen, direccion, desfases) {
+    const ts = Array.isArray(desfases) && desfases.length ? desfases.slice(0, 4) : [0, 0.2, 0.36, 0.52];
+    const n = reducido() || nivel() === 'bajo' ? Math.min(2, ts.length) : ts.length;
+    if (origen && origen.isObject3D) origen.getWorldPosition(_v); else if (origen && typeof origen.x === 'number') _v.set(origen.x, origen.y || 0, origen.z || 0); else return { ok: false, n: 0 };
+    let dx = direccion ? +direccion.x || 0 : S.facing.x, dz = direccion ? +direccion.z || 0 : S.facing.z; const L = Math.hypot(dx, dz) || 1; dx /= L; dz /= L;
+    for (let k = 0; k < n; k++) {
+      let libre = -1; for (let i = 0; i < MAXR; i++) if (!ranillos[i]) { libre = i; break; }
+      if (libre < 0) break;
+      ranillos[libre] = { ox: _v.x, oy: _v.y, oz: _v.z, dx, dy: 0, dz, t0: tFx + ts[k], vida: 0.32, alcance: 1.1 };
+    }
+    rings.visible = true; quieto = false;
+    return { ok: true, n };
+  }
+  const _vc = new THREE.Vector3();
+  function pintarEfectos() {
+    let nE = 0, nN = 0;
+    for (let i = efectos.length - 1; i >= 0; i--) {
+      const e = efectos[i], t = tFx - e.t0;
+      if (t > e.dur + (e.tipo === 'notas' ? 0.9 : 0.25) || !e.actor.parent) { efectos.splice(i, 1); continue; }
+      _vc.copy(e.actor.position); _vc.y += e.alto;
+      if (e.tipo === 'estrellas') {
+        const f = Math.min(1, t / 0.15) * Math.min(1, Math.max(0, (e.dur + 0.25 - t) / 0.25));
+        for (let k = 0; k < e.n && nE < NC; k++, nE++) {
+          const a = t * 4.2 + k * Math.PI * 2 / e.n, r = 0.38 + 0.04 * Math.sin(t * 6 + k);
+          _c.copy(COL_EST).multiplyScalar(f * (0.75 + 0.25 * Math.sin(t * 9 + k * 2)));
+          ponerCarta(mEstrellas, nE, _vc.x + Math.cos(a) * r, _vc.y + 0.12 + 0.06 * Math.sin(a * 2), _vc.z + Math.sin(a) * r, 0.75 + 0.2 * Math.sin(t * 7 + k), _c, t * 3 + k);
+        }
+      } else {
+        const cada = e.dur / e.n;
+        for (let k = 0; k < e.n && nN < NC; k++) {
+          const tk = t - k * cada; if (tk < 0 || tk > 0.9) continue;
+          const p = tk / 0.9, f = Math.min(1, p / 0.12) * (1 - p), lado = k % 2 ? 1 : -1;
+          _c.copy(COL_NOTA[k % COL_NOTA.length]).multiplyScalar(f);
+          ponerCarta(mNotas, nN++, _vc.x + lado * (0.15 + 0.25 * p) + 0.08 * Math.sin(tk * 9), _vc.y + 0.1 + 0.75 * p, _vc.z + 0.12 * Math.cos(tk * 7), 0.7 + 0.3 * p, _c, 0.3 * Math.sin(tk * 8));
+        }
+      }
+    }
+    for (let i = nE; i < NC; i++) { _m.makeScale(0, 0, 0); mEstrellas.setMatrixAt(i, _m); }
+    for (let i = nN; i < NC; i++) { _m.makeScale(0, 0, 0); mNotas.setMatrixAt(i, _m); }
+    for (const m of [mEstrellas, mNotas]) { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; }
+    mEstrellas.visible = nE > 0; mNotas.visible = nN > 0;
+    return nE + nN;
+  }
+  function ponerCarta(m, idx, x, y, z, escala, color, giro) {
+    _q.copy(G.renderer.camera.quaternion); if (giro) { _roll.setFromAxisAngle(_ejeZ, giro); _q.multiply(_roll); }
+    _p.set(x, y, z); _s.set(escala, escala, escala); _m.compose(_p, _q, _s); m.setMatrixAt(idx, _m); m.setColorAt(idx, color);
+  }
+
   let quieto = false; // CPU (móvil): sin anillos ni escudos, tras una pasada que los deja a escala 0 no se reescriben ni se suben los búferes
   function paso(dt) {
     tFx += Math.min(0.1, Math.max(0, dt || 0));
+    if (efectos.length || mEstrellas.visible || mNotas.visible) pintarEfectos(); // Combate 2.0: estrellas y notas
     let hay = escudos.length > 0 || eVivas > 0;
     for (let i = 0; i < NE && !hay; i++) if (eT[i] >= 0) hay = true;
     for (let i = 0; i < MAXR && !hay; i++) if (ranillos[i]) hay = true;
@@ -316,9 +410,9 @@ window.AVV18Fx = function (G) {
   }
 
   G.on('render', dt => paso(Number.isFinite(dt) ? dt : 0.016), 31);
-  G.on('apply', () => { for (let i = 0; i < MAXR; i++) ranillos[i] = null; for (let i = escudos.length - 1; i >= 0; i--) quitar(escudos[i]); eT.fill(-1); eVivas = 0; rings.visible = plumas.visible = false; }, 31);
+  G.on('apply', () => { for (let i = 0; i < MAXR; i++) ranillos[i] = null; for (let i = escudos.length - 1; i >= 0; i--) quitar(escudos[i]); eT.fill(-1); eVivas = 0; rings.visible = plumas.visible = false; efectos.length = 0; mEstrellas.visible = mNotas.visible = false; }, 31);
 
-  const estado = () => ({ anillos: ranillos.filter(Boolean).length, escudos: escudos.length, estela: eVivas, llamadas: (rings.visible ? 1 : 0) + (plumas.visible ? 1 : 0), nivel: nivel() });
+  const estado = () => ({ anillos: ranillos.filter(Boolean).length, escudos: escudos.length, estela: eVivas, efectos: efectos.length, llamadas: (rings.visible ? 1 : 0) + (plumas.visible ? 1 : 0) + (mEstrellas.visible ? 1 : 0) + (mNotas.visible ? 1 : 0), nivel: nivel() });
 
   function test() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
@@ -412,12 +506,26 @@ window.AVV18Fx = function (G) {
       G.renderer.REDUCED = R0;
       check('V18.2 §6: estela del elemento (fuego, agua, viento, naturaleza, luz, eco) con las tarjetas de pluma del mismo InstancedMesh: cerca de la cotorra, fuego sube, agua cae, se apaga sola; nada con movimiento reducido',
         !est.err && ELEM_IDS.every(k => est[k]) && est.vivas === 12 && est.lejos === 0 && est.visible && est.malla && est.fuegoSube && est.aguaCae && est.muere && est.reducido && est.desconocido, JSON.stringify(est));
+      // Combate 2.0: anillos del pico al ritmo del grito, estrellitas del mareo que giran sobre la cabeza y notas del canto
+      { const ac = {}; const o = new THREE.Object3D(); o.position.set(0, 50, 0); scene.add(o);
+        try {
+          const a0 = ranillos.filter(Boolean).length, ap = anillosPico({ x: 0, y: 51.6, z: 0 }, { x: 0, z: 1 }, [0, 0.2, 0.36, 0.52]);
+          ac.anillos = ranillos.filter(Boolean).length - a0 === ap.n && ap.n >= 2;
+          const es = estrellas(o, 1, 1.7), no = notas(o, 0.8, 1.6); avanza(0.3);
+          ac.estrellas = es.ok && mEstrellas.visible && mNotas.visible && efectos.length === 2;
+          o.position.x = 5; // las tarjetas van con el actor: se mueve y siguen
+          avanza(0.1); _m.identity(); mEstrellas.getMatrixAt(0, _m); _p.setFromMatrixPosition(_m); ac.sigue = Math.abs(_p.x - 5) < 0.6 && _p.y > 51.4;
+          avanza(2.2); ac.seApaga = efectos.length === 0 && !mEstrellas.visible && !mNotas.visible;
+          ac.sinActor = estrellas(null, 1).ok === false;
+        } catch (e) { ac.err = e && e.message; } finally { scene.remove(o); }
+        check('Combate 2.0: anillos del pico (al ritmo del grito), estrellitas que giran sobre la cabeza y notas que suben; siguen al actor y se apagan solas',
+          !ac.err && ac.anillos && ac.estrellas && ac.sigue && ac.seApaga && ac.sinActor, JSON.stringify(ac)); }
       check('Sin excepciones y todo se apaga al final', estado().escudos === 0 && estado().anillos === 0, JSON.stringify(estado()));
     } catch (e) { check('Sin excepciones', false, e && e.message); }
     finally { if (cal0) { ponerCal(cal0.nivel); RC.manual = cal0.manual; } }
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18fx = { onda, escudo, dispersar, apagar, estela, ELEMENTOS: ELEM_IDS, paso, estado, test, _interno: { ranillos, escudos, rings, plumas, pPos } };
+  G.v18fx = { onda, escudo, dispersar, apagar, estela, anillosPico, estrellas, notas, ELEMENTOS: ELEM_IDS, paso, estado, test, _interno: { ranillos, escudos, rings, plumas, pPos, efectos, mEstrellas, mNotas } };
   return G.v18fx;
 };
