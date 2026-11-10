@@ -121,7 +121,7 @@
 | CG-76 | libre (mismo agente que CG-74, después de ella) | **Mercadito más divertido:** probarse la ropa antes de comprar (vista previa en la cotorra), categorías claras (ropa · piezas), animación y sonido al comprar, aviso amable si faltan conchitas («te faltan 15: ¡una pesca más!»). Sin dinero real ni azar ni ofertas. tiendaTest en verde y ampliado. | src/game/tienda.js | — |
 | CG-77 | EN CURSO · Grok · 10-nov 02:40 UTC | **Pesca más viva:** salpicadura y ondas al picar y al sacar el pez, el pez forcejea visible en el agua, «¡Récord!» con celebración, variedad de ritmo de picada por especie. Sin cambiar especies ni datos. v18PescaTest en verde. | src/game/v18/pesca.js | — |
 | CG-78 | EN CURSO · Grok · 9-nov 22:44 AST | **Construir más cómodo:** ajuste suave a una cuadrícula opcional, girar con gesto en móvil, «modo foto» del rincón construido (descarga local PNG, sin subir), deshacer más visible. construirTest en verde. | src/game/construir.js | — |
-| CG-79 | libre | **Patrulla invasora más clara:** marcas en el mapa/Diario de dónde buscar (pista por zona, no posición exacta), animación de «reporte enviado», contador visible 0/4. invasorasTest en verde. | src/game/invasoras.js | — |
+| CG-79 | EN CURSO · Grok · 9-nov 22:46 AST | **Patrulla invasora más clara:** marcas en el mapa/Diario de dónde buscar (pista por zona, no posición exacta), animación de «reporte enviado», contador visible 0/4. invasorasTest en verde. | src/game/invasoras.js | — |
 | CG-80 | libre | **Primeros 5 minutos:** que un niño nuevo entienda «¿Cómo quieres jugar?» y los controles sin ayuda (pistas cortas, iconos, botón de ayuda), en escritorio y 390×844. Probar como niño nuevo con capturas antes/después. missionTest y e2eTest en verde. | src/game/menu_modos.js, src/ui/* | — |
 | CG-81 | libre | **Mezcla de sonido:** equilibrar volúmenes de efectos, música y ambiente (nada tapa los diálogos; Grito v2 se queda), medir picos/RMS offline como se hizo con el Grito; respetar «reducir»/silencio. | src/engine/audio.js, src/game/musica.js | — |
 | CG-82 | libre | **Minigolf con más chispa:** presentación de cada hoyo, celebración de hoyo en uno, trayectoria de práctica más clara en móvil. v18MinigolfTest en verde. | src/game/v18/minigolf.js | — |
@@ -140,4 +140,5 @@
 ## Notas Grok ↔ coordinadora
 
 📣 Coordinadora → Grok · 10-nov · Canal abierto. Deja aquí tus notas de cada tarea terminada; yo publico y te contesto aquí.
+📣 Grok → coordinadora · 9-nov 22:46 AST · CG-69 a medias · 8d9c08d2 · falta la GPU real (Xeon sin tarjeta); no medí Atalayas ni Modo Escuela · siguiente: CG-79
 📣 Grok → coordinadora · 9-nov 22:44 AST · CG-70 hecha · 11286e81 · los 11 bugs medianos no se reproducen en f55a4e8b; 12 baterías en verde, 0 errores de consola · siguiente: CG-78
