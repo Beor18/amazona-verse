@@ -858,10 +858,12 @@
         check('CG-115 · la habitación entra de un golpe', habitacion('descanso') && lista.length > nHab);
         const tras = lista.length;
         check('CG-115 · deshacer la habitación la quita entera', deshacer() && lista.length === nHab && rehacer() && lista.length === tras);
+        const cal = G.renderer.calidad, esc0 = cal && cal.escuela;
+        if (cal) { cal.escuela = false; cal.nivel = 'medio'; }
         check('CG-115 · dentro, el tope es 12 (8 en bajo)', presupuesto() === 12);
-        G.renderer.calidad.nivel = 'bajo';
+        if (cal) cal.nivel = 'bajo';
         check('CG-115 · en bajo el tope del cuarto es 8', presupuesto() === 8);
-        G.renderer.calidad.nivel = antes.nivel;
+        if (cal) { cal.nivel = antes.nivel; cal.escuela = esc0; }
         const guardado = S.interiores && S.interiores.edificios && S.interiores.edificios.prueba;
         contexto(null);
         check('CG-115 · al salir del cuarto el rincón de fuera vuelve y el interior queda guardado', lista.length === CAPACIDAD && guardado && guardado.piezas.length === tras, (guardado && guardado.piezas.length) + ' piezas');
