@@ -1,13 +1,14 @@
-# Publica sitio/ en SiteGround (www.amazonaverse.com) cada vez que cambia en main. Hace lo que antes hacía Vercel solo.
-# Los merges de unir_api.yml se suben con el token de la Action y no disparan un push aquí: por eso también corre al
-# terminar esa Action. publicar.sh no sube nada si sitio/ no cambió.
+# Publica sitio/ en SiteGround con cada cambio que llega a main: en kelving1.sg-host.com (sitio Node.js) y en el sitio
+# Apache amazonaverse.com. Sustituye a Vercel (el repo se desvinculó de Vercel el 10-nov-2026).
+# Corre en cada push a main. Los merges de unir_api.yml y de auto_merge.yml se suben con el token de la Action y no
+# disparan un push: por eso también corre al terminar esas dos. publicar.sh no sube nada si sitio/ no cambió (tarda unos
+# segundos). Si un destino falla, el otro se publica igual.
 name: Publicar en SiteGround
 on:
   push:
     branches: [main]
-    paths: ['sitio/**', 'tools/build/siteground/**', '.github/workflows/publicar_siteground.yml']
   workflow_run:
-    workflows: ['Unir rama de la API con main']
+    workflows: ['Unir rama de la API con main', 'Unir PR con main']
     types: [completed]
   workflow_dispatch:
 permissions:
@@ -27,7 +28,12 @@ jobs:
           sparse-checkout: |
             sitio
             tools/build/siteground
-      - name: Subir a SiteGround
+      - name: Subir a kelving1.sg-host.com
         env:
           SG_SSH_KEY: ${{ secrets.SG_SSH_KEY }}
-        run: bash tools/build/siteground/publicar.sh
+        run: bash tools/build/siteground/publicar.sh kelving1
+      - name: Subir a amazonaverse.com
+        if: success() || failure()
+        env:
+          SG_SSH_KEY: ${{ secrets.SG_SSH_KEY }}
+        run: bash tools/build/siteground/publicar.sh amazonaverse

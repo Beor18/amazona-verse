@@ -89,4 +89,4 @@ GIT_INDEX_FILE=$T git commit -q -m "Sitio: publica $HEAD_SHA ($NOTA)
 Co-Authored-By: ${AV_COAUTOR:-Claude <noreply@anthropic.com>}"
 rm -f "$T"; git reset -q
 for i in 1 2 3 4; do git pull -q --rebase origin main && git push -q origin HEAD:main && break; sleep $((2**i)); done
-echo "publicado $HEAD_SHA en $(git rev-parse --short HEAD); la Action publicar_siteground lo sube a www.amazonaverse.com en 1–3 minutos"
+echo "publicado $HEAD_SHA en $(git rev-parse --short HEAD); la Action publicar_siteground lo sube a SiteGround (kelving1.sg-host.com) en 1–3 minutos"

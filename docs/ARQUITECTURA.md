@@ -124,13 +124,17 @@ En un Chromebook el contexto se pierde al suspender, al cambiar de pestaña o cu
 
 Solo lo arma y lo commitea el coordinador, tras el recorrido de QA y con su etiqueta de versión. Nadie edita `sitio/` a mano.
 
-**Dónde se publica (desde el 10-nov-2026):** www.amazonaverse.com está en SiteGround, en el sitio `amazonaverse.com` del plan de hosting de Kelvin (Apache, servidor `gtxm1363.siteground.biz`).
-- La Action `.github/workflows/publicar_siteground.yml` corre `tools/build/siteground/publicar.sh` en cada push a `main` que toque `sitio/` y al terminar `unir_api.yml`.
+**Dónde se publica (desde el 10-nov-2026):** en SiteGround, en dos sitios del plan de Kelvin.
+- **https://kelving1.sg-host.com/**: sitio Node.js, funcionando. nginx entrega con 180 días de caché todo archivo que esté en `public_html`, así que `sitio/` va a `~/www/kelving1.sg-host.com/amazona` (fuera de `public_html`) y lo sirve la app `tools/build/siteground/kelving1/server.js` con las reglas de `vercel.json`. Esa app se sube a mano: Site Tools › Node.js › Deployment Options › ⋮ › Upload manually, con un `.tar.gz` de `server.js` + `package.json`. Solo hace falta volver a subirla si cambia `server.js`. En `public_html` solo quedan `Default.html` (relleno de SiteGround) y `.nodeapp`. NGINX Direct Delivery tiene que seguir apagado; si se enciende, `/` vuelve a mostrar «Under construction».
+- **Sitio Apache `amazonaverse.com`** (servidor `gtxm1363.siteground.biz`): listo para www.amazonaverse.com, pero el dominio sigue en Vercel hasta cambiar el A y el `www` en name.com.
+- La Action `.github/workflows/publicar_siteground.yml` corre `tools/build/siteground/publicar.sh kelving1` y `… amazonaverse` en cada push a `main` y al terminar `unir_api.yml` y `auto_merge.yml`, cuyos merges no disparan un push. Si `sitio/` no cambió, no sube nada.
+- Vercel: el repo se desvinculó del proyecto `amazona-verse` (equipo de Fernando) el 10-nov-2026 y ya no despliega con los push. Mientras el DNS de www.amazonaverse.com apunte a Vercel, ese dominio sigue mostrando el último deploy de Vercel, sin actualizaciones.
 - El script sube `sitio/` por SSH con rsync. Solo manda lo que cambió y cambia los archivos al final, así nadie carga una versión mezclada.
 - Las reglas de Apache (caché como en Vercel, cabeceras de seguridad, `amazonaverse.com` → `www`) están en `tools/build/siteground/htaccess`.
 - La llave SSH de la Action es el secreto `SG_SSH_KEY` del repo. Nunca va en archivos.
-- A mano: `tools/build/siteground/publicar.sh`, con la llave `~/.ssh/siteground_amazona`.
-- En SiteGround están apagados NGINX Direct Delivery y la caché dinámica. Con ellos encendidos se ignora el `.htaccess` y se sirven versiones viejas hasta 180 días.
+- A mano: `tools/build/siteground/publicar.sh [kelving1|amazonaverse]`, con la llave `~/.ssh/siteground_amazona`.
+- En los dos sitios están apagados NGINX Direct Delivery y la caché dinámica. Con ellos encendidos se ignora el `.htaccess` y se sirven versiones viejas hasta 180 días.
+- El ranking (Edge Function `amazona-records` de Supabase) solo acepta llamadas desde amazonaverse.com y vercel.app. Desde kelving1.sg-host.com el juego funciona, pero los récords no se guardan hasta que se añada ese origen y se despliegue la función.
 
 ## Ejecutor con créditos de la API (`tools/agente_api/`)
 Corre las tareas de `docs/equipo/TAREAS_API.md` con el Claude Agent SDK y los créditos de la API, no con el plan Max.

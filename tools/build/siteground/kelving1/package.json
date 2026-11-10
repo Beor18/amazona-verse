@@ -1,0 +1,13 @@
+{
+  "name": "amazona-sitio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Amazona Verse: servidor estático de sitio/ para el sitio Node.js de SiteGround (kelving1.sg-host.com)",
+  "main": "server.js",
+  "scripts": {
+    "build": "node --check server.js",
+    "start": "node server.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {}
+}
