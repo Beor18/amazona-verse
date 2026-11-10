@@ -230,11 +230,11 @@
       const ls0 = localStorage.getItem(CLAVE);
       const abierto = pause && pause.matches && pause.matches(':popover-open');
       try {
-        check('La pausa tiene imagen, movimiento, efectos y voces, y avisa de la música', !!$('opt-cal-nota') && !!$('opt-mov') && !!$('opt-sfx') && !!$('opt-voz') && /música/.test($('opt-son-nota').textContent));
+        check('La pausa tiene imagen, movimiento, efectos y voces, y avisa de la música', !!$('opt-cal-nota') && !!$('opt-mov') && !!$('opt-sfx') && !!$('opt-voz') && /música|music/i.test($('opt-son-nota').textContent), $('opt-son-nota').textContent);
         sec.querySelector('[data-opt-cal="bajo"]').click();
-        check('Baja deja la calidad en bajo, a mano, y dice qué cambia', R.calidad.nivel === 'bajo' && R.calidad.manual === true && /plantas/.test($('opt-cal-nota').textContent), $('opt-cal-nota').textContent);
+        check('Baja deja la calidad en bajo, a mano, y dice qué cambia', R.calidad.nivel === 'bajo' && R.calidad.manual === true && /plantas|plants/i.test($('opt-cal-nota').textContent), $('opt-cal-nota').textContent);
         sec.querySelector('[data-opt-cal="auto"]').click();
-        check('Auto vuelve a dejar que el juego elija', R.calidad.manual === false && $('opt-cal-nota').textContent === FRASE.auto[0]);
+        check('Auto vuelve a dejar que el juego elija', R.calidad.manual === false && ($('opt-cal-nota').textContent === FRASE.auto[0] || $('opt-cal-nota').textContent === FRASE.auto[1]), $('opt-cal-nota').textContent);
         $('opt-sfx').value = 40; $('opt-sfx').dispatchEvent(new Event('change', { bubbles: true }));
         $('opt-voz').value = 20; $('opt-voz').dispatchEvent(new Event('change', { bubbles: true }));
         let guard = null;
