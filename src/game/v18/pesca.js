@@ -87,20 +87,20 @@ window.AVV18Pesca = function (G) {
   const PEZ = {}; for (const p of PECES) PEZ[p.id] = p;
   const TXT = {
     nombre: 'Pesca en el río', label: 'Pescar en el río',
-    empieza: '¡A pescar! Mantén pulsado para lanzar y suelta. Tienes 2 minutos y medio.',
+    empieza: '¡A pescar! Mantén apretado para lanzar y suelta. Tienes dos minutos y medio.',
     guia: 'Mantén Espacio y suelta para lanzar · ← → apuntar', guiaT: 'Mantén Lanzar y suelta · ◀ ▶ apuntar',
     pEspera: 'Espera a que el corcho se hunda…', pMordisco: 'Solo está mordisqueando… espera.', pPronto: '¡Muy pronto! Espera a que se hunda del todo.',
-    pPica: '¡Pica! ¡Ahora!', pTira: 'Mantén para subir el anzuelo y suelta para bajarlo: quédate en la zona verde.', pCansado: 'El pez se está cansando: ¡ya casi!',
-    escapo: 'Se llevó la carnada… ¡lanza otra vez!', seFue: '¡Se escapó! Ya volverá. Lanza otra vez.', tierra: 'Cayó en la orilla: lanza hacia el agua.',
-    lanzar: 'Lanzar', soltarB: 'Soltar', recoger: '¡Recoge!', clavar: '¡Clava!', esperarB: 'Esperar', soltarPez: 'Soltarlo', reportar: 'Reportar al DRNA',
+    pPica: '¡Pica! ¡Ahora!', pTira: 'Mantén apretado para subir el anzuelo y suelta para bajarlo. Quédate en lo verde.', pCansado: '¡Ya se cansa! Casi lo tienes.',
+    escapo: 'Se llevó la carnada… ¡lanza otra vez!', seFue: '¡Se escapó! Ya vuelve. Lanza otra vez.', tierra: 'Cayó en la orilla. Lanza hacia el agua.',
+    lanzar: 'Lanzar', soltarB: 'Soltar', recoger: '¡Recoge!', clavar: '¡Clava!', esperarB: 'Esperar', soltarPez: 'Soltarlo', reportar: 'Avisar al DRNA',
     salir: 'Salir', otra: 'Otra ronda', menu: 'Volver al menú', seguir: 'Seguir explorando', izq: 'Apuntar a la izquierda', der: 'Apuntar a la derecha',
     fuerza: 'Fuerza', tiempo: 'Tiempo', peces: 'Peces', puntos: 'Puntos', record: 'Récord',
-    foto: '¡Foto para tu álbum!', fuente: 'Fuente', nativo: 'Nativo de Puerto Rico', invasora: 'Especie invasora',
-    consejo: 'Consejo de pescador: la foto, rápida y con el pez cerca del agua.',
-    alAgua: '¡Al río! Nada feliz otra vez.', reportado: '¡Gracias! Las invasoras no se devuelven al agua: avisar al DRNA ayuda a los peces nativos.',
-    invasoraNo: 'Las especies invasoras no se devuelven al agua. Repórtala al DRNA.',
+    foto: '¡Foto para tu álbum!', fuente: 'Fuente', nativo: 'De aquí, de Puerto Rico', invasora: 'No es de aquí',
+    consejo: 'La foto, rapidito, con el pez cerquita del agua.',
+    alAgua: '¡Al río! Nada feliz otra vez.', reportado: '¡Gracias! Este pez no vuelve al río: avisar al DRNA cuida a los peces de aquí.',
+    invasoraNo: 'Este pez no es de aquí y no vuelve al río. Avísale al DRNA.',
     fin: '¡Se acabó el tiempo!', nuevo: '¡Nuevo récord!', album: 'Tu álbum de hoy', nada: 'Hoy no picó nada. ¡Otra ronda!',
-    sale: '¡Hasta luego! El río te espera cerca de Villa Raíz.', cerrado: 'La pesca todavía no está abierta.',
+    sale: '¡Hasta luego! El río te espera cerca de Villa Raíz.', cerrado: 'La pesca todavía no está.',
     tienda: 'Mercadito', tiendaL: 'Abrir el Mercadito del río'
   };
   const tiempoTxt = s => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
@@ -108,7 +108,7 @@ window.AVV18Pesca = function (G) {
   const masTxt = n => '+' + n + ' puntos', finTxt = (n, p) => (n === 1 ? '1 pez' : n + ' peces') + ' · ' + p + ' puntos';
   const fuenteTxt = f => 'Fuente: ' + f.join(' · ');
   const atrapado = nom => '¡Atrapaste: ' + nom + '!';
-  const conchasTxt = n => '+' + n + ' conchitas', bonoTxt = n => TXT.reportado + ' Premio de conservación: +' + n + ' conchitas.';
+  const conchasTxt = n => '+' + n + ' conchitas', bonoTxt = n => TXT.reportado + ' Premio por avisar: +' + n + ' conchitas.';
   const finConchas = (g, t) => 'Conchitas de hoy: +' + g + ' · Tienes ' + t;
   // Conchitas del Mercadito (src/game/tienda.js pone el pago fijo de cada especie); sin la tienda, la pesca sigue igual
   const tienda = () => (G.tienda && G.tienda.disponible && G.tienda.disponible() ? G.tienda : null);
@@ -937,7 +937,7 @@ window.AVV18Pesca = function (G) {
         const ver = s => { if (!en.includes(JSON.stringify(s))) falta.push(s); };
         for (const k in TXT) ver(TXT[k]);
         for (const p of PECES) { ver(p.nombre); ver(p.dato); }
-        for (const s of ['Tiempo: {}', 'Peces: {}', 'Puntos: {}', 'Récord: {}', '+{} puntos', '¡Atrapaste: {}!', '{} peces · {} puntos', '1 pez · {} puntos', 'Pesca', 'Lanza, espera el pique y suelta el pez', '¡Atrapaste: {}! +{} puntos · +{} conchitas', TXT.reportado + ' Premio de conservación: +{} conchitas.', 'Conchitas de hoy: +{} · Tienes {}']) ver(s);
+        for (const s of ['Tiempo: {}', 'Peces: {}', 'Puntos: {}', 'Récord: {}', '+{} puntos', '¡Atrapaste: {}!', '{} peces · {} puntos', '1 pez · {} puntos', 'Pesca', 'Lanza, espera el pique y suelta el pez', '¡Atrapaste: {}! +{} puntos · +{} conchitas', TXT.reportado + ' Premio por avisar: +{} conchitas.', 'Conchitas de hoy: +{} · Tienes {}']) ver(s);
         check('Inglés: todos los textos del minijuego están en content/cap1/en.js', !falta.length, falta.slice(0, 6).join(' | '));
       } catch (e) { check('Inglés: se pudo leer content/cap1/en.js', false, e); }
       check('Sin errores de consola durante la prueba', !errores.length, errores.slice(0, 3).join(' | '));
