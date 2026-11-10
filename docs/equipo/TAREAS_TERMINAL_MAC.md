@@ -24,7 +24,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | GT-04 | hecha · duelo 60 fps con y sin combate2, escritorio y móvil, 0 errores | **Combate 2.0 con GPU real:** duelo completo con y sin `?combate2=1` (escritorio y perfil móvil 390×844): FPS medio/peor cuadro, 0 errores, y cualquier cosa que se vea rara (anotar con captura). |
 | GT-05 | continua · 10-nov: `0095a89` verificado (vuelo/duelo 60 fps, pesca, Construir y Mercadito en verde, 0 errores) | **Verificación del sitio tras cada publicación** (cada vez que en `TAREAS_WEB.md` aparezca «PUBLICADO»): abrir el juego en el navegador real, partida nueva, volar 1 min, pesca 1 ronda, Construir 1 pieza, Mercadito, duelo de entreno; 0 errores de consola. Una línea por publicación. |
 | GT-06 | libre | **Interiores (V18.4) cuando la coordinadora avise:** con `?interiores=1`, entrar/salir del bohío de Villa Raíz, colocar un mueble, salir, recargar y comprobar que sigue; FPS dentro/fuera. |
-| GT-07 | libre | **Android/iPhone emulados con GPU real** (perfil Pixel 7, Galaxy S5 con CPU ×4, iPhone 13): Atalayas con textura (no cajas beige), sin cuadraditos, nitidez; FPS. |
+| GT-07 | parcial · FPS 58-60 en Pixel 7, Galaxy S5 ×4 e iPhone 13, 0 errores; la textura de las Atalayas NO quedó verificada | **Android/iPhone emulados con GPU real** (perfil Pixel 7, Galaxy S5 con CPU ×4, iPhone 13): Atalayas con textura (no cajas beige), sin cuadraditos, nitidez; FPS. |
 | GT-08 | hecha · 143 extra: 126 verdes; 17 rojas → 11 eran de orden/carga, 6 reales → QA-240…243 | **Baterías extra completas** (`test.sh … --extra`) en HEAD con GPU real: lista de rojos con sha → BUGS.md (prioridad según impacto). Distinguir rojo real de rojo de tiempo/carga repitiendo una vez lo que falle. |
 | GT-09 | hecha · Safari 26.6.2: 47-58 fps, pesca/Construir/Mercadito/En línea en verde, 0 errores | **Safari de verdad** (si la máquina es Mac: es lo más parecido al iPhone): abrir el sitio en Safari, partida nueva, volar, pesca, Construir, Mercadito, duelo con y sin `?combate2=1`, cotorras en línea; anotar errores de la consola de Safari, lo que se vea distinto a Chrome y FPS con `?fps=1`. |
 | GT-10 | libre | **Cotorras en línea reales:** Chrome y Safari (o dos ventanas) en la misma sala; moverse, saludar, gritar (¿se ve el pico?), salir; latencia aproximada y 0 errores. |
@@ -127,4 +127,23 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 - Pendiente: «publico yo ahora b09747e» (12:19 UTC) todavía no tiene su PUBLICADO. Lo verifico cuando aparezca.
 
 📣 Terminal → coordinadora · 10-nov 12:32 AST · GT-05 hecha para `0095a89` · vuelo 60 / duelo 60 fps, pesca 59/59, Construir 59/59, Mercadito 46/46, 0 errores; vuelvo cuando salga el PUBLICADO de b09747e · siguiente: GT-07
+
+**GT-07 · Android y iPhone emulados con GPU real (10-nov ~12:35-12:50 AST, sitio `0095a89`)** · **parcial**
+- Perfiles: Chrome 157 sin interfaz con ANGLE Metal M4, emulación de tamaño, DPR, toque y UA.
+  - Pixel 7: 412×915 a DPR 2,625, Android 14.
+  - Galaxy S5: 360×640 a DPR 3, CPU ×4 al medir.
+  - iPhone 13: 390×844 a DPR 3, UA de iOS 17.
+- Spawn, 30 s:
+  - Pixel 7: 60 fps · peor cuadro 33 ms · 94 draw calls · «alto», DPR 1,75
+  - Galaxy S5 ×4: 60 fps · 100 ms · 102 · «alto», DPR 1,75
+  - iPhone 13: 60 fps · 16,8 ms · 70 · «bajo», DPR 1,75
+- Escena «Atalayas», 30 s, teletransporte a la plaza de `kelvin_aldea_lomas` (-69,2, 68,4 de `content/cap1/mundo.js`) y vuelo con la cámara girando:
+  - Pixel 7: 60 fps · peor cuadro 67 ms · 87 draw calls · 1,2 M triángulos
+  - Galaxy S5 ×4: 58 fps · 117 ms · 91 draw calls
+  - iPhone 13: 60 fps · 16,8 ms · 49 draw calls · 235 k triángulos
+  - 0 errores de consola en los tres.
+- **No verificado:** las capturas muestran a Vittata junto a la cabaña de Iguaca y no las torres. Las coordenadas de la plaza no dejaron a la cámara mirando las Atalayas, así que la comprobación «con textura, sin cajas beige» (QA-nuevo-edif-android) **sigue pendiente**. Sin cuadraditos ni artefactos en lo que sí se ve.
+- Para cerrarla hace falta la posición de las torres `torre_vigia` del grupo `kelvin_aldea_lomas` (ver `src/game/v18/arco.js:93`) y apuntar la cámara a ellas. Lo retomo después de la cola si nadie lo hace antes.
+
+📣 Terminal → coordinadora · 10-nov 12:35 AST · GT-07 parcial · Pixel 7, Galaxy S5 ×4 e iPhone 13 emulados a 58-60 fps (spawn y vuelo en la zona de las Atalayas), 0 errores; la textura de las Atalayas NO quedó verificada (la cámara no las encuadró) → pendiente · siguiente: GT-10
 
