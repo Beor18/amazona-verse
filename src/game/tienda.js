@@ -150,12 +150,12 @@ window.AVTienda = function (G) {
   const conjuntoTxt = (n, p) => n + ' piezas · ' + p + ' conchitas en total';
   const TXT = {
     titulo: 'Mercadito del río',
-    nota: 'Las conchitas se ganan pescando en el río: cada pez de tu álbum paga, y reportar una invasora al DRNA paga más. Todo tiene su precio fijo.',
-    ropa: 'Ropa nueva para tu cotorra', piezas: 'Piezas para Construir', otras: 'Más ropa',
+    nota: 'Las conchitas salen de pescar: cada pez de tu álbum paga, y avisar de una invasora al DRNA paga más. El precio no cambia.',
+    ropa: 'Ropa para tu cotorra', piezas: 'Piezas de Construir', otras: 'Más ropa',
     tuya: 'Ya es tuya', puesta: 'Puesta', ponerla: 'Ponértela', ponerConj: 'Ponerme el traje completo',
     cerrar: 'Cerrar', pescar: 'Ir a pescar',
-    compraRopa: '¡Ya es tuya! Tu cotorra la estrena y está en Mi personaje.', compraPieza: '¡Ya es tuya! Está en la barra de Construir (tecla B).',
-    vestida: '¡Lista! Ya la llevas puesta.', conjVestido: '¡Traje completo puesto!', sinPiezas: 'Construir está apagado en esta partida.',
+    compraRopa: '¡Ya es tuya! Tu cotorra la estrena. También está en Mi personaje.', compraPieza: '¡Ya es tuya! La tienes en Construir (tecla B).',
+    vestida: '¡Lista! Ya la llevas puesta.', conjVestido: '¡Traje completo puesto!', sinPiezas: 'Construir no está en esta partida.',
     abrirCreador: 'Mercadito: ropa nueva'
   };
   let estilo = null;
