@@ -36,6 +36,59 @@ AVE.module('pruebas', function (G) {
     if (keep) G.guardado.load(true); else G.creador.open(true);
   }
 
+  // Combat Animation 2.0 (docs/equipo/AUDITORIA_ANIMACION_COMBATE.md): pico que abre hacia -X, sílabas al hablar, abanico de
+  // plumas, cola con muelle y mirar. Con una instancia propia, sin escena: solo update() a 60 Hz.
+  async function caraTest(check) {
+    let ch; try { ch = await window.AVCharacter.create(); } catch (e) { check('Cara: el modelo carga', false, String(e)); return; }
+    if (!ch.pico || !ch.alas) { check('Cara: la API pico/hablar/alas/colaImpulso/mirar existe', false); return; }
+    const B = ch.bones, dt = 1 / 60, paso = n => { for (let i = 0; i < n; i++) ch.update(dt); };
+    const r3 = v => Math.round(v * 1000) / 1000;
+    ch.expression = 'neutral'; paso(40);
+    // 1. Pico: abrir gira el hueso hacia -X y baja la punta de la mandíbula (punto delante del pico, en el espacio del hueso)
+    const inv = ch.restMat.pico.clone().invert(), tipL = new THREE.Vector3(0, 0.86, 0.46).applyMatrix4(inv), w = new THREE.Vector3();
+    const tipY = () => { ch.root.updateMatrixWorld(true); return w.copy(tipL).applyMatrix4(B.pico.matrixWorld).y; };
+    const x0 = B.pico.rotation.x, y0 = tipY();
+    ch.pico(1); paso(20);
+    const x1 = B.pico.rotation.x, y1 = tipY();
+    check('Pico: abrir gira el hueso hacia -X (~0,55 rad) y baja la mandíbula', x1 - x0 < -0.45 && x1 - x0 > -0.65 && y1 < y0 - 0.01, 'Δx ' + r3(x1 - x0) + ' rad, punta ' + r3((y1 - y0) * 100) + ' cm');
+    ch.pico(0); paso(40);
+    ch.pico(1, 200); paso(10); const abierto = ch.talkV; paso(45);
+    check('Pico: pico(1, 200 ms) abre rápido y se cierra solo', abierto > 0.35 && ch.talkV < 0.03, r3(abierto) + ' → ' + r3(ch.talkV) + ' rad');
+    // 2. Hablar: sílabas de 6 a 9 por segundo, irregulares, de 0,25 a 0,35 rad como mucho; al callar se cierra
+    ch.hablar(true); const xs = [];
+    for (let i = 0; i < 180; i++) { paso(1); xs.push(ch.talkV); }
+    ch.hablar(false); paso(30);
+    const mx = Math.max(...xs), cruces = [];
+    for (let i = 1; i < xs.length; i++) if (xs[i] > mx * 0.5 && xs[i - 1] <= mx * 0.5) cruces.push(i);
+    const hz = cruces.length / 3, ints = cruces.slice(1).map((c, i) => c - cruces[i]), dif = new Set(ints).size;
+    check('Hablar: el pico aletea en sílabas de 6 a 9 por segundo (no un seno) y se cierra al callar', hz >= 5 && hz <= 10 && dif >= 3 && mx > 0.2 && mx < 0.38 && ch.talkV < 0.03,
+      hz.toFixed(1) + ' Hz, ' + dif + ' duraciones distintas, máx ' + r3(mx) + ' rad, al callar ' + r3(ch.talkV));
+    // 3. Alas: alas(1, 1) abre el abanico (la cadena de delante y la de atrás se separan) y alas(0, 0) lo pliega
+    const cL = ch.alasCad && ch.alasCad.L, sep = () => { ch.root.updateMatrixWorld(true); const a = cL[0].c[2].getWorldPosition(new THREE.Vector3()), b = cL[3].c[2].getWorldPosition(new THREE.Vector3()); return a.distanceTo(b); };
+    const s0 = cL ? sep() : 0, r0 = cL ? cL[0].c[0].rotation.x : 0;
+    ch.alas(1, 1); paso(60);
+    const s1 = cL ? sep() : 0, r1 = cL ? cL[0].c[0].rotation.x : 0, abre = ch.estadoCara().alas;
+    ch.alas(0, 0); paso(60);
+    const s2 = cL ? sep() : 0;
+    check('Alas: alas(1, 1) abre las plumas en abanico y alas(0, 0) las pliega', !!cL && abre > 0.95 && Math.abs(r1 - r0) > 0.3 && s1 > s0 * 1.25 && Math.abs(s2 - s0) < s0 * 0.1,
+      'separación ' + r3(s0) + ' → ' + r3(s1) + ' → ' + r3(s2) + ', raíz ' + r3(r1 - r0) + ' rad');
+    // 4. Cola: muelle que responde a un golpe y al frenar, y se asienta
+    ch.alas(null); ch.colaImpulso(1); const cs = [];
+    for (let i = 0; i < 150; i++) { paso(1); cs.push(ch.colaSp.x); }
+    const pico1 = Math.max(...cs.map(Math.abs)), fin1 = Math.abs(cs[cs.length - 1]);
+    for (let i = 0; i < 40; i++) { ch.root.position.z += 6 * dt; paso(1); }
+    const cf = []; for (let i = 0; i < 150; i++) { paso(1); cf.push(ch.colaSp.x); }
+    const frena = Math.max(...cf.slice(0, 30)), fin2 = Math.abs(cf[cf.length - 1]);
+    ch.root.position.set(0, 0, 0); paso(5);
+    check('Cola: el muelle responde a colaImpulso y al frenar (sube) y se asienta en 2,5 s', pico1 > 0.15 && fin1 < 0.01 && frena > 0.04 && fin2 < 0.01,
+      'golpe ' + r3(pico1) + ' → ' + r3(fin1) + ', frenar ' + r3(frena) + ' → ' + r3(fin2) + ' rad');
+    // 5. Mirar: un objetivo a un lado gira la cabeza hacia allí
+    paso(30); const y0c = B.cabeza.rotation.y;
+    ch.mirar(new THREE.Vector3(3, 1.2, 1)); paso(90); const y1c = B.cabeza.rotation.y; ch.mirar(null); paso(5);
+    check('Mirar: mirar(objetivo) gira la cabeza hacia el objetivo', Math.abs(y1c - y0c) > 0.3, 'giro ' + r3(y1c - y0c) + ' rad');
+    try { window.AVCharacter.disposeObject(ch.root, true); } catch (e) { /* nada */ }
+  }
+
   // Pruebas del sistema de accesorios 3D (requieren el modelo con esqueleto)
   async function accessoryTest() {
     const { check, result } = runner();
@@ -173,6 +226,7 @@ AVE.module('pruebas', function (G) {
     const mapas = []; ch.root.traverse(m => { if ((m.isSkinnedMesh || m.isMesh) && !m.userData.isAccessory && m.material && m.material.map) mapas.push(m.material.map.name || ''); });
     const conPiel = mapas.some(n => n === 'piel_festiva');
     check('El plumaje cambia la cara: festiva lleva su piel (máscara pintada) y el tinte se apaga', conPiel && (!ch.tint || ch.tint.tintOn.value.length() === 0), [...new Set(mapas)].join(',') || 'sin mapas');
+    await caraTest(check);
     // Retrato idéntico para juego y cómic
     const prevProfile = S.profile;
     S.profile = { created: true, name: 'Prueba', look: { species: 'vittata', accessories: { eyes: { id: 'gafas', color: '#2b2b2b' }, neck: { id: 'panuelo', color: '#d6403a' } } } };
