@@ -403,7 +403,7 @@ window.AV_EN = {
  "Dos en la misma computadora": "Two on the same computer",
  "Tu nivel, tu poder y las que te faltan": "Your level, your power and the ones you still need",
  "Baja el río en canoa: contra el reloj y tu fantasma": "Paddle down the river: against the clock and your ghost",
- "Teclado: WASD para moverte, Espacio para despegar y posarte, E para la acción. Teléfono: el joystick mueve y el botón grande es la acción.": "Keyboard: WASD to move, Space to take off and land, E for the action. Phone: the joystick moves you and the big button is the action.",
+ "Teclado: WASD te mueve. Con Espacio despegas y te posas. E es la acción. En el teléfono, el joystick mueve y el botón grande es la acción.": "Keyboard: WASD moves you. With Space you take off and you land. E is the action. On the phone, the joystick moves you and the big button is the action.",
  "+{} puntos al nido": "+{} points to the nest",
  "Días en el nido": "Days in the nest",
  "Tus huevos": "Your eggs",

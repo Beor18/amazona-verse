@@ -626,7 +626,7 @@
           quietaEn(hi.x + 40, hi.z); simular(3);
           ok('Lejos (40 m) no se avista nada', !mem.vistos.length);
           quietaEn(hi.x + 15, hi.z); simular(0.2);
-          ok('A 15 m sale una pista una sola vez', textos.length === 1 && /despacio/.test(textos[0]), textos.join(' | ')); simular(1);
+          ok('A 15 m sale una pista una sola vez', textos.length === 1 && /despacito/.test(textos[0]), textos.join(' | ')); simular(1);
           ok('…y no se repite', textos.length === 1);
           quietaEn(hi.x + 2, hi.z); M.speed = 9; M.flying = true; simular(2); M.speed = 0; M.flying = false;
           ok('Pasar volando rápido junto a ella no la avista', !mem.vistos.includes('iguana'));

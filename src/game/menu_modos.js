@@ -64,7 +64,7 @@
       records: [L('Mis récords', 'My records'), L('Medallas y tiempos', 'Medals and times')],
       ayuda: L('¿Cómo se juega?', 'How do I play?'),
       elige: L('Elige una tarjeta', 'Pick a card'),
-      pista: L('Teclado: WASD para moverte, Espacio para despegar y posarte, E para la acción. Teléfono: el joystick mueve y el botón grande es la acción.', 'Keyboard: WASD to move, Space to take off and land, E for the action. Phone: the joystick moves you and the big button is the action.'),
+      pista: L('Teclado: WASD te mueve. Con Espacio despegas y te posas. E es la acción. En el teléfono, el joystick mueve y el botón grande es la acción.', 'Keyboard: WASD moves you. With Space you take off and you land. E is the action. On the phone, the joystick moves you and the big button is the action.'),
     });
     function subAventura() {
       const pasos = (G.misiones && G.misiones.steps) || [];
