@@ -182,7 +182,7 @@ AVE.module('audio', function (G) {
       voiceBus = off.createGain(); voiceBus.gain.value = 1; voiceBus.connect(master);
       salida = sfxBus;
       try {
-        SOUNDS[name](0.02, name === 'grito' ? 1 : undefined);
+        SOUNDS[name](0.02, name === 'grito' ? 1 : 0);
         const buf = await off.startRendering(), d = buf.getChannelData(0);
         let pico = 0;
         for (let i = 0; i < d.length; i++) { const a = Math.abs(d[i]); if (a > pico) pico = a; }
