@@ -12,6 +12,15 @@
 - **Cómo probarlo:** `AV.historicoTest()` con la bandera apagada y encendida. Con `?interiores=1`, Acción en (−104, 138) dice Entrar.
 - **Lo confirma:** historicoTest 13/13. Build `cg-118-ee43b06c`: las 12 en verde, 0 errores. Los 2 avisos son el de streaming (QA-230, Kimi).
 
+### Dev 2 · 10-nov 07:55 AST · QA-236 hecha
+- **Tarea:** Construir entra en la sesión corta. Cerrada.
+- **Commit:** `26d08809` (el mismo `memoria.js` que la build `qa-236-28d0c4a`). EN CURSO fue `52e95f9f`.
+- **Por qué fallaba:** `empezar()` se niega si otra acción sigue dueña. Al salir, la pesca devuelve la acción anterior. La prueba ahora suelta pesca, golf y duelo, cierra la portada y carga el módulo si aún no está.
+- **Archivos:** `src/pruebas/memoria.js`. No toqué `construir.js`, `streaming.js` ni textos educativos.
+- **Qué falta:** nada. La nota de las banderas `?interiores=1` y `?piloto=1` no la hice.
+- **Cómo probarlo:** `AV.memoriaLargaTest()` (5 ciclos).
+- **Lo confirma:** memoriaLargaTest 11/11. Construir 5/5. Geometrías 383→388→398→399→398, pendiente 0. Las 12 en verde, 0 errores. El aviso de streaming (QA-230) es de Kimi. La versión larga de 10 ciclos no la volví a correr.
+
 ### Dev 2 · 10-nov 07:42 AST · QA-236 en curso
 - **Tarea:** en la sesión corta, Construir no arranca (9/11). Ronda 7 sobre `8608a3c6`. El id libre era QA-236 (el más alto era QA-235).
 - **Commit de código:** todavía no.
