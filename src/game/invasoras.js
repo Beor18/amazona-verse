@@ -407,7 +407,7 @@
       const t = F.t;
       for (let i = 0; i < h.individuos.length; i++) {
         const v = h.individuos[i];
-        if (id === 'iguana') { v.x = h.x; v.z = h.z; v.y = h.y - 0.035; v.yaw = h.yaw; } // tomando el sol: quieta (la vida va en su shader)
+        if (id === 'iguana') { v.x = h.x; v.z = h.z; v.y = h.y + 0.12; v.yaw = h.yaw; } // el cuerpo queda sobre el suelo; a ras de la orilla el terreno la tapaba
         else if (id === 'tilapia') { // nadan en grupo, en círculo lento
           const a = v.a + t * 0.35, r = 0.9 + 0.25 * Math.sin(t * 0.5 + v.fase);
           v.x = h.x + Math.cos(a) * r; v.z = h.z + Math.sin(a) * r; v.y = Math.max(H(v.x, v.z) + 0.15, h.agua - 0.3 - 0.08 * i);
@@ -429,7 +429,7 @@
         mover(e.id, h);
         const fases = im.geometry.attributes.iFase;
         h.individuos.forEach((v, i) => { dummy.position.set(v.x, v.y, v.z); dummy.rotation.set(0, v.yaw, 0); dummy.updateMatrix(); im.setMatrixAt(i, dummy.matrix); fases.setX(i, v.fase); });
-        im.count = h.individuos.length; im.instanceMatrix.needsUpdate = true; fases.needsUpdate = true; im.visible = true;
+        im.count = h.individuos.length; im.instanceMatrix.needsUpdate = true; fases.needsUpdate = true; im.visible = true; im.layers.set(0); im.frustumCulled = false;
         if (e.donde !== 'orilla') { // «visor»: bajo el agua solo se distinguen de cerca; lejos el agua los tapa (se dibujan antes que ella)
           const mira = Math.hypot(S.pos.x - h.x, S.pos.z - h.z) < (e.radio || 8) * VISOR && S.pos.y - h.y < 14;
           im.material.depthTest = !mira; im.renderOrder = mira ? 10 : -1; h.visor = mira;
@@ -563,6 +563,17 @@
       el.classList.remove('inv-on'); void el.offsetWidth; el.classList.add('inv-on');
     }
     pintarCuenta();
+    // El primer dibujo, en SwiftShader, aún no tiene el programa: la captura de la landing no la veía.
+    (function calentarIguana() {
+      const R = G.renderer && G.renderer.renderer, cam = G.renderer && G.renderer.camera, im = mallas.iguana;
+      if (!R || !cam || !im || typeof R.compile !== 'function') return;
+      const n = im.count, vis = im.visible;
+      im.count = 1; im.visible = true; im.layers.set(0);
+      const fant = new THREE.Scene();
+      scene.remove(im); fant.add(im);
+      try { R.compile(fant, cam); } catch (e) { /* el primer dibujo lo compila */ }
+      finally { fant.remove(im); scene.add(im); im.count = n; im.visible = vis; }
+    })();
 
     // ---------- Bucle ----------
     function paso(dt, busy) {
@@ -613,6 +624,16 @@
           F.prueba = true; G.INVASORAS = true; simular(0.3);
           const lI = nivelAgua(hi.x, hi.z);
           ok('Iguana en tierra seca junto al río (a 18 m o menos de un punto del cauce)', !(lI > hi.y + 0.1) && RIO.some(p => Math.hypot(p[0] - hi.x, p[1] - hi.z) < 18 + p[3]), 'y ' + hi.y.toFixed(2) + ' · agua ' + lI);
+          const quieto = G.quiet, prueba0 = F.prueba, cam0 = G.renderer.camera.position.clone();
+          G.quiet = false; F.prueba = false; G.INVASORAS = true;
+          quietaEn(hi.x + 6, hi.z); G.renderer.camera.position.set(S.pos.x, S.pos.y + 1.6, S.pos.z);
+          paso(0.05, false);
+          const imI = mallas.iguana, m4 = new THREE.Matrix4(), pI = new THREE.Vector3();
+          imI.getMatrixAt(0, m4); pI.setFromMatrixPosition(m4);
+          const d6 = Math.hypot(S.pos.x - hi.x, S.pos.z - hi.z), sueloI = H(pI.x, pI.z);
+          ok('La iguana es visible a 6 m', imI.visible && imI.count >= 1 && (imI.layers.mask & 1) !== 0 && pI.y >= sueloI + 0.05 && d6 > 5 && d6 < 7 && Math.hypot(pI.x - hi.x, pI.z - hi.z) < 1.5,
+            'd ' + d6.toFixed(1) + ' · visible ' + imI.visible + ' · n ' + imI.count + ' · capa ' + imI.layers.mask + ' · y ' + pI.y.toFixed(2) + ' / suelo ' + sueloI.toFixed(2));
+          G.renderer.camera.position.copy(cam0); G.quiet = quieto; F.prueba = prueba0;
           const bajo = (h, v) => v.y < nivelAgua(v.x, v.z) - 0.05 && v.y >= H(v.x, v.z) - 0.01;
           ok('Tilapias bajo el agua del río y sobre el fondo', ht.individuos.length === 4 && ht.individuos.every(v => bajo(ht, v)), ht.individuos.map(v => (nivelAgua(v.x, v.z) - v.y).toFixed(2)).join(','));
           ok('Plecos en el fondo del río, bajo el agua', hp.individuos.every(v => bajo(hp, v) && v.y - H(v.x, v.z) < 0.1));
