@@ -1636,8 +1636,8 @@ AVE.module('streaming', function (G) {
       programarCercaGlobal();
     }
     // CG-73: la fusión cercana (KIMI-341) reserva unos 20 MB de geometría. El heap de arranque se
-    // mide justo al soltar la pantalla de carga: hasta 4 s después se dibujan los lotes por instancia
-    // (el mismo aspecto). Si Vittata se mueve o una prueba llama a terminar(), se funde en ese momento.
+    // mide unos segundos después de soltar la pantalla de carga (intro y red quieta): 12 s se dibujan
+    // los lotes por instancia, el mismo aspecto. Si Vittata se mueve o una prueba llama a terminar(), se funde ya.
     let cercaPuede = false, cercaTimer = 0;
     const cercaEspera = [];
     function activarCerca() {
@@ -1648,7 +1648,7 @@ AVE.module('streaming', function (G) {
     }
     function programarCerca() {
       if (cercaPuede || cercaTimer) return;
-      cercaTimer = setTimeout(activarCerca, 4000);
+      cercaTimer = setTimeout(activarCerca, 12000);
     }
     function fundirCercaZona(Z, forzar) {
       if ((!Z.ciudad && Z.nivel < 2) || Z.cercaF || (!forzar && (cargasPendientes(Z, 'cerca') || cargasPendientes(Z, 'hd')))) return;
