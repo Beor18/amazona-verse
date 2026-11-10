@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 06:40 AST · CG-116 en curso
+- **Tarea:** vanos transitables. CG-115 la tiene Dev 4 (`construir.js`). CG-113 la tiene Dev 1 (`interiores.js`). No las toqué. No dejé CG-115 a mi nombre: el commit que la marcaba se descartó en el rebase.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/engine/solidos.js`. No toco `construir.js`, `interiores.js`, `bohios.js` ni los bugs de la ronda 6.
+- **Qué falta:** la puerta de `casa_paja_a` no suma sólido (el dibujo de la puerta se queda) y la base de la torre k300 tiene un paso en la colisión, sin cambiar la malla.
+- **Cómo probarlo:** `AV.solidosTest()` y las 12.
+- **Lo confirma:** solidosTest y las 12 baterías, 0 errores.
+
 ### Dev 4 · 10-nov 06:35 AST · CG-115 en curso
 - **Tarea:** Construir dentro. Fila EN CURSO. CG-113 la lleva Dev 1 (`bohios.js`). Yo solo toco `construir.js`.
 - **Commit de código:** todavía no.
