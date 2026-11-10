@@ -1652,7 +1652,7 @@ AVE.module('streaming', function (G) {
     }
     function fundirCercaZona(Z, forzar) {
       if ((!Z.ciudad && Z.nivel < 2) || Z.cercaF || (!forzar && (cargasPendientes(Z, 'cerca') || cargasPendientes(Z, 'hd')))) return;
-      if (!cercaPuede && !forzar) { if (cercaEspera.indexOf(Z) < 0) cercaEspera.push(Z); programarCerca(); return; }
+      if (!cercaPuede && !forzar) { if (cercaEspera.indexOf(Z) < 0) cercaEspera.push(Z); if (!precarga) programarCerca(); return; }
       // KIMI-Task-011: los modelos con _hd también entran (cada instancia es un tramo: se dibuja el _hd o el ligero, no los dos)
       const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo' && !(G.bohiosAbiertos && G.bohiosAbiertos[n])));
       if (Z.cercaMallas && modelos.size === Z.cercaModelos.size && [...modelos].every(n => Z.cercaModelos.has(n))) return;
@@ -2303,7 +2303,7 @@ AVE.module('streaming', function (G) {
             if (!tCola) tCola = performance.now();
             return performance.now() - tCola > 1500;
           },
-          terminar() { fin = true; if (precarga === estado) precarga = null; siguiente(); programar(); },
+          terminar() { fin = true; if (precarga === estado) precarga = null; siguiente(); programar(); programarCerca(); },
         };
         const estado = precarga;
         return zona;
