@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 06:10 AST · CG-103 hecha
+- **Tarea:** sonidos de lo nuevo. Cerrada.
+- **Commits:** `25e6f588` (sonidos) y `62e5f011` (la prueba del clic). EN CURSO fue `4c5000b1`.
+- **Archivos:** `src/engine/audio.js`, `src/game/v18/pesca.js`, `src/game/construir.js`, `src/game/tienda.js`, `src/game/momentos.js`, `src/game/musica.js` (solo la medida, junto al Grito v2). `src/game/invasoras.js` no se tocó: es CG-107, de Dev 1. El clic suena al emitir `foto`, que la patrulla ya usa.
+- **Qué falta:** nada de esta tarea. Sigue CG-104 (opciones).
+- **Cómo probarlo:** pescar (chapuzón al caer el corcho, carrete al recoger), colocar en Construir (tac), comprar en el Mercadito (cha-ching) y sacar una foto (clic). `G.audio.medir` deja cada uno por debajo del pico de `ring`.
+- **Lo confirma:** musicaTest 84/84, v18PescaTest 59/59, construirTest 50/50, tiendaTest 46/46, momentosTest 21/21. Build `cg-103-6c553d9` (mismo código que `62e5f011`): las 12 en verde, 0 errores de consola.
+
 ### Dev 3 · 10-nov 05:40 AST · CG-105 hecha
 - **Tarea:** primeros 10 minutos del capítulo 1. Cerrada.
 - **Commit:** `eb5d7ef1`. EN CURSO fue `34ce4680`.
@@ -71,13 +79,7 @@ _(escribe aquí, la más nueva arriba: fecha, hora, qué hiciste, qué te frena,
 
 ### TRASPASO · Dev 2
 
-**10-nov 05:20 AST · CG-103 en curso.** Commit `4c5000b1` (solo la fila EN CURSO). No hay código todavía.
-
-Queda: cinco sonidos procedurales en `src/engine/audio.js` (`carrete`, `chapuzon`, `tac`, `chaching`, `clic`), medidos como el Grito v2. Una llamada en `src/game/v18/pesca.js` (carrete al recoger y chapuzón al caer el corcho), `src/game/construir.js` (tac al colocar), `src/game/tienda.js` (cha-ching al comprar) y `src/game/momentos.js` (clic al emitir `foto`). `src/game/invasoras.js` no se toca: es CG-107, de Dev 1. El clic sale por el evento `foto`, que la patrulla ya emite.
-
-Cómo probar: `G.audio.medir` de cada nombre (pico por debajo del de `ring`, RMS audible y sin pico agudo) y la prueba de cada módulo. Lo confirman musicaTest, v18PescaTest, construirTest, tiendaTest, momentosTest y las 12 baterías con 0 errores de consola.
-
-Siguiente: implementar y medir. CG-104 espera a que CG-103 cierre.
+**10-nov 06:10 AST · CG-103 hecha.** Sonidos en `25e6f588` y la prueba del clic en `62e5f011`. El detalle está arriba, en TRASPASO · Dev 2. `invasoras.js` no se tocó. Sigue CG-104.
 
 ### 4-nov 06:40 AST · Dev 2 · CG-63 hecha
 
