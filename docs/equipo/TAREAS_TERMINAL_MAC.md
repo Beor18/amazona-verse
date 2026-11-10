@@ -27,7 +27,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | GT-07 | parcial · FPS 58-60 en Pixel 7, Galaxy S5 ×4 e iPhone 13, 0 errores; la textura de las Atalayas NO quedó verificada | **Android/iPhone emulados con GPU real** (perfil Pixel 7, Galaxy S5 con CPU ×4, iPhone 13): Atalayas con textura (no cajas beige), sin cuadraditos, nitidez; FPS. |
 | GT-08 | hecha · 143 extra: 126 verdes; 17 rojas → 11 eran de orden/carga, 6 reales → QA-240…243 | **Baterías extra completas** (`test.sh … --extra`) en HEAD con GPU real: lista de rojos con sha → BUGS.md (prioridad según impacto). Distinguir rojo real de rojo de tiempo/carga repitiendo una vez lo que falle. |
 | GT-09 | hecha · Safari 26.6.2: 47-58 fps, pesca/Construir/Mercadito/En línea en verde, 0 errores | **Safari de verdad** (si la máquina es Mac: es lo más parecido al iPhone): abrir el sitio en Safari, partida nueva, volar, pesca, Construir, Mercadito, duelo con y sin `?combate2=1`, cotorras en línea; anotar errores de la consola de Safari, lo que se vea distinto a Chrome y FPS con `?fps=1`. |
-| GT-10 | libre | **Cotorras en línea reales:** Chrome y Safari (o dos ventanas) en la misma sala; moverse, saludar, gritar (¿se ve el pico?), salir; latencia aproximada y 0 errores. |
+| GT-10 | hecha (Chrome↔Chrome) · se ven en 1,3 s, mensajes cada ~253 ms, salida vista en 2,4 s, 0 errores; Safari↔Chrome sin concluir | **Cotorras en línea reales:** Chrome y Safari (o dos ventanas) en la misma sala; moverse, saludar, gritar (¿se ve el pico?), salir; latencia aproximada y 0 errores. |
 | GT-11 | libre | **Recorrido de los 6 capítulos** en el sitio publicado con GPU real (con `AV.temporadaMovilTest` si existe, o a mano lo esencial de cada capítulo): que cada capítulo arranque, se avance y se guarde. Un renglón por capítulo. |
 | GT-12 | libre | **Sesión larga de 20 min** con GPU real (volar, pesca, Construir, duelo, Patrulla): memoria del heap y de la GPU al minuto 1, 10 y 20 (`performance.memory`, `?fps=1`), FPS al principio y al final. ¿Crece sin parar? |
 | GT-13 | libre | **Solo teclado y lector de pantalla** (VoiceOver en Mac): menú, pausa, opciones, pesca, Construir, Mercadito; anotar lo que no se puede usar. |
@@ -146,4 +146,21 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 - Para cerrarla hace falta la posición de las torres `torre_vigia` del grupo `kelvin_aldea_lomas` (ver `src/game/v18/arco.js:93`) y apuntar la cámara a ellas. Lo retomo después de la cola si nadie lo hace antes.
 
 📣 Terminal → coordinadora · 10-nov 12:35 AST · GT-07 parcial · Pixel 7, Galaxy S5 ×4 e iPhone 13 emulados a 58-60 fps (spawn y vuelo en la zona de las Atalayas), 0 errores; la textura de las Atalayas NO quedó verificada (la cámara no las encuadró) → pendiente · siguiente: GT-10
+
+**GT-10 · cotorras en línea reales (10-nov ~12:55-13:20 AST, sitio `0095a89`, Realtime de verdad sin mock)**
+- **Chrome ↔ Chrome** (dos Chrome 157 con GPU real del M4, perfiles separados):
+  - A crea la sala (`4ZXBW`) y B se une con el código.
+  - Los dos ven al otro en **1,26 s**, contando desde que B pulsa unir hasta `pares 1` y `pintadas 1` en ambos.
+  - Movimientos de A vistos por B: 10 de 10, a **253-256 ms** del cambio. Es estable, así que mide sobre todo el ritmo de envío del juego (~4 por segundo) más la red; la red sola va por debajo.
+  - Al final: A envió 36 y recibió 25; B envió 25 y recibió 35. Cuando B sale, A lo ve en **2,4 s** (`presentes` pasa de 2 a 1).
+  - 0 errores de consola en los dos.
+  - Gestos enviados: saludar, enojo y celebrar.
+- **No verificado:** que el gesto y el pico (grito) se vean en el otro lado. La guía «¡Así se juega!» de la partida nueva tapaba la vista en las capturas. Además, en esta versión del juego el grito no es un gesto de la lista (`saludar, celebrar, bailar, idea, enojo, pelea, molestia`); `estadoCara` dio pico 0 sin gritar.
+- **Safari ↔ Chrome, sin concluir:**
+  - Entraron a la misma sala en 3,4 s (`presentes 2` en los dos) y Chrome dibujó la cotorra de Safari.
+  - Safari dejó de enviar (2 mensajes en todo el rato) y no dibujó la de Chrome; su captura salió en negro.
+  - Lo más probable es que la ventana de automatización de Safari quedara tapada por otra ventana del Mac y Safari frenara la página. No abro fallo: hay que repetirlo a mano con Safari delante y la ventana visible.
+- Evidencia fuera del repo: `gt_online2.py` y `gt_online.py` del carril Terminal, JSON y capturas.
+
+📣 Terminal → coordinadora · 10-nov 12:43 AST · GT-10 hecha (Chrome↔Chrome) · sala real: se ven en 1,26 s, movimientos a ~253 ms, salida vista en 2,4 s, 0 errores; gesto y pico sin verificar en captura (la guía tapaba); Safari↔Chrome sin concluir (Safari frenado en segundo plano), toca repetirlo a mano · siguiente: GT-11
 
