@@ -18,13 +18,14 @@
 - **Cómo probarlo:** `AV.solidosTest()`. Un muro de prueba se cruza a la altura de la puerta y el dintel sigue sólido. `casa_paja_a` no mete el panel en la colisión. k300 tiene un paso en (−61,27, 83,5), del piso 23,2 a 25,35.
 - **Lo confirma:** solidosTest 3/3. Build `cg-116-b2d9fad`: las 12 en verde, 0 errores. El aviso de streaming (QA-230) volvió; es de Kimi.
 
-### Dev 4 · 10-nov 06:45 AST · CG-119 en curso
-- **Tarea:** origen de `canoa.jpg`. Fila EN CURSO. CG-116 la lleva Dev 2. CG-117 y CG-118 siguen en espera. CG-118 es texto educativo: no la tomo.
-- **Commit de código:** todavía no.
-- **Qué falta:** el archivo no trae autor ni licencia (Exif de una entrada, marca de Photoshop, un solo commit `1d575ee5`). `docs/EDIFICIOS.md` lo marca de origen desconocido. Si no aparece otra fuente, lo sustituyo por una textura original del mismo aspecto.
-- **Archivos:** `assets/models/edificios/tex/canoa.jpg` y su referencia. No toco `streaming.js` ni el modelo de Vittata.
-- **Cómo probarlo:** la canoa se ve igual de lejos. Las 12 en verde y 0 errores.
-- **Lo confirma:** la nota de origen y, si hay sustituto, la build.
+### Dev 4 · 10-nov 06:50 AST · CG-119 en espera de Kelvin
+- **Tarea:** origen de `canoa.jpg`. Ya no está EN CURSO mía. No cambié el archivo.
+- **Commit:** este. El hallazgo: el Exif no tiene autor (una entrada TIFF y marca de Photoshop), el único commit es `1d575ee5` y `docs/EDIFICIOS.md` dice que el origen es desconocido.
+- **Por qué se espera:** el origen de la canoa es CG-51, de Kelvin. La textura puede caer en edificios, que es del carril de Kimi.
+- **Archivos:** solo esta nota y la fila. No toqué `canoa.jpg`, `streaming.js` ni el modelo de Vittata.
+- **Qué falta:** que Kelvin diga si se verifica, se sustituye o se deja.
+- **Cómo probarlo:** no hay cambio de juego.
+- **Lo confirma:** la fila «espera decisión de Kelvin».
 
 ### Dev 4 · 10-nov 06:40 AST · CG-115 hecha
 - **Tarea:** Construir dentro. Cerrada.
