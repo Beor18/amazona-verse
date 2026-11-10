@@ -550,6 +550,8 @@ window.AVV18Evolucion = function (G) {
         '.v18-evo-guia{margin:6px 0 8px;padding:8px 10px;border-radius:12px;background:#fff3c4;color:#3b2a14;text-align:left;font-size:calc(14px * var(--fs-k,1));line-height:1.35}' +
         '.v18-evo-guia p{margin:3px 0}.v18-evo-guia .meta{font-weight:700}.v18-evo-guia .v18-evo-chip{display:inline-block;padding:2px 8px;margin:2px 2px 0 0;border-radius:9px;background:#ffe39a;font-size:calc(13px * var(--fs-k,1))}' +
         '.v18-evo-guia kbd{display:inline-block;vertical-align:middle;height:auto;font:700 calc(13px * var(--fs-k,1))/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 5px;margin:0 3px 0 6px;border-radius:6px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center}' +
+        '.v18-evo-sig,.v18-evo-logros{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px}.v18-evo-sig img,.v18-evo-logro img{width:28px;height:28px;border-radius:50%;background:#fff8}' +
+        '.v18-evo-logro{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 2px;border-radius:14px;background:#ffe39a;color:#3b2a14}' +
         ':root.a11y-contraste .v18-evo-guia{background:#000;color:#fff;border:2px solid #fff}:root.a11y-contraste .v18-evo-guia .v18-evo-chip{background:#333;color:#fff}' +
         '@media (min-width:761px){#v18-evo-carta{top:calc(env(safe-area-inset-top,0px) + 96px)}}' + // en la computadora el aviso (#toast, capa superior) ocupa el borde de arriba
         '@keyframes v18evo{from{transform:translateY(-16px) scale(.9);opacity:0}to{transform:none;opacity:1}}';
@@ -596,6 +598,10 @@ window.AVV18Evolucion = function (G) {
     try { css(); } catch (e) { /* sin documento */ }
     const r = info(sp), L = lineaHud({ especie: sp, nivel: r.nivel, variante: r.variante, poder: H.poderDe(sp) });
     let h = `<span class="v18-evo-f"><span>${esc(L.nivel)}</span> · <span>${esc(L.etapa)}</span></span><i class="v18-evo-bar"><b style="width:${Math.round(L.frac * 100)}%"></b></i>`;
+    const etapas = sp === 'vittata' ? ETAPAS : ETAPAS_ESP, sigEt = etapas.find(et => et.desde > r.nivel);
+    h += `<span class="v18-evo-sig" data-v18-siguiente>${retrato(sp, 28)}`;
+    h += sigEt ? `<span>${esc(sigEt.nombre)}</span> · <span>${esc(con(TXT.nivel, sigEt.desde))}</span> · <span>${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span>` : `<span>${esc(TXT.max)}</span>`;
+    h += '</span>';
     h += `<span class="v18-evo-m">${r.sig == null ? `<span>${esc(TXT.max)}</span>` : `<span>${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span>`}</span>`;
     if (sp === 'vittata') h += '<span style="display:block">' + ETAPAS.slice(1).map(et => r.nivel >= et.desde ? `<span class="v18-evo-et">${esc(et.nombre)}</span>` : `<span class="v18-evo-et no"><span>${esc(et.nombre)}</span> · <span>${esc(con(TXT.nivel, et.desde))}</span></span>`).join('') + '</span>';
     else {
@@ -623,7 +629,7 @@ window.AVV18Evolucion = function (G) {
   }
   function htmlExtra() {
     const e = E(), v = info('vittata'), sel = V.seleccionada();
-    let h = htmlGuia();
+    let h = htmlGuia() + htmlLogros();
     if (sel === 'vittata' && v.nivel >= 20) {
       const cur = v.variante || (v.nivel >= 30 ? 'maestro' : 'dirigido'), vs = VARIANTES.filter(x => x !== 'maestro' || v.nivel >= 30), et = { amplificado: 1, dirigido: 2, maestro: 3 };
       h += `<div class="row v18-evo-x"><span>${esc(TXT.varTit)}</span> ` + vs.map(x => `<button class="btn${cur === x ? '' : ' ghost'}" type="button" data-v18var="${x}" aria-pressed="${cur === x}">${esc(ETAPAS[et[x]].nombre)}</button>`).join(' ') + '</div>';
@@ -635,6 +641,17 @@ window.AVV18Evolucion = function (G) {
       h += `<p class="v18-evo-x" style="opacity:.85">${esc(a.explora)}</p>`;
     }
     return h + htmlAlianzas();
+  }
+  // Logros ya conseguidos, cada uno con retrato. Si todavía no hay, una frase y el retrato: la pantalla no queda vacía.
+  function htmlLogros() {
+    try { css(); } catch (e) { /* sin documento */ }
+    const marcas = (E().marcas) || {}, hechos = Object.keys(marcas).filter(k => marcas[k]).slice(0, 6);
+    const etiq = k => (k.indexOf('esp:') === 0 ? nombre(k.slice(4)) : k.indexOf('gana:') === 0 ? nombre(k.slice(5)) : TXT.guiaExplora);
+    const foto = k => (k.indexOf('esp:') === 0 || k.indexOf('gana:') === 0) ? k.slice(k.indexOf(':') + 1) : 'vittata';
+    let h = '<div class="v18-evo-logros" data-v18logros>';
+    if (!hechos.length) h += retrato('vittata', 28) + `<span>${esc(TXT.guiaExplora)}</span>`;
+    else h += hechos.map(k => `<span class="v18-evo-logro">${retrato(RETRATOS.has(foto(k)) ? foto(k) : 'vittata', 28)}<span>${esc(etiq(k))}</span></span>`).join('');
+    return h + '</div>';
   }
   // Las alianzas de bandada que ya conoces (la líder o la compañera está en tu bandada): estado, qué falta y el reto, uno por uno
   function htmlAlianzas() {
@@ -1254,7 +1271,17 @@ window.AVV18Evolucion = function (G) {
         const x = document.createElement('div'); x.innerHTML = htmlExtra(); const tx = x.textContent;
         check('Ficha de agilis nv 22: «Nv 22 · Guardián», «Faltan … XP», «Velocidad +24 %», «Espera −12 %», la secundaria de ALAS, las etapas y «Viento Cruzado · Líder»; la fila de alianza dice cómo conseguirla',
           /Nv 22/.test(t) && /Guardián/.test(t) && /Faltan \d+ XP para el nivel 23/.test(t) && /Velocidad \+24 %/.test(t) && /Espera −12 %/.test(t) && t.indexOf(TXT.sec_alas) >= 0 && /Maestro · Nivel 30/.test(t) && /Viento Cruzado · Líder · Bloqueada/.test(t) &&
-          /Viento Cruzado/.test(tx) && tx.indexOf(TXT.aliReqG) >= 0 && lineaHud({ especie: 'agilis', nivel: 22, poder: 'quiebro' }).etapa === 'Guardián', t.slice(0, 260) + ' | ' + tx.slice(0, 120)); }
+          /Viento Cruzado/.test(tx) && tx.indexOf(TXT.aliReqG) >= 0 && lineaHud({ especie: 'agilis', nivel: 22, poder: 'quiebro' }).etapa === 'Guardián', t.slice(0, 260) + ' | ' + tx.slice(0, 120));
+        const sig = f.querySelector('[data-v18-siguiente]'), logs = x.querySelector('[data-v18logros]');
+        const vacio = document.createElement('div');
+        P.cambiarEvo(e => { e.marcas = {}; });
+        vacio.innerHTML = htmlLogros();
+        P.cambiarEvo(e => { for (const h of hitos()) e.marcas[h[0]] = true; });
+        check('CG-83: la siguiente etapa sale con retrato y lo que falta, y los logros llevan imagen (si no hay, una frase, nunca una pantalla vacía)',
+          !!sig && !!sig.querySelector('img') && /Maestro/.test(sig.textContent) && /Nivel 30/.test(sig.textContent) && /Faltan \d+ XP/.test(sig.textContent) &&
+          !!logs && logs.querySelectorAll('img').length >= 1 && logs.textContent.trim().length > 4 &&
+          !!vacio.querySelector('img') && vacio.textContent.indexOf(TXT.guiaExplora) >= 0 && vacio.textContent.trim().length > 8,
+          (sig && sig.textContent || '') + ' | ' + (vacio.textContent || '').slice(0, 80)); }
       // 18. Avisos al jugar (no solo en la ficha): tarjeta de nivel en cada subida, «+N XP» pequeña al ganar XP explorando,
       // una tarjeta grande no la pisa una pequeña y, con el cómic encima, la tarjeta espera a que se cierre
       { reset(); quitarCarta(); prueba({ especie: 'vittata', xp: T(11) - 10 }); dar('vittata', 30, 'prueba');
