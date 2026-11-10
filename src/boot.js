@@ -186,6 +186,10 @@
       (window.AV_INTERIORES ? Promise.resolve() : AVE.assets.script('content/comun/interiores.js'))
         .then(() => cargarInteriores()).then(m => m.iniciar()).catch(e => console.warn('interiores', e));
     }
+    // CG-117: taller de Tuerca en k300. Solo con ?interiores=1. No toca interiores.js ni construir.js.
+    const cargarTaller = aDemanda('src/game/v18/taller_tuerca.js', 'AVTallerTuerca');
+    AV.tallerTuercaTest = o => cargarTaller().then(m => m.test(o));
+    if (/[?&]interiores=1\b/.test(location.search)) cargarTaller().then(m => m.preparar()).catch(e => console.warn('taller tuerca', e));
     // Mercadito del río (src/game/tienda.js). CG-92: no va en la descarga de antes de jugar. El botón se ve igual (Pausa y Mi personaje);
     // el script, las miniaturas y el saldo entran al abrirlo, al pescar, al empezar un hoyo o un reto, o si la partida ya tiene compras
     // (la ropa comprada tiene que estar puesta al entrar).
