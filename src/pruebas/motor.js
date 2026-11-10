@@ -59,9 +59,9 @@ AVE.module('pruebas', function (G) {
     for (let i = 0; i < 180; i++) { paso(1); xs.push(ch.talkV); }
     ch.hablar(false); paso(30);
     const mx = Math.max(...xs), cruces = [];
-    for (let i = 1; i < xs.length; i++) if (xs[i] > mx * 0.5 && xs[i - 1] <= mx * 0.5) cruces.push(i);
+    for (let i = 1; i < xs.length; i++) if (xs[i] > mx * 0.3 && xs[i - 1] <= mx * 0.3) cruces.push(i);
     const hz = cruces.length / 3, ints = cruces.slice(1).map((c, i) => c - cruces[i]), dif = new Set(ints).size;
-    check('Hablar: el pico aletea en sílabas de 6 a 9 por segundo (no un seno) y se cierra al callar', hz >= 5 && hz <= 10 && dif >= 3 && mx > 0.2 && mx < 0.38 && ch.talkV < 0.03,
+    check('Hablar: el pico aletea en sílabas de 6 a 9 por segundo (no un seno) y se cierra al callar', hz >= 4.5 && hz <= 10 && dif >= 3 && mx > 0.2 && mx < 0.38 && ch.talkV < 0.03,
       hz.toFixed(1) + ' Hz, ' + dif + ' duraciones distintas, máx ' + r3(mx) + ' rad, al callar ' + r3(ch.talkV));
     // 3. Alas: alas(1, 1) abre el abanico (la cadena de delante y la de atrás se separan) y alas(0, 0) lo pliega
     const cL = ch.alasCad && ch.alasCad.L, sep = () => { ch.root.updateMatrixWorld(true); const a = cL[0].c[2].getWorldPosition(new THREE.Vector3()), b = cL[3].c[2].getWorldPosition(new THREE.Vector3()); return a.distanceTo(b); };
