@@ -372,6 +372,25 @@ window.AVTienda = function (G) {
         for (const t of ['Tienes {} conchitas', 'Tienes 1 conchita', '{} conchitas', 'Te faltan {}', 'Comprar · {}', '{} piezas · {} conchitas en total', 'Comprar {} por {} conchitas', 'el Mercadito del río ({} conchitas)', 'Mercadito', 'Ponértela: {}', 'Esa pieza está en el Mercadito del río.']) ver(t);
         check('Inglés: todos los textos del Mercadito están en content/cap1/en.js', !falta.length, falta.slice(0, 5).join(' | '));
       } catch (e) { check('Inglés: se pudo leer content/cap1/en.js', false, e); }
+      // CG-74: la miniatura del traje azul es el modelo (túnica + emblema), la misma que Mi personaje
+      if (G.creador && G.creador.accessoryThumb && !G.actores.failed3D) {
+        const src = await G.creador.accessoryThumb('traje', '#1c6e8c');
+        const img = new Image();
+        await new Promise(r => { img.onload = img.onerror = r; img.src = src; });
+        const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+        const g = cv.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0, 64, 64);
+        const px = g.getImageData(0, 0, 64, 64).data;
+        let opacos = 0, azul = 0, oro = 0, verde = 0;
+        for (let i = 0; i < px.length; i += 4) {
+          if (px[i + 3] < 24) continue;
+          opacos++;
+          const r = px[i], gg = px[i + 1], b = px[i + 2];
+          if (b > r + 18 && b > gg && b > 45) azul++;
+          else if (r > 150 && gg > 100 && b < 110 && r > b + 30) oro++;
+          else if (gg > r + 12 && gg > b && gg > 50) verde++;
+        }
+        check('La miniatura del traje azul del Guardián muestra la túnica y el emblema', opacos > 350 && azul > opacos * 0.18 && oro > 8 && verde > 4, `opacos ${opacos} azul ${azul} oro ${oro} verde ${verde}`);
+      } else check('La miniatura del traje azul del Guardián muestra la túnica y el emblema', !G.actores.failed3D, 'sin WebGL');
       check('Sin errores de consola durante la prueba', !errores.length, errores.slice(0, 3).join(' | '));
     } catch (e) {
       check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
