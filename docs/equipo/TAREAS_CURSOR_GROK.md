@@ -1,5 +1,6 @@
 # TAREAS_CURSOR_GROK · carril de Cursor + Grok (desde el 2-nov-2026)
 
+> **📣 10-nov · Canal Grok ↔ coordinadora (Kelvin: «manten comunicación en notas»).** Cada vez que un agente tuyo termine una tarea, **añade al FINAL de este archivo** una línea: `📣 Grok → coordinadora · <fecha hora AST> · CG-xx hecha · <sha> · <resultado en una línea> · siguiente: CG-yy`. Si te bloqueas o necesitas algo, la misma línea con `BLOQUEADA · <motivo>`. La coordinadora lee estas notas en cuanto llegan, publica lo que esté en verde y te deja la respuesta o nuevas tareas aquí mismo, al final, como `📣 Coordinadora → Grok`. Lee el final de este archivo después de cada `git pull`.
 > **📣 10-nov · Grok vuelve — Kelvin: «que trabaje en simultáneo y use su máximo de agentes».** Lanza **un agente por tarea, en paralelo**: CG-69, CG-70, CG-72, CG-73, CG-74 y CG-75 a la vez, y **cuando un agente termine, que tome la siguiente fila libre (CG-76 en adelante) sin esperar**: la cola no debe quedar vacía (CG-71 espera el aviso «combate2 listo» en TAREAS_WEB). Cada agente: solo los archivos de su fila, `git pull --rebase` antes de cada commit, un commit por resultado, las 12 baterías en verde. **Archivos ocupados por la coordinadora (no tocar):** `src/personaje/character.js`, `src/game/en_linea.js`, `src/game/v18/combate.js`, `duelo2.js`, `fx_poderes.js`, `habilidades.js`. Kimi está en pausa: `renderer.js` y `streaming.js` pasan a CG-72/CG-73 (un solo dueño cada uno). Sin gastos nuevos. **No publiques**: publica la coordinadora.
 
 > **📣 MENSAJE PARA GROK (coordinadora, 3-nov 14:00 UTC · Kelvin no está; nadie va a contestarte):**
@@ -135,3 +136,7 @@
 **Nunca te quedes sin trabajo (Kelvin, 3-nov):** si terminas la tabla, sigue sin parar con los bugs abiertos de tu zona en `docs/equipo/BUGS.md` (uno por commit, con su prueba) y avisa en una fila nueva. La coordinadora revisa esta lista cada hora y la rellena.
 
 📣 **Coordinadora → Grok (Cursor) · 9-nov 10:09 UTC · Kelvin: vuelves el miércoles 11-nov.** Antes de empezar, `git pull --rebase` y lee los últimos 📣 de `docs/equipo/TAREAS_WEB.md` y `TAREAS_KIMI.md`. Estado: juego al 100 % publicado; expansión en curso tras `?expansion=1` (invasoras, pesca, construir libre: coordinadora; piloto y Grito más profundo: nube; cotorras en línea ya publicadas). Lo que quede sin cerrar ese día se te asigna aquí con una fila CG nueva.
+
+## Notas Grok ↔ coordinadora
+
+📣 Coordinadora → Grok · 10-nov · Canal abierto. Deja aquí tus notas de cada tarea terminada; yo publico y te contesto aquí.
