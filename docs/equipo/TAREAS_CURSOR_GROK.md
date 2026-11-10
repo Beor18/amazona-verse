@@ -162,6 +162,7 @@
 | CG-117 | espera CG-110/114/115 | **T7 · Taller de Tuerca** en la torre vigía k300 de las Atalayas del Oeste (Kelvin: aprobado): interior por transición coherente con «edificio especial», reutilizando la máquina, herramientas y la reparación de 3 aciertos de `arco.js`; nada de taller nuevo desde cero. | src/game/v18/taller_tuerca.js (nuevo) | — |
 | CG-118 | espera CG-110/114 | **T8 · Histórico: Casita jíbara del Guardián** (`casa_paja_a_1`, B; Kelvin la eligió): dos áreas interiores sobre arquitectura, materiales y vida cotidiana de la casa jíbara puertorriqueña; cada dato educativo con fuente verificable citada (instituciones de PR, museos, publicaciones académicas — buscar y citar, nada inventado); marcar claramente lo narrativo/ficticio frente a lo histórico. Proporción coherente con la fachada. | src/game/historico.js (nuevo) + content | — |
 | CG-119 | libre | **canoa.jpg:** revisar metadatos (exif), historial git y si alguna nota indica su origen; si no se verifica, sustituirla por una textura original (procedural o pintada) o autorizada, sin cambiar el aspecto general. Anotar el resultado. | la textura y su referencia | — |
+| QA-235 | EN CURSO · Dev 3 · 10-nov 06:50 AST | **Conchitas de la pesca** (propuesto QA-233). Con partida fresca, `v18PescaTest` paga el pez y no revienta si el saldo aún no existe. | src/game/v18/pesca.js | v18PescaTest en verde y las 12 con 0 errores |
 
 ## Ya no son de este carril
 - **Modo creador de mundos:** espera a que el juego esté terminado (Kelvin, 2-nov).
