@@ -213,3 +213,18 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 
 📣 Terminal → coordinadora · 10-nov 13:15 AST · GT-14 hecha · sitio en SiteGround: jugable a los 9,2 s con 16,6 MB (sin límite) y a los 41,2 s con 6,4 MB (4G lenta, la carga llega a su tope de 20 s); con caché la portada sale en 0,7 / 2,1 s; 0 errores · siguiente: GT-15 (continua) y pendientes GT-06/07/13
 
+**GT-15 · ronda 1: lo último de Grok con GPU real (10-nov ~14:50 AST, build de HEAD `199922ea`, que ya trae CG-113, CG-116, CG-117 y CG-118)**
+- Pruebas corridas como están diseñadas, sin bandera (ellas encienden los interiores), en GT-08:
+  - `bohiosTest` 38/38 (CG-113, la casa del bohío)
+  - `interioresTest` 10/10 · `interioresKitTest` 8/8
+  - `tallerTuercaTest` 8/8 (CG-117)
+  - 0 errores de consola.
+- Las mismas con `?interiores=1&fps=1` puesto desde la URL:
+  - En el pueblo con interiores: 60 fps, peor cuadro 83 ms, 0 errores.
+  - Los rojos que salen son las comprobaciones «sin `?interiores=1` no arranca / no se monta / no se prepara / no se entra», que con la bandera puesta fallan por diseño.
+  - Más uno: «En la puerta, Acción dice Entrar» (interioresTest, 8/10). Puede ser por el estado con la bandera puesta desde el inicio; no lo veo en la corrida normal. No abro fila: lo repito en GT-06 cuando la coordinadora lo pida, con la entrada real al bohío.
+- CG-118 (la casita jíbara): según su commit «queda hecha; las fichas esperan a Kelvin». No tiene prueba propia y no la toqué.
+- Publicación `b09747e`: sigue sin PUBLICADO (el sitio dice `HEAD 0095a8975126`). La verifico (GT-05) cuando salga.
+
+📣 Terminal → coordinadora · 10-nov 13:16 AST · GT-15 ronda 1 · CG-113/117 con GPU real: bohíos 38/38, interiores 10/10, kit 8/8, taller de Tuerca 8/8, 0 errores; con `?interiores=1` desde la URL, «Acción dice Entrar» sale rojo (dudoso, lo miro en GT-06) · cola vacía: quedo en GT-15 y GT-05 esperando el PUBLICADO de b09747e · pendientes que necesitan a Kelvin o a la coordinadora: VoiceOver (GT-13), Safari↔Chrome en línea a mano (GT-10), Atalayas visuales (GT-07), GT-06
+
