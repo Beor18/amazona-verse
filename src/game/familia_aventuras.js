@@ -92,6 +92,10 @@ window.AVFamiliaAventuras = function (G) {
   hud.id = 'fq-hud'; hud.hidden = true; hud.setAttribute('role', 'status');
   hud.innerHTML = '<span id="fq-hud-txt"></span><span class="fila"><button type="button" class="btn sm" id="fq-hud-ok"></button><button type="button" class="btn sm ghost" id="fq-hud-salir" aria-label="Dejar la aventura">✕</button></span>';
   document.body.appendChild(hud);
+  const cartel = document.createElement('div');
+  cartel.id = 'fq-turno'; cartel.hidden = true; cartel.setAttribute('role', 'status');
+  cartel.innerHTML = '<b></b><span></span>';
+  document.body.appendChild(cartel);
   const css = document.createElement('style');
   css.id = 'estilo-fq';
   css.textContent = '#fq{position:fixed;inset:0;z-index:46;display:grid;place-items:center;padding:16px;background:rgba(8,28,22,.6);container-type:inline-size;box-sizing:border-box}'
@@ -104,7 +108,13 @@ window.AVFamiliaAventuras = function (G) {
     + '#fq .tarjeta small{font:500 13px/1.25 sans-serif;opacity:.85}#fq .tarjeta .hecho{color:#1f7a2e;font-weight:800}'
     + '#fq .serie{font:800 22px/1.2 sans-serif;letter-spacing:.06em;margin:0 0 12px}#fq .cuento li{margin:0 0 6px}'
     + '#fq canvas.vineta,#fq img.vineta{display:block;width:100%;height:auto;margin:0 0 12px;border-radius:10px;background:#fff}'
-    + '#fq .pagina{max-width:420px;margin:0 auto 12px}'
+    + '#fq .pagina{max-width:420px;margin:0 auto 12px;padding:8px;border-radius:14px;background:#fffdf6;box-shadow:0 0 0 6px #f3e2b0,0 8px 0 #c9b48a}'
+    + '#fq p.fq-pista{animation:fqPista .45s ease}@keyframes fqPista{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}'
+    + '#fq-turno{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:47;pointer-events:none;text-align:center;color:#fff8ea;text-shadow:0 3px 0 #1c140c}'
+    + '#fq-turno[hidden]{display:none!important}#fq-turno b{display:block;font:800 64px/1 var(--font-display,sans-serif);animation:fqPop .4s ease}#fq-turno span{display:block;margin-top:6px;font:700 28px/1.2 sans-serif}'
+    + '@keyframes fqPop{from{transform:scale(.55);opacity:0}to{transform:none;opacity:1}}'
+    + '@media (prefers-reduced-motion:reduce){#fq p.fq-pista,#fq-turno b{animation:none}}'
+    + '@media (max-width:700px){#fq-turno b{font-size:44px}#fq-turno span{font-size:22px}}'
     + '@container (max-width:700px){#fq .caja{padding:14px}#fq h2{font-size:22px}#fq .tarjetas{grid-template-columns:1fr}#fq .fila .btn{flex:1 1 auto}}'
     + '#fq-hud{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translateX(-50%);z-index:45;display:flex;flex-wrap:wrap;align-items:center;gap:8px;max-width:min(560px,calc(100vw - 28px));box-sizing:border-box;padding:8px 10px;border-radius:14px;background:rgba(246,241,228,.95);color:#1c140c;font:700 16px/1.25 sans-serif;box-shadow:0 4px 0 #c9b48a}'
     + '#fq-hud .fila{display:flex;gap:8px}'
@@ -128,7 +138,9 @@ window.AVFamiliaAventuras = function (G) {
   function pantalla(titulo, ...nodos) {
     $('fq-titulo').textContent = titulo;
     const c = cuerpo(); c.innerHTML = '';
-    nodos.filter(Boolean).forEach(n => c.appendChild(n));
+    const vivos = nodos.filter(Boolean);
+    if (vivos[0] && vivos[0].tagName === 'P') vivos[0].classList.add('fq-pista');
+    vivos.forEach(n => c.appendChild(n));
     raiz.hidden = false; hud.hidden = true; abierto = true;
     const f = c.querySelector('button'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { /* */ } }
   }
@@ -138,6 +150,15 @@ window.AVFamiliaAventuras = function (G) {
     const b = $('fq-hud-ok'); b.hidden = !ok; b.textContent = ok || ''; b.onclick = fnOk || null;
   }
   const hudTexto = t => { $('fq-hud-txt').textContent = t; };
+  let cartelT = 0;
+  function teToca(n) {
+    const c = $('fq-turno'); if (!c) return;
+    c.querySelector('b').textContent = '¡Te toca!';
+    c.querySelector('span').textContent = quien(n);
+    c.hidden = false;
+    clearTimeout(cartelT);
+    cartelT = setTimeout(() => { c.hidden = true; }, 1400);
+  }
   $('fq-hud-salir').addEventListener('click', () => { soltar(); menu(); });
 
   // ---------- Menú ----------
@@ -211,7 +232,7 @@ window.AVFamiliaAventuras = function (G) {
     if (d <= r) {
       if (A.paso === 'ida') {
         A.paso = 'pasar';
-        mostrarHud(`¡Llegaste a ${A.destino.nombre}! Pasa el mando a ${quien(2)}.`, 'Ya tengo el mando', () => { A.paso = 'vuelta'; A.ultD = null; mostrarHud(`${quien(2)}: vuelve volando a la salida.`, null); });
+        mostrarHud(`¡Llegaste a ${A.destino.nombre}! Pasa el mando a ${quien(2)}.`, 'Ya tengo el mando', () => { A.paso = 'vuelta'; A.ultD = null; teToca(2); mostrarHud(`${quien(2)}: vuelve volando a la salida.`, null); });
       } else terminar('relevo', { lugar: A.destino.nombre, segundos: Math.round(A.t) });
       return;
     }
@@ -240,6 +261,7 @@ window.AVFamiliaAventuras = function (G) {
   }
   function espejoCopiar(aviso) {
     const A = actual, copia = A.ronda === 1 ? 2 : 1;
+    teToca(copia);
     A.paso = 'copiar'; A.resp = [];
     const pinta = (msg) => {
       pantalla(`Copia mi gesto · ronda ${A.ronda}`,
@@ -314,19 +336,19 @@ window.AVFamiliaAventuras = function (G) {
     asegurar('trucos', 'src/game/trucos.js', 'AVTrucos');
     pantalla('Trucos a dúo',
       texto(`Entre los dos, ${META_TRUCOS} trucos en el aire (toneles, loopings, barrenas…). ${quien(1)} empieza; cuando quiera, pasa el mando. Cada uno hace al menos uno.`),
-      fila(boton('¡A volar!', () => { A.paso = 'jugar'; duoHud(); }, '', 'fq-duo-ya'), boton('Volver', menu, 'ghost')));
+      fila(boton('¡A volar!', () => { A.paso = 'jugar'; teToca(1); duoHud(); }, '', 'fq-duo-ya'), boton('Volver', menu, 'ghost')));
   }
   function duoHud() {
     const A = actual, total = A.trucos[0] + A.trucos[1];
     const pasar = A.turno === 0 && A.trucos[0] > 0;
-    mostrarHud(`Trucos juntos: ${total}/${META_TRUCOS} · Turno: ${quien(A.turno + 1)}`, pasar ? `Pasar el mando a ${quien(2)}` : null, pasar ? () => { A.turno = 1; duoHud(); } : null);
+    mostrarHud(`Trucos juntos: ${total}/${META_TRUCOS} · Turno: ${quien(A.turno + 1)}`, pasar ? `Pasar el mando a ${quien(2)}` : null, pasar ? () => { A.turno = 1; teToca(2); duoHud(); } : null);
   }
   G.on('truco', () => {
     const A = actual; if (!A || A.id !== 'duo' || A.paso !== 'jugar') return;
     A.trucos[A.turno] += 1;
     const total = A.trucos[0] + A.trucos[1];
     if (A.turno === 1 && total >= META_TRUCOS) terminar('duo', { trucos: total, j1: A.trucos[0], j2: A.trucos[1] });
-    else if (A.turno === 0 && A.trucos[0] >= META_TRUCOS - 1) { A.turno = 1; duoHud(); hudTexto(`¡Qué racha! Ahora ${quien(2)}: falta ${META_TRUCOS - total}.`); }
+    else if (A.turno === 0 && A.trucos[0] >= META_TRUCOS - 1) { A.turno = 1; teToca(2); duoHud(); hudTexto(`¡Qué racha! Ahora ${quien(2)}: falta ${META_TRUCOS - total}.`); }
     else duoHud();
   });
 
@@ -363,7 +385,7 @@ window.AVFamiliaAventuras = function (G) {
     if (actual !== A) return null;
     if (!E) { pantalla('Escondite en equipo', texto('El escondite no está en este capítulo. Prueben otra aventura.'), fila(boton('Volver', menu))); return null; }
     A.sitios = E.empezar(); A.paso = 'jugar'; A.turno = 0; A.hallados = 0; A.t = 0;
-    esconditeHud();
+    teToca(1); esconditeHud();
     return A.sitios;
   }
   function esconditeHud(extra) {
@@ -378,6 +400,7 @@ window.AVFamiliaAventuras = function (G) {
       A.hallados = n;
       if (n >= A.sitios.length) { terminar('escondite', { segundos: Math.round(A.t) }); return; }
       A.turno = 1 - A.turno;
+      teToca(A.turno + 1);
       esconditeHud(`¡Encontrado! Pasa el mando.`);
     } else if (A.t > 125) {
       A.paso = 'fin';
@@ -693,11 +716,13 @@ window.AVFamiliaAventuras = function (G) {
 
       // 4. Trucos a dúo
       empezar('duo');
+      ok('Cada aventura abre con una pista corta', !!cuerpo().querySelector('p.fq-pista'));
       $('fq-duo-ya').click();
       G.emit('truco', 'tonel'); G.emit('truco', 'looping'); G.emit('truco', 'barrena');
       ok('Dúo: el contador es de los dos', /3\/6/.test(hud.textContent) && !$('fq-hud-ok').hidden, hud.textContent);
       $('fq-hud-ok').click();
       ok('Dúo: el mando pasa al jugador 2', actual.turno === 1 && /Jugador 2/.test(hud.textContent));
+      ok('Dúo: al pasar el mando sale «¡Te toca!» grande', $('fq-turno') && !$('fq-turno').hidden && $('fq-turno').querySelector('b').textContent === '¡Te toca!' && /Jugador 2/.test($('fq-turno').textContent));
       G.emit('truco', 'tonel'); G.emit('truco', 'tonel'); G.emit('truco', 'looping');
       ok('Dúo: 6 trucos entre los dos completan', hecha('duo') && estado.hechas.duo.datos.j1 === 3 && estado.hechas.duo.datos.j2 === 3);
 
