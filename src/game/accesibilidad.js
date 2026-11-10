@@ -1216,6 +1216,8 @@ AVE.module('accesibilidad', function (G) {
         finally { if (!ya) { try { G.construir.salir(); } catch (e) { /* ya fuera */ } } }
         check('Construir: cada botón de la barra tiene nombre, mide el foco visible y respeta reducir movimiento', okC, detC);
       }
+      const hojaInv = document.getElementById('invasoras-css');
+      if (hojaInv) check('Patrulla: la fuente del Diario muestra el foco y reducir movimiento no la desplaza', /fauna-fuente a:focus-visible/.test(hojaInv.textContent) && /prefers-reduced-motion/.test(hojaInv.textContent) && !/translate/.test(hojaInv.textContent.slice(hojaInv.textContent.indexOf('prefers-reduced-motion'))));
     } catch (e) {
       check('Sin excepciones', false, e && (e.stack || e.message)); // QA-97: con la pila, para ver dónde falla cuando la máquina va cargada
     } finally {

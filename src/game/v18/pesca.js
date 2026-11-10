@@ -646,16 +646,16 @@ window.AVV18Pesca = function (G) {
     const b = (a, txt, tecla, extra) => `<button type="button" data-a="${a}"${extra || ''}><span data-k="t-${a}">${txt}</span>${tecla ? k(tecla) : ''}</button>`;
     hud.el.innerHTML = `<div class="vp-flash" data-k="flash"></div><div class="vp-caja"><div class="vp-info"><span data-k="tiempo"></span><span data-k="peces"></span><span data-k="puntos"></span><span data-k="record"></span></div>` +
       `<div data-k="juego"><div data-k="cargaW"><div class="vp-barra"><b data-k="carga"></b></div><div class="vp-et">${TXT.fuerza}</div></div>` +
-      `<div data-k="tiraW" hidden><div class="vp-tira"><div class="vp-zona" data-k="zona"></div><div class="vp-marca" data-k="marca"></div></div><div class="vp-prog"><b data-k="prog"></b></div></div>` +
-      `<div class="vp-bot">${b('izq', '◀', '←', ` aria-label="${TXT.izq}"`)}${b('accion', TXT.lanzar, 'Espacio', ' class="vp-principal"')}${b('der', '▶', '→', ` aria-label="${TXT.der}"`)}</div>` +
-      `<div class="vp-bot2" style="grid-template-columns:1fr">${b('salir', TXT.salir, 'Esc')}</div><div class="vp-guia" data-k="guia" role="status"></div></div>` +
+      `<div data-k="tiraW" hidden><div class="vp-tira"><div class="vp-zona" data-k="zona"></div><div class="vp-marca" data-k="marca"></div></div><div class="vp-prog" data-k="metro" role="meter" aria-label="${TXT.pTira}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><b data-k="prog"></b></div></div>` +
+      `<div class="vp-bot">${b('izq', '◀', '←', ` aria-label="${TXT.izq}" aria-keyshortcuts="ArrowLeft"`)}${b('accion', TXT.lanzar, 'Espacio', ` class="vp-principal" aria-label="${TXT.lanzar}" aria-keyshortcuts="Space"`)}${b('der', '▶', '→', ` aria-label="${TXT.der}" aria-keyshortcuts="ArrowRight"`)}</div>` +
+      `<div class="vp-bot2" style="grid-template-columns:1fr">${b('salir', TXT.salir, 'Esc', ` aria-label="${TXT.salir}" aria-keyshortcuts="Escape"`)}</div><div class="vp-guia" data-k="guia" role="status"></div></div>` +
       `<div class="vp-ficha" data-k="ficha" role="status" hidden><p class="vp-t">${TXT.foto}</p><p class="vp-n" data-k="fn"></p><p class="vp-c" data-k="fc" data-no-tr></p>` +
       `<p><span class="vp-chapa" data-k="fchapa"></span></p><p class="vp-d" data-k="fd"></p><p class="vp-f" data-k="ff" data-no-tr></p><p class="vp-k" data-k="fk"></p>` +
-      `<div class="vp-bot2" style="grid-template-columns:1fr">${b('soltar', TXT.soltarPez, 'Espacio', ' class="vp-principal"')}</div></div>` +
+      `<div class="vp-bot2" style="grid-template-columns:1fr">${b('soltar', TXT.soltarPez, 'Espacio', ` class="vp-principal" aria-label="${TXT.soltarPez}" aria-keyshortcuts="Space"`)}</div></div>` +
       `<div class="vp-fin" data-k="fin" role="status" hidden><p class="vp-g" data-k="fin1"></p><p data-k="fin2"></p><p class="vp-nuevo" data-k="fin3"></p><p class="vp-et" data-k="fin4">${TXT.album}</p><div class="vp-alb" data-k="alb"></div>` +
       `<p class="vp-conchas" data-k="fin5" hidden></p>` +
-      `<div class="vp-bot2">${b('otra', TXT.otra, 'R')}<button type="button" data-a="salir"><span data-k="t-bsalir">${TXT.salir}</span>${k('Esc')}</button></div>` +
-      (tienda() ? `<div class="vp-bot2" style="grid-template-columns:1fr">${b('tienda', TXT.tienda, 'T', ` aria-label="${TXT.tiendaL}" class="vp-tienda"`)}</div>` : '') + '</div></div>';
+      `<div class="vp-bot2">${b('otra', TXT.otra, 'R', ` aria-label="${TXT.otra}" aria-keyshortcuts="R"`)}<button type="button" data-a="salir" aria-label="${TXT.salir}" aria-keyshortcuts="Escape"><span data-k="t-bsalir">${TXT.salir}</span>${k('Esc')}</button></div>` +
+      (tienda() ? `<div class="vp-bot2" style="grid-template-columns:1fr">${b('tienda', TXT.tienda, 'T', ` aria-label="${TXT.tiendaL}" aria-keyshortcuts="T" class="vp-tienda"`)}</div>` : '') + '</div></div>';
     for (const kq in hud.qs) delete hud.qs[kq];
     hud.lleno = true; PK.firma = '';
   }
@@ -678,7 +678,10 @@ window.AVV18Pesca = function (G) {
     if (foto && A.pez) {
       const p = A.pez;
       texto('fn', p.nombre); texto('fc', p.cient); texto('fchapa', p.invasora ? TXT.invasora : TXT.nativo); hud.q('fchapa').classList.toggle('inv', !!p.invasora);
-      texto('fd', p.dato); texto('ff', fuenteTxt(p.fuente)); texto('fk', p.invasora ? TXT.invasoraNo : TXT.consejo); texto('t-soltar', p.invasora ? TXT.reportar : TXT.soltarPez);
+      texto('fd', p.dato); texto('ff', fuenteTxt(p.fuente)); texto('fk', p.invasora ? TXT.invasoraNo : TXT.consejo);
+      const verboSoltar = p.invasora ? TXT.reportar : TXT.soltarPez;
+      texto('t-soltar', verboSoltar);
+      const bSoltar = hud.el.querySelector('button[data-a="soltar"]'); if (bSoltar) bSoltar.setAttribute('aria-label', verboSoltar);
     }
     if (fin && A.resultado) {
       const r = A.resultado;
@@ -686,7 +689,9 @@ window.AVV18Pesca = function (G) {
       hud.q('alb').innerHTML = ''; const ks = Object.keys(r.album);
       if (!ks.length) { const s = document.createElement('span'); s.textContent = TXT.nada; hud.q('alb').appendChild(s); }
       for (const id of ks) { const s = document.createElement('span'), n = document.createElement('b'), c = document.createElement('i'); n.textContent = PEZ[id].nombre; c.textContent = ' × ' + r.album[id]; c.setAttribute('data-no-tr', ''); s.append(n, c); hud.q('alb').appendChild(s); }
-      texto('t-bsalir', A.desdeMenu ? TXT.menu : TXT.salir);
+      const nomSalir = A.desdeMenu ? TXT.menu : TXT.salir;
+      texto('t-bsalir', nomSalir);
+      const bFin = hud.el.querySelector('[data-k="fin"] button[data-a="salir"]'); if (bFin) bFin.setAttribute('aria-label', nomSalir);
       const T = tienda(), f5 = hud.q('fin5'); if (f5) { f5.hidden = !T; if (T) texto('fin5', finConchas(r.conchitas || 0, T.saldo())); }
     }
     enfocar(foto ? 'soltar' : fin ? 'otra' : 'accion');
@@ -710,10 +715,13 @@ window.AVV18Pesca = function (G) {
     if (tira) {
       const z = hud.q('zona'); z.style.left = ((A.zona - A.ancho / 2) * 100).toFixed(1) + '%'; z.style.width = (A.ancho * 100).toFixed(1) + '%';
       z.classList.toggle('dentro', Math.abs(A.marca - A.zona) <= A.ancho / 2);
-      hud.q('marca').style.left = (A.marca * 100).toFixed(1) + '%'; hud.q('prog').style.width = (Math.max(0, Math.min(1, A.prog)) * 100).toFixed(1) + '%';
+      hud.q('marca').style.left = (A.marca * 100).toFixed(1) + '%';
+      const avance = Math.max(0, Math.min(1, A.prog));
+      hud.q('prog').style.width = (avance * 100).toFixed(1) + '%';
+      const metro = hud.q('metro'); if (metro) metro.setAttribute('aria-valuenow', String(Math.round(avance * 100)));
     } else hud.q('carga').style.width = (A.carga * 100).toFixed(1) + '%';
     const verbo = verboPrincipal(); texto('t-accion', verbo);
-    const pr = hud.el.querySelector('button[data-a="accion"]'); if (pr) pr.classList.toggle('pica', A.fase === 'pica');
+    const pr = hud.el.querySelector('button[data-a="accion"]'); if (pr) { pr.classList.toggle('pica', A.fase === 'pica'); if (pr.getAttribute('aria-label') !== verbo) pr.setAttribute('aria-label', verbo); }
     const apunta = A.fase === 'listo' || A.fase === 'carga';
     for (const a of ['izq', 'der']) { const bb = hud.el.querySelector('button[data-a="' + a + '"]'); if (bb) bb.style.visibility = apunta ? '' : 'hidden'; }
     if (forzar || !A.pistaTxt) { if (A.fase === 'listo' && (!A.pistaTxt || forzar && ![TXT.tierra, TXT.escapo, TXT.seFue].includes(A.pistaTxt))) A.pistaTxt = tt ? TXT.guiaT : TXT.guia; texto('guia', A.pistaTxt || ''); }
@@ -786,6 +794,8 @@ window.AVV18Pesca = function (G) {
       const empezo = forzar ? iniciar({ forzar: true }) : irYJugar();
       check('Empieza: Vittata en el muelle, HUD de la pesca, 2:30 de ronda y controles propios', empezo && A.fase === 'listo' && A.tiempo === RONDA && hud && !hud.el.hidden && document.body.classList.contains('v18-pesca-on') &&
         G.interaccion.modo === modo && Math.hypot(S.pos.x - SITIO.x, S.pos.z - SITIO.z) < 0.05 && P.g.visible && toasts.includes(TXT.empieza), forzar ? 'forzado (había un diálogo o tarjeta abiertos)' : '');
+      const botonesP = [...hud.el.querySelectorAll('button')].filter(b => b.getClientRects().length), hojaP = (document.getElementById('v18-pesca-css') || {}).textContent || '';
+      check('Cada botón visible tiene nombre, el foco se ve y la barra de recoger se anuncia', botonesP.length >= 3 && botonesP.every(b => (b.getAttribute('aria-label') || '').length > 1) && /:focus-visible/.test(hojaP) && /prefers-reduced-motion/.test(hojaP) && hud.q('metro').getAttribute('role') === 'meter' && hud.q('metro').getAttribute('aria-label') === TXT.pTira, botonesP.map(b => b.getAttribute('aria-label')).join(','));
       for (let k = 0; k < 100 && !AMIGOS.chispa && !barato(); k++) await new Promise(r => setTimeout(r, 100)); // el .glb de Chispa (caché de npc.js)
       { const ig = AMIGOS.iguaca, ch = AMIGOS.chispa, sit = amigosSitio();
         check('Amigos en la orilla: Iguaca (sprite del cap. 1) y Chispa (su modelo, en Idle) junto a Vittata, en tierra seca; en «bajo», solo Iguaca',

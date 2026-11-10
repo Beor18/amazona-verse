@@ -510,6 +510,7 @@
         '.inv-album .fauna-tarjeta{display:flex;gap:.6em;align-items:flex-start;padding:.45em .55em;border-radius:10px;background:rgba(255,255,255,.07)}' +
         '.inv-album .fauna-tarjeta svg{flex:none}.inv-album .fauna-tarjeta span{display:flex;flex-direction:column;gap:.15em;min-width:0}' +
         '.inv-album small{opacity:.9;line-height:1.35}.inv-album i{opacity:.8;font-size:.9em}.inv-album .fauna-fuente a{color:inherit;text-decoration:underline;word-break:break-word}' +
+        '.inv-album .fauna-fuente a:focus-visible{outline:3px solid #ffe066;outline-offset:2px}' +
         '.inv-album .fauna-falta{opacity:.6}.inv-intro,.inv-nota{display:block;opacity:.85;line-height:1.35;margin:.2em 0 .5em}' +
         '#inv-cuenta{position:fixed;left:max(12px,env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + 78px);z-index:var(--z-hud,5);' +
         'min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:999px;background:#243a28;color:#f4ffe8;border:2px solid #d7e7a8;' +
@@ -648,6 +649,8 @@
           const div = document.createElement('div'); div.innerHTML = htmlAlbum();
           const tarjetas = Array.from(div.querySelectorAll('.inv-tarjeta'));
           ok('Diario: 4 fichas con «Fuente» y enlace https', tarjetas.length === 4 && tarjetas.every(t => /Fuente/.test(t.textContent) && t.querySelector('a[href^="https://"]')) && /\(4\/4\)/.test(div.textContent));
+        const hojaI = (document.getElementById('invasoras-css') || {}).textContent || '';
+        ok('Las fuentes se pueden enfocar y reducir movimiento no desplaza el reporte', [...div.querySelectorAll('a')].length === 4 && [...div.querySelectorAll('a')].every(a => a.tabIndex >= 0) && /fauna-fuente a:focus-visible/.test(hojaI) && /prefers-reduced-motion/.test(hojaI) && !/translate/.test(hojaI.slice(hojaI.indexOf('prefers-reduced-motion'))));
           ok('La sección está registrada en el Diario', !!(G.diario && G.diario.seccion));
           if (G.aula && G.aula.aj) {
             G.aula.aj.idioma = 'en'; div.innerHTML = htmlAlbum();
