@@ -183,6 +183,7 @@ window.AVTienda = function (G) {
       '#tienda .tn-cat[aria-pressed="true"]{box-shadow:inset 0 0 0 3px #1f7a4a}' +
       '#tienda .tn-acc{display:flex;flex-direction:column;gap:6px;min-width:0}' +
       '#tienda li.tn-vista{outline:3px solid #3d8fb0}' +
+      '#tienda button:focus-visible{outline:3px solid #1f7a4a;outline-offset:2px}' +
       '@keyframes tn-pop{0%{transform:scale(.97)}45%{transform:scale(1.03)}100%{transform:scale(1)}}' +
       '#tienda li.tn-nueva{animation:tn-pop .5s var(--ease-pop,ease);outline:3px solid #e8c32a}' +
       '@media (prefers-reduced-motion:reduce){#tienda li.tn-nueva{animation:none}}' +
@@ -227,20 +228,20 @@ window.AVTienda = function (G) {
     let ropa = '';
     for (const c in conj) {
       const l = conj[c], total = l.reduce((s, it) => s + it.precio, 0), todas = l.every(it => e.compras.includes(it.id)), puesto = todas && l.every(puesta);
-      const boton = todas && !puesto ? `<button class="btn secondary tn-b" type="button" data-tn="conjunto" data-id="${c}">${esc(TXT.ponerConj)}</button>` : '';
+      const boton = todas && !puesto ? `<button class="btn secondary tn-b" type="button" data-tn="conjunto" data-id="${c}" aria-label="${esc(TXT.ponerConj)}">${esc(TXT.ponerConj)}</button>` : '';
       ropa += `<p class="tn-sub"><span><span>${esc(CONJUNTO[c] || c)}</span> <small>${esc(conjuntoTxt(l.length, total))}</small></span>${boton}</p><ul>${l.map(it => filaItem(it, e)).join('')}</ul>`;
     }
     if (sueltas.length) ropa += `<p class="tn-sub"><span>${esc(TXT.otras)}</span></p><ul>${sueltas.map(it => filaItem(it, e)).join('')}</ul>`;
     const conConstruir = G.CONSTRUIR !== false && !!G.construir;
     const piezas = conConstruir ? `<ul>${ITEMS.filter(it => it.tipo === 'construir').map(it => filaItem(it, e)).join('')}</ul>` : `<p class="tn-nota">${esc(TXT.sinPiezas)}</p>`;
-    const pescar = origen !== 'pesca' && G.PESCA !== false && G.pescaBotonPausa ? `<button class="btn" type="button" data-tn="pescar">${esc(TXT.pescar)}</button>` : '';
-    const cats = `<div class="tn-cats" role="tablist"><button class="btn secondary tn-cat" type="button" data-tn="cat" data-id="ropa" aria-pressed="${cat === 'ropa'}">${esc(TXT.ropa)}</button><button class="btn secondary tn-cat" type="button" data-tn="cat" data-id="piezas" aria-pressed="${cat === 'piezas'}">${esc(TXT.piezas)}</button></div>`;
+    const pescar = origen !== 'pesca' && G.PESCA !== false && G.pescaBotonPausa ? `<button class="btn" type="button" data-tn="pescar" aria-label="${esc(TXT.pescar)}">${esc(TXT.pescar)}</button>` : '';
+    const cats = `<div class="tn-cats" role="tablist" aria-label="${esc(TXT.titulo)}"><button class="btn secondary tn-cat" type="button" role="tab" data-tn="cat" data-id="ropa" aria-controls="tn-ropa" aria-pressed="${cat === 'ropa'}" aria-label="${esc(TXT.ropa)}">${esc(TXT.ropa)}</button><button class="btn secondary tn-cat" type="button" role="tab" data-tn="cat" data-id="piezas" aria-controls="tn-piezas" aria-pressed="${cat === 'piezas'}" aria-label="${esc(TXT.piezas)}">${esc(TXT.piezas)}</button></div>`;
     const aviso = msgFalta != null ? `<p class="tn-msg" role="status" aria-live="polite">${faltanHtml(msgFalta)}</p>` : `<p class="tn-msg" role="status" aria-live="polite">${esc(msg)}</p>`;
     return `<div id="tienda" data-origen="${esc(origen)}"><h2>${esc(TXT.titulo)}</h2>` +
       `<p class="tn-saldo" data-tn-saldo>${CONCHA}<span>${esc(tienesTxt(e.conchitas))}</span></p><p class="tn-nota">${esc(TXT.nota)}</p>` +
       cats + `<h3 id="tn-ropa">${esc(TXT.ropa)}</h3>${ropa}<h3 id="tn-piezas">${esc(TXT.piezas)}</h3>${piezas}` +
       aviso +
-      `<div class="tn-pie">${pescar}<button class="btn ghost" type="button" data-tn="cerrar">${esc(TXT.cerrar)}</button></div></div>`;
+      `<div class="tn-pie">${pescar}<button class="btn ghost" type="button" data-tn="cerrar" aria-label="${esc(TXT.cerrar)}">${esc(TXT.cerrar)}</button></div></div>`;
   }
   // Miniaturas reales de la ropa (el mismo render que Mi personaje, G.creador.accessoryThumb); si no hay WebGL, queda el color
   async function miniaturas() {
@@ -333,6 +334,14 @@ window.AVTienda = function (G) {
   // Otra tarjeta que pisa la del Mercadito (showCard de otro módulo) también la cierra
   const cardEl = $('card');
   if (cardEl) {
+    cardEl.addEventListener('keydown', ev => {
+      if (!abierta() || (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight')) return;
+      const b = ev.target.closest && ev.target.closest('[data-tn="cat"]'); if (!b) return;
+      ev.preventDefault();
+      const otro = b.dataset.id === 'piezas' ? 'ropa' : 'piezas';
+      const n = $('tienda') && $('tienda').querySelector(`[data-tn="cat"][data-id="${otro}"]`);
+      if (n) { n.click(); try { n.focus({ preventScroll: true }); } catch (e) { /* sin foco */ } }
+    });
     cardEl.addEventListener('click', ev => {
       if (!abierta()) return;
       const b = ev.target.closest && ev.target.closest('[data-tn]'); if (!b) return;
@@ -383,7 +392,7 @@ window.AVTienda = function (G) {
     if (grid && !$('b-tienda')) {
       const b = document.createElement('button'); b.className = 'btn tile'; b.id = 'b-tienda'; b.type = 'button';
       b.dataset.icon = 'tienda'; b.style.setProperty('--icon', ICONO); b.setAttribute('popovertarget', 'pause'); b.setAttribute('popovertargetaction', 'hide');
-      b.textContent = 'Mercadito';
+      b.textContent = 'Mercadito'; b.setAttribute('aria-label', 'Mercadito');
       b.addEventListener('click', () => setTimeout(() => abrir('pausa'), 0));
       const ref = $('b-save'); grid.insertBefore(b, ref && ref.parentNode === grid ? ref : null);
     }
@@ -477,6 +486,11 @@ window.AVTienda = function (G) {
       await espera(50);
       const bRopa = $('tienda').querySelector('[data-tn="cat"][data-id="ropa"]'), bPie = $('tienda').querySelector('[data-tn="cat"][data-id="piezas"]');
       check('Categorías claras: Ropa y Piezas', !!bRopa && !!bPie && bRopa.textContent.trim() === TXT.ropa && bPie.textContent.trim() === TXT.piezas && bRopa.getAttribute('aria-pressed') === 'true');
+      const hojaT = (document.getElementById('tn-estilo') || {}).textContent || '';
+      const noms = [...$('tienda').querySelectorAll('button')].filter(b => !((b.getAttribute('aria-label') || b.textContent || '').trim()));
+      check('Cada botón tiene nombre, el foco se ve y reducir movimiento apaga la animación', !noms.length && /button:focus-visible/.test(hojaT) && /prefers-reduced-motion/.test(hojaT), noms.map(b => b.dataset.tn).join(','));
+      bPie.focus(); bPie.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      check('Con el teclado, la flecha cambia de Piezas a Ropa', document.activeElement === bRopa && bRopa.getAttribute('aria-pressed') === 'true' && bPie.getAttribute('aria-pressed') === 'false');
       const bPro = $('tienda').querySelector('[data-tn="probar"][data-id="sombrero_rio"]');
       check('La ropa sin comprar tiene «Probar»', !!bPro && bPro.textContent.trim() === 'Probar', bPro ? bPro.textContent : 'sin botón');
       if (bPro) bPro.click();
