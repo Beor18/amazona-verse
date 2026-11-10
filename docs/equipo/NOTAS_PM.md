@@ -2,13 +2,13 @@
 
 ## TRASPASO
 
-### Dev 2 · 10-nov 06:20 AST · CG-111 en curso
-- **Tarea:** kit modular de interior. Fila EN CURSO. QA-230 ya está en `1289a139`.
-- **Commit de código:** todavía no.
-- **Archivos:** `src/game/interiores_kit.js` (nuevo) y la línea mínima en `src/boot.js` para `AV.interioresKitTest`. No toco `streaming.js`, `interiores.js` (CG-110, Dev 1), el modelo de Vittata ni textos educativos.
-- **Qué falta:** piezas procedurales (pared, esquina, piso, techo, puerta, ventana, estante, vitrina), una sala de prueba bajo el presupuesto, y que sin `?interiores=1` no se encienda en el mundo.
-- **Cómo probarlo:** `AV.interioresKitTest()`.
-- **Lo confirma:** interioresKitTest y las 12 baterías, 0 errores de consola.
+### Dev 2 · 10-nov 06:40 AST · CG-111 hecha
+- **Tarea:** kit modular de interior. Cerrada.
+- **Commit:** `4bbc4b09` (mismo código que `0efc6a63`, el de la build). EN CURSO fue `76c64624`. QA-230 está en `1289a139`.
+- **Archivos:** `src/game/interiores_kit.js`, cuatro líneas en `src/boot.js`. No toqué `streaming.js`, `interiores.js`, el modelo de Vittata ni textos educativos.
+- **Qué falta:** nada de esta tarea. No hay modelos nuevos: la cáscara es procedural y el bohío amueblado sigue siendo `bohio_interior.glb`. Sin `?interiores=1` no entra en el mundo.
+- **Cómo probarlo:** `AV.interioresKitTest()`. Una sala de 8 mallas y menos de 12 mil triángulos.
+- **Lo confirma:** interioresKitTest 8/8. Build `cg-111-0efc6a6`: las 12 en verde, 0 errores y 0 avisos de consola.
 
 ### Dev 2 · 10-nov 06:15 AST · QA-230 para Kimi
 - **Tarea:** anotar el aviso de streaming. Sin código.
