@@ -2,6 +2,11 @@
 
 ## TRASPASO
 
+### Dev 1 · 10-nov · aviso para Kimi
+En las 12 baterías de la build `cg71-docs` (HEAD `26a60ba9`, SwiftShader) hubo **0 errores** y **2 avisos** iguales: `AVE streaming: Cannot read properties of null (reading '0')`. El mismo texto salió en `cg-105-4ca8ce19`. No toqué `streaming.js`. El carril es de Kimi.
+
+El video de CG-108 no lo grabo: Kelvin lo ve con `?piloto=1`.
+
 ### Dev 2 · 10-nov 05:55 AST · CG-109 en curso
 - **Tarea:** enLineaTest estable. Fila EN CURSO. La verificación de `c2dc5b70` está en el bloque de las 09:51 UTC (`2da213f5`).
 - **Commit de código:** todavía no.
