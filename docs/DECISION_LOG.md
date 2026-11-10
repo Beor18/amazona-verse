@@ -511,3 +511,5 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
 2026-11-10 · [KELVIN] «No hay más créditos de Kimi hasta nuevo aviso; no voy a gastar más dinero en este juego.» Kimi 1–4 en pausa. Nada de gastos nuevos (servicios, créditos, compras); seguimos solo con lo que ya está pagado.
 2026-11-10 · [KELVIN] Mercadito del río aprobado («Sí apruebo la tienda»), con sus 6 piezas nuevas de Construir.
 2026-11-10 · [KELVIN] Pausa del cierre 1.0: Amazona Combat Animation 2.0 es prioridad (cotorras de duelo rígidas, sin pico, ataques sin energía). Sin contenido nuevo.
+
+2026-11-10 · [KELVIN] Directiva V18.4 «Edificios vivos, interiores explorables y construcción modular» (PDF de Kelvin, resumen en docs/equipo/V18_4_EDIFICIOS_VIVOS.md): no ampliar el mapa; reutilizar edificios, texturas, piezas y sistemas existentes; secuencia inventario → un edificio funcional → editor y persistencia → tres pilotos (Histórico, Taller de Tuerca, Casa editable) → validación; sin cuentas ni servicios remotos nuevos; no prometer 30 FPS en todo Chromebook; duelo y optimización escolar siguen en paralelo.
