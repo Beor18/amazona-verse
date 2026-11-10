@@ -140,7 +140,7 @@
 | CG-95 | EN CURSO · Grok · 10-nov 00:20 AST | **«Hay una versión nueva»:** cuando se publica, el juego abierto avisa amable «Hay novedades: toca para actualizar» (service worker), sin perder la partida; así Kelvin no tiene que cerrar la pestaña. Probar el cambio de versión en local. | sw.js, src/boot.js (solo el aviso) | — |
 | CG-96 | EN CURSO · Grok · 9-nov 23:58 AST | **Cómic con lo nuevo:** plantillas/pegatinas de pesca, Construir y Patrulla para las viñetas del cómic; mismas reglas (local, sin subir). comicTest en verde. | módulos del cómic (src/game/comic* ) | — |
 | CG-97 | EN CURSO · Grok · 9-nov 23:58 AST | **Minijuegos V18 con chispa:** Maestro Moon, sapo, serpiente, Guardián, carreras de Chispa: pistas en 20 s, celebración clara al ganar, sin pantallas de espera; balance igual. Pruebas V18 de cada uno en verde. | src/game/v18/moon.js, sapo.js, serpiente.js, guardian.js, chispa.js, descubrir.js | — |
-| CG-98 | EN CURSO · Grok · 10-nov 00:08 AST | **Criadero y huevos más claros:** qué hacer en cada paso, celebración al nacer, nada de pantallas vacías. criaderoTest en verde. | módulos del criadero | — |
+| CG-98 | hecha · 2b3ff695 · sin cápsula elegida el nido dice qué tocar; una por ganar explica cómo se consigue; lista para nacer pide ver la eclosión. criaderoTest 55/55. Las 12 en verde en cg-98-2b3ff695, 0 errores de consola. | **Criadero y huevos más claros:** qué hacer en cada paso, celebración al nacer, nada de pantallas vacías. criaderoTest en verde. | módulos del criadero | — |
 
 ## Ya no son de este carril
 - **Modo creador de mundos:** espera a que el juego esté terminado (Kelvin, 2-nov).
@@ -183,3 +183,4 @@
 📣 Grok → coordinadora · 10-nov 00:07 AST · CG-90 a medias · 7195a1e8 · Construir, pesca, Patrulla y Mercadito se leen con el teclado; falta cotorras en línea (en_linea.js de la coordinadora) · siguiente: CG-98
 📣 Grok → coordinadora · 10-nov 00:08 AST · CG-94 hecha · 5c83794a · la pausa agrupa Jugar, Mi cotorra y Opciones; Pesca, Mercadito y la copia caen en su grupo. Las 12 en verde en cg-94-f42f2ff5 (mismo parche), 0 errores de consola · siguiente: CG-95 cuando CG-92 suelte sw.js y boot.js
 📣 Grok → coordinadora · 10-nov 00:11 AST · CG-92 hecha · 4ab3867c · la descarga inicial pasa de 22,93 a 22,89 MB; el Mercadito espera a abrirse y los modos que no se ven no entran al primer toque; la vista sigue en 118 llamadas · siguiente: CG-95
+📣 Grok → coordinadora · 10-nov 00:18 AST · CG-98 hecha · 2b3ff695 · el criadero dice el siguiente paso y una cápsula por ganar no deja la ficha vacía; criaderoTest 55/55 y las 12 en verde · siguiente: ninguna libre (CG-95, CG-96 y CG-97 en curso)
