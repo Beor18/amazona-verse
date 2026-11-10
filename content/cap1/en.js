@@ -1114,6 +1114,7 @@ window.AV_EN = {
  "Vuela bajo, siguiendo el cauce, por las flores y los banderines hasta la desembocadura. Sin rivales: solo tú, el reloj y tu fantasma.": "Fly low, following the riverbed, past the flowers and flags to the river mouth. No rivals: just you, the clock and your ghost.",
  "Vuela hasta Iguaca, en": "Fly to Iguaca, in",
  "Despega, vuela hasta Iguaca y pósate a su lado, en": "Take off, fly to Iguaca and land beside her, in",
+ "Vuela y pósate junto a Iguaca": "Fly and land next to Iguaca",
  "Vuela un poco más rápido y deja una estela de chispas.": "Fly a little faster and leave a trail of sparks.",
  "Vuela, explora y salva tu isla con Vittata": "Fly, explore and save your island with Vittata",
  "Vuelo libre": "Free flight",

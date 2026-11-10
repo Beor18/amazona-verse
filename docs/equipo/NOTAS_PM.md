@@ -56,6 +56,16 @@
 4. **No toquéis** `src/engine/renderer.js` (en arreglo en la nube), `streaming.js`, `vegetacion.js`, `terreno.js`, `look.js` (Kimi), `src/game/ciudad_viva.js` ni `album.js` (nube).
 5. Las 12 baterías en verde antes de cada push. No esperéis a Kelvin en lo técnico: preguntad aquí.
 
+## TRASPASO
+
+### Dev 3 · CG-105
+- Tarea: primeros 10 minutos del capítulo 1. EN CURSO en `34ce4680`.
+- Código: `content/cap1/historia.js` (la copa acepta un planeo a 2 m y sienta a Vittata), `content/cap1/en.js` (el objetivo corto en inglés), `content/cap1/pruebas.js` (el caso). El guion y las fichas educativas no se tocan.
+- Antes: playtest CG-58, paso de Iguaca 39,9 s y 6 intentos sin posarse (ventana ±1,6 m). Después: Acción vale entre −0,8 m y +2,8 m de la copa, a menos de 2,6 m en horizontal, y un acercamiento la sienta.
+- Probar: niño nuevo, saltar intro, volar a la copa y pulsar Acción un poco por encima de Iguaca. Desde el suelo sigue sin poder hablarle.
+- Lo confirma: missionTest (caso «CG-105 · a 2 m sobre la copa») y e2eTest 4.2. Las 12 baterías y 0 errores de consola.
+- Falta: correr esas pruebas y marcar la fila hecha. CG-107 es de Dev 1 (`src/game/invasoras.js`): no la toco.
+
 ## Para la coordinadora (del PM o el Dev)
 
 _(escribe aquí, la más nueva arriba: fecha, hora, qué hiciste, qué te frena, qué preguntas)_

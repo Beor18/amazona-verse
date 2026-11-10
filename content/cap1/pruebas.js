@@ -92,6 +92,13 @@
     // Mejora 1: Iguaca llama desde la copa; el primer objetivo es volar hasta ella y desde el suelo, bajo la copa, no se le habla
     check('Al despertar, Iguaca está arriba y el primer objetivo es volar hasta ella', C.luma.arriba() && S.step === 0 && /Iguaca/.test($('steps').querySelector('li.now').textContent) && C.luma.percha.y > G.terreno.height(C.luma.percha.x, C.luma.percha.z) + 3, C.luma.percha.y.toFixed(1) + ' m');
     check('Desde el suelo, bajo la copa, no se le puede hablar a Iguaca', !useAt('luma'));
+    { // CG-105: el playtest se quedaba 39,9 s porque un planeo a 2 m sobre la copa no contaba como «junto a Iguaca»
+      const p = C.luma.percha, x0 = S.pos.x, y0 = S.pos.y, z0 = S.pos.z, volaba = G.fisica.MOVE.flying;
+      S.pos.x = p.x + 0.7; S.pos.y = p.y + 2.2; S.pos.z = p.z; S.vy = 0; G.fisica.MOVE.flying = true;
+      const nb = G.interaccion.nearest();
+      check('CG-105 · a 2 m sobre la copa, junto a Iguaca, ya se le puede hablar', C.luma.junto() && nb && nb.id === 'luma', nb && nb.id);
+      S.pos.x = x0; S.pos.y = y0; S.pos.z = z0; S.vy = 0; G.fisica.MOVE.flying = volaba;
+    }
     const posada = posarseLuma(G, T);
     check('Posada a su lado: Iguaca llamó desde arriba (bocadillo libre, el juego no se para) y se le puede hablar', posada && !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && !G.ui.busy() && !!G.interaccion.nearest() && G.interaccion.nearest().id === 'luma', JSON.stringify(G.dialogo.actual()));
     action();
