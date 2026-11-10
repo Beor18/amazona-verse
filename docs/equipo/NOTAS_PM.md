@@ -34,14 +34,14 @@
 - **Cómo probarlo:** build de HEAD, SwiftShader, `AV.memoriaLargaTest()` (corta) y `{ largo: true }` (30 min simulados). Tras calentar, geometrías, texturas, oyentes y nodos con pendiente ≈ 0.
 - **Lo confirma:** `memoriaLargaTest` y las 12 de `tools/build/config.json`.
 
-### Dev 1 · 10-nov · CG-107 hecha
-- **Tarea:** CG-107, la iguana que no se veía de cerca. Cerrada.
-- **Commit:** `e97e45b5`. EN CURSO fue `4b075229`.
-- **Archivo:** `src/game/invasoras.js`. No toqué textos educativos, `sitio/`, el carril de Kimi ni el modelo de Vittata.
-- **Percha del capítulo 1:** mi arreglo (`2897f7f9`) no se subió y no lo retomé. Dev 3 la cerró en CG-105 (`eb5d7ef1`).
-- **Qué falta:** nada de CG-107. Siguiente, si sigue libre: CG-71.
-- **Cómo probarlo:** a 6 m del hogar, con la patrulla encendida y sin `G.quiet`, la malla está visible, con un individuo, en la capa 0, y el cuerpo por encima del suelo (en la prueba: y 5,92 / suelo 5,76).
-- **Lo confirma:** `invasorasTest` 32/32, caso «La iguana es visible a 6 m». Build `cg-107-55688e20` (mismo parche): las 12 en verde, 0 errores de consola. El aviso de heap (130 MB frente a 120) no falla la suite.
+### Dev 1 · 10-nov · CG-71 en curso
+- **Tarea:** CG-71, validar Combate 2.0. Fila EN CURSO en `56b39bf6`. No cerrada: esta máquina es llvmpipe, no GPU real, y el FPS no vale.
+- **Código del combate:** no lo toqué. `combate.js`, `duelo2.js` y `fx_poderes.js` no cambian desde `e97e45b5`.
+- **Qué falta:** duelo en escritorio y en móvil con `?combate2=1`, FPS y peor cuadro con y sin la bandera, Modo Escuela, y capturas en `docs/img/cg71/`. Hace falta una GPU real.
+- **Cómo probarlo:** abrir el juego publicado con `?combate2=1`, jugar un duelo entero en las dos ventanas, repetir sin la bandera y con Escuela, y guardar las capturas.
+- **Lo que ya pasó aquí:** `v18CombateTest` 102/102 y `v18Duelo2Test` 35/35 en la build `cg-107-55688e20`, 0 errores de consola. Eso no sustituye el FPS.
+- **CG-107:** cerrada en `e97e45b5` (cierre `e7593be4`). `invasorasTest` 32/32 y las 12 en verde.
+- **Percha del capítulo 1:** mi arreglo `2897f7f9` no se subió. Dev 3 la cerró en CG-105 (`eb5d7ef1`). No la retomé.
 
 **Pausa por créditos (4-nov, Dev 1).** QA-148 confirmado: el capítulo 2 sale del paso 1 en 27,9 s (playtest CG-58, 390×844, guía 0). Pendiente: CG-62. El capítulo 1 no se tocó (el niño no sale del paso 1; no es solo lentitud). K35 B (el Guardián sigue llegando al construir). K36 B (la medalla espera arte). La fuente de la canoa (CG-51). El aviso del heap (151,4 MB frente a 120; no falla la suite).
 
