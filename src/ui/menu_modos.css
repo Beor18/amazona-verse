@@ -16,6 +16,14 @@
 
 .modos { margin: 0; width: 100%; max-width: 780px; }
 .modos-t { margin: 0 0 var(--sp-3); font: 700 var(--fs-2xl)/1.1 var(--font-display); color: #fff; text-shadow: 0 2px 0 rgba(27, 21, 80, 0.6), 0 6px 18px rgba(27, 21, 80, 0.5); }
+.modos-ayuda {
+  display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
+  min-height: 44px; min-width: 44px; margin: var(--sp-3) 0 0; padding: 8px 16px;
+  border-radius: var(--r-pill, 999px); border: 2px solid rgba(255, 255, 255, 0.45);
+  background: rgba(16, 36, 28, 0.9); color: #fff; font: 700 var(--fs-md)/1.2 var(--font-display); cursor: pointer;
+}
+.modos-pista { margin: var(--sp-2) 0 0; max-width: 42rem; color: #fff; font: 600 var(--fs-md)/1.35 var(--font-body); text-shadow: 0 2px 0 rgba(27, 21, 80, 0.55); }
+.modos-pista[hidden] { display: none; }
 .modos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(136px, 1fr)); gap: var(--sp-3); width: 100%; }
 .modo {
   position: relative; min-height: 124px; min-width: 0; padding: var(--sp-3) var(--sp-2); gap: var(--sp-1);

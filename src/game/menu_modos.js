@@ -62,6 +62,8 @@
       libre: [L('Vuelo libre', 'Free flight'), L('Explora sin misiones', 'Explore with no missions')],
       nido: [L('Mi nido', 'My nest'), L('Tus huevos y crías', 'Your eggs and chicks')],
       records: [L('Mis récords', 'My records'), L('Medallas y tiempos', 'Medals and times')],
+      ayuda: L('¿Cómo se juega?', 'How do I play?'),
+      pista: L('Elige una tarjeta. En el juego te mueves, despegas y te posas. En el teléfono, el botón grande es la acción.', 'Pick a card. In the game you move, take off and land. On a phone, the big button is the action.'),
     });
     function subAventura() {
       const pasos = (G.misiones && G.misiones.steps) || [];
@@ -115,6 +117,28 @@
       });
       const foco = tarjetas().find(b => b.dataset.modo === u && !b.hidden) || tarjetas()[0];
       if (foco && portada && portada.open) setTimeout(() => { if (portada.open && !portada.inert) foco.focus({ preventScroll: true }); }, 0);
+      pintarAyuda(T);
+    }
+    function pintarAyuda(T) {
+      if (!form) return;
+      let b = document.getElementById('modos-ayuda');
+      if (!b) {
+        b = document.createElement('button');
+        b.type = 'button'; b.id = 'modos-ayuda'; b.className = 'modos-ayuda';
+        b.addEventListener('click', ev => {
+          ev.preventDefault(); ev.stopPropagation();
+          const p = document.getElementById('modos-pista');
+          if (!p) return;
+          p.hidden = !p.hidden;
+          b.setAttribute('aria-expanded', p.hidden ? 'false' : 'true');
+        });
+        form.appendChild(b);
+      }
+      let p = document.getElementById('modos-pista');
+      if (!p) { p = document.createElement('p'); p.id = 'modos-pista'; p.className = 'modos-pista'; p.hidden = true; b.insertAdjacentElement('afterend', p); }
+      b.textContent = T.ayuda;
+      p.textContent = T.pista;
+      b.setAttribute('aria-expanded', p.hidden ? 'false' : 'true');
     }
     function recordar(modo) { guardar({ ultimo: modo }); }
 
@@ -491,6 +515,11 @@
         check('Nido, récords, Mis cotorras, Álbum y Retos con amigos no cierran la portada (type=button)', ENCIMA.every(m => form.querySelector(`[data-modo="${m}"]`).type === 'button'));
         check('Las tarjetas de la V18 se ven con la bandera encendida y se ocultan sin ella', ['golf', 'duelo', 'amigos', 'cotorras'].every(m => form.querySelector(`[data-modo="${m}"]`).hidden === !G.V18));
         check('Textos en ES', $('modos-t').textContent === '¿Cómo quieres jugar?' && form.querySelector('[data-modo="libre"] b').textContent === 'Vuelo libre', '«' + $('modos-t').textContent + '» / «' + form.querySelector('[data-modo="libre"] b').textContent + '»');
+        const ay = document.getElementById('modos-ayuda'), pi = document.getElementById('modos-pista');
+        check('Un botón de ayuda, después de las tarjetas, abre una pista corta', !!ay && ay.type === 'button' && ay.textContent === '¿Cómo se juega?' && form.querySelector('button') === form.querySelector('[data-modo="aventura"]') && !!pi && pi.hidden && ay.getBoundingClientRect().height >= 44);
+        ay.click();
+        check('La pista explica mover, despegar y posarse', pi && !pi.hidden && /despegas/.test(pi.textContent) && /posas/.test(pi.textContent));
+        ay.click();
         // 2. Cada tarjeta abre su modo y «Cambiar de juego» vuelve al menú
         retos = await cargar.retos(); retos.pruebas.prueba(true);
         if (!portada.open) volver();
