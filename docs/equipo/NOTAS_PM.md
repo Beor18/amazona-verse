@@ -2,13 +2,13 @@
 
 ## TRASPASO
 
-### Dev 2 · 10-nov 06:40 AST · CG-116 en curso
-- **Tarea:** vanos transitables. CG-115 la tiene Dev 4 (`construir.js`). CG-113 la tiene Dev 1 (`interiores.js`). No las toqué. No dejé CG-115 a mi nombre: el commit que la marcaba se descartó en el rebase.
-- **Commit de código:** todavía no.
-- **Archivos:** `src/engine/solidos.js`. No toco `construir.js`, `interiores.js`, `bohios.js` ni los bugs de la ronda 6.
-- **Qué falta:** la puerta de `casa_paja_a` no suma sólido (el dibujo de la puerta se queda) y la base de la torre k300 tiene un paso en la colisión, sin cambiar la malla.
-- **Cómo probarlo:** `AV.solidosTest()` y las 12.
-- **Lo confirma:** solidosTest y las 12 baterías, 0 errores.
+### Dev 2 · 10-nov 07:15 AST · CG-116 hecha
+- **Tarea:** vanos transitables. Cerrada. CG-115 sigue de Dev 4 y CG-113 de Dev 1. No las toqué. No llegó a quedar un commit mío marcando CG-115.
+- **Commit:** `dda94f8f` (mismo `solidos.js` que `b2d9fadf`, el de la build). EN CURSO fue `7a37f1bd`.
+- **Archivos:** `src/engine/solidos.js` y una línea en `src/boot.js` para la prueba. La malla no cambia. No toqué `construir.js`, `interiores.js`, `bohios.js` ni los bugs de la ronda 6.
+- **Qué falta:** nada de esta tarea.
+- **Cómo probarlo:** `AV.solidosTest()`. Un muro de prueba se cruza a la altura de la puerta y el dintel sigue sólido. `casa_paja_a` no mete el panel en la colisión. k300 tiene un paso en (−61,27, 83,5), del piso 23,2 a 25,35.
+- **Lo confirma:** solidosTest 3/3. Build `cg-116-b2d9fad`: las 12 en verde, 0 errores. El aviso de streaming (QA-230) volvió; es de Kimi.
 
 ### Dev 4 · 10-nov 06:45 AST · CG-119 en curso
 - **Tarea:** origen de `canoa.jpg`. Fila EN CURSO. CG-116 la lleva Dev 2. CG-117 y CG-118 siguen en espera. CG-118 es texto educativo: no la tomo.
