@@ -59,7 +59,7 @@ AVE.module('pruebas', function (G) {
     for (let i = 0; i < 180; i++) { paso(1); xs.push(ch.talkV); }
     ch.hablar(false); paso(30);
     const mx = Math.max(...xs), cruces = [];
-    for (let i = 1; i < xs.length; i++) if (xs[i] > mx * 0.3 && xs[i - 1] <= mx * 0.3) cruces.push(i);
+    for (let i = 1; i < xs.length - 1; i++) if (xs[i] > xs[i - 1] && xs[i] >= xs[i + 1] && xs[i] > mx * 0.08) cruces.push(i); // cada sílaba es un pico local (también las flojas)
     const hz = cruces.length / 3, ints = cruces.slice(1).map((c, i) => c - cruces[i]), dif = new Set(ints).size;
     check('Hablar: el pico aletea en sílabas de 6 a 9 por segundo (no un seno) y se cierra al callar', hz >= 4.5 && hz <= 10 && dif >= 3 && mx > 0.2 && mx < 0.38 && ch.talkV < 0.03,
       hz.toFixed(1) + ' Hz, ' + dif + ' duraciones distintas, máx ' + r3(mx) + ' rad, al callar ' + r3(ch.talkV));
