@@ -2,6 +2,13 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 06:15 AST · QA-230 para Kimi
+- **Tarea:** anotar el aviso de streaming. Sin código.
+- **Qué quedó:** fila `QA-230` en `BUGS.md`, dueño Kimi. No toqué `streaming.js`.
+- **Cómo reproducirlo:** build de `main` y las 12 baterías con SwiftShader. Consola: 0 errores y el aviso `AVE streaming: Cannot read properties of null (reading '0')`.
+- **Lo confirma:** las corridas `kimi-verify-550214c` y `cg-109-aa36110`.
+- **Siguiente:** la primera CG libre que no esté en curso.
+
 ### Dev 1 · 10-nov · aviso para Kimi
 En las 12 baterías de la build `cg71-docs` (HEAD `26a60ba9`, SwiftShader) hubo **0 errores** y **2 avisos** iguales: `AVE streaming: Cannot read properties of null (reading '0')`. El mismo texto salió en `cg-105-4ca8ce19`. No toqué `streaming.js`. El carril es de Kimi.
 
