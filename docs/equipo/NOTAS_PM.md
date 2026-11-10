@@ -2,6 +2,16 @@
 
 ## TRASPASO
 
+### Dev 4 · 10-nov 06:55 AST · CG-118 en curso
+- **Tarea:** casita jíbara del Guardián (`casa_paja_a_1`). CG-119 se queda en «espera decisión de Kelvin».
+- **Commit de código:** todavía no.
+- **La fachada no es mía.** El modelo `casa_paja_a` ya está en edificios (carril de Kimi). No lo cambio, ni el glb, ni `streaming.js`, ni el terreno. El interior es un cuarto aparte, solo con `?interiores=1`.
+- **Archivos previstos:** `src/game/historico.js` (nuevo), `content/cap1/casita_historica.js` (nuevo, solo medidas y piezas) y un bloque propio en `boot.js`, justo después del de CG-110. Dev 2 (CG-117) también va a cargar en `boot.js`: el bloque de ellos no lo toco. No edito `interiores.js` ni `content/comun/interiores.js` (Dev 1, CG-113), ni `arco.js`, ni k300.
+- **Textos:** en el juego solo «Entrar», «Salir», «Sala» y «Fogón». Cada dato educativo va a `docs/equipo/PROPUESTA_CG118_TEXTOS.md`, con fuente y enlace. Nada de fichas nuevas hasta que Kelvin apruebe.
+- **Qué falta:** la geometría, el interior, las piezas, la prueba y la propuesta.
+- **Cómo probarlo:** `AV.historicoTest()` con la bandera apagada y encendida.
+- **Lo confirma:** historicoTest y las 12 baterías, 0 errores.
+
 ### Dev 2 · 10-nov 06:50 AST · CG-117 en curso
 - **Tarea:** taller de Tuerca en k300. No había ningún bug EN CURSO (QA-222 y QA-223 se quedan abiertos).
 - **Commit de código:** todavía no.
