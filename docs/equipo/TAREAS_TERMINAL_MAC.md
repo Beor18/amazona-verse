@@ -31,7 +31,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | GT-11 | hecha · los 6 caps arrancan, se juegan a 59-60 fps y guardan en el sitio publicado, 0 errores; avance completo = temporadaMovilTest 172/173 en local | **Recorrido de los 6 capítulos** en el sitio publicado con GPU real (con `AV.temporadaMovilTest` si existe, o a mano lo esencial de cada capítulo): que cada capítulo arranque, se avance y se guarde. Un renglón por capítulo. |
 | GT-12 | hecha · 20 min: memoria estable (heap ~460-470 MB, 456 geometrías, 184 texturas desde el min 3), 60 fps de principio a fin, 0 errores | **Sesión larga de 20 min** con GPU real (volar, pesca, Construir, duelo, Patrulla): memoria del heap y de la GPU al minuto 1, 10 y 20 (`performance.memory`, `?fps=1`), FPS al principio y al final. ¿Crece sin parar? |
 | GT-13 | parcial · teclado: accesibilidadTest 97/97 y controlesTest en verde en el sitio; VoiceOver pendiente (necesita a Kelvin delante) | **Solo teclado y lector de pantalla** (VoiceOver en Mac): menú, pausa, opciones, pesca, Construir, Mercadito; anotar lo que no se puede usar. |
-| GT-14 | libre | **Carga real** desde tu red: tiempo hasta poder jugar (primera vez y con caché), MB descargados (DevTools → Network), en computadora y emulando 4G lenta. |
+| GT-14 | hecha · 1.ª vez: jugable en 9,2 s (16,6 MB) sin límite y en 41,2 s (6,4 MB) con 4G lenta; con caché la portada sale en 0,7 / 2,1 s | **Carga real** desde tu red: tiempo hasta poder jugar (primera vez y con caché), MB descargados (DevTools → Network), en computadora y emulando 4G lenta. |
 | GT-15 | continua | **Cuando la cola esté vacía:** cada vez que llegue un commit «CG-… hecha» de Grok en `TAREAS_CURSOR_GROK.md`, prueba rápida de esa función con GPU real (abrir, usar, 0 errores) y una línea aquí. Así nunca te quedas sin trabajo. |
 
 ## Notas Terminal ↔ coordinadora
@@ -199,4 +199,17 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 - **VoiceOver: no lo hice.** Habla en voz alta y toma el control del teclado y la pantalla del Mac de Kelvin; no lo activo sin él delante. Queda pendiente: recorrer con VoiceOver en Safari el menú, la pausa, las opciones, la pesca, Construir y el Mercadito, y anotar qué no se anuncia o no se puede usar.
 
 📣 Terminal → coordinadora · 10-nov 13:12 AST · GT-13 parcial · teclado en el sitio: accesibilidadTest 97/97 y controlesTest 22/22 en escritorio y 3/3 en móvil, 0 errores; HEAD ya trae el rojo de W35 en el minigolf (QA-240); VoiceOver pendiente de hacerlo con Kelvin delante · siguiente: GT-14
+
+**GT-14 · carga real desde la red de la casa (10-nov ~14:30-14:45 AST, sitio `0095a89` en SiteGround, Chrome 157 con GPU real, perfil nuevo en cada red)**
+- Conteo: «portada lista» = el modelo del jugador cargado (`listo_js`); «se puede jugar» = portada → creador → Empezar → fin de la carga (`preparar_js`). MB = `encodedDataLength` de la red (DevTools), sumado hasta «se puede jugar».
+- Sin límite de red:
+  - Primera vez: portada en **4,2 s**, se puede jugar a los **9,2 s**, **16,62 MB** en 348 peticiones, 0 errores.
+  - Con caché: portada en **0,7 s**, 0,01 MB en 319 peticiones, todas de la caché.
+- 4G lenta emulada (150 ms de latencia, 1,6 Mbps de bajada y 0,75 de subida):
+  - Primera vez: portada en **21,0 s**, se puede jugar a los **41,2 s**, **6,38 MB**, 0 errores. La pantalla de carga llegó a su tope de 20 s (`carga 20014 ms (tope)`): deja jugar mientras lo demás sigue bajando en segundo plano.
+  - Con caché: portada en **2,1 s**, 0,01 MB.
+- Lo que no salió: el tiempo «se puede jugar» con caché. Borrar `localStorage` no dejó al juego como jugador nuevo (queda otro almacén, quizá IndexedDB) y no se abrió el creador. Esas dos cifras no valen; solo cuentan las de la portada.
+- Lectura: con buena red se juega a los 9 s y con 4G lenta a los 41 s. Lo que retrasa la 4G lenta es la espera de 20 s de la pantalla de carga más la portada. La descarga completa de arranque de la build HEAD es de 45 MB (QA-239); en vivo, hasta poder jugar, bajan 16,6 MB.
+
+📣 Terminal → coordinadora · 10-nov 13:15 AST · GT-14 hecha · sitio en SiteGround: jugable a los 9,2 s con 16,6 MB (sin límite) y a los 41,2 s con 6,4 MB (4G lenta, la carga llega a su tope de 20 s); con caché la portada sale en 0,7 / 2,1 s; 0 errores · siguiente: GT-15 (continua) y pendientes GT-06/07/13
 
