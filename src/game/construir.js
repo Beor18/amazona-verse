@@ -372,9 +372,19 @@
       const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, f0 = { x: (S.facing && S.facing.x) || 0, z: (S.facing && S.facing.z) || 1 };
       S.pos.x = x; S.pos.z = z + 6; S.pos.y = H(S.pos.x, S.pos.z) + 1.6; S.facing = { x: 0, z: -1 };
       let url = null;
-      try { url = G.renderer.snapshot(960, 540, 0.8); } catch (e) { url = null; }
+      try {
+        const r = G.renderer.snapshot(960, 540, 0.8);
+        url = r && typeof r.then === 'function' ? await r : r;
+      } catch (e) { url = null; }
       S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.facing = f0;
-      if (typeof url !== 'string' || url.indexOf('data:image') !== 0) { aviso('No se pudo hacer la foto'); return null; }
+      if (typeof url === 'string' && url.indexOf('data:image/jpeg') === 0) {
+        try {
+          const im = new Image(); im.src = url; await im.decode();
+          const cv = document.createElement('canvas'); cv.width = im.naturalWidth || 960; cv.height = im.naturalHeight || 540;
+          cv.getContext('2d').drawImage(im, 0, 0); url = cv.toDataURL('image/png');
+        } catch (e) { url = null; }
+      }
+      if (typeof url !== 'string' || url.indexOf('data:image/png') !== 0) { aviso('No se pudo hacer la foto'); return null; }
       if (!G.quiet) {
         const a = document.createElement('a');
         a.href = url; a.download = 'rincon-vittata.png'; a.rel = 'noopener';
@@ -679,7 +689,7 @@
         cuadrícula(false); actualizar();
         const suelto = crudo();
         check('Sin cuadrícula el fantasma vuelve a seguir a Vittata', Math.abs(est.x - suelto.x) < 1e-6 && Math.abs(est.z - suelto.z) < 1e-6);
-        const urlFoto = foto();
+        const urlFoto = await foto();
         check('La foto del rincón es un PNG local y no deja un enlace para subirlo', typeof urlFoto === 'string' && urlFoto.indexOf('data:image/png') === 0 && urlFoto.length > 200 && !document.querySelector('a[download="rincon-vittata.png"]'), urlFoto ? urlFoto.slice(0, 22) + '… ' + urlFoto.length : 'sin foto');
         // 3b. Piezas del Mercadito del río: sin comprarlas no salen en la barra ni se eligen; compradas, sí (teclas 1–9 en el orden de la barra)
         S.tienda = { v: 1, conchitas: 0, ganadas: 0, compras: [] }; refrescar();
