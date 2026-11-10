@@ -34,7 +34,7 @@
      portadas: { valorDelSelect: claveDeCaptura },
      vinetas: [{ id, img: 'portrait'|claveDeCaptura, needs: ClaveDeEvento, texto: string | (S, G) => string, opciones?: [string | (S, G) => string],
        gag?: 'caida'|'mariposa'|'siesta'|'imitar' (solo para la prueba), ilustracion?: 'nido'|'eclosion'|'rama'|'pichon_cae'|'pichon_mariposa'|'pichon_duerme'|'pichon_imita', sinCaptura?, encuadre? }],
-     tipo?, pose?, dialogo?|pensamiento?, efecto?: 'fuush'|'confusion'|'bandera'|'record', marca?(S) (valor del récord) }],
+     tipo?, pose?, dialogo?|pensamiento?, efecto?: 'fuush'|'confusion'|'bandera'|'record'|'pesca'|'construir'|'patrulla', marca?(S) (valor del récord) }],
      plantilla: { titulos: { tipo: texto }, aprendi: [{ needs, texto }], ensenanza: [{ needs, texto }] },
      decorar?(ctx, viñeta, caja, altoImagen, G) (de la página anterior; la plantilla no lo usa) }.
    Estado: S.comic { title, order, captions, vinetas, ocultas?: [ids fuera de la página], aprendi?: índice, ensenanza?: índice }.
@@ -711,6 +711,28 @@ AVE.module('comic', function (G) {
     const d = G.eventos.defs && def && G.eventos.defs[def.needs];
     return (d && TIPO_EV[d.type]) || 'hallazgo';
   }
+  // Pegatinas de lo nuevo: solo si la partida ya tiene esa actividad. Se dibujan en la plantilla (nada que subir).
+  function actividadesComic() {
+    const a = [];
+    try {
+      const est = G.v18pesca && G.v18pesca.estado && G.v18pesca.estado();
+      const m = G.v18 && G.v18.mundo && G.v18.mundo('pesca_rio');
+      const peces = est && ((est.peces > 0) || (est.album && Object.keys(est.album).length) || (est.record > 0));
+      const visto = m && typeof m === 'object' && ((m.mejor > 0) || (Array.isArray(m.vistos) && m.vistos.length));
+      if (peces || visto) a.push('pesca');
+    } catch (e) { /* sin pesca */ }
+    if (S.construir && Array.isArray(S.construir.piezas) && S.construir.piezas.length) a.push('construir');
+    try {
+      const inv = G.invasoras && G.invasoras.estado && G.invasoras.estado();
+      if (inv && Array.isArray(inv.vistos) && inv.vistos.length) a.push('patrulla');
+      else {
+        const clave = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.invasoras';
+        const d = JSON.parse(localStorage.getItem(clave) || 'null');
+        if (d && Array.isArray(d.vistos) && d.vistos.length) a.push('patrulla');
+      }
+    } catch (e) { /* sin patrulla */ }
+    return a;
+  }
   const ocultasDe = () => (Array.isArray(S.comic.ocultas) ? S.comic.ocultas.filter(x => typeof x === 'string').slice(0, 64) : null);
   function enPagina(panels) {
     panels = panels || orderedPanels();
@@ -736,7 +758,8 @@ AVE.module('comic', function (G) {
     const panels = enPagina();
     const imgs = {};
     for (const k of new Set(panels.map(p => p.img).filter(k => k && k !== 'portrait'))) imgs[k] = propia(S.captures[k]) ? await loadImg(S.captures[k]).catch(() => null) : null;
-    const vinetas = [], usados = new Set();
+    const vinetas = [], usados = new Set(), acts = actividadesComic();
+    let ai = 0;
     // Un título de escena no se repite en la página: el segundo del mismo tipo usa el alternativo (pack plantilla.titulosAlt)
     const reservaTit = ['Y después…', '¡Otra idea!', '¡Otro reto!', '¡Más alto!', 'Nuevos amigos', '¡Qué alegría!', '¡Una sorpresa!'];
     const titulo = tipo => {
@@ -754,7 +777,8 @@ AVE.module('comic', function (G) {
       vinetas.push({ id: p.id, eventId: p.needs, timestamp: ev ? ev.t : null, sceneImage: img || null,
         escena: !img && p.ilustracion ? (x, X, Y, w, h) => ilustrar(x, p.ilustracion, X, Y, w, h) : null,
         sceneTitle: titulo(tipo), dialogueText: gl ? T(gl) : '', dialogueType: def.pensamiento ? 'pensamiento' : 'dialogo',
-        captionText: narracionDe(p), effectId: val(def.efecto) || null, recordValue: val(def.marca) || null, look: p.look || lookActual(), pose: def.pose || POSE_DE[tipo] || 'celebrar' });
+        captionText: narracionDe(p), effectId: val(def.efecto) || null, recordValue: val(def.marca) || null,
+        pegatina: ai < acts.length ? acts[ai++] : null, look: p.look || lookActual(), pose: def.pose || POSE_DE[tipo] || 'celebrar' });
     }
     return { panels, datos: { chapterId: C.capitulo || null, titulo: T(tituloValido(S.comic.title)), nombre: S.profile.name, look: lookActual(), retrato: await retratoDe(null, 256),
       aprendi: T(leccion('aprendi')), ensenanza: T(leccion('ensenanza')), botones: opts.botones !== false, vinetas } };
@@ -1411,6 +1435,39 @@ AVE.module('comic', function (G) {
       const antes = G.idioma.actual();
       try { await G.idioma.poner('en'); const r = await datosPagina(); check('En inglés, los títulos de escena y las lecciones salen en EN', r.datos.vinetas.filter(v => !v.falta).every(v => !/[áéíóúñ¡¿]/i.test(v.sceneTitle)) && !/[ñ¿]/.test(r.datos.aprendi), r.datos.vinetas.map(v => v.sceneTitle || '·').join(' | ')); }
       finally { await G.idioma.poner(antes); }
+    }
+    // Pegatinas de pesca, Construir y Patrulla: se dibujan en el lienzo (sin imagen que subir) y salen si la partida las tiene.
+    {
+      const base = vs.find(v => !v.falta) || vs[0];
+      const tipos = ['pesca', 'construir', 'patrulla'];
+      const colores = { pesca: [0x14, 0x78, 0xd4], construir: [0xd0, 0x78, 0x20], patrulla: [0x1c, 0x8c, 0x46] };
+      const vins = tipos.map(tipo => Object.assign({}, base, { id: 'peg-' + tipo, pegatina: tipo, effectId: null, falta: false, sceneImage: null }));
+      while (vins.length < 6) vins.push({ falta: true, pose: 'celebrar', look: base && base.look });
+      const cv = document.createElement('canvas');
+      const R3 = await PT.componer(cv, Object.assign({}, d, { botones: false, vinetas: vins }));
+      const pix = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+      const okC = tipos.every(tipo => {
+        const iv = R3.vinetas.find(v => v.pegatina && v.pegatina.tipo === tipo);
+        if (!iv) return false;
+        const X = Math.round(iv.pegatina.x + 8), Y = Math.round(iv.pegatina.y + iv.pegatina.h / 2);
+        if (X < 0 || Y < 0 || X >= cv.width || Y >= cv.height) return false;
+        const i = (Y * cv.width + X) * 4, c = colores[tipo];
+        return Math.abs(pix[i] - c[0]) + Math.abs(pix[i + 1] - c[1]) + Math.abs(pix[i + 2] - c[2]) < 36;
+      });
+      check('Pegatinas de pesca, Construir y Patrulla dibujadas en la viñeta (local, sin subir)', okC, tipos.map(tipo => { const iv = R3.vinetas.find(v => v.pegatina && v.pegatina.tipo === tipo); return tipo + (iv ? ' sí' : ' no'); }).join(', '));
+      const cons0 = S.construir;
+      const claveInv = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.invasoras';
+      let inv0; try { inv0 = localStorage.getItem(claveInv); } catch (e) { inv0 = undefined; }
+      try {
+        S.construir = { v: 1, piezas: [{ t: 'nido', x: 1, z: 1, r: 0 }] };
+        localStorage.setItem(claveInv, JSON.stringify({ v: 1, vistos: ['iguana'], completa: false }));
+        const r = await datosPagina({ botones: false });
+        const pegs = r.datos.vinetas.map(v => v.pegatina).filter(Boolean);
+        check('Si hay piezas construidas y un avistamiento, el cómic pone esas pegatinas', pegs.includes('construir') && pegs.includes('patrulla') && new Set(pegs).size === pegs.length, pegs.join(',') || 'ninguna');
+      } finally {
+        S.construir = cons0;
+        try { if (inv0 == null) localStorage.removeItem(claveInv); else localStorage.setItem(claveInv, inv0); } catch (e) { /* sin almacén */ }
+      }
     }
   }
   // AV.comicTest (boot.js es del coordinador: se expone aquí si boot no lo hizo)
