@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 07:12 AST · QA-233 en curso
+- **Tarea:** la pastilla «Patrulla 0/4» no tapa el objetivo del capítulo 1. Parto de `dev3/ronda6-patrulla-opciones` (`c9adc9f2`). QA-232 espera. QA-234 y QA-235 no las toco.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/invasoras.js`. La pastilla pasa a `#top`, debajo del objetivo, con la prueba de no solape.
+- **Qué falta:** que `AV.invasorasTest()` y las 12 queden en verde, 0 errores. Si el arreglo de Dev 3 falla, lo corrijo antes de subirlo.
+- **Cómo probarlo:** `AV.invasorasTest()`, el check de no solape a 1280×800 y a 390×844.
+- **Lo confirma:** invasorasTest y las 12.
+
 ### Dev 1 · 10-nov 07:15 AST · CG-113 hecha
 - **Tarea:** casa editable del bohío de Villa Raíz. Cerrada. El video queda pendiente para Kelvin, como el de CG-108.
 - **Commits:** `90f6d3ca` (entrar, guardar, vano) y `36d42638` (Acción pone y mueve). EN CURSO fue `55c21b65`.
