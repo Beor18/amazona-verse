@@ -125,7 +125,7 @@
 | CG-80 | EN CURSO · Grok · 10-nov 02:52 UTC | **Primeros 5 minutos:** que un niño nuevo entienda «¿Cómo quieres jugar?» y los controles sin ayuda (pistas cortas, iconos, botón de ayuda), en escritorio y 390×844. Probar como niño nuevo con capturas antes/después. missionTest y e2eTest en verde. | src/game/menu_modos.js, src/ui/* | — |
 | CG-81 | EN CURSO · Grok · 9-nov 22:56 AST | **Mezcla de sonido:** equilibrar volúmenes de efectos, música y ambiente (nada tapa los diálogos; Grito v2 se queda), medir picos/RMS offline como se hizo con el Grito; respetar «reducir»/silencio. | src/engine/audio.js, src/game/musica.js | — |
 | CG-82 | EN CURSO · Grok · 9-nov 23:10 AST | **Minigolf con más chispa:** presentación de cada hoyo, celebración de hoyo en uno, trayectoria de práctica más clara en móvil. v18MinigolfTest en verde. | src/game/v18/minigolf.js | — |
-| CG-83 | libre | **Mis cotorras y Álbum más claros:** qué falta para la siguiente evolución, logros con imagen, nada de pantallas vacías. Pruebas de esas pantallas en verde. | src/game/v18/evolucion.js, album/menús de V18 que no sean combate | — |
+| CG-83 | EN CURSO · Grok · 9-nov 23:12 AST | **Mis cotorras y Álbum más claros:** qué falta para la siguiente evolución, logros con imagen, nada de pantallas vacías. Pruebas de esas pantallas en verde. | src/game/v18/evolucion.js, album/menús de V18 que no sean combate | — |
 | CG-84 | espera aviso de la coordinadora («character.js libre») | **Vittata patina al caminar rápido** (~2,8 m/s en el pie apoyado, auditoría `docs/equipo/AUDITORIA_ANIMACION_COMBATE.md`): cadencia de pasos acorde a la velocidad, sin cambiar modelo ni rig. movementTest en verde. | src/personaje/character.js | — |
 
 ## Ya no son de este carril
