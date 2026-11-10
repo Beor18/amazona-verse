@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 06:25 AST · CG-104 en curso
+- **Tarea:** opciones claras. Fila EN CURSO. CG-103 ya está cerrada (`25e6f588`, `62e5f011`).
+- **Commit de código:** todavía no.
+- **Archivos:** `index.html` (sección en la pausa), `src/ui/ui.js`, `src/ui/ui.css`. No toco `invasoras.js` (CG-107, Dev 1) ni `renderer.js`.
+- **Qué falta:** volumen de efectos y de voces (la música y el ambiente ya están), calidad Auto/Baja/Media/Alta con una frase, y «Reducir movimiento». Todo guardado. Que quepa a 390×844 y se use con teclado.
+- **Cómo probarlo:** abrir Pausa, mover los deslizadores, elegir Baja y Auto, activar Reducir movimiento, recargar y comprobar que se quedan. A 390 px nada de la sección se sale.
+- **Lo confirma:** `opcionesTest` y las 12 baterías, 0 errores de consola.
+
 ### Dev 2 · 10-nov 06:10 AST · CG-103 hecha
 - **Tarea:** sonidos de lo nuevo. Cerrada.
 - **Commits:** `25e6f588` (sonidos) y `62e5f011` (la prueba del clic). EN CURSO fue `4c5000b1`.
