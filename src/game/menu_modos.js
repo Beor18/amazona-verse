@@ -45,9 +45,9 @@
       golf: [L('Minigolf', 'Mini golf'), L('Lleva la semilla gigante hasta el nido', 'Take the giant seed to the nest')], // V18 (Kelvin 7-nov: a la vista en el menú)
       pesca: [L('Pesca', 'Fishing'), L('Lanza, espera el pique y suelta el pez', 'Cast, wait for the bite and release the fish')], // src/game/v18/pesca.js
       duelo: [L('Duelo', 'Duel'), L('Uno a uno contra la Campeona', 'One-on-one against the Champion')], // src/game/v18/combate.js
-      duelo2: [L('Duelo de 2', '2-player duel'), L('Dos jugadores en la misma computadora', 'Two players on the same computer')], // src/game/v18/duelo2.js
+      duelo2: [L('Duelo de 2', '2-player duel'), L('Dos en la misma computadora', 'Two on the same computer')], // src/game/v18/duelo2.js
       amigos: [L('Retos con amigos', 'Challenges with friends'), L('Chispa, Moon y el Guardián', 'Chispa, Moon and the Guardian')],
-      cotorras: [L('Mis cotorras', 'My parrots'), L('Nivel, poder y las que faltan', 'Level, power and the ones to get')], // descubrir.js + evolucion.js
+      cotorras: [L('Mis cotorras', 'My parrots'), L('Tu nivel, tu poder y las que te faltan', 'Your level, your power and the ones you still need')], // descubrir.js + evolucion.js
       album: [L('Álbum', 'Album'), L('Las 36 cotorras que vas viendo', 'The 36 parrots you spot')], // src/game/album.js
       chispa: [L('Carrera con Chispa', 'Race with Chispa'), L('Cuatro banderines y vuelta a la meta', 'Four flags and back to the finish')], // src/game/v18/chispa.js
       moon: [L('Entrenamiento con Moon', 'Training with Moon'), L('Esquiva las bolas de luz', 'Dodge the light orbs')], // src/game/v18/moon.js
@@ -57,14 +57,14 @@
       banquete: [L('¡Banquete!', 'Feast!'), L('Frutos en vuelo y combos', 'Fruit on the wing and combos')],
       flight: [L('Amazona Flight', 'Amazona Flight'), L('Vuela sin parar entre los troncos', 'Fly non-stop between the logs')],
       tren: [L('El tren de Vittata', "Vittata's Train"), L('Carga, desvíos y curvas por la costa', 'Cargo, switches and curves along the coast')], // src/game/tren.js (C16)
-      river: [L('River Rush', 'River Rush'), L('Baja el río en canoa: contrarreloj y fantasma', 'Paddle down the river: time trial and ghost')], // src/game/river_rush.js (AC2)
+      river: [L('River Rush', 'River Rush'), L('Baja el río en canoa: contra el reloj y tu fantasma', 'Paddle down the river: against the clock and your ghost')], // src/game/river_rush.js (AC2)
       maze: [L('Amazona Maze', 'Amazona Maze'), L('Frutos en el laberinto y guardianes', 'Fruit in the maze and guardians')], // src/game/maze.js (AB1, BI2)
-      libre: [L('Vuelo libre', 'Free flight'), L('Explora sin misiones', 'Explore with no missions')],
+      libre: [L('Vuelo libre', 'Free flight'), L('Explora a tu aire, sin misiones', 'Explore on your own, with no missions')],
       nido: [L('Mi nido', 'My nest'), L('Tus huevos y crías', 'Your eggs and chicks')],
       records: [L('Mis récords', 'My records'), L('Medallas y tiempos', 'Medals and times')],
       ayuda: L('¿Cómo se juega?', 'How do I play?'),
       elige: L('Elige una tarjeta', 'Pick a card'),
-      pista: L('En el teclado, WASD te mueve. Con Espacio despegas y te posas. E es la acción. En el teléfono, el joystick mueve y el botón grande es la acción.', 'On a keyboard, WASD moves you. With Space you take off and you land. E is the action. On a phone, the joystick moves you and the big button is the action.'),
+      pista: L('Teclado: WASD para moverte, Espacio para despegar y posarte, E para la acción. Teléfono: el joystick mueve y el botón grande es la acción.', 'Keyboard: WASD to move, Space to take off and land, E for the action. Phone: the joystick moves you and the big button is the action.'),
     });
     function subAventura() {
       const pasos = (G.misiones && G.misiones.steps) || [];
