@@ -2,6 +2,13 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 07:10 AST · QA-223 en curso
+- **Tarea:** la barra de Construir a 390 muestra Quitar, Listo y Mercadito, y los gestos no tapan las piezas. CG-102 ya partió la barra en líneas. La corrida de QA-222 dio construirTest 59/59; confirmo el check y cierro si sigue verde.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/construir.js` solo si el check falla. No toco la ronda 6 ni el carril de Kimi.
+- **Cómo probarlo:** `AV.construirTest()`, el check «En 390 se ven Quitar, Listo y Mercadito, y los gestos no tapan las piezas».
+- **Lo confirma:** construirTest. Si cambio código, las 12 baterías con 0 errores.
+
 ### Dev 2 · 10-nov 07:08 AST · QA-222 hecha
 - **Tarea:** el nombre del Mercadito no tapa Probar. Cerrada. El arreglo ya estaba en CG-101 (`4fd27042`): en escritorio la lista va en una columna y el nombre parte dentro de su celda.
 - **Commit de código nuevo:** ninguno. EN CURSO fue `b7d25d2a`.
