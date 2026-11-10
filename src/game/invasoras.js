@@ -452,6 +452,8 @@
       const e = espDe(id), n = mem.vistos.length, total = especies().length;
       G.emit('aprendizaje', { tipo: 'invasora', id });
       flash();
+      animarReporte(n, total);
+      pintarCuenta();
       avisar(L(`¡Avistamiento! ${e.nombre}: reporte enviado a la Estación de Conservación (${n}/${total}). Mira su ficha en el Diario.`,
         `Sighting! ${e.nombreEn}: report sent to the Conservation Station (${n}/${total}). See its card in the Journal.`), 4200);
       if (n >= total && !mem.completa) {
@@ -508,15 +510,64 @@
         '.inv-album .fauna-tarjeta{display:flex;gap:.6em;align-items:flex-start;padding:.45em .55em;border-radius:10px;background:rgba(255,255,255,.07)}' +
         '.inv-album .fauna-tarjeta svg{flex:none}.inv-album .fauna-tarjeta span{display:flex;flex-direction:column;gap:.15em;min-width:0}' +
         '.inv-album small{opacity:.9;line-height:1.35}.inv-album i{opacity:.8;font-size:.9em}.inv-album .fauna-fuente a{color:inherit;text-decoration:underline;word-break:break-word}' +
-        '.inv-album .fauna-falta{opacity:.6}.inv-intro,.inv-nota{display:block;opacity:.85;line-height:1.35;margin:.2em 0 .5em}';
+        '.inv-album .fauna-falta{opacity:.6}.inv-intro,.inv-nota{display:block;opacity:.85;line-height:1.35;margin:.2em 0 .5em}' +
+        '#inv-cuenta{position:fixed;left:max(12px,env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + 78px);z-index:var(--z-hud,5);' +
+        'min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:999px;background:#243a28;color:#f4ffe8;border:2px solid #d7e7a8;' +
+        'font:700 16px/1 var(--font-display,sans-serif);box-shadow:0 3px 0 rgba(0,0,0,.28);pointer-events:none}' +
+        '#inv-cuenta[hidden]{display:none}' +
+        '#inv-reporte{position:fixed;left:50%;top:30%;z-index:70;min-height:44px;display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:16px;' +
+        'background:#fff8e8;color:#2b2118;font:700 18px/1.2 var(--font-display,sans-serif);box-shadow:0 6px 0 #d9c7a3;pointer-events:none;opacity:0}' +
+        '#inv-reporte.inv-on{animation:inv-rep 1.25s ease-out both}' +
+        '@keyframes inv-rep{0%{opacity:0;transform:translate(-50%,-20%) scale(.72)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}72%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-90%) scale(.96)}}' +
+        '@media (prefers-reduced-motion:reduce){#inv-reporte.inv-on{animation:inv-rep-suave .4s ease-out both}@keyframes inv-rep-suave{0%{opacity:0}30%{opacity:1}100%{opacity:0}}}';
       document.head.appendChild(st);
     }
     if (G.diario && G.diario.seccion) G.diario.seccion({ id: 'invasoras', html: htmlAlbum });
+
+    // Marca de zona (no el sitio exacto del animal): 32 m aparte, para el mapa y para Acción.
+    function zonaDe(e) {
+      const h = hogar[e.id]; if (!h) return null;
+      const ang = { iguana: 0.7, tilapia: 2.4, pleco: 3.9, pezleon: 5.2 }[e.id] || 1;
+      return { x: h.x + Math.cos(ang) * 32, z: h.z + Math.sin(ang) * 32 };
+    }
+    if (G.interaccion) for (const e of especies()) {
+      const z = zonaDe(e); if (!z) continue;
+      G.interaccion.add({
+        id: 'invzona_' + e.id, x: z.x, z: z.z, r: 5,
+        visible: () => (activo() && (!G.quiet || F.prueba) && !mem.vistos.includes(e.id)),
+        label: () => L('Buscar en esta zona', 'Search this area'),
+        use: () => avisar(L(`${e.pista} No es el sitio exacto: mira alrededor.`, `${e.pistaEn} This is not the exact spot: look around.`), 3600),
+      });
+    }
+    function cuentaEl() {
+      if (F.cuenta) return F.cuenta;
+      const d = document.createElement('div'); d.id = 'inv-cuenta'; d.className = 'hud'; d.setAttribute('role', 'status'); d.hidden = true;
+      document.body.appendChild(d); return (F.cuenta = d);
+    }
+    function pintarCuenta() {
+      const el = cuentaEl(), n = mem.vistos.length, t = especies().length || 4;
+      const txt = L(`Patrulla ${n}/${t}`, `Patrol ${n}/${t}`);
+      if (el.textContent !== txt) el.textContent = txt;
+      el.hidden = !(activo() && (!G.quiet || F.prueba));
+    }
+    function animarReporte(n, total) {
+      if (G.quiet && !F.prueba) return;
+      let el = F.reporte;
+      if (!el) {
+        el = document.createElement('div'); el.id = 'inv-reporte'; el.setAttribute('role', 'status');
+        document.body.appendChild(el); F.reporte = el;
+      }
+      el.textContent = L(`Reporte enviado ${n}/${total}`, `Report sent ${n}/${total}`);
+      el.dataset.n = String(n);
+      el.classList.remove('inv-on'); void el.offsetWidth; el.classList.add('inv-on');
+    }
+    pintarCuenta();
 
     // ---------- Bucle ----------
     function paso(dt, busy) {
       dt = Math.min(dt, 0.1); F.t += dt; uT.value += dt;
       if (activo()) revisar(dt, !busy);
+      pintarCuenta();
       dibujar();
     }
     G.on('update', (dt, busy) => { if (!F.prueba) paso(dt, busy); }, 88);
@@ -582,6 +633,11 @@
           const antes = mem.vistos.includes('iguana'); simular(0.7);
           ok('Despacio a 2 m: se avista a los 1,5 s, no antes', !antes && mem.vistos.includes('iguana') && aprend.filter(i => i === 'iguana').length === 1);
           ok('Aviso de reporte a la Estación con la cuenta (1/4)', textos.some(t => /Estación de Conservación \(1\/4\)/.test(t)), textos.slice(-1)[0]);
+          const rep = document.getElementById('inv-reporte'), cnt = document.getElementById('inv-cuenta');
+          ok('El reporte enviado se anima y el contador visible pasa a 1/4', !!(rep && rep.classList.contains('inv-on') && /Reporte enviado 1\/4/.test(rep.textContent) && cnt && /Patrulla 1\/4/.test(cnt.textContent) && !cnt.hidden), (rep && rep.textContent) + ' · ' + (cnt && cnt.textContent));
+          const zonas = especies().map(e => G.interaccion.find('invzona_' + e.id));
+          ok('El mapa marca la zona, no el sitio exacto (a 18 m o más del animal)', zonas.every(z => z && hogar[z.id.slice(8)] && Math.hypot(z.x - hogar[z.id.slice(8)].x, z.z - hogar[z.id.slice(8)].z) >= 18), zonas.map(z => z && Math.hypot(z.x - hogar[z.id.slice(8)].x, z.z - hogar[z.id.slice(8)].z).toFixed(0)).join(','));
+          ok('La marca no dice coordenadas y, ya avistada la iguana, su marca se esconde', zonas.every(z => z && !/\d{2,}/.test(z.label())) && !!(zonas[0] && !zonas[0].visible()), zonas[0] && zonas[0].label());
           simular(2); ok('Quedarse más no lo cuenta otra vez', aprend.filter(i => i === 'iguana').length === 1);
           // Foto: a 1,5 radios cuenta al instante
           quietaEn(ht.x + (espDe('tilapia').radio * 1.3), ht.z); G.emit('foto', { gesto: 'saludar' });
