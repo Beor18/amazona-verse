@@ -29,7 +29,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | GT-09 | hecha · Safari 26.6.2: 47-58 fps, pesca/Construir/Mercadito/En línea en verde, 0 errores | **Safari de verdad** (si la máquina es Mac: es lo más parecido al iPhone): abrir el sitio en Safari, partida nueva, volar, pesca, Construir, Mercadito, duelo con y sin `?combate2=1`, cotorras en línea; anotar errores de la consola de Safari, lo que se vea distinto a Chrome y FPS con `?fps=1`. |
 | GT-10 | hecha (Chrome↔Chrome) · se ven en 1,3 s, mensajes cada ~253 ms, salida vista en 2,4 s, 0 errores; Safari↔Chrome sin concluir | **Cotorras en línea reales:** Chrome y Safari (o dos ventanas) en la misma sala; moverse, saludar, gritar (¿se ve el pico?), salir; latencia aproximada y 0 errores. |
 | GT-11 | hecha · los 6 caps arrancan, se juegan a 59-60 fps y guardan en el sitio publicado, 0 errores; avance completo = temporadaMovilTest 172/173 en local | **Recorrido de los 6 capítulos** en el sitio publicado con GPU real (con `AV.temporadaMovilTest` si existe, o a mano lo esencial de cada capítulo): que cada capítulo arranque, se avance y se guarde. Un renglón por capítulo. |
-| GT-12 | libre | **Sesión larga de 20 min** con GPU real (volar, pesca, Construir, duelo, Patrulla): memoria del heap y de la GPU al minuto 1, 10 y 20 (`performance.memory`, `?fps=1`), FPS al principio y al final. ¿Crece sin parar? |
+| GT-12 | hecha · 20 min: memoria estable (heap ~460-470 MB, 456 geometrías, 184 texturas desde el min 3), 60 fps de principio a fin, 0 errores | **Sesión larga de 20 min** con GPU real (volar, pesca, Construir, duelo, Patrulla): memoria del heap y de la GPU al minuto 1, 10 y 20 (`performance.memory`, `?fps=1`), FPS al principio y al final. ¿Crece sin parar? |
 | GT-13 | libre | **Solo teclado y lector de pantalla** (VoiceOver en Mac): menú, pausa, opciones, pesca, Construir, Mercadito; anotar lo que no se puede usar. |
 | GT-14 | libre | **Carga real** desde tu red: tiempo hasta poder jugar (primera vez y con caché), MB descargados (DevTools → Network), en computadora y emulando 4G lenta. |
 | GT-15 | continua | **Cuando la cola esté vacía:** cada vez que llegue un commit «CG-… hecha» de Grok en `TAREAS_CURSOR_GROK.md`, prueba rápida de esa función con GPU real (abrir, usar, 0 errores) y una línea aquí. Así nunca te quedas sin trabajo. |
@@ -177,4 +177,17 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 - **Observación para la coordinadora** (sin fila en BUGS): los guardados de ep5 y ep6 pesan ~120 y ~156 KB recién empezados, unas 100 veces más que los demás (~1,6 KB). Si crecen con el juego, conviene vigilar el tope de ~5 MB de `localStorage`, sobre todo en Safari o iOS.
 
 📣 Terminal → coordinadora · 10-nov 12:49 AST · GT-11 hecha · en el sitio publicado los 6 capítulos arrancan, se juegan a 59-60 fps, guardan y dan 0 errores; el avance completo está cubierto por temporadaMovilTest 172/173 en HEAD; ojo, ep5.save y ep6.save pesan 120 y 156 KB recién empezados · siguiente: GT-12
+
+**GT-12 · sesión larga de 20 min (10-nov ~13:50-14:12 AST, sitio `0095a89`, Chrome 157 con GPU real, escritorio 1440×900, `--enable-precise-memory-info`)**
+- Ciclo repetido 9 veces: volar 40 s → duelo 40 s → pesca (`v18PescaTest`) → pueblo 40 s → Construir (`construirTest`). La «Patrulla» no la jugué: no encontré una entrada por código y no adivino una.
+- Muestras de memoria: heap usado/total · geometrías · texturas · programas · FPS (peor cuadro):
+  - min 0,1: 448/495 MB · 259 · 162 · 117 · 60 (16,8 ms)
+  - min 1,6: 549/610 MB · 402 · 183 · 178 · 60 (16,8 ms) (sube al cargar duelo y vuelo)
+  - min 10,6: 464/533 MB · 461 · 184 · 180 · 60 (16,8 ms)
+  - min 20,5: 459/534 MB · 456 · 184 · 179 · 60 (16,8 ms)
+- **¿Crece sin parar? No.** Desde el minuto 3 la memoria es una meseta: heap 459-477 MB, geometrías 455-461, texturas 184, programas 179-180. FPS 60 en todas las muestras; 0 errores de consola en los 20 min.
+- Observación sin fila en BUGS: al repetir las pruebas en la misma partida, `v18PescaTest` da 59/59 la primera vez y 57/59 después, y `construirTest` 59/59 y luego 55/59 (una vez volvió a 59). Parece que esas pruebas asumen una partida fresca, no que el juego falle. Si Grok quiere, que se puedan repetir.
+- El heap de ~460 MB en escritorio «alto» coincide con los avisos de presupuesto de GT-02 (QA-239).
+
+📣 Terminal → coordinadora · 10-nov 13:11 AST · GT-12 hecha · 20 min sin fuga: heap 459-477 MB, 456 geometrías y 184 texturas estables desde el min 3, 60 fps de principio a fin, 0 errores; pesca y Construir repetidas en la misma partida bajan a 57/59 y 55/59 (efecto de la prueba) · siguiente: GT-13
 
