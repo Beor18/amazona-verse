@@ -31,17 +31,17 @@ AVE.module('criadero', function (G) {
   const U = {
     titulo: { es: 'Criadero', en: 'Hatchery' }, eyebrow: { es: 'Aviario de Villa Raíz', en: 'Villa Raíz aviary' },
     cerrar: { es: 'Cerrar el criadero', en: 'Close the hatchery' }, docentes: { es: 'Docentes', en: 'Teachers' },
-    nivel: { es: 'Nivel', en: 'Level' }, dias: { es: 'Días de incubación', en: 'Incubation days' },
-    capsulas: { es: 'Cápsulas', en: 'Capsules' }, aprende: { es: 'Crece aprendiendo', en: 'Grows by learning' },
+    nivel: { es: 'Nivel', en: 'Level' }, dias: { es: 'Días en el nido', en: 'Days in the nest' },
+    capsulas: { es: 'Tus huevos', en: 'Your eggs' }, aprende: { es: 'Crece aprendiendo', en: 'Grows by learning' },
     real: { es: 'Del aviario real', en: 'From the real aviary' }, fuente: { es: 'Fuente', en: 'Source' },
     aprender: { es: 'Aprender', en: 'Learning' }, explorar: { es: 'Explorar', en: 'Exploring' }, cuidar: { es: 'Cuidar', en: 'Caring' },
-    cargas: { es: 'Cuidados disponibles', en: 'Care available' }, sinCargas: { es: 'Tu cotorrita está feliz. Aprende algo nuevo en el juego para tener más cuidados.', en: 'Your chick is happy. Learn something new in the game to get more care.' },
+    cargas: { es: 'Cuidados que te quedan', en: 'Care you have left' }, sinCargas: { es: 'Tu cotorrita está feliz. Aprende algo nuevo en el juego para cuidarla otra vez.', en: 'Your chick is happy. Learn something new in the game to care for it again.' },
     huevoCuidado: { es: 'Primero tiene que nacer: aprende y explora para darle calor.', en: 'It has to hatch first: learn and explore to keep it warm.' },
     incubar: { es: 'Poner en el nido', en: 'Place in the nest' }, ver: { es: 'Ver', en: 'View' }, bloqueada: { es: 'Por ganar', en: 'To earn' },
     eclosion: { es: '¡Se mueve! Ver la eclosión', en: 'It\'s moving! Watch it hatch' }, saltar: { es: 'Saltar', en: 'Skip' },
     nacio: { es: '¡Nació tu pichón!', en: 'Your chick hatched!' }, crecio: { es: '¡Creció!', en: 'It grew!' },
-    liberar: { es: 'Lección de la liberación', en: 'Release lesson' }, siguiente: { es: 'Siguiente', en: 'Next' },
-    demo: { es: 'Simular aprendizaje (prototipo)', en: 'Simulate learning (prototype)' }, posturas: { es: 'Posturas', en: 'Poses' },
+    liberar: { es: 'Lección al soltarla', en: 'Lesson when you let it go' }, siguiente: { es: 'Siguiente', en: 'Next' },
+    demo: { es: 'Probar: sumar aprendizaje', en: 'Try: add learning' }, posturas: { es: 'Poses', en: 'Poses' },
     ganada: { es: '¡Ganaste una cápsula!', en: 'You earned a capsule!' }, nada: { es: 'Toca una cápsula de abajo. Si dice Por ganar, ahí lees cómo conseguirla. Si ya es tuya, ponla en el nido.', en: 'Tap a capsule below. If it says To earn, that is how you get it. If it is already yours, place it in the nest.' },
     libre: { es: 'Libre en el bosque', en: 'Free in the forest' }, xpSig: { es: 'para el nivel', en: 'to level' }, max: { es: 'Nivel máximo', en: 'Max level' },
     proxima: { es: 'Próxima etapa', en: 'Next stage' }, cargando: { es: 'Preparando el nido…', en: 'Preparing the nest…' },
@@ -284,8 +284,8 @@ AVE.module('criadero', function (G) {
       } else {
         const L = nivelDe(c.xp), n = NIV(), lo = n[L - 1], hi = L < D().xp.nivelMax ? n[L] : lo;
         const sig = D().etapas.find(e => e.niveles && e.niveles[0] > L);
-        cuerpo = `<p class="cr-stat"><span>${esc(u('nivel'))}</span><b>${L}</b><em>${c.xp} XP</em></p>${barra(c.xp - lo, hi - lo)}
-          <p class="cr-hint">${L < D().xp.nivelMax ? `${hi - c.xp} XP ${esc(u('xpSig'))} ${L + 1}` : esc(u('max'))}${sig ? ` · ${esc(u('proxima'))}: ${esc(t(sig.nombre))} (${esc(u('nivel'))} ${sig.niveles[0]})` : ''}</p>
+        cuerpo = `<p class="cr-stat"><span>${esc(u('nivel'))}</span><b>${L}</b><em>${c.xp} ${esc(t({ es: 'puntos', en: 'points' }))}</em></p>${barra(c.xp - lo, hi - lo)}
+          <p class="cr-hint">${L < D().xp.nivelMax ? `${hi - c.xp} ${esc(t({ es: 'puntos', en: 'points' }))} ${esc(u('xpSig'))} ${L + 1}` : esc(u('max'))}${sig ? ` · ${esc(u('proxima'))}: ${esc(t(sig.nombre))} (${esc(u('nivel'))} ${sig.niveles[0]})` : ''}</p>
           ${c.estado === 'liberada' ? `<p class="cr-free">${esc(u('libre'))}</p>` : et === 'adulto' ? `<button class="btn magic sm" type="button" data-cr="liberar" data-icon="feather">${esc(u('liberar'))}</button>` : ''}`;
       }
       const rzP = RZ() && et !== 'huevo' ? RZ().def(RZ().de(c)) : null; // rareza de la cría (solo nacida o libre)
@@ -311,7 +311,7 @@ AVE.module('criadero', function (G) {
     root.querySelector('.cr-caps').innerHTML = `<h3>${esc(u('capsulas'))} <small>${Object.keys(st.capsulas).length}/${D().huevos.length}</small></h3><ul class="cr-cap-grid">${caps}</ul>${pista}`;
     // --- Aprender ---
     const F = st.fuentes, tot = F.aprender + F.explorar + F.cuidar || 1;
-    const fila = (k, cls) => `<li><span>${esc(u(k))}</span>${barra(F[k], tot, cls)}<b>${F[k]} XP</b></li>`;
+    const fila = (k, cls) => `<li><span>${esc(u(k))}</span>${barra(F[k], tot, cls)}<b>${F[k]} ${esc(t({ es: 'puntos', en: 'points' }))}</b></li>`;
     root.querySelector('.cr-learn').innerHTML = `<h3>${esc(u('aprende'))}</h3><ul class="cr-src-list">${fila('aprender', 'learn')}${fila('explorar', 'explore')}${fila('cuidar', 'care')}</ul>
       ${DEMO ? `<details class="cr-demo"><summary>${esc(u('demo'))}</summary><div class="cr-demo-row">
         <button class="chip" type="button" data-cr="demo" data-v="ficha:1">+40 ${esc(t(D().xp.fuentes.ficha.nombre))}</button>
@@ -1358,7 +1358,7 @@ AVE.module('criadero', function (G) {
     if (!b || b.hidden || !xp) return false;
     estiloHUD();
     const m = document.createElement('span'); m.className = 'nido-mas'; m.setAttribute('aria-hidden', 'true');
-    m.textContent = `+${xp} XP ${t({ es: 'al nido', en: 'to the nest' })}`;
+    m.textContent = `+${xp} ${t({ es: 'puntos al nido', en: 'points to the nest' })}`;
     for (const viejo of b.querySelectorAll('.nido-mas')) viejo.remove();
     b.appendChild(m);
     setTimeout(() => { if (m.parentNode) m.remove(); }, 1800);
@@ -1515,9 +1515,9 @@ AVE.module('criadero', function (G) {
     const filas = D().huevos.map(h => { const c = st.capsulas[h.id]; const et = etapaDe(c);
       return `<tr><td>${esc(t(h.nombre))}</td><td>${esc(t(D().rarezas[h.rareza]))}</td><td>${c ? esc(c.estado === 'liberada' ? u('libre') : t(etapaDef(et).nombre)) : '·'}</td><td>${c && et !== 'huevo' ? nivelDe(c.xp) : c ? diasDe(c) + '/' + D().incubacion.dias + ' d' : ''}</td><td>${esc(t(h.obtener.texto))}</td></tr>`; }).join('');
     const reales = D().real.map(f => `<li><b>${esc(f.estado)}</b> · ${esc(t(f.texto))}<br><small>${esc(f.fuente)}${f.url ? ` · <code>${esc(f.url)}</code>` : ''}${f.nota ? ' · ' + esc(f.nota) : ''}</small></li>`).join('');
-    return `<p class="note">${esc(t({ es: 'La cotorra crece con lo que el estudiante aprende y explora; cuidar da poco y nunca castiga. Nada baja con el tiempo y nada se compra. Solo se guarda en este dispositivo.', en: 'The parrot grows with what the student learns and explores; care gives little and never punishes. Nothing decays over time and nothing is bought. Stored on this device only.' }))}</p>
-      <h3>${esc(t({ es: 'De dónde sale la XP', en: 'Where XP comes from' }))}</h3>
-      <ul><li>${esc(u('aprender'))}: ${F.aprender} XP (${pc(F.aprender)} %)</li><li>${esc(u('explorar'))}: ${F.explorar} XP (${pc(F.explorar)} %)</li><li>${esc(u('cuidar'))}: ${F.cuidar} XP (${pc(F.cuidar)} %)</li></ul>
+    return `<p class="note">${esc(t({ es: 'La cotorra crece con lo que el niño aprende y explora. Cuidarla da poco y nunca castiga. Nada baja con el tiempo y nada se compra. Solo se guarda en este teléfono o computadora.', en: 'The parrot grows with what the child learns and explores. Caring gives a little and never punishes. Nothing goes down over time and nothing is bought. It is saved only on this phone or computer.' }))}</p>
+      <h3>${esc(t({ es: 'De dónde salen los puntos', en: 'Where the points come from' }))}</h3>
+      <ul><li>${esc(u('aprender'))}: ${F.aprender} ${esc(t({ es: 'puntos', en: 'points' }))} (${pc(F.aprender)} %)</li><li>${esc(u('explorar'))}: ${F.explorar} ${esc(t({ es: 'puntos', en: 'points' }))} (${pc(F.explorar)} %)</li><li>${esc(u('cuidar'))}: ${F.cuidar} ${esc(t({ es: 'puntos', en: 'points' }))} (${pc(F.cuidar)} %)</li></ul>
       <h3>${esc(u('capsulas'))}</h3><div class="maestro-scroll"><table class="maestro-tabla"><thead><tr><th>${esc(u('capsulas'))}</th><th>Reto</th><th>Etapa</th><th>Nivel / días</th><th>Cómo se gana</th></tr></thead><tbody>${filas}</tbody></table></div>
       <h3>${esc(t({ es: 'Capa real y fuentes', en: 'Real-world layer and sources' }))}</h3><ul class="maestro-fuentes">${reales}</ul>
       <h3>${esc(t({ es: 'Para la clase', en: 'For class' }))}</h3>
@@ -1748,7 +1748,7 @@ AVE.module('criadero', function (G) {
         check('El pack cap1 engancha el nido a la charla con Iguaca (LumaHelped)', !cfgBk || G.pack.id !== 'cap1' || cfgBk.desde === 'LumaHelped', cfgBk && String(cfgBk.desde));
         // Huevo del HUD y «+XP al nido»: la XP ya no sube en silencio
         const xpLugar = dar('lugar', 'prueba-lugar'), mas = btn && btn.querySelector('.nido-mas');
-        check('Descubrir un lugar da XP de explorar (fuente extra, 8 XP) y el botón muestra «+8 XP al nido»', xpLugar === 8 && st.fuentes.explorar >= 8 && !!mas && /\+8 XP/.test(mas.textContent), mas ? mas.textContent : 'sin aviso');
+        check('Descubrir un lugar da XP de explorar (fuente extra, 8 XP) y el botón muestra «+8 puntos al nido»', xpLugar === 8 && st.fuentes.explorar >= 8 && !!mas && /\+8 puntos/.test(mas.textContent), mas ? mas.textContent : 'sin aviso');
         check('La misma fuente no se repite (lugar ya otorgado)', dar('lugar', 'prueba-lugar') === 0);
         pasoMundo(0);
         const huevoHUD = btn && btn.querySelector('.nido-huevo svg'), etiqueta = btn ? btn.getAttribute('aria-label') || '' : '';
