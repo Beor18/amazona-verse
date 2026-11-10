@@ -214,11 +214,59 @@ AVE.module('guardado', function (G) {
     return hechos;
   }
 
+  // ---------- Interiores (CG-112): lo que no se entiende no se guarda ----------
+  // Mismo criterio que Construir: versión, números finitos y un tope. Coordenadas del cuarto, no del mapa.
+  const INT_EDIF = 24, INT_PIEZAS = 40, INT_M = 40;
+  const idInterior = s => typeof s === 'string' && /^[a-z0-9_]{1,32}$/i.test(s);
+  function limpiarInteriores(d) {
+    if (!esObj(d) || d.v !== 1 || !esObj(d.edificios)) return null;
+    const edificios = {};
+    let n = 0;
+    for (const id of Object.keys(d.edificios)) {
+      if (n >= INT_EDIF) break;
+      if (!idInterior(id)) continue;
+      const e = d.edificios[id];
+      if (!esObj(e)) continue;
+      const piezas = [];
+      for (const p of (Array.isArray(e.piezas) ? e.piezas : [])) {
+        if (piezas.length >= INT_PIEZAS) break;
+        if (!esObj(p) || !idInterior(p.t) || p.t.length > 24) continue;
+        if (typeof p.x !== 'number' || typeof p.z !== 'number' || !isFinite(p.x) || !isFinite(p.z) || Math.abs(p.x) > INT_M || Math.abs(p.z) > INT_M) continue;
+        if (!Number.isInteger(p.r) || p.r < 0 || p.r > 7) continue;
+        const pieza = { t: p.t, x: Math.round(p.x * 100) / 100, z: Math.round(p.z * 100) / 100, r: p.r };
+        if (p.mat != null) {
+          if (!idInterior(p.mat) || p.mat.length > 24) continue;
+          pieza.mat = p.mat;
+        }
+        piezas.push(pieza);
+      }
+      let estado = null;
+      if (esObj(e.estado)) {
+        estado = {};
+        let nk = 0;
+        for (const k of Object.keys(e.estado)) {
+          if (nk >= 6 || !idInterior(k) || k.length > 24) continue;
+          const v = e.estado[k];
+          if (typeof v === 'boolean' || (typeof v === 'number' && isFinite(v)) || (typeof v === 'string' && v.length <= 40)) { estado[k] = v; nk++; }
+        }
+        if (!nk) estado = null;
+      }
+      if (!piezas.length && !estado) continue;
+      edificios[id] = { piezas, estado };
+      n++;
+    }
+    return n ? { v: 1, edificios } : null;
+  }
+  function valorClave(k) {
+    if (k === 'interiores' && SAVED_KEYS.indexOf('interiores') >= 0) return limpiarInteriores(S.interiores);
+    return S[k];
+  }
+
   // ---------- Serializar ----------
   let escritoUltimo = 0;
   function paraGuardar(sinCapturas, be) {
     const o = { v: SAVE_VERSION, formato: FORMATO, escrito: escritoUltimo = Math.max(Date.now(), escritoUltimo + 1) };
-    for (const k of SAVED_KEYS) o[k] = S[k];
+    for (const k of SAVED_KEYS) o[k] = valorClave(k);
     o.profile = Object.assign({}, S.profile, { name: limpiarNombre(S.profile && S.profile.name) });
     o.comic = limpiarComic(S.comic);
     if (sinCapturas) o.captures = {};
@@ -352,6 +400,7 @@ AVE.module('guardado', function (G) {
     const next = Object.assign(f, d, { event: null, water: G.terreno.waterBase, vy: 0, captures: d.captures || {} });
     next.missions = Object.assign({}, f.missions, d.missions);
     next.comic = limpiarComic(d.comic);
+    if (SAVED_KEYS.indexOf('interiores') >= 0) next.interiores = limpiarInteriores(d.interiores);
     for (const k of ['formato', 'escrito', 'satelites', 'resumen']) delete next[k];
     replace(next);
     escritoUltimo = Math.max(escritoUltimo, d.escrito || 0);
@@ -631,6 +680,24 @@ AVE.module('guardado', function (G) {
         check('La migración limpia datos personales (teléfono y correo)', !js.includes('555 0123') && !js.includes('ana@') && m.profile.name === 'Ana', m.profile.name);
         const ok5 = cargarDe(CF);
         check('La partida migrada se carga en el juego', ok5 && S.step === 2 && S.profile.created && esObj(S.comic.vinetas));
+        if (SAVED_KEYS.indexOf('interiores') >= 0) check('CG-112 · una partida vieja llega sin interiores', m.interiores == null && S.interiores == null);
+      }
+      if (SAVED_KEYS.indexOf('interiores') >= 0) {
+        const bueno = { v: 1, edificios: { casa: { piezas: [{ t: 'nido', x: 1.256, z: -2, r: 2, mat: 'hoja' }, { t: 'roto', x: Infinity, z: 0, r: 0 }, { t: 'lejos', x: 80, z: 0, r: 1 }], estado: { luz: true, nota: 'ok', raro: { a: 1 } } } } };
+        const limpio = limpiarInteriores(bueno);
+        const p0 = limpio && limpio.edificios.casa.piezas[0];
+        check('CG-112 · se queda la pieza válida y se tira la rota', limpio && limpio.v === 1 && limpio.edificios.casa.piezas.length === 1 && p0.t === 'nido' && p0.x === 1.26 && p0.r === 2 && p0.mat === 'hoja' && limpio.edificios.casa.estado.luz === true && limpio.edificios.casa.estado.nota === 'ok' && !('raro' in limpio.edificios.casa.estado));
+        const muchas = []; for (let i = 0; i < 50; i++) muchas.push({ t: 'nido', x: 0, z: 0, r: 0 });
+        const tope = limpiarInteriores({ v: 1, edificios: { casa: { piezas: muchas, estado: null } } });
+        check('CG-112 · el tope es 40 piezas por cuarto', tope && tope.edificios.casa.piezas.length === 40);
+        check('CG-112 · un interior ilegible queda en null', limpiarInteriores({ v: 2, edificios: {} }) === null && limpiarInteriores('x') === null && limpiarInteriores({ v: 1 }) === null);
+        S.interiores = { v: 1, edificios: { bohio: { piezas: [{ t: 'mesa', x: 0.5, z: 1, r: 1 }], estado: null } } };
+        guardarEn(C); replace(freshState()); cargarDe(C);
+        check('CG-112 · el interior se guarda y vuelve', S.interiores && S.interiores.edificios.bohio.piezas.length === 1 && S.interiores.edificios.bohio.piezas[0].t === 'mesa' && S.interiores.edificios.bohio.piezas[0].r === 1);
+        S.interiores = { v: 9, edificios: { casa: { piezas: [{ t: 'nido', x: 0, z: 0, r: 0 }] } } };
+        guardarEn(C); replace(freshState()); cargarDe(C);
+        check('CG-112 · al guardar, lo ilegible no vuelve', S.interiores == null);
+        S.interiores = null;
       }
       // 5b. Satélite corrupto: vuelve de la copia; uno borrado a propósito no se resucita
       const RF = almacenFalso(); RF.set(sat.criadero, '{roto');

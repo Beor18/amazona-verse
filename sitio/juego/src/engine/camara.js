@@ -69,7 +69,40 @@ AVE.module('camara', function (G) {
   for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) addEventListener(ev, e => e.preventDefault(), { passive: false });
 
   function manual() { lastManual = now(); }
-  function dist() { return G.fisica.MOVE.flying ? CAM.distFly : CAM.dist; }
+  function dist() { return modoInterior ? 3.25 : (G.fisica.MOVE.flying ? CAM.distFly : CAM.dist); }
+  // CG-114: dentro de un cuarto la cámara se queda a 3,25 m, esconde el techo y el muro que queda entre ella y Vittata.
+  // Apagado, no cambia la cámara de fuera. El recorte contra muros (evitarMuros) sigue valiendo: no atraviesa paredes.
+  let modoInterior = null;
+  function cercaDeLaLinea(x, z, ax, az, bx, bz, radio) {
+    const abx = bx - ax, abz = bz - az, l2 = abx * abx + abz * abz || 1;
+    let t = ((x - ax) * abx + (z - az) * abz) / l2;
+    t = Math.max(0, Math.min(1, t));
+    const px = ax + abx * t, pz = az + abz * t;
+    return Math.hypot(x - px, z - pz) <= radio;
+  }
+  function ponerInterior(on) {
+    if (modoInterior) {
+      if (modoInterior.techo) modoInterior.techo.visible = modoInterior.techoV;
+      for (const m of modoInterior.muros) m.mesh.visible = m.vis;
+    }
+    if (!on) { modoInterior = null; return false; }
+    const o = on === true ? {} : on;
+    modoInterior = {
+      techo: o.techo || null,
+      techoV: o.techo ? o.techo.visible : true,
+      muros: (o.muros || []).filter(Boolean).map(mesh => ({ mesh, vis: mesh.visible })),
+    };
+    return true;
+  }
+  function aplicarInterior() {
+    if (!modoInterior) return;
+    if (modoInterior.techo) modoInterior.techo.visible = false;
+    const ax = S.pos.x, az = S.pos.z, bx = camPos.x, bz = camPos.z;
+    for (const m of modoInterior.muros) {
+      const p = m.mesh.position;
+      m.mesh.visible = cercaDeLaLinea(p.x, p.z, ax, az, bx, bz, 1.1) ? false : m.vis;
+    }
+  }
   // Elevación de la cámara normal (rad) y rango de `inclina`: del tope hacia abajo a inclinaMax sobre el horizonte
   const elev0 = () => { const f = G.fisica.MOVE.flying; return Math.atan2((f ? CAM.heightFly : CAM.height) - CAM.look, f ? CAM.distFly : CAM.dist); };
   const fijaInclina = v => Math.max(-CAM.inclinaMin * RAD, Math.min(elev0() + CAM.inclinaMax * RAD, +v || 0));
@@ -243,12 +276,20 @@ AVE.module('camara', function (G) {
       }
     }
     nominal.copy(camPos);
+    if (modoInterior) {
+      const hx = S.pos.x, hy = lookY(), hz = S.pos.z;
+      const dx = camPos.x - hx, dy = camPos.y - hy, dz = camPos.z - hz;
+      const L = Math.hypot(dx, dy, dz) || 1, k = 3.25 / L;
+      camPos.set(hx + dx * k, hy + dy * k, hz + dz * k);
+      nominal.copy(camPos);
+    }
     evitarCopas();
     // En laderas y barrancos la cámara no se mete bajo el terreno (ni en el agua)
     const gy = suelo(camPos.x, camPos.z);
     if (camPos.y < gy) camPos.y = gy;
     evitarMuros();
     histeresis(snap);
+    aplicarInterior();
   }
   const lookY = () => (anchorY == null ? S.pos.y : anchorY) + CAM.look - 0.5 * (G.fisica.MOVE.flying ? 0 : G.fisica.MOVE.agachada || 0);
   // Apunta a Vittata y, si el jugador mira arriba y la cámara no pudo bajar lo bastante (suelo, agua), gira la vista
@@ -523,13 +564,37 @@ AVE.module('camara', function (G) {
       }
       Object.assign(S.pos, keep.pos);
       ok('despegar y aterrizar junto al alero (134,183), 4 rumbos: la cámara se mueve sin tirones (≤ 1 m por cuadro)', salto < 1 && cortes === c1, 'salto máx ' + Math.round(salto * 100) / 100 + ' m · ' + JSON.stringify({ cortes: cortes - c1, suaves: suaves - sv1, en: dondeSalto }));
+      // CG-114: el modo interior no cambia la cámara de fuera. Encendido, se acerca a 3–3,5 m sin un salto, esconde el techo y el muro de en medio.
+      ponerInterior(null); place(true);
+      const alPunto = () => Math.hypot(camera.position.x - S.pos.x, camera.position.y - lookY(), camera.position.z - S.pos.z);
+      const dFuera = alPunto();
+      const techo = new THREE.Mesh(new THREE.BoxGeometry(2, 0.1, 2), new THREE.MeshBasicMaterial()); techo.name = 'techo-prueba'; techo.position.set(S.pos.x, S.pos.y + 2.4, S.pos.z);
+      const muro = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2, 2), new THREE.MeshBasicMaterial());
+      const lado = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2, 2), new THREE.MeshBasicMaterial());
+      const yaw0 = yaw; yaw = 0; place(true);
+      muro.position.set(S.pos.x + Math.sin(yaw) * 1.6, S.pos.y + 1, S.pos.z + Math.cos(yaw) * 1.6);
+      lado.position.set(S.pos.x + 6, S.pos.y + 1, S.pos.z);
+      G.renderer.scene.add(techo, muro, lado);
+      const antes = camera.position.clone();
+      ponerInterior({ techo, muros: [muro, lado] });
+      follow(1 / 60);
+      const saltoIn = camera.position.distanceTo(antes);
+      for (let i = 0; i < 90; i++) follow(1 / 60);
+      const dIn = alPunto();
+      ok('Interior: en un cuadro no salta, y a los 1,5 s queda entre 3 y 3,5 m', saltoIn < 1.2 && dIn >= 3 && dIn <= 3.5, 'salto ' + saltoIn.toFixed(2) + ' · ' + dIn.toFixed(2) + ' m');
+      ok('Interior: oculta el techo y el muro que tapa; el muro de al lado se queda', techo.visible === false && muro.visible === false && lado.visible === true);
+      ponerInterior(null); yaw = yaw0;
+      ok('Al salir del interior el techo vuelve y la distancia de fuera no era la de dentro', techo.visible === true && muro.visible === true && dFuera > 4, dFuera.toFixed(2));
+      G.renderer.scene.remove(techo, muro, lado);
+      techo.geometry.dispose(); muro.geometry.dispose(); lado.geometry.dispose();
     } catch (e) { ok('sin excepciones', false, e && e.message); }
+    ponerInterior(null);
     Object.assign(S.pos, keep.pos); S.vy = keep.vy; yaw = keep.yaw; inclina = keep.inclina; lastManual = keep.lastManual; vida.plano = keep.plano;
     for (const k of CLAVES) M[k] = keep.M[k];
     place(true);
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, get fovPicado() { return fovPicado; }, set fovPicado(v) { fovPicado = Number.isFinite(v) ? v : 0; }, CAM, juice, vida, get cortes() { return cortes; }, get dCol() { return dCol; }, get suaves() { return suaves; }, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, interior: ponerInterior, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, get fovPicado() { return fovPicado; }, set fovPicado(v) { fovPicado = Number.isFinite(v) ? v : 0; }, CAM, juice, vida, get cortes() { return cortes; }, get dCol() { return dCol; }, get suaves() { return suaves; }, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
     get anchorY() { return anchorY; } };
 });

@@ -121,6 +121,10 @@
     const hab18 = aDemanda('src/game/v18/habilidades.js', 'AVV18Habilidades'), comb18 = aDemanda('src/game/v18/combate.js', 'AVV18Combate');
     const cargarCombate = () => cargarV18().then(hab18).then(comb18);
     AV.v18CombateTest = o => cargarCombate().then(c => c.test(o));
+    const cargarPiloto = aDemanda('src/game/v18/piloto.js', 'AVV18Piloto');
+    AV.pilotoTest = o => cargarPiloto().then(p => p.test(o));
+    AV.pilotoCargar = cargarPiloto;
+    if (/[?&]piloto=1\b/.test(location.search)) alPrimerGesto(cargarPiloto);
     if (v18On) alPrimerGesto(cargarCombate);
     const descubrir18 = aDemanda('src/game/v18/descubrir.js', 'AVV18Descubrir'), cargarV18Descubrir = () => cargarV18().then(descubrir18); AV.v18DescubrirTest = o => cargarV18Descubrir().then(d => d.test(o)); if (v18On) alPrimerGesto(cargarV18Descubrir); // frente C: descubrir, desbloquear y elegir la cotorra de Dominica
     const reparar18 = aDemanda('src/game/v18/reparar.js', 'AVV18Reparar'), cargarV18Reparar = () => cargarV18().then(reparar18); AV.v18RepararTest = o => cargarV18Reparar().then(r => r.test(o)); if (v18On) alPrimerGesto(cargarV18Reparar); // frente B: puente colgante roto → reparado
@@ -170,6 +174,22 @@
     if (G.CONSTRUIR == null) G.CONSTRUIR = !/[?&]construir=0\b/.test(location.search);
     const cargarConstruir = aDemanda('src/game/construir.js', 'AVConstruir'); AV.construir = () => cargarConstruir().then(c => c.empezar()); AV.construirTest = o => cargarConstruir().then(c => c.test(o));
     if (G.CONSTRUIR) cargarConstruir().catch(e => console.warn('construir', e));
+    // CG-111: kit de interior. No se baja hasta la prueba o hasta ?interiores=1. No pone nada en el mundo por sí solo.
+    const cargarKit = aDemanda('src/game/interiores_kit.js', 'AVInterioresKit');
+    AV.interioresKitTest = o => cargarKit().then(k => k.test(o));
+    if (/[?&]interiores=1\b/.test(location.search)) cargarKit().catch(e => console.warn('interiores kit', e));
+    // V18.4 · CG-110: núcleo de interiores (entrar/salir en el sitio o por transición). Solo con ?interiores=1 hasta que Kelvin
+    // apruebe; sin la bandera no se baja nada. La prueba carga el módulo a demanda.
+    const cargarInteriores = aDemanda('src/game/interiores.js', 'AVInteriores');
+    AV.interioresTest = o => cargarInteriores().then(m => m.test(o));
+    if (/[?&]interiores=1\b/.test(location.search)) {
+      (window.AV_INTERIORES ? Promise.resolve() : AVE.assets.script('content/comun/interiores.js'))
+        .then(() => cargarInteriores()).then(m => m.iniciar()).catch(e => console.warn('interiores', e));
+    }
+    // CG-117: taller de Tuerca en k300. Solo con ?interiores=1. No toca interiores.js ni construir.js.
+    const cargarTaller = aDemanda('src/game/v18/taller_tuerca.js', 'AVTallerTuerca');
+    AV.tallerTuercaTest = o => cargarTaller().then(m => m.test(o));
+    if (/[?&]interiores=1\b/.test(location.search)) cargarTaller().then(m => m.preparar()).catch(e => console.warn('taller tuerca', e));
     // Mercadito del río (src/game/tienda.js). CG-92: no va en la descarga de antes de jugar. El botón se ve igual (Pausa y Mi personaje);
     // el script, las miniaturas y el saldo entran al abrirlo, al pescar, al empezar un hoyo o un reto, o si la partida ya tiene compras
     // (la ropa comprada tiene que estar puesta al entrar).
@@ -241,6 +261,7 @@
     if (G.input.test) AV.teclasTest = o => G.input.test(o); // src/engine/input.js
     if (G.input.tactil) AV.tactilTest = o => G.input.tactil(o); // CG-40: joystick bajo el dedo, cámara con el otro, despegar y vibrar
     if (G.camara.test) AV.camaraTest = o => G.camara.test(o); // src/engine/camara.js (mirar arriba, 31-oct)
+    if (G.solidos && G.solidos.test) AV.solidosTest = o => G.solidos.test(o); // CG-116
     if (G.accesibilidad && G.accesibilidad.test) AV.accesibilidadTest = o => G.accesibilidad.test(o); // src/game/accesibilidad.js
     // Mis récords y Compartir (src/game/records.js): se carga al pedirlo (pausa, portada o «Compartir» del cómic) y junto con los retos,
     // para anotar cada resultado a nombre de la cotorra que jugó. Todo local; la partida no se toca

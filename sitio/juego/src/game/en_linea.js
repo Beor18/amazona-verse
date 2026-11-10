@@ -421,17 +421,26 @@
         const visto = await espera(() => { const q = pares.get(botId); return q && q.ch && q.ch.root.parent === scene; }, 15000);
         const q = pares.get(botId);
         check('Aquí se ve a la otra cotorra (modelo en la escena, con su especie y anillo)', visto && q.esp === especieBot && !!q.marca && q.marca.parent === q.ch.root, q ? q.esp : 'no llegó');
-        // (con tickPares a mano: en Chrome sin GPU hay muy pocos cuadros por segundo)
-        await sleep(400); tickPares(0.016);
+        // Con la máquina cargada un sleep fijo se queda corto: se espera a la condición, con tope, y se avanza el pintado a mano.
         const p0 = q && q.ch ? q.ch.root.position.clone() : null;
-        await sleep(700); tickPares(0.016);
+        const movio = await espera(() => {
+          tickPares(0.05);
+          const p = q && q.ch && q.ch.root.position;
+          if (!p0 || !p) return false;
+          const d = p0.distanceTo(p);
+          return d > 0.3 && d < 6 && q.snaps.length && q.snaps[q.snaps.length - 1].v === 1;
+        }, 8000);
         const p1 = q && q.ch ? q.ch.root.position.clone() : null;
-        check('Y se mueve, interpolada', p0 && p1 && p0.distanceTo(p1) > 0.3 && p0.distanceTo(p1) < 6 && q.snaps[q.snaps.length - 1].v === 1, p0 && p1 ? p0.distanceTo(p1).toFixed(2) + ' m en 0,7 s' : '');
-        // 3. El bot ve a este juego moverse
-        const n0 = botRecibe.length;
-        S.pos.x += 1.5; await sleep(600); S.pos.x += 1.5; await sleep(600);
+        const dMov = p0 && p1 ? p0.distanceTo(p1) : 0;
+        check('Y se mueve, interpolada', movio && dMov > 0.3 && dMov < 6 && q.snaps[q.snaps.length - 1].v === 1, p0 && p1 ? dMov.toFixed(2) + ' m' : '');
+        // 3. El bot ve a este juego moverse (también por condición: el envío va en su intervalo, no en un sleep de 600 ms)
+        const n0 = botRecibe.length, tEnv = performance.now();
+        S.pos.x += 1.5;
+        const uno = await espera(() => botRecibe.length > n0, 8000);
+        S.pos.x += 1.5;
+        const dos = await espera(() => { const m = botRecibe.slice(n0); return m.length >= 2 && Math.abs(m[m.length - 1].x - m[0].x) > 1; }, 8000);
         const mios = botRecibe.slice(n0);
-        check('La otra cotorra recibe a esta y la ve moverse', mios.length >= 2 && Math.abs(mios[mios.length - 1].x - mios[0].x) > 1, mios.length + ' mensajes');
+        check('La otra cotorra recibe a esta y la ve moverse', uno && dos && mios.length >= 2 && Math.abs(mios[mios.length - 1].x - mios[0].x) > 1, mios.length + ' mensajes');
         // 4. Solo los campos permitidos, y nada más
         const todos = botRecibe.concat(E.ultimoPayload ? [E.ultimoPayload] : []);
         const malos = todos.filter(p => Object.keys(p).some(k => !CAMPOS.includes(k)) || CAMPOS.some(k => !(k in p)));
@@ -442,7 +451,8 @@
         check('La cara viaja: pico abierto, hablando y alas en abanico en la otra cotorra', !!cara && cara.pico >= 0.75 && cara.habla && cara.alas > 0.5 && chc.talkV > 0.3,
           cara ? JSON.stringify(cara) + ' · apertura ' + (chc.talkV || 0).toFixed(2) + ' rad' : 'sin modelo');
         check('El mensaje lleva solo id, especie, posición, rumbo, vuelo, gesto, mundo y la cara (pico, hablar, alas)', todos.length > 0 && malos.length === 0 && todos[0].id === yoId && /^[a-z0-9]{6,16}$/.test(todos[0].id), Object.keys(todos[0] || {}).join(','));
-        check('Ritmo de envío ≤ 10 por segundo', mios.length <= 14, mios.length + ' en 1,2 s');
+        const segEnv = Math.max(0.001, (performance.now() - tEnv) / 1000);
+        check('Ritmo de envío ≤ 10 por segundo', segEnv < 1.5 ? mios.length <= 14 : mios.length / segEnv <= 10, mios.length + ' en ' + segEnv.toFixed(1) + ' s');
         // 5. Lo raro que llegue se descarta
         const nAntes = pares.size;
         recibir({ id: 'zzzzzzzz', esp: 'vittata', x: 0, y: 0, z: 0, rumbo: 0, vuela: 0, gesto: '', mundo: mundoActual(), nombre: 'Ana' });
@@ -453,7 +463,7 @@
         // 6. Otro mundo: no se pinta
         clearInterval(mueve);
         bot.enviar('p', { id: botId, esp: especieBot, x: base.x, y: S.pos.y, z: base.z, rumbo: 0, vuela: 0, gesto: '', mundo: 'otro_mundo' });
-        check('Si está en otro capítulo no se pinta', await espera(() => { const r = pares.get(botId); return r && !r.ch; }, 3000));
+        check('Si está en otro capítulo no se pinta', await espera(() => { tickPares(0.05); const r = pares.get(botId); return r && !r.ch; }, 8000));
         // 7. Presencia: al salir el bot, se quita
         bot.salir();
         check('Cuando la otra sale de la sala, desaparece', await espera(() => !pares.has(botId) && !E.presentes.has(botId), 6000));

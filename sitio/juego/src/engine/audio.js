@@ -145,6 +145,12 @@ AVE.module('audio', function (G) {
     land: t => noise(t, 0.14, { type: 'lowpass', freq: 520, gain: 0.25 }),
     unlock: t => { [0, 2, 4, 5, 7].forEach((i, k) => tone(pent(i, 523.25), t + k * 0.09, 0.32, { gain: 0.16 })); noise(t + 0.45, 0.7, { freq: 6000, q: 0.7, gain: 0.06 }); },
     martillo: (t, v) => { const k = 1 + 0.06 * ((v || 0) % 3); tone(210 * k, t, 0.09, { type: 'square', to: 130 * k, gain: 0.07 }); noise(t, 0.07, { type: 'bandpass', freq: 1500, q: 1.2, gain: 0.2 }); }, // BM34: golpe de martillo en madera
+    // CG-103: lo nuevo, sin archivos. Energía en 200 Hz–3 kHz (se oye en la bocina de una laptop) y más flojo que «ring».
+    carrete: t => { for (let i = 0; i < 3; i++) { const t0 = t + i * 0.045; noise(t0, 0.035, { type: 'bandpass', freq: 1400, q: 3, gain: 0.1 }); tone(520, t0, 0.03, { type: 'square', gain: 0.035 }); } },
+    chapuzon: t => { noise(t, 0.36, { type: 'lowpass', freq: 1600, to: 380, gain: 0.2 }); tone(240, t, 0.2, { type: 'sine', to: 140, gain: 0.05 }); },
+    tac: t => { noise(t, 0.05, { type: 'bandpass', freq: 1200, q: 1.6, gain: 0.16 }); tone(190, t, 0.07, { type: 'triangle', to: 95, gain: 0.06 }); },
+    chaching: t => { tone(880, t, 0.14, { type: 'sine', gain: 0.08 }); tone(1318, t + 0.09, 0.18, { type: 'sine', gain: 0.06 }); },
+    clic: t => { tone(2400, t, 0.03, { type: 'square', gain: 0.045 }); noise(t, 0.025, { type: 'highpass', freq: 1800, gain: 0.06 }); },
     tick: t => tone(880, t, 0.06, { type: 'sine', gain: 0.05 }),
     wrong: t => tone(300, t, 0.28, { type: 'triangle', to: 190, gain: 0.14 }),
     grito, // Grito del Yunque: graznido + ondas (src/game/v18/habilidades.js, explorar.js)

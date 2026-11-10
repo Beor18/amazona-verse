@@ -27,8 +27,12 @@ window.AVV18Duelo2 = function (G) {
   if (G.v18duelo2) return G.v18duelo2;
   const H = G.v18hab, Cb = G.v18combate, S = G.S, F = G.fisica, M = F.MOVE, R = G.renderer, scene = R.scene, camera = R.camera;
   const sitio = Cb.sitio, ARENA_R = 12, PLUMAS = 5;
-  // Combate 2.0 (?combate2=1, combate.js → vida.c2): la misma máquina de estados para Vittata (J1) y el J2; sin la bandera, lo de siempre
+  // Combate 2.0 (para todos; ?combate2=0 lo apaga; combate.js → vida.c2): la misma máquina de estados para Vittata (J1) y el J2; sin la bandera, lo de siempre
   const C2 = Cb.vida && Cb.vida.c2, c2On = () => !!(C2 && C2.on()); let enUso = null;
+  // Combate 2.0 · extremidades y combos (combate.js → vida.ext, el mismo motor). J1: U O J L (las del mapa de input.js);
+  // J2: teclado numérico 7 9 4 6 (alas arriba, patas abajo) o mando LB RB LT RT. Sin la bandera no se toma ninguna tecla.
+  const XT = Cb.vida && Cb.vida.ext;
+  const EXT2 = { Numpad7: 'alaIzq', Numpad9: 'alaDer', Numpad4: 'pataIzq', Numpad6: 'pataDer' };
   const ALTURA = p => G.terreno.height(p.x, p.z);
   const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const TXT = {
@@ -41,6 +45,7 @@ window.AVV18Duelo2 = function (G) {
     // Las mismas teclas con <kbd> (juego en familia, 5-nov: «. , -» sueltos no se leían). Cada texto es su propio nodo (en.js).
     jugador1: 'Jugador 1:', jugador2: 'Jugador 2:', mover: 'mover', ala: 'ala', semillaMant: 'semilla (mantener: poder)', poder: 'poder', saltito: 'saltito',
     mando: 'Con un mando conectado, juega el Jugador 2: X ala · B semilla · Y poder · A saltito',
+    extTeclas: 'Alas y patas (combos): Jugador 1 con U O J L · Jugador 2 con 7 9 4 6 del teclado numérico o LB RB LT RT del mando', comboDe: n => 'Jugador ' + n,
     aviso: 'Duelo de 2 jugadores · Esc para salir', gana1: '¡Gana el Jugador 1!', gana2: '¡Gana el Jugador 2!',
     bloquea: '¡Bloqueado!', reduce: '¡El escudo aguantó parte del grito!', interrumpe: '¡Interrumpida!',
     // Entreno y pistas (8-nov); las de Jugador 1 son las mismas del duelo contra la Campeona
@@ -132,13 +137,37 @@ window.AVV18Duelo2 = function (G) {
   }
   function usar(f, id) {
     if (D.fase !== 'lucha' || !f) return { ok: false, motivo: 'fase' };
+    if (c2On() && EXD && EXD.bloquea(f, id)) return { ok: false, motivo: 'recupera' }; // recuperándose de un combo
     enUso = f; let r; try { r = H.usar(f, id, ctxDe(f)); } finally { enUso = null; }
     if (r.ok && C2) C2.accion(f, id); // Combate 2.0 (solo con la bandera): la pose de la acción, en este mismo cuadro
+    if (r.ok && c2On() && EXD) EXD.alPoder(f, id); // el poder justo después de un combo: «¡Bomba Boricua!»
     if (r.ok && !H.get(id).basico) f.ultPoder = id; // Imitación (oratrix): el registro del último poder de cada una
     if (r.ok) { D.stats[f === D.j1 ? 'usos1' : 'usos2']++; pintar(); alUsar(f, id, r); }
     return r;
   }
   const poderDe = f => f.poder;
+  // El motor de extremidades de este duelo (las mismas reglas, combos y poses que contra la Campeona)
+  const EXD = XT ? XT.crear({
+    lucha: () => D.fase === 'lucha',
+    otro: f => (f === D.j1 ? D.j2 : D.j1),
+    golpear: (de, bl, g) => golpear(de, bl, g),
+    despues: (s, fn) => D.timers.push({ t: s, fn }),
+    t: () => D.tLucha || 0,
+    ventana: () => XT.ventana(),
+    anunciar: (f, cb) => anunciarCombo(f, cb),
+    fxCombo: (f, cb, fase) => XT.fxCombo(f, cb, fase, f === D.j1 ? D.j2 : D.j1, true),
+    sonar,
+    alUsar: (f, k, r) => { const q = f === D.j1 ? 'ext1' : 'ext2'; D.stats[q] = (D.stats[q] || 0) + (k === 'poder' ? 0 : 1); if (r.combo) D.stats.combos = (D.stats.combos || 0) + 1; }
+  }) : null;
+  const usarExt = (f, k) => (c2On() && EXD && D.fase === 'lucha' ? EXD.usar(f, k) : { ok: false, motivo: 'fase' });
+  let comboVis = 0;
+  function anunciarCombo(f, cb) {
+    if (!hud) return; XT.css();
+    let e = hud.q('combo'); if (!e) { e = document.createElement('div'); e.className = 'vd-combo'; e.dataset.k = 'combo'; e.setAttribute('aria-live', 'polite'); hud.q('centro').after(e); }
+    e.textContent = ''; const b = document.createElement('b'); b.textContent = cb.nombre; e.appendChild(b);
+    const sm = document.createElement('small'); sm.textContent = TXT.comboDe(f === D.j1 ? 1 : 2); e.appendChild(sm);
+    e.className = 'vd-combo c-' + cb.id + (f === D.j2 ? ' rival' : ''); e.hidden = false; void e.offsetWidth; e.classList.add('sale'); e.dataset.id = cb.id; comboVis = 1.3;
+  }
 
   // ---------- Entrada del Jugador 1: la de siempre (Acción, Impulso y G), tomada mientras dura el duelo ----------
   // Tras terminar, «Otra vez» espera FIN_PAUSA ms: machacar el ala no reinicia sin ver quién ganó (como en combate.js)
@@ -163,6 +192,10 @@ window.AVV18Duelo2 = function (G) {
     if (G.pausa && G.pausa.activa && G.pausa.activa()) return; // con el menú de pausa abierto no se juega
     if (e.key === 'Escape' && D.fase !== 'nada') { e.stopImmediatePropagation(); e.preventDefault(); salir(); return; }
     const mv = MOVER2[e.code] || MOVER2[e.key], ac = ACC2[e.code];
+    if (!mv && !ac && c2On() && XT) { // Combate 2.0: extremidades del J2 (teclado numérico) y del J1 (las de input.js)
+      const k2 = EXT2[e.code], kl = (e.key || '').toLowerCase(), k1 = !k2 && kl.length === 1 ? XT.EXT_K.find(a => XT.teclaExt(a) === kl) : null;
+      if (k2 || k1) { e.stopImmediatePropagation(); e.preventDefault(); if (k2) entradaJ2.teclas++; if (!e.repeat) usarExt(k2 ? D.j2 : D.j1, k2 || k1); return; }
+    }
     if (!mv && !ac) {
       if ((e.key || '').toLowerCase() === 'g') { // poder directo del J1; QA-173: consumida, no inclina la cámara
         e.stopImmediatePropagation();
@@ -182,7 +215,7 @@ window.AVV18Duelo2 = function (G) {
   }
   function teclaArriba(e) {
     const mv = MOVER2[e.code] || MOVER2[e.key], ac = ACC2[e.code];
-    if (!mv && !ac) return;
+    if (!mv && !ac) { if (c2On() && EXT2[e.code]) { e.stopImmediatePropagation(); e.preventDefault(); } return; }
     e.stopImmediatePropagation(); e.preventDefault();
     if (mv) t2[mv] = false;
     else if (ac === 'correr') t2.correr = false;
@@ -210,11 +243,12 @@ window.AVV18Duelo2 = function (G) {
       if (nuevoG(gp, 2)) usar(D.j2, 'golpe_ala');
       if (nuevoG(gp, 3)) usar(D.j2, poderDe(D.j2));
       if (nuevoG(gp, 0)) saltar2();
+      if (c2On()) { if (nuevoG(gp, 4)) usarExt(D.j2, 'alaIzq'); if (nuevoG(gp, 5)) usarExt(D.j2, 'alaDer'); if (nuevoG(gp, 6)) usarExt(D.j2, 'pataIzq'); if (nuevoG(gp, 7)) usarExt(D.j2, 'pataDer'); } // Combate 2.0
       if (nuevoG(gp, 1)) pad.sostB = performance.now();
       if (!btnG(gp, 1) && pad.b[1] && pad.sostB) { const ms = performance.now() - pad.sostB; pad.sostB = 0; usar(D.j2, ms >= 450 ? poderDe(D.j2) : 'semilla'); }
     } else if (D.fase === 'fin' && (nuevoG(gp, 0) || nuevoG(gp, 2))) otraVezSiListo();
     for (let i = 0; i < gp.buttons.length; i++) pad.b[i] = btnG(gp, i);
-    const o = pad.out; o.x = x; o.y = y; o.correr = Math.hypot(x, y) > 0.92 || btnG(gp, 5);
+    const o = pad.out; o.x = x; o.y = y; o.correr = Math.hypot(x, y) > 0.92 || (!c2On() && btnG(gp, 5)); // con Combate 2.0, RB es el ala derecha
     return o;
   }
 
@@ -455,7 +489,7 @@ window.AVV18Duelo2 = function (G) {
     const bot = ESPECIES.map(e => `<button class="btn${e.id === D.esp2 ? '' : ' ghost'}" type="button" data-d2sp="${e.id}" aria-pressed="${e.id === D.esp2}">${esc(e.nombre)}<small style="display:block;opacity:.8">${esc((H.get(H.poderDe(e.id)) || {}).nombre || '')}</small></button>`).join('');
     G.ui.showCard(`<div class="v18-d2"><h2>${esc(TXT.titulo)}</h2><p>${esc(TXT.nota)}</p><p><b>${esc(TXT.elige)}</b></p><div class="row">${bot}</div>` +
       `<div class="d2-teclas">${filaTeclas(TXT.jugador1, [['W A S D', TXT.mover], ['E', TXT.ala], ['F', TXT.semillaMant], ['G', TXT.poder]])}` +
-      `${filaTeclas(TXT.jugador2, [['← ↑ ↓ →', TXT.mover], ['.', TXT.ala], [',', TXT.semillaMant], ['-', TXT.poder], ['Enter', TXT.saltito]])}<div class="note">${esc(TXT.mando)}</div></div>` +
+      `${filaTeclas(TXT.jugador2, [['← ↑ ↓ →', TXT.mover], ['.', TXT.ala], [',', TXT.semillaMant], ['-', TXT.poder], ['Enter', TXT.saltito]])}<div class="note">${esc(TXT.mando)}</div>${c2On() ? `<div class="note" data-d2ext>${esc(TXT.extTeclas)}</div>` : ''}</div>` +
       `<div class="row"><button class="btn" id="v18-d2-ok" type="button">${esc(TXT.jugar)}</button><button class="btn ghost" id="v18-d2-no" type="button">${esc(TXT.cancelar)}</button></div></div>`);
     const card = G.ui.$('card');
     card.querySelectorAll('[data-d2sp]').forEach(b => { b.onclick = () => {
@@ -482,7 +516,7 @@ window.AVV18Duelo2 = function (G) {
     crearJ2(); pielJ2();
     quitarBalas(); D.timers.length = 0; D.trampas.length = 0;
     if (D.j1 && D.j1.wob && pl3d && pl3d.root) { pl3d.root.rotation.z -= D.j1.wob; D.j1.wob = 0; }
-    nuevos(); D.resultado = null; D.stats = { usos1: 0, usos2: 0, golpes: 0 };
+    nuevos(); D.resultado = null; D.stats = { usos1: 0, usos2: 0, golpes: 0 }; D.tLucha = 0; comboVis = 0; if (hud && hud.q('combo')) hud.q('combo').hidden = true;
     const conEntreno = !!o.entreno || (!o.sinCuenta && !o.sinEntreno && !entVisto()); // el primer duelo de 2 empieza con el entreno
     ent = null; for (const k in pistas) { const P = pistas[k]; P.t = 2.5; P.pl = PLUMAS; P.golpeado = false; }
     colocar();
@@ -615,6 +649,7 @@ window.AVV18Duelo2 = function (G) {
     if (D.fase === 'nada') return;
     if (C2) C2.pasoReloj(dt); // hit-stop visual de Combate 2.0 (mientras dura este duelo, combate.js no lo lleva)
     if (centroT > 0) { centroT -= dt; if (centroT <= 0 && hud && D.fase !== 'cuenta') hud.q('centro').textContent = ''; }
+    if (comboVis > 0) { comboVis -= dt; if (comboVis <= 0 && hud && hud.q('combo')) hud.q('combo').hidden = true; }
     const mando = leerMando();
     if (D.fase === 'cuenta') {
       D.cuenta -= dt;
@@ -623,7 +658,8 @@ window.AVV18Duelo2 = function (G) {
       M.vx = M.vz = 0; // nadie se mueve hasta «¡Ya!»
     }
     if (D.fase === 'lucha') {
-      H.paso(D.j1, dt); H.paso(D.j2, dt);
+      D.tLucha = (D.tLucha || 0) + dt;
+      H.paso(D.j1, dt); H.paso(D.j2, dt); if (c2On() && EXD) { EXD.paso(D.j1, dt); EXD.paso(D.j2, dt); }
       for (let i = D.timers.length - 1; i >= 0; i--) { const t = D.timers[i]; t.t -= dt; if (t.t <= 0) { D.timers.splice(i, 1); t.fn(); if (D.fase !== 'lucha') break; } }
       if (D.fase === 'lucha') pasoTrampas(dt);
       if (D.fase === 'lucha') pasoBalas(dt);
@@ -862,7 +898,7 @@ window.AVV18Duelo2 = function (G) {
         G.emit('render', 0.016);
         check('du3: en el duelo de 2 no se ven la flecha ni el haz de la guía de la misión', !G.fx.guideArrow.visible && !G.fx.guideBeam.visible, JSON.stringify({ flechaAntes: flecha0 }));
       }
-      // Combate 2.0 (?combate2=1): el J2 y Vittata con la máquina de estados de combate.js; sin la bandera, la capa de siempre
+      // Combate 2.0 (para todos; ?combate2=0 lo apaga): el J2 y Vittata con la máquina de estados de combate.js; sin la bandera, la capa de siempre
       if (C2) {
         const c2_0 = G.combate2;
         try {
@@ -874,6 +910,19 @@ window.AVV18Duelo2 = function (G) {
           check('Combate 2.0 (duelo de 2): con la bandera, el aletazo de Vittata sale en su pose de impacto y el J2 lo encaja (impacto → vuelve); sin ella, la capa de siempre',
             sinC2 && u.acierto && acc && acc.fam === 'ala' && acc.u >= C2.FAM.ala.imp - 1e-6 && imp >= 3 && subs.indexOf('impacto') >= 0 && subs[subs.length - 1] !== 'impacto',
             JSON.stringify({ sinC2, acierto: u.acierto, acc: acc && { fam: acc.fam, u: +acc.u.toFixed(3) }, imp, subs }));
+          // Extremidades y combos (10-nov): J1 con U O J L (input.js), J2 con 7 9 4 6 del teclado numérico; sin la bandera esas teclas no se toman
+          G.combate2 = false; iniciar({ forzar: true, sinCuenta: true, sinEntreno: true }); cerca(1.5); limpio();
+          const n7 = tecla('keydown', '7', 'Numpad7'); tecla('keyup', '7', 'Numpad7');
+          const apagada = !n7.defaultPrevented && !D.j2.ext && !D.j1.ext;
+          G.combate2 = true; iniciar({ forzar: true, sinCuenta: true, sinEntreno: true }); cerca(1.5); limpio(); S.facing = { x: 1, z: 0 }; correr(0.2);
+          const eu = tecla('keydown', 'u', 'KeyU'); tecla('keyup', 'u', 'KeyU'); const acc1 = D.j1.anima2 && D.j1.anima2.acc; correr(0.15);
+          const j1 = { prev: eu.defaultPrevented, usos: D.j1.ext && D.j1.ext.usos, subs: acc1 ? acc1.fam + '@' + acc1.lado : '', pl2: D.j2.plumas };
+          correr(0.8); limpio(); cerca(1.5);
+          tecla('keydown', '4', 'Numpad4'); tecla('keyup', '4', 'Numpad4'); correr(0.25, () => cerca(1.5)); tecla('keydown', '6', 'Numpad6'); tecla('keyup', '6', 'Numpad6'); correr(0.1, () => cerca(1.5));
+          const nomC = hud.q('combo'), j2 = { usos: D.j2.ext && D.j2.ext.usos, combos: D.j2.ext && Object.keys(D.j2.ext.combos).join(','), nom: nomC && !nomC.hidden && nomC.dataset.id, subs: D.j2.anima2 && (D.j2.anima2.historial || []).slice(-3).join('>') };
+          check('Combate 2.0 (duelo de 2): extremidades y combos para las dos (J1: U O J L; J2: 7 9 4 6 del teclado numérico) con el nombre del combo; sin la bandera esas teclas no se toman',
+            apagada && j1.prev && j1.usos === 1 && /ext_ala/.test(j1.subs) && j1.pl2 === 4 && j2.usos === 2 && j2.combos === 'patita' && j2.nom === 'patita' && /combo_patita/.test(j2.subs),
+            JSON.stringify({ apagada, j1, j2 }));
         } finally { G.combate2 = c2_0; salir(); }
       }
       // 7. Salir: todo vuelve

@@ -38,7 +38,8 @@
     historia: {
       pasos: [
         // Mejora 1: al despertar, Iguaca llama desde la copa del flamboyán de la plaza (o el techo del taller): hay que despegar y posarse
-        { id: 'luma', texto: (S, G) => 'Despega, vuela hasta Iguaca y pósate a su lado, en ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán'),
+        // CG-105: el objetivo largo no cabía de un vistazo. La flecha sigue marcando la copa.
+        { id: 'luma', texto: () => 'Vuela y pósate junto a Iguaca',
           guia: G => (G.c.luma ? G.c.luma.guia() : at(G, 'luma')) },
         // Revisar el taller avanza solo al examinar la máquina y el transmisor (también vale si se revisaron antes de subir con Iguaca)
         { id: 'taller', texto: 'Revisa tu taller dañado',
@@ -99,9 +100,9 @@
         if (hecho) return; hecho = true; soltar();
         if (saltada) { G.dialogo.cancelarLibre(); if (A) A.fin(); } else if (A) A.claro(2200);
         const llama = 'La Gran Ruptura dañó el taller. ¡Iguaca te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.';
-        G.ui.toast(llama, 5000);
+        G.ui.toast(llama, 3200);
         // El taller se descubre al despertar y su aviso («Lugares descubiertos 1/32») tapa esta llamada. Se repite cuando ese aviso se va.
-        setTimeout(() => { if (G.S.step === 0 && !G.S.complete) G.ui.toast(llama, 5000); }, 3400);
+        setTimeout(() => { if (G.S.step === 0 && !G.S.complete) G.ui.toast(llama, 2800); }, 2600);
       };
       function alTeclear(e) { if (btn && !btn.isConnected) { soltar(); return; } /* W35: si otro quitó «Saltar intro» (apertura.fin() al cargar partida o al abrir el minigolf), la escucha se suelta y la tecla sigue su camino */ if (e.repeat || ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return; if (G.pausa && G.pausa.activa && G.pausa.activa()) return; e.preventDefault(); e.stopPropagation(); terminar(true); }
       if (!G.quiet) {
@@ -619,9 +620,9 @@
         const p = G.terreno.poi && G.terreno.poi('flamboyan_plaza');
         if (p) {
           const hero = ((((MAPA_C1 || {}).flora || {}).heroes) || []).find(h => h.especie === 'flamboyan' && Math.hypot(h.pos[0] - p.x, h.pos[2] - p.z) < 0.5);
-          return { x: p.x, z: p.z, y: H(p.x, p.z) + 7, r: 1.7, esc: (hero && hero.escala) || 1, arbol: true, nombre: 'la copa del flamboyán de la plaza' };
+          return { x: p.x, z: p.z, y: H(p.x, p.z) + 7, r: 2.4, esc: (hero && hero.escala) || 1, arbol: true, nombre: 'la copa del flamboyán de la plaza' };
         }
-        const T = C.T; return { x: T.x, z: T.z, y: T.base + 3.9, r: 1.6, esc: 1, arbol: false, nombre: 'el techo del taller' };
+        const T = C.T; return { x: T.x, z: T.z, y: T.base + 3.9, r: 2.2, esc: 1, arbol: false, nombre: 'el techo del taller' };
       })();
       // Altura de la copa: la del modelo del flamboyán por su escala en el mapa, cuando carga la flora (hasta entonces, 7 m)
       if (percha.arbol && G.vegetacion && G.vegetacion.listo) G.vegetacion.listo.then(() => {
@@ -632,8 +633,14 @@
       const lumaArriba = () => S.step === 0 && !S.complete;
       let lumaK = lumaArriba() ? 0 : 1; // 0 = en la percha, 1 = en su sitio de la plaza
       let llamo = false;
-      // Posada junto a Iguaca: a su altura y dentro de la percha (desde el suelo, bajo la copa, no se le puede hablar)
-      const juntoALuma = () => Math.abs(S.pos.y - percha.y) < 1.6;
+      // Posada junto a Iguaca. Antes solo valía ±1,6 m de la copa: el niño llegaba volando un poco por encima,
+      // pulsaba Acción 6 veces y el paso no avanzaba (playtest CG-58: 39,9 s). Ahora cabe un planeo justo
+      // encima. Desde el suelo, varios metros más abajo, sigue sin poder hablarle.
+      const juntoALuma = () => {
+        const dh = Math.hypot(S.pos.x - percha.x, S.pos.z - percha.z);
+        const dy = S.pos.y - percha.y;
+        return dh < 2.6 && dy > -0.8 && dy < 2.8;
+      };
       lumaIt.visible = () => !lumaArriba() || juntoALuma();
       // BM26: dónde está Iguaca (punto de interacción y colisión) es simulación y va en 'update'; en 'render' solo se coloca el
       // sprite. Antes todo iba en 'render' y, sin cuadros de dibujo (pestaña o iframe oculto: sin requestAnimationFrame), el punto
@@ -648,6 +655,20 @@
       };
       lumaPos(0);
       G.on('update', dt => { lumaPos(dt); }, 12);
+      // CG-105: al entrar en la zona de hablar, se sienta en la copa. Un acercamiento lento peleaba con el
+      // palo del playtest y el vuelo daba vueltas (1222 s de juego). Solo mientras Iguaca espera arriba.
+      G.on('update', () => {
+        if (!lumaArriba() || G.dialogo.open()) return;
+        const dh = Math.hypot(percha.x - S.pos.x, percha.z - S.pos.z);
+        const dy = S.pos.y - percha.y;
+        if (dh > 2.4 || dy < -0.6 || dy > 3 || S.vy > 4) return;
+        const M = G.fisica.MOVE;
+        if (!M.flying && !M.landing && dh < 0.8 && dy < 1.1 && dy > -0.2) return;
+        S.pos.x = percha.x; S.pos.z = percha.z; S.pos.y = percha.y + 0.35; S.vy = 0;
+        M.flying = false; M.landing = false;
+        if (M.vx != null) M.vx = 0;
+        if (M.vz != null) M.vz = 0;
+      }, 8);
       G.on('render', (dt, t) => {
         const e = lumaPos(0), x = lumaIt.x, z = lumaIt.z;
         const gy = H(LUMA_SUELO.x, LUMA_SUELO.z), y = percha.y + (gy - percha.y) * e;

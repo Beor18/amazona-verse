@@ -407,7 +407,7 @@
       const t = F.t;
       for (let i = 0; i < h.individuos.length; i++) {
         const v = h.individuos[i];
-        if (id === 'iguana') { v.x = h.x; v.z = h.z; v.y = h.y - 0.035; v.yaw = h.yaw; } // tomando el sol: quieta (la vida va en su shader)
+        if (id === 'iguana') { v.x = h.x; v.z = h.z; v.y = h.y + 0.12; v.yaw = h.yaw; } // el cuerpo queda sobre el suelo; a ras de la orilla el terreno la tapaba
         else if (id === 'tilapia') { // nadan en grupo, en círculo lento
           const a = v.a + t * 0.35, r = 0.9 + 0.25 * Math.sin(t * 0.5 + v.fase);
           v.x = h.x + Math.cos(a) * r; v.z = h.z + Math.sin(a) * r; v.y = Math.max(H(v.x, v.z) + 0.15, h.agua - 0.3 - 0.08 * i);
@@ -429,7 +429,7 @@
         mover(e.id, h);
         const fases = im.geometry.attributes.iFase;
         h.individuos.forEach((v, i) => { dummy.position.set(v.x, v.y, v.z); dummy.rotation.set(0, v.yaw, 0); dummy.updateMatrix(); im.setMatrixAt(i, dummy.matrix); fases.setX(i, v.fase); });
-        im.count = h.individuos.length; im.instanceMatrix.needsUpdate = true; fases.needsUpdate = true; im.visible = true;
+        im.count = h.individuos.length; im.instanceMatrix.needsUpdate = true; fases.needsUpdate = true; im.visible = true; im.layers.set(0); im.frustumCulled = false;
         if (e.donde !== 'orilla') { // «visor»: bajo el agua solo se distinguen de cerca; lejos el agua los tapa (se dibujan antes que ella)
           const mira = Math.hypot(S.pos.x - h.x, S.pos.z - h.z) < (e.radio || 8) * VISOR && S.pos.y - h.y < 14;
           im.material.depthTest = !mira; im.renderOrder = mira ? 10 : -1; h.visor = mira;
@@ -512,7 +512,7 @@
         '.inv-album small{opacity:.9;line-height:1.35}.inv-album i{opacity:.8;font-size:.9em}.inv-album .fauna-fuente a{color:inherit;text-decoration:underline;word-break:break-word}' +
         '.inv-album .fauna-fuente a:focus-visible{outline:3px solid #ffe066;outline-offset:2px}' +
         '.inv-album .fauna-falta{opacity:.6}.inv-intro,.inv-nota{display:block;opacity:.85;line-height:1.35;margin:.2em 0 .5em}' +
-        '#inv-cuenta{position:fixed;left:max(12px,env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + 78px);z-index:var(--z-hud,5);' +
+        '#inv-cuenta.hud{position:relative;left:auto;top:auto;flex:1 0 100%;width:max-content;max-width:100%;margin:8px 0 0;z-index:var(--z-hud,5);' +
         'min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:999px;background:#243a28;color:#f4ffe8;border:2px solid #d7e7a8;' +
         'font:700 16px/1 var(--font-display,sans-serif);box-shadow:0 3px 0 rgba(0,0,0,.28);pointer-events:none}' +
         '#inv-cuenta[hidden]{display:none}' +
@@ -543,7 +543,8 @@
     function cuentaEl() {
       if (F.cuenta) return F.cuenta;
       const d = document.createElement('div'); d.id = 'inv-cuenta'; d.className = 'hud'; d.setAttribute('role', 'status'); d.hidden = true;
-      document.body.appendChild(d); return (F.cuenta = d);
+      const padre = document.getElementById('top') || document.body;
+      padre.appendChild(d); return (F.cuenta = d);
     }
     function pintarCuenta() {
       const el = cuentaEl(), n = mem.vistos.length, t = especies().length || 4;
@@ -563,6 +564,17 @@
       el.classList.remove('inv-on'); void el.offsetWidth; el.classList.add('inv-on');
     }
     pintarCuenta();
+    // El primer dibujo, en SwiftShader, aún no tiene el programa: la captura de la landing no la veía.
+    (function calentarIguana() {
+      const R = G.renderer && G.renderer.renderer, cam = G.renderer && G.renderer.camera, im = mallas.iguana;
+      if (!R || !cam || !im || typeof R.compile !== 'function') return;
+      const n = im.count, vis = im.visible;
+      im.count = 1; im.visible = true; im.layers.set(0);
+      const fant = new THREE.Scene();
+      scene.remove(im); fant.add(im);
+      try { R.compile(fant, cam); } catch (e) { /* el primer dibujo lo compila */ }
+      finally { fant.remove(im); scene.add(im); im.count = n; im.visible = vis; }
+    })();
 
     // ---------- Bucle ----------
     function paso(dt, busy) {
@@ -613,6 +625,16 @@
           F.prueba = true; G.INVASORAS = true; simular(0.3);
           const lI = nivelAgua(hi.x, hi.z);
           ok('Iguana en tierra seca junto al río (a 18 m o menos de un punto del cauce)', !(lI > hi.y + 0.1) && RIO.some(p => Math.hypot(p[0] - hi.x, p[1] - hi.z) < 18 + p[3]), 'y ' + hi.y.toFixed(2) + ' · agua ' + lI);
+          const quieto = G.quiet, prueba0 = F.prueba, cam0 = G.renderer.camera.position.clone();
+          G.quiet = false; F.prueba = false; G.INVASORAS = true;
+          quietaEn(hi.x + 6, hi.z); G.renderer.camera.position.set(S.pos.x, S.pos.y + 1.6, S.pos.z);
+          paso(0.05, false);
+          const imI = mallas.iguana, m4 = new THREE.Matrix4(), pI = new THREE.Vector3();
+          imI.getMatrixAt(0, m4); pI.setFromMatrixPosition(m4);
+          const d6 = Math.hypot(S.pos.x - hi.x, S.pos.z - hi.z), sueloI = H(pI.x, pI.z);
+          ok('La iguana es visible a 6 m', imI.visible && imI.count >= 1 && (imI.layers.mask & 1) !== 0 && pI.y >= sueloI + 0.05 && d6 > 5 && d6 < 7 && Math.hypot(pI.x - hi.x, pI.z - hi.z) < 1.5,
+            'd ' + d6.toFixed(1) + ' · visible ' + imI.visible + ' · n ' + imI.count + ' · capa ' + imI.layers.mask + ' · y ' + pI.y.toFixed(2) + ' / suelo ' + sueloI.toFixed(2));
+          G.renderer.camera.position.copy(cam0); G.quiet = quieto; F.prueba = prueba0;
           const bajo = (h, v) => v.y < nivelAgua(v.x, v.z) - 0.05 && v.y >= H(v.x, v.z) - 0.01;
           ok('Tilapias bajo el agua del río y sobre el fondo', ht.individuos.length === 4 && ht.individuos.every(v => bajo(ht, v)), ht.individuos.map(v => (nivelAgua(v.x, v.z) - v.y).toFixed(2)).join(','));
           ok('Plecos en el fondo del río, bajo el agua', hp.individuos.every(v => bajo(hp, v) && v.y - H(v.x, v.z) < 0.1));
@@ -636,6 +658,35 @@
           ok('Aviso de reporte a la Estación con la cuenta (1/4)', textos.some(t => /Estación de Conservación \(1\/4\)/.test(t)), textos.slice(-1)[0]);
           const rep = document.getElementById('inv-reporte'), cnt = document.getElementById('inv-cuenta');
           ok('El reporte enviado se anima y el contador visible pasa a 1/4', !!(rep && rep.classList.contains('inv-on') && /Reporte enviado 1\/4/.test(rep.textContent) && cnt && /Patrulla 1\/4/.test(cnt.textContent) && !cnt.hidden), (rep && rep.textContent) + ' · ' + (cnt && cnt.textContent));
+          {
+            const solapan = (a, b) => !!(a && b && a.width > 0 && b.width > 0 && a.left < b.right - 1 && a.right > b.left + 1 && a.top < b.bottom - 1 && a.bottom > b.top + 1);
+            const ahora = document.querySelector('#steps li.now');
+            const txtObj = ahora ? ahora.textContent : '';
+            if (ahora) ahora.textContent = 'Vuela y pósate junto a Iguaca';
+            const medir = async (w, h) => {
+              const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+              fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:' + w + 'px;height:' + h + 'px;border:0';
+              const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => '<link rel="stylesheet" href="' + l.href + '">').join('');
+              const top = document.getElementById('top');
+              const css = document.getElementById('invasoras-css');
+              let cuerpo = top ? top.outerHTML : '';
+              if (!/li class="now"/.test(cuerpo)) cuerpo = cuerpo.replace('</ol>', '<li class="now">Vuela y pósate junto a Iguaca</li></ol>');
+              fr.srcdoc = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + hojas + (css ? css.outerHTML : '') + '</head><body>' + cuerpo + '</body></html>';
+              document.body.appendChild(fr);
+              await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 2500); });
+              const md = fr.contentDocument;
+              const obj = md && md.querySelector('#steps li.now'), pill = md && md.getElementById('inv-cuenta');
+              if (pill) pill.hidden = false;
+              const o = obj && obj.getBoundingClientRect(), p = pill && pill.getBoundingClientRect();
+              const pos = pill && md.defaultView.getComputedStyle(pill).position;
+              const mal = !md ? 'sin documento' : !obj ? 'sin objetivo' : !pill ? 'sin pastilla' : pos !== 'relative' ? 'posición ' + pos : solapan(o, p) ? 'solape ' + Math.round(o.left) + ',' + Math.round(o.top) + '–' + Math.round(o.right) + ',' + Math.round(o.bottom) + ' con ' + Math.round(p.left) + ',' + Math.round(p.top) + '–' + Math.round(p.right) + ',' + Math.round(p.bottom) : '';
+              fr.remove();
+              return mal;
+            };
+            const m1280 = await medir(1280, 800), m390 = await medir(390, 844);
+            if (ahora) ahora.textContent = txtObj;
+            ok('La pastilla de la Patrulla no tapa el objetivo a 1280×800 ni a 390×844', !m1280 && !m390, [m1280 && ('1280 ' + m1280), m390 && ('390 ' + m390)].filter(Boolean).join(' · '));
+          }
           const zonas = especies().map(e => G.interaccion.find('invzona_' + e.id));
           ok('El mapa marca la zona, no el sitio exacto (a 18 m o más del animal)', zonas.every(z => z && hogar[z.id.slice(8)] && Math.hypot(z.x - hogar[z.id.slice(8)].x, z.z - hogar[z.id.slice(8)].z) >= 18), zonas.map(z => z && Math.hypot(z.x - hogar[z.id.slice(8)].x, z.z - hogar[z.id.slice(8)].z).toFixed(0)).join(','));
           ok('La marca no dice coordenadas y, ya avistada la iguana, su marca se esconde', zonas.every(z => z && !/\d{2,}/.test(z.label())) && !!(zonas[0] && !zonas[0].visible()), zonas[0] && zonas[0].label());

@@ -1,7 +1,7 @@
 /* Juego · Construir libre (expansión tras la temporada 1; ROADMAP «Después de la temporada 1», Kelvin 9-nov)
    Amplía el modo construir del cap. 1 (hoy solo el refugio: content/cap1/historia.js «Modo construir» y el fantasma de
    content/cap1/mundo.js) a un rincón propio: nido, techo de hojas y decoración. Mismo gesto que el refugio: un fantasma delante de
-   Vittata (verde si cabe, rojo si no), Acción coloca y suena el martillo (G.audio.martillar).
+   Vittata (verde si cabe, rojo si no), Acción coloca y suena un tac de madera (G.audio «tac»).
    ENCENDIDO PARA TODOS (Kelvin 9-nov: «Piezas aprobadas»): ya no depende de ?expansion=1 (esa bandera ya no existe).
    Bandera propia G.CONSTRUIR (boot.js): encendida por defecto, ?construir=0 la apaga; boot.js carga este archivo al arrancar.
    Piezas: 7 tipos procedurales y estilizados (sin modelos nuevos), de todos desde el principio, y 6 más del Mercadito del río
@@ -26,8 +26,11 @@
     const H = (x, z) => G.terreno.height(x, z);
     const agua = (x, z) => { try { return G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) : -Infinity; } catch (e) { return -Infinity; } };
     const bajo = () => { const c = G.renderer && G.renderer.calidad; return !!c && (c.nivel === 'bajo' || c.escuela === true); };
-    const presupuesto = () => (bajo() ? PRESUPUESTO_BAJO : CAPACIDAD);
-    let forzado = false;
+    const presupuesto = () => {
+      if (ctx) { const tope = bajo() ? 8 : 12; return Math.min(tope, ctx.tope || tope); }
+      return bajo() ? PRESUPUESTO_BAJO : CAPACIDAD;
+    };
+    let forzado = false, ctx = null;
     const habilitado = () => G.CONSTRUIR !== false || forzado;
     const sonar = (n, a) => { if (G.quiet || !G.audio) return; try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
     const aviso = (t, ms) => { if (!G.quiet && G.ui) G.ui.toast(t, ms || 2600); };
@@ -258,9 +261,32 @@
     }
     let lista = [];
     const r2 = v => Math.round(v * 100) / 100;
+    const piezasDe = () => lista.map(p => ({ t: p.t, x: r2(p.x), z: r2(p.z), r: p.r }));
     function guardar() {
-      S.construir = lista.length ? { v: 1, piezas: lista.map(p => ({ t: p.t, x: r2(p.x), z: r2(p.z), r: p.r })) } : null;
+      if (ctx && ctx.id) {
+        const prev = esObj(S.interiores) && S.interiores.v === 1 && esObj(S.interiores.edificios) ? S.interiores.edificios : {};
+        const edificios = Object.assign({}, prev);
+        const antes = esObj(edificios[ctx.id]) ? edificios[ctx.id] : {};
+        edificios[ctx.id] = { piezas: piezasDe(), estado: antes.estado || null };
+        const alguno = Object.keys(edificios).some(id => { const e = edificios[id]; return e && ((e.piezas && e.piezas.length) || e.estado); });
+        S.interiores = alguno ? { v: 1, edificios } : null;
+      } else S.construir = lista.length ? { v: 1, piezas: piezasDe() } : null;
       if (G.guardado && G.guardado.autosave) G.guardado.autosave();
+    }
+    function mundoDe(p) {
+      if (!ctx) return { x: p.x, z: p.z, y: H(p.x, p.z) };
+      return { x: (ctx.ox || 0) + p.x, z: (ctx.oz || 0) + p.z, y: ctx.piso };
+    }
+    function enZona(x, z) {
+      const zn = ctx && ctx.zona; if (!zn) return true;
+      if (typeof zn.r === 'number') return Math.hypot(x - zn.x, z - zn.z) <= zn.r + 1e-6;
+      if (!Array.isArray(zn) || zn.length < 3) return true;
+      let dentro = false;
+      for (let i = 0, j = zn.length - 1; i < zn.length; j = i++) {
+        const a = zn[i], b = zn[j];
+        if (((a.z > z) !== (b.z > z)) && (x < (b.x - a.x) * (z - a.z) / ((b.z - a.z) || 1e-9) + a.x)) dentro = !dentro;
+      }
+      return dentro;
     }
 
     // ---------- Escena: un InstancedMesh por tipo (se crea solo si la bandera está encendida) ----------
@@ -299,17 +325,56 @@
       for (const t of ORDEN) mallas[t].count = 0;
       for (const p of lista) {
         const m = mallas[p.t]; if (!m || m.count >= CAPACIDAD) continue;
-        _o.position.set(p.x, H(p.x, p.z), p.z); _o.rotation.set(0, p.r * PASO, 0); _o.updateMatrix();
+        const w = mundoDe(p);
+        _o.position.set(w.x, w.y, w.z); _o.rotation.set(0, p.r * PASO, 0); _o.updateMatrix();
         m.setMatrixAt(m.count++, _o.matrix);
       }
       const sombra = !bajo();
       for (const t of ORDEN) { const m = mallas[t]; m.visible = m.count > 0; m.castShadow = sombra; m.instanceMatrix.needsUpdate = true; }
     }
-    function aplicar(d) { lista = leer(d); historial.length = 0; if (habilitado()) { asegurarEscena(); pintar(); } return lista.length; }
+    function aplicar(d) { lista = leer(d); historial.length = 0; rehacerPila.length = 0; if (habilitado()) { asegurarEscena(); pintar(); } return lista.length; }
+    const HABITACIONES = {
+      descanso: [{ t: 'nido', x: -0.6, z: 0.4, r: 1 }, { t: 'flores', x: 0.8, z: -0.3, r: 0 }],
+    };
+    function contexto(c) {
+      guardar();
+      historial.length = 0; rehacerPila.length = 0;
+      if (!c) { ctx = null; lista = leer(S.construir); if (habilitado()) { asegurarEscena(); pintar(); } return null; }
+      ctx = {
+        id: String(c.id || 'cuarto'),
+        zona: c.zona || null,
+        piso: typeof c.piso === 'number' ? c.piso : H(S.pos.x, S.pos.z),
+        protegidos: Array.isArray(c.protegidos) ? c.protegidos : [],
+        tope: c.tope,
+        ox: typeof c.ox === 'number' ? c.ox : S.pos.x,
+        oz: typeof c.oz === 'number' ? c.oz : S.pos.z,
+      };
+      const ed = S.interiores && S.interiores.edificios && S.interiores.edificios[ctx.id];
+      lista = leer({ v: 1, piezas: ed && ed.piezas });
+      if (habilitado()) { asegurarEscena(); pintar(); }
+      return { id: ctx.id, piso: ctx.piso };
+    }
+    function habitacion(nombre) {
+      const receta = HABITACIONES[nombre];
+      if (!receta) return false;
+      const antes = copia();
+      const ox = ctx ? 0 : S.pos.x, oz = ctx ? 0 : S.pos.z;
+      for (const p of receta) {
+        if (lista.length >= presupuesto() || !tiene(p.t)) continue;
+        const x = ox + p.x, z = oz + p.z;
+        const wx = ctx ? (ctx.ox || 0) + x : x, wz = ctx ? (ctx.oz || 0) + z : z;
+        if (validar(p.t, wx, wz)) continue;
+        lista.push({ t: p.t, x: r2(x), z: r2(z), r: p.r || 0 });
+      }
+      if (lista.length === antes.length) return false;
+      anotar({ op: 'lote', antes, despues: copia() });
+      pintar(); guardar(); pintarHud(); sonar('tac'); actualizar();
+      return true;
+    }
 
     // ---------- Modo construir: toma la acción mientras está activo (como el del refugio) ----------
     let activo = false, tipo = 'nido', giro = 0, modo0 = null, rejilla = false;
-    const historial = [];
+    const historial = [], rehacerPila = [];
     const vista = { x: 0, z: 0, listo: false };
     const REJ = 1;
     const est = { x: 0, z: 0, valido: false, motivo: '' };
@@ -317,11 +382,16 @@
     function validar(t, x, z) {
       const T = TIPOS[t];
       if (lista.length >= presupuesto()) return 'Ya usaste todas tus piezas. Quita alguna para seguir.';
-      const y = H(x, z);
-      if (!isFinite(y) || y < agua(x, z) + 0.05) return 'En el agua no se puede construir';
+      if (ctx) {
+        if (!enZona(x, z)) return 'Aquí no';
+        if ((ctx.protegidos || []).some(p => Math.hypot(x - p.x, z - p.z) < (p.r || 1.2))) return 'Esto se queda libre';
+      } else {
+        const y = H(x, z);
+        if (!isFinite(y) || y < agua(x, z) + 0.05) return 'En el agua no se puede construir';
+      }
       const col = (G.fisica && G.fisica.colliders) || [];
       if (col.some(c => c.r > 0 && Math.hypot(x - c.x, z - c.z) < c.r + T.r * 0.5)) return 'Aquí no cabe: choca con algo';
-      if (!T.sobre && lista.some(p => !TIPOS[p.t].sobre && Math.hypot(x - p.x, z - p.z) < (T.r + TIPOS[p.t].r) * 0.6)) return 'Muy cerca de otra pieza';
+      if (!T.sobre && lista.some(p => { const w = mundoDe(p); return !TIPOS[p.t].sobre && Math.hypot(x - w.x, z - w.z) < (T.r + TIPOS[p.t].r) * 0.6; })) return 'Muy cerca de otra pieza';
       return '';
     }
     function crudo() {
@@ -339,7 +409,7 @@
       } else { vista.listo = false; est.x = c.x; est.z = c.z; }
       est.motivo = validar(tipo, est.x, est.z); est.valido = !est.motivo;
       fantasma.geometry = geos[tipo];
-      fantasma.position.set(est.x, H(est.x, est.z), est.z); fantasma.rotation.set(0, giro * PASO, 0);
+      fantasma.position.set(est.x, ctx ? ctx.piso : H(est.x, est.z), est.z); fantasma.rotation.set(0, giro * PASO, 0);
       anillo.scale.setScalar(TIPOS[tipo].r);
       matF.color.copy(lin(est.valido ? '#7fd38f' : '#d6403a'));
     }
@@ -349,11 +419,12 @@
       const x = rejilla ? Math.round(crudo().x / REJ) * REJ : est.x, z = rejilla ? Math.round(crudo().z / REJ) * REJ : est.z;
       const motivo = validar(tipo, x, z);
       if (motivo) { aviso(motivo); sonar('wrong'); return false; }
-      const p = { t: tipo, x, z, r: giro };
-      lista.push(p); historial.push({ op: '+', p });
+      const p = ctx ? { t: tipo, x: r2(x - (ctx.ox || 0)), z: r2(z - (ctx.oz || 0)), r: giro } : { t: tipo, x, z, r: giro };
+      lista.push(p); anotar({ op: '+', p });
       pintar(); guardar(); pintarHud();
-      if (G.audio && G.audio.martillar && !G.quiet) G.audio.martillar(lista.length === 1 ? 3 : 1);
-      if (G.fx && G.fx.burst && !G.quiet && !bajo()) try { G.fx.burst(p.x, H(p.x, p.z) + 0.6, p.z, 'feathers', 8); } catch (e) { /* sin fx */ }
+      const w = mundoDe(p);
+      if (G.audio && G.audio.play) { try { G.audio.play('tac'); } catch (e) { /* sin audio */ } }
+      if (G.fx && G.fx.burst && !G.quiet && !bajo()) try { G.fx.burst(w.x, w.y + 0.6, w.z, 'feathers', 8); } catch (e) { /* sin fx */ }
       return true;
     }
     function girar(d) { giro = (giro + (d < 0 ? 7 : 1)) % 8; sonar('tick'); actualizar(); pintarHud(); return giro; }
@@ -370,7 +441,7 @@
       let x = S.pos.x, z = S.pos.z;
       if (lista.length) { x = 0; z = 0; for (const p of lista) { x += p.x; z += p.z; } x /= lista.length; z /= lista.length; }
       const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, f0 = { x: (S.facing && S.facing.x) || 0, z: (S.facing && S.facing.z) || 1 };
-      S.pos.x = x; S.pos.z = z + 6; S.pos.y = H(S.pos.x, S.pos.z) + 1.6; S.facing = { x: 0, z: -1 };
+      S.pos.x = x; S.pos.z = z + 6; S.pos.y = (ctx ? ctx.piso : H(S.pos.x, S.pos.z)) + 1.6; S.facing = { x: 0, z: -1 };
       let url = null;
       try {
         const r = G.renderer.snapshot(960, 540, 0.8);
@@ -394,10 +465,29 @@
       return url;
     }
     function elegir(t) { if (!TIPOS[t]) return false; if (!tiene(t)) { aviso('Esa pieza está en el Mercadito del río.'); return false; } tipo = t; sonar('tick'); actualizar(); pintarHud(); return true; }
+    function anotar(h) { historial.push(h); rehacerPila.length = 0; }
+    function copia() { return lista.map(p => ({ t: p.t, x: p.x, z: p.z, r: p.r })); }
+    function haciaAtras(h) {
+      if (h.op === 'lote') lista = h.antes.map(p => ({ t: p.t, x: p.x, z: p.z, r: p.r }));
+      else if (h.op === '+') { const i = lista.lastIndexOf(h.p); if (i >= 0) lista.splice(i, 1); }
+      else lista.splice(Math.min(h.i, lista.length), 0, h.p);
+    }
+    function haciaAdelante(h) {
+      if (h.op === 'lote') lista = h.despues.map(p => ({ t: p.t, x: p.x, z: p.z, r: p.r }));
+      else if (h.op === '+') lista.push(h.p);
+      else lista.splice(h.i, 1);
+    }
     function deshacer() {
       const h = historial.pop();
       if (!h) { aviso('No hay nada que deshacer'); return false; }
-      if (h.op === '+') { const i = lista.lastIndexOf(h.p); if (i >= 0) lista.splice(i, 1); } else lista.splice(Math.min(h.i, lista.length), 0, h.p);
+      haciaAtras(h); rehacerPila.push(h);
+      pintar(); guardar(); pintarHud(); sonar('tick'); actualizar();
+      return true;
+    }
+    function rehacer() {
+      const h = rehacerPila.pop();
+      if (!h) { aviso('No hay nada que rehacer'); return false; }
+      haciaAdelante(h); historial.push(h);
       pintar(); guardar(); pintarHud(); sonar('tick'); actualizar();
       return true;
     }
@@ -407,7 +497,7 @@
       let mejor = -1, bd = 1.4;
       lista.forEach((p, i) => { const d = Math.hypot(p.x - x, p.z - z); if (d < bd) { bd = d; mejor = i; } });
       if (mejor < 0) { aviso('No hay ninguna pieza cerca para quitar'); return false; }
-      const p = lista.splice(mejor, 1)[0]; historial.push({ op: '-', p, i: mejor });
+      const p = lista.splice(mejor, 1)[0]; anotar({ op: '-', p, i: mejor });
       pintar(); guardar(); pintarHud(); sonar('pickup', 1); actualizar();
       return true;
     }
@@ -433,7 +523,7 @@
     }
     G.on('update', (dt, busy) => { if (activo && fantasma) { fantasma.visible = !busy; if (!busy) actualizar(); } }, 89);
     G.on('escape', () => { if (activo) salir(); });
-    G.on('apply', () => { if (activo) salir(); aplicar(S.construir); }, 60);
+    G.on('apply', () => { if (activo) salir(); if (ctx && ctx.id) { lista = leer({ v: 1, piezas: (S.interiores && S.interiores.edificios && S.interiores.edificios[ctx.id] && S.interiores.edificios[ctx.id].piezas) || [] }); historial.length = 0; rehacerPila.length = 0; pintar(); } else aplicar(S.construir); }, 60);
 
     // ---------- Teclado (captura: mientras se construye, estas teclas no hacen su otra función) ----------
     // B no es de fábrica de nadie, pero el remapeo (src/engine/input.js) deja ponerla a volar, aterrizar…: entonces B es de esa acción
@@ -450,7 +540,8 @@
       else if (/^[1-9]$/.test(k)) { const d = disponibles(); if (d[+k - 1]) elegir(d[+k - 1]); }
       else if (k === 'r') girar(1);
       else if (k === 'q') girar(-1);
-      else if (k === 'z') deshacer();
+      else if (k === 'z' && !e.shiftKey) deshacer();
+      else if (k === 'y' || (k === 'z' && e.shiftKey)) rehacer();
       else if (k === 'delete' || k === 'backspace') quitar();
       else hecho = false;
       if (hecho) { e.preventDefault(); e.stopImmediatePropagation(); }
@@ -605,7 +696,7 @@
     async function test() {
       const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
       const espera = ms => new Promise(r => setTimeout(r, ms));
-      const antes = { construir: S.construir ? JSON.parse(JSON.stringify(S.construir)) : S.construir, tienda: S.tienda ? JSON.parse(JSON.stringify(S.tienda)) : S.tienda, pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing),
+      const antes = { construir: S.construir ? JSON.parse(JSON.stringify(S.construir)) : S.construir, interiores: S.interiores ? JSON.parse(JSON.stringify(S.interiores)) : S.interiores, tienda: S.tienda ? JSON.parse(JSON.stringify(S.tienda)) : S.tienda, pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing),
         modo: G.interaccion.modo, quiet: G.quiet, forzado, nivel: G.renderer.calidad && G.renderer.calidad.nivel };
       const sinApagar = G.CONSTRUIR !== false;
       const enEscena = () => { let n = 0; G.renderer.scene.traverse(o => { if (o.name && o.name.indexOf('construir') === 0) n++; }); return n; };
@@ -688,6 +779,7 @@
         check('La tecla 6 elige el tronco', tipo === 'tronco');
         S.facing = { x: -S.facing.x, z: -S.facing.z }; actualizar();
         check('Coloca un tronco girado', colocar() && lista.length === 2 && lista[1].r === 2 && mallas.tronco.count === 1, est.motivo);
+        check('Colocar suena un tac de madera', !!(G.audio && G.audio.log && G.audio.log.includes('tac')));
         check('El tronco queda al ras del suelo', Math.abs(new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().fromArray(mallas.tronco.instanceMatrix.array, 0)).y - H(lista[1].x, lista[1].z)) < 1e-3);
         check('Deshacer quita el último (Z)', (dispatchEvent(new KeyboardEvent('keydown', { key: 'z', bubbles: true })), lista.length === 1 && mallas.tronco.count === 0 && !mallas.tronco.visible));
         S.facing = { x: -S.facing.x, z: -S.facing.z }; actualizar();
@@ -750,6 +842,31 @@
         G.renderer.calidad.nivel = 'bajo';
         check(`Calidad «bajo» / Modo Escuela: presupuesto de ${PRESUPUESTO_BAJO} y sin sombras de las piezas`, presupuesto() === PRESUPUESTO_BAJO && (pintar(), ORDEN.every(t => !mallas[t].castShadow)));
         G.renderer.calidad.nivel = antes.nivel;
+        // CG-115: dentro de un cuarto, la zona, lo protegido, el piso, rehacer y una habitación
+        const ox = Math.round(S.pos.x), oz = Math.round(S.pos.z), piso = H(ox, oz) + 3;
+        contexto({ id: 'prueba', zona: { x: ox, z: oz, r: 4 }, piso, protegidos: [{ x: ox + 1, z: oz, r: 0.6 }], ox, oz });
+        S.facing = { x: 0, z: 1 }; elegir('piedra'); actualizar();
+        const fuera = { x: ox + 6, z: oz };
+        check('CG-115 · fuera de la zona no se construye', validar('piedra', fuera.x, fuera.z) === 'Aquí no');
+        check('CG-115 · lo protegido se queda libre', validar('piedra', ox + 1, oz) === 'Esto se queda libre');
+        S.pos.x = ox; S.pos.z = oz - 3; S.facing = { x: 0, z: 1 }; actualizar();
+        const ySuelo = H(est.x, est.z);
+        check('CG-115 · la pieza queda a la altura del piso del cuarto', colocar() && lista.length === 1 && Math.abs(new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().fromArray(mallas.piedra.instanceMatrix.array, 0)).y - piso) < 1e-3 && Math.abs(piso - ySuelo) > 0.2, est.motivo);
+        check('CG-115 · deshacer y rehacer', deshacer() && lista.length === 0 && rehacer() && lista.length === 1 && lista[0].t === 'piedra');
+        deshacer();
+        const nHab = lista.length;
+        check('CG-115 · la habitación entra de un golpe', habitacion('descanso') && lista.length > nHab);
+        const tras = lista.length;
+        check('CG-115 · deshacer la habitación la quita entera', deshacer() && lista.length === nHab && rehacer() && lista.length === tras);
+        const cal = G.renderer.calidad, esc0 = cal && cal.escuela;
+        if (cal) { cal.escuela = false; cal.nivel = 'medio'; }
+        check('CG-115 · dentro, el tope es 12 (8 en bajo)', presupuesto() === 12);
+        if (cal) cal.nivel = 'bajo';
+        check('CG-115 · en bajo el tope del cuarto es 8', presupuesto() === 8);
+        if (cal) { cal.nivel = antes.nivel; cal.escuela = esc0; }
+        const guardado = S.interiores && S.interiores.edificios && S.interiores.edificios.prueba;
+        contexto(null);
+        check('CG-115 · al salir del cuarto el rincón de fuera vuelve y el interior queda guardado', lista.length === CAPACIDAD && guardado && guardado.piezas.length === tras, (guardado && guardado.piezas.length) + ' piezas');
         salir();
         check('Listo/Esc devuelve la acción a quien la tenía', !activo && G.interaccion.modo === antes.modo && hudEl.hidden);
       } catch (e) {
@@ -757,17 +874,17 @@
       } finally {
         // 6. Limpieza: la partida y el mundo como estaban
         if (G.renderer.calidad) G.renderer.calidad.nivel = antes.nivel;
-        salir();
-        S.construir = antes.construir; S.tienda = antes.tienda; refrescar(); Object.assign(S.pos, antes.pos); S.facing = antes.facing;
+        ctx = null; salir();
+        S.construir = antes.construir; S.interiores = antes.interiores; S.tienda = antes.tienda; refrescar(); Object.assign(S.pos, antes.pos); S.facing = antes.facing;
         forzar(antes.forzado); aplicar(S.construir); G.interaccion.modo = antes.modo;
         G.quiet = antes.quiet;
       }
       if (sinApagar) check('Limpieza: la tarjeta y el botón siguen ahí (encendido para todos)', !!$('b-construir') && !!$('b-construir-menu') && !activo);
-      check('Limpieza: la partida queda como estaba', JSON.stringify(S.construir) === JSON.stringify(antes.construir));
+      check('Limpieza: la partida queda como estaba', JSON.stringify(S.construir) === JSON.stringify(antes.construir) && JSON.stringify(S.interiores) === JSON.stringify(antes.interiores));
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    const api = { empezar, salir, activo: () => activo, elegir, girar, colocar, deshacer, quitar, cuadrícula, foto, rejilla: () => rejilla, piezas: () => lista.map(p => Object.assign({}, p)), aplicar, presupuesto,
+    const api = { empezar, salir, activo: () => activo, elegir, girar, colocar, deshacer, rehacer, quitar, cuadrícula, foto, rejilla: () => rejilla, piezas: () => lista.map(p => Object.assign({}, p)), aplicar, presupuesto, contexto, habitacion,
       forzar, test, TIPOS: ORDEN.slice(), BASE: BASE.slice(), EXTRA: EXTRA.slice(), SVG, NOMBRE, tiene, disponibles, refrescar, CAPACIDAD, _escena: () => ({ grupo, fantasma, est: Object.assign({}, est) }) };
     G.construir = api;
     return api;

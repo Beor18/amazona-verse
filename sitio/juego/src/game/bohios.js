@@ -180,6 +180,164 @@ window.AVBohios = function (G) {
     };
   }
 
+  // CG-113 · Casa editable del bohío amueblado. Solo con ?interiores=1. Se entra en el mismo sitio
+  // (sin cuarto aparte). Las piezas viven en S.interiores. El vano se ensancha en la colisión, no en la malla.
+  const casaOn = () => G.interioresOn === true || /[?&]interiores=1\b/.test(location.search);
+  const casaDat = () => (window.AV_INTERIORES && window.AV_INTERIORES.casa) || { id: 'bohio_villa', cuerpo: 0.64, piezas: ['banco'] };
+  const CASA_R = 1.6, ESC_GLB = 1.75;
+  let dentroCasa = false, vanoHecho = false, casaLista = false, muebleP = null, muebleG = null;
+  const dibujo = new THREE.Group(); dibujo.name = 'casa-piezas';
+  function datosCasa() {
+    if (window.AV_INTERIORES || !G.assets || !G.assets.script) return Promise.resolve(casaDat());
+    return G.assets.script('content/comun/interiores.js').then(casaDat, casaDat);
+  }
+  function piezasGuardadas() {
+    const id = casaDat().id, e = S.interiores && S.interiores.edificios && S.interiores.edificios[id];
+    return (e && e.piezas) ? e.piezas.map(p => ({ t: p.t, x: p.x, z: p.z, r: p.r })) : [];
+  }
+  function guardarPiezas(lista) {
+    const id = casaDat().id;
+    if (!lista.length) {
+      if (S.interiores && S.interiores.edificios) delete S.interiores.edificios[id];
+      if (S.interiores && S.interiores.edificios && !Object.keys(S.interiores.edificios).length) S.interiores = null;
+      return;
+    }
+    if (!S.interiores || S.interiores.v !== 1 || !S.interiores.edificios) S.interiores = { v: 1, edificios: {} };
+    const piezas = lista.map(p => ({ t: p.t, x: Math.round(p.x * 100) / 100, z: Math.round(p.z * 100) / 100, r: p.r | 0 }));
+    S.interiores.edificios[id] = { piezas, estado: null };
+  }
+  function pintarPiezas() {
+    while (dibujo.children.length) {
+      const m = dibujo.children.pop();
+      if (m.geometry) m.geometry.dispose();
+      if (m.material && m.material.dispose) m.material.dispose();
+    }
+    const I = casa; if (!I) return 0;
+    if (!dibujo.parent) G.renderer.scene.add(dibujo);
+    for (const p of piezasGuardadas()) {
+      const w = localAMundo(I, p.x, 0, p.z);
+      const y = (G.terreno ? G.terreno.height(w.x, w.z) : I.pos[1]) + 0.2;
+      const m = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.36, 0.42), new THREE.MeshLambertMaterial({ color: 0xa56b3c }));
+      m.name = 'casa-pieza'; m.userData.sinSolido = true; m.position.set(w.x, y, w.z);
+      m.rotation.y = (I.rotY || 0) + p.r * Math.PI / 4;
+      dibujo.add(m);
+    }
+    return dibujo.children.length;
+  }
+  function piezaValida(t, x, z, r) {
+    const tipos = casaDat().piezas || ['banco'];
+    return tipos.indexOf(t) >= 0 && Math.abs(x) <= CASA_R && Math.abs(z) <= CASA_R && Number.isInteger(r) && r >= 0 && r <= 7;
+  }
+  function colocar(t, x, z, r) {
+    if (!casaOn() || !casa || !piezaValida(t, x, z, r)) return false;
+    const lista = piezasGuardadas(); lista.push({ t, x, z, r }); guardarPiezas(lista); pintarPiezas(); return true;
+  }
+  function mover(i, x, z, r) {
+    if (!casaOn() || !casa) return false;
+    const lista = piezasGuardadas(); const p = lista[i];
+    if (!p || !piezaValida(p.t, x, z, r)) return false;
+    p.x = x; p.z = z; p.r = r; guardarPiezas(lista); pintarPiezas(); return true;
+  }
+  function ponerJugador(x, z) {
+    S.pos.x = x; S.pos.z = z; S.pos.y = (G.terreno ? G.terreno.height(x, z) : S.pos.y) + 0.12; S.vy = 0;
+    const M = G.fisica && G.fisica.MOVE;
+    if (M) { M.flying = false; M.vx = M.vz = 0; M.grounded = true; }
+  }
+  function entrar() {
+    if (!casaOn() || !casa) return false;
+    const p = puerta(casa); if (!p) return false;
+    ponerJugador(p.dentroX, p.dentroZ);
+    dentroCasa = true;
+    if (G.camara && G.camara.interior) G.camara.interior({});
+    pintarPiezas();
+    return true;
+  }
+  function salir() {
+    if (!casa) return false;
+    const p = puerta(casa);
+    if (p) ponerJugador(p.x, p.z);
+    dentroCasa = false;
+    if (G.camara && G.camara.interior) G.camara.interior(null);
+    return true;
+  }
+  function centroVano(p) { return { x: p.x - p.nx * 0.7, z: p.z - p.nz * 0.7 }; }
+  function holgura(I) {
+    const p = puerta(I); if (!p || !G.solidos || !G.solidos.dentro) return 0;
+    const c = centroVano(p), tx = -p.nz, tz = p.nx;
+    const y = (G.terreno ? G.terreno.height(c.x, c.z) : p.y) + 0.9;
+    const hasta = (s) => { let w = 0; for (let d = 0; d <= 0.8; d += 0.02) { if (G.solidos.dentro(c.x + tx * d * s, c.z + tz * d * s, y) > -Infinity) break; w = d; } return w; };
+    return Math.round((hasta(1) + hasta(-1)) * 100) / 100;
+  }
+  function ensanchar(I) {
+    I = I || casa;
+    const p = puerta(I); if (!p || !G.solidos || !G.solidos.recortar) return null;
+    const cuerpo = casaDat().cuerpo || 0.64, radio = cuerpo / 2;
+    const c = centroVano(p), tx = -p.nz, tz = p.nx;
+    if (!vanoHecho) {
+      const y0 = (G.terreno ? G.terreno.height(c.x, c.z) : p.y);
+      const celda = (G.solidos.CELL || 0.3);
+      if (G.solidos.abrirPaso) G.solidos.abrirPaso(c.x, c.z, Math.atan2(p.nz, p.nx), 0.9, cuerpo + celda, y0 - 0.05, y0 + Math.max(1.7, p.alto) - 0.08);
+      else G.solidos.recortar(c.x - 1.2, c.z - 1.2, c.x + 1.2, c.z + 1.2, (x, z) => {
+        const dx = x - c.x, dz = z - c.z;
+        return Math.abs(dx * p.nx + dz * p.nz) <= 0.45 && Math.abs(dx * tx + dz * tz) <= radio + celda / 2;
+      }, y0 - 0.02);
+      vanoHecho = true;
+    }
+    return { anchoMalla: p.ancho, anchoPaso: holgura(I), cuerpo };
+  }
+  function mueble() {
+    if (!casa || !G.assets || !G.assets.loadGLB) return Promise.reject(new Error('sin casa'));
+    if (muebleP) return muebleP;
+    const I = casa;
+    muebleP = G.assets.loadGLB('assets/models/entorno/bohio_interior.glb', {
+      b64: () => (window.AV_ENTORNO_B64 || {}).bohio_interior,
+      script: 'assets/models/entorno/bohio_interior_glb.js',
+      base: 'assets/models/entorno/',
+      error: 'interior de bohío no disponible',
+    }).then(g => {
+      muebleG = new THREE.Group(); muebleG.name = 'casa-mueble';
+      g.scene.traverse(o => { if (o.isMesh) o.userData.sinSolido = true; });
+      muebleG.add(g.scene);
+      const e = I.escala / ESC_GLB;
+      muebleG.scale.setScalar(e);
+      muebleG.position.set(I.pos[0], I.pos[1], I.pos[2]);
+      muebleG.rotation.y = I.rotY || 0;
+      G.renderer.scene.add(muebleG);
+      return muebleG;
+    }).catch(e => { muebleP = null; throw e; });
+    return muebleP;
+  }
+  function listoCasa() {
+    if (!casaOn() || casaLista || !casa) return false;
+    casaLista = true;
+    const p = puerta(casa); if (!p) return false;
+    G.interaccion.add({
+      id: 'casa-entrar', x: p.x, z: p.z, r: 1.6,
+      visible: () => casaOn() && !dentroCasa,
+      label: () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Enter' : 'Entrar'),
+      use: () => entrar(),
+    });
+    G.interaccion.add({
+      id: 'casa-salir', x: p.dentroX, z: p.dentroZ, r: 1.6,
+      visible: () => dentroCasa,
+      label: () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Exit' : 'Salir'),
+      use: () => salir(),
+    });
+    G.interaccion.add({
+      id: 'casa-poner', x: p.dentroX, z: p.dentroZ, r: 2.2,
+      visible: () => dentroCasa && piezasGuardadas().length === 0,
+      label: () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Place bench' : 'Poner banco'),
+      use: () => colocar('banco', 0.4, 0.2, 1),
+    });
+    G.interaccion.add({
+      id: 'casa-mover', x: p.dentroX, z: p.dentroZ, r: 2.2,
+      visible: () => dentroCasa && piezasGuardadas().length > 0,
+      label: () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Move' : 'Mover'),
+      use: () => { const a = piezasGuardadas()[0]; if (a) mover(0, a.x > 0 ? -0.3 : 0.4, a.x > 0 ? 0.5 : 0.2, a.x > 0 ? 2 : 1); },
+    });
+    return true;
+  }
+
   // KIMI-333 (Modo Escuela): los muebles de los bohíos se recorren y frustum-cullan cada cuadro aunque
   // estén dentro de la casa y no se vean nunca desde fuera. Fuera de 60 m el grupo entero se apaga
   // (visible=false poda el recorrido de la escena entero); cullPequenos ya los sacaba del dibujo a
@@ -294,6 +452,44 @@ window.AVBohios = function (G) {
         for (let d = 0.4; d <= 3.2 && !sitio; d += 0.2) { const x = q.x + q.nx * d, z = q.z + q.nz * d; if (G.solidos.penetra(x, z, G.terreno.height(x, z) + 0.12, 1.2) === 0) sitio = true; }
         ok('BM13 ' + nom + ': frente a la puerta hay sitio para estar de pie', sitio);
       }
+      const onCasa = G.interioresOn, int0 = S.interiores;
+      try {
+        await datosCasa();
+        G.interioresOn = false;
+        ok('Sin ?interiores=1 no se entra en la casa', entrar() === false);
+        G.interioresOn = true;
+        const pCasa = puerta(casa);
+        ok('Entrar deja a Vittata dentro del mismo bohío', !!(pCasa && entrar() && Math.hypot(S.pos.x - pCasa.dentroX, S.pos.z - pCasa.dentroZ) < 0.25 && Math.hypot(S.pos.x - I.pos[0], S.pos.z - I.pos[2]) < 4 && Math.abs(S.pos.y - I.pos[1]) < 4));
+        ok('En la puerta, Acción dice Entrar', listoCasa() && G.interaccion.find('casa-entrar').label() === 'Entrar');
+        const poner = G.interaccion.find('casa-poner');
+        ok('Dentro, Acción pone el banco y lo guarda', !!(poner && poner.visible() && poner.label() === 'Poner banco' && (poner.use(), S.interiores && S.interiores.edificios.bohio_villa.piezas[0].t === 'banco' && S.interiores.edificios.bohio_villa.piezas[0].r === 1)));
+        const m0 = dibujo.children[0];
+        ok('La pieza queda dentro de la casa', !!(m0 && Math.hypot(m0.position.x - I.pos[0], m0.position.z - I.pos[2]) < 3));
+        const mov = G.interaccion.find('casa-mover');
+        ok('Acción Mover cambia el sitio guardado', !!(mov && mov.visible() && (mov.use(), S.interiores.edificios.bohio_villa.piezas[0].x === -0.3 && S.interiores.edificios.bohio_villa.piezas[0].r === 2)));
+        salir();
+        while (dibujo.children.length) dibujo.remove(dibujo.children[0]);
+        ok('Salir la deja en la puerta, sin otro cuarto', Math.hypot(S.pos.x - pCasa.x, S.pos.z - pCasa.z) < 0.25 && !dentroCasa);
+        ok('Al volver se ve la pieza guardada', entrar() && dibujo.children.length === 1 && S.interiores.edificios.bohio_villa.piezas[0].z === 0.5);
+        const g = await mueble();
+        ok('El mobiliario del bohío queda en la casa, a la escala de la fachada', !!(g && g.parent === G.renderer.scene && Math.abs(g.scale.x - I.escala / 1.75) < 0.02 && Math.hypot(g.position.x - I.pos[0], g.position.z - I.pos[2]) < 0.05));
+        const anchoAntes = pCasa.ancho;
+        const van = ensanchar(I);
+        const pDespues = puerta(I);
+        const c = centroVano(pDespues);
+        const pie = G.terreno.height(c.x, c.z) + 0.05;
+        const cabe = G.solidos.penetra(c.x, c.z, pie, 1.2);
+        ok('El paso llega a 0,64 m y la malla del vano no cambia', !!(van && van.anchoPaso >= 0.64 && cabe === 0 && Math.abs(pDespues.ancho - anchoAntes) < 0.001), (van ? van.anchoPaso + ' m · malla ' + pDespues.ancho.toFixed(2) : 'sin vano') + ' · cuerpo ' + cabe);
+        if (G.guardado && G.guardado.save && G.guardado.load) {
+          G.guardado.save(true);
+          S.interiores = null;
+          G.guardado.load(true);
+          ok('La partida devuelve el banco', !!(S.interiores && S.interiores.edificios && S.interiores.edificios.bohio_villa && S.interiores.edificios.bohio_villa.piezas[0].t === 'banco'));
+        }
+      } finally {
+        salir(); G.interioresOn = onCasa; S.interiores = int0;
+        if (G.camara && G.camara.interior) G.camara.interior(null);
+      }
       const vis = vistas();
       ok('Hay encuadre de aire, camino y puerta', !!(vis && vis.aire && vis.camino && vis.puerta), vis && vis.casa && (vis.casa.id + ' alto ' + vis.casa.alto.toFixed(2)));
     } catch (e) {
@@ -307,7 +503,7 @@ window.AVBohios = function (G) {
 
   preparar().catch(() => {});
   vigilar();
-  const api = { get listo() { return preparar(); }, get casa() { return casa; }, montadas, otras, montarOtras, puertaDe: puerta, vistas, preparar, test, factor };
+  const api = { get listo() { return preparar(); }, get casa() { return casa; }, montadas, otras, montarOtras, puertaDe: puerta, vistas, preparar, test, factor, entrar, salir, colocar, mover, ensanchar, mueble, listoCasa, piezas: piezasGuardadas };
   G.bohios = api;
   return api;
 };

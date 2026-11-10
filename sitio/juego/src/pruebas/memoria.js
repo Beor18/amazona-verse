@@ -6,7 +6,7 @@
         streaming de zonas cargando y soltando,
      2. vuela un rato (despegar, avanzar, aterrizar),
      3. un duelo V18 contra la Campeona (tarjeta Duelo del menú) hasta el final o el tope de tiempo, y vuelta al menú,
-     4. abre y cierra el menú «¿Cómo quieres jugar?» y sus modos: minigolf, Retos (menú y tormenta), Mis cotorras y Álbum,
+     4. abre y cierra el menú «¿Cómo quieres jugar?» y sus modos: minigolf, Retos (menú y tormenta), pesca, Construir, Mis cotorras y Álbum,
      5. vuelve al punto de partida y deja que el streaming suelte lo de lejos antes de medir.
    Medidas tras cada ciclo (con GC forzado si Chrome tiene --js-flags=--expose-gc): heap JS (performance.memory),
    renderer.info.memory (geometrías y texturas), programas de shader, objetos de la escena, oyentes netos vivos, intervalos,
@@ -190,6 +190,16 @@ window.AVMemoriaLargaTest = function (G) {
         const ok = $('mm-album-ok'); if (!$('card').hidden) { vistos.push('album'); if (ok) ok.click(); else G.ui.hideCard(); } else notas.push('el Álbum no se abrió');
       }
       await cuadros(2);
+      // Pesca en el río (carga perezosa) y Construir libre: entran y salen en cada ciclo
+      await MM.elegir('pesca');
+      if (await hasta(() => !['nada', 'disuelve', 'deshace', 'despierta'].includes(fase(G.v18pesca)), 30000)) {
+        vistos.push('pesca'); await jugar(3, 1.5);
+      } else notas.push('la pesca no empezó');
+      MM.volver(); await cuadros(2);
+      const C = G.construir;
+      if (C && C.empezar && C.empezar()) { vistos.push('construir'); await jugar(2, 1.5); C.salir(); }
+      else notas.push('Construir no empezó');
+      await cuadros(2);
     } catch (e) { notas.push('menú: ' + (e && e.message)); }
     try { MM.volver(); cerrarPortada(); } catch (e) { /* */ }
     return vistos;
@@ -241,14 +251,14 @@ window.AVMemoriaLargaTest = function (G) {
       const gc = typeof window.gc === 'function';
       const fila = k => medidas.map(m => m[k]).join('→');
       ok('Simula ' + Math.round(tSim / 60) + ' min de juego en 390×844 y calidad baja sin errores (' + N + ' ciclos)', notas.length === 0 && R.calidad.nivel === 'bajo', notas.slice(0, 4).join(' | '));
-      if (v18) ok('Cada ciclo juega un duelo V18 y abre minigolf, Retos, Mis cotorras y el Álbum', duelos === N && ['golf', 'retos', 'cotorras'].every(m => modos[m] === N), 'duelos ' + duelos + '/' + N + ' · ' + JSON.stringify(modos));
+      if (v18) ok('Cada ciclo juega un duelo V18 y abre minigolf, Retos, pesca, Construir, Mis cotorras y el Álbum', duelos === N && ['golf', 'retos', 'cotorras', 'pesca', 'construir'].every(m => modos[m] === N), 'duelos ' + duelos + '/' + N + ' · ' + JSON.stringify(modos));
       ok('Geometrías estables tras calentar (≤ +6, pendiente ≈ 0)', crece('geo') <= 6 && pend('geo') <= 1, fila('geo') + ' · pendiente ' + pend('geo') + '/ciclo' + (crece('geo') > 0 ? ' · subidas tras calentar y vivas: ' + gpuNuevos : ''));
       ok('Texturas estables tras calentar (≤ +2, pendiente ≈ 0)', crece('tex') <= 2 && pend('tex') <= 0.5, fila('tex') + ' · pendiente ' + pend('tex') + '/ciclo' + (crece('tex') > 0 && crece('geo') <= 0 ? ' · subidas tras calentar y vivas: ' + gpuNuevos : ''));
       ok('Programas de shader estables (≤ +2)', crece('prog') <= 2, fila('prog'));
       ok('Objetos de la escena estables (≤ +10; sin los edificios por zonas, que vigila streamingTest)', crece('objsMundo') <= 10 && pend('objsMundo') <= 3, fila('objsMundo') + ' · con edificios ' + fila('objs') + ' · mallas ' + fila('mallas') + (crece('objsMundo') > 0 ? ' · crecen: ' + Object.keys(b.grupos).map(k => [k, b.grupos[k] - (a.grupos[k] || 0)]).filter(x => x[1] > 0).sort((x, y) => y[1] - x[1]).slice(0, 6).map(x => x[0] + ' +' + x[1]).join(', ') : ''));
       const tipos = Object.keys(b.porTipo).filter(t => (b.porTipo[t] || 0) - (a.porTipo[t] || 0) > 0).map(t => t + ' +' + ((b.porTipo[t] || 0) - (a.porTipo[t] || 0)));
       ok('Oyentes de eventos: no se acumulan (≤ +1 tras calentar)', crece('oyentes') <= 1, fila('oyentes') + (tipos.length ? ' · ' + tipos.join(', ') : ''));
-      ok('Intervalos y rAF: ninguno se acumula', crece('intervalos') <= 0 && crece('raf') <= 2, 'intervalos ' + fila('intervalos') + ' · raf ' + fila('raf'));
+      ok('Intervalos y rAF: no se acumulan (≤ 1: el aviso de versión arranca una vez a los 120 s)', crece('intervalos') <= 1 && crece('raf') <= 2, 'intervalos ' + fila('intervalos') + ' · raf ' + fila('raf'));
       ok('Nodos del DOM: sin huérfanos que crecen (≤ +20)', crece('nodos') <= 20, fila('nodos'));
       const dHeap = a.heapMB == null ? null : r1(b.heapMB - a.heapMB);
       ok('Heap JS estable tras calentar' + (gc ? ' (GC forzado: ≤ +6 MB y pendiente ≤ 1,5 MB/ciclo)' : ' (sin GC forzado: ≤ +40 MB)'),

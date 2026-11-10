@@ -460,6 +460,18 @@
       // Si se tocó una tarjeta antes de que cargara este archivo, el dialog ya está cerrado con su valor
       if (!portada.open && MODOS.includes(portada.returnValue)) setTimeout(() => { const v = portada.returnValue; portada.returnValue = ''; elegir(v); }, 0);
     }
+    if (form && /[?&]piloto=1\b/.test(location.search) && !form.querySelector('[data-piloto]')) {
+      const bp = document.createElement('button');
+      bp.type = 'button'; bp.className = 'btn tile modo'; bp.dataset.piloto = '1';
+      bp.innerHTML = '<b></b><small></small>';
+      const nom = () => { const en = G.aula && G.aula.aj && G.aula.aj.idioma === 'en'; bp.querySelector('b').textContent = en ? 'Flight school' : 'Escuela de vuelo'; bp.querySelector('small').textContent = en ? 'With the Guardian' : 'Con el Guardián'; };
+      nom();
+      bp.addEventListener('click', () => {
+        const ir = () => { if (G.v18piloto && G.v18piloto.empezar) { recordar('aventura'); G.v18piloto.empezar(); if (portada && portada.open) portada.close(); } };
+        if (G.v18piloto) ir(); else if (window.AV && AV.pilotoCargar) AV.pilotoCargar().then(ir);
+      });
+      form.appendChild(bp);
+    }
     if (form) {
       form.addEventListener('click', e => {
         const b = e.target.closest('[data-modo]'); if (!b) return;
