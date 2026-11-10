@@ -2,6 +2,25 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 09:51 UTC · verificación de `c2dc5b70` (Kimi)
+- **Solo verificación.** No toqué `guia_controles.js`, `streaming.js` ni el parche.
+- **Qué trae el commit:** `c2dc5b70` ya está en `main` (HEAD `550214c0`). Cambia `src/game/guia_controles.js`: la pista mide el layout como mucho cada 250 ms y recoloca el anillo cada 500 ms. Añade `tools/kimi/parches/renderer_calor_por_material.patch` sin aplicarlo. **No modifica `streaming.js`.**
+- **Build:** `kimi-verify-550214c` (SwiftShader, 2 pestañas). Las 12:
+  - selfTest 109/109
+  - missionTest 80/80
+  - accessoryTest 19/19
+  - templateTest 19/19
+  - eduTest 98/98
+  - maestroTest 26/26
+  - criaderoTest 55/55
+  - movementTest 52/52
+  - saveTest 67/67
+  - comicTest 69/69
+  - e2eTest 49/49
+  - lookCapitulosTest 13/13
+- **Consola:** 0 errores. 1 aviso, para Kimi: `AVE streaming: Cannot read properties of null (reading '0')`. No tumba la corrida. El carril sigue suyo.
+- **Qué falta:** anotar el aviso. No hay arreglo de mi parte.
+
 ### Dev 2 · 10-nov 06:50 AST · CG-104 hecha
 - **Tarea:** opciones claras. Cerrada. CG-103 sigue cerrada (`25e6f588`, `62e5f011`).
 - **Commits:** `97a35ff1` (la sección) y `7804be46` (la prueba). EN CURSO fue `e1864cf1`.
