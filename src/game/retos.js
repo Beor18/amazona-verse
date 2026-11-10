@@ -287,6 +287,10 @@
       MAT.hoja = lm(new THREE.MeshLambertMaterial({ color: '#3f9a4e', side: THREE.DoubleSide }));
       return MAT;
     }
+    // Una geometría por forma. Cada banderín, rama o brillo es una malla nueva, pero compartir la forma evita que
+    // memoriaLargaTest sume una geometría cada vez que esa malla se dibuja por primera vez (CG-106).
+    const GEO = {};
+    function geoComun(clave, crear) { return GEO[clave] || (GEO[clave] = crear()); }
     const aditivo = (map, color, op) => lm(new THREE.MeshBasicMaterial({ map, color: color || '#ffffff', transparent: true, opacity: op == null ? 1 : op, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }));
     // Apaga la alfa hacia el borde del plano (el UV de la geometría, no el de la textura que se desplaza).
     // cortina: se disuelve en el agua, en el cielo y en los lados. techo: óvalo, sin arista contra el cielo.
@@ -1337,15 +1341,16 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     const pool = { ramas: [], sombras: [], rayos: [], brillos: [], semillas: [] };
     function hacerRama() {
       const m = mats(), g = new THREE.Group();
-      const palo = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.2, 3, 7), m.rama); palo.rotation.z = Math.PI / 2 - 0.25; g.add(palo);
-      const sub = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.1, 1.3, 6), m.rama); sub.position.set(0.5, 0.35, 0); sub.rotation.z = -0.6; g.add(sub);
-      for (let i = 0; i < 6; i++) { const hj = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.5), m.hoja); hj.position.set(-1.2 + i * 0.5, 0.25 + (i % 2) * 0.15, (i % 3 - 1) * 0.3); hj.rotation.set(i, i * 0.7, 0.3); g.add(hj); }
+      const palo = new THREE.Mesh(geoComun('rama-palo', () => new THREE.CylinderGeometry(0.13, 0.2, 3, 7)), m.rama); palo.rotation.z = Math.PI / 2 - 0.25; g.add(palo);
+      const sub = new THREE.Mesh(geoComun('rama-sub', () => new THREE.CylinderGeometry(0.07, 0.1, 1.3, 6)), m.rama); sub.position.set(0.5, 0.35, 0); sub.rotation.z = -0.6; g.add(sub);
+      const gh = geoComun('rama-hoja', () => new THREE.PlaneGeometry(0.9, 0.5));
+      for (let i = 0; i < 6; i++) { const hj = new THREE.Mesh(gh, m.hoja); hj.position.set(-1.2 + i * 0.5, 0.25 + (i % 2) * 0.15, (i % 3 - 1) * 0.3); hj.rotation.set(i, i * 0.7, 0.3); g.add(hj); }
       return g;
     }
     function desdePool(tipo, crear) { const l = pool[tipo]; const o = l.find(x => !x.userData.usado) || (l.push(sobreAgua(crear())), l[l.length - 1]); o.userData.usado = true; o.visible = true; if (!o.parent) TM.grupo.add(o); return o; }
     function soltar(o) { if (o) { o.userData.usado = false; o.visible = false; } }
-    const nuevaSombra = () => { const s = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), lm(new THREE.MeshBasicMaterial({ map: texSombra(), transparent: true, depthWrite: false, fog: false }))); s.rotation.x = -Math.PI / 2; return s; };
-    const nuevoBrillo = () => { const s = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), aditivo(texBrillo(), '#fff2a0', 1)); s.rotation.x = -Math.PI / 2; const col = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.9, 1, 12, 1, true), aditivo(null, '#fff6c0', 0.2)); col.rotation.x = Math.PI / 2; col.name = 'col'; s.add(col); s.userData.col = col; return s; };
+    const nuevaSombra = () => { const s = new THREE.Mesh(geoComun('sombra', () => new THREE.PlaneGeometry(1, 1)), lm(new THREE.MeshBasicMaterial({ map: texSombra(), transparent: true, depthWrite: false, fog: false }))); s.rotation.x = -Math.PI / 2; return s; };
+    const nuevoBrillo = () => { const s = new THREE.Mesh(geoComun('brillo', () => new THREE.PlaneGeometry(1, 1)), aditivo(texBrillo(), '#fff2a0', 1)); s.rotation.x = -Math.PI / 2; const col = new THREE.Mesh(geoComun('brillo-col', () => new THREE.CylinderGeometry(0.5, 0.9, 1, 12, 1, true)), aditivo(null, '#fff6c0', 0.2)); col.rotation.x = Math.PI / 2; col.name = 'col'; s.add(col); s.userData.col = col; return s; };
     const nuevoRayo = () => { const s = new THREE.Sprite(spriteMat(texRayo(), '#ffffff', true, 1)); s.center.set(0.5, 0); return s; };
     const nuevaSemilla = () => new THREE.Sprite(spriteMat(texSemilla(), '#ffffff', false, 1));
     function construirArena() {
@@ -1354,8 +1359,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       // Banderines alrededor: marcan el borde de la arena
       for (let i = 0; i < 14; i++) {
         const t = i / 14 * Math.PI * 2, x = a.x + Math.cos(t) * (T_TORMENTA.radio + 1.5), z = a.z + Math.sin(t) * (T_TORMENTA.radio + 1.5), y0 = superficie(x, z) - 0.5;
-        const palo = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 9, 6), m.palo); palo.position.set(x, y0 + 4.5, z); TM.grupo.add(palo);
-        const tela = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1), lm(new THREE.MeshLambertMaterial({ map: texBanderin(' '), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, color: i % 2 ? '#ffcf5a' : '#7fd3ff' })));
+        const palo = new THREE.Mesh(geoComun('banderin-palo', () => new THREE.CylinderGeometry(0.08, 0.12, 9, 6)), m.palo); palo.position.set(x, y0 + 4.5, z); TM.grupo.add(palo);
+        const tela = new THREE.Mesh(geoComun('banderin-tela', () => new THREE.PlaneGeometry(1.6, 1)), lm(new THREE.MeshLambertMaterial({ map: texBanderin(' '), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, color: i % 2 ? '#ffcf5a' : '#7fd3ff' })));
         tela.position.set(x + 0.8 * Math.cos(t + 1.57), y0 + 8.3, z + 0.8 * Math.sin(t + 1.57)); tela.rotation.y = -t; TM.grupo.add(tela);
       }
       // Frente: cortina alta (entra en el agua y en el cielo) y techo de nube. El plano es más grande que
