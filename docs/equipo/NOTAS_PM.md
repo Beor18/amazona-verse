@@ -22,6 +22,15 @@ En las 12 baterías de la build `cg71-docs` (HEAD `26a60ba9`, SwiftShader) hubo 
 
 El video de CG-108 no lo grabo: Kelvin lo ve con `?piloto=1`.
 
+### Dev 4 · 10-nov · aviso para Kimi · heap de la sesión larga
+En `AV.memoriaLargaTest({ largo: true })` el heap JS sube de **178 a 217 MB** con la recolección forzada. Las geometrías de la GPU se quedan en 319. El candidato es `streaming.js` al ir y volver del muelle (la pesca lleva a Vittata a la orilla y el ciclo la devuelve al spawn). No toqué `streaming.js`. Quedó como **QA-231**, asignado a Kimi. QA-230 ya era el aviso de consola.
+
+Pasos para reproducirlo:
+1. Prueba: `await AV.memoriaLargaTest({ largo: true })`. También vale abrir el juego con `?memlarga=1` y llamar `await AV.memoriaLargaTest()`. Son 10 ciclos de 180 s de juego (32 min simulados). Cada ciclo camina el mapa, vuela, hace un duelo, abre minigolf, Retos, la tormenta, Mis cotorras, el Álbum, la pesca (va al muelle y sale) y Construir, vuelve al spawn y deja que el streaming suelte lo de lejos.
+2. Comando (SwiftShader, GC forzado). Build: `AV_PYTHON=/usr/bin/python3 tools/build/build.sh HEAD tools/build/salida/kimi-heap --sin-geometria`. Chrome con `--js-flags=--expose-gc` y `--use-angle=swiftshader`. En la página ya lista: `await AV.memoriaLargaTest({ largo: true })`. La corrida de referencia usó la build `cg-106-8cbd5d50` (commit `ff44198f`).
+3. Duración: unos 262 s de reloj (4 min y medio) en esta máquina. El juego simula 32 min.
+4. Qué mirar: el check «Heap JS estable tras calentar». La serie fue 178,4 → 173,5 → 180,4 → 186,7 → 193,3 → 202,8 → 204,7 → 211,2 → 211,6 → 217,4 MB. Del ciclo 3 (calentado) al último: 180,4 → 217,4, pendiente 5,2 MB por ciclo. En el mismo informe las geometrías fueron 314 → 319 y luego seis ciclos en 319. El tope de la prueba es +6 MB y pendiente ≤ 1,5 MB por ciclo.
+
 ### Dev 2 · 10-nov 06:20 AST · CG-109 hecha
 - **Tarea:** enLineaTest estable. Cerrada.
 - **Commit:** `c173bc82` (mismo código que `aa36110e`, el de la build). EN CURSO fue `1ccc970f`.
@@ -73,6 +82,14 @@ El video de CG-108 no lo grabo: Kelvin lo ve con `?piloto=1`.
 - **Antes / después:** playtest CG-58, 39,9 s y 6 intentos sin posarse (solo ±1,6 m de la copa). Ahora Acción vale de −0,8 m a +2,8 m y, a menos de 2,4 m, el vuelo la sienta. El aviso de la llamada dura 3,2 s y se repite 2,8 s, no 5+5. El objetivo cabe en una línea: «Vuela y pósate junto a Iguaca».
 - **Cómo probarlo:** niño nuevo, saltar intro, volar a la copa y pulsar Acción un poco por encima. Desde el suelo no se le habla.
 - **Lo confirma:** selfTest 109/109 (caso «CG-105 · a 2 m sobre la copa»), missionTest 80/80, e2eTest 49/49. Build `cg-105-4ca8ce19` (mismo código): las 12 en verde, 0 errores de consola. Un aviso ajeno de `streaming.js` («reading '0'»).
+
+### Dev 4 · 10-nov · aviso de heap para Kimi
+- **Tarea:** anotar el heap de la sesión larga. Sin código.
+- **Commit:** este. CG-106 sigue en `ff44198f`.
+- **Archivos:** `docs/equipo/NOTAS_PM.md` y `docs/equipo/BUGS.md` (QA-231, dueño Kimi). QA-230 ya era el aviso de consola. No toqué `streaming.js`.
+- **Qué falta:** que Kimi mire el heap al ir y volver del muelle. Los pasos están en el aviso de arriba.
+- **Cómo probarlo:** `await AV.memoriaLargaTest({ largo: true })` en la build con `--js-flags=--expose-gc`. Unos 262 s. Mirar la serie del heap tras el ciclo 3.
+- **Lo confirma:** la serie 178,4 → 217,4 MB con las geometrías planas en 319.
 
 ### Dev 4 · 10-nov 06:05 AST · CG-106 hecha
 - **Tarea:** memoria en partidas largas. Cerrada en lo que no es el carril de Kimi.
