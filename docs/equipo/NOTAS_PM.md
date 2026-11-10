@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 07:28 AST · QA-232 en curso
+- **Tarea:** opcionesTest en inglés. QA-233 ya está en `2d6ee085`. No toco QA-234 ni QA-235.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/ui/ui.js`, solo la prueba. Parto de las tres comprobaciones de `c9adc9f2` y las hago en español y en inglés dentro de la misma corrida.
+- **Qué falta:** `AV.opcionesTest()` 10/10 en los dos idiomas, y las 12 con 0 errores.
+- **Cómo probarlo:** `AV.opcionesTest()`.
+- **Lo confirma:** opcionesTest y las 12.
+
 ### Dev 3 · 10-nov 07:20 AST · QA-234 cerrada
 - **Tarea:** a11y móvil (propuesto QA-232). Cerrada. No hubo arreglo: en este main las 6 ya pasan.
 - **Commit:** este. EN CURSO fue `6c42dee8`.
