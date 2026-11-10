@@ -366,7 +366,7 @@
       return rejilla;
     }
     async function foto() {
-      if (!G.renderer || !G.renderer.snapshot) { aviso('Ahora no se puede hacer la foto'); return null; }
+      if (!G.renderer || !G.renderer.snapshot) { aviso('Ahora no se puede sacar la foto'); return null; }
       let x = S.pos.x, z = S.pos.z;
       if (lista.length) { x = 0; z = 0; for (const p of lista) { x += p.x; z += p.z; } x /= lista.length; z /= lista.length; }
       const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, f0 = { x: (S.facing && S.facing.x) || 0, z: (S.facing && S.facing.z) || 1 };
@@ -384,12 +384,12 @@
           cv.getContext('2d').drawImage(im, 0, 0); url = cv.toDataURL('image/png');
         } catch (e) { url = null; }
       }
-      if (typeof url !== 'string' || url.indexOf('data:image/png') !== 0) { aviso('No se pudo hacer la foto'); return null; }
+      if (typeof url !== 'string' || url.indexOf('data:image/png') !== 0) { aviso('No se pudo sacar la foto'); return null; }
       if (!G.quiet) {
         const a = document.createElement('a');
         a.href = url; a.download = 'rincon-vittata.png'; a.rel = 'noopener';
         document.body.appendChild(a); a.click(); a.remove();
-        aviso('La foto quedó en tu dispositivo. No se sube a ningún sitio.', 3200);
+        aviso('La foto quedó en tu teléfono o computadora. No se sube a ningún sitio.', 3200);
       }
       return url;
     }
@@ -419,7 +419,7 @@
       modo0 = G.interaccion.modo; G.interaccion.modo = modo;
       activo = true; fantasma.visible = true; vista.listo = false;
       hud(true); actualizar(); pintarHud();
-      aviso('¡Construye tu rincón! Elige una pieza, gírala y pulsa Acción para colocarla.', 4200);
+      aviso('¡Arma tu rincón! Elige una pieza, gírala y toca Acción para ponerla.', 4200);
       return true;
     }
     function salir() {
@@ -498,11 +498,11 @@
       if (!ver) { if (hudEl) hudEl.hidden = true; return; }
       css();
       if (!hudEl) {
-        hudEl = document.createElement('div'); hudEl.id = 'cl-hud'; hudEl.className = 'hud'; hudEl.setAttribute('role', 'toolbar'); hudEl.setAttribute('aria-label', 'Modo construir');
+        hudEl = document.createElement('div'); hudEl.id = 'cl-hud'; hudEl.className = 'hud'; hudEl.setAttribute('role', 'toolbar'); hudEl.setAttribute('aria-label', 'Para construir');
         const tecla = window.matchMedia && matchMedia('(pointer: coarse)').matches ? () => '' : k => `<kbd>${k}</kbd>`;
         hudEl.innerHTML = '<div class="cl-fila cl-piezas">' + filaPiezas() + '</div>' +
           `<div class="cl-fila cl-herr"><span class="cl-cuenta" aria-live="polite"></span><button type="button" class="cl-deshacer" data-cl="deshacer" aria-disabled="true" aria-label="Deshacer" aria-keyshortcuts="Z"><span class="cl-etiq">Deshacer</span> ${tecla('Z')}</button><button type="button" data-cl="girar" aria-label="Girar" aria-keyshortcuts="R">Girar ${tecla('R')}</button>` +
-          `<button type="button" data-cl="rejilla" aria-pressed="false" aria-label="Cuadrícula">Cuadrícula</button><button type="button" data-cl="foto" aria-label="Foto">Foto</button>` +
+          `<button type="button" data-cl="rejilla" aria-pressed="false" aria-label="Cuadritos">Cuadritos</button><button type="button" data-cl="foto" aria-label="Foto">Foto</button>` +
           `<button type="button" data-cl="quitar" aria-label="Quitar" aria-keyshortcuts="Delete">Quitar ${tecla('Supr')}</button><button type="button" data-cl="listo" aria-label="Listo" aria-keyshortcuts="Escape">Listo ${tecla('Esc')}</button>` +
           (G.tienda && G.tienda.disponible && G.tienda.disponible() ? '<button type="button" data-cl="tienda" aria-label="Mercadito">Mercadito</button>' : '') + '</div>';
         let gesto = null, gestoYa = false;
