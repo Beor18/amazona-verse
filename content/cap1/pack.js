@@ -75,7 +75,7 @@
     meta: { titulo: 'El día que el cielo se rompió', capitulo: 1, almacen: 'amazonaverse' },
     jugador: { nombre: 'Vittata', sprite: 'assets/vittata.png', especie: 'vittata', altura: 1.75, acompanante: { altura: 1.4 }, aparicion: { x: -8, z: -2.5 }, camara: 0.35 },
     guardado: {
-      version: 6,
+      version: 7,
       // edu: misión educativa "La ruta de la gota" y aula (educativa.js, src/game/aula.js). Clave nueva: las partidas viejas la reciben vacía.
       // lugares: ids de los lugares con nombre ya descubiertos (src/game/lugares.js); las partidas viejas la reciben vacía.
       // guardianIntro: el Guardián ya se presentó antes de construir (KELVIN-2, decisión del equipo 30-oct); false en las partidas viejas.
@@ -85,11 +85,13 @@
       // dones: ids aprendidos con una mentora (src/game/dones.js). Vacío en las partidas viejas: la Llamada espera a Iguaca.
       // construir: rincón de Construir libre { v: 1, piezas } (src/game/construir.js, encendido para todos); null en las partidas viejas.
       // tienda: Mercadito del río { v: 1, conchitas, ganadas, compras: [id] } (src/game/tienda.js); null en las partidas viejas.
-      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'guardianIntro', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'gearRoof', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces', 'album', 'dones', 'construir', 'tienda'],
+      // interiores: cuartos editables { v: 1, edificios: { id: { piezas: [{ t, x, z, r, mat }], estado } } } en coordenadas del cuarto
+      // (CG-112). null en las partidas viejas. La validación de datos rotos está en guardado.js.
+      claves: ['examined', 'evaluated', 'refuge', 'builds', 'guardianMet', 'guardianIntro', 'benchUnlocked', 'transmitterOn', 'boatPlan', 'gearRoof', 'indicators', 'chorus', 'coquis', 'edu', 'lugares', 'marcador', 'rescates', 'fauna', 'peces', 'album', 'dones', 'construir', 'tienda', 'interiores'],
       estado: () => ({
         examined: { maquina: false, transmisor: false }, evaluated: { A: false, B: false },
         refuge: null, builds: [], guardianMet: false, guardianIntro: false, benchUnlocked: false, transmitterOn: false, boatPlan: false, gearRoof: false,
-        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [], lugares: [], marcador: null, rescates: 0, fauna: [], peces: [], album: [], dones: [], construir: null, tienda: null,
+        indicators: { seguridad: '—', acceso: '—', habitat: '—' }, chorus: false, coquis: [], lugares: [], marcador: null, rescates: 0, fauna: [], peces: [], album: [], dones: [], construir: null, tienda: null, interiores: null,
         edu: {
           hecho: { p1: false, p2: false, p3: false, p4: false, p5: false, p6: false, p7: false, p8: false },
           inicio: null, fin: null, pred1: null, pred2: null, perchas: {}, cadena: 0, vista: 0, vistos: { A: false, B: false },
@@ -128,6 +130,8 @@
           else if (d.step >= 6) d.step = 5;
           else if (d.step === 5) d.step = 4;
         }
+        // v6 -> v7 (CG-112): los interiores no existían. Una partida vieja llega sin cuarto guardado.
+        if (d && d.v === 6) d = Object.assign({}, d, { v: 7, interiores: null });
         return d;
       },
     },
