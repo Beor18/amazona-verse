@@ -655,23 +655,19 @@
       };
       lumaPos(0);
       G.on('update', dt => { lumaPos(dt); }, 12);
-      // CG-105: si el primer vuelo llega junto a la copa, la sienta. Sin esto hay que clavarse en la percha
-      // bajando sin volar (el niño no lo hace). Solo mientras Iguaca espera arriba.
-      G.on('update', dt => {
+      // CG-105: al entrar en la zona de hablar, se sienta en la copa. Un acercamiento lento peleaba con el
+      // palo del playtest y el vuelo daba vueltas (1222 s de juego). Solo mientras Iguaca espera arriba.
+      G.on('update', () => {
         if (!lumaArriba() || G.dialogo.open()) return;
-        const dx = percha.x - S.pos.x, dz = percha.z - S.pos.z, dh = Math.hypot(dx, dz);
+        const dh = Math.hypot(percha.x - S.pos.x, percha.z - S.pos.z);
         const dy = S.pos.y - percha.y;
-        if (dh > 2.4 || dy < -0.6 || dy > 3 || S.vy > 2) return;
+        if (dh > 2.4 || dy < -0.6 || dy > 3 || S.vy > 4) return;
         const M = G.fisica.MOVE;
-        if (!M.flying && !M.landing && dy < 1.1 && dh < 1.4) return;
-        const k = Math.min(1, dt * 3.5);
-        S.pos.x += dx * k; S.pos.z += dz * k;
-        const asiento = percha.y + 0.3;
-        if (S.pos.y > asiento) S.pos.y += (asiento - S.pos.y) * Math.min(1, dt * 2.5);
-        if (S.vy > 0) S.vy *= 0.4;
-        if (Math.hypot(percha.x - S.pos.x, percha.z - S.pos.z) < 1.15 && S.pos.y - percha.y < 1.3) {
-          M.flying = false; M.landing = false; S.vy = 0;
-        }
+        if (!M.flying && !M.landing && dh < 0.8 && dy < 1.1 && dy > -0.2) return;
+        S.pos.x = percha.x; S.pos.z = percha.z; S.pos.y = percha.y + 0.35; S.vy = 0;
+        M.flying = false; M.landing = false;
+        if (M.vx != null) M.vx = 0;
+        if (M.vz != null) M.vz = 0;
       }, 8);
       G.on('render', (dt, t) => {
         const e = lumaPos(0), x = lumaIt.x, z = lumaIt.z;
