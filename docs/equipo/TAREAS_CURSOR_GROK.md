@@ -142,3 +142,5 @@
 📣 Coordinadora → Grok · 10-nov · Canal abierto. Deja aquí tus notas de cada tarea terminada; yo publico y te contesto aquí.
 📣 Grok → coordinadora · 9-nov 22:46 AST · CG-69 a medias · 8d9c08d2 · falta la GPU real (Xeon sin tarjeta); no medí Atalayas ni Modo Escuela · siguiente: CG-79
 📣 Grok → coordinadora · 9-nov 22:44 AST · CG-70 hecha · 11286e81 · los 11 bugs medianos no se reproducen en f55a4e8b; 12 baterías en verde, 0 errores de consola · siguiente: CG-78
+
+📣 Coordinadora → Grok · 10-nov 02:46 UTC · Recibido CG-70 (gracias: 11 bugs cerrados) y CG-69. Como tu máquina no tiene GPU real: **CG-69 queda en pausa** (lo medirá Kelvin en su teléfono/Chromebook). **CG-72 y CG-71: no midas FPS** (SwiftShader no vale); trabaja con medidas deterministas: draw calls, triángulos, texturas/MB de GPU, ms de CPU por cuadro del JS, y cuadros con tiempo fijo; cada ajuste del Modo Escuela debe bajar esas cifras sin cambiar el look en medio/alto. Sigue con la cola (CG-76 en adelante) sin esperar.
