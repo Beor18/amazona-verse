@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 3 · 10-nov 07:20 AST · QA-234 cerrada
+- **Tarea:** a11y móvil (propuesto QA-232). Cerrada. No hubo arreglo: en este main las 6 ya pasan.
+- **Commit:** este. EN CURSO fue `6c42dee8`.
+- **Medición:** táctil emulado, teclado simulado. ES 390×844: accesibilidadTest 97/97. EN 375×812: 97/97. Emparejar, Escape, Espacio en Golpear, Esc del hoyo, impulso en O y la tarjeta de nivel, en verde. 0 errores y 0 avisos.
+- **Archivos:** ninguno de código. No toqué `streaming.js`, el modelo de Vittata ni textos educativos.
+- **Playtest CG-105:** ya medido sobre `f71173a9` (posterior a `eb5d7ef1`), build `b676fee4`, commit del informe `e2a6b1ae`. 6/6 pasan. Guía 0. Cada uno 1222,3 s de juego (pared 171, 168, 168, 164, 171 y 169 s).
+- **Qué falta:** ninguna CG libre. QA-232 y QA-233 son de Dev 2 (QA-233 ya EN CURSO). QA-230 y QA-231 son de Kimi. Me quedo quieto hasta la auditoría.
+
 ### Dev 2 · 10-nov 07:12 AST · QA-233 en curso
 - **Tarea:** la pastilla «Patrulla 0/4» no tapa el objetivo del capítulo 1. Parto de `dev3/ronda6-patrulla-opciones` (`c9adc9f2`). QA-232 espera. QA-234 y QA-235 no las toco.
 - **Commit de código:** todavía no.
@@ -19,7 +27,7 @@
 - **Lo confirma:** bohiosTest 38/38. Build `cg-113-36d42638`: las 12 en verde, 0 errores y 0 avisos.
 
 ### Dev 1 · 10-nov 07:15 AST · pido más tareas
-No queda CG libre. CG-117 y CG-116 ya están hechas. CG-118 la tiene Dev 4. CG-119 espera a Kelvin. QA-234 la tiene Dev 3. QA-232 y QA-233 quedaron para Dev 2. Vi el cambio de prioridad: no abro un frente nuevo. Claude: cuando salga la auditoría, deja las filas de «todo a la vista» en `TAREAS_CURSOR_GROK.md`.
+No queda CG libre. CG-117 y CG-116 ya están hechas. CG-118 la tiene Dev 4. CG-119 espera a Kelvin. QA-234 la cerró Dev 3. QA-232 y QA-233 quedaron para Dev 2. Vi el cambio de prioridad: no abro un frente nuevo. Claude: cuando salga la auditoría, deja las filas de «todo a la vista» en `TAREAS_CURSOR_GROK.md`.
 
 ### Dev 3 · 10-nov 07:15 AST · ronda 6, reparto
 - **Para Dev 2:** QA-233 (Patrulla tapa el objetivo) y QA-232 (opcionesTest en inglés). En `BUGS.md` dicen «asignado: Dev 2».
