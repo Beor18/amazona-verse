@@ -26,7 +26,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | GT-06 | libre | **Interiores (V18.4) cuando la coordinadora avise:** con `?interiores=1`, entrar/salir del bohío de Villa Raíz, colocar un mueble, salir, recargar y comprobar que sigue; FPS dentro/fuera. |
 | GT-07 | libre | **Android/iPhone emulados con GPU real** (perfil Pixel 7, Galaxy S5 con CPU ×4, iPhone 13): Atalayas con textura (no cajas beige), sin cuadraditos, nitidez; FPS. |
 | GT-08 | libre | **Baterías extra completas** (`test.sh … --extra`) en HEAD con GPU real: lista de rojos con sha → BUGS.md (prioridad según impacto). Distinguir rojo real de rojo de tiempo/carga repitiendo una vez lo que falle. |
-| GT-09 | libre | **Safari de verdad** (si la máquina es Mac: es lo más parecido al iPhone): abrir el sitio en Safari, partida nueva, volar, pesca, Construir, Mercadito, duelo con y sin `?combate2=1`, cotorras en línea; anotar errores de la consola de Safari, lo que se vea distinto a Chrome y FPS con `?fps=1`. |
+| GT-09 | hecha · Safari 26.6.2: 47-58 fps, pesca/Construir/Mercadito/En línea en verde, 0 errores | **Safari de verdad** (si la máquina es Mac: es lo más parecido al iPhone): abrir el sitio en Safari, partida nueva, volar, pesca, Construir, Mercadito, duelo con y sin `?combate2=1`, cotorras en línea; anotar errores de la consola de Safari, lo que se vea distinto a Chrome y FPS con `?fps=1`. |
 | GT-10 | libre | **Cotorras en línea reales:** Chrome y Safari (o dos ventanas) en la misma sala; moverse, saludar, gritar (¿se ve el pico?), salir; latencia aproximada y 0 errores. |
 | GT-11 | libre | **Recorrido de los 6 capítulos** en el sitio publicado con GPU real (con `AV.temporadaMovilTest` si existe, o a mano lo esencial de cada capítulo): que cada capítulo arranque, se avance y se guarde. Un renglón por capítulo. |
 | GT-12 | libre | **Sesión larga de 20 min** con GPU real (volar, pesca, Construir, duelo, Patrulla): memoria del heap y de la GPU al minuto 1, 10 y 20 (`performance.memory`, `?fps=1`), FPS al principio y al final. ¿Crece sin parar? |
@@ -75,4 +75,19 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 - No hice captura de pantalla: esta sonda mide sin ventana visible y no vi nada raro en las cifras. La inspección visual del duelo queda para GT-09 en Safari.
 
 📣 Terminal → coordinadora · 10-nov 11:45 AST · GT-04 hecha · duelo 60 fps clavados (peor cuadro 16,8 ms) con y sin `combate2=1`, en escritorio y en móvil 390×844; 0 errores de consola · siguiente: GT-09
+
+**GT-09 · Safari de verdad (10-nov ~12:00-12:20 AST)**
+- Condiciones: Safari 26.6.2 en el iMac M4, manejado con `safaridriver` (WebDriver, ventana de automatización aparte de 1440×900), sitio publicado, partida nueva, sin freno de CPU, calidad automática.
+- Escenas, 30 s cada una (FPS medio · mediana · peor cuadro · draw calls · calidad):
+  - spawn 51 fps · 19 ms · 180 ms · 138 · medio
+  - vuelo 47 fps · 20 ms · 109 ms · 140 · medio
+  - pueblo 56 fps · 17 ms · 277 ms · 108 · bajo
+  - duelo 58 fps · 17 ms · 99 ms · 91 · bajo
+- Duelo con `?combate2=1`: 52 fps · peor cuadro 57 ms · 102 draw calls.
+- Pruebas del juego en Safari: `v18PescaTest` 59/59 · `construirTest` 59/59 · `tiendaTest` (Mercadito) 46/46 · `enLineaTest` 17/17.
+- Errores: 0 en todo. Los vigilé con ganchos `onerror`, `unhandledrejection`, `console.error` y errores de recursos instalados nada más cargar la página: WebDriver de Safari no da la consola, así que un error de los primeros milisegundos de la carga no se vería.
+- Distinto a Chrome: Safari rinde menos con la misma GPU (47-58 fps frente a 60 clavados en Chrome sin freno). El ajuste automático baja a «medio» o «bajo» y cambia el DPR entre 1 y 1,25. No vi nada roto en las capturas: HUD, chips del duelo y combos en su sitio. Capturas en `docs/img/gt-09/`.
+- No cubierto aquí: cotorras en línea con dos navegadores reales (es GT-10; aquí solo `enLineaTest`).
+
+📣 Terminal → coordinadora · 10-nov 12:25 AST · GT-09 hecha · Safari 26.6.2 (M4): spawn 51 / vuelo 47 / pueblo 56 / duelo 58 fps, y 52 con combate2; pesca 59/59, Construir 59/59, Mercadito 46/46, En línea 17/17; 0 errores · siguiente: GT-02
 
