@@ -374,6 +374,48 @@
     const cargarLook = aDemanda('src/game/look.js', 'AVLook');
     AV.lookTest = o => cargarLook().then(l => l.test(o));
     cargarLook().catch(() => {}); // ya, no a los 7 s: el look se aplica antes del primer cuadro del mundo (la portada lo tapa), sin salto de color
+    // CG-95: una publicación nueva (otro sha en ave:build) deja el worker en espera. El aviso no recarga solo:
+    // la partida sigue en localStorage y solo se relee al tocar.
+    if (navigator.serviceWorker) {
+      let puesto = false, quiere = false;
+      const en = () => (G.aula && G.aula.aj && G.aula.aj.idioma) === 'en';
+      const shaDe = t => { const q = /name="ave:build"[^>]*content="([^"]+)"/i.exec(t) || /content="([^"]+)"[^>]*name="ave:build"/i.exec(t); return q ? q[1].trim().split(/\s+/).pop() : ''; };
+      const shaAhora = () => { const m = document.querySelector('meta[name="ave:build"]'); return m ? (m.getAttribute('content') || '').trim().split(/\s+/).pop() : ''; };
+      function mostrar(reg) {
+        if (puesto || !reg || !navigator.serviceWorker.controller || !reg.waiting) return;
+        puesto = true;
+        const b = document.createElement('button');
+        b.type = 'button'; b.id = 'av-version';
+        b.textContent = en() ? 'There is something new: tap to update' : 'Hay novedades: toca para actualizar';
+        b.style.cssText = 'position:fixed;z-index:80;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);max-width:min(440px,calc(100vw - 24px));min-height:44px;padding:10px 18px;border:0;border-radius:999px;background:#1d5e33;color:#fff;font:700 16px/1.3 system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer';
+        b.addEventListener('click', () => {
+          quiere = true; b.disabled = true;
+          const w = reg.waiting;
+          if (w) w.postMessage({ tipo: 'actualizar' });
+          else location.reload();
+        });
+        document.body.appendChild(b);
+      }
+      function mirar(reg) {
+        if (!reg) return;
+        if (reg.waiting && navigator.serviceWorker.controller) mostrar(reg);
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', () => { if (nw.state === 'installed') mostrar(reg); });
+        });
+      }
+      navigator.serviceWorker.addEventListener('controllerchange', () => { if (quiere) location.reload(); });
+      navigator.serviceWorker.getRegistration().then(mirar).catch(() => {});
+      navigator.serviceWorker.ready.then(mirar).catch(() => {});
+      const revisar = () => fetch('index.html', { cache: 'no-store' }).then(r => r.text()).then(html => {
+        const sha = shaDe(html), ahora = shaAhora();
+        if (!sha || !ahora || sha === ahora) return;
+        const u = new URL('sw.js', document.baseURI); u.searchParams.set('b', sha);
+        return navigator.serviceWorker.register(u.href).then(mirar);
+      }).catch(() => {});
+      setTimeout(() => { revisar(); setInterval(revisar, 120000); }, 120000);
+    }
     window.AV = AV;
   }
   function start(id) { expose(AVE.boot(id)); }

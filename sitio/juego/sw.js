@@ -9,7 +9,15 @@ function interesa(path) {
   return /\/tex_hd\/hd_[a-z0-9_]+\.(jpe?g|ktx2)$/i.test(path) || /_glb\.js$/i.test(path) || /\.glb$/i.test(path);
 }
 
-self.addEventListener('install', () => { self.skipWaiting(); });
+// La primera visita no tiene worker activo: entra ya, para cachear. Si ya hay una partida abierta,
+// el worker nuevo espera a que el jugador toque «Hay novedades» (boot.js le manda { tipo: 'actualizar' }).
+self.addEventListener('install', e => {
+  e.waitUntil((async () => { if (!self.registration.active) await self.skipWaiting(); })());
+});
+self.addEventListener('message', e => {
+  const d = e.data;
+  if (d && d.tipo === 'actualizar') self.skipWaiting();
+});
 self.addEventListener('activate', e => {
   e.waitUntil((async () => {
     const claves = await caches.keys();

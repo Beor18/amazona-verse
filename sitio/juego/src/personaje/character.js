@@ -721,9 +721,13 @@
     }
     // Fase del paso: la cadencia sale de la velocidad real (speed / zancada), así los pies no patinan; el clip Walk se
     // sincroniza con esa fase (su pie izquierdo va adelante en t = 0,25 del ciclo, igual que el paso procedural en φ = π/2).
+    // En el mundo, Vittata recibe la velocidad real (actores.js). Con la zancada de 1,25 m el pie apoyado patina
+    // a paso rápido (~2,8 m/s, docs/equipo/AUDITORIA_ANIMACION_COMBATE.md). El duelo ya mete el 0,8 en speed
+    // (AND.paso) y no pone posarT, así que aquí no se aplica otra vez. Correr y nadar no cambian.
     _gaitPhase(dt) {
       const g = this.gait || 0, run = g > 1.5, sp = this.speed;
-      const hz = this.swimming ? (run ? 2.6 : 1.4) : sp != null ? clamp(sp / (run ? ANIM.strideRun : ANIM.strideWalk), ANIM.cadence[0], ANIM.cadence[1]) : run ? 4.8 : 3.4;
+      const paso = !run && !this.swimming && g > 0 && g <= 1.5 && this.posarT != null ? 0.8 : 1;
+      const hz = this.swimming ? (run ? 2.6 : 1.4) : sp != null ? clamp(sp * paso / (run ? ANIM.strideRun : ANIM.strideWalk), ANIM.cadence[0], ANIM.cadence[1]) : run ? 4.8 : 3.4;
       this.hz = this.hz == null ? hz : this.hz + (hz - this.hz) * Math.min(1, dt * 8);
       if (g > 0 || (this.gW || 0) > 0.01) this.ph = ((this.ph || 0) + dt * this.hz * Math.PI * 2) % (Math.PI * 2);
       const wa = this.actions.Walk;
