@@ -1116,7 +1116,114 @@ window.AVV18Combate = function (G) {
     if (B.espalda1001 && s.cola) ch.rot(B.espalda1001, 'x', s.cola);
     if (B.pico && s.pico) ch.rot(B.pico, 'x', s.pico);
   }
-  const vidaApi = { antes: vida, huesos: vidaHuesos, ESTADOS: VIDA_EST, VEL: VIDA_VEL };
+  // ---------- Andar (Kelvin 9-nov: «no me gusta el movimiento del bot de la cotorra del duelo») ----------
+  // Cómo se mueve el cuerpo que se ve; la posición de juego (r.pos), la IA, sus tiempos y sus golpes no cambian.
+  // - El cuerpo sigue a la posición de juego con un muelle crítico que copia su velocidad (sin retraso en marcha): los
+  //   arranques, frenazos y quiebros no saltan de un cuadro a otro.
+  // - Pasos de verdad: de frente anda con el clip Walk del modelo y la cadencia que pide su velocidad (como Vittata); el
+  //   cuerpo se gira hacia donde va (giro con velocidad y aceleración limitadas) y la cabeza sigue mirando a la rival.
+  // - De lado o hacia atrás (rodeando de cerca, apartándose, antes de girarse) no patina: va a saltitos de cotorra, con las
+  //   patas juntas y quietas en el suelo y el cuerpo avanzando solo en el aire, con un golpe de alas en cada uno.
+  // - Girando en el sitio da pasitos; al caer de un quiebro amortigua con las rodillas y la cola; se inclina al arrancar y
+  //   al frenar y se ladea en las curvas. Con el pie, IK contra el suelo real (en Modo Escuela, sin IK: solo cuentas).
+  // También la usa el Jugador 2 del duelo de 2 (duelo2.js, con G.v18combate.vida.andar).
+  const AND = { w: 25, acel: 90, paso: 0.8, giro: 7, giroAtaque: 10, giroAcel: 60, quieta: 0.35, aire: 0.15, suelo: 0.1, alto: 0.06, corre: 8.5,
+    lado: [1.4, 1.75], atras: [1.95, 1.6], girada: [0.4, 0.6], asienta: 0.3, pasoGiro: 1.4 };
+  const MOV_PIE = 1.0, MOV_TIRON = 100; // umbrales de las pruebas (m/s de un pie apoyado de media; m/s² del cuerpo que se ve)
+  const suave01 = u => (u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u));
+  // o: { x, z (posición de juego), yaw (rumbo pedido) o mira ({x, z} de la rival) + encara (de frente a ella), aire (en el
+  //      aire por el juego: quiebro, empujón, saltito de sorpresa), ataque (giro rápido) }
+  function andar(f, o, dt) {
+    let A = f.andar;
+    if (!A || Math.hypot(o.x - A.px, o.z - A.pz) > 3) { // primera vez o teletransporte: sin muelle ni saltos
+      A = f.andar = { px: o.x, pz: o.z, vx: 0, vz: 0, sx: o.x, sz: o.z, svx: 0, svz: 0, yaw: o.yaw != null ? o.yaw : (A ? A.yaw : f.yaw || 0), w: 0,
+        modo: 'quieta', modoT: 0, lado: false, atras: false, girada: false, hop: { aire: false, t: 0, ax: o.x, az: o.z, x: o.x, z: o.z, h: 0 },
+        aire: false, aireT: 0, asienta: 0, lean: 0, bank: 0, sp: 0, alas: 0, out: { x: o.x, z: o.z, alto: 0, yaw: 0, speed: 0, gait: 0, airborne: false, clip: 'Idle', lean: 0, bank: 0, settle: 0, alas: 0, modo: 'quieta' } };
+    }
+    const d = Math.max(dt, 1e-4);
+    // 1. Velocidad de juego, suavizada (lo que el muelle copia)
+    const x0 = A.px, z0 = A.pz, gx = (o.x - x0) / d, gz = (o.z - z0) / d; A.px = o.x; A.pz = o.z;
+    const kv = 1 - Math.exp(-dt / 0.05); A.vx += (gx - A.vx) * kv; A.vz += (gz - A.vz) * kv;
+    // 2. Muelle crítico (subpasos de 1/100 s, con la posición de juego interpolada dentro del cuadro: estable con cualquier dt)
+    const n = Math.min(12, Math.ceil(dt / 0.01)), h = dt / n, W = AND.w, sx0 = A.sx, sz0 = A.sz;
+    for (let i = 0; i < n; i++) {
+      const u = (i + 1) / n, tx = x0 + (o.x - x0) * u, tz = z0 + (o.z - z0) * u;
+      let ax = W * W * (tx - A.sx) + 2 * W * (A.vx - A.svx), az = W * W * (tz - A.sz) + 2 * W * (A.vz - A.svz);
+      const am = Math.hypot(ax, az); if (am > AND.acel) { ax *= AND.acel / am; az *= AND.acel / am; } // sin tirones: aceleración máxima
+      A.svx += ax * h; A.svz += az * h;
+      A.sx += A.svx * h; A.sz += A.svz * h;
+    }
+    const s = Math.hypot(A.svx, A.svz), viaje = Math.atan2(A.svx, A.svz);
+    // 3. Hacia dónde quiere mirar el cuerpo
+    const aRival = o.mira ? Math.atan2(o.mira.x - A.sx, o.mira.z - A.sz) : null, dRival = o.mira ? Math.hypot(o.mira.x - A.sx, o.mira.z - A.sz) : 99;
+    if (o.aire && !A.aire) A.aireT = 0;
+    if (!o.aire && A.aire) A.asienta = AND.asienta; // aterriza de un quiebro o un empujón: amortigua
+    A.aire = !!o.aire; if (A.aire) A.aireT += dt;
+    let quiere = A.yaw;
+    if (o.yaw != null) quiere = o.yaw;
+    else if (aRival != null && (o.encara || A.aire)) quiere = aRival;
+    else if (s > AND.quieta) {
+      const off = aRival == null ? 0 : Math.abs(giroPi(viaje - aRival));
+      A.atras = aRival != null && off > (A.atras ? AND.atras[1] : AND.atras[0]); // apartándose: de cara a la rival, a saltitos
+      A.lado = aRival != null && dRival < 3.4 && s < (A.lado ? AND.lado[1] : AND.lado[0]); // rodeando de cerca y despacio: de lado
+      quiere = A.atras || A.lado ? aRival : viaje;
+    } else if (aRival != null) quiere = aRival;
+    // 4. Giro con velocidad y aceleración limitadas (en el aire de un quiebro gira menos: no hace trompos)
+    const gmax = (o.ataque ? AND.giroAtaque : AND.giro) * (A.aire ? 0.6 : 1), wq = Math.max(-gmax, Math.min(gmax, giroPi(quiere - A.yaw) * 9));
+    A.w += Math.max(-AND.giroAcel * dt, Math.min(AND.giroAcel * dt, wq - A.w)); A.yaw = giroPi(A.yaw + A.w * dt);
+    // 5. Paso: andar de frente, saltitos de lado/atrás, correr (J2), quieta (pasitos si gira)
+    const dif = s > 0.05 ? Math.abs(giroPi(viaje - A.yaw)) : 0;
+    A.girada = dif > (A.girada ? AND.girada[0] : AND.girada[1]); // el cuerpo aún no mira hacia donde va
+    let modo = A.aire ? 'aire' : s > AND.corre ? 'corre' : s > AND.quieta ? (A.girada ? 'saltos' : 'anda') : 'quieta';
+    // Cambiar de paso cuesta un poco (sin parpadeos entre andar y saltar)
+    A.modoT += dt;
+    if (modo !== A.modo && (A.modoT > 0.25 || modo === 'aire' || A.modo === 'aire')) { A.modo = modo; A.modoT = 0; } else modo = A.modo;
+    // 6. Saltitos: el cuerpo que se ve se queda donde cayó mientras toca el suelo y avanza solo en el aire
+    const H = A.hop, salta = modo === 'saltos' || (modo === 'quieta' && Math.hypot(H.x - A.sx, H.z - A.sz) > 0.05 && !H.aire);
+    if (H.aire) {
+      H.t += dt; const u = Math.min(1, H.t / AND.aire), e = suave01(u);
+      const bx = A.sx + A.svx * (AND.aire - Math.min(H.t, AND.aire) + AND.suelo * 0.5), bz = A.sz + A.svz * (AND.aire - Math.min(H.t, AND.aire) + AND.suelo * 0.5);
+      H.x = H.ax + (bx - H.ax) * e; H.z = H.az + (bz - H.az) * e; H.h = H.alto * Math.sin(Math.PI * u);
+      if (u >= 1) { H.aire = false; H.t = 0; H.h = 0; }
+    } else if (modo === 'aire' || modo === 'anda' || modo === 'corre') {
+      // Fuera de los saltitos el cuerpo vuelve a la posición del muelle (de pie no: allí se da un último saltito)
+      const k = Math.exp(-dt / 0.1); H.x = A.sx + (H.x - sx0) * k; H.z = A.sz + (H.z - sz0) * k; H.t = 0; // el desfase se apaga
+    } else {
+      H.t += dt;
+      if (salta && H.t >= AND.suelo) { H.aire = true; H.t = 0; H.ax = H.x; H.az = H.z; H.alto = AND.alto + 0.03 * Math.min(1, s / 2); }
+    }
+    // Lejos de su sitio (cambió de golpe la velocidad): sin saltos raros, vuelve con el muelle
+    { const ox = H.x - A.sx, oz = H.z - A.sz, od = Math.hypot(ox, oz); if (od > 0.45) { H.x = A.sx + ox / od * 0.45; H.z = A.sz + oz / od * 0.45; } }
+    // 7. Postura: se inclina al acelerar y se echa atrás al frenar; se ladea en las curvas
+    const sp0 = A.sp; A.sp = s; const acel = (s - sp0) / d;
+    const leanQ = A.aire ? 0 : Math.max(-0.08, Math.min(0.16, s * 0.02 + acel * 0.012)), bankQ = Math.max(-0.1, Math.min(0.1, -A.w * Math.min(1, s / 3) * 0.04));
+    const kp = 1 - Math.exp(-dt * 8); A.lean += (leanQ - A.lean) * kp; A.bank += (bankQ - A.bank) * kp;
+    if (A.asienta > 0) A.asienta = Math.max(0, A.asienta - dt);
+    A.alas = H.aire ? Math.sin(Math.PI * Math.min(1, H.t / AND.aire)) : Math.max(0, A.alas - dt * 6);
+    const O = A.out, enSaltos = H.aire || modo === 'saltos';
+    O.x = H.x; O.z = H.z; O.alto = H.h; O.yaw = A.yaw; O.lean = A.lean; O.bank = A.bank; O.modo = modo;
+    // Los saltitos son de unos centímetros: las patas no se recogen (si se recogieran y volvieran a estirar con el pie ya en
+    // el suelo, el pie patinaría); solo el aire de verdad del juego (quiebro, empujón) las recoge
+    O.airborne = modo === 'aire';
+    O.gait = modo === 'corre' ? 2 : modo === 'anda' ? 1 : modo === 'quieta' && !enSaltos && Math.abs(A.w) > AND.pasoGiro ? 1 : 0;
+    // Cadencia: la del paso de character.js (zancada 1,25 m) escalada por AND.paso, medida para que el pie apoyado no patine
+    // con las patas de la cotorra a esta escala; girando en el sitio, pasitos lentos
+    O.speed = O.gait === 1 && modo === 'quieta' ? 0.6 : O.gait === 1 ? s * AND.paso : s;
+    O.clip = O.gait === 1 ? 'Walk' : 'Idle';
+    O.settle = A.asienta / AND.asienta; O.alas = A.alas;
+    return O;
+  }
+  // Aplica lo de andar() a un personaje (antes de update) y cambia de clip solo cuando hace falta
+  function andarAplicar(ch, O, f, conClip) {
+    if (conClip && f.clipAnda !== O.clip) { try { if (ch.play(O.clip)) f.clipAnda = O.clip; } catch (e) { /* sin clip */ } }
+    ch.speed = O.speed; ch.gait = O.gait; ch.landSettle = O.settle > 0 ? O.settle : 0;
+  }
+  // Después de update: el golpe de alas de cada saltito (como vidaHuesos, se deshace solo en el cuadro siguiente)
+  function andarHuesos(ch, O) {
+    const B = ch.bones; if (!B || !O || !(O.alas > 0.01) || !B.armL1 || !B.armL1001) return;
+    ch.rot(B.armL1, 'z', 0.35 * O.alas); ch.rot(B.armL1001, 'z', -0.35 * O.alas);
+  }
+  const vidaApi = { antes: vida, huesos: vidaHuesos, andar, andarAplicar, andarHuesos, AND, ESTADOS: VIDA_EST, VEL: VIDA_VEL };
   function dibujarRival(dt, vel, sinAnimar) {
     const ch = C.ch; if (!ch) return;
     const r = C.r, root = ch.root, now = performance.now() / 1000, lucha = C.fase === 'lucha';
@@ -1124,39 +1231,47 @@ window.AVV18Combate = function (G) {
     root.visible = true;
     // Saltito de los quiebros (solo se ve: la posición de juego no sube)
     const salto = r.saltoDur > 0 ? 0.32 * Math.sin(Math.PI * Math.min(1, r.saltoT / r.saltoDur)) : 0;
-    const hop = (ch.gait || 0) > 1.5 && !salto ? Math.abs(Math.sin(ch.ph || 0)) * 0.06 * Math.min(1, vel / 2.5) : 0; // saltitos al trotar
+    const fin = C.fase === 'fin' ? (C.resultado === 'win' ? 'pierde' : 'gana') : '';
+    // Mira a la jugadora: en la cuenta, en la lucha, al ganar y, esperando en la explanada, a quien se acerca (< 20 m)
+    const cerca = C.fase === 'nada' && (S.pos.x - r.pos.x) ** 2 + (S.pos.z - r.pos.z) ** 2 < 400;
+    const mira = !(r.mareo > 0) && fin !== 'pierde' && (lucha || C.fase === 'cuenta' || fin === 'gana' || cerca);
+    if (mira) { if (C.fase === 'nada' || !C.j) mirarA.set(S.pos.x, S.pos.y + 1.2, S.pos.z); else mirarA.set(C.j.pos.x, C.j.pos.y + 1.2, C.j.pos.z); }
+    // Andar: el cuerpo que se ve (ver andar()); en espera y mareada sigue el rumbo de juego (r.yaw)
+    const libre = lucha && !(r.mareo > 0) && !fin;
+    const enJuegoAire = r.lift.dura > 0 || r.saltoDur > 0 || r.mov.t > 0 || r.kb.t > 0;
+    const O = andar(r, { x: r.pos.x, z: r.pos.z, yaw: libre ? null : r.yaw, mira: libre && C.j ? C.j.pos : null,
+      encara: !!prep || r.golpeAnim > 0, ataque: !!prep, aire: enJuegoAire }, dt);
+    r.yawVis = O.yaw;
     // du3: antes del aletazo retrocede un palmo (carga el golpe) y al soltarlo se lanza adelante (solo se ve)
     const carga = prep === 'golpe_ala' ? -0.16 * Math.min(1, Math.max(0, r.prepDur - r.prepT) / 0.18) : r.golpeAnim > 0 ? 0.22 * Math.sin(Math.PI * Math.min(1, r.golpeAnim / 0.3)) : 0;
-    root.position.set(r.pos.x + Math.sin(r.yaw) * carga, r.pos.y + salto + hop, r.pos.z + Math.cos(r.yaw) * carga);
-    root.rotation.y = r.yaw; // el rumbo ya gira con velocidad limitada (moverRival)
+    // Empujón sin saltito de juego: un traspié corto en el aire (no se arrastra por el suelo)
+    const traspie = r.kb.t > 0 && !salto && !(r.lift.dura > 0) ? 0.1 * Math.sin(Math.PI * Math.min(1, (r.andar.aireT || 0) / 0.3)) : 0;
+    root.position.set(O.x + Math.sin(O.yaw) * carga, r.pos.y + salto + traspie + O.alto, O.z + Math.cos(O.yaw) * carga);
+    root.rotation.y = O.yaw;
     const kz = Math.min(1, dt * 10);
-    root.rotation.z = r.mareo > 0 ? Math.sin(now * (r.finMareo > 0 ? 9 : 14)) * (r.finMareo > 0 ? 0.32 : 0.25) : root.rotation.z + ((prep === 'semilla' ? 0.16 : 0) - root.rotation.z) * kz; // tambaleo del mareo; ladea la cabeza al apuntar
-    root.rotation.x += ((prep === 'semilla' ? 0.14 : prep ? 0 : Math.min(0.1, vel * 0.02)) - root.rotation.x) * kz; // se inclina al correr y al apuntar
+    root.rotation.z = r.mareo > 0 ? Math.sin(now * (r.finMareo > 0 ? 9 : 14)) * (r.finMareo > 0 ? 0.32 : 0.25) : root.rotation.z + ((prep === 'semilla' ? 0.16 : O.bank) - root.rotation.z) * kz; // tambaleo del mareo; ladea la cabeza al apuntar; en las curvas
+    root.rotation.x += ((prep === 'semilla' ? 0.14 : prep ? 0 : O.lean) - root.rotation.x) * kz; // se inclina al arrancar y al apuntar, atrás al frenar
     if (sinAnimar) { ponerAviso(prep, now); return; } // CPU (móvil): colocada, pero sin animar el esqueleto este cuadro (ver dibujarQuieta)
     if (r.finMareo > 0 && azar() < dt * 5) fx('gold', r.pos.x, r.pos.y + 1.8, r.pos.z); // estrellitas del mareo final
     // Se agacha para el golpe. du3: es la pose «agachada bajo un toldo» de character.js (con 1 se tumba a 0,81 m); con 0,62
     // la Campeona quedaba casi tumbada en el suelo. Con 0,1 se inclina ~20° adelante y flexiona las patas (alas abiertas aparte).
     r.agacha += ((prep === 'golpe_ala' ? AGACHA_ALA : prep === 'semilla' ? AGACHA_SEMILLA : 0) - r.agacha) * Math.min(1, dt * 12);
-    const enAire = r.lift.dura > 0 || r.saltoDur > 0;
-    // Andar de lado o deprisa: saltitos con las alas a medio abrir ('hop'); despacio y de frente, pasos
-    const lado = vel > 0.7 && Math.sin(r.yaw) * r.v.x + Math.cos(r.yaw) * r.v.z < 0.5 * Math.hypot(r.v.x, r.v.z); // de lado o hacia atrás
-    // Mira a la jugadora: en la cuenta, en la lucha, al ganar y, esperando en la explanada, a quien se acerca (< 20 m)
-    const fin = C.fase === 'fin' ? (C.resultado === 'win' ? 'pierde' : 'gana') : '';
-    const cerca = C.fase === 'nada' && (S.pos.x - r.pos.x) ** 2 + (S.pos.z - r.pos.z) ** 2 < 400;
-    const mira = !(r.mareo > 0) && fin !== 'pierde' && (lucha || C.fase === 'cuenta' || fin === 'gana' || cerca);
-    if (mira) { if (C.fase === 'nada' || !C.j) mirarA.set(S.pos.x, S.pos.y + 1.2, S.pos.z); else mirarA.set(C.j.pos.x, C.j.pos.y + 1.2, C.j.pos.z); }
-    Object.assign(ch, { speed: vel, gait: vel > 3 || lado ? 2 : vel > 0.3 ? 1 : 0, airborne: enAire, flying: enAire, legsDown: enAire ? 0.6 : 1, swimming: false, diving: false,
-      wingMode: r.alasT > 0 ? 'land' : r.golpeAnim > 0 ? 'flap' : prep === 'golpe_ala' ? 'preflare' : enAire ? 'flap' : vel > 0.3 ? 'walk' : 'idle',
+    const enAire = O.airborne || r.lift.dura > 0 || r.saltoDur > 0, grande = r.lift.dura > 0 || r.saltoDur > 0 || r.mov.t > 0;
+    const esc = !!(G.renderer && G.renderer.calidad && G.renderer.calidad.escuela);
+    andarAplicar(ch, O, r, !fin);
+    Object.assign(ch, { airborne: enAire, flying: false, legsDown: 0, swimming: false, diving: false,
+      wingMode: r.alasT > 0 ? 'land' : r.golpeAnim > 0 ? 'flap' : prep === 'golpe_ala' ? 'preflare' : grande ? 'flap' : O.gait ? 'walk' : 'idle',
       expression: r.mareo > 0 ? 'surprised' : r.picoT > 0 || prep ? 'fight' : 'happy',
-      mouth: r.picoT > 0 ? boca(r) : null, lookAt: mira ? mirarA : null,
-      emote: null, posado: '', agachada: enAire ? 0 : r.agacha, groundY: ALTURA(r.pos), groundAt: null });
-    const V = vida(ch, r, { prep, prepK: prep && r.prepDur > 0 ? 1 - r.prepT / r.prepDur : 0, ataque: r.golpeAnim > 0, salto: r.saltoDur > 0 || r.mov.t > 0, vel, fin }, dt);
-    try { ch.update(dt); vidaHuesos(ch, V); } catch (e) { /* animación */ }
+      mouth: r.picoT > 0 ? boca(r) : null, lookAt: mira ? mirarA : null, ikEscuela: esc,
+      emote: null, posado: '', agachada: enAire ? 0 : r.agacha, groundY: ALTURA(r.pos), groundAt: esc ? null : sueloRival });
+    const V = vida(ch, r, { prep, prepK: prep && r.prepDur > 0 ? 1 - r.prepT / r.prepDur : 0, ataque: r.golpeAnim > 0, salto: r.saltoDur > 0 || r.mov.t > 0, vel: O.modo === 'quieta' ? 0 : O.speed, fin }, dt);
+    try { ch.update(dt); vidaHuesos(ch, V); andarHuesos(ch, O); } catch (e) { /* animación */ }
     // Altura real de la cabeza sobre los pies (sigue al saltito, a la carga y a la pose), para el «!»
     const cab = ch.bones && ch.bones.cabeza;
     if (cab) { cab.getWorldPosition(cabezaV); C.cabezaAlto = cabezaV.y - r.pos.y; }
     ponerAviso(prep, now);
   }
+  const sueloRival = (x, z) => G.terreno.height(x, z);
   // «!» a ~0,4 m sobre la coronilla (el hueso de la cabeza está en su base, ~0,8 m más abajo; du3: antes iba fijo a 2,25 m de los pies, muy por encima de la Campeona, y más aún agachada)
   const AGACHA_ALA = 0.1, AGACHA_SEMILLA = 0.03, AVISO_SOBRE = 0.9, cabezaV = new THREE.Vector3();
   function ponerAviso(prep, now) {
@@ -1381,6 +1496,11 @@ window.AVV18Combate = function (G) {
       };
       const yawVis = () => (C.ch ? C.ch.root.rotation.y : r.yaw);
       let n = 0, mov = 0, lat = 0, des = 0, tiro = 0, golpe = 0, yaw0 = yawVis(), hist = [];
+      // 9-nov (Kelvin: «no me gusta el movimiento del bot»): lo que se ve, cuadro a cuadro. Pies: cuánto se desliza cada pie
+      // apoyado (a menos de 3 cm de su suelo en dos cuadros seguidos); cadencia: zancada que da el paso (velocidad del cuerpo
+      // que se ve entre la frecuencia del paso) al andar; cuerpo: el mayor salto de velocidad de un cuadro al siguiente.
+      const pieV = new THREE.Vector3(), ch0 = C.ch, pie0 = [null, null], raiz0 = { x: 0, z: 0, v: null };
+      let apoyos = 0, desliz = 0, deslizMax = 0, cuerpoMax = 0, andaN = 0, zancadaMal = 0, zancadas = []; const modosV = {}, pisadas = [];
       S.pos.x = sitio.x - 5; S.pos.z = sitio.z;
       try {
         for (let t = 0; t < seg && C.fase === 'lucha'; t += dt) {
@@ -1404,20 +1524,45 @@ window.AVV18Combate = function (G) {
           if (C.ch && C.ch.agachada > 0.04) res.agacha = true;
           const vx = (r.pos.x - x0) / dt, vz = (r.pos.z - z0) / dt, v = Math.hypot(vx, vz);
           if ((quiebro || r.mov.t > 0) && !(r.kb.t > 0) && !(r.mareo > 0)) { res.quiebros++; if (C.ch && !C.ch.airborne) res.quiebrosSinSalto++; }
+          if (ch0 && ch0.feet && ch0.feet.length === 2) {
+            const rx = ch0.root.position.x, rz = ch0.root.position.z, rvx = (rx - raiz0.x) / dt, rvz = (rz - raiz0.z) / dt;
+            const An = r.andar; // el cuerpo (sin los saltitos, que van a propósito a golpes): su velocidad no salta de un cuadro a otro
+            if (An && raiz0.sv) { const dv = Math.hypot(An.svx - raiz0.sv.x, An.svz - raiz0.sv.z); if (dv < 30) cuerpoMax = Math.max(cuerpoMax, dv / dt); }
+            if (An) raiz0.sv = { x: An.svx, z: An.svz };
+            const rs = Math.hypot(rvx, rvz);
+            // Zancada = velocidad / frecuencia del paso (1,25 m por ciclo en character.js); por debajo de 1,6 m/s la cadencia mínima
+            // de character.js (1,2 Hz) acorta el paso a propósito
+            if (raiz0.v && ch0.gait === 1 && !ch0.airborne && rs > 1.6 && ch0.hz > 0) { andaN++; const z = rs / ch0.hz * AND.paso; zancadas.push(z); if (Math.abs(z - 1.25) > 0.3) zancadaMal++; }
+            raiz0.x = rx; raiz0.z = rz; raiz0.v = { x: rvx, z: rvz };
+            if (r.andar) { const m = r.andar.out.modo; modosV[m] = (modosV[m] || 0) + 1; }
+            ch0.feet.forEach((f, i) => {
+              f.eff.getWorldPosition(pieV); const alto = pieV.y - G.terreno.height(pieV.x, pieV.z), p0 = pie0[i];
+              if (!ch0.airborne && p0 && !p0.aire) pisadas.push({ i, a: alto, a0: p0.alto, v: Math.hypot(pieV.x - p0.x, pieV.z - p0.z) / dt });
+              pie0[i] = { x: pieV.x, z: pieV.z, alto, aire: ch0.airborne };
+            });
+          }
           if (sacudida || r.kb.t > 0 || r.mov.t > 0 || r.mareo > 0) { hist.length = 0; continue; }
           n++;
-          if (C.ch && Math.abs((C.ch.speed || 0) - v) > 0.5) des++;
+          if (C.ch && C.ch.gait === 1 && v > 0.8 && Math.abs((C.ch.speed || 0) / AND.paso - v) > 0.5) des++; // andando, la cadencia sale de su velocidad real
           const pv = hist.length ? hist[hist.length - 1] : null;
           if (pv && v > 0.6 && pv.v > 0.6 && (vx * pv.x + vz * pv.z) / (v * pv.v) < Math.cos(Math.PI / 4)) res.bruscos++;
           const p3 = hist.length >= 3 ? hist[hist.length - 3] : null;
           if (p3 && v > 0.6 && p3.v > 0.6 && (vx * p3.x + vz * p3.z) / (v * p3.v) < -0.5) res.inversiones++;
           hist.push({ x: vx, z: vz, v }); if (hist.length > 3) hist.shift();
-          if (v > 1) { mov++; const fy = y1; if (Math.abs(Math.sin(fy) * vx + Math.cos(fy) * vz) / v < 0.5 && !(C.ch && C.ch.gait > 1.5)) lat++; }
+          if (v > 1) { mov++; const fy = y1; if (Math.abs(Math.sin(fy) * vx + Math.cos(fy) * vz) / v < 0.5 && C.ch && C.ch.gait === 1 && !C.ch.airborne) lat++; } // de lado con pasos de andar (los saltitos no cuentan)
         }
       } finally { H.usar = usar0; }
       res.bruscos = Math.round(100 * res.bruscos / seg) / 100; res.inversiones = Math.round(100 * res.inversiones / seg) / 100;
       res.lateral = Math.round(100 * lat / Math.max(1, mov)) / 100; res.desfase = Math.round(100 * des / Math.max(1, n)) / 100; res.giroMax = Math.round(10 * res.giroMax) / 10;
       res.cuadros = n; res.andando = mov;
+      zancadas.sort((a, b) => a - b);
+      // Pie apoyado: a menos de 2,5 cm de lo más bajo que suele llegar ese pie en el duelo (percentil 5) (la bola del pie no toca el suelo
+      // del todo: está unos centímetros por encima de pie), en dos cuadros seguidos
+      const bajo = [0, 1].map(i => { const h = pisadas.filter(p => p.i === i).map(p => p.a).sort((x, y) => x - y); return h.length ? h[Math.floor(h.length * 0.05)] : 9; });
+      for (const p of pisadas) if (p.a < bajo[p.i] + 0.025 && p.a0 < bajo[p.i] + 0.025 && p.v < 30) { apoyos++; desliz += p.v; deslizMax = Math.max(deslizMax, p.v); }
+      Object.assign(res, { apoyos, deslizPie: Math.round(100 * desliz / Math.max(1, apoyos)) / 100, deslizPieMax: Math.round(100 * deslizMax) / 100,
+        saltoVelCuerpo: Math.round(cuerpoMax), pasosAndando: andaN, zancadaMed: zancadas.length ? Math.round(100 * zancadas[zancadas.length >> 1]) / 100 : 0,
+        zancadaMal: Math.round(100 * zancadaMal / Math.max(1, andaN)) / 100, modos: modosV });
       salir();
       return res;
     }
@@ -1652,6 +1797,35 @@ window.AVV18Combate = function (G) {
         const mv = medirMovimiento(14);
         check('Movimiento: gira con velocidad limitada, sin temblores ni cambios bruscos de dirección', mv.giroMax <= 15 && mv.bruscos <= 0.3 && mv.inversiones <= 0.3, JSON.stringify(mv));
         check('Movimiento: no se desliza de lado sin saltitos y anda a la velocidad que se mueve', mv.lateral <= 0.08 && mv.desfase <= 0.05, JSON.stringify(mv));
+        // 9-nov (Kelvin: «no me gusta el movimiento del bot de la cotorra del duelo»): lo que se ve se mueve como una cotorra viva
+        check('Movimiento: en el duelo anda de frente con el paso a la cadencia de su velocidad y de lado va a saltitos',
+          mv.pasosAndando >= 20 && mv.zancadaMal <= 0.15 && (mv.modos.anda || 0) > 20 && (mv.modos.saltos || 0) > 5, JSON.stringify(mv));
+        // Pie apoyado, medido a 60 cuadros/s (a 20 el apoyo dura 2 o 3 cuadros y la medida baila): andando de frente a 4 m/s y
+        // de lado a 1,4 m/s, cuánto se desliza por el suelo el pie que toca (mediana). AND.paso (cadencia) se midió así: con la
+        // de character.js tal cual (1) el pie patina casi el doble.
+        let pasoQ = null;
+        const pisa = (vel, lado, cad) => {
+          const r = C.r, ch = C.ch, p0 = AND.paso, v3 = new THREE.Vector3(), prev = [null, null], hs = [[], []], filas = [];
+          AND.paso = cad; S.pos.x = sitio.x - 6; S.pos.z = sitio.z;
+          try {
+            r.pos.x = sitio.x - 4; r.pos.z = sitio.z + 3; r.yaw = lado ? 0 : Math.PI / 2; pasoQ(0.1); for (let i = 0; i < 30; i++) pasoQ(1 / 60);
+            for (let i = 0; i < 150; i++) {
+              r.pos.x += vel / 60; r.yaw = lado ? 0 : Math.PI / 2; pasoQ(1 / 60);
+              ch.feet.forEach((f, k) => { f.eff.getWorldPosition(v3); const h = v3.y - G.terreno.height(v3.x, v3.z); if (prev[k] && i > 40) filas.push({ k, h, h0: prev[k].h, d: Math.hypot(v3.x - prev[k].x, v3.z - prev[k].z) * 60 }); hs[k].push(h); prev[k] = { x: v3.x, z: v3.z, h }; });
+            }
+          } finally { AND.paso = p0; }
+          const bajo = hs.map(h => h.slice().sort((a, b) => a - b)[Math.floor(h.length * 0.05)]);
+          const ap = filas.filter(x => x.h < bajo[x.k] + 0.02 && x.h0 < bajo[x.k] + 0.02).map(x => x.d).sort((a, b) => a - b);
+          return { n: ap.length, med: Math.round(100 * (ap[ap.length >> 1] || 0)) / 100, modo: r.andar ? r.andar.out.modo : '' };
+        };
+        if (C.ch && C.ch.feet && C.ch.feet.length === 2) {
+          salir(); pasoQ = dt => { animaFresca = 1.5; dibujarRival(dt, moverRivalQuieta(dt)); };
+          const anda = pisa(4, false, AND.paso), anda1 = pisa(4, false, 1), lado = pisa(1.4, true, AND.paso);
+          check('Movimiento: el pie apoyado apenas se desliza (andando de frente a 4 m/s, menos que con la cadencia sin ajustar; de lado, a saltitos, casi nada)',
+            anda.n >= 10 && anda.med <= MOV_PIE && anda.med < anda1.med && lado.n >= 10 && lado.med <= 0.2 && lado.modo === 'saltos', JSON.stringify({ anda, sinAjustar: anda1, lado }));
+        }
+        check('Movimiento: el cuerpo que se ve no da tirones (sin saltos de velocidad de un cuadro a otro) y gira a ' + AND.giroAtaque + ' rad/s como mucho',
+          mv.saltoVelCuerpo <= MOV_TIRON && mv.giroMax <= AND.giroAtaque + 0.5, JSON.stringify({ saltoVelCuerpo: mv.saltoVelCuerpo, giroMax: mv.giroMax }));
         check('Telegrafía: cada golpe de ala y cada semilla de la rival vienen avisados (se agacha y abre las alas, o apunta, con «!» encima)',
           mv.alas >= 1 && mv.alasAvisadas === mv.alas && mv.semillasAvisadas === mv.semillas && mv.marca && mv.agacha, JSON.stringify(mv));
         // El aviso se puede leer: quieta, el golpe llega al acabar el aviso; apartándose a tiempo, falla; pegarle mientras avisa

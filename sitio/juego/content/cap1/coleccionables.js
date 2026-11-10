@@ -55,5 +55,29 @@
       { clave: 'camisa:deportiva', hito: 'all12', nombre: 'Camisa Deportiva 787', pista: 'el Diario completo', viste: { slot: 'torso', id: 'camisa', color: '#d6403a', style: 'deportiva' } },
       { clave: 'lentes:#c9a227', hito: 'all12', nombre: 'Lentes dorados', pista: 'el Diario completo', viste: { slot: 'eyes', id: 'lentes', color: '#c9a227', style: 'sol' } },
     ],
+    // Mercadito del río (src/game/tienda.js; Kelvin 9-nov, idea de su hija: «con esos peces el premio sea comprar más ropa y más cosas»).
+    // Se paga con conchitas, una moneda del juego que solo se gana pescando (src/game/v18/pesca.js): sin dinero real, sin azar, sin
+    // ofertas ni relojes. Cada cosa tiene un precio fijo y a la vista. Nada de lo que ya se tenía se bloquea: la ropa son colores
+    // NUEVOS (el último de cada pieza en src/personaje/wardrobe.js; clave pieza:color como en ropa) y las piezas de Construir son
+    // tipos nuevos de src/game/construir.js. conjunto: las piezas que forman el traje «Pescador del río».
+    tienda: {
+      moneda: 'conchitas',
+      ropa: [
+        { id: 'sombrero_rio', clave: 'sombrero2:#2e8b7a', precio: 40, conjunto: 'pescador', nombre: 'Sombrero de pescador verde río', viste: { slot: 'head', id: 'sombrero2', color: '#2e8b7a', style: 'pescador' } },
+        { id: 'chaleco_arena', clave: 'camisa:#cbb48a', precio: 60, conjunto: 'pescador', nombre: 'Chaleco explorador color arena', viste: { slot: 'torso', id: 'camisa', color: '#cbb48a', style: 'chaleco' } },
+        { id: 'pantalon_arena', clave: 'pantalon:#cbb48a', precio: 50, conjunto: 'pescador', nombre: 'Pantalón cargo color arena', viste: { slot: 'legs', id: 'pantalon', color: '#cbb48a', style: 'cargo' } },
+        { id: 'botas_coral', clave: 'botas:#ff7a5c', precio: 50, conjunto: 'pescador', nombre: 'Tenis color coral', viste: { slot: 'feet', id: 'botas', color: '#ff7a5c', style: 'tenis' } },
+        { id: 'lentes_turquesa', clave: 'lentes:#1fb5b0', precio: 30, nombre: 'Lentes redondos turquesa', viste: { slot: 'eyes', id: 'lentes', color: '#1fb5b0', style: 'redondas' } },
+        { id: 'traje_rio', clave: 'traje:#1c6e8c', precio: 120, nombre: 'Traje de Guardián azul río', viste: { slot: 'torso', id: 'traje', color: '#1c6e8c' } },
+      ],
+      construir: [
+        { id: 'helecho', precio: 25, nombre: 'Helecho' },
+        { id: 'cerca', precio: 30, nombre: 'Cerca de bambú' },
+        { id: 'farol', precio: 40, nombre: 'Farol' },
+        { id: 'comedero', precio: 45, nombre: 'Comedero de aves' },
+        { id: 'domino', precio: 60, nombre: 'Mesa de dominó' },
+        { id: 'hamaca', precio: 70, nombre: 'Hamaca' },
+      ],
+    },
   });
 })();

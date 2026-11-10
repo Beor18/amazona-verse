@@ -611,24 +611,26 @@
   }
 
   // ---------- Catálogo (se suma a los accesorios de character.js) ----------
+  // El último color de sombreros, lentes, camisa, traje, pantalón y botas es del Mercadito del río (src/game/tienda.js; pack.tienda.ropa):
+  // se ve bloqueado en Mi personaje hasta comprarlo con conchitas de la pesca (precio fijo, sin dinero real ni azar).
   const COL = ['#d6403a', '#3d8fb0', '#2f8f4e', '#2b2b2b', '#f2a03d', '#7a4fb3', '#e8c32a', '#f4f4f0'];
   const defs = [
     { id: 'gorra', slot: 'head', mount: 'mount_head_top', name: 'Gorra', colors: COL, styles: [['liso', 'Clásica'], ['pr', 'Bandera PR'], ['criolla', 'Criolla de paja'], ['playera', 'Playera'], ['reves', 'Hacia atrás'], ['trucker', 'Trucker']], glb: { reves: 'gorra_reves', trucker: 'gorra_trucker', '*': 'gorra' }, build: capGroup },
     { id: 'pava', slot: 'head', mount: 'mount_head_top', name: 'Pava jíbara (PR)', colors: ['#d6403a', '#0a50a1', '#2b2b2b', '#2f8f4e'], glb: 'pava', build: pavaGroup },
-    { id: 'sombrero2', slot: 'head', mount: 'mount_head_top', name: 'Sombreros', colors: ['#8a6a3a', '#5a3a22', '#d6403a', '#3d8fb0', '#2f8f4e', '#2b2b2b'], styles: [['paja', 'De paja'], ['tropical', 'Tropical'], ['vaquero', 'Vaquero'], ['pescador', 'Pescador']], glb: { paja: 'sombrero_paja', tropical: 'sombrero_tropical', vaquero: 'sombrero_vaquero', pescador: 'sombrero_pescador' }, build: brimHat },
+    { id: 'sombrero2', slot: 'head', mount: 'mount_head_top', name: 'Sombreros', colors: ['#8a6a3a', '#5a3a22', '#d6403a', '#3d8fb0', '#2f8f4e', '#2b2b2b', '#2e8b7a'], styles: [['paja', 'De paja'], ['tropical', 'Tropical'], ['vaquero', 'Vaquero'], ['pescador', 'Pescador']], glb: { paja: 'sombrero_paja', tropical: 'sombrero_tropical', vaquero: 'sombrero_vaquero', pescador: 'sombrero_pescador' }, build: brimHat },
     { id: 'casco', slot: 'head', mount: 'mount_head_top', name: 'Cascos', colors: ['#f2c21a', '#f2a03d', '#f4f4f0', '#3d8fb0', '#d6403a'], styles: [['constructor', 'Constructor'], ['marinero', 'Marinero'], ['pirata', 'Pirata']], glb: { constructor: 'casco_constructor', marinero: 'casco_marinero', pirata: 'casco_pirata' }, build: hardHat },
-    { id: 'lentes', slot: 'eyes', mount: 'mount_eyes', name: 'Lentes', colors: ['#2b2b2b', '#c9a227', '#d6403a', '#3d8fb0', '#f4f4f0'], styles: [['sol', 'De sol'], ['redondas', 'Redondas'], ['deportivas', 'Deportivas'], ['buceo', 'Máscara de buceo'], ['binoculares', 'Binoculares']], glb: { sol: 'lentes_sol', redondas: 'lentes_redondas', deportivas: 'lentes_deportivas', buceo: 'lentes_buceo', binoculares: 'lentes_binoculares' }, build: shades },
-    { id: 'camisa', slot: 'torso', fit: shirtParts, glb: 'camisa', name: 'Camisa', colors: ['#f4f4f0', '#d6403a', '#3d8fb0', '#2f8f4e', '#f2a03d', '#2b2b2b', '#7a4fb3', '#e8c32a'],
+    { id: 'lentes', slot: 'eyes', mount: 'mount_eyes', name: 'Lentes', colors: ['#2b2b2b', '#c9a227', '#d6403a', '#3d8fb0', '#f4f4f0', '#1fb5b0'], styles: [['sol', 'De sol'], ['redondas', 'Redondas'], ['deportivas', 'Deportivas'], ['buceo', 'Máscara de buceo'], ['binoculares', 'Binoculares']], glb: { sol: 'lentes_sol', redondas: 'lentes_redondas', deportivas: 'lentes_deportivas', buceo: 'lentes_buceo', binoculares: 'lentes_binoculares' }, build: shades },
+    { id: 'camisa', slot: 'torso', fit: shirtParts, glb: 'camisa', name: 'Camisa', colors: ['#f4f4f0', '#d6403a', '#3d8fb0', '#2f8f4e', '#f2a03d', '#2b2b2b', '#7a4fb3', '#e8c32a', '#cbb48a'],
       styles: [['liso', 'Lisa'], ['pr', 'Bandera PR'], ['hawaiana', 'Hawaiana'], ['guayabera', 'Guayabera'], ['deportiva', 'Deportiva 787'], ['camuflaje', 'Camuflaje'], ['chaleco', 'Chaleco explorador']] },
     // Traje de Guardián (BM157): traje entero en la ranura de la camisa (la sustituye). La TELA se tiñe con el color elegido; oro y
     // cotorra quedan fijos. La corona va en el mismo .glb, rígida al hueso de la cabeza: headPart la separa y character.js la
     // apaga si hay algo en la ranura de la cabeza (gorra, casco… van en su lugar).
     { id: 'traje', slot: 'torso', fit: guardianParts, glb: 'traje_guardian', headPart: 'cabeza001', name: 'Traje de Guardián',
-      colors: ['#1f7a5c', '#2a5bd7', '#b3262b', '#7a4fb3', '#2b2b2b', '#f4f4f0'] },
+      colors: ['#1f7a5c', '#2a5bd7', '#b3262b', '#7a4fb3', '#2b2b2b', '#f4f4f0', '#1c6e8c'] },
     // Pantalón: liso/flores/cargo/camuflaje van sobre el corto; mezclilla, sobre el largo
-    { id: 'pantalon', slot: 'legs', fit: pantsParts, glb: { liso: 'pantalon_corto', flores: 'pantalon_corto', cargo: 'pantalon_corto', camuflaje: 'pantalon_corto', mezclilla: 'pantalon_largo' }, name: 'Pantalón', colors: ['#3d6fa8', '#8a6a3a', '#2f8f4e', '#2b2b2b', '#d6403a', '#f2a03d'],
+    { id: 'pantalon', slot: 'legs', fit: pantsParts, glb: { liso: 'pantalon_corto', flores: 'pantalon_corto', cargo: 'pantalon_corto', camuflaje: 'pantalon_corto', mezclilla: 'pantalon_largo' }, name: 'Pantalón', colors: ['#3d6fa8', '#8a6a3a', '#2f8f4e', '#2b2b2b', '#d6403a', '#f2a03d', '#cbb48a'],
       styles: [['liso', 'Corto'], ['flores', 'De playa'], ['cargo', 'Cargo'], ['camuflaje', 'Militar'], ['mezclilla', 'Mezclilla largo']] },
-    { id: 'botas', slot: 'feet', fit: bootParts, glb: { aventura: 'botas_aventura', constructor: 'botas_constructor', militar: 'botas_militar', tenis: 'botas_tenis', espacial: 'botas_espacial', buzo: 'botas_buzo', tenis_pr: 'botas_tenis_pr', chancletas: 'botas_chancletas' }, name: 'Calzado', colors: ['#d6403a', '#3d8fb0', '#2f8f4e', '#2b2b2b'],
+    { id: 'botas', slot: 'feet', fit: bootParts, glb: { aventura: 'botas_aventura', constructor: 'botas_constructor', militar: 'botas_militar', tenis: 'botas_tenis', espacial: 'botas_espacial', buzo: 'botas_buzo', tenis_pr: 'botas_tenis_pr', chancletas: 'botas_chancletas' }, name: 'Calzado', colors: ['#d6403a', '#3d8fb0', '#2f8f4e', '#2b2b2b', '#ff7a5c'],
       styles: [['aventura', 'Aventura'], ['constructor', 'Constructor'], ['militar', 'Militares'], ['tenis', 'Tenis'], ['espacial', 'Espaciales'], ['buzo', 'De buzo'], ['tenis_pr', 'Tenis PR'], ['chancletas', 'Chancletas']] },
     { id: 'equipo', slot: 'back', mount: 'mount_back', name: 'Equipo', colors: ['#3d8fb0', '#d6403a', '#2f8f4e', '#9aa0a3'], styles: [['mochila_pr', 'Mochila PR'], ['cuatro', 'Cuatro puertorriqueño'], ['tanques', 'Tanques de oxígeno'], ['jetpack', 'Jetpack ligero']],
       glb: { mochila_pr: 'equipo_mochila_pr', cuatro: 'equipo_cuatro', tanques: 'equipo_tanques', jetpack: 'equipo_jetpack' }, build: backItem },

@@ -4,10 +4,11 @@
    Vittata (verde si cabe, rojo si no), Acción coloca y suena el martillo (G.audio.martillar).
    ENCENDIDO PARA TODOS (Kelvin 9-nov: «Piezas aprobadas»): ya no depende de ?expansion=1 (esa bandera ya no existe).
    Bandera propia G.CONSTRUIR (boot.js): encendida por defecto, ?construir=0 la apaga; boot.js carga este archivo al arrancar.
-   Piezas: 7 tipos procedurales y estilizados (sin modelos nuevos). Cada tipo es UNA geometría fundida con colores de vértice y un
-   InstancedMesh: 7 llamadas de dibujo como mucho, con 40 piezas o con 1. Presupuesto: 40 piezas (24 en calidad «bajo» y Modo Escuela);
-   sin compras, sin cajas sorpresa: todas las piezas desde el principio.
-   Controles: teclado 1–7 pieza · R / Q girar · Z deshacer · Supr o Retroceso quitar la pieza bajo el fantasma · E/Enter colocar ·
+   Piezas: 7 tipos procedurales y estilizados (sin modelos nuevos), de todos desde el principio, y 6 más del Mercadito del río
+   (helecho, cerca, farol, comedero, mesa de dominó y hamaca; src/game/tienda.js, se compran con conchitas de la pesca a precio fijo). Cada tipo es UNA geometría fundida con colores de vértice y un
+   InstancedMesh: una llamada de dibujo por tipo que tenga piezas (13 como mucho), con 40 piezas o con 1. Presupuesto: 40 piezas (24 en calidad «bajo» y Modo Escuela);
+   sin dinero real ni cajas sorpresa: las 7 de siempre desde el principio y las del Mercadito por su precio fijo.
+   Controles: teclado 1–9 pieza (en el orden de la barra) · R / Q girar · Z deshacer · Supr o Retroceso quitar la pieza bajo el fantasma · E/Enter colocar ·
    Esc o B salir (B también entra). Táctil: la barra de piezas y herramientas de arriba y el botón Acción («Colocar»).
    Guardado: S.construir = { v: 1, piezas: [{ t, x, z, r }] } en la partida (content/cap1/pack.js, clave «construir»). r = giro en
    pasos de 45°. Lo que no se entiende (dañado, otra versión, tipos que no existen, números raros) se lee como vacío o se descarta.
@@ -145,9 +146,102 @@
         }
         return P;
       } },
+      // ---- Del Mercadito del río (src/game/tienda.js): se compran con conchitas de la pesca; misma técnica que las de arriba ----
+      // Helecho: matita de frondas arqueadas
+      helecho: { r: 0.4, sobre: false, hacer() {
+        const P = [];
+        for (let i = 0; i < 9; i++) {
+          const a = i / 9 * Math.PI * 2, h = 0.5 + (i % 3) * 0.08, abre = 0.9 + (i % 2) * 0.35;
+          P.push(parte(new C.ConeGeometry(0.09, h, 4), i % 2 ? '#3f8a35' : '#55a644', { p: [Math.cos(a) * 0.16, h * 0.42, Math.sin(a) * 0.16], dir: [Math.cos(a) * abre, 1, Math.sin(a) * abre], s: [1, 1, 0.28] }));
+          P.push(parte(new C.ConeGeometry(0.06, h * 0.55, 4), '#6fbf52', { p: [Math.cos(a) * 0.36, h * 0.66, Math.sin(a) * 0.36], dir: [Math.cos(a) * 1.6, 0.4, Math.sin(a) * 1.6], s: [1, 1, 0.25] }));
+        }
+        P.push(parte(new C.SphereGeometry(0.12, 7, 5), '#2f6e2a', { p: [0, 0.06, 0], s: [1.3, 0.5, 1.3] }));
+        return P;
+      } },
+      // Cerca de bambú: siete cañas con sus nudos y dos travesaños atados
+      cerca: { r: 0.9, sobre: false, hacer() {
+        const P = [];
+        for (let i = 0; i < 7; i++) {
+          const x = -0.84 + i * 0.28, h = 0.82 + (i % 2) * 0.12, c = i % 2 ? '#b8a248' : '#c9b25a';
+          P.push(parte(new C.CylinderGeometry(0.045, 0.05, h, 7), c, { p: [x, h / 2, 0], tapa: '#8f7a30' }));
+          for (const y of [0.28, 0.58]) P.push(parte(new C.CylinderGeometry(0.054, 0.054, 0.03, 7), '#8f7a30', { p: [x, y, 0] }));
+        }
+        for (const y of [0.34, 0.66]) P.push(parte(new C.CylinderGeometry(0.03, 0.03, 1.86, 6), '#a08c3a', { p: [0, y, 0.06], r: [0, 0, Math.PI / 2] }));
+        return P;
+      } },
+      // Farol: poste con brazo y un farol de luz cálida
+      farol: { r: 0.35, sobre: false, hacer() {
+        return [parte(new C.CylinderGeometry(0.16, 0.2, 0.08, 10), '#3b332c', { p: [0, 0.04, 0] }),
+          parte(new C.CylinderGeometry(0.04, 0.05, 1.75, 8), '#3b332c', { p: [0, 0.9, 0] }),
+          parte(new C.BoxGeometry(0.34, 0.04, 0.04), '#3b332c', { p: [0.15, 1.7, 0] }),
+          parte(new C.CylinderGeometry(0.012, 0.012, 0.12, 4), '#3b332c', { p: [0.29, 1.63, 0] }),
+          parte(new C.CylinderGeometry(0.1, 0.12, 0.05, 8), '#2a2420', { p: [0.29, 1.56, 0] }),
+          parte(new C.CylinderGeometry(0.095, 0.095, 0.22, 8), '#ffd27a', { p: [0.29, 1.42, 0] }),
+          parte(new C.SphereGeometry(0.06, 8, 6), '#fff1b8', { p: [0.29, 1.42, 0] }),
+          parte(new C.CylinderGeometry(0.11, 0.09, 0.04, 8), '#2a2420', { p: [0.29, 1.29, 0] }),
+          parte(new C.ConeGeometry(0.13, 0.1, 8), '#2a2420', { p: [0.29, 1.62, 0] })];
+      } },
+      // Comedero de aves: casita sobre un poste, con su bandeja de semillas
+      comedero: { r: 0.4, sobre: false, hacer() {
+        const P = [parte(new C.CylinderGeometry(0.04, 0.05, 1.25, 6), '#6b4a2b', { p: [0, 0.62, 0] }),
+          parte(new C.BoxGeometry(0.46, 0.04, 0.36), '#8a5a32', { p: [0, 1.26, 0] }),
+          parte(new C.BoxGeometry(0.28, 0.26, 0.22), '#d9a35a', { p: [0, 1.41, 0] }),
+          parte(new C.CylinderGeometry(0.045, 0.045, 0.02, 10), '#3b2a1a', { p: [0, 1.43, 0.112], r: [Math.PI / 2, 0, 0] })];
+        for (const sg of [-1, 1]) P.push(parte(new C.BoxGeometry(0.24, 0.03, 0.32), '#a4472f', { p: [sg * 0.1, 1.6, 0], r: [0, 0, -sg * 0.62] }));
+        for (const z of [-0.17, 0.17]) P.push(parte(new C.BoxGeometry(0.46, 0.05, 0.02), '#8a5a32', { p: [0, 1.3, z] }));
+        for (const x of [-0.22, 0.22]) P.push(parte(new C.BoxGeometry(0.02, 0.05, 0.36), '#8a5a32', { p: [x, 1.3, 0] }));
+        for (let i = 0; i < 7; i++) P.push(parte(new C.SphereGeometry(0.025, 5, 3), '#e3c27a', { p: [-0.18 + (i % 4) * 0.035, 1.29, (i < 4 ? 0.1 : -0.1) + (i % 2) * 0.02] }));
+        return P;
+      } },
+      // Mesa de dominó: mesa cuadrada, dos banquitos y fichas blancas sobre la mesa
+      domino: { r: 1.0, sobre: false, hacer() {
+        const P = [parte(new C.BoxGeometry(0.9, 0.06, 0.9), '#8a5a32', { p: [0, 0.74, 0], tapa: '#2f7a4a' })];
+        for (const [x, z] of [[0.38, 0.38], [-0.38, 0.38], [0.38, -0.38], [-0.38, -0.38]]) P.push(parte(new C.BoxGeometry(0.06, 0.72, 0.06), '#6b4a2b', { p: [x, 0.36, z] }));
+        for (const sg of [-1, 1]) {
+          P.push(parte(new C.CylinderGeometry(0.2, 0.2, 0.06, 12), '#a8743f', { p: [sg * 0.78, 0.46, 0] }));
+          for (let k = 0; k < 3; k++) { const a = k / 3 * Math.PI * 2; P.push(parte(new C.CylinderGeometry(0.025, 0.03, 0.44, 5), '#6b4a2b', { p: [sg * 0.78 + Math.cos(a) * 0.13, 0.22, Math.sin(a) * 0.13] })); }
+        }
+        const FICHAS = [[-0.24, -0.1, 0], [-0.12, -0.1, 0], [0, -0.1, 0], [0.12, -0.04, 0.6], [0.2, 0.08, 1.57], [-0.3, 0.22, 0.3], [0.25, -0.28, 1.2]];
+        for (const [x, z, r] of FICHAS) {
+          P.push(parte(new C.BoxGeometry(0.1, 0.022, 0.05), '#f7f3ea', { p: [x, 0.782, z], r: [0, r, 0] }));
+          P.push(parte(new C.BoxGeometry(0.004, 0.024, 0.04), '#2b2b2b', { p: [x, 0.783, z], r: [0, r, 0] }));
+        }
+        return P;
+      } },
+      // Hamaca: dos horcones y una hamaca de rayas que cuelga entre ellos
+      hamaca: { r: 1.4, sobre: false, hacer() {
+        const P = [];
+        for (const x of [-1.35, 1.35]) {
+          P.push(parte(new C.CylinderGeometry(0.06, 0.08, 1.7, 7), '#6b4a2b', { p: [x, 0.85, 0] }));
+          P.push(parte(new C.SphereGeometry(0.075, 6, 4), '#5c3f24', { p: [x, 1.7, 0] }));
+        }
+        const N = 14, X0 = -1.05, X1 = 1.05, yA = 1.32, yB = 0.72, RAYAS = ['#e85d3a', '#f4c430', '#2fb5a8', '#f4c430', '#e85d3a'];
+        const y = t => yB + (yA - yB) * Math.pow(2 * t - 1, 2);
+        for (let i = 0; i < N; i++) {
+          const t0 = i / N, t1 = (i + 1) / N, xa = X0 + (X1 - X0) * t0, xb = X0 + (X1 - X0) * t1, ya = y(t0), yb = y(t1);
+          const L = Math.hypot(xb - xa, yb - ya), ancho = 0.18 + 0.5 * Math.sin(Math.PI * (t0 + t1) / 2);
+          for (let k = 0; k < RAYAS.length; k++) {
+            const z = (k - (RAYAS.length - 1) / 2) * ancho / RAYAS.length, curva = Math.abs(z) * 0.35;
+            P.push(parte(new C.BoxGeometry(L + 0.01, 0.025, ancho / RAYAS.length + 0.004), RAYAS[k], { p: [(xa + xb) / 2, (ya + yb) / 2 + curva, z], r: [0, 0, Math.atan2(yb - ya, xb - xa)] }));
+          }
+        }
+        for (const sg of [-1, 1]) {
+          const xa = sg * 1.05, xb = sg * 1.33, ya = yA, yb = 1.58, L = Math.hypot(xb - xa, yb - ya);
+          P.push(parte(new C.CylinderGeometry(0.012, 0.012, L, 4), '#f5f0e0', { p: [(xa + xb) / 2, (ya + yb) / 2, 0], dir: [xb - xa, yb - ya, 0] }));
+        }
+        return P;
+      } },
     };
-    const ORDEN = ['nido', 'techo', 'bromelia', 'flores', 'piedra', 'tronco', 'banderines'];
-    const NOMBRE = { nido: 'Nido de ramitas', techo: 'Techo de hojas', bromelia: 'Bromelia', flores: 'Flores', piedra: 'Piedras', tronco: 'Tronco', banderines: 'Banderines' };
+    // BASE: las 7 de siempre, de todos desde el principio. EXTRA: las del Mercadito del río (pack.tienda.construir), solo cuando se compran.
+    const BASE = ['nido', 'techo', 'bromelia', 'flores', 'piedra', 'tronco', 'banderines'];
+    const EXTRA = ['helecho', 'cerca', 'farol', 'comedero', 'domino', 'hamaca'];
+    const ORDEN = BASE.concat(EXTRA);
+    const NOMBRE = { nido: 'Nido de ramitas', techo: 'Techo de hojas', bromelia: 'Bromelia', flores: 'Flores', piedra: 'Piedras', tronco: 'Tronco', banderines: 'Banderines',
+      helecho: 'Helecho', cerca: 'Cerca de bambú', farol: 'Farol', comedero: 'Comedero de aves', domino: 'Mesa de dominó', hamaca: 'Hamaca' };
+    // Una pieza del Mercadito es tuya si está en S.tienda.compras (src/game/tienda.js la valida al cargar; aquí solo se lee)
+    const compradas = () => { try { if (G.tienda && G.tienda.compradas) return G.tienda.compradas(); const t = S.tienda; return esObj(t) && Array.isArray(t.compras) ? t.compras : []; } catch (e) { return []; } };
+    const tiene = t => BASE.includes(t) || (EXTRA.includes(t) && compradas().includes(t));
+    const disponibles = () => ORDEN.filter(tiene);
 
     // ---------- Datos: leer (tolerante) y guardar ----------
     function leer(d) {
@@ -249,7 +343,7 @@
       return true;
     }
     function girar(d) { giro = (giro + (d < 0 ? 7 : 1)) % 8; sonar('tick'); actualizar(); pintarHud(); return giro; }
-    function elegir(t) { if (!TIPOS[t]) return false; tipo = t; sonar('tick'); actualizar(); pintarHud(); return true; }
+    function elegir(t) { if (!TIPOS[t]) return false; if (!tiene(t)) { aviso('Esa pieza está en el Mercadito del río.'); return false; } tipo = t; sonar('tick'); actualizar(); pintarHud(); return true; }
     function deshacer() {
       const h = historial.pop();
       if (!h) { aviso('No hay nada que deshacer'); return false; }
@@ -303,7 +397,7 @@
       let hecho = true;
       if (k === 'b' && !e.repeat && !bOcupada()) { if (activo) salir(); else empezar(); }
       else if (!activo) hecho = false;
-      else if (/^[1-7]$/.test(k)) elegir(ORDEN[+k - 1]);
+      else if (/^[1-9]$/.test(k)) { const d = disponibles(); if (d[+k - 1]) elegir(d[+k - 1]); }
       else if (k === 'r') girar(1);
       else if (k === 'q') girar(-1);
       else if (k === 'z') deshacer();
@@ -320,6 +414,12 @@
       flores: '<path d="M10 28V16M22 28V13M16 28V19" stroke="#3f7d2c" stroke-width="2"/><circle cx="10" cy="14" r="4.5" fill="#e2363b"/><circle cx="22" cy="11" r="4.5" fill="#f4c430"/><circle cx="16" cy="18" r="4" fill="#f07fb0"/><circle cx="10" cy="14" r="1.6" fill="#ffe08a"/><circle cx="22" cy="11" r="1.6" fill="#fff3c4"/>',
       piedra: '<path d="M3 26q1-9 9-10 7 0 9 10z" fill="#8d8f88"/><path d="M17 26q1-7 7-7 6 1 6 7z" fill="#7c7f78"/><path d="M7 18q4-3 8-1" stroke="#5f8a3a" stroke-width="2.4" fill="none" stroke-linecap="round"/>',
       tronco: '<rect x="3" y="14" width="24" height="10" rx="5" fill="#6b4a2b"/><ellipse cx="27" cy="19" rx="3.5" ry="5" fill="#d9b27a"/><path d="M12 14l-2-5" stroke="#5c3f24" stroke-width="2.4" stroke-linecap="round"/>',
+      helecho: '<path d="M16 28C12 20 6 16 2 15M16 28c4-8 10-12 14-13M16 28C14 18 10 10 7 5M16 28c2-10 6-18 9-23M16 28V6" stroke="#4f9a3c" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M6 14l2 3M9 9l2 3M22 9l-2 3M26 14l-2 3M14 12l2 2M18 16l-2 2" stroke="#6fbf52" stroke-width="2" stroke-linecap="round"/>',
+      cerca: '<path d="M5 28V8M11 28V5M17 28V8M23 28V5M29 28V8" stroke="#c9b25a" stroke-width="3.4" stroke-linecap="round"/><path d="M2 14h29M2 22h29" stroke="#a08c3a" stroke-width="2.2" stroke-linecap="round"/><path d="M3.6 17h3M9.6 12h3M15.6 17h3M21.6 12h3M27.6 17h3" stroke="#8f7a30" stroke-width="1.4"/>',
+      farol: '<path d="M9 29V5h9" stroke="#3b332c" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M5 29h8" stroke="#3b332c" stroke-width="3" stroke-linecap="round"/><path d="M18 5v3" stroke="#3b332c" stroke-width="1.6"/><path d="M14 9h8l-1 2H15z" fill="#2a2420"/><rect x="15" y="11" width="6" height="8" rx="1.5" fill="#ffd27a"/><circle cx="18" cy="15" r="2" fill="#fff1b8"/><path d="M14.5 19h7l-1 2h-5z" fill="#2a2420"/>',
+      comedero: '<path d="M16 29V18" stroke="#6b4a2b" stroke-width="2.6" stroke-linecap="round"/><path d="M7 18h18v-2H7z" fill="#8a5a32"/><rect x="11" y="10" width="10" height="7" fill="#d9a35a"/><path d="M8 11l8-6 8 6" stroke="#a4472f" stroke-width="3" fill="none" stroke-linejoin="round"/><circle cx="16" cy="13" r="1.6" fill="#3b2a1a"/><circle cx="9.5" cy="15" r="1" fill="#e3c27a"/><circle cx="22.5" cy="15" r="1" fill="#e3c27a"/>',
+      domino: '<path d="M3 14h26v3H3z" fill="#8a5a32"/><path d="M3 14h26" stroke="#2f7a4a" stroke-width="2"/><path d="M6 17v11M26 17v11" stroke="#6b4a2b" stroke-width="2.4"/><rect x="8" y="9" width="7" height="4" rx="1" fill="#f7f3ea" stroke="#2b2b2b" stroke-width=".6"/><rect x="17" y="9" width="7" height="4" rx="1" fill="#f7f3ea" stroke="#2b2b2b" stroke-width=".6"/><path d="M11.5 9v4M20.5 9v4" stroke="#2b2b2b" stroke-width=".7"/><circle cx="9.8" cy="11" r=".8" fill="#2b2b2b"/><circle cx="22.2" cy="11" r=".8" fill="#2b2b2b"/>',
+      hamaca: '<path d="M3 29V6M29 29V6" stroke="#6b4a2b" stroke-width="2.6" stroke-linecap="round"/><path d="M3 9l4 4M29 9l-4 4" stroke="#f5f0e0" stroke-width="1.2"/><path d="M7 13q9 12 18 0" stroke="#e85d3a" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M7.5 15q8.5 10 17 0" stroke="#f4c430" stroke-width="2" fill="none"/><path d="M8 17q8 8 16 0" stroke="#2fb5a8" stroke-width="2" fill="none"/>',
       banderines: '<path d="M3 6v22M29 6v22" stroke="#7b5430" stroke-width="2.4"/><path d="M3 8q13 8 26 0" stroke="#f5f0e0" stroke-width="1.4" fill="none"/><path d="M6 10l3 7 3-5z" fill="#f4c430"/><path d="M13 12l3 7 3-6z" fill="#2fb5a8"/><path d="M20 12l3 6 3-7z" fill="#e85d8f"/>',
     };
     const ICONO_HUD = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#000" d="M3 20.5 13.6 9.9l1.5 1.5L4.5 22zM12.4 4.2l3-1.7 6.1 6.1-1.7 3-2.1-2.1-1.6 1.6-3.8-3.8 1.6-1.6z"/></svg>') + '")';
@@ -347,9 +447,10 @@
       if (!hudEl) {
         hudEl = document.createElement('div'); hudEl.id = 'cl-hud'; hudEl.className = 'hud'; hudEl.setAttribute('role', 'toolbar'); hudEl.setAttribute('aria-label', 'Modo construir');
         const tecla = window.matchMedia && matchMedia('(pointer: coarse)').matches ? () => '' : k => `<kbd>${k}</kbd>`;
-        hudEl.innerHTML = '<div class="cl-fila cl-piezas">' + ORDEN.map((t, i) => `<button type="button" data-cl-tipo="${t}" aria-pressed="false" title="${NOMBRE[t]} (${i + 1})"><svg viewBox="0 0 32 32" aria-hidden="true">${SVG[t]}</svg><small>${NOMBRE[t]}</small></button>`).join('') + '</div>' +
+        hudEl.innerHTML = '<div class="cl-fila cl-piezas">' + filaPiezas() + '</div>' +
           `<div class="cl-fila cl-herr"><span class="cl-cuenta" aria-live="polite"></span><button type="button" data-cl="girar">Girar ${tecla('R')}</button><button type="button" data-cl="deshacer">Deshacer ${tecla('Z')}</button>` +
-          `<button type="button" data-cl="quitar">Quitar ${tecla('Supr')}</button><button type="button" data-cl="listo">Listo ${tecla('Esc')}</button></div>`;
+          `<button type="button" data-cl="quitar">Quitar ${tecla('Supr')}</button><button type="button" data-cl="listo">Listo ${tecla('Esc')}</button>` +
+          (G.tienda && G.tienda.disponible && G.tienda.disponible() ? '<button type="button" data-cl="tienda">Mercadito</button>' : '') + '</div>';
         hudEl.addEventListener('click', e => {
           const b = e.target.closest && e.target.closest('button'); if (!b) return;
           if (b.dataset.clTipo) elegir(b.dataset.clTipo);
@@ -357,12 +458,17 @@
           else if (b.dataset.cl === 'deshacer') deshacer();
           else if (b.dataset.cl === 'quitar') quitar();
           else if (b.dataset.cl === 'listo') salir();
+          else if (b.dataset.cl === 'tienda') { if (G.tienda) G.tienda.abrir('construir'); return; }
           if (b.blur) b.blur(); // que Espacio y Enter vuelvan al juego
         });
         document.body.appendChild(hudEl);
       }
       hudEl.hidden = false;
     }
+    // La fila de piezas: las 7 de siempre y las del Mercadito que ya son tuyas (teclas 1–9 en ese orden)
+    function filaPiezas() { return disponibles().map((t, i) => `<button type="button" data-cl-tipo="${t}" aria-pressed="${t === tipo}" title="${NOMBRE[t]}${i < 9 ? ' (' + (i + 1) + ')' : ''}"><svg viewBox="0 0 32 32" aria-hidden="true">${SVG[t]}</svg><small>${NOMBRE[t]}</small></button>`).join(''); }
+    // Tras una compra en el Mercadito (src/game/tienda.js) la barra se rehace con la pieza nueva
+    function refrescar() { if (!hudEl) return; const f = hudEl.querySelector('.cl-piezas'); if (f) f.innerHTML = filaPiezas(); if (!tiene(tipo)) tipo = 'nido'; pintarHud(); }
     let cuentaTxt = '';
     function pintarHud() {
       if (!hudEl || hudEl.hidden) return;
@@ -418,7 +524,7 @@
     async function test() {
       const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
       const espera = ms => new Promise(r => setTimeout(r, ms));
-      const antes = { construir: S.construir ? JSON.parse(JSON.stringify(S.construir)) : S.construir, pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing),
+      const antes = { construir: S.construir ? JSON.parse(JSON.stringify(S.construir)) : S.construir, tienda: S.tienda ? JSON.parse(JSON.stringify(S.tienda)) : S.tienda, pos: Object.assign({}, S.pos), facing: Object.assign({}, S.facing),
         modo: G.interaccion.modo, quiet: G.quiet, forzado, nivel: G.renderer.calidad && G.renderer.calidad.nivel };
       const sinApagar = G.CONSTRUIR !== false;
       const enEscena = () => { let n = 0; G.renderer.scene.traverse(o => { if (o.name && o.name.indexOf('construir') === 0) n++; }); return n; };
@@ -440,7 +546,7 @@
         // 2. Encendida a la fuerza (solo la prueba): escena, entradas y modo
         forzar(true);
         S.construir = null; aplicar(null);
-        check('Encendida: 7 tipos, un InstancedMesh por tipo (7 llamadas de dibujo como mucho)', ORDEN.every(t => mallas[t] && mallas[t].isInstancedMesh) && grupo.children.filter(o => o.isInstancedMesh).length === 7);
+        check('Encendida: 7 piezas de siempre y 6 del Mercadito, un InstancedMesh por tipo (solo se dibujan los que tienen piezas)', BASE.length === 7 && EXTRA.length === 6 && ORDEN.every(t => mallas[t] && mallas[t].isInstancedMesh) && grupo.children.filter(o => o.isInstancedMesh).length === ORDEN.length && ORDEN.every(t => !mallas[t].visible));
         check('Encendida: botón del HUD y tarjeta del menú', !!$('b-construir') && !!$('b-construir-menu'));
         // Un sitio libre para construir: se busca alrededor de la aparición y de donde está Vittata
         const sitios = [[S.pos.x, S.pos.z], [G.guardado.spawn.x, G.guardado.spawn.z], [0, 0], [-20, 10], [15, -15], [30, 30]];
@@ -456,7 +562,7 @@
         check('Hay un sitio libre en tierra para probar', ok, `${S.pos.x.toFixed(1)}, ${S.pos.z.toFixed(1)}`);
         check('empezar() entra y toma la acción («Colocar»)', empezar() && activo && G.interaccion.modo === modo && modo.verbo === 'Colocar');
         await espera(60);
-        check('La barra de piezas se ve con 7 piezas y la cuenta', !!hudEl && !hudEl.hidden && hudEl.querySelectorAll('[data-cl-tipo]').length === 7 && /Piezas: 0\/\d+/.test(hudEl.querySelector('.cl-cuenta').textContent), hudEl && hudEl.querySelector('.cl-cuenta').textContent);
+        check('La barra de piezas se ve con las 7 de siempre (y las compradas) y la cuenta', !!hudEl && !hudEl.hidden && BASE.every(t => hudEl.querySelector('[data-cl-tipo="' + t + '"]')) && hudEl.querySelectorAll('[data-cl-tipo]').length === disponibles().length && /Piezas: 0\/\d+/.test(hudEl.querySelector('.cl-cuenta').textContent), hudEl && hudEl.querySelector('.cl-cuenta').textContent);
         elegir('nido'); actualizar();
         check('Fantasma visible y verde donde cabe', fantasma.visible && est.valido && matF.color.g > matF.color.r, est.motivo);
         // 3. Colocar, girar, deshacer y quitar
@@ -482,6 +588,17 @@
         check('No se puede poner otra pieza encima del nido', (actualizar(), !est.valido && /cerca/.test(est.motivo)), est.motivo);
         elegir('techo'); actualizar();
         check('El techo de hojas sí va sobre el nido', est.valido && colocar() && lista.length === 2, est.motivo);
+        // 3b. Piezas del Mercadito del río: sin comprarlas no salen en la barra ni se eligen; compradas, sí (teclas 1–9 en el orden de la barra)
+        S.tienda = { v: 1, conchitas: 0, ganadas: 0, compras: [] }; refrescar();
+        check('Sin comprarla, el farol no está en la barra ni se puede elegir', !hudEl.querySelector('[data-cl-tipo="farol"]') && !elegir('farol') && tipo !== 'farol' && disponibles().length === 7);
+        S.tienda = { v: 1, conchitas: 0, ganadas: 40, compras: ['farol'] }; refrescar();
+        dispatchEvent(new KeyboardEvent('keydown', { key: '8', bubbles: true }));
+        check('Comprado, el farol sale en la barra (8.ª pieza) y la tecla 8 lo elige', !!hudEl.querySelector('[data-cl-tipo="farol"]') && disponibles().length === 8 && tipo === 'farol', tipo);
+        S.facing = { x: -S.facing.x, z: -S.facing.z }; actualizar();
+        check('El farol comprado se coloca como las demás (su propio InstancedMesh)', colocar() && lista.length === 3 && lista[2].t === 'farol' && mallas.farol.count === 1 && mallas.farol.visible, est.motivo);
+        deshacer(); S.facing = { x: -S.facing.x, z: -S.facing.z };
+        check('Las 6 piezas del Mercadito se construyen (geometría con color de vértice y sin NaN)', EXTRA.every(t => geos[t] && geos[t].attributes.color && Array.from(geos[t].attributes.position.array).every(Number.isFinite)));
+        S.tienda = antes.tienda; refrescar(); elegir('techo');
         // 4. Guardado y recarga (la partida serializada vuelve a pintar lo mismo); datos dañados = vacío
         const d = JSON.parse(G.guardado.serialize(true));
         check('La partida guarda S.construir (v1, 2 piezas)', d.construir && d.construir.v === 1 && d.construir.piezas.length === 2 && G.guardado.KEYS.includes('construir'), JSON.stringify(d.construir).slice(0, 120));
@@ -508,7 +625,7 @@
         // 6. Limpieza: la partida y el mundo como estaban
         if (G.renderer.calidad) G.renderer.calidad.nivel = antes.nivel;
         salir();
-        S.construir = antes.construir; Object.assign(S.pos, antes.pos); S.facing = antes.facing;
+        S.construir = antes.construir; S.tienda = antes.tienda; refrescar(); Object.assign(S.pos, antes.pos); S.facing = antes.facing;
         forzar(antes.forzado); aplicar(S.construir); G.interaccion.modo = antes.modo;
         G.quiet = antes.quiet;
       }
@@ -518,7 +635,7 @@
     }
 
     const api = { empezar, salir, activo: () => activo, elegir, girar, colocar, deshacer, quitar, piezas: () => lista.map(p => Object.assign({}, p)), aplicar, presupuesto,
-      forzar, test, TIPOS: ORDEN.slice(), CAPACIDAD, _escena: () => ({ grupo, fantasma, est: Object.assign({}, est) }) };
+      forzar, test, TIPOS: ORDEN.slice(), BASE: BASE.slice(), EXTRA: EXTRA.slice(), SVG, NOMBRE, tiene, disponibles, refrescar, CAPACIDAD, _escena: () => ({ grupo, fantasma, est: Object.assign({}, est) }) };
     G.construir = api;
     return api;
   };

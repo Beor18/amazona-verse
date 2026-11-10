@@ -169,6 +169,9 @@
     if (G.CONSTRUIR == null) G.CONSTRUIR = !/[?&]construir=0\b/.test(location.search);
     const cargarConstruir = aDemanda('src/game/construir.js', 'AVConstruir'); AV.construir = () => cargarConstruir().then(c => c.empezar()); AV.construirTest = o => cargarConstruir().then(c => c.test(o));
     if (G.CONSTRUIR) cargarConstruir().catch(e => console.warn('construir', e));
+    // Mercadito del río (src/game/tienda.js; Kelvin 9-nov, idea de su hija): las conchitas de la pesca compran ropa y piezas de Construir, a precio
+    // fijo, sin dinero real ni azar. Solo en packs con pack.tienda (cap1). Se carga al arrancar: lee S.tienda y pone su botón en la Pausa y en Mi personaje.
+    if (G.pack && G.pack.tienda) { const cargarTienda = aDemanda('src/game/tienda.js', 'AVTienda'); AV.tiendaTest = o => cargarTienda().then(t => t.test(o)); cargarTienda().catch(e => console.warn('tienda', e)); }
     // V18.3 · personajes históricos (sistema único src/game/v18/npc.js, datos content/comun/personajes_v18.js) y su primera misión en Puerto de La Mina (src/game/v18/puerto.js)
     const NPC18_SRC = 'src/game/v18/npc.js', npc18 = aDemanda(NPC18_SRC, 'AVV18Npc'), puerto18 = aDemanda('src/game/v18/puerto.js', 'AVV18Puerto'), cargarV18Puerto = () => Promise.all([cargarV18(), hab18(), cargarV18Fx(), AVE.assets.script('content/comun/personajes_v18.js')]).then(npc18).then(puerto18);
     AV.v18PuertoTest = o => { const antes = { v18: G.V18, npc: !!window.AVV18Npc, puerto: !!window.AVV18Puerto, glb: (performance.getEntriesByType('resource') || []).filter(r => /models\/personajes\//.test(r.name)).length }; return cargarV18Puerto().then(p => p.test(Object.assign({ antes }, o))); }; if (v18On) cuandoToque(() => mundoV18('puente_villa', 'reparado'), cargarV18Puerto); // W32: antes de reparar el puente no sale nada (su check 2)
