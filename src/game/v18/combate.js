@@ -864,7 +864,7 @@ window.AVV18Combate = function (G) {
     C.j = nuevoJugador(o); const ch = C.ch; C.r = nuevoRival(o.dificultad || dificultadDe(C.j)); C.ch = ch; C.tLucha = 0;
     C.j.ultPoder = null; C.r.ultPoder = null; // Imitación: duelo nuevo, nada que copiar todavía
     if (C.ch && C.chEsp !== C.r.especie) { try { C.ch.applyLook({ species: C.r.especie, accessories: { eyes: { id: 'gafas', color: '#7fd3ff' } } }); C.chEsp = C.r.especie; } catch (e) { /* piel */ } }
-    C.timers.length = 0; C.resultado = null; C.premio = false; C.sinExtIA = !!o.sinExtIA; cartaC = false;
+    C.timers.length = 0; C.resultado = null; C.premio = false; C.sinExtIA = !!o.sinExtIA; cartaC = false; comboVis = 0; if (hud && hud.ext) hud.ext.nom.hidden = true;
     C.stats = nuevasStats();
     const conEntreno = !!o.entreno || (!o.sinCuenta && !o.sinEntreno && !espForzada && !entrenoVisto()); // el primer duelo empieza con el entreno
     ent = null; pista.t = 2.5; pista.plj = C.j.plumas; pista.golpeado = false;
@@ -1885,13 +1885,13 @@ window.AVV18Combate = function (G) {
     if (cam && G.camara && G.camara.shake && !(R && R.REDUCED)) G.camara.shake(0.07, 0.18);
   }
   // Nombre grande del combo en pantalla (1,3 s; el de la Campeona, más pequeño y azul)
-  let comboVis = 0, comboTO = 0;
+  let comboVis = 0;
   function anunciarCombo(f, cb) {
     if (!hud) return; hudExt(); const e = hud.q('combo'); if (!e) return;
     e.textContent = ''; const b = document.createElement('b'); b.textContent = cb.nombre; e.appendChild(b);
     if (f.ia) { const s = document.createElement('small'); s.textContent = TXT.comboRival; e.appendChild(s); }
     e.className = 'vd-combo c-' + cb.id + (f.ia ? ' rival' : ''); e.hidden = false; void e.offsetWidth; e.classList.add('sale');
-    e.dataset.id = cb.id; comboVis = 1.3; clearTimeout(comboTO); comboTO = setTimeout(() => { if (comboVis > 0 && hud) { comboVis = 0; e.hidden = true; } }, 2200);
+    e.dataset.id = cb.id; comboVis = 1.3; // se va con el tiempo de juego (paso); al salir o reiniciar, también
   }
   function usarExtJ(k) {
     if (C.fase !== 'lucha' || !C.j || combosAbierta()) return { ok: false, motivo: 'fase' };
