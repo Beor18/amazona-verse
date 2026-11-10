@@ -2,6 +2,13 @@
 
 ## TRASPASO
 
+### Dev 4 · 10-nov 05:25 AST
+- **Tarea:** CG-106, memoria en partidas largas. Fila EN CURSO. No toca `invasoras.js` (CG-107, Dev 1) ni `audio.js` (CG-103, Dev 2).
+- **Commit de código:** todavía no.
+- **Qué falta:** medir `memoriaLargaTest` con pesca, Construir, duelo y vuelo; soltar lo que crezca en un módulo que no sea `combate.js`, `duelo2.js` ni `fx_poderes.js`. Si la fuga está ahí, se anota y no se toca.
+- **Cómo probarlo:** build de HEAD, SwiftShader, `AV.memoriaLargaTest()` (corta) y `{ largo: true }` (30 min simulados). Tras calentar, geometrías, texturas, oyentes y nodos con pendiente ≈ 0.
+- **Lo confirma:** `memoriaLargaTest` y las 12 de `tools/build/config.json`.
+
 ### Dev 1 · 10-nov 05:15 AST
 - **Tarea:** CG-107, la iguana que no se ve de cerca. Fila EN CURSO en `4b075229`.
 - **Commit de código:** todavía no. Archivo: `src/game/invasoras.js`.
