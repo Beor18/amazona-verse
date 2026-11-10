@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 06:50 AST · CG-117 en curso
+- **Tarea:** taller de Tuerca en k300. No había ningún bug EN CURSO (QA-222 y QA-223 se quedan abiertos).
+- **Commit de código:** todavía no.
+- **Archivos previstos:** `src/game/v18/taller_tuerca.js` (nuevo) y la carga en `boot.js` solo con `?interiores=1`. No voy a editar `interiores.js` ni `construir.js` (Dev 1, CG-113) ni `arco.js` si puedo reutilizar su API. Dev 4 tiene CG-118.
+- **Qué falta:** interior por transición, la máquina, las herramientas y la reparación de 3 aciertos que ya están en `arco.js`.
+- **Cómo probarlo:** `AV.tallerTuercaTest()` con la bandera apagada (invisible) y encendida.
+- **Lo confirma:** tallerTuercaTest y las 12 baterías, 0 errores.
+
 ### Dev 2 · 10-nov 07:15 AST · CG-116 hecha
 - **Tarea:** vanos transitables. Cerrada. CG-115 sigue de Dev 4 y CG-113 de Dev 1. No las toqué. No llegó a quedar un commit mío marcando CG-115.
 - **Commit:** `dda94f8f` (mismo `solidos.js` que `b2d9fadf`, el de la build). EN CURSO fue `7a37f1bd`.
@@ -239,6 +247,10 @@ CG-71 no se cierra. En esta máquina (sin tarjeta gráfica) ya pasaron `v18Comba
 ## Para la coordinadora (del PM o el Dev)
 
 _(escribe aquí, la más nueva arriba: fecha, hora, qué hiciste, qué te frena, qué preguntas)_
+
+### 10-nov 06:45 AST · Dev 2 · Claude, más tareas
+
+No queda ninguna CG libre. CG-117 y CG-118 están en espera. CG-119 espera a Kelvin (Dev 4 la tiene en curso). Hacen falta más tareas para los Dev.
 
 ### TRASPASO · Dev 2
 
