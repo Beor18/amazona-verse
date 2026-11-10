@@ -15,7 +15,8 @@
    - Dónde se abre: resultados de la pesca (botón «Mercadito» o T), la Pausa («Mercadito»), Mi personaje («Mercadito: ropa nueva») y la
      barra de Construir («Mercadito»). Es la tarjeta del juego (#card): Esc o «Cerrar» la cierran y el foco vuelve a donde estaba.
    - Textos en español; el inglés en content/cap1/en.js (idioma.js los traduce en pantalla).
-   API: disponible(), saldo(), ganadas(), compradas(), tiene(id), precio(id), pagarPez(idPez, 'foto'|'drna'), ganar(n), comprar(id),
+   API: disponible(), saldo(), ganadas(), compradas(), tiene(id), precio(id), pagarPez(idPez, 'foto'|'drna'), ganar(n),
+   ganarLogro(clave, n) (minigolf y retos: pocas, una vez por récord, tope diario; la pesca no usa este tope), comprar(id),
    vestir(id), abrir(origen), cerrar(), abierta(), PAGO_PEZ, BONO_DRNA, CATALOGO, leer(d), test(). Prueba: AV.tiendaTest(). */
 window.AVTienda = function (G) {
   'use strict';
@@ -36,17 +37,20 @@ window.AVTienda = function (G) {
   const sonar = (n, a) => { ultimoSonido = n; if (G.quiet) return; try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
 
   // ---------- Datos: leer (tolerante) y guardar ----------
+  const TOPE_DIA = 12, PAGO_LOGRO = Object.freeze({ record: 2, uno: 3, carrera: 2 });
   function leer(d) {
-    const out = { v: 1, conchitas: 0, ganadas: 0, compras: [] };
+    const out = { v: 1, conchitas: 0, ganadas: 0, compras: [], logros: [], dia: { fecha: '', n: 0 } };
     if (!esObj(d) || d.v !== 1) return out;
     out.conchitas = entero(d.conchitas);
     out.ganadas = Math.max(entero(d.ganadas), out.conchitas);
     if (Array.isArray(d.compras)) for (const id of d.compras) if (typeof id === 'string' && POR_ID[id] && !out.compras.includes(id)) out.compras.push(id);
+    if (Array.isArray(d.logros)) for (const k of d.logros) if (typeof k === 'string' && k.length > 0 && k.length <= 48 && !out.logros.includes(k) && out.logros.length < 120) out.logros.push(k);
+    if (esObj(d.dia) && typeof d.dia.fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.dia.fecha)) { out.dia.fecha = d.dia.fecha; out.dia.n = Math.min(TOPE_DIA, entero(d.dia.n)); }
     return out;
   }
   const est = () => leer(S.tienda);
   function escribir(e, tipo) {
-    S.tienda = { v: 1, conchitas: e.conchitas, ganadas: e.ganadas, compras: e.compras.slice() };
+    S.tienda = { v: 1, conchitas: e.conchitas, ganadas: e.ganadas, compras: e.compras.slice(), logros: (e.logros || []).slice(), dia: { fecha: (e.dia && e.dia.fecha) || '', n: (e.dia && e.dia.n) || 0 } };
     try { if (G.guardado && G.guardado.autosave) G.guardado.autosave(); } catch (er) { /* sin guardado */ }
     try { G.emit('tienda', { tipo, conchitas: e.conchitas }); } catch (er) { /* sin oyentes */ }
   }
@@ -77,6 +81,36 @@ window.AVTienda = function (G) {
     if (como === 'drna') return INVASORAS.includes(id) ? ganar(BONO_DRNA, 'drna') : 0;
     return PAGO_PEZ[id] ? ganar(PAGO_PEZ[id], 'pez') : 0;
   }
+  // Logros fuera de la pesca: cantidad fija, una vez por clave de récord, y como mucho TOPE_DIA al día.
+  // La pesca (pagarPez / ganar) no pasa por aquí. Sin azar. Con G.quiet no paga (las pruebas no farmean).
+  const fechaHoy = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  function ganarLogro(clave, n, o) {
+    o = o || {};
+    if (!disponible() || (G.quiet && !o.prueba)) return 0;
+    if (typeof clave !== 'string' || clave.length < 3 || clave.length > 48) return 0;
+    if (!Number.isInteger(n) || n <= 0 || n > 8) return 0;
+    const e = est();
+    if (e.logros.includes(clave)) return 0;
+    const fecha = fechaHoy();
+    if (e.dia.fecha !== fecha) e.dia = { fecha, n: 0 };
+    const cabe = TOPE_DIA - e.dia.n;
+    if (cabe <= 0) return 0;
+    const pago = Math.min(n, cabe);
+    e.logros.push(clave); e.dia.n += pago;
+    e.conchitas = Math.min(MAX, e.conchitas + pago); e.ganadas = Math.min(MAX, Math.max(e.ganadas + pago, e.conchitas));
+    escribir(e, 'logro');
+    if (o.aviso !== false && !G.quiet) { try { G.ui.toast('+' + pago + ' conchitas', 2400); } catch (er) { /* sin HUD */ } }
+    return pago;
+  }
+  // Carreras y retos que ya avisan su récord (retosResultado). Una partida de prueba no paga.
+  const MODOS_RETO = { flight: 1, rio_rush: 1, tren: 1, rio: 1, carrera: 1, tormenta: 1, rescate: 1, maze: 1, banquete: 1 };
+  G.on('retosResultado', ev => {
+    if (!ev || ev.prueba || G.quiet || !MODOS_RETO[ev.modo]) return;
+    if (ev.llego === false) return;
+    if (!(ev.nuevo || ev.nuevoRecord || ev.medalla === 'oro')) return;
+    const marca = (ev.nuevo || ev.nuevoRecord) ? String(ev.ms || ev.puntos || ev.puesto || 'rec') : 'oro';
+    ganarLogro('carrera:' + ev.modo + ':' + marca, PAGO_LOGRO.carrera);
+  });
   // Comprar: descuenta el precio exacto o no hace nada (nunca deja el saldo en negativo)
   function comprar(id) {
     const it = POR_ID[id];
@@ -385,6 +419,26 @@ window.AVTienda = function (G) {
       check('Partida sin Mercadito: 0 conchitas y nada comprado', saldo() === 0 && compradas().length === 0);
       check('Ganar solo suma enteros positivos', ganar(-5) === 0 && ganar(2.5) === 0 && ganar(0) === 0 && ganar('9') === 0 && saldo() === 0);
       check('La pesca paga fijo por especie y el DRNA da el bono solo por invasoras', pagarPez('olivo', 'foto') === 5 && pagarPez('guavina', 'foto') === 15 && pagarPez('tilapia', 'drna') === 10 && pagarPez('dajao', 'drna') === 0 && pagarPez('tiburon', 'foto') === 0 && saldo() === 30, saldo());
+      // CG-87: logros fuera de la pesca. La pesca de arriba no cuenta para el tope.
+      S.tienda = { v: 1, conchitas: 0, ganadas: 0, compras: [] };
+      G.quiet = false;
+      const rec = ganarLogro('golf-rec:1:1', PAGO_LOGRO.record), otra = ganarLogro('golf-rec:1:1', PAGO_LOGRO.record), uno = ganarLogro('golf-uno:1', PAGO_LOGRO.uno);
+      let carreras = 0; for (let i = 0; i < 20; i++) carreras += ganarLogro('carrera:flight:' + i, PAGO_LOGRO.carrera);
+      const tope = rec + otra + uno + carreras;
+      check('Récord y hoyo en uno pagan poco y una sola vez; el tope diario es ' + TOPE_DIA, rec === 2 && otra === 0 && uno === 3 && tope === TOPE_DIA && saldo() === TOPE_DIA, saldo());
+      const ayer = leer(S.tienda); ayer.dia = { fecha: '2000-01-01', n: TOPE_DIA }; S.tienda = ayer;
+      check('Al día siguiente el tope vuelve a empezar', ganarLogro('golf-rec:2:1', 2) === 2 && saldo() === TOPE_DIA + 2);
+      G.emit('retosResultado', { modo: 'tren', nuevo: true, puntos: 40, prueba: true });
+      const antesTren = saldo();
+      G.emit('retosResultado', { modo: 'tren', nuevo: true, puntos: 40 });
+      const tren1 = saldo() - antesTren;
+      G.emit('retosResultado', { modo: 'tren', nuevo: true, puntos: 40 });
+      check('Un récord de reto paga +2 una vez; una partida de prueba no paga', tren1 === 2 && saldo() === antesTren + 2);
+      G.quiet = true;
+      check('Con la prueba en silencio un logro no paga', ganarLogro('golf-rec:3:1', 2) === 0 && saldo() === antesTren + 2);
+      check('La pesca no usa el tope del día', pagarPez('olivo', 'foto') === 5 && saldo() === antesTren + 7);
+      G.quiet = true;
+      S.tienda = { v: 1, conchitas: 30, ganadas: 30, compras: [] };
       const r0 = comprar('farol');
       check('Sin conchitas suficientes no se compra y dice cuántas faltan; el saldo no baja', !r0.ok && r0.motivo === 'faltan' && r0.faltan === 10 && saldo() === 30 && !tiene('farol'), JSON.stringify(r0));
       ganar(70);
@@ -502,8 +556,8 @@ window.AVTienda = function (G) {
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
 
-  const api = { disponible, saldo, ganadas, compradas, tiene, precio, pagarPez, ganar, comprar, vestir, vestirConjunto, abrir, cerrar, abierta, leer,
-    PAGO_PEZ, BONO_DRNA, CATALOGO: ITEMS.map(it => Object.assign({}, it)), test };
+  const api = { disponible, saldo, ganadas, compradas, tiene, precio, pagarPez, ganar, ganarLogro, comprar, vestir, vestirConjunto, abrir, cerrar, abierta, leer,
+    PAGO_PEZ, PAGO_LOGRO, TOPE_DIA, BONO_DRNA, CATALOGO: ITEMS.map(it => Object.assign({}, it)), test };
   G.tienda = api;
   return api;
 };

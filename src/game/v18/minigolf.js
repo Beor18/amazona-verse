@@ -627,6 +627,16 @@ window.AVV18Minigolf = function (G) {
     toast(TXT.fuera, 2200); sonar('wrong'); emitir({ tipo: 'fuera', n: A.golpes }); pintar();
     if (multi()) finTurno();
   }
+  // Conchitas del Mercadito: pocas, una vez por récord y por hoyo en uno. En silencio (pruebas) no paga.
+  function conchasNido(n, nuevo) {
+    const T = G.tienda;
+    if (!T || !T.ganarLogro || G.quiet || multi()) return 0;
+    let s = 0;
+    if (nuevo) s += T.ganarLogro('golf-rec:' + HOYO.n + ':' + n, T.PAGO_LOGRO.record, { aviso: false }) || 0;
+    if (n === 1) s += T.ganarLogro('golf-uno:' + HOYO.n, T.PAGO_LOGRO.uno, { aviso: false }) || 0;
+    if (s) toast('+' + s + ' conchitas', 2800);
+    return s;
+  }
   function alNido() {
     B.mov = false; B.vx = B.vz = 0; A.nidoT = 0; A.cargando = false; A.hundir = true; flecha.visible = false;
     if (multi()) { // por turnos: sin récord ni premios; entra y pasa el turno
@@ -642,7 +652,8 @@ window.AVV18Minigolf = function (G) {
     const seAbre = cerrado;
     const r = record() || { mejor: n, medalla: med };
     const dados = premiar(med);
-    A.resultado = { hoyo: HOYO.n, golpes: n, medalla: med, nuevo, mejor: r.mejor, premios: dados.map(p => p.clave), abre: seAbre ? sig : 0 };
+    const conchas = conchasNido(n, nuevo);
+    A.resultado = { hoyo: HOYO.n, golpes: n, medalla: med, nuevo, mejor: r.mejor, premios: dados.map(p => p.clave), abre: seAbre ? sig : 0, conchas };
     const y = H(P_NIDO.x, P_NIDO.z);
     A.enUno = n === 1;
     fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 14); fx('feathers', P_NIDO.x, y + 0.8, P_NIDO.z, 10); sonar('unlock');
@@ -653,6 +664,7 @@ window.AVV18Minigolf = function (G) {
     if (hud) {
       hud.q('fin1').textContent = nidoTxt(n); hud.q('fin1').classList.toggle('uno', !!A.enUno); hud.q('fin2').textContent = TXT[med]; hud.q('fin2').dataset.m = med;
       hud.q('fin3').textContent = nuevo ? TXT.nuevo : recordTxt(r.mejor);
+      if (hud.q('fin5')) { hud.q('fin5').hidden = !conchas; hud.q('fin5').textContent = conchas ? '+' + conchas + ' conchitas' : ''; }
       hud.q('t-seguir').textContent = alMenu() ? TXT.menu : TXT.seguir;
       hud.q('fin4').textContent = med === 'oro' ? tx('medOro') : tx('medOtra');
       hud.q('fin').hidden = false; hud.q('bot').hidden = true;
@@ -987,7 +999,7 @@ window.AVV18Minigolf = function (G) {
       `<div class="vg-bot6">${HOYOS.map(bh).join('')}</div><div class="vg-elige-salir">${b('salir', TXT.salir, 'Esc')}</div></div>` +
       `<div data-k="bot"><div class="vg-bot">${b('izq', '◀', '←', ` aria-label="${TXT.izq}"`)}${b('golpe', TXT.golpe, 'Espacio', ' class="vg-golpe"')}${b('der', '▶', '→', ` aria-label="${TXT.der}"`)}</div>` +
       `<div class="vg-bot2">${b('grito', TXT.poder, 'G', ' data-k="bgrito"')}${b('reiniciar', TXT.reiniciar, 'R')}${b('salir', TXT.salir, 'Esc')}</div><div class="vg-guia" data-k="guia" role="status">${tactil() ? TXT.guiaT : TXT.guia}</div></div>` +
-      `<div class="vg-fin" data-k="fin" role="status" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><p data-k="fin4"></p><div class="vg-tabla" data-k="tabla" hidden></div><p data-k="fin3"></p>` +
+      `<div class="vg-fin" data-k="fin" role="status" hidden><p data-k="fin1"></p><p class="vg-m" data-k="fin2"></p><p data-k="fin4"></p><div class="vg-tabla" data-k="tabla" hidden></div><p data-k="fin3"></p><p data-k="fin5" hidden></p>` +
       `<div class="vg-bot2">${b('siguiente', TXT.siguiente, 'N', ' data-k="bsig"')}${b('hoyos', TXT.hoyos, 'H', ' data-k="bhoyos"')}${b('otra', TXT.otra, 'R')}${b('seguir', TXT.seguir, 'E')}</div></div></div>`;
     for (const kq in hud.qs) delete hud.qs[kq];
     hud.golpe = hud.el.querySelector('[data-a="golpe"]'); hud.lleno = true;
@@ -1256,6 +1268,7 @@ window.AVV18Minigolf = function (G) {
       // Oro asegurado (un golpe desde 3 m del nido) para probar el premio del oro una vez; luego otro oro no da nada
       const oro = () => { for (let i = 0; i < 6; i++) { reiniciar(); colocar(NIDO.u - 3, 0); apuntaLocal(NIDO.u, NIDO.v); tirar(fuerzaPara(3.3 + Math.ceil(i / 2) * 0.3 * (i % 2 ? 1 : -1))); hastaQuieta(); if (A.fase === 'nido') break; } return A.fase === 'nido' ? A.resultado : null; };
       const madB = mad(), o1 = oro(), madC = mad(), o2 = oro(), madD = mad();
+      if (n === 1 && G.tienda && hud.q('fin5')) check('En la prueba el hoyo no muestra conchitas (el silencio no farmea)', hud.q('fin5').hidden && !hud.q('fin5').textContent, hud.q('fin5').textContent);
       check('Hoyo ' + n + ': un resultado mejor guarda el récord (1 golpe, oro); el premio del oro se da una sola vez y repetir no da más',
         o1 && o1.golpes === 1 && o1.nuevo && recordDe(h).mejor === 1 && recordDe(h).medalla === 'oro' && madC - madB === (res.medalla === 'oro' ? 0 : 2) && o2 && !o2.premios.length && madD === madC && V.otorgado(h.premios[1].clave),
         JSON.stringify({ o1: o1 && o1.premios, o2: o2 && o2.premios, madera: [madB, madC, madD] }));

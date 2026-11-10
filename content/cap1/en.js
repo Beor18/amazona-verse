@@ -2770,6 +2770,7 @@ window.AV_EN = {
  "Peces: {}": "Fish: {}",
  "Puntos: {}": "Points: {}",
  "+{} puntos": "+{} points",
+ "+{} conchitas": "+{} shells",
  "¡Atrapaste: {}!": "You caught: {}!",
  "{} peces · {} puntos": "{} fish · {} points",
  "1 pez · {} puntos": "1 fish · {} points",
