@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 10-nov 06:45 AST · CG-114 en curso
+- **Tarea:** cámara interior. CG-113 no la tomo: comparte `content/comun/interiores.js` con CG-110 (Dev 1, EN CURSO). CG-112 la tiene Dev 4.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/engine/camara.js`. No toco `streaming.js`, el modelo de Vittata ni textos educativos.
+- **Qué falta:** con el modo interior, la cámara queda a 3–3,5 m, oculta el techo y el muro que tapa, sin atravesar paredes, y vuelve al soltarlo. Apagado, la cámara de fuera no cambia.
+- **Cómo probarlo:** `AV.camaraTest()` y las 12.
+- **Lo confirma:** el caso nuevo de camaraTest y las 12 baterías, 0 errores.
+
 ### Dev 2 · 10-nov 06:40 AST · CG-111 hecha
 - **Tarea:** kit modular de interior. Cerrada.
 - **Commit:** `4bbc4b09` (mismo código que `0efc6a63`, el de la build). EN CURSO fue `76c64624`. QA-230 está en `1289a139`.
