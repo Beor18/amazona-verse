@@ -235,9 +235,9 @@ AVE.module('momentos', function (G) {
     const panel = id => (G.comic && G.comic.comicPanels ? G.comic.comicPanels().find(p => p.id === id) : null);
     const fotoFalsa = (() => { const c = document.createElement('canvas'); c.width = 480; c.height = 360; const g = c.getContext('2d'); g.fillStyle = '#2d5a43'; g.fillRect(0, 0, 480, 360); g.fillStyle = '#7fc35a'; g.beginPath(); g.arc(240, 180, 110, 0, 7); g.fill(); return c.toDataURL('image/jpeg', 0.8); })();
     try {
-      const nClic = G.audio && G.audio.log ? G.audio.log.length : 0;
+      if (G.audio && G.audio.log) G.audio.log.length = 0; // el registro se queda en 40: slice(largo) salía vacío aunque el clic sí entrara
       G.emit('foto', { gesto: 'saludar' }); fotoT = 0; fotoGesto = '';
-      check('La foto suena un clic de cámara', !!(G.audio && G.audio.log && G.audio.log.slice(nClic).includes('clic')));
+      check('La foto suena un clic de cámara', !!(G.audio && G.audio.log && G.audio.log.includes('clic')), G.audio && G.audio.log ? G.audio.log.join(',') : 'sin audio');
       check('Los 5 eventos de los momentos están definidos', CLAVES.every(k => !!G.eventos.defs[k]));
       const defs = (G.pack.comic && G.pack.comic.vinetas) || [];
       const sinVineta = CLAVES.filter(k => { const v = defs.find(x => x.needs === k); return !(v && v.opciones && v.opciones.length >= 3); });
