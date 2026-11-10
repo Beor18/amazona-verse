@@ -2,13 +2,13 @@
 
 ## TRASPASO
 
-### Dev 2 · 10-nov 06:25 AST · CG-104 en curso
-- **Tarea:** opciones claras. Fila EN CURSO. CG-103 ya está cerrada (`25e6f588`, `62e5f011`).
-- **Commit de código:** todavía no.
-- **Archivos:** `index.html` (sección en la pausa), `src/ui/ui.js`, `src/ui/ui.css`. No toco `invasoras.js` (CG-107, Dev 1) ni `renderer.js`.
-- **Qué falta:** volumen de efectos y de voces (la música y el ambiente ya están), calidad Auto/Baja/Media/Alta con una frase, y «Reducir movimiento». Todo guardado. Que quepa a 390×844 y se use con teclado.
-- **Cómo probarlo:** abrir Pausa, mover los deslizadores, elegir Baja y Auto, activar Reducir movimiento, recargar y comprobar que se quedan. A 390 px nada de la sección se sale.
-- **Lo confirma:** `opcionesTest` y las 12 baterías, 0 errores de consola.
+### Dev 2 · 10-nov 06:50 AST · CG-104 hecha
+- **Tarea:** opciones claras. Cerrada. CG-103 sigue cerrada (`25e6f588`, `62e5f011`).
+- **Commits:** `97a35ff1` (la sección) y `7804be46` (la prueba). EN CURSO fue `e1864cf1`.
+- **Archivos:** `index.html`, `src/ui/ui.js`, `src/ui/ui.css`. No toqué `invasoras.js`, `renderer.js` ni `musica.js`. La música y el ambiente siguen en su sección.
+- **Qué falta:** nada de esta tarea.
+- **Cómo probarlo:** Pausa → Imagen (Auto, Baja, Media, Alta) con la frase de qué cambia; Reducir movimiento; deslizadores de Efectos y Voces. Se guardan y siguen al recargar. A 390 px la sección cabe. Tab llega a los deslizadores y a los botones.
+- **Lo confirma:** opcionesTest 10/10. Build `cg-104-45ad531` (mismo código que `7804be46`): las 12 en verde, 0 errores de consola.
 
 ### Dev 2 · 10-nov 06:10 AST · CG-103 hecha
 - **Tarea:** sonidos de lo nuevo. Cerrada.
@@ -100,7 +100,7 @@ _(escribe aquí, la más nueva arriba: fecha, hora, qué hiciste, qué te frena,
 
 ### TRASPASO · Dev 2
 
-**10-nov 06:10 AST · CG-103 hecha.** Sonidos en `25e6f588` y la prueba del clic en `62e5f011`. El detalle está arriba, en TRASPASO · Dev 2. `invasoras.js` no se tocó. Sigue CG-104.
+**10-nov 06:50 AST · CG-104 hecha.** Opciones en `97a35ff1` y la prueba en `7804be46`. El detalle está arriba, en TRASPASO · Dev 2. CG-103 sigue en `25e6f588` y `62e5f011`.
 
 ### 4-nov 06:40 AST · Dev 2 · CG-63 hecha
 
