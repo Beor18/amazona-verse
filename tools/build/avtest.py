@@ -15,6 +15,10 @@ Uso (siempre con el python de Blender y -I; nunca `python3`):
   petición a dominios fuera de la lista permitida.
 - --paralelo N (W21; por defecto 1 = en serie): reparte las baterías entre N Chrome a la vez (tope 2), cada uno con su
   perfil y su portada → creador → Empezar, equilibradas por pruebas.duracion_estimada_s; junta resultados, red y consola.
+- W23: con GPU por software (SwiftShader/llvmpipe) emula devicePixelRatio pruebas.dpr_gpu_software (0.5) con el mismo viewport
+  CSS (mismo layout; el lienzo tiene 4 veces menos píxeles). --dpr F o AV_TEST_DPR=F lo cambia; 1 lo quita. Con GPU real, nada.
+  --pestanas N (o AV_TEST_PESTANAS=N, tope 3) reparte como --paralelo pero en N pestañas de UN solo Chrome, cada una en su
+  contexto (la 1 en el del perfil, como en serie). El informe trae las fases fuera de las baterías y la CPU de Chrome de cada una.
 - Escribe reporte-test.{json,md} y capturas, y sale con 0 si pasa, 1 si falla y 2 si no pudo correr (Chrome, servidor).
 """
 import argparse
@@ -37,7 +41,7 @@ import time
 import urllib.parse
 import urllib.request
 
-VERSION = '1.1.0'
+VERSION = '1.2.0'
 MB = 1024 * 1024
 
 
@@ -95,7 +99,12 @@ class Servidor:
             def do_POST(s):  # el artifact tampoco acepta escrituras
                 s.send_error(405, 'la build es de solo lectura')
 
-        self.httpd = http.server.ThreadingHTTPServer(('127.0.0.1', puerto), H)
+        class Srv(http.server.ThreadingHTTPServer):
+            def handle_error(s, request, client_address):  # W23: el navegador corta descargas al recargar el iframe: no es un error
+                if not isinstance(sys.exc_info()[1], (BrokenPipeError, ConnectionResetError)):
+                    super().handle_error(request, client_address)
+
+        self.httpd = Srv(('127.0.0.1', puerto), H)
         self.httpd.daemon_threads = True
         self.puerto = self.httpd.server_address[1]
         self.hilo = threading.Thread(target=self.httpd.serve_forever, daemon=True)
@@ -227,10 +236,14 @@ class WS:
 
 
 class CDP:
-    def __init__(self, ws, al_evento):
-        self.ws, self.al_evento, self.n = ws, al_evento, 0
+    def __init__(self, ws, al_evento, cortar=None):
+        # cortar (W23): si devuelve True (la pestaña se cayó), la llamada en curso falla ya en vez de esperar su tiempo máximo
+        # (antes una pestaña caída a mitad de una batería dejaba la puerta parada bateria_max_s, 30 min en la nube)
+        self.ws, self.al_evento, self.n, self.cortar = ws, al_evento, 0, cortar
 
     def call(self, metodo, params=None, sesion=None, timeout=60):
+        if sesion and self.cortar and self.cortar():
+            raise CDPError('%s: la pestaña de Chrome se cayó' % metodo)
         self.n += 1
         mid = self.n
         m = {'id': mid, 'method': metodo, 'params': params or {}}
@@ -246,6 +259,8 @@ class CDP:
                 return r.get('result', {})
             if 'method' in r:
                 self.al_evento(r)
+                if sesion and self.cortar and self.cortar():
+                    raise CDPError('%s: la pestaña de Chrome se cayó' % metodo)
 
     def bombear(self, segundos):
         limite = time.monotonic() + segundos
@@ -313,7 +328,12 @@ VISTA_JS = r'''new Promise(ok => requestAnimationFrame(() => requestAnimationFra
 })))'''
 # Topes orientativos: solo dan aviso, nunca hacen fallar la build (los topes que fallan los decide Kelvin)
 TOPE_DRAW_CALLS, TOPE_TEXTURAS_MB = 150, 300
+TOPE_PESTANAS = 3  # W23 --pestanas: pestañas a la vez en un solo Chrome
 TOPE_CHROME = 2  # como mucho 2 Chrome a la vez (regla de Kelvin): --paralelo no pasa de aquí
+# GPU del Chrome de la prueba, leída en about:blank antes de abrir el juego (SwiftShader/llvmpipe = GPU por software)
+GPU_JS = r'''(() => { try { const g = document.createElement('canvas').getContext('webgl'); if (!g) return 'sin webgl';
+  const e = g.getExtension('WEBGL_debug_renderer_info'); return String(e ? g.getParameter(e.UNMASKED_RENDERER_WEBGL) : g.getParameter(g.RENDERER));
+} catch (e) { return 'error: ' + e; } })()'''
 
 
 def medir(cdp, ses, estado, P):
@@ -400,6 +420,24 @@ class Chrome:
             raise Infra('Chrome eligió el puerto reservado %d' % self.puerto)
         with urllib.request.urlopen('http://127.0.0.1:%d/json/version' % self.puerto, timeout=10) as r:
             self.version = json.loads(r.read().decode()).get('Browser', '?')
+
+    def cpu_s(self):
+        """W23: CPU (usuario + sistema, s) que llevan los procesos vivos de este Chrome (su grupo de procesos). Solo Linux (/proc);
+        None si no se puede leer. Con la VM compartida el tiempo de reloj depende de los demás; la CPU dice lo que cuesta cada batería."""
+        try:
+            tic, total = os.sysconf('SC_CLK_TCK'), 0
+            for d in os.listdir('/proc'):
+                if not d.isdigit():
+                    continue
+                try:
+                    f = open('/proc/%s/stat' % d).read().rsplit(')', 1)[1].split()
+                except OSError:
+                    continue
+                if int(f[2]) == self.proc.pid:  # pgrp (start_new_session: el grupo es el pid del Chrome)
+                    total += int(f[11]) + int(f[12])
+            return round(total / tic, 1)
+        except (OSError, ValueError, IndexError, AttributeError):
+            return None
 
     def cola(self):
         try:
@@ -531,18 +569,40 @@ def sesion(S, k):
     al_evento = oyente(estado)
     sufijo = '' if k == 0 else '-%d' % (k + 1)
     chrome = ws = None
+    comun = S.get('chrome_comun')  # W23 --pestanas: un solo Chrome; cada instancia es una pestaña en su propio contexto
     try:
-        chrome = Chrome(P, set(P['puertos_prohibidos']), os.path.join(informe, 'chrome-test%s.log' % sufijo))
-        S['chromes'].append(chrome)
-        out['entorno'] = {'chrome': chrome.version, 'puerto_web': S['puerto'], 'puerto_devtools': chrome.puerto, 'perfil': chrome.perfil}
-        decir('· servidor %s · Chrome %s · DevTools 127.0.0.1:%d (perfil temporal propio)' % (S['origen'], chrome.version, chrome.puerto))
+        if comun:
+            chrome = comun
+            out['entorno'] = {'chrome': chrome.version, 'puerto_web': S['puerto'], 'puerto_devtools': chrome.puerto, 'perfil': chrome.perfil,
+                              'pestana': k + 1}
+            decir('· servidor %s · Chrome %s · DevTools 127.0.0.1:%d · pestaña %d de %d (un solo Chrome)' % (S['origen'], chrome.version, chrome.puerto, k + 1, n))
+        else:
+            chrome = Chrome(P, set(P['puertos_prohibidos']), os.path.join(informe, 'chrome-test%s.log' % sufijo))
+            S['chromes'].append(chrome)
+            out['entorno'] = {'chrome': chrome.version, 'puerto_web': S['puerto'], 'puerto_devtools': chrome.puerto, 'perfil': chrome.perfil}
+            decir('· servidor %s · Chrome %s · DevTools 127.0.0.1:%d (perfil temporal propio)' % (S['origen'], chrome.version, chrome.puerto))
         ws = WS('ws://127.0.0.1:%d%s' % (chrome.puerto, chrome.ws_path))
-        cdp = CDP(ws, al_evento)
-        tid = cdp.call('Target.createTarget', {'url': 'about:blank'})['targetId']
+        cdp = CDP(ws, al_evento, lambda: estado['caida'])
+        destino = {'url': 'about:blank'}
+        if comun and k > 0:
+            # La pestaña 1 usa el contexto del perfil, como en serie; las demás, uno aislado (sin localStorage ni caché compartidos)
+            destino['browserContextId'] = cdp.call('Target.createBrowserContext', {})['browserContextId']
+        tid = cdp.call('Target.createTarget', destino)['targetId']
         ses = estado['ses'] = cdp.call('Target.attachToTarget', {'targetId': tid, 'flatten': True})['sessionId']
-        for me, pa in (('Page.enable', {}), ('Runtime.enable', {}), ('Log.enable', {}), ('Network.enable', {}),
+        for me, pa in (('Inspector.enable', {}), ('Page.enable', {}), ('Runtime.enable', {}), ('Log.enable', {}), ('Network.enable', {}),
                        ('Network.setCacheDisabled', {'cacheDisabled': True}), ('Emulation.setFocusEmulationEnabled', {'enabled': True})):
             cdp.call(me, pa, ses)
+        # W23 · resolución de dibujo con GPU por software: mismo viewport CSS (mismo layout, mismas medidas del DOM) y menos
+        # píxeles que sombrear. Solo si la GPU es software y la escala pedida es < 1; antes de navegar, porque el renderer lee
+        # devicePixelRatio al arrancar. Con GPU real (Mac) no cambia nada. --dpr 1 (o AV_TEST_DPR=1) lo quita.
+        gpu = str(evaluar(cdp, ses, GPU_JS, 20, promesa=False) or '')
+        out['entorno']['gpu'] = gpu
+        esc = S['dpr']
+        if esc and esc < 1 and re.search(r'swiftshader|llvmpipe|softpipe|software', gpu, re.I):
+            vw, vh = json.loads(evaluar(cdp, ses, 'JSON.stringify([innerWidth, innerHeight])', 20, promesa=False))
+            cdp.call('Emulation.setDeviceMetricsOverride', {'width': vw, 'height': vh, 'deviceScaleFactor': esc, 'mobile': False}, ses)
+            out['entorno']['dpr_emulado'] = esc
+            decir('· GPU por software (%s): se dibuja a devicePixelRatio %s con el mismo viewport %d×%d' % (gpu[:50], esc, vw, vh))
         cdp.call('Page.navigate', {'url': S['origen'] + '/index.html'}, ses)
 
         # 2. Arranque
@@ -565,6 +625,8 @@ def sesion(S, k):
                 falla('el modelo 3D de Vittata no cargó (actores.failed3D)')
             decir('· juego listo en %.1f s' % out['arranque_s'])
             cdp.bombear(1.5)
+            tf = out['fases_s'] = {'arranque': out['arranque_s']}  # W23: dónde se va el tiempo fuera de las baterías
+            tm = time.monotonic()
             if P.get('preparar_js'):
                 try:
                     out['preparacion'] = evaluar(cdp, ses, P['preparar_js'], 90, promesa=True)
@@ -574,9 +636,11 @@ def sesion(S, k):
                     falla('flujo de jugador nuevo: %s' % out['preparacion'])
                 decir('· preparación: %s' % out['preparacion'])
                 cdp.bombear(0.8)
+            tf['preparacion'], tm = round(time.monotonic() - tm, 1), time.monotonic()
             # Medidas de la carga inicial (antes de las baterías): red quieta, heap y base64 residente
             out['medidas'] = medir(cdp, ses, estado, P)
             estado['fase'] = 'pruebas'
+            tf['medidas'], tm = round(time.monotonic() - tm, 1), time.monotonic()
             med = out['medidas']
             decir('· medida la carga inicial: heap %s MB (%s MB tras GC) · base64 residente %s MB · vista de arranque: %s draw calls, %s MB de texturas' % (
                 med.get('heap_mb'), med.get('heap_gc_mb'), med.get('b64_residente_mb'), med.get('draw_calls'), med.get('texturas_mb')))
@@ -600,6 +664,7 @@ def sesion(S, k):
                     if intento == 5:
                         raise
             out['disponibles'] = disponibles
+            tf['inyeccion'], tm = round(time.monotonic() - tm, 1), time.monotonic()
             req = [] if a.solo_medir else list(P['baterias'])
             extra = [b for b in disponibles if b not in req] if a.extra else []
             todas = req + extra
@@ -610,12 +675,16 @@ def sesion(S, k):
             out['plan'] = todas
             # 3. Baterías
             for nombre in todas:
+                if estado['caida']:
+                    out['baterias'][nombre] = {'existe': None, 'requerida': nombre in req, 'error': 'no corrió: la pestaña de Chrome se cayó'}
+                    continue
                 if time.monotonic() - S['t_ini'] > P['total_max_s'] or S['abortar'].is_set():
                     out['baterias'][nombre] = {'existe': None, 'requerida': nombre in req, 'error': 'sin tiempo (límite total %d s)' % P['total_max_s']
                                                if not S['abortar'].is_set() else 'no corrió: otra instancia de Chrome falló'}
                     continue
                 if n == 1:
                     print('· AV.%s() …' % nombre, end=' ', flush=True)
+                cpu0 = chrome.cpu_s()
                 try:
                     r = json.loads(evaluar(cdp, ses, BATERIA_JS % json.dumps(nombre), P['bateria_max_s']))
                 except TimeoutError:
@@ -623,6 +692,9 @@ def sesion(S, k):
                 except (CDPError, JSError) as e:
                     r = {'existe': True, 'error': str(e)[:600]}
                 r['requerida'] = nombre in req
+                cpu1 = chrome.cpu_s()
+                if cpu0 is not None and cpu1 is not None and not comun:  # con --pestanas la CPU del Chrome es de todas: no se reparte
+                    r['cpu_s'] = round(cpu1 - cpu0, 1)
                 if n > 1:
                     r['instancia'] = k + 1
                 out['baterias'][nombre] = r
@@ -631,12 +703,13 @@ def sesion(S, k):
                 elif 'error' in r:
                     res = 'ERROR: ' + r['error'].splitlines()[0][:160]
                 else:
-                    res = '%d/%d en %.1f s' % (r['passed'], r['total'], r['ms'] / 1000)
+                    res = '%d/%d en %.1f s' % (r['passed'], r['total'], r['ms'] / 1000) + (' (CPU de Chrome %.0f s)' % r['cpu_s'] if r.get('cpu_s') is not None else '')
                 if n == 1:
                     print(res, flush=True)
                 else:
                     decir('· AV.%s() … %s' % (nombre, res))
                 cdp.bombear(0.3)
+            tf['baterias'] = round(time.monotonic() - tm, 1)
             cdp.bombear(2.0)
             try:
                 out['ave_errores'] = json.loads(evaluar(cdp, ses, 'JSON.stringify(window.__aveErrores || [])', 10, promesa=False) or '[]')
@@ -648,7 +721,10 @@ def sesion(S, k):
             except (CDPError, TimeoutError):
                 pass
         try:
-            cdp.call('Browser.close', {}, None, 5)
+            if comun:
+                cdp.call('Target.closeTarget', {'targetId': tid}, None, 10)
+            else:
+                cdp.call('Browser.close', {}, None, 5)
         except (CDPError, TimeoutError, Infra, OSError):
             pass
     except Infra as e:
@@ -658,7 +734,7 @@ def sesion(S, k):
         out['duracion_s'] = round(time.monotonic() - out['t0'], 1)
         if ws:
             ws.cerrar()
-        if chrome:
+        if chrome and not comun:
             chrome.cerrar()
 
 
@@ -736,18 +812,45 @@ def correr(a, cfg):
     if pedido > TOPE_CHROME:
         aviso('--paralelo %d recortado a %d (tope de %d Chrome a la vez)' % (pedido, n, TOPE_CHROME))
     R['paralelo'] = n
+    # W23: --pestanas N reparte igual que --paralelo, pero en N pestañas de UN solo Chrome (cuenta como 1 Chrome bajo el candado)
+    try:
+        pedidas = int(a.pestanas if a.pestanas is not None else os.environ.get('AV_TEST_PESTANAS') or 1)
+    except ValueError:
+        raise Infra('AV_TEST_PESTANAS no es un número: %r' % os.environ.get('AV_TEST_PESTANAS')) from None
+    pestanas = 1 if a.solo_medir else min(max(1, pedidas), TOPE_PESTANAS, max(1, len(P['baterias'])))
+    if pedidas > TOPE_PESTANAS:
+        aviso('--pestanas %d recortado a %d' % (pedidas, pestanas))
+    if pestanas > 1:
+        if n > 1:
+            raise Infra('--pestanas y --paralelo no se combinan: elige uno')
+        n = pestanas
+    R['pestanas'] = pestanas
+    # W23: devicePixelRatio con GPU por software. --dpr manda; si no, AV_TEST_DPR; si no, pruebas.dpr_gpu_software (1 = sin cambio)
+    dpr = a.dpr if a.dpr is not None else os.environ.get('AV_TEST_DPR') or P.get('dpr_gpu_software', 1)
+    try:
+        dpr = float(dpr)
+    except ValueError:
+        raise Infra('devicePixelRatio no válido: %r' % dpr) from None
+    if not 0.25 <= dpr <= 1:
+        raise Infra('--dpr / AV_TEST_DPR debe estar entre 0.25 y 1 (es %s)' % dpr)
+    R['dpr_software'] = dpr
 
     t_ini = time.monotonic()
     srv = None
     S = {'a': a, 'P': P, 'n': n, 'informe': informe, 'inyectados': inyectados, 't_ini': t_ini, 'candado': threading.Lock(),
-         'abortar': threading.Event(), 'chromes': [], 'inst': [{} for _ in range(n)]}
+         'abortar': threading.Event(), 'chromes': [], 'inst': [{} for _ in range(n)],
+         'dpr': R['dpr_software']}
     try:
         srv = Servidor(raiz, a.puerto or 0, extra_dir)
         S['puerto'], S['origen'] = srv.puerto, 'http://127.0.0.1:%d' % srv.puerto
+        if pestanas > 1:
+            S['chrome_comun'] = Chrome(P, set(P['puertos_prohibidos']), os.path.join(informe, 'chrome-test.log'))
+            S['chromes'].append(S['chrome_comun'])
         if n == 1:
             sesion(S, 0)
         else:
-            print('· modo paralelo: %d instancias de Chrome con perfil propio y el mismo servidor' % n, flush=True)
+            print('· modo paralelo: %d pestañas en un solo Chrome, cada una con su contexto, y el mismo servidor' % n if pestanas > 1 else
+                  '· modo paralelo: %d instancias de Chrome con perfil propio y el mismo servidor' % n, flush=True)
             errores = [None] * n
 
             def hilo(k):
@@ -779,7 +882,7 @@ def correr(a, cfg):
     I = S['inst']
     estados = [x['estado'] for x in I]
     R['entorno'] = I[0].get('entorno') or {'puerto_web': S.get('puerto')}
-    for clave in ('arranque_s', 'preparacion', 'medidas', 'disponibles'):
+    for clave in ('arranque_s', 'preparacion', 'medidas', 'disponibles', 'fases_s'):
         if clave in I[0]:
             R['baterias_disponibles' if clave == 'disponibles' else clave] = I[0][clave]
     orden = list(P['baterias']) + [b for b in (I[0].get('disponibles') or []) if b not in P['baterias']]
@@ -796,7 +899,7 @@ def correr(a, cfg):
         R['avisos'] += [pre + w for w in x.get('avisos', [])]
     if n > 1:
         R['instancias'] = [{'instancia': k + 1, 'entorno': x.get('entorno'), 'arranque_s': x.get('arranque_s'), 'preparacion': x.get('preparacion'),
-                            'baterias': x.get('plan'), 'duracion_s': x.get('duracion_s'),
+                            'baterias': x.get('plan'), 'duracion_s': x.get('duracion_s'), 'fases_s': x.get('fases_s'),
                             'baterias_s': round(sum((r.get('ms') or 0) for r in x['baterias'].values()) / 1000, 1)} for k, x in enumerate(I)]
     estado = {'excepciones': sum((e['excepciones'] for e in estados), []), 'consola': sum((e['consola'] for e in estados), []),
               'log': sum((e['log'] for e in estados), []), 'avisos_consola': sum(e['avisos_consola'] for e in estados),
@@ -945,7 +1048,9 @@ def escribir_reporte(informe, R):
                   % (m['ref'], (m['commit'] or '')[:10], (m['huella'] or '')[:16], m['archivos'], 'sí' if not (m['faltan'] or m['sobran'] or m['distintos']) else 'NO'))
     e = R.get('entorno') or {}
     md.append('- %s · %s · servidor 127.0.0.1:%s · DevTools 127.0.0.1:%s (perfil temporal propio)' % (R['inicio'], e.get('chrome', '?'), e.get('puerto_web', '?'), e.get('puerto_devtools', '?')))
-    md.append('- Arranque hasta window.AV: %s s · preparación: %s · duración total: %s s\n' % (R.get('arranque_s', '?'), R.get('preparacion', '—'), R.get('duracion_s', '?')))
+    md.append('- GPU: %s%s' % (e.get('gpu', '?'), ' · dibujo a devicePixelRatio %s (GPU por software, mismo viewport CSS)' % e['dpr_emulado'] if e.get('dpr_emulado') else ''))
+    md.append('- Arranque hasta window.AV: %s s · preparación: %s · duración total: %s s' % (R.get('arranque_s', '?'), R.get('preparacion', '—'), R.get('duracion_s', '?')))
+    md.append('- Fases (s): %s\n' % (', '.join('%s %s' % kv for kv in (R.get('fases_s') or {}).items()) or '—'))
     md.append('## Baterías\n')
     md.append('| Batería | Resultado | Tiempo | Detalle |\n|---|---|---|---|')
     for n, r in (R.get('baterias') or {}).items():
@@ -957,7 +1062,7 @@ def escribir_reporte(informe, R):
             ok = r['passed'] == r['total'] and r['total'] > 0
             res = '%s %d/%d' % ('pasa' if ok else 'FALLA', r['passed'], r['total'])
             det = ' · '.join(x['name'] + (' (%s)' % x['extra'] if x['extra'] else '') for x in r['results'] if not x['ok'])[:400]
-        md.append('| %s%s | %s | %s | %s |' % (n, '' if r.get('requerida') else ' (extra)', res, '%.1f s' % (r['ms'] / 1000) if r.get('ms') else '—', det.replace('|', '/')))
+        md.append('| %s%s | %s | %s | %s |' % (n, '' if r.get('requerida') else ' (extra)', res, ('%.1f s' % (r['ms'] / 1000) + (' · CPU %.0f s' % r['cpu_s'] if r.get('cpu_s') is not None else '')) if r.get('ms') else '—', det.replace('|', '/')))
     ci, med = R.get('carga_inicial') or {}, R.get('medidas') or {}
     md.append('\n## Carga inicial y memoria\n')
     md.append('Desde que se abre la página hasta tener el mundo jugable (portada → creador → Empezar, red quieta), antes de las baterías.\n')
@@ -1014,6 +1119,10 @@ def main():
     ap.add_argument('--solo-medir', action='store_true', help='solo el flujo de jugador nuevo y las medidas de carga y heap, sin baterías')
     ap.add_argument('--paralelo', type=int, default=1, metavar='N', help='reparte las baterías en N instancias de Chrome a la vez '
                     '(perfiles separados, equilibradas por duracion_estimada_s; tope 2). Por defecto 1: en serie, como siempre')
+    ap.add_argument('--pestanas', type=int, default=None, metavar='N', help='como --paralelo, pero en N pestañas de un solo Chrome '
+                    '(contexto aislado cada una; tope 3). Por defecto AV_TEST_PESTANAS o 1')
+    ap.add_argument('--dpr', type=float, default=None, metavar='F', help='solo con GPU por software (SwiftShader): dibuja a '
+                    'devicePixelRatio F con el mismo viewport CSS. Por defecto AV_TEST_DPR o pruebas.dpr_gpu_software; 1 = sin cambio')
     ap.add_argument('--reintentos', type=int, default=1, help='reintentos si Chrome o el servidor fallan (no si fallan las pruebas)')
     a = ap.parse_args()
     signal.signal(signal.SIGTERM, lambda *x: sys.exit(2))

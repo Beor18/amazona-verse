@@ -1,7 +1,7 @@
 #!/bin/bash
 # Amazona Verse · pruebas de una build en Chrome sin interfaz (dueño: Build/Release Engineer). Ver docs/equipo/BUILD.md.
 #
-#   tools/build/test.sh <carpeta> [--extra] [--solo-medir] [--puerto N] [--informe DIR] [--paralelo N]
+#   tools/build/test.sh <carpeta> [--extra] [--solo-medir] [--puerto N] [--informe DIR] [--paralelo N] [--pestanas N] [--dpr F]
 #   tools/build/test.sh --limpiar      (cierra solo los Chrome avtest-chrome-* huérfanos, padre 1, con más de 30 min)
 #
 # <carpeta>: salida de build.sh (o una carpeta con index.html). Sirve la build en un puerto libre, abre un Chrome propio
@@ -9,11 +9,13 @@
 # accessoryTest, templateTest, eduTest, maestroTest, criaderoTest, movementTest, saveTest, comicTest y e2eTest tras el
 # flujo de jugador nuevo, y mide la carga inicial y el heap. Escribe reporte-test.{md,json} y capturas junto a la build.
 # Al salir (también con INT, TERM o tiempo agotado) cierra su Chrome y su perfil temporal.
+# W23: con GPU por software (SwiftShader) dibuja a devicePixelRatio pruebas.dpr_gpu_software (0.5) con el mismo viewport CSS;
+# --dpr 1 o AV_TEST_DPR=1 lo quita. --pestanas N (o AV_TEST_PESTANAS=N) reparte las baterías en N pestañas de UN Chrome.
 # Salida: 0 pasa, 1 falla, 2 no se pudo correr.
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-uso() { sed -n '4,12p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+uso() { sed -n '4,14p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 [ $# -ge 1 ] || { uso; exit 2; }
 case "$1" in -h|--help) uso; exit 0 ;; esac
 

@@ -174,6 +174,8 @@
       1280,
       800
     ],
+    "_nota_dpr": "W23 (10-nov): solo con GPU por software (SwiftShader/llvmpipe, la VM y la nube), avtest.py emula devicePixelRatio dpr_gpu_software con el MISMO viewport CSS: mismo layout y mismas medidas del DOM, mismas baterías y mismos checks; el lienzo WebGL y la composición tienen 4 veces menos píxeles que sombrear. Con GPU real (Mac) no cambia nada. --dpr 1 o AV_TEST_DPR=1 lo quita. Medido en docs/equipo/TAREAS_WEB.md (📣 W23).",
+    "dpr_gpu_software": 0.5,
     "chrome": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
     "chrome_flags": [
       "--headless=new",
