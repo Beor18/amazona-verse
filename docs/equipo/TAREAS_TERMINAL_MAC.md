@@ -18,10 +18,10 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 ## Tareas (en orden)
 | Id | Estado | Tarea |
 |---|---|---|
-| GT-01 | libre | **Ficha de la máquina:** SO, CPU, RAM, **GPU** (modelo) y navegador; confirma que Chrome usa la GPU real (`chrome://gpu`, sin SwiftShader). Si NO hay GPU real, dilo y salta a GT-05. |
+| GT-01 | hecha (d42d93f2) | **Ficha de la máquina:** SO, CPU, RAM, **GPU** (modelo) y navegador; confirma que Chrome usa la GPU real (`chrome://gpu`, sin SwiftShader). Si NO hay GPU real, dilo y salta a GT-05. |
 | GT-02 | libre | **Las 12 baterías en HEAD con GPU real**, una vez: resultado por batería y errores de consola. Rojos → BUGS.md con el sha. |
-| GT-03 | libre | **Modo Escuela (QA-181) con GPU real:** en el sitio publicado, perfil Chromebook (DevTools: CPU ×4 de ralentización, ventana 1366×768) con `?calidad=bajo&escuela=1&fps=1`: FPS medio y peor cuadro 60 s en el spawn y 60 s volando; lo mismo sin `escuela=1`. Una línea por medida. |
-| GT-04 | libre | **Combate 2.0 con GPU real:** duelo completo con y sin `?combate2=1` (escritorio y perfil móvil 390×844): FPS medio/peor cuadro, 0 errores, y cualquier cosa que se vea rara (anotar con captura). |
+| GT-03 | hecha · 60 fps en todo (spawn/vuelo/pueblo/duelo, con y sin escuela, Chromebook ×4) | **Modo Escuela (QA-181) con GPU real:** en el sitio publicado, perfil Chromebook (DevTools: CPU ×4 de ralentización, ventana 1366×768) con `?calidad=bajo&escuela=1&fps=1`: FPS medio y peor cuadro 60 s en el spawn y 60 s volando; lo mismo sin `escuela=1`. Una línea por medida. |
+| GT-04 | hecha · duelo 60 fps con y sin combate2, escritorio y móvil, 0 errores | **Combate 2.0 con GPU real:** duelo completo con y sin `?combate2=1` (escritorio y perfil móvil 390×844): FPS medio/peor cuadro, 0 errores, y cualquier cosa que se vea rara (anotar con captura). |
 | GT-05 | libre | **Verificación del sitio tras cada publicación** (cada vez que en `TAREAS_WEB.md` aparezca «PUBLICADO»): abrir el juego en el navegador real, partida nueva, volar 1 min, pesca 1 ronda, Construir 1 pieza, Mercadito, duelo de entreno; 0 errores de consola. Una línea por publicación. |
 | GT-06 | libre | **Interiores (V18.4) cuando la coordinadora avise:** con `?interiores=1`, entrar/salir del bohío de Villa Raíz, colocar un mueble, salir, recargar y comprobar que sigue; FPS dentro/fuera. |
 | GT-07 | libre | **Android/iPhone emulados con GPU real** (perfil Pixel 7, Galaxy S5 con CPU ×4, iPhone 13): Atalayas con textura (no cajas beige), sin cuadraditos, nitidez; FPS. |
@@ -51,3 +51,28 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 - GPU en Chrome: con los flags de `tools/build/config.json` (`--headless=new --use-angle=metal --enable-gpu --ignore-gpu-blocklist`), WebGL 1 y WebGL 2 dan `ANGLE (Apple, ANGLE Metal Renderer: Apple M4)`. Es GPU real, **no SwiftShader**. Lo medí con `WEBGL_debug_renderer_info` en Chrome sin interfaz; no abrí `chrome://gpu` a mano.
 
 📣 Terminal → coordinadora · 10-nov 10:55 AST · GT-01 hecha · iMac M4 (8 CPU / 8 GPU, 16 GB, macOS 26.6.2), Chrome 157 con ANGLE Metal sobre Apple M4: GPU real, sin SwiftShader · siguiente: GT-02
+
+**Aviso de método para todo el equipo (10-nov):** para medir FPS **no** se usa `taskpolicy -b`. Pone a Chrome en segundo plano y lo frena a 10-15 fps, con cuadros pegados a 100 ms. Pasó en mi primer lote, que descarté entero. Con `nice -n 15` solo, el mismo escritorio da 60 fps. `taskpolicy -b` sigue bien para builds y baterías, no para medir rendimiento.
+
+**GT-03 · Modo Escuela con GPU real (10-nov ~11:10-11:40 AST)**
+- Condiciones: sitio publicado https://www.amazonaverse.com/juego/, iMac M4, Chrome 157 sin interfaz con ANGLE Metal, perfil Chromebook 1366×768 a DPR 1, CPU ×4 solo mientras se mide, 60 s por escena, partida nueva.
+- Escenas: spawn quieto; vuelo con W y la cámara girando; pueblo a pie en la villa girando; duelo con la Campeona en lucha automática.
+- Herramienta: `gt_fps.py`, fuera del repo, que reutiliza `movil_modos.py` y `avtest.py`. Cifras: FPS medio · peor cuadro.
+- `?calidad=bajo&escuela=1&fps=1`: spawn 60 · 16,8 ms · vuelo 59 · 66,7 ms · pueblo 60 · 16,8 ms · duelo 60 · 16,8 ms. Calidad «bajo», DPR 1, 65-101 draw calls.
+- `?calidad=bajo&fps=1` (sin escuela): spawn 60 · 16,8 ms · vuelo 59 · 116,6 ms · pueblo 60 · 16,8 ms · duelo 60 · 49,9 ms. 74-110 draw calls.
+- Extra, escritorio 1440×900 sin freno de CPU, calidad automática («alto»): normal 60/60/60/60 fps (peor 100 / 116,8 / 16,8 / 33,3 ms) y con `escuela=1` 60/60/60/60 fps (peor 16,8 / 33,4 / 16,8 / 16,8 ms).
+- Errores de consola: 0 en todas las corridas menos una. Escuela + vuelo dio 50 `net::ERR_FAILED` de `*_lejos_glb.js` y no se repitió en 2 repeticiones (59 fps, 0 errores) → QA-238, baja, intermitente, posible hosting de SiteGround.
+- Lectura: con la GPU real del M4 y la CPU a ×4 el juego va a 60 fps en las 4 escenas, con y sin Modo Escuela. El peor cuadro está en el vuelo (entra contenido por streaming). Ojo: un ×4 sobre un M4 es más rápido que un Celeron de Chromebook real; las medidas ×6 de KIMI-127/158 en PC siguen siendo la referencia de «Chromebook lento».
+
+📣 Terminal → coordinadora · 10-nov 11:45 AST · GT-03 hecha · Chromebook ×4 con GPU real: 59-60 fps en spawn, vuelo, pueblo y duelo, con y sin `escuela=1`; peor cuadro 66,7 ms (escuela) y 116,6 ms (normal), los dos en el vuelo; 1 corrida con 50 ERR_FAILED de red → QA-238 · siguiente: GT-04
+
+**GT-04 · Combate 2.0 con GPU real (10-nov ~11:40 AST)**
+- Condiciones: sitio publicado, duelo con la Campeona 45 s en lucha automática, sin freno de CPU, calidad automática.
+- Escritorio 1440×900, sin `combate2`: 60 fps · mediana 16,7 ms · peor 16,8 ms · 97 draw calls · 0 errores.
+- Escritorio, con `?combate2=1`: 60 fps · peor 16,8 ms · 94 draw calls · 0 errores.
+- Móvil 390×844 a DPR 3, táctil, UA de iPhone, sin `combate2` (el juego elige «bajo» con DPR 1,75): 60 fps · peor 16,8 ms · 62 draw calls · 0 errores.
+- Móvil, con `?combate2=1`: 60 fps · peor 16,8 ms · 66 draw calls · 0 errores.
+- No hice captura de pantalla: esta sonda mide sin ventana visible y no vi nada raro en las cifras. La inspección visual del duelo queda para GT-09 en Safari.
+
+📣 Terminal → coordinadora · 10-nov 11:45 AST · GT-04 hecha · duelo 60 fps clavados (peor cuadro 16,8 ms) con y sin `combate2=1`, en escritorio y en móvil 390×844; 0 errores de consola · siguiente: GT-09
+
