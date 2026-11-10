@@ -16,6 +16,15 @@
 
 .modos { margin: 0; width: 100%; max-width: 780px; }
 .modos-t { margin: 0 0 var(--sp-3); font: 700 var(--fs-2xl)/1.1 var(--font-display); color: #fff; text-shadow: 0 2px 0 rgba(27, 21, 80, 0.6), 0 6px 18px rgba(27, 21, 80, 0.5); }
+.modos-pistas { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: var(--sp-3) 0 0; width: 100%; }
+.modos-pista-lead { flex: 1 0 100%; margin: 0; text-align: center; color: #fff; font: 700 var(--fs-md)/1.3 var(--font-display); text-shadow: 0 2px 0 rgba(27, 21, 80, 0.55); }
+.modos-pista-i {
+  display: inline-flex; align-items: center; gap: 6px; box-sizing: border-box; max-width: 100%;
+  min-height: 36px; padding: 4px 12px; border-radius: var(--r-pill, 999px);
+  background: rgba(16, 36, 28, 0.9); color: #fff; border: 2px solid rgba(255, 255, 255, 0.28);
+  font: 700 var(--fs-sm)/1.2 var(--font-body);
+}
+.modos-pista-i .modos-ico { width: 22px; height: 22px; flex: none; }
 .modos-ayuda {
   display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;
   min-height: 44px; min-width: 44px; margin: var(--sp-3) 0 0; padding: 8px 16px;
