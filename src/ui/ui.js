@@ -271,7 +271,7 @@
         if (pause && !abierto && pause.hidePopover) { try { pause.hidePopover(); } catch (e) { /* ya cerrada */ } }
         rotular();
       }
-      return out;
+      return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     };
   }
 })();
