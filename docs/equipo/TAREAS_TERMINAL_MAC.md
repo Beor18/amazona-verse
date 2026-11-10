@@ -1,14 +1,14 @@
-# TAREAS_GROK_TERMINAL · carril de verificación y pruebas (Grok en el terminal de Kelvin)
+# TAREAS_TERMINAL_MAC · carril de verificación y pruebas (Claude Code en el terminal de la máquina de Kelvin)
 
-Kelvin, 10-nov: «tengo Grok instalado en el terminal; dale los trabajos de verificaciones y pruebas». Este carril **solo verifica y mide**: no cambia código del juego. Los arreglos los hacen Grok en Cursor (`TAREAS_CURSOR_GROK.md`) o la coordinadora.
+Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaciones y pruebas». Este carril **solo verifica y mide**: no cambia código del juego. Los arreglos los hacen Grok en Cursor (`TAREAS_CURSOR_GROK.md`) o la coordinadora.
 
 ## Reglas
 1. Antes de cada tarea: `git pull --rebase origin main`. Lee el final de este archivo (notas 📣).
 2. **No toques código** (`src/`, `content/`, `web/`, `sitio/`). Solo escribes resultados en este archivo, filas en `docs/equipo/BUGS.md` y, si hace falta, capturas en `docs/img/gt-<tarea>/`.
-3. **Esta máquina es la de Kelvin:** si Kelvin está generando videos o ediciones (Mac ocupada), espera o haz solo tareas ligeras. Procesos pesados con baja prioridad (`nice -n 15`; en Mac `taskpolicy -b nice -n 15`). No cierres apps de Kelvin. Nada de descargas, cuentas ni claves sin permiso. No borres nada de forma permanente.
+3. **Esta máquina es la de Kelvin:** si Kelvin está generando videos o ediciones (máquina ocupada), espera o haz solo tareas ligeras. Procesos pesados con baja prioridad (`nice -n 15`; en Mac `taskpolicy -b nice -n 15`). No cierres apps de Kelvin. Nada de descargas, cuentas ni claves sin permiso. No borres nada de forma permanente.
 4. **Mac:** nunca uses el `python3` del sistema (se cuelga); usa `~/Applications/Blender.app/Contents/Resources/4.2/python/bin/python3.11 -I` (ver CLAUDE.md). Si es otra máquina, anota cuál es (SO, CPU, **GPU**) en tu primera nota.
 5. Un resultado por línea, con números reales. **Nunca inventes una medida**: si no se pudo medir, dilo.
-6. Al terminar cada tarea, añade al final de este archivo: `📣 Grok terminal → coordinadora · <fecha hora AST> · GT-xx hecha · <resultado en una línea> · siguiente: GT-yy`. La coordinadora lo lee solo y publica/arregla.
+6. Al terminar cada tarea, añade al final de este archivo: `📣 Terminal → coordinadora · <fecha hora AST> · GT-xx hecha · <resultado en una línea> · siguiente: GT-yy`. La coordinadora lo lee solo y publica/arregla.
 
 ## Cómo se prueba
 - Build: `tools/build/build.sh HEAD tools/build/salida/gt-<tarea>-<sha>` (en Mac con `AV_PYTHON` apuntando al python de Blender).
@@ -26,6 +26,8 @@ Kelvin, 10-nov: «tengo Grok instalado en el terminal; dale los trabajos de veri
 | GT-06 | libre | **Interiores (V18.4) cuando la coordinadora avise:** con `?interiores=1`, entrar/salir del bohío de Villa Raíz, colocar un mueble, salir, recargar y comprobar que sigue; FPS dentro/fuera. |
 | GT-07 | libre | **Android/iPhone emulados con GPU real** (perfil Pixel 7, Galaxy S5 con CPU ×4, iPhone 13): Atalayas con textura (no cajas beige), sin cuadraditos, nitidez; FPS. |
 
-## Notas Grok terminal ↔ coordinadora
+## Notas Terminal ↔ coordinadora
 
-📣 Coordinadora → Grok terminal · 10-nov · Carril abierto. Empieza por GT-01 y sigue en orden. Si la máquina está ocupada con videos de Kelvin, haz solo GT-01 y GT-05.
+📣 Coordinadora → Terminal · 10-nov · Carril abierto. Empieza por GT-01 y sigue en orden. Si la máquina está ocupada con videos de Kelvin, haz solo GT-01 y GT-05.
+
+**Commits de este carril:** termina el mensaje con la línea `Co-Authored-By` de tu modelo (Claude). Commits pequeños, solo de este archivo, BUGS.md y docs/img/gt-*.
