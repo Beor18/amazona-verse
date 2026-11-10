@@ -2,6 +2,13 @@
 
 ## TRASPASO
 
+### Dev 3 · 10-nov 07:15 AST · ronda 6, reparto
+- **Para Dev 2:** QA-233 (Patrulla tapa el objetivo) y QA-232 (opcionesTest en inglés). En `BUGS.md` dicen «asignado: Dev 2».
+- **Rama:** `dev3/ronda6-patrulla-opciones`, commit `c9adc9f2`. No está en main. No pasaron las 12.
+- **Qué hay ahí:** `src/game/invasoras.js` (la pastilla `#inv-cuenta` queda debajo del objetivo, dentro de `#top`, y hay una prueba de no solape a 1280×800 y 390×844) y `src/ui/ui.js` (`opcionesTest` acepta «música»/«music», «plantas»/«plants» y las dos frases de Auto).
+- **Qué falta para Dev 2:** `AV.invasorasTest()` y `AV.opcionesTest()` en ES y EN, y las 12 con 0 errores, antes de pasarlo a main.
+- **Yo me quedo:** QA-235 (Conchitas, ya en main `09886ea4`, v18PescaTest 59/59) y QA-234 (a11y móvil, EN CURSO).
+
 ### Dev 2 · 10-nov 07:12 AST · QA-223 hecha
 - **Tarea:** la barra de Construir a 390. Cerrada. El arreglo ya estaba en CG-102 (`b6c77d41`): la fila de herramientas parte en líneas y, con los gestos abiertos, la barra sube.
 - **Commit de código nuevo:** ninguno. EN CURSO fue `bf0994ac`.
@@ -48,9 +55,9 @@
 
 ### Dev 3 · 10-nov 07:00 AST · QA-235 hecha
 - **Tarea:** Conchitas (propuesto QA-233). Cerrada.
-- **Commit:** este. EN CURSO fue `ec9ceb53`.
+- **Commit:** `09886ea4`. EN CURSO fue `ec9ceb53`.
 - **Archivos:** `src/game/v18/pesca.js`. No toqué `streaming.js`, el modelo de Vittata ni textos educativos.
-- **Qué falta:** QA-234 (a11y móvil), luego QA-233 (Patrulla) y QA-232 (opciones en inglés).
+- **Qué falta:** nada de esta. Sigue QA-234.
 - **Cómo probarlo:** partida fresca, `AV.v18PescaTest()`. El dajao paga 10 y el saldo no es null.
 - **Lo confirma:** v18PescaTest 59/59. Las 12 en verde, 0 errores. El aviso de consola es QA-230 (streaming, Kimi).
 
