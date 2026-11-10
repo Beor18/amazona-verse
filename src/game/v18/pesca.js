@@ -352,11 +352,18 @@ window.AVV18Pesca = function (G) {
   function cae() {
     const c = A.corcho, lv = nivelAgua(c.x, c.z);
     if (!(lv > G.terreno.height(c.x, c.z) + 0.1)) { A.fase = 'listo'; pista(TXT.tierra); emitir({ tipo: 'tierra' }); pintar(true); return; } // no cayó al agua
-    c.y = lv; A.fase = 'espera'; A.esperaT = 1.8 + azar() * 3.2; A.mordT = 0.6 + azar() * 1.2; A.pez = elegirPez();
+    c.y = lv; A.fase = 'espera'; A.pez = elegirPez();
+    // El ritmo sale de la velocidad que ya tiene cada especie: no se cambian los datos. La guavina pica antes; el olivo, más tarde.
+    A.ritmo = ritmoPicada(A.pez);
+    A.esperaT = (1.8 + azar() * 3.2) * A.ritmo; A.mordT = (0.6 + azar() * 1.2) * A.ritmo;
     sonar('splash', 0.4); fx('bubbles', c.x, lv + 0.05, c.z, 6); ondear(1);
     pista(TXT.pEspera); emitir({ tipo: 'cae', x: +c.x.toFixed(2), z: +c.z.toFixed(2) }); pintar(true);
   }
-  function picar() { A.fase = 'pica'; A.picaT = VENTANA; sonar('splash', 0.9); sonar('ring', 3); fx('bubbles', A.corcho.x, A.corcho.y, A.corcho.z, 10); ondear(1.6); pista(TXT.pPica); emitir({ tipo: 'pica', pez: A.pez.id }); pintar(true); }
+  function ritmoPicada(p) {
+    const v = p && p.vel > 0 ? p.vel : 0.8;
+    return Math.max(0.62, Math.min(1.2, 1.32 - v * 0.5));
+  }
+  function picar() { A.fase = 'pica'; A.picaT = VENTANA; sonar('splash', 0.9); sonar('ring', 3); fx('bubbles', A.corcho.x, A.corcho.y, A.corcho.z, 14); ondear(1.8); A.olas = 2; pista(TXT.pPica); emitir({ tipo: 'pica', pez: A.pez.id }); pintar(true); }
   function clavar() {
     if (A.fase !== 'pica') return false;
     const p = A.pez; A.fase = 'tira'; A.prog = 0.3; A.marca = 0.25; A.vmarca = 0; A.zona = 0.5; A.zonaObj = 0.5; A.zonaV = 0; A.tiraT = 0; A.cansado = false; A.ancho = p.zona;
@@ -367,6 +374,7 @@ window.AVV18Pesca = function (G) {
   function atrapa() {
     const p = A.pez; A.fase = 'foto'; A.fotoT = 0; A.peces++; A.puntos += p.pts; A.album[p.id] = (A.album[p.id] || 0) + 1; A.sosteniendo = false;
     vestirPez(p); P.pez.visible = true; flash(); celebrar();
+    const cc = A.corcho; sonar('splash', 0.75); fx('bubbles', cc.x, (cc.y || 0) + 0.05, cc.z, 16); ondear(2.1); A.olas = 2;
     const c = pagar(p, 'foto');
     sonar('unlock'); toast(atrapado(p.nombre) + ' ' + masTxt(p.pts) + (c ? ' · ' + conchasTxt(c) : ''), 2200);
     emitir({ tipo: 'atrapa', pez: p.id, puntos: A.puntos }); hud.vista = null; paneles(); pintar(true);
@@ -393,6 +401,7 @@ window.AVV18Pesca = function (G) {
     recordSesion = Math.max(recordSesion, A.puntos); if (A.puntos > 0) guardarRecord(A.puntos);
     A.record = recordVer(); A.ultimo = A.resultado = { peces: A.peces, puntos: A.puntos, conchitas: A.conchitas, nuevo: A.nuevo, album: Object.assign({}, A.album) };
     sonar(A.peces ? 'unlock' : 'tick'); toast(TXT.fin, 2400);
+    if (A.nuevo) { celebrar(); toast('¡Récord!', 2800); }
     emitir({ tipo: 'fin', peces: A.peces, puntos: A.puntos, nuevo: A.nuevo }); hud.vista = null; paneles(); pintar(true);
     return true;
   }
@@ -411,7 +420,7 @@ window.AVV18Pesca = function (G) {
       case 'vuela': A.vuelo += dt / 0.7; if (A.vuelo >= 1) cae(); break;
       case 'espera':
         A.esperaT -= dt; A.mordT -= dt;
-        if (A.mordT <= 0 && A.esperaT > 0.6) { A.mordT = 0.8 + azar() * 1.4; A.mord = 0.35; sonar('tick'); if (A.aviso !== 'pronto') pista(TXT.pMordisco); }
+        if (A.mordT <= 0 && A.esperaT > 0.6) { A.mordT = (0.8 + azar() * 1.4) * (A.ritmo || 1); A.mord = 0.35; sonar('tick'); if (A.aviso !== 'pronto') pista(TXT.pMordisco); }
         if (A.esperaT <= 0) picar();
         break;
       case 'pica': A.picaT -= dt; if (A.picaT <= 0) escapa(TXT.escapo, 'escapo'); break;
@@ -474,10 +483,17 @@ window.AVV18Pesca = function (G) {
     if (P.onda.visible) {
       const od = P.onda.userData; od.t = (od.t || 0) + dt;
       const s = 1 + od.t * 3 * (od.f || 1); P.onda.scale.set(s, s, s); P.onda.material.opacity = Math.max(0, 0.7 - od.t * 0.7);
-      if (od.t > 1) P.onda.visible = false;
+      if (od.t > 1) { if ((A.olas || 0) > 1 && !barato()) { A.olas--; od.t = 0; od.f = (od.f || 1) * 0.65; } else P.onda.visible = false; }
     }
-    // el pez: en la foto, delante de Vittata, coleteando; al soltarlo, salta de vuelta al agua
-    if (A.fase === 'foto' && P.pez.visible) {
+    // el pez forcejea en el agua mientras pica o se recoge; en la foto, delante de Vittata; al soltarlo, salta de vuelta
+    if ((A.fase === 'pica' || A.fase === 'tira') && A.pez) {
+      vestirPez(A.pez);
+      P.pez.visible = true;
+      const lv = nivelAgua(cx, cz), w = A.pez.vel || 1, ag = Math.sin(A.t * (7 + w * 5));
+      P.pez.position.set(cx + (lado.x || 0) * ag * 0.4, (isFinite(lv) ? lv : cy) - 0.12 + Math.abs(ag) * 0.1, cz + (lado.z || 0) * ag * 0.2);
+      P.pez.rotation.set(0.35 * ag, Math.atan2(d.z, d.x), 0.55 * ag);
+      P.cola.rotation.y = 0.9 * Math.sin(A.t * (12 + w * 6));
+    } else if (A.fase === 'foto' && P.pez.visible) {
       A.fotoT += dt;
       // a la izquierda de Vittata (la caña está a su derecha), de lado a la cámara y por encima de la ficha
       P.pez.position.set(q.x - lado.x * 1.1 + d.x * 0.4, q.y + 1.9 + 0.06 * Math.sin(A.t * 3), q.z - lado.z * 1.1 + d.z * 0.4);
@@ -788,6 +804,8 @@ window.AVV18Pesca = function (G) {
       check('Pulsar antes del pique solo da una pista («¡Muy pronto!») y se sigue esperando', A.fase === 'espera' && A.pistaTxt === TXT.pPronto);
       hasta(() => A.fase === 'pica', 8);
       check('Pica: el corcho se hunde, suena y el botón dice «¡Clava!»', A.fase === 'pica' && P.corcho.position.y < nivelAgua(A.corcho.x, A.corcho.z) - 0.05 && hud.q('t-accion').textContent === TXT.clavar && eventos.some(e => e.tipo === 'pica'));
+      correr(0.05);
+      check('Al picar, el pez forcejea en el agua y sale una onda (en calidad baja, sin onda)', A.fase === 'pica' && P.pez.visible && (barato() || P.onda.visible));
       tecla('keydown', ' ');
       check('Teclado: pulsar a tiempo clava el anzuelo y empieza a recoger (barra con la zona del pez)', A.fase === 'tira' && !hud.q('tiraW').hidden);
       tecla('keyup', ' ');
@@ -817,6 +835,7 @@ window.AVV18Pesca = function (G) {
       const cuenta = d => { const r = {}; A.dist = d; for (let i = 0; i < 400; i++) { const p = elegirPez(); r[p.id] = (r[p.id] || 0) + 1; } return r; };
       const cerca = cuenta(D_MIN), lejos = cuenta(D_MAX);
       check('En medio del río pican más dajaos y guavinas; cerca de la orilla, más olivos y anguilas', (lejos.guavina || 0) > (cerca.guavina || 0) * 2 && (lejos.dajao || 0) > (cerca.dajao || 0) && (cerca.olivo || 0) > (lejos.olivo || 0) * 2 && (cerca.anguila || 0) > (lejos.anguila || 0), JSON.stringify({ cerca, lejos }));
+      check('El ritmo de picada cambia con la especie y no toca sus datos: la guavina espera menos que el olivo', ritmoPicada(PEZ.guavina) < ritmoPicada(PEZ.olivo) && ritmoPicada(PEZ.olivo) <= 1.2 && PEZ.olivo.vel === 0.6 && PEZ.guavina.pts === 30);
       // 6. Invasora: no se suelta, se reporta al DRNA
       const cAntes = A.conchitas, sAntes = TI.saldo();
       A.forzar = 'tilapia'; lanzar(0.5); hasta(() => A.fase === 'pica', 10); clavar(); recogerCon(() => apretar(), () => aflojar(), 40);
@@ -833,6 +852,7 @@ window.AVV18Pesca = function (G) {
       const pts = A.puntos; A.tiempo = 0.05; correr(0.2);
       const r1 = { fin1: hud.q('fin1').textContent, fin2: hud.q('fin2').textContent, fin3: hud.q('fin3').textContent, alb: hud.q('alb').textContent };
       check('Se acaba el tiempo: resultados con peces, puntos, récord y el álbum de hoy', A.fase === 'fin' && !hud.q('fin').hidden && hud.q('juego').hidden && r1.fin1 === TXT.fin && r1.fin2 === finTxt(3, pts) && r1.fin3 === TXT.nuevo && r1.alb.includes('Tilapia de Mozambique') && r1.alb.includes('Pleco') && r1.alb.includes(pez1.nombre), JSON.stringify(r1));
+      check('¡Récord! sale en un aviso y los amigos celebran', toasts.includes('¡Récord!') && AMIGOS.celebraT > 0);
       const g = v && v.mundo ? v.mundo(ID) : null;
       check('Resultados: conchitas de la ronda y las que tienes, y el botón del Mercadito', A.resultado.conchitas === A.conchitas && A.conchitas === pago(pez1.id) + 15 + 15 && !hud.q('fin5').hidden && hud.q('fin5').textContent === finConchas(A.conchitas, TI.saldo()) && !!bot('tienda') && bot('tienda').getClientRects().length > 0, hud.q('fin5').textContent);
       tecla('keydown', 't');
