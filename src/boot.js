@@ -257,6 +257,7 @@
     if (G.input.test) AV.teclasTest = o => G.input.test(o); // src/engine/input.js
     if (G.input.tactil) AV.tactilTest = o => G.input.tactil(o); // CG-40: joystick bajo el dedo, cámara con el otro, despegar y vibrar
     if (G.camara.test) AV.camaraTest = o => G.camara.test(o); // src/engine/camara.js (mirar arriba, 31-oct)
+    if (G.solidos && G.solidos.test) AV.solidosTest = o => G.solidos.test(o); // CG-116
     if (G.accesibilidad && G.accesibilidad.test) AV.accesibilidadTest = o => G.accesibilidad.test(o); // src/game/accesibilidad.js
     // Mis récords y Compartir (src/game/records.js): se carga al pedirlo (pausa, portada o «Compartir» del cómic) y junto con los retos,
     // para anotar cada resultado a nombre de la cotorra que jugó. Todo local; la partida no se toca

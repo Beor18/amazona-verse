@@ -226,13 +226,56 @@ AVE.module('solidos', function (G) {
     }
     return n;
   }
-  function aplicarRecortes() { let n = 0; for (const R of recortes) n += recorteUno(R); if (n) version++; return n; }
+  function aplicarRecortes() { let n = 0; for (const R of recortes) n += recorteUno(R); for (const P of pasajes) n += pasoUno(P); if (n) version++; return n; }
   function recortar(x0, z0, x1, z1, dentro, yCorte) {
     const R = { x0: Math.min(x0, x1), z0: Math.min(z0, z1), x1: Math.max(x0, x1), z1: Math.max(z0, z1), dentro: dentro || (() => true), yCorte };
     recortes.push(R);
     const n = recorteUno(R); if (n) version++;
     return n;
   }
+  // CG-116: un paso a la altura de una puerta. Quita el sólido entre y0 y y1 y deja lo de encima (dintel, techo).
+  // La malla no se toca. Se vuelve a aplicar tras rasterizar o rellenar, como los recortes.
+  const pasajes = [];
+  const TRANSITABLES = new Set(['casa_paja_a']); // el panel de la puerta se dibuja; no entra en la colisión
+  function pasoUno(P) {
+    let n = 0;
+    const y0 = cm(P.y0), y1 = cm(P.y1);
+    const ix0 = Math.floor(P.x0 / CELL), ix1 = Math.floor(P.x1 / CELL), iz0 = Math.floor(P.z0 / CELL), iz1 = Math.floor(P.z1 / CELL);
+    for (let ix = ix0; ix <= ix1; ix++) for (let iz = iz0; iz <= iz1; iz++) {
+      if (P.dentro && !P.dentro((ix + 0.5) * CELL, (iz + 0.5) * CELL)) continue;
+      const bx = Math.floor(ix / B), bz = Math.floor(iz / B), b = blocks.get(key(bx, bz)); if (!b) continue;
+      const c = (ix - bx * B) + (iz - bz * B) * B, nAnt = b.n[c];
+      const lo = [], hi = [], gx = [], gz = [];
+      for (let s2 = 0; s2 < nAnt; s2++) {
+        const i = c * NS + s2, a = b.lo[i], t = b.hi[i];
+        const push = (l, h) => { if (h > l && lo.length < NS) { lo.push(l); hi.push(h); gx.push(b.gx[i]); gz.push(b.gz[i]); } };
+        if (t <= y0 || a >= y1) push(a, t);
+        else if (a < y0 && t > y1) { push(a, y0); push(y1, t); }
+        else if (a < y0) push(a, Math.min(t, y0));
+        else if (t > y1) push(Math.max(a, y1), t);
+      }
+      let igual = lo.length === nAnt;
+      if (igual) for (let s2 = 0; s2 < nAnt; s2++) if (lo[s2] !== b.lo[c * NS + s2] || hi[s2] !== b.hi[c * NS + s2]) igual = false;
+      if (igual) continue;
+      for (let s2 = 0; s2 < lo.length; s2++) { const i = c * NS + s2; b.lo[i] = lo[s2]; b.hi[i] = hi[s2]; b.gx[i] = gx[s2]; b.gz[i] = gz[s2]; }
+      b.n[c] = lo.length;
+      if (!lo.length && nAnt) celdas--;
+      n++;
+    }
+    return n;
+  }
+  function abrirPaso(cx, cz, yaw, largo, ancho, y0, y1) {
+    const c = Math.cos(yaw), s = Math.sin(yaw), P = {
+      x0: cx - largo, z0: cz - largo, x1: cx + largo, z1: cz + largo, y0, y1,
+      dentro(x, z) { const dx = x - cx, dz = z - cz, lx = dx * c + dz * s, lz = -dx * s + dz * c; return Math.abs(lx) <= largo / 2 && Math.abs(lz) <= ancho / 2; },
+    };
+    pasajes.push(P);
+    const n = pasoUno(P); if (n) version++;
+    return n;
+  }
+  // k300, Atalayas del Oeste: base de torre_vigia (−61,27, 83,5, rot 2,031, piso 23,13). El modelo está en MACIZOS
+  // (no tiene vano medido). El paso es solo colisión: la malla de la torre no cambia.
+  abrirPaso(-61.27, 83.5, 2.0312, 10, 1.6, 23.2, 25.35);
   let rellenas = 0, version = 0; // version sube cada vez que termina una pieza (fisica renueva su caché de colliders)
   // KIMI-035: quita el trabajo de la cola y devuelve su matriz al pool si era de región (pendReg al día)
   function sacar(Q, J) {
@@ -758,7 +801,7 @@ AVE.module('solidos', function (G) {
     const sirve = q => q.geo.attributes.uv && !q.geo.attributes.color && !q.mat.vertexColors;
     let p = null; for (const re of PREFERIDO) { p = partes.find(q => sirve(q) && re.test(q.mat.name || '')); if (p) break; }
     p = p || partes.find(sirve); if (!p) { R.fundido = true; return 0; }
-    const paneles = R.vanos.map(panelVano), viejo = p.geo, mats = sinSolido ? [] : (matricesPorModelo[R.nombre] || matricesDe.get(viejo) || []);
+    const paneles = R.vanos.map(panelVano), viejo = p.geo, mats = (sinSolido || TRANSITABLES.has(R.nombre)) ? [] : (matricesPorModelo[R.nombre] || matricesDe.get(viejo) || []);
     p.geo = fundir([viejo, ...paneles], false);
     const sc = G.renderer.scene;
     sc.traverse(o => { if (o.isMesh && o.geometry === viejo) o.geometry = p.geo; });
@@ -788,6 +831,7 @@ AVE.module('solidos', function (G) {
   function drenarPend(R) {
     if (!R.pend || !R.listo) return;
     const pend = R.pend; R.pend = null;
+    if (TRANSITABLES.has(R.nombre)) return;
     if (R.vanos && R.vanos.length) { R.panelesSol = R.panelesSol || R.vanos.map(panelVano); for (const m of pend) for (const g of R.panelesSol) encolar(g, m, 'vano'); }
   }
   function panelInstancia(nombre, matriz) {
@@ -858,6 +902,21 @@ AVE.module('solidos', function (G) {
     const kb = n => Math.round(n * B * B * (1 + NS * 6) / 1024);
     return { bloques: blocks.size, bloquesFlora: flora.size, triangulos, rellenas, pendientes: cola.length + colaFlora.length, regiones: regiones.size, kb: kb(blocks.size), kbFlora: kb(flora.size) };
   }
-  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, agregarPartes, terminar, stats, altoEn, recortar, rehacerFlora,
-    cerrarVanos, panelAbierto, panelInstancia, vanos: vanosHechos };
+  function test() {
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    const ix = Math.floor(520 / CELL), iz = Math.floor(520 / CELL);
+    const d0 = destino, r0 = regionActual;
+    destino = blocks; regionActual = null;
+    insert(ix, iz, 0, 4, 0, 0);
+    const antes = bloquea(520, 520, 1);
+    abrirPaso(520, 520, 0, 1.2, 1.2, 0.2, 2.6);
+    const hueco = bloquea(520, 520, 1), dintel = bloquea(520, 520, 3.2);
+    destino = d0; regionActual = r0;
+    check('Un muro de prueba frena antes de abrir el paso', antes);
+    check('El paso se cruza a la altura de la puerta y el dintel sigue sólido', !hueco && dintel, 'hueco ' + hueco + ' · dintel ' + dintel);
+    check('casa_paja_a no mete la puerta en la colisión; la torre vigía sigue maciza y se abre solo en k300', TRANSITABLES.has('casa_paja_a') && !TRANSITABLES.has('torre_vigia') && pasajes.some(p => Math.abs(p.x0 + 61.27) < 12));
+    return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
+  }
+  return { SO, CELL, listo, get version() { return version; }, get activo() { return blocks.size > 0 || flora.size > 0; }, suelo, bloquea, penetra, techo, libre, fino, percha, cubre, dentro, que, agregar, agregarPartes, terminar, stats, altoEn, recortar, abrirPaso, rehacerFlora,
+    cerrarVanos, panelAbierto, panelInstancia, vanos: vanosHechos, test };
 });
