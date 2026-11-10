@@ -66,7 +66,7 @@ window.AVV18Sapo = function (G) {
     o = o || {};
     if ((despierto() || !lista()) && !o.forzar) return false;
     for (const otro of [G.v18combate, G.v18amenaza, G.v18serpiente]) { try { const f = otro && otro.estado && otro.estado().fase; if (f && f !== 'nada' && f !== 'disuelve' && f !== 'deshace') return false; } catch (e) { /* */ } }
-    Object.assign(A, { fase: 'lucha', t: 0, ritmo: 2.4, reloj: o.reloj != null ? o.reloj : 0, abierta: 0, aciertos: 0, empuje: null, premio: false, salto: 0, ronquidos: 0 });
+    Object.assign(A, { fase: 'lucha', t: 0, ritmo: 2.4, reloj: o.reloj != null ? o.reloj : 0, abierta: 0, aciertos: 0, empuje: null, premio: false, salto: 0, ronquidos: 0, sin: 0, pista20: false });
     quitarBalas(); cuerpo.visible = boca.visible = ojos.visible = true;
     enganchar(); toast(TXT.empieza, 2600); emitir({ tipo: 'empieza' });
     return true;
@@ -92,7 +92,7 @@ window.AVV18Sapo = function (G) {
   function llega() {
     const b = centroBoca();
     if (A.abierta > 0) {
-      A.aciertos++; fx('gold', b.x, b.y + 0.4, b.z, 10); sonar('unlock'); emitir({ tipo: 'nam', n: A.aciertos });
+      A.aciertos++; A.sin = 0; fx('gold', b.x, b.y + 0.4, b.z, 10); sonar('unlock'); emitir({ tipo: 'nam', n: A.aciertos });
       A.abierta = 0; A.ritmo = Math.max(1.6, A.ritmo - 0.3); // ¡ñam!: cierra la boca y ronca un poco más rápido
       if (A.aciertos >= SEMILLAS) { terminar(); return; }
       toast(TXT.nam + ' ' + A.aciertos + '/' + SEMILLAS, 1300);
@@ -117,8 +117,8 @@ window.AVV18Sapo = function (G) {
     if (V) V.cambiarMundo(ID, 'despierto');
     if (nueva) pagar();
     A.premio = nueva;
-    toast(TXT.fin, 2800); setTimeout(() => toast(nueva ? TXT.gana : TXT.ganaOtra, 3400), G.quiet ? 0 : 2000);
-    const y = H(sitio.x, sitio.z); fx('stars', sitio.x, y + 2, sitio.z, 16); fx('bubbles', sitio.poza.x, y + 0.5, sitio.poza.z, 20); sonar('unlock');
+    toast(TXT.fin, 2200); toast(nueva ? TXT.gana : TXT.ganaOtra, 3400);
+    const y = H(sitio.x, sitio.z); fx('stars', sitio.x, y + 2, sitio.z, 18); fx('gold', sitio.x, y + 2.4, sitio.z, 12); fx('bubbles', sitio.poza.x, y + 0.5, sitio.poza.z, 20); sonar('unlock');
     emitir({ tipo: 'win', premio: nueva });
     soltar();
   }
@@ -182,6 +182,8 @@ window.AVV18Sapo = function (G) {
     if (A.empuje && A.empuje.t > 0) { S.pos.x += A.empuje.x * dt; S.pos.z += A.empuje.z * dt; A.empuje.t -= dt; }
     pasoBalas(dt); if (A.fase !== 'lucha') return;
     if (dc > R_SALE) { salir(TXT.sale); return; }
+    A.sin += dt;
+    if (!A.pista20 && A.sin >= 20) { A.pista20 = true; toast(TACTIL ? TXT.guiaT : TXT.guia, 3200); }
     dibujar();
   }
   G.on('update', (dt, busy) => { if (A.manual || busy) return; paso(Math.min(dt, 0.1)); }, 74);
@@ -226,13 +228,16 @@ window.AVV18Sapo = function (G) {
       aTiempo(true);
       check('Semilla que llega con la boca abierta: ¡ñam! (1/3) y ronca más rápido', A.aciertos === 1 && A.ritmo < ritmo0, 'aciertos ' + A.aciertos);
       aTiempo(true); aTiempo(true);
-      check('Tres a tiempo lo despiertan: «¡Ay, qué hambre tenía! Gracias, cotorrita.»', A.aciertos === 3 && A.fase !== 'lucha' && toasts.includes(TXT.fin), 'aciertos ' + A.aciertos + ', fase ' + A.fase);
+      check('Tres a tiempo lo despiertan: «¡Ay, qué hambre tenía! Gracias, cotorrita.»', A.aciertos === 3 && A.fase !== 'lucha' && toasts.includes(TXT.fin) && toasts.includes(TXT.gana), 'aciertos ' + A.aciertos + ', fase ' + A.fase);
       check('Premio una vez: 1 piedra', (S.inv.piedra || 0) === (inv0.piedra || 0) + 1 && A.premio);
       correr(1.8);
       check('Se aparta de un salto, no vuelve y tras recargar sigue despierto', !cuerpo.visible && despierto() && iniciar({}) === false && (V.recargar(), despierto()));
       iniciar({ forzar: true }); ir(8); aTiempo(true); aTiempo(true); aTiempo(true);
       check('Repetirlo no da el premio otra vez', !A.premio && (S.inv.piedra || 0) === (inv0.piedra || 0) + 1);
       correr(1.8);
+      toasts.length = 0; iniciar({ forzar: true }); ir(10); correr(20.2);
+      check('A los 20 s sin acierto sale la pista de cómo lanzar', toasts.includes(TACTIL ? TXT.guiaT : TXT.guia), toasts.slice(-3).join(' | '));
+      salir();
       iniciar({ forzar: true }); ir(R_SALE + 5); correr(0.1);
       check('Al alejarse se sale y suelta la Acción', A.fase === 'nada' && G.interaccion.modo !== modo);
       check('Es un minijuego: no hay plumas ni vida que quitar', !('plumas' in A));

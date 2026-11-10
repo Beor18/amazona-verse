@@ -62,6 +62,9 @@
       libre: [L('Vuelo libre', 'Free flight'), L('Explora sin misiones', 'Explore with no missions')],
       nido: [L('Mi nido', 'My nest'), L('Tus huevos y crías', 'Your eggs and chicks')],
       records: [L('Mis récords', 'My records'), L('Medallas y tiempos', 'Medals and times')],
+      ayuda: L('¿Cómo se juega?', 'How do I play?'),
+      elige: L('Elige una tarjeta', 'Pick a card'),
+      pista: L('En el teclado, WASD te mueve. Con Espacio despegas y te posas. E es la acción. En el teléfono, el joystick mueve y el botón grande es la acción.', 'On a keyboard, WASD moves you. With Space you take off and you land. E is the action. On a phone, the joystick moves you and the big button is the action.'),
     });
     function subAventura() {
       const pasos = (G.misiones && G.misiones.steps) || [];
@@ -115,6 +118,58 @@
       });
       const foco = tarjetas().find(b => b.dataset.modo === u && !b.hidden) || tarjetas()[0];
       if (foco && portada && portada.open) setTimeout(() => { if (portada.open && !portada.inert) foco.focus({ preventScroll: true }); }, 0);
+      pintarAyuda(T);
+    }
+    const ICO_AYUDA = {
+      mover: '<svg class="modos-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l3 4h-2v4h4V9l4 3-4 3v-2h-4v4h2l-3 4-3-4h2v-4H7v2l-4-3 4-3v2h4V7h-2z" fill="currentColor"/></svg>',
+      subir: '<svg class="modos-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      bajar: '<svg class="modos-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v13M6 13l6 6 6-6" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      accion: '<svg class="modos-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M9 12.2l2.1 2.2 4-4.4" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    };
+    function pintarAyuda(T) {
+      if (!form) return;
+      const en = !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
+      let fila = document.getElementById('modos-pistas');
+      if (!fila) {
+        fila = document.createElement('div');
+        fila.id = 'modos-pistas'; fila.className = 'modos-pistas';
+        fila.setAttribute('role', 'list');
+        form.appendChild(fila);
+      }
+      const pasos = [
+        [ICO_AYUDA.mover, 'Mover', 'Move'],
+        [ICO_AYUDA.subir, 'Despegar', 'Take off'],
+        [ICO_AYUDA.bajar, 'Posarte', 'Land'],
+        [ICO_AYUDA.accion, 'Acción', 'Action'],
+      ];
+      fila.replaceChildren();
+      const lead = document.createElement('span');
+      lead.className = 'modos-pista-lead'; lead.textContent = T.elige; fila.appendChild(lead);
+      for (const [svg, es, enT] of pasos) {
+        const s = document.createElement('span');
+        s.className = 'modos-pista-i'; s.setAttribute('role', 'listitem');
+        s.innerHTML = svg;
+        const n = document.createElement('b'); n.textContent = en ? enT : es; s.appendChild(n);
+        fila.appendChild(s);
+      }
+      let b = document.getElementById('modos-ayuda');
+      if (!b) {
+        b = document.createElement('button');
+        b.type = 'button'; b.id = 'modos-ayuda'; b.className = 'modos-ayuda';
+        b.addEventListener('click', ev => {
+          ev.preventDefault(); ev.stopPropagation();
+          const p = document.getElementById('modos-pista');
+          if (!p) return;
+          p.hidden = !p.hidden;
+          b.setAttribute('aria-expanded', p.hidden ? 'false' : 'true');
+        });
+        form.appendChild(b);
+      }
+      let p = document.getElementById('modos-pista');
+      if (!p) { p = document.createElement('p'); p.id = 'modos-pista'; p.className = 'modos-pista'; p.hidden = true; b.insertAdjacentElement('afterend', p); }
+      b.textContent = T.ayuda;
+      p.textContent = T.pista;
+      b.setAttribute('aria-expanded', p.hidden ? 'false' : 'true');
     }
     function recordar(modo) { guardar({ ultimo: modo }); }
 
@@ -491,6 +546,12 @@
         check('Nido, récords, Mis cotorras, Álbum y Retos con amigos no cierran la portada (type=button)', ENCIMA.every(m => form.querySelector(`[data-modo="${m}"]`).type === 'button'));
         check('Las tarjetas de la V18 se ven con la bandera encendida y se ocultan sin ella', ['golf', 'duelo', 'amigos', 'cotorras'].every(m => form.querySelector(`[data-modo="${m}"]`).hidden === !G.V18));
         check('Textos en ES', $('modos-t').textContent === '¿Cómo quieres jugar?' && form.querySelector('[data-modo="libre"] b').textContent === 'Vuelo libre', '«' + $('modos-t').textContent + '» / «' + form.querySelector('[data-modo="libre"] b').textContent + '»');
+        const ay = document.getElementById('modos-ayuda'), pi = document.getElementById('modos-pista'), chips = document.getElementById('modos-pistas');
+        check('Hay pistas con icono: mover, despegar, posarte y acción', !!chips && /Despegar/.test(chips.textContent) && /Posarte/.test(chips.textContent) && /Acción/.test(chips.textContent) && chips.querySelectorAll('svg').length >= 4, chips && chips.textContent);
+        check('El botón de ayuda va después de las tarjetas y mide 44 px', !!ay && ay.type === 'button' && ay.textContent === '¿Cómo se juega?' && form.querySelector('button').dataset.modo === 'aventura' && !!pi && pi.hidden && parseFloat(getComputedStyle(ay).minHeight) >= 44, ay && (ay.textContent + ' / ' + getComputedStyle(ay).minHeight));
+        ay.click();
+        check('La ayuda explica el teclado y el teléfono', pi && !pi.hidden && /despegas/.test(pi.textContent) && /posas/.test(pi.textContent) && /teléfono/.test(pi.textContent));
+        ay.click();
         // 2. Cada tarjeta abre su modo y «Cambiar de juego» vuelve al menú
         retos = await cargar.retos(); retos.pruebas.prueba(true);
         if (!portada.open) volver();
@@ -693,7 +754,7 @@
         const aj = G.aula && G.aula.aj, idioma0 = aj ? aj.idioma : null;
         if (aj) { aj.idioma = 'en'; mostrar(); check('Textos en EN', $('modos-t').textContent === 'How do you want to play?' && form.querySelector('[data-modo="nido"] b').textContent === 'My nest' && form.querySelector('[data-modo="duelo"] b').textContent === 'Duel' && form.querySelector('[data-modo="amigos"] small').textContent === 'Chispa, Moon and the Guardian'); aj.idioma = idioma0; mostrar(); }
         // 6. Maqueta móvil: sin desbordes, tarjetas de 44 px o más y sin solaparse
-        for (const [w, h] of [[375, 812], [320, 568], [812, 375]]) {
+        for (const [w, h] of [[390, 844], [375, 812], [320, 568], [812, 375]]) {
           const m = await maquetaPortada(w, h);
           try {
             const d = m.d, malos = [];
@@ -704,6 +765,13 @@
             const main = d.querySelector('.title-main'), cs = main && d.defaultView.getComputedStyle(main);
             if (main && main.scrollHeight > main.clientHeight + 1 && cs.overflowY !== 'auto' && cs.overflowY !== 'scroll') malos.push('el menú no cabe y no se desplaza');
             const titulo = d.getElementById('modos-t'); if (titulo && titulo.getBoundingClientRect().width > w) malos.push('el título desborda');
+            if (w === 390) {
+              const ayb = d.getElementById('modos-ayuda'), pista = d.getElementById('modos-pista'), chips = d.getElementById('modos-pistas');
+              if (!chips || chips.querySelectorAll('svg').length < 4) malos.push('faltan las pistas con icono');
+              if (!ayb || ayb.getBoundingClientRect().height < 44) malos.push('el botón de ayuda mide ' + (ayb ? Math.round(ayb.getBoundingClientRect().height) : 0));
+              if (pista) pista.hidden = false;
+              if (d.documentElement.scrollWidth > w + 1) malos.push('con la ayuda abierta, página ' + d.documentElement.scrollWidth);
+            }
             check(`Maqueta ${w}×${h}: nada desborda, tarjetas ≥ 44 px y sin solapes`, !malos.length, malos.join('; '));
           } finally { m.cerrar(); }
         }

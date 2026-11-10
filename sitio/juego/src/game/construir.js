@@ -9,7 +9,8 @@
    InstancedMesh: una llamada de dibujo por tipo que tenga piezas (13 como mucho), con 40 piezas o con 1. Presupuesto: 40 piezas (24 en calidad «bajo» y Modo Escuela);
    sin dinero real ni cajas sorpresa: las 7 de siempre desde el principio y las del Mercadito por su precio fijo.
    Controles: teclado 1–9 pieza (en el orden de la barra) · R / Q girar · Z deshacer · Supr o Retroceso quitar la pieza bajo el fantasma · E/Enter colocar ·
-   Esc o B salir (B también entra). Táctil: la barra de piezas y herramientas de arriba y el botón Acción («Colocar»).
+   Esc o B salir (B también entra). Táctil: la barra de piezas y herramientas de arriba, un gesto horizontal sobre Girar, y el botón Acción («Colocar»).
+   Cuadrícula opcional (el fantasma se acerca suave a la casilla de 1 m). Foto del rincón: PNG en el dispositivo, sin subirlo. Deshacer se marca cuando hay algo que deshacer.
    Guardado: S.construir = { v: 1, piezas: [{ t, x, z, r }] } en la partida (content/cap1/pack.js, clave «construir»). r = giro en
    pasos de 45°. Lo que no se entiende (dañado, otra versión, tipos que no existen, números raros) se lee como vacío o se descarta.
    Textos en español; el inglés en content/cap1/en.js (idioma.js los traduce en pantalla).
@@ -307,8 +308,10 @@
     function aplicar(d) { lista = leer(d); historial.length = 0; if (habilitado()) { asegurarEscena(); pintar(); } return lista.length; }
 
     // ---------- Modo construir: toma la acción mientras está activo (como el del refugio) ----------
-    let activo = false, tipo = 'nido', giro = 0, modo0 = null;
+    let activo = false, tipo = 'nido', giro = 0, modo0 = null, rejilla = false;
     const historial = [];
+    const vista = { x: 0, z: 0, listo: false };
+    const REJ = 1;
     const est = { x: 0, z: 0, valido: false, motivo: '' };
     const modo = { activo: () => activo, accion: () => colocar(), aviso: () => (est.valido ? 'Acción: colocar la pieza' : est.motivo), verbo: 'Colocar' };
     function validar(t, x, z) {
@@ -321,10 +324,19 @@
       if (!T.sobre && lista.some(p => !TIPOS[p.t].sobre && Math.hypot(x - p.x, z - p.z) < (T.r + TIPOS[p.t].r) * 0.6)) return 'Muy cerca de otra pieza';
       return '';
     }
+    function crudo() {
+      const f = S.facing || { x: 0, z: 1 }, fl = Math.hypot(f.x, f.z) || 1;
+      return { x: S.pos.x + f.x / fl * DIST, z: S.pos.z + f.z / fl * DIST };
+    }
     function actualizar() {
       if (!activo || !fantasma) return;
-      const f = S.facing || { x: 0, z: 1 }, fl = Math.hypot(f.x, f.z) || 1;
-      est.x = S.pos.x + f.x / fl * DIST; est.z = S.pos.z + f.z / fl * DIST;
+      const c = crudo();
+      if (rejilla) {
+        const tx = Math.round(c.x / REJ) * REJ, tz = Math.round(c.z / REJ) * REJ;
+        if (!vista.listo) { vista.x = c.x; vista.z = c.z; vista.listo = true; }
+        vista.x += (tx - vista.x) * 0.5; vista.z += (tz - vista.z) * 0.5;
+        est.x = vista.x; est.z = vista.z;
+      } else { vista.listo = false; est.x = c.x; est.z = c.z; }
       est.motivo = validar(tipo, est.x, est.z); est.valido = !est.motivo;
       fantasma.geometry = geos[tipo];
       fantasma.position.set(est.x, H(est.x, est.z), est.z); fantasma.rotation.set(0, giro * PASO, 0);
@@ -334,8 +346,10 @@
     function colocar() {
       if (!activo) return false;
       actualizar();
-      if (!est.valido) { aviso(est.motivo); sonar('wrong'); return false; }
-      const p = { t: tipo, x: est.x, z: est.z, r: giro };
+      const x = rejilla ? Math.round(crudo().x / REJ) * REJ : est.x, z = rejilla ? Math.round(crudo().z / REJ) * REJ : est.z;
+      const motivo = validar(tipo, x, z);
+      if (motivo) { aviso(motivo); sonar('wrong'); return false; }
+      const p = { t: tipo, x, z, r: giro };
       lista.push(p); historial.push({ op: '+', p });
       pintar(); guardar(); pintarHud();
       if (G.audio && G.audio.martillar && !G.quiet) G.audio.martillar(lista.length === 1 ? 3 : 1);
@@ -343,6 +357,42 @@
       return true;
     }
     function girar(d) { giro = (giro + (d < 0 ? 7 : 1)) % 8; sonar('tick'); actualizar(); pintarHud(); return giro; }
+    function cuadrícula(on) {
+      rejilla = on == null ? !rejilla : !!on;
+      vista.listo = false;
+      const b = hudEl && hudEl.querySelector('[data-cl="rejilla"]');
+      if (b) b.setAttribute('aria-pressed', String(rejilla));
+      sonar('tick'); actualizar(); pintarHud();
+      return rejilla;
+    }
+    async function foto() {
+      if (!G.renderer || !G.renderer.snapshot) { aviso('Ahora no se puede hacer la foto'); return null; }
+      let x = S.pos.x, z = S.pos.z;
+      if (lista.length) { x = 0; z = 0; for (const p of lista) { x += p.x; z += p.z; } x /= lista.length; z /= lista.length; }
+      const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, f0 = { x: (S.facing && S.facing.x) || 0, z: (S.facing && S.facing.z) || 1 };
+      S.pos.x = x; S.pos.z = z + 6; S.pos.y = H(S.pos.x, S.pos.z) + 1.6; S.facing = { x: 0, z: -1 };
+      let url = null;
+      try {
+        const r = G.renderer.snapshot(960, 540, 0.8);
+        url = r && typeof r.then === 'function' ? await r : r;
+      } catch (e) { url = null; }
+      S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.facing = f0;
+      if (typeof url === 'string' && url.indexOf('data:image/jpeg') === 0) {
+        try {
+          const im = new Image(); im.src = url; await im.decode();
+          const cv = document.createElement('canvas'); cv.width = im.naturalWidth || 960; cv.height = im.naturalHeight || 540;
+          cv.getContext('2d').drawImage(im, 0, 0); url = cv.toDataURL('image/png');
+        } catch (e) { url = null; }
+      }
+      if (typeof url !== 'string' || url.indexOf('data:image/png') !== 0) { aviso('No se pudo hacer la foto'); return null; }
+      if (!G.quiet) {
+        const a = document.createElement('a');
+        a.href = url; a.download = 'rincon-vittata.png'; a.rel = 'noopener';
+        document.body.appendChild(a); a.click(); a.remove();
+        aviso('La foto quedó en tu dispositivo. No se sube a ningún sitio.', 3200);
+      }
+      return url;
+    }
     function elegir(t) { if (!TIPOS[t]) return false; if (!tiene(t)) { aviso('Esa pieza está en el Mercadito del río.'); return false; } tipo = t; sonar('tick'); actualizar(); pintarHud(); return true; }
     function deshacer() {
       const h = historial.pop();
@@ -367,7 +417,7 @@
       if (G.interaccion.modo && G.interaccion.modo !== modo && G.interaccion.modo.activo && G.interaccion.modo.activo()) { aviso('Termina lo que estás haciendo y vuelve a probar.'); return false; }
       asegurarEscena(); pintar();
       modo0 = G.interaccion.modo; G.interaccion.modo = modo;
-      activo = true; fantasma.visible = true;
+      activo = true; fantasma.visible = true; vista.listo = false;
       hud(true); actualizar(); pintarHud();
       aviso('¡Construye tu rincón! Elige una pieza, gírala y pulsa Acción para colocarla.', 4200);
       return true;
@@ -429,16 +479,19 @@
       estilo = document.createElement('style'); estilo.id = 'cl-estilo';
       estilo.textContent = '#cl-hud{left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 142px);display:flex;flex-direction:column;align-items:center;gap:6px;max-width:calc(100vw - 32px)}' +
         '#cl-hud .cl-fila{display:flex;gap:6px;align-items:center;background:rgba(16,36,28,.82);border-radius:16px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.35);max-width:100%;overflow-x:auto;scrollbar-width:none}' +
-        '#cl-hud button{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:48px;min-height:48px;padding:4px 6px;border-radius:12px;color:#fff8e6;font:600 12px/1.1 system-ui,sans-serif;cursor:pointer;text-align:center;background:rgba(255,255,255,.08);touch-action:manipulation}' +
+        '#cl-hud button{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:44px;padding:4px 6px;border-radius:12px;color:#fff8e6;font:600 12px/1.1 system-ui,sans-serif;cursor:pointer;text-align:center;background:rgba(255,255,255,.08);touch-action:manipulation}' +
         '#cl-hud button:hover{background:rgba(255,255,255,.18)}#cl-hud button:focus-visible{outline:3px solid #ffd27a;outline-offset:1px}' +
         '#cl-hud button[aria-pressed="true"]{background:#ffd27a;color:#10241c;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}' +
         '#cl-hud svg{width:30px;height:30px}#cl-hud .cl-cuenta{color:#fff8e6;font:700 13px system-ui,sans-serif;padding:0 8px;white-space:nowrap}' +
         '#cl-hud kbd{font:600 10px system-ui,sans-serif;opacity:.7}' +
         '#cl-hud .cl-herr button{flex-direction:row;font-size:13px;padding:4px 10px}' +
+        '#cl-hud .cl-deshacer.cl-hay{background:#ffd27a;color:#10241c;box-shadow:0 0 0 3px rgba(255,210,122,.7);min-width:84px;font-weight:800}' +
+        '#cl-hud .cl-deshacer[aria-disabled="true"]{opacity:.5;box-shadow:none}' +
         'body:has(#title[open]) #cl-hud,body:has(#creator:not([hidden])) #cl-hud{visibility:hidden}' +
         '@media (max-width:700px),(pointer:coarse){#cl-hud{left:12px;transform:none;align-items:flex-start;top:calc(env(safe-area-inset-top,0px) + 226px);max-width:calc(100vw - 84px)}' +
-        '#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{min-width:40px;min-height:44px;padding:2px}#cl-hud svg{width:26px;height:26px}' +
-        '#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-cuenta{font-size:12px;padding:0 4px}}';
+        '#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{min-width:44px;min-height:44px;padding:2px}#cl-hud svg{width:26px;height:26px}' +
+        '#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-cuenta{font-size:12px;padding:0 4px}}' +
+        '@media (prefers-reduced-motion:reduce){#cl-hud,#cl-hud *{animation:none;transition:none}}';
       document.head.appendChild(estilo);
     }
     function hud(ver) {
@@ -448,14 +501,33 @@
         hudEl = document.createElement('div'); hudEl.id = 'cl-hud'; hudEl.className = 'hud'; hudEl.setAttribute('role', 'toolbar'); hudEl.setAttribute('aria-label', 'Modo construir');
         const tecla = window.matchMedia && matchMedia('(pointer: coarse)').matches ? () => '' : k => `<kbd>${k}</kbd>`;
         hudEl.innerHTML = '<div class="cl-fila cl-piezas">' + filaPiezas() + '</div>' +
-          `<div class="cl-fila cl-herr"><span class="cl-cuenta" aria-live="polite"></span><button type="button" data-cl="girar">Girar ${tecla('R')}</button><button type="button" data-cl="deshacer">Deshacer ${tecla('Z')}</button>` +
-          `<button type="button" data-cl="quitar">Quitar ${tecla('Supr')}</button><button type="button" data-cl="listo">Listo ${tecla('Esc')}</button>` +
-          (G.tienda && G.tienda.disponible && G.tienda.disponible() ? '<button type="button" data-cl="tienda">Mercadito</button>' : '') + '</div>';
+          `<div class="cl-fila cl-herr"><span class="cl-cuenta" aria-live="polite"></span><button type="button" class="cl-deshacer" data-cl="deshacer" aria-disabled="true" aria-label="Deshacer" aria-keyshortcuts="Z"><span class="cl-etiq">Deshacer</span> ${tecla('Z')}</button><button type="button" data-cl="girar" aria-label="Girar" aria-keyshortcuts="R">Girar ${tecla('R')}</button>` +
+          `<button type="button" data-cl="rejilla" aria-pressed="false" aria-label="Cuadrícula">Cuadrícula</button><button type="button" data-cl="foto" aria-label="Foto">Foto</button>` +
+          `<button type="button" data-cl="quitar" aria-label="Quitar" aria-keyshortcuts="Delete">Quitar ${tecla('Supr')}</button><button type="button" data-cl="listo" aria-label="Listo" aria-keyshortcuts="Escape">Listo ${tecla('Esc')}</button>` +
+          (G.tienda && G.tienda.disponible && G.tienda.disponible() ? '<button type="button" data-cl="tienda" aria-label="Mercadito">Mercadito</button>' : '') + '</div>';
+        let gesto = null, gestoYa = false;
+        hudEl.addEventListener('pointerdown', e => {
+          if (!activo || (e.button && e.button > 0)) return;
+          const b = e.target.closest && e.target.closest('button');
+          if (b && b.dataset.clTipo) return;
+          gesto = { id: e.pointerId, x: e.clientX, y: e.clientY, hecho: false };
+        });
+        hudEl.addEventListener('pointermove', e => {
+          if (!gesto || e.pointerId !== gesto.id || gesto.hecho) return;
+          const dx = e.clientX - gesto.x, dy = e.clientY - gesto.y;
+          if (Math.abs(dx) < 36 || Math.abs(dx) < Math.abs(dy)) return;
+          gesto.hecho = true; gestoYa = true; girar(dx > 0 ? 1 : -1);
+        });
+        const finGesto = e => { if (gesto && e.pointerId === gesto.id) gesto = null; };
+        hudEl.addEventListener('pointerup', finGesto);
+        hudEl.addEventListener('pointercancel', finGesto);
         hudEl.addEventListener('click', e => {
           const b = e.target.closest && e.target.closest('button'); if (!b) return;
           if (b.dataset.clTipo) elegir(b.dataset.clTipo);
-          else if (b.dataset.cl === 'girar') girar(1);
+          else if (b.dataset.cl === 'girar') { if (gestoYa) gestoYa = false; else girar(1); }
           else if (b.dataset.cl === 'deshacer') deshacer();
+          else if (b.dataset.cl === 'rejilla') cuadrícula();
+          else if (b.dataset.cl === 'foto') foto();
           else if (b.dataset.cl === 'quitar') quitar();
           else if (b.dataset.cl === 'listo') salir();
           else if (b.dataset.cl === 'tienda') { if (G.tienda) G.tienda.abrir('construir'); return; }
@@ -466,7 +538,7 @@
       hudEl.hidden = false;
     }
     // La fila de piezas: las 7 de siempre y las del Mercadito que ya son tuyas (teclas 1–9 en ese orden)
-    function filaPiezas() { return disponibles().map((t, i) => `<button type="button" data-cl-tipo="${t}" aria-pressed="${t === tipo}" title="${NOMBRE[t]}${i < 9 ? ' (' + (i + 1) + ')' : ''}"><svg viewBox="0 0 32 32" aria-hidden="true">${SVG[t]}</svg><small>${NOMBRE[t]}</small></button>`).join(''); }
+    function filaPiezas() { return disponibles().map((t, i) => `<button type="button" data-cl-tipo="${t}" aria-pressed="${t === tipo}" aria-label="${NOMBRE[t]}"${i < 9 ? ` aria-keyshortcuts="${i + 1}"` : ''}><svg viewBox="0 0 32 32" aria-hidden="true">${SVG[t]}</svg><small>${NOMBRE[t]}</small></button>`).join(''); }
     // Tras una compra en el Mercadito (src/game/tienda.js) la barra se rehace con la pieza nueva
     function refrescar() { if (!hudEl) return; const f = hudEl.querySelector('.cl-piezas'); if (f) f.innerHTML = filaPiezas(); if (!tiene(tipo)) tipo = 'nido'; pintarHud(); }
     let cuentaTxt = '';
@@ -475,6 +547,13 @@
       hudEl.querySelectorAll('[data-cl-tipo]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.clTipo === tipo)));
       const c = hudEl.querySelector('.cl-cuenta'), t = `Piezas: ${lista.length}/${presupuesto()}`;
       if (c && t !== cuentaTxt) { cuentaTxt = t; c.textContent = t; }
+      const d = hudEl.querySelector('[data-cl="deshacer"]');
+      if (d) {
+        const n = historial.length, et = d.querySelector('.cl-etiq');
+        d.classList.toggle('cl-hay', n > 0);
+        d.setAttribute('aria-disabled', n ? 'false' : 'true');
+        if (et) et.textContent = n ? 'Deshacer · ' + n : 'Deshacer';
+      }
     }
     // Botón del HUD (junto a Pausa) y tarjeta «Construir» en «¿Cómo quieres jugar?» (no lleva data-modo: menu_modos.js no la cuenta)
     let botonHud = null, tarjeta = null;
@@ -563,6 +642,8 @@
         check('empezar() entra y toma la acción («Colocar»)', empezar() && activo && G.interaccion.modo === modo && modo.verbo === 'Colocar');
         await espera(60);
         check('La barra de piezas se ve con las 7 de siempre (y las compradas) y la cuenta', !!hudEl && !hudEl.hidden && BASE.every(t => hudEl.querySelector('[data-cl-tipo="' + t + '"]')) && hudEl.querySelectorAll('[data-cl-tipo]').length === disponibles().length && /Piezas: 0\/\d+/.test(hudEl.querySelector('.cl-cuenta').textContent), hudEl && hudEl.querySelector('.cl-cuenta').textContent);
+        const botonesA = [...hudEl.querySelectorAll('button')], hojaA = (document.getElementById('cl-estilo') || {}).textContent || '';
+        check('Cada botón tiene nombre para el lector, mide 44 px y el foco se ve', botonesA.length >= 8 && botonesA.every(b => (b.getAttribute('aria-label') || '').trim().length > 1 && parseFloat(getComputedStyle(b).minWidth) >= 44 && parseFloat(getComputedStyle(b).minHeight) >= 44) && /:focus-visible/.test(hojaA) && /prefers-reduced-motion/.test(hojaA), botonesA.map(b => b.getAttribute('aria-label')).join(','));
         elegir('nido'); actualizar();
         check('Fantasma visible y verde donde cabe', fantasma.visible && est.valido && matF.color.g > matF.color.r, est.motivo);
         // 3. Colocar, girar, deshacer y quitar
@@ -588,6 +669,31 @@
         check('No se puede poner otra pieza encima del nido', (actualizar(), !est.valido && /cerca/.test(est.motivo)), est.motivo);
         elegir('techo'); actualizar();
         check('El techo de hojas sí va sobre el nido', est.valido && colocar() && lista.length === 2, est.motivo);
+        // CG-78: cuadrícula suave, gesto de giro, foto local y Deshacer visible
+        const btnDes = hudEl.querySelector('[data-cl="deshacer"]');
+        check('Deshacer se marca cuando hay algo que deshacer', !!btnDes && btnDes.classList.contains('cl-hay') && btnDes.getAttribute('aria-disabled') === 'false' && /Deshacer · [1-9]/.test(btnDes.textContent), btnDes && btnDes.textContent);
+        const g0 = giro, zona = hudEl.querySelector('[data-cl="girar"]');
+        zona.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 20, clientY: 40, pointerId: 7 }));
+        zona.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 80, clientY: 44, pointerId: 7 }));
+        zona.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: 80, clientY: 44, pointerId: 7 }));
+        check('Un gesto horizontal sobre Girar gira la pieza', giro === (g0 + 1) % 8, giro + ' desde ' + g0);
+        girar(-1);
+        check('La cuadrícula empieza apagada', cuadrícula(false) === false && hudEl.querySelector('[data-cl="rejilla"]').getAttribute('aria-pressed') === 'false');
+        cuadrícula(true);
+        for (let i = 0; i < 14; i++) actualizar();
+        const meta = crudo();
+        check('Con la cuadrícula el fantasma se acerca a la casilla de 1 m', Math.abs(est.x - Math.round(meta.x)) < 0.05 && Math.abs(est.z - Math.round(meta.z)) < 0.05, est.x.toFixed(3) + ',' + est.z.toFixed(3));
+        const nAntes = lista.length, cabe = !validar(tipo, Math.round(meta.x), Math.round(meta.z));
+        if (cabe) {
+          check('La pieza colocada cae en la cuadrícula', colocar() && Math.abs(lista[lista.length - 1].x - Math.round(meta.x)) < 1e-6 && Math.abs(lista[lista.length - 1].z - Math.round(meta.z)) < 1e-6, lista[lista.length - 1].x + ',' + lista[lista.length - 1].z);
+          deshacer();
+          check('Deshacer quita esa pieza de la cuadrícula', lista.length === nAntes);
+        } else check('La casilla de la cuadrícula no estaba libre (el acercamiento ya se midió)', true, est.motivo);
+        cuadrícula(false); actualizar();
+        const suelto = crudo();
+        check('Sin cuadrícula el fantasma vuelve a seguir a Vittata', Math.abs(est.x - suelto.x) < 1e-6 && Math.abs(est.z - suelto.z) < 1e-6);
+        const urlFoto = await foto();
+        check('La foto del rincón es un PNG local y no deja un enlace para subirlo', typeof urlFoto === 'string' && urlFoto.indexOf('data:image/png') === 0 && urlFoto.length > 200 && !document.querySelector('a[download="rincon-vittata.png"]'), urlFoto ? urlFoto.slice(0, 22) + '… ' + urlFoto.length : 'sin foto');
         // 3b. Piezas del Mercadito del río: sin comprarlas no salen en la barra ni se eligen; compradas, sí (teclas 1–9 en el orden de la barra)
         S.tienda = { v: 1, conchitas: 0, ganadas: 0, compras: [] }; refrescar();
         check('Sin comprarla, el farol no está en la barra ni se puede elegir', !hudEl.querySelector('[data-cl-tipo="farol"]') && !elegir('farol') && tipo !== 'farol' && disponibles().length === 7);
@@ -634,7 +740,7 @@
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    const api = { empezar, salir, activo: () => activo, elegir, girar, colocar, deshacer, quitar, piezas: () => lista.map(p => Object.assign({}, p)), aplicar, presupuesto,
+    const api = { empezar, salir, activo: () => activo, elegir, girar, colocar, deshacer, quitar, cuadrícula, foto, rejilla: () => rejilla, piezas: () => lista.map(p => Object.assign({}, p)), aplicar, presupuesto,
       forzar, test, TIPOS: ORDEN.slice(), BASE: BASE.slice(), EXTRA: EXTRA.slice(), SVG, NOMBRE, tiene, disponibles, refrescar, CAPACIDAD, _escena: () => ({ grupo, fantasma, est: Object.assign({}, est) }) };
     G.construir = api;
     return api;

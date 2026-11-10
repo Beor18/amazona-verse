@@ -710,6 +710,97 @@ AVE.module('streaming', function (G) {
     };
     avanzar();
   }
+  // CG-73: la fusión cercana (fundirCercaPaso) clonaba cada instancia, le aplicaba la matriz y luego
+  // fusionLenta volvía a copiar. Los clones seguían vivos (gr.geos) hasta cerrar la zona: a ~9 s el heap
+  // se iba a 139–145 MB con basura que el GC aún no había recogido (presupuesto 120; KIMI-341). Aquí se
+  // escribe el mismo resultado en un solo pase, desde la geometría fuente y la matriz de la instancia.
+  // Mismo contrato que clone + applyMatrix4 (r128: getX no desnormaliza) + fusionLenta, troceado igual.
+  const _nmCerca = new THREE.Matrix3();
+  const _truncU8 = new Uint8Array(1), _truncI8 = new Int8Array(1), _truncU16 = new Uint16Array(1), _truncI16 = new Int16Array(1), _truncU32 = new Uint32Array(1), _truncI32 = new Int32Array(1);
+  function truncAttr(a, v) {
+    const arr = a.array;
+    if (!arr || arr instanceof Float32Array || arr instanceof Float64Array) return v;
+    const t = arr instanceof Uint16Array ? _truncU16 : arr instanceof Int16Array ? _truncI16
+      : arr instanceof Uint8Array ? _truncU8 : arr instanceof Int8Array ? _truncI8
+      : arr instanceof Uint32Array ? _truncU32 : arr instanceof Int32Array ? _truncI32 : null;
+    if (!t) return v;
+    t[0] = v;
+    return t[0];
+  }
+  function fusionLentaPartes(partes, modo, ms, paso, alTerminar) {
+    let nv = 0, ni = 0;
+    for (const d of partes) {
+      const g = d.geo, n = g.attributes.position.count;
+      nv += n; ni += g.index ? g.index.count : n;
+    }
+    const dims = modo === 'tex' ? { position: 3, normal: 3, uv: 2, avCelda: 2 }
+      : { position: 3, normal: 3, uv: partes.every(d => d.geo.attributes.uv) ? 2 : 0 };
+    const arr = {};
+    for (const k in dims) if (dims[k]) arr[k] = new Float32Array(nv * dims[k]);
+    const idx = nv > 65535 ? new Uint32Array(ni) : new Uint16Array(ni);
+    let p0 = 0, vo = 0, io = 0, v0 = 0, x0 = 0;
+    let bx1 = Infinity, by1 = Infinity, bz1 = Infinity, bx2 = -Infinity, by2 = -Infinity, bz2 = -Infinity;
+    const TROZO = 24576;
+    const avanzar = () => {
+      const t0 = performance.now();
+      while (p0 < partes.length) {
+        const d = partes[p0], g = d.geo, a = g.attributes, n = a.position.count, e = d.m.elements;
+        if (v0 < n) {
+          const kp = kNorm(a.position), kn = a.normal ? kNorm(a.normal) : 1, ku = a.uv ? kNorm(a.uv) : 1, ka = a.avCelda ? kNorm(a.avCelda) : 1;
+          const ne = arr.normal && a.normal ? _nmCerca.getNormalMatrix(d.m).elements : null;
+          const cu = d.celda ? (d.celda[1] % 4) / 4 : 0, cv = d.celda ? Math.floor(d.celda[1] / 4) / 4 : 0;
+          const fin = Math.min(n, v0 + TROZO);
+          for (let i = v0; i < fin; i++) {
+            const v = vo + i;
+            const x = a.position.getX(i), y = a.position.getY(i), z = a.position.getZ(i);
+            const w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
+            let px = (e[0] * x + e[4] * y + e[8] * z + e[12]) * w;
+            let py = (e[1] * x + e[5] * y + e[9] * z + e[13]) * w;
+            let pz = (e[2] * x + e[6] * y + e[10] * z + e[14]) * w;
+            px = truncAttr(a.position, px); py = truncAttr(a.position, py); pz = truncAttr(a.position, pz);
+            px *= kp; py *= kp; pz *= kp;
+            arr.position[v * 3] = px; arr.position[v * 3 + 1] = py; arr.position[v * 3 + 2] = pz;
+            if (px < bx1) bx1 = px; if (px > bx2) bx2 = px;
+            if (py < by1) by1 = py; if (py > by2) by2 = py;
+            if (pz < bz1) bz1 = pz; if (pz > bz2) bz2 = pz;
+            if (ne) {
+              let nx = a.normal.getX(i), ny = a.normal.getY(i), nz = a.normal.getZ(i);
+              let rx = ne[0] * nx + ne[3] * ny + ne[6] * nz;
+              let ry = ne[1] * nx + ne[4] * ny + ne[7] * nz;
+              let rz = ne[2] * nx + ne[5] * ny + ne[8] * nz;
+              const len = Math.hypot(rx, ry, rz) || 1;
+              rx = truncAttr(a.normal, rx / len); ry = truncAttr(a.normal, ry / len); rz = truncAttr(a.normal, rz / len);
+              arr.normal[v * 3] = rx * kn; arr.normal[v * 3 + 1] = ry * kn; arr.normal[v * 3 + 2] = rz * kn;
+            }
+            if (arr.uv && a.uv) { arr.uv[v * 2] = a.uv.getX(i) * ku; arr.uv[v * 2 + 1] = a.uv.getY(i) * ku; }
+            if (arr.avCelda) {
+              if (d.celda) { arr.avCelda[v * 2] = cu; arr.avCelda[v * 2 + 1] = cv; }
+              else if (a.avCelda) { arr.avCelda[v * 2] = a.avCelda.getX(i) * ka; arr.avCelda[v * 2 + 1] = a.avCelda.getY(i) * ka; }
+            }
+          }
+          v0 = fin;
+        } else {
+          const cnt = g.index ? g.index.count : n, fin = Math.min(cnt, x0 + TROZO * 3);
+          if (g.index) for (let i = x0; i < fin; i++) idx[io + i] = g.index.getX(i) + vo;
+          else for (let i = x0; i < fin; i++) idx[io + i] = i + vo;
+          x0 = fin;
+          if (x0 >= cnt) { io += cnt; vo += n; p0++; v0 = 0; x0 = 0; }
+        }
+        if (performance.now() - t0 >= ms) break;
+      }
+      if (p0 < partes.length) { paso(avanzar); return; }
+      const out = new THREE.BufferGeometry();
+      for (const k in arr) if (arr[k]) out.setAttribute(k, new THREE.BufferAttribute(arr[k], dims[k]));
+      out.setIndex(new THREE.BufferAttribute(idx, 1));
+      if (nv) {
+        out.boundingBox = new THREE.Box3(new THREE.Vector3(bx1, by1, bz1), new THREE.Vector3(bx2, by2, bz2));
+        const c = out.boundingBox.getCenter(new THREE.Vector3());
+        out.boundingSphere = new THREE.Sphere(c, c.distanceTo(out.boundingBox.max));
+      } else { out.computeBoundingSphere(); out.computeBoundingBox(); }
+      alTerminar(out);
+    };
+    avanzar();
+  }
   // Color medio (lineal) de la textura de un material, para el LOD lejano generado
   const lienzo = document.createElement('canvas'); lienzo.width = lienzo.height = 8;
   function colorMedio(m) {
@@ -1544,8 +1635,24 @@ AVE.module('streaming', function (G) {
       Z.cercaMallas = null; Z.cercaModelos = new Set();
       programarCercaGlobal();
     }
+    // CG-73: la fusión cercana (KIMI-341) reserva unos 20 MB de geometría. El heap de arranque se
+    // mide unos segundos después de soltar la pantalla de carga (intro y red quieta): 12 s se dibujan
+    // los lotes por instancia, el mismo aspecto. Si Vittata se mueve o una prueba llama a terminar(), se funde ya.
+    let cercaPuede = false, cercaTimer = 0;
+    const cercaEspera = [];
+    function activarCerca() {
+      if (cercaPuede) return;
+      cercaPuede = true;
+      if (cercaTimer) { clearTimeout(cercaTimer); cercaTimer = 0; }
+      for (const Z of cercaEspera.splice(0)) encolar(() => fundirCercaZona(Z, true), 'fundirCerca:' + Z.id);
+    }
+    function programarCerca() {
+      if (cercaPuede || cercaTimer) return;
+      cercaTimer = setTimeout(activarCerca, 12000);
+    }
     function fundirCercaZona(Z, forzar) {
       if ((!Z.ciudad && Z.nivel < 2) || Z.cercaF || (!forzar && (cargasPendientes(Z, 'cerca') || cargasPendientes(Z, 'hd')))) return;
+      if (!cercaPuede && !forzar) { if (cercaEspera.indexOf(Z) < 0) cercaEspera.push(Z); if (!precarga) programarCerca(); return; }
       // KIMI-Task-011: los modelos con _hd también entran (cada instancia es un tramo: se dibuja el _hd o el ligero, no los dos)
       const modelos = new Set([...Z.modelos].filter(n => res(n, 'cerca').estado === 'listo' && !(G.bohiosAbiertos && G.bohiosAbiertos[n])));
       if (Z.cercaMallas && modelos.size === Z.cercaModelos.size && [...modelos].every(n => Z.cercaModelos.has(n))) return;
@@ -1578,20 +1685,24 @@ AVE.module('streaming', function (G) {
           programarCercaGlobal();
           return;
         }
-        // KIMI-044: clon del grupo materializado aquí en tandas y dispuesto al cerrar (mismo reparto que el HD)
-        if (!materializarGrupo(F, gr, 6)) { encolar(() => fundirCercaPaso(Z), 'fundirCerca:' + Z.id); return; }
-        const atlas = /^AV_HD_/.test(gr.mat.name) && gr.geos.every(g => g.attributes.avCelda);
-        fusionLenta(gr.geos, atlas ? 'tex' : 'plana', 6,
+        // CG-73: sin clonar (materializarGrupo dejaba cada copia viva hasta el cierre de la zona).
+        // Mismos tramos: un descriptor por parte, con el mismo número de índices que el clon.
+        const cuentas = gr.partes.map(d => {
+          const g = d.geo, pc = g.attributes.position.count, ic = g.index ? g.index.count : 0;
+          return g.index ? { index: { count: ic }, attributes: { position: { count: pc } } } : { attributes: { position: { count: pc } } };
+        });
+        const atlas = /^AV_HD_/.test(gr.mat.name) && gr.partes.every(d => d.celda || d.geo.attributes.avCelda);
+        fusionLentaPartes(gr.partes, atlas ? 'tex' : 'plana', 6,
           sig => encolar(sig, 'fundirCerca:' + Z.id),
           geo => {
             if (Z.cercaF !== F) { geo.dispose(); return; } // la zona se invalidó a medias: se descarta
             const m = new THREE.Mesh(geo, gr.mat);
-            conTramos(m, gr.mat, gr.geos, gr.ins);
+            conTramos(m, gr.mat, cuentas, gr.ins);
             m.name = 'edificiosZonaCerca:' + Z.id + ':' + gr.mat.name; m.userData.sinSolido = true; m.userData.modelos = gr.modelos;
             m.visible = false; m.castShadow = false; m.receiveShadow = true; m.matrixAutoUpdate = false;
             const it = mats[gr.mat.name]; if (it) it.refs++;
             scene.add(m); F.ms.push(m); subirTex(m);
-            for (const g of gr.tmp) g.dispose(); gr.tmp = null; F.temporales = [];
+            gr.partes = null; gr.ins = null;
             F.g++;
             encolar(() => fundirCercaPaso(Z), 'fundirCerca:' + Z.id);
           });
@@ -1883,7 +1994,7 @@ AVE.module('streaming', function (G) {
     function revisar(x, z) {
       if (x == null) { const S = G.S; x = S.pos ? S.pos.x : 0; z = S.pos ? S.pos.z : 0; }
       if (!inicio) inicio = [x, z];
-      else if (quieto && Math.hypot(x - inicio[0], z - inicio[1]) > CFG.moverse) { quieto = false; siguiente(); }
+      else if (quieto && Math.hypot(x - inicio[0], z - inicio[1]) > CFG.moverse) { quieto = false; siguiente(); activarCerca(); }
       const Rc = radioCerca(), Rl = alcanceZona(), H = CFG.histeresis;
       const anticipo = vueloAnticipo(x, z);
       const ahora = performance.now();
@@ -2192,7 +2303,7 @@ AVE.module('streaming', function (G) {
             if (!tCola) tCola = performance.now();
             return performance.now() - tCola > 1500;
           },
-          terminar() { fin = true; if (precarga === estado) precarga = null; siguiente(); programar(); },
+          terminar() { fin = true; if (precarga === estado) precarga = null; siguiente(); programar(); programarCerca(); },
         };
         const estado = precarga;
         return zona;
@@ -2209,6 +2320,7 @@ AVE.module('streaming', function (G) {
       // helada. Así el hilo queda vivo, el topeMs puede disparar y las descargas van más en paralelo.
       terminar(o) {
         o = o || {};
+        activarCerca(); // las pruebas asientan el mundo aquí: la fusión cercana tiene que estar hecha antes de medir
         const topeMs = Math.max(0, o.topeMs || 0), t0 = performance.now();
         aplicarBajasPendientes(); // KIMI-038: el asentado exige el estado aplicado (las bajadas diferidas no esperan al temporizador)
         // Lo que ya se está bajando, más los trabajos y la colocación. La cola que el modo quieto

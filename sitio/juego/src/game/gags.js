@@ -468,7 +468,7 @@
       }
       if (B.cabeza && (est.cabX || est.cabZ)) { ch.rot(B.cabeza, 'x', est.cabX); ch.rot(B.cabeza, 'z', est.cabZ); }
       if (B.espalda1 && (est.torsoX || est.torsoZ)) { ch.rot(B.espalda1, 'x', est.torsoX); ch.rot(B.espalda1, 'z', est.torsoZ); }
-      if (B.pico && est.pico) ch.rot(B.pico, 'x', est.pico);
+      if (B.pico && est.pico) ch.rot(B.pico, 'x', -est.pico); // -X abre (AUDITORIA_ANIMACION_COMBATE.md §4)
       if (est.parpados > 0.02 && ch.lids && ch._lid) { try { for (const l of ch.lids) ch._lid(l, est.parpados); } catch (e) { /* sin párpados */ } }
       // Cabeza en el mundo: la mariposa se posa encima, las zetas suben de ahí y las estrellitas giran alrededor
       const cab = B.cabeza001 || B.cabeza;

@@ -84,7 +84,14 @@ AVE.module('diario', function (G) {
       + '#card details.especies > summary.lbl::after { content: ""; margin-left: auto; width: 9px; height: 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); }'
       + '#card details.especies[open] > summary.lbl::after { transform: rotate(45deg); }'
       + '#card details.especies > ul.diary { margin-top: var(--sp-3); }'
-      + '#card details.especies li small { overflow-wrap: anywhere; }';
+      + '#card details.especies li small { overflow-wrap: anywhere; }'
+      + '#card .diario-sec{margin:12px 0 4px;padding-top:8px;border-top:2px dotted rgba(107,82,54,.28)}'
+      + '#card .diario-sec > .lbl{display:block;font-weight:800;margin:0 0 6px}'
+      + '#card .peces-album,#card .fauna-album,#card .inv-album{list-style:none;margin:.3em 0 .8em;padding:0;display:grid;gap:.45em}'
+      + '#card .pez-tarjeta,#card .fauna-tarjeta{display:flex;gap:.6em;align-items:flex-start;padding:.55em .6em;border-radius:12px;background:rgba(255,248,230,.82);border:2px solid rgba(107,82,54,.18)}'
+      + '#card .pez-tarjeta svg,#card .fauna-tarjeta svg{flex:none;width:60px;height:40px;background:#fff;border-radius:8px}'
+      + '#card .pez-tarjeta span,#card .fauna-tarjeta span{display:flex;flex-direction:column;gap:.15em;min-width:0}'
+      + '#card .pez-fuente a,#card .fauna-fuente a{color:inherit;text-decoration:underline;word-break:break-word}';
     document.head.appendChild(st);
   }
   // «BirdLife International (2020). Amazona vittata. IUCN Red List 2020: e.T22686239A179276011» → «BirdLife International (2020), Lista Roja UICN e.T22686239A179276011»
@@ -124,8 +131,10 @@ AVE.module('diario', function (G) {
     const byCat = Object.keys(cats).map(c => ` · ${cats[c].nombre} ${count(c)}/${entries.filter(x => x.cat === c).length}`).join('');
     const notasCiudad = (G.sorpresas && G.sorpresas.estado) ? G.sorpresas.estado().notas : [];
     const bloqueCiudad = notasCiudad.length ? `<span class="lbl">${esc(G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'The city' : 'La ciudad')}</span><ul class="diary">${notasCiudad.map(n => `<li class="found"><div><small>${esc(n)}</small></div></li>`).join('')}</ul>` : '';
+    const orden = ['fauna', 'peces', 'invasoras'];
+    const secs = secciones.slice().sort((a, b) => (orden.indexOf(a.id) < 0 ? 9 : orden.indexOf(a.id)) - (orden.indexOf(b.id) < 0 ? 9 : orden.indexOf(b.id)));
     G.ui.showCard(`<h2>${D.titulo || 'Diario'}</h2><p class="note">${S.field.length}/${total}${byCat}</p>
-      <ul class="diary">${items}</ul>${secciones.map(x => x.html()).join('')}${htmlEspecies()}${bloqueCiudad}<span class="lbl">Ropa desbloqueable</span><ul class="ropa">${ropa}</ul>
+      <ul class="diary">${items}</ul>${secs.map(x => `<section class="diario-sec" data-sec="${esc(x.id)}">${x.html()}</section>`).join('')}${htmlEspecies()}${bloqueCiudad}<span class="lbl">Ropa desbloqueable</span><ul class="ropa">${ropa}</ul>
       <div class="row"><button class="btn ghost" id="d-close" type="button">Cerrar</button></div>`);
     $('d-close').onclick = G.ui.hideCard;
     // Foco: entra a la tarjeta al abrirla y vuelve al botón Diario al cerrarla (QA-07)
@@ -219,6 +228,16 @@ AVE.module('diario', function (G) {
         check('A 343 px de ancho la sección no desborda', card.scrollWidth <= card.clientWidth + 1 && !malos.length, `scrollW ${card.scrollWidth} / ${card.clientWidth}, ${malos.length} fuera`);
         const sum = card.querySelector('details.especies > summary');
         check('El resumen mide ≥ 44 px de alto', !!sum && sum.getBoundingClientRect().height >= 43.5, sum && sum.getBoundingClientRect().height);
+        const prevP = secciones.find(s => s.id === 'peces'), prevI = secciones.find(s => s.id === 'invasoras');
+        seccion({ id: 'peces', html: () => '<span class="lbl">Peces del río (1/1)</span><ul class="peces-album"><li class="pez-tarjeta"><svg viewBox="0 0 60 40"></svg><span><b>Olivo</b> <i>Sicydium plumieri</i><small class="pez-fuente">Fuente: <a href="https://www.fishbase.se">FishBase</a></small></span></li></ul>' });
+        seccion({ id: 'invasoras', html: () => '<span class="lbl">Patrulla</span><ul class="fauna-album inv-album"><li class="fauna-tarjeta"><svg viewBox="0 0 60 40"></svg><span><b>Tilapia</b> <i>Oreochromis mossambicus</i><small class="fauna-fuente">Fuente: <a href="https://nas.er.usgs.gov">USGS</a></small></span></li></ul>' });
+        open();
+        const pez = card.querySelector('[data-sec="peces"] .pez-tarjeta'), inv = card.querySelector('[data-sec="invasoras"] .fauna-tarjeta');
+        const flex = n => n && getComputedStyle(n).display === 'flex';
+        const pecesAntes = !!(pez && inv && card.querySelector('[data-sec="peces"]').compareDocumentPosition(card.querySelector('[data-sec="invasoras"]')) & Node.DOCUMENT_POSITION_FOLLOWING);
+        check('Peces e invasoras van en su sección, con ficha, fuente y el mismo estilo que la fauna', !!pez && !!inv && flex(pez) && flex(inv) && /FishBase/.test(pez.textContent) && /USGS/.test(inv.textContent) && pecesAntes);
+        if (prevP) seccion(prevP); else { const i = secciones.findIndex(s => s.id === 'peces'); if (i >= 0) secciones.splice(i, 1); }
+        if (prevI) seccion(prevI); else { const i = secciones.findIndex(s => s.id === 'invasoras'); if (i >= 0) secciones.splice(i, 1); }
       } finally { G.ui.hideCard(); card.style.maxWidth = ''; card.style.boxSizing = ''; }
     }
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };

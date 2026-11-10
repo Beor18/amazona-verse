@@ -266,6 +266,20 @@ window.AVCiudadViva = function (G) {
       } else if (a.accion === 'recoge') { a.cab = 0.5 + Math.max(0, Math.sin(R.t * 8 + a.fase)) * 0.5; a.giroObj = 0; if (a.t > 1.8) a.t = a.dur; }
       else if (a.accion === 'duerme') { a.cab = 0.55; a.giroObj = 1.9; a.pitch = -0.3 + Math.sin(R.t * 1.1 + a.fase) * 0.03; }
       else if (a.accion === 'vela') { a.cab = 0.05; a.giroObj = Math.sin(R.t * 0.4 + a.fase) * 1.1; }
+      else if (a.accion === 'mira') {
+        let mejor = null, bd = 8;
+        for (const b of R.aves) {
+          if (b === a || b.oculta || b.est !== 'posada') continue;
+          const d = Math.hypot(b.x - a.x, b.z - a.z);
+          if (d > 0.4 && d < bd) { bd = d; mejor = b; }
+        }
+        a.cab = 0;
+        if (mejor) {
+          const quiere = Math.atan2(mejor.x - a.x, mejor.z - a.z), dif = angDif(a.yaw, quiere);
+          a.yaw += Math.sign(dif) * Math.min(Math.abs(dif), dt * 2.2);
+          a.giroObj = Math.sin(R.t * 1.6 + a.fase) * 0.15;
+        }
+      }
       else a.cab = a.accion === 'come' ? 0.45 + Math.max(0, Math.sin(R.t * 9 + a.fase)) * 0.6 : a.accion === 'acicala' ? 0.35 + Math.sin(R.t * 11 + a.fase) * 0.2 : 0;
       a.gir += (a.giroObj - a.gir) * Math.min(1, dt * 6);
       if (a.accion !== 'duerme') a.pitch = (a.perch && a.perch.tipo === 'suelo' ? -0.25 : -0.45) + (a.accion === 'come' || a.accion === 'arregla' ? 0.4 : 0);
@@ -497,6 +511,15 @@ window.AVCiudadViva = function (G) {
       for (let i = 0; i < 1800; i++) { cvPaso(0.05, 'todo'); revisar(); }
       check('Vuelan de torre en torre', !!vistos.vuela);
       check('Rutinas de día: conversan, buscan comida, arreglan y juegan', vistos.charla && vistos.come && (vistos.arregla || vistos.recoge) && (vistos.juega || reducido()), Object.keys(vistos).join(','));
+      const par = R.aves.filter(a => !a.oculta).slice(0, 2);
+      if (par.length === 2) {
+        const [pa, pb] = par;
+        pb.x = pa.x + 2; pb.z = pa.z; pb.y = pa.y; pa.est = pb.est = 'posada'; pa.accion = pb.accion = 'mira';
+        pa.grupo = pb.grupo = null; pa.bando = pb.bando = null; pa.dur = pb.dur = 99; pa.t = pb.t = 0; pa.oculta = pb.oculta = false;
+        for (let i = 0; i < 50; i++) cvPaso(0.05, 'todo');
+        const hacia = Math.atan2(pb.x - pa.x, pb.z - pa.z);
+        check('CG-93: dos cotorras posadas cerca se miran, sin mallas nuevas', Math.abs(angDif(pa.yaw, hacia)) < 0.45 && B.meshes.length === 2, Math.abs(angDif(pa.yaw, hacia)).toFixed(2));
+      } else check('CG-93: hay dos cotorras para mirarse', false, String(par.length));
       check('De día cruzan el cielo de la ciudad en bandada', !!vistos.bandada, Object.keys(vistos).join(','));
       check('Nadie atraviesa el suelo', malSuelo === 0, malSuelo + ' ' + peor);
       check('Nadie atraviesa un edificio', malEdif === 0, malEdif + ' ' + peor);

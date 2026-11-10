@@ -4,7 +4,8 @@
    solo al pulsar «Jugar en línea» en la pausa (boot.js); sin abrirlo, el juego no toca la red.
    - Salas por código: 5 letras/números sin ambiguos (sin 0/O, 1/I/L). Tope de 8 cotorras por sala (la 9.ª no entra).
    - Lo único que se envía (CAMPOS): id al azar de esta partida (nuevo cada vez que se abre la página), especie de la cotorra,
-     posición, rumbo, si vuela, el gesto en curso y el mundo (capítulo) para pintar solo a quien está en el mismo. Nada de
+     posición, rumbo, si vuela, el gesto en curso, el mundo (capítulo) para pintar solo a quien está en el mismo, y la cara:
+     apertura del pico (picoT 0..1), si habla (hablar 0/1) y abanico de las alas (alas 0..1). Nada de
      nombres, chat, fotos ni correos; el único texto que escribe el jugador es el código de la sala.
    - ~8 envíos/s mientras se mueve (1/s quieta, para seguir viva); al recibir se interpola con ~150 ms de retraso. Una cotorra
      que calla 5 s se quita; Presence avisa al entrar y salir.
@@ -17,7 +18,9 @@
 (function () {
   'use strict';
   const ALFABETO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789', LARGO = 5, MAX_SALA = 8;
-  const CAMPOS = ['id', 'esp', 'x', 'y', 'z', 'rumbo', 'vuela', 'gesto', 'mundo'];
+  const CAMPOS = ['id', 'esp', 'x', 'y', 'z', 'rumbo', 'vuela', 'gesto', 'mundo', 'picoT', 'hablar', 'alas'];
+  // Campos de cara (Combat Animation 2.0): opcionales al recibir (una versión anterior del juego no los manda)
+  const CAMPOS_CARA = ['picoT', 'hablar', 'alas'];
   const HZ = 8, HZ_QUIETA = 1, SILENCIO_MS = 5000, RETRASO_MS = 150, LEJOS = 140, JOIN_MS = 8000, LATIDO_MS = 25000;
   const reCodigo = new RegExp('^[' + ALFABETO + ']{' + LARGO + '}$');
   const azarId = () => { const a = new Uint8Array(8); try { crypto.getRandomValues(a); } catch (e) { for (let i = 0; i < 8; i++) a[i] = Math.random() * 256; } return Array.from(a, b => (b % 36).toString(36)).join(''); };
@@ -130,11 +133,18 @@
     function miRumbo() { const p = G.actores && G.actores.player3D; if (p && p.root) return p.root.rotation.y; const f = S.facing || { x: 0, z: 1 }; return Math.atan2(f.x, f.z); }
     const r2 = v => Math.round(v * 100) / 100;
     // El payload sale de aquí y de ningún otro sitio: solo CAMPOS
-    function miPayload() {
-      const M = (G.fisica && G.fisica.MOVE) || {}, em = G.actores && G.actores.emote;
-      return { id: yoId, esp: String(miEspecie()).slice(0, 24), x: r2(S.pos.x), y: r2(S.pos.y), z: r2(S.pos.z), rumbo: r2(miRumbo()),
-        vuela: M.flying ? 1 : 0, gesto: (em && em.name) || '', mundo: mundoActual() };
+    function miCara() {
+      const p = G.actores && G.actores.player3D;
+      try { if (p && p.estadoCara) { const c = p.estadoCara(); return { picoT: r1(c.pico), hablar: c.habla ? 1 : 0, alas: r1(c.alas) }; } } catch (e) { /* sin modelo */ }
+      return { picoT: 0, hablar: 0, alas: 0 };
     }
+    function miPayload() {
+      const M = (G.fisica && G.fisica.MOVE) || {}, em = G.actores && G.actores.emote, c = miCara();
+      return { id: yoId, esp: String(miEspecie()).slice(0, 24), x: r2(S.pos.x), y: r2(S.pos.y), z: r2(S.pos.z), rumbo: r2(miRumbo()),
+        vuela: M.flying ? 1 : 0, gesto: (em && em.name) || '', mundo: mundoActual(), picoT: c.picoT, hablar: c.hablar, alas: c.alas };
+    }
+    const r1 = v => Math.round(clamp01(v) * 10) / 10;
+    const clamp01 = v => (typeof v === 'number' && isFinite(v) ? Math.max(0, Math.min(1, v)) : 0);
     // Lo recibido se valida campo a campo: lo que no cuadra se descarta
     function validar(p) {
       if (!p || typeof p !== 'object') return null;
@@ -145,7 +155,11 @@
       const EM = (G.actores && G.actores.EMOTES) || {};
       const gesto = typeof p.gesto === 'string' && EM[p.gesto] ? p.gesto : '';
       const mundo = typeof p.mundo === 'string' && /^[a-z0-9_-]{1,24}$/.test(p.mundo) ? p.mundo : '';
-      return { id: p.id, esp, x: p.x, y: p.y, z: p.z, rumbo: p.rumbo, vuela: p.vuela ? 1 : 0, gesto, mundo };
+      // Cara: números de 0 a 1 (lo que no lo sea se descarta entero) y hablar 0/1
+      for (const k of ['picoT', 'alas']) if (k in p && (typeof p[k] !== 'number' || !isFinite(p[k]) || p[k] < 0 || p[k] > 1)) return null;
+      if ('hablar' in p && p.hablar !== 0 && p.hablar !== 1 && p.hablar !== true && p.hablar !== false) return null;
+      return { id: p.id, esp, x: p.x, y: p.y, z: p.z, rumbo: p.rumbo, vuela: p.vuela ? 1 : 0, gesto, mundo,
+        picoT: p.picoT || 0, hablar: p.hablar ? 1 : 0, alas: p.alas || 0 };
     }
 
     // ---------- Conectar / salir ----------
@@ -206,7 +220,8 @@
       if (document.hidden) { if (performance.now() - ultimoMs > 1000 / HZ_QUIETA) enviarAhora(); return; }
       desdeUltimo = (performance.now() - ultimoMs) / 1000;
       const p = miPayload(), u = ultimoEnvio;
-      const cambio = !u || Math.abs(p.x - u.x) + Math.abs(p.y - u.y) + Math.abs(p.z - u.z) > 0.02 || Math.abs(p.rumbo - u.rumbo) > 0.02 || p.vuela !== u.vuela || p.gesto !== u.gesto || p.esp !== u.esp || p.mundo !== u.mundo;
+      const cambio = !u || Math.abs(p.x - u.x) + Math.abs(p.y - u.y) + Math.abs(p.z - u.z) > 0.02 || Math.abs(p.rumbo - u.rumbo) > 0.02 || p.vuela !== u.vuela || p.gesto !== u.gesto || p.esp !== u.esp || p.mundo !== u.mundo
+        || p.picoT !== u.picoT || p.hablar !== u.hablar || p.alas !== u.alas;
       if (cambio || desdeUltimo >= 1 / HZ_QUIETA) enviarAhora();
     }
 
@@ -223,7 +238,7 @@
       const t = performance.now();
       q.ultimo = t; q.mundo = p.mundo;
       if (q.esp !== p.esp) { q.esp = p.esp; if (q.ch) try { q.ch.applyLook({ species: p.esp, accessories: {} }); } catch (e) { /* piel */ } }
-      q.snaps.push({ t, x: p.x, y: p.y, z: p.z, r: p.rumbo, v: p.vuela, g: p.gesto });
+      q.snaps.push({ t, x: p.x, y: p.y, z: p.z, r: p.rumbo, v: p.vuela, g: p.gesto, pk: p.picoT, h: p.hablar, al: p.alas });
       if (q.snaps.length > 12) q.snaps.splice(0, q.snaps.length - 12);
     }
     const calidadBaja = () => { const c = G.renderer && G.renderer.calidad; return !!(c && (c.escuela === true || c.nivel === 'bajo')); };
@@ -261,7 +276,7 @@
       if (t <= s[0].t) return s[0];
       for (let i = s.length - 1; i > 0; i--) {
         const a = s[i - 1], b = s[i];
-        if (t >= a.t && t <= b.t) { const k = (t - a.t) / Math.max(1, b.t - a.t); return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, z: a.z + (b.z - a.z) * k, r: angLerp(a.r, b.r, k), v: b.v, g: b.g }; }
+        if (t >= a.t && t <= b.t) { const k = (t - a.t) / Math.max(1, b.t - a.t); return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, z: a.z + (b.z - a.z) * k, r: angLerp(a.r, b.r, k), v: b.v, g: b.g, pk: b.pk, h: b.h, al: b.al }; }
       }
       return s[s.length - 1];
     }
@@ -297,6 +312,8 @@
         Object.assign(ch, { speed: v, gait: enAire ? 0 : v > 4 ? 2 : v > 0.3 ? 1 : 0, airborne: enAire, flying: !!m.v, legsDown: m.v ? 0 : 1, swimming: false, diving: false,
           wingMode: m.v ? (v > 6 ? 'fly' : 'hover') : enAire ? 'flap' : v > 0.3 ? 'walk' : 'idle', expression: (em && em.face) || 'happy', mouth: null, lookAt: null,
           emote: (em && em.pose) || null, posado: '', agachada: 0, groundY: suelo, groundAt: null });
+        // Cara de la otra cotorra: pico, sílabas al hablar y abanico de alas (con la API de character.js)
+        try { if (ch.pico) { ch.pico(m.pk || 0); ch.hablar(!!m.h); ch.alas(m.al || 0); if (m.pk > 0) ch.expression = 'fight'; } } catch (e) { /* cara */ }
         try { ch.update(dta); } catch (e) { /* animación */ }
       });
     }
@@ -400,7 +417,7 @@
         // 2. El bot vuela en círculo junto a Vittata; aquí se ve y se mueve
         const base = { x: S.pos.x + 3, z: S.pos.z + 2 }, especieBot = 'agilis';
         let paso = 0;
-        const mueve = setInterval(() => { paso++; const a = paso * 0.15; bot.enviar('p', { id: botId, esp: especieBot, x: base.x + Math.cos(a) * 2, y: S.pos.y + 1.5, z: base.z + Math.sin(a) * 2, rumbo: a, vuela: 1, gesto: '', mundo: mundoActual() }); }, 1000 / HZ);
+        const mueve = setInterval(() => { paso++; const a = paso * 0.15; bot.enviar('p', { id: botId, esp: especieBot, x: base.x + Math.cos(a) * 2, y: S.pos.y + 1.5, z: base.z + Math.sin(a) * 2, rumbo: a, vuela: 1, gesto: '', mundo: mundoActual(), picoT: 0.8, hablar: 1, alas: 1 }); }, 1000 / HZ);
         const visto = await espera(() => { const q = pares.get(botId); return q && q.ch && q.ch.root.parent === scene; }, 15000);
         const q = pares.get(botId);
         check('Aquí se ve a la otra cotorra (modelo en la escena, con su especie y anillo)', visto && q.esp === especieBot && !!q.marca && q.marca.parent === q.ch.root, q ? q.esp : 'no llegó');
@@ -418,13 +435,21 @@
         // 4. Solo los campos permitidos, y nada más
         const todos = botRecibe.concat(E.ultimoPayload ? [E.ultimoPayload] : []);
         const malos = todos.filter(p => Object.keys(p).some(k => !CAMPOS.includes(k)) || CAMPOS.some(k => !(k in p)));
-        check('El mensaje lleva solo id, especie, posición, rumbo, vuelo, gesto y mundo', todos.length > 0 && malos.length === 0 && todos[0].id === yoId && /^[a-z0-9]{6,16}$/.test(todos[0].id), Object.keys(todos[0] || {}).join(','));
+        // La cara llega a la otra: abre el pico (hueso «pico» hacia -X), habla y abre el abanico de las alas
+        const qc = pares.get(botId), chc = qc && qc.ch;
+        if (chc) for (let i = 0; i < 20; i++) tickPares(0.033);
+        const cara = chc && chc.estadoCara ? chc.estadoCara() : null;
+        check('La cara viaja: pico abierto, hablando y alas en abanico en la otra cotorra', !!cara && cara.pico >= 0.75 && cara.habla && cara.alas > 0.5 && chc.talkV > 0.3,
+          cara ? JSON.stringify(cara) + ' · apertura ' + (chc.talkV || 0).toFixed(2) + ' rad' : 'sin modelo');
+        check('El mensaje lleva solo id, especie, posición, rumbo, vuelo, gesto, mundo y la cara (pico, hablar, alas)', todos.length > 0 && malos.length === 0 && todos[0].id === yoId && /^[a-z0-9]{6,16}$/.test(todos[0].id), Object.keys(todos[0] || {}).join(','));
         check('Ritmo de envío ≤ 10 por segundo', mios.length <= 14, mios.length + ' en 1,2 s');
         // 5. Lo raro que llegue se descarta
         const nAntes = pares.size;
         recibir({ id: 'zzzzzzzz', esp: 'vittata', x: 0, y: 0, z: 0, rumbo: 0, vuela: 0, gesto: '', mundo: mundoActual(), nombre: 'Ana' });
         recibir({ id: 'yyyyyyyy', esp: 'vittata', x: NaN, y: 0, z: 0, rumbo: 0, vuela: 0, gesto: '', mundo: mundoActual() });
-        check('Se descarta lo que trae campos de más (p. ej. un nombre) o números raros', pares.size === nAntes);
+        recibir({ id: 'xxxxxxxx', esp: 'vittata', x: 0, y: 0, z: 0, rumbo: 0, vuela: 0, gesto: '', mundo: mundoActual(), picoT: 7 });
+        recibir({ id: 'wwwwwwww', esp: 'vittata', x: 0, y: 0, z: 0, rumbo: 0, vuela: 0, gesto: '', mundo: mundoActual(), hablar: 'hola' });
+        check('Se descarta lo que trae campos de más (p. ej. un nombre) o números raros (también en la cara)', pares.size === nAntes);
         // 6. Otro mundo: no se pinta
         clearInterval(mueve);
         bot.enviar('p', { id: botId, esp: especieBot, x: base.x, y: S.pos.y, z: base.z, rumbo: 0, vuela: 0, gesto: '', mundo: 'otro_mundo' });

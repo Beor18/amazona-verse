@@ -789,16 +789,17 @@
     }
 
     // ---------- Volumen ----------
-    const DIALOGO_DUCK = 0.6;
+    const DIALOGO_DUCK = 0.6, AMB_DIALOGO = 0.4; // la charla se lee: la música baja y el ambiente (río, viento) baja más
     const MBASE = 1.8, ABASE = 1.4; // con las pistas normalizadas a ~0,05 de nivel medio, el valor de fábrica (55 %) queda ~-33 dBFS
     // La voz del Aula tapa menos; mientras un huevo eclosiona, la música se aparta (el efecto de la eclosión va por el bus de efectos)
     // Diálogo (caja o bocadillo de G.dialogo): la música baja a 0,6 para que se lea tranquilo; vuelve suave al cerrarlo
     const enDialogo = () => { try { return !!(G.dialogo && G.dialogo.activo && G.dialogo.activo()); } catch (e) { return false; } };
     const duck = () => Math.min(hablaHasta > performance.now() ? 0.45 : 1, eclosionAhora ? BANDA_SONORA.eclosion : 1, enDialogo() ? DIALOGO_DUCK : 1);
+    const duckAmb = () => enDialogo() ? AMB_DIALOGO : 1;
     let gM = -1, gA = -1;
     function aplicarVolumen() { // solo escribe en el bus si el valor cambió: menos eventos de automatización
       if (!eng) return;
-      const t = eng.c.currentTime, m = leer(), nm = MBASE * ganancia(m.musica) * duck(), na = ABASE * ganancia(m.ambiente);
+      const t = eng.c.currentTime, m = leer(), nm = MBASE * ganancia(m.musica) * duck(), na = ABASE * ganancia(m.ambiente) * duckAmb();
       if (eng.nuevo || Math.abs(nm - gM) > 0.002) { eng.musicaBus.gain.setTargetAtTime(nm, t, nm < gM ? 0.1 : 0.3); gM = nm; } // baja deprisa, vuelve suave
       if (eng.nuevo || Math.abs(na - gA) > 0.002) { eng.ambBus.gain.setTargetAtTime(na, t, 0.08); gA = na; }
       eng.nuevo = false;
@@ -1221,6 +1222,11 @@
           check('Hay aves de día y coquíes de noche', dia.eventos >= 1 && noch.eventos >= 1 && noch.rms > 0.0005 && dia.rms > 0.0005, `aves ${dia.eventos}/${dia.rms.toFixed(4)} · coquíes ${noch.eventos}/${noch.rms.toFixed(4)}`);
           check('Ambiente simple: 3 capas de agua, mar y viento (sin grillos) y suena', simp.rms > 0.005 && !simp.capas.includes('grillos'), simp.capas.join());
           check('El ambiente no se pasa de volumen (pico bajo 0,6 con todo al máximo)', aguas.pico < 0.6 && simp.pico < 0.6 && noch.pico < 0.6 && dia.pico < 0.6, [aguas, simp, noch, dia].map(v => v.pico.toFixed(2)).join(' · '));
+          if (A.medir) {
+            const g = await A.medir('grito', 1.5), ring = await A.medir('ring', 0.8), splash = await A.medir('splash', 0.7);
+            check('Grito v2 se queda: su RMS de 300 ms está en la banda medida y su pico no pasa al de «ring»', !!(g && ring && splash) && g.rms > 0.008 && g.rms < 0.04 && g.pico < ring.pico && g.pico < 0.2 && splash.pico < 0.45,
+              g && ring && splash ? `grito rms ${g.rms.toFixed(3)} pico ${g.pico.toFixed(3)} · ring ${ring.pico.toFixed(3)} · splash ${splash.pico.toFixed(3)}` : 'sin medida');
+          }
         }
 
         // 10. Banda sonora (los temas de Kelvin)
@@ -1232,8 +1238,9 @@
         ranasHasta = ranas0;
         G.emit('voz', { charIndex: 3 }); const baja = duck(); G.emit('voz', { fin: true, texto: '' });
         check('La música baja mientras habla la voz del Aula y vuelve al terminar', baja < 1 && duck() === 1);
-        const dlg0 = G.dialogo; G.dialogo = { activo: () => true }; const bajaDlg = duck(); G.dialogo = dlg0;
+        const dlg0 = G.dialogo; G.dialogo = { activo: () => true }; const bajaDlg = duck(), ambDlg = duckAmb(); G.dialogo = dlg0;
         check('La música baja durante un diálogo y vuelve al cerrarlo', bajaDlg === DIALOGO_DUCK && duck() === 1, bajaDlg);
+        check('El ambiente baja durante un diálogo, para que el río y el viento no tapen la charla, y vuelve al cerrarlo', ambDlg === AMB_DIALOGO && duckAmb() === 1, ambDlg);
         if (A.esSuave) { const r0 = A.reducido; A.reducido = true; const suaves = ['trueno', 'crecida', 'construir'].every(A.esSuave) && !A.esSuave('pickup'); A.reducido = false; const normal = !A.esSuave('trueno'); A.reducido = r0;
           check('Con «Reducir movimiento» trueno, crecida y martillazos suenan a la mitad; sin él, normal', suaves && normal); }
         const ecl0 = eclosionAhora; eclosionAhora = true; const bajaHuevo = duck(); eclosionAhora = ecl0;

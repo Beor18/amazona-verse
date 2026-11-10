@@ -106,6 +106,7 @@
     // W32: módulos V18 que no hacen falta al arrancar. No se piden en el primer gesto, sino cuando hacen falta: Vittata cerca de su
     // sitio fijo o el progreso V18 que los saca (se mira una vez por segundo). Las pruebas AV.v18*Test los siguen cargando al pedirlas.
     const cuandoToque = (cond, fn) => { const t = setInterval(() => { let si = false; try { si = !!cond(); } catch (e) { si = false; } if (si) { clearInterval(t); fn().catch(() => {}); } }, 1000); };
+    const faseDe = a => { try { const f = a && !a.diferido && a.estado && a.estado().fase; return f || 'nada'; } catch (e) { return 'nada'; } };
     const cerca = (x, z, r) => { const p = G.S && G.S.pos; return !!p && Math.hypot(p.x - x, p.z - z) < r; };
     const enCap1 = () => !!(G.pack && G.pack.id === 'cap1');
     const mundoV18 = (id, valor) => !!(G.v18 && G.v18.mundo) && (G.v18.mundo(id) === valor);
@@ -123,15 +124,15 @@
     if (v18On) alPrimerGesto(cargarCombate);
     const descubrir18 = aDemanda('src/game/v18/descubrir.js', 'AVV18Descubrir'), cargarV18Descubrir = () => cargarV18().then(descubrir18); AV.v18DescubrirTest = o => cargarV18Descubrir().then(d => d.test(o)); if (v18On) alPrimerGesto(cargarV18Descubrir); // frente C: descubrir, desbloquear y elegir la cotorra de Dominica
     const reparar18 = aDemanda('src/game/v18/reparar.js', 'AVV18Reparar'), cargarV18Reparar = () => cargarV18().then(reparar18); AV.v18RepararTest = o => cargarV18Reparar().then(r => r.test(o)); if (v18On) alPrimerGesto(cargarV18Reparar); // frente B: puente colgante roto → reparado
-    const ciclo18 = aDemanda('src/game/v18/ciclo.js', 'AVV18Ciclo'), cargarV18Ciclo = () => Promise.all([cargarCombate(), cargarV18Descubrir(), cargarV18Reparar()]).then(ciclo18); AV.v18CicloTest = o => cargarV18Ciclo().then(c => c.test(o)); if (v18On) alPrimerGesto(cargarV18Ciclo); // frente D (D14): duelo → materiales → puente → pista del reto extra
+    const ciclo18 = aDemanda('src/game/v18/ciclo.js', 'AVV18Ciclo'), cargarV18Ciclo = () => Promise.all([cargarCombate(), cargarV18Descubrir(), cargarV18Reparar()]).then(ciclo18); AV.v18CicloTest = o => cargarV18Ciclo().then(c => c.test(o)); if (v18On) cuandoToque(() => mundoV18('puente_villa', 'reparado') || faseDe(G.v18combate) !== 'nada', cargarV18Ciclo); // CG-92: no va en el primer minuto; al duelo o con el puente reparado
     const misterio18 = aDemanda('src/game/v18/misterio.js', 'AVV18Misterio'), cargarV18Misterio = () => Promise.all([cargarV18(), cargarMarana()]).then(misterio18); AV.v18MisterioTest = o => cargarV18Misterio().then(m => m.test(o)); if (v18On) cuandoToque(() => G.v18 && enCap1() && !mundoV18('puente_villa', 'reparado'), cargarV18Misterio); // KIMI-070 (W32: solo mientras el puente está roto): la Maraña vigía el puente roto (misterio visual+sonido)
     // V18.1 · primera amenaza de fantasía, la Sombra de Tormenta (Kelvin 5-nov; src/game/v18/amenaza.js): después del puente y el duelo
-    const amenaza18 = aDemanda('src/game/v18/amenaza.js', 'AVV18Amenaza'), cargarV18Amenaza = () => Promise.all([cargarCombate(), cargarV18Reparar(), cargarV18Fx()]).then(amenaza18); AV.v18AmenazaTest = o => cargarV18Amenaza().then(a => a.test(o)); if (v18On) alPrimerGesto(cargarV18Amenaza);
+    const amenaza18 = aDemanda('src/game/v18/amenaza.js', 'AVV18Amenaza'), cargarV18Amenaza = () => Promise.all([cargarCombate(), cargarV18Reparar(), cargarV18Fx()]).then(amenaza18); AV.v18AmenazaTest = o => cargarV18Amenaza().then(a => a.test(o)); if (v18On) cuandoToque(() => mundoV18('puente_villa', 'reparado') && !mundoV18('sombra_tormenta', 'dispersa'), cargarV18Amenaza); // CG-92: la nube solo se ve tras reparar el puente
     // Decisión 14 (Kelvin 5-nov): «Duelo de 2 jugadores» en la misma computadora, en tiempo real (src/game/v18/duelo2.js). En táctil no se carga.
     const duelo218 = aDemanda('src/game/v18/duelo2.js', 'AVV18Duelo2'), cargarV18Duelo2 = () => Promise.all([cargarCombate(), cargarV18Fx()]).then(duelo218); AV.v18Duelo2Test = o => cargarV18Duelo2().then(d => d.test(o));
     if (v18On && !(window.matchMedia && matchMedia('(pointer: coarse)').matches)) cuandoToque(() => { const c = G.v18combate && G.v18combate.sitio; return c && cerca(c.x, c.z, 40); }, cargarV18Duelo2); // W32: al acercarse a la explanada del duelo
     // V18.1 · cuatro cotorras más que llegan con los hitos (Quiebro, Ala fuerte, Lluvia de semillas, Ojo del cenote; Kelvin 5-nov)
-    const nuevas18 = aDemanda('src/game/v18/nuevas.js', 'AVV18Nuevas'), cargarV18Nuevas = () => Promise.all([cargarCombate(), cargarV18Amenaza()]).then(nuevas18); AV.v18NuevasTest = o => cargarV18Nuevas().then(n => n.test(o)); if (v18On) alPrimerGesto(cargarV18Nuevas);
+    const nuevas18 = aDemanda('src/game/v18/nuevas.js', 'AVV18Nuevas'), cargarV18Nuevas = () => Promise.all([cargarCombate(), cargarV18Amenaza()]).then(nuevas18); AV.v18NuevasTest = o => cargarV18Nuevas().then(n => n.test(o)); if (v18On) cuandoToque(() => faseDe(G.v18combate) !== 'nada' || mundoV18('puente_villa', 'reparado') || mundoV18('sombra_tormenta', 'dispersa'), cargarV18Nuevas); // CG-92: al primer duelo o con un hito ya cumplido
     AV.v18PoderesTest = o => Promise.all([cargarV18Nuevas(), cargarV18Descubrir()]).then(([n]) => n.testPoderes(o)); // cierre: los 34 poderes, uno a uno (desbloqueo, G/botón, guardado, inglés)
     // V18.1 · segunda y tercera amenaza de fantasía (Kelvin 5-nov): Serpiente de la Maraña (nudos) y Sapo Encantado (minijuego de ritmo)
     const serpiente18 = aDemanda('src/game/v18/serpiente.js', 'AVV18Serpiente'), cargarV18Serpiente = () => Promise.all([cargarV18(), cargarMarana()]).then(serpiente18); AV.v18SerpienteTest = o => cargarV18Serpiente().then(x => x.test(o)); if (v18On) cuandoToque(() => mundoV18('sombra_tormenta', 'dispersa') && !mundoV18('serpiente_marana', 'deshecha'), cargarV18Serpiente); // W32: sale tras la Sombra y hasta deshacerla
@@ -154,7 +155,7 @@
           tileP = document.createElement('button'); tileP.className = 'btn tile'; tileP.id = 'b-v18-pesca'; tileP.type = 'button';
           tileP.setAttribute('data-icon', 'star'); tileP.setAttribute('popovertarget', 'pause'); tileP.setAttribute('popovertargetaction', 'hide');
           tileP.textContent = 'Pesca';
-          tileP.addEventListener('click', () => setTimeout(() => cargarV18Pesca().then(p => p && p.irYJugar()).catch(e => console.warn('pesca', e)), 0));
+          tileP.addEventListener('click', () => setTimeout(() => { cargarTienda().catch(() => {}); cargarV18Pesca().then(p => p && p.irYJugar()).catch(e => console.warn('pesca', e)); }, 0));
           grid.appendChild(tileP);
         }
         if (tileP) tileP.hidden = !(ve && ![G.v18pesca, G.v18combate, G.v18amenaza, G.v18serpiente, G.v18sapo, G.v18duelo2, G.v18minigolf, G.v18chispa, G.v18moon, G.v18guardian].some(enMarchaP));
@@ -169,9 +170,31 @@
     if (G.CONSTRUIR == null) G.CONSTRUIR = !/[?&]construir=0\b/.test(location.search);
     const cargarConstruir = aDemanda('src/game/construir.js', 'AVConstruir'); AV.construir = () => cargarConstruir().then(c => c.empezar()); AV.construirTest = o => cargarConstruir().then(c => c.test(o));
     if (G.CONSTRUIR) cargarConstruir().catch(e => console.warn('construir', e));
-    // Mercadito del río (src/game/tienda.js; Kelvin 9-nov, idea de su hija): las conchitas de la pesca compran ropa y piezas de Construir, a precio
-    // fijo, sin dinero real ni azar. Solo en packs con pack.tienda (cap1). Se carga al arrancar: lee S.tienda y pone su botón en la Pausa y en Mi personaje.
-    if (G.pack && G.pack.tienda) { const cargarTienda = aDemanda('src/game/tienda.js', 'AVTienda'); AV.tiendaTest = o => cargarTienda().then(t => t.test(o)); cargarTienda().catch(e => console.warn('tienda', e)); }
+    // Mercadito del río (src/game/tienda.js). CG-92: no va en la descarga de antes de jugar. El botón se ve igual (Pausa y Mi personaje);
+    // el script, las miniaturas y el saldo entran al abrirlo, al pescar, al empezar un hoyo o un reto, o si la partida ya tiene compras
+    // (la ropa comprada tiene que estar puesta al entrar).
+    const cargarTienda = (!G.pack || !G.pack.tienda) ? () => Promise.resolve(null) : aDemanda('src/game/tienda.js', 'AVTienda');
+    if (G.pack && G.pack.tienda) {
+      AV.tiendaTest = o => cargarTienda().then(t => t.test(o));
+      const compras = G.S && G.S.tienda && Array.isArray(G.S.tienda.compras) && G.S.tienda.compras.length;
+      const iconoTn = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#000" d="M12 3C7 3 3 7.2 3 12.2c0 2.4 1 4.6 2.6 6.1L12 21l6.4-2.7c1.6-1.5 2.6-3.7 2.6-6.1C21 7.2 17 3 12 3zm0 3.2.9 11.6h-1.8zM8 7.6l2.7 10.3-1.6.6zm8 0-1.1 10.9-1.6-.6zM5.6 11l4 7.2-1.3.9zm12.8 0-2.7 8.1-1.3-.9z"/></svg>') + '")';
+      const ponerBoton = (padre, antes, id, cls, texto, origen) => {
+        if (!padre || document.getElementById(id)) return;
+        const b = document.createElement('button'); b.className = cls; b.id = id; b.type = 'button';
+        b.dataset.icon = 'tienda'; b.style.setProperty('--icon', iconoTn); b.textContent = texto;
+        if (id === 'b-tienda') { b.setAttribute('popovertarget', 'pause'); b.setAttribute('popovertargetaction', 'hide'); }
+        b.addEventListener('click', () => setTimeout(() => cargarTienda().then(t => t && t.abrir(origen)).catch(e => console.warn('tienda', e)), 0));
+        padre.insertBefore(b, antes && antes.parentNode === padre ? antes : null);
+      };
+      const gridP = document.querySelector('#pause .pause-grid');
+      ponerBoton(gridP, document.getElementById('b-save'), 'b-tienda', 'btn tile', 'Mercadito', 'pausa');
+      const slots = document.getElementById('p-slots');
+      if (slots && slots.parentNode) ponerBoton(slots.parentNode, slots, 'p-tienda', 'btn secondary', 'Mercadito: ropa nueva', 'creador');
+      const menuP = document.getElementById('pause');
+      if (menuP) menuP.addEventListener('beforetoggle', e => { if (e.newState === 'open') cargarTienda().catch(() => {}); });
+      if (compras) cargarTienda().catch(e => console.warn('tienda', e));
+      else if (v18On) cuandoToque(() => faseDe(G.v18minigolf) !== 'nada' || faseDe(G.v18pesca) !== 'nada', cargarTienda);
+    }
     // V18.3 · personajes históricos (sistema único src/game/v18/npc.js, datos content/comun/personajes_v18.js) y su primera misión en Puerto de La Mina (src/game/v18/puerto.js)
     const NPC18_SRC = 'src/game/v18/npc.js', npc18 = aDemanda(NPC18_SRC, 'AVV18Npc'), puerto18 = aDemanda('src/game/v18/puerto.js', 'AVV18Puerto'), cargarV18Puerto = () => Promise.all([cargarV18(), hab18(), cargarV18Fx(), AVE.assets.script('content/comun/personajes_v18.js')]).then(npc18).then(puerto18);
     AV.v18PuertoTest = o => { const antes = { v18: G.V18, npc: !!window.AVV18Npc, puerto: !!window.AVV18Puerto, glb: (performance.getEntriesByType('resource') || []).filter(r => /models\/personajes\//.test(r.name)).length }; return cargarV18Puerto().then(p => p.test(Object.assign({ antes }, o))); }; if (v18On) cuandoToque(() => mundoV18('puente_villa', 'reparado'), cargarV18Puerto); // W32: antes de reparar el puente no sale nada (su check 2)
@@ -195,7 +218,7 @@
     const guardian18 = conMarca('v18guardian', -63, -37, 'Circuito del Primer Vuelo', 'src/game/v18/guardian.js', 'AVV18Guardian'), cargarV18Guardian = () => Promise.all([cargarV18(), AVE.assets.script('content/comun/personajes_v18.js'), AVE.assets.script(NPC18_SRC), AVE.assets.script('src/game/v18/guardian.js')]).then(npc18).then(guardian18);
     AV.v18GuardianTest = o => { const antes = { v18: G.V18, guardian: !!window.AVV18Guardian, glb: (performance.getEntriesByType('resource') || []).filter(r => /models\/personajes\/guardian_vuelo/.test(r.name)).length }; return cargarV18Guardian().then(g => g.test(Object.assign({ antes }, o))); }; if (v18On) cuandoToque(() => G.V18 && enCap1() && cerca(-63, -37, 130), cargarV18Guardian); // W32: SITIO.salida de guardian.js
     // V18.2 evolución, niveles y alianza Eco Protector (src/game/v18/evolucion.js; docs/equipo/V18_2_DISENO.md). La prueba mira antes de cargarlo si ya estaba sin la bandera.
-    const evo18 = aDemanda('src/game/v18/evolucion.js', 'AVV18Evolucion'), cargarV18Evo = () => Promise.all([cargarCombate(), cargarV18Descubrir(), cargarV18Fx()]).then(evo18); AV.v18EvolucionTest = o => { const antes = { v18: G.V18, cargado: !!window.AVV18Evolucion, evo: !!G.v18evo, script: !!document.querySelector('script[src*="v18/evolucion.js"]') }; return cargarV18Evo().then(e => e.test(Object.assign({ antes }, o))); }; if (v18On) alPrimerGesto(cargarV18Evo);
+    const evo18 = aDemanda('src/game/v18/evolucion.js', 'AVV18Evolucion'), cargarV18Evo = () => Promise.all([cargarCombate(), cargarV18Descubrir(), cargarV18Fx()]).then(evo18); AV.v18EvolucionTest = o => { const antes = { v18: G.V18, cargado: !!window.AVV18Evolucion, evo: !!G.v18evo, script: !!document.querySelector('script[src*="v18/evolucion.js"]') }; return cargarV18Evo().then(e => e.test(Object.assign({ antes }, o))); }; if (v18On) cuandoToque(() => faseDe(G.v18combate) !== 'nada' || faseDe(G.v18minigolf) !== 'nada', cargarV18Evo); // CG-92: la ficha de nivel entra con el duelo o el hoyo, no al arrancar
     // KIMI-150: poderes en exploración (columna «Explorando» de la matriz; tecla G o botón Poder en táctil)
     const explorar18 = aDemanda('src/game/v18/explorar.js', 'AVV18Explorar'), cargarV18Explorar = () => Promise.all([cargarV18(), hab18(), cargarV18Fx()]).then(explorar18); AV.v18ExplorarTest = o => cargarV18Explorar().then(x => x.test(o)); if (v18On) alPrimerGesto(cargarV18Explorar);
     const cargarSorpresas = aDemanda('src/game/sorpresas.js', 'AVSorpresas'); AV.sorpresasTest = o => cargarSorpresas().then(s => s.test(o)); alPrimerGesto(cargarSorpresas); // CG-45, sin tocar ciudad_viva.js
@@ -243,7 +266,7 @@
     { const b = document.getElementById('b-en-linea'); if (b) b.addEventListener('click', () => { AV.enLinea(); }); }
     // Modo Retos (src/game/retos.js): se carga al pedirlo (botón «Retos» de la portada o de la pausa), no en la descarga inicial
     let retos = null;
-    const cargarRetos = () => retos || (retos = AVE.assets.script('src/game/retos.js').then(() => { cargarRecords().catch(() => {}); return window.AVRetos(G); }, e => { retos = null; throw e; }));
+    const cargarRetos = () => retos || (retos = AVE.assets.script('src/game/retos.js').then(() => { cargarRecords().catch(() => {}); cargarTienda().catch(() => {}); return window.AVRetos(G); }, e => { retos = null; throw e; }));
     AV.retos = () => cargarRetos().then(r => (r.activo ? r.salir() : r.abrir()), () => G.ui.toast('No se pudieron cargar los retos. Prueba otra vez.', 3000));
     AV.retosTest = o => cargarRetos().then(r => r.test(o));
     AV.cg17Test = o => cargarRetos().then(r => r.cg17Test(o));

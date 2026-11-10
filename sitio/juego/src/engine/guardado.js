@@ -431,6 +431,48 @@ AVE.module('guardado', function (G) {
 
   $('b-save').onclick = () => save(false);
   $('b-load').onclick = () => load(false);
+  // Copia local para otro aparato: un archivo JSON, sin servidor ni cuentas. Lo roto no se carga.
+  const MSG_COPIA_ROTA = () => L('Ese archivo no es una partida de Amazona', 'That file is not an Amazona save');
+  function cargarCopia(texto, silent) {
+    const d = typeof texto === 'string' && texto.length < 8e6 ? legible(texto, almacen) : null;
+    if (!d) { if (!silent && !G.quiet) G.ui.toast(MSG_COPIA_ROTA()); return false; }
+    aplicar(d);
+    try { save(true); } catch (e) { /* se guarda al salir */ }
+    if (!silent && !G.quiet) G.ui.toast(L('Copia cargada', 'Copy loaded'));
+    return true;
+  }
+  function descargarCopia() {
+    const txt = serialize(false);
+    if (!G.quiet) {
+      const a = document.createElement('a'), url = URL.createObjectURL(new Blob([txt], { type: 'application/json' }));
+      a.href = url; a.download = 'amazona-partida.json'; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      G.ui.toast(L('La copia quedó en tu dispositivo', 'The copy stayed on your device'));
+    }
+    return txt;
+  }
+  (function botonesCopia() {
+    const base = $('b-save'); if (!base || !base.parentNode || $('b-copia-guardar')) return;
+    const poner = (id, texto, fn) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = base.className; b.id = id; b.textContent = texto; b.onclick = fn;
+      base.parentNode.insertBefore(b, base.nextSibling);
+    };
+    const entrada = document.createElement('input');
+    entrada.type = 'file'; entrada.accept = 'application/json,.json'; entrada.hidden = true; entrada.id = 'b-copia-archivo';
+    entrada.addEventListener('change', () => {
+      const f = entrada.files && entrada.files[0]; entrada.value = '';
+      if (!f) return;
+      const lector = new FileReader();
+      lector.onload = () => cargarCopia(String(lector.result || ''));
+      lector.onerror = () => { if (!G.quiet) G.ui.toast(MSG_COPIA_ROTA()); };
+      lector.readAsText(f);
+    });
+    document.body.appendChild(entrada);
+    poner('b-copia-cargar', L('Cargar copia', 'Load a copy'), () => entrada.click());
+    poner('b-copia-guardar', L('Guardar copia', 'Save a copy'), () => descargarCopia());
+  })();
   // «Comenzar de cero»: la partida y el cómic solo se borran por esta elección explícita (menú de pausa, panel final, o
   // «Nuevo estudiante» del Modo Maestro). Menú: con popover el botón solo se alcanza dentro de la pregunta #confirm-reset;
   // sin popover (navegadores viejos) src/ui/ui.css lo deja suelto en la fila del menú, así que pide dos toques seguidos.
@@ -661,6 +703,12 @@ AVE.module('guardado', function (G) {
       check('Nuevo estudiante: se borran la partida, .tmp, .prev, todas las copias de rescate (también las de los satélites) el progreso V18.1 y la memoria', NE.mapa.size === 0 && REAL.mem.json === null, NE.mapa.size + ' claves quedan');
       const RZ = almacenFalso(); RZ.set(claveV18(), '{"v":1}'); RZ.set(SAVE_KEY + '.otra', '{}'); borrarV18(RZ);
       check('Comenzar de cero borra también el progreso de la V18.1 (QA-161) y nada más', RZ.get(claveV18()) == null && RZ.get(SAVE_KEY + '.otra') === '{}');
+      const copiaArchivo = descargarCopia(), pasoC = S.step;
+      check('Guardar copia escribe la partida en JSON y, en silencio, no deja un enlace de descarga', typeof copiaArchivo === 'string' && copiaArchivo.indexOf('"saveId"') > 0 && !document.querySelector('a[download="amazona-partida.json"]'));
+      S.step = pasoC + 3;
+      check('Cargar esa copia devuelve el paso guardado', cargarCopia(copiaArchivo, true) && S.step === pasoC);
+      S.step = pasoC + 1;
+      check('Un archivo roto o que no es una partida no cambia nada', !cargarCopia('{', true) && !cargarCopia('null', true) && !cargarCopia('{"v":1}', true) && !cargarCopia('', true) && S.step === pasoC + 1);
       // 7c. Arranque con una partida de una versión futura (o dañada): no se borra nada, se empieza una nueva y se avisa con suavidad
       const AR = almacenFalso(), futuraRaw = JSON.stringify(Object.assign(JSON.parse(serialize(false, almacenFalso())), { v: SAVE_VERSION + 1 }));
       AR.set(SAVE_KEY, futuraRaw); AR.set(SAVE_KEY + '.prev', '{"v":1}');
@@ -715,6 +763,6 @@ AVE.module('guardado', function (G) {
   // AV.saveTest (boot.js es del coordinador: se expone aquí si boot no lo hizo)
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.saveTest) AV.saveTest = o => test(o); }, 0);
 
-  return { KEY: SAVE_KEY, VERSION: SAVE_VERSION, FORMATO, KEYS: SAVED_KEYS, spawn, freshState, replace, serialize, save, autosave, migrate, validSave, load,
+  return { KEY: SAVE_KEY, VERSION: SAVE_VERSION, FORMATO, KEYS: SAVED_KEYS, spawn, freshState, replace, serialize, save, autosave, migrate, validSave, load, descargarCopia, cargarCopia,
     applyWorld, reset, arrancarVacio, copiasIlegibles: (be, base) => copiasIlegibles(be || almacen, base || SAVE_KEY), estado: () => Object.assign({}, estado), limpiarTexto, suspender, suspendido: () => suspendido, instantanea, restaurar, test };
 });

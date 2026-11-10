@@ -169,6 +169,35 @@ AVE.module('audio', function (G) {
       for (let i = 0; i < n; i++) setTimeout(() => { if (!G.quiet) api.play('martillo', i); }, i * 300);
       return n;
     },
+    // Pico y RMS de la ventana de 300 ms más fuerte, sin altavoces (OfflineAudioContext). El Grito v2 se mide así.
+    async medir(name, seg) {
+      const OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      if (!OC || !SOUNDS[name]) return null;
+      const sr = 44100, off = new OC(1, Math.ceil(sr * (seg || 1.4)), sr);
+      const prev = { ctx, master, sfxBus, voiceBus, suaveBus, salida, noiseBuf };
+      ctx = off; noiseBuf = null;
+      master = off.createGain(); master.gain.value = 1; master.connect(off.destination);
+      sfxBus = off.createGain(); sfxBus.gain.value = 1; sfxBus.connect(master);
+      suaveBus = off.createGain(); suaveBus.gain.value = SUAVE; suaveBus.connect(sfxBus);
+      voiceBus = off.createGain(); voiceBus.gain.value = 1; voiceBus.connect(master);
+      salida = sfxBus;
+      try {
+        SOUNDS[name](0.02, name === 'grito' ? 1 : 0);
+        const buf = await off.startRendering(), d = buf.getChannelData(0);
+        let pico = 0;
+        for (let i = 0; i < d.length; i++) { const a = Math.abs(d[i]); if (a > pico) pico = a; }
+        const win = Math.floor(0.3 * buf.sampleRate);
+        let rms = 0;
+        for (let i = 0; i + win < d.length; i += Math.floor(win / 4)) {
+          let s = 0; for (let k = 0; k < win; k++) s += d[i + k] * d[i + k];
+          rms = Math.max(rms, Math.sqrt(s / win));
+        }
+        return { pico, rms };
+      } finally {
+        ctx = prev.ctx; master = prev.master; sfxBus = prev.sfxBus; voiceBus = prev.voiceBus;
+        suaveBus = prev.suaveBus; salida = prev.salida; noiseBuf = prev.noiseBuf;
+      }
+    },
     // Devuelve true si sonó; el registro sirve para probar sin altavoces
     play(name, arg) {
       if (!SOUNDS[name]) return false;

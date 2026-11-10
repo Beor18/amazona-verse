@@ -23,7 +23,7 @@ window.AVV18Muelle = function (G) {
   const S = G.S, T = G.terreno, scene = G.renderer.scene;
   const ID = 'arco_muelle';
   const ESTADOS = ['inicio', 'plan', 'medido', 'materiales', 'construido'];
-  const XP_FIN = 100, R_VISTA = 220, R_REUNION = 8, R_LLEGADA = 28, R_HUD = 40, R_AVISO = 45, SOSTENER_S = 3;
+  const XP_FIN = 100, CONCHAS = 15, R_VISTA = 220, R_REUNION = 8, R_LLEGADA = 28, R_HUD = 40, R_AVISO = 45, SOSTENER_S = 3;
   const R_TOMA_LEJOS = 160, R_TOMA_CERCA = 45, R_DEVUELVE = 60;
   const ATALAYAS = { x: -69.2, z: 68.4 };
   // Medido en el mapa real: la plaza del embarcadero (content/cap1/mundo.js) y el río Amazonas (agua.rio, nivel 13 m, x ≈ −114,3 aquí)
@@ -33,8 +33,7 @@ window.AVV18Muelle = function (G) {
     titulo: 'El muelle de la otra orilla',
     aviso: 'En el Embarcadero de las Canoas el Constructor prepara su primera obra buena… La bandera verde te lleva.',
     llegada: [['constructor', 'Vittata, ¡mi primer proyecto bueno! Lo pidieron los vecinos del embarcadero.'], ['ingeniera', 'Y el plano lo hicimos juntos: un muelle para subir a las canoas sin mojarse.']],
-    reunion: [['ingeniera', '¡Hola, Vittata! Antes de clavar nada, hay que saber dónde está firme el fondo.'], ['constructor', 'Antes yo clavaba primero y preguntaba después. Hoy no.'],
-      ['ingeniera', 'Vuela sobre el río y marca las tres boyas: donde flotan quietas, va un poste.']],
+    reunion: [['ingeniera', '¡Hola, Vittata! Antes de clavar nada, hay que saber dónde está firme el fondo.'], ['ingeniera', 'Vuela sobre el río y marca las tres boyas: donde flotan quietas, va un poste.']],
     boya: 'Marcar la boya', boyaN: 'Boya marcada: aquí el fondo está firme. ({}/3)',
     ojos: 'Tus ojos ven las boyas aunque las tape el agua: brillan sobre el río.',
     medido: [['ingeniera', '¡Tres sitios firmes para tres postes! Ahora faltan tablas.'], ['constructor', 'El río se llevó cuatro tablas aguas abajo. ¿Nos ayudas a buscarlas?']],
@@ -291,7 +290,15 @@ window.AVV18Muelle = function (G) {
     emitir({ tipo: 'construido' });
     return true;
   }
+  function pagarConchas() {
+    if (!hecho() || !G.tienda || !G.tienda.ganar || V.otorgado('conchas_muelle')) return 0;
+    if (!V.otorgar('conchas_muelle', 'conchas_muelle', 1)) return 0;
+    const n = G.tienda.ganar(CONCHAS, 'mision') || 0;
+    if (n) toast('+' + n + ' conchitas', 3200);
+    return n;
+  }
   function pagarXP() {
+    pagarConchas();
     if (!hecho() || !G.v18evo || !G.v18evo.dar || V.otorgado('xp_muelle')) return 0;
     if (!V.otorgar('xp_muelle', 'xp_muelle', 1)) return 0;
     return G.v18evo.dar(V.seleccionada() || 'vittata', XP_FIN, 'muelle') || 0;
@@ -541,7 +548,7 @@ window.AVV18Muelle = function (G) {
       cerrarCharlas();
       // 9 · persistencia, partidas viejas y «Comenzar de cero»
       V.recargar(); G.emit('apply'); await esperar(60); correr(0.2);
-      check('9 · Paso 8: tras recargar siguen el muelle, la rampa y las dos apariencias; ni premio ni XP se repiten', hecho() && gMuelle.visible && M.rampas.every(p => p.when()) && N.estado('constructor') === 'maestro_obra' && N.estado('ingeniera') === 'jefa_obra' && !V.otorgar('arco_muelle', 'arco_muelle', 1) && pagarXP() === 0);
+      check('9 · Paso 8: tras recargar siguen el muelle, la rampa y las dos apariencias; ni premio ni XP ni conchitas se repiten', hecho() && gMuelle.visible && M.rampas.every(p => p.when()) && N.estado('constructor') === 'maestro_obra' && N.estado('ingeniera') === 'jefa_obra' && !V.otorgar('arco_muelle', 'arco_muelle', 1) && pagarXP() === 0 && pagarConchas() === 0);
       localStorage.setItem(V.clave(), JSON.stringify({ v: 2, especies: {}, inv: {}, otorgados: {}, mundo: { puente_villa: 'reparado', puerto_mina: 'reparado', arco_atalayas: 'encendido' }, sel: null, evo: {} }));
       V.recargar(); G.emit('apply'); await esperar(60); correr(0.1);
       const vieja = estado() === 'inicio' && !gMuelle.visible && !M.rampas.some(p => p.when()) && N.estado('constructor') === 'vecino';

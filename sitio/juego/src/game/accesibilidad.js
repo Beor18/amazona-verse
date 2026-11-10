@@ -1202,6 +1202,22 @@ AVE.module('accesibilidad', function (G) {
       check('Sin nada elegido en la sesión, una partida sin ajustes queda con todo apagado', !/a11y-/.test(raiz.className));
       S.profile = Object.assign({}, perfil0, { a11y: { texto: 9, contraste: 'sí', subtitulos: 1, relajado: 'true', zurdo: {} } }); sync();
       check('Un valor dañado vuelve a Normal y todo apagado', !/a11y-/.test(raiz.className));
+      if (G.construir && G.construir.empezar && G.construir.salir) {
+        const ya = G.construir.activo && G.construir.activo();
+        let okC = false, detC = '';
+        try {
+          if (!ya) G.construir.empezar();
+          const hudC = document.getElementById('cl-hud');
+          const bs = [...document.querySelectorAll('#cl-hud button')];
+          const st = (document.getElementById('cl-estilo') || {}).textContent || '';
+          okC = !!hudC && !hudC.hidden && bs.length >= 8 && bs.every(b => (b.getAttribute('aria-label') || '').trim().length > 1) && /:focus-visible/.test(st) && /prefers-reduced-motion/.test(st);
+          detC = bs.length + ' botones';
+        } catch (e) { detC = String(e && e.message || e); }
+        finally { if (!ya) { try { G.construir.salir(); } catch (e) { /* ya fuera */ } } }
+        check('Construir: cada botón de la barra tiene nombre, mide el foco visible y respeta reducir movimiento', okC, detC);
+      }
+      const hojaInv = document.getElementById('invasoras-css');
+      if (hojaInv) check('Patrulla: la fuente del Diario muestra el foco y reducir movimiento no la desplaza', /fauna-fuente a:focus-visible/.test(hojaInv.textContent) && /prefers-reduced-motion/.test(hojaInv.textContent) && !/translate/.test(hojaInv.textContent.slice(hojaInv.textContent.indexOf('prefers-reduced-motion'))));
     } catch (e) {
       check('Sin excepciones', false, e && (e.stack || e.message)); // QA-97: con la pila, para ver dónde falla cuando la máquina va cargada
     } finally {

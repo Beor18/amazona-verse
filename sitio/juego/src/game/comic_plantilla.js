@@ -9,7 +9,7 @@
      3. Página blanca y 6 viñetas inclinadas como en la referencia: captura real recortada a su máscara (cuadrilátero), borde de tinta,
         cintillo con número y título de escena, globo (diálogo o pensamiento; sin texto no hay globo), caja de narración, círculo con la
         cotorra del jugador en una pose real según el evento y decoraciones solo si el evento las justifica (¡FUUUSH!, ???, bandera,
-        NUEVO RÉCORD con el tiempo real). Viñetas, cintillos, globos, cajas, círculos y decoraciones 42/44/45 se reconstruyen por
+        NUEVO RÉCORD con el tiempo real, y las pegatinas de pesca, Construir y Patrulla si la partida las tiene). Viñetas, cintillos, globos, cajas, círculos y decoraciones 42/44/45 se reconstruyen por
         programa: los recortes traen textos y siluetas de muestra (o salen cortados) y no sirven como capa limpia.
      4. Abajo: 11 «¿Qué aprendí?» y 12 «Mi enseñanza de vida» con su texto, el personaje central (pose real del jugador, con borde
         de pegatina, sobre una roca) y los 4 botones 14–17, que en el editor son acciones reales (comic.js: zonas()).
@@ -20,7 +20,8 @@
      botones(), limpiarCache(), cargarCapas() }.
    datos = { titulo, nombre, look, retrato?, aprendi, ensenanza, botones (bool), vinetas: [6 × { id, falta?, sceneImage (img|null),
      escena?(ctx,x,y,w,h), sceneTitle, dialogueText, dialogueType ('dialogo'|'pensamiento'), captionText, effectId, recordValue,
-     look, pose }] }. Textos ya en el idioma del jugador (comic.js los traduce). */
+     pegatina?: 'pesca'|'construir'|'patrulla', look, pose }] }. Textos ya en el idioma del jugador (comic.js los traduce).
+     Las pegatinas se dibujan aquí (nada que subir). effectId con uno de esos tres nombres también las pinta. */
 AVE.module('comicPlantilla', function (G) {
   'use strict';
   const BASE = 'assets/comic/plantilla/';
@@ -443,6 +444,37 @@ AVE.module('comicPlantilla', function (G) {
     x.strokeText(t2, X + 86, Y + 82); x.fillStyle = '#ffffff'; x.fillText(t2, X + 86, Y + 82);
     x.restore();
   }
+  // Pegatinas de lo nuevo (pesca, Construir, Patrulla). Se dibujan en el lienzo: no hay imagen que subir.
+  // El borde izquierdo (14 px) queda del color plano para que la prueba lo pueda leer.
+  const PEG_COLOR = { pesca: '#1478d4', construir: '#d07820', patrulla: '#1c8c46' };
+  const PEG_W = 124, PEG_H = 44;
+  function pegatinaActividad(x, X, Y, tipo) {
+    const fondo = PEG_COLOR[tipo]; if (!fondo) return null;
+    const t = tipo === 'pesca' ? L('¡PESCA!', 'CAUGHT!') : tipo === 'construir' ? L('¡ARMADO!', 'BUILT!') : L('¡AVISTÉ!', 'SPOTTED!');
+    x.save();
+    rr(x, X, Y, PEG_W, PEG_H, 12); x.fillStyle = fondo; x.fill(); x.lineWidth = 3; x.strokeStyle = '#ffffff'; x.stroke();
+    x.lineWidth = 2; x.strokeStyle = INK; x.stroke();
+    x.save(); x.translate(X + 30, Y + PEG_H / 2);
+    x.fillStyle = '#ffffff'; x.strokeStyle = INK; x.lineWidth = 1.6; x.lineJoin = 'round';
+    if (tipo === 'pesca') {
+      x.beginPath(); x.ellipse(-2, 0, 11, 6, 0, 0, Math.PI * 2); x.fill(); x.stroke();
+      x.beginPath(); x.moveTo(8, 0); x.lineTo(16, -6); x.lineTo(16, 6); x.closePath(); x.fill(); x.stroke();
+    } else if (tipo === 'construir') {
+      x.beginPath(); x.moveTo(-12, 4); x.lineTo(0, -10); x.lineTo(12, 4); x.closePath(); x.fill(); x.stroke();
+      x.fillRect(-8, 4, 16, 10); x.strokeRect(-8, 4, 16, 10);
+    } else {
+      x.beginPath(); x.arc(0, 1, 9, 0, Math.PI * 2); x.fill(); x.stroke();
+      x.beginPath(); x.moveTo(0, -12); x.quadraticCurveTo(8, -2, 0, 6); x.quadraticCurveTo(-8, -2, 0, -12); x.fillStyle = '#b6f0c4'; x.fill(); x.stroke();
+    }
+    x.restore();
+    let fs = 16; x.font = `700 ${fs}px ${FD}`; x.textAlign = 'left'; x.textBaseline = 'middle';
+    while (x.measureText(t).width > 72 && fs > 10) { fs -= 0.5; x.font = `700 ${fs}px ${FD}`; }
+    x.lineWidth = 3; x.strokeStyle = INK; x.strokeText(t, X + 48, Y + PEG_H / 2 + 1);
+    x.fillStyle = '#ffffff'; x.fillText(t, X + 48, Y + PEG_H / 2 + 1);
+    x.fillStyle = fondo; x.fillRect(X + 4, Y + 4, 10, 10); // muestra plana, lejos del borde y del icono
+    x.restore();
+    return { tipo, x: X, y: Y, w: PEG_W, h: PEG_H, muestra: { x: X + 9, y: Y + 9 } };
+  }
   // Tapa un texto de muestra de una pieza con el color del papel (degradado suave, sin bordes) — para escribir el dinámico encima
   function parche(x, X, Y, w, h, c0, c1) {
     const g = x.createRadialGradient(X + w / 2, Y + h / 2, 4, X + w / 2, Y + h / 2, Math.max(w, h) * 0.62);
@@ -557,7 +589,7 @@ AVE.module('comicPlantilla', function (G) {
     // Página blanca
     const PB = PAGINA_BLANCA;
     rr(x, PB.x, PB.y, PB.w, PB.h, PB.r); x.fillStyle = '#f7fbff'; x.fill(); x.lineWidth = 4; x.strokeStyle = INK; x.stroke();
-    const info = [];
+    const info = [], sellos = [];
     d.vinetas.forEach((v, i) => {
       const s = SLOTS[i], q = s.quad, b = caja(q);
       x.save(); poli(x, q); x.clip();
@@ -600,14 +632,24 @@ AVE.module('comicPlantilla', function (G) {
       }
       if (ef === 'bandera') bandera(x, bordeDer(q, b.y + 36) - 18, b.y + 34);
       if (ef === 'record') { const k = 0.8, Y = s.caja.y - 112 * k - 4, X = bordeDer(q, Y + 60) - 172 * k - 12; x.save(); x.translate(X, Y); x.scale(k, k); placaRecord(x, 0, 0, v.recordValue); x.restore(); }
+      const pegTipo = v.falta ? null : (PEG_COLOR[v.pegatina] ? v.pegatina : (PEG_COLOR[ef] ? ef : null));
+      let peg = null;
+      if (pegTipo) {
+        const X = Math.min(b.x + b.w - PEG_W - 12, Math.max(b.x + 8, s.libre[0] - 20));
+        const Y = Math.min(s.caja.y - PEG_H - 8, Math.max(b.y + 34, s.libre[1] - PEG_H - 8));
+        sellos.push({ X, Y, tipo: pegTipo, i });
+        peg = { tipo: pegTipo, x: X * K, y: Y * K, w: PEG_W * K, h: PEG_H * K, muestra: { x: (X + 9) * K, y: (Y + 9) * K } };
+      }
       cintillo(x, s, i + 1, v.falta ? L('POR DESCUBRIR', 'TO DISCOVER') : String(v.sceneTitle || '').toUpperCase());
       const gl = !v.falta && v.dialogueText ? globo(x, s, v.dialogueText, v.dialogueType) : null;
       const cj = cajaTexto(x, s, v.falta ? L('Esta escena aparecerá cuando ocurra en tu aventura.', 'This scene will appear when it happens in your adventure.') : (v.captionText || ''), limite);
       circulo(x, s, poses[i]);
       const c = s.circulo;
       info.push({ id: v.id, caja: { x: b.x * K, y: b.y * K, w: b.w * K, h: b.h * K }, circulo: { x: (c.cx - c.r) * K, y: (c.cy - c.r) * K, s: c.r * 2 * K },
-        globo: gl, textoCaja: cj, efecto: ef, poseReal: !!poses[i].real, poseFoto });
+        globo: gl, textoCaja: cj, efecto: ef, pegatina: peg, poseReal: !!poses[i].real, poseFoto });
     });
+    // Encima de viñetas, globos y círculos: una pegatina no queda tapada por la viñeta de al lado.
+    for (const sello of sellos) pegatinaActividad(x, sello.X, sello.Y, sello.tipo);
     // Abajo: «¿Qué aprendí?», personaje central y «Mi enseñanza de vida»
     roca(x);
     pieza('que_aprendi'); pieza('ensenanza');

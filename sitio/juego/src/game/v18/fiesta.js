@@ -23,7 +23,7 @@ window.AVV18Fiesta = function (G) {
   const S = G.S, T = G.terreno, scene = G.renderer.scene;
   const ID = 'fiesta_colina';
   const ESTADOS = ['inicio', 'reunion', 'limpio', 'faroles', 'fiesta'];
-  const XP_FIN = 150, R_VISTA = 220, R_REUNION = 9, R_LLEGADA = 30, R_ENCUENTRO = 14, R_HUD = 40, R_AVISO = 45, ALTO_POSTE = 4.5;
+  const XP_FIN = 150, CONCHAS = 20, R_VISTA = 220, R_REUNION = 9, R_LLEGADA = 30, R_ENCUENTRO = 14, R_HUD = 40, R_AVISO = 45, ALTO_POSTE = 4.5;
   const R_TOMA_LEJOS = 160, R_TOMA_CERCA = 45, R_DEVUELVE = 60;
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const MUELLE = { x: -121, z: -4.2 }, YOKAHU = { x: 14, z: 172 }, CHISPA = { x: 45.8, z: 54.3 };
@@ -34,8 +34,7 @@ window.AVV18Fiesta = function (G) {
     titulo: 'La fiesta de la colina',
     aviso: 'En los Templos de la Colina se prepara una fiesta… ¡y tus amigos te esperan! La bandera verde te lleva.',
     llegada: [['tuerca', '¡Vittata! Los vecinos de las carpas nos invitaron a su fiesta.'], ['constructor', 'Antes hay algo que arreglar. Ven, te cuento.']],
-    reunion: [['constructor', 'Cuando yo construía sin mirar, mi obra dejó escombros en esta plaza.'], ['ingeniera', 'Hoy lo arreglamos los tres juntos… bueno, los cuatro, contigo.'],
-      ['tuerca', 'Yo traje faroles nuevos para la fiesta. ¡Hay que colgarlos bien alto!'], ['constructor', 'Primero los escombros. Tu poder los aparta en un momento.']],
+    reunion: [['constructor', 'Cuando yo construía sin mirar, mi obra dejó escombros en esta plaza.'], ['constructor', 'Primero los escombros. Tu poder los aparta en un momento.']],
     noAhora: 'Tu poder no sale ahora. Espera un momento y vuelve a probar.', 
     escombro: '¡Escombros fuera! {}/3', falla: 'Mira al montón de escombros y acércate un poco más.', espera: 'Tu poder se está recargando…',
     limpio: [['ingeniera', '¡La plaza quedó limpia! Ahora, los faroles de Tuerca.'], ['tuerca', 'Vuela a lo alto de cada poste y cuelga uno. ¡Que se vean desde lejos!']],
@@ -377,7 +376,15 @@ window.AVV18Fiesta = function (G) {
       '.v18-arco-fin li span{color:#e8a91a;margin-right:6px}.v18-arco-fin .btn{min-height:44px;min-width:44px}';
     document.head.appendChild(st);
   }
+  function pagarConchas() {
+    if (!hecho() || !G.tienda || !G.tienda.ganar || V.otorgado('conchas_fiesta')) return 0;
+    if (!V.otorgar('conchas_fiesta', 'conchas_fiesta', 1)) return 0;
+    const n = G.tienda.ganar(CONCHAS, 'mision') || 0;
+    if (n) toast('+' + n + ' conchitas', 3200);
+    return n;
+  }
   function pagarXP() {
+    pagarConchas();
     if (!hecho() || !G.v18evo || !G.v18evo.dar || V.otorgado('xp_fiesta')) return 0;
     if (!V.otorgar('xp_fiesta', 'xp_fiesta', 1)) return 0;
     return G.v18evo.dar(V.seleccionada() || 'vittata', XP_FIN, 'fiesta') || 0;
@@ -632,7 +639,7 @@ window.AVV18Fiesta = function (G) {
       try { G.ui.hideCard(); } catch (e) { /* */ }
       // 9 · persistencia, partidas viejas y «Comenzar de cero»
       V.recargar(); G.emit('apply'); await esperar(60); correr(0.2);
-      check('9 · Tras recargar siguen la placa, los faroles, los banderines y el Constructor aliado; ni premio ni XP se repiten', hecho() && gPlaca.visible && gBander.visible && N.estado('constructor') === 'aliado' && !V.otorgar('fiesta_colina', 'fiesta_colina', 1) && pagarXP() === 0 && !G.ui.cardOpen);
+      check('9 · Tras recargar siguen la placa, los faroles, los banderines y el Constructor aliado; ni premio ni XP ni conchitas se repiten', hecho() && gPlaca.visible && gBander.visible && N.estado('constructor') === 'aliado' && !V.otorgar('fiesta_colina', 'fiesta_colina', 1) && pagarXP() === 0 && pagarConchas() === 0 && !G.ui.cardOpen);
       localStorage.setItem(V.clave(), JSON.stringify({ v: 2, especies: {}, inv: {}, otorgados: {}, mundo: { puente_villa: 'reparado', puerto_mina: 'reparado', arco_atalayas: 'encendido', arco_muelle: 'construido', fiesta_colina: '???' }, sel: null, evo: {} }));
       V.recargar(); G.emit('apply'); await esperar(60); correr(0.1);
       check('9b · Una partida de antes (muelle hecho, sin claves de la fiesta) empieza en «inicio»; un valor desconocido no rompe nada', estado() === 'inicio' && !gPlaca.visible && N.estado('constructor') === 'maestro_obra' && SITIO.escombros.every((p, i) => !escListo(i)));

@@ -31,7 +31,7 @@ window.AVV18Puerto = function (G) {
   const S = G.S, T = G.terreno, scene = G.renderer.scene;
   const ID = 'puerto_mina';
   const ESTADOS = ['obra', 'descubierto', 'investigado', 'desactivado', 'reparado'];
-  const XP_FIN = 150, R_VISTA = 220, R_DESCUBRE = 14, R_ENCUENTRO = 16, R_HUD = 45, R_AVISO = 40, FRENO_S = 3, BOCANADA_S = 5;
+  const XP_FIN = 150, CONCHAS = 10, R_VISTA = 220, R_DESCUBRE = 14, R_ENCUENTRO = 16, R_HUD = 45, R_AVISO = 40, FRENO_S = 3, BOCANADA_S = 5;
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   // Medido en el mapa real (assets/data/mapa_cap1*.js) y en el juego: eje de la escalera de A (pie, plaza) a B (borde de la meseta)
   const SITIO = { plaza: { x: 73.6, z: -75.2 }, a: { x: 74.4, z: -73.25 }, b: { x: 85.6, z: -74.45 } };
@@ -41,7 +41,7 @@ window.AVV18Puerto = function (G) {
   const TRAMOS = [['ruta de la gota (cap. 1)', 78, -129, 66, -70, 5], ['sendero de La Mina', 126, -60, 86, -86, 6]];
   const TXT = {
     aviso: 'En Puerto de La Mina retumba una máquina… La bandera verde del mapa te lleva.',
-    llegada: [['constructor', '¡Más rápido! Esta escalera tiene que estar lista hoy.'], ['ingeniera', 'Pero en esa ladera anidan cotorras… y la máquina se atascó.'], ['constructor', '¿Las cotorras? Se mudan un ratito y ya. ¡Esta obra no se para!']],
+    llegada: [['constructor', '¡Más rápido! Esta escalera tiene que estar lista hoy.'], ['ingeniera', 'Pero en esa ladera anidan cotorras… y la máquina se atascó.']],
     descubre: ['¡Hola, Vittata! Qué bueno que llegaste.', 'Mi jefe le compró a Tuerca esta perforadora para hacer escalones a toda prisa. Se trabó y ahora tapa la única subida a pie.', 'Antes de tocarla hay que entender qué le pasa. ¿Me ayudas a buscar pistas?'],
     pistas: { tuerca: ['Mirar la tuerca suelta', 'Una tuerca suelta del engranaje: por eso se trabó.'], plano: ['Mirar el plano roto', 'El plano de la obra… ¡nadie marcó los nidos de la ladera!'], aceite: ['Mirar la mancha de aceite', 'Aceite en el suelo: la máquina trabajó sin parar ni revisarse.'] },
     ojos: 'Tus ojos ven lo que otros no: las pistas brillan y una ruta dorada lleva al engranaje.',
@@ -600,7 +600,15 @@ window.AVV18Puerto = function (G) {
   }
 
   // ---------- XP V18.2 (una vez; también si evolucion.js llega después) ----------
+  function pagarConchas() {
+    if (!reparado() || !G.tienda || !G.tienda.ganar || V.otorgado('conchas_puerto')) return 0;
+    if (!V.otorgar('conchas_puerto', 'conchas_puerto', 1)) return 0;
+    const n = G.tienda.ganar(CONCHAS, 'mision') || 0;
+    if (n) toast('+' + n + ' conchitas', 3200);
+    return n;
+  }
   function pagarXP() {
+    pagarConchas();
     if (!reparado() || !G.v18evo || !G.v18evo.dar || V.otorgado('xp_puerto')) return 0;
     if (!V.otorgar('xp_puerto', 'xp_puerto', 1)) return 0;
     return G.v18evo.dar(V.seleccionada() || 'vittata', XP_FIN, 'puerto') || 0;
@@ -1007,7 +1015,7 @@ window.AVV18Puerto = function (G) {
       V.recargar(); G.emit('apply'); await esperar(60); correr(0.2);
       check('15 · Paso 9: tras recargar siguen la escalera, la rampa, la máquina reconvertida, las apariencias y los diálogos nuevos', reparado() && gEscalera.visible && M.rampas.every(p => p.when()) && maq.flor.visible && N.estado('constructor') === 'reparador' && N.instancia('ingeniera') && N.instancia('ingeniera').apariencia === 'responsable'
         && (N.def('constructor').porEstado[N.estado('constructor')].dialogo[0] || '').indexOf('Construir rápido') === 0);
-      check('15b · Tras recargar, ni el premio ni la XP se repiten', !V.otorgar('puerto_mina', 'puerto_mina', 1) && pagarXP() === 0);
+      check('15b · Tras recargar, ni el premio ni la XP ni las conchitas se repiten', !V.otorgar('puerto_mina', 'puerto_mina', 1) && pagarXP() === 0 && pagarConchas() === 0);
       // 16 · partidas viejas y valores raros
       localStorage.setItem(V.clave(), JSON.stringify({ v: 1, especies: {}, inv: {}, otorgados: {}, mundo: { puente_villa: 'reparado' }, sel: null }));
       V.recargar(); G.emit('apply'); await esperar(60); correr(0.1);

@@ -73,6 +73,36 @@
     });
   }
 
+  // Los botones que otros módulos añaden a la pausa (Pesca, Mercadito, copia, Minigolf…) vuelven a su grupo.
+  if (pause) {
+    const COTORRA = new Set(['b-char', 'b-comic-menu', 'b-tienda']);
+    const OPCIONES = new Set(['b-save', 'b-load', 'b-copia-guardar', 'b-copia-cargar', 'b-sound', 'b-web', 'b-reset']);
+    let ocupado = false;
+    function agruparPausa() {
+      if (ocupado) return;
+      const grid = pause.querySelector('.pause-grid');
+      const hJ = $('pause-g-jugar'), hC = $('pause-g-cotorra'), hO = $('pause-g-opciones');
+      if (!grid || !hJ || !hC || !hO) return;
+      const grupos = { jugar: [], cotorra: [], opciones: [] };
+      for (const el of [...grid.children]) {
+        if (!el.matches || !el.matches('button, a')) continue;
+        const id = el.id;
+        const g = COTORRA.has(id) ? 'cotorra'
+          : (OPCIONES.has(id) || el.classList.contains('warn') || el.getAttribute('popovertarget') === 'confirm-reset') ? 'opciones'
+          : 'jugar';
+        grupos[g].push(el);
+      }
+      const deseado = [hJ, ...grupos.jugar, hC, ...grupos.cotorra, hO, ...grupos.opciones];
+      const actual = [...grid.children].filter(el => el.matches('h3.pause-grupo, button, a'));
+      if (deseado.length === actual.length && deseado.every((el, i) => el === actual[i])) return;
+      ocupado = true;
+      for (const el of deseado) grid.appendChild(el);
+      ocupado = false;
+    }
+    agruparPausa();
+    new MutationObserver(agruparPausa).observe(pause, { childList: true, subtree: true });
+  }
+
   // ---------- 4. Objetivo compacto en el móvil (QA-06) ----------
   const quest = $('quest');
   if (quest && !$('quest-toggle')) {

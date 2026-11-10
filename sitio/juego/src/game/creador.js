@@ -164,6 +164,98 @@ AVE.module('creador', function (G) {
   const thumbCache = {};
   // Un solo renderizador para todas las miniaturas (crear uno por pieza agota los contextos WebGL del celular)
   let thumbRig = null;
+  // El .glb del traje se carga una vez: la miniatura lo dibuja con la tela del color elegido (la versión simple
+  // son tubos y un disco, y el traje azul del Mercadito se veía raro en la tienda y en Mi personaje).
+  let trajeGltf = null;
+  function cargarTraje(nombre) {
+    if (!trajeGltf && window.AVE && AVE.assets) {
+      trajeGltf = AVE.assets.loadGLB('assets/models/ropa/' + nombre + '.glb', {
+        b64: () => window.AV_ROPA_B64 && window.AV_ROPA_B64[nombre],
+        script: 'assets/models/ropa/' + nombre + '_glb.js',
+        base: 'assets/models/ropa/', error: 'ropa no disponible',
+      }).catch(e => { trajeGltf = null; throw e; });
+    }
+    return trajeGltf;
+  }
+  // La miniatura es solo el torso: corona, hombreras y lo que va en brazos o patas quedan fuera
+  // (sin el cuerpo de la cotorra se ven sueltos). Se queda la túnica y el emblema del pecho.
+  function soloTorso(geo, mesh) {
+    const piel = mesh.skeleton, I = geo.index, si = geo.attributes.skinIndex, sw = geo.attributes.skinWeight;
+    if (!piel || !I || !si || !sw) return;
+    const uno = sw.normalized ? (sw.array instanceof Uint8Array ? 255 : sw.array instanceof Uint16Array ? 65535 : 1) : 1;
+    const leer = ['getX', 'getY', 'getZ', 'getW'];
+    const deTorso = v => {
+      let mejor = -1, hueso = '';
+      for (const f of leer) {
+        const w = sw[f](v) / uno; if (w <= mejor) continue;
+        mejor = w; const b = piel.bones[si[f](v)]; hueso = b ? b.name : '';
+      }
+      return /^(espalda1|espalda2|root)$/.test(hueso);
+    };
+    const grupos = geo.groups && geo.groups.length ? geo.groups.map(g => ({ start: g.start, count: g.count, materialIndex: g.materialIndex })) : [{ start: 0, count: I.count, materialIndex: 0 }];
+    const nuevo = [], ng = [];
+    for (const gr of grupos) {
+      const ini = nuevo.length;
+      for (let t = gr.start; t < gr.start + gr.count; t += 3) {
+        const a = I.getX(t), b = I.getX(t + 1), c = I.getX(t + 2);
+        if (!deTorso(a) && !deTorso(b) && !deTorso(c)) continue;
+        nuevo.push(a, b, c);
+      }
+      if (nuevo.length > ini) ng.push({ start: ini, count: nuevo.length - ini, materialIndex: gr.materialIndex || 0 });
+    }
+    if (!nuevo.length || nuevo.length === I.count) return;
+    geo.setIndex(nuevo); geo.clearGroups();
+    if (ng.length > 1) for (const g of ng) geo.addGroup(g.start, g.count, g.materialIndex);
+  }
+  function materialTraje(m, color) {
+    const tela = /^TELA/.test(m.name || '') && window.AVWardrobe;
+    const s = tela ? window.AVWardrobe.cloth('liso', color).clone() : m.clone();
+    if (!tela && window.AVColor) window.AVColor.fixGamma22(s);
+    s.skinning = true; s.morphTargets = false; s.userData = { shared: false };
+    return s;
+  }
+  function soltarMiniatura(obj) {
+    obj.traverse(o => {
+      if (o.geometry) o.geometry.dispose();
+      if (o.isSkinnedMesh && o.skeleton) o.skeleton.dispose();
+      if (o.material) for (const m of [].concat(o.material)) if (!m.userData.shared) m.dispose();
+    });
+  }
+  // Caja de los vértices que sí se dibujan (la corona ya no está en el índice)
+  function cajaPiel(root) {
+    const box = new THREE.Box3(), v = new THREE.Vector3();
+    root.updateMatrixWorld(true);
+    root.traverse(o => {
+      if (!o.isMesh || !o.geometry.attributes.position) return;
+      const pos = o.geometry.attributes.position, idx = o.geometry.index, n = idx ? idx.count : pos.count;
+      const paso = Math.max(1, Math.floor(n / 600));
+      for (let i = 0; i < n; i += paso) {
+        const vi = idx ? idx.getX(i) : i;
+        if (o.boneTransform) o.boneTransform(vi, v); else v.fromBufferAttribute(pos, vi);
+        box.expandByPoint(v.applyMatrix4(o.matrixWorld));
+      }
+    });
+    return box;
+  }
+  // El traje de Guardián: el modelo de Blender, de frente, sin la corona, con la tela del color elegido
+  async function miniaturaTraje(color) {
+    const def = C3.ACCESSORIES.find(a => a.id === 'traje');
+    if (!def || !def.glb || !THREE.SkeletonUtils) return null;
+    const gltf = await cargarTraje(def.glb);
+    if (!gltf || !gltf.scene) return null;
+    const root = THREE.SkeletonUtils.clone(gltf.scene);
+    root.traverse(o => {
+      if (!o.isSkinnedMesh) return;
+      o.geometry = o.geometry.clone();
+      soloTorso(o.geometry, o);
+      o.material = materialTraje(o.material, color);
+      o.frustumCulled = false;
+      if (o.skeleton) o.skeleton.pose();
+    });
+    const box = cajaPiel(root);
+    if (box.isEmpty()) { soltarMiniatura(root); return null; }
+    return { obj: root, box };
+  }
   async function accessoryThumb(id, color, style) {
     const key = id + color + (style || '');
     if (thumbCache[key]) return thumbCache[key];
@@ -177,12 +269,25 @@ AVE.module('creador', function (G) {
       thumbRig = { cv, rr, sc, cam: new THREE.PerspectiveCamera(30, 1, 0.01, 50) };
     }
     const { cv, rr, sc, cam } = thumbRig;
-    const acc = C3.buildAccessory(id, color, style); sc.add(acc);
-    const box = new THREE.Box3().setFromObject(acc), c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3()).length() || 1;
-    cam.position.set(c.x + sz * 0.9, c.y + sz * 0.6, c.z + sz * 1.6); cam.lookAt(c);
+    let acc = null, caja = null, propio = false;
+    if (id === 'traje') {
+      try { const m = await miniaturaTraje(color); if (m) { acc = m.obj; caja = m.box; propio = true; } } catch (e) { acc = null; }
+    }
+    if (!acc) acc = C3.buildAccessory(id, color, style);
+    sc.add(acc);
+    const box = caja || new THREE.Box3().setFromObject(acc), c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3());
+    const largo = (id === 'traje' ? Math.max(sz.x, sz.y) : sz.length()) || 1;
+    const px = id === 'traje' ? 192 : 104;
+    if (cv.width !== px) { cv.width = cv.height = px; rr.setSize(px, px, false); }
+    // El traje se ve de frente (el emblema del pecho); el resto, en el tres cuartos de siempre
+    if (id === 'traje' && propio) cam.position.set(c.x, c.y + largo * 0.05, c.z + largo * 2.35);
+    else cam.position.set(c.x + largo * 0.9, c.y + largo * 0.6, c.z + largo * 1.6);
+    cam.near = Math.max(0.01, largo * 0.01); cam.far = Math.max(50, largo * 20);
+    cam.lookAt(c); cam.updateProjectionMatrix();
     rr.clear(); rr.render(sc, cam);
     sc.remove(acc);
-    if (C3.disposeObject) C3.disposeObject(acc); // la miniatura queda en caché como imagen; la malla ya no hace falta
+    if (propio) soltarMiniatura(acc);
+    else if (C3.disposeObject) C3.disposeObject(acc); // la miniatura queda en caché como imagen; la malla ya no hace falta
     thumbCache[key] = cv.toDataURL('image/png');
     return thumbCache[key];
   }

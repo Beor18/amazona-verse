@@ -58,7 +58,21 @@
     posar: { alcance: { cadera: 0.22, rodilla: 0.15, dedos: 0.45, cola: -0.2, cabeza: 0.25 }, agarre: 0.75,
       amortigua: { cadera: 0.4, rodilla: 0.65, tobillo: 0.45, bajar: 0.07 }, pecho: 0.16, cola: 0.5, cabeza: 0.7,
       acomodo: [0.78, 1.05], plumas: 0.1 },
-    mouthMax: 0.4,            // apertura máxima del pico al hablar (rad; 0,35 ≈ 5,5 cm): algo más para que se lea de lejos
+    // Pico (hueso `pico`, mandíbula de abajo): ABRE con -X (sonda de docs/equipo/AUDITORIA_ANIMACION_COMBATE.md §4; +X la
+    // mete dentro del pico de arriba). Todo lo de aquí es apertura positiva y se gira con PICO_ABRE. mouthMax: grito (rad).
+    mouthMax: 0.55,
+    // Hablar: sílabas sueltas de 6 a 9 por segundo (no un seno), cada una con su apertura; a veces una casi cerrada.
+    // ataque/suelta: rapidez (1/s) con que el pico sigue a su objetivo al abrir y al cerrar (abre rápido, cierra algo más lento).
+    habla: { max: 0.3, hz: [6, 9], floja: 0.12, ataque: 45, suelta: 24 },
+    // Alas (ch.alas(L, R), 0 plegada … 1 abierta del todo, y el abanico automático al volar): las cuatro cadenas de plumas de
+    // la mano (armL3, armL2.002, .004, .006 y sus hijas) se abren en abanico en el plano del ala (de la de delante a la de
+    // atrás), se estiran (deshacen la curva de reposo) y la punta se alarga. brazo/codo: lo que suben el hombro (Z) y estiran
+    // el codo (-X) con alas() en el suelo (volando ya lo hace el aleteo). vuelo: abanico por wingMode.
+    alas: { abanico: [0.5, 0.2, -0.16, -0.5], estira: 0.2, punta: 0.3, brazo: 1.05, codo: 0.3, rapidez: 12,
+      vuelo: { fly: 0.75, flap: 0.9, glide: 1, hover: 0.85, takeoff: 0.9, descend: 0.85, preflare: 1, land: 0.95, settle: 0.4, posar: 0.7, hop: 0.35, swim: 0.3 } },
+    // Cola (espalda1.001, +X sube): muelle amortiguado de 2.º orden que sigue la aceleración del cuerpo (frenar → arriba,
+    // despegar → abajo) y el giro (se abre hacia fuera). w: rad/s (~2 Hz), z: amortiguamiento, max: tope (rad).
+    cola: { w: 13, z: 0.3, frena: 0.016, sube: 0.012, gira: 0.09, max: 0.5, impulso: 6 },
     lookMax: [1.05, 0.45],    // giro máximo de la cabeza al mirar a alguien (lado, arriba/abajo)
     footIK: 0.32,             // corrección máxima de cada pata en pendiente (unidades del modelo)
     // IK de patas: iteraciones CCD y tolerancia (m) con las que se para antes; inclinación máxima del pie (dedos) según la
@@ -70,6 +84,14 @@
     agachada: { espalda: 1.0, pecho: 0.45, cabeza: 0.4, cadera: 0.45, rodilla: 0.7, tobillo: 0.5, bajar: 0.1 }, // de 1,75 a 0,81 m
   };
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const PICO_ABRE = -1; // signo del eje X del hueso `pico` que abre la mandíbula (medido; ver ANIM.mouthMax)
+  // Cadenas de plumas de cada ala (raíz → punta); _buildAlas las ordena de delante a atrás en reposo
+  const ALAS_CADENAS = {
+    L: [['armL3', 'Bone003', 'Bone005'], ['armL2002', 'armL2003', 'armL2019'], ['armL2004', 'armL2005', 'armL2009'], ['armL2006', 'armL2007', 'armL2008']],
+    R: [['armL3001', 'Bone004', 'Bone006'], ['armL2010', 'armL2011', 'armL2012'], ['armL2013', 'armL2014', 'armL2015'], ['armL2016', 'armL2017', 'armL2018']],
+  };
+  // Calidad baja o Modo Escuela: alas y cola se recalculan a medio ritmo
+  const calidadBaja = () => { const R = window.AV && window.AV.G && window.AV.G.renderer, c = R && R.calidad; return !!(c && (c.escuela === true || c.nivel === 'bajo')); };
   const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _bp = new THREE.Vector3(), _ep = new THREE.Vector3(), _tg = new THREE.Vector3();
   const _q = new THREE.Quaternion(), _qw = new THREE.Quaternion(), _qp = new THREE.Quaternion(), _qi = new THREE.Quaternion();
   const FINGERS = ['armL2002', 'armL2003', 'armL2004', 'armL2005', 'armL2006', 'armL2007',
@@ -481,9 +503,47 @@
       this.fitAdj = {};
       this.expression = 'neutral'; this.talking = false;
       this.anchors = this._buildAnchors();
+      this.alasCad = this._buildAlas();
       this.ikSaved = [];
       if (this.clips.Idle) this.play('Idle');
     }
+    // ---------- API de cara, alas y cola (combate, diálogos y en línea; ver ANIM.habla, ANIM.alas y ANIM.cola) ----------
+    // pico(v, ms): abrir el pico a v (0..1 de ANIM.mouthMax); con ms se cierra solo al pasar ese tiempo. Abre rápido y cierra
+    // algo más lento. Se suma a mouth (el juego) y a hablar (sílabas): manda la apertura mayor.
+    pico(v, ms) { this.picoT = clamp(+v || 0, 0, 1); this.picoHasta = ms > 0 ? (this.wingT || 0) + ms / 1000 : 0; return this; }
+    // hablar(true|false): sílabas de 6 a 9 por segundo mientras dure (lo mismo que poner talking)
+    hablar(on) { this.talking = !!on; return this; }
+    // alas(abrirL, abrirR): 0 plegada … 1 abierta del todo (abanico de plumas, hombro arriba y codo estirado), con suavizado.
+    // Se queda puesta hasta otra llamada; alas(null) la quita. Volando, el abanico sale solo (ANIM.alas.vuelo).
+    alas(l, r) { if (l == null) this.alasT = null; else this.alasT = [clamp(+l || 0, 0, 1), clamp(r == null ? +l || 0 : +r || 0, 0, 1)]; return this; }
+    // colaImpulso(fuerza, lado): golpe al muelle de la cola (fuerza 1 ≈ 0,4 rad arriba; negativo, abajo; lado -1..1 la abre)
+    colaImpulso(f, lado) { const C = this._cola(); C.vx += (+f || 0) * ANIM.cola.impulso; C.vz += (+lado || 0) * ANIM.cola.impulso; return this; }
+    // mirar(objetivo|null): Vector3 del mundo u Object3D (se sigue cada cuadro). Manda sobre lookAt mientras esté puesto.
+    mirar(o) { this.mirarObj = o || null; return this; }
+    // Para el paquete en línea y las pruebas: apertura que se pide al pico (0..1), si habla y abanico de las alas (0..1)
+    estadoCara() {
+      const a = this.alasV || [0, 0], p = Math.max(this.picoT || 0, this.mouth != null ? clamp(this.mouth, 0, 1) : 0);
+      return { pico: p, habla: !!this.talking, alas: Math.max(a[0], a[1]) };
+    }
+    // Cadenas de plumas con su abanico: en reposo (pose T) se ordenan de delante (+Z del modelo) a atrás, y se mide hacia
+    // dónde lleva la punta girar la raíz en +X (el signo que abre el abanico hacia delante).
+    _buildAlas() {
+      const out = {}, v = new THREE.Vector3(), inv = this.root.matrixWorld.clone().invert();
+      const punta = b => v.setFromMatrixPosition(b.matrixWorld).applyMatrix4(inv).z;
+      for (const lado of ['L', 'R']) {
+        const cad = ALAS_CADENAS[lado].map(n => n.map(x => this.bones[x])).filter(c => c.every(Boolean));
+        if (cad.length !== 4) return null;
+        const med = cad.map(c => {
+          const z0 = punta(c[2]); c[0].rotation.x += 0.1; c[0].updateMatrixWorld(true);
+          const z1 = punta(c[2]); c[0].rotation.x -= 0.1; c[0].updateMatrixWorld(true);
+          return { c, z: z0, sg: z1 > z0 ? 1 : -1, f: 1, ySet: null };
+        });
+        med.sort((a, b) => b.z - a.z);
+        out[lado] = med;
+      }
+      return out;
+    }
+    _cola() { return this.colaSp || (this.colaSp = { x: 0, vx: 0, z: 0, vz: 0, p: null, v: new THREE.Vector3(), a: new THREE.Vector3(), yaw: 0, yr: 0 }); }
     // Anclas para llevar cosas (agarre.js): puntos del modelo en reposo, derechos y a escala del personaje, que siguen a su hueso.
     // manoL/manoR: palma de cada ala-mano; pico: entre las puntas del pico (en la cabeza: abrir el pico no lo suelta);
     // pecho: delante del pecho (carga con los dos brazos); patas: entre las patas (lo que lleva volando, como las aves).
@@ -648,6 +708,12 @@
       this.face(dt);
       this.emotePose(dt);
       this.actPose(dt);
+      // Alas y cola: en calidad baja o Modo Escuela, a medio ritmo (se acumula el dt del cuadro que se salta)
+      this.medioDt = (this.medioDt || 0) + dt;
+      const recalc = !(this.ikEscuela || calidadBaja()) || (this.medioFr = !this.medioFr);
+      const dtm = recalc ? this.medioDt : 0; if (recalc) this.medioDt = 0;
+      this._alasPose(dtm, mode, recalc);
+      this._colaPose(dtm, recalc);
       this.crouchPose();
       this.clothes();
       this._footIK(dt);
@@ -702,7 +768,7 @@
       };
       const body = (lean, tilt, twist) => { if (B.espalda1) { this.rot(B.espalda1, 'x', lean * w); this.rot(B.espalda1, 'z', tilt * w); this.rot(B.espalda1, 'y', twist * w); } };
       const head = (x, y, z) => { if (B.cabeza) { this.rot(B.cabeza, 'x', x * w); this.rot(B.cabeza, 'y', y * w); this.rot(B.cabeza, 'z', z * w); } };
-      const beak = v => { if (B.pico) this.rot(B.pico, 'x', v * w); };
+      const beak = v => { if (B.pico) this.rot(B.pico, 'x', PICO_ABRE * v * w); };
       const lift = v => { this.root.position.y += v * w * this.root.scale.y; };
       switch (this.emoteName) {
         case 'dance': {
@@ -751,7 +817,7 @@
       }
     }
     // Cara y manos: parpadeo, expresión (párpados, pico, cabeza), hablar, mirar alrededor, gestos y dedos.
-    // Ejes medidos: pico +X abre; cabeza X asiente, Y gira, Z ladea; codo +X dobla; dedos +X cierran.
+    // Ejes medidos: pico -X abre (PICO_ABRE); cabeza X asiente, Y gira, Z ladea; codo +X dobla; dedos +X cierran.
     face(dt) {
       const B = this.bones, t = this.wingT || 0, k = 1 - Math.exp(-dt * 7);
       const EX = {
@@ -769,22 +835,26 @@
       if (this.blinkT > 0) { this.blinkT -= dt; blink = Math.sin(Math.max(0, 1 - this.blinkT / 0.15) * Math.PI); }
       for (const lid of this.lids || []) this._lid(lid, Math.max(0.03, Math.min(1, ex[0] + blink * (1 - ex[0]))));
       // Hablar: el pico sigue a mouth (0..1) si el juego lo da (sílabas del texto que se escribe o de la voz que lee);
-      // si no, abre y cierra con un ritmo de sílabas genérico. Abre rápido y cierra algo más lento, como un pico real.
+      // si no, sílabas sueltas (ANIM.habla). pico(v, ms) pide una apertura (grito, canto). Manda la mayor. Abre rápido y
+      // cierra algo más lento, como un pico real.
+      const H = ANIM.habla;
       let talk = 0;
-      if (this.talking) this.talkPh = (this.talkPh || 0) + dt * 15;
+      if (this.talking) { this.talkPh = (this.talkPh || 0) + dt * 15; talk = this._silaba(dt) * H.max; }
       if (this.mouth != null) talk = clamp(this.mouth, 0, 1) * ANIM.mouthMax;
-      else if (this.talking) talk = Math.max(0, Math.sin(this.talkPh)) * (0.55 + 0.45 * Math.sin(this.talkPh * 0.37 + 1.3)) * 0.32;
+      if (this.picoHasta && t >= this.picoHasta) { this.picoT = 0; this.picoHasta = 0; }
+      talk = Math.max(talk, (this.picoT || 0) * ANIM.mouthMax);
       if (this.carry === 'pico') talk *= 0.35; // con algo en el pico habla entre dientes
-      this.talkV = (this.talkV || 0) + (talk - (this.talkV || 0)) * Math.min(1, dt * (talk > (this.talkV || 0) ? 38 : 22));
-      if (B.pico) this.rot(B.pico, "x", ex[1] + this.talkV);
+      this.talkV = (this.talkV || 0) + (talk - (this.talkV || 0)) * Math.min(1, dt * (talk > (this.talkV || 0) ? H.ataque : H.suelta));
+      if (B.pico) this.rot(B.pico, "x", PICO_ABRE * (ex[1] + this.talkV));
       // Mirar a alguien (lookAt: quien habla, lo que va a agarrar) o, quieta, mirar alrededor
       this.lookIn = (this.lookIn || 0) - dt;
       if (this.lookIn <= 0) { this.lookIn = 1.5 + Math.random() * 3; this.lookGoal = [(Math.random() - 0.5) * 0.9, (Math.random() - 0.5) * 0.25]; }
       const still = !(this.gW > 0.1) && !this.talking;
       let g = still ? (this.lookGoal || [0, 0]) : [0, 0];
-      if (this.lookAt && this.anchors && this.anchors.pico) {
+      const mo = this.mirarObj, mira = mo ? (mo.isObject3D ? mo.getWorldPosition(_v2) : mo) : this.lookAt;
+      if (mira && this.anchors && this.anchors.pico) {
         this.root.updateMatrixWorld(true);
-        const v = this.root.worldToLocal(_tg.copy(this.lookAt)), hy = 1.0;
+        const v = this.root.worldToLocal(_tg.copy(mira)), hy = 1.0;
         g = [clamp(Math.atan2(v.x, v.z), -ANIM.lookMax[0], ANIM.lookMax[0]) * this.headSign.yaw,
           clamp(-Math.atan2(v.y - hy, Math.hypot(v.x, v.z)), -ANIM.lookMax[1], ANIM.lookMax[1]) * this.headSign.pitch];
       }
@@ -807,6 +877,79 @@
       // Dedos: algo cerrados en reposo, se abren al gesticular, con leve movimiento propio
       let i = 0;
       for (const n of FINGERS) if (B[n]) this.rot(B[n], "x", 0.18 + Math.sin(t * 1.4 + i++) * 0.05 - gw * 0.15);
+    }
+    // Una sílaba tras otra (6 a 9 por segundo, ANIM.habla): abre rápido hasta el 35 % y cierra; cada una con su apertura
+    _silaba(dt) {
+      const S = this.sil || (this.sil = { t: 0, dur: 0.12, amp: 1 }), H = ANIM.habla;
+      S.t += dt;
+      if (S.t >= S.dur) {
+        S.t = Math.min(S.t - S.dur, 0.05);
+        S.dur = 1 / (H.hz[0] + Math.random() * (H.hz[1] - H.hz[0]));
+        S.amp = Math.random() < H.floja ? 0.15 : 0.55 + Math.random() * 0.45;
+      }
+      const u = S.t / S.dur;
+      return S.amp * (u < 0.35 ? Math.sin(u / 0.35 * Math.PI / 2) : Math.cos((u - 0.35) / 0.65 * Math.PI / 2));
+    }
+    // Alas en abanico (ANIM.alas): objetivo = mayor de alas() y del abanico de vuelo, más un temblor de plumas de vez en
+    // cuando en reposo. En calidad baja o Modo Escuela se recalcula un cuadro de cada dos (los giros se aplican siempre).
+    _alasPose(dt, mode, recalc) {
+      const A = ANIM.alas, B = this.bones, cad = this.alasCad;
+      if (!cad) return;
+      const v = this.alasV || (this.alasV = [0, 0]), b = this.alasB || (this.alasB = [0, 0]);
+      if (recalc) {
+        const auto = A.vuelo[mode] || 0;
+        // Reposo: de vez en cuando una ala se acomoda las plumas (abre y cierra un poco)
+        this.ruT = (this.ruT == null ? 3 + Math.random() * 5 : this.ruT) - dt;
+        if (this.ruT <= 0) { this.ruT = 4 + Math.random() * 6; this.ruL = Math.random() < 0.5 ? 0 : 1; this.ruE = 0; }
+        let ru = 0;
+        if (this.ruE != null) { this.ruE += dt; ru = this.ruE < 0.5 ? Math.sin(this.ruE / 0.5 * Math.PI) * 0.22 : 0; if (this.ruE >= 0.5) this.ruE = null; }
+        const quieto = mode === 'idle' || mode === 'walk';
+        const k = 1 - Math.exp(-dt * A.rapidez);
+        for (let i = 0; i < 2; i++) {
+          const ex = this.alasT ? this.alasT[i] : 0;
+          const tg = Math.max(auto, ex, quieto && this.ruL === i ? ru : 0);
+          v[i] += (tg - v[i]) * k; b[i] += (ex - b[i]) * k;
+        }
+      }
+      const fl = 1 - clamp(this.wOpen || 0, 0, 1); // volando el aleteo ya abre el hombro: alas() no lo suma
+      ['L', 'R'].forEach((lado, i) => {
+        const s = v[i], sh = B[lado === 'L' ? 'armL1' : 'armL1001'], el = B[lado === 'L' ? 'armL2' : 'armL2001'];
+        if (b[i] > 0.001 && sh && el) { this.rot(sh, 'z', (lado === 'L' ? 1 : -1) * A.brazo * b[i] * fl); this.rot(el, 'x', -A.codo * b[i]); }
+        cad[lado].forEach((m, j) => {
+          const c = m.c;
+          if (s > 0.001) { this.rot(c[0], 'x', m.sg * A.abanico[j] * s); this.rot(c[1], 'x', -m.sg * A.estira * s); this.rot(c[2], 'x', -m.sg * A.estira * 0.5 * s); }
+          // Punta más larga: escala relativa (si nadie la ha cambiado desde el cuadro anterior se deshace la de antes; así
+          // convive con el criadero, que también escala huesos)
+          const sc = c[2].scale, f = 1 + A.punta * s, base = sc.y === m.ySet ? sc.y / (m.f || 1) : sc.y;
+          sc.y = base * f; m.ySet = sc.y; m.f = f;
+        });
+      });
+    }
+    // Cola con muelle (ANIM.cola): sigue la aceleración y el giro del cuerpo, y colaImpulso() le da golpes
+    _colaPose(dt, recalc) {
+      const cola = this.bones.espalda1001; if (!cola) return;
+      const P = ANIM.cola, C = this._cola(), r = this.root;
+      if (recalc && dt > 0) {
+        const p = r.position;
+        if (!C.p || C.p.distanceToSquared(p) > 9) { C.p = p.clone(); C.v.set(0, 0, 0); C.a.set(0, 0, 0); C.yaw = r.rotation.y; C.yr = 0; }
+        const vx = (p.x - C.p.x) / dt, vy = (p.y - C.p.y) / dt, vz = (p.z - C.p.z) / dt, kv = Math.min(1, dt * 12);
+        const ax = (vx - C.v.x) / dt, ay = (vy - C.v.y) / dt, az = (vz - C.v.z) / dt;
+        C.v.x += (vx - C.v.x) * kv; C.v.y += (vy - C.v.y) * kv; C.v.z += (vz - C.v.z) * kv;
+        C.a.x += (ax * kv - C.a.x) * kv; C.a.y += (ay * kv - C.a.y) * kv; C.a.z += (az * kv - C.a.z) * kv;
+        C.p.copy(p);
+        let dy = r.rotation.y - C.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); C.yaw = r.rotation.y;
+        C.yr += (dy / dt - C.yr) * kv;
+        const sy = Math.sin(r.rotation.y), cy = Math.cos(r.rotation.y), af = C.a.x * sy + C.a.z * cy;
+        const tx = clamp(-P.frena * af - P.sube * C.a.y, -P.max, P.max), tz = clamp(-P.gira * C.yr, -P.max, P.max);
+        const W = P.w, n = Math.max(1, Math.ceil(dt / 0.02)), h = dt / n;
+        for (let i = 0; i < n; i++) {
+          C.vx += (W * W * (tx - C.x) - 2 * P.z * W * C.vx) * h; C.x += C.vx * h;
+          C.vz += (W * W * (tz - C.z) - 2 * P.z * W * C.vz) * h; C.z += C.vz * h;
+        }
+        C.x = clamp(C.x, -P.max * 1.4, P.max * 1.4); C.z = clamp(C.z, -P.max * 1.4, P.max * 1.4);
+      }
+      if (Math.abs(C.x) > 1e-4) this.rot(cola, 'x', C.x);
+      if (Math.abs(C.z) > 1e-4) this.rot(cola, 'z', C.z);
     }
     rot(bone, ax, v) { bone.rotation[ax] += v; this.ofs.push([bone, ax, v]); }
     // Paso procedural encima del clip: gait 0 quieto, 1 caminar, 2 correr (saltitos con las patas juntas); airborne recoge
@@ -977,10 +1120,10 @@
           this.rot(B[h], 'x', -0.35 * r); this.rot(B[kn], 'x', -0.45 * r); this.rot(B[an], 'x', 0.35 * r);
         }
         this.root.position.y -= 0.06 * r * this.root.scale.y;
-        if (beak && B.pico) this.rot(B.pico, 'x', 0.25 * Math.sin(Math.min(1, r) * Math.PI));
+        if (beak && B.pico) this.rot(B.pico, 'x', PICO_ABRE * 0.25 * Math.sin(Math.min(1, r) * Math.PI));
       }
       if (u > 0.001 && this.carry === 'pico' && B.cabeza) this.rot(B.cabeza, 'x', 0.3 * Math.sin(u * Math.PI) * this.headSign.pitch);
-      if (this.carry === 'pico' && B.pico) this.rot(B.pico, 'x', 0.06); // el pico sujeta: apenas abierto
+      if (this.carry === 'pico' && B.pico) this.rot(B.pico, 'x', PICO_ABRE * 0.06); // el pico sujeta: apenas abierto
     }
     // ---------- IK (CCD sobre los huesos ya animados; se deshace al empezar el cuadro siguiente) ----------
     _restoreIK() {

@@ -277,7 +277,7 @@ window.AVV18Moon = function (G) {
     matarOrbs(); pintarHud(); mostrarFin(gana, A.toques);
     N.colocar(NPC, { x: SITIO.x, z: SITIO.z, rotY: SITIO.rotY, comenta: true, anim: undefined });
     ponerMoon();
-    if (gana) { sonar('unlock'); fx('gold', S.pos.x, S.pos.y + 1.2, S.pos.z, 14); if (nuevo) toast(TXT.nuevo.replace('{}', A.toques), 3000); }
+    if (gana) { sonar('unlock'); fx('gold', S.pos.x, S.pos.y + 1.2, S.pos.z, 14); fx('stars', S.pos.x, S.pos.y + 1.8, S.pos.z, 16); toast(TXT.fGana, 2400); if (nuevo) toast(TXT.nuevo.replace('{}', A.toques), 3000); }
     else { sonar('ring'); N.animar(NPC, 'hablar'); }
     if (gana) pagarXP();
     emitir({ tipo: 'fin', gana, toques: A.toques, nuevo });
@@ -324,6 +324,7 @@ window.AVV18Moon = function (G) {
       if ((A.lanzarEn -= dt) <= 0) { A.lanzarEn += CADENCIA_S; lanzar(); }
       pasoOrbs(dt);
       if (A.toques >= MAX_TOQUES) { terminar(false); return; }
+      if (A.t >= 20 && !(pista.vistas & 2)) { pista.vistas |= 2; mostrarPista(TACTIL ? TXT.pToqueT : TXT.pToque.replace('{}', teclaDe('accion', 'e'))); }
       if (A.t >= DUR_S) { terminar(true); return; }
       const alej = Math.hypot(S.pos.x - A.mx, S.pos.z - A.mz);
       const alto = S.pos.y - H(S.pos.x, S.pos.z);

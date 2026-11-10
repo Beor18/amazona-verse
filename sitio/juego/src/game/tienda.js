@@ -15,7 +15,8 @@
    - Dónde se abre: resultados de la pesca (botón «Mercadito» o T), la Pausa («Mercadito»), Mi personaje («Mercadito: ropa nueva») y la
      barra de Construir («Mercadito»). Es la tarjeta del juego (#card): Esc o «Cerrar» la cierran y el foco vuelve a donde estaba.
    - Textos en español; el inglés en content/cap1/en.js (idioma.js los traduce en pantalla).
-   API: disponible(), saldo(), ganadas(), compradas(), tiene(id), precio(id), pagarPez(idPez, 'foto'|'drna'), ganar(n), comprar(id),
+   API: disponible(), saldo(), ganadas(), compradas(), tiene(id), precio(id), pagarPez(idPez, 'foto'|'drna'), ganar(n),
+   ganarLogro(clave, n) (minigolf y retos: pocas, una vez por récord, tope diario; la pesca no usa este tope), comprar(id),
    vestir(id), abrir(origen), cerrar(), abierta(), PAGO_PEZ, BONO_DRNA, CATALOGO, leer(d), test(). Prueba: AV.tiendaTest(). */
 window.AVTienda = function (G) {
   'use strict';
@@ -32,20 +33,24 @@ window.AVTienda = function (G) {
   const esObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
   const entero = v => (Number.isInteger(v) && v >= 0 && v <= MAX ? v : 0);
   const disponible = () => ITEMS.length > 0;
-  const sonar = (n, a) => { if (G.quiet) return; try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  let ultimoSonido = '';
+  const sonar = (n, a) => { ultimoSonido = n; if (G.quiet) return; try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
 
   // ---------- Datos: leer (tolerante) y guardar ----------
+  const TOPE_DIA = 12, PAGO_LOGRO = Object.freeze({ record: 2, uno: 3, carrera: 2 });
   function leer(d) {
-    const out = { v: 1, conchitas: 0, ganadas: 0, compras: [] };
+    const out = { v: 1, conchitas: 0, ganadas: 0, compras: [], logros: [], dia: { fecha: '', n: 0 } };
     if (!esObj(d) || d.v !== 1) return out;
     out.conchitas = entero(d.conchitas);
     out.ganadas = Math.max(entero(d.ganadas), out.conchitas);
     if (Array.isArray(d.compras)) for (const id of d.compras) if (typeof id === 'string' && POR_ID[id] && !out.compras.includes(id)) out.compras.push(id);
+    if (Array.isArray(d.logros)) for (const k of d.logros) if (typeof k === 'string' && k.length > 0 && k.length <= 48 && !out.logros.includes(k) && out.logros.length < 120) out.logros.push(k);
+    if (esObj(d.dia) && typeof d.dia.fecha === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.dia.fecha)) { out.dia.fecha = d.dia.fecha; out.dia.n = Math.min(TOPE_DIA, entero(d.dia.n)); }
     return out;
   }
   const est = () => leer(S.tienda);
   function escribir(e, tipo) {
-    S.tienda = { v: 1, conchitas: e.conchitas, ganadas: e.ganadas, compras: e.compras.slice() };
+    S.tienda = { v: 1, conchitas: e.conchitas, ganadas: e.ganadas, compras: e.compras.slice(), logros: (e.logros || []).slice(), dia: { fecha: (e.dia && e.dia.fecha) || '', n: (e.dia && e.dia.n) || 0 } };
     try { if (G.guardado && G.guardado.autosave) G.guardado.autosave(); } catch (er) { /* sin guardado */ }
     try { G.emit('tienda', { tipo, conchitas: e.conchitas }); } catch (er) { /* sin oyentes */ }
   }
@@ -76,6 +81,36 @@ window.AVTienda = function (G) {
     if (como === 'drna') return INVASORAS.includes(id) ? ganar(BONO_DRNA, 'drna') : 0;
     return PAGO_PEZ[id] ? ganar(PAGO_PEZ[id], 'pez') : 0;
   }
+  // Logros fuera de la pesca: cantidad fija, una vez por clave de récord, y como mucho TOPE_DIA al día.
+  // La pesca (pagarPez / ganar) no pasa por aquí. Sin azar. Con G.quiet no paga (las pruebas no farmean).
+  const fechaHoy = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+  function ganarLogro(clave, n, o) {
+    o = o || {};
+    if (!disponible() || (G.quiet && !o.prueba)) return 0;
+    if (typeof clave !== 'string' || clave.length < 3 || clave.length > 48) return 0;
+    if (!Number.isInteger(n) || n <= 0 || n > 8) return 0;
+    const e = est();
+    if (e.logros.includes(clave)) return 0;
+    const fecha = fechaHoy();
+    if (e.dia.fecha !== fecha) e.dia = { fecha, n: 0 };
+    const cabe = TOPE_DIA - e.dia.n;
+    if (cabe <= 0) return 0;
+    const pago = Math.min(n, cabe);
+    e.logros.push(clave); e.dia.n += pago;
+    e.conchitas = Math.min(MAX, e.conchitas + pago); e.ganadas = Math.min(MAX, Math.max(e.ganadas + pago, e.conchitas));
+    escribir(e, 'logro');
+    if (o.aviso !== false && !G.quiet) { try { G.ui.toast('+' + pago + ' conchitas', 2400); } catch (er) { /* sin HUD */ } }
+    return pago;
+  }
+  // Carreras y retos que ya avisan su récord (retosResultado). Una partida de prueba no paga.
+  const MODOS_RETO = { flight: 1, rio_rush: 1, tren: 1, rio: 1, carrera: 1, tormenta: 1, rescate: 1, maze: 1, banquete: 1 };
+  G.on('retosResultado', ev => {
+    if (!ev || ev.prueba || G.quiet || !MODOS_RETO[ev.modo]) return;
+    if (ev.llego === false) return;
+    if (!(ev.nuevo || ev.nuevoRecord || ev.medalla === 'oro')) return;
+    const marca = (ev.nuevo || ev.nuevoRecord) ? String(ev.ms || ev.puntos || ev.puesto || 'rec') : 'oro';
+    ganarLogro('carrera:' + ev.modo + ':' + marca, PAGO_LOGRO.carrera);
+  });
   // Comprar: descuenta el precio exacto o no hace nada (nunca deja el saldo en negativo)
   function comprar(id) {
     const it = POR_ID[id];
@@ -108,7 +143,10 @@ window.AVTienda = function (G) {
   const ICONO = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#000" d="M12 3C7 3 3 7.2 3 12.2c0 2.4 1 4.6 2.6 6.1L12 21l6.4-2.7c1.6-1.5 2.6-3.7 2.6-6.1C21 7.2 17 3 12 3zm0 3.2.9 11.6h-1.8zM8 7.6l2.7 10.3-1.6.6zm8 0-1.1 10.9-1.6-.6zM5.6 11l4 7.2-1.3.9zm12.8 0-2.7 8.1-1.3-.9z"/></svg>') + '")';
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const tienesTxt = n => (n === 1 ? 'Tienes 1 conchita' : 'Tienes ' + n + ' conchitas');
-  const precioTxt = n => n + ' conchitas', faltanTxt = n => 'Te faltan ' + n, comprarTxt = n => 'Comprar · ' + n;
+  const precioTxt = n => n + ' conchitas', comprarTxt = n => 'Comprar · ' + n;
+  // «Te faltan 15: Ir a pescar»: las dos frases ya están en en.js (CG-75 tiene ese archivo). Van en nodos separados para que el inglés las traduzca.
+  const faltanTxt = n => 'Te faltan ' + n + ': ' + TXT.pescar;
+  const faltanHtml = n => `<span class="tn-falta"><span>${esc('Te faltan ' + n)}</span>: <span>${esc(TXT.pescar)}</span></span>`;
   const conjuntoTxt = (n, p) => n + ' piezas · ' + p + ' conchitas en total';
   const TXT = {
     titulo: 'Mercadito del río',
@@ -140,7 +178,15 @@ window.AVTienda = function (G) {
       '#tienda .tn-txt{min-width:0}#tienda .tn-txt b{display:block;font-size:var(--fs-sm,15px);line-height:1.25;color:var(--c-ink,#3b2a14)}#tienda .tn-txt small{display:block;margin-top:2px;font-size:var(--fs-xs,13px);color:var(--c-ink-muted,#6b5236)}' +
       '#tienda .tn-b{min-height:var(--tap,48px);min-width:var(--tap,48px);padding:0 14px;white-space:nowrap;font-size:var(--fs-sm,15px)}' +
       '#tienda .tn-falta,#tienda .tn-ok{font:700 var(--fs-xs,13px)/1.2 var(--font-body,inherit);white-space:nowrap;padding:6px 10px;border-radius:999px}' +
-      '#tienda .tn-falta{color:#7a4b16;background:#fbe7c4}#tienda .tn-ok{color:#17552c;background:#d3f0d8}' +
+      '#tienda .tn-falta{color:#7a4b16;background:#fbe7c4;white-space:normal}#tienda .tn-ok{color:#17552c;background:#d3f0d8}' +
+      '#tienda .tn-cats{display:flex;gap:8px;margin:0 0 8px}#tienda .tn-cat{flex:1 1 40%;min-height:var(--tap,48px);min-width:var(--tap,48px);padding:8px 10px;white-space:normal;line-height:1.2}' +
+      '#tienda .tn-cat[aria-pressed="true"]{box-shadow:inset 0 0 0 3px #1f7a4a}' +
+      '#tienda .tn-acc{display:flex;flex-direction:column;gap:6px;min-width:0}' +
+      '#tienda li.tn-vista{outline:3px solid #3d8fb0}' +
+      '#tienda button:focus-visible{outline:3px solid #1f7a4a;outline-offset:2px}' +
+      '@keyframes tn-pop{0%{transform:scale(.97)}45%{transform:scale(1.03)}100%{transform:scale(1)}}' +
+      '#tienda li.tn-nueva{animation:tn-pop .5s var(--ease-pop,ease);outline:3px solid #e8c32a}' +
+      '@media (prefers-reduced-motion:reduce){#tienda li.tn-nueva{animation:none}}' +
       '#tienda .tn-msg{min-height:1.4em;margin:var(--sp-2,8px) 0 0;font-weight:700;color:#17552c}' +
       '#tienda .tn-pie{position:sticky;bottom:0;display:flex;flex-wrap:wrap;gap:var(--sp-3,12px);justify-content:flex-end;margin:var(--sp-2,8px) calc(var(--sp-5,20px) * -1) 0;padding:var(--sp-3,12px) var(--sp-5,20px) var(--sp-4,16px);background:linear-gradient(180deg,rgba(251,241,220,0),var(--c-paper,#fbf1dc) 30%)}' +
       '#tienda .tn-pie .btn{min-height:var(--tap,48px)}' +
@@ -149,7 +195,9 @@ window.AVTienda = function (G) {
       '#p-tienda{width:100%;margin:0 0 var(--sp-3,12px);min-height:var(--tap,48px)}#p-tienda::before{--icon:' + ICONO + '}';
     document.head.appendChild(estilo);
   }
-  let abiertaYa = false, origen = '', foco = null, ariaLabel0 = null, msg = '';
+  let abiertaYa = false, origen = '', foco = null, ariaLabel0 = null, msg = '', msgFalta = null;
+  let probando = '', recien = '', cat = 'ropa';
+  let puestoDeVerdad = null, lookDeVerdad = null;
   const abierta = () => abiertaYa && !!$('tienda') && G.ui && G.ui.cardOpen;
   function miniatura(it) {
     if (it.tipo === 'construir') {
@@ -160,14 +208,19 @@ window.AVTienda = function (G) {
   }
   function filaItem(it, e) {
     const mia = e.compras.includes(it.id);
+    const esRopa = it.tipo === 'ropa' || (it.tipo !== 'construir' && !!it.viste);
+    const probar = esRopa && !mia ? `<button class="btn secondary tn-b" type="button" data-tn="probar" data-id="${it.id}" aria-pressed="${probando === it.id}" aria-label="${esc('Probar: ' + it.nombre)}">${esc('Probar')}</button>` : '';
     let accion;
-    if (!mia) accion = e.conchitas >= it.precio
-      ? `<button class="btn tn-b" type="button" data-tn="comprar" data-id="${it.id}" aria-label="${esc('Comprar ' + it.nombre + ' por ' + precioTxt(it.precio))}">${esc(comprarTxt(it.precio))}</button>`
-      : `<span class="tn-falta">${esc(faltanTxt(it.precio - e.conchitas))}</span>`;
-    else if (it.tipo === 'ropa') accion = puesta(it) ? `<span class="tn-ok"><span>${esc(TXT.puesta)}</span> ✓</span>` : `<button class="btn secondary tn-b" type="button" data-tn="vestir" data-id="${it.id}" aria-label="${esc(TXT.ponerla + ': ' + it.nombre)}">${esc(TXT.ponerla)}</button>`;
+    if (!mia) {
+      const pago = e.conchitas >= it.precio
+        ? `<button class="btn tn-b" type="button" data-tn="comprar" data-id="${it.id}" aria-label="${esc('Comprar ' + it.nombre + ' por ' + precioTxt(it.precio))}">${esc(comprarTxt(it.precio))}</button>`
+        : faltanHtml(it.precio - e.conchitas);
+      accion = probar ? `<span class="tn-acc">${probar}${pago}</span>` : pago;
+    } else if (esRopa) accion = puesta(it) ? `<span class="tn-ok"><span>${esc(TXT.puesta)}</span> ✓</span>` : `<button class="btn secondary tn-b" type="button" data-tn="vestir" data-id="${it.id}" aria-label="${esc(TXT.ponerla + ': ' + it.nombre)}">${esc(TXT.ponerla)}</button>`;
     else accion = `<span class="tn-ok"><span>${esc(TXT.tuya)}</span> ✓</span>`;
     const sub = mia ? esc(TXT.tuya) : CONCHA + esc(precioTxt(it.precio));
-    return `<li class="${mia ? 'tuya' : ''}" data-id="${it.id}"><span class="tn-img" data-img="${it.id}">${miniatura(it)}</span><span class="tn-txt"><b>${esc(it.nombre)}</b><small>${sub}</small></span>${accion}</li>`;
+    const cls = (mia ? 'tuya' : '') + (recien === it.id ? ' tn-nueva' : '') + (probando === it.id ? ' tn-vista' : '');
+    return `<li class="${cls.trim()}" data-id="${it.id}"><span class="tn-img" data-img="${it.id}">${miniatura(it)}</span><span class="tn-txt"><b>${esc(it.nombre)}</b><small>${sub}</small></span>${accion}</li>`;
   }
   function html() {
     const e = est(), conj = {}, sueltas = [];
@@ -175,18 +228,20 @@ window.AVTienda = function (G) {
     let ropa = '';
     for (const c in conj) {
       const l = conj[c], total = l.reduce((s, it) => s + it.precio, 0), todas = l.every(it => e.compras.includes(it.id)), puesto = todas && l.every(puesta);
-      const boton = todas && !puesto ? `<button class="btn secondary tn-b" type="button" data-tn="conjunto" data-id="${c}">${esc(TXT.ponerConj)}</button>` : '';
+      const boton = todas && !puesto ? `<button class="btn secondary tn-b" type="button" data-tn="conjunto" data-id="${c}" aria-label="${esc(TXT.ponerConj)}">${esc(TXT.ponerConj)}</button>` : '';
       ropa += `<p class="tn-sub"><span><span>${esc(CONJUNTO[c] || c)}</span> <small>${esc(conjuntoTxt(l.length, total))}</small></span>${boton}</p><ul>${l.map(it => filaItem(it, e)).join('')}</ul>`;
     }
     if (sueltas.length) ropa += `<p class="tn-sub"><span>${esc(TXT.otras)}</span></p><ul>${sueltas.map(it => filaItem(it, e)).join('')}</ul>`;
     const conConstruir = G.CONSTRUIR !== false && !!G.construir;
     const piezas = conConstruir ? `<ul>${ITEMS.filter(it => it.tipo === 'construir').map(it => filaItem(it, e)).join('')}</ul>` : `<p class="tn-nota">${esc(TXT.sinPiezas)}</p>`;
-    const pescar = origen !== 'pesca' && G.PESCA !== false && G.pescaBotonPausa ? `<button class="btn" type="button" data-tn="pescar">${esc(TXT.pescar)}</button>` : '';
+    const pescar = origen !== 'pesca' && G.PESCA !== false && G.pescaBotonPausa ? `<button class="btn" type="button" data-tn="pescar" aria-label="${esc(TXT.pescar)}">${esc(TXT.pescar)}</button>` : '';
+    const cats = `<div class="tn-cats" role="tablist" aria-label="${esc(TXT.titulo)}"><button class="btn secondary tn-cat" type="button" role="tab" data-tn="cat" data-id="ropa" aria-controls="tn-ropa" aria-pressed="${cat === 'ropa'}" aria-label="${esc(TXT.ropa)}">${esc(TXT.ropa)}</button><button class="btn secondary tn-cat" type="button" role="tab" data-tn="cat" data-id="piezas" aria-controls="tn-piezas" aria-pressed="${cat === 'piezas'}" aria-label="${esc(TXT.piezas)}">${esc(TXT.piezas)}</button></div>`;
+    const aviso = msgFalta != null ? `<p class="tn-msg" role="status" aria-live="polite">${faltanHtml(msgFalta)}</p>` : `<p class="tn-msg" role="status" aria-live="polite">${esc(msg)}</p>`;
     return `<div id="tienda" data-origen="${esc(origen)}"><h2>${esc(TXT.titulo)}</h2>` +
       `<p class="tn-saldo" data-tn-saldo>${CONCHA}<span>${esc(tienesTxt(e.conchitas))}</span></p><p class="tn-nota">${esc(TXT.nota)}</p>` +
-      `<h3>${esc(TXT.ropa)}</h3>${ropa}<h3>${esc(TXT.piezas)}</h3>${piezas}` +
-      `<p class="tn-msg" role="status" aria-live="polite">${esc(msg)}</p>` +
-      `<div class="tn-pie">${pescar}<button class="btn ghost" type="button" data-tn="cerrar">${esc(TXT.cerrar)}</button></div></div>`;
+      cats + `<h3 id="tn-ropa">${esc(TXT.ropa)}</h3>${ropa}<h3 id="tn-piezas">${esc(TXT.piezas)}</h3>${piezas}` +
+      aviso +
+      `<div class="tn-pie">${pescar}<button class="btn ghost" type="button" data-tn="cerrar" aria-label="${esc(TXT.cerrar)}">${esc(TXT.cerrar)}</button></div></div>`;
   }
   // Miniaturas reales de la ropa (el mismo render que Mi personaje, G.creador.accessoryThumb); si no hay WebGL, queda el color
   async function miniaturas() {
@@ -207,10 +262,55 @@ window.AVTienda = function (G) {
     const b = enfocar || !mismo ? (enfocar ? t.querySelector(enfocar) : null) || t.querySelector('[data-tn="comprar"],[data-tn="vestir"],[data-tn="cerrar"]') : mismo;
     if (b) try { b.focus({ preventScroll: !!mismo }); } catch (e) { /* */ }
   }
+  function copia(x) { return JSON.parse(JSON.stringify(x || {})); }
+  function anclar(inicial) {
+    puestoDeVerdad = copia(S.wear);
+    if (inicial) {
+      try {
+        const ch = window.AVShowcase && AVShowcase.character && AVShowcase.character();
+        lookDeVerdad = ch && ch.look ? copia(ch.look) : null;
+      } catch (e) { lookDeVerdad = null; }
+    }
+    if (lookDeVerdad) lookDeVerdad.accessories = copia(S.wear);
+  }
+  function pintarCotorra(wear, celebrar) {
+    S.wear = wear;
+    try { G.actores.applyWear(); } catch (e) { /* sin personaje 3D */ }
+    try {
+      const sh = window.AVShowcase;
+      if (!sh || !sh.setLook || sh.status() !== 'ready') return null;
+      const base = lookDeVerdad || (sh.character() && sh.character().look);
+      if (!base) return null;
+      const look = copia(base); look.accessories = copia(wear);
+      sh.setLook(look, !!celebrar);
+      return look;
+    } catch (e) { return null; }
+  }
+  function probar(id) {
+    const it = POR_ID[id]; if (!it || it.tipo !== 'ropa' || tiene(id)) return false;
+    if (!puestoDeVerdad) anclar();
+    const v = it.viste;
+    const pieza = v.style ? { id: v.id, color: v.color, style: v.style } : { id: v.id, color: v.color };
+    pintarCotorra(Object.assign({}, puestoDeVerdad, { [v.slot]: pieza }), true);
+    probando = id; msg = TXT.puesta; msgFalta = null; sonar('tick');
+    return true;
+  }
+  function restaurar() {
+    if (!puestoDeVerdad) return;
+    const wear = puestoDeVerdad, look = lookDeVerdad;
+    puestoDeVerdad = null; lookDeVerdad = null; probando = '';
+    S.wear = wear;
+    try { G.actores.applyWear(); } catch (e) { /* */ }
+    try { if (look && window.AVShowcase && AVShowcase.status() === 'ready') AVShowcase.setLook(look, false); } catch (e) { /* */ }
+  }
   function abrir(o) {
     if (!disponible()) return false;
     css();
-    if (!abierta()) { foco = document.activeElement && document.activeElement !== document.body ? document.activeElement : null; msg = ''; }
+    if (!abierta()) {
+      foco = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;
+      msg = ''; msgFalta = null; probando = ''; recien = '';
+      anclar(true);
+    }
     origen = o || 'pausa'; abiertaYa = true;
     G.ui.showCard(html());
     const card = $('card');
@@ -225,6 +325,7 @@ window.AVTienda = function (G) {
   G.on('cardHidden', () => {
     if (!abiertaYa) return;
     abiertaYa = false;
+    restaurar();
     const card = $('card'); if (card) { card.setAttribute('aria-label', ariaLabel0 || 'Tarjeta'); card.setAttribute('aria-modal', 'false'); }
     try { if (G.creador && $('creator') && !$('creator').hidden) G.creador.renderSlots(); } catch (e) { /* */ }
     const f = foco; foco = null;
@@ -233,21 +334,52 @@ window.AVTienda = function (G) {
   // Otra tarjeta que pisa la del Mercadito (showCard de otro módulo) también la cierra
   const cardEl = $('card');
   if (cardEl) {
+    cardEl.addEventListener('keydown', ev => {
+      if (!abierta() || (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight')) return;
+      const b = ev.target.closest && ev.target.closest('[data-tn="cat"]'); if (!b) return;
+      ev.preventDefault();
+      const otro = b.dataset.id === 'piezas' ? 'ropa' : 'piezas';
+      const n = $('tienda') && $('tienda').querySelector(`[data-tn="cat"][data-id="${otro}"]`);
+      if (n) { n.click(); try { n.focus({ preventScroll: true }); } catch (e) { /* sin foco */ } }
+    });
     cardEl.addEventListener('click', ev => {
       if (!abierta()) return;
       const b = ev.target.closest && ev.target.closest('[data-tn]'); if (!b) return;
       const a = b.dataset.tn, id = b.dataset.id;
       if (a === 'cerrar') { cerrar(); return; }
+      if (a === 'cat') {
+        cat = id === 'piezas' ? 'piezas' : 'ropa';
+        const sec = document.getElementById(cat === 'piezas' ? 'tn-piezas' : 'tn-ropa');
+        if (sec) sec.scrollIntoView({ block: 'nearest' });
+        const nav = $('tienda') && $('tienda').querySelectorAll('[data-tn="cat"]');
+        if (nav) nav.forEach(x => x.setAttribute('aria-pressed', x.dataset.id === cat ? 'true' : 'false'));
+        return;
+      }
       if (a === 'pescar') { cerrar(); const t = G.pescaBotonPausa && G.pescaBotonPausa(); if (t && !t.hidden) t.click(); return; }
+      if (a === 'probar') { if (probar(id)) pintar(`[data-tn="probar"][data-id="${id}"]`); return; }
       if (a === 'comprar') {
-        const r = comprar(id), it = POR_ID[id];
-        if (r.ok) { msg = it.tipo === 'ropa' ? TXT.compraRopa : TXT.compraPieza; sonar('unlock'); try { if (!G.quiet && G.fx && G.fx.burst && G.S.pos) G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 10); } catch (e) { /* */ } }
-        else { msg = r.motivo === 'faltan' ? faltanTxt(r.faltan) : ''; sonar('wrong'); }
+        const it = POR_ID[id];
+        if (it && it.tipo === 'ropa' && puestoDeVerdad) S.wear = copia(puestoDeVerdad);
+        const r = comprar(id);
+        if (r.ok) {
+          msg = it.tipo === 'ropa' ? TXT.compraRopa : TXT.compraPieza; msgFalta = null; recien = id; probando = '';
+          if (it.tipo === 'ropa') { anclar(false); pintarCotorra(S.wear, true); }
+          sonar('unlock');
+          try { if (!G.quiet && G.fx && G.fx.burst && G.S.pos) G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 10); } catch (e) { /* */ }
+        } else { msg = ''; msgFalta = r.motivo === 'faltan' ? r.faltan : null; sonar('wrong'); }
         pintar(r.ok ? `[data-tn="vestir"][data-id="${id}"],[data-tn="conjunto"],[data-tn="cerrar"]` : null);
         return;
       }
-      if (a === 'vestir') { if (vestir(id)) { msg = TXT.vestida; sonar('tick'); } pintar(); return; }
-      if (a === 'conjunto') { if (vestirConjunto(id)) { msg = TXT.conjVestido; sonar('unlock'); } pintar('[data-tn="cerrar"]'); }
+      if (a === 'vestir') {
+        if (puestoDeVerdad) S.wear = copia(puestoDeVerdad);
+        if (vestir(id)) { msg = TXT.vestida; msgFalta = null; anclar(false); pintarCotorra(S.wear, true); sonar('tick'); }
+        pintar(); return;
+      }
+      if (a === 'conjunto') {
+        if (puestoDeVerdad) S.wear = copia(puestoDeVerdad);
+        if (vestirConjunto(id)) { msg = TXT.conjVestido; msgFalta = null; anclar(false); pintarCotorra(S.wear, true); sonar('unlock'); }
+        pintar('[data-tn="cerrar"]');
+      }
     });
   }
   // Escape lo atiende input.js (cierra la tarjeta); con la pesca enganchada, pesca.js deja pasar las teclas mientras hay tarjeta
@@ -260,7 +392,7 @@ window.AVTienda = function (G) {
     if (grid && !$('b-tienda')) {
       const b = document.createElement('button'); b.className = 'btn tile'; b.id = 'b-tienda'; b.type = 'button';
       b.dataset.icon = 'tienda'; b.style.setProperty('--icon', ICONO); b.setAttribute('popovertarget', 'pause'); b.setAttribute('popovertargetaction', 'hide');
-      b.textContent = 'Mercadito';
+      b.textContent = 'Mercadito'; b.setAttribute('aria-label', 'Mercadito');
       b.addEventListener('click', () => setTimeout(() => abrir('pausa'), 0));
       const ref = $('b-save'); grid.insertBefore(b, ref && ref.parentNode === grid ? ref : null);
     }
@@ -296,6 +428,26 @@ window.AVTienda = function (G) {
       check('Partida sin Mercadito: 0 conchitas y nada comprado', saldo() === 0 && compradas().length === 0);
       check('Ganar solo suma enteros positivos', ganar(-5) === 0 && ganar(2.5) === 0 && ganar(0) === 0 && ganar('9') === 0 && saldo() === 0);
       check('La pesca paga fijo por especie y el DRNA da el bono solo por invasoras', pagarPez('olivo', 'foto') === 5 && pagarPez('guavina', 'foto') === 15 && pagarPez('tilapia', 'drna') === 10 && pagarPez('dajao', 'drna') === 0 && pagarPez('tiburon', 'foto') === 0 && saldo() === 30, saldo());
+      // CG-87: logros fuera de la pesca. La pesca de arriba no cuenta para el tope.
+      S.tienda = { v: 1, conchitas: 0, ganadas: 0, compras: [] };
+      G.quiet = false;
+      const rec = ganarLogro('golf-rec:1:1', PAGO_LOGRO.record), otra = ganarLogro('golf-rec:1:1', PAGO_LOGRO.record), uno = ganarLogro('golf-uno:1', PAGO_LOGRO.uno);
+      let carreras = 0; for (let i = 0; i < 20; i++) carreras += ganarLogro('carrera:flight:' + i, PAGO_LOGRO.carrera);
+      const tope = rec + otra + uno + carreras;
+      check('Récord y hoyo en uno pagan poco y una sola vez; el tope diario es ' + TOPE_DIA, rec === 2 && otra === 0 && uno === 3 && tope === TOPE_DIA && saldo() === TOPE_DIA, saldo());
+      const ayer = leer(S.tienda); ayer.dia = { fecha: '2000-01-01', n: TOPE_DIA }; S.tienda = ayer;
+      check('Al día siguiente el tope vuelve a empezar', ganarLogro('golf-rec:2:1', 2) === 2 && saldo() === TOPE_DIA + 2);
+      G.emit('retosResultado', { modo: 'tren', nuevo: true, puntos: 40, prueba: true });
+      const antesTren = saldo();
+      G.emit('retosResultado', { modo: 'tren', nuevo: true, puntos: 40 });
+      const tren1 = saldo() - antesTren;
+      G.emit('retosResultado', { modo: 'tren', nuevo: true, puntos: 40 });
+      check('Un récord de reto paga +2 una vez; una partida de prueba no paga', tren1 === 2 && saldo() === antesTren + 2);
+      G.quiet = true;
+      check('Con la prueba en silencio un logro no paga', ganarLogro('golf-rec:3:1', 2) === 0 && saldo() === antesTren + 2);
+      check('La pesca no usa el tope del día', pagarPez('olivo', 'foto') === 5 && saldo() === antesTren + 7);
+      G.quiet = true;
+      S.tienda = { v: 1, conchitas: 30, ganadas: 30, compras: [] };
       const r0 = comprar('farol');
       check('Sin conchitas suficientes no se compra y dice cuántas faltan; el saldo no baja', !r0.ok && r0.motivo === 'faltan' && r0.faltan === 10 && saldo() === 30 && !tiene('farol'), JSON.stringify(r0));
       ganar(70);
@@ -332,10 +484,22 @@ window.AVTienda = function (G) {
       check('Entradas: botón «Mercadito» en la Pausa y en Mi personaje', !!bP && !!bP.closest('#pause') && !!bC && !!bC.closest('#creator'));
       check('abrir() muestra la tarjeta del Mercadito con el saldo', abrir('prueba') && G.ui.cardOpen && !!$('tienda') && $('tienda').querySelector('[data-tn-saldo]').textContent.includes(tienesTxt(75)));
       await espera(50);
+      const bRopa = $('tienda').querySelector('[data-tn="cat"][data-id="ropa"]'), bPie = $('tienda').querySelector('[data-tn="cat"][data-id="piezas"]');
+      check('Categorías claras: Ropa y Piezas', !!bRopa && !!bPie && bRopa.textContent.trim() === TXT.ropa && bPie.textContent.trim() === TXT.piezas && bRopa.getAttribute('aria-pressed') === 'true');
+      const hojaT = (document.getElementById('tn-estilo') || {}).textContent || '';
+      const noms = [...$('tienda').querySelectorAll('button')].filter(b => !((b.getAttribute('aria-label') || b.textContent || '').trim()));
+      check('Cada botón tiene nombre, el foco se ve y reducir movimiento apaga la animación', !noms.length && /button:focus-visible/.test(hojaT) && /prefers-reduced-motion/.test(hojaT), noms.map(b => b.dataset.tn).join(','));
+      bPie.focus(); bPie.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      check('Con el teclado, la flecha cambia de Piezas a Ropa', document.activeElement === bRopa && bRopa.getAttribute('aria-pressed') === 'true' && bPie.getAttribute('aria-pressed') === 'false');
+      const bPro = $('tienda').querySelector('[data-tn="probar"][data-id="sombrero_rio"]');
+      check('La ropa sin comprar tiene «Probar»', !!bPro && bPro.textContent.trim() === 'Probar', bPro ? bPro.textContent : 'sin botón');
+      if (bPro) bPro.click();
+      check('Probar la pone en la cotorra sin cobrar ni desbloquear', saldo() === 75 && !tiene('sombrero_rio') && S.wear.head && S.wear.head.id === 'sombrero2' && S.wear.head.color === '#2e8b7a' && !(S.unlocked || []).includes('sombrero2:#2e8b7a'), JSON.stringify(S.wear && S.wear.head));
       const bHel = $('tienda').querySelector('[data-tn="comprar"][data-id="helecho"]'), sinBoton = !$('tienda').querySelector('[data-tn="comprar"][data-id="traje_rio"]');
       check('Lo que alcanza tiene «Comprar · precio»; lo que no, «Te faltan N» (sin botón)', !!bHel && bHel.textContent.trim() === comprarTxt(25) && sinBoton && $('tienda').querySelector('[data-id="traje_rio"] .tn-falta').textContent === faltanTxt(45), bHel && bHel.textContent);
       bHel.click();
       check('El botón compra: 75 − 25 = 50, la fila pasa a «Ya es tuya» y lo anuncia', saldo() === 50 && tiene('helecho') && !!$('tienda').querySelector('li.tuya[data-id="helecho"]') && $('tienda').querySelector('.tn-msg').textContent === TXT.compraPieza);
+      check('Comprar suena y anima la fila', ultimoSonido === 'unlock' && $('tienda').querySelector('li[data-id="helecho"]').classList.contains('tn-nueva'));
       // maqueta a 390 × 844 con las hojas reales
       const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
       fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:390px;height:844px;border:0';
@@ -372,6 +536,25 @@ window.AVTienda = function (G) {
         for (const t of ['Tienes {} conchitas', 'Tienes 1 conchita', '{} conchitas', 'Te faltan {}', 'Comprar · {}', '{} piezas · {} conchitas en total', 'Comprar {} por {} conchitas', 'el Mercadito del río ({} conchitas)', 'Mercadito', 'Ponértela: {}', 'Esa pieza está en el Mercadito del río.']) ver(t);
         check('Inglés: todos los textos del Mercadito están en content/cap1/en.js', !falta.length, falta.slice(0, 5).join(' | '));
       } catch (e) { check('Inglés: se pudo leer content/cap1/en.js', false, e); }
+      // CG-74: la miniatura del traje azul es el modelo (túnica + emblema), la misma que Mi personaje
+      if (G.creador && G.creador.accessoryThumb && !G.actores.failed3D) {
+        const src = await G.creador.accessoryThumb('traje', '#1c6e8c');
+        const img = new Image();
+        await new Promise(r => { img.onload = img.onerror = r; img.src = src; });
+        const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+        const g = cv.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0, 64, 64);
+        const px = g.getImageData(0, 0, 64, 64).data;
+        let opacos = 0, azul = 0, oro = 0, verde = 0;
+        for (let i = 0; i < px.length; i += 4) {
+          if (px[i + 3] < 24) continue;
+          opacos++;
+          const r = px[i], gg = px[i + 1], b = px[i + 2];
+          if (b > r + 18 && b > gg && b > 45) azul++;
+          else if (r > 150 && gg > 100 && b < 110 && r > b + 30) oro++;
+          else if (gg > r + 12 && gg > b && gg > 50) verde++;
+        }
+        check('La miniatura del traje azul del Guardián muestra la túnica y el emblema', opacos > 350 && azul > opacos * 0.18 && oro > 8 && verde > 4, `opacos ${opacos} azul ${azul} oro ${oro} verde ${verde}`);
+      } else check('La miniatura del traje azul del Guardián muestra la túnica y el emblema', !G.actores.failed3D, 'sin WebGL');
       check('Sin errores de consola durante la prueba', !errores.length, errores.slice(0, 3).join(' | '));
     } catch (e) {
       check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
@@ -387,8 +570,8 @@ window.AVTienda = function (G) {
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
 
-  const api = { disponible, saldo, ganadas, compradas, tiene, precio, pagarPez, ganar, comprar, vestir, vestirConjunto, abrir, cerrar, abierta, leer,
-    PAGO_PEZ, BONO_DRNA, CATALOGO: ITEMS.map(it => Object.assign({}, it)), test };
+  const api = { disponible, saldo, ganadas, compradas, tiene, precio, pagarPez, ganar, ganarLogro, comprar, vestir, vestirConjunto, abrir, cerrar, abierta, leer,
+    PAGO_PEZ, PAGO_LOGRO, TOPE_DIA, BONO_DRNA, CATALOGO: ITEMS.map(it => Object.assign({}, it)), test };
   G.tienda = api;
   return api;
 };

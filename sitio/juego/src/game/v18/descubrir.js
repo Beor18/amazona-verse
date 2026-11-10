@@ -208,7 +208,7 @@ window.AVV18Descubrir = function (G) {
     if (R.activo || desbloqueada() || !P.length) return false;
     if (!descubierta()) descubrir();
     posar(0);
-    Object.assign(R, { activo: true, t: RETO_S, k: 1, avisoPoco: false }); R.intentos++;
+    Object.assign(R, { activo: true, t: RETO_S, k: 1, avisoPoco: false, sin: 0, pista20: false }); R.intentos++;
     volarA(1);
     toast(TXT.empieza);
     return true;
@@ -236,9 +236,11 @@ window.AVV18Descubrir = function (G) {
       if (R.k >= SALTOS) { posar(R.k); terminarReto(true); return; }
       sonar('pickup', R.k + 2);
       toast(TXT.bien + ' ' + R.k + '/' + SALTOS, 1800);
-      R.k++; volarA(R.k);
+      R.k++; R.sin = 0; R.pista20 = false; volarA(R.k);
       return;
     }
+    R.sin = (R.sin || 0) + dt;
+    if (!R.pista20 && R.sin >= 20) { R.pista20 = true; toast(TXT.empieza, 2800); }
     if (R.t <= 0) { terminarReto(false, 'tiempo'); return; }
     if (distXZ(s.pos, B.pos) > R_LEJOS) terminarReto(false, 'lejos');
   }

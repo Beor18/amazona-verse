@@ -70,7 +70,7 @@ window.AVV18Serpiente = function (G) {
     if ((deshecha() || !lista()) && !o.forzar) return false;
     if (G.v18combate && G.v18combate.estado && G.v18combate.estado().fase !== 'nada') return false;
     if (G.v18amenaza && G.v18amenaza.estado && G.v18amenaza.estado().fase === 'lucha') return false;
-    Object.assign(A, { fase: 'lucha', t: 0, vel: 0.35, siguiente: 0, sueltos: [false, false, false, false], ciclo: 0, empuje: null, premio: false, escala: 1 });
+    Object.assign(A, { fase: 'lucha', t: 0, vel: 0.35, siguiente: 0, sueltos: [false, false, false, false], ciclo: 0, empuje: null, premio: false, escala: 1, sin: 0, pista20: false });
     bejucos.visible = nudos.visible = ojos.visible = true;
     enganchar(); toast(TXT.empieza, 2600); sonar('nido_chispa'); emitir({ tipo: 'empieza' });
     return true;
@@ -86,7 +86,7 @@ window.AVV18Serpiente = function (G) {
     const i = A.siguiente, p = posNudo(i), d = Math.hypot(S.pos.x - p.x, (S.pos.y + 0.8 - p.y) * 0.8, S.pos.z - p.z);
     if (d > R_NUDO) { latigo(TXT.lejos); return { ok: false, motivo: 'lejos', d }; }
     if (!brilla()) { latigo(TXT.espera); return { ok: false, motivo: 'destiempo' }; }
-    A.sueltos[i] = true; A.siguiente++; A.vel += 0.18;
+    A.sueltos[i] = true; A.siguiente++; A.vel += 0.18; A.sin = 0;
     fx('leaves', p.x, p.y, p.z, 14); fx('stars', p.x, p.y, p.z, 8); sonar('unlock');
     emitir({ tipo: 'nudo', n: A.siguiente });
     if (A.siguiente >= NUDOS) terminar(); else toast(TXT.suelto + ' ' + A.siguiente + '/' + NUDOS, 1600);
@@ -105,7 +105,7 @@ window.AVV18Serpiente = function (G) {
     if (nueva) pagar();
     A.premio = nueva;
     try { if (sitio.rastro && G.marana && G.marana.limpiar) G.marana.limpiar(sitio.rastro); } catch (e) { /* sin maraña */ }
-    toast(TXT.fin, 2600); setTimeout(() => toast(nueva ? TXT.gana : TXT.ganaOtra, 3400), G.quiet ? 0 : 1800);
+    toast(TXT.fin, 2200); toast(nueva ? TXT.gana : TXT.ganaOtra, 3400);
     fx('leaves', sitio.x, altura(sitio.x, sitio.z) + 3, sitio.z, 30); fx('gold', sitio.x, altura(sitio.x, sitio.z) + 3, sitio.z, 18); sonar('unlock');
     emitir({ tipo: 'win', premio: nueva });
     soltar();
@@ -170,6 +170,8 @@ window.AVV18Serpiente = function (G) {
     A.giro += A.vel * dt; A.ciclo = (A.ciclo + dt) % PERIODO;
     if (A.empuje && A.empuje.t > 0) { S.pos.x += A.empuje.x * dt; S.pos.z += A.empuje.z * dt; A.empuje.t -= dt; }
     if (dc > R_SALE) { salir(TXT.sale); return; }
+    A.sin += dt;
+    if (!A.pista20 && A.sin >= 20) { A.pista20 = true; toast(TACTIL ? TXT.guiaT : TXT.guia, 3200); }
     dibujar();
   }
   // En pausa o con una tarjeta abierta no avanza (como el resto del mundo)
@@ -208,7 +210,7 @@ window.AVV18Serpiente = function (G) {
       check('Cerca pero sin brillo: no se suelta (precisión)', accion().motivo === 'destiempo' && A.siguiente === 0);
       correr(0.5);
       for (let i = 0; i < NUDOS; i++) { esperarBrillo(); alNudo(A.siguiente); A.empuje = null; const r = accion(); if (!r.ok) break; correr(0.1); }
-      check('Los 4 nudos en orden, cada uno cuando brilla, la deshacen: «Ya vendré a enredar otro día…»', A.siguiente === NUDOS && A.fase === 'deshace' && toasts.includes(TXT.fin), 'nudos ' + A.siguiente + ', fase ' + A.fase);
+      check('Los 4 nudos en orden, cada uno cuando brilla, la deshacen: «Ya vendré a enredar otro día…»', A.siguiente === NUDOS && A.fase === 'deshace' && toasts.includes(TXT.fin) && toasts.includes(TXT.gana), 'nudos ' + A.siguiente + ', fase ' + A.fase);
       check('Cada nudo suelto la hace girar más rápido y acorta el brillo', A.vel > 0.35 + 0.18 * 3 && ventana() < 1.1);
       check('Premio una vez: 1 madera', (S.inv.madera || 0) === (inv0.madera || 0) + 1 && A.premio);
       correr(1.5);
@@ -217,6 +219,9 @@ window.AVV18Serpiente = function (G) {
       for (let i = 0; i < NUDOS; i++) { esperarBrillo(); alNudo(A.siguiente); A.empuje = null; accion(); correr(0.1); }
       check('Repetirla no da el premio otra vez', !A.premio && (S.inv.madera || 0) === (inv0.madera || 0) + 1);
       correr(1.5);
+      toasts.length = 0; iniciar({ forzar: true }); S.pos.x = sitio.x + 8; S.pos.z = sitio.z; correr(20.2);
+      check('A los 20 s sin soltar un nudo sale la pista', toasts.includes(TACTIL ? TXT.guiaT : TXT.guia), toasts.slice(-3).join(' | '));
+      salir();
       iniciar({ forzar: true }); S.pos.x = sitio.x + R_SALE + 5; S.pos.z = sitio.z; correr(0.1);
       check('Al alejarse se sale y suelta la Acción', A.fase === 'nada' && G.interaccion.modo !== modo);
     } catch (e) { check('Sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 2).join(' ') : e); }
