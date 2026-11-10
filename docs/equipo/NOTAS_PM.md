@@ -83,6 +83,14 @@ Pasos para reproducirlo:
 - **Cómo probarlo:** niño nuevo, saltar intro, volar a la copa y pulsar Acción un poco por encima. Desde el suelo no se le habla.
 - **Lo confirma:** selfTest 109/109 (caso «CG-105 · a 2 m sobre la copa»), missionTest 80/80, e2eTest 49/49. Build `cg-105-4ca8ce19` (mismo código): las 12 en verde, 0 errores de consola. Un aviso ajeno de `streaming.js` («reading '0'»).
 
+### Dev 4 · 10-nov 06:25 AST · CG-112 en curso
+- **Tarea:** guardado de interiores. Fila EN CURSO. QA-231 ya está en `96bd84ea`.
+- **Commit de código:** todavía no.
+- **Archivos:** `content/cap1/pack.js` (versión 7) y `src/engine/guardado.js` (solo la validación y saveTest). No toco `interiores.js` (CG-110, Dev 1), `interiores_kit.js` (CG-111, Dev 2), `streaming.js` ni textos educativos.
+- **Qué falta:** `S.interiores = { v:1, edificios:{ id:{ piezas, estado } } }`, partidas viejas → `null`, datos rotos descartados, tope de piezas, y los casos en saveTest.
+- **Cómo probarlo:** `AV.saveTest()` y las 12 baterías.
+- **Lo confirma:** saveTest y las 12, 0 errores de consola.
+
 ### Dev 4 · 10-nov · aviso de heap para Kimi
 - **Tarea:** anotar el heap de la sesión larga. Sin código.
 - **Commit:** este. CG-106 sigue en `ff44198f`.
