@@ -175,7 +175,7 @@ window.AVTienda = function (G) {
       '#tienda .tn-img{width:56px;height:56px;border-radius:12px;background:radial-gradient(circle at 50% 40%,#fffaf0,#efe2c8);display:grid;place-items:center;overflow:hidden}' +
       '#tienda .tn-img img{width:56px;height:56px;object-fit:contain}#tienda .tn-img svg{width:44px;height:44px}' +
       '#tienda .tn-img .tn-color{width:30px;height:30px;border-radius:50%;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18),0 0 0 3px #fff}' +
-      '#tienda .tn-txt{min-width:0}#tienda .tn-txt b{display:block;font-size:var(--fs-sm,15px);line-height:1.25;color:var(--c-ink,#3b2a14)}#tienda .tn-txt small{display:block;margin-top:2px;font-size:var(--fs-xs,13px);color:var(--c-ink-muted,#6b5236)}' +
+      '#tienda .tn-txt{min-width:0}#tienda .tn-txt b{display:block;overflow-wrap:anywhere;font-size:var(--fs-sm,15px);line-height:1.25;color:var(--c-ink,#3b2a14)}#tienda .tn-txt small{display:block;overflow-wrap:anywhere;margin-top:2px;font-size:var(--fs-xs,13px);color:var(--c-ink-muted,#6b5236)}' +
       '#tienda .tn-b{min-height:var(--tap,48px);min-width:var(--tap,48px);padding:0 14px;white-space:nowrap;font-size:var(--fs-sm,15px)}' +
       '#tienda .tn-falta,#tienda .tn-ok{font:700 var(--fs-xs,13px)/1.2 var(--font-body,inherit);white-space:nowrap;padding:6px 10px;border-radius:999px}' +
       '#tienda .tn-falta{color:#7a4b16;background:#fbe7c4;white-space:normal}#tienda .tn-ok{color:#17552c;background:#d3f0d8}' +
@@ -190,6 +190,7 @@ window.AVTienda = function (G) {
       '#tienda .tn-msg{min-height:1.4em;margin:var(--sp-2,8px) 0 0;font-weight:700;color:#17552c}' +
       '#tienda .tn-pie{position:sticky;bottom:0;display:flex;flex-wrap:wrap;gap:var(--sp-3,12px);justify-content:flex-end;margin:var(--sp-2,8px) calc(var(--sp-5,20px) * -1) 0;padding:var(--sp-3,12px) var(--sp-5,20px) var(--sp-4,16px);background:linear-gradient(180deg,rgba(251,241,220,0),var(--c-paper,#fbf1dc) 30%)}' +
       '#tienda .tn-pie .btn{min-height:var(--tap,48px)}' +
+      '@media (min-width:561px){#tienda ul{grid-template-columns:1fr}}' +
       '@media (max-width:560px){#card:has(#tienda){padding:var(--sp-4,16px) var(--sp-4,16px) 0}#tienda li{grid-template-columns:48px 1fr;row-gap:8px}#tienda .tn-img,#tienda .tn-img img{width:48px;height:48px}' +
       '#tienda li>:last-child{grid-column:1 / -1;justify-self:stretch;text-align:center}#tienda .tn-b{width:100%}#tienda .tn-pie{margin:var(--sp-2,8px) calc(var(--sp-4,16px) * -1) 0;padding:var(--sp-3,12px) var(--sp-4,16px) var(--sp-4,16px)}#tienda .tn-pie .btn{flex:1 1 40%}}' +
       '#p-tienda{width:100%;margin:0 0 var(--sp-3,12px);min-height:var(--tap,48px)}#p-tienda::before{--icon:' + ICONO + '}';
@@ -486,6 +487,14 @@ window.AVTienda = function (G) {
       await espera(50);
       const bRopa = $('tienda').querySelector('[data-tn="cat"][data-id="ropa"]'), bPie = $('tienda').querySelector('[data-tn="cat"][data-id="piezas"]');
       check('Categorías claras: Ropa y Piezas', !!bRopa && !!bPie && bRopa.textContent.trim() === TXT.ropa && bPie.textContent.trim() === TXT.piezas && bRopa.getAttribute('aria-pressed') === 'true');
+      const solape = [];
+      for (const li of $('tienda').querySelectorAll('li')) {
+        const nom = li.querySelector('.tn-txt b'), btn = li.querySelector('[data-tn="probar"],[data-tn="comprar"],[data-tn="vestir"]');
+        if (!nom || !btn) continue;
+        const a = nom.getBoundingClientRect(), c = btn.getBoundingClientRect();
+        if (a.width > 0 && c.width > 0 && a.right > c.left + 1 && a.bottom > c.top + 1 && a.top < c.bottom - 1) solape.push(li.dataset.id);
+      }
+      check('En escritorio el nombre no se monta sobre Probar ni Comprar', !solape.length, solape.join(','));
       const hojaT = (document.getElementById('tn-estilo') || {}).textContent || '';
       const noms = [...$('tienda').querySelectorAll('button')].filter(b => !((b.getAttribute('aria-label') || b.textContent || '').trim()));
       check('Cada botón tiene nombre, el foco se ve y reducir movimiento apaga la animación', !noms.length && /button:focus-visible/.test(hojaT) && /prefers-reduced-motion/.test(hojaT), noms.map(b => b.dataset.tn).join(','));
