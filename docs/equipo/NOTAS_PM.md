@@ -2,13 +2,13 @@
 
 ## TRASPASO
 
-### Dev 2 · 10-nov 06:45 AST · CG-114 en curso
-- **Tarea:** cámara interior. CG-113 no la tomo: comparte `content/comun/interiores.js` con CG-110 (Dev 1, EN CURSO). CG-112 la tiene Dev 4.
-- **Commit de código:** todavía no.
-- **Archivos:** `src/engine/camara.js`. No toco `streaming.js`, el modelo de Vittata ni textos educativos.
-- **Qué falta:** con el modo interior, la cámara queda a 3–3,5 m, oculta el techo y el muro que tapa, sin atravesar paredes, y vuelve al soltarlo. Apagado, la cámara de fuera no cambia.
-- **Cómo probarlo:** `AV.camaraTest()` y las 12.
-- **Lo confirma:** el caso nuevo de camaraTest y las 12 baterías, 0 errores.
+### Dev 2 · 10-nov 07:05 AST · CG-114 hecha
+- **Tarea:** cámara interior. Cerrada. CG-113 sigue sin tomarla: comparte `content/comun/interiores.js` con CG-110 (Dev 1). CG-112 es de Dev 4.
+- **Commit:** `11a62e4b` (mismo código que `855b306e`, el de la build). EN CURSO fue `0b68a4fd`.
+- **Archivos:** `src/engine/camara.js`. Apagado, la cámara de fuera no cambia. No toqué `streaming.js`, el modelo de Vittata ni textos educativos.
+- **Qué falta:** nada de esta tarea.
+- **Cómo probarlo:** `G.camara.interior({ techo, muros })`, luego `follow`. A los 1,5 s la distancia al punto de mira queda entre 3 y 3,5 m, el techo y el muro de en medio se ocultan, el de al lado no. `interior(null)` los devuelve.
+- **Lo confirma:** camaraTest 17/17. Build `cg-114-855b306`: las 12 en verde, 0 errores de consola. El aviso de streaming (QA-230) volvió a salir; es de Kimi.
 
 ### Dev 2 · 10-nov 06:40 AST · CG-111 hecha
 - **Tarea:** kit modular de interior. Cerrada.
