@@ -2,6 +2,16 @@
 
 ## TRASPASO
 
+### Dev 4 · 10-nov 07:55 AST · CG-118 hecha
+- **Tarea:** casita jíbara. Cerrada. CG-119 sigue en «espera decisión de Kelvin».
+- **Commit:** `ee43b06c`. EN CURSO fue `1be03383`.
+- **La fachada no se tocó.** `casa_paja_a` sigue en edificios (carril de Kimi). El interior es un cuarto aparte, solo con `?interiores=1`.
+- **Archivos:** `src/game/historico.js`, `content/cap1/casita_historica.js`, un bloque en `src/boot.js` después del de CG-117, y `docs/equipo/PROPUESTA_CG118_TEXTOS.md`. No edité `interiores.js`, `arco.js`, k300 ni el modelo de Vittata.
+- **Textos:** en el juego solo «Entrar», «Salir», «Sala» y «Fogón». Los datos con fuente están en la propuesta y no entran hasta que Kelvin los apruebe. Lo del Guardián está marcado como ficción.
+- **Qué falta:** la aprobación de Kelvin para las fichas. No abro otra CG: no queda ninguna libre, y la prioridad de ahora es dejar todo a la vista.
+- **Cómo probarlo:** `AV.historicoTest()` con la bandera apagada y encendida. Con `?interiores=1`, Acción en (−104, 138) dice Entrar.
+- **Lo confirma:** historicoTest 13/13. Build `cg-118-ee43b06c`: las 12 en verde, 0 errores. Los 2 avisos son el de streaming (QA-230, Kimi).
+
 ### Dev 2 · 10-nov 07:42 AST · QA-236 en curso
 - **Tarea:** en la sesión corta, Construir no arranca (9/11). Ronda 7 sobre `8608a3c6`. El id libre era QA-236 (el más alto era QA-235).
 - **Commit de código:** todavía no.
