@@ -1449,7 +1449,7 @@ AVE.module('comic', function (G) {
       const okC = tipos.every(tipo => {
         const iv = R3.vinetas.find(v => v.pegatina && v.pegatina.tipo === tipo);
         if (!iv) return false;
-        const X = Math.round(iv.pegatina.x + 8), Y = Math.round(iv.pegatina.y + iv.pegatina.h / 2);
+        const X = Math.round(iv.pegatina.muestra.x), Y = Math.round(iv.pegatina.muestra.y);
         if (X < 0 || Y < 0 || X >= cv.width || Y >= cv.height) return false;
         const i = (Y * cv.width + X) * 4, c = colores[tipo];
         return Math.abs(pix[i] - c[0]) + Math.abs(pix[i + 1] - c[1]) + Math.abs(pix[i + 2] - c[2]) < 36;

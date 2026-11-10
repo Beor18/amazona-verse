@@ -471,8 +471,9 @@ AVE.module('comicPlantilla', function (G) {
     while (x.measureText(t).width > 72 && fs > 10) { fs -= 0.5; x.font = `700 ${fs}px ${FD}`; }
     x.lineWidth = 3; x.strokeStyle = INK; x.strokeText(t, X + 48, Y + PEG_H / 2 + 1);
     x.fillStyle = '#ffffff'; x.fillText(t, X + 48, Y + PEG_H / 2 + 1);
+    x.fillStyle = fondo; x.fillRect(X + 4, Y + 4, 10, 10); // muestra plana, lejos del borde y del icono
     x.restore();
-    return { tipo, x: X, y: Y, w: PEG_W, h: PEG_H };
+    return { tipo, x: X, y: Y, w: PEG_W, h: PEG_H, muestra: { x: X + 9, y: Y + 9 } };
   }
   // Tapa un texto de muestra de una pieza con el color del papel (degradado suave, sin bordes) — para escribir el dinámico encima
   function parche(x, X, Y, w, h, c0, c1) {
@@ -588,7 +589,7 @@ AVE.module('comicPlantilla', function (G) {
     // Página blanca
     const PB = PAGINA_BLANCA;
     rr(x, PB.x, PB.y, PB.w, PB.h, PB.r); x.fillStyle = '#f7fbff'; x.fill(); x.lineWidth = 4; x.strokeStyle = INK; x.stroke();
-    const info = [];
+    const info = [], sellos = [];
     d.vinetas.forEach((v, i) => {
       const s = SLOTS[i], q = s.quad, b = caja(q);
       x.save(); poli(x, q); x.clip();
@@ -634,9 +635,10 @@ AVE.module('comicPlantilla', function (G) {
       const pegTipo = v.falta ? null : (PEG_COLOR[v.pegatina] ? v.pegatina : (PEG_COLOR[ef] ? ef : null));
       let peg = null;
       if (pegTipo) {
-        const X = b.x + 10, Y = Math.max(b.y + 28, s.caja.y - PEG_H - 6);
-        peg = pegatinaActividad(x, X, Y, pegTipo);
-        if (peg) peg = { tipo: peg.tipo, x: peg.x * K, y: peg.y * K, w: peg.w * K, h: peg.h * K };
+        const X = Math.min(b.x + b.w - PEG_W - 12, Math.max(b.x + 8, s.libre[0] - 20));
+        const Y = Math.min(s.caja.y - PEG_H - 8, Math.max(b.y + 34, s.libre[1] - PEG_H - 8));
+        sellos.push({ X, Y, tipo: pegTipo, i });
+        peg = { tipo: pegTipo, x: X * K, y: Y * K, w: PEG_W * K, h: PEG_H * K, muestra: { x: (X + 9) * K, y: (Y + 9) * K } };
       }
       cintillo(x, s, i + 1, v.falta ? L('POR DESCUBRIR', 'TO DISCOVER') : String(v.sceneTitle || '').toUpperCase());
       const gl = !v.falta && v.dialogueText ? globo(x, s, v.dialogueText, v.dialogueType) : null;
@@ -646,6 +648,8 @@ AVE.module('comicPlantilla', function (G) {
       info.push({ id: v.id, caja: { x: b.x * K, y: b.y * K, w: b.w * K, h: b.h * K }, circulo: { x: (c.cx - c.r) * K, y: (c.cy - c.r) * K, s: c.r * 2 * K },
         globo: gl, textoCaja: cj, efecto: ef, pegatina: peg, poseReal: !!poses[i].real, poseFoto });
     });
+    // Encima de viñetas, globos y círculos: una pegatina no queda tapada por la viñeta de al lado.
+    for (const sello of sellos) pegatinaActividad(x, sello.X, sello.Y, sello.tipo);
     // Abajo: «¿Qué aprendí?», personaje central y «Mi enseñanza de vida»
     roca(x);
     pieza('que_aprendi'); pieza('ensenanza');
