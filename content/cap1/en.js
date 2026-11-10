@@ -2953,5 +2953,11 @@ window.AV_EN = {
  "Duelo: ala derecha": "Duel: right wing",
  "Duelo: pata izquierda": "Duel: left foot",
  "Duelo: pata derecha": "Duel: right foot",
- "Alas y patas (combos): Jugador 1 con U O J L · Jugador 2 con 7 9 4 6 del teclado numérico o LB RB LT RT del mando": "Wings and feet (combos): Player 1 with U O J L · Player 2 with numpad 7 9 4 6 or LB RB LT RT on a gamepad"
+ "Alas y patas (combos): Jugador 1 con U O J L · Jugador 2 con 7 9 4 6 del teclado numérico o LB RB LT RT del mando": "Wings and feet (combos): Player 1 with U O J L · Player 2 with numpad 7 9 4 6 or LB RB LT RT on a gamepad",
+ "Botones": "Buttons",
+ "Personalizar controles": "Customize controls",
+ "Arrastra cada botón a donde quieras. Elegido:": "Drag each button wherever you like. Selected:",
+ "Tamaño": "Size",
+ "Opacidad": "Opacity",
+ "Restablecer": "Reset"
 };
