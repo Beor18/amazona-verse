@@ -59,12 +59,13 @@ El video de CG-108 no lo grabo: Kelvin lo ve con `?piloto=1`.
 - **Cómo probarlo:** niño nuevo, saltar intro, volar a la copa y pulsar Acción un poco por encima. Desde el suelo no se le habla.
 - **Lo confirma:** selfTest 109/109 (caso «CG-105 · a 2 m sobre la copa»), missionTest 80/80, e2eTest 49/49. Build `cg-105-4ca8ce19` (mismo código): las 12 en verde, 0 errores de consola. Un aviso ajeno de `streaming.js` («reading '0'»).
 
-### Dev 4 · 10-nov 05:25 AST
-- **Tarea:** CG-106, memoria en partidas largas. Fila EN CURSO. No toca `invasoras.js` (CG-107, Dev 1) ni `audio.js` (CG-103, Dev 2).
-- **Commit de código:** todavía no.
-- **Qué falta:** medir `memoriaLargaTest` con pesca, Construir, duelo y vuelo; soltar lo que crezca en un módulo que no sea `combate.js`, `duelo2.js` ni `fx_poderes.js`. Si la fuga está ahí, se anota y no se toca.
-- **Cómo probarlo:** build de HEAD, SwiftShader, `AV.memoriaLargaTest()` (corta) y `{ largo: true }` (30 min simulados). Tras calentar, geometrías, texturas, oyentes y nodos con pendiente ≈ 0.
-- **Lo confirma:** `memoriaLargaTest` y las 12 de `tools/build/config.json`.
+### Dev 4 · 10-nov 06:05 AST · CG-106 hecha
+- **Tarea:** memoria en partidas largas. Cerrada en lo que no es el carril de Kimi.
+- **Commit:** `ff44198f`. EN CURSO fue `76ca13c7`.
+- **Archivos:** `src/game/retos.js` (una geometría por forma de banderín, rama, sombra y brillo) y `src/pruebas/memoria.js` (cada ciclo abre pesca y Construir). No toqué `invasoras.js`, `combate.js`, `duelo2.js`, `fx_poderes.js`, `streaming.js`, `renderer.js` ni el modelo de Vittata.
+- **Qué falta:** en la sesión de 32 min el heap JS sigue (178,4→217,4 MB, pendiente 5,2 MB/ciclo) con la GPU ya plana. No está en los tres archivos prohibidos. El candidato es el streaming al ir y volver del muelle. No lo toqué.
+- **Cómo probarlo:** `AV.memoriaLargaTest()` (5 ciclos, 11/11) y `AV.memoriaLargaTest({ largo: true })` (10 ciclos, 32 min). Móvil 390×844, calidad baja, SwiftShader.
+- **Lo confirma:** geometrías 314→319 y luego seis ciclos en 319. Build `cg-106-8cbd5d50` (mismo parche): las 12 en verde, 0 errores de consola. La corta dio 11/11.
 
 ### Dev 1 · 10-nov · CG-108 hecha
 - **Tarea:** escuela de vuelo y show aéreo. Cerrada en el juego. La bandera sigue apagada.
