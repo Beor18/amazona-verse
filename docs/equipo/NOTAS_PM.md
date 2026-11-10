@@ -61,6 +61,14 @@
 - **Cómo probarlo:** build de HEAD, SwiftShader, `AV.memoriaLargaTest()` (corta) y `{ largo: true }` (30 min simulados). Tras calentar, geometrías, texturas, oyentes y nodos con pendiente ≈ 0.
 - **Lo confirma:** `memoriaLargaTest` y las 12 de `tools/build/config.json`.
 
+### Dev 1 · 10-nov · CG-108 hecha
+- **Tarea:** escuela de vuelo y show aéreo. Cerrada en el juego. La bandera sigue apagada.
+- **Commit:** `4361eaef`. EN CURSO fue `59a925eb`.
+- **Archivos:** `src/game/v18/piloto.js`, `src/boot.js` (la prueba `AV.pilotoTest`), `src/game/menu_modos.js` (la tarjeta solo si la dirección lleva `piloto=1`).
+- **Qué falta:** el video corto y las fotos en `docs/img/cg108/` para que Kelvin las vea. Sin eso la bandera no se enciende sola.
+- **Cómo probarlo:** abre `https://www.amazonaverse.com/juego/?piloto=1` cuando esté publicado, o una build local con esa dirección. Jugar → tarjeta **Escuela de vuelo**. Sin `piloto=1` no aparece.
+- **Lo confirma:** `pilotoTest` 13/13 (bandera apagada no empieza; las 6 lecciones; el show suma trucos; las conchitas una vez y con tope). Build `cg-108-407c9204`: las 12 en verde, 0 errores de consola.
+
 ### Dev 1 · 10-nov · CG-71 en curso, la mide Kelvin
 CG-71 no se cierra. En esta máquina (sin tarjeta gráfica) ya pasaron `v18CombateTest` 102/102 y `v18Duelo2Test` 35/35, con 0 errores y sin tocar el código del combate. El FPS de aquí no vale. Kelvin mide lo que falta, en su computadora y en su teléfono.
 
