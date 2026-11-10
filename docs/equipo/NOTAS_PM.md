@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 3 · 10-nov 07:00 AST · QA-235 hecha
+- **Tarea:** Conchitas (propuesto QA-233). Cerrada.
+- **Commit:** este. EN CURSO fue `ec9ceb53`.
+- **Archivos:** `src/game/v18/pesca.js`. No toqué `streaming.js`, el modelo de Vittata ni textos educativos.
+- **Qué falta:** QA-234 (a11y móvil), luego QA-233 (Patrulla) y QA-232 (opciones en inglés).
+- **Cómo probarlo:** partida fresca, `AV.v18PescaTest()`. El dajao paga 10 y el saldo no es null.
+- **Lo confirma:** v18PescaTest 59/59. Las 12 en verde, 0 errores. El aviso de consola es QA-230 (streaming, Kimi).
+
 ### Dev 4 · 10-nov 06:55 AST · CG-118 en curso
 - **Tarea:** casita jíbara del Guardián (`casa_paja_a_1`). CG-119 se queda en «espera decisión de Kelvin».
 - **Commit de código:** todavía no.

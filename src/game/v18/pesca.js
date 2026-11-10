@@ -661,6 +661,14 @@ window.AVV18Pesca = function (G) {
     hud.lleno = true; PK.firma = '';
   }
   function vaciarHud() { if (!hud || !hud.lleno) return; hud.el.textContent = ''; hud.lleno = false; for (const kq in hud.qs) delete hud.qs[kq]; }
+  // El Mercadito entra al pescar. Si el script llega después de armar el HUD, el botón se pone al ver los resultados.
+  function ponerBotonTienda() {
+    if (!hud || !hud.lleno || !tienda() || hud.el.querySelector('button[data-a="tienda"]')) return;
+    const fin = hud.q('fin'); if (!fin) return;
+    const wrap = document.createElement('div'); wrap.className = 'vp-bot2'; wrap.style.gridTemplateColumns = '1fr';
+    wrap.innerHTML = '<button type="button" data-a="tienda" aria-label="' + TXT.tiendaL + '" aria-keyshortcuts="T" class="vp-tienda"><span data-k="t-tienda">' + TXT.tienda + '</span><kbd aria-hidden="true">T</kbd></button>';
+    fin.appendChild(wrap);
+  }
   const texto = (k, t) => { const e = hud.q(k); if (e && e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } };
   function pista(t) { A.pistaTxt = t; if (hud && hud.lleno) texto('guia', t); }
   function verboPrincipal() {
@@ -694,6 +702,7 @@ window.AVV18Pesca = function (G) {
       texto('t-bsalir', nomSalir);
       const bFin = hud.el.querySelector('[data-k="fin"] button[data-a="salir"]'); if (bFin) bFin.setAttribute('aria-label', nomSalir);
       const T = tienda(), f5 = hud.q('fin5'); if (f5) { f5.hidden = !T; if (T) texto('fin5', finConchas(r.conchitas || 0, T.saldo())); }
+      if (T) ponerBotonTienda();
     }
     enfocar(foto ? 'soltar' : fin ? 'otra' : 'accion');
   }
@@ -762,8 +771,22 @@ window.AVV18Pesca = function (G) {
     const toque = (b, tipo, id) => { const r = b.getBoundingClientRect(); b.dispatchEvent(new PointerEvent(tipo, { bubbles: true, cancelable: true, pointerId: id || 41, pointerType: 'touch', isPrimary: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 })); };
     // Recoger como un jugador: mantener cuando el anzuelo está por debajo de la zona y soltar cuando está por encima
     const recogerCon = (bajar, subir, s) => { let abajo = false; for (let t = 0; t < (s || 30) && A.fase === 'tira'; t += 1 / 60) { const q = A.marca < A.zona - 0.03 || (A.marca < A.zona + 0.03 && A.vmarca < 0); if (q && !abajo) { bajar(); abajo = true; } else if (!q && abajo) { subir(); abajo = false; } paso(1 / 60); } if (abajo) subir(); return A.fase; };
-    // Conchitas: la prueba gana conchitas de verdad en G.S; al terminar se deja S.tienda como estaba
-    const TI = tienda(), tienda0 = S.tienda ? JSON.parse(JSON.stringify(S.tienda)) : S.tienda, saldo0 = TI ? TI.saldo() : 0, pago = id => (TI ? TI.PAGO_PEZ[id] : 0);
+    // Conchitas: la prueba gana conchitas de verdad en G.S; al terminar se deja S.tienda como estaba.
+    // En una partida fresca el Mercadito aún no está cargado (entra al pescar). TI se rellena antes de cobrar.
+    // saldoDe() no revienta si el saldo todavía no existe.
+    let TI = tienda(), saldo0 = 0;
+    const tienda0 = S.tienda ? JSON.parse(JSON.stringify(S.tienda)) : S.tienda;
+    const saldoDe = () => { try { return TI && typeof TI.saldo === 'function' ? TI.saldo() : null; } catch (e) { return null; } };
+    const pago = id => (TI && TI.PAGO_PEZ ? TI.PAGO_PEZ[id] : 0);
+    const asegurarTienda = async () => {
+      if (tienda()) { TI = tienda(); return TI; }
+      try {
+        if (window.AVE && AVE.assets && AVE.assets.script) await AVE.assets.script('src/game/tienda.js');
+        if (window.AVTienda) window.AVTienda(G);
+      } catch (e) { /* sin mercado */ }
+      TI = tienda();
+      return TI;
+    };
     const ficha = () => hud && !hud.q('ficha').hidden ? { n: hud.q('fn').textContent, c: hud.q('fc').textContent, d: hud.q('fd').textContent, f: hud.q('ff').textContent, b: hud.q('t-soltar').textContent } : null;
     try {
       // 0. Encendida para todos (Kelvin 9-nov): sin bandera la tarjeta y el botón de la Pausa se ven; ?pesca=0 (G.PESCA = false) lo esconde todo
@@ -790,6 +813,7 @@ window.AVV18Pesca = function (G) {
       const secos = []; for (let k = D_MIN; k <= D_MAX + 1e-6; k += 0.5) { const x = SITIO.x + d0.x * k, z = SITIO.z + d0.z * k; if (!(nivelAgua(x, z) > G.terreno.height(x, z) + 0.1)) secos.push(k); }
       check('El sitio es una orilla del Río Amazonas: tierra seca un poco por encima del agua y río abierto delante en todo el alcance del lanzamiento',
         !(nivelAgua(SITIO.x, SITIO.z) > sueloM - 0.05) && sueloM - lvR > 0.1 && sueloM - lvR < 2 && !secos.length, JSON.stringify({ suelo: +sueloM.toFixed(2), agua: lvR, secos }));
+      await asegurarTienda(); saldo0 = saldoDe(); if (saldo0 == null) saldo0 = 0;
       A.manual = true; semilla = 12345;
       const forzar = !libre() || otroActivo();
       const empezo = forzar ? iniciar({ forzar: true }) : irYJugar();
@@ -826,7 +850,7 @@ window.AVV18Pesca = function (G) {
       const pez1 = A.pez, fin1 = recogerCon(() => tecla('keydown', ' '), () => tecla('keyup', ' '), 40);
       const f1 = ficha();
       check('Teclado: manteniendo el anzuelo en la zona verde se atrapa el pez y sale su ficha (nombre, nombre científico, dato y fuente)', fin1 === 'foto' && A.peces === 1 && A.puntos === pez1.pts && f1 && f1.n === pez1.nombre && f1.c === pez1.cient && f1.d === pez1.dato && /^Fuente: /.test(f1.f), JSON.stringify({ fase: fin1, pez: pez1 && pez1.id, ficha: f1 }));
-      check('Conchitas: el pez de la foto paga lo fijo de su especie (olivo 5, dajao 10, guavina 15, anguila 15) y el aviso lo dice', !!TI && fin1 === 'foto' && pago(pez1.id) > 0 && A.conchitas === pago(pez1.id) && TI.saldo() === saldo0 + pago(pez1.id) && toasts.some(t => t.endsWith(' · ' + conchasTxt(pago(pez1.id)))) && JSON.stringify(TI.PAGO_PEZ) === JSON.stringify({ olivo: 5, dajao: 10, guavina: 15, anguila: 15, tilapia: 5, pleco: 5 }), pez1.id + ' · ' + A.conchitas + ' · saldo ' + (TI && TI.saldo()));
+      check('Conchitas: el pez de la foto paga lo fijo de su especie (olivo 5, dajao 10, guavina 15, anguila 15) y el aviso lo dice', !!TI && fin1 === 'foto' && pago(pez1.id) > 0 && A.conchitas === pago(pez1.id) && saldoDe() === saldo0 + pago(pez1.id) && toasts.some(t => t.endsWith(' · ' + conchasTxt(pago(pez1.id)))) && JSON.stringify(TI.PAGO_PEZ) === JSON.stringify({ olivo: 5, dajao: 10, guavina: 15, anguila: 15, tilapia: 5, pleco: 5 }), pez1.id + ' · ' + A.conchitas + ' · saldo ' + saldoDe());
       { const ch = AMIGOS.chispa; correr(0.2);
         check('Al atrapar, los amigos celebran: Iguaca da saltitos y Chispa hace «Celebrar»; luego vuelven a Idle', AMIGOS.saltoT > 0 && AMIGOS.iguaca.sp.position.y > AMIGOS.iguaca.y + 1.05 && (!ch || !ch.mixer || ch.anim === 'Celebrar'),
           JSON.stringify({ salto: +AMIGOS.saltoT.toFixed(2), anim: ch && ch.anim })); }
@@ -836,7 +860,7 @@ window.AVV18Pesca = function (G) {
       check('Con la ficha abierta el reloj de la ronda se para', A.tiempo === t0);
       tecla('keydown', ' '); tecla('keyup', ' ');
       check('Teclado: «Soltarlo» devuelve el pez al agua y se vuelve a lanzar', A.fase === 'listo' && A.album[pez1.id] === 1 && eventos.some(e => e.tipo === 'suelta' && e.pez === pez1.id) && toasts.includes(TXT.alAgua));
-      check('Soltarlo no cambia las conchitas: ya se pagaron por la foto', A.conchitas === pago(pez1.id) && TI.saldo() === saldo0 + pago(pez1.id));
+      check('Soltarlo no cambia las conchitas: ya se pagaron por la foto', A.conchitas === pago(pez1.id) && saldoDe() === saldo0 + pago(pez1.id));
       correr(1.2);
       check('El pez salta de vuelta al agua y desaparece', !P.pez.visible);
       // 3. Un pique que no se clava: el pez se va
@@ -851,13 +875,13 @@ window.AVV18Pesca = function (G) {
       check('En medio del río pican más dajaos y guavinas; cerca de la orilla, más olivos y anguilas', (lejos.guavina || 0) > (cerca.guavina || 0) * 2 && (lejos.dajao || 0) > (cerca.dajao || 0) && (cerca.olivo || 0) > (lejos.olivo || 0) * 2 && (cerca.anguila || 0) > (lejos.anguila || 0), JSON.stringify({ cerca, lejos }));
       check('El ritmo de picada cambia con la especie y no toca sus datos: la guavina espera menos que el olivo', ritmoPicada(PEZ.guavina) < ritmoPicada(PEZ.olivo) && ritmoPicada(PEZ.olivo) <= 1.2 && PEZ.olivo.vel === 0.6 && PEZ.guavina.pts === 30);
       // 6. Invasora: no se suelta, se reporta al DRNA
-      const cAntes = A.conchitas, sAntes = TI.saldo();
+      const cAntes = A.conchitas, sAntes = saldoDe();
       A.forzar = 'tilapia'; lanzar(0.5); hasta(() => A.fase === 'pica', 10); clavar(); recogerCon(() => apretar(), () => aflojar(), 40);
       const f2 = ficha();
       check('Invasora (tilapia de Mozambique): ficha «Especie invasora» y el botón dice «Reportar al DRNA»', A.fase === 'foto' && A.pez.id === 'tilapia' && f2 && f2.b === TXT.reportar && hud.q('fchapa').textContent === TXT.invasora && hud.q('fk').textContent === TXT.invasoraNo, JSON.stringify(f2));
       const cFoto = A.conchitas;
       soltarPez();
-      check('Conchitas: la invasora paga 5 por la foto y reportarla al DRNA da 10 más (premio de conservación, dicho en el aviso)', cFoto === cAntes + 5 && A.conchitas === cAntes + 5 + TI.BONO_DRNA && TI.BONO_DRNA === 10 && TI.saldo() === sAntes + 15 && toasts.includes(bonoTxt(10)), cFoto + ' → ' + A.conchitas);
+      check('Conchitas: la invasora paga 5 por la foto y reportarla al DRNA da 10 más (premio de conservación, dicho en el aviso)', !!TI && cFoto === cAntes + 5 && A.conchitas === cAntes + 5 + TI.BONO_DRNA && TI.BONO_DRNA === 10 && saldoDe() === sAntes + 15 && toasts.includes(bonoTxt(10)), cFoto + ' → ' + A.conchitas);
       check('Al reportarla no vuelve al agua: aviso de gracias y evento para el módulo de invasoras', A.fase === 'listo' && !P.pez.visible && toasts.some(t => t.indexOf(TXT.reportado) === 0) && invasoras.length === 1 && invasoras[0].id === 'tilapia' && !eventos.some(e => e.tipo === 'suelta' && e.pez === 'tilapia'));
       A.forzar = 'pleco'; lanzar(0.2); hasta(() => A.fase === 'pica', 10); clavar(); recogerCon(() => apretar(), () => aflojar(), 40);
       const f3 = ficha();
@@ -868,7 +892,7 @@ window.AVV18Pesca = function (G) {
       check('Se acaba el tiempo: resultados con peces, puntos, récord y el álbum de hoy', A.fase === 'fin' && !hud.q('fin').hidden && hud.q('juego').hidden && r1.fin1 === TXT.fin && r1.fin2 === finTxt(3, pts) && r1.fin3 === TXT.nuevo && r1.alb.includes('Tilapia de Mozambique') && r1.alb.includes('Pleco') && r1.alb.includes(pez1.nombre), JSON.stringify(r1));
       check('¡Récord! sale en un aviso y los amigos celebran', toasts.includes('¡Récord!') && AMIGOS.celebraT > 0);
       const g = v && v.mundo ? v.mundo(ID) : null;
-      check('Resultados: conchitas de la ronda y las que tienes, y el botón del Mercadito', A.resultado.conchitas === A.conchitas && A.conchitas === pago(pez1.id) + 15 + 15 && !hud.q('fin5').hidden && hud.q('fin5').textContent === finConchas(A.conchitas, TI.saldo()) && !!bot('tienda') && bot('tienda').getClientRects().length > 0, hud.q('fin5').textContent);
+      check('Resultados: conchitas de la ronda y las que tienes, y el botón del Mercadito', !!TI && A.resultado.conchitas === A.conchitas && A.conchitas === pago(pez1.id) + 15 + 15 && !hud.q('fin5').hidden && hud.q('fin5').textContent === finConchas(A.conchitas, saldoDe()) && !!bot('tienda') && bot('tienda').getClientRects().length > 0, hud.q('fin5').textContent);
       tecla('keydown', 't');
       const tAbre = G.ui.cardOpen && !!document.getElementById('tienda');
       tecla('keydown', 'r'); const sigueFin = A.fase === 'fin';
