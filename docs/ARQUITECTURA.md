@@ -120,9 +120,17 @@ En un Chromebook el contexto se pierde al suspender, al cambiar de pestaña o cu
 `tools/build/sitio.sh <build>/site` rehace `sitio/` desde cero:
 - la landing (`git archive HEAD:web`, sin sus docs) en la raíz;
 - el juego ya construido y probado con `build.sh` + `test.sh` en `sitio/juego/`;
-- un `vercel.json` con caché para `assets/` y cabeceras de seguridad.
+- un `vercel.json` con caché para `assets/` y cabeceras de seguridad (solo lo lee Vercel, que ya no sirve el dominio).
 
-Vercel publica `main` con Root Directory = `sitio`. Solo lo arma y lo commitea el coordinador, tras el recorrido de QA y con su etiqueta de versión. Nadie edita `sitio/` a mano.
+Solo lo arma y lo commitea el coordinador, tras el recorrido de QA y con su etiqueta de versión. Nadie edita `sitio/` a mano.
+
+**Dónde se publica (desde el 10-nov-2026):** www.amazonaverse.com está en SiteGround, en el sitio `amazonaverse.com` del plan de hosting de Kelvin (Apache, servidor `gtxm1363.siteground.biz`).
+- La Action `.github/workflows/publicar_siteground.yml` corre `tools/build/siteground/publicar.sh` en cada push a `main` que toque `sitio/` y al terminar `unir_api.yml`.
+- El script sube `sitio/` por SSH con rsync. Solo manda lo que cambió y cambia los archivos al final, así nadie carga una versión mezclada.
+- Las reglas de Apache (caché como en Vercel, cabeceras de seguridad, `amazonaverse.com` → `www`) están en `tools/build/siteground/htaccess`.
+- La llave SSH de la Action es el secreto `SG_SSH_KEY` del repo. Nunca va en archivos.
+- A mano: `tools/build/siteground/publicar.sh`, con la llave `~/.ssh/siteground_amazona`.
+- En SiteGround están apagados NGINX Direct Delivery y la caché dinámica. Con ellos encendidos se ignora el `.htaccess` y se sirven versiones viejas hasta 180 días.
 
 ## Ejecutor con créditos de la API (`tools/agente_api/`)
 Corre las tareas de `docs/equipo/TAREAS_API.md` con el Claude Agent SDK y los créditos de la API, no con el plan Max.

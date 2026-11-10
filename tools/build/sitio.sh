@@ -1,10 +1,11 @@
 #!/bin/bash
-# Amazona Verse · sitio publicable (Vercel, Root Directory = sitio): la landing (web/) en la raíz y el juego en /juego/.
+# Amazona Verse · sitio publicable (www.amazonaverse.com en SiteGround): la landing (web/) en la raíz y el juego en /juego/.
 #
 #   tools/build/sitio.sh <build-del-juego>/site
 #
 # Rehace ./sitio con la landing (git archive de HEAD:web, sin docs) + el juego ya construido y probado (build.sh +
-# test.sh) + vercel.json. Después se hace commit de sitio/ en main como cualquier otro cambio; Vercel publica main.
+# test.sh) + vercel.json. Después se hace commit de sitio/ en main como cualquier otro cambio; la Action
+# publicar_siteground.yml lo sube a SiteGround (www.amazonaverse.com) con tools/build/siteground/publicar.sh.
 set -euo pipefail
 SITE="${1:?uso: sitio.sh <build>/site}"
 JUEGO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"; OUT="$JUEGO/sitio"

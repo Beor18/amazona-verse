@@ -1,0 +1,33 @@
+# Publica sitio/ en SiteGround (www.amazonaverse.com) cada vez que cambia en main. Hace lo que antes hacía Vercel solo.
+# Los merges de unir_api.yml se suben con el token de la Action y no disparan un push aquí: por eso también corre al
+# terminar esa Action. publicar.sh no sube nada si sitio/ no cambió.
+name: Publicar en SiteGround
+on:
+  push:
+    branches: [main]
+    paths: ['sitio/**', 'tools/build/siteground/**', '.github/workflows/publicar_siteground.yml']
+  workflow_run:
+    workflows: ['Unir rama de la API con main']
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: siteground
+  cancel-in-progress: false
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: |
+            sitio
+            tools/build/siteground
+      - name: Subir a SiteGround
+        env:
+          SG_SSH_KEY: ${{ secrets.SG_SSH_KEY }}
+        run: bash tools/build/siteground/publicar.sh

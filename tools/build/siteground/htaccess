@@ -1,0 +1,26 @@
+# Amazona Verse · reglas de amazonaverse.com en SiteGround (Apache). publicar.sh lo sube como public_html/.htaccess.
+# Hace lo mismo que hacía sitio/vercel.json en Vercel.
+DirectoryIndex index.html
+DirectorySlash On
+Options -Indexes
+
+# amazonaverse.com → www.amazonaverse.com, como en Vercel (el sitemap y los enlaces usan www)
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^amazonaverse\.com$ [NC]
+RewriteRule ^ https://www.amazonaverse.com%{REQUEST_URI} [R=301,L]
+
+AddType text/vtt .vtt
+AddType audio/mp4 .m4a
+AddType font/woff2 .woff2
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  # assets/ y juego/assets/: 1 h de caché; el resto (html, json y el código del juego, sin hash en el nombre) se revalida siempre
+  <If "%{REQUEST_URI} =~ m#^/(juego/)?assets/#">
+    Header set Cache-Control "public, max-age=3600, stale-while-revalidate=86400"
+  </If>
+  <Else>
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </Else>
+</IfModule>
