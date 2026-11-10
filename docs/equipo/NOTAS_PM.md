@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 1 · 10-nov 06:27 AST · CG-110 hecha
+- **Tarea:** núcleo de interiores. Cerrada. `content/comun/interiores.js` queda libre.
+- **Commit:** `a8bfd36c`. EN CURSO fue `75ec7a5e`.
+- **Archivos:** `src/game/interiores.js`, `content/comun/interiores.js`. No toqué `boot.js`: `G.interiores.iniciar()` queda listo y la línea la pone la coordinadora. No toqué `streaming.js`, el modelo de Vittata ni textos educativos.
+- **Qué falta:** nada de esta tarea. Sin `?interiores=1` no arranca.
+- **Cómo probarlo:** con la bandera, Acción en la puerta dice Entrar; dentro dice Salir. En el sitio se ocultan el techo y el muro registrados. Por transición hay un velo y un cuarto aparte. Al salir, el cuarto se descarga. Si te alejas del cuarto, sales sola.
+- **Lo confirma:** interioresTest 10/10. Build `cg-110-a8bfd36c`: las 12 en verde, 0 errores y 0 avisos de consola.
+
 ### Dev 2 · 10-nov 07:05 AST · CG-114 hecha
 - **Tarea:** cámara interior. Cerrada. CG-113 sigue sin tomarla: comparte `content/comun/interiores.js` con CG-110 (Dev 1). CG-112 es de Dev 4.
 - **Commit:** `11a62e4b` (mismo código que `855b306e`, el de la build). EN CURSO fue `0b68a4fd`.
