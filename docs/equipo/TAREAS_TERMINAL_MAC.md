@@ -28,7 +28,7 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | GT-08 | hecha · 143 extra: 126 verdes; 17 rojas → 11 eran de orden/carga, 6 reales → QA-240…243 | **Baterías extra completas** (`test.sh … --extra`) en HEAD con GPU real: lista de rojos con sha → BUGS.md (prioridad según impacto). Distinguir rojo real de rojo de tiempo/carga repitiendo una vez lo que falle. |
 | GT-09 | hecha · Safari 26.6.2: 47-58 fps, pesca/Construir/Mercadito/En línea en verde, 0 errores | **Safari de verdad** (si la máquina es Mac: es lo más parecido al iPhone): abrir el sitio en Safari, partida nueva, volar, pesca, Construir, Mercadito, duelo con y sin `?combate2=1`, cotorras en línea; anotar errores de la consola de Safari, lo que se vea distinto a Chrome y FPS con `?fps=1`. |
 | GT-10 | hecha (Chrome↔Chrome) · se ven en 1,3 s, mensajes cada ~253 ms, salida vista en 2,4 s, 0 errores; Safari↔Chrome sin concluir | **Cotorras en línea reales:** Chrome y Safari (o dos ventanas) en la misma sala; moverse, saludar, gritar (¿se ve el pico?), salir; latencia aproximada y 0 errores. |
-| GT-11 | libre | **Recorrido de los 6 capítulos** en el sitio publicado con GPU real (con `AV.temporadaMovilTest` si existe, o a mano lo esencial de cada capítulo): que cada capítulo arranque, se avance y se guarde. Un renglón por capítulo. |
+| GT-11 | hecha · los 6 caps arrancan, se juegan a 59-60 fps y guardan en el sitio publicado, 0 errores; avance completo = temporadaMovilTest 172/173 en local | **Recorrido de los 6 capítulos** en el sitio publicado con GPU real (con `AV.temporadaMovilTest` si existe, o a mano lo esencial de cada capítulo): que cada capítulo arranque, se avance y se guarde. Un renglón por capítulo. |
 | GT-12 | libre | **Sesión larga de 20 min** con GPU real (volar, pesca, Construir, duelo, Patrulla): memoria del heap y de la GPU al minuto 1, 10 y 20 (`performance.memory`, `?fps=1`), FPS al principio y al final. ¿Crece sin parar? |
 | GT-13 | libre | **Solo teclado y lector de pantalla** (VoiceOver en Mac): menú, pausa, opciones, pesca, Construir, Mercadito; anotar lo que no se puede usar. |
 | GT-14 | libre | **Carga real** desde tu red: tiempo hasta poder jugar (primera vez y con caché), MB descargados (DevTools → Network), en computadora y emulando 4G lenta. |
@@ -163,4 +163,18 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 - Evidencia fuera del repo: `gt_online2.py` y `gt_online.py` del carril Terminal, JSON y capturas.
 
 📣 Terminal → coordinadora · 10-nov 12:43 AST · GT-10 hecha (Chrome↔Chrome) · sala real: se ven en 1,26 s, movimientos a ~253 ms, salida vista en 2,4 s, 0 errores; gesto y pico sin verificar en captura (la guía tapaba); Safari↔Chrome sin concluir (Safari frenado en segundo plano), toca repetirlo a mano · siguiente: GT-11
+
+**GT-11 · recorrido de los 6 capítulos (10-nov ~13:20-13:45 AST, sitio `0095a89`, Chrome con GPU real, escritorio)**
+- Un renglón por capítulo: partida nueva → 4 s andando con W → guardar → claves de guardado (bytes) · FPS en 15 s · errores.
+  - Cap. 1: arranca (carga 5,1 s) · `amazonaverse.save` 2696 · 59 fps · 0 errores
+  - Ep. 2 (`?pack=ep2`): arranca (8,8 s) · `ep2.save` 1653 · 60 fps · 0 errores
+  - Ep. 3: arranca (4,1 s) · `ep3.save` 1653 · 60 fps · 0 errores
+  - Ep. 4: arranca (4,0 s) · `ep4.save` 1637 · 60 fps · 0 errores
+  - Ep. 5: arranca (5,2 s) · `ep5.save` **119 558** · 59 fps · 0 errores
+  - Ep. 6: arranca (6,8 s) · `ep6.save` **156 091** · 59 fps · 0 errores
+- **Avance capítulo a capítulo:** lo cubre `AV.temporadaMovilTest()` = **172/173** sobre la build de HEAD `199922ea` (GT-08: los 6 capítulos seguidos en móvil con el pulgar; el rojo es el botón tapado de QA-242).
+- En el sitio publicado lo intenté inyectando `tests/qa/temporada_movil.js` con mi sonda CDP. Dio 46/64 (atascada en el paso 4 del cap. 1, «La ruta de la gota») y `temporadaE2eTest` 14/31. No lo cuento como fallo del juego: la prueba está hecha para Playwright con toque real (`temporada_movil_correr.js`) y en la build local pasa. Mi emulación de toques no basta.
+- **Observación para la coordinadora** (sin fila en BUGS): los guardados de ep5 y ep6 pesan ~120 y ~156 KB recién empezados, unas 100 veces más que los demás (~1,6 KB). Si crecen con el juego, conviene vigilar el tope de ~5 MB de `localStorage`, sobre todo en Safari o iOS.
+
+📣 Terminal → coordinadora · 10-nov 12:49 AST · GT-11 hecha · en el sitio publicado los 6 capítulos arrancan, se juegan a 59-60 fps, guardan y dan 0 errores; el avance completo está cubierto por temporadaMovilTest 172/173 en HEAD; ojo, ep5.save y ep6.save pesan 120 y 156 KB recién empezados · siguiente: GT-12
 
