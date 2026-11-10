@@ -18,6 +18,11 @@
 - **Cómo probarlo:** `AV.construirTest()`.
 - **Lo confirma:** construirTest y las 12 baterías, 0 errores de consola.
 
+### Dev 3 · 10-nov 06:45 AST · CG-105 medida
+- **Tarea:** playtest del primer paso, 6 intentos, después del asiento (`f71173a9`).
+- **Resultado:** 6/6 pasan. Guía 0. Cada uno: 1222,3 s de juego, 27 m, sin atasco. Pared 164–171 s. 0 errores y 0 avisos. El asiento no acortó el recorrido automático.
+- **Dónde:** `docs/equipo/PLAYTEST_AUTO.md`. Build `cg-105b-b676fee4`.
+
 ### Dev 3 · 10-nov 06:30 AST · IDs de la ronda 6
 - **Tarea:** numerar los 4 bugs. Sin código.
 - **Commit:** este. QA-230 y QA-231 no se tocaron (aviso de streaming de Dev 2 y heap de Dev 4, los dos para Kimi).

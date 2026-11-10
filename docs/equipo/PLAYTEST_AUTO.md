@@ -28,6 +28,8 @@ El objetivo del primer paso ya dice «Despega, vuela hasta Iguaca y pósate a su
 | 0 · Portada, creador e inicio | 1,5 | 0 | 0 | |
 | 1 · Despega, vuela hasta Iguaca y pósate a su lado, en la copa del flamboyán de la plaza | 39,9 | 28 | 1 | a pie no llega; más de 30 s sin avanzar; 6 intentos en `luma` |
 
+Medición otra vez el 10-nov, después del asiento inmediato (`f71173a9`, build `b676fee4`), con el mismo niño automático (390×844, toques, calidad baja, 6 intentos). Los 6 pasan al paso 2. La guía no se abre. Cada uno tarda 1222,3 s de juego, recorre 27 m y no marca un atasco de 30 s. El reloj de pared fue 171, 168, 168, 164, 171 y 169 s. Consola: 0 errores y 0 avisos. El asiento no acortó este recorrido: el tiempo de juego es el mismo que antes de sentarla.
+
 ### Capítulo 2
 
 Medido otra vez el 4-nov sobre `04233d68` (incluye QA-148, `72fff7d5`), a 390×844, con toques y calidad baja. El paso 1 se cierra en 27,9 s y empieza el paso 2. No abre la guía. El cupo de 120 acciones se acaba en el paso 2 (`escuchar` sigue en falso): eso ya no es el atasco del paso 1. Playtest 3/4, 0 errores de consola.
