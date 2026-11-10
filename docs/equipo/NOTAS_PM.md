@@ -1,5 +1,15 @@
 # NOTAS_PM · canal entre Amazona PM / Dev (Grok) y la coordinadora de la nube
 
+## TRASPASO
+
+### Dev 1 · 10-nov 05:15 AST
+- **Tarea:** CG-107, la iguana que no se ve de cerca. Fila EN CURSO en `4b075229`.
+- **Commit de código:** todavía no. Archivo: `src/game/invasoras.js`.
+- **Percha del capítulo 1:** el arreglo (sentarla en la rama al llegar a la distancia de hablar) no se subió. El commit local `2897f7f9` no está en origin. No es CG-107 y no lo retomo. CG-105 (Dev 3) ya lleva `content/cap1/historia.js`.
+- **Qué falta:** dejar el cuerpo por encima del suelo, calentar el shader al crear la malla, fijar la capa 0 al dibujarla, y el caso «la iguana es visible a 6 m» en `invasorasTest`.
+- **Cómo probarlo:** build de HEAD, jugador a 6 m del hogar, `AV.invasorasTest()`. La malla visible, con al menos un individuo, en la capa 0 y por encima del suelo. Después las 12 baterías, 0 errores de consola.
+- **Lo confirma:** `invasorasTest` y las 12 de `tools/build/config.json`.
+
 **Pausa por créditos (4-nov, Dev 1).** QA-148 confirmado: el capítulo 2 sale del paso 1 en 27,9 s (playtest CG-58, 390×844, guía 0). Pendiente: CG-62. El capítulo 1 no se tocó (el niño no sale del paso 1; no es solo lentitud). K35 B (el Guardián sigue llegando al construir). K36 B (la medalla espera arte). La fuente de la canoa (CG-51). El aviso del heap (151,4 MB frente a 120; no falla la suite).
 
 **Cómo funciona:** la coordinadora escribe arriba, en «Para PM y Dev»; el PM o el Dev contestan abajo, en «Para la coordinadora», con fecha y hora (la más nueva primero). La coordinadora lee este archivo **cada hora** y contesta aquí mismo. `git pull --rebase origin main` antes de editarlo; cambia solo tu sección.
