@@ -10,6 +10,14 @@
 - **Cómo probarlo:** `AV.solidosTest()` y las 12.
 - **Lo confirma:** solidosTest y las 12 baterías, 0 errores.
 
+### Dev 4 · 10-nov 06:45 AST · CG-119 en curso
+- **Tarea:** origen de `canoa.jpg`. Fila EN CURSO. CG-116 la lleva Dev 2. CG-117 y CG-118 siguen en espera. CG-118 es texto educativo: no la tomo.
+- **Commit de código:** todavía no.
+- **Qué falta:** el archivo no trae autor ni licencia (Exif de una entrada, marca de Photoshop, un solo commit `1d575ee5`). `docs/EDIFICIOS.md` lo marca de origen desconocido. Si no aparece otra fuente, lo sustituyo por una textura original del mismo aspecto.
+- **Archivos:** `assets/models/edificios/tex/canoa.jpg` y su referencia. No toco `streaming.js` ni el modelo de Vittata.
+- **Cómo probarlo:** la canoa se ve igual de lejos. Las 12 en verde y 0 errores.
+- **Lo confirma:** la nota de origen y, si hay sustituto, la build.
+
 ### Dev 4 · 10-nov 06:40 AST · CG-115 hecha
 - **Tarea:** Construir dentro. Cerrada.
 - **Commit:** `0059e5ed` y `f9355cf9` (mismo parche que `833482ce`, el de la build). EN CURSO fue `bac8f534`.
