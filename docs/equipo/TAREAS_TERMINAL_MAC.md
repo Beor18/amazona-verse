@@ -25,9 +25,19 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | GT-05 | libre | **Verificación del sitio tras cada publicación** (cada vez que en `TAREAS_WEB.md` aparezca «PUBLICADO»): abrir el juego en el navegador real, partida nueva, volar 1 min, pesca 1 ronda, Construir 1 pieza, Mercadito, duelo de entreno; 0 errores de consola. Una línea por publicación. |
 | GT-06 | libre | **Interiores (V18.4) cuando la coordinadora avise:** con `?interiores=1`, entrar/salir del bohío de Villa Raíz, colocar un mueble, salir, recargar y comprobar que sigue; FPS dentro/fuera. |
 | GT-07 | libre | **Android/iPhone emulados con GPU real** (perfil Pixel 7, Galaxy S5 con CPU ×4, iPhone 13): Atalayas con textura (no cajas beige), sin cuadraditos, nitidez; FPS. |
+| GT-08 | libre | **Baterías extra completas** (`test.sh … --extra`) en HEAD con GPU real: lista de rojos con sha → BUGS.md (prioridad según impacto). Distinguir rojo real de rojo de tiempo/carga repitiendo una vez lo que falle. |
+| GT-09 | libre | **Safari de verdad** (si la máquina es Mac: es lo más parecido al iPhone): abrir el sitio en Safari, partida nueva, volar, pesca, Construir, Mercadito, duelo con y sin `?combate2=1`, cotorras en línea; anotar errores de la consola de Safari, lo que se vea distinto a Chrome y FPS con `?fps=1`. |
+| GT-10 | libre | **Cotorras en línea reales:** Chrome y Safari (o dos ventanas) en la misma sala; moverse, saludar, gritar (¿se ve el pico?), salir; latencia aproximada y 0 errores. |
+| GT-11 | libre | **Recorrido de los 6 capítulos** en el sitio publicado con GPU real (con `AV.temporadaMovilTest` si existe, o a mano lo esencial de cada capítulo): que cada capítulo arranque, se avance y se guarde. Un renglón por capítulo. |
+| GT-12 | libre | **Sesión larga de 20 min** con GPU real (volar, pesca, Construir, duelo, Patrulla): memoria del heap y de la GPU al minuto 1, 10 y 20 (`performance.memory`, `?fps=1`), FPS al principio y al final. ¿Crece sin parar? |
+| GT-13 | libre | **Solo teclado y lector de pantalla** (VoiceOver en Mac): menú, pausa, opciones, pesca, Construir, Mercadito; anotar lo que no se puede usar. |
+| GT-14 | libre | **Carga real** desde tu red: tiempo hasta poder jugar (primera vez y con caché), MB descargados (DevTools → Network), en computadora y emulando 4G lenta. |
+| GT-15 | continua | **Cuando la cola esté vacía:** cada vez que llegue un commit «CG-… hecha» de Grok en `TAREAS_CURSOR_GROK.md`, prueba rápida de esa función con GPU real (abrir, usar, 0 errores) y una línea aquí. Así nunca te quedas sin trabajo. |
 
 ## Notas Terminal ↔ coordinadora
 
 📣 Coordinadora → Terminal · 10-nov · Carril abierto. Empieza por GT-01 y sigue en orden. Si la máquina está ocupada con videos de Kelvin, haz solo GT-01 y GT-05.
 
 **Commits de este carril:** termina el mensaje con la línea `Co-Authored-By` de tu modelo (Claude). Commits pequeños, solo de este archivo, BUGS.md y docs/img/gt-*.
+
+📣 Coordinadora → Terminal · 10-nov · Kelvin: «dale trabajo para que no pare». Cola ampliada: **GT-08 a GT-15**. Orden sugerido: GT-01 → GT-03 → GT-04 → GT-09 → GT-02 → GT-08 → el resto; y **GT-15 siempre que no haya nada libre**. Con GPU real tus medidas son las únicas reales del equipo: anótalas con cuidado.
