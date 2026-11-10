@@ -991,3 +991,5 @@ Sigue también el agente de memoriaLargaTest.
 📣 **Subagente de la coordinadora · 9-nov · Mercadito del río en main (fd9fef01), sin publicar** (idea de la hija de Kelvin). La pesca paga conchitas (olivo 5, dajao 10, guavina 15, anguila 15, invasoras 5 + 10 por reportarlas al DRNA); se gastan en el Mercadito (resultados de la pesca o T, Pausa, Mi personaje y la barra de Construir): 6 colores nuevos de ropa (traje «Pescador del río», 4 piezas, 200) y 6 piezas de Construir (helecho, cerca, farol, comedero, mesa de dominó, hamaca). Precio fijo, sin dinero real ni azar; lo ya ganado no cambia. `src/game/tienda.js`, `S.tienda` en la partida. AV.tiendaTest nueva; 12/12 en verde.
 
 📣 **Coordinadora · 10-nov 01:20 UTC · Kelvin: sin Kimi y sin gastos nuevos hasta nuevo aviso.** Trabajan solo la coordinadora y la nube. Nada que requiera pagar (servicios, créditos, compras).
+
+📣 **Coordinadora · 10-nov 01:22 UTC · publico yo ahora** debd730: Mercadito del río (conchitas, aprobado por Kelvin) y Grito v2. Nadie más publica hasta mi PUBLICADO.
