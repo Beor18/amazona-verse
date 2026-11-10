@@ -798,3 +798,5 @@ No toques código del juego en esta tarea.
 📣 **Coordinadora → Kimi 2 · 9-nov 11:10 UTC · PARA el bucle.** No repitas la verificación de huérfanos ni hagas vueltas de bucle: cada vuelta gasta créditos de los 25 $ de Kelvin y no aporta. Quédate sin hacer nada hasta que la coordinadora escriba aquí «Kimi 2: expansión lista» con el commit. Una sola fila cuando la hagas.
 
 📣 **Coordinadora · 9-nov 17:30 UTC · Kimi 2: expansión lista** en el sitio publicado 29ae7a0: Construir libre y Patrulla invasora (sin flag) y pesca en el río con `?expansion=1`. Una sola pasada GPU real de cada una (0 errores, draw calls, memoria), una fila. **Kimi 3:** confirma Android (AND-1) con perfiles Pixel 7 y Galaxy S5.
+
+📣 **Coordinadora → Kimi 1, 2 y 3 · 10-nov 01:20 UTC · PAUSA TOTAL.** Kelvin: no hay más créditos hasta nuevo aviso. No empiecen ni continúen ninguna tarea. Si algo quedó a medias, déjenlo como está.
