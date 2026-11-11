@@ -1,6 +1,6 @@
 /* CG-120 · «¿Qué hay para hacer?» en la Pausa y en la portada.
    Cada fila dice el estado y tiene Ir. Ir reutiliza elegir / lanzar18 / llevar de menu_modos.js.
-   No lista lo que solo sale con una bandera (piloto, interiores): eso lo decide Kelvin. */
+   La casa del bohío está encendida (CG-126). El piloto sigue con bandera. */
 (function () {
   'use strict';
   window.AVQueHacer = function (G) {
@@ -41,9 +41,16 @@
       { id: 'patrulla', nombre: L('Patrulla', 'Patrol'), estado: patrulla, puede: () => true, ir: () => irLlevar(150, 170) },
       { id: 'familia', nombre: L('Aventuras en familia', 'Family adventures'), estado: listo, puede: () => true, ir: () => abrirFamilia() },
       { id: 'cotorras', nombre: L('Mis cotorras', 'My parrots'), estado: listo, puede: () => true, ir: () => irModo('cotorras') },
+      { id: 'casa', nombre: L('Casa del bohío', 'Bohio house'), estado: listo, puede: () => true, ir: () => irCasa() },
       { id: 'construir', nombre: L('Construir', 'Build'), estado: listo, puede: () => !!(G.construir && G.construir.empezar), ir: () => { cerrar(); if (G.construir) G.construir.empezar(); } },
       { id: 'mercadito', nombre: L('Mercadito', 'Market'), estado: listo, puede: () => !!(G.tienda && G.tienda.abrir), ir: () => { cerrar(); if (G.tienda) G.tienda.abrir('que-hacer'); } }
     ];
+    function irCasa() {
+      const ir = d => { if (d) irLlevar(d.x, d.z); };
+      if (G.bohios && G.bohios.donde) return ir(G.bohios.donde());
+      if (window.AV && AV.bohios) return AV.bohios().then(b => b && b.donde && ir(b.donde()));
+      return false;
+    }
     function abrirFamilia() {
       cerrar();
       if (G.familiaAventuras && G.familiaAventuras.abrir) return G.familiaAventuras.abrir();
@@ -105,6 +112,7 @@
         ok('El panel se abre desde la portada y desde la pausa', !!($('b-que-hacer') && $('b-que-hacer-title') && dlg.open));
         const ids = [...dlg.querySelectorAll('[data-qh]')].map(el => el.dataset.qh);
         ok('Están Family Quest, Tuerca, la Patrulla y Mis cotorras', ['familia', 'tuerca', 'patrulla', 'cotorras'].every(id => ids.includes(id)), ids.join(','));
+        ok('CG-126 · está la casa del bohío', ids.includes('casa'));
         const filasEl = [...dlg.querySelectorAll('.qh-fila')];
         ok('Cada fila tiene estado e Ir', filasEl.length > 0 && filasEl.every(el => el.querySelector('small') && el.querySelector('small').textContent && el.querySelector('.qh-ir')));
         const tu = dlg.querySelector('[data-qh="tuerca"] small');

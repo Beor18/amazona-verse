@@ -2,13 +2,13 @@
 
 ## TRASPASO
 
-### Dev 3 · 11-nov · CG-126 en curso
-- **Tarea:** encender los interiores para todos. El bohío de Villa Raíz se usa jugando, sin `?interiores=1`. La bandera sigue: `?interiores=1` enciende y `G.interioresOn === false` o `?interiores=0` apaga.
-- **Commit de código:** todavía no.
-- **Archivos:** `src/game/bohios.js` y la fila en `src/ui/que_hacer.js`. No toco `boot.js`, `tienda.js`, `construir.js`, `pesca.js`, el taller, el piloto ni CG-118.
-- **Qué falta:** que Entrar y Poner banco salgan al jugar, y una fila en «¿Qué hay para hacer?».
+### Dev 3 · 11-nov · CG-126 hecha
+- **Tarea:** interiores del bohío para todos. Cerrada. EN CURSO fue `5574974c`.
+- **Qué hace:** al jugar, en la puerta del bohío de Villa Raíz Acción dice Entrar y dentro dice Poner banco, sin `?interiores=1`. `G.interioresOn === false` o `?interiores=0` la apaga. `?interiores=1` sigue encendiéndola. «¿Qué hay para hacer?» tiene la casa y Ir lleva a la puerta.
+- **Archivos:** `src/game/bohios.js`, `src/ui/que_hacer.js`, `content/cap1/en.js`. No toqué `boot.js`, `tienda.js`, `construir.js`, `pesca.js`, el piloto, el taller ni CG-118.
+- **Qué falta:** el piloto y el taller siguen con bandera, porque su carga está en `boot.js`.
 - **Cómo probarlo:** `AV.bohiosTest()` y `AV.queHacerTest()`.
-- **Lo confirma:** las 12 de GT-13 (`gt13-4474c6c`), 0 errores. Los avisos de streaming son QA-230.
+- **Lo confirma:** los checks CG-126 y las 12 de la build de este commit.
 
 ### Dev 2 · 11-nov 04:25 AST · GT-13 hecha
 - **Tarea:** foco del Mercadito, de Construir y de la pesca. Cerrada.

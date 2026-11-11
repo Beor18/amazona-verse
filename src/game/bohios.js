@@ -165,6 +165,13 @@ window.AVBohios = function (G) {
     return res;
   }
   // Tres encuadres para las capturas: aire, camino y puerta (Vittata en el umbral).
+  function donde() {
+    const I = casa || elegir(casas());
+    const p = I && puerta(I);
+    if (p) return { x: p.x, z: p.z };
+    if (I && I.pos) return { x: I.pos[0], z: I.pos[2] };
+    return null;
+  }
   function vistas() {
     const I = casa || elegir(casas());
     if (!I) return null;
@@ -180,9 +187,13 @@ window.AVBohios = function (G) {
     };
   }
 
-  // CG-113 · Casa editable del bohío amueblado. Solo con ?interiores=1. Se entra en el mismo sitio
-  // (sin cuarto aparte). Las piezas viven en S.interiores. El vano se ensancha en la colisión, no en la malla.
-  const casaOn = () => G.interioresOn === true || /[?&]interiores=1\b/.test(location.search);
+  // CG-113 · Casa editable del bohío amueblado. Se entra en el mismo sitio (sin cuarto aparte).
+  // CG-126: encendida para todos. ?interiores=1 sigue encendiéndola. G.interioresOn === false o ?interiores=0 la apaga.
+  const casaOn = () => {
+    if (/[?&]interiores=0\b/.test(location.search)) return false;
+    if (G.interioresOn === false) return false;
+    return true;
+  };
   const casaDat = () => (window.AV_INTERIORES && window.AV_INTERIORES.casa) || { id: 'bohio_villa', cuerpo: 0.64, piezas: ['banco'] };
   const CASA_R = 1.6, ESC_GLB = 1.75;
   let dentroCasa = false, vanoHecho = false, casaLista = false, muebleP = null, muebleG = null;
@@ -308,7 +319,8 @@ window.AVBohios = function (G) {
     return muebleP;
   }
   function listoCasa() {
-    if (!casaOn() || casaLista || !casa) return false;
+    if (!casaOn() || !casa) return false;
+    if (casaLista) return true;
     const p = puerta(casa); if (!p) return false;
     casaLista = true;
     const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
@@ -339,7 +351,7 @@ window.AVBohios = function (G) {
     });
     return true;
   }
-  // QA-244: al jugar, no solo en la prueba. La bandera sigue siendo ?interiores=1.
+  // QA-244: al jugar, no solo en la prueba. CG-126: también sin ?interiores=1.
   function casaJugando() {
     if (!casaOn() || !casa || !puerta(casa)) return;
     if (!casaLista) listoCasa();
@@ -464,8 +476,11 @@ window.AVBohios = function (G) {
       const onCasa = G.interioresOn, int0 = S.interiores;
       try {
         await datosCasa();
+        G.interioresOn = undefined;
+        ok('CG-126 · sin bandera, la casa se usa', casaOn() && entrar() === true);
+        salir();
         G.interioresOn = false;
-        ok('Sin ?interiores=1 no se entra en la casa', entrar() === false);
+        ok('Con la casa apagada no se entra', entrar() === false);
         G.interioresOn = true;
         const pCasa = puerta(casa);
         ok('Entrar deja a Vittata dentro del mismo bohío', !!(pCasa && entrar() && Math.hypot(S.pos.x - pCasa.dentroX, S.pos.z - pCasa.dentroZ) < 0.25 && Math.hypot(S.pos.x - I.pos[0], S.pos.z - I.pos[2]) < 4 && Math.abs(S.pos.y - I.pos[1]) < 4));
@@ -520,7 +535,7 @@ window.AVBohios = function (G) {
 
   preparar().catch(() => {});
   vigilar();
-  const api = { get listo() { return preparar(); }, get casa() { return casa; }, montadas, otras, montarOtras, puertaDe: puerta, vistas, preparar, test, factor, entrar, salir, colocar, mover, ensanchar, mueble, listoCasa, piezas: piezasGuardadas };
+  const api = { get listo() { return preparar(); }, get casa() { return casa; }, montadas, otras, montarOtras, puertaDe: puerta, vistas, donde, preparar, test, factor, entrar, salir, colocar, mover, ensanchar, mueble, listoCasa, piezas: piezasGuardadas };
   G.bohios = api;
   return api;
 };

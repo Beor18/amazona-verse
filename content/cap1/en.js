@@ -164,6 +164,7 @@ window.AV_EN = {
  "Casi llegas a la meta": "You almost reached the finish",
  "Casi. Escucha otra vez, o pulsa Pasar.": "Almost. Listen again, or press Skip.",
  "Casi. Piensa en lo que hacen los aviarios del programa.": "Almost. Think about what the program's aviaries do.",
+ "Casa del bohío": "Bohio house",
  "Casita jíbara": "Jíbaro cottage",
  "Celebrar": "Celebrate",
  "Cerrar": "Close",
