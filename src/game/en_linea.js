@@ -323,7 +323,7 @@
     G.on('render', alRender, 70);
 
     // ---------- Panel (encima del juego, con la pausa puesta) ----------
-    let panel = null;
+    let panel = null, origenFoco = null;
     function estilo() {
       if ($('en-linea-css')) return;
       const s = document.createElement('style'); s.id = 'en-linea-css';
@@ -331,6 +331,8 @@
         '#en-linea[hidden]{display:none}#en-linea .el-caja{background:var(--c-surface-solid,#132b21);color:var(--paper,#f4f7f1);border:2px solid var(--c-line,rgba(127,211,143,.4));border-radius:20px;padding:22px;max-width:420px;width:100%;display:grid;gap:12px;box-shadow:0 18px 50px rgba(0,0,0,.45)}' +
         '#en-linea h2{margin:0;font-size:1.4rem}#en-linea p{margin:0;color:var(--muted,#a9c2b1);line-height:1.4}#en-linea .el-fila{display:flex;gap:8px;flex-wrap:wrap}' +
         '#en-linea input{flex:1;min-width:0;font:inherit;font-size:1.4rem;letter-spacing:.3em;text-transform:uppercase;text-align:center;padding:10px;border-radius:12px;border:2px solid var(--c-line,#7fd38f);background:rgba(0,0,0,.25);color:inherit}' +
+        '#en-linea button:focus-visible,#en-linea input:focus-visible{outline:3px solid #ffd27a;outline-offset:2px}' +
+        '@media (prefers-reduced-motion:reduce){#en-linea,#en-linea *{animation:none;transition:none}}' +
         '#en-linea .el-codigo{font-size:2.4rem;font-weight:800;letter-spacing:.3em;text-align:center;color:var(--gold,#ffd27a)}#en-linea .el-n{text-align:center}';
       document.head.appendChild(s);
     }
@@ -351,7 +353,16 @@
       });
       k('input').addEventListener('input', e => { const v = limpiarCodigo(e.target.value); if (v !== e.target.value) e.target.value = v; });
       k('input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); unir(e.target.value); } else if (e.key === 'Escape') cerrar(); });
-      panel.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); cerrar(); } });
+      panel.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { e.preventDefault(); cerrar(); return; }
+        if (e.key !== 'Tab' || panel.hidden) return;
+        const lista = [...panel.querySelectorAll('button, input, [href], select, textarea')].filter(el => !el.disabled && el.tabIndex !== -1 && el.getClientRects().length);
+        if (!lista.length) return;
+        e.preventDefault();
+        let i = lista.indexOf(document.activeElement);
+        if (i < 0) i = e.shiftKey ? 0 : -1;
+        lista[e.shiftKey ? (i <= 0 ? lista.length - 1 : i - 1) : (i + 1) % lista.length].focus();
+      });
       document.body.appendChild(panel);
       return panel;
     }
@@ -368,14 +379,23 @@
       k('n').textContent = T.cuantas(Math.max(1, E.presentes.size));
       b('crear').disabled = b('unir').disabled = E.fase === 'conectando';
     }
+    const focoInicial = () => panel && panel.querySelector(E.fase === 'dentro' ? '[data-a="cerrar"]' : '[data-a="crear"]');
+    const ponerFoco = () => { const f = focoInicial(); if (f && panel && !panel.hidden) try { f.focus({ preventScroll: true }); } catch (e) { /* */ } };
     function abrir() {
+      const act = document.activeElement;
+      origenFoco = (act && act !== document.body && act !== document.documentElement) ? act : document.getElementById('b-en-linea');
       montar(); pintar(); panel.hidden = false;
       try { G.pausa && G.pausa.set('enlinea', true); } catch (e) { /* sin pausa */ }
-      setTimeout(() => { const f = panel.querySelector(E.fase === 'dentro' ? '[data-a="cerrar"]' : '[data-a="crear"]'); if (f && !panel.hidden) f.focus({ preventScroll: true }); }, 0);
+      ponerFoco(); setTimeout(ponerFoco, 0); // el cierre de la pausa deja el foco en body un instante después
     }
     function cerrar() {
       if (panel) panel.hidden = true;
       try { G.pausa && G.pausa.set('enlinea', false); } catch (e) { /* sin pausa */ }
+      const f = origenFoco; origenFoco = null;
+      if (!f || !f.isConnected) return;
+      const pop = f.closest && f.closest('[popover]');
+      try { if (pop && !pop.matches(':popover-open')) pop.showPopover(); } catch (e) { /* sin popover */ }
+      try { f.focus({ preventScroll: true }); } catch (e) { /* */ }
     }
     G.on('apply', () => pintar(), 92);
 
@@ -484,8 +504,20 @@
         let quedan = 0; scene.traverse(x => { if (x.userData && x.userData.enLinea) quedan++; });
         check('Salir de la sala quita todos los modelos y marcas', E.fase === 'fuera' && pares.size === 0 && quedan === 0, quedan + ' objetos');
         // 11. El panel: abre y cierra con la pausa
-        abrir(); const abierto = !panel.hidden && G.pausa.motivos.has('enlinea'); cerrar();
-        check('El panel «Jugar en línea» abre con pausa y cierra', abierto && panel.hidden && !G.pausa.motivos.has('enlinea'));
+        const bLinea = document.getElementById('b-en-linea'); if (bLinea) bLinea.focus();
+        abrir(); const abierto = !panel.hidden && G.pausa.motivos.has('enlinea');
+        const hojaEL = (document.getElementById('en-linea-css') || {}).textContent || '';
+        const primero = panel.querySelector('[data-a="crear"]');
+        check('El panel «Jugar en línea» abre con pausa, el foco entra en «Crear sala» y se ve al tabular', abierto && document.activeElement === primero && /:focus-visible/.test(hojaEL) && /prefers-reduced-motion/.test(hojaEL));
+        const visibles = [...panel.querySelectorAll('button, input')].filter(el => el.getClientRects().length);
+        const ultimo = visibles[visibles.length - 1];
+        if (ultimo) ultimo.focus();
+        const tab = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+        if (ultimo) ultimo.dispatchEvent(tab);
+        check('Tab no sale del panel: vuelve al primer control', !!ultimo && tab.defaultPrevented && document.activeElement === visibles[0], document.activeElement && (document.activeElement.getAttribute('data-a') || document.activeElement.tagName));
+        cerrar();
+        check('El panel «Jugar en línea» cierra y el foco vuelve al botón que lo abrió', panel.hidden && !G.pausa.motivos.has('enlinea') && (!bLinea || document.activeElement === bLinea));
+        try { const pop = bLinea && bLinea.closest('[popover]'); if (pop && pop.matches(':popover-open')) pop.hidePopover(); } catch (e) { /* sin popover */ }
         check('Códigos: sin letras ambiguas y se limpia lo escrito', limpiarCodigo(' ab-c2d9 x') === 'ABC2D' && !/[01OIL]/.test(ALFABETO));
       } catch (e) {
         check('Sin excepciones', false, e && e.message);
