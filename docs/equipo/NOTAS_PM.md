@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 4 · 11-nov · GT-06 en curso (QA-244 y QA-245)
+- **Tarea:** con `?interiores=1`, la casa del bohío se puede usar jugando. QA-239 a QA-243 ya estaban usados. La fila (a) del terminal es QA-244 y la (b) es QA-245.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/bohios.js`. No enciendo interiores para todos (eso es CG-126). No toco `boot.js`, `interiores.js` ni el carril de Kimi.
+- **Qué falta:** llamar a `listoCasa()` y `ensanchar()` al jugar, y separar Salir de Poner banco.
+- **Cómo probarlo:** `AV.bohiosTest()`.
+- **Lo confirma:** bohiosTest y las 12, 0 errores.
+
 ### Dev 4 · 11-nov · QA-242 hecha
 - **Tarea:** la guía no tapa Acción en el cap. 2 móvil. Cerrada.
 - **Commit:** `f5fe747f`. EN CURSO fue `3a62ef74`.
