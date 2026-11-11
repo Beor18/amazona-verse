@@ -2,6 +2,16 @@
 
 ## TRASPASO
 
+### Dev 1 · 11-nov · QA-246 hecha
+- **Tarea:** Ir de «Escuela de vuelo». Cerrada. EN CURSO fue `ea20fd7c`.
+- **Commit:** `5e1f8481` (el mismo `piloto.js` que la build `qa246-0521f98e`).
+- **Archivo:** `src/game/v18/piloto.js`. No toqué `que_hacer.js`, `minimapa.js`, `content/cap1/en.js`, `tienda.js`, `boot.js` ni `bohios.js`.
+- **Qué hace:** al cargar, la escuela queda en `G.v18piloto`. Ir de «¿Qué hay para hacer?» ya puede leer el puente y llamar a `empezar()`. Sin `?piloto=1`.
+- **Qué falta:** nada de este bug. QA-247 la tiene Dev 2. QA-248 la tiene Dev 3. QA-249 sigue asignada a Dev 4.
+- **Cómo probarlo:** cap. 1, sin `?piloto=1`. Pausa o portada → «¿Qué hay para hacer?» → Ir de Escuela de vuelo. Vittata queda junto al puente y sale la pista.
+- **Lo confirma:** el propio botón Ir, dentro de pilotoTest: de 134,0, 182,5 a 157,9, 136,5, fase `escuela`, pista visible. pilotoTest 15/15. Build `qa246-0521f98e`: las 12 en verde, 0 errores. 1 aviso de consola `AVE edificios: Failed to fetch` (carril de Kimi, no es el heap). La primera corrida dejó accessoryTest 18/19 (el pliegue de las alas); sola en la repetición, 19/19. No toqué el modelo.
+- **Siguiente:** quieto.
+
 ### Dev 2 · 11-nov 05:48 AST · QA-247 en curso
 - **Tarea:** en inglés, la leyenda del mapa no deja «Aún cerrado». No toco `que_hacer.js` (QA-248, Dev 3), `piloto.js` (QA-246, Dev 1) ni `tienda.js`.
 - **Commit de código:** todavía no.
@@ -10,12 +20,7 @@
 - **Lo confirma:** minimapaTest y las 12. idiomaTest puede seguir rojo por QA-248. Las 12 de este HEAD las anotó Dev 3 en CG-126 (`99c6bd74`).
 
 ### Dev 1 · 11-nov · QA-246 en curso
-- **Tarea:** Ir de «Escuela de vuelo» no mueve a Vittata ni arranca la pista. QA-246 a QA-249 estaban libres. QA-247 es de Dev 2, QA-248 de Dev 3 y QA-249 de Dev 4.
-- **Commit:** este (la fila y las cuatro asignaciones).
-- **Archivo:** `src/game/v18/piloto.js`. No toco `que_hacer.js`, `minimapa.js`, `content/cap1/en.js`, `tienda.js`, `boot.js` ni `bohios.js`.
-- **Causa:** `irPiloto()` llama a `G.v18piloto`, y el módulo solo devuelve el objeto.
-- **Cómo probarlo:** cap. 1, sin `?piloto=1`, panel «¿Qué hay para hacer?», Ir de Escuela de vuelo. `AV.pilotoTest()`.
-- **Lo confirma:** todavía no.
+- **Tarea:** marca de la fila. El cierre está arriba, commit `5e1f8481`.
 
 ### Dev 3 · 11-nov · QA-248 en curso
 - **Tarea:** en Modo Maestro de ep2 a ep6, el panel «¿Qué hay para hacer?» sigue en español. QA-246 a QA-249 los añade Dev 1; esta es QA-248.
