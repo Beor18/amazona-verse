@@ -397,7 +397,12 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     // Panel: sale al empezar a jugar (primera vez en el dispositivo o si nunca ha volado) y se cierra al moverse.
     // Espera a que acaben los bocadillos libres: si no, tapa el gancho del capítulo (la apertura en negro va en bocadillos)
     if (jugando && !(G.dialogo.libre && G.dialogo.libre())) listoT += dt; else listoT = 0;
-    if (!panelAbierto && !tactil() && listoT > AJ.listo && !enSesion.panel && (!est.vistas.panel || !est.hecho.volar)) { enSesion.panel = 1; mostrar(false); }
+    // QA-242: en 390×844 la caja de teclado (div.guia-caja) tapa Acción. Si los botones ya se ven, esa guía no sale.
+    // forzado === 'teclado' es la prueba de la guía: ahí el panel sí puede abrirse.
+    if (hudVis.sucio) hudVisRevisar();
+    const conBotones = !forzado && (tactil() || hudVis.tactil);
+    if (conBotones && panelAbierto) cerrar();
+    if (!panelAbierto && !conBotones && listoT > AJ.listo && !enSesion.panel && (!est.vistas.panel || !est.hecho.volar)) { enSesion.panel = 1; mostrar(false); }
     if (panelAbierto) {
       panelT += dt;
       if (panelT > AJ.gracia && (pidiendoMover() || M.flying) && (panelMov += dt) > AJ.cierre) cerrar();
@@ -537,6 +542,15 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       pmTick(0.05);
       ok('Al volver el botón de volar, despegar cuenta de nuevo sin el atasco', pm.dataset.paso === 'despegar' && pmE.t < 1 && !pm.classList.contains('pm-atascado'),
         't ' + pmE.t);
+      forzado = null;
+      hudVis.sucio = true;
+      mostrar(true);
+      actualizar(0.1);
+      const bAct = document.getElementById('b-act');
+      const rcA = bAct.getBoundingClientRect();
+      const encima = document.elementFromPoint(rcA.left + rcA.width / 2, rcA.top + rcA.height / 2);
+      ok('QA-242 · con los botones a la vista la caja de teclado no tapa Acción', panel.hidden && !(encima && encima.closest && encima.closest('.guia-caja')), encima && (encima.id || encima.className));
+      forzado = 'tactil';
       if (lg0) raiz.style.setProperty('--tap-lg', lg0); else raiz.style.removeProperty('--tap-lg');
       if (xl0) raiz.style.setProperty('--tap-xl', xl0); else raiz.style.removeProperty('--tap-xl');
       if (jump) { if (sz0) jump.style.setProperty('--sz', sz0); else jump.style.removeProperty('--sz'); }
