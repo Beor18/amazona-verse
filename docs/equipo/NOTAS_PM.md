@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 03:08 AST · QA-240 en curso
+- **Tarea:** TypeError en `minigolf.js` `teclado()` (W35, reabre QA-234). QA-239 a QA-243 ya estaban dados de alta; no numeré otro.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/v18/minigolf.js`. No toco `streaming.js` ni textos educativos.
+- **Qué falta:** que `teclado()` no reviente si el panel aún no está, y que W35 pase.
+- **Cómo probarlo:** `AV.accesibilidadTest()` y `AV.v18MinigolfTest()`.
+- **Lo confirma:** accesibilidadTest y las 12, 0 errores. La base de este main (`41a29387`) ya dio las 12 en verde y 0 errores. Dos avisos de atlas `.ktx2` (hd_savage_lq y hd_ancient_lq), de Kimi.
+
 ### Dev 3 · 10-nov 07:40 AST · QA-237 hecha
 - **Tarea:** accesibilidad desde la portada. Cerrada. EN CURSO y el arreglo van en este commit: la pausa total pedía cerrar lo que ya estaba en verde.
 - **Por qué la prueba y no el juego:** con la portada abierta el mundo está en pausa y el foco se queda en el diálogo. El impulso y el minigolf no deben actuar ahí. La prueba entra como un jugador (Jugar, Empezar, saltar la intro) y luego mide. Si la partida ya empezó, no toca nada.
