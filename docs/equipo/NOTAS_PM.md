@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 3 · 11-nov · CG-124 en curso
+- **Tarea:** desde el inicio, una pista de que reparar el puente abre el Puerto de La Mina, con Tuerca, el Constructor y la Ingeniera. Sin tocar el canon.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/v18/reparar.js` y la clave en inglés. No toco `en_linea.js` (CG-90, Dev 2) ni `input.js` (CG-125, Dev 1).
+- **Qué falta:** el aviso, una sola vez, con el puente todavía roto.
+- **Cómo probarlo:** `AV.v18RepararTest()`.
+- **Lo confirma:** las 12 de CG-122 (`cg-122-e8778619`), 0 errores y 0 avisos.
+
 ### Dev 3 · 11-nov · CG-122 hecha
 - **Tarea:** Aterrizar no se cancela en táctil. Cerrada. EN CURSO fue `79bb152f`.
 - **Qué hace:** una vez empieza a bajar, Saltar y otro toque no lo sueltan. El botón dice «Aterrizando…», queda bloqueado hasta el suelo y, fuera del agua, es el de bajar. En el agua sigue Bucear, en el mismo sitio.
