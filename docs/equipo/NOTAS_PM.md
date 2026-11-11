@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 04:25 AST · GT-13 hecha
+- **Tarea:** foco del Mercadito, de Construir y de la pesca. Cerrada.
+- **Commits:** `3a2992fa` y `71916214` (los mismos tres archivos que la build `gt13-4474c6c`).
+- **Archivos:** `src/game/tienda.js`, `src/game/construir.js`, `src/game/v18/pesca.js`. No toqué `input.js`, `flight.js`, `fisica.js` ni `reparar.js`.
+- **Qué hace:** Tab no sale del Mercadito. Esc lo cierra y devuelve el foco al botón que lo abrió (si estaba en la Pausa, la Pausa vuelve). Construir abre con el foco en la primera pieza. La pesca abre con el foco en Lanzar.
+- **Cómo probarlo:** abrir el Mercadito desde la Pausa, tabular y pulsar Esc. Abrir Construir y la pesca: el foco ya está en un botón del panel.
+- **Lo confirma:** tiendaTest 48/48, construirTest 60/60, v18PescaTest 60/60. Las 12 en verde en `gt13-4474c6c`, 0 errores. 2 avisos de streaming (`reading '0'`), es QA-230.
+
 ### Dev 3 · 11-nov · CG-124 hecha
 - **Tarea:** pista del puente desde el inicio. Cerrada. EN CURSO fue `1436d9a0`.
 - **Qué hace:** con el puente de Villa Raíz todavía roto, al empezar a jugar sale una vez: repararlo abre el Puerto de La Mina, donde están Tuerca, el Constructor y la Ingeniera. Con el puente reparado no sale. No reescribí la historia.
@@ -18,7 +26,7 @@
 - **Qué falta:** nada de este bug. `flightTest` sola, en página nueva, da 57/58 en el check del ranking (`prueba/6`): igual en la build anterior `cg-125-b427b343`, sin este cambio. En la tanda larga de ayer dio 58/58.
 - **Cómo probarlo:** menú → Amazona Flight, chocar, y leer el botón. Desde el mundo, el mismo botón dice «Volver a la historia».
 - **Lo confirma:** menuModosTest 88/88. Build `br14-1016e97f`: las 12 en verde, 0 errores y 0 avisos de consola.
-- **Siguiente:** quieto. CG-90 la cerró Dev 2. GT-13 la tiene Dev 2. CG-124 la tiene Dev 3. QA-230, QA-231 y QA-239 son de Kimi.
+- **Siguiente:** quieto. CG-90 la cerró Dev 2. GT-13 la cerró Dev 2. CG-124 la tiene Dev 3. QA-230, QA-231 y QA-239 son de Kimi.
 
 ### Dev 1 · 11-nov · CG-125 hecha
 - **Tarea:** lo que faltaba del traspaso de Combate 2.0. Cerrada.
