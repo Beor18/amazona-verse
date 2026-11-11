@@ -724,6 +724,16 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
           finally { if (m && m.cerrar) m.cerrar(); }
         }
       }
+      // QA-247: «Aún cerrado» de la leyenda tiene inglés (content/cap1/en.js). El resto de idiomaTest es QA-248.
+      if (G.idioma && G.idioma.poner) {
+        const idi0 = G.idioma.actual();
+        try {
+          await G.idioma.poner('en');
+          const li = elG.querySelector('.l-candado') && elG.querySelector('.l-candado').parentElement;
+          const txt = li ? li.textContent.replace(/\s+/g, ' ').trim() : '';
+          check('QA-247 · en inglés la leyenda del candado dice «Still closed»', txt === 'Still closed', txt);
+        } finally { await G.idioma.poner(idi0 || 'es'); }
+      } else check('QA-247 · en inglés la leyenda del candado dice «Still closed»', false, 'sin idioma');
     } catch (e) {
       check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300));
     } finally {

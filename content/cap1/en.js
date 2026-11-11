@@ -95,6 +95,7 @@ window.AV_EN = {
  "Aviario de Villa Raíz": "Villa Raíz Aviary",
  "Ay, bendito. Quedó hecha pedazos.": "Oh no. It's in pieces.",
  "Azul": "Blue",
+ "Aún cerrado": "Still closed",
  "Aún ninguna.": "None yet.",
  "Aún no hay capítulos terminados en este dispositivo.": "No chapters finished on this device yet.",
  "Aún no hay huevos. ¡Abre el criadero!": "No eggs yet. Open the nursery!",
