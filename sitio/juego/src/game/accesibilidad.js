@@ -463,7 +463,7 @@ AVE.module('accesibilidad', function (G) {
   async function test(o) {
     const out = [];
     const check = (name, ok, extra) => { out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) }); };
-    const perfil0 = S.profile, ultimo0 = ultimo, mudo0 = G.audio.vol.muted, abierto0 = (() => { try { return menu.matches(':popover-open'); } catch (e) { return false; } })();
+    let perfil0 = S.profile; const ultimo0 = ultimo, mudo0 = G.audio.vol.muted, abierto0 = (() => { try { return menu.matches(':popover-open'); } catch (e) { return false; } })();
     const ajIdi = G.aula && G.aula.aj, idi0 = ajIdi ? ajIdi.idioma : null;
     // Asignar aj.idioma a mano deja el traductor (G.idioma) en el idioma de arranque. Con la partida en inglés,
     // ese observador reescribe el subtítulo en español en cuanto pasa un rato: el BIP, que espera, sale en inglés.
@@ -475,7 +475,41 @@ AVE.module('accesibilidad', function (G) {
     };
     if (o && (o.idioma === 'en' || o.idioma === 'es')) await ponerIdioma(o.idioma);
     guardarAlCambiar = false;
+    // QA-237: si se llama en la portada, recién recargada, el mundo está en pausa y el foco se queda
+    // en el diálogo. El impulso, el minigolf y el Aula entonces fallan. Eso es lo correcto del menú:
+    // no se juega encima de la portada. La prueba entra como un jugador (Jugar → Empezar → saltar la intro)
+    // y mide el juego. Si la partida ya empezó, no toca nada.
+    const asegurarPartida = async () => {
+      const title = $('title');
+      if (!title || !title.open) return;
+      const sleep = ms => new Promise(r => setTimeout(r, ms));
+      const espera = async (f, ms) => {
+        const t0 = performance.now();
+        while (performance.now() - t0 < ms) { if (f()) return true; await sleep(80); }
+        return !!f();
+      };
+      const jugar = title.querySelector('form[method=dialog] button');
+      if (!jugar) throw new Error('la portada no tiene el botón de Jugar');
+      jugar.click();
+      if (!await espera(() => !title.open, 4000)) throw new Error('la portada sigue abierta');
+      const cr = $('creator');
+      if (cr) await espera(() => !cr.hidden || !!(S.profile && S.profile.created), 8000);
+      if (cr && !cr.hidden) {
+        await espera(() => { const st = $('p-stage-status'); return !!(st && st.hidden); }, 30000);
+        const save = $('p-save');
+        if (!save) throw new Error('el creador no tiene Empezar');
+        save.click();
+        if (!await espera(() => cr.hidden, 8000)) throw new Error('Empezar no cerró el creador');
+      }
+      if (window.AV && AV.cargaEsperar) await AV.cargaEsperar(30000);
+      const saltar = $('c1-saltar');
+      if (saltar) { saltar.click(); await espera(() => !$('c1-saltar'), 3000); }
+      if (G.pausa && G.pausa.sincronizar) G.pausa.sincronizar();
+      if (title.open || (G.pausa && G.pausa.activa())) throw new Error('el mundo sigue en pausa tras empezar');
+    };
     try {
+      await asegurarPartida();
+      if (S.profile) perfil0 = S.profile;
       check('Sección «Accesibilidad» en el menú de pausa: texto, contraste, subtítulos, relajado, zurdo, daltonismo y una mano',
         !!sec && sec.querySelectorAll('[data-a11y-texto]').length === 3 && BOOLS.every(k => !!sec.querySelector(`[data-a11y-bool="${k}"]`)));
       check('Los ajustes nuevos están apagados de entrada', (() => { S.profile = Object.assign({}, perfil0, { a11y: undefined }); const a = leer(); return a.texto === 0 && BOOLS.every(k => a[k] === false); })());

@@ -59,6 +59,18 @@ AVE.module('interaccion', function (G) {
     const libre = verb === 'Acción';
     if (actBtn.classList.contains('sin-objetivo') !== libre) { actBtn.classList.toggle('sin-objetivo', libre); actBtn.style.opacity = libre ? '0.65' : ''; }
     G.input.syncSwimButtons(G.fisica.MOVE.swimming);
+    // CG-122: el texto y el bloqueo del aterrizaje. input.js y botones.js son de CG-125 (Dev 1): no se mueven de sitio.
+    // Fuera del agua, volando, #b-fly ya es el botón de bajar (Aterrizar). En el agua sigue #b-dive, en el mismo sitio.
+    const fly = $('b-fly'), Mfly = G.fisica.MOVE;
+    if (fly) {
+      if (Mfly.flying && Mfly.landing) {
+        if (fly.textContent !== 'Aterrizando…') {
+          fly.textContent = 'Aterrizando…'; fly.dataset.icon = 'dive';
+          fly.setAttribute('aria-label', 'Aterrizando: espera a tocar el suelo');
+        }
+        if (!fly.disabled) fly.disabled = true;
+      } else if (fly.disabled) fly.disabled = false;
+    }
   }, 90);
   return api;
 });

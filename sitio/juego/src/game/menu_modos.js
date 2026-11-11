@@ -613,8 +613,9 @@
           let rec0 = null; try { rec0 = localStorage.getItem(CLAVE_RET); } catch (e) { /* sin almacén */ }
           // 12 s y no 3: el choque emite retosResultado (XP, foto del momento) y en la nube el hilo se para segundos (QA-220); con 3 s
           // la espera vencía antes de que saltara el temporizador de 350 ms de resultados() y se leía el texto viejo del botón (QA-223b)
+          if (d.st.ui && d.st.ui.fin) d.st.ui.fin.hidden = true; // el final de una partida anterior no cuenta
           d.vaciar(); d.st.fase = 'juego'; d.J.dist = 30; d.J.y = fa.P.yMin - 0.1; d.J.vy = -1; d.paso(1 / 60);
-          const t0 = performance.now(), visto = await hasta(() => !!(d.st.ui && !d.st.ui.fin.hidden), 12000); finInfo = 'final ' + (visto ? 'a los ' : 'no salió en ') + Math.round(performance.now() - t0) + ' ms, fase ' + d.st.fase + ', puntos ' + d.J.puntos;
+          const t0 = performance.now(), visto = await hasta(() => !!(d.st.ui && d.st.fase === 'fin' && !d.st.ui.fin.hidden), 12000); finInfo = 'final ' + (visto ? 'a los ' : 'no salió en ') + Math.round(performance.now() - t0) + ' ms, fase ' + d.st.fase + ', puntos ' + d.J.puntos;
           const ok = visto && textoEs(d.st.ui.fin.querySelector('[data-salir]'), s);
           try { if (rec0 == null) localStorage.removeItem(CLAVE_RET); else localStorage.setItem(CLAVE_RET, rec0); } catch (e) { /* sin almacén */ }
           return ok;
@@ -808,8 +809,9 @@
     }
 
     // QA-212: ocupado() = hay una actividad V18 en marcha (duelo, minigolf, carreras…); lo miran las pistas de descubrir.js y ciclo.js
-    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, desdeMenu: () => desdeMenu, ocupado: () => ocupado18(), get libre() { return libre; }, get pendiente() { return pendiente; } };
+    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18(), get libre() { return libre; }, get pendiente() { return pendiente; } };
     api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir });
+    if (window.AVQueHacer) window.AVQueHacer(G);
     return api;
   };
 

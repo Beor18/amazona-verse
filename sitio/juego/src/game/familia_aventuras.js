@@ -153,7 +153,7 @@ window.AVFamiliaAventuras = function (G) {
   let cartelT = 0;
   function teToca(n) {
     const c = $('fq-turno'); if (!c) return;
-    c.querySelector('b').textContent = '¡Te toca!';
+    c.querySelector('b').textContent = T('¡Te toca!');
     c.querySelector('span').textContent = quien(n);
     c.hidden = false;
     clearTimeout(cartelT);

@@ -1122,21 +1122,30 @@ window.AVV18Minigolf = function (G) {
   function teclado() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     if (A.fase !== 'nada' || !K || !ofrecible()) return out;
-    const nombre = el => (el.getAttribute('aria-labelledby') || '').split(/\s+/).map(id => document.getElementById(id)).filter(Boolean).map(x => x.textContent.trim()).join(' ') || el.getAttribute('aria-label') || el.textContent.trim();
+    const nombre = el => !el ? '' : ((el.getAttribute('aria-labelledby') || '').split(/\s+/).map(id => id && document.getElementById(id)).filter(Boolean).map(x => x.textContent.trim()).join(' ') || el.getAttribute('aria-label') || el.textContent.trim());
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M.flying, yaw0 = G.camara.yaw, man0 = A.manual, toast0 = G.ui.toast, r0 = JSON.stringify(record());
     const foco0 = document.activeElement, ancla = document.createElement('button');
     ancla.type = 'button'; ancla.textContent = 'W35'; ancla.style.cssText = 'position:fixed;left:0;top:0;opacity:0;pointer-events:none'; document.body.appendChild(ancla); ancla.focus();
-    const tecla = (el, key, tipo) => { const ev = new KeyboardEvent(tipo || 'keydown', { key, bubbles: true, cancelable: true }); el.dispatchEvent(ev); return ev; };
+    const tecla = (el, key, tipo) => { const ev = new KeyboardEvent(tipo || 'keydown', { key, bubbles: true, cancelable: true }); (el || document.body).dispatchEvent(ev); return ev; };
     G.ui.toast = () => {}; A.manual = true;
     try {
-      iniciar({ forzar: true });
+      // QA-240: iniciar() puede volver sin panel (hoyo sin sitio). Antes hud.el y nombre(null) lanzaban TypeError.
+      if (!iniciar({ forzar: true }) || !hud || !hud.el) {
+        check('W35 · Minigolf: teclado sin excepciones', false, 'el hoyo no arrancó');
+        return out;
+      }
       const el = hud.el, eli = hud.q('elige'), j1 = el.querySelector('[data-a="j1"]'), j2 = el.querySelector('[data-a="j2"]');
+      if (!eli || !j1 || !j2) {
+        check('W35 · Minigolf: teclado sin excepciones', false, 'falta el panel de jugadores');
+        return out;
+      }
       check('W35 · Minigolf «¿Cuántos juegan?»: al abrir, el foco va a «1 jugador»; el panel y el grupo tienen nombre',
         document.activeElement === j1 && el.getAttribute('role') === 'region' && !!nombre(el) && eli.getAttribute('role') === 'group' && !!nombre(eli), (document.activeElement && (document.activeElement.dataset.a || document.activeElement.id)) + ' · ' + nombre(eli));
       const sinNombre = [...el.querySelectorAll('button')].filter(b => !nombre(b)).map(b => b.dataset.a);
       check('W35 · Minigolf: todos los botones del panel son <button> con nombre', !sinNombre.length, sinNombre.join(', '));
       j2.focus(); const ev = tecla(j2, 'Enter'); const nativo = !ev.defaultPrevented; if (nativo) j2.click(); // el navegador hace el clic (detail 0) si nadie lo impidió
       const golpe = el.querySelector('[data-a="golpe"]');
+      if (!golpe) { check('W35 · Minigolf: teclado sin excepciones', false, 'falta Golpear'); return out; }
       check('W35 · Minigolf: Enter sobre «2 jugadores» lo pulsa (el hoyo no se traga la tecla) y el foco pasa a «Golpear»', nativo && A.njug === 2 && !A.eligiendo && document.activeElement === golpe, JSON.stringify({ nativo, n: A.njug, foco: document.activeElement && document.activeElement.dataset.a }));
       const ev2 = tecla(golpe, ' '); tecla(golpe, ' ', 'keyup'); A.cargando = false;
       check('W35 · Minigolf: con el foco en «Golpear», Espacio sigue cargando la fuerza (no hace clic)', ev2.defaultPrevented);

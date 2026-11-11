@@ -1,11 +1,16 @@
-/* CG-108 · Escuela de Vuelo del Guardián y show aéreo. Solo con ?piloto=1 (apagado hasta que Kelvin vea fotos).
+/* CG-108 · Escuela de Vuelo del Guardián y show aéreo. CG-126: encendida al jugar.
+   ?piloto=0 o G.piloto === false la apaga. ?piloto=1 sigue encendiéndola.
    Sin anillos: la marca es una hoja suave. No cambia el vuelo de fuera. No hay modelos ni edificios nuevos. */
 window.AVV18Piloto = function (G) {
   'use strict';
   if (G.v18piloto) return G.v18piloto;
   const S = G.S, M = G.fisica.MOVE, H = (x, z) => G.terreno.height(x, z);
   const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' && en ? en : es);
-  const encendido = () => G.piloto === true || /[?&]piloto=1\b/.test(location.search);
+  const encendido = () => {
+    if (/[?&]piloto=0\b/.test(location.search)) return false;
+    if (G.piloto === false) return false;
+    return true;
+  };
   const escuela = () => !!(G.renderer && G.renderer.calidad && G.renderer.calidad.escuela);
   const reducido = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const aguaEn = (x, z) => (G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) : -Infinity);
@@ -98,8 +103,20 @@ window.AVV18Piloto = function (G) {
     const quiet0 = G.quiet, piloto0 = G.piloto; G.quiet = true;
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fly0 = M.flying, sp0 = M.speed, vy0 = S.vy, g0 = M.grounded;
     try {
+      G.piloto = undefined; salir();
+      const abrirPanel = document.getElementById('b-que-hacer') || document.getElementById('b-que-hacer-title');
+      if (abrirPanel) abrirPanel.click();
+      const btnIr = document.querySelector('#que-hacer [data-qh="piloto"] .qh-ir');
+      const antes = { x: S.pos.x, z: S.pos.z };
+      if (btnIr && !btnIr.disabled) btnIr.click();
+      const puenteIr = sitio().puente;
+      const pistaIr = document.getElementById('piloto-pista');
+      ok('QA-246 · Ir lleva al puente y arranca la escuela', !!G.v18piloto && G.v18piloto.empezar === empezar && !!btnIr && !btnIr.disabled && Math.hypot(S.pos.x - puenteIr.x, S.pos.z - puenteIr.z) < 1 && estado().fase === 'escuela' && !!pistaIr && !pistaIr.hidden, 'de ' + antes.x.toFixed(1) + ',' + antes.z.toFixed(1) + ' a ' + S.pos.x.toFixed(1) + ',' + S.pos.z.toFixed(1));
+      S.pos.x = antes.x; S.pos.z = antes.z; salir();
+      ok('CG-126 · sin bandera, la escuela empieza', encendido() && empezar() === true && estado().fase === 'escuela');
+      salir();
       G.piloto = false; salir();
-      ok('Sin ?piloto=1 no se ve ni empieza', !encendido() && empezar() === false && !estado().visible);
+      ok('CG-126 · ?piloto=0 o piloto en false la apaga', !encendido() && empezar() === false && !estado().visible);
       G.piloto = true;
       ok('Con la bandera empieza la escuela', empezar() === true && estado().fase === 'escuela' && document.getElementById('piloto-pista') && !document.getElementById('piloto-pista').hidden);
       ok('La marca no es un anillo', !hoja || hoja.geometry.type !== 'RingGeometry');
@@ -134,5 +151,7 @@ window.AVV18Piloto = function (G) {
     finally { G.piloto = piloto0; G.quiet = quiet0; S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.vy = vy0; M.flying = fly0; M.speed = sp0; M.grounded = g0; salir(); }
     return { passed: out.filter(x => x.ok).length, total: out.length, results: out };
   }
-  return { empezar, paso, salir, estado, anotar, pagar, sitio, test, LEC };
+  const api = { empezar, paso, salir, estado, anotar, pagar, sitio, test, LEC };
+  G.v18piloto = api; // Ir de «¿Qué hay para hacer?» lee G.v18piloto; aDemanda no lo guarda (QA-246)
+  return api;
 };

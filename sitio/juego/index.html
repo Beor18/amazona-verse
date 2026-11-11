@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="ave:ktx2" content="assets/models/edificios/tex_hd/hd_ancient_lq.jpg assets/models/edificios/tex_hd/hd_savage_lq.jpg assets/models/edificios/tex_hd/hd_ancient_lq1024.jpg assets/models/edificios/tex_hd/hd_savage_lq1024.jpg">
 <meta name="ave:sin-glb" content="1">
-<meta name="ave:build" content="HEAD 0095a8975126">
+<meta name="ave:build" content="HEAD 58f2ba9ad0bc">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Amazona Verse</title>
 <link rel="icon" type="image/png" href="assets/vittata.png">
@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="src/ui/ui.css">
 <link rel="stylesheet" href="src/ui/criadero.css" data-criadero>
 <link rel="stylesheet" href="src/ui/menu_modos.css">
+<link rel="stylesheet" href="src/ui/que_hacer.css">
 <link rel="stylesheet" href="src/ui/retos_dia.css">
 
 <canvas id="game" aria-label="Mundo de Amazona Verse"></canvas>
@@ -120,7 +121,7 @@
       </div>
     </form>
     <!-- Capítulos de la temporada (AV1): cada uno es un content pack (?pack=<id>, boot.js lo carga solo); el botón abre #capitulos -->
-    <nav class="title-episodios" aria-label="Capítulos"><button class="btn" id="b-capitulos-title" type="button" data-no-tr data-icon="book">Capítulos</button></nav>
+    <nav class="title-episodios" aria-label="Capítulos"><button class="btn" id="b-capitulos-title" type="button" data-no-tr data-icon="book">Capítulos</button><button class="btn" id="b-que-hacer-title" type="button">¿Qué hay para hacer?</button></nav>
     <p class="title-hint">Tu progreso se guarda solo · Teclado, ratón o pantalla táctil</p>
   </div>
   <img class="title-hero" src="assets/vittata.png" alt="" width="512" height="512">
@@ -160,6 +161,7 @@
       <button class="btn tile" id="b-records" type="button" data-icon="star" popovertarget="pause" popovertargetaction="hide">Mis récords</button>
       <button class="btn tile" id="b-en-linea" type="button" data-icon="wing" popovertarget="pause" popovertargetaction="hide">Jugar en línea</button>
       <button class="btn tile" id="b-menu-modos" type="button" data-icon="rotate" popovertarget="pause" popovertargetaction="hide">Cambiar de juego</button>
+      <button class="btn tile" id="b-que-hacer" type="button" data-icon="book">¿Qué hay para hacer?</button>
       <button class="btn tile" id="b-capitulos" type="button" data-no-tr data-icon="book" popovertarget="pause" popovertargetaction="hide">Capítulos</button>
       <h3 class="pause-grupo" id="pause-g-cotorra" data-icon="shirt">Mi cotorra</h3>
       <button class="btn tile" id="b-char" type="button" data-icon="shirt" popovertarget="pause" popovertargetaction="hide">Mi personaje</button>
@@ -375,6 +377,7 @@
 <script src="src/engine/camara.js" charset="utf-8"></script>
 <script src="src/engine/audio.js" charset="utf-8"></script>
 <script src="src/engine/input.js" charset="utf-8"></script>
+<script src="src/engine/botones.js" charset="utf-8"></script>
 <script src="src/engine/fisica.js" charset="utf-8"></script>
 <script src="src/engine/ambiente.js" charset="utf-8"></script>
 <script src="src/engine/terreno.js" charset="utf-8"></script>
@@ -412,6 +415,7 @@
 <script src="src/game/ninos.js" charset="utf-8"></script>
 <script src="src/game/retos_dia.js" charset="utf-8"></script>
 <script src="src/game/zonas.js" charset="utf-8"></script>
+<script src="src/ui/que_hacer.js" charset="utf-8"></script>
 <script src="src/game/menu_modos.js" charset="utf-8"></script>
 <script src="src/game/temporada.js" charset="utf-8"></script>
 <script src="src/pruebas/motor.js" charset="utf-8"></script>

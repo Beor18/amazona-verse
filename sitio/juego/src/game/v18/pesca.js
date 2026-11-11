@@ -711,7 +711,10 @@ window.AVV18Pesca = function (G) {
     hud.vista = a;
     const act = document.activeElement, enJuego = !act || act === document.body || hud.el.contains(act) || (focoPrevio && act === focoPrevio);
     if (!enJuego) return;
-    const b = hud.el.querySelector('button[data-a="' + a + '"]'); if (b && b.getClientRects().length) try { b.focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
+    const b = hud.el.querySelector('button[data-a="' + a + '"]'); if (!b || !b.getClientRects().length) return;
+    const ir = () => { if (!hud || hud.el.hidden || hud.vista !== a || !b.isConnected) return; try { b.focus({ preventScroll: true }); } catch (e) { /* sin foco */ } };
+    ir();
+    if (!act || act === document.body) setTimeout(ir, 0); // la pausa suelta el foco en body un instante después
   }
   const PK = { firma: '' };
   function pintar(forzar) {
@@ -817,6 +820,7 @@ window.AVV18Pesca = function (G) {
       A.manual = true; semilla = 12345;
       const forzar = !libre() || otroActivo();
       const empezo = forzar ? iniciar({ forzar: true }) : irYJugar();
+      check('Al empezar, el foco entra en Lanzar y no queda en body', empezo && document.activeElement === hud.el.querySelector('button[data-a="accion"]'));
       check('Empieza: Vittata en el muelle, HUD de la pesca, 2:30 de ronda y controles propios', empezo && A.fase === 'listo' && A.tiempo === RONDA && hud && !hud.el.hidden && document.body.classList.contains('v18-pesca-on') &&
         G.interaccion.modo === modo && Math.hypot(S.pos.x - SITIO.x, S.pos.z - SITIO.z) < 0.05 && P.g.visible && toasts.includes(TXT.empieza), forzar ? 'forzado (había un diálogo o tarjeta abiertos)' : '');
       const botonesP = [...hud.el.querySelectorAll('button')].filter(b => b.getClientRects().length), hojaP = (document.getElementById('v18-pesca-css') || {}).textContent || '';

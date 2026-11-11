@@ -1,0 +1,29 @@
+/* CG-120 · panel «¿Qué hay para hacer?». Cabe en 390 px y se usa con teclado. */
+#que-hacer {
+  width: min(32rem, calc(100vw - 1.5rem));
+  max-height: min(85vh, 100%);
+  overflow: auto;
+  padding: 1rem;
+  border: 0;
+  border-radius: 16px;
+  background: #10241c;
+  color: #f4f1e6;
+}
+#que-hacer h2 { margin: 0 0 .75rem; font-size: 1.25rem; }
+#que-hacer .qh-lista { display: flex; flex-direction: column; gap: .5rem; margin: 0; padding: 0; list-style: none; }
+#que-hacer .qh-fila {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .4rem .5rem; border-radius: 10px; background: rgba(255,255,255,.06);
+}
+#que-hacer .qh-txt { flex: 1; min-width: 0; }
+#que-hacer .qh-txt b, #que-hacer .qh-txt small { display: block; }
+#que-hacer .qh-txt small { opacity: .85; }
+#que-hacer .qh-ir, #que-hacer .qh-cerrar {
+  min-width: 44px; min-height: 44px; padding: .4rem .7rem;
+}
+#que-hacer .qh-pie { display: flex; justify-content: flex-end; margin-top: .75rem; }
+@media (max-width: 420px) {
+  #que-hacer { width: calc(100vw - 1rem); padding: .75rem; }
+  #que-hacer .qh-fila { flex-wrap: wrap; }
+  #que-hacer .qh-ir { margin-left: auto; }
+}

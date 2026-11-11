@@ -26,6 +26,18 @@ window.AVV18Reparar = function (G) {
   const pagar = c => { if (G.objetos && G.objetos.pay) G.objetos.pay(c); else for (const k in c) S.inv[k] -= c[k]; };
   const refrescarInv = () => { try { G.objetos.renderInv(); } catch (e) { /* sin HUD */ } try { if (G.guardado.save) G.guardado.save(true); else G.guardado.autosave(); } catch (e) { /* sin guardado */ } }; // QA-162: al momento, junto a la marca de G.v18
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 3200); } catch (e) { /* sin interfaz */ } };
+  // CG-124: desde el inicio, con el puente roto, una pista. No cambia la historia: nombra lo que ya existe.
+  const PISTA_PUERTO = 'Repara el puente de Villa Raíz y se abre el Puerto de La Mina. Allí están Tuerca, el Constructor y la Ingeniera.';
+  let pistaPuerto = false;
+  function avisarPuerto() {
+    if (pistaPuerto || !enCap1() || reparado()) return false;
+    if (G.pausa && G.pausa.activa && G.pausa.activa()) return false;
+    if (G.ui && (G.ui.cardOpen || (G.ui.overlayOpen && G.ui.overlayOpen()))) return false;
+    if (G.dialogo && G.dialogo.open && G.dialogo.open()) return false;
+    pistaPuerto = true;
+    toast(PISTA_PUERTO, 6500);
+    return true;
+  }
   const sonar = n => { try { G.audio.play(n); } catch (e) { /* sin audio */ } };
   const estado = () => V.mundo(ID) || 'roto';
   const reparado = () => estado() === 'reparado';
@@ -407,6 +419,7 @@ window.AVV18Reparar = function (G) {
   G.on('apply', () => setTimeout(aplicar, 0), 95);
   G.on('v18', ev => { if (ev && ev.tipo === 'mundo' && ev.id === ID) aplicar(); else if (ev && ev.tipo === 'recompensa') sincronizar(); });
   G.on('update', (dt, busy) => { if (!busy) paso(dt); }, 46);
+  G.on('update', () => { avisarPuerto(); }, 47);
 
   // ---------- Cruce a pie con el motor de movimiento (para la prueba; no teletransporta por el camino) ----------
   // Pone a Vittata en la orilla, a `desde` m de la cabecera A por el eje (negativo: hacia Villa Raíz), y camina con W y la
@@ -534,6 +547,15 @@ window.AVV18Reparar = function (G) {
       const igual = (a, b) => { if (a.length !== b.length) return false; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false; return true; };
       check('Roto por defecto: estado, tablas del centro ocultas y el piso no sostiene',
         estado() === 'roto' && igual(idx(), P.rotoIdx) && !igual(idx(), P.idx0) && P.piso.when() === false);
+      if (G.dialogo && G.dialogo.open && G.dialogo.open() && G.dialogo.clear) G.dialogo.clear();
+      if (G.ui && G.ui.cardOpen && G.ui.hideCard) G.ui.hideCard();
+      for (const id of ['creator', 'comic', 'end']) { const e = document.getElementById(id); if (e) e.hidden = true; }
+      pistaPuerto = false; toasts.length = 0;
+      const dijoPuerto = avisarPuerto();
+      check('CG-124 · con el puente roto, desde el inicio, la pista abre el Puerto de La Mina con Tuerca, el Constructor y la Ingeniera',
+        dijoPuerto && toasts.some(t => /puente de Villa Raíz/.test(t) && /Puerto de La Mina/.test(t) && /Tuerca/.test(t) && /Constructor/.test(t) && /Ingeniera/.test(t)), toasts.join(' | '));
+      toasts.length = 0;
+      check('CG-124 · la pista sale una sola vez', !avisarPuerto() && toasts.length === 0);
       const sinPiso = T.plataformas.filter(p => p.id === 'puente' && (!p.when || p.when())).length === 0;
       check('Roto: no hay piso activo del puente ni corriente', sinPiso && !enCorriente(c.x, c.z, c.y + 1));
       const rotoPie = await cruzarAPie(-6.5, 3, 400);
@@ -646,6 +668,8 @@ window.AVV18Reparar = function (G) {
       const sinPelear = !V.otorgado('combate_1') && reparar();
       check('El puente se paga sin pelear (piedra y fibra recogidas + madera de la orilla), sin el premio del duelo',
         sinPelear && estado() === 'reparado' && inv('madera') === 0 && inv('piedra') === 0 && !V.otorgado('combate_1'), 'madera ' + inv('madera') + ', piedra ' + inv('piedra'));
+      pistaPuerto = false; toasts.length = 0;
+      check('CG-124 · con el puente reparado la pista no sale', !avisarPuerto() && !toasts.some(t => /Puerto de La Mina/.test(t)));
       const resto = materiales.filter(R => !cogida(R));
       check('Con el puente reparado, los demás recogibles siguen en el mundo', resto.length === 2 && resto.every(R => R.g.visible && R.it.visible()));
     } catch (e) { check('Sin excepciones', false, e && e.stack); }

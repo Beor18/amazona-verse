@@ -124,7 +124,9 @@
     const cargarPiloto = aDemanda('src/game/v18/piloto.js', 'AVV18Piloto');
     AV.pilotoTest = o => cargarPiloto().then(p => p.test(o));
     AV.pilotoCargar = cargarPiloto;
-    if (/[?&]piloto=1\b/.test(location.search)) alPrimerGesto(cargarPiloto);
+    // CG-126: la escuela sale al jugar. ?piloto=0 la apaga; ?piloto=1 sigue encendiéndola.
+    if (G.piloto == null) G.piloto = !/[?&]piloto=0\b/.test(location.search);
+    if (G.piloto !== false) alPrimerGesto(cargarPiloto);
     if (v18On) alPrimerGesto(cargarCombate);
     const descubrir18 = aDemanda('src/game/v18/descubrir.js', 'AVV18Descubrir'), cargarV18Descubrir = () => cargarV18().then(descubrir18); AV.v18DescubrirTest = o => cargarV18Descubrir().then(d => d.test(o)); if (v18On) alPrimerGesto(cargarV18Descubrir); // frente C: descubrir, desbloquear y elegir la cotorra de Dominica
     const reparar18 = aDemanda('src/game/v18/reparar.js', 'AVV18Reparar'), cargarV18Reparar = () => cargarV18().then(reparar18); AV.v18RepararTest = o => cargarV18Reparar().then(r => r.test(o)); if (v18On) alPrimerGesto(cargarV18Reparar); // frente B: puente colgante roto → reparado
@@ -178,18 +180,27 @@
     const cargarKit = aDemanda('src/game/interiores_kit.js', 'AVInterioresKit');
     AV.interioresKitTest = o => cargarKit().then(k => k.test(o));
     if (/[?&]interiores=1\b/.test(location.search)) cargarKit().catch(e => console.warn('interiores kit', e));
-    // V18.4 · CG-110: núcleo de interiores (entrar/salir en el sitio o por transición). Solo con ?interiores=1 hasta que Kelvin
-    // apruebe; sin la bandera no se baja nada. La prueba carga el módulo a demanda.
+    // V18.4 · CG-110: núcleo de interiores. CG-126: encendido al jugar. ?interiores=0 lo apaga; ?interiores=1 sigue.
+    // La prueba carga el módulo a demanda. CG-118 no entra aquí.
     const cargarInteriores = aDemanda('src/game/interiores.js', 'AVInteriores');
     AV.interioresTest = o => cargarInteriores().then(m => m.test(o));
-    if (/[?&]interiores=1\b/.test(location.search)) {
-      (window.AV_INTERIORES ? Promise.resolve() : AVE.assets.script('content/comun/interiores.js'))
-        .then(() => cargarInteriores()).then(m => m.iniciar()).catch(e => console.warn('interiores', e));
+    if (G.interioresOn == null) G.interioresOn = !/[?&]interiores=0\b/.test(location.search);
+    let interioresListos = Promise.resolve();
+    if (G.interioresOn !== false) {
+      interioresListos = (window.AV_INTERIORES ? Promise.resolve() : AVE.assets.script('content/comun/interiores.js'))
+        .then(() => cargarInteriores()).then(m => { m.iniciar(); return m; }).catch(e => console.warn('interiores', e));
     }
-    // CG-117: taller de Tuerca en k300. Solo con ?interiores=1. No toca interiores.js ni construir.js.
+    // CG-117: taller de Tuerca en k300. Misma bandera que el núcleo. No toca interiores.js ni construir.js.
     const cargarTaller = aDemanda('src/game/v18/taller_tuerca.js', 'AVTallerTuerca');
     AV.tallerTuercaTest = o => cargarTaller().then(m => m.test(o));
-    if (/[?&]interiores=1\b/.test(location.search)) cargarTaller().then(m => m.preparar()).catch(e => console.warn('taller tuerca', e));
+    if (G.interioresOn !== false) interioresListos.then(() => cargarTaller()).then(m => m && m.preparar()).catch(e => console.warn('taller tuerca', e));
+    // CG-118: casita por transición. No toca la fachada ni el bloque de CG-117. Solo con ?interiores=1.
+    const cargarCasita = () => (window.AV_CASITA ? Promise.resolve() : AVE.assets.script('content/cap1/casita_historica.js'));
+    const cargarHistorico = aDemanda('src/game/historico.js', 'AVHistorico');
+    AV.historicoTest = o => cargarCasita().then(cargarHistorico).then(m => m.test(o));
+    if (/[?&]interiores=1\b/.test(location.search)) {
+      cargarCasita().then(cargarHistorico).then(m => m.iniciar()).catch(e => console.warn('historico', e));
+    }
     // Mercadito del río (src/game/tienda.js). CG-92: no va en la descarga de antes de jugar. El botón se ve igual (Pausa y Mi personaje);
     // el script, las miniaturas y el saldo entran al abrirlo, al pescar, al empezar un hoyo o un reto, o si la partida ya tiene compras
     // (la ropa comprada tiene que estar puesta al entrar).

@@ -196,9 +196,22 @@ window.AVMemoriaLargaTest = function (G) {
         vistos.push('pesca'); await jugar(3, 1.5);
       } else notas.push('la pesca no empezó');
       MM.volver(); await cuadros(2);
+      // QA-236: empezar() se niega si otra acción sigue dueña. Al salir, la pesca
+      // devuelve la acción anterior; si esa sigue activa, Construir no entra.
+      for (const a of [G.v18pesca, G.v18minigolf, G.v18combate, G.v18duelo2]) {
+        try { const f = a && a.estado && a.estado().fase; if (a && a.salir && f && f !== 'nada') a.salir(); } catch (e) { /* ya fuera */ }
+      }
+      cerrarPortada();
+      if (!(G.construir && G.construir.empezar) && window.AVE && window.AVConstruir) {
+        try { await AVE.assets.script('src/game/construir.js'); AVConstruir(G); } catch (e) { /* se anota abajo */ }
+      }
       const C = G.construir;
       if (C && C.empezar && C.empezar()) { vistos.push('construir'); await jugar(2, 1.5); C.salir(); }
-      else notas.push('Construir no empezó');
+      else {
+        const modo = G.interaccion && G.interaccion.modo;
+        const ocupa = !!(modo && modo.activo && modo.activo());
+        notas.push('Construir no empezó' + (C ? '' : ' (sin módulo)') + (G.CONSTRUIR === false ? ' (apagado)' : '') + (ocupa ? ' (acción: ' + (modo.verbo || 'ocupada') + ')' : ''));
+      }
       await cuadros(2);
     } catch (e) { notas.push('menú: ' + (e && e.message)); }
     try { MM.volver(); cerrarPortada(); } catch (e) { /* */ }

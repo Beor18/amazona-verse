@@ -79,7 +79,7 @@ window.AVV18Combate = function (G) {
     // Entreno guiado, chips y pistas (cada texto es su propio nodo: el nombre del poder va aparte y se traduce solo)
     como: '¿Cómo se pelea?', saltarEnt: 'Saltar entreno', entPaso: (n, de) => 'Entreno · paso ' + n + ' de ' + (de || 3),
     // Combate 2.0 (para todos; ?combate2=0 lo apaga): extremidades y combos
-    combos: 'Combos', comboRival: 'Campeona', sinPrisa: 'Combos sin prisa: más tiempo entre toque y toque', aPelear: '¡A pelear!',
+    combos: 'Combos', botones: 'Botones', comboRival: 'Campeona', sinPrisa: 'Combos sin prisa: más tiempo entre toque y toque', aPelear: '¡A pelear!',
     unCombo: 'un combo', tuPoder: 'tu poder', e4: 'Combo: ala izquierda y luego ala derecha.', e5: 'Combo: pata izquierda y luego pata derecha.',
     t4: 'Combo: toca Ala izq. y luego Ala der.', t5: 'Combo: toca Pata izq. y luego Pata der.',
     e1: 'Acércate y pulsa E para dar un aletazo.', e2: 'Ahora pulsa F para lanzar una semilla.', e3: 'Pulsa G (o mantén F) para usar tu poder:',
@@ -485,6 +485,12 @@ window.AVV18Combate = function (G) {
   // V18.2: la H (poder de alianza) igual, pero solo si hay alianza elegida; si no, H sigue libre.
   function tecla(e) {
     const k = (e.key || '').toLowerCase();
+    // Auditoría 10-nov: Esc abría la pausa y el duelo seguía; ahora Esc sale del duelo (como en el duelo de 2)
+    if (e.key === 'Escape' && enganchado && (C.fase === 'lucha' || C.fase === 'cuenta') && !(e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) {
+      if (cartaC) { abrirCombos(false); e.stopImmediatePropagation(); e.preventDefault(); return; }
+      if (G.botones && G.botones.editando && G.botones.editando()) return;
+      e.stopImmediatePropagation(); e.preventDefault(); salir(); return;
+    }
     if (enganchado && c2On() && k.length === 1) { // Combate 2.0: las 4 extremidades (U O J L de fábrica, cambiables en «Teclas»)
       const a = EXT_K.find(x => teclaExt(x) === k);
       if (a && !(e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) {
@@ -595,7 +601,7 @@ window.AVV18Combate = function (G) {
     if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
     if (G.dones && G.dones.sostener === sostenerDuelo) G.dones.sostener = sostener0;
     removeEventListener('keydown', tecla, true); sost = 0; soltarJugador(); devolverCamara();
-    document.body.classList.remove('v18-duelo-on');
+    document.body.classList.remove('v18-duelo-on'); document.body.classList.remove('v18-ext-on');
   }
 
   // ---------- HUD ----------
@@ -650,7 +656,7 @@ window.AVV18Combate = function (G) {
       '#v18-duelo:not(.tactil) .vd-ent{position:fixed;left:16px;top:calc(env(safe-area-inset-top,0px) + 270px);width:min(300px,calc(50vw - 210px));min-width:220px;margin:0}' +
       '#v18-duelo:not(.tactil) .vd-bot{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 132px);margin:0;flex-wrap:nowrap;gap:8px}' +
       '#v18-duelo button.vd-como{display:flex;align-items:center;gap:5px;margin:6px 0 0 auto;min-height:36px;padding:4px 10px;font-size:13px;background:#ffe39a;--icon-size:16px}#v18-duelo.tactil button.vd-como{min-height:56px;font-size:14px}' +
-      '#v18-duelo button.vd-como[hidden]{display:none!important}' +
+      '#v18-duelo button.vd-como[hidden]{display:none!important}#v18-duelo button.vd-salir-b{background:#ffd0c4}' +
       '#v18-duelo .vd-pista{margin:6px auto 0;width:max-content;max-width:100%;background:rgba(255,227,154,.95);color:#3b2a14;text-shadow:none;font-weight:600;font-size:16px;padding:6px 14px;border-radius:18px;box-shadow:0 2px 8px #0005;text-align:center;animation:vdPista .25s ease-out}' +
       '#v18-duelo .vd-pista[hidden]{display:none}#v18-duelo .vd-pista b:empty{display:none}@keyframes vdPista{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}' +
       '#v18-duelo .vd-ent{margin-top:8px;background:rgba(255,248,234,.96);color:#3b2a14;text-shadow:none;border-radius:16px;padding:10px 12px;box-shadow:0 4px 14px #0006;text-align:center}' +
@@ -674,7 +680,7 @@ window.AVV18Combate = function (G) {
     // Chip de acción: icono + nombre + tecla; .vd-cdv es la recarga (alto = lo que falta) y .listo lo ilumina
     const chip = (a, ico, n, k) => `<button class="vd-chip" data-a="${a}" data-icon="${ico}" type="button"${a === 'alianza' ? ' hidden' : ''}><span data-k="cn-${a}">${n}</span><kbd>${k}</kbd><i class="vd-cdv"></i></button>`;
     el.innerHTML = `<div class="vd-fila"><div class="vd-lado j"><div class="vd-nom">${TXT.tu}</div><div class="vd-pod" data-k="pj"></div><div class="vd-nv" data-k="nv" hidden><span data-k="nvN"></span> · <span data-k="nvE"></span></div><div class="vd-xp" data-k="xp" hidden><b></b></div><div class="vd-pl" data-k="plj">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-j"><b></b></div><button class="vd-ali" data-a="alianza" type="button" hidden></button></div>` +
-      `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div><button class="vd-como" data-a="como" data-k="como" type="button" data-icon="question">${TXT.como}</button></div></div>` +
+      `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div><button class="vd-como" data-a="como" data-k="como" type="button" data-icon="question">${TXT.como}</button><button class="vd-como vd-salir-b" data-a="salirDuelo" data-k="salirB" type="button" data-icon="close" hidden>${TXT.salir}</button></div></div>` +
       `<div class="vd-centro" data-k="centro"></div><div class="vd-apoyo" data-k="apoyo" hidden><img src="assets/retratos/v18/arausiaca.png" alt=""><span>${TXT.apoyo}</span></div>` +
       `<div class="vd-pista" data-k="pista" hidden><span data-k="pistaTxt"></span> <b data-k="pistaPod"></b></div>` +
       `<div class="vd-ent" data-k="ent" hidden><div class="vd-ent-cab"><span data-k="entPaso"></span><span class="vd-ent-pp" data-k="entPP"><i></i><i></i><i></i></span></div>` +
@@ -685,7 +691,8 @@ window.AVV18Combate = function (G) {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
       const a = b.dataset.a;
-      if (a === 'combos') abrirCombos(!cartaC); else if (a === 'cerrarCombos') abrirCombos(false); else if (a === 'como') iniciar({ entreno: true }); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (a === 'alianza') { if (C.j && C.j.alianza) usar(C.j, C.j.alianza); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
+      if (a === 'salirDuelo') { salir(); return; } // auditoría 10-nov: salir a mitad del duelo, también en táctil
+      if (a === 'controles') { if (G.botones) G.botones.abrir(); } else if (a === 'combos') abrirCombos(!cartaC); else if (a === 'cerrarCombos') abrirCombos(false); else if (a === 'como') iniciar({ entreno: true }); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (a === 'alianza') { if (C.j && C.j.alianza) usar(C.j, C.j.alianza); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
     });
     const viejo = document.getElementById('v18-duelo'); if (viejo) viejo.remove(); // una instancia nueva del módulo (QA-163 en v18CombateTest) no deja dos #v18-duelo
     document.body.appendChild(el);
@@ -726,6 +733,7 @@ window.AVV18Combate = function (G) {
     texto('cn-poder', (H.get(C.j.poder) || {}).nombre || TXT.poder);
     const chA = hud.el.querySelector('.vd-chip[data-a="alianza"]'); chA.hidden = !aliH; if (aliH) texto('cn-alianza', aliH.nombre);
     hud.q('como').hidden = !!ent || C.fase === 'nada';
+    hud.q('salirB').hidden = !(C.fase === 'lucha' || C.fase === 'cuenta');
     pintarChips(); ponerTags(); if (hud.ext || c2On()) pintarExt();
   }
   // Recarga visual de los chips: cada cuadro, pero solo escribe en el DOM cuando cambia (pasos de 5 %)
@@ -1931,9 +1939,12 @@ window.AVV18Combate = function (G) {
       '#v18-duelo .vd-cc kbd{font:700 13px/1 Fredoka,system-ui,sans-serif;padding:5px 8px;border-radius:8px;background:#3b2a14;color:#fff3d6}#v18-duelo .vd-cc kbd.vd-k-pata{background:#6b3f12}#v18-duelo .vd-cc kbd.vd-k-poder,#v18-duelo .vd-cc kbd.vd-k-combo{background:#8a1f6a}' +
       '#v18-duelo .vd-cc i{font-style:normal;font-weight:700}#v18-duelo .vd-cc label{display:flex;gap:8px;align-items:center;margin:8px 0;font-size:15px;font-weight:600;min-height:44px}#v18-duelo .vd-cc input{width:24px;height:24px}' +
       '#v18-duelo .vd-cc button{background:#3b2a14;color:#fff3d6;width:100%}' +
-      '#v18-duelo-ext{position:fixed;z-index:39;display:grid;grid-template-columns:repeat(2,60px);grid-template-rows:repeat(2,60px);gap:8px;pointer-events:none}#v18-duelo-ext[hidden]{display:none}' +
+      '#v18-duelo-ext{position:fixed;z-index:42;display:grid;grid-template-columns:repeat(2,60px);grid-template-rows:repeat(2,60px);gap:8px;pointer-events:none}#v18-duelo-ext[hidden]{display:none}' +
       // Kelvin 10-nov («no encontraban los botones»): alto contraste, fondo oscuro semiopaco, borde claro, icono y nombre corto
       '#v18-duelo-ext button{pointer-events:auto;width:60px;height:60px;border-radius:18px;border:3px solid #fff3d6;padding:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:700 12px/1 Fredoka,system-ui,sans-serif;color:#fff;background:rgba(20,70,40,.82);box-shadow:0 3px 0 #0b2a17,0 4px 12px #0007;text-shadow:0 1px 2px #000;--icon-size:26px;touch-action:none;-webkit-user-select:none;user-select:none}' +
+      // Con el 2×2 a la vista, fuera Gestos y Construir de la columna derecha (en un duelo no sirven y quedaban debajo); el
+      // aviso (#toast) pasa por debajo de los botones (siempre se ven y se pueden tocar)
+      'body.v18-ext-on #b-emotes,body.v18-ext-on #b-construir{visibility:hidden}' +
       '#v18-duelo-ext button.pata{background:rgba(110,55,10,.85)}#v18-duelo-ext button::before{background:#fff}#v18-duelo-ext button:active,#v18-duelo-ext button.pulsa{transform:translateY(2px);box-shadow:0 1px 0 #0b2a17;background:#2e8b3e}#v18-duelo-ext button.cd{opacity:.65}';
     document.head.appendChild(st);
   }
@@ -1946,6 +1957,9 @@ window.AVV18Combate = function (G) {
     bot.appendChild(grupo);
     const cb = document.createElement('button'); cb.className = 'vd-combos-b'; cb.type = 'button'; cb.dataset.a = 'combos'; cb.dataset.k = 'combosB'; cb.dataset.icon = 'star'; cb.textContent = TXT.combos; cb.hidden = true;
     const como = hud.q('como'); como.after(cb);
+    // Táctil: ruedita para mover los botones (src/engine/botones.js, «Personalizar controles»)
+    const gear = document.createElement('button'); gear.className = 'vd-combos-b vd-ctl'; gear.type = 'button'; gear.dataset.a = 'controles'; gear.dataset.icon = 'gear'; gear.textContent = TXT.botones; gear.hidden = true;
+    cb.after(gear);
     const nom = document.createElement('div'); nom.className = 'vd-combo'; nom.dataset.k = 'combo'; nom.hidden = true; nom.setAttribute('aria-live', 'polite');
     hud.q('centro').after(nom);
     const carta = document.createElement('div'); carta.className = 'vd-cc'; carta.dataset.k = 'cc'; carta.hidden = true; carta.setAttribute('role', 'dialog'); carta.setAttribute('aria-label', TXT.combos);
@@ -1961,7 +1975,8 @@ window.AVV18Combate = function (G) {
     const viejo = document.getElementById('v18-duelo-ext'); if (viejo) viejo.remove();
     document.body.appendChild(pad);
     el.addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('button[data-x]'); if (!b || !el.contains(b)) return; e.preventDefault(); e.stopPropagation(); usarExtJ(b.dataset.x); }, true);
-    hud.ext = { grupo, combosB: cb, nom, carta, pad };
+    hud.ext = { grupo, combosB: cb, gear, nom, carta, pad };
+    if (G.botones && G.botones.aplicar) try { G.botones.aplicar(); } catch (e) { /* diseño propio */ }
     return hud.ext;
   }
   function abrirCombos(on) {
@@ -1977,9 +1992,9 @@ window.AVV18Combate = function (G) {
   function pintarExt() {
     if (!hud || !hud.ext) { if (hud && c2On() && C.fase !== 'nada') hudExt(); if (!hud || !hud.ext) return; }
     const X = hud.ext, on = c2On() && !hud.el.hidden && (C.fase === 'lucha' || C.fase === 'cuenta');
-    X.grupo.hidden = !on || TACTIL; X.combosB.hidden = !on || !!ent;
+    X.grupo.hidden = !on || TACTIL; X.combosB.hidden = !on || !!ent; X.gear.hidden = !on || !TACTIL || !G.botones;
     if (!on && cartaC) abrirCombos(false);
-    const verPad = on && TACTIL && !cartaC; X.pad.hidden = !verPad;
+    const verPad = on && TACTIL && !cartaC; X.pad.hidden = !verPad; document.body.classList.toggle('v18-ext-on', verPad);
     if (!on) { if (comboVis > 0) { comboVis = 0; X.nom.hidden = true; } return; }
     const f = C.j, E = f && f.ext;
     if (!TACTIL) for (const b of X.grupo.children) {
@@ -3020,6 +3035,12 @@ window.AVV18Combate = function (G) {
       const dA = dps(false), dB = dps(true), rel = dB / dA - 1;
       check('C2 · equilibrio: con extremidades y combos, la mejor jugada quita plumas al mismo ritmo (±10 %) que con lo de siempre',
         Math.abs(rel) <= 0.1, JSON.stringify({ siempre: +dA.toFixed(3), conCombos: +dB.toFixed(3), cambio: Math.round(rel * 1000) / 10 + ' %' }));
+      // 8b. Auditoría 10-nov: «Salir» a la vista durante la pelea y Esc sale del duelo (no solo abre la pausa)
+      iniciar({ sinCuenta: true, especie: 'vittata', sinExtIA: true }); pintar();
+      const sb = hud.q('salirB'), verSalir = !!sb && !sb.hidden && sb.getBoundingClientRect().width > 0;
+      const evE = tecla('Escape'); const fueraEsc = C.fase === 'nada';
+      iniciar({ sinCuenta: true, especie: 'vittata', sinExtIA: true }); pintar(); hud.q('salirB').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true })); const fueraBoton = C.fase === 'nada';
+      check('Duelo: botón «Salir» a la vista durante la pelea (sale al tocarlo) y Esc sale del duelo', verSalir && evE.defaultPrevented && fueraEsc && fueraBoton, JSON.stringify({ verSalir, esc: evE.defaultPrevented, fueraEsc, fueraBoton }));
       // 9. Táctil a 390 × 844: el 2×2 cabe, sus botones miden ≥ 48 px y no tapa Acción, Impulso (con su etiqueta), Saltar ni Volar
       {
         const acts = { left: 390 - 20 - 182, right: 370, top: 844 - 28 - 170, bottom: 816, width: 182 }, tagTop = acts.top - 40; // ≥ 56 px (Kelvin)
