@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 3 · 11-nov · CG-126 en curso (piloto y taller)
+- **Tarea:** encender la escuela de vuelo y el taller de Tuerca para todos. La casa del bohío ya está (`34cd056d`).
+- **Commit de código:** todavía no.
+- **Archivos:** `src/boot.js` (solo las dos cargas), `src/game/v18/piloto.js`, `src/game/v18/taller_tuerca.js`, `src/game/interiores.js` (el mismo apagado) y `src/ui/que_hacer.js`. No toco el bloque de CG-118, `historico.js`, textos educativos ni el carril de Kimi.
+- **Qué falta:** que salgan al jugar sin `?piloto=1` ni `?interiores=1`, que `?piloto=0` y `?interiores=0` apaguen, y que Ir lleve al sitio.
+- **Cómo probarlo:** `AV.pilotoTest()`, `AV.tallerTuercaTest()` y `AV.queHacerTest()`.
+- **Lo confirma:** las 12 de `cg-126-34cd056d`, 0 errores. 1 aviso de streaming (QA-230).
+
 ### Dev 3 · 11-nov · CG-126 hecha
 - **Tarea:** interiores del bohío para todos. Cerrada. EN CURSO fue `5574974c`.
 - **Qué hace:** al jugar, en la puerta del bohío de Villa Raíz Acción dice Entrar y dentro dice Poner banco, sin `?interiores=1`. `G.interioresOn === false` o `?interiores=0` la apaga. `?interiores=1` sigue encendiéndola. «¿Qué hay para hacer?» tiene la casa y Ir lleva a la puerta.
