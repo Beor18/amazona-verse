@@ -35,13 +35,13 @@
 - **Cómo probarlo:** en la portada o en la Pausa, «¿Qué hay para hacer?». Cada fila dice el estado. Ir del minigolf usa el menú. Sin el puente, Tuerca dice que se abre al repararlo y su Ir no se puede pulsar. A 390 px, Ir mide al menos 44 px. El foco llega a Ir.
 - **Lo confirma:** queHacerTest 8/8. Build `cg-120-b124a76e` (mismo código que `59e0800c`): las 12 en verde, 0 errores y 0 avisos.
 
-### Dev 4 · 11-nov · GT-06 en curso (QA-244 y QA-245)
-- **Tarea:** con `?interiores=1`, la casa del bohío se puede usar jugando. QA-239 a QA-243 ya estaban usados. La fila (a) del terminal es QA-244 y la (b) es QA-245.
-- **Commit de código:** todavía no.
-- **Archivos:** `src/game/bohios.js`. No enciendo interiores para todos (eso es CG-126). No toco `boot.js`, `interiores.js` ni el carril de Kimi.
-- **Qué falta:** llamar a `listoCasa()` y `ensanchar()` al jugar, y separar Salir de Poner banco.
-- **Cómo probarlo:** `AV.bohiosTest()`.
-- **Lo confirma:** bohiosTest y las 12, 0 errores.
+### Dev 4 · 11-nov · GT-06 hecha (QA-244 y QA-245)
+- **Tarea:** la casa del bohío se usa jugando, solo con `?interiores=1`. Cerrada. No encendí interiores para todos.
+- **Commit:** `1663176b`. EN CURSO fue `b50064b6`. QA-244 es la fila (a) del terminal y QA-245 la (b). QA-239 a QA-243 ya estaban usados.
+- **Archivos:** `src/game/bohios.js`. Al jugar se llaman `listoCasa()` y `ensanchar()`. Poner banco queda donde se entra y Salir queda en el vano.
+- **Qué falta:** CG-121 (marcadores del mapa). CG-125 la tiene Dev 1. CG-126 espera a que CG-120 a CG-124 estén en verde.
+- **Cómo probarlo:** `AV.bohiosTest()` con la bandera apagada y encendida.
+- **Lo confirma:** bohiosTest 40/40. Build `gt06-63828eda` (mismo `bohios.js`): las 12 en verde, 0 errores. Los avisos son de streaming (atlas ktx2 y QA-230), de Kimi.
 
 ### Dev 4 · 11-nov · QA-242 hecha
 - **Tarea:** la guía no tapa Acción en el cap. 2 móvil. Cerrada.
