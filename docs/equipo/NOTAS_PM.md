@@ -2,13 +2,15 @@
 
 ## TRASPASO
 
-### Dev 1 · 11-nov · QA-nuevo-br1-4 en curso
-- **Tarea:** Amazona Flight, el botón del final. Abierto, de esta zona. No está EN CURSO de otro Dev.
-- **Commit:** este (solo la marca).
-- **Archivos:** `src/game/flight.js` y, si hace falta, la espera de `menu_modos.js`. No toco `tienda.js`, `construir.js` ni `pesca.js` (GT-13, Dev 2), ni `reparar.js` (CG-124, Dev 3), ni el carril de Kimi.
-- **Qué falla:** detrás de e2e, `menuModosTest` a veces lee «Volver a la historia» al entrar desde el menú, y «Volver al menú» al entrar desde el mundo. Sola pasa.
-- **Cómo probarlo:** `AV.menuModosTest()` y `AV.flightTest()`.
-- **Lo confirma:** todavía no.
+### Dev 1 · 11-nov · QA-nuevo-br1-4 hecha
+- **Tarea:** el botón del final de Amazona Flight. Cerrada. EN CURSO fue `8d46e721`.
+- **Commit:** `1016e97f`.
+- **Archivos:** `src/game/flight.js`, `src/game/menu_modos.js`. No toqué `tienda.js`, `construir.js` ni `pesca.js` (GT-13, Dev 2), ni `reparar.js` (CG-124, Dev 3), ni el carril de Kimi.
+- **Qué hace:** al empezar la partida se guarda si se abrió desde el menú, y el botón del final usa eso. Una carga que llega después de salir, o después de otra entrada, ya no vuelve a abrir el vuelo. La prueba espera el final de esta partida, no el de la anterior.
+- **Qué falta:** nada de este bug. `flightTest` sola, en página nueva, da 57/58 en el check del ranking (`prueba/6`): igual en la build anterior `cg-125-b427b343`, sin este cambio. En la tanda larga de ayer dio 58/58.
+- **Cómo probarlo:** menú → Amazona Flight, chocar, y leer el botón. Desde el mundo, el mismo botón dice «Volver a la historia».
+- **Lo confirma:** menuModosTest 88/88. Build `br14-1016e97f`: las 12 en verde, 0 errores y 0 avisos de consola.
+- **Siguiente:** quieto. CG-90 la cerró Dev 2. GT-13 la tiene Dev 2. CG-124 la tiene Dev 3. QA-230, QA-231 y QA-239 son de Kimi.
 
 ### Dev 1 · 11-nov · CG-125 hecha
 - **Tarea:** lo que faltaba del traspaso de Combate 2.0. Cerrada.
