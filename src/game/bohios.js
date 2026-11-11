@@ -309,34 +309,43 @@ window.AVBohios = function (G) {
   }
   function listoCasa() {
     if (!casaOn() || casaLista || !casa) return false;
-    casaLista = true;
     const p = puerta(casa); if (!p) return false;
+    casaLista = true;
+    const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
+    // QA-245: Poner y Mover quedan donde se entra. Salir queda en el vano, más cerca de la puerta.
     G.interaccion.add({
       id: 'casa-entrar', x: p.x, z: p.z, r: 1.6,
       visible: () => casaOn() && !dentroCasa,
-      label: () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Enter' : 'Entrar'),
+      label: () => L('Entrar', 'Enter'),
       use: () => entrar(),
     });
     G.interaccion.add({
-      id: 'casa-salir', x: p.dentroX, z: p.dentroZ, r: 1.6,
-      visible: () => dentroCasa,
-      label: () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Exit' : 'Salir'),
-      use: () => salir(),
-    });
-    G.interaccion.add({
-      id: 'casa-poner', x: p.dentroX, z: p.dentroZ, r: 2.2,
+      id: 'casa-poner', x: p.dentroX, z: p.dentroZ, r: 1.4,
       visible: () => dentroCasa && piezasGuardadas().length === 0,
-      label: () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Place bench' : 'Poner banco'),
+      label: () => L('Poner banco', 'Place bench'),
       use: () => colocar('banco', 0.4, 0.2, 1),
     });
     G.interaccion.add({
-      id: 'casa-mover', x: p.dentroX, z: p.dentroZ, r: 2.2,
+      id: 'casa-mover', x: p.dentroX, z: p.dentroZ, r: 1.4,
       visible: () => dentroCasa && piezasGuardadas().length > 0,
-      label: () => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'Move' : 'Mover'),
+      label: () => L('Mover', 'Move'),
       use: () => { const a = piezasGuardadas()[0]; if (a) mover(0, a.x > 0 ? -0.3 : 0.4, a.x > 0 ? 0.5 : 0.2, a.x > 0 ? 2 : 1); },
+    });
+    G.interaccion.add({
+      id: 'casa-salir', x: p.x, z: p.z, r: 0.28,
+      visible: () => dentroCasa,
+      label: () => L('Salir', 'Exit'),
+      use: () => salir(),
     });
     return true;
   }
+  // QA-244: al jugar, no solo en la prueba. La bandera sigue siendo ?interiores=1.
+  function casaJugando() {
+    if (!casaOn() || !casa || !puerta(casa)) return;
+    if (!casaLista) listoCasa();
+    if (!vanoHecho && G.solidos && (G.solidos.recortar || G.solidos.abrirPaso)) ensanchar(casa);
+  }
+  G.on('update', casaJugando, 44);
 
   // KIMI-333 (Modo Escuela): los muebles de los bohíos se recorren y frustum-cullan cada cuadro aunque
   // estén dentro de la casa y no se vean nunca desde fuera. Fuera de 60 m el grupo entero se apaga
@@ -461,6 +470,14 @@ window.AVBohios = function (G) {
         const pCasa = puerta(casa);
         ok('Entrar deja a Vittata dentro del mismo bohío', !!(pCasa && entrar() && Math.hypot(S.pos.x - pCasa.dentroX, S.pos.z - pCasa.dentroZ) < 0.25 && Math.hypot(S.pos.x - I.pos[0], S.pos.z - I.pos[2]) < 4 && Math.abs(S.pos.y - I.pos[1]) < 4));
         ok('En la puerta, Acción dice Entrar', listoCasa() && G.interaccion.find('casa-entrar').label() === 'Entrar');
+        salir();
+        S.pos.x = pCasa.x; S.pos.z = pCasa.z;
+        const enPuerta = G.interaccion.nearest();
+        ok('Jugando, en la puerta Acción es Entrar', !!(enPuerta && enPuerta.id === 'casa-entrar'), enPuerta && enPuerta.id);
+        entrar();
+        S.pos.x = pCasa.dentroX; S.pos.z = pCasa.dentroZ;
+        const dentroAcc = G.interaccion.nearest();
+        ok('Dentro, Acción dice Poner banco y no Salir', !!(dentroAcc && dentroAcc.id === 'casa-poner' && dentroAcc.label() === 'Poner banco'), dentroAcc && (dentroAcc.id + ' · ' + dentroAcc.label()));
         const poner = G.interaccion.find('casa-poner');
         ok('Dentro, Acción pone el banco y lo guarda', !!(poner && poner.visible() && poner.label() === 'Poner banco' && (poner.use(), S.interiores && S.interiores.edificios.bohio_villa.piezas[0].t === 'banco' && S.interiores.edificios.bohio_villa.piezas[0].r === 1)));
         const m0 = dibujo.children[0];
