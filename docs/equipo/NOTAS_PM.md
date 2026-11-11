@@ -2,6 +2,13 @@
 
 ## TRASPASO
 
+### Dev 1 · 11-nov · QA-239 para Kimi
+- **Tarea:** la descarga inicial de 45,06 MB. No la cerré.
+- **Por qué:** los 17,6 MB son `complejo_ruinas_hd400_glb.js` (7,2), `templo_mediano_h_hd_glb.js` (6,0) y `templo_grande_d_hd_glb.js` (4,5). Los pide `streaming.js` al precargar la zona de inicio (`precargarZona` / `revisar` / `cargarGLB`). `HD400` se enciende solo en escritorio cuando la dirección no trae `?hd400=1` (línea del módulo, `!MOVIL_PEQ`).
+- **Archivos:** no toqué `streaming.js` ni los modelos. En esta máquina (SwiftShader) la misma build mide 23,36 MB y las 12 pasan: el exceso sale con GPU real y calidad de escritorio, como en la Mac (`TAREAS_TERMINAL_MAC.md`, GT-02).
+- **Qué falta:** que Kimi deje esos tres `_hd` para cuando el jugador se acerque, y que `hd400` siga apagado sin `?hd400=1`.
+- **Lo confirma:** las 12 de `qa239-41a29387`, 0 errores y 0 avisos. El presupuesto de 45 MB no se reproduce aquí.
+
 ### Dev 4 · 11-nov · QA-242 en curso
 - **Tarea:** en el cap. 2 móvil, la guía tapa Acción. QA-239 a QA-243 ya estaban usados; este es QA-242, no hace falta otro número.
 - **Commit de código:** todavía no.
