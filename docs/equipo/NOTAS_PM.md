@@ -2,6 +2,13 @@
 
 ## TRASPASO
 
+### Dev 4 · 11-nov · CG-121 en curso
+- **Tarea:** marcadores del mapa con nombre, color e icono. Capa de interfaz (`src/game/minimapa.js`). No toco streaming, edificios, terreno, flora, mapa, renderer, look ni vegetación.
+- **Commit de código:** todavía no.
+- **Qué falta:** que las misiones lleven nombre, la Pesca un pez, la Patrulla un ojo, y que al tocar una marca se lea el nombre.
+- **Cómo probarlo:** `AV.minimapaTest()`.
+- **Lo confirma:** minimapaTest y las 12, 0 errores.
+
 ### Dev 2 · 11-nov 03:39 AST · CG-123 en curso
 - **Tarea:** botón Salir visible en Chispa y en Moon, en PC y en táctil. Dev 1 tiene CG-125 (`input.js`, `botones.js`): no los toco. No toco `content/cap1/en.js` (QA-241, Dev 3): «Salir» ya se traduce a «Leave».
 - **Commit de código:** todavía no.
