@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 1 · 11-nov · QA-nuevo-br1-4 en curso
+- **Tarea:** Amazona Flight, el botón del final. Abierto, de esta zona. No está EN CURSO de otro Dev.
+- **Commit:** este (solo la marca).
+- **Archivos:** `src/game/flight.js` y, si hace falta, la espera de `menu_modos.js`. No toco `tienda.js`, `construir.js` ni `pesca.js` (GT-13, Dev 2), ni `reparar.js` (CG-124, Dev 3), ni el carril de Kimi.
+- **Qué falla:** detrás de e2e, `menuModosTest` a veces lee «Volver a la historia» al entrar desde el menú, y «Volver al menú» al entrar desde el mundo. Sola pasa.
+- **Cómo probarlo:** `AV.menuModosTest()` y `AV.flightTest()`.
+- **Lo confirma:** todavía no.
+
 ### Dev 1 · 11-nov · CG-125 hecha
 - **Tarea:** lo que faltaba del traspaso de Combate 2.0. Cerrada.
 - **Commit:** `462eed10`. EN CURSO fue `69c1018c`.
