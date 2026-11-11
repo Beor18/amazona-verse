@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 03:25 AST · QA-243 en curso
+- **Tarea:** en el playtest del cap. 1, Jugar no abre el creador en 40 s. Dev 1 tiene `menu_modos.js` (CG-120): no lo toco si puedo arreglarlo en otro sitio.
+- **Commit de código:** todavía no.
+- **Archivos previstos:** el arranque del creador (`src/engine/core.js` o `src/game/creador.js`) o la prueba (`tests/qa/ep_caminar.js`). No toco `boot.js` ni textos educativos.
+- **Qué falta:** ver por qué `#creator` sigue oculto 40 s después del clic en Aventura.
+- **Cómo probarlo:** `AV.playtestCap1Test()`.
+- **Lo confirma:** playtestCap1Test y las 12, 0 errores. Las 12 de este juego ya pasaron en `qa-240-1d322f3` (0 errores; aviso de streaming QA-230).
+
 ### Dev 2 · 11-nov 03:20 AST · QA-240 hecha
 - **Tarea:** TypeError del teclado del minigolf. Cerrada.
 - **Commit:** `929697fa` (el mismo `minigolf.js` que la build `qa-240-1d322f3`). EN CURSO fue `5ccfc5b8`.
