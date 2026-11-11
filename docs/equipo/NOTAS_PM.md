@@ -2,6 +2,13 @@
 
 ## TRASPASO
 
+### Dev 3 · 11-nov · QA-241 hecha
+- **Tarea:** «¡Te toca!» y «Viste algo nuevo en la ciudad…» en inglés. Cerrada. EN CURSO fue `71a4f423`.
+- **Qué era:** con el juego en EN, «¡Te toca!» no tenía clave y «pichón» se cambiaba solo por «chick» dentro de la frase en español.
+- **Archivos:** `content/cap1/en.js` y `src/game/familia_aventuras.js`. No toqué `ciudad_viva.js`, `musica.js`, `streaming.js` ni textos educativos.
+- **Lo confirma:** idiomaTest 31/31. Las 12 en verde en `qa-241-a4bd3b66`, 0 errores y 0 avisos.
+- **Qué falta:** CG-122, luego CG-124.
+
 ### Dev 2 · 11-nov 03:50 AST · CG-123 hecha
 - **Tarea:** botón Salir visible en Chispa y en Moon. Cerrada.
 - **Commit:** `81c6960c` (el mismo `chispa.js` y `moon.js` que la build `cg-123-5095e88`).
