@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 03:20 AST · QA-240 hecha
+- **Tarea:** TypeError del teclado del minigolf. Cerrada.
+- **Commit:** `929697fa` (el mismo `minigolf.js` que la build `qa-240-1d322f3`). EN CURSO fue `5ccfc5b8`.
+- **Archivos:** `src/game/v18/minigolf.js`. `nombre()` aguanta un elemento null. Si el hoyo no arranca o falta el panel, W35 lo anota y no revienta.
+- **Qué falta:** QA-243 (el creador del playtest) y luego CG-123.
+- **Cómo probarlo:** `AV.accesibilidadTest()` y `AV.v18MinigolfTest()`.
+- **Lo confirma:** accesibilidadTest 106/106 (W35 del minigolf en verde) y v18MinigolfTest 119/119. Las 12 en verde, 0 errores. Un aviso: `AVE streaming: Cannot read properties of null (reading '0')` (QA-230, Kimi).
+
 ### Dev 1 · 11-nov · QA-239 para Kimi
 - **Tarea:** la descarga inicial de 45,06 MB. No la cerré.
 - **Por qué:** los 17,6 MB son `complejo_ruinas_hd400_glb.js` (7,2), `templo_mediano_h_hd_glb.js` (6,0) y `templo_grande_d_hd_glb.js` (4,5). Los pide `streaming.js` al precargar la zona de inicio (`precargarZona` / `revisar` / `cargarGLB`). `HD400` se enciende solo en escritorio cuando la dirección no trae `?hd400=1` (línea del módulo, `!MOVIL_PEQ`).
