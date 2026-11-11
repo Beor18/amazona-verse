@@ -6,7 +6,11 @@ window.AVInteriores = function (G) {
   if (G.interiores && G.interiores.iniciar) return G.interiores;
   const S = G.S, H = (x, z) => G.terreno.height(x, z);
   const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' && en ? en : es);
-  const encendido = () => G.interioresOn === true || /[?&]interiores=1\b/.test(location.search);
+  const encendido = () => {
+    if (/[?&]interiores=0\b/.test(location.search)) return false;
+    if (G.interioresOn === false) return false;
+    return true;
+  };
   const lista = () => (window.AV_INTERIORES && window.AV_INTERIORES.edificios) || [];
   const porId = id => lista().find(e => e.id === id);
   let activoId = null, grupo = null, arranque = false;

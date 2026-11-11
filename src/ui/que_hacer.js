@@ -42,9 +42,27 @@
       { id: 'familia', nombre: L('Aventuras en familia', 'Family adventures'), estado: listo, puede: () => true, ir: () => abrirFamilia() },
       { id: 'cotorras', nombre: L('Mis cotorras', 'My parrots'), estado: listo, puede: () => true, ir: () => irModo('cotorras') },
       { id: 'casa', nombre: L('Casa del bohío', 'Bohio house'), estado: listo, puede: () => true, ir: () => irCasa() },
+      { id: 'piloto', nombre: L('Escuela de vuelo', 'Flight school'), estado: () => G.piloto === false ? L('Apagada', 'Off') : listo(), puede: () => G.piloto !== false, ir: () => irPiloto() },
+      { id: 'taller', nombre: L('Taller de Tuerca', "Tuerca's workshop"), estado: () => G.interioresOn === false ? L('Apagado', 'Off') : listo(), puede: () => G.interioresOn !== false, ir: () => irTaller() },
       { id: 'construir', nombre: L('Construir', 'Build'), estado: listo, puede: () => !!(G.construir && G.construir.empezar), ir: () => { cerrar(); if (G.construir) G.construir.empezar(); } },
       { id: 'mercadito', nombre: L('Mercadito', 'Market'), estado: listo, puede: () => !!(G.tienda && G.tienda.abrir), ir: () => { cerrar(); if (G.tienda) G.tienda.abrir('que-hacer'); } }
     ];
+    function irPiloto() {
+      cerrar();
+      const ir = () => {
+        const p = G.v18piloto && G.v18piloto.sitio && G.v18piloto.sitio();
+        if (p && p.puente) irLlevar(p.puente.x, p.puente.z);
+        if (G.v18piloto && G.v18piloto.empezar) G.v18piloto.empezar();
+      };
+      if (G.v18piloto && G.v18piloto.empezar) return ir();
+      if (window.AV && AV.pilotoCargar) return AV.pilotoCargar().then(ir);
+      return false;
+    }
+    function irTaller() {
+      const ed = G.tallerTuerca && G.tallerTuerca.ED;
+      const p = ed && ed.puerta ? ed.puerta : { x: -61.27, z: 85.6 };
+      irLlevar(p.x, p.z);
+    }
     function irCasa() {
       const ir = d => { if (d) irLlevar(d.x, d.z); };
       if (G.bohios && G.bohios.donde) return ir(G.bohios.donde());
@@ -113,6 +131,7 @@
         const ids = [...dlg.querySelectorAll('[data-qh]')].map(el => el.dataset.qh);
         ok('Están Family Quest, Tuerca, la Patrulla y Mis cotorras', ['familia', 'tuerca', 'patrulla', 'cotorras'].every(id => ids.includes(id)), ids.join(','));
         ok('CG-126 · está la casa del bohío', ids.includes('casa'));
+        ok('CG-126 · están la escuela de vuelo y el taller de Tuerca', ids.includes('piloto') && ids.includes('taller') && !dlg.querySelector('[data-qh="piloto"] .qh-ir').disabled && !dlg.querySelector('[data-qh="taller"] .qh-ir').disabled);
         const filasEl = [...dlg.querySelectorAll('.qh-fila')];
         ok('Cada fila tiene estado e Ir', filasEl.length > 0 && filasEl.every(el => el.querySelector('small') && el.querySelector('small').textContent && el.querySelector('.qh-ir')));
         const tu = dlg.querySelector('[data-qh="tuerca"] small');

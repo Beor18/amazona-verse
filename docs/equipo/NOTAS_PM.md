@@ -2,13 +2,12 @@
 
 ## TRASPASO
 
-### Dev 3 · 11-nov · CG-126 en curso (piloto y taller)
-- **Tarea:** encender la escuela de vuelo y el taller de Tuerca para todos. La casa del bohío ya está (`34cd056d`).
-- **Commit de código:** todavía no.
-- **Archivos:** `src/boot.js` (solo las dos cargas), `src/game/v18/piloto.js`, `src/game/v18/taller_tuerca.js`, `src/game/interiores.js` (el mismo apagado) y `src/ui/que_hacer.js`. No toco el bloque de CG-118, `historico.js`, textos educativos ni el carril de Kimi.
-- **Qué falta:** que salgan al jugar sin `?piloto=1` ni `?interiores=1`, que `?piloto=0` y `?interiores=0` apaguen, y que Ir lleve al sitio.
+### Dev 3 · 11-nov · CG-126 hecha (piloto y taller)
+- **Tarea:** escuela de vuelo y taller de Tuerca para todos. Cerrada. EN CURSO fue `8eb075bd`. La casa ya estaba (`34cd056d`).
+- **Qué hace:** al jugar salen sin `?piloto=1` ni `?interiores=1`. `?piloto=0` o `G.piloto === false` apaga la escuela. `?interiores=0` o `G.interioresOn === false` apaga el taller y el núcleo. `?piloto=1` y `?interiores=1` siguen encendiendo. «¿Qué hay para hacer?» tiene las dos filas: Ir de la escuela empieza en el puente y Ir del taller lleva a k300. La casita de CG-118 sigue solo con `?interiores=1`.
+- **Archivos:** `src/boot.js` (las dos cargas), `src/game/v18/piloto.js`, `src/game/v18/taller_tuerca.js`, `src/game/interiores.js`, `src/ui/que_hacer.js`, `content/cap1/en.js`. No toqué `historico.js` ni el bloque de CG-118.
 - **Cómo probarlo:** `AV.pilotoTest()`, `AV.tallerTuercaTest()` y `AV.queHacerTest()`.
-- **Lo confirma:** las 12 de `cg-126-34cd056d`, 0 errores. 1 aviso de streaming (QA-230).
+- **Lo confirma:** los checks CG-126 de apagado y las 12 de la build de este commit.
 
 ### Dev 3 · 11-nov · CG-126 hecha
 - **Tarea:** interiores del bohío para todos. Cerrada. EN CURSO fue `5574974c`.

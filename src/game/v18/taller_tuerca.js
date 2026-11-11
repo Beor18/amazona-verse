@@ -1,4 +1,4 @@
-/* CG-117 · Taller de Tuerca en la torre k300. Solo con ?interiores=1.
+/* CG-117 · Taller de Tuerca en la torre k300. CG-126: encendido al jugar. ?interiores=0 lo apaga.
    El cuarto es la transición del núcleo. La reparación es G.v18arco.usarPoder (3 aciertos en arco.js).
    No hay un taller nuevo: máquina y tres herramientas, y la misma llamada. */
 (function () {
@@ -12,7 +12,11 @@
       cuarto: { x: 8, z: 8, y: 40 },
       fuera: { x: -61.27, z: 87.2 },
     };
-    const encendido = () => G.interioresOn === true || /[?&]interiores=1\b/.test(location.search);
+    const encendido = () => {
+      if (/[?&]interiores=0\b/.test(location.search)) return false;
+      if (G.interioresOn === false) return false;
+      return true;
+    };
     let grupo = null, hechos = 0, puesto = false;
     function asegurarLista() {
       const eds = window.AV_INTERIORES && window.AV_INTERIORES.edificios;
@@ -103,8 +107,10 @@
       try {
         if (!window.AV_INTERIORES && window.AVE) await AVE.assets.script('content/comun/interiores.js');
         if (!G.interiores && window.AVE) await AVE.assets.script('src/game/interiores.js').then(() => window.AVInteriores(G));
+        G.interioresOn = undefined;
+        ok('CG-126 · sin bandera, el taller se prepara', preparar() === true && !!G.interaccion.find('int_taller_k300'));
         G.interioresOn = false;
-        ok('Sin ?interiores=1 el taller no se prepara', preparar() === false);
+        ok('CG-126 · ?interiores=0 o interiores apagados no preparan el taller', preparar() === false);
         G.interioresOn = true;
         ok('Con la bandera el taller queda en k300', preparar() === true && !!G.interaccion.find('int_taller_k300'));
         G.S.pos.x = ED.puerta.x; G.S.pos.z = ED.puerta.z;

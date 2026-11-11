@@ -1,11 +1,16 @@
-/* CG-108 · Escuela de Vuelo del Guardián y show aéreo. Solo con ?piloto=1 (apagado hasta que Kelvin vea fotos).
+/* CG-108 · Escuela de Vuelo del Guardián y show aéreo. CG-126: encendida al jugar.
+   ?piloto=0 o G.piloto === false la apaga. ?piloto=1 sigue encendiéndola.
    Sin anillos: la marca es una hoja suave. No cambia el vuelo de fuera. No hay modelos ni edificios nuevos. */
 window.AVV18Piloto = function (G) {
   'use strict';
   if (G.v18piloto) return G.v18piloto;
   const S = G.S, M = G.fisica.MOVE, H = (x, z) => G.terreno.height(x, z);
   const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' && en ? en : es);
-  const encendido = () => G.piloto === true || /[?&]piloto=1\b/.test(location.search);
+  const encendido = () => {
+    if (/[?&]piloto=0\b/.test(location.search)) return false;
+    if (G.piloto === false) return false;
+    return true;
+  };
   const escuela = () => !!(G.renderer && G.renderer.calidad && G.renderer.calidad.escuela);
   const reducido = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   const aguaEn = (x, z) => (G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) : -Infinity);
@@ -98,8 +103,11 @@ window.AVV18Piloto = function (G) {
     const quiet0 = G.quiet, piloto0 = G.piloto; G.quiet = true;
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fly0 = M.flying, sp0 = M.speed, vy0 = S.vy, g0 = M.grounded;
     try {
+      G.piloto = undefined; salir();
+      ok('CG-126 · sin bandera, la escuela empieza', encendido() && empezar() === true && estado().fase === 'escuela');
+      salir();
       G.piloto = false; salir();
-      ok('Sin ?piloto=1 no se ve ni empieza', !encendido() && empezar() === false && !estado().visible);
+      ok('CG-126 · ?piloto=0 o piloto en false la apaga', !encendido() && empezar() === false && !estado().visible);
       G.piloto = true;
       ok('Con la bandera empieza la escuela', empezar() === true && estado().fase === 'escuela' && document.getElementById('piloto-pista') && !document.getElementById('piloto-pista').hidden);
       ok('La marca no es un anillo', !hoja || hoja.geometry.type !== 'RingGeometry');
