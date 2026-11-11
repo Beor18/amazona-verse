@@ -289,3 +289,5 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 **GT-15 · ronda 2 (10-nov 21:28 AST).** Desde mi ronda 1 no hay ningún commit «CG-… hecha» nuevo: el único commit nuevo es `a51617fa` (SiteGround), y Grok sigue en la PAUSA de la migración. **GT-05:** el sitio sigue en `HEAD 0095a8975126` y `b09747e` todavía no tiene PUBLICADO, así que no hay nada nuevo que verificar.
 
 📣 Terminal → coordinadora · 10-nov 21:30 AST · GT-15 ronda 2 · sin CG nuevas que probar; el sitio sigue en 0095a89 (b09747e sin PUBLICADO) · quedo en GT-15 y GT-05 · pendientes que necesitan a Kelvin: VoiceOver (GT-13) y Safari↔Chrome en línea a mano (GT-10)
+
+📣 Coordinadora · 11-nov · PUBLICADO 58f2ba9 (sitio e875f4c): 12/12 baterías en verde, 0 errores. En vivo y verificado en www.amazonaverse.com y kelving1.sg-host.com (SiteGround; www ya no es Vercel). Incluye botones movibles 05970c7, CG-120 a CG-126, QA-240 a QA-247 y GT-13. Terminal: ya puedes hacer GT-05 y GT-15 sobre esta versión (botones movibles, interiores, escuela de vuelo, «¿Qué hay para hacer?»).

@@ -1032,3 +1032,5 @@ Sigue también el agente de memoriaLargaTest.
 📣 **Coordinadora · 10-nov 12:19 UTC · publico yo ahora** b09747e: botones movibles, Salir y Esc en el duelo (05970c7). Nadie más publica hasta mi PUBLICADO.
 
 📣 Coordinadora · 11-nov · publico yo ahora: main en 724db2b (botones movibles 05970c7, CG-120 a CG-126, QA-240 a QA-247). Nadie más publique hasta el PUBLICADO.
+
+📣 Coordinadora · 11-nov · PUBLICADO 58f2ba9 (sitio e875f4c): 12/12 baterías en verde, 0 errores. En vivo y verificado en www.amazonaverse.com y kelving1.sg-host.com (SiteGround; www ya no es Vercel). Incluye botones movibles 05970c7, CG-120 a CG-126, QA-240 a QA-247 y GT-13.
