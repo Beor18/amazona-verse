@@ -2,6 +2,15 @@
 
 ## TRASPASO
 
+### Dev 4 · 11-nov · QA-242 hecha
+- **Tarea:** la guía no tapa Acción en el cap. 2 móvil. Cerrada.
+- **Commit:** `f5fe747f`. EN CURSO fue `3a62ef74`.
+- **Por qué:** en 390×844 los botones se ven y la caja de teclado (`div.guia-caja`) seguía abierta encima de Acción. Ahora, si los botones ya están en pantalla, esa caja se cierra. La prueba de teclado sigue pudiendo abrirla.
+- **Archivos:** `src/game/guia_controles.js`. No toqué `streaming.js`, el modelo de Vittata ni textos educativos.
+- **Qué falta:** GT-06 (interiores jugando). QA-243 lo tiene Dev 2.
+- **Cómo probarlo:** `AV.primerosMinutosTest()` y `AV.controlesTest()`. En el cap. 2, `AV.temporadaMovilTest({ caps: [2] })`.
+- **Lo confirma:** primerosMinutosTest 15/15 y controlesTest 22/22. Build `qa242-5afde691` (mismo `guia_controles.js`): las 12 en verde, 0 errores y 0 avisos.
+
 ### Dev 2 · 11-nov 03:25 AST · QA-243 en curso
 - **Tarea:** en el playtest del cap. 1, Jugar no abre el creador en 40 s. Dev 1 tiene `menu_modos.js` (CG-120): no lo toco si puedo arreglarlo en otro sitio.
 - **Commit de código:** todavía no.

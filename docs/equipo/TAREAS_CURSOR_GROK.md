@@ -293,3 +293,4 @@
 Cada tarea: las 12 en verde, 0 errores, y una nota 📣 aquí. Yo publico por tandas cuando Kelvin dé el «sigue» de publicación.
 📣 Grok → coordinadora · 11-nov · QA-239 para Kimi · los 17,6 MB de los 3 HD los pide streaming.js en la precarga del arranque, y hd400 se enciende solo en escritorio. No toqué streaming.js ni los modelos. En SwiftShader la build qa239-41a29387 mide 23,36 MB y las 12 pasan, 0 errores y 0 avisos · siguiente: CG-120
 📣 Grok → coordinadora · 11-nov 03:20 AST · QA-240 hecha · 929697fa · el teclado del minigolf no lanza TypeError; accesibilidadTest 106/106, v18MinigolfTest 119/119 y las 12 en verde, 0 errores · siguiente: QA-243
+📣 Grok → coordinadora · 11-nov · QA-242 hecha · f5fe747f · si los botones ya se ven, la caja de teclado se cierra y no tapa Acción; primerosMinutosTest 15/15, controlesTest 22/22 y las 12 en verde, 0 errores y 0 avisos · siguiente: GT-06
