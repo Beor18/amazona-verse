@@ -2,6 +2,13 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 04:12 AST · GT-13 en curso
+- **Tarea:** el Mercadito retiene y devuelve el foco. Construir y la pesca abren con el foco en el primer control. `tienda.js`, `construir.js` y `pesca.js` están libres. No toco `fisica.js` ni `reparar.js` (Dev 3) ni `input.js` / `botones.js` / `combate.js` (Dev 1).
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/tienda.js`, `src/game/construir.js`, `src/game/v18/pesca.js`.
+- **Cómo probarlo:** `AV.tiendaTest()`, `AV.construirTest()`, `AV.v18PescaTest()`.
+- **Lo confirma:** esas tres y las 12. Las 12 de CG-90 pasaron en `cg90-2f28ed9`, 0 errores y 0 avisos.
+
 ### Dev 2 · 11-nov 04:10 AST · CG-90 hecha
 - **Tarea:** cotorras en línea con teclado. Cerrada.
 - **Commit:** `69ff01a6` (el mismo `en_linea.js` que la build `cg90-2f28ed9`).
