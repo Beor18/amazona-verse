@@ -52,7 +52,8 @@ window.AVV18Chispa = function (G) {
     kCorrer: 'Correr', kRapido: 'Más rápido', kVolar: 'Volar', kAun: 'Aún más rápido', tVolar: 'Volar', tImpulso: 'Impulso',
     pDelante: '¡Chispa va delante! Vuela con {}: ¡es más rápido!', pDelanteT: '¡Chispa va delante! Pulsa Volar: ¡es más rápido!',
     pMapa: 'El banderín naranja también sale en el minimapa',
-    fGana: '¡Le ganaste a Chispa!', fPierde: '¡Chispa llegó primero!', fTiempo: 'Tu tiempo: {}', fOtra: 'Otra vez: vuela para ir más rápido'
+    fGana: '¡Le ganaste a Chispa!', fPierde: '¡Chispa llegó primero!', fTiempo: 'Tu tiempo: {}', fOtra: 'Otra vez: vuela para ir más rápido',
+    salir: 'Salir' // ya está en content/cap1/en.js («Leave»); no invento otra frase
   };
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
@@ -124,6 +125,7 @@ window.AVV18Chispa = function (G) {
       const st = document.createElement('style'); st.id = 'v18-chispa-css';
       st.textContent = 'body:has(#v18-chispa:not([hidden])) #toast{z-index:41}' + /* revisión clrt: el aviso, encima del panel de resultado en el móvil, como en Moon y el Guardián */ '#v18-chispa{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(340px,calc(100vw - 32px));z-index:40;' +
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(20,32,60,.78);border:2px solid #ff8a1f;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
+        '#v18-chispa .vc-h{display:flex;align-items:center;justify-content:center;gap:8px}#v18-chispa .vc-x{pointer-events:auto;flex:none;min-width:44px;min-height:44px;padding:0 12px;border:0;border-radius:22px;background:#fff3d6;color:#3b2a14;font:inherit;font-size:calc(14px * var(--fs-k,1));font-weight:700}' +
         '#v18-chispa .vc-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-chispa .vc-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-chispa .vc-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd23f;text-shadow:0 2px 0 #b35a00}#v18-chispa .vc-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
         // Cómo se juega (8-nov, patrón del duelo): meta, rival, chips de tecla, pista breve y resultado
@@ -132,7 +134,7 @@ window.AVV18Chispa = function (G) {
         '#v18-chispa kbd{font:700 calc(12px * var(--fs-k,1))/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 6px;border-radius:6px;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 0 #0007;text-align:center}' +
         '#v18-chispa .vc-pi{margin:6px auto 0;background:rgba(255,227,154,.96);color:#3b2a14;font-weight:600;font-size:calc(14px * var(--fs-k,1));padding:4px 10px;border-radius:14px;animation:vcPista .25s ease-out}#v18-chispa [hidden]{display:none}' +
         '@keyframes vcPista{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}' +
-        '#v18-chispa.fin:not([hidden]){display:flex;flex-direction:column}#v18-chispa.fin .vc-t{order:-2}#v18-chispa.fin .vc-n{order:-1}' +
+        '#v18-chispa.fin:not([hidden]){display:flex;flex-direction:column}#v18-chispa.fin .vc-h{order:-2}#v18-chispa.fin .vc-x{display:none}#v18-chispa.fin .vc-n{order:-1}' +
         '#v18-chispa.fin .vc-n{font-size:calc(28px * var(--fs-k,1));line-height:1.15}#v18-chispa.fin .vc-l,#v18-chispa.fin .vc-k,#v18-chispa.fin .vc-c,#v18-chispa.fin .vc-pi{display:none}' +
         // pul3 (QA V18.3): también en escritorio el panel de misiones de la historia no se ve durante la carrera; vuelve al salir (como en el Guardián)
         'body.v18-chispa-on #quest,body.v18-chispa-on #quest-toggle{visibility:hidden}' +
@@ -146,8 +148,13 @@ window.AVV18Chispa = function (G) {
     const el = document.createElement('div'); el.id = 'v18-chispa'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
     // W35 · lector de pantalla: el panel se nombra con su título; el reloj (cambia cada décima) y el récord no se anuncian solos
     el.setAttribute('aria-labelledby', 'vc-t');
-    el.innerHTML = '<div class="vc-t" id="vc-t"></div><div class="vc-m"></div><div class="vc-n" hidden></div><div class="vc-l"><span class="vc-p"></span><span class="vc-s" aria-live="off"></span></div>' +
+    el.innerHTML = '<div class="vc-h"><div class="vc-t" id="vc-t"></div><button type="button" class="vc-x">Salir</button></div><div class="vc-m"></div><div class="vc-n" hidden></div><div class="vc-l"><span class="vc-p"></span><span class="vc-s" aria-live="off"></span></div>' +
       '<div class="vc-c" aria-live="off"></div><div class="vc-r" aria-live="off"></div><div class="vc-k" aria-hidden="true"></div><div class="vc-pi" hidden></div>';
+    // CG-123: sin teclado no había un Salir a la vista (solo Esc o alejarse). ≥ 44 px, en PC y en táctil.
+    const bx = el.querySelector('.vc-x');
+    bx.textContent = TXT.salir;
+    bx.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cancelar('sale'); });
+    bx.addEventListener('click', e => { if (e.detail !== 0) return; e.preventDefault(); cancelar('sale'); });
     document.body.appendChild(el);
     const q = c => el.querySelector(c);
     hud = { el, t: q('.vc-t'), m: q('.vc-m'), n: q('.vc-n'), p: q('.vc-p'), s: q('.vc-s'), c: q('.vc-c'), r: q('.vc-r'), k: q('.vc-k'), pi: q('.vc-pi'), cache: {} };
@@ -342,7 +349,7 @@ window.AVV18Chispa = function (G) {
     if (A.fase === 'cuenta' || A.fase === 'carrera') { const p = RUTA[A.sig]; return { x: p.x, z: p.z, nombre: TXT.siguiente }; }
     return { x: SITIO.salida.x, z: SITIO.salida.z, nombre: TXT.nombre };
   };
-  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.punto, TXT.meta, TXT.siguiente, TXT.tiempo, TXT.record, TXT.gag, TXT.nuevo, TXT.xp, TXT.lejos,
+  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.punto, TXT.meta, TXT.siguiente, TXT.tiempo, TXT.record, TXT.gag, TXT.nuevo, TXT.xp, TXT.lejos, TXT.salir,
     TXT.metaTxt, TXT.rival, TXT.rivalMeta, TXT.kCorrer, TXT.kRapido, TXT.kVolar, TXT.kAun, TXT.pDelante, TXT.pDelanteT, TXT.pMapa, TXT.fGana, TXT.fPierde, TXT.fTiempo, TXT.fOtra].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
     if (d.nombre) l.push(d.nombre.es); return l; };
@@ -360,7 +367,14 @@ window.AVV18Chispa = function (G) {
       const el = hud.el;
       check('W35 · Chispa: el panel de la carrera se anuncia (role=status, aria-live) con nombre; el reloj y el récord no se leen a cada décima',
         !el.hidden && el.getAttribute('role') === 'status' && el.getAttribute('aria-live') === 'polite' && !!nombre(el) && hud.s.getAttribute('aria-live') === 'off' && hud.r.getAttribute('aria-live') === 'off', nombre(el));
-      check('W35 · Chispa: el panel no roba el foco (la carrera se juega con las teclas de siempre)', document.activeElement === foco0 && !el.querySelector('button, [tabindex]'));
+      const bx = el.querySelector('.vc-x'), rbtn = bx.getBoundingClientRect();
+      check('W35 · Chispa: el panel no roba el foco; «Salir» es un botón de al menos 44 px, con nombre, en PC y en táctil',
+        document.activeElement === foco0 && bx.tagName === 'BUTTON' && bx.type === 'button' && bx.textContent.trim() === TXT.salir && bx.tabIndex === 0 && rbtn.width >= 44 && rbtn.height >= 44 && getComputedStyle(bx).display !== 'none',
+        Math.round(rbtn.width) + '×' + Math.round(rbtn.height));
+      bx.focus(); bx.click();
+      check('W35 · Chispa: Enter o Espacio sobre «Salir» deja la carrera (sin contar partida)', A.fase === 'nada' && el.hidden, A.fase);
+      if (document.activeElement === bx) bx.blur();
+      empezar({ forzar: true });
       const gp = G.guiaControles && G.guiaControles.prueba, forz0 = gp && gp.forzado;
       if (gp) gp.forzado = 'teclado';
       if (gp && gp.mostrar(true)) {

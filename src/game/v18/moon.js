@@ -54,7 +54,8 @@ window.AVV18Moon = function (G) {
     // Cómo se juega, sin leer párrafos (Kelvin 8-nov, como en el duelo): meta siempre a la vista, teclas, pistas y resultado claro
     metaTxt: 'Esquiva las bolas de luz: 3 toques y se acaba', kMover: 'Moverte', kImpulso: 'Impulso', tImpulso: 'Impulso',
     pViene: '¡Ahí viene! Apártate de lado', pToque: '¡Te tocó! Muévete de lado o pulsa {} para un impulso', pToqueT: '¡Te tocó! Muévete de lado o pulsa Impulso',
-    fGana: '¡Entreno superado!', fPierde: '¡Tres toques!', fToques: 'Toques: {} de 3', fOtra: 'Otra vez: no te quedes quieta'
+    fGana: '¡Entreno superado!', fPierde: '¡Tres toques!', fToques: 'Toques: {} de 3', fOtra: 'Otra vez: no te quedes quieta',
+    salir: 'Salir' // ya está en content/cap1/en.js («Leave»); no invento otra frase
   };
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
@@ -135,6 +136,7 @@ window.AVV18Moon = function (G) {
       const st = document.createElement('style'); st.id = 'v18-moon-css';
       st.textContent = '#v18-moon{position:fixed;top:calc(env(safe-area-inset-top,0px) + 92px);left:0;right:0;margin-inline:auto;width:min(340px,calc(100vw - 32px));z-index:40;' +
         'pointer-events:none;text-align:center;color:#fff;font:inherit;background:rgba(24,26,58,.8);border:2px solid #b9a7ff;border-radius:16px;padding:8px 12px;box-shadow:0 3px 12px rgba(0,0,0,.35)}' +
+        '#v18-moon .vm-h{display:flex;align-items:center;justify-content:center;gap:8px}#v18-moon .vm-x{pointer-events:auto;flex:none;min-width:44px;min-height:44px;padding:0 12px;border:0;border-radius:22px;background:#fff3d6;color:#3b2a14;font:inherit;font-size:calc(14px * var(--fs-k,1));font-weight:700}' +
         '#v18-moon .vm-t{font-size:calc(13px * var(--fs-k,1));opacity:.9;letter-spacing:.02em}#v18-moon .vm-l{display:flex;justify-content:space-between;gap:10px;font-size:calc(17px * var(--fs-k,1));font-weight:700;margin-top:2px}' +
         '#v18-moon .vm-n{font-size:calc(46px * var(--fs-k,1));font-weight:800;line-height:1.1;color:#ffd76a;text-shadow:0 2px 0 #6a4dc9}#v18-moon .vm-r{font-size:calc(12px * var(--fs-k,1));opacity:.85;margin-top:2px}' +
         // Cómo se juega (8-nov, patrón del duelo): meta, chips de tecla, pista breve y resultado
@@ -143,7 +145,7 @@ window.AVV18Moon = function (G) {
         '#v18-moon kbd{font:700 calc(12px * var(--fs-k,1))/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 6px;border-radius:6px;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 0 #0007;text-align:center}' +
         '#v18-moon .vm-pi{margin:6px auto 0;background:rgba(255,227,154,.96);color:#3b2a14;font-weight:600;font-size:calc(14px * var(--fs-k,1));padding:4px 10px;border-radius:14px;animation:vmPista .25s ease-out}#v18-moon [hidden]{display:none}' +
         '@keyframes vmPista{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}' +
-        '#v18-moon.fin:not([hidden]){display:flex;flex-direction:column}#v18-moon.fin .vm-t{order:-2}#v18-moon.fin .vm-n{order:-1}' +
+        '#v18-moon.fin:not([hidden]){display:flex;flex-direction:column}#v18-moon.fin .vm-h{order:-2}#v18-moon.fin .vm-x{display:none}#v18-moon.fin .vm-n{order:-1}' +
         '#v18-moon.fin .vm-n{font-size:calc(28px * var(--fs-k,1));line-height:1.15}#v18-moon.fin .vm-l,#v18-moon.fin .vm-k,#v18-moon.fin .vm-r,#v18-moon.fin .vm-pi{display:none}' +
         'body:has(#v18-moon:not([hidden])) #toast{z-index:41}' + // auditoría de la otra cuenta (7-nov): el aviso, encima del panel, como en el puerto (W29a: estaba dentro de la regla de #v18-moon, anidada, y no llegaba a #toast)
         // pul3 (QA V18.3): también en escritorio el panel de misiones de la historia no se ve durante el entreno; vuelve al salir (como en el Guardián)
@@ -158,8 +160,13 @@ window.AVV18Moon = function (G) {
     const el = document.createElement('div'); el.id = 'v18-moon'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
     // W35 · lector de pantalla: el panel se nombra con su título; los segundos que quedan y el reloj no se anuncian solos (los toques sí)
     el.setAttribute('aria-labelledby', 'vm-t');
-    el.innerHTML = '<div class="vm-t" id="vm-t"></div><div class="vm-m"></div><div class="vm-n" hidden></div><div class="vm-l"><span class="vm-p" aria-live="off"></span><span class="vm-s"></span></div><div class="vm-r" aria-live="off"></div>' +
+    el.innerHTML = '<div class="vm-h"><div class="vm-t" id="vm-t"></div><button type="button" class="vm-x">Salir</button></div><div class="vm-m"></div><div class="vm-n" hidden></div><div class="vm-l"><span class="vm-p" aria-live="off"></span><span class="vm-s"></span></div><div class="vm-r" aria-live="off"></div>' +
       '<div class="vm-k" aria-hidden="true"></div><div class="vm-pi" hidden></div>';
+    // CG-123: sin teclado no había un Salir a la vista (solo Esc o alejarse). ≥ 44 px, en PC y en táctil.
+    const bx = el.querySelector('.vm-x');
+    bx.textContent = TXT.salir;
+    bx.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cancelar('sale'); });
+    bx.addEventListener('click', e => { if (e.detail !== 0) return; e.preventDefault(); cancelar('sale'); });
     document.body.appendChild(el);
     const q = c => el.querySelector(c);
     hud = { el, t: q('.vm-t'), m: q('.vm-m'), n: q('.vm-n'), p: q('.vm-p'), s: q('.vm-s'), r: q('.vm-r'), k: q('.vm-k'), pi: q('.vm-pi'), cache: {} };
@@ -342,7 +349,7 @@ window.AVV18Moon = function (G) {
     if (!activa()) return null;
     return { x: SITIO.x, z: SITIO.z, nombre: TXT.nombre };
   };
-  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.quedan, TXT.toques, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.alto, TXT.esquiva, TXT.esquivaA,
+  const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.quedan, TXT.toques, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.alto, TXT.salir, TXT.esquiva, TXT.esquivaA,
     TXT.metaTxt, TXT.kMover, TXT.kImpulso, TXT.pViene, TXT.pToque, TXT.pToqueT, TXT.fGana, TXT.fPierde, TXT.fToques, TXT.fOtra].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
     if (d.nombre) l.push(d.nombre.es); return l; };
@@ -366,7 +373,14 @@ window.AVV18Moon = function (G) {
       const el = hud.el;
       check('W35 · Moon: el panel se anuncia (role=status, aria-live) con nombre; el reloj y los segundos que quedan no se leen solos',
         !el.hidden && el.getAttribute('role') === 'status' && el.getAttribute('aria-live') === 'polite' && !!nombre(el) && hud.p.getAttribute('aria-live') === 'off' && hud.r.getAttribute('aria-live') === 'off' && hud.s.getAttribute('aria-live') !== 'off', nombre(el));
-      check('W35 · Moon: el panel no roba el foco (se esquiva con las teclas de siempre)', document.activeElement === foco0 && !el.querySelector('button, [tabindex]'));
+      const bx = el.querySelector('.vm-x'), rbtn = bx.getBoundingClientRect();
+      check('W35 · Moon: el panel no roba el foco; «Salir» es un botón de al menos 44 px, con nombre, en PC y en táctil',
+        document.activeElement === foco0 && bx.tagName === 'BUTTON' && bx.type === 'button' && bx.textContent.trim() === TXT.salir && bx.tabIndex === 0 && rbtn.width >= 44 && rbtn.height >= 44 && getComputedStyle(bx).display !== 'none',
+        Math.round(rbtn.width) + '×' + Math.round(rbtn.height));
+      bx.focus(); bx.click();
+      check('W35 · Moon: Enter o Espacio sobre «Salir» deja el entreno (sin contar partida)', A.fase === 'nada' && el.hidden, A.fase);
+      if (document.activeElement === bx) bx.blur();
+      empezar({ forzar: true });
       const gp = G.guiaControles && G.guiaControles.prueba, forz0 = gp && gp.forzado;
       if (gp) gp.forzado = 'teclado';
       if (gp && gp.mostrar(true)) {
