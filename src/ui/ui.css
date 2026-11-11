@@ -705,6 +705,8 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #prompt { bottom: calc(env(safe-area-inset-bottom, 0px) + 206px); font-size: 15px; }
   /* El aviso se alinea a la izquierda y deja libre la columna de botones de la derecha (Diario, Gestos, Pausa) */
   #toast { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 262px); left: max(var(--sp-3), env(safe-area-inset-left, 0px)); margin-inline: 0; max-width: calc(100vw - 2 * var(--sp-3) - 56px); }
+  /* CG-125: con el 2×2 del duelo (alas y patas) el aviso quedaba debajo. Sube, y los botones siguen tocables. */
+  body.v18-ext-on #toast { top: calc(env(safe-area-inset-top, 0px) + 118px); bottom: auto; max-height: min(28vh, 160px); }
   /* CG-4 (QA-86, QA-87): con el diálogo abierto, el aviso sube bajo el objetivo; abajo tapaba el nombre y la
      primera línea del diálogo (375×812). El top es el mayor de «bajo el objetivo» y «bajo el minimapa»
      (medido vía --mm-top en :root por minimapa.js): el aviso es ancho y, a 118px, sus nombres largos quedaban

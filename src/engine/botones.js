@@ -3,7 +3,8 @@
    de pantalla se arrastra a donde quieras (con imán a una rejilla de 8 px y sin salirse de la pantalla), se cambia de tamaño
    (P, M, G) y de opacidad, y se marca en rojo si pisa a otro. «Restablecer» vuelve a lo de fábrica y «Listo» guarda.
    Botones: Acción, Impulso (mantenido: tu poder), Saltar, Volar/Bucear y, en el duelo, ala izquierda, ala derecha, pata
-   izquierda y pata derecha (src/game/v18/combate.js). El joystick no entra: nace bajo el dedo (CG-40).
+   izquierda y pata derecha (src/game/v18/combate.js) y el joystick. Sin sitio guardado, el joystick
+   sigue naciendo bajo el dedo (CG-40). Con sitio guardado, se queda ahí.
    Se guarda en este dispositivo, aparte de la partida (como las teclas): localStorage `<almacen>.botones` =
    { v: 1, vertical: { id: { x, y, s, o } }, horizontal: { … } }; x, y = centro en fracción de la pantalla (vale para otro
    tamaño de móvil), s = tamaño (0,8 · 1 · 1,25), o = opacidad (0,35–1). Vertical y horizontal se guardan por separado.
@@ -18,7 +19,8 @@ AVE.module('botones', function (G) {
     { id: 'fly', q: '#b-fly, #b-dive', n: 'Volar' },
     { id: 'salir', q: '#v18-duelo [data-k="salirB"]', n: 'Salir', duelo: true },
     { id: 'alaIzq', q: '#v18-duelo-ext [data-x="alaIzq"]', n: 'Ala izq.', duelo: true }, { id: 'alaDer', q: '#v18-duelo-ext [data-x="alaDer"]', n: 'Ala der.', duelo: true },
-    { id: 'pataIzq', q: '#v18-duelo-ext [data-x="pataIzq"]', n: 'Pata izq.', duelo: true }, { id: 'pataDer', q: '#v18-duelo-ext [data-x="pataDer"]', n: 'Pata der.', duelo: true }
+    { id: 'pataIzq', q: '#v18-duelo-ext [data-x="pataIzq"]', n: 'Pata izq.', duelo: true }, { id: 'pataDer', q: '#v18-duelo-ext [data-x="pataDer"]', n: 'Pata der.', duelo: true },
+    { id: 'palo', q: '#stick', n: 'Joystick' }
   ];
   const TAM = { P: 0.8, M: 1, G: 1.25 }, REJ = 8;
   const orient = () => (innerWidth > innerHeight ? 'horizontal' : 'vertical');
@@ -63,6 +65,7 @@ AVE.module('botones', function (G) {
     const el = [...document.querySelectorAll(c.q)].find(x => x.offsetParent || x.getClientRects().length);
     if (el) { const r = el.getBoundingClientRect(); if (r.width > 0) return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width / ((datos[orient()][c.id] || {}).s || 1), h: r.height / ((datos[orient()][c.id] || {}).s || 1) }; }
     if (c.id === 'salir') return { x: innerWidth - 70, y: Math.min(innerHeight * 0.45, 340), w: 96, h: 48 }; // fuera del duelo: bajo el panel
+    if (c.id === 'palo') return { x: 90, y: innerHeight - 110, w: 136, h: 136 }; // esquina de fábrica si el palo aún no se mide
     // Los del duelo fuera de un duelo: el 2×2 de combate.js encima de los botones grandes (60 px y 8 de hueco)
     const acts = document.getElementById('acts'), r = acts && acts.getBoundingClientRect(), vw = innerWidth;
     const base = r && r.width > 0 ? r : { left: vw - 202, right: vw - 20, top: innerHeight - 198, width: 182 };
@@ -202,7 +205,7 @@ AVE.module('botones', function (G) {
       check('De fábrica no hay nada guardado ni ningún estilo puesto', !localStorage.getItem(CLAVE) && !act.dataset.ctl && !act.style.left, act.style.cssText);
       const r0 = act.getBoundingClientRect();
       const e = abrir();
-      check('El editor se abre con un botón fantasma por control (Acción, Impulso, Saltar, Volar, Salir y las 4 del duelo) y pone el juego en pausa', !!e && Object.keys(e.ghosts).length === 9 && !!(G.pausa && G.pausa.motivos.has('controles')), Object.keys(e.ghosts).join(','));
+      check('El editor se abre con un botón fantasma por control (Acción, Impulso, Saltar, Volar, Salir, las 4 del duelo y el joystick) y pone el juego en pausa', !!e && Object.keys(e.ghosts).length === 10 && !!e.ghosts.palo && !!(G.pausa && G.pausa.motivos.has('controles')), Object.keys(e.ghosts).join(','));
       // Arrastrar Acción con el dedo (eventos sintéticos): imán a 8 px y dentro de la pantalla
       const g = e.ghosts.act, gr = g.getBoundingClientRect(), cx = gr.left + gr.width / 2, cy = gr.top + gr.height / 2;
       const pe = (t, x, y) => g.dispatchEvent(new PointerEvent(t, { bubbles: true, cancelable: true, pointerId: 77, pointerType: 'touch', clientX: x, clientY: y }));
@@ -215,6 +218,7 @@ AVE.module('botones', function (G) {
       e.el.querySelector('[data-tam="G"]').click(); const op = e.el.querySelector('[data-c="op"]'); op.value = '60'; op.dispatchEvent(new Event('input'));
       mover('dash', innerWidth / 2, innerHeight / 2); const choca = e.choques;
       mover('dash', innerWidth / 2 + 200, innerHeight / 2);
+      mover('palo', 96, 96);
       check('Tamaño G y opacidad 60 % del elegido; si dos se pisan se marcan', e.borr.act.s === 1.25 && Math.abs(e.borr.act.o - 0.6) < 1e-9 && choca >= 2 && e.ghosts.act.classList.contains('sel'), JSON.stringify({ s: e.borr.act.s, o: e.borr.act.o, choca }));
       cerrar(true);
       const r1 = act.getBoundingClientRect(), g1 = JSON.parse(localStorage.getItem(CLAVE) || 'null');
@@ -223,6 +227,20 @@ AVE.module('botones', function (G) {
         JSON.stringify({ r1: [r1.left, r1.top, r1.width], g1: g1 && g1[orient()].act }));
       const otra = orient() === 'vertical' ? 'horizontal' : 'vertical';
       check('Vertical y horizontal se guardan aparte', g1 && !g1[otra].act, JSON.stringify(g1 && g1[otra]));
+      const stick = document.getElementById('stick'), dispS = stick.style.display;
+      stick.style.display = 'block';
+      aplicar();
+      const leftPalo = stick.style.left;
+      check('El joystick guardado se queda en su sitio', g1[orient()].palo && Math.abs(parseFloat(leftPalo) - (g1[orient()].palo.x * innerWidth - stick.offsetWidth / 2)) <= 8, leftPalo);
+      const canvas = G.renderer.canvas;
+      canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch', pointerId: 91, clientX: Math.min(innerWidth * 0.4, 220), clientY: innerHeight - 48 }));
+      canvas.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerType: 'touch', pointerId: 91, clientX: Math.min(innerWidth * 0.4, 220), clientY: innerHeight - 48 }));
+      check('Con el joystick guardado, un toque lejos no lo lleva bajo el dedo', stick.style.left === leftPalo, stick.style.left + ' vs ' + leftPalo);
+      stick.style.display = dispS;
+      let regla = false;
+      const ver = rules => { for (const r of rules) { if (r.cssRules && ver(r.cssRules)) return true; const t = r.cssText || ''; if (t.includes('v18-ext-on') && t.includes('#toast') && t.includes('bottom: auto')) return true; } return false; };
+      for (const sh of document.styleSheets) { try { if (ver(sh.cssRules)) regla = true; } catch (e) { /* hoja de otro origen */ } }
+      check('Con el 2×2 del duelo, el aviso de misión sube', regla);
       datos = leer(); aplicar();
       check('Se relee igual al volver a cargar', datos[orient()].act && datos[orient()].act.s === 1.25 && !!act.dataset.ctl);
       localStorage.setItem(CLAVE, '{"v":1,"vertical":{"act":{"x":"mal","s":99}}}');

@@ -207,10 +207,19 @@ AVE.module('input', function (G) {
   const zurdo = () => document.documentElement.classList.contains('a11y-zurdo');
   const unaMano = () => document.documentElement.classList.contains('a11y-unamano');
   // Con una mano el palo se queda en su esquina: solo lo agarra un toque encima de él. El resto de la pantalla gira la cámara.
+  function paloGuardado() {
+    try {
+      if (!G.botones || !G.botones.datos) return null;
+      const o = window.innerWidth > window.innerHeight ? 'horizontal' : 'vertical';
+      const e = G.botones.datos()[o] && G.botones.datos()[o].palo;
+      return e && typeof e.x === 'number' && typeof e.y === 'number' ? e : null;
+    } catch (err) { return null; }
+  }
   const zonaPalo = (x, y) => {
-    if (unaMano()) {
+    const fijo = paloGuardado();
+    if (unaMano() || fijo) {
       const r = stickEl.getBoundingClientRect();
-      if (r.width < 8) return false;
+      if (r.width < 8) return !!(fijo && y != null && Math.hypot(x - fijo.x * window.innerWidth, y - fijo.y * window.innerHeight) < 80);
       const dentroX = x >= r.left - 12 && x <= r.right + 12;
       if (y == null) return dentroX;
       return dentroX && y >= r.top - 12 && y <= r.bottom + 12;
@@ -240,7 +249,9 @@ AVE.module('input', function (G) {
     if (paused() || stickId != null) return false;
     const toque = !e.pointerType || e.pointerType === 'touch' || e.pointerType === 'pen';
     if (!toque) return false;
+    const fijo = paloGuardado();
     if (unaMano()) stickEl.classList.remove('flotando');
+    else if (fijo) colocarPalo(fijo.x * window.innerWidth, fijo.y * window.innerHeight);
     else colocarPalo(e.clientX, e.clientY);
     stickId = e.pointerId;
     try { stickEl.setPointerCapture(e.pointerId); } catch (err) { /* el dedo sigue en el lienzo */ }
