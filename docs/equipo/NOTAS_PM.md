@@ -2,6 +2,13 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 05:48 AST · QA-247 en curso
+- **Tarea:** en inglés, la leyenda del mapa no deja «Aún cerrado». No toco `que_hacer.js` (QA-248, Dev 3), `piloto.js` (QA-246, Dev 1) ni `tienda.js`.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/minimapa.js` y `content/cap1/en.js` (solo esa frase).
+- **Cómo probarlo:** poner EN y abrir el mapa. La leyenda del candado dice «Still closed».
+- **Lo confirma:** minimapaTest y las 12. idiomaTest puede seguir rojo por QA-248. Las 12 de este HEAD las anotó Dev 3 en CG-126 (`99c6bd74`).
+
 ### Dev 1 · 11-nov · QA-246 en curso
 - **Tarea:** Ir de «Escuela de vuelo» no mueve a Vittata ni arranca la pista. QA-246 a QA-249 estaban libres. QA-247 es de Dev 2, QA-248 de Dev 3 y QA-249 de Dev 4.
 - **Commit:** este (la fila y las cuatro asignaciones).
