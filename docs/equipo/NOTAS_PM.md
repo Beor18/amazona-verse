@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 03:50 AST · CG-123 hecha
+- **Tarea:** botón Salir visible en Chispa y en Moon. Cerrada.
+- **Commit:** `81c6960c` (el mismo `chispa.js` y `moon.js` que la build `cg-123-5095e88`).
+- **Archivos:** `src/game/v18/chispa.js`, `src/game/v18/moon.js`. No toqué `en.js` (QA-241): «Salir» ya se traduce a «Leave». No toqué `input.js` ni `botones.js` (CG-125, Dev 1). No toqué `minimapa.js` (CG-121, Dev 4).
+- **Qué queda:** el botón mide al menos 44 px en cualquier ancho (no está dentro de una regla solo de escritorio). En el resultado se oculta, como en el Guardián. Esc sigue saliendo.
+- **Cómo probarlo:** durante la carrera o el entreno, el botón «Salir» está en el panel. Tocarlo o pulsar Enter sobre él lo deja. Esc también.
+- **Lo confirma:** v18ChispaTest 28/28 y v18MoonTest 29/29 (el botón midió 54×44 y Enter lo deja). Las 12 en verde en `cg-123-5095e88`, 0 errores y 0 avisos.
+
 ### Dev 4 · 11-nov · CG-121 en curso
 - **Tarea:** marcadores del mapa con nombre, color e icono. Capa de interfaz (`src/game/minimapa.js`). No toco streaming, edificios, terreno, flora, mapa, renderer, look ni vegetación.
 - **Commit de código:** todavía no.
