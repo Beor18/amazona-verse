@@ -32,7 +32,7 @@ window.AVV18Reparar = function (G) {
   function avisarPuerto() {
     if (pistaPuerto || !enCap1() || reparado()) return false;
     if (G.pausa && G.pausa.activa && G.pausa.activa()) return false;
-    if (G.ui && (G.ui.cardOpen || G.ui.overlayOpen)) return false;
+    if (G.ui && (G.ui.cardOpen || (G.ui.overlayOpen && G.ui.overlayOpen()))) return false;
     if (G.dialogo && G.dialogo.open && G.dialogo.open()) return false;
     pistaPuerto = true;
     toast(PISTA_PUERTO, 6500);
@@ -547,6 +547,9 @@ window.AVV18Reparar = function (G) {
       const igual = (a, b) => { if (a.length !== b.length) return false; for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false; return true; };
       check('Roto por defecto: estado, tablas del centro ocultas y el piso no sostiene',
         estado() === 'roto' && igual(idx(), P.rotoIdx) && !igual(idx(), P.idx0) && P.piso.when() === false);
+      if (G.dialogo && G.dialogo.open && G.dialogo.open() && G.dialogo.clear) G.dialogo.clear();
+      if (G.ui && G.ui.cardOpen && G.ui.hideCard) G.ui.hideCard();
+      for (const id of ['creator', 'comic', 'end']) { const e = document.getElementById(id); if (e) e.hidden = true; }
       pistaPuerto = false; toasts.length = 0;
       const dijoPuerto = avisarPuerto();
       check('CG-124 · con el puente roto, desde el inicio, la pista abre el Puerto de La Mina con Tuerca, el Constructor y la Ingeniera',

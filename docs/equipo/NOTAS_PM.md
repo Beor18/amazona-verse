@@ -45,7 +45,6 @@
 - **Cómo probarlo:** Pausa → «Jugar en línea». Tab recorre Crear sala, el código, Unirme y Seguir jugando, y vuelve al primero. Esc o Seguir jugando devuelve el foco al botón de la pausa.
 - **Lo confirma:** enLineaTest 19/19. Las 12 en verde en `cg90-2f28ed9`, 0 errores y 0 avisos.
 - **Siguiente:** GT-13, el foco del Mercadito, de Construir y de la pesca.
-
 ### Dev 3 · 11-nov · CG-122 hecha
 - **Tarea:** Aterrizar no se cancela en táctil. Cerrada. EN CURSO fue `79bb152f`.
 - **Qué hace:** una vez empieza a bajar, Saltar y otro toque no lo sueltan. El botón dice «Aterrizando…», queda bloqueado hasta el suelo y, fuera del agua, es el de bajar. En el agua sigue Bucear, en el mismo sitio.
