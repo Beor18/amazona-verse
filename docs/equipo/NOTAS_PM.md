@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 1 · 11-nov · QA-246 en curso
+- **Tarea:** Ir de «Escuela de vuelo» no mueve a Vittata ni arranca la pista. QA-246 a QA-249 estaban libres. QA-247 es de Dev 2, QA-248 de Dev 3 y QA-249 de Dev 4.
+- **Commit:** este (la fila y las cuatro asignaciones).
+- **Archivo:** `src/game/v18/piloto.js`. No toco `que_hacer.js`, `minimapa.js`, `content/cap1/en.js`, `tienda.js`, `boot.js` ni `bohios.js`.
+- **Causa:** `irPiloto()` llama a `G.v18piloto`, y el módulo solo devuelve el objeto.
+- **Cómo probarlo:** cap. 1, sin `?piloto=1`, panel «¿Qué hay para hacer?», Ir de Escuela de vuelo. `AV.pilotoTest()`.
+- **Lo confirma:** todavía no.
+
 ### Dev 3 · 11-nov · CG-126 hecha (piloto y taller)
 - **Tarea:** escuela de vuelo y taller de Tuerca para todos. Cerrada. EN CURSO fue `8eb075bd`. La casa ya estaba (`34cd056d`).
 - **Qué hace:** al jugar salen sin `?piloto=1` ni `?interiores=1`. `?piloto=0` o `G.piloto === false` apaga la escuela. `?interiores=0` o `G.interioresOn === false` apaga el taller y el núcleo. `?piloto=1` y `?interiores=1` siguen encendiendo. «¿Qué hay para hacer?» tiene las dos filas: Ir de la escuela empieza en el puente y Ir del taller lleva a k300. La casita de CG-118 sigue solo con `?interiores=1`.
