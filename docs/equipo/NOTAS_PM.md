@@ -7,7 +7,7 @@
 - **Qué hace:** al jugar salen sin `?piloto=1` ni `?interiores=1`. `?piloto=0` o `G.piloto === false` apaga la escuela. `?interiores=0` o `G.interioresOn === false` apaga el taller y el núcleo. `?piloto=1` y `?interiores=1` siguen encendiendo. «¿Qué hay para hacer?» tiene las dos filas: Ir de la escuela empieza en el puente y Ir del taller lleva a k300. La casita de CG-118 sigue solo con `?interiores=1`.
 - **Archivos:** `src/boot.js` (las dos cargas), `src/game/v18/piloto.js`, `src/game/v18/taller_tuerca.js`, `src/game/interiores.js`, `src/ui/que_hacer.js`, `content/cap1/en.js`. No toqué `historico.js` ni el bloque de CG-118.
 - **Cómo probarlo:** `AV.pilotoTest()`, `AV.tallerTuercaTest()` y `AV.queHacerTest()`.
-- **Lo confirma:** los checks CG-126 de apagado y las 12 de la build de este commit.
+- **Lo confirma:** pilotoTest 14/14 (sin bandera empieza; `piloto` en false apaga), tallerTuercaTest 9/9 (sin bandera se prepara; `interioresOn` en false no) y queHacerTest 10/10. Build `cg-126-5a06f3c5` (mismo código): las 12 en verde, 0 errores y 0 avisos de consola. El presupuesto de heap avisa 132,1 MB a los 9 s; no es un aviso de consola.
 
 ### Dev 3 · 11-nov · CG-126 hecha
 - **Tarea:** interiores del bohío para todos. Cerrada. EN CURSO fue `5574974c`.
