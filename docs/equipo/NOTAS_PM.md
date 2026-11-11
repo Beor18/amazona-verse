@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 03:55 AST · CG-90 en curso
+- **Tarea:** cotorras en línea con teclado. `en_linea.js` está libre. No toco `fisica.js` (CG-122, Dev 3), `combate.js` / `input.js` / `botones.js` (CG-125, Dev 1) ni `minimapa.js` (CG-121, Dev 4).
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/en_linea.js`.
+- **Qué falta:** que el panel retenga el Tab, que el foco entre en «Crear sala» y que al cerrar vuelva al botón que lo abrió.
+- **Cómo probarlo:** `AV.enLineaTest()`.
+- **Lo confirma:** enLineaTest y las 12. Las 12 de este juego, antes del arreglo, pasaron en `cg90-12-c0c910b`: 0 errores, 2 avisos de streaming (QA-230).
+
 ### Dev 3 · 11-nov · CG-122 en curso
 - **Tarea:** Aterrizar no se cancela en táctil. El botón dirá «Aterrizando…» y quedará bloqueado hasta el suelo. Saltar no cancela.
 - **Commit de código:** todavía no.
