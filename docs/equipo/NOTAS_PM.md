@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 1 · 11-nov · CG-125 en curso
+- **Tarea:** lo que falta del traspaso de Combate 2.0. Fila EN CURSO. Todavía sin código.
+- **Commit:** este (solo la fila).
+- **Qué falta:** el joystick no se puede mover (nace bajo el dedo, CG-40, `input.js` y `botones.js`). El aviso de misión (`#toast`) queda debajo del 2×2 en el móvil durante el duelo. No invento nombres de combos. No grabo video.
+- **Archivos previstos:** `src/engine/input.js`, `src/engine/botones.js`, el aviso del duelo. No toco `streaming.js` ni el modelo de Vittata.
+- **Cómo probarlo:** `AV.botonesTest()` y `AV.v18CombateTest()`, y las 12.
+- **Lo confirma:** todavía no.
+
 ### Dev 1 · 11-nov · CG-120 hecha
 - **Tarea:** panel «¿Qué hay para hacer?». Cerrada.
 - **Commit:** `59e0800c`. EN CURSO fue `8598eafe`.
