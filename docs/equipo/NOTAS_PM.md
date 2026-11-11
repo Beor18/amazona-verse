@@ -17,6 +17,15 @@
 - **Cómo probarlo:** cap. 1, sin `?piloto=1`, panel «¿Qué hay para hacer?», Ir de Escuela de vuelo. `AV.pilotoTest()`.
 - **Lo confirma:** todavía no.
 
+### Dev 3 · 11-nov · QA-248 en curso
+- **Tarea:** en Modo Maestro de ep2 a ep6, el panel «¿Qué hay para hacer?» sigue en español. QA-246 a QA-249 los añade Dev 1; esta es QA-248.
+- **Commit de código:** todavía no.
+- **Archivos:** solo `src/ui/que_hacer.js`. No toco `en.js`, `piloto.js`, `minimapa.js`, `tienda.js`, `boot.js` ni `bohios.js`.
+- **Qué era:** `L()` lee el idioma al pintar y nadie vuelve a pintar cuando el Aula cambia a EN. En el cap. 1 se nota al abrir el panel ya en inglés; en Maestro el diálogo queda con el primer pintado.
+- **Qué falta:** volver a pintar al cambiar el idioma, reutilizando las frases que ya tiene `L()`.
+- **Cómo probarlo:** `AV.queHacerTest()` y, si cabe, `AV.idiomaTest()`. «Aún cerrado» es QA-247.
+- **Lo confirma:** las 12 de `cg-126-5a06f3c5`, 0 errores y 0 avisos de consola.
+
 ### Dev 3 · 11-nov · CG-126 hecha (piloto y taller)
 - **Tarea:** escuela de vuelo y taller de Tuerca para todos. Cerrada. EN CURSO fue `8eb075bd`. La casa ya estaba (`34cd056d`).
 - **Qué hace:** al jugar salen sin `?piloto=1` ni `?interiores=1`. `?piloto=0` o `G.piloto === false` apaga la escuela. `?interiores=0` o `G.interioresOn === false` apaga el taller y el núcleo. `?piloto=1` y `?interiores=1` siguen encendiendo. «¿Qué hay para hacer?» tiene las dos filas: Ir de la escuela empieza en el puente y Ir del taller lleva a k300. La casita de CG-118 sigue solo con `?interiores=1`.
