@@ -870,6 +870,7 @@ window.AV_EN = {
  "Repara y activa el transmisor": "Repair and switch on the transmitter",
  "Reparar y activar el transmisor": "Repair and switch on the transmitter",
  "Reparar el puente: 2 maderas + 1 piedra": "Fix the bridge: 2 pieces of wood + 1 stone",
+ "Repara el puente de Villa Raíz y se abre el Puerto de La Mina. Allí están Tuerca, el Constructor y la Ingeniera.": "Fix the Villa Raíz bridge and La Mina Harbor opens. Tuerca, the Builder and the Engineer are there.",
  "Recoger madera del puente": "Pick up bridge wood",
  "+1 madera del puente ({}/{})": "+1 bridge wood ({}/{})",
  "Faltan materiales: 2 maderas y 1 piedra (tienes {} y {}). Gana el duelo de la explanada o junta madera y piedra por el bosque.": "Missing materials: 2 pieces of wood and 1 stone (you have {} and {}). Win the duel on the clearing or gather wood and stone in the forest.",

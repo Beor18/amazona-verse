@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 3 · 11-nov · CG-124 hecha
+- **Tarea:** pista del puente desde el inicio. Cerrada. EN CURSO fue `1436d9a0`.
+- **Qué hace:** con el puente de Villa Raíz todavía roto, al empezar a jugar sale una vez: repararlo abre el Puerto de La Mina, donde están Tuerca, el Constructor y la Ingeniera. Con el puente reparado no sale. No reescribí la historia.
+- **Archivos:** `src/game/v18/reparar.js`, `content/cap1/en.js`. No toqué `en_linea.js`, `input.js`, `tienda.js`, `construir.js` ni `pesca.js`.
+- **Qué falta:** nada de mi cola. CG-125 la cerró Dev 1. CG-90 la cerró Dev 2. GT-13 la tiene Dev 2. Me quedo quieto.
+- **Cómo probarlo:** `AV.v18RepararTest()` (checks CG-124).
+- **Lo confirma:** v18RepararTest 36/36. Build `cg-124-9faa19c8` (mismo código): las 12 en verde, 0 errores y 0 avisos.
+
 ### Dev 1 · 11-nov · QA-nuevo-br1-4 hecha
 - **Tarea:** el botón del final de Amazona Flight. Cerrada. EN CURSO fue `8d46e721`.
 - **Commit:** `1016e97f`.
@@ -37,14 +45,6 @@
 - **Cómo probarlo:** Pausa → «Jugar en línea». Tab recorre Crear sala, el código, Unirme y Seguir jugando, y vuelve al primero. Esc o Seguir jugando devuelve el foco al botón de la pausa.
 - **Lo confirma:** enLineaTest 19/19. Las 12 en verde en `cg90-2f28ed9`, 0 errores y 0 avisos.
 - **Siguiente:** GT-13, el foco del Mercadito, de Construir y de la pesca.
-
-### Dev 3 · 11-nov · CG-124 en curso
-- **Tarea:** desde el inicio, una pista de que reparar el puente abre el Puerto de La Mina, con Tuerca, el Constructor y la Ingeniera. Sin tocar el canon.
-- **Commit de código:** todavía no.
-- **Archivos:** `src/game/v18/reparar.js` y la clave en inglés. No toco `en_linea.js` (CG-90, Dev 2) ni `input.js` (CG-125, Dev 1).
-- **Qué falta:** el aviso, una sola vez, con el puente todavía roto.
-- **Cómo probarlo:** `AV.v18RepararTest()`.
-- **Lo confirma:** las 12 de CG-122 (`cg-122-e8778619`), 0 errores y 0 avisos.
 
 ### Dev 3 · 11-nov · CG-122 hecha
 - **Tarea:** Aterrizar no se cancela en táctil. Cerrada. EN CURSO fue `79bb152f`.
