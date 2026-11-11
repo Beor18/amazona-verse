@@ -509,6 +509,9 @@
       modo0 = G.interaccion.modo; G.interaccion.modo = modo;
       activo = true; fantasma.visible = true; vista.listo = false;
       hud(true); actualizar(); pintarHud();
+      const primero = hudEl && hudEl.querySelector('button[data-cl-tipo]');
+      const enfocarPieza = () => { if (activo && primero && primero.isConnected) try { primero.focus({ preventScroll: true }); } catch (e) { /* */ } };
+      enfocarPieza(); setTimeout(enfocarPieza, 0); // la pausa suelta el foco en body un instante después
       aviso('¡Arma tu rincón! Elige una pieza, gírala y toca Acción para ponerla.', 4200);
       return true;
     }
@@ -623,7 +626,7 @@
           else if (b.dataset.cl === 'foto') foto();
           else if (b.dataset.cl === 'quitar') quitar();
           else if (b.dataset.cl === 'listo') salir();
-          else if (b.dataset.cl === 'tienda') { if (G.tienda) G.tienda.abrir('construir'); return; }
+          else if (b.dataset.cl === 'tienda') { if (G.tienda) G.tienda.abrir('construir', b); return; }
           if (b.blur) b.blur(); // que Espacio y Enter vuelvan al juego
         });
         document.body.appendChild(hudEl);
@@ -733,6 +736,7 @@
         }
         check('Hay un sitio libre en tierra para probar', ok, `${S.pos.x.toFixed(1)}, ${S.pos.z.toFixed(1)}`);
         check('empezar() entra y toma la acción («Colocar»)', empezar() && activo && G.interaccion.modo === modo && modo.verbo === 'Colocar');
+        check('Al abrir, el foco entra en la primera pieza y no queda en body', !!hudEl && document.activeElement === hudEl.querySelector('button[data-cl-tipo]'));
         await espera(60);
         check('La barra de piezas se ve con las 7 de siempre (y las compradas) y la cuenta', !!hudEl && !hudEl.hidden && BASE.every(t => hudEl.querySelector('[data-cl-tipo="' + t + '"]')) && hudEl.querySelectorAll('[data-cl-tipo]').length === disponibles().length && /Piezas: 0\/\d+/.test(hudEl.querySelector('.cl-cuenta').textContent), hudEl && hudEl.querySelector('.cl-cuenta').textContent);
         const botonesA = [...hudEl.querySelectorAll('button')], hojaA = (document.getElementById('cl-estilo') || {}).textContent || '';

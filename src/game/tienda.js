@@ -304,11 +304,12 @@ window.AVTienda = function (G) {
     try { G.actores.applyWear(); } catch (e) { /* */ }
     try { if (look && window.AVShowcase && AVShowcase.status() === 'ready') AVShowcase.setLook(look, false); } catch (e) { /* */ }
   }
-  function abrir(o) {
+  function abrir(o, desde) {
     if (!disponible()) return false;
     css();
     if (!abierta()) {
-      foco = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;
+      const act = document.activeElement;
+      foco = (desde && desde.nodeType === 1) ? desde : (act && act !== document.body && act !== document.documentElement ? act : null);
       msg = ''; msgFalta = null; probando = ''; recien = '';
       anclar(true);
     }
@@ -330,11 +331,25 @@ window.AVTienda = function (G) {
     const card = $('card'); if (card) { card.setAttribute('aria-label', ariaLabel0 || 'Tarjeta'); card.setAttribute('aria-modal', 'false'); }
     try { if (G.creador && $('creator') && !$('creator').hidden) G.creador.renderSlots(); } catch (e) { /* */ }
     const f = foco; foco = null;
-    if (f && document.contains(f) && f.getClientRects().length) try { f.focus({ preventScroll: true }); } catch (e) { /* */ }
+    if (f && f.isConnected) {
+      const pop = f.closest && f.closest('[popover]');
+      try { if (pop && !pop.matches(':popover-open')) pop.showPopover(); } catch (e) { /* sin popover */ }
+      try { f.focus({ preventScroll: true }); } catch (e) { /* */ }
+    }
   });
   // Otra tarjeta que pisa la del Mercadito (showCard de otro módulo) también la cierra
   const cardEl = $('card');
   if (cardEl) {
+    cardEl.addEventListener('keydown', ev => {
+      if (!abierta() || ev.key !== 'Tab') return;
+      const lista = [...cardEl.querySelectorAll('button, [href], input, select, textarea')].filter(el => !el.disabled && el.tabIndex !== -1 && el.getClientRects().length);
+      if (!lista.length) return;
+      ev.preventDefault();
+      let i = lista.indexOf(document.activeElement);
+      if (i < 0) i = ev.shiftKey ? 0 : -1;
+      const j = ev.shiftKey ? (i <= 0 ? lista.length - 1 : i - 1) : (i + 1) % lista.length;
+      try { lista[j].focus({ preventScroll: true }); } catch (e) { /* */ }
+    });
     cardEl.addEventListener('keydown', ev => {
       if (!abierta() || (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight')) return;
       const b = ev.target.closest && ev.target.closest('[data-tn="cat"]'); if (!b) return;
@@ -394,14 +409,14 @@ window.AVTienda = function (G) {
       const b = document.createElement('button'); b.className = 'btn tile'; b.id = 'b-tienda'; b.type = 'button';
       b.dataset.icon = 'tienda'; b.style.setProperty('--icon', ICONO); b.setAttribute('popovertarget', 'pause'); b.setAttribute('popovertargetaction', 'hide');
       b.textContent = 'Mercadito'; b.setAttribute('aria-label', 'Mercadito');
-      b.addEventListener('click', () => setTimeout(() => abrir('pausa'), 0));
+      b.addEventListener('click', () => { const el = b; setTimeout(() => abrir('pausa', el), 0); });
       const ref = $('b-save'); grid.insertBefore(b, ref && ref.parentNode === grid ? ref : null);
     }
     const slots = $('p-slots');
     if (slots && !$('p-tienda')) {
       const b = document.createElement('button'); b.className = 'btn secondary'; b.id = 'p-tienda'; b.type = 'button';
       b.dataset.icon = 'tienda'; b.textContent = TXT.abrirCreador;
-      b.addEventListener('click', () => abrir('creador'));
+      b.addEventListener('click', () => abrir('creador', b));
       slots.parentNode.insertBefore(b, slots);
     }
   }
@@ -535,6 +550,18 @@ window.AVTienda = function (G) {
       const bConj = $('tienda').querySelector('[data-tn="conjunto"]'); if (bConj) bConj.click();
       check('«Ponerme el traje completo» viste las 4 piezas', !!bConj && ROPA.filter(x => x.conjunto === 'pescador').every(puesta), JSON.stringify(S.wear));
       check('Esc cierra el Mercadito (como toda tarjeta)', (dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })), !G.ui.cardOpen && !abierta()));
+      const ancla = $('b-tienda');
+      if (ancla) ancla.focus();
+      const entro = abrir('prueba', ancla) && $('card').contains(document.activeElement) && document.activeElement !== document.body;
+      const listaF = $('card') ? [...$('card').querySelectorAll('button')].filter(el => !el.disabled && el.getClientRects().length) : [];
+      const ultF = listaF[listaF.length - 1];
+      if (ultF) ultF.focus();
+      const tabF = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+      if (ultF) ultF.dispatchEvent(tabF);
+      check('Al abrir, el foco entra en el Mercadito y Tab no sale de la tarjeta', entro && !!ultF && tabF.defaultPrevented && $('card').contains(document.activeElement));
+      dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      check('Esc devuelve el foco al botón que lo abrió', !!ancla && document.activeElement === ancla);
+      try { const pop = ancla && ancla.closest('[popover]'); if (pop && pop.matches(':popover-open')) pop.hidePopover(); } catch (e) { /* sin popover */ }
       // 5. Inglés: todos los textos tienen su entrada en content/cap1/en.js
       try {
         const en = await (await fetch('content/cap1/en.js', { cache: 'no-store' })).text(), falta = [];
