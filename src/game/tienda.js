@@ -514,6 +514,7 @@ window.AVTienda = function (G) {
       const noms = [...$('tienda').querySelectorAll('button')].filter(b => !((b.getAttribute('aria-label') || b.textContent || '').trim()));
       check('Cada botón tiene nombre, el foco se ve y reducir movimiento apaga la animación', !noms.length && /button:focus-visible/.test(hojaT) && /prefers-reduced-motion/.test(hojaT), noms.map(b => b.dataset.tn).join(','));
       bPie.focus(); bPie.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      bPie.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft', bubbles: true }));
       check('Con el teclado, la flecha cambia de Piezas a Ropa', document.activeElement === bRopa && bRopa.getAttribute('aria-pressed') === 'true' && bPie.getAttribute('aria-pressed') === 'false');
       const bPro = $('tienda').querySelector('[data-tn="probar"][data-id="sombrero_rio"]');
       check('La ropa sin comprar tiene «Probar»', !!bPro && bPro.textContent.trim() === 'Probar', bPro ? bPro.textContent : 'sin botón');
