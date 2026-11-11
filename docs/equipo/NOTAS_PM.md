@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 3 · 11-nov · CG-122 en curso
+- **Tarea:** Aterrizar no se cancela en táctil. El botón dirá «Aterrizando…» y quedará bloqueado hasta el suelo. Saltar no cancela.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/engine/fisica.js` (la lógica) y el texto del botón. No toco `input.js` ni `botones.js`: los tiene Dev 1 en CG-125. No muevo los botones.
+- **Qué falta:** que Saltar y otro toque no suelten el aterrizaje, y que el botón lo diga.
+- **Cómo probarlo:** `AV.movementTest()` y `AV.tactilTest()`.
+- **Lo confirma:** las 12 de `c4cab427` (mismo parche que `qa-241-a4bd3b66`), 0 errores y 0 avisos.
+
 ### Dev 4 · 11-nov · CG-121 hecha
 - **Tarea:** marcadores del mapa con nombre, color e icono. Cerrada. Solo `src/game/minimapa.js`.
 - **Commit:** `ab746d98`. EN CURSO fue `d66cbd7f`.
