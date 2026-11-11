@@ -23,14 +23,14 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 | GT-03 | hecha · 60 fps en todo (spawn/vuelo/pueblo/duelo, con y sin escuela, Chromebook ×4) | **Modo Escuela (QA-181) con GPU real:** en el sitio publicado, perfil Chromebook (DevTools: CPU ×4 de ralentización, ventana 1366×768) con `?calidad=bajo&escuela=1&fps=1`: FPS medio y peor cuadro 60 s en el spawn y 60 s volando; lo mismo sin `escuela=1`. Una línea por medida. |
 | GT-04 | hecha · duelo 60 fps con y sin combate2, escritorio y móvil, 0 errores | **Combate 2.0 con GPU real:** duelo completo con y sin `?combate2=1` (escritorio y perfil móvil 390×844): FPS medio/peor cuadro, 0 errores, y cualquier cosa que se vea rara (anotar con captura). |
 | GT-05 | continua · 10-nov: `0095a89` verificado (vuelo/duelo 60 fps, pesca, Construir y Mercadito en verde, 0 errores) | **Verificación del sitio tras cada publicación** (cada vez que en `TAREAS_WEB.md` aparezca «PUBLICADO»): abrir el juego en el navegador real, partida nueva, volar 1 min, pesca 1 ronda, Construir 1 pieza, Mercadito, duelo de entreno; 0 errores de consola. Una línea por publicación. |
-| GT-06 | libre | **Interiores (V18.4) cuando la coordinadora avise:** con `?interiores=1`, entrar/salir del bohío de Villa Raíz, colocar un mueble, salir, recargar y comprobar que sigue; FPS dentro/fuera. |
-| GT-07 | parcial · FPS 58-60 en Pixel 7, Galaxy S5 ×4 e iPhone 13, 0 errores; la textura de las Atalayas NO quedó verificada | **Android/iPhone emulados con GPU real** (perfil Pixel 7, Galaxy S5 con CPU ×4, iPhone 13): Atalayas con textura (no cajas beige), sin cuadraditos, nitidez; FPS. |
+| GT-06 | hecha · en el sitio NO se puede entrar al bohío jugando (sin «Entrar», vano sin ensanchar) y dentro Acción saca en vez de «Poner banco»; por API el banco se guarda y vuelve tras recargar; 60 fps dentro y fuera, 0 errores | **Interiores (V18.4) cuando la coordinadora avise:** con `?interiores=1`, entrar/salir del bohío de Villa Raíz, colocar un mueble, salir, recargar y comprobar que sigue; FPS dentro/fuera. |
+| GT-07 | hecha · Atalayas con textura (madera, piedra, lonas) en Pixel 7, Galaxy S5 ×4 e iPhone 13, sin cajas beige ni cuadraditos; vuelo 60 / 51 / 60 fps, 0 errores | **Android/iPhone emulados con GPU real** (perfil Pixel 7, Galaxy S5 con CPU ×4, iPhone 13): Atalayas con textura (no cajas beige), sin cuadraditos, nitidez; FPS. |
 | GT-08 | hecha · 143 extra: 126 verdes; 17 rojas → 11 eran de orden/carga, 6 reales → QA-240…243 | **Baterías extra completas** (`test.sh … --extra`) en HEAD con GPU real: lista de rojos con sha → BUGS.md (prioridad según impacto). Distinguir rojo real de rojo de tiempo/carga repitiendo una vez lo que falle. |
 | GT-09 | hecha · Safari 26.6.2: 47-58 fps, pesca/Construir/Mercadito/En línea en verde, 0 errores | **Safari de verdad** (si la máquina es Mac: es lo más parecido al iPhone): abrir el sitio en Safari, partida nueva, volar, pesca, Construir, Mercadito, duelo con y sin `?combate2=1`, cotorras en línea; anotar errores de la consola de Safari, lo que se vea distinto a Chrome y FPS con `?fps=1`. |
 | GT-10 | hecha (Chrome↔Chrome) · se ven en 1,3 s, mensajes cada ~253 ms, salida vista en 2,4 s, 0 errores; Safari↔Chrome sin concluir | **Cotorras en línea reales:** Chrome y Safari (o dos ventanas) en la misma sala; moverse, saludar, gritar (¿se ve el pico?), salir; latencia aproximada y 0 errores. |
 | GT-11 | hecha · los 6 caps arrancan, se juegan a 59-60 fps y guardan en el sitio publicado, 0 errores; avance completo = temporadaMovilTest 172/173 en local | **Recorrido de los 6 capítulos** en el sitio publicado con GPU real (con `AV.temporadaMovilTest` si existe, o a mano lo esencial de cada capítulo): que cada capítulo arranque, se avance y se guarde. Un renglón por capítulo. |
 | GT-12 | hecha · 20 min: memoria estable (heap ~460-470 MB, 456 geometrías, 184 texturas desde el min 3), 60 fps de principio a fin, 0 errores | **Sesión larga de 20 min** con GPU real (volar, pesca, Construir, duelo, Patrulla): memoria del heap y de la GPU al minuto 1, 10 y 20 (`performance.memory`, `?fps=1`), FPS al principio y al final. ¿Crece sin parar? |
-| GT-13 | parcial · teclado: accesibilidadTest 97/97 y controlesTest en verde en el sitio; VoiceOver pendiente (necesita a Kelvin delante) | **Solo teclado y lector de pantalla** (VoiceOver en Mac): menú, pausa, opciones, pesca, Construir, Mercadito; anotar lo que no se puede usar. |
+| GT-13 | parcial+ · teclado y árbol de accesibilidad: 0 controles sin nombre en HUD, pausa, opciones, Mercadito, Construir y pesca; foco se escapa del Mercadito y se pierde al cerrarlo; VoiceOver real sigue pendiente (Kelvin delante) | **Solo teclado y lector de pantalla** (VoiceOver en Mac): menú, pausa, opciones, pesca, Construir, Mercadito; anotar lo que no se puede usar. |
 | GT-14 | hecha · 1.ª vez: jugable en 9,2 s (16,6 MB) sin límite y en 41,2 s (6,4 MB) con 4G lenta; con caché la portada sale en 0,7 / 2,1 s | **Carga real** desde tu red: tiempo hasta poder jugar (primera vez y con caché), MB descargados (DevTools → Network), en computadora y emulando 4G lenta. |
 | GT-15 | continua | **Cuando la cola esté vacía:** cada vez que llegue un commit «CG-… hecha» de Grok en `TAREAS_CURSOR_GROK.md`, prueba rápida de esa función con GPU real (abrir, usar, 0 errores) y una línea aquí. Así nunca te quedas sin trabajo. |
 
@@ -228,3 +228,64 @@ Kelvin, 10-nov: «tengo [Claude] en el terminal; dale los trabajos de verificaci
 
 📣 Terminal → coordinadora · 10-nov 13:16 AST · GT-15 ronda 1 · CG-113/117 con GPU real: bohíos 38/38, interiores 10/10, kit 8/8, taller de Tuerca 8/8, 0 errores; con `?interiores=1` desde la URL, «Acción dice Entrar» sale rojo (dudoso, lo miro en GT-06) · cola vacía: quedo en GT-15 y GT-05 esperando el PUBLICADO de b09747e · pendientes que necesitan a Kelvin o a la coordinadora: VoiceOver (GT-13), Safari↔Chrome en línea a mano (GT-10), Atalayas visuales (GT-07), GT-06
 
+
+**Reinicio de la Mac (10-nov ~20:50 AST).** Sesión nueva del carril Terminal. Las sondas viejas estaban en un temporal y se perdieron. Rehice una sola, fuera del repo (`gt_sonda.py` en el scratchpad), con `avtest.py` y `look_capturas.py`. Mismo método: Chrome 157 sin interfaz, ANGLE Metal sobre el M4 (GPU real), `nice -n 15` sin `taskpolicy -b`, partida nueva en el sitio publicado (`HEAD 0095a8975126`).
+
+**GT-06 · Interiores, casa del bohío con `?interiores=1` (10-nov ~21:00 AST, sitio `0095a89`)**
+- Casa elegida por el juego: `bohio_redondo@kelvin_aldea_rio_este#1` (Villa Raíz, datos `bohio_villa`).
+- **Jugando, no se puede entrar.** En la puerta, a 1 m, no hay aviso «Entrar»: `casa-entrar` no está registrado, `interaccion.nearest()` da null y Acción no hace nada. Andando 2,5 s con W hacia el vano, Vittata se queda a ~2 m del umbral.
+  - Causa en el código (lo leo, no lo toco): en `src/game/bohios.js`, `listoCasa()` (registra Entrar, Salir, Poner banco y Mover), `ensanchar()` (abre el paso a 0,64 m) y `mueble()` solo se llaman desde `test()`. Nada del juego los llama. Por eso `bohiosTest` da 38/38 y la casa no funciona al jugar.
+- **Dentro, Acción sale en vez de «Poner banco».** Entré con `G.bohios.entrar()` y `listoCasa()` a mano. `casa-salir` y `casa-poner` están en el mismo punto (distancia 0,00) y `nearest()` elige `casa-salir`, que se registra antes. El aviso dice «Salir» y Acción saca a Vittata, así que «Poner banco» y «Mover» no se alcanzan con Acción. La prueba no lo ve porque llama a `poner.use()` directamente. Además, la hamaca, la tinaja y el fogón del bohío entran en el mismo radio.
+- **El guardado funciona (por API).** `colocar('banco',0.4,0.2,1)` lo dibuja (1 pieza) y lo escribe en `amazonaverse.save`. Tras salir, guardar y recargar la página, `S.interiores` vuelve con el banco y al entrar se dibuja 1 pieza.
+- FPS (escritorio 1440×900, «alto», 20 s cada uno, peor cuadro):
+  - en la puerta: 60 fps · 16,8 ms · 98 draw calls
+  - dentro: 60 fps · 16,8 ms · 98 draw calls
+  - fuera tras salir: 60 fps · 16,8 ms · 89 draw calls
+  - 0 errores de consola en las dos corridas.
+- Para BUGS.md (no la toco: Kelvin pidió commit solo de este archivo). Propongo 2 filas a la coordinadora:
+  - **(a) media:** con `?interiores=1` la casa del bohío no se puede usar jugando, porque `listoCasa()` y `ensanchar()` solo corren en `test()`. Bloquea CG-126 («encender lo terminado»).
+  - **(b) media:** dentro, `casa-salir` le gana a `casa-poner` en el mismo punto, así que Acción nunca pone ni mueve el banco. Haría falta separarlos o dar prioridad a poner y mover.
+
+📣 Terminal → coordinadora · 10-nov 21:30 AST · GT-06 hecha · en el sitio con `?interiores=1` la casa del bohío NO se puede usar jugando: sin «Entrar» en la puerta (listoCasa/ensanchar solo corren en test()) y, dentro, Acción sale en vez de «Poner banco» (Salir y Poner en el mismo punto); por API el banco se guarda y vuelve tras recargar; 60 fps dentro y fuera, 0 errores; propongo 2 filas QA (a) y (b) arriba, ojo antes de CG-126 · siguiente: GT-07
+
+**GT-07 · Atalayas en Android y iPhone emulados, cierre (10-nov ~21:10 AST, sitio `0095a89`)**
+- Encuadre: las 11 `torre_vigia` de `kelvin_aldea_lomas` sacadas de `escenaKelvin` (centro -87,2, 89,8). Streaming terminado y cámara puesta a mano, como en `look_capturas.py`: una toma de lejos y otra a 12 m de una torre.
+- Resultado visual: **con textura en los 4 perfiles** (escritorio, Pixel 7, Galaxy S5 ×4 e iPhone 13). Empalizada de madera con veta, rocas talladas, plataforma de tablas y lonas rosadas. **Ni cajas beige ni cuadraditos.** Nitidez bien a DPR 1,5-1,75.
+- Vuelo 20 s sobre las Atalayas girando la cámara (FPS · peor cuadro · draw calls · calidad):
+  - Pixel 7 (412×915): 60 fps · 66,7 ms · 95 · «alto» DPR 1,75
+  - Galaxy S5 con CPU ×4 (360×640): **51 fps · 300 ms** · 94 · «medio» DPR 1,5 (en el spawn de la mañana daba 58)
+  - iPhone 13 (390×844): 60 fps · 66,6 ms · 61 · «bajo» DPR 1,75
+  - Escritorio: 58 fps · 183 ms · 134 · «alto»
+- 0 errores de consola en todos.
+- Capturas fuera del repo (Kelvin pidió commit solo de este archivo): `gt07/{escritorio,pixel7,s5,iphone13}/atalaya*.png` en el scratchpad de esta sesión. Si las quieren en `docs/img/gt-07/`, que me lo digan.
+
+📣 Terminal → coordinadora · 10-nov 21:30 AST · GT-07 hecha · Atalayas con textura (madera, piedra, lonas), sin cajas beige ni cuadraditos, en Pixel 7, Galaxy S5 ×4 e iPhone 13; volando sobre ellas 60 / 51 / 60 fps (S5 ×4 con peor cuadro de 300 ms), 0 errores · siguiente: GT-13
+
+**GT-13 · teclado y lector de pantalla, segunda pasada (10-nov ~21:20 AST, sitio `0095a89`, escritorio)**
+- VoiceOver real **sigue sin hacerse**: habla en voz alta y toma el control del Mac de Kelvin, y Kelvin no está delante.
+- En su lugar medí lo que lee un lector de pantalla: el árbol de accesibilidad de Chrome (`Accessibility.getFullAXTree`), con teclas reales (`Input.dispatchKeyEvent`).
+- Controles sin nombre accesible: **0** en todas las pantallas.
+  - HUD: 5 controles
+  - Pausa: 60 controles, diálogo «Pausa»
+  - Opciones: 69 controles; 7 en el grupo Opciones, todos con etiqueta
+  - Mercadito: 16 controles, diálogo «Mercadito del río»
+  - Construir: 20 controles
+  - Pesca: 10 controles
+  - Hay regiones vivas (`aria-live`) en todas (2-8).
+- Teclado:
+  - Esc abre la pausa con el foco en «Seguir jugando».
+  - El Tab de la pausa sigue un orden lógico: Retos → … → Pesca → Mi personaje → Mercadito → Guardar → … → ES/EN → Texto corto → Leer en voz alta → tamaños → Alto contraste → Subtítulos → Modo relajado.
+  - En Construir, Tab llega a las 7 piezas y a Deshacer, Girar, Cuadritos, Foto y Quitar.
+  - En la pesca, Tab llega a Apuntar izquierda y derecha, Lanzar y Salir.
+- **Lo que falla, de poca gravedad:**
+  - (c) el Mercadito no retiene el foco. Con Tab sale del diálogo a los botones del HUD de detrás (Controles, Diario, Gestos, Construir…) y luego vuelve.
+  - (d) al cerrar el Mercadito con Esc, el foco queda en `body` y no vuelve al botón que lo abrió.
+  - (e) al abrir Construir y la pesca, el foco queda en `body`: hay que pulsar Tab varias veces para llegar a las piezas o a Lanzar.
+  - Además, en Construir un solo Esc cierra Construir y abre la pausa a la vez. Puede ser a propósito.
+- 0 errores de consola.
+
+📣 Terminal → coordinadora · 10-nov 21:30 AST · GT-13 parcial+ · árbol de accesibilidad: 0 controles sin nombre en HUD, pausa, opciones, Mercadito, Construir y pesca, diálogos con nombre y regiones vivas; el teclado llega a todo; menores: el Mercadito no retiene el foco ni lo devuelve al cerrar, y Construir y la pesca abren con el foco en body; VoiceOver real sigue pendiente de Kelvin · siguiente: GT-15
+
+**GT-15 · ronda 2 (10-nov 21:28 AST).** Desde mi ronda 1 no hay ningún commit «CG-… hecha» nuevo: el único commit nuevo es `a51617fa` (SiteGround), y Grok sigue en la PAUSA de la migración. **GT-05:** el sitio sigue en `HEAD 0095a8975126` y `b09747e` todavía no tiene PUBLICADO, así que no hay nada nuevo que verificar.
+
+📣 Terminal → coordinadora · 10-nov 21:30 AST · GT-15 ronda 2 · sin CG nuevas que probar; el sitio sigue en 0095a89 (b09747e sin PUBLICADO) · quedo en GT-15 y GT-05 · pendientes que necesitan a Kelvin: VoiceOver (GT-13) y Safari↔Chrome en línea a mano (GT-10)
