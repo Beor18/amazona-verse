@@ -2,6 +2,15 @@
 
 ## TRASPASO
 
+### Dev 4 · 11-nov · CG-121 hecha
+- **Tarea:** marcadores del mapa con nombre, color e icono. Cerrada. Solo `src/game/minimapa.js`.
+- **Commit:** `ab746d98`. EN CURSO fue `d66cbd7f`.
+- **Qué hace:** cada misión usa el nombre de su Acción. La Pesca es un pez. La Patrulla es un ojo. Puerto, Atalayas, muelle, fiesta y la Sombra (si hay sitio de duelo) salen con candado y una pista corta mientras no están listos. Al tocar una marca, el mapa dice el nombre.
+- **Archivos:** `src/game/minimapa.js`. No toqué streaming, edificios, terreno, flora, renderer, look ni vegetación. No toqué `boot.js`.
+- **Qué falta:** CG-125 la tiene Dev 1. CG-123 ya la cerró Dev 2. Lo siguiente libre de mi lista, si no choca, es el resto de CG-90.
+- **Cómo probarlo:** `AV.minimapaTest()`. Abrir el mapa y tocar la Pesca.
+- **Lo confirma:** minimapaTest 49/49. Build `cg121-ab746d98`: las 12 en verde, 0 errores. Los avisos son de edificios y de streaming (QA-230), de Kimi. El cierre se volvió a medir en `cg121-cierre-e0b9ae6d`: las 12 en verde, 0 errores.
+
 ### Dev 3 · 11-nov · QA-241 hecha
 - **Tarea:** «¡Te toca!» y «Viste algo nuevo en la ciudad…» en inglés. Cerrada. EN CURSO fue `71a4f423`.
 - **Qué era:** con el juego en EN, «¡Te toca!» no tenía clave y «pichón» se cambiaba solo por «chick» dentro de la frase en español.
@@ -16,13 +25,6 @@
 - **Qué queda:** el botón mide al menos 44 px en cualquier ancho (no está dentro de una regla solo de escritorio). En el resultado se oculta, como en el Guardián. Esc sigue saliendo.
 - **Cómo probarlo:** durante la carrera o el entreno, el botón «Salir» está en el panel. Tocarlo o pulsar Enter sobre él lo deja. Esc también.
 - **Lo confirma:** v18ChispaTest 28/28 y v18MoonTest 29/29 (el botón midió 54×44 y Enter lo deja). Las 12 en verde en `cg-123-5095e88`, 0 errores y 0 avisos.
-
-### Dev 4 · 11-nov · CG-121 en curso
-- **Tarea:** marcadores del mapa con nombre, color e icono. Capa de interfaz (`src/game/minimapa.js`). No toco streaming, edificios, terreno, flora, mapa, renderer, look ni vegetación.
-- **Commit de código:** todavía no.
-- **Qué falta:** que las misiones lleven nombre, la Pesca un pez, la Patrulla un ojo, y que al tocar una marca se lea el nombre.
-- **Cómo probarlo:** `AV.minimapaTest()`.
-- **Lo confirma:** minimapaTest y las 12, 0 errores.
 
 ### Dev 2 · 11-nov 03:39 AST · CG-123 en curso
 - **Tarea:** botón Salir visible en Chispa y en Moon, en PC y en táctil. Dev 1 tiene CG-125 (`input.js`, `botones.js`): no los toco. No toco `content/cap1/en.js` (QA-241, Dev 3): «Salir» ya se traduce a «Leave».
