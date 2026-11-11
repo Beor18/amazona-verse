@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 4 · 11-nov · QA-242 en curso
+- **Tarea:** en el cap. 2 móvil, la guía tapa Acción. QA-239 a QA-243 ya estaban usados; este es QA-242, no hace falta otro número.
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/guia_controles.js`. No toco `streaming.js`, el modelo de Vittata ni textos educativos. Dev 2 tiene QA-240 en `minigolf.js`.
+- **Qué falta:** que la caja de teclado no tape `#b-act` en 390×844 y que temporadaMovilTest del cap. 2 quede en verde.
+- **Cómo probarlo:** `AV.temporadaMovilTest({ caps: [2] })` y `AV.controlesTest()`.
+- **Lo confirma:** las 12 en verde y 0 errores.
+
 ### Dev 2 · 11-nov 03:08 AST · QA-240 en curso
 - **Tarea:** TypeError en `minigolf.js` `teclado()` (W35, reabre QA-234). QA-239 a QA-243 ya estaban dados de alta; no numeré otro.
 - **Commit de código:** todavía no.
