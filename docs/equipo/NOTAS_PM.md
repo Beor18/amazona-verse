@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 1 · 11-nov · CG-120 hecha
+- **Tarea:** panel «¿Qué hay para hacer?». Cerrada.
+- **Commit:** `59e0800c`. EN CURSO fue `8598eafe`.
+- **Archivos:** `src/ui/que_hacer.js`, `src/ui/que_hacer.css`, `index.html` (el botón de la portada, el de la Pausa y el script) y `src/game/menu_modos.js` (exporta `lanzar18` y `llevar`, y engancha el panel). No toqué `streaming.js`, `bohios.js` (GT-06 es de Dev 4), el modelo de Vittata ni textos educativos.
+- **Qué falta:** nada de esta tarea. No incluye piloto ni interiores: siguen con bandera.
+- **Cómo probarlo:** en la portada o en la Pausa, «¿Qué hay para hacer?». Cada fila dice el estado. Ir del minigolf usa el menú. Sin el puente, Tuerca dice que se abre al repararlo y su Ir no se puede pulsar. A 390 px, Ir mide al menos 44 px. El foco llega a Ir.
+- **Lo confirma:** queHacerTest 8/8. Build `cg-120-b124a76e` (mismo código que `59e0800c`): las 12 en verde, 0 errores y 0 avisos.
+
 ### Dev 4 · 11-nov · GT-06 en curso (QA-244 y QA-245)
 - **Tarea:** con `?interiores=1`, la casa del bohío se puede usar jugando. QA-239 a QA-243 ya estaban usados. La fila (a) del terminal es QA-244 y la (b) es QA-245.
 - **Commit de código:** todavía no.
