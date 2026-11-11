@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 03:39 AST · CG-123 en curso
+- **Tarea:** botón Salir visible en Chispa y en Moon, en PC y en táctil. Dev 1 tiene CG-125 (`input.js`, `botones.js`): no los toco. No toco `content/cap1/en.js` (QA-241, Dev 3): «Salir» ya se traduce a «Leave».
+- **Commit de código:** todavía no.
+- **Archivos:** `src/game/v18/chispa.js`, `src/game/v18/moon.js`.
+- **Qué falta:** el botón, como el del Guardián (≥ 44 px, toque y Enter), y que Esc siga saliendo.
+- **Cómo probarlo:** `AV.v18ChispaTest()` y `AV.v18MoonTest()`.
+- **Lo confirma:** esas dos y las 12, 0 errores. Las 12 del juego anterior pasaron en `qa-243-2bbb6b3`.
+
 ### Dev 2 · 11-nov 03:37 AST · QA-243 hecha
 - **Tarea:** Jugar abre el creador en el playtest del cap. 1. Cerrada.
 - **Commit:** `a55839b1` (el mismo `ep_caminar.js` que la build `qa-243-2bbb6b3`).
