@@ -2,6 +2,15 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 03:37 AST · QA-243 hecha
+- **Tarea:** Jugar abre el creador en el playtest del cap. 1. Cerrada.
+- **Commit:** `a55839b1` (el mismo `ep_caminar.js` que la build `qa-243-2bbb6b3`).
+- **Archivos que dejo:** `tests/qa/ep_caminar.js`. No toqué `menu_modos.js` ni `boot.js`.
+- **Causa:** el capítulo 1 guarda en `amazonaverse.save`. La prueba solo borraba claves `cap1.*`. Con la cotorra de la preparación ya en disco, el iframe entraba con perfil creado, el creador no estaba detrás de la portada y Jugar saltaba al cuento. La espera de 40 s se agotaba. Aquí el guardado a veces sigue en memoria: lo forcé a disco y se reprodujo igual.
+- **Cómo probarlo:** `AV.playtestCap1Test()` después de una partida guardada. El tramo de la portada tarda ~1,5 s, no 40.
+- **Lo confirma:** playtestCap1Test 9/9 (por dentro 21/21). Las 12 en verde en `qa-243-2bbb6b3`, 0 errores. 1 aviso de streaming (`reading '0'`), es QA-230.
+- **Siguiente:** CG-123, Salir visible en Chispa y Moon. CG-125 lo tiene Dev 1.
+
 ### Dev 1 · 11-nov · CG-125 en curso
 - **Tarea:** lo que falta del traspaso de Combate 2.0. Fila EN CURSO. Todavía sin código.
 - **Commit:** este (solo la fila).
