@@ -82,6 +82,11 @@ AVE.module('streaming', function (G) {
     // F2.1: 45/70/90 m eran el mínimo (Kelvin, 26-oct: no se recorta el kit), no el tope.
     // Media 90 m y alta 120 m. Baja se queda en 45 m: el móvil modesto no carga más mallas.
     hd: { bajo: 45, medio: 90, alto: 120 },
+    // QA-239 (11-nov, presupuesto de descarga inicial 28 MB; la Mac midió 45,06): _hd «pesado» = su manifiesto pasa
+    // de estos KB (complejo_ruinas_hd400 7,2 MB, templo_mediano_h_hd 6,0, templo_grande_d_hd 4,5) o trae texturas
+    // propias fuera del atlas (kit.original: hasta 26 JPEG de tex_original/, ~11 MB). Con el jugador quieto, la
+    // pantalla de carga no los baja salvo que estén encima (CFG.precarga); entran al primer paso, como el kit lejano.
+    hdPesadoKB: 2000,
     hdGrande: 10,                                  // m de radio: los grandes usan su _hd también más allá del LOD (los pequeños, el lejano: menos draw calls)
     // kelvin_ruinas_yunque y _2 (el conjunto de torres de la izquierda, sobre la roca).
     // Desde el aire la ciudad mide más que el _hd general y si no se ve la silueta beige.
@@ -561,13 +566,21 @@ AVE.module('streaming', function (G) {
   // arranque suben al 4096 real donde el tope lo exige (atlasMax() === 0). Si un parse de GLB aterriza
   // justo antes del barrido, su material ya está en mats y también lo sube; los posteriores nacen con el
   // 4096 (kit «listo»). En móvil/bajo no se pide nada: la vista final queda idéntica en todas las calidades.
-  setTimeout(() => {
-    if (atlasMax() !== 0) return;
-    for (const k in mats) if (/^AV_HD_/.test(k)) {
-      const it = mats[k];
-      if (it && it.mat.userData.avLQDifuso) subirAtlasA4096(k, it.mat);
-    }
-  }, 20000);
+  // QA-239: los 20 s cuentan desde que la pantalla de carga suelta el mundo (precargarZona → terminar), no desde
+  // que carga este módulo: en un equipo lento la carga dura más de 20 s y el 4096 (9,3 MB) entraba en la descarga
+  // inicial. Sin pantalla de carga queda el temporizador de siempre.
+  let barridoT = 0;
+  const programarBarrido = ms => {
+    clearTimeout(barridoT);
+    barridoT = setTimeout(() => {
+      if (atlasMax() !== 0) return;
+      for (const k in mats) if (/^AV_HD_/.test(k)) {
+        const it = mats[k];
+        if (it && it.mat.userData.avLQDifuso) subirAtlasA4096(k, it.mat);
+      }
+    }, ms);
+  };
+  programarBarrido(20000);
   function material(src, fijo) {
     const k = src.name || src.uuid;
     let it = mats[k];
@@ -1200,10 +1213,15 @@ AVE.module('streaming', function (G) {
     }
     // Con el jugador quieto solo arrancan el lejano cercano y el modelo completo de la precarga.
     // El resto espera en cola, con referencia, hasta que Vittata se mueve.
+    // QA-239: los _hd pesados (CFG.hdPesadoKB) no entran con la pantalla de carga: están a 100-200 m del punto de
+    // aparición y eran 17,6 MB + sus texturas de la descarga inicial. Hasta el primer paso se ve su modelo ligero con
+    // textura (lo mismo que mientras un _hd baja); las fusiones de la zona no los esperan (cargasPendientes).
+    const hdPesado = r => { if (r.tipo !== 'hd') return false; const k = KIT(), e = k && k[r.n]; return !!(e && (e.original || (e.kbHD || 0) > CFG.hdPesadoKB)); };
+    const hdAplazado = r => r.tipo === 'hd' && r.estado === 'cola' && hdPesado(r) && !puedeAhora(r);
     function puedeAhora(r) {
       if (!(arrancando || quieto)) return true;
-      if (precarga && !arrancando && r.prio <= precarga.radio) return true; // pantalla de carga: la zona de inicio entera
       const pre = CFG.precarga[nivelCal()] || 50, lq = CFG.lejosQuieto[nivelCal()] || 150;
+      if (precarga && !arrancando && r.prio <= precarga.radio && !(r.prio >= pre && hdPesado(r))) return true; // pantalla de carga: la zona de inicio entera
       return (r.tipo === 'lejos' && r.prio < lq) || ((r.tipo === 'cerca' || r.tipo === 'hd') && r.prio < pre);
     }
     function siguiente() {
@@ -1411,7 +1429,7 @@ AVE.module('streaming', function (G) {
       return m;
     }
     function cargasPendientes(Z, tipo) {
-      return [...Z.modelos].some(n => { const r = res(n, tipo); return r.estado === 'bajando' || (r.estado === 'cola' && r.refs); });
+      return [...Z.modelos].some(n => { const r = res(n, tipo); return r.estado === 'bajando' || (r.estado === 'cola' && r.refs && !hdAplazado(r)); });
     }
     // KIMI-Task-011: las mallas globales (varias zonas fundidas por material) guardan el tramo del índice de cada zona y se
     // dibujan con grupos: solo los tramos de las zonas que de verdad usan esa versión este cuadro (un draw call por tramo
@@ -2278,12 +2296,13 @@ AVE.module('streaming', function (G) {
         if (x == null) { const S = G.S; x = S.pos ? S.pos.x : 0; z = S.pos ? S.pos.z : 0; }
         const radio = o.radio != null ? o.radio : Math.max(radioCerca(), hdActivo() ? CFG.hd[nivelCal()] || 0 : 0) + CFG.histeresis;
         precarga = { radio, descargas: Math.max(1, o.descargas || CFG.descargas), ms: Math.max(2, o.ms || CFG.msCuadro) };
+        programarBarrido(60000); // QA-239: el atlas 4096 espera a terminar() (60 s de tope si la pantalla de carga no cierra)
         revisar(x, z); siguiente();
         const objetivo = new Set();
         const recoger = () => {
           for (const n in recursos) for (const t in recursos[n]) {
             const r = recursos[n][t];
-            if (r.estado !== 'nada' && (r.refs || r.fijo) && r.prio != null && r.prio <= radio) objetivo.add(r);
+            if (r.estado !== 'nada' && (r.refs || r.fijo) && r.prio != null && r.prio <= radio && !hdAplazado(r)) objetivo.add(r); // QA-239: los _hd pesados no se esperan
           }
         };
         const pendiente = r => r.estado !== 'listo' && r.estado !== 'error' && r.estado !== 'nada';
@@ -2303,7 +2322,7 @@ AVE.module('streaming', function (G) {
             if (!tCola) tCola = performance.now();
             return performance.now() - tCola > 1500;
           },
-          terminar() { fin = true; if (precarga === estado) precarga = null; siguiente(); programar(); programarCerca(); },
+          terminar() { if (!fin) programarBarrido(20000); fin = true; if (precarga === estado) precarga = null; siguiente(); programar(); programarCerca(); },
         };
         const estado = precarga;
         return zona;
