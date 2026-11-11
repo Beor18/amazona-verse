@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 05:58 AST · QA-247 hecha
+- **Tarea:** la leyenda del mapa ya no deja «Aún cerrado» en inglés. Cerrada.
+- **Commit:** `9121a12e` (el mismo `minimapa.js` y `en.js` que la build `qa247-45e6d24`).
+- **Archivos:** `content/cap1/en.js` (una frase) y un check en `src/game/minimapa.js`. No toqué `que_hacer.js`, `piloto.js` ni `tienda.js`.
+- **Traducción:** «Aún cerrado» → «Still closed».
+- **Cómo probarlo:** pon el juego en inglés y abre el mapa. El candado de la leyenda dice «Still closed».
+- **Lo confirma:** minimapaTest 50/50 sola. Las 12 en verde en `qa247-45e6d24`, 0 errores y 0 avisos. idiomaTest 15/31: lo que queda es «¿Qué hay para hacer?» y «Se abre al reparar el puente» (QA-248). «Aún cerrado» ya no sale.
+
 ### Dev 1 · 11-nov · QA-246 hecha
 - **Tarea:** Ir de «Escuela de vuelo». Cerrada. EN CURSO fue `ea20fd7c`.
 - **Commit:** `5e1f8481` (el mismo `piloto.js` que la build `qa246-0521f98e`).
