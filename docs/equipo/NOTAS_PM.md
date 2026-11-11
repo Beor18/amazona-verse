@@ -2,6 +2,16 @@
 
 ## TRASPASO
 
+### Dev 1 · 11-nov · CG-125 hecha
+- **Tarea:** lo que faltaba del traspaso de Combate 2.0. Cerrada.
+- **Commit:** `462eed10`. EN CURSO fue `69c1018c`.
+- **Archivos:** `src/engine/botones.js`, `src/engine/input.js`, `src/ui/ui.css`. No toqué `combate.js` (los nombres de los combos los decide Kelvin), `streaming.js` ni el modelo de Vittata.
+- **Qué hace:** en Personalizar controles el joystick se arrastra y se guarda por orientación. Si hay posición guardada, se queda ahí y un toque lejos no lo lleva bajo el dedo. Sin guardar, sigue naciendo bajo el dedo (CG-40). En pantallas de hasta 560 px, con el 2×2 del duelo (`body.v18-ext-on`), el aviso de misión sube y no queda debajo.
+- **Qué falta:** el video no está grabado. Los nombres de los combos los decide Kelvin. En la tanda `--extra`, «du2: la guía ¡Así se juega! sale al terminar» dio 116/117 según el orden (el traspaso ya lo tenía; pasa sola). No lo toqué.
+- **Cómo probarlo:** Pausa → Personalizar controles, mover el joystick y Listo. En el teléfono, durante el duelo, el aviso queda por encima del 2×2.
+- **Lo confirma:** botonesTest 14/14 y tactilTest 12/12 en la build `cg-125-e0c70930` (los mismos tres archivos). v18Duelo2Test 36/36. Build `cg-125-b427b343` (el mismo código de juego que `462eed10`): las 12 en verde, 0 errores. 1 aviso de heap (129,3 MB, no falla).
+- **Siguiente:** nada libre de mi zona. CG-90 la cerró Dev 2 (`69ff01a6`). GT-13 la tiene Dev 2 en curso (`tienda.js`, `construir.js`, `pesca.js`). CG-124 la tiene Dev 3. Me quedo quieto.
+
 ### Dev 2 · 11-nov 04:12 AST · GT-13 en curso
 - **Tarea:** el Mercadito retiene y devuelve el foco. Construir y la pesca abren con el foco en el primer control. `tienda.js`, `construir.js` y `pesca.js` están libres. No toco `fisica.js` ni `reparar.js` (Dev 3) ni `input.js` / `botones.js` / `combate.js` (Dev 1).
 - **Commit de código:** todavía no.
@@ -84,12 +94,7 @@
 - **Siguiente:** CG-123, Salir visible en Chispa y Moon. CG-125 lo tiene Dev 1.
 
 ### Dev 1 · 11-nov · CG-125 en curso
-- **Tarea:** lo que falta del traspaso de Combate 2.0. Fila EN CURSO. Todavía sin código.
-- **Commit:** este (solo la fila).
-- **Qué falta:** el joystick no se puede mover (nace bajo el dedo, CG-40, `input.js` y `botones.js`). El aviso de misión (`#toast`) queda debajo del 2×2 en el móvil durante el duelo. No invento nombres de combos. No grabo video.
-- **Archivos previstos:** `src/engine/input.js`, `src/engine/botones.js`, el aviso del duelo. No toco `streaming.js` ni el modelo de Vittata.
-- **Cómo probarlo:** `AV.botonesTest()` y `AV.v18CombateTest()`, y las 12.
-- **Lo confirma:** todavía no.
+- **Tarea:** arranque de la fila, solo la marca. El código y el cierre están arriba, en «CG-125 hecha», commit `462eed10`.
 
 ### Dev 1 · 11-nov · CG-120 hecha
 - **Tarea:** panel «¿Qué hay para hacer?». Cerrada.
