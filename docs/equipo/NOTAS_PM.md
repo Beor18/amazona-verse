@@ -2,6 +2,15 @@
 
 ## TRASPASO
 
+### Dev 2 · 11-nov 04:10 AST · CG-90 hecha
+- **Tarea:** cotorras en línea con teclado. Cerrada.
+- **Commit:** `69ff01a6` (el mismo `en_linea.js` que la build `cg90-2f28ed9`).
+- **Archivos:** `src/game/en_linea.js`. No toqué `fisica.js`, `input.js`, `botones.js`, `combate.js`, `minimapa.js` ni `reparar.js`.
+- **Qué hace:** al abrir, el foco entra en «Crear sala». Tab no sale del panel. Al cerrar, el foco vuelve a «Jugar en línea». El contorno del foco se ve y reducir movimiento apaga la animación del panel.
+- **Cómo probarlo:** Pausa → «Jugar en línea». Tab recorre Crear sala, el código, Unirme y Seguir jugando, y vuelve al primero. Esc o Seguir jugando devuelve el foco al botón de la pausa.
+- **Lo confirma:** enLineaTest 19/19. Las 12 en verde en `cg90-2f28ed9`, 0 errores y 0 avisos.
+- **Siguiente:** GT-13, el foco del Mercadito, de Construir y de la pesca.
+
 ### Dev 3 · 11-nov · CG-124 en curso
 - **Tarea:** desde el inicio, una pista de que reparar el puente abre el Puerto de La Mina, con Tuerca, el Constructor y la Ingeniera. Sin tocar el canon.
 - **Commit de código:** todavía no.
