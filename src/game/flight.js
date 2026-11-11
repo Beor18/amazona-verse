@@ -110,6 +110,7 @@
     const decor = [];  // palmas de la orilla: { x, i, s, giro }
     let rnd = G.util.rng(1);
     let modulos = 0;
+    let apertura = 0; // cada abrir() y cada salir() avanzan: una carga vieja no vuelve a entrar (QA-nuevo-br1-4)
 
     // ---------- Pool de instancias (se crea una vez al entrar; solo cambia instanceMatrix) ----------
     const KIT = { base: 'assets/models/entorno/', b64: 'AV_ENTORNO_B64' };
@@ -560,7 +561,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       u.nuevo.hidden = !J.nuevo;
       u.rec.textContent = J.mejor ? (J.puntos === 1 ? '1 obstáculo' : J.puntos + ' obstáculos') + ' · tu mejor: ' + J.mejor : 'Pasa un obstáculo para tener tu primer récord.';
       const ls = metaLineas(); u.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join(''); u.meta.hidden = !ls.length; u.rank.hidden = !(G.RANKING_EN_LINEA === true && J.nuevo && claveRec === ALMACEN && J.puntos > 0); /* L3: ranking en línea apagado */ // ganas de seguir: el «casi», la siguiente meta y el sello (sin presión)
-      u.fin.querySelector('[data-salir]').textContent = alMenu() ? 'Volver al menú' : 'Volver a la historia'; /* entró desde «¿Cómo quieres jugar?»: el botón lleva al menú */
+      u.fin.querySelector('[data-salir]').textContent = st.abrioDesdeMenu ? 'Volver al menú' : 'Volver a la historia'; /* entró desde «¿Cómo quieres jugar?»: el botón lleva al menú */
       u.fin.hidden = false; u.fin.querySelector('[data-compartir]').hidden = !J.mejor;
       const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }
@@ -598,6 +599,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       rnd = G.util.rng(J.semilla = (Date.now() ^ (Math.random() * 1e9)) >>> 0 || 1);
       Object.assign(J, { y: 6, vy: 0, v: P.vel0, dist: 0, puntos: 0, n: 0, t: 0, flapT: 0, finT: 0, hover: 0, nuevo: false, choque: '', mejor: leerRec().flight.mejor || 0 });
       st.fase = 'listo'; st.hitStop = 0; st.golpe = null; J.golpeado = null; J.rv = 0; J.guia = (leerRec().flight.jugadas || 0) < 3;
+      st.abrioDesdeMenu = alMenu(); // se decide al empezar esta partida: el vigía del menú puede quitar la marca antes de que salga el final
       const u = st.ui; if (u) { u.el.hidden = false; u.fin.hidden = true; u.pista.hidden = false; pintarPuntos(); u.chip.classList.remove('pop'); }
       sincronizar();
       while (!obst.length || obst[obst.length - 1].x < J.dist + P.adelante) { const n0 = obst.length; generar(); if (obst.length === n0) break; }
@@ -624,9 +626,14 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
       if (!st.activo && !libre()) { G.ui.toast('Termina lo que estás haciendo y vuelve a probar Amazona Flight.', 3200); return Promise.resolve(false); }
       if (!$('creator').hidden) { st.creador = true; G.creador.close(); } // jugador nuevo: el creador vuelve al salir
       if (!st.listo) G.ui.toast('Cargando Amazona Flight…', 5000);
-      return crearPool().then(() => { entrar(); iniciar(); return true; }, e => { G.ui.toast('No se pudo cargar Amazona Flight. Prueba otra vez.', 3000); console.error('flight:', e); return false; });
+      const yo = ++apertura;
+      return crearPool().then(() => {
+        if (yo !== apertura) return false; // ya se salió, o hay una entrada más nueva
+        entrar(); iniciar(); return true;
+      }, e => { G.ui.toast('No se pudo cargar Amazona Flight. Prueba otra vez.', 3000); console.error('flight:', e); return false; });
     }
     function salir() {
+      apertura++;
       if (!st.activo) { if (st.ui) st.ui.el.hidden = true; document.body.classList.remove('flight-on', 'retos-on'); return; }
       const env = st.env, C = G.camara, cam3 = R.camera;
       vaciar(); subirMatrices(); raiz.visible = false; st.fase = 'nada';
