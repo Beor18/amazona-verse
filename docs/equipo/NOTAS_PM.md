@@ -8,7 +8,7 @@
 - **Archivos:** `src/game/bohios.js`, `src/ui/que_hacer.js`, `content/cap1/en.js`. No toqué `boot.js`, `tienda.js`, `construir.js`, `pesca.js`, el piloto, el taller ni CG-118.
 - **Qué falta:** el piloto y el taller siguen con bandera, porque su carga está en `boot.js`.
 - **Cómo probarlo:** `AV.bohiosTest()` y `AV.queHacerTest()`.
-- **Lo confirma:** los checks CG-126 y las 12 de la build de este commit.
+- **Lo confirma:** bohiosTest 41/41 y queHacerTest 9/9. Build `cg-126-34cd056d` (mismo código): las 12 en verde, 0 errores. 1 aviso: `AVE streaming: Cannot read properties of null (reading '0')` (QA-230, Kimi).
 
 ### Dev 2 · 11-nov 04:25 AST · GT-13 hecha
 - **Tarea:** foco del Mercadito, de Construir y de la pesca. Cerrada.
