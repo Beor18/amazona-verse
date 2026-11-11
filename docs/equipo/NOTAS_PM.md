@@ -2,6 +2,14 @@
 
 ## TRASPASO
 
+### Dev 3 · 11-nov · CG-122 hecha
+- **Tarea:** Aterrizar no se cancela en táctil. Cerrada. EN CURSO fue `79bb152f`.
+- **Qué hace:** una vez empieza a bajar, Saltar y otro toque no lo sueltan. El botón dice «Aterrizando…», queda bloqueado hasta el suelo y, fuera del agua, es el de bajar. En el agua sigue Bucear, en el mismo sitio.
+- **Archivos:** `src/engine/fisica.js`, `src/game/interaccion.js` (el texto, después de sincronizar), `src/pruebas/movimiento.js`, `content/cap1/en.js`. No toqué `input.js` ni `botones.js` (CG-125, Dev 1) ni moví botones.
+- **Qué falta:** CG-124.
+- **Cómo probarlo:** `AV.movementTest()` (check «CG-122») y `AV.tactilTest()`.
+- **Lo confirma:** movementTest 54/54 (los dos checks CG-122 en verde). Build `cg-122-e8778619` (mismo código): las 12 en verde, 0 errores y 0 avisos.
+
 ### Dev 2 · 11-nov 03:55 AST · CG-90 en curso
 - **Tarea:** cotorras en línea con teclado. `en_linea.js` está libre. No toco `fisica.js` (CG-122, Dev 3), `combate.js` / `input.js` / `botones.js` (CG-125, Dev 1) ni `minimapa.js` (CG-121, Dev 4).
 - **Commit de código:** todavía no.
@@ -9,14 +17,6 @@
 - **Qué falta:** que el panel retenga el Tab, que el foco entre en «Crear sala» y que al cerrar vuelva al botón que lo abrió.
 - **Cómo probarlo:** `AV.enLineaTest()`.
 - **Lo confirma:** enLineaTest y las 12. Las 12 de este juego, antes del arreglo, pasaron en `cg90-12-c0c910b`: 0 errores, 2 avisos de streaming (QA-230).
-
-### Dev 3 · 11-nov · CG-122 en curso
-- **Tarea:** Aterrizar no se cancela en táctil. El botón dirá «Aterrizando…» y quedará bloqueado hasta el suelo. Saltar no cancela.
-- **Commit de código:** todavía no.
-- **Archivos:** `src/engine/fisica.js` (la lógica) y el texto del botón. No toco `input.js` ni `botones.js`: los tiene Dev 1 en CG-125. No muevo los botones.
-- **Qué falta:** que Saltar y otro toque no suelten el aterrizaje, y que el botón lo diga.
-- **Cómo probarlo:** `AV.movementTest()` y `AV.tactilTest()`.
-- **Lo confirma:** las 12 de `c4cab427` (mismo parche que `qa-241-a4bd3b66`), 0 errores y 0 avisos.
 
 ### Dev 4 · 11-nov · CG-121 hecha
 - **Tarea:** marcadores del mapa con nombre, color e icono. Cerrada. Solo `src/game/minimapa.js`.

@@ -84,6 +84,8 @@ window.AV_EN = {
  "Aterriza suave en el suelo": "Land gently on the ground",
  "Aterrizar": "Land",
  "Aterrizar: bajar suave hasta el suelo": "Land: come down gently to the ground",
+ "Aterrizando…": "Landing…",
+ "Aterrizando: espera a tocar el suelo": "Landing: wait until you touch the ground",
  "Aula": "Classroom",
  "Aura": "Aura",
  "Avanzar": "Move forward",

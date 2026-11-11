@@ -216,6 +216,16 @@ window.AVMovimientoTest = function (G) {
       vyTouch = prev;
       met.aterrizajeDesdeM = r2(hLand); met.aterrizajeS = r2(n * DT); met.aterrizajeVy = r2(vyTouch);
       check('Aterrizar (V): baja sola y toca el suelo suave', !M.flying && M.grounded && vyTouch > -2.2, `${met.aterrizajeDesdeM} m en ${met.aterrizajeS} s, ${met.aterrizajeVy} m/s al tocar`);
+      // CG-122: fuera del agua el botón de volar es el de bajar. Aterrizando no lo cancelan Saltar ni otro toque.
+      reset(L.x, L.z); F.toggleFly(); frame(null, 40);
+      const yAntes = S.pos.y; F.land(); F.tryJump(); F.toggleFly(); frame(null, 6);
+      const flyB = document.getElementById('b-fly'), diveB = document.getElementById('b-dive');
+      check('CG-122 · fuera del agua, Aterrizando… queda bloqueado: Saltar y otro toque no cancelan',
+        M.flying && M.landing && !M.swimming && S.pos.y < yAntes &&
+        flyB && flyB.textContent === 'Aterrizando…' && flyB.disabled && diveB && diveB.hidden,
+        JSON.stringify({ landing: M.landing, y: r2(S.pos.y), txt: flyB && flyB.textContent, dis: !!(flyB && flyB.disabled), dive: !!(diveB && diveB.hidden) }));
+      if (flyB) flyB.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }));
+      check('CG-122 · el botón bloqueado no suelta el aterrizaje', M.landing && M.flying);
       // Patas en vuelo (2-nov, Kelvin: «en crucero las patas cuelgan»): en crucero y en el impulso van recogidas contra el
       // vientre (legsDown 0 y la bola de cada pie por encima de 0,2 del modelo; de pie está a 0,04) y legsDown solo sale en la
       // aproximación final: nada por encima de 6 m al aterrizar, patas abajo en el último metro.

@@ -129,7 +129,7 @@ AVE.module('fisica', function (G) {
   // ---------- Acciones (las llama input.js) ----------
   function jump(v) { S.vy = v; MOVE.coyote = 0; MOVE.buffer = 0; MOVE.jumping = true; MOVE.grounded = false; G.audio.play('jump'); }
   function tryJump() {
-    if (MOVE.flying) { if (MOVE.landing) { MOVE.landing = false; S.vy = Math.max(S.vy, 1); } return; } // saltar cancela el aterrizaje
+    if (MOVE.flying) return; // CG-122: saltar no cancela el aterrizaje
     if (MOVE.swimming) { S.vy = T.swimJumpV; MOVE.swimming = false; MOVE.jumping = true; G.agua.splash(S.pos.x, S.water, S.pos.z, 0.8); return; }
     if (onGroundNow() || MOVE.coyote > 0) { jump(T.jumpV); MOVE.airJumps = 1; return; }
     // Cayendo y a punto de tocar el suelo: se guarda el salto (no gasta el doble salto ni despega sin querer)
@@ -152,11 +152,13 @@ AVE.module('fisica', function (G) {
     else { S.vy = Math.max(S.vy, 2); MOVE.takeoff = 0.15; }
     G.emit('vuelo', true);
   }
-  // Volando: empieza a aterrizar (bajada controlada y frenado con las alas). Otra vez (o saltar) sigue volando.
+  // Volando: empieza a aterrizar (bajada controlada y frenado con las alas).
+  // CG-122: una vez empezó, sigue hasta el suelo. Ni Saltar ni otro toque lo cancelan.
   function land() { if (MOVE.flying) { MOVE.landing = true; MOVE.takeoff = 0; } }
   function toggleFly() {
+    if (MOVE.landing) return;
     if (!MOVE.flying) { startFlying(); return; }
-    if (MOVE.landing) { MOVE.landing = false; S.vy = Math.max(S.vy, 0.5); } else land();
+    land();
   }
   function endFlight() { if (!MOVE.flying) return; MOVE.flying = false; MOVE.landing = false; MOVE.takeoff = 0; G.emit('vuelo', false); }
   function tryDash() {
