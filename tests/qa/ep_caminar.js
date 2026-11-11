@@ -40,7 +40,14 @@
     let W, fr = null, G, S, $;
     const respaldo = {};
     try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); respaldo[k] = localStorage.getItem(k); } } catch (e) { /* sin almacenamiento */ }
-    if (!opts.temporada) try { for (const k of Object.keys(respaldo)) if ((cfg.limpiar || new RegExp('^' + cfg.pack + '|aula\\.' + cfg.pack + '|temporada')).test(k)) localStorage.removeItem(k); } catch (e) { /* */ }
+    // QA-243: el cap. 1 guarda en amazonaverse.save (content/cap1/pack.js), no en cap1.*. Si esa partida sigue en el
+    // almacén (la dejó la preparación o una batería anterior), el iframe entra con cotorra, Jugar no abre el creador
+    // y la espera de 40 s se agota. Se suspende el guardado de esta página para que no la vuelva a escribir al arrancar.
+    const limpiarRx = cfg.limpiar || (cfg.pack === 'cap1' ? /^amazonaverse|^cap1|aula\.cap1|temporada/ : new RegExp('^' + cfg.pack + '|aula\\.' + cfg.pack + '|temporada'));
+    const padre = window.AV && window.AV.G && window.AV.G.guardado;
+    let suspendioPadre = false;
+    if (!opts.temporada && padre && padre.suspender) { try { padre.suspender(true); suspendioPadre = true; } catch (e) { /* */ } }
+    if (!opts.temporada) try { for (const k of Object.keys(respaldo)) if (limpiarRx.test(k)) localStorage.removeItem(k); } catch (e) { /* */ }
     const tacto = !!opts.tacto;
     fr = document.createElement('iframe');
     fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
@@ -52,11 +59,13 @@
     W = await until(() => { const x = fr.contentWindow; return x && x.AV && x.AV.pack === cfg.pack && x.AV.G && (x.AV.G.actores.player3D || x.AV.G.actores.failed3D) && x; }, opts.timeout || 240000, 100);
     if (W) await sleep(800);
     const devolver = () => {
-      if (opts.temporada) return;
-      try {
-        for (const k of Object.keys(localStorage)) if (!(k in respaldo)) localStorage.removeItem(k);
-        for (const k of Object.keys(respaldo)) if (localStorage.getItem(k) !== respaldo[k]) localStorage.setItem(k, respaldo[k]);
-      } catch (e) { /* sin almacenamiento */ }
+      if (!opts.temporada) {
+        try {
+          for (const k of Object.keys(localStorage)) if (!(k in respaldo)) localStorage.removeItem(k);
+          for (const k of Object.keys(respaldo)) if (localStorage.getItem(k) !== respaldo[k]) localStorage.setItem(k, respaldo[k]);
+        } catch (e) { /* sin almacenamiento */ }
+      }
+      if (suspendioPadre && padre && padre.suspender) { try { padre.suspender(false); suspendioPadre = false; } catch (e) { /* */ } }
     };
     if (!W || !W.AV || W.AV.pack !== cfg.pack) { check('El capítulo ' + cfg.n + ' arranca (?pack=' + cfg.pack + (cfg.query || '') + ')', false, 'no arrancó'); if (fr && !opts.keep) fr.remove(); devolver(); return { out, tramos, atascos, faltanEN: [] }; }
     G = W.AV.G; S = G.S; $ = id => W.document.getElementById(id);
