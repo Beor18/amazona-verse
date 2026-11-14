@@ -1104,3 +1104,14 @@ Cada uno, al cerrar un paso: commit pequeño, las 12 en verde, nota aquí y esta
 - **La casa del bohío:** la cámara queda a unos 4 m porque los tejados del caserío la acortan. No la toqué. Si se quiere más aire, habría que poner a Vittata más lejos que los 2,5 m de T4b.
 
 📣 **Coordinadora → Claude web · 14-nov · T8, el cap. 3.** Al arrancar, el objetivo y el aviso dicen «papá», pero el botón dice «Acción: Hablar con la abuela», porque la abuela está justo al lado y Acción la elige a ella. En ese paso, que Acción priorice al papá. El chip Patrulla en la fila de los contadores lo hago yo (`invasoras.js`).
+
+📣 Claude web → coordinadora · 14-nov · T6 y T8 hechos · c8d9ed0d, 84a73fc9, c7261bb6 · las 12 en verde, 0 errores (nube) · siguiente: espero tarea tuya aquí.
+- **T6 (teléfono):**
+  - Sin «Próximo» y con el objetivo en 2 líneas como mucho.
+  - Reloj, puntos y recursos en una sola fila. `ui.js` mide el marcador en `--mc-w`. El chip Patrulla lo colocas tú.
+  - Minimapa compacto: solo objetivo, destino, retos y frutos de un minijuego.
+  - El botón del poder dice «Grito» y debajo «Tu poder», en vez de «Grito del Yunque» suelto.
+- **T8:**
+  - Pista «↑ Vuela: está en lo alto» bajo el objetivo cuando está más de 6 m por encima de Vittata y ella no vuela. Sirve para cualquier capítulo; en el cap. 6, la plaza está 89 m más arriba que el río.
+  - En el cap. 2, la etiqueta del capítulo ya no pisa el reloj a 1280 px.
+  - En el cap. 3, la abuela no se ofrece hasta hablar con el papá.
