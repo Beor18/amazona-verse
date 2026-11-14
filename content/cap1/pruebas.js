@@ -565,7 +565,7 @@
     check('Apertura (QA-221): «Saltar» se esconde mientras un panel está encima y vuelve al cerrarlo', !!ocultoConPanel && !!vuelveSinPanel, 'con panel: ' + (ocultoConPanel ? 'oculto' : 'visible') + ' · sin panel: ' + (vuelveSinPanel ? 'vuelve' : 'no vuelve'));
     dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
     check('Apertura: cualquier tecla la salta: sin bocadillos, sin capas, sin botón y con el aviso de Iguaca', !G.dialogo.activo() && !fade() && !document.getElementById('c1-ruptura') && !document.getElementById('c1-saltar') && !!ap1 && /Iguaca te llama/.test($('toast').textContent));
-    check('Revisión T2, ronda 4: el aviso «Iguaca te llama» es de una sola vez ({ fijo }: la cola llena no lo tira)', /Iguaca te llama/.test(G.ui.colaTest().actual || '') && G.ui.colaTest().fijo === true, JSON.stringify(G.ui.colaTest()));
+    check('Revisión T2, ronda 4: el aviso «Iguaca te llama» es de una sola vez ({ fijo }: la cola llena no lo tira)', (c => (/Iguaca te llama/.test(c.actual || '') && c.fijo === true) || c.cola.some((t, i) => /Iguaca te llama/.test(t) && c.fijos[i]))(G.ui.colaTest()), JSON.stringify(G.ui.colaTest())); // en pantalla o esperando (apartado)
     G.quiet = true; G.c.apertura.fin();
     G.quiet = true;
     useAt('transmisor');

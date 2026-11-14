@@ -98,7 +98,7 @@ AVE.module('ui', function (G) {
     siguiente(ks);
   }, 84);
   // Solo para las baterías: activa el tiempo mínimo aunque G.quiet esté puesto y devuelve el estado de la cola
-  function colaTest(on) { if (on != null) colaPrueba = !!on; return { cola: cola.map(p => p.text || p.html), actual: enPantalla() ? (actual.text || actual.html) : null, fijo: enPantalla() ? !!actual.fijo : null, visto, max: COLA_MAX }; }
+  function colaTest(on) { if (on != null) colaPrueba = !!on; return { cola: cola.map(p => p.text || p.html), actual: enPantalla() ? (actual.text || actual.html) : null, fijo: enPantalla() ? !!actual.fijo : null, fijos: cola.map(p => !!p.fijo), visto, max: COLA_MAX }; }
   function overlayOpen() { return !$('end').hidden || !$('comic').hidden || !$('creator').hidden; }
   // Ocupado: diálogo, tarjeta u overlay abiertos (el jugador no se mueve ni recoge)
   function busy() { return G.dialogo.open() || cardOpen || overlayOpen(); }
