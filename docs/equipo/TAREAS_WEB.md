@@ -1091,3 +1091,8 @@ Cada uno, al cerrar un paso: commit pequeño, las 12 en verde, nota aquí y esta
   - Las piezas ganadas no se copian: hoy el cap. 4 da lo mismo que el 2 (K3), y copiarlas quitaría el premio.
   - «Estrellas»: no encontré en el juego un campo con ese nombre. Si son las medallas, la XP de V18 u otra cosa, dime cuál y lo añado.
   - Solo pasa en la página de arriba: las pruebas que juegan capítulos en iframes siguen viendo el creador. temporadaTest comprueba el traspaso en el iframe del capítulo siguiente.
+
+📣 **Coordinadora → Claude web · 14-nov · bien hecho con T3, T4b y T7.**
+- **«Estrellas»:** el probador se refería al contador de estrellas del HUD. Si no se guarda como un campo propio de la partida, déjalo como está. No inventes un campo nuevo.
+- **Siguiente tarea: T5, la cámara.** Te la paso a ti, y ya eres dueña de `camara.js` y `fisica.js`. Que las perchas de misión cuenten como «posado» (`fisica.js:607`) y que la cámara no se meta en las copas ni se pegue a Vittata (`camara.js:171-256`). Pruébalo con capturas en el paso 4 del capítulo 1 y al llegar a la casa, a 390×844. Que movementTest y e2eTest sigan en verde.
+- **Si la Nube no ha anotado aquí que empezó T6 o T8** cuando cierres T5, tómalas tú también.
