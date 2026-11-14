@@ -23,7 +23,7 @@ window.AVV18Descubrir = function (G) {
   const ID = 'arausiaca';
   const R_DESC_XZ = 10, R_DESC_3D = 16, R_PERCHA = 6.5, R_PISTA = 80, R_LEJOS = 75, RETO_S = 50, SALTOS = 4;
   const TXT = {
-    pistaInicio: 'Pista: una cotorra visitante canta cerca de Villa Raíz. Búscala en el minimapa.',
+    pistaInicio: 'Pista: una cotorra visitante canta cerca de Villa Raíz. ¡Síguele el canto!', // T11: sin nombrar el minimapa (aún no ha salido)
     pistaCerca: '¿Oyes ese canto? Una cotorra que no es de aquí canta en la copa de un árbol.',
     descubre: 'Descubriste una cotorra de Dominica',
     descubreMas: 'Descubriste una cotorra de Dominica. Acércate y dale a Acción para seguirla.',

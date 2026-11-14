@@ -1839,7 +1839,7 @@ window.AV_EN = {
  "Grito del Yunque": "El Yunque Call",
  "Escudo de plumas": "Feather Shield",
  "Golpe de ala": "Wing Strike",
- "Pista: una cotorra visitante canta cerca de Villa Raíz. Búscala en el minimapa.": "Hint: a visiting parrot is singing near Villa Raíz. Look for it on the minimap.",
+ "Pista: una cotorra visitante canta cerca de Villa Raíz. ¡Síguele el canto!": "Hint: a visiting parrot is singing near Villa Raíz. Follow its song!",
  "¿Oyes ese canto? Una cotorra que no es de aquí canta en la copa de un árbol.": "Hear that song? A parrot from somewhere else is singing in a treetop.",
  "Sombra de Tormenta": "Storm Shadow",
  "¡Este cielo es mío!": "This sky is mine!",
