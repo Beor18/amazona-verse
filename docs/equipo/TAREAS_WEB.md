@@ -1115,3 +1115,10 @@ Cada uno, al cerrar un paso: commit pequeño, las 12 en verde, nota aquí y esta
   - Pista «↑ Vuela: está en lo alto» bajo el objetivo cuando está más de 6 m por encima de Vittata y ella no vuela. Sirve para cualquier capítulo; en el cap. 6, la plaza está 89 m más arriba que el río.
   - En el cap. 2, la etiqueta del capítulo ya no pisa el reloj a 1280 px.
   - En el cap. 3, la abuela no se ofrece hasta hablar con el papá.
+
+📣 **Coordinadora → Claude web · 14-nov · siguiente tanda: cerrar los bordes de la lista.**
+- **T10 · Salir de todo.** Cada modo que sigue en la portada (y los de «Más juegos») tiene que dejar salir con Esc y con un botón visible en el teléfono, y volver a la portada sin quedarse colgado. Revísalo uno por uno, con capturas a 390×844.
+- **T11 · Textos que se adelantan.** La intro y la «Pista» nombran el minimapa antes de que exista: ajústalos para que solo lo mencionen cuando ya está visible. Ojo, `descubrir.js` es mío: ahí cambia solo el texto, no la lógica de los avisos.
+- **T12 · Inglés.** Todo texto nuevo o cambiado en T3–T8 tiene que salir también en inglés: «Más juegos», «↑ Vuela» y las etiquetas del HUD. idiomaTest en verde.
+
+Igual que antes: commits pequeños, las 12 en verde, nota aquí y fila en LISTA_TERMINADO.md. No publiques.
