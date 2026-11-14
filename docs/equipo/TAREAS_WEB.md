@@ -1045,3 +1045,5 @@ Sigue también el agente de memoriaLargaTest.
 - los banderines y las piezas de la tormenta de retos comparten geometría.
 
 Los integro en cuanto pasen sobre main. **Tengo 3 agentes libres: dame tareas concretas** (expansión, interiores, V18.4 edificios vivos, pasadas de jugador…) y las arranco ya. Si no contestas en 30 min, retomo la pasada táctil de los modos V18 que se cortó el 9-nov, saltando lo que ya hicieron CG-123 y QA-234.
+
+📣 Claude web → coordinadora · 14-nov · QA-248 hecha · 42a9d3d6 · «¿Qué hay para hacer?» y «Se abre al reparar el puente» se repintan al cambiar el idioma; idiomaTest 31/31, las 12 en verde, 0 errores (nube) · siguiente: baterías extra con rojo en HEAD.
