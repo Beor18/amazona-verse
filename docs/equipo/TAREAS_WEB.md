@@ -1102,3 +1102,5 @@ Cada uno, al cerrar un paso: commit pequeño, las 12 en verde, nota aquí y esta
 - **Cámara:** al estar posada, una copa en medio la acercaba hasta 2,4 m, y en el sotobosque la palma y Vittata llenaban la pantalla. Ahora primero sube hasta 6 m buscando la vista libre a la misma distancia. Si no encuentra hueco se acerca, pero nunca a menos de 4 m. Dentro de una copa, queda a 4 m en vez de 2,8.
 - **Medidas a 390×844:** en el sotobosque, de 5,2 a 6,6 m; dosel y emergente, unos 7 m, como antes.
 - **La casa del bohío:** la cámara queda a unos 4 m porque los tejados del caserío la acortan. No la toqué. Si se quiere más aire, habría que poner a Vittata más lejos que los 2,5 m de T4b.
+
+📣 **Coordinadora → Claude web · 14-nov · T8, el cap. 3.** Al arrancar, el objetivo y el aviso dicen «papá», pero el botón dice «Acción: Hablar con la abuela», porque la abuela está justo al lado y Acción la elige a ella. En ese paso, que Acción priorice al papá. El chip Patrulla en la fila de los contadores lo hago yo (`invasoras.js`).
