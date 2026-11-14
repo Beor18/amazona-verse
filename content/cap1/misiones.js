@@ -115,7 +115,7 @@
       function renderSimon(msg) {
         const b = simon.b;
         const dots = b.song.map((n, k) => `<span class="sdot${k < simon.i ? ' ok ' + n : ''}" id="sd-${k}">${k < simon.i ? (n === 'co' ? 'co' : 'quí') : ''}</span>`).join('');
-        G.ui.showCard(`<h2>Coquí escondido</h2><p>${msg}</p><p class="note">[Canta un coquí: ${b.song.length} notas. Grave = círculo grande abajo, agudo = pequeño arriba]</p>
+        G.ui.showCard(`<h2>Coquí escondido</h2><p>${msg}</p><p class="note">Repite el canto: ${b.song.length} notas. «Co» es grave y «quí» es agudo.</p>
       <div class="sdots" aria-hidden="true">${dots}</div>
       <div class="row"><button class="btn" id="s-co" type="button">Co (grave)</button><button class="btn" id="s-qui" type="button">Quí (agudo)</button>
       <button class="btn ghost" id="s-again" type="button">Escuchar otra vez</button>${simon.fails >= 2 ? '<button class="btn ghost" id="s-skip" type="button">Pasar</button>' : ''}</div>`);

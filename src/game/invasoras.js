@@ -445,6 +445,7 @@
         const d = F.flash; d.style.transition = 'none'; d.style.opacity = '0.75'; void d.offsetWidth; d.style.transition = 'opacity .45s ease-out'; d.style.opacity = '0';
       } catch (e) { /* sin DOM */ }
     }
+    const enEscena = () => { try { return !!(G.ui.busy() || (G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) || document.body.classList.contains('retos-on')); } catch (e) { return false; } };
     function avisar(texto, ms) { if (G.quiet && !F.prueba) return; try { G.ui.toast(texto, ms || 3600); } catch (e) { /* sin HUD */ } }
     function avistar(id) {
       if (!activo() || !espDe(id) || mem.vistos.includes(id)) return false;
@@ -512,7 +513,7 @@
         '.inv-album small{opacity:.9;line-height:1.35}.inv-album i{opacity:.8;font-size:.9em}.inv-album .fauna-fuente a{color:inherit;text-decoration:underline;word-break:break-word}' +
         '.inv-album .fauna-fuente a:focus-visible{outline:3px solid #ffe066;outline-offset:2px}' +
         '.inv-album .fauna-falta{opacity:.6}.inv-intro,.inv-nota{display:block;opacity:.85;line-height:1.35;margin:.2em 0 .5em}' +
-        '#inv-cuenta.hud{position:relative;left:auto;top:auto;flex:1 0 100%;width:max-content;max-width:100%;margin:8px 0 0;z-index:var(--z-hud,5);' +
+        '#inv-cuenta.hud{position:relative;left:auto;top:auto;flex:0 0 100%;width:max-content;max-width:max-content;margin:8px 0 0;z-index:var(--z-hud,5);' +
         'min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:999px;background:#243a28;color:#f4ffe8;border:2px solid #d7e7a8;' +
         'font:700 16px/1 var(--font-display,sans-serif);box-shadow:0 3px 0 rgba(0,0,0,.28);pointer-events:none}' +
         '#inv-cuenta[hidden]{display:none}' +
@@ -550,7 +551,9 @@
       const el = cuentaEl(), n = mem.vistos.length, t = especies().length || 4;
       const txt = L(`Patrulla ${n}/${t}`, `Patrol ${n}/${t}`);
       if (el.textContent !== txt) el.textContent = txt;
-      el.hidden = !(activo() && (!G.quiet || F.prueba));
+      // T1: fila propia pero del tamaño del texto (con flex-grow cruzaba toda la pantalla); fuera mientras hay un minijuego,
+      // un diálogo, una tarjeta o un panel en marcha (vuelve sola al terminar)
+      el.hidden = !(activo() && (!G.quiet || F.prueba) && !(!F.prueba && enEscena()));
     }
     function animarReporte(n, total) {
       if (G.quiet && !F.prueba) return;
@@ -714,8 +717,15 @@
           F.prueba = false; G.quiet = true; paso(0.05, false);
           ok('En las baterías (G.quiet) no se ve ninguna', visibles() === 0);
           G.quiet = false; quietaEn(hi.x + 300, hi.z); G.renderer.camera.position.set(hi.x + 300, hi.y + 5, hi.z); paso(0.05, false);
-          const lejos = !mallas.iguana.visible; G.quiet = g0.quiet;
+          const lejos = !mallas.iguana.visible;
           ok('A más de 70 m la iguana se apaga', lejos);
+          { // T1: la pastilla de la Patrulla se aparta mientras hay actividad o escena en marcha y vuelve al terminar
+            const busy0 = G.ui.busy; let enMarcha = false, sale = false, vuelve = false;
+            try { pintarCuenta(); const antes = !F.cuenta.hidden; G.ui.busy = () => true; pintarCuenta(); enMarcha = F.cuenta.hidden; G.ui.busy = busy0; pintarCuenta(); vuelve = (!F.cuenta.hidden) === antes; sale = true; }
+            finally { G.ui.busy = busy0; }
+            ok('La pastilla de la Patrulla se oculta con una actividad en marcha y vuelve al terminar', sale && enMarcha && vuelve);
+          }
+          G.quiet = g0.quiet;
           F.prueba = true;
           await cuadros(2);
         }
