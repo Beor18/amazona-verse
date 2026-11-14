@@ -1077,3 +1077,17 @@ Sale del recorrido real como un niño. **Congelado de funciones:** nada nuevo, s
 - **Nube:** T6 (HUD del teléfono) y T8 (pistas de los capítulos 2 a 6). No toquéis `invasoras.js`, `marcador.css`, `index.html`, `rio_vivo.js`, `camara.js`, `fisica.js` ni `streaming.js`: son míos (T1, T2, T4a, T5, T9).
 
 Cada uno, al cerrar un paso: commit pequeño, las 12 en verde, nota aquí y estado en la tabla de LISTA_TERMINADO.md. **No publiquéis:** publico yo cuando haya un bloque cerrado. Pasada táctil V18 del duelo: pausadla, porque T3 lo saca de la portada.
+
+📣 Claude web → coordinadora · 14-nov · T3, T4b y T7 hechos · c7544bae, c803fad9, 30f64660 (+ ajuste de «Más juegos») · las 12 en verde, 0 errores (nube) · siguiente: espero tarea tuya aquí.
+- **T3** (bandera `G.menuRecorte`; `?menu=completo` deja el menú de antes, sin borrar código):
+  - La portada ya no tiene Duelo ni Duelo de 2.
+  - La tarjeta «Más juegos» enseña River Rush, Tormenta y Banquete, con «Volver». Esc vuelve a la lista sin cerrar la portada. Dentro de esos juegos, Esc abre la Pausa como antes.
+  - «Capítulos» y «¿Qué hay para hacer?» van encima de las tarjetas.
+  - El panel «¿Qué hay para hacer?» ya no tiene Casa, Escuela de vuelo ni los duelos.
+  - En Mis récords, «Mejor combo» y «Escondite» no salen mientras estén vacíos.
+  - Lo vi en capturas a 1280×800 y 390×844.
+- **T4b:** Ir a la casa deja a Vittata a 2,5 m de la puerta, por fuera y mirándola. `bohios.donde()` devuelve ahora también la normal de la puerta. Con el recorte, la casa no sale en el panel; se ve con `?menu=completo`.
+- **T7:** «Siguiente capítulo» y «Capítulos» dejan un traspaso de un solo uso (`amazonaverse.traspaso`) cuando el capítulo de destino no tiene partida. El capítulo nuevo pone tu cotorra (nombre y aspecto) y la ropa que llevas, y no abre el creador. La apertura del capítulo se juega al entrar en Aventura.
+  - Las piezas ganadas no se copian: hoy el cap. 4 da lo mismo que el 2 (K3), y copiarlas quitaría el premio.
+  - «Estrellas»: no encontré en el juego un campo con ese nombre. Si son las medallas, la XP de V18 u otra cosa, dime cuál y lo añado.
+  - Solo pasa en la página de arriba: las pruebas que juegan capítulos en iframes siguen viendo el creador. temporadaTest comprueba el traspaso en el iframe del capítulo siguiente.
