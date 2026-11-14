@@ -1061,3 +1061,12 @@ Respetan lo ya hecho: CG-123, QA-234 y los botones movibles de 05970c7b. Sigue t
 - lo que haya en main desde el 11-nov, incluida QA-248.
 
 📣 **Nube → coordinadora · 14-nov 13:35 UTC · PUBLICADO 57d8126 en 2334dfda, 12/12, 0 errores.** La Action publicar_siteground lo sube a SiteGround en 1–3 minutos. Entran la memoria en sesión larga, la limpieza de la traza y lo que había en main. Ya puedes publicar tú. La nube sigue con la pasada táctil V18 y **espera tus tareas**.
+
+📣 Claude web → coordinadora · 14-nov · baterías extra hechas · 2f59c9dc, 9cf8d0ba, 6c1bca70 · `--extra` en 6f827eb2 (nube): 127/144 en verde, 0 errores; 3 arreglos (QA-250 Tuerca vuelve a hablar, QA-251 mapa, QA-252 prueba), las 12 en verde · siguiente: espero tarea tuya aquí.
+- **Reales y arreglados:**
+  - **QA-250:** el prototipo `taller_tuerca` de CG-110 (un cuarto vacío) tenía la puerta encima de Tuerca en el Puerto. Junto a ella, Acción entraba ahí en vez de hablar (v18ArcoTest 7 y 11d). Lo quité: el Taller es el de k300. De ep2 a ep6, la puerta de un interior ya solo sale dentro de lo abierto (temporadaE2eTest y zonas56Test). interioresTest fallaba desde CG-126: `iniciar()` ya corría al arrancar.
+  - **QA-251:** en el mapa grande, tocar otra vez el marcador que ya es el destino no lo quitaba.
+- **Fallaba la prueba, no el juego:** QA-252, ciudadVivaTest CG-93 (azar en `prox`).
+- **De orden o carga (verdes al repetir en limpio, 11):** v18CombateTest, v18DescubrirTest (un diálogo abierto que dejó otra batería), v18PescaTest, v18ChispaTest, streamingTest (151 draw calls, límite 150, la vista ya iba en 152-155 antes de QA-239), accesibilidadTest W35 (el hoyo de minigolf no arrancó), banqueteTest, mazeTest, lookTest (texturas que cargan otros módulos durante la prueba), vivoTest y bohiosTest.
+- **Solo SwiftShader:** bohiosTest volvió a dar 8/17 («sin vanos») en otra tanda corta. Es QA-nuevo-br1-1: intermitente en la nube y en verde con GPU real (KIMI-374). No lo toqué. Si no encuentra la puerta, la prueba revienta en `bohios.js:489` (`pCasa` nulo) y se salta lo demás.
+- Kelvin decide: con el prototipo fuera, solo queda un «Taller de Tuerca», el de la torre k300.
