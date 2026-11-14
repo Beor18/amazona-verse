@@ -419,6 +419,37 @@
         check('Revisión T2 · la cola llena no tira el aviso de la actividad en marcha', c.length === n && c[0] === 'Aviso de inicio de la actividad' && !c.includes('Aviso de fuera que se repite'), c.join(' | '));
       } finally { G.rescate = r0; cm.hidden = cm0; UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = ''; }
     }
+    { // Revisión T2, ronda 4 (reparo 1): el aviso de una actividad que ya terminó no vuelve. El del rescate se aparta cuando la pesca
+      // empieza (el rescate ya acabó): se descarta. El de la pesca, apartado por el Diario, vuelve; si la pesca acaba, se va y no vuelve
+      const UI = G.ui, tt = document.getElementById('toast'), r0 = G.rescate, cuerpo = document.body.classList, p0 = cuerpo.contains('v18-pesca-on');
+      UI.vaciarAvisos(); UI.colaTest(true);
+      let rescate = false, fuera = false, vuelve = false, tras = false;
+      try {
+        G.rescate = Object.assign(Object.create(r0 || null), { activo: () => true }); tick(0.05);
+        UI.toast('Aviso del rescate R4', 6000); tick(0.05); rescate = !tt.hidden && tt.textContent === 'Aviso del rescate R4';
+        G.rescate = r0; cuerpo.add('v18-pesca-on'); UI.toast('Aviso de la pesca R4', 6000); tick(0.05); tick(0.05);
+        fuera = !UI.colaTest().cola.includes('Aviso del rescate R4') && tt.textContent === 'Aviso de la pesca R4';
+        UI.showCard('<p>Tarjeta de prueba</p>'); tick(0.05); UI.hideCard(); tick(0.05);
+        vuelve = !tt.hidden && tt.textContent === 'Aviso de la pesca R4';
+        if (!p0) cuerpo.remove('v18-pesca-on'); tick(0.05); tick(3);
+        tras = (tt.hidden || !/R4/.test(tt.textContent)) && !UI.colaTest().cola.some(t => /R4/.test(t));
+      } finally { G.rescate = r0; if (!p0) cuerpo.remove('v18-pesca-on'); if (UI.cardOpen) UI.hideCard(); }
+      check('Revisión T2 · el aviso de una actividad que ya terminó no vuelve a salir', rescate && fuera && vuelve && tras, [rescate, fuera, vuelve, tras, tt.textContent].join(' · '));
+      UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = '';
+    }
+    { // Revisión T2, ronda 4 (reparo 3): en una batería (G.quiet) el aviso que ya estaba de antes no retiene el de la prueba (el «Iguaca
+      // te llama» tapaba el «¡Ñam!» de banqueteTest); y el Banquete en marcha (un modo de Retos, body.retos-on) cuenta como escena
+      const UI = G.ui, tt = document.getElementById('toast'), q0 = G.quiet, cuerpo = document.body.classList, r0 = cuerpo.contains('retos-on');
+      UI.vaciarAvisos();
+      let deja = false, escena = false;
+      try {
+        G.quiet = false; UI.toast('Aviso de la partida R4', 3200); G.quiet = true;
+        UI.toast('Aviso de la prueba R4', 2600); deja = !tt.hidden && tt.textContent === 'Aviso de la prueba R4';
+        cuerpo.add('retos-on'); escena = UI.enEscena() && UI.avisoLibre('Aviso libre R4') === false;
+      } finally { G.quiet = q0; if (!r0) cuerpo.remove('retos-on'); }
+      check('Revisión T2 · en una batería el aviso de antes no tapa el de la prueba, y el Banquete cuenta como escena', deja && escena, deja + ' · ' + escena + ' · ' + tt.textContent);
+      UI.vaciarAvisos(); tt.textContent = '';
+    }
     if (G.dialogo && G.dialogo.activo) { // Revisión T2: un aviso en pantalla no se queda encima del diálogo o del bocadillo: se aparta y vuelve al acabar
       const UI = G.ui, tt = document.getElementById('toast'), act0 = G.dialogo.activo;
       UI.hideToast(); UI.toast('Aviso antes del diálogo', 3000); const antes = !tt.hidden;
@@ -534,6 +565,7 @@
     check('Apertura (QA-221): «Saltar» se esconde mientras un panel está encima y vuelve al cerrarlo', !!ocultoConPanel && !!vuelveSinPanel, 'con panel: ' + (ocultoConPanel ? 'oculto' : 'visible') + ' · sin panel: ' + (vuelveSinPanel ? 'vuelve' : 'no vuelve'));
     dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
     check('Apertura: cualquier tecla la salta: sin bocadillos, sin capas, sin botón y con el aviso de Iguaca', !G.dialogo.activo() && !fade() && !document.getElementById('c1-ruptura') && !document.getElementById('c1-saltar') && !!ap1 && /Iguaca te llama/.test($('toast').textContent));
+    check('Revisión T2, ronda 4: el aviso «Iguaca te llama» es de una sola vez ({ fijo }: la cola llena no lo tira)', /Iguaca te llama/.test(G.ui.colaTest().actual || '') && G.ui.colaTest().fijo === true, JSON.stringify(G.ui.colaTest()));
     G.quiet = true; G.c.apertura.fin();
     G.quiet = true;
     useAt('transmisor');

@@ -164,6 +164,9 @@ window.AVRioVivo = function (G) {
       '#rio-visor .rv-txt{position:absolute;left:50%;bottom:calc(45% - 37vmin);transform:translateX(-50%);padding:.35em .8em;border-radius:999px;background:rgba(2,24,32,.78);color:#e8fbff;font-size:var(--fs-s,15px);white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}' +
       '#rio-visor .rv-barra{display:block;height:3px;margin-top:.25em;border-radius:2px;background:#7fe3f0;transform-origin:left;transform:scaleX(0)}' +
       '@media (prefers-reduced-motion: reduce){#rio-visor{transition:none}}' +
+      // Ronda 4 de T2: en el teléfono el aviso (#toast, anclado abajo a 262 px) crece hacia arriba y no hacia la etiqueta del visor,
+      // pero la etiqueta llega hasta 45vh − 37vmin + su alto: con el visor encendido el aviso sube lo que haga falta para no tocarla
+      '@media (max-width:560px){body:has(#rio-visor.on) #toast{margin-bottom:max(0px,calc(45vh - 37vmin + 46px - 262px - env(safe-area-inset-bottom,0px)))}}' +
       '.peces-album{list-style:none;margin:.3em 0 .4em;padding:0;display:grid;gap:.45em}' +
       '.pez-tarjeta{display:flex;gap:.6em;align-items:flex-start;padding:.45em .55em;border-radius:10px;background:rgba(255,255,255,.07)}' +
       '.pez-tarjeta svg{flex:none}.pez-tarjeta span{display:flex;flex-direction:column;gap:.15em;min-width:0}' +
@@ -429,6 +432,21 @@ window.AVRioVivo = function (G) {
       oyenteTest = null; F.prueba = false; F.obs = g0.obs; F.avisado = g0.avisado; S.peces = g0.peces;
       Object.assign(S.pos, g0.pos); S.vy = g0.vy; M.posado = g0.posado; M.speed = g0.speed; M.flying = g0.flying; M.swimming = g0.swimming;
       F.visor = 0; F.visorOn = false; hud.classList.remove('on'); for (const b of bancos) b.huye.x = b.huye.z = 0;
+    }
+    { // Revisión T2, ronda 4: a 390×844 un aviso de 3 líneas no pisa la etiqueta del visor (en un iframe con las hojas del juego)
+      const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+      fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:390px;height:844px;border:0';
+      const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => '<link rel="stylesheet" href="' + l.href + '">').join('');
+      const css = document.getElementById('rio-vivo-css');
+      fr.srcdoc = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + hojas + (css ? css.outerHTML : '') +
+        '</head><body><div id="rio-visor" class="on"><div class="rv-txt"><span class="rv-nombre">Visor · busca peces bajo el agua</span><i class="rv-barra"></i></div></div>' +
+        '<div id="toast" class="hud">Repara el puente de Villa Raíz y se abre el Puerto de La Mina. Allí están Tuerca, el Constructor y la Ingeniera.</div></body></html>';
+      document.body.appendChild(fr);
+      await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 8000); }); // sin GPU la primera carga de las hojas pasa a veces de 2,5 s
+      const md = fr.contentDocument, t = md && md.getElementById('toast'), e = md && md.querySelector('#rio-visor .rv-txt');
+      const a = t && t.getBoundingClientRect(), b = e && e.getBoundingClientRect(), lineas = t ? Math.round((a.height - 24) / 21) : 0;
+      ok('Revisión T2, ronda 4: a 390×844 un aviso de 3 líneas no toca la etiqueta del visor', !!(a && b && a.height > 0 && b.height > 0 && a.bottom <= b.top - 2), a && b ? 'aviso ' + Math.round(a.top) + '–' + Math.round(a.bottom) + ' (~' + lineas + ' líneas) · etiqueta ' + Math.round(b.top) + '–' + Math.round(b.bottom) : 'sin medir');
+      fr.remove();
     }
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }

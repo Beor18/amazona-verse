@@ -517,7 +517,12 @@
         '#inv-cuenta.hud{position:relative;left:auto;top:auto;flex:0 0 100%;width:max-content;max-width:max-content;margin:8px 0 0;z-index:var(--z-hud,5);' +
         'min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:999px;background:#243a28;color:#f4ffe8;border:2px solid #d7e7a8;' +
         'font:700 16px/1 var(--font-display,sans-serif);box-shadow:0 3px 0 rgba(0,0,0,.28);pointer-events:none}' +
-        '#inv-cuenta[hidden]{display:none}' +
+        '#inv-cuenta[hidden]{display:none}#inv-cuenta i{display:none}' +
+        // Ronda 4 de T2: en el teléfono (HUD de T6) va en la fila de los contadores (reloj, puntos y recursos), compacta: huella y n/4
+        // («Patrulla» sigue en el texto para el lector de pantalla). Antes bajaba sola a una tercera fila.
+        '@media (max-width:560px){#inv-cuenta.hud{flex:0 0 auto;margin:0 0 0 auto;min-height:42px;padding:0 10px;gap:5px;font-size:15px}' +
+        '#inv-cuenta i{display:block;flex:none;width:16px;height:16px;background:currentColor;-webkit-mask:var(--i-paw) center/contain no-repeat;mask:var(--i-paw) center/contain no-repeat}' +
+        '#inv-cuenta .inv-c-txt{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}' +
         '#inv-reporte{position:fixed;left:50%;top:30%;z-index:70;min-height:44px;display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:16px;' +
         'background:#fff8e8;color:#2b2118;font:700 18px/1.2 var(--font-display,sans-serif);box-shadow:0 6px 0 #d9c7a3;pointer-events:none;opacity:0}' +
         '#inv-reporte.inv-on{animation:inv-rep 1.25s ease-out both}' +
@@ -551,7 +556,7 @@
     function pintarCuenta() {
       const el = cuentaEl(), n = mem.vistos.length, t = especies().length || 4;
       const txt = L(`Patrulla ${n}/${t}`, `Patrol ${n}/${t}`);
-      if (el.textContent !== txt) el.textContent = txt;
+      if (el.textContent !== txt) el.innerHTML = `<i aria-hidden="true"></i><span class="inv-c-txt">${esc(L('Patrulla', 'Patrol'))} </span>${n}/${t}`;
       // T1: fila propia pero del tamaño del texto (con flex-grow cruzaba toda la pantalla); fuera mientras hay un minijuego,
       // un diálogo, una tarjeta o un panel en marcha (vuelve sola al terminar)
       el.hidden = !(activo() && (!G.quiet || F.prueba) && !(!F.prueba && enEscena()));
@@ -676,6 +681,7 @@
             const ahora = document.querySelector('#steps li.now');
             const txtObj = ahora ? ahora.textContent : '';
             if (ahora) ahora.textContent = 'Vuela y pósate junto a Iguaca';
+            const filas = {};
             const medir = async (w, h) => {
               const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
               fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:' + w + 'px;height:' + h + 'px;border:0';
@@ -684,21 +690,27 @@
               const css = document.getElementById('invasoras-css');
               let cuerpo = top ? top.outerHTML : '';
               if (!/li class="now"/.test(cuerpo)) cuerpo = cuerpo.replace('</ol>', '<li class="now">Vuela y pósate junto a Iguaca</li></ol>');
-              fr.srcdoc = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + hojas + (css ? css.outerHTML : '') + '</head><body>' + cuerpo + '</body></html>';
+              // Ronda 4 de T2: sin animaciones, se mide la posición final (el «rise-in» del objetivo lo baja 24 px al cargar)
+              fr.srcdoc = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + hojas + (css ? css.outerHTML : '') + '<style>*{animation:none!important;transition:none!important}</style></head><body>' + cuerpo + '</body></html>';
               document.body.appendChild(fr);
-              await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 2500); });
+              await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 8000); }); // sin GPU la primera carga de las hojas pasa a veces de 2,5 s
               const md = fr.contentDocument;
               const obj = md && md.querySelector('#steps li.now'), pill = md && md.getElementById('inv-cuenta');
               if (pill) pill.hidden = false;
+              const mc = md && md.getElementById('marcador'), tp = md && md.getElementById('top'); // con el marcador a la vista (reloj y puntos), como en partida
+              if (mc && w < 560) { mc.hidden = false; if (tp && !tp.style.getPropertyValue('--mc-w')) tp.style.setProperty('--mc-w', '110px'); }
               const o = obj && obj.getBoundingClientRect(), p = pill && pill.getBoundingClientRect();
               const pos = pill && md.defaultView.getComputedStyle(pill).position;
               const mal = !md ? 'sin documento' : !obj ? 'sin objetivo' : !pill ? 'sin pastilla' : pos !== 'relative' ? 'posición ' + pos : solapan(o, p) ? 'solape ' + Math.round(o.left) + ',' + Math.round(o.top) + '–' + Math.round(o.right) + ',' + Math.round(o.bottom) + ' con ' + Math.round(p.left) + ',' + Math.round(p.top) + '–' + Math.round(p.right) + ',' + Math.round(p.bottom) : '';
+              const iv = md && md.getElementById('inv'), r = iv && iv.getBoundingClientRect();
+              filas[w] = !r || !p ? 'sin inventario' : (p.top < r.bottom - 1 && p.bottom > r.top + 1 && !solapan(r, p) && p.right <= w + 1) ? '' : 'pastilla ' + Math.round(p.left) + ',' + Math.round(p.top) + '–' + Math.round(p.right) + ',' + Math.round(p.bottom) + ' · contadores ' + Math.round(r.left) + ',' + Math.round(r.top) + '–' + Math.round(r.right) + ',' + Math.round(r.bottom);
               fr.remove();
               return mal;
             };
             const m1280 = await medir(1280, 800), m390 = await medir(390, 844);
             if (ahora) ahora.textContent = txtObj;
             ok('La pastilla de la Patrulla no tapa el objetivo a 1280×800 ni a 390×844', !m1280 && !m390, [m1280 && ('1280 ' + m1280), m390 && ('390 ' + m390)].filter(Boolean).join(' · '));
+            ok('Revisión T2, ronda 4: a 390×844 la pastilla va en la fila de los contadores, sin pisarlos (no en una tercera fila)', !filas[390], filas[390]);
           }
           const zonas = especies().map(e => G.interaccion.find('invzona_' + e.id));
           ok('El mapa marca la zona, no el sitio exacto (a 18 m o más del animal)', zonas.every(z => z && hogar[z.id.slice(8)] && Math.hypot(z.x - hogar[z.id.slice(8)].x, z.z - hogar[z.id.slice(8)].z) >= 18), zonas.map(z => z && Math.hypot(z.x - hogar[z.id.slice(8)].x, z.z - hogar[z.id.slice(8)].z).toFixed(0)).join(','));

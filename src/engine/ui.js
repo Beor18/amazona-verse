@@ -30,7 +30,11 @@ AVE.module('ui', function (G) {
   // la escena en marcha solo si todas las de ahora ya estaban al darlo: así el de un minijuego no se queda encima del siguiente
   // (rescate → pesca sin un cuadro libre entre medias) ni de una tarjeta que se abre en medio (el Diario). La cola llena tampoco
   // tira los de la actividad en marcha: primero los que se repiten y no son de escena; si todos lo son, el más nuevo.
+  // Ronda 4: un aviso de una actividad (rescate, pesca, modos…; no las pantallas como la tarjeta o el diálogo) que ya se apartó
+  // una vez no vuelve si su actividad terminó: al apartarlo, o mientras espera en la cola, se descarta (salvo los { fijo }).
   const MIN_S = 2.2, COLA_MAX = 8, cola = [];
+  const PANTALLAS = ['tarjeta', 'comic', 'creador', 'fin', 'apertura', 'dialogo', 'portada', 'pausa'];
+  const acabado = (q, ks) => { if (!q || q.fijo || !q.escena) return false; const a = q.escena.filter(c => !PANTALLAS.includes(c)); return a.length > 0 && !a.some(c => ks.includes(c)); };
   let actual = null, colaPrueba = false;
   // QA-93: tarjeta en teléfono, cómic o creador. QA-188 (W28): también la apertura del capítulo — el narrador habla en
   // bocadillos libres, no en G.dialogo, así que busy() no lo cubre y el aviso salía pegado a su subtítulo.
@@ -48,7 +52,8 @@ AVE.module('ui', function (G) {
   // Saca el siguiente de la cola si no hay pantalla que lo tape y el de pantalla ya cumplió su tiempo mínimo
   function siguiente(esc) {
     if (!cola.length || tapado()) return;
-    if (enPantalla() && actual.vivo) { const dur = toastTimer === Infinity ? MIN_S : visto + toastTimer; if (visto < Math.min(MIN_S, dur)) return; }
+    // Ronda 4: en una batería (G.quiet) tampoco reserva su tiempo el aviso que salió antes de ella («Iguaca te llama» tapaba el «Ñam» de banqueteTest)
+    if (enPantalla() && actual.vivo && (!G.quiet || colaPrueba)) { const dur = toastTimer === Infinity ? MIN_S : visto + toastTimer; if (visto < Math.min(MIN_S, dur)) return; }
     const ks = esc == null ? escenas() : esc;
     const i = ks.length ? cola.findIndex(q => deEscena(q, ks)) : 0; // con escena, solo los de la actividad
     if (i >= 0) mostrar(cola.splice(i, 1)[0]);
@@ -77,7 +82,8 @@ AVE.module('ui', function (G) {
   // El aviso en pantalla se aparta al frente de la cola con lo que le quedaba (mínimo 1,5 s) y vuelve cuando se destapa
   function apartar() {
     if (!enPantalla()) return;
-    if (!cola.includes(actual)) { if (toastTimer !== Infinity) actual.ms = Math.max(1500, Math.round(toastTimer * 1000)); cola.unshift(actual); }
+    const i = cola.indexOf(actual); if (i >= 0) cola.splice(i, 1);
+    if (!acabado(actual, escenas())) { if (toastTimer !== Infinity) actual.ms = Math.max(1500, Math.round(toastTimer * 1000)); actual.apartado = true; cola.unshift(actual); }
     ocultar();
   }
   // QA-188 (en vivo, 7-nov): un aviso que ya estaba en pantalla cuando algo pasa a taparlo (empieza la apertura del cap. 1
@@ -85,12 +91,14 @@ AVE.module('ui', function (G) {
   G.on('update', () => {
     if (!cola.length && !enPantalla()) return;
     const ks = escenas();
+    for (let i = cola.length - 1; i >= 0; i--) if (cola[i].apartado && acabado(cola[i], ks)) cola.splice(i, 1);
+    if (enPantalla() && actual.apartado && acabado(actual, ks)) ocultar(); // el que ya volvió una vez tampoco se queda tras su actividad
     if (!ks.length) { for (const q of cola) q.escena = null; if (actual) actual.escena = null; }
     if (enPantalla() && (tapado() || (ks.length && !deEscena(actual, ks)))) { apartar(); return; }
     siguiente(ks);
   }, 84);
   // Solo para las baterías: activa el tiempo mínimo aunque G.quiet esté puesto y devuelve el estado de la cola
-  function colaTest(on) { if (on != null) colaPrueba = !!on; return { cola: cola.map(p => p.text || p.html), actual: enPantalla() ? (actual.text || actual.html) : null, visto, max: COLA_MAX }; }
+  function colaTest(on) { if (on != null) colaPrueba = !!on; return { cola: cola.map(p => p.text || p.html), actual: enPantalla() ? (actual.text || actual.html) : null, fijo: enPantalla() ? !!actual.fijo : null, visto, max: COLA_MAX }; }
   function overlayOpen() { return !$('end').hidden || !$('comic').hidden || !$('creator').hidden; }
   // Ocupado: diálogo, tarjeta u overlay abiertos (el jugador no se mueve ni recoge)
   function busy() { return G.dialogo.open() || cardOpen || overlayOpen(); }

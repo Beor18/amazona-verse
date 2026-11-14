@@ -164,7 +164,7 @@ AVE.module('lugares', function (G) {
     espera = d.asentamiento ? 3.8 : 3.4;
     const D = d.nuevo && G.descubrir, cuenta = D && D.htmlCuenta ? D.htmlCuenta() : ''; // «Lugares descubiertos N/M» (descubrir.js)
     if (d.asentamiento) rotulo(d.asentamiento, d.nuevo, cuenta);
-    else G.ui.toastHTML(D && D.htmlAviso ? D.htmlAviso(d.nombre) : `<b>Descubriste</b> ${esc(d.nombre)}${cuenta}`, 3200); // dos líneas: «¡Descubriste …!» y la cuenta
+    else G.ui.toastHTML(D && D.htmlAviso ? D.htmlAviso(d.nombre) : `<b>Descubriste</b> ${esc(d.nombre)}${cuenta}`, 3200, { fijo: true }); // de una sola vez (la cola llena no lo tira); dos líneas: «¡Descubriste …!» y la cuenta
     if (d.nuevo) G.audio.play('pickup');
   }
   let t = 0;
@@ -219,6 +219,7 @@ AVE.module('lugares', function (G) {
       G.quiet = false; avisar(0); G.quiet = true;
       const tt = $('toast');
       check('Sale «Descubriste: <lugar>» en el HUD', !!tt && !tt.hidden && /Descubriste/.test(tt.textContent) && tt.textContent.includes(nombreDe(p)) && !!tt.querySelector('b'), tt ? tt.textContent : 'sin toast');
+      check('Revisión T2, ronda 4: «¡Descubriste…!» es de una sola vez ({ fijo }: la cola llena no lo tira)', G.ui.colaTest && G.ui.colaTest().fijo === true, G.ui.colaTest && JSON.stringify(G.ui.colaTest()));
       G.ui.hideToast();
       // QA-188 (W28): con la apertura del capítulo en curso (narrador en bocadillos libres) la cola espera y drena después
       cola.length = 0; espera = 0;
