@@ -1379,6 +1379,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         mats();
         if (!TM.grupo) construirArena();
         TM.grupo.visible = true; if (!TM.grupo.parent) raiz.add(TM.grupo);
+        // QA-nuevo-br3-3: las texturas de la tormenta (incluidas las de las piezas del pool, que salen más tarde) se suben ya,
+        // al empezar (si ya están subidas, initTexture solo las enlaza; también tras recuperar el contexto): si no, cada una subía en su primer dibujo, en una partida cualquiera, y la sesión larga lo veía crecer
+        const W = R.renderer, contexto = R.contexto;
+        if (W && W.initTexture && !(contexto && contexto.perdido)) for (const t of [texSombra(), texBrillo(), texRayo(), texSemilla(), texPluma(), texBanderin(' '), TM.mapaCortina, TM.techo.material.map]) { try { W.initTexture(t); } catch (e) { /* la sube su primer dibujo */ } }
         for (const k in pool) pool[k].forEach(soltar);
         Object.assign(TM, { fase: 'cuenta', t: 0, cuenta: T_CARRERA.cuentaPaso * 3, vidas: T_TORMENTA.vidas, puntos: 0, combo: 0, comboT: 0, invul: 0, peligros: [], semillas: [],
           rT: 1.5, lT: 15, sT: 0, frente: 0, fuera: 0, ultimoN: 3, vientoT: 0, recogidas: 0, golpes: 0, finT: 0, lanzados: 0 });
@@ -1841,6 +1845,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         abrir();
         check('«Otro reto» vuelve al menú', !ui.menu.hidden && ui.fin.hidden);
         check('La tormenta arranca', jugar('tormenta') && modo === TORMENTA && TM.fase === 'cuenta' && C.fase === 'nada');
+        { const W = R.renderer, enGPU = t => !!(W && W.properties.get(t).__webglTexture), txs = [texSombra(), texBrillo(), texRayo(), texSemilla(), texPluma()];
+          check('QA-nuevo-br3-3 · Las texturas de la tormenta ya están en la GPU al empezar (no suben en una partida cualquiera)', (R.contexto && R.contexto.perdido) || txs.every(enGPU), txs.filter(t => !enGPU(t)).length + ' sin subir'); }
         check('El agua de la tormenta es un solo cuerpo', G.agua.uniforms.uTormenta && G.agua.uniforms.uTormenta.value === 1);
         check('Las cosas de la carrera se esconden', !C.grupo.visible && !C.rivales.length);
         tick(3);
