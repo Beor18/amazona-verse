@@ -122,6 +122,9 @@
     enganchar('b-que-hacer');
     enganchar('b-que-hacer-title');
     pintar();
+    // QA-248: al cambiar el idioma se vuelve a pintar (en ep2 a ep6 el panel se pintaba antes de poner EN y se quedaba en español)
+    if (G.on) G.on('aula', k => { if (k === 'idioma') pintar(); });
+    if (G.on) G.on('apply', () => pintar(), 95); // una partida guardada en EN
     async function test() {
       const out = [], ok = (n, pass, extra) => out.push({ name: n, ok: !!pass, extra: extra == null ? '' : String(extra) });
       const abierto = dlg.open;
