@@ -37,7 +37,8 @@ AVE.module('camara', function (G) {
     lazy: 0.55, lazyFly: 1.1,      // fuerza del seguimiento perezoso (rad/s por rad de diferencia, a velocidad de carrera)
     groundClear: 0.9,              // separación mínima sobre el terreno
     agachadaAlto: 1.3, agachadaDist: 4.2, // agachada bajo un toldo: la cámara baja y se acerca para verla bajo la lona
-    copaMin: 2.4, copaDentro: 2.8, // con una copa en medio: distancia mínima / si Vittata está dentro de la copa (m)
+    copaMin: 4, copaDentro: 4,     // con una copa en medio: distancia mínima / si Vittata está dentro de la copa (m). T5: antes 2,4 y 2,8 (la vista se pegaba a Vittata)
+    copaSubir: 6,                  // T5: con una copa en medio, antes de acercarse sube hasta estos m buscando la vista libre
     rollMax: 4, rollK: 0.09,       // inclinación en vuelo: máximo (°) y grados por grado/s de giro del rumbo
     fovMin: 4, fovMax: 12,         // FOV extra al volar o en el impulso, de parado a velocidad de impulso
     caida: 0.35, bob: 0.01,        // dolly al aterrizar (m por impacto 1) y balanceo al caminar (m)
@@ -166,11 +167,34 @@ AVE.module('camara', function (G) {
       const t = (-b - Math.sqrt(disc)) / L2; if (t > 0 && t < tMin) tMin = t;
     }
     const L = Math.sqrt(L2);
-    // Posada: se acerca para verla (QA-27). Volando, el piso es el 82 % de distFly: bajar a copaMin (2,4 m)
+    // T5: con una copa en medio (y Vittata fuera de las copas), primero sube por encima de las hojas a la misma distancia;
+    // solo si no hay hueco se acerca (antes se acercaba siempre y la pantalla se llenaba de Vittata y de hojas)
+    if (tMin < 1 && !dentro) {
+      const gy = suelo(camPos.x, camPos.z);
+      for (let up = 1; up <= CAM.copaSubir; up += 1) {
+        const y = camPos.y + up;
+        if (y > gy && !cruzaCopa(lista, camPos.x, y, camPos.z)) { camPos.y = y; return; }
+      }
+    }
+    // Posada: se acerca para verla (QA-27), nunca a menos de copaMin. Volando, el piso es el 82 % de distFly: bajar a 2,4 m
     // agrandaba la vista como un zoom cada vez que una copa cruzaba la línea (QA-61).
     const piso = M.posado ? CAM.copaMin : Math.max(CAM.copaMin, CAM.distFly * 0.82);
     if (dentro && M.posado) { const k = Math.min(1, CAM.copaDentro / L); camPos.set(cabeza.x + dirCam.x * k, S.pos.y - 0.3, cabeza.z + dirCam.z * k); }
     else if (tMin < 1 || dentro) { const k = Math.min(1, Math.max(piso / L, dentro ? piso / L : tMin - 0.4 / L)); if (k < 0.995) camPos.set(cabeza.x + dirCam.x * k, cabeza.y + dirCam.y * k, cabeza.z + dirCam.z * k); }
+  }
+  // ¿La línea cabeza→(px, py, pz) entra en alguna copa, o el punto cae dentro de una? La copa en la que está la cabeza no cuenta.
+  function cruzaCopa(lista, px, py, pz) {
+    const dx = px - cabeza.x, dy = py - cabeza.y, dz = pz - cabeza.z, l2 = dx * dx + dy * dy + dz * dz;
+    for (let i = 0; i < lista.length; i += 4) {
+      const cx = lista[i], cy = lista[i + 1], cz = lista[i + 2], r2 = lista[i + 3] * lista[i + 3];
+      const ox = cabeza.x - cx, oy = cabeza.y - cy, oz = cabeza.z - cz, c = ox * ox + oy * oy + oz * oz - r2;
+      if (c < 0) continue;
+      if ((px - cx) ** 2 + (py - cy) ** 2 + (pz - cz) ** 2 < r2) return true;
+      const b = ox * dx + oy * dy + oz * dz; if (b >= 0) continue;
+      const disc = b * b - l2 * c; if (disc < 0) continue;
+      const t = (-b - Math.sqrt(disc)) / l2; if (t > 0 && t < 1) return true;
+    }
+    return false;
   }
   // Si el encuadre cae dentro de un muro, un tejado o una cúpula, retrocede por la línea hasta quedar fuera.
   // Si eso la dejaría a menos de 3,2 m (la vista se agrandaba al chocar), prueba a rodear el obstáculo.

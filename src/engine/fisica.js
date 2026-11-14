@@ -119,6 +119,11 @@ AVE.module('fisica', function (G) {
     if (y != null && G.solidos && G.solidos.activo && !columnaPercha(x, z, y)) { const s = G.solidos.suelo(x, z, y, tolSolido); if (s > g) g = s; }
     return g;
   }
+  // La percha de misión sobre la que están los pies (a ±3 cm de su tope), o null
+  function perchaBajo(x, z, y) {
+    for (const p of perchas) if (Math.abs(y - p.y) < 0.03 && Math.hypot(x - p.x, z - p.z) < p.r && (!p.when || p.when())) return p;
+    return null;
+  }
   function columnaPercha(x, z, y) {
     for (const p of perchas) if (y >= p.y - PERCHA_TOL && y < p.y + 4 && Math.hypot(x - p.x, z - p.z) < p.r + 0.3 && (!p.when || p.when())) return p;
     return null;
@@ -605,10 +610,13 @@ AVE.module('fisica', function (G) {
     // Posada: sobre un sólido ('alto': techo, roca, cornisa) o sobre algo fino ('fino': rama, baranda, poste, cumbrera)
     const antes = MOVE.posado;
     MOVE.posado = '';
-    if (SOL && MOVE.grounded && !MOVE.onTerrain && Math.abs(SOL.suelo(S.pos.x, S.pos.z, S.pos.y + 0.01) - S.pos.y) < 0.03) MOVE.posado = SOL.fino(S.pos.x, S.pos.z, S.pos.y + 0.01) ? 'fino' : 'alto';
+    // T5: sobre una percha de misión (addPercha: las capas del bosque, los postes de la fiesta…) también está posada, como en una rama
+    const enPercha = MOVE.grounded && !MOVE.onTerrain && perchaBajo(S.pos.x, S.pos.z, S.pos.y);
+    if (enPercha) MOVE.posado = 'fino';
+    else if (SOL && MOVE.grounded && !MOVE.onTerrain && Math.abs(SOL.suelo(S.pos.x, S.pos.z, S.pos.y + 0.01) - S.pos.y) < 0.03) MOVE.posado = SOL.fino(S.pos.x, S.pos.z, S.pos.y + 0.01) ? 'fino' : 'alto';
     // Gancho 'posado' una vez por aterrizaje (el cómic cuenta la primera vez en un techo o en una rama alta)
     if (MOVE.posado && !antes && MOVE.wasAirPosado) {
-      const que = SOL.que(S.pos.x, S.pos.z, S.pos.y + 0.01);
+      const que = enPercha ? 'percha' : SOL.que(S.pos.x, S.pos.z, S.pos.y + 0.01);
       G.emit('posado', { tipo: MOVE.posado, que, altura: +(S.pos.y - G.terreno.height(S.pos.x, S.pos.z)).toFixed(2) });
       // Sonido según dónde: techo o cumbrera → aterrizar_techo; rama (y lo fino) → posarse_rama
       G.audio.play(que === 'techo' || que === 'cumbrera' ? 'aterrizar_techo' : que === 'rama' || MOVE.posado === 'fino' ? 'posarse_rama' : 'aterrizar_techo');
