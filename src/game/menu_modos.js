@@ -882,7 +882,7 @@
 
     // QA-212: ocupado() = hay una actividad V18 en marcha (duelo, minigolf, carreras…); lo miran las pistas de descubrir.js y ciclo.js
     const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18(), get libre() { return libre; }, get pendiente() { return pendiente; } };
-    api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir });
+    api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir, aplazarIntro: () => { aplazar = true; } });
     if (window.AVQueHacer) window.AVQueHacer(G);
     return api;
   };
@@ -914,6 +914,10 @@
       img: Array.from({ length: 12 }, (_, i) => { const a = i / 12 * Math.PI * 2; return `<circle cx="${(32 + 21 * Math.cos(a)).toFixed(1)}" cy="${(32 + 21 * Math.sin(a)).toFixed(1)}" r="4" fill="${i % 3 ? '#ffe2ec' : 'var(--gold)'}"/>`; }).join('') + '<circle cx="32" cy="32" r="8" fill="var(--gold)"/>' },
   ];
   const TEMP = 'amazonaverse.temporada';
+  // T7 · Continuidad: al pasar a un capítulo NUEVO desde «Siguiente capítulo» o «Capítulos», tu cotorra (nombre y aspecto) y la
+  // ropa que llevas pasan con un traspaso de un solo uso; el capítulo siguiente lo aplica y no abre el creador. Las piezas ganadas
+  // (unlocked) no se copian: cada capítulo da las suyas (K3, el reparto de ropa, lo decide Kelvin).
+  const TRAS = 'amazonaverse.traspaso', TRAS_MS = 24 * 3600e3;
   // Último capítulo elegido o jugado: boot.js lo abre al volver a entrar sin un clic en el sitio. Solo la página de arriba
   // (los iframes de las pruebas no lo tocan).
   const CAPK = 'amazonaverse.capitulo';
@@ -966,8 +970,32 @@
     function jugar(n) {
       apuntarCapitulo(cap(n).id); // lo que eligió el jugador manda al volver a entrar (boot.js)
       if (n === actual) { cerrar(); const t = $('title'); if (t && t.open) h.elegir('aventura'); return null; }
+      dejarTraspaso(n);
       const url = urlDe(n); G.guardado.autosave && G.guardado.autosave(); navegar(url); return url;
     }
+    // ---------- T7 · Traspaso de la cotorra al capítulo siguiente ----------
+    function dejarTraspaso(n) {
+      if (window.top !== window || !(S.profile && S.profile.created) || estado(n) !== 'nuevo') return false;
+      const d = partida(n); if (d && d.profile && d.profile.created) return false; // allí ya hay cotorra: manda la suya
+      try {
+        localStorage.setItem(TRAS, JSON.stringify({ v: 1, a: cap(n).id, desde: actual, t: Date.now(),
+          profile: { name: S.profile.name, look: S.profile.look }, wear: Object.assign({}, S.wear || {}) }));
+        return true;
+      } catch (e) { return false; }
+    }
+    function recibirTraspaso() {
+      let d = null; try { d = JSON.parse(localStorage.getItem(TRAS) || 'null'); } catch (e) { d = null; }
+      if (!d || d.v !== 1 || d.a !== cap(actual).id) return false;
+      try { localStorage.removeItem(TRAS); } catch (e) { /* sin almacén */ }
+      if ((S.profile && S.profile.created) || !(Date.now() - d.t < TRAS_MS) || !d.profile || !d.profile.name || !G.creador || !G.creador.saveCharacter) return false;
+      if (h.aplazarIntro) h.aplazarIntro(); // la apertura del capítulo se juega al entrar en Aventura, no detrás de la portada
+      const err = G.creador.saveCharacter({ name: d.profile.name, look: d.profile.look || undefined });
+      if (err) return false; // nombre que ya no pasa el filtro: el creador sigue abierto, como siempre
+      if (d.wear && typeof d.wear === 'object') { S.wear = Object.assign({}, d.wear); if (G.actores && G.actores.applyWear) G.actores.applyWear(); }
+      if (G.guardado && G.guardado.autosave) G.guardado.autosave();
+      return true;
+    }
+    const traspasado = recibirTraspaso();
 
     // ---------- Panel final: «Siguiente capítulo» ----------
     function pintarFin() {
@@ -1032,7 +1060,7 @@
       const quiet0 = G.quiet; G.quiet = true;
       const snap = G.guardado.instantanea(); G.guardado.suspender(true);
       const creador = $('creator'), creador0 = !!(creador && !creador.hidden); // para reabrir el creador al final si estaba abierto (antes no se definía: ReferenceError)
-      const claves = [TEMP, CAPK].concat(CAPS.filter(c => c.n !== actual).map(c => c.almacen + '.save'));
+      const claves = [TEMP, CAPK, TRAS].concat(CAPS.filter(c => c.n !== actual).flatMap(c => [c.almacen + '.save', c.almacen + '.menu']));
       const antes = {}; for (const k of claves) { try { antes[k] = localStorage.getItem(k); localStorage.removeItem(k); } catch (e) { /* sin almacén */ } }
       const nav0 = navegar; let fueA = null; navegar = u => { fueA = u; };
       const aj = G.aula && G.aula.aj, idioma0 = aj ? aj.idioma : null;
@@ -1109,6 +1137,8 @@
         // 6. Encadenar: el siguiente capítulo arranca (iframe a 375×812) y ve el progreso guardado aquí
         const sig = actual < 6 ? actual + 1 : actual - 1;
         if (opts.encadenar !== false) {
+          try { localStorage.removeItem(TRAS); } catch (e) { /* sin almacén */ }
+          const tras = dejarTraspaso(sig); // T7: la cotorra de este capítulo pasa al siguiente (si allí no hay partida)
           fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
           fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:375px;height:812px;border:0;';
           fr.src = new URL(urlDe(sig), location.href).href; document.body.appendChild(fr);
@@ -1117,6 +1147,10 @@
           if (ok) {
             const W = fr.contentWindow, T2 = W.AV.temporada, G2 = W.AV.G;
             G2.quiet = true; G2.guardado.suspender(true);
+            if (tras) {
+              const p2 = G2.S.profile || {}, cr2 = W.document.getElementById('creator');
+              check(`T7 · Capítulo ${sig}: llega tu cotorra (nombre, aspecto y ropa) y no se abre el creador`, !!(p2.created && p2.name === S.profile.name && (!S.profile.look || (p2.look && p2.look.species === S.profile.look.species)) && JSON.stringify(G2.S.wear || {}) === JSON.stringify(S.wear || {}) && cr2 && cr2.hidden && T2.traspasado && localStorage.getItem(TRAS) === null), `perfil ${p2.created}/${p2.name} · creador ${cr2 && !cr2.hidden ? 'abierto' : 'cerrado'} · traspasado ${T2.traspasado}`);
+            }
             const hud2 = (G2.pack.meta && G2.pack.meta.hud) || {};
             check(`Capítulo ${sig}: rótulo «Capítulo ${sig}»`, (G2.pack.meta.capitulo === sig) && (!hud2.capitulo || hud2.capitulo.startsWith('Capítulo ' + sig)), hud2.capitulo);
             check(`Capítulo ${sig}: ve terminados el ${actual} y el 4 (progreso común)`, T2.estado(actual) === 'terminado' && T2.estado(4) === 'terminado' && T2.decision(4).opcion === 'puente');
@@ -1199,6 +1233,6 @@
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    return { CAPS, actual, estado, terminar, decision, leer, urlDe, jugar, abrir, cerrar, pintar, test, capituloTest };
+    return { CAPS, actual, estado, terminar, decision, leer, urlDe, jugar, abrir, cerrar, pintar, test, capituloTest, traspasado, dejarTraspaso };
   }
 })();
