@@ -168,6 +168,8 @@ AVE.module('misiones', function (G) {
   function showEnd() {
     $('end-text').textContent = HIST.fin ? HIST.fin(S, G) : '';
     verConfirmacion(false, false);
+    // T2: el aviso que estaba en pantalla se va y no vuelve; los que lleguen con el panel abierto esperan a que se cierre (G.ui)
+    try { G.ui.hideToast(); } catch (e) { /* sin HUD */ }
     $('end').hidden = false;
   }
   function seguirExplorando() {

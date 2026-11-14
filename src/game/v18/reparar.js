@@ -26,14 +26,19 @@ window.AVV18Reparar = function (G) {
   const pagar = c => { if (G.objetos && G.objetos.pay) G.objetos.pay(c); else for (const k in c) S.inv[k] -= c[k]; };
   const refrescarInv = () => { try { G.objetos.renderInv(); } catch (e) { /* sin HUD */ } try { if (G.guardado.save) G.guardado.save(true); else G.guardado.autosave(); } catch (e) { /* sin guardado */ } }; // QA-162: al momento, junto a la marca de G.v18
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 3200); } catch (e) { /* sin interfaz */ } };
+  // T2: «hay actividad o escena en marcha» (src/engine/ui.js; sin ella, lo de antes: pausa, tarjeta, panel o diálogo)
+  const enEscena = () => {
+    try {
+      if (G.ui && G.ui.enEscena) return G.ui.enEscena();
+      return !!((G.pausa && G.pausa.activa && G.pausa.activa()) || (G.ui && (G.ui.cardOpen || (G.ui.overlayOpen && G.ui.overlayOpen()))) || (G.dialogo && G.dialogo.open && G.dialogo.open()));
+    } catch (e) { return false; }
+  };
   // CG-124: desde el inicio, con el puente roto, una pista. No cambia la historia: nombra lo que ya existe.
   const PISTA_PUERTO = 'Repara el puente de Villa Raíz y se abre el Puerto de La Mina. Allí están Tuerca, el Constructor y la Ingeniera.';
   let pistaPuerto = false;
   function avisarPuerto() {
     if (pistaPuerto || !enCap1() || reparado()) return false;
-    if (G.pausa && G.pausa.activa && G.pausa.activa()) return false;
-    if (G.ui && (G.ui.cardOpen || (G.ui.overlayOpen && G.ui.overlayOpen()))) return false;
-    if (G.dialogo && G.dialogo.open && G.dialogo.open()) return false;
+    if (enEscena()) return false; // T2: la regla compartida (src/engine/ui.js); se reintenta en el siguiente cuadro
     pistaPuerto = true;
     toast(PISTA_PUERTO, 6500);
     return true;
@@ -374,7 +379,7 @@ window.AVV18Reparar = function (G) {
     if (d < 60 && (CORR.fxT -= dt) <= 0) { CORR.fxT = 0.45; try { G.fx.burst(c.x + (Math.random() - 0.5) * 3, c.y + 1 + Math.random() * 6, c.z + (Math.random() - 0.5) * 3, 'leaves', 2); } catch (e) { /* sin fx */ } }
     if (!M || d > CORR.r) return;
     if (!M.flying) {
-      if ((CORR.pistaT -= dt) <= 0) { CORR.pistaT = 12; toast('Vuela aquí, en el centro del puente: la corriente te sube.'); }
+      if ((CORR.pistaT -= dt) <= 0) { CORR.pistaT = 12; if (!enEscena()) toast('Vuela aquí, en el centro del puente: la corriente te sube.'); }
       return;
     }
     if (S.pos.y >= c.y + CORR.alto) return;
@@ -550,6 +555,12 @@ window.AVV18Reparar = function (G) {
       if (G.dialogo && G.dialogo.open && G.dialogo.open() && G.dialogo.clear) G.dialogo.clear();
       if (G.ui && G.ui.cardOpen && G.ui.hideCard) G.ui.hideCard();
       for (const id of ['creator', 'comic', 'end']) { const e = document.getElementById(id); if (e) e.hidden = true; }
+      if (G.dialogo && G.dialogo.cancelarLibre) try { G.dialogo.cancelarLibre(); } catch (e) { /* sin bocadillo */ }
+      { // T2: con una escena en marcha (aquí, una tarjeta) la pista no sale ni se gasta; sale al cerrarla
+        pistaPuerto = false; toasts.length = 0;
+        G.ui.showCard('<p>prueba T2</p>'); const conTarjeta = avisarPuerto(), dijo = toasts.length; G.ui.hideCard();
+        check('T2 · con una tarjeta abierta la pista del puerto espera (no sale ni se gasta)', conTarjeta === false && dijo === 0 && !pistaPuerto && (!G.ui.enEscena || G.ui.enEscena() === false), 'enEscena ' + (G.ui.enEscena && G.ui.enEscena()));
+      }
       pistaPuerto = false; toasts.length = 0;
       const dijoPuerto = avisarPuerto();
       check('CG-124 · con el puente roto, desde el inicio, la pista abre el Puerto de La Mina con Tuerca, el Constructor y la Ingeniera',

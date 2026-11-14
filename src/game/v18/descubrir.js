@@ -47,14 +47,16 @@ window.AVV18Descubrir = function (G) {
   // del narrador) ni durante la apertura en negro del cap. 1; espera a que el jugador esté libre de verdad
   // QA-212: tampoco con una actividad V18 en marcha (la cuenta atrás del duelo…; G.menuModos.ocupado, la de menu_modos.js) ni con la
   // portada (el menú de modos) o la pausa abiertas: no se puede ir a buscarla y tapa lo que hay en pantalla
+  // T2 (lista «terminado»): todo esto es ahora la regla compartida G.ui.enEscena() (src/engine/ui.js); lo de abajo queda de respaldo
   const otraCosa = () => {
     try {
+      if (G.ui && G.ui.enEscena) return G.ui.enEscena();
       const t = document.getElementById('title'), p = document.getElementById('pause');
       return !!(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) || !!(t && t.open) || !!(p && p.matches && p.matches(':popover-open'));
     } catch (e) { return false; }
   };
   const libre = () => {
-    try { return !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo()) && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar') && !otraCosa(); }
+    try { if (G.ui.enEscena) return !G.ui.enEscena(); return !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo()) && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar') && !otraCosa(); }
     catch (e) { return true; }
   };
   const sonar = (n, a) => { try { if (G.audio && (!G.audio.has || G.audio.has(n))) return G.audio.play(n, a); } catch (e) { /* sin audio */ } return false; };

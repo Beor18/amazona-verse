@@ -445,7 +445,8 @@
         const d = F.flash; d.style.transition = 'none'; d.style.opacity = '0.75'; void d.offsetWidth; d.style.transition = 'opacity .45s ease-out'; d.style.opacity = '0';
       } catch (e) { /* sin DOM */ }
     }
-    const enEscena = () => { try { return !!(G.ui.busy() || (G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) || document.body.classList.contains('retos-on')); } catch (e) { return false; } };
+    // T2: la regla compartida «hay actividad o escena en marcha» (src/engine/ui.js); sin ella, solo G.ui.busy()
+    const enEscena = () => { try { return G.ui.enEscena ? G.ui.enEscena() : G.ui.busy(); } catch (e) { return false; } };
     function avisar(texto, ms) { if (G.quiet && !F.prueba) return; try { G.ui.toast(texto, ms || 3600); } catch (e) { /* sin HUD */ } }
     function avistar(id) {
       if (!activo() || !espDe(id) || mem.vistos.includes(id)) return false;
@@ -582,12 +583,21 @@
     // ---------- Bucle ----------
     function paso(dt, busy) {
       dt = Math.min(dt, 0.1); F.t += dt; uT.value += dt;
-      if (activo()) revisar(dt, !busy);
+      if (activo()) revisar(dt, !busy && (F.prueba || !enEscena())); // T2: ni pistas ni avistamientos con una escena en marcha
       pintarCuenta();
       dibujar();
     }
     G.on('update', (dt, busy) => { if (!F.prueba) paso(dt, busy); }, 88);
-    if (activo() && !mem.vistos.length && !G.quiet) setTimeout(() => avisar(L(`${D.album.titulo}: ${D.album.intro}`, `${D.album.tituloEn}: ${D.album.introEn}`), 5200), 2500);
+    // T2: la presentación espera a que no haya escena ni actividad en marcha (antes salía en medio de la pesca o de un diálogo)
+    if (activo() && !mem.vistos.length && !G.quiet) {
+      let intentos = 0;
+      const presentar = () => {
+        if (G.quiet || mem.vistos.length || !activo()) return;
+        if (enEscena()) { if (++intentos < 60) setTimeout(presentar, 2000); return; }
+        avisar(L(`${D.album.titulo}: ${D.album.intro}`, `${D.album.tituloEn}: ${D.album.introEn}`), 5200);
+      };
+      setTimeout(presentar, 2500);
+    }
     const estado = () => ({ activo: activo(), vistos: mem.vistos.slice(), completa: mem.completa, hogar: Object.keys(hogar),
       draw: Object.values(mallas).filter(m => m.visible).length });
 

@@ -251,6 +251,7 @@ window.AVRioVivo = function (G) {
   // Pista del visor: la primera vez que se vuela a menos de 8 m del agua sin que el visor esté encendido (aún muy alto), un aviso corto
   function pistaVisor(dt, busy) {
     if (F.pistaDada || F.visorOn || busy || !verDe() || !M.flying || M.swimming || vistos().length > 0) return;
+    try { if (!F.prueba && G.ui.enEscena && G.ui.enEscena()) return; } catch (e) { /* sin interfaz */ } // T2: la regla compartida; se reintenta luego
     F.pistaT -= dt; if (F.pistaT > 0) return; F.pistaT = 0.3;
     const l = aguaCerca(2.5), h = S.pos.y - l;
     if (l > -Infinity && h >= VUELO_BAJO && h < PISTA_ALTO) {
