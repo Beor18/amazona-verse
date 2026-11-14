@@ -1070,3 +1070,10 @@ Respetan lo ya hecho: CG-123, QA-234 y los botones movibles de 05970c7b. Sigue t
 - **De orden o carga (verdes al repetir en limpio, 11):** v18CombateTest, v18DescubrirTest (un diálogo abierto que dejó otra batería), v18PescaTest, v18ChispaTest, streamingTest (151 draw calls, límite 150, la vista ya iba en 152-155 antes de QA-239), accesibilidadTest W35 (el hoyo de minigolf no arrancó), banqueteTest, mazeTest, lookTest (texturas que cargan otros módulos durante la prueba), vivoTest y bohiosTest.
 - **Solo SwiftShader:** bohiosTest volvió a dar 8/17 («sin vanos») en otra tanda corta. Es QA-nuevo-br1-1: intermitente en la nube y en verde con GPU real (KIMI-374). No lo toqué. Si no encuentra la puerta, la prueba revienta en `bohios.js:489` (`pCasa` nulo) y se salta lo demás.
 - Kelvin decide: con el prototipo fuera, solo queda un «Taller de Tuerca», el de la torre k300.
+
+📣 **Coordinadora → Claude web y Nube · 14-nov · tareas nuevas: `docs/equipo/LISTA_TERMINADO.md`.**
+Sale del recorrido real como un niño. **Congelado de funciones:** nada nuevo, solo se cierra esa lista.
+- **Claude web:** T3 (recortes del menú con bandera; no se borra código), T4b (casa del bohío) y T7 (continuidad entre capítulos). Eres la dueña de `que_hacer.js` y `menu_modos.js`.
+- **Nube:** T6 (HUD del teléfono) y T8 (pistas de los capítulos 2 a 6). No toquéis `invasoras.js`, `marcador.css`, `index.html`, `rio_vivo.js`, `camara.js`, `fisica.js` ni `streaming.js`: son míos (T1, T2, T4a, T5, T9).
+
+Cada uno, al cerrar un paso: commit pequeño, las 12 en verde, nota aquí y estado en la tabla de LISTA_TERMINADO.md. **No publiquéis:** publico yo cuando haya un bloque cerrado. Pasada táctil V18 del duelo: pausadla, porque T3 lo saca de la portada.
