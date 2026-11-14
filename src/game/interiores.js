@@ -11,6 +11,8 @@ window.AVInteriores = function (G) {
     if (G.interioresOn === false) return false;
     return true;
   };
+  // QA-250: de ep2 a ep6 (zonas activas), la puerta solo sale si su sitio está dentro de lo abierto (el viento no deja llegar)
+  const abierto = (x, z) => !(G.zonas && G.zonas.activa && G.zonas.dentro) || G.zonas.dentro(x, z);
   const lista = () => (window.AV_INTERIORES && window.AV_INTERIORES.edificios) || [];
   const porId = id => lista().find(e => e.id === id);
   let activoId = null, grupo = null, arranque = false;
@@ -79,12 +81,12 @@ window.AVInteriores = function (G) {
   function registrar(id, obj) { partes[id] = obj || {}; }
   function iniciar() {
     if (!encendido()) return false;
-    if (arranque) return true;
     arranque = true;
     for (const ed of lista()) {
+      if (G.interaccion.find('int_' + ed.id)) continue; // QA-250: ya registrado; uno que llegue después a la lista también entra
       G.interaccion.add({
         id: 'int_' + ed.id, x: ed.puerta.x, z: ed.puerta.z, r: ed.puerta.r || 2.2,
-        visible: () => encendido() && activoId !== ed.id,
+        visible: () => encendido() && activoId !== ed.id && abierto(ed.puerta.x, ed.puerta.z),
         label: () => L('Entrar', 'Enter'),
         use: () => entrar(ed),
       });
@@ -118,12 +120,14 @@ window.AVInteriores = function (G) {
       G.interioresOn = true;
       const eds = window.AV_INTERIORES.edificios;
       eds.push({ id: 'quieto', modo: 'sitio', puerta: { x: 420, z: -420, r: 2.2 }, dentro: { x: 420, z: -418 }, fuera: { x: 420, z: -423 } });
+      // QA-250: edificio por transición solo para la prueba (el de verdad es el taller de k300, que pone taller_tuerca.js)
+      eds.push({ id: 'prueba_cuarto', modo: 'transicion', puerta: { x: 430, z: -430, r: 2.2 }, cuarto: { x: 8, z: 8, y: 40 }, fuera: { x: 430, z: -433 } });
       ok('iniciar() queda listo', iniciar() === true && iniciar() === true);
       S.pos.x = 420; S.pos.z = -420;
       const quieto = G.interaccion.find('int_quieto');
       const cercaQ = G.interaccion.nearest();
       ok('En la puerta, Acción dice Entrar', !!(quieto && quieto.visible() && quieto.label() === 'Entrar' && cercaQ && cercaQ.id === 'int_quieto'), cercaQ && (cercaQ.id + ' · ' + cercaQ.label()));
-      const villa = porId('bohio_villa'), taller = porId('taller_tuerca');
+      const villa = porId('bohio_villa'), taller = porId('prueba_cuarto');
       ok('Hay un edificio en el sitio y otro por transición', !!(villa && villa.modo === 'sitio' && taller && taller.modo === 'transicion'));
       const techo = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.2), new THREE.MeshBasicMaterial({ color: 0xff0000 }));
       const muro = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.2), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
@@ -137,15 +141,18 @@ window.AVInteriores = function (G) {
       ok('Dentro, Acción dice Salir', !!(sale && sale.visible() && sale.label() === 'Salir'));
       sale.use();
       ok('Al salir vuelven el techo y el muro y el cuarto se descarga', !activo() && techo.visible === true && muro.visible === true && !grupo && Math.hypot(S.pos.x - villa.fuera.x, S.pos.z - villa.fuera.z) < 0.2);
-      G.interaccion.find('int_taller_tuerca').use();
-      ok('La transición deja a Vittata en el cuarto aparte', activo() === 'taller_tuerca' && Math.abs(S.pos.y - taller.cuarto.y) < 1 && !!document.getElementById('interiores-velo'));
+      G.interaccion.find('int_prueba_cuarto').use();
+      ok('La transición deja a Vittata en el cuarto aparte', activo() === 'prueba_cuarto' && Math.abs(S.pos.y - taller.cuarto.y) < 1 && !!document.getElementById('interiores-velo'));
       S.pos.x = 400; S.pos.z = 400; paso();
       ok('Si se aleja, sale: no se queda atrapada', !activo() && Math.hypot(S.pos.x - taller.fuera.x, S.pos.z - taller.fuera.z) < 0.2);
     } catch (e) { ok('La prueba terminó', false, String(e && e.message || e)); }
     finally {
       G.interioresOn = on0; if (activo()) salir();
       const eds = window.AV_INTERIORES && window.AV_INTERIORES.edificios;
-      if (eds) { const i = eds.findIndex(e => e.id === 'quieto'); if (i >= 0) eds.splice(i, 1); }
+      for (const id of ['quieto', 'prueba_cuarto']) {
+        const i = eds ? eds.findIndex(e => e.id === id) : -1; if (i >= 0) eds.splice(i, 1);
+        for (const k of ['int_' + id, 'int_salir_' + id]) { const j = G.interaccion.list.findIndex(it => it.id === k); if (j >= 0) G.interaccion.list.splice(j, 1); }
+      }
       S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z;
     }
     return { passed: out.filter(x => x.ok).length, total: out.length, results: out };

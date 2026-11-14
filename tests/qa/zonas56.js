@@ -58,7 +58,7 @@
         G = W.AV.G;
         const Z = G.zonas, ZC = Z.ZONAS[cap], dentro = (x, z) => [[ZC.x, ZC.z, ZC.r]].concat(ZC.mas || []).some(c => Math.hypot(x - c[0], z - c[1]) <= c[2]);
         check(`Cap. ${cap} · ?mapa=real: el mapa real del cap. 1 y las zonas activas`, !!G.terreno.mapa && Z.activa && G.pack.mundo.mapa === W.AVE.mundoReal.mapa);
-        const sitios = [['aparición', G.pack.jugador.aparicion]].concat(G.actores && G.pack.npcs ? G.pack.npcs.map(n => ['npc ' + n.id, n]) : [], G.diario.entries.map(e => ['diario ' + e.id, e]), G.interaccion.list.map(i => ['interacción ' + i.id, i]));
+        const sitios = [['aparición', G.pack.jugador.aparicion]].concat(G.actores && G.pack.npcs ? G.pack.npcs.map(n => ['npc ' + n.id, n]) : [], G.diario.entries.map(e => ['diario ' + e.id, e]), G.interaccion.list.filter(i => !i.visible || i.visible()).map(i => ['interacción ' + i.id, i])); // QA-250: las ocultas no cuentan (p. ej. Salir del cuarto aparte de un interior), como en temporada_e2e.js
         const fuera = sitios.filter(([, p]) => !dentro(p.x, p.z)).map(([n, p]) => n + ' (' + p.x.toFixed(1) + ', ' + p.z.toFixed(1) + ')');
         check(`Cap. ${cap} · aparición, personajes, hallazgos e interacciones dentro de su zona (${sitios.length})`, !fuera.length, fuera.join(' | '));
         // Lo único que va sobre el agua es lo del puente (la percha de la señal y donde se coloca la tabla larga)
