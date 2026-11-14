@@ -168,7 +168,7 @@ window.AVBohios = function (G) {
   function donde() {
     const I = casa || elegir(casas());
     const p = I && puerta(I);
-    if (p) return { x: p.x, z: p.z };
+    if (p) return { x: p.x, z: p.z, nx: p.nx, nz: p.nz }; // T4b: nx/nz, la normal de la puerta hacia fuera
     if (I && I.pos) return { x: I.pos[0], z: I.pos[2] };
     return null;
   }
