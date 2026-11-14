@@ -343,7 +343,8 @@ window.AVV18Explorar = function (G) {
       // QA-185 (móvil): encima del grupo de botones (#acts) y oculto cuando el HUD táctil está oculto (intro, diálogos, cómic); antes tapaba Impulso
       const acts = document.getElementById('acts'), ra = acts && acts.getBoundingClientRect();
       const hud = !!(ra && ra.height && getComputedStyle(acts).visibility !== 'hidden');
-      const ver = libre() && hud;
+      const tp = document.getElementById('title');
+      const ver = libre() && hud && !(tp && tp.open) && !(G.ui && G.ui.cardOpen); // T10: no encima de la portada ni de una tarjeta
       if (b.hidden === ver) b.hidden = !ver;
       if (ver) {
         // QA-191 (móvil): si el aviso de Acción (#prompt) queda a la altura del botón, el botón sube por encima y no tapa el nombre
@@ -366,14 +367,17 @@ window.AVV18Explorar = function (G) {
         }
       }
       if (ver) {
-        // T6: nombre corto y debajo «Tu poder» (antes «Grito del Yunque» suelto, sin decir qué era)
+        // T6/T12: el nombre del poder y debajo «Tu poder» (antes «Grito del Yunque» suelto, sin decir qué era); en inglés, traducido
         const nombre = (G.v18hab && G.v18hab.get(G.v18hab.poderDe(especie())) || {}).nombre || 'Poder';
-        if (b.dataset.nombre !== nombre) {
-          b.dataset.nombre = nombre;
-          const corto = nombre.length > 12 ? nombre.split(' ')[0] : nombre;
-          b.innerHTML = '<b style="display:block;font-weight:800;line-height:1.1"></b><small style="display:block;font-size:11px;opacity:.85;line-height:1.1">Tu poder</small>';
-          b.firstChild.textContent = corto;
-          b.setAttribute('aria-label', nombre + ': tu poder');
+        const en = !!(G.idioma && G.idioma.activo && G.idioma.activo()), clave = nombre + (en ? '|en' : '|es');
+        if (b.dataset.nombre !== clave) {
+          b.dataset.nombre = clave;
+          const nom = en && G.idioma.tr ? G.idioma.tr(nombre) : nombre;
+          b.style.maxWidth = '136px';
+          b.innerHTML = '<b style="display:block;font-weight:800;line-height:1.1"></b><small style="display:block;font-size:11px;opacity:.85;line-height:1.1"></small>';
+          b.firstChild.textContent = nom;
+          b.lastChild.textContent = en ? 'Your power' : 'Tu poder';
+          b.setAttribute('aria-label', nom + (en ? ': your power' : ': tu poder'));
         }
       }
     }

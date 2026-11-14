@@ -93,6 +93,27 @@
     G.on('render', () => { if (libre && G.fx && G.fx.guide) G.fx.guide(null, 0); }, 61); // después del gancho de misiones (60)
     function entrarLibre() { libre = true; raiz.classList.add('modo-libre'); }
     function salirLibre() { if (!libre) return; libre = false; raiz.classList.remove('modo-libre'); }
+    // ---------- T10 · «Salir» a la vista en los modos que no tienen el suyo (Vuelo libre, Tormenta, Banquete) ----------
+    // Vuelve a la portada como «Cambiar de juego». Esc sigue abriendo la Pausa, como en el resto de juegos.
+    let bSalir = null;
+    function botonSalir() {
+      if (bSalir) return bSalir;
+      bSalir = document.createElement('button');
+      bSalir.type = 'button'; bSalir.id = 'modo-salir'; bSalir.className = 'btn ghost secondary hud'; bSalir.dataset.icon = 'close'; bSalir.hidden = true; bSalir.style.display = 'none';
+      bSalir.style.cssText += ';position:fixed;z-index:60;top:calc(env(safe-area-inset-top,0px) + 64px);left:max(12px,env(safe-area-inset-left,0px));min-height:44px;pointer-events:auto';
+      bSalir.addEventListener('click', ev => { ev.preventDefault(); volver(); });
+      document.body.appendChild(bSalir);
+      return bSalir;
+    }
+    const SALIR_EN = { libre: () => libre, tormenta: () => !!(G.retosApi && G.retosApi.activo && G.retosApi.reto === 'tormenta'), banquete: () => !!(G.retosApi && G.retosApi.activo && G.retosApi.reto === 'banquete') };
+    setInterval(() => {
+      const m = Object.keys(SALIR_EN).find(k => { try { return SALIR_EN[k](); } catch (e) { return false; } });
+      const ver = !!m && !(portada && portada.open) && !G.ui.cardOpen && !(G.dialogo && G.dialogo.open && G.dialogo.open());
+      if (!ver && !bSalir) return;
+      const b = botonSalir();
+      if (ver) { const t = L('Salir', 'Exit'); if (b.textContent !== t) b.textContent = t; b.setAttribute('aria-label', L('Salir y volver al menú', 'Exit to the menu')); }
+      if (b.hidden === ver) { b.hidden = !ver; b.style.display = ver ? '' : 'none'; }
+    }, 400);
 
     // ---------- Pintar el menú ----------
     function tarjetas() { return form ? [...form.querySelectorAll('[data-modo]')] : []; }
@@ -139,7 +160,19 @@
       if (primero && portada && portada.open) setTimeout(() => primero.focus({ preventScroll: true }), 0);
     }
     // Esc con «Más juegos» abierto vuelve a la lista (no cierra la portada)
-    if (portada) portada.addEventListener('cancel', e => { if (masAbierto) { e.preventDefault(); abrirMas(false); } });
+    // T10: con la portada a la vista, Esc cierra la tarjeta abierta encima (Mis cotorras, Álbum, Retos con amigos) y, si no hay,
+    // cierra «Más juegos». La portada se abre con show() (no modal), así que Esc no llega como 'cancel': se escucha la tecla.
+    function escPortada(e) {
+      const c = $('card');
+      if (G.ui.cardOpen && c && c.classList.contains('mm-encima')) { e.preventDefault(); G.ui.hideCard(); const f = tarjetas().find(seVeT); if (f) f.focus({ preventScroll: true }); return true; }
+      if (masAbierto) { e.preventDefault(); abrirMas(false); return true; }
+      return false;
+    }
+    if (portada) portada.addEventListener('cancel', e => { escPortada(e); });
+    addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || !portada || !portada.open) return;
+      if (escPortada(e)) e.stopImmediatePropagation();
+    }, true);
     if (portada) portada.addEventListener('close', () => { if (masAbierto) { masAbierto = false; if (form) form.classList.remove('modos-mas-abierto'); } }); // al volver, la lista entera
     function capitulosArriba() {
       const nav = document.querySelector('#title .title-episodios'), dlgForm = form;
@@ -625,13 +658,32 @@
           bMas.click();
           const aVista = [...form.querySelector('.modos-grid').children].filter(el => getComputedStyle(el).display !== 'none');
           check('T3 · «Más juegos» enseña solo sus tres juegos y «Volver»', masAbierto && MAS.every(vis) && !vis('aventura') && /Volver|Back/.test(bMas.textContent) && aVista.length === 4, aVista.map(el => el.dataset.modo || el.textContent.trim().slice(0, 12)).join(','));
-          const ev = new Event('cancel', { cancelable: true }); portada.dispatchEvent(ev);
-          check('T3 · Esc en «Más juegos» vuelve a la lista sin cerrar la portada', !masAbierto && ev.defaultPrevented && vis('aventura') && !vis('river'));
+          const aj = G.aula && G.aula.aj, idi0 = aj ? aj.idioma : null;
+          if (aj) { aj.idioma = 'en'; mostrar(); check('T12 · en inglés, «Back» y «To all the cards»; cerrado, «More games»', /Back/.test(bMas.textContent) && /To all the cards/.test(bMas.textContent) && (abrirMas(false), /More games/.test(bMas.textContent)), bMas.textContent); aj.idioma = idi0; abrirMas(true); }
+          const abiertaP = portada.open; if (!abiertaP) portada.show();
+          const ev = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); dispatchEvent(ev);
+          check('T3 · Esc en «Más juegos» vuelve a la lista sin cerrar la portada', !masAbierto && ev.defaultPrevented && portada.open && vis('aventura') && !vis('river'));
+          if (!abiertaP) { portada.returnValue = ''; portada.close(); }
           const nav = document.querySelector('#title .title-episodios');
           check('T3 · «Capítulos» va encima de las tarjetas', !!nav && !!(nav.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING));
           G.menuRecorte = false; mostrar();
           check('T3 · con ?menu=completo vuelve el menú de antes', vis('river') && vis('tormenta') && seVe('duelo') === seVe0('duelo') && !seVeT(bMas));
           G.menuRecorte = rec0; mostrar();
+        }
+        // T10 · Vuelo libre tiene «Salir» a la vista y vuelve a la portada
+        {
+          const abierta = portada.open; if (abierta) { portada.returnValue = ''; portada.close(); }
+          entrarLibre(); await espera(900);
+          const b = $('modo-salir'), visto = !!(b && !b.hidden && b.getBoundingClientRect().height >= 44);
+          if (b) b.click(); await espera(100);
+          check('T10 · Vuelo libre: «Salir» a la vista (44 px) y vuelve a la portada', visto && !libre && portada.open, 'visto ' + visto + ' · libre ' + libre + ' · portada ' + portada.open);
+          // T10 · Esc cierra la tarjeta del Álbum abierta encima de la portada, y la portada sigue
+          if (!portada.open) portada.show();
+          await elegir('album'); await hasta(() => G.ui.cardOpen, 3000);
+          const conTarjeta = G.ui.cardOpen;
+          dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })); await espera(80);
+          check('T10 · Esc cierra la tarjeta del Álbum y deja la portada', conTarjeta && !G.ui.cardOpen && portada.open, 'tarjeta ' + conTarjeta + ' → ' + G.ui.cardOpen + ' · portada ' + portada.open);
+          if (!abierta && portada.open) { portada.returnValue = ''; portada.close(); }
         }
         check('Textos en ES', $('modos-t').textContent === '¿Cómo quieres jugar?' && form.querySelector('[data-modo="libre"] b').textContent === 'Vuelo libre', '«' + $('modos-t').textContent + '» / «' + form.querySelector('[data-modo="libre"] b').textContent + '»');
         const ay = document.getElementById('modos-ayuda'), pi = document.getElementById('modos-pista'), chips = document.getElementById('modos-pistas');
