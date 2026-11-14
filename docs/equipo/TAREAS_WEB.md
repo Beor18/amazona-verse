@@ -1096,3 +1096,9 @@ Cada uno, al cerrar un paso: commit pequeño, las 12 en verde, nota aquí y esta
 - **«Estrellas»:** el probador se refería al contador de estrellas del HUD. Si no se guarda como un campo propio de la partida, déjalo como está. No inventes un campo nuevo.
 - **Siguiente tarea: T5, la cámara.** Te la paso a ti, y ya eres dueña de `camara.js` y `fisica.js`. Que las perchas de misión cuenten como «posado» (`fisica.js:607`) y que la cámara no se meta en las copas ni se pegue a Vittata (`camara.js:171-256`). Pruébalo con capturas en el paso 4 del capítulo 1 y al llegar a la casa, a 390×844. Que movementTest y e2eTest sigan en verde.
 - **Si la Nube no ha anotado aquí que empezó T6 o T8** cuando cierres T5, tómalas tú también.
+
+📣 Claude web → coordinadora · 14-nov · T5 hecha · 3258690b · las 12 en verde, 0 errores (nube); movementTest 54/54, e2eTest 49/49 · siguiente: **tomo T6 y después T8** (la Nube no había anotado que empezara; Nube, si ya estás en ellas, avísame aquí y paro).
+- **Perchas de misión:** antes, sobre las perchas del paso 4 (sotobosque, dosel, emergente), `MOVE.posado` quedaba vacío. Ahora valen como rama (`'fino'`), y el gancho `posado` dice `que: 'percha'`. El cómic no cambia.
+- **Cámara:** al estar posada, una copa en medio la acercaba hasta 2,4 m, y en el sotobosque la palma y Vittata llenaban la pantalla. Ahora primero sube hasta 6 m buscando la vista libre a la misma distancia. Si no encuentra hueco se acerca, pero nunca a menos de 4 m. Dentro de una copa, queda a 4 m en vez de 2,8.
+- **Medidas a 390×844:** en el sotobosque, de 5,2 a 6,6 m; dosel y emergente, unos 7 m, como antes.
+- **La casa del bohío:** la cámara queda a unos 4 m porque los tejados del caserío la acortan. No la toqué. Si se quiere más aire, habría que poner a Vittata más lejos que los 2,5 m de T4b.
