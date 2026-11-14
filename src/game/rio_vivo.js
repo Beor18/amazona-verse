@@ -265,7 +265,9 @@ window.AVRioVivo = function (G) {
     const quieta = M.posado ? M.speed < 0.6 : !M.flying && !M.swimming && M.speed < 0.4;
     F.quieta = quieta && !busy ? F.quieta + dt : 0;
     const n = nadar(dt);
-    const quiere = !busy && visorPosible();
+    // T4a: mientras se pesca (v18/pesca.js) el visor no sale: tapaba el corcho y el río con sus peces de observación
+    const pescando = !!(document.body && document.body.classList.contains('v18-pesca-on'));
+    const quiere = !busy && !pescando && visorPosible();
     F.visor = Math.max(0, Math.min(1, F.visor + (quiere ? dt : -dt) * 3));
     F.visorOn = F.visor > 0.5;
     mat.opacity = 0.5 + F.visor * 0.5; mat.depthWrite = F.visorOn;
@@ -378,6 +380,12 @@ window.AVRioVivo = function (G) {
       // el buceo del capítulo sigue: nadando, el visor se apaga y el banco se aparta
       ponEn(b.x, lvl, b.z, { swimming: true, speed: 1 }); b.huye.x = b.huye.z = 0; simular(1.5);
       ok('Nadando (buceo del capítulo): visor apagado y los peces se apartan', !F.visorOn && Math.hypot(b.huye.x, b.huye.z) > 0.5, Math.hypot(b.huye.x, b.huye.z).toFixed(2) + ' m');
+      { // T4a: pescando, el visor no sale aunque se vuele bajo sobre el río
+        const pesca0 = document.body.classList.contains('v18-pesca-on');
+        document.body.classList.add('v18-pesca-on'); ponEn(b.x, lvl + 1.8, b.z, { flying: true, speed: 4 }); simular(0.6); const conPesca = F.visorOn;
+        document.body.classList.toggle('v18-pesca-on', pesca0); simular(0.6);
+        ok('Pescando, el visor del río no sale (y vuelve al terminar)', !conPesca && F.visorOn, 'pescando ' + conPesca + ' · después ' + F.visorOn);
+      }
       // 6. Observar
       S.peces = []; F.obs = {}; aprend.length = 0;
       ponEn(b.x, lvl + 1.5, b.z, { flying: true, speed: 3 }); simular(0.6);

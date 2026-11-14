@@ -81,8 +81,13 @@
       G.on('render', () => {
         const now = performance.now() / 1000;
         if (S.chorus && !S.missions.m3 && !S.complete && !atardecerPedido && window.AV && window.AV.atardecer) { atardecerPedido = true; window.AV.atardecer().catch(() => { atardecerPedido = false; }); }
+        // T4a: el arbusto del coquí 2 está a 2 m del muelle de la pesca (v18/pesca.js, SITIO): mientras se pesca se aparta para
+        // que no tape el río ni el corcho (el coro no puede estar en marcha a la vez: la pesca es una actividad aparte)
+        const pescaSitio = document.body.classList.contains('v18-pesca-on') && G.v18pesca && G.v18pesca.SITIO;
         for (const b of BUSHES) {
           const bm = bushMeshes[b.id], live = S.chorus && !S.missions.m3 && !S.coquis.includes(b.id);
+          const tapa = !!(pescaSitio && Math.hypot(b.x - pescaSitio.x, b.z - pescaSitio.z) < 8);
+          if (tapa && !bm.oculto) { bm.oculto = true; bm.g.visible = false; } else if (!tapa && bm.oculto) { bm.oculto = false; bm.g.visible = true; }
           bm.glow.visible = live; bm.frog.visible = S.coquis.includes(b.id) || S.missions.m3;
           if (live) { const k = 1 + Math.sin(now * 3 + b.x) * 0.08; bm.glow.scale.setScalar(k); bm.glow.material.opacity = 0.18 + Math.sin(now * 3 + b.x) * 0.06; }
         }
