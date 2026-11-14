@@ -193,5 +193,28 @@ AVE.module('misiones', function (G) {
   G.on('apply', () => { verConfirmacion(false, false); if (S.complete && !S.explorando) showEnd(); else $('end').hidden = true; }, 70);
   G.on('apply', renderQuest, 90);
 
-  return { steps, DONE, missions, unlocks, cumple, progreso, done, complete, check, advanceTo, grant, lockOf, guideTarget, at, closest, needItems, renderQuest, proximoPremio, renderProximo, showEnd, seguirExplorando };
+  // ---------- T8 · Pista «vuela» ----------
+  // Con el objetivo más de VUELA_DY m por encima de Vittata (la plaza de la Ciudad de los 36 en el cap. 6, la meseta del cap. 5
+  // desde abajo…) y ella sin volar, bajo el objetivo sale «↑ Vuela: está en lo alto». Se mira cada 0,5 s; nada se escribe en la partida.
+  const VUELA_DY = 6;
+  let vuelaT = 0;
+  function pistaVuela() {
+    const steps = $('steps'); if (!steps || !steps.parentNode) return false;
+    let el = $('pista-vuela');
+    let t = null; try { t = guideTarget(); } catch (e) { t = null; }
+    const M = G.fisica && G.fisica.MOVE;
+    const alto = t ? (t.y != null ? t.y : G.terreno.height(t.x, t.z)) : null;
+    const ver = !!(t && alto - S.pos.y > VUELA_DY && !(M && (M.flying || M.swimming)));
+    if (!el) {
+      if (!ver) return false;
+      el = document.createElement('div'); el.id = 'pista-vuela'; el.setAttribute('role', 'status');
+      el.style.cssText = 'margin:6px 0 0;font:700 var(--fs-xs,12px)/1.3 var(--font-body,sans-serif);color:var(--c-primary,#f2a03d)';
+      el.textContent = '↑ Vuela: está en lo alto';
+      steps.parentNode.insertBefore(el, steps.nextSibling);
+    }
+    if (el.hidden === ver) el.hidden = !ver;
+    return ver;
+  }
+  G.on('update', dt => { if ((vuelaT -= dt) > 0) return; vuelaT = 0.5; pistaVuela(); });
+  return { steps, DONE, missions, unlocks, cumple, progreso, done, complete, check, advanceTo, grant, lockOf, guideTarget, at, closest, needItems, renderQuest, proximoPremio, renderProximo, showEnd, seguirExplorando, pistaVuela };
 });

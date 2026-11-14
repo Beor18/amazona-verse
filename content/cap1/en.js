@@ -2980,5 +2980,6 @@ window.AV_EN = {
  "Tamaño": "Size",
  "Opacidad": "Opacity",
  "Restablecer": "Reset",
- "Tu poder": "Your power"
+ "Tu poder": "Your power",
+ "↑ Vuela: está en lo alto": "↑ Fly: it is up high"
 };

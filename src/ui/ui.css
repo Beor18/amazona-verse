@@ -206,6 +206,8 @@ kbd {
 }
 #quest { width: 330px; max-width: 100%; min-width: 0; padding: var(--sp-3) var(--sp-4) var(--sp-4); animation: rise-in var(--dur-3) var(--ease-out) both; }
 #quest .chapter { display: flex; align-items: center; gap: 6px; font: 700 var(--fs-xs)/1.2 var(--font-body); text-transform: uppercase; letter-spacing: var(--tracking-caps); color: var(--c-eyebrow); --icon: var(--i-flag); --icon-size: 14px; }
+/* T8: el marcador (reloj y puntos) va arriba a la derecha del objetivo: la etiqueta del capítulo le deja su ancho (ui.js pone --mc-w) */
+#quest:has(#marcador:not([hidden])) .chapter { padding-right: calc(var(--mc-w, 96px) + 6px); }
 #quest .chapter::before { content: ""; width: 14px; height: 14px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }
 #quest h1 { margin: 4px 0 0; font: 700 var(--fs-lg)/var(--lh-tight) var(--font-display); color: var(--c-text); text-wrap: balance; }
 /* Lista de pasos → barra segmentada + objetivo actual. El texto de todos los pasos sigue en el árbol accesible. */
@@ -679,6 +681,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #top { gap: 6px; }
   #quest { position: relative; padding: 7px 34px 9px var(--sp-3); border-radius: var(--r-lg); }
   #quest .chapter, #missions, #indicators { display: none; }
+  #quest:has(#marcador:not([hidden])) .chapter { padding-right: 0; } /* T8: en el teléfono el marcador va debajo del objetivo */
   #steps { margin: 0; padding-top: 10px; }
   #steps li::before { height: 4px; }
   /* T6: el objetivo en 2 líneas como mucho (antes 1 línea cortada con «…») */
