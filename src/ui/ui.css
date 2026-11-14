@@ -681,7 +681,12 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #quest .chapter, #missions, #indicators { display: none; }
   #steps { margin: 0; padding-top: 10px; }
   #steps li::before { height: 4px; }
-  #steps li.now { display: block; font-size: 15px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* T6: el objetivo en 2 líneas como mucho (antes 1 línea cortada con «…») */
+  #steps li.now { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 15px; line-height: 1.25; white-space: normal; overflow: hidden; }
+  /* T6: sin «Próximo: premio» en el teléfono (sigue en el objetivo desplegado del escritorio y en el Diario) */
+  #next-reward { display: none !important; }
+  /* T6: los contadores juntos: el inventario va pegado al reloj del marcador (ui.js pone --mc-w con su ancho) */
+  #top:has(#marcador:not([hidden])) #inv { margin-left: calc(var(--mc-w, 0px) + 4px); margin-right: auto; }
   #steps li.now::after { display: none; }
   #quest.abierto { padding-bottom: var(--sp-3); }
   #quest.abierto #steps { margin-top: 6px; } /* la barra no queda pegada al capítulo (UI v21 P3) */

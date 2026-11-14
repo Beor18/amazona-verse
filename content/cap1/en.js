@@ -2979,5 +2979,6 @@ window.AV_EN = {
  "Arrastra cada botón a donde quieras. Elegido:": "Drag each button wherever you like. Selected:",
  "Tamaño": "Size",
  "Opacidad": "Opacity",
- "Restablecer": "Reset"
+ "Restablecer": "Reset",
+ "Tu poder": "Your power"
 };

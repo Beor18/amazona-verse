@@ -365,7 +365,17 @@ window.AVV18Explorar = function (G) {
           if (re && re.width && !(bR <= re.left || re.right <= bR - pw || bB <= re.top || re.bottom <= bB - ph)) { b.hidden = true; break; }
         }
       }
-      if (ver) { const nombre = (G.v18hab && G.v18hab.get(G.v18hab.poderDe(especie())) || {}).nombre || 'Poder'; if (b.textContent !== nombre) b.textContent = nombre; }
+      if (ver) {
+        // T6: nombre corto y debajo «Tu poder» (antes «Grito del Yunque» suelto, sin decir qué era)
+        const nombre = (G.v18hab && G.v18hab.get(G.v18hab.poderDe(especie())) || {}).nombre || 'Poder';
+        if (b.dataset.nombre !== nombre) {
+          b.dataset.nombre = nombre;
+          const corto = nombre.length > 12 ? nombre.split(' ')[0] : nombre;
+          b.innerHTML = '<b style="display:block;font-weight:800;line-height:1.1"></b><small style="display:block;font-size:11px;opacity:.85;line-height:1.1">Tu poder</small>';
+          b.firstChild.textContent = corto;
+          b.setAttribute('aria-label', nombre + ': tu poder');
+        }
+      }
     }
   });
 

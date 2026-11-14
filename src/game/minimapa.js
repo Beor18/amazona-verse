@@ -431,8 +431,13 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     const orden = ['fruto', 'pueblo', 'lugar', 'reto', 'parada', 'mision', 'pesca', 'patrulla', 'candado', 'v18golf', 'v18puerto', 'v18rival', 'v18chispa', 'v18moon', 'v18guardian', 'dest', 'obj'], inset = rM + 3 * k;
     const dentro = (x, y) => x > inset * 0.4 && y > inset * 0.4 && x < w - inset * 0.4 && y < h - inset * 0.4;
     const bordes = [], rotulos = [];
+    // T6: el compacto del teléfono (≤ 110 px) solo lleva lo que guía: objetivo, destino, retos y los frutos de un minijuego;
+    // lugares, pueblos, misiones y candados siguen en el mapa grande
+    const limpio = !grande && ((anchoC >= 0 ? anchoC : cvC.clientWidth) || 124) <= 110;
+    const SOLO = { obj: 1, dest: 1, reto: 1 };
     for (const tipo of orden) for (const m of ms) {
       if (m.tipo !== tipo) continue;
+      if (limpio && !SOLO[tipo] && !(tipo === 'fruto' && ext.frutos)) continue;
       let x = px(m.x), y = pz(m.z);
       const principal = tipo === 'obj' || tipo === 'dest';
       if (!dentro(x, y)) {

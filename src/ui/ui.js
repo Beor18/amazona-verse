@@ -118,6 +118,13 @@
     };
     tg.addEventListener('click', () => abrir(!quest.classList.contains('abierto')));
     abrir(false);
+    // T6: en el teléfono el inventario va pegado al reloj del marcador (#marcador llega después, desde marcador.js): su ancho en --mc-w
+    const top = $('top');
+    if (top && window.ResizeObserver) {
+      const ro = new ResizeObserver(es => { for (const e of es) top.style.setProperty('--mc-w', Math.ceil(e.target.getBoundingClientRect().width) + 'px'); });
+      const mirar = () => { const mc = $('marcador'); if (mc && !mc.dataset.mcw) { mc.dataset.mcw = '1'; ro.observe(mc); return true; } return !!mc; };
+      if (!mirar()) { const mo = new MutationObserver(() => { if (mirar()) mo.disconnect(); }); mo.observe(quest, { childList: true }); }
+    }
   }
 
   // ---------- 5. Portada: fondo inerte y foco al cerrarla (QA-04) ----------
