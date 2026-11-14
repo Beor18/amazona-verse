@@ -518,9 +518,12 @@
         'min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:999px;background:#243a28;color:#f4ffe8;border:2px solid #d7e7a8;' +
         'font:700 16px/1 var(--font-display,sans-serif);box-shadow:0 3px 0 rgba(0,0,0,.28);pointer-events:none}' +
         '#inv-cuenta[hidden]{display:none}#inv-cuenta i{display:none}' +
-        // Ronda 4 de T2: en el teléfono (HUD de T6) va en la fila de los contadores (reloj, puntos y recursos), compacta: huella y n/4
-        // («Patrulla» sigue en el texto para el lector de pantalla). Antes bajaba sola a una tercera fila.
-        '@media (max-width:560px){#inv-cuenta.hud{flex:0 0 auto;margin:0 0 0 auto;min-height:42px;padding:0 10px;gap:5px;font-size:15px}' +
+        // Ronda 5 de T2: en el teléfono (HUD de T6) va bajo la fila de los contadores, en la columna del borde derecho que el minimapa
+        // deja libre (minimapa.js lo corre 56 px), compacta: huella encima de n/4 («Patrulla» sigue para el lector de pantalla). En la
+        // fila de los contadores no cabía en cuanto un recurso llegaba a 10 (bajaba encima del minimapa); fuera del flujo no depende
+        // de las cifras del reloj, los puntos ni los recursos, y no toca el HUD de T6.
+        '@media (max-width:560px){#inv-cuenta.hud{position:absolute;right:0;top:calc(100% + 6px);flex-direction:column;justify-content:center;' +
+        'box-sizing:border-box;width:44px;max-width:44px;min-height:44px;margin:0;padding:5px 0;gap:2px;border-radius:14px;font-size:14px}' +
         '#inv-cuenta i{display:block;flex:none;width:16px;height:16px;background:currentColor;-webkit-mask:var(--i-paw) center/contain no-repeat;mask:var(--i-paw) center/contain no-repeat}' +
         '#inv-cuenta .inv-c-txt{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}' +
         '#inv-reporte{position:fixed;left:50%;top:30%;z-index:70;min-height:44px;display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:16px;' +
@@ -701,16 +704,20 @@
               if (mc && w < 560) { mc.hidden = false; if (tp && !tp.style.getPropertyValue('--mc-w')) tp.style.setProperty('--mc-w', '110px'); }
               const o = obj && obj.getBoundingClientRect(), p = pill && pill.getBoundingClientRect();
               const pos = pill && md.defaultView.getComputedStyle(pill).position;
-              const mal = !md ? 'sin documento' : !obj ? 'sin objetivo' : !pill ? 'sin pastilla' : pos !== 'relative' ? 'posición ' + pos : solapan(o, p) ? 'solape ' + Math.round(o.left) + ',' + Math.round(o.top) + '–' + Math.round(o.right) + ',' + Math.round(o.bottom) + ' con ' + Math.round(p.left) + ',' + Math.round(p.top) + '–' + Math.round(p.right) + ',' + Math.round(p.bottom) : '';
-              const iv = md && md.getElementById('inv'), r = iv && iv.getBoundingClientRect();
-              filas[w] = !r || !p ? 'sin inventario' : (p.top < r.bottom - 1 && p.bottom > r.top + 1 && !solapan(r, p) && p.right <= w + 1) ? '' : 'pastilla ' + Math.round(p.left) + ',' + Math.round(p.top) + '–' + Math.round(p.right) + ',' + Math.round(p.bottom) + ' · contadores ' + Math.round(r.left) + ',' + Math.round(r.top) + '–' + Math.round(r.right) + ',' + Math.round(r.bottom);
+              const mal = !md ? 'sin documento' : !obj ? 'sin objetivo' : !pill ? 'sin pastilla' : pos !== (w < 560 ? 'absolute' : 'relative') ? 'posición ' + pos : solapan(o, p) ? 'solape ' + Math.round(o.left) + ',' + Math.round(o.top) + '–' + Math.round(o.right) + ',' + Math.round(o.bottom) + ' con ' + Math.round(p.left) + ',' + Math.round(p.top) + '–' + Math.round(p.right) + ',' + Math.round(p.bottom) : '';
+              // Ronda 5: con los contadores en el peor caso de partida (recursos de 2 cifras y puntos de 3, marcador más ancho), la
+              // pastilla queda bajo su fila y a la derecha del minimapa (que acaba 56 px antes del margen derecho de 12 px)
+              const iv = md && md.getElementById('inv');
+              if (iv && w < 560) { for (const x of iv.querySelectorAll('b')) x.textContent = '99'; if (tp) tp.style.setProperty('--mc-w', '128px'); }
+              const r = iv && iv.getBoundingClientRect(), p2 = pill && pill.getBoundingClientRect(), b = v => Math.round(v);
+              filas[w] = !r || !p2 ? 'sin inventario' : (p2.top >= r.bottom && p2.left >= w - 12 - 56 + 1 && p2.right <= w - 12 + 1 && p2.width >= 40 && p2.height >= 40 && !solapan(r, p2) && !solapan(o, p2)) ? '' : 'pastilla ' + b(p2.left) + ',' + b(p2.top) + '–' + b(p2.right) + ',' + b(p2.bottom) + ' · contadores ' + b(r.left) + ',' + b(r.top) + '–' + b(r.right) + ',' + b(r.bottom);
               fr.remove();
               return mal;
             };
             const m1280 = await medir(1280, 800), m390 = await medir(390, 844);
             if (ahora) ahora.textContent = txtObj;
             ok('La pastilla de la Patrulla no tapa el objetivo a 1280×800 ni a 390×844', !m1280 && !m390, [m1280 && ('1280 ' + m1280), m390 && ('390 ' + m390)].filter(Boolean).join(' · '));
-            ok('Revisión T2, ronda 4: a 390×844 la pastilla va en la fila de los contadores, sin pisarlos (no en una tercera fila)', !filas[390], filas[390]);
+            ok('Revisión T2, ronda 5: a 390×844, con recursos de 2 cifras y puntos de 3, la pastilla queda en la columna derecha, sin pisar contadores ni minimapa', !filas[390], filas[390]);
           }
           const zonas = especies().map(e => G.interaccion.find('invzona_' + e.id));
           ok('El mapa marca la zona, no el sitio exacto (a 18 m o más del animal)', zonas.every(z => z && hogar[z.id.slice(8)] && Math.hypot(z.x - hogar[z.id.slice(8)].x, z.z - hogar[z.id.slice(8)].z) >= 18), zonas.map(z => z && Math.hypot(z.x - hogar[z.id.slice(8)].x, z.z - hogar[z.id.slice(8)].z).toFixed(0)).join(','));

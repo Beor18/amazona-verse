@@ -437,6 +437,28 @@
       check('Revisión T2 · el aviso de una actividad que ya terminó no vuelve a salir', rescate && fuera && vuelve && tras, [rescate, fuera, vuelve, tras, tt.textContent].join(' · '));
       UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = '';
     }
+    { // Revisión T2, ronda 5 (reparo 4): el panel «¡Así se juega!» (guia_controles.js) cuenta como escena: un aviso que llega con él
+      // abierto no sale encima (ni uno { fijo } como «Iguaca te llama»), y el que ya estaba se aparta; salen al cerrarlo. El panel
+      // se queda cerrado al acabar (se abre solo una vez por sesión y, abierto, retendría los avisos de las pruebas siguientes).
+      // (con G.quiet puesto: colaTest(true) hace que el panel cuente; con G.quiet quitado, avanzar el tiempo arranca bocadillos de la partida)
+      const UI = G.ui, tt = document.getElementById('toast'), gp = document.getElementById('guia-panel');
+      const GC = G.guiaControles, ses = GC && GC.prueba && GC.prueba.enSesion, s0 = ses && ses.panel;
+      let escena = false, espera = false, aparta = false, sale = false;
+      if (gp) {
+        if (GC && GC.cerrar) GC.cerrar(); if (ses) ses.panel = 1; // que no se abra solo durante la prueba
+        UI.vaciarAvisos(); UI.colaTest(true);
+        try {
+          UI.toast('Aviso de antes R5', 6000); const antes = !tt.hidden && tt.textContent === 'Aviso de antes R5';
+          gp.hidden = false; escena = UI.enEscena(); tick(0.05);
+          aparta = antes && tt.hidden;
+          UI.toast('Iguaca te llama R5', 6000, { fijo: true }); tick(0.05);
+          espera = tt.hidden && UI.colaTest().cola.includes('Iguaca te llama R5') && UI.avisoLibre('Aviso libre R5') === false;
+          gp.hidden = true; tick(0.05);
+          sale = !tt.hidden && tt.textContent === 'Aviso de antes R5' && UI.colaTest().cola.includes('Iguaca te llama R5');
+        } finally { gp.hidden = true; if (GC && GC.cerrar) GC.cerrar(); if (ses) ses.panel = s0; UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = ''; }
+      }
+      check('Revisión T2 · el panel «¡Así se juega!» cuenta como escena: los avisos esperan a que se cierre', !gp || (escena && aparta && espera && sale), [!!gp, escena, aparta, espera, sale, tt.textContent].join(' · '));
+    }
     { // Revisión T2, ronda 4 (reparo 3): en una batería (G.quiet) el aviso que ya estaba de antes no retiene el de la prueba (el «Iguaca
       // te llama» tapaba el «¡Ñam!» de banqueteTest); y el Banquete en marcha (un modo de Retos, body.retos-on) cuenta como escena
       const UI = G.ui, tt = document.getElementById('toast'), q0 = G.quiet, cuerpo = document.body.classList, r0 = cuerpo.contains('retos-on');

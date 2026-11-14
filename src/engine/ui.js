@@ -33,7 +33,9 @@ AVE.module('ui', function (G) {
   // Ronda 4: un aviso de una actividad (rescate, pesca, modos…; no las pantallas como la tarjeta o el diálogo) que ya se apartó
   // una vez no vuelve si su actividad terminó: al apartarlo, o mientras espera en la cola, se descarta (salvo los { fijo }).
   const MIN_S = 2.2, COLA_MAX = 8, cola = [];
-  const PANTALLAS = ['tarjeta', 'comic', 'creador', 'fin', 'apertura', 'dialogo', 'portada', 'pausa'];
+  // Ronda 5: el panel «¡Así se juega!» (guia_controles.js, 'controles') es una pantalla que no da avisos propios: mientras está
+  // abierto ninguno sale encima (se apartan y esperan a que se cierre).
+  const PANTALLAS = ['tarjeta', 'comic', 'creador', 'fin', 'apertura', 'dialogo', 'portada', 'pausa', 'controles'];
   const acabado = (q, ks) => { if (!q || q.fijo || !q.escena) return false; const a = q.escena.filter(c => !PANTALLAS.includes(c)); return a.length > 0 && !a.some(c => ks.includes(c)); };
   let actual = null, colaPrueba = false;
   // QA-93: tarjeta en teléfono, cómic o creador. QA-188 (W28): también la apertura del capítulo — el narrador habla en
@@ -104,7 +106,7 @@ AVE.module('ui', function (G) {
   function busy() { return G.dialogo.open() || cardOpen || overlayOpen(); }
   // T2 (lista «terminado»): LA regla «hay actividad o escena en marcha», la única que consultan los avisos que salen solos (pistas,
   // recordatorios, presentaciones): la apertura del capítulo, un diálogo o bocadillo, una tarjeta, el cómic, el creador, el panel
-  // final, la portada o la pausa, y cualquier minijuego o modo (Retos, Flight, Maze, Tren… envuelven G.ui.busy; los de la V18 y la
+  // final, la portada, la pausa o el panel «¡Así se juega!», y cualquier minijuego o modo (Retos, Flight, Maze, Tren… envuelven G.ui.busy; los de la V18 y la
   // pesca, G.menuModos.ocupado(); el rescate y el banquete, su activo()). Los avisos que da la propia actividad no la consultan.
   // Las escenas en marcha, cada una con su clave (vacía = libre). enEscena() es «hay alguna».
   function escenas() {
@@ -115,6 +117,7 @@ AVE.module('ui', function (G) {
       const si = (c, n) => { if (c) k.push(n); };
       si(cardOpen, 'tarjeta'); si(!$('comic').hidden, 'comic'); si(!$('creator').hidden, 'creador'); si(!$('end').hidden, 'fin');
       si(d.getElementById('c1-saltar') || d.getElementById('c1-fade'), 'apertura'); si(enDialogo() || fn(G.dialogo, 'open'), 'dialogo');
+      const gp = d.getElementById('guia-panel'); si(gp && !gp.hidden && (!G.quiet || colaPrueba), 'controles'); // en las baterías, solo si la prueba de la cola lo pide
       si(t && t.open, 'portada'); si((p && p.matches && p.matches(':popover-open')) || fn(G.pausa, 'activa'), 'pausa');
       for (const c of ['retos-on', 'v18-pesca-on', 'v18-golf-on', 'duelo-on']) si(cuerpo && cuerpo.contains(c), c);
       si(fn(G.menuModos, 'ocupado'), 'modos'); si(fn(G.rescate, 'activo'), 'rescate'); si(fn(G.banqueteApi, 'activo'), 'banquete');
@@ -124,7 +127,7 @@ AVE.module('ui', function (G) {
   }
   function enEscena() { return escenas().length > 0; }
   // El aviso es de la escena en marcha si la tenía toda al darlo (las escenas que terminaron no cuentan)
-  const deEscena = (q, ks) => !!(q && q.escena && ks.every(c => q.escena.includes(c)));
+  const deEscena = (q, ks) => !!(q && q.escena && !ks.includes('controles') && ks.every(c => q.escena.includes(c)));
   // Aviso que sale solo: con escena en marcha no sale y devuelve false (quien lo llama no lo da por dado y lo reintenta luego)
   function avisoLibre(text, ms) { if (enEscena()) return false; toast(text, ms, { fijo: true }); return true; }
   // El creador es opaco: mientras está abierto el mundo no se dibuja
