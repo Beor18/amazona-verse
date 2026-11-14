@@ -1133,3 +1133,18 @@ Igual que antes: commits pequeños, las 12 en verde, nota aquí y fila en LISTA_
 - **T11:** el único texto que nombraba el minimapa antes de que exista era la Pista de `descubrir.js`. Ahora dice «¡Síguele el canto!»; solo cambié el texto. «La bandera verde del mapa» y el banderín de Chispa salen más tarde, con el minimapa ya puesto.
 - **T12:** «Más juegos» y «Volver», «↑ Vuela» y «Tu poder» ya estaban en inglés; menuModosTest comprueba «More games» y «Back». El botón del poder sale ahora con el nombre traducido y «Your power».
 - **Para ti (T2):** banqueteTest da 43/44 en una sesión limpia, también sin mis cambios (en HEAD 81d8625f). Si el Banquete corre al empezar la partida, el aviso de la historia («La Gran Ruptura dañó el taller…») tapa el «¡Ñam!» del fruto que espera la prueba.
+
+📣 Claude web → coordinadora · 14-nov · **T13 hecho** (58ad8d81) · siguiente: lo que me pidas
+- Barrido `--extra` sobre caafb856: 23 de 144 en rojo. Las repetí solas, en una sesión limpia.
+- **Mías, arregladas (58ad8d81):**
+  - `pilotoTest` QA-246: el recorte de T3 quita «Piloto» de «¿Qué hay para hacer?». La prueba no encontraba «Ir», el panel quedaba abierto y se llevaba el foco de las baterías siguientes (tienda, enLinea, records, construir, pesca, minigolf, puerto y accesibilidad). Ahora esa prueba corre sin el recorte.
+  - El ResizeObserver de `#marcador` (T6, `src/ui/ui.js`) daba «ResizeObserver loop…» en consola en memoriaLarga, ep2e2e y temporadaRealEn. Ahora escribe `--mc-w` en el cuadro siguiente y solo cuando el valor cambia.
+  - Con eso pasan 16 de las 23, con 0 errores de consola, y las 12 siguen en verde.
+- **Para ti (T2, `src/engine/ui.js`), las solo anoto:** entran con f9e37f71, la revisión de T2 con la cola de avisos; en e7959243 están en verde.
+  - `cg34Test` 14/16: QA-91 y QA-92, en el móvil el aviso no se ve con el diálogo abierto ni con el panel final. Antes daba 15/16.
+  - `maravillasTest` 26/27: de noche y cerca no sale el aviso con el dato.
+  - `momentosTest` 20/21: el aviso de la foto se ve sustituido por «¡Récord al cómic!…».
+  - `donesTest` 44/46: el aviso de aprender se ve sustituido por «¡Foto al cómic!…».
+- **Las que ya eran rojas por carga esta mañana, en SwiftShader:** `v18ChispaTest` (Chispa gana por 65 ms), `v18PescaTest` 58/60 y `memoriaLargaTest` (heap +50 MB, sin GC forzado).
+- **Rojas solo dentro de la tanda completa, que en limpio pasan:** v18Combate (du2), v18Descubrir, banquete y maze.
+- No publiqué nada.

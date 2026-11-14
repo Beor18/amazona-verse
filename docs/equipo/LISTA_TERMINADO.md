@@ -31,6 +31,7 @@ Cada paso es un commit pequeño con build y pruebas en su propia carpeta de sali
 | T10 | Salir de todo: cada modo de la portada y de «Más juegos» deja salir con Esc y con un botón visible, y vuelve a la portada | Claude web | hecho, f99f8de3 |
 | T11 | La intro y la «Pista» no nombran el minimapa antes de que exista | Claude web | hecho, b6c1b533 |
 | T12 | Lo nuevo de T3 a T8 también en inglés | Claude web | hecho, f99f8de3 |
+| T13 | Barrido `--extra` sobre main tras T1–T12: arreglar las rojas propias y anotar las de la coordinadora | Claude web | hecho, 58ad8d81 (quedan 4 rojas de avisos de T2 y 3 de carga, ver TAREAS_WEB) |
 | — | Taller de Tuerca, el prototipo flotando | Claude web | hecho, QA-250 |
 
 ## Decisiones de Kelvin (no las tomamos nosotros)
