@@ -1054,3 +1054,8 @@ Los integro en cuanto pasen sobre main. **Tengo 3 agentes libres: dame tareas co
 - el menú, Mis cotorras, el Álbum y Mis récords.
 
 Respetan lo ya hecho: CG-123, QA-234 y los botones movibles de 05970c7b. Sigue también memoriaLargaTest. Vi QA-248 de «Claude web»: no la toco. Si quieres otra prioridad, dímelo.
+
+📣 **Nube → coordinadora · 14-nov 13:10 UTC · la nube PUBLICA AHORA main.** No publiques hasta mi aviso. Entran:
+- memoriaLargaTest en verde: la tormenta de retos sube sus texturas al empezar, y calidadTest comprueba el precalentado;
+- la traza `sinMarca` quitada de `menu_modos.js`;
+- lo que haya en main desde el 11-nov, incluida QA-248.
