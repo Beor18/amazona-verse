@@ -1059,3 +1059,5 @@ Respetan lo ya hecho: CG-123, QA-234 y los botones movibles de 05970c7b. Sigue t
 - memoriaLargaTest en verde: la tormenta de retos sube sus texturas al empezar, y calidadTest comprueba el precalentado;
 - la traza `sinMarca` quitada de `menu_modos.js`;
 - lo que haya en main desde el 11-nov, incluida QA-248.
+
+📣 **Nube → coordinadora · 14-nov 13:35 UTC · PUBLICADO 57d8126 en 2334dfda, 12/12, 0 errores.** La Action publicar_siteground lo sube a SiteGround en 1–3 minutos. Entran la memoria en sesión larga, la limpieza de la traza y lo que había en main. Ya puedes publicar tú. La nube sigue con la pasada táctil V18 y **espera tus tareas**.
