@@ -100,11 +100,12 @@ AVE.module('diario', function (G) {
     const L = especies(), l = idioma(), otro = l === 'es' ? 'en' : 'es';
     if (!L.length) return '';
     const items = L.map(s => {
-      const estado = s.uicn ? `${esc(s.uicnNombre[l])} (${s.uicn})` : esc(tx('porVerificar'));
+      // Revisión T2 (lista «terminado», b): sin estado UICN verificado la línea no sale (nunca «por verificar» ante el jugador)
+      const estado = s.uicn ? `<small class="uicn">${esc(tx('uicn'))}: ${esc(s.uicnNombre[l])} (${s.uicn})</small>` : '';
       const fuente = ['Wikipedia (EN, ES)'].concat(s.evaluacion ? [citaUicn(s.evaluacion)] : []).join(' · ');
       return `<li class="found" lang="${l}" data-especie="${esc(s.id)}"><span class="ico fauna" aria-hidden="true"></span><div>`
         + `<b>${esc(s.comun[l])}</b><small><span lang="${otro}">${esc(s.comun[otro])}</span> · <i lang="la">${esc(s.cientifico)}</i></small>`
-        + `<small>${esc(s.distribucion[l])}</small><small class="uicn">${esc(tx('uicn'))}: ${estado}</small>`
+        + `<small>${esc(s.distribucion[l])}</small>${estado}`
         + `<small class="fuente">${esc(tx('fuente'))}: ${esc(fuente)}</small></div></li>`;
     }).join('');
     return `<details class="especies"><summary class="lbl lbl-especies">${esc(tx('titulo'))} <small>${L.length} ${esc(tx('especies'))}</small></summary><ul class="diary especies">${items}</ul></details>`;
@@ -189,7 +190,8 @@ AVE.module('diario', function (G) {
         if (aj) aj.idioma = l;
         const d = document.createElement('div'); d.innerHTML = htmlEspecies();
         const li = d.querySelectorAll('li[data-especie]');
-        check(`[${l}] Una ficha por especie, con común, científico, distribución, UICN y fuente`, li.length === L.length && [...li].every(x => x.querySelectorAll('b').length === 1 && x.querySelector('i[lang=la]') && x.querySelector('.uicn') && x.querySelector('.fuente') && x.querySelectorAll('small').length === 4));
+        check(`[${l}] Una ficha por especie, con común, científico, distribución, UICN y fuente`, li.length === L.length && [...li].every(x => x.querySelectorAll('b').length === 1 && x.querySelector('i[lang=la]') && x.querySelector('.fuente') && x.querySelectorAll('small').length === (x.querySelector('.uicn') ? 4 : 3)));
+        check(`[${l}] Revisión T2 · sin estado UICN verificado no sale la línea ni «por verificar»`, [...li].every(x => { const s = L.find(e => e.id === x.dataset.especie); return s && !!x.querySelector('.uicn') === !!s.uicn; }) && !/verificar|verified/i.test(d.textContent), sinUicn.length + ' sin estado');
         check(`[${l}] Sin «undefined» ni «null» en el texto`, !/undefined|null|\[object/.test(d.textContent));
         const fila = d.querySelector('[data-especie=diadema]');
         check(`[${l}] El loro diadema ya trae su estado verificado (${E.categorias.LC[l]}, LC; Kelvin 2-nov)`, !!fila && fila.querySelector('.uicn').textContent.includes(E.categorias.LC[l] + ' (LC)'));

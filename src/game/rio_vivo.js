@@ -251,7 +251,7 @@ window.AVRioVivo = function (G) {
   // Pista del visor: la primera vez que se vuela a menos de 8 m del agua sin que el visor esté encendido (aún muy alto), un aviso corto
   function pistaVisor(dt, busy) {
     if (F.pistaDada || F.visorOn || busy || !verDe() || !M.flying || M.swimming || vistos().length > 0) return;
-    try { if (!F.prueba && G.ui.enEscena && G.ui.enEscena()) return; } catch (e) { /* sin interfaz */ } // T2: la regla compartida; se reintenta luego
+    if (otraEscena()) return; // T2: la regla compartida; se reintenta luego
     F.pistaT -= dt; if (F.pistaT > 0) return; F.pistaT = 0.3;
     const l = aguaCerca(2.5), h = S.pos.y - l;
     if (l > -Infinity && h >= VUELO_BAJO && h < PISTA_ALTO) {
@@ -261,6 +261,8 @@ window.AVRioVivo = function (G) {
   }
 
   // ---------- Bucle ----------
+  // La regla compartida G.ui.enEscena(); en la prueba (F.prueba) la batería pone F.escenaPrueba para no depender de la portada
+  const otraEscena = () => { try { return F.prueba ? !!(F.escenaPrueba && F.escenaPrueba()) : !!(G.ui.enEscena && G.ui.enEscena()); } catch (e) { return false; } };
   function paso(dt, busy) {
     dt = Math.min(dt, 0.1); F.t += dt; uT.value += dt;
     const quieta = M.posado ? M.speed < 0.6 : !M.flying && !M.swimming && M.speed < 0.4;
@@ -268,8 +270,9 @@ window.AVRioVivo = function (G) {
     const n = nadar(dt);
     // T4a: mientras se pesca (v18/pesca.js) el visor no sale: tapaba el corcho y el río con sus peces de observación
     const pescando = !!(document.body && document.body.classList.contains('v18-pesca-on'));
-    const quiere = !busy && !pescando && visorPosible();
-    F.visor = Math.max(0, Math.min(1, F.visor + (quiere ? dt : -dt) * 3));
+    // Revisión T2: con otra escena en marcha (rescate del pichón, un minijuego, un diálogo…) el visor entero se apaga, no solo su pista
+    const escena = otraEscena(), quiere = !busy && !pescando && !escena && visorPosible();
+    F.visor = escena ? 0 : Math.max(0, Math.min(1, F.visor + (quiere ? dt : -dt) * 3)); // con escena se apaga en el acto (sin fundido)
     F.visorOn = F.visor > 0.5;
     mat.opacity = 0.5 + F.visor * 0.5; mat.depthWrite = F.visorOn;
     const orden = F.visorOn ? 10 : -1; for (const id in mallas) mallas[id].renderOrder = orden;
@@ -386,6 +389,16 @@ window.AVRioVivo = function (G) {
         document.body.classList.add('v18-pesca-on'); ponEn(b.x, lvl + 1.8, b.z, { flying: true, speed: 4 }); simular(0.6); const conPesca = F.visorOn;
         document.body.classList.toggle('v18-pesca-on', pesca0); simular(0.6);
         ok('Pescando, el visor del río no sale (y vuelve al terminar)', !conPesca && F.visorOn, 'pescando ' + conPesca + ' · después ' + F.visorOn);
+      }
+      { // Revisión T2: con el rescate del pichón (u otro minijuego) en marcha, ni visor ni su aviso «quédate cerca del pez»
+        const r0 = G.rescate, av0 = F.avisado, dichos = [], t0 = G.ui.toast;
+        G.rescate = Object.assign(Object.create(r0 || null), { activo: () => true }); F.escenaPrueba = () => G.ui.enEscena(); F.avisado = false;
+        G.ui.toast = x => { dichos.push(x); };
+        let conRescate = true;
+        try { ponEn(b.x, lvl + 1.8, b.z, { flying: true, speed: 4 }); simular(0.6); conRescate = F.visorOn || hud.classList.contains('on'); }
+        finally { G.rescate = r0; G.ui.toast = t0; F.escenaPrueba = null; F.avisado = av0; }
+        simular(0.6);
+        ok('Revisión T2 · con el rescate en marcha el visor del río no sale ni avisa (y vuelve al terminar)', !conRescate && !dichos.length && F.visorOn, 'rescate ' + conRescate + ' · avisos ' + dichos.length + ' · después ' + F.visorOn);
       }
       // 6. Observar
       S.peces = []; F.obs = {}; aprend.length = 0;

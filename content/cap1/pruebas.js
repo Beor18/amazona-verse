@@ -350,6 +350,27 @@
       check('QA-188 · un aviso ya visible cuando empieza la apertura se aparta y vuelve al terminarla', antes && aparta && !tt.hidden && tt.textContent === 'Aviso previo QA188' && !UI.avisoPendiente, antes + ' · ' + aparta + ' · ' + tt.textContent);
       UI.hideToast(); tt.textContent = '';
     }
+    { // Revisión T2: una sola cola de avisos. Dos del mismo instante salen uno tras otro, el primero con su tiempo mínimo en pantalla
+      const UI = G.ui, tt = document.getElementById('toast');
+      UI.hideToast(); UI.colaTest(true);
+      try {
+        UI.toast('Aviso cola A', 4000); UI.toast('Aviso cola B', 4000); UI.toast('Aviso cola A', 4000);
+        const alPrincipio = tt.textContent === 'Aviso cola A' && UI.colaTest().cola.join() === 'Aviso cola B';
+        tick(1.0); const aMitad = tt.textContent === 'Aviso cola A';
+        tick(1.4); const luego = tt.textContent === 'Aviso cola B' && !UI.colaTest().cola.length;
+        check('Revisión T2 · los avisos van en una cola: uno cada vez, con su tiempo mínimo, y sin repetir el mismo', alPrincipio && aMitad && luego, alPrincipio + ' · ' + aMitad + ' · ' + luego + ' · ' + tt.textContent);
+      } finally { UI.colaTest(false); UI.hideToast(); tt.textContent = ''; }
+    }
+    if (G.dialogo && G.dialogo.activo) { // Revisión T2: un aviso en pantalla no se queda encima del diálogo o del bocadillo: se aparta y vuelve al acabar
+      const UI = G.ui, tt = document.getElementById('toast'), act0 = G.dialogo.activo;
+      UI.hideToast(); UI.toast('Aviso antes del diálogo', 3000); const antes = !tt.hidden;
+      let aparta = false;
+      try { G.dialogo.activo = () => true; tick(0.05); aparta = tt.hidden && UI.avisoPendiente && UI.avisoPendiente.text === 'Aviso antes del diálogo'; }
+      finally { G.dialogo.activo = act0; }
+      tick(0.05);
+      check('Revisión T2 · al empezar un diálogo el aviso visible se aparta y vuelve al terminar', antes && aparta && !tt.hidden && tt.textContent === 'Aviso antes del diálogo', antes + ' · ' + aparta + ' · ' + tt.textContent);
+      UI.hideToast(); tt.textContent = '';
+    }
     { // Largo A (7-nov): un aviso ya visible cuando se abre una tarjeta en el teléfono se aparta y vuelve al cerrarla
       const UI = G.ui, tt = document.getElementById('toast');
       const iw0 = Object.getOwnPropertyDescriptor(window, 'innerWidth'); Object.defineProperty(window, 'innerWidth', { value: 390, configurable: true }); // se restaura tal cual: borrarlo deja innerWidth sin definir el resto de la sesión

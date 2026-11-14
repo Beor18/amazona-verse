@@ -12,35 +12,66 @@ AVE.module('ui', function (G) {
   // pregunta y las opciones; se aparta y vuelve al cerrarla, como los que llegan con la tarjeta abierta (QA-93).
   function showCard(html) {
     $('card').innerHTML = html; $('card').hidden = false; cardOpen = true;
-    if (window.innerWidth <= 560 && !$('toast').hidden && actual) { if (!pendiente) pendiente = actual; ocultar(); }
+    if (window.innerWidth <= 560) apartar();
   }
   function hideCard() { $('card').hidden = true; cardOpen = false; G.emit('cardHidden'); }
-  let toastTimer = 0;
+  let toastTimer = 0, visto = 0;
   // QA-93 (W3): un aviso que salta con una pantalla que lo taparía (la tarjeta en un teléfono, ≤ 560 px, como el Diario o
-  // Retos; o el cómic o el creador, a pantalla completa) espera a que se cierre y sale después. Solo se guarda el último.
-  let pendiente = null, actual = null;
+  // Retos; o el cómic o el creador, a pantalla completa) espera a que se cierre y sale después.
+  // Revisión T2 (lista «terminado»): UNA cola de avisos. Sale uno cada vez; el siguiente espera a que el de pantalla lleve su
+  // tiempo mínimo (MIN_S, o su duración si es más corta), así dos avisos del mismo instante (fin de la intro, Patrulla, pista de la
+  // cotorra visitante; «¡Descubriste…!» e «Iguaca te llama») ya no se pisan. Un aviso igual al de pantalla o a uno en cola no se
+  // repite; la cola guarda los 4 últimos. Un aviso dado en las baterías (G.quiet) no reserva tiempo mínimo, salvo que la prueba de la cola lo pida.
+  const MIN_S = 2.2, COLA_MAX = 4, cola = [];
+  let actual = null, colaPrueba = false;
   // QA-93: tarjeta en teléfono, cómic o creador. QA-188 (W28): también la apertura del capítulo — el narrador habla en
   // bocadillos libres, no en G.dialogo, así que busy() no lo cubre y el aviso salía pegado a su subtítulo.
   // T2 (lista «terminado»): el panel final también aparta los avisos; vuelven al cerrarlo.
-  const tapado = () => (cardOpen && window.innerWidth <= 560) || !$('comic').hidden || !$('creator').hidden || !!document.getElementById('c1-saltar') || !$('end').hidden;
+  // Revisión T2: también un diálogo de caja o un bocadillo (G.dialogo.activo): el aviso no se queda encima.
+  const enDialogo = () => { try { return !!(G.dialogo && (G.dialogo.activo ? G.dialogo.activo() : G.dialogo.open())); } catch (e) { return false; } };
+  const tapado = () => (cardOpen && window.innerWidth <= 560) || !$('comic').hidden || !$('creator').hidden || !!document.getElementById('c1-saltar') || !$('end').hidden || enDialogo();
+  const igual = (p, q) => !!(p && q && p.text === q.text && p.html === q.html);
+  const enPantalla = () => !!actual && !$('toast').hidden;
   function mostrar(p) {
-    actual = p;
+    actual = p; visto = 0; p.vivo = !G.quiet || colaPrueba; // en las baterías (G.quiet) el aviso no reserva su tiempo mínimo
     if (p.html) $('toast').innerHTML = p.html; else { G.audio.play('tick'); $('toast').textContent = p.text; }
     $('toast').hidden = false; toastTimer = p.ms === 0 ? Infinity : (p.ms || 2200) / 1000;
   }
-  function toast(text, ms) { const p = { text, ms }; if (tapado()) { pendiente = p; return; } mostrar(p); }
-  function toastHTML(html, ms) { const p = { html, ms }; if (tapado()) { pendiente = p; return; } mostrar(p); }
+  // Saca el siguiente de la cola si no hay pantalla que lo tape y el de pantalla ya cumplió su tiempo mínimo
+  function siguiente() {
+    if (!cola.length || tapado()) return;
+    if (enPantalla() && actual.vivo) { const dur = toastTimer === Infinity ? MIN_S : visto + toastTimer; if (visto < Math.min(MIN_S, dur)) return; }
+    mostrar(cola.shift());
+  }
+  function encolar(p) {
+    if (enPantalla() && igual(actual, p)) { if (toastTimer !== Infinity) toastTimer = Math.max(toastTimer, p.ms === 0 ? Infinity : (p.ms || 2200) / 1000); return; } // el mismo: solo se alarga
+    if (cola.some(q => igual(q, p))) return;
+    cola.push(p); if (cola.length > COLA_MAX) cola.shift();
+    siguiente();
+  }
+  function toast(text, ms) { encolar({ text, ms }); }
+  function toastHTML(html, ms) { encolar({ html, ms }); }
   // QA-207: «ocultar» (interno) quita el aviso de la pantalla y respeta el apartado; los apartados de showCard y del update lo usan.
   // hideToast() (público) además descarta el aviso que estaba en pantalla si quedó apartado, para que no vuelva al cerrarse
   // la tarjeta. Un aviso distinto que llegó con la pantalla tapada y aún no se ha visto (QA-93) sigue esperando.
   function ocultar() { $('toast').hidden = true; toastTimer = 0; }
-  function hideToast() { if (pendiente && pendiente === actual) pendiente = null; ocultar(); }
+  // Para las baterías: la cola entera fuera (lo que dejó la partida antes de la prueba no se mezcla con sus avisos)
+  function vaciarAvisos() { cola.length = 0; ocultar(); }
+  function hideToast() { const i = cola.indexOf(actual); if (i >= 0) cola.splice(i, 1); ocultar(); }
+  // El aviso en pantalla se aparta al frente de la cola con lo que le quedaba (mínimo 1,5 s) y vuelve cuando se destapa
+  function apartar() {
+    if (!enPantalla()) return;
+    if (!cola.includes(actual)) { if (toastTimer !== Infinity) actual.ms = Math.max(1500, Math.round(toastTimer * 1000)); cola.unshift(actual); }
+    ocultar();
+  }
   // QA-188 (en vivo, 7-nov): un aviso que ya estaba en pantalla cuando algo pasa a taparlo (empieza la apertura del cap. 1
-  // justo al cerrar el creador, se abre el cómic…) se aparta y vuelve al terminar, como los que llegan después
+  // justo al cerrar el creador, se abre el cómic, empieza un diálogo…) se aparta y vuelve al terminar, como los que llegan después
   G.on('update', () => {
-    if (!pendiente && actual && !$('toast').hidden && tapado()) { pendiente = actual; ocultar(); return; }
-    if (pendiente && !tapado()) { const p = pendiente; pendiente = null; mostrar(p); }
+    if (enPantalla() && tapado()) { apartar(); return; }
+    siguiente();
   }, 84);
+  // Solo para las baterías: activa el tiempo mínimo aunque G.quiet esté puesto y devuelve el estado de la cola
+  function colaTest(on) { if (on != null) colaPrueba = !!on; return { cola: cola.map(p => p.text || p.html), actual: enPantalla() ? (actual.text || actual.html) : null, visto }; }
   function overlayOpen() { return !$('end').hidden || !$('comic').hidden || !$('creator').hidden; }
   // Ocupado: diálogo, tarjeta u overlay abiertos (el jugador no se mueve ni recoge)
   function busy() { return G.dialogo.open() || cardOpen || overlayOpen(); }
@@ -62,7 +93,7 @@ AVE.module('ui', function (G) {
   function avisoLibre(text, ms) { if (enEscena()) return false; toast(text, ms); return true; }
   // El creador es opaco: mientras está abierto el mundo no se dibuja
   function worldHidden() { return !$('creator').hidden; }
-  G.on('update', dt => { if (toastTimer !== Infinity && toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) ocultar(); } }, 85);
+  G.on('update', dt => { if (enPantalla()) visto += dt; if (toastTimer !== Infinity && toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) ocultar(); } }, 85);
 
   // Botón de sonido
   const soundBtn = $('b-sound'), A = G.audio;
@@ -83,5 +114,5 @@ AVE.module('ui', function (G) {
     if (H.titulo) document.title = H.titulo;
   }
 
-  return { $, showCard, hideCard, get cardOpen() { return cardOpen; }, get avisoPendiente() { return pendiente; }, toast, toastHTML, hideToast, overlayOpen, busy, worldHidden, enEscena, avisoLibre };
+  return { $, showCard, hideCard, get cardOpen() { return cardOpen; }, get avisoPendiente() { return cola[0] || null; }, colaTest, toast, toastHTML, hideToast, vaciarAvisos, overlayOpen, busy, worldHidden, enEscena, avisoLibre };
 });
