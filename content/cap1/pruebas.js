@@ -361,6 +361,33 @@
         check('Revisión T2 · los avisos van en una cola: uno cada vez, con su tiempo mínimo, y sin repetir el mismo', alPrincipio && aMitad && luego, alPrincipio + ' · ' + aMitad + ' · ' + luego + ' · ' + tt.textContent);
       } finally { UI.colaTest(false); UI.hideToast(); tt.textContent = ''; }
     }
+    { // Revisión T2, ronda 2: un aviso dado fuera de escena (y uno aceptado por avisoLibre) no sale en medio de un minijuego:
+      // el de pantalla se aparta, los de la cola esperan, el de la propia actividad sí sale, y al terminar salen los demás en orden
+      const UI = G.ui, tt = document.getElementById('toast'), r0 = G.rescate;
+      UI.vaciarAvisos(); UI.colaTest(true);
+      let fuera = false, propio = false, libreNo = true, aceptado = false;
+      try {
+        UI.toast('Aviso fuera de escena', 4000); aceptado = UI.avisoLibre('Aviso libre de prueba', 4000);
+        G.rescate = Object.assign(Object.create(r0 || null), { activo: () => true }); tick(0.05);
+        fuera = tt.hidden; libreNo = !UI.avisoLibre('Aviso libre en escena', 3000);
+        UI.toast('Aviso del minijuego', 1000); tick(0.05); propio = !tt.hidden && tt.textContent === 'Aviso del minijuego';
+        tick(3); fuera = fuera && tt.hidden;
+      } finally { G.rescate = r0; }
+      tick(0.05); const vuelve = !tt.hidden && tt.textContent === 'Aviso fuera de escena';
+      tick(2.3); const luego = !tt.hidden && tt.textContent === 'Aviso libre de prueba';
+      check('Revisión T2 · con un minijuego en marcha los avisos de fuera esperan (y el visible se aparta); el del minijuego sale', aceptado && fuera && libreNo && propio && vuelve && luego, [aceptado, fuera, libreNo, propio, vuelve, luego, tt.textContent].join(' · '));
+      UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = '';
+    }
+    { // Revisión T2, ronda 2: si la cola se llena, se tira el más viejo que se puede repetir, no uno de una sola vez (avisoLibre o { fijo })
+      const UI = G.ui, tt = document.getElementById('toast'), cm = document.getElementById('comic'), cm0 = cm.hidden;
+      UI.vaciarAvisos(); cm.hidden = false; UI.colaTest(true);
+      try {
+        UI.toast('Aviso fijo de prueba', 2000, { fijo: true }); UI.toast('Aviso que se repite', 2000);
+        const n = UI.colaTest().max; for (let i = 0; i < n; i++) UI.toast('Aviso de relleno ' + i, 2000);
+        const c = UI.colaTest().cola;
+        check('Revisión T2 · la cola llena no tira primero un aviso de una sola vez', c.length === n && c[0] === 'Aviso fijo de prueba' && !c.includes('Aviso que se repite'), c.join(' | '));
+      } finally { cm.hidden = cm0; UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = ''; }
+    }
     if (G.dialogo && G.dialogo.activo) { // Revisión T2: un aviso en pantalla no se queda encima del diálogo o del bocadillo: se aparta y vuelve al acabar
       const UI = G.ui, tt = document.getElementById('toast'), act0 = G.dialogo.activo;
       UI.hideToast(); UI.toast('Aviso antes del diálogo', 3000); const antes = !tt.hidden;

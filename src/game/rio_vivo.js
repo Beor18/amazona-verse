@@ -291,7 +291,7 @@ window.AVRioVivo = function (G) {
       hudNombre.textContent = !e ? L('Visor · busca peces bajo el agua', 'Viewer · look for fish under the water') :
         visto ? L('Visor · ', 'Viewer · ') + L(e.nombre, e.nombreEn) + ' (' + e.cientifico + ')' : L('Visor · observando un pez…', 'Viewer · watching a fish…');
       hudBarra.style.transform = 'scaleX(' + (e && !visto ? Math.min(1, (F.obs[e.id] || 0) / OBS_T) : 0) + ')';
-      if (!F.avisado) { F.avisado = true; try { G.ui.toast(L('Visor: quédate cerca del pez para observarlo.', 'Viewer: stay near a fish to watch it.'), 2600); } catch (err) { /* sin HUD */ } }
+      if (!F.avisado) { F.avisado = true; try { G.ui.toast(L('Visor: quédate cerca del pez para observarlo.', 'Viewer: stay near a fish to watch it.'), 2600, { fijo: true }); } catch (err) { /* sin HUD */ } }
     }
   }
   let recalidad = false;

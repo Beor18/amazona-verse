@@ -25,7 +25,7 @@ window.AVV18Reparar = function (G) {
   const tiene = c => (G.objetos && G.objetos.has ? G.objetos.has(c) : Object.keys(c).every(k => inv(k) >= c[k]));
   const pagar = c => { if (G.objetos && G.objetos.pay) G.objetos.pay(c); else for (const k in c) S.inv[k] -= c[k]; };
   const refrescarInv = () => { try { G.objetos.renderInv(); } catch (e) { /* sin HUD */ } try { if (G.guardado.save) G.guardado.save(true); else G.guardado.autosave(); } catch (e) { /* sin guardado */ } }; // QA-162: al momento, junto a la marca de G.v18
-  const toast = (t, ms) => { try { G.ui.toast(t, ms || 3200); } catch (e) { /* sin interfaz */ } };
+  const toast = (t, ms, o) => { try { G.ui.toast(t, ms || 3200, o); } catch (e) { /* sin interfaz */ } };
   // T2: «hay actividad o escena en marcha» (src/engine/ui.js; sin ella, lo de antes: pausa, tarjeta, panel o diálogo)
   const enEscena = () => {
     try {
@@ -40,7 +40,7 @@ window.AVV18Reparar = function (G) {
     if (pistaPuerto || !enCap1() || reparado()) return false;
     if (enEscena()) return false; // T2: la regla compartida (src/engine/ui.js); se reintenta en el siguiente cuadro
     pistaPuerto = true;
-    toast(PISTA_PUERTO, 6500);
+    toast(PISTA_PUERTO, 6500, { fijo: true }); // de una sola vez: la cola no la tira primero (src/engine/ui.js)
     return true;
   }
   const sonar = n => { try { G.audio.play(n); } catch (e) { /* sin audio */ } };

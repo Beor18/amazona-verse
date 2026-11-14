@@ -21,8 +21,12 @@ AVE.module('ui', function (G) {
   // Revisión T2 (lista «terminado»): UNA cola de avisos. Sale uno cada vez; el siguiente espera a que el de pantalla lleve su
   // tiempo mínimo (MIN_S, o su duración si es más corta), así dos avisos del mismo instante (fin de la intro, Patrulla, pista de la
   // cotorra visitante; «¡Descubriste…!» e «Iguaca te llama») ya no se pisan. Un aviso igual al de pantalla o a uno en cola no se
-  // repite; la cola guarda los 4 últimos. Un aviso dado en las baterías (G.quiet) no reserva tiempo mínimo, salvo que la prueba de la cola lo pida.
-  const MIN_S = 2.2, COLA_MAX = 4, cola = [];
+  // repite. Un aviso dado en las baterías (G.quiet) no reserva tiempo mínimo, salvo que la prueba de la cola lo pida.
+  // Ronda 2: un aviso dado FUERA de escena (p.escena false) no sale mientras haya escena (enEscena()): espera, y si ya estaba en
+  // pantalla se aparta. Los que da la propia actividad (llegan con la escena en marcha) sí salen. Al acabar la escena todos pasan a
+  // «fuera», así uno que quedó en cola no sale encima de la escena siguiente. Tope de cola COLA_MAX: si se pasa, se tira el más viejo
+  // que no sea de una sola vez (p.fijo: los aceptados por avisoLibre o los dados con { fijo: true }, que no se repiten).
+  const MIN_S = 2.2, COLA_MAX = 8, cola = [];
   let actual = null, colaPrueba = false;
   // QA-93: tarjeta en teléfono, cómic o creador. QA-188 (W28): también la apertura del capítulo — el narrador habla en
   // bocadillos libres, no en G.dialogo, así que busy() no lo cubre y el aviso salía pegado a su subtítulo.
@@ -38,19 +42,22 @@ AVE.module('ui', function (G) {
     $('toast').hidden = false; toastTimer = p.ms === 0 ? Infinity : (p.ms || 2200) / 1000;
   }
   // Saca el siguiente de la cola si no hay pantalla que lo tape y el de pantalla ya cumplió su tiempo mínimo
-  function siguiente() {
+  function siguiente(esc) {
     if (!cola.length || tapado()) return;
     if (enPantalla() && actual.vivo) { const dur = toastTimer === Infinity ? MIN_S : visto + toastTimer; if (visto < Math.min(MIN_S, dur)) return; }
-    mostrar(cola.shift());
+    const i = (esc == null ? enEscena() : esc) ? cola.findIndex(q => q.escena) : 0; // con escena, solo los de la actividad
+    if (i >= 0) mostrar(cola.splice(i, 1)[0]);
   }
   function encolar(p) {
-    if (enPantalla() && igual(actual, p)) { if (toastTimer !== Infinity) toastTimer = Math.max(toastTimer, p.ms === 0 ? Infinity : (p.ms || 2200) / 1000); return; } // el mismo: solo se alarga
-    if (cola.some(q => igual(q, p))) return;
-    cola.push(p); if (cola.length > COLA_MAX) cola.shift();
-    siguiente();
+    if (enPantalla() && igual(actual, p)) { if (toastTimer !== Infinity) toastTimer = Math.max(toastTimer, p.ms === 0 ? Infinity : (p.ms || 2200) / 1000); if (p.fijo) actual.fijo = true; return; } // el mismo: solo se alarga
+    const q0 = cola.find(q => igual(q, p)); if (q0) { if (p.fijo) q0.fijo = true; return; }
+    p.escena = enEscena(); cola.push(p);
+    if (cola.length > COLA_MAX) { const i = cola.findIndex(q => !q.fijo); cola.splice(i >= 0 ? i : 0, 1); }
+    siguiente(p.escena);
   }
-  function toast(text, ms) { encolar({ text, ms }); }
-  function toastHTML(html, ms) { encolar({ html, ms }); }
+  const fijo = o => !!(o && o.fijo);
+  function toast(text, ms, o) { encolar({ text, ms, fijo: fijo(o) }); }
+  function toastHTML(html, ms, o) { encolar({ html, ms, fijo: fijo(o) }); }
   // QA-207: «ocultar» (interno) quita el aviso de la pantalla y respeta el apartado; los apartados de showCard y del update lo usan.
   // hideToast() (público) además descarta el aviso que estaba en pantalla si quedó apartado, para que no vuelva al cerrarse
   // la tarjeta. Un aviso distinto que llegó con la pantalla tapada y aún no se ha visto (QA-93) sigue esperando.
@@ -67,11 +74,14 @@ AVE.module('ui', function (G) {
   // QA-188 (en vivo, 7-nov): un aviso que ya estaba en pantalla cuando algo pasa a taparlo (empieza la apertura del cap. 1
   // justo al cerrar el creador, se abre el cómic, empieza un diálogo…) se aparta y vuelve al terminar, como los que llegan después
   G.on('update', () => {
-    if (enPantalla() && tapado()) { apartar(); return; }
-    siguiente();
+    if (!cola.length && !enPantalla()) return;
+    const esc = enEscena();
+    if (!esc) for (const q of cola) q.escena = false;
+    if (enPantalla() && (tapado() || (esc && !actual.escena))) { apartar(); return; }
+    siguiente(esc);
   }, 84);
   // Solo para las baterías: activa el tiempo mínimo aunque G.quiet esté puesto y devuelve el estado de la cola
-  function colaTest(on) { if (on != null) colaPrueba = !!on; return { cola: cola.map(p => p.text || p.html), actual: enPantalla() ? (actual.text || actual.html) : null, visto }; }
+  function colaTest(on) { if (on != null) colaPrueba = !!on; return { cola: cola.map(p => p.text || p.html), actual: enPantalla() ? (actual.text || actual.html) : null, visto, max: COLA_MAX }; }
   function overlayOpen() { return !$('end').hidden || !$('comic').hidden || !$('creator').hidden; }
   // Ocupado: diálogo, tarjeta u overlay abiertos (el jugador no se mueve ni recoge)
   function busy() { return G.dialogo.open() || cardOpen || overlayOpen(); }
@@ -90,7 +100,7 @@ AVE.module('ui', function (G) {
     } catch (e) { return false; }
   }
   // Aviso que sale solo: con escena en marcha no sale y devuelve false (quien lo llama no lo da por dado y lo reintenta luego)
-  function avisoLibre(text, ms) { if (enEscena()) return false; toast(text, ms); return true; }
+  function avisoLibre(text, ms) { if (enEscena()) return false; toast(text, ms, { fijo: true }); return true; }
   // El creador es opaco: mientras está abierto el mundo no se dibuja
   function worldHidden() { return !$('creator').hidden; }
   G.on('update', dt => { if (enPantalla()) visto += dt; if (toastTimer !== Infinity && toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) ocultar(); } }, 85);
