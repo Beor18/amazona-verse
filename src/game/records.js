@@ -615,13 +615,14 @@
     }
     function htmlDescubrimientos(d) {
       const u = d.descubrimientos, tope = n => Math.max(0, Math.min(1, n));
+      const vacias = G.menuRecorte === false; // T3: «Mejor combo» y «Escondite» no salen vacíos (con ?menu=completo, sí)
       const comboTxt = !u.combo ? tx('sinCombo') : u.combo >= 3 ? tx('loca') : u.combo === 2 ? tx('plumas') : tx('unTruco');
       const tiempoFill = u.tiempo ? Math.max(0.35, Math.min(1, 1 - (u.tiempo - 15) / 105)) : 0;
       const ins = (f, valor, titulo, detalle) => `<li><span class="rec-ins" style="--fill:${tope(f).toFixed(3)}" role="img" aria-label="${esc(titulo)}"><span>${valor}</span></span><b>${esc(titulo)}</b><small>${detalle}</small></li>`;
       const vecinos = `<span class="rec-vecinos">${['coqui', 'lagartijo', 'mariposa'].map(id => `<i class="${u.vecinos.includes(id) ? 'llena' : 'falta'}">${esc(tx(id))}</i>`).join('')}</span>`;
       return `<section class="rec-sec" id="rec-descubrimientos" aria-labelledby="rec-h-desc"><h3 id="rec-h-desc">${esc(tx('descubrimientos'))} <small>${esc(tx('descNota'))}</small></h3><ul class="rec-insignias">
-        ${ins(u.combo / 3, u.combo ? '×' + u.combo : '·', tx('combo'), esc(comboTxt))}
-        ${ins(tiempoFill, u.tiempo ? '★' : '·', tx('escondite'), u.tiempo ? esc(reloj(u.tiempo)) : esc(tx('sinEscondite')))}
+        ${vacias || u.combo ? ins(u.combo / 3, u.combo ? '×' + u.combo : '·', tx('combo'), esc(comboTxt)) : ''}
+        ${vacias || u.tiempo ? ins(tiempoFill, u.tiempo ? '★' : '·', tx('escondite'), u.tiempo ? esc(reloj(u.tiempo)) : esc(tx('sinEscondite'))) : ''}
         ${ins(u.sorpresas / u.sorpresasTotal, u.sorpresas + '/' + u.sorpresasTotal, tx('ciudad'), esc(tx('deVistas')))}
         ${ins(u.marana / u.maranaTotal, u.marana + '/' + u.maranaTotal, tx('marana'), esc(tx('deLimpios')))}
         ${ins(u.vecinos.length / 3, u.vecinos.length + '/3', tx('vecinos'), vecinos)}
@@ -1156,7 +1157,8 @@
         check('Los botones del panel miden 44 px o más', grande.length === 0, grande.length + ' pequeños');
         const rb = root.querySelector('.rec-box'), cuerpo = root.querySelector('.rec-body');
         check('Nada se desborda a lo ancho', rb.scrollWidth <= rb.clientWidth + 1 && cuerpo.scrollWidth <= cuerpo.clientWidth + 1 && rb.getBoundingClientRect().right <= window.innerWidth + 1, `${cuerpo.scrollWidth}/${cuerpo.clientWidth} en ${window.innerWidth}`);
-        check('Sin logros, las seis insignias salen vacías', /Mis descubrimientos/.test(txt) && /Aún sin combo/.test(txt) && /Aún sin tiempo/.test(txt) && root.querySelectorAll('#rec-descubrimientos .rec-ins').length === 6);
+        const nIns = G.menuRecorte === false ? 6 : 4;
+        check('Sin logros, las insignias salen vacías' + (nIns === 4 ? ' (T3: sin «Mejor combo» ni «Escondite» hasta tener algo)' : ''), /Mis descubrimientos/.test(txt) && (nIns === 4 ? !/Aún sin combo/.test(txt) && !/Aún sin tiempo/.test(txt) : /Aún sin combo/.test(txt) && /Aún sin tiempo/.test(txt)) && root.querySelectorAll('#rec-descubrimientos .rec-ins').length === nIns, root.querySelectorAll('#rec-descubrimientos .rec-ins').length);
         localStorage.setItem(pruebas.trucos, JSON.stringify({ v: 1, mejor: 3 }));
         localStorage.setItem(pruebas.escondite, JSON.stringify({ v: 1, mejor: 42.5 }));
         localStorage.setItem(pruebas.ciudad, JSON.stringify({ visitas: 2, ultima: ['fruta'], vistos: ['fruta', 'cuerda', 'coqui'], notas: [] }));
@@ -1180,7 +1182,7 @@
         localStorage.setItem(pruebas.trucos, 'basura');
         localStorage.setItem(pruebas.ciudad, JSON.stringify({ vistos: [1, 'fruta', 'fruta', '<script>'] }));
         pintar();
-        check('Datos dañados de descubrimientos no rompen el panel', !!root.querySelector('#rec-descubrimientos') && /Aún sin combo/.test(root.textContent) && /1\/12/.test(root.querySelector('#rec-descubrimientos').textContent));
+        check('Datos dañados de descubrimientos no rompen el panel', !!root.querySelector('#rec-descubrimientos') && (G.menuRecorte === false ? /Aún sin combo/.test(root.textContent) : !/Mejor combo/.test(root.querySelector('#rec-descubrimientos').textContent)) && /1\/12/.test(root.querySelector('#rec-descubrimientos').textContent));
         // ---------- Sección V18 (solo lectura de `<almacen>.v18`) ----------
         const secV18 = () => root.querySelector('#rec-v18'), tarjeta = k => (root.querySelector(`#rec-v18 [data-v18="${k}"]`) || {}).textContent || '';
         const plano = el => (el ? el.textContent.replace(/\s+/g, ' ') : '');

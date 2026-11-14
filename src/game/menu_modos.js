@@ -98,15 +98,71 @@
     function tarjetas() { return form ? [...form.querySelectorAll('[data-modo]')] : []; }
     const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
     // Las de la V18 solo con la bandera encendida; el Duelo de 2 necesita teclado (duelo2.js no se carga en táctil)
-    const seVe = m => (EXP.includes(m) ? G.PESCA !== false : !V18M.includes(m) || (!!G.V18 && (m !== 'duelo2' || !tactil())));
+    const seVe0 = m => (EXP.includes(m) ? G.PESCA !== false : !V18M.includes(m) || (!!G.V18 && (m !== 'duelo2' || !tactil())));
+    // ---------- T3 · Recorte del menú (LISTA_TERMINADO, 14-nov) ----------
+    // Mientras Kelvin decide la lista final de modos (K4): fuera de la portada el Duelo y el Duelo de 2 (siguen en el código y en
+    // ?mini=); River Rush, Tormenta y Banquete van dentro de «Más juegos»; «Capítulos» sube encima de las tarjetas.
+    // Bandera fácil de revertir: ?menu=completo (o G.menuRecorte = false antes de arrancar) deja el menú de antes.
+    if (G.menuRecorte == null) G.menuRecorte = !/[?&]menu=completo\b/.test(location.search);
+    const RECORTE = () => G.menuRecorte !== false;
+    const seVeT = b => !b.hidden && !b.classList.contains('recorte-fuera'); // tarjeta a la vista
+    if (!document.getElementById('menu-recorte-css')) {
+      const st = document.createElement('style'); st.id = 'menu-recorte-css';
+      st.textContent = '#modos .recorte-fuera{display:none!important}#title .title-episodios.episodios-arriba{margin:0 0 12px}';
+      document.head.appendChild(st);
+    }
+    const FUERA = ['duelo', 'duelo2'], MAS = ['river', 'tormenta', 'banquete'];
+    const seVe = m => seVe0(m) && !(RECORTE() && FUERA.includes(m));
+    let masAbierto = false;
+    function masJuegos() {
+      const grid = form && form.querySelector('.modos-grid');
+      if (!grid) return null;
+      let b = form.querySelector('[data-mas-juegos]');
+      if (!b) {
+        b = document.createElement('button');
+        b.type = 'button'; b.className = 'btn tile modo modo-mas'; b.dataset.masJuegos = '1';
+        b.innerHTML = '<svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><circle cx="16" cy="32" r="7" fill="var(--leaf, #5cbf6a)"/><circle cx="32" cy="32" r="7" fill="var(--sun, #ffd25e)"/><circle cx="48" cy="32" r="7" fill="var(--sky, #6fc3ff)"/></svg><b></b><small></small>';
+        b.addEventListener('click', ev => { ev.preventDefault(); abrirMas(!masAbierto); });
+        const tras = grid.querySelector('[data-modo="banquete"]') || grid.lastElementChild;
+        if (tras) tras.insertAdjacentElement('afterend', b); else grid.appendChild(b);
+      }
+      return b;
+    }
+    function abrirMas(on) {
+      masAbierto = !!on && RECORTE();
+      if (form) form.classList.toggle('modos-mas-abierto', masAbierto);
+      mostrar();
+      const primero = masAbierto ? tarjetas().find(b => MAS.includes(b.dataset.modo) && seVeT(b)) : form && form.querySelector('[data-mas-juegos]');
+      if (primero && portada && portada.open) setTimeout(() => primero.focus({ preventScroll: true }), 0);
+    }
+    // Esc con «Más juegos» abierto vuelve a la lista (no cierra la portada)
+    if (portada) portada.addEventListener('cancel', e => { if (masAbierto) { e.preventDefault(); abrirMas(false); } });
+    if (portada) portada.addEventListener('close', () => { if (masAbierto) { masAbierto = false; if (form) form.classList.remove('modos-mas-abierto'); } }); // al volver, la lista entera
+    function capitulosArriba() {
+      const nav = document.querySelector('#title .title-episodios'), dlgForm = form;
+      if (!nav || !dlgForm) return;
+      if (RECORTE()) { if (nav.nextElementSibling !== dlgForm) dlgForm.insertAdjacentElement('beforebegin', nav); nav.classList.add('episodios-arriba'); }
+    }
     function mostrar() {
       if (!form) return;
       const T = TX(), u = ultimo();
       const t = $('modos-t'); if (t) t.textContent = T.titulo;
       const bm = $('b-menu-modos'); if (bm) bm.textContent = T.cambiar;
+      capitulosArriba();
+      const bMas = RECORTE() ? masJuegos() : form.querySelector('[data-mas-juegos]');
+      if (bMas) {
+        bMas.hidden = !RECORTE(); bMas.style.display = RECORTE() ? '' : 'none';
+        bMas.querySelector('b').textContent = masAbierto ? L('Volver', 'Back') : L('Más juegos', 'More games');
+        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta y el banquete', 'River Rush, the storm and the feast');
+        bMas.setAttribute('aria-expanded', String(masAbierto));
+        bMas.setAttribute('aria-label', bMas.querySelector('b').textContent + '. ' + bMas.querySelector('small').textContent);
+      }
       tarjetas().forEach((b, i) => {
         const m = b.dataset.modo, tx = T[m]; if (!tx) return;
         if (V18M.includes(m) || EXP.includes(m)) { const ve = seVe(m); b.hidden = !ve; b.style.display = ve ? '' : 'none'; }
+        // T3: con «Más juegos» abierto solo se ven sus tres juegos; cerrado, todas menos esas tres. Solo una clase: no toca hidden,
+        // así lo que otro código esconde (el tren, el Maze) sigue escondido
+        b.classList.toggle('recorte-fuera', RECORTE() && (masAbierto ? !MAS.includes(m) : MAS.includes(m)));
         const bb = b.querySelector('b'), sm = b.querySelector('small');
         if (bb) bb.textContent = tx[0]; if (sm) sm.textContent = tx[1];
         b.style.setProperty('--i', i);
@@ -116,7 +172,7 @@
         if (chapa) { chapa.textContent = T.ultimo; chapa.hidden = !es; }
         b.setAttribute('aria-label', tx[0] + '. ' + tx[1] + (es ? '. ' + T.ultimo : ''));
       });
-      const foco = tarjetas().find(b => b.dataset.modo === u && !b.hidden) || tarjetas()[0];
+      const foco = tarjetas().find(b => b.dataset.modo === u && seVeT(b)) || tarjetas().find(seVeT) || tarjetas()[0];
       if (foco && portada && portada.open) setTimeout(() => { if (portada.open && !portada.inert) foco.focus({ preventScroll: true }); }, 0);
       pintarAyuda(T);
     }
@@ -480,7 +536,7 @@
       });
       form.addEventListener('keydown', e => {
         if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
-        const ts = tarjetas().filter(b => !b.hidden), i = ts.indexOf(document.activeElement); if (i < 0) return;
+        const ts = [...form.querySelectorAll('[data-modo]:not([hidden]):not(.recorte-fuera), [data-mas-juegos]:not([hidden])')], i = ts.indexOf(document.activeElement); if (i < 0) return;
         const cols = Math.max(1, Math.round(form.querySelector('.modos-grid').clientWidth / ts[0].offsetWidth));
         const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowDown' ? cols : -cols;
         const j = i + d; if (j < 0 || j >= ts.length) return;
@@ -556,7 +612,23 @@
         const primero = form.querySelector('button');
         check('La primera tarjeta es Aventura y es submit del form method=dialog', primero && primero.dataset.modo === 'aventura' && primero.type === 'submit' && form.method === 'dialog');
         check('Nido, récords, Mis cotorras, Álbum y Retos con amigos no cierran la portada (type=button)', ENCIMA.every(m => form.querySelector(`[data-modo="${m}"]`).type === 'button'));
-        check('Las tarjetas de la V18 se ven con la bandera encendida y se ocultan sin ella', ['golf', 'duelo', 'amigos', 'cotorras'].every(m => form.querySelector(`[data-modo="${m}"]`).hidden === !G.V18));
+        check('Las tarjetas de la V18 se ven con la bandera encendida y se ocultan sin ella', ['golf', 'amigos', 'cotorras'].concat(RECORTE() ? [] : ['duelo']).every(m => form.querySelector(`[data-modo="${m}"]`).hidden === !G.V18));
+        // T3 · recorte del menú (bandera G.menuRecorte; ?menu=completo lo quita)
+        {
+          const rec0 = G.menuRecorte, vis = m => { const b = form.querySelector(`[data-modo="${m}"]`); return !!b && seVeT(b) && getComputedStyle(b).display !== 'none'; };
+          G.menuRecorte = true; masAbierto = false; mostrar();
+          const bMas = form.querySelector('[data-mas-juegos]');
+          check('T3 · sin Duelo ni Duelo de 2 en la portada, y River Rush, Tormenta y Banquete dentro de «Más juegos»', !vis('duelo') && !vis('duelo2') && MAS.every(m => !vis(m)) && !!bMas && seVeT(bMas) && vis('aventura') && vis('golf'), ['duelo', 'duelo2'].concat(MAS).map(m => m + ':' + vis(m)).join(' '));
+          bMas.click();
+          check('T3 · «Más juegos» enseña solo sus tres juegos y «Volver»', masAbierto && MAS.every(vis) && !vis('aventura') && /Volver|Back/.test(bMas.textContent), MAS.map(m => m + ':' + vis(m)).join(' '));
+          const ev = new Event('cancel', { cancelable: true }); portada.dispatchEvent(ev);
+          check('T3 · Esc en «Más juegos» vuelve a la lista sin cerrar la portada', !masAbierto && ev.defaultPrevented && vis('aventura') && !vis('river'));
+          const nav = document.querySelector('#title .title-episodios');
+          check('T3 · «Capítulos» va encima de las tarjetas', !!nav && !!(nav.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING));
+          G.menuRecorte = false; mostrar();
+          check('T3 · con ?menu=completo vuelve el menú de antes', vis('river') && vis('tormenta') && seVe('duelo') === seVe0('duelo') && !seVeT(bMas));
+          G.menuRecorte = rec0; mostrar();
+        }
         check('Textos en ES', $('modos-t').textContent === '¿Cómo quieres jugar?' && form.querySelector('[data-modo="libre"] b').textContent === 'Vuelo libre', '«' + $('modos-t').textContent + '» / «' + form.querySelector('[data-modo="libre"] b').textContent + '»');
         const ay = document.getElementById('modos-ayuda'), pi = document.getElementById('modos-pista'), chips = document.getElementById('modos-pistas');
         check('Hay pistas con icono: mover, despegar, posarte y acción', !!chips && /Despegar/.test(chips.textContent) && /Posarte/.test(chips.textContent) && /Acción/.test(chips.textContent) && chips.querySelectorAll('svg').length >= 4, chips && chips.textContent);

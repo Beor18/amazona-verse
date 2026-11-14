@@ -16,6 +16,7 @@
     };
     const listo = () => L('Listo', 'Ready');
     const CASA_D = 2.5;
+    const RECORTE_QH = ['casa', 'piloto', 'duelo', 'duelo2'];
     function irModo(modo) {
       cerrar();
       const pausa = $('pause');
@@ -98,6 +99,7 @@
       dlg.innerHTML = '<h2 id="que-hacer-t">' + t + '</h2><ul class="qh-lista"></ul><div class="qh-pie"><button type="button" class="btn ghost qh-cerrar">' + L('Cerrar', 'Close') + '</button></div>';
       const ul = dlg.querySelector('.qh-lista');
       for (const f of filas()) {
+        if (G.menuRecorte !== false && RECORTE_QH.includes(f.id)) continue; // T3: fuera mientras Kelvin decide (K4); ?menu=completo los vuelve a poner
         if (f.id === 'construir' && !(G.construir && G.construir.empezar) && !G.queHacerPrueba) continue;
         if (f.id === 'mercadito' && !(G.tienda && G.tienda.abrir) && !G.queHacerPrueba) continue;
         const li = document.createElement('li');
@@ -133,8 +135,13 @@
     if (G.on) G.on('apply', () => pintar(), 95); // una partida guardada en EN
     async function test() {
       const out = [], ok = (n, pass, extra) => out.push({ name: n, ok: !!pass, extra: extra == null ? '' : String(extra) });
-      const abierto = dlg.open;
+      const abierto = dlg.open, rec0 = G.menuRecorte;
       try {
+        // T3: con el recorte, ni la casa, ni la escuela, ni los duelos
+        G.menuRecorte = true; abrir();
+        const conR = [...dlg.querySelectorAll('[data-qh]')].map(el => el.dataset.qh);
+        ok('T3 · con el recorte no salen la casa, la escuela de vuelo ni los duelos', RECORTE_QH.every(id => !conR.includes(id)) && conR.includes('tuerca') && conR.includes('taller'), conR.join(','));
+        G.menuRecorte = false; // lo de abajo prueba el panel completo (?menu=completo)
         abrir();
         ok('El panel se abre desde la portada y desde la pausa', !!($('b-que-hacer') && $('b-que-hacer-title') && dlg.open));
         const ids = [...dlg.querySelectorAll('[data-qh]')].map(el => el.dataset.qh);
@@ -171,7 +178,7 @@
           ok('T4b · Ir a la casa: a 2,5 m de la puerta y mirándola', !!(llevado && Math.abs(llevado.x - 10) < 1e-6 && Math.abs(llevado.z - 22.5) < 1e-6 && llevado.mx === 10 && llevado.mz === 20), JSON.stringify(llevado));
         }
       } catch (e) { ok('La prueba terminó', false, e && e.message); }
-      finally { dlg.style.width = ''; if (!abierto) cerrar(); }
+      finally { G.menuRecorte = rec0; pintar(); dlg.style.width = ''; if (!abierto) cerrar(); }
       return { passed: out.filter(x => x.ok).length, total: out.length, results: out };
     }
     const api = { abrir, cerrar, pintar, test };
