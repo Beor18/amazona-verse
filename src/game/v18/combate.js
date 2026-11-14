@@ -604,14 +604,14 @@ window.AVV18Combate = function (G) {
     modo0 = G.interaccion.modo; G.interaccion.modo = modo;
     if (G.dones) { sostener0 = G.dones.sostener; G.dones.sostener = sostenerDuelo; }
     addEventListener('keydown', tecla, true); if (G.input && G.input.keys) G.input.keys.delete('g'); envolverJugador(); alejarCamara();
-    document.body.classList.add('v18-duelo-on');
+    document.body.classList.add('v18-duelo-on'); document.body.classList.toggle('v18-duelo-tt', TACTIL);
   }
   function soltar() {
     if (!enganchado) return; enganchado = false;
     if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
     if (G.dones && G.dones.sostener === sostenerDuelo) G.dones.sostener = sostener0;
     removeEventListener('keydown', tecla, true); sost = 0; soltarJugador(); devolverCamara();
-    document.body.classList.remove('v18-duelo-on'); document.body.classList.remove('v18-ext-on'); document.body.classList.remove('v18-duelo-fin-t');
+    document.body.classList.remove('v18-duelo-on'); document.body.classList.remove('v18-ext-on'); document.body.classList.remove('v18-duelo-fin-t', 'v18-duelo-tt'); document.documentElement.style.removeProperty('--vd-bajo');
   }
 
   // ---------- HUD ----------
@@ -623,7 +623,7 @@ window.AVV18Combate = function (G) {
       '#v18-duelo .vd-fila{display:flex;gap:8px;justify-content:space-between}' +
       '#v18-duelo .vd-lado{flex:1;background:rgba(30,40,30,.72);border-radius:12px;padding:6px 10px;min-width:0}' +
       '#v18-duelo .vd-lado.r{text-align:right}#v18-duelo .vd-nom{font-weight:600;font-size:14px}#v18-duelo .vd-pod{font-size:12px;opacity:.85}' +
-      'body.v18-duelo-on #quest,body.v18-duelo-on #inv{visibility:hidden}' +
+      'body.v18-duelo-on #quest,body.v18-duelo-on #inv,body.v18-duelo-on #inv-cuenta{visibility:hidden}' +
       // QA-166/167: en el escritorio el HUD va debajo del aviso (#toast, arriba al centro); en el móvil el minimapa tapaba las
       // plumas de la rival y el panel de fin pisaba el botón Diario (columna derecha): se oculta el minimapa durante el duelo
       // (vuelve al salir) y el panel deja libre esa columna.
@@ -693,7 +693,17 @@ window.AVV18Combate = function (G) {
       '#v18-duelo .vd-ent button{min-height:40px;font-size:14px;background:#3b2a14;color:#fff3d6}#v18-duelo.tactil .vd-ent button{min-height:56px}' +
       '#v18-duelo-tags{position:fixed;inset:0;pointer-events:none;z-index:39}#v18-duelo-tags[hidden]{display:none}' +
       '#v18-duelo-tags span{position:absolute;transform:translate(-50%,-100%);background:#3b2a14;color:#fff3d6;font:700 13px/1.15 Fredoka,system-ui,sans-serif;padding:4px 8px;border-radius:10px;white-space:nowrap;text-align:center;box-shadow:0 2px 6px #0006}' +
-      '#v18-duelo-tags span[hidden]{display:none}#v18-duelo-tags small{display:block;font-size:11px;font-weight:600;opacity:.85}';
+      '#v18-duelo-tags span[hidden]{display:none}#v18-duelo-tags small{display:block;font-size:11px;font-weight:600;opacity:.85}' +
+      // Pasada táctil (14-nov, rescatada sobre T38): teléfono en horizontal (844 × 390). El HUD centrado a 92 px tapaba el Diario y,
+      // con el entreno debajo, a la Campeona y a Vittata. Ahora: HUD arriba a la izquierda, entreno y panel final abajo, entre el
+      // joystick y el 2×2, fuera el minimapa (como en vertical) y el aviso justo debajo del HUD (--vd-bajo lo mide ponerBajo), ancho
+      // para que quepa en una línea y no llegue al joystick
+      '@media (orientation:landscape) and (max-height:560px){' +
+      '#v18-duelo.tactil{top:calc(env(safe-area-inset-top,0px) + 8px);left:max(12px,env(safe-area-inset-left,0px));right:auto;margin:0;width:min(380px,45vw)}body.v18-duelo-tt #minimapa{visibility:hidden}' +
+      '#v18-duelo.tactil :is(.vd-ent,.vd-fin){position:fixed;left:0;right:0;margin:0 auto;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:min(440px,calc(100vw - 380px));min-width:260px;max-height:calc(100vh - 16px);overflow:auto;box-sizing:border-box}' +
+      'body.v18-duelo-tt #toast{top:var(--vd-bajo,calc(env(safe-area-inset-top,0px) + 140px));bottom:auto;left:max(12px,env(safe-area-inset-left,0px));right:auto;margin:0;max-width:min(480px,calc(100vw - 360px))}}' +
+      // Vertical: el entreno deja libre la columna de Diario y Pausa, como el panel final (con más botones en #sys, el Diario sube)
+      '@media (orientation:portrait) and (max-width:760px){#v18-duelo.tactil .vd-ent{margin-right:52px}}';
     document.head.appendChild(st);
   }
   function montarHud() {
@@ -727,6 +737,20 @@ window.AVV18Combate = function (G) {
     document.body.appendChild(tg);
     hud = { el, tags: tg, q: k => el.querySelector('[data-k="' + k + '"]') };
     return hud;
+  }
+  // Táctil en horizontal: dónde acaba el HUD (paneles, cuenta y pista; el entreno y el final van abajo, fijos); ahí va el aviso.
+  // Sin listas nuevas (recorre los hijos) y cada 400 ms como mucho, desde paso().
+  const HORIZ = window.matchMedia ? matchMedia('(orientation:landscape) and (max-height:560px)') : null;
+  let bajoT = 0, bajoPx = 0;
+  function ponerBajo(el) {
+    const w = el.ownerDocument.defaultView; let b = 0;
+    for (const e of el.children) {
+      if (e.hidden || !e.matches('.vd-fila,.vd-centro,.vd-pista') || w.getComputedStyle(e).position === 'fixed') continue;
+      const r = e.getBoundingClientRect(); if (r.height > 0 && r.bottom > b) b = r.bottom;
+    }
+    const px = Math.round(Math.min(b + 8, w.innerHeight * 0.5));
+    if (b > 0 && px !== bajoPx) { bajoPx = px; el.ownerDocument.documentElement.style.setProperty('--vd-bajo', px + 'px'); }
+    return px;
   }
   function pulso(k) { if (!hud) return; const e = hud.q(k); e.classList.add('pulso'); setTimeout(() => e.classList.remove('pulso'), 300); }
   // Aviso del centro del HUD («¡Bloqueado!», «¡Interrumpida!»…). Frente A (5-nov): tras un golpe al escudo se quedaba
@@ -2264,6 +2288,7 @@ window.AVV18Combate = function (G) {
   function paso(dt) {
     if (!(G.v18duelo2 && G.v18duelo2.estado().fase !== 'nada')) C2.pasoReloj(dt); // hit-stop visual (en el duelo de 2 lo lleva duelo2.js)
     if (C.fase === 'nada') { if (C.ch) dibujarQuieta(dt, moverRivalQuieta(dt)); return; }
+    if (TACTIL && hud && HORIZ && HORIZ.matches && performance.now() - bajoT > 400) { bajoT = performance.now(); ponerBajo(hud.el); } // el aviso sigue al HUD
     if (apoyoT > 0) { apoyoT -= dt; if (apoyoT <= 0 && hud) hud.q('apoyo').hidden = true; }
     if (centroT > 0) { centroT -= dt; if (centroT <= 0 && hud && C.fase !== 'cuenta') hud.q('centro').textContent = ''; }
     if (C.fase === 'cuenta') {
@@ -3150,6 +3175,11 @@ window.AVV18Combate = function (G) {
         const ok = parseFloat(cs.width) >= 56 && parseFloat(cs.height) >= 56 && dentro(sp) && dentro(z) && !sp.zurdo && z.zurdo && sp.top + h === acts.bottom && sp.left + w <= acts.right && z.left === 20 && sp.top > 66 + 140 && ocultaActs;
         check('C2 · táctil (390 × 844, T38): el 2×2 (Ala, Pata, Semilla, Poder) cabe, mide ≥ 56 px y va donde los botones grandes, que se ocultan (también en modo zurdo)', ok, JSON.stringify({ boton: [cs.width, cs.height], sp, z, ocultaActs }));
       }
+      // Pasada táctil (14-nov) en una maqueta con las hojas reales, en vertical (390 × 844) y en horizontal (844 × 390): en la
+      // pelea, el entreno y el final, todo botón mide ≥ 44 px y cabe, y nada se pisa (HUD, entreno, final, 2×2, Diario, Pausa,
+      // joystick ni el aviso)
+      try { const m = await maquetaTactil(); check('Táctil (390 × 844 y 844 × 390): botones ≥ 44 px, dentro de la pantalla y sin solapes en la pelea, el entreno y el final', m.ok, m.mal.slice(0, 8).join(' · ') || m.info); }
+      catch (e) { check('Táctil (390 × 844 y 844 × 390): botones ≥ 44 px, dentro de la pantalla y sin solapes', false, e && e.message); }
       // 10. «Reducir movimiento»: el combo no sacude la cámara ni lanza partículas de fx_poderes; sin cortes bruscos en las poses
       const RD = R.REDUCED, J = G.camara && G.camara.juice;
       try { R.REDUCED = true; iniciar({ sinCuenta: true, especie: 'vittata', sinExtIA: true }); quieta2(); ver(0.2, () => quieta2()); if (J) { J.shake = 0; J.amp = 0; }
@@ -3178,6 +3208,62 @@ window.AVV18Combate = function (G) {
     try { if (crudo == null) localStorage.removeItem(P.clave()); else localStorage.setItem(P.clave(), crudo); } catch (e) { /* sin almacenamiento */ }
     P.recargar(); Object.assign(pista.dom, dom0);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
+  }
+  // Maqueta táctil (pasada 14-nov, sobre T38): un iframe del tamaño del móvil con las hojas reales, el HUD del duelo en táctil, los
+  // botones del juego (#sys, #acts, #stick, #minimapa), el 2×2 y el aviso. Coloca el 2×2 y el aviso como en el juego y mide.
+  async function maquetaTactil() {
+    montarHud(); hudExt();
+    const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => `<link rel="stylesheet" href="${l.href}">`).join('');
+    const css = ['v18-duelo-css', 'v18-duelo-ext-css'].map(id => document.getElementById(id)).filter(Boolean).map(e => e.outerHTML).join('');
+    const html = id => { const e = document.getElementById(id); return e ? e.outerHTML : ''; };
+    const mal = [], info = [];
+    for (const [vw, vh] of [[390, 844], [844, 390]]) {
+      const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+      fr.style.cssText = `position:fixed;left:-10000px;top:0;width:${vw}px;height:${vh}px;border:0`;
+      fr.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${css}` +
+        '<style>#acts{display:grid!important}#stick{display:block!important}#toast{display:block!important}</style></head>' + // en el escritorio ui.css los esconde
+        `<body class="v18-duelo-on v18-duelo-tt">${html('sys')}${html('minimapa')}${html('toast')}${html('stick')}${html('acts')}${hud.el.outerHTML}${hud.ext.pad.outerHTML}</body></html>`;
+      document.body.appendChild(fr);
+      try {
+        await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 15000); }); // con la máquina cargada el srcdoc tarda más de 5 s
+        const md = fr.contentDocument, mw = fr.contentWindow, el = md && md.getElementById('v18-duelo'), pad = md && md.getElementById('v18-duelo-ext');
+        if (!el || !pad || !md.getElementById('acts')) { mal.push(vw + '×' + vh + ': la maqueta no cargó'); continue; }
+        await new Promise(r => setTimeout(r, 300));
+        el.hidden = false; el.classList.add('tactil');
+        const q = k => el.querySelector('[data-k="' + k + '"]'), toast = md.getElementById('toast');
+        toast.hidden = false; toast.textContent = TXT.bienvenida; toast.style.animation = 'none'; // un iframe fuera de pantalla no avanza la animación de entrada
+        q('entPaso').textContent = TXT.entPaso(1, 4); q('entK').textContent = TXT.kAla; q('entTxt').textContent = TXT.tA1;
+        q('finXp').textContent = '+40 XP · ¡Nivel 4!'; q('finTxt').textContent = TXT.gana; q('finTipTxt').textContent = TXT.porGana; el.querySelector('.vd-fin [data-a="salir"]').textContent = TXT.menu;
+        const ESTADOS = { pelea: { ent: 0, fin: 0, como: 1, salir: 1, pad: 1 }, entreno: { ent: 1, fin: 0, como: 0, salir: 1, pad: 1 }, final: { ent: 0, fin: 1, como: 1, salir: 0, pad: 0 } };
+        for (const nom in ESTADOS) {
+          const E = ESTADOS[nom], tag = vw + '×' + vh + ' ' + nom;
+          q('ent').hidden = !E.ent; q('fin').hidden = !E.fin; q('como').hidden = !E.como; q('salirB').hidden = !E.salir;
+          pad.hidden = !E.pad; md.body.classList.toggle('v18-ext-on', !!E.pad); md.body.classList.toggle('v18-duelo-fin-t', !!E.fin);
+          const acts = md.getElementById('acts').getBoundingClientRect();
+          const s = sitioPad(acts, acts.top, vw, pad.offsetWidth || 162, pad.offsetHeight || 162); pad.style.left = s.left + 'px'; pad.style.top = s.top + 'px';
+          bajoPx = 0; ponerBajo(el); bajoPx = 0;
+          const ver = e => { if (!e || e.closest('[hidden]')) return false; const cs = mw.getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') return false; const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+          const nombre = e => (e.id ? '#' + e.id : '') + (e.dataset.a || e.dataset.x || e.className.split(' ')[0] || '');
+          const botones = [...el.querySelectorAll('button'), ...pad.querySelectorAll('button'), ...md.querySelectorAll('#acts > button, #b-diary, #b-menu')].filter(ver);
+          for (const b of botones) {
+            const r = b.getBoundingClientRect();
+            if (r.width < 44 || r.height < 44) mal.push(`${tag}: ${nombre(b)} mide ${Math.round(r.width)}×${Math.round(r.height)}`);
+            if (r.left < 0 || r.top < 0 || r.right > vw + 0.5 || r.bottom > vh + 0.5) mal.push(`${tag}: ${nombre(b)} se sale (${Math.round(r.left)},${Math.round(r.top)})`);
+          }
+          // Lo que no se puede pisar: botones, paneles (los botones de dentro de un panel no chocan con su panel), joystick, minimapa y aviso
+          const cajas = botones.concat([q('ent'), q('fin'), el.querySelector('.vd-fila'), md.getElementById('stick'), md.getElementById('minimapa'), toast].filter(ver));
+          for (let i = 0; i < cajas.length; i++) for (let j = i + 1; j < cajas.length; j++) {
+            const a = cajas[i], b = cajas[j]; if (a.contains(b) || b.contains(a)) continue;
+            const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+            const ox = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left), oy = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
+            if (ox > 1 && oy > 1) mal.push(`${tag}: ${nombre(a)} pisa ${nombre(b)} (${Math.round(ox)}×${Math.round(oy)})`);
+          }
+          if (md.documentElement.scrollWidth > vw) mal.push(tag + ': scroll horizontal');
+          info.push(tag + ' ok');
+        }
+      } finally { fr.remove(); }
+    }
+    return { ok: !mal.length, mal, info: info.join(', ') };
   }
   // Vista de cumbre: posición de la rival para el minimapa mientras la jugadora la «ve desde la cumbre» (lee minimapa.js)
   function mapa() {
