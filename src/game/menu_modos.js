@@ -108,7 +108,10 @@
     const seVeT = b => !b.hidden && !b.classList.contains('recorte-fuera'); // tarjeta a la vista
     if (!document.getElementById('menu-recorte-css')) {
       const st = document.createElement('style'); st.id = 'menu-recorte-css';
-      st.textContent = '#modos .recorte-fuera{display:none!important}#title .title-episodios.episodios-arriba{margin:0 0 12px}';
+      st.textContent = '#modos .recorte-fuera{display:none!important}#title .title-episodios.episodios-arriba{margin:0 0 12px}'
+        // «Más juegos» abierto: solo sus tres juegos y «Volver», en ese orden (también fuera las tarjetas que añaden otros módulos)
+        + '#modos.modos-mas-abierto .modos-grid>:not([data-mas-juegos]):not([data-modo="river"]):not([data-modo="tormenta"]):not([data-modo="banquete"]){display:none!important}'
+        + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-mas-juegos]{order:4}';
       document.head.appendChild(st);
     }
     const FUERA = ['duelo', 'duelo2'], MAS = ['river', 'tormenta', 'banquete'];
@@ -620,7 +623,8 @@
           const bMas = form.querySelector('[data-mas-juegos]');
           check('T3 · sin Duelo ni Duelo de 2 en la portada, y River Rush, Tormenta y Banquete dentro de «Más juegos»', !vis('duelo') && !vis('duelo2') && MAS.every(m => !vis(m)) && !!bMas && seVeT(bMas) && vis('aventura') && vis('golf'), ['duelo', 'duelo2'].concat(MAS).map(m => m + ':' + vis(m)).join(' '));
           bMas.click();
-          check('T3 · «Más juegos» enseña solo sus tres juegos y «Volver»', masAbierto && MAS.every(vis) && !vis('aventura') && /Volver|Back/.test(bMas.textContent), MAS.map(m => m + ':' + vis(m)).join(' '));
+          const aVista = [...form.querySelector('.modos-grid').children].filter(el => getComputedStyle(el).display !== 'none');
+          check('T3 · «Más juegos» enseña solo sus tres juegos y «Volver»', masAbierto && MAS.every(vis) && !vis('aventura') && /Volver|Back/.test(bMas.textContent) && aVista.length === 4, aVista.map(el => el.dataset.modo || el.textContent.trim().slice(0, 12)).join(','));
           const ev = new Event('cancel', { cancelable: true }); portada.dispatchEvent(ev);
           check('T3 · Esc en «Más juegos» vuelve a la lista sin cerrar la portada', !masAbierto && ev.defaultPrevented && vis('aventura') && !vis('river'));
           const nav = document.querySelector('#title .title-episodios');
