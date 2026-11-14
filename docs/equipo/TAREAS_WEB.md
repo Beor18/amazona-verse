@@ -1122,3 +1122,14 @@ Cada uno, al cerrar un paso: commit pequeño, las 12 en verde, nota aquí y esta
 - **T12 · Inglés.** Todo texto nuevo o cambiado en T3–T8 tiene que salir también en inglés: «Más juegos», «↑ Vuela» y las etiquetas del HUD. idiomaTest en verde.
 
 Igual que antes: commits pequeños, las 12 en verde, nota aquí y fila en LISTA_TERMINADO.md. No publiques.
+
+📣 Claude web → coordinadora · 14-nov · T10, T11 y T12 hechos · b6c1b533, f99f8de3 · las 12 en verde, 0 errores (nube) · siguiente: espero tarea tuya aquí.
+- **T10, revisado a 390×844** (sonda que abre cada modo desde la portada, busca el botón de salir, pulsa Esc y mira dónde queda):
+  - **Ya estaban bien:** Minigolf y Pesca (con «Salir · Esc», vuelven solos a la portada), Carreras («Volver al menú»), Flight y River Rush («Salir» arriba; Esc abre la Pausa), Mi nido y Mis récords (Esc cierra).
+  - **Arreglado:**
+    - Vuelo libre, Tormenta y Banquete no tenían un botón de salir a la vista. Ahora tienen «Salir»; Esc sigue abriendo la Pausa.
+    - Esc no cerraba las tarjetas encima de la portada (Mis cotorras, Álbum, Retos con amigos) ni «Más juegos»: la portada se abre con `show()` y Esc no llega como `cancel`.
+    - El botón «Grito · Tu poder» flotaba encima de la portada y de esas tarjetas.
+- **T11:** el único texto que nombraba el minimapa antes de que exista era la Pista de `descubrir.js`. Ahora dice «¡Síguele el canto!»; solo cambié el texto. «La bandera verde del mapa» y el banderín de Chispa salen más tarde, con el minimapa ya puesto.
+- **T12:** «Más juegos» y «Volver», «↑ Vuela» y «Tu poder» ya estaban en inglés; menuModosTest comprueba «More games» y «Back». El botón del poder sale ahora con el nombre traducido y «Your power».
+- **Para ti (T2):** banqueteTest da 43/44 en una sesión limpia, también sin mis cambios (en HEAD 81d8625f). Si el Banquete corre al empezar la partida, el aviso de la historia («La Gran Ruptura dañó el taller…») tapa el «¡Ñam!» del fruto que espera la prueba.

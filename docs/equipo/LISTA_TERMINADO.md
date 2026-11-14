@@ -28,6 +28,9 @@ Cada paso es un commit pequeño con build y pruebas en su propia carpeta de sali
 | T7 | Continuidad: «Siguiente capítulo» copia el perfil del capítulo anterior (nombre, aspecto, ropa, estrellas) y salta el creador (`guardado.js:7`, `menu_modos.js:833-844`) | Claude web | hecho, 30f64660 (nombre, aspecto y ropa; las piezas ganadas no, por K3; «estrellas»: no hay un campo con ese nombre, ver nota en TAREAS_WEB) |
 | T8 | Capítulos 2 a 6: pistas de «vuela» en los objetivos en altura (ep5 y ep6); en el capítulo 3, hablar con el papá y no con la abuela; la etiqueta del HUD del capítulo 2 no choca con el reloj | Claude web (14-nov, de la Nube) | hecho, 84a73fc9 + cap. 3 (ver nota en TAREAS_WEB) |
 | T9 | Ocultar al jugador los textos «(provisional)» y «por verificar» (`character.js:120`, `creador.js:314`, `rescate.js:51-54` y `:124`, `album.js:174` y `:185`). Se ocultan y no se inventan datos | coordinadora | hecho · f41558c |
+| T10 | Salir de todo: cada modo de la portada y de «Más juegos» deja salir con Esc y con un botón visible, y vuelve a la portada | Claude web | hecho, f99f8de3 |
+| T11 | La intro y la «Pista» no nombran el minimapa antes de que exista | Claude web | hecho, b6c1b533 |
+| T12 | Lo nuevo de T3 a T8 también en inglés | Claude web | hecho, f99f8de3 |
 | — | Taller de Tuerca, el prototipo flotando | Claude web | hecho, QA-250 |
 
 ## Decisiones de Kelvin (no las tomamos nosotros)
