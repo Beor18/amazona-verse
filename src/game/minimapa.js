@@ -310,6 +310,8 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
         const d = Math.hypot((m.x - v.cx) / v.mpp + r.width / 2 - px, (m.z - v.cz) / v.mpp + r.height / 2 - py);
         if (d < bd) { bd = d; mejor = m; }
       }
+      // QA-251: otro toque sobre el marcador que ya es el destino lo quita (antes lo volvía a fijar y no había forma de quitarlo tocando)
+      if (mejor && destino && Math.hypot(destino.x - mejor.x, destino.z - mejor.z) < 0.01) { tocada = null; quitarDestino(); pintarInfo(); return; }
       if (mejor) { tocada = mejor; fijarDestino(mejor.x, mejor.z); pintarInfo(); return; }
       tocada = null;
       if (destino && Math.hypot((destino.x - v.cx) / v.mpp + r.width / 2 - px, (destino.z - v.cz) / v.mpp + r.height / 2 - py) < 18) quitarDestino(); else fijarDestino(x, z);
@@ -669,11 +671,24 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       // Destino por toque: fijar y quitar
       abrir(); quitarDestino();
       const r = cvG.getBoundingClientRect(), vg = vistaGrande(r.width);
-      const cx = r.left + (S.pos.x + 25 - vg.cx) / vg.mpp + r.width / 2, cy = r.top + (S.pos.z + 25 - vg.cz) / vg.mpp + r.height / 2;
+      // QA-251: un punto sin marcador con nombre a menos de 18 px (si cae sobre uno, el toque elige el marcador: eso va aparte)
+      const libre = (dx, dz) => marcadores().every(m => !m.nombre || Math.hypot(m.x - (S.pos.x + dx), m.z - (S.pos.z + dz)) / vg.mpp > 24);
+      const off = [[25, 25], [-25, 25], [25, -25], [-25, -25], [40, 0], [0, 40], [-40, 0], [0, -40]].find(o => libre(o[0], o[1])) || [25, 25];
+      const cx = r.left + (S.pos.x + off[0] - vg.cx) / vg.mpp + r.width / 2, cy = r.top + (S.pos.z + off[1] - vg.cz) / vg.mpp + r.height / 2;
       cvG.dispatchEvent(new MouseEvent('click', { clientX: cx, clientY: cy, bubbles: true }));
-      const fij = !!destino && Math.hypot(destino.x - (S.pos.x + 25), destino.z - (S.pos.z + 25)) < 3 * vg.mpp;
+      const fij = !!destino && Math.hypot(destino.x - (S.pos.x + off[0]), destino.z - (S.pos.z + off[1])) < 3 * vg.mpp;
       cvG.dispatchEvent(new MouseEvent('click', { clientX: cx, clientY: cy, bubbles: true }));
-      check('Un toque en el mapa fija el destino verde y otro sobre él lo quita', fij && !destino);
+      check('Un toque en el mapa fija el destino verde y otro sobre él lo quita', fij && !destino, 'desvío ' + off.join(','));
+      // QA-251: sobre un marcador con nombre, el primer toque lo fija y el segundo lo quita
+      const mk = marcadores().find(m => m.nombre && Math.abs(m.x - vg.cx) / vg.mpp < r.width / 2 - 20 && Math.abs(m.z - vg.cz) / vg.mpp < r.height / 2 - 20);
+      if (mk) {
+        const mx = r.left + (mk.x - vg.cx) / vg.mpp + r.width / 2, my = r.top + (mk.z - vg.cz) / vg.mpp + r.height / 2;
+        cvG.dispatchEvent(new MouseEvent('click', { clientX: mx, clientY: my, bubbles: true }));
+        const puesto = !!destino;
+        cvG.dispatchEvent(new MouseEvent('click', { clientX: mx, clientY: my, bubbles: true }));
+        check('QA-251 · dos toques sobre un marcador: lo fijan y lo quitan', puesto && !destino, mk.nombre);
+        quitarDestino();
+      }
       const rutaAntes = pref.ruta; elG.querySelector('.mg-ruta').click(); const rutaCambia = pref.ruta !== rutaAntes; elG.querySelector('.mg-ruta').click();
       check('«Ruta» activa y desactiva la línea hacia el objetivo', rutaCambia && pref.ruta === rutaAntes);
       cerrar();
