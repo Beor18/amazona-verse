@@ -183,7 +183,7 @@ window.AVRioVivo = function (G) {
     G.emit('aprendizaje', { tipo: 'pez', id });
     if (!G.quiet) {
       const e = espDe(id);
-      try { G.ui.toastHTML(`<b>${esc(L('Peces del río', 'River fish'))}</b> · ${esc(L(e.nombre, e.nombreEn))}`, 3200); } catch (err) { /* sin HUD */ }
+      try { G.ui.toastHTML(`<b>${esc(L('Peces del río', 'River fish'))}</b> · ${esc(L(e.nombre, e.nombreEn))}`, 3200, { fijo: true }); } catch (err) { /* sin HUD */ } // T2 ronda 3: de una sola vez por especie
       try { G.guardado.autosave(); } catch (err) { /* sin guardado */ }
     }
     return true;

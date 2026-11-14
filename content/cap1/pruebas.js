@@ -379,14 +379,45 @@
       UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = '';
     }
     { // Revisión T2, ronda 2: si la cola se llena, se tira el más viejo que se puede repetir, no uno de una sola vez (avisoLibre o { fijo })
-      const UI = G.ui, tt = document.getElementById('toast'), cm = document.getElementById('comic'), cm0 = cm.hidden;
+      // (ronda 3: el relleno llega con otra escena encima, el rescate; si todos fueran de la misma escena se iría el más nuevo)
+      const UI = G.ui, tt = document.getElementById('toast'), cm = document.getElementById('comic'), cm0 = cm.hidden, r0 = G.rescate;
       UI.vaciarAvisos(); cm.hidden = false; UI.colaTest(true);
       try {
         UI.toast('Aviso fijo de prueba', 2000, { fijo: true }); UI.toast('Aviso que se repite', 2000);
+        G.rescate = Object.assign(Object.create(r0 || null), { activo: () => true });
         const n = UI.colaTest().max; for (let i = 0; i < n; i++) UI.toast('Aviso de relleno ' + i, 2000);
         const c = UI.colaTest().cola;
         check('Revisión T2 · la cola llena no tira primero un aviso de una sola vez', c.length === n && c[0] === 'Aviso fijo de prueba' && !c.includes('Aviso que se repite'), c.join(' | '));
-      } finally { cm.hidden = cm0; UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = ''; }
+      } finally { G.rescate = r0; cm.hidden = cm0; UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = ''; }
+    }
+    { // Revisión T2, ronda 3 (reparo 1 y 7): el aviso de una actividad no se queda encima de la siguiente (el rescate acaba y la pesca
+      // empieza en el mismo cuadro) ni de una tarjeta que se abre en medio (el Diario): se aparta, sale el de la nueva y vuelve al cerrar
+      const UI = G.ui, tt = document.getElementById('toast'), r0 = G.rescate, cuerpo = document.body.classList, p0 = cuerpo.contains('v18-pesca-on');
+      UI.vaciarAvisos(); UI.colaTest(true);
+      let rescate = false, pesca = false, tarjeta = false, vuelve = false;
+      try {
+        G.rescate = Object.assign(Object.create(r0 || null), { activo: () => true }); tick(0.05);
+        UI.toast('Aviso del rescate', 6000); tick(0.05); rescate = !tt.hidden && tt.textContent === 'Aviso del rescate';
+        G.rescate = r0; cuerpo.add('v18-pesca-on'); UI.toast('Aviso de la pesca', 6000); tick(0.05); tick(0.05); // un cuadro aparta el del rescate, el siguiente saca el de la pesca
+        pesca = !tt.hidden && tt.textContent === 'Aviso de la pesca';
+        UI.showCard('<p>Tarjeta de prueba</p>'); tick(0.05); tarjeta = tt.hidden;
+        UI.hideCard(); tick(0.05); vuelve = !tt.hidden && tt.textContent === 'Aviso de la pesca';
+      } finally { G.rescate = r0; if (!p0) cuerpo.remove('v18-pesca-on'); if (UI.cardOpen) UI.hideCard(); }
+      check('Revisión T2 · el aviso de una actividad no se queda encima de la siguiente ni de una tarjeta abierta en medio', rescate && pesca && tarjeta && vuelve, [rescate, pesca, tarjeta, vuelve, tt.textContent].join(' · '));
+      UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = '';
+    }
+    { // Revisión T2, ronda 3 (reparo 2): con la cola llena no se tira el aviso de la actividad en marcha: primero uno de fuera que se
+      // repite; si todos son de la actividad, el más nuevo (el de inicio, «¡A pescar!…», se queda)
+      const UI = G.ui, tt = document.getElementById('toast'), cm = document.getElementById('comic'), cm0 = cm.hidden, r0 = G.rescate;
+      UI.vaciarAvisos(); cm.hidden = false; UI.colaTest(true);
+      try {
+        UI.toast('Aviso de fuera que se repite', 2000);
+        G.rescate = Object.assign(Object.create(r0 || null), { activo: () => true });
+        UI.toast('Aviso de inicio de la actividad', 2000);
+        const n = UI.colaTest().max; for (let i = 0; i < n; i++) UI.toast('Aviso de la actividad ' + i, 2000);
+        const c = UI.colaTest().cola;
+        check('Revisión T2 · la cola llena no tira el aviso de la actividad en marcha', c.length === n && c[0] === 'Aviso de inicio de la actividad' && !c.includes('Aviso de fuera que se repite'), c.join(' | '));
+      } finally { G.rescate = r0; cm.hidden = cm0; UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = ''; }
     }
     if (G.dialogo && G.dialogo.activo) { // Revisión T2: un aviso en pantalla no se queda encima del diálogo o del bocadillo: se aparta y vuelve al acabar
       const UI = G.ui, tt = document.getElementById('toast'), act0 = G.dialogo.activo;

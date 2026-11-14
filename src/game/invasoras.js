@@ -447,7 +447,7 @@
     }
     // T2: la regla compartida «hay actividad o escena en marcha» (src/engine/ui.js); sin ella, solo G.ui.busy()
     const enEscena = () => { try { return G.ui.enEscena ? G.ui.enEscena() : G.ui.busy(); } catch (e) { return false; } };
-    function avisar(texto, ms) { if (G.quiet && !F.prueba) return; try { G.ui.toast(texto, ms || 3600); } catch (e) { /* sin HUD */ } }
+    function avisar(texto, ms, fijo) { if (G.quiet && !F.prueba) return; try { G.ui.toast(texto, ms || 3600, fijo ? { fijo: true } : undefined); } catch (e) { /* sin HUD */ } }
     function avistar(id) {
       if (!activo() || !espDe(id) || mem.vistos.includes(id)) return false;
       mem.vistos.push(id);
@@ -457,11 +457,11 @@
       animarReporte(n, total);
       pintarCuenta();
       avisar(L(`¡La viste! ${e.nombre}: reporte enviado a la Estación de Conservación (${n}/${total}). Su ficha está en el Diario.`,
-        `You saw it! ${e.nombreEn}: report sent to the Conservation Station (${n}/${total}). Its card is in the Journal.`), 4200);
+        `You saw it! ${e.nombreEn}: report sent to the Conservation Station (${n}/${total}). Its card is in the Journal.`), 4200, true); // T2 ronda 3: de una sola vez, la cola llena no lo tira
       if (n >= total && !mem.completa) {
         mem.completa = true;
         const fin = () => avisar(L('¡Patrulla completa! La Estación ya sabe dónde buscar a las 4. ¡Gracias!',
-          'Patrol complete! The Station now knows where to look for all 4. Thank you!'), 4800);
+          'Patrol complete! The Station now knows where to look for all 4. Thank you!'), 4800, true);
         if (F.prueba) fin(); else setTimeout(fin, 4300);
       }
       guardar();
@@ -594,7 +594,7 @@
       const presentar = () => {
         if (G.quiet || mem.vistos.length || !activo()) return;
         if (enEscena()) { if (++intentos < 60) setTimeout(presentar, 2000); return; }
-        avisar(L(`${D.album.titulo}: ${D.album.intro}`, `${D.album.tituloEn}: ${D.album.introEn}`), 5200);
+        avisar(L(`${D.album.titulo}: ${D.album.intro}`, `${D.album.tituloEn}: ${D.album.introEn}`), 5200, true);
       };
       setTimeout(presentar, 2500);
     }

@@ -42,7 +42,7 @@ window.AVV18Descubrir = function (G) {
   const RETRATOS = new Set(['agilis', 'arausiaca', 'barbadensis', 'diadema', 'farinosa', 'guildingii', 'xantholora']); // BM152 (Mac): retratos con el personaje del juego
   const NOMBRES = { vittata: 'Cotorra puertorriqueña', arausiaca: 'Cotorra de Dominica' };
   const PODERES = { islenas: 'Grito del Yunque', montaneras: 'Escudo de plumas' }; // respaldo si el motor de habilidades (habilidades.js) aún no cargó
-  const toast = (t, ms) => { try { G.ui.toast(t, ms || 3600); } catch (e) { /* sin interfaz */ } };
+  const toast = (t, ms, fijo) => { try { G.ui.toast(t, ms || 3600, fijo ? { fijo: true } : undefined); } catch (e) { /* sin interfaz */ } };
   // QA-188/QA-186: un aviso de pista no sale con la historia en pantalla (caja de diálogo, bocadillo o subtítulo
   // del narrador) ni durante la apertura en negro del cap. 1; espera a que el jugador esté libre de verdad
   // QA-212: tampoco con una actividad V18 en marcha (la cuenta atrás del duelo…; G.menuModos.ocupado, la de menu_modos.js) ni con la
@@ -346,7 +346,7 @@ window.AVV18Descubrir = function (G) {
   function avisarInicio() {
     if (avisoInicio || descubierta() || G.quiet) return false;
     avisoInicio = true;
-    try { if ((G.pack && G.pack.id === 'cap1') && libre()) { toast(TXT.pistaInicio, 5000); return true; } } catch (e) { /* sin interfaz */ }
+    try { if ((G.pack && G.pack.id === 'cap1') && libre()) { toast(TXT.pistaInicio, 5000, true); return true; } } catch (e) { /* sin interfaz */ }
     return false;
   }
   function montar() {
@@ -363,7 +363,7 @@ window.AVV18Descubrir = function (G) {
       try { libreAhora = libre(); } catch (e) { return; /* sin interfaz */ }
       if (!libreAhora) { if (++intentos < 20) setTimeout(pista, 3000); return; }
       avisoInicio = true;
-      toast(TXT.pistaInicio, 5000);
+      toast(TXT.pistaInicio, 5000, true);
     };
     setTimeout(pista, 9000);
     return true;

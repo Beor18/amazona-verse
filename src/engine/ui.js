@@ -26,6 +26,10 @@ AVE.module('ui', function (G) {
   // pantalla se aparta. Los que da la propia actividad (llegan con la escena en marcha) sí salen. Al acabar la escena todos pasan a
   // «fuera», así uno que quedó en cola no sale encima de la escena siguiente. Tope de cola COLA_MAX: si se pasa, se tira el más viejo
   // que no sea de una sola vez (p.fijo: los aceptados por avisoLibre o los dados con { fijo: true }, que no se repiten).
+  // Ronda 3: cada aviso recuerda QUÉ escenas había al darlo (p.escena: lista de claves de escenas()), no solo «había escena». Es de
+  // la escena en marcha solo si todas las de ahora ya estaban al darlo: así el de un minijuego no se queda encima del siguiente
+  // (rescate → pesca sin un cuadro libre entre medias) ni de una tarjeta que se abre en medio (el Diario). La cola llena tampoco
+  // tira los de la actividad en marcha: primero los que se repiten y no son de escena; si todos lo son, el más nuevo.
   const MIN_S = 2.2, COLA_MAX = 8, cola = [];
   let actual = null, colaPrueba = false;
   // QA-93: tarjeta en teléfono, cómic o creador. QA-188 (W28): también la apertura del capítulo — el narrador habla en
@@ -45,15 +49,20 @@ AVE.module('ui', function (G) {
   function siguiente(esc) {
     if (!cola.length || tapado()) return;
     if (enPantalla() && actual.vivo) { const dur = toastTimer === Infinity ? MIN_S : visto + toastTimer; if (visto < Math.min(MIN_S, dur)) return; }
-    const i = (esc == null ? enEscena() : esc) ? cola.findIndex(q => q.escena) : 0; // con escena, solo los de la actividad
+    const ks = esc == null ? escenas() : esc;
+    const i = ks.length ? cola.findIndex(q => deEscena(q, ks)) : 0; // con escena, solo los de la actividad
     if (i >= 0) mostrar(cola.splice(i, 1)[0]);
   }
   function encolar(p) {
     if (enPantalla() && igual(actual, p)) { if (toastTimer !== Infinity) toastTimer = Math.max(toastTimer, p.ms === 0 ? Infinity : (p.ms || 2200) / 1000); if (p.fijo) actual.fijo = true; return; } // el mismo: solo se alarga
     const q0 = cola.find(q => igual(q, p)); if (q0) { if (p.fijo) q0.fijo = true; return; }
-    p.escena = enEscena(); cola.push(p);
-    if (cola.length > COLA_MAX) { const i = cola.findIndex(q => !q.fijo); cola.splice(i >= 0 ? i : 0, 1); }
-    siguiente(p.escena);
+    const ks = escenas(); p.escena = ks.length ? ks : null; cola.push(p);
+    if (cola.length > COLA_MAX) { // se va el más viejo que se repite y no es de la escena; si todos son de ella, el más nuevo (el de inicio se queda)
+      let i = cola.findIndex(q => !q.fijo && !deEscena(q, ks));
+      if (i < 0) for (let j = cola.length - 1; j >= 0 && i < 0; j--) if (!cola[j].fijo) i = j;
+      cola.splice(i >= 0 ? i : 0, 1);
+    }
+    siguiente(ks);
   }
   const fijo = o => !!(o && o.fijo);
   function toast(text, ms, o) { encolar({ text, ms, fijo: fijo(o) }); }
@@ -75,10 +84,10 @@ AVE.module('ui', function (G) {
   // justo al cerrar el creador, se abre el cómic, empieza un diálogo…) se aparta y vuelve al terminar, como los que llegan después
   G.on('update', () => {
     if (!cola.length && !enPantalla()) return;
-    const esc = enEscena();
-    if (!esc) for (const q of cola) q.escena = false;
-    if (enPantalla() && (tapado() || (esc && !actual.escena))) { apartar(); return; }
-    siguiente(esc);
+    const ks = escenas();
+    if (!ks.length) { for (const q of cola) q.escena = null; if (actual) actual.escena = null; }
+    if (enPantalla() && (tapado() || (ks.length && !deEscena(actual, ks)))) { apartar(); return; }
+    siguiente(ks);
   }, 84);
   // Solo para las baterías: activa el tiempo mínimo aunque G.quiet esté puesto y devuelve el estado de la cola
   function colaTest(on) { if (on != null) colaPrueba = !!on; return { cola: cola.map(p => p.text || p.html), actual: enPantalla() ? (actual.text || actual.html) : null, visto, max: COLA_MAX }; }
@@ -89,16 +98,25 @@ AVE.module('ui', function (G) {
   // recordatorios, presentaciones): la apertura del capítulo, un diálogo o bocadillo, una tarjeta, el cómic, el creador, el panel
   // final, la portada o la pausa, y cualquier minijuego o modo (Retos, Flight, Maze, Tren… envuelven G.ui.busy; los de la V18 y la
   // pesca, G.menuModos.ocupado(); el rescate y el banquete, su activo()). Los avisos que da la propia actividad no la consultan.
-  function enEscena() {
+  // Las escenas en marcha, cada una con su clave (vacía = libre). enEscena() es «hay alguna».
+  function escenas() {
+    const k = [];
     try {
       const d = document, cuerpo = d.body && d.body.classList, t = $('title'), p = $('pause');
-      const fn = (o, k) => !!(o && typeof o[k] === 'function' && o[k]());
-      return !!((G.ui && G.ui.busy ? G.ui.busy() : busy()) || tapado() || d.getElementById('c1-fade') || fn(G.dialogo, 'activo') ||
-        (t && t.open) || (p && p.matches && p.matches(':popover-open')) || fn(G.pausa, 'activa') ||
-        (cuerpo && (cuerpo.contains('retos-on') || cuerpo.contains('v18-pesca-on') || cuerpo.contains('v18-golf-on') || cuerpo.contains('duelo-on'))) ||
-        fn(G.menuModos, 'ocupado') || fn(G.rescate, 'activo') || fn(G.banqueteApi, 'activo'));
-    } catch (e) { return false; }
+      const fn = (o, n) => { try { return !!(o && typeof o[n] === 'function' && o[n]()); } catch (e) { return false; } };
+      const si = (c, n) => { if (c) k.push(n); };
+      si(cardOpen, 'tarjeta'); si(!$('comic').hidden, 'comic'); si(!$('creator').hidden, 'creador'); si(!$('end').hidden, 'fin');
+      si(d.getElementById('c1-saltar') || d.getElementById('c1-fade'), 'apertura'); si(enDialogo() || fn(G.dialogo, 'open'), 'dialogo');
+      si(t && t.open, 'portada'); si((p && p.matches && p.matches(':popover-open')) || fn(G.pausa, 'activa'), 'pausa');
+      for (const c of ['retos-on', 'v18-pesca-on', 'v18-golf-on', 'duelo-on']) si(cuerpo && cuerpo.contains(c), c);
+      si(fn(G.menuModos, 'ocupado'), 'modos'); si(fn(G.rescate, 'activo'), 'rescate'); si(fn(G.banqueteApi, 'activo'), 'banquete');
+      si(!k.length && G.ui && G.ui.busy && G.ui.busy !== busy && G.ui.busy(), 'ocupado'); // un modo que envuelve G.ui.busy (Flight, Tren…)
+    } catch (e) { /* sin interfaz */ }
+    return k;
   }
+  function enEscena() { return escenas().length > 0; }
+  // El aviso es de la escena en marcha si la tenía toda al darlo (las escenas que terminaron no cuentan)
+  const deEscena = (q, ks) => !!(q && q.escena && ks.every(c => q.escena.includes(c)));
   // Aviso que sale solo: con escena en marcha no sale y devuelve false (quien lo llama no lo da por dado y lo reintenta luego)
   function avisoLibre(text, ms) { if (enEscena()) return false; toast(text, ms, { fijo: true }); return true; }
   // El creador es opaco: mientras está abierto el mundo no se dibuja
