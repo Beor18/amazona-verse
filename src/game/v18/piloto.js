@@ -100,10 +100,11 @@ window.AVV18Piloto = function (G) {
 
   async function test() {
     const out = [], ok = (n, pass, extra) => out.push({ name: n, ok: !!pass, extra: extra == null ? '' : String(extra) });
-    const quiet0 = G.quiet, piloto0 = G.piloto; G.quiet = true;
+    const quiet0 = G.quiet, piloto0 = G.piloto, recorte0 = G.menuRecorte; G.quiet = true;
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fly0 = M.flying, sp0 = M.speed, vy0 = S.vy, g0 = M.grounded;
     try {
       G.piloto = undefined; salir();
+      G.menuRecorte = false; // T3 saca «Piloto» de «¿Qué hay para hacer?»; QA-246 prueba el Ir sin el recorte
       const abrirPanel = document.getElementById('b-que-hacer') || document.getElementById('b-que-hacer-title');
       if (abrirPanel) abrirPanel.click();
       const btnIr = document.querySelector('#que-hacer [data-qh="piloto"] .qh-ir');
@@ -112,7 +113,7 @@ window.AVV18Piloto = function (G) {
       const puenteIr = sitio().puente;
       const pistaIr = document.getElementById('piloto-pista');
       ok('QA-246 · Ir lleva al puente y arranca la escuela', !!G.v18piloto && G.v18piloto.empezar === empezar && !!btnIr && !btnIr.disabled && Math.hypot(S.pos.x - puenteIr.x, S.pos.z - puenteIr.z) < 1 && estado().fase === 'escuela' && !!pistaIr && !pistaIr.hidden, 'de ' + antes.x.toFixed(1) + ',' + antes.z.toFixed(1) + ' a ' + S.pos.x.toFixed(1) + ',' + S.pos.z.toFixed(1));
-      S.pos.x = antes.x; S.pos.z = antes.z; salir();
+      S.pos.x = antes.x; S.pos.z = antes.z; salir(); G.menuRecorte = recorte0;
       ok('CG-126 · sin bandera, la escuela empieza', encendido() && empezar() === true && estado().fase === 'escuela');
       salir();
       G.piloto = false; salir();
@@ -148,7 +149,7 @@ window.AVV18Piloto = function (G) {
       salir();
       ok('Al salir no queda la pista', !estado().visible);
     } catch (e) { ok('La prueba terminó', false, String(e && e.message || e)); }
-    finally { G.piloto = piloto0; G.quiet = quiet0; S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.vy = vy0; M.flying = fly0; M.speed = sp0; M.grounded = g0; salir(); }
+    finally { G.menuRecorte = recorte0; G.piloto = piloto0; G.quiet = quiet0; S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.vy = vy0; M.flying = fly0; M.speed = sp0; M.grounded = g0; salir(); }
     return { passed: out.filter(x => x.ok).length, total: out.length, results: out };
   }
   const api = { empezar, paso, salir, estado, anotar, pagar, sitio, test, LEC };

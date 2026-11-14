@@ -121,7 +121,13 @@
     // T6: en el teléfono el inventario va pegado al reloj del marcador (#marcador llega después, desde marcador.js): su ancho en --mc-w
     const top = $('top');
     if (top && window.ResizeObserver) {
-      const ro = new ResizeObserver(es => { for (const e of es) top.style.setProperty('--mc-w', Math.ceil(e.target.getBoundingClientRect().width) + 'px'); });
+      // se aplica en el cuadro siguiente y solo si cambia: escribirlo dentro del aviso del observador daba «ResizeObserver loop…» en consola
+      let mcw = '', pend = 0;
+      const ro = new ResizeObserver(es => {
+        const el = es[es.length - 1].target;
+        if (pend) return;
+        pend = requestAnimationFrame(() => { pend = 0; const v = Math.ceil(el.getBoundingClientRect().width) + 'px'; if (v !== mcw) { mcw = v; top.style.setProperty('--mc-w', v); } });
+      });
       const mirar = () => { const mc = $('marcador'); if (mc && !mc.dataset.mcw) { mc.dataset.mcw = '1'; ro.observe(mc); return true; } return !!mc; };
       if (!mirar()) { const mo = new MutationObserver(() => { if (mirar()) mo.disconnect(); }); mo.observe(quest, { childList: true }); }
     }
