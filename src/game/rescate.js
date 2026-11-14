@@ -48,8 +48,10 @@ window.AVRescate = function (G) {
     frutos: 'Tus frutos siguen contigo para el nido. ¡Un pichón se cayó! Está piando por ahí.',
     llevas: 'Tienes las patas ocupadas: suelta lo que llevas primero.',
   };
-  // Dato real para el cartel (Wikipedia EN, «Puerto Rican amazon», consultada el 25-oct-2026; por verificar en USFWS/DRNA)
+  // Dato real para el cartel (Wikipedia EN, «Puerto Rican amazon», consultada el 25-oct-2026; por verificar en USFWS/DRNA).
+  // T9 (14-nov): mientras no esté verificado en USFWS/DRNA, el cartel NO lo muestra (verificado: false); no se rellena con otro dato.
   const DATO = {
+    verificado: false,
     texto: 'La cotorra puertorriqueña anida en huecos de árboles, sobre todo de palo colorado, y también en cajas nido de madera del programa de recuperación. Los pichones salen del nido a los 60–65 días.',
     fuente: 'Wikipedia (en): Puerto Rican amazon, consultada el 25 de octubre de 2026 (por verificar en USFWS/DRNA)',
     url: 'https://en.wikipedia.org/wiki/Puerto_Rican_amazon',
@@ -121,7 +123,7 @@ window.AVRescate = function (G) {
     estilo();
     const d = propio();
     G.ui.showCard(`<div class="rs-card"><h2>${TXT.titulo}</h2><p>Un pichón se cayó de su nido. Búscalo por su pío, agárralo y devuélvelo a esta caja nido lo antes posible.</p>
-      <p class="rs-dato">${DATO.texto}</p><p class="note">Fuente: <a href="${DATO.url}" target="_blank" rel="noopener">${DATO.fuente}</a></p>
+      ${DATO.verificado ? `<p class="rs-dato">${DATO.texto}</p><p class="note">Fuente: <a href="${DATO.url}" target="_blank" rel="noopener">${DATO.fuente}</a></p>` : ''}
       ${d.mejor ? `<p class="rs-rec">Tu mejor tiempo: <b>${reloj(d.mejor / 1000)}</b></p>` : ''}
       <div class="row"><button class="btn" id="rs-vamos" type="button">¡Vamos!</button><button class="btn sec" id="rs-luego" type="button">Ahora no</button></div></div>`);
     const b = $('rs-vamos'), c = $('rs-luego');

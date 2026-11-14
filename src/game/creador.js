@@ -311,7 +311,7 @@ AVE.module('creador', function (G) {
       const styles = curDef && curDef.styles ? `<div class="styles">${curDef.styles.map(([s, n]) => { const lk = lockOf(curDef.id, s); return `<button class="chip${lk ? ' locked' : ''}" type="button" data-style="${s}" aria-pressed="${cur.style === s}"${lockAttr(lk)}>${n}${lk ? ' (bloq.)' : ''}</button>`; }).join('')}</div>` : '';
       const swatches = curDef ? `<div class="swatches">${curDef.colors.map(c => { const lk = lockOf(curDef.id, undefined, c); return `<button class="swatch${lk ? ' locked' : ''}" type="button" data-color="${c}" aria-pressed="${cur.color === c}" aria-label="Color ${c}${lk ? ' (bloqueado)' : ''}" style="background:${c}"${lockAttr(lk)}></button>`; }).join('')}</div>` : '';
       rows.push(`<div class="slot" data-slot="${slot}">
-        <div class="sname">${SLOT_LABEL[slot] || slot}<small>${curDef ? curDef.name : 'Nada'}${curDef && curDef.placeholder ? ' <span class="ph-tag">(provisional)</span>' : ''}</small></div>
+        <div class="sname">${SLOT_LABEL[slot] || slot}<small>${curDef ? curDef.name : 'Nada'}</small></div>
         <div class="opts">
           <div class="thumbs"><button class="thumb" type="button" data-act="none" aria-pressed="${!cur}" aria-label="Sin ${SLOT_LABEL[slot]}">Nada</button>${thumbs.join('')}</div>
           ${styles}${swatches}
