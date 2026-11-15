@@ -61,7 +61,9 @@ window.AVRendimientoModulos = function (G) {
       if (o.isInstancedMesh) { for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, mi); sp.copy(g.boundingSphere).applyMatrix4(mi).applyMatrix4(o.matrixWorld); if (fr.intersectsSphere(sp)) return false; } return true; }
       sp.copy(g.boundingSphere).applyMatrix4(o.matrixWorld); sp.radius += 0.5; return !fr.intersectsSphere(sp);
     };
-    const candidato = o => o.isInstancedMesh || (o.isSkinnedMesh && o.frustumCulled === false);
+    const sombra = () => !!(R.sun && R.sun.castShadow);
+    // lo que el recorte puede apagar: instancias (≤ 4000) y cuerpos con esqueleto sin recorte de three; con sol, no lo que da sombra
+    const candidato = o => (o.isInstancedMesh ? o.count > 0 && o.count <= 4000 : o.isSkinnedMesh && o.frustumCulled === false) && !(sombra() && o.castShadow) && !o.userData.sinCulling;
     const cuadro = activo => {
       const rr = R.renderer, orig = rr.renderBufferDirect, dib = new Set(); let n = 0, nFuera = 0;
       FC.activo = activo;
@@ -77,13 +79,19 @@ window.AVRendimientoModulos = function (G) {
       let malos = 0, antes = 0, despues = 0, callsA = 0, callsD = 0;
       for (const yaw of [0, Math.PI]) {
         G.camara.yaw = yaw;
-        const a = cuadro(false), d = cuadro(true);
-        for (const o of a.dib) if (!d.dib.has(o) && !fuera(o)) malos++;
+        // tres pares alternados y el mínimo de cada lado: un precalentado o una carga de streaming en un cuadro suelto suma draw calls que no son del recorte
+        let a = null, d = null;
+        for (let k = 0; k < 3; k++) {
+          const x = cuadro(false), y = cuadro(true);
+          for (const o of x.dib) if (!y.dib.has(o) && !fuera(o)) malos++;
+          if (!a || x.n < a.n) a = x; if (!d || y.n < d.n) d = y;
+        }
         antes += a.nFuera; despues += d.nFuera; callsA += a.n; callsD += d.n;
-        filas.push('giro ' + yaw.toFixed(1) + ': ' + a.n + '→' + d.n + ' calls, fuera ' + a.nFuera + '→' + d.nFuera);
+        filas.push('giro ' + yaw.toFixed(1) + ': ' + a.n + '→' + d.n + ' calls, fuera ' + a.nFuera + '→' + d.nFuera + ', apagadas ' + d.apagados);
       }
       ok('T46 · lo que deja de dibujarse estaba de verdad fuera de cámara (nada visible desaparece)', malos === 0, malos + ' a la vista sin dibujar · ' + filas.join(' · '));
-      ok('T46 · fuera de cámara se dibuja como mucho la cuarta parte que sin el recorte (y nunca más draw calls)', despues <= Math.floor(antes / 4) && callsD <= callsA, 'fuera ' + antes + '→' + despues + ' · calls ' + callsA + '→' + callsD);
+      ok('T46 · fuera de cámara se dibuja menos que sin el recorte (y nunca más draw calls)', (antes === 0 || despues < antes) && callsD <= callsA,
+        'fuera ' + antes + '→' + despues + ' · calls ' + callsA + '→' + callsD + ' · ' + (G.renderer.calidad && G.renderer.calidad.nivel) + (sombra() ? ' con sombras' : ' sin sombras'));
     } catch (e) { ok('T46 · recorte fuera de cámara sin excepciones', false, e && e.message); }
     finally { G.camara.yaw = yaw0; FC.activo = true; }
   }

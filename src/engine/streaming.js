@@ -2525,7 +2525,10 @@ AVE.module('streaming', function (G) {
         ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal() + aviso + ' · ' + st.diag);
       if (R.fueraCamara) { // T46: en la peor toma, el recorte de lo de fuera de cámara (InstancedMesh, personajes con esqueleto) no suma draw calls
         const FC = R.fueraCamara, yawT = G.camara.yaw; G.camara.yaw = st.yaw;
-        FC.activo = false; dibujar(1); const sinR = contar(); FC.activo = true; dibujar(1); const conR = contar(), apag = FC.ultimo; G.camara.yaw = yawT;
+        // tres pares alternados y el mínimo de cada lado (un cuadro suelto con sombra, precalentado o carga suma calls que no son del recorte)
+        let sinR = Infinity, conR = Infinity, apag = 0;
+        for (let k = 0; k < 3; k++) { FC.activo = false; dibujar(1); sinR = Math.min(sinR, contar()); FC.activo = true; dibujar(1); conR = Math.min(conR, contar()); apag = Math.max(apag, FC.ultimo); }
+        G.camara.yaw = yawT;
         check('T46 · En la vista más cargada, lo que queda fuera de cámara no se dibuja (nunca suma draw calls)', conR <= sinR, sinR + ' → ' + conR + ' draw calls · ' + apag + ' mallas fuera de cámara apagadas');
       }
       { // QA-nuevo-br1-3: los personajes V18 (Arausiaca, la rival del duelo, los NPC de v18npc) a más de 60 m no se dibujan; tras
