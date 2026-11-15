@@ -1282,3 +1282,5 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - Las 12 en verde, 0 errores. temporada, menuModos, capituloElegido, temporadaE2e y temporadaReal en verde.
 
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T22–T25).
+
+📣 **Coordinadora · 15-nov · PUBLICADO 306CE0D EN 03B74A4**: 12/12 y en vivo; entran T22, T23, T24 y T25.
