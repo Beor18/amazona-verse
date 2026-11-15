@@ -1056,6 +1056,17 @@
       return true;
     }
     const traspasado = recibirTraspaso();
+    // T25: si se llegó con «Siguiente capítulo», en cuanto se abre la portada se entra en la Aventura (como al pulsar «Jugar»)
+    const DIRECTO = 'amazonaverse.directo';
+    let directo = null; try { directo = sessionStorage.getItem(DIRECTO); } catch (e) { directo = null; }
+    if (directo) {
+      try { sessionStorage.removeItem(DIRECTO); } catch (e) { /* sin almacén */ }
+      if (directo === cap(actual).id && window.top === window) {
+        const t0 = Date.now();
+        const mirar = () => { const t = $('title'); if (t && t.open) { h.elegir('aventura'); return; } if (Date.now() - t0 < 60000) setTimeout(mirar, 250); };
+        setTimeout(mirar, 250);
+      }
+    }
 
     // ---------- Panel final: «Siguiente capítulo» ----------
     function pintarFin() {
@@ -1064,7 +1075,8 @@
       bSig.hidden = !hay;
       if (hay) { bSig.textContent = L('Siguiente capítulo', 'Next chapter'); bSig.setAttribute('aria-label', L(`Siguiente capítulo: Capítulo ${actual + 1}, ${cap(actual + 1).es}`, `Next chapter: Chapter ${actual + 1}, ${cap(actual + 1).en}`)); }
     }
-    if (bSig) bSig.addEventListener('click', () => jugar(actual + 1));
+    // T25: «Siguiente capítulo» lleva directo a la Aventura del capítulo nuevo, sin pasar por su portada (DIRECTO, de un solo uso)
+    if (bSig) bSig.addEventListener('click', () => { if (actual < CAPS.length) { try { sessionStorage.setItem(DIRECTO, cap(actual + 1).id); } catch (e) { /* sin almacén */ } } jugar(actual + 1); });
     const fin = $('end');
     if (fin) new MutationObserver(() => { if (!fin.hidden && S.complete) { alTerminar(); pintarFin(); } }).observe(fin, { attributes: true, attributeFilter: ['hidden'] });
     G.on('apply', () => { if (S.complete) alTerminar(); pintarFin(); }, 95);
