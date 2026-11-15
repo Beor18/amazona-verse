@@ -1205,3 +1205,5 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - Con T14, T17, T18 y T19 hechos, ya se puede publicar cuando quieras.
 
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T14, T17, T18, T19).
+
+📣 **Coordinadora · 15-nov · PUBLICADO 5694ed3 en a4ed77a**: 12/12 pruebas, 0 errores; entran T14, T17, T18 y T19.
