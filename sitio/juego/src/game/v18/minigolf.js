@@ -940,7 +940,21 @@ window.AVV18Minigolf = function (G) {
       '@media (max-width:760px){body.v18-golf-on #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto}body.v18-golf-on #bocadillos{top:calc(env(safe-area-inset-top,0px) + 116px)}body.v18-golf-on #minimapa{visibility:hidden}}' +
       // W29a: en el móvil el panel alto (elegir jugadores) subía hasta los botones de Diario/Emociones/Pausa y el botón tapaba «Récord»: el panel se estrecha y deja libre esa columna
       '@media (max-width:760px){#v18-golf.vg-lado{margin-inline:16px auto;width:calc(100vw - 96px)}#v18-golf.vg-lado .vg-bot4 button{padding:6px 4px}}' +
-      '@media (min-width:761px) and (pointer:fine){#v18-golf{bottom:16px}}';
+      '@media (min-width:761px) and (pointer:fine){#v18-golf{bottom:16px}}' +
+      // tmg (táctil, 14-nov): la cuenta de la Patrulla (barra ancha de #top) se veía detrás del panel y del hoyo; vuelve al salir
+      'body.v18-golf-on #inv-cuenta{display:none}' +
+      // tmg · teléfono en vertical: jugando, el panel ancho llegaba a la columna de Diario/Gestos/Construir/Pausa y tapaba media Pausa.
+      // Se estrecha siempre (como vg-lado) y deja libre esa columna; los botones de 3 en fila caben con menos relleno
+      '@media (max-width:760px) and (orientation:portrait){#v18-golf{margin-inline:16px auto;width:calc(100vw - 96px)}#v18-golf .vg-bot2 button,#v18-golf .vg-bot button{padding:6px 4px;font-size:15px}#v18-golf .vg-info{gap:2px 10px;font-size:14px}#v18-golf .vg-presenta{font-size:16px}}' +
+      // tmg · teléfono en horizontal (390 px de alto): el panel centrado ocupaba toda la altura, tapaba Diario y Gestos y no dejaba ver
+      // la semilla ni el nido. Va en una columna a la izquierda, compacto, bajo el aviso (arriba, en el centro)
+      '@media (orientation:landscape) and (max-height:520px){#v18-golf,#v18-golf.vg-lado{left:max(12px,env(safe-area-inset-left,0px));right:auto;margin:0;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:min(370px,44vw)}' +
+      '#v18-golf .vg-caja{padding:6px 10px;border-radius:14px}#v18-golf .vg-info{gap:2px 10px;font-size:13px}#v18-golf .vg-presenta{font-size:15px;margin-top:2px}#v18-golf .vg-meta{font-size:13px;margin-top:2px}' +
+      '#v18-golf .vg-barra{margin:4px 0 1px}#v18-golf button{min-height:46px;font-size:15px;padding:4px 8px}#v18-golf button.vg-golpe{font-size:16px}' +
+      '#v18-golf .vg-bot,#v18-golf .vg-bot2,#v18-golf .vg-bot4,#v18-golf .vg-bot6{gap:6px;margin-top:6px}#v18-golf .vg-bot4 button,#v18-golf .vg-bot6 button{min-height:48px;font-size:15px}' +
+      '#v18-golf .vg-elige p,#v18-golf .vg-fin p{font-size:16px;margin:1px 0}#v18-golf .vg-fin .vg-m{font-size:18px}#v18-golf .vg-fila{font-size:15px}#v18-golf .vg-elige-salir{margin-top:6px}' +
+      '#v18-golf .vg-guia{margin-top:6px;font-size:13px;padding:3px 10px}' +
+      '#v18-golf .vg-bot6{grid-template-columns:repeat(3,1fr)}#v18-golf .vg-bot6 button{padding:4px 2px}#v18-golf .vg-h small{font-size:11px}#v18-golf .vg-elige .vg-et{font-size:12px}}';
     document.head.appendChild(st);
   }
   function montarHud() {
@@ -1759,11 +1773,12 @@ window.AVV18Minigolf = function (G) {
           fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
           fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:390px;height:844px;border:0';
           const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => `<link rel="stylesheet" href="${l.href}">`).join('');
-          const css = document.getElementById('v18-golf-css');
-          fr.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${css ? css.outerHTML : ''}</head><body class="v18-golf-on">${hud.el.outerHTML}</body></html>`;
+          const css = document.getElementById('v18-golf-css'), sysEl = document.getElementById('sys'), sysH = sysEl ? sysEl.outerHTML : ''; // tmg: con Diario/Gestos/Construir/Pausa de verdad
+          fr.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${css ? css.outerHTML : ''}</head><body class="v18-golf-on">${hud.el.outerHTML}${sysH}</body></html>`;
           document.body.appendChild(fr);
           await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
-          const md = fr.contentDocument, mal = [];
+          const md = fr.contentDocument, mal = [], solapes = [];
+          let MW = 390, MH = 844;
           const panel = (nombreP, lado, vis) => {
             const e = md.getElementById('v18-golf'); e.hidden = false; e.classList.toggle('vg-lado', lado);
             for (const k of ['elige', 'hoyos', 'bot', 'fin']) e.querySelector('[data-k="' + k + '"]').hidden = k !== vis;
@@ -1771,13 +1786,27 @@ window.AVV18Minigolf = function (G) {
             if (!bs.length) mal.push(nombreP + ': sin botones');
             for (const b of bs) {
               const r = b.getBoundingClientRect();
-              if (r.width < 44 || r.height < 44 || r.left < 0 || r.right > 390 || r.bottom > 844 || r.top < 0) mal.push(`${nombreP} «${b.textContent.trim()}» ${Math.round(r.width)}×${Math.round(r.height)} en ${Math.round(r.left)}–${Math.round(r.right)}`);
+              if (r.width < 44 || r.height < 44 || r.left < 0 || r.right > MW || r.bottom > MH || r.top < 0) mal.push(`${MW}×${MH} ${nombreP} «${b.textContent.trim()}» ${Math.round(r.width)}×${Math.round(r.height)} en ${Math.round(r.left)}–${Math.round(r.right)}`);
             }
-            if (md.documentElement.scrollWidth > 390) mal.push(nombreP + ': scroll horizontal ' + md.documentElement.scrollWidth);
+            if (md.documentElement.scrollWidth > MW) mal.push(`${MW}×${MH} ${nombreP}: scroll horizontal ` + md.documentElement.scrollWidth);
+            // tmg: el panel no tapa Diario, Gestos, Construir ni Pausa (en vertical, columna a la derecha; en horizontal, fila arriba)
+            const pr = e.getBoundingClientRect();
+            if (pr.top < 0) solapes.push(`${MW}×${MH} ${nombreP}: el panel no cabe (arriba en ${Math.round(pr.top)})`);
+            for (const sb of md.querySelectorAll('#sys button')) {
+              const q = sb.getBoundingClientRect(); if (!q.width || sb.hidden) continue;
+              const ox = Math.min(pr.right, q.right) - Math.max(pr.left, q.left), oy = Math.min(pr.bottom, q.bottom) - Math.max(pr.top, q.top);
+              if (ox > 2 && oy > 2) solapes.push(`${MW}×${MH} ${nombreP} tapa #${sb.id} ${Math.round(ox)}×${Math.round(oy)}`);
+            }
           };
           if (!md || !md.getElementById('v18-golf')) mal.push('la maqueta no cargó');
-          else { panel('hoyo', false, 'bot'); panel('elegir', true, 'elige'); panel('elegir hoyo', true, 'hoyos'); panel('final', false, 'fin'); }
-          check('Móvil: a 390 px todos los botones del hoyo (jugar, elegir jugadores, elegir hoyo, final) miden ≥ 44 px y no se salen de la pantalla', !mal.length, mal.join(' · '));
+          else for (const [w, h] of [[390, 844], [844, 390]]) {
+            MW = w; MH = h; fr.style.width = w + 'px'; fr.style.height = h + 'px'; void md.documentElement.offsetWidth;
+            const pj = md.querySelector('#v18-golf [data-k="jugs"]');
+            if (pj) { pj.hidden = false; if (!pj.textContent) pj.textContent = 'J1: 0 · J2: 0'; } // el hoyo con la fila de jugadores (partida por turnos), lo más alto
+            panel('hoyo', false, 'bot'); if (pj) pj.hidden = true; panel('elegir', true, 'elige'); panel('elegir hoyo', true, 'hoyos'); panel('final', false, 'fin');
+          }
+          check('Móvil: a 390×844 y a 844×390 todos los botones del hoyo (jugar, elegir jugadores, elegir hoyo, final) miden ≥ 44 px y no se salen de la pantalla', !mal.length, mal.join(' · '));
+          check('Móvil (tmg): a 390×844 y a 844×390 el panel cabe y no tapa Diario, Gestos, Construir ni Pausa', md && md.querySelectorAll('#sys button').length >= 3 && !solapes.length, solapes.join(' · ') || md.querySelectorAll('#sys button').length + ' botones de #sys');
           // Salir con su botón
           const ps = pulsa(bot('salir'), 39); suelta(ps);
           check('Móvil: el botón «Salir» deja el hoyo y devuelve el control', A.fase === 'nada' && hud.el.hidden && G.interaccion.modo !== modo && !document.body.classList.contains('v18-golf-on'));

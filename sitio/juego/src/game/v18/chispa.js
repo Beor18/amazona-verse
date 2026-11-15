@@ -142,7 +142,13 @@ window.AVV18Chispa = function (G) {
         // QA móvil: el panel (centrado, 300 px) tapaba el objetivo, el reloj, los contadores y medio minimapa. En el teléfono, como el duelo y la
         // Sombra, el objetivo se oculta durante la carrera y el panel va a la izquierda, sin llegar al minimapa (que sigue: marca el banderín)
         '@media (max-width:760px){body.v18-chispa-on #quest{display:none}#v18-chispa{top:calc(env(safe-area-inset-top,0px) + 58px);left:16px;right:auto;margin:0;width:min(300px,calc(100vw - 190px));padding:6px 10px}#v18-chispa .vc-n{font-size:calc(30px * var(--fs-k,1));line-height:1}#v18-chispa .vc-l{flex-wrap:wrap;justify-content:center;column-gap:8px;row-gap:0}' +
-        '#v18-chispa .vc-m{font-size:calc(13px * var(--fs-k,1))}#v18-chispa.fin .vc-n{font-size:calc(22px * var(--fs-k,1))}}'; // W29a: más compacto, para que el aviso (bajo el minimapa) no tape la última fila
+        '#v18-chispa .vc-m{font-size:calc(13px * var(--fs-k,1))}#v18-chispa.fin .vc-n{font-size:calc(22px * var(--fs-k,1))}}' +
+        // tmg (táctil, 14-nov): la cuenta de la Patrulla (barra de #top) se veía a través del panel; vuelve al salir
+        'body.v18-chispa-on #inv-cuenta{display:none}' +
+        // tmg · teléfono en horizontal (390 px de alto): el panel centrado tapaba a Vittata y Diario/Gestos, y «Salir» caía encima de Diario.
+        // Va arriba a la izquierda (columna libre sobre el joystick), compacto, y el aviso a su derecha
+        '@media (orientation:landscape) and (max-height:520px){#v18-chispa{top:calc(env(safe-area-inset-top,0px) + 8px);left:max(12px,env(safe-area-inset-left,0px));right:auto;margin:0;width:min(300px,36vw);min-width:0;padding:6px 10px}#v18-chispa .vc-n{font-size:calc(30px * var(--fs-k,1));line-height:1}#v18-chispa .vc-l{font-size:calc(15px * var(--fs-k,1));flex-wrap:wrap;justify-content:center;column-gap:8px;row-gap:0}#v18-chispa .vc-m{font-size:calc(13px * var(--fs-k,1))}#v18-chispa .vc-k{margin-top:2px;row-gap:2px}#v18-chispa kbd{padding:2px 5px}#v18-chispa.fin .vc-n{font-size:calc(22px * var(--fs-k,1))}' +
+        'body.v18-chispa-on #toast{left:calc(max(12px,env(safe-area-inset-left,0px)) + min(300px,36vw) + 12px);right:max(12px,env(safe-area-inset-right,0px));max-width:none;top:calc(env(safe-area-inset-top,0px) + 8px);bottom:auto}}'; // W29a: más compacto, para que el aviso (bajo el minimapa) no tape la última fila
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-chispa'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
@@ -399,6 +405,51 @@ window.AVV18Chispa = function (G) {
   }
 
   // ---------- Prueba ----------
+  // ---------- tmg · táctil: el panel en un teléfono de 390×844 y de 844×390 (maqueta con las hojas de estilo reales y el HUD de verdad) ----------
+  async function maquetaMovil() {
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    if (!hud) return out;
+    const fr = document.createElement('iframe'), mal = [], html = id => { const e = document.getElementById(id); return e ? e.outerHTML : ''; };
+    fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1; fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:390px;height:844px;border:0';
+    // todas las hojas: las enlazadas y las que ponen los módulos (la del panel, la del minimapa…)
+    const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => `<link rel="stylesheet" href="${l.href}">`).join('') + [...document.querySelectorAll('style')].map(x => x.outerHTML).join('');
+    fr.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}</head>` +
+      `<body class="v18-chispa-on">${hud.el.outerHTML}${html('top')}${html('sys')}${html('stick')}${html('acts')}${html('minimapa')}</body></html>`;
+    document.body.appendChild(fr);
+    try {
+      await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+      const md = fr.contentDocument, p = md && md.getElementById('v18-chispa');
+      if (!p) mal.push('la maqueta no cargó');
+      else {
+        p.hidden = false; p.classList.remove('fin'); // en carrera, con la cuenta grande a la vista (lo más alto)
+        const n = p.querySelector('.vc-n'); if (n) { n.hidden = false; n.textContent = '3'; }
+        for (const [w, h] of [[390, 844], [844, 390]]) {
+          fr.style.width = w + 'px'; fr.style.height = h + 'px'; void md.documentElement.offsetWidth;
+          // el minimapa se coloca bajo el objetivo y el inventario (≤ 560 px) o bajo el inventario y los botones (minimapa.js, colocar)
+          const mm = md.getElementById('minimapa');
+          if (mm) {
+            let fondo = 0;
+            for (const id of (w <= 560 ? ['quest', 'inv'] : ['inv', 'sys'])) { const e = md.getElementById(id); if (e && !e.hidden && md.defaultView.getComputedStyle(e).display !== 'none') fondo = Math.max(fondo, e.getBoundingClientRect().bottom); }
+            if (fondo) mm.style.setProperty('--mm-top', Math.ceil(fondo + 4) + 'px'); else mm.style.removeProperty('--mm-top');
+          }
+          const t = w + '×' + h, pr = p.getBoundingClientRect(), bx = p.querySelector('.vc-x').getBoundingClientRect();
+          if (pr.left < 0 || pr.top < 0 || pr.right > w || pr.bottom > h) mal.push(`${t} el panel se sale (${[pr.left, pr.top, pr.right, pr.bottom].map(Math.round)})`);
+          if (bx.width < 44 || bx.height < 44) mal.push(`${t} «Salir» ${Math.round(bx.width)}×${Math.round(bx.height)}`);
+          for (const b of md.querySelectorAll('#sys button, #acts button, #stick, #minimapa')) {
+            const q = b.getBoundingClientRect(), cs = md.defaultView.getComputedStyle(b);
+            if (!q.width || b.hidden || cs.display === 'none' || cs.visibility === 'hidden') continue;
+            const ox = Math.min(pr.right, q.right) - Math.max(pr.left, q.left), oy = Math.min(pr.bottom, q.bottom) - Math.max(pr.top, q.top);
+            if (ox > 2 && oy > 2) mal.push(`${t} tapa #${b.id} ${Math.round(ox)}×${Math.round(oy)}`);
+          }
+        }
+        if (!md.querySelector('#sys button') || !md.querySelector('#acts button')) mal.push('sin el HUD en la maqueta');
+      }
+    } catch (e) { mal.push(String((e && e.message) || e)); }
+    fr.remove();
+    check('tmg · Táctil (Chispa): a 390×844 y a 844×390 el panel cabe, «Salir» mide ≥ 44 px y no tapa Diario, Gestos, Construir, Pausa, el joystick, los botones grandes ni el minimapa', !mal.length, mal.join(' · '));
+    return out;
+  }
+
   async function test(o) {
     o = o || {};
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
@@ -572,6 +623,7 @@ window.AVV18Chispa = function (G) {
         V.cambiarMundo(ID, rG);
       }
       for (const r of teclado()) out.push(r); // W35
+      for (const r of await maquetaMovil()) out.push(r); // tmg · táctil en vertical y en horizontal
       // 15 · textos
       if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
       const D = window.AV_EN || {}, pats = Object.keys(D).filter(k => k.indexOf('{}') >= 0).map(k => new RegExp('^' + k.split('{}').map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('(.+?)') + '$'));
