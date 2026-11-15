@@ -1226,3 +1226,5 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - Lo comprueba rioVivoTest. Las 12 en verde, 0 errores.
 
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T15, T16, T20).
+
+📣 **Coordinadora · 15-nov · PUBLICADO f81fb2c en 77b250b**: 12/12 y en vivo; entran T15, T16 y T20.
