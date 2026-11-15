@@ -1901,3 +1901,34 @@ No toco lo de B (sonidos, lo táctil del duelo y el minigolf, rendimiento, publi
 - Lo que deja A: su lista pendiente, en su nota final aquí arriba.
 - Cuando acabes, propones tú la siguiente tanda y sigues sin parar.
 - Publicas tú cada 2 o 3 tareas, con la receta de siempre. Así se gastan los créditos de esta cuenta antes de que venza.
+
+📣 **Claude web A** → coordinadora · 15-nov · **T60 hecha: el Ojo de cotorra encuentra a los pichones del Escondite** (commit: ver REGISTRO).
+- **Qué hace:** jugando al Escondite (T56), el poder Ojo de cotorra (T42) hace brillar primero a los pichones que faltan, a menos de 40 m y a su altura. Lo demás cercano brilla después, como siempre. Así se une un poder nuevo con un juego nuevo.
+- **Cómo:** `escondite.js` da `pendientes()` (solo lectura) y `poderes_extra.js` los pone delante en el Ojo. No toqué los sonidos de B (T52) en ese archivo.
+- **Pruebas:** v18PoderesExtraTest con una comprobación nueva (el pichón brilla primero y a su altura), esconditeTest y las baterías obligatorias.
+
+📣 **Claude web A** → coordinadora · 15-nov · **NOTA FINAL: la sesión A termina (decisión de Kelvin).** Todo lo mío está en main, en verde y sin nada a medias.
+**Hecho por A (T38–T60):**
+- **T38** · el duelo bien hecho y de vuelta en la portada: rival visible, 4 botones táctiles, entreno corto y los Lentes de la Campeona.
+- **T39** · Construir: piezas de casita con texturas del kit y encaje con imán.
+- **T40** · pulido: la Foto de Construir y la XP repetida.
+- **T41** · giro alegre en vuelo y esquive en el duelo.
+- **T42** · tres poderes nuevos de Vittata: Ráfaga, Ojo de cotorra y Planeo largo.
+- **T43** · minijuego «Sigue el canto».
+- **T44** · el Duelo de 2 en el teléfono, en horizontal.
+- **T47** · «Mis récords» con lo nuevo.
+- **T50** · «Casita rápida».
+- **T51** y **T51b** · pasada en inglés, y el canto en horizontal.
+- **T56** · el Escondite en «Más juegos».
+- **T59** · pared con puerta y pared con ventana.
+- **T60** · el Ojo de cotorra encuentra a los pichones.
+**Pendiente (pasa a B):**
+- **T48** · el criterio de llegada del robot del pulgar en alto (antena del cap. 5 y «grupos» del cap. 6). Es de la prueba, no del juego; la pista está en mi nota de T51b.
+- **T49** · el puente y el taller de la historia: decisión de arte y canon de Kelvin.
+- **T57** · una tarjeta «¿Cómo se pelea?» con dibujos antes del duelo. No la hice porque se pisaba con el entreno y con lo táctil de B; queda a elección de Kelvin.
+- **familyQuestTest «sin red»:** se queja de las descargas de sonidos de T45, como ya avisé.
+- **Para que Kelvin decida:**
+  - el nombre y el color de los «Lentes de la Campeona»;
+  - los nombres, cómo se gana cada poder de T42 y sus teclas (H/Y/N);
+  - las especies de los retratos de «Sigue el canto».
+Gracias.

@@ -67,8 +67,10 @@ window.AVV18PoderesExtra = function (G) {
       const cosas = [];
       try { for (const it of G.interaccion.list) { if (it.visible && !it.visible()) continue; const dd = Math.hypot(it.x - S.pos.x, it.z - S.pos.z); if (dd < 25) cosas.push({ it, dd }); } } catch (e) { /* sin interacción */ }
       cosas.sort((a, b) => a.dd - b.dd);
+      // T60: jugando al Escondite, los pichones que faltan van primero (hasta 40 m): el Ojo los hace brillar
+      try { const E = G.escondite; if (E && E.activo && E.activo() && E.pendientes) E.pendientes().filter(p => Math.hypot(p.x - S.pos.x, p.z - S.pos.z) < 40).reverse().forEach(p => cosas.unshift({ it: { x: p.x, z: p.z, y: p.y }, dd: 0, pichon: true })); } catch (e) { /* sin escondite */ }
       const sel = cosas.slice(0, 6);
-      for (const c of sel) { const y = H(c.it.x, c.it.z) + 1.1; pulsos.push({ x: c.it.x, y, z: c.it.z, k: 0, veces: 4, t: 0 }); G.fx.ringFx(c.it.x, y, c.it.z, 1.4, 0.8, 0.6); }
+      for (const c of sel) { const y = c.pichon ? c.it.y + 0.6 : H(c.it.x, c.it.z) + 1.1; pulsos.push({ x: c.it.x, y, z: c.it.z, k: 0, veces: 4, t: 0 }); G.fx.ringFx(c.it.x, y, c.it.z, 1.4, 0.8, 0.6); }
       G.fx.ringFx(S.pos.x, S.pos.y + 0.4, S.pos.z, 3, 1, 0.5);
       est.ultimoOjo = sel.length;
       if (!sel.length) toast(L('El Ojo de cotorra no ve nada cerca.', 'The Parrot eye sees nothing nearby.'), 2400);
@@ -217,6 +219,12 @@ window.AVV18PoderesExtra = function (G) {
           oidos.join() === ['poder_rafaga', 'poder_ojo', 'poder_planeo'].filter(has).join() && ['poder_rafaga', 'poder_ojo', 'poder_planeo'].every(has), oidos.join());
       }
       // Teclas
+      { // T60: con el Escondite en marcha, el Ojo hace brillar primero a los pichones que faltan
+        const E0 = G.escondite, px = S.pos.x + 12, pz = S.pos.z + 3;
+        G.escondite = { activo: () => true, pendientes: () => [{ x: px, y: 5, z: pz }] }; pulsos.length = 0;
+        try { usar('ojo', true); } finally { G.escondite = E0; }
+        check('T60 · Escondite: el Ojo de cotorra hace brillar al pichón escondido (primero, a su altura)', pulsos.length >= 1 && Math.abs(pulsos[0].x - px) < 0.01 && Math.abs(pulsos[0].y - 5.6) < 0.01, JSON.stringify(pulsos[0]));
+      }
       check('Teclas H, Y y N (solo si no están asignadas a otra acción)', ['h', 'y', 'n'].every(k => IDS.some(i => P[i].tecla === k)) && !ocupada('h'));
       // Táctil: un botón por poder ganado, con nombre
       if (TACTIL) { pintar(true); check('Táctil: un botón con nombre por poder ganado', !!caja && caja.querySelectorAll('button[data-extra]').length === 3 && [...caja.querySelectorAll('button')].every(b => b.textContent.trim().length > 1)); }

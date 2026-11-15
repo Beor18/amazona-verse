@@ -173,6 +173,7 @@ window.AVEscondite = function (G) {
     jugando = false; malla.visible = false; malla.count = 0; G.quiet = q; S.pos.x = px; S.pos.z = pz;
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
-  G.escondite = { empezar, paso, test, cerca, jugar, salir, activo, get mejor() { return mejor; }, _pich: () => ({ listos: pich.listos, n: pich.chs.length, vis: pich.chs.map(c => c.root.visible), pos: pich.chs.map(c => [c.root.position.x, c.root.position.y, c.root.position.z].map(v => +v.toFixed(1))), esc: pich.chs.map(c => +c.root.scale.x.toFixed(3)) }) };
+  const pendientes = () => (jugando ? sitios.filter(s0 => !s0.hallado).map(s0 => ({ x: s0.x, y: s0.y, z: s0.z })) : []); // T60: para el Ojo de cotorra
+  G.escondite = { empezar, paso, test, cerca, jugar, salir, activo, pendientes, get mejor() { return mejor; }, _pich: () => ({ listos: pich.listos, n: pich.chs.length, vis: pich.chs.map(c => c.root.visible), pos: pich.chs.map(c => [c.root.position.x, c.root.position.y, c.root.position.z].map(v => +v.toFixed(1))), esc: pich.chs.map(c => +c.root.scale.x.toFixed(3)) }) };
   return G.escondite;
 };
