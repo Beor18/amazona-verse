@@ -170,6 +170,7 @@ AVE.module('misiones', function (G) {
     verConfirmacion(false, false);
     // T2: el aviso que estaba en pantalla se va y no vuelve; los que lleguen con el panel abierto esperan a que se cierre (G.ui)
     try { G.ui.hideToast(); } catch (e) { /* sin HUD */ }
+    if ($('end').hidden && !G.quiet) try { G.audio.play('panel_final'); } catch (e) { /* sin audio */ } // T45: capítulo completado
     $('end').hidden = false;
   }
   function seguirExplorando() {

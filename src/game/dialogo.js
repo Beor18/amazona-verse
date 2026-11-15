@@ -86,6 +86,7 @@ AVE.module('dialogo', function (G) {
   function nextCaja() {
     const l = queue.shift();
     if (!l) { $('dialog').hidden = true; const d = onDone; onDone = null; if (d) d(); return; }
+    if ($('dialog').hidden && !G.quiet) try { G.audio.play('aviso'); } catch (e) { /* sin audio */ } // T45: aparece un diálogo nuevo
     $('d-who').textContent = l.who; $('d-text').lang = l.lang || ''; $('d-text').textContent = l.text; retrato($('d-img'), l.img || img(l.who), l.who);
     $('dialog').hidden = false;
     hablar(l);

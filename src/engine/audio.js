@@ -7,6 +7,12 @@
    aterrizar_techo, posarse_rama, despegar, nido_chispa, eclosion_huevo. Se tocan igual, con G.audio.play(nombre).
    Se piden tras el primer gesto (autoplay), .ogg o .mp3 según el navegador; mientras cargan suena un sintético
    de respaldo. Un pack registra más con G.audio.sample(nombre, { url: 'ruta/sin_extension.', gain, respaldo }).
+   T45: los 30 efectos de Suno de assets/audio/sfx/ (ficha en sonidos.json) van en MUESTRAS con «perezosa»: no se piden en el primer
+   gesto, sino al primer uso, con G.audio.precargar(lista) al entrar en su modo o, los de vuelo e interfaz, un rato después de arrancar.
+   Mientras tanto suena su respaldo sintético (el primero que exista de la lista). minMs: tiempo mínimo entre dos (si llega antes suena
+   «pronto», o nada). Los ambientes (bucle: true) no se tocan con play: los pone src/game/musica.js en su bus con G.audio.buffer(n);
+   un play de su nombre (p. ej. la lluvia de clima.js) suena su respaldo solo si el bucle no está sonando (G.audio.enBucle[n]).
+   Clics en los botones de los menús: «boton», solo al pulsar (nunca al pasar por encima) y si el botón no tocó ya otro sonido.
    G.audio.alSonar(fn): fn(nombre, arg) en cada G.audio.play de un sonido que existe, suene o no (sin altavoces, con el sonido apagado o
    antes del primer gesto del jugador). Lo usan los subtítulos de sonido (src/game/accesibilidad.js); un fallo del oyente no frena el sonido.
    Con «Reducir movimiento» (G.renderer.REDUCED o G.audio.reducido = true) los golpes fuertes (FUERTES: trueno, crecida, construir) suenan a la
@@ -18,6 +24,7 @@ AVE.module('audio', function (G) {
   const FUERTES = new Set(['trueno', 'crecida', 'construir']), SUAVE = 0.5;
   const vol = { master: 0.7, sfx: 0.8, voice: 0.9, muted: false };
   const oyentes = [];
+  let nPlays = 0; // cuántos play() van (el registro se recorta a 40; el clic de «boton» mira si su botón ya sonó algo)
   try { const v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && typeof v === 'object') Object.assign(vol, v); } catch (e) { /* sin almacenamiento */ }
   function apply() { if (!ctx) return; master.gain.value = vol.muted ? 0 : vol.master; sfxBus.gain.value = vol.sfx; voiceBus.gain.value = vol.voice; }
   // El navegador solo deja sonar después de un gesto del jugador
@@ -31,7 +38,9 @@ AVE.module('audio', function (G) {
     sfxBus = ctx.createGain(); sfxBus.connect(master);
     suaveBus = ctx.createGain(); suaveBus.gain.value = SUAVE; suaveBus.connect(sfxBus); salida = sfxBus;
     voiceBus = ctx.createGain(); voiceBus.connect(master);
-    apply(); Object.keys(MUESTRAS).forEach(cargar); return ctx;
+    apply(); Object.keys(MUESTRAS).forEach(n => { if (!MUESTRAS[n].perezosa || quiere.has(n)) cargar(n); });
+    setTimeout(() => precargarEnCalma(PRECARGA), PRECARGA_MS); // vuelo e interfaz: fuera de la carga inicial
+    return ctx;
   }
   // Muestras en archivo: bus de efectos, mismo silencio y volumen que los sintéticos
   const MUESTRAS = {
@@ -41,6 +50,50 @@ AVE.module('audio', function (G) {
     nido_chispa: { gain: 0.8, respaldo: 'tick' },
     eclosion_huevo: { gain: 0.9, respaldo: 'unlock' },
   };
+  // T45: efectos de Suno (assets/audio/sfx/, ficha en sonidos.json; −20 LUFS como los de arriba). respaldo: lista de sintéticos (el primero
+  // que exista); minMs y pronto: sin spam; tono(arg): velocidad de reproducción; bucle: ambiente que pone musica.js (no se toca con play).
+  const SFX = {
+    aleteo: { gain: 0.5, respaldo: 'aleteo_sint', minMs: 380, pronto: 'aleteo_sint' }, // entre dos aletazos de archivo, el sintético suave
+    planeo: { gain: 0.55, respaldo: 'dash', minMs: 2500 },
+    picada: { gain: 0.6, respaldo: ['picado', 'dash'], minMs: 2000 },
+    frenada: { gain: 0.6, respaldo: 'land', minMs: 1500 },
+    semilla: { gain: 0.7, respaldo: ['r_semilla', 'pickup'], tono: c => 1 + Math.min(c || 0, 9) * 0.03 }, // el combo sube un poco el tono
+    logro: { gain: 0.8, respaldo: 'unlock', minMs: 1500 },
+    boton: { gain: 0.6, respaldo: 'clic', minMs: 90 },
+    aviso: { gain: 0.6, respaldo: 'tick', minMs: 1500 },
+    flecha: { gain: 0.65, respaldo: 'tick', minMs: 1500, pronto: 'tick' },
+    panel_final: { gain: 0.85, respaldo: 'unlock', minMs: 3000 },
+    pieza: { gain: 0.8, respaldo: 'tac', minMs: 120, pronto: 'tac' },
+    encaje: { gain: 0.7, respaldo: 'tick', minMs: 250 },
+    puente_reparado: { gain: 0.9, respaldo: 'unlock', minMs: 3000 },
+    lanzar: { gain: 0.75, respaldo: 'dash', minMs: 600 },
+    pica: { gain: 0.8, respaldo: 'splash', minMs: 600 },
+    clavado: { gain: 0.85, respaldo: 'unlock', minMs: 1000 },
+    duelo_ala: { gain: 0.7, respaldo: ['ext_ala', 'dash'], minMs: 300, pronto: 'ext_ala' },
+    duelo_pata: { gain: 0.7, respaldo: ['ext_pata', 'tac'], minMs: 250, pronto: 'ext_pata' },
+    duelo_semilla: { gain: 0.7, respaldo: 'dash', minMs: 300, pronto: 'dash' },
+    duelo_poder: { gain: 0.8, respaldo: 'dash', minMs: 800 },
+    duelo_victoria: { gain: 0.85, respaldo: 'unlock', minMs: 3000 },
+    duelo_derrota: { gain: 0.8, respaldo: 'wrong', minMs: 3000 },
+    poder_grito: { gain: 0.85, respaldo: 'grito', minMs: 800 },
+    poder_rafaga: { gain: 0.8, respaldo: 'dash', minMs: 800 }, // T42 le dará su momento
+    poder_ojo: { gain: 0.8, respaldo: 'descubrir', minMs: 800 }, // T42
+    poder_planeo: { gain: 0.8, respaldo: 'dash', minMs: 800 }, // T42
+    bosque_yunque: { bucle: true },
+    lluvia: { bucle: true, respaldo: 'lluvia_sint' },
+    rio: { bucle: true },
+    noche_coquis: { bucle: true },
+  };
+  for (const n of Object.keys(SFX)) MUESTRAS[n] = Object.assign({ gain: 1, url: 'assets/audio/sfx/' + n + '.', perezosa: true }, SFX[n]);
+  // Los de vuelo e interfaz (y los finales de una sola vez) se piden PRECARGA_MS después del primer gesto, de uno en uno y en calma
+  const PRECARGA = ['aleteo', 'planeo', 'picada', 'frenada', 'boton', 'aviso', 'flecha', 'semilla', 'logro', 'panel_final', 'puente_reparado', 'poder_grito'], PRECARGA_MS = 20000;
+  const quiere = new Set(); // pedidas con precargar() antes de que exista el AudioContext
+  function precargarEnCalma(lista) {
+    const fila = lista.filter(n => MUESTRAS[n] && !bufs[n] && !pedidas[n]);
+    const uno = () => { const n = fila.shift(); if (!n || !ctx) return; cargar(n); (pedidas[n] || Promise.resolve()).then(() => setTimeout(siguiente, 150)); };
+    const siguiente = () => (window.requestIdleCallback ? requestIdleCallback(uno, { timeout: 2000 }) : uno());
+    siguiente();
+  }
   const bufs = {}, pedidas = {};
   let ext = null;
   function formato() {
@@ -69,11 +122,18 @@ AVE.module('audio', function (G) {
       .then(ab => new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(() => {}); }))
       .then(b => { bufs[n] = b; }, () => { /* se queda el respaldo sintético */ });
   }
-  function muestra(n, t) {
+  function respaldoDe(m) { for (const r of [].concat(m.respaldo || [])) if (SOUNDS[r]) return SOUNDS[r]; return null; }
+  function muestra(n, t, arg) {
     const b = bufs[n], m = MUESTRAS[n];
-    if (!b) { cargar(n); if (m.respaldo && SOUNDS[m.respaldo]) SOUNDS[m.respaldo](t); return; }
+    if (m.bucle) { if (!api.enBucle[n]) { const r = respaldoDe(m); if (r) r(t, arg); } return; } // el bucle lo pone musica.js
+    if (m.minMs) {
+      const ahora = performance.now();
+      if (ahora - (m.ult || -1e9) < m.minMs) { if (m.pronto && SOUNDS[m.pronto]) SOUNDS[m.pronto](t, arg); return; }
+      m.ult = ahora;
+    }
+    if (!b) { cargar(n); const r = respaldoDe(m); if (r) r(t, arg); return; }
     const src = ctx.createBufferSource(), g = ctx.createGain();
-    src.buffer = b; g.gain.value = m.gain == null ? 1 : m.gain; src.connect(g); g.connect(salida); src.start(t);
+    src.buffer = b; if (m.tono) src.playbackRate.value = m.tono(arg); g.gain.value = m.gain == null ? 1 : m.gain; src.connect(g); g.connect(salida); src.start(t);
   }
   function env(g, t0, dur, peak) { g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + Math.min(0.02, dur / 4)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); }
   function tone(freq, t0, dur, o) {
@@ -140,7 +200,7 @@ AVE.module('audio', function (G) {
     ring: (t, i) => { tone(pent(i + 2, 392), t, 0.4, { type: 'sine', gain: 0.22 }); tone(pent(i + 4, 392), t + 0.08, 0.35, { type: 'sine', gain: 0.1 }); },
     dash: t => noise(t, 0.25, { freq: 600, to: 2600, q: 0.8, gain: 0.22 }),
     splash: t => noise(t, 0.45, { type: 'lowpass', freq: 1800, to: 280, gain: 0.3 }),
-    aleteo: (t, v) => noise(t, 0.12, { type: 'bandpass', freq: 380 + Math.min(1, (v || 0) / 20) * 420, to: 160, q: 0.7, gain: 0.07 }), // BM22: golpe de alas; el ritmo lo marca fisica.js según la velocidad
+    aleteo_sint: (t, v) => noise(t, 0.12, { type: 'bandpass', freq: 380 + Math.min(1, (v || 0) / 20) * 420, to: 160, q: 0.7, gain: 0.07 }), // BM22: golpe de alas; el ritmo lo marca fisica.js según la velocidad
     jump: t => tone(330, t, 0.12, { type: 'square', to: 540, gain: 0.05 }),
     land: t => noise(t, 0.14, { type: 'lowpass', freq: 520, gain: 0.25 }),
     unlock: t => { [0, 2, 4, 5, 7].forEach((i, k) => tone(pent(i, 523.25), t + k * 0.09, 0.32, { gain: 0.16 })); noise(t + 0.45, 0.7, { freq: 6000, q: 0.7, gain: 0.06 }); },
@@ -152,18 +212,26 @@ AVE.module('audio', function (G) {
     chaching: t => { tone(880, t, 0.14, { type: 'sine', gain: 0.08 }); tone(1318, t + 0.09, 0.18, { type: 'sine', gain: 0.06 }); },
     clic: t => { tone(2400, t, 0.03, { type: 'square', gain: 0.045 }); noise(t, 0.025, { type: 'highpass', freq: 1800, gain: 0.06 }); },
     tick: t => tone(880, t, 0.06, { type: 'sine', gain: 0.05 }),
+    lluvia_sint: t => noise(t, 1.05, { type: 'highpass', freq: 2400, q: 0.4, gain: 0.05 }), // la de clima.js: respaldo de «lluvia» sin el bucle
     wrong: t => tone(300, t, 0.28, { type: 'triangle', to: 190, gain: 0.14 }),
     grito, // Grito del Yunque: graznido + ondas (src/game/v18/habilidades.js, explorar.js)
     descubrir: t => { [0, 4, 7, 12].forEach((n, k) => tone(392 * Math.pow(2, n / 12), t + k * 0.05, 0.9 - k * 0.1, { type: 'sine', gain: 0.1 })); noise(t + 0.1, 0.8, { freq: 7000, q: 0.6, gain: 0.04 }); }, // acorde corto al descubrir un lugar (fx.js)
   };
-  for (const n of Object.keys(MUESTRAS)) SOUNDS[n] = t => muestra(n, t);
+  for (const n of Object.keys(MUESTRAS)) SOUNDS[n] = (t, arg) => muestra(n, t, arg);
   const api = {
     vol, ensure, apply, log: [],
     get ctx() { return ctx; }, get master() { return master; }, // para src/game/musica.js, que cuelga su música y su ambiente del mismo master (ctx es null hasta el primer gesto)
     alSonar(fn) { if (typeof fn === 'function') oyentes.push(fn); },
     define(name, fn) { SOUNDS[name] = (t, arg) => fn(t, arg, A); },
-    sample(name, o) { MUESTRAS[name] = Object.assign({ gain: 1 }, o); SOUNDS[name] = t => muestra(name, t); cargar(name); },
+    sample(name, o) { MUESTRAS[name] = Object.assign({ gain: 1 }, o); SOUNDS[name] = (t, arg) => muestra(name, t, arg); cargar(name); },
     listo: name => !!bufs[name], // la muestra ya está decodificada (para pruebas)
+    // T45: efectos en archivo. precargar(lista) al entrar en un modo; buffer(n) devuelve la muestra decodificada o null (y la pide);
+    // enBucle[n] lo pone musica.js mientras suena el ambiente en archivo; muestras() y ficha(n) son para las pruebas.
+    precargar(lista) { for (const n of [].concat(lista || [])) { if (!MUESTRAS[n]) continue; if (ctx) cargar(n); else quiere.add(n); } },
+    buffer(n) { if (bufs[n]) return bufs[n]; if (MUESTRAS[n]) cargar(n); return null; },
+    enBucle: {},
+    muestras: () => Object.keys(MUESTRAS),
+    ficha: n => MUESTRAS[n] ? Object.assign({}, MUESTRAS[n], { url: (MUESTRAS[n].url || 'assets/audio/' + n + '.') + formato() }) : null,
     has: name => !!SOUNDS[name],
     reducido: null, // null: lo decide el sistema (G.renderer.REDUCED); true o false lo fuerza (pruebas o ajuste del menú)
     esSuave: name => FUERTES.has(name) && (api.reducido != null ? !!api.reducido : !!(G.renderer && G.renderer.REDUCED)),
@@ -209,7 +277,7 @@ AVE.module('audio', function (G) {
       if (!SOUNDS[name]) return false;
       const now = performance.now();
       if (name === 'tick' && now - lastAt < 250) return false; // el aviso no tapa otro sonido
-      lastAt = now; api.log.push(name); if (api.log.length > 40) api.log.shift();
+      lastAt = now; nPlays++; api.log.push(name); if (api.log.length > 40) api.log.shift();
       for (const f of oyentes) { try { f(name, arg); } catch (e) { /* un oyente no frena el sonido */ } }
       if (!ctx || ctx.state !== 'running' || vol.muted) return false;
       salida = api.esSuave(name) ? suaveBus : sfxBus;
@@ -217,6 +285,16 @@ AVE.module('audio', function (G) {
       return true;
     },
   };
+  // T45: «boton» al pulsar un botón de un menú (no los del juego: palanca, Acción, gestos). Si el botón ya sonó algo, no se dobla.
+  let logAntes = -1;
+  const BOTON_NO = '#acts, #stick, #emotes, #sys, .guia-hud, #minimapa, [data-sin-boton]';
+  document.addEventListener('click', () => { logAntes = nPlays; }, true); // antes de los oyentes del botón
+  document.addEventListener('click', e => {
+    const b = e.target && e.target.closest && e.target.closest('button, [role="button"], summary');
+    const sono = logAntes >= 0 && nPlays !== logAntes; logAntes = -1;
+    if (!b || b.disabled || sono || G.quiet || b.closest(BOTON_NO)) return;
+    api.play('boton');
+  });
   addEventListener('pointerdown', () => ensure(), { passive: true });
   addEventListener('keydown', () => ensure());
   return api;

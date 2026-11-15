@@ -44,7 +44,7 @@ AVE.module('interaccion', function (G) {
     if (it) { it.use(); return; }
     if (lleva()) { G.agarre.soltar(); return; }
     // Nada cerca: que el botón no parezca roto. T27: responde al momento ({ ya }), con un sonido suave y la pista del paso
-    try { G.audio.play('tick'); } catch (e) { /* sin audio */ }
+    try { G.audio.play('flecha'); } catch (e) { /* sin audio */ } // T45: pista «sigue la flecha» (audio.js: si se repite, un tick)
     let paso = ''; try { const q = document.querySelector('#steps li.now'); paso = q ? q.textContent.trim() : ''; } catch (e) { /* sin HUD */ }
     const en = !!(G.idioma && G.idioma.activo && G.idioma.activo()); // el objetivo de la página ya va traducido; el prefijo, según el idioma
     G.ui.toast(paso ? (en ? 'Follow the arrow ✦: ' : 'Sigue la flecha ✦: ') + paso : 'Aquí no hay nada para usar. Sigue la flecha ✦ hasta lo que brilla: el botón cambia de nombre.', 2600, { ya: true });

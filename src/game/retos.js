@@ -735,7 +735,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       if (!ui || !ui.meta) return;
       const reto = st.reto, rec = leerRec(), ls = metaLineas(reto, st.ultimo, rec);
       const s = selloNuevo(reto, st.antes || {}, rec);
-      if (s) ls.unshift('¡Nuevo sello de ' + s + ' en Mis récords!');
+      if (s) { ls.unshift('¡Nuevo sello de ' + s + ' en Mis récords!'); if (st.selloSonado !== st.ultimo) { st.selloSonado = st.ultimo; sonar('logro'); } } // T45: una estrella nueva
       ui.meta.innerHTML = ls.map(t => '<span>' + t + '</span>').join('');
       ui.meta.hidden = !ls.length;
       ui.descanso.hidden = !tocaDescanso(Date.now());
@@ -1544,7 +1544,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         if (TM.fase === 'juego' && Math.hypot(S.pos.x - s.x, S.pos.z - s.z) < 2.2 && Math.abs(S.pos.y + 0.7 - s.y) < 2.6) {
           TM.combo = Math.min(9, TM.combo + 1); TM.comboT = T_TORMENTA.combo;
           const pts = (s.dorada ? 50 : 10) * TM.combo; TM.puntos += pts; TM.recogidas++;
-          sonar(s.dorada ? 'r_dorada' : 'r_semilla', TM.combo);
+          sonar(s.dorada ? 'r_dorada' : 'semilla', TM.combo); // T45: la semilla de Suno (el combo sube el tono)
           G.fx.burst(s.x, s.y, s.z, 'gold', s.dorada ? 22 : 10);
           if (TM.combo >= 2) aviso('+' + pts + '  ·  combo x' + TM.combo); else aviso('+' + pts);
           soltar(s.sp); TM.semillas.splice(i, 1);

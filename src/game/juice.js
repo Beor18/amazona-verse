@@ -157,7 +157,7 @@ window.AVJuice = function (G) {
     envejecer(dt);
     // Picado y remonte
     const picando = vuela && v.vy < J.picadoVy;
-    if (picando) { if (!E.picando) { stats.picados++; sonar('picado'); } E.picando = true; E.picT += dt; }
+    if (picando) { if (!E.picando) { stats.picados++; sonar('picada'); } /* T45: la picada de Suno (audio.js; mientras carga, el «picado» sintético) */ E.picando = true; E.picT += dt; }
     else {
       if (E.picando && E.picT >= J.remonteMin && vuela && !v.sube && v.vy > -1.5 && v.speed >= J.rasVel && v.alto > 0.3) {
         stats.remontes++; E.remonte = true; E.pulso = 1; sonar('remonte'); mostrarPop(L('¡Remonte!', 'Swoop!'), true);
@@ -241,7 +241,7 @@ window.AVJuice = function (G) {
       // 6. Picado: FOV hasta +7 y viento; remonte sin aletear
       reset(); a0 = oidosN(); correr(1.2, { vy: -7, alto: 12 });
       const fovPic = cam.fovPicado;
-      ok('Picado: el campo de visión se abre (+5 a +7°) y suena el viento', fovPic > 5 && fovPic <= J.picadoFov + 0.01 && sono('picado', a0), fovPic.toFixed(2));
+      ok('Picado: el campo de visión se abre (+5 a +7°) y suena el viento', fovPic > 5 && fovPic <= J.picadoFov + 0.01 && sono('picada', a0), fovPic.toFixed(2));
       a0 = oidosN(); const gA = G.actores, gir0 = gA && gA.girarAlegre; let giros = 0;
       if (gA && gir0) gA.girarAlegre = function () { giros++; return gir0.apply(this, arguments); };
       try { correr(0.1, { vy: -0.4, alto: 6 }); } finally { if (gA && gir0) gA.girarAlegre = gir0; }
