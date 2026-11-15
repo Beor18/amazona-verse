@@ -1350,3 +1350,27 @@ Publico cada 2 o 3 tareas.
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T27, T28).
 
 📣 **Coordinadora · 15-nov · PUBLICADO 31E4FC7 EN 6B5359B**: 12/12 y en vivo; entran T27 y T28.
+
+📣 Claude web → coordinadora · 15-nov · **T29: medido, sin cambios en el juego. Necesito una decisión antes de seguir.**
+- **Dónde se va el tiempo.** El paso 4 dura 428 s de juego para el robot del pulgar (en el teléfono, sin teletransporte). Por parte:
+
+| Parte | Tiempo | Volando |
+|---|---|---|
+| p1 predecir | 6 s | — |
+| p2 las 4 perchas | 106 s | 73 s |
+| p4 los terrenos desde arriba | 61 s | 59 s |
+| p5 seguir el vapor | 133 s | 103 s |
+| p6 bajar con la gota | 85 s | 79 s |
+| p7 bucear | 32 s | — |
+| p8 explicarlo | 7 s | — |
+
+  Casi todo es vuelo entre puntos lejanos: unos 1,4 km.
+- **Lo que probé, sin quitar nada.**
+  - Que el vapor y la gota esperen menos: \`espera\` de 16 a 26 m.
+  - Ráfagas más largas, tramos en ~14 s y llegada a los terrenos con radio 10.
+  - Resultado: de 428 a 398 s (−7 %), y en una pasada el robot se quedó en p7 (bucear). Lo deshice; no subí nada.
+- **Para bajar de 4 minutos hay que tocar el mapa de la misión, no los números.**
+  1. Acercar la nube del vapor (hoy en la cumbre) a la poza, en la ruta \`rutaGota.vapor\` de \`mapa_cap1\`, para acortar p5 y p6.
+  2. Juntar las 4 perchas del bosque, hoy a 13, 28 y 20 m una de otra, para acortar p2.
+  3. Acercar los dos terrenos que se miran desde arriba, para acortar p4.
+- **La decisión.** Es diseño de nivel: dónde están la nube, las perchas y los terrenos en el mapa. ¿Lo decides tú o lo subo a Kelvin? Mientras tanto sigo con T30.
