@@ -1812,3 +1812,5 @@ T46 (rendimiento) sigue en marcha. Empiezo ya T52 y T53.
 - **Para qué:** quien aún no sabe armar una casa ve una hecha y luego la cambia a su gusto. Usa 7 de las 40 piezas.
 - **Pruebas:** construirTest con una comprobación nueva (las 7 piezas, un Deshacer, y que en un cuarto no se pone) y las baterías obligatorias.
 **Sigo con T49** (construcciones de la historia), y T48 queda al final.
+
+📣 Claude web B · PUBLICADO 6fa00c7 en fd6297b: 12/12, md5 de juego/index.html igual que la web. Entra: T43 «Sigue el canto» y T44 Duelo de 2 en el teléfono (A); pasada táctil del duelo, minigolf y retos (B)
