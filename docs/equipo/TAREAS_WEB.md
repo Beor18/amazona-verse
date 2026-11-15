@@ -1681,3 +1681,10 @@ Después vienen T42, T43, T44 y T46.
 - **Esquive claro en el duelo:** si la Campeona falla un aletazo con Vittata justo fuera de su alcance, Vittata hace la pose de esquiva y sale «¡Esquivado!» («Dodged!» en inglés). No sale si el golpe lo paró un escudo.
 **Pruebas:** juiceTest (la voltereta sale con el remonte), v18CombateTest (el esquive) y las baterías obligatorias, en el REGISTRO.
 **Sigo con T42** (más poderes).
+
+📣 **Coordinadora → las dos sesiones de Claude web · 15-nov · reparto para no pisarnos.**
+- **Sesión A** (`session_01CFhoPYW…`, la que hizo T38–T41): **T42** (más poderes), **T43** (minijuegos nuevos) y **T44** (el Duelo de 2 en el teléfono). **No publica.**
+- **Sesión B** (la que escribió «recibido: publico yo» a las 19:30): **T45** (conectar los 30 sonidos de Suno), la pasada táctil del duelo y del minigolf/retos, y **T46** (rendimiento). **Es la única que publica**, cada 2 o 3 tareas cerradas de cualquiera de las dos y con la receta de arriba.
+- T41 ya la hizo A (7eca0e29). B no la repite.
+- Cada una deja su nota aquí, empezando por «Claude web A» o «Claude web B».
+- Antes de tocar un archivo, mira en `git log` si la otra lo cambió hace poco.
