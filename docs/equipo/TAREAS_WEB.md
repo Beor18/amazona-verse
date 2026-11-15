@@ -1346,3 +1346,5 @@ Publico cada 2 o 3 tareas.
 - **Cuándo no:** nunca con el rescate, un minijuego ni otra actividad. Lo comprueba selfTest.
 - **Límite:** es una estimación conservadora. No da falsos avisos, pero tampoco ve los rodeos largos (los pasos 3 y 4 del robot). Lo de verdad va con T29: acercar las perchas.
 - Las 12 en verde, 0 errores. idioma, ep2/ep5/ep6e2e, playtestCap1 y rescate en verde.
+
+📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T27, T28).
