@@ -37,6 +37,7 @@ AVE.module('ui', function (G) {
   // seguidos «Tu cómic te espera…», «Patrulla invasora…» y «Algo se mueve…»). No vale dentro de una actividad ni para el que
   // vuelve tras apartarse. En las baterías (G.quiet) no se espera, salvo que la prueba lo pida con respiroTest(true).
   const RESPIRO_S = 5; let respiro = 0, respiroPrueba = false;
+  const YA_MIN = 0.5; // T21
   // Ronda 5: el panel «¡Así se juega!» (guia_controles.js, 'controles') es una pantalla que no da avisos propios: mientras está
   // abierto ninguno sale encima (se apartan y esperan a que se cierre).
   const PANTALLAS = ['tarjeta', 'comic', 'creador', 'fin', 'apertura', 'dialogo', 'portada', 'pausa', 'controles'];
@@ -51,16 +52,24 @@ AVE.module('ui', function (G) {
   const igual = (p, q) => !!(p && q && p.text === q.text && p.html === q.html);
   const enPantalla = () => !!actual && !$('toast').hidden;
   function mostrar(p) {
-    actual = p; visto = 0; p.vivo = !G.quiet || colaPrueba; // en las baterías (G.quiet) el aviso no reserva su tiempo mínimo
+    actual = p; visto = 0; p.t0 = performance.now(); /* T21: hora real en que salió (YA_MIN) */ p.vivo = !G.quiet || colaPrueba; // en las baterías (G.quiet) el aviso no reserva su tiempo mínimo
     if (p.html) $('toast').innerHTML = p.html; else { G.audio.play('tick'); $('toast').textContent = p.text; }
     $('toast').hidden = false; toastTimer = p.ms === 0 ? Infinity : (p.ms || 2200) / 1000;
   }
   // Saca el siguiente de la cola si no hay pantalla que lo tape y el de pantalla ya cumplió su tiempo mínimo
   function siguiente(esc) {
     if (!cola.length || tapado()) return;
+    const hayYa = cola.some(q => q.ya);
     // Ronda 4: en una batería (G.quiet) tampoco reserva su tiempo el aviso que salió antes de ella («Iguaca te llama» tapaba el «Ñam» de banqueteTest)
-    if (enPantalla() && actual.vivo && (!G.quiet || colaPrueba)) { const dur = toastTimer === Infinity ? MIN_S : visto + toastTimer; if (visto < Math.min(MIN_S, dur)) return; }
+    if (!hayYa && enPantalla() && actual.vivo && (!G.quiet || colaPrueba)) { const dur = toastTimer === Infinity ? MIN_S : visto + toastTimer; if (visto < Math.min(MIN_S, dur)) return; }
     const ks = esc == null ? escenas() : esc;
+    // T21: lo que el niño acaba de hacer ({ ya }) sale al momento: el aviso de pantalla se aparta (vuelve después) y no hay respiro
+    // Si el de pantalla también es { ya } y salió hace menos de YA_MIN s (dos cosas en el mismo instante: la foto y su récord),
+    // el nuevo espera su turno; si no, el más nuevo pasa delante y el de pantalla vuelve después
+    const ultimoYa = () => { for (let k = cola.length - 1; k >= 0; k--) if (cola[k].ya && (!ks.length || deEscena(cola[k], ks))) return k; return -1; }; // el más nuevo primero
+    const ya = ultimoYa();
+    if (ya >= 0 && !(enPantalla() && actual.ya && (performance.now() - (actual.t0 || 0)) / 1000 < YA_MIN)) { if (enPantalla()) apartar(); const j = ultimoYa(); if (j >= 0) { respiro = 0; mostrar(cola.splice(j, 1)[0]); } return; }
+    if (ya >= 0) return;
     if (respiro > 0 && !enPantalla() && !ks.length && !cola[0].apartado && (!G.quiet || respiroPrueba)) return; // T19
     const i = ks.length ? cola.findIndex(q => deEscena(q, ks)) : 0; // con escena, solo los de la actividad
     if (i >= 0) mostrar(cola.splice(i, 1)[0]);
@@ -76,9 +85,9 @@ AVE.module('ui', function (G) {
     }
     siguiente(ks);
   }
-  const fijo = o => !!(o && o.fijo);
-  function toast(text, ms, o) { encolar({ text, ms, fijo: fijo(o) }); }
-  function toastHTML(html, ms, o) { encolar({ html, ms, fijo: fijo(o) }); }
+  const fijo = o => !!(o && o.fijo), ya = o => !!(o && o.ya);
+  function toast(text, ms, o) { encolar({ text, ms, fijo: fijo(o), ya: ya(o) }); }
+  function toastHTML(html, ms, o) { encolar({ html, ms, fijo: fijo(o), ya: ya(o) }); }
   // QA-207: «ocultar» (interno) quita el aviso de la pantalla y respeta el apartado; los apartados de showCard y del update lo usan.
   // hideToast() (público) además descarta el aviso que estaba en pantalla si quedó apartado, para que no vuelva al cerrarse
   // la tarjeta. Un aviso distinto que llegó con la pantalla tapada y aún no se ha visto (QA-93) sigue esperando.

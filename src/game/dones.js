@@ -252,7 +252,7 @@
     function avisoAprender(texto) {
       estiloMentora();
       const t = document.getElementById('toast');
-      if (G.ui && G.ui.toast) G.ui.toast(texto, 3000);
+      if (G.ui && G.ui.toast) G.ui.toast(texto, 3000, { ya: true }); // T21: el don que acaba de aprender sale al momento
       if (t) t.classList.add('don-aprender');
       const b = document.getElementById('b-dash');
       if (b) {
@@ -521,6 +521,7 @@
           G.S.event = null; G.quiet = false; G.fisica.MOVE.flying = false; G.fisica.MOVE.swimming = false;
           if (G.dialogo && G.dialogo.clear) G.dialogo.clear();
           soltarEscenas();
+          if (G.ui.vaciarAvisos) G.ui.vaciarAvisos(); // T21: el aviso de la Llamada (hace un instante) no cuenta para el de la Ráfaga
           const oraOk = mirar() === true && G.dialogo && G.dialogo.actual && G.dialogo.actual() && G.dialogo.actual().who === 'Oratrix';
           check('En su capítulo, Oratrix enseña la Ráfaga doble', oraOk, G.dialogo && G.dialogo.actual && G.dialogo.actual() ? G.dialogo.actual().who : 'sin diálogo');
           if (oraOk) { G.dialogo.next(); G.dialogo.next(); G.dialogo.next(); } // 3 líneas desde 24c

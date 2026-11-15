@@ -132,13 +132,18 @@
         cerrarTodo();
         if (G.dialogo.say) G.dialogo.say([{ who: 'Iguaca', text: 'Hola, Vittata. Mira la loma, que allí empieza todo.' }], null, { caja: true });
         await sleep(400); await aviso('Habla con Iguaca');
-        const dlg = $('dialog'), s91 = (!dlg || dlg.hidden || $('toast').hidden) ? 0 : solape(rect('toast'), dlg.getBoundingClientRect());
-        ok('móvil · QA-91 · con el diálogo abierto el aviso se ve y no tapa la caja', dlg && !dlg.hidden && !$('toast').hidden && s91 === 0, ($('toast').hidden ? 'el aviso no se ve · ' : '') + (dlg && !dlg.hidden ? '' : 'el diálogo no se abrió · ') + s91 + ' px² de solape');
+        // T21: con la regla de T2, el aviso de fuera espera a que se cierre el diálogo (no sale encima de la caja) y sale después
+        const dlg = $('dialog'), abierto91 = !!(dlg && !dlg.hidden), espera91 = $('toast').hidden;
+        if (G.dialogo.clear) G.dialogo.clear(); else if (dlg) dlg.hidden = true;
+        { const t0 = performance.now(); while ($('toast').hidden && performance.now() - t0 < 3000) await sleep(100); }
+        ok('móvil · QA-91 · con el diálogo abierto el aviso espera (no tapa la caja) y sale al cerrarlo', abierto91 && espera91 && !$('toast').hidden, (abierto91 ? '' : 'el diálogo no se abrió · ') + (espera91 ? '' : 'salió encima · ') + ($('toast').hidden ? 'no salió después' : ''));
         // QA-92: panel final + aviso
         cerrarTodo(); $('end').hidden = false; await aviso('Descubriste Poza Honda');
+        // T21: igual con el panel final: el aviso espera (no tapa sus botones) y sale al cerrarlo
         const btns = [...$('end').querySelectorAll('button, .btn')].filter(b => b.offsetParent);
         const s92 = $('toast').hidden ? 0 : btns.reduce((s, b) => s + solape(rect('toast'), b.getBoundingClientRect()), 0);
-        ok('móvil · QA-92 · con el panel final el aviso se ve y no tapa sus botones (' + btns.length + ')', !$('toast').hidden && btns.length && s92 === 0, s92 + ' px² de solape');
+        $('end').hidden = true; { const t0 = performance.now(); while ($('toast').hidden && performance.now() - t0 < 3000) await sleep(100); }
+        ok('móvil · QA-92 · con el panel final el aviso no tapa sus botones (' + btns.length + ') y sale al cerrarlo', btns.length && s92 === 0 && !$('toast').hidden, s92 + ' px² de solape' + ($('toast').hidden ? ' · no salió después' : ''));
         // QA-93: tarjeta a pantalla completa + aviso → espera y sale al cerrar
         cerrarTodo(); G.ui.showCard('<h2>Cuaderno</h2><p>Prueba QA-93</p>'); await aviso('Termina lo que estás haciendo y vuelve a tocar «Retos»');
         const oculto = $('toast').hidden;

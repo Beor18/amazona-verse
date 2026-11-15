@@ -149,8 +149,9 @@ window.AVMaravillas = function (G) {
   function aviso(fase) {
     if (G.quiet || !cercaDe() || vistos[fase]) return;
     vistos[fase] = true;
-    if (fase === 'noche') G.ui.toastHTML('<b>' + DATO.texto + '</b><br><small>' + DATO.fuente + '</small>', 7000);
-    else G.ui.toast('Atardecer en la caleta: salen las luciérnagas y canta un coquí.', 4000);
+    // T21: la maravilla que acaba de encontrar sale al momento ({ ya }), delante de los avisos que esperaban
+    if (fase === 'noche') G.ui.toastHTML('<b>' + DATO.texto + '</b><br><small>' + DATO.fuente + '</small>', 7000, { ya: true });
+    else G.ui.toast('Atardecer en la caleta: salen las luciérnagas y canta un coquí.', 4000, { ya: true });
   }
   G.on('update', dt => {
     const fase = faseDe(S.clock || 0), ver = cercaDe() && fase !== 'dia';
@@ -218,7 +219,10 @@ window.AVMaravillas = function (G) {
       G.quiet = false; vistos.noche = false; aviso('noche');
       tapan.forEach(e => { e.hidden = false; });
       const toast = document.getElementById('toast');
-      ok('Cerca y de noche, el aviso cuenta el dato y la fuente', !!(toast && !toast.hidden && /Pyrodinium bahamense/.test(toast.textContent) && /NOAA/.test(toast.textContent)), tapan.length ? 'apartados: ' + tapan.map(e => e.id).join(', ') : '');
+      // T21: si en ese momento hay una escena o una pantalla delante (regla de T2), el aviso espera en la cola, al frente: también vale
+      const enCola = (G.ui.colaTest ? G.ui.colaTest().cola : []).some(t => /Pyrodinium bahamense/.test(t) && /NOAA/.test(t));
+      const visto = !!(toast && !toast.hidden && /Pyrodinium bahamense/.test(toast.textContent) && /NOAA/.test(toast.textContent));
+      ok('Cerca y de noche, el aviso cuenta el dato y la fuente (en pantalla o el primero en espera)', visto || enCola, (visto ? 'en pantalla' : enCola ? 'en espera' : 'no está') + (tapan.length ? ' · apartados: ' + tapan.map(e => e.id).join(', ') : ''));
       // BM21: toques en el agua
       const Ub = G.agua && G.agua.uniforms && G.agua.uniforms.uBio;
       ok('El agua tiene el tinte de la caleta (uBio, 4 toques)', !!Ub && Ub.value.length === 4);
