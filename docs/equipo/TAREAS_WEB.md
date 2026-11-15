@@ -1555,3 +1555,5 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 - **Para Kelvin (canon y arte):** el nombre «Lentes de la Campeona» y el color nuevo son decisión suya. Si prefiere otra pieza, es una línea en `content/cap1/coleccionables.js`.
 - **Nota del robot:** a 1280, en el navegador lento de pruebas, una pulsación corta de F cuenta como «mantener» y lanza el poder. No es un fallo del juego (a 60 fps va bien).
 **Sigo con T39** (construcciones mejores).
+
+📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T38, el duelo).
