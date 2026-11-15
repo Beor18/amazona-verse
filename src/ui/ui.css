@@ -714,14 +714,14 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   /* El aviso se alinea a la izquierda y deja libre la columna de botones de la derecha (Diario, Gestos, Pausa) */
   #toast { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 262px); left: max(var(--sp-3), env(safe-area-inset-left, 0px)); margin-inline: 0; max-width: calc(100vw - 2 * var(--sp-3) - 56px); }
   /* CG-125: con el 2×2 del duelo (alas y patas) el aviso quedaba debajo. Sube, y los botones siguen tocables. */
-  body.v18-ext-on #toast { top: calc(env(safe-area-inset-top, 0px) + 118px); bottom: auto; max-height: min(28vh, 160px); }
+  body.v18-ext-on #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; max-height: min(28vh, 160px); } /* T22: debajo del minimapa */
   /* CG-4 (QA-86, QA-87): con el diálogo abierto, el aviso sube bajo el objetivo; abajo tapaba el nombre y la
      primera línea del diálogo (375×812). El top es el mayor de «bajo el objetivo» y «bajo el minimapa»
      (medido vía --mm-top en :root por minimapa.js): el aviso es ancho y, a 118px, sus nombres largos quedaban
      bajo el minimapa y se recortaban (QA-195, W28). Con los gestos NO aplica: el minimapa se oculta con
      #emotes abiertos (minimapa.js), así que el aviso sigue a 118px y no tapa sus filas (QA-86). */
   body:has(#dialog:not([hidden])) #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; }
-  body:has(#emotes:not([hidden])) #toast { top: calc(env(safe-area-inset-top, 0px) + 118px); bottom: auto; }
+  body:has(#emotes:not([hidden])) #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; } /* T22: debajo del minimapa */
   /* QA-188 (W28): con un bocadillo de historia visible (el narrador y los diálogos de los packs van en bocadillos libres, no
      en #dialog), el aviso sube igual que con la caja de diálogo; abajo quedaba debajo del bocadillo y los dos ilegibles (ep2) */
   body:has(#bocadillos:not([hidden])) #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; }
@@ -1111,3 +1111,11 @@ html.a11y-unamano.a11y-zurdo #toast {
 
 /* T6/T17: sin «Próximo: premio» en el HUD, ni en el teléfono ni en el escritorio (el premio sigue en el Diario) */
 #next-reward { display: none !important; }
+
+/* T22: en el teléfono, la ficha de ciencia del Diario sale compacta (antes tapaba media pantalla en la percha del suelo) */
+@media (max-width: 560px) {
+  #toast:has(.av-ciencia) { min-height: 0; padding: var(--sp-2) var(--sp-3) var(--sp-2) 52px; font-size: calc(13px * var(--fs-k, 1)); line-height: 1.3; }
+  #toast:has(.av-ciencia)::before { width: 30px; height: 30px; margin-top: -15px; left: 12px; background-size: 18px; }
+  #toast .av-ciencia b { font-size: calc(14px * var(--fs-k, 1)); line-height: 1.2; }
+  #toast .av-ciencia small { font-size: calc(11px * var(--fs-k, 1)); line-height: 1.25; }
+}

@@ -217,7 +217,11 @@ AVE.module('camara', function (G) {
       const L = Math.hypot(dx, dy, dz);
       if (L < 1.6) return { x: hx + dx, y: hy + dy, z: hz + dz, d: L };
       const n = Math.max(1, Math.ceil(L / 0.15)); let corte = -1; // BM6-7: cada 0,15 m (los muros finos se saltaban)
-      for (let i = 1; i <= n; i++) {
+      // T22: posada, si la cabeza ya está dentro de un sólido fino (al pie de un tronco, dentro de su colisión), ese no cuenta:
+      // se salta el tramo hasta salir de él (antes todo cortaba a 0,15 m y la cámara se pegaba a Vittata a 0,4 m)
+      let i0 = 1;
+      if (G.fisica.MOVE.posado && G.solidos.dentro(hx, hz, hy) > -Infinity) { while (i0 <= n && G.solidos.dentro(hx + dx * i0 / n, hz + dz * i0 / n, hy + dy * i0 / n) > -Infinity) i0++; if (i0 / n * L > 0.9) i0 = 1; } // solo un tronco fino (≤ 0,9 m); un muro o un edificio sí cuenta
+      for (let i = i0; i <= n; i++) {
         const t = i / n;
         if (G.solidos.dentro(hx + dx * t, hz + dz * t, hy + dy * t) > -Infinity) { corte = i - 1; break; }
       }
@@ -430,7 +434,9 @@ AVE.module('camara', function (G) {
   function tramoLibre(hx, hy, hz, x, y, z) {
     const dx = x - hx, dy = y - hy, dz = z - hz, L = Math.hypot(dx, dy, dz); if (L < 1.6) return 1;
     const n = Math.ceil(L / 0.3);
-    for (let i = 1; i <= n; i++) { const t = i / n; if (G.solidos.dentro(hx + dx * t, hz + dz * t, hy + dy * t) > -Infinity) return (i - 1) / n; }
+    let i0 = 1; // T22: el sólido en el que ya está la cabeza (al pie de un tronco) no cuenta, como en evitarMuros
+    if (G.fisica.MOVE.posado && G.solidos.dentro(hx, hz, hy) > -Infinity) { while (i0 <= n && G.solidos.dentro(hx + dx * i0 / n, hz + dz * i0 / n, hy + dy * i0 / n) > -Infinity) i0++; if (i0 / n * L > 0.9) i0 = 1; }
+    for (let i = i0; i <= n; i++) { const t = i / n; if (G.solidos.dentro(hx + dx * t, hz + dz * t, hy + dy * t) > -Infinity) return (i - 1) / n; }
     return 1;
   }
   let suaves = 0;
