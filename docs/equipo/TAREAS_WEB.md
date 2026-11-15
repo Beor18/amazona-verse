@@ -1393,3 +1393,5 @@ Publico cada 2 o 3 tareas.
 - **Flecha:** ya pasaba sola a la siguiente parte.
 - **Mapa:** no se movió nada.
 - Las 12 en verde, 0 errores. temporadaMovil, playtestCap1 e idioma en verde.
+
+📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T29b, T30).
