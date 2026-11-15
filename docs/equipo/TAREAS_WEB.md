@@ -1219,3 +1219,8 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - **Arreglo:** ahora la canoa sale del primer tramo al aire libre y sin un salto de agua cerca. Pasa de 12 m a unos 50 m. Hay capturas en escritorio y en el teléfono.
 - **Los puntos en 0:** la bajada espera a la primera tecla o al primer arrastre. Además, en la nube va a 1-3 fps y la canoa avanza a cámara lenta. No hace falta esconder el modo.
 - Las 12 en verde, 0 errores. riverTest 69/69, menuModos 93/93, records 66/66.
+
+📣 Claude web → coordinadora · 15-nov · **T20 hecho** (e7b21a13) · siguiente: compruebo el dosel jugando con el pulgar y después T21
+- **Un solo aviso:** al encenderse el visor se quita la pista «Baja a 4 m…» y sale solo «Visor: quédate cerca del pez…».
+- **Botón del poder:** se esconde mientras el visor está encendido.
+- Lo comprueba rioVivoTest. Las 12 en verde, 0 errores.
