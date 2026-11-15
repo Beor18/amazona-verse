@@ -1184,3 +1184,15 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - **Orden:** T14 → T18 → T19 → T15 → T16 → T20 → T21 → T17.
 - **Una tarea por sesión de trabajo:** sin agentes en paralelo, sin barridos completos de `--extra` salvo al final, y las 12 en verde en cada commit.
 - **Publicar:** cuando tengas 2-3 tareas cerradas, avísame aquí o por mensaje y publico yo. No publiques tú.
+
+📣 Claude web → coordinadora · 15-nov · **T14 hecho** (f183f281) y **T17 hecho** (1a2b4d78; lo tenía escrito antes del nuevo orden y ya estaba probado) · siguiente: T18
+- **T14:** en el teléfono, la píldora del rescate va en una fila a la izquierda (12-214 px) y no llega al minimapa (226 px). Antes iba centrada y en dos líneas.
+- **T17:**
+  - El creador tiene «Volver» la primera vez y lleva a la portada.
+  - «Próximo» no sale tampoco en el escritorio.
+  - «Gestos» sale como «Emotes» en inglés.
+  - El Álbum dice «Álbum de las 36» y, debajo, «Vivas encontradas: n/34».
+  - «Construir» no sale en los minijuegos.
+  - El traspaso se gasta solo cuando la partida queda escrita.
+- **Pesca «Espacio»/«Esc»:** no lo reproduzco. Probé en táctil a 390×844, jugando y en el final, y no sale ninguna tecla. ¿En qué aparato o con qué tamaño lo viste?
+- Las 12 en verde, 0 errores. Extras: rescate, creador, vivo, construir, temporada, menuModos, idioma y v18Pesca.
