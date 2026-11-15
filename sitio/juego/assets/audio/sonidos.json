@@ -81,6 +81,525 @@
     "kb": 17.6,
     "pico_decodificado": -8.2
    }
+  },
+  "aleteo": {
+   "descripcion": "Un aletazo ligero de cotorra, estilo dibujo animado.",
+   "duracion_s": 0.6,
+   "sonoridad_lu": -26.7,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/aleteo.ogg",
+    "kb": 8.3,
+    "pico_decodificado": -5.3
+   },
+   "mp3": {
+    "archivo": "sfx/aleteo.mp3",
+    "kb": 6.4,
+    "pico_decodificado": -4.7
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 0b639585-4115-480f-b01b-9e714cf26f4d"
+  },
+  "planeo": {
+   "descripcion": "Whoosh de aire suave al planear.",
+   "duracion_s": 1.5,
+   "sonoridad_lu": -21.0,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/planeo.ogg",
+    "kb": 15.4,
+    "pico_decodificado": -4.3
+   },
+   "mp3": {
+    "archivo": "sfx/planeo.mp3",
+    "kb": 15.3,
+    "pico_decodificado": -4.7
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 51c6301c-72f0-42cb-ba0b-feabe2fbdd56"
+  },
+  "picada": {
+   "descripcion": "Whoosh de viento que acelera y sube de tono en la picada.",
+   "duracion_s": 2.32,
+   "sonoridad_lu": -20.6,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/picada.ogg",
+    "kb": 21.5,
+    "pico_decodificado": -5.1
+   },
+   "mp3": {
+    "archivo": "sfx/picada.mp3",
+    "kb": 23.2,
+    "pico_decodificado": -5.0
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 4b399a07-ef10-42cb-8b0a-2844793cfe21"
+  },
+  "frenada": {
+   "descripcion": "Aletazos rápidos que frenan, con un posado suave.",
+   "duracion_s": 1.82,
+   "sonoridad_lu": -22.3,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/frenada.ogg",
+    "kb": 18.1,
+    "pico_decodificado": -4.6
+   },
+   "mp3": {
+    "archivo": "sfx/frenada.mp3",
+    "kb": 18.3,
+    "pico_decodificado": -4.9
+   },
+   "origen": "Suno (plan Premier de Kelvin), id e212fd62-272d-4f04-8944-934d8a69d1bd"
+  },
+  "semilla": {
+   "descripcion": "Pop brillante con destello mágico al recoger una semilla.",
+   "duracion_s": 1.2,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -5.4,
+   "ogg": {
+    "archivo": "sfx/semilla.ogg",
+    "kb": 13.4,
+    "pico_decodificado": -5.4
+   },
+   "mp3": {
+    "archivo": "sfx/semilla.mp3",
+    "kb": 12.2,
+    "pico_decodificado": -6.0
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 8d6dbeed-7ddd-4b14-9805-95159851871f"
+  },
+  "logro": {
+   "descripcion": "Chime alegre de campanas en arpegio por una estrella ganada.",
+   "duracion_s": 1.4,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -7.4,
+   "ogg": {
+    "archivo": "sfx/logro.ogg",
+    "kb": 14.9,
+    "pico_decodificado": -7.5
+   },
+   "mp3": {
+    "archivo": "sfx/logro.mp3",
+    "kb": 14.3,
+    "pico_decodificado": -7.9
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 519ac6be-d72d-474e-be27-b9ee605531ba"
+  },
+  "boton": {
+   "descripcion": "Toque de interfaz suave, un pop cálido como de madera.",
+   "duracion_s": 0.3,
+   "sonoridad_lu": -23.6,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/boton.ogg",
+    "kb": 6.3,
+    "pico_decodificado": -4.9
+   },
+   "mp3": {
+    "archivo": "sfx/boton.mp3",
+    "kb": 3.6,
+    "pico_decodificado": -5.0
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 9ee4ec7c-064c-4b79-a925-a52184402cc5"
+  },
+  "aviso": {
+   "descripcion": "Notificación suave de dos notas de marimba.",
+   "duracion_s": 1.5,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -7.8,
+   "ogg": {
+    "archivo": "sfx/aviso.ogg",
+    "kb": 15.3,
+    "pico_decodificado": -7.8
+   },
+   "mp3": {
+    "archivo": "sfx/aviso.mp3",
+    "kb": 15.3,
+    "pico_decodificado": -8.2
+   },
+   "origen": "Suno (plan Premier de Kelvin), id f43daaa6-47c6-42c8-a107-38e9ea7c79f0"
+  },
+  "flecha": {
+   "descripcion": "Ding amable de campana con brillo para la pista «sigue la flecha».",
+   "duracion_s": 1.5,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -8.4,
+   "ogg": {
+    "archivo": "sfx/flecha.ogg",
+    "kb": 15.2,
+    "pico_decodificado": -8.2
+   },
+   "mp3": {
+    "archivo": "sfx/flecha.mp3",
+    "kb": 15.3,
+    "pico_decodificado": -9.0
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 17fd19c6-2ff4-42e5-8edc-3a56050fd980"
+  },
+  "panel_final": {
+   "descripcion": "Fanfarria corta de metales y campanas por capítulo completado.",
+   "duracion_s": 3.0,
+   "sonoridad_lu": -20.1,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/panel_final.ogg",
+    "kb": 27.3,
+    "pico_decodificado": -4.7
+   },
+   "mp3": {
+    "archivo": "sfx/panel_final.mp3",
+    "kb": 29.8,
+    "pico_decodificado": -5.4
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 2b404395-05c9-4ae9-a47f-0819f6df85e9"
+  },
+  "pieza": {
+   "descripcion": "Golpe cálido de pieza de madera al colocarla, tipo caricatura.",
+   "duracion_s": 0.8,
+   "sonoridad_lu": -21.6,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/pieza.ogg",
+    "kb": 8.6,
+    "pico_decodificado": -4.7
+   },
+   "mp3": {
+    "archivo": "sfx/pieza.mp3",
+    "kb": 8.5,
+    "pico_decodificado": -5.0
+   },
+   "origen": "Suno (plan Premier de Kelvin), id f2cfa417-dc1b-4fc3-a662-75df7517a3d4"
+  },
+  "encaje": {
+   "descripcion": "Clic magnético de encaje, brillante y limpio.",
+   "duracion_s": 0.4,
+   "sonoridad_lu": -20.9,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/encaje.ogg",
+    "kb": 6.5,
+    "pico_decodificado": -4.6
+   },
+   "mp3": {
+    "archivo": "sfx/encaje.mp3",
+    "kb": 4.5,
+    "pico_decodificado": -4.7
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 5b785af2-89d4-4751-bbb9-6730194f71f3"
+  },
+  "puente_reparado": {
+   "descripcion": "Logro de construcción: golpes de madera y luego una campanita.",
+   "duracion_s": 3.5,
+   "sonoridad_lu": -21.1,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/puente_reparado.ogg",
+    "kb": 31.2,
+    "pico_decodificado": -4.6
+   },
+   "mp3": {
+    "archivo": "sfx/puente_reparado.mp3",
+    "kb": 34.7,
+    "pico_decodificado": -5.2
+   },
+   "origen": "Suno (plan Premier de Kelvin), id ad517f84-b46f-4a3c-a0f2-2c2a433b209f"
+  },
+  "lanzar": {
+   "descripcion": "Lanzar el anzuelo, con zumbido de sedal y giro del carrete.",
+   "duracion_s": 1.6,
+   "sonoridad_lu": -22.6,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/lanzar.ogg",
+    "kb": 16.2,
+    "pico_decodificado": -4.5
+   },
+   "mp3": {
+    "archivo": "sfx/lanzar.mp3",
+    "kb": 16.2,
+    "pico_decodificado": -4.7
+   },
+   "origen": "Suno (plan Premier de Kelvin), id de8c8cc4-ff16-40bd-ac0d-4003cd96cb49"
+  },
+  "pica": {
+   "descripcion": "El pez pica: chapoteo pequeño y suave.",
+   "duracion_s": 1.0,
+   "sonoridad_lu": -20.8,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/pica.ogg",
+    "kb": 10.8,
+    "pico_decodificado": -4.5
+   },
+   "mp3": {
+    "archivo": "sfx/pica.mp3",
+    "kb": 10.4,
+    "pico_decodificado": -4.9
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 6d6a08b2-96c6-4437-bee9-a9fd66bed787"
+  },
+  "clavado": {
+   "descripcion": "¡Clavado!: salpicadura juguetona y luego un chime alegre.",
+   "duracion_s": 2.5,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -4.6,
+   "ogg": {
+    "archivo": "sfx/clavado.ogg",
+    "kb": 23.8,
+    "pico_decodificado": -5.0
+   },
+   "mp3": {
+    "archivo": "sfx/clavado.mp3",
+    "kb": 25.1,
+    "pico_decodificado": -4.7
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 092e4ff6-62a7-42be-8700-ab41588d6d5a"
+  },
+  "duelo_ala": {
+   "descripcion": "Duelo: barrido de ala ligero con palmada suave.",
+   "duracion_s": 2.0,
+   "sonoridad_lu": -20.2,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/duelo_ala.ogg",
+    "kb": 19.1,
+    "pico_decodificado": -4.6
+   },
+   "mp3": {
+    "archivo": "sfx/duelo_ala.mp3",
+    "kb": 20.2,
+    "pico_decodificado": -4.9
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 2c96a3ae-359a-4bbb-9d74-4aeba6e7ddcc"
+  },
+  "duelo_pata": {
+   "descripcion": "Duelo: un golpe cartoon limpio de pata.",
+   "duracion_s": 1.0,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -7.6,
+   "ogg": {
+    "archivo": "sfx/duelo_pata.ogg",
+    "kb": 10.3,
+    "pico_decodificado": -7.7
+   },
+   "mp3": {
+    "archivo": "sfx/duelo_pata.mp3",
+    "kb": 10.4,
+    "pico_decodificado": -8.0
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 64264f6b-bdc3-435c-9344-d9202b1445b7"
+  },
+  "duelo_semilla": {
+   "descripcion": "Duelo: silbido de lanzamiento y pop pequeño.",
+   "duracion_s": 1.6,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -5.1,
+   "ogg": {
+    "archivo": "sfx/duelo_semilla.ogg",
+    "kb": 16.0,
+    "pico_decodificado": -5.4
+   },
+   "mp3": {
+    "archivo": "sfx/duelo_semilla.mp3",
+    "kb": 16.2,
+    "pico_decodificado": -5.6
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 3535f4ac-f124-4def-8465-bc81ede6a362"
+  },
+  "duelo_poder": {
+   "descripcion": "Duelo: carga mágica que sube y estalla con destellos.",
+   "duracion_s": 3.0,
+   "sonoridad_lu": -22.2,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/duelo_poder.ogg",
+    "kb": 27.9,
+    "pico_decodificado": -4.6
+   },
+   "mp3": {
+    "archivo": "sfx/duelo_poder.mp3",
+    "kb": 29.8,
+    "pico_decodificado": -4.7
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 3fc57482-ce10-4c4b-8154-402d856b4c64"
+  },
+  "duelo_victoria": {
+   "descripcion": "Jingle corto y alegre de marimba y flauta al ganar un duelo.",
+   "duracion_s": 3.47,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -7.0,
+   "ogg": {
+    "archivo": "sfx/duelo_victoria.ogg",
+    "kb": 30.8,
+    "pico_decodificado": -7.3
+   },
+   "mp3": {
+    "archivo": "sfx/duelo_victoria.mp3",
+    "kb": 34.5,
+    "pico_decodificado": -7.2
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 68a25def-8fd8-473a-bac9-134057c02bab"
+  },
+  "duelo_derrota": {
+   "descripcion": "Marimba que baja suave y termina con esperanza («casi»).",
+   "duracion_s": 4.28,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -7.0,
+   "ogg": {
+    "archivo": "sfx/duelo_derrota.ogg",
+    "kb": 37.8,
+    "pico_decodificado": -6.6
+   },
+   "mp3": {
+    "archivo": "sfx/duelo_derrota.mp3",
+    "kb": 42.5,
+    "pico_decodificado": -7.5
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 05b2edbd-8ef5-4aef-8158-b18919d81bd5"
+  },
+  "poder_grito": {
+   "descripcion": "Poder: grito de cotorra mágico con eco del bosque, juguetón.",
+   "duracion_s": 3.0,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -6.8,
+   "ogg": {
+    "archivo": "sfx/poder_grito.ogg",
+    "kb": 27.9,
+    "pico_decodificado": -7.4
+   },
+   "mp3": {
+    "archivo": "sfx/poder_grito.mp3",
+    "kb": 29.8,
+    "pico_decodificado": -7.1
+   },
+   "origen": "Suno (plan Premier de Kelvin), id d7408b15-58fd-43ed-aa4f-07ab40d8274b"
+  },
+  "poder_rafaga": {
+   "descripcion": "Poder: ráfaga de viento mágica con campanitas.",
+   "duracion_s": 2.5,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -5.2,
+   "ogg": {
+    "archivo": "sfx/poder_rafaga.ogg",
+    "kb": 23.2,
+    "pico_decodificado": -5.5
+   },
+   "mp3": {
+    "archivo": "sfx/poder_rafaga.mp3",
+    "kb": 25.1,
+    "pico_decodificado": -4.8
+   },
+   "origen": "Suno (plan Premier de Kelvin), id d90bcd0d-7c42-4353-9c2e-efc945764bab"
+  },
+  "poder_ojo": {
+   "descripcion": "Poder: destello brillante al revelar algo escondido.",
+   "duracion_s": 2.5,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -7.1,
+   "ogg": {
+    "archivo": "sfx/poder_ojo.ogg",
+    "kb": 24.1,
+    "pico_decodificado": -7.1
+   },
+   "mp3": {
+    "archivo": "sfx/poder_ojo.mp3",
+    "kb": 25.1,
+    "pico_decodificado": -7.5
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 58af1876-7d70-4b50-9912-425c33ebe0d2"
+  },
+  "poder_planeo": {
+   "descripcion": "Poder: planeo largo de viento suave con destellos.",
+   "duracion_s": 3.5,
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -6.5,
+   "ogg": {
+    "archivo": "sfx/poder_planeo.ogg",
+    "kb": 32.3,
+    "pico_decodificado": -6.8
+   },
+   "mp3": {
+    "archivo": "sfx/poder_planeo.mp3",
+    "kb": 34.7,
+    "pico_decodificado": -6.9
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 50faaab2-fd0a-4b30-a3c6-e53d15b298ca"
+  },
+  "bosque_yunque": {
+   "descripcion": "Ambiente en bucle: selva de día, pájaros suaves, coquíes a lo lejos y hojas.",
+   "duracion_s": 15.06,
+   "loop": true,
+   "canales": "estéreo",
+   "sonoridad_lu": -24.9,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/bosque_yunque.ogg",
+    "kb": 174.4,
+    "pico_decodificado": -4.9
+   },
+   "mp3": {
+    "archivo": "sfx/bosque_yunque.mp3",
+    "kb": 177.2,
+    "pico_decodificado": -4.7
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 2e447cff-4e47-4525-8412-60401b03ab66"
+  },
+  "lluvia": {
+   "descripcion": "Ambiente en bucle: lluvia tropical suave sobre hojas anchas, sin truenos.",
+   "duracion_s": 17.56,
+   "loop": true,
+   "canales": "estéreo",
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -7.4,
+   "ogg": {
+    "archivo": "sfx/lluvia.ogg",
+    "kb": 182.2,
+    "pico_decodificado": -7.4
+   },
+   "mp3": {
+    "archivo": "sfx/lluvia.mp3",
+    "kb": 206.5,
+    "pico_decodificado": -7.9
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 5c4fac4f-47e3-48d1-a1c4-f97379aceeb8"
+  },
+  "rio": {
+   "descripcion": "Ambiente en bucle: quebrada de montaña entre rocas, agua que burbujea.",
+   "duracion_s": 6.88,
+   "loop": true,
+   "canales": "estéreo",
+   "sonoridad_lu": -26.4,
+   "pico_wav_dbfs": -4.5,
+   "ogg": {
+    "archivo": "sfx/rio.ogg",
+    "kb": 86.7,
+    "pico_decodificado": -4.5
+   },
+   "mp3": {
+    "archivo": "sfx/rio.mp3",
+    "kb": 81.3,
+    "pico_decodificado": -4.4
+   },
+   "origen": "Suno (plan Premier de Kelvin), id ecbdbf34-3776-4756-9c90-74d616e2773e"
+  },
+  "noche_coquis": {
+   "descripcion": "Ambiente en bucle: noche tranquila con muchos coquíes y grillos suaves.",
+   "duracion_s": 11.9,
+   "loop": true,
+   "canales": "estéreo",
+   "sonoridad_lu": -20.0,
+   "pico_wav_dbfs": -6.1,
+   "ogg": {
+    "archivo": "sfx/noche_coquis.ogg",
+    "kb": 117.5,
+    "pico_decodificado": -5.9
+   },
+   "mp3": {
+    "archivo": "sfx/noche_coquis.mp3",
+    "kb": 140.1,
+    "pico_decodificado": -6.7
+   },
+   "origen": "Suno (plan Premier de Kelvin), id 82f4a9ee-3f50-49c7-9460-3765d0d1b9bc"
   }
- }
+ },
+ "_nota_sfx": "Los efectos en sfx/ salen de Suno (plan Premier de Kelvin, uso comercial). Se recortaron al golpe útil, mono 48 kHz (los ambientes en estéreo 96 kbps y en bucle con fundido cruzado). Aún no están conectados al juego: para tocarlos hay que añadirlos a MUESTRAS en src/engine/audio.js con url \"assets/audio/sfx/<nombre>.\"."
 }

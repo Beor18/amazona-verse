@@ -48,25 +48,39 @@
       if (o.dir) _q.setFromUnitVectors(ARRIBA, _p.set(o.dir[0], o.dir[1], o.dir[2]).normalize());
       else _q.setFromEuler(_e.set(o.r ? o.r[0] : 0, o.r ? o.r[1] : 0, o.r ? o.r[2] : 0));
       const n = g.attributes.position.count, col = new Float32Array(n * 3), nor = g.attributes.normal;
+      // T39: coordenadas de textura (escaladas por o.uv) y material de la parte (o.m: 'tablas', 'piedra', 'paja'; sin o.m, color liso)
+      const uv = new Float32Array(n * 2), uvA = g.attributes.uv, su = o.uv ? o.uv[0] : 1, sv = o.uv ? o.uv[1] : 1;
+      if (uvA) for (let i = 0; i < n; i++) { uv[i * 2] = uvA.getX(i) * su; uv[i * 2 + 1] = uvA.getY(i) * sv; }
       const k = 0.9 + azar() * 0.2, c = lin(color).multiplyScalar(k), ct = o.tapa ? lin(o.tapa) : c;
       for (let i = 0; i < n; i++) { const cc = o.tapa && Math.abs(nor.getY(i)) > 0.9 ? ct : c; col[i * 3] = cc.r; col[i * 3 + 1] = cc.g; col[i * 3 + 2] = cc.b; }
       const p = o.p || [0, 0, 0], s = o.s || [1, 1, 1];
       g.applyMatrix4(_m.compose(_p.set(p[0], p[1], p[2]), _q, _s.set(s[0], s[1], s[2])));
-      const r = { pos: g.attributes.position.array, nor: g.attributes.normal.array, col };
+      const r = { pos: g.attributes.position.array, nor: g.attributes.normal.array, col, uv, m: o.m || '' };
       g.dispose();
       return r;
     }
+    // T39: las partes se ordenan por material y cada material es un grupo de la geometría (el InstancedMesh lleva un material por
+    // grupo: una pieza con tablas y color liso son 2 llamadas de dibujo). Sin texturas, un solo grupo, como antes.
     function fundir(partes) {
+      const orden = MATS.filter(m => partes.some(p => p.m === m));
+      partes = orden.reduce((a, m) => a.concat(partes.filter(p => p.m === m)), []);
       let n = 0; for (const p of partes) n += p.pos.length;
-      const pos = new Float32Array(n), nor = new Float32Array(n), col = new Float32Array(n);
-      let o = 0; for (const p of partes) { pos.set(p.pos, o); nor.set(p.nor, o); col.set(p.col, o); o += p.pos.length; }
+      const pos = new Float32Array(n), nor = new Float32Array(n), col = new Float32Array(n), uv = new Float32Array(n / 3 * 2);
+      let o = 0; for (const p of partes) { pos.set(p.pos, o); nor.set(p.nor, o); col.set(p.col, o); uv.set(p.uv, o / 3 * 2); o += p.pos.length; }
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
       g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
       g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+      let v = 0;
+      for (const m of orden) { const c = partes.filter(p => p.m === m).reduce((k, p) => k + p.pos.length / 3, 0); g.addGroup(v, c, MATS.indexOf(m)); v += c; }
+      g.userData.mats = orden;
       g.computeBoundingSphere();
       return g;
     }
+    // Texturas del kit de edificios que ya está en el repo (assets/models/edificios/tex, 512 px): se cargan solo al usarlas
+    const MATS = ['', 'tablas', 'piedra', 'paja'];
+    const TEX = { tablas: 'kb3d_woodplanks', piedra: 'kb3d_wallm', paja: 'kb3d_roofthatched' };
     // Banderín: triángulo con sus dos caras (sin DoubleSide en el material compartido)
     function triangulo(an, al) {
       const g = new THREE.BufferGeometry(), a = an / 2;
@@ -235,16 +249,63 @@
         }
         return P;
       } },
+      // ---- T39 · Para armar una casita (de todos desde el principio): piezas de 2 m que encajan con imán (iman) y llevan las
+      // texturas del kit de edificios (tablas, piedra y paja). La pared y el muro miden 2 m a lo largo de su eje X.
+      // Piso de tablas: 2 × 2 m, un poco levantado sobre cuatro tacos
+      piso: { r: 1.0, sobre: false, iman: 'piso', hacer() {
+        const P = [parte(new C.BoxGeometry(2.0, 0.12, 2.0), '#e6d2b4', { p: [0, 0.16, 0], m: 'tablas', uv: [2, 2] }),
+          parte(new C.BoxGeometry(2.04, 0.06, 0.12), '#c9a77c', { p: [0, 0.2, 0.96], m: 'tablas', uv: [2, 0.12] }),
+          parte(new C.BoxGeometry(2.04, 0.06, 0.12), '#c9a77c', { p: [0, 0.2, -0.96], m: 'tablas', uv: [2, 0.12] })];
+        for (const [x, z] of [[0.85, 0.85], [-0.85, 0.85], [0.85, -0.85], [-0.85, -0.85]]) P.push(parte(new C.BoxGeometry(0.16, 0.14, 0.16), '#6b4a2b', { p: [x, 0.05, z] }));
+        return P;
+      } },
+      // Pared de tablas: dos horcones, tablas y una viga arriba
+      pared: { r: 1.0, sobre: true, iman: 'pared', hacer() {
+        const P = [parte(new C.BoxGeometry(1.84, 1.5, 0.08), '#ead7b8', { p: [0, 0.97, 0], m: 'tablas', uv: [1.8, 1.5] })];
+        for (const x of [-0.94, 0.94]) P.push(parte(new C.BoxGeometry(0.14, 1.9, 0.14), '#d2b48c', { p: [x, 0.95, 0], m: 'tablas', uv: [0.15, 1.8] }));
+        P.push(parte(new C.BoxGeometry(2.04, 0.12, 0.16), '#c9a77c', { p: [0, 1.86, 0], m: 'tablas', uv: [2, 0.12] }));
+        P.push(parte(new C.BoxGeometry(1.84, 0.08, 0.1), '#b08a5c', { p: [0, 0.26, 0], m: 'tablas', uv: [2, 0.1] }));
+        return P;
+      } },
+      // Muro de piedra: bloques de piedra con su remate
+      muro: { r: 1.0, sobre: true, iman: 'pared', hacer() {
+        return [parte(new C.BoxGeometry(2.0, 0.95, 0.34), '#f2ebe0', { p: [0, 0.48, 0], m: 'piedra', uv: [2, 1] }),
+          parte(new C.BoxGeometry(2.08, 0.12, 0.42), '#d9d0c2', { p: [0, 1.0, 0], m: 'piedra', uv: [2, 0.25] }),
+          parte(new C.DodecahedronGeometry(0.14), '#5f8a3a', { p: [0.6, 1.08, 0.05], s: [1.4, 0.35, 1] })];
+      } },
+      // Tejado de paja a dos aguas sobre cuatro horcones (va encima de un piso: encaja en su centro)
+      tejado: { r: 1.2, sobre: true, iman: 'tejado', hacer() {
+        const P = [];
+        for (const [x, z] of [[0.92, 0.92], [-0.92, 0.92], [0.92, -0.92], [-0.92, -0.92]]) P.push(parte(new C.CylinderGeometry(0.06, 0.075, 2.0, 7), '#6b4a2b', { p: [x, 1.0, z] }));
+        for (const sg of [-1, 1]) P.push(parte(new C.BoxGeometry(2.6, 0.12, 1.62), '#efe0b0', { p: [0, 2.32, sg * 0.66], r: [sg * 0.62, 0, 0], m: 'paja', uv: [2, 1.4] }));
+        P.push(parte(new C.CylinderGeometry(0.07, 0.07, 2.7, 7), '#6b4a2b', { p: [0, 2.82, 0], r: [0, 0, Math.PI / 2] }));
+        for (const x of [-0.92, 0.92]) P.push(parte(new C.BoxGeometry(0.08, 0.08, 2.0), '#5c3f24', { p: [x, 1.98, 0] }));
+        return P;
+      } },
+      // Maceta con heliconia (adorno): maceta de barro y las brácteas rojas y amarillas
+      maceta: { r: 0.35, sobre: false, hacer() {
+        const P = [parte(new C.CylinderGeometry(0.26, 0.19, 0.38, 12), '#b5562f', { p: [0, 0.19, 0] }),
+          parte(new C.CylinderGeometry(0.28, 0.28, 0.06, 12), '#c96a3d', { p: [0, 0.39, 0] }),
+          parte(new C.CylinderGeometry(0.23, 0.23, 0.02, 12), '#4a3220', { p: [0, 0.4, 0] })];
+        for (let i = 0; i < 5; i++) {
+          const a = i / 5 * Math.PI * 2, h = 0.75 + (i % 2) * 0.2;
+          P.push(parte(new C.ConeGeometry(0.11, h, 4), i % 2 ? '#3f8a35' : '#4f9a3c', { p: [Math.cos(a) * 0.08, 0.4 + h / 2, Math.sin(a) * 0.08], dir: [Math.cos(a) * 0.35, 1, Math.sin(a) * 0.35], s: [1, 1, 0.3] }));
+        }
+        for (let k = 0; k < 5; k++) P.push(parte(new C.ConeGeometry(0.06, 0.2, 4), k % 2 ? '#f4c430' : '#e2363b', { p: [0.04 * (k % 2 ? 1 : -1), 0.95 + k * 0.1, 0.02], r: [0, 0, (k % 2 ? 1 : -1) * 1.1] }));
+        return P;
+      } },
     };
     // BASE: las 7 de siempre, de todos desde el principio. EXTRA: las del Mercadito del río (pack.tienda.construir), solo cuando se compran.
     const BASE = ['nido', 'techo', 'bromelia', 'flores', 'piedra', 'tronco', 'banderines'];
+    const CASA = ['piso', 'pared', 'muro', 'tejado', 'maceta']; // T39: de todos desde el principio, detrás de las 7 de siempre
     const EXTRA = ['helecho', 'cerca', 'farol', 'comedero', 'domino', 'hamaca'];
-    const ORDEN = BASE.concat(EXTRA);
+    const ORDEN = BASE.concat(CASA, EXTRA);
     const NOMBRE = { nido: 'Nido de ramitas', techo: 'Techo de hojas', bromelia: 'Bromelia', flores: 'Flores', piedra: 'Piedras', tronco: 'Tronco', banderines: 'Banderines',
+      piso: 'Piso de tablas', pared: 'Pared de tablas', muro: 'Muro de piedra', tejado: 'Tejado de paja', maceta: 'Maceta con heliconia',
       helecho: 'Helecho', cerca: 'Cerca de bambú', farol: 'Farol', comedero: 'Comedero de aves', domino: 'Mesa de dominó', hamaca: 'Hamaca' };
     // Una pieza del Mercadito es tuya si está en S.tienda.compras (src/game/tienda.js la valida al cargar; aquí solo se lee)
     const compradas = () => { try { if (G.tienda && G.tienda.compradas) return G.tienda.compradas(); const t = S.tienda; return esObj(t) && Array.isArray(t.compras) ? t.compras : []; } catch (e) { return []; } };
-    const tiene = t => BASE.includes(t) || (EXTRA.includes(t) && compradas().includes(t));
+    const tiene = t => BASE.includes(t) || CASA.includes(t) || (EXTRA.includes(t) && compradas().includes(t));
     const disponibles = () => ORDEN.filter(tiene);
 
     // ---------- Datos: leer (tolerante) y guardar ----------
@@ -290,7 +351,21 @@
     }
 
     // ---------- Escena: un InstancedMesh por tipo (se crea solo si la bandera está encendida) ----------
-    let grupo = null, mat = null, fantasma = null, matF = null, anillo = null;
+    let grupo = null, mat = null, fantasma = null, matF = null, anillo = null, matsT = null;
+    const cargadas = {};
+    function texturaDe(t) {
+      if (!matsT || !geos[t]) return;
+      for (const k of geos[t].userData.mats) {
+        if (!k || cargadas[k]) continue;
+        cargadas[k] = true; const mt = matsT[MATS.indexOf(k)];
+        try {
+          new THREE.TextureLoader().load('assets/models/edificios/tex/' + TEX[k] + '.jpg', tx => {
+            tx.encoding = THREE.sRGBEncoding; tx.wrapS = tx.wrapT = THREE.RepeatWrapping; tx.anisotropy = 4;
+            if (matsT && matsT[MATS.indexOf(k)] === mt) { mt.map = tx; mt.needsUpdate = true; } else tx.dispose();
+          }, undefined, () => { /* sin textura: se queda el color */ });
+        } catch (e) { /* sin cargador */ }
+      }
+    }
     const mallas = {}, geos = {};
     function asegurarEscena() {
       if (grupo) return;
@@ -299,10 +374,12 @@
       // sus instancias, y el grupo se daba por «pequeño y lejos» (capa 31: invisible). Las piezas ya se limitan a 40 y van sin recorte.
       grupo.userData.sinCulling = true; grupo.frustumCulled = false;
       mat = new THREE.MeshLambertMaterial({ vertexColors: true });
+      // T39: un material por grupo (MATS); los de textura empiezan sin imagen y la cargan la primera vez que se ven (texturaDe)
+      matsT = MATS.map(k => (k ? new THREE.MeshLambertMaterial({ vertexColors: true }) : mat));
       for (const t of ORDEN) {
         semilla = 7 + ORDEN.indexOf(t) * 13;
         geos[t] = fundir(TIPOS[t].hacer());
-        const m = new THREE.InstancedMesh(geos[t], mat, CAPACIDAD);
+        const m = new THREE.InstancedMesh(geos[t], geos[t].userData.mats.some(Boolean) ? matsT : mat, CAPACIDAD);
         m.name = 'construir_' + t; m.count = 0; m.visible = false; m.frustumCulled = false; m.receiveShadow = true;
         mallas[t] = m; grupo.add(m);
       }
@@ -317,7 +394,9 @@
       G.renderer.scene.remove(grupo);
       for (const t of ORDEN) { geos[t].dispose(); delete geos[t]; delete mallas[t]; }
       anillo.geometry.dispose(); mat.dispose(); matF.dispose();
-      grupo = mat = matF = fantasma = anillo = null;
+      for (const m of matsT) if (m !== mat) { if (m.map) m.map.dispose(); m.dispose(); }
+      for (const k in cargadas) delete cargadas[k];
+      grupo = mat = matF = fantasma = anillo = matsT = null;
     }
     const _o = new THREE.Object3D();
     function pintar() {
@@ -330,7 +409,7 @@
         m.setMatrixAt(m.count++, _o.matrix);
       }
       const sombra = !bajo();
-      for (const t of ORDEN) { const m = mallas[t]; m.visible = m.count > 0; m.castShadow = sombra; m.instanceMatrix.needsUpdate = true; }
+      for (const t of ORDEN) { const m = mallas[t]; m.visible = m.count > 0; m.castShadow = sombra; m.instanceMatrix.needsUpdate = true; if (m.count) texturaDe(t); }
     }
     function aplicar(d) { lista = leer(d); historial.length = 0; rehacerPila.length = 0; if (habilitado()) { asegurarEscena(); pintar(); } return lista.length; }
     const HABITACIONES = {
@@ -377,7 +456,7 @@
     const historial = [], rehacerPila = [];
     const vista = { x: 0, z: 0, listo: false };
     const REJ = 1;
-    const est = { x: 0, z: 0, valido: false, motivo: '' };
+    const est = { x: 0, z: 0, r: 0, iman: false, valido: false, motivo: '' };
     const modo = { activo: () => activo, accion: () => colocar(), aviso: () => (est.valido ? 'Acción: colocar la pieza' : est.motivo), verbo: 'Colocar' };
     function validar(t, x, z) {
       const T = TIPOS[t];
@@ -394,6 +473,27 @@
       if (!T.sobre && lista.some(p => { const w = mundoDe(p); return !TIPOS[p.t].sobre && Math.hypot(x - w.x, z - w.z) < (T.r + TIPOS[p.t].r) * 0.6; })) return 'Muy cerca de otra pieza';
       return '';
     }
+    // T39 · Encaje con imán: cerca (≤ IMAN m) de un sitio donde la pieza encaja, el fantasma salta ahí, toma el giro que toca y se
+    // pone dorado. Piso con piso (al lado), pared o muro en el borde de un piso, en la punta de otra pared o en su esquina, y el
+    // tejado en el centro de un piso. Todo en metros del mundo (en un interior, mundoDe suma su origen).
+    const IMAN = 1.0;
+    const ejeX = r => ({ x: Math.cos(r * PASO), z: -Math.sin(r * PASO) }), ejeZ = r => ({ x: Math.sin(r * PASO), z: Math.cos(r * PASO) });
+    function imanes(t) {
+      const fam = TIPOS[t] && TIPOS[t].iman, out = []; if (!fam) return out;
+      const add = (w, dx, dz, r) => out.push({ x: w.x + dx, z: w.z + dz, r: ((r % 8) + 8) % 8 });
+      for (const p of lista) {
+        const f = TIPOS[p.t].iman; if (!f) continue;
+        const w = mundoDe(p), X = ejeX(p.r), Z = ejeZ(p.r);
+        if (fam === 'piso' && f === 'piso') for (const k of [-2, 2]) { add(w, X.x * k, X.z * k, p.r); add(w, Z.x * k, Z.z * k, p.r); }
+        else if (fam === 'pared' && f === 'piso') for (const k of [-1, 1]) { add(w, X.x * k, X.z * k, p.r + 2); add(w, Z.x * k, Z.z * k, p.r); }
+        else if (fam === 'pared' && f === 'pared') {
+          for (const k of [-2, 2]) add(w, X.x * k, X.z * k, p.r);
+          for (const a of [-1, 1]) for (const b of [-1, 1]) add(w, X.x * a + Z.x * b, X.z * a + Z.z * b, p.r + 2);
+        } else if (fam === 'tejado' && f === 'piso') add(w, 0, 0, p.r);
+      }
+      // sin repetir lo que ya está puesto (misma pieza en el mismo sitio)
+      return out.filter(c => !lista.some(p => { const w = mundoDe(p); return TIPOS[p.t].iman === fam && Math.hypot(w.x - c.x, w.z - c.z) < 0.3; }));
+    }
     function crudo() {
       const f = S.facing || { x: 0, z: 1 }, fl = Math.hypot(f.x, f.z) || 1;
       return { x: S.pos.x + f.x / fl * DIST, z: S.pos.z + f.z / fl * DIST };
@@ -407,19 +507,23 @@
         vista.x += (tx - vista.x) * 0.5; vista.z += (tz - vista.z) * 0.5;
         est.x = vista.x; est.z = vista.z;
       } else { vista.listo = false; est.x = c.x; est.z = c.z; }
+      const antes = est.iman; est.iman = false; est.r = giro;
+      let bd = IMAN; for (const k of imanes(tipo)) { const d = Math.hypot(k.x - est.x, k.z - est.z); if (d < bd) { bd = d; est.x = k.x; est.z = k.z; est.r = k.r; est.iman = true; } }
+      if (est.iman && !antes) sonar('tick');
       est.motivo = validar(tipo, est.x, est.z); est.valido = !est.motivo;
       fantasma.geometry = geos[tipo];
-      fantasma.position.set(est.x, ctx ? ctx.piso : H(est.x, est.z), est.z); fantasma.rotation.set(0, giro * PASO, 0);
+      fantasma.position.set(est.x, ctx ? ctx.piso : H(est.x, est.z), est.z); fantasma.rotation.set(0, est.r * PASO, 0);
       anillo.scale.setScalar(TIPOS[tipo].r);
-      matF.color.copy(lin(est.valido ? '#7fd38f' : '#d6403a'));
+      matF.color.copy(lin(!est.valido ? '#d6403a' : est.iman ? '#ffd27a' : '#7fd38f')); // dorado: encaja con imán
+      texturaDe(tipo);
     }
     function colocar() {
       if (!activo) return false;
       actualizar();
-      const x = rejilla ? Math.round(crudo().x / REJ) * REJ : est.x, z = rejilla ? Math.round(crudo().z / REJ) * REJ : est.z;
+      const x = rejilla && !est.iman ? Math.round(crudo().x / REJ) * REJ : est.x, z = rejilla && !est.iman ? Math.round(crudo().z / REJ) * REJ : est.z, rg = est.iman ? est.r : giro;
       const motivo = validar(tipo, x, z);
       if (motivo) { aviso(motivo); sonar('wrong'); return false; }
-      const p = ctx ? { t: tipo, x: r2(x - (ctx.ox || 0)), z: r2(z - (ctx.oz || 0)), r: giro } : { t: tipo, x, z, r: giro };
+      const p = ctx ? { t: tipo, x: r2(x - (ctx.ox || 0)), z: r2(z - (ctx.oz || 0)), r: rg } : { t: tipo, x, z, r: rg };
       lista.push(p); anotar({ op: '+', p });
       pintar(); guardar(); pintarHud();
       const w = mundoDe(p);
@@ -558,6 +662,12 @@
       flores: '<path d="M10 28V16M22 28V13M16 28V19" stroke="#3f7d2c" stroke-width="2"/><circle cx="10" cy="14" r="4.5" fill="#e2363b"/><circle cx="22" cy="11" r="4.5" fill="#f4c430"/><circle cx="16" cy="18" r="4" fill="#f07fb0"/><circle cx="10" cy="14" r="1.6" fill="#ffe08a"/><circle cx="22" cy="11" r="1.6" fill="#fff3c4"/>',
       piedra: '<path d="M3 26q1-9 9-10 7 0 9 10z" fill="#8d8f88"/><path d="M17 26q1-7 7-7 6 1 6 7z" fill="#7c7f78"/><path d="M7 18q4-3 8-1" stroke="#5f8a3a" stroke-width="2.4" fill="none" stroke-linecap="round"/>',
       tronco: '<rect x="3" y="14" width="24" height="10" rx="5" fill="#6b4a2b"/><ellipse cx="27" cy="19" rx="3.5" ry="5" fill="#d9b27a"/><path d="M12 14l-2-5" stroke="#5c3f24" stroke-width="2.4" stroke-linecap="round"/>',
+      // T39
+      piso: '<path d="M2 20l14-7 14 7-14 7z" fill="#c9a77c"/><path d="M6 18l14 7M10 16l14 7M14 14l14 7" stroke="#8a6236" stroke-width="1.2"/><path d="M2 20v3l14 7 14-7v-3" fill="none" stroke="#6b4a2b" stroke-width="2"/>',
+      pared: '<rect x="5" y="8" width="22" height="18" fill="#d9bc8f"/><path d="M5 13h22M5 18h22M5 23h22" stroke="#8a6236" stroke-width="1.2"/><path d="M5 5v24M27 5v24" stroke="#6b4a2b" stroke-width="3"/><path d="M3 6h26" stroke="#8a6236" stroke-width="2.6"/>',
+      muro: '<path d="M3 14h26v14H3z" fill="#cfc4b2"/><path d="M3 21h26M10 14v7M20 14v7M6 21v7M15 21v7M24 21v7" stroke="#8d8577" stroke-width="1.4"/><path d="M2 12h28v3H2z" fill="#b5ab9b"/>',
+      tejado: '<path d="M2 16L16 5l14 11z" fill="#d9c48a"/><path d="M6 13l3 3M12 9l3 4M18 9l2 4M24 12l2 3" stroke="#a88e4f" stroke-width="1.4"/><path d="M7 16v13M25 16v13" stroke="#6b4a2b" stroke-width="2.4"/><path d="M2 16h28" stroke="#8a6236" stroke-width="1.6"/>',
+      maceta: '<path d="M9 19h14l-2 10H11z" fill="#b5562f"/><path d="M8 18h16v2H8z" fill="#c96a3d"/><path d="M16 18V6M16 18l-6-9M16 18l6-10" stroke="#3f8a35" stroke-width="2.4" stroke-linecap="round"/><path d="M14 8l4-2-1 4zM10 12l3-1v3zM19 11l3 1-2 2z" fill="#e2363b"/>',
       helecho: '<path d="M16 28C12 20 6 16 2 15M16 28c4-8 10-12 14-13M16 28C14 18 10 10 7 5M16 28c2-10 6-18 9-23M16 28V6" stroke="#4f9a3c" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M6 14l2 3M9 9l2 3M22 9l-2 3M26 14l-2 3M14 12l2 2M18 16l-2 2" stroke="#6fbf52" stroke-width="2" stroke-linecap="round"/>',
       cerca: '<path d="M5 28V8M11 28V5M17 28V8M23 28V5M29 28V8" stroke="#c9b25a" stroke-width="3.4" stroke-linecap="round"/><path d="M2 14h29M2 22h29" stroke="#a08c3a" stroke-width="2.2" stroke-linecap="round"/><path d="M3.6 17h3M9.6 12h3M15.6 17h3M21.6 12h3M27.6 17h3" stroke="#8f7a30" stroke-width="1.4"/>',
       farol: '<path d="M9 29V5h9" stroke="#3b332c" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M5 29h8" stroke="#3b332c" stroke-width="3" stroke-linecap="round"/><path d="M18 5v3" stroke="#3b332c" stroke-width="1.6"/><path d="M14 9h8l-1 2H15z" fill="#2a2420"/><rect x="15" y="11" width="6" height="8" rx="1.5" fill="#ffd27a"/><circle cx="18" cy="15" r="2" fill="#fff1b8"/><path d="M14.5 19h7l-1 2h-5z" fill="#2a2420"/>',
@@ -735,7 +845,7 @@
         // 2. Encendida a la fuerza (solo la prueba): escena, entradas y modo
         forzar(true);
         S.construir = null; aplicar(null);
-        check('Encendida: 7 piezas de siempre y 6 del Mercadito, un InstancedMesh por tipo (solo se dibujan los que tienen piezas)', BASE.length === 7 && EXTRA.length === 6 && ORDEN.every(t => mallas[t] && mallas[t].isInstancedMesh) && grupo.children.filter(o => o.isInstancedMesh).length === ORDEN.length && ORDEN.every(t => !mallas[t].visible));
+        check('Encendida: 7 piezas de siempre, 5 de la casita (T39) y 6 del Mercadito, un InstancedMesh por tipo (solo se dibujan los que tienen piezas)', BASE.length === 7 && CASA.length === 5 && EXTRA.length === 6 && ORDEN.every(t => mallas[t] && mallas[t].isInstancedMesh) && grupo.children.filter(o => o.isInstancedMesh).length === ORDEN.length && ORDEN.every(t => !mallas[t].visible));
         check('Encendida: botón del HUD y tarjeta del menú', !!$('b-construir') && !!$('b-construir-menu'));
         {
           const cl = document.body.classList, tenia = cl.contains('duelo-on');
@@ -840,10 +950,12 @@
         check('La foto del rincón es un PNG local y no deja un enlace para subirlo', typeof urlFoto === 'string' && urlFoto.indexOf('data:image/png') === 0 && urlFoto.length > 200 && !document.querySelector('a[download="rincon-vittata.png"]'), urlFoto ? urlFoto.slice(0, 22) + '… ' + urlFoto.length : 'sin foto');
         // 3b. Piezas del Mercadito del río: sin comprarlas no salen en la barra ni se eligen; compradas, sí (teclas 1–9 en el orden de la barra)
         S.tienda = { v: 1, conchitas: 0, ganadas: 0, compras: [] }; refrescar();
-        check('Sin comprarla, el farol no está en la barra ni se puede elegir', !hudEl.querySelector('[data-cl-tipo="farol"]') && !elegir('farol') && tipo !== 'farol' && disponibles().length === 7);
+        const nLibres = BASE.length + CASA.length;
+        check('Sin comprarla, el farol no está en la barra ni se puede elegir', !hudEl.querySelector('[data-cl-tipo="farol"]') && !elegir('farol') && tipo !== 'farol' && disponibles().length === nLibres);
         S.tienda = { v: 1, conchitas: 0, ganadas: 40, compras: ['farol'] }; refrescar();
         dispatchEvent(new KeyboardEvent('keydown', { key: '8', bubbles: true }));
-        check('Comprado, el farol sale en la barra (8.ª pieza) y la tecla 8 lo elige', !!hudEl.querySelector('[data-cl-tipo="farol"]') && disponibles().length === 8 && tipo === 'farol', tipo);
+        const t8 = tipo; hudEl.querySelector('[data-cl-tipo="farol"]').click();
+        check('Comprado, el farol sale en la barra (detrás de las libres), se elige tocándolo y la tecla 8 es la 8.ª de la barra (el piso)', !!hudEl.querySelector('[data-cl-tipo="farol"]') && disponibles().length === nLibres + 1 && t8 === disponibles()[7] && tipo === 'farol', t8 + ' → ' + tipo);
         S.facing = { x: -S.facing.x, z: -S.facing.z }; actualizar();
         check('El farol comprado se coloca como las demás (su propio InstancedMesh)', colocar() && lista.length === 3 && lista[2].t === 'farol' && mallas.farol.count === 1 && mallas.farol.visible, est.motivo);
         deshacer(); S.facing = { x: -S.facing.x, z: -S.facing.z };
@@ -859,6 +971,39 @@
         const malos = ['basura', 42, [], { v: 2, piezas: [{ t: 'nido', x: 0, z: 0 }] }, { v: 1 }, { v: 1, piezas: 'x' }];
         check('Un guardado dañado o de otra versión se lee vacío', malos.every(m => aplicar(m) === 0));
         check('Las piezas raras se descartan y las buenas quedan', aplicar({ v: 1, piezas: [{ t: 'nave', x: 1, z: 1 }, { t: 'nido', x: NaN, z: 0 }, null, { t: 'flores', x: 1, z: 2, r: 99 }, { t: 'piedra', x: '3', z: 1 }] }) === 1 && lista[0].r === 0);
+        // T39 · la casita: texturas por grupo y encaje con imán (piso con piso, pared en el borde, tejado en el centro)
+        {
+          aplicar(null); empezar(); giro = 0; rejilla = false;
+          const pIni = { x: S.pos.x, z: S.pos.z }, f0 = S.facing;
+          // un sitio libre cerca (sin agua ni sólidos donde van los dos pisos y la pared)
+          let p0 = pIni;
+          for (let k = 0; k < 24; k++) {
+            const q = { x: pIni.x + (k % 6) * 6 - 15, z: pIni.z + Math.floor(k / 6) * 6 - 9 };
+            if ([0, 2].every(d => !validar('piso', q.x + 3 + d, q.z)) && !validar('pared', q.x + 3, q.z + 1)) { p0 = q; break; }
+          }
+          S.pos.x = p0.x; S.pos.z = p0.z;
+          S.facing = { x: 1, z: 0 }; elegir('piso'); actualizar();
+          const c0 = { x: est.x, z: est.z }, motivo0 = est.motivo, puso = colocar();
+          S.pos.x = p0.x + 2.35; elegir('piso'); actualizar();
+          const imanPiso = { iman: est.iman, dx: +(est.x - c0.x).toFixed(3), dz: +(est.z - c0.z).toFixed(3), r: est.r, dorado: matF.color.equals(lin('#ffd27a')) };
+          const puso2 = colocar();
+          S.pos.x = p0.x + 0.3; S.pos.z = p0.z + 0.75; elegir('pared'); actualizar();
+          const imanPared = { iman: est.iman, dx: +(est.x - c0.x).toFixed(3), dz: +(est.z - c0.z).toFixed(3), r: est.r };
+          const puso3 = colocar();
+          S.pos.x = p0.x + 0.3; S.pos.z = p0.z + 0.2; elegir('tejado'); actualizar();
+          const imanTejado = { iman: est.iman, dx: +(est.x - c0.x).toFixed(3), dz: +(est.z - c0.z).toFixed(3) };
+          S.pos.x = p0.x - 4; S.pos.z = p0.z; elegir('pared'); actualizar(); const sinIman = !est.iman && est.r === giro;
+          check('T39 · imán: un piso encaja al lado de otro (2 m), la pared en su borde y el tejado en su centro; lejos, sin imán',
+            puso && puso2 && puso3 && imanPiso.iman && Math.abs(imanPiso.dx - 2) < 1e-3 && Math.abs(imanPiso.dz) < 1e-3 && imanPiso.dorado &&
+            imanPared.iman && Math.abs(imanPared.dx) < 1e-3 && Math.abs(imanPared.dz - 1) < 1e-3 && imanPared.r === 0 && imanTejado.iman && Math.abs(imanTejado.dx) < 1e-3 && Math.abs(imanTejado.dz) < 1e-3 && sinIman,
+            JSON.stringify({ puso, motivo0, puso2, puso3, imanPiso, imanPared, imanTejado, sinIman, motivo: est.motivo }));
+          const g = geos.pared, gp = geos.piso, ms = mallas.piso.material;
+          check('T39 · las piezas de la casita llevan texturas del kit (tablas, piedra, paja), un grupo por material, y se piden al usarlas',
+            Array.isArray(ms) && gp.groups.length === 2 && g.groups.length === 1 && geos.muro.userData.mats.includes('piedra') && geos.tejado.userData.mats.includes('paja') && !!cargadas.tablas &&
+            CASA.every(t => geos[t].attributes.uv && Array.from(geos[t].attributes.position.array).every(Number.isFinite)) && !Array.isArray(mallas.nido.material),
+            JSON.stringify({ piso: gp.groups.length, pared: g.groups.length, cargadas }));
+          salir(); S.pos.x = pIni.x; S.pos.z = pIni.z; S.facing = f0; aplicar(null);
+        }
         // 5. Presupuesto
         const muchas = { v: 1, piezas: Array.from({ length: CAPACIDAD + 12 }, (_, i) => ({ t: ORDEN[i % 7], x: S.pos.x + 200 + i, z: S.pos.z + 200, r: i % 8 })) };
         check(`Nunca más de ${CAPACIDAD} piezas (capacidad de las mallas)`, aplicar(muchas) === CAPACIDAD && ORDEN.reduce((s, t) => s + mallas[t].count, 0) === CAPACIDAD);
