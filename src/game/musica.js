@@ -1043,11 +1043,11 @@
         const sr = 22050, c = new C(2, sr * 4, sr), sal = c.createGain(); sal.connect(c.destination);
         const bufs = {};
         for (const b of BUCLES) { try { const ab = await fetch(A.ficha(b.n).url).then(r => r.arrayBuffer()); bufs[b.n] = await new Promise((res, rej) => { const p = c.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(rej); }); } catch (e) { /* lo dice el check */ } }
-        const activos = {}, arch = { buffer: n => bufs[n] || null, activo: (n, on) => { activos[n] = on; } };
+        const activos = {}, arch = { buffer: n => bufs[n] || null, activo: (n, on) => { activos[n] = on; } }, otro = { buffer: arch.buffer };
         const am = crearAmbiente(c, sal, 'completo', arch), dia = calcularAmbiente({ hora: 12, rio: 0.8, lluvia: true });
         am.aplicar(dia, 0, 1); const sust = am.sustituye(), sonando = am.archivos.slice();
-        const simple = crearAmbiente(c, c.createGain(), 'simple', arch); simple.aplicar(dia, 0, 1);
-        const noche = crearAmbiente(c, c.createGain(), 'completo', arch); noche.aplicar(calcularAmbiente({ hora: 23 }), 0, 1);
+        const simple = crearAmbiente(c, c.createGain(), 'simple', otro); simple.aplicar(dia, 0, 1);
+        const noche = crearAmbiente(c, c.createGain(), 'completo', otro); noche.aplicar(calcularAmbiente({ hora: 23 }), 0, 1);
         const buf = await c.startRendering(), a = analizar(buf, 1.5);
         check('T45: de día con lluvia junto al río suenan bosque, lluvia y río en archivo y quitan su capa sintética (sin doblar)',
           ['bosque_yunque', 'lluvia', 'rio'].every(n => sonando.includes(n) && activos[n]) && !sonando.includes('noche_coquis') && sust.lluvia === 0 && sust.rio === 0 && sust.eventos.includes('aves'), sonando.join() + ' ' + JSON.stringify(sust));

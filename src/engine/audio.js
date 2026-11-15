@@ -222,7 +222,12 @@ AVE.module('audio', function (G) {
     vol, ensure, apply, log: [],
     get ctx() { return ctx; }, get master() { return master; }, // para src/game/musica.js, que cuelga su música y su ambiente del mismo master (ctx es null hasta el primer gesto)
     alSonar(fn) { if (typeof fn === 'function') oyentes.push(fn); },
-    define(name, fn) { SOUNDS[name] = (t, arg) => fn(t, arg, A); },
+    // Un ambiente en bucle no se pisa: lo que un pack define con su nombre (la lluvia de la crecida de cap1) pasa a ser su respaldo
+    define(name, fn) {
+      const m = MUESTRAS[name];
+      if (m && m.bucle) { SOUNDS[name + '_sint'] = (t, arg) => fn(t, arg, A); m.respaldo = name + '_sint'; return; }
+      SOUNDS[name] = (t, arg) => fn(t, arg, A);
+    },
     sample(name, o) { MUESTRAS[name] = Object.assign({ gain: 1 }, o); SOUNDS[name] = (t, arg) => muestra(name, t, arg); cargar(name); },
     listo: name => !!bufs[name], // la muestra ya está decodificada (para pruebas)
     // T45: efectos en archivo. precargar(lista) al entrar en un modo; buffer(n) devuelve la muestra decodificada o null (y la pide);
@@ -275,9 +280,10 @@ AVE.module('audio', function (G) {
     // Devuelve true si sonó; el registro sirve para probar sin altavoces
     play(name, arg) {
       if (!SOUNDS[name]) return false;
+      nPlays++; // también los que el tope de abajo calla: el botón que pidió su sonido no se dobla con «boton»
       const now = performance.now();
       if (name === 'tick' && now - lastAt < 250) return false; // el aviso no tapa otro sonido
-      lastAt = now; nPlays++; api.log.push(name); if (api.log.length > 40) api.log.shift();
+      lastAt = now; api.log.push(name); if (api.log.length > 40) api.log.shift();
       for (const f of oyentes) { try { f(name, arg); } catch (e) { /* un oyente no frena el sonido */ } }
       if (!ctx || ctx.state !== 'running' || vol.muted) return false;
       salida = api.esSuave(name) ? suaveBus : sfxBus;
