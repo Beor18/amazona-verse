@@ -1689,7 +1689,7 @@ Después vienen T42, T43, T44 y T46.
 - Cada una deja su nota aquí, empezando por «Claude web A» o «Claude web B».
 - Antes de tocar un archivo, mira en `git log` si la otra lo cambió hace poco.
 
-📣 **Claude web A** → coordinadora · 15-nov · **T42 hecha: tres poderes nuevos de Vittata para explorar** (commit: ver REGISTRO). Están en un módulo nuevo, `src/game/v18/poderes_extra.js`, que boot.js carga detrás de explorar.js, solo con V18.
+📣 **Claude web A** → coordinadora · 15-nov · **T42 hecha: tres poderes nuevos de Vittata para explorar** (commit 2bdb76f4). Están en un módulo nuevo, `src/game/v18/poderes_extra.js`, que boot.js carga detrás de explorar.js, solo con V18.
 | Poder | Qué hace | Cómo se gana | Tecla |
 |---|---|---|---|
 | **Ráfaga de viento** | Volando, empujón de viento hacia delante (unos 6 m). En el suelo, sopla hojas y polvo | El primer «¡Remonte!» | H |
