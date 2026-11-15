@@ -16,7 +16,7 @@
     };
     const listo = () => L('Listo', 'Ready');
     const CASA_D = 2.5;
-    const RECORTE_QH = ['casa', 'piloto', 'duelo', 'duelo2'];
+    const RECORTE_QH = ['casa', 'piloto']; // T38: los duelos vuelven (Kelvin, 15-nov)
     function irModo(modo) {
       cerrar();
       const pausa = $('pause');
@@ -140,7 +140,7 @@
         // T3: con el recorte, ni la casa, ni la escuela, ni los duelos
         G.menuRecorte = true; abrir();
         const conR = [...dlg.querySelectorAll('[data-qh]')].map(el => el.dataset.qh);
-        ok('T3 · con el recorte no salen la casa, la escuela de vuelo ni los duelos', RECORTE_QH.every(id => !conR.includes(id)) && conR.includes('tuerca') && conR.includes('taller'), conR.join(','));
+        ok('T3 · con el recorte no salen la casa ni la escuela de vuelo (T38: los duelos, sí)', RECORTE_QH.every(id => !conR.includes(id)) && conR.includes('tuerca') && conR.includes('taller'), conR.join(','));
         G.menuRecorte = false; // lo de abajo prueba el panel completo (?menu=completo)
         abrir();
         ok('El panel se abre desde la portada y desde la pausa', !!($('b-que-hacer') && $('b-que-hacer-title') && dlg.open));

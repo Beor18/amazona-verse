@@ -135,7 +135,7 @@
         + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-mas-juegos]{order:4}';
       document.head.appendChild(st);
     }
-    const FUERA = ['duelo', 'duelo2'], MAS = ['river', 'tormenta', 'banquete'];
+    const FUERA = [], MAS = ['river', 'tormenta', 'banquete']; // T38: el Duelo y el Duelo de 2 vuelven a la portada (Kelvin, 15-nov)
     const seVe = m => seVe0(m) && !(RECORTE() && FUERA.includes(m));
     let masAbierto = false;
     function masJuegos() {
@@ -648,13 +648,13 @@
         const primero = form.querySelector('button');
         check('La primera tarjeta es Aventura y es submit del form method=dialog', primero && primero.dataset.modo === 'aventura' && primero.type === 'submit' && form.method === 'dialog');
         check('Nido, récords, Mis cotorras, Álbum y Retos con amigos no cierran la portada (type=button)', ENCIMA.every(m => form.querySelector(`[data-modo="${m}"]`).type === 'button'));
-        check('Las tarjetas de la V18 se ven con la bandera encendida y se ocultan sin ella', ['golf', 'amigos', 'cotorras'].concat(RECORTE() ? [] : ['duelo']).every(m => form.querySelector(`[data-modo="${m}"]`).hidden === !G.V18));
+        check('Las tarjetas de la V18 se ven con la bandera encendida y se ocultan sin ella', ['golf', 'amigos', 'cotorras', 'duelo'].every(m => form.querySelector(`[data-modo="${m}"]`).hidden === !G.V18));
         // T3 · recorte del menú (bandera G.menuRecorte; ?menu=completo lo quita)
         {
           const rec0 = G.menuRecorte, vis = m => { const b = form.querySelector(`[data-modo="${m}"]`); return !!b && seVeT(b) && getComputedStyle(b).display !== 'none'; };
           G.menuRecorte = true; masAbierto = false; mostrar();
           const bMas = form.querySelector('[data-mas-juegos]');
-          check('T3 · sin Duelo ni Duelo de 2 en la portada, y River Rush, Tormenta y Banquete dentro de «Más juegos»', !vis('duelo') && !vis('duelo2') && MAS.every(m => !vis(m)) && !!bMas && seVeT(bMas) && vis('aventura') && vis('golf'), ['duelo', 'duelo2'].concat(MAS).map(m => m + ':' + vis(m)).join(' '));
+          check('T3/T38 · el Duelo (y, con teclado, el Duelo de 2) en la portada, y River Rush, Tormenta y Banquete dentro de «Más juegos»', vis('duelo') === !!G.V18 && vis('duelo2') === seVe0('duelo2') && MAS.every(m => !vis(m)) && !!bMas && seVeT(bMas) && vis('aventura') && vis('golf'), ['duelo', 'duelo2'].concat(MAS).map(m => m + ':' + vis(m)).join(' '));
           bMas.click();
           const aVista = [...form.querySelector('.modos-grid').children].filter(el => getComputedStyle(el).display !== 'none');
           check('T3 · «Más juegos» enseña solo sus tres juegos y «Volver»', masAbierto && MAS.every(vis) && !vis('aventura') && /Volver|Back/.test(bMas.textContent) && aVista.length === 4, aVista.map(el => el.dataset.modo || el.textContent.trim().slice(0, 12)).join(','));

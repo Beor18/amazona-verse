@@ -36,6 +36,7 @@ window.AVV18Combate = function (G) {
   if (G.v18combate) return G.v18combate;
   const H = G.v18hab, S = G.S, F = G.fisica, M = F.MOVE, R = G.renderer, scene = R.scene;
   const ALTURA = h => G.terreno.height(h.x, h.z);
+  const LENTES = 'lentes:#7fd3ff'; // clave del premio (content/cap1/coleccionables.js, ropa con hito 'duelo')
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches); // QA-163: sin tecla G en táctil
   const ARENA_R = 12, SALIDA_R = 24, PLUMAS = 5;
   // La Campeona según la etapa del jugador. pensar: segundos entre decisiones; esquiva y escudo: probabilidad de reaccionar a
@@ -89,6 +90,10 @@ window.AVV18Combate = function (G) {
     pCercaT: '¡Cerca! Aletazo (Acción)', pLejosT: 'Lejos: semilla (Impulso)', pPoderT: '¡Poder listo! (mantén Impulso)',
     dGolpe: '¡Te dieron! Muévete de lado para esquivar.', dEscudo: '¡Te dieron! Para cubrirte, usa tu poder (G):', dEscudoT: '¡Te dieron! Para cubrirte, mantén Impulso:',
     accion: 'Acción', impulso: 'Impulso', tagPoder: 'mantén: poder',
+    // T38: en táctil, 4 botones (Ala, Pata, Semilla, Poder) y un entreno de 4 pasos con ellos
+    tA1: 'Acércate a la Campeona y toca Ala.', tA2: 'Ahora toca Semilla: la lanza de lejos.', tA3: 'Toca Poder para usar tu poder:', tA4: 'Combo: toca Ala dos veces seguidas.',
+    kAla: 'Ala', kSemilla: 'Semilla', kPoder: 'Poder', kAla2: 'Ala ×2',
+    pCercaP: '¡Cerca! Toca Ala', pLejosP: 'Lejos: toca Semilla', pPoderP: '¡Poder listo! Toca Poder', dEscudoP: '¡Te dieron! Para cubrirte, toca Poder:', tPoderP: 'Consejo: toca Poder:',
     // V18.1 §9 («entiende por qué ganó»): al terminar, una línea que explica el resultado y, si pierdes, qué probar
     porGana: 'Le quitaste todas sus plumas.', porGanaPoder: 'Le quitaste todas sus plumas y tu poder ayudó:',
     tPoder: 'Consejo: usa tu poder (G):', tPoderT: 'Consejo: usa tu poder (mantén Impulso):',
@@ -601,7 +606,7 @@ window.AVV18Combate = function (G) {
     if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
     if (G.dones && G.dones.sostener === sostenerDuelo) G.dones.sostener = sostener0;
     removeEventListener('keydown', tecla, true); sost = 0; soltarJugador(); devolverCamara();
-    document.body.classList.remove('v18-duelo-on'); document.body.classList.remove('v18-ext-on');
+    document.body.classList.remove('v18-duelo-on'); document.body.classList.remove('v18-ext-on'); document.body.classList.remove('v18-duelo-fin-t');
   }
 
   // ---------- HUD ----------
@@ -636,6 +641,20 @@ window.AVV18Combate = function (G) {
       '#v18-duelo.tactil .vd-en{margin-top:3px}#v18-duelo.tactil .vd-centro{font-size:32px;margin-top:2px}' +
       '#v18-duelo.tactil .vd-fin{padding:8px;margin-top:4px}#v18-duelo.tactil .vd-fin p{font-size:15px;margin-bottom:6px}' +
       'body.v18-duelo-on #toast{z-index:41}' +
+      // T38 (Natanael: «la rival no se ve»): en táctil los paneles se quedan en una franja baja (nombre, plumas y energía) y
+      // los botones Cómo/Salir en fila: la Campeona queda a la vista entre los paneles y Vittata. El entreno, compacto.
+      '#v18-duelo.tactil .vd-pod,#v18-duelo.tactil .vd-nv,#v18-duelo.tactil .vd-xp{display:none!important}' +
+      '#v18-duelo.tactil .vd-nom{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '#v18-duelo.tactil .vd-lado.r{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;column-gap:6px}#v18-duelo.tactil .vd-lado.r>div{flex-basis:100%}' +
+      '#v18-duelo.tactil .vd-lado.r button.vd-como{margin:5px 0 0;min-height:56px;padding:2px 10px}' +
+      // «¿Cómo se pelea?» solo con su icono (lleva aria-label) y «Combos» fuera: con Salir caben en una fila
+      '#v18-duelo.tactil .vd-lado.r button[data-a="como"]{font-size:0;gap:0;min-width:44px;justify-content:center;--icon-size:22px}#v18-duelo.tactil .vd-lado.r button.vd-combos-b{display:none!important}' +
+      // Al terminar, en táctil, el panel ya tiene «Otra vez» y «Salir»: fuera los botones grandes y el aviso repetidos
+      'body.v18-duelo-fin-t :is(#acts,#prompt,#v18-duelo-tags){visibility:hidden!important}' +
+      // y el aviso (#toast) baja, encima del 2×2: arriba tapaba a la Campeona al empezar
+      '@media (max-width:560px){body.v18-ext-on #toast{top:auto!important;bottom:calc(env(safe-area-inset-bottom,0px) + 214px)!important;margin-bottom:0!important}}' +
+      '#v18-duelo.tactil .vd-ent{padding:6px 10px;margin-top:6px}#v18-duelo.tactil .vd-ent-cuerpo{margin:4px 0}#v18-duelo.tactil .vd-ent-txt{font-size:15px}' +
+      '#v18-duelo.tactil .vd-ent button{min-height:44px;padding:2px 14px}' +
       // V18.2: nivel y XP del jugador, botón de la alianza (≥ 56 px en táctil, dentro del panel: no tapa Diario ni botones grandes)
       '#v18-duelo .vd-nv{font-size:11px;opacity:.9;margin-top:1px}#v18-duelo .vd-xp{height:3px;border-radius:2px;background:#0006;overflow:hidden;margin:2px 0 1px}' +
       '#v18-duelo .vd-xp b{display:block;height:100%;background:#ffd27a;width:0}#v18-duelo button.vd-ali{display:block;width:100%;margin-top:5px;padding:4px 8px;font-size:14px;background:#ffe39a}' +
@@ -645,7 +664,7 @@ window.AVV18Combate = function (G) {
       '#v18-duelo .vd-finxp{font-size:15px!important;color:#ffe39a}#v18-duelo .vd-finxp:empty{display:none}' +
       '#v18-duelo .vd-fintip{font-size:14px!important;opacity:.92;margin:.2em 0 .5em}#v18-duelo .vd-fintip b:empty{display:none}' +
       // Cómo se pelea (8-nov): chips de acción (icono + tecla + recarga), entreno guiado, pistas y etiquetas táctiles
-      '#v18-duelo [data-icon="semilla"]{--icon:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M12 2c4 3 6 7 6 11a6 6 0 0 1-12 0c0-4 2-8 6-11z\'/%3E%3C/svg%3E")}' +
+      ':is(#v18-duelo,#v18-duelo-ext) [data-icon="semilla"]{--icon:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M12 2c4 3 6 7 6 11a6 6 0 0 1-12 0c0-4 2-8 6-11z\'/%3E%3C/svg%3E")}' +
       '#v18-duelo button.vd-chip{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:6px;padding:6px 10px 6px 12px;--icon-size:20px;transition:box-shadow .15s,opacity .15s,transform .15s}' +
       '#v18-duelo .vd-chip kbd{font:700 14px/1 Fredoka,system-ui,sans-serif;min-width:24px;padding:4px 6px;border-radius:7px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center}' +
       '#v18-duelo .vd-chip .vd-cdv{position:absolute;left:0;right:0;bottom:0;height:var(--cd,0%);background:rgba(40,30,20,.45);pointer-events:none}' +
@@ -680,7 +699,7 @@ window.AVV18Combate = function (G) {
     // Chip de acción: icono + nombre + tecla; .vd-cdv es la recarga (alto = lo que falta) y .listo lo ilumina
     const chip = (a, ico, n, k) => `<button class="vd-chip" data-a="${a}" data-icon="${ico}" type="button"${a === 'alianza' ? ' hidden' : ''}><span data-k="cn-${a}">${n}</span><kbd>${k}</kbd><i class="vd-cdv"></i></button>`;
     el.innerHTML = `<div class="vd-fila"><div class="vd-lado j"><div class="vd-nom">${TXT.tu}</div><div class="vd-pod" data-k="pj"></div><div class="vd-nv" data-k="nv" hidden><span data-k="nvN"></span> · <span data-k="nvE"></span></div><div class="vd-xp" data-k="xp" hidden><b></b></div><div class="vd-pl" data-k="plj">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-j"><b></b></div><button class="vd-ali" data-a="alianza" type="button" hidden></button></div>` +
-      `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div><button class="vd-como" data-a="como" data-k="como" type="button" data-icon="question">${TXT.como}</button><button class="vd-como vd-salir-b" data-a="salirDuelo" data-k="salirB" type="button" data-icon="close" hidden>${TXT.salir}</button></div></div>` +
+      `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div><button class="vd-como" data-a="como" data-k="como" type="button" data-icon="question" aria-label="${TXT.como}">${TXT.como}</button><button class="vd-como vd-salir-b" data-a="salirDuelo" data-k="salirB" type="button" data-icon="close" hidden>${TXT.salir}</button></div></div>` +
       `<div class="vd-centro" data-k="centro"></div><div class="vd-apoyo" data-k="apoyo" hidden><img src="assets/retratos/v18/arausiaca.png" alt=""><span>${TXT.apoyo}</span></div>` +
       `<div class="vd-pista" data-k="pista" hidden><span data-k="pistaTxt"></span> <b data-k="pistaPod"></b></div>` +
       `<div class="vd-ent" data-k="ent" hidden><div class="vd-ent-cab"><span data-k="entPaso"></span><span class="vd-ent-pp" data-k="entPP"><i></i><i></i><i></i></span></div>` +
@@ -783,7 +802,14 @@ window.AVV18Combate = function (G) {
   const ENT_COMBO = [
     { id: 'combo:abanicazo', k: () => teclaExt('alaIzq').toUpperCase() + ' → ' + teclaExt('alaDer').toUpperCase(), kt: 'Ala izq. → Ala der.', txt: TXT.e4, txtT: TXT.t4, nom: '¡Abanicazo!' },
     { id: 'combo:patita', k: () => teclaExt('pataIzq').toUpperCase() + ' → ' + teclaExt('pataDer').toUpperCase(), kt: 'Pata izq. → Pata der.', txt: TXT.e5, txtT: TXT.t5, nom: '¡Patita Sabrosa!' }];
-  const pasosEnt = () => (c2On() ? ENT_PASOS.concat(ENT_COMBO) : ENT_PASOS);
+  // T38 (Natanael: «el entreno no pasa del paso 1»): en táctil, con los 4 botones, 4 pasos cortos que se ven en el botón
+  const ENT_PAD = [
+    { id: 'golpe_ala', k: 'E', kt: TXT.kAla, txt: TXT.e1, txtT: TXT.tA1 },
+    { id: 'semilla', k: 'F', kt: TXT.kSemilla, txt: TXT.e2, txtT: TXT.tA2 },
+    { id: 'poder', k: 'G', kt: TXT.kPoder, txt: TXT.e3, txtT: TXT.tA3 },
+    { id: 'combo:abanicazo', k: 'E', kt: TXT.kAla2, txt: TXT.e4, txtT: TXT.tA4, nom: '¡Abanicazo!' }];
+  const padOn = () => TACTIL && c2On();
+  const pasosEnt = () => (padOn() ? ENT_PAD : c2On() ? ENT_PASOS.concat(ENT_COMBO) : ENT_PASOS);
   let ent = null; // { paso, fin } mientras dura el entreno
   const PISTA = { cerca: 2, lejos: 4, poder: 8, defensa: 16 }; // bits de G.v18.mundo('pistas_duelo'): pista ya dominada
   const pista = { t: 0, vis: 0, plj: 0, golpeado: false, dom: { cerca: 0, lejos: 0, poder: 0 } };
@@ -842,26 +868,29 @@ window.AVV18Combate = function (G) {
       if (!(m & PISTA.defensa)) {
         dominar(PISTA.defensa);
         const def = DEFENSAS.has(C.j.poder);
-        mostrarPista(def ? (TACTIL ? TXT.dEscudoT : TXT.dEscudo) : TXT.dGolpe, def ? nombrePoder() : ''); pista.vis = 3.2; pista.t = 4.5;
+        mostrarPista(def ? (padOn() ? TXT.dEscudoP : TACTIL ? TXT.dEscudoT : TXT.dEscudo) : TXT.dGolpe, def ? nombrePoder() : ''); pista.vis = 3.2; pista.t = 4.5;
       }
     }
     pista.plj = C.j.plumas;
     if ((pista.t -= dt) > 0) return;
     const d = Math.hypot(S.pos.x - C.r.pos.x, S.pos.z - C.r.pos.z);
     let t = null;
-    if (!(m & PISTA.poder) && C.j.energia >= C.j.energiaMax - 0.5 && H.listo(C.j, C.j.poder).ok) t = TACTIL ? TXT.pPoderT : TXT.pPoder;
-    else if (!(m & PISTA.cerca) && d <= ALA_R() && H.listo(C.j, 'golpe_ala').ok) t = TACTIL ? TXT.pCercaT : TXT.pCerca;
-    else if (!(m & PISTA.lejos) && d > 5.5 && H.listo(C.j, 'semilla').ok) t = TACTIL ? TXT.pLejosT : TXT.pLejos;
+    const P2 = padOn();
+    if (!(m & PISTA.poder) && C.j.energia >= C.j.energiaMax - 0.5 && H.listo(C.j, C.j.poder).ok) t = P2 ? TXT.pPoderP : TACTIL ? TXT.pPoderT : TXT.pPoder;
+    else if (!(m & PISTA.cerca) && d <= ALA_R() && H.listo(C.j, 'golpe_ala').ok) t = P2 ? TXT.pCercaP : TACTIL ? TXT.pCercaT : TXT.pCerca;
+    else if (!(m & PISTA.lejos) && d > 5.5 && H.listo(C.j, 'semilla').ok) t = P2 ? TXT.pLejosP : TACTIL ? TXT.pLejosT : TXT.pLejos;
     if (t) { mostrarPista(t, ''); pista.t = 4.5; } else pista.t = 0.3;
   }
 
   // ---------- Ciclo del duelo ----------
-  function colocar() {
-    const yJ = ALTURA({ x: sitio.x - 5, z: sitio.z });
-    S.pos.x = sitio.x - 5; S.pos.z = sitio.z; S.pos.y = yJ + 0.05; S.vy = 0; M.vx = M.vz = 0; M.dashT = 0;
+  // T38 (Natanael: «la rival no se ve»): a 10 m la Campeona salía diminuta en el teléfono, detrás de los paneles. Empiezan a
+  // 7 m (en el entreno, a 2,1 m y algo de lado: el primer aletazo ya llega y la Campeona no queda detrás de Vittata).
+  function colocar(cerca) {
+    const D = cerca ? 1.5 : 3.5, yJ = ALTURA({ x: sitio.x - D, z: sitio.z });
+    S.pos.x = sitio.x - D; S.pos.z = sitio.z; S.pos.y = yJ + 0.05; S.vy = 0; M.vx = M.vz = 0; M.dashT = 0;
     if (M.flying && F.endFlight) { try { F.endFlight(); } catch (e) { /* ya en el suelo */ } }
-    S.facing = { x: 1, z: 0 };
-    rivalPos.x = sitio.x + 5; rivalPos.z = sitio.z; rivalPos.y = ALTURA(rivalPos);
+    rivalPos.x = cerca ? sitio.x + 0.2 : sitio.x + D; rivalPos.z = cerca ? sitio.z - 1.3 : sitio.z; rivalPos.y = ALTURA(rivalPos);
+    { const dx = rivalPos.x - S.pos.x, dz = rivalPos.z - S.pos.z, n = Math.hypot(dx, dz) || 1; S.facing = { x: dx / n, z: dz / n }; }
     if (G.camara) { G.camara.yaw = Math.atan2(-1, 0); if (G.camara.place) try { G.camara.place(true); } catch (e) { /* cámara */ } }
   }
   function iniciar(o) {
@@ -872,6 +901,7 @@ window.AVV18Combate = function (G) {
     C.j = nuevoJugador(o); const ch = C.ch; C.r = nuevoRival(o.dificultad || dificultadDe(C.j)); C.ch = ch; C.tLucha = 0;
     C.j.ultPoder = null; C.r.ultPoder = null; // Imitación: duelo nuevo, nada que copiar todavía
     if (C.ch && C.chEsp !== C.r.especie) { try { C.ch.applyLook({ species: C.r.especie, accessories: { eyes: { id: 'gafas', color: '#7fd3ff' } } }); C.chEsp = C.r.especie; } catch (e) { /* piel */ } }
+    document.body.classList.remove('v18-duelo-fin-t');
     C.timers.length = 0; C.resultado = null; C.premio = false; C.sinExtIA = !!o.sinExtIA; cartaC = false; comboVis = 0; if (hud && hud.ext) hud.ext.nom.hidden = true;
     C.stats = nuevasStats();
     const conEntreno = !!o.entreno || (!o.sinCuenta && !o.sinEntreno && !espForzada && !entrenoVisto()); // el primer duelo empieza con el entreno
@@ -879,7 +909,7 @@ window.AVV18Combate = function (G) {
     // du2: con partida nueva desde el menú el duelo empezaba antes de que el sitio definitivo (QA-174) se aplicara y se peleaba
     // entre los árboles del sitio provisional; si está pendiente, se aplica antes de colocar a las dos
     if (recolocar && C.fase === 'nada' && !retirada && enCap1() && !(G.v18duelo2 && G.v18duelo2.estado().fase !== 'nada')) moverSitio();
-    colocar();
+    colocar(conEntreno);
     montarHud(); hud.el.hidden = false; hud.q('fin').hidden = true; hud.q('bot').hidden = false; hud.q('finXp').textContent = ''; hud.q('apoyo').hidden = true; apoyoT = 0;
     enganchar(); ocultarPista();
     if (conEntreno) { C.fase = 'lucha'; ent = { paso: 0, fin: 0 }; flotante(''); }
@@ -888,9 +918,16 @@ window.AVV18Combate = function (G) {
     pintarEntreno(); pintar();
     return true;
   }
+  // T38: premio de juego al ganar (sin dinero ni compras): los Lentes de la Campeona, una vez por partida (misiones.grant
+  // los estrena, los deja en Mi personaje y lo dice). También los da el Duelo de 2 (duelo2.js).
+  function premioRopa() {
+    if (!G.misiones || !G.misiones.grant || !Array.isArray(S.unlocked) || S.unlocked.includes(LENTES)) return false;
+    try { return G.misiones.grant('duelo').length > 0; } catch (e) { return false; }
+  }
   function terminar(res) {
     if (C.fase !== 'lucha') return;
     C.fase = 'fin'; C.resultado = res; C.finT = performance.now(); quitarBalas(); C.timers.length = 0;
+    if (TACTIL) document.body.classList.add('v18-duelo-fin-t');
     const gano = res === 'win';
     // Antes del evento: la XP de esta victoria no cambia la etapa con la que se ganó
     if (gano) sumarEtapa();
@@ -906,6 +943,7 @@ window.AVV18Combate = function (G) {
       // el aviso dice para qué sirven: el puente (frente B), si todavía está roto; la guía al puente la pone ciclo.js
       const puenteListo = !!(G.v18 && G.v18.mundo && G.v18.mundo('puente_villa') === 'reparado');
       txt = nueva ? (puenteListo ? TXT.ganaGuarda : TXT.gana) : TXT.ganaOtra; C.premio = nueva;
+      premioRopa();
       sonar('unlock'); fx('gold', C.r.pos.x, C.r.pos.y + 1.2, C.r.pos.z);
     } else { txt = TXT.pierde; C.premio = false; sonar('wrong'); }
     if (G.ui && G.ui.toast) G.ui.toast(txt, 3200);
@@ -917,7 +955,7 @@ window.AVV18Combate = function (G) {
   function consejo(gano, st, quitadas) {
     const usoPoder = !!(st && st.poderJ > 0);
     if (gano) return usoPoder ? { id: 'porGanaPoder', txt: TXT.porGanaPoder, pod: nombrePoder() } : { id: 'porGana', txt: TXT.porGana, pod: '' };
-    if (!usoPoder) return { id: 'tPoder', txt: TACTIL ? TXT.tPoderT : TXT.tPoder, pod: nombrePoder() };
+    if (!usoPoder) return { id: 'tPoder', txt: padOn() ? TXT.tPoderP : TACTIL ? TXT.tPoderT : TXT.tPoder, pod: nombrePoder() };
     if ((quitadas || 0) <= 1) return { id: 'tCerca', txt: TXT.tCerca, pod: '' };
     return { id: 'tEsquiva', txt: TXT.tEsquiva, pod: '' };
   }
@@ -1903,6 +1941,23 @@ window.AVV18Combate = function (G) {
     e.className = 'vd-combo c-' + cb.id + (f.ia ? ' rival' : ''); e.hidden = false; void e.offsetWidth; e.classList.add('sale');
     e.dataset.id = cb.id; comboVis = 1.3; // se va con el tiempo de juego (paso); al salir o reiniciar, también
   }
+  const PAD_K = ['ala', 'pata', 'semilla', 'poder'], PAD_ICO = { ala: 'wing', pata: 'paw', semilla: 'semilla', poder: 'bolt' };
+  const PAD_TXT = { ala: 'Ala', pata: 'Pata', semilla: 'Semilla', poder: 'Poder' };
+  // Qué ala o pata toca: la de enfrente de la última si va seguida (combo), si no la izquierda
+  function ladoPad(tipo) {
+    const X = C.j && C.j.ext, vivo = X && X.cad.length && (C.tLucha || 0) - X.ultT <= ventanaCombo();
+    const ult = X && X.buf && EXT[X.buf] ? X.buf : vivo ? X.cad[X.cad.length - 1] : '';
+    if (!ult || (tipo === 'ala' && EXT[ult].tipo === 'pata')) return tipo + 'Izq';
+    return tipo + (EXT[ult].lado > 0 ? 'Der' : 'Izq');
+  }
+  function usarPad(a) {
+    if (!C.j || C.fase !== 'lucha') return { ok: false, motivo: 'fase' };
+    if (a === 'ala' || a === 'pata') return c2On() ? usarExtJ(ladoPad(a)) : a === 'ala' ? usar(C.j, 'golpe_ala') : { ok: false };
+    const id = a === 'poder' ? C.j.poder : 'semilla', r = usar(C.j, id);
+    // Tras un combo se recupera un momento: el toque no se pierde, sale en cuanto puede (como el ala y la pata en cola)
+    if (!r.ok && r.motivo === 'recupera' && C.j.ext) { const f = C.j; C.timers.push({ t: C.j.ext.rec + 0.02, fn: () => { if (C.j === f) usar(f, id); } }); return { ok: true, cola: true }; }
+    pintar(); return r;
+  }
   function usarExtJ(k) {
     if (C.fase !== 'lucha' || !C.j || combosAbierta()) return { ok: false, motivo: 'fase' };
     const r = EXM.usar(C.j, k); pintarExt(); return r;
@@ -1914,7 +1969,7 @@ window.AVV18Combate = function (G) {
   let cartaC = false;
   const combosAbierta = () => cartaC;
   function secHtml(c) {
-    const k = a => `<kbd class="vd-k-${EXT[a].tipo}${EXT[a].lado < 0 ? ' der' : ''}">${TACTIL ? EXT[a].corto : teclaExt(a).toUpperCase() + ' · ' + EXT[a].corto}</kbd>`;
+    const k = a => `<kbd class="vd-k-${EXT[a].tipo}${EXT[a].lado < 0 ? ' der' : ''}">${TACTIL ? PAD_TXT[EXT[a].tipo] : teclaExt(a).toUpperCase() + ' · ' + EXT[a].corto}</kbd>`;
     return c.sec ? c.sec[0].map(k).join('<i>→</i>') : `<kbd class="vd-k-combo">${TXT.unCombo}</kbd><i>→</i><kbd class="vd-k-poder">${TXT.tuPoder}</kbd>`;
   }
   // Estilos del HUD de extremidades y combos (también los usa el nombre del combo del duelo de 2: #v18-duelo2)
@@ -1945,7 +2000,13 @@ window.AVV18Combate = function (G) {
       // Con el 2×2 a la vista, fuera Gestos y Construir de la columna derecha (en un duelo no sirven y quedaban debajo); el
       // aviso (#toast) pasa por debajo de los botones (siempre se ven y se pueden tocar)
       'body.v18-ext-on #b-emotes,body.v18-ext-on #b-construir{visibility:hidden}' +
-      '#v18-duelo-ext button.pata{background:rgba(110,55,10,.85)}#v18-duelo-ext button::before{background:#fff}#v18-duelo-ext button:active,#v18-duelo-ext button.pulsa{transform:translateY(2px);box-shadow:0 1px 0 #0b2a17;background:#2e8b3e}#v18-duelo-ext button.cd{opacity:.65}';
+      '#v18-duelo-ext button.pata{background:rgba(110,55,10,.85)}#v18-duelo-ext button::before{background:#fff}#v18-duelo-ext button:active,#v18-duelo-ext button.pulsa{transform:translateY(2px);box-shadow:0 1px 0 #0b2a17;background:#2e8b3e}#v18-duelo-ext button.cd{opacity:.65}' +
+      // T38: 4 botones grandes (Ala, Pata, Semilla, Poder) donde estaban Acción, Impulso, Saltar y Volar, que se ocultan
+      '#v18-duelo-ext{grid-template-columns:repeat(2,76px);grid-template-rows:repeat(2,76px);gap:10px}#v18-duelo-ext button{width:76px;height:76px;border-radius:24px;font-size:15px;--icon-size:30px}' +
+      '#v18-duelo-ext button.semilla{background:rgba(150,105,10,.88)}#v18-duelo-ext button.poder{background:rgba(110,40,140,.88)}' +
+      '#v18-duelo-ext button.poder.listo{box-shadow:0 0 0 4px #ffe39a,0 0 18px #ffd27a;animation:vdListo 1.2s ease-in-out infinite}@keyframes vdListo{50%{transform:scale(1.06)}}' +
+      '@media (prefers-reduced-motion: reduce){#v18-duelo-ext button.poder.listo{animation:none}}' +
+      'body.v18-ext-on #acts,body.v18-ext-on #v18-duelo-tags{visibility:hidden!important}';
     document.head.appendChild(st);
   }
   function hudExt() {
@@ -1965,12 +2026,15 @@ window.AVV18Combate = function (G) {
     const carta = document.createElement('div'); carta.className = 'vd-cc'; carta.dataset.k = 'cc'; carta.hidden = true; carta.setAttribute('role', 'dialog'); carta.setAttribute('aria-label', TXT.combos);
     el.appendChild(carta);
     carta.addEventListener('change', e => { if (e.target && e.target.dataset.a === 'sinPrisa') ponerSinPrisa(e.target.checked); });
+    // T38 (Natanael: «botones claros»; había de 7 a 9 botones de ataque): en táctil, solo 4 y en lugar de los grandes
+    // (Acción, Impulso, Saltar y Volar se ocultan mientras se ven): Ala, Pata, Semilla y Poder. Ala y Pata eligen solas el
+    // lado (ladoPad): dos toques de Ala son ¡Abanicazo!, dos de Pata ¡Patita Sabrosa! y Ala + Pata ¡Cruzaíto!
     const pad = document.createElement('div'); pad.id = 'v18-duelo-ext'; pad.hidden = true;
-    pad.innerHTML = EXT_K.map(a => `<button type="button" data-x="${a}" class="${EXT[a].tipo}${EXT[a].lado < 0 ? ' der' : ''}" data-icon="${EXT[a].tipo === 'ala' ? 'wing' : 'paw'}" aria-label="${EXT[a].nombre}">${EXT[a].corto}</button>`).join('');
+    pad.innerHTML = PAD_K.map(a => `<button type="button" data-x="${a}" class="${a}" data-icon="${PAD_ICO[a]}" aria-label="${PAD_TXT[a]}"><span>${PAD_TXT[a]}</span></button>`).join('');
     pad.addEventListener('pointerdown', e => {
       const b = e.target.closest && e.target.closest('button[data-x]'); if (!b) return;
       e.preventDefault(); e.stopPropagation(); b.classList.add('pulsa'); setTimeout(() => b.classList.remove('pulsa'), 120);
-      usarExtJ(b.dataset.x);
+      usarPad(b.dataset.x);
     });
     const viejo = document.getElementById('v18-duelo-ext'); if (viejo) viejo.remove();
     document.body.appendChild(pad);
@@ -1983,7 +2047,8 @@ window.AVV18Combate = function (G) {
     const X = hudExt(); if (!X) return false;
     cartaC = !!on && c2On() && C.fase !== 'nada';
     if (cartaC) {
-      X.carta.innerHTML = `<h3>${TXT.combos}</h3><ul>${COMBOS.map(c => `<li class="c-${c.id}"><b>${c.nombre}</b><span>${secHtml(c)}</span><small>${c.como}</small></li>`).join('')}</ul>` +
+      // T38: en táctil, Ala y Pata eligen el lado solas: salen los combos que se hacen con ellas (Revolú y Brinco Coquí, no)
+      X.carta.innerHTML = `<h3>${TXT.combos}</h3><ul>${COMBOS.filter(c => !TACTIL || !c.sec || c.sec[0].length === 2).map(c => `<li class="c-${c.id}"><b>${c.nombre}</b><span>${secHtml(c)}</span><small>${c.como}</small></li>`).join('')}</ul>` +
         `<label><input type="checkbox" data-a="sinPrisa"${sinPrisa() ? ' checked' : ''}> ${TXT.sinPrisa}</label><button type="button" data-a="cerrarCombos">${TXT.aPelear}</button>`;
     }
     X.carta.hidden = !cartaC; return cartaC;
@@ -1992,7 +2057,7 @@ window.AVV18Combate = function (G) {
   function pintarExt() {
     if (!hud || !hud.ext) { if (hud && c2On() && C.fase !== 'nada') hudExt(); if (!hud || !hud.ext) return; }
     const X = hud.ext, on = c2On() && !hud.el.hidden && (C.fase === 'lucha' || C.fase === 'cuenta');
-    X.grupo.hidden = !on || TACTIL; X.combosB.hidden = !on || !!ent; X.gear.hidden = !on || !TACTIL || !G.botones;
+    X.grupo.hidden = !on || TACTIL; X.combosB.hidden = !on || !!ent; X.gear.hidden = true; // T38: «Botones» sigue en la pausa (panel más bajo)
     if (!on && cartaC) abrirCombos(false);
     const verPad = on && TACTIL && !cartaC; X.pad.hidden = !verPad; document.body.classList.toggle('v18-ext-on', verPad);
     if (!on) { if (comboVis > 0) { comboVis = 0; X.nom.hidden = true; } return; }
@@ -2003,11 +2068,14 @@ window.AVV18Combate = function (G) {
       if (b._pct !== pct) { b._pct = pct; b.style.setProperty('--cd', pct + '%'); b.classList.toggle('cd', pct > 0); }
     }
     if (verPad) {
-      for (const b of X.pad.children) { const a = b.dataset.x, c = !!(E && (E.rec > 0 || (E.cd[a] || 0) > 0)); if (b._cd !== c) { b._cd = c; b.classList.toggle('cd', c); } }
+      for (const b of X.pad.children) {
+        const a = b.dataset.x, id = a === 'poder' ? f.poder : a, l = a === 'semilla' || a === 'poder' ? H.listo(f, id) : null;
+        const c = a === 'ala' || a === 'pata' ? !!(E && E.rec > 0) : !l.ok, brilla = a === 'poder' && l.ok;
+        if (b._cd !== c) { b._cd = c; b.classList.toggle('cd', c); } if (b._br !== brilla) { b._br = brilla; b.classList.toggle('listo', brilla); }
+      }
       const acts = document.getElementById('acts'), r = acts && acts.getBoundingClientRect();
       if (r && r.width > 0) {
-        const tag = hud.tags && hud.tags.querySelector('[data-t="b-dash"]'), tr = tag && !tag.hidden ? tag.getBoundingClientRect() : null;
-        const s = sitioPad(r, tr && tr.height ? tr.top : r.top, innerWidth, X.pad.offsetWidth || 124, X.pad.offsetHeight || 124);
+        const s = sitioPad(r, r.top, innerWidth, X.pad.offsetWidth || 160, X.pad.offsetHeight || 160);
         X.pad.style.left = s.left + 'px'; X.pad.style.top = s.top + 'px';
       }
     }
@@ -2015,15 +2083,18 @@ window.AVV18Combate = function (G) {
   // Dónde va el 2×2: encima de los botones grandes (#acts) y de la etiqueta de Impulso, pegado al borde de fuera (a la
   // derecha; en modo zurdo, a la izquierda), sin salirse de la pantalla. r: caja de #acts; arriba: lo más alto de lo que hay
   // encima (etiqueta de Impulso o el propio #acts); w, h: tamaño del 2×2.
+  // T38: el 2×2 va en el sitio de los botones grandes (ocultos mientras se ve), con su borde de abajo en el de #acts
   function sitioPad(r, arriba, vw, w, h) {
     const zurdo = r.left + r.width / 2 < vw / 2;
     const left = zurdo ? Math.max(8, r.left) : Math.min(vw - 8 - w, r.right - w);
-    return { left: Math.round(left), top: Math.round(Math.max(8, Math.min(r.top, arriba) - 12 - h)), zurdo };
+    return { left: Math.round(left), top: Math.round(Math.max(8, r.bottom - h)), zurdo };
   }
   // Entreno (con la bandera): después del poder, dos combos (¡Abanicazo! y ¡Patita Sabrosa!)
   function alUsarExt(k, r) {
     if (!ent || ent.fin > 0) return;
-    const P = pasosEnt()[ent.paso]; if (!P || P.id.indexOf('combo:') !== 0) return;
+    const P = pasosEnt()[ent.paso]; if (!P) return;
+    if (P.id === 'golpe_ala' && EXT[k] && EXT[k].tipo === 'ala' && !r.combo) { if (r.acierto) avanzarEntreno(); else flotante(TXT.masCerca, 1); return; }
+    if (P.id.indexOf('combo:') !== 0) return;
     if (r.combo === P.id.slice(6)) avanzarEntreno();
   }
   const vidaApi = { antes: vida, huesos: vidaHuesos, andar, andarAplicar, andarHuesos, AND, ESTADOS: VIDA_EST, VEL: VIDA_VEL, c2: C2,
@@ -2624,7 +2695,7 @@ window.AVV18Combate = function (G) {
           const r = C.r, ch = C.ch, p0 = AND.paso, v3 = new THREE.Vector3(), prev = [null, null], hs = [[], []], filas = [];
           AND.paso = cad; S.pos.x = sitio.x - 6; S.pos.z = sitio.z;
           try {
-            r.pos.x = sitio.x - 4; r.pos.z = sitio.z + 3; r.yaw = lado ? 0 : Math.PI / 2; pasoQ(0.1); for (let i = 0; i < 30; i++) pasoQ(1 / 60);
+            r.pos.x = sitio.x - 4; r.pos.z = sitio.z + 3; r.pos.y = ALTURA(r.pos); r.mov.t = 0; r.kb.t = 0; r.saltoDur = 0; if (r.lift) r.lift.dura = 0; r.yaw = lado ? 0 : Math.PI / 2; pasoQ(0.1); // T38: en el suelo y sin movimiento ni empujón de un duelo anterior (el entreno la deja con mov.t) for (let i = 0; i < 30; i++) pasoQ(1 / 60);
             for (let i = 0; i < 150; i++) {
               r.pos.x += vel / 60; r.yaw = lado ? 0 : Math.PI / 2; pasoQ(1 / 60);
               ch.feet.forEach((f, k) => { f.eff.getWorldPosition(v3); const h = v3.y - G.terreno.height(v3.x, v3.z); if (prev[k] && i > 40) filas.push({ k, h, h0: prev[k].h, d: Math.hypot(v3.x - prev[k].x, v3.z - prev[k].z) * 60 }); hs[k].push(h); prev[k] = { x: v3.x, z: v3.z, h }; });
@@ -2769,6 +2840,7 @@ window.AVV18Combate = function (G) {
       // 7. Victoria: 2 maderas y 1 piedra del inventario del juego, una sola vez
       P.borrar(); const m0 = S.inv.madera || 0, p0 = S.inv.piedra || 0;
       iniciar({ sinCuenta: true, especie: 'vittata' }); C.r.plumas = 1; quieta(1.2); C.r.escudo = 0; evs.length = 0; toasts.length = 0;
+      const ropa0 = { u: (S.unlocked || []).slice(), w: JSON.stringify(S.wear || {}) }; S.unlocked = (S.unlocked || []).filter(k => k !== LENTES);
       const qa162 = { n: 0, inm: 0 }, save0 = G.guardado && G.guardado.save;
       if (save0) G.guardado.save = function (f) { qa162.n++; if (f === true) qa162.inm++; return save0.apply(this, arguments); };
       usar(C.j, 'golpe_ala');
@@ -2777,6 +2849,8 @@ window.AVV18Combate = function (G) {
       check('Sin plumas, la rival se marea: victoria con 2 maderas y 1 piedra', C.fase === 'fin' && C.resultado === 'win' && S.inv.madera === m0 + 2 && S.inv.piedra === p0 + 1 &&
         evs.some(e => e.tipo === 'win') && toasts.includes(TXT.gana) && C.r.finMareo > 0 && P.cuantos('pluma_rival') === 0,
         JSON.stringify({ fase: C.fase, m: S.inv.madera - m0, p: S.inv.piedra - p0, t: toasts }));
+      { const u = S.unlocked.slice(), w = S.wear && S.wear.eyes;
+        check('T38 · premio de juego: al ganar, los Lentes de la Campeona (ropa que ya existe; se estrenan y quedan en Mi personaje)', u.includes(LENTES) && !!w && w.id === 'lentes' && w.color === '#7fd3ff' && !!(G.misiones.unlocks || []).find(x => x.clave === LENTES && x.hito === 'duelo'), JSON.stringify({ w, u })); }
       check('QA-162: ganar el duelo guarda la partida al momento (save inmediato, no autosave)', !save0 || (qa162.n >= 1 && qa162.inm >= 1), JSON.stringify(qa162));
       check('Al terminar, Acción dice «Otra vez»', modo.verbo === TXT.otra && !hud.q('fin').hidden);
       modo.accion();
@@ -2797,6 +2871,7 @@ window.AVV18Combate = function (G) {
       P.recargar();
       check('Tras recargar, la victoria sigue marcada como pagada', !P.otorgar('combate_1', 'victoria_duelo', 1));
       check('Tras recargar, los duelos por etapa siguen guardados como números', P.mundo('duelos_ganados_e0') === 2);
+      S.unlocked = ropa0.u; S.wear = JSON.parse(ropa0.w); if (G.actores && G.actores.applyWear) G.actores.applyWear(); // T38: la ropa como estaba
       // 8. Derrota: mareo divertido, sin recompensa
       P.borrar(); const m1 = S.inv.madera;
       iniciar({ sinCuenta: true, especie: 'vittata' }); C.j.plumas = 1; C.r.pos.x = S.pos.x + 1.2; C.r.pos.z = S.pos.z; C.r.golpeT = 0; C.r.pensar = 0; C.r.mareo = 0; C.r.poderT = 99; evs.length = 0;
@@ -2839,11 +2914,13 @@ window.AVV18Combate = function (G) {
           check('QA-163: en táctil el aviso del duelo nombra los botones (o calla si las etiquetas de Acción e Impulso ya lo dicen) y no pide la tecla G',
             avisoT === (tagsT ? '' : TXT.avisoTactil) && avisoT !== TXT.aviso && !/\bG\b/.test(avisoT), JSON.stringify({ avisoT, tagsT }));
           combT.iniciar({ entreno: true, especie: 'vittata' });
-          const kT = document.querySelector('#v18-duelo [data-k="entK"]'), tagA = document.querySelector('#v18-duelo-tags [data-t="b-act"]'), tagD = document.querySelector('#v18-duelo-tags [data-t="b-dash"]');
-          const comoT = document.querySelector('#v18-duelo [data-a="como"]');
-          check('Táctil: el entreno nombra los botones (Acción, Impulso), Acción e Impulso llevan etiqueta Ala / Semilla y «¿Cómo se pelea?» mide ≥ 56 px',
-            kT && kT.textContent === TXT.accion && tagA && tagA.textContent === TXT.ala && tagD && tagD.textContent.indexOf(TXT.semilla) === 0 && comoT && parseFloat(getComputedStyle(comoT).minHeight) >= 56,
-            JSON.stringify({ k: kT && kT.textContent, a: tagA && tagA.textContent, d: tagD && tagD.textContent, mh: comoT && getComputedStyle(comoT).minHeight }));
+          const kT = document.querySelector('#v18-duelo [data-k="entK"]'), tT = document.querySelector('#v18-duelo [data-k="entTxt"]'), pp = document.querySelector('#v18-duelo [data-k="entPP"]');
+          const comoT = document.querySelector('#v18-duelo [data-a="como"]'), padT = [...document.querySelectorAll('#v18-duelo-ext button')].map(b => b.textContent.trim());
+          // T38: con Combate 2.0, 4 botones (Ala, Pata, Semilla, Poder) y un entreno de 4 pasos que los nombra
+          const c2T = G.combate2 != null ? !!G.combate2 : !/[?&]combate2=0\b/.test(location.search);
+          check('Táctil (T38): el entreno nombra el botón que toca (Ala…), son 4 pasos con el 2×2 Ala/Pata/Semilla/Poder y «¿Cómo se pelea?» mide ≥ 56 px',
+            !c2T || (kT && kT.textContent === TXT.kAla && tT && tT.textContent === TXT.tA1 && pp && pp.children.length === 4 && padT.join(',') === 'Ala,Pata,Semilla,Poder' && comoT && parseFloat(getComputedStyle(comoT).minHeight) >= 56),
+            JSON.stringify({ k: kT && kT.textContent, t: tT && tT.textContent, pasos: pp && pp.children.length, pad: padT, mh: comoT && getComputedStyle(comoT).minHeight }));
         } catch (e) { check('QA-163: en táctil el aviso del duelo nombra los botones y no pide la tecla G', false, e && e.message); }
         try { if (combT) combT.salir(); } catch (e) { /* ya fuera */ }
         window.matchMedia = mm;
@@ -3048,8 +3125,11 @@ window.AVV18Combate = function (G) {
         const sp = sitioPad(acts, tagTop, 390, w, h), z = sitioPad(Object.assign({}, acts, { left: 20, right: 202 }), tagTop, 390, w, h);
         const dentro = q => q.left >= 8 && q.left + w <= 382 && q.top >= 8 && q.top + h <= 844;
         const choca = (q, r) => !(q.left + w <= r.left || q.left >= r.right || q.top + h <= r.top || q.top >= r.bottom);
-        const ok = parseFloat(cs.width) >= 56 && parseFloat(cs.height) >= 56 && dentro(sp) && dentro(z) && !choca(sp, { left: acts.left, right: acts.right, top: tagTop, bottom: acts.bottom }) && !choca(z, { left: 20, right: 202, top: tagTop, bottom: acts.bottom }) && !sp.zurdo && z.zurdo && sp.top > 66 + 140;
-        check('C2 · táctil (390 × 844): el 2×2 de alas y patas cabe, mide ≥ 56 px y va encima de los botones grandes sin taparlos (también en modo zurdo)', ok, JSON.stringify({ boton: [cs.width, cs.height], sp, z }));
+        // T38: va EN LUGAR de los botones grandes (se ocultan con body.v18-ext-on): abajo, alineado con su borde exterior
+        let ocultaActs = false;
+        for (const sh of document.styleSheets) { try { for (const r of sh.cssRules) if ((r.cssText || '').includes('v18-ext-on') && (r.cssText || '').includes('#acts') && /visibility:\s*hidden/.test(r.cssText)) ocultaActs = true; } catch (e) { /* otra hoja */ } }
+        const ok = parseFloat(cs.width) >= 56 && parseFloat(cs.height) >= 56 && dentro(sp) && dentro(z) && !sp.zurdo && z.zurdo && sp.top + h === acts.bottom && sp.left + w <= acts.right && z.left === 20 && sp.top > 66 + 140 && ocultaActs;
+        check('C2 · táctil (390 × 844, T38): el 2×2 (Ala, Pata, Semilla, Poder) cabe, mide ≥ 56 px y va donde los botones grandes, que se ocultan (también en modo zurdo)', ok, JSON.stringify({ boton: [cs.width, cs.height], sp, z, ocultaActs }));
       }
       // 10. «Reducir movimiento»: el combo no sacude la cámara ni lanza partículas de fx_poderes; sin cortes bruscos en las poses
       const RD = R.REDUCED, J = G.camara && G.camara.juice;
@@ -3095,6 +3175,6 @@ window.AVV18Combate = function (G) {
     if (hud && hud.tags) hud.tags.remove();
     if (hud && hud.ext && hud.ext.pad) hud.ext.pad.remove();
   }
-  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, vida: vidaApi, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
+  G.v18combate = { sitio, iniciar, salir, otraVez, usar, paso, premioRopa, LENTES, vida: vidaApi, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
   return G.v18combate;
 };

@@ -38,7 +38,7 @@ window.AVV18Duelo2 = function (G) {
   const TXT = {
     opcion: 'Duelo de 2 jugadores', j1: 'Jugador 1', j2: 'Jugador 2', energia: 'Energía', ya: '¡Ya!',
     otra: 'Otra vez', salir: 'Salir', menu: 'Volver al menú', jugar: '¡A jugar!', cancelar: 'Ahora no',
-    titulo: 'Duelo de 2 jugadores', nota: 'Dos personas en esta computadora. Gana quien le quite las 5 plumas a la otra. Es un juego: no da premios.',
+    titulo: 'Duelo de 2 jugadores', nota: 'Dos personas en esta computadora. Gana quien le quite las 5 plumas a la otra. Premio la primera vez: los Lentes de la Campeona.',
     elige: '¿Con qué cotorra juega el Jugador 2?',
     teclas1: 'Jugador 1: W A S D mover · E ala · F semilla (mantener: poder) · G poder',
     teclas2: 'Jugador 2: flechas mover · . ala · , semilla (mantener: poder) · - poder · Enter saltito',
@@ -535,7 +535,9 @@ window.AVV18Duelo2 = function (G) {
     emitir({ tipo: 'fin', de: quien, a: perd.id, valor: (quien === 'j1' ? D.j1 : D.j2).plumas });
     sonar('unlock'); fx('gold', perd.pos.x, perd.pos.y + 1.2, perd.pos.z);
     if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; flotante(''); }
-    // Sin recompensa: ni inventario, ni G.v18, ni guardado
+    // T38: el premio de juego del duelo (los Lentes de la Campeona, una vez por partida: combate.js); nada más (ni
+    // inventario ni G.v18)
+    if (Cb && Cb.premioRopa) Cb.premioRopa();
   }
   function otraVez() { return iniciar({ forzar: true, sinEntreno: true }); }
   function salir() {
@@ -870,8 +872,9 @@ window.AVV18Duelo2 = function (G) {
       tecla('keydown', 'g', 'KeyG'); tecla('keyup', 'g', 'KeyG');
       const gritoOk = D.j1.cd[D.j1.poder] > 0; correr(0.5, () => cerca(4));
       check('Poder del Jugador 1 (G) sale y no lo dispara el Jugador 2', gritoOk && (D.j1.poder !== 'grito_yunque' || D.j2.interrumpida > 0), D.j1.poder);
-      // 5. Victoria y derrota, sin recompensa
+      // 5. Victoria y derrota: de premio, solo los Lentes de la Campeona (T38), una vez
       const invA = JSON.stringify(S.inv || {}); evs.length = 0; guardados = 0;
+      const ropa0 = { u: (S.unlocked || []).slice(), w: JSON.stringify(S.wear || {}) }; S.unlocked = (S.unlocked || []).filter(k => k !== (Cb && Cb.LENTES));
       limpio(); cerca(1.5); D.j2.plumas = 1; usar(D.j1, 'golpe_ala');
       check('Sin plumas el Jugador 2: gana el Jugador 1', D.fase === 'fin' && D.resultado === 'j1' && D.j2.finMareo > 0 && hud.q('finTxt').textContent === TXT.gana1 && !hud.q('fin').hidden);
       check('Al terminar, Acción (o el ala del J2) dice «Otra vez»', modo.verbo === TXT.otra);
@@ -882,8 +885,10 @@ window.AVV18Duelo2 = function (G) {
       D.fase = 'lucha'; limpio(); cerca(1.5); D.j1.plumas = 1; tecla('keydown', '.', 'Period'); tecla('keyup', '.', 'Period');
       check('Sin plumas el Jugador 1: gana el Jugador 2', D.fase === 'fin' && D.resultado === 'j2' && hud.q('finTxt').textContent === TXT.gana2);
       const crudoAhora = (() => { try { return localStorage.getItem(P.clave()); } catch (e) { return null; } })();
-      check('Sin recompensa: ni inventario, ni progreso V18, ni guardado', JSON.stringify(S.inv || {}) === invA && crudoAhora === crudo && guardados === 0 &&
-        !P.otorgado('duelo2') && evs.every(e => e.tipo !== 'win' && e.tipo !== 'loss'), JSON.stringify({ guardados }));
+      const lentesN = S.unlocked.filter(k => k === (Cb && Cb.LENTES)).length;
+      check('T38 · de premio, los Lentes de la Campeona (una vez); ni inventario ni progreso V18', JSON.stringify(S.inv || {}) === invA && crudoAhora === crudo && lentesN === 1 &&
+        !P.otorgado('duelo2') && evs.every(e => e.tipo !== 'win' && e.tipo !== 'loss'), JSON.stringify({ guardados, lentesN }));
+      S.unlocked = ropa0.u; S.wear = JSON.parse(ropa0.w); if (G.actores && G.actores.applyWear) G.actores.applyWear();
       // 6. Cámara compartida
       iniciar({ sinCuenta: true }); cerca(3); G.camara.follow(0.05); G.camara.follow(1);
       const dCerca = camera.position.distanceTo(new THREE.Vector3((S.pos.x + pos2.x) / 2, (S.pos.y + pos2.y) / 2, (S.pos.z + pos2.z) / 2));

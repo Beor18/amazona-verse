@@ -751,8 +751,8 @@
     // Guardado del progreso del sprint
     SV.save(true); const snap = SV.serialize(); SV.reset(true);
     try { localStorage.setItem(SV.KEY, snap); } catch (e) { /* sin almacenamiento */ }
-    // Toda la ropa que hoy se puede ganar (la pava espera a la misión educativa)
-    check('Se guardan misiones, Diario y ropa', SV.load(true) && S.missions.m3 && S.field.length === 13 && S.unlocked.length === G.misiones.unlocks.filter(u => u.hito !== 'educativa').length && S.wear.feet, S.unlocked.join(','));
+    // Toda la ropa que hoy se puede ganar (la pava espera a la misión educativa; los lentes de la Campeona, al duelo: T38)
+    check('Se guardan misiones, Diario y ropa', SV.load(true) && S.missions.m3 && S.field.length === 13 && S.unlocked.length === G.misiones.unlocks.filter(u => u.hito !== 'educativa' && u.hito !== 'duelo').length && S.wear.feet, S.unlocked.join(','));
     // Color y presupuesto de render
     const R = G.renderer.renderer;
     // El post se carga perezoso: hasta que termina (o si el equipo cae a «bajo») el tone mapping es CustomToneMapping (W1: ACES con
