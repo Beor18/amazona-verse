@@ -177,6 +177,16 @@ AVE.module('actores', function (G) {
   }
   // Ladeo en las curvas y giro: se mide la velocidad de giro real del cuerpo
   const turn = { yaw: null, rate: 0 };
+  // T41 · Giro alegre: una voltereta completa sobre el eje del cuerpo, volando (la pide juice.js con el «¡Remonte!» y vale para
+  // celebrar en el aire). Solo animación: el ladeo de siempre sigue debajo (turn.bz) y la voltereta se suma encima. Con «reducir
+  // movimiento» no se hace. girarAlegre(lado) → true si empezó.
+  const giro = { t: 0, dur: 0.75, lado: 1, n: 0, prev: 0 };
+  function girarAlegre(lado) {
+    const M = G.fisica && G.fisica.MOVE, R = G.renderer;
+    if (!M || !M.flying || giro.t > 0 || (R && R.REDUCED)) return false;
+    giro.t = giro.dur; giro.lado = lado < 0 ? -1 : lado > 0 ? 1 : (turn.rate > 0 ? -1 : 1); giro.n++;
+    return true;
+  }
   // Recoger algo: un saltito de alegría (sin tocar objetos.js: se nota en S.collected)
   const joy = { n: -1, t: 0 };
   // Aterrizaje por etapas, como un loro de verdad (Kelvin, 1-nov: «muy específico»). Solo postura: la física no cambia.
@@ -278,8 +288,13 @@ AVE.module('actores', function (G) {
       // Ladeo (roll): volando se inclina hacia dentro de la curva como un ave; corriendo, apenas; en el agua, meceo
       const bank = MOVE.flying ? Math.max(-0.65, Math.min(0.65, -turn.rate * Math.min(1, sp / F.FLY_SPEED) * 0.45))
         : !MOVE.swimming && MOVE.grounded ? Math.max(-0.12, Math.min(0.12, -turn.rate * sp / F.RUN_SPEED * 0.05)) : 0;
-      if (MOVE.swimming && !diving) r.z = Math.sin(performance.now() / 590) * 0.06;
-      else r.z += (bank - r.z) * Math.min(1, dt * 5);
+      // T41: la voltereta va encima; el ladeo se calcula sobre lo de debajo (sin voltereta, igual que siempre)
+      if (!MOVE.flying || snap) giro.t = 0;
+      const gk = giro.t > 0 ? 1 - giro.t / giro.dur : 0, gOff = giro.t > 0 ? giro.lado * Math.PI * 2 * (gk * gk * (3 - 2 * gk)) : 0;
+      giro.t = Math.max(0, giro.t - dt);
+      const zb = r.z - giro.prev;
+      r.z = (MOVE.swimming && !diving ? Math.sin(performance.now() / 590) * 0.06 : zb + (bank - zb) * Math.min(1, dt * 5)) + gOff;
+      giro.prev = gOff;
       if (MOVE.swimming && !diving) root.position.y += Math.sin(performance.now() / 430) * 0.035;
       // Aplastón al aterrizar, proporcional al golpe (aterrizar volando: suave)
       const sq = MOVE.land > 0 ? Math.sin(MOVE.land / F.TUNING.squashTime * Math.PI) * (0.06 + 0.16 * (MOVE.impact || 0)) : 0;
@@ -324,7 +339,7 @@ AVE.module('actores', function (G) {
       // Alegría al recoger: saltito, cara feliz y un aleteo corto
       const nCol = (S.collected || []).length;
       if (joy.n < 0 || snap) joy.n = nCol;
-      if (nCol > joy.n && !inDialog) joy.t = 0.6;
+      if (nCol > joy.n && !inDialog) { joy.t = 0.6; if (MOVE.flying) girarAlegre(); } // T41: recoger volando, voltereta de alegría
       joy.n = nCol; joy.t = Math.max(0, joy.t - dt);
       if (joy.t > 0 && MOVE.grounded) root.position.y += Math.sin((0.6 - joy.t) / 0.6 * Math.PI) * 0.12;
       P.expression = emote.name ? EMOTES[emote.name].face
@@ -570,7 +585,7 @@ AVE.module('actores', function (G) {
   return {
     player, pShadow, companion, cShadow, companionPos, npcs, npc: id => npcs[id], spawnNpc, spriteFrom, blob,
     get player3D() { return player3D; }, get companion3D() { return companion3D; }, get failed3D() { return failed3D; },
-    init3D, applyWear, refreshCompanion, POSAR, get posa() { return Object.assign({}, posa); }, EMOTES, EMOTE_KEYS, emote, playEmote, stopEmote, modoFoto, get fotoModo() { return fotoModo; }, sync3D,
+    init3D, applyWear, refreshCompanion, POSAR, girarAlegre, get giro() { return Object.assign({}, giro); }, get posa() { return Object.assign({}, posa); }, EMOTES, EMOTE_KEYS, emote, playEmote, stopEmote, modoFoto, get fotoModo() { return fotoModo; }, sync3D,
     placePlayerSprite, snapCompanionSprite, flipSprite, rim, nombre: J.nombre, sprite: J.sprite, especie: J.especie, ikCerca, IK_LEJOS_ESC,
   };
 });

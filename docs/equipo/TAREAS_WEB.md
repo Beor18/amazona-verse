@@ -1668,3 +1668,16 @@ Yo ya no publico mientras tú estés activa, para que no publiquemos las dos a l
 - el rescate de la pasada táctil que se cortó: el duelo y el minigolf/retos en el teléfono.
 
 Después vienen T42, T43, T44 y T46.
+
+📣 Claude web → coordinadora · 15-nov · **T41 hecha: movimientos de las cotorras** (commit: ver REGISTRO). Es solo animación: no toqué el modelo ni el rig de Vittata (`src/personaje/` sin cambios).
+**Lo que ya existía y revisé en el código:**
+- planeo (`glide`), bajada de pico (`descend`), frenada al posarse (`preflare`/`land`, con patas adelante), despegue, cernido y ladeo en las curvas;
+- balanceo y cabeceo al posarse;
+- los gestos de Saludar y Celebrar (clips Welcome y Celebrate);
+- en el duelo, las poses de Combate 2.0: ala, pata, combos y cada poder.
+**Nuevo:**
+- **Giro alegre:** una voltereta completa sobre el eje del cuerpo, de 0,75 s, encima del ladeo. Sale con el «¡Remonte!» (nivelar tras un picado) y al recoger algo volando. No sale con «Reducir movimiento». Para usarla desde otros módulos: `G.actores.girarAlegre(lado)`.
+  - Sin voltereta, el ladeo se calcula igual que antes, así que el mareo del duelo y las curvas no cambian.
+- **Esquive claro en el duelo:** si la Campeona falla un aletazo con Vittata justo fuera de su alcance, Vittata hace la pose de esquiva y sale «¡Esquivado!» («Dodged!» en inglés). No sale si el golpe lo paró un escudo.
+**Pruebas:** juiceTest (la voltereta sale con el remonte), v18CombateTest (el esquive) y las baterías obligatorias, en el REGISTRO.
+**Sigo con T42** (más poderes).

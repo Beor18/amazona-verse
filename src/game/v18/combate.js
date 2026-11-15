@@ -85,7 +85,7 @@ window.AVV18Combate = function (G) {
     t4: 'Combo: toca Ala izq. y luego Ala der.', t5: 'Combo: toca Pata izq. y luego Pata der.',
     e1: 'Acércate y pulsa E para dar un aletazo.', e2: 'Ahora pulsa F para lanzar una semilla.', e3: 'Pulsa G (o mantén F) para usar tu poder:',
     t1: 'Acércate y toca Acción para dar un aletazo.', t2: 'Ahora toca Impulso para lanzar una semilla.', t3: 'Mantén Impulso para usar tu poder:',
-    bien: '¡Bien!', masCerca: '¡Más cerca!', entFin: '¡Ya sabes pelear! Ahora, el duelo de verdad.',
+    bien: '¡Bien!', masCerca: '¡Más cerca!', esquivado: '¡Esquivado!', entFin: '¡Ya sabes pelear! Ahora, el duelo de verdad.',
     pCerca: '¡Cerca! Aletazo (E)', pLejos: 'Lejos: semilla (F)', pPoder: '¡Poder listo! (G)',
     pCercaT: '¡Cerca! Aletazo (Acción)', pLejosT: 'Lejos: semilla (Impulso)', pPoderT: '¡Poder listo! (mantén Impulso)',
     dGolpe: '¡Te dieron! Muévete de lado para esquivar.', dEscudo: '¡Te dieron! Para cubrirte, usa tu poder (G):', dEscudoT: '¡Te dieron! Para cubrirte, mantén Impulso:',
@@ -449,6 +449,11 @@ window.AVV18Combate = function (G) {
     }
     if (r.ok && id === 'cuento' && !f.ia) flotante(TXT.cuento, 1.0); // Cuento: confirmación de que la rival se distrajo
     if (r.ok && f.ia) { C.stats.ataques++; if (!H.get(id).basico) C.stats.poderes++; }
+    // T41: la Campeona falla un aletazo con Vittata cerca → esquive claro: pose de esquiva (Combate 2.0) y «¡Esquivado!»
+    if (r.ok && f.ia && id === 'golpe_ala' && r.acierto === false && C.j && C.fase === 'lucha' && H.dist(f, C.j) > ALA_R() - 0.3 && H.dist(f, C.j) < ALA_R() + 1.6) { // fuera de su alcance (no un golpe parado)
+      C.stats.esquivasJ = (C.stats.esquivasJ || 0) + 1; flotante(TXT.esquivado, 0.8);
+      try { C2.accion(C.j, 'esquiva', { fam: 'esquiva', lado: C.stats.esquivasJ % 2 ? 1 : -1 }); } catch (e) { /* sin Combate 2.0 */ } // sin azar(): no cambia lo que decide la IA
+    }
     // V18.2: desafío de las alianzas (usar el poder propio 2 veces)
     if (r.ok && !r.avisada && !f.ia && id === f.poder) C.stats.poderJ++;
     if (r.ok) pintar();
@@ -3118,6 +3123,11 @@ window.AVV18Combate = function (G) {
       const evE = tecla('Escape'); const fueraEsc = C.fase === 'nada';
       iniciar({ sinCuenta: true, especie: 'vittata', sinExtIA: true }); pintar(); hud.q('salirB').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true })); const fueraBoton = C.fase === 'nada';
       check('Duelo: botón «Salir» a la vista durante la pelea (sale al tocarlo) y Esc sale del duelo', verSalir && evE.defaultPrevented && fueraEsc && fueraBoton, JSON.stringify({ verSalir, esc: evE.defaultPrevented, fueraEsc, fueraBoton }));
+      // T41: esquive claro: la Campeona falla un aletazo con Vittata justo fuera de su alcance
+      { iniciar({ sinCuenta: true, especie: 'vittata', sinExtIA: true }); C.r.mareo = 0; C.r.cd = {}; C.j.inv = 0;
+        C.r.pos.x = S.pos.x + ALA_R() + 0.4; C.r.pos.z = S.pos.z; const e0 = C.stats.esquivasJ || 0, pl0 = C.j.plumas, ru = usar(C.r, 'golpe_ala');
+        check('T41 · si la Campeona falla un aletazo por poco, Vittata esquiva con claridad («¡Esquivado!») y no pierde plumas',
+          ru.ok && (C.stats.esquivasJ || 0) === e0 + 1 && hud.q('centro').textContent === TXT.esquivado && C.j.plumas === pl0, JSON.stringify({ ok: ru.ok, ac: ru.acierto, n: C.stats.esquivasJ, c: hud.q('centro').textContent })); salir(); }
       // 9. Táctil a 390 × 844: el 2×2 cabe, sus botones miden ≥ 48 px y no tapa Acción, Impulso (con su etiqueta), Saltar ni Volar
       {
         const acts = { left: 390 - 20 - 182, right: 370, top: 844 - 28 - 170, bottom: 816, width: 182 }, tagTop = acts.top - 40; // ≥ 56 px (Kelvin)
