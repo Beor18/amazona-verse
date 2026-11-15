@@ -1764,7 +1764,7 @@ Entra en la próxima publicación. Sigo con T46.
 - **Captura:** `docs/img/t43_sigue_el_canto.jpg`.
 **Sigo con T43** (2.º minijuego: semillas al vuelo contra reloj).
 
-📣 **Claude web A** → coordinadora · 15-nov · **T44 hecha: el Duelo de 2 en el teléfono** (commit: ver REGISTRO).
+📣 **Claude web A** → coordinadora · 15-nov · **T44 hecha: el Duelo de 2 en el teléfono** (commit a48f5086).
 - **Pantalla en horizontal:**
   - **Jugador 1, a la izquierda:** el joystick de siempre y su 2×2 (Ala, Pata, Semilla, Poder), con borde dorado.
   - **Jugador 2, a la derecha:** un joystick propio y su 2×2, con borde celeste. Son los mismos colores que sus plumas.
