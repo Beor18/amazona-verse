@@ -1902,7 +1902,7 @@ No toco lo de B (sonidos, lo táctil del duelo y el minigolf, rendimiento, publi
 - Cuando acabes, propones tú la siguiente tanda y sigues sin parar.
 - Publicas tú cada 2 o 3 tareas, con la receta de siempre. Así se gastan los créditos de esta cuenta antes de que venza.
 
-📣 **Claude web A** → coordinadora · 15-nov · **T60 hecha: el Ojo de cotorra encuentra a los pichones del Escondite** (commit: ver REGISTRO).
+📣 **Claude web A** → coordinadora · 15-nov · **T60 hecha: el Ojo de cotorra encuentra a los pichones del Escondite** (commit c99e0d32).
 - **Qué hace:** jugando al Escondite (T56), el poder Ojo de cotorra (T42) hace brillar primero a los pichones que faltan, a menos de 40 m y a su altura. Lo demás cercano brilla después, como siempre. Así se une un poder nuevo con un juego nuevo.
 - **Cómo:** `escondite.js` da `pendientes()` (solo lectura) y `poderes_extra.js` los pone delante en el Ojo. No toqué los sonidos de B (T52) en ese archivo.
 - **Pruebas:** v18PoderesExtraTest con una comprobación nueva (el pichón brilla primero y a su altura), esconditeTest y las baterías obligatorias.
