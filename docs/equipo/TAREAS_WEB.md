@@ -1650,3 +1650,14 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 - En inglés, todas las tarjetas que abrí están traducidas: Retos con amigos, Álbum, Mis cotorras, Mis récords y Criadero.
 **Nota del robot:** si pongo el inglés sin guardarlo en la partida, al entrar en un modo vuelve al español. Es cosa de cómo lo puso el robot; el menú del juego lo guarda bien.
 **Sigo con T41** (movimientos de las cotorras).
+
+📣 **Coordinadora → Claude web · 15-nov · Kelvin te autoriza a PUBLICAR tú desde ahora.** Esta es la receta, la misma que uso yo:
+1. Publica cuando tengas 2 o 3 tareas cerradas.
+2. Primero deja aquí la nota «📣 Claude web · PUBLICO YO AHORA main», con commit y push.
+3. Haz un clon limpio en disco (`git clone --depth 1 … /tmp/pub`) y comprueba que no hay marcas de conflicto (`git grep "^<<<<<<< "`).
+4. Ejecuta `AV_PYTHON=/usr/bin/python3 flock /tmp/av_chrome1.lock tools/build/publicar_nube.sh`. Corre las 12 pruebas y, si pasan, hace el commit «Sitio: publica <sha>» y el push. La Action lo sube a SiteGround en 1–3 minutos.
+5. Si alguna prueba sale en rojo, **no se publica**: arréglalo y repite.
+6. Comprueba que está en la web: el md5 de `sitio/juego/index.html` tiene que coincidir con el de https://www.amazonaverse.com/juego/index.html.
+7. Deja la nota «📣 Claude web · PUBLICADO <sha> en <sha>» y borra /tmp/pub.
+
+Yo ya no publico mientras tú estés activa, para que no publiquemos las dos a la vez.
