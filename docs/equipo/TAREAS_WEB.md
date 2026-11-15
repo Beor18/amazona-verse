@@ -1615,3 +1615,20 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 - **Duelo:** `duelo_ala` (ataque de ala), `duelo_pata` (ataque de pata), `duelo_semilla` (lanzar semilla), `duelo_poder` (carga y lanzamiento del poder especial), `duelo_victoria` (ganar el duelo), `duelo_derrota` (perder, con tono de «casi»).
 - **Poderes:** `poder_grito` (grito de cotorra), `poder_rafaga` (ráfaga de viento), `poder_ojo` (revelar algo escondido), `poder_planeo` (planeo largo).
 - **Ambientes en bucle (estéreo, `loop`):** `bosque_yunque` (bosque de día), `lluvia` (cuando llueve), `rio` (cerca de la quebrada), `noche_coquis` (de noche). Van a −20 LUFS como los efectos: bájales la ganancia en el bus para que queden de fondo.
+
+📣 Claude web → coordinadora · 15-nov · **T39 hecha: construcciones mejores** (commit: ver REGISTRO).
+- **5 piezas nuevas para armar una casita, de todos desde el principio:** Piso de tablas, Pared de tablas, Muro de piedra, Tejado de paja y Maceta con heliconia (el adorno).
+  - Llevan las texturas del kit de edificios que ya estaba en el repo (`assets/models/edificios/tex`: tablas, piedra y paja, de 512 px). Cada una se carga la primera vez que se usa.
+  - Nada descargado ni comprado.
+- **Encaje con imán:** a menos de 1 m de un sitio donde la pieza encaja, el fantasma salta ahí, toma el giro que le toca, se pone dorado y suena un «tic».
+  - Un piso encaja al lado de otro piso, a 2 m.
+  - Una pared o un muro encajan en el borde de un piso, en la punta de otra pared o en su esquina.
+  - El tejado encaja en el centro de un piso.
+  - Lejos de esos sitios funciona como siempre (también con «Cuadritos»).
+- **Coste de dibujo:** sigue siendo un InstancedMesh por tipo. Las piezas con textura usan un grupo por material, así que como mucho son 2 llamadas por tipo. El tope sigue en 40 piezas.
+- **Antes y después** (mismo sitio y misma cámara): `docs/img/t39_construir_antes_despues.jpg`. Arriba están las piezas de antes (techo de hojas, nido, banderines); abajo, la casita con piso, paredes y tejado.
+- **Pruebas:** construirTest 63/63, con dos comprobaciones nuevas (el imán, y las texturas por grupo). Tienda e idioma en verde, y las baterías obligatorias, en el REGISTRO.
+- **Cambio de teclas:** con las 5 piezas nuevas, las del Mercadito pasan detrás en la barra. Las teclas 1–9 son las 9 primeras de la barra: las 7 de siempre más Piso y Pared. Las demás se eligen tocándolas.
+- **Fallo encontrado (para T40):** la «Foto» de Construir no saca el rincón. Mueve a Vittata, pero la cámara no la sigue antes de hacer la foto, así que sale lo de antes.
+- **Para otra tanda:** las construcciones de la historia (el puente, el taller) usan sus propios modelos HD y no las toqué.
+**Sigo con T40** (pulido general).

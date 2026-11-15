@@ -2998,5 +2998,10 @@ window.AV_EN = {
  "Consejo: toca Poder:": "Tip: tap Power:",
  "Lentes de la Campeona": "Clearing Champion's glasses",
  "ganar un duelo en la Explanada": "winning a duel at the Clearing",
- "Dos personas en esta computadora. Gana quien le quite las 5 plumas a la otra. Premio la primera vez: los Lentes de la Campeona.": "Two people on this computer. Whoever takes the other's 5 feathers wins. First-time prize: the Clearing Champion's glasses."
+ "Dos personas en esta computadora. Gana quien le quite las 5 plumas a la otra. Premio la primera vez: los Lentes de la Campeona.": "Two people on this computer. Whoever takes the other's 5 feathers wins. First-time prize: the Clearing Champion's glasses.",
+ "Piso de tablas": "Plank floor",
+ "Pared de tablas": "Plank wall",
+ "Muro de piedra": "Stone wall",
+ "Tejado de paja": "Thatched roof",
+ "Maceta con heliconia": "Heliconia pot"
 };
