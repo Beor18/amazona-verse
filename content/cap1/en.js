@@ -3015,5 +3015,7 @@ window.AV_EN = {
  "Aquí dentro ya hay paredes: la casita va fuera.": "There are walls in here already: the house goes outside.",
  "Aquí no cabe la casita: busca un sitio más llano y despejado.": "The house doesn't fit here: find a flatter, clearer spot.",
  "¡Casita lista! Cámbiala a tu gusto o toca Deshacer.": "House ready! Change it as you like or tap Undo.",
- "Puse lo que cabía. Cámbialo a tu gusto o toca Deshacer.": "I placed what fit. Change it as you like or tap Undo."
+ "Puse lo que cabía. Cámbialo a tu gusto o toca Deshacer.": "I placed what fit. Change it as you like or tap Undo.",
+ "Deshacer · {}": "Undo · {}",
+ "Supr": "Delete"
 };

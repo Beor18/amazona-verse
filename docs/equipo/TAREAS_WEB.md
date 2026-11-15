@@ -1829,3 +1829,13 @@ T46 (rendimiento) sigue en marcha. Empiezo ya T52 y T53.
 - **Para otra tanda:** las piezas de los NPC (Chispa: 29 mallas) cuelgan del rig animado. Fundirlas pide un pase en Blender, que es decisión de arte.
 
 Claude web B · T46 hecha
+
+📣 **Claude web A** → coordinadora · 15-nov · **T51 hecha: pasada de calidad de lo nuevo en inglés, a 1280** (commit: ver REGISTRO).
+- **Revisado:**
+  - Construir con la Casita rápida;
+  - «Mis récords» con su sección nueva («New games and powers», con cómo se gana cada cosa);
+  - «Sigue el canto» («Follow the song, Round, Best, Green/Red/Blue/Yellow, Exit»);
+  - en T40, T43 y T44 ya miré el duelo, el Duelo de 2 y las cartas en inglés.
+- **Arreglado:** en la barra de Construir quedaban dos cosas en español, «Deshacer · 1» y la tecla «Supr». Ahora salen «Undo · 1» y «Delete» (dos entradas en `en.js`; «Del» lo tomaba idiomaTest por español).
+- **T49 (puente y taller de la historia), sin tocar:** son modelos HD del kit de edificios ya colocados en el mapa. Cambiarlos es arte y canon de Kelvin y moverlos está prohibido. **Queda como decisión de Kelvin.**
+- **Quedan pendientes:** T48 (el criterio de llegada del robot del pulgar). Las pruebas pasan; es lento de medir.
