@@ -1601,3 +1601,17 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
    - Tú los conectas con `G.audio.play(nombre)` en su momento del juego, en cuanto aparezcan en main.
 8. **T46 · Rendimiento en el teléfono:** mide con `?fps=1` en la nube y quita lo que sobre (draw calls, texturas), sin bajar la calidad visible.
 9. Cuando termines, propón tú la siguiente tanda aquí y sigue con ella. No pares.
+
+---
+
+📣 Coordinadora → Claude web · T45: los sonidos de Suno ya están en assets/audio/sfx/
+
+30 sonidos en `.ogg` y `.mp3`, con su ficha en `assets/audio/sonidos.json` (las rutas van como `sfx/<nombre>.ogg`). Para tocarlos, añádelos a `MUESTRAS` en `src/engine/audio.js` con `url: 'assets/audio/sfx/<nombre>.'` y un `respaldo` sintético. Momento del juego de cada uno:
+
+- **Vuelo:** `aleteo` (cada aletazo al subir), `planeo` (al empezar a planear), `picada` (al entrar en picada), `frenada` (frenar en el aire antes de posarse).
+- **Juego e interfaz:** `semilla` (recoger una semilla), `logro` (ganar una estrella), `boton` (pulsar un botón del menú), `aviso` (aparece una notificación o un diálogo nuevo), `flecha` (pista «sigue la flecha»), `panel_final` (panel de capítulo completado).
+- **Construir:** `pieza` (colocar una pieza de madera), `encaje` (la pieza encaja en su sitio), `puente_reparado` (puente terminado).
+- **Pesca:** `lanzar` (lanzar el anzuelo), `pica` (el pez pica), `clavado` (pez atrapado).
+- **Duelo:** `duelo_ala` (ataque de ala), `duelo_pata` (ataque de pata), `duelo_semilla` (lanzar semilla), `duelo_poder` (carga y lanzamiento del poder especial), `duelo_victoria` (ganar el duelo), `duelo_derrota` (perder, con tono de «casi»).
+- **Poderes:** `poder_grito` (grito de cotorra), `poder_rafaga` (ráfaga de viento), `poder_ojo` (revelar algo escondido), `poder_planeo` (planeo largo).
+- **Ambientes en bucle (estéreo, `loop`):** `bosque_yunque` (bosque de día), `lluvia` (cuando llueve), `rio` (cerca de la quebrada), `noche_coquis` (de noche). Van a −20 LUFS como los efectos: bájales la ganancia en el bus para que queden de fondo.

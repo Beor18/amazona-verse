@@ -94,3 +94,44 @@ Para oír un momento a mano: `AV.G.musicaApi.simular({ retos: true, reto: 'torme
 
 
 **4-nov-2026:** dos temas nuevos de Kelvin (Suno, cuenta de pago de Kelvin; ids en la tabla, sacados de los metadatos del MP3): «La Ciudad de los 36: Noche Encantada» y «Las Sorpresas: ¡Algo se Esconde!». Kelvin aprobó la dirección; **Licencia confirmada (4-nov, 00:45 UTC aprox.):** Kelvin mandó captura de su perfil de Suno con el plan **Pro** activo, cuenta @kelvingarcia, con «Las Sorpresas: ¡Algo se Esconde!» en su biblioteca. El plan Pro da uso comercial según los términos de Suno. La captura no se sube al repo (es su perfil personal). Convertidos a AAC 96 kb/s estéreo sin metadatos (1,26 MB y 0,92 MB), mismo nivel medio que los demás (−18,4 dB). Bucle a ojo: [20,5; 98,4] y [15; 71,4].
+
+## Efectos de Suno (15-nov-2026)
+
+30 efectos nuevos hechos con Suno en la cuenta de Kelvin. **Licencia:** son de Kelvin, generados con su plan pagado de Suno (Premier), que da uso comercial según los términos de Suno.
+
+Están en `assets/audio/sfx/` (`.ogg` y `.mp3`) y en `assets/audio/sonidos.json` con su id, duración, peso y sonoridad. Se recortaron al golpe útil, mono 48 kHz, OGG Vorbis 72 kbps y MP3 80 kbps, a unos −20 LUFS con el pico a −4,5 dBFS como máximo. Los 4 ambientes van en estéreo a 96 kbps, con bucle cerrado por un fundido cruzado de 1,5 s. Ninguno está conectado al juego todavía (lo hace Claude web en T45).
+
+| Nombre | Id del clip en Suno | Duración |
+|---|---|---|
+| aleteo | `0b639585-4115-480f-b01b-9e714cf26f4d` | 0.6 s |
+| planeo | `51c6301c-72f0-42cb-ba0b-feabe2fbdd56` | 1.5 s |
+| picada | `4b399a07-ef10-42cb-8b0a-2844793cfe21` | 2.32 s |
+| frenada | `e212fd62-272d-4f04-8944-934d8a69d1bd` | 1.82 s |
+| semilla | `8d6dbeed-7ddd-4b14-9805-95159851871f` | 1.2 s |
+| logro | `519ac6be-d72d-474e-be27-b9ee605531ba` | 1.4 s |
+| boton | `9ee4ec7c-064c-4b79-a925-a52184402cc5` | 0.3 s |
+| aviso | `f43daaa6-47c6-42c8-a107-38e9ea7c79f0` | 1.5 s |
+| flecha | `17fd19c6-2ff4-42e5-8edc-3a56050fd980` | 1.5 s |
+| panel_final | `2b404395-05c9-4ae9-a47f-0819f6df85e9` | 3.0 s |
+| pieza | `f2cfa417-dc1b-4fc3-a662-75df7517a3d4` | 0.8 s |
+| encaje | `5b785af2-89d4-4751-bbb9-6730194f71f3` | 0.4 s |
+| puente_reparado | `ad517f84-b46f-4a3c-a0f2-2c2a433b209f` | 3.5 s |
+| lanzar | `de8c8cc4-ff16-40bd-ac0d-4003cd96cb49` | 1.6 s |
+| pica | `6d6a08b2-96c6-4437-bee9-a9fd66bed787` | 1.0 s |
+| clavado | `092e4ff6-62a7-42be-8700-ab41588d6d5a` | 2.5 s |
+| duelo_ala | `2c96a3ae-359a-4bbb-9d74-4aeba6e7ddcc` | 2.0 s |
+| duelo_pata | `64264f6b-bdc3-435c-9344-d9202b1445b7` | 1.0 s |
+| duelo_semilla | `3535f4ac-f124-4def-8465-bc81ede6a362` | 1.6 s |
+| duelo_poder | `3fc57482-ce10-4c4b-8154-402d856b4c64` | 3.0 s |
+| duelo_victoria | `68a25def-8fd8-473a-bac9-134057c02bab` | 3.47 s |
+| duelo_derrota | `05b2edbd-8ef5-4aef-8158-b18919d81bd5` | 4.28 s |
+| poder_grito | `d7408b15-58fd-43ed-aa4f-07ab40d8274b` | 3.0 s |
+| poder_rafaga | `d90bcd0d-7c42-4353-9c2e-efc945764bab` | 2.5 s |
+| poder_ojo | `58af1876-7d70-4b50-9912-425c33ebe0d2` | 2.5 s |
+| poder_planeo | `50faaab2-fd0a-4b30-a3c6-e53d15b298ca` | 3.5 s |
+| bosque_yunque | `2e447cff-4e47-4525-8412-60401b03ab66` | 15.06 s |
+| lluvia | `5c4fac4f-47e3-48d1-a1c4-f97379aceeb8` | 17.56 s |
+| rio | `ecbdbf34-3776-4756-9c90-74d616e2773e` | 6.88 s |
+| noche_coquis | `82f4a9ee-3f50-49c7-9460-3765d0d1b9bc` | 11.9 s |
+
+**Para que Kelvin lo valide (escuchar):** los cortes se eligieron por la forma de onda, sin escucharlos. Conviene oír sobre todo aleteo, pieza, encaje, pica, boton y duelo_pata, que se cortaron a un solo golpe. aleteo (−26,7 LUFS), rio (−26,4) y bosque_yunque (−24,9) quedan más bajos porque el tope de pico no deja subirlos más sin limitador.
