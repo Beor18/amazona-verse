@@ -224,7 +224,7 @@
       st.textContent = '#stick{display:block !important}#acts{display:grid !important}#guia-hud{display:none !important}';
       doc.head.appendChild(st);
     }
-    const ocupado = () => G.ui.busy();
+    const ocupado = () => G.ui.busy() || !!(opts.pulgar && $('c1-saltar')); // T23: la apertura (HUD oculto) también: se toca «Saltar intro»
 
     // ---------- Tarjetas ----------
     let ultimas = null, lineaCarta = null;
@@ -257,6 +257,9 @@
       let n = 0, hizo = false;
       while (n++ < 600) {
         await mirarEN();
+        // T23: durante la apertura el HUD está oculto (no se puede mover); el niño toca «Saltar intro», como haría con el pulgar
+        const sx = $('c1-saltar');
+        if (sx && sx.getClientRects().length) { hizo = true; await clic(sx); await jugar(0.3); continue; }
         if (G.dialogo.open()) {
           if (tr) tr.lineas++; hizo = true;
           const dn = opts.pulgar && $('d-next'); // con el pulgar se toca «Seguir» de la caja (Acción queda oculta bajo el diálogo)

@@ -244,6 +244,7 @@
       const m = M();
       if (m.fin || S.complete || !(dt > 0) || busy || document.hidden || !conReloj()) return false;
       if (G.pausa && G.pausa.activa()) return false;
+      if (document.getElementById('c1-saltar')) return false; // T23: el reloj no corre durante la apertura del capítulo
       m.t += Math.min(dt, 0.25);
       return true;
     }
@@ -412,6 +413,8 @@
         check('En pausa (menú, portada o motivo de otro módulo) se detiene', Math.abs(M().t - 2) < 1e-6, M().t);
         seg(5, true);
         check('Con un diálogo, tarjeta o menú abierto (busy) se detiene', Math.abs(M().t - 2) < 1e-6, M().t);
+        { const sx = document.createElement('div'); sx.id = 'c1-saltar'; document.body.appendChild(sx); seg(5); sx.remove();
+          check('T23 · Durante la apertura del capítulo («Saltar intro» a la vista) el cronómetro no corre', Math.abs(M().t - 2) < 1e-6, M().t); }
         try { Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }); hiddenDef = true; } catch (e) { /* sin override */ }
         if (hiddenDef) { seg(5); check('Con la pestaña oculta se detiene', Math.abs(M().t - 2) < 1e-6, M().t); delete document.hidden; hiddenDef = false; }
         const retosAntes = G.retosApi; G.retosApi = { activo: true }; seg(5); G.retosApi = retosAntes;
