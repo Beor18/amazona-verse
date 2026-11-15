@@ -3022,5 +3022,7 @@ window.AV_EN = {
  "River Rush, la tormenta, el banquete, el canto y el escondite": "River Rush, the storm, the feast, the song and hide-and-seek",
  "¡Escondite! Encuentra a los pichones. El pío se oye más fuerte cerca.": "Hide-and-seek! Find the chicks. The peep gets louder when you are close.",
  "¡Los encontraste!": "You found them!",
- "Se escondieron otra vez. Cuando quieras, otra ronda.": "They hid again. Another round whenever you want."
+ "Se escondieron otra vez. Cuando quieras, otra ronda.": "They hid again. Another round whenever you want.",
+ "Pared con puerta": "Wall with door",
+ "Pared con ventana": "Wall with window"
 };

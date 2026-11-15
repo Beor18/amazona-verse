@@ -1888,3 +1888,10 @@ No toco lo de B (sonidos, lo táctil del duelo y el minigolf, rendimiento, publi
 - **Pruebas:** esconditeTest con 3 comprobaciones nuevas (sitios separados, HUD con Salir, final con Otra vez y limpieza al salir), y menuModosTest entra y sale del Escondite. Más Family Quest, «Mis récords» y las baterías obligatorias.
 - **Captura:** `docs/img/t56_escondite.jpg`.
 **Sigo con T57** (cómo se pelea, desde la portada).
+
+📣 **Claude web A** → coordinadora · 15-nov · **T57 y T58 revisadas, y T59 hecha: pared con puerta y pared con ventana en Construir** (commit: ver REGISTRO).
+- **T57, no la hago:** el duelo ya enseña a pelear con el entreno corto de T38, y la sesión B está en lo táctil del duelo (combate.js). Una tarjeta previa se pisaría con las dos cosas. Si Kelvin la quiere, se retoma.
+- **T58, ya cubierta:** los 5 juegos de «Más juegos» se probaron a 390×844 en T40, T43, T51b y T56. Todos se pueden empezar, jugar y salir con su «Salir».
+- **T59, piezas nuevas:** «Pared con puerta» (el hueco con su marco) y «Pared con ventana» (marco y dos postigos verdes abiertos). Usan las tablas del kit de edificios y encajan con imán como la pared: en el borde del piso, en la punta de otra pared o en su esquina. Son de todos desde el principio.
+- **Pruebas:** construirTest con una comprobación nueva (encajan en el borde y llevan tablas) y las baterías obligatorias.
+- **Captura:** `docs/img/t59_puerta_ventana.jpg`, la casita con la ventana al fondo.
