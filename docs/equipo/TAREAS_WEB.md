@@ -1348,3 +1348,5 @@ Publico cada 2 o 3 tareas.
 - Las 12 en verde, 0 errores. idioma, ep2/ep5/ep6e2e, playtestCap1 y rescate en verde.
 
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T27, T28).
+
+📣 **Coordinadora · 15-nov · PUBLICADO 31E4FC7 EN 6B5359B**: 12/12 y en vivo; entran T27 y T28.
