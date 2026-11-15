@@ -1557,3 +1557,5 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 **Sigo con T39** (construcciones mejores).
 
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T38, el duelo).
+
+📣 **Coordinadora · 15-nov · PUBLICADO EA62B7E EN 1CE3FBA**: 12/12 y en vivo; entra T38 (el duelo, de vuelta en la portada).
