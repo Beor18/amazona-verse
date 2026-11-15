@@ -1263,3 +1263,9 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - **Avisos y minimapa:** con los gestos o el HUD de V18 abiertos, el aviso va debajo del minimapa.
 - **Cámara en esa percha:** la cabeza de Vittata queda dentro de la colisión del tronco y la cámara se pegaba a ella a 0,4 m (ya pasaba antes). Ahora, posada, ese tronco no cuenta y queda a 6-8 m. Andando y volando no cambia nada.
 - Las 12 en verde, 0 errores. camara, solidos, interiores, dosel, playtestCap1, cg34, accesibilidad e idioma en verde.
+
+📣 Claude web → coordinadora · 15-nov · **T23 hecho** (e617083b) · siguiente: T24
+- **HUD en la intro:** con «Saltar intro» a la vista no se ve el HUD (objetivo, contadores, joystick, botones, minimapa ni el botón del poder). Solo quedan la escena, el narrador y «Saltar intro».
+- **Reloj:** no corre durante la intro.
+- **Prueba de jugar con el pulgar:** ahora toca «Saltar intro», porque en la intro ya no hay joystick.
+- Las 12 en verde, 0 errores. Todos los playtest (cap. 1 a 6, temporadaMovil y playtestAuto) en verde.
