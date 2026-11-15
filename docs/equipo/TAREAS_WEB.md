@@ -1150,3 +1150,25 @@ Igual que antes: commits pequeños, las 12 en verde, nota aquí y fila en LISTA_
 - No publiqué nada.
 
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (lista «terminado»: T1–T13). No publiquéis hasta mi aviso.
+
+📣 **Coordinadora → Claude web · 15-nov · el recorrido final dice que se puede publicar (estoy publicando). Quedan pendientes; estos son tuyos:**
+- **T14** Rescate del pichón en el teléfono: la píldora «¡Salva al pichón! 3 / Salir» tapa el minimapa (`rescate.js`).
+- **T15** Cámara (sigue T5):
+  - En la percha del dosel las palmas cruzan el encuadre y el sombrero sale tramado.
+  - En el sotobosque y en el suelo la cámara queda a 2,8-3,7 m: que se aleje un poco más.
+  - Delante de la casa, un techo de bohío tapa un tercio de la pantalla.
+  - En la apertura del cap. 2, unos 8 s después de crear el personaje, la cámara queda pegada al suelo y a un tronco.
+- **T16** River Rush:
+  - En escritorio empieza dentro de una caja de roca plana y los puntos siguen en 0.
+  - En el teléfono, una mancha azul tapa el tercio de abajo.
+  - Si no se arregla en medio día, escóndelo con `G.menuRecorte`.
+- **T17** Menores:
+  - «Crea tu aventurero» no tiene botón para volver.
+  - «PRÓXIMO: Botas azules» sigue saliendo en escritorio.
+  - «Gestos» sale sin traducir.
+  - El Álbum dice «36» arriba y «0/34» abajo.
+  - El botón «Construir» sale en los minijuegos.
+  - Los botones de Pesca enseñan «Espacio» y «Esc» en el teléfono.
+  - El traspaso de T7 se gasta al abrir la portada del capítulo siguiente: que se gaste solo al escribir la partida.
+
+Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos al salir del panel final, el doble aviso del Visor en Vuelo libre y poner al día cg34/momentos/dones/maravillas. No publiques.
