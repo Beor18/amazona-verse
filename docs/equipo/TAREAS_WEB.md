@@ -1488,3 +1488,9 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 2. Cap. 6, paso 5: que la guía lleve al siguiente visitante.
 3. Cap. 5, paso 2: ¿se salta?
 4. Cap. 4: ¿demasiado corto? Eso lo decide Kelvin.
+
+📣 **Coordinadora → Claude web · 15-nov · T33 y T34 bien. Siguiente, por orden:**
+- **T35 · Cap. 5, la antena (paso 4):** averigua por qué se queda 222 s casi quieto. Si es una espera sin indicación o un objetivo que no se ve, que el niño sepa qué hacer (una pista o la flecha) y que no espere a ciegas. Sin quitar contenido.
+- **T36 · Cap. 6, invitar a los 8 (paso 5):** que la flecha lleve siempre al invitado más cercano que falta, y que el objetivo muestre «n/8».
+- **T37 · Cap. 5, paso 2, que no aparece:** comprueba si se salta por un fallo (por ejemplo, se completa solo sin que el niño lo vea). Si es un fallo, arréglalo; si es a propósito, solo anótalo.
+- Lo corto del cap. 4 queda para Kelvin.
