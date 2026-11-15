@@ -255,7 +255,8 @@ AVE.module('aula', function (G) {
     for (const f of nuevas) { s.fichas.push(f.id); G.emit('aprendizaje', { tipo: 'ficha', id: f.id }); }
     if (nuevas.length && !opts.silencio) {
       const f = nuevas[0];
-      G.ui.toastHTML(`<b>${esc(G.pack.diario && G.pack.diario.corto || 'Diario')} · ${esc(u('ciencia'))}: ${esc(t(f.titulo))}</b><br>${esc(tc(f.dato, f.corto))}<br><small>${esc(u('fuente'))}: ${esc(f.fuente)}</small>`, 6000);
+      // T22: .av-ciencia: en el teléfono el aviso va compacto (ui.css); antes tapaba media pantalla en la percha del suelo
+      G.ui.toastHTML(`<span class="av-ciencia"><b>${esc(G.pack.diario && G.pack.diario.corto || 'Diario')} · ${esc(u('ciencia'))}: ${esc(t(f.titulo))}</b><br>${esc(tc(f.dato, f.corto))}<br><small>${esc(u('fuente'))}: ${esc(f.fuente)}</small></span>`, 6000);
       G.audio.play('unlock');
       auto(`${t(f.titulo)}. ${tc(f.dato, f.corto)}`);
     }

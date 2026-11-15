@@ -1326,6 +1326,9 @@ AVE.module('criadero', function (G) {
     'box-shadow:0 2px 0 var(--c-primary-lip,#b86f1a);opacity:0;animation:nido-mas 1.7s ease-out forwards}' +
     '@keyframes nido-mas{0%{opacity:0;transform:translate(-50%,6px)}15%{opacity:1;transform:translate(-50%,-14px)}75%{opacity:1;transform:translate(-50%,-30px)}100%{opacity:0;transform:translate(-50%,-40px)}}' +
     '#b-nido .nido-huevo.late svg{animation:nido-late .6s ease-out}@keyframes nido-late{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}' +
+    // T22: en el teléfono el botón va pegado al borde derecho: el «+N puntos al nido» crece hacia la izquierda (se cortaba en el borde)
+    '@media (max-width:560px){#b-nido .nido-mas{left:auto;right:0;animation-name:nido-mas-der}}' +
+    '@keyframes nido-mas-der{0%{opacity:0;transform:translate(0,6px)}15%{opacity:1;transform:translate(0,-14px)}75%{opacity:1;transform:translate(0,-30px)}100%{opacity:0;transform:translate(0,-40px)}}' +
     '@media (prefers-reduced-motion:reduce){#b-nido .nido-mas{animation:nido-mas-quieto 1.7s linear forwards;transform:translate(-50%,-24px)}@keyframes nido-mas-quieto{0%,70%{opacity:1}100%{opacity:0}}#b-nido .nido-huevo.late svg{animation:none}}';
   let hudHuevo = null, hudHuevoClave = '';
   // El <style> va dentro de #sys (junto al botón) para que la maqueta móvil de accesibilidad.js, que copia #sys, lo lleve
