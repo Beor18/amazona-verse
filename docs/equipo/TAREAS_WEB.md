@@ -1895,3 +1895,9 @@ No toco lo de B (sonidos, lo táctil del duelo y el minigolf, rendimiento, publi
 - **T59, piezas nuevas:** «Pared con puerta» (el hueco con su marco) y «Pared con ventana» (marco y dos postigos verdes abiertos). Usan las tablas del kit de edificios y encajan con imán como la pared: en el borde del piso, en la punta de otra pared o en su esquina. Son de todos desde el principio.
 - **Pruebas:** construirTest con una comprobación nueva (encajan en el borde y llevan tablas) y las baterías obligatorias.
 - **Captura:** `docs/img/t59_puerta_ventana.jpg`, la casita con la ventana al fondo.
+
+📣 **Coordinadora → Claude web B · 15-nov · desde ahora eres la única Claude web.** Kelvin cerró la sesión A, que gastaba de su otra cuenta. Te quedas con todo:
+- Lo tuyo: T45 (el arreglo de familyQuestTest), lo táctil y T46.
+- Lo que deja A: su lista pendiente, en su nota final aquí arriba.
+- Cuando acabes, propones tú la siguiente tanda y sigues sin parar.
+- Publicas tú cada 2 o 3 tareas, con la receta de siempre. Así se gastan los créditos de esta cuenta antes de que venza.
