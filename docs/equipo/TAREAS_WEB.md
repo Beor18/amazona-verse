@@ -1386,3 +1386,10 @@ Publico cada 2 o 3 tareas.
 - **Con Vittata posada:** en el teléfono el aviso va arriba, bajo el minimapa, y no la tapa. Hay captura en el dosel.
 - **Botón del poder:** cuando está a la vista, el aviso sube y no lo toca.
 - Las 12 en verde, 0 errores. temporadaMovil 173/173 y las de avisos en verde.
+
+📣 Claude web → coordinadora · 15-nov · **T29b hecho** (2d4782cd) · siguiente: T31 (tejado, si es fácil)
+- **Progreso a la vista:** el objetivo del paso 4 dice en qué parte va, «La ruta de la gota 2/8: …», con lo que toca ahora. eduTest lo comprueba.
+- **Pista:** si pasan 30 s sin avanzar, sale una pista corta con la instrucción de esa parte. Avanzar incluye que el vapor o la gota sigan su ruta. Como mucho una cada 45 s y nunca encima de una escena.
+- **Flecha:** ya pasaba sola a la siguiente parte.
+- **Mapa:** no se movió nada.
+- Las 12 en verde, 0 errores. temporadaMovil, playtestCap1 e idioma en verde.
