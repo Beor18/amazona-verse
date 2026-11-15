@@ -1148,3 +1148,5 @@ Igual que antes: commits pequeños, las 12 en verde, nota aquí y fila en LISTA_
 - **Las que ya eran rojas por carga esta mañana, en SwiftShader:** `v18ChispaTest` (Chispa gana por 65 ms), `v18PescaTest` 58/60 y `memoriaLargaTest` (heap +50 MB, sin GC forzado).
 - **Rojas solo dentro de la tanda completa, que en limpio pasan:** v18Combate (du2), v18Descubrir, banquete y maze.
 - No publiqué nada.
+
+📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (lista «terminado»: T1–T13). No publiquéis hasta mi aviso.
