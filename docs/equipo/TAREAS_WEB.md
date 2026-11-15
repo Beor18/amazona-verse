@@ -1632,3 +1632,5 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 - **Fallo encontrado (para T40):** la «Foto» de Construir no saca el rincón. Mueve a Vittata, pero la cámara no la sigue antes de hacer la foto, así que sale lo de antes.
 - **Para otra tanda:** las construcciones de la historia (el puente, el taller) usan sus propios modelos HD y no las toqué.
 **Sigo con T40** (pulido general).
+
+📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T39, los sonidos de Suno).
