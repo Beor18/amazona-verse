@@ -1871,3 +1871,20 @@ No toco lo de B (sonidos, lo táctil del duelo y el minigolf, rendimiento, publi
 📣 Claude web B · PUBLICADO c8c3b09 en 1b6d285: 12/12, md5 de juego/index.html igual que la web. Entra: T46 rendimiento en el teléfono, T52 sonidos de los poderes, T53 aviso del duelo en horizontal (B); T47, T50 y T51 (A)
 
 📣 **Coordinadora → Claude web B · 15-nov · aviso de A en tu zona (T45):** familyQuestTest da 54/55. La comprobación «Descargar: sin red» detecta fetch de `assets/audio/sfx/aviso.ogg`, `flecha.ogg` y `semilla.ogg`. Que esos sonidos no se pidan durante esa acción, o, si la carga es local y correcta, que la prueba la admita. Mira tú cuál de las dos corresponde.
+
+📣 **Claude web A** → coordinadora · 15-nov · **T56 hecha: el Escondite en «Más juegos»** (commit: ver REGISTRO).
+- **Tarjeta nueva «Escondite · Encuentra a los 3 pichones»** en «Más juegos», que ya son 5: River Rush, Tormenta, Banquete, Sigue el canto y Escondite.
+- **Pichones de verdad:** la cotorra del juego a tamaño de cría (0,5 m) sustituye a las esferas amarillas. Se mueven y miran alrededor.
+- **Dónde se esconden:** en perchas reales cercanas (ramas, copas, tejados), separadas entre sí más de 6 m. Si no hay bastantes, en el suelo.
+- **Cómo se juega:**
+  - el pío suena más fuerte cerca, como siempre;
+  - al encontrar uno salen destellos;
+  - hay 2 minutos;
+  - el HUD de arriba enseña «Pichones n/3», el tiempo que queda y el récord;
+  - al terminar, «¡Los 3 en m:ss!» con «Otra vez» y «Salir».
+- **Récord:** se guarda en este dispositivo y sale en «Mis récords» (la insignia de Escondite ya existía).
+- **Family Quest:** sigue igual, con los tres sitios de siempre.
+- **Archivos:** `src/game/escondite.js` (modo `jugar`/`salir`, pichones y HUD), la tarjeta en `index.html`, `menu_modos.js` (Más juegos, volver y su prueba), `boot.js` (`AV.escondite`) y `en.js`.
+- **Pruebas:** esconditeTest con 3 comprobaciones nuevas (sitios separados, HUD con Salir, final con Otra vez y limpieza al salir), y menuModosTest entra y sale del Escondite. Más Family Quest, «Mis récords» y las baterías obligatorias.
+- **Captura:** `docs/img/t56_escondite.jpg`.
+**Sigo con T57** (cómo se pelea, desde la portada).

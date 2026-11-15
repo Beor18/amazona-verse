@@ -339,7 +339,7 @@
     alPrimerGesto(cargarJuice);
     const cargarTrucos = aDemanda('src/game/trucos.js', 'AVTrucos'); AV.trucosTest = o => cargarTrucos().then(t => t.test(o)); alPrimerGesto(cargarTrucos); // CG-41
     const cargarHumor = aDemanda('src/game/humor.js', 'AVHumor'); AV.humorTest = o => cargarHumor().then(h => h.test(o)); alPrimerGesto(cargarHumor); // CG-42
-    const cargarEscondite = aDemanda('src/game/escondite.js', 'AVEscondite'); AV.esconditeTest = o => cargarEscondite().then(e => e.test(o)); alPrimerGesto(cargarEscondite); // CG-43
+    const cargarEscondite = aDemanda('src/game/escondite.js', 'AVEscondite'); AV.esconditeTest = o => cargarEscondite().then(e => e.test(o)); AV.escondite = () => cargarEscondite().then(e => e.jugar()); /* T56: Más juegos */ alPrimerGesto(cargarEscondite); // CG-43
     const cargarMarana = aDemanda('src/game/marana.js', 'AVMarana'); AV.maranaTest = o => cargarMarana().then(m => m.test(o)); alPrimerGesto(cargarMarana); // CG-46
     // Patrulla invasora (src/game/invasoras.js): ENCENDIDA para todos (Kelvin 9-nov: aprobada, «me gusta cómo se ve»), sin bandera de
     // expansión. Bandera propia G.INVASORAS: encendida por
