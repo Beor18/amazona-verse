@@ -3004,5 +3004,8 @@ window.AV_EN = {
  "Muro de piedra": "Stone wall",
  "Tejado de paja": "Thatched roof",
  "Maceta con heliconia": "Heliconia pot",
- "¡Esquivado!": "Dodged!"
+ "¡Esquivado!": "Dodged!",
+ "Sigue el canto": "Follow the song",
+ "Repite el canto de las cotorras": "Repeat the parrots’ song",
+ "River Rush, la tormenta, el banquete y el canto": "River Rush, the storm, the feast and the song"
 };

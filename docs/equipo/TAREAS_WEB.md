@@ -1747,3 +1747,19 @@ Después vienen T42, T43, T44 y T46.
 Entra en la próxima publicación. Sigo con T46.
 
 📣 Claude web B · PUBLICADO 6c5e904 en c1d2eeb: 12/12, md5 de juego/index.html igual que la web. Entra: T40 pulido, T41 movimientos y T42 poderes (A); T45 los 30 sonidos de Suno (B)
+
+
+📣 **Claude web A** → coordinadora · 15-nov · **T43 (1.ª parte): minijuego nuevo «Sigue el canto»**, en «Más juegos» (commit: ver REGISTRO).
+- **Cómo se juega:** 4 cotorras de colores (verde, roja, azul y amarilla, con los retratos de la V18 que ya hay: agilis, brasiliensis, versicolor y tresmariae). Cantan una secuencia y el niño la repite tocándolas, o con 1-4 / las flechas. Cada ronda suma una nota y va un poco más rápida. Una partida dura de 1 a 3 minutos.
+- **Al fallar no se castiga:** sale «¡Casi! Repetiste n cantos» o «¡Nuevo récord!», con «Otra vez» y «Salir».
+- **Récord:** se guarda en este dispositivo. Sin cuentas, sin datos y sin compras.
+- **Detalles técnicos:** los cantos son sintetizados (G.audio, nada descargado). El mundo queda en pausa y el HUD de detrás se oculta mientras se juega. Esc o «Salir» vuelven al menú.
+- **Archivos:**
+  - `src/game/canto.js` (nuevo);
+  - la tarjeta en `index.html`;
+  - `menu_modos.js`: «Más juegos» tiene ahora 4 juegos, cuenta el canto y menuModosTest entra y sale de él;
+  - `boot.js` lo carga al elegirlo;
+  - `en.js`.
+- **Pruebas:** `AV.cantoTest()` 11/11 (abre, pausa, escucha, ronda 2, fallo con récord, teclado, inglés y Esc), menuModosTest 98/98 y las baterías obligatorias.
+- **Captura:** `docs/img/t43_sigue_el_canto.jpg`.
+**Sigo con T43** (2.º minijuego: semillas al vuelo contra reloj).

@@ -29,7 +29,7 @@
     const S = G.S, $ = G.util.$, P = G.pack, raiz = document.documentElement;
     const ALMACEN = ((P.meta && P.meta.almacen) || P.id) + '.menu';
     const portada = $('title'), form = $('modos'), creador = $('creator');
-    const MODOS = ['aventura', 'golf', 'pesca', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'maze', 'libre', 'nido', 'records'];
+    const MODOS = ['aventura', 'golf', 'pesca', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'canto', 'maze', 'libre', 'nido', 'records'];
     // V18 (Kelvin 8-nov: «¿dónde está lo divertido?»): cada actividad de la V18 con su tarjeta. «Retos con amigos» abre una tarjeta con
     // las tres de los amigos (SUB); Mis cotorras, el Álbum y Retos con amigos se abren encima del menú, como Mi nido (ENCIMA).
     const SUB = ['chispa', 'moon', 'guardian'], ENCIMA = ['nido', 'records', 'cotorras', 'album', 'amigos'];
@@ -58,6 +58,7 @@
       flight: [L('Amazona Flight', 'Amazona Flight'), L('Vuela sin parar entre los troncos', 'Fly non-stop between the logs')],
       tren: [L('El tren de Vittata', "Vittata's Train"), L('Carga, desvíos y curvas por la costa', 'Cargo, switches and curves along the coast')], // src/game/tren.js (C16)
       river: [L('River Rush', 'River Rush'), L('Baja el río en canoa: contra el reloj y tu fantasma', 'Paddle down the river: against the clock and your ghost')], // src/game/river_rush.js (AC2)
+      canto: [L('Sigue el canto', 'Follow the song'), L('Repite el canto de las cotorras', 'Repeat the parrots’ song')], // src/game/canto.js (T43)
       maze: [L('Amazona Maze', 'Amazona Maze'), L('Frutos en el laberinto y guardianes', 'Fruit in the maze and guardians')], // src/game/maze.js (AB1, BI2)
       libre: [L('Vuelo libre', 'Free flight'), L('Explora a tu aire, sin misiones', 'Explore on your own, with no missions')],
       nido: [L('Mi nido', 'My nest'), L('Tus huevos y crías', 'Your eggs and chicks')],
@@ -130,12 +131,12 @@
     if (!document.getElementById('menu-recorte-css')) {
       const st = document.createElement('style'); st.id = 'menu-recorte-css';
       st.textContent = '#modos .recorte-fuera{display:none!important}#title .title-episodios.episodios-arriba{margin:0 0 12px}'
-        // «Más juegos» abierto: solo sus tres juegos y «Volver», en ese orden (también fuera las tarjetas que añaden otros módulos)
-        + '#modos.modos-mas-abierto .modos-grid>:not([data-mas-juegos]):not([data-modo="river"]):not([data-modo="tormenta"]):not([data-modo="banquete"]){display:none!important}'
-        + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-mas-juegos]{order:4}';
+        // «Más juegos» abierto: solo sus juegos (River Rush, Tormenta, Banquete y Sigue el canto) y «Volver», en ese orden (también fuera las tarjetas que añaden otros módulos)
+        + '#modos.modos-mas-abierto .modos-grid>:not([data-mas-juegos]):not([data-modo="river"]):not([data-modo="tormenta"]):not([data-modo="banquete"]):not([data-modo="canto"]){display:none!important}'
+        + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-modo="canto"]{order:4}#modos.modos-mas-abierto [data-mas-juegos]{order:5}';
       document.head.appendChild(st);
     }
-    const FUERA = [], MAS = ['river', 'tormenta', 'banquete']; // T38: el Duelo y el Duelo de 2 vuelven a la portada (Kelvin, 15-nov)
+    const FUERA = [], MAS = ['river', 'tormenta', 'banquete', 'canto']; // T38: el Duelo y el Duelo de 2 vuelven a la portada (Kelvin, 15-nov)
     const seVe = m => seVe0(m) && !(RECORTE() && FUERA.includes(m));
     let masAbierto = false;
     function masJuegos() {
@@ -189,7 +190,7 @@
       if (bMas) {
         bMas.hidden = !RECORTE(); bMas.style.display = RECORTE() ? '' : 'none';
         bMas.querySelector('b').textContent = masAbierto ? L('Volver', 'Back') : L('Más juegos', 'More games');
-        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta y el banquete', 'River Rush, the storm and the feast');
+        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta, el banquete y el canto', 'River Rush, the storm, the feast and the song');
         bMas.setAttribute('aria-expanded', String(masAbierto));
         bMas.setAttribute('aria-label', bMas.querySelector('b').textContent + '. ' + bMas.querySelector('small').textContent);
       }
@@ -433,6 +434,7 @@
     const SIGUE = {
       flight: () => document.body.classList.contains('flight-on'),
       river: () => document.body.classList.contains('river-on'),
+      canto: () => document.body.classList.contains('canto-on'),
       tren: () => document.body.classList.contains('tren-on'),
       maze: () => document.body.classList.contains('maze-on'),
       carreras: () => !!(G.retosApi && G.retosApi.activo) || document.body.classList.contains('retos-on'),
@@ -475,6 +477,7 @@
       else if (modo === 'flight') p = listo().then(() => (window.AV && window.AV.flight ? window.AV.flight() : false));
       else if (modo === 'tren') p = listo().then(() => (window.AV && window.AV.tren ? window.AV.tren() : false)); // El tren de Vittata (src/game/tren.js, C16)
       else if (modo === 'river') p = listo().then(() => (window.AV && window.AV.riverRush ? window.AV.riverRush() : false));
+      else if (modo === 'canto') p = window.AV && window.AV.canto ? window.AV.canto() : Promise.resolve(false); // T43: Sigue el canto (src/game/canto.js)
       else if (modo === 'maze') p = listo().then(() => (window.AV && window.AV.maze ? window.AV.maze() : false)); // Amazona Maze (src/game/maze.js, BI2)
       else if (modo === 'libre') { entrarLibre(); p = Promise.resolve(true); }
       else if (modo === 'nido') p = G.criadero && G.criadero.abrir ? G.criadero.abrir() : Promise.resolve(false);
@@ -530,6 +533,7 @@
       const fv = G.flightApi; if (fv) { try { fv.salir(); } catch (e) { /* ya fuera */ } }
       const tv = G.trenApi; if (tv) { try { tv.salir(); } catch (e) { /* ya fuera */ } } // src/game/tren.js (C16)
       const rv = G.riverRushApi; if (rv) { try { rv.salir(); } catch (e) { /* ya fuera */ } }
+      if (G.cantoApi) { try { G.cantoApi.salir(); } catch (e) { /* ya fuera */ } } // T43
       const mz = G.mazeApi; if (mz) { try { mz.salir(); } catch (e) { /* ya fuera */ } } // src/game/maze.js (BI2)
       if (G.criadero && G.criadero.abierto && G.criadero.abierto()) G.criadero.cerrar();
       salir18();
@@ -657,7 +661,7 @@
           check('T3/T38 · el Duelo (y, con teclado, el Duelo de 2) en la portada, y River Rush, Tormenta y Banquete dentro de «Más juegos»', vis('duelo') === !!G.V18 && vis('duelo2') === seVe0('duelo2') && MAS.every(m => !vis(m)) && !!bMas && seVeT(bMas) && vis('aventura') && vis('golf'), ['duelo', 'duelo2'].concat(MAS).map(m => m + ':' + vis(m)).join(' '));
           bMas.click();
           const aVista = [...form.querySelector('.modos-grid').children].filter(el => getComputedStyle(el).display !== 'none');
-          check('T3 · «Más juegos» enseña solo sus tres juegos y «Volver»', masAbierto && MAS.every(vis) && !vis('aventura') && /Volver|Back/.test(bMas.textContent) && aVista.length === 4, aVista.map(el => el.dataset.modo || el.textContent.trim().slice(0, 12)).join(','));
+          check('T3 · «Más juegos» enseña solo sus juegos (T43: con Sigue el canto, 4) y «Volver»', masAbierto && MAS.every(vis) && !vis('aventura') && /Volver|Back/.test(bMas.textContent) && aVista.length === MAS.length + 1, aVista.map(el => el.dataset.modo || el.textContent.trim().slice(0, 12)).join(','));
           const aj = G.aula && G.aula.aj, idi0 = aj ? aj.idioma : null;
           if (aj) { aj.idioma = 'en'; mostrar(); check('T12 · en inglés, «Back» y «To all the cards»; cerrado, «More games»', /Back/.test(bMas.textContent) && /To all the cards/.test(bMas.textContent) && (abrirMas(false), /More games/.test(bMas.textContent)), bMas.textContent); aj.idioma = idi0; abrirMas(true); }
           const abiertaP = portada.open; if (!abiertaP) portada.show();
@@ -714,6 +718,10 @@
         const okR = await hasta(() => G.riverRushApi && G.riverRushApi.activo, 15000);
         check('River Rush: la tarjeta abre el río y cierra la portada', okR && !portada.open);
         volver(); check('Vuelve al menú desde River Rush', portada.open && !G.riverRushApi.activo && !document.body.classList.contains('river-on'));
+        await elegir('canto'); // T43
+        const okC = await hasta(() => G.cantoApi && G.cantoApi.activo(), 15000);
+        check('T43 · Sigue el canto: la tarjeta abre el juego (con su «Salir») y cierra la portada', okC && !portada.open && !!document.querySelector('#canto [data-a="salir"]'));
+        volver(); check('T43 · Vuelve al menú desde Sigue el canto (sin pausa colgada)', portada.open && !G.cantoApi.activo() && !document.body.classList.contains('canto-on') && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('canto')));
         await elegir('tren');
         const okTren = await hasta(() => G.trenApi && G.trenApi.activo, 15000);
         check('El tren de Vittata: la tarjeta abre el tren y cierra la portada', okTren && !portada.open);
