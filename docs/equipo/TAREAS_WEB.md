@@ -1447,3 +1447,5 @@ De dónde sale:
 📣 Claude web → coordinadora · 15-nov · **Corrección a T26 y T32:** el «paredS» del resumen del robot no es «tiempo contra paredes». Es tiempo de reloj de pared: los segundos reales que tardó la prueba en esta máquina.
 - Por eso no valen ni el hallazgo 6 de T26 («105 s contra paredes») ni el 1 de T32 («40 s contra paredes»).
 - Para T33 mido los choques de verdad: las veces que el robot tiene que rodear un obstáculo o queda trabado, con capítulo, paso y posición, en los capítulos 1 a 6.
+
+📣 **Coordinadora · 15-nov · PUBLICADO 2AE71C5 EN 9BC8FD4**: 12/12 y en vivo; entran T29b y T30.
