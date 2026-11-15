@@ -76,20 +76,23 @@ window.AVRendimientoModulos = function (G) {
     try {
       const sp0 = (G.terreno.mapa || {}).spawn; if (sp0) { S.pos.x = sp0.x; S.pos.z = sp0.z; S.pos.y = G.terreno.height(sp0.x, sp0.z); }
       const filas = [];
-      let malos = 0, antes = 0, despues = 0, callsA = 0, callsD = 0;
+      let malos = 0, antes = 0, despues = 0, callsA = 0, callsD = 0; const nombresMalos = [];
       for (const yaw of [0, Math.PI]) {
         G.camara.yaw = yaw;
         // tres pares alternados y el mínimo de cada lado: un precalentado o una carga de streaming en un cuadro suelto suma draw calls que no son del recorte
-        let a = null, d = null;
+        // «desaparece» = se dibuja en los 3 cuadros sin recorte y en ninguno con recorte (hay piezas que parpadean solas entre cuadros)
+        let a = null, d = null, siempre = null; const alguna = new Set();
         for (let k = 0; k < 3; k++) {
           const x = cuadro(false), y = cuadro(true);
-          for (const o of x.dib) if (!y.dib.has(o) && !fuera(o)) malos++;
+          siempre = siempre ? new Set([...siempre].filter(o => x.dib.has(o))) : new Set(x.dib);
+          for (const o of y.dib) alguna.add(o);
           if (!a || x.n < a.n) a = x; if (!d || y.n < d.n) d = y;
         }
+        for (const o of siempre) if (!alguna.has(o) && !fuera(o)) { malos++; nombresMalos.push(o.name || o.type); }
         antes += a.nFuera; despues += d.nFuera; callsA += a.n; callsD += d.n;
         filas.push('giro ' + yaw.toFixed(1) + ': ' + a.n + '→' + d.n + ' calls, fuera ' + a.nFuera + '→' + d.nFuera + ', apagadas ' + d.apagados);
       }
-      ok('T46 · lo que deja de dibujarse estaba de verdad fuera de cámara (nada visible desaparece)', malos === 0, malos + ' a la vista sin dibujar · ' + filas.join(' · '));
+      ok('T46 · lo que deja de dibujarse estaba de verdad fuera de cámara (nada visible desaparece)', malos === 0, malos + ' a la vista sin dibujar' + (malos ? ' (' + nombresMalos.slice(0, 5).join(', ') + ')' : '') + ' · ' + filas.join(' · '));
       ok('T46 · fuera de cámara se dibuja menos que sin el recorte (y nunca más draw calls)', (antes === 0 || despues < antes) && callsD <= callsA,
         'fuera ' + antes + '→' + despues + ' · calls ' + callsA + '→' + callsD + ' · ' + (G.renderer.calidad && G.renderer.calidad.nivel) + (sombra() ? ' con sombras' : ' sin sombras'));
     } catch (e) { ok('T46 · recorte fuera de cámara sin excepciones', false, e && e.message); }

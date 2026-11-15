@@ -2526,10 +2526,12 @@ AVE.module('streaming', function (G) {
       if (R.fueraCamara) { // T46: en la peor toma, el recorte de lo de fuera de cámara (InstancedMesh, personajes con esqueleto) no suma draw calls
         const FC = R.fueraCamara, yawT = G.camara.yaw; G.camara.yaw = st.yaw;
         // tres pares alternados y el mínimo de cada lado (un cuadro suelto con sombra, precalentado o carga suma calls que no son del recorte)
+        // Solo los draw calls de la cámara principal: la sombra no se redibuja en todos los cuadros y, alternando, caería siempre del mismo lado
+        const rr = R.renderer, contarCam = () => { const orig = rr.renderBufferDirect; let n = 0; rr.renderBufferDirect = function (c) { if (c === R.camera) n++; return orig.apply(this, arguments); }; try { G.camara.place(true); R.render(1 / 60, false); } finally { rr.renderBufferDirect = orig; } return n; };
         let sinR = Infinity, conR = Infinity, apag = 0;
-        for (let k = 0; k < 3; k++) { FC.activo = false; dibujar(1); sinR = Math.min(sinR, contar()); FC.activo = true; dibujar(1); conR = Math.min(conR, contar()); apag = Math.max(apag, FC.ultimo); }
+        for (let k = 0; k < 3; k++) { FC.activo = false; dibujar(1); sinR = Math.min(sinR, contarCam()); FC.activo = true; dibujar(1); conR = Math.min(conR, contarCam()); apag = Math.max(apag, FC.ultimo); }
         G.camara.yaw = yawT;
-        check('T46 · En la vista más cargada, lo que queda fuera de cámara no se dibuja (nunca suma draw calls)', conR <= sinR, sinR + ' → ' + conR + ' draw calls · ' + apag + ' mallas fuera de cámara apagadas');
+        check('T46 · En la vista más cargada, lo que queda fuera de cámara no se dibuja (nunca suma draw calls)', conR <= sinR, sinR + ' → ' + conR + ' draw calls de la cámara · ' + apag + ' mallas fuera de cámara apagadas');
       }
       { // QA-nuevo-br1-3: los personajes V18 (Arausiaca, la rival del duelo, los NPC de v18npc) a más de 60 m no se dibujan; tras
         // pasar por sus sitios (juiceTest carga los módulos a demanda) sumaban ~47 draw calls en esta vista
