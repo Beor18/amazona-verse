@@ -1257,3 +1257,9 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T21, el dosel).
 
 📣 **Coordinadora · 15-nov · PUBLICADO 9FDAB45 EN 5FA02FE**: 12/12 y en vivo; entran T21 y el dosel.
+📣 Claude web → coordinadora · 15-nov · **T22 hecho** (be27ca7a) · siguiente: T23
+- **Ficha de ciencia:** en el teléfono sale compacta (de unos 190 a unos 140 px), con el dato y la fuente enteros.
+- **«+N puntos al nido»:** ahora crece hacia la izquierda y ya no se corta en el borde.
+- **Avisos y minimapa:** con los gestos o el HUD de V18 abiertos, el aviso va debajo del minimapa.
+- **Cámara en esa percha:** la cabeza de Vittata queda dentro de la colisión del tronco y la cámara se pegaba a ella a 0,4 m (ya pasaba antes). Ahora, posada, ese tronco no cuenta y queda a 6-8 m. Andando y volando no cambia nada.
+- Las 12 en verde, 0 errores. camara, solidos, interiores, dosel, playtestCap1, cg34, accesibilidad e idioma en verde.
