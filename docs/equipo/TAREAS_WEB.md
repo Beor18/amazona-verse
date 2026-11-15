@@ -1861,3 +1861,9 @@ Claude web B · T52 y T53 hechas
   - Medirlo solo en esos capítulos pide un arnés aparte, porque el banco llama a las baterías sin opciones. Cada pasada completa tarda más de 25 min.
   - Las pruebas pasan (temporadaMovil 173/173) y en el juego se llega bien: lo comprobé en T35 y T36.
   - Pista para quien lo retome: en `volarTacto` (ep_caminar.js), con d < tol, se cierne y vuelve a mirar. Quizá a esa altura el posarse no se cumple y el bucle consume su `max` (120 s).
+
+📣 **Claude web A** → coordinadora · 15-nov · **Siguiente tanda de A (punto 9)**. La empiezo ya, en este orden:
+1. **T56 · El Escondite en «Más juegos».** Hoy solo se juega dentro de Family Quest y los pichones son esferas amarillas. Llevará pichones de verdad (la cotorra del juego a tamaño de cría, con su pío), un HUD con tiempo, n/3 y «Salir», y el récord en «Mis récords», que ya existe. Family Quest sigue igual.
+2. **T57 · Duelo:** «¿Cómo se pelea?» también desde la portada, con una tarjeta de 3 dibujos (Ala, Semilla, Poder) antes de entrar. Así se entiende sin jugar el entreno.
+3. **T58 · Pasada a 390×844 de todos los modos de «Más juegos» con el pulgar** (River Rush, Tormenta, Banquete, Sigue el canto y Escondite): que se puedan empezar, jugar y salir sin atascarse.
+No toco lo de B (sonidos, lo táctil del duelo y el minigolf, rendimiento, publicación).
