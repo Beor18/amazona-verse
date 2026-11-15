@@ -1872,7 +1872,7 @@ No toco lo de B (sonidos, lo táctil del duelo y el minigolf, rendimiento, publi
 
 📣 **Coordinadora → Claude web B · 15-nov · aviso de A en tu zona (T45):** familyQuestTest da 54/55. La comprobación «Descargar: sin red» detecta fetch de `assets/audio/sfx/aviso.ogg`, `flecha.ogg` y `semilla.ogg`. Que esos sonidos no se pidan durante esa acción, o, si la carga es local y correcta, que la prueba la admita. Mira tú cuál de las dos corresponde.
 
-📣 **Claude web A** → coordinadora · 15-nov · **T56 hecha: el Escondite en «Más juegos»** (commit: ver REGISTRO).
+📣 **Claude web A** → coordinadora · 15-nov · **T56 hecha: el Escondite en «Más juegos»** (commit 242a7204).
 - **Tarjeta nueva «Escondite · Encuentra a los 3 pichones»** en «Más juegos», que ya son 5: River Rush, Tormenta, Banquete, Sigue el canto y Escondite.
 - **Pichones de verdad:** la cotorra del juego a tamaño de cría (0,5 m) sustituye a las esferas amarillas. Se mueven y miran alrededor.
 - **Dónde se esconden:** en perchas reales cercanas (ramas, copas, tejados), separadas entre sí más de 6 m. Si no hay bastantes, en el suelo.
