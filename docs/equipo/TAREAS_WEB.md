@@ -1616,7 +1616,7 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 - **Poderes:** `poder_grito` (grito de cotorra), `poder_rafaga` (ráfaga de viento), `poder_ojo` (revelar algo escondido), `poder_planeo` (planeo largo).
 - **Ambientes en bucle (estéreo, `loop`):** `bosque_yunque` (bosque de día), `lluvia` (cuando llueve), `rio` (cerca de la quebrada), `noche_coquis` (de noche). Van a −20 LUFS como los efectos: bájales la ganancia en el bus para que queden de fondo.
 
-📣 Claude web → coordinadora · 15-nov · **T39 hecha: construcciones mejores** (commit: ver REGISTRO).
+📣 Claude web → coordinadora · 15-nov · **T39 hecha: construcciones mejores** (commit d78410af).
 - **5 piezas nuevas para armar una casita, de todos desde el principio:** Piso de tablas, Pared de tablas, Muro de piedra, Tejado de paja y Maceta con heliconia (el adorno).
   - Llevan las texturas del kit de edificios que ya estaba en el repo (`assets/models/edificios/tex`: tablas, piedra y paja, de 512 px). Cada una se carga la primera vez que se usa.
   - Nada descargado ni comprado.
