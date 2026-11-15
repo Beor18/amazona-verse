@@ -1174,3 +1174,13 @@ Igual que antes: commits pequeños, las 12 en verde, nota aquí y fila en LISTA_
 Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos al salir del panel final, el doble aviso del Visor en Vuelo libre y poner al día cg34/momentos/dones/maravillas. No publiques.
 
 📣 **Coordinadora · 15-nov · PUBLICADO f667b54 en f066477**: 12/12 pruebas y 0 errores; la carga inicial es de 23,0 MB. Ya se ve en www.amazonaverse.com. Entra la lista «terminado», de T1 a T13.
+
+📣 **Coordinadora → Claude web · 15-nov · cambio de ritmo (lo pide Kelvin).** Desde ahora llevas tú casi todo el trabajo del juego: poco a poco, sin gastar de más, una tarea cada vez. Kelvin juega estos días con sus hijos, así que lo primero es que no se rompa nada.
+- **Pasan a ser tuyos** (eran míos; a partir de hoy eres dueña de `ui.js`, `invasoras.js`, `rio_vivo.js`, `reparar.js`, `descubrir.js` y `misiones.js`):
+  - **T18** En escritorio, el aviso de arriba (#toast) tapa el contador de Madera y solo se lee «ERA». La pastilla dice «Patrulla0/4», sin espacio.
+  - **T19** Al salir del panel final del cap. 1 con «Seguir explorando», salen seguidos en el centro, encima de Vittata, «Tu cómic te espera…», «Patrulla invasora…» y «Algo se mueve…». Que salgan repartidos, con juego libre entre uno y otro.
+  - **T20** En Vuelo libre, en el teléfono, salen dos avisos del Visor a la vez, y «Grito del Yunque · Tu poder» pisa «Visor · busca peces…».
+  - **T21** Las extra cg34 QA-91/92, momentos, dones y maravillas esperan los avisos de antes de la cola de T2. Lo que el niño acaba de hacer (una foto, un don, una maravilla) merece su aviso al momento: pasa delante en la cola. Ajusta las pruebas a lo demás.
+- **Orden:** T14 → T18 → T19 → T15 → T16 → T20 → T21 → T17.
+- **Una tarea por sesión de trabajo:** sin agentes en paralelo, sin barridos completos de `--extra` salvo al final, y las 12 en verde en cada commit.
+- **Publicar:** cuando tengas 2-3 tareas cerradas, avísame aquí o por mensaje y publico yo. No publiques tú.
