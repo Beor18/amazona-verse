@@ -185,6 +185,9 @@ window.AVCarga = function (G) {
         // Se destapa el mundo: el cuadro siguiente es el primero de verdad (todo enlazado). Se mide cuánto tarda.
         ocultar = false;
         if (G.pausa) G.pausa.set('carga', false);
+        // T15: la cámara se colocó antes de que el terreno y Vittata tuvieran su altura final (en la apertura del cap. 2 quedaba
+        // pegada al suelo, mirando la hierba): al destapar el mundo se coloca otra vez, salvo con un modo que lleva la suya
+        try { const modo = [...document.body.classList].some(c => /-on$/.test(c)); if (G.camara && G.camara.place && !modo) G.camara.place(true); } catch (e) { /* sin cámara */ }
         G.cargaPendiente = false; // la precubierta del boot: el mundo ya destapa (QA-159)
         const tR = performance.now();
         // El peor cuadro del primer segundo de juego (QA-53: < 500 ms)

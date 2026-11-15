@@ -39,6 +39,7 @@ AVE.module('camara', function (G) {
     agachadaAlto: 1.3, agachadaDist: 4.2, // agachada bajo un toldo: la cámara baja y se acerca para verla bajo la lona
     copaMin: 4, copaDentro: 4,     // con una copa en medio: distancia mínima / si Vittata está dentro de la copa (m). T5: antes 2,4 y 2,8 (la vista se pegaba a Vittata)
     copaSubir: 6,                  // T5: con una copa en medio, antes de acercarse sube hasta estos m buscando la vista libre
+    murosSubir: 5,                 // T15: igual con un tejado o un muro en medio (caserío)
     rollMax: 4, rollK: 0.09,       // inclinación en vuelo: máximo (°) y grados por grado/s de giro del rumbo
     fovMin: 4, fovMax: 12,         // FOV extra al volar o en el impulso, de parado a velocidad de impulso
     caida: 0.35, bob: 0.01,        // dolly al aterrizar (m por impacto 1) y balanceo al caminar (m)
@@ -223,6 +224,15 @@ AVE.module('camara', function (G) {
     };
     const dx0 = qx - hx, dy0 = qy - hy, dz0 = qz - hz;
     let best = libre(dx0, dy0, dz0);
+    // T15: si un tejado o un muro corta la línea, primero sube (hasta murosSubir m) a la misma distancia buscando la vista libre;
+    // solo si no hay hueco se acerca (en el caserío los techos la dejaban a ~4 m y llenaban un tercio de la pantalla)
+    const dh0 = Math.hypot(dx0, dz0);
+    if (!modoInterior && best.d < dh0 - 0.3) {
+      for (let up = 1; up <= CAM.murosSubir; up += 1) {
+        const r = libre(dx0, dy0 + up, dz0);
+        if (r.d >= dh0 - 0.05) { best = r; break; }
+      }
+    }
     // Vuelta completa: un tejado ancho tapa los lados, y el hueco libre queda detrás de Vittata.
     if (best.d < 3.2) {
       const dh = Math.hypot(dx0, dz0) || CAM.dist, ang0 = Math.atan2(dx0, dz0);
