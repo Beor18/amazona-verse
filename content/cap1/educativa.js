@@ -841,6 +841,22 @@
       G.on('aula', k => { if (k === 'idioma') pintarChip(); });
 
       // ---------- Bucle de la misión ----------
+      // T29b: si pasan 30 s de juego sin avanzar en el paso (el objetivo no cambia), una pista corta con lo que toca ahora.
+      // Como mucho una cada 45 s; no sale con una escena delante (avisoLibre) ni fuera de la misión.
+      const PISTA = { t: 0, clave: '', ultima: -Infinity, reloj: 0 };
+      G.on('update', (dt, busy) => {
+        if (!enMision() || G.quiet) { PISTA.t = 0; return; }
+        PISTA.reloj += dt;
+        // también cuenta como avance que el vapor o la gota sigan su ruta (cada 10 m)
+        const clave = textoPaso() + '|' + (T.voluta ? Math.floor(T.voluta.d / 10) : '') + '|' + (T.gota ? T.gota.i + ':' + Math.floor(T.gota.d / 10) : '');
+        if (clave !== PISTA.clave) { PISTA.clave = clave; PISTA.t = 0; return; }
+        if (busy) return;
+        PISTA.t += dt;
+        if (PISTA.t >= 30 && PISTA.reloj - PISTA.ultima >= 45) {
+          const id = actual(), def = id && paso(id);
+          if (def && G.ui.avisoLibre && G.ui.avisoLibre((AU.aj.idioma === 'en' ? 'Hint: ' : 'Pista: ') + tc(def.instruccion, def.corto) + ' ✦', 4500)) { PISTA.ultima = PISTA.reloj; PISTA.t = 0; }
+        }
+      }, 89);
       G.on('update', (dt, busy) => {
         const e = E();
         if (T.pendiente && !busy) { T.pendiente.t -= dt; if (T.pendiente.t <= 0) { const f = T.pendiente.fn; T.pendiente = null; f(); } }
@@ -985,7 +1001,9 @@
         if (id === 'p2' || (id === 'p3' && !e.perchas.dosel)) extra = ` (${RUTA.perchas.filter(p => e.perchas[p.capa]).length}/${PERCHAS.length})`;
         if (id === 'p4') extra = ` (${(e.vistos.A ? 1 : 0) + (e.vistos.B ? 1 : 0)}/2)`;
         const shown = id === 'p3' && !e.perchas.dosel ? paso('p2') : def;
-        return `${t(LEC.meta.titulo)}: ${t(shown.corto)}${extra}`;
+        // T29b: el progreso del paso a la vista («La ruta de la gota 2/8: …»); la parte p3 cuenta como p2 mientras sigue en las perchas
+        const n = PASOS.indexOf(shown.id || id) + 1;
+        return `${t(LEC.meta.titulo)}${n > 0 ? ' ' + n + '/' + PASOS.length : ''}: ${t(shown.corto)}${extra}`;
       }
       function guia() {
         if (!enMision()) return null;

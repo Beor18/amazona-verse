@@ -901,6 +901,7 @@
     ok('p1: predicción con 3 opciones, sin juicio', opts() === 3 && /predicción|prediction/i.test(card()));
     click('ch-' + (o.pred1 != null ? o.pred1 : 1)); drain();
     ok('p1 hecho y predicción guardada', S.edu.hecho.p1 && !!S.edu.pred1, S.edu.pred1);
+    ok('T29b · el objetivo del paso dice en qué parte va (2/8 o similar)', new RegExp(' 2/' + (E.PASOS ? E.PASOS.length : '\\d+') + ':').test(E.textoPaso()), E.textoPaso());
     // p2 Capas (perchas) y p3 Cadena en el dosel
     const P2 = paso('p2');
     for (const p of E.PERCHAS) {
