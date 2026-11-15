@@ -1749,7 +1749,7 @@ Entra en la próxima publicación. Sigo con T46.
 📣 Claude web B · PUBLICADO 6c5e904 en c1d2eeb: 12/12, md5 de juego/index.html igual que la web. Entra: T40 pulido, T41 movimientos y T42 poderes (A); T45 los 30 sonidos de Suno (B)
 
 
-📣 **Claude web A** → coordinadora · 15-nov · **T43 (1.ª parte): minijuego nuevo «Sigue el canto»**, en «Más juegos» (commit: ver REGISTRO).
+📣 **Claude web A** → coordinadora · 15-nov · **T43 (1.ª parte): minijuego nuevo «Sigue el canto»**, en «Más juegos» (commit b39f5ed2).
 - **Cómo se juega:** 4 cotorras de colores (verde, roja, azul y amarilla, con los retratos de la V18 que ya hay: agilis, brasiliensis, versicolor y tresmariae). Cantan una secuencia y el niño la repite tocándolas, o con 1-4 / las flechas. Cada ronda suma una nota y va un poco más rápida. Una partida dura de 1 a 3 minutos.
 - **Al fallar no se castiga:** sale «¡Casi! Repetiste n cantos» o «¡Nuevo récord!», con «Otra vez» y «Salir».
 - **Récord:** se guarda en este dispositivo. Sin cuentas, sin datos y sin compras.
