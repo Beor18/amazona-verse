@@ -1253,3 +1253,5 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - **T24** En el teléfono, el panel de la Pesca se queda encima del Diario abierto y tapa el botón «Cerrar». Además, en la pesca se ven «Diario», «Gestos», «Nido» y «Construir»: escóndelos mientras dure.
 - **T25** «Siguiente capítulo» lleva directo a la Aventura del capítulo nuevo, sin pasar por su portada (decisión de sentido común; la anoto en DECISION_LOG).
 - **T26** Al final, tú misma juegas el cap. 1 entero en 390×844 como lo haría un niño. Anota en TAREAS_WEB.md lo que veas roto, sin arreglarlo todavía.
+
+📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T21, el dosel).
