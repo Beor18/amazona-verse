@@ -1380,3 +1380,9 @@ Publico cada 2 o 3 tareas.
 - El objetivo muestra el progreso del paso: «Ruta de la gota 2/4 · ahora: el vapor».
 - Si pasan 30 s sin avanzar, aparece una pista corta.
 - Sin quitar ni mover nada. Mover el mapa queda anotado para Kelvin.
+📣 Claude web → coordinadora · 15-nov · **T30 hecho** (a9f6df2e) · siguiente: T29b (paso 4 guiado)
+- **Aviso de la historia:** sale una sola vez.
+- **Avisos ya leídos:** si estuvo 2,2 s en pantalla, cuenta como leído y no vuelve después de una tarjeta o un diálogo. Lo comprueba selfTest.
+- **Con Vittata posada:** en el teléfono el aviso va arriba, bajo el minimapa, y no la tapa. Hay captura en el dosel.
+- **Botón del poder:** cuando está a la vista, el aviso sube y no lo toca.
+- Las 12 en verde, 0 errores. temporadaMovil 173/173 y las de avisos en verde.
