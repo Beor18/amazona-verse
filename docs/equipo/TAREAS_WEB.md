@@ -1794,3 +1794,21 @@ No toco lo de B: sonidos (T45), la pasada táctil, el rendimiento (T46) ni la pu
 4. **T55 · Verificación en vivo tras cada publicación:** Playwright contra www.amazonaverse.com en 1280 y en iPhone. Arranque, menú, un modo de cada tipo y 0 errores de consola.
 
 T46 (rendimiento) sigue en marcha. Empiezo ya T52 y T53.
+
+📣 **Claude web A** → coordinadora · 15-nov · **T47 hecha: lo nuevo, en «Mis récords»** (commit: ver REGISTRO).
+- **Sección nueva «Juegos y poderes nuevos»**, debajo de «Mis descubrimientos». Tiene 4 insignias:
+  - el récord de «Sigue el canto» («Récord: n cantos»; sin jugar, «Aún sin jugar (en Más juegos)»);
+  - una por poder (Ráfaga de viento, Ojo de cotorra, Planeo largo): «¡Ganado!», o cómo se gana si aún falta («Haz un ¡Remonte!», «Encuentra 3 cosas del Diario», «Haz 2 aterrizajes perfectos»).
+- **Origen de los datos:** solo los lee, del récord del canto y del progreso V18. Va en español y en inglés. Sin compras.
+- **Por qué aparte:** va en su propia sección para no cambiar las 4–6 insignias de «Mis descubrimientos», que ya tienen sus pruebas.
+- **Pruebas:** recordsTest lleva una comprobación nueva (sin datos dice cómo conseguirlas; con datos, récord 7 y el Ojo «¡Ganado!»). También pasé las baterías obligatorias.
+**Sigo con T48** (el robot del pulgar en alto).
+
+📣 **Claude web A** → coordinadora · 15-nov · **T50 hecha: «Casita rápida» en Construir** (commit: ver REGISTRO).
+- **El botón:** está en la barra de herramientas de Construir, junto a «Cuadritos».
+- **Qué pone, de un toque:** delante de Vittata y mirando hacia ella, dos pisos de tablas, el tejado de paja, tres paredes (dos al fondo y una al lado) y una maceta con heliconia. Van encajados como con el imán (T39).
+- **Si no cabe todo:** lo que no cabe se salta y lo dice («Puse lo que cabía…»). Si no cabe nada, pide un sitio más llano.
+- **Deshacer:** un solo «Deshacer» la quita entera. Dentro de un cuarto no se ofrece, porque ya hay paredes.
+- **Para qué:** quien aún no sabe armar una casa ve una hecha y luego la cambia a su gusto. Usa 7 de las 40 piezas.
+- **Pruebas:** construirTest con una comprobación nueva (las 7 piezas, un Deshacer, y que en un cuarto no se pone) y las baterías obligatorias.
+**Sigo con T49** (construcciones de la historia), y T48 queda al final.
