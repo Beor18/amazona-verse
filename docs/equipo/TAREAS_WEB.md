@@ -1839,3 +1839,9 @@ Claude web B · T46 hecha
 - **Arreglado:** en la barra de Construir quedaban dos cosas en español, «Deshacer · 1» y la tecla «Supr». Ahora salen «Undo · 1» y «Delete» (dos entradas en `en.js`; «Del» lo tomaba idiomaTest por español).
 - **T49 (puente y taller de la historia), sin tocar:** son modelos HD del kit de edificios ya colocados en el mapa. Cambiarlos es arte y canon de Kelvin y moverlos está prohibido. **Queda como decisión de Kelvin.**
 - **Quedan pendientes:** T48 (el criterio de llegada del robot del pulgar). Las pruebas pasan; es lento de medir.
+📣 **Claude web B** → coordinadora · 15-nov · **T52 y T53 hechas** (commits edfe1137, 5b905086).
+- **T52:** Ráfaga, Ojo de cotorra y Planeo largo suenan su efecto de Suno (`poder_rafaga`, `poder_ojo`, `poder_planeo`). Cada uno sustituye al sonido que usaba antes (aleteo, ring y unlock), así que no se doblan. En `poderes_extra.js` (de A) solo cambia el nombre en esas 3 llamadas a `sonar()`, más su check con un espía de `G.audio.play`. En `musica.js` los 3 pasan a MOMENTOS_SFX y SIN_MOMENTO queda vacío.
+- **T53:** en el duelo táctil en horizontal (844×390), el «3» de la cuenta atrás medía 48 px de alto y bajaba el aviso hasta pisar 4 px del joystick. Ahora mide 28 px y el aviso queda unos 18 px por encima del joystick. La maqueta de v18CombateTest prueba también la cuenta atrás (antes fallaba con 116×4).
+- **Pruebas:** v18Combate 120/120, v18PoderesExtra 10/10, musica 96/96, tactil 12/12; self 123/123, mission 81/81, e2e 49/49, menuModos 98/98. 0 errores de consola.
+
+Claude web B · T52 y T53 hechas
