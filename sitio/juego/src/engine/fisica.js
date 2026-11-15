@@ -516,6 +516,7 @@ AVE.module('fisica', function (G) {
       if (viento !== !!MOVE.viento) { MOVE.viento = viento; G.emit('viento', viento); }
       MOVE.techoVuelo = lim;
       if (dive && above < 0.25 && S.vy <= 0) MOVE.landing = true; // bajar con C hasta el suelo también aterriza
+      MOVE.picando = dive; MOVE.subiendo = jumpHeld && !busy; // T45: el sonido de cada maniobra (juicy)
     } else {
       if (MOVE.wet && onGround) { MOVE.wet = false; MOVE.shake = true; G.agua.spray(S.pos.x, S.pos.y + 1.0, S.pos.z); } // sale del agua: se sacude
       const gliding = jumpHeld && S.vy < 0 && !onGround;
@@ -635,7 +636,14 @@ AVE.module('fisica', function (G) {
 
   // BM22, feedback «juicy»: sacudida suave (≤ 0,15) al chocar con un muro, hojas al atravesar una copa y aleteo con ritmo
   // según la velocidad. La sacudida respeta «Reducir movimiento» (camara.shake); lo demás no mueve la cámara.
-  const JU = { muro: 0, hojas: 0, ala: 0 };
+  // T45: sonidos de vuelo de Suno. aleteo: cada aletazo al subir o cernirse (no al planear ni en picada); planeo al empezar a planear
+  // (en vuelo a crucero sin subir ni bajar, o planeando tras un salto); frenada al empezar a frenar con las alas para posarse. La picada
+  // la suena src/game/juice.js (su picado de siempre). audio.js pone el mínimo entre repeticiones.
+  const JU = { muro: 0, hojas: 0, ala: 0, ve: '' };
+  function maniobra() {
+    if (MOVE.flying && MOVE.takeoff <= 0) return MOVE.landing ? 'frena' : MOVE.picando ? 'picada' : MOVE.subiendo || MOVE.fase === 'cernido' ? 'sube' : MOVE.fase === 'vuelo' ? 'planea' : '';
+    return MOVE.fase === 'planeo' ? 'planea' : '';
+  }
   function choque(v) {
     if (v < 3 || JU.muro > 0 || !G.camara || !G.fx) return;
     JU.muro = 0.4; G.camara.shake(Math.min(0.15, 0.02 + v * 0.01), 0.18);
@@ -643,7 +651,9 @@ AVE.module('fisica', function (G) {
   }
   function juicy(dt, v) {
     JU.muro = Math.max(0, JU.muro - dt); JU.hojas = Math.max(0, JU.hojas - dt);
-    if (MOVE.flying && MOVE.takeoff <= 0 && !MOVE.landing) {
+    const ve = maniobra();
+    if (ve !== JU.ve) { if (ve === 'planea') G.audio.play('planeo'); else if (ve === 'frena') G.audio.play('frenada'); JU.ve = ve; }
+    if (ve === 'sube') {
       if ((JU.ala -= dt) <= 0) { JU.ala = Math.max(0.2, 0.55 - v * 0.02); G.audio.play('aleteo', v); if (G.fx) G.fx.juicy.aleteo++; }
     } else JU.ala = 0;
     if (JU.hojas <= 0 && v > 1.5 && G.camara && G.camara.copasAhora && G.fx && G.fx.hojas) {

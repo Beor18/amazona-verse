@@ -330,7 +330,7 @@
       const ahora = performance.now();
       if (st.fase === 'listo') { st.fase = 'juego'; J.t = 0; ocultarPista(); }
       if (st.fase === 'juego') {
-        J.vy = P.impulso; J.flapT = P.flap; J.ultimoToque = ahora; sonar('jump');
+        J.vy = P.impulso; J.flapT = P.flap; J.ultimoToque = ahora; sonar('aleteo'); // T45: aletazo de Suno (audio.js: si se toca muy seguido, el sintético suave)
         if (!REDUCED && G.fx && G.fx.burst && !(opts && opts.sinFx)) { try { G.fx.burst(S.pos.x, S.pos.y + 0.4, S.pos.z, 'feathers', 3, S.pos.y + 3); } catch (e) { /* sin fx */ } }
         return true;
       }
@@ -743,7 +743,9 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           J.dist = dist0;
           // ---------- Impulso y gravedad ----------
           check('Antes del primer toque Vittata se queda cernida (fase listo)', st.fase === 'listo' && (tick(1), st.fase === 'listo' && Math.abs(J.y - 6) < 0.3));
-          toque();
+          { const oidos = [], play0 = G.audio.play; G.audio.play = function (n) { oidos.push(n); return play0.apply(this, arguments); };
+            try { toque(); } finally { G.audio.play = play0; }
+            check('T45: cada toque suena el aletazo de Suno («aleteo»)', oidos.includes('aleteo') && !oidos.includes('jump'), oidos.join()); }
           check('El primer toque arranca y da el impulso (vy = impulso, aleteo de despegue)', st.fase === 'juego' && J.vy === P.impulso && J.flapT > 0 && (sincronizar(), M.fase === 'despegue'));
           const y0 = J.y; tick(0.1);
           check('Sube tras el toque', J.y > y0 + 0.5, (J.y - y0).toFixed(2));

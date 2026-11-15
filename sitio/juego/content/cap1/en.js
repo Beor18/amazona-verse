@@ -3003,5 +3003,6 @@ window.AV_EN = {
  "Pared de tablas": "Plank wall",
  "Muro de piedra": "Stone wall",
  "Tejado de paja": "Thatched roof",
- "Maceta con heliconia": "Heliconia pot"
+ "Maceta con heliconia": "Heliconia pot",
+ "¡Esquivado!": "Dodged!"
 };

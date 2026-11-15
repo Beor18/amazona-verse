@@ -581,7 +581,19 @@
   // =====================================================================
   // Ambiente: capas continuas de ruido filtrado + aves y coquíes sueltos
   // =====================================================================
-  function crearAmbiente(c, dest, modo) {
+  // T45: ambientes de Suno en bucle (assets/audio/sfx/, estéreo). Cada uno sigue el nivel de una capa: el bosque del Yunque el de las aves
+  // (de día), los coquíes el de las ranas (de noche), la lluvia el de la lluvia (clima) y el río el del río (cerca de la quebrada). Cuando
+  // su archivo ya suena, sustituye a la capa sintética que hace lo mismo (sin doblar): los dos cambian con el mismo fundido largo
+  // (cruce suave). Van bajitos en el bus del ambiente (deslizador «Ambiente», silencio y diálogo) y aún más bajos con música.
+  // Se piden solo cuando su capa suena (arch.buffer: G.audio, pasados unos segundos de juego); en «simple» no hay archivos.
+  const BUCLES = [
+    { n: 'bosque_yunque', capa: 'aves', k: 0.32, quita: { bosque: 0.5 }, sinEventos: 'aves' },
+    { n: 'noche_coquis', capa: 'coquies', k: 0.3, quita: { grillos: 0.3 }, sinEventos: 'coquies' },
+    { n: 'lluvia', capa: 'lluvia', k: 0.34, quita: { lluvia: 0 } },
+    { n: 'rio', capa: 'rio', k: 0.36, quita: { rio: 0 } },
+  ];
+  const AMB_CON_MUSICA = 0.7, AMB_FUNDIDO = 1.2, AMB_SUELTA_S = 20;
+  function crearAmbiente(c, dest, modo, arch) {
     const simple = modo === 'simple', ruido = ruidoDe(c);
     const fuentes = [], nodos = [], capas = {};
     const lazo = () => { const s = c.createBufferSource(); s.buffer = ruido; s.loop = true; s.start(0, Math.random() * 1.4); fuentes.push(s); return s; };
@@ -627,14 +639,45 @@
     }
     let proxAve = 0, proxCoqui = 0, nEventos = 0;
     const lento = simple || modo === 'ligero' ? 1.6 : 1; // en equipos justos, menos eventos
+    // T45: capas en archivo (una fuente en bucle por ambiente, solo mientras suena; se suelta tras AMB_SUELTA_S s en silencio)
+    const bucles = simple || !arch ? [] : BUCLES.map(b => ({ b, g: null, src: null, cero: 0 }));
+    const mul = {}, sinEv = {}; // lo que la capa en archivo quita a la sintética
+    function capasArchivo(niv, t, fMus) {
+      for (const k in mul) delete mul[k]; for (const k in sinEv) delete sinEv[k];
+      for (const L of bucles) {
+        const quiere = niv[L.b.capa] || 0;
+        if (!L.src && quiere > 0.03) {
+          const buf = arch.buffer(L.b.n);
+          if (buf) {
+            L.g = c.createGain(); L.g.gain.value = 0; L.g.connect(dest);
+            L.src = c.createBufferSource(); L.src.buffer = buf; L.src.loop = true; L.src.connect(L.g); L.src.start(t, Math.random() * buf.duration);
+          }
+        }
+        if (!L.src) { if (arch.activo) arch.activo(L.b.n, false); continue; }
+        L.g.gain.setTargetAtTime(quiere * L.b.k * fMus, t, AMB_FUNDIDO);
+        for (const k in L.b.quita) mul[k] = Math.min(mul[k] == null ? 1 : mul[k], L.b.quita[k]);
+        if (L.b.sinEventos) sinEv[L.b.sinEventos] = true;
+        if (arch.activo) arch.activo(L.b.n, quiere > 0.03);
+        if (quiere > 0.03) L.cero = 0; else if (!L.cero) L.cero = t; else if (t - L.cero > AMB_SUELTA_S) soltarBucle(L);
+      }
+    }
+    function soltarBucle(L) {
+      try { L.src.stop(); L.src.disconnect(); L.g.disconnect(); } catch (e) { /* ya suelto */ }
+      L.src = null; L.g = null; L.cero = 0; if (arch && arch.activo) arch.activo(L.b.n, false);
+    }
     return {
-      aplicar(niv, t) { for (const k in capas) capas[k].gain.setTargetAtTime((niv[k] || 0) * (K[k] || 1), t, 0.8); },
+      aplicar(niv, t, fMus) {
+        if (bucles.length) capasArchivo(niv, t, fMus == null ? 1 : fMus);
+        for (const k in capas) capas[k].gain.setTargetAtTime((niv[k] || 0) * (K[k] || 1) * (mul[k] == null ? 1 : mul[k]), t, mul[k] == null ? 0.8 : AMB_FUNDIDO);
+      },
       eventos(t, niv, ranasCallan) {
-        if (niv.aves > 0.04 && t >= proxAve) { ave(t + 0.05); nEventos++; proxAve = t + lento * (2 + Math.random() * 5) / (0.35 + niv.aves); }
-        if (niv.coquies > 0.04 && !ranasCallan && t >= proxCoqui) { coqui(t + 0.05); nEventos++; proxCoqui = t + lento * (1 + Math.random() * 2.2) / (0.35 + niv.coquies); }
+        if (niv.aves > 0.04 && !sinEv.aves && t >= proxAve) { ave(t + 0.05); nEventos++; proxAve = t + lento * (2 + Math.random() * 5) / (0.35 + niv.aves); }
+        if (niv.coquies > 0.04 && !sinEv.coquies && !ranasCallan && t >= proxCoqui) { coqui(t + 0.05); nEventos++; proxCoqui = t + lento * (1 + Math.random() * 2.2) / (0.35 + niv.coquies); }
       },
       get capas() { return Object.keys(capas); }, get eventosSonados() { return nEventos; },
+      get archivos() { return bucles.filter(L => L.src).map(L => L.b.n); }, sustituye: () => Object.assign({ eventos: Object.keys(sinEv) }, mul),
       cerrar() {
+        for (const L of bucles) if (L.src) soltarBucle(L);
         for (const o of fuentes) { try { o.stop(); } catch (e) { /* ya parada */ } }
         for (const nd of nodos) { try { nd.disconnect(); } catch (e) { /* ya suelto */ } }
       },
@@ -737,10 +780,12 @@
 
     // ---------- Motor en vivo ----------
     let eng = null, niv = calcularAmbiente({}), cuenta = 0;
+    const AMB_ESPERA_MS = 8000;
     const memBanda = { fallo: {}, pos: {}, bloqueo: false }; // sobrevive a rehacer el motor (cambio de calidad o de contexto)
     function desmontar() {
       if (!eng) return;
       try { eng.rep.cerrar(); eng.ambiente.cerrar(); eng.musicaBus.disconnect(); eng.ambBus.disconnect(); } catch (e) { /* ya suelto */ }
+      if (A.enBucle) for (const k in A.enBucle) A.enBucle[k] = false;
       eng = null;
     }
     function preparar() {
@@ -753,7 +798,11 @@
       const motor = crearMotor(c, modo, musicaBus);
       const rep = crearReproductor({ c, salida: musicaBus, mem: memBanda, tabla: BANDA_SONORA, ahora: () => performance.now(),
         crearAudio: () => new Audio(), sintetica: (nombre, t) => motor.pista(nombre, t, true) });
-      eng = { c, modo, musicaBus, ambBus, motor, rep, ambiente: crearAmbiente(c, ambBus, modo), conectado: { m: false, a: false }, nuevo: true };
+      const t0 = performance.now(), arch = { // T45: ambientes en archivo, pedidos pasados AMB_ESPERA_MS de juego (fuera de la carga inicial)
+        buffer: n => (A.buffer && performance.now() - t0 > AMB_ESPERA_MS ? A.buffer(n) : null),
+        activo: (n, on) => { if (A.enBucle) A.enBucle[n] = !!on; },
+      };
+      eng = { c, modo, musicaBus, ambBus, motor, rep, ambiente: crearAmbiente(c, ambBus, modo, arch), conectado: { m: false, a: false }, nuevo: true };
       return true;
     }
     function conectar(bus, clave, quiere) {
@@ -820,7 +869,7 @@
         aplicarVolumen();
         if (quiereMusica) { eng.rep.reanudar(); eng.rep.poner(st.pista); eng.rep.paso(); }
         if (quiereAmb) {
-          if (cuenta++ % 4 === 0) { niv = calcularAmbiente(entradasAmbiente(e)); eng.ambiente.aplicar(niv, c.currentTime); }
+          if (cuenta++ % 4 === 0) { niv = calcularAmbiente(entradasAmbiente(e)); eng.ambiente.aplicar(niv, c.currentTime, quiereMusica ? AMB_CON_MUSICA : 1); }
           eng.ambiente.eventos(c.currentTime, niv, ranasHasta > ahora);
         }
       } catch (err) {
@@ -923,6 +972,89 @@
       for (let t = 1.5; t < seg - 0.4; t += 0.1) am.eventos(t, nivel, false); // como el reloj de tick(): cada 0,1 s
       const buf = await c.startRendering();
       return Object.assign(analizar(buf, 1.5), { eventos: am.eventosSonados, capas: am.capas });
+    }
+
+    // T45: los 30 efectos de Suno. Cada nombre está en MUESTRAS con su archivo y respaldo, el archivo se descarga y se decodifica (y dura
+    // lo que dice sonidos.json), cada momento del juego llama a su sonido (espía de G.audio.play) y los ambientes en bucle sustituyen a su
+    // capa sintética con un cruce suave, bajitos, solo fuera de «simple».
+    const MOMENTOS_SFX = {
+      aleteo: 'src/engine/fisica.js', planeo: 'src/engine/fisica.js', frenada: 'src/engine/fisica.js', picada: 'src/game/juice.js',
+      semilla: 'src/game/retos.js', logro: 'src/game/retos.js', boton: 'src/engine/audio.js', aviso: 'src/game/dialogo.js', flecha: 'src/game/interaccion.js',
+      panel_final: 'src/game/misiones.js', pieza: 'src/game/construir.js', encaje: 'src/game/construir.js', puente_reparado: 'src/game/v18/reparar.js',
+      lanzar: 'src/game/v18/pesca.js', pica: 'src/game/v18/pesca.js', clavado: 'src/game/v18/pesca.js',
+      duelo_ala: 'src/game/v18/habilidades.js', duelo_pata: 'src/game/v18/combate.js', duelo_semilla: 'src/game/v18/habilidades.js', duelo_poder: 'src/game/v18/habilidades.js',
+      duelo_victoria: 'src/game/v18/combate.js', duelo_derrota: 'src/game/v18/combate.js', poder_grito: 'src/game/v18/explorar.js',
+    };
+    const SIN_MOMENTO = ['poder_rafaga', 'poder_ojo', 'poder_planeo']; // T42 los creará: registrados, sin momento todavía
+    async function probarSfx(check) {
+      const ficha = await fetch('assets/audio/sonidos.json').then(r => r.json()).catch(() => null);
+      const nombres = ficha ? Object.keys(ficha.sonidos).filter(n => /^sfx\//.test((ficha.sonidos[n].ogg || {}).archivo || '')) : [];
+      check('T45: sonidos.json trae los 30 efectos de Suno en sfx/', nombres.length === 30, nombres.length);
+      const malos = nombres.filter(n => { const f = A.ficha && A.ficha(n); return !(f && f.perezosa && new RegExp('^assets/audio/sfx/' + n + '\\.(ogg|mp3)$').test(f.url) && (f.bucle || [].concat(f.respaldo || []).some(A.has))); });
+      check('T45: cada efecto está en MUESTRAS con url assets/audio/sfx/<nombre>. , carga perezosa y un respaldo sintético que existe', !malos.length && nombres.length === 30, malos.join(', '));
+      const alArrancar = A.muestras().filter(n => !A.ficha(n).perezosa);
+      check('T45: al primer gesto solo se piden las 5 muestras de siempre (los efectos nuevos, al usarse o en calma más tarde)', alArrancar.join() === 'aterrizar_techo,posarse_rama,despegar,nido_chispa,eclosion_huevo', alArrancar.join());
+      // Cada archivo se descarga y se decodifica, de uno en uno (un contexto sin conexión que se suelta: no queda en memoria)
+      const C = OC(), malDec = [];
+      for (const n of nombres) {
+        try {
+          const ab = await fetch(A.ficha(n).url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); });
+          const b = await new Promise((res, rej) => { const p = new C(1, 1, 48000).decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(rej); });
+          if (Math.abs(b.duration - ficha.sonidos[n].duracion_s) > 0.25) malDec.push(n + ' ' + b.duration.toFixed(2) + ' s');
+        } catch (e) { malDec.push(n + ': ' + (e && e.message || e)); }
+      }
+      check('T45: los 30 efectos se descargan, se decodifican y duran lo que dice sonidos.json (±0,25 s)', !malDec.length && nombres.length === 30, malDec.join(' · '));
+      // Cada momento llama a su sonido: en su módulo (las baterías de cada modo lo prueban con un espía) y aquí, los que se pueden pulsar
+      const fuentes = {}, sinLlamada = [];
+      for (const n in MOMENTOS_SFX) {
+        const f = MOMENTOS_SFX[n];
+        if (!(f in fuentes)) fuentes[f] = await fetch(f).then(r => r.text()).catch(() => '');
+        if (!new RegExp("['\"]" + n + "['\"]").test(fuentes[f])) sinLlamada.push(n + ' (' + f + ')');
+      }
+      const conMomento = Object.keys(MOMENTOS_SFX).concat(SIN_MOMENTO, BUCLES.map(b => b.n));
+      check('T45: cada efecto tiene su momento en el código (los poderes ráfaga, ojo y planeo esperan a T42; los ambientes van en musica.js)',
+        !sinLlamada.length && nombres.every(n => conMomento.includes(n)), sinLlamada.concat(nombres.filter(n => !conMomento.includes(n))).join(', '));
+      const play0 = A.play, oidos = [], q0 = G.quiet;
+      A.play = function (n, a) { oidos.push(n); return play0.call(this, n, a); };
+      try {
+        G.quiet = false;
+        const b1 = document.createElement('button'), b2 = document.createElement('button');
+        b1.textContent = 'prueba'; b2.textContent = 'prueba'; b2.onclick = () => A.play('tick');
+        document.body.append(b1, b2);
+        b1.dispatchEvent(new MouseEvent('mouseover', { bubbles: true })); const tras = oidos.length;
+        b1.click(); const conBoton = oidos.slice(tras);
+        oidos.length = 0; b2.click(); const dobla = oidos.filter(n => n === 'boton').length;
+        b1.remove(); b2.remove();
+        check('T45: pulsar un botón de menú suena «boton»; pasar por encima no, y si el botón ya suena lo suyo no se dobla', tras === 0 && conBoton.join() === 'boton' && dobla === 0, conBoton.join() + ' / ' + dobla);
+        if (G.dialogo && G.dialogo.say && !G.dialogo.activo()) {
+          oidos.length = 0; G.dialogo.say([{ who: 'Vittata', text: '…' }], null, { caja: true }); const dlg = oidos.includes('aviso');
+          if (G.dialogo.clear) G.dialogo.clear(); else G.dialogo.next();
+          check('T45: al aparecer un diálogo nuevo suena «aviso»', dlg, oidos.join());
+        }
+      } finally { A.play = play0; G.quiet = q0; }
+      check('T45: sin spam: aletazo con mínimo entre dos (y el sintético suave en medio), flecha y botón sin repetir seguido', A.ficha('aleteo').minMs >= 300 && A.ficha('aleteo').pronto === 'aleteo_sint' && A.ficha('flecha').minMs >= 1000 && A.ficha('boton').minMs > 0);
+      // La lluvia de clima.js (un play cada segundo): con el bucle en archivo sonando no se dobla; sin él, su soplo sintético de siempre
+      if (A.medir && A.enBucle) {
+        const e0 = A.enBucle.lluvia; A.enBucle.lluvia = false; const sin = await A.medir('lluvia', 1.3); A.enBucle.lluvia = true; const con = await A.medir('lluvia', 1.3); A.enBucle.lluvia = e0;
+        check('T45: «lluvia» suena su soplo sintético solo si el bucle de lluvia no suena (nunca las dos)', !!(sin && con) && sin.rms > 0.001 && con.pico === 0, sin && con ? sin.rms.toFixed(4) + ' / ' + con.pico : 'sin medida');
+      }
+      // Ambientes en bucle: cruce suave con su capa sintética, bajitos y nunca en «simple»
+      if (C) {
+        const sr = 22050, c = new C(2, sr * 4, sr), sal = c.createGain(); sal.connect(c.destination);
+        const bufs = {};
+        for (const b of BUCLES) { try { const ab = await fetch(A.ficha(b.n).url).then(r => r.arrayBuffer()); bufs[b.n] = await new Promise((res, rej) => { const p = c.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(rej); }); } catch (e) { /* lo dice el check */ } }
+        const activos = {}, arch = { buffer: n => bufs[n] || null, activo: (n, on) => { activos[n] = on; } }, otro = { buffer: arch.buffer };
+        const am = crearAmbiente(c, sal, 'completo', arch), dia = calcularAmbiente({ hora: 12, rio: 0.8, lluvia: true });
+        am.aplicar(dia, 0, 1); const sust = am.sustituye(), sonando = am.archivos.slice();
+        const simple = crearAmbiente(c, c.createGain(), 'simple', otro); simple.aplicar(dia, 0, 1);
+        const noche = crearAmbiente(c, c.createGain(), 'completo', otro); noche.aplicar(calcularAmbiente({ hora: 23 }), 0, 1);
+        const buf = await c.startRendering(), a = analizar(buf, 1.5);
+        check('T45: de día con lluvia junto al río suenan bosque, lluvia y río en archivo y quitan su capa sintética (sin doblar)',
+          ['bosque_yunque', 'lluvia', 'rio'].every(n => sonando.includes(n) && activos[n]) && !sonando.includes('noche_coquis') && sust.lluvia === 0 && sust.rio === 0 && sust.eventos.includes('aves'), sonando.join() + ' ' + JSON.stringify(sust));
+        check('T45: de noche suenan los coquíes en archivo (y no el bosque de día); en «simple» no hay archivos', noche.archivos.join() === 'noche_coquis' && !simple.archivos.length, noche.archivos.join() + ' / ' + simple.archivos.join());
+        check('T45: los ambientes en archivo quedan de fondo (pico < 0,5 y nivel medio bajo antes del bus)', a.pico > 0.001 && a.pico < 0.5 && a.rms < 0.12, 'pico ' + a.pico.toFixed(3) + ' rms ' + a.rms.toFixed(3));
+        am.cerrar(); simple.cerrar(); noche.cerrar();
+      }
     }
 
     // Pruebas de la banda sonora: la tabla, los archivos de verdad (solo sus metadatos) y el reproductor con un contexto y un <audio> de mentira
@@ -1236,6 +1368,7 @@
 
         // 10. Banda sonora (los temas de Kelvin)
         await probarBanda(check);
+        await probarSfx(check);
 
         // 9. Otros enganches
         const ranas0 = ranasHasta; ranasHasta = 0;

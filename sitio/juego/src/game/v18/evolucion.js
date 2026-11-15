@@ -602,7 +602,8 @@ window.AVV18Evolucion = function (G) {
     h += `<span class="v18-evo-sig" data-v18-siguiente>${imgLogro(sp)}`;
     h += sigEt ? `<span>${esc(sigEt.nombre)}</span> · <span>${esc(con(TXT.nivel, sigEt.desde))}</span> · <span>${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span>` : `<span>${esc(TXT.max)}</span>`;
     h += '</span>';
-    h += `<span class="v18-evo-m">${r.sig == null ? `<span>${esc(TXT.max)}</span>` : `<span>${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span>`}</span>`;
+    // T40: con siguiente etapa, lo que falta ya va en su línea (salía dos veces); sin ella, aquí (o «Nivel máximo», si no lo dijo ya)
+    if (!sigEt && r.sig != null) h += `<span class="v18-evo-m"><span>${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span></span>`;
     if (sp === 'vittata') h += '<span style="display:block">' + ETAPAS.slice(1).map(et => r.nivel >= et.desde ? `<span class="v18-evo-et">${esc(et.nombre)}</span>` : `<span class="v18-evo-et no"><span>${esc(et.nombre)}</span> · <span>${esc(con(TXT.nivel, et.desde))}</span></span>`).join('') + '</span>';
     else {
       h += htmlMejora(sp, r);

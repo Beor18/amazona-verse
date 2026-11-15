@@ -280,6 +280,7 @@ window.AVV18Pesca = function (G) {
     S.facing = FRENTE;
   }
   function iniciar(o) {
+    try { G.audio.precargar(['lanzar', 'pica', 'clavado']); } catch (e) { /* sin audio */ } // T45: sus efectos de Suno, antes de que toquen
     o = o || {};
     if (A.fase !== 'nada') return false;
     if (!disponible()) return false;
@@ -339,7 +340,7 @@ window.AVV18Pesca = function (G) {
     A.dist = dist; A.carga = 0; A.cargando = false;
     Object.assign(A.corcho, { x0: q.x + d.x * 0.6, z0: q.z + d.z * 0.6, x: q.x + d.x * dist, z: q.z + d.z * dist });
     A.fase = 'vuela'; A.vuelo = 0; A.aviso = '';
-    sonar('dash'); emitir({ tipo: 'lanza', dist: +dist.toFixed(2), p }); pintar(true);
+    sonar('lanzar'); emitir({ tipo: 'lanza', dist: +dist.toFixed(2), p }); pintar(true);
     return true;
   }
   function elegirPez() {
@@ -363,7 +364,7 @@ window.AVV18Pesca = function (G) {
     const v = p && p.vel > 0 ? p.vel : 0.8;
     return Math.max(0.62, Math.min(1.2, 1.32 - v * 0.5));
   }
-  function picar() { A.fase = 'pica'; A.picaT = VENTANA; sonar('splash', 0.9); sonar('ring', 3); fx('bubbles', A.corcho.x, A.corcho.y, A.corcho.z, 14); ondear(1.8); A.olas = 2; pista(TXT.pPica); emitir({ tipo: 'pica', pez: A.pez.id }); pintar(true); }
+  function picar() { A.fase = 'pica'; A.picaT = VENTANA; sonar('pica'); fx('bubbles', A.corcho.x, A.corcho.y, A.corcho.z, 14); ondear(1.8); A.olas = 2; pista(TXT.pPica); emitir({ tipo: 'pica', pez: A.pez.id }); pintar(true); }
   function clavar() {
     if (A.fase !== 'pica') return false;
     const p = A.pez; A.fase = 'tira'; A.prog = 0.3; A.marca = 0.25; A.vmarca = 0; A.zona = 0.5; A.zonaObj = 0.5; A.zonaV = 0; A.tiraT = 0; A.cansado = false; A.ancho = p.zona;
@@ -374,9 +375,9 @@ window.AVV18Pesca = function (G) {
   function atrapa() {
     const p = A.pez; A.fase = 'foto'; A.fotoT = 0; A.peces++; A.puntos += p.pts; A.album[p.id] = (A.album[p.id] || 0) + 1; A.sosteniendo = false;
     vestirPez(p); P.pez.visible = true; flash(); celebrar();
-    const cc = A.corcho; sonar('splash', 0.75); fx('bubbles', cc.x, (cc.y || 0) + 0.05, cc.z, 16); ondear(2.1); A.olas = 2;
+    const cc = A.corcho; sonar('clavado'); fx('bubbles', cc.x, (cc.y || 0) + 0.05, cc.z, 16); ondear(2.1); A.olas = 2;
     const c = pagar(p, 'foto');
-    sonar('unlock'); toast(atrapado(p.nombre) + ' ' + masTxt(p.pts) + (c ? ' · ' + conchasTxt(c) : ''), 2200);
+    toast(atrapado(p.nombre) + ' ' + masTxt(p.pts) + (c ? ' · ' + conchasTxt(c) : ''), 2200);
     emitir({ tipo: 'atrapa', pez: p.id, puntos: A.puntos }); hud.vista = null; paneles(); pintar(true);
   }
   function soltarPez() {

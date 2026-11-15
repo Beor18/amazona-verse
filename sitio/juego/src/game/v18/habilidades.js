@@ -47,7 +47,7 @@ window.AVV18Habilidades = function (G) {
   // ---------- Básicos comunes (todas las especies) ----------
   registrar({ id: 'golpe_ala', basico: true, nombre: 'Golpe de ala', coste: 0, cooldown: 0.55, alcance: 2.4, fx: 'feathers',
     efecto(ctx) {
-      const { yo, otro } = ctx; ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('aleteo');
+      const { yo, otro } = ctx; ctx.fx('feathers', yo.pos.x, yo.pos.y + 0.9, yo.pos.z); ctx.sonar('duelo_ala');
       const alcance = this.alcance * (yo.vistacumbre > 0 ? ((get('vista_cumbre') || {}).alcanceK || 1.35) : 1); // Vista de cumbre: los golpes de ala alcanzan un poco más
       if (dist(yo, otro) > alcance) return { ok: true, acierto: false };
       return { ok: true, acierto: ctx.golpear(otro, { plumas: 1, empuje: 7, mareo: 0.7, dir: dirA(yo, otro) }) };
@@ -60,7 +60,7 @@ window.AVV18Habilidades = function (G) {
       if (yo.mira && !yo.ia) { const f = yo.mira(); if (f && f.x * d.x + f.z * d.z < 0.35) { ax = f.x; az = f.z; } }
       ctx.lanzar({ de: yo, x: yo.pos.x + ax * 0.8, y: yo.pos.y + 0.9, z: yo.pos.z + az * 0.8, vx: ax * 16, vy: (otro.pos.y - yo.pos.y) / Math.max(0.3, d.d / 16), vz: az * 16,
         vida: this.alcance / 16, radio: 1.0, golpe: { plumas: 1, empuje: 3.5, mareo: 0.45 } });
-      ctx.sonar('dash'); return { ok: true };
+      ctx.sonar('duelo_semilla'); return { ok: true };
     } });
 
   // ---------- Poderes por especie ----------
@@ -645,7 +645,12 @@ window.AVV18Habilidades = function (G) {
     let torcido = 0;
     if (f.falla > 0) { const l0 = c.lanzar, lado = Math.random() < 0.5 ? -1 : 1; c.lanzar = b => { const a = lado * 0.6, ca = Math.cos(a), sa = Math.sin(a), vx = b.vx;
       b.vx = vx * ca - b.vz * sa; b.vz = vx * sa + b.vz * ca; b.vy = (b.vy || 0) + 2.5; b.falla = true; torcido++; return l0(b); }; }
-    const r = l.h.efecto(c) || { ok: true };
+    // T45: un poder especial suena «duelo_poder» una sola vez al lanzarse, en lugar de sus sonidos genéricos (dash, ring, unlock,
+    // aleteo) de ese mismo instante; el Grito conserva su graznido con ondas. Lo que el poder programe para después suena tal cual.
+    let dentro = false, dado = false;
+    if (!l.h.basico) { const s0 = c.sonar; c.sonar = (n, a) => { if (!dentro || n === 'grito') return s0(n, a); if (!dado) { dado = true; s0('duelo_poder'); } }; }
+    dentro = true;
+    let r; try { r = l.h.efecto(c) || { ok: true }; } finally { dentro = false; }
     if (torcido) f.falla = 0;
     return Object.assign({ ok: true, id }, r);
   }

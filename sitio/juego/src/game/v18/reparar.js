@@ -262,7 +262,7 @@ window.AVV18Reparar = function (G) {
     pagar(COSTE);
     refrescarInv();
     aplicar();
-    sonar('unlock');
+    sonar('puente_reparado'); // T45 (Suno)
     const c = centro();
     if (c) { try { G.fx.recoger(c.x, c.y + 0.5, c.z, 'feathers', 26); G.fx.burst(c.x, c.y + 0.5, c.z, 'stars', 18); } catch (e) { /* sin fx */ } }
     try { G.camara.shake(0.08, 0.3); } catch (e) { /* sin cámara */ }

@@ -85,7 +85,7 @@ window.AVV18Combate = function (G) {
     t4: 'Combo: toca Ala izq. y luego Ala der.', t5: 'Combo: toca Pata izq. y luego Pata der.',
     e1: 'Acércate y pulsa E para dar un aletazo.', e2: 'Ahora pulsa F para lanzar una semilla.', e3: 'Pulsa G (o mantén F) para usar tu poder:',
     t1: 'Acércate y toca Acción para dar un aletazo.', t2: 'Ahora toca Impulso para lanzar una semilla.', t3: 'Mantén Impulso para usar tu poder:',
-    bien: '¡Bien!', masCerca: '¡Más cerca!', entFin: '¡Ya sabes pelear! Ahora, el duelo de verdad.',
+    bien: '¡Bien!', masCerca: '¡Más cerca!', esquivado: '¡Esquivado!', entFin: '¡Ya sabes pelear! Ahora, el duelo de verdad.',
     pCerca: '¡Cerca! Aletazo (E)', pLejos: 'Lejos: semilla (F)', pPoder: '¡Poder listo! (G)',
     pCercaT: '¡Cerca! Aletazo (Acción)', pLejosT: 'Lejos: semilla (Impulso)', pPoderT: '¡Poder listo! (mantén Impulso)',
     dGolpe: '¡Te dieron! Muévete de lado para esquivar.', dEscudo: '¡Te dieron! Para cubrirte, usa tu poder (G):', dEscudoT: '¡Te dieron! Para cubrirte, mantén Impulso:',
@@ -449,6 +449,11 @@ window.AVV18Combate = function (G) {
     }
     if (r.ok && id === 'cuento' && !f.ia) flotante(TXT.cuento, 1.0); // Cuento: confirmación de que la rival se distrajo
     if (r.ok && f.ia) { C.stats.ataques++; if (!H.get(id).basico) C.stats.poderes++; }
+    // T41: la Campeona falla un aletazo con Vittata cerca → esquive claro: pose de esquiva (Combate 2.0) y «¡Esquivado!»
+    if (r.ok && f.ia && id === 'golpe_ala' && r.acierto === false && C.j && C.fase === 'lucha' && H.dist(f, C.j) > ALA_R() - 0.3 && H.dist(f, C.j) < ALA_R() + 1.6) { // fuera de su alcance (no un golpe parado)
+      C.stats.esquivasJ = (C.stats.esquivasJ || 0) + 1; flotante(TXT.esquivado, 0.8);
+      try { C2.accion(C.j, 'esquiva', { fam: 'esquiva', lado: C.stats.esquivasJ % 2 ? 1 : -1 }); } catch (e) { /* sin Combate 2.0 */ } // sin azar(): no cambia lo que decide la IA
+    }
     // V18.2: desafío de las alianzas (usar el poder propio 2 veces)
     if (r.ok && !r.avisada && !f.ia && id === f.poder) C.stats.poderJ++;
     if (r.ok) pintar();
@@ -894,6 +899,7 @@ window.AVV18Combate = function (G) {
     if (G.camara) { G.camara.yaw = Math.atan2(-1, 0); if (G.camara.place) try { G.camara.place(true); } catch (e) { /* cámara */ } }
   }
   function iniciar(o) {
+    try { G.audio.precargar(['duelo_ala', 'duelo_pata', 'duelo_semilla', 'duelo_poder', 'duelo_victoria', 'duelo_derrota']); } catch (e) { /* sin audio */ } // T45: sus efectos de Suno, antes de que toquen
     o = o || {};
     crearRival();
     semilla = o.semilla || 7; espForzada = o.especie || null;
@@ -944,8 +950,8 @@ window.AVV18Combate = function (G) {
       const puenteListo = !!(G.v18 && G.v18.mundo && G.v18.mundo('puente_villa') === 'reparado');
       txt = nueva ? (puenteListo ? TXT.ganaGuarda : TXT.gana) : TXT.ganaOtra; C.premio = nueva;
       premioRopa();
-      sonar('unlock'); fx('gold', C.r.pos.x, C.r.pos.y + 1.2, C.r.pos.z);
-    } else { txt = TXT.pierde; C.premio = false; sonar('wrong'); }
+      sonar('duelo_victoria'); fx('gold', C.r.pos.x, C.r.pos.y + 1.2, C.r.pos.z);
+    } else { txt = TXT.pierde; C.premio = false; sonar('duelo_derrota'); }
     if (G.ui && G.ui.toast) G.ui.toast(txt, 3200);
     if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; hud.q('bot').hidden = true; flotante(gano ? TXT.ganaste : TXT.perdiste, 1.6);
       try { hud.q('finXp').innerHTML = G.v18evo && G.v18evo.htmlFin ? G.v18evo.htmlFin() : ''; } catch (e) { /* sin evolución */ }
@@ -1832,7 +1838,7 @@ window.AVV18Combate = function (G) {
       const m = buscarCombo(X.cad);
       if (m) return remate(f, k, m.c, otro, m.q);
       C2.accion(f, 'ext_' + E.tipo, { fam: 'ext_' + E.tipo, lado: E.lado });
-      cfg.sonar(E.tipo === 'ala' ? 'ext_ala' : 'ext_pata', E.lado);
+      cfg.sonar(E.tipo === 'ala' ? 'duelo_ala' : 'duelo_pata', E.lado); // T45 (Suno; mientras carga, ext_ala / ext_pata)
       const r = { ok: true, k, acierto: false, combo: null };
       if (otro && H.dist(f, otro) <= E.alcance) {
         const d = H.dirA(f, otro), l = lado(d), s = E.tipo === 'ala' ? E.lado : 0; // ala izquierda → empuja a su derecha
@@ -2614,6 +2620,14 @@ window.AVV18Combate = function (G) {
         for (const b of C.balas.splice(0)) { try { scene.remove(b.m); } catch (e) { /* bala */ } }
       }
 
+      // T45: los sonidos de Suno del duelo (aletazo, semilla y poder especial una sola vez, sin el genérico), con un espía en ctx.sonar
+      {
+        const suena = id => { const o = []; const yo = { id: 't45', especie: C.j.especie, pos: { x: 0, y: 0, z: 0 }, energia: 100, cd: {}, poder: 'escudo_plumas', mareo: 0 };
+          const otro = { id: 't45b', pos: { x: 60, y: 0, z: 0 }, energia: 100, cd: {}, mareo: 0 };
+          let r = null; try { r = H.usar(yo, id, { otro, sonar: n => o.push(n) }); } catch (e) { o.push('error ' + e.message); } return (r && r.ok ? '' : 'no:') + o.join('+'); };
+        const ala = suena('golpe_ala'), sem = suena('semilla'), pod = suena('escudo_plumas');
+        check('T45: en el duelo el aletazo suena «duelo_ala», la semilla «duelo_semilla» y un poder «duelo_poder» una vez (sin el genérico)', ala === 'duelo_ala' && sem === 'duelo_semilla' && pod === 'duelo_poder', [ala, sem, pod].join(' · '));
+      }
       // 3. Grito del Yunque: empuja, interrumpe, sin quitar plumas; hay que apuntar; recuperación
       quieta(4); cara(1); C.r.escudo = 0; evs.length = 0; podEv.length = 0;
       const oidosG = [], play0 = G.audio.play; G.audio.play = (n, x) => { oidosG.push(n); return play0(n, x); }; // Kelvin 9-nov: el Grito suena
@@ -3118,6 +3132,11 @@ window.AVV18Combate = function (G) {
       const evE = tecla('Escape'); const fueraEsc = C.fase === 'nada';
       iniciar({ sinCuenta: true, especie: 'vittata', sinExtIA: true }); pintar(); hud.q('salirB').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true })); const fueraBoton = C.fase === 'nada';
       check('Duelo: botón «Salir» a la vista durante la pelea (sale al tocarlo) y Esc sale del duelo', verSalir && evE.defaultPrevented && fueraEsc && fueraBoton, JSON.stringify({ verSalir, esc: evE.defaultPrevented, fueraEsc, fueraBoton }));
+      // T41: esquive claro: la Campeona falla un aletazo con Vittata justo fuera de su alcance
+      { iniciar({ sinCuenta: true, especie: 'vittata', sinExtIA: true }); C.r.mareo = 0; C.r.cd = {}; C.j.inv = 0;
+        C.r.pos.x = S.pos.x + ALA_R() + 0.4; C.r.pos.z = S.pos.z; const e0 = C.stats.esquivasJ || 0, pl0 = C.j.plumas, ru = usar(C.r, 'golpe_ala');
+        check('T41 · si la Campeona falla un aletazo por poco, Vittata esquiva con claridad («¡Esquivado!») y no pierde plumas',
+          ru.ok && (C.stats.esquivasJ || 0) === e0 + 1 && hud.q('centro').textContent === TXT.esquivado && C.j.plumas === pl0, JSON.stringify({ ok: ru.ok, ac: ru.acierto, n: C.stats.esquivasJ, c: hud.q('centro').textContent })); salir(); }
       // 9. Táctil a 390 × 844: el 2×2 cabe, sus botones miden ≥ 48 px y no tapa Acción, Impulso (con su etiqueta), Saltar ni Volar
       {
         const acts = { left: 390 - 20 - 182, right: 370, top: 844 - 28 - 170, bottom: 816, width: 182 }, tagTop = acts.top - 40; // ≥ 56 px (Kelvin)

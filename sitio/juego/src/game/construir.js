@@ -447,7 +447,7 @@
       }
       if (lista.length === antes.length) return false;
       anotar({ op: 'lote', antes, despues: copia() });
-      pintar(); guardar(); pintarHud(); sonar('tac'); actualizar();
+      pintar(); guardar(); pintarHud(); sonar('pieza'); actualizar();
       return true;
     }
 
@@ -509,7 +509,7 @@
       } else { vista.listo = false; est.x = c.x; est.z = c.z; }
       const antes = est.iman; est.iman = false; est.r = giro;
       let bd = IMAN; for (const k of imanes(tipo)) { const d = Math.hypot(k.x - est.x, k.z - est.z); if (d < bd) { bd = d; est.x = k.x; est.z = k.z; est.r = k.r; est.iman = true; } }
-      if (est.iman && !antes) sonar('tick');
+      if (est.iman && !antes) sonar('encaje'); // T45: encaja en su sitio (Suno)
       est.motivo = validar(tipo, est.x, est.z); est.valido = !est.motivo;
       fantasma.geometry = geos[tipo];
       fantasma.position.set(est.x, ctx ? ctx.piso : H(est.x, est.z), est.z); fantasma.rotation.set(0, est.r * PASO, 0);
@@ -527,7 +527,7 @@
       lista.push(p); anotar({ op: '+', p });
       pintar(); guardar(); pintarHud();
       const w = mundoDe(p);
-      if (G.audio && G.audio.play) { try { G.audio.play('tac'); } catch (e) { /* sin audio */ } }
+      if (G.audio && G.audio.play) { try { G.audio.play('pieza'); } catch (e) { /* sin audio */ } } // T45: pieza de madera (Suno; mientras carga, «tac»)
       if (G.fx && G.fx.burst && !G.quiet && !bajo()) try { G.fx.burst(w.x, w.y + 0.6, w.z, 'feathers', 8); } catch (e) { /* sin fx */ }
       return true;
     }
@@ -546,12 +546,20 @@
       if (lista.length) { x = 0; z = 0; for (const p of lista) { x += p.x; z += p.z; } x /= lista.length; z /= lista.length; }
       const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, f0 = { x: (S.facing && S.facing.x) || 0, z: (S.facing && S.facing.z) || 1 };
       S.pos.x = x; S.pos.z = z + 6; S.pos.y = (ctx ? ctx.piso : H(S.pos.x, S.pos.z)) + 1.6; S.facing = { x: 0, z: -1 };
+      // T40: la cámara no seguía a Vittata antes de la foto (salía lo de antes): se coloca detrás, mirando al rincón, y vuelve después
+      const cam = G.camara, yaw0 = cam ? cam.yaw : 0, ponCam = () => { if (cam && cam.place) try { cam.place(true); } catch (e) { /* cámara */ } };
+      if (cam) { cam.yaw = 0; ponCam(); }
+      // y Vittata no tapa el rincón: se esconde solo durante la foto
+      const pj = G.actores && G.actores.player3D, raiz = pj && pj.root, vis0 = raiz ? raiz.visible : true;
+      if (raiz) raiz.visible = false;
       let url = null;
       try {
         const r = G.renderer.snapshot(960, 540, 0.8);
         url = r && typeof r.then === 'function' ? await r : r;
       } catch (e) { url = null; }
       S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.facing = f0;
+      if (raiz) raiz.visible = vis0;
+      if (cam) { cam.yaw = yaw0; ponCam(); }
       if (typeof url === 'string' && url.indexOf('data:image/jpeg') === 0) {
         try {
           const im = new Image(); im.src = url; await im.decode();
@@ -606,6 +614,7 @@
       return true;
     }
     function empezar() {
+      try { G.audio.precargar(['pieza', 'encaje']); } catch (e) { /* sin audio */ } // T45
       if (!habilitado()) return false;
       if (activo) return true;
       if (G.interaccion.modo && G.interaccion.modo !== modo && G.interaccion.modo.activo && G.interaccion.modo.activo()) { aviso('Termina lo que estás haciendo y vuelve a probar.'); return false; }
@@ -914,7 +923,7 @@
         check('La tecla 6 elige el tronco', tipo === 'tronco');
         S.facing = { x: -S.facing.x, z: -S.facing.z }; actualizar();
         check('Coloca un tronco girado', colocar() && lista.length === 2 && lista[1].r === 2 && mallas.tronco.count === 1, est.motivo);
-        check('Colocar suena un tac de madera', !!(G.audio && G.audio.log && G.audio.log.includes('tac')));
+        check('Colocar suena la pieza de madera (T45)', !!(G.audio && G.audio.log && G.audio.log.includes('pieza')));
         check('El tronco queda al ras del suelo', Math.abs(new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().fromArray(mallas.tronco.instanceMatrix.array, 0)).y - H(lista[1].x, lista[1].z)) < 1e-3);
         check('Deshacer quita el último (Z)', (dispatchEvent(new KeyboardEvent('keydown', { key: 'z', bubbles: true })), lista.length === 1 && mallas.tronco.count === 0 && !mallas.tronco.visible));
         S.facing = { x: -S.facing.x, z: -S.facing.z }; actualizar();
@@ -946,7 +955,12 @@
         cuadrícula(false); actualizar();
         const suelto = crudo();
         check('Sin cuadrícula el fantasma vuelve a seguir a Vittata', Math.abs(est.x - suelto.x) < 1e-6 && Math.abs(est.z - suelto.z) < 1e-6);
-        const urlFoto = await foto();
+        const camF = G.camara, yawF = camF && camF.yaw, rzF = G.actores && G.actores.player3D && G.actores.player3D.root, visF = rzF && rzF.visible;
+        let yawDentro = null, ocultaDentro = null; const snap0 = G.renderer.snapshot;
+        G.renderer.snapshot = function () { yawDentro = camF ? camF.yaw : null; ocultaDentro = rzF ? !rzF.visible : null; return snap0.apply(this, arguments); };
+        let urlFoto; try { urlFoto = await foto(); } finally { G.renderer.snapshot = snap0; }
+        check('T40 · la foto pone la cámara detrás, mirando al rincón, sin Vittata delante, y luego todo vuelve como estaba',
+          (!camF || (yawDentro === 0 && camF.yaw === yawF)) && (!rzF || (ocultaDentro === true && rzF.visible === visF)), JSON.stringify({ yawDentro, yawF, ocultaDentro }));
         check('La foto del rincón es un PNG local y no deja un enlace para subirlo', typeof urlFoto === 'string' && urlFoto.indexOf('data:image/png') === 0 && urlFoto.length > 200 && !document.querySelector('a[download="rincon-vittata.png"]'), urlFoto ? urlFoto.slice(0, 22) + '… ' + urlFoto.length : 'sin foto');
         // 3b. Piezas del Mercadito del río: sin comprarlas no salen en la barra ni se eligen; compradas, sí (teclas 1–9 en el orden de la barra)
         S.tienda = { v: 1, conchitas: 0, ganadas: 0, compras: [] }; refrescar();

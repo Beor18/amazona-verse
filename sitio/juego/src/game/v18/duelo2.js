@@ -509,6 +509,7 @@ window.AVV18Duelo2 = function (G) {
     pos2.x = sitio.x + 5; pos2.z = sitio.z; pos2.y = ALTURA(pos2);
   }
   function iniciar(o) {
+    try { G.audio.precargar(['duelo_ala', 'duelo_pata', 'duelo_semilla', 'duelo_poder', 'duelo_victoria', 'duelo_derrota']); } catch (e) { /* sin audio */ } // T45: sus efectos de Suno, antes de que toquen
     o = o || {};
     if (!disponible() && !o.forzar) return false;
     if (Cb.estado().fase !== 'nada') return false; // nunca a la vez que el duelo contra la Campeona
@@ -533,7 +534,7 @@ window.AVV18Duelo2 = function (G) {
     const perd = quien === 'j1' ? D.j2 : D.j1; perd.finMareo = 2.2; perd.mareo = Math.max(perd.mareo, 2.2);
     const txt = quien === 'j1' ? TXT.gana1 : TXT.gana2;
     emitir({ tipo: 'fin', de: quien, a: perd.id, valor: (quien === 'j1' ? D.j1 : D.j2).plumas });
-    sonar('unlock'); fx('gold', perd.pos.x, perd.pos.y + 1.2, perd.pos.z);
+    sonar('duelo_victoria'); fx('gold', perd.pos.x, perd.pos.y + 1.2, perd.pos.z);
     if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; flotante(''); }
     // T38: el premio de juego del duelo (los Lentes de la Campeona, una vez por partida: combate.js); nada más (ni
     // inventario ni G.v18)
