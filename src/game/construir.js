@@ -433,6 +433,28 @@
       if (habilitado()) { asegurarEscena(); pintar(); }
       return { id: ctx.id, piso: ctx.piso };
     }
+    // T50 · «Casita rápida»: de un toque, delante de Vittata y mirando hacia ella, dos pisos de tablas, el tejado de paja, tres
+    // paredes (fondo y un lado) y una maceta, ya encajados como con el imán. Lo que no cabe se salta; se deshace con un solo
+    // «Deshacer». Solo fuera de los cuartos (dentro ya hay sus paredes).
+    function casita() {
+      if (ctx) { aviso('Aquí dentro ya hay paredes: la casita va fuera.'); return false; }
+      const f = S.facing || { x: 0, z: 1 }, rr = ((Math.round(Math.atan2(f.x, f.z) / PASO) % 8) + 8) % 8;
+      const c = crudo(), X = ejeX(rr), Z = ejeZ(rr), en = (a, b) => ({ x: c.x + X.x * a + Z.x * b, z: c.z + X.z * a + Z.z * b });
+      // a: a lo ancho (eje X de la casita), b: hacia el fondo (lejos de Vittata)
+      const receta = [['piso', -1, 1, 0], ['piso', 1, 1, 0], ['tejado', -1, 1, 0], ['pared', -1, 2, 0], ['pared', 1, 2, 0], ['pared', -2, 1, 2], ['maceta', 1.7, -0.2, 0]];
+      const antes = copia();
+      for (const [t, a, b, dr] of receta) {
+        if (lista.length >= presupuesto() || !tiene(t)) continue;
+        const w = en(a, b);
+        if (validar(t, w.x, w.z)) continue;
+        lista.push({ t, x: r2(w.x), z: r2(w.z), r: (rr + dr) % 8 });
+      }
+      if (lista.length === antes.length) { aviso('Aquí no cabe la casita: busca un sitio más llano y despejado.'); sonar('wrong'); return false; }
+      anotar({ op: 'lote', antes, despues: copia() });
+      pintar(); guardar(); pintarHud(); sonar('pieza'); actualizar();
+      aviso(lista.length - antes.length === receta.length ? '¡Casita lista! Cámbiala a tu gusto o toca Deshacer.' : 'Puse lo que cabía. Cámbialo a tu gusto o toca Deshacer.', 3200);
+      return true;
+    }
     function habitacion(nombre) {
       const receta = HABITACIONES[nombre];
       if (!receta) return false;
@@ -717,7 +739,7 @@
         const tecla = window.matchMedia && matchMedia('(pointer: coarse)').matches ? () => '' : k => `<kbd>${k}</kbd>`;
         hudEl.innerHTML = '<div class="cl-fila cl-piezas">' + filaPiezas() + '</div>' +
           `<div class="cl-fila cl-herr"><span class="cl-cuenta" aria-live="polite"></span><button type="button" class="cl-deshacer" data-cl="deshacer" aria-disabled="true" aria-label="Deshacer" aria-keyshortcuts="Z"><span class="cl-etiq">Deshacer</span> ${tecla('Z')}</button><button type="button" data-cl="girar" aria-label="Girar" aria-keyshortcuts="R">Girar ${tecla('R')}</button>` +
-          `<button type="button" data-cl="rejilla" aria-pressed="false" aria-label="Cuadritos">Cuadritos</button><button type="button" data-cl="foto" aria-label="Foto">Foto</button>` +
+          `<button type="button" data-cl="rejilla" aria-pressed="false" aria-label="Cuadritos">Cuadritos</button><button type="button" data-cl="casita" aria-label="Casita rápida">Casita rápida</button><button type="button" data-cl="foto" aria-label="Foto">Foto</button>` +
           `<button type="button" data-cl="quitar" aria-label="Quitar" aria-keyshortcuts="Delete">Quitar ${tecla('Supr')}</button><button type="button" data-cl="listo" aria-label="Listo" aria-keyshortcuts="Escape">Listo ${tecla('Esc')}</button>` +
           (G.tienda && G.tienda.disponible && G.tienda.disponible() ? '<button type="button" data-cl="tienda" aria-label="Mercadito">Mercadito</button>' : '') + '</div>';
         let gesto = null, gestoYa = false;
@@ -743,6 +765,7 @@
           else if (b.dataset.cl === 'deshacer') deshacer();
           else if (b.dataset.cl === 'rejilla') cuadrícula();
           else if (b.dataset.cl === 'foto') foto();
+          else if (b.dataset.cl === 'casita') casita();
           else if (b.dataset.cl === 'quitar') quitar();
           else if (b.dataset.cl === 'listo') salir();
           else if (b.dataset.cl === 'tienda') { if (G.tienda) G.tienda.abrir('construir', b); return; }
@@ -1016,6 +1039,13 @@
             Array.isArray(ms) && gp.groups.length === 2 && g.groups.length === 1 && geos.muro.userData.mats.includes('piedra') && geos.tejado.userData.mats.includes('paja') && !!cargadas.tablas &&
             CASA.every(t => geos[t].attributes.uv && Array.from(geos[t].attributes.position.array).every(Number.isFinite)) && !Array.isArray(mallas.nido.material),
             JSON.stringify({ piso: gp.groups.length, pared: g.groups.length, cargadas }));
+          // T50: Casita rápida, de un toque y con un solo Deshacer
+          aplicar(null); S.pos.x = p0.x; S.pos.z = p0.z; S.facing = { x: 1, z: 0 }; actualizar();
+          const hizoC = casita(), tiposC = lista.map(p => p.t).sort().join(','), nC = lista.length;
+          const unDeshacer = deshacer() && lista.length === 0;
+          const enCuarto = (ctx = { id: 'x' }, !casita()); ctx = null;
+          check('T50 · «Casita rápida»: dos pisos, tejado y tres paredes (y la maceta si cabe) de un toque; un Deshacer la quita; dentro de un cuarto no',
+            hizoC && (tiposC === 'maceta,pared,pared,pared,piso,piso,tejado' || tiposC === 'pared,pared,pared,piso,piso,tejado') && unDeshacer && enCuarto && !!(hudEl && hudEl.querySelector('[data-cl="casita"]')), JSON.stringify({ hizoC, nC, tiposC, unDeshacer, enCuarto }));
           salir(); S.pos.x = pIni.x; S.pos.z = pIni.z; S.facing = f0; aplicar(null);
         }
         // 5. Presupuesto
@@ -1068,7 +1098,7 @@
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    const api = { empezar, salir, activo: () => activo, elegir, girar, colocar, deshacer, rehacer, quitar, cuadrícula, foto, rejilla: () => rejilla, piezas: () => lista.map(p => Object.assign({}, p)), aplicar, presupuesto, contexto, habitacion,
+    const api = { empezar, salir, activo: () => activo, elegir, girar, colocar, deshacer, rehacer, quitar, cuadrícula, foto, casita, rejilla: () => rejilla, piezas: () => lista.map(p => Object.assign({}, p)), aplicar, presupuesto, contexto, habitacion,
       forzar, test, TIPOS: ORDEN.slice(), BASE: BASE.slice(), EXTRA: EXTRA.slice(), SVG, NOMBRE, tiene, disponibles, refrescar, CAPACIDAD, _escena: () => ({ grupo, fantasma, est: Object.assign({}, est) }) };
     G.construir = api;
     return api;
