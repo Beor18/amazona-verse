@@ -697,8 +697,10 @@ window.AVV18Combate = function (G) {
       // Pasada táctil (14-nov, rescatada sobre T38): teléfono en horizontal (844 × 390). El HUD centrado a 92 px tapaba el Diario y,
       // con el entreno debajo, a la Campeona y a Vittata. Ahora: HUD arriba a la izquierda, entreno y panel final abajo, entre el
       // joystick y el 2×2, fuera el minimapa (como en vertical) y el aviso justo debajo del HUD (--vd-bajo lo mide ponerBajo), ancho
-      // para que quepa en una línea y no llegue al joystick
+      // para que quepa en una línea y no llegue al joystick. T53: en la cuenta atrás el «3» medía 48 px de alto (line-height 1.5) y bajaba
+      // el aviso hasta pisar 4 px del joystick; ahora 28 px justos, y el aviso, aun en dos líneas, queda encima del joystick
       '@media (orientation:landscape) and (max-height:560px){' +
+      '#v18-duelo.tactil .vd-centro{font-size:28px;line-height:1;margin-top:0}' +
       '#v18-duelo.tactil{top:calc(env(safe-area-inset-top,0px) + 8px);left:max(12px,env(safe-area-inset-left,0px));right:auto;margin:0;width:min(380px,45vw)}body.v18-duelo-tt #minimapa{visibility:hidden}' +
       '#v18-duelo.tactil :is(.vd-ent,.vd-fin){position:fixed;left:0;right:0;margin:0 auto;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:min(440px,calc(100vw - 380px));min-width:260px;max-height:calc(100vh - 16px);overflow:auto;box-sizing:border-box}' +
       'body.v18-duelo-tt #toast{top:var(--vd-bajo,calc(env(safe-area-inset-top,0px) + 140px));bottom:auto;left:max(12px,env(safe-area-inset-left,0px));right:auto;margin:0;max-width:min(480px,calc(100vw - 360px))}}' +
@@ -3178,7 +3180,7 @@ window.AVV18Combate = function (G) {
       // Pasada táctil (14-nov) en una maqueta con las hojas reales, en vertical (390 × 844) y en horizontal (844 × 390): en la
       // pelea, el entreno y el final, todo botón mide ≥ 44 px y cabe, y nada se pisa (HUD, entreno, final, 2×2, Diario, Pausa,
       // joystick ni el aviso)
-      try { const m = await maquetaTactil(); check('Táctil (390 × 844 y 844 × 390): botones ≥ 44 px, dentro de la pantalla y sin solapes en la pelea, el entreno y el final', m.ok, m.mal.slice(0, 8).join(' · ') || m.info); }
+      try { const m = await maquetaTactil(); check('Táctil (390 × 844 y 844 × 390): botones ≥ 44 px, dentro de la pantalla y sin solapes en la cuenta atrás, la pelea, el entreno y el final', m.ok, m.mal.slice(0, 8).join(' · ') || m.info); }
       catch (e) { check('Táctil (390 × 844 y 844 × 390): botones ≥ 44 px, dentro de la pantalla y sin solapes', false, e && e.message); }
       // 10. «Reducir movimiento»: el combo no sacude la cámara ni lanza partículas de fx_poderes; sin cortes bruscos en las poses
       const RD = R.REDUCED, J = G.camara && G.camara.juice;
@@ -3234,10 +3236,11 @@ window.AVV18Combate = function (G) {
         toast.hidden = false; toast.textContent = TXT.bienvenida; toast.style.animation = 'none'; // un iframe fuera de pantalla no avanza la animación de entrada
         q('entPaso').textContent = TXT.entPaso(1, 4); q('entK').textContent = TXT.kAla; q('entTxt').textContent = TXT.tA1;
         q('finXp').textContent = '+40 XP · ¡Nivel 4!'; q('finTxt').textContent = TXT.gana; q('finTipTxt').textContent = TXT.porGana; el.querySelector('.vd-fin [data-a="salir"]').textContent = TXT.menu;
-        const ESTADOS = { pelea: { ent: 0, fin: 0, como: 1, salir: 1, pad: 1 }, entreno: { ent: 1, fin: 0, como: 0, salir: 1, pad: 1 }, final: { ent: 0, fin: 1, como: 1, salir: 0, pad: 0 } };
+        // T53: la cuenta atrás (el «3» grande en el centro del HUD y el aviso de bienvenida debajo) tampoco pisa el joystick
+        const ESTADOS = { cuenta: { ent: 0, fin: 0, como: 1, salir: 1, pad: 1, centro: '3' }, pelea: { ent: 0, fin: 0, como: 1, salir: 1, pad: 1 }, entreno: { ent: 1, fin: 0, como: 0, salir: 1, pad: 1 }, final: { ent: 0, fin: 1, como: 1, salir: 0, pad: 0 } };
         for (const nom in ESTADOS) {
           const E = ESTADOS[nom], tag = vw + '×' + vh + ' ' + nom;
-          q('ent').hidden = !E.ent; q('fin').hidden = !E.fin; q('como').hidden = !E.como; q('salirB').hidden = !E.salir;
+          q('ent').hidden = !E.ent; q('fin').hidden = !E.fin; q('como').hidden = !E.como; q('salirB').hidden = !E.salir; q('centro').textContent = E.centro || '';
           pad.hidden = !E.pad; md.body.classList.toggle('v18-ext-on', !!E.pad); md.body.classList.toggle('v18-duelo-fin-t', !!E.fin);
           const acts = md.getElementById('acts').getBoundingClientRect();
           const s = sitioPad(acts, acts.top, vw, pad.offsetWidth || 162, pad.offsetHeight || 162); pad.style.left = s.left + 'px'; pad.style.top = s.top + 'px';
@@ -3251,7 +3254,7 @@ window.AVV18Combate = function (G) {
             if (r.left < 0 || r.top < 0 || r.right > vw + 0.5 || r.bottom > vh + 0.5) mal.push(`${tag}: ${nombre(b)} se sale (${Math.round(r.left)},${Math.round(r.top)})`);
           }
           // Lo que no se puede pisar: botones, paneles (los botones de dentro de un panel no chocan con su panel), joystick, minimapa y aviso
-          const cajas = botones.concat([q('ent'), q('fin'), el.querySelector('.vd-fila'), md.getElementById('stick'), md.getElementById('minimapa'), toast].filter(ver));
+          const cajas = botones.concat([q('ent'), q('fin'), el.querySelector('.vd-fila'), E.centro ? q('centro') : null, md.getElementById('stick'), md.getElementById('minimapa'), toast].filter(ver));
           for (let i = 0; i < cajas.length; i++) for (let j = i + 1; j < cajas.length; j++) {
             const a = cajas[i], b = cajas[j]; if (a.contains(b) || b.contains(a)) continue;
             const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
