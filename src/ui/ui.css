@@ -486,6 +486,8 @@ html.mov-reducido *, html.mov-reducido *::before, html.mov-reducido *::after { a
   -webkit-backdrop-filter: none; backdrop-filter: none; pointer-events: auto;
   display: block; animation: toast-in var(--dur-3) var(--ease-pop);
 }
+/* T18: en el escritorio, entre el objetivo y los contadores (ui.js pone --hud-l y --hud-r); antes tapaba «Madera» */
+@media (min-width: 561px) { #toast { left: var(--hud-l, 0px); right: var(--hud-r, 0px); max-width: min(520px, calc(100vw - var(--hud-l, 0px) - var(--hud-r, 0px) - 24px)); } }
 #toast:not(:has(button)), #toast:not(:has(button)) * { pointer-events: none; } /* W17: un aviso sin botón no se come el toque del botón de la tarjeta que tapa (móvil) */
 #toast::before {
   content: ""; position: absolute; left: 12px; top: 50%; width: 40px; height: 40px; margin-top: -20px; border-radius: 50%;

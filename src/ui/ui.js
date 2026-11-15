@@ -131,6 +131,29 @@
       const mirar = () => { const mc = $('marcador'); if (mc && !mc.dataset.mcw) { mc.dataset.mcw = '1'; ro.observe(mc); return true; } return !!mc; };
       if (!mirar()) { const mo = new MutationObserver(() => { if (mirar()) mo.disconnect(); }); mo.observe(quest, { childList: true }); }
     }
+    // T18: en el escritorio el aviso de arriba (#toast) va en el hueco entre el objetivo y los contadores (tapaba «Madera»):
+    // --hud-l y --hud-r con sus bordes, al cuadro siguiente y solo si cambian (ui.css los usa a partir de 561 px)
+    const inv = $('inv');
+    if (inv && window.ResizeObserver) {
+      const raiz = document.documentElement; let pend = 0, prev = '';
+      const medir = () => {
+        pend = 0;
+        const vis = e => e && e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden';
+        const l = vis(quest) ? Math.ceil(quest.getBoundingClientRect().right) + 12 : 0;
+        const r = vis(inv) ? Math.ceil(innerWidth - inv.getBoundingClientRect().left) + 12 : 0;
+        let ll = l, rr = r; if (innerWidth - l - r < 340) ll = rr = 0; // hueco estrecho: el aviso centrado de siempre
+        const k = ll + '|' + rr; if (k === prev) return; prev = k;
+        raiz.style.setProperty('--hud-l', ll + 'px'); raiz.style.setProperty('--hud-r', rr + 'px');
+      };
+      const pedir = () => { if (!pend) pend = requestAnimationFrame(medir); };
+      const ro = new ResizeObserver(pedir); ro.observe(quest); ro.observe(inv); addEventListener('resize', pedir);
+      new MutationObserver(pedir).observe(inv, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
+      // con la portada abierta el HUD no se ve (mide 0) y al cerrarla no cambia de tamaño: se mide también cada vez que sale un aviso
+      const tt = $('toast'); if (tt) new MutationObserver(medir).observe(tt, { childList: true, attributes: true, attributeFilter: ['hidden', 'class'] });
+      // los contadores se corren sin cambiar de tamaño (llega «Patrulla 0/4» a su lado): con un aviso a la vista se mira cada segundo
+      setInterval(() => { if (tt && !tt.hidden) pedir(); }, 1000);
+      pedir();
+    }
   }
 
   // ---------- 5. Portada: fondo inerte y foco al cerrarla (QA-04) ----------
