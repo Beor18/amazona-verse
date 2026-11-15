@@ -376,6 +376,19 @@
         } finally { UI.respiroTest(false); UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = ''; }
       }
     }
+    { // T21: lo que el niño acaba de hacer ({ ya }: una foto, un don, una maravilla) sale al momento; el aviso de antes vuelve después
+      const UI = G.ui, tt = document.getElementById('toast');
+      UI.vaciarAvisos(); UI.colaTest(true);
+      try {
+        UI.toast('Aviso de antes', 4000); UI.toast('Aviso en cola', 4000); tick(0.05);
+        const antes = !tt.hidden && tt.textContent === 'Aviso de antes';
+        UI.toast('¡Foto al cómic! (prueba)', 1500, { ya: true }); tick(0.05);
+        const ya = !tt.hidden && tt.textContent === '¡Foto al cómic! (prueba)';
+        const vistos = []; for (let k = 0; k < 60; k++) { tick(0.1); if (!tt.hidden) vistos.push(tt.textContent); }
+        const vuelve = vistos.indexOf('Aviso de antes') > vistos.indexOf('¡Foto al cómic! (prueba)');
+        check('T21 · el aviso de lo que el niño acaba de hacer sale al momento y el de antes vuelve después', antes && ya && vuelve, [antes, ya, vuelve, [...new Set(vistos)].join(' > ')].join(' · '));
+      } finally { UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = ''; }
+    }
     { // Revisión T2, ronda 2: un aviso dado fuera de escena (y uno aceptado por avisoLibre) no sale en medio de un minijuego:
       // el de pantalla se aparta, los de la cola esperan, el de la propia actividad sí sale, y al terminar salen los demás en orden
       const UI = G.ui, tt = document.getElementById('toast'), r0 = G.rescate;

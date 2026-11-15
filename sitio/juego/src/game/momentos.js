@@ -22,7 +22,7 @@ AVE.module('momentos', function (G) {
   const IMPACTO = C.impacto || 0.75, ESPERA_FOTO = C.esperaFoto != null ? C.esperaFoto : 0.8;
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const esImagen = im => typeof im === 'string' && /^data:image\/(jpeg|png|webp);base64,/.test(im) && im.length > 2000 && im.length < 800000;
-  const aviso = (html, ms) => { if (!G.quiet && G.ui && G.ui.toastHTML) G.ui.toastHTML(html, ms); };
+  const aviso = (html, ms) => { if (!G.quiet && G.ui && G.ui.toastHTML) G.ui.toastHTML(html, ms, { ya: true }); }; // T21: la foto que acaba de tomar sale al momento
 
   // Eventos narrativos (definidos aquí si el pack no los trae)
   const EV = {
@@ -286,6 +286,7 @@ AVE.module('momentos', function (G) {
       check('Un resultado que no es récord no se anota', alResultado({ modo: 'carrera', llego: true, puesto: 3, ms: 90000, prueba: false }) === false && !pendRecord);
       // Foto con pose: de frente, al cómic; una foto nueva reemplaza la anterior en la misma viñeta
       if (lienzoListo()) {
+        if (G.ui.vaciarAvisos) G.ui.vaciarAvisos(); // T21: el aviso del récord de arriba no cuenta para el de la foto (nadie hace las dos cosas en medio segundo)
         const ok1 = tomarFoto('bailar');
         for (let i = 0; i < 100 && !had('PhotoTaken'); i++) { G.renderer.update(0); await new Promise(r => setTimeout(r, 10)); } // CG-64: la foto se completa 1–2 cuadros después; 0m: tiempo real (nube)
         const pF = panel('foto'), cap1 = S.captures[imgDe('PhotoTaken') || 'foto'];

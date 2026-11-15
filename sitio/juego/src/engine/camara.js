@@ -162,7 +162,9 @@ AVE.module('camara', function (G) {
     for (let i = 0; i < lista.length; i += 4) {
       const ox = cabeza.x - lista[i], oy = cabeza.y - lista[i + 1], oz = cabeza.z - lista[i + 2], r = lista[i + 3];
       const c = ox * ox + oy * oy + oz * oz - r * r;
-      if (c < 0) { dentro = true; continue; }
+      // T15: encima de una copa pequeña (el centro por debajo de la cabeza: posada en lo alto de una palma del sotobosque) no está
+      // «dentro»: las hojas quedan debajo y la cámara normal, detrás y por encima, la ve. Bajo la copa se metía entre las hojas a 4 m
+      if (c < 0) { if (!(r < 3 && lista[i + 1] < cabeza.y - 0.3)) dentro = true; continue; }
       const b = ox * dirCam.x + oy * dirCam.y + oz * dirCam.z; if (b >= 0) continue;
       const disc = b * b - L2 * c; if (disc < 0) continue;
       const t = (-b - Math.sqrt(disc)) / L2; if (t > 0 && t < tMin) tMin = t;
@@ -175,6 +177,15 @@ AVE.module('camara', function (G) {
       for (let up = 1; up <= CAM.copaSubir; up += 1) {
         const y = camPos.y + up;
         if (y > gy && !cruzaCopa(lista, camPos.x, y, camPos.z)) { camPos.y = y; return; }
+      }
+      // T15: posada, si subiendo no hay hueco, la cámara rodea a Vittata (hasta ±160°) a la misma distancia buscando la vista libre
+      // antes de acercarse (en la percha del dosel se pegaba a 4,7 m con las hojas de la copa de al lado en el encuadre)
+      if (M.posado) {
+        const ang0 = Math.atan2(dirCam.x, dirCam.z), dh = Math.hypot(dirCam.x, dirCam.z);
+        for (let k = 1; k <= 8; k++) for (const sig of [1, -1]) for (const up of [0, 2, 4]) {
+          const a = ang0 + sig * k * 0.35, x = cabeza.x + Math.sin(a) * dh, z = cabeza.z + Math.cos(a) * dh, y = camPos.y + up;
+          if (y > suelo(x, z) + 0.5 && !cruzaCopa(lista, x, y, z)) { camPos.set(x, y, z); return; }
+        }
       }
     }
     // Posada: se acerca para verla (QA-27), nunca a menos de copaMin. Volando, el piso es el 82 % de distFly: bajar a 2,4 m
