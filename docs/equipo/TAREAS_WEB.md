@@ -1559,3 +1559,45 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T38, el duelo).
 
 📣 **Coordinadora · 15-nov · PUBLICADO EA62B7E EN 1CE3FBA**: 12/12 y en vivo; entra T38 (el duelo, de vuelta en la portada).
+
+📣 **Coordinadora → Claude web · 15-nov · CAMBIO DE MODO (lo pide Kelvin): trabajo sin parar hasta gastar los créditos de esta cuenta.** Kelvin no va a renovarla, así que hay que aprovecharla entera ahora.
+- **Cómo trabajar:**
+  - Sigue la lista de abajo en orden.
+  - Al cerrar una tarea, empieza la siguiente **sin esperar mi respuesta**.
+  - Si llegas al límite de 5 horas, en cuanto se reinicie sigues desde donde ibas.
+  - Puedes usar subagentes o flujos si te ayudan a ir más rápido, siempre sin pisar archivos entre ellos.
+  - Lo de siempre: las 12 pruebas en verde en cada commit, una nota aquí y no publicar. Yo publico cada 2 o 3 tareas.
+- **Reglas que no cambian:**
+  - Vittata no se toca: ni el modelo ni el rig.
+  - Nada de canon nuevo ni personajes nuevos de historia.
+  - Ni dinero real, ni cajas de premios, ni presión de compra.
+  - Nada de anillos de vuelo.
+  - Datos de naturaleza solo con fuente.
+  - Nada de descargas ni compras.
+  - Lo que sea decisión de Kelvin, anótalo y sigue con otra cosa.
+
+**Lista, en orden:**
+1. **T39 · Construcciones mejores** (ya en marcha).
+2. **T40 · Pulido general:**
+   - vuelve a recorrer los caps. 1 a 6 y los modos de la portada en 390×844 y 1280×720;
+   - arregla todo lo que se vea roto, cortado, tapado o sin traducir;
+   - incluye los detalles que quedaron sueltos: «Patrulla0/4» sin espacio en escritorio, «Gestos» sin traducir, el Álbum con «36» arriba y «0/34» abajo, y el botón «Construir» en los minijuegos.
+3. **T41 · Movimientos de las cotorras**, más vivos con el rig que ya existe:
+   - planear, picada, frenada al posarse, un giro alegre y gestos de celebración y de saludo;
+   - lo mismo en el duelo: golpe de ala, patada y esquive con animación clara.
+   - Solo animación, sin tocar el modelo ni el rig de Vittata.
+4. **T42 · Más poderes:** 2 o 3 nuevos además del «Grito del Yunque».
+   - Por ejemplo: «Ráfaga de viento» (empuja hojas y semillas), «Ojo de cotorra» (resalta lo escondido cerca) y «Planeo largo».
+   - Cada uno se gana jugando, tiene su efecto visual y su botón claro en el teléfono, y no se compra.
+5. **T43 · Minijuegos nuevos para que los niños se queden.** Cortos, de 1 a 3 minutos, con récord y salida clara. Por ejemplo:
+   - recoger semillas al vuelo contra reloj;
+   - «sigue el canto» (repetir una secuencia de cantos);
+   - una carrera de planeo entre nubes sin anillos;
+   - el escondite con otra cotorra.
+   - Cada uno en «Más juegos» y con una prueba nueva.
+6. **T44 · El Duelo de 2 en el teléfono** (hoy solo sale en la computadora): pantalla partida o por turnos, con los 4 botones.
+7. **T45 · Sonido:**
+   - Yo genero efectos nuevos con Suno y los subo a `assets/audio/sfx/` con su lista en `sonidos.json`.
+   - Tú los conectas con `G.audio.play(nombre)` en su momento del juego, en cuanto aparezcan en main.
+8. **T46 · Rendimiento en el teléfono:** mide con `?fps=1` en la nube y quita lo que sobre (draw calls, texturas), sin bajar la calidad visible.
+9. Cuando termines, propón tú la siguiente tanda aquí y sigue con ella. No pares.
