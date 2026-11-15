@@ -1128,3 +1128,10 @@ body:has(#c1-saltar) :is(#stick, #acts, #prompt, #sys, #top, #emotes, #keyhint, 
    encima (el Diario con el teclado, el Mercadito), el panel de la Pesca no la tapa (antes tapaba su «Cerrar» en el teléfono) */
 body.v18-pesca-on :is(#b-diary, #b-emotes, #b-nido, #b-construir) { display: none !important; }
 body.v18-pesca-on:has(#card:not([hidden])) #v18-pesca { visibility: hidden; }
+
+/* T30: en el teléfono, con Vittata posada el aviso va arriba (bajo el minimapa) y no le tapa el cuerpo; y con el botón del
+   poder a la vista el aviso sube 64 px para no tocarlo */
+@media (max-width: 560px) {
+  body.vittata-posada:not(:has(#dialog:not([hidden]))):not(:has(#end:not([hidden]))) #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; }
+  body:not(.vittata-posada):has(#v18-exp-poder:not([hidden])) #toast { margin-bottom: 64px; }
+}

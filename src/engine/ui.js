@@ -99,7 +99,9 @@ AVE.module('ui', function (G) {
   function apartar() {
     if (!enPantalla()) return;
     const i = cola.indexOf(actual); if (i >= 0) cola.splice(i, 1);
-    if (!acabado(actual, escenas())) { if (toastTimer !== Infinity) actual.ms = Math.max(1500, Math.round(toastTimer * 1000)); actual.apartado = true; cola.unshift(actual); }
+    // T30: el que ya estuvo MIN_S en pantalla cuenta como leído y no vuelve tras la tarjeta o el diálogo
+    const leido = visto >= MIN_S && actual.vivo;
+    if (!leido && !acabado(actual, escenas())) { if (toastTimer !== Infinity) actual.ms = Math.max(1500, Math.round(toastTimer * 1000)); actual.apartado = true; cola.unshift(actual); }
     ocultar();
   }
   // QA-188 (en vivo, 7-nov): un aviso que ya estaba en pantalla cuando algo pasa a taparlo (empieza la apertura del cap. 1
