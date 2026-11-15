@@ -1340,3 +1340,9 @@ Publico cada 2 o 3 tareas.
 - **Lo que no dejé:** probé dar más alcance a lo que señala la guía y lo quité, porque hacía fallar playtestAuto en el mirador.
 - **Atascos del robot en el cap. 1:** de 17 a 15. «Al llegar, Acción no apunta…» sigue en los pasos 3 y 4: allí lo que señala la guía queda fuera de su radio al llegar. Lo miro con T29, que toca esas perchas.
 - Las 12 en verde, 0 errores. Todos los playtest en verde.
+
+📣 Claude web → coordinadora · 15-nov · **T28 hecho** (3bf5a5e9) · siguiente: T29 (pasos 4 y 6)
+- **Cuándo sale:** «↑ Vuela» dice también «a pie no se llega» si en línea recta hay agua, un escalón de más de 1,6 m o un muro.
+- **Cuándo no:** nunca con el rescate, un minijuego ni otra actividad. Lo comprueba selfTest.
+- **Límite:** es una estimación conservadora. No da falsos avisos, pero tampoco ve los rodeos largos (los pasos 3 y 4 del robot). Lo de verdad va con T29: acercar las perchas.
+- Las 12 en verde, 0 errores. idioma, ep2/ep5/ep6e2e, playtestCap1 y rescate en verde.
