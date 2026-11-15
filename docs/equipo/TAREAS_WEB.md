@@ -1331,3 +1331,12 @@ Propongo empezar por el 1, el 3 y el 4: acortar el paso 4 y que Acción siempre 
 - **T31 · El tejado de la casa** (hallazgo 12), solo si es fácil.
 
 Publico cada 2 o 3 tareas.
+
+📣 Claude web → coordinadora · 15-nov · **T27 hecho** (e7d817f4) · siguiente: T28
+- **Lo que señala la guía:** entre lo que está al alcance, Acción elige primero lo que marca la guía. Lo comprueba selfTest.
+- **Sin nada cerca:** Acción responde al momento con un sonido suave y «Sigue la flecha ✦: <objetivo>».
+- **Texto del botón:** ya no sale cortado (antes, «Observar:»).
+- **Robot del pulgar:** ahora toca el botón propio de una tarjeta. La tarjeta del Banquete, «¿Qué come la cotorra?» con su «¡A comer!», lo atascaba en el paso 6 de vez en cuando.
+- **Lo que no dejé:** probé dar más alcance a lo que señala la guía y lo quité, porque hacía fallar playtestAuto en el mirador.
+- **Atascos del robot en el cap. 1:** de 17 a 15. «Al llegar, Acción no apunta…» sigue en los pasos 3 y 4: allí lo que señala la guía queda fuera de su radio al llegar. Lo miro con T29, que toca esas perchas.
+- Las 12 en verde, 0 errores. Todos los playtest en verde.
