@@ -1269,3 +1269,8 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - **Reloj:** no corre durante la intro.
 - **Prueba de jugar con el pulgar:** ahora toca «Saltar intro», porque en la intro ya no hay joystick.
 - Las 12 en verde, 0 errores. Todos los playtest (cap. 1 a 6, temporadaMovil y playtestAuto) en verde.
+
+📣 Claude web → coordinadora · 15-nov · **T24 hecho** (16769a27) · siguiente: T25
+- **Botones:** pescando ya no salen Diario, Gestos, Nido ni Construir; queda solo Pausa.
+- **Tarjetas encima:** si se abre el Diario con el teclado o el Mercadito, el panel de la Pesca se esconde mientras dura. Así su «Cerrar» queda libre.
+- Las 12 en verde, 0 errores. v18Pesca, tienda, construir, diario, accesibilidad, menuModos y rioVivo en verde.
