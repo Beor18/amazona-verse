@@ -543,7 +543,7 @@ window.AVV18Moon = function (G) {
       ir(SITIO.x + 9, SITIO.z); empezar({ forzar: true }); correr(CUENTA_S + 0.3);
       const nT = toasts.length; MV.dashCd = 0; MV.dashT = 0;
       try { G.interaccion.action(); } catch (e) { /* lo dice el check */ }
-      const nada = toasts.slice(nT).filter(t => /nada para usar/.test(t)), esquiva = MV.dashT > 0;
+      const nada = toasts.slice(nT).filter(t => /nada para usar|Sigue la flecha/.test(t)), esquiva = MV.dashT > 0;
       cancelar('sale'); MV.dashT = 0; MV.dashCd = 0;
       const suelta = !(G.interaccion.modo && G.interaccion.modo.activo());
       check('17 · Acción durante el entreno no dice «Aquí no hay nada para usar»: esquiva con un impulso; al acabar se suelta Acción', !nada.length && esquiva && suelta,

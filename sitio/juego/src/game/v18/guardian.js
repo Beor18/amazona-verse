@@ -614,7 +614,7 @@ window.AVV18Guardian = function (G) {
       const qDentro = qVis(), nT = toasts.length; G.camara.yaw = 0;
       try { G.interaccion.action(); } catch (e) { /* lo dice el check */ }
       const pq = SITIO.puertas[A.sig], yawQ = Math.atan2(-(pq.x - S.pos.x), -(pq.z - S.pos.z));
-      const nada = toasts.slice(nT).filter(t => /nada para usar/.test(t)), mira = Math.abs(Math.atan2(Math.sin(G.camara.yaw - yawQ), Math.cos(G.camara.yaw - yawQ))) < 0.05;
+      const nada = toasts.slice(nT).filter(t => /nada para usar|Sigue la flecha/.test(t)), mira = Math.abs(Math.atan2(Math.sin(G.camara.yaw - yawQ), Math.cos(G.camara.yaw - yawQ))) < 0.05;
       cancelar('sale');
       const qFuera = qVis(), suelta = !(G.interaccion.modo && G.interaccion.modo.activo());
       check('17 · Durante el circuito no se ve el panel de misiones de la historia (#quest) y vuelve al salir', !qDentro && qFuera === q0, JSON.stringify({ q0, qDentro, qFuera }));

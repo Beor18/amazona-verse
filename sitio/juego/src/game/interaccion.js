@@ -12,14 +12,20 @@ AVE.module('interaccion', function (G) {
   const api = { list, modo: null, add, find, nearest, action };
   function add(it) { list.push(it); return it; }
   function find(id) { return list.find(i => i.id === id); }
+  // T27: entre lo que está al alcance, primero lo que señala la guía (a 2,5 m o menos de su objetivo); si no, lo más cercano.
+  // Antes, al llegar adonde decía la guía, Acción podía apuntar a otra cosa de al lado y «no hacía nada» para el paso
+  function guia() { try { return G.misiones && G.misiones.guideTarget ? G.misiones.guideTarget() : null; } catch (e) { return null; } }
   function nearest() {
-    let best = null, bd = Infinity;
+    let best = null, bd = Infinity, guiado = null, gd = Infinity;
+    const g = guia();
     for (const it of list) {
       if (it.visible && !it.visible()) continue;
       const d = Math.hypot(S.pos.x - it.x, S.pos.z - it.z);
-      if (d < it.r && d < bd) { bd = d; best = it; }
+      if (!(d < it.r)) continue;
+      if (d < bd) { bd = d; best = it; }
+      if (g) { const dg = Math.hypot(it.x - g.x, it.z - g.z); if (dg < 2.5 && dg < gd) { gd = dg; guiado = it; } }
     }
-    return best;
+    return guiado || best;
   }
   const modoActivo = () => !!(api.modo && api.modo.activo());
   // El texto del aviso va en un span: así se recorta con puntos suspensivos (o en 2 líneas en el móvil) y no a mitad de palabra
@@ -37,8 +43,11 @@ AVE.module('interaccion', function (G) {
     const it = nearest();
     if (it) { it.use(); return; }
     if (lleva()) { G.agarre.soltar(); return; }
-    // Nada cerca: que el botón no parezca roto
-    G.ui.toast('Aquí no hay nada para usar. Acércate a lo que brilla: el botón cambia de nombre.');
+    // Nada cerca: que el botón no parezca roto. T27: responde al momento ({ ya }), con un sonido suave y la pista del paso
+    try { G.audio.play('tick'); } catch (e) { /* sin audio */ }
+    let paso = ''; try { const q = document.querySelector('#steps li.now'); paso = q ? q.textContent.trim() : ''; } catch (e) { /* sin HUD */ }
+    const en = !!(G.idioma && G.idioma.activo && G.idioma.activo()); // el objetivo de la página ya va traducido; el prefijo, según el idioma
+    G.ui.toast(paso ? (en ? 'Follow the arrow ✦: ' : 'Sigue la flecha ✦: ') + paso : 'Aquí no hay nada para usar. Sigue la flecha ✦ hasta lo que brilla: el botón cambia de nombre.', 2600, { ya: true });
   }
   const lleva = () => !!(G.agarre && G.agarre.lleva && G.agarre.lleva());
   // Aviso de acción, verbo del botón contextual y botón Bucear (al final de cada paso de simulación)
@@ -52,7 +61,8 @@ AVE.module('interaccion', function (G) {
     if (modo && !busy) { const a = api.modo.aviso(); if (a) poner(a); else ocultar(); } // aviso vacío: el modo ya enseña sus controles (chips del duelo)
     else if (it) poner('Acción: ' + it.label());
     else ocultar();
-    const verb = modo && !busy ? api.modo.verbo : it ? it.label().split(' ')[0] : G.dialogo.open() ? 'Seguir' : !busy && lleva() ? 'Soltar' : 'Acción';
+    // T27: el verbo sin la puntuación del final («Observar: Suelo» daba «Observar:» y se veía cortado)
+    const verb = modo && !busy ? api.modo.verbo : it ? it.label().split(' ')[0].replace(/[:,;.…·]+$/, '') : G.dialogo.open() ? 'Seguir' : !busy && lleva() ? 'Soltar' : 'Acción';
     const actBtn = G.input.actBtn;
     if (actBtn.textContent !== verb) actBtn.textContent = verb;
     // Atenuado cuando no hay nada que hacer; con algo cerca se ve pleno y dice el verbo
