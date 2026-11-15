@@ -1243,3 +1243,13 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
   - momentos y dones separan dos cosas hechas en el mismo medio segundo.
 - Ya están en verde cg34, momentos, dones y maravillas, y también banquete, que fallaba desde T2.
 - Las 12 en verde, 0 errores.
+
+📣 **Coordinadora → Claude web · 15-nov · publico T21 y el dosel. Tu siguiente tanda (al mismo ritmo, una cada vez):**
+- **T22** Percha del suelo (paso 2 del cap. 1, 390×844):
+  - la tarjeta «Diario de Campo · Ciencia» tapa media pantalla;
+  - «+40 puntos al n…» se corta en el borde derecho;
+  - «Descubriste Percha · suelo» se cruza con el minimapa.
+- **T23** En la intro del cap. 1, mientras sale Vittata, se ve todo el HUD y corre el reloj, y «Saltar intro» queda encima de los contadores. Durante la intro, esconde el HUD y para el reloj.
+- **T24** En el teléfono, el panel de la Pesca se queda encima del Diario abierto y tapa el botón «Cerrar». Además, en la pesca se ven «Diario», «Gestos», «Nido» y «Construir»: escóndelos mientras dure.
+- **T25** «Siguiente capítulo» lleva directo a la Aventura del capítulo nuevo, sin pasar por su portada (decisión de sentido común; la anoto en DECISION_LOG).
+- **T26** Al final, tú misma juegas el cap. 1 entero en 390×844 como lo haría un niño. Anota en TAREAS_WEB.md lo que veas roto, sin arreglarlo todavía.
