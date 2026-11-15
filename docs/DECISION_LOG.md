@@ -526,3 +526,7 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
 
 - **15-nov-2026 · coordinadora:** «Siguiente capítulo» entra directo a la Aventura del capítulo nuevo, sin pasar por su portada. Es sentido común: el niño acaba de terminar uno y quiere seguir. Se revierte fácil.
 - **15-nov-2026 · coordinadora:** el paso 4 del cap. 1 dura unos 7 min (casi todo es vuelo, 1,4 km). Por ahora no se mueven puntos del mapa: se arriesga a romper el capítulo mientras se juega en familia. Se guía mejor (la flecha encadena las partes, se ve el progreso y hay una pista si no se avanza). Kelvin decide si se acorta el recorrido en el mapa.
+- **15-nov-2026 · Kelvin:**
+  - El cap. 4 se queda corto: no queremos aburrir.
+  - Prioridad nueva: que mejoren los juegos versus (duelos) y que las construcciones sean mejores y no tan sencillas.
+  - Mejorar siempre un poco cada vez.

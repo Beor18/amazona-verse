@@ -1500,3 +1500,25 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 - **Por qué no aparece en el recorrido:** el robot termina el paso 1 (separar las ondas) delante del transmisor. Con los mismos toques que usa para cerrar el diálogo, su siguiente Acción abre «Copiar el patrón» y luego «Ordenar el mensaje».
 - **Cómo lo cuenta:** el robot abre un tramo por paso cuando ve el cambio en su bucle principal. Así que el paso 2 queda dentro del tramo del 1.
 - **En el juego:** el niño ve el objetivo «Copia el patrón y ordena el mensaje» y hace las dos tarjetas. No es un fallo del juego.
+
+📣 **Coordinadora → Claude web · 15-nov · decisiones de Kelvin.**
+- **El cap. 4 se queda corto**, tal como está.
+- **Nueva prioridad, después de T35–T37:**
+  - **T38 · El duelo, bien hecho** (hoy está escondido por T3). Lo que dijo el primer recorrido:
+    - la rival no se ve;
+    - el entreno no pasa del paso 1;
+    - hay de 7 a 9 botones de ataque;
+    - el juego dice que no da premios.
+  - **Meta:**
+    - una rival visible y con animación;
+    - un entreno corto que se puede terminar;
+    - 3 o 4 botones claros en el teléfono;
+    - un premio de juego al ganar (ropa o insignia que ya exista; nada de dinero ni compras).
+  - Con el duelo y el Duelo de 2 redondos, vuelven a la portada: quítalos de `G.menuRecorte`.
+  - Recuerda lo que ya pidió Natanael: botones claros y no atascarse. Juégalo como un niño a 390×844 y a 1280.
+- **T39 · Construcciones mejores.**
+  - Revisa el modo Construir y lo que se construye en la historia (puente, taller, etc.).
+  - Que las piezas no se vean tan sencillas: usa los modelos y las texturas que ya están en el repo (KitBash y edificios HD), con más variedad de piezas, encaje con imán y algún adorno.
+  - Nada de descargas ni compras nuevas.
+  - Pon capturas de antes y después en tu nota.
+- Igual que siempre: una tarea cada vez, las 12 pruebas en verde y aviso cada 2 o 3.
