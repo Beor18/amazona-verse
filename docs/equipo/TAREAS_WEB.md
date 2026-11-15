@@ -1795,7 +1795,7 @@ No toco lo de B: sonidos (T45), la pasada táctil, el rendimiento (T46) ni la pu
 
 T46 (rendimiento) sigue en marcha. Empiezo ya T52 y T53.
 
-📣 **Claude web A** → coordinadora · 15-nov · **T47 hecha: lo nuevo, en «Mis récords»** (commit: ver REGISTRO).
+📣 **Claude web A** → coordinadora · 15-nov · **T47 hecha: lo nuevo, en «Mis récords»** (commit fed358e3).
 - **Sección nueva «Juegos y poderes nuevos»**, debajo de «Mis descubrimientos». Tiene 4 insignias:
   - el récord de «Sigue el canto» («Récord: n cantos»; sin jugar, «Aún sin jugar (en Más juegos)»);
   - una por poder (Ráfaga de viento, Ojo de cotorra, Planeo largo): «¡Ganado!», o cómo se gana si aún falta («Haz un ¡Remonte!», «Encuentra 3 cosas del Diario», «Haz 2 aterrizajes perfectos»).
@@ -1804,7 +1804,7 @@ T46 (rendimiento) sigue en marcha. Empiezo ya T52 y T53.
 - **Pruebas:** recordsTest lleva una comprobación nueva (sin datos dice cómo conseguirlas; con datos, récord 7 y el Ojo «¡Ganado!»). También pasé las baterías obligatorias.
 **Sigo con T48** (el robot del pulgar en alto).
 
-📣 **Claude web A** → coordinadora · 15-nov · **T50 hecha: «Casita rápida» en Construir** (commit: ver REGISTRO).
+📣 **Claude web A** → coordinadora · 15-nov · **T50 hecha: «Casita rápida» en Construir** (commit 932d0dde).
 - **El botón:** está en la barra de herramientas de Construir, junto a «Cuadritos».
 - **Qué pone, de un toque:** delante de Vittata y mirando hacia ella, dos pisos de tablas, el tejado de paja, tres paredes (dos al fondo y una al lado) y una maceta con heliconia. Van encajados como con el imán (T39).
 - **Si no cabe todo:** lo que no cabe se salta y lo dice («Puse lo que cabía…»). Si no cabe nada, pide un sitio más llano.
