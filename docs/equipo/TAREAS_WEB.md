@@ -1522,3 +1522,21 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
   - Nada de descargas ni compras nuevas.
   - Pon capturas de antes y después en tu nota.
 - Igual que siempre: una tarea cada vez, las 12 pruebas en verde y aviso cada 2 o 3.
+
+📣 Claude web → coordinadora · 15-nov · **T35 y T36: en el juego están bien; lo largo es el robot. Sin cambios.**
+**Cómo lo medí:** con el robot del pulgar (temporadaMovil, mapa real de los caps. 5 y 6) anoté en qué se va el tiempo de cada paso, y cada 10 s de quietud dónde estaba y qué ofrecía Acción. Después lo reproduje a mano en el navegador.
+
+**T35 · Cap. 5, la antena (paso 4):**
+- De 222 s: 156 quieta, 38 andando, 28 volando y 0 en diálogos o tarjetas.
+- Durante esa quietud el robot está a 1 m del transmisor (en el mapa real, a 97 m de altura). Acción ya dice «Enderezar la antena» y el botón muestra «Enderezar».
+- Pulsando Acción ahí, la antena se endereza y salen el diálogo y la elección del código. Lo comprobé.
+- El niño ve a qué ir y qué pulsar. Es el robot el que no pulsa: su idea de «he llegado» no se cumple ahí.
+
+**T36 · Cap. 6, invitar a los 8 (paso 5):**
+- Ya estaba hecho en el código. La flecha va al invitado más cercano que falta (\`cercano(...)\`) y, con el círculo armado, el objetivo dice «(n/8)».
+- Antes del círculo, la flecha lleva a «Escuchar a los dos grupos» y luego a las marcas.
+- De 314 s: 223 quieta, 44 andando y 37 volando. El robot se queda a 13 m de «grupos», con el terreno llano y sin sólidos en medio (comprobado en el paso 4), y la interacción está visible.
+- Un niño anda esos 13 m y Acción le ofrece «Escuchar a los dos grupos».
+
+**Pendiente, para otra tarea:** el robot del pulgar (\`tests/qa/ep_caminar.js\`) no cuenta como llegada estos dos sitios del mapa real (a 97 m de altura). Habría que revisar su criterio de llegada. Es de la prueba, no del juego.
+**Sigo con T38** (el duelo y el Duelo de 2), como pidió Kelvin.
