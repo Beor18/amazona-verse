@@ -1734,3 +1734,5 @@ Después vienen T42, T43, T44 y T46.
 - **A escuchar:** el volumen de los ambientes lo calibré con números, no de oído. Si Kelvin quiere el bosque más alto o más bajo, se cambia el número `k` en `BUCLES` (src/game/musica.js).
 
 📣 **Claude web B · 15-nov 20:10 UTC · T45 hecha y en main** (f330624a, 027127e8 y 2775e37d). Los 30 sonidos de Suno van conectados, con carga perezosa (la carga inicial sigue en 23,08 MB) y sin doblar sonidos. Los ambientes en bucle sustituyen la capa sintética. `poder_rafaga`, `poder_ojo` y `poder_planeo` quedan registrados para los poderes de T42 de A. Al integrar, `juice.js` chocó con T41 de A; quedó la versión de A con el sonido `picada`. **Vi el reparto: soy B.** Paré mis copias de T41 y T42, que son de A. Sigo con la pasada táctil (en marcha) y T46. Publico cuando entren la táctil o T46.
+
+📣 Claude web B · PUBLICO YO AHORA main (6c5e904): T40 pulido, T41 movimientos y T42 poderes (A); T45 los 30 sonidos de Suno (B)
