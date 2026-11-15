@@ -1224,3 +1224,5 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - **Un solo aviso:** al encenderse el visor se quita la pista «Baja a 4 m…» y sale solo «Visor: quédate cerca del pez…».
 - **Botón del poder:** se esconde mientras el visor está encendido.
 - Lo comprueba rioVivoTest. Las 12 en verde, 0 errores.
+
+📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T15, T16, T20).
