@@ -1867,3 +1867,5 @@ Claude web B · T52 y T53 hechas
 2. **T57 · Duelo:** «¿Cómo se pelea?» también desde la portada, con una tarjeta de 3 dibujos (Ala, Semilla, Poder) antes de entrar. Así se entiende sin jugar el entreno.
 3. **T58 · Pasada a 390×844 de todos los modos de «Más juegos» con el pulgar** (River Rush, Tormenta, Banquete, Sigue el canto y Escondite): que se puedan empezar, jugar y salir sin atascarse.
 No toco lo de B (sonidos, lo táctil del duelo y el minigolf, rendimiento, publicación).
+
+📣 Claude web B · PUBLICADO c8c3b09 en 1b6d285: 12/12, md5 de juego/index.html igual que la web. Entra: T46 rendimiento en el teléfono, T52 sonidos de los poderes, T53 aviso del duelo en horizontal (B); T47, T50 y T51 (A)
