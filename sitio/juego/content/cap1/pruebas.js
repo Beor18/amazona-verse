@@ -403,6 +403,17 @@
         } finally { st.guia = g0; G.rescate = r0; M.flying = f0; M.swimming = sw0; Mi.pistaVuela(); }
       }
     }
+    { // T30: un aviso que ya estuvo 2,2 s en pantalla cuenta como leído: no vuelve después de una tarjeta
+      const UI = G.ui, tt = document.getElementById('toast');
+      UI.vaciarAvisos(); UI.colaTest(true);
+      try {
+        UI.toast('Aviso ya leído', 8000); tick(2.6);
+        const visto = !tt.hidden && tt.textContent === 'Aviso ya leído';
+        const cm = document.getElementById('comic'), cm0 = cm.hidden; cm.hidden = false; tick(0.1); cm.hidden = cm0; tick(0.5); // el cómic lo tapa (en cualquier tamaño)
+        const vuelve = !tt.hidden && tt.textContent === 'Aviso ya leído';
+        check('T30 · un aviso ya leído (2,2 s en pantalla) no vuelve después de lo que lo tapó (cómic, tarjeta en el teléfono)', visto && !vuelve, visto + ' · ' + vuelve);
+      } finally { UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = ''; }
+    }
     { // T21: lo que el niño acaba de hacer ({ ya }: una foto, un don, una maravilla) sale al momento; el aviso de antes vuelve después
       const UI = G.ui, tt = document.getElementById('toast');
       UI.vaciarAvisos(); UI.colaTest(true);
@@ -890,6 +901,7 @@
     ok('p1: predicción con 3 opciones, sin juicio', opts() === 3 && /predicción|prediction/i.test(card()));
     click('ch-' + (o.pred1 != null ? o.pred1 : 1)); drain();
     ok('p1 hecho y predicción guardada', S.edu.hecho.p1 && !!S.edu.pred1, S.edu.pred1);
+    ok('T29b · el objetivo del paso dice en qué parte va (2/8 o similar)', new RegExp(' 2/' + (E.PASOS ? E.PASOS.length : '\\d+') + ':').test(E.textoPaso()), E.textoPaso());
     // p2 Capas (perchas) y p3 Cadena en el dosel
     const P2 = paso('p2');
     for (const p of E.PERCHAS) {
