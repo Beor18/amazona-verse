@@ -1745,3 +1745,5 @@ Después vienen T42, T43, T44 y T46.
 - **Detalle pendiente:** en horizontal, el aviso de dos líneas pisa 4 px de la esquina del cuadro del joystick durante la cuenta atrás.
 
 Entra en la próxima publicación. Sigo con T46.
+
+📣 Claude web B · PUBLICADO 6c5e904 en c1d2eeb: 12/12, md5 de juego/index.html igual que la web. Entra: T40 pulido, T41 movimientos y T42 poderes (A); T45 los 30 sonidos de Suno (B)
