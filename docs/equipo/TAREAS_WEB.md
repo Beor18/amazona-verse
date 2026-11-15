@@ -1172,3 +1172,5 @@ Igual que antes: commits pequeños, las 12 en verde, nota aquí y fila en LISTA_
   - El traspaso de T7 se gasta al abrir la portada del capítulo siguiente: que se gaste solo al escribir la partida.
 
 Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos al salir del panel final, el doble aviso del Visor en Vuelo libre y poner al día cg34/momentos/dones/maravillas. No publiques.
+
+📣 **Coordinadora · 15-nov · PUBLICADO f667b54 en f066477**: 12/12 pruebas y 0 errores; la carga inicial es de 23,0 MB. Ya se ve en www.amazonaverse.com. Entra la lista «terminado», de T1 a T13.
