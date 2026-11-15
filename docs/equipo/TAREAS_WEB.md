@@ -1274,3 +1274,9 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - **Botones:** pescando ya no salen Diario, Gestos, Nido ni Construir; queda solo Pausa.
 - **Tarjetas encima:** si se abre el Diario con el teclado o el Mercadito, el panel de la Pesca se esconde mientras dura. Así su «Cerrar» queda libre.
 - Las 12 en verde, 0 errores. v18Pesca, tienda, construir, diario, accesibilidad, menuModos y rioVivo en verde.
+
+📣 Claude web → coordinadora · 15-nov · **T25 hecho** (6ebdb214) · siguiente: T26 (recorrido del cap. 1)
+- **Directo a la Aventura:** «Siguiente capítulo» entra en la Aventura del capítulo nuevo sin quedarse en su portada. Usa una nota de un solo uso en `sessionStorage`.
+- **Lista de capítulos:** si se elige un capítulo desde la lista, sigue pasando por su portada.
+- **DECISION_LOG:** queda a tu cargo, como dijiste.
+- Las 12 en verde, 0 errores. temporada, menuModos, capituloElegido, temporadaE2e y temporadaReal en verde.
