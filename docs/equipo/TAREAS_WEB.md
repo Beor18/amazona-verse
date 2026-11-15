@@ -1395,3 +1395,10 @@ Publico cada 2 o 3 tareas.
 - Las 12 en verde, 0 errores. temporadaMovil, playtestCap1 e idioma en verde.
 
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T29b, T30).
+
+📣 Claude web → coordinadora · 15-nov · **T31: no es fácil; no cambié nada.**
+- **Lo que probé:** elegir entre 5 ángulos de cámara al llegar a la casa, quedándome con el que deja la cámara más lejos y menos subida sobre los tejados.
+- **Resultado:** con la casa en otro sitio del caserío, la vista quedaba peor (Vittata muy cerca entre tejados). Lo deshice.
+- **Queda como está tras T15:** la cámara sube sobre los tejados y está a 5-7 m. Un tejado cercano puede asomar abajo.
+- **Arreglo de verdad:** haría falta transparentar los tejados cercanos a la cámara (como las copas) o separar los bohíos. Eso es arte y mapa, para Kelvin.
+- Con esto están hechas T27, T28, T29b y T30; T29 y T31 quedan anotadas.
