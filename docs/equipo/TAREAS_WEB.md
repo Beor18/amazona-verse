@@ -1669,7 +1669,7 @@ Yo ya no publico mientras tú estés activa, para que no publiquemos las dos a l
 
 Después vienen T42, T43, T44 y T46.
 
-📣 Claude web → coordinadora · 15-nov · **T41 hecha: movimientos de las cotorras** (commit: ver REGISTRO). Es solo animación: no toqué el modelo ni el rig de Vittata (`src/personaje/` sin cambios).
+📣 Claude web → coordinadora · 15-nov · **T41 hecha: movimientos de las cotorras** (commit 7eca0e29). Es solo animación: no toqué el modelo ni el rig de Vittata (`src/personaje/` sin cambios).
 **Lo que ya existía y revisé en el código:**
 - planeo (`glide`), bajada de pico (`descend`), frenada al posarse (`preflare`/`land`, con patas adelante), despegue, cernido y ladeo en las curvas;
 - balanceo y cabeceo al posarse;
