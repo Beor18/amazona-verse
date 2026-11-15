@@ -445,7 +445,9 @@
         const d = F.flash; d.style.transition = 'none'; d.style.opacity = '0.75'; void d.offsetWidth; d.style.transition = 'opacity .45s ease-out'; d.style.opacity = '0';
       } catch (e) { /* sin DOM */ }
     }
-    function avisar(texto, ms) { if (G.quiet && !F.prueba) return; try { G.ui.toast(texto, ms || 3600); } catch (e) { /* sin HUD */ } }
+    // T2: la regla compartida «hay actividad o escena en marcha» (src/engine/ui.js); sin ella, solo G.ui.busy()
+    const enEscena = () => { try { return G.ui.enEscena ? G.ui.enEscena() : G.ui.busy(); } catch (e) { return false; } };
+    function avisar(texto, ms, fijo) { if (G.quiet && !F.prueba) return; try { G.ui.toast(texto, ms || 3600, fijo ? { fijo: true } : undefined); } catch (e) { /* sin HUD */ } }
     function avistar(id) {
       if (!activo() || !espDe(id) || mem.vistos.includes(id)) return false;
       mem.vistos.push(id);
@@ -455,11 +457,11 @@
       animarReporte(n, total);
       pintarCuenta();
       avisar(L(`¡La viste! ${e.nombre}: reporte enviado a la Estación de Conservación (${n}/${total}). Su ficha está en el Diario.`,
-        `You saw it! ${e.nombreEn}: report sent to the Conservation Station (${n}/${total}). Its card is in the Journal.`), 4200);
+        `You saw it! ${e.nombreEn}: report sent to the Conservation Station (${n}/${total}). Its card is in the Journal.`), 4200, true); // T2 ronda 3: de una sola vez, la cola llena no lo tira
       if (n >= total && !mem.completa) {
         mem.completa = true;
         const fin = () => avisar(L('¡Patrulla completa! La Estación ya sabe dónde buscar a las 4. ¡Gracias!',
-          'Patrol complete! The Station now knows where to look for all 4. Thank you!'), 4800);
+          'Patrol complete! The Station now knows where to look for all 4. Thank you!'), 4800, true);
         if (F.prueba) fin(); else setTimeout(fin, 4300);
       }
       guardar();
@@ -512,10 +514,18 @@
         '.inv-album small{opacity:.9;line-height:1.35}.inv-album i{opacity:.8;font-size:.9em}.inv-album .fauna-fuente a{color:inherit;text-decoration:underline;word-break:break-word}' +
         '.inv-album .fauna-fuente a:focus-visible{outline:3px solid #ffe066;outline-offset:2px}' +
         '.inv-album .fauna-falta{opacity:.6}.inv-intro,.inv-nota{display:block;opacity:.85;line-height:1.35;margin:.2em 0 .5em}' +
-        '#inv-cuenta.hud{position:relative;left:auto;top:auto;flex:1 0 100%;width:max-content;max-width:100%;margin:8px 0 0;z-index:var(--z-hud,5);' +
+        '#inv-cuenta.hud{position:relative;left:auto;top:auto;flex:0 0 100%;width:max-content;max-width:max-content;margin:8px 0 0;z-index:var(--z-hud,5);' +
         'min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:999px;background:#243a28;color:#f4ffe8;border:2px solid #d7e7a8;' +
         'font:700 16px/1 var(--font-display,sans-serif);box-shadow:0 3px 0 rgba(0,0,0,.28);pointer-events:none}' +
-        '#inv-cuenta[hidden]{display:none}' +
+        '#inv-cuenta[hidden]{display:none}#inv-cuenta i{display:none}' +
+        // Ronda 5 de T2: en el teléfono (HUD de T6) va bajo la fila de los contadores, en la columna del borde derecho que el minimapa
+        // deja libre (minimapa.js lo corre 56 px), compacta: huella encima de n/4 («Patrulla» sigue para el lector de pantalla). En la
+        // fila de los contadores no cabía en cuanto un recurso llegaba a 10 (bajaba encima del minimapa); fuera del flujo no depende
+        // de las cifras del reloj, los puntos ni los recursos, y no toca el HUD de T6.
+        '@media (max-width:560px){#inv-cuenta.hud{position:absolute;right:0;top:calc(100% + 6px);flex-direction:column;justify-content:center;' +
+        'box-sizing:border-box;width:44px;max-width:44px;min-height:44px;margin:0;padding:5px 0;gap:2px;border-radius:14px;font-size:14px}' +
+        '#inv-cuenta i{display:block;flex:none;width:16px;height:16px;background:currentColor;-webkit-mask:var(--i-paw) center/contain no-repeat;mask:var(--i-paw) center/contain no-repeat}' +
+        '#inv-cuenta .inv-c-txt{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}}' +
         '#inv-reporte{position:fixed;left:50%;top:30%;z-index:70;min-height:44px;display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:16px;' +
         'background:#fff8e8;color:#2b2118;font:700 18px/1.2 var(--font-display,sans-serif);box-shadow:0 6px 0 #d9c7a3;pointer-events:none;opacity:0}' +
         '#inv-reporte.inv-on{animation:inv-rep 1.25s ease-out both}' +
@@ -549,8 +559,10 @@
     function pintarCuenta() {
       const el = cuentaEl(), n = mem.vistos.length, t = especies().length || 4;
       const txt = L(`Patrulla ${n}/${t}`, `Patrol ${n}/${t}`);
-      if (el.textContent !== txt) el.textContent = txt;
-      el.hidden = !(activo() && (!G.quiet || F.prueba));
+      if (el.textContent !== txt) el.innerHTML = `<i aria-hidden="true"></i><span class="inv-c-txt">${esc(L('Patrulla', 'Patrol'))} </span>${n}/${t}`;
+      // T1: fila propia pero del tamaño del texto (con flex-grow cruzaba toda la pantalla); fuera mientras hay un minijuego,
+      // un diálogo, una tarjeta o un panel en marcha (vuelve sola al terminar)
+      el.hidden = !(activo() && (!G.quiet || F.prueba) && !(!F.prueba && enEscena()));
     }
     function animarReporte(n, total) {
       if (G.quiet && !F.prueba) return;
@@ -579,12 +591,21 @@
     // ---------- Bucle ----------
     function paso(dt, busy) {
       dt = Math.min(dt, 0.1); F.t += dt; uT.value += dt;
-      if (activo()) revisar(dt, !busy);
+      if (activo()) revisar(dt, !busy && (F.prueba || !enEscena())); // T2: ni pistas ni avistamientos con una escena en marcha
       pintarCuenta();
       dibujar();
     }
     G.on('update', (dt, busy) => { if (!F.prueba) paso(dt, busy); }, 88);
-    if (activo() && !mem.vistos.length && !G.quiet) setTimeout(() => avisar(L(`${D.album.titulo}: ${D.album.intro}`, `${D.album.tituloEn}: ${D.album.introEn}`), 5200), 2500);
+    // T2: la presentación espera a que no haya escena ni actividad en marcha (antes salía en medio de la pesca o de un diálogo)
+    if (activo() && !mem.vistos.length && !G.quiet) {
+      let intentos = 0;
+      const presentar = () => {
+        if (G.quiet || mem.vistos.length || !activo()) return;
+        if (enEscena()) { if (++intentos < 60) setTimeout(presentar, 2000); return; }
+        avisar(L(`${D.album.titulo}: ${D.album.intro}`, `${D.album.tituloEn}: ${D.album.introEn}`), 5200, true);
+      };
+      setTimeout(presentar, 2500);
+    }
     const estado = () => ({ activo: activo(), vistos: mem.vistos.slice(), completa: mem.completa, hogar: Object.keys(hogar),
       draw: Object.values(mallas).filter(m => m.visible).length });
 
@@ -663,6 +684,7 @@
             const ahora = document.querySelector('#steps li.now');
             const txtObj = ahora ? ahora.textContent : '';
             if (ahora) ahora.textContent = 'Vuela y pósate junto a Iguaca';
+            const filas = {};
             const medir = async (w, h) => {
               const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
               fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:' + w + 'px;height:' + h + 'px;border:0';
@@ -671,21 +693,31 @@
               const css = document.getElementById('invasoras-css');
               let cuerpo = top ? top.outerHTML : '';
               if (!/li class="now"/.test(cuerpo)) cuerpo = cuerpo.replace('</ol>', '<li class="now">Vuela y pósate junto a Iguaca</li></ol>');
-              fr.srcdoc = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + hojas + (css ? css.outerHTML : '') + '</head><body>' + cuerpo + '</body></html>';
+              // Ronda 4 de T2: sin animaciones, se mide la posición final (el «rise-in» del objetivo lo baja 24 px al cargar)
+              fr.srcdoc = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + hojas + (css ? css.outerHTML : '') + '<style>*{animation:none!important;transition:none!important}</style></head><body>' + cuerpo + '</body></html>';
               document.body.appendChild(fr);
-              await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 2500); });
+              await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 8000); }); // sin GPU la primera carga de las hojas pasa a veces de 2,5 s
               const md = fr.contentDocument;
               const obj = md && md.querySelector('#steps li.now'), pill = md && md.getElementById('inv-cuenta');
               if (pill) pill.hidden = false;
+              const mc = md && md.getElementById('marcador'), tp = md && md.getElementById('top'); // con el marcador a la vista (reloj y puntos), como en partida
+              if (mc && w < 560) { mc.hidden = false; if (tp && !tp.style.getPropertyValue('--mc-w')) tp.style.setProperty('--mc-w', '110px'); }
               const o = obj && obj.getBoundingClientRect(), p = pill && pill.getBoundingClientRect();
               const pos = pill && md.defaultView.getComputedStyle(pill).position;
-              const mal = !md ? 'sin documento' : !obj ? 'sin objetivo' : !pill ? 'sin pastilla' : pos !== 'relative' ? 'posición ' + pos : solapan(o, p) ? 'solape ' + Math.round(o.left) + ',' + Math.round(o.top) + '–' + Math.round(o.right) + ',' + Math.round(o.bottom) + ' con ' + Math.round(p.left) + ',' + Math.round(p.top) + '–' + Math.round(p.right) + ',' + Math.round(p.bottom) : '';
+              const mal = !md ? 'sin documento' : !obj ? 'sin objetivo' : !pill ? 'sin pastilla' : pos !== (w < 560 ? 'absolute' : 'relative') ? 'posición ' + pos : solapan(o, p) ? 'solape ' + Math.round(o.left) + ',' + Math.round(o.top) + '–' + Math.round(o.right) + ',' + Math.round(o.bottom) + ' con ' + Math.round(p.left) + ',' + Math.round(p.top) + '–' + Math.round(p.right) + ',' + Math.round(p.bottom) : '';
+              // Ronda 5: con los contadores en el peor caso de partida (recursos de 2 cifras y puntos de 3, marcador más ancho), la
+              // pastilla queda bajo su fila y a la derecha del minimapa (que acaba 56 px antes del margen derecho de 12 px)
+              const iv = md && md.getElementById('inv');
+              if (iv && w < 560) { for (const x of iv.querySelectorAll('b')) x.textContent = '99'; if (tp) tp.style.setProperty('--mc-w', '128px'); }
+              const r = iv && iv.getBoundingClientRect(), p2 = pill && pill.getBoundingClientRect(), b = v => Math.round(v);
+              filas[w] = !r || !p2 ? 'sin inventario' : (p2.top >= r.bottom && p2.left >= w - 12 - 56 + 1 && p2.right <= w - 12 + 1 && p2.width >= 40 && p2.height >= 40 && !solapan(r, p2) && !solapan(o, p2)) ? '' : 'pastilla ' + b(p2.left) + ',' + b(p2.top) + '–' + b(p2.right) + ',' + b(p2.bottom) + ' · contadores ' + b(r.left) + ',' + b(r.top) + '–' + b(r.right) + ',' + b(r.bottom);
               fr.remove();
               return mal;
             };
             const m1280 = await medir(1280, 800), m390 = await medir(390, 844);
             if (ahora) ahora.textContent = txtObj;
             ok('La pastilla de la Patrulla no tapa el objetivo a 1280×800 ni a 390×844', !m1280 && !m390, [m1280 && ('1280 ' + m1280), m390 && ('390 ' + m390)].filter(Boolean).join(' · '));
+            ok('Revisión T2, ronda 5: a 390×844, con recursos de 2 cifras y puntos de 3, la pastilla queda en la columna derecha, sin pisar contadores ni minimapa', !filas[390], filas[390]);
           }
           const zonas = especies().map(e => G.interaccion.find('invzona_' + e.id));
           ok('El mapa marca la zona, no el sitio exacto (a 18 m o más del animal)', zonas.every(z => z && hogar[z.id.slice(8)] && Math.hypot(z.x - hogar[z.id.slice(8)].x, z.z - hogar[z.id.slice(8)].z) >= 18), zonas.map(z => z && Math.hypot(z.x - hogar[z.id.slice(8)].x, z.z - hogar[z.id.slice(8)].z).toFixed(0)).join(','));
@@ -714,8 +746,15 @@
           F.prueba = false; G.quiet = true; paso(0.05, false);
           ok('En las baterías (G.quiet) no se ve ninguna', visibles() === 0);
           G.quiet = false; quietaEn(hi.x + 300, hi.z); G.renderer.camera.position.set(hi.x + 300, hi.y + 5, hi.z); paso(0.05, false);
-          const lejos = !mallas.iguana.visible; G.quiet = g0.quiet;
+          const lejos = !mallas.iguana.visible;
           ok('A más de 70 m la iguana se apaga', lejos);
+          { // T1: la pastilla de la Patrulla se aparta mientras hay actividad o escena en marcha y vuelve al terminar
+            const busy0 = G.ui.busy; let enMarcha = false, sale = false, vuelve = false;
+            try { pintarCuenta(); const antes = !F.cuenta.hidden; G.ui.busy = () => true; pintarCuenta(); enMarcha = F.cuenta.hidden; G.ui.busy = busy0; pintarCuenta(); vuelve = (!F.cuenta.hidden) === antes; sale = true; }
+            finally { G.ui.busy = busy0; }
+            ok('La pastilla de la Patrulla se oculta con una actividad en marcha y vuelve al terminar', sale && enMarcha && vuelve);
+          }
+          G.quiet = g0.quiet;
           F.prueba = true;
           await cuadros(2);
         }

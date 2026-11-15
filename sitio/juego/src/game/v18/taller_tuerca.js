@@ -71,7 +71,7 @@
       if (!G.interaccion.find('int_taller_k300')) {
         G.interaccion.add({
           id: 'int_taller_k300', x: ED.puerta.x, z: ED.puerta.z, r: ED.puerta.r,
-          visible: () => encendido() && G.interiores.activo() !== ED.id,
+          visible: () => encendido() && G.interiores.activo() !== ED.id && (!(G.zonas && G.zonas.activa && G.zonas.dentro) || G.zonas.dentro(ED.puerta.x, ED.puerta.z)), // QA-250: fuera de lo abierto no sale
           label: () => 'Entrar',
           use: () => G.interiores.entrar(ED),
         });

@@ -120,6 +120,8 @@
       ['El servicio de pasajeros del tren de la isla terminó a mediados del siglo XX; hoy quedan estaciones y puentes como recuerdo (por verificar).',
         'Passenger service on the island railway ended in the mid-1900s; today stations and bridges remain as a memory (to be verified).'],
     ];
+    // Revisión T2 (lista «terminado», b): el jugador nunca ve «por verificar»; un dato sin verificar no sale y, si no queda ninguno, no hay «¿Sabías que…?»
+    const SABIAS_VER = SABIAS.filter(s => !/verificar|verified/i.test(s[0] + s[1]));
     const t = s => (ingles() && TX[s] != null ? TX[s] : s);
     const tf = (s, ...a) => { let r = t(s); for (const v of a) r = r.replace('{}', v); return r; };
 
@@ -730,7 +732,7 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
       u.nuevo.hidden = !J.nuevo;
       u.rec.textContent = J.entregas ? J.entregas + ' ' + t(J.entregas === 1 ? 'entrega' : 'entregas') + ' · ' + J.aTiempo + ' ' + t('a tiempo') + (J.perdidas ? ' · ' + J.perdidas + ' ' + t('cajas caídas') : '') + (J.mejor ? ' · ' + t('tu mejor') + ': ' + J.mejor : '') : t('Haz una entrega para tener tu primer récord.');
       const ls = metaLineas(); u.meta.innerHTML = ls.map(x => '<span>' + x + '</span>').join(''); u.meta.hidden = !ls.length;
-      const sb = SABIAS[J.semilla % SABIAS.length]; u.sabias.lastElementChild.textContent = ingles() ? sb[1] : sb[0];
+      const sb = SABIAS_VER.length ? SABIAS_VER[J.semilla % SABIAS_VER.length] : null; u.sabias.hidden = !sb; u.sabias.lastElementChild.textContent = sb ? (ingles() ? sb[1] : sb[0]) : '';
       u.fin.querySelector('.tr-botones [data-salir]').textContent = t(alMenu() ? 'Volver al menú' : 'Volver a la historia'); /* entró desde «¿Cómo quieres jugar?»: el botón lleva al menú */
       u.fin.hidden = false; u.desvio.hidden = true; u.aviso.hidden = true;
       const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
@@ -956,6 +958,7 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
           check('Resultados a la vista: puntos, medalla de bronce, entregas y la siguiente meta («Te faltan…»)', !st.ui.fin.hidden && st.ui.num.textContent === '330' && st.ui.medalla.classList.contains('bronce') && /3 entregas/.test(st.ui.rec.textContent) && new RegExp('Te faltan ' + (MEDALLAS[1][1] - 330) + ' puntos para la plata').test(st.ui.meta.textContent), st.ui.meta.textContent);
           check('Medallas: bronce ' + MEDALLAS[0][1] + ', plata ' + MEDALLAS[1][1] + ', oro ' + MEDALLAS[2][1], medallaDe(MEDALLAS[0][1] - 1) === '' && medallaDe(MEDALLAS[0][1]) === 'bronce' && medallaDe(MEDALLAS[1][1]) === 'plata' && medallaDe(MEDALLAS[2][1]) === 'oro');
           check('El «¿Sabías que…?» lleva fuente o «por verificar»', SABIAS.every(s => /verificar|Fuente/.test(s[0]) && /verified|Source/.test(s[1])));
+          check('Revisión T2 · el jugador no ve «por verificar»: el «¿Sabías que…?» solo sale con datos verificados', !/verificar|verified/i.test(st.ui.fin.textContent) && st.ui.sabias.hidden === !SABIAS_VER.length, SABIAS_VER.length + ' verificados · ' + st.ui.sabias.textContent.slice(0, 60));
           check('Un toque reflejo justo al acabar no reinicia; pasado finEspera sí', (J.finT = 0, toque() === false && st.fase === 'fin') && (J.finT = P.finEspera, toque() === true && st.fase === 'juego'));
           check('«Otra vez» rápido: resultados a los ' + P.finPanel + ' s y el turno nuevo arranca ya (sin «Toca para arrancar»): puntos 0, tren en la Playa, 6 cargas esperando, resultados ocultos', P.finPanel <= 0.4 && J.puntos === 0 && st.fase === 'juego' && st.ui.pista.hidden && V.segs[J.seg].id === 'oeste' && V.ests.every(e => e.espera) && st.ui.fin.hidden);
           // ---------- Robot: turnos enteros con 3 semillas (calibración de medallas y estabilidad) ----------

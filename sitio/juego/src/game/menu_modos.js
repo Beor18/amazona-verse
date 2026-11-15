@@ -93,20 +93,112 @@
     G.on('render', () => { if (libre && G.fx && G.fx.guide) G.fx.guide(null, 0); }, 61); // después del gancho de misiones (60)
     function entrarLibre() { libre = true; raiz.classList.add('modo-libre'); }
     function salirLibre() { if (!libre) return; libre = false; raiz.classList.remove('modo-libre'); }
+    // ---------- T10 · «Salir» a la vista en los modos que no tienen el suyo (Vuelo libre, Tormenta, Banquete) ----------
+    // Vuelve a la portada como «Cambiar de juego». Esc sigue abriendo la Pausa, como en el resto de juegos.
+    let bSalir = null;
+    function botonSalir() {
+      if (bSalir) return bSalir;
+      bSalir = document.createElement('button');
+      bSalir.type = 'button'; bSalir.id = 'modo-salir'; bSalir.className = 'btn ghost secondary hud'; bSalir.dataset.icon = 'close'; bSalir.hidden = true; bSalir.style.display = 'none';
+      bSalir.style.cssText += ';position:fixed;z-index:60;top:calc(env(safe-area-inset-top,0px) + 64px);left:max(12px,env(safe-area-inset-left,0px));min-height:44px;pointer-events:auto';
+      bSalir.addEventListener('click', ev => { ev.preventDefault(); volver(); });
+      document.body.appendChild(bSalir);
+      return bSalir;
+    }
+    const SALIR_EN = { libre: () => libre, tormenta: () => !!(G.retosApi && G.retosApi.activo && G.retosApi.reto === 'tormenta'), banquete: () => !!(G.retosApi && G.retosApi.activo && G.retosApi.reto === 'banquete') };
+    setInterval(() => {
+      const m = Object.keys(SALIR_EN).find(k => { try { return SALIR_EN[k](); } catch (e) { return false; } });
+      const ver = !!m && !(portada && portada.open) && !G.ui.cardOpen && !(G.dialogo && G.dialogo.open && G.dialogo.open());
+      if (!ver && !bSalir) return;
+      const b = botonSalir();
+      if (ver) { const t = L('Salir', 'Exit'); if (b.textContent !== t) b.textContent = t; b.setAttribute('aria-label', L('Salir y volver al menú', 'Exit to the menu')); }
+      if (b.hidden === ver) { b.hidden = !ver; b.style.display = ver ? '' : 'none'; }
+    }, 400);
 
     // ---------- Pintar el menú ----------
     function tarjetas() { return form ? [...form.querySelectorAll('[data-modo]')] : []; }
     const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
     // Las de la V18 solo con la bandera encendida; el Duelo de 2 necesita teclado (duelo2.js no se carga en táctil)
-    const seVe = m => (EXP.includes(m) ? G.PESCA !== false : !V18M.includes(m) || (!!G.V18 && (m !== 'duelo2' || !tactil())));
+    const seVe0 = m => (EXP.includes(m) ? G.PESCA !== false : !V18M.includes(m) || (!!G.V18 && (m !== 'duelo2' || !tactil())));
+    // ---------- T3 · Recorte del menú (LISTA_TERMINADO, 14-nov) ----------
+    // Mientras Kelvin decide la lista final de modos (K4): fuera de la portada el Duelo y el Duelo de 2 (siguen en el código y en
+    // ?mini=); River Rush, Tormenta y Banquete van dentro de «Más juegos»; «Capítulos» sube encima de las tarjetas.
+    // Bandera fácil de revertir: ?menu=completo (o G.menuRecorte = false antes de arrancar) deja el menú de antes.
+    if (G.menuRecorte == null) G.menuRecorte = !/[?&]menu=completo\b/.test(location.search);
+    const RECORTE = () => G.menuRecorte !== false;
+    const seVeT = b => !b.hidden && !b.classList.contains('recorte-fuera'); // tarjeta a la vista
+    if (!document.getElementById('menu-recorte-css')) {
+      const st = document.createElement('style'); st.id = 'menu-recorte-css';
+      st.textContent = '#modos .recorte-fuera{display:none!important}#title .title-episodios.episodios-arriba{margin:0 0 12px}'
+        // «Más juegos» abierto: solo sus tres juegos y «Volver», en ese orden (también fuera las tarjetas que añaden otros módulos)
+        + '#modos.modos-mas-abierto .modos-grid>:not([data-mas-juegos]):not([data-modo="river"]):not([data-modo="tormenta"]):not([data-modo="banquete"]){display:none!important}'
+        + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-mas-juegos]{order:4}';
+      document.head.appendChild(st);
+    }
+    const FUERA = ['duelo', 'duelo2'], MAS = ['river', 'tormenta', 'banquete'];
+    const seVe = m => seVe0(m) && !(RECORTE() && FUERA.includes(m));
+    let masAbierto = false;
+    function masJuegos() {
+      const grid = form && form.querySelector('.modos-grid');
+      if (!grid) return null;
+      let b = form.querySelector('[data-mas-juegos]');
+      if (!b) {
+        b = document.createElement('button');
+        b.type = 'button'; b.className = 'btn tile modo modo-mas'; b.dataset.masJuegos = '1';
+        b.innerHTML = '<svg class="modo-img" viewBox="0 0 64 64" aria-hidden="true"><circle cx="16" cy="32" r="7" fill="var(--leaf, #5cbf6a)"/><circle cx="32" cy="32" r="7" fill="var(--sun, #ffd25e)"/><circle cx="48" cy="32" r="7" fill="var(--sky, #6fc3ff)"/></svg><b></b><small></small>';
+        b.addEventListener('click', ev => { ev.preventDefault(); abrirMas(!masAbierto); });
+        const tras = grid.querySelector('[data-modo="banquete"]') || grid.lastElementChild;
+        if (tras) tras.insertAdjacentElement('afterend', b); else grid.appendChild(b);
+      }
+      return b;
+    }
+    function abrirMas(on) {
+      masAbierto = !!on && RECORTE();
+      if (form) form.classList.toggle('modos-mas-abierto', masAbierto);
+      mostrar();
+      const primero = masAbierto ? tarjetas().find(b => MAS.includes(b.dataset.modo) && seVeT(b)) : form && form.querySelector('[data-mas-juegos]');
+      if (primero && portada && portada.open) setTimeout(() => primero.focus({ preventScroll: true }), 0);
+    }
+    // Esc con «Más juegos» abierto vuelve a la lista (no cierra la portada)
+    // T10: con la portada a la vista, Esc cierra la tarjeta abierta encima (Mis cotorras, Álbum, Retos con amigos) y, si no hay,
+    // cierra «Más juegos». La portada se abre con show() (no modal), así que Esc no llega como 'cancel': se escucha la tecla.
+    function escPortada(e) {
+      const c = $('card');
+      if (G.ui.cardOpen && c && c.classList.contains('mm-encima')) { e.preventDefault(); G.ui.hideCard(); const f = tarjetas().find(seVeT); if (f) f.focus({ preventScroll: true }); return true; }
+      if (masAbierto) { e.preventDefault(); abrirMas(false); return true; }
+      return false;
+    }
+    if (portada) portada.addEventListener('cancel', e => { escPortada(e); });
+    addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || !portada || !portada.open) return;
+      if (escPortada(e)) e.stopImmediatePropagation();
+    }, true);
+    if (portada) portada.addEventListener('close', () => { if (masAbierto) { masAbierto = false; if (form) form.classList.remove('modos-mas-abierto'); } }); // al volver, la lista entera
+    function capitulosArriba() {
+      const nav = document.querySelector('#title .title-episodios'), dlgForm = form;
+      if (!nav || !dlgForm) return;
+      if (RECORTE()) { if (nav.nextElementSibling !== dlgForm) dlgForm.insertAdjacentElement('beforebegin', nav); nav.classList.add('episodios-arriba'); }
+    }
     function mostrar() {
       if (!form) return;
       const T = TX(), u = ultimo();
       const t = $('modos-t'); if (t) t.textContent = T.titulo;
       const bm = $('b-menu-modos'); if (bm) bm.textContent = T.cambiar;
+      capitulosArriba();
+      const bMas = RECORTE() ? masJuegos() : form.querySelector('[data-mas-juegos]');
+      if (bMas) {
+        bMas.hidden = !RECORTE(); bMas.style.display = RECORTE() ? '' : 'none';
+        bMas.querySelector('b').textContent = masAbierto ? L('Volver', 'Back') : L('Más juegos', 'More games');
+        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta y el banquete', 'River Rush, the storm and the feast');
+        bMas.setAttribute('aria-expanded', String(masAbierto));
+        bMas.setAttribute('aria-label', bMas.querySelector('b').textContent + '. ' + bMas.querySelector('small').textContent);
+      }
       tarjetas().forEach((b, i) => {
         const m = b.dataset.modo, tx = T[m]; if (!tx) return;
         if (V18M.includes(m) || EXP.includes(m)) { const ve = seVe(m); b.hidden = !ve; b.style.display = ve ? '' : 'none'; }
+        // T3: con «Más juegos» abierto solo se ven sus tres juegos; cerrado, todas menos esas tres. Solo una clase: no toca hidden,
+        // así lo que otro código esconde (el tren, el Maze) sigue escondido
+        b.classList.toggle('recorte-fuera', RECORTE() && (masAbierto ? !MAS.includes(m) : MAS.includes(m)));
         const bb = b.querySelector('b'), sm = b.querySelector('small');
         if (bb) bb.textContent = tx[0]; if (sm) sm.textContent = tx[1];
         b.style.setProperty('--i', i);
@@ -116,7 +208,7 @@
         if (chapa) { chapa.textContent = T.ultimo; chapa.hidden = !es; }
         b.setAttribute('aria-label', tx[0] + '. ' + tx[1] + (es ? '. ' + T.ultimo : ''));
       });
-      const foco = tarjetas().find(b => b.dataset.modo === u && !b.hidden) || tarjetas()[0];
+      const foco = tarjetas().find(b => b.dataset.modo === u && seVeT(b)) || tarjetas().find(seVeT) || tarjetas()[0];
       if (foco && portada && portada.open) setTimeout(() => { if (portada.open && !portada.inert) foco.focus({ preventScroll: true }); }, 0);
       pintarAyuda(T);
     }
@@ -480,7 +572,7 @@
       });
       form.addEventListener('keydown', e => {
         if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
-        const ts = tarjetas().filter(b => !b.hidden), i = ts.indexOf(document.activeElement); if (i < 0) return;
+        const ts = [...form.querySelectorAll('[data-modo]:not([hidden]):not(.recorte-fuera), [data-mas-juegos]:not([hidden])')], i = ts.indexOf(document.activeElement); if (i < 0) return;
         const cols = Math.max(1, Math.round(form.querySelector('.modos-grid').clientWidth / ts[0].offsetWidth));
         const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowDown' ? cols : -cols;
         const j = i + d; if (j < 0 || j >= ts.length) return;
@@ -556,7 +648,43 @@
         const primero = form.querySelector('button');
         check('La primera tarjeta es Aventura y es submit del form method=dialog', primero && primero.dataset.modo === 'aventura' && primero.type === 'submit' && form.method === 'dialog');
         check('Nido, récords, Mis cotorras, Álbum y Retos con amigos no cierran la portada (type=button)', ENCIMA.every(m => form.querySelector(`[data-modo="${m}"]`).type === 'button'));
-        check('Las tarjetas de la V18 se ven con la bandera encendida y se ocultan sin ella', ['golf', 'duelo', 'amigos', 'cotorras'].every(m => form.querySelector(`[data-modo="${m}"]`).hidden === !G.V18));
+        check('Las tarjetas de la V18 se ven con la bandera encendida y se ocultan sin ella', ['golf', 'amigos', 'cotorras'].concat(RECORTE() ? [] : ['duelo']).every(m => form.querySelector(`[data-modo="${m}"]`).hidden === !G.V18));
+        // T3 · recorte del menú (bandera G.menuRecorte; ?menu=completo lo quita)
+        {
+          const rec0 = G.menuRecorte, vis = m => { const b = form.querySelector(`[data-modo="${m}"]`); return !!b && seVeT(b) && getComputedStyle(b).display !== 'none'; };
+          G.menuRecorte = true; masAbierto = false; mostrar();
+          const bMas = form.querySelector('[data-mas-juegos]');
+          check('T3 · sin Duelo ni Duelo de 2 en la portada, y River Rush, Tormenta y Banquete dentro de «Más juegos»', !vis('duelo') && !vis('duelo2') && MAS.every(m => !vis(m)) && !!bMas && seVeT(bMas) && vis('aventura') && vis('golf'), ['duelo', 'duelo2'].concat(MAS).map(m => m + ':' + vis(m)).join(' '));
+          bMas.click();
+          const aVista = [...form.querySelector('.modos-grid').children].filter(el => getComputedStyle(el).display !== 'none');
+          check('T3 · «Más juegos» enseña solo sus tres juegos y «Volver»', masAbierto && MAS.every(vis) && !vis('aventura') && /Volver|Back/.test(bMas.textContent) && aVista.length === 4, aVista.map(el => el.dataset.modo || el.textContent.trim().slice(0, 12)).join(','));
+          const aj = G.aula && G.aula.aj, idi0 = aj ? aj.idioma : null;
+          if (aj) { aj.idioma = 'en'; mostrar(); check('T12 · en inglés, «Back» y «To all the cards»; cerrado, «More games»', /Back/.test(bMas.textContent) && /To all the cards/.test(bMas.textContent) && (abrirMas(false), /More games/.test(bMas.textContent)), bMas.textContent); aj.idioma = idi0; abrirMas(true); }
+          const abiertaP = portada.open; if (!abiertaP) portada.show();
+          const ev = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); dispatchEvent(ev);
+          check('T3 · Esc en «Más juegos» vuelve a la lista sin cerrar la portada', !masAbierto && ev.defaultPrevented && portada.open && vis('aventura') && !vis('river'));
+          if (!abiertaP) { portada.returnValue = ''; portada.close(); }
+          const nav = document.querySelector('#title .title-episodios');
+          check('T3 · «Capítulos» va encima de las tarjetas', !!nav && !!(nav.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING));
+          G.menuRecorte = false; mostrar();
+          check('T3 · con ?menu=completo vuelve el menú de antes', vis('river') && vis('tormenta') && seVe('duelo') === seVe0('duelo') && !seVeT(bMas));
+          G.menuRecorte = rec0; mostrar();
+        }
+        // T10 · Vuelo libre tiene «Salir» a la vista y vuelve a la portada
+        {
+          const abierta = portada.open; if (abierta) { portada.returnValue = ''; portada.close(); }
+          entrarLibre(); await espera(900);
+          const b = $('modo-salir'), visto = !!(b && !b.hidden && b.getBoundingClientRect().height >= 44);
+          if (b) b.click(); await espera(100);
+          check('T10 · Vuelo libre: «Salir» a la vista (44 px) y vuelve a la portada', visto && !libre && portada.open, 'visto ' + visto + ' · libre ' + libre + ' · portada ' + portada.open);
+          // T10 · Esc cierra la tarjeta del Álbum abierta encima de la portada, y la portada sigue
+          if (!portada.open) portada.show();
+          await elegir('album'); await hasta(() => G.ui.cardOpen, 3000);
+          const conTarjeta = G.ui.cardOpen;
+          dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })); await espera(80);
+          check('T10 · Esc cierra la tarjeta del Álbum y deja la portada', conTarjeta && !G.ui.cardOpen && portada.open, 'tarjeta ' + conTarjeta + ' → ' + G.ui.cardOpen + ' · portada ' + portada.open);
+          if (!abierta && portada.open) { portada.returnValue = ''; portada.close(); }
+        }
         check('Textos en ES', $('modos-t').textContent === '¿Cómo quieres jugar?' && form.querySelector('[data-modo="libre"] b').textContent === 'Vuelo libre', '«' + $('modos-t').textContent + '» / «' + form.querySelector('[data-modo="libre"] b').textContent + '»');
         const ay = document.getElementById('modos-ayuda'), pi = document.getElementById('modos-pista'), chips = document.getElementById('modos-pistas');
         check('Hay pistas con icono: mover, despegar, posarte y acción', !!chips && /Despegar/.test(chips.textContent) && /Posarte/.test(chips.textContent) && /Acción/.test(chips.textContent) && chips.querySelectorAll('svg').length >= 4, chips && chips.textContent);
@@ -810,7 +938,7 @@
 
     // QA-212: ocupado() = hay una actividad V18 en marcha (duelo, minigolf, carreras…); lo miran las pistas de descubrir.js y ciclo.js
     const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18(), get libre() { return libre; }, get pendiente() { return pendiente; } };
-    api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir });
+    api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir, aplazarIntro: () => { aplazar = true; } });
     if (window.AVQueHacer) window.AVQueHacer(G);
     return api;
   };
@@ -842,6 +970,10 @@
       img: Array.from({ length: 12 }, (_, i) => { const a = i / 12 * Math.PI * 2; return `<circle cx="${(32 + 21 * Math.cos(a)).toFixed(1)}" cy="${(32 + 21 * Math.sin(a)).toFixed(1)}" r="4" fill="${i % 3 ? '#ffe2ec' : 'var(--gold)'}"/>`; }).join('') + '<circle cx="32" cy="32" r="8" fill="var(--gold)"/>' },
   ];
   const TEMP = 'amazonaverse.temporada';
+  // T7 · Continuidad: al pasar a un capítulo NUEVO desde «Siguiente capítulo» o «Capítulos», tu cotorra (nombre y aspecto) y la
+  // ropa que llevas pasan con un traspaso de un solo uso; el capítulo siguiente lo aplica y no abre el creador. Las piezas ganadas
+  // (unlocked) no se copian: cada capítulo da las suyas (K3, el reparto de ropa, lo decide Kelvin).
+  const TRAS = 'amazonaverse.traspaso', TRAS_MS = 24 * 3600e3;
   // Último capítulo elegido o jugado: boot.js lo abre al volver a entrar sin un clic en el sitio. Solo la página de arriba
   // (los iframes de las pruebas no lo tocan).
   const CAPK = 'amazonaverse.capitulo';
@@ -894,8 +1026,32 @@
     function jugar(n) {
       apuntarCapitulo(cap(n).id); // lo que eligió el jugador manda al volver a entrar (boot.js)
       if (n === actual) { cerrar(); const t = $('title'); if (t && t.open) h.elegir('aventura'); return null; }
+      dejarTraspaso(n);
       const url = urlDe(n); G.guardado.autosave && G.guardado.autosave(); navegar(url); return url;
     }
+    // ---------- T7 · Traspaso de la cotorra al capítulo siguiente ----------
+    function dejarTraspaso(n) {
+      if (window.top !== window || !(S.profile && S.profile.created) || estado(n) !== 'nuevo') return false;
+      const d = partida(n); if (d && d.profile && d.profile.created) return false; // allí ya hay cotorra: manda la suya
+      try {
+        localStorage.setItem(TRAS, JSON.stringify({ v: 1, a: cap(n).id, desde: actual, t: Date.now(),
+          profile: { name: S.profile.name, look: S.profile.look }, wear: Object.assign({}, S.wear || {}) }));
+        return true;
+      } catch (e) { return false; }
+    }
+    function recibirTraspaso() {
+      let d = null; try { d = JSON.parse(localStorage.getItem(TRAS) || 'null'); } catch (e) { d = null; }
+      if (!d || d.v !== 1 || d.a !== cap(actual).id) return false;
+      try { localStorage.removeItem(TRAS); } catch (e) { /* sin almacén */ }
+      if ((S.profile && S.profile.created) || !(Date.now() - d.t < TRAS_MS) || !d.profile || !d.profile.name || !G.creador || !G.creador.saveCharacter) return false;
+      if (h.aplazarIntro) h.aplazarIntro(); // la apertura del capítulo se juega al entrar en Aventura, no detrás de la portada
+      const err = G.creador.saveCharacter({ name: d.profile.name, look: d.profile.look || undefined });
+      if (err) return false; // nombre que ya no pasa el filtro: el creador sigue abierto, como siempre
+      if (d.wear && typeof d.wear === 'object') { S.wear = Object.assign({}, d.wear); if (G.actores && G.actores.applyWear) G.actores.applyWear(); }
+      if (G.guardado && G.guardado.autosave) G.guardado.autosave();
+      return true;
+    }
+    const traspasado = recibirTraspaso();
 
     // ---------- Panel final: «Siguiente capítulo» ----------
     function pintarFin() {
@@ -960,7 +1116,7 @@
       const quiet0 = G.quiet; G.quiet = true;
       const snap = G.guardado.instantanea(); G.guardado.suspender(true);
       const creador = $('creator'), creador0 = !!(creador && !creador.hidden); // para reabrir el creador al final si estaba abierto (antes no se definía: ReferenceError)
-      const claves = [TEMP, CAPK].concat(CAPS.filter(c => c.n !== actual).map(c => c.almacen + '.save'));
+      const claves = [TEMP, CAPK, TRAS].concat(CAPS.filter(c => c.n !== actual).flatMap(c => [c.almacen + '.save', c.almacen + '.menu']));
       const antes = {}; for (const k of claves) { try { antes[k] = localStorage.getItem(k); localStorage.removeItem(k); } catch (e) { /* sin almacén */ } }
       const nav0 = navegar; let fueA = null; navegar = u => { fueA = u; };
       const aj = G.aula && G.aula.aj, idioma0 = aj ? aj.idioma : null;
@@ -1037,6 +1193,8 @@
         // 6. Encadenar: el siguiente capítulo arranca (iframe a 375×812) y ve el progreso guardado aquí
         const sig = actual < 6 ? actual + 1 : actual - 1;
         if (opts.encadenar !== false) {
+          try { localStorage.removeItem(TRAS); } catch (e) { /* sin almacén */ }
+          const tras = dejarTraspaso(sig); // T7: la cotorra de este capítulo pasa al siguiente (si allí no hay partida)
           fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
           fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:375px;height:812px;border:0;';
           fr.src = new URL(urlDe(sig), location.href).href; document.body.appendChild(fr);
@@ -1045,6 +1203,10 @@
           if (ok) {
             const W = fr.contentWindow, T2 = W.AV.temporada, G2 = W.AV.G;
             G2.quiet = true; G2.guardado.suspender(true);
+            if (tras) {
+              const p2 = G2.S.profile || {}, cr2 = W.document.getElementById('creator');
+              check(`T7 · Capítulo ${sig}: llega tu cotorra (nombre, aspecto y ropa) y no se abre el creador`, !!(p2.created && p2.name === S.profile.name && (!S.profile.look || (p2.look && p2.look.species === S.profile.look.species)) && JSON.stringify(G2.S.wear || {}) === JSON.stringify(S.wear || {}) && cr2 && cr2.hidden && T2.traspasado && localStorage.getItem(TRAS) === null), `perfil ${p2.created}/${p2.name} · creador ${cr2 && !cr2.hidden ? 'abierto' : 'cerrado'} · traspasado ${T2.traspasado}`);
+            }
             const hud2 = (G2.pack.meta && G2.pack.meta.hud) || {};
             check(`Capítulo ${sig}: rótulo «Capítulo ${sig}»`, (G2.pack.meta.capitulo === sig) && (!hud2.capitulo || hud2.capitulo.startsWith('Capítulo ' + sig)), hud2.capitulo);
             check(`Capítulo ${sig}: ve terminados el ${actual} y el 4 (progreso común)`, T2.estado(actual) === 'terminado' && T2.estado(4) === 'terminado' && T2.decision(4).opcion === 'puente');
@@ -1127,6 +1289,6 @@
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    return { CAPS, actual, estado, terminar, decision, leer, urlDe, jugar, abrir, cerrar, pintar, test, capituloTest };
+    return { CAPS, actual, estado, terminar, decision, leer, urlDe, jugar, abrir, cerrar, pintar, test, capituloTest, traspasado, dejarTraspaso };
   }
 })();

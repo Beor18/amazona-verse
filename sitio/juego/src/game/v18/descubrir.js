@@ -23,7 +23,7 @@ window.AVV18Descubrir = function (G) {
   const ID = 'arausiaca';
   const R_DESC_XZ = 10, R_DESC_3D = 16, R_PERCHA = 6.5, R_PISTA = 80, R_LEJOS = 75, RETO_S = 50, SALTOS = 4;
   const TXT = {
-    pistaInicio: 'Pista: una cotorra visitante canta cerca de Villa Raíz. Búscala en el minimapa.',
+    pistaInicio: 'Pista: una cotorra visitante canta cerca de Villa Raíz. ¡Síguele el canto!', // T11: sin nombrar el minimapa (aún no ha salido)
     pistaCerca: '¿Oyes ese canto? Una cotorra que no es de aquí canta en la copa de un árbol.',
     descubre: 'Descubriste una cotorra de Dominica',
     descubreMas: 'Descubriste una cotorra de Dominica. Acércate y dale a Acción para seguirla.',
@@ -42,19 +42,21 @@ window.AVV18Descubrir = function (G) {
   const RETRATOS = new Set(['agilis', 'arausiaca', 'barbadensis', 'diadema', 'farinosa', 'guildingii', 'xantholora']); // BM152 (Mac): retratos con el personaje del juego
   const NOMBRES = { vittata: 'Cotorra puertorriqueña', arausiaca: 'Cotorra de Dominica' };
   const PODERES = { islenas: 'Grito del Yunque', montaneras: 'Escudo de plumas' }; // respaldo si el motor de habilidades (habilidades.js) aún no cargó
-  const toast = (t, ms) => { try { G.ui.toast(t, ms || 3600); } catch (e) { /* sin interfaz */ } };
+  const toast = (t, ms, fijo) => { try { G.ui.toast(t, ms || 3600, fijo ? { fijo: true } : undefined); } catch (e) { /* sin interfaz */ } };
   // QA-188/QA-186: un aviso de pista no sale con la historia en pantalla (caja de diálogo, bocadillo o subtítulo
   // del narrador) ni durante la apertura en negro del cap. 1; espera a que el jugador esté libre de verdad
   // QA-212: tampoco con una actividad V18 en marcha (la cuenta atrás del duelo…; G.menuModos.ocupado, la de menu_modos.js) ni con la
   // portada (el menú de modos) o la pausa abiertas: no se puede ir a buscarla y tapa lo que hay en pantalla
+  // T2 (lista «terminado»): todo esto es ahora la regla compartida G.ui.enEscena() (src/engine/ui.js); lo de abajo queda de respaldo
   const otraCosa = () => {
     try {
+      if (G.ui && G.ui.enEscena) return G.ui.enEscena();
       const t = document.getElementById('title'), p = document.getElementById('pause');
       return !!(G.menuModos && G.menuModos.ocupado && G.menuModos.ocupado()) || !!(t && t.open) || !!(p && p.matches && p.matches(':popover-open'));
     } catch (e) { return false; }
   };
   const libre = () => {
-    try { return !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo()) && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar') && !otraCosa(); }
+    try { if (G.ui.enEscena) return !G.ui.enEscena(); return !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo()) && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar') && !otraCosa(); }
     catch (e) { return true; }
   };
   const sonar = (n, a) => { try { if (G.audio && (!G.audio.has || G.audio.has(n))) return G.audio.play(n, a); } catch (e) { /* sin audio */ } return false; };
@@ -344,7 +346,7 @@ window.AVV18Descubrir = function (G) {
   function avisarInicio() {
     if (avisoInicio || descubierta() || G.quiet) return false;
     avisoInicio = true;
-    try { if ((G.pack && G.pack.id === 'cap1') && libre()) { toast(TXT.pistaInicio, 5000); return true; } } catch (e) { /* sin interfaz */ }
+    try { if ((G.pack && G.pack.id === 'cap1') && libre()) { toast(TXT.pistaInicio, 5000, true); return true; } } catch (e) { /* sin interfaz */ }
     return false;
   }
   function montar() {
@@ -361,7 +363,7 @@ window.AVV18Descubrir = function (G) {
       try { libreAhora = libre(); } catch (e) { return; /* sin interfaz */ }
       if (!libreAhora) { if (++intentos < 20) setTimeout(pista, 3000); return; }
       avisoInicio = true;
-      toast(TXT.pistaInicio, 5000);
+      toast(TXT.pistaInicio, 5000, true);
     };
     setTimeout(pista, 9000);
     return true;

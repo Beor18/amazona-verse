@@ -164,6 +164,9 @@ window.AVRioVivo = function (G) {
       '#rio-visor .rv-txt{position:absolute;left:50%;bottom:calc(45% - 37vmin);transform:translateX(-50%);padding:.35em .8em;border-radius:999px;background:rgba(2,24,32,.78);color:#e8fbff;font-size:var(--fs-s,15px);white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}' +
       '#rio-visor .rv-barra{display:block;height:3px;margin-top:.25em;border-radius:2px;background:#7fe3f0;transform-origin:left;transform:scaleX(0)}' +
       '@media (prefers-reduced-motion: reduce){#rio-visor{transition:none}}' +
+      // Ronda 4 de T2: en el teléfono el aviso (#toast, anclado abajo a 262 px) crece hacia arriba y no hacia la etiqueta del visor,
+      // pero la etiqueta llega hasta 45vh − 37vmin + su alto: con el visor encendido el aviso sube lo que haga falta para no tocarla
+      '@media (max-width:560px){body:has(#rio-visor.on) #toast{margin-bottom:max(0px,calc(45vh - 37vmin + 46px - 262px - env(safe-area-inset-bottom,0px)))}}' +
       '.peces-album{list-style:none;margin:.3em 0 .4em;padding:0;display:grid;gap:.45em}' +
       '.pez-tarjeta{display:flex;gap:.6em;align-items:flex-start;padding:.45em .55em;border-radius:10px;background:rgba(255,255,255,.07)}' +
       '.pez-tarjeta svg{flex:none}.pez-tarjeta span{display:flex;flex-direction:column;gap:.15em;min-width:0}' +
@@ -183,7 +186,7 @@ window.AVRioVivo = function (G) {
     G.emit('aprendizaje', { tipo: 'pez', id });
     if (!G.quiet) {
       const e = espDe(id);
-      try { G.ui.toastHTML(`<b>${esc(L('Peces del río', 'River fish'))}</b> · ${esc(L(e.nombre, e.nombreEn))}`, 3200); } catch (err) { /* sin HUD */ }
+      try { G.ui.toastHTML(`<b>${esc(L('Peces del río', 'River fish'))}</b> · ${esc(L(e.nombre, e.nombreEn))}`, 3200, { fijo: true }); } catch (err) { /* sin HUD */ } // T2 ronda 3: de una sola vez por especie
       try { G.guardado.autosave(); } catch (err) { /* sin guardado */ }
     }
     return true;
@@ -251,6 +254,7 @@ window.AVRioVivo = function (G) {
   // Pista del visor: la primera vez que se vuela a menos de 8 m del agua sin que el visor esté encendido (aún muy alto), un aviso corto
   function pistaVisor(dt, busy) {
     if (F.pistaDada || F.visorOn || busy || !verDe() || !M.flying || M.swimming || vistos().length > 0) return;
+    if (otraEscena()) return; // T2: la regla compartida; se reintenta luego
     F.pistaT -= dt; if (F.pistaT > 0) return; F.pistaT = 0.3;
     const l = aguaCerca(2.5), h = S.pos.y - l;
     if (l > -Infinity && h >= VUELO_BAJO && h < PISTA_ALTO) {
@@ -260,13 +264,18 @@ window.AVRioVivo = function (G) {
   }
 
   // ---------- Bucle ----------
+  // La regla compartida G.ui.enEscena(); en la prueba (F.prueba) la batería pone F.escenaPrueba para no depender de la portada
+  const otraEscena = () => { try { return F.prueba ? !!(F.escenaPrueba && F.escenaPrueba()) : !!(G.ui.enEscena && G.ui.enEscena()); } catch (e) { return false; } };
   function paso(dt, busy) {
     dt = Math.min(dt, 0.1); F.t += dt; uT.value += dt;
     const quieta = M.posado ? M.speed < 0.6 : !M.flying && !M.swimming && M.speed < 0.4;
     F.quieta = quieta && !busy ? F.quieta + dt : 0;
     const n = nadar(dt);
-    const quiere = !busy && visorPosible();
-    F.visor = Math.max(0, Math.min(1, F.visor + (quiere ? dt : -dt) * 3));
+    // T4a: mientras se pesca (v18/pesca.js) el visor no sale: tapaba el corcho y el río con sus peces de observación
+    const pescando = !!(document.body && document.body.classList.contains('v18-pesca-on'));
+    // Revisión T2: con otra escena en marcha (rescate del pichón, un minijuego, un diálogo…) el visor entero se apaga, no solo su pista
+    const escena = otraEscena(), quiere = !busy && !pescando && !escena && visorPosible();
+    F.visor = escena ? 0 : Math.max(0, Math.min(1, F.visor + (quiere ? dt : -dt) * 3)); // con escena se apaga en el acto (sin fundido)
     F.visorOn = F.visor > 0.5;
     mat.opacity = 0.5 + F.visor * 0.5; mat.depthWrite = F.visorOn;
     const orden = F.visorOn ? 10 : -1; for (const id in mallas) mallas[id].renderOrder = orden;
@@ -285,7 +294,7 @@ window.AVRioVivo = function (G) {
       hudNombre.textContent = !e ? L('Visor · busca peces bajo el agua', 'Viewer · look for fish under the water') :
         visto ? L('Visor · ', 'Viewer · ') + L(e.nombre, e.nombreEn) + ' (' + e.cientifico + ')' : L('Visor · observando un pez…', 'Viewer · watching a fish…');
       hudBarra.style.transform = 'scaleX(' + (e && !visto ? Math.min(1, (F.obs[e.id] || 0) / OBS_T) : 0) + ')';
-      if (!F.avisado) { F.avisado = true; try { G.ui.toast(L('Visor: quédate cerca del pez para observarlo.', 'Viewer: stay near a fish to watch it.'), 2600); } catch (err) { /* sin HUD */ } }
+      if (!F.avisado) { F.avisado = true; try { G.ui.toast(L('Visor: quédate cerca del pez para observarlo.', 'Viewer: stay near a fish to watch it.'), 2600, { fijo: true }); } catch (err) { /* sin HUD */ } }
     }
   }
   let recalidad = false;
@@ -378,6 +387,22 @@ window.AVRioVivo = function (G) {
       // el buceo del capítulo sigue: nadando, el visor se apaga y el banco se aparta
       ponEn(b.x, lvl, b.z, { swimming: true, speed: 1 }); b.huye.x = b.huye.z = 0; simular(1.5);
       ok('Nadando (buceo del capítulo): visor apagado y los peces se apartan', !F.visorOn && Math.hypot(b.huye.x, b.huye.z) > 0.5, Math.hypot(b.huye.x, b.huye.z).toFixed(2) + ' m');
+      { // T4a: pescando, el visor no sale aunque se vuele bajo sobre el río
+        const pesca0 = document.body.classList.contains('v18-pesca-on');
+        document.body.classList.add('v18-pesca-on'); ponEn(b.x, lvl + 1.8, b.z, { flying: true, speed: 4 }); simular(0.6); const conPesca = F.visorOn;
+        document.body.classList.toggle('v18-pesca-on', pesca0); simular(0.6);
+        ok('Pescando, el visor del río no sale (y vuelve al terminar)', !conPesca && F.visorOn, 'pescando ' + conPesca + ' · después ' + F.visorOn);
+      }
+      { // Revisión T2: con el rescate del pichón (u otro minijuego) en marcha, ni visor ni su aviso «quédate cerca del pez»
+        const r0 = G.rescate, av0 = F.avisado, dichos = [], t0 = G.ui.toast;
+        G.rescate = Object.assign(Object.create(r0 || null), { activo: () => true }); F.escenaPrueba = () => G.ui.enEscena(); F.avisado = false;
+        G.ui.toast = x => { dichos.push(x); };
+        let conRescate = true;
+        try { ponEn(b.x, lvl + 1.8, b.z, { flying: true, speed: 4 }); simular(0.6); conRescate = F.visorOn || hud.classList.contains('on'); }
+        finally { G.rescate = r0; G.ui.toast = t0; F.escenaPrueba = null; F.avisado = av0; }
+        simular(0.6);
+        ok('Revisión T2 · con el rescate en marcha el visor del río no sale ni avisa (y vuelve al terminar)', !conRescate && !dichos.length && F.visorOn, 'rescate ' + conRescate + ' · avisos ' + dichos.length + ' · después ' + F.visorOn);
+      }
       // 6. Observar
       S.peces = []; F.obs = {}; aprend.length = 0;
       ponEn(b.x, lvl + 1.5, b.z, { flying: true, speed: 3 }); simular(0.6);
@@ -407,6 +432,21 @@ window.AVRioVivo = function (G) {
       oyenteTest = null; F.prueba = false; F.obs = g0.obs; F.avisado = g0.avisado; S.peces = g0.peces;
       Object.assign(S.pos, g0.pos); S.vy = g0.vy; M.posado = g0.posado; M.speed = g0.speed; M.flying = g0.flying; M.swimming = g0.swimming;
       F.visor = 0; F.visorOn = false; hud.classList.remove('on'); for (const b of bancos) b.huye.x = b.huye.z = 0;
+    }
+    { // Revisión T2, ronda 4: a 390×844 un aviso de 3 líneas no pisa la etiqueta del visor (en un iframe con las hojas del juego)
+      const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+      fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:390px;height:844px;border:0';
+      const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => '<link rel="stylesheet" href="' + l.href + '">').join('');
+      const css = document.getElementById('rio-vivo-css');
+      fr.srcdoc = '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + hojas + (css ? css.outerHTML : '') +
+        '</head><body><div id="rio-visor" class="on"><div class="rv-txt"><span class="rv-nombre">Visor · busca peces bajo el agua</span><i class="rv-barra"></i></div></div>' +
+        '<div id="toast" class="hud">Repara el puente de Villa Raíz y se abre el Puerto de La Mina. Allí están Tuerca, el Constructor y la Ingeniera.</div></body></html>';
+      document.body.appendChild(fr);
+      await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 8000); }); // sin GPU la primera carga de las hojas pasa a veces de 2,5 s
+      const md = fr.contentDocument, t = md && md.getElementById('toast'), e = md && md.querySelector('#rio-visor .rv-txt');
+      const a = t && t.getBoundingClientRect(), b = e && e.getBoundingClientRect(), lineas = t ? Math.round((a.height - 24) / 21) : 0;
+      ok('Revisión T2, ronda 4: a 390×844 un aviso de 3 líneas no toca la etiqueta del visor', !!(a && b && a.height > 0 && b.height > 0 && a.bottom <= b.top - 2), a && b ? 'aviso ' + Math.round(a.top) + '–' + Math.round(a.bottom) + ' (~' + lineas + ' líneas) · etiqueta ' + Math.round(b.top) + '–' + Math.round(b.bottom) : 'sin medir');
+      fr.remove();
     }
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }

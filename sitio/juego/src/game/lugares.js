@@ -156,7 +156,7 @@ AVE.module('lugares', function (G) {
     if (tR > 0 && G.ui.cardOpen && window.innerWidth <= 560) ocultarRotulo(); // auditoría 7-nov: en el teléfono el rótulo (z 30, a 30vh) tapaba la pregunta de una tarjeta abierta después
     if (!cola.length) return;
     espera = Math.max(0, espera - dt);
-    if (espera > 0 || G.quiet || G.ui.busy() || (G.dialogo && G.dialogo.activo && G.dialogo.activo()) || $('c1-fade') || $('c1-saltar') || enV18()) return; // QA-188 (W28): espera también a diálogo/bocadillo/narrador (busy no los cubre) y a la apertura del cap. 1; pul4: con una actividad V18 en marcha (minigolf, duelo, retos…) espera a que acabe
+    if (espera > 0 || G.quiet || (G.ui.enEscena ? G.ui.enEscena() : G.ui.busy() || (G.dialogo && G.dialogo.activo && G.dialogo.activo()) || $('c1-fade') || $('c1-saltar')) || enV18()) return; // QA-188 (W28): espera también a diálogo/bocadillo/narrador (busy no los cubre) y a la apertura del cap. 1; pul4: con una actividad V18 en marcha (minigolf, duelo, retos…) espera a que acabe
     const t = $('toast');
     const d = cola[0];
     if (!d.asentamiento && t && !t.hidden && t.querySelector('button')) return; // el aviso de construcción trae un botón: no se pisa
@@ -164,7 +164,7 @@ AVE.module('lugares', function (G) {
     espera = d.asentamiento ? 3.8 : 3.4;
     const D = d.nuevo && G.descubrir, cuenta = D && D.htmlCuenta ? D.htmlCuenta() : ''; // «Lugares descubiertos N/M» (descubrir.js)
     if (d.asentamiento) rotulo(d.asentamiento, d.nuevo, cuenta);
-    else G.ui.toastHTML(D && D.htmlAviso ? D.htmlAviso(d.nombre) : `<b>Descubriste</b> ${esc(d.nombre)}${cuenta}`, 3200); // dos líneas: «¡Descubriste …!» y la cuenta
+    else G.ui.toastHTML(D && D.htmlAviso ? D.htmlAviso(d.nombre) : `<b>Descubriste</b> ${esc(d.nombre)}${cuenta}`, 3200, { fijo: true }); // de una sola vez (la cola llena no lo tira); dos líneas: «¡Descubriste …!» y la cuenta
     if (d.nuevo) G.audio.play('pickup');
   }
   let t = 0;
@@ -214,10 +214,12 @@ AVE.module('lugares', function (G) {
       check('Al llegar se descubre una sola vez y queda en la partida (S.lugares)', n1 >= 1 && n2 === 0 && descubiertos().filter(id => id === p.id).length === 1, nombreDe(p));
       check('Descubrir suma XP al nido por el gancho aprendizaje (tipo lugar)', C.xp === false || xpRecibidas.includes(p.id));
       // Aviso en el HUD: espera a que el jugador esté libre y sale con el estilo de logro
+      if (G.ui.vaciarAvisos) G.ui.vaciarAvisos(); // revisión T2: los avisos que la partida dejó en la cola de ui.js no se cuelan en la prueba
       { const solo = cola.filter(d => d.id === p.id); cola.length = 0; cola.push(...solo); espera = 0; } // 7-nov: sin esto, en una partida real el lugar donde está el jugador (p. ej. el Taller) iba primero en la cola y la prueba leía su aviso
       G.quiet = false; avisar(0); G.quiet = true;
       const tt = $('toast');
       check('Sale «Descubriste: <lugar>» en el HUD', !!tt && !tt.hidden && /Descubriste/.test(tt.textContent) && tt.textContent.includes(nombreDe(p)) && !!tt.querySelector('b'), tt ? tt.textContent : 'sin toast');
+      check('Revisión T2, ronda 4: «¡Descubriste…!» es de una sola vez ({ fijo }: la cola llena no lo tira)', G.ui.colaTest && G.ui.colaTest().fijo === true, G.ui.colaTest && JSON.stringify(G.ui.colaTest()));
       G.ui.hideToast();
       // QA-188 (W28): con la apertura del capítulo en curso (narrador en bocadillos libres) la cola espera y drena después
       cola.length = 0; espera = 0;

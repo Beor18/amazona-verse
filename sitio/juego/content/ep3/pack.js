@@ -580,7 +580,8 @@
         decir([di('Papá', S.complete ? '¡Llegaron! Lo sabía.' : fr[S.step] || 'Ese bote va a llegar lejos.')]);
       }
       G.interaccion.add({ id: 'papa', x: PAPA.x, z: PAPA.z, r: 3.6, label: () => S.step === 0 ? 'Hablar con el papá' : 'Hablar con el papá', use: papa });
-      G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => 'Hablar con la abuela',
+      // T8: al empezar, la abuela está al lado y Acción la elegía a ella cuando el objetivo dice «Habla con el papá»: hasta hablar con él no se ofrece
+      G.interaccion.add({ id: 'abuela', x: ABUELA.x, z: ABUELA.z, r: 2.4, label: () => 'Hablar con la abuela', visible: () => !(S.step === 0 && !(S.edu && S.edu.inicio)),
         use: () => decir([di('Abuela', S.complete ? 'Me contaron que preguntaste antes de contar. Así se llega lejos.' : G.eventos.had('BoatLaunched') ? 'Que no se vire, ¿eh? Y escucha a quien conoce el agua.' : 'Yo vuelo poco ya, mi niña. Un bote nos llevaría a todos.')]) });
       const predicho = () => S.collected.some(k => k.indexOf('prediccion_') === 0);
       G.interaccion.add({ id: 'mesa', x: MESA.x, z: MESA.z, r: 2.2, label: () => S.step === 0 && S.edu && S.edu.inicio && !predicho() ? 'Predecir qué flota' : 'Mirar el plano del bote',

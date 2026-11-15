@@ -516,7 +516,11 @@ window.AVCiudadViva = function (G) {
         const [pa, pb] = par;
         pb.x = pa.x + 2; pb.z = pa.z; pb.y = pa.y; pa.est = pb.est = 'posada'; pa.accion = pb.accion = 'mira';
         pa.grupo = pb.grupo = null; pa.bando = pb.bando = null; pa.dur = pb.dur = 99; pa.t = pb.t = 0; pa.oculta = pb.oculta = false;
-        for (let i = 0; i < 50; i++) cvPaso(0.05, 'todo');
+        // QA-252: que no cambien de acción al azar (prox), que sea de día y que ninguna otra cotorra más cerca les robe la mirada
+        pa.prox = pb.prox = 99;
+        const otras = R.aves.filter(a => a !== pa && a !== pb && !a.oculta), hora0 = R.horaPrueba;
+        otras.forEach(a => { a.oculta = true; }); R.horaPrueba = 12;
+        try { for (let i = 0; i < 50; i++) cvPaso(0.05, 'todo'); } finally { otras.forEach(a => { a.oculta = false; }); R.horaPrueba = hora0; }
         const hacia = Math.atan2(pb.x - pa.x, pb.z - pa.z);
         check('CG-93: dos cotorras posadas cerca se miran, sin mallas nuevas', Math.abs(angDif(pa.yaw, hacia)) < 0.45 && B.meshes.length === 2, Math.abs(angDif(pa.yaw, hacia)).toFixed(2));
       } else check('CG-93: hay dos cotorras para mirarse', false, String(par.length));

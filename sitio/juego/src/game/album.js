@@ -171,7 +171,7 @@ AVE.module('album', function (G) {
       const s = estado(e);
       return `<li class="abierta" data-album="${esc(e.id)}" lang="${l}">${retrato(e.id, 'abierta')}${e.id === ultima ? `<span class="album-nueva">${esc(L('¡Nueva!', 'New!'))}</span>` : ''}<b>${esc(nombre(e, l))}</b>` +
         `<small lang="${otro}">${esc(nombre(e, otro))}</small><i lang="la">${esc(e.cientifico)}</i>` +
-        `<small class="uicn">${s ? `${esc(s[l])} (${esc(s.cat)})` : esc(L('Estado por verificar', 'Status to be verified'))}</small></li>`;
+        (s ? `<small class="uicn">${esc(s[l])} (${esc(s.cat)})</small>` : '') + '</li>'; // T9: sin estado verificado no se muestra nada (ni «por verificar»)
     }).join('');
     const reveladas = vocesReveladas();
     const hist = extintas().map(e => {
@@ -182,7 +182,7 @@ AVE.module('album', function (G) {
       const s = estado(e);
       return `<li class="historica" data-album="${esc(e.id)}" lang="${l}">${retrato(e.id, 'historica')}<b class="canon">${esc(CANON[e.id])}</b>` +
         `<small>${esc(nombre(e, l))}</small><small lang="${otro}">${esc(nombre(e, otro))}</small><i lang="la">${esc(e.cientifico)}</i>` +
-        `<small class="uicn">${s ? `${esc(s[l])} (${esc(s.cat)})` : esc(L('Estado por verificar', 'Status to be verified'))}</small>` +
+        (s ? `<small class="uicn">${esc(s[l])} (${esc(s.cat)})</small>` : '') +
         `<small>${esc(L('Una de las dos voces del transmisor.', 'One of the two voices of the transmitter.'))}</small>` +
         `<small>${esc(L('Ya no vuela. Se conoce solo por relatos antiguos.', 'It no longer flies. It is known only from old accounts.'))}</small></li>`;
     }).join('');
@@ -324,7 +324,8 @@ AVE.module('album', function (G) {
       const ab = d.querySelector(`[data-album="${sp}"]`), cerr = d.querySelectorAll('li.cerrada');
       const eSp = vivas().find(e => e.id === sp);
       const esSilueta = li => { const im = li.querySelectorAll('img'); return im.length === 1 && im[0].getAttribute('src') === DIR_RET + SILUETA + '.webp' && !im[0].outerHTML.includes(li.dataset.album); };
-      check('Diario: tarjeta abierta con nombre ES y EN, científico y estado', !!ab && ab.textContent.includes(nombre(eSp, 'es')) && ab.textContent.includes(nombre(eSp, 'en')) && ab.querySelector('i[lang=la]') && ab.querySelector('.uicn'), ab && ab.textContent);
+      check('Diario: tarjeta abierta con nombre ES y EN, científico y estado', !!ab && ab.textContent.includes(nombre(eSp, 'es')) && ab.textContent.includes(nombre(eSp, 'en')) && ab.querySelector('i[lang=la]') && (estado(eSp) ? !!ab.querySelector('.uicn') : !ab.querySelector('.uicn')), ab && ab.textContent);
+      check('T9 · El álbum nunca muestra «por verificar»', !/verificar|to be verified/i.test(d.textContent), (d.textContent.match(/.{0,30}verif.{0,10}/i) || [''])[0]);
       const nombresCerr = vivas().filter(e => !visto(e.id)).some(e => [...cerr].some(li => li.textContent.includes(nombre(e, 'es')) || li.textContent.includes(e.cientifico)));
       check('Las cerradas: silueta y «???», sin nombre ni datos (ni en la imagen: la silueta es la misma para las 36)', cerr.length === 34 - cuenta().n && [...cerr].every(li => /\?\?\?/.test(li.textContent) && esSilueta(li)) && !nombresCerr, cerr.length + ' cerradas');
       const img = ab && ab.querySelector('img.retrato');

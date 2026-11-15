@@ -100,9 +100,9 @@
         if (hecho) return; hecho = true; soltar();
         if (saltada) { G.dialogo.cancelarLibre(); if (A) A.fin(); } else if (A) A.claro(2200);
         const llama = 'La Gran Ruptura dañó el taller. ¡Iguaca te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.';
-        G.ui.toast(llama, 3200);
+        G.ui.toast(llama, 3200, { fijo: true }); // de una sola vez: la cola llena no lo tira
         // El taller se descubre al despertar y su aviso («Lugares descubiertos 1/32») tapa esta llamada. Se repite cuando ese aviso se va.
-        setTimeout(() => { if (G.S.step === 0 && !G.S.complete) G.ui.toast(llama, 2800); }, 2600);
+        setTimeout(() => { if (G.S.step === 0 && !G.S.complete) G.ui.toast(llama, 2800, { fijo: true }); }, 2600);
       };
       function alTeclear(e) { if (btn && !btn.isConnected) { soltar(); return; } /* W35: si otro quitó «Saltar intro» (apertura.fin() al cargar partida o al abrir el minigolf), la escucha se suelta y la tecla sigue su camino */ if (e.repeat || ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return; if (G.pausa && G.pausa.activa && G.pausa.activa()) return; e.preventDefault(); e.stopPropagation(); terminar(true); }
       if (!G.quiet) {
