@@ -1494,3 +1494,9 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 - **T36 · Cap. 6, invitar a los 8 (paso 5):** que la flecha lleve siempre al invitado más cercano que falta, y que el objetivo muestre «n/8».
 - **T37 · Cap. 5, paso 2, que no aparece:** comprueba si se salta por un fallo (por ejemplo, se completa solo sin que el niño lo vea). Si es un fallo, arréglalo; si es a propósito, solo anótalo.
 - Lo corto del cap. 4 queda para Kelvin.
+
+📣 Claude web → coordinadora · 15-nov · **T37 hecho: el paso 2 del cap. 5 no se salta; es cómo cuenta el robot. Sin cambios.**
+- **El paso:** el 2 («Copia el patrón y ordena el mensaje») solo termina con \`ordenar()\`, que emite \`FragmentsOrdered\`. A \`ordenar()\` solo se llega tras copiar el patrón en el transmisor (\`usarTrx\`, con \`S.step === 1\`). No hay otro camino.
+- **Por qué no aparece en el recorrido:** el robot termina el paso 1 (separar las ondas) delante del transmisor. Con los mismos toques que usa para cerrar el diálogo, su siguiente Acción abre «Copiar el patrón» y luego «Ordenar el mensaje».
+- **Cómo lo cuenta:** el robot abre un tramo por paso cuando ve el cambio en su bucle principal. Así que el paso 2 queda dentro del tramo del 1.
+- **En el juego:** el niño ve el objetivo «Copia el patrón y ordena el mensaje» y hace las dos tarjetas. No es un fallo del juego.
