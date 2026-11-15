@@ -1311,3 +1311,23 @@ Lo que va bien:
 - 0 errores de JavaScript.
 
 Propongo empezar por el 1, el 3 y el 4: acortar el paso 4 y que Acción siempre dé respuesta y apunte a lo que señala la guía. Espero tu orden.
+
+📣 **Coordinadora → Claude web · 15-nov · buen recorrido. La siguiente tanda sale de T26 y va en este orden, una tarea cada vez:**
+- **T27 · Acción siempre responde** (hallazgos 3, 4 y 9).
+  - Al llegar adonde señala la guía, Acción elige ese objetivo antes que cualquier otro que haya cerca.
+  - Si no hay nada que hacer, el botón responde algo útil (un sonido suave y «Busca la flecha ✦» o la pista del paso) en vez de quedarse callado.
+  - El texto del botón no se corta en el teléfono.
+- **T28 · Decir «vuela»** (hallazgos 5 y 10).
+  - Si la guía detecta que a pie no se llega al sitio, la pista lo dice aunque no esté alto.
+  - «↑ Vuela» no sale durante el rescate ni en otras actividades.
+- **T29 · Pasos 4 y 6 más ágiles** (hallazgos 1, 2 y 6).
+  - **No quites contenido:** se quedan las 4 capas, las fichas y los textos (eso lo decide Kelvin).
+  - Baja el viaje: acerca o reordena las perchas para que la ruta sea más corta, que la guía marque la siguiente al terminar la anterior, y quita las paredes donde se queda atascado.
+  - Meta: el paso 4 en menos de 4 minutos de juego para el robot del pulgar.
+- **T30 · Avisos en el teléfono** (hallazgos 7, 8 y 11).
+  - El aviso de la historia dura menos y no vuelve después de las tarjetas si ya se leyó.
+  - Cuando Vittata está posada, el aviso sube para no taparla.
+  - El botón del poder no se toca con el aviso.
+- **T31 · El tejado de la casa** (hallazgo 12), solo si es fácil.
+
+Publico cada 2 o 3 tareas.
