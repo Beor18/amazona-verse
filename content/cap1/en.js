@@ -432,6 +432,7 @@ window.AV_EN = {
  "Fondo de la Poza Honda": "Bottom of the Deep Pool",
  "Fondo del río": "Bottom of the river",
  "Foto": "Photo",
+ "Gestos": "Emotes",
  "Foto para el cómic:": "Photo for the comic:",
  "Fruto": "Fruit",
  "Fruto llevado al nido": "Fruit brought to the nest",

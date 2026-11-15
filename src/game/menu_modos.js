@@ -1042,13 +1042,17 @@
     function recibirTraspaso() {
       let d = null; try { d = JSON.parse(localStorage.getItem(TRAS) || 'null'); } catch (e) { d = null; }
       if (!d || d.v !== 1 || d.a !== cap(actual).id) return false;
-      try { localStorage.removeItem(TRAS); } catch (e) { /* sin almacén */ }
-      if ((S.profile && S.profile.created) || !(Date.now() - d.t < TRAS_MS) || !d.profile || !d.profile.name || !G.creador || !G.creador.saveCharacter) return false;
+      const gastar = () => { try { localStorage.removeItem(TRAS); } catch (e) { /* sin almacén */ } };
+      // T17: el traspaso se gasta solo cuando la partida nueva queda escrita (antes se borraba al abrir la portada: si la pestaña
+      // se cerraba antes del autoguardado, se perdían a la vez el traspaso y la cotorra). Uno caducado o ya usado sí se borra.
+      if ((S.profile && S.profile.created) || !(Date.now() - d.t < TRAS_MS) || !d.profile || !d.profile.name) { gastar(); return false; }
+      if (!G.creador || !G.creador.saveCharacter) return false;
       if (h.aplazarIntro) h.aplazarIntro(); // la apertura del capítulo se juega al entrar en Aventura, no detrás de la portada
       const err = G.creador.saveCharacter({ name: d.profile.name, look: d.profile.look || undefined });
       if (err) return false; // nombre que ya no pasa el filtro: el creador sigue abierto, como siempre
       if (d.wear && typeof d.wear === 'object') { S.wear = Object.assign({}, d.wear); if (G.actores && G.actores.applyWear) G.actores.applyWear(); }
-      if (G.guardado && G.guardado.autosave) G.guardado.autosave();
+      if (G.guardado && G.guardado.save ? G.guardado.save(true) : false) gastar();
+      else if (G.guardado && G.guardado.autosave) G.guardado.autosave(); // no se pudo escribir: el traspaso sigue para la próxima vez
       return true;
     }
     const traspasado = recibirTraspaso();
