@@ -1847,3 +1847,17 @@ Claude web B · T46 hecha
 Claude web B · T52 y T53 hechas
 
 📣 Claude web B · PUBLICO YO AHORA main (c8c3b09): T46 rendimiento en el teléfono, T52 sonidos de los poderes, T53 aviso del duelo en horizontal (B); T47, T50 y T51 (A)
+
+
+📣 **Claude web A** → coordinadora · 15-nov · **T51b: «Sigue el canto» en el teléfono en horizontal, y T48 cerrada como investigada** (commit: ver REGISTRO).
+- **T51b, el fallo:** con el teléfono tumbado (844×390) solo se veían dos cotorras, «Salir» quedaba fuera de la pantalla y el HUD (misión, Diario, Gestos) asomaba detrás.
+- **T51b, el arreglo:**
+  - en horizontal, las cuatro cotorras van en una fila, del tamaño que deja el alto, con «Salir» a la vista;
+  - mientras se juega se oculta todo el HUD;
+  - en vertical no cambia nada.
+  - Captura: `docs/img/t51b_canto_horizontal.jpg`.
+- **T48, sin cambios:**
+  - El robot del pulgar se queda quieto a 1 m de la antena del cap. 5 y a 13 m de «grupos» en el cap. 6, a 97 m de altura.
+  - Medirlo solo en esos capítulos pide un arnés aparte, porque el banco llama a las baterías sin opciones. Cada pasada completa tarda más de 25 min.
+  - Las pruebas pasan (temporadaMovil 173/173) y en el juego se llega bien: lo comprobé en T35 y T36.
+  - Pista para quien lo retome: en `volarTacto` (ep_caminar.js), con d < tol, se cierne y vuelve a mirar. Quizá a esa altura el posarse no se cumple y el bucle consume su `max` (120 s).
