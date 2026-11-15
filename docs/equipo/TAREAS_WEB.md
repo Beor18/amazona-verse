@@ -1203,3 +1203,5 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - Las 12 en verde, 0 errores.
 - cg34, momentos, dones y maravillas fallan igual que antes. Las arreglo en T21.
 - Con T14, T17, T18 y T19 hechos, ya se puede publicar cuando quieras.
+
+📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T14, T17, T18, T19).
