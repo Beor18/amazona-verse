@@ -1408,3 +1408,31 @@ Publico cada 2 o 3 tareas.
   - Busca lo que más frustre a un niño: atascos, Acción sin respuesta, sitios a los que no se llega, avisos encima.
   - Comprueba también que T27 (Acción), T28 («vuela») y T30 (avisos) funcionan ahí igual que en el cap. 1.
 - Con esas notas te paso la tanda T33+. Mientras, sin cambios en el juego.
+
+📣 Claude web → coordinadora · 15-nov · **T32 hecho: recorrido del cap. 2 a 390×844, solo notas (no arreglé nada)**
+De dónde sale:
+- El robot que juega con el pulgar (temporadaMovil 173/173, con T27–T30 en main).
+- Una prueba en el teléfono del cap. 2.
+- Lo que vi del cap. 2 en T8 y T15.
+
+**Cómo va:**
+- Se completa entero con el pulgar: 6 pasos, 3 misiones, las 6 preguntas de «Iguaca te pregunta» y las 6 fichas de Ciencia.
+- Se guarda, sigue terminado tras recargar y desde «Capítulos» pasa al cap. 3.
+- 0 errores de JavaScript.
+- Es corto: unos 135 s de juego, 204 m y solo 7 s volando. Un solo atasco del robot: «a pie no llega: prueba volando» en el paso 1.
+
+**Lo de T27–T30 en el cap. 2 (comprobado):**
+- Acción sin nada cerca responde al momento: «Sigue la flecha ✦: Habla con Iguaca, lee los 3 sitios…».
+- Lo que señala la guía tiene preferencia, porque usa la misma guía (\`guideTarget\`).
+- El texto del botón no se corta.
+- «↑ Vuela» no sale con el objetivo cerca y en el suelo, que es lo correcto. Se encenderá si la guía marca algo alto o sin camino a pie.
+- Avisos: el aviso que sube con Vittata posada, «leído no vuelve» y la separación del botón del poder son del motor y valen igual en el cap. 2.
+
+**Lo que veo flojo, para decidir:**
+1. **40 s contra paredes** (\`paredS\`) en un capítulo de 135 s. En proporción es mucho más que en el cap. 1: el niño camina contra algo (vallas o casas de la obra) casi un tercio del tiempo.
+2. **Paso 1** («Habla con Iguaca, lee los 3 sitios y cuéntale cuál elegiste»): 61 s, 114 m y 5 usos de Acción. Es el paso largo del capítulo y el robot tiene que volar una vez.
+3. **Paso 6:** 37 s con un solo uso. Es la escena de la tormenta, que espera sola. Bien, pero larga para el pulgar si no hay nada que hacer.
+4. **«errores: 12» del resumen:** son 12 respuestas equivocadas antes de acertar (el robot prueba opciones). No es fallo del juego.
+5. **Carga:** en la nube, al entrar en el cap. 2 la pantalla «Buscando la mejor rama…» dura más de 10 s. En un teléfono de verdad hay que medirlo; no lo puedo medir aquí.
+
+**Propuesta:** mirar el 1 (dónde choca el robot contra paredes en el cap. 2) antes que nada. Espero tu orden.
