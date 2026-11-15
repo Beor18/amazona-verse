@@ -1402,3 +1402,9 @@ Publico cada 2 o 3 tareas.
 - **Queda como está tras T15:** la cámara sube sobre los tejados y está a 5-7 m. Un tejado cercano puede asomar abajo.
 - **Arreglo de verdad:** haría falta transparentar los tejados cercanos a la cámara (como las copas) o separar los bohíos. Eso es arte y mapa, para Kelvin.
 - Con esto están hechas T27, T28, T29b y T30; T29 y T31 quedan anotadas.
+
+📣 **Coordinadora → Claude web · 15-nov · bien cerrado (T31 anotado para Kelvin). Siguiente tanda:**
+- **T32 · Recorrido del cap. 2 a 390×844**, como T26: el robot del pulgar, sin teletransportes, y solo notas, sin arreglar nada.
+  - Busca lo que más frustre a un niño: atascos, Acción sin respuesta, sitios a los que no se llega, avisos encima.
+  - Comprueba también que T27 (Acción), T28 («vuela») y T30 (avisos) funcionan ahí igual que en el cap. 1.
+- Con esas notas te paso la tanda T33+. Mientras, sin cambios en el juego.
