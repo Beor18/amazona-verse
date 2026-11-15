@@ -198,20 +198,39 @@ AVE.module('misiones', function (G) {
   // desde abajo…) y ella sin volar, bajo el objetivo sale «↑ Vuela: está en lo alto». Se mira cada 0,5 s; nada se escribe en la partida.
   const VUELA_DY = 6;
   let vuelaT = 0;
+  // T28: ¿a pie no se llega? En línea recta hacia el objetivo (a más de 8 m): agua de por medio, un escalón de más de 1,6 m
+  // entre dos muestras seguidas (un barranco o un acantilado) o un muro a la altura del pecho. Es una estimación barata (cada 0,5 s)
+  function aPieNo(t) {
+    const dx = t.x - S.pos.x, dz = t.z - S.pos.z, L = Math.hypot(dx, dz); if (L < 8) return false;
+    const n = Math.min(40, Math.ceil(L / 1.5)); let hPrev = G.terreno.height(S.pos.x, S.pos.z);
+    for (let i = 1; i <= n; i++) {
+      const x = S.pos.x + dx * i / n, z = S.pos.z + dz * i / n, h = G.terreno.height(x, z);
+      if (Math.abs(h - hPrev) > 1.6) return true;
+      try { if (G.agua && G.agua.levelAt && G.agua.levelAt(x, z) - h > 0.6) return true; } catch (e) { /* sin agua */ }
+      try { if (i < n - 2 && G.solidos && G.solidos.activo && G.solidos.dentro(x, z, h + 1) > -Infinity) return true; } catch (e) { /* sin sólidos */ } // el sólido del propio objetivo (una casa, un tronco) no cuenta
+      hPrev = h;
+    }
+    return false;
+  }
   function pistaVuela() {
     const steps = $('steps'); if (!steps || !steps.parentNode) return false;
     let el = $('pista-vuela');
     let t = null; try { t = guideTarget(); } catch (e) { t = null; }
     const M = G.fisica && G.fisica.MOVE;
     const alto = t ? (t.y != null ? t.y : G.terreno.height(t.x, t.z)) : null;
-    const ver = !!(t && alto - S.pos.y > VUELA_DY && !(M && (M.flying || M.swimming)));
+    // T28: tampoco durante el rescate, un minijuego u otra actividad (allí el objetivo de la historia no es lo que se busca)
+    let escena = false; try { escena = !!(G.ui.enEscena && G.ui.enEscena()); } catch (e) { escena = false; }
+    const libre = !!(t && !(M && (M.flying || M.swimming)) && !escena);
+    const enAlto = libre && alto - S.pos.y > VUELA_DY;
+    const sinCamino = libre && !enAlto && aPieNo(t);
+    const ver = enAlto || sinCamino;
     if (!el) {
       if (!ver) return false;
       el = document.createElement('div'); el.id = 'pista-vuela'; el.setAttribute('role', 'status');
       el.style.cssText = 'margin:6px 0 0;font:700 var(--fs-xs,12px)/1.3 var(--font-body,sans-serif);color:var(--c-primary,#f2a03d)';
-      el.textContent = '↑ Vuela: está en lo alto';
       steps.parentNode.insertBefore(el, steps.nextSibling);
     }
+    if (ver) { const txt = enAlto ? '↑ Vuela: está en lo alto' : '↑ Vuela: a pie no se llega'; if (el.textContent !== txt) el.textContent = txt; }
     if (el.hidden === ver) el.hidden = !ver;
     return ver;
   }

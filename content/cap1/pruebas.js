@@ -389,6 +389,20 @@
         check('T27 · Acción elige lo que señala la guía antes que lo más cercano (sin guía, lo más cercano)', elegida === 'prueba_guiada' && sinGuia === 'prueba_cerca', elegida + ' · ' + sinGuia);
       } finally { Mi.guideTarget = gt0; for (const id of ['prueba_cerca', 'prueba_guiada']) { const k = I.list.findIndex(x => x.id === id); if (k >= 0) I.list.splice(k, 1); } }
     }
+    { // T28: «↑ Vuela» con el objetivo en lo alto; y no sale con una actividad en marcha (el rescate)
+      const Mi = G.misiones, st = Mi.steps && Mi.steps[G.S.step], g0 = st && st.guia, r0 = G.rescate, M = G.fisica.MOVE, f0 = M.flying, sw0 = M.swimming;
+      if (st && Mi.pistaVuela) {
+        const obj = { x: G.S.pos.x + 20, z: G.S.pos.z, y: G.S.pos.y + 12 };
+        try {
+          st.guia = () => obj; M.flying = false; M.swimming = false;
+          const propio = Mi.guideTarget() === obj;
+          const alto = Mi.pistaVuela(), el = document.getElementById('pista-vuela'), txt = el ? el.textContent : '';
+          G.rescate = Object.assign(Object.create(r0 || null), { activo: () => true });
+          const enRescate = Mi.pistaVuela();
+          check('T28 · «↑ Vuela» sale con el objetivo en lo alto y no durante el rescate', (!propio || (alto && /lo alto/.test(txt))) && enRescate === false, [propio, alto, txt, enRescate].join(' · '));
+        } finally { st.guia = g0; G.rescate = r0; M.flying = f0; M.swimming = sw0; Mi.pistaVuela(); }
+      }
+    }
     { // T21: lo que el niño acaba de hacer ({ ya }: una foto, un don, una maravilla) sale al momento; el aviso de antes vuelve después
       const UI = G.ui, tt = document.getElementById('toast');
       UI.vaciarAvisos(); UI.colaTest(true);

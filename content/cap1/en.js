@@ -2983,5 +2983,6 @@ window.AV_EN = {
  "Opacidad": "Opacity",
  "Restablecer": "Reset",
  "Tu poder": "Your power",
- "↑ Vuela: está en lo alto": "↑ Fly: it is up high"
+ "↑ Vuela: está en lo alto": "↑ Fly: it is up high",
+ "↑ Vuela: a pie no se llega": "↑ Fly: you can't walk there"
 };
