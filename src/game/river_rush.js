@@ -185,9 +185,31 @@
       bola(0, -0.55, 0, 0.1);
       return G.util.mergeGeos(partes);
     }
+    // T16: el nacimiento está dentro de las grutas (estructura:grutas): la canoa y la cámara empezaban dentro de la roca y solo se
+    // veían sus caras planas. La salida pasa al primer tramo sin gruta encima de la canoa ni de la cámara y sin un salto de agua
+    // entre las dos (una vez por mapa).
+    let inicioListo = false;
+    function ajustarInicio() {
+      if (inicioListo) return; inicioListo = true;
+      const gr = scene.getObjectByName('estructura:grutas'); if (!gr) return;
+      const rc = new THREE.Raycaster(), arriba = new THREE.Vector3(0, 1, 0), o = new THREE.Vector3(), cp = new THREE.Vector3(), q = {};
+      const tapa = (x, y, z) => { o.set(x, y, z); rc.set(o, arriba); rc.far = 40; return rc.intersectObject(gr, true).length > 0; };
+      const s0 = J.s, l0 = J.lado; let libres = 0;
+      try {
+        for (let s = P.inicio; s < P.inicio + 300; s += 2) {
+          enCauce(s, q); J.s = s; J.lado = 0; camObjetivo(cp);
+          // y sin un salto del río entre la cámara y la canoa ni en los 20 m de delante (el agua de arriba, lisa y con borde recto,
+          // tapaba el tercio de abajo)
+          let salto = false; try { if (G.agua && G.agua.levelAt) { const a = G.agua.levelAt(cp.x, cp.z), b = G.agua.levelAt(q.x, q.z), qa = enCauce(s + 20, {}), c = G.agua.levelAt(qa.x, qa.z); salto = [a, c].some(v => isFinite(v) && isFinite(b) && Math.abs(v - b) > 0.3); } } catch (e) { /* sin agua */ }
+          libres = salto || tapa(q.x, q.y + 0.6, q.z) || tapa(cp.x, cp.y, cp.z) ? 0 : libres + 1;
+          if (libres >= 5) { P.inicio = Math.round(s - 4); break; } // 8 m seguidos al aire libre
+        }
+      } finally { J.s = s0; J.lado = l0; }
+    }
     function crearPool() {
       if (st.listo) return st.listo;
       if (!construirCauce()) return Promise.reject(new Error('este mapa no tiene río (mapa.agua.rio)'));
+      try { ajustarInicio(); } catch (e) { /* sin grutas: el inicio de siempre */ }
       const tareas = Object.keys(MODELO).map(tipo => cargarModelo(MODELO[tipo][0], MODELO[tipo][1]).then(m => {
         const size = new THREE.Vector3(); m.box.getSize(size);
         const eje = size.x >= size.y && size.x >= size.z ? 'x' : size.z >= size.y ? 'z' : 'y';
@@ -943,8 +965,13 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
             const pr = (x, y, z) => new THREE.Vector3(x, y, z).project(c);
             const root = G.actores.player3D && G.actores.player3D.root, bb = root ? new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3()) : null, hv = bb && bb.y > 0.3 && bb.y < 6 ? bb.y : 1.2;
             const t1 = pr(S.pos.x, S.pos.y + hv, S.pos.z), t0 = pr(S.pos.x, S.pos.y, S.pos.z);
-            canoa.grupo.updateMatrixWorld(true); const cb = new THREE.Box3().setFromObject(canoa.grupo), xs = [], ys = [];
-            for (const x of [cb.min.x, cb.max.x]) for (const y of [cb.min.y, cb.max.y]) for (const z of [cb.min.z, cb.max.z]) { const p = pr(x, y, z); xs.push(p.x); ys.push(p.y); }
+            // T16: las esquinas de verdad de la canoa (caja de cada malla en su espacio, girada con ella); la caja alineada con los ejes
+            // del mundo crece cuando el río va en diagonal y la canoa parecía salirse del cuadro sin salirse
+            canoa.grupo.updateMatrixWorld(true); const xs = [], ys = [], v3 = new THREE.Vector3();
+            for (const ms of canoa.grupo.children) {
+              if (!ms.geometry) continue; if (!ms.geometry.boundingBox) ms.geometry.computeBoundingBox(); const cb = ms.geometry.boundingBox;
+              for (const x of [cb.min.x, cb.max.x]) for (const y of [cb.min.y, cb.max.y]) for (const z of [cb.min.z, cb.max.z]) { v3.set(x, y, z).applyMatrix4(ms.matrixWorld); const p = pr(v3.x, v3.y, v3.z); xs.push(p.x); ys.push(p.y); }
+            }
             const detras = (() => { const q = enCauce(J.s, {}), dx = c.position.x - S.pos.x, dz = c.position.z - S.pos.z, l = Math.hypot(dx, dz) || 1; return -(dx * q.tx + dz * q.tz) / l; })();
             cam.asp = a0;
             return { V: t0, tam: Math.abs(t1.y - t0.y) / 2, canoa: { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) }, detras, alto: c.position.y - S.pos.y, hv };
@@ -952,7 +979,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
           const enV = p => p.z > 0 && p.z < 1 && Math.abs(p.x) < 0.95 && Math.abs(p.y) < 0.95, canoaEnV = v => v.canoa.x0 > -1 && v.canoa.x1 < 1 && v.canoa.y0 > -1 && v.canoa.y1 < 1;
           const vm = vista(390 / 844), vd = vista(16 / 9);
           check('Cámara detrás (río arriba) y por encima de la canoa', vm.detras > 0.8 && vd.detras > 0.8 && vm.alto > 2 && vd.alto > 2, 'detrás ' + vd.detras.toFixed(2) + ' · alto ' + vd.alto.toFixed(1) + ' m');
-          check('Móvil vertical (390×844), primer cuadro: Vittata ≥ 12 % del alto, la canoa entera a la vista y ≥ 25 % del ancho', enV(vm.V) && vm.tam >= 0.12 && canoaEnV(vm) && (vm.canoa.x1 - vm.canoa.x0) / 2 >= 0.25, 'Vittata ' + (vm.tam * 100).toFixed(0) + '% (' + vm.hv.toFixed(2) + ' m) · canoa ' + ((vm.canoa.x1 - vm.canoa.x0) * 50).toFixed(0) + '% del ancho');
+          check('Móvil vertical (390×844), primer cuadro: Vittata ≥ 12 % del alto, la canoa entera a la vista y ≥ 25 % del ancho', enV(vm.V) && vm.tam >= 0.12 && canoaEnV(vm) && (vm.canoa.x1 - vm.canoa.x0) / 2 >= 0.25, 'Vittata ' + (vm.tam * 100).toFixed(0) + '% (' + vm.hv.toFixed(2) + ' m) · canoa ' + ((vm.canoa.x1 - vm.canoa.x0) * 50).toFixed(0) + '% del ancho · ' + ['x0', 'x1', 'y0', 'y1'].map(k => k + ' ' + vm.canoa[k].toFixed(2)).join(' '));
           check('Escritorio (16:9): Vittata ≥ 8 % del alto y la canoa entera a la vista', enV(vd.V) && vd.tam >= 0.08 && canoaEnV(vd), 'Vittata ' + (vd.tam * 100).toFixed(0) + '%');
           // QA-49: donde el centro del cauce tiene un techo (pasto o puente), la cámara queda por encima y no se ve la losa
           { const s0 = J.s, l0 = J.lado, pos = new THREE.Vector3(); let mal = 0, peor = 0, en = 0, techos = 0;
