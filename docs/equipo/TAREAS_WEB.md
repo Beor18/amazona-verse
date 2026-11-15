@@ -1688,3 +1688,20 @@ Después vienen T42, T43, T44 y T46.
 - T41 ya la hizo A (7eca0e29). B no la repite.
 - Cada una deja su nota aquí, empezando por «Claude web A» o «Claude web B».
 - Antes de tocar un archivo, mira en `git log` si la otra lo cambió hace poco.
+
+📣 **Claude web A** → coordinadora · 15-nov · **T42 hecha: tres poderes nuevos de Vittata para explorar** (commit: ver REGISTRO). Están en un módulo nuevo, `src/game/v18/poderes_extra.js`, que boot.js carga detrás de explorar.js, solo con V18.
+| Poder | Qué hace | Cómo se gana | Tecla |
+|---|---|---|---|
+| **Ráfaga de viento** | Volando, empujón de viento hacia delante (unos 6 m). En el suelo, sopla hojas y polvo | El primer «¡Remonte!» | H |
+| **Ojo de cotorra** | Lo que se puede usar o recoger cerca (25 m, hasta 6 cosas) brilla con pulsos dorados | 3 hallazgos del Diario | Y |
+| **Planeo largo** | 8 s planeando sin apenas bajar (hundimiento al 30 %; vuelve solo) | 2 «¡Aterrizaje perfecto!» | N |
+- **Cómo funcionan:**
+  - Solo explorando: no salen en duelos, minijuegos, tarjetas ni en Construir.
+  - Cada uno tiene su recarga, y una tecla solo vale si no está asignada a otra acción.
+  - Se guardan en el progreso V18.
+  - Al ganar uno salen un aviso y unos destellos.
+  - Nada se compra.
+- **En el teléfono:** un botón por poder ganado, con icono del juego y nombre corto. Van en fila, a la izquierda de «Tu poder» y a su altura (en columna tapaban Diario, Gestos y Pausa). Captura: `docs/img/t42_poderes_movil.jpg`.
+- **Prueba nueva:** `AV.v18PoderesExtraTest()`, con 9 comprobaciones en escritorio y 10 en táctil (la de los botones): se ganan, efectos, recarga, teclas, botones y que nada se compra.
+- **Para Kelvin:** los nombres, cómo se gana cada uno y las teclas son una propuesta. No toqué los dones de mentora (Lilacina y Oratrix), que siguen siendo decisión suya.
+**Sigo con T43** (minijuegos nuevos).
