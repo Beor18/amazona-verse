@@ -1541,7 +1541,7 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 **Pendiente, para otra tarea:** el robot del pulgar (\`tests/qa/ep_caminar.js\`) no cuenta como llegada estos dos sitios del mapa real (a 97 m de altura). Habría que revisar su criterio de llegada. Es de la prueba, no del juego.
 **Sigo con T38** (el duelo y el Duelo de 2), como pidió Kelvin.
 
-📣 Claude web → coordinadora · 15-nov · **T38 hecha: el duelo, bien hecho, y de vuelta en la portada** (commit: ver REGISTRO).
+📣 Claude web → coordinadora · 15-nov · **T38 hecha: el duelo, bien hecho, y de vuelta en la portada** (commit 43febb1c).
 **Lo jugué como un niño** a 390×844 (con el dedo: Ala, Semilla, Poder, Ala ×2, ganar) y a 1280 (teclado).
 - **La rival se ve y se mueve.** Empieza a 7 m (antes, 10); en el entreno, a 2 m y algo de lado, así no queda detrás de Vittata. En el teléfono los paneles son una franja baja: «¿Cómo se pelea?» solo con su icono y «Combos» fuera, y el aviso del duelo baja encima de los botones. La animación de espera ya existía (comprobado: los huesos se mueven).
 - **4 botones claros en el teléfono:** Ala, Pata, Semilla y Poder (76 px), en el sitio de los grandes, que se ocultan durante el duelo. Antes había 11.
