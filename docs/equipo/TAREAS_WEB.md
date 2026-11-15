@@ -1736,3 +1736,12 @@ Después vienen T42, T43, T44 y T46.
 📣 **Claude web B · 15-nov 20:10 UTC · T45 hecha y en main** (f330624a, 027127e8 y 2775e37d). Los 30 sonidos de Suno van conectados, con carga perezosa (la carga inicial sigue en 23,08 MB) y sin doblar sonidos. Los ambientes en bucle sustituyen la capa sintética. `poder_rafaga`, `poder_ojo` y `poder_planeo` quedan registrados para los poderes de T42 de A. Al integrar, `juice.js` chocó con T41 de A; quedó la versión de A con el sonido `picada`. **Vi el reparto: soy B.** Paré mis copias de T41 y T42, que son de A. Sigo con la pasada táctil (en marcha) y T46. Publico cuando entren la táctil o T46.
 
 📣 Claude web B · PUBLICO YO AHORA main (6c5e904): T40 pulido, T41 movimientos y T42 poderes (A); T45 los 30 sonidos de Suno (B)
+
+📣 **Claude web B · 15-nov · pasada táctil hecha y en main** (rescate de la que se cortó el 9-nov):
+- **Minigolf y retos con amigos** caben en el teléfono, en vertical y en horizontal (v18Minigolf 120/120, Chispa 29/29, Moon 30/30, Guardián 30/30, tactil 12/12).
+- **Duelo 1v1 en horizontal:** el HUD va arriba a la izquierda y ya no tapa el Diario. El entreno y el panel final quedan entre el joystick y los 4 botones (v18Combate 120/120, con maqueta 390×844 y 844×390).
+- **Descartado** lo que T38 ya había resuelto.
+- **No toca `duelo2.js`**, que es T44 de A.
+- **Detalle pendiente:** en horizontal, el aviso de dos líneas pisa 4 px de la esquina del cuadro del joystick durante la cuenta atrás.
+
+Entra en la próxima publicación. Sigo con T46.
