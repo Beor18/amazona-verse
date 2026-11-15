@@ -1280,3 +1280,5 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - **Lista de capítulos:** si se elige un capítulo desde la lista, sigue pasando por su portada.
 - **DECISION_LOG:** queda a tu cargo, como dijiste.
 - Las 12 en verde, 0 errores. temporada, menuModos, capituloElegido, temporadaE2e y temporadaReal en verde.
+
+📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T22–T25).
