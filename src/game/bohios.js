@@ -62,9 +62,15 @@ window.AVBohios = function (G) {
       alto: (v.alto - v.y0) * I.escala, ancho: v.w * I.escala, nx: n.x, nz: n.z,
     };
   }
+  // T46: un material por color, compartido por todos los muebles de todas las casas (antes uno nuevo por pieza: 7 por casa)
+  const matsColor = new Map();
   function mat(rgb) {
-    const m = new THREE.MeshStandardMaterial({ color: new THREE.Color().setRGB(rgb[0], rgb[1], rgb[2]), roughness: 0.92, metalness: 0 });
+    const k = rgb.join();
+    let m = matsColor.get(k);
+    if (m) return m;
+    m = new THREE.MeshStandardMaterial({ color: new THREE.Color().setRGB(rgb[0], rgb[1], rgb[2]), roughness: 0.92, metalness: 0 });
     m.name = 'bohio-interior';
+    matsColor.set(k, m);
     return m;
   }
   function pieza(geo, rgb, x, y, z) {

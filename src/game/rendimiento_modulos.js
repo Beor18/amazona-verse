@@ -1,7 +1,8 @@
 /* Juego · CG-47. Coste por cuadro de los módulos nuevos, en el hilo del juego (no en la GPU).
    Cada uno tiene que quedar por debajo de 0,5 ms y entre todos por debajo de 2 ms, en silencio y también cerca.
    Ciudad viva y comunidades no se reescriben: en calidad baja no se cargan y, lejos, su update sale al momento;
-   dibujan en las mallas de la bandada (0 draw calls propios). window.AVRendimientoModulos(G). */
+   dibujan en las mallas de la bandada (0 draw calls propios). T46: y el recorte de lo que queda fuera de cámara (renderer.js).
+   window.AVRendimientoModulos(G). */
 window.AVRendimientoModulos = function (G) {
   'use strict';
   const S = G.S, M = G.fisica.MOVE;
@@ -42,10 +43,49 @@ window.AVRendimientoModulos = function (G) {
       }
       ok('Los seis juntos, cerca, < 2 ms', suma < 2, suma.toFixed(4) + ' ms');
       ok('Cifras', true, JSON.stringify(cifras));
+      fueraDeCamara(ok);
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     G.quiet = guard.quiet; S.pos.x = guard.x; S.pos.y = guard.y; S.pos.z = guard.z; M.flying = guard.flying;
     if (G.renderer.calidad) G.renderer.calidad.nivel = guard.nivel;
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
+  }
+  // T46: lo que queda fuera de cámara (InstancedMesh y personajes con esqueleto) no se dibuja. Mismo cuadro y misma cámara,
+  // con el recorte apagado y encendido: lo que deja de dibujarse tiene que estar de verdad fuera, y lo de fuera tiene que bajar.
+  function fueraDeCamara(ok) {
+    const R = G.renderer, FC = R.fueraCamara;
+    ok('T46 · el renderer expone el recorte fuera de cámara', !!FC && typeof FC.activo === 'boolean');
+    if (!FC || !R.renderer.renderBufferDirect) return;
+    const cam = R.camera, fr = new THREE.Frustum(), mm = new THREE.Matrix4(), mi = new THREE.Matrix4(), sp = new THREE.Sphere();
+    const fuera = o => { // de verdad fuera: ninguna instancia (o el cuerpo entero) toca el cuadro
+      const g = o.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
+      if (o.isInstancedMesh) { for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, mi); sp.copy(g.boundingSphere).applyMatrix4(mi).applyMatrix4(o.matrixWorld); if (fr.intersectsSphere(sp)) return false; } return true; }
+      sp.copy(g.boundingSphere).applyMatrix4(o.matrixWorld); sp.radius += 0.5; return !fr.intersectsSphere(sp);
+    };
+    const candidato = o => o.isInstancedMesh || (o.isSkinnedMesh && o.frustumCulled === false);
+    const cuadro = activo => {
+      const rr = R.renderer, orig = rr.renderBufferDirect, dib = new Set(); let n = 0, nFuera = 0;
+      FC.activo = activo;
+      rr.renderBufferDirect = function (c, sc, geo, mat, obj) { if (c === cam) { n++; dib.add(obj); if (candidato(obj) && fuera(obj)) nFuera++; } return orig.apply(this, arguments); };
+      try { if (G.camara.place) G.camara.place(true); cam.updateMatrixWorld(); fr.setFromProjectionMatrix(mm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse)); R.render(1 / 60, false); }
+      finally { rr.renderBufferDirect = orig; FC.activo = true; }
+      return { n, nFuera, dib, apagados: FC.ultimo };
+    };
+    const yaw0 = G.camara.yaw;
+    try {
+      const sp0 = (G.terreno.mapa || {}).spawn; if (sp0) { S.pos.x = sp0.x; S.pos.z = sp0.z; S.pos.y = G.terreno.height(sp0.x, sp0.z); }
+      const filas = [];
+      let malos = 0, antes = 0, despues = 0, callsA = 0, callsD = 0;
+      for (const yaw of [0, Math.PI]) {
+        G.camara.yaw = yaw;
+        const a = cuadro(false), d = cuadro(true);
+        for (const o of a.dib) if (!d.dib.has(o) && !fuera(o)) malos++;
+        antes += a.nFuera; despues += d.nFuera; callsA += a.n; callsD += d.n;
+        filas.push('giro ' + yaw.toFixed(1) + ': ' + a.n + '→' + d.n + ' calls, fuera ' + a.nFuera + '→' + d.nFuera);
+      }
+      ok('T46 · lo que deja de dibujarse estaba de verdad fuera de cámara (nada visible desaparece)', malos === 0, malos + ' a la vista sin dibujar · ' + filas.join(' · '));
+      ok('T46 · fuera de cámara se dibuja como mucho la cuarta parte que sin el recorte (y nunca más draw calls)', despues <= Math.floor(antes / 4) && callsD <= callsA, 'fuera ' + antes + '→' + despues + ' · calls ' + callsA + '→' + callsD);
+    } catch (e) { ok('T46 · recorte fuera de cámara sin excepciones', false, e && e.message); }
+    finally { G.camara.yaw = yaw0; FC.activo = true; }
   }
   G.rendimientoModulos = { test };
   return G.rendimientoModulos;

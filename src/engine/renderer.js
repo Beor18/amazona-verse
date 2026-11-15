@@ -589,7 +589,7 @@ AVE.module('renderer', function (G) {
   // lo que proyecta sombra con el sol encendido (su sombra puede caer dentro del cuadro), lo que se recorta solo (sinCulling),
   // ni los InstancedMesh muy grandes (más de 4000 instancias: recalcular la esfera costaría más que el draw call).
   const fueraFr = new THREE.Frustum(), fueraM = new THREE.Matrix4(), fueraIM = new THREE.Matrix4(), fueraS = new THREE.Sphere(), fueraV = new THREE.Vector3();
-  const fueraBox = new THREE.Box3(), esferasInst = new WeakMap(), FUERA = { ultimo: 0 };
+  const fueraBox = new THREE.Box3(), esferasInst = new WeakMap(), FUERA = { ultimo: 0, activo: true }; // activo=false solo para medir antes/después (T46)
   function esferaInstancias(o) {   // esfera local (espacio del objeto) que cubre todas sus instancias; se rehace al cambiar las matrices
     const v = o.instanceMatrix.version, g = o.geometry;
     let c = esferasInst.get(o);
@@ -610,6 +610,7 @@ AVE.module('renderer', function (G) {
   function delJugador(o) { for (let x = o; x; x = x.parent) { if (x.parent === scene) return x.name === 'personaje'; } return false; }
   function ocultarFuera(cam, guard) {
     let n = 0;
+    if (!FUERA.activo) { FUERA.ultimo = 0; return; }
     cam.updateMatrixWorld();
     fueraFr.setFromProjectionMatrix(fueraM.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
     const conSombra = sun.castShadow;
@@ -1683,6 +1684,7 @@ AVE.module('renderer', function (G) {
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, leerLienzo: fotoLeer, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, setEscuela, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
     _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; }, get otra() { return calorOtra.size; }, get pantalla() { return pantallaN; } },
+    fueraCamara: FUERA, // T46: { ultimo, activo }: lo apagado este cuadro por quedar fuera de cámara; activo=false solo en las pruebas
     _dyn: dyn, // QA-176: las pruebas de imagen (lookTest) lo usan para fijar la resolución dinámica; el juego no lo toca
     fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, esperas: FOTOS.esperas, caidas: FOTOS.caidas, errPBO: FOTOS.errPBO, cola: FOTOS.cola.length }),
     precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas, marcaGPU },
