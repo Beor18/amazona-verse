@@ -581,6 +581,54 @@ AVE.module('renderer', function (G) {
     post.grade.uniforms.uRayos.value = RAYOS * k;
     R.enabled = k > 0; // sin sol en pantalla no se corren los pases
   }
+  // ---------- T46: fuera de cámara, lo que three no sabe recortar ----------
+  // three recorta un InstancedMesh con la esfera de su geometría (una sola instancia, en el origen del objeto), y los personajes
+  // con esqueleto llevan frustumCulled = false: en el teléfono se dibujaban siempre, aunque quedaran detrás de la cámara (medido en
+  // T46: 28-43 draw calls por cuadro y las dos cotorras V18 de 28 k triángulos). Aquí se apagan SOLO durante este dibujo (como
+  // ocultarPendientes: no toca la lógica del juego) cuando su esfera real, con margen, no toca el campo de visión. No se toca:
+  // lo que proyecta sombra con el sol encendido (su sombra puede caer dentro del cuadro), lo que se recorta solo (sinCulling),
+  // ni los InstancedMesh muy grandes (más de 4000 instancias: recalcular la esfera costaría más que el draw call).
+  const fueraFr = new THREE.Frustum(), fueraM = new THREE.Matrix4(), fueraIM = new THREE.Matrix4(), fueraS = new THREE.Sphere(), fueraV = new THREE.Vector3();
+  const fueraBox = new THREE.Box3(), esferasInst = new WeakMap(), FUERA = { ultimo: 0, activo: true }; // activo=false solo para medir antes/después (T46)
+  function esferaInstancias(o) {   // esfera local (espacio del objeto) que cubre todas sus instancias; se rehace al cambiar las matrices
+    const v = o.instanceMatrix.version, g = o.geometry;
+    let c = esferasInst.get(o);
+    if (c && c.v === v && c.n === o.count && c.g === g) return c.s;
+    if (!g.boundingSphere) g.computeBoundingSphere();
+    const bs = g.boundingSphere, e = o.instanceMatrix.array;
+    fueraBox.makeEmpty(); let rMax = 0;
+    for (let i = 0; i < o.count; i++) {
+      fueraIM.fromArray(e, i * 16);
+      fueraV.copy(bs.center).applyMatrix4(fueraIM); fueraBox.expandByPoint(fueraV);
+      rMax = Math.max(rMax, bs.radius * fueraIM.getMaxScaleOnAxis());
+    }
+    if (!c) esferasInst.set(o, c = { s: new THREE.Sphere() });
+    fueraBox.getBoundingSphere(c.s); c.s.radius = (c.s.radius + rMax) * 1.25 + 2; // margen: el viento, las alas y el bote van en el shader
+    c.v = v; c.n = o.count; c.g = g;
+    return c.s;
+  }
+  function delJugador(o) { for (let x = o; x; x = x.parent) { if (x.parent === scene) return x.name === 'personaje'; } return false; }
+  function ocultarFuera(cam, guard) {
+    let n = 0;
+    if (!FUERA.activo) { FUERA.ultimo = 0; return; }
+    cam.updateMatrixWorld();
+    fueraFr.setFromProjectionMatrix(fueraM.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
+    const conSombra = sun.castShadow;
+    for (const o of dibujables()) {
+      if (!o.visible || (conSombra && o.castShadow) || o.userData.sinCulling) continue;
+      if (o.isInstancedMesh) {
+        if (o.count <= 0 || o.count > 4000) continue;
+        fueraS.copy(esferaInstancias(o)).applyMatrix4(o.matrixWorld);
+      } else if (o.isSkinnedMesh && o.frustumCulled === false) {
+        if (delJugador(o)) continue;
+        const g = o.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
+        fueraS.copy(g.boundingSphere).applyMatrix4(o.matrixWorld); fueraS.radius = fueraS.radius * 1.5 + 1.5; // la animación dobla el cuerpo
+      } else continue;
+      if (fueraFr.intersectsSphere(fueraS)) continue;
+      guard.push([o, true]); o.visible = false; n++;
+    }
+    FUERA.ultimo = n;
+  }
   function drawScene(cam) {
     nubesU.uTime.value = t;
     cullPequenos(cam || camera);
@@ -589,6 +637,7 @@ AVE.module('renderer', function (G) {
     scene.updateMatrixWorld(); // KIMI-145: Scene.autoUpdate=false; una sola pasada por cuadro (antes ~3 con re-composición total)
     // Lo que todavía no se enlazó no entra en este dibujo: si no, el cuadro de «Empezar» compila el resto de golpe.
     const guard = ocultarPendientes();
+    ocultarFuera(post.activo && post.composer ? camera : (cam || camera), guard); // T46: el composer dibuja siempre con la cámara principal
     try {
       if (post.activo && post.composer) { situarRayos(cam || camera); post.composer.render(); }
       else renderer.render(scene, cam || camera);
@@ -1008,7 +1057,7 @@ AVE.module('renderer', function (G) {
   }
   const medidor = { fps: 0, ms: 0, frames: 0, t0: performance.now() };
   function stats() {
-    return { fps: Math.round(medidor.fps), calls: cuenta.ultimo.calls, triangulos: cuenta.ultimo.tris, calidad: calidad.nivel, dpr: renderer.getPixelRatio(), post: post.activo, sombras: sun.castShadow, gpu: GPU, escuela: calidad.escuela === true };
+    return { fps: Math.round(medidor.fps), calls: cuenta.ultimo.calls, triangulos: cuenta.ultimo.tris, calidad: calidad.nivel, dpr: renderer.getPixelRatio(), post: post.activo, sombras: sun.castShadow, gpu: GPU, escuela: calidad.escuela === true, fueraCamara: FUERA.ultimo };
   }
 
   resize();
@@ -1635,6 +1684,7 @@ AVE.module('renderer', function (G) {
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, leerLienzo: fotoLeer, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, setEscuela, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
     _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; }, get otra() { return calorOtra.size; }, get pantalla() { return pantallaN; } },
+    fueraCamara: FUERA, // T46: { ultimo, activo }: lo apagado este cuadro por quedar fuera de cámara; activo=false solo en las pruebas
     _dyn: dyn, // QA-176: las pruebas de imagen (lookTest) lo usan para fijar la resolución dinámica; el juego no lo toca
     fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, esperas: FOTOS.esperas, caidas: FOTOS.caidas, errPBO: FOTOS.errPBO, cola: FOTOS.cola.length }),
     precarga: { programas: programasPendientes, texturas: () => texturasPendientes().length, subirTexturas, marcaGPU },

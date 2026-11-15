@@ -984,8 +984,9 @@
       lanzar: 'src/game/v18/pesca.js', pica: 'src/game/v18/pesca.js', clavado: 'src/game/v18/pesca.js',
       duelo_ala: 'src/game/v18/habilidades.js', duelo_pata: 'src/game/v18/combate.js', duelo_semilla: 'src/game/v18/habilidades.js', duelo_poder: 'src/game/v18/habilidades.js',
       duelo_victoria: 'src/game/v18/combate.js', duelo_derrota: 'src/game/v18/combate.js', poder_grito: 'src/game/v18/explorar.js',
+      poder_rafaga: 'src/game/v18/poderes_extra.js', poder_ojo: 'src/game/v18/poderes_extra.js', poder_planeo: 'src/game/v18/poderes_extra.js', // T52
     };
-    const SIN_MOMENTO = ['poder_rafaga', 'poder_ojo', 'poder_planeo']; // T42 los creará: registrados, sin momento todavía
+    const SIN_MOMENTO = []; // T52: ya no queda ninguno sin momento (los poderes ráfaga, ojo y planeo suenan en poderes_extra.js)
     async function probarSfx(check) {
       const ficha = await fetch('assets/audio/sonidos.json').then(r => r.json()).catch(() => null);
       const nombres = ficha ? Object.keys(ficha.sonidos).filter(n => /^sfx\//.test((ficha.sonidos[n].ogg || {}).archivo || '')) : [];
@@ -1012,8 +1013,8 @@
         if (!new RegExp("['\"]" + n + "['\"]").test(fuentes[f])) sinLlamada.push(n + ' (' + f + ')');
       }
       const conMomento = Object.keys(MOMENTOS_SFX).concat(SIN_MOMENTO, BUCLES.map(b => b.n));
-      check('T45: cada efecto tiene su momento en el código (los poderes ráfaga, ojo y planeo esperan a T42; los ambientes van en musica.js)',
-        !sinLlamada.length && nombres.every(n => conMomento.includes(n)), sinLlamada.concat(nombres.filter(n => !conMomento.includes(n))).join(', '));
+      check('T45/T52: cada efecto tiene su momento en el código, también ráfaga, ojo y planeo (los ambientes van en musica.js)',
+        !sinLlamada.length && !SIN_MOMENTO.length && ['poder_rafaga', 'poder_ojo', 'poder_planeo'].every(n => n in MOMENTOS_SFX) && nombres.every(n => conMomento.includes(n)), sinLlamada.concat(nombres.filter(n => !conMomento.includes(n))).join(', '));
       const play0 = A.play, oidos = [], q0 = G.quiet;
       A.play = function (n, a) { oidos.push(n); return play0.call(this, n, a); };
       try {

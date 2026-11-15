@@ -60,7 +60,7 @@ window.AVV18PoderesExtra = function (G) {
       for (let k = 1; k <= 3; k++) { const x = S.pos.x + d.x * k * 2, z = S.pos.z + d.z * k * 2, y = M.flying ? S.pos.y + 0.6 : H(x, z) + 0.4; G.fx.burst(x, y, z, 'leaves', 6); G.fx.burst(x, y, z, 'dust', 4); }
       G.fx.ringFx(S.pos.x, S.pos.y + 0.6, S.pos.z, 2.2, 0.4, 0.5);
       if (M.flying) est.empuje = { x: d.x * 10, z: d.z * 10, t: 0.6 };
-      sonar('aleteo');
+      sonar('poder_rafaga');
       return true;
     },
     ojo() {
@@ -72,7 +72,7 @@ window.AVV18PoderesExtra = function (G) {
       G.fx.ringFx(S.pos.x, S.pos.y + 0.4, S.pos.z, 3, 1, 0.5);
       est.ultimoOjo = sel.length;
       if (!sel.length) toast(L('El Ojo de cotorra no ve nada cerca.', 'The Parrot eye sees nothing nearby.'), 2400);
-      sonar('ring');
+      sonar('poder_ojo');
       return true;
     },
     planeo() {
@@ -81,7 +81,7 @@ window.AVV18PoderesExtra = function (G) {
       if (est.sink0 == null) est.sink0 = T.glideSink;
       T.glideSink = est.sink0 * 0.3; est.planeoT = P.planeo.dura;
       G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'feathers', 12);
-      sonar('unlock');
+      sonar('poder_planeo');
       return true;
     }
   };
@@ -204,6 +204,18 @@ window.AVV18PoderesExtra = function (G) {
       M.flying = true; const r3 = usar('planeo', true), bajo = T.glideSink;
       for (let i = 0; i < 90; i++) paso(0.1);
       check('Planeo largo: solo volando; baja el hundimiento al 30 % y a los 8 s vuelve solo', !sinVolar && r3 && Math.abs(bajo - guard.sink * 0.3) < 1e-9 && T.glideSink === guard.sink && est.planeoT <= 0, bajo + ' → ' + T.glideSink);
+      // T52: cada poder suena su efecto de Suno al usarse (espía de G.audio.play; sin doblar con el aleteo, ring o unlock de antes)
+      if (G.audio && G.audio.play) {
+        const play0 = G.audio.play, oidos = [], ui0 = G.ui && G.ui.toast;
+        G.audio.play = function (n) { oidos.push(n); };
+        try {
+          G.quiet = false; if (ui0) G.ui.toast = () => {};
+          M.flying = true; for (const id of IDS) { cd[id] = 0; usar(id, true); }
+        } finally { G.audio.play = play0; if (ui0) G.ui.toast = ui0; G.quiet = true; terminarPlaneo(); est.empuje = null; pulsos.length = 0; }
+        const has = n => !G.audio.has || G.audio.has(n);
+        check('T52: usar Ráfaga, Ojo y Planeo suena poder_rafaga, poder_ojo y poder_planeo (uno cada uno, sin otro sonido encima)',
+          oidos.join() === ['poder_rafaga', 'poder_ojo', 'poder_planeo'].filter(has).join() && ['poder_rafaga', 'poder_ojo', 'poder_planeo'].every(has), oidos.join());
+      }
       // Teclas
       check('Teclas H, Y y N (solo si no están asignadas a otra acción)', ['h', 'y', 'n'].every(k => IDS.some(i => P[i].tecla === k)) && !ocupada('h'));
       // Táctil: un botón por poder ganado, con nombre

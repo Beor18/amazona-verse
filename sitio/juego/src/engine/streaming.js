@@ -2523,6 +2523,19 @@ AVE.module('streaming', function (G) {
       }
       check('Draw calls de la vista más cargada ≤ 150', st.calls > 0 && st.calls <= 150, ZM.id + ' (giro ' + r2(st.yaw) + '): ' + st.calls + ' draw calls, edificios ' + st.edif +
         ' (' + st.cerca + ' instancias cerca, ' + st.hd + ' _hd, ' + st.lejos + ' lejos sueltas, ' + st.zonas + ' zonas fundidas) · ' + nivelCal() + aviso + ' · ' + st.diag);
+      if (R.fueraCamara) { // T46: en la peor toma, el recorte de lo de fuera de cámara (InstancedMesh, personajes con esqueleto) no suma draw calls
+        const FC = R.fueraCamara, yawT = G.camara.yaw; G.camara.yaw = st.yaw;
+        // tres pares alternados y el mínimo de cada lado (un cuadro suelto con sombra, precalentado o carga suma calls que no son del recorte)
+        // Solo los draw calls de la cámara principal (sin la pasada de sombra ni el post)
+        const rr = R.renderer, contarCam = () => { const orig = rr.renderBufferDirect; let n = 0; rr.renderBufferDirect = function (c) { if (c === R.camera) n++; return orig.apply(this, arguments); }; try { G.camara.place(true); R.render(1 / 60, false); } finally { rr.renderBufferDirect = orig; } return n; };
+        // Orden ABBA BAAB (sin, con, con, sin, con, sin, sin, con): si el streaming sigue colocando cosas durante la medida,
+        // la tendencia cae igual en los dos lados y se compara la suma de 4 cuadros por lado.
+        let sinR = 0, conR = 0, apag = 0;
+        for (const act of [false, true, true, false, true, false, false, true]) { FC.activo = act; dibujar(1); const n = contarCam(); if (act) { conR += n; apag = Math.max(apag, FC.ultimo); } else sinR += n; FC.activo = true; }
+        sinR = Math.round(sinR / 4); conR = Math.round(conR / 4);
+        G.camara.yaw = yawT;
+        check('T46 · En la vista más cargada, lo que queda fuera de cámara no se dibuja (nunca suma draw calls)', conR <= sinR, sinR + ' → ' + conR + ' draw calls de la cámara (media de 4 cuadros) · ' + apag + ' mallas fuera de cámara apagadas');
+      }
       { // QA-nuevo-br1-3: los personajes V18 (Arausiaca, la rival del duelo, los NPC de v18npc) a más de 60 m no se dibujan; tras
         // pasar por sus sitios (juiceTest carga los módulos a demanda) sumaban ~47 draw calls en esta vista
         const esV18 = h => /^(v18_arausiaca|v18_rival|v18npc:)/.test(h.name || ''), v18 = scene.children.filter(esV18);

@@ -3010,5 +3010,12 @@ window.AV_EN = {
  "River Rush, la tormenta, el banquete y el canto": "River Rush, the storm, the feast and the song",
  "Dos en la misma pantalla": "Two on the same screen",
  "Gira el teléfono: el Duelo de 2 se juega en horizontal, cada jugador por su lado.": "Turn the phone: the 2-player duel is played sideways, each player on their own side.",
- "En el teléfono, en horizontal: el Jugador 1 a la izquierda (joystick y 4 botones) y el Jugador 2 a la derecha (su joystick y sus 4 botones).": "On the phone, sideways: Player 1 on the left (joystick and 4 buttons) and Player 2 on the right (their own joystick and 4 buttons)."
+ "En el teléfono, en horizontal: el Jugador 1 a la izquierda (joystick y 4 botones) y el Jugador 2 a la derecha (su joystick y sus 4 botones).": "On the phone, sideways: Player 1 on the left (joystick and 4 buttons) and Player 2 on the right (their own joystick and 4 buttons).",
+ "Casita rápida": "Quick house",
+ "Aquí dentro ya hay paredes: la casita va fuera.": "There are walls in here already: the house goes outside.",
+ "Aquí no cabe la casita: busca un sitio más llano y despejado.": "The house doesn't fit here: find a flatter, clearer spot.",
+ "¡Casita lista! Cámbiala a tu gusto o toca Deshacer.": "House ready! Change it as you like or tap Undo.",
+ "Puse lo que cabía. Cámbialo a tu gusto o toca Deshacer.": "I placed what fit. Change it as you like or tap Undo.",
+ "Deshacer · {}": "Undo · {}",
+ "Supr": "Delete"
 };
