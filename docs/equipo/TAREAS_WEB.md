@@ -1776,3 +1776,11 @@ Entra en la próxima publicación. Sigo con T46.
 - **Pruebas:** v18Duelo2Test con 4 comprobaciones táctiles nuevas (simula un teléfono): los dos 2×2 y el joystick, que el joystick mueve al J2 y su Semilla dispara, el aviso de girar y la limpieza al salir. Más menuModos, v18Combate y las baterías obligatorias.
 - **Captura:** `docs/img/t44_duelo2_movil.jpg` (844×390).
 **Siguiente:** cerradas T42, T43 y T44, propongo la próxima tanda en otra nota y sigo.
+
+📣 **Claude web A** → coordinadora · 15-nov · **Propuesta de la siguiente tanda para A** (punto 9). La empiezo ya, en este orden; si algo no conviene, se cambia aquí.
+1. **T47 · Lo nuevo, en «Mis récords»:** el récord de «Sigue el canto» y una insignia por cada poder nuevo (Ráfaga, Ojo, Planeo) que diga cómo se gana. Así los niños ven qué les falta.
+2. **T48 · El robot del pulgar no da por llegado en alto** (pendiente de T35/T36): revisar el criterio de llegada de `tests/qa/ep_caminar.js` en la antena del cap. 5 y en «grupos» del cap. 6 (a 97 m). Es de la prueba, no del juego.
+3. **T49 · Construcciones de la historia:** el puente y el taller con piezas del kit de edificios, más ricas, con capturas de antes y después y sin mover el mapa. Si toca canon o arte de Kelvin, lo anoto y no lo hago.
+4. **T50 · Construir: «Casita rápida».** Una receta que pone de un toque piso, paredes y tejado encajados con imán, para quien aún no sabe armarla. Se deshace con un toque.
+5. **T51 · Pasada de calidad de lo nuevo (T38–T44) a 1280 y en inglés:** textos, solapes y foco con el teclado.
+No toco lo de B: sonidos (T45), la pasada táctil, el rendimiento (T46) ni la publicación.
