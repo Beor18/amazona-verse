@@ -105,6 +105,11 @@ AVE.module('ui', function (G) {
     siguiente(ks);
   }, 84);
   // Solo para las baterías: activa el tiempo mínimo aunque G.quiet esté puesto y devuelve el estado de la cola
+  // T20: quita un aviso que ya no hace falta (en pantalla o en la cola), p. ej. la pista del visor cuando el visor ya se encendió
+  function quitarAviso(text) {
+    for (let i = cola.length - 1; i >= 0; i--) if (cola[i].text === text) cola.splice(i, 1);
+    if (enPantalla() && actual.text === text) { ocultar(); respiro = 0; }
+  }
   function respiroTest(on) { if (on != null) { respiroPrueba = !!on; if (!on) respiro = 0; } return { respiro, RESPIRO_S }; }
   function colaTest(on) { if (on != null) colaPrueba = !!on; return { cola: cola.map(p => p.text || p.html), actual: enPantalla() ? (actual.text || actual.html) : null, fijo: enPantalla() ? !!actual.fijo : null, fijos: cola.map(p => !!p.fijo), visto, max: COLA_MAX }; }
   function overlayOpen() { return !$('end').hidden || !$('comic').hidden || !$('creator').hidden; }
@@ -159,5 +164,5 @@ AVE.module('ui', function (G) {
     if (H.titulo) document.title = H.titulo;
   }
 
-  return { $, showCard, hideCard, get cardOpen() { return cardOpen; }, get avisoPendiente() { return cola[0] || null; }, colaTest, respiroTest, toast, toastHTML, hideToast, vaciarAvisos, overlayOpen, busy, worldHidden, enEscena, avisoLibre };
+  return { $, showCard, hideCard, get cardOpen() { return cardOpen; }, get avisoPendiente() { return cola[0] || null; }, colaTest, respiroTest, quitarAviso, toast, toastHTML, hideToast, vaciarAvisos, overlayOpen, busy, worldHidden, enEscena, avisoLibre };
 });
