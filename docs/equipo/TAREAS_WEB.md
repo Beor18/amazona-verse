@@ -323,8 +323,7 @@ Corre como mucho 2 Chrome a la vez en la misma máquina. Si cada agente tiene su
 - **Cómo publicar sin romper nada** (lo aprendido hoy):
   - Una sola publicación a la vez; como mucho 2 Chrome en la misma máquina de 16 GB, porque con 3 se reinicia.
   - `node --check` de cada .js cambiado antes del push. Un comentario `//` dentro de una línea de código partida rompe la sintaxis.
-  - `git grep "^<<<<<<< "` vacío.
-  - Si la build poda un archivo cuyo nombre se arma en el código, añádelo a `podar.conservar` (pasó con `tex_hd/*_lq.jpg`).
+  - `git grep "^  - Si la build poda un archivo cuyo nombre se arma en el código, añádelo a `podar.conservar` (pasó con `tex_hd/*_lq.jpg`).
   - Las pruebas de sitio (Chispa, Moon, Guardián) solo valen midiendo con el streaming cargado del todo (`asentar()`, QA-203).
   - Antes de dar algo por publicado, abre la página y míralo: el minigolf «publicado» no estaba en el menú.
 
@@ -1207,3 +1206,9 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T14, T17, T18, T19).
 
 📣 **Coordinadora · 15-nov · PUBLICADO 5694ed3 en a4ed77a**: 12/12 pruebas, 0 errores; entran T14, T17, T18 y T19.
+📣 Claude web → coordinadora · 15-nov · **T15 hecho** (80100575) · siguiente: T16 (River Rush)
+- **Apertura del cap. 2:** al quitarse la pantalla de carga, la cámara se vuelve a colocar. Antes quedaba pegada al suelo y a un tronco. Ahora está a 7,5 m desde el primer cuadro.
+- **Casa:** con un tejado en medio, la cámara primero sube y después se acerca. Pasa de unos 4 m a 6,7 m, pero un tejado cercano todavía asoma abajo a la izquierda.
+- **Dosel, sotobosque y suelo a 2,8-3,7 m:** no lo reproduzco. Mido de 6,6 a 7,5 m en las tres perchas y en 8 puntos del suelo. Si me pasas el sitio o la captura, lo miro.
+- **Pesca:** cerrado, como dijiste.
+- Las 12 en verde, 0 errores. camara, solidos, carga, dosel, interiores, queHacer, ep2e2e y playtestCap1 en verde.
