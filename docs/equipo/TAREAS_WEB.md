@@ -1284,3 +1284,30 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T22–T25).
 
 📣 **Coordinadora · 15-nov · PUBLICADO 306CE0D EN 03B74A4**: 12/12 y en vivo; entran T22, T23, T24 y T25.
+
+📣 Claude web → coordinadora · 15-nov · **T26 hecho: recorrido del cap. 1 a 390×844, solo notas (no arreglé nada)**
+De dónde sale:
+- El robot que juega con el pulgar y sin teletransporte (playtestCap1 sobre main con T22–T25, en la nube). El capítulo entero son unos 19 min de juego, 2,4 km y 88 toques.
+- Lo que medí hoy en el teléfono en cada tarea.
+- Las capturas sueltas del iframe durante el recorrido no sirven (salía la portada a destiempo), así que no las uso.
+
+Lo que veo roto o flojo, de más a menos importante:
+1. **Paso 4, «La ruta de la gota», es muy largo:** 430-460 s de juego, unos 1.400 m y 340 s volando. Tiene más de 30 s sin avanzar y la guía se abre una vez. Para un niño es el paso donde se pierde.
+2. **Paso 6, «Repara y activa el transmisor», también largo:** 400-590 s y unos 450 m.
+3. **«Acción no hace nada»:** sale en casi todos los pasos (17 atascos en total). El niño pulsa Acción y no pasa nada, sin ninguna respuesta.
+4. **«Al llegar, Acción no apunta a lo que señala la guía»** (pasos 3 y 4). Al llegar adonde dice la guía, Acción ofrece otra cosa cercana.
+5. **«A pie no llega: prueba volando»** (pasos 3 a 6). La guía señala sitios a los que andando no se llega, y el objetivo no dice que hay que volar. La pista «↑ Vuela» de T8 solo sale cuando el sitio está alto.
+6. **105 s contra paredes** en todo el capítulo (\`paredS\`).
+7. **Aviso de la historia demasiado largo:** «La Gran Ruptura dañó el taller. ¡Iguaca te llama…» se queda muchos segundos y vuelve después de las tarjetas. Lo vi encima de Vittata en el dosel y en el sotobosque.
+8. **Avisos encima de Vittata en el teléfono:** el aviso va a 262 px del borde de abajo y, posada en las perchas, le tapa el cuerpo.
+9. **Acción cortado:** en la percha del suelo el botón dice «Observar:», con el nombre cortado. El texto completo, «Acción: Observar: Suelo», sí sale arriba.
+10. **«↑ Vuela: está en lo alto» en el rescate:** sale durante el rescate del pichón aunque el objetivo de la historia (Iguaca) no es lo que se busca ahí.
+11. **Botón del poder tapando avisos:** el botón «Grito del Yunque · Tu poder» queda pegado al aviso de abajo a la derecha. En la percha del suelo casi se tocan.
+12. **Casa del bohío:** la cámara ya sube por encima de los tejados (T15), pero un tejado cercano todavía asoma abajo a la izquierda.
+
+Lo que va bien:
+- El capítulo se completa entero con el pulgar: 21/21, las 3 misiones y las 17 fichas de ciencia.
+- Se guarda solo, sigue terminado tras recargar y desde «Capítulos» pasa al cap. 2.
+- 0 errores de JavaScript.
+
+Propongo empezar por el 1, el 3 y el 4: acortar el paso 4 y que Acción siempre dé respuesta y apunte a lo que señala la guía. Espero tu orden.
