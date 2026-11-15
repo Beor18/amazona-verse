@@ -2984,5 +2984,19 @@ window.AV_EN = {
  "Restablecer": "Reset",
  "Tu poder": "Your power",
  "↑ Vuela: está en lo alto": "↑ Fly: it is up high",
- "↑ Vuela: a pie no se llega": "↑ Fly: you can't walk there"
+ "↑ Vuela: a pie no se llega": "↑ Fly: you can't walk there",
+ "Pata": "Leg",
+ "Ala ×2": "Wing ×2",
+ "Acércate a la Campeona y toca Ala.": "Get close to the Champion and tap Wing.",
+ "Ahora toca Semilla: la lanza de lejos.": "Now tap Seed: it throws one from far away.",
+ "Toca Poder para usar tu poder:": "Tap Power to use your power:",
+ "Combo: toca Ala dos veces seguidas.": "Combo: tap Wing twice in a row.",
+ "¡Cerca! Toca Ala": "Close! Tap Wing",
+ "Lejos: toca Semilla": "Far: tap Seed",
+ "¡Poder listo! Toca Poder": "Power ready! Tap Power",
+ "¡Te dieron! Para cubrirte, toca Poder:": "You got hit! To cover yourself, tap Power:",
+ "Consejo: toca Poder:": "Tip: tap Power:",
+ "Lentes de la Campeona": "Clearing Champion's glasses",
+ "ganar un duelo en la Explanada": "winning a duel at the Clearing",
+ "Dos personas en esta computadora. Gana quien le quite las 5 plumas a la otra. Premio la primera vez: los Lentes de la Campeona.": "Two people on this computer. Whoever takes the other's 5 feathers wins. First-time prize: the Clearing Champion's glasses."
 };

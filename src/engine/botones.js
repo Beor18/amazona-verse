@@ -18,8 +18,9 @@ AVE.module('botones', function (G) {
     { id: 'act', q: '#b-act', n: 'Acción' }, { id: 'dash', q: '#b-dash', n: 'Impulso' }, { id: 'jump', q: '#b-jump', n: 'Saltar' },
     { id: 'fly', q: '#b-fly, #b-dive', n: 'Volar' },
     { id: 'salir', q: '#v18-duelo [data-k="salirB"]', n: 'Salir', duelo: true },
-    { id: 'alaIzq', q: '#v18-duelo-ext [data-x="alaIzq"]', n: 'Ala izq.', duelo: true }, { id: 'alaDer', q: '#v18-duelo-ext [data-x="alaDer"]', n: 'Ala der.', duelo: true },
-    { id: 'pataIzq', q: '#v18-duelo-ext [data-x="pataIzq"]', n: 'Pata izq.', duelo: true }, { id: 'pataDer', q: '#v18-duelo-ext [data-x="pataDer"]', n: 'Pata der.', duelo: true },
+    // T38: el 2×2 del duelo es Ala, Pata, Semilla y Poder (antes, las dos alas y las dos patas)
+    { id: 'ala', q: '#v18-duelo-ext [data-x="ala"]', n: 'Ala', duelo: true }, { id: 'pata', q: '#v18-duelo-ext [data-x="pata"]', n: 'Pata', duelo: true },
+    { id: 'semilla', q: '#v18-duelo-ext [data-x="semilla"]', n: 'Semilla', duelo: true }, { id: 'poder', q: '#v18-duelo-ext [data-x="poder"]', n: 'Poder', duelo: true },
     { id: 'palo', q: '#stick', n: 'Joystick' }
   ];
   const TAM = { P: 0.8, M: 1, G: 1.25 }, REJ = 8;
@@ -66,12 +67,13 @@ AVE.module('botones', function (G) {
     if (el) { const r = el.getBoundingClientRect(); if (r.width > 0) return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width / ((datos[orient()][c.id] || {}).s || 1), h: r.height / ((datos[orient()][c.id] || {}).s || 1) }; }
     if (c.id === 'salir') return { x: innerWidth - 70, y: Math.min(innerHeight * 0.45, 340), w: 96, h: 48 }; // fuera del duelo: bajo el panel
     if (c.id === 'palo') return { x: 90, y: innerHeight - 110, w: 136, h: 136 }; // esquina de fábrica si el palo aún no se mide
-    // Los del duelo fuera de un duelo: el 2×2 de combate.js encima de los botones grandes (60 px y 8 de hueco)
+    // Los del duelo fuera de un duelo: el 2×2 de combate.js (76 px y 10 de hueco; en el duelo va en lugar de los grandes,
+    // que se ocultan): aquí, encima de los grandes, para poder moverlos sin que se pisen
     const acts = document.getElementById('acts'), r = acts && acts.getBoundingClientRect(), vw = innerWidth;
     const base = r && r.width > 0 ? r : { left: vw - 202, right: vw - 20, top: innerHeight - 198, width: 182 };
     const k = CTL.indexOf(c) - 5, col = k % 2, fila = k >> 1, zurdo = base.left + base.width / 2 < vw / 2;
-    const left = zurdo ? Math.max(8, base.left) : Math.min(vw - 136, base.right - 128), top = base.top - 52 - 128;
-    return { x: left + col * 68 + 30, y: top + fila * 68 + 30, w: 60, h: 60 };
+    const left = zurdo ? Math.max(8, base.left) : Math.min(vw - 170, base.right - 162), top = base.top - 52 - 162;
+    return { x: left + col * 86 + 38, y: top + fila * 86 + 38, w: 76, h: 76 };
   }
 
   // ---------- Editor ----------

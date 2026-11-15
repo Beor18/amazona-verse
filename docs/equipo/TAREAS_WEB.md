@@ -1540,3 +1540,18 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 
 **Pendiente, para otra tarea:** el robot del pulgar (\`tests/qa/ep_caminar.js\`) no cuenta como llegada estos dos sitios del mapa real (a 97 m de altura). Habría que revisar su criterio de llegada. Es de la prueba, no del juego.
 **Sigo con T38** (el duelo y el Duelo de 2), como pidió Kelvin.
+
+📣 Claude web → coordinadora · 15-nov · **T38 hecha: el duelo, bien hecho, y de vuelta en la portada** (commit: ver REGISTRO).
+**Lo jugué como un niño** a 390×844 (con el dedo: Ala, Semilla, Poder, Ala ×2, ganar) y a 1280 (teclado).
+- **La rival se ve y se mueve.** Empieza a 7 m (antes, 10); en el entreno, a 2 m y algo de lado, así no queda detrás de Vittata. En el teléfono los paneles son una franja baja: «¿Cómo se pelea?» solo con su icono y «Combos» fuera, y el aviso del duelo baja encima de los botones. La animación de espera ya existía (comprobado: los huesos se mueven).
+- **4 botones claros en el teléfono:** Ala, Pata, Semilla y Poder (76 px), en el sitio de los grandes, que se ocultan durante el duelo. Antes había 11.
+  - Ala y Pata eligen el lado solas: Ala, Ala → ¡Abanicazo!; Pata, Pata → ¡Patita Sabrosa!; Ala, Pata → ¡Cruzaíto!
+  - Al terminar solo quedan «Otra vez» y «Volver al menú» (antes, «Otra vez» tres veces).
+  - El editor «Personalizar controles» ya usa los 4 nuevos.
+- **Entreno corto que se termina:** en el teléfono son 4 pasos (Ala, Semilla, Poder, Ala ×2), y cada paso nombra el botón que hay que tocar. El robot lo terminó entero. Arreglado también: un toque de Semilla o Poder justo después de un combo se perdía; ahora espera y sale. En el teclado, los 5 pasos de siempre.
+- **Premio de juego:** los **Lentes de la Campeona**. Son los lentes deportivos que ya existen, en el celeste de la Campeona (color nuevo en el ropero). Los da la primera victoria, en el Duelo o en el Duelo de 2, y Vittata se los pone. Sin dinero ni compras. Los materiales del puente siguen como estaban. El Duelo de 2 ya no dice «no da premios».
+- **Portada:** fuera de `G.menuRecorte` el Duelo y el Duelo de 2, también en «¿Qué hago?». El Duelo de 2 sigue sin salir en táctil, porque es para dos con teclado.
+- **Pruebas:** las baterías en verde con 0 errores de consola, más v18Combate 117/117, v18Duelo2 36/36, botones, queHacer, menuModos, tienda, creador, diario y controles. Puse al día las comprobaciones táctiles y la de la portada (T3).
+- **Para Kelvin (canon y arte):** el nombre «Lentes de la Campeona» y el color nuevo son decisión suya. Si prefiere otra pieza, es una línea en `content/cap1/coleccionables.js`.
+- **Nota del robot:** a 1280, en el navegador lento de pruebas, una pulsación corta de F cuenta como «mantener» y lanza el poder. No es un fallo del juego (a 60 fps va bien).
+**Sigo con T39** (construcciones mejores).

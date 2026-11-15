@@ -53,6 +53,8 @@
       { clave: 'gorra:pr', hito: 'fauna4', nombre: 'Gorra de la bandera', pista: '4 animales del Diario', viste: { slot: 'head', id: 'gorra', color: '#d6403a', style: 'pr' } },
       { clave: 'mano:maracas', hito: 'cultura4', nombre: 'Maracas', pista: '4 objetos de cultura del Diario', viste: { slot: 'hand', id: 'mano', color: '#d6403a', style: 'maracas' } },
       { clave: 'camisa:deportiva', hito: 'all12', nombre: 'Camisa Deportiva 787', pista: 'el Diario completo', viste: { slot: 'torso', id: 'camisa', color: '#d6403a', style: 'deportiva' } },
+      // T38: premio de juego del duelo (sin dinero ni compras): los lentes celestes de la Campeona de la Explanada
+      { clave: 'lentes:#7fd3ff', hito: 'duelo', nombre: 'Lentes de la Campeona', pista: 'ganar un duelo en la Explanada', viste: { slot: 'eyes', id: 'lentes', color: '#7fd3ff', style: 'deportivas' } },
       { clave: 'lentes:#c9a227', hito: 'all12', nombre: 'Lentes dorados', pista: 'el Diario completo', viste: { slot: 'eyes', id: 'lentes', color: '#c9a227', style: 'sol' } },
     ],
     // Mercadito del río (src/game/tienda.js; Kelvin 9-nov, idea de su hija: «con esos peces el premio sea comprar más ropa y más cosas»).
