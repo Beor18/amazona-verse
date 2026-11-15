@@ -385,6 +385,7 @@ window.AVRescate = function (G) {
     hudEl.hidden = false; bajarHud(); pintarHud();
   }
   // En móvil (≤560 px) el objetivo #quest ocupa el borde de arriba: el reloj se coloca justo debajo de #top (objetivo + inventario).
+  // T14: y en una fila a la izquierda, sin llegar al minimapa (antes, centrado y en dos líneas, lo tapaba).
   function bajarHud() {
     if (!hudEl) return;
     const top = document.getElementById('top');
@@ -404,6 +405,8 @@ window.AVRescate = function (G) {
       background:var(--c-panel,#fff8ec);color:var(--c-ink,#2b2116);border-radius:999px;padding:6px 8px 6px 16px;box-shadow:0 4px 14px rgba(0,0,0,.25);font:600 var(--fs-md,16px)/1.2 Fredoka,system-ui,sans-serif}
       #rs-hud .rs-reloj{font-size:var(--fs-xl,22px);min-width:3.2em;text-align:center;font-variant-numeric:tabular-nums}
       #rs-hud .rs-salir{border:0;border-radius:999px;padding:6px 12px;background:var(--c-accent-soft,#f2e2c4);color:inherit;font:inherit;cursor:pointer;min-height:44px}
+      @media (max-width:560px){#rs-hud{left:max(12px,env(safe-area-inset-left,0px));transform:none;flex-wrap:nowrap;gap:6px;padding:4px 4px 4px 12px;max-width:calc(100vw - var(--mm,96px) - 92px)}
+        #rs-hud .rs-t{font-size:calc(13px * var(--fs-k,1));line-height:1.1;min-width:0;overflow-wrap:anywhere}#rs-hud .rs-reloj{font-size:calc(20px * var(--fs-k,1));min-width:2em}#rs-hud .rs-salir{padding:6px 10px;flex:none}}
       .rs-card h2{margin-top:0}.rs-card .rs-dato{background:rgba(63,174,74,.12);border-radius:10px;padding:8px 10px}
       .rs-res{display:flex;gap:14px;align-items:center;margin:8px 0;flex-wrap:wrap}.rs-res b{font-size:calc(34px * var(--fs-k,1));display:block;font-variant-numeric:tabular-nums}
       .rs-med{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:50%;font-size:calc(28px * var(--fs-k,1));color:#fff;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
