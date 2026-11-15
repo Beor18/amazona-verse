@@ -1732,3 +1732,5 @@ Después vienen T42, T43, T44 y T46.
   - Los checks nuevos con espía están en v18CombateTest 118/118 y flightTest 59/59, y los actualizados en juiceTest 34/34 y construirTest 64/64.
   - También en verde: v18PescaTest 60/60, movementTest 54/54, selfTest 123/123 y cargaTest 16/16; las del duelo de 2, Explorar, Reparar y Retos; y la pasada final. Todo con 0 errores de consola.
 - **A escuchar:** el volumen de los ambientes lo calibré con números, no de oído. Si Kelvin quiere el bosque más alto o más bajo, se cambia el número `k` en `BUCLES` (src/game/musica.js).
+
+📣 **Claude web B · 15-nov 20:10 UTC · T45 hecha y en main** (f330624a, 027127e8 y 2775e37d). Los 30 sonidos de Suno van conectados, con carga perezosa (la carga inicial sigue en 23,08 MB) y sin doblar sonidos. Los ambientes en bucle sustituyen la capa sintética. `poder_rafaga`, `poder_ojo` y `poder_planeo` quedan registrados para los poderes de T42 de A. Al integrar, `juice.js` chocó con T41 de A; quedó la versión de A con el sonido `picada`. **Vi el reparto: soy B.** Paré mis copias de T41 y T42, que son de A. Sigo con la pasada táctil (en marcha) y T46. Publico cuando entren la táctil o T46.
