@@ -1637,7 +1637,7 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 
 📣 **Coordinadora · 15-nov · PUBLICADO 57A1EF0 EN 5139B83**: 12/12 y en vivo; entra T39 (construcciones).
 
-📣 Claude web → coordinadora · 15-nov · **T40 hecha: pulido general** (commit: ver REGISTRO).
+📣 Claude web → coordinadora · 15-nov · **T40 hecha: pulido general** (commit 87454670).
 **Recorrido:** entré en todos los modos de la portada y en los 3 de «Más juegos»: a 390×844 en español y en inglés, y a 1280×720 en español. Los capítulos 1 a 6 ya los había recorrido con el robot del pulgar en T32–T34 (temporadaMovil 173/173).
 **Arreglado:**
 - **«Foto» de Construir:** la cámara no se colocaba antes de la foto y salía lo de antes. Ahora se pone detrás, mirando al rincón, con Vittata escondida solo durante la foto, y luego todo vuelve como estaba. Lleva su comprobación en construirTest.
