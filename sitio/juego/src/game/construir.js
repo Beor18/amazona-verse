@@ -653,6 +653,20 @@
     }
     // Botón del HUD (junto a Pausa) y tarjeta «Construir» en «¿Cómo quieres jugar?» (no lleva data-modo: menu_modos.js no la cuenta)
     let botonHud = null, tarjeta = null;
+    // T17: el botón del HUD no sale con un minijuego o un modo de la portada en marcha (salía encima de Pesca, Minigolf, Carreras…)
+    function enMinijuego() {
+      const fn = (o, n) => { try { return !!(o && typeof o[n] === 'function' && o[n]()); } catch (e) { return false; } };
+      const cl = document.body && document.body.classList;
+      if (cl && ['retos-on', 'v18-pesca-on', 'v18-golf-on', 'duelo-on'].some(c => cl.contains(c))) return true;
+      if (fn(G.menuModos, 'ocupado') || fn(G.rescate, 'activo') || fn(G.banqueteApi, 'activo')) return true;
+      const dm = G.menuModos && G.menuModos.desdeMenu ? G.menuModos.desdeMenu() : null;
+      return !!dm && dm !== 'libre';
+    }
+    setInterval(() => {
+      if (!botonHud) return;
+      const ocultar = !activo && enMinijuego();
+      if (botonHud.hidden !== ocultar) { botonHud.hidden = ocultar; botonHud.style.display = ocultar ? 'none' : ''; }
+    }, 400);
     function entradas(ver) {
       if (!ver) { if (botonHud) { botonHud.remove(); botonHud = null; } if (tarjeta) { tarjeta.remove(); tarjeta = null; } return; }
       const sys = $('sys'), menu = $('b-menu');
@@ -723,6 +737,13 @@
         S.construir = null; aplicar(null);
         check('Encendida: 7 piezas de siempre y 6 del Mercadito, un InstancedMesh por tipo (solo se dibujan los que tienen piezas)', BASE.length === 7 && EXTRA.length === 6 && ORDEN.every(t => mallas[t] && mallas[t].isInstancedMesh) && grupo.children.filter(o => o.isInstancedMesh).length === ORDEN.length && ORDEN.every(t => !mallas[t].visible));
         check('Encendida: botón del HUD y tarjeta del menú', !!$('b-construir') && !!$('b-construir-menu'));
+        {
+          const cl = document.body.classList, tenia = cl.contains('duelo-on');
+          cl.add('duelo-on'); await new Promise(r => setTimeout(r, 900));
+          const oculto = $('b-construir').hidden;
+          if (!tenia) cl.remove('duelo-on'); await new Promise(r => setTimeout(r, 900));
+          check('T17 · Con un minijuego en marcha el botón «Construir» del HUD no sale, y vuelve al terminar', oculto && !$('b-construir').hidden, JSON.stringify({ oculto, despues: $('b-construir').hidden }));
+        }
         // Un sitio libre para construir: se busca alrededor de la aparición y de donde está Vittata
         const sitios = [[S.pos.x, S.pos.z], [G.guardado.spawn.x, G.guardado.spawn.z], [0, 0], [-20, 10], [15, -15], [30, 30]];
         let ok = false;

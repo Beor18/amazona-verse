@@ -517,7 +517,7 @@
         '#inv-cuenta.hud{position:relative;left:auto;top:auto;flex:0 0 100%;width:max-content;max-width:max-content;margin:8px 0 0;z-index:var(--z-hud,5);' +
         'min-height:44px;display:flex;align-items:center;padding:0 14px;border-radius:999px;background:#243a28;color:#f4ffe8;border:2px solid #d7e7a8;' +
         'font:700 16px/1 var(--font-display,sans-serif);box-shadow:0 3px 0 rgba(0,0,0,.28);pointer-events:none}' +
-        '#inv-cuenta[hidden]{display:none}#inv-cuenta i{display:none}' +
+        '#inv-cuenta[hidden]{display:none}#inv-cuenta i{display:none}#inv-cuenta .inv-c-txt{margin-right:.3em}' + // T18: «Patrulla 0/4» (el flex se comía el espacio)
         // Ronda 5 de T2: en el teléfono (HUD de T6) va bajo la fila de los contadores, en la columna del borde derecho que el minimapa
         // deja libre (minimapa.js lo corre 56 px), compacta: huella encima de n/4 («Patrulla» sigue para el lector de pantalla). En la
         // fila de los contadores no cabía en cuanto un recurso llegaba a 10 (bajaba encima del minimapa); fuera del flujo no depende

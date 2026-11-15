@@ -406,6 +406,7 @@ AVE.module('creador', function (G) {
       p.name = nombreAzar(h); G.guardado.autosave();
     }
   }, 20);
+  let primera = false; // T17: el creador se abrió la primera vez (desde la portada)
   async function open(first) {
     const p = S.profile;
     draftLook = profileLook(p);
@@ -416,7 +417,13 @@ AVE.module('creador', function (G) {
     $('p-species').value = ops.some(o => o.id === draftLook.species) ? draftLook.species : 'vittata';
     if ($('p-species').value !== draftLook.species) draftLook = C3.normalizeLook(Object.assign({}, draftLook, { species: $('p-species').value }));
     $('p-error').hidden = true;
-    $('p-cancel').hidden = !!first;
+    // T17: la primera vez «Cancelar» no salía y no había forma de volver; ahora sale como «Volver» y lleva a la portada
+    // (el creador sigue esperando detrás, como al pulsar Jugar). Si no hay portada, se queda escondido como antes.
+    primera = !!first;
+    const bc = $('p-cancel'), haciaPortada = primera && !!(G.menuModos && G.menuModos.volver && $('title'));
+    if (!bc.dataset.txt0) bc.dataset.txt0 = bc.textContent;
+    bc.textContent = haciaPortada ? 'Volver' : bc.dataset.txt0;
+    bc.hidden = primera && !haciaPortada;
     // Foco al primer campo (si la portada está encima, src/ui/ui.js lo pone al cerrarla)
     const portada = $('title');
     if (!portada || !portada.open) setTimeout(() => { const f = $('p-name-libre') || $('p-name-a'); if (f && !$('creator').hidden) f.focus(); }, 0);
@@ -454,7 +461,7 @@ AVE.module('creador', function (G) {
     return null;
   }
   $('p-save').onclick = () => { const err = saveCharacter(); if (err) { $('p-error').textContent = err; $('p-error').hidden = false; } };
-  $('p-cancel').onclick = close;
+  $('p-cancel').onclick = () => { if (primera && G.menuModos && G.menuModos.volver && $('title')) G.menuModos.volver(); else close(); };
   $('b-char').onclick = () => open(false);
 
   // Retrato idéntico al del juego: se renderiza con el mismo modelo, plumaje y accesorios
@@ -477,7 +484,7 @@ AVE.module('creador', function (G) {
   }
   G.on('apply', () => { $('creator').hidden = true; }, 60);
 
-  function test() {
+  async function test() {
     const R = [], ok = (name, c, extra) => R.push({ name, ok: !!c, extra: extra == null ? '' : String(extra) });
     const antes = JSON.parse(JSON.stringify(S.profile || {}));
     const quiet = G.quiet, abierto = $('creator') && !$('creator').hidden;
@@ -512,6 +519,20 @@ AVE.module('creador', function (G) {
         ok('Los desplegables no se ven', $('p-name-a').hidden && $('p-name-b').hidden);
         $('p-name-azar').click();
         ok('El dado escribe un nombre de la lista en el campo', esNombreDeLista($('p-name-libre').value) && $('p-name').textContent === $('p-name-libre').value, $('p-name-libre').value);
+      }
+      // T17: la primera vez el creador tiene «Volver», que lleva a la portada (y el creador sigue detrás)
+      const portada = $('title');
+      if (portada && G.menuModos && G.menuModos.volver) {
+        const abiertaP = portada.open; if (abiertaP) { portada.returnValue = ''; portada.close(); }
+        const tope = pr => Promise.race([pr.catch(() => {}), new Promise(r => setTimeout(r, 4000))]);
+        await tope(open(true));
+        const bc = $('p-cancel'), visto = !bc.hidden && bc.textContent === 'Volver';
+        bc.click();
+        ok('T17 · La primera vez, «Volver» se ve en el creador y lleva a la portada; el creador sigue detrás', visto && portada.open && !$('creator').hidden, JSON.stringify({ visto, portada: portada.open }));
+        await tope(open(false));
+        ok('T17 · Desde el juego, el botón vuelve a ser «Cancelar»', !bc.hidden && bc.textContent !== 'Volver', bc.textContent);
+        close(); primera = false;
+        if (!abiertaP && portada.open) { portada.returnValue = ''; portada.close(); }
       }
     } finally {
       S.profile = antes;

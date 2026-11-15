@@ -186,8 +186,8 @@ AVE.module('album', function (G) {
         `<small>${esc(L('Una de las dos voces del transmisor.', 'One of the two voices of the transmitter.'))}</small>` +
         `<small>${esc(L('Ya no vuela. Se conoce solo por relatos antiguos.', 'It no longer flies. It is known only from old accounts.'))}</small></li>`;
     }).join('');
-    return `<div class="album-sec" data-no-tr><span class="lbl">${esc(L('Álbum de las 36', 'Album of the 36'))} ${c.n}/${c.m}</span>` +
-      `<div class="album-meta" data-album-meta><b>${esc(L('Encontradas', 'Found'))}: ${c.n}/${c.m}</b><i class="album-bar" aria-hidden="true"><i style="width:${c.m ? Math.round(100 * c.n / c.m) : 0}%"></i></i>` +
+    return `<div class="album-sec" data-no-tr><span class="lbl">${esc(L('Álbum de las 36', 'Album of the 36'))}</span>` + // T17: sin «0/34» al lado del 36 (34 vivas + 2 históricas)
+      `<div class="album-meta" data-album-meta><b>${esc(L('Vivas encontradas', 'Living ones found'))}: ${c.n}/${c.m}</b><i class="album-bar" aria-hidden="true"><i style="width:${c.m ? Math.round(100 * c.n / c.m) : 0}%"></i></i>` +
       `<ol class="album-pasos"><li><span class="n">1</span>${esc(L('Vuela cerca de una cotorra', 'Fly close to a parrot'))}</li><li><span class="n">2</span>${esc(L('Mírala 2 segundos', 'Watch it for 2 seconds'))}</li>` +
       `<li><span class="n">3</span>${esc(L('¡Se guarda aquí!', 'It is saved here!'))}</li></ol>` +
       `<p class="album-nota">${esc(L('Hay cotorras en la plaza, el río y la poza de Villa Raíz.', 'There are parrots in the plaza, the river and the pool of Villa Raíz.'))}</p></div>` +
@@ -337,13 +337,13 @@ AVE.module('album', function (G) {
       const hi = d.querySelectorAll('li.historica');
       check('Antes del cap. 5, Mara y Vela están ocultas: silueta gris y «???», sin nombre del canon ni de especie', hi.length === 2 && [...hi].every(li => li.classList.contains('oculta') && /\?\?\?/.test(li.textContent) &&
         /historia por descubrir/i.test(li.textContent) && esSilueta(li) && !/Mara|Vela|Martini|Guadalup|martinicana|violacea|Extint/i.test(li.textContent)), [...hi].map(li => li.textContent).join(' | '));
-      check(`Cuenta «Álbum de las 36 ${S.album.length}/34»`, d.textContent.includes(`Álbum de las 36 ${S.album.length}/34`));
+      check(`Cuenta «Vivas encontradas: ${S.album.length}/34» (T17: sin la cuenta al lado del 36)`, d.textContent.includes(`Vivas encontradas: ${S.album.length}/34`) && !d.textContent.includes(`Álbum de las 36 ${S.album.length}/34`));
       check('Sin «undefined» ni «null»', !/undefined|null|\[object/.test(d.textContent));
       { // Se entiende solo (Kelvin 8-nov): meta con cuántas llevas y barra, 3 pasos cortos, dónde buscar y «¡Nueva!» en la recién abierta
         const m = d.querySelector('[data-album-meta]'), pasos = m ? m.querySelectorAll('.album-pasos li') : [], bar = m && m.querySelector('.album-bar i');
         const nuevas = d.querySelectorAll('.album-nueva'), pct = Math.round(100 * cuenta().n / 34);
-        check('Álbum claro: meta «Encontradas: n/34» con barra, 3 pasos (vuela cerca, mírala 2 s, se guarda), dónde buscar y «¡Nueva!» solo en la recién abierta',
-          !!m && m.textContent.includes(`Encontradas: ${cuenta().n}/34`) && bar && bar.style.width === pct + '%' && pasos.length === 3 && /2 segundos/.test(pasos[1].textContent) &&
+        check('Álbum claro: meta «Vivas encontradas: n/34» con barra, 3 pasos (vuela cerca, mírala 2 s, se guarda), dónde buscar y «¡Nueva!» solo en la recién abierta',
+          !!m && m.textContent.includes(`Vivas encontradas: ${cuenta().n}/34`) && bar && bar.style.width === pct + '%' && pasos.length === 3 && /2 segundos/.test(pasos[1].textContent) &&
           /Villa Raíz/.test(m.textContent) && nuevas.length === 1 && nuevas[0].closest(`[data-album="${sp}"]`) && m.textContent.length < 200, m && m.textContent); }
       if (aj) aj.idioma = 'en';
       d = document.createElement('div'); d.innerHTML = html();

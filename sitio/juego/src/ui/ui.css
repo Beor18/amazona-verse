@@ -486,6 +486,8 @@ html.mov-reducido *, html.mov-reducido *::before, html.mov-reducido *::after { a
   -webkit-backdrop-filter: none; backdrop-filter: none; pointer-events: auto;
   display: block; animation: toast-in var(--dur-3) var(--ease-pop);
 }
+/* T18: en el escritorio, entre el objetivo y los contadores (ui.js pone --hud-l y --hud-r); antes tapaba «Madera» */
+@media (min-width: 561px) { #toast { left: var(--hud-l, 0px); right: var(--hud-r, 0px); max-width: min(520px, calc(100vw - var(--hud-l, 0px) - var(--hud-r, 0px) - 24px)); } }
 #toast:not(:has(button)), #toast:not(:has(button)) * { pointer-events: none; } /* W17: un aviso sin botón no se come el toque del botón de la tarjeta que tapa (móvil) */
 #toast::before {
   content: ""; position: absolute; left: 12px; top: 50%; width: 40px; height: 40px; margin-top: -20px; border-radius: 50%;
@@ -686,8 +688,6 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #steps li::before { height: 4px; }
   /* T6: el objetivo en 2 líneas como mucho (antes 1 línea cortada con «…») */
   #steps li.now { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 15px; line-height: 1.25; white-space: normal; overflow: hidden; }
-  /* T6: sin «Próximo: premio» en el teléfono (sigue en el objetivo desplegado del escritorio y en el Diario) */
-  #next-reward { display: none !important; }
   /* T6: los contadores juntos: el inventario va pegado al reloj del marcador (ui.js pone --mc-w con su ancho) */
   #top:has(#marcador:not([hidden])) #inv { margin-left: calc(var(--mc-w, 0px) + 4px); margin-right: auto; }
   #steps li.now::after { display: none; }
@@ -1108,3 +1108,6 @@ html.a11y-unamano.a11y-zurdo #toast {
 #familia button.sel { outline: 3px solid #e0a93a; }
 #familia .marca { margin: 8px 0; padding: 10px 12px; border-radius: 12px; background: #fff; }
 #familia .premio { font-weight: 800; }
+
+/* T6/T17: sin «Próximo: premio» en el HUD, ni en el teléfono ni en el escritorio (el premio sigue en el Diario) */
+#next-reward { display: none !important; }
