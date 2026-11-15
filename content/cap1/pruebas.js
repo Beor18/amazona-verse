@@ -361,6 +361,21 @@
         check('Revisión T2 · los avisos van en una cola: uno cada vez, con su tiempo mínimo, y sin repetir el mismo', alPrincipio && aMitad && luego, alPrincipio + ' · ' + aMitad + ' · ' + luego + ' · ' + tt.textContent);
       } finally { UI.colaTest(false); UI.hideToast(); tt.textContent = ''; }
     }
+    { // T19: en juego libre, cuando un aviso termina solo, el siguiente espera unos segundos de juego (no salen seguidos)
+      const UI = G.ui, tt = document.getElementById('toast');
+      if (UI.respiroTest) {
+        UI.vaciarAvisos(); UI.colaTest(true); UI.respiroTest(true);
+        try {
+          const R0 = UI.respiroTest().RESPIRO_S;
+          UI.toast('Aviso respiro A', 1000); UI.toast('Aviso respiro B', 1000); tick(0.05);
+          const a = !tt.hidden && tt.textContent === 'Aviso respiro A';
+          tick(1.2); const hueco = tt.hidden;
+          tick(R0 - 1.5); const sigue = tt.hidden;
+          tick(1.6); const b = !tt.hidden && tt.textContent === 'Aviso respiro B';
+          check('T19 · en juego libre, entre un aviso y el siguiente hay unos segundos de juego sin avisos', a && hueco && sigue && b, [a, hueco, sigue, b, tt.textContent].join(' · '));
+        } finally { UI.respiroTest(false); UI.colaTest(false); UI.vaciarAvisos(); tt.textContent = ''; }
+      }
+    }
     { // Revisión T2, ronda 2: un aviso dado fuera de escena (y uno aceptado por avisoLibre) no sale en medio de un minijuego:
       // el de pantalla se aparta, los de la cola esperan, el de la propia actividad sí sale, y al terminar salen los demás en orden
       const UI = G.ui, tt = document.getElementById('toast'), r0 = G.rescate;

@@ -33,6 +33,10 @@ AVE.module('ui', function (G) {
   // Ronda 4: un aviso de una actividad (rescate, pesca, modos…; no las pantallas como la tarjeta o el diálogo) que ya se apartó
   // una vez no vuelve si su actividad terminó: al apartarlo, o mientras espera en la cola, se descarta (salvo los { fijo }).
   const MIN_S = 2.2, COLA_MAX = 8, cola = [];
+  // T19: en juego libre, cuando un aviso termina solo, el siguiente espera RESPIRO_S de juego (al cerrar el panel final salían
+  // seguidos «Tu cómic te espera…», «Patrulla invasora…» y «Algo se mueve…»). No vale dentro de una actividad ni para el que
+  // vuelve tras apartarse. En las baterías (G.quiet) no se espera, salvo que la prueba lo pida con respiroTest(true).
+  const RESPIRO_S = 5; let respiro = 0, respiroPrueba = false;
   // Ronda 5: el panel «¡Así se juega!» (guia_controles.js, 'controles') es una pantalla que no da avisos propios: mientras está
   // abierto ninguno sale encima (se apartan y esperan a que se cierre).
   const PANTALLAS = ['tarjeta', 'comic', 'creador', 'fin', 'apertura', 'dialogo', 'portada', 'pausa', 'controles'];
@@ -57,6 +61,7 @@ AVE.module('ui', function (G) {
     // Ronda 4: en una batería (G.quiet) tampoco reserva su tiempo el aviso que salió antes de ella («Iguaca te llama» tapaba el «Ñam» de banqueteTest)
     if (enPantalla() && actual.vivo && (!G.quiet || colaPrueba)) { const dur = toastTimer === Infinity ? MIN_S : visto + toastTimer; if (visto < Math.min(MIN_S, dur)) return; }
     const ks = esc == null ? escenas() : esc;
+    if (respiro > 0 && !enPantalla() && !ks.length && !cola[0].apartado && (!G.quiet || respiroPrueba)) return; // T19
     const i = ks.length ? cola.findIndex(q => deEscena(q, ks)) : 0; // con escena, solo los de la actividad
     if (i >= 0) mostrar(cola.splice(i, 1)[0]);
   }
@@ -100,6 +105,7 @@ AVE.module('ui', function (G) {
     siguiente(ks);
   }, 84);
   // Solo para las baterías: activa el tiempo mínimo aunque G.quiet esté puesto y devuelve el estado de la cola
+  function respiroTest(on) { if (on != null) { respiroPrueba = !!on; if (!on) respiro = 0; } return { respiro, RESPIRO_S }; }
   function colaTest(on) { if (on != null) colaPrueba = !!on; return { cola: cola.map(p => p.text || p.html), actual: enPantalla() ? (actual.text || actual.html) : null, fijo: enPantalla() ? !!actual.fijo : null, fijos: cola.map(p => !!p.fijo), visto, max: COLA_MAX }; }
   function overlayOpen() { return !$('end').hidden || !$('comic').hidden || !$('creator').hidden; }
   // Ocupado: diálogo, tarjeta u overlay abiertos (el jugador no se mueve ni recoge)
@@ -132,7 +138,7 @@ AVE.module('ui', function (G) {
   function avisoLibre(text, ms) { if (enEscena()) return false; toast(text, ms, { fijo: true }); return true; }
   // El creador es opaco: mientras está abierto el mundo no se dibuja
   function worldHidden() { return !$('creator').hidden; }
-  G.on('update', dt => { if (enPantalla()) visto += dt; if (toastTimer !== Infinity && toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) ocultar(); } }, 85);
+  G.on('update', dt => { if (enPantalla()) visto += dt; if (toastTimer !== Infinity && toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) { ocultar(); if (!escenas().length) respiro = RESPIRO_S; } } if (respiro > 0 && !enPantalla()) respiro = Math.max(0, respiro - dt); }, 85);
 
   // Botón de sonido
   const soundBtn = $('b-sound'), A = G.audio;
@@ -153,5 +159,5 @@ AVE.module('ui', function (G) {
     if (H.titulo) document.title = H.titulo;
   }
 
-  return { $, showCard, hideCard, get cardOpen() { return cardOpen; }, get avisoPendiente() { return cola[0] || null; }, colaTest, toast, toastHTML, hideToast, vaciarAvisos, overlayOpen, busy, worldHidden, enEscena, avisoLibre };
+  return { $, showCard, hideCard, get cardOpen() { return cardOpen; }, get avisoPendiente() { return cola[0] || null; }, colaTest, respiroTest, toast, toastHTML, hideToast, vaciarAvisos, overlayOpen, busy, worldHidden, enEscena, avisoLibre };
 });
