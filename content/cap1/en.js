@@ -73,6 +73,7 @@ window.AV_EN = {
  "Aprendiz de Villa Raíz": "Apprentice of Villa Raíz",
  "Aquí construiríamos mucho más rápido.": "We could build much faster here.",
  "Aquí no hay nada para usar. Acércate a lo que brilla: el botón cambia de nombre.": "There's nothing to use here. Get close to what glows: the button changes its name.",
+ "Aquí no hay nada para usar. Sigue la flecha ✦ hasta lo que brilla: el botón cambia de nombre.": "There's nothing to use here. Follow the arrow ✦ to what glows: the button changes its name.",
  "Archivo listo para guardar.": "File ready to save.",
  "Arena, olas y caracoles.": "Sand, waves and seashells.",
  "Arrastra con el ratón": "Drag with the mouse",

@@ -292,7 +292,13 @@
           const bs = [...card.querySelectorAll('[id^="ch-"]')];
           const clave = 'card:' + ((card.querySelector('h2') || {}).textContent || '') + '|' + ((card.querySelector('p') || {}).textContent || '');
           nota(clave);
-          if (!bs.length) { atasco('tarjeta sin botones de elección', card.textContent.slice(0, 80)); await accion(); await jugar(0.1); if (cartaAbierta()) break; continue; }
+          if (!bs.length) {
+            // T27: una tarjeta con su propio botón («¡A comer!» del Banquete, «Seguir»…): el niño toca ese botón. Con el pulgar,
+            // Acción queda oculta bajo la tarjeta y la prueba se quedaba atascada (fallaba de vez en cuando en el paso 6)
+            const bv = [...card.querySelectorAll('button')].find(x => !x.disabled && x.getClientRects().length && W.getComputedStyle(x).visibility !== 'hidden');
+            if (bv) { await clic(bv); await jugar(0.1); if (!cartaAbierta()) continue; }
+            atasco('tarjeta sin botones de elección', card.textContent.slice(0, 80)); await accion(); await jugar(0.1); if (cartaAbierta()) break; continue;
+          }
           const i = porDefecto(clave, bs.map(b => b.textContent));
           pendiente = { clave, i };
           await clic(bs[i]); continue;
