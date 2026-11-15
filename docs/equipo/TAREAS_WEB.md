@@ -1449,3 +1449,42 @@ De dónde sale:
 - Para T33 mido los choques de verdad: las veces que el robot tiene que rodear un obstáculo o queda trabado, con capítulo, paso y posición, en los capítulos 1 a 6.
 
 📣 **Coordinadora · 15-nov · PUBLICADO 2AE71C5 EN 9BC8FD4**: 12/12 y en vivo; entran T29b y T30.
+
+📣 Claude web → coordinadora · 15-nov · **T33 hecho: sin cambios, no hay colisiones invisibles.**
+- **Cómo lo medí:** anoté cada vez que el robot del pulgar tiene que rodear un obstáculo («rodea», tras 8 empujones sin avanzar) o queda trabado. Fueron los capítulos 1 a 6, en el teléfono, con temporadaMovil (179/179 con la anotación temporal, que no subí).
+- **Resultado:** un solo choque en los seis capítulos. Fue en el cap. 1, paso 4, volando en (165, 10, 162), contra un sólido real que el robot rodea. En los caps. 2 a 6, ninguno.
+- No hay nada que arreglar. Los «s contra paredes» de antes eran mi error de lectura (ya corregido arriba).
+
+📣 Claude web → coordinadora · 15-nov · **T34 hecho: recorridos rápidos de los caps. 3 a 6 a 390×844, solo notas.**
+De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto. Los tiempos son de juego; cuando las dos pasadas difieren, pongo un rango.
+
+**Lo general:**
+- Los 4 capítulos se completan enteros con el pulgar: 3 misiones, «Iguaca te pregunta» y fichas.
+- Guardan, siguen terminados tras recargar y pasan al siguiente.
+- 0 errores de JavaScript y 0 choques.
+- T27–T30 son del motor y valen igual en ellos.
+
+**Cap. 3 (unos 220 s):**
+- Paso 1, «Habla con el papá, predice y prueba qué flota»: 51-78 s y 10 usos. Es el más largo y pide muchos toques.
+- Paso 6, «Cruza la bahía»: 60 s. El robot tiene que volar, porque a pie no se llega.
+- Una vez, más de 30 s sin avanzar.
+
+**Cap. 4 (unos 57 s, el más corto de la temporada):**
+- Los pasos 3 a 6 duran 2-4 s cada uno: maqueta, asamblea, construir y acompañar a la abuela.
+- No hay atascos, pero quizá se sienta demasiado rápido.
+- **Para Kelvin:** ¿es así a propósito?
+
+**Cap. 5 (unos 400 s):**
+- **Paso 4, «Endereza la antena y elige la señal»: 222 s con solo 55 m y 2 usos.** Es casi todo esperar o probar, y el paso más largo de la temporada por tiempo quieto. Es el primero que miraría.
+- Paso 3, «Lee las ruinas y escucha al Guardián»: 140-150 s. A pie no se llega dos veces.
+- El paso 2 no aparece en ninguna de las dos pasadas: se completa solo o se salta. Hay que comprobarlo.
+
+**Cap. 6 (unos 450 s):**
+- Paso 5, «Escucha a los dos grupos e invita a los 8 que llegaron»: 85-314 s, 11 usos y 178 m. Varía mucho entre pasadas, así que encontrar a los 8 depende de por dónde se vaya.
+- Paso 6, «Habla con el Guardián en el centro»: 35 s. A pie no se llega.
+
+**Propuesta de orden:**
+1. Cap. 5, paso 4 (la antena): ¿por qué 222 s quieto?
+2. Cap. 6, paso 5: que la guía lleve al siguiente visitante.
+3. Cap. 5, paso 2: ¿se salta?
+4. Cap. 4: ¿demasiado corto? Eso lo decide Kelvin.
