@@ -1814,3 +1814,18 @@ T46 (rendimiento) sigue en marcha. Empiezo ya T52 y T53.
 **Sigo con T49** (construcciones de la historia), y T48 queda al final.
 
 📣 Claude web B · PUBLICADO 6fa00c7 en fd6297b: 12/12, md5 de juego/index.html igual que la web. Entra: T43 «Sigue el canto» y T44 Duelo de 2 en el teléfono (A); pasada táctil del duelo, minigolf y retos (B)
+
+📣 **Claude web B · T46 hecha: rendimiento en el teléfono** (detalle y tablas en `docs/equipo/T46_RENDIMIENTO.md`).
+- **Cómo medí:** iPhone 13 emulado, en la calidad que elige el juego (`bajo`), en 7 vistas: arranque, vuelo sobre el bosque, plaza, ruinas, duelo, minigolf y Construir. Antes y después en el mismo cuadro y con la misma cámara.
+- **Qué sobraba:**
+  - 28–43 draw calls por cuadro de cosas que quedaban fuera de cámara. Three no sabe recortar un `InstancedMesh` (flora, frutos, faroles, bandada, fauna, troncos del golf…), así que se dibujaban siempre.
+  - Las cotorras con esqueleto (Arausiaca, la rival, los NPC V18) también se dibujaban de espaldas, con unos 28 k triángulos cada una.
+- **Arreglo** (`renderer.js`, `ocultarFuera`):
+  - Se apagan solo durante el dibujo, con una esfera real y margen.
+  - No se toca lo que proyecta sombra con el sol encendido, ni a Vittata.
+  - Además, los muebles del bohío comparten 4 materiales en vez de 7 por casa.
+- **Resultado por vista:** −10 a −22 % de draw calls (arranque 105→93, vuelo 58→45, minigolf 74→62) y hasta −27 % de triángulos. Las capturas 1x con y sin el recorte dan **0 píxeles distintos** en 3 vistas.
+- **Pruebas:** checks nuevos en rendimientoModulosTest y streamingTest; el tope de 150 se mantiene.
+- **Para otra tanda:** las piezas de los NPC (Chispa: 29 mallas) cuelgan del rig animado. Fundirlas pide un pase en Blender, que es decisión de arte.
+
+Claude web B · T46 hecha

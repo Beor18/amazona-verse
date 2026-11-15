@@ -79,16 +79,16 @@ window.AVRendimientoModulos = function (G) {
       let malos = 0, antes = 0, despues = 0, callsA = 0, callsD = 0; const nombresMalos = [];
       for (const yaw of [0, Math.PI]) {
         G.camara.yaw = yaw;
-        // tres pares alternados y el mínimo de cada lado: un precalentado o una carga de streaming en un cuadro suelto suma draw calls que no son del recorte
-        // «desaparece» = se dibuja en los 3 cuadros sin recorte y en ninguno con recorte (hay piezas que parpadean solas entre cuadros)
-        let a = null, d = null, siempre = null; const alguna = new Set();
-        for (let k = 0; k < 3; k++) {
-          const x = cuadro(false), y = cuadro(true);
-          siempre = siempre ? new Set([...siempre].filter(o => x.dib.has(o))) : new Set(x.dib);
-          for (const o of y.dib) alguna.add(o);
-          if (!a || x.n < a.n) a = x; if (!d || y.n < d.n) d = y;
+        // «desaparece» = se dibuja en todos los cuadros sin recorte y en ninguno con recorte (hay piezas que parpadean solas).
+        // Orden ABBA BAAB y suma de 4 cuadros por lado: una carga o un precalentado en curso cae igual en los dos lados.
+        const a = { n: 0, nFuera: 0 }, d = { n: 0, nFuera: 0, apagados: 0 }; let siempre = null; const alguna = new Set();
+        for (const act of [false, true, true, false, true, false, false, true]) {
+          const x = cuadro(act);
+          if (act) { d.n += x.n; d.nFuera += x.nFuera; d.apagados = Math.max(d.apagados, x.apagados); for (const o of x.dib) alguna.add(o); }
+          else { a.n += x.n; a.nFuera += x.nFuera; siempre = siempre ? new Set([...siempre].filter(o => x.dib.has(o))) : new Set(x.dib); }
         }
         for (const o of siempre) if (!alguna.has(o) && !fuera(o)) { malos++; nombresMalos.push(o.name || o.type); }
+        a.n = Math.round(a.n / 4); d.n = Math.round(d.n / 4); a.nFuera = Math.round(a.nFuera / 4); d.nFuera = Math.round(d.nFuera / 4);
         antes += a.nFuera; despues += d.nFuera; callsA += a.n; callsD += d.n;
         filas.push('giro ' + yaw.toFixed(1) + ': ' + a.n + '→' + d.n + ' calls, fuera ' + a.nFuera + '→' + d.nFuera + ', apagadas ' + d.apagados);
       }
