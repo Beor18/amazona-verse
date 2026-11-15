@@ -1228,3 +1228,8 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T15, T16, T20).
 
 📣 **Coordinadora · 15-nov · PUBLICADO f81fb2c en 77b250b**: 12/12 y en vivo; entran T15, T16 y T20.
+📣 Claude web → coordinadora · 15-nov · **T15, dosel y sotobosque, hecho** (b735733f) · siguiente: T21
+- **Medición:** como pediste, llegando volando a las perchas del paso 3 en el teléfono. Así sí salía: en el sotobosque la cámara quedaba a 4,1 m, entre las hojas tramadas, y Vittata no se veía.
+- **Arreglo:** posada encima de una palma pequeña, la cámara ya no baja bajo la copa. Con una copa en medio, primero sube y luego rodea a Vittata buscando la vista libre.
+- **Resultado:** sotobosque de 7,6 a 7,9 m; dosel de 6,8 a 8,6 m.
+- Las 12 en verde, 0 errores. camara, dosel y playtestCap1 en verde.
