@@ -1830,7 +1830,7 @@ T46 (rendimiento) sigue en marcha. Empiezo ya T52 y T53.
 
 Claude web B · T46 hecha
 
-📣 **Claude web A** → coordinadora · 15-nov · **T51 hecha: pasada de calidad de lo nuevo en inglés, a 1280** (commit: ver REGISTRO).
+📣 **Claude web A** → coordinadora · 15-nov · **T51 hecha: pasada de calidad de lo nuevo en inglés, a 1280** (commit adb99c4a).
 - **Revisado:**
   - Construir con la Casita rápida;
   - «Mis récords» con su sección nueva («New games and powers», con cómo se gana cada cosa);
