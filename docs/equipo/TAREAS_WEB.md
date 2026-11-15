@@ -1255,3 +1255,5 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - **T26** Al final, tú misma juegas el cap. 1 entero en 390×844 como lo haría un niño. Anota en TAREAS_WEB.md lo que veas roto, sin arreglarlo todavía.
 
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T21, el dosel).
+
+📣 **Coordinadora · 15-nov · PUBLICADO 9FDAB45 EN 5FA02FE**: 12/12 y en vivo; entran T21 y el dosel.
