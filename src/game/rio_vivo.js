@@ -251,6 +251,7 @@ window.AVRioVivo = function (G) {
     return { cerca, dCerca };
   }
 
+  const PISTA_TXT = () => L('Baja a 4 m del agua o quédate quieta en la orilla para mirar los peces con el visor.', 'Fly down to within 4 m of the water, or stay still on the bank, to look for fish with the viewer.');
   // Pista del visor: la primera vez que se vuela a menos de 8 m del agua sin que el visor esté encendido (aún muy alto), un aviso corto
   function pistaVisor(dt, busy) {
     if (F.pistaDada || F.visorOn || busy || !verDe() || !M.flying || M.swimming || vistos().length > 0) return;
@@ -259,7 +260,7 @@ window.AVRioVivo = function (G) {
     const l = aguaCerca(2.5), h = S.pos.y - l;
     if (l > -Infinity && h >= VUELO_BAJO && h < PISTA_ALTO) {
       F.pistaDada = true;
-      try { G.ui.toast(L('Baja a 4 m del agua o quédate quieta en la orilla para mirar los peces con el visor.', 'Fly down to within 4 m of the water, or stay still on the bank, to look for fish with the viewer.'), 4200); } catch (err) { /* sin HUD */ }
+      try { G.ui.toast(PISTA_TXT(), 4200); } catch (err) { /* sin HUD */ }
     }
   }
 
@@ -294,7 +295,8 @@ window.AVRioVivo = function (G) {
       hudNombre.textContent = !e ? L('Visor · busca peces bajo el agua', 'Viewer · look for fish under the water') :
         visto ? L('Visor · ', 'Viewer · ') + L(e.nombre, e.nombreEn) + ' (' + e.cientifico + ')' : L('Visor · observando un pez…', 'Viewer · watching a fish…');
       hudBarra.style.transform = 'scaleX(' + (e && !visto ? Math.min(1, (F.obs[e.id] || 0) / OBS_T) : 0) + ')';
-      if (!F.avisado) { F.avisado = true; try { G.ui.toast(L('Visor: quédate cerca del pez para observarlo.', 'Viewer: stay near a fish to watch it.'), 2600, { fijo: true }); } catch (err) { /* sin HUD */ } }
+      // T20: con el visor ya encendido, la pista de «baja a 4 m» sobra: se quita y sale solo el aviso del visor (antes salían los dos)
+      if (!F.avisado) { F.avisado = true; try { if (G.ui.quitarAviso) G.ui.quitarAviso(PISTA_TXT()); } catch (err) { /* sin HUD */ } try { G.ui.toast(L('Visor: quédate cerca del pez para observarlo.', 'Viewer: stay near a fish to watch it.'), 2600, { fijo: true }); } catch (err) { /* sin HUD */ } }
     }
   }
   let recalidad = false;
@@ -368,6 +370,19 @@ window.AVRioVivo = function (G) {
           F.pistaDada = false; F.pistaT = 0; S.peces = ['dajao']; ponEn(b.x, lvl + 6, b.z, { flying: true, speed: 4 }); simular(0.8);
           ok('Quien ya observó un pez no recibe la pista', textos.length === 0);
         } finally { G.ui.toast = toast0; if (G.aula && G.aula.aj) G.aula.aj.idioma = idioma0; S.peces = []; F.pistaDada = true; }
+      }
+      // T20: al encenderse el visor, la pista de «baja a 4 m» se quita y sale solo el aviso del visor (antes salían los dos seguidos)
+      if (G.ui.quitarAviso && G.ui.colaTest) {
+        const q0 = G.quiet, av0 = F.avisado, tt = document.getElementById('toast');
+        G.ui.vaciarAvisos(); G.ui.colaTest(true);
+        try {
+          G.quiet = false; F.avisado = false; F.pistaDada = false; F.pistaT = 0; S.peces = [];
+          ponEn(b.x, lvl + 6, b.z, { flying: true, speed: 4 }); simular(0.8);
+          const pista = !tt.hidden && /4 m/.test(tt.textContent);
+          ponEn(b.x, lvl + 1.8, b.z, { flying: true, speed: 4 }); simular(0.8);
+          const c = G.ui.colaTest(), todos = [c.actual].concat(c.cola).filter(Boolean).join(' | ');
+          ok('T20 · con el visor encendido la pista «baja a 4 m» se va y queda solo el aviso del visor', pista && !/4 m/.test(todos) && /Visor|Viewer/.test(todos), todos);
+        } finally { G.quiet = q0; F.avisado = av0; F.pistaDada = true; S.peces = []; G.ui.colaTest(false); G.ui.vaciarAvisos(); hud.classList.remove('on'); }
       }
       // orilla: el punto seco más cercano al banco, de pie y quieta
       let orilla = null;
