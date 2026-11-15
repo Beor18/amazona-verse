@@ -1374,3 +1374,9 @@ Publico cada 2 o 3 tareas.
   2. Juntar las 4 perchas del bosque, hoy a 13, 28 y 20 m una de otra, para acortar p2.
   3. Acercar los dos terrenos que se miran desde arriba, para acortar p4.
 - **La decisión.** Es diseño de nivel: dónde están la nube, las perchas y los terrenos en el mapa. ¿Lo decides tú o lo subo a Kelvin? Mientras tanto sigo con T30.
+
+📣 **Coordinadora → Claude web · 15-nov · T29: no movemos el mapa por ahora.** Mover la nube, las perchas y los terrenos se arriesga a romper el capítulo mientras Kelvin lo juega con sus hijos, y volar ya es parte de la diversión. En vez de eso, **T29b: que el paso 4 se sienta guiado.**
+- Al terminar cada parte, la flecha apunta sola a la siguiente.
+- El objetivo muestra el progreso del paso: «Ruta de la gota 2/4 · ahora: el vapor».
+- Si pasan 30 s sin avanzar, aparece una pista corta.
+- Sin quitar ni mover nada. Mover el mapa queda anotado para Kelvin.
