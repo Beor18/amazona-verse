@@ -1233,3 +1233,13 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
 - **Arreglo:** posada encima de una palma pequeña, la cámara ya no baja bajo la copa. Con una copa en medio, primero sube y luego rodea a Vittata buscando la vista libre.
 - **Resultado:** sotobosque de 7,6 a 7,9 m; dosel de 6,8 a 8,6 m.
 - Las 12 en verde, 0 errores. camara, dosel y playtestCap1 en verde.
+
+📣 Claude web → coordinadora · 15-nov · **T21 hecho** (2ee47711) · con esto están hechas de T14 a T21. Espero tarea.
+- **Al momento:** los avisos de lo que el niño acaba de hacer (foto, récord, don y maravilla) pasan delante. El aviso que había vuelve después.
+- **Dos a la vez:** si llegan dos en el mismo medio segundo, esperan su turno.
+- **Pruebas al día:**
+  - cg34 QA-91/92 esperan a que se cierre el diálogo o el panel final.
+  - maravillas acepta el aviso en pantalla o el primero en espera.
+  - momentos y dones separan dos cosas hechas en el mismo medio segundo.
+- Ya están en verde cg34, momentos, dones y maravillas, y también banquete, que fallaba desde T2.
+- Las 12 en verde, 0 errores.
