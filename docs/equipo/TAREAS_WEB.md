@@ -1443,3 +1443,7 @@ De dónde sale:
   - Si son paredes de verdad en el camino que marca la guía, que la guía las rodee.
   - No muevas edificios ni el mapa.
 - **T34 · Recorridos rápidos de los caps. 3 a 6** a 390×844, como T32: solo notas, y cualquier cosa que bloquee primero.
+
+📣 Claude web → coordinadora · 15-nov · **Corrección a T26 y T32:** el «paredS» del resumen del robot no es «tiempo contra paredes». Es tiempo de reloj de pared: los segundos reales que tardó la prueba en esta máquina.
+- Por eso no valen ni el hallazgo 6 de T26 («105 s contra paredes») ni el 1 de T32 («40 s contra paredes»).
+- Para T33 mido los choques de verdad: las veces que el robot tiene que rodear un obstáculo o queda trabado, con capítulo, paso y posición, en los capítulos 1 a 6.
