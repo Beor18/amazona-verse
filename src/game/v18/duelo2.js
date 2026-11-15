@@ -1,6 +1,7 @@
 /* Juego · V18.1 · «Duelo de 2 jugadores» en la misma computadora (decisión 14 de Kelvin, 5-nov: en tiempo real, no por
    turnos; nada de pantalla dividida en el móvil; nada en línea). Prototipo.
-   - Solo con la bandera V18 y en computadora (sin pointer: coarse): en táctil no se carga ni aparece la opción.
+   - Solo con la bandera V18. T44: también en táctil, en horizontal: cada jugador con su joystick y sus 4 botones (en vertical,
+     «Gira el teléfono» y pausa).
    - Se entra en la explanada del duelo: en el centro del círculo hay un sitio «Duelo de 2 jugadores» (el duelo contra la
      Campeona sigue igual, hablando con ella). Una tarjeta simple deja elegir la cotorra del Jugador 2 y enseña las teclas.
    - Jugador 1 = la Vittata del jugador con sus teclas de siempre: mover (WASD), ala (Acción / E), semilla (Impulso / F),
@@ -38,7 +39,7 @@ window.AVV18Duelo2 = function (G) {
   const TXT = {
     opcion: 'Duelo de 2 jugadores', j1: 'Jugador 1', j2: 'Jugador 2', energia: 'Energía', ya: '¡Ya!',
     otra: 'Otra vez', salir: 'Salir', menu: 'Volver al menú', jugar: '¡A jugar!', cancelar: 'Ahora no',
-    titulo: 'Duelo de 2 jugadores', nota: 'Dos personas en esta computadora. Gana quien le quite las 5 plumas a la otra. Premio la primera vez: los Lentes de la Campeona.',
+    titulo: 'Duelo de 2 jugadores', nota: 'Dos personas en la misma pantalla. Gana quien le quite las 5 plumas a la otra. Premio la primera vez: los Lentes de la Campeona.',
     elige: '¿Con qué cotorra juega el Jugador 2?',
     teclas1: 'Jugador 1: W A S D mover · E ala · F semilla (mantener: poder) · G poder',
     teclas2: 'Jugador 2: flechas mover · . ala · , semilla (mantener: poder) · - poder · Enter saltito',
@@ -327,6 +328,7 @@ window.AVV18Duelo2 = function (G) {
     addEventListener('keydown', teclaAbajo, true); addEventListener('keyup', teclaArriba, true); addEventListener('blur', sueltaTodo);
     envolver(); tomarCamara();
     document.body.classList.add('v18-duelo-on');
+    if (tactil()) tactilOn(true);
   }
   function sueltaTodo() { for (const k in t2) t2[k] = false; sost2 = 0; }
   function soltar() {
@@ -335,7 +337,7 @@ window.AVV18Duelo2 = function (G) {
     if (G.dones && G.dones.sostener === sostener1) G.dones.sostener = sostener0;
     if (fly0) { F.toggleFly = fly0; F.startFlying = start0; fly0 = start0 = null; }
     removeEventListener('keydown', teclaAbajo, true); removeEventListener('keyup', teclaArriba, true); removeEventListener('blur', sueltaTodo);
-    sueltaTodo(); sost1 = 0; soltarVittata(); soltarCamara();
+    sueltaTodo(); sost1 = 0; soltarVittata(); soltarCamara(); tactilOn(false);
     document.body.classList.remove('v18-duelo-on');
   }
 
@@ -433,7 +435,7 @@ window.AVV18Duelo2 = function (G) {
     if (!hud) return;
     hud.q('ent').hidden = !ent; if (!ent) return;
     const i = Math.min(ent.paso, 2), pon = (k, t) => { const e = hud.q(k); if (e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } };
-    pon('entPaso', TXT.entPaso(i + 1)); pon('entTxt', ENT_TXT[i]); pon('entK1', TECLAS.j1[i]); pon('entK2', TECLAS.j2[i]);
+    pon('entPaso', TXT.entPaso(i + 1)); pon('entTxt', ENT_TXT[i]); const tk = tactil() ? [TT.ala, TT.semilla, TT.poder] : null; pon('entK1', tk ? tk[i] : TECLAS.j1[i]); pon('entK2', tk ? tk[i] : TECLAS.j2[i]); // T44: en táctil, el botón
     hud.q('entJ1').classList.toggle('ya', !!ent.j1); hud.q('entJ2').classList.toggle('ya', !!ent.j2);
   }
   function saltarEntreno() { if (!ent) return false; marcarEnt(); ent = null; return iniciar({ forzar: true, sinEntreno: true }); }
@@ -483,12 +485,91 @@ window.AVV18Duelo2 = function (G) {
   // ---------- Tarjeta: elegir la cotorra del Jugador 2 y ver las teclas ----------
   const filaTeclas = (quien, lista) => `<div class="d2-fila"><b>${esc(quien)}</b> ` +
     lista.map(([k, t]) => `<span class="d2-k"><kbd>${esc(k)}</kbd> ${esc(t)}</span>`).join(' ') + '</div>';
+  // ---------- T44 · En el teléfono: en horizontal, cada jugador con su joystick y sus 4 botones ----------
+  // Jugador 1 a la izquierda: el joystick de siempre (#stick) y su 2×2 encima. Jugador 2 a la derecha: un joystick propio y su
+  // 2×2 encima. Los botones grandes (#acts) se ocultan. Ala y Pata eligen el lado solos (alternan: dos toques = combo).
+  // En vertical: «Gira el teléfono» y el duelo en pausa (G.pausa 'duelo2-girar') hasta que se gire.
+  const T44 = { el: null, st2: { id: null, x: 0, y: 0, cx: 0, cy: 0 }, lado: { j1: { ala: 1, pata: 1 }, j2: { ala: 1, pata: 1 } }, girar: false };
+  const TT = { ala: 'Ala', pata: 'Pata', semilla: 'Semilla', poder: 'Poder', gira: 'Gira el teléfono: el Duelo de 2 se juega en horizontal, cada jugador por su lado.',
+    j1: 'Jugador 1', j2: 'Jugador 2', tarjetaT: 'En el teléfono, en horizontal: el Jugador 1 a la izquierda (joystick y 4 botones) y el Jugador 2 a la derecha (su joystick y sus 4 botones).' };
+  function usarTactil(f, quien, a) {
+    if (D.fase !== 'lucha' || !f) return false;
+    if (a === 'ala' || a === 'pata') {
+      if (!c2On() || ent) return a === 'ala' ? usar(f, 'golpe_ala').ok : false; // en el entreno, el aletazo de siempre (lo que pide su paso 1)
+      const L = T44.lado[quien]; L[a] = -L[a];
+      return usarExt(f, a + (L[a] > 0 ? 'Izq' : 'Der')).ok;
+    }
+    return usar(f, a === 'poder' ? poderDe(f) : 'semilla').ok;
+  }
+  function toque2() { const s2 = T44.st2; return T44.el && s2.id != null ? { x: s2.x, y: s2.y, correr: Math.hypot(s2.x, s2.y) > 0.92 } : null; }
+  function cssT44() {
+    if (document.getElementById('d2-tactil-css')) return;
+    const st = document.createElement('style'); st.id = 'd2-tactil-css';
+    st.textContent = '#d2-tactil{position:fixed;inset:0;pointer-events:none;z-index:42;font-family:Fredoka,system-ui,sans-serif}#d2-tactil[hidden]{display:none}' +
+      '#d2-tactil .d2-pad{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 168px);display:grid;grid-template-columns:repeat(2,58px);gap:8px;pointer-events:none}' +
+      '#d2-tactil .d2-pad.j1{left:max(14px,env(safe-area-inset-left,0px))}#d2-tactil .d2-pad.j2{right:max(14px,env(safe-area-inset-right,0px))}' +
+      '#d2-tactil .d2-pad b{grid-column:1/3;text-align:center;font-size:12px;color:#fff8ea;text-shadow:0 1px 2px #000a}' +
+      '#d2-tactil .d2-pad button{pointer-events:auto;width:58px;height:58px;border-radius:18px;border:3px solid var(--borde);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:700 11px/1 Fredoka,system-ui,sans-serif;color:#fff;background:rgba(20,70,40,.84);box-shadow:0 3px 0 #0b2a17,0 4px 10px #0007;text-shadow:0 1px 2px #000;--icon-size:24px;touch-action:none;-webkit-user-select:none;user-select:none}' +
+      '#d2-tactil .d2-pad.j1{--borde:#ffd27a}#d2-tactil .d2-pad.j2{--borde:#7fd3ff}#d2-tactil .d2-pad button.pata{background:rgba(110,55,10,.86)}#d2-tactil .d2-pad button.semilla{background:rgba(150,105,10,.88)}#d2-tactil .d2-pad button.poder{background:rgba(110,40,140,.88)}' +
+      '#d2-tactil .d2-pad button:active{transform:translateY(2px)}' +
+      '#d2-tactil .d2-st2{position:absolute;right:max(24px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 18px);width:136px;height:136px;border-radius:50%;background:rgba(255,255,255,.14);border:3px solid #7fd3ff;pointer-events:auto;touch-action:none}' +
+      '#d2-tactil .d2-st2 i{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:#7fd3ff;box-shadow:0 3px 8px #0007}' +
+      '#d2-tactil .d2-gira{position:absolute;inset:0;display:grid;place-items:center;padding:24px;background:rgba(8,20,14,.88);color:#fff8ea;font-size:20px;font-weight:700;text-align:center;pointer-events:auto}#d2-tactil .d2-gira[hidden]{display:none}' +
+      '#d2-tactil .d2-pad[hidden],#d2-tactil .d2-st2[hidden],#d2-tactil .d2-salir[hidden]{display:none}#d2-tactil [data-icon="semilla"]{--icon:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M12 2c4 3 6 7 6 11a6 6 0 0 1-12 0c0-4 2-8 6-11z\'/%3E%3C/svg%3E")}' +
+      'body.d2-tactil-on #v18-duelo2 :is(.vd-chips,.vd-tc,.vd-et){display:none!important}body.d2-tactil-on #v18-duelo2 .vd-lado{padding:4px 8px}' +
+      'body.d2-tactil-on :is(#quest,#inv,#b-diary,#b-emotes,#b-construir,#b-menu,#prompt,#minimapa,#marcador){visibility:hidden!important}' + // «Salir» va arriba a la izquierda
+      '#d2-tactil .d2-salir{position:absolute;left:max(14px,env(safe-area-inset-left,0px));top:calc(env(safe-area-inset-top,0px) + 10px);pointer-events:auto;min-height:44px;padding:4px 14px;border-radius:22px;border:0;background:#ffd0c4;color:#3b2a14;font:700 15px Fredoka,system-ui,sans-serif;box-shadow:0 2px 6px #0006}' +
+      'body.d2-tactil-on #acts,body.d2-tactil-on #v18-exp-poder,body.d2-tactil-on #v18-extra,body.d2-tactil-on #v18-duelo-tags{visibility:hidden!important}';
+    document.head.appendChild(st);
+  }
+  function tactilOn(on) {
+    if (!on) {
+      if (T44.el) { T44.el.remove(); T44.el = null; }
+      document.body.classList.remove('d2-tactil-on'); T44.st2.id = null; T44.st2.x = T44.st2.y = 0;
+      if (T44.girar) { T44.girar = false; try { G.pausa && G.pausa.set && G.pausa.set('duelo2-girar', false); } catch (e) { /* */ } }
+      return;
+    }
+    if (T44.el) return;
+    cssT44();
+    const pad = q => `<div class="d2-pad ${q}"><b>${q === 'j1' ? TT.j1 : TT.j2}</b>` + ['ala', 'pata', 'semilla', 'poder'].map(a => `<button type="button" class="${a}" data-q="${q}" data-a="${a}" data-icon="${{ ala: 'wing', pata: 'paw', semilla: 'semilla', poder: 'bolt' }[a]}" aria-label="${TT[a]} (${q === 'j1' ? TT.j1 : TT.j2})"><span>${TT[a]}</span></button>`).join('') + '</div>';
+    const el = document.createElement('div'); el.id = 'd2-tactil';
+    el.innerHTML = pad('j1') + pad('j2') + '<div class="d2-st2" aria-label="Joystick del Jugador 2"><i></i></div><button type="button" class="d2-salir" data-salir="1"></button><div class="d2-gira" hidden></div>';
+    el.querySelector('.d2-salir').textContent = TXT.salir;
+    el.querySelector('.d2-gira').textContent = TT.gira;
+    el.addEventListener('pointerdown', e => {
+      if (e.target.closest && e.target.closest('[data-salir]')) { e.preventDefault(); e.stopPropagation(); salir(); return; }
+      const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
+      e.preventDefault(); e.stopPropagation();
+      usarTactil(b.dataset.q === 'j1' ? D.j1 : D.j2, b.dataset.q, b.dataset.a);
+    });
+    const st = el.querySelector('.d2-st2'), bola = st.firstChild, s2 = T44.st2;
+    const mueve = e => { const dx = e.clientX - s2.cx, dy = e.clientY - s2.cy, R = 50, n = Math.hypot(dx, dy) || 1, k = Math.min(1, n / R); s2.x = dx / n * k; s2.y = dy / n * k; bola.style.transform = `translate(${s2.x * R}px,${s2.y * R}px)`; };
+    st.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); const r = st.getBoundingClientRect(); s2.id = e.pointerId; s2.cx = r.left + r.width / 2; s2.cy = r.top + r.height / 2; try { st.setPointerCapture(e.pointerId); } catch (x) { /* */ } mueve(e); });
+    st.addEventListener('pointermove', e => { if (e.pointerId === s2.id) mueve(e); });
+    const suelta = e => { if (e.pointerId !== s2.id) return; s2.id = null; s2.x = s2.y = 0; bola.style.transform = ''; };
+    st.addEventListener('pointerup', suelta); st.addEventListener('pointercancel', suelta);
+    document.body.appendChild(el); T44.el = el;
+    document.body.classList.add('d2-tactil-on');
+    pintarT44();
+  }
+  // Cada cuadro (barato): en vertical, el aviso de girar y la pausa; los botones solo en la pelea
+  function pintarT44() {
+    const el = T44.el; if (!el) return;
+    const vertical = innerHeight > innerWidth, gira = vertical && D.fase !== 'fin';
+    const g = el.querySelector('.d2-gira'); if (g.hidden === gira) g.hidden = !gira;
+    if (gira !== T44.girar) { T44.girar = gira; try { G.pausa && G.pausa.set && G.pausa.set('duelo2-girar', gira); } catch (e) { /* */ } }
+    const ver = D.fase === 'lucha' || D.fase === 'cuenta';
+    for (const p of el.querySelectorAll('.d2-pad, .d2-st2, .d2-salir')) if (p.hidden === ver) p.hidden = !ver;
+  }
+  addEventListener('resize', () => pintarT44());
+
   function abrirTarjeta() {
     if (!disponible()) return false;
     crearJ2();
     const bot = ESPECIES.map(e => `<button class="btn${e.id === D.esp2 ? '' : ' ghost'}" type="button" data-d2sp="${e.id}" aria-pressed="${e.id === D.esp2}">${esc(e.nombre)}<small style="display:block;opacity:.8">${esc((H.get(H.poderDe(e.id)) || {}).nombre || '')}</small></button>`).join('');
     G.ui.showCard(`<div class="v18-d2"><h2>${esc(TXT.titulo)}</h2><p>${esc(TXT.nota)}</p><p><b>${esc(TXT.elige)}</b></p><div class="row">${bot}</div>` +
-      `<div class="d2-teclas">${filaTeclas(TXT.jugador1, [['W A S D', TXT.mover], ['E', TXT.ala], ['F', TXT.semillaMant], ['G', TXT.poder]])}` +
+      (tactil() ? `<p class="note" data-d2tactil>${esc(TT.tarjetaT)}</p>` : '') +
+      `<div class="d2-teclas"${tactil() ? ' hidden' : ''}>${filaTeclas(TXT.jugador1, [['W A S D', TXT.mover], ['E', TXT.ala], ['F', TXT.semillaMant], ['G', TXT.poder]])}` +
       `${filaTeclas(TXT.jugador2, [['← ↑ ↓ →', TXT.mover], ['.', TXT.ala], [',', TXT.semillaMant], ['-', TXT.poder], ['Enter', TXT.saltito]])}<div class="note">${esc(TXT.mando)}</div>${c2On() ? `<div class="note" data-d2ext>${esc(TXT.extTeclas)}</div>` : ''}</div>` +
       `<div class="row"><button class="btn" id="v18-d2-ok" type="button">${esc(TXT.jugar)}</button><button class="btn ghost" id="v18-d2-no" type="button">${esc(TXT.cancelar)}</button></div></div>`);
     const card = G.ui.$('card');
@@ -653,7 +734,7 @@ window.AVV18Duelo2 = function (G) {
     if (C2) C2.pasoReloj(dt); // hit-stop visual de Combate 2.0 (mientras dura este duelo, combate.js no lo lleva)
     if (centroT > 0) { centroT -= dt; if (centroT <= 0 && hud && D.fase !== 'cuenta') hud.q('centro').textContent = ''; }
     if (comboVis > 0) { comboVis -= dt; if (comboVis <= 0 && hud && hud.q('combo')) hud.q('combo').hidden = true; }
-    const mando = leerMando();
+    const mando = leerMando() || toque2();
     if (D.fase === 'cuenta') {
       D.cuenta -= dt;
       if (hud) hud.q('centro').textContent = D.cuenta > 0 ? String(Math.ceil(D.cuenta)) : TXT.ya;
@@ -673,7 +754,7 @@ window.AVV18Duelo2 = function (G) {
       if (D.j1.finMareo > 0) { M.vx *= 0.8; M.vz *= 0.8; }
     }
     if (D.fase === 'nada') return;
-    pasoJ1(dt); mover2(dt, mando);
+    pasoJ1(dt); mover2(dt, mando); if (T44.el) pintarT44();
     if (D.fase === 'lucha') { // el escudo caducado se dispersa solo
       for (const f of [D.j1, D.j2]) if (f.escudoVisto && f.escudo <= 0) { f.escudoVisto = false; if (v18fx('dispersar')) try { G.v18fx.dispersar(f); } catch (e) { /* efecto */ } } else if (f.escudo > 0) f.escudoVisto = true;
     }
@@ -681,7 +762,7 @@ window.AVV18Duelo2 = function (G) {
   }
 
   // ---------- En el mundo: el sitio del duelo de 2 jugadores, en el centro del círculo de la explanada ----------
-  function disponible() { return !!G.V18 && !tactil() && !!(G.pack && G.pack.id === 'cap1'); } // QA-192: la estación es de la explanada de Villa Raíz
+  function disponible() { return !!G.V18 && !!(G.pack && G.pack.id === 'cap1'); } // T44: también en táctil (en horizontal, con dos mandos en pantalla) // QA-192: la estación es de la explanada de Villa Raíz
   // Marca pintada en el suelo (un solo plano; textura canvas en runtime, 0 assets): halo cálido suave,
   // guía tenue, dos medias lunas entrelazadas (oro = Jugador 1 al oeste, azul = Jugador 2 al este) y dos plumas cruzadas.
   const texSitio = (() => {
@@ -770,8 +851,8 @@ window.AVV18Duelo2 = function (G) {
       const mm0 = window.matchMedia;
       window.matchMedia = q => /coarse/.test(q) ? { matches: true, media: q, addEventListener() {}, removeEventListener() {} } : mm0.call(window, q);
       let tactilOk;
-      try { tactilOk = !disponible() && !it.visible() && !abrirTarjeta() && !iniciar({}) && !G.ui.cardOpen; } finally { window.matchMedia = mm0; }
-      check('En táctil no aparece la opción ni se puede abrir', tactilOk && D.fase === 'nada');
+      try { tactilOk = disponible() && it.visible() && abrirTarjeta() && G.ui.cardOpen && !!G.ui.$('card').querySelector('[data-d2tactil]'); } finally { window.matchMedia = mm0; if (G.ui.cardOpen) G.ui.hideCard(); }
+      check('T44 · en táctil también aparece la opción y su tarjeta explica los mandos en pantalla', tactilOk && D.fase === 'nada');
       // 2. La tarjeta: elegir la cotorra del J2 y empezar
       abrirTarjeta();
       const card = G.ui.$('card');
@@ -940,6 +1021,23 @@ window.AVV18Duelo2 = function (G) {
         Object.keys(vuelta).filter(k => !vuelta[k]).join(', '));
       check('Sin errores de consola durante la prueba', errores.length === 0, errores.join(' | '));
     } catch (e) { check('Sin excepciones', false, e && (e.stack || e.message)); }
+    // T44: en el teléfono (pointer: coarse simulado), dos mandos en pantalla; el J2 se mueve con su joystick y usa sus botones
+    { const mm = window.matchMedia;
+      try {
+        window.matchMedia = q => (/pointer:\s*coarse/.test(q) ? { matches: true, media: q, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, onchange: null } : mm(q));
+        salir(); iniciar({ forzar: true, sinCuenta: true });
+        const el = document.getElementById('d2-tactil'), pads = el ? el.querySelectorAll('.d2-pad') : [], b1 = el && el.querySelectorAll('.d2-pad.j1 button').length, b2 = el && el.querySelectorAll('.d2-pad.j2 button').length;
+        check('T44 · táctil: dos 2×2 (Jugador 1 a la izquierda, Jugador 2 a la derecha), el joystick del J2 y sin los botones grandes', !!el && pads.length === 2 && b1 === 4 && b2 === 4 && !!el.querySelector('.d2-st2') && document.body.classList.contains('d2-tactil-on') && disponible(), JSON.stringify({ b1, b2 }));
+        const x0 = pos2.x; T44.st2.id = 7; T44.st2.x = -1; T44.st2.y = 0; for (let i = 0; i < 10; i++) paso(0.05); T44.st2.id = null; T44.st2.x = 0;
+        D.j2.cd = {}; D.j2.energia = D.j2.energiaMax || 100; const us = usarTactil(D.j2, 'j2', 'semilla');
+        check('T44 · el joystick del J2 lo mueve y su botón Semilla dispara', pos2.x < x0 - 0.5 && us && (D.j2.cd.semilla || 0) > 0, (pos2.x - x0).toFixed(2));
+        const vertical = innerHeight > innerWidth, g = el.querySelector('.d2-gira');
+        check('T44 · en vertical sale «Gira el teléfono» (y pausa); en horizontal, no', g.hidden === !vertical && T44.girar === vertical, JSON.stringify({ vertical, oculto: g.hidden }));
+        salir();
+        check('T44 · al salir se quitan los mandos y vuelven los botones grandes', !document.getElementById('d2-tactil') && !document.body.classList.contains('d2-tactil-on') && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('duelo2-girar')));
+      } catch (e) { check('T44 · táctil sin excepciones', false, e && (e.stack || e.message)); }
+      finally { window.matchMedia = mm; try { salir(); } catch (e) { /* fuera */ } }
+    }
     // QA-192: fuera del cap. 1 la estación no existe (la marca del suelo usa la misma guarda)
     try {
       const pack0 = G.pack && G.pack.id; G.pack.id = 'ep4';

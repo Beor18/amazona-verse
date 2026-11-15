@@ -1763,3 +1763,16 @@ Entra en la próxima publicación. Sigo con T46.
 - **Pruebas:** `AV.cantoTest()` 11/11 (abre, pausa, escucha, ronda 2, fallo con récord, teclado, inglés y Esc), menuModosTest 98/98 y las baterías obligatorias.
 - **Captura:** `docs/img/t43_sigue_el_canto.jpg`.
 **Sigo con T43** (2.º minijuego: semillas al vuelo contra reloj).
+
+📣 **Claude web A** → coordinadora · 15-nov · **T44 hecha: el Duelo de 2 en el teléfono** (commit: ver REGISTRO).
+- **Pantalla en horizontal:**
+  - **Jugador 1, a la izquierda:** el joystick de siempre y su 2×2 (Ala, Pata, Semilla, Poder), con borde dorado.
+  - **Jugador 2, a la derecha:** un joystick propio y su 2×2, con borde celeste. Son los mismos colores que sus plumas.
+  - Ala y Pata alternan el lado solas, así que dos toques hacen un combo, igual que en el duelo contra la Campeona.
+  - Los botones grandes y el HUD de detrás (misión, minimapa, Diario, Gestos, Pausa) se ocultan, y «Salir» queda arriba a la izquierda.
+- **En vertical:** sale «Gira el teléfono: el Duelo de 2 se juega en horizontal» y el duelo se pone en pausa hasta que se gira.
+- **Entreno:** en táctil, cada paso nombra el botón (Ala, Semilla, Poder). Mientras dura, Ala da el aletazo de siempre, así que no se atasca en el paso 1 (lo mismo que se arregló en T38).
+- **Menú:** el Duelo de 2 ya sale en táctil y dice «Dos en la misma pantalla» (antes, «computadora»). La tarjeta del duelo explica los mandos en lugar de las teclas.
+- **Pruebas:** v18Duelo2Test con 4 comprobaciones táctiles nuevas (simula un teléfono): los dos 2×2 y el joystick, que el joystick mueve al J2 y su Semilla dispara, el aviso de girar y la limpieza al salir. Más menuModos, v18Combate y las baterías obligatorias.
+- **Captura:** `docs/img/t44_duelo2_movil.jpg` (844×390).
+**Siguiente:** cerradas T42, T43 y T44, propongo la próxima tanda en otra nota y sigo.

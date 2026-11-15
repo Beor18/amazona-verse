@@ -45,7 +45,7 @@
       golf: [L('Minigolf', 'Mini golf'), L('Lleva la semilla gigante hasta el nido', 'Take the giant seed to the nest')], // V18 (Kelvin 7-nov: a la vista en el menú)
       pesca: [L('Pesca', 'Fishing'), L('Lanza, espera el pique y suelta el pez', 'Cast, wait for the bite and release the fish')], // src/game/v18/pesca.js
       duelo: [L('Duelo', 'Duel'), L('Uno a uno contra la Campeona', 'One-on-one against the Champion')], // src/game/v18/combate.js
-      duelo2: [L('Duelo de 2', '2-player duel'), L('Dos en la misma computadora', 'Two on the same computer')], // src/game/v18/duelo2.js
+      duelo2: [L('Duelo de 2', '2-player duel'), L('Dos en la misma pantalla', 'Two on the same screen')], // src/game/v18/duelo2.js
       amigos: [L('Retos con amigos', 'Challenges with friends'), L('Chispa, Moon y el Guardián', 'Chispa, Moon and the Guardian')],
       cotorras: [L('Mis cotorras', 'My parrots'), L('Tu nivel, tu poder y las que te faltan', 'Your level, your power and the ones you still need')], // descubrir.js + evolucion.js
       album: [L('Álbum', 'Album'), L('Las 36 cotorras que vas viendo', 'The 36 parrots you spot')], // src/game/album.js
@@ -120,7 +120,7 @@
     function tarjetas() { return form ? [...form.querySelectorAll('[data-modo]')] : []; }
     const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
     // Las de la V18 solo con la bandera encendida; el Duelo de 2 necesita teclado (duelo2.js no se carga en táctil)
-    const seVe0 = m => (EXP.includes(m) ? G.PESCA !== false : !V18M.includes(m) || (!!G.V18 && (m !== 'duelo2' || !tactil())));
+    const seVe0 = m => (EXP.includes(m) ? G.PESCA !== false : !V18M.includes(m) || !!G.V18); // T44: el Duelo de 2 también en táctil (en horizontal)
     // ---------- T3 · Recorte del menú (LISTA_TERMINADO, 14-nov) ----------
     // Mientras Kelvin decide la lista final de modos (K4): fuera de la portada el Duelo y el Duelo de 2 (siguen en el código y en
     // ?mini=); River Rush, Tormenta y Banquete van dentro de «Más juegos»; «Capítulos» sube encima de las tarjetas.
