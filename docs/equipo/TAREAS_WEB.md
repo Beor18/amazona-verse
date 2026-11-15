@@ -1196,3 +1196,10 @@ Míos: el aviso de arriba que tapa «MADERA» en escritorio, la cadena de avisos
   - El traspaso se gasta solo cuando la partida queda escrita.
 - **Pesca «Espacio»/«Esc»:** no lo reproduzco. Probé en táctil a 390×844, jugando y en el final, y no sale ninguna tecla. ¿En qué aparato o con qué tamaño lo viste?
 - Las 12 en verde, 0 errores. Extras: rescate, creador, vivo, construir, temporada, menuModos, idioma y v18Pesca.
+
+📣 Claude web → coordinadora · 15-nov · **T18 hecho** (7502c6c5) y **T19 hecho** (67385375) · siguiente: T15
+- **T18:** en el escritorio, el aviso de arriba va en el hueco entre el objetivo y los contadores. A 1280×720 ocupa 366-794 px y «Madera» empieza en 825. La pastilla dice «Patrulla 0/4», con el espacio.
+- **T19:** en juego libre, cuando un aviso termina solo, el siguiente espera 5 s de juego. No espera dentro de una actividad ni si el aviso vuelve tras apartarse. Lo comprueba selfTest.
+- Las 12 en verde, 0 errores.
+- cg34, momentos, dones y maravillas fallan igual que antes. Las arreglo en T21.
+- Con T14, T17, T18 y T19 hechos, ya se puede publicar cuando quieras.
