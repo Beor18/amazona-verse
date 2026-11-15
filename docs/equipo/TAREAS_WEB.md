@@ -1705,3 +1705,30 @@ Después vienen T42, T43, T44 y T46.
 - **Prueba nueva:** `AV.v18PoderesExtraTest()`, con 9 comprobaciones en escritorio y 10 en táctil (la de los botones): se ganan, efectos, recarga, teclas, botones y que nada se compra.
 - **Para Kelvin:** los nombres, cómo se gana cada uno y las teclas son una propuesta. No toqué los dones de mentora (Lilacina y Oratrix), que siguen siendo decisión suya.
 **Sigo con T43** (minijuegos nuevos).
+📣 Claude web → coordinadora · 15-nov · **T45 hecha: los 30 sonidos de Suno ya suenan en el juego** (commits 4da035e6 y b4b022f2).
+- **Dónde suena cada uno:**
+  - Vuelo: `aleteo` en cada aletazo al subir o quedarse en el sitio (al planear ya no aletea); `planeo` al empezar a planear; `picada` al entrar en picada (sustituye al «picado» sintético); `frenada` al frenar con las alas antes de posarse.
+  - Amazona Flight: cada toque suena `aleteo`.
+  - Juego e interfaz: `semilla` al recoger una semilla en «¡Escapa de la tormenta!» (el combo sube un poco el tono); `logro` al ganar un sello nuevo (★) en Retos; `boton` al pulsar un botón de un menú; `aviso` cuando aparece una caja de diálogo nueva; `flecha` en la pista «Sigue la flecha»; `panel_final` al abrirse el panel del capítulo completado.
+  - Construir: `pieza` al colocar; `encaje` cuando el imán encaja la pieza.
+  - Puente de Villa Raíz: `puente_reparado`.
+  - Pesca: `lanzar`, `pica` y `clavado` (pez atrapado).
+  - Duelo: `duelo_ala` (aletazo y alas de los combos), `duelo_pata`, `duelo_semilla`, `duelo_poder` (una sola vez al lanzar un poder especial, en lugar de su sonido genérico; el Grito conserva su graznido con ondas), `duelo_victoria` y `duelo_derrota`.
+  - Poderes: `poder_grito` en el Grito del Yunque al explorar.
+- **Sin doblar:** cada sonido nuevo sustituye al sintético que había en ese momento. El sintético solo suena mientras el archivo carga.
+- **Sin spam:**
+  - Hay un tiempo mínimo entre repeticiones. Si dos aletazos llegan demasiado juntos, el segundo es el soplo sintético suave.
+  - Los botones suenan solo al pulsarlos (nunca al pasar por encima), y no suenan si el botón ya hace su propio sonido.
+- **Carga perezosa:**
+  - Ninguno entra en la descarga inicial: la carga sigue en 23,08 MB (el aviso es a partir de 28 MB) y el heap queda en 19 MB tras la recolección de basura.
+  - Los de vuelo e interfaz se piden de uno en uno 20 s después del primer toque. Los de cada modo se piden al entrar en él (duelo, pesca, Construir). Los ambientes se piden solo cuando toca oírlos.
+- **Ambientes en bucle** (en `musica.js`, por el bus y el deslizador «Ambiente»):
+  - Cuáles: `bosque_yunque` de día, `noche_coquis` de noche, `lluvia` con el clima o la crecida y `rio` cerca de la quebrada.
+  - Cada uno sustituye a su capa sintética con un cruce suave y van bajitos. Con música suenan aún más bajo (×0,7). En calidad «baja» no se cargan.
+  - Con el bucle de lluvia sonando, los golpes de lluvia de cada segundo (clima.js y la crecida de cap1) se callan, para que no suenen dos lluvias.
+- **Pendiente para T42:** `poder_rafaga`, `poder_ojo` y `poder_planeo` ya están registrados en MUESTRAS, pero todavía no tienen momento en el juego.
+- **Pruebas:**
+  - musicaTest 95/95, con 10 comprobaciones nuevas: cada nombre se descarga y se decodifica, cada momento llama a su sonido y los ambientes funcionan bien.
+  - Los checks nuevos con espía están en v18CombateTest 118/118 y flightTest 59/59, y los actualizados en juiceTest 34/34 y construirTest 64/64.
+  - También en verde: v18PescaTest 60/60, movementTest 54/54, selfTest 123/123 y cargaTest 16/16; las del duelo de 2, Explorar, Reparar y Retos; y la pasada final. Todo con 0 errores de consola.
+- **A escuchar:** el volumen de los ambientes lo calibré con números, no de oído. Si Kelvin quiere el bosque más alto o más bajo, se cambia el número `k` en `BUCLES` (src/game/musica.js).
