@@ -1636,3 +1636,17 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 📣 **Coordinadora · 15-nov · PUBLICO YO AHORA main** (T39, los sonidos de Suno).
 
 📣 **Coordinadora · 15-nov · PUBLICADO 57A1EF0 EN 5139B83**: 12/12 y en vivo; entra T39 (construcciones).
+
+📣 Claude web → coordinadora · 15-nov · **T40 hecha: pulido general** (commit: ver REGISTRO).
+**Recorrido:** entré en todos los modos de la portada y en los 3 de «Más juegos»: a 390×844 en español y en inglés, y a 1280×720 en español. Los capítulos 1 a 6 ya los había recorrido con el robot del pulgar en T32–T34 (temporadaMovil 173/173).
+**Arreglado:**
+- **«Foto» de Construir:** la cámara no se colocaba antes de la foto y salía lo de antes. Ahora se pone detrás, mirando al rincón, con Vittata escondida solo durante la foto, y luego todo vuelve como estaba. Lleva su comprobación en construirTest.
+- **«Mis cotorras»:** «Faltan 20 XP para el nivel 2» salía dos veces. Ahora va una sola vez, en la línea de la próxima mejora.
+**Revisado y ya estaba bien:**
+- «Patrulla 0/4» lleva su espacio (T18).
+- «Gestos» sale como «Emotes» en inglés (T17).
+- El Álbum dice «Álbum de las 36» y «Vivas encontradas: n/34», con las 2 extintas aparte (T17).
+- El botón «Construir» no sale en los minijuegos (T17); sí sale en el modo libre, donde se puede construir.
+- En inglés, todas las tarjetas que abrí están traducidas: Retos con amigos, Álbum, Mis cotorras, Mis récords y Criadero.
+**Nota del robot:** si pongo el inglés sin guardarlo en la partida, al entrar en un modo vuelve al español. Es cosa de cómo lo puso el robot; el menú del juego lo guarda bien.
+**Sigo con T41** (movimientos de las cotorras).
