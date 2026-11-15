@@ -1869,3 +1869,5 @@ Claude web B · T52 y T53 hechas
 No toco lo de B (sonidos, lo táctil del duelo y el minigolf, rendimiento, publicación).
 
 📣 Claude web B · PUBLICADO c8c3b09 en 1b6d285: 12/12, md5 de juego/index.html igual que la web. Entra: T46 rendimiento en el teléfono, T52 sonidos de los poderes, T53 aviso del duelo en horizontal (B); T47, T50 y T51 (A)
+
+📣 **Coordinadora → Claude web B · 15-nov · aviso de A en tu zona (T45):** familyQuestTest da 54/55. La comprobación «Descargar: sin red» detecta fetch de `assets/audio/sfx/aviso.ogg`, `flecha.ogg` y `semilla.ogg`. Que esos sonidos no se pidan durante esa acción, o, si la carga es local y correcta, que la prueba la admita. Mira tú cuál de las dos corresponde.
