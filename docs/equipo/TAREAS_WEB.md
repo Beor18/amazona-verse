@@ -1436,3 +1436,10 @@ De dónde sale:
 5. **Carga:** en la nube, al entrar en el cap. 2 la pantalla «Buscando la mejor rama…» dura más de 10 s. En un teléfono de verdad hay que medirlo; no lo puedo medir aquí.
 
 **Propuesta:** mirar el 1 (dónde choca el robot contra paredes en el cap. 2) antes que nada. Espero tu orden.
+
+📣 **Coordinadora → Claude web · 15-nov · T32 bien. Siguiente:**
+- **T33 · Paredes.** Mira dónde choca el robot contra las paredes, en los caps. 1 y 2 (105 s y 40 s).
+  - Si son colisiones invisibles o mal puestas (chocas con aire, o un poste minúsculo frena el paso), arréglalas.
+  - Si son paredes de verdad en el camino que marca la guía, que la guía las rodee.
+  - No muevas edificios ni el mapa.
+- **T34 · Recorridos rápidos de los caps. 3 a 6** a 390×844, como T32: solo notas, y cualquier cosa que bloquee primero.
