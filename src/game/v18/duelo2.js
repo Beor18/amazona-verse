@@ -1138,7 +1138,8 @@ window.AVV18Duelo2 = function (G) {
           if (acc) { acc.relajado = () => true; try { iniciar({ sinCuenta: true, asaltos: 3 }); limpio(); cerca(6); D.tAsalto = 10; paso(0.05); tRel = hud.q('relojN').textContent; } finally { acc.relajado = rel0; } }
           iniciar({ sinCuenta: true, asaltos: 1 }); limpio(); cerca(6); D.tAsalto = 10; paso(0.05); const t1 = hud.q('relojN').textContent;
           iniciar({ sinCuenta: true, asaltos: 3 }); limpio(); cerca(6); D.tAsalto = 10; paso(0.05); const t3 = hud.q('relojN').textContent;
-          hud.q('combo').hidden = false; comboVis = 1.3; iniciar({ sinCuenta: true, asaltos: 3 }); const cv = { vis: comboVis, oculto: hud.q('combo').hidden };
+          let ce = hud.q('combo'); if (!ce) { ce = document.createElement('div'); ce.className = 'vd-combo'; ce.dataset.k = 'combo'; hud.q('centro').after(ce); } // como lo crea el primer combo
+          ce.hidden = false; comboVis = 1.3; iniciar({ sinCuenta: true, asaltos: 3 }); const cv = { vis: comboVis, oculto: hud.q('combo').hidden };
           check('F1 · Duelo de 2: sin tope (modo relajado o un asalto) el reloj no cuenta; al mejor de 3, sí; al empezar se quita el cartel del combo',
             (tRel === null || tRel === '') && t1 === '' && t3 === String(ASALTO_TOPE - 10) && cv.vis === 0 && cv.oculto, JSON.stringify({ tRel, t1, t3, cv })); }
         // Brinco: J1 con Espacio (no salta como siempre), J2 con su saltito; un golpe dentro del Brinco no entra y deja abierta 0,8 s a quien lo dio
@@ -1214,7 +1215,7 @@ window.AVV18Duelo2 = function (G) {
         D.j2.cd = {}; D.j2.energia = D.j2.energiaMax || 100; const us = usarTactil(D.j2, 'j2', 'semilla');
         check('T44 · el joystick del J2 lo mueve y su botón Semilla dispara', pos2.x < x0 - 0.5 && us && (D.j2.cd.semilla || 0) > 0, (pos2.x - x0).toFixed(2));
         { const bb1 = el.querySelector('.d2-pad.j1 button.brinco'), bb2 = el.querySelector('.d2-pad.j2 button.brinco');
-          for (const f of [D.j1, D.j2]) { f.brinco = 0; f.brincoCd = 0; f.mareo = 0; f.lift.dura = 0; }
+          for (const f of [D.j1, D.j2]) { f.brinco = 0; f.brincoCd = 0; f.mareo = 0; if (f.lift) f.lift.dura = 0; }
           const ok1 = usarTactil(D.j1, 'j1', 'brinco'), ok2 = usarTactil(D.j2, 'j2', 'brinco');
           const r1 = bb1 && bb1.getBoundingClientRect(), p1 = el.querySelector('.d2-pad.j1').getBoundingClientRect(), r2 = bb2 && bb2.getBoundingClientRect(), p2 = el.querySelector('.d2-pad.j2').getBoundingClientRect();
           const fuera = (r, p) => r && r.width >= 44 && (r.left >= p.right - 0.5 || r.right <= p.left + 0.5);
