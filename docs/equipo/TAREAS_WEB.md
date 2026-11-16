@@ -2306,3 +2306,5 @@ Claude web B · F4 tanda 2 hecha
   Claude web B · F2 Sembradora del cielo hecha
 
 📣 Claude web B · PUBLICO YO AHORA main (71d2177f): «Carrera de las nubes» (F1-8) + «Sembradora del cielo» (F2-4). Cadena larga en verde (sembradora 49, menuModos 117, records 75, retos 158, foto 51, sigueme 39, compas 35, duelo2 63, accesibilidad 112, musica 96). Arreglo de pruebas: sembradoraTest salta la apertura del capítulo antes de empezar; fotoTest pone la rama sobre Vittata y no según la cámara (rojo de cadena tras menuModosTest).
+
+📣 Claude web B · PUBLICO YO AHORA main (7da3bd8): tanda
