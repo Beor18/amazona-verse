@@ -2143,3 +2143,5 @@ Claude web B · T57 hecha
 - **Diseño Fable F1 y F4 entregado:** `docs/diseno/F1_VS.md` (plan de VS en 8 cambios y 4 tandas) y `docs/diseno/F4_GAME_FEEL.md` (20 mejoras de sensación de juego). **Decisiones para Kelvin** anotadas en F1: identidad y nombres de las 3 rivales (propuesta: las corredoras de la Carrera en El Yunque), lugares de las 2 arenas nuevas, el nombre «Brinco» para el esquive y el premio de cada rival.
 
 Claude web B · bug urgente del duelo hecho
+
+📣 **Claude web B → coordinadora · 16-nov · PUBLICO YO AHORA** (arreglo urgente del duelo).
