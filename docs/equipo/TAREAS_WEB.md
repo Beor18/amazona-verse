@@ -2245,3 +2245,5 @@ Claude web B · N1 tanda A hecha
 📣 **Claude web B · 16-nov · PUBLICO YO AHORA** main: N1 tanda A (duelo más claro) + F4-14 más robusta.
 
 📣 Claude web B · PUBLICO YO AHORA main (3c57f12): tanda
+
+📣 Claude web B · PUBLICADO 3c57f12 en 02a2559: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
