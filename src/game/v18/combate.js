@@ -3175,9 +3175,10 @@ window.AVV18Combate = function (G) {
       // Bug urgente (16-nov, Kelvin: «la pata sube y da vueltas sola»): el mismo bucle que el juego (paso del duelo y luego
       // actores.sync3D, que anima a Vittata con la envoltura de Combate 2.0), quieta en el suelo (con el IK de patas). Sin el
       // arreglo de character.js la pata se tuerce ~43° en el primer segundo y se queda así; con él solo bota la guardia.
-      if (pl3d && pl3d.bones && G.actores && G.actores.sync3D && G.fisica && G.fisica.MOVE) {
+      iniciar({ sinCuenta: true, especie: 'vittata' }); quieta(3); frena();
+      if (!(pl3d && pl3d.bones && G.actores && G.actores.sync3D && G.fisica && G.fisica.MOVE)) check('Bug urgente: la prueba de la pata tiene a Vittata envuelta y actores.sync3D', false, JSON.stringify({ pl3d: !!pl3d }));
+      else {
         const MV = G.fisica.MOVE, gr0 = MV.grounded, fl0 = MV.flying, sw0 = MV.swimming, pj = pl3d.bones, ps = ['pieL1', 'pieL1001', 'pieL2', 'pieL2001'].filter(k => pj[k]);
-        iniciar({ sinCuenta: true, especie: 'vittata' }); quieta(3); frena();
         let maxPata = 0, ik = 0; const pq0 = [];
         try {
           for (let i = 0; i < 90; i++) {
@@ -3189,8 +3190,8 @@ window.AVV18Combate = function (G) {
         } finally { MV.grounded = gr0; MV.flying = fl0; MV.swimming = sw0; }
         check('Bug urgente: Vittata quieta en guardia no mueve la pata sola (pieL1, pieL2 y sus pares se mueven < 20° en 3 s, con el bucle del juego y el IK de patas)',
           ps.length === 4 && ik > 80 && maxPata < 20, JSON.stringify({ maxPata: +maxPata.toFixed(1), ik, huesos: ps.length }));
-        salir();
       }
+      salir();
       // Espera viva: tres variaciones que se turnan (guardia, curiosa, se sacude)
       // (con un luchador de prueba quieto: en la lucha la Campeona casi nunca está quieta tanto tiempo)
       const idles = new Set(), fq = { id: 'quieta', pos: { x: 0, y: 0, z: 0 }, plumas: 5, mareo: 0 };
