@@ -2297,3 +2297,5 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICO YO AHORA main (ddd14a2): tanda
 
 📣 Claude web B · PUBLICADO ddd14a2 en 8d2669c: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
+
+✅ Claude web B · PUBLICADO «Foto relámpago» + Duelo de 2 con revancha y Ventaja (7afdc92 en 8d2669c, 12/12, md5 igual en la web). Los dos rojos de cadena larga ya tienen causa y arreglo: las pruebas de compas.js, sigueme.js y foto_safari.js simulaban `keydown` sin `keyup`, y input.js se quedaba con w/flechas pulsadas para las baterías siguientes (rompía las teclas de v18Duelo2Test y la T20 de rioVivoTest). Ahora cada tecla simulada lleva su `keyup`; la cadena siguemeTest, compasTest, fotoTest, v18Duelo2Test, rioVivoTest y menuModosTest pasa entera. Para --extra faltan compasTest, siguemeTest y fotoTest.
