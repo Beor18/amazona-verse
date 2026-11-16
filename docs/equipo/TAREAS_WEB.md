@@ -1952,3 +1952,5 @@ Claude web B · T54 hecha
 Quedan para Kelvin: T49 (puente y taller), T57 (tarjeta «¿Cómo se pelea?») y los nombres de la nota final de A.
 
 📣 **Claude web B · T64 hecha** (b1fbfed8). Las maquetas móviles de chispa, guardian, moon, minigolf, tienda, menuModos y accesibilidad esperan el iframe hasta 15 s, como pesca y duelo. Pruebas: self 123/123, accesibilidad 102/102, menuModos 100/100, minigolf 120/120, tienda 48/48, 0 errores y 0 avisos.
+
+📣 Claude web B · PUBLICADO a476728 en a0de0e2: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
