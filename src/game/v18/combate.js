@@ -726,8 +726,9 @@ window.AVV18Combate = function (G) {
       '#v18-duelo.tactil .vd-centro{font-size:28px;line-height:1;margin-top:0}' +
       '#v18-duelo.tactil{top:calc(env(safe-area-inset-top,0px) + 8px);left:max(12px,env(safe-area-inset-left,0px));right:auto;margin:0;width:min(380px,45vw)}body.v18-duelo-tt #minimapa{visibility:hidden}' +
       '#v18-duelo.tactil .vd-acc{right:auto;left:calc(max(12px,env(safe-area-inset-left,0px)) + min(380px,45vw) + 10px)}' + // T57: a la derecha de los paneles
+      // y el aviso nunca sube a la fila de Diario y Pausa (#sys: 80 px + 48): antes lo bajaban los botones dentro del panel
       '#v18-duelo.tactil :is(.vd-ent,.vd-fin){position:fixed;left:0;right:0;margin:0 auto;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:min(440px,calc(100vw - 380px));min-width:260px;max-height:calc(100vh - 16px);overflow:auto;box-sizing:border-box}' +
-      'body.v18-duelo-tt #toast{top:var(--vd-bajo,calc(env(safe-area-inset-top,0px) + 140px));bottom:auto;left:max(12px,env(safe-area-inset-left,0px));right:auto;margin:0;max-width:min(480px,calc(100vw - 360px))}}' +
+      'body.v18-duelo-tt #toast{top:max(var(--vd-bajo,0px),calc(env(safe-area-inset-top,0px) + 136px));bottom:auto;left:max(12px,env(safe-area-inset-left,0px));right:auto;margin:0;max-width:min(480px,calc(100vw - 360px))}}' +
       // Vertical: el entreno deja libre la columna de Diario y Pausa, como el panel final (con más botones en #sys, el Diario sube)
       '@media (orientation:portrait) and (max-width:760px){#v18-duelo.tactil .vd-ent{margin-right:52px}}';
     document.head.appendChild(st);
@@ -3381,7 +3382,7 @@ window.AVV18Combate = function (G) {
         const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
         fr.style.cssText = `position:fixed;left:-10000px;top:0;width:${vw}px;height:${vh}px;border:0`;
         const c2g = G.combate2; G.combate2 = c2; let html; try { html = htmlTarjeta(modo, tactil, c2, modo === 'uno'); } finally { G.combate2 = c2g; }
-        fr.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${css}</head><body><div id="vd-como" role="dialog">${html}</div></body></html>`;
+        fr.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${css}<style>#vd-como *{animation:none!important}</style></head><body><div id="vd-como" role="dialog">${html}</div></body></html>`; // un iframe fuera de pantalla no avanza la animación de entrada
         document.body.appendChild(fr);
         try {
           await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 15000); });
