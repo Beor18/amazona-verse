@@ -3101,7 +3101,7 @@ window.AV_EN = {
  "¡Empate! La próxima pluma gana.": "Tie! The next feather wins.",
  "Alas al compás": "Wings on the Beat",
  "Aletea con el tambor y sube al cielo": "Flap with the drum and climb to the sky",
- "River Rush, la tormenta, el banquete, el canto, el escondite, las semillas, la escuela de vuelo y el tambor": "River Rush, the storm, the feast, the song, hide-and-seek, the seeds, the flight school and the drum",
+ "River Rush, la tormenta, el banquete, el canto, el escondite, las semillas, la escuela de vuelo y Alas al compás": "River Rush, the storm, the feast, the song, hide-and-seek, the seeds, the flight school and Wings on the Beat",
  "¡Perfecto!": "Perfect!",
  "¡Racha de {}!": "{} in a row!",
  "Llegaste a las copas": "You reached the treetops",

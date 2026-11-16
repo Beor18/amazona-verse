@@ -194,7 +194,7 @@
       if (bMas) {
         bMas.hidden = !RECORTE(); bMas.style.display = RECORTE() ? '' : 'none';
         bMas.querySelector('b').textContent = masAbierto ? L('Volver', 'Back') : L('Más juegos', 'More games');
-        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta, el banquete, el canto, el escondite, las semillas, la escuela de vuelo y el tambor', 'River Rush, the storm, the feast, the song, hide-and-seek, the seeds, the flight school and the drum');
+        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta, el banquete, el canto, el escondite, las semillas, la escuela de vuelo y Alas al compás', 'River Rush, the storm, the feast, the song, hide-and-seek, the seeds, the flight school and Wings on the Beat');
         bMas.setAttribute('aria-expanded', String(masAbierto));
         bMas.setAttribute('aria-label', bMas.querySelector('b').textContent + '. ' + bMas.querySelector('small').textContent);
       }

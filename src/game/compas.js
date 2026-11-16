@@ -3,8 +3,9 @@
    tiempo, ella da un aletazo y sube (perfecto = el doble y una estela). Cada 8 seguidos, «¡Racha!»: cambia el paisaje (sotobosque →
    copas → nubes → cielo abierto), sube el tempo y entra un instrumento más. Fallar no hace caer: planea y solo pierde la racha.
    Capas: 1 negras a 90 ppm · 2 a 105 con silencios (hoja blanca: no tocar también es acertar) · 3 a 120 con contratiempos ·
-   4 a 132 con patrones de 2 compases; luego cada racha suma 4 ppm. Hojas doradas opcionales entre tiempos: suben más, pero un
-   toque fuera de tiempo rompe la racha. Ventana ±120 ms (perfecto) y ±220 ms (bien); los 4 primeros golpes miden el retraso del
+   4 a 132 con patrones de 2 compases; luego cada 16 seguidos suma 4 ppm (tope 148). Hojas doradas opcionales entre tiempos: suben
+   más, pero un toque fuera de tiempo rompe la racha. Si un toque cae cerca de un golpe y de una dorada o un silencio, gana el golpe.
+   Multiplicador por racha (×2 desde 8 seguidos, ×3 desde 16, ×4 desde 24): machacar sin compás no compensa. Ventana ±120 ms (perfecto) y ±220 ms (bien); los 4 primeros golpes miden el retraso del
    toque (calibración) y lo compensan.
    El reloj es el del audio (AudioContext.currentTime), no el de los cuadros; sin audio, el de performance.now() (las hojas siguen
    marcando el tiempo). Tambor y percusión sintetizados con G.audio.define (sin archivos ni descargas); aleteo, ring, unlock,
@@ -23,7 +24,7 @@ window.AVCompas = function (G) {
   const html = document.documentElement;
   const reducido = () => html.classList.contains('mov-reducido') || (G.audio && G.audio.reducido != null ? !!G.audio.reducido : !!(G.renderer && G.renderer.REDUCED));
   const DUR = 90, PERF = 0.12, BIEN = 0.22, CALIB_V = 0.3, CALIB_N = 4, ANTES = 2.0, GEN = 3.0, AUDIO_ANTES = 0.25;
-  const BPM = [90, 105, 120, 132], BPM_MAX = 168;
+  const BPM = [90, 105, 120, 132], BPM_MAX = 148;
   const leerRec = () => { try { const d = JSON.parse(localStorage.getItem(ALM) || 'null'); return d && d.v === 1 && Number.isInteger(d.mejor) && d.mejor >= 0 && d.mejor < 100000 ? d : null; } catch (e) { return null; } };
   const guardarRec = (mejor, racha, jugadas) => { try { localStorage.setItem(ALM, JSON.stringify({ v: 1, mejor, racha, jugadas })); } catch (e) { /* sin almacén */ } };
   const A = G.audio;
@@ -58,15 +59,19 @@ window.AVCompas = function (G) {
   const compases = []; for (let i = 0; i < 8; i++) compases.push({ t: -1, capa: 0, b: 0.5 });
   const calib = [0, 0, 0, 0];
   const E = { fase: 'nada', fuente: 'perf', t0: 0, tm: 0, manual: false, genT: 0, nComp: 0, capa: 0, capaMeta: 0, vuelta: 0, capaVis: 0, capaAnt: 0, mezcla: 1,
-    metros: 0, racha: 0, mejorRacha: 0, perfectos: 0, bienes: 0, fallos: 0, dobles: 0, calN: 0, offset: 0, ultToque: -9, ultimoT: 0,
+    metros: 0, racha: 0, mejorRacha: 0, perfectos: 0, bienes: 0, fallos: 0, dobles: 0, calN: 0, offset: 0, ultToque: -9, ultimoT: 0, ultT: 0, finP: 0,
     mejor: 0, mejorRachaRec: 0, jugadas: 0, nuevo: false, hop: 0, sq: 0, inclina: 0, plano: 0, flash: 0, flashC: 0, cuenta: -1, avisos: 0, pistaT: 0, vistoS: false, vistoD: false };
   const ac = () => (A && A.ctx && A.ctx.state === 'running' ? A.ctx : null);
   function ahora() {
     if (E.manual) return E.tm;
-    if (E.fuente === 'audio') { const c = ac(); if (c) return c.currentTime - E.t0; }
-    return performance.now() / 1000 - E.t0;
+    if (E.fuente === 'audio') {
+      const c = ac(); if (c) return (E.ultT = c.currentTime - E.t0);
+      E.fuente = 'perf'; E.t0 = performance.now() / 1000 - E.ultT; // el audio se paró (suspend, Siri, alarma): sigue en performance.now() sin salto
+    }
+    return (E.ultT = performance.now() / 1000 - E.t0);
   }
   function bpm() { return E.capaMeta < 3 ? BPM[E.capaMeta] : Math.min(BPM_MAX, BPM[3] + 4 * E.vuelta); }
+  const mult = () => 1 + Math.min(3, Math.floor(E.racha / 8)); // ×1, ×2 desde 8 seguidos, ×3 desde 16, ×4 desde 24
   function nota(t, tipo) { const n = notas.find(x => !x.on); if (!n) return null; n.on = true; n.t = t; n.tipo = tipo; n.res = ''; n.tr = 0; return n; }
   function ev(t, nombre, f, ya) { const e = evs.find(x => !x.on); if (!e) return; e.on = true; e.t = t; e.n = nombre; e.f = f || 0; e.ya = !!ya; e.puesto = false; }
   function generar(limite) {
@@ -133,7 +138,7 @@ window.AVCompas = function (G) {
   function acierto(n, d) {
     const perf = Math.abs(d) <= PERF;
     n.res = perf ? 'perfecto' : 'bien'; n.tr = 0;
-    const subir = n.tipo === 'doble' ? (perf ? 3 : 2) : (perf ? 2 : 1);
+    const subir = (n.tipo === 'doble' ? (perf ? 3 : 2) : (perf ? 2 : 1)) * mult();
     E.metros += subir; E.racha++; if (E.racha > E.mejorRacha) E.mejorRacha = E.racha;
     if (perf) E.perfectos++; else E.bienes++;
     if (n.tipo === 'doble') E.dobles++;
@@ -145,8 +150,8 @@ window.AVCompas = function (G) {
   }
   function racha() { // cada 8 seguidos: ¡Racha! y la capa siguiente (tempo e instrumento nuevos desde el próximo compás que se genere)
     if (E.racha === 0 || E.racha % 8) return false;
-    if (E.capaMeta < 3) E.capaMeta++; else if (bpm() < BPM_MAX) E.vuelta++;
-    aviso(L(`¡Racha de ${E.racha}!`, `${E.racha} in a row!`), 'racha');
+    if (E.capaMeta < 3) E.capaMeta++; else if (E.racha % 16 === 0 && bpm() < BPM_MAX) E.vuelta++; // en el cielo abierto, con calma: +4 ppm cada 16
+    aviso(L(`¡Racha de ${E.racha}!`, `${E.racha} in a row!`), 'racha'); prepintar(E.capaMeta);
     sonar('ring', Math.min(6, E.racha / 8));
     return true;
   }
@@ -156,9 +161,14 @@ window.AVCompas = function (G) {
     if (t - E.ultToque < 0.07) return false;
     E.ultToque = t; E.sq = Math.max(E.sq, 0.5);
     const cal = E.calN < CALIB_N, v = cal ? CALIB_V : BIEN, ta = t - (cal ? 0 : E.offset);
-    let best = null, bd = 1e9;
-    for (const n of notas) { if (!n.on || n.res) continue; const d = Math.abs(ta - n.t); if (d < bd) { bd = d; best = n; } }
-    if (!best || bd > v) { // toque fuera de tiempo: durante la cuenta no cuenta; luego rompe la racha (sin bajar)
+    // dentro de la ventana manda el golpe; la dorada solo si el toque cae en ella (±120 ms) y no tan cerca del golpe; el silencio, si no hay otra
+    let g = null, gd = 1e9, o = null, od = 1e9, s = null, sd = 1e9;
+    for (const n of notas) {
+      if (!n.on || n.res) continue; const d = Math.abs(ta - n.t); if (d > v) continue;
+      if (n.tipo === 'golpe') { if (d < gd) { gd = d; g = n; } } else if (n.tipo === 'doble') { if (d < od) { od = d; o = n; } } else if (d < sd) { sd = d; s = n; }
+    }
+    const best = o && od <= PERF && od < gd && gd > PERF ? o : g || o || s;
+    if (!best) { // toque fuera de tiempo: durante la cuenta no cuenta; luego rompe la racha (sin bajar)
       if (E.nComp < 2 || t < E.inicio - 0.4) return false;
       romper(); return false;
     }
@@ -197,16 +207,17 @@ window.AVCompas = function (G) {
       const f = FRASE_CAPA[cv]; if (f && cv > E.capaAnt) setTimeout(() => { if (E.fase === 'juego') aviso(L(f[0], f[1]), 'capa'); }, 450);
       if (cv === 1 && !E.vistoS) { E.vistoS = true; pista(L('Hoja blanca: ¡no toques!', 'White leaf: don’t tap!')); }
     }
-    if (!E.vistoD && notas.some(n => n.on && n.tipo === 'doble' && n.t - t < ANTES && n.t > t)) { E.vistoD = true; pista(L('Hoja dorada: sube más, si te atreves', 'Golden leaf: climb higher, if you dare')); }
+    if (!E.vistoD && hayDorada(t)) { E.vistoD = true; pista(L('Hoja dorada: sube más, si te atreves', 'Golden leaf: climb higher, if you dare')); }
     // cuenta 3, 2, 1, ¡ya!
     const b0 = E.bCuenta;
     const k = t >= E.tCuenta && t < E.tCuenta + 4 * b0 ? Math.floor((t - E.tCuenta) / b0) : -1;
     if (k !== E.cuenta) { E.cuenta = k; pintarCuenta(); }
-    if (E.mezcla < 1 && (E.mezcla = Math.min(1, E.mezcla + dt / 1.2)) >= 1) for (let i = 0; i < 4; i++) if (i !== E.capaVis) capas[i] = null; // solo queda pintada la capa a la vista
+    if (E.mezcla < 1 && (E.mezcla = Math.min(1, E.mezcla + dt / 1.2)) >= 1) for (let i = 0; i < 4; i++) if (i !== E.capaVis && i !== E.capaMeta) capas[i] = null; // solo quedan la capa a la vista y la que viene
     E.hop = Math.max(0, E.hop - dt * 2.4); E.sq = Math.max(0, E.sq - dt * 5); E.flash = Math.max(0, E.flash - dt * 4); E.plano = Math.max(0, E.plano - dt * 1.2);
     if (E.pistaT > 0 && (E.pistaT -= dt) <= 0 && el) q('pista').classList.add('cp-oculta');
     if (E.genT >= DUR && t > ultima + 0.6) fin();
   }
+  function hayDorada(t) { for (const n of notas) if (n.on && n.tipo === 'doble' && n.t - t < ANTES && n.t > t) return true; return false; }
   function pasoChispas(dt) {
     for (const p of chis) { if (!p.on) continue; p.vida -= dt; if (p.vida <= 0) { p.on = false; continue; } p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 120 * dt; }
   }
@@ -226,11 +237,12 @@ window.AVCompas = function (G) {
   function copa(x, cx0, cy, r, col, luz) { x.fillStyle = col; x.beginPath(); for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; x.moveTo(cx0 + Math.cos(a) * r * 0.55 + r * 0.5, cy + Math.sin(a) * r * 0.4); x.arc(cx0 + Math.cos(a) * r * 0.55, cy + Math.sin(a) * r * 0.4, r * 0.5, 0, Math.PI * 2); } x.fill(); if (luz) { x.fillStyle = luz; x.beginPath(); x.arc(cx0 - r * 0.25, cy - r * 0.3, r * 0.32, 0, Math.PI * 2); x.fill(); } }
   function fronda(x, bx, by, largo, ang, col) { x.strokeStyle = col; x.fillStyle = col; x.lineWidth = Math.max(2, largo * 0.03); x.beginPath(); const ex = bx + Math.cos(ang) * largo, ey = by + Math.sin(ang) * largo; x.moveTo(bx, by); x.quadraticCurveTo((bx + ex) / 2 + largo * 0.2, (by + ey) / 2, ex, ey); x.stroke(); for (let i = 1; i < 9; i++) { const k = i / 9, px = bx + (ex - bx) * k + largo * 0.2 * Math.sin(k * Math.PI) * 0.6, py = by + (ey - by) * k, l = largo * 0.22 * (1 - k * 0.7); for (const s of [-1, 1]) { x.beginPath(); x.ellipse(px + Math.cos(ang + s * 1.1) * l * 0.5, py + Math.sin(ang + s * 1.1) * l * 0.5, l * 0.5, l * 0.14, ang + s * 1.1, 0, Math.PI * 2); x.fill(); } } }
   function pintarCapa(i) {
-    const W = lay.W, H = lay.H, f = lienzo(W, H), m = lienzo(W, H), c = lienzo(W, H), tira = lienzo(1, 1).getContext('2d');
+    // a la densidad de la pantalla (nítido en retina), con un tope de píxeles por lienzo para no pasarse de memoria en Safari
+    const W = lay.W, H = lay.H, k = Math.max(1, Math.min(lay.dpr, Math.sqrt(2.4e6 / (W * H)))), f = lienzo(W * k, H * k), m = lienzo(W * k, H * k), c = lienzo(W * k, H * k), tira = lienzo(1, 1).getContext('2d');
     // medio y cerca se repiten en horizontal: se pintan tres veces (−W, 0, +W) con la misma semilla para que el borde no se note
     for (const dx of [0, -W, W]) {
       const xf = dx ? tira : f.getContext('2d'), xm = m.getContext('2d'), xc = c.getContext('2d'), r = rng(7 + i * 31);
-      xm.setTransform(1, 0, 0, 1, dx, 0); xc.setTransform(1, 0, 0, 1, dx, 0);
+      if (!dx) xf.setTransform(k, 0, 0, k, 0, 0); xm.setTransform(k, 0, 0, k, dx * k, 0); xc.setTransform(k, 0, 0, k, dx * k, 0);
       if (i === 0) { // sotobosque: verde hondo, rayos de luz, troncos y helechos
         xf.fillStyle = grad(xf, H, ['#0d3526', '#1d5a3a', '#3f7d3a']); xf.fillRect(0, 0, W, H);
         xf.fillStyle = 'rgba(255,250,200,.07)'; for (let k = 0; k < 5; k++) { const x0 = r() * W; xf.beginPath(); xf.moveTo(x0, 0); xf.lineTo(x0 + 40 + r() * 50, 0); xf.lineTo(x0 - W * 0.25 + 120, H); xf.lineTo(x0 - W * 0.25, H); xf.fill(); }
@@ -256,11 +268,17 @@ window.AVCompas = function (G) {
         for (let k = 0; k < 3; k++) nube(xc, (k + r() * 0.5) * W / 3, H * (0.8 + r() * 0.15), 150 + r() * 80, 'rgba(255,248,235,.9)');
       }
     }
-    for (const x of [m, c]) x.getContext('2d').setTransform(1, 0, 0, 1, 0, 0);
+    for (const x of [f, m, c]) x.getContext('2d').setTransform(1, 0, 0, 1, 0, 0);
     capas[i] = { fondo: f, medio: m, cerca: c };
     return capas[i];
   }
   const capa = i => capas[i] || pintarCapa(i);
+  let preId = 0; // la capa que viene se pinta antes, fuera del cuadro del cambio (sin tirón al llegar la racha)
+  function prepintar(i) {
+    if (preId || capas[i] || !cx) return;
+    const hazlo = () => { preId = 0; if (E.fase === 'juego' && !capas[i] && lay.W) pintarCapa(i); };
+    preId = window.requestIdleCallback ? requestIdleCallback(hazlo, { timeout: 1200 }) : setTimeout(hazlo, 60);
+  }
   function medir() {
     if (!cv) return;
     const W = Math.max(1, innerWidth), H = Math.max(1, innerHeight), dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -268,9 +286,9 @@ window.AVCompas = function (G) {
     lay.W = W; lay.H = H; lay.dpr = dpr;
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     lay.S = Math.max(110, Math.min(250, W * 0.4, H * 0.3));
-    lay.vx = Math.round(W * (W > H ? 0.32 : 0.36)); lay.vy = Math.round(Math.max(80 + lay.S * 0.5, H * 0.42));
+    lay.vx = Math.round(W * (W > H ? 0.32 : 0.28)); lay.vy = Math.round(Math.max(80 + lay.S * 0.5, H * 0.42));
     lay.laneY = Math.round(Math.min(H - 70, lay.vy + lay.S * 0.58 + 22)); lay.r = Math.max(24, Math.min(34, lay.S * 0.16));
-    lay.vel = (W - lay.vx + 40) / ANTES;
+    lay.vel = Math.max((W - lay.vx + 40) / ANTES, 2.2 * lay.r / (30 / BPM_MAX)); // en vertical, las corcheas más rápidas no se montan (hoja ≈ 1,9 r de ancho)
     capas[0] = capas[1] = capas[2] = capas[3] = null;
     if (el) { // el aviso va encima de Vittata; en horizontal bajo, a su derecha (encima no cabe sin tapar el HUD)
       const fb = q('fb'), lado = lay.lado = H < 500 && W > H; fb.classList.toggle('lado', lado);
@@ -301,8 +319,9 @@ window.AVCompas = function (G) {
     let latido = 0;
     if (E.fase === 'juego' && !red && t >= E.tCuenta) { const ph = ((t - E.compasT) / E.compasB) % 1; latido = ph >= 0 ? Math.max(0, 1 - ph * 4) : 0; }
     cx.lineWidth = 5; cx.strokeStyle = '#fff8e6';
-    cx.fillStyle = E.flash > 0 ? (E.flashC === 1 ? 'rgba(255,210,63,' : E.flashC === 2 ? 'rgba(255,255,255,' : 'rgba(157,240,122,') + (0.25 + 0.6 * E.flash) + ')' : 'rgba(255,248,230,.18)';
-    cx.beginPath(); cx.arc(vx, y, r * (1 + latido * 0.12), 0, Math.PI * 2); cx.fill(); cx.stroke();
+    cx.beginPath(); cx.arc(vx, y, r * (1 + latido * 0.12), 0, Math.PI * 2);
+    if (E.flash > 0) { cx.globalAlpha = 0.25 + 0.6 * E.flash; cx.fillStyle = COL_CHIS[E.flashC === 1 ? 1 : E.flashC === 2 ? 2 : 0]; } else cx.fillStyle = 'rgba(255,248,230,.18)';
+    cx.fill(); cx.globalAlpha = 1; cx.stroke();
     cx.lineWidth = 2; cx.strokeStyle = 'rgba(255,248,230,.6)'; cx.beginPath(); cx.arc(vx, y, r * 0.55, 0, Math.PI * 2); cx.stroke();
     // hojas que llegan desde la derecha
     if (HOJA) for (const n of notas) {
@@ -330,10 +349,11 @@ window.AVCompas = function (G) {
       const S = lay.S, hop = red ? E.hop * 0.25 : E.hop, sq = red ? 0 : E.sq, bob = red ? 0 : Math.sin(t * 2.2) * 4;
       const yy = lay.vy - hop * S * 0.18 + bob + E.plano * 10;
       cx.save(); cx.translate(vx, yy); cx.rotate(E.plano * 0.18 - hop * 0.05); cx.scale(1 - sq * 0.06, 1 + sq * 0.08);
-      if (E.sq > 0.1 && !red) { cx.strokeStyle = 'rgba(255,255,255,' + (E.sq * 0.7) + ')'; cx.lineWidth = 4; cx.lineCap = 'round'; for (let s = -1; s <= 1; s += 2) { cx.beginPath(); cx.moveTo(s * S * 0.2, -S * 0.1); cx.quadraticCurveTo(s * S * 0.46, -S * 0.32, s * S * 0.52, -S * 0.02); cx.stroke(); } }
+      if (E.sq > 0.1 && !red) { cx.globalAlpha = E.sq * 0.7; cx.strokeStyle = '#ffffff'; cx.lineWidth = 4; cx.lineCap = 'round'; for (let s = -1; s <= 1; s += 2) { cx.beginPath(); cx.moveTo(s * S * 0.2, -S * 0.1); cx.quadraticCurveTo(s * S * 0.46, -S * 0.32, s * S * 0.52, -S * 0.02); cx.stroke(); } cx.globalAlpha = 1; }
       cx.drawImage(img, -S / 2, -S / 2, S, S);
       cx.restore();
     }
+    if (E.fase === 'fin') { cx.fillStyle = 'rgba(8,22,16,.6)'; cx.fillRect(0, 0, W, H); } // detrás del panel final: el juego queda en penumbra, sin fantasmas
   }
   function cuadro(ts) {
     raf = 0;
@@ -362,13 +382,13 @@ window.AVCompas = function (G) {
       '#compas .cp-hud{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 10px);display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);box-sizing:border-box;padding:6px 8px 6px 14px;border-radius:22px;background:rgba(16,36,28,.82);font-weight:600;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.35)}' +
       '@media (max-width:599px),(max-height:500px){#compas .cp-hud{flex-wrap:nowrap;gap:10px;padding-left:12px}#compas .cp-alt{font-size:17px!important;white-space:nowrap}#compas .cp-racha{white-space:nowrap}#compas .cp-rec{display:none}}' +
       '#compas .cp-alt{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}#compas .cp-racha{font-variant-numeric:tabular-nums}#compas .cp-rec{opacity:.85;font-size:14px}' +
-      '#compas button{min-height:44px;min-width:44px;padding:4px 16px;border-radius:22px;border:0;font:700 16px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer;touch-action:manipulation}#compas button.salir{background:#ffd0c4}#compas button:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}' +
+      '#compas button{min-height:44px;min-width:44px;padding:4px 16px;border-radius:22px;border:0;font:700 16px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer;touch-action:manipulation}#compas button.salir{background:#ffd0c4}#compas button:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}#compas .cp-fin:focus{outline:none}' +
       '#compas .cp-fb{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;padding:4px 14px;border-radius:999px;font-weight:700;font-size:20px;pointer-events:none;background:rgba(16,36,28,.78)}#compas .cp-fb:empty{display:none}#compas .cp-fb.lado{transform:translate(0,-50%)}#compas .cp-fb.lado.pop{animation:none}' +
       '#compas .cp-fb.perf{background:#fff8e6;color:#1f5a2a}#compas .cp-fb.bien{background:#9df07a;color:#173b12}#compas .cp-fb.casi{background:rgba(16,36,28,.78);color:#ffe0b8}#compas .cp-fb.racha,#compas .cp-fb.capa{background:#ffd23f;color:#3b2a14;font-size:22px}' +
       '#compas .cp-fb.pop{animation:cp-pop .35s ease-out}@keyframes cp-pop{0%{transform:translate(-50%,-80%) scale(.7)}60%{transform:translate(-50%,-105%) scale(1.08)}100%{transform:translate(-50%,-100%) scale(1)}}' +
       '#compas .cp-cuenta{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:min(22vw,120px);font-weight:700;text-shadow:0 4px 18px rgba(0,0,0,.45);pointer-events:none}#compas .cp-cuenta:empty{display:none}' +
       '#compas .cp-pista{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;text-align:center;padding:8px 16px;border-radius:18px;background:rgba(16,36,28,.8);font-size:16px;font-weight:600;pointer-events:none;transition:opacity .4s}#compas .cp-pista.cp-oculta{opacity:0}' +
-      '#compas .cp-fin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(380px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:24px;background:rgba(16,36,28,.94);text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;gap:8px;touch-action:manipulation}' +
+      '#compas .cp-fin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(380px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:24px;background:rgba(16,36,28,.98);text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;gap:8px;touch-action:manipulation}' +
       '#compas .cp-fin h2{margin:0;font-size:26px}#compas .cp-gran{font-size:46px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#compas .cp-fin p{margin:0;font-size:17px;font-weight:600}#compas .cp-det{font-size:15px!important;opacity:.85;font-weight:500!important}#compas .cp-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}#compas .cp-bots button{min-height:54px;padding:6px 22px;font-size:17px;border-radius:27px}' +
       '@media (orientation:landscape) and (max-height:500px){#compas .cp-fin{padding:12px 16px;gap:4px}#compas .cp-fin h2{font-size:21px}#compas .cp-gran{font-size:36px}#compas .cp-pista{font-size:14px;padding:6px 12px}}' +
       '@media (prefers-reduced-motion:reduce){#compas .cp-fb.pop{animation:none}#compas .cp-pista{transition:none}}.mov-reducido #compas .cp-fb.pop{animation:none}.mov-reducido #compas .cp-pista{transition:none}' +
@@ -382,7 +402,7 @@ window.AVCompas = function (G) {
     el.innerHTML = '<canvas aria-hidden="true"></canvas>' +
       '<div class="cp-hud"><b id="cp-tit" data-k="tit"></b><span class="cp-alt" data-k="alt"></span><span class="cp-racha" data-k="racha"></span><span class="cp-rec" data-k="rec"></span><button type="button" class="salir" data-a="salir"></button></div>' +
       '<div class="cp-fb" data-k="fb" aria-live="polite"></div><div class="cp-cuenta" data-k="cuenta" aria-hidden="true"></div><div class="cp-pista" data-k="pista"></div>' +
-      '<div class="cp-fin" data-k="fin" role="group" aria-labelledby="cp-fin-t" hidden><h2 id="cp-fin-t" data-k="ft"></h2><div class="cp-gran" data-k="fn"></div><p data-k="fmsg" aria-live="polite"></p><p class="cp-det" data-k="fdet"></p><div class="cp-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div></div>';
+      '<div class="cp-fin" data-k="fin" role="group" aria-labelledby="cp-fin-t" tabindex="-1" hidden><h2 id="cp-fin-t" data-k="ft"></h2><div class="cp-gran" data-k="fn"></div><p data-k="fmsg" aria-live="polite"></p><p class="cp-det" data-k="fdet"></p><div class="cp-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div></div>';
     cv = el.querySelector('canvas'); cx = cv.getContext('2d');
     img = new Image(); img.decoding = 'async'; img.src = 'assets/vittata.png';
     el.addEventListener('pointerdown', e => {
@@ -403,7 +423,7 @@ window.AVCompas = function (G) {
     if (!el) return;
     const t = q('tit'); t.textContent = L('Alas al compás', 'Wings on the Beat'); t.hidden = estrecho();
     q('alt').textContent = L(`Altura: ${E.metros} m`, `Height: ${E.metros} m`);
-    q('racha').textContent = L('Racha ', 'Streak ') + E.racha;
+    q('racha').textContent = L('Racha ', 'Streak ') + E.racha + (mult() > 1 ? ' ×' + mult() : '');
     q('rec').textContent = E.mejor ? L('Récord ', 'Best ') + E.mejor + ' m' : '';
     el.querySelector('.cp-hud [data-a="salir"]').textContent = L('Salir', 'Exit');
     el.setAttribute('aria-label', L('Alas al compás', 'Wings on the Beat'));
@@ -436,7 +456,8 @@ window.AVCompas = function (G) {
     Object.assign(E, { fase: 'juego', manual: !!o.manual, semilla0: o.semilla || 0, tm: 0, genT: 0.6, tCuenta: 0.6, bCuenta: 60 / BPM[0], inicio: 0.6 + 240 / BPM[0], compasT: 0.6, compasB: 60 / BPM[0], nComp: 0, capa: 0, capaMeta: 0, vuelta: 0, capaVis: 0, capaAnt: 0, mezcla: 1,
       metros: 0, racha: 0, mejorRacha: 0, perfectos: 0, bienes: 0, fallos: 0, dobles: 0, calN: 0, offset: 0, ultToque: -9, ultimoT: 0,
       mejor: rec ? rec.mejor : 0, mejorRachaRec: rec && Number.isInteger(rec.racha) ? rec.racha : 0, jugadas: rec && Number.isInteger(rec.jugadas) ? rec.jugadas : 0,
-      nuevo: false, hop: 0, sq: 0, inclina: 0, plano: 0, flash: 0, cuenta: -1, pistaT: 0, vistoS: false, vistoD: false });
+      nuevo: false, hop: 0, sq: 0, inclina: 0, plano: 0, flash: 0, cuenta: -1, pistaT: 0, vistoS: false, vistoD: false, ultT: 0, finP: 0 });
+    if (logroId) { clearTimeout(logroId); logroId = 0; }
     const c = !E.manual && ac();
     E.fuente = c ? 'audio' : 'perf'; E.t0 = c ? c.currentTime : performance.now() / 1000;
     el.hidden = false; q('fin').hidden = true; el.querySelector('.cp-hud').hidden = false; q('fb').textContent = ''; q('cuenta').textContent = '';
@@ -459,17 +480,23 @@ window.AVCompas = function (G) {
     if (E.mejorRacha > E.mejorRachaRec) E.mejorRachaRec = E.mejorRacha;
     guardarRec(E.mejor, E.mejorRachaRec, E.jugadas);
     try { G.emit('record', { modo: 'compas', puntos: E.metros, racha: E.mejorRacha }); } catch (e) { /* */ }
-    sonar('panel_final'); if (E.nuevo && E.metros > 0) setTimeout(() => sonar('logro'), 700);
+    sonar('panel_final'); if (E.nuevo && E.metros > 0) logroId = setTimeout(() => { logroId = 0; if (E.fase === 'fin') sonar('logro'); }, 700);
     q('fb').textContent = ''; q('cuenta').textContent = ''; q('pista').classList.add('cp-oculta');
     pintarHud(); pintarFin(); q('fin').hidden = false; el.querySelector('.cp-hud').hidden = true;
-    const otra = el.querySelector('[data-a="otra"]'); setTimeout(() => { try { if (E.fase === 'fin') otra.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
+    // el foco va al panel (no a «Otra vez»): un Espacio de los últimos compases no arranca otra partida sin ver el resultado; Tab lleva a los botones
+    const pf = q('fin'); setTimeout(() => { try { if (E.fase === 'fin') pf.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
   }
+  let logroId = 0;
   const activo = () => E.fase !== 'nada';
   function salir() {
     if (!activo()) return false;
     E.fase = 'nada';
     for (const n of notas) n.on = false; for (const e of evs) e.on = false; for (const p of chis) p.on = false;
     if (raf) { cancelAnimationFrame(raf); raf = 0; }
+    if (logroId) { clearTimeout(logroId); logroId = 0; }
+    if (preId) { if (window.cancelIdleCallback) cancelIdleCallback(preId); clearTimeout(preId); preId = 0; }
+    capas[0] = capas[1] = capas[2] = capas[3] = null; // sin lienzos grandes vivos junto al mundo 3D (memoria de Safari en iPhone)
+    if (cv) { cv.width = cv.height = 1; lay.W = lay.H = 0; }
     if (el) { el.hidden = true; q('fin').hidden = true; el.querySelectorAll('[data-k]').forEach(x => { if (x.dataset.k !== 'fin') x.textContent = ''; }); el.querySelectorAll('button').forEach(b => { b.textContent = ''; }); } // sin texto viejo (ni en otro idioma)
     document.body.classList.remove('compas-on');
     try { if (G.pausa && G.pausa.set) G.pausa.set('compas', false); } catch (e) { /* sin pausa */ }
@@ -478,7 +505,14 @@ window.AVCompas = function (G) {
   addEventListener('keydown', e => {
     if (!activo()) return;
     if (e.key === 'Escape') { if (e.repeat) return; e.preventDefault(); e.stopImmediatePropagation(); salir(); return; }
-    if (E.fase !== 'juego' || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (E.fase === 'fin') { // el panel final es modal: las teclas del mundo (P, M, 1-7…) no pasan; Tab, Enter y Espacio van a los botones (no en el primer segundo)
+      if (e.key === 'Tab') return;
+      const boton = (e.key === 'Enter' || e.key === ' ') && performance.now() / 1000 - E.finP > 1 && e.target && e.target.closest && e.target.closest('#compas button');
+      e.stopImmediatePropagation(); if (!boton) e.preventDefault();
+      return;
+    }
+    if (E.fase !== 'juego') return;
     if (e.key === ' ' || e.key === 'ArrowUp' || /^[a-zA-Z0-9ñÑ]$/.test(e.key)) {
       e.preventDefault(); e.stopImmediatePropagation(); if (e.repeat) return;
       if (E.manual) tocar(); else tocar(ahora() - Math.max(0, Math.min(0.1, (performance.now() - e.timeStamp) / 1000)));
@@ -513,6 +547,7 @@ window.AVCompas = function (G) {
       // 8 seguidos: ¡Racha!, capa 2 (copas, 105 ppm, silencios)
       let nR = 0; while (E.racha < 8 && nR++ < 30) { const g = golpes()[0]; irA(g.t + E.offset); tecla(' '); }
       check('8 seguidos: «¡Racha de 8!» y la capa siguiente (105 ppm)', E.racha === 8 && E.capaMeta === 1 && bpm() === 105 && /Racha de 8/.test(q('fb').textContent), q('fb').textContent + ' · ' + bpm());
+      { const g = golpes()[0], m0 = E.metros; irA(g.t + E.offset); tecla(' '); check('Con racha de 8 o más sube el doble (×2 en el HUD)', E.metros === m0 + 4 && /×2/.test(q('racha').textContent), (E.metros - m0) + ' · ' + q('racha').textContent); }
       let nS = 0; while (E.capaVis !== 1 && nS++ < 40) { const g = golpes()[0]; irA(g.t + E.offset); tecla(' '); }
       await new Promise(r => setTimeout(r, 520));
       check('Al llegar su compás cambia el paisaje: «Llegaste a las copas»', E.capaVis === 1 && /Llegaste a las copas/.test(q('fb').textContent), E.capaVis + ' · ' + q('fb').textContent);
@@ -527,13 +562,34 @@ window.AVCompas = function (G) {
       // Hoja dorada opcional: sube 3 con perfecto
       { const d = nota(E.tm + 1, 'doble'); const m0 = E.metros; irA(d.t + E.offset); tecla(' '); check('Hoja dorada (doble) a tiempo: +3 m', d.res === 'perfecto' && E.metros === m0 + 3 && E.dobles === 1, E.metros - m0);
         const d2 = nota(E.tm + 1, 'doble'); for (const n of notas) if (n !== d2 && n.on && !n.res && n.t < d2.t + 0.8) n.on = false; const r0 = E.racha, m1 = E.metros; irA(d2.t + 0.5); check('Dejar pasar la dorada no castiga', d2.res === 'perdida' && E.racha === r0 && E.metros === m1, d2.res + ' · ' + r0 + ' → ' + E.racha); }
-      check('Sin asignaciones por cuadro: grupos fijos de hojas, sonidos y chispas', notas.length === NN && evs.length === NE && chis.length === NP && notas.filter(n => n.on).length < NN && evs.filter(e => e.on).length < NE);
+      // Golpe entre una dorada o un silencio: el toque es del golpe (no rompe la racha)
+      { const limpiar = () => { for (const n of notas) if (n.on && !n.res) n.on = false; };
+        limpiar(); const T = E.tm + 1.5, o = E.offset, d = nota(T - 0.227, 'doble'), g1 = nota(T, 'golpe'), r0 = E.racha;
+        irA(T - 0.12 + o); tecla(' ');
+        check('Toque 0,12 s antes de un golpe con una dorada a 0,227 s: es del golpe y la dorada queda libre', g1.res === 'perfecto' && !d.res && E.racha === r0 + 1, g1.res + '/' + d.res);
+        limpiar(); const T2 = E.tm + 1.5, s1 = nota(T2 - 0.25, 'silencio'), g2 = nota(T2, 'golpe'), r1 = E.racha;
+        irA(T2 - 0.13 + o); tecla(' ');
+        check('Toque 0,13 s antes de un golpe con un silencio a 0,25 s: cuenta el golpe, sin «¡Casi!»', g2.res === 'bien' && !s1.res && E.racha === r1 + 1, g2.res + '/' + s1.res);
+        limpiar(); const T3 = E.tm + 1.5, d3 = nota(T3, 'doble'), g3 = nota(T3 + 0.227, 'golpe'), r2 = E.racha;
+        irA(T3 + 0.01 + o); tecla(' ');
+        check('Toque justo en la dorada (el golpe a más de 120 ms): es de la dorada', d3.res === 'perfecto' && !g3.res && E.racha === r2 + 1, d3.res + '/' + g3.res);
+        limpiar(); }
+      check('Sin asignaciones por cuadro: grupos fijos, y la lógica y el dibujo sin cierres .some/.find ni colores armados con «+»', notas.length === NN && evs.length === NE && chis.length === NP && notas.filter(n => n.on).length < NN && evs.filter(e => e.on).length < NE && ![logica, dibujar].some(f => /\.(some|filter|find|map)\(|'rgba\([^']*'\s*\+/.test(String(f))));
+      // El audio se para a media partida (suspend, Siri): el tiempo sigue sin salto
+      if (A) { const ctx0 = A.ctx, man0 = E.manual, f0 = E.fuente, t00 = E.t0, uT = E.ultT; let okA = false, info = '';
+        try { const fake = { state: 'running', currentTime: 500 }; A.ctx = fake; E.manual = false; E.fuente = 'audio'; E.t0 = 500 - 20; const a1 = ahora(); fake.state = 'interrupted'; const a2 = ahora();
+          okA = Math.abs(a1 - 20) < 1e-6 && Math.abs(a2 - 20) < 0.05 && E.fuente === 'perf'; info = a1.toFixed(2) + ' → ' + a2.toFixed(2) + ' · ' + E.fuente; }
+        catch (e) { info = e.message; } finally { A.ctx = ctx0; E.manual = man0; E.fuente = f0; E.t0 = t00; E.ultT = uT; }
+        check('Si el audio deja de sonar (suspend o «interrupted»), el reloj pasa a performance.now() sin saltar', okA, info); }
       // «Reducir movimiento»: sin chispas ni estela
       if (A) { A.reducido = true; for (const p of chis) p.on = false; const g = golpes()[0]; irA(g.t + E.offset); tecla(' '); check('Con «Reducir movimiento» no salen chispas ni estela', E.perfectos >= 2 && !chis.some(p => p.on)); A.reducido = red0; }
       // Fin: el tiempo se acaba
       aviso(L('¡Perfecto!', 'Perfect!'), 'perf'); const ladoOk = q('fb').classList.contains('lado') === (innerHeight < 500 && innerWidth > innerHeight); const hr = el.querySelector('.cp-hud').getBoundingClientRect(), fbr = q('fb').getBoundingClientRect();
       const metros = E.metros; let nF = 0; while (E.fase === 'juego' && nF++ < 200) paso(1);
       check('Al terminar la música (≈ 90 s): panel con la altura, «¡Nuevo récord!», «Otra vez» y «Salir»', E.fase === 'fin' && !q('fin').hidden && q('fn').textContent === metros + ' m' && new RegExp('Nuevo récord: ' + metros + ' m').test(q('fmsg').textContent) && /Racha más larga: \d+/.test(q('fdet').textContent), q('fmsg').textContent);
+      await new Promise(r => setTimeout(r, 30));
+      { const fe = document.activeElement, tP = tecla('p'), tE = tecla(' ');
+        check('Con el panel final, las teclas del mundo no pasan (P, M…) y un Espacio no arranca otra partida; el foco va al panel', tP.defaultPrevented && tE.defaultPrevented && E.fase === 'fin' && fe === q('fin') && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('menu')), (fe && (fe.dataset.k || fe.tagName)) + ' · ' + E.fase); }
       const rg = leerRec(); check('El récord (metros, racha más larga y jugadas) se guarda en este dispositivo', rg && rg.mejor === metros && rg.racha === E.mejorRacha && rg.jugadas === 1, JSON.stringify(rg));
       const bots = [...q('fin').querySelectorAll('button')].map(b => b.getBoundingClientRect()), fr = q('fin').getBoundingClientRect();
       check('Cabe en la pantalla: panel dentro, sin el HUD encima; «Otra vez» y «Salir» ≥ 54 px', bots.every(b => b.height >= 54 && b.width >= 54) && fr.left >= 0 && fr.right <= innerWidth && fr.top >= 0 && fr.bottom <= innerHeight && el.querySelector('.cp-hud').hidden && hr.left >= 0 && hr.right <= innerWidth && hr.bottom < innerHeight * 0.3 && hr.height <= 72 && lay.laneY + lay.r < innerHeight && lay.vy - lay.S / 2 > hr.bottom - 30 && (fbr.top >= hr.bottom || fbr.left >= hr.right || fbr.right <= hr.left) && ladoOk, `${innerWidth}×${innerHeight} · panel ${Math.round(fr.width)}×${Math.round(fr.height)} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)} · aviso ${Math.round(fbr.left)},${Math.round(fbr.top)}`);
@@ -549,7 +605,13 @@ window.AVCompas = function (G) {
         ae.idioma = idi0; pintarHud(); pintarFin();
       }
       el.querySelector('.cp-fin [data-a="salir"]').click();
-      check('«Salir» lo quita todo (lienzo, clase, pausa y bucle), sin pausa colgada', !activo() && el.hidden && !document.body.classList.contains('compas-on') && !raf && (!G.pausa || !G.pausa.motivos || !G.pausa.motivos.has('compas')) && !notas.some(n => n.on));
+      check('«Salir» lo quita todo (lienzo, clase, pausa y bucle), sin pausa colgada, y suelta la memoria (capas y lienzo a 1 px, sin «logro» pendiente)', !activo() && el.hidden && !document.body.classList.contains('compas-on') && !raf && (!G.pausa || !G.pausa.motivos || !G.pausa.motivos.has('compas')) && !notas.some(n => n.on) && capas.every(c => !c) && cv.width === 1 && !logroId);
+      // Machacar sin mirar el ritmo no compensa: frente a seguir el compás, menos de la mitad
+      { jugar({ manual: true, semilla: 3 }); let n = 0; while (E.fase === 'juego' && n++ < 400) { paso(0.333); tocar(); } const mMach = E.metros;
+        jugar({ manual: true, semilla: 3 }); n = 0; while (E.fase === 'juego' && n++ < 600) { const g = golpes()[0]; if (!g) { paso(0.5); continue; } irA(g.t + 0.02); tocar(); } const mBien = E.metros, vMax = E.vuelta, bMax = bpm();
+        check('Machacar cada 0,333 s da menos de la mitad que seguir el compás; en el cielo abierto +4 ppm cada 16 (tope ' + BPM_MAX + ')', mMach * 2 < mBien && bMax <= BPM_MAX && BPM_MAX <= 148, mMach + ' m frente a ' + mBien + ' m · vuelta ' + vMax + ' · ' + bMax + ' ppm');
+        check('Las corcheas más rápidas no se montan en el carril (separación ≥ ancho de hoja)', lay.vel * (30 / BPM_MAX) >= 1.9 * lay.r, Math.round(lay.vel * 30 / BPM_MAX) + ' px · hoja ' + Math.round(1.9 * lay.r));
+        salir(); try { localStorage.removeItem(ALM); } catch (e) { /* */ } }
       jugar({ manual: true, semilla: 3 });
       const ev = tecla('Escape');
       check('Esc en plena partida también sale', !activo() && ev.defaultPrevented && el.hidden && (!G.pausa || !G.pausa.motivos || !G.pausa.motivos.has('compas')));
