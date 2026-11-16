@@ -1276,6 +1276,8 @@ window.AV_EN = {
  "¡Lo logramos! Mi familia tiene un techo.": "We did it! My family has a roof.",
  "¡Lo logramos! …¿Oyes eso? Viene más lluvia.": "We did it! …Do you hear that? More rain is coming.",
  "¡Lo sabía! ¡Solo era ajustar el equilibrio!": "I knew it! It just needed the balance adjusted!",
+ "¡Lo tienes todo!": "You've got it all!",
+ "¡Pasaste a {}!": "You passed {}!",
  "¡Lo tienes! Llévalo volando a la caja nido del cartel.": "You got it! Fly it to the nest box on the sign.",
  "¡Lo tienes! Suéltalo con Acción donde el agua no llegue.": "You got it! Drop it with Action where the water can't reach.",
  "¡Los coquíes! Hay tres escondidos en los arbustos que brillan. Tú imitas cualquier canto, ¿verdad?": "The coquís! There are three hidden in the glowing bushes. You can imitate any song, right?",

@@ -1005,7 +1005,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     }
 
     const C = { fase: 'nada', t: 0, cuenta: 0, sig: 0, sJug: 0, objetos: [], corrientes: [], rivales: [], llegadas: [], boostT: 0, ultCorriente: null,
-      tiempo: 0, puesto: 0, finT: 0, q: {}, ya: false, tags: [], fan: null, grab: null };
+      tiempo: 0, puesto: 0, finT: 0, q: {}, ya: false, tags: [], fan: null, grab: null, puestoAnt: 0, adelT: 0, adelantos: 0, adelSaltos: 0 };
     const CARRERA = {
       iniciar() {
         mats();
@@ -1134,6 +1134,29 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     }
     function progresoRival(r) { return r.llego ? ruta.R.largo + 1000 - r.tLlegada : r.s; }
     function puestoActual() { const p = progresoJugador(); let n = 1; for (const r of C.rivales) if (progresoRival(r) > p) n++; return n; }
+    // F4-20 (docs/diseno/F4_GAME_FEEL.md): al mejorar de puesto, «r_punto» agudo, el número del PUESTO salta y aviso «¡Pasaste a
+    // Mango!» (la rival que iba justo delante). Una vez cada ADEL.esperaS s como mucho (dos que van parejas no lo repiten sin parar).
+    // «Reducir movimiento» (sistema o menú): sin salto; el sonido y el aviso se quedan. Solo en la carrera con rivales.
+    const ADEL = { esperaS: 1.5, tono: 9 };
+    const KF_PUESTO = [{ transform: 'scale(1)' }, { transform: 'scale(1.5)', offset: 0.35 }, { transform: 'scale(0.94)', offset: 0.7 }, { transform: 'scale(1)' }];
+    const OPT_PUESTO = { duration: 380, easing: 'cubic-bezier(.34,1.56,.64,1)' };
+    function adelantar(p, dt) {
+      if (C.fase !== 'juego' || C.rio) { C.puestoAnt = p; C.adelT = 0; for (const r of C.rivales) r.delante = undefined; return; }
+      C.adelT = Math.max(0, C.adelT - (dt || 0));
+      const pj = progresoJugador(); let pasada = null, sp = Infinity;
+      for (const r of C.rivales) {
+        const pr = progresoRival(r), d = pr > pj;
+        if (r.delante === true && !d && pr < sp) { pasada = r; sp = pr; } // de las que pasó, la que iba más cerca
+        r.delante = d;
+      }
+      if (pasada && C.puestoAnt && p < C.puestoAnt && C.adelT <= 0) {
+        C.adelT = ADEL.esperaS; C.adelantos++;
+        sonar('r_punto', ADEL.tono);
+        aviso('¡Pasaste a ' + pasada.def.nombre + '!');
+        if (!(REDUCED || (A && A.reducido === true)) && ui.pos.animate) { try { ui.pos.animate(KF_PUESTO, OPT_PUESTO); C.adelSaltos++; } catch (e) { /* sin animación */ } }
+      }
+      C.puestoAnt = p;
+    }
     function actualizarCarrera(dt) {
       const Rr = ruta.R; if (!Rr || C.fase === 'nada') return;
       const q = C.q;
@@ -1316,6 +1339,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       {
         const p = C.fase === 'fin' ? C.puesto : puestoActual();
         pon(ui.pos, p + (p === 1 || p === 3 ? '.er' : '.º'));
+        adelantar(p, dt); // F4-20
         pon(ui.tiempo, reloj(C.fase === 'fin' ? C.tiempo : C.t));
         pon(ui.pts, Math.min(C.sig, Rr.puntos.length - 1) + '/' + (Rr.puntos.length - 1));
         const o = C.objetos[Math.min(C.sig, C.objetos.length - 1)].userData;
@@ -1695,6 +1719,20 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         check('Goma: muy por detrás del jugador aceleran', C.rivales.every(r => r.v > r.def.base * 1.05), C.rivales.map(r => r.v.toFixed(1)).join('/'));
         modo.render(0.016);
         check('Puesto en el HUD con el jugador delante: 1.er/4', ui.pos.textContent === '1.er');
+        // F4-20: al mejorar de puesto, «r_punto» agudo una vez, el PUESTO salta y «¡Pasaste a …!»; con «Reducir movimiento» del menú sin salto
+        {
+          const red0 = A.reducido, nombres = RIVALES.map(r => r.nombre);
+          const a0 = C.adelantos, s0 = C.adelSaltos, txt = ui.aviso.textContent;
+          const ok1 = a0 >= 1 && nombres.some(n => txt === '¡Pasaste a ' + n + '!');
+          C.adelT = 0; C.sig = sig0; C.sJug = sj0; modo.render(0.016); const atras = puestoActual();
+          A.log.length = 0; C.adelT = 0; C.sig = 3; C.sJug = Rr.puntos[3].s - 1; modo.render(0.016); modo.render(0.016);
+          const vez = { adel: C.adelantos - a0, saltos: C.adelSaltos - s0, punto: A.log.filter(n => n === 'r_punto').length, aviso: ui.aviso.textContent };
+          A.reducido = true; C.sig = sig0; C.sJug = sj0; modo.render(0.016); C.adelT = 0; C.sig = 3; C.sJug = Rr.puntos[3].s - 1; modo.render(0.016); A.reducido = red0;
+          const red = { adel: C.adelantos - a0 - vez.adel, saltos: C.adelSaltos - s0 - vez.saltos };
+          check('F4-20: al adelantar suena «r_punto» agudo una vez, el PUESTO salta y sale «¡Pasaste a …!» (la rival); con «Reducir movimiento» del menú, sin salto',
+            ok1 && atras > 1 && vez.adel === 1 && vez.punto === 1 && (REDUCED ? vez.saltos === 0 : vez.saltos === 1) && /^¡Pasaste a (Mango|Cielo|Perla)!$/.test(vez.aviso) && red.adel === 1 && red.saltos === 0,
+            JSON.stringify({ txt, atras, vez, red }));
+        }
         C.sig = sig0; C.sJug = sj0;
         // Corriente: impulso medible
         const c0 = C.corrientes[1]; colocarJugador(c0.x - c0.tx * 12, c0.y, c0.z - c0.tz * 12, c0.tx, c0.tz); C.sJug = c0.s - 12; M.vx = c0.tx * 12; M.vz = c0.tz * 12;
