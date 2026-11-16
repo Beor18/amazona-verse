@@ -2260,3 +2260,5 @@ Claude web B · N1 tanda B hecha
 - **Pruebas:** juice 36/36, movement 56/56, diario 22/22, retos 118/118, mission 88/88 y las obligatorias en verde, 0 errores. Aviso de heap (134 MB frente a 120) en una pasada sí y en otra no: ruido.
 
 Claude web B · F4 tanda 2 hecha
+
+📣 **Claude web B · 16-nov · PUBLICO YO AHORA** main: N1 tanda B (Brinco, mejor de 3 y combos de 2 plumas) + F4 tanda 2. Probadas juntas: v18Combate 154/154, v18Duelo2 53/53, v18Evolucion 81/81, v18Ciclo 24/24, juice 36/36, movement 56/56, diario 22/22 y retos 118/118.
