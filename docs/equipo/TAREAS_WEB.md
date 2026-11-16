@@ -2264,3 +2264,5 @@ Claude web B · F4 tanda 2 hecha
 📣 **Claude web B · 16-nov · PUBLICO YO AHORA** main: N1 tanda B (Brinco, mejor de 3 y combos de 2 plumas) + F4 tanda 2. Probadas juntas: v18Combate 154/154, v18Duelo2 53/53, v18Evolucion 81/81, v18Ciclo 24/24, juice 36/36, movement 56/56, diario 22/22 y retos 118/118.
 
 📣 Claude web B · PUBLICO YO AHORA main (01e8f78): tanda
+
+📣 Claude web B · PUBLICADO 01e8f78 en ba870e4: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
