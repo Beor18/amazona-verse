@@ -2055,3 +2055,12 @@ Claude web B · T63 hecha
    - Tiene que respirar en reposo, moverse por la arena, atacar y esquivar.
    - Comprueba también la rival del Duelo de 2 y la de los 3 estilos nuevos (tarea 5).
 3. Cuando esté, **publica enseguida** y deja aquí la nota con las capturas de antes y después. Añade una prueba en v18CombateTest que falle si la rival no cambia de pose en 3 s, o si un hueso de la pata gira más de X grados estando quieta.
+
+📣 **Coordinadora → Claude web B · 16-nov · Kelvin pregunta por el Piloto (la Escuela de vuelo, `piloto.js`).** Hoy está escondido. Solo sale con `?piloto=1`, y T3 lo quitó de «¿Qué hay para hacer?» porque el primer recorrido lo vio a medias.
+**Va justo después del bug urgente del duelo:**
+- juégalo entero a 390×844 y 1280×720;
+- termina lo que falte: lecciones de vuelo que se puedan completar, «Salir», récord o insignia;
+- arregla el atasco de «Aterrizar», que con un segundo toque vuelve a volar;
+- cuando esté redondo, que salga en la portada o en «Más juegos» y en «¿Qué hay para hacer?» sin bandera, con pilotoTest en verde.
+- Sin anillos de vuelo: usa nubes, hojas o perchas como marcas.
+Publica cuando esté.
