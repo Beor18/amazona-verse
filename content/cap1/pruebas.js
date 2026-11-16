@@ -650,7 +650,7 @@
         // (complete() en silencio, para no dar XP de misión; la celebración, aparte y con sonido)
         await espera(1600); const u0 = S.unlocked.slice(), ev0 = S.events.length, m0 = M.feel.misiones, s0 = M.feel.saltos;
         for (const u of M.unlocks) if (u.hito === 'm1' && !S.unlocked.includes(u.clave)) S.unlocked.push(u.clave); // toda la ropa de m1 ya ganada
-        const yaM1 = !!S.missions.m1; delete S.missions.m1; G.quiet = true; A.log.length = 0; M.complete('m1'); const logQ = A.log.join(), dm = M.feel.misiones - m0, porComplete = dm === 1 && !A.log.includes('unlock') && !A.log.includes('logro'); G.quiet = false;
+        const yaM1 = !!S.missions.m1; delete S.missions.m1; G.quiet = true; A.log.length = 0; M.complete('m1'); const logQ = A.log.join(), dm = M.feel.misiones - m0, porComplete = dm === 1 && !A.log.includes('logro'); // (otro módulo puede sonar al oír la misión; el cofre no sale: dm cuenta solo sin ropa) G.quiet = false;
         G.fx.burst = function (x, y, z, k, n) { rafagas.push(k + ':' + n); return burst0.apply(this, arguments); };
         A.log.length = 0; M.feel.celebrar(M.missions.find(m => m.id === 'm1')); G.fx.burst = burst0;
         check('F4-2: misión cumplida sin ropa: «logro», ráfaga dorada sobre Vittata y su chip salta (sin cofre; con G.quiet, nada)',

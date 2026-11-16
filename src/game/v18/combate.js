@@ -3116,8 +3116,8 @@ window.AVV18Combate = function (G) {
           for (let i = 0; i < 4; i++) { paso(i ? 1 : 0.05); vistos.push(hud.q('centro').textContent); if (i < 3) await espera(300); }
           paso(0.05);
           check('F4-14: la cuenta suena «tick» en 3, 2 y 1 y «lanzar» en «¡Ya!», cada número con su pop (y el poder ya cargado no suena al empezar)',
-            vistos.join() === ['3', '2', '1', TXT.ya].join() && veces('tick') === 3 && veces('lanzar') === 1 && FS.ticks - f0.ticks === 3 && FS.ya - f0.ya === 1 &&
-            FS.pops - f0.pops === 4 && C.fase === 'lucha' && veces('encaje') === 0, JSON.stringify({ vistos, log: A.log.join(), pops: FS.pops - f0.pops }));
+            vistos.join() === ['3', '2', '1', TXT.ya].join() && veces('tick') >= 3 && veces('lanzar') === 1 && FS.ticks - f0.ticks === 3 && FS.ya - f0.ya === 1 &&
+            FS.pops - f0.pops === 4 && C.fase === 'lucha' && veces('encaje') === 0, JSON.stringify({ vistos, log: A.log.join(), ticks: FS.ticks - f0.ticks, pops: FS.pops - f0.pops })); // otro «tick» del juego puede caer en la espera; los de la cuenta, FS.ticks
           // 15 · pluma quitada
           A.play = function (n, arg) { if (n === 'duelo_pata') tonos.push(arg); return play0.apply(this, arguments); };
           if (burst0) G.fx.burst = function (x, y, z, k, n) { rafagas.push(k + ':' + n); return burst0.apply(this, arguments); };
