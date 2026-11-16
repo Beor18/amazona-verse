@@ -532,10 +532,11 @@ window.AVV18Duelo2 = function (G) {
   // 2×2 encima. Los botones grandes (#acts) se ocultan. Ala y Pata eligen el lado solos (alternan: dos toques = combo).
   // En vertical: «Gira el teléfono» y el duelo en pausa (G.pausa 'duelo2-girar') hasta que se gire.
   const T44 = { el: null, st2: { id: null, x: 0, y: 0, cx: 0, cy: 0 }, lado: { j1: { ala: 1, pata: 1 }, j2: { ala: 1, pata: 1 } }, girar: false };
-  const TT = { ala: 'Ala', pata: 'Pata', semilla: 'Semilla', poder: 'Poder', gira: 'Gira el teléfono: el Duelo de 2 se juega en horizontal, cada jugador por su lado.',
+  const TT = { ala: 'Ala', pata: 'Pata', semilla: 'Semilla', poder: 'Poder', brinco: 'Brinco', gira: 'Gira el teléfono: el Duelo de 2 se juega en horizontal, cada jugador por su lado.',
     j1: 'Jugador 1', j2: 'Jugador 2', tarjetaT: 'En el teléfono, en horizontal: el Jugador 1 a la izquierda (joystick y 4 botones) y el Jugador 2 a la derecha (su joystick y sus 4 botones).' };
   function usarTactil(f, quien, a) {
     if (D.fase !== 'lucha' || !f) return false;
+    if (a === 'brinco') { if (f === D.j1) return brinco1(); const cd = f.brincoCd > 0; saltar2(); return !cd && f.brinco > 0; } // F1: Brinco en el teléfono (un botón junto a cada 2×2)
     if (a === 'ala' || a === 'pata') {
       if (!c2On() || ent) return a === 'ala' ? usar(f, 'golpe_ala').ok : false; // en el entreno, el aletazo de siempre (lo que pide su paso 1)
       const L = T44.lado[quien]; L[a] = -L[a];
@@ -554,6 +555,7 @@ window.AVV18Duelo2 = function (G) {
       '#d2-tactil .d2-pad button{pointer-events:auto;width:58px;height:58px;border-radius:18px;border:3px solid var(--borde);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:700 11px/1 Fredoka,system-ui,sans-serif;color:#fff;background:rgba(20,70,40,.84);box-shadow:0 3px 0 #0b2a17,0 4px 10px #0007;text-shadow:0 1px 2px #000;--icon-size:24px;touch-action:none;-webkit-user-select:none;user-select:none}' +
       '#d2-tactil .d2-pad.j1{--borde:#ffd27a}#d2-tactil .d2-pad.j2{--borde:#7fd3ff}#d2-tactil .d2-pad button.pata{background:rgba(110,55,10,.86)}#d2-tactil .d2-pad button.semilla{background:rgba(150,105,10,.88)}#d2-tactil .d2-pad button.poder{background:rgba(110,40,140,.88)}' +
       '#d2-tactil .d2-pad button:active{transform:translateY(2px)}' +
+      '#d2-tactil .d2-pad button.brinco{position:absolute;bottom:0;width:56px;height:56px;border-radius:50%;background:rgba(20,90,120,.86)}#d2-tactil .d2-pad.j1 button.brinco{left:calc(100% + 10px)}#d2-tactil .d2-pad.j2 button.brinco{right:calc(100% + 10px)}' +
       '#d2-tactil .d2-st2{position:absolute;right:max(24px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 18px);width:136px;height:136px;border-radius:50%;background:rgba(255,255,255,.14);border:3px solid #7fd3ff;pointer-events:auto;touch-action:none}' +
       '#d2-tactil .d2-st2 i{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:#7fd3ff;box-shadow:0 3px 8px #0007}' +
       '#d2-tactil .d2-gira{position:absolute;inset:0;display:grid;place-items:center;padding:24px;background:rgba(8,20,14,.88);color:#fff8ea;font-size:20px;font-weight:700;text-align:center;pointer-events:auto}#d2-tactil .d2-gira[hidden]{display:none}' +
@@ -573,7 +575,8 @@ window.AVV18Duelo2 = function (G) {
     }
     if (T44.el) return;
     cssT44();
-    const pad = q => `<div class="d2-pad ${q}"><b>${q === 'j1' ? TT.j1 : TT.j2}</b>` + ['ala', 'pata', 'semilla', 'poder'].map(a => `<button type="button" class="${a}" data-q="${q}" data-a="${a}" data-icon="${{ ala: 'wing', pata: 'paw', semilla: 'semilla', poder: 'bolt' }[a]}" aria-label="${TT[a]} (${q === 'j1' ? TT.j1 : TT.j2})"><span>${TT[a]}</span></button>`).join('') + '</div>';
+    const pad = q => `<div class="d2-pad ${q}"><b>${q === 'j1' ? TT.j1 : TT.j2}</b>` + ['ala', 'pata', 'semilla', 'poder'].map(a => `<button type="button" class="${a}" data-q="${q}" data-a="${a}" data-icon="${{ ala: 'wing', pata: 'paw', semilla: 'semilla', poder: 'bolt' }[a]}" aria-label="${TT[a]} (${q === 'j1' ? TT.j1 : TT.j2})"><span>${TT[a]}</span></button>`).join('') +
+      `<button type="button" class="brinco" data-q="${q}" data-a="brinco" data-icon="jump" aria-label="${TT.brinco} (${q === 'j1' ? TT.j1 : TT.j2})"><span>${TT.brinco}</span></button></div>`; // F1: el Brinco, al lado de dentro del 2×2 (no lo mueve)
     const el = document.createElement('div'); el.id = 'd2-tactil';
     el.innerHTML = pad('j1') + pad('j2') + '<div class="d2-st2" aria-label="Joystick del Jugador 2"><i></i></div><button type="button" class="d2-salir" data-salir="1"></button><div class="d2-gira" hidden></div>';
     el.querySelector('.d2-salir').textContent = TXT.salir;
@@ -642,7 +645,8 @@ window.AVV18Duelo2 = function (G) {
     quitarBalas(); D.timers.length = 0; D.trampas.length = 0;
     if (D.j1 && D.j1.wob && pl3d && pl3d.root) { pl3d.root.rotation.z -= D.j1.wob; D.j1.wob = 0; }
     nuevos(); D.resultado = null; D.stats = { usos1: 0, usos2: 0, golpes: 0 }; D.tLucha = 0;
-    D.nAsaltos = Math.max(1, o.asaltos || asaltosDef || ASALTOS); D.asalto = 1; D.gan1 = D.gan2 = 0; D.pausa = 0; D.tAsalto = 0; D.empate = false; // F1 · cambio 3 comboVis = 0; if (hud && hud.q('combo')) hud.q('combo').hidden = true;
+    D.nAsaltos = Math.max(1, o.asaltos || asaltosDef || ASALTOS); D.asalto = 1; D.gan1 = D.gan2 = 0; D.pausa = 0; D.tAsalto = 0; D.empate = false; // F1 · cambio 3
+    comboVis = 0; if (hud && hud.q('combo')) hud.q('combo').hidden = true;
     const conEntreno = !!o.entreno || (!o.sinCuenta && !o.sinEntreno && !entVisto()); // el primer duelo de 2 empieza con el entreno
     const conTarjeta = !o.entreno && !o.sinCuenta && !o.sinEntreno && !o.sinTarjeta && !tjVista(); // T57: antes, la tarjeta
     ent = null; for (const k in pistas) { const P = pistas[k]; P.t = 2.5; P.pl = PLUMAS; P.golpeado = false; }
@@ -676,19 +680,27 @@ window.AVV18Duelo2 = function (G) {
     if (D.j2.v) D.j2.v.x = D.j2.v.z = 0;
     colocar(); flotante(TXT.ya, 0.7); pintar(); pintarReloj();
   }
+  // ¿Corre el tope de 45 s? Solo al mejor de 3, fuera del entreno y sin el modo relajado (el reloj solo cuenta si hay tope)
+  function hayTope() {
+    if (ent || (D.nAsaltos || 1) < 2) return false;
+    try { if (G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado()) return false; } catch (e) { /* sin accesibilidad */ }
+    return true;
+  }
   function topeAsalto() {
-    if (ent || D.empate || (D.nAsaltos || 1) < 2) return;
-    try { if (G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado()) return; } catch (e) { /* sin accesibilidad */ }
+    if (D.empate || !hayTope()) return;
     if (D.j1.plumas === D.j2.plumas) { D.empate = true; flotante(TXT.empate, 1.6); return; }
     flotante(TXT.tiempo, 1); finAsalto(D.j1.plumas > D.j2.plumas ? 'j1' : 'j2');
   }
   function pintarReloj() {
     if (!hud) return; const el = hud.q('reloj'); if (!el) return;
     const ver = !ent && D.fase !== 'nada'; if (el.hidden === ver) el.hidden = !ver; if (!ver) return;
-    const t = D.pausa > 0 || D.fase !== 'lucha' ? '' : D.empate ? '!' : String(Math.max(0, Math.ceil(ASALTO_TOPE - (D.tAsalto || 0))));
+    const t = D.pausa > 0 || D.fase !== 'lucha' || !hayTope() ? '' : D.empate ? '!' : String(Math.max(0, Math.ceil(ASALTO_TOPE - (D.tAsalto || 0)))); // sin tope, sin cuenta atrás
     const n = hud.q('relojN'); if (n.textContent !== t) n.textContent = t;
-    const dots = (k, g) => Array.from(hud.q(k).children).forEach((i, x) => { const on = x < g; if (i.classList.contains('on') !== on) i.classList.toggle('on', on); i.hidden = x >= ganaCon(); });
-    dots('as1', D.gan1 || 0); dots('as2', D.gan2 || 0);
+    puntos(hud.q('as1'), D.gan1 || 0); puntos(hud.q('as2'), D.gan2 || 0);
+  }
+  function puntos(el, g) { // sin closures ni arrays nuevos: corre en cada cuadro de la pelea
+    const c = el.children, gc = ganaCon();
+    for (let x = 0; x < c.length; x++) { const i = c[x], on = x < g, oc = x >= gc; if (i.classList.contains('on') !== on) i.classList.toggle('on', on); if (i.hidden !== oc) i.hidden = oc; }
   }
   function terminar(quien) {
     if (D.fase !== 'lucha') return;
@@ -825,14 +837,14 @@ window.AVV18Duelo2 = function (G) {
       M.vx = M.vz = 0; // nadie se mueve hasta «¡Ya!»
     }
     if (D.fase === 'lucha' && D.pausa > 0) { // F1 · cambio 3: respiro entre asaltos
-      M.vx = M.vz = 0; for (const f of [D.j1, D.j2]) f.mareo = Math.max(0, (f.mareo || 0) - dt);
+      M.vx = M.vz = 0; D.j1.mareo = Math.max(0, (D.j1.mareo || 0) - dt); D.j2.mareo = Math.max(0, (D.j2.mareo || 0) - dt);
       D.pausa -= dt; if (D.pausa <= 0) nuevoAsalto();
       pintarReloj(); pasoJ1(dt); dibujar2(dt); return;
     }
     if (D.fase === 'lucha') {
       D.tLucha = (D.tLucha || 0) + dt;
       if (!ent) { D.tAsalto = (D.tAsalto || 0) + dt; if (D.tAsalto >= ASALTO_TOPE) topeAsalto(); if (D.fase !== 'lucha' || D.pausa > 0) return; }
-      for (const f of [D.j1, D.j2]) if (f.abierta > 0) f.abierta = Math.max(0, f.abierta - dt); // F1: abierta tras un Brinco
+      if (D.j1.abierta > 0) D.j1.abierta = Math.max(0, D.j1.abierta - dt); if (D.j2.abierta > 0) D.j2.abierta = Math.max(0, D.j2.abierta - dt); // F1: abierta tras un Brinco
       H.paso(D.j1, dt); H.paso(D.j2, dt); if (c2On() && EXD) { EXD.paso(D.j1, dt); EXD.paso(D.j2, dt); }
       for (let i = D.timers.length - 1; i >= 0; i--) { const t = D.timers[i]; t.t -= dt; if (t.t <= 0) { D.timers.splice(i, 1); t.fn(); if (D.fase !== 'lucha' || D.pausa > 0) break; } }
       if (D.fase === 'lucha' && !(D.pausa > 0)) pasoTrampas(dt);
@@ -1121,6 +1133,14 @@ window.AVV18Duelo2 = function (G) {
           a3.g2 === 1 && a3.txt === TXT.asalto3 && D.fase === 'fin' && D.resultado === 'j1' && fins.length === 1 && fins[0].asaltos.join() === '2,1', JSON.stringify({ a1, a2, a3, fins: fins.length, as: fins[0] && fins[0].asaltos }));
         iniciar({ sinCuenta: true, asaltos: 3 }); limpio(); cerca(6); D.j1.plumas = 4; D.j2.plumas = 2; D.tAsalto = ASALTO_TOPE - 0.02; paso(0.05); const tp = { g1: D.gan1, pausa: D.pausa > 0 };
         check('F1 · Duelo de 2: tope de 45 s por asalto (gana quien tenga más plumas) y reloj a la vista', tp.g1 === 1 && tp.pausa && !hud.q('reloj').hidden, JSON.stringify(tp));
+        // Revisión: sin tope (modo relajado o un solo asalto) el reloj no cuenta hacia atrás; «Otra vez» quita el cartel del combo anterior
+        { const acc = G.accesibilidad, rel0 = acc && acc.relajado; let tRel = null;
+          if (acc) { acc.relajado = () => true; try { iniciar({ sinCuenta: true, asaltos: 3 }); limpio(); cerca(6); D.tAsalto = 10; paso(0.05); tRel = hud.q('relojN').textContent; } finally { acc.relajado = rel0; } }
+          iniciar({ sinCuenta: true, asaltos: 1 }); limpio(); cerca(6); D.tAsalto = 10; paso(0.05); const t1 = hud.q('relojN').textContent;
+          iniciar({ sinCuenta: true, asaltos: 3 }); limpio(); cerca(6); D.tAsalto = 10; paso(0.05); const t3 = hud.q('relojN').textContent;
+          hud.q('combo').hidden = false; comboVis = 1.3; iniciar({ sinCuenta: true, asaltos: 3 }); const cv = { vis: comboVis, oculto: hud.q('combo').hidden };
+          check('F1 · Duelo de 2: sin tope (modo relajado o un asalto) el reloj no cuenta; al mejor de 3, sí; al empezar se quita el cartel del combo',
+            (tRel === null || tRel === '') && t1 === '' && t3 === String(ASALTO_TOPE - 10) && cv.vis === 0 && cv.oculto, JSON.stringify({ tRel, t1, t3, cv })); }
         // Brinco: J1 con Espacio (no salta como siempre), J2 con su saltito; un golpe dentro del Brinco no entra y deja abierta 0,8 s a quien lo dio
         iniciar({ sinCuenta: true, asaltos: 3 }); limpio(); cerca(1.5); D.j1.brincoCd = 0;
         tecla('keydown', ' ', 'Space'); tecla('keyup', ' ', 'Space');
@@ -1188,11 +1208,18 @@ window.AVV18Duelo2 = function (G) {
       try {
         window.matchMedia = q => (/pointer:\s*coarse/.test(q) ? { matches: true, media: q, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, onchange: null } : mm(q));
         salir(); iniciar({ forzar: true, sinCuenta: true });
-        const el = document.getElementById('d2-tactil'), pads = el ? el.querySelectorAll('.d2-pad') : [], b1 = el && el.querySelectorAll('.d2-pad.j1 button').length, b2 = el && el.querySelectorAll('.d2-pad.j2 button').length;
+        const el = document.getElementById('d2-tactil'), pads = el ? el.querySelectorAll('.d2-pad') : [], b1 = el && el.querySelectorAll('.d2-pad.j1 button:not(.brinco)').length, b2 = el && el.querySelectorAll('.d2-pad.j2 button:not(.brinco)').length;
         check('T44 · táctil: dos 2×2 (Jugador 1 a la izquierda, Jugador 2 a la derecha), el joystick del J2 y sin los botones grandes', !!el && pads.length === 2 && b1 === 4 && b2 === 4 && !!el.querySelector('.d2-st2') && document.body.classList.contains('d2-tactil-on') && disponible(), JSON.stringify({ b1, b2 }));
         const x0 = pos2.x; T44.st2.id = 7; T44.st2.x = -1; T44.st2.y = 0; for (let i = 0; i < 10; i++) paso(0.05); T44.st2.id = null; T44.st2.x = 0;
         D.j2.cd = {}; D.j2.energia = D.j2.energiaMax || 100; const us = usarTactil(D.j2, 'j2', 'semilla');
         check('T44 · el joystick del J2 lo mueve y su botón Semilla dispara', pos2.x < x0 - 0.5 && us && (D.j2.cd.semilla || 0) > 0, (pos2.x - x0).toFixed(2));
+        { const bb1 = el.querySelector('.d2-pad.j1 button.brinco'), bb2 = el.querySelector('.d2-pad.j2 button.brinco');
+          for (const f of [D.j1, D.j2]) { f.brinco = 0; f.brincoCd = 0; f.mareo = 0; f.lift.dura = 0; }
+          const ok1 = usarTactil(D.j1, 'j1', 'brinco'), ok2 = usarTactil(D.j2, 'j2', 'brinco');
+          const r1 = bb1 && bb1.getBoundingClientRect(), p1 = el.querySelector('.d2-pad.j1').getBoundingClientRect(), r2 = bb2 && bb2.getBoundingClientRect(), p2 = el.querySelector('.d2-pad.j2').getBoundingClientRect();
+          const fuera = (r, p) => r && r.width >= 44 && (r.left >= p.right - 0.5 || r.right <= p.left + 0.5);
+          check('F1 · táctil: cada jugador tiene su botón Brinco (≥ 44 px, junto a su 2×2 sin pisarlo) y da su Brinco de 0,25 s',
+            ok1 && ok2 && D.j1.brinco > 0 && D.j2.brinco > 0 && fuera(r1, p1) && fuera(r2, p2), JSON.stringify({ ok1, ok2, r1: r1 && [r1.left, r1.width], p1: [p1.left, p1.right], r2: r2 && [r2.left, r2.width], p2: [p2.left, p2.right] })); }
         const vertical = innerHeight > innerWidth, g = el.querySelector('.d2-gira');
         check('T44 · en vertical sale «Gira el teléfono» (y pausa); en horizontal, no', g.hidden === !vertical && T44.girar === vertical, JSON.stringify({ vertical, oculto: g.hidden }));
         salir();
