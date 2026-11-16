@@ -3080,7 +3080,7 @@ window.AV_EN = {
  "Carrera de nubes": "Cloud race",
  "Pasa por las 6 nubes lo más rápido que puedas.": "Fly through the 6 clouds as fast as you can.",
  "Cinco lecciones con nubes y hojas": "Five lessons with clouds and leaves",
- "River Rush, la tormenta, el banquete, el canto, el escondite y la escuela de vuelo": "River Rush, the storm, the feast, the song, hide-and-seek and the flight school",
+ "River Rush, la tormenta, el banquete, el canto, el escondite, las semillas y la escuela de vuelo": "River Rush, the storm, the feast, the song, hide-and-seek, the seeds and the flight school",
  "¡Insignia de piloto! Hiciste las 5 lecciones.": "Pilot badge! You did all 5 lessons.",
  "¡Insignia de piloto!": "Pilot badge!",
  "Salir de la escuela de vuelo": "Exit the flight school",

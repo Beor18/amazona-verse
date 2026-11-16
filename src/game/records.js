@@ -48,7 +48,7 @@
     // (src/game/v18/progreso.js): aquí solo se lee
     const CLAVE = { retos: ALM + '.retos', criadero: ALM + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero'), casa: ALM + '.records',
       trucos: ALM + '.trucos', escondite: ALM + '.escondite', ciudad: ALM + '.ciudadVisitas', marana: ALM + '.marana', vecinos: ALM + '.vecinos', humor: ALM + '.humor',
-      v18: ALM + '.v18', canto: ALM + '.canto', semillas: ALM + '.semillas' }; // canto: récord de «Sigue el canto» (src/game/canto.js, T43)
+      v18: ALM + '.v18', canto: ALM + '.canto', semillas: ALM + '.semillas', piloto: ALM + '.piloto' }; // piloto: lecciones e insignia de la Escuela de vuelo (src/game/v18/piloto.js) // canto: récord de «Sigue el canto» (src/game/canto.js, T43)
     const MAX_CASA = 24; // cotorras distintas en el libro
     const PARTICIPANTES_MAX = 9;
     const esObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -92,6 +92,7 @@
       combo: ['Mejor combo', 'Best combo'], sinCombo: ['Aún sin combo', 'No combo yet'], unTruco: ['Un truco', 'One trick'],
       plumas: ['¡Plumas al viento!', 'Feathers in the wind!'], loca: ['¡Cotorra loca!', 'Silly parrot!'],
       escondite: ['Escondite', 'Hide-and-seek'], sinEscondite: ['Aún sin tiempo', 'No time yet'],
+      piloto: ['Escuela de vuelo', 'Flight school'], pilotoLec: ['Lecciones: {}/5', 'Lessons: {}/5'], pilotoIns: ['¡Insignia de piloto!', 'Pilot badge!'], pilotoCarrera: ['carrera de nubes', 'cloud race'],
       ciudad: ['Sorpresas de la ciudad', 'City surprises'], deVistas: ['Momentos distintos', 'Different moments'],
       marana: ['Rastros de Maraña', 'Maraña trails'], deLimpios: ['Cuento de la bandada', 'A flock story'],
       vecinos: ['Vecinos vistos', 'Neighbors seen'], coqui: ['Coquí', 'Coquí'], lagartijo: ['Lagartijo', 'Anole'], mariposa: ['Mariposa', 'Butterfly'],
@@ -264,7 +265,8 @@
     }
     function descubrimientosDe() {
       const tr = leerJSON(CLAVE.trucos), es = leerJSON(CLAVE.escondite), ci = leerJSON(CLAVE.ciudad);
-      const ma = leerJSON(CLAVE.marana), ve = leerJSON(CLAVE.vecinos), hu = leerJSON(CLAVE.humor);
+      const ma = leerJSON(CLAVE.marana), ve = leerJSON(CLAVE.vecinos), hu = leerJSON(CLAVE.humor), pi = leerJSON(CLAVE.piloto);
+      const piM = pi && pi.mejor && typeof pi.mejor === 'object' ? pi.mejor : {};
       const vecinosOk = ['coqui', 'lagartijo', 'mariposa'];
       return {
         combo: tr ? ent(tr.mejor, 99) : 0, tiempo: es ? num(es.mejor) : null,
@@ -272,6 +274,7 @@
         marana: idsDe(ma, 'limpios', 5).length, maranaTotal: 5,
         vecinos: idsDe(ve, 'vistos', 3).filter(id => vecinosOk.includes(id)),
         siestas: hu ? ent(hu.siestas, 999) : 0,
+        piloto: { lecciones: ['despegar', 'hojas', 'picada', 'percha', 'carrera'].filter(id => num(piM[id]) > 0).length, insignia: !!(pi && pi.insignia === true), carrera: num(piM.carrera) },
       };
     }
     // V18 (solo lectura del progreso `<almacen>.v18`, el formato de progreso.js v2; nada nuevo): minigolf, Chispa, Moon,
@@ -651,6 +654,7 @@
         ${ins(u.marana / u.maranaTotal, u.marana + '/' + u.maranaTotal, tx('marana'), esc(tx('deLimpios')))}
         ${ins(u.vecinos.length / 3, u.vecinos.length + '/3', tx('vecinos'), vecinos)}
         ${ins(u.siestas / 3, String(u.siestas), tx('siestas'), esc(u.siestas ? tx('siestasHechas') : tx('sinSiesta')))}
+        ${u.piloto && u.piloto.lecciones ? ins(u.piloto.lecciones / 5, u.piloto.insignia ? '★' : u.piloto.lecciones + '/5', tx('piloto'), esc((u.piloto.insignia ? tx('pilotoIns') : tx('pilotoLec').replace('{}', u.piloto.lecciones)) + (u.piloto.carrera ? ' · ' + tx('pilotoCarrera') + ' ' + reloj(u.piloto.carrera) : ''))) : ''}
       </ul></section>`;
     }
     // Textos de la sección V18: en español aquí y en inglés en content/cap1/en.js (el mismo diccionario de idioma.js); {} = dato
@@ -1134,11 +1138,11 @@
       const VOLATIL = ['clock', 'pos', 'vy', 'facing', 'water', 'event', 'marcador']; // marcador: el cronómetro sigue contando mientras corre la prueba
       const comparable = () => JSON.stringify(Object.fromEntries(Object.entries(S).filter(([k]) => !VOLATIL.includes(k))));
       const raw = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-      const claves = [G.guardado.KEY, G.guardado.KEY + '.tmp', G.guardado.KEY + '.prev', CLAVE.retos, CLAVE.criadero, CLAVE.casa, CLAVE.trucos, CLAVE.escondite, CLAVE.ciudad, CLAVE.marana, CLAVE.vecinos, CLAVE.humor, G.pack.aula && G.pack.aula.clave].filter(Boolean);
+      const claves = [G.guardado.KEY, G.guardado.KEY + '.tmp', G.guardado.KEY + '.prev', CLAVE.retos, CLAVE.criadero, CLAVE.casa, CLAVE.trucos, CLAVE.escondite, CLAVE.ciudad, CLAVE.marana, CLAVE.vecinos, CLAVE.humor, CLAVE.piloto, G.pack.aula && G.pack.aula.clave].filter(Boolean);
       const antes = claves.map(raw), sAntes = comparable();
       const orig = Object.assign({}, CLAVE), idiomaAntes = G.aula && G.aula.aj ? G.aula.aj.idioma : null;
       const pruebas = { retos: orig.retos + '.prueba', criadero: orig.criadero + '.prueba', casa: orig.casa + '.prueba',
-        trucos: orig.trucos + '.prueba', escondite: orig.escondite + '.prueba', canto: orig.canto + '.prueba', semillas: orig.semillas + '.prueba', ciudad: orig.ciudad + '.prueba', marana: orig.marana + '.prueba', vecinos: orig.vecinos + '.prueba', humor: orig.humor + '.prueba', v18: orig.v18 + '.prueba' };
+        trucos: orig.trucos + '.prueba', escondite: orig.escondite + '.prueba', canto: orig.canto + '.prueba', semillas: orig.semillas + '.prueba', ciudad: orig.ciudad + '.prueba', marana: orig.marana + '.prueba', vecinos: orig.vecinos + '.prueba', humor: orig.humor + '.prueba', piloto: orig.piloto + '.prueba', v18: orig.v18 + '.prueba' };
       const quitar = () => { for (const k of Object.values(pruebas)) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } delete mem[k]; } };
       const cerrarTodo = () => { if (puertaAbierta) cerrarPuerta(false); if (abierto) cerrar(); };
       const nuevoS = (nombre, extra) => Object.assign({ profile: { created: true, name: nombre, look: { species: 'oratrix' } }, complete: false, step: 2, clock: 600, events: [], field: [] }, extra);
@@ -1193,6 +1197,15 @@
         const desc = root.querySelector('#rec-descubrimientos'), dt = desc ? desc.textContent.replace(/\s+/g, ' ') : '';
         check('Los descubrimientos muestran combo, escondite, ciudad, Maraña, vecinos y siestas', /¡Cotorra loca!/.test(dt) && /×3/.test(dt) && /0:42\.5/.test(dt) && /3\/12/.test(dt) && /2\/5/.test(dt) && /2\/3/.test(dt) && /Coquí/.test(dt) && /Lagartijo/.test(dt) && /Mariposa/.test(dt), dt.slice(0, 200));
         const fills = [...desc.querySelectorAll('.rec-ins')].map(el => parseFloat(el.style.getPropertyValue('--fill')));
+        { // Piloto (16-nov): la Escuela de vuelo sale solo con récord (lecciones hechas, insignia y carrera de nubes)
+          const sinP = !/Escuela de vuelo/.test(dt);
+          localStorage.setItem(pruebas.piloto, JSON.stringify({ v: 1, mejor: { despegar: 3.2, hojas: 11, carrera: 42.5 }, insignia: false })); pintar();
+          const d1 = root.querySelector('#rec-descubrimientos').textContent.replace(/\s+/g, ' ');
+          localStorage.setItem(pruebas.piloto, JSON.stringify({ v: 1, mejor: { despegar: 3, hojas: 9, picada: 8, percha: 12, carrera: 40 }, insignia: true })); pintar();
+          const d2 = root.querySelector('#rec-descubrimientos').textContent.replace(/\s+/g, ' ');
+          check('Piloto · «Mis récords»: la Escuela de vuelo sale con récord (lecciones, carrera e insignia) y no sin él', sinP && /Escuela de vuelo/.test(d1) && /Lecciones: 3\/5/.test(d1) && /carrera de nubes 0:42\.5/.test(d1) && /¡Insignia de piloto!/.test(d2), d1.slice(-90));
+          localStorage.removeItem(pruebas.piloto); pintar();
+        }
         check('Las insignias se llenan según lo logrado y el lagartijo sigue vacío', fills.length === 6 && fills[0] === 1 && fills[1] > 0.3 && Math.abs(fills[2] - 0.25) < 0.001 && Math.abs(fills[3] - 0.4) < 0.001 && fills[4] > 0.6 && fills[5] > 0.6 && desc.querySelectorAll('.rec-vecinos i.llena').length === 2 && desc.querySelector('.rec-vecinos i.falta'), fills.map(n => n.toFixed(2)).join(','));
         check('No hay cajas ni compras', !/loot|compra|tienda|caja/i.test(dt));
         { // T47: Sigue el canto y los poderes nuevos (sin datos: cómo se consiguen; con datos: récord y «¡Ganado!»)
