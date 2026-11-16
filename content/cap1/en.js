@@ -3049,5 +3049,20 @@ window.AV_EN = {
  "mitad izquierda": "left half",
  "mitad derecha": "right half",
  "J1": "P1",
- "J2": "P2"
+ "J2": "P2",
+ "Escalera": "Steps",
+ "Baranda": "Railing",
+ "Techo a dos aguas": "Gable roof",
+ "Farol de piedra": "Stone lantern",
+ "Cerca de tablas": "Picket fence",
+ "Banco": "Bench",
+ "Huerto": "Veggie patch",
+ "Plantillas": "Quick builds",
+ "Bohío": "Bohío hut",
+ "Torre de vigía": "Lookout tower",
+ "Puente pequeño": "Little bridge",
+ "Nido grande": "Big nest",
+ "Aquí no cabe: busca un sitio más llano y despejado.": "It doesn’t fit here: find a flatter, clearer spot.",
+ "¡Listo! Cámbialo a tu gusto o toca Deshacer.": "Done! Change it as you like or tap Undo.",
+ "Las plantillas van fuera, no dentro de un cuarto.": "Quick builds go outside, not inside a room."
 };
