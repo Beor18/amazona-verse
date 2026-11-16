@@ -64,6 +64,22 @@ AVE.module('misiones', function (G) {
     if (chip && G.fx.saltar && G.fx.saltar(chip)) feel.saltos++;
   }
   feel.celebrar = celebrarMision; // las pruebas lo miran sin pasar por los oyentes de «aprendizaje»
+  // F4-9: al reunir todos los materiales (se cumple un paso con hasta: { tiene }), «logro» (el del paso: no se dobla), los
+  // contadores de esos materiales saltan en cadena (uno cada 120 ms) y aviso «¡Lo tienes todo!». «Reducir movimiento» (sistema o
+  // menú): sin saltos; el aviso y el sonido se quedan. Con G.quiet (baterías), nada (feel.todo sí cuenta).
+  const TODO = { cadenaMs: 120, avisoMs: 2600 };
+  const movReducido = () => !!(G.renderer.REDUCED || (G.audio && G.audio.reducido === true) || document.documentElement.classList.contains('mov-reducido'));
+  feel.todo = 0; feel.cadena = 0;
+  function saltaContador(k) { const el = G.objetos.contador && G.objetos.contador(k); if (el && G.fx.saltar && G.fx.saltar(el)) feel.cadena++; }
+  function celebrarTodo(cost) {
+    feel.todo++;
+    if (G.quiet) return;
+    logro();
+    G.ui.toast('¡Lo tienes todo!', TODO.avisoMs, { ya: true }); // lo que acaba de hacer: sale al momento
+    if (movReducido()) return;
+    Object.keys(cost).forEach((k, i) => { if (i) setTimeout(saltaContador, i * TODO.cadenaMs, k); else saltaContador(k); });
+  }
+  feel.celebrarTodo = celebrarTodo;
   function complete(id) {
     if (S.missions[id]) return;
     const m = missions.find(x => x.id === id);
@@ -79,15 +95,16 @@ AVE.module('misiones', function (G) {
   function check(antesDe) {
     const antes = typeof antesDe === 'number' ? antesDe : S.step;
     for (const m of activas()) if (!S.missions[m.id] && progreso(m) >= m.pasos.length) complete(m.id);
-    let changed = true;
+    let changed = true, todo = null;
     while (changed) {
       changed = false;
       const st = steps[S.step];
-      if (st && st.hasta && cumple(st.hasta)) { S.step++; changed = true; if (st.alCompletar) st.alCompletar(G); }
+      if (st && st.hasta && cumple(st.hasta)) { S.step++; changed = true; if (st.hasta.tiene) todo = st.hasta.tiene; if (st.alCompletar) st.alCompletar(G); }
     }
     celebrarPaso(antes); // F4-1
     G.objetos.syncVisible();
-    renderQuest(); G.objetos.renderInv(); G.guardado.autosave();
+    renderQuest(); G.objetos.renderInv(!!todo); G.guardado.autosave(); // F4-8: con todo reunido, el «encaje» del contador calla
+    if (todo) celebrarTodo(todo); // F4-9
   }
   function advanceTo(n) { const antes = S.step; if (n > S.step) S.step = n; check(antes); }
 

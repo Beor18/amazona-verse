@@ -1276,6 +1276,8 @@ window.AV_EN = {
  "¡Lo logramos! Mi familia tiene un techo.": "We did it! My family has a roof.",
  "¡Lo logramos! …¿Oyes eso? Viene más lluvia.": "We did it! …Do you hear that? More rain is coming.",
  "¡Lo sabía! ¡Solo era ajustar el equilibrio!": "I knew it! It just needed the balance adjusted!",
+ "¡Lo tienes todo!": "You've got it all!",
+ "¡Pasaste a {}!": "You passed {}!",
  "¡Lo tienes! Llévalo volando a la caja nido del cartel.": "You got it! Fly it to the nest box on the sign.",
  "¡Lo tienes! Suéltalo con Acción donde el agua no llegue.": "You got it! Drop it with Action where the water can't reach.",
  "¡Los coquíes! Hay tres escondidos en los arbustos que brillan. Tú imitas cualquier canto, ¿verdad?": "The coquís! There are three hidden in the glowing bushes. You can imitate any song, right?",
@@ -3086,5 +3088,15 @@ window.AV_EN = {
  "Salir de la escuela de vuelo": "Exit the flight school",
  "Bajar (mantener)": "Go down (hold)",
  "Lecciones: {}/5": "Lessons: {}/5",
- "carrera de nubes": "cloud race"
+ "carrera de nubes": "cloud race",
+ // F1 · tanda B (duelo: Brinco —nombre provisional— y asaltos)
+ "Brinco": "Dodge",
+ "brinco": "dodge",
+ "Consejo: cuando veas «!» sobre la Campeona, ¡da un Brinco!": "Tip: when you see «!» over the Champion, dodge!",
+ "¡Te dieron! Cuando veas «!», da un Brinco (Espacio).": "You got hit! When you see «!», dodge (Space).",
+ "¡Te dieron! Cuando veas «!», toca Brinco.": "You got hit! When you see «!», tap Dodge.",
+ "¡Te dieron! Cuando veas «!», toca Saltar para dar un Brinco.": "You got hit! When you see «!», tap Jump to dodge.",
+ "¡Asalto 2!": "Round 2!",
+ "¡Asalto final!": "Final round!",
+ "¡Empate! La próxima pluma gana.": "Tie! The next feather wins."
 };

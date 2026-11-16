@@ -175,12 +175,16 @@
   }
 
   // ---------- 3. Rebote de contadores ----------
+  // F4 (revisión): si la cifra ya salta por script (G.fx.saltar, destello del Diario), no se suma el rebote CSS (doble rebote).
+  // diarioTest lo mira en AV.reboteContador (el observador no se pone con prefers-reduced-motion del sistema).
+  const saltaYa = el => !!(el.getAnimations && el.getAnimations().some(a => !(window.CSSAnimation && a instanceof CSSAnimation) && !(window.CSSTransition && a instanceof CSSTransition) && a.playState === 'running'));
+  if (window.AV) window.AV.reboteContador = { saltaYa, activo: !reduce.matches };
   if (!reduce.matches) {
     const bump = el => { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); };
     for (const id of ['i-madera', 'i-piedra', 'i-componente', 'b-diary']) {
       const el = $(id); if (!el) continue;
       let prev = el.textContent;
-      new MutationObserver(() => { if (document.documentElement.classList.contains('mov-reducido')) return; if (el.textContent !== prev) { prev = el.textContent; bump(el); } })
+      new MutationObserver(() => { if (document.documentElement.classList.contains('mov-reducido')) return; if (el.textContent !== prev) { prev = el.textContent; if (!saltaYa(el)) bump(el); } })
         .observe(el, { childList: true, characterData: true, subtree: true });
     }
   }

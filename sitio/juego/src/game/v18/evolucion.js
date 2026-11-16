@@ -725,7 +725,9 @@ window.AVV18Evolucion = function (G) {
       }
     } else if (ev.tipo === 'loss' && ev.a === 'jugador') {
       ultimo = { xp: 0, sube: 0 };
-      if ((ev.quitadas || 0) >= TOPE.pierdeQuitadas && (ev.dura || 0) >= TOPE.pierdeDura) ultimo.xp = dar(sp, XP.pierde, 'duelo', { repetible: true, duelo: true });
+      // F1 · tanda B: quitadas y dura suman todos los asaltos jugados; la compuerta contra el farmeo se pide por asalto
+      const nAs = Math.max(1, ev.asaltos ? (ev.asaltos[0] || 0) + (ev.asaltos[1] || 0) : 1);
+      if ((ev.quitadas || 0) >= TOPE.pierdeQuitadas * nAs && (ev.dura || 0) >= TOPE.pierdeDura * nAs) ultimo.xp = dar(sp, XP.pierde, 'duelo', { repetible: true, duelo: true });
       const a = ALIANZAS.find(x => x.lider === sp && estadoAli(x.id) === 'disponible');
       if (a) ultimo.reto = { nombre: a.nombre, n: Math.min(2, (a.reto === 'interrupciones' ? ev.interrupciones : ev.poderJ) || 0) };
     } else return;
@@ -761,6 +763,7 @@ window.AVV18Evolucion = function (G) {
     o = o || {};
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const Cb = G.v18combate, S = G.S, P = V;
+    if (Cb.asaltosPrueba) Cb.asaltosPrueba(1); // F1 · cambio 3: estas pruebas miran un asalto; el equilibrio (dueloMedio) juega el mejor de 3
     let crudo = null; try { crudo = localStorage.getItem(P.clave()); } catch (e) { /* sin almacenamiento */ }
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, inv0 = Object.assign({}, S.inv), sel0 = P.seleccionada();
     const toasts = [], toast0 = G.ui.toast; G.ui.toast = (t, ms) => { toasts.push(String(t)); return toast0.call(G.ui, t, ms); };
@@ -777,12 +780,13 @@ window.AVV18Evolucion = function (G) {
     const vaciar = () => { while (C().timers.length) C().timers.shift().fn(); };
     // Jugadora automática «media» para el equilibrio (determinista: su propio generador con semilla)
     const ETAPAS_EQ = [1, 10, 20, 30];
-    function dueloMedio(nivel, k, dif) {
+    // F1 · cambio 2: con brinco, además lee el aviso de la rival y da un Brinco (350 ms de reacción, cuando el arco está casi lleno)
+    function dueloMedio(nivel, k, dif, brinco) {
       let sem = 101 + k * 31; const rnd = () => { sem = (sem * 48271) % 2147483647; return (sem - 1) / 2147483646; };
-      const op = { sinCuenta: true, especie: 'vittata', evo: { nivel }, semilla: 3 + k * 17 }; if (dif) op.dificultad = dif;
+      const op = { sinCuenta: true, especie: 'vittata', evo: { nivel }, semilla: 3 + k * 17, asaltos: Cb.ASALTOS || 1 }; if (dif) op.dificultad = dif; // F1: el duelo de verdad (mejor de 3)
       Cb.iniciar(op);
-      const jug = {}; let t = 0, prox = 0, fase = 0, faseT = 0, lado = 1, aparta = 0, error = 0, vista = 0;
-      correr(180, () => {
+      const jug = {}; let t = 0, prox = 0, fase = 0, faseT = 0, lado = 1, aparta = 0, error = 0, vista = 0, visto = '', ini = 0;
+      correr(300, () => {
         t += 0.05; const c = C(), j = c.j, r = c.r, d = H.dirA(j, r), v = 5.5 * 0.05;
         if (t >= faseT) { fase = rnd() < 0.5 ? 0 : 1; faseT = t + 3 + rnd() * 3; lado = rnd() < 0.5 ? -1 : 1; }
         if (t >= vista) { error = (rnd() - 0.5) * 0.9; vista = t + 0.5; }
@@ -793,6 +797,11 @@ window.AVV18Evolucion = function (G) {
         if (aparta > 0) { aparta -= 0.05; mx = -d.z * lado; mz = d.x * lado; }
         else if (d.d > quiere + 0.8) { mx = d.x; mz = d.z; } else if (d.d < quiere - 0.8) { mx = -d.x; mz = -d.z; }
         const viene = c.balas.find(b => b.de === r && Math.hypot(b.m.position.x - S.pos.x, b.m.position.z - S.pos.z) < 6);
+        if (r.prep !== visto) { visto = r.prep; ini = t; }
+        if (brinco && Cb.brinco && !(j.brincoCd > 0) && !(c.pausa > 0)) {
+          if (r.prep && r.prep !== 'semilla' && t - ini >= 0.35 && r.prepT <= 0.2 && d.d < 3.2) { if (Cb.brinco().ok) jug.brinco = (jug.brinco || 0) + 1; }
+          else if (viene && Math.hypot(viene.m.position.x - S.pos.x, viene.m.position.z - S.pos.z) < 2.4) { if (Cb.brinco().ok) jug.brinco = (jug.brinco || 0) + 1; }
+        }
         if (viene && aparta <= 0 && t >= prox && rnd() < 0.35) { aparta = 0.35; prox = t + 0.6; }
         const ox = S.pos.x - Cb.sitio.x, oz = S.pos.z - Cb.sitio.z, od = Math.hypot(ox, oz) || 1;
         if (od > 9.5 && (mx * ox + mz * oz) > 0) { const tx = -oz / od, tz = ox / od, sg = (tx * d.x + tz * d.z) > 0 ? -1 : 1; mx = tx * sg; mz = tz * sg; }
@@ -806,15 +815,16 @@ window.AVV18Evolucion = function (G) {
         else if (d.d > 3.5 && j.energia >= 50 && H.listo(j, 'semilla').ok && rnd() < 0.5) u = 'semilla';
         if (u) { const ru = Cb.usar(j, u); if (ru.ok) { prox = t + 0.6; jug[u] = (jug[u] || 0) + 1; if (ru.acierto) jug[u + '+'] = (jug[u + '+'] || 0) + 1; } }
       });
-      const c = C(); return { gana: c.resultado === 'win', s: c.tLucha || 0, quitadas: (c.r.plumasMax || 5) - c.r.plumas, perdidas: 5 - c.j.plumas, st: Object.assign({}, c.stats, jug) };
+      const c = C(); return { gana: c.resultado === 'win', s: c.tLucha || 0, total: (c.tTotal || 0) + 3, quitadas: c.quitadas != null ? c.quitadas : (c.r.plumasMax || 5) - c.r.plumas, perdidas: 5 - c.j.plumas, st: Object.assign({}, c.stats, jug) };
     }
     function medirEquilibrio(q) {
       q = q || {}; const N = q.n || 36, res = {};
       for (const nivel of (q.niveles || ETAPAS_EQ)) {
-        let g = 0, dur = 0, pl = 0, pj = 0, primera = 0; const st = {};
+        let g = 0, dur = 0, pl = 0, pj = 0, primera = 0; const st = {}, tot = [];
         const dif = q.dificultad ? q.dificultad[etapaIdx(nivel)] : null;
-        for (let k = 0; k < N; k++) { const r = dueloMedio(nivel, k, dif); if (r.gana) { g++; if (!primera) primera = k + 1; } dur += r.s; if (q.stats) for (const x in r.st) if (typeof r.st[x] === 'number') st[x] = (st[x] || 0) + r.st[x] / N; pl += r.quitadas; pj += r.perdidas; }
-        res['nv' + nivel] = { gana: g + '/' + N, pct: Math.round(100 * g / N), primera, s: Math.round(dur / N), quitadas: Math.round(10 * pl / N) / 10, perdidas: Math.round(10 * pj / N) / 10 };
+        for (let k = 0; k < N; k++) { const r = dueloMedio(nivel, k, dif, q.brinco); tot.push(r.total); if (r.gana) { g++; if (!primera) primera = k + 1; } dur += r.s; if (q.stats) for (const x in r.st) if (typeof r.st[x] === 'number') st[x] = (st[x] || 0) + r.st[x] / N; pl += r.quitadas; pj += r.perdidas; }
+        tot.sort((a, b) => a - b);
+        res['nv' + nivel] = { gana: g + '/' + N, pct: Math.round(100 * g / N), primera, s: Math.round(dur / N), total: Math.round((tot[(N - 1) >> 1] + tot[N >> 1]) / 2), quitadas: Math.round(10 * pl / N) / 10, perdidas: Math.round(10 * pj / N) / 10 }; // total: mediana del duelo entero (cuenta y respiros incluidos)
         if (q.stats) { for (const x in st) st[x] = Math.round(st[x] * 10) / 10; res['nv' + nivel].st = st; }
       }
       Cb.salir();
@@ -824,11 +834,12 @@ window.AVV18Evolucion = function (G) {
     if (o.barrido) {
       mudo = true; oye = false; reset();
       const filas = [];
-      try { for (const dif of o.barrido) filas.push({ dif: dif.map(d => d.id), res: medirEquilibrio({ n: o.n || 36, dificultad: dif, stats: o.stats }) }); } catch (e) { filas.push({ error: String(e && (e.stack || e.message)) }); }
+      try { for (const dif of o.barrido) filas.push({ dif: dif.map(d => d.id), res: medirEquilibrio({ n: o.n || 36, dificultad: dif, stats: o.stats, brinco: o.brinco, niveles: o.niveles }) }); } catch (e) { filas.push({ error: String(e && (e.stack || e.message)) }); }
       mudo = false; hoyFijo = null; quitarCarta(); try { Cb.salir(); } catch (e) { /* ya fuera */ }
       G.ui.toast = toast0; Object.assign(S.pos, pos0); S.facing = fac0;
       try { if (crudo == null) localStorage.removeItem(P.clave()); else localStorage.setItem(P.clave(), crudo); } catch (e) { /* sin almacenamiento */ }
       P.recargar();
+      if (Cb.asaltosPrueba) Cb.asaltosPrueba(0);
       return { passed: 1, total: 1, results: [{ name: 'barrido', ok: true, extra: JSON.stringify(filas) }] };
     }
     try {
@@ -883,6 +894,11 @@ window.AVV18Evolucion = function (G) {
       check('20 victorias en un día dan como máximo 160 XP de duelo (40 ×2, luego la mitad)', info('arausiaca').xp === 160 && xs[0] === 40 && xs[1] === 40 && xs[2] === 20 && xs[19] === 0, xs.join(','));
       hoyFijo = 'prueba-2'; let a4 = info('arausiaca').xp;
       loss({ quitadas: 0 }); const l0 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
+      // F1 · tanda B: al mejor de 3 la compuerta va por asalto (0-2 con 1 pluma o con 30 s en total, sin XP; 1-2 con 3 plumas y 60 s, sí)
+      loss({ asaltos: [0, 2], quitadas: 1, dura: 45 }); const lA = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
+      loss({ asaltos: [0, 2], quitadas: 3, dura: 30 }); const lB = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
+      loss({ asaltos: [1, 2], quitadas: 3, dura: 60 }); const lC = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
+      check('F1 · XP por perder al mejor de 3: la compuerta (1 pluma y 20 s) se pide por asalto jugado', lA === 0 && lB === 0 && lC > 0, JSON.stringify({ lA, lB, lC }));
       loss({ dura: 12 }); const l1 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
       loss(); const l2 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
       G.emit('v18combate', { tipo: 'win', de: 'jugador', duelo: 2, especie: 'arausiaca' }); const d2 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
@@ -1337,6 +1353,13 @@ window.AVV18Evolucion = function (G) {
         mudo = true; const res = medirEquilibrio({ n: o.n || 36, dificultad: o.dificultad }); mudo = false;
         const pcts = ETAPAS_EQ.map(n => res['nv' + n].pct), ok = pcts.every(x => x >= 55 && x <= 75);
         check('Equilibrio: la jugadora media gana entre el 55 y el 75 % de los duelos en cada etapa (Aprendiz, Despertar, Guardián y Maestro)', ok, JSON.stringify(res));
+        // F1 · tanda B (16-nov): al mejor de 3 asaltos, con el respiro tras cada pluma. Ritmo: el duelo entero (cuenta y respiros
+        // incluidos) dura 60–100 s de mediana. Leer el aviso y dar un Brinco rinde: la misma jugadora con Brinco gana mucho más.
+        const tots = ETAPAS_EQ.map(n => res['nv' + n].total).sort((a, b) => a - b), totMed = (tots[1] + tots[2]) / 2;
+        check('F1 · ritmo: el duelo al mejor de 3 dura entre 60 y 100 s (mediana de las cuatro etapas, cuenta y respiros incluidos)', totMed >= 60 && totMed <= 100, JSON.stringify({ mediana: totMed, porEtapa: ETAPAS_EQ.map(n => res['nv' + n].total) }));
+        mudo = true; const resB = medirEquilibrio({ n: o.n || 36, dificultad: o.dificultad, brinco: true, niveles: [1, 30] }); mudo = false;
+        check('F1 · leer y esquivar: con el Brinco (350 ms de reacción) la jugadora media gana ≥ 80 % en Aprendiz y más que sin él en Maestro',
+          resB.nv1.pct >= 80 && resB.nv30.pct > res.nv30.pct, JSON.stringify({ conBrinco: { nv1: resB.nv1.pct, nv30: resB.nv30.pct }, sinBrinco: { nv1: res.nv1.pct, nv30: res.nv30.pct } }));
         check('Primera victoria posible en el nivel 1: la jugadora media gana alguno de sus 3 primeros duelos en el nivel 1', res.nv1.primera > 0 && res.nv1.primera <= 3, 'primera victoria en el duelo ' + res.nv1.primera);
         check('La Campeona sube con la etapa: piensa antes y usa más su poder en Maestro que en Aprendiz (sin tocar lo que quita cada golpe)',
           Cb.DIFICULTAD[3].pensar < Cb.DIFICULTAD[0].pensar && Cb.DIFICULTAD[3].poder > Cb.DIFICULTAD[0].poder && Cb.DIFICULTAD.every(d => d.plumas >= 3 && d.plumas <= 5), JSON.stringify(Cb.DIFICULTAD.map(d => d.id + ':' + d.pensar + '/' + d.poder + '/' + d.plumas)));
@@ -1350,6 +1373,7 @@ window.AVV18Evolucion = function (G) {
     Object.assign(S.inv, inv0); try { if (G.objetos && G.objetos.renderInv) G.objetos.renderInv(); } catch (e) { /* HUD */ }
     try { if (crudo == null) localStorage.removeItem(P.clave()); else localStorage.setItem(P.clave(), crudo); } catch (e) { /* sin almacenamiento */ }
     P.recargar(); void sel0;
+    if (Cb.asaltosPrueba) Cb.asaltosPrueba(0);
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
