@@ -465,6 +465,7 @@
       const alto = G.c.mirador.position.y > G.terreno.places.villa.base + 2;
       const mirOk = useAt('mirador', 2.4, 0); const cercMi = ultimoCercano; drain();
       await esperaCaptura('final'); // CG-64: la foto del final se codifica 1–2 cuadros después
+      for (let i = 0; i < 30 && $('end').hidden; i++) await new Promise(r => setTimeout(r, 100)); // F4-12: sin G.quiet, Vittata celebra 1,2 s antes del panel
       const botonesFin = [...W.document.querySelectorAll('#end button')].filter(b => !b.closest('[hidden]')).map(b => (b.id || '?') + '=' + b.textContent.trim());
       check('4.9', 'Mirador: subir y mirar el horizonte desbloquea el plano de la embarcación y completa el capítulo (panel final con «Crear mi cómic»)', alto && mirOk && S.boatPlan && S.complete && had('BoatBlueprintUnlocked') && had('LocationDiscoveredMirador') && had('ChapterCompleted') && S.step === G.misiones.DONE && !$('end').hidden && !!$('b-comic') && !!S.captures.final,
         { paso: S.step, miradorAlto: alto, botones: botonesFin, foto: !!S.captures.final, cercano: mirOk ? null : cercMi });
