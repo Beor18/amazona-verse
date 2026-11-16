@@ -214,11 +214,14 @@
     // ---------- Prueba: AV.obrasTest() ----------
     async function test() {
       const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
-      const C = G.construir, R = G.residentes;
+      const C = G.construir;
+      try { if (!G.bandada && window.AVE && AVE.assets) { await AVE.assets.script('src/game/bandada.js'); window.AVBandada(G); } if (G.bandada && G.bandada.residentes) await G.bandada.residentes; } catch (e) { /* sin bandada */ }
+      const R = G.residentes;
       const cal = G.renderer && G.renderer.calidad;
       const antes = { construir: S.construir ? JSON.parse(JSON.stringify(S.construir)) : S.construir, album: Array.isArray(S.album) ? S.album.slice() : S.album,
         pos: Object.assign({}, S.pos), quiet: G.quiet, f3: G.F3PIEZAS, nivel: cal && cal.nivel, escuela: cal && cal.escuela, guardado: (() => { try { return localStorage.getItem(CLAVE); } catch (e) { return null; } })(), datos: JSON.parse(JSON.stringify(datos)) };
-      const ponPiezas = ps => { S.construir = ps.length ? { v: 1, piezas: ps } : null; if (C) C.aplicar(S.construir); recalcular('guardar'); };
+      // como al colocar: primero el aviso de «guardar» (lo que anuncia la obra) y luego construir.js lee lo mismo (su aviso «cargar» ya no cambia nada)
+      const ponPiezas = ps => { S.construir = ps.length ? { v: 1, piezas: ps } : null; recalcular('guardar'); if (C) C.aplicar(S.construir); };
       const tipos = () => obras.map(o => o.tipo).sort().join(',');
       try {
         G.quiet = true; prueba = true;
@@ -324,7 +327,7 @@
         C.contexto(null); // guarda (con la apartada) y vuelve a leer
         const sigue = !!S.construir && S.construir.piezas.some(p => p.t === 'cajanido');
         check('Bandera apagada (por defecto): sin caja nido ni Merendero, la caja nido no es obra y la de la partida se guarda tal cual', antes.f3 !== true && apagada && sigue, JSON.stringify({ f3: antes.f3, apagada, sigue }));
-        G.F3PIEZAS = true; C.refrescar(); C.aplicar(S.construir); recalcular('guardar');
+        G.F3PIEZAS = true; C.refrescar(); recalcular('guardar'); C.aplicar(S.construir);
         check('Bandera encendida: la caja nido sale, es obra «Caja nido» y el Merendero está entre las plantillas', C.tiene('cajanido') && C.piezas().some(p => p.t === 'cajanido') && tipos() === 'cajanido' && C.PLANTILLAS_F3.includes('merendero') && ultimoAviso === '¡Obra lista: Caja nido!', tipos() + ' ' + ultimoAviso);
         if (R && R.invitar) {
           R.reiniciar(); const o = obras[0]; o.espera = 0; paso(CADA);
@@ -378,7 +381,7 @@
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    G.obras = { lista: () => obras.map(o => ({ tipo: o.tipo, x: o.x, z: o.z, mejor: !!o.mejor })), recalcular, libro: () => datos.libro.map(e => Object.assign({}, e)), html, estado, OBRAS,
+    G.obras = { cargar, lista: () => obras.map(o => ({ tipo: o.tipo, x: o.x, z: o.z, mejor: !!o.mejor })), recalcular, libro: () => datos.libro.map(e => Object.assign({}, e)), html, estado, OBRAS,
       get piezasNuevas() { return nuevas(); }, test };
     return G.obras;
   };
