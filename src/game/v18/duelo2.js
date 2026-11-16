@@ -343,14 +343,14 @@ window.AVV18Duelo2 = function (G) {
   // F1 (16-nov): encuadre() y el paso de cámara viven en combate.js (camaraDos), que el duelo contra la Campeona también usa;
   // aquí, con giro 0: la cámara al sur (+z) mirando al norte; el Jugador 1 empieza a la izquierda y el 2 a la derecha
   // F4-16 y 19: al terminar, durante la cámara lenta, cerca de las dos; luego, con la ganadora (como en combate.js; con «Reducir
-  // movimiento», en un corte). Aquí el panel final va en medio, bajo el HUD: la ganadora queda debajo de él (la cámara mira algo
-  // más arriba; en el teléfono en horizontal, más, porque el panel ocupa más alto).
-  const CAM_FIN = 7; let camAlto = 1; // m que la cámara mira por encima de la ganadora (se decide al terminar: no cada cuadro)
+  // movimiento», en un corte). El panel final va abajo y aparece al acabar la cámara lenta (FL.panel): la ganadora, entre el HUD y él.
+  const CAM_FIN = 7; let camAlto = -0.4; // m que la cámara mira por encima de la ganadora (+1; se decide al terminar: no cada cuadro)
   const ganadora2 = () => (D.resultado === 'j1' ? S.pos : pos2);
   const camDos = Cb.camaraDos({ a: () => S.pos, b: () => pos2, ajusta(e) {
     if (D.fase !== 'fin' || !D.resultado) return;
     if (FL && FL.lento && FL.lento()) { e.d = FL.CAM_LENTO; return; }
     const g = ganadora2(); e.x = g.x; e.y = g.y + camAlto; e.z = g.z; e.d = CAM_FIN;
+    if (FL && FL.apartar) FL.apartar(e, g, g === S.pos ? pos2 : S.pos, 0); // revisión F4: la perdedora no tapa a la ganadora
   } }), CAMD = camDos.CAMD, cam = camDos.cam, encuadre = camDos.encuadre;
   let follow0 = null, draw0 = null;
   function camaraPaso(dt, snap) {
@@ -411,6 +411,8 @@ window.AVV18Duelo2 = function (G) {
         '#v18-duelo2 .vd-centro{text-align:center;font-size:44px;font-weight:700;margin-top:6px}' +
         '#v18-duelo2 .vd-fin{text-align:center;background:rgba(30,40,30,.82);border-radius:14px;padding:10px;margin-top:8px}#v18-duelo2 .vd-fin p{margin:0 0 8px;font-size:20px;font-weight:600}' +
         // F4-19: panel de dos líneas: quién gana (en grande) y la serie. F4-18: «¡Uy!» pequeño (fijo: no mueve el HUD)
+        '#v18-duelo2 .vd-fin{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);margin:0 auto;width:min(520px,calc(100vw - 32px));box-sizing:border-box;padding:8px 10px}#v18-duelo2 .vd-fin.vd-fin-espera{visibility:hidden}' +
+        '@media (max-height:500px){#v18-duelo2 .vd-fin{padding:5px 8px}#v18-duelo2 .vd-fin p[data-k="finTxt"]{font-size:24px!important;margin-bottom:2px!important}#v18-duelo2 .vd-fin p.vd-fin-serie{margin:0 0 4px!important}}' +
         '#v18-duelo2 .vd-fin p[data-k="finTxt"]{font-size:26px;font-weight:800;color:#ffe27a;line-height:1.15;margin-bottom:4px}' +
         '#v18-duelo2 .vd-uy{position:fixed;left:0;right:0;top:40%;margin:0 auto;width:max-content;padding:2px 12px;border-radius:12px;background:rgba(30,40,30,.72);font-size:20px;font-weight:700;pointer-events:none}#v18-duelo2 .vd-uy[hidden]{display:none}' +
         // F1 · cambio 7 (revisión): el marcador de la serie en el panel final y «Otra vez» atenuado mientras espera FIN_PAUSA
@@ -474,8 +476,9 @@ window.AVV18Duelo2 = function (G) {
   }
   function pintarSerie() {
     if (!hud) return; const el = hud.q('serie'); if (!el) return;
-    const ver = D.fase !== 'nada' && !ent && (D.serie.j1 + D.serie.j2) > 0, t = TXT.serie(D.serie.j1, D.serie.j2);
-    if (el.hidden === ver) el.hidden = !ver; if (ver && el.textContent !== t) el.textContent = t;
+    // (en el final no: el marcador ya va en el panel, no dos veces en pantalla; revisión F4)
+    const ver = D.fase !== 'nada' && D.fase !== 'fin' && !ent && (D.serie.j1 + D.serie.j2) > 0, t = TXT.serie(D.serie.j1, D.serie.j2);
+    if (el.hidden === ver) el.hidden = !ver; if ((ver || D.fase === 'fin') && el.textContent !== t) el.textContent = t;
   }
   function pintarFin() { // F1 · cambio 7 (revisión): serie en el panel final y «Otra vez» atenuado hasta que se puede pulsar
     if (!hud || D.fase !== 'fin') return;
@@ -760,9 +763,11 @@ window.AVV18Duelo2 = function (G) {
     const txt = quien === 'j1' ? TXT.gana1 : TXT.gana2;
     emitir({ tipo: 'fin', de: quien, a: perd.id, valor: (quien === 'j1' ? D.j1 : D.j2).plumas, asaltos: [D.gan1 || 0, D.gan2 || 0] });
     sonar('duelo_victoria'); fx('gold', perd.pos.x, perd.pos.y + 1.2, perd.pos.z);
-    camAlto = innerHeight < 500 ? 3.6 : 1; // pantalla baja (teléfono de lado): el panel ocupa casi todo el centro, la ganadora va debajo
+    // Revisión F4: el panel ya no va en medio sino abajo (en el final los botones táctiles se esconden) y espera a que acabe la
+    // cámara lenta: la ganadora, en la franja libre entre el HUD y el panel (la cámara mira a la altura de su pecho)
+    camAlto = -0.4;
     if (FL && FL.final) { if (FL.movReducido()) cam.listo = false; FL.final(ganadora2()); } // F4-16 y 19: cámara lenta, acercamiento, y destellos y pétalos sobre quien gana
-    if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; flotante(''); pintarFin(); }
+    if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; flotante(''); pintarFin(); pintarSerie(); if (FL && FL.panel) FL.panel(hud.q('fin')); }
     // T38: el premio de juego del duelo (los Lentes de la Campeona, una vez por partida: combate.js); nada más (ni
     // inventario ni G.v18)
     if (Cb && Cb.premioRopa) Cb.premioRopa();
@@ -771,6 +776,7 @@ window.AVV18Duelo2 = function (G) {
   function salir() {
     if (D.fase === 'nada') return false;
     D.fase = 'nada'; quitarBalas(); D.timers.length = 0; D.trampas.length = 0; soltar(); ent = null; if (tjAbierta()) TJ.cerrar('salir');
+    if (FL && FL.cancelar) FL.cancelar(); // revisión F4: salir durante la cámara lenta no deja destellos ni pétalos pendientes
     D.serie.j1 = D.serie.j2 = 0; D.ventaja.j1 = D.ventaja.j2 = false; pintarSerie(); // F1 · cambio 7: al salir del modo, marcador y Ventaja a cero
     if (hud) { flotante(''); hud.el.hidden = true; pintarEntreno(); }
     if (D.ch) D.ch.root.visible = false;
@@ -1223,14 +1229,22 @@ window.AVV18Duelo2 = function (G) {
           const ultimo = k => { salir(); iniciar({ sinCuenta: true, asaltos: 1 }); limpio(); cerca(1.5); S.facing = { x: 1, z: 0 }; A.log.length = 0; rafagas.length = 0; petalos.length = 0;
             if (k === 'j1') { D.j2.plumas = 1; usar(D.j1, 'golpe_ala'); } else { D.j1.plumas = 1; usar(D.j2, 'golpe_ala'); } };
           const g0 = Object.assign({}, FS); ultimo('j2');
-          const c2 = c2On(), enLento = { fase: D.fase, res: D.resultado, lentoT: C2 ? C2.lentoT : 0, d: encuadre().d, dest: FS.destellos - g0.destellos, vic: A.log.filter(n => n === 'duelo_victoria').length };
+          const finEl = hud.q('fin'), espera = () => finEl.classList.contains('vd-fin-espera') && getComputedStyle(finEl).visibility === 'hidden';
+          const c2 = c2On(), enLento = { fase: D.fase, res: D.resultado, lentoT: C2 ? C2.lentoT : 0, d: encuadre().d, dest: FS.destellos - g0.destellos, vic: A.log.filter(n => n === 'duelo_victoria').length, panelEspera: espera() };
           for (let i = 0; i < 6; i++) C2.pasoReloj(0.1);
+          { const panel06 = espera(); for (let i = 0; i < 6; i++) C2.pasoReloj(0.1); const panel12 = espera(), r = finEl.getBoundingClientRect(), serieHud = hud.q('serie');
+            const abajo = getComputedStyle(finEl).position === 'fixed' && r.bottom > innerHeight - 40 && r.top > innerHeight * 0.45;
+            check('F4-16 y 19 · Duelo de 2 (revisión): el panel final va abajo y aparece al acabar la cámara lenta (no tapa a quien gana); el marcador sale en el panel y no también en el HUD',
+              (!c2 || (enLento.panelEspera && panel06 && !panel12)) && abajo && (!serieHud || serieHud.hidden) && !hud.q('finSerie').hidden,
+              JSON.stringify({ c2, panelEspera: enLento.panelEspera, panel06, panel12, abajo, top: Math.round(r.top), bottom: Math.round(r.bottom), alto: innerHeight, serieHud: serieHud && !serieHud.hidden })); }
           const e2 = encuadre(), tras = { lentoT: C2.lentoT, d: e2.d, x: +(e2.x - pos2.x).toFixed(3), z: +(e2.z - pos2.z).toFixed(3), dest: FS.destellos - g0.destellos, oro30: rafagas.filter(r => r === 'gold:30').length, pet: petalos.join(),
             l1: hud.q('finTxt').textContent, l2: hud.q('finSerie').textContent, l2Vis: !hud.q('finSerie').hidden, tam: parseFloat(getComputedStyle(hud.q('finTxt')).fontSize), otra: !!hud.q('otraB') };
           check('F4-16 y 19 · Duelo de 2: último golpe a cámara lenta 0,5 s cerca de las dos; luego la cámara con quien gana (también el J2), 30 destellos y pétalos, y panel de dos líneas (quién gana y la serie)',
             enLento.fase === 'fin' && enLento.res === 'j2' && enLento.vic === 1 && enLento.dest === 0 && (!c2 || (Math.abs(enLento.lentoT - 0.5) < 1e-6 && enLento.d === FL.CAM_LENTO)) &&
             tras.lentoT === 0 && tras.d === 7 && tras.x === 0 && tras.z === 0 && tras.dest === 1 && tras.oro30 === 1 && tras.pet === String(FL.FINAL.petalos) && tras.l1 === TXT.gana2 && tras.l2Vis && tras.l2 === TXT.serie(0, 1) && tras.tam >= 24 && tras.otra,
             JSON.stringify({ c2, enLento, tras }));
+          { const s0 = FS.destellos; ultimo('j1'); salir(); for (let i = 0; i < 12; i++) C2.pasoReloj(0.1);
+            check('F4-16 · Duelo de 2 (revisión): salir durante la cámara lenta cancela los destellos y pétalos pendientes', FS.destellos === s0 && C2.lentoT === 0, JSON.stringify({ dest: FS.destellos - s0, lentoT: C2.lentoT })); }
           const g1 = Object.assign({}, FS); A.reducido = true; ultimo('j1'); for (let i = 0; i < 6; i++) C2.pasoReloj(0.1); A.reducido = false;
           const red = { lentos: FS.lentos - g1.lentos, dest: FS.destellos - g1.destellos, oro30: rafagas.filter(r => r === 'gold:30').length, pet: petalos.length, lentoT: C2.lentoT, listo: cam.listo, finales: FS.finales - g1.finales, d: encuadre().d };
           check('F4-16 y 19 · Duelo de 2: con «Reducir movimiento», sin cámara lenta ni partículas y la cámara pasa a quien gana en un corte',
@@ -1255,7 +1269,7 @@ window.AVV18Duelo2 = function (G) {
         const gana = k => { limpio(); cerca(1.5); if (k === 'j1') { D.j2.plumas = 1; usar(D.j1, 'golpe_ala'); } else { D.j1.plumas = 1; usar(D.j2, 'golpe_ala'); } };
         iniciar({ sinCuenta: true, asaltos: 1 }); const s0 = { j1: D.serie.j1, j2: D.serie.j2, oculto: hud.q('serie').hidden };
         gana('j1'); usar(D.j1, 'golpe_ala'); terminar('j2'); // tras el fin, ni otro golpe ni otro terminar cuentan
-        const s1 = { j1: D.serie.j1, j2: D.serie.j2, txt: hud.q('serie').textContent, oculto: hud.q('serie').hidden, fins: fins() };
+        const s1 = { j1: D.serie.j1, j2: D.serie.j2, txt: hud.q('serie').textContent, oculto: hud.q('serie').hidden, panel: hud.q('finSerie').hidden ? '' : hud.q('finSerie').textContent, fins: fins() }; // en el final, el marcador va en el panel (no en el HUD a la vez: revisión F4)
         // «Otra vez»: sin tarjeta, sin entreno, cuenta corta; la pelea empieza antes de 2 s (tiempo de juego) y la llamada es inmediata
         const espA = D.esp2; D.finT -= FIN_PAUSA; const r0 = performance.now(); hud.q('fin').querySelector('[data-a="otra"]').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true })); const rMs = performance.now() - r0;
         const ov = { fase: D.fase, card: !!G.ui.cardOpen, tj: tjAbierta(), ent: !!ent, finOculto: hud.q('fin').hidden, pl: [D.j1.plumas, D.j2.plumas], serie: hud.q('serie').textContent };
@@ -1267,8 +1281,8 @@ window.AVV18Duelo2 = function (G) {
         D.finT -= FIN_PAUSA; otraVez(); D.fase = 'lucha'; gana('j1'); const s3 = { txt: hud.q('serie').textContent, fins: fins() };
         salir(); const s4 = { j1: D.serie.j1, j2: D.serie.j2, oculto: hud.q('serie').hidden };
         iniciar({ sinCuenta: true, asaltos: 1 }); const s5 = { oculto: hud.q('serie').hidden, j1: D.serie.j1 }; salir();
-        check('F1 · cambio 7: marcador de la sesión «J1 1 · 0 J2» que suma al terminar cada duelo (una vez) y se borra al salir del modo',
-          s0.j1 === 0 && s0.j2 === 0 && s0.oculto && s1.j1 === 1 && s1.j2 === 0 && s1.txt === TXT.serie(1, 0) && !s1.oculto && s2.j1 === 1 && s2.j2 === 1 && s2.txt === TXT.serie(1, 1) &&
+        check('F1 · cambio 7: marcador de la sesión «J1 1 · 0 J2» que suma al terminar cada duelo (una vez; en el final, en el panel) y se borra al salir del modo',
+          s0.j1 === 0 && s0.j2 === 0 && s0.oculto && s1.j1 === 1 && s1.j2 === 0 && s1.txt === TXT.serie(1, 0) && s1.oculto && s1.panel === TXT.serie(1, 0) && s2.j1 === 1 && s2.j2 === 1 && s2.txt === TXT.serie(1, 1) &&
           s3.txt === TXT.serie(2, 1) && s4.j1 === 0 && s4.j2 === 0 && s4.oculto && s5.oculto && s5.j1 === 0, JSON.stringify({ s0, s1, s2, s3, s4, s5 }));
         check('F1 · cambio 7: el fin (victoria / derrota) se emite una sola vez por duelo, también con «Otra vez»', s1.fins === 1 && s2.fins === 2 && s3.fins === 3 && evs.every(e => e.tipo !== 'win' && e.tipo !== 'loss'), JSON.stringify({ f1: s1.fins, f2: s2.fins, f3: s3.fins }));
         // Ventaja: solo a quien la marca, en cada asalto, y se mantiene con «Otra vez»

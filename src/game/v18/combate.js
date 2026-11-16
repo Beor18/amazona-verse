@@ -420,11 +420,17 @@ window.AVV18Combate = function (G) {
     if (lento) C2.despues(LENTO.seg, suelta); else suelta();
     return true;
   }
-  const ocultarUy = el => { el.hidden = true; };
+  const ocultarUy = el => { el.hidden = true; }, FALLA = { polvoAlto: 1.5 }; FEEL.enAire = 0;
   // b: la semilla (b.cerca: la menor distancia² a la que pasó de su blanco); enSuelo: acabó tocando el suelo; uy: el elemento del «¡Uy!» (null: no se dice)
   function feelFalla(b, suelo, enSuelo, uy) {
     const p = b.m.position;
-    if (enSuelo) { FEEL.fallos++; if (!movReducido()) try { G.fx.hojas(p.x, suelo + 0.15, p.z, 4); G.fx.polvo(p.x, suelo, p.z, 0.15); FEEL.polvos++; } catch (e) { /* sin efectos */ } }
+    // Revisión F4: la semilla recta casi nunca baja al suelo en la explanada; la que se acaba en el aire (b.t >= b.vida) también
+    // responde: se deshace en las mismas 4 hojas donde se acaba, y con polvo si iba a menos de FALLA.polvoAlto m del suelo
+    const aire = !enSuelo && b.t >= b.vida, alto = p.y - suelo;
+    if (enSuelo || aire) {
+      FEEL.fallos++; if (aire) FEEL.enAire++;
+      if (!movReducido()) try { G.fx.hojas(p.x, enSuelo ? suelo + 0.15 : p.y, p.z, 4); if (enSuelo || alto < FALLA.polvoAlto) { G.fx.polvo(p.x, suelo, p.z, 0.15); FEEL.polvos++; } } catch (e) { /* sin efectos */ }
+    }
     const roce = b.radio + UY.margen;
     if (uy && b.cerca !== undefined && b.cerca < roce * roce) {
       FEEL.uys++; uy.textContent = UY.txt; uy.hidden = false; animar(uy, KF_POP, OPT_POP);
@@ -432,9 +438,34 @@ window.AVV18Combate = function (G) {
     }
   }
   const lentoActivo = () => c2On() && C2.lentoT > 0;
-  function feelCancelar() { finalN++; C2.lentoT = 0; } // duelo nuevo: sin cámara lenta ni destellos del anterior
+  // Revisión F4: el panel final no tapa la cámara lenta ni a la ganadora celebrando. Mientras dura la cámara lenta y PANEL.tras s
+  // más, el panel ya está puesto (hidden = false: el foco y las baterías lo ven) pero invisible (.vd-fin-espera); luego aparece.
+  // Sin cámara lenta («Reducir movimiento», Combate 2.0 apagado), al momento. Se cuenta con el reloj visual (C2.despues).
+  Object.assign(FEEL, { paneles: 0 });
+  const PANEL = { tras: 0.6 };
+  function feelPanel(el) {
+    if (!el) return false;
+    el.classList.remove('vd-fin-espera');
+    if (!lentoActivo()) return false;
+    el.classList.add('vd-fin-espera'); FEEL.paneles++;
+    const n = finalN;
+    C2.despues(C2.lentoT + PANEL.tras, () => { if (n === finalN) el.classList.remove('vd-fin-espera'); });
+    return true;
+  }
+  // La cámara del final no deja a la perdedora delante de la ganadora: si está entre las dos (a menos de GIRO_FIN.min rad del eje
+  // ganadora→cámara), la cámara gira alrededor de la ganadora hasta GIRO_FIN.min, por el lado más corto. e: el encuadre; g: la
+  // ganadora; p: la perdedora; yw: el giro de la cámara. Pone e.yaw (camaraDos lo usa en lugar de o.yaw()).
+  const GIRO_FIN = { min: 0.95, cerca: 4 };
+  function apartarCamara(e, g, p, yw) {
+    const dx = p.x - g.x, dz = p.z - g.z, d = Math.hypot(dx, dz);
+    if (d < 0.05 || d > GIRO_FIN.cerca) return;
+    const ap = Math.atan2(dx, dz); let dif = yw - ap; dif = Math.atan2(Math.sin(dif), Math.cos(dif));
+    if (Math.abs(dif) >= GIRO_FIN.min) return;
+    e.yaw = ap + (dif >= 0 ? GIRO_FIN.min : -GIRO_FIN.min);
+  }
+  function feelCancelar() { finalN++; C2.lentoT = 0; } // duelo nuevo o salir: sin cámara lenta, destellos ni panel en espera del anterior
   const feel = { stats: FEEL, pata: () => { pataT = performance.now(); }, cuenta: feelCuenta, pluma: feelPluma, poderIni: feelPoderIni, poder: feelPoder, movReducido,
-    final: feelFinal, falla: feelFalla, lento: lentoActivo, cancelar: feelCancelar, LENTO, FINAL, UY, CAM_LENTO };
+    final: feelFinal, falla: feelFalla, lento: lentoActivo, cancelar: feelCancelar, panel: feelPanel, apartar: apartarCamara, LENTO, FINAL, UY, CAM_LENTO, PANEL, GIRO: GIRO_FIN };
   let cuentaVista = -1;
   const estPoder = { armado: false, coste: 0 };
   const botonPoder = () => (TACTIL ? document.getElementById('b-dash') : hud && hud.el.querySelector('.vd-chip[data-a="poder"]'));
@@ -684,18 +715,18 @@ window.AVV18Combate = function (G) {
   const CAMD2 = { min: 8.5, max: 21, base: 6.5, k: 0.9, elev: 0.6, rate: 4 };
   function camaraDos(o) {
     const D = Object.assign({}, CAMD2, o.camd), cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), d: 10, listo: false };
-    const e = { x: 0, y: 0, z: 0, d: 10, sep: 0 };
+    const e = { x: 0, y: 0, z: 0, d: 10, sep: 0, yaw: null }; // yaw: lo pone ajusta() para girar la cámara (null: o.yaw())
     function encuadre() {
       const a = o.a(), b = o.b();
       e.x = (a.x + b.x) / 2; e.z = (a.z + b.z) / 2; e.y = (a.y + b.y) / 2; e.sep = Math.hypot(a.x - b.x, a.z - b.z);
-      e.d = Math.max(D.min, Math.min(D.max, D.base + e.sep * D.k));
+      e.d = Math.max(D.min, Math.min(D.max, D.base + e.sep * D.k)); e.yaw = null;
       if (o.ajusta) o.ajusta(e, a, b);
       return e;
     }
     function paso(dt, snap) {
       encuadre(); const k = snap || !cam.listo ? 1 : Math.min(1, (dt || 0) * D.rate), camera = R.camera;
       cam.d += (e.d - cam.d) * k;
-      const yw = o.yaw ? o.yaw() : 0, sx = Math.sin(yw), cz = Math.cos(yw);
+      const yw = e.yaw !== null ? e.yaw : o.yaw ? o.yaw() : 0, sx = Math.sin(yw), cz = Math.cos(yw);
       let hz = cam.d * Math.cos(D.elev), vy = cam.d * Math.sin(D.elev);
       if (o.libre && !o.libre(e.x + sx * hz, e.z + cz * hz)) {
         for (let n = 0; n < 40 && hz > 3 && !o.libre(e.x + sx * hz, e.z + cz * hz); n++) hz -= 0.5;
@@ -718,7 +749,7 @@ window.AVV18Combate = function (G) {
     ajusta(e, a, b) {
       // (si perdió Vittata y se aleja más de 6 m de la ganadora, vuelve el plano de las dos: no se queda fuera de cuadro)
       if (C.fase === 'fin' && C.r && C.resultado && lentoActivo()) { e.d = CAM_LENTO; return; } // F4-16: durante la cámara lenta, cerca de las dos
-      if (C.fase === 'fin' && C.r && C.resultado && (C.resultado === 'win' || e.sep < 6)) { const g = ganadora(); e.x = g.x; e.y = TACTIL ? g.y : g.y - 0.6; e.z = g.z; e.d = CAM_FIN; return; } // en el escritorio, algo alta en pantalla: el panel final va abajo (en táctil va arriba)
+      if (C.fase === 'fin' && C.r && C.resultado && (C.resultado === 'win' || e.sep < 6)) { const g = ganadora(); e.x = g.x; e.y = TACTIL ? g.y : g.y - 0.6; e.z = g.z; e.d = CAM_FIN; apartarCamara(e, g, g === S.pos ? b : a, G.camara ? G.camara.yaw : 0); return; } // en el escritorio, algo alta en pantalla: el panel final va abajo (en táctil va arriba)
       const camera = R.camera; if (!camera) return;
       const yw = G.camara ? G.camara.yaw : 0, lat = Math.abs((b.x - a.x) * Math.cos(yw) - (b.z - a.z) * Math.sin(yw));
       const th = Math.tan((camera.fov || 55) * Math.PI / 360) * (camera.aspect || 1);
@@ -800,7 +831,7 @@ window.AVV18Combate = function (G) {
       '#v18-duelo button.cd{opacity:.5}#v18-duelo .vd-fin{text-align:center;background:rgba(30,40,30,.82);border-radius:14px;padding:10px;margin-top:8px}' +
       '#v18-duelo .vd-fin p{margin:0 0 8px;font-size:18px;font-weight:600}' +
       // F4-19: panel de dos líneas: quién gana, en grande, y por qué. F4-18: «¡Uy!» pequeño (fijo: no mueve el HUD)
-      '#v18-duelo .vd-fin p.vd-fin-tit{font-size:26px;font-weight:800;margin-bottom:2px;color:#ffe27a;line-height:1.15}#v18-duelo .vd-fin p.vd-fin-tit:empty{display:none}#v18-duelo.tactil .vd-fin p.vd-fin-tit{font-size:17px;line-height:1.05;margin-bottom:1px}' +
+      '#v18-duelo .vd-fin.vd-fin-espera{visibility:hidden}#v18-duelo .vd-fin p.vd-fin-tit{font-size:26px;font-weight:800;margin-bottom:2px;color:#ffe27a;line-height:1.15}#v18-duelo .vd-fin p.vd-fin-tit:empty{display:none}#v18-duelo.tactil .vd-fin p.vd-fin-tit{font-size:17px;line-height:1.05;margin-bottom:1px}' +
       // (en táctil, la línea nueva no agranda el panel: menos aire entre las líneas; así no pisa el aviso en 844 × 390)
       '#v18-duelo.tactil .vd-fin.vd-fin2{padding:6px 8px}#v18-duelo.tactil .vd-fin.vd-fin2 p{margin-bottom:3px}' +
       '#v18-duelo .vd-uy{position:fixed;left:0;right:0;top:40%;margin:0 auto;width:max-content;padding:2px 12px;border-radius:12px;background:rgba(30,40,30,.72);font-size:20px;font-weight:700;pointer-events:none}#v18-duelo .vd-uy[hidden]{display:none}' +
@@ -1308,7 +1339,9 @@ window.AVV18Combate = function (G) {
       sonar('duelo_victoria'); fx('gold', C.r.pos.x, C.r.pos.y + 1.2, C.r.pos.z);
     } else { txt = TXT.pierde; C.premio = false; sonar('duelo_derrota'); }
     if (G.ui && G.ui.toast) G.ui.toast(txt, 3200);
-    if (hud) { hud.q('finTit').textContent = gano ? TXT.ganaste : TXT.perdiste; hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; hud.q('bot').hidden = true; flotante(gano ? TXT.ganaste : TXT.perdiste, 1.6);
+    if (hud) { hud.q('finTit').textContent = gano ? TXT.ganaste : TXT.perdiste; hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; hud.q('bot').hidden = true;
+      // Revisión F4: «¡Ganaste!» grande solo mientras el panel espera (la cámara lenta); luego lo dice el título del panel, no los dos a la vez
+      flotante(feelPanel(hud.q('fin')) ? (gano ? TXT.ganaste : TXT.perdiste) : '', C2.lentoT + PANEL.tras - 0.5);
       try { hud.q('finXp').innerHTML = G.v18evo && G.v18evo.htmlFin ? G.v18evo.htmlFin() : ''; } catch (e) { /* sin evolución */ }
       const c = consejo(gano, C.stats, C.quitadas || 0); hud.q('finTipTxt').textContent = c.txt; hud.q('finTipPod').textContent = c.pod; }
   }
@@ -1421,6 +1454,7 @@ window.AVV18Combate = function (G) {
   function salir(motivo) {
     if (C.fase === 'nada') return false;
     C.fase = 'nada'; quitarBalas(); C.timers.length = 0; soltar(); ent = null; cartaC = false; comboVis = 0; if (tj && tj.modo === 'uno') cerrarTarjeta('salir');
+    feelCancelar(); // revisión F4: salir durante la cámara lenta no deja destellos ni pétalos pendientes sobre Vittata
     if (hud) { flotante(''); hud.el.hidden = true; ocultarPista(); pintarEntreno(); ponerTags(); if (hud.ext) { hud.ext.carta.hidden = true; hud.ext.nom.hidden = true; pintarExt(); } }
     rivalPos.x = sitio.x + 4; rivalPos.z = sitio.z; rivalPos.y = ALTURA(rivalPos);
     if (C.r) { C.r.mareo = 0; C.r.finMareo = 0; C.r.lift.t = C.r.lift.dura = 0; }
@@ -3479,19 +3513,32 @@ window.AVV18Combate = function (G) {
             try {
               const ultimo = () => { iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 1 }); quieta(1.2); C.r.plumas = 1; A.log.length = 0; rafagas.length = 0; petalos.length = 0; golpe(); };
               R.REDUCED = false; A.reducido = false; const g0 = Object.assign({}, FS); ultimo();
-              const c2 = c2On(), enLento = { fase: C.fase, res: C.resultado, lentoT: C2.lentoT, dt: +C2.dtVis(1).toFixed(2), d: camDos.encuadre().d, dest: FS.destellos - g0.destellos, vic: veces('duelo_victoria'), oro30: rafagas.filter(r => r === 'gold:30').length };
+              const finEl = hud.q('fin'), espera = () => finEl.classList.contains('vd-fin-espera') && getComputedStyle(finEl).visibility === 'hidden';
+              const c2 = c2On(), enLento = { fase: C.fase, res: C.resultado, lentoT: C2.lentoT, dt: +C2.dtVis(1).toFixed(2), d: camDos.encuadre().d, dest: FS.destellos - g0.destellos, vic: veces('duelo_victoria'), oro30: rafagas.filter(r => r === 'gold:30').length,
+                panelEspera: espera(), panelPuesto: !finEl.hidden, centro: hud.q('centro').textContent };
               for (let i = 0; i < 6; i++) C2.pasoReloj(0.1);
+              const panel06 = espera(); for (let i = 0; i < 6; i++) C2.pasoReloj(0.1); const panel12 = espera();
+              // revisión F4: el panel ya está puesto pero invisible durante la cámara lenta y PANEL.tras s más; «¡Ganaste!» grande solo entonces
+              check('F4-16 y 19 (revisión): el panel final no tapa la cámara lenta ni a la ganadora: aparece PANEL.tras s después; mientras, «¡Ganaste!» en grande (no los dos a la vez)',
+                !c2 || (enLento.panelEspera && enLento.panelPuesto && enLento.centro === TXT.ganaste && panel06 && !panel12), JSON.stringify({ c2, panelEspera: enLento.panelEspera, centro: enLento.centro, panel06, panel12 }));
               const tras = { lentoT: C2.lentoT, dt: C2.dtVis(1), d: camDos.encuadre().d, dest: FS.destellos - g0.destellos, oro30: rafagas.filter(r => r === 'gold:30').length, pet: petalos.join(), vic: veces('duelo_victoria'),
                 tit: hud.q('finTit').textContent, txt: hud.q('finTxt').textContent, titVis: getComputedStyle(hud.q('finTit')).display !== 'none', gana: !!(C.j.anima2 || C.j.anima) };
               check('F4-16 y 19: último golpe: 0,5 s a cámara lenta (solo lo visual) cerca de las dos y duelo_victoria una vez; al acabar, la cámara con la ganadora, 30 destellos dorados y pétalos, y panel de dos líneas',
                 enLento.fase === 'fin' && enLento.res === 'win' && enLento.vic === 1 && enLento.dest === 0 && enLento.oro30 === 0 && (!c2 || (Math.abs(enLento.lentoT - 0.5) < 1e-6 && enLento.d === CAM_LENTO && (enLento.dt === LENTO.k || enLento.dt === 0.06))) &&
                 tras.lentoT === 0 && tras.dt === 1 && tras.d === CAM_FIN && tras.dest === 1 && tras.oro30 === 1 && tras.pet === String(FINAL.petalos) && tras.vic === 1 && tras.tit === TXT.ganaste && !!tras.txt && tras.titVis && FS.lentos - g0.lentos === (c2 ? 1 : 0) && FS.finales - g0.finales === 1,
                 JSON.stringify({ c2, enLento, tras }));
-              const g1 = Object.assign({}, FS); A.reducido = true; ultimo(); for (let i = 0; i < 6; i++) C2.pasoReloj(0.1);
-              const red = { fase: C.fase, lentos: FS.lentos - g1.lentos, finales: FS.finales - g1.finales, dest: FS.destellos - g1.destellos, oro30: rafagas.filter(r => r === 'gold:30').length, pet: petalos.length, lentoT: C2.lentoT, d: camDos.encuadre().d };
+              // revisión F4: salir durante la cámara lenta no deja destellos ni pétalos pendientes (C2.pasoReloj sigue corriendo fuera)
+              { const s0 = FS.destellos; ultimo(); salir(); for (let i = 0; i < 12; i++) C2.pasoReloj(0.1); const sale = { dest: FS.destellos - s0, lentoT: C2.lentoT, fase: C.fase, oro30: rafagas.filter(r => r === 'gold:30').length };
+                check('F4-16 (revisión): salir durante la cámara lenta cancela los destellos y pétalos pendientes', sale.dest === 0 && sale.oro30 === 0 && sale.lentoT === 0 && sale.fase === 'nada', JSON.stringify(sale)); }
+              // revisión F4-19: la perdedora entre la cámara y la ganadora → la cámara gira alrededor de la ganadora (GIRO.min); si no tapa, igual
+              { const e = { yaw: null }, g = { x: 0, z: 0 }; apartarCamara(e, g, { x: 0.2, z: 1.5 }, 0); const gira = e.yaw; e.yaw = null; apartarCamara(e, g, { x: 2, z: -0.5 }, 0); const nada = e.yaw;
+                const sep = gira === null ? 0 : Math.abs(Math.atan2(Math.sin(gira - Math.atan2(0.2, 1.5)), Math.cos(gira - Math.atan2(0.2, 1.5))));
+                check('F4-19 (revisión): si la perdedora tapa a la ganadora, la cámara gira hasta dejarla a un lado (y no gira si no tapa)', gira !== null && Math.abs(sep - GIRO_FIN.min) < 1e-6 && nada === null, JSON.stringify({ gira, sep, nada })); }
+              const g1 = Object.assign({}, FS); A.reducido = true; ultimo(); const redPanel = { espera: hud.q('fin').classList.contains('vd-fin-espera'), centro: hud.q('centro').textContent }; for (let i = 0; i < 6; i++) C2.pasoReloj(0.1);
+              const red = { espera: redPanel.espera, centro: redPanel.centro, fase: C.fase, lentos: FS.lentos - g1.lentos, finales: FS.finales - g1.finales, dest: FS.destellos - g1.destellos, oro30: rafagas.filter(r => r === 'gold:30').length, pet: petalos.length, lentoT: C2.lentoT, d: camDos.encuadre().d };
               A.reducido = false;
               check('F4-16 y 19: con «Reducir movimiento» no hay cámara lenta, ni acercamiento, ni destellos ni pétalos (el final y el panel se quedan)',
-                red.fase === 'fin' && red.lentos === 0 && red.finales === 1 && red.dest === 0 && red.oro30 === 0 && red.pet === 0 && red.lentoT === 0 && red.d === CAM_FIN, JSON.stringify(red));
+                red.fase === 'fin' && !red.espera && red.centro === '' && red.lentos === 0 && red.finales === 1 && red.dest === 0 && red.oro30 === 0 && red.pet === 0 && red.lentoT === 0 && red.d === CAM_FIN, JSON.stringify(red));
               // 18 · semilla que falla: al tocar el suelo, 4 hojas y polvo; si pasa rozando a la Campeona y no la toca, «¡Uy!» pequeño
               const J = G.fx.juicy, uy = hud.q('uy');
               const tiro = (dx, dz, vx, vy, vida) => { C.balas.length = 0; const y = C.r.pos.y + 0.9; lanzar({ de: C.j, x: C.r.pos.x + dx, y, z: C.r.pos.z + dz, vx, vy, vz: 0, vida, radio: 0.9, golpe: { plumas: 1 } }); for (let i = 0; i < 40 && C.balas.length; i++) pasoBalas(0.05); };
@@ -3499,12 +3546,12 @@ window.AVV18Combate = function (G) {
               const h0 = { f: FS.fallos, p: FS.polvos, u: FS.uys, hojas: J.hojas, polvo: J.polvo };
               tiro(-6, 3, 0, -12, 2); const suelo = { fallos: FS.fallos - h0.f, polvos: FS.polvos - h0.p, hojas: J.hojas - h0.hojas, polvo: J.polvo - h0.polvo, hojas4: rafagas.filter(r => r === 'leaves:4').length, uy: !uy.hidden, pl: C.r.plumas };
               tiro(-3, 1.5, 12, 0, 0.5); const roza = { uys: FS.uys - h0.u, uy: !uy.hidden, txt: uy.textContent, pl: C.r.plumas, fixed: getComputedStyle(uy).position };
-              uy.hidden = true; tiro(-3, 6, 12, 0, 0.5); const lejos = { uys: FS.uys - h0.u, uy: !uy.hidden };
+              uy.hidden = true; const a0 = { f: FS.fallos, a: FS.enAire, hojas: J.hojas }; tiro(-3, 6, 12, 0, 0.5); const lejos = { uys: FS.uys - h0.u, uy: !uy.hidden, fallos: FS.fallos - a0.f, aire: FS.enAire - a0.a, hojas: J.hojas - a0.hojas };
               A.reducido = true; const r0 = { f: FS.fallos, p: FS.polvos, hojas: J.hojas }; tiro(-6, 3, 0, -12, 2); A.reducido = false;
               const redS = { fallos: FS.fallos - r0.f, polvos: FS.polvos - r0.p, hojas: J.hojas - r0.hojas };
-              check('F4-18: semilla que falla: al tocar el suelo, 4 hojas y un poco de polvo; rozando a la Campeona sin tocarla, «¡Uy!» pequeño (lejos, no); con «Reducir movimiento», sin hojas ni polvo',
+              check('F4-18: semilla que falla: al tocar el suelo (o al acabarse en el aire: revisión), 4 hojas y un poco de polvo; rozando a la Campeona sin tocarla, «¡Uy!» pequeño (lejos, no); con «Reducir movimiento», sin hojas ni polvo',
                 suelo.fallos === 1 && suelo.polvos === 1 && suelo.hojas === 1 && suelo.polvo === 1 && suelo.hojas4 === 1 && !suelo.uy && suelo.pl === PLUMAS && roza.uys === 1 && roza.uy && roza.txt === UY.txt && roza.pl === PLUMAS && roza.fixed === 'fixed' &&
-                lejos.uys === 1 && !lejos.uy && redS.fallos === 1 && redS.polvos === 0 && redS.hojas === 0, JSON.stringify({ suelo, roza, lejos, redS }));
+                lejos.uys === 1 && !lejos.uy && lejos.fallos === 1 && lejos.aire === 1 && lejos.hojas === 1 && redS.fallos === 1 && redS.polvos === 0 && redS.hojas === 0, JSON.stringify({ suelo, roza, lejos, redS }));
             } finally { G.fx.petalos = pet0; G.fx.hojas = hoj0; G.combate2 = cb0; if (burst0) G.fx.burst = burst0; A.reducido = ar0; }
           }
         } finally { A.play = play0; if (burst0) G.fx.burst = burst0; R.REDUCED = R0; A.reducido = ar0; salir(); }
