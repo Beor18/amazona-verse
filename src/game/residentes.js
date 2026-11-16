@@ -425,9 +425,23 @@ window.AVResidentes = function (G, B) {
   }
   G.on('update', dt => paso(dt, 'sin-dibujo'), 87); // bandada.js (prio 88) dibuja todo junto
 
+  // F2-2 («Foto relámpago», src/game/foto_safari.js): «dónde hay una ahora». La residente viva (de las que se dibujan este cuadro)
+  // más cercana a (x, z), de la especie sp si se pide, en out { x, y, z, sp, oculto: false }; out2 (opcional), la segunda de esa misma
+  // especie, con out2.ok. Devuelve out, o null si no hay ninguna. Solo lee: no cambia nada.
+  function cerca(x, z, out, out2, sp) {
+    let d1 = Infinity, d2 = Infinity, a1 = null, a2 = null;
+    for (let i = 0; i < lista.length; i++) {
+      const a = lista[i]; if (sp && a.sp !== sp) continue;
+      const d = (a.x - x) * (a.x - x) + (a.z - z) * (a.z - z);
+      if (d < d1) { if (a1 && (!sp ? a1.sp === a.sp : true)) { d2 = d1; a2 = a1; } d1 = d; a1 = a; } else if (d < d2 && (sp || (a1 && a.sp === a1.sp))) { d2 = d; a2 = a; }
+    }
+    if (out2) { out2.ok = !!(a2 && a2.sp === (a1 && a1.sp)); if (out2.ok) { out2.x = a2.x; out2.y = a2.y; out2.z = a2.z; out2.sp = a2.sp; out2.oculto = false; } }
+    if (!a1) return null;
+    out.x = a1.x; out.y = a1.y; out.z = a1.z; out.sp = a1.sp; out.oculto = false; return out;
+  }
   function aves() { const o = []; for (const c of colonias()) o.push(...c.aves); if (R.vis) o.push(...R.vis.aves); return o; }
   const giroHacia = (a, p) => angDif(a.yaw + a.gir, Math.atan2(p.x - a.x, p.z - a.z));
-  G.residentes = { N, VIS_N, HAB, colonias, aves, paso, reiniciar, forzar, giroHacia, alCalidad, reducido, saludo, visitar, especiesEn, poolDe, habitatDe, pacto,
+  G.residentes = { N, VIS_N, HAB, colonias, aves, cerca, paso, reiniciar, forzar, giroHacia, alCalidad, reducido, saludo, visitar, especiesEn, poolDe, habitatDe, pacto,
     poblar: (col, n) => activar(col, n), visita: () => R.vis,
     prueba: on => { R.prueba = !!on; if (!on) { R.pactoPrueba = null; R.terminadosPrueba = null; } }, pactoPrueba: v => { R.pactoPrueba = v; }, terminadosPrueba: t => { R.terminadosPrueba = t || null; }, llegadas,
     olvidar: () => { R.acum = {}; R.verT = 0; }, estado: () => ({ aves: aves().length, colonias: colonias().filter(c => c.aves.length).map(c => c.id), visita: R.vis ? R.vis.de.id + '→' + R.vis.a.id + ' ' + R.vis.fase : null }) };

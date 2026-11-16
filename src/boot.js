@@ -94,7 +94,7 @@
     const fugas = aDemanda('src/pruebas/fugas.js', 'AVFugasTest'); AV.fugasTest = o => fugas().then(m => m.test(o)); // W20: abrir y cerrar modos no deja basura
     const memoria = aDemanda('src/pruebas/memoria.js', 'AVMemoriaLargaTest'); AV.memoriaLargaTest = o => memoria().then(m => m.test(o)); // hito 1: memoria estable en sesión larga en móvil (?memlarga=1: 30 min)
     if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
-    if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); alPrimerGesto(fauna); } // src/game/fauna.js
+    if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); AV.fauna = fauna; alPrimerGesto(fauna); } // src/game/fauna.js
     const cargarVecinos = aDemanda('src/game/vecinos.js', 'AVVecinos'); AV.vecinosTest = o => cargarVecinos().then(v => v.test(o)); alPrimerGesto(cargarVecinos); // CG-44
     // V18.1 «El mundo que cambia contigo» (Kelvin 5-nov). Kelvin 6-nov: ENCENDIDA por defecto en el enlace principal (docs/DECISION_LOG.md).
     // Se apaga con ?v18=0 o localStorage amazonaverse.v18on = '0' (QA-164: no es la clave del progreso <almacen>.v18); ?v18=1 / '1' la encienden.
@@ -263,6 +263,8 @@
     const compasF2 = aDemanda('src/game/compas.js', 'AVCompas'); AV.compas = () => compasF2().then(c => c.jugar()); AV.compasTest = o => compasF2().then(c => c.test(o));
     // F2-1: «¡Sígueme, bandada!» (Más juegos), se carga al elegirlo; antes la bandada (sus cotorras y su aleteo)
     const siguemeF2 = aDemanda('src/game/sigueme.js', 'AVSigueme'), cargarSigueme = () => cargarBandada().catch(() => null).then(() => siguemeF2()); AV.sigueme = () => cargarSigueme().then(s => s.jugar()); AV.siguemeTest = o => cargarSigueme().then(s => s.test(o));
+    // F2-2: «Foto relámpago» (Más juegos), se carga al elegirlo; antes los animales que fotografía (fauna, peces y cotorras residentes)
+    const fotoF2 = aDemanda('src/game/foto_safari.js', 'AVFotoSafari'), cargarFoto = () => Promise.all([AV.fauna ? AV.fauna() : null, G.terreno.mapa && G.terreno.mapa.agua ? cargarRioVivo() : null, cargarBandada()].map(p => Promise.resolve(p).catch(() => null))).then(() => fotoF2()); AV.foto = () => cargarFoto().then(f => f.jugar()); AV.fotoTest = o => cargarFoto().then(f => f.test(o));
     const cargarSorpresas = aDemanda('src/game/sorpresas.js', 'AVSorpresas'); AV.sorpresasTest = o => cargarSorpresas().then(s => s.test(o)); alPrimerGesto(cargarSorpresas); // CG-45, sin tocar ciudad_viva.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
     if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)

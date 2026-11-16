@@ -465,5 +465,25 @@ window.AVRioVivo = function (G) {
     }
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
-  return (G.rioVivo = { estado, observar, test, paso, bancos, F, especies: ESPECIES, get visor() { return F.visorOn; }, get meshes() { return Object.values(mallas); } });
+  // F2-2 («Foto relámpago», src/game/foto_safari.js): «dónde hay uno ahora». El pez de la especie id más cercano a (x, z) en out
+  // { x, y, z, oculto: false }; out2 (opcional), el segundo, con out2.ok. Los bancos lejanos (que no nadan) dan su centro bajo el agua.
+  // Devuelve out, o null si no hay ningún banco de esa especie. Solo lee: no cambia nada.
+  const CER = { x: 0, z: 0, d1: 0, d2: 0, o1: null, o2: null };
+  function cercaPon(px, py, pz) {
+    const C = CER, d = (px - C.x) * (px - C.x) + (pz - C.z) * (pz - C.z), a = C.o1, b = C.o2;
+    if (d < C.d1) { if (b && C.d1 < Infinity) { b.x = a.x; b.y = a.y; b.z = a.z; b.oculto = false; b.ok = true; C.d2 = C.d1; } C.d1 = d; a.x = px; a.y = py; a.z = pz; a.oculto = false; }
+    else if (b && d < C.d2) { C.d2 = d; b.x = px; b.y = py; b.z = pz; b.oculto = false; b.ok = true; }
+  }
+  function cerca(id, x, z, out, out2) {
+    const C = CER; C.x = x; C.z = z; C.d1 = Infinity; C.d2 = Infinity; C.o1 = out; C.o2 = out2 || null;
+    if (out2) out2.ok = false;
+    for (let k = 0; k < bancos.length; k++) {
+      const b = bancos[k]; if (b.id !== id) continue;
+      const nada = Math.hypot(b.x - S.pos.x, b.z - S.pos.z) <= ACTIVO + 6;
+      if (nada) for (let i = 0; i < b.peces.length; i++) { const p = b.peces[i]; if (p.y !== 0) cercaPon(p.x, p.y, p.z); else cercaPon(b.x, nivelAgua(b.x, b.z) - 0.4, b.z); }
+      else cercaPon(b.x, nivelAgua(b.x, b.z) - 0.4, b.z);
+    }
+    return C.d1 < Infinity ? out : null;
+  }
+  return (G.rioVivo = { estado, observar, cerca, test, paso, bancos, F, especies: ESPECIES, get visor() { return F.visorOn; }, get meshes() { return Object.values(mallas); } });
 };

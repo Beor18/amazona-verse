@@ -475,6 +475,35 @@
     G.on('update', (dt, busy) => { if (!F.prueba) paso(dt, busy); }, 87);
     G.on('apply', () => { vistos(); recolocarLagartijos(); BOA.t = -1; BOA.visto = false; });
     G.on('calidad', () => { recolocarLagartijos(); });
+    // F2-2 («Foto relámpago», src/game/foto_safari.js): «dónde hay uno ahora». El de la especie id más cercano a (x, z), escrito en
+    // out { x, y, z, oculto } (oculto: el lagartijo escondido al otro lado del tronco); out2 (opcional) recibe el segundo, con out2.ok.
+    // Devuelve out, o null si no hay ninguno (el coquí, solo cuando se ve: neblina, llovizna o el atardecer con M3). Solo lee: no cambia nada.
+    const CER = { x: 0, z: 0, d1: 0, d2: 0, o1: null, o2: null }, _pc = { x: 0, y: 0, z: 0 };
+    function cercaPon(px, py, pz, oc) {
+      const C = CER, d = (px - C.x) * (px - C.x) + (pz - C.z) * (pz - C.z), a = C.o1, b = C.o2;
+      if (d < C.d1) { if (b && C.d1 < Infinity) { b.x = a.x; b.y = a.y; b.z = a.z; b.oculto = a.oculto; b.ok = true; C.d2 = C.d1; } C.d1 = d; a.x = px; a.y = py; a.z = pz; a.oculto = oc; }
+      else if (b && d < C.d2) { C.d2 = d; b.x = px; b.y = py; b.z = pz; b.oculto = oc; b.ok = true; }
+    }
+    function cerca(id, x, z, out, out2) {
+      const C = CER; C.x = x; C.z = z; C.d1 = Infinity; C.d2 = Infinity; C.o1 = out; C.o2 = out2 || null;
+      if (out2) out2.ok = false;
+      if (id === 'lagartijo') {
+        for (let i = 0; i < LAG.lista.length; i++) {
+          const l = LAG.lista[i]; posLag(l, _pc);
+          let da = Math.atan2(S.pos.z - l.t.z, S.pos.x - l.t.x) - l.ang; da = Math.abs(((da % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+          cercaPon(_pc.x, _pc.y, _pc.z, da > 1.3);
+        }
+      } else if (id === 'mariposa') {
+        const n = N_MAR[nivel()] != null ? N_MAR[nivel()] : 8;
+        for (let k = 0; k < MAR.nubes.length; k++) { const nb = MAR.nubes[k]; for (let i = 0; i < n && i < nb.aves.length; i++) { const a = nb.aves[i]; cercaPon(a.x, a.y || H(a.x, a.z) + 1.5, a.z, false); } }
+      } else if (id === 'coqui') {
+        if (!coquiVisible()) return null;
+        for (let i = 0; i < COQ.lista.length; i++) { const c = COQ.lista[i]; cercaPon(c.x, c.y != null ? c.y : H(c.x, c.z) + c.alto, c.z, false); }
+      } else if (id === 'boa') {
+        if (BOA.mesh && BOA.centro) cercaPon(BOA.centro.x, BOA.centro.y, BOA.centro.z, false);
+      }
+      return C.d1 < Infinity ? out : null;
+    }
     const estado = () => ({ lagartijos: LAG.lista.length, mariposas: MAR.nubes.length * (N_MAR[nivel()] || 0), coquies: COQ.lista.length, coquiVisible: coquiVisible(),
       boa: !!BOA.mesh, vistos: vistos().slice(), draw: [lagMesh, marCerca, marLejos, coqMesh, BOA.mesh].filter(m => m && m.visible).length });
 
@@ -619,6 +648,6 @@
       return { passed: results.filter(r => r.ok).length, total: results.length, results };
     }
 
-    return { estado, observar, paso, test, F, LAG, MAR, COQ, BOA, get meshes() { return [lagMesh, marCerca, marLejos, coqMesh, BOA.mesh].filter(Boolean); } };
+    return (G.fauna = { estado, observar, cerca, paso, test, F, LAG, MAR, COQ, BOA, get meshes() { return [lagMesh, marCerca, marLejos, coqMesh, BOA.mesh].filter(Boolean); } }); // G.fauna: lo lee foto_safari.js (F2-2)
   }
 })();
