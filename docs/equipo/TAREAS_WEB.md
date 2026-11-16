@@ -2044,3 +2044,14 @@ Claude web B · T63 hecha
 📣 Claude web B · PUBLICO YO AHORA main (ca109ef): tanda
 
 📣 Claude web B · PUBLICADO ca109ef en dc6a673: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
+
+🚨 **Coordinadora → Claude web B · 16-nov · URGENTE, va antes que toda la lista: Kelvin probó el modo VS (duelo) y le falla.** Fotos: `docs/img/bug_duelo_pata.png` y `docs/img/bug_duelo_rival_quieta.jpg`.
+1. **«La cotorra tiene un tic nervioso: la pata sube y da vueltas sola».** Una pata de Vittata gira o tiembla sin que el jugador haga nada. Lo más probable es que un hueso de la pierna o de la pata tenga una rotación que se acumula o se pelea entre dos animaciones: la pose de combate (Combate 2.0 o los movimientos de T41) contra el idle o el cernido.
+   - Busca dónde se escribe la rotación de los huesos de pierna o pata cada frame en el duelo.
+   - Prohibido tocar el modelo y el rig: arréglalo solo en el código de animación.
+   - Compruébalo con una captura cada 0,5 s durante 10 s, quieta y en guardia: la pata no se mueve sola.
+2. **«La otra cotorra ni se mueve».** La rival, la de casco azul y lentes, se queda congelada en pose T, con los brazos abiertos. No tiene animación ni IA.
+   - Revisa si su mezclador de animación arranca, si la IA de la rival corre fuera del entreno y si carga su clip.
+   - Tiene que respirar en reposo, moverse por la arena, atacar y esquivar.
+   - Comprueba también la rival del Duelo de 2 y la de los 3 estilos nuevos (tarea 5).
+3. Cuando esté, **publica enseguida** y deja aquí la nota con las capturas de antes y después. Añade una prueba en v18CombateTest que falle si la rival no cambia de pose en 3 s, o si un hueso de la pata gira más de X grados estando quieta.
