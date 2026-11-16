@@ -658,9 +658,14 @@
     // El mixer solo reescribe un hueso cuando el valor del clip cambia, así que los ajustes del cuadro
     // anterior se deshacen antes de mezclar; si no, se acumulan y el cuerpo termina girado (el IK se deshace igual).
     update(dt) {
+      // Bug urgente del duelo (16-nov, la pata que «da vueltas sola»): se deshace en orden inverso a como se puso. Lo que se
+      // sumó con rot() DESPUÉS de la primera copia del IK (p. ej. Combate 2.0, que gira pieL1/pieL2 tras update()) va antes de
+      // restaurar el IK; si no, la copia del IK (sin ese giro) lo borraba y luego se restaba otra vez: −v por cuadro, acumulado.
+      const ofs = this.ofs || [], corte = this.ikSaved && this.ikSaved.length && this.ikOfsN >= 0 ? Math.min(this.ikOfsN, ofs.length) : ofs.length;
+      for (let i = ofs.length - 1; i >= corte; i--) ofs[i][0].rotation[ofs[i][1]] -= ofs[i][2];
       this._restoreIK();
-      for (const [bone, ax, v] of this.ofs || []) bone.rotation[ax] -= v;
-      this.ofs = [];
+      for (let i = corte - 1; i >= 0; i--) ofs[i][0].rotation[ofs[i][1]] -= ofs[i][2];
+      this.ofs = []; this.ikOfsN = -1;
       this._gaitPhase(dt);
       this.mixer.update(dt);
       const L = this.bones.armL1, R = this.bones.armL1001;
@@ -1130,6 +1135,8 @@
       if (this.carry === 'pico' && B.pico) this.rot(B.pico, 'x', PICO_ABRE * 0.06); // el pico sujeta: apenas abierto
     }
     // ---------- IK (CCD sobre los huesos ya animados; se deshace al empezar el cuadro siguiente) ----------
+    // Copia de un hueso antes de que el IK lo gire; la primera del cuadro marca cuántos rot() había ya (ver update)
+    _ikGuarda(b) { if (!this.ikSaved.length) this.ikOfsN = (this.ofs || []).length; this.ikSaved.push([b, b.quaternion.clone()]); }
     _restoreIK() {
       const sv = this.ikSaved || [];
       for (let i = sv.length - 1; i >= 0; i--) sv[i][0].quaternion.copy(sv[i][1]);
@@ -1139,7 +1146,7 @@
     // tol (m): se para en cuanto el extremo queda a menos de tol del objetivo (más iteraciones sin gastar de más)
     _ccd(chain, eff, target, w, iters, maxA, tol) {
       if (w < 0.01) return;
-      for (const b of chain) this.ikSaved.push([b, b.quaternion.clone()]);
+      for (const b of chain) this._ikGuarda(b);
       for (let it = 0; it < iters; it++) {
         if (tol && eff.getWorldPosition(_ep).distanceToSquared(target) < tol * tol) break;
         for (let i = chain.length - 1; i >= 0; i--) {
@@ -1170,7 +1177,7 @@
       this.root.updateMatrixWorld(true);
       el.getWorldQuaternion(_qw); _v1.copy(this.poleLocal).applyQuaternion(_qw); _v2.set(0, 1, 0);
       if (_v1.dot(_v2) > 0.966) return; // ya está a menos de 15°
-      this.ikSaved.push([el, el.quaternion.clone()]);
+      this._ikGuarda(el);
       _q.setFromUnitVectors(_v1, _v2); _qi.identity().slerp(_q, 0.9);
       el.parent.getWorldQuaternion(_qp); _qw.premultiply(_qi); el.quaternion.copy(_qp.invert().multiply(_qw));
       el.updateMatrixWorld(true);
@@ -1213,7 +1220,7 @@
       if (!c || !c.ok || c.repetido) { if (c) c.repetido = false; return false; }
       c.repetido = true;
       if (c.pelvis < -1e-4) this.root.position.y += c.pelvis;
-      for (let i = 0; i < c.n; i++) { const b = c.huesos[i]; this.ikSaved.push([b, b.quaternion.clone()]); b.quaternion.multiply(c.deltas[i]); }
+      for (let i = 0; i < c.n; i++) { const b = c.huesos[i]; this._ikGuarda(b); b.quaternion.multiply(c.deltas[i]); }
       this.ikFeet = c.feet; this.ikErr = c.err;
       return true;
     }
@@ -1244,7 +1251,7 @@
       const ang = Math.acos(clamp(_v2.y, -1, 1));
       if (ang > 1e-3) { _q.setFromUnitVectors(_v1, _v2); _qi.identity().slerp(_q, Math.min(1, Math.min(ang, ANIM.footTilt) / ang) * w); } else _qi.identity();
       f.toes.forEach((b, j) => {
-        this.ikSaved.push([b, b.quaternion.clone()]);
+        this._ikGuarda(b);
         b.parent.getWorldQuaternion(_qp); _qw.copy(f.toeQ[j]).premultiply(_qi);
         b.quaternion.copy(_qp.invert().multiply(_qw));
         b.updateMatrixWorld(true);

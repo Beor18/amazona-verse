@@ -64,6 +64,16 @@ window.AVV18Duelo2 = function (G) {
     { id: 'ventralis', nombre: 'Cotorra de La Española' },
     { id: 'vittata', nombre: 'Cotorra puertorriqueña' }
   ];
+  // T57: la tarjeta «¿Cómo se pelea?» de combate.js (modo 'dos': teclas de cada jugador o mitades de la pantalla). Sale sola
+  // el primer Duelo de 2 de este navegador (como su entreno: localStorage) y luego con el botón, aquí y en la elección de cotorras
+  const TJ = Cb.tarjeta, CLAVE_TJ = 'av_v18_duelo2_tarjeta';
+  const tjAbierta = () => !!(TJ && TJ.abierta() && TJ.modo() === 'dos');
+  const tjVista = () => { try { return localStorage.getItem(CLAVE_TJ) === '1'; } catch (e) { return false; } };
+  const marcarTj = () => { try { localStorage.setItem(CLAVE_TJ, '1'); } catch (e) { /* sin almacenamiento */ } };
+  function abrirComo(conPracticar, alCerrar) {
+    if (!TJ) return false;
+    marcarTj(); return TJ.abrir('dos', { tactil: tactil(), alCerrar, entrenar: conPracticar ? () => iniciar({ forzar: true, entreno: true }) : null });
+  }
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const emitir = ev => { try { G.emit('v18combate', Object.assign({ duelo: 2 }, ev)); } catch (e) { /* sin oyentes */ } };
   function fx(tipo, x, y, z) { try { if (G.fx && G.fx.burst) G.fx.burst(x, y, z, tipo, 8); } catch (e) { /* sin efectos */ } }
@@ -137,7 +147,7 @@ window.AVV18Duelo2 = function (G) {
       poder: ev => { try { G.emit('v18poder', Object.assign({ duelo: 2 }, ev)); } catch (e) { /* sin oyentes */ } }, fx, sonar };
   }
   function usar(f, id) {
-    if (D.fase !== 'lucha' || !f) return { ok: false, motivo: 'fase' };
+    if (D.fase !== 'lucha' || !f || tjAbierta()) return { ok: false, motivo: 'fase' };
     if (c2On() && EXD && EXD.bloquea(f, id)) return { ok: false, motivo: 'recupera' }; // recuperándose de un combo
     enUso = f; let r; try { r = H.usar(f, id, ctxDe(f)); } finally { enUso = null; }
     if (r.ok && C2) C2.accion(f, id); // Combate 2.0 (solo con la bandera): la pose de la acción, en este mismo cuadro
@@ -189,6 +199,7 @@ window.AVV18Duelo2 = function (G) {
   const t2 = { up: false, down: false, left: false, right: false, correr: false };
   const entradaJ2 = { teclas: 0 }; // cuenta las teclas que se quedó el Jugador 2 (prueba)
   function teclaAbajo(e) {
+    if (tjAbierta()) return; // T57: Esc y Enter cierran la tarjeta; el duelo espera
     if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName)) return;
     if (G.pausa && G.pausa.activa && G.pausa.activa()) return; // con el menú de pausa abierto no se juega
     if (e.key === 'Escape' && D.fase !== 'nada') { e.stopImmediatePropagation(); e.preventDefault(); salir(); return; }
@@ -393,7 +404,7 @@ window.AVV18Duelo2 = function (G) {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
       const a = b.dataset.a;
-      if (a === 'como') iniciar({ forzar: true, entreno: true }); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else salir();
+      if (a === 'como') abrirComo(!ent); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else salir();
     });
     document.body.appendChild(el);
     hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
@@ -571,7 +582,7 @@ window.AVV18Duelo2 = function (G) {
       (tactil() ? `<p class="note" data-d2tactil>${esc(TT.tarjetaT)}</p>` : '') +
       `<div class="d2-teclas"${tactil() ? ' hidden' : ''}>${filaTeclas(TXT.jugador1, [['W A S D', TXT.mover], ['E', TXT.ala], ['F', TXT.semillaMant], ['G', TXT.poder]])}` +
       `${filaTeclas(TXT.jugador2, [['← ↑ ↓ →', TXT.mover], ['.', TXT.ala], [',', TXT.semillaMant], ['-', TXT.poder], ['Enter', TXT.saltito]])}<div class="note">${esc(TXT.mando)}</div>${c2On() ? `<div class="note" data-d2ext>${esc(TXT.extTeclas)}</div>` : ''}</div>` +
-      `<div class="row"><button class="btn" id="v18-d2-ok" type="button">${esc(TXT.jugar)}</button><button class="btn ghost" id="v18-d2-no" type="button">${esc(TXT.cancelar)}</button></div></div>`);
+      `<div class="row"><button class="btn" id="v18-d2-ok" type="button">${esc(TXT.jugar)}</button>${TJ ? `<button class="btn secondary" id="v18-d2-como" type="button" data-icon="question">${esc(TXT.como)}</button>` : ''}<button class="btn ghost" id="v18-d2-no" type="button">${esc(TXT.cancelar)}</button></div></div>`);
     const card = G.ui.$('card');
     card.querySelectorAll('[data-d2sp]').forEach(b => { b.onclick = () => {
       D.esp2 = b.getAttribute('data-d2sp');
@@ -579,6 +590,7 @@ window.AVV18Duelo2 = function (G) {
     }; });
     G.ui.$('v18-d2-ok').onclick = () => { G.ui.hideCard(); iniciar({}); };
     G.ui.$('v18-d2-no').onclick = () => G.ui.hideCard();
+    const bc = G.ui.$('v18-d2-como'); if (bc) bc.onclick = () => abrirComo(false, () => { G.ui.hideCard(); iniciar({ sinTarjeta: true }); }); // T57: encima de la elección; «¡A pelear!» empieza (Esc vuelve a la elección)
     return true;
   }
 
@@ -600,12 +612,15 @@ window.AVV18Duelo2 = function (G) {
     if (D.j1 && D.j1.wob && pl3d && pl3d.root) { pl3d.root.rotation.z -= D.j1.wob; D.j1.wob = 0; }
     nuevos(); D.resultado = null; D.stats = { usos1: 0, usos2: 0, golpes: 0 }; D.tLucha = 0; comboVis = 0; if (hud && hud.q('combo')) hud.q('combo').hidden = true;
     const conEntreno = !!o.entreno || (!o.sinCuenta && !o.sinEntreno && !entVisto()); // el primer duelo de 2 empieza con el entreno
+    const conTarjeta = !o.entreno && !o.sinCuenta && !o.sinEntreno && !o.sinTarjeta && !tjVista(); // T57: antes, la tarjeta
     ent = null; for (const k in pistas) { const P = pistas[k]; P.t = 2.5; P.pl = PLUMAS; P.golpeado = false; }
     colocar();
     montarHud(); hud.el.hidden = false; hud.q('fin').hidden = true; pistaDe('j1', null); pistaDe('j2', null);
     enganchar(); sueltaTodo();
     if (conEntreno) { D.fase = 'lucha'; ent = { paso: 0, j1: false, j2: false, fin: 0 }; flotante(''); }
     else if (o.sinCuenta) { D.fase = 'lucha'; flotante(''); } else { D.fase = 'cuenta'; D.cuenta = 3; flotante('3', 1); }
+    if (tjAbierta()) TJ.cerrar('salir');
+    if (conTarjeta) abrirComo(false);
     pintarEntreno(); pintar();
     return true;
   }
@@ -624,7 +639,7 @@ window.AVV18Duelo2 = function (G) {
   function otraVez() { return iniciar({ forzar: true, sinEntreno: true }); }
   function salir() {
     if (D.fase === 'nada') return false;
-    D.fase = 'nada'; quitarBalas(); D.timers.length = 0; D.trampas.length = 0; soltar(); ent = null;
+    D.fase = 'nada'; quitarBalas(); D.timers.length = 0; D.trampas.length = 0; soltar(); ent = null; if (tjAbierta()) TJ.cerrar('salir');
     if (hud) { flotante(''); hud.el.hidden = true; pintarEntreno(); }
     if (D.ch) D.ch.root.visible = false;
     return true;
@@ -731,6 +746,7 @@ window.AVV18Duelo2 = function (G) {
   }
   function paso(dt) {
     if (D.fase === 'nada') return;
+    if (tjAbierta()) { M.vx = M.vz = 0; return; } // T57: con la tarjeta «¿Cómo se pelea?» abierta, el duelo espera
     if (C2) C2.pasoReloj(dt); // hit-stop visual de Combate 2.0 (mientras dura este duelo, combate.js no lo lleva)
     if (centroT > 0) { centroT -= dt; if (centroT <= 0 && hud && D.fase !== 'cuenta') hud.q('centro').textContent = ''; }
     if (comboVis > 0) { comboVis -= dt; if (comboVis <= 0 && hud && hud.q('combo')) hud.q('combo').hidden = true; }
@@ -836,6 +852,7 @@ window.AVV18Duelo2 = function (G) {
     const P = G.v18, crudo = (() => { try { return localStorage.getItem(P.clave()); } catch (e) { return null; } })();
     const guardar0 = G.guardado && G.guardado.save; let guardados = 0;
     const ent0 = (() => { try { return localStorage.getItem(CLAVE_ENT); } catch (e) { return null; } })(); // el entreno visto o no, como estaba
+    const tj0 = (() => { try { return localStorage.getItem(CLAVE_TJ); } catch (e) { return null; } })(); marcarTj(); // T57: la tarjeta se mira aparte (abajo)
     if (G.guardado) { G.guardado.save = function (ya) { if (ya) guardados++; else if (guardar0) return guardar0.apply(this, arguments); }; }
     const evs = []; const oy = e => { if (!oy.mudo && e && e.duelo === 2) evs.push(e); }; G.on('v18combate', oy);
     const errores = []; const oyErr = e => errores.push(String(e && (e.message || e.reason) || e)); addEventListener('error', oyErr); addEventListener('unhandledrejection', oyErr);
@@ -858,6 +875,14 @@ window.AVV18Duelo2 = function (G) {
       const card = G.ui.$('card');
       const bv = card.querySelector('[data-d2sp="ventralis"]'); if (bv) bv.onclick();
       check('La tarjeta deja elegir la cotorra del Jugador 2 y enseña las teclas', G.ui.cardOpen && card.querySelectorAll('[data-d2sp]').length === ESPECIES.length && D.esp2 === 'ventralis' && /Jugador 2/.test(card.textContent));
+      // T57: «¿Cómo se pelea?» también en la elección de cotorras: la tarjeta sale encima, con las teclas de los dos; Esc vuelve a la elección
+      {
+        const bc = G.ui.$('v18-d2-como'); if (bc) bc.onclick();
+        const el = TJ && TJ.el(), kj = el ? [...el.querySelectorAll('.vdc-k em')].map(e => e.textContent).join('') : '';
+        const ok1 = tjAbierta() && G.ui.cardOpen && /J1/.test(kj) && /J2/.test(kj) && !!el.querySelector('[data-mov="mover"] kbd') && el.textContent.includes('←') && D.fase === 'nada';
+        const ev = tecla('keydown', 'Escape', 'Escape');
+        check('T57 · Duelo de 2: «¿Cómo se pelea?» en la elección abre la tarjeta con las teclas de cada jugador (J1 / J2) y Esc vuelve a la elección', ok1 && ev.defaultPrevented && !tjAbierta() && G.ui.cardOpen && D.fase === 'nada', JSON.stringify({ ok1, kj, card: G.ui.cardOpen }));
+      }
       marcarEnt(); // el entreno se mira aparte (abajo): aquí, la cuenta atrás de siempre
       G.ui.$('v18-d2-ok').onclick();
       check('«¡A jugar!» abre el duelo con cuenta atrás, HUD de Jugador 1 / Jugador 2 y 5 plumas por lado', D.fase === 'cuenta' && !G.ui.cardOpen && !hud.el.hidden &&
@@ -867,8 +892,16 @@ window.AVV18Duelo2 = function (G) {
       {
         const pd = b => b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
         const toque = (key, code) => { tecla('keydown', key, code); tecla('keyup', key, code); };
-        try { localStorage.removeItem(CLAVE_ENT); } catch (e) { /* sin almacenamiento */ }
+        try { localStorage.removeItem(CLAVE_ENT); localStorage.removeItem(CLAVE_TJ); } catch (e) { /* sin almacenamiento */ }
         iniciar({ forzar: true });
+        // T57: la tarjeta sale sola en el primer Duelo de 2, antes del entreno; mientras está abierta el duelo espera
+        {
+          const el = TJ && TJ.el(), abierta = tjAbierta() && tjVista() && !!ent && ent.paso === 0 && !el.querySelector('[data-tj="entrenar"]');
+          limpio(); cerca(1.5); toque('e', 'KeyE'); toque('.', 'Period'); paso(0.3);
+          const espera = ent && !ent.j1 && !ent.j2 && ent.paso === 0;
+          el.querySelector('[data-tj="ok"]').click();
+          check('T57 · Duelo de 2: la tarjeta sale sola la primera vez (antes del entreno), el duelo espera y «¡A pelear!» la cierra', abierta && espera && !tjAbierta() && !!ent && D.fase === 'lucha', JSON.stringify({ abierta, espera }));
+        }
         check('Entreno de 2: el primer duelo empieza con el paso 1 (Jugador 1 E, Jugador 2 «.») sin cuenta atrás', !!ent && ent.paso === 0 && D.fase === 'lucha' && !hud.q('ent').hidden &&
           hud.q('entK1').textContent === 'E' && hud.q('entK2').textContent === '.' && hud.q('entTxt').textContent === TXT.ent1 && hud.q('como').hidden, JSON.stringify({ ent, fase: D.fase }));
         limpio(); cerca(7); toque('e', 'KeyE');
@@ -887,9 +920,14 @@ window.AVV18Duelo2 = function (G) {
         check('Entreno de 2: semilla (F / «,») y poder (G / «-»); al terminar se recuerda y empieza el duelo con cuenta atrás', p2 && p3 && !ent && D.fase === 'cuenta' && hud.q('ent').hidden, JSON.stringify({ p2, p3, fase: D.fase }));
         salir(); iniciar({ forzar: true });
         check('Entreno de 2: no se repite solo', !ent && D.fase === 'cuenta' && !hud.q('como').hidden);
-        pd(hud.q('como')); const porBoton = !!ent && D.fase === 'lucha';
+        check('T57 · Duelo de 2: la tarjeta no sale sola la segunda vez', !tjAbierta());
+        pd(hud.q('como')); const c0 = D.cuenta, conPr = tjAbierta() && !!TJ.el().querySelector('[data-tj="entrenar"]'); paso(0.4);
+        const ev = tecla('keydown', 'Escape', 'Escape');
+        check('T57 · Duelo de 2: el botón «¿Cómo se pelea?» abre la tarjeta (con «Practicar»), la cuenta espera y Esc la cierra sin salir', conPr && D.cuenta === c0 && ev.defaultPrevented && !tjAbierta() && D.fase === 'cuenta', JSON.stringify({ conPr, c0, c: D.cuenta, fase: D.fase }));
+        pd(hud.q('como')); TJ.el().querySelector('[data-tj="entrenar"]').click();
+        const porBoton = !!ent && D.fase === 'lucha' && !tjAbierta();
         pd(hud.el.querySelector('[data-a="saltarEnt"]'));
-        check('Entreno de 2: «¿Cómo se pelea?» lo abre y «Saltar entreno» va al duelo', porBoton && !ent && D.fase === 'cuenta');
+        check('Entreno de 2: «¿Cómo se pelea?» → «Practicar» lo abre y «Saltar entreno» va al duelo', porBoton && !ent && D.fase === 'cuenta');
         iniciar({ sinCuenta: true, forzar: true }); limpio(); cerca(7);
         const kb = k => Array.from(hud.q(k).querySelectorAll('kbd')).map(e => e.textContent).join('');
         usar(D.j2, 'semilla'); paso(0.05);
@@ -1036,6 +1074,8 @@ window.AVV18Duelo2 = function (G) {
         salir();
         check('T44 · al salir se quitan los mandos y vuelven los botones grandes', !document.getElementById('d2-tactil') && !document.body.classList.contains('d2-tactil-on') && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('duelo2-girar')));
       } catch (e) { check('T44 · táctil sin excepciones', false, e && (e.stack || e.message)); }
+      try { const m = await TJ.maqueta('dos'); check('T57 · Duelo de 2: la tarjeta «¿Cómo se pelea?» cabe entera (sin desplazar ni cortar) a 390 × 844, 844 × 390 y 1280 × 720, con «¡A pelear!» ≥ 44 px', m.ok, m.mal.slice(0, 8).join(' · ') || m.info); }
+      catch (e) { check('T57 · Duelo de 2: la tarjeta cabe en las tres medidas', false, e && e.message); }
       finally { window.matchMedia = mm; try { salir(); } catch (e) { /* fuera */ } }
     }
     // QA-192: fuera del cap. 1 la estación no existe (la marca del suelo usa la misma guarda)
@@ -1049,6 +1089,8 @@ window.AVV18Duelo2 = function (G) {
     oy.mudo = true; removeEventListener('error', oyErr); removeEventListener('unhandledrejection', oyErr);
     if (G.guardado) { if (guardar0) G.guardado.save = guardar0; else delete G.guardado.save; }
     try { if (ent0 == null) localStorage.removeItem(CLAVE_ENT); else localStorage.setItem(CLAVE_ENT, ent0); } catch (e) { /* sin almacenamiento */ }
+    try { if (tj0 == null) localStorage.removeItem(CLAVE_TJ); else localStorage.setItem(CLAVE_TJ, tj0); } catch (e) { /* sin almacenamiento */ }
+    if (tjAbierta()) TJ.cerrar('salir');
     D.esp2 = esp0;
     Object.assign(S.pos, pos0); S.facing = fac0; M.vx = M.vz = 0;
     if (JSON.stringify(S.inv || {}) !== inv0) { const o = JSON.parse(inv0); for (const k of Object.keys(S.inv)) if (!(k in o)) delete S.inv[k]; Object.assign(S.inv, o); }
