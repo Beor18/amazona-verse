@@ -862,7 +862,7 @@
         if (!preparar()) return; // sin AudioContext (aún no hubo gesto): no hay nada que sonar
         const c = eng.c, m = leer();
         const sonable = c.state === 'running' && !A.vol.muted && !document.hidden && !G.quiet; // G.quiet: en las baterías no suena nada
-        const minijuegoRitmo = document.body.classList.contains('compas-on') || document.body.classList.contains('sigueme-on'); // «Alas al compás» lleva su propia percusión: la música del mundo calla para no tapar el pulso; en «¡Sígueme, bandada!» se oyen los silbidos de la fila
+        const minijuegoRitmo = document.body.classList.contains('compas-on') || document.body.classList.contains('sigueme-on') || document.body.classList.contains('foto-on'); // F2-2: en «Foto relámpago» tampoco (se oye el clic de la cámara); «Alas al compás» lleva su propia percusión: la música del mundo calla para no tapar el pulso; en «¡Sígueme, bandada!» se oyen los silbidos de la fila
         const quiereMusica = sonable && m.musica > 0 && eng.modo !== 'simple' && !minijuegoRitmo, quiereAmb = sonable && m.ambiente > 0;
         conectar(eng.musicaBus, 'm', quiereMusica); conectar(eng.ambBus, 'a', quiereAmb);
         if (!quiereMusica) eng.rep.pausar(); // con el sonido apagado, la música a 0 o la pestaña oculta, los temas en archivo se pausan (no bajan datos)

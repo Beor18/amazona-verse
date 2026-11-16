@@ -134,6 +134,7 @@ window.AVMinimapa = function (G) {
   function objetivo() {
     if (ext.objetivo !== undefined) return ext.objetivo;
     try { const sg = G.siguemeApi && G.siguemeApi.objetivo && G.siguemeApi.objetivo(); if (sg) return sg; } catch (e) { /* sin minijuego */ } // F2-1: en «¡Sígueme, bandada!» la estrella es el dormidero, como la flecha
+    try { const fo = G.fotoApi && G.fotoApi.objetivo && G.fotoApi.objetivo(); if (fo) return fo; } catch (e) { /* sin minijuego */ } // F2-2: en «Foto relámpago», el animal de la tarjeta (como la flecha)
     const rt = datosReto();
     if (rt && rt.puntos) return { x: rt.puntos[rt.sig].x, z: rt.puntos[rt.sig].z, reto: true };
     if (rt && rt.arena) return { x: rt.arena.x, z: rt.arena.z, reto: true };
