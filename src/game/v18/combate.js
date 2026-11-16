@@ -651,7 +651,7 @@ window.AVV18Combate = function (G) {
     camd: { elev: 0.72 }, a: () => S.pos, b: () => (C.r ? C.r.pos : S.pos), yaw: () => (G.camara ? G.camara.yaw : 0), libre: camLibre,
     ajusta(e, a, b) {
       // (si perdió Vittata y se aleja más de 6 m de la ganadora, vuelve el plano de las dos: no se queda fuera de cuadro)
-      if (C.fase === 'fin' && C.r && C.resultado && (C.resultado === 'win' || e.sep < 6)) { const g = ganadora(); e.x = g.x; e.y = g.y - 0.6; e.z = g.z; e.d = CAM_FIN; return; } // algo alta en pantalla: el panel final va abajo
+      if (C.fase === 'fin' && C.r && C.resultado && (C.resultado === 'win' || e.sep < 6)) { const g = ganadora(); e.x = g.x; e.y = TACTIL ? g.y : g.y - 0.6; e.z = g.z; e.d = CAM_FIN; return; } // en el escritorio, algo alta en pantalla: el panel final va abajo (en táctil va arriba)
       const camera = R.camera; if (!camera) return;
       const yw = G.camara ? G.camara.yaw : 0, lat = Math.abs((b.x - a.x) * Math.cos(yw) - (b.z - a.z) * Math.sin(yw));
       const th = Math.tan((camera.fov || 55) * Math.PI / 360) * (camera.aspect || 1);
