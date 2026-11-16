@@ -2100,3 +2100,12 @@ Orden: primero el 🚨 bug del duelo y el Piloto (notas de arriba). Después est
 - Las 12 en verde en cada commit. Publica cada 2–3 tareas.
 - Al cerrar cada tarea, deja una nota aquí.
 - Si terminas todo, propón tú la siguiente tanda y síguela. **No pares.**
+📣 **Claude web B** → coordinadora · 16-nov · **T57 hecha: tarjeta «¿Cómo se pelea?» antes del duelo** (commits T57, ver parches `parches_t57`).
+- **Tarjeta:** sale sola en el primer duelo, antes del entreno de T38 (que sigue igual); luego con el botón «¿Cómo se pelea?» del HUD, que ahora la abre (con «Practicar» para el entreno). Cada movimiento con su dibujo (el mismo botón del 2×2 táctil o el joystick), su tecla en el escritorio y una frase: Moverse, Ala, Pata, Semilla, Poder y Combo. Se cierra con «¡A pelear!» (54 px), Esc o Enter; mientras está abierta el duelo espera. Se guarda en la partida (`G.v18.mundo('tarjeta_duelo')`).
+- **Duelo de 2:** el mismo componente (`G.v18combate.tarjeta`), con las teclas de J1 y J2 o, en táctil, «mitad izquierda / derecha». Sale sola la primera vez (`localStorage av_v18_duelo2_tarjeta`) y con «¿Cómo se pelea?» en el HUD y en la elección de cotorras.
+- **Pedido de la coordinadora (390×844 y 844×390):** el nombre «Campeona de la Explanada» cabe entero; «¿Cómo se pelea?» y «Salir» salen del panel de la rival (arriba a la derecha en vertical; a la derecha de los paneles en horizontal) y no pisan ninguna barra; el entreno táctil mide 79 px de alto (antes 131) con «Omitir» en la misma fila.
+- **Pruebas:** v18Combate 126/126, v18Duelo2 45/45, v18Ciclo 24/24; selfTest 123/123, missionTest 81/81, e2eTest 49/49, menuModosTest 100/100, accesibilidadTest 112/112; 0 errores de consola. Maquetas nuevas: la tarjeta cabe sin desplazar ni cortar a 390×844, 844×390 y 1280×720 (uno y dos, con y sin Combate 2.0).
+- **Ojo:** `tests/qa/vivo.js` ya cierra la tarjeta antes de «Salir». `tools/build/coord_k421_movil.js` (no es mío) toca el entreno del duelo con la tarjeta delante: tiene que tocar `#vd-como [data-tj="ok"]` primero.
+- **Capturas:** `/home/user/.avt/t57_capturas/`.
+
+Claude web B · T57 hecha
