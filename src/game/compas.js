@@ -22,7 +22,7 @@ window.AVCompas = function (G) {
   const L = (es, eng) => (en() ? eng : es);
   const html = document.documentElement;
   const reducido = () => html.classList.contains('mov-reducido') || (G.audio && G.audio.reducido != null ? !!G.audio.reducido : !!(G.renderer && G.renderer.REDUCED));
-  const DUR = 90, PERF = 0.12, BIEN = 0.22, CALIB_V = 0.3, CALIB_N = 4, ANTES = 2.0, GEN = 2.6, AUDIO_ANTES = 0.25;
+  const DUR = 90, PERF = 0.12, BIEN = 0.22, CALIB_V = 0.3, CALIB_N = 4, ANTES = 2.0, GEN = 3.0, AUDIO_ANTES = 0.25;
   const BPM = [90, 105, 120, 132], BPM_MAX = 168;
   const leerRec = () => { try { const d = JSON.parse(localStorage.getItem(ALM) || 'null'); return d && d.v === 1 && Number.isInteger(d.mejor) && d.mejor >= 0 && d.mejor < 100000 ? d : null; } catch (e) { return null; } };
   const guardarRec = (mejor, racha, jugadas) => { try { localStorage.setItem(ALM, JSON.stringify({ v: 1, mejor, racha, jugadas })); } catch (e) { /* sin almacén */ } };
@@ -226,31 +226,37 @@ window.AVCompas = function (G) {
   function copa(x, cx0, cy, r, col, luz) { x.fillStyle = col; x.beginPath(); for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; x.moveTo(cx0 + Math.cos(a) * r * 0.55 + r * 0.5, cy + Math.sin(a) * r * 0.4); x.arc(cx0 + Math.cos(a) * r * 0.55, cy + Math.sin(a) * r * 0.4, r * 0.5, 0, Math.PI * 2); } x.fill(); if (luz) { x.fillStyle = luz; x.beginPath(); x.arc(cx0 - r * 0.25, cy - r * 0.3, r * 0.32, 0, Math.PI * 2); x.fill(); } }
   function fronda(x, bx, by, largo, ang, col) { x.strokeStyle = col; x.fillStyle = col; x.lineWidth = Math.max(2, largo * 0.03); x.beginPath(); const ex = bx + Math.cos(ang) * largo, ey = by + Math.sin(ang) * largo; x.moveTo(bx, by); x.quadraticCurveTo((bx + ex) / 2 + largo * 0.2, (by + ey) / 2, ex, ey); x.stroke(); for (let i = 1; i < 9; i++) { const k = i / 9, px = bx + (ex - bx) * k + largo * 0.2 * Math.sin(k * Math.PI) * 0.6, py = by + (ey - by) * k, l = largo * 0.22 * (1 - k * 0.7); for (const s of [-1, 1]) { x.beginPath(); x.ellipse(px + Math.cos(ang + s * 1.1) * l * 0.5, py + Math.sin(ang + s * 1.1) * l * 0.5, l * 0.5, l * 0.14, ang + s * 1.1, 0, Math.PI * 2); x.fill(); } } }
   function pintarCapa(i) {
-    const W = lay.W, H = lay.H, f = lienzo(W, H), m = lienzo(W, H), c = lienzo(W, H), xf = f.getContext('2d'), xm = m.getContext('2d'), xc = c.getContext('2d'), r = rng(7 + i * 31);
-    if (i === 0) { // sotobosque: verde hondo, rayos de luz, troncos y helechos
-      xf.fillStyle = grad(xf, H, ['#0d3526', '#1d5a3a', '#3f7d3a']); xf.fillRect(0, 0, W, H);
-      xf.fillStyle = 'rgba(255,250,200,.07)'; for (let k = 0; k < 5; k++) { const x0 = r() * W; xf.beginPath(); xf.moveTo(x0, 0); xf.lineTo(x0 + 40 + r() * 50, 0); xf.lineTo(x0 - W * 0.25 + 120, H); xf.lineTo(x0 - W * 0.25, H); xf.fill(); }
-      for (let k = 0; k < 7; k++) { const x0 = (k + r() * 0.6) * W / 7, w = 14 + r() * 26; xm.fillStyle = k % 2 ? '#173f2a' : '#1b4630'; xm.fillRect(x0, 0, w, H); xm.fillStyle = 'rgba(120,170,110,.18)'; xm.fillRect(x0 + w * 0.15, 0, w * 0.18, H); }
-      for (let k = 0; k < 9; k++) copa(xm, r() * W, H * (0.04 + r() * 0.1), 50 + r() * 40, '#14402a', null);
-      for (let k = 0; k < 12; k++) fronda(xc, (k + r()) * W / 12, H + 6, H * (0.18 + r() * 0.14), -Math.PI / 2 - 0.9 + r() * 1.8, k % 2 ? '#0f3622' : '#123f27');
-      for (let k = 0; k < 6; k++) { const x0 = r() * W; xc.strokeStyle = '#123a24'; xc.lineWidth = 3; xc.beginPath(); xc.moveTo(x0, 0); xc.quadraticCurveTo(x0 + 20, H * 0.12, x0 - 6, H * (0.12 + r() * 0.14)); xc.stroke(); }
-    } else if (i === 1) { // copas: cielo claro arriba, copas soleadas abajo
-      xf.fillStyle = grad(xf, H, ['#79c3ea', '#b9e3f0', '#d7efc9']); xf.fillRect(0, 0, W, H);
-      xf.fillStyle = 'rgba(255,240,170,.55)'; xf.beginPath(); xf.arc(W * 0.8, H * 0.14, Math.min(W, H) * 0.07, 0, Math.PI * 2); xf.fill();
-      for (let k = 0; k < 14; k++) copa(xm, (k + r() * 0.5) * W / 14, H * (0.72 + r() * 0.1), 40 + r() * 34, '#4f9b4c', '#77bd62');
-      for (let k = 0; k < 9; k++) copa(xc, (k + r() * 0.5) * W / 9, H * (0.9 + r() * 0.08), 60 + r() * 40, '#2e7334', '#4d9a45');
-      for (let k = 0; k < 4; k++) fronda(xc, r() * W, 0, H * 0.16, Math.PI / 2 + (r() - 0.5) * 0.8, '#2a6b31');
-    } else if (i === 2) { // nubes: azul claro, el bosque lejos abajo, nubes grandes
-      xf.fillStyle = grad(xf, H, ['#5ea8e6', '#a7d6f6', '#e3f4ff']); xf.fillRect(0, 0, W, H);
-      xf.fillStyle = '#6aa66a'; for (let k = 0; k < 30; k++) { xf.beginPath(); xf.arc((k + r()) * W / 30, H * 0.99, 14 + r() * 10, 0, Math.PI * 2); xf.fill(); }
-      for (let k = 0; k < 5; k++) nube(xm, (k + r() * 0.6) * W / 5, H * (0.2 + r() * 0.45), 110 + r() * 80, 'rgba(255,255,255,.75)');
-      for (let k = 0; k < 4; k++) nube(xc, (k + r() * 0.5) * W / 4, H * (0.88 + r() * 0.1), 220 + r() * 120, 'rgba(255,255,255,.95)');
-    } else { // cielo abierto: azul hondo y una franja dorada, cirros y alguna nube
-      xf.fillStyle = grad(xf, H, ['#163f86', '#3a7fcf', '#8cc0ea', '#ffd9a0']); xf.fillRect(0, 0, W, H);
-      const g = xf.createRadialGradient(W * 0.82, H * 0.2, 0, W * 0.82, H * 0.2, Math.min(W, H) * 0.3); g.addColorStop(0, 'rgba(255,245,200,.9)'); g.addColorStop(0.25, 'rgba(255,230,150,.35)'); g.addColorStop(1, 'rgba(255,230,150,0)'); xf.fillStyle = g; xf.fillRect(0, 0, W, H);
-      for (let k = 0; k < 6; k++) { xm.strokeStyle = 'rgba(255,255,255,.35)'; xm.lineWidth = 3 + r() * 3; xm.lineCap = 'round'; const y0 = H * (0.12 + r() * 0.5), x0 = r() * W; xm.beginPath(); xm.moveTo(x0, y0); xm.quadraticCurveTo(x0 + 80, y0 - 12, x0 + 170 + r() * 80, y0 + 4); xm.stroke(); }
-      for (let k = 0; k < 3; k++) nube(xc, (k + r() * 0.5) * W / 3, H * (0.8 + r() * 0.15), 150 + r() * 80, 'rgba(255,248,235,.9)');
+    const W = lay.W, H = lay.H, f = lienzo(W, H), m = lienzo(W, H), c = lienzo(W, H), tira = lienzo(1, 1).getContext('2d');
+    // medio y cerca se repiten en horizontal: se pintan tres veces (−W, 0, +W) con la misma semilla para que el borde no se note
+    for (const dx of [0, -W, W]) {
+      const xf = dx ? tira : f.getContext('2d'), xm = m.getContext('2d'), xc = c.getContext('2d'), r = rng(7 + i * 31);
+      xm.setTransform(1, 0, 0, 1, dx, 0); xc.setTransform(1, 0, 0, 1, dx, 0);
+      if (i === 0) { // sotobosque: verde hondo, rayos de luz, troncos y helechos
+        xf.fillStyle = grad(xf, H, ['#0d3526', '#1d5a3a', '#3f7d3a']); xf.fillRect(0, 0, W, H);
+        xf.fillStyle = 'rgba(255,250,200,.07)'; for (let k = 0; k < 5; k++) { const x0 = r() * W; xf.beginPath(); xf.moveTo(x0, 0); xf.lineTo(x0 + 40 + r() * 50, 0); xf.lineTo(x0 - W * 0.25 + 120, H); xf.lineTo(x0 - W * 0.25, H); xf.fill(); }
+        for (let k = 0; k < 7; k++) { const x0 = (k + r() * 0.6) * W / 7, w = 14 + r() * 26; xm.fillStyle = k % 2 ? '#173f2a' : '#1b4630'; xm.fillRect(x0, 0, w, H); xm.fillStyle = 'rgba(120,170,110,.18)'; xm.fillRect(x0 + w * 0.15, 0, w * 0.18, H); }
+        for (let k = 0; k < 9; k++) copa(xm, r() * W, H * (0.04 + r() * 0.1), 50 + r() * 40, '#14402a', null);
+        for (let k = 0; k < 12; k++) fronda(xc, (k + r()) * W / 12, H + 6, H * (0.18 + r() * 0.14), -Math.PI / 2 - 0.9 + r() * 1.8, k % 2 ? '#0f3622' : '#123f27');
+        for (let k = 0; k < 6; k++) { const x0 = r() * W; xc.strokeStyle = '#123a24'; xc.lineWidth = 3; xc.beginPath(); xc.moveTo(x0, 0); xc.quadraticCurveTo(x0 + 20, H * 0.12, x0 - 6, H * (0.12 + r() * 0.14)); xc.stroke(); }
+      } else if (i === 1) { // copas: cielo claro arriba, copas soleadas abajo
+        xf.fillStyle = grad(xf, H, ['#79c3ea', '#b9e3f0', '#d7efc9']); xf.fillRect(0, 0, W, H);
+        xf.fillStyle = 'rgba(255,240,170,.55)'; xf.beginPath(); xf.arc(W * 0.8, H * 0.14, Math.min(W, H) * 0.07, 0, Math.PI * 2); xf.fill();
+        for (let k = 0; k < 14; k++) copa(xm, (k + r() * 0.5) * W / 14, H * (0.72 + r() * 0.1), 40 + r() * 34, '#4f9b4c', '#77bd62');
+        for (let k = 0; k < 9; k++) copa(xc, (k + r() * 0.5) * W / 9, H * (0.9 + r() * 0.08), 60 + r() * 40, '#2e7334', '#4d9a45');
+        for (let k = 0; k < 4; k++) fronda(xc, r() * W, 0, H * 0.16, Math.PI / 2 + (r() - 0.5) * 0.8, '#2a6b31');
+      } else if (i === 2) { // nubes: azul claro, el bosque lejos abajo, nubes grandes
+        xf.fillStyle = grad(xf, H, ['#5ea8e6', '#a7d6f6', '#e3f4ff']); xf.fillRect(0, 0, W, H);
+        xf.fillStyle = '#6aa66a'; for (let k = 0; k < 30; k++) { xf.beginPath(); xf.arc((k + r()) * W / 30, H * 0.99, 14 + r() * 10, 0, Math.PI * 2); xf.fill(); }
+        for (let k = 0; k < 5; k++) nube(xm, (k + r() * 0.6) * W / 5, H * (0.2 + r() * 0.45), 110 + r() * 80, 'rgba(255,255,255,.75)');
+        for (let k = 0; k < 4; k++) nube(xc, (k + r() * 0.5) * W / 4, H * (0.88 + r() * 0.1), 220 + r() * 120, 'rgba(255,255,255,.95)');
+      } else { // cielo abierto: azul hondo y una franja dorada, cirros y alguna nube
+        xf.fillStyle = grad(xf, H, ['#163f86', '#3a7fcf', '#8cc0ea', '#ffd9a0']); xf.fillRect(0, 0, W, H);
+        const g = xf.createRadialGradient(W * 0.82, H * 0.2, 0, W * 0.82, H * 0.2, Math.min(W, H) * 0.3); g.addColorStop(0, 'rgba(255,245,200,.9)'); g.addColorStop(0.25, 'rgba(255,230,150,.35)'); g.addColorStop(1, 'rgba(255,230,150,0)'); xf.fillStyle = g; xf.fillRect(0, 0, W, H);
+        for (let k = 0; k < 6; k++) { xm.strokeStyle = 'rgba(255,255,255,.35)'; xm.lineWidth = 3 + r() * 3; xm.lineCap = 'round'; const y0 = H * (0.12 + r() * 0.5), x0 = r() * W; xm.beginPath(); xm.moveTo(x0, y0); xm.quadraticCurveTo(x0 + 80, y0 - 12, x0 + 170 + r() * 80, y0 + 4); xm.stroke(); }
+        for (let k = 0; k < 3; k++) nube(xc, (k + r() * 0.5) * W / 3, H * (0.8 + r() * 0.15), 150 + r() * 80, 'rgba(255,248,235,.9)');
+      }
     }
+    for (const x of [m, c]) x.getContext('2d').setTransform(1, 0, 0, 1, 0, 0);
     capas[i] = { fondo: f, medio: m, cerca: c };
     return capas[i];
   }
@@ -266,7 +272,9 @@ window.AVCompas = function (G) {
     lay.laneY = Math.round(Math.min(H - 70, lay.vy + lay.S * 0.58 + 22)); lay.r = Math.max(24, Math.min(34, lay.S * 0.16));
     lay.vel = (W - lay.vx + 40) / ANTES;
     capas[0] = capas[1] = capas[2] = capas[3] = null;
-    if (el) { const fb = q('fb'); fb.style.left = lay.vx + 'px'; fb.style.top = Math.max(64, lay.vy - lay.S * 0.5 - 30) + 'px'; }
+    if (el) { // el aviso va encima de Vittata; en horizontal bajo, a su derecha (encima no cabe sin tapar el HUD)
+      const fb = q('fb'), lado = H < 500 && W > H; fb.classList.toggle('lado', lado);
+      fb.style.left = (lado ? lay.vx + lay.S * 0.45 + 12 : lay.vx) + 'px'; fb.style.top = (lado ? lay.vy - lay.S * 0.15 : Math.max(120, lay.vy - lay.S * 0.5 - 30)) + 'px'; }
   }
   function tile(x, c, off, a) { if (a <= 0) return; x.globalAlpha = a; const w = lay.W, o = ((off % w) + w) % w; x.drawImage(c, -o, 0, w, lay.H); x.drawImage(c, w - o, 0, w, lay.H); }
   function dibujar(t) {
@@ -352,9 +360,10 @@ window.AVCompas = function (G) {
     st.textContent = '#compas{position:fixed;inset:0;z-index:80;font-family:Fredoka,system-ui,sans-serif;color:#fff8e6;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden;background:#0d3526}#compas[hidden],#compas [hidden]{display:none!important}' +
       '#compas canvas{position:absolute;inset:0;width:100%;height:100%;display:block}' +
       '#compas .cp-hud{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 10px);display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);box-sizing:border-box;padding:6px 8px 6px 14px;border-radius:22px;background:rgba(16,36,28,.82);font-weight:600;font-size:15px;box-shadow:0 4px 14px rgba(0,0,0,.35)}' +
+      '@media (max-width:599px),(max-height:500px){#compas .cp-hud{flex-wrap:nowrap;gap:10px;padding-left:12px}#compas .cp-alt{font-size:17px!important;white-space:nowrap}#compas .cp-racha{white-space:nowrap}#compas .cp-rec{display:none}}' +
       '#compas .cp-alt{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}#compas .cp-racha{font-variant-numeric:tabular-nums}#compas .cp-rec{opacity:.85;font-size:14px}' +
       '#compas button{min-height:44px;min-width:44px;padding:4px 16px;border-radius:22px;border:0;font:700 16px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer;touch-action:manipulation}#compas button.salir{background:#ffd0c4}#compas button:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}' +
-      '#compas .cp-fb{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;padding:4px 14px;border-radius:999px;font-weight:700;font-size:20px;pointer-events:none;background:rgba(16,36,28,.78)}#compas .cp-fb:empty{display:none}' +
+      '#compas .cp-fb{position:absolute;transform:translate(-50%,-100%);white-space:nowrap;padding:4px 14px;border-radius:999px;font-weight:700;font-size:20px;pointer-events:none;background:rgba(16,36,28,.78)}#compas .cp-fb:empty{display:none}#compas .cp-fb.lado{transform:translate(0,-50%)}#compas .cp-fb.lado.pop{animation:none}' +
       '#compas .cp-fb.perf{background:#fff8e6;color:#1f5a2a}#compas .cp-fb.bien{background:#9df07a;color:#173b12}#compas .cp-fb.casi{background:rgba(16,36,28,.78);color:#ffe0b8}#compas .cp-fb.racha,#compas .cp-fb.capa{background:#ffd23f;color:#3b2a14;font-size:22px}' +
       '#compas .cp-fb.pop{animation:cp-pop .35s ease-out}@keyframes cp-pop{0%{transform:translate(-50%,-80%) scale(.7)}60%{transform:translate(-50%,-105%) scale(1.08)}100%{transform:translate(-50%,-100%) scale(1)}}' +
       '#compas .cp-cuenta{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:min(22vw,120px);font-weight:700;text-shadow:0 4px 18px rgba(0,0,0,.45);pointer-events:none}#compas .cp-cuenta:empty{display:none}' +
@@ -389,7 +398,7 @@ window.AVCompas = function (G) {
     return el;
   }
   const q = k => el.querySelector('[data-k="' + k + '"]');
-  const estrecho = () => innerWidth < 600;
+  const estrecho = () => innerWidth < 600 || innerHeight < 500;
   function pintarHud() {
     if (!el) return;
     const t = q('tit'); t.textContent = L('Alas al compás', 'Wings on the Beat'); t.hidden = estrecho();
@@ -430,7 +439,7 @@ window.AVCompas = function (G) {
       nuevo: false, hop: 0, sq: 0, inclina: 0, plano: 0, flash: 0, cuenta: -1, pistaT: 0, vistoS: false, vistoD: false });
     const c = !E.manual && ac();
     E.fuente = c ? 'audio' : 'perf'; E.t0 = c ? c.currentTime : performance.now() / 1000;
-    el.hidden = false; q('fin').hidden = true; q('fb').textContent = ''; q('cuenta').textContent = '';
+    el.hidden = false; q('fin').hidden = true; el.querySelector('.cp-hud').hidden = false; q('fb').textContent = ''; q('cuenta').textContent = '';
     document.body.classList.add('compas-on');
     try { if (G.pausa && G.pausa.set) G.pausa.set('compas', true); } catch (e) { /* sin pausa */ }
     medir(); pintarHud();
@@ -452,7 +461,7 @@ window.AVCompas = function (G) {
     try { G.emit('record', { modo: 'compas', puntos: E.metros, racha: E.mejorRacha }); } catch (e) { /* */ }
     sonar('panel_final'); if (E.nuevo && E.metros > 0) setTimeout(() => sonar('logro'), 700);
     q('fb').textContent = ''; q('cuenta').textContent = ''; q('pista').classList.add('cp-oculta');
-    pintarHud(); pintarFin(); q('fin').hidden = false;
+    pintarHud(); pintarFin(); q('fin').hidden = false; el.querySelector('.cp-hud').hidden = true;
     const otra = el.querySelector('[data-a="otra"]'); setTimeout(() => { try { if (E.fase === 'fin') otra.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
   }
   const activo = () => E.fase !== 'nada';
@@ -493,8 +502,8 @@ window.AVCompas = function (G) {
       jugar({ manual: true, semilla: 5 });
       const hb = el.querySelector('.cp-hud [data-a="salir"]').getBoundingClientRect();
       check('Se abre a pantalla completa con su lienzo, la altura (0 m), la racha y «Salir» de ≥ 44 px; el mundo en pausa', activo() && !el.hidden && q('fin').hidden && /Altura: 0 m/.test(q('alt').textContent) && /Racha 0/.test(q('racha').textContent) && hb.height >= 44 && cv.width > 0 && document.body.classList.contains('compas-on') && (!G.pausa || !G.pausa.motivos || G.pausa.motivos.has('compas')), q('alt').textContent + ' · ' + Math.round(hb.height));
-      check('Primero la cuenta: 4 golpes de clave sin hojas y luego las hojas (a 90 ppm)', E.tCuenta === 0.6 && notas.filter(n => n.on).every(n => n.t >= E.inicio - 1e-9) && golpes().length >= 4 && Math.abs(golpes()[1].t - golpes()[0].t - 60 / 90) < 1e-6 && evs.filter(e => e.on && e.n === 'compas_cuenta').length === 4, golpes().slice(0, 3).map(n => n.t.toFixed(2)).join(','));
       irA(E.tCuenta + 0.05); check('La cuenta se ve: 3', q('cuenta').textContent === '3', q('cuenta').textContent);
+      check('Primero la cuenta: 4 golpes de clave sin hojas y luego las hojas (a 90 ppm)', E.tCuenta === 0.6 && notas.filter(n => n.on).every(n => n.t >= E.inicio - 1e-9) && golpes().length >= 4 && Math.abs(golpes()[1].t - golpes()[0].t - 60 / 90) < 1e-6 && evs.filter(e => e.on && e.n === 'compas_cuenta').length === 4, golpes().slice(0, 3).map(n => n.t.toFixed(2)).join(','));
       // Calibración: el niño toca 0,16 s tarde en los 4 primeros golpes (cuentan como «bien»)
       for (let i = 0; i < 4; i++) { const g = golpes()[0]; irA(g.t + 0.16); if (i === 0) { const ev = tecla(' '); check('Con el teclado (Espacio) se sube un tramo: «¡Bien!» +1 m', ev.defaultPrevented && E.metros === 1 && E.racha === 1 && /¡Bien!/.test(q('fb').textContent), E.metros + ' m · ' + q('fb').textContent); } else if (i === 1) { dedo(); check('Con el dedo en cualquier parte también: +1 m', E.metros === 2 && E.racha === 2, E.metros); } else tecla('ArrowUp'); }
       check('Calibración: tras 4 golpes mide el retraso (≈ 0,16 s) y lo compensa', E.calN === 4 && Math.abs(E.offset - 0.16) < 0.03, E.offset.toFixed(3));
@@ -517,18 +526,19 @@ window.AVCompas = function (G) {
         irA(s2.t + E.offset); tecla(' '); check('Tocar en el silencio rompe la racha', s2.res === 'casi' && E.racha === 0); }
       // Hoja dorada opcional: sube 3 con perfecto
       { const d = nota(E.tm + 1, 'doble'); const m0 = E.metros; irA(d.t + E.offset); tecla(' '); check('Hoja dorada (doble) a tiempo: +3 m', d.res === 'perfecto' && E.metros === m0 + 3 && E.dobles === 1, E.metros - m0);
-        const d2 = nota(E.tm + 1, 'doble'), r0 = E.racha; irA(d2.t + 0.5); check('Dejar pasar la dorada no castiga', d2.res === 'perdida' && E.racha === r0); }
+        const d2 = nota(E.tm + 1, 'doble'); for (const n of notas) if (n !== d2 && n.on && !n.res && n.t < d2.t + 0.8) n.on = false; const r0 = E.racha, m1 = E.metros; irA(d2.t + 0.5); check('Dejar pasar la dorada no castiga', d2.res === 'perdida' && E.racha === r0 && E.metros === m1, d2.res + ' · ' + r0 + ' → ' + E.racha); }
       check('Sin asignaciones por cuadro: grupos fijos de hojas, sonidos y chispas', notas.length === NN && evs.length === NE && chis.length === NP && notas.filter(n => n.on).length < NN && evs.filter(e => e.on).length < NE);
       // «Reducir movimiento»: sin chispas ni estela
       if (A) { A.reducido = true; for (const p of chis) p.on = false; const g = golpes()[0]; irA(g.t + E.offset); tecla(' '); check('Con «Reducir movimiento» no salen chispas ni estela', E.perfectos >= 2 && !chis.some(p => p.on)); A.reducido = red0; }
       // Fin: el tiempo se acaba
+      aviso(L('¡Perfecto!', 'Perfect!'), 'perf'); const hr = el.querySelector('.cp-hud').getBoundingClientRect(), fbr = q('fb').getBoundingClientRect();
       const metros = E.metros; let nF = 0; while (E.fase === 'juego' && nF++ < 200) paso(1);
       check('Al terminar la música (≈ 90 s): panel con la altura, «¡Nuevo récord!», «Otra vez» y «Salir»', E.fase === 'fin' && !q('fin').hidden && q('fn').textContent === metros + ' m' && new RegExp('Nuevo récord: ' + metros + ' m').test(q('fmsg').textContent) && /Racha más larga: \d+/.test(q('fdet').textContent), q('fmsg').textContent);
       const rg = leerRec(); check('El récord (metros, racha más larga y jugadas) se guarda en este dispositivo', rg && rg.mejor === metros && rg.racha === E.mejorRacha && rg.jugadas === 1, JSON.stringify(rg));
-      const bots = [...q('fin').querySelectorAll('button'), el.querySelector('.cp-hud button')].map(b => b.getBoundingClientRect()), fr = q('fin').getBoundingClientRect(), hr = el.querySelector('.cp-hud').getBoundingClientRect();
-      check('Cabe en la pantalla: panel y HUD dentro; «Otra vez» y «Salir» ≥ 54 px, «Salir» de arriba ≥ 44 px', bots.slice(0, 2).every(b => b.height >= 54 && b.width >= 54) && bots[2].height >= 44 && fr.left >= 0 && fr.right <= innerWidth && fr.top >= 0 && fr.bottom <= innerHeight && hr.left >= 0 && hr.right <= innerWidth && hr.bottom < innerHeight * 0.3 && lay.laneY + lay.r < innerHeight && lay.vy - lay.S / 2 > hr.bottom - 30, `${innerWidth}×${innerHeight} · panel ${Math.round(fr.width)}×${Math.round(fr.height)} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)}`);
+      const bots = [...q('fin').querySelectorAll('button')].map(b => b.getBoundingClientRect()), fr = q('fin').getBoundingClientRect();
+      check('Cabe en la pantalla: panel dentro, sin el HUD encima; «Otra vez» y «Salir» ≥ 54 px', bots.every(b => b.height >= 54 && b.width >= 54) && fr.left >= 0 && fr.right <= innerWidth && fr.top >= 0 && fr.bottom <= innerHeight && el.querySelector('.cp-hud').hidden && hr.left >= 0 && hr.right <= innerWidth && hr.bottom < innerHeight * 0.3 && hr.height <= 72 && lay.laneY + lay.r < innerHeight && lay.vy - lay.S / 2 > hr.bottom - 30 && (fbr.top >= hr.bottom || fbr.left >= hr.right || fbr.right <= hr.left), `${innerWidth}×${innerHeight} · panel ${Math.round(fr.width)}×${Math.round(fr.height)} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)} · aviso ${Math.round(fbr.left)},${Math.round(fbr.top)}`);
       el.querySelector('[data-a="otra"]').click();
-      check('«Otra vez» empieza limpio (0 m, racha 0, capa 1, sin panel, récord a la vista)', E.fase === 'juego' && E.metros === 0 && E.racha === 0 && E.capaMeta === 0 && E.capaVis === 0 && E.calN === 0 && q('fin').hidden && new RegExp('Récord ' + metros + ' m').test(q('rec').textContent) && !notas.some(n => n.res), q('rec').textContent);
+      check('«Otra vez» empieza limpio (0 m, racha 0, capa 1, sin panel, récord a la vista)', E.fase === 'juego' && E.metros === 0 && E.racha === 0 && E.capaMeta === 0 && E.capaVis === 0 && E.calN === 0 && q('fin').hidden && new RegExp('Récord ' + metros + ' m').test(q('rec').textContent) && !notas.some(n => n.on && n.res), q('rec').textContent);
       let nG = 0; while (E.fase === 'juego' && nG++ < 200) paso(1);
       check('Sin superar el récord: «Llegaste a 0 m. Récord: …»', new RegExp('Llegaste a 0 m\\. Récord: ' + metros + ' m').test(q('fmsg').textContent) && leerRec().mejor === metros && leerRec().jugadas === 2, q('fmsg').textContent);
       const ae = G.aula && G.aula.aj, idi0 = ae ? ae.idioma : null;
