@@ -2542,7 +2542,7 @@ AVE.module('streaming', function (G) {
           try { G.camara.place(true); R.render(1 / 60, false); } finally { rr.renderBufferDirect = orig; rr.render = origR; } return n; };
         // Orden ABBA BAAB (sin, con, con, sin, con, sin, sin, con): si el streaming sigue colocando cosas durante la medida,
         // la tendencia cae igual en los dos lados y se compara la suma de 4 cuadros por lado.
-        let sinR = 0, conR = 0, apag = 0; const intentos = [];
+        let sinR = 0, conR = 0, apag = 0; const intentos = []; const PC = R._precalentar, rep0 = PC && PC.repetidos;
         for (let intento = 0; intento < 3; intento++) {
           sinR = 0; conR = 0; apag = 0;
           for (const act of [false, true, true, false, true, false, false, true]) { FC.activo = act; dibujar(1); const n = contarCam(); if (act) { conR += n; apag = Math.max(apag, FC.ultimo); } else sinR += n; FC.activo = true; }
@@ -2552,6 +2552,13 @@ AVE.module('streaming', function (G) {
         G.camara.yaw = yawT;
         check('T46 · En la vista más cargada, lo que queda fuera de cámara no se dibuja (nunca suma draw calls)', sinR > 0 && conR <= sinR, sinR + ' → ' + conR + ' draw calls de la cámara (media de 4 cuadros) · ' + apag + ' mallas fuera de cámara apagadas · medidas ' + intentos.join(', ')
           + ' · ' + calor + ' del precalentado sin contar' + (calor ? ' (' + Object.entries(quienCalor).sort((a, b) => b[1] - a[1]).slice(0, 4).map(e => e[0] + ' ' + e[1]).join(', ') + ')' : ''));
+        if (PC && typeof PC.repetidos === 'number') { // T63 (QA-nuevo-t54-3): tras los setCalidad de arriba, cada cosa se calienta una vez por cambio
+          const repM = PC.repetidos - rep0, cal0 = calor; let cuadros = 0;
+          while (cuadros < 120 && (PC.pendientes > 0 || PC.otraPendiente)) { dibujar(1); cuadros++; }
+          const rep = PC.repetidos - rep0;
+          check('T63 · Tras cambiar de calidad, el precalentado no vuelve a calentar lo ya calentado y termina', rep === 0 && !(PC.pendientes > 0) && !PC.otraPendiente,
+            rep + ' calentados repetidos (' + repM + ' durante la medida T46, ' + cal0 + ' draw calls del precalentado en ella) · ' + cuadros + ' cuadros más hasta terminar · quedan ' + PC.pendientes + ' objetos' + (PC.otraPendiente ? ' y la variante contraria de sombras' : ''));
+        }
       }
       { // QA-nuevo-br1-3: los personajes V18 (Arausiaca, la rival del duelo, los NPC de v18npc) a más de 60 m no se dibujan; tras
         // pasar por sus sitios (juiceTest carga los módulos a demanda) sumaban ~47 draw calls en esta vista

@@ -838,7 +838,18 @@ AVE.module('renderer', function (G) {
   // Dibuja solo este objeto (con las luces y las sombras de verdad) para enlazar su programa.
   // pantalla=false: a un target 32×32 lineal (el juego con post dibuja a un target lineal);
   // pantalla=true: al lienzo (salida sRGB), la variante que usan las fotos directas del cómic (QA-220).
+  // T63: calentados que no tenían nada pendiente (debería quedarse en 0; lo mira streamingTest tras sus cambios de calidad)
+  let calorRepetidos = 0, calentandoOtra = false;
+  function yaCaliente(o, pantalla) {
+    if (pantalla) return pantallaObjetos.has(o);
+    for (const m of matsDe(o)) {
+      if (!m) continue;
+      if (calentandoOtra ? conLuz(m) && !calorOtra.has(idCalorOtra(o, m)) : !calorHecho.has(idCalor(o, m))) return false;
+    }
+    return true;
+  }
   function warmUno(o, pantalla) {
+    if (yaCaliente(o, pantalla)) calorRepetidos++;
     const objs = dibujables();
     const guard = objs.map(obj => [obj, obj.visible, obj.frustumCulled, obj.isInstancedMesh ? obj.count : null]);
     const padres = [];
@@ -945,8 +956,8 @@ AVE.module('renderer', function (G) {
   }
   function warmOtraUno(o) {
     const on = sun.castShadow;
-    try { sun.castShadow = !on; warmUno(o, false); } // compila/enlaza la variante contraria (queda en la caché de three)
-    finally { sun.castShadow = on; }
+    try { sun.castShadow = !on; calentandoOtra = true; warmUno(o, false); } // compila/enlaza la variante contraria (queda en la caché de three)
+    finally { sun.castShadow = on; calentandoOtra = false; }
     for (const m of matsDe(o)) if (m && conLuz(m)) calorOtra.add(idCalorOtra(o, m));
   }
   function warmOtraPresupuesto(maxN, ms) {
@@ -956,7 +967,10 @@ AVE.module('renderer', function (G) {
     for (const o of dibujables()) {
       if (n >= maxN || performance.now() - t0 > ms) break;
       const claves = [];
-      for (const m of matsDe(o)) { if (m) { const k = idCalorOtra(o, m); if (!calorOtra.has(k)) claves.push(k); } }
+      // T63 (QA-nuevo-t54-3): solo las familias CON luz tienen variante contraria (warmOtraUno solo marca esas). Antes las sin luz
+      // (cielo, nubes, partículas, MeshBasic…) contaban siempre como pendientes: se volvían a calentar en cada cuadro, gastaban
+      // todo el tope (2 por cuadro) y las de verdad pendientes, más abajo en la lista, no llegaban nunca (no terminaba).
+      for (const m of matsDe(o)) { if (m && conLuz(m)) { const k = idCalorOtra(o, m); if (!calorOtra.has(k)) claves.push(k); } }
       if (!claves.length || claves.every(k => vistos.has(k))) continue;
       warmOtraUno(o); n++;
       for (const k of claves) vistos.add(k);
@@ -1252,6 +1266,11 @@ AVE.module('renderer', function (G) {
     G.camara.follow(dt);
     G.emit('render', dt, t, moving); // look.js puede cambiar la clave del programa aquí
     G.camara.fov(dt);
+    // T63: los ganchos de 'render' (streaming, flora…) pueden añadir mallas: la lista de dibujables se rehace después de ellos.
+    // Antes se guardaba por cuadro del bucle, y un R.render() fuera del bucle (las pruebas, o un gancho que la pidiera antes)
+    // reutilizaba una lista vieja: warmUno no ocultaba lo nuevo, que se dibujaba de polizón en cada calentado (las zonas fundidas
+    // de QA-nuevo-t54-3, «calentadas» una y otra vez), y ocultarPendientes no lo ocultaba en el dibujo real.
+    listaDib = null;
     const f1 = FASES ? performance.now() : 0;
     // Enlaza lo que el look acaba de marcar, antes del dibujo de verdad. Con el mundo visible el
     // tope es de 2 familias y ~6 ms: el cuadro no apila enlaces antes del primer dibujo (QA-53).
@@ -1710,7 +1729,7 @@ AVE.module('renderer', function (G) {
 
   return { renderer, scene, camera, canvas, MOBILE, DEVICE_DPR, REDUCED, linMat, linearize, resize, update, render, start, snapshot, leerLienzo: fotoLeer, drawScene,
     sun, hemi, sky, sunDir, calidad, setCalidad, setEscuela, PRESETS, stats, post, ATMOS, niebla: { srgb: fogSRGB, lin: fogLin }, get t() { return t; },
-    _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; }, get otra() { return calorOtra.size; }, get pantalla() { return pantallaN; } },
+    _precalentar: { get activo() { return puedeCalentar; }, get hechos() { return calorHecho.size; }, get otra() { return calorOtra.size; }, get pantalla() { return pantallaN; }, get repetidos() { return calorRepetidos; }, get pendientes() { return programasPendientes(); }, get otraPendiente() { return !!(otraAlcanzable() && siguienteCalorOtra()); } },
     fueraCamara: FUERA, // T46: { ultimo, activo }: lo apagado este cuadro por quedar fuera de cámara; activo=false solo en las pruebas
     _dyn: dyn, // QA-176: las pruebas de imagen (lookTest) lo usan para fijar la resolución dinámica; el juego no lo toca
     fotos: () => ({ diferidas: FOTOS.diferidas, sync: FOTOS.sync, esperas: FOTOS.esperas, caidas: FOTOS.caidas, errPBO: FOTOS.errPBO, cola: FOTOS.cola.length }),
