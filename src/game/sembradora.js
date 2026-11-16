@@ -655,6 +655,7 @@ window.AVSembradora = function (G) {
     G.quiet = true;
     try {
       try { localStorage.removeItem(ALM); } catch (e) { /* */ }
+      { const sx = document.getElementById('c1-saltar'); if (sx) { sx.click(); for (let i = 0; i < 60 && document.getElementById('c1-saltar'); i++) await new Promise(r => setTimeout(r, 50)); } } // como accesibilidadTest: si la prueba corre durante la apertura del capítulo, se salta antes (el HUD espera a que acabe, a propósito)
       jugar({ semilla: 5, callado: true });
       const hb = hudEl.querySelector('[data-a="salir"]').getBoundingClientRect();
       check('Se abre con el HUD (reloj 1:30, 0 árboles, 5 semillas y «Salir» de ≥ 44 px), 4 parches y el saco', activo() && !hudEl.hidden && finEl.hidden && q(hudEl, 'r').textContent === '1:30' && q(hudEl, 'a').textContent === '0' && q(hudEl, 's').querySelectorAll('i.on').length === 5 && hb.height >= 44 && hb.width >= 44 && parches.every(p => p.on) && M.saco.visible && document.body.classList.contains('sembradora-on'),
@@ -826,7 +827,7 @@ window.AVSembradora = function (G) {
       }
       const sacoFin = { x: saco.x, z: saco.z };
       finEl.querySelector('[data-a="otra"]').click();
-      check('«Otra vez» empieza limpio en el mismo claro (1:30, 0 árboles, 5 semillas, sin árboles viejos, sin panel ni pausa y la cámara del juego)', E.fase === 'juego' && E.puntos === 0 && E.arboles === 0 && E.semillas === 5 && arboles.every(a => !a.on) && finEl.hidden && q(hudEl, 'r').textContent === '1:30' && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('sembradora')) && parches.every(p => p.on) && camEs(vertical() ? AJ_JV : AJ_J) && Math.hypot(saco.x - sacoFin.x, saco.z - sacoFin.z) < 0.01, Math.hypot(saco.x - sacoFin.x, saco.z - sacoFin.z).toFixed(2) + ' m');
+      check('«Otra vez» empieza limpio en el mismo claro (1:30, 0 árboles, 5 semillas, sin árboles viejos, sin panel ni pausa y la cámara del juego)', E.fase === 'juego' && E.puntos === 0 && E.arboles === 0 && E.semillas === 5 && arboles.every(a => !a.on) && finEl.hidden && q(hudEl, 'r').textContent === '1:30' && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('sembradora')) && parches.every(p => p.on) && camEs(vertical() ? AJ_JV : AJ_J) && Math.hypot(saco.x - sacoFin.x, saco.z - sacoFin.z) < 0.01, Math.hypot(saco.x - sacoFin.x, saco.z - sacoFin.z).toFixed(2) + ' m · ' + [E.fase, E.puntos, E.arboles, E.semillas, arboles.filter(a => a.on).length, finEl.hidden, q(hudEl, 'r').textContent, G.pausa && G.pausa.motivos ? [...G.pausa.motivos].join('+') : '-', parches.filter(p => p.on).length, camEs(vertical() ? AJ_JV : AJ_J)].join('/'));
       { // con «Reducir movimiento», al terminar ni sube la cámara ni se mueve Vittata: el panel sale ya
         html.classList.add('mov-reducido');
         try { lejos(); const vx0 = S.pos.x, vz0 = S.pos.z; E.t = DUR; paso(0.1);
