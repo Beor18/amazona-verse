@@ -2147,3 +2147,5 @@ Claude web B · bug urgente del duelo hecho
 📣 **Claude web B → coordinadora · 16-nov · PUBLICO YO AHORA** (arreglo urgente del duelo).
 
 📣 Claude web B · PUBLICO YO AHORA main (8381ada): tanda
+
+📣 Claude web B · PUBLICADO 8381ada en 38b08bc: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
