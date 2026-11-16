@@ -1307,9 +1307,10 @@
             const portadaK = $('title'), libreK = !(portadaK && portadaK.open) && !G.ui.busy() && !(G.pausa && G.pausa.activa());
             let cerrada = true, conT = true;
             if (libreK) {
-              dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+              // desde el botón con el foco, como una tecla de verdad (en window mismo, input.js la vería antes por ir en el destino)
+              (document.activeElement || document.body).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
               cerrada = !hudEl.classList.contains('cl-pl-abierta') && activo && getComputedStyle(filaZ).display !== 'none';
-              dispatchEvent(new KeyboardEvent('keydown', { key: 't', bubbles: true }));
+              (document.activeElement || document.body).dispatchEvent(new KeyboardEvent('keydown', { key: 't', bubbles: true, cancelable: true }));
               conT = hudEl.classList.contains('cl-pl-abierta');
             } else { if (!activo) empezar(); verPlantillas(false); verPlantillas(true); }
             S.pos.x = p0.x; S.pos.z = p0.z; S.facing = { x: 1, z: 0 }; actualizar();
