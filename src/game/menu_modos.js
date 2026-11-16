@@ -1001,7 +1001,7 @@
     }
 
     // QA-212: ocupado() = hay una actividad V18 en marcha (duelo, minigolf, carreras…); lo miran las pistas de descubrir.js y ciclo.js
-    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18(), get libre() { return libre; }, get pendiente() { return pendiente; } };
+    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18() || document.body.classList.contains('sigueme-on'), /* F2-1: ¡Sígueme, bandada! se juega en el mundo: los avisos de la historia esperan */ get libre() { return libre; }, get pendiente() { return pendiente; } };
     api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir, aplazarIntro: () => { aplazar = true; } });
     if (window.AVQueHacer) window.AVQueHacer(G);
     return api;

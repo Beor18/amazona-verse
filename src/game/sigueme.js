@@ -22,7 +22,8 @@ window.AVSigueme = function (G) {
   const H = (x, z) => G.terreno.height(x, z);
   const nivelAgua = (x, z) => { const w = G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) : -1e9; return w > -1e8 ? w : -Infinity; };
   const ALM = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.sigueme';
-  const DUR = 120, VIS = 10, NP = 14, BUF = 64, PASO_R = 0.4, SEP = 1.5, UNE = 6, ENTREGA = 8, CERCA_R = 45, NC = 96;
+  const DUR = 120, VIS = 10, NP = 14, BUF = 64, PASO_R = 0.4, SEP = 1.5, UNE = 6, ENTREGA = 8, CERCA_R = 45, NC = 96, UNE_V = 10; // UNE_V: en vertical se une con más margen (posada sobre una copa, la de abajo también vale)
+  const ESC_FILA = 1.95;
   const MEDALLA = { bronce: 30, plata: 70, oro: 120 };
   const en = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
   const L = (es, eng) => (en() ? eng : es);
@@ -101,7 +102,7 @@ window.AVSigueme = function (G) {
     malla.name = 'sigueme:cotorras'; cartelQ.name = 'sigueme:interrogacion'; cartelZ.name = 'sigueme:dormilona';
   }
   function soltarMallas() {
-    for (const m of [malla, cartelQ, cartelZ]) if (m) { R.scene.remove(m); if (m !== malla) m.material.dispose(); }
+    for (const m of [malla, cartelQ, cartelZ]) if (m) { R.scene.remove(m); m.dispose(); if (m !== malla) m.material.dispose(); } // m.dispose(): suelta los búferes de instanceMatrix e instanceColor en la GPU
     if (geoPropia) geoPropia.dispose(); if (geoCartel) geoCartel.dispose(); if (texQ) texQ.dispose(); if (texZ) texZ.dispose(); if (matPropio) matPropio.dispose();
     malla = cartelQ = cartelZ = texQ = texZ = geoCartel = geoPropia = matPropio = null;
   }
@@ -118,7 +119,7 @@ window.AVSigueme = function (G) {
     const ver = E.fase === 'juego', cam = R.camera, ahora = E.t;
     nm = 0; let nq = 0, nz = 0;
     if (ver) {
-      for (let i = 0; i < E.n && i < VIS; i++) { const f = fila[i]; poner(f.x + f.ox, f.y, f.z + f.oz, 0, f.yaw, 0, 1.55, f.col, f.fase, 1, 0); }
+      for (let i = 0; i < E.n && i < VIS; i++) { const f = fila[i]; poner(f.x + f.ox, f.y, f.z + f.oz, 0, f.yaw, 0, ESC_FILA, f.col, f.fase, 1, 0); } // las tuyas, un poco más grandes que las de la bandada del mundo
       for (const p of pool) {
         if (!p.on) continue;
         const posada = p.tipo !== 'perdida' && !p.vuela;
@@ -163,6 +164,7 @@ window.AVSigueme = function (G) {
       e.x = c.x; e.z = c.z; e.rc = Math.max(1.2, Math.min(4.5, c.r * 4)); e.rc2 = e.rc * e.rc; e.y0 = g + alto * 0.5; e.y1 = g + alto; e.top = g + alto;
     }
   }
+  function bajoCopa(x, z) { for (let i = 0; i < nCerca; i++) { const c = cerca[i], dx = x - c.x, dz = z - c.z; if (dx * dx + dz * dz < (c.rc + 1) * (c.rc + 1)) return true; } return false; }
   function enCopa(x, y, z) { for (let i = 0; i < nCerca; i++) { const c = cerca[i], dx = x - c.x, dz = z - c.z; if (dx * dx + dz * dz < c.rc2 && y > c.y0 && y < c.y1) return true; } return false; }
 
   // ---------- Cotorras sueltas, dormilonas y perdidas ----------
@@ -176,20 +178,28 @@ window.AVSigueme = function (G) {
     if (et >= 1 && nCerca && azar() < 0.6) { // entre árboles: posada en una copa
       for (let k = 0; k < 6; k++) {
         const c = cerca[Math.floor(azar() * nCerca)], d = Math.hypot(c.x - S.pos.x, c.z - S.pos.z);
-        if (d > 12 && d < 40) { p.x = c.x; p.z = c.z; p.y = c.top + 0.1; return p; }
+        if (d > 12 && d < 40) { // revolotea junto a la copa, por fuera y a media altura: no hay que meterse en el follaje
+          const a = rnd(0, Math.PI * 2), r = c.rc + 1.6; p.x = c.x + Math.cos(a) * r; p.z = c.z + Math.sin(a) * r;
+          p.y = Math.max(H(p.x, p.z) + 1.2, c.y0); p.vuela = true; return p;
+        }
       }
     }
     for (let k = 0; k < 8; k++) {
       const a = rnd(0, Math.PI * 2), d = et === 0 ? rnd(10, 26) : rnd(12, 34);
       const x = S.pos.x + Math.cos(a) * d, z = S.pos.z + Math.sin(a) * d, g = H(x, z), w = nivelAgua(x, z);
       if (w > g + 0.3) { if (et === 0 && k < 7) continue; p.x = x; p.z = z; p.y = w + 1.6; p.vuela = true; if (p.tipo === 'dormilona') p.tipo = 'suelta'; return p; } // sobre el agua: revolotea
-      if (et === 0 && k < 7 && enCopa(x, g + 3, z)) continue; // al principio, en campo abierto
+      if (k < 7 && bajoCopa(x, z)) continue; // nunca debajo de una copa (se vería desde arriba y no se llega sin meterse en las hojas)
       p.x = x; p.z = z; p.y = g + 0.12; return p;
     }
     p.on = false; return null;
   }
   function perder(x, y, z, col) {
-    const p = libre(); if (!p) return;
+    let p = libre();
+    if (!p) { // grupo lleno: la que se suelta no se pierde; deja su sitio la suelta o dormilona más lejana (ya nacerá otra cerca) o, si no hay, la perdida más vieja
+      let bd = -1, bt = -1, q = null;
+      for (const o of pool) { if (o.tipo !== 'perdida') { const d = (o.x - S.pos.x) ** 2 + (o.z - S.pos.z) ** 2; if (d > bd) { bd = d; p = o; } } else if (o.t > bt) { bt = o.t; q = o; } }
+      p = p || q; if (!p) return;
+    }
     p.on = true; p.tipo = 'perdida'; p.vuela = true; p.cx = x; p.cz = z; p.y = Math.max(y, H(x, z) + 1); p.x = x; p.z = z; p.ang = rnd(0, 6.28); p.t = 0; p.col = col; p.fase = rnd(0, 6.28);
   }
   function unir(p) {
@@ -227,18 +237,23 @@ window.AVSigueme = function (G) {
     const n = E.n, pts = n * mult(n);
     E.puntos += pts; E.entregas++;
     E.n = 0; E.extra = 0;
-    try { if (G.fx && G.fx.burst) G.fx.burst(dorm.x, dorm.top, dorm.z, 'gold', reducido() ? 8 : 24); } catch (e) { /* sin fx */ }
+    try { if (G.fx && G.fx.burst) if (!reducido()) G.fx.burst(dorm.x, dorm.top, dorm.z, 'gold', 24); } catch (e) { /* sin fx */ }
     sonar('encaje'); if (n >= 7) sonar('logro');
     aviso(L(`¡Bandada a salvo! +${pts}`, `Flock safe! +${pts}`), 'oro');
     nuevoDormidero(); camara(); pintarHud();
   }
-  // Con la fila de más de 6, la cámara se aleja un poco para verla entera (solo el ajuste de siempre, como el minigolf)
-  let cam0 = null;
+  // Con la fila de 4 o más, la cámara se aleja para verla (un poco con 4–6, más con 7 o más; solo el ajuste de siempre, como el minigolf)
+  let cam0 = null, camN = 0;
+  const CAM_D = [0, 1.2, 2.6], CAM_F = [0, 2.2, 4.6];
   function camara() {
     const C = G.camara && G.camara.CAM; if (!C) return;
-    const lejos = E.fase === 'juego' && E.n > 6;
-    if (lejos && !cam0) { cam0 = { dist: C.dist, distFly: C.distFly }; C.dist += 1.6; C.distFly += 2.4; E.camLejos = true; }
-    else if (!lejos && cam0) { if (C.dist === cam0.dist + 1.6) C.dist = cam0.dist; if (C.distFly === cam0.distFly + 2.4) C.distFly = cam0.distFly; cam0 = null; E.camLejos = false; }
+    const nivel = E.fase !== 'juego' ? 0 : E.n >= 7 ? 2 : E.n >= 4 ? 1 : 0;
+    if (nivel === camN) return;
+    if (!cam0) cam0 = { dist: C.dist, distFly: C.distFly };
+    // si otro módulo cambió la distancia mientras tanto, no se pisa
+    if (C.dist === cam0.dist + CAM_D[camN]) C.dist = cam0.dist + CAM_D[nivel];
+    if (C.distFly === cam0.distFly + CAM_F[camN]) C.distFly = cam0.distFly + CAM_F[nivel];
+    camN = nivel; E.camLejos = nivel > 0; if (!nivel) cam0 = null;
   }
 
   // ---------- Paso ----------
@@ -258,7 +273,7 @@ window.AVSigueme = function (G) {
       E.giro = hA != null && hB != null ? Math.abs(envolver(hA - hB)) : 0;
       const lim = giroMax(E.n) * (E.rafaga > 0 ? 0.6 : 1);
       if (E.giro > lim && E.t > E.cortes) soltarCola(Math.max(1, Math.min(3, Math.ceil((E.giro - lim) / 0.35))), 'giro');
-      else if (E.giro > lim * 0.7 && E.n >= 4 && E.t > E.avisoGiroT && E.t > E.cortes + 1) { E.avisoGiroT = E.t + 3; aviso(L('¡Gira más abierto!', 'Turn wider!'), 'malo'); }
+      else if (E.giro > lim * 0.7 && E.n >= 4 && E.t > E.avisoGiroT && E.t > E.cortes + 1) { E.avisoGiroT = E.t + 3; sonar('aviso'); aviso(L('¡Gira más abierto!', 'Turn wider!'), 'malo'); } // aviso importante: también suena
     }
     // ráfagas (etapa 3): aviso con hojas y sonido, luego 2,5 s de viento que empuja la cola
     if (E.t >= 80) {
@@ -266,7 +281,7 @@ window.AVSigueme = function (G) {
       if (!E.rafagaAviso && !E.rafaga && E.t >= E.proxRafaga) {
         E.rafagaAviso = 1.6; E.rafDir = rnd(0, Math.PI * 2); sonar('aviso');
         aviso(L('¡Viene una ráfaga! Vuela recto', 'A gust is coming! Fly straight'), 'malo');
-        try { if (G.fx && G.fx.burst) G.fx.burst(vx + Math.sin(E.rafDir) * 4, vy + 1.5, vz + Math.cos(E.rafDir) * 4, 'leaves', red ? 6 : 18); } catch (e) { /* sin fx */ }
+        try { if (G.fx && G.fx.burst) if (!red) G.fx.burst(vx + Math.sin(E.rafDir) * 4, vy + 1.5, vz + Math.cos(E.rafDir) * 4, 'leaves', 18); } catch (e) { /* sin fx */ }
       }
       if (E.rafagaAviso > 0 && (E.rafagaAviso -= dt) <= 0) { E.rafagaAviso = 0; E.rafaga = 2.5; }
       if (E.rafaga > 0 && (E.rafaga -= dt) <= 0) { E.rafaga = 0; E.proxRafaga = E.t + rnd(7, 10); }
@@ -294,13 +309,15 @@ window.AVSigueme = function (G) {
         p.ang += dt * (red ? 1.2 : 2.2); p.x = p.cx + Math.cos(p.ang) * 2.4; p.z = p.cz + Math.sin(p.ang) * 2.4; p.yaw = p.ang + Math.PI; p.fase += dt;
         if (p.t > 20) { p.tipo = 'suelta'; p.vuela = false; p.y = H(p.x, p.z) + 0.12; } // se cansa y se posa: sigue esperando
       } else if (p.tipo === 'dormilona') {
-        if (d2 < 15 * 15) { const a = Math.atan2(dz, dx); if (p.t > 0 && p.angPrev !== 0) p.ang += Math.abs(envolver(a - p.angPrev)); p.angPrev = a || 1e-6; }
-        else { p.angPrev = 0; p.ang = Math.max(0, p.ang - dt * 0.5); }
-        if (p.ang >= Math.PI * 2) { p.tipo = 'suelta'; p.t = 0; sonar('descubrir'); aviso(L('¡Se despertó!', 'She woke up!'), 'bien'); }
+        if (d2 > 75 * 75) { p.on = false; continue; } // quedó muy atrás: no ocupa el sitio de una que nazca cerca
+        // el ángulo se suma CON signo: solo una vuelta de verdad llega a 2π (ir y volver en zigzag se anula)
+        if (d2 < 15 * 15) { const a = Math.atan2(dz, dx); if (p.t > 0 && p.angPrev !== 0) p.ang += envolver(a - p.angPrev); p.angPrev = a || 1e-6; }
+        else { p.angPrev = 0; p.ang = Math.sign(p.ang) * Math.max(0, Math.abs(p.ang) - dt * 0.5); }
+        if (Math.abs(p.ang) >= Math.PI * 2) { p.tipo = 'suelta'; p.t = 0; sonar('descubrir'); aviso(L('¡Se despertó!', 'She woke up!'), 'bien'); }
         continue;
       } else if (d2 > 75 * 75) { p.on = false; continue; } // quedó muy atrás: nace otra más cerca
       else { p.yaw = Math.atan2(-dx, -dz); }
-      if (d2 < UNE * UNE && Math.abs(p.y - vy) < UNE && (p.tipo !== 'perdida' || p.t > 2.5)) unir(p); // la que se acaba de soltar no vuelve en el mismo giro
+      if (d2 < UNE * UNE && Math.abs(p.y - vy) < UNE_V && (p.tipo !== 'perdida' || p.t > 2.5)) unir(p); // la que se acaba de soltar no vuelve en el mismo giro
     }
     // nacen más sueltas
     if ((E.prox -= dt) <= 0) { E.prox = 0.5; if (sueltasVivas() < 4 + etapa()) nacer(); }
@@ -316,8 +333,9 @@ window.AVSigueme = function (G) {
     if (hudEl && Math.floor((E.t - dt) * 4) !== Math.floor(E.t * 4)) pintarHud();
   }
   G.on('update', (dt, busy) => { if (!G.quiet && !busy) paso(Math.min(0.05, dt || 0)); });
-  const guiar = () => { if (E.fase === 'juego' && dorm.ok && G.fx && G.fx.guide) { guia.x = dorm.x; guia.y = dorm.top + 4; guia.z = dorm.z; G.fx.guide(guia, performance.now() / 1000); } };
+  const guiar = () => { verHud(); if (E.fase === 'juego' && dorm.ok && G.fx && G.fx.guide) { guia.x = dorm.x; guia.y = dorm.top + 4; guia.z = dorm.z; G.fx.guide(guia, performance.now() / 1000); } };
   G.on('render', guiar, 61); // después de misiones.js (60): la flecha va al dormidero
+  G.on('pausa', () => verHud()); // al terminar la carga sale el HUD
 
   // ---------- HUD y panel final ----------
   let hudEl = null, finEl = null;
@@ -333,7 +351,11 @@ window.AVSigueme = function (G) {
       '#sig-fin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:24px;background:rgba(16,36,28,.95);color:#fff8e6;font-family:Fredoka,system-ui,sans-serif;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;gap:8px}#sig-fin:focus{outline:none}' +
       '#sig-fin h2{margin:0;font-size:26px}#sig-fin .sig-gran{display:flex;align-items:center;gap:8px;font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#sig-fin .sig-gran svg{width:42px;height:42px}#sig-fin p{margin:0;font-size:17px;font-weight:600}#sig-fin .sig-med{font-size:16px;padding:3px 12px;border-radius:999px;background:#fff3d6;color:#3b2a14}#sig-fin .sig-med:empty{display:none}#sig-fin .sig-det{font-size:15px;opacity:.85;font-weight:500}#sig-fin .sig-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}' +
       '@media (orientation:landscape) and (max-height:500px){#sig-fin{padding:12px 16px;gap:4px}#sig-fin h2{font-size:21px}#sig-fin .sig-gran{font-size:34px}}' +
-      'body.sigueme-on :is(#quest,#inv,#modo-salir){visibility:hidden!important}';
+      // la historia no se mezcla con el minijuego: fuera el letrero y los avisos de la misión, los bocadillos, la pista de Acción, los contadores
+      // de la Patrulla, los combos y el poder (sus avisos esperan: G.menuModos.ocupado() cuenta este juego como actividad en marcha)
+      'body.sigueme-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
+      // con el panel final, tampoco las pistas de vuelo ni el minimapa: solo el resultado
+      'body.sigueme-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag){visibility:hidden!important}';
     document.head.appendChild(st);
   }
   function montar() {
@@ -389,9 +411,9 @@ window.AVSigueme = function (G) {
     trReset(S.pos.x, S.pos.y + 0.6, S.pos.z);
     renovarCerca(); dorm.ok = false; nuevoDormidero();
     for (let i = 0; i < 3; i++) nacer('suelta'); // que no empiece con el cielo vacío
-    hudEl.hidden = false; finEl.hidden = true; q(hudEl, 'msg').textContent = '';
-    document.body.classList.add('sigueme-on');
-    camara(); pintarHud(); pintar();
+    finEl.hidden = true; q(hudEl, 'msg').textContent = '';
+    document.body.classList.add('sigueme-on'); document.body.classList.remove('sigueme-fin');
+    camara(); pintarHud(); pintar(); verHud();
     aviso(L('Junta cotorras y llévalas al árbol que brilla', 'Gather parrots and lead them to the glowing tree'), 'bien'); E.msgT = 4; // en su franja, no en un aviso grande que tape el HUD
     sonar('boton');
     return true;
@@ -407,12 +429,15 @@ window.AVSigueme = function (G) {
     guardarRec(E.mejor, E.mejorFila, E.jugadas);
     try { G.emit('record', { modo: 'sigueme', puntos: E.puntos, fila: E.filaMax }); } catch (e) { /* */ }
     sonar('panel_final'); if (E.nuevo && E.puntos > 0) logroId = setTimeout(() => { logroId = 0; if (E.fase === 'fin') sonar('logro'); }, 700);
-    camara(); pintar(); pintarHud(); pintarFin(); finEl.hidden = false; hudEl.hidden = true; q(hudEl, 'msg').textContent = ''; // un solo «Salir»: el del panel
+    camara(); pintar(); pintarHud(); pintarFin(); finEl.hidden = false; hudEl.hidden = true; q(hudEl, 'msg').textContent = ''; document.body.classList.add('sigueme-fin'); // un solo «Salir»: el del panel
     try { if (G.pausa && G.pausa.set) G.pausa.set('sigueme', true); } catch (e) { /* sin pausa */ } // panel modal: el mundo se congela detrás
     // el foco va al panel (no a «Otra vez»): una tecla de vuelo de los últimos segundos no arranca otra partida sin ver el resultado
     setTimeout(() => { try { if (E.fase === 'fin') finEl.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
   }
   const activo = () => E.fase !== 'nada';
+  // Durante la pantalla de carga (pausa 'carga') el HUD no sale encima: aparece cuando el mundo ya se ve
+  const cargando = () => { try { return !!(G.pausa && G.pausa.motivos && G.pausa.motivos.has('carga')); } catch (e) { return false; } };
+  function verHud() { if (hudEl) { const v = E.fase === 'juego' && !cargando(); if (hudEl.hidden === v) hudEl.hidden = !v; } }
   function salir() {
     if (!activo()) return false;
     E.fase = 'nada';
@@ -420,7 +445,7 @@ window.AVSigueme = function (G) {
     if (logroId) { clearTimeout(logroId); logroId = 0; }
     camara(); soltarMallas();
     if (hudEl) { hudEl.hidden = true; finEl.hidden = true; [hudEl, finEl].forEach(el => el.querySelectorAll('[data-k]').forEach(x => { if (x.dataset.k !== 'fila') x.textContent = ''; })); [hudEl, finEl].forEach(el => el.querySelectorAll('button').forEach(b => { b.textContent = ''; })); } // sin texto viejo (ni en otro idioma)
-    document.body.classList.remove('sigueme-on');
+    document.body.classList.remove('sigueme-on', 'sigueme-fin');
     try { if (G.pausa && G.pausa.set) G.pausa.set('sigueme', false); } catch (e) { /* sin pausa */ }
     return true;
   }
@@ -456,6 +481,15 @@ window.AVSigueme = function (G) {
         q(hudEl, 'r').textContent + ' · ' + vivas().length + ' · ' + Math.round(hb.height));
       check('Se dibujan con 3 mallas instanciadas como mucho (cotorras, «?» y «Zz»)', malla && malla.visible && malla.count === 3 && cartelQ.visible && cartelQ.count === 3 && R.scene.children.filter(m => /^sigueme:/.test(m.name)).length === 3, malla && malla.count);
       { const hr = hudEl.getBoundingClientRect(); check('El HUD cabe en una sola franja arriba', hr.left >= 0 && hr.right <= innerWidth && hr.top >= 0 && hr.height <= 64, `${innerWidth}×${innerHeight} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)}`); }
+      check('La historia no se mezcla: cuenta como actividad (los avisos de la misión esperan) y su letrero, la pista de Acción y los contadores no se ven',
+        (!G.menuModos || !G.menuModos.ocupado || G.menuModos.ocupado()) && ['toast', 'prompt', 'quest', 'inv-cuenta', 'bocadillos'].every(id => { const el = document.getElementById(id); return !el || getComputedStyle(el).visibility === 'hidden'; }));
+      check('El minimapa marca el dormidero (la misma meta que la flecha)', !G.minimapa || !G.minimapa.marcadores || G.minimapa.marcadores().some(m => m.tipo === 'obj' && m.x === dorm.x && m.z === dorm.z));
+      if (G.pausa && G.pausa.set && G.pausa.motivos) {
+        const yaCarga = G.pausa.motivos.has('carga');
+        G.pausa.set('carga', true); verHud(); const tapado = hudEl.hidden;
+        if (!yaCarga) G.pausa.set('carga', false); verHud();
+        check('Con la pantalla de carga el HUD espera y luego sale', tapado && (yaCarga || !hudEl.hidden));
+      }
       check('La geometría y el aleteo son los de la bandada (o la de reserva sin ella)', !G.bandada || !G.bandada.meshes || malla.material === G.bandada.meshes[0].material, G.bandada ? 'bandada' : 'reserva');
       const ae = G.aula && G.aula.aj;
       let llegan = 0; const oye = () => { llegan++; }; addEventListener('keydown', oye); tecla('w'); tecla('ArrowLeft'); removeEventListener('keydown', oye);
@@ -467,7 +501,7 @@ window.AVSigueme = function (G) {
       const p1 = sumar(); lejos();
       check('Pasar a menos de 6 m: se une a la fila con «¡Se unió!»', E.n === 1 && !p1.on && /Se unió/.test(q(hudEl, 'msg').textContent) && fila[0].col === p1.col, E.n + ' · ' + q(hudEl, 'msg').textContent);
       for (let i = 0; i < 3; i++) sumar();
-      check('Con 4, «¡Fila de 4! ×2» y el HUD lo cuenta', E.n === 4 && /Fila de 4! ×2/.test(q(hudEl, 'msg').textContent) && q(hudEl, 'x').textContent === '×2' && q(hudEl, 'fila').querySelectorAll('svg.on').length === 4, q(hudEl, 'msg').textContent);
+      check('Con 4, «¡Fila de 4! ×2» y el HUD lo cuenta', E.n === 4 && /Fila de 4! ×2/.test(q(hudEl, 'msg').textContent) && q(hudEl, 'x').textContent === '×2' && q(hudEl, 'fila').querySelectorAll('svg.on').length === 4 && (!C || (E.camLejos && C.distFly > camD0[1])), q(hudEl, 'msg').textContent);
       for (let i = 0; i < 4; i++) sumar();
       check('Con más de 6 la cámara se aleja un poco', !C || (E.camLejos && C.distFly > camD0[1]), C && C.distFly);
       // Volar recto: nadie se suelta y la fila calca el camino detrás de Vittata
@@ -485,6 +519,13 @@ window.AVSigueme = function (G) {
       E.cortes = 0; trReset(S.pos.x, S.pos.y + 0.6, S.pos.z); const nAntes = E.n;
       ir(pp.cx + 1, pp.y, pp.cz); paso(0.02);
       check('Las perdidas dan vueltas y se pueden recuperar', pp.x !== ax0 && E.n === nAntes + 1 && !pp.on, E.n);
+      { // con el grupo lleno, las que se sueltan tampoco se pierden: deja su sitio la suelta más lejana
+        for (const p of pool) p.on = false;
+        for (let i = 0; i < NP; i++) { const p = pool[i]; p.on = true; p.tipo = 'suelta'; p.t = 0; p.x = S.pos.x + 20 + i; p.z = S.pos.z; p.y = S.pos.y; }
+        const nA = E.n, k = soltarCola(2, 'giro');
+        check('Con el grupo de 14 lleno, las que se sueltan siguen dando vueltas (no desaparecen)', nA >= 2 && k === 2 && E.n === nA - 2 && vivas('perdida').length === 2, nA + ' · ' + vivas('perdida').length);
+        for (let j = 0; j < 2; j++) { const f = fila[E.n]; f.tUne = -9; E.n++; } E.cortes = 0;
+      }
       for (const p of pool) p.on = false; E.n = Math.min(E.n, 8);
       // Rozar una copa
       for (const f of fila) f.tUne = -9;
@@ -505,11 +546,43 @@ window.AVSigueme = function (G) {
       lejos(); const dm = nacer('dormilona'); dm.tipo = 'dormilona'; dm.vuela = false; dm.x = S.pos.x + 9; dm.z = S.pos.z; dm.y = S.pos.y + 0.6; dm.t = 0.1;
       ir(dm.x + 3, dm.y, dm.z); paso(0.02); paso(0.02);
       const dormida = dm.on && dm.tipo === 'dormilona' && E.n === 0;
+      for (let a = 0; a < 200; a++) { const s = a % 2 ? 0.8 : -0.8; ir(dm.x + 9 * Math.cos(s), dm.y, dm.z + 9 * Math.sin(s)); paso(0.02); }
+      check('Ir y volver en zigzag a su lado no la despierta (hay que dar la vuelta de verdad)', dm.on && dm.tipo === 'dormilona', dm.ang.toFixed(2));
       for (let a = 0; a <= 64; a++) { const t = a / 64 * Math.PI * 2.1; ir(dm.x + Math.cos(t) * 9, dm.y, dm.z + Math.sin(t) * 9); paso(0.02); }
       check('Una dormilona («Zz») no se une al pasar; rodeándola una vez se despierta', dormida && dm.tipo === 'suelta' && cartelZ && cartelQ, dm.tipo + ' · ' + dm.ang.toFixed(2));
       ir(dm.x + 2, dm.y, dm.z); paso(0.02);
       check('…y entonces se une', E.n === 1 && !dm.on, E.n);
       for (const p of pool) p.on = false;
+      { const d2 = nacer('dormilona'); d2.tipo = 'dormilona'; d2.x = S.pos.x + 80; d2.z = S.pos.z; d2.t = 0.1; paso(0.02);
+        check('Una dormilona que queda muy atrás (más de 75 m) desaparece y deja nacer otra cerca', !d2.on); }
+      { // en la etapa 2, la que espera en un árbol revolotea junto a la copa (por fuera), no dentro ni encima del follaje
+        const t0 = E.t; E.t = 50; lejos(); const cx = S.pos.x + 25, cz = S.pos.z, gy = H(cx, cz), c = cerca[0];
+        c.x = cx; c.z = cz; c.rc = 3; c.rc2 = 9; c.y0 = gy + 6; c.y1 = gy + 12; c.top = gy + 12; nCerca = 1;
+        let vistas = 0, bien = 0;
+        for (let i = 0; i < 40; i++) { for (const p of pool) p.on = false; const p = nacer('suelta'); if (!p) continue; const d = Math.hypot(p.x - cx, p.z - cz); if (d < c.rc + 3 && p.y > H(p.x, p.z) + 1) { vistas++; if (d > c.rc && !enCopa(p.x, p.y, p.z) && p.y < c.top && p.vuela) bien++; } }
+        check('En los árboles esperan junto a la copa, por fuera y a media altura (no hay que meterse en las hojas)', vistas > 0 && bien === vistas, bien + '/' + vistas);
+        for (const p of pool) p.on = false; nCerca = 0; E.t = t0;
+      }
+      { // «Reducir movimiento»: sin ráfagas de partículas, y el aviso de giro también suena
+        const fx = G.fx, b0 = fx && fx.burst, au = G.audio, p0 = au && au.play; let chispas = 0; const sonidos = [];
+        html.classList.add('mov-reducido'); const ptsA = E.puntos, entA = E.entregas;
+        try {
+          if (fx) fx.burst = () => { chispas++; };
+          if (au) au.play = n => { sonidos.push(n); };
+          G.quiet = false;
+          E.n = 1; fila[0].tUne = -9; ir(dorm.x + 2, dorm.top + 2, dorm.z); paso(0.02);
+          E.t = 85; E.proxRafaga = 85; E.rafaga = 0; E.rafagaAviso = 0; lejos(); trReset(S.pos.x, S.pos.y + 0.6, S.pos.z); paso(0.02);
+          E.rafaga = 0; E.rafagaAviso = 0; E.proxRafaga = 1e9; E.t = 30;
+          // giro de unos 0,7 × el límite con 4 en fila: «¡Gira más abierto!» con sonido
+          for (let i = 0; i < 4; i++) { fila[i].tUne = -9; } E.n = 4; E.cortes = 0; E.avisoGiroT = 0;
+          const x1 = S.pos.x, z1 = S.pos.z; trReset(x1, S.pos.y + 0.6, z1); sonidos.length = 0;
+          for (let i = 0; i < 10; i++) { S.pos.x += 0.45; paso(0.02); }
+          for (let i = 0; i < 8; i++) { S.pos.x += 0.45 * Math.cos(1.25); S.pos.z += 0.45 * Math.sin(1.25); paso(0.02); }
+        } finally { G.quiet = true; E.puntos = ptsA; E.entregas = entA; if (fx) fx.burst = b0; if (au) au.play = p0; html.classList.remove('mov-reducido'); }
+        const giroOk = /Gira más abierto/.test(q(hudEl, 'msg').textContent);
+        check('Con «Reducir movimiento»: ni chispas al entregar ni hojas en la ráfaga, y «¡Gira más abierto!» suena', chispas === 0 && (!au || (giroOk && sonidos.includes('aviso'))), 'chispas ' + chispas + ' · ' + q(hudEl, 'msg').textContent + ' · ' + sonidos.join(','));
+        for (const p of pool) p.on = false; E.n = 0;
+      }
       // Ráfaga (etapa 3): se avisa con texto y sonido, y con ella un giro menor ya suelta
       E.t = 85; E.proxRafaga = 85; E.rafaga = 0; E.rafagaAviso = 0; lejos(); trReset(S.pos.x, S.pos.y + 0.6, S.pos.z); paso(0.02);
       const avisada = E.rafagaAviso > 0 && /ráfaga/i.test(q(hudEl, 'msg').textContent);
@@ -520,6 +593,7 @@ window.AVSigueme = function (G) {
       lejos(); E.t = DUR - 0.05; paso(0.1);
       const fr = finEl.getBoundingClientRect(), bots = [...finEl.querySelectorAll('button')].map(b => b.getBoundingClientRect());
       check('El reloj termina: panel con puntos, «¡Nuevo récord!», la fila más larga, «Otra vez» y «Salir»', E.fase === 'fin' && !finEl.hidden && q(finEl, 'fn').textContent === String(pE) && new RegExp('Nuevo récord: ' + pE + ' puntos').test(q(finEl, 'fmsg').textContent) && /Fila más larga: 8/.test(q(finEl, 'fdet').textContent) && !malla.visible, q(finEl, 'fmsg').textContent + ' · ' + q(finEl, 'fdet').textContent);
+      check('Con el panel final no quedan pistas del mundo detrás (minimapa ni pistas de vuelo)', document.body.classList.contains('sigueme-fin') && ['minimapa', 'guia-hud', 'keyhint'].every(id => { const el = document.getElementById(id); return !el || getComputedStyle(el).visibility === 'hidden'; }));
       check('El récord y la fila más larga se guardan en este dispositivo', (() => { const r = leerRec(); return r && r.mejor === pE && r.fila === 8 && r.jugadas === 1; })(), JSON.stringify(leerRec()));
       check('Cabe en la pantalla: panel dentro y botones del final ≥ 54 px', bots.every(b => b.height >= 54 && b.width >= 54) && fr.left >= 0 && fr.right <= innerWidth && fr.top >= 0 && fr.bottom <= innerHeight, `${innerWidth}×${innerHeight} · ${Math.round(fr.width)}×${Math.round(fr.height)}`);
       await new Promise(r => setTimeout(r, 30));
@@ -535,7 +609,9 @@ window.AVSigueme = function (G) {
       check('«Otra vez» empieza limpio (2:00, 0 puntos, fila vacía, sin panel ni pausa)', E.fase === 'juego' && E.puntos === 0 && E.n === 0 && finEl.hidden && q(hudEl, 'r').textContent === '2:00' && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('sigueme')) && vivas('suelta').length === 3);
       lejos(); E.t = DUR; paso(0.1);
       check('Sin puntos, nunca castiga: «¡Casi!» y el récord sigue', /Casi/.test(q(finEl, 'fmsg').textContent) && leerRec().mejor === pE && q(finEl, 'fmed').textContent === '', q(finEl, 'fmsg').textContent);
+      let soltadas = 0; for (const m of [malla, cartelQ, cartelZ]) m.addEventListener('dispose', () => { soltadas++; });
       finEl.querySelector('[data-a="salir"]').click();
+      check('Al salir se sueltan las 3 mallas instanciadas (sus búferes de la GPU también)', soltadas === 3, soltadas);
       check('«Salir» lo quita todo (HUD, panel, clase, pausa, mallas fuera de la escena y cámara de siempre)', !activo() && hudEl.hidden && finEl.hidden && !document.body.classList.contains('sigueme-on') && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('sigueme')) && !malla && !R.scene.children.some(m => /^sigueme:/.test(m.name)) && (!C || (C.dist === camD0[0] && C.distFly === camD0[1])));
       jugar({ semilla: 3, callado: true });
       const ev = tecla('Escape');
@@ -549,6 +625,8 @@ window.AVSigueme = function (G) {
     return { results: out, passed: out.filter(x => x.ok).length, total: out.length };
   }
 
-  G.siguemeApi = { jugar, salir, activo, paso, test, estado: () => ({ fase: E.fase, puntos: E.puntos, fila: E.n, filaMax: E.filaMax, restante: restante(), mejor: E.mejor, sueltas: sueltasVivas(), dormidero: dorm.ok ? { x: dorm.x, z: dorm.z } : null }), _dev: { E, pool, fila } };
+  G.siguemeApi = { jugar, salir, activo, paso, test, estado: () => ({ fase: E.fase, puntos: E.puntos, fila: E.n, filaMax: E.filaMax, restante: restante(), mejor: E.mejor, sueltas: sueltasVivas(), dormidero: dorm.ok ? { x: dorm.x, z: dorm.z } : null }),
+    objetivo: () => (E.fase === 'juego' && dorm.ok ? dorm : null), // lo lee el minimapa (minimapa.js objetivo()): la estrella marca el dormidero, como la flecha
+    _dev: { E, pool, fila } };
   return G.siguemeApi;
 };
