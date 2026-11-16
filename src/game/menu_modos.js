@@ -841,6 +841,7 @@
             if (C.fase === 'fin') return true;
             if (C.fase === 'cuenta') G.v18combate.paso(1); /* la cuenta 3-2-1 sin esperarla */
             if (C.fase !== 'lucha') return false;
+            if (C.pausa > 0) { G.v18combate.paso(C.pausa + 0.01); return false; } /* F1: el respiro entre asaltos (mejor de 3) sin esperarlo */
             for (const f of [C.j, C.r]) { f.cd = {}; f.mareo = 0; f.inv = 0; f.escudo = 0; }
             C.j.plumas = Math.min(C.j.plumas, 1); C.r.pos.x = S.pos.x + 1.2; C.r.pos.z = S.pos.z; C.r.poderT = 99;
             try { G.v18combate.usar(C.r, 'golpe_ala'); } catch (e) { /* aún no puede */ }

@@ -198,12 +198,13 @@ window.AVV18Ciclo = function (G) {
       for (let t = 0; t < 4 && C.fase === 'cuenta'; t += 0.05) Cb.paso(0.05);
       // Pelea con la API pública del duelo: escudo cuando la rival está cerca, ala a tiro, semilla lejos. Si se pierde, «Otra vez».
       let intentos = 1, escudosJ = 0;
-      for (let t = 0; t < 180 && C.resultado !== 'win'; t += 0.05) {
+      for (let t = 0; t < 480 && C.resultado !== 'win'; t += 0.05) { // F1 · cambio 3: el duelo es al mejor de 3 asaltos (más largo)
         if (C.fase === 'fin') { if (C.resultado === 'loss') { intentos++; Cb.otraVez(); continue; } break; }
         if (C.fase !== 'lucha') { Cb.paso(0.05); continue; }
         const d = Math.hypot(C.r.pos.x - S.pos.x, C.r.pos.z - S.pos.z);
         S.facing = { x: (C.r.pos.x - S.pos.x) / (d || 1), z: (C.r.pos.z - S.pos.z) / (d || 1) };
         if (d < 3.5 && C.j.escudo <= 0) { /* se cubre cuando la rival llega encima */ if (Cb.usar(C.j, 'escudo_plumas').ok) escudosJ++; }
+        if (Cb.brinco && C.r.prep && C.r.prep !== 'semilla' && C.r.prepT <= 0.2 && d < 3.2) Cb.brinco(); // F1: lee el aviso y da un Brinco
         if (d < 2.3) Cb.usar(C.j, 'golpe_ala');
         else if (d > 5 && C.j.energia > 60 && escudosJ > 0) Cb.usar(C.j, 'semilla'); /* semillas tras probar el escudo: si no, se gana de lejos sin que llegue */
         Cb.paso(0.05);
@@ -256,7 +257,7 @@ window.AVV18Ciclo = function (G) {
       // 8. Ganar otra vez no paga; con la otra cotorra se cumple el reto extra
       ir({ x: sitio.x - 2, z: sitio.z }); toasts.length = 0;
       D.elegir(perfil || 'vittata');
-      Cb.iniciar({ sinCuenta: true });
+      Cb.iniciar({ sinCuenta: true, asaltos: 1 }); // un asalto: aquí se mira el pago, no los asaltos (los prueba AV.v18CombateTest)
       const quieta = () => { C.r.pensar = 99; C.r.esquivaT = 99; C.r.poderT = 99; C.r.mov.t = 0; C.r.pos.x = S.pos.x + 1.2; C.r.pos.z = S.pos.z; };
       // aviso de la rival tras un golpe al escudo (frente A): sale «¡Bloqueado!» y se borra solo aunque el duelo no avance
       quieta(); const rEsc = Cb.usar(C.r, 'escudo_plumas'), rGolpe = Cb.usar(C.j, 'golpe_ala');
