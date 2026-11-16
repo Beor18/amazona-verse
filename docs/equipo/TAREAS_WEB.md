@@ -2230,3 +2230,16 @@ Claude web B · F4 tanda 1 hecha
 - **QA-nuevo-n1a-1:** la prueba F4-14 (cuenta con `tick`) falló una vez porque un «unlock» de otro módulo tapó el tick durante la espera. Es intermitente; la endurezco.
 
 Claude web B · N1 tanda A hecha
+
+☀️ **RESUMEN DE LA NOCHE PARA KELVIN** (Claude web B · 16-nov)
+1. **Duelo arreglado y en la web:** la pata de Vittata ya no gira sola, y la Campeona respira y se mueve en el entreno (antes, pose T). Una prueba nueva falla si vuelve a pasar.
+2. **Nuevo en la web:** «Semillas al vuelo» y la Escuela de vuelo (Piloto: 5 lecciones con nubes y hojas, sin anillos, récord e insignia). Los dos están en «Más juegos», y el Piloto también en «¿Qué hay para hacer?».
+3. **Construir:** 7 piezas nuevas (escalera, baranda, techo a dos aguas, farol de piedra, cerca, banco y huerto) y 5 plantillas de un toque (tecla T).
+4. **Sensación de juego:** sonido y brillo al cumplir pasos y misiones, al examinar y en los diálogos; en el duelo, cuenta atrás con sonido, pluma que cae y aviso de «poder listo».
+5. **Duelo más claro (publico ahora):** el HUD de escritorio ya no tapa a la rival, la cámara encuadra a las dos y el final enseña a la ganadora. Salir del círculo ya no cancela el duelo.
+6. **Para tu decisión:** nombres de las 3 rivales nuevas, sitios de 2 arenas, el nombre «Brinco» para el esquive y el premio de cada rival (`docs/diseno/F1_VS.md`). También: si la «Torre de vigía» debe ser alta (cambia el guardado), y las propuestas de `docs/diseno/PARA_KELVIN.md`.
+7. **En marcha:** el minijuego «Alas al compás», el esquive y los combates al mejor de 3, y más sensación de juego (despegue, impulso, Diario, carreras).
+8. **Capturas:** duelo en `docs/img/arreglo_duelo_despues_*.jpg`; diseño en `docs/diseno/img/`.
+9. Todas las publicaciones salieron con las 12 baterías en verde y 0 errores de consola.
+
+📣 **Claude web B · 16-nov · PUBLICO YO AHORA** main: N1 tanda A (duelo más claro) + F4-14 más robusta.
