@@ -399,7 +399,42 @@ window.AVV18Combate = function (G) {
     if (animar(typeof boton === 'function' ? boton() : boton, KF_LATE, OPT_LATE)) FEEL.pulsos++;
     return true;
   }
-  const feel = { stats: FEEL, pata: () => { pataT = performance.now(); }, cuenta: feelCuenta, pluma: feelPluma, poderIni: feelPoderIni, poder: feelPoder, movReducido };
+  // ---------- F4 · 16, 18 y 19 (docs/diseno/F4_GAME_FEEL.md), también compartidas con duelo2.js ----------
+  // 16: último golpe: 0,5 s a cámara lenta (C2.lento: el dtVis de Combate 2.0; la IA, los temporizadores y el reloj del juego
+  //     siguen igual), la cámara se acerca a las dos (CAM_LENTO) y duelo_victoria (ya suena en terminar: no se dobla).
+  // 18: semilla que falla: al tocar el suelo, 4 hojas y un poco de polvo; si pasó rozando a la rival (a 1 m de su alcance) y
+  //     no la tocó, «¡Uy!» pequeño un momento.
+  // 19: final: la cámara se queda con la ganadora, que celebra (fin 'gana' de la Vida y de Combate 2.0); al acabar la cámara
+  //     lenta, 30 destellos dorados y pétalos sobre ella; panel de dos líneas (quién gana, en grande, y por qué).
+  // «Reducir movimiento»: sin cámara lenta ni acercamiento (corte a la ganadora), sin partículas; el «¡Uy!» sale sin animación.
+  Object.assign(FEEL, { finales: 0, lentos: 0, destellos: 0, fallos: 0, polvos: 0, uys: 0 });
+  const LENTO = { seg: 0.5, k: 0.3 }, FINAL = { destellos: 30, petalos: 20 }, UY = { margen: 1, ms: 750, txt: '¡Uy!' }, CAM_LENTO = 5;
+  // gana: la posición de la ganadora (se lee al soltar los destellos, cuando acaba la cámara lenta)
+  let finalN = 0; // cada final suelta sus destellos solo si no empezó otro duelo entretanto («Otra vez» o salir)
+  function feelFinal(gana) {
+    FEEL.finales++;
+    if (movReducido()) return false;
+    const lento = c2On() && C2.lento(LENTO.seg); if (lento) FEEL.lentos++;
+    const n = ++finalN;
+    const suelta = () => { if (n !== finalN) return; try { G.fx.burst(gana.x, gana.y + 1.3, gana.z, 'gold', FINAL.destellos); G.fx.petalos(gana.x, gana.y + 2.3, gana.z, FINAL.petalos); FEEL.destellos++; } catch (e) { /* sin efectos */ } };
+    if (lento) C2.despues(LENTO.seg, suelta); else suelta();
+    return true;
+  }
+  const ocultarUy = el => { el.hidden = true; };
+  // b: la semilla (b.cerca: la menor distancia² a la que pasó de su blanco); enSuelo: acabó tocando el suelo; uy: el elemento del «¡Uy!» (null: no se dice)
+  function feelFalla(b, suelo, enSuelo, uy) {
+    const p = b.m.position;
+    if (enSuelo) { FEEL.fallos++; if (!movReducido()) try { G.fx.hojas(p.x, suelo + 0.15, p.z, 4); G.fx.polvo(p.x, suelo, p.z, 0.15); FEEL.polvos++; } catch (e) { /* sin efectos */ } }
+    const roce = b.radio + UY.margen;
+    if (uy && b.cerca !== undefined && b.cerca < roce * roce) {
+      FEEL.uys++; uy.textContent = UY.txt; uy.hidden = false; animar(uy, KF_POP, OPT_POP);
+      clearTimeout(uy._uyTO); uy._uyTO = setTimeout(ocultarUy, UY.ms, uy);
+    }
+  }
+  const lentoActivo = () => c2On() && C2.lentoT > 0;
+  function feelCancelar() { finalN++; C2.lentoT = 0; } // duelo nuevo: sin cámara lenta ni destellos del anterior
+  const feel = { stats: FEEL, pata: () => { pataT = performance.now(); }, cuenta: feelCuenta, pluma: feelPluma, poderIni: feelPoderIni, poder: feelPoder, movReducido,
+    final: feelFinal, falla: feelFalla, lento: lentoActivo, cancelar: feelCancelar, LENTO, FINAL, UY, CAM_LENTO };
   let cuentaVista = -1;
   const estPoder = { armado: false, coste: 0 };
   const botonPoder = () => (TACTIL ? document.getElementById('b-dash') : hud && hud.el.querySelector('.vd-chip[data-a="poder"]'));
@@ -682,6 +717,7 @@ window.AVV18Combate = function (G) {
     camd: { elev: 0.72 }, a: () => S.pos, b: () => (C.r ? C.r.pos : S.pos), yaw: () => (G.camara ? G.camara.yaw : 0), libre: camLibre,
     ajusta(e, a, b) {
       // (si perdió Vittata y se aleja más de 6 m de la ganadora, vuelve el plano de las dos: no se queda fuera de cuadro)
+      if (C.fase === 'fin' && C.r && C.resultado && lentoActivo()) { e.d = CAM_LENTO; return; } // F4-16: durante la cámara lenta, cerca de las dos
       if (C.fase === 'fin' && C.r && C.resultado && (C.resultado === 'win' || e.sep < 6)) { const g = ganadora(); e.x = g.x; e.y = TACTIL ? g.y : g.y - 0.6; e.z = g.z; e.d = CAM_FIN; return; } // en el escritorio, algo alta en pantalla: el panel final va abajo (en táctil va arriba)
       const camera = R.camera; if (!camera) return;
       const yw = G.camara ? G.camara.yaw : 0, lat = Math.abs((b.x - a.x) * Math.cos(yw) - (b.z - a.z) * Math.sin(yw));
@@ -763,6 +799,11 @@ window.AVV18Combate = function (G) {
       '#v18-duelo button{pointer-events:auto;font:inherit;font-size:15px;font-weight:600;min-height:44px;padding:6px 14px;border-radius:22px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 6px #0005;cursor:pointer}' +
       '#v18-duelo button.cd{opacity:.5}#v18-duelo .vd-fin{text-align:center;background:rgba(30,40,30,.82);border-radius:14px;padding:10px;margin-top:8px}' +
       '#v18-duelo .vd-fin p{margin:0 0 8px;font-size:18px;font-weight:600}' +
+      // F4-19: panel de dos líneas: quién gana, en grande, y por qué. F4-18: «¡Uy!» pequeño (fijo: no mueve el HUD)
+      '#v18-duelo .vd-fin p.vd-fin-tit{font-size:26px;font-weight:800;margin-bottom:2px;color:#ffe27a;line-height:1.15}#v18-duelo .vd-fin p.vd-fin-tit:empty{display:none}#v18-duelo.tactil .vd-fin p.vd-fin-tit{font-size:17px;line-height:1.05;margin-bottom:1px}' +
+      // (en táctil, la línea nueva no agranda el panel: menos aire entre las líneas; así no pisa el aviso en 844 × 390)
+      '#v18-duelo.tactil .vd-fin.vd-fin2{padding:6px 8px}#v18-duelo.tactil .vd-fin.vd-fin2 p{margin-bottom:3px}' +
+      '#v18-duelo .vd-uy{position:fixed;left:0;right:0;top:40%;margin:0 auto;width:max-content;padding:2px 12px;border-radius:12px;background:rgba(30,40,30,.72);font-size:20px;font-weight:700;pointer-events:none}#v18-duelo .vd-uy[hidden]{display:none}' +
       // Juego en familia (5-nov), táctil: panel + fila Ala/Semilla/Escudo ocupaban ~60 % del alto y el Escudo caía sobre el
       // Diario. En táctil ya están los botones grandes (Acción = ala, Impulso = semilla, mantener Impulso = poder): fuera la
       // fila repetida y el panel se compacta; el aviso (#toast) queda por encima del panel si coinciden.
@@ -880,12 +921,12 @@ window.AVV18Combate = function (G) {
     el.innerHTML = `<div class="vd-fila"><div class="vd-lado j"><div class="vd-nom">${TXT.tu}</div><div class="vd-pod" data-k="pj"></div><div class="vd-nv" data-k="nv" hidden><span data-k="nvN"></span> · <span data-k="nvE"></span></div><div class="vd-xp" data-k="xp" hidden><b></b></div><div class="vd-pl" data-k="plj">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-j"><b></b></div><button class="vd-ali" data-a="alianza" type="button" hidden></button></div>` +
       `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div><div class="vd-acc" data-k="acc"><button class="vd-como" data-a="como" data-k="como" type="button" data-icon="question" aria-label="${TXT.como}">${TXT.como}</button><button class="vd-como vd-salir-b" data-a="salirDuelo" data-k="salirB" type="button" data-icon="close" hidden>${TXT.salir}</button></div></div></div>` +
       `<div class="vd-reloj" data-k="reloj" hidden><span class="vd-as j" data-k="asj"><i></i><i></i></span><b data-k="relojN"></b><span class="vd-as r" data-k="asr"><i></i><i></i></span></div>` +
-      `<div class="vd-centro" data-k="centro"></div><div class="vd-apoyo" data-k="apoyo" hidden><img src="assets/retratos/v18/arausiaca.png" alt=""><span>${TXT.apoyo}</span></div>` +
+      `<div class="vd-centro" data-k="centro"></div><div class="vd-uy" data-k="uy" hidden aria-hidden="true"></div><div class="vd-apoyo" data-k="apoyo" hidden><img src="assets/retratos/v18/arausiaca.png" alt=""><span>${TXT.apoyo}</span></div>` +
       `<div class="vd-pista" data-k="pista" hidden><span data-k="pistaTxt"></span> <b data-k="pistaPod"></b></div>` +
       `<div class="vd-ent" data-k="ent" hidden><div class="vd-ent-cab"><span data-k="entPaso"></span><span class="vd-ent-pp" data-k="entPP"><i></i><i></i><i></i></span></div>` +
       `<div class="vd-ent-cuerpo"><kbd data-k="entK"></kbd><div class="vd-ent-txt"><span data-k="entTxt"></span> <b data-k="entPod"></b></div></div><button data-a="saltarEnt" type="button">${TACTIL ? TXT.saltar : TXT.saltarEnt}</button></div>` +
       `<div class="vd-bot" data-k="bot">${chip('golpe_ala', 'wing', TXT.ala, 'E')}${chip('semilla', 'semilla', TXT.semilla, 'F')}${chip('poder', 'bolt', TXT.poder, 'G')}${chip('brinco', 'jump', TXT.brinco, TXT.teclaEsp)}${chip('alianza', 'star', '', 'H')}</div>` +
-      `<div class="vd-fin" data-k="fin" hidden><p class="vd-finxp" data-k="finXp"></p><p data-k="finTxt"></p><p class="vd-fintip" data-k="finTip"><span data-k="finTipTxt"></span> <b data-k="finTipPod"></b></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
+      `<div class="vd-fin vd-fin2" data-k="fin" hidden><p class="vd-fin-tit" data-k="finTit"></p><p class="vd-finxp" data-k="finXp"></p><p data-k="finTxt"></p><p class="vd-fintip" data-k="finTip"><span data-k="finTipTxt"></span> <b data-k="finTipPod"></b></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
     el.addEventListener('pointerdown', e => {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
@@ -1229,7 +1270,7 @@ window.AVV18Combate = function (G) {
     if (conEntreno) { C.fase = 'lucha'; ent = { paso: 0, fin: 0 }; flotante(''); }
     else if (o.sinCuenta) { C.fase = 'lucha'; flotante(''); }
     else { C.fase = 'cuenta'; C.cuenta = 3; flotante('3', 1); if (G.ui && G.ui.toast) G.ui.toast(TXT.bienvenida, 2600); }
-    cuentaVista = -1; feelPoderIni(estPoder, C.j); // F4-14 y 17
+    cuentaVista = -1; feelPoderIni(estPoder, C.j); feelCancelar(); if (hud) hud.q('uy').hidden = true; // F4-14 y 17; F4-16 y 18: sin cámara lenta ni «¡Uy!» de antes
     if (tarjetaAbierta() && tj.modo === 'uno') cerrarTarjeta('salir');
     if (conTarjeta) { ponerMundo(TJ_CLAVE, 1); abrirComo(); }
     pintarEntreno(); pintar();
@@ -1245,8 +1286,9 @@ window.AVV18Combate = function (G) {
     if (C.fase !== 'lucha') return;
     C.fase = 'fin'; C.resultado = res; C.finT = performance.now(); quitarBalas(); C.timers.length = 0;
     if (TACTIL) document.body.classList.add('v18-duelo-fin-t');
-    if (R.REDUCED) camDos.cam.listo = false; // F1: «Reducir movimiento»: a la ganadora en un corte, sin acercamiento
+    if (R.REDUCED || movReducido()) camDos.cam.listo = false; // F1: «Reducir movimiento»: a la ganadora en un corte, sin acercamiento
     const gano = res === 'win';
+    feelFinal(gano ? S.pos : C.r.pos); // F4-16 y 19: cámara lenta, acercamiento y luego destellos y pétalos sobre la ganadora
     // Antes del evento: la XP de esta victoria no cambia la etapa con la que se ganó
     if (gano) sumarEtapa();
     emitir({ tipo: res, de: gano ? 'jugador' : 'rival', a: gano ? 'rival' : 'jugador', valor: gano ? C.j.plumas : C.r.plumas,
@@ -1266,7 +1308,7 @@ window.AVV18Combate = function (G) {
       sonar('duelo_victoria'); fx('gold', C.r.pos.x, C.r.pos.y + 1.2, C.r.pos.z);
     } else { txt = TXT.pierde; C.premio = false; sonar('duelo_derrota'); }
     if (G.ui && G.ui.toast) G.ui.toast(txt, 3200);
-    if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; hud.q('bot').hidden = true; flotante(gano ? TXT.ganaste : TXT.perdiste, 1.6);
+    if (hud) { hud.q('finTit').textContent = gano ? TXT.ganaste : TXT.perdiste; hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; hud.q('bot').hidden = true; flotante(gano ? TXT.ganaste : TXT.perdiste, 1.6);
       try { hud.q('finXp').innerHTML = G.v18evo && G.v18evo.htmlFin ? G.v18evo.htmlFin() : ''; } catch (e) { /* sin evolución */ }
       const c = consejo(gano, C.stats, C.quitadas || 0); hud.q('finTipTxt').textContent = c.txt; hud.q('finTipPod').textContent = c.pod; }
   }
@@ -1928,10 +1970,13 @@ window.AVV18Combate = function (G) {
       if (o.camara && G.camara && G.camara.shake && !reducido()) G.camara.shake(o.n > 0 ? 0.09 : 0.055, 0.16);
     }
     // dt del personaje (mixer y procedural) y de esta capa: casi parado durante el hit-stop. pasoReloj: una vez por cuadro
-    const dtVis = dt => (paradaT > 0 ? dt * 0.06 : dt);
+    // F4-16: lentoT, la cámara lenta del último golpe (solo se ve: dtVis; nada del juego va más lento)
+    let lentoT = 0;
+    const lento = s => { if (reducido() || (G.audio && G.audio.reducido === true)) return false; lentoT = Math.max(lentoT, s); return true; };
+    const dtVis = dt => (paradaT > 0 ? dt * 0.06 : lentoT > 0 ? dt * LENTO.k : dt);
     const visT = []; // efectos que esperan a su pose (solo se ven; no van en C.timers, que lee la IA)
     const despues = (s, fn) => { visT.push({ t: s, fn }); if (visT.length > 16) visT.shift().fn(); };
-    const pasoReloj = dt => { if (paradaT > 0) paradaT = Math.max(0, paradaT - dt); for (let i = visT.length - 1; i >= 0; i--) { const v = visT[i]; v.t -= dt; if (v.t <= 0) { visT.splice(i, 1); try { v.fn(); } catch (e) { /* efecto */ } } } };
+    const pasoReloj = dt => { if (paradaT > 0) paradaT = Math.max(0, paradaT - dt); if (lentoT > 0) lentoT = Math.max(0, lentoT - dt); for (let i = visT.length - 1; i >= 0; i--) { const v = visT[i]; v.t -= dt; if (v.t <= 0) { visT.splice(i, 1); try { v.fn(); } catch (e) { /* efecto */ } } } };
     // ---- Antes de ch.update: estado, pose meta, fundido, muelles, raíz (escala y desplazamiento), cara, pico y abanico ----
     // o: { fin ('gana' | 'pierde' | ''), prep ('golpe_ala' | 'semilla' | ''), prepK (0..1), vel (m/s), salto (esquiva de juego),
     //      escalaAbs (quien la mueve pone la escala de la raíz cada cuadro: Vittata, actores.js) }
@@ -2159,7 +2204,7 @@ window.AVV18Combate = function (G) {
       if (fr < 0 || fr !== perf.ultimo) { perf.ultimo = fr; if (fr >= 0) perf.cuadros++; }
     }
     const perfApi = () => ({ ms: +perf.ms.toFixed(3), llamadas: perf.n, cuadros: perf.cuadros, msPorCuadro: perf.cuadros ? +(perf.ms / perf.cuadros).toFixed(4) : null, reiniciar() { perf.ms = perf.n = perf.cuadros = 0; } });
-    return { on: c2On, antes, huesos, soltar, accion, golpe, dtVis, pasoReloj, despues, famDe, estadoDe, ESTADOS, FAM, REAC, I, K, perf: perfApi, get parada() { return paradaT; } };
+    return { on: c2On, antes, huesos, soltar, accion, golpe, dtVis, pasoReloj, despues, lento, famDe, estadoDe, ESTADOS, FAM, REAC, I, K, perf: perfApi, get parada() { return paradaT; }, get lentoT() { return lentoT; }, set lentoT(v) { lentoT = v; } };
   })();
   // ---------- Combate 2.0 · las 4 extremidades y los combos (Kelvin 10-nov: «añadir más controles para mover ala izquierda,
   // ala derecha, pierna izquierda, pierna derecha y poder crear combos») · para todos (?combate2=0 lo apaga) ----------
@@ -2654,6 +2699,7 @@ window.AVV18Combate = function (G) {
       if (b.arco) { if (!b.arcoT) { b.arcoT = 1; b.vy = b.arco.vy; } b.vy -= b.arco.g * dt; } // Semilla de río: sale en arco y cae
       b.t += dt; p.x += b.vx * dt; p.y += b.vy * dt; p.z += b.vz * dt;
       const dx = p.x - blanco.pos.x, dy = p.y - (blanco.pos.y + 0.9), dz = p.z - blanco.pos.z, suelo = G.terreno.height(p.x, p.z);
+      { const d2 = dx * dx + dy * dy + dz * dz; if (b.cerca === undefined || d2 < b.cerca) b.cerca = d2; } // F4-18: lo más cerca que pasó
       if (b.arco && b.botes > 0 && p.y < suelo && b.t < b.vida) { p.y = suelo; b.vy = Math.abs(b.vy) * b.arco.rebote; b.botes--; b.boto = (b.boto || 0) + 1; fx('leaves', p.x, suelo + 0.1, p.z); } // ...y bota dos veces
       let fin = b.t >= b.vida || p.y < suelo - 0.1;
       let porGolpe = false;
@@ -2672,6 +2718,7 @@ window.AVV18Combate = function (G) {
               vida: 0.8, radio: 0.9, golpe: { plumas: 1, empuje: 2.5, mareo: 0.4 } });
           }
         }
+        if (!porGolpe) feelFalla(b, suelo, p.y < suelo - 0.1, blanco === C.r && hud ? hud.q('uy') : null); // F4-18
         scene.remove(b.m); C.balas.splice(i, 1); if (C.fase !== 'lucha' || C.pausa > 0) return; // F1: o empezó el respiro entre asaltos
       }
     }
@@ -3423,6 +3470,43 @@ window.AVV18Combate = function (G) {
           R.REDUCED = true; C.j.cd[id] = 5; quieta(3); paso(0.05); C.j.cd[id] = 0; C.j.energia = C.j.energiaMax; quieta(3); paso(0.05);
           check('F4-17: el poder listo suena «encaje» y late su botón una vez por carga; con «Reducir movimiento», sin latido',
             unaVez && FS.poderes - f3.poderes === 2 && FS.pulsos - f3.pulsos === 1 && !!botonPoder(), JSON.stringify({ unaVez, poderes: FS.poderes - f3.poderes, pulsos: FS.pulsos - f3.pulsos, poder: id }));
+          // 16 y 19 · último golpe y final: cámara lenta 0,5 s (solo dtVis), cerca de las dos, y luego la ganadora con 30 destellos y
+          // pétalos; panel de dos líneas. Con «Reducir movimiento» (sistema o menú): sin cámara lenta ni partículas (corte a la ganadora)
+          {
+            const pet0 = G.fx.petalos, petalos = [], hoj0 = G.fx.hojas, cb0 = G.combate2; G.fx.petalos = function (x, y, z, n) { petalos.push(n); return pet0.apply(this, arguments); };
+            G.fx.hojas = function (x, y, z, n) { rafagas.push('leaves:' + n); return hoj0.apply(this, arguments); }; G.combate2 = true; // la cámara lenta es de Combate 2.0
+            if (burst0) G.fx.burst = function (x, y, z, k, n) { rafagas.push(k + ':' + n); return burst0.apply(this, arguments); };
+            try {
+              const ultimo = () => { iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 1 }); quieta(1.2); C.r.plumas = 1; A.log.length = 0; rafagas.length = 0; petalos.length = 0; golpe(); };
+              R.REDUCED = false; A.reducido = false; const g0 = Object.assign({}, FS); ultimo();
+              const c2 = c2On(), enLento = { fase: C.fase, res: C.resultado, lentoT: C2.lentoT, dt: +C2.dtVis(1).toFixed(2), d: camDos.encuadre().d, dest: FS.destellos - g0.destellos, vic: veces('duelo_victoria'), oro30: rafagas.filter(r => r === 'gold:30').length };
+              for (let i = 0; i < 6; i++) C2.pasoReloj(0.1);
+              const tras = { lentoT: C2.lentoT, dt: C2.dtVis(1), d: camDos.encuadre().d, dest: FS.destellos - g0.destellos, oro30: rafagas.filter(r => r === 'gold:30').length, pet: petalos.join(), vic: veces('duelo_victoria'),
+                tit: hud.q('finTit').textContent, txt: hud.q('finTxt').textContent, titVis: getComputedStyle(hud.q('finTit')).display !== 'none', gana: !!(C.j.anima2 || C.j.anima) };
+              check('F4-16 y 19: último golpe: 0,5 s a cámara lenta (solo lo visual) cerca de las dos y duelo_victoria una vez; al acabar, la cámara con la ganadora, 30 destellos dorados y pétalos, y panel de dos líneas',
+                enLento.fase === 'fin' && enLento.res === 'win' && enLento.vic === 1 && enLento.dest === 0 && enLento.oro30 === 0 && (!c2 || (Math.abs(enLento.lentoT - 0.5) < 1e-6 && enLento.d === CAM_LENTO && (enLento.dt === LENTO.k || enLento.dt === 0.06))) &&
+                tras.lentoT === 0 && tras.dt === 1 && tras.d === CAM_FIN && tras.dest === 1 && tras.oro30 === 1 && tras.pet === String(FINAL.petalos) && tras.vic === 1 && tras.tit === TXT.ganaste && !!tras.txt && tras.titVis && FS.lentos - g0.lentos === (c2 ? 1 : 0) && FS.finales - g0.finales === 1,
+                JSON.stringify({ c2, enLento, tras }));
+              const g1 = Object.assign({}, FS); A.reducido = true; ultimo(); for (let i = 0; i < 6; i++) C2.pasoReloj(0.1);
+              const red = { fase: C.fase, lentos: FS.lentos - g1.lentos, finales: FS.finales - g1.finales, dest: FS.destellos - g1.destellos, oro30: rafagas.filter(r => r === 'gold:30').length, pet: petalos.length, lentoT: C2.lentoT, d: camDos.encuadre().d };
+              A.reducido = false;
+              check('F4-16 y 19: con «Reducir movimiento» no hay cámara lenta, ni acercamiento, ni destellos ni pétalos (el final y el panel se quedan)',
+                red.fase === 'fin' && red.lentos === 0 && red.finales === 1 && red.dest === 0 && red.oro30 === 0 && red.pet === 0 && red.lentoT === 0 && red.d === CAM_FIN, JSON.stringify(red));
+              // 18 · semilla que falla: al tocar el suelo, 4 hojas y polvo; si pasa rozando a la Campeona y no la toca, «¡Uy!» pequeño
+              const J = G.fx.juicy, uy = hud.q('uy');
+              const tiro = (dx, dz, vx, vy, vida) => { C.balas.length = 0; const y = C.r.pos.y + 0.9; lanzar({ de: C.j, x: C.r.pos.x + dx, y, z: C.r.pos.z + dz, vx, vy, vz: 0, vida, radio: 0.9, golpe: { plumas: 1 } }); for (let i = 0; i < 40 && C.balas.length; i++) pasoBalas(0.05); };
+              iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 1 }); quieta(5); uy.hidden = true; rafagas.length = 0;
+              const h0 = { f: FS.fallos, p: FS.polvos, u: FS.uys, hojas: J.hojas, polvo: J.polvo };
+              tiro(-6, 3, 0, -12, 2); const suelo = { fallos: FS.fallos - h0.f, polvos: FS.polvos - h0.p, hojas: J.hojas - h0.hojas, polvo: J.polvo - h0.polvo, hojas4: rafagas.filter(r => r === 'leaves:4').length, uy: !uy.hidden, pl: C.r.plumas };
+              tiro(-3, 1.5, 12, 0, 0.5); const roza = { uys: FS.uys - h0.u, uy: !uy.hidden, txt: uy.textContent, pl: C.r.plumas, fixed: getComputedStyle(uy).position };
+              uy.hidden = true; tiro(-3, 6, 12, 0, 0.5); const lejos = { uys: FS.uys - h0.u, uy: !uy.hidden };
+              A.reducido = true; const r0 = { f: FS.fallos, p: FS.polvos, hojas: J.hojas }; tiro(-6, 3, 0, -12, 2); A.reducido = false;
+              const redS = { fallos: FS.fallos - r0.f, polvos: FS.polvos - r0.p, hojas: J.hojas - r0.hojas };
+              check('F4-18: semilla que falla: al tocar el suelo, 4 hojas y un poco de polvo; rozando a la Campeona sin tocarla, «¡Uy!» pequeño (lejos, no); con «Reducir movimiento», sin hojas ni polvo',
+                suelo.fallos === 1 && suelo.polvos === 1 && suelo.hojas === 1 && suelo.polvo === 1 && suelo.hojas4 === 1 && !suelo.uy && suelo.pl === PLUMAS && roza.uys === 1 && roza.uy && roza.txt === UY.txt && roza.pl === PLUMAS && roza.fixed === 'fixed' &&
+                lejos.uys === 1 && !lejos.uy && redS.fallos === 1 && redS.polvos === 0 && redS.hojas === 0, JSON.stringify({ suelo, roza, lejos, redS }));
+            } finally { G.fx.petalos = pet0; G.fx.hojas = hoj0; G.combate2 = cb0; if (burst0) G.fx.burst = burst0; A.reducido = ar0; }
+          }
         } finally { A.play = play0; if (burst0) G.fx.burst = burst0; R.REDUCED = R0; A.reducido = ar0; salir(); }
       }
 
@@ -3896,6 +3980,7 @@ window.AVV18Combate = function (G) {
         R.REDUCED = red; iniciar({ sinCuenta: true, especie: 'vittata' }); quieta(4); S.pos.x = sitio.x - 2; S.pos.z = sitio.z + 1; C.r.pos.x = sitio.x + 2; C.r.pos.z = sitio.z - 1;
         for (let i = 0; i < 20; i++) G.camara.follow(0.05);
         terminar(res); G.camara.follow(0.05); const p1 = camDos.cam.pos.clone();
+        for (let i = 0; i < 12; i++) C2.pasoReloj(0.05); // F4-16: pasa la cámara lenta (la lleva paso(), que aquí no corre)
         for (let i = 0; i < 60; i++) G.camara.follow(0.05);
         const g = res === 'win' ? S.pos : C.r.pos, otra = res === 'win' ? C.r.pos : S.pos;
         const r = { centrada: centrada(g), cerca: +cam.position.distanceTo(new THREE.Vector3(g.x, g.y + 1, g.z)).toFixed(2), corte: +p1.distanceTo(camDos.cam.pos).toFixed(3) };
