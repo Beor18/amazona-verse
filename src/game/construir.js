@@ -910,6 +910,8 @@
         '#cl-hud .cl-herr{flex-wrap:wrap;overflow:visible}' +
         '#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
         'body:has(#emotes:not([hidden])) #cl-hud{top:calc(env(safe-area-inset-top,0px) + 72px);max-width:calc(100vw - 24px)}}' +
+        // C10: teléfono en horizontal (844×390): la barra va al centro, entre el joystick y los botones de acción, bajo el HUD de arriba
+        '@media (orientation:landscape) and (max-height:500px){#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 360px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}}' +
         '@media (prefers-reduced-motion:reduce){#cl-hud,#cl-hud *{animation:none;transition:none}}';
       document.head.appendChild(estilo);
     }
@@ -1137,6 +1139,24 @@
           }
           fr.remove();
           check('En 390 se ven Quitar, Listo, Plantillas y Mercadito, los gestos no tapan las piezas y las 5 plantillas caben (C10)', !mal.length, mal.join(' · '));
+        }
+        {
+          // C10 · teléfono en horizontal (844×390): la barra queda en el centro, entre el joystick (izquierda) y los botones de acción
+          // (derecha), bajo el HUD de arriba, sin cortar ningún botón, con las piezas o con las plantillas abiertas
+          const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+          fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:844px;height:390px;border:0';
+          fr.srcdoc = `<!doctype html><html><head><style>${hojaA}body{margin:0}#cl-hud{position:fixed}</style></head><body>${hudEl.outerHTML}</body></html>`;
+          document.body.appendChild(fr);
+          await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 2500); });
+          const doc = fr.contentDocument, raiz = doc && doc.getElementById('cl-hud'), mal = [];
+          const mide = et => {
+            const c = raiz.getBoundingClientRect();
+            if (c.top < 149 || c.bottom > 330 || c.left < 179 || c.right > 665) mal.push(`${et} caja ${Math.round(c.left)},${Math.round(c.top)}–${Math.round(c.right)},${Math.round(c.bottom)}`);
+            raiz.querySelectorAll('.cl-herr button, .cl-plantillas button').forEach(b => { const r = b.getBoundingClientRect(); if (r.width && (r.left < c.left - 1 || r.right > c.right + 1)) mal.push(et + ' cortado ' + b.getAttribute('aria-label')); });
+          };
+          if (raiz) { mide('piezas'); raiz.classList.add('cl-pl-abierta'); mide('plantillas'); } else mal.push('sin barra');
+          fr.remove();
+          check('C10 · en 844×390 la barra va al centro, entre el joystick y los botones de acción, y no corta nada', !mal.length, mal.join(' · '));
         }
         elegir('nido'); actualizar();
         check('Fantasma visible y verde donde cabe', fantasma.visible && est.valido && matF.color.g > matF.color.r, est.motivo);
