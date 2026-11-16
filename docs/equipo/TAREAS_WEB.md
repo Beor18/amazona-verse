@@ -1974,3 +1974,52 @@ Claude web B · T55 hecha
 - T57, la tarjeta «¿Cómo se pelea?», con un agente, porque ya no se pisa con lo táctil.
 
 T46 está hecha y publicada. Luego sigo con el pulido a 390×844 y 1280×720, los versus, las construcciones, los minijuegos, los movimientos y los poderes.
+
+📣 **Coordinadora → Claude web B · 16-nov · LISTA LARGA para no parar.** Al terminar una tarea, empieza la siguiente sin esperar. Cuando acabes la lista, vuelve a leer esta nota (puede que haya más abajo) y si no hay nada nuevo, propón tú la siguiente tanda y síguela. **Publica cada 2–3 tareas** con la receta.
+
+**A. Lo que quedó pendiente (primero)**
+1. **familyQuestTest 54/55:** la comprobación «Descargar: sin red» ve peticiones a `sfx/aviso.ogg`, `flecha.ogg` y `semilla.ogg`.
+2. **T46 · Rendimiento en el teléfono** (`?fps=1`): menos draw calls y texturas, sin bajar la calidad visible.
+3. **T48 · Criterio de llegada del robot del pulgar:** que no se pare a 13 m ni a 97 m de altura cuando un niño sí llegaría.
+4. **T57:** la que dejó A (mira su nota final).
+
+**B. Juegos versus (prioridad de Kelvin)**
+
+5. **Duelo:** 3 rivales con estilo distinto (rápida, fuerte y lista), que se desbloquean ganando. Usa los modelos de cotorra que ya existen, sin tocar el de Vittata.
+6. **Duelo:** combos sencillos con 2 botones (Ala + Pata) que se descubren jugando. Animación y sonido con los sfx `duelo_*`.
+7. **Duelo de 2:** elegir arena entre 3 sitios del mapa ya existentes y un marcador «mejor de 3».
+8. **Carrera versus:** dos cotorras por una ruta de planeo marcada con nubes o hojas (no anillos). En el teléfono, en horizontal y a pantalla partida.
+
+**C. Construcciones (prioridad de Kelvin)**
+
+9. **Más piezas** del kit: escalera, baranda, techo a dos aguas, farol, cerca, banco y huerto. Todas con encaje por imán.
+10. **Plantillas de un toque:** «Bohío», «Torre de vigía», «Puente pequeño» y «Nido grande», que el niño puede modificar después.
+11. **Pintar piezas** con 6 colores de la naturaleza de la isla y una «Foto» del rincón que vaya al Álbum.
+12. **Construir con un amigo:** en el Duelo de 2 o en el mismo dispositivo, por turnos. Solo si es fácil.
+
+**D. Minijuegos para que los niños se queden** (1–3 min, con récord, «Otra vez» y «Salir», en «Más juegos», con su prueba y en inglés)
+
+13. **«Semillas al vuelo»:** recoger semillas que caen, contra reloj.
+14. **«Planeo entre nubes»:** llegar lo más lejos posible sin tocar el suelo, sin anillos.
+15. **«¿Quién canta?»:** escuchar un canto y elegir el ave. Solo con aves y cantos que ya estén en el juego y tengan fuente.
+16. **«Rescate rápido»:** llevar 3 pichones a su nido antes de que llueva.
+
+**E. Cotorras y poderes**
+
+17. **Más gestos:** baile, saludo con la pata, susto cómico y dormir en la percha. Que suenen con los sfx de Suno.
+18. **Combinar poderes:** Ráfaga + Planeo largo da un súper planeo. Que lo enseñe un aviso la primera vez.
+19. **Logros visibles en «Mis récords»:** 10 nuevos, ganados jugando, con icono.
+
+**F. Pulido continuo**
+
+20. **Recorrido completo:** caps. 1 a 6 y todos los modos, en 390×844 y 1280×720, en español y en inglés. Arreglar lo que se vea roto, cortado, tapado o sin traducir.
+21. **Sonido:** que cada acción importante tenga su sfx de `assets/audio/sfx/` (vuelo, recoger, construir, pesca, duelo y poderes) y el ambiente del bosque o de la noche según la hora. Volúmenes equilibrados.
+22. **Accesibilidad:** que todo lo nuevo se pueda jugar con teclado y que los botones del teléfono midan al menos 44 px.
+
+**Decisiones de Kelvin**: no las tomes tú. Anótalas aquí y sigue con otra cosa:
+- arte 3D de Iguaca, el Guardián, la Abuela y el Papá;
+- el final de la temporada;
+- el reparto de premios por capítulo;
+- mover el mapa;
+- el puente y el taller de la historia (T49);
+- el selector de plumaje que no se ve.
