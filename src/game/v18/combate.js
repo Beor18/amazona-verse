@@ -2697,11 +2697,21 @@ window.AVV18Combate = function (G) {
         // Bug urgente (16-nov, Kelvin: «la otra cotorra ni se mueve», congelada con las alas abiertas): viva en el entreno
         const hb = C.ch && C.ch.bones || {}, hs = ['espalda1', 'cabeza', 'armL1', 'armL1001'].filter(k => hb[k]), q0 = hs.map(k => hb[k].quaternion.clone());
         let maxD = 0, maxHueso = 0, enAireN = 0, n = 0;
+        // Bug urgente (16-nov, Kelvin: «la pata sube y da vueltas sola»): el mismo bucle que el juego (paso del duelo y luego
+        // actores.sync3D, que anima a Vittata con la envoltura de Combate 2.0). Sin el arreglo de character.js la pata se
+        // tuerce ~43° en el primer segundo y se queda así; con él solo se mueve lo que bota la guardia (< 12°).
+        const pj = pl3d && pl3d.bones || {}, sy = !!(pl3d && G.actores && G.actores.sync3D), ps = ['pieL1', 'pieL1001', 'pieL2', 'pieL2001'].filter(k => pj[k]), pq0 = [];
+        let maxPata = 0;
         for (let t = 0; t < 3; t += 1 / 30) {
-          paso(1 / 30); n++; maxD = Math.max(maxD, Math.hypot(C.r.pos.x - r0.x, C.r.pos.z - r0.z)); if (C.ch && C.ch.airborne) enAireN++;
+          paso(1 / 30); if (sy) G.actores.sync3D(1 / 30, false, false);
+          if (n === 2) ps.forEach(k => pq0.push(pj[k].quaternion.clone()));
+          else if (n > 2) ps.forEach((k, i) => { maxPata = Math.max(maxPata, 2 * Math.acos(Math.min(1, Math.abs(pq0[i].dot(pj[k].quaternion)))) * 180 / Math.PI); });
+          n++; maxD = Math.max(maxD, Math.hypot(C.r.pos.x - r0.x, C.r.pos.z - r0.z)); if (C.ch && C.ch.airborne) enAireN++;
           hs.forEach((k, i) => { maxHueso = Math.max(maxHueso, 2 * Math.acos(Math.min(1, Math.abs(q0[i].dot(hb[k].quaternion)))) * 180 / Math.PI); });
         }
         const dj1 = Math.hypot(C.r.pos.x - S.pos.x, C.r.pos.z - S.pos.z);
+        check('Bug urgente: Vittata quieta en guardia no mueve la pata sola (pieL1, pieL2 y sus pares se mueven < 20° en 3 s, con el bucle del juego)',
+          !sy || ps.length < 4 || maxPata < 20, JSON.stringify({ maxPata: +maxPata.toFixed(1), sy, huesos: ps.length }));
         check('Bug urgente: en el entreno la Campeona está viva (cambia de pose en 3 s, se balancea de lado y no se queda en el aire con las alas abiertas)',
           !C.ch || (maxHueso > 3 && maxD > 0.15 && enAireN < n * 0.2), JSON.stringify({ maxHueso: +maxHueso.toFixed(1), maxD: +maxD.toFixed(2), enAire: enAireN + '/' + n }));
         check('Entreno: la Campeona no se acerca ni ataca (se queda junto a su sitio); nadie pierde plumas', maxD < 1.3 && dj1 > dj0 - 1.3 && C.stats.ataques === 0 && C.j.plumas === PLUMAS && C.r.plumas === C.r.plumasMax,
@@ -3177,22 +3187,6 @@ window.AVV18Combate = function (G) {
       const idles = new Set(), fq = { id: 'quieta', pos: { x: 0, y: 0, z: 0 }, plumas: 5, mareo: 0 };
       if (ch) { for (let t = 0; t < 10.6; t += dt) { C2.pasoReloj(dt); const a = C2.antes(ch, fq, { vel: 0 }, dt); if (a.sub === 'espera') idles.add(a.idle); } C2.soltar(ch, fq); }
       check('C2: en la espera, tres variaciones que se turnan (guardia que bota, curiosa, se sacude las plumas)', idles.size === 3, JSON.stringify([...idles]));
-      // Bug urgente (16-nov, Kelvin: «la pata sube y da vueltas sola»): en guardia, sobre suelo irregular (el IK de patas corre),
-      // los giros que Combate 2.0 pone en pieL1/pieL2 después de update() no se acumulan cuadro a cuadro. 10 s a 30 cuadros/s.
-      if (ch && ch.bones && ch.bones.pieL1) {
-        const g0 = ch.groundAt, gy0 = ch.groundY, ab0 = ch.airborne, fq2 = { id: 'quieta', pos: { x: 0, y: 0, z: 0 }, plumas: 5, mareo: 0 };
-        const p0 = ch.root.position.clone(), base = p0.y;
-        ch.groundAt = (x, z) => base + 0.06 * Math.sin(x * 9) + 0.05 * Math.cos(z * 7); ch.groundY = base; ch.airborne = false;
-        const qA = new THREE.Quaternion(), ang = (a, b) => 2 * Math.acos(Math.min(1, Math.abs(a.dot(b)))) * 180 / Math.PI;
-        let maxGiro = 0, maxRod = 0; const qB = new THREE.Quaternion(), qR = new THREE.Quaternion(), qR0 = new THREE.Quaternion();
-        for (let i = 0; i < 300; i++) {
-          C2.pasoReloj(1 / 30); const a = C2.antes(ch, fq2, { vel: 0 }, 1 / 30); ch.update(1 / 30); C2.huesos(ch, a);
-          if (i === 60) { qA.copy(ch.bones.pieL1.quaternion); if (ch.bones.pieL2) qR0.copy(ch.bones.pieL2.quaternion); }
-          if (i > 60) { qB.copy(ch.bones.pieL1.quaternion); maxGiro = Math.max(maxGiro, ang(qA, qB)); if (ch.bones.pieL2) { qR.copy(ch.bones.pieL2.quaternion); maxRod = Math.max(maxRod, ang(qR0, qR)); } }
-        }
-        C2.soltar(ch, fq2); ch.groundAt = g0; ch.groundY = gy0; ch.airborne = ab0; ch.root.position.copy(p0);
-        check('Bug urgente: en guardia sobre suelo irregular la pata no gira sola (pieL1 y pieL2 se mueven < 25° en 10 s)', maxGiro < 25 && maxRod < 25, 'pieL1 ' + maxGiro.toFixed(1) + '° · pieL2 ' + maxRod.toFixed(1) + '°');
-      }
       // Golpe de ala de la jugadora: su pose de impacto sale en el mismo cuadro, la Campeona encaja el golpe (impacto, pico
       // abierto, aplastada), hay hit-stop y todo vuelve a la espera
       iniciar({ sinCuenta: true, especie: 'vittata' }); quieta(1.2); C.r.escudo = 0; C.r.inv = 0; C.j.cd.golpe_ala = 0; cara(1); ver(0.2, frena);
