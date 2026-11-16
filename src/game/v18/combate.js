@@ -606,54 +606,87 @@ window.AVV18Combate = function (G) {
     delete pl3d.update; if (pl3d.update !== upd0) pl3d.update = upd0; // la de la clase vuelve a mandar
     pl3d = upd0 = null;
   }
-  // du3 (8-nov): a distancia de ala, con la cámara de siempre (7,5 m detrás y 4,2 m arriba) Vittata tapaba a la Campeona.
-  // Mientras dura el duelo, la cámara se coloca algo más alta y más atrás (mira por encima de Vittata), y si la Campeona
-  // queda cerca y justo detrás de Vittata, al dibujar la cámara orbita un poco alrededor de Vittata (hasta ORBITA rad) para
-  // verla de lado: solo en el cuadro que se dibuja (camera.position vuelve después: el seguimiento de camara.js no cambia).
-  // Al salir vuelve lo que había (si nadie lo cambió entretanto). Solo se tocan dist y height de G.camara.CAM y su draw.
-  // Lo de antes se guarda en G (G.camDuelo0, con cuántos duelos la piden): una instancia de prueba del módulo (QA-163) con
-  // un duelo ya abierto no toma la cámara del duelo por la de siempre.
-  const CAM_DUELO = { dist: 8.6, height: 6.1 };
-  let camPedida = false, draw0 = null, miDraw = null, orb = 0, orbLado = 1;
-  const ORBITA = 0.2, /* Kelvin: los controles deben entenderse; un giro grande descuadra WASD con lo que se ve (≈11° máx.) */ camGuarda = new THREE.Vector3();
-  function orbitar(dt) {
-    const cam = R.camera, j = S.pos, rp = C.r && C.r.pos;
-    let quiere = 0;
-    if (cam && rp && C.fase === 'lucha') {
-      const cx = j.x - cam.position.x, cz = j.z - cam.position.z, rx = rp.x - j.x, rz = rp.z - j.z, dr = Math.hypot(rx, rz);
-      const a = Math.atan2(cx * rz - cz * rx, cx * rx + cz * rz); // ángulo de la rival vista desde la cámara (sin órbita)
-      if (Math.abs(a) > 0.05) orbLado = a > 0 ? 1 : -1; // casi en línea: sigue hacia el lado de antes (sin bailar)
-      const cerca = 1 - Math.min(1, Math.max(0, dr - 4.5) / 2.5); // de 4,5 a 7 m se apaga
-      if (Math.abs(a) < Math.PI / 2) quiere = (a - orbLado * Math.max(Math.abs(a), ORBITA)) * cerca;
+  // F1 · cambio 1 (16-nov, «que se vea la pelea»): antes la cámara seguía a Vittata y solo orbitaba ≈11° (du3); la Campeona
+  // quedaba fuera de plano, detrás de la cámara o de una mata, y al terminar se veía una planta. Ahora, como en el Duelo de 2,
+  // una cámara de dos (camaraDos, compartida con duelo2.js): sigue el punto medio y se aleja con la separación, sin girar
+  // (el giro es el de G.camara.yaw, el mismo que usa WASD: Kelvin pidió que los controles coincidan con lo que se ve).
+  // - Que quepan a lo ancho: en vertical (390 × 844) la pantalla es estrecha y se aleja lo que haga falta (hasta CAM_ANCHO_MAX).
+  // - Pasillo despejado (QA-174): la cámara no sale del círculo despejado ni del pasillo al oeste; si saldría, se acerca y
+  //   sube (misma distancia, más picado; sin girar).
+  // - Al terminar, mira a la ganadora de cerca (CAM_FIN); con «Reducir movimiento», corte directo en vez de acercamiento.
+  // Solo se toman G.camara.follow y draw (con envolturas que, si alguien las devuelve tarde, pasan a lo de siempre).
+  const CAMD2 = { min: 8.5, max: 21, base: 6.5, k: 0.9, elev: 0.6, rate: 4 };
+  function camaraDos(o) {
+    const D = Object.assign({}, CAMD2, o.camd), cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), d: 10, listo: false };
+    const e = { x: 0, y: 0, z: 0, d: 10, sep: 0 };
+    function encuadre() {
+      const a = o.a(), b = o.b();
+      e.x = (a.x + b.x) / 2; e.z = (a.z + b.z) / 2; e.y = (a.y + b.y) / 2; e.sep = Math.hypot(a.x - b.x, a.z - b.z);
+      e.d = Math.max(D.min, Math.min(D.max, D.base + e.sep * D.k));
+      if (o.ajusta) o.ajusta(e, a, b);
+      return e;
     }
-    orb += (quiere - orb) * Math.min(1, (dt || 0.016) * 4);
-    return orb;
+    function paso(dt, snap) {
+      encuadre(); const k = snap || !cam.listo ? 1 : Math.min(1, (dt || 0) * D.rate), camera = R.camera;
+      cam.d += (e.d - cam.d) * k;
+      const yw = o.yaw ? o.yaw() : 0, sx = Math.sin(yw), cz = Math.cos(yw);
+      let hz = cam.d * Math.cos(D.elev), vy = cam.d * Math.sin(D.elev);
+      if (o.libre && !o.libre(e.x + sx * hz, e.z + cz * hz)) {
+        for (let n = 0; n < 40 && hz > 3 && !o.libre(e.x + sx * hz, e.z + cz * hz); n++) hz -= 0.5;
+        vy = Math.sqrt(Math.max(0, cam.d * cam.d - hz * hz));
+      }
+      const px = e.x + sx * hz, pz = e.z + cz * hz, py = Math.max(e.y + 1 + vy, G.terreno.height(px, pz) + 1);
+      cam.pos.set(cam.pos.x + (px - cam.pos.x) * k, cam.pos.y + (py - cam.pos.y) * k, cam.pos.z + (pz - cam.pos.z) * k);
+      cam.mira.set(cam.mira.x + (e.x - cam.mira.x) * k, cam.mira.y + (e.y + 1 - cam.mira.y) * k, cam.mira.z + (e.z - cam.mira.z) * k);
+      cam.listo = true;
+      if (camera) { camera.position.copy(cam.pos); camera.lookAt(cam.mira); }
+    }
+    return { cam, CAMD: D, encuadre, paso };
   }
-  // La envoltura guarda su draw de antes: si otra (duelo2.js) la envolvió a su vez y la devuelve más tarde, sigue sirviendo.
-  const envolverDraw = orig => Object.assign(function (dt) {
-    if (!camPedida) return orig.call(this, dt);
-    const cam = R.camera, f = Math.abs(orbitar(dt)) > 0.002 && cam;
-    if (f) {
-      camGuarda.copy(cam.position);
-      const dx = cam.position.x - S.pos.x, dz = cam.position.z - S.pos.z, c = Math.cos(orb), sn = Math.sin(orb);
-      cam.position.x = S.pos.x + dx * c - dz * sn; cam.position.z = S.pos.z + dx * sn + dz * c;
+  const CAM_FIN = 7, CAM_ANCHO_MAX = 30;
+  const camLibre = (x, z) => Math.hypot(x - sitio.x, z - sitio.z) < ARENA_R + 0.5 || (x < sitio.x - 4 && x > sitio.x - 18 && Math.abs(z - sitio.z) < 2.5);
+  const ganadora = () => (C.resultado === 'win' ? S.pos : C.r.pos);
+  const camDos = camaraDos({
+    a: () => S.pos, b: () => (C.r ? C.r.pos : S.pos), yaw: () => (G.camara ? G.camara.yaw : 0), libre: camLibre,
+    ajusta(e, a, b) {
+      // (si perdió Vittata y se aleja más de 6 m de la ganadora, vuelve el plano de las dos: no se queda fuera de cuadro)
+      if (C.fase === 'fin' && C.r && C.resultado && (C.resultado === 'win' || e.sep < 6)) { const g = ganadora(); e.x = g.x; e.y = g.y; e.z = g.z; e.d = CAM_FIN; return; }
+      const camera = R.camera; if (!camera) return;
+      const yw = G.camara ? G.camara.yaw : 0, lat = Math.abs((b.x - a.x) * Math.cos(yw) - (b.z - a.z) * Math.sin(yw));
+      const th = Math.tan((camera.fov || 55) * Math.PI / 360) * (camera.aspect || 1);
+      e.d = Math.max(e.d, Math.min(CAM_ANCHO_MAX, (lat / 2 + 1.4) / Math.max(0.2, th)));
     }
-    try { return orig.call(this, dt); } finally { if (f) cam.position.copy(camGuarda); }
-  }, { orig, duelo: true });
+  });
+  // Dibujo: la sacudida de camara.js (juice; ya respeta «Reducir movimiento») solo durante el dibujo, como en draw()
+  function dibujarDos(dt) {
+    const cam = R.camera, J = G.camara.juice; let sx = 0, sy = 0, sz = 0;
+    cam.position.copy(camDos.cam.pos); cam.lookAt(camDos.cam.mira);
+    if (J && J.shake > 0) {
+      J.shake -= dt || 0; const a = J.amp * Math.min(1, Math.max(0, J.shake) / 0.2);
+      sx = (Math.random() - 0.5) * a; sy = (Math.random() - 0.5) * a; sz = (Math.random() - 0.5) * a; if (J.shake <= 0) J.amp = 0;
+      cam.position.x += sx; cam.position.y += sy; cam.position.z += sz;
+    }
+    if (R.drawScene) R.drawScene(cam); else R.renderer.render(scene, cam);
+    cam.position.x -= sx; cam.position.y -= sy; cam.position.z -= sz;
+  }
+  let camPedida = false, miFollow = null, miDraw = null;
   function alejarCamara() {
-    const K = G.camara && G.camara.CAM; if (!K || camPedida) return;
+    if (camPedida || !G.camara || !R || !R.camera || typeof G.camara.follow !== 'function') return;
     camPedida = true;
-    if (!draw0 && R && R.camera && typeof G.camara.draw === 'function') { const d = G.camara.draw; orb = 0;
-      draw0 = d.duelo ? d.orig : d; miDraw = envolverDraw(draw0); G.camara.draw = miDraw; } // una envoltura vieja que se quedó: se quita
-    if (G.camDuelo0) { G.camDuelo0.n++; return; }
-    G.camDuelo0 = { dist: K.dist, height: K.height, n: 1 }; Object.assign(K, CAM_DUELO);
+    const f = G.camara.follow, d = G.camara.draw, f0 = f.duelo ? f.orig : f, d0 = d && d.duelo ? d.orig : d; // una envoltura vieja que se quedó: se quita
+    const yo = {};
+    miFollow = Object.assign(function (dt) { return camPedida && miFollow === yo.f ? camDos.paso(dt, false) : f0.call(this, dt); }, { duelo: true, orig: f0 });
+    miDraw = Object.assign(function (dt) { return camPedida && miDraw === yo.d ? dibujarDos(dt) : d0.call(this, dt); }, { duelo: true, orig: d0 });
+    yo.f = miFollow; yo.d = miDraw; G.camara.follow = miFollow; G.camara.draw = miDraw;
+    camDos.cam.listo = false; camDos.paso(0, true);
   }
   function devolverCamara() {
-    const K = G.camara && G.camara.CAM, o = G.camDuelo0; if (!camPedida) return;
+    if (!camPedida) return;
     camPedida = false;
-    if (draw0) { if (G.camara.draw === miDraw) G.camara.draw = draw0; draw0 = miDraw = null; orb = 0; } if (!K || !o || --o.n > 0) return;
-    for (const k in CAM_DUELO) if (K[k] === CAM_DUELO[k]) K[k] = o[k]; // si alguien lo cambió entretanto, se respeta
-    G.camDuelo0 = null;
+    if (G.camara.follow === miFollow) G.camara.follow = miFollow.orig;
+    if (G.camara.draw === miDraw) G.camara.draw = miDraw.orig;
+    miFollow = miDraw = null;
+    try { G.camara.place(true); } catch (e) { /* cámara */ }
   }
   function enganchar() {
     if (enganchado) return; enganchado = true;
@@ -777,7 +810,19 @@ window.AVV18Combate = function (G) {
       '#v18-duelo.tactil :is(.vd-ent,.vd-fin){position:fixed;left:0;right:0;margin:0 auto;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);width:min(440px,calc(100vw - 380px));min-width:260px;max-height:calc(100vh - 16px);overflow:auto;box-sizing:border-box}' +
       'body.v18-duelo-tt #toast{top:max(var(--vd-bajo,0px),calc(env(safe-area-inset-top,0px) + 136px));bottom:auto;left:max(12px,env(safe-area-inset-left,0px));right:auto;margin:0;max-width:min(480px,calc(100vw - 360px))}}' +
       // Vertical: el entreno deja libre la columna de Diario y Pausa, como el panel final (con más botones en #sys, el Diario sube)
-      '@media (orientation:portrait) and (max-width:760px){#v18-duelo.tactil .vd-ent{margin-right:52px}}';
+      '@media (orientation:portrait) and (max-width:760px){#v18-duelo.tactil .vd-ent{margin-right:52px}}' +
+      // F1 · cambio 1 (16-nov, «que se vea la pelea»): en el escritorio los dos paneles (380 × 240 px en el centro) tapaban a la
+      // Campeona y su «!». Ahora, como en el teléfono, una franja arriba: Tú a la izquierda y la rival a la derecha (nombre,
+      // plumas y energía), «¿Cómo se pelea?», «Combos» y «Salir» en la esquina de arriba a la izquierda, la pista y el panel
+      // final abajo (encima de los chips). El centro queda libre para la cámara de las dos.
+      '#v18-duelo:not(.tactil){top:calc(env(safe-area-inset-top,0px) + 10px);left:16px;right:16px;width:auto;margin:0}' +
+      '#v18-duelo:not(.tactil) .vd-fila{align-items:flex-start}#v18-duelo:not(.tactil) .vd-lado{flex:0 1 260px;padding:5px 10px}' +
+      '#v18-duelo:not(.tactil) :is(.vd-pod,.vd-et,.vd-nv,.vd-xp){display:none!important}' +
+      '#v18-duelo:not(.tactil) .vd-acc{display:flex;gap:8px;align-items:center;position:fixed;left:16px;top:calc(env(safe-area-inset-top,0px) + 76px)}' +
+      '#v18-duelo:not(.tactil) .vd-acc button.vd-como,#v18-duelo:not(.tactil) .vd-acc button.vd-combos-b{margin:0}' +
+      '#v18-duelo:not(.tactil) .vd-centro{margin-top:0}' +
+      '#v18-duelo:not(.tactil) .vd-pista{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 196px);margin:0 auto}' +
+      '#v18-duelo:not(.tactil) .vd-fin{position:fixed;left:0;right:0;margin:0 auto;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);width:min(460px,calc(100vw - 32px));box-sizing:border-box}';
     document.head.appendChild(st);
   }
   function montarHud() {
@@ -1143,6 +1188,7 @@ window.AVV18Combate = function (G) {
     if (C.fase !== 'lucha') return;
     C.fase = 'fin'; C.resultado = res; C.finT = performance.now(); quitarBalas(); C.timers.length = 0;
     if (TACTIL) document.body.classList.add('v18-duelo-fin-t');
+    if (R.REDUCED) camDos.cam.listo = false; // F1: «Reducir movimiento»: a la ganadora en un corte, sin acercamiento
     const gano = res === 'win';
     // Antes del evento: la XP de esta victoria no cambia la etapa con la que se ganó
     if (gano) sumarEtapa();
@@ -2391,6 +2437,23 @@ window.AVV18Combate = function (G) {
     if (j.kb.t > 0) { j.kb.t -= dt; S.pos.x += j.kb.x * dt; S.pos.z += j.kb.z * dt; j.kb.x *= 0.88; j.kb.z *= 0.88; }
     if (j.mareo > 0) { M.vx *= 0.8; M.vz *= 0.8; if (G.fx && G.fx.burst && azar() < dt * 6) fx('gold', S.pos.x, S.pos.y + 1.7, S.pos.z); }
   }
+  // F1 · borde de la arena (del cambio 6): el círculo retiene a Vittata como ya retiene a la rival (y como en el Duelo de 2):
+  // mantener «adelante» ya no cancela el duelo («Salir» sigue en el HUD). Al llegar al borde se desliza por él y lo nota con
+  // un roce suave: unas hojitas a sus pies y un «tick» bajito, cada 0,7 s como mucho; sin sacudida de cámara. No toca azar()
+  // ni las estadísticas del duelo (el equilibrio no cambia).
+  const BORDE_R = ARENA_R - 0.5;
+  let rozaT = 0, rozaN = 0;
+  function borde(dt) {
+    rozaT = Math.max(0, rozaT - (dt || 0));
+    const ox = S.pos.x - sitio.x, oz = S.pos.z - sitio.z, od = Math.hypot(ox, oz);
+    if (od <= BORDE_R || od < 1e-6) return false;
+    const nx = ox / od, nz = oz / od;
+    S.pos.x = sitio.x + nx * BORDE_R; S.pos.z = sitio.z + nz * BORDE_R;
+    const vn = (M.vx || 0) * nx + (M.vz || 0) * nz; if (vn > 0) { M.vx -= vn * nx; M.vz -= vn * nz; }
+    const kb = C.j && C.j.kb; if (kb && kb.t > 0) { const kn = kb.x * nx + kb.z * nz; if (kn > 0) { kb.x -= kn * nx; kb.z -= kn * nz; } }
+    if (rozaT <= 0) { rozaT = 0.7; rozaN++; fx('leaves', S.pos.x + nx * 0.4, S.pos.y + 0.15, S.pos.z + nz * 0.4); sonar('tick'); }
+    return true;
+  }
   function pasoBalas(dt0) {
     for (let i = C.balas.length - 1; i >= 0; i--) {
       const b = C.balas[i], p = b.m.position;
@@ -2478,6 +2541,7 @@ window.AVV18Combate = function (G) {
   function paso(dt) {
     if (!(G.v18duelo2 && G.v18duelo2.estado().fase !== 'nada')) C2.pasoReloj(dt); // hit-stop visual (en el duelo de 2 lo lleva duelo2.js)
     if (C.fase === 'nada') { if (C.ch) dibujarQuieta(dt, moverRivalQuieta(dt)); return; }
+    if (C.fase === 'lucha' || C.fase === 'cuenta') borde(dt); // F1: el círculo retiene a Vittata
     if (TACTIL && hud && HORIZ && HORIZ.matches && performance.now() - bajoT > 400) { bajoT = performance.now(); ponerBajo(hud.el); } // el aviso sigue al HUD
     if (apoyoT > 0) { apoyoT -= dt; if (apoyoT <= 0 && hud) hud.q('apoyo').hidden = true; }
     if (tarjetaAbierta() && tj.modo === 'uno') { if (C.ch) dibujarRival(dt, 0); return; } // T57: la tarjeta abierta: el duelo espera (la Campeona respira; bug urgente 16-nov)
@@ -2820,14 +2884,39 @@ window.AVV18Combate = function (G) {
           const tagsVis = !!document.querySelector('#v18-duelo-tags:not([hidden]) span:not([hidden])'), avA = modo.aviso();
           hud.q('bot').hidden = true; const avSin = TACTIL ? avA : modo.aviso(); hud.q('bot').hidden = false;
           const tgM = G.misiones && G.misiones.guideTarget ? G.misiones.guideTarget() : null; G.emit('render', 0.016);
-          const K = G.camara.CAM;
-          check('du3: en el duelo la cámara va más alta y más atrás (se ve a la Campeona por encima de Vittata)', K.dist === CAM_DUELO.dist && K.height === CAM_DUELO.height && !!G.camDuelo0 && G.camara.draw === miDraw, JSON.stringify({ d: K.dist, h: K.height }));
-          // Campeona a 2 m justo detrás de Vittata vista desde la cámara: la órbita la saca ~ORBITA rad; a 12 m, nada
-          { const cp = R.camera.position.clone(), rp0 = Object.assign({}, C.r.pos), o0 = orb;
-            R.camera.position.set(S.pos.x - 8, S.pos.y + 6, S.pos.z); C.r.pos.x = S.pos.x + 2; C.r.pos.z = S.pos.z; orb = 0; orbitar(1); const oCerca = orb;
-            C.r.pos.x = S.pos.x + 12; orb = 0; orbitar(1); const oLejos = orb;
-            R.camera.position.copy(cp); Object.assign(C.r.pos, rp0); orb = o0;
-            check('du3: con la Campeona cerca y tapada por Vittata la cámara orbita para verla (de lejos no)', Math.abs(Math.abs(oCerca) - ORBITA) < 0.02 && Math.abs(oLejos) < 0.01, JSON.stringify({ oCerca: oCerca.toFixed(3), oLejos: oLejos.toFixed(3) })); }
+          // F1 · cambio 1: cámara de las dos (camaraDos, la del Duelo de 2) sin girar; HUD de escritorio en franja; final en la ganadora
+          {
+            const cam = R.camera, yaw0 = G.camara.yaw, p0 = Object.assign({}, S.pos), r0 = Object.assign({}, C.r.pos), asp0 = cam.aspect;
+            const W = innerWidth, Hh = innerHeight, pv = new THREE.Vector3();
+            const px = (x, y, z) => { pv.set(x, y, z).project(cam); return { x: (pv.x + 1) / 2 * W, y: (1 - pv.y) / 2 * Hh, z: pv.z }; };
+            // caja en pantalla de una cotorra (pies → cabeza, ±0,45 m) y del «!» (centro a ~2,4 m, ±0,35 m)
+            const caja = (p, y0, y1, r) => { const a = px(p.x, p.y + y0, p.z), b = px(p.x, p.y + y1, p.z), s = Math.abs(px(p.x + r, p.y + (y0 + y1) / 2, p.z).x - px(p.x, p.y + (y0 + y1) / 2, p.z).x) + Math.abs(px(p.x, p.y + (y0 + y1) / 2, p.z + r).x - px(p.x, p.y + (y0 + y1) / 2, p.z).x);
+              return { l: Math.min(a.x, b.x) - s, r: Math.max(a.x, b.x) + s, t: Math.min(a.y, b.y), b: Math.max(a.y, b.y), z: Math.max(a.z, b.z) }; };
+            const dentro = c => c.z < 1 && c.l >= 0 && c.r <= W && c.t >= 0 && c.b <= Hh;
+            const pisa = (c, q) => c.l < q.right && c.r > q.left && c.t < q.bottom && c.b > q.top;
+            pintar();
+            const rects = [...hud.el.querySelectorAll('.vd-lado, .vd-acc button, .vd-bot')].filter(e => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden' && !e.hidden).map(e => e.getBoundingClientRect()).filter(q => q.width > 0);
+            // posiciones típicas: de 2 a 9 m, de frente, de lado, por detrás y cerca del borde
+            const casos = [[-3, 0, 3, 0], [-1, 0, 1.2, 0], [0, 0, 2, 1.5], [0, 0, -2.5, 0.5], [2, 3, -2, 4], [-6, -4, 2, 3], [4, -6, 4, 2], [-8, 0, 1, 0], [0, -9, 0, -1]];
+            const malHud = [], malCabe = [], malAlto = [];
+            for (const [jx, jz, rx, rz] of casos) {
+              S.pos.x = sitio.x + jx; S.pos.z = sitio.z + jz; S.pos.y = ALTURA(S.pos); C.r.pos.x = sitio.x + rx; C.r.pos.z = sitio.z + rz; C.r.pos.y = ALTURA(C.r.pos);
+              G.camara.follow(0.016); camDos.paso(0, true); cam.updateMatrixWorld();
+              const cr = caja(C.r.pos, 0.1, 1.6, 0.45), ca = caja(C.r.pos, 2.05, 2.75, 0.35), cj = caja(S.pos, 0.1, 1.6, 0.45);
+              if (!TACTIL && rects.some(q => pisa(cr, q) || pisa(ca, q))) malHud.push([jx, jz, rx, rz].join(','));
+              if (!dentro(cr) || !dentro(cj) || !dentro(ca)) malCabe.push([jx, jz, rx, rz].join(','));
+              cam.aspect = 390 / 844; cam.updateProjectionMatrix(); camDos.paso(0, true); cam.updateMatrixWorld(); // también en un teléfono en vertical
+              const Wv = W; { const c1 = caja(C.r.pos, 0.1, 1.6, 0.45), c2 = caja(S.pos, 0.1, 1.6, 0.45); if (!(c1.z < 1 && c2.z < 1 && Math.min(c1.l, c2.l) >= 0 && Math.max(c1.r, c2.r) <= Wv && Math.min(c1.t, c2.t) >= 0 && Math.max(c1.b, c2.b) <= Hh)) malAlto.push([jx, jz, rx, rz].join(',')); }
+              cam.aspect = asp0; cam.updateProjectionMatrix();
+            }
+            check('F1: el HUD de escritorio (franja arriba) no pisa a la rival ni su «!» proyectados en pantalla', TACTIL || (rects.length >= 2 && !malHud.length), JSON.stringify({ malHud, n: rects.length, vista: W + '×' + Hh, lado: rects[0] && Math.round(rects[0].bottom) }));
+            check('F1: las dos cotorras (y el «!») caben en el encuadre de la cámara de dos, también en un teléfono en vertical', !malCabe.length && !malAlto.length, JSON.stringify({ malCabe, malAlto }));
+            check('F1: la cámara del duelo no gira (WASD sigue a lo que se ve) y es la de las dos', G.camara.yaw === yaw0 && !!G.camara.follow.duelo && !!G.camara.draw.duelo, JSON.stringify({ yaw0, yaw: G.camara.yaw }));
+            // pasillo despejado (QA-174): la cámara nunca queda fuera del círculo despejado ni del pasillo del oeste
+            { const malP = []; for (const [jx, jz, rx, rz] of casos) { S.pos.x = sitio.x + jx; S.pos.z = sitio.z + jz; C.r.pos.x = sitio.x + rx; C.r.pos.z = sitio.z + rz; camDos.paso(0, true); if (!camLibre(camDos.cam.pos.x, camDos.cam.pos.z) && Math.hypot(camDos.cam.pos.x - camDos.encuadre().x, camDos.cam.pos.z - camDos.encuadre().z) > 3.05) malP.push([jx, jz, rx, rz].join(',')); }
+              check('F1: la cámara de dos se queda en el círculo despejado o en su pasillo (QA-174)', !malP.length, JSON.stringify(malP)); }
+            Object.assign(S.pos, p0); Object.assign(C.r.pos, r0); camDos.paso(0, true);
+          }
           check('du2: en el duelo no se ven la flecha ni el haz de la guía de la misión', !!G.fx && !G.fx.guideArrow.visible && !G.fx.guideBeam.visible, JSON.stringify({ objetivo: tgM }));
           check('du2: con los chips a la vista el aviso de abajo calla (sin chips vuelve el de siempre)', TACTIL ? avA === (tagsVis ? '' : TXT.avisoTactil) : (avA === '' && avSin === TXT.aviso), JSON.stringify({ avA, avSin, tagsVis }));
         }
@@ -3489,8 +3578,34 @@ window.AVV18Combate = function (G) {
       finally { G.pack.id = pack0; }
       check('QA-192: en el cap. 1 la oferta solo depende del estado del duelo', it.visible() === cap1oferta);
     } catch (e) { check('QA-192: fuera del cap. 1 no se ofrece el duelo', false, e && e.message); }
+    // F1: al terminar la cámara mira a la ganadora (no a una planta); con «Reducir movimiento», en un corte. Y el borde (cambio 6):
+    // mantener «adelante» hacia fuera 10 s no cancela el duelo; Vittata se queda en el círculo y lo nota con un roce suave.
+    try {
+      const RD = R.REDUCED, cam = R.camera, centrada = p => { cam.updateMatrixWorld(); const v = new THREE.Vector3(p.x, p.y + 0.9, p.z).project(cam); return Math.abs(v.x) < 0.3 && Math.abs(v.y) < 0.45 && v.z < 1; };
+      const fin = (res, red) => {
+        R.REDUCED = red; iniciar({ sinCuenta: true, especie: 'vittata' }); quieta(4); S.pos.x = sitio.x - 2; S.pos.z = sitio.z + 1; C.r.pos.x = sitio.x + 2; C.r.pos.z = sitio.z - 1;
+        for (let i = 0; i < 20; i++) G.camara.follow(0.05);
+        terminar(res); G.camara.follow(0.05); const p1 = camDos.cam.pos.clone();
+        for (let i = 0; i < 60; i++) G.camara.follow(0.05);
+        const g = res === 'win' ? S.pos : C.r.pos, otra = res === 'win' ? C.r.pos : S.pos;
+        const r = { centrada: centrada(g), cerca: +cam.position.distanceTo(new THREE.Vector3(g.x, g.y + 1, g.z)).toFixed(2), corte: +p1.distanceTo(camDos.cam.pos).toFixed(3) };
+        r.otraNoCentro = !centrada(otra); salir(); return r;
+      };
+      const w = fin('win', false), l = fin('loss', false), red = fin('win', true);
+      check('F1: al terminar la cámara mira a la ganadora de cerca (gane Vittata o la Campeona)', w.centrada && l.centrada && w.cerca < CAM_FIN + 2.5 && l.cerca < CAM_FIN + 2.5 && w.corte > 0.05, JSON.stringify({ w, l }));
+      check('F1: con «Reducir movimiento» la cámara pasa a la ganadora en un corte (sin acercamiento)', red.centrada && red.corte < 0.01, JSON.stringify(red));
+      R.REDUCED = RD;
+      // borde: «adelante» hacia el este (fuera del círculo) durante 10 s, a la velocidad de andar
+      iniciar({ sinCuenta: true, especie: 'vittata' }); quieta(-3); C.r.pos.x = sitio.x - 6; C.r.pos.z = sitio.z;
+      const n0 = rozaN; let maxD = 0, fases = new Set();
+      for (let t = 0; t < 10; t += 0.05) { M.vx = 6; M.vz = 0; S.pos.x += 6 * 0.05; paso(0.05); fases.add(C.fase); maxD = Math.max(maxD, Math.hypot(S.pos.x - sitio.x, S.pos.z - sitio.z)); C.r.pensar = 99; C.j.plumas = Math.max(C.j.plumas, 3); }
+      check('F1: salir del círculo manteniendo «adelante» 10 s no cancela el duelo: el borde retiene a Vittata', C.fase === 'lucha' && !fases.has('nada') && maxD <= BORDE_R + 0.31,
+        JSON.stringify({ fase: C.fase, maxD: +maxD.toFixed(2), fases: [...fases] }));
+      check('F1: el borde se nota con un roce suave (hojitas y un «tick» espaciados, sin sacudida)', rozaN - n0 >= 3 && rozaN - n0 <= 16 && Math.abs(M.vx) < 1e-6, JSON.stringify({ roces: rozaN - n0, vx: M.vx }));
+      M.vx = M.vz = 0; salir();
+    } catch (e) { check('F1: cámara final y borde sin excepciones', false, e && (e.stack || e.message)); try { salir(); } catch (e2) { /* ya fuera */ } }
     try { salir(); } catch (e) { /* ya fuera */ }
-    { const K = G.camara.CAM; check('du3: al salir del duelo la cámara vuelve a su distancia, altura y dibujo de siempre', !G.camDuelo0 && K.dist !== CAM_DUELO.dist && K.height !== CAM_DUELO.height && !G.camara.draw.duelo, JSON.stringify({ d: K.dist, h: K.height })); }
+    check('F1: al salir del duelo la cámara vuelve a su seguimiento y dibujo de siempre', !G.camara.draw.duelo && !G.camara.follow.duelo && !camPedida);
     G.ui.toast = toast0;
     oyente.mudo = true; evs.length = 0; podEv.length = 0; // G.on no tiene «off»: los oyentes de la prueba se quedan mudos
     Object.assign(S.pos, pos0); S.facing = fac0; M.flying = fly0; M.vx = M.vz = 0;
@@ -3616,6 +3731,6 @@ window.AVV18Combate = function (G) {
     if (hud && hud.ext && hud.ext.pad) hud.ext.pad.remove();
   }
   const tarjeta = { maqueta: maquetaTarjeta, abrir: abrirTarjeta, cerrar: cerrarTarjeta, abierta: tarjetaAbierta, modo: () => (tarjetaAbierta() ? tj.modo : ''), html: htmlTarjeta, css: cssTarjeta, el: () => tj && tj.el };
-  G.v18combate = { feel, sitio, iniciar, tarjeta, salir, otraVez, usar, paso, premioRopa, LENTES, vida: vidaApi, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
+  G.v18combate = { feel, sitio, camaraDos, iniciar, tarjeta, salir, otraVez, usar, paso, premioRopa, LENTES, vida: vidaApi, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
   return G.v18combate;
 };

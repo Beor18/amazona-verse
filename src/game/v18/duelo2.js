@@ -303,26 +303,13 @@ window.AVV18Duelo2 = function (G) {
   }
 
   // ---------- Cámara compartida: encuadra a las dos y se abre hasta un límite ----------
-  const CAMD = { min: 8.5, max: 21, base: 6.5, k: 0.9, elev: 0.6, rate: 4 };
-  const cam = { pos: new THREE.Vector3(), mira: new THREE.Vector3(), d: 10, listo: false };
+  // F1 (16-nov): encuadre() y el paso de cámara viven en combate.js (camaraDos), que el duelo contra la Campeona también usa;
+  // aquí, con giro 0: la cámara al sur (+z) mirando al norte; el Jugador 1 empieza a la izquierda y el 2 a la derecha
+  const camDos = Cb.camaraDos({ a: () => S.pos, b: () => pos2 }), CAMD = camDos.CAMD, cam = camDos.cam, encuadre = camDos.encuadre;
   let follow0 = null, draw0 = null;
-  function encuadre() {
-    const a = S.pos, b = pos2, mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2, my = (a.y + b.y) / 2;
-    const sep = Math.hypot(a.x - b.x, a.z - b.z);
-    const d = Math.max(CAMD.min, Math.min(CAMD.max, CAMD.base + sep * CAMD.k));
-    return { x: mx, y: my, z: mz, d, sep };
-  }
   function camaraPaso(dt, snap) {
-    const e = encuadre(), k = snap || !cam.listo ? 1 : Math.min(1, (dt || 0) * CAMD.rate);
-    cam.d += (e.d - cam.d) * k;
-    const y = Math.sin(CAMD.elev), h = Math.cos(CAMD.elev);
-    // yaw 0: la cámara al sur (+z) mirando al norte; el Jugador 1 empieza a la izquierda y el 2 a la derecha
-    const px = e.x, py = Math.max(e.y + 1 + cam.d * y, G.terreno.height(e.x, e.z + cam.d * h) + 1), pz = e.z + cam.d * h;
-    cam.pos.set(cam.pos.x + (px - cam.pos.x) * k, cam.pos.y + (py - cam.pos.y) * k, cam.pos.z + (pz - cam.pos.z) * k);
-    cam.mira.set(cam.mira.x + (e.x - cam.mira.x) * k, cam.mira.y + (e.y + 1 - cam.mira.y) * k, cam.mira.z + (e.z - cam.mira.z) * k);
-    cam.listo = true;
+    camDos.paso(dt, snap);
     if (G.camara) G.camara.yaw = 0; // WASD y flechas, relativos a esta cámara
-    camera.position.copy(cam.pos); camera.lookAt(cam.mira);
   }
   function tomarCamara() {
     if (!G.camara || follow0) return;
