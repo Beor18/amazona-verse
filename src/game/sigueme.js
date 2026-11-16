@@ -258,7 +258,7 @@ window.AVSigueme = function (G) {
       E.giro = hA != null && hB != null ? Math.abs(envolver(hA - hB)) : 0;
       const lim = giroMax(E.n) * (E.rafaga > 0 ? 0.6 : 1);
       if (E.giro > lim && E.t > E.cortes) soltarCola(Math.max(1, Math.min(3, Math.ceil((E.giro - lim) / 0.35))), 'giro');
-      else if (E.giro > lim * 0.7 && E.n >= 4 && E.t > E.avisoGiroT) { E.avisoGiroT = E.t + 3; aviso(L('¡Gira más abierto!', 'Turn wider!'), 'malo'); }
+      else if (E.giro > lim * 0.7 && E.n >= 4 && E.t > E.avisoGiroT && E.t > E.cortes + 1) { E.avisoGiroT = E.t + 3; aviso(L('¡Gira más abierto!', 'Turn wider!'), 'malo'); }
     }
     // ráfagas (etapa 3): aviso con hojas y sonido, luego 2,5 s de viento que empuja la cola
     if (E.t >= 80) {
@@ -300,7 +300,7 @@ window.AVSigueme = function (G) {
         continue;
       } else if (d2 > 75 * 75) { p.on = false; continue; } // quedó muy atrás: nace otra más cerca
       else { p.yaw = Math.atan2(-dx, -dz); }
-      if (d2 < UNE * UNE && Math.abs(p.y - vy) < UNE) unir(p);
+      if (d2 < UNE * UNE && Math.abs(p.y - vy) < UNE && (p.tipo !== 'perdida' || p.t > 2.5)) unir(p); // la que se acaba de soltar no vuelve en el mismo giro
     }
     // nacen más sueltas
     if ((E.prox -= dt) <= 0) { E.prox = 0.5; if (sueltasVivas() < 4 + etapa()) nacer(); }
@@ -457,7 +457,8 @@ window.AVSigueme = function (G) {
       check('Se dibujan con 3 mallas instanciadas como mucho (cotorras, «?» y «Zz»)', malla && malla.visible && malla.count === 3 && cartelQ.visible && cartelQ.count === 3 && R.scene.children.filter(m => /^sigueme:/.test(m.name)).length === 3, malla && malla.count);
       check('La geometría y el aleteo son los de la bandada (o la de reserva sin ella)', !G.bandada || !G.bandada.meshes || malla.material === G.bandada.meshes[0].material, G.bandada ? 'bandada' : 'reserva');
       const ae = G.aula && G.aula.aj;
-      check('Con teclado y táctil se juega volando: las teclas de vuelo pasan al mundo y el joystick sigue a la vista', !tecla('w').defaultPrevented && !tecla(' ').defaultPrevented && (() => { const st = document.getElementById('stick'); return !st || getComputedStyle(st).visibility !== 'hidden'; })());
+      let llegan = 0; const oye = () => { llegan++; }; addEventListener('keydown', oye); tecla('w'); tecla('ArrowLeft'); removeEventListener('keydown', oye);
+      check('Con teclado y táctil se juega volando: las teclas de vuelo pasan al mundo y el joystick sigue a la vista', llegan === 2 && (() => { const st = document.getElementById('stick'); return !st || getComputedStyle(st).visibility !== 'hidden'; })());
       // Unirse: Vittata a menos de 6 m de una suelta
       E.prox = 1e9; lejos(); trReset(S.pos.x, S.pos.y + 0.6, S.pos.z);
       for (const p of pool) p.on = false;
@@ -479,7 +480,7 @@ window.AVSigueme = function (G) {
       for (let i = 0; i < 10; i++) { S.pos.x -= 0.25; paso(0.02); }
       const perdidas = vivas('perdida');
       check('Un giro muy cerrado suelta a las últimas («Giro muy cerrado: se soltaron N»), que se quedan dando vueltas', E.n < 8 && E.n >= 5 && perdidas.length === 8 - E.n && /Giro muy cerrado: se soltaron \d/.test(q(hudEl, 'msg').textContent), E.n + ' · ' + q(hudEl, 'msg').textContent);
-      const pp = perdidas[0], ax0 = pp.x; paso(0.1);
+      const pp = perdidas[0], ax0 = pp.x; paso(0.1); pp.t = 3;
       E.cortes = 0; trReset(S.pos.x, S.pos.y + 0.6, S.pos.z); const nAntes = E.n;
       ir(pp.cx + 1, pp.y, pp.cz); paso(0.02);
       check('Las perdidas dan vueltas y se pueden recuperar', pp.x !== ax0 && E.n === nAntes + 1 && !pp.on, E.n);
