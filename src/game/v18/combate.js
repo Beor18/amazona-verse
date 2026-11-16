@@ -3110,7 +3110,7 @@ window.AVV18Combate = function (G) {
         try {
           R.REDUCED = false; A.reducido = false;
           // 14 · cuenta atrás
-          iniciar({ especie: 'vittata' }); quieta(3); await espera(300); A.log.length = 0;
+          iniciar({ especie: 'vittata' }); quieta(3); await espera(300); C.cuenta = 3; cuentaVista = -1; A.log.length = 0; // el bucle del juego también corre la cuenta mientras se espera
           const f0 = Object.assign({}, FS), vistos = [];
           for (let i = 0; i < 4; i++) { paso(i ? 1 : 0.05); vistos.push(hud.q('centro').textContent); if (i < 3) await espera(300); }
           paso(0.05);

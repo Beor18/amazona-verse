@@ -903,7 +903,7 @@ window.AVV18Duelo2 = function (G) {
       if (FL) {
         const A = G.audio, R0 = R.REDUCED, ar0 = A.reducido, FS = FL.stats, espera = ms => new Promise(r => setTimeout(r, ms)), veces = n => A.log.filter(x => x === n).length;
         try {
-          R.REDUCED = false; A.reducido = false; cerca(4); await espera(300); A.log.length = 0;
+          R.REDUCED = false; A.reducido = false; cerca(4); await espera(300); D.fase = 'cuenta'; D.cuenta = 3; cuentaVista = -1; A.log.length = 0; // el bucle del juego también corre la cuenta mientras se espera
           const f0 = Object.assign({}, FS), vistos = [];
           for (let i = 0; i < 4; i++) { paso(i ? 1 : 0.05); vistos.push(hud.q('centro').textContent); if (i < 3) await espera(300); }
           paso(0.05);
