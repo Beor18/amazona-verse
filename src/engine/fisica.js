@@ -78,6 +78,7 @@ AVE.module('fisica', function (G) {
     landV: 5.5,           // aterrizar (V o botón Aterrizar): baja a esta velocidad…
     flareHeight: 2.6,     // …y desde esta altura sobre el suelo frena con las alas…
     flareV: 1.3,          // …hasta tocar el suelo a esta velocidad (aterrizaje suave)
+    graciaPosado: 0.45,   // al posarse con Aterrizar, este rato el botón Volar (o V) no relanza (doble toque; input.js)
     landSpeed: 0.55,      // aterrizando, la velocidad horizontal máxima es esta fracción del crucero
     perchAssist: 0.6,     // bajando, a esta distancia (m) de algo fino se centra encima para posarse
     // Agacharse (bajo un toldo, un alero o una lona bajos): con menos espacio que altoCabeza sobre los pies se agacha
@@ -97,7 +98,7 @@ AVE.module('fisica', function (G) {
   const FLY_SPEED = T.fly, FLY_CEIL = T.flyCeil;
   const SWIM_SPEED = T.swim, SWIM_DEPTH = T.swimDepth;
   const MOVE = { vx: 0, vz: 0, airJumps: 0, coyote: 0, dashT: 0, dashCd: 0, airDash: true, land: 0, impact: 0, wasAir: false,
-    flying: false, landing: false, takeoff: 0, jumping: false, buffer: 0, grounded: true, groundY: 0, grade: 0, onTerrain: true,
+    flying: false, landing: false, takeoff: 0, posadoT: 0, jumping: false, buffer: 0, grounded: true, groundY: 0, grade: 0, onTerrain: true,
     fase: 'suelo', slope: 0, speed: 0, agachada: 0, alto: 0 };
   const colliders = [];
   // Altura de cada tipo de obstáculo para poder pasar volando por encima (un pack añade los suyos)
@@ -165,7 +166,9 @@ AVE.module('fisica', function (G) {
     if (!MOVE.flying) { startFlying(); return; }
     land();
   }
-  function endFlight() { if (!MOVE.flying) return; MOVE.flying = false; MOVE.landing = false; MOVE.takeoff = 0; G.emit('vuelo', false); }
+  // Piloto (16-nov): posadoT = cuándo terminó un aterrizaje (performance.now). input.js no deja que Volar (botón o V) relance
+  // en los T.graciaPosado s siguientes: el segundo toque de un niño en Aterrizar llegaba justo al tocar suelo y volvía a volar.
+  function endFlight() { if (!MOVE.flying) return; if (MOVE.landing) MOVE.posadoT = performance.now(); MOVE.flying = false; MOVE.landing = false; MOVE.takeoff = 0; G.emit('vuelo', false); }
   function tryDash() {
     if (MOVE.dashCd > 0 || busyNow()) return;
     const air = !onGroundNow();
