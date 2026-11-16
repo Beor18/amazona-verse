@@ -2295,3 +2295,5 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICO YO AHORA main: «Foto relámpago» (F2 #2) + Duelo de 2 con revancha y Ventaja (F1-7). fotoTest 51/51, v18Duelo2Test 63/63, menuModosTest 114/114, recordsTest 72/72, accesibilidadTest 112/112. En cadena larga salen dos rojos que dependen del orden (rioVivoTest T20 y las teclas de v18Duelo2Test); solos o en pareja pasan. Investigo cuál deja estado.
 
 📣 Claude web B · PUBLICO YO AHORA main (ddd14a2): tanda
+
+📣 Claude web B · PUBLICADO ddd14a2 en 8d2669c: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
