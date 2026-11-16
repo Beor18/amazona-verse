@@ -647,10 +647,11 @@ window.AVV18Combate = function (G) {
   const camLibre = (x, z) => Math.hypot(x - sitio.x, z - sitio.z) < ARENA_R + 0.5 || (x < sitio.x - 4 && x > sitio.x - 18 && Math.abs(z - sitio.z) < 2.5);
   const ganadora = () => (C.resultado === 'win' ? S.pos : C.r.pos);
   const camDos = camaraDos({
-    a: () => S.pos, b: () => (C.r ? C.r.pos : S.pos), yaw: () => (G.camara ? G.camara.yaw : 0), libre: camLibre,
+    // algo más picada que la del Duelo de 2 (0,72 rad): sin girar, la Campeona suele quedar detrás de Vittata y así se le ve la cabeza y el «!»
+    camd: { elev: 0.72 }, a: () => S.pos, b: () => (C.r ? C.r.pos : S.pos), yaw: () => (G.camara ? G.camara.yaw : 0), libre: camLibre,
     ajusta(e, a, b) {
       // (si perdió Vittata y se aleja más de 6 m de la ganadora, vuelve el plano de las dos: no se queda fuera de cuadro)
-      if (C.fase === 'fin' && C.r && C.resultado && (C.resultado === 'win' || e.sep < 6)) { const g = ganadora(); e.x = g.x; e.y = g.y; e.z = g.z; e.d = CAM_FIN; return; }
+      if (C.fase === 'fin' && C.r && C.resultado && (C.resultado === 'win' || e.sep < 6)) { const g = ganadora(); e.x = g.x; e.y = g.y - 0.6; e.z = g.z; e.d = CAM_FIN; return; } // algo alta en pantalla: el panel final va abajo
       const camera = R.camera; if (!camera) return;
       const yw = G.camara ? G.camara.yaw : 0, lat = Math.abs((b.x - a.x) * Math.cos(yw) - (b.z - a.z) * Math.sin(yw));
       const th = Math.tan((camera.fov || 55) * Math.PI / 360) * (camera.aspect || 1);
