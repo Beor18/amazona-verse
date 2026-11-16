@@ -69,7 +69,7 @@
       titulo: ['Mis récords', 'My records'], cerrar: ['Cerrar', 'Close'],
       local: ['Todo se guarda solo en este dispositivo. No se envía nada a ningún servidor.', 'Everything is saved only on this device. Nothing is sent to any server.'],
       retos: ['Modo Retos', 'Challenge mode'], retosNota: ['Lo mejor de este dispositivo.', 'The best on this device.'],
-      rio: ['Contrarreloj del río', 'River time trial'], carrera: ['Carrera en El Yunque', 'El Yunque race'], tormenta: ['¡Escapa de la tormenta!', 'Escape the storm!'],
+      rio: ['Contrarreloj del río', 'River time trial'], nubes: ['Carrera de las nubes', 'Cloud race'], carrera: ['Carrera en El Yunque', 'El Yunque race'], tormenta: ['¡Escapa de la tormenta!', 'Escape the storm!'],
       mejorTiempo: ['Mejor tiempo', 'Best time'], mejorPuntos: ['Mejor puntuación', 'Best score'], mejorPuesto: ['Mejor puesto', 'Best place'], ganadas: ['Carreras ganadas', 'Races won'],
       jugadas: ['Veces jugado', 'Times played'], puntos: ['puntos', 'points'], aguantado: ['Más tiempo aguantado', 'Longest time'],
       sinRecord: ['Aún sin récord. ¡Prueba este reto!', 'No record yet. Try this challenge!'],
@@ -156,7 +156,9 @@
       const tn = ok && esObj(d.tren) ? d.tren : null; // src/game/tren.js (C16): solo si se jugó
       const rr = ok && esObj(d.rio_rush) ? d.rio_rush : null; // src/game/river_rush.js (AC1): solo si se jugó
       const mz = ok && esObj(d.maze) ? d.maze : null; // src/game/maze.js: solo si se jugó
+      const nb = ok && esObj(d.nubes) ? d.nubes : null; // Carrera de las nubes (retos.js, F1-8): solo si se jugó
       return {
+        nubes: nb ? nubesLimpio(nb) : null,
         flight: f ? { mejor: num(f.mejor), jugadas: ent(f.jugadas) } : null,
         tren: tn ? { mejor: num(tn.mejor), jugadas: ent(tn.jugadas) } : null,
         rio_rush: rr ? { mejor: num(rr.mejor), jugadas: ent(rr.jugadas), reloj: num(rr.reloj), medallaReloj: ['bronce', 'plata', 'oro'].includes(rr.medallaReloj) ? rr.medallaReloj : null, jugadasReloj: ent(rr.jugadasReloj) } : null, // AC2: + contrarreloj (ms y medalla)
@@ -167,6 +169,8 @@
         rio: { mejor: num(w.mejor), medalla: MEDALLAS_RIO.includes(w.medalla) ? w.medalla : null, oros: ent(w.oros), jugadas: ent(w.jugadas) },
       };
     }
+    // La carrera de las nubes guarda lo mismo que la de El Yunque: mejor tiempo, mejor puesto, ganadas y veces jugada
+    function nubesLimpio(z) { return { mejor: num(z.mejor), puesto: Number.isInteger(z.puesto) && z.puesto >= 1 && z.puesto <= PARTICIPANTES_MAX ? z.puesto : null, oros: ent(z.oros), jugadas: ent(z.jugadas) }; }
     const medallaCarrera = p => (!p ? null : p === 1 ? 'oro' : p === 2 ? 'plata' : p === 3 ? 'bronce' : 'meta');
     const medallaTormenta = pts => (!pts ? null : pts >= 1500 ? 'oro' : pts >= 800 ? 'plata' : null);
 
@@ -224,6 +228,7 @@
         if (esObj(e.tren)) out.jugadores[nombre].tren = { mejor: num(e.tren.mejor), jugadas: ent(e.tren.jugadas) }; // src/game/tren.js (C16)
         if (esObj(e.rio_rush)) out.jugadores[nombre].rio_rush = retosDe({ v: 1, rio_rush: e.rio_rush }).rio_rush; // src/game/river_rush.js (AC2)
         if (esObj(e.maze)) out.jugadores[nombre].maze = { mejor: num(e.maze.mejor), jugadas: ent(e.maze.jugadas) }; // src/game/maze.js
+        if (esObj(e.nubes)) out.jugadores[nombre].nubes = nubesLimpio(e.nubes); // Carrera de las nubes (F1-8)
       }
       return out;
     }
@@ -397,6 +402,11 @@
       const libro = leerCasa(), e = entradaDe(libro, nombre); if (!e) return false;
       if (r.modo === 'carrera') {
         const c = e.carrera; c.jugadas++;
+        const ms = typeof r.ms === 'number' && r.ms >= 1000 && r.ms <= 36e5 ? Math.round(r.ms) : null, p = Number.isInteger(r.puesto) && r.puesto >= 1 && r.puesto <= PARTICIPANTES_MAX ? r.puesto : null;
+        if (r.llego === true && ms && p) { if (!c.mejor || ms < c.mejor) c.mejor = ms; c.puesto = Math.min(c.puesto || 99, p); if (p === 1) c.oros++; }
+        if (Array.isArray(r.rivales)) sumarVistas(libro, r.rivales);
+      } else if (r.modo === 'nubes') { // Carrera de las nubes (retos.js, F1-8): como la de El Yunque, en su propia entrada
+        const c = e.nubes || (e.nubes = nubesLimpio({})); c.jugadas++;
         const ms = typeof r.ms === 'number' && r.ms >= 1000 && r.ms <= 36e5 ? Math.round(r.ms) : null, p = Number.isInteger(r.puesto) && r.puesto >= 1 && r.puesto <= PARTICIPANTES_MAX ? r.puesto : null;
         if (r.llego === true && ms && p) { if (!c.mejor || ms < c.mejor) c.mejor = ms; c.puesto = Math.min(c.puesto || 99, p); if (p === 1) c.oros++; }
         if (Array.isArray(r.rivales)) sumarVistas(libro, r.rivales);
@@ -589,10 +599,15 @@
       const tren = !(tn.mejor || tn.jugadas) ? '' : `<article class="rec-card"><h4>${esc(tx('tren'))}</h4>${tn.mejor ? `<div class="rec-grande">${medalla(tn.mejor >= 650 ? 'oro' : tn.mejor >= 450 ? 'plata' : tn.mejor >= 250 ? 'bronce' : '', '★')}<div><b class="rec-num">${tn.mejor}</b><small>${esc(tx('puntos'))}</small></div></div>` : `<p>${esc(tx('sinRecord'))}</p>`}<dl>${dato(tx('jugadas'), tn.jugadas)}</dl></article>`;
       const rr = d.retos.rio_rush || { mejor: null, jugadas: 0, reloj: null, medallaReloj: null, jugadasReloj: 0 }; // src/game/river_rush.js (AC2, publicado: la tarjeta sale siempre)
       const rioRush = `<article class="rec-card"><h4>${esc(tx('rio_rush'))}</h4>${rr.mejor ? `<div class="rec-grande">${medalla(rr.mejor >= 250 ? 'oro' : rr.mejor >= 120 ? 'plata' : rr.mejor >= 40 ? 'bronce' : '', '★')}<div><b class="rec-num">${rr.mejor}</b><small>${esc(tx('puntos'))}</small></div></div>` : `<p>${esc(tx('sinRecord'))}</p>`}<dl>${dato(tx('jugadas'), rr.jugadas)}${rr.reloj ? dato(tx('contrarreloj'), `${rr.medallaReloj ? medalla(rr.medallaReloj, '★') + ' ' : ''}${esc(reloj(rr.reloj / 1000))}`) : ''}</dl></article>`;
+      const nb = d.retos.nubes || { mejor: null, puesto: null, oros: 0, jugadas: 0 }, mn = medallaCarrera(nb.puesto); // Carrera de las nubes (F1-8): la tarjeta sale cuando ya se jugó
+      const nubes = !(nb.mejor || nb.jugadas) ? '' : `<article class="rec-card" data-reto="nubes"><h4>${esc(tx('nubes'))}</h4>${nb.mejor
+        ? `<div class="rec-grande">${medalla(mn, nb.puesto <= 3 ? nb.puesto : '★')}<div><b class="rec-num">${reloj(nb.mejor / 1000)}</b><small>${esc(tx('mejorTiempo'))} · ${esc(medallaTxt(mn))}</small></div></div>
+           <dl>${dato(tx('mejorPuesto'), esc(ordinal(nb.puesto || 1)))}${dato(tx('ganadas'), nb.oros)}${dato(tx('jugadas'), nb.jugadas)}</dl>`
+        : `<p>${esc(tx('sinRecord'))}</p><dl>${dato(tx('jugadas'), nb.jugadas)}</dl>`}</article>`;
       const mz = d.retos.maze || { mejor: null, jugadas: 0 }; // src/game/maze.js (BI2). 31-oct: Maze fuera del menú y congelado (Kelvin); la tarjeta solo sale si ya se jugó
       const maze = !(mz.mejor || mz.jugadas) ? '' : `<article class="rec-card"><h4>${esc(tx('maze'))}</h4>${mz.mejor ? `<div class="rec-grande">${medalla(mz.mejor >= 900 ? 'oro' : mz.mejor >= 500 ? 'plata' : mz.mejor >= 200 ? 'bronce' : '', '★')}<div><b class="rec-num">${mz.mejor}</b><small>${esc(tx('puntos'))}</small></div></div>` : `<p>${esc(tx('sinRecord'))}</p>`}<dl>${dato(tx('jugadas'), mz.jugadas)}</dl></article>`;
       return `<section class="rec-sec" aria-labelledby="rec-h-retos"><h3 id="rec-h-retos">${esc(tx('retos'))} <small>${esc(tx('retosNota'))}</small></h3><div class="rec-grid">
-        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article>${flight}${tren}${rioRush}${maze}</div>${sellos(d)}</section>`;
+        <article class="rec-card"><h4>${esc(tx('carrera'))}</h4>${carrera}</article><article class="rec-card"><h4>${esc(tx('tormenta'))}</h4>${tormenta}</article><article class="rec-card"><h4>${esc(tx('rio'))}</h4>${rio}</article><article class="rec-card"><h4>${esc(tx('banquete'))}</h4>${banquete}</article><article class="rec-card"><h4>${esc(tx('rescate'))}</h4>${rescate}</article>${nubes}${flight}${tren}${rioRush}${maze}</div>${sellos(d)}</section>`;
     }
     // Sellos (pegatinas cosméticas): uno por medalla lograda en cada reto, sacados de los récords guardados. Solo habilidad: sin compras, cajas ni azar.
     function sellos(d) {
@@ -600,13 +615,14 @@
       const nivel = {
         carrera: R.carrera.puesto ? (R.carrera.puesto === 1 ? 2 : R.carrera.puesto === 2 ? 1 : R.carrera.puesto === 3 ? 0 : -1) : -1,
         tormenta: R.tormenta.mejor ? (R.tormenta.mejor >= 1500 ? 2 : R.tormenta.mejor >= 800 ? 1 : 0) : -1,
+        nubes: R.nubes && R.nubes.puesto ? 3 - R.nubes.puesto : -1, // 1.º oro, 2.º plata, 3.º bronce (como El Yunque)
         rio: ord.indexOf(R.rio.medalla), banquete: por(R.banquete.mejor, 600, 1200), flight: R.flight ? por(R.flight.mejor, 25, 60) : -1, tren: R.tren ? por(R.tren.mejor, 450, 650) : -1, maze: R.maze ? por(R.maze.mejor, 500, 900) : -1, // tren (C16): bronce 250; maze (BI2): bronce 200
       };
       if (R.flight && R.flight.mejor && R.flight.mejor < 10 && nivel.flight === 0) nivel.flight = -1;
       if (R.tren && R.tren.mejor && R.tren.mejor < 250 && nivel.tren === 0) nivel.tren = -1; // src/game/tren.js (C16)
       if (R.maze && R.maze.mejor && R.maze.mejor < 200 && nivel.maze === 0) nivel.maze = -1; // src/game/maze.js (BI2)
       { const z = R.rio_rush || {}, p = z.mejor >= 250 ? 2 : z.mejor >= 120 ? 1 : z.mejor >= 40 ? 0 : -1; nivel.rio_rush = Math.max(p, ord.indexOf(z.medallaReloj)); } // River Rush (AC2): la mejor de puntos y contrarreloj
-      const filas = ['carrera', 'tormenta', 'rio', 'banquete', 'flight', 'tren', 'rio_rush', 'maze'].filter(k => (k !== 'tren' || (R.tren && (R.tren.mejor || R.tren.jugadas))) && (k !== 'maze' || (R.maze && (R.maze.mejor || R.maze.jugadas)))).map(k => `<li><span class="rs-n">${esc(tx(k))}</span><span class="rs-m">${ord.map((m, i) => `<span class="rec-m ${i <= nivel[k] ? m : 'falta'}" role="img" aria-label="${esc(tx(m))}${i <= nivel[k] ? '' : ' · ' + esc(tx('sinSello'))}">${i <= nivel[k] ? '★' : ''}</span>`).join('')}</span></li>`).join('');
+      const filas = ['carrera', 'nubes', 'tormenta', 'rio', 'banquete', 'flight', 'tren', 'rio_rush', 'maze'].filter(k => (k !== 'nubes' || (R.nubes && (R.nubes.mejor || R.nubes.jugadas))) && (k !== 'tren' || (R.tren && (R.tren.mejor || R.tren.jugadas))) && (k !== 'maze' || (R.maze && (R.maze.mejor || R.maze.jugadas)))).map(k => `<li><span class="rs-n">${esc(tx(k))}</span><span class="rs-m">${ord.map((m, i) => `<span class="rec-m ${i <= nivel[k] ? m : 'falta'}" role="img" aria-label="${esc(tx(m))}${i <= nivel[k] ? '' : ' · ' + esc(tx('sinSello'))}">${i <= nivel[k] ? '★' : ''}</span>`).join('')}</span></li>`).join('');
       return `<h4 class="rec-sellos-t">${esc(tx('sellos'))} <small>${esc(tx('sellosNota'))}</small></h4><ul class="rec-sellos">${filas}</ul>`;
     }
     function htmlHistoria(d) {
@@ -1299,6 +1315,15 @@
         check('Con una sola cotorra la casa explica que aquí saldrán las demás', /varias cotorras/.test(root.textContent) && !root.querySelector('.rec-casa'));
         const ana = nuevoS('Ana Luna'), beto = nuevoS('Beto Mar'), tel = nuevoS('Cielo 787 555 0123');
         check('Anota la contrarreloj del río (mejor tiempo y mejor medalla) a nombre de la cotorra', anotar({ modo: 'rio', llego: true, ms: 64000, medalla: 'plata' }, ana) && anotar({ modo: 'rio', llego: true, ms: 70000, medalla: 'oro' }, ana) && (() => { const w = leerCasa().jugadores['Ana Luna'].rio; return w.mejor === 64000 && w.medalla === 'oro' && w.oros === 1 && w.jugadas === 2; })() && retosDe({ v: 1, rio: { mejor: 5000, medalla: 'madera' } }).rio.medalla === null);
+        { // F1-8: la carrera de las nubes tiene su propia entrada (no suma a la de El Yunque); su tarjeta y su sello salen al jugarla
+          const yq0 = JSON.stringify(leerCasa().jugadores['Ana Luna'].carrera);
+          const okN = anotar({ modo: 'nubes', llego: true, puesto: 3, ms: 41000, rivales: ['oratrix'] }, ana) && anotar({ modo: 'nubes', llego: true, puesto: 1, ms: 43000, rivales: [] }, ana) && anotar({ modo: 'nubes', llego: false, puesto: 4, ms: 9000 }, ana);
+          const nN = leerCasa().jugadores['Ana Luna'].nubes, limpio = retosDe({ v: 1, nubes: { mejor: 'x', puesto: 12, oros: -3, jugadas: 2 } }).nubes;
+          const htmlN = htmlRetos({ retos: retosDe({ v: 1, nubes: { mejor: 41000, puesto: 2, oros: 0, jugadas: 3 } }) }), htmlSin = htmlRetos({ retos: retosDe({ v: 1 }) });
+          check('F1-8 · Anota la carrera de las nubes aparte (mejor tiempo, mejor puesto, ganadas) sin tocar la de El Yunque',
+            okN && nN && nN.mejor === 41000 && nN.puesto === 1 && nN.oros === 1 && nN.jugadas === 3 && JSON.stringify(leerCasa().jugadores['Ana Luna'].carrera) === yq0 && limpio.mejor === null && limpio.puesto === null && limpio.oros === 0 && retosDe({ v: 1 }).nubes === null, JSON.stringify(nN));
+          check('F1-8 · «Mis récords»: tarjeta y sello de la carrera de las nubes solo si ya se jugó', /data-reto="nubes"/.test(htmlN) && /0:41\.0/.test(htmlN) && htmlN.indexOf(tx('nubes')) > 0 && !/data-reto="nubes"/.test(htmlSin) && htmlSin.indexOf(tx('nubes')) < 0);
+        }
         check('Anota una carrera a nombre de la cotorra', anotar({ modo: 'carrera', llego: true, puesto: 2, ms: 70100, rivales: ['oratrix', 'versicolor', 'albifrons'] }, ana) && leerCasa().jugadores['Ana Luna'].carrera.mejor === 70100);
         anotar({ modo: 'tormenta', sobrevivio: true, puntos: 900 }, ana);
         anotar({ modo: 'carrera', llego: true, puesto: 1, ms: 61000, rivales: [] }, beto);
