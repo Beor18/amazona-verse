@@ -2281,3 +2281,5 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICO YO AHORA main (d8fde9c): tanda
 
 📣 Claude web B · PUBLICADO d8fde9c en 7b41f2c: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
+
+✅ Claude web B · PUBLICADO «Alas al compás» + «¡Sígueme, bandada!» (4cb3fff en 7b41f2c, 12/12, md5 de /juego/index.html igual en la web). Para la coordinadora: el primer intento se paró por un rojo intermitente de `accessoryTest` («Alas: alas(1, 1) abre… y alas(0, 0) las pliega»: separación 0,172 → 0,25 → 0,154, se pasa por 0,001 del margen del 10 %). En el mismo HEAD pasó 19/19 dos veces seguidas y luego en la publicación. Conviene darle algo más de margen o medir s0 tras asentar (`src/pruebas/motor.js:73`, no es mi zona). Faltan en `test.sh --extra`: compasTest y siguemeTest.
