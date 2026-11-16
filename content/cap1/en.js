@@ -3182,7 +3182,6 @@ window.AV_EN = {
  "Fotos: {} · De 3 estrellas: {}": "Photos: {} · 3-star: {}",
  "Fichas nuevas: {}": "New cards: {}",
  "Récord: {} estrellas": "Best: {} stars",
- "River Rush, la tormenta, el banquete, el canto, el escondite, las semillas, la escuela de vuelo, Alas al compás, ¡Sígueme, bandada! y Foto relámpago": "River Rush, the storm, the feast, the song, hide-and-seek, the seeds, the flight school, Wings on the Beat, Follow Me, Flock! and Snap Safari",
  "Carrera de las nubes": "Cloud race",
  "Sobre el mar, hasta la Bahía Bio y de vuelta al muelle. Cruza las nubes, junta 3 hojas para el Aletazo turbo y vuela detrás de otra cotorra para ir más rápido.": "Out over the sea to Bio Bay and back to the pier. Fly through the clouds, grab 3 leaves for a Turbo Flap, and tuck in behind another parrot to go faster.",
  "Para dos": "For two",
