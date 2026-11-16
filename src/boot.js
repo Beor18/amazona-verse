@@ -256,6 +256,8 @@
     const extra18 = aDemanda('src/game/v18/poderes_extra.js', 'AVV18PoderesExtra'), cargarV18Extra = () => cargarV18Explorar().then(() => extra18()); AV.v18PoderesExtraTest = o => cargarV18Extra().then(x => x.test(o)); if (v18On) alPrimerGesto(cargarV18Extra);
     // T43: «Sigue el canto» (Más juegos), se carga al elegirlo
     const canto43 = aDemanda('src/game/canto.js', 'AVCanto'); AV.canto = () => canto43().then(c => c.empezar()); AV.cantoTest = o => canto43().then(c => c.test(o));
+    // D13: «Semillas al vuelo» (Más juegos), se carga al elegirlo
+    const semillas13 = aDemanda('src/game/semillas.js', 'AVSemillas'); AV.semillas = () => semillas13().then(s => s.jugar()); AV.semillasTest = o => semillas13().then(s => s.test(o));
     const cargarSorpresas = aDemanda('src/game/sorpresas.js', 'AVSorpresas'); AV.sorpresasTest = o => cargarSorpresas().then(s => s.test(o)); alPrimerGesto(cargarSorpresas); // CG-45, sin tocar ciudad_viva.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
     if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)
