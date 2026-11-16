@@ -101,7 +101,7 @@ window.AVFotoSafari = function (G) {
   }
 
   // ---------- Medir el encuadre: proyección del animal a la pantalla (distancia al centro), distancia y quietud de Vittata ----------
-  const lado = () => Math.min(innerWidth, innerHeight) * 0.62; // el marco (px), cuadrado y en el centro
+  const lado = () => Math.min(innerWidth, innerHeight) * 0.52; // el marco (px), cuadrado y en el centro
   function enMarco(p) {
     const cam = R.camera; _v.set(p.x, p.y, p.z).project(cam);
     if (!(_v.z > -1 && _v.z < 1)) return -1; // detrás de la cámara
@@ -173,14 +173,23 @@ window.AVFotoSafari = function (G) {
     if (on && !cam0) { cam0 = { dist: C.dist, distFly: C.distFly }; C.dist = Math.max(2.6, C.dist - CAM_D); C.distFly = Math.max(3, C.distFly - CAM_F); cam0.d = C.dist; cam0.f = C.distFly; }
     else if (!on && cam0) { if (C.dist === cam0.d) C.dist = cam0.dist; if (C.distFly === cam0.f) C.distFly = cam0.distFly; cam0 = null; } // si otro módulo la cambió mientras tanto, no se pisa
   }
+  // Mirando por la cámara, Vittata no tapa el marco: su modelo se oculta mientras (como en el vuelo libre) y vuelve al cerrar
+  let ocultaV = null;
+  function verVittata(on) {
+    try {
+      const r = G.actores && G.actores.player3D && G.actores.player3D.root;
+      if (!on && r && r.visible && !ocultaV) { r.visible = false; ocultaV = r; }
+      else if (on && ocultaV) { ocultaV.visible = true; ocultaV = null; }
+    } catch (e) { /* sin modelo */ }
+  }
   function abrirCam() {
     if (E.cam || E.fase !== 'juego' || !carta.tipo) return;
-    E.cam = true; E.camT = 0; E.vivo = -1; E.vcode = -1; camara(true); sonar('boton');
+    E.cam = true; E.camT = 0; E.vivo = -1; E.vcode = -1; camara(true); verVittata(false); sonar('boton');
     document.body.classList.add('foto-cam'); pintarVisor();
   }
   function cerrarCam() {
     if (!E.cam) return;
-    E.cam = false; camara(false); document.body.classList.remove('foto-cam'); pintarVisor();
+    E.cam = false; camara(false); verVittata(true); document.body.classList.remove('foto-cam'); pintarVisor();
   }
   function disparar() {
     if (E.fase !== 'juego' || !carta.tipo) return;
@@ -256,12 +265,12 @@ window.AVFotoSafari = function (G) {
       '#fs-carta{position:fixed;left:12px;right:12px;margin-inline:auto;width:fit-content;max-width:min(440px,calc(100vw - 24px));top:calc(env(safe-area-inset-top,0px) + 66px);z-index:60;display:flex;align-items:center;gap:10px;padding:6px 14px 6px 8px;border-radius:999px;' + caja + 'pointer-events:none}' +
       '#fs-carta svg{flex:none;width:40px;height:40px;padding:3px;border-radius:50%;background:#fff3d6}#fs-carta .fs-c{display:flex;flex-direction:column;min-width:0}#fs-carta b{font-size:17px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#fs-carta small{font-size:13px;line-height:1.2;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
       '#fs-carta .fs-cond{color:#ffd23f}#fs-carta .fs-cond:empty{display:none}#fs-carta i{position:absolute;left:22px;right:22px;bottom:2px;height:3px;border-radius:2px;background:#7fe3a0;transform-origin:left}#fs-carta i.poco{background:#ffb4a2}' +
-      '#fs-visor{position:fixed;inset:0;z-index:59;pointer-events:none}#fs-visor .fs-marco{position:absolute;left:50%;top:50%;width:62vmin;height:62vmin;transform:translate(-50%,-50%);border-radius:10px;box-shadow:0 0 0 200vmax rgba(0,0,0,.28)}' +
+      '#fs-visor{position:fixed;inset:0;z-index:59;pointer-events:none}#fs-visor .fs-marco{position:absolute;left:50%;top:50%;width:52vmin;height:52vmin;transform:translate(-50%,-50%);border-radius:10px;box-shadow:0 0 0 200vmax rgba(0,0,0,.28)}' +
       '#fs-visor .fs-marco::before,#fs-visor .fs-marco::after{content:"";position:absolute;inset:0;border-radius:10px;border:4px solid #fff;clip-path:polygon(0 0,22% 0,22% 4px,4px 4px,4px 22%,0 22%,0 78%,4px 78%,4px calc(100% - 4px),22% calc(100% - 4px),22% 100%,78% 100%,78% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 78%,100% 78%,100% 22%,calc(100% - 4px) 22%,calc(100% - 4px) 4px,78% 4px,78% 0,100% 0,100% 100%,0 100%)}' +
       '#fs-visor .fs-marco::after{border:0;inset:calc(50% - 9px);border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.75);clip-path:none}#fs-visor.s3 .fs-marco::before{border-color:#ffd23f}' +
-      '#fs-visor .fs-est{position:absolute;left:50%;top:calc(50% + 31vmin + 10px);transform:translateX(-50%);display:flex;gap:6px;padding:4px 12px;border-radius:999px;background:rgba(16,36,28,.82)}#fs-visor .fs-est svg{width:30px;height:30px;fill:rgba(255,255,255,.28)}#fs-visor .fs-est svg.on{fill:#ffd23f}' +
-      '#fs-visor .fs-vtx{position:absolute;left:50%;top:calc(50% - 31vmin - 42px);transform:translateX(-50%);white-space:nowrap;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis;padding:4px 12px;border-radius:999px;background:rgba(16,36,28,.82);color:#fff8e6;font:600 15px Fredoka,system-ui,sans-serif}#fs-visor .fs-vtx:empty{display:none}' +
-      '#fs-visor button{position:absolute;right:calc(50% - 31vmin + 6px);top:calc(50% + 31vmin - 50px);padding:0;width:44px;font-size:20px;pointer-events:auto;background:rgba(255,243,214,.92)}' +
+      '#fs-visor .fs-est{position:absolute;left:50%;top:calc(50% + 26vmin + 10px);transform:translateX(-50%);display:flex;gap:6px;padding:4px 12px;border-radius:999px;background:rgba(16,36,28,.82)}#fs-visor .fs-est svg{width:30px;height:30px;fill:rgba(255,255,255,.28)}#fs-visor .fs-est svg.on{fill:#ffd23f}' +
+      '#fs-visor .fs-vtx{position:absolute;left:50%;top:calc(50% - 26vmin + 8px);transform:translateX(-50%);width:max-content;max-width:calc(52vmin - 16px);text-align:center;line-height:1.2;padding:4px 12px;border-radius:14px;background:rgba(16,36,28,.82);color:#fff8e6;font:600 14px Fredoka,system-ui,sans-serif;box-sizing:border-box}#fs-visor .fs-vtx:empty{display:none}' +
+      '#fs-visor button{position:absolute;right:calc(50% - 26vmin + 6px);top:calc(50% + 26vmin - 50px);padding:0;width:44px;font-size:20px;pointer-events:auto;background:rgba(255,243,214,.92)}' +
       '#fs-hud button,#fs-fin button,#fs-visor button,#fs-foto{min-height:44px;min-width:44px;padding:4px 16px;border-radius:22px;border:0;font:700 16px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer;touch-action:manipulation}' +
       '#fs-hud button.salir,#fs-fin button.salir{background:#ffd0c4}#fs-hud button:focus-visible,#fs-fin button:focus-visible,#fs-visor button:focus-visible,#fs-foto:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}' +
       '#fs-foto{position:fixed;right:calc(env(safe-area-inset-right,0px) + 18px);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);z-index:60;min-height:64px;min-width:64px;padding:6px 18px;border-radius:32px;display:flex;align-items:center;gap:8px;font-size:18px;background:#ffd23f}#fs-foto svg{width:26px;height:26px}' +
@@ -272,7 +281,7 @@ window.AVFotoSafari = function (G) {
       '#fs-fin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:18px 18px 16px;border-radius:24px;' + caja + 'text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}#fs-fin:focus{outline:none}' +
       '#fs-fin h2{margin:0;font-size:26px}#fs-fin .fs-gran{display:flex;align-items:center;gap:8px;font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#fs-fin .fs-gran svg{width:42px;height:42px;fill:#ffd23f}#fs-fin p{margin:0;font-size:17px;font-weight:600}#fs-fin .fs-med{font-size:16px;padding:3px 12px;border-radius:999px;background:#fff3d6;color:#3b2a14}#fs-fin .fs-med:empty{display:none}#fs-fin .fs-det{font-size:15px;opacity:.85;font-weight:500}' +
       '#fs-fin .fs-rollo{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}#fs-fin .fs-rollo:empty{display:none}#fs-fin .fs-rollo span{display:flex;flex-direction:column;align-items:center;padding:3px 4px 1px;border-radius:6px;background:#fffdf4;color:#e0a400;font-size:11px;line-height:1}#fs-fin .fs-rollo svg{width:26px;height:26px}#fs-fin .fs-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}#fs-fin button{min-height:54px;padding:4px 22px;font-size:18px}' +
-      '@media (orientation:landscape) and (max-height:500px){#fs-carta{left:12px;right:auto;margin:0;top:calc(env(safe-area-inset-top,0px) + 10px);max-width:min(330px,calc(50vw - 24px))}#fs-hud{right:12px;left:auto;margin:0}#fs-hud [data-k="msg"]{top:calc(100% + 8px);left:auto;right:0;transform:none}#fs-visor .fs-vtx{top:calc(50% - 31vmin + 8px);max-width:calc(62vmin - 16px)}#fs-fin{padding:12px 16px;gap:4px}#fs-fin h2{font-size:21px}#fs-fin .fs-gran{font-size:34px}}' +
+      '@media (orientation:landscape) and (max-height:500px){#fs-carta{left:12px;right:auto;margin:0;top:calc(env(safe-area-inset-top,0px) + 10px);max-width:min(330px,calc(50vw - 24px))}#fs-hud{right:12px;left:auto;margin:0}#fs-hud [data-k="msg"]{top:calc(100% + 8px);left:auto;right:0;transform:none}#fs-fin{padding:12px 16px;gap:4px}#fs-fin h2{font-size:21px}#fs-fin .fs-gran{font-size:34px}}' +
       // la historia no se mezcla con el minijuego: fuera el letrero, los avisos y bocadillos, la pista de Acción, los contadores
       'body.foto-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
       'body.foto-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#fs-foto){visibility:hidden!important}';
@@ -486,12 +495,13 @@ window.AVFotoSafari = function (G) {
       quieta(); ponerDelante(4); const t0 = carta.tipo, rel0 = E.reloj;
       tecla('e');
       const abierta = E.cam && !visorEl.hidden && document.body.classList.contains('foto-cam');
-      check('Con teclado: Acción abre la cámara (marco y estrellas en vivo) y la vista se acerca', abierta && (!C || C.distFly < camD0[1]), E.cam);
+      const pv = G.actores && G.actores.player3D && G.actores.player3D.root;
+      check('Con teclado: Acción abre la cámara (marco y estrellas en vivo), la vista se acerca y Vittata no tapa el marco', abierta && (!C || C.distFly < camD0[1]) && (!pv || !pv.visible), E.cam);
       quieta(); paso(0.02); quieta(); paso(0.4);
       const vivas = q(visorEl, 'est').querySelectorAll('svg.on').length;
       check('Centrado, cerca y quieta: se encienden las 3 estrellas en vivo', E.vivo === 3 && vivas === 3, E.vivo + ' · centro ' + MED.centro.toFixed(2) + ' cerca ' + MED.cerca.toFixed(2) + ' quieta ' + MED.quieta.toFixed(2));
       quieta(); tecla('e');
-      check('…y otra vez Acción: «¡Fotaza!», +3 estrellas, +10 s y sale la siguiente tarjeta', E.estrellas === 3 && E.fotos === 1 && /Fotaza/.test(q(hudEl, 'msg').textContent) && Math.abs(E.reloj - rel0 - BONO) < 0.5 && E.k === 2 && !E.cam && !estEl.hidden, q(hudEl, 'msg').textContent + ' · ' + t0.id + ' → ' + (carta.tipo && carta.tipo.id));
+      check('…y otra vez Acción: «¡Fotaza!», +3 estrellas, +10 s, sale la siguiente tarjeta y Vittata vuelve a verse', (!pv || pv.visible) && E.estrellas === 3 && E.fotos === 1 && /Fotaza/.test(q(hudEl, 'msg').textContent) && Math.abs(E.reloj - rel0 - BONO) < 0.5 && E.k === 2 && !E.cam && !estEl.hidden, q(hudEl, 'msg').textContent + ' · ' + t0.id + ' → ' + (carta.tipo && carta.tipo.id));
       // Táctil: el botón Acción de siempre
       const act = G.input && G.input.actBtn;
       if (act) {
