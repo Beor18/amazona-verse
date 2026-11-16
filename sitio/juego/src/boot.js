@@ -423,14 +423,24 @@
         const b = document.createElement('button');
         b.type = 'button'; b.id = 'av-version';
         b.textContent = en() ? 'There is something new: tap to update' : 'Hay novedades: toca para actualizar';
-        b.style.cssText = 'position:fixed;z-index:80;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);max-width:min(440px,calc(100vw - 24px));min-height:44px;padding:10px 18px;border:0;border-radius:999px;background:#1d5e33;color:#fff;font:700 16px/1.3 system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer';
+        b.style.cssText = 'max-width:min(440px,calc(100vw - 80px));min-height:44px;padding:10px 18px;border:0;border-radius:999px;background:#1d5e33;color:#fff;font:700 16px/1.3 system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer';
         b.addEventListener('click', () => {
           quiere = true; b.disabled = true;
           const w = reg.waiting;
           if (w) w.postMessage({ tipo: 'actualizar' });
           else location.reload();
         });
-        document.body.appendChild(b);
+        // T66: arriba y con «×» para cerrarlo; abajo tapaba el «Salir» del minigolf y de «Sigue el canto» (lo vio T55, tests/qa/vivo.js)
+        const caja = document.createElement('div');
+        caja.id = 'av-version-caja';
+        caja.style.cssText = 'position:fixed;z-index:80;left:0;right:0;top:max(10px,env(safe-area-inset-top));display:flex;justify-content:center;gap:6px;align-items:center;pointer-events:none';
+        const x = document.createElement('button');
+        x.type = 'button'; x.id = 'av-version-x'; x.textContent = '×';
+        x.setAttribute('aria-label', en() ? 'Not now' : 'Ahora no');
+        x.style.cssText = 'flex:none;width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font:700 22px/1 system-ui,sans-serif;cursor:pointer;pointer-events:auto';
+        b.style.pointerEvents = 'auto';
+        x.addEventListener('click', () => caja.remove());
+        caja.append(b, x); document.body.appendChild(caja);
       }
       function mirar(reg) {
         if (!reg) return;
