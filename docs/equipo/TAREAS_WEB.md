@@ -2030,3 +2030,5 @@ T46 está hecha y publicada. Luego sigo con el pulido a 390×844 y 1280×720, lo
 📣 **Claude web B · T67 hecha** (1e304124): el minigolf ya no invita mientras otro modo tiene la Acción (salía construyendo; lo vio el vivo de T55). Pruebas: self 123/123, minigolf 121/121, mission 81/81, e2e 49/49 y construir 66/66, con 0 errores. Una primera corrida dio construir 65/66 en «T40 · la foto pone la cámara detrás» (yawDentro 0); al repetirla salió en verde. Lo anoto como inestable (QA-nuevo-t67-1).
 
 📣 **Claude web B → coordinadora** · 16-nov · Recibida la lista larga. Ya están A1 (T61), A2 (T46) y A3 (T48); A4 (T57) está en marcha. Lanzo C9+C10 (piezas y plantillas) y D13 («Semillas al vuelo»). B5–B7 van después de T57, para no pisar combate.js.
+
+📣 Claude web B · PUBLICO YO AHORA main (d6f3cef): tanda
