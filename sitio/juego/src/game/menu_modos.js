@@ -29,7 +29,7 @@
     const S = G.S, $ = G.util.$, P = G.pack, raiz = document.documentElement;
     const ALMACEN = ((P.meta && P.meta.almacen) || P.id) + '.menu';
     const portada = $('title'), form = $('modos'), creador = $('creator');
-    const MODOS = ['aventura', 'golf', 'pesca', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'canto', 'escondite', 'maze', 'libre', 'nido', 'records'];
+    const MODOS = ['aventura', 'golf', 'pesca', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'canto', 'escondite', 'semillas', 'maze', 'libre', 'nido', 'records'];
     // V18 (Kelvin 8-nov: «¿dónde está lo divertido?»): cada actividad de la V18 con su tarjeta. «Retos con amigos» abre una tarjeta con
     // las tres de los amigos (SUB); Mis cotorras, el Álbum y Retos con amigos se abren encima del menú, como Mi nido (ENCIMA).
     const SUB = ['chispa', 'moon', 'guardian'], ENCIMA = ['nido', 'records', 'cotorras', 'album', 'amigos'];
@@ -60,6 +60,7 @@
       river: [L('River Rush', 'River Rush'), L('Baja el río en canoa: contra el reloj y tu fantasma', 'Paddle down the river: against the clock and your ghost')], // src/game/river_rush.js (AC2)
       canto: [L('Sigue el canto', 'Follow the song'), L('Repite el canto de las cotorras', 'Repeat the parrots’ song')], // src/game/canto.js (T43)
       escondite: [L('Escondite', 'Hide-and-seek'), L('Encuentra a los 3 pichones', 'Find the 3 chicks')], // src/game/escondite.js (T56)
+      semillas: [L('Semillas al vuelo', 'Seeds on the wing'), L('Atrapa las semillas que caen del cielo', 'Catch the seeds falling from the sky')], // src/game/semillas.js (D13)
       maze: [L('Amazona Maze', 'Amazona Maze'), L('Frutos en el laberinto y guardianes', 'Fruit in the maze and guardians')], // src/game/maze.js (AB1, BI2)
       libre: [L('Vuelo libre', 'Free flight'), L('Explora a tu aire, sin misiones', 'Explore on your own, with no missions')],
       nido: [L('Mi nido', 'My nest'), L('Tus huevos y crías', 'Your eggs and chicks')],
@@ -133,11 +134,11 @@
       const st = document.createElement('style'); st.id = 'menu-recorte-css';
       st.textContent = '#modos .recorte-fuera{display:none!important}#title .title-episodios.episodios-arriba{margin:0 0 12px}'
         // «Más juegos» abierto: solo sus juegos (River Rush, Tormenta, Banquete y Sigue el canto) y «Volver», en ese orden (también fuera las tarjetas que añaden otros módulos)
-        + '#modos.modos-mas-abierto .modos-grid>:not([data-mas-juegos]):not([data-modo="river"]):not([data-modo="tormenta"]):not([data-modo="banquete"]):not([data-modo="canto"]):not([data-modo="escondite"]){display:none!important}'
-        + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-modo="canto"]{order:4}#modos.modos-mas-abierto [data-modo="escondite"]{order:5}#modos.modos-mas-abierto [data-mas-juegos]{order:6}';
+        + '#modos.modos-mas-abierto .modos-grid>:not([data-mas-juegos]):not([data-modo="river"]):not([data-modo="tormenta"]):not([data-modo="banquete"]):not([data-modo="canto"]):not([data-modo="escondite"]):not([data-modo="semillas"]){display:none!important}'
+        + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-modo="canto"]{order:4}#modos.modos-mas-abierto [data-modo="escondite"]{order:5}#modos.modos-mas-abierto [data-modo="semillas"]{order:6}#modos.modos-mas-abierto [data-mas-juegos]{order:7}';
       document.head.appendChild(st);
     }
-    const FUERA = [], MAS = ['river', 'tormenta', 'banquete', 'canto', 'escondite']; // T38: el Duelo y el Duelo de 2 vuelven a la portada (Kelvin, 15-nov)
+    const FUERA = [], MAS = ['river', 'tormenta', 'banquete', 'canto', 'escondite', 'semillas']; // T38: el Duelo y el Duelo de 2 vuelven a la portada (Kelvin, 15-nov)
     const seVe = m => seVe0(m) && !(RECORTE() && FUERA.includes(m));
     let masAbierto = false;
     function masJuegos() {
@@ -191,7 +192,7 @@
       if (bMas) {
         bMas.hidden = !RECORTE(); bMas.style.display = RECORTE() ? '' : 'none';
         bMas.querySelector('b').textContent = masAbierto ? L('Volver', 'Back') : L('Más juegos', 'More games');
-        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta, el banquete, el canto y el escondite', 'River Rush, the storm, the feast, the song and hide-and-seek');
+        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta, el banquete, el canto, el escondite y las semillas', 'River Rush, the storm, the feast, the song, hide-and-seek and the seeds');
         bMas.setAttribute('aria-expanded', String(masAbierto));
         bMas.setAttribute('aria-label', bMas.querySelector('b').textContent + '. ' + bMas.querySelector('small').textContent);
       }
@@ -437,6 +438,7 @@
       river: () => document.body.classList.contains('river-on'),
       canto: () => document.body.classList.contains('canto-on'),
       escondite: () => document.body.classList.contains('escondite-on'),
+      semillas: () => document.body.classList.contains('semillas-on'), // D13
       tren: () => document.body.classList.contains('tren-on'),
       maze: () => document.body.classList.contains('maze-on'),
       carreras: () => !!(G.retosApi && G.retosApi.activo) || document.body.classList.contains('retos-on'),
@@ -481,6 +483,7 @@
       else if (modo === 'river') p = listo().then(() => (window.AV && window.AV.riverRush ? window.AV.riverRush() : false));
       else if (modo === 'canto') p = window.AV && window.AV.canto ? window.AV.canto() : Promise.resolve(false); // T43: Sigue el canto (src/game/canto.js)
       else if (modo === 'escondite') p = listo().then(() => (window.AV && window.AV.escondite ? window.AV.escondite() : false)); // T56
+      else if (modo === 'semillas') p = listo().then(() => (window.AV && window.AV.semillas ? window.AV.semillas() : false)); // D13: Semillas al vuelo
       else if (modo === 'maze') p = listo().then(() => (window.AV && window.AV.maze ? window.AV.maze() : false)); // Amazona Maze (src/game/maze.js, BI2)
       else if (modo === 'libre') { entrarLibre(); p = Promise.resolve(true); }
       else if (modo === 'nido') p = G.criadero && G.criadero.abrir ? G.criadero.abrir() : Promise.resolve(false);
@@ -538,6 +541,7 @@
       const rv = G.riverRushApi; if (rv) { try { rv.salir(); } catch (e) { /* ya fuera */ } }
       if (G.cantoApi) { try { G.cantoApi.salir(); } catch (e) { /* ya fuera */ } } // T43
       if (G.escondite && G.escondite.salir) { try { G.escondite.salir(); } catch (e) { /* ya fuera */ } } // T56
+      if (G.semillasApi) { try { G.semillasApi.salir(); } catch (e) { /* ya fuera */ } } // D13
       const mz = G.mazeApi; if (mz) { try { mz.salir(); } catch (e) { /* ya fuera */ } } // src/game/maze.js (BI2)
       if (G.criadero && G.criadero.abierto && G.criadero.abierto()) G.criadero.cerrar();
       salir18();
@@ -726,6 +730,19 @@
         const okE = await hasta(() => G.escondite && G.escondite.activo && G.escondite.activo(), 15000);
         check('T56 · Escondite: la tarjeta abre el juego (con su «Salir») y cierra la portada', okE && !portada.open && !!document.querySelector('#esc-hud [data-a="salir"]'));
         volver(); check('T56 · Vuelve al menú desde el Escondite', portada.open && !G.escondite.activo() && !document.body.classList.contains('escondite-on'));
+        { // D13: Semillas al vuelo, desde «Más juegos»: entra, su «Salir» y Esc vuelven al menú
+          await elegir('semillas');
+          const okS = await hasta(() => G.semillasApi && G.semillasApi.activo(), 15000);
+          check('D13 · Semillas al vuelo: la tarjeta abre el juego (con su «Salir») y cierra la portada', okS && !portada.open && !!document.querySelector('#sem-hud [data-a="salir"]') && document.body.classList.contains('semillas-on'));
+          document.querySelector('#sem-hud [data-a="salir"]').click();
+          const alMenuS = await hasta(() => portada.open, 8000);
+          check('D13 · su «Salir» vuelve al menú', alMenuS && !G.semillasApi.activo() && !document.body.classList.contains('semillas-on') && desdeMenu === null, 'portada ' + portada.open + ', marca ' + desdeMenu);
+          await elegir('semillas'); await hasta(() => G.semillasApi.activo(), 15000);
+          dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+          const alMenuE = await hasta(() => portada.open, 8000);
+          check('D13 · Esc en el juego también vuelve al menú', alMenuE && !G.semillasApi.activo() && !document.body.classList.contains('semillas-on'));
+          if (!portada.open) volver();
+        }
         await elegir('canto'); // T43
         const okC = await hasta(() => G.cantoApi && G.cantoApi.activo(), 15000);
         check('T43 · Sigue el canto: la tarjeta abre el juego (con su «Salir») y cierra la portada', okC && !portada.open && !!document.querySelector('#canto [data-a="salir"]'));

@@ -318,18 +318,131 @@
         for (let k = 0; k < 5; k++) P.push(parte(new C.ConeGeometry(0.06, 0.2, 4), k % 2 ? '#f4c430' : '#e2363b', { p: [0.04 * (k % 2 ? 1 : -1), 0.95 + k * 0.1, 0.02], r: [0, 0, (k % 2 ? 1 : -1) * 1.1] }));
         return P;
       } },
+      // ---- C9 · Más piezas del kit (de todos desde el principio): mismas texturas del kit (tablas, piedra, paja) y encaje con imán.
+      // Familias nuevas de imán: 'borde' (por fuera del borde de un piso, mirando hacia fuera; «fuera» = metros desde el borde hasta
+      // el centro de la pieza) y 'esquina' (en las esquinas de un piso). La baranda y la cerca de tablas encajan como la pared.
+      // Escalera de tablas: tres escalones que suben hasta el piso (bajan hacia +Z), zancas y pasamanos
+      escalera: { r: 0.6, sobre: true, iman: 'borde', fuera: 0.4, hacer() {
+        const P = [];
+        for (const [h, z0, z1] of [[0.22, -0.4, -0.13], [0.15, -0.13, 0.14], [0.075, 0.14, 0.4]]) {
+          P.push(parte(new C.BoxGeometry(1.1, h, z1 - z0), '#e6d2b4', { p: [0, h / 2, (z0 + z1) / 2], m: 'tablas', uv: [1.1, 0.3] }));
+          P.push(parte(new C.BoxGeometry(1.14, 0.025, 0.05), '#b08a5c', { p: [0, h - 0.012, z1 - 0.025], m: 'tablas', uv: [1.1, 0.05] }));
+        }
+        const L = Math.hypot(0.8, 0.22), inc = Math.atan2(0.22, 0.8);
+        for (const sg of [-1, 1]) {
+          P.push(parte(new C.BoxGeometry(0.07, 0.12, L), '#c9a77c', { p: [sg * 0.585, 0.13, 0], r: [inc, 0, 0], m: 'tablas', uv: [0.1, L] }));
+          P.push(parte(new C.BoxGeometry(0.08, 0.95, 0.08), '#8a6236', { p: [sg * 0.585, 0.475, 0.34], m: 'tablas', uv: [0.08, 0.9] }));
+          P.push(parte(new C.BoxGeometry(0.08, 1.05, 0.08), '#8a6236', { p: [sg * 0.585, 0.745, -0.36], m: 'tablas', uv: [0.08, 1] }));
+          const Lp = Math.hypot(0.7, 0.32);
+          P.push(parte(new C.BoxGeometry(0.07, 0.06, Lp + 0.08), '#c9a77c', { p: [sg * 0.585, 1.11, -0.01], r: [Math.atan2(0.32, 0.7), 0, 0], m: 'tablas', uv: [0.1, Lp] }));
+          for (const z of [0.34, -0.36]) P.push(parte(new C.SphereGeometry(0.055, 8, 6), '#6b4a2b', { p: [sg * 0.585, z > 0 ? 0.97 : 1.29, z] }));
+        }
+        return P;
+      } },
+      // Baranda de tablas: 2 m, tres postes con remate, pasamanos, zócalo y balaustres
+      baranda: { r: 1.0, sobre: true, iman: 'pared', hacer() {
+        const P = [];
+        for (const x of [-0.94, 0, 0.94]) {
+          P.push(parte(new C.BoxGeometry(0.11, 1.0, 0.11), '#c9a77c', { p: [x, 0.5, 0], m: 'tablas', uv: [0.12, 1] }));
+          P.push(parte(new C.ConeGeometry(0.09, 0.12, 4), '#8a6236', { p: [x, 1.06, 0], r: [0, Math.PI / 4, 0] }));
+        }
+        P.push(parte(new C.BoxGeometry(2.0, 0.07, 0.13), '#d2b48c', { p: [0, 0.97, 0], m: 'tablas', uv: [2, 0.1] }));
+        P.push(parte(new C.BoxGeometry(1.9, 0.06, 0.08), '#b08a5c', { p: [0, 0.22, 0], m: 'tablas', uv: [2, 0.08] }));
+        for (let i = 0; i < 10; i++) {
+          const x = -0.83 + i * 0.184 + (i >= 5 ? 0.02 : 0); if (Math.abs(x) < 0.08) continue;
+          P.push(parte(new C.CylinderGeometry(0.025, 0.03, 0.72, 6), '#e6d2b4', { p: [x, 0.6, 0] }));
+        }
+        return P;
+      } },
+      // Techo a dos aguas de tablas rojizas, con sus dos hastiales cerrados, cumbrera y cuatro horcones (encaja en el centro de un piso)
+      dosaguas: { r: 1.2, sobre: true, iman: 'tejado', hacer() {
+        const P = [];
+        for (const [x, z] of [[0.94, 0.94], [-0.94, 0.94], [0.94, -0.94], [-0.94, -0.94]]) P.push(parte(new C.BoxGeometry(0.12, 1.92, 0.12), '#8a6236', { p: [x, 0.96, z], m: 'tablas', uv: [0.12, 1.9] }));
+        for (const z of [-0.94, 0.94]) P.push(parte(new C.BoxGeometry(2.0, 0.1, 0.12), '#8a6236', { p: [0, 1.92, z], m: 'tablas', uv: [2, 0.1] }));
+        const inc = 0.6, ala = 1.36;
+        for (const sg of [-1, 1]) {
+          P.push(parte(new C.BoxGeometry(2.5, 0.08, ala), '#d0745a', { p: [0, 2.3, sg * 0.58], r: [sg * inc, 0, 0], m: 'tablas', uv: [2.5, 1.3] }));
+          P.push(parte(new C.BoxGeometry(2.54, 0.12, 0.05), '#f2ebe0', { p: [0, 2.3 - Math.sin(inc) * ala / 2 - 0.02, sg * (0.58 + Math.cos(inc) * ala / 2)], m: 'tablas', uv: [2.5, 0.1] }));
+        }
+        const sh = new C.Shape(); sh.moveTo(-1.0, 0); sh.lineTo(1.0, 0); sh.lineTo(0, 0.7); sh.lineTo(-1.0, 0);
+        for (const x of [-1.0, 1.0]) P.push(parte(new C.ExtrudeGeometry(sh, { depth: 0.06, bevelEnabled: false }), '#ead7b8', { p: [x - 0.03, 1.97, 0], r: [0, Math.PI / 2, 0], m: 'tablas', uv: [1, 1] }));
+        for (const x of [-1.0, 1.0]) P.push(parte(new C.BoxGeometry(0.1, 0.06, 0.2), '#2a2420', { p: [x * 1.01, 2.25, 0] }));
+        P.push(parte(new C.BoxGeometry(2.6, 0.1, 0.14), '#8a6236', { p: [0, 2.69, 0], m: 'tablas', uv: [2.6, 0.1] }));
+        return P;
+      } },
+      // Farol de piedra: pedestal de piedra, poste de tablas y farol de luz cálida con su techito (encaja en las esquinas del piso)
+      farolito: { r: 0.3, sobre: false, iman: 'esquina', hacer() {
+        return [parte(new C.BoxGeometry(0.36, 0.5, 0.36), '#f2ebe0', { p: [0, 0.25, 0], m: 'piedra', uv: [0.4, 0.5] }),
+          parte(new C.BoxGeometry(0.44, 0.07, 0.44), '#d9d0c2', { p: [0, 0.53, 0], m: 'piedra', uv: [0.45, 0.1] }),
+          parte(new C.BoxGeometry(0.1, 0.95, 0.1), '#8a6236', { p: [0, 1.04, 0], m: 'tablas', uv: [0.1, 1] }),
+          parte(new C.BoxGeometry(0.26, 0.04, 0.26), '#2a2420', { p: [0, 1.52, 0] }),
+          parte(new C.CylinderGeometry(0.1, 0.1, 0.26, 8), '#ffd27a', { p: [0, 1.67, 0] }),
+          parte(new C.SphereGeometry(0.065, 8, 6), '#fff1b8', { p: [0, 1.67, 0] }),
+          ...[[-1, -1], [-1, 1], [1, -1], [1, 1]].map(([a, b]) => parte(new C.BoxGeometry(0.025, 0.28, 0.025), '#2a2420', { p: [a * 0.11, 1.67, b * 0.11] })),
+          parte(new C.ConeGeometry(0.21, 0.16, 4), '#2a2420', { p: [0, 1.88, 0], r: [0, Math.PI / 4, 0] }),
+          parte(new C.SphereGeometry(0.03, 6, 4), '#2a2420', { p: [0, 1.97, 0] })];
+      } },
+      // Cerca de tablas encaladas: 2 m, dos postes, dos travesaños y nueve tablitas en punta (encaja como la pared)
+      valla: { r: 1.0, sobre: true, iman: 'pared', hacer() {
+        const P = [];
+        for (const x of [-0.94, 0.94]) {
+          P.push(parte(new C.BoxGeometry(0.11, 0.98, 0.11), '#c9a77c', { p: [x, 0.49, 0], m: 'tablas', uv: [0.12, 1] }));
+          P.push(parte(new C.ConeGeometry(0.09, 0.12, 4), '#8a6236', { p: [x, 1.04, 0], r: [0, Math.PI / 4, 0] }));
+        }
+        for (const y of [0.28, 0.66]) P.push(parte(new C.BoxGeometry(1.9, 0.07, 0.04), '#b08a5c', { p: [0, y, -0.05], m: 'tablas', uv: [2, 0.07] }));
+        for (let i = 0; i < 9; i++) {
+          const x = -0.76 + i * 0.19, h = 0.74 + (i % 2 ? 0 : 0.04);
+          P.push(parte(new C.BoxGeometry(0.13, h, 0.03), '#f6f1e6', { p: [x, 0.08 + h / 2, 0], m: 'tablas', uv: [0.13, h] }));
+          P.push(parte(new C.ConeGeometry(0.092, 0.1, 4), '#f6f1e6', { p: [x, 0.13 + h, 0], r: [0, Math.PI / 4, 0], s: [1, 1, 0.24] }));
+        }
+        return P;
+      } },
+      // Banco de tablas sobre dos patas de piedra, con respaldo (por fuera del borde de un piso, de espaldas a la casa)
+      banco: { r: 0.75, sobre: false, iman: 'borde', fuera: 0.3, hacer() {
+        const P = [];
+        for (const x of [-0.52, 0.52]) {
+          P.push(parte(new C.BoxGeometry(0.14, 0.4, 0.38), '#f2ebe0', { p: [x, 0.2, 0.02], m: 'piedra', uv: [0.4, 0.4] }));
+          P.push(parte(new C.BoxGeometry(0.07, 0.42, 0.07), '#8a6236', { p: [x, 0.62, -0.18], r: [-0.12, 0, 0], m: 'tablas', uv: [0.07, 0.4] }));
+        }
+        for (const z of [-0.1, 0.06, 0.2]) P.push(parte(new C.BoxGeometry(1.4, 0.05, 0.14), '#e6d2b4', { p: [0, 0.43, z], m: 'tablas', uv: [1.4, 0.14] }));
+        for (const y of [0.62, 0.78]) P.push(parte(new C.BoxGeometry(1.4, 0.1, 0.035), '#d2b48c', { p: [0, y, -0.2 - (y - 0.45) * 0.12], r: [-0.12, 0, 0], m: 'tablas', uv: [1.4, 0.1] }));
+        return P;
+      } },
+      // Huerto: cajón de tablas con tierra, una fila de lechugas, una de ajíes rojos y amarillos, y su letrerito
+      huerto: { r: 0.95, sobre: false, iman: 'borde', fuera: 0.5, hacer() {
+        const P = [];
+        for (const sg of [-1, 1]) {
+          P.push(parte(new C.BoxGeometry(1.8, 0.3, 0.06), '#d2b48c', { p: [0, 0.15, sg * 0.42], m: 'tablas', uv: [1.8, 0.3] }));
+          P.push(parte(new C.BoxGeometry(0.06, 0.3, 0.78), '#d2b48c', { p: [sg * 0.87, 0.15, 0], m: 'tablas', uv: [0.78, 0.3] }));
+        }
+        for (const [x, z] of [[0.87, 0.42], [-0.87, 0.42], [0.87, -0.42], [-0.87, -0.42]]) P.push(parte(new C.BoxGeometry(0.1, 0.36, 0.1), '#8a6236', { p: [x, 0.18, z], m: 'tablas', uv: [0.1, 0.36] }));
+        P.push(parte(new C.BoxGeometry(1.68, 0.06, 0.78), '#4a3220', { p: [0, 0.25, 0] }));
+        for (let i = 0; i < 5; i++) {
+          const x = -0.64 + i * 0.32;
+          for (let k = 0; k < 6; k++) { const a = k / 6 * Math.PI * 2 + i; P.push(parte(new C.SphereGeometry(0.075, 7, 5), k % 2 ? '#7cc24f' : '#5ea83c', { p: [x + Math.cos(a) * 0.05, 0.33, -0.18 + Math.sin(a) * 0.05], s: [1, 0.7, 1] })); }
+          P.push(parte(new C.SphereGeometry(0.06, 7, 5), '#a8db7a', { p: [x, 0.37, -0.18] }));
+          P.push(parte(new C.CylinderGeometry(0.012, 0.016, 0.26, 4), '#3f7d2c', { p: [x, 0.4, 0.17] }));
+          for (let k = 0; k < 4; k++) { const a = k / 4 * Math.PI * 2 + i * 0.7; P.push(parte(new C.ConeGeometry(0.05, 0.14, 4), '#4f9a3c', { p: [x + Math.cos(a) * 0.06, 0.46, 0.17 + Math.sin(a) * 0.06], dir: [Math.cos(a), 0.7, Math.sin(a)], s: [1, 1, 0.3] })); }
+          for (let k = 0; k < 3; k++) { const a = k / 3 * Math.PI * 2 + i; P.push(parte(new C.ConeGeometry(0.022, 0.08, 6), (i + k) % 3 ? '#e2363b' : '#f4c430', { p: [x + Math.cos(a) * 0.07, 0.39, 0.17 + Math.sin(a) * 0.07], r: [Math.PI, 0, 0] })); }
+        }
+        P.push(parte(new C.BoxGeometry(0.04, 0.42, 0.04), '#8a6236', { p: [0.95, 0.33, 0.3], m: 'tablas', uv: [0.04, 0.4] }));
+        P.push(parte(new C.BoxGeometry(0.22, 0.14, 0.03), '#e6d2b4', { p: [0.95, 0.56, 0.32], m: 'tablas', uv: [0.22, 0.14] }));
+        return P;
+      } },
     };
     // BASE: las 7 de siempre, de todos desde el principio. EXTRA: las del Mercadito del río (pack.tienda.construir), solo cuando se compran.
     const BASE = ['nido', 'techo', 'bromelia', 'flores', 'piedra', 'tronco', 'banderines'];
     const CASA = ['piso', 'pared', 'puerta', 'ventana', 'muro', 'tejado', 'maceta']; // T39: de todos desde el principio, detrás de las 7 de siempre
+    const KIT = ['escalera', 'baranda', 'dosaguas', 'farolito', 'valla', 'banco', 'huerto']; // C9: de todos desde el principio, detrás de la casita
     const EXTRA = ['helecho', 'cerca', 'farol', 'comedero', 'domino', 'hamaca'];
-    const ORDEN = BASE.concat(CASA, EXTRA);
+    const ORDEN = BASE.concat(CASA, KIT, EXTRA);
     const NOMBRE = { nido: 'Nido de ramitas', techo: 'Techo de hojas', bromelia: 'Bromelia', flores: 'Flores', piedra: 'Piedras', tronco: 'Tronco', banderines: 'Banderines',
       piso: 'Piso de tablas', pared: 'Pared de tablas', puerta: 'Pared con puerta', ventana: 'Pared con ventana', muro: 'Muro de piedra', tejado: 'Tejado de paja', maceta: 'Maceta con heliconia',
+      escalera: 'Escalera', baranda: 'Baranda', dosaguas: 'Techo a dos aguas', farolito: 'Farol de piedra', valla: 'Cerca de tablas', banco: 'Banco', huerto: 'Huerto',
       helecho: 'Helecho', cerca: 'Cerca de bambú', farol: 'Farol', comedero: 'Comedero de aves', domino: 'Mesa de dominó', hamaca: 'Hamaca' };
     // Una pieza del Mercadito es tuya si está en S.tienda.compras (src/game/tienda.js la valida al cargar; aquí solo se lee)
     const compradas = () => { try { if (G.tienda && G.tienda.compradas) return G.tienda.compradas(); const t = S.tienda; return esObj(t) && Array.isArray(t.compras) ? t.compras : []; } catch (e) { return []; } };
-    const tiene = t => BASE.includes(t) || CASA.includes(t) || (EXTRA.includes(t) && compradas().includes(t));
+    const tiene = t => BASE.includes(t) || CASA.includes(t) || KIT.includes(t) || (EXTRA.includes(t) && compradas().includes(t));
     const disponibles = () => ORDEN.filter(tiene);
 
     // ---------- Datos: leer (tolerante) y guardar ----------
@@ -460,12 +573,26 @@
     // T50 · «Casita rápida»: de un toque, delante de Vittata y mirando hacia ella, dos pisos de tablas, el tejado de paja, tres
     // paredes (fondo y un lado) y una maceta, ya encajados como con el imán. Lo que no cabe se salta; se deshace con un solo
     // «Deshacer». Solo fuera de los cuartos (dentro ya hay sus paredes).
-    function casita() {
-      if (ctx) { aviso('Aquí dentro ya hay paredes: la casita va fuera.'); return false; }
+    // C10 · Plantillas de un toque, igual que la casita: cada receta es [tipo, a, b, giro], con a a lo ancho (eje X de la plantilla) y b
+    // hacia el fondo (lejos de Vittata), en metros desde el punto que mira Vittata; el giro se suma al de la plantilla (pasos de 45°).
+    // Todo cae donde caería con el imán: un piso mide 2 m, la pared va en su borde (±1), la escalera, el banco y el huerto por fuera
+    // (1 + fuera) y el farol de piedra en la esquina (±1,2). Respeta el presupuesto y validar(); un Deshacer quita la plantilla entera
+    // y Quitar, pieza a pieza.
+    const PLANTILLAS = {
+      casita: [['piso', -1, 1, 0], ['piso', 1, 1, 0], ['tejado', -1, 1, 0], ['pared', -1, 2, 0], ['pared', 1, 2, 0], ['pared', -2, 1, 2], ['maceta', 1.7, -0.2, 0]],
+      bohio: [['piso', 0, 1, 0], ['tejado', 0, 1, 0], ['pared', 0, 2, 0], ['ventana', -1, 1, 2], ['ventana', 1, 1, 2], ['puerta', 0, 0, 0], ['escalera', 0, -0.4, 4], ['huerto', 1.5, 1, 2], ['banco', -1.3, 1, 6]],
+      torre: [['piso', 0, 1, 0], ['dosaguas', 0, 1, 0], ['muro', 0, 2, 0], ['muro', -1, 1, 2], ['muro', 1, 1, 2], ['escalera', 0, -0.4, 4], ['farolito', -1.2, -0.2, 0], ['farolito', 1.2, -0.2, 0]],
+      puente: [['piso', -2, 1, 0], ['piso', 0, 1, 0], ['piso', 2, 1, 0], ['baranda', -2, 0, 0], ['baranda', 0, 0, 0], ['baranda', 2, 0, 0], ['baranda', -2, 2, 0], ['baranda', 0, 2, 0], ['baranda', 2, 2, 0], ['escalera', -3.4, 1, 6], ['escalera', 3.4, 1, 2]],
+      nidogrande: [['nido', 0, 1, 0], ['techo', 0, 1, 0], ['bromelia', -1.35, 0.3, 0], ['flores', 1.35, 0.3, 0], ['flores', -1.35, 1.7, 0], ['bromelia', 1.35, 1.7, 0], ['tronco', 0, -0.4, 0], ['farolito', 0, 2.15, 0]],
+    };
+    const NOMBRE_PL = { casita: 'Casita rápida', bohio: 'Bohío', torre: 'Torre de vigía', puente: 'Puente pequeño', nidogrande: 'Nido grande' };
+    function plantilla(nombre) {
+      const receta = PLANTILLAS[nombre]; if (!receta) return false;
+      const casa = nombre === 'casita';
+      if (ctx) { aviso(casa ? 'Aquí dentro ya hay paredes: la casita va fuera.' : 'Las plantillas van fuera, no dentro de un cuarto.'); return false; }
+      if (lista.length >= presupuesto()) { aviso('Ya usaste todas tus piezas. Quita alguna para seguir.'); sonar('wrong'); return false; }
       const f = S.facing || { x: 0, z: 1 }, rr = ((Math.round(Math.atan2(f.x, f.z) / PASO) % 8) + 8) % 8;
       const c = crudo(), X = ejeX(rr), Z = ejeZ(rr), en = (a, b) => ({ x: c.x + X.x * a + Z.x * b, z: c.z + X.z * a + Z.z * b });
-      // a: a lo ancho (eje X de la casita), b: hacia el fondo (lejos de Vittata)
-      const receta = [['piso', -1, 1, 0], ['piso', 1, 1, 0], ['tejado', -1, 1, 0], ['pared', -1, 2, 0], ['pared', 1, 2, 0], ['pared', -2, 1, 2], ['maceta', 1.7, -0.2, 0]];
       const antes = copia();
       for (const [t, a, b, dr] of receta) {
         if (lista.length >= presupuesto() || !tiene(t)) continue;
@@ -473,12 +600,15 @@
         if (validar(t, w.x, w.z)) continue;
         lista.push({ t, x: r2(w.x), z: r2(w.z), r: (rr + dr) % 8 });
       }
-      if (lista.length === antes.length) { aviso('Aquí no cabe la casita: busca un sitio más llano y despejado.'); sonar('wrong'); return false; }
+      if (lista.length === antes.length) { aviso(casa ? 'Aquí no cabe la casita: busca un sitio más llano y despejado.' : 'Aquí no cabe: busca un sitio más llano y despejado.'); sonar('wrong'); return false; }
       anotar({ op: 'lote', antes, despues: copia() });
       pintar(); guardar(); pintarHud(); sonar('pieza'); actualizar();
-      aviso(lista.length - antes.length === receta.length ? '¡Casita lista! Cámbiala a tu gusto o toca Deshacer.' : 'Puse lo que cabía. Cámbialo a tu gusto o toca Deshacer.', 3200);
+      const todo = lista.length - antes.length === receta.length;
+      aviso(casa ? (todo ? '¡Casita lista! Cámbiala a tu gusto o toca Deshacer.' : 'Puse lo que cabía. Cámbialo a tu gusto o toca Deshacer.')
+        : (todo ? '¡Listo! Cámbialo a tu gusto o toca Deshacer.' : 'Puse lo que cabía. Cámbialo a tu gusto o toca Deshacer.'), 3200);
       return true;
     }
+    const casita = () => plantilla('casita');
     function habitacion(nombre) {
       const receta = HABITACIONES[nombre];
       if (!receta) return false;
@@ -522,7 +652,7 @@
     // T39 · Encaje con imán: cerca (≤ IMAN m) de un sitio donde la pieza encaja, el fantasma salta ahí, toma el giro que toca y se
     // pone dorado. Piso con piso (al lado), pared o muro en el borde de un piso, en la punta de otra pared o en su esquina, y el
     // tejado en el centro de un piso. Todo en metros del mundo (en un interior, mundoDe suma su origen).
-    const IMAN = 1.0;
+    const IMAN = 1.0, ESQ = 1.2;
     const ejeX = r => ({ x: Math.cos(r * PASO), z: -Math.sin(r * PASO) }), ejeZ = r => ({ x: Math.sin(r * PASO), z: Math.cos(r * PASO) });
     function imanes(t) {
       const fam = TIPOS[t] && TIPOS[t].iman, out = []; if (!fam) return out;
@@ -536,6 +666,10 @@
           for (const k of [-2, 2]) add(w, X.x * k, X.z * k, p.r);
           for (const a of [-1, 1]) for (const b of [-1, 1]) add(w, X.x * a + Z.x * b, X.z * a + Z.z * b, p.r + 2);
         } else if (fam === 'tejado' && f === 'piso') add(w, 0, 0, p.r);
+        else if (fam === 'borde' && f === 'piso') { // C9: por fuera de cada borde, mirando hacia fuera (su +Z sale del piso)
+          const d = 1 + (TIPOS[t].fuera || 0.4);
+          add(w, Z.x * d, Z.z * d, p.r); add(w, -Z.x * d, -Z.z * d, p.r + 4); add(w, X.x * d, X.z * d, p.r + 2); add(w, -X.x * d, -X.z * d, p.r + 6);
+        } else if (fam === 'esquina' && f === 'piso') for (const a of [-1, 1]) for (const b of [-1, 1]) add(w, (X.x * a + Z.x * b) * ESQ, (X.z * a + Z.z * b) * ESQ, p.r);
       }
       // sin repetir lo que ya está puesto (misma pieza en el mismo sitio)
       return out.filter(c => !lista.some(p => { const w = mundoDe(p); return TIPOS[p.t].iman === fam && Math.hypot(w.x - c.x, w.z - c.z) < 0.3; }));
@@ -679,7 +813,7 @@
       activo = false;
       if (fantasma) fantasma.visible = false;
       if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
-      modo0 = null; hud(false);
+      modo0 = null; verPlantillas(false); hud(false);
       if (lista.length) aviso('Tu rincón quedó guardado.');
       return true;
     }
@@ -705,6 +839,8 @@
       else if (k === 'z' && !e.shiftKey) deshacer();
       else if (k === 'y' || (k === 'z' && e.shiftKey)) rehacer();
       else if (k === 'delete' || k === 'backspace') quitar();
+      else if (k === 't') verPlantillas();
+      else if (k === 'escape' && hudEl && hudEl.classList.contains('cl-pl-abierta')) verPlantillas();
       else hecho = false;
       if (hecho) { e.preventDefault(); e.stopImmediatePropagation(); }
     }, true);
@@ -731,7 +867,23 @@
       comedero: '<path d="M16 29V18" stroke="#6b4a2b" stroke-width="2.6" stroke-linecap="round"/><path d="M7 18h18v-2H7z" fill="#8a5a32"/><rect x="11" y="10" width="10" height="7" fill="#d9a35a"/><path d="M8 11l8-6 8 6" stroke="#a4472f" stroke-width="3" fill="none" stroke-linejoin="round"/><circle cx="16" cy="13" r="1.6" fill="#3b2a1a"/><circle cx="9.5" cy="15" r="1" fill="#e3c27a"/><circle cx="22.5" cy="15" r="1" fill="#e3c27a"/>',
       domino: '<path d="M3 14h26v3H3z" fill="#8a5a32"/><path d="M3 14h26" stroke="#2f7a4a" stroke-width="2"/><path d="M6 17v11M26 17v11" stroke="#6b4a2b" stroke-width="2.4"/><rect x="8" y="9" width="7" height="4" rx="1" fill="#f7f3ea" stroke="#2b2b2b" stroke-width=".6"/><rect x="17" y="9" width="7" height="4" rx="1" fill="#f7f3ea" stroke="#2b2b2b" stroke-width=".6"/><path d="M11.5 9v4M20.5 9v4" stroke="#2b2b2b" stroke-width=".7"/><circle cx="9.8" cy="11" r=".8" fill="#2b2b2b"/><circle cx="22.2" cy="11" r=".8" fill="#2b2b2b"/>',
       hamaca: '<path d="M3 29V6M29 29V6" stroke="#6b4a2b" stroke-width="2.6" stroke-linecap="round"/><path d="M3 9l4 4M29 9l-4 4" stroke="#f5f0e0" stroke-width="1.2"/><path d="M7 13q9 12 18 0" stroke="#e85d3a" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M7.5 15q8.5 10 17 0" stroke="#f4c430" stroke-width="2" fill="none"/><path d="M8 17q8 8 16 0" stroke="#2fb5a8" stroke-width="2" fill="none"/>',
+      // C9
+      escalera: '<path d="M4 27h8v-6h8v-6h8v12z" fill="#d9bc8f"/><path d="M4 27h24M12 21h8M20 15h8M12 21v6M20 15v6" stroke="#8a6236" stroke-width="1.4"/><path d="M5 26V14M27 13V4" stroke="#6b4a2b" stroke-width="2.4" stroke-linecap="round"/><path d="M5 14L27 4" stroke="#c9a77c" stroke-width="2.4" stroke-linecap="round"/>',
+      baranda: '<path d="M3 11h26" stroke="#c9a77c" stroke-width="3.2" stroke-linecap="round"/><path d="M3 24h26" stroke="#b08a5c" stroke-width="2.2"/><path d="M8 12v12M12 12v12M20 12v12M24 12v12" stroke="#e6d2b4" stroke-width="2"/><path d="M4 9v19M16 9v19M28 9v19" stroke="#8a6236" stroke-width="3.2"/><path d="M2.5 9l1.5-2 1.5 2M14.5 9l1.5-2 1.5 2M26.5 9l1.5-2 1.5 2" fill="#6b4a2b"/>',
+      dosaguas: '<path d="M16 4L2 15h4l10-7.6L26 15h4z" fill="#d0745a"/><path d="M6 15L16 7.4 26 15z" fill="#ead7b8"/><path d="M9 12.6l14 0M11.7 10.5h8.6" stroke="#c9a77c" stroke-width="1"/><path d="M7 15v14M25 15v14" stroke="#8a6236" stroke-width="2.4"/><path d="M6 15h20" stroke="#8a6236" stroke-width="1.8"/><path d="M2 15h4M26 15h4" stroke="#f2ebe0" stroke-width="1.4"/>',
+      farolito: '<rect x="11" y="21" width="10" height="8" fill="#cfc4b2"/><path d="M11 25h10M16 21v4" stroke="#8d8577" stroke-width="1"/><path d="M10 21h12" stroke="#b5ab9b" stroke-width="2"/><path d="M16 20v-6" stroke="#8a6236" stroke-width="2.6"/><rect x="12.5" y="7" width="7" height="7" rx="1" fill="#ffd27a" stroke="#2a2420" stroke-width="1.2"/><circle cx="16" cy="10.5" r="2" fill="#fff1b8"/><path d="M11 7l5-4 5 4z" fill="#2a2420"/>',
+      valla: '<path d="M2 13h28M2 22h28" stroke="#b08a5c" stroke-width="2"/><path d="M6 28V9l2-3 2 3v19zM14 28V9l2-3 2 3v19zM22 28V9l2-3 2 3v19z" fill="#f6f1e6" stroke="#a8916a" stroke-width=".8"/><path d="M3 28V10M29 28V10" stroke="#8a6236" stroke-width="2.6"/>',
+      banco: '<path d="M4 17h24v3H4z" fill="#d9bc8f"/><path d="M5 9h22v2.6H5zM5 13h22v2.4H5z" fill="#c9a77c"/><path d="M8 9l-1 8M24 9l1 8" stroke="#8a6236" stroke-width="2"/><rect x="6" y="20" width="5" height="8" fill="#cfc4b2"/><rect x="21" y="20" width="5" height="8" fill="#cfc4b2"/>',
+      huerto: '<path d="M3 20h26v8H3z" fill="#c9a77c"/><path d="M3 24h26" stroke="#8a6236" stroke-width="1.2"/><path d="M4 20h24v-1H4z" fill="#4a3220"/><circle cx="8" cy="16" r="3.2" fill="#5ea83c"/><circle cx="8" cy="15.4" r="1.6" fill="#a8db7a"/><circle cx="16" cy="16" r="3.2" fill="#7cc24f"/><circle cx="16" cy="15.4" r="1.6" fill="#a8db7a"/><path d="M24 19V11M24 14l-3-2M24 13l3-2" stroke="#3f7d2c" stroke-width="1.6" stroke-linecap="round"/><path d="M21 13l1 3.5 1-3z" fill="#e2363b"/><path d="M26 12l1 3.5 1-3z" fill="#f4c430"/>',
       banderines: '<path d="M3 6v22M29 6v22" stroke="#7b5430" stroke-width="2.4"/><path d="M3 8q13 8 26 0" stroke="#f5f0e0" stroke-width="1.4" fill="none"/><path d="M6 10l3 7 3-5z" fill="#f4c430"/><path d="M13 12l3 7 3-6z" fill="#2fb5a8"/><path d="M20 12l3 6 3-7z" fill="#e85d8f"/>',
+    };
+    // C10 · iconos de las plantillas
+    const SVG_PL = {
+      casita: '<path d="M3 16L13 7l10 9z" fill="#d9c48a"/><path d="M5 16h16v12H5z" fill="#d9bc8f"/><path d="M5 20h16M5 24h16" stroke="#a8916a" stroke-width=".9"/><path d="M5 16v12M21 16v12" stroke="#6b4a2b" stroke-width="2"/><path d="M24 22h6l-1 6h-4z" fill="#b5562f"/><path d="M27 22v-7M27 22l-3-5M27 22l3-5" stroke="#3f8a35" stroke-width="1.6" stroke-linecap="round"/><path d="M26 15l2-1-.5 2z" fill="#e2363b"/><path d="M2 29h28" stroke="#8a6236" stroke-width="2"/>',
+      bohio: '<path d="M1 15L16 4l15 11z" fill="#d9c48a"/><path d="M5 13l2 3M10 9l2 4M16 7v5M22 9l-2 4M27 13l-2 3" stroke="#a88e4f" stroke-width="1.2"/><path d="M5 15h22v11H5z" fill="#d9bc8f"/><rect x="13" y="18" width="6" height="8" fill="#5a3a22"/><rect x="7" y="18" width="4" height="4" fill="#9ed0ff" stroke="#8a6236" stroke-width=".9"/><rect x="21" y="18" width="4" height="4" fill="#9ed0ff" stroke="#8a6236" stroke-width=".9"/><path d="M12 26h8v1.6h1.5V29h-11v-1.4H12z" fill="#c9a77c"/><path d="M2 29h28" stroke="#8a6236" stroke-width="1.6"/>',
+      torre: '<path d="M16 3L4 12h24z" fill="#d0745a"/><path d="M8 12h16" stroke="#8a6236" stroke-width="1.6"/><path d="M8 12v8M24 12v8" stroke="#8a6236" stroke-width="2"/><path d="M5 19h22v10H5z" fill="#cfc4b2"/><path d="M5 23h22M11 19v4M21 19v4M8 23v6M16 23v6M24 23v6" stroke="#8d8577" stroke-width="1"/><path d="M4 18h24v2H4z" fill="#b5ab9b"/><rect x="1" y="21" width="3" height="4" rx=".8" fill="#ffd27a" stroke="#2a2420" stroke-width=".8"/><rect x="28" y="21" width="3" height="4" rx=".8" fill="#ffd27a" stroke="#2a2420" stroke-width=".8"/>',
+      puente: '<path d="M1 26l4-3h22l4 3z" fill="#c9a77c"/><path d="M5 23h22v2H5z" fill="#d9bc8f"/><path d="M5 23v-8M12 23v-8M20 23v-8M27 23v-8" stroke="#8a6236" stroke-width="2.2"/><path d="M4 15h24" stroke="#c9a77c" stroke-width="2.4" stroke-linecap="round"/><path d="M8.5 16v7M16 16v7M23.5 16v7" stroke="#e6d2b4" stroke-width="1.4"/><path d="M2 29q14-4 28 0" stroke="#4a90e2" stroke-width="2" fill="none" opacity=".8"/>',
+      nidogrande: '<path d="M2 12L16 3l14 9z" fill="#5a8a36"/><path d="M4 12l-2 3M10 12l-1 3M22 12l1 3M28 12l2 3" stroke="#7db54c" stroke-width="2" stroke-linecap="round"/><path d="M7 12v16M25 12v16" stroke="#6b4a2b" stroke-width="2"/><ellipse cx="16" cy="24" rx="8" ry="4" fill="#c9a25a"/><path d="M8 22q8 6 16 0M9 25l14-3" stroke="#7b5430" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="3" cy="25" r="2" fill="#e2363b"/><circle cx="29" cy="25" r="2" fill="#f4c430"/><path d="M3 27v2M29 27v2" stroke="#3f7d2c" stroke-width="1.4"/>',
     };
     const ICONO_HUD = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#000" d="M3 20.5 13.6 9.9l1.5 1.5L4.5 22zM12.4 4.2l3-1.7 6.1 6.1-1.7 3-2.1-2.1-1.6 1.6-3.8-3.8 1.6-1.6z"/></svg>') + '")';
     let hudEl = null, estilo = null;
@@ -745,7 +897,10 @@
         '#cl-hud button[aria-pressed="true"]{background:#ffd27a;color:#10241c;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}' +
         '#cl-hud svg{width:30px;height:30px}#cl-hud .cl-cuenta{color:#fff8e6;font:700 13px system-ui,sans-serif;padding:0 8px;white-space:nowrap}' +
         '#cl-hud kbd{font:600 10px system-ui,sans-serif;opacity:.7}' +
-        '#cl-hud .cl-herr button{flex-direction:row;font-size:13px;padding:4px 10px}' +
+        '#cl-hud .cl-herr button{flex-direction:row;font-size:13px;padding:4px 10px;white-space:nowrap}' +
+        '#cl-hud .cl-plantillas{display:none}#cl-hud.cl-pl-abierta .cl-plantillas{display:flex}#cl-hud.cl-pl-abierta .cl-piezas{display:none}' +
+        '#cl-hud .cl-plantillas button{width:74px;flex:0 0 auto}#cl-hud .cl-plantillas small{font-size:11px;line-height:1.1}' +
+        '#cl-hud [data-cl="plantillas"][aria-expanded="true"]{background:#ffd27a;color:#10241c}' +
         '#cl-hud .cl-deshacer.cl-hay{background:#ffd27a;color:#10241c;box-shadow:0 0 0 3px rgba(255,210,122,.7);min-width:84px;font-weight:800}' +
         '#cl-hud .cl-deshacer[aria-disabled="true"]{opacity:.5;box-shadow:none}' +
         'body:has(#title[open]) #cl-hud,body:has(#creator:not([hidden])) #cl-hud{visibility:hidden}' +
@@ -753,7 +908,10 @@
         '#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{min-width:44px;min-height:44px;padding:2px}#cl-hud svg{width:26px;height:26px}' +
         '#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-cuenta{font-size:12px;padding:0 4px}' +
         '#cl-hud .cl-herr{flex-wrap:wrap;overflow:visible}' +
+        '#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
         'body:has(#emotes:not([hidden])) #cl-hud{top:calc(env(safe-area-inset-top,0px) + 72px);max-width:calc(100vw - 24px)}}' +
+        // C10: teléfono en horizontal (844×390): la barra va al centro, entre el joystick y los botones de acción, bajo el HUD de arriba
+        '@media (orientation:landscape) and (max-height:500px){#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}}' +
         '@media (prefers-reduced-motion:reduce){#cl-hud,#cl-hud *{animation:none;transition:none}}';
       document.head.appendChild(estilo);
     }
@@ -764,8 +922,9 @@
         hudEl = document.createElement('div'); hudEl.id = 'cl-hud'; hudEl.className = 'hud'; hudEl.setAttribute('role', 'toolbar'); hudEl.setAttribute('aria-label', 'Para construir');
         const tecla = window.matchMedia && matchMedia('(pointer: coarse)').matches ? () => '' : k => `<kbd>${k}</kbd>`;
         hudEl.innerHTML = '<div class="cl-fila cl-piezas">' + filaPiezas() + '</div>' +
+          '<div class="cl-fila cl-plantillas" id="cl-plantillas" role="group" aria-label="Plantillas">' + Object.keys(PLANTILLAS).map(k => `<button type="button" data-cl-pl="${k}" aria-label="${NOMBRE_PL[k]}"><svg viewBox="0 0 32 32" aria-hidden="true">${SVG_PL[k]}</svg><small>${NOMBRE_PL[k]}</small></button>`).join('') + '</div>' +
           `<div class="cl-fila cl-herr"><span class="cl-cuenta" aria-live="polite"></span><button type="button" class="cl-deshacer" data-cl="deshacer" aria-disabled="true" aria-label="Deshacer" aria-keyshortcuts="Z"><span class="cl-etiq">Deshacer</span> ${tecla('Z')}</button><button type="button" data-cl="girar" aria-label="Girar" aria-keyshortcuts="R">Girar ${tecla('R')}</button>` +
-          `<button type="button" data-cl="rejilla" aria-pressed="false" aria-label="Cuadritos">Cuadritos</button><button type="button" data-cl="casita" aria-label="Casita rápida">Casita rápida</button><button type="button" data-cl="foto" aria-label="Foto">Foto</button>` +
+          `<button type="button" data-cl="rejilla" aria-pressed="false" aria-label="Cuadritos">Cuadritos</button><button type="button" data-cl="plantillas" aria-expanded="false" aria-controls="cl-plantillas" aria-label="Plantillas" aria-keyshortcuts="T">Plantillas ${tecla('T')}</button><button type="button" data-cl="foto" aria-label="Foto">Foto</button>` +
           `<button type="button" data-cl="quitar" aria-label="Quitar" aria-keyshortcuts="Delete">Quitar ${tecla('Supr')}</button><button type="button" data-cl="listo" aria-label="Listo" aria-keyshortcuts="Escape">Listo ${tecla('Esc')}</button>` +
           (G.tienda && G.tienda.disponible && G.tienda.disponible() ? '<button type="button" data-cl="tienda" aria-label="Mercadito">Mercadito</button>' : '') + '</div>';
         let gesto = null, gestoYa = false;
@@ -792,6 +951,8 @@
           else if (b.dataset.cl === 'rejilla') cuadrícula();
           else if (b.dataset.cl === 'foto') foto();
           else if (b.dataset.cl === 'casita') casita();
+          else if (b.dataset.cl === 'plantillas') { verPlantillas(); return; }
+          else if (b.dataset.clPl) { verPlantillas(false); plantilla(b.dataset.clPl); }
           else if (b.dataset.cl === 'quitar') quitar();
           else if (b.dataset.cl === 'listo') salir();
           else if (b.dataset.cl === 'tienda') { if (G.tienda) G.tienda.abrir('construir', b); return; }
@@ -800,6 +961,19 @@
         document.body.appendChild(hudEl);
       }
       hudEl.hidden = false;
+    }
+    // C10 · El botón «Plantillas» cambia la fila de piezas por la de plantillas (en el mismo sitio: no tapa más pantalla) y al revés
+    function verPlantillas(on) {
+      if (!hudEl) return false;
+      const abre = on == null ? !hudEl.classList.contains('cl-pl-abierta') : !!on;
+      hudEl.classList.toggle('cl-pl-abierta', abre);
+      const b = hudEl.querySelector('[data-cl="plantillas"]'); if (b) b.setAttribute('aria-expanded', String(abre));
+      if (on == null) {
+        sonar('tick');
+        const dest = abre ? hudEl.querySelector('[data-cl-pl]') : b;
+        if (dest) try { dest.focus({ preventScroll: true }); } catch (e) { /* */ }
+      }
+      return abre;
     }
     // La fila de piezas: las 7 de siempre y las del Mercadito que ya son tuyas (teclas 1–9 en ese orden)
     function filaPiezas() { return disponibles().map((t, i) => `<button type="button" data-cl-tipo="${t}" aria-pressed="${t === tipo}" aria-label="${NOMBRE[t]}"${i < 9 ? ` aria-keyshortcuts="${i + 1}"` : ''}><svg viewBox="0 0 32 32" aria-hidden="true">${SVG[t]}</svg><small>${NOMBRE[t]}</small></button>`).join(''); }
@@ -903,7 +1077,7 @@
         // 2. Encendida a la fuerza (solo la prueba): escena, entradas y modo
         forzar(true);
         S.construir = null; aplicar(null);
-        check('Encendida: 7 piezas de siempre, 7 de la casita (T39 y T59: puerta y ventana) y 6 del Mercadito, un InstancedMesh por tipo (solo se dibujan los que tienen piezas)', BASE.length === 7 && CASA.length === 7 && EXTRA.length === 6 && ORDEN.every(t => mallas[t] && mallas[t].isInstancedMesh) && grupo.children.filter(o => o.isInstancedMesh).length === ORDEN.length && ORDEN.every(t => !mallas[t].visible));
+        check('Encendida: 7 piezas de siempre, 7 de la casita (T39 y T59: puerta y ventana), 7 del kit (C9) y 6 del Mercadito, un InstancedMesh por tipo (solo se dibujan los que tienen piezas)', BASE.length === 7 && CASA.length === 7 && KIT.length === 7 && EXTRA.length === 6 && ORDEN.every(t => mallas[t] && mallas[t].isInstancedMesh) && grupo.children.filter(o => o.isInstancedMesh).length === ORDEN.length && ORDEN.every(t => !mallas[t].visible));
         check('Encendida: botón del HUD y tarjeta del menú', !!$('b-construir') && !!$('b-construir-menu'));
         {
           const cl = document.body.classList, tenia = cl.contains('duelo-on');
@@ -943,7 +1117,7 @@
             const r = b.getBoundingClientRect();
             if (r.right > 390 || r.left < 0 || r.bottom > 844 || r.top < 0) mal.push(`${sel} ${Math.round(r.left)},${Math.round(r.top)}–${Math.round(r.right)},${Math.round(r.bottom)}`);
           };
-          const sels = ['[aria-label="Quitar"]', '[aria-label="Listo"]', '[aria-label="Cuadritos"]'].concat(hudEl.querySelector('[aria-label="Mercadito"]') ? ['[aria-label="Mercadito"]'] : []);
+          const sels = ['[aria-label="Quitar"]', '[aria-label="Listo"]', '[aria-label="Cuadritos"]', '[aria-label="Plantillas"]'].concat(hudEl.querySelector('[aria-label="Mercadito"]') ? ['[aria-label="Mercadito"]'] : []);
           sels.forEach(dentro);
           const emo = doc && doc.getElementById('emotes'), piezas = doc && doc.querySelector('.cl-piezas');
           if (emo && piezas) {
@@ -951,9 +1125,38 @@
             const a = piezas.getBoundingClientRect(), c = emo.getBoundingClientRect();
             const choca = a.right > c.left + 1 && a.bottom > c.top + 1 && a.top < c.bottom - 1 && a.left < c.right - 1;
             if (choca) mal.push('gestos tapan las piezas');
+            emo.hidden = true;
+          }
+          // C10: con «Plantillas» abierta, su fila ocupa el sitio de la de piezas (no más alta) y sus 5 botones caben enteros en 390
+          const raiz = doc && doc.getElementById('cl-hud');
+          if (raiz && piezas) {
+            const hA = raiz.getBoundingClientRect().height; raiz.classList.add('cl-pl-abierta');
+            const hB = raiz.getBoundingClientRect().height, bs = [...doc.querySelectorAll('[data-cl-pl]')];
+            if (getComputedStyle(piezas).display !== 'none') mal.push('la fila de piezas sigue con plantillas abiertas');
+            if (hB > hA + 1) mal.push(`plantillas más alta ${Math.round(hA)}→${Math.round(hB)}`);
+            if (bs.length !== 5) mal.push('plantillas: ' + bs.length);
+            bs.forEach(b => { const r = b.getBoundingClientRect(); if (r.left < 0 || r.right > 390 - 12 || r.width < 44 || r.height < 44) mal.push(`${b.dataset.clPl} ${Math.round(r.left)}–${Math.round(r.right)} ${Math.round(r.width)}×${Math.round(r.height)}`); });
           }
           fr.remove();
-          check('En 390 se ven Quitar, Listo y Mercadito, y los gestos no tapan las piezas', !mal.length, mal.join(' · '));
+          check('En 390 se ven Quitar, Listo, Plantillas y Mercadito, los gestos no tapan las piezas y las 5 plantillas caben (C10)', !mal.length, mal.join(' · '));
+        }
+        {
+          // C10 · teléfono en horizontal (844×390): la barra queda en el centro, entre el joystick (izquierda) y los botones de acción
+          // (derecha), bajo el HUD de arriba, sin cortar ningún botón, con las piezas o con las plantillas abiertas
+          const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+          fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:844px;height:390px;border:0';
+          fr.srcdoc = `<!doctype html><html><head><style>${hojaA}body{margin:0}#cl-hud{position:fixed}</style></head><body>${hudEl.outerHTML}</body></html>`;
+          document.body.appendChild(fr);
+          await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 2500); });
+          const doc = fr.contentDocument, raiz = doc && doc.getElementById('cl-hud'), mal = [];
+          const mide = et => {
+            const c = raiz.getBoundingClientRect();
+            if (c.top < 149 || c.bottom > 330 || c.left < 199 || c.right > 645) mal.push(`${et} caja ${Math.round(c.left)},${Math.round(c.top)}–${Math.round(c.right)},${Math.round(c.bottom)}`);
+            raiz.querySelectorAll('.cl-herr button, .cl-plantillas button').forEach(b => { const r = b.getBoundingClientRect(); if (r.width && (r.left < c.left - 1 || r.right > c.right + 1)) mal.push(et + ' cortado ' + b.getAttribute('aria-label')); });
+          };
+          if (raiz) { mide('piezas'); raiz.classList.add('cl-pl-abierta'); mide('plantillas'); } else mal.push('sin barra');
+          fr.remove();
+          check('C10 · en 844×390 la barra va al centro, entre el joystick y los botones de acción, y no corta nada', !mal.length, mal.join(' · '));
         }
         elegir('nido'); actualizar();
         check('Fantasma visible y verde donde cabe', fantasma.visible && est.valido && matF.color.g > matF.color.r, est.motivo);
@@ -1013,7 +1216,7 @@
         check('La foto del rincón es un PNG local y no deja un enlace para subirlo', typeof urlFoto === 'string' && urlFoto.indexOf('data:image/png') === 0 && urlFoto.length > 200 && !document.querySelector('a[download="rincon-vittata.png"]'), urlFoto ? urlFoto.slice(0, 22) + '… ' + urlFoto.length : 'sin foto');
         // 3b. Piezas del Mercadito del río: sin comprarlas no salen en la barra ni se eligen; compradas, sí (teclas 1–9 en el orden de la barra)
         S.tienda = { v: 1, conchitas: 0, ganadas: 0, compras: [] }; refrescar();
-        const nLibres = BASE.length + CASA.length;
+        const nLibres = BASE.length + CASA.length + KIT.length;
         check('Sin comprarla, el farol no está en la barra ni se puede elegir', !hudEl.querySelector('[data-cl-tipo="farol"]') && !elegir('farol') && tipo !== 'farol' && disponibles().length === nLibres);
         S.tienda = { v: 1, conchitas: 0, ganadas: 40, compras: ['farol'] }; refrescar();
         dispatchEvent(new KeyboardEvent('keydown', { key: '8', bubbles: true }));
@@ -1073,7 +1276,69 @@
           const unDeshacer = deshacer() && lista.length === 0;
           const enCuarto = (ctx = { id: 'x' }, !casita()); ctx = null;
           check('T50 · «Casita rápida»: dos pisos, tejado y tres paredes (y la maceta si cabe) de un toque; un Deshacer la quita; dentro de un cuarto no',
-            hizoC && (tiposC === 'maceta,pared,pared,pared,piso,piso,tejado' || tiposC === 'pared,pared,pared,piso,piso,tejado') && unDeshacer && enCuarto && !!(hudEl && hudEl.querySelector('[data-cl="casita"]')), JSON.stringify({ hizoC, nC, tiposC, unDeshacer, enCuarto }));
+            hizoC && (tiposC === 'maceta,pared,pared,pared,piso,piso,tejado' || tiposC === 'pared,pared,pared,piso,piso,tejado') && unDeshacer && enCuarto && !!(hudEl && hudEl.querySelector('[data-cl-pl="casita"]')), JSON.stringify({ hizoC, nC, tiposC, unDeshacer, enCuarto }));
+          // C9 · cada pieza nueva lleva texturas del kit, icono y nombre, encaja con imán donde toca (piso en P, giro 0) y se coloca
+          {
+            aplicar(null); empezar(); giro = 0; S.pos.x = p0.x; S.pos.z = p0.z; S.facing = { x: 1, z: 0 }; elegir('piso'); actualizar();
+            const P = { x: est.x, z: est.z }, conPiso = colocar(), mal = [];
+            const META = { escalera: [0, 1.4, 0], baranda: [0, 1, 0], dosaguas: [0, 0, 0], farolito: [1.2, 1.2, 0], valla: [0, 1, 0], banco: [1.3, 0, 2], huerto: [-1.5, 0, 6] };
+            for (const t of KIT) {
+              const [dx, dz, r] = META[t] || [9, 9, 0];
+              S.pos.x = P.x + dx - DIST + 0.2; S.pos.z = P.z + dz + 0.15; elegir(t); actualizar();
+              const g = geos[t], kitTex = g.userData.mats.some(m => m === 'tablas' || m === 'piedra' || m === 'paja');
+              const okT = est.iman && Math.abs(est.x - P.x - dx) < 1e-3 && Math.abs(est.z - P.z - dz) < 1e-3 && est.r === r && kitTex && !!SVG[t] && !!NOMBRE[t] &&
+                Array.from(g.attributes.position.array).every(Number.isFinite) && !!(hudEl && hudEl.querySelector('[data-cl-tipo="' + t + '"]'));
+              const n0 = lista.length, puso = okT && colocar() && lista.length === n0 + 1 && lista[n0].t === t && mallas[t].count === 1;
+              if (!puso) mal.push(t + ' ' + JSON.stringify({ iman: est.iman, dx: +(est.x - P.x).toFixed(2), dz: +(est.z - P.z).toFixed(2), r: est.r, kitTex, motivo: est.motivo }));
+              if (puso) deshacer();
+            }
+            check('C9 · escalera, baranda, techo a dos aguas, farol de piedra, cerca de tablas, banco y huerto: texturas del kit, icono, y encajan con imán junto a un piso y se colocan', conPiso && !mal.length, mal.join(' · ') || 'P ' + P.x.toFixed(1) + ',' + P.z.toFixed(1));
+            aplicar(null);
+          }
+          // C10 · plantillas de un toque: se colocan (lo que cabe), cuentan piezas, un Deshacer las quita enteras y Quitar va pieza a pieza
+          {
+            empezar(); elegir('flores'); const res = {}, malP = [];
+            for (const k of Object.keys(PLANTILLAS)) {
+              aplicar(null); S.pos.x = p0.x; S.pos.z = p0.z; S.facing = { x: 1, z: 0 }; actualizar();
+              const hizo = plantilla(k), n = lista.length, tipos = lista.every(p => PLANTILLAS[k].some(r => r[0] === p.t));
+              const cuenta = (pintarHud(), hudEl.querySelector('.cl-cuenta').textContent === 'Piezas: ' + n + '/' + presupuesto());
+              const unoMenos = n > 1 ? (S.pos.x = lista[n - 1].x - DIST, S.pos.z = lista[n - 1].z, actualizar(), quitar() && lista.length === n - 1) : true;
+              const todo = (n > 1 ? deshacer() : true) && deshacer() && lista.length === 0 && rehacer() && lista.length === n;
+              res[k] = n;
+              if (!(hizo && n >= Math.min(3, PLANTILLAS[k].length) && tipos && cuenta && unoMenos && todo)) malP.push(k + ' ' + JSON.stringify({ hizo, n, tipos, cuenta, unoMenos, todo }));
+            }
+            check('C10 · Casita rápida, Bohío, Torre de vigía, Puente pequeño y Nido grande se colocan de un toque, cuentan piezas, Quitar va pieza a pieza y un Deshacer quita la plantilla entera', !malP.length, malP.join(' · ') || JSON.stringify(res));
+            // límite de piezas: con 2 libres pone 2 y lo dice; lleno no pone nada; dentro de un cuarto no
+            aplicar(null); S.pos.x = p0.x; S.pos.z = p0.z; S.facing = { x: 1, z: 0 };
+            const top = presupuesto();
+            for (let i = 0; i < top - 2; i++) lista.push({ t: 'flores', x: r2(p0.x + 300 + i * 2), z: r2(p0.z + 300), r: 0 });
+            actualizar();
+            const parcial = plantilla('bohio') && lista.length === top, lleno = !plantilla('torre') && lista.length === top;
+            aplicar(null);
+            const enCuartoP = (ctx = { id: 'x' }, !plantilla('nidogrande')); ctx = null;
+            check('C10 · las plantillas respetan el límite de piezas (con 2 libres pone 2; lleno, ninguna) y no van dentro de un cuarto', parcial && lleno && enCuartoP, JSON.stringify({ parcial, lleno, enCuartoP, top }));
+            // la barra: «Plantillas» cambia la fila de piezas por la de plantillas; T la abre, Esc la cierra; un toque coloca y la cierra
+            const bP = hudEl.querySelector('[data-cl="plantillas"]'), filaP = hudEl.querySelector('.cl-plantillas'), filaZ = hudEl.querySelector('.cl-piezas');
+            bP.click();
+            const abierta = hudEl.classList.contains('cl-pl-abierta') && bP.getAttribute('aria-expanded') === 'true' && getComputedStyle(filaP).display !== 'none' && getComputedStyle(filaZ).display === 'none' && filaP.querySelectorAll('button[data-cl-pl]').length === 5 && document.activeElement === filaP.querySelector('button');
+            // las teclas solo llegan sin nada encima (como la B de arriba): si quedó un diálogo de la isla, se cierra antes
+            const encimaK = { dlg: !!G.dialogo.open(), card: !!G.ui.cardOpen, busy: !!G.ui.busy(), pausa: !!(G.pausa && G.pausa.activa()), portada: !!($("title") && $("title").open) };
+            try { if (G.dialogo.open()) G.dialogo.clear(); if (G.ui.cardOpen) G.ui.hideCard(); } catch (e) { /* */ }
+            const portadaK = $('title'), libreK = !(portadaK && portadaK.open) && !G.ui.busy() && !(G.pausa && G.pausa.activa());
+            let cerrada = true, conT = true;
+            if (libreK) {
+              // desde el botón con el foco, como una tecla de verdad (en window mismo, input.js la vería antes por ir en el destino)
+              (document.activeElement || document.body).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+              cerrada = !hudEl.classList.contains('cl-pl-abierta') && activo && getComputedStyle(filaZ).display !== 'none';
+              (document.activeElement || document.body).dispatchEvent(new KeyboardEvent('keydown', { key: 't', bubbles: true, cancelable: true }));
+              conT = hudEl.classList.contains('cl-pl-abierta');
+            } else { if (!activo) empezar(); verPlantillas(false); verPlantillas(true); }
+            S.pos.x = p0.x; S.pos.z = p0.z; S.facing = { x: 1, z: 0 }; actualizar();
+            filaP.querySelector('[data-cl-pl="nidogrande"]').click();
+            const toque = lista.length > 0 && lista.some(p => p.t === 'nido') && !hudEl.classList.contains('cl-pl-abierta');
+            check('C10 · el botón «Plantillas» cambia la fila de piezas por la de plantillas (T la abre, Esc la cierra sin salir) y un toque coloca y vuelve a las piezas', abierta && cerrada && conT && toque, JSON.stringify({ abierta, cerrada, conT, toque, teclas: libreK ? 'probadas' : 'pantalla encima: no se prueban', encimaK }));
+            aplicar(null);
+          }
           salir(); S.pos.x = pIni.x; S.pos.z = pIni.z; S.facing = f0; aplicar(null);
         }
         // 5. Presupuesto
@@ -1126,8 +1391,8 @@
       return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
     }
 
-    const api = { empezar, salir, activo: () => activo, elegir, girar, colocar, deshacer, rehacer, quitar, cuadrícula, foto, casita, rejilla: () => rejilla, piezas: () => lista.map(p => Object.assign({}, p)), aplicar, presupuesto, contexto, habitacion,
-      forzar, test, TIPOS: ORDEN.slice(), BASE: BASE.slice(), EXTRA: EXTRA.slice(), SVG, NOMBRE, tiene, disponibles, refrescar, CAPACIDAD, _escena: () => ({ grupo, fantasma, est: Object.assign({}, est) }) };
+    const api = { empezar, salir, activo: () => activo, elegir, girar, colocar, deshacer, rehacer, quitar, cuadrícula, foto, casita, plantilla, verPlantillas, PLANTILLAS: Object.keys(PLANTILLAS), rejilla: () => rejilla, piezas: () => lista.map(p => Object.assign({}, p)), aplicar, presupuesto, contexto, habitacion,
+      forzar, test, TIPOS: ORDEN.slice(), BASE: BASE.slice(), EXTRA: EXTRA.slice(), KIT: KIT.slice(), SVG, NOMBRE, tiene, disponibles, refrescar, CAPACIDAD, _escena: () => ({ grupo, fantasma, est: Object.assign({}, est) }) };
     G.construir = api;
     return api;
   };
