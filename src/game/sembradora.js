@@ -486,7 +486,8 @@ window.AVSembradora = function (G) {
   const activo = () => E.fase !== 'nada';
   // Durante la pantalla de carga (pausa 'carga') el HUD no sale encima: aparece cuando el mundo ya se ve
   const cargando = () => { try { return !!(G.pausa && G.pausa.motivos && G.pausa.motivos.has('carga')); } catch (e) { return false; } };
-  function verHud() { if (hudEl) { const v = E.fase === 'juego' && !cargando(); if (hudEl.hidden === v) hudEl.hidden = !v; } }
+  // tampoco durante la apertura del capítulo («Saltar intro» a la vista, ui.css T23)
+  function verHud() { if (hudEl) { const v = E.fase === 'juego' && !cargando() && !document.getElementById('c1-saltar'); if (hudEl.hidden === v) hudEl.hidden = !v; } }
   function salir() {
     if (!activo()) return false;
     E.fase = 'nada'; guia.ok = false;
