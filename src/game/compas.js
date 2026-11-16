@@ -61,7 +61,8 @@ window.AVCompas = function (G) {
   const E = { fase: 'nada', fuente: 'perf', t0: 0, tm: 0, manual: false, genT: 0, nComp: 0, capa: 0, capaMeta: 0, vuelta: 0, capaVis: 0, capaAnt: 0, mezcla: 1,
     metros: 0, racha: 0, mejorRacha: 0, perfectos: 0, bienes: 0, fallos: 0, dobles: 0, calN: 0, offset: 0, ultToque: -9, ultimoT: 0, ultT: 0, finP: 0,
     mejor: 0, mejorRachaRec: 0, jugadas: 0, nuevo: false, hop: 0, sq: 0, inclina: 0, plano: 0, flash: 0, flashC: 0, cuenta: -1, avisos: 0, pistaT: 0, vistoS: false, vistoD: false };
-  const ac = () => (A && A.ctx && A.ctx.state === 'running' ? A.ctx : null);
+  let ctxPrueba = null; // solo la prueba: un AudioContext simulado
+  const ac = () => { const c = ctxPrueba || (A && A.ctx); return c && c.state === 'running' ? c : null; };
   function ahora() {
     if (E.manual) return E.tm;
     if (E.fuente === 'audio') {
@@ -560,7 +561,7 @@ window.AVCompas = function (G) {
         for (const g of golpes().filter(g => g.t < s2.t)) { irA(g.t + E.offset); tecla(' '); }
         irA(s2.t + E.offset); tecla(' '); check('Tocar en el silencio rompe la racha', s2.res === 'casi' && E.racha === 0); }
       // Hoja dorada opcional: sube 3 con perfecto
-      { const d = nota(E.tm + 1, 'doble'); const m0 = E.metros; irA(d.t + E.offset); tecla(' '); check('Hoja dorada (doble) a tiempo: +3 m', d.res === 'perfecto' && E.metros === m0 + 3 && E.dobles === 1, E.metros - m0);
+      { for (const n of notas) if (n.on && !n.res && n.t < E.tm + 1.5) n.on = false; const d = nota(E.tm + 1, 'doble'); const m0 = E.metros; irA(d.t + E.offset); tecla(' '); check('Hoja dorada (doble) a tiempo: +3 m', d.res === 'perfecto' && E.metros === m0 + 3 && E.dobles === 1, E.metros - m0);
         const d2 = nota(E.tm + 1, 'doble'); for (const n of notas) if (n !== d2 && n.on && !n.res && n.t < d2.t + 0.8) n.on = false; const r0 = E.racha, m1 = E.metros; irA(d2.t + 0.5); check('Dejar pasar la dorada no castiga', d2.res === 'perdida' && E.racha === r0 && E.metros === m1, d2.res + ' · ' + r0 + ' → ' + E.racha); }
       // Golpe entre una dorada o un silencio: el toque es del golpe (no rompe la racha)
       { const limpiar = () => { for (const n of notas) if (n.on && !n.res) n.on = false; };
@@ -576,10 +577,10 @@ window.AVCompas = function (G) {
         limpiar(); }
       check('Sin asignaciones por cuadro: grupos fijos, y la lógica y el dibujo sin cierres .some/.find ni colores armados con «+»', notas.length === NN && evs.length === NE && chis.length === NP && notas.filter(n => n.on).length < NN && evs.filter(e => e.on).length < NE && ![logica, dibujar].some(f => /\.(some|filter|find|map)\(|'rgba\([^']*'\s*\+/.test(String(f))));
       // El audio se para a media partida (suspend, Siri): el tiempo sigue sin salto
-      if (A) { const ctx0 = A.ctx, man0 = E.manual, f0 = E.fuente, t00 = E.t0, uT = E.ultT; let okA = false, info = '';
-        try { const fake = { state: 'running', currentTime: 500 }; A.ctx = fake; E.manual = false; E.fuente = 'audio'; E.t0 = 500 - 20; const a1 = ahora(); fake.state = 'interrupted'; const a2 = ahora();
+      { const man0 = E.manual, f0 = E.fuente, t00 = E.t0, uT = E.ultT; let okA = false, info = '';
+        try { const fake = { state: 'running', currentTime: 500 }; ctxPrueba = fake; E.manual = false; E.fuente = 'audio'; E.t0 = 500 - 20; const a1 = ahora(); fake.state = 'interrupted'; const a2 = ahora();
           okA = Math.abs(a1 - 20) < 1e-6 && Math.abs(a2 - 20) < 0.05 && E.fuente === 'perf'; info = a1.toFixed(2) + ' → ' + a2.toFixed(2) + ' · ' + E.fuente; }
-        catch (e) { info = e.message; } finally { A.ctx = ctx0; E.manual = man0; E.fuente = f0; E.t0 = t00; E.ultT = uT; }
+        catch (e) { info = e.message; } finally { ctxPrueba = null; E.manual = man0; E.fuente = f0; E.t0 = t00; E.ultT = uT; }
         check('Si el audio deja de sonar (suspend o «interrupted»), el reloj pasa a performance.now() sin saltar', okA, info); }
       // «Reducir movimiento»: sin chispas ni estela
       if (A) { A.reducido = true; for (const p of chis) p.on = false; const g = golpes()[0]; irA(g.t + E.offset); tecla(' '); check('Con «Reducir movimiento» no salen chispas ni estela', E.perfectos >= 2 && !chis.some(p => p.on)); A.reducido = red0; }
