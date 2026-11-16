@@ -176,7 +176,9 @@ window.AVV18Minigolf = function (G) {
   const fx = (k, x, y, z, n) => { try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
   const emitir = ev => { try { G.emit('v18minigolf', ev); } catch (e) { /* sin oyentes */ } };
   // QA: «¡Descubriste…!» tapaba la invitación; espera a que no haya otro aviso en pantalla
-  const avisoLibre = () => { const t = document.getElementById('toast'); return !t || t.hidden; };
+  // T67: tampoco mientras otro modo tiene la Acción (Construir, refugio…): el vivo de T55 vio la invitación del minigolf construyendo
+  const otroModo = () => { try { const m = G.interaccion && G.interaccion.modo; return !!(m && m.activo && m.activo()); } catch (e) { return false; } };
+  const avisoLibre = () => { const t = document.getElementById('toast'); return (!t || t.hidden) && !otroModo(); };
   const H = (x, z) => G.terreno.height(x, z);
   const agua = (x, z) => { try { return G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) : -Infinity; } catch (e) { return -Infinity; } };
 
@@ -1438,6 +1440,11 @@ window.AVV18Minigolf = function (G) {
         correr(0.1);
         const fuera = { interaccion: it.visible(), salida: salida.visible, semilla: semilla.visible, nido: nido.visible, troncos: troncos.visible, mapa: G.v18minigolf.mapa(), invita: A.invitado || toasts.includes(TXT.invita), inicia: G.v18minigolf.iniciar({ forzar: true }) };
         A.invitado = inv0; G.pack.id = pack0; toasts.length = 0;
+        { // T67: con otro modo activo (Construir…) el minigolf no invita
+          const m0 = G.interaccion.modo; G.interaccion.modo = { activo: () => true };
+          const conModo = otroModo(); G.interaccion.modo = m0;
+          check('T67: mientras otro modo tiene la Acción (Construir…) el minigolf no invita', conModo, 'conModo=' + conModo);
+        }
         check('QA-189: fuera de Villa Raíz no hay estación (sin interacción, piezas, marcador, invitación ni inicio; en ep4 se nacía junto al hoyo)',
           !fuera.interaccion && !fuera.salida && !fuera.semilla && !fuera.nido && !fuera.troncos && fuera.mapa === null && !fuera.invita && fuera.inicia === false, JSON.stringify(fuera));
         correr(0.05);
