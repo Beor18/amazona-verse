@@ -212,12 +212,35 @@ AVE.module('misiones', function (G) {
     for (const id of FIN_PRINCIPAL) { const el = $(id); if (el) el.hidden = !!on; }
     if (foco !== false && !$('end').hidden) { const b = $(on ? 'b-again-no' : 'b-again'); if (b) b.focus({ preventScroll: true }); }
   }
-  function showEnd() {
+  // F4-12 (docs/diseno/F4_GAME_FEEL.md): fin del capítulo. Antes del panel, 1,2 s de fiesta: suena panel_final, Vittata celebra
+  // (el gesto Celebrar, clip Celebrate; volando o si no puede, el clip directamente) y caen 30 pétalos; luego entra el panel.
+  // Sin espera con G.quiet (baterías) ni al cargar una partida ya terminada ('apply': la repetición). «Reducir movimiento»: sin
+  // pétalos (el gesto, el sonido y la espera se quedan). Llamar otra vez durante la fiesta no la repite.
+  const FIN = { celebraMs: 1200, petalos: 30 };
+  feel.fin = 0; feel.finPetalos = 0; feel.FIN = FIN;
+  let finEspera = 0, finFiesta = false;
+  function celebrarFin() {
+    feel.fin++;
+    try { G.audio.play('panel_final'); } catch (e) { /* sin audio */ } // T45: capítulo completado (una vez: el panel ya no lo repite)
+    const A = G.actores;
+    try { if (!(A.playEmote && A.playEmote('celebrar')) && A.player3D && A.player3D.play) A.player3D.play('Celebrate', true); } catch (e) { /* sin modelo */ }
+    if (!movReducido()) { try { G.fx.petalos(S.pos.x, S.pos.y + 2.2, S.pos.z, FIN.petalos); feel.finPetalos++; } catch (e) { /* sin efectos */ } }
+  }
+  function cancelarFiesta() { if (finEspera) clearTimeout(finEspera); finEspera = 0; finFiesta = false; }
+  function showEnd(ya, o) {
+    const fiesta = ya !== true && $('end').hidden && (!G.quiet || (o && o.fiesta));
+    if (fiesta && finEspera) return; // ya está celebrando: el panel llega solo
+    if (fiesta) {
+      celebrarFin(); finFiesta = true;
+      finEspera = setTimeout(() => { finEspera = 0; if (S.complete || (o && o.fiesta)) showEnd(true); else finFiesta = false; }, FIN.celebraMs);
+      return;
+    }
+    const sonado = finFiesta; cancelarFiesta();
     $('end-text').textContent = HIST.fin ? HIST.fin(S, G) : '';
     verConfirmacion(false, false);
     // T2: el aviso que estaba en pantalla se va y no vuelve; los que lleguen con el panel abierto esperan a que se cierre (G.ui)
     try { G.ui.hideToast(); } catch (e) { /* sin HUD */ }
-    if ($('end').hidden && !G.quiet) try { G.audio.play('panel_final'); } catch (e) { /* sin audio */ } // T45: capítulo completado
+    if ($('end').hidden && !G.quiet && !sonado) try { G.audio.play('panel_final'); } catch (e) { /* sin audio */ } // T45: capítulo completado
     $('end').hidden = false;
   }
   function seguirExplorando() {
@@ -238,7 +261,7 @@ AVE.module('misiones', function (G) {
   G.on('escape', () => { if ($('end').hidden) return; if (confirmando()) verConfirmacion(false); else seguirExplorando(); });
 
   G.on('render', () => { G.fx.guide(G.ui.busy() ? null : guideTarget(), performance.now() / 1000); }, 60);
-  G.on('apply', () => { verConfirmacion(false, false); if (S.complete && !S.explorando) showEnd(); else $('end').hidden = true; }, 70);
+  G.on('apply', () => { verConfirmacion(false, false); cancelarFiesta(); if (S.complete && !S.explorando) showEnd(true); else $('end').hidden = true; }, 70);
   G.on('apply', renderQuest, 90);
 
   // ---------- T8 · Pista «vuela» ----------
