@@ -213,7 +213,7 @@ window.AVCompas = function (G) {
 
   // ---------- Dibujo ----------
   let el = null, cv = null, cx = null, img = null, raf = 0, tPrev = 0;
-  const lay = { W: 0, H: 0, dpr: 1, vx: 0, vy: 0, S: 160, laneY: 0, vel: 200, r: 30 };
+  const lay = { lado: false, W: 0, H: 0, dpr: 1, vx: 0, vy: 0, S: 160, laneY: 0, vel: 200, r: 30 };
   const capas = [null, null, null, null]; // { fondo, medio, cerca } pintados una vez por tamaño
   const COL_CHIS = ['#9df07a', '#ffd23f', '#ffffff'];
   const HOJA = (() => { try { const p = new Path2D(); p.moveTo(-1, 0); p.quadraticCurveTo(-0.3, -0.62, 0.95, -0.08); p.quadraticCurveTo(1.05, 0, 0.95, 0.08); p.quadraticCurveTo(-0.3, 0.62, -1, 0); p.closePath(); return p; } catch (e) { return null; } })();
@@ -273,10 +273,10 @@ window.AVCompas = function (G) {
     lay.vel = (W - lay.vx + 40) / ANTES;
     capas[0] = capas[1] = capas[2] = capas[3] = null;
     if (el) { // el aviso va encima de Vittata; en horizontal bajo, a su derecha (encima no cabe sin tapar el HUD)
-      const fb = q('fb'), lado = H < 500 && W > H; fb.classList.toggle('lado', lado);
+      const fb = q('fb'), lado = lay.lado = H < 500 && W > H; fb.classList.toggle('lado', lado);
       fb.style.left = (lado ? lay.vx + lay.S * 0.45 + 12 : lay.vx) + 'px'; fb.style.top = (lado ? lay.vy - lay.S * 0.15 : Math.max(120, lay.vy - lay.S * 0.5 - 30)) + 'px'; }
   }
-  function tile(x, c, off, a) { if (a <= 0) return; x.globalAlpha = a; const w = lay.W, o = ((off % w) + w) % w; x.drawImage(c, -o, 0, w, lay.H); x.drawImage(c, w - o, 0, w, lay.H); }
+  function tile(x, c, off, a) { if (a <= 0) return; x.globalAlpha = a; const w = lay.W, o = Math.round((((off % w) + w) % w) * lay.dpr) / lay.dpr; /* en píxel entero: sin raya en la junta */ x.drawImage(c, -o, 0, w, lay.H); x.drawImage(c, w - o, 0, w, lay.H); }
   function dibujar(t) {
     if (!cx) return;
     const W = lay.W, H = lay.H, red = reducido(), velF = red ? 0.15 : 1;
@@ -410,7 +410,7 @@ window.AVCompas = function (G) {
   }
   function aviso(txt, cls) {
     if (!el) return;
-    const fb = q('fb'); fb.textContent = txt; fb.className = 'cp-fb ' + (cls || '');
+    const fb = q('fb'); fb.textContent = txt; fb.className = 'cp-fb ' + (cls || '') + (lay.lado ? ' lado' : '');
     if (!reducido()) { void fb.offsetWidth; fb.classList.add('pop'); }
   }
   function pista(txt) { if (!el) return; const p = q('pista'); p.textContent = txt; p.classList.remove('cp-oculta'); E.pistaT = 4; }
@@ -531,12 +531,12 @@ window.AVCompas = function (G) {
       // «Reducir movimiento»: sin chispas ni estela
       if (A) { A.reducido = true; for (const p of chis) p.on = false; const g = golpes()[0]; irA(g.t + E.offset); tecla(' '); check('Con «Reducir movimiento» no salen chispas ni estela', E.perfectos >= 2 && !chis.some(p => p.on)); A.reducido = red0; }
       // Fin: el tiempo se acaba
-      aviso(L('¡Perfecto!', 'Perfect!'), 'perf'); const hr = el.querySelector('.cp-hud').getBoundingClientRect(), fbr = q('fb').getBoundingClientRect();
+      aviso(L('¡Perfecto!', 'Perfect!'), 'perf'); const ladoOk = q('fb').classList.contains('lado') === (innerHeight < 500 && innerWidth > innerHeight); const hr = el.querySelector('.cp-hud').getBoundingClientRect(), fbr = q('fb').getBoundingClientRect();
       const metros = E.metros; let nF = 0; while (E.fase === 'juego' && nF++ < 200) paso(1);
       check('Al terminar la música (≈ 90 s): panel con la altura, «¡Nuevo récord!», «Otra vez» y «Salir»', E.fase === 'fin' && !q('fin').hidden && q('fn').textContent === metros + ' m' && new RegExp('Nuevo récord: ' + metros + ' m').test(q('fmsg').textContent) && /Racha más larga: \d+/.test(q('fdet').textContent), q('fmsg').textContent);
       const rg = leerRec(); check('El récord (metros, racha más larga y jugadas) se guarda en este dispositivo', rg && rg.mejor === metros && rg.racha === E.mejorRacha && rg.jugadas === 1, JSON.stringify(rg));
       const bots = [...q('fin').querySelectorAll('button')].map(b => b.getBoundingClientRect()), fr = q('fin').getBoundingClientRect();
-      check('Cabe en la pantalla: panel dentro, sin el HUD encima; «Otra vez» y «Salir» ≥ 54 px', bots.every(b => b.height >= 54 && b.width >= 54) && fr.left >= 0 && fr.right <= innerWidth && fr.top >= 0 && fr.bottom <= innerHeight && el.querySelector('.cp-hud').hidden && hr.left >= 0 && hr.right <= innerWidth && hr.bottom < innerHeight * 0.3 && hr.height <= 72 && lay.laneY + lay.r < innerHeight && lay.vy - lay.S / 2 > hr.bottom - 30 && (fbr.top >= hr.bottom || fbr.left >= hr.right || fbr.right <= hr.left), `${innerWidth}×${innerHeight} · panel ${Math.round(fr.width)}×${Math.round(fr.height)} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)} · aviso ${Math.round(fbr.left)},${Math.round(fbr.top)}`);
+      check('Cabe en la pantalla: panel dentro, sin el HUD encima; «Otra vez» y «Salir» ≥ 54 px', bots.every(b => b.height >= 54 && b.width >= 54) && fr.left >= 0 && fr.right <= innerWidth && fr.top >= 0 && fr.bottom <= innerHeight && el.querySelector('.cp-hud').hidden && hr.left >= 0 && hr.right <= innerWidth && hr.bottom < innerHeight * 0.3 && hr.height <= 72 && lay.laneY + lay.r < innerHeight && lay.vy - lay.S / 2 > hr.bottom - 30 && (fbr.top >= hr.bottom || fbr.left >= hr.right || fbr.right <= hr.left) && ladoOk, `${innerWidth}×${innerHeight} · panel ${Math.round(fr.width)}×${Math.round(fr.height)} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)} · aviso ${Math.round(fbr.left)},${Math.round(fbr.top)}`);
       el.querySelector('[data-a="otra"]').click();
       check('«Otra vez» empieza limpio (0 m, racha 0, capa 1, sin panel, récord a la vista)', E.fase === 'juego' && E.metros === 0 && E.racha === 0 && E.capaMeta === 0 && E.capaVis === 0 && E.calN === 0 && q('fin').hidden && new RegExp('Récord ' + metros + ' m').test(q('rec').textContent) && !notas.some(n => n.on && n.res), q('rec').textContent);
       let nG = 0; while (E.fase === 'juego' && nG++ < 200) paso(1);
