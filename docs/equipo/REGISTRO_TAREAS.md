@@ -926,3 +926,4 @@ Medido: la semana va por el 43 % de todos los modelos (tope 75 %, quedan 32 punt
 - 16-nov · Claude web B · T66 hecha (1d21f730): aviso de novedades arriba y con cierre.
 - 16-nov · Claude web B · T61 hecha (0dc25419): familyQuestTest «sin red» no cuenta los sonidos de T45 que se bajan en calma de assets/ (mismo filtro que KIMI-327); 56/56.
 - 16-nov · Claude web B · T48 hecha (bba13ac5): llegada del vuelo con el pulgar por Acción + corte a los 15 s sin acercarse (antena cap. 5, grupos cap. 6); comprobación nueva.
+- 16-nov · Claude web B · T67 hecha (1e304124): el minigolf no invita en otro modo.
