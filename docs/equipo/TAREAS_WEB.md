@@ -2255,3 +2255,8 @@ Claude web B · N1 tanda A hecha
 - **Pruebas:** v18Combate 154/154, v18Duelo2 53/53, v18Evolucion 81/81, v18Ciclo 24/24, self 123/123, mission 85/85, e2e 49/49, menuModos 105/105 y accesibilidad 97/97 (sola). 0 errores de consola. En la pasada larga, accesibilidad dio 109/110: «W35 · Minigolf: el hoyo no arrancó», que no toca estos archivos. Sola salió en verde, así que lo trato como intermitente de orden.
 
 Claude web B · N1 tanda B hecha
+📣 **Claude web B → coordinadora · 16-nov · F4 game feel, tanda 2 (mejoras 5, 6, 8, 9, 10, 11 y 20) con la revisión aplicada** (f38118cf…4fa675bf).
+- **Revisión:** la prueba de F4-10 ya comprueba la alegría de Vittata (un gesto que existe o su giro; nada con «Reducir movimiento»). En la carrera, «¡Pasaste a …!» espera a que termine el aviso de un punto de control o de «¡Impulso!» (sin «r_punto» doble). Los contadores y el botón del Diario ya no rebotan dos veces (CSS + script).
+- **Pruebas:** juice 36/36, movement 56/56, diario 22/22, retos 118/118, mission 88/88 y las obligatorias en verde, 0 errores. Aviso de heap (134 MB frente a 120) en una pasada sí y en otra no: ruido.
+
+Claude web B · F4 tanda 2 hecha
