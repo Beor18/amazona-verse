@@ -2196,8 +2196,11 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
             check('F1-8 · Tú eliges cuándo: la tecla de Acción gasta el turbo (más velocidad) y vacía las hojas', C.turbos === t0 + 1 && C.turboT > 0 && C.hojas === 0 && Math.hypot(M.vx, M.vz) > v0 + 5 && usarTurbo() === false, v0.toFixed(1) + ' → ' + Math.hypot(M.vx, M.vz).toFixed(1)); }
           // Nube: cruzarla da un impulso, una sola vez
           const cruzarNube = n => {
-            const q = enRuta(n.s - 9, {}); colocarJugador(n.x - q.tx * 9, n.y - 0.6, n.z - q.tz * 9, q.tx, q.tz); C.sJug = proyectar(S.pos.x, S.pos.z, n.s - 9); M.vx = q.tx * 14; M.vz = q.tz * 14;
-            const v0 = Math.hypot(M.vx, M.vz); let vMax = 0; for (let i = 0; i < 24; i++) { tick(0.05); vMax = Math.max(vMax, Math.hypot(M.vx, M.vz)); } return [v0, vMax];
+            // Vuela recto hacia la nube con «adelante» pulsado (como quien juega): la velocidad de crucero antes y la máxima al cruzarla
+            const q = enRuta(n.s - 14, {}); colocarJugador(n.x - q.tx * 14, n.y - 0.6, n.z - q.tz * 14, q.tx, q.tz); C.sJug = proyectar(S.pos.x, S.pos.z, n.s - 14); M.vx = q.tx * 14; M.vz = q.tz * 14;
+            G.input.keys.add('w'); let v0 = 0, vMax = 0, antes = true; const iN = C.nubeImpulsos;
+            try { for (let i = 0; i < 30; i++) { mirarHacia(n.x - S.pos.x, n.z - S.pos.z); st.ultimoManual = performance.now(); const v = Math.hypot(M.vx, M.vz); tick(0.05); if (antes && C.nubeImpulsos === iN) v0 = v; else { antes = false; vMax = Math.max(vMax, Math.hypot(M.vx, M.vz)); } } } finally { G.input.keys.delete('w'); }
+            return [v0, vMax];
           };
           const nb = C.N.nubes[2], i0 = C.nubeImpulsos, [vn0, vnMax] = cruzarNube(nb), i1 = C.nubeImpulsos;
           colocarJugador(nb.x, nb.y - 0.6, nb.z, 1, 0); C.sJug = proyectar(nb.x, nb.z, nb.s); tick(0.3);
@@ -2396,7 +2399,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 
     const api = G.retosApi = { abrir, jugar, salir, otraVez, test, cg17Test, get activo() { return st.activo; }, get fase() { return st.fase; }, get reto() { return st.reto; },
       pruebas: { datosRanking, publicarMarca, medallaDeReto, retoDelDia, metaLineas, selloNuevo, tocarSesion, tocaDescanso, pintarGanchos, sesion, prueba: on => { claveRec = on ? ALMACEN + '.prueba' : ALMACEN; }, clave: () => claveRec, ui: () => (montarUI(), ui) }, // banqueteTest: récords en una clave aislada
-      alternarFantasma, _dev: { C, TM, ruta, lanzarPeligro, ponerSemilla, T_CARRERA, T_TORMENTA, efectos, enRuta, proyectar, superficie, rejillaAltos, construirRuta, datosCarrera } };
+      alternarFantasma, _dev: { C, TM, ruta, lanzarPeligro, ponerSemilla, T_CARRERA, T_TORMENTA, efectos, enRuta, proyectar, superficie, rejillaAltos, construirRuta, datosCarrera, T_NUBES, datosNubes, colocarJugador, mirarHacia, usarTurbo, rebufoDetras, get dos() { return st.dos; } } };
     return api;
   };
 })();
