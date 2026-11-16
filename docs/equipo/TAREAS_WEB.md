@@ -1654,8 +1654,7 @@ De dónde sale: dos pasadas del robot del pulgar, temporadaMovil y playtestAuto.
 📣 **Coordinadora → Claude web · 15-nov · Kelvin te autoriza a PUBLICAR tú desde ahora.** Esta es la receta, la misma que uso yo:
 1. Publica cuando tengas 2 o 3 tareas cerradas.
 2. Primero deja aquí la nota «📣 Claude web · PUBLICO YO AHORA main», con commit y push.
-3. Haz un clon limpio en disco (`git clone --depth 1 … /tmp/pub`) y comprueba que no hay marcas de conflicto (`git grep "^<<<<<<< "`).
-4. Ejecuta `AV_PYTHON=/usr/bin/python3 flock /tmp/av_chrome1.lock tools/build/publicar_nube.sh`. Corre las 12 pruebas y, si pasan, hace el commit «Sitio: publica <sha>» y el push. La Action lo sube a SiteGround en 1–3 minutos.
+3. Haz un clon limpio en disco (`git clone --depth 1 … /tmp/pub`) y comprueba que no hay marcas de conflicto (`git grep "^4. Ejecuta `AV_PYTHON=/usr/bin/python3 flock /tmp/av_chrome1.lock tools/build/publicar_nube.sh`. Corre las 12 pruebas y, si pasan, hace el commit «Sitio: publica <sha>» y el push. La Action lo sube a SiteGround en 1–3 minutos.
 5. Si alguna prueba sale en rojo, **no se publica**: arréglalo y repite.
 6. Comprueba que está en la web: el md5 de `sitio/juego/index.html` tiene que coincidir con el de https://www.amazonaverse.com/juego/index.html.
 7. Deja la nota «📣 Claude web · PUBLICADO <sha> en <sha>» y borra /tmp/pub.
@@ -2153,3 +2152,32 @@ Claude web B · bug urgente del duelo hecho
 📣 **Claude web B → coordinadora · 16-nov · D13 «Semillas al vuelo» integrada** (en «Más juegos», con récord, «Otra vez», «Salir» y Mis récords). Pruebas en main: semillasTest 16/16, recordsTest 68/68, menuModosTest 103/103, selfTest 123/123, missionTest 81/81, e2eTest 49/49, accesibilidadTest 112/112; 0 errores. Sale en la próxima publicación.
 
 Claude web B · D13 hecha
+
+📣 **Claude web B · C9 hecha: siete piezas nuevas en Construir** (parches `parches_c9`).
+- **Las piezas:** Escalera, Baranda, Techo a dos aguas (tablas rojizas, con hastiales), Farol de piedra, Cerca de tablas (encalada), Banco (tablas sobre patas de piedra) y Huerto (cajón con lechugas y ajíes). Son de todos desde el principio y van detrás de las de la casita.
+- **Cómo se hacen:** usan las mismas texturas del kit (tablas, piedra y paja), con un InstancedMesh por tipo, como las de T39. Cada una tiene su icono en la barra y su inglés en `en.js`.
+- **Encaje con imán:**
+  - La baranda y la cerca encajan como la pared, y el techo a dos aguas como el tejado.
+  - Hay dos familias nuevas. «Borde»: la escalera, el banco y el huerto, por fuera del piso y mirando hacia fuera. «Esquina»: el farol de piedra.
+- **Para Kelvin:** el «Farol» y la «Cerca de bambú» del Mercadito siguen igual. Las nuevas son otras piezas (de piedra y de tablas), para no regalar lo que se compra con conchitas.
+
+📣 **Claude web B · C10 hecha: plantillas de un toque.**
+- **Las plantillas:** Bohío (9 piezas), Torre de vigía (8), Puente pequeño (11) y Nido grande (8), junto a «Casita rápida». Todas funcionan como T50:
+  - lo que no cabe se salta y lo dice;
+  - respetan el tope de piezas y `validar()`;
+  - un Deshacer quita la plantilla entera, y Quitar va pieza a pieza;
+  - no se ponen dentro de un cuarto.
+- **La barra:** el botón «Plantillas» (tecla T) sustituye a «Casita rápida». Abre una fila con las 5 plantillas en el sitio de la fila de piezas, así que no tapa más pantalla. Esc la cierra sin salir de Construir, y al elegir una se vuelve a las piezas.
+- **Teléfono en horizontal (844×390):** la barra tapaba el joystick y los botones de acción (ya pasaba antes). Ahora va compacta en el centro, entre los dos.
+- **Pruebas:** construirTest 71/71, con 5 comprobaciones nuevas:
+  - cada pieza encaja y se coloca;
+  - cada plantilla se coloca, cuenta piezas y se quita;
+  - tope de piezas;
+  - la barra con el teclado;
+  - 390 y 844×390 sin cortes.
+
+  selfTest 123/123, missionTest 81/81, e2eTest 49/49, menuModosTest 100/100 y accesibilidadTest 112/112, todo con 0 errores.
+- **Capturas:** en `/home/user/.avt/c9_capturas/`, a 390×844, 844×390 y 1280×720, con la barra de piezas y con la de plantillas.
+- **Para Kelvin:**
+  - Como las piezas van siempre al ras del suelo, la «Torre de vigía» es un mirador con parapeto de piedra, no una torre alta. Para que sea alta habría que guardar la altura de cada pieza, y ese cambio del guardado lo decide él.
+  - El «Puente pequeño» es una pasarela: no se puede construir sobre el agua.
