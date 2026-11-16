@@ -20,6 +20,7 @@ window.AVJuice = function (G) {
     picadoVy: -4, picadoFov: 7, remonteMin: 0.6,       // m/s de bajada, ° de FOV al picar a fondo, s de picado para el remonte
     remonteFov: 4, perfectoV: 2, petaloEspera: 1.2,    // pulso de FOV del remonte, m/s al tocar, s entre pétalos del mismo árbol
     impulsoFov: 3, impulsoSeg: 0.3,                    // F4-6: pulso de FOV del impulso (° arriba del todo) y cuánto dura
+    lineasDesde: 0.9, lineasLleno: 1.3, lineasBase: 0.35, lineasMax: 0.5, // F4-13: líneas desde el 90 % de la velocidad máxima de vuelo (ya a un 35 %), del todo a ×1,3 (impulso), opacidad tope
   };
   const MINIJUEGO = /\b(retos|flight|maze|river|tren|duelo)-on\b/;
   let idiomaForzado = null, reducidoForzado = null, fuerza = false, simulado = null;
@@ -27,7 +28,7 @@ window.AVJuice = function (G) {
   const L = (es, eng) => (en() ? eng : es);
   const reducido = () => (reducidoForzado != null ? reducidoForzado : !!(G.renderer.REDUCED || (G.audio && G.audio.reducido === true)));
   const apagado = () => !fuerza && (G.quiet || MINIJUEGO.test(document.body.className) || !(S.profile && S.profile.created));
-  const stats = { rasanteSeg: 0, rasanteMax: 0, rasantes: 0, picados: 0, remontes: 0, perfectos: 0, petalos: 0, impulsos: 0 };
+  const stats = { rasanteSeg: 0, rasanteMax: 0, rasantes: 0, picados: 0, remontes: 0, perfectos: 0, petalos: 0, impulsos: 0, lineas: 0, lineasMax: 0 };
 
   // ---------- Sonidos (sintetizados; no hay descarga) ----------
   const A = G.audio;
@@ -69,8 +70,15 @@ window.AVJuice = function (G) {
   }
   // Si el juego se pausa (menú, Diario, una tarjeta) el bucle 'update' no corre: el chip y el pop no se quedan encima de esa pantalla
   let ultimoPaso = 0;
-  const ocultar = () => { chip.hidden = true; chip.classList.remove('sale'); pop.hidden = true; pop.classList.remove('anim'); popT = 0; };
-  setInterval(() => { if ((!chip.hidden || !pop.hidden) && ((G.pausa && G.pausa.activa && G.pausa.activa()) || performance.now() - ultimoPaso > 1500)) ocultar(); }, 250); // 1,5 s: un equipo lento no lo apaga entre cuadros
+  const ocultar = () => { chip.hidden = true; chip.classList.remove('sale'); pop.hidden = true; pop.classList.remove('anim'); popT = 0; if (E.lin > 0) { E.lin = 0; E.linOn = false; if (G.fx.lineasOpacidad) G.fx.lineasOpacidad(lineasEl, 0); } };
+  setInterval(() => { if (E.lin > 0 && G.pausa && G.pausa.activa && G.pausa.activa()) ocultar(); // F4-13: las líneas, solo con la pausa (un equipo muy lento no las apaga)
+    if ((!chip.hidden || !pop.hidden) && ((G.pausa && G.pausa.activa && G.pausa.activa()) || performance.now() - ultimoPaso > 1500)) ocultar(); }, 250); // 1,5 s: un equipo lento no lo apaga entre cuadros
+  // F4-13 (docs/diseno/F4_GAME_FEEL.md): vuelo a tope. Pasando del 90 % de la velocidad máxima de vuelo (TUNING.fly), líneas de
+  // velocidad finas en los bordes (la capa común de fx.js, la misma receta que la carrera de retos.js). Suben suave con la
+  // velocidad (tope con el impulso) y se apagan al frenar. Con «Reducir movimiento», G.quiet o en un minijuego, nada.
+  const capaLineas = document.createElement('div'); capaLineas.id = 'juice-lineas'; capaLineas.setAttribute('aria-hidden', 'true');
+  capaLineas.style.cssText = 'position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:var(--z-hud,5)'; document.body.appendChild(capaLineas);
+  const lineasEl = G.fx.lineasVel ? G.fx.lineasVel(capaLineas, true) : null;
   const pintarChip = n => { chip.innerHTML = `${L('Rasante', 'Skim')} <b>×${n}</b>`; };
 
   // ---------- Estela: dos colas de puntos (puntas de las alas), un solo Points aditivo ----------
@@ -131,7 +139,15 @@ window.AVJuice = function (G) {
   }
 
   // ---------- Estado ----------
-  const E = { ras: false, rasT: 0, rasN: 0, chipT: 0, picT: 0, picando: false, fov: 0, pulso: 0, remonte: false, imp: -1, impMax: 0 };
+  const E = { ras: false, rasT: 0, rasN: 0, chipT: 0, picT: 0, picando: false, fov: 0, pulso: 0, remonte: false, imp: -1, impMax: 0, lin: 0, linOn: false };
+  function pasoLineas(dt, v, vuela, red) {
+    const max = (F.TUNING && F.TUNING.fly) || 12, r = vuela && !red ? v.speed / max : 0;
+    const meta = r > J.lineasDesde ? J.lineasMax * (J.lineasBase + (1 - J.lineasBase) * Math.min(1, (r - J.lineasDesde) / (J.lineasLleno - J.lineasDesde))) : 0;
+    E.lin = red ? 0 : E.lin + (meta - E.lin) * Math.min(1, dt * (meta > E.lin ? 6 : 4)); if (E.lin < 0.004) E.lin = 0;
+    if (meta > 0 && !E.linOn) { E.linOn = true; stats.lineas++; } else if (meta === 0 && E.linOn) E.linOn = false;
+    if (E.lin > stats.lineasMax) stats.lineasMax = E.lin;
+    if (G.fx.lineasOpacidad) G.fx.lineasOpacidad(lineasEl, E.lin);
+  }
   // F4-6 (docs/diseno/F4_GAME_FEEL.md): el impulso (fisica.js avisa con 'impulso') abre el FOV +3° y lo cierra en 0,3 s, en
   // media onda de seno (sube y baja suave y acaba justo en 0; la cámara aún lo suaviza). Va en G.camara.fovImpulso, que se suma
   // encima del FOV del impulso. Con «Reducir movimiento» (sistema o menú), G.quiet o en un minijuego, nada.
@@ -149,7 +165,7 @@ window.AVJuice = function (G) {
   }
   function paso(dt) {
     dt = Math.min(Math.max(dt || 0, 0), 0.1); ultimoPaso = performance.now();
-    if (!fuerza && G.ui.busy && G.ui.busy() && (!chip.hidden || !pop.hidden)) ocultar();
+    if (!fuerza && G.ui.busy && G.ui.busy() && (!chip.hidden || !pop.hidden || E.lin > 0)) ocultar();
     popT -= dt; if (popT <= 0 && !pop.hidden) { pop.hidden = true; pop.classList.remove('anim'); }
     const off = apagado(), v = off ? null : leer(), red = reducido();
     const vuela = !!v && v.flying && v.takeoff <= 0 && !v.landing;
@@ -186,6 +202,7 @@ window.AVJuice = function (G) {
     E.fov += (meta - E.fov) * Math.min(1, dt * 5); if (Math.abs(E.fov) < 0.02 && !meta) E.fov = 0;
     cam.fovPicado = E.fov;
     pasoImpulso(dt, off, red); // F4-6
+    pasoLineas(dt, v, vuela, red); // F4-13
     // Pétalos del flamboyán
     for (const [k, t] of espera) { if (t - dt <= 0) espera.delete(k); else espera.set(k, t - dt); }
     if (v && v.flying && v.speed > 1.5) {
@@ -217,7 +234,7 @@ window.AVJuice = function (G) {
   G.on('vuelo', on => { if (!on) alAterrizar(); });
   G.on('impulso', alImpulso);
   G.on('update', dt => paso(dt), 88);
-  const limpiar = () => { E.ras = false; E.picando = false; E.picT = 0; E.pulso = 0; E.fov = 0; cam.fovPicado = 0; E.imp = -1; cam.fovImpulso = 0; chip.hidden = true; pop.hidden = true; popT = 0; edadA.fill(9); estela.visible = false; espera.clear(); };
+  const limpiar = () => { E.ras = false; E.picando = false; E.picT = 0; E.pulso = 0; E.fov = 0; cam.fovPicado = 0; E.imp = -1; cam.fovImpulso = 0; E.lin = 0; E.linOn = false; if (G.fx.lineasOpacidad) G.fx.lineasOpacidad(lineasEl, 0); chip.hidden = true; pop.hidden = true; popT = 0; edadA.fill(9); estela.visible = false; espera.clear(); };
   G.on('apply', limpiar, 90);
 
   // ---------- Prueba (AV.juiceTest): cada efecto con cuadros simulados, sin depender de volar de verdad ----------
@@ -291,7 +308,7 @@ window.AVJuice = function (G) {
       // 8. Pétalos al cruzar un flamboyán (copa de prueba) con espera por árbol
       // QA-nuevo-br1-5: tras selfTest quedaban 200/200 partículas vivas (sin cuadros entre baterías no caducan) y el tope no dejaba
       // soltar pétalos. Se dejan terminar las de antes (mismo patrón que lugares.js/maravillas.js) antes de medir.
-      for (let i = 0; i < 8 && G.fx.live > G.fx.MAX_PARTICLES - 16 && G.fx.update; i++) G.fx.update(0.5);
+      for (let i = 0; i < 40 && G.fx.live > G.fx.MAX_PARTICLES - 16 && G.fx.update; i++) G.fx.update(0.5); // (update toma como mucho 0,1 s: 40 vueltas = 4 s, más que los pétalos de 2,2 s)
       reset(); copasExtra = [[S.pos.x, 10, S.pos.z, 4, 'prueba']]; copasT = -1; a0 = oidosN(); const vivos0 = G.fx.live;
       correr(0.2, { y: 9.5, alto: 7 });
       ok('Pétalos: al cruzar la copa de un flamboyán caen pétalos (rojo y anaranjado) y suena un brillo', (G.fx.juicy.petalos || 0) === p0 + 1 && G.fx.live > vivos0 && sono('petalos', a0) && !!G.fx.PALETTE.petals, ((G.fx.juicy.petalos || 0) - p0) + ' · partículas ' + vivos0 + '→' + G.fx.live + '/' + G.fx.MAX_PARTICLES + ' · sonó ' + sono('petalos', a0));
@@ -333,6 +350,21 @@ window.AVJuice = function (G) {
             JSON.stringify({ base: +fBase.toFixed(2), con: +fCon.toFixed(2), vuelve: +fVuelve.toFixed(2) }));
         } else ok('F4-6: la cámara (sistema con «Reducir movimiento»: sin pulso)', true, 'REDUCED');
         C.sinVida = sv; cam.fovImpulso = 0; for (let i = 0; i < 60; i++) cam.fov(0.1);
+      }
+      // 9c. F4-13 · vuelo a tope: líneas finas en los bordes (la capa común de fx.js) pasando del 90 % de la velocidad máxima;
+      // por debajo, aterrizando o con «Reducir movimiento», ninguna. Contador stats.lineas: una vez por racha.
+      {
+        const max = F.TUNING.fly, l0 = stats.lineas, op = () => +(lineasEl && lineasEl.style.opacity || 0);
+        reset(); correr(1.5, { speed: max * 0.85 }); const bajo = { lin: E.lin, op: op() };
+        correr(1.5, { speed: max * 0.97 }); const tope = { lin: E.lin, op: op(), n: stats.lineas - l0 };
+        correr(1.2, { speed: max * 1.55 }); const imp = { lin: E.lin, n: stats.lineas - l0 };
+        correr(2, { speed: max * 0.5 }); const frena = { lin: E.lin, op: op() };
+        reducidoForzado = true; reset(); const lr0 = stats.lineas; correr(1.5, { speed: max * 1.4 }); const red13 = { lin: E.lin, op: op(), n: stats.lineas - lr0 }; reducidoForzado = false;
+        const capa = !!lineasEl && lineasEl.classList.contains('fx-lineas') && lineasEl.classList.contains('finas') && !!document.querySelector('#retos-fx .rt-lineas.fx-lineas, #juice-lineas .fx-lineas');
+        ok('F4-13: vuelo a tope: líneas finas en los bordes desde el 90 % de la velocidad máxima (más con el impulso), se apagan al frenar; con «Reducir movimiento», ninguna',
+          capa && bajo.lin === 0 && bajo.op === 0 && tope.lin > 0.05 && tope.op > 0.05 && tope.n === 1 && imp.lin > tope.lin && imp.lin <= J.lineasMax + 1e-6 && imp.n === 1 && frena.lin === 0 && frena.op === 0 && red13.lin === 0 && red13.op === 0 && red13.n === 0,
+          JSON.stringify({ capa, bajo, tope, imp, frena, red13 }));
+        reset();
       }
       // 10. Baterías y minijuegos: nada
       fuerza = false; G.quiet = true; reset(); correr(2, { alto: 0.5 });
