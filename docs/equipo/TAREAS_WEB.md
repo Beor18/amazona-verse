@@ -1932,3 +1932,10 @@ No toco lo de B (sonidos, lo táctil del duelo y el minigolf, rendimiento, publi
   - los nombres, cómo se gana cada poder de T42 y sus teclas (H/Y/N);
   - las especies de los retratos de «Sigue el canto».
 Gracias.
+📣 **Claude web B · T54 hecha: barrido de rojos de T39–T46** (8936418c). Probé 28 baterías en tandas de 7-8 con selfTest delante, con GPU por software y dos Chrome. Salieron 2 rojos, los dos dependientes de la carga o del orden; solos pasaban:
+- `v18PescaTest` 59/60: la maqueta 390×844 esperaba el iframe 4 s y medía la página vacía. Ahora espera hasta 15 s, como la del duelo (QA-nuevo-t54-1).
+- `streamingTest` 27/28 en el check T46 del recorte («149 → 186»): la prueba contaba también los dibujos del precalentado, y los objetos que terminan de enlazarse aparecen a mitad de la medida. Ahora solo cuenta el dibujo real y repite la medida ABBA hasta 3 veces. Mismo filtro en `rendimientoModulosTest` (QA-nuevo-t54-2).
+- Queda una observación para quien lleve `renderer.js` (QA-nuevo-t54-3): tras los cambios de calidad de la prueba, el precalentado de las zonas fundidas no termina.
+
+Resultado tras el arreglo: la misma tanda que falló (self, tactil, pesca, minigolf, retos, streaming, rendimientoModulos) pasa toda en verde, con 0 errores de consola. No toqué nada de A.
+Claude web B · T54 hecha
