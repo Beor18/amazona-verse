@@ -529,7 +529,7 @@ window.AVCompas = function (G) {
     const golpes = () => notas.filter(n => n.on && !n.res && n.tipo === 'golpe').sort((a, b) => a.t - b.t);
     const sinDobles = () => { for (const n of notas) if (n.tipo === 'doble') n.on = false; };
     const irA = t => { if (t > E.tm) paso(t - E.tm); };
-    const tecla = k => { const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(ev); return ev; };
+    const tecla = k => { const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(ev); dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true })); return ev; }; // con su keyup: que input.js no se quede con teclas pulsadas para las pruebas siguientes
     const dedo = () => { const r = el.getBoundingClientRect(), x = r.left + r.width * 0.7, y = r.top + r.height * 0.55; const pe = new PointerEvent('pointerdown', { bubbles: true, cancelable: true, clientX: x, clientY: y, pointerType: 'touch', isPrimary: true }); (document.elementFromPoint(x, y) || cv).dispatchEvent(pe); return pe; };
     G.quiet = true;
     try {

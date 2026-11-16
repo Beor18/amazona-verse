@@ -541,7 +541,7 @@ window.AVFotoSafari = function (G) {
     const m = MV(), mv0 = { speed: m.speed, flying: m.flying }, vy0 = S.vy;
     const C = G.camara && G.camara.CAM, camD0 = C ? [C.dist, C.distFly] : null;
     const cam = R.camera, fwd = new THREE.Vector3();
-    const tecla = k => { const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(ev); return ev; };
+    const tecla = k => { const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(ev); dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true })); return ev; }; // con su keyup: que input.js no se quede con teclas pulsadas para las pruebas siguientes
     // Un animal de prueba delante de la cámara, a d m de Vittata (y otro al lado para «dos en el marco»)
     const sitio = { x: 0, y: 0, z: 0, oc: false, hay: true, dos: false, nove: false, sin: null, solo: null };
     const K = G.camara, yaw0 = K ? K.yaw : 0, fovB0 = K ? K.fovBonus : 0;
