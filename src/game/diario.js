@@ -35,8 +35,39 @@ AVE.module('diario', function (G) {
   }
   const count = c => entries.filter(x => x.cat === c && S.field.includes(x.id)).length;
 
+  // F4-11 (docs/diseno/F4_GAME_FEEL.md): al encontrar algo, el botón «Diario n/13» salta con un destello dorado y ya muestra el
+  // número nuevo. Al 13/13, pétalos sobre Vittata y «panel_final»: un poco después, para no doblarse con el sonido del hallazgo
+  // (0,7 s) ni con el «unlock» de la ropa del Diario completo (1,6 s). «Reducir movimiento» (sistema o menú): sin salto ni
+  // destello; el sonido y los pétalos se quedan. Con G.quiet (baterías), nada.
+  const KF_DESTELLO = [{ color: '#ffd24a', textShadow: '0 0 12px rgba(255, 210, 74, 0.95)', offset: 0.3 }];
+  const OPT_DESTELLO = { duration: 700, easing: 'ease-out' };
+  const FIN = { esperaMs: 700, esperaRopaMs: 1600, petalos: 30 };
+  const feel = { saltos: 0, completos: 0, finales: 0 };
+  const movReducido = () => !!(G.renderer.REDUCED || (G.audio && G.audio.reducido === true) || document.documentElement.classList.contains('mov-reducido'));
+  let finT = 0;
+  function finalDiario() {
+    finT = 0;
+    if (G.quiet) return;
+    G.audio.play('panel_final'); feel.finales++;
+    if (G.fx.petalos) G.fx.petalos(S.pos.x, S.pos.y + 1.6, S.pos.z, FIN.petalos);
+  }
+  function celebrarHallazgo(completo, conRopa) {
+    if (G.quiet) return;
+    renderButton();
+    const b = $('b-diary');
+    if (b && !b.hidden && !movReducido() && G.fx.saltar(b)) {
+      feel.saltos++;
+      if (b.animate) try { b.animate(KF_DESTELLO, OPT_DESTELLO); } catch (e) { /* sin animación */ }
+    }
+    if (!completo) return;
+    feel.completos++;
+    clearTimeout(finT); finT = setTimeout(finalDiario, conRopa ? FIN.esperaRopaMs : FIN.esperaMs);
+  }
+  feel.celebrar = celebrarHallazgo; // las pruebas lo miran sin pasar por found() (que guarda y avisa al Aula)
+  G.on('apply', () => { clearTimeout(finT); finT = 0; }, 46);
   function found(f) {
     if (S.field.includes(f.id)) return;
+    const completoAntes = S.field.length >= total;
     const cat = cats[f.cat] || {};
     S.field.push(f.id);
     meshes[f.id].visible = false;
@@ -47,8 +78,10 @@ AVE.module('diario', function (G) {
     G.audio.play(cat.sonido || 'pickup', juice.combo + 3); G.camara.hitStop(0.06);
     G.fx.burst(f.x, ys[f.id] + 0.8, f.z, cat.rafaga || 'feathers', 22);
     G.ui.toastHTML(`<b>${D.corto || 'Diario'} · ${f.nombre}</b> (${S.field.length}/${total})<br>${f.texto}`, 5000);
-    for (const h of D.hitos || []) if (h.todos ? S.field.length >= total : count(h.cat) >= h.min) G.misiones.grant(h.id);
+    let ropa = false;
+    for (const h of D.hitos || []) if (h.todos ? S.field.length >= total : count(h.cat) >= h.min) { if (G.misiones.grant(h.id).length) ropa = true; }
     G.misiones.renderQuest(); G.guardado.autosave();
+    celebrarHallazgo(!completoAntes && S.field.length >= total, ropa); // F4-11
   }
   const secciones = [];
   function seccion(sec) { const i = secciones.findIndex(x => x.id === sec.id); if (i >= 0) secciones[i] = sec; else secciones.push(sec); }
@@ -242,8 +275,30 @@ AVE.module('diario', function (G) {
         if (prevI) seccion(prevI); else { const i = secciones.findIndex(s => s.id === 'invasoras'); if (i >= 0) secciones.splice(i, 1); }
       } finally { G.ui.hideCard(); card.style.maxWidth = ''; card.style.boxSizing = ''; }
     }
+    // F4-11: el botón del Diario salta con destello y muestra el número; al 13/13, pétalos y «panel_final» (tras el hallazgo o la ropa)
+    {
+      const A = G.audio, b = $('b-diary'), q0 = G.quiet, R0 = G.renderer.REDUCED, red0 = A.reducido, html = document.documentElement, mov0 = html.classList.contains('mov-reducido');
+      const espera = ms => new Promise(r => setTimeout(r, ms)), veces = n => A.log.filter(x => x === n).length, J = G.fx.juicy;
+      try {
+        G.quiet = false; G.renderer.REDUCED = false; A.reducido = false; html.classList.remove('mov-reducido');
+        const f0 = Object.assign({}, feel); A.log.length = 0;
+        celebrarHallazgo(false, false); const numero = b.textContent === `${D.boton || 'Diario'} ${S.field.length}/${total}`;
+        const salto = feel.saltos - f0.saltos;
+        A.reducido = true; celebrarHallazgo(false, false); const saltoMenu = feel.saltos - f0.saltos - salto; A.reducido = false;
+        await espera(FIN.esperaMs + 150); const sinFin = veces('panel_final') === 0;
+        const p0 = J.petalos; celebrarHallazgo(true, false); const antes = veces('panel_final');
+        await espera(FIN.esperaMs + 150); const fin = { sonido: veces('panel_final'), antes, petalos: J.petalos - p0 };
+        A.log.length = 0; celebrarHallazgo(true, true); await espera(FIN.esperaMs + 150); const conRopaPronto = veces('panel_final');
+        await espera(FIN.esperaRopaMs - FIN.esperaMs + 100); const conRopa = veces('panel_final');
+        G.quiet = true; const f1 = Object.assign({}, feel); celebrarHallazgo(true, false); await espera(FIN.esperaMs + 150);
+        const quieto = feel.saltos === f1.saltos && feel.completos === f1.completos && feel.finales === f1.finales;
+        check('F4-11: el botón «Diario n/13» salta (no con «Reducir movimiento» del menú) y muestra el número; al 13/13, pétalos y «panel_final» una vez, después del hallazgo o de la ropa; con G.quiet, nada',
+          numero && (b.hidden || salto === 1) && saltoMenu === 0 && sinFin && fin.antes === 0 && fin.sonido === 1 && fin.petalos === 1 && conRopaPronto === 0 && conRopa === 1 && quieto,
+          JSON.stringify({ numero, salto, saltoMenu, sinFin, fin, conRopaPronto, conRopa, quieto }));
+      } finally { G.quiet = q0; G.renderer.REDUCED = R0; A.reducido = red0; html.classList.toggle('mov-reducido', mov0); }
+    }
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };
   }
 
-  return { entries, meshes, total, found, open, seccion, especies, htmlEspecies, test, hud, renderButton, count, y: id => ys[id] };
+  return { feel, FIN, entries, meshes, total, found, open, seccion, especies, htmlEspecies, test, hud, renderButton, count, y: id => ys[id] };
 });
