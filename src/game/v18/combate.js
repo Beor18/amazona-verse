@@ -3172,26 +3172,31 @@ window.AVV18Combate = function (G) {
       const sin = duelo(false), con = duelo(true);
       check('C2: equilibrio intacto (mismo duelo con semilla y guion: con y sin la bandera, igual IA, tiempos, daño y resultado)', sin === con, sin === con ? sin.slice(0, 160) : sin + ' ≠ ' + con);
       G.combate2 = true; salir();
-      // Bug urgente (16-nov, Kelvin: «la pata sube y da vueltas sola»): el mismo bucle que el juego (paso del duelo y luego
-      // actores.sync3D, que anima a Vittata con la envoltura de Combate 2.0), quieta en el suelo (con el IK de patas). Sin el
-      // arreglo de character.js la pata se tuerce ~43° en el primer segundo y se queda así; con él solo bota la guardia.
-      iniciar({ sinCuenta: true, especie: 'vittata' }); quieta(3); frena();
-      if (!(pl3d && pl3d.bones && G.actores && G.actores.sync3D && G.fisica && G.fisica.MOVE)) check('Bug urgente: la prueba de la pata tiene a Vittata envuelta y actores.sync3D', false, JSON.stringify({ pl3d: !!pl3d }));
-      else {
-        const MV = G.fisica.MOVE, gr0 = MV.grounded, fl0 = MV.flying, sw0 = MV.swimming, pj = pl3d.bones, ps = ['pieL1', 'pieL1001', 'pieL2', 'pieL2001'].filter(k => pj[k]);
-        let maxPata = 0, ik = 0; const pq0 = [];
-        try {
-          for (let i = 0; i < 90; i++) {
-            MV.grounded = true; MV.flying = false; MV.swimming = false; frena(); C.r.pos.x = S.pos.x + 3; C.r.pos.z = S.pos.z;
-            paso(dt); G.actores.sync3D(dt, false, false); if (pl3d.groundAt) ik++;
-            if (i === 1) ps.forEach(k => pq0.push(pj[k].quaternion.clone()));
-            else if (i > 1) ps.forEach((k, j) => { maxPata = Math.max(maxPata, 2 * Math.acos(Math.min(1, Math.abs(pq0[j].dot(pj[k].quaternion)))) * 180 / Math.PI); });
-          }
-        } finally { MV.grounded = gr0; MV.flying = fl0; MV.swimming = sw0; }
-        check('Bug urgente: Vittata quieta en guardia no mueve la pata sola (pieL1, pieL2 y sus pares se mueven < 20° en 3 s, con el bucle del juego y el IK de patas)',
-          ps.length === 4 && ik > 80 && maxPata < 20, JSON.stringify({ maxPata: +maxPata.toFixed(1), ik, huesos: ps.length }));
+      // Bug urgente (16-nov, Kelvin: «la pata sube y da vueltas sola»). Causa: Combate 2.0 gira pieL1/pieL1001 con rot() DESPUÉS
+      // de update(), cuando el IK de patas ya guardó su copia; character.js restauraba esa copia y luego restaba el giro otra vez
+      // (−v por cuadro, acumulado en lo que el clip no reescribe). Prueba del mecanismo, sin clip que lo tape: Vittata quieta
+      // sobre suelo irregular (IK de patas en marcha) y el giro de Combate 2.0 tras cada update(). Sin el arreglo: ~4,6° por
+      // cuadro (más de 90° en 2 s); con él, la pata no se mueve.
+      {
+        const ch = G.actores && G.actores.player3D, B = ch && ch.bones;
+        if (!(B && B.pieL1 && B.pieL1001 && ch.feet && ch.feet.length === 2 && ch.mixer)) check('Bug urgente: la prueba de la pata tiene a Vittata con IK de patas', false);
+        else {
+          const mx0 = ch.mixer, g0 = ch.groundAt, gy0 = ch.groundY, ab0 = ch.airborne, p0 = ch.root.position.clone(), base = p0.y, q0 = [], hs = [B.pieL1, B.pieL1001];
+          let maxPata = 0, ik = 0;
+          try {
+            ch.mixer = { update() {} };
+            ch.groundAt = (x, z) => base + 0.06 * Math.sin(x * 9) + 0.05 * Math.cos(z * 7); ch.groundY = base; ch.airborne = false;
+            for (let i = 0; i < 60; i++) {
+              ch.root.position.copy(p0); ch.update(dt); if (ch.ikSaved && ch.ikSaved.length) ik++;
+              ch.rot(B.pieL1, 'z', 0.08); ch.rot(B.pieL1001, 'z', -0.08);
+              if (i === 2) hs.forEach(h => q0.push(h.quaternion.clone()));
+              else if (i > 2) hs.forEach((h, j) => { maxPata = Math.max(maxPata, 2 * Math.acos(Math.min(1, Math.abs(q0[j].dot(h.quaternion)))) * 180 / Math.PI); });
+            }
+          } finally { ch.mixer = mx0; ch.groundAt = g0; ch.groundY = gy0; ch.airborne = ab0; ch.root.position.copy(p0); ch.update(0); ch.root.position.copy(p0); }
+          check('Bug urgente: la pata no gira sola (giro de Combate 2.0 tras update() con el IK de patas: pieL1 y pieL1001 se mueven < 8° en 2 s)',
+            ik > 50 && maxPata < 8, JSON.stringify({ maxPata: +maxPata.toFixed(1), ik }));
+        }
       }
-      salir();
       // Espera viva: tres variaciones que se turnan (guardia, curiosa, se sacude)
       // (con un luchador de prueba quieto: en la lucha la Campeona casi nunca está quieta tanto tiempo)
       const idles = new Set(), fq = { id: 'quieta', pos: { x: 0, y: 0, z: 0 }, plumas: 5, mareo: 0 };
