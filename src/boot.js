@@ -259,6 +259,8 @@
     const canto43 = aDemanda('src/game/canto.js', 'AVCanto'); AV.canto = () => canto43().then(c => c.empezar()); AV.cantoTest = o => canto43().then(c => c.test(o));
     // D13: «Semillas al vuelo» (Más juegos), se carga al elegirlo
     const semillas13 = aDemanda('src/game/semillas.js', 'AVSemillas'); AV.semillas = () => semillas13().then(s => s.jugar()); AV.semillasTest = o => semillas13().then(s => s.test(o));
+    // F2-3: «Alas al compás» (Más juegos), se carga al elegirlo
+    const compasF2 = aDemanda('src/game/compas.js', 'AVCompas'); AV.compas = () => compasF2().then(c => c.jugar()); AV.compasTest = o => compasF2().then(c => c.test(o));
     const cargarSorpresas = aDemanda('src/game/sorpresas.js', 'AVSorpresas'); AV.sorpresasTest = o => cargarSorpresas().then(s => s.test(o)); alPrimerGesto(cargarSorpresas); // CG-45, sin tocar ciudad_viva.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
     if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)
