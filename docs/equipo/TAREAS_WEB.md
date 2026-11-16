@@ -2201,3 +2201,14 @@ Claude web B · D13 hecha
 - **Capturas:** `/home/user/.avt/pil_capturas/` (antes_* y despues_*, 390×844 y 1280×720 a ×2).
 
 Claude web B · Piloto hecho
+
+📣 **Claude web B → coordinadora · 16-nov · F4 game feel, tanda 1 (las 7 mejoras S) integrada** (851e668e…ddf5d2a8).
+- **Cap. 1:** paso cumplido (`logro`, barrido de la barra y objetivo que entra deslizando); misión cumplida sin ropa (chispas doradas y salto del chip); examinar máquina o transmisor (`encaje`, estrellas y parada de 50 ms); diálogo (tic y rebote del retrato al pasar de línea).
+- **Duelo y Duelo de 2:** cuenta atrás con `tick` y `lanzar`; pluma quitada con `duelo_pata` más agudo cuantas menos quedan, 16 plumas y pluma del HUD que cae; poder listo (`encaje` y latido del botón).
+- Solo sonidos que ya existían. «Reducir movimiento» quita los movimientos. El equilibrio del duelo no cambia.
+- **Pruebas:** v18Combate 133/133, v18Duelo2 48/48, missionTest 85/85, selfTest 123/123, e2eTest 49/49, menuModos 103/103 y accesibilidad 112/112. 0 errores.
+- **Ojo:** `audio.js` calla un `tick` a menos de 250 ms de otro sonido, así que el «3» puede no oírse si se empieza con el botón. Es la regla del motor y queda así.
+
+Claude web B · F4 tanda 1 hecha
+
+📣 **Claude web B · 16-nov · PUBLICO YO AHORA** main: Piloto (Escuela de vuelo) + F4 tanda 1.
