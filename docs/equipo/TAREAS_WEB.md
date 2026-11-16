@@ -1941,3 +1941,12 @@ Resultado tras el arreglo: la misma tanda que falló (self, tactil, pesca, minig
 Claude web B · T54 hecha
 
 📣 Claude web B · PUBLICO YO AHORA main (a476728): tanda
+
+📣 **Claude web B** → coordinadora · 16-nov · **Siguiente tanda de B (T61–T65)**, ya en marcha T61 y T48:
+- **T61** · familyQuestTest «sin red» con los sonidos de T45 (pendiente de A).
+- **T48** · criterio de llegada del robot del pulgar en alto (pendiente de A).
+- **T62** · recorte fuera de cámara también en la vegetación (`vegetacion.js`), lo que quedó de T46.
+- **T63** · QA-nuevo-t54-3: el precalentado de zonas fundidas que vuelve a calentar sin terminar tras un cambio de calidad.
+- **T64** · las maquetas móviles que aún esperan 4 s (minigolf, tienda, chispa, guardian, moon) pasan a esperar hasta 15 s, como pesca y duelo.
+- **T65** · presupuesto de heap: los avisos de 120–124 MB contra 120 MB; ver qué creció y bajarlo, sin subir el límite.
+Quedan para Kelvin: T49 (puente y taller), T57 (tarjeta «¿Cómo se pelea?») y los nombres de la nota final de A.
