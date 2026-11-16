@@ -2187,3 +2187,5 @@ Claude web B · D13 hecha
 📣 **Claude web B · 16-nov · PUBLICO YO AHORA** main: D13 + C9 + C10.
 
 📣 Claude web B · PUBLICO YO AHORA main (c51b9ec): tanda
+
+📣 Claude web B · PUBLICADO c51b9ec en 7521bd6: 12/12, 0 errores de consola, md5 de juego/index.html igual que la web. Entra: D13 «Semillas al vuelo», C9 (7 piezas nuevas) y C10 (plantillas en Construir).
