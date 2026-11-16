@@ -3158,6 +3158,22 @@ window.AVV18Combate = function (G) {
       const idles = new Set(), fq = { id: 'quieta', pos: { x: 0, y: 0, z: 0 }, plumas: 5, mareo: 0 };
       if (ch) { for (let t = 0; t < 10.6; t += dt) { C2.pasoReloj(dt); const a = C2.antes(ch, fq, { vel: 0 }, dt); if (a.sub === 'espera') idles.add(a.idle); } C2.soltar(ch, fq); }
       check('C2: en la espera, tres variaciones que se turnan (guardia que bota, curiosa, se sacude las plumas)', idles.size === 3, JSON.stringify([...idles]));
+      // Bug urgente (16-nov, Kelvin: «la pata sube y da vueltas sola»): en guardia, sobre suelo irregular (el IK de patas corre),
+      // los giros que Combate 2.0 pone en pieL1/pieL2 después de update() no se acumulan cuadro a cuadro. 10 s a 30 cuadros/s.
+      if (ch && ch.bones && ch.bones.pieL1) {
+        const g0 = ch.groundAt, gy0 = ch.groundY, ab0 = ch.airborne, fq2 = { id: 'quieta', pos: { x: 0, y: 0, z: 0 }, plumas: 5, mareo: 0 };
+        const p0 = ch.root.position.clone(), base = p0.y;
+        ch.groundAt = (x, z) => base + 0.06 * Math.sin(x * 9) + 0.05 * Math.cos(z * 7); ch.groundY = base; ch.airborne = false;
+        const qA = new THREE.Quaternion(), ang = (a, b) => 2 * Math.acos(Math.min(1, Math.abs(a.dot(b)))) * 180 / Math.PI;
+        let maxGiro = 0, maxRod = 0; const qB = new THREE.Quaternion(), qR = new THREE.Quaternion(), qR0 = new THREE.Quaternion();
+        for (let i = 0; i < 300; i++) {
+          C2.pasoReloj(1 / 30); const a = C2.antes(ch, fq2, { vel: 0 }, 1 / 30); ch.update(1 / 30); C2.huesos(ch, a);
+          if (i === 60) { qA.copy(ch.bones.pieL1.quaternion); if (ch.bones.pieL2) qR0.copy(ch.bones.pieL2.quaternion); }
+          if (i > 60) { qB.copy(ch.bones.pieL1.quaternion); maxGiro = Math.max(maxGiro, ang(qA, qB)); if (ch.bones.pieL2) { qR.copy(ch.bones.pieL2.quaternion); maxRod = Math.max(maxRod, ang(qR0, qR)); } }
+        }
+        C2.soltar(ch, fq2); ch.groundAt = g0; ch.groundY = gy0; ch.airborne = ab0; ch.root.position.copy(p0);
+        check('Bug urgente: en guardia sobre suelo irregular la pata no gira sola (pieL1 y pieL2 se mueven < 25° en 10 s)', maxGiro < 25 && maxRod < 25, 'pieL1 ' + maxGiro.toFixed(1) + '° · pieL2 ' + maxRod.toFixed(1) + '°');
+      }
       // Golpe de ala de la jugadora: su pose de impacto sale en el mismo cuadro, la Campeona encaja el golpe (impacto, pico
       // abierto, aplastada), hay hit-stop y todo vuelve a la espera
       iniciar({ sinCuenta: true, especie: 'vittata' }); quieta(1.2); C.r.escudo = 0; C.r.inv = 0; C.j.cd.golpe_ala = 0; cara(1); ver(0.2, frena);
