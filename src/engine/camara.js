@@ -475,8 +475,9 @@ AVE.module('camara', function (G) {
   }
   let fovBonus = 0; // BM20: el despegue del mirador abre el campo de visión (G.wow); 0 el resto del tiempo
   let fovPicado = 0; // DIVERSION_CAP1 mejora 6 (src/game/juice.js): el picado y el remonte abren el campo de visión (el mayor de este y fovExtra, no la suma); sin vida no cuenta
+  let fovImpulso = 0; // F4-6 (src/game/juice.js): pulso corto del impulso (+3° como mucho, vuelve a 0); se suma encima; sin vida no cuenta
   function fov(dt) {
-    const wantFov = 55 + Math.max(fovExtra(), quieta() ? 0 : fovPicado) + fovBonus; // el picado no se suma al FOV del vuelo o del impulso
+    const wantFov = 55 + Math.max(fovExtra(), quieta() ? 0 : fovPicado) + fovBonus + (quieta() ? 0 : fovImpulso); // el picado no se suma al FOV del vuelo o del impulso
     let dirty = false;
     // Un minijuego puede dejar el FOV en 34 o el zoom de la cámara en otro valor: aquí vuelve al de exploración.
     if (!(camera.fov > 30 && camera.fov < 100)) { camera.fov = wantFov; dirty = true; }
@@ -646,6 +647,6 @@ AVE.module('camara', function (G) {
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
 
-  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, interior: ponerInterior, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, get fovPicado() { return fovPicado; }, set fovPicado(v) { fovPicado = Number.isFinite(v) ? v : 0; }, CAM, juice, vida, get cortes() { return cortes; }, get dCol() { return dCol; }, get suaves() { return suaves; }, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
+  return { get yaw() { return yaw; }, set yaw(v) { yaw = v; }, get inclina() { return inclina; }, set inclina(v) { inclina = fijaInclina(v); }, inclinar, test, interior: ponerInterior, get fovBonus() { return fovBonus; }, set fovBonus(v) { fovBonus = v; }, get fovPicado() { return fovPicado; }, set fovPicado(v) { fovPicado = Number.isFinite(v) ? v : 0; }, get fovImpulso() { return fovImpulso; }, set fovImpulso(v) { fovImpulso = Number.isFinite(v) ? v : 0; }, CAM, juice, vida, get cortes() { return cortes; }, get dCol() { return dCol; }, get suaves() { return suaves; }, dist, place, follow, shake, hitStop, fov, fovExtra, draw, manual, descubrir, copaLibre, probarCopas, copasAhora,
     get anchorY() { return anchorY; } };
 });

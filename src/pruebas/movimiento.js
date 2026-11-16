@@ -850,6 +850,26 @@ window.AVMovimientoTest = function (G) {
         check('Feedback juicy: polvo al aterrizar, salpicadura al posarse en agua, aleteo, hojas en la copa y sacudida ≤ 0,15 (sin sacudida con «Reducir movimiento»)',
           dPolvo >= 1 && (!hondo || dSalp >= 1) && dAla >= 2 && logAla && dHojas >= 1 && (rd ? CJ.amp === 0 : sacude) && s0 === J.sacudida, JSON.stringify(met.juicy));
         CJ.amp = 0; CJ.shake = 0;
+        // F4-5 y F4-6 (docs/diseno/F4_GAME_FEEL.md): despegar del suelo levanta polvo y, sobre tierra, 4 hojas; el impulso deja 4 plumas
+        // detrás y suena «aleteo» con su «dash». Con G.quiet (baterías), nada. El pulso de FOV del impulso se prueba en AV.juiceTest.
+        {
+          const FE = F.FEEL, burst0 = G.fx.burst, rafagas = [], A = G.audio;
+          try {
+            G.quiet = false; G.fx.burst = function (x, y, z, k, n) { rafagas.push(k + ':' + n); return burst0.apply(this, arguments); };
+            reset(tx, tz); const f0 = Object.assign({}, FE), p0 = J.polvo, enTierra = M.onTerrain; A.log.length = 0;
+            F.startFlying(); const desp = { n: FE.despegues - f0.despegues, polvo: J.polvo - p0, hojas: rafagas.filter(r => r === 'leaves:4').length, enTierra, log: A.log.join() };
+            reset(tx, tz); rafagas.length = 0; A.log.length = 0; M.dashCd = 0;
+            F.tryDash(); const plumaAtras = rafagas.includes('feathers:4');
+            const imp = { n: FE.impulsos - f0.impulsos, plumas: rafagas.filter(r => r === 'feathers:4').length, log: A.log.join() };
+            G.quiet = true; reset(tx, tz); const f1 = Object.assign({}, FE); F.startFlying(); reset(tx, tz); M.dashCd = 0; F.tryDash();
+            const quieto = FE.despegues === f1.despegues && FE.impulsos === f1.impulsos;
+            met.f4 = { desp, imp, quieto };
+            check('F4-5: despegar del suelo levanta polvo y 4 hojas (sobre tierra); con G.quiet, nada',
+              desp.n === 1 && desp.polvo === 1 && desp.hojas === (enTierra ? 1 : 0) && /despegar/.test(desp.log) && quieto, JSON.stringify(met.f4));
+            check('F4-6: el impulso deja 4 plumas detrás y suena «aleteo» junto a su «dash» (una vez cada uno); con G.quiet, nada',
+              imp.n === 1 && imp.plumas === 1 && plumaAtras && imp.log.split(',').filter(n => n === 'dash').length === 1 && imp.log.split(',').filter(n => n === 'aleteo').length === 1 && quieto, JSON.stringify(met.f4));
+          } finally { G.fx.burst = burst0; G.quiet = true; reset(tx, tz); }
+        }
       }
       lap('juicy');
       check('Duración de cada tramo de la prueba (ms)', true, JSON.stringify(dur));

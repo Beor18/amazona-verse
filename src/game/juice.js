@@ -19,6 +19,7 @@ window.AVJuice = function (G) {
     rasAlto: 1, rasVel: 6, rasPaso: 1, rasQueda: 1.5,  // m sobre el agua o el terreno, m/s mínimos, s por cada «×1», s que queda el chip
     picadoVy: -4, picadoFov: 7, remonteMin: 0.6,       // m/s de bajada, ° de FOV al picar a fondo, s de picado para el remonte
     remonteFov: 4, perfectoV: 2, petaloEspera: 1.2,    // pulso de FOV del remonte, m/s al tocar, s entre pétalos del mismo árbol
+    impulsoFov: 3, impulsoSeg: 0.3,                    // F4-6: pulso de FOV del impulso (° arriba del todo) y cuánto dura
   };
   const MINIJUEGO = /\b(retos|flight|maze|river|tren|duelo)-on\b/;
   let idiomaForzado = null, reducidoForzado = null, fuerza = false, simulado = null;
@@ -26,7 +27,7 @@ window.AVJuice = function (G) {
   const L = (es, eng) => (en() ? eng : es);
   const reducido = () => (reducidoForzado != null ? reducidoForzado : !!(G.renderer.REDUCED || (G.audio && G.audio.reducido === true)));
   const apagado = () => !fuerza && (G.quiet || MINIJUEGO.test(document.body.className) || !(S.profile && S.profile.created));
-  const stats = { rasanteSeg: 0, rasanteMax: 0, rasantes: 0, picados: 0, remontes: 0, perfectos: 0, petalos: 0 };
+  const stats = { rasanteSeg: 0, rasanteMax: 0, rasantes: 0, picados: 0, remontes: 0, perfectos: 0, petalos: 0, impulsos: 0 };
 
   // ---------- Sonidos (sintetizados; no hay descarga) ----------
   const A = G.audio;
@@ -130,7 +131,22 @@ window.AVJuice = function (G) {
   }
 
   // ---------- Estado ----------
-  const E = { ras: false, rasT: 0, rasN: 0, chipT: 0, picT: 0, picando: false, fov: 0, pulso: 0, remonte: false };
+  const E = { ras: false, rasT: 0, rasN: 0, chipT: 0, picT: 0, picando: false, fov: 0, pulso: 0, remonte: false, imp: -1, impMax: 0 };
+  // F4-6 (docs/diseno/F4_GAME_FEEL.md): el impulso (fisica.js avisa con 'impulso') abre el FOV +3° y lo cierra en 0,3 s, en
+  // media onda de seno (sube y baja suave y acaba justo en 0; la cámara aún lo suaviza). Va en G.camara.fovImpulso, que se suma
+  // encima del FOV del impulso. Con «Reducir movimiento» (sistema o menú), G.quiet o en un minijuego, nada.
+  function alImpulso() {
+    if (apagado() || reducido()) return;
+    E.imp = 0; E.impMax = 0; stats.impulsos++;
+  }
+  function pasoImpulso(dt, off, red) {
+    if (E.imp < 0) return;
+    E.imp += dt;
+    if (off || red || E.imp >= J.impulsoSeg) { E.imp = -1; cam.fovImpulso = 0; return; }
+    const f = J.impulsoFov * Math.sin(Math.PI * E.imp / J.impulsoSeg);
+    if (f > E.impMax) E.impMax = f;
+    cam.fovImpulso = f;
+  }
   function paso(dt) {
     dt = Math.min(Math.max(dt || 0, 0), 0.1); ultimoPaso = performance.now();
     if (!fuerza && G.ui.busy && G.ui.busy() && (!chip.hidden || !pop.hidden)) ocultar();
@@ -169,6 +185,7 @@ window.AVJuice = function (G) {
     const meta = red || !v ? 0 : (picando ? J.picadoFov * Math.min(1, (-v.vy - 3) / 4) : 0) + J.remonteFov * E.pulso;
     E.fov += (meta - E.fov) * Math.min(1, dt * 5); if (Math.abs(E.fov) < 0.02 && !meta) E.fov = 0;
     cam.fovPicado = E.fov;
+    pasoImpulso(dt, off, red); // F4-6
     // Pétalos del flamboyán
     for (const [k, t] of espera) { if (t - dt <= 0) espera.delete(k); else espera.set(k, t - dt); }
     if (v && v.flying && v.speed > 1.5) {
@@ -198,8 +215,9 @@ window.AVJuice = function (G) {
     return true;
   }
   G.on('vuelo', on => { if (!on) alAterrizar(); });
+  G.on('impulso', alImpulso);
   G.on('update', dt => paso(dt), 88);
-  const limpiar = () => { E.ras = false; E.picando = false; E.picT = 0; E.pulso = 0; E.fov = 0; cam.fovPicado = 0; chip.hidden = true; pop.hidden = true; popT = 0; edadA.fill(9); estela.visible = false; espera.clear(); };
+  const limpiar = () => { E.ras = false; E.picando = false; E.picT = 0; E.pulso = 0; E.fov = 0; cam.fovPicado = 0; E.imp = -1; cam.fovImpulso = 0; chip.hidden = true; pop.hidden = true; popT = 0; edadA.fill(9); estela.visible = false; espera.clear(); };
   G.on('apply', limpiar, 90);
 
   // ---------- Prueba (AV.juiceTest): cada efecto con cuadros simulados, sin depender de volar de verdad ----------
@@ -292,9 +310,34 @@ window.AVJuice = function (G) {
       alAterrizar(base({ flying: false, speed: 0.5, vy: -1, y: 2, suelo: 2 }));
       ok('Reducir movimiento: sin FOV, sin estela ni pétalos; chip y pop sin animación', sinEstela && chipR && fovR === 0 && G.fx.juicy.petalos === pr0 && !pop.hidden && !pop.classList.contains('anim'), JSON.stringify({ sinEstela, chipR, fovR, pet: G.fx.juicy.petalos - pr0 }));
       reducidoForzado = false;
+      // 9b. F4-6 · impulso: pulso de FOV suave (+3° arriba, media onda) que en 0,3 s vuelve justo a 0; con «Reducir movimiento»
+      // (sistema o menú: reducido() mira los dos), nada. Cuadros de 1/60 s con el estado real del juego (simulado no cuenta aquí).
+      {
+        reset(); const muestras = []; let fin = -1;
+        G.emit('impulso'); const ini = E.imp === 0;
+        for (let i = 0; i < 30; i++) { paso(1 / 60); muestras.push(cam.fovImpulso); if (fin < 0 && E.imp < 0) fin = (i + 1) / 60; }
+        const pico = Math.max(...muestras), iPico = muestras.indexOf(pico);
+        let suave = true; for (let i = 1; i < muestras.length; i++) if (Math.abs(muestras[i] - muestras[i - 1]) > 0.6) suave = false;
+        const sube = muestras.slice(0, iPico + 1).every((v, i, a) => !i || v >= a[i - 1]), baja = muestras.slice(iPico, 18).every((v, i, a) => !i || v <= a[i - 1]);
+        reducidoForzado = true; reset(); G.emit('impulso'); const nR = E.imp; paso(1 / 60); const fovR6 = cam.fovImpulso; reducidoForzado = false;
+        ok('F4-6: el impulso abre el FOV hasta +3° con un pulso suave que en 0,3 s vuelve a 0; con «Reducir movimiento», nada',
+          ini && pico > 2.9 && pico <= J.impulsoFov + 1e-6 && suave && sube && baja && fin > 0.28 && fin < 0.33 && cam.fovImpulso === 0 && nR === -1 && fovR6 === 0,
+          JSON.stringify({ pico: +pico.toFixed(2), fin: +fin.toFixed(3), suave, sube, baja, nR, fovR6 }));
+        // la cámara lo suma encima del FOV del impulso (fovExtra) y vuelve a su valor
+        const C = cam.CAM, sv = C.sinVida, camF = G.renderer.camera; C.sinVida = false;
+        if (!G.renderer.REDUCED) {
+          for (let i = 0; i < 60; i++) cam.fov(0.1); const fBase = camF.fov;
+          cam.fovImpulso = 3; for (let i = 0; i < 60; i++) cam.fov(0.1); const fCon = camF.fov;
+          cam.fovImpulso = 0; for (let i = 0; i < 60; i++) cam.fov(0.1); const fVuelve = camF.fov;
+          ok('F4-6: la cámara suma el pulso encima del FOV de ese momento y luego vuelve a su valor', Math.abs(fCon - fBase - 3) < 0.1 && Math.abs(fVuelve - fBase) < 0.1,
+            JSON.stringify({ base: +fBase.toFixed(2), con: +fCon.toFixed(2), vuelve: +fVuelve.toFixed(2) }));
+        } else ok('F4-6: la cámara (sistema con «Reducir movimiento»: sin pulso)', true, 'REDUCED');
+        C.sinVida = sv; cam.fovImpulso = 0; for (let i = 0; i < 60; i++) cam.fov(0.1);
+      }
       // 10. Baterías y minijuegos: nada
       fuerza = false; G.quiet = true; reset(); correr(2, { alto: 0.5 });
-      const q = chip.hidden && cam.fovPicado === 0 && !alAterrizar(base({ flying: false, speed: 0.5, vy: -1, y: 2, suelo: 2 }));
+      G.emit('impulso'); const qImp = E.imp === -1;
+      const q = qImp && chip.hidden && cam.fovPicado === 0 && !alAterrizar(base({ flying: false, speed: 0.5, vy: -1, y: 2, suelo: 2 }));
       G.quiet = false; document.body.classList.add('retos-on'); reset(); correr(2, { alto: 0.5 }); const mj = chip.hidden; document.body.classList.remove('retos-on');
       ok('Con G.quiet (baterías) y en un minijuego no hace nada', q && mj);
       // 11. Cámara: fovPicado entra en el FOV y respeta la cámara sin vida

@@ -149,12 +149,30 @@ AVE.module('fisica', function (G) {
     if (MOVE.jumping && !MOVE.flying && S.vy > 0) S.vy *= T.jumpCut;
     MOVE.jumping = false;
   }
+  // F4-5 y F4-6 (docs/diseno/F4_GAME_FEEL.md): despegar del suelo levanta polvo y, sobre tierra (no en un tejado), 4 hojas;
+  // el impulso deja 4 plumas detrás, suena «aleteo» con su «dash» y avisa con 'impulso' (src/game/juice.js da el pulso de FOV,
+  // que respeta «Reducir movimiento»). Solo partículas de G.fx (sin mallas nuevas). Con G.quiet (baterías) no sale nada.
+  // FEEL cuenta cada uno (las pruebas lo leen).
+  const FEEL = { despegues: 0, impulsos: 0 };
+  function despegueFx() {
+    if (G.quiet || !G.fx) return;
+    FEEL.despegues++;
+    if (G.fx.polvo) G.fx.polvo(S.pos.x, S.pos.y, S.pos.z, 0.6);
+    if (MOVE.onTerrain) G.fx.burst(S.pos.x, S.pos.y + 0.25, S.pos.z, 'leaves', 4);
+  }
+  function impulsoFx() {
+    if (G.quiet || !G.fx) return;
+    FEEL.impulsos++;
+    G.fx.burst(S.pos.x - S.facing.x * 0.7, S.pos.y + 0.8, S.pos.z - S.facing.z * 0.7, 'feathers', 4);
+    G.audio.play('aleteo', DASH_SPEED);
+    G.emit('impulso');
+  }
   function startFlying() {
     if (busyNow()) return;
-    const fromGround = onGroundNow() || MOVE.swimming;
+    const fromGround = onGroundNow() || MOVE.swimming, nadaba = MOVE.swimming;
     if (MOVE.swimming) { MOVE.swimming = false; G.agua.splash(S.pos.x, S.water, S.pos.z, 1.1); }
     MOVE.flying = true; MOVE.landing = false; MOVE.jumping = false; MOVE.grounded = false;
-    if (fromGround) { S.vy = T.takeoffV * (G.rareza ? G.rareza.mult('impulso') : 1); MOVE.takeoff = T.takeoffTime; G.audio.play('despegar'); }
+    if (fromGround) { S.vy = T.takeoffV * (G.rareza ? G.rareza.mult('impulso') : 1); MOVE.takeoff = T.takeoffTime; G.audio.play('despegar'); if (!nadaba) despegueFx(); }
     else { S.vy = Math.max(S.vy, 2); MOVE.takeoff = 0.15; }
     G.emit('vuelo', true);
   }
@@ -175,7 +193,7 @@ AVE.module('fisica', function (G) {
     if (air && !MOVE.airDash) return;
     if (air && !MOVE.flying) { MOVE.airDash = false; S.vy = Math.max(S.vy, T.dashAirLift); }
     MOVE.dashT = T.dashTime; MOVE.dashCd = T.dashCooldown;
-    G.audio.play('dash');
+    G.audio.play('dash'); impulsoFx(); // F4-6
   }
   // Empuja un punto fuera de un collider: círculo (r) o caja alineada (hx/hz). Los de edificios, estructuras, árboles, el taller
   // y las estacas se ignoran donde solidos.js ya tiene su geometría real (si no, empujarían fuera de un techo a quien está parado encima).
@@ -667,7 +685,7 @@ AVE.module('fisica', function (G) {
       }
     }
   }
-  return { MOVE, TUNING: T, colliders, alturas, perchas, addPercha, removePercha, suelo, pushOut, removeColliders, soltarAtasco,
+  return { MOVE, FEEL, TUNING: T, colliders, alturas, perchas, addPercha, removePercha, suelo, pushOut, removeColliders, soltarAtasco,
     tryJump, releaseJump, startFlying, land, toggleFly, endFlight, tryDash, step, slopeAt,
     techoVuelo: (x, z) => techoVuelo(x, z, suelo(x, z, S.pos.y)),
     SPEED, RUN_SPEED, DASH_SPEED, FLY_SPEED, FLY_CEIL, SWIM_SPEED, SWIM_DEPTH };
