@@ -574,7 +574,7 @@ window.AVCompas = function (G) {
         limpiar(); const T3 = E.tm + 1.5, d3 = nota(T3, 'doble'), g3 = nota(T3 + 0.227, 'golpe'), r2 = E.racha;
         irA(T3 + 0.01 + o); tecla(' ');
         check('Toque justo en la dorada (el golpe a más de 120 ms): es de la dorada', d3.res === 'perfecto' && !g3.res && E.racha === r2 + 1, d3.res + '/' + g3.res);
-        limpiar(); }
+        limpiar(); let k = 0; while (!golpes().length && k++ < 200) paso(0.1); }
       check('Sin asignaciones por cuadro: grupos fijos, y la lógica y el dibujo sin cierres .some/.find ni colores armados con «+»', notas.length === NN && evs.length === NE && chis.length === NP && notas.filter(n => n.on).length < NN && evs.filter(e => e.on).length < NE && ![logica, dibujar].some(f => /\.(some|filter|find|map)\(|'rgba\([^']*'\s*\+/.test(String(f))));
       // El audio se para a media partida (suspend, Siri): el tiempo sigue sin salto
       { const man0 = E.manual, f0 = E.fuente, t00 = E.t0, uT = E.ultT; let okA = false, info = '';
