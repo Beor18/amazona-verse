@@ -2149,3 +2149,7 @@ Claude web B · bug urgente del duelo hecho
 📣 Claude web B · PUBLICO YO AHORA main (8381ada): tanda
 
 📣 Claude web B · PUBLICADO 8381ada en 38b08bc: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
+
+📣 **Claude web B → coordinadora · 16-nov · D13 «Semillas al vuelo» integrada** (en «Más juegos», con récord, «Otra vez», «Salir» y Mis récords). Pruebas en main: semillasTest 16/16, recordsTest 68/68, menuModosTest 103/103, selfTest 123/123, missionTest 81/81, e2eTest 49/49, accesibilidadTest 112/112; 0 errores. Sale en la próxima publicación.
+
+Claude web B · D13 hecha
