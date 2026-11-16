@@ -2064,3 +2064,39 @@ Claude web B · T63 hecha
 - cuando esté redondo, que salga en la portada o en «Más juegos» y en «¿Qué hay para hacer?» sin bandera, con pilotoTest en verde.
 - Sin anillos de vuelo: usa nubes, hojas o perchas como marcas.
 Publica cuando esté.
+
+📣 **Coordinadora → Claude web B · 16-nov · TRABAJO SERIO para tus 2 reinicios (uno con Fable y otro con el modelo normal).** Kelvin quiere que se aproveche entero.
+Orden: primero el 🚨 bug del duelo y el Piloto (notas de arriba). Después esto.
+
+**BLOQUE FABLE: diseño y evaluación creativa.** Haz este bloque cuando tengas Fable activo. Cada entregable es un documento corto en `docs/diseno/` con capturas, y luego se implementa.
+- **F1 · Rediseño del VS.**
+  - Juega el duelo, el Duelo de 2 y la carrera. Escribe qué los haría divertidos a los 8–14 años: ritmo, lectura del golpe, feedback, cámara, reglas, rivales y progresión.
+  - Compáralos con juegos de pelea y carreras familiares, solo como referencia de mecánicas, sin copiar ninguno.
+  - Sale un plan de 5–8 cambios concretos, por orden de impacto. **Impleméntalo tú después** (bloque normal).
+- **F2 · Diseño de 4 minijuegos de calidad** que encajen con la isla y con volar.
+  - Para cada uno: la regla en una frase, el bucle de 30 s, la dificultad que sube, el récord, el teléfono y el inglés.
+  - Sin anillos, sin dinero ni cajas de premios.
+- **F3 · Construir 2.0:**
+  - de «poner piezas» a «hacer cosas que sirvan»: un nido que atrae aves, un puente que abre un atajo, un comedero que trae visitantes;
+  - piezas, plantillas, colores y foto.
+- **F4 · Sensación de juego («game feel»).**
+  - Recorre el cap. 1 y anota cada momento seco: un golpe sin respuesta, un logro sin celebración o un vuelo sin inercia.
+  - Lista 20 mejoras pequeñas de juice (partículas, sacudidas suaves, sonidos de Suno, animaciones).
+- **F5 · Propuestas para Kelvin, solo propuestas y sin implementar:**
+  - el final de la temporada en el cap. 6;
+  - el reparto de premios sin repetir;
+  - 2 opciones de arte para Iguaca, el Guardián, la Abuela y el Papá (3D o marco ilustrado).
+  - Ponlas en `docs/diseno/PARA_KELVIN.md`.
+
+**BLOQUE NORMAL: implementación.** Haz este bloque con el modelo normal.
+- **N1 · Implementar F1 entero:** el VS rediseñado, con prueba y capturas.
+- **N2 · Implementar los minijuegos de F2,** uno por uno, cada uno en «Más juegos», con su prueba y en inglés.
+- **N3 · Implementar F3 (Construir 2.0)** y las 20 mejoras de F4.
+- **N4 · Lo que quede de la LISTA LARGA de arriba,** en orden.
+- **N5 · Recorrido final** de los caps. 1 a 6 y todos los modos, en el teléfono y en la computadora: anota y arregla. Después, publica.
+
+**Reglas de siempre:**
+- Vittata no se toca (ni el modelo ni el rig). No cambias canon.
+- Las 12 en verde en cada commit. Publica cada 2–3 tareas.
+- Al cerrar cada tarea, deja una nota aquí.
+- Si terminas todo, propón tú la siguiente tanda y síguela. **No pares.**
