@@ -385,6 +385,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos .rt-reto p { margin: 0; font-size: var(--fs-sm); }
 #retos .rt-reto .rt-rec { font: 700 var(--fs-sm)/1.2 var(--font-display); color: #704205; } /* 8,0:1 sobre #fff8e8 (antes #8a5208, 6,0:1; alto contraste pide ≥ 7:1) */
 #retos .rt-fila { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+#retos .rt-reto .rt-fila { gap: 8px; } #retos .rt-reto .rt-fila .btn { flex: 1 1 0; min-width: max-content; } /* F1-8: «Jugar» y «Para dos», a lo ancho */
 #retos .rt-dones { margin: 0 0 8px; }
 #retos .rt-familias { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
 #retos .rt-familias[hidden] { display: none; }
@@ -417,6 +418,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos .rt-turbo .rt-hojas i.si { background: linear-gradient(160deg, #c8f59a, #3f9a4e); box-shadow: 0 0 6px rgba(200,245,154,.8); }
 #retos .rt-turbo .rt-tecla { color: #ffd27a; opacity: 1; }
 @media (max-width: 640px) { #retos .rt-turbo b { font-size: 15px; } }
+@media (max-width: 640px) and (orientation: portrait) { #retos .rt-turbo { left: auto; right: 12px; transform: none; bottom: calc(env(safe-area-inset-bottom, 0px) + 216px); } } /* teléfono en vertical: encima de Bajar e Impulso, lejos del joystick y de Subir */
 #retos-fx { position: fixed; inset: 0; pointer-events: none; z-index: var(--z-hud); }
 #retos-fx > div { position: absolute; inset: 0; opacity: 0; }
 #retos-fx .rt-lineas { inset: -20%; background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0) 0deg 5deg, rgba(255,255,255,.6) 5deg 5.5deg, rgba(255,255,255,0) 5.5deg 11deg);
@@ -788,7 +790,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui.fin.querySelector('[data-salir]').textContent = txt;
     }
     function resultados(html) {
-      ui.hud.hidden = true; ui.flecha.hidden = true; ui.tags.textContent = '';
+      ui.hud.hidden = true; ui.flecha.hidden = true; ui.turbo.hidden = true; ui.tags.textContent = '';
       ui.fin.hidden = false; st.fase = 'fin'; salirTxt();
       G.pausa.set('retos', true);
       html(); pintarGanchos();
@@ -898,7 +900,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       if (ruta0) {
         return {
           nubes: true,
-          salida: { x: 150, z: 238, nombre: 'Villa Raíz' },
+          salida: { x: 174, z: 240, nombre: 'Villa Raíz' }, // 50 m al este de la meta: en la salida no se ve el banderín de META encima
           puntos: [ // ida por fuera del arrecife (z ≈ 250), vuelta en la bahía y regreso por dentro (z ≈ 232): 16–20 m entre una y otra
             { x: 120, z: 250, via: true },
             { x: 84, z: 254, nombre: 'El arrecife' },
@@ -946,8 +948,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         const s0 = Rr.largo * (0.1 + 0.8 * (g + 0.5) / T_NUBES.grupos), lat = [3.5, -3.5, 0][g % 3];
         for (let j = 0; j < 3; j++) { const q = enRuta(s0 + j * 5, {}); hojas.push({ g, s: s0 + j * 5, x: q.x - q.tz * lat, y: q.y + 0.3, z: q.z + q.tx * lat, activa: true, fase: (g * 3 + j) * 0.9 }); }
       }
-      const geoH = new THREE.PlaneGeometry(1.5, 1.5);
-      const matH = lm(new THREE.MeshLambertMaterial({ map: texHoja(), color: '#ffffff', emissive: '#2f6a2a', side: THREE.DoubleSide, alphaTest: 0.35 }));
+      const geoH = new THREE.PlaneGeometry(2, 2); // se distinguen de lejos sobre el mar
+      const matH = lm(new THREE.MeshLambertMaterial({ map: texHoja(), color: '#ffffff', emissive: '#3f8a34', side: THREE.DoubleSide, alphaTest: 0.35 }));
       const mallaH = new THREE.InstancedMesh(geoH, matH, hojas.length);
       mallaH.name = 'hojas-carrera'; mallaH.frustumCulled = false;
       const K = { nubes, hojas, mallaN, mallaH };
