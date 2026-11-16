@@ -304,8 +304,8 @@ window.AVV18Combate = function (G) {
     const n = rc.n, empuje = rc.empuje, mareo = rc.mareo, parcial = rc.parcial;
     if (g.interrumpe) interrumpir(blanco, mareo, parcial);
     if (blanco.lift && empuje > 0) { blanco.lift.alto = n > 0 ? 0.45 : 0.25; blanco.lift.t = 0; blanco.lift.dura = 0.32; C.stats.reacciones++; } // saltito de sorpresa
-    fx('feathers', blanco.pos.x, blanco.pos.y + 1, blanco.pos.z);
-    sonar(n > 0 ? 'land' : 'jump');
+    if (n > 0) feelPluma(blanco, n, hud && hud.q(blanco === C.j ? 'plj' : 'plr').children, sonar); // F4-15
+    else { fx('feathers', blanco.pos.x, blanco.pos.y + 1, blanco.pos.z); sonar('jump'); }
     if (de.ia) C.stats.aciertosIA = (C.stats.aciertosIA || 0) + 1;
     emitir({ tipo: 'hit', de: de.id, a: blanco.id, valor: n, reducido: parcial || undefined, interrumpe: !!g.interrumpe || undefined });
     if (n > 0) emitir({ tipo: 'damage', de: de.id, a: blanco.id, valor: blanco.plumas });
@@ -328,7 +328,54 @@ window.AVV18Combate = function (G) {
       else if (G.fx.burst) G.fx.burst(x, y, z, tipo, tipo === 'bubbles' ? 10 : 8);
     } catch (e) { /* sin efectos */ }
   }
-  function sonar(n, arg) { try { if (G.audio && G.audio.play) G.audio.play(n, arg); } catch (e) { /* sin audio */ } }
+  function sonar(n, arg) { if (n === 'duelo_pata') pataT = performance.now(); try { if (G.audio && G.audio.play) G.audio.play(n, arg); } catch (e) { /* sin audio */ } }
+  let pataT = -1e9; // la última patada que sonó (la de Combate 2.0 ya suena al dar: la pluma no la dobla)
+
+  // ---------- F4 · Sensación de juego (docs/diseno/F4_GAME_FEEL.md 14, 15 y 17), compartida con duelo2.js (G.v18combate.feel) ----------
+  // 14: la cuenta atrás suena (tick en 3, 2 y 1; lanzar en «¡Ya!») y cada número entra con un pop.
+  // 15: la pluma quitada suena duelo_pata, más agudo cuantas menos quedan; 16 plumas (antes 8) y la pluma del HUD salta y cae.
+  // 17: el poder listo suena encaje y su botón late, una vez por carga (se vuelve a armar al gastarlo o al quedarse sin energía).
+  // «Reducir movimiento» quita el pop, el salto de la pluma y el latido (quedan el sonido y las plumas). El sonido va por
+  // G.audio.play (volumen y silencio del juego). No toca daño, tiempos ni IA. Animaciones WAAPI solo en el momento del evento.
+  const FEEL = { ticks: 0, ya: 0, pops: 0, plumas: 0, caidas: 0, poderes: 0, pulsos: 0 };
+  const movReducido = () => !!((G.renderer && G.renderer.REDUCED) || (G.audio && G.audio.reducido === true));
+  const KF_POP = [{ transform: 'scale(1.7)', opacity: 0.3 }, { transform: 'scale(0.92)', opacity: 1, offset: 0.6 }, { transform: 'scale(1)', opacity: 1 }];
+  const KF_CAE = [{ transform: 'rotate(20deg) translateY(0) scale(1)', opacity: 1 }, { transform: 'rotate(-12deg) translateY(-9px) scale(1.45)', opacity: 1, offset: 0.25 },
+    { transform: 'rotate(70deg) translateY(24px) scale(0.85)', opacity: 0 }];
+  const KF_LATE = [{ transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(255,216,74,.95)' }, { transform: 'scale(1.14)', boxShadow: '0 0 0 9px rgba(255,216,74,0)', offset: 0.45 },
+    { transform: 'scale(1)', boxShadow: '0 0 0 0 rgba(255,216,74,0)' }];
+  const OPT_POP = { duration: 280, easing: 'cubic-bezier(.34,1.56,.64,1)' }, OPT_CAE = { duration: 560, easing: 'ease-in' }, OPT_LATE = { duration: 460, easing: 'ease-out' };
+  function animar(el, kf, op) { if (!el || !el.animate || movReducido()) return false; try { el.animate(kf, op); return true; } catch (e) { return false; } }
+  // 14 · vista: el número que se veía (3, 2, 1; 0 = «¡Ya!»; -1 al empezar). Suena y hace pop solo al cambiar; devuelve el nuevo
+  function feelCuenta(vista, cuenta, el, son) {
+    const n = cuenta > 0 ? Math.ceil(cuenta) : 0;
+    if (n === vista) return vista;
+    if (n > 0) { son('tick'); FEEL.ticks++; } else { son('lanzar'); FEEL.ya++; }
+    if (animar(el, KF_POP, OPT_POP)) FEEL.pops++;
+    return n;
+  }
+  // 15 · f ya perdió n plumas (n > 0); fila: las <i> de sus plumas en el HUD. Si una patada acaba de sonar duelo_pata, no se dobla.
+  function feelPluma(f, n, fila, son) {
+    const max = f.plumasMax || PLUMAS, quedan = Math.max(0, f.plumas);
+    if (performance.now() - pataT > 120) son('duelo_pata', 1 + 0.3 * Math.min(1, (max - quedan) / max)); // tono: 1,06 con 4 plumas … 1,3 con ninguna
+    try { if (G.fx && G.fx.burst) G.fx.burst(f.pos.x, f.pos.y + 1, f.pos.z, 'feathers', 16); } catch (e) { /* sin efectos */ }
+    FEEL.plumas++;
+    if (fila) for (let i = quedan; i < Math.min(fila.length, quedan + n); i++) if (animar(fila[i], KF_CAE, OPT_CAE)) FEEL.caidas++;
+  }
+  // 17 · est { armado, coste } por luchadora (feelPoderIni al empezar el duelo). boton: el elemento o una función que lo da.
+  function feelPoderIni(est, f) { est.armado = false; const h = f && f.poder ? H.ver(f, H.get(f.poder)) : null; est.coste = (h && h.coste) || 0; return est; }
+  function feelPoder(est, f, lucha, boton, son) {
+    if (!f || !f.poder) return false;
+    if ((f.cd[f.poder] || 0) > 0 || f.energia < est.coste) { est.armado = true; return false; }
+    if (!est.armado || !lucha || f.mareo > 0 || f.deslumbrada > 0) return false;
+    est.armado = false; son('encaje'); FEEL.poderes++;
+    if (animar(typeof boton === 'function' ? boton() : boton, KF_LATE, OPT_LATE)) FEEL.pulsos++;
+    return true;
+  }
+  const feel = { stats: FEEL, pata: () => { pataT = performance.now(); }, cuenta: feelCuenta, pluma: feelPluma, poderIni: feelPoderIni, poder: feelPoder, movReducido };
+  let cuentaVista = -1;
+  const estPoder = { armado: false, coste: 0 };
+  const botonPoder = () => (TACTIL ? document.getElementById('b-dash') : hud && hud.el.querySelector('.vd-chip[data-a="poder"]'));
   const v18fx = nombre => G.v18fx && typeof G.v18fx[nombre] === 'function';
 
   // Ondas del Grito del Yunque: con G.v18fx.onda si existe; si no, tres anillos que avanzan y se abren (una geometría compartida)
@@ -813,6 +860,7 @@ window.AVV18Combate = function (G) {
   }
   // Recarga visual de los chips: cada cuadro, pero solo escribe en el DOM cuando cambia (pasos de 5 %)
   function pintarChips() {
+    if (hud && C.j) feelPoder(estPoder, C.j, C.fase === 'lucha' && !ent, botonPoder, sonar); // F4-17 (también en táctil: late el botón Impulso)
     if (!hud || !C.j || TACTIL) return;
     for (const b of hud.q('bot').children) {
       const a = b.dataset.a, id = a === 'poder' ? C.j.poder : a === 'alianza' ? C.j.alianza : a;
@@ -1079,6 +1127,7 @@ window.AVV18Combate = function (G) {
     if (conEntreno) { C.fase = 'lucha'; ent = { paso: 0, fin: 0 }; flotante(''); }
     else if (o.sinCuenta) { C.fase = 'lucha'; flotante(''); }
     else { C.fase = 'cuenta'; C.cuenta = 3; flotante('3', 1); if (G.ui && G.ui.toast) G.ui.toast(TXT.bienvenida, 2600); }
+    cuentaVista = -1; feelPoderIni(estPoder, C.j); // F4-14 y 17
     if (tarjetaAbierta() && tj.modo === 'uno') cerrarTarjeta('salir');
     if (conTarjeta) { ponerMundo(TJ_CLAVE, 1); abrirComo(); }
     pintarEntreno(); pintar();
@@ -2437,6 +2486,7 @@ window.AVV18Combate = function (G) {
       C.cuenta -= dt;
       const n = Math.ceil(C.cuenta);
       if (hud) hud.q('centro').textContent = C.cuenta > 0 ? String(n) : TXT.ya;
+      cuentaVista = feelCuenta(cuentaVista, C.cuenta, hud && hud.q('centro'), sonar); // F4-14
       if (C.cuenta <= 0) { C.fase = 'lucha'; centroT = 0.7; }
     }
     if (comboVis > 0) { comboVis -= dt; if (comboVis <= 0 && hud && hud.ext) hud.ext.nom.hidden = true; }
@@ -3052,6 +3102,43 @@ window.AVV18Combate = function (G) {
         }
       }
 
+      // F4 · sensación de juego (docs/diseno/F4_GAME_FEEL.md 14, 15 y 17). audio.js calla un «tick» a menos de 250 ms de otro
+      // sonido: entre números se espera ese rato de reloj real.
+      {
+        const A = G.audio, R0 = R.REDUCED, ar0 = A.reducido, FS = FEEL, espera = ms => new Promise(r => setTimeout(r, ms));
+        const veces = n => A.log.filter(x => x === n).length, play0 = A.play, burst0 = G.fx && G.fx.burst, tonos = [], rafagas = [];
+        try {
+          R.REDUCED = false; A.reducido = false;
+          // 14 · cuenta atrás
+          iniciar({ especie: 'vittata' }); quieta(3); await espera(300); A.log.length = 0;
+          const f0 = Object.assign({}, FS), vistos = [];
+          for (let i = 0; i < 4; i++) { paso(i ? 1 : 0.05); vistos.push(hud.q('centro').textContent); if (i < 3) await espera(300); }
+          paso(0.05);
+          check('F4-14: la cuenta suena «tick» en 3, 2 y 1 y «lanzar» en «¡Ya!», cada número con su pop (y el poder ya cargado no suena al empezar)',
+            vistos.join() === ['3', '2', '1', TXT.ya].join() && veces('tick') === 3 && veces('lanzar') === 1 && FS.ticks - f0.ticks === 3 && FS.ya - f0.ya === 1 &&
+            FS.pops - f0.pops === 4 && C.fase === 'lucha' && veces('encaje') === 0, JSON.stringify({ vistos, log: A.log.join(), pops: FS.pops - f0.pops }));
+          // 15 · pluma quitada
+          A.play = function (n, arg) { if (n === 'duelo_pata') tonos.push(arg); return play0.apply(this, arguments); };
+          if (burst0) G.fx.burst = function (x, y, z, k, n) { rafagas.push(k + ':' + n); return burst0.apply(this, arguments); };
+          const golpe = () => { C.r.escudo = 0; C.r.inv = 0; C.r.hojas = 0; C.r.mareo = 0; C.j.mareo = 0; C.j.cd.golpe_ala = 0; quieta(1.2); cara(1); usar(C.j, 'golpe_ala'); };
+          const f1 = Object.assign({}, FS); A.log.length = 0; golpe(); await espera(300); golpe();
+          check('F4-15: pluma quitada: «duelo_pata» (no «land») más agudo cuantas menos quedan, 16 plumas y la pluma del HUD cae',
+            C.r.plumas === PLUMAS - 2 && veces('duelo_pata') === 2 && !A.log.includes('land') && tonos.length === 2 && tonos[0] > 1 && tonos[1] > tonos[0] && tonos[1] <= 1.5 &&
+            rafagas.filter(r => r === 'feathers:16').length === 2 && FS.plumas - f1.plumas === 2 && FS.caidas - f1.caidas === 2,
+            JSON.stringify({ pl: C.r.plumas, log: A.log.join(), tonos, rafagas, caidas: FS.caidas - f1.caidas }));
+          R.REDUCED = true; const f2 = Object.assign({}, FS); A.log.length = 0; await espera(300); golpe();
+          check('F4-15: con «Reducir movimiento» la pluma del HUD no salta (el sonido y las plumas siguen)', FS.plumas - f2.plumas === 1 && FS.caidas === f2.caidas && veces('duelo_pata') === 1, JSON.stringify({ log: A.log.join() }));
+          A.play = play0; if (burst0) G.fx.burst = burst0;
+          // 17 · poder listo
+          R.REDUCED = false; const id = C.j.poder, f3 = Object.assign({}, FS); C.j.energia = C.j.energiaMax; C.j.mareo = 0; C.r.golpeT = 99; C.r.plumas = PLUMAS;
+          C.j.cd[id] = 5; quieta(3); paso(0.05); A.log.length = 0; C.j.cd[id] = 0; quieta(3); paso(0.05); quieta(3); paso(0.05); quieta(3); paso(0.05);
+          const unaVez = veces('encaje') === 1 && FS.poderes - f3.poderes === 1 && FS.pulsos - f3.pulsos === 1;
+          R.REDUCED = true; C.j.cd[id] = 5; quieta(3); paso(0.05); C.j.cd[id] = 0; C.j.energia = C.j.energiaMax; quieta(3); paso(0.05);
+          check('F4-17: el poder listo suena «encaje» y late su botón una vez por carga; con «Reducir movimiento», sin latido',
+            unaVez && FS.poderes - f3.poderes === 2 && FS.pulsos - f3.pulsos === 1 && !!botonPoder(), JSON.stringify({ unaVez, poderes: FS.poderes - f3.poderes, pulsos: FS.pulsos - f3.pulsos, poder: id }));
+        } finally { A.play = play0; if (burst0) G.fx.burst = burst0; R.REDUCED = R0; A.reducido = ar0; salir(); }
+      }
+
       // 7. Victoria: 2 maderas y 1 piedra del inventario del juego, una sola vez
       P.borrar(); const m0 = S.inv.madera || 0, p0 = S.inv.piedra || 0;
       iniciar({ sinCuenta: true, especie: 'vittata' }); C.r.plumas = 1; quieta(1.2); C.r.escudo = 0; evs.length = 0; toasts.length = 0;
@@ -3528,6 +3615,6 @@ window.AVV18Combate = function (G) {
     if (hud && hud.ext && hud.ext.pad) hud.ext.pad.remove();
   }
   const tarjeta = { maqueta: maquetaTarjeta, abrir: abrirTarjeta, cerrar: cerrarTarjeta, abierta: tarjetaAbierta, modo: () => (tarjetaAbierta() ? tj.modo : ''), html: htmlTarjeta, css: cssTarjeta, el: () => tj && tj.el };
-  G.v18combate = { sitio, iniciar, tarjeta, salir, otraVez, usar, paso, premioRopa, LENTES, vida: vidaApi, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
+  G.v18combate = { feel, sitio, iniciar, tarjeta, salir, otraVez, usar, paso, premioRopa, LENTES, vida: vidaApi, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
   return G.v18combate;
 };

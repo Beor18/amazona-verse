@@ -617,6 +617,47 @@
     for (let i = 0; i < 20 && G.dialogo.activo(); i++) G.dialogo.next();
     check('W18b · La misma charla pedida en sus bocadillos pasa la línea y su final corre una vez', enBoc && !reabre && paso && finMismo === 2, JSON.stringify({ enBoc, reabre, paso, finMismo, sigue: G.dialogo.activo() }));
     G.dialogo.clear();
+    // F4 · sensación de juego (docs/diseno/F4_GAME_FEEL.md 1, 2 y 4)
+    {
+      const A = G.audio, D = G.dialogo, M = G.misiones, R0 = G.renderer.REDUCED, html = document.documentElement, mov0 = html.classList.contains('mov-reducido');
+      const espera = ms => new Promise(r => setTimeout(r, ms)), veces = n => A.log.filter(x => x === n).length, burst0 = G.fx.burst, rafagas = [];
+      try {
+        G.quiet = false; G.renderer.REDUCED = false; html.classList.remove('mov-reducido');
+        // 4 · pasar de línea: tic y rebote; rápido (< 150 ms) sin tic; con «Reducir movimiento» sin rebote; el reloj de los bocadillos no suena
+        const f0 = Object.assign({}, D.feel);
+        D.say([1, 2, 3, 4].map(i => ({ who: 'Iguaca', text: 'F4 ' + i + '.' })), null, { caja: true });
+        await espera(D.PASO.minMs + 40); A.log.length = 0; D.next(); D.next();
+        G.renderer.REDUCED = true; await espera(D.PASO.minMs + 40); D.next(); G.renderer.REDUCED = false;
+        const caja = { tics: D.feel.tics - f0.tics, rebotes: D.feel.rebotes - f0.rebotes, boton: veces('boton') };
+        D.clear(); D.say([1, 2, 3, 4].map(i => ({ who: 'Narrador', text: 'F4 libre ' + i + '.' })), null, { libre: true });
+        const l0 = D.actual().text;
+        const f1 = Object.assign({}, D.feel); tick(D.LIBRE.min + 0.3); const reloj = D.libre() && D.actual().text !== l0 ? D.feel.tics - f1.tics : -1; await espera(D.PASO.minMs + 40); D.next();
+        const libreTic = D.feel.tics - f1.tics;
+        G.quiet = true; const f2 = Object.assign({}, D.feel); D.next(); const quieto = D.feel.tics === f2.tics && D.feel.rebotes === f2.rebotes; G.quiet = false; D.clear();
+        check('F4-4: pasar de línea suena un tic suave y el retrato rebota; rápido no suena, con «Reducir movimiento» no rebota y el reloj de los bocadillos no suena',
+          caja.tics === 2 && caja.rebotes === 2 && caja.boton === 2 && reloj === 0 && libreTic === 1 && quieto, JSON.stringify({ caja, reloj, libreTic, quieto }));
+        // 1 · paso cumplido: «logro» una vez, el tramo barre y el objetivo nuevo entra; con «Reducir movimiento», quietos
+        const p0 = M.feel.pasos; A.log.length = 0; M.advanceTo(1);
+        const lis = () => document.querySelectorAll('#steps li'), anim = (el, ps) => el ? getComputedStyle(el, ps).animationName : '';
+        const barre = anim(lis()[0], '::before'), entra = anim(lis()[1]), clases = [lis()[0].className, lis()[1].className];
+        html.classList.add('mov-reducido'); M.advanceTo(2);
+        const quietos = [anim(lis()[1], '::before'), anim(lis()[2])];
+        check('F4-1: paso cumplido: «logro» una sola vez (dos pasos seguidos no lo doblan), el tramo barre y el objetivo nuevo entra; con «Reducir movimiento», quietos',
+          veces('logro') === 1 && M.feel.pasos - p0 === 2 && /recien/.test(clases[0]) && /entra/.test(clases[1]) && barre === 'seg-barre' && entra === 'obj-entra' && quietos.every(a => a === 'none'),
+          JSON.stringify({ log: A.log.join(), clases, barre, entra, quietos }));
+        html.classList.remove('mov-reducido'); S.step = 0; M.renderQuest();
+        // 2 · misión cumplida sin ropa (la de m1 ya ganada): «logro», ráfaga dorada y el chip salta
+        // (complete() en silencio, para no dar XP de misión; la celebración, aparte y con sonido)
+        await espera(1600); const u0 = S.unlocked.slice(), ev0 = S.events.length, m0 = M.feel.misiones, s0 = M.feel.saltos;
+        if (!S.unlocked.includes('botas')) S.unlocked.push('botas');
+        G.quiet = true; A.log.length = 0; M.complete('m1'); const porComplete = M.feel.misiones - m0 === 1 && !A.log.includes('unlock') && !A.log.includes('logro'); G.quiet = false;
+        G.fx.burst = function (x, y, z, k, n) { rafagas.push(k + ':' + n); return burst0.apply(this, arguments); };
+        A.log.length = 0; M.feel.celebrar(M.missions.find(m => m.id === 'm1')); G.fx.burst = burst0;
+        check('F4-2: misión cumplida sin ropa: «logro», ráfaga dorada sobre Vittata y su chip salta (sin cofre; con G.quiet, nada)',
+          porComplete && veces('logro') === 1 && rafagas.includes('gold:20') && M.feel.saltos - s0 === 1, JSON.stringify({ porComplete, log: A.log.join(), rafagas, saltos: M.feel.saltos - s0 }));
+        delete S.missions.m1; S.unlocked = u0; S.events.length = ev0; M.renderQuest();
+      } finally { G.fx.burst = burst0; G.renderer.REDUCED = R0; html.classList.toggle('mov-reducido', mov0); G.quiet = true; D.clear(); }
+    }
     G.quiet = false; G.pack.inicio(G);
     // Mejora 3: el gancho va en bocadillos libres (pasan solos con el tiempo del juego; no cuentan como ocupado)
     check('Introducción con los disparadores inicio: (bocadillos libres, el juego no se para)', !!G.dialogo.libre() && !G.dialogo.open() && !G.ui.busy() && G.dialogo.actual().who === 'Narrador' && G.dialogo.queue.length === 5, G.dialogo.queue.length + 1 + ' líneas');
@@ -661,6 +702,20 @@
     drain(); useAt('maquina'); drain();
     await esperaFoto(G, T, 'workshop'); // CG-64: la foto se codifica 1–2 cuadros después
     check('Revisar el taller antes de subir con Iguaca también cuenta (evento y foto; el paso avanza al volver)', had('WorkshopExplored') && !!S.captures.workshop && S.step === 0);
+    // F4-3: examinar suena «encaje» con 10 estrellas; la primera vez, parada de 50 ms (con «Reducir movimiento», sin parada)
+    {
+      const A = G.audio, R0 = G.renderer.REDUCED, ES = G.c.examinarStats, burst0 = G.fx.burst, rafagas = [], ex0 = S.examined.maquina;
+      try {
+        G.quiet = false; G.renderer.REDUCED = false; delete S.examined.maquina; G.camara.juice.hitStop = 0; const e0 = Object.assign({}, ES);
+        G.fx.burst = function (x, y, z, k, n) { rafagas.push(k + ':' + n); return burst0.apply(this, arguments); };
+        A.log.length = 0; useAt('maquina'); const parada = G.camara.juice.hitStop; drain();
+        useAt('maquina'); drain();
+        G.renderer.REDUCED = true; delete S.examined.maquina; G.camara.juice.hitStop = 0; useAt('maquina'); const paradaR = G.camara.juice.hitStop; drain();
+        check('F4-3: examinar suena «encaje» y salen 10 estrellas; la primera vez, una parada de 50 ms (no con «Reducir movimiento»)',
+          A.log.filter(n => n === 'encaje').length === 3 && rafagas.filter(r => r === 'stars:10').length === 3 && ES.n - e0.n === 3 && ES.paradas - e0.paradas === 1 &&
+          Math.abs(parada - 0.05) < 1e-6 && paradaR === 0 && S.examined.maquina === true, JSON.stringify({ log: A.log.join(), rafagas, parada, paradaR }));
+      } finally { G.fx.burst = burst0; G.renderer.REDUCED = R0; G.camara.juice.hitStop = 0; G.quiet = true; if (ex0) S.examined.maquina = true; drain(); }
+    }
     posarseLuma(G, T);
     check('interact:luma_inicio: Iguaca llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
     soltarCapas(G);

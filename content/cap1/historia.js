@@ -311,6 +311,18 @@
 
       // ---------- Acciones de la historia ----------
       const LIBRE = { libre: true };
+      // F4-3 (docs/diseno/F4_GAME_FEEL.md): examinar suena «encaje», salen 10 estrellas sobre el objeto y, la primera vez, una
+      // parada de 50 ms (como recoger; con «Reducir movimiento», sin parada). Con G.quiet (baterías) no hace nada.
+      const examinarStats = { n: 0, paradas: 0 };
+      C.examinarStats = examinarStats;
+      function examinarFx(what, primera) {
+        if (G.quiet) return;
+        const p = what === 'maquina' ? MAQ : TRX;
+        G.audio.play('encaje');
+        try { G.fx.burst(p.x, S.pos.y + 1.5, p.z, 'stars', 10); } catch (e) { /* sin efectos */ }
+        examinarStats.n++;
+        if (primera && !G.renderer.REDUCED) { G.camara.hitStop(0.05); examinarStats.paradas++; }
+      }
       function examine(what) {
         const firstTime = !S.examined[what];
         S.examined[what] = true;
@@ -320,6 +332,7 @@
           ? L('evento:WorkshopExplored', [{ who: 'Vittata', img: IMG.V, text: 'Mi máquina… Si consigo repararla, todavía podemos…' }])
           : L('interact:transmisor', [{ who: 'Vittata', img: IMG.V, text: 'Este transmisor llevaba años sin funcionar. Ahora además tiene la antena doblada.' }]);
         say(lines, null, LIBRE);
+        examinarFx(what, firstTime); // F4-3
         if (firstTime && S.examined.maquina && S.examined.transmisor && !G.eventos.had('WorkshopExplored')) {
           log('WorkshopExplored'); capture('workshop');
           if (S.step >= 1) toast('Taller revisado. Ahora, a juntar los materiales del refugio.', 3500);

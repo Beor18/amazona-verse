@@ -38,18 +38,46 @@ AVE.module('misiones', function (G) {
   // Cuántos pasos de una misión secundaria se cumplen en orden
   function progreso(m) { let i = 0; while (i < m.pasos.length && cumple(m.pasos[i].hasta)) i++; return i; }
   function done(id) { return !!S.missions[id]; }
+  // ---------- F4 · Sensación de juego (docs/diseno/F4_GAME_FEEL.md 1 y 2) ----------
+  // Paso cumplido: «logro», el tramo de la barra se llena con un barrido de 400 ms y el objetivo nuevo entra deslizando
+  // (clases recien/entra de ui.css: con «Reducir movimiento» la regla global de ui.css las deja quietas). Misión cumplida sin
+  // ropa: «logro», ráfaga dorada sobre Vittata y su chip salta (G.fx.saltar ya respeta «Reducir movimiento»). Un solo
+  // «logro» cada 1,5 s (el paso y la misión del mismo momento no se doblan, ni con el «unlock» de la ropa ni con el final del
+  // capítulo, que tiene su panel_final). Con G.quiet (baterías) no suena ni salta nada; las clases sí se ponen.
+  const feel = { pasos: 0, misiones: 0, saltos: 0 };
+  let logroT = -1e9, recien = null; // recien: { de, a } pasos que entraron en este momento (lo gasta el siguiente renderQuest)
+  function logro() {
+    const t = performance.now(); if (G.quiet || t - logroT < 1500) return false;
+    logroT = t; G.audio.play('logro'); return true;
+  }
+  function celebrarPaso(antes) {
+    if (S.step <= antes) return;
+    recien = { de: antes, a: S.step }; feel.pasos++;
+    if (S.step < DONE) logro();
+  }
+  function celebrarMision(m) {
+    feel.misiones++;
+    if (G.quiet) return;
+    logro();
+    try { G.fx.burst(S.pos.x, S.pos.y + 1.7, S.pos.z, 'gold', 20); } catch (e) { /* sin efectos */ }
+    const i = activas().filter(x => x.hud).indexOf(m), chip = i >= 0 && $('missions') ? $('missions').children[i] : null;
+    if (chip && G.fx.saltar && G.fx.saltar(chip)) feel.saltos++;
+  }
+  feel.celebrar = celebrarMision; // las pruebas lo miran sin pasar por los oyentes de «aprendizaje»
   function complete(id) {
     if (S.missions[id]) return;
     const m = missions.find(x => x.id === id);
     S.missions[id] = true;
     G.eventos.log('MissionCompleted', { mission: id });
     G.emit('aprendizaje', { tipo: 'mision', id });
-    grant((m && m.recompensa && m.recompensa.hito) || id);
+    const ropa = grant((m && m.recompensa && m.recompensa.hito) || id);
     renderQuest(); G.guardado.autosave();
+    if (!ropa.length && m) celebrarMision(m); // F4-2 (con ropa ya hay cofre, sacudida y aviso)
     if (m && m.alCompletar) m.alCompletar(G);
   }
   // Revisa misiones y pasos automáticos; refresca HUD, objetos visibles y guardado
-  function check() {
+  function check(antesDe) {
+    const antes = typeof antesDe === 'number' ? antesDe : S.step;
     for (const m of activas()) if (!S.missions[m.id] && progreso(m) >= m.pasos.length) complete(m.id);
     let changed = true;
     while (changed) {
@@ -57,10 +85,11 @@ AVE.module('misiones', function (G) {
       const st = steps[S.step];
       if (st && st.hasta && cumple(st.hasta)) { S.step++; changed = true; if (st.alCompletar) st.alCompletar(G); }
     }
+    celebrarPaso(antes); // F4-1
     G.objetos.syncVisible();
     renderQuest(); G.objetos.renderInv(); G.guardado.autosave();
   }
-  function advanceTo(n) { if (n > S.step) S.step = n; check(); }
+  function advanceTo(n) { const antes = S.step; if (n > S.step) S.step = n; check(antes); }
 
   // ---------- Recompensas ----------
   function grant(hito) {
@@ -73,7 +102,7 @@ AVE.module('misiones', function (G) {
     }
     S.wear = Object.assign({}, S.wear);
     G.actores.applyWear();
-    G.audio.play('unlock'); G.fx.rewardChest(); G.camara.shake(0.12, 0.3);
+    G.audio.play('unlock'); logroT = performance.now(); G.fx.rewardChest(); G.camara.shake(0.12, 0.3); // F4: el «logro» del paso no se dobla con este
     // Sin un toque previo Chrome bloquea la vibración y lo anota como error de consola (BC2)
     if (navigator.vibrate && G.renderer.MOBILE && !(navigator.userActivation && !navigator.userActivation.hasBeenActive)) try { navigator.vibrate(60); } catch (e) { /* sin vibración */ }
     G.ui.toast('¡Ropa nueva: ' + got.map(u => u.nombre).join(' y ') + '! ' + G.actores.nombre + ' la estrena y ya está en Mi personaje.', 4200);
@@ -137,9 +166,10 @@ AVE.module('misiones', function (G) {
   function renderQuest() {
     // Número de pasos para la barra del HUD (variables CSS --n y --n-label de src/ui/ui.css)
     const el = $('steps'); el.style.setProperty('--n', steps.length); el.style.setProperty('--n-label', '"' + steps.length + '"');
+    const r = recien; recien = null; // F4-1: el tramo recién cumplido barre y el objetivo nuevo entra (solo en este dibujo)
     el.innerHTML = steps.map((s, i) => {
       const label = (typeof s.texto === 'function' ? s.texto(S, G) : s.texto) + (s.progreso ? s.progreso(S, G) : '');
-      const cls = i < S.step ? 'done' : i === S.step ? 'now' : 'later';
+      const cls = (i < S.step ? 'done' : i === S.step ? 'now' : 'later') + (r && i >= r.de && i < r.a ? ' recien' : '') + (r && i === S.step ? ' entra' : '');
       return `<li class="${cls}">${label}</li>`;
     }).join('');
     renderProximo();
@@ -236,5 +266,5 @@ AVE.module('misiones', function (G) {
     return ver;
   }
   G.on('update', dt => { if ((vuelaT -= dt) > 0) return; vuelaT = 0.5; pistaVuela(); });
-  return { steps, DONE, missions, unlocks, cumple, progreso, done, complete, check, advanceTo, grant, lockOf, guideTarget, at, closest, needItems, renderQuest, proximoPremio, renderProximo, showEnd, seguirExplorando, pistaVuela };
+  return { feel, steps, DONE, missions, unlocks, cumple, progreso, done, complete, check, advanceTo, grant, lockOf, guideTarget, at, closest, needItems, renderQuest, proximoPremio, renderProximo, showEnd, seguirExplorando, pistaVuela };
 });

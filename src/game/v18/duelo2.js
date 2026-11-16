@@ -77,7 +77,13 @@ window.AVV18Duelo2 = function (G) {
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const emitir = ev => { try { G.emit('v18combate', Object.assign({ duelo: 2 }, ev)); } catch (e) { /* sin oyentes */ } };
   function fx(tipo, x, y, z) { try { if (G.fx && G.fx.burst) G.fx.burst(x, y, z, tipo, 8); } catch (e) { /* sin efectos */ } }
-  function sonar(n, arg) { try { if (G.audio && G.audio.play) G.audio.play(n, arg); } catch (e) { /* sin audio */ } }
+  function sonar(n, arg) { if (n === 'duelo_pata' && FL) FL.pata(); try { if (G.audio && G.audio.play) G.audio.play(n, arg); } catch (e) { /* sin audio */ } }
+  // F4 · sensación de juego (14 cuenta con sonido, 15 pluma quitada, 17 poder listo): las mismas funciones que el duelo (combate.js → feel)
+  const FL = Cb.feel || null;
+  let cuentaVista = -1;
+  const estP1 = { armado: false, coste: 0 }, estP2 = { armado: false, coste: 0 };
+  const chipPoder = k => hud && hud.q(k) && hud.q(k).querySelector('[data-a="poder"]');
+  const poder1 = () => chipPoder('ch1'), poder2 = () => chipPoder('ch2');
   const v18fx = n => G.v18fx && typeof G.v18fx[n] === 'function';
 
   // ---------- Estado ----------
@@ -118,7 +124,8 @@ window.AVV18Duelo2 = function (G) {
     if (rc.r !== 'ok') return false;
     if (g.interrumpe) { blanco.interrumpida = rc.mareo; if (blanco === D.j1) { sost1 = 0; M.dashT = 0; M.vx *= 0.3; M.vz *= 0.3; } else sost2 = 0; if (!rc.parcial) flotante(TXT.interrumpe); }
     if (blanco.lift && rc.empuje > 0) { blanco.lift.alto = rc.n > 0 ? 0.45 : 0.25; blanco.lift.t = 0; blanco.lift.dura = 0.32; }
-    fx('feathers', blanco.pos.x, blanco.pos.y + 1, blanco.pos.z); sonar(rc.n > 0 ? 'land' : 'jump');
+    if (rc.n > 0 && FL) FL.pluma(blanco, rc.n, hud && hud.q(blanco === D.j1 ? 'pl1' : 'pl2').children, sonar); // F4-15
+    else { fx('feathers', blanco.pos.x, blanco.pos.y + 1, blanco.pos.z); sonar(rc.n > 0 ? 'land' : 'jump'); }
     D.stats.golpes++;
     emitir({ tipo: 'hit', de: de.id, a: blanco.id, valor: rc.n, reducido: rc.parcial || undefined, interrumpe: !!g.interrumpe || undefined });
     if (rc.n > 0) emitir({ tipo: 'damage', de: de.id, a: blanco.id, valor: blanco.plumas });
@@ -427,6 +434,7 @@ window.AVV18Duelo2 = function (G) {
   // Recarga visual: cada cuadro, pero solo escribe en el DOM cuando cambia (pasos de 5 %)
   function pintarChips() {
     if (!hud || !D.j1) return;
+    if (FL) { const lu = D.fase === 'lucha' && !ent; FL.poder(estP1, D.j1, lu, poder1, sonar); FL.poder(estP2, D.j2, lu, poder2, sonar); } // F4-17
     for (const [f, k] of [[D.j1, 'ch1'], [D.j2, 'ch2']]) for (const b of hud.q(k).children) {
       const id = b.dataset.a === 'poder' ? f.poder : b.dataset.a, h = H.ver(f, H.get(id)) || {}, cd = f.cd[id] || 0;
       const pct = Math.round(Math.max(0, Math.min(1, cd / (h.cooldown || 1))) * 20) * 5;
@@ -619,6 +627,7 @@ window.AVV18Duelo2 = function (G) {
     enganchar(); sueltaTodo();
     if (conEntreno) { D.fase = 'lucha'; ent = { paso: 0, j1: false, j2: false, fin: 0 }; flotante(''); }
     else if (o.sinCuenta) { D.fase = 'lucha'; flotante(''); } else { D.fase = 'cuenta'; D.cuenta = 3; flotante('3', 1); }
+    cuentaVista = -1; if (FL) { FL.poderIni(estP1, D.j1); FL.poderIni(estP2, D.j2); } // F4-14 y 17
     if (tjAbierta()) TJ.cerrar('salir');
     if (conTarjeta) abrirComo(false);
     pintarEntreno(); pintar();
@@ -754,6 +763,7 @@ window.AVV18Duelo2 = function (G) {
     if (D.fase === 'cuenta') {
       D.cuenta -= dt;
       if (hud) hud.q('centro').textContent = D.cuenta > 0 ? String(Math.ceil(D.cuenta)) : TXT.ya;
+      if (FL) cuentaVista = FL.cuenta(cuentaVista, D.cuenta, hud && hud.q('centro'), sonar); // F4-14
       if (D.cuenta <= 0) { D.fase = 'lucha'; centroT = 0.7; }
       M.vx = M.vz = 0; // nadie se mueve hasta «¡Ya!»
     }
@@ -888,6 +898,27 @@ window.AVV18Duelo2 = function (G) {
       check('«¡A jugar!» abre el duelo con cuenta atrás, HUD de Jugador 1 / Jugador 2 y 5 plumas por lado', D.fase === 'cuenta' && !G.ui.cardOpen && !hud.el.hidden &&
         hud.el.textContent.includes(TXT.j1) && hud.el.textContent.includes(TXT.j2) && hud.q('pl1').children.length === 5 && hud.q('pl2').children.length === 5 && !!hud.q('en1') && !!hud.q('en2'));
       check('La segunda cotorra es otra piel de las que hay, con su poder', !!D.ch && D.chEsp === 'ventralis' && D.j2.poder === H.poderDe('ventralis') && D.ch.root.parent === scene, D.j2.poder);
+      // F4 · sensación de juego (docs/diseno/F4_GAME_FEEL.md 14, 15 y 17) con las funciones del duelo (combate.js → feel).
+      // audio.js calla un «tick» a menos de 250 ms de otro sonido: entre números se espera ese rato de reloj real.
+      if (FL) {
+        const A = G.audio, R0 = R.REDUCED, ar0 = A.reducido, FS = FL.stats, espera = ms => new Promise(r => setTimeout(r, ms)), veces = n => A.log.filter(x => x === n).length;
+        try {
+          R.REDUCED = false; A.reducido = false; cerca(4); await espera(300); A.log.length = 0;
+          const f0 = Object.assign({}, FS), vistos = [];
+          for (let i = 0; i < 4; i++) { paso(i ? 1 : 0.05); vistos.push(hud.q('centro').textContent); if (i < 3) await espera(300); }
+          paso(0.05);
+          check('F4-14 · Duelo de 2: la cuenta suena «tick» en 3, 2 y 1 y «lanzar» en «¡Ya!», con pop (sin «encaje» al empezar)',
+            vistos.join() === ['3', '2', '1', TXT.ya].join() && veces('tick') === 3 && veces('lanzar') === 1 && FS.ticks - f0.ticks === 3 && FS.ya - f0.ya === 1 && FS.pops - f0.pops === 4 &&
+            D.fase === 'lucha' && veces('encaje') === 0, JSON.stringify({ vistos, log: A.log.join(), pops: FS.pops - f0.pops }));
+          const f1 = Object.assign({}, FS); limpio(); cerca(1.5); S.facing = { x: 1, z: 0 }; A.log.length = 0; usar(D.j1, 'golpe_ala');
+          check('F4-15 · Duelo de 2: la pluma quitada suena «duelo_pata» (no «land») y la del HUD cae',
+            D.j2.plumas === PLUMAS - 1 && veces('duelo_pata') === 1 && !A.log.includes('land') && FS.plumas - f1.plumas === 1 && FS.caidas - f1.caidas === 1, JSON.stringify({ pl: D.j2.plumas, log: A.log.join() }));
+          D.j2.plumas = PLUMAS; limpio(); cerca(4); paso(0.05);
+          const id = D.j2.poder, f2 = Object.assign({}, FS); D.j2.cd[id] = 5; paso(0.05); A.log.length = 0; D.j2.cd[id] = 0; D.j2.energia = 100; paso(0.05); paso(0.05); paso(0.05);
+          check('F4-17 · Duelo de 2: el poder listo suena «encaje» y late su botón, una vez por carga',
+            veces('encaje') === 1 && FS.poderes - f2.poderes === 1 && FS.pulsos - f2.pulsos === 1 && !!poder2(), JSON.stringify({ log: A.log.join(), poder: id, pulsos: FS.pulsos - f2.pulsos }));
+        } finally { R.REDUCED = R0; A.reducido = ar0; limpio(); D.j1.plumas = D.j2.plumas = PLUMAS; pintar(); }
+      }
       // Cómo se pelea (8-nov): entreno de 3 pasos con las teclas de cada jugador, chips y pistas
       {
         const pd = b => b.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));

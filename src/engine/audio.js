@@ -70,7 +70,7 @@ AVE.module('audio', function (G) {
     pica: { gain: 0.8, respaldo: 'splash', minMs: 600 },
     clavado: { gain: 0.85, respaldo: 'unlock', minMs: 1000 },
     duelo_ala: { gain: 0.7, respaldo: ['ext_ala', 'dash'], minMs: 300, pronto: 'ext_ala' },
-    duelo_pata: { gain: 0.7, respaldo: ['ext_pata', 'tac'], minMs: 250, pronto: 'ext_pata' },
+    duelo_pata: { gain: 0.7, respaldo: ['ext_pata', 'tac'], minMs: 250, pronto: 'ext_pata', tono: a => (a > 1 && a <= 1.5 ? a : 1) }, // F4-15: la pluma quitada lo sube (1,06–1,3); el lado de la patada (±1) no
     duelo_semilla: { gain: 0.7, respaldo: 'dash', minMs: 300, pronto: 'dash' },
     duelo_poder: { gain: 0.8, respaldo: 'dash', minMs: 800 },
     duelo_victoria: { gain: 0.85, respaldo: 'unlock', minMs: 3000 },
