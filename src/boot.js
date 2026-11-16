@@ -433,7 +433,7 @@
         // T66: arriba y con «×» para cerrarlo; abajo tapaba el «Salir» del minigolf y de «Sigue el canto» (lo vio T55, tests/qa/vivo.js)
         const caja = document.createElement('div');
         caja.id = 'av-version-caja';
-        caja.style.cssText = 'position:fixed;z-index:80;left:50%;top:max(10px,env(safe-area-inset-top));transform:translateX(-50%);display:flex;gap:6px;align-items:center;pointer-events:none';
+        caja.style.cssText = 'position:fixed;z-index:80;left:0;right:0;top:max(10px,env(safe-area-inset-top));display:flex;justify-content:center;gap:6px;align-items:center;pointer-events:none';
         const x = document.createElement('button');
         x.type = 'button'; x.id = 'av-version-x'; x.textContent = '×';
         x.setAttribute('aria-label', en() ? 'Not now' : 'Ahora no');
