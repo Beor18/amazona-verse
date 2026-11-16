@@ -9,7 +9,7 @@
      medio hasta la desembocadura: 7 flores con banderín y la meta. Medallas por tiempo (oro, plata, bronce), récord y fantasma propios
      (`<almacén>.retos.fantasma.rio`); en los récords: rio: { mejor (ms), medalla, oros, jugadas }, y emite retosResultado con modo 'rio'.
    - «Carrera de las nubes» (F1 · cambio 8, B8; nombre y lugar provisionales, los decide Kelvin): versus sobre el mar, de Villa Raíz a
-     la Bahía Bio por la ruta de vuelo «costa_sur» del mapa (todo agua: ningún sólido dentro del recorrido). Tres cosas para remontar,
+     la Bahía Bio y vuelta, por la ruta de vuelo «costa_sur» del mapa (todo agua: ningún sólido dentro del recorrido). Tres cosas para remontar,
      sin proyectiles ni choques: nubes (volumen blanco, nunca un aro: cruzar cada una da un impulso corto, una vez por nube), hojas
      (3 llenan el «Aletazo turbo», que se usa cuando quieras con la tecla de Acción o el botón táctil) y rebufo (1 s detrás y cerca
      de otra cotorra o del fantasma da velocidad). Nubes y hojas son 2 InstancedMesh (las 2 únicas mallas nuevas); al salir de Retos
@@ -465,7 +465,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       <span class="rt-rec" data-rec="tormenta"></span><button class="btn" type="button" data-jugar="tormenta" data-icon="bolt">Jugar</button></div>
     <div class="rt-reto"><h3>Contrarreloj del río</h3><p>Vuela bajo, siguiendo el cauce, por las flores y los banderines hasta la desembocadura. Sin rivales: solo tú, el reloj y tu fantasma.</p>
       <span class="rt-rec" data-rec="rio"></span><button class="btn" type="button" data-jugar="rio" data-icon="flag">Jugar</button></div>
-    <div class="rt-reto"><h3>Carrera de las nubes</h3><p>Sobre el mar, de Villa Raíz a la Bahía Bio. Cruza las nubes, junta 3 hojas para el Aletazo turbo y vuela detrás de otra cotorra para ir más rápido.</p>
+    <div class="rt-reto"><h3>Carrera de las nubes</h3><p>Sobre el mar, hasta la Bahía Bio y de vuelta al muelle. Cruza las nubes, junta 3 hojas para el Aletazo turbo y vuela detrás de otra cotorra para ir más rápido.</p>
       <span class="rt-rec" data-rec="nubes"></span><div class="rt-fila"><button class="btn" type="button" data-jugar="nubes" data-icon="flag">Jugar</button><button class="btn ghost secondary" type="button" data-jugar="nubes_dos" data-icon="feather">Para dos</button></div></div>
     <div class="rt-reto"><h3>¡Banquete!</h3><p>75 segundos en la colina: recoge los frutos de las palmas y los tabonucos en vuelo. Seguidos, sin tocar el suelo, suben el combo. Los de las copas valen más.</p>
       <span class="rt-rec" data-rec="banquete"></span><button class="btn" type="button" data-jugar="banquete" data-icon="flag">Jugar</button></div>
@@ -888,8 +888,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const d = datosCarrera(); d.rio = true; return d; // pack sin río: el mismo círculo, pero a ras del terreno
     }
     // ---------- Carrera de las nubes (F1 · cambio 8): sobre el mar del sur, por la ruta de vuelo «costa_sur» del mapa ----------
-    // La ruta sale frente al muelle de Villa Raíz (la zona de aparición: ya cargada) y va hacia el oeste por encima del arrecife,
-    // en zigzag suave entre z 232 y 254 (todo agua en mapa_cap1_altura), hasta la Bahía Bio. Ningún edificio ni árbol en el recorrido.
+    // La ruta sale frente al muelle de Villa Raíz (la zona de aparición: ya cargada), va hacia el oeste por fuera del arrecife hasta la
+    // Bahía Bio, da la vuelta y regresa por dentro hasta el muelle (todo agua en mapa_cap1_altura, z de 226 a 256). Ningún edificio ni
+    // árbol en el recorrido.
     const T_NUBES = { nubeImpulso: 6, nubeT: 0.9, nubeRx: 4.6, nubeRy: 3.2, hojaRadio: 2.4, hojasTurbo: 3, turboT: 1.6, turboEmpuje: 26, turboImpulso: 7,
       rebufoS: 1, rebufoT: 1.2, rebufoEmpuje: 12, rebufoLargo: 10, rebufoMin: 1, rebufoAncho: 2.6, rebufoAlto: 2.5, nubes: 8, grupos: 6, limite: 150 };
     function datosNubes() {
@@ -897,19 +898,22 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       if (ruta0) {
         return {
           nubes: true,
-          salida: { x: 150, z: 234, nombre: 'El muelle' },
-          puntos: [
-            { x: 128, z: 247, via: true },
-            { x: 100, z: 252, nombre: 'El arrecife' },
-            { x: 74, z: 238, via: true },
-            { x: 32, z: 234, nombre: 'Frente al mirador' },
-            { x: 4, z: 247, via: true },
-            { x: -30, z: 253, nombre: 'Mar abierto' },
-            { x: -62, z: 240, via: true },
-            { x: -100, z: 236, nombre: 'Rumbo a la bahía' },
-            { x: -130, z: 246, via: true },
+          salida: { x: 150, z: 238, nombre: 'Villa Raíz' },
+          puntos: [ // ida por fuera del arrecife (z ≈ 250), vuelta en la bahía y regreso por dentro (z ≈ 232): 16–20 m entre una y otra
+            { x: 120, z: 250, via: true },
+            { x: 84, z: 254, nombre: 'El arrecife' },
+            { x: 50, z: 247, via: true },
+            { x: 14, z: 253, nombre: 'Frente al mirador' },
+            { x: -30, z: 256, via: true },
+            { x: -82, z: 250, via: true },
+            { x: -140, z: 239, nombre: 'Bahía Bio' },
+            { x: -128, z: 226, via: true },
+            { x: -88, z: 230, via: true },
+            { x: -40, z: 232, nombre: 'Mar abierto' },
+            { x: 10, z: 235, via: true },
+            { x: 62, z: 231, via: true },
           ],
-          meta: { x: -158, z: 224, nombre: 'Bahía Bio' },
+          meta: { x: 120, z: 233, nombre: 'El muelle' },
         };
       }
       const d = datosCarrera(); d.nubes = true; delete d.meta.y; return d; // pack sin esa ruta: el círculo de la aparición

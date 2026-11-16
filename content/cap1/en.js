@@ -3184,7 +3184,7 @@ window.AV_EN = {
  "Récord: {} estrellas": "Best: {} stars",
  "River Rush, la tormenta, el banquete, el canto, el escondite, las semillas, la escuela de vuelo, Alas al compás, ¡Sígueme, bandada! y Foto relámpago": "River Rush, the storm, the feast, the song, hide-and-seek, the seeds, the flight school, Wings on the Beat, Follow Me, Flock! and Snap Safari",
  "Carrera de las nubes": "Cloud race",
- "Sobre el mar, de Villa Raíz a la Bahía Bio. Cruza las nubes, junta 3 hojas para el Aletazo turbo y vuela detrás de otra cotorra para ir más rápido.": "Out over the sea, from Villa Raíz to Bio Bay. Fly through the clouds, grab 3 leaves for a Turbo Flap, and tuck in behind another parrot to go faster.",
+ "Sobre el mar, hasta la Bahía Bio y de vuelta al muelle. Cruza las nubes, junta 3 hojas para el Aletazo turbo y vuela detrás de otra cotorra para ir más rápido.": "Out over the sea to Bio Bay and back to the pier. Fly through the clouds, grab 3 leaves for a Turbo Flap, and tuck in behind another parrot to go faster.",
  "Para dos": "For two",
  "Aletazo turbo": "Turbo Flap",
  "Aletazo turbo: listo": "Turbo Flap: ready",
@@ -3204,12 +3204,11 @@ window.AV_EN = {
  "El arrecife": "The reef",
  "Frente al mirador": "By the lookout tower",
  "Mar abierto": "Open sea",
- "Rumbo a la bahía": "On to the bay",
  "Bahía Bio": "Bio Bay",
  "El arrecife · {} m": "The reef · {} m",
  "Frente al mirador · {} m": "By the lookout tower · {} m",
  "Mar abierto · {} m": "Open sea · {} m",
- "Rumbo a la bahía · {} m": "On to the bay · {} m",
  "Bahía Bio · {} m": "Bio Bay · {} m",
+ "El muelle · {} m": "The pier · {} m",
  "Récord: {} · mejor puesto {}": "Best: {} · best place {}"
 };
