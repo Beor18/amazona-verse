@@ -658,9 +658,12 @@ window.AVV18Habilidades = function (G) {
   // El Escudo de plumas para un golpe normal del todo y reduce el grito sin anularlo; en los dos casos se gasta.
   // Sin escudo, la invulnerabilidad breve tras perder una pluma ignora lo que no venga con «forzar».
   // Cambia plumas, mareo, inv y kb de `blanco`; los efectos, avisos y eventos los pone quien llama.
-  // Devuelve { r: 'bloqueado' | 'inmune' | 'ok', n (plumas quitadas), empuje, mareo, parcial, dir, escudo (había escudo) }.
+  // Devuelve { r: 'esquivado' | 'bloqueado' | 'inmune' | 'ok', n (plumas quitadas), empuje, mareo, parcial, dir, escudo (había escudo) }.
   const ESCUDO_DEF = { reduceEmpuje: 0.4, reduceMareo: 0.35 };
+  // F1 · cambio 2 (Brinco): mientras dura la ventana del Brinco (f.brinco, 0,25 s) no entra nada, ni lo que viene con
+  // «forzar» (las colas de un combo): el golpe se esquiva y no gasta el escudo. Quien llama decide qué pasa (castigo).
   function recibir(de, blanco, g) {
+    if (blanco.brinco > 0) return { r: 'esquivado', n: 0, empuje: 0, mareo: 0, parcial: false, escudo: blanco.escudo > 0 };
     let n = g.plumas || 0, empuje = g.empuje || 0, mareo = g.mareo || 0, parcial = false;
     if (blanco.escudo > 0 && g.rompeEscudo) { blanco.escudo = 0; blanco.alasT = 0; blanco.escudoRoto = true; } // Ala fuerte: rompe el escudo (también en el duelo de 2)
     const escudo = blanco.escudo > 0;
@@ -688,6 +691,7 @@ window.AVV18Habilidades = function (G) {
     f.pesada = Math.max(0, (f.pesada || 0) - dt); // Plumas de manglar: pisar una pluma va más lento
     f.ojobandada = Math.max(0, (f.ojobandada || 0) - dt); // Ojo de bandada: la ventana del aviso
     f.distraida = Math.max(0, (f.distraida || 0) - dt); // Cuento: distraída no ataca ni se acerca
+    f.brinco = Math.max(0, (f.brinco || 0) - dt); f.brincoCd = Math.max(0, (f.brincoCd || 0) - dt); // F1: ventana y recarga del Brinco
     if (!f.picoT && f.cara === 'fight') f.cara = null;
   }
   G.v18hab = { ENERGIA_MAX, RECARGA, BASICOS: ['golpe_ala', 'semilla'], registrar, get, lista: () => Array.from(REG.values()), poderDe, familia, luchador, listo, usar, recibir, paso, dist, dirA, mira, ver };

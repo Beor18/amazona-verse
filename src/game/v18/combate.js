@@ -39,27 +39,48 @@ window.AVV18Combate = function (G) {
   const LENTES = 'lentes:#7fd3ff'; // clave del premio (content/cap1/coleccionables.js, ropa con hito 'duelo')
   const TACTIL = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches); // QA-163: sin tecla G en táctil
   const ARENA_R = 12, SALIDA_R = 24, PLUMAS = 5;
+  // F1 · cambio 3 (16-nov, «ritmo»): mejor de 3 asaltos de 5 plumas; gana el duelo quien se lleve 2. Entre asaltos, 2 s de
+  // respiro («¡Asalto 2!», las dos a su sitio). Tope de 45 s por asalto: gana quien tenga más plumas; si empatan, la próxima
+  // pluma decide. Con el modo relajado (G.accesibilidad.relajado()) no hay tope. Meta: asalto de 20–35 s, duelo de 60–100 s.
+  // El evento final (win / loss) sale una vez por duelo, como siempre; iniciar({ asaltos: 1 }) es el duelo de un asalto.
+  const ASALTOS = 3, ASALTO_TOPE = 45, ASALTO_PAUSA = 2;
+  let asaltosDef = ASALTOS; // AV.v18CombateTest prueba lo de siempre con un asalto (asaltosDef = 1) y los asaltos aparte, pidiéndolos
+  // F1 · cambio 2: Brinco (nombre provisional: lo decide Kelvin). Espacio (Saltar) o su botón táctil: un salto corto de lado
+  // con 0,25 s sin daño (H.recibir → 'esquivado') y 0,9 s de recarga (no se encadena). Esquive a tiempo (un golpe esquivado,
+  // o su aletazo que falla justo después del Brinco): «¡Esquivado!», la rival queda abierta 0,8 s (ni ataca ni se defiende)
+  // y tú cargas 15 de energía.
+  const BRINCO = { dura: 0.25, cd: 0.9, empuje: 8, abierta: 0.8, energia: 15, ventana: 0.45 };
+  // Respiro tras perder una pluma (solo al mejor de 3): la golpeada queda RITMO.respiro s más sin recibir (además del hueco de
+  // siempre, mareo + 0,25 s). Alarga el asalto hacia la meta (20–35 s) y ayuda un poco a quien va perdiendo.
+  // Medido con la jugadora «media» de AV.v18EvolucionTest (36 duelos por etapa): sin respiro, asaltos de ~13 s y duelos de ~35 s;
+  // con 3 s, duelos de 60–80 s (mediana). Mientras dura, la golpeada parpadea suave (sin «Reducir movimiento»).
+  const RITMO = { respiro: 3.0 };
+  const parpadea = (f, now) => !!(f && C.fase === 'lucha' && (C.nAsaltos || 1) > 1 && f.inv > 0 && !(f.mareo > 0) && !(R && R.REDUCED) && Math.floor(now * 8) % 3 === 2);
   // La Campeona según la etapa del jugador. pensar: segundos entre decisiones; esquiva y escudo: probabilidad de reaccionar a
   // una semilla (ve: a cuántos metros la ve venir; calma: espera entre reacciones); ala y tiro: espera entre golpes y semillas;
   // poder: probabilidad de usarlo cuando puede; vel: velocidad al acercarse; plumas: las que trae (hoy, las 5 en todas).
   // aparta: se sale del alcance de tu ala mientras la suya espera; rehace: se aparta de un salto al recuperarse de un golpe;
   // leeGrito: se escuda al verte abrir el pico; cerca y tiroMin: distancias del ala y de la semilla. CLASICA es la de siempre.
   // aviso y apunta: segundos que anuncia el golpe de ala y la semilla (telegrafía, 8-nov); el aviso se acorta con la etapa.
+  // F1 · tanda B (16-nov, mejor de 3 con respiro tras la pluma): Aprendiz esquiva y se escuda menos (0,96 → 0,85) y usa menos su
+  // poder (0,725 → 0,65); Despertar usa más su poder (0,625 → 0,8) y se aparta más (aparta 0,695 → 0,85, rehace 0,89 → 0,97).
   // Números medidos con la jugadora «media» de AV.v18EvolucionTest (36 duelos por etapa, con semilla): gana del 55 al 75 %.
   // 8-nov: con la telegrafía (que la deja comprometida y a tiro) y el rodeo fuera de tu alcance se reajustaron reflejos,
   // semillas, velocidad y poder para volver a esa franja (antes, sin tocarlos, la jugadora media ganaba el 92–100 %).
   const CLASICA = { id: 'clasica', pensar: 0.25, ve: 5.5, calma: 2.4, esquiva: 0.55, escudo: 0.55, ala: 1.15, tiro: 2.4, poder: 0.3, vel: 4.2, plumas: PLUMAS };
   const DIFICULTAD = [
-    { id: 'aprendiz', pensar: 0.17, ve: 6.33, calma: 1.074, esquiva: 0.96, escudo: 0.96, ala: 0.9, tiro: 0.898, poder: 0.725, vel: 5.765, aparta: 0.825, rehace: 0.89, cerca: 2.36, leeGrito: 0.81, tiroMin: 4.63, aviso: 0.5, apunta: 0.3, plumas: PLUMAS },
-    { id: 'despertar', pensar: 0.14, ve: 6.63, calma: 1.308, esquiva: 0.89, escudo: 0.89, ala: 0.81, tiro: 1.288, poder: 0.625, vel: 5.245, aparta: 0.695, rehace: 0.89, cerca: 2.38, leeGrito: 0.73, tiroMin: 4.13, aviso: 0.45, apunta: 0.3, plumas: PLUMAS },
-    { id: 'guardian', pensar: 0.13, ve: 6.7, calma: 1.074, esquiva: 0.95, escudo: 0.95, ala: 0.79, tiro: 1.008, poder: 0.82, vel: 5.74, aparta: 0.86, rehace: 0.96, cerca: 2.38, leeGrito: 0.88, tiroMin: 4, aviso: 0.42, apunta: 0.3, plumas: PLUMAS },
-    { id: 'maestro', pensar: 0.11, ve: 6.93, calma: 1.15, esquiva: 0.93, escudo: 0.93, ala: 0.72, tiro: 1.18, poder: 0.76, vel: 5.49, aparta: 0.81, rehace: 0.95, cerca: 2.4, leeGrito: 0.87, tiroMin: 3.63, aviso: 0.38, apunta: 0.3, plumas: PLUMAS }
+    { id: 'aprendiz', pensar: 0.17, ve: 6.33, calma: 1.074, esquiva: 0.85, escudo: 0.85, ala: 0.9, tiro: 0.898, poder: 0.65, vel: 5.765, aparta: 0.825, rehace: 0.89, cerca: 2.36, leeGrito: 0.81, tiroMin: 4.63, aviso: 0.7, apunta: 0.5, plumas: PLUMAS },
+    { id: 'despertar', pensar: 0.14, ve: 6.63, calma: 1.308, esquiva: 0.89, escudo: 0.89, ala: 0.81, tiro: 1.288, poder: 0.8, vel: 5.245, aparta: 0.85, rehace: 0.97, cerca: 2.38, leeGrito: 0.73, tiroMin: 4.13, aviso: 0.6, apunta: 0.48, plumas: PLUMAS },
+    { id: 'guardian', pensar: 0.13, ve: 6.7, calma: 1.074, esquiva: 0.95, escudo: 0.95, ala: 0.79, tiro: 1.008, poder: 0.82, vel: 5.74, aparta: 0.86, rehace: 0.96, cerca: 2.38, leeGrito: 0.88, tiroMin: 4, aviso: 0.52, apunta: 0.46, plumas: PLUMAS },
+    { id: 'maestro', pensar: 0.11, ve: 6.93, calma: 1.15, esquiva: 0.93, escudo: 0.93, ala: 0.72, tiro: 1.18, poder: 0.76, vel: 5.49, aparta: 0.81, rehace: 0.95, cerca: 2.4, leeGrito: 0.87, tiroMin: 3.63, aviso: 0.45, apunta: 0.45, plumas: PLUMAS }
   ];
 
 
   // Telegrafía: segundos que la rival anuncia su golpe de ala (se agacha y abre las alas) y su semilla (apunta). Cada etapa
   // puede traer los suyos (aviso, apunta); si no, estos.
-  const AVISO_ALA = 0.45, AVISO_SEMILLA = 0.3, APARTA_ESPERA = 0.9; // y entre dos saltos atrás seguidos, para que no salte sin parar
+  // F1 · cambio 2 (16-nov, «leer, esquivar y castigar»): el aviso dura de 0,7 s (Aprendiz) a 0,45 s (Maestro) y nunca menos
+  // de 0,45 s (también la semilla y las extremidades); antes, 0,5–0,38 s y la semilla 0,3 s.
+  const AVISO_ALA = 0.6, AVISO_SEMILLA = 0.45, AVISO_MIN = 0.45, APARTA_ESPERA = 0.9; // y entre dos saltos atrás seguidos, para que no salte sin parar
   function dificultadDe(j) {
     if (!j || !j.nivel) return CLASICA;
     let i = j.nivel >= 30 ? 3 : j.nivel >= 20 ? 2 : j.nivel >= 10 ? 1 : 0;
@@ -88,7 +109,7 @@ window.AVV18Combate = function (G) {
     bien: '¡Bien!', masCerca: '¡Más cerca!', esquivado: '¡Esquivado!', entFin: '¡Ya sabes pelear! Ahora, el duelo de verdad.',
     pCerca: '¡Cerca! Aletazo (E)', pLejos: 'Lejos: semilla (F)', pPoder: '¡Poder listo! (G)',
     pCercaT: '¡Cerca! Aletazo (Acción)', pLejosT: 'Lejos: semilla (Impulso)', pPoderT: '¡Poder listo! (mantén Impulso)',
-    dGolpe: '¡Te dieron! Muévete de lado para esquivar.', dEscudo: '¡Te dieron! Para cubrirte, usa tu poder (G):', dEscudoT: '¡Te dieron! Para cubrirte, mantén Impulso:',
+    dGolpe: '¡Te dieron! Cuando veas «!», da un Brinco (Espacio).', dEscudo: '¡Te dieron! Para cubrirte, usa tu poder (G):', dEscudoT: '¡Te dieron! Para cubrirte, mantén Impulso:',
     accion: 'Acción', impulso: 'Impulso', tagPoder: 'mantén: poder',
     // T38: en táctil, 4 botones (Ala, Pata, Semilla, Poder) y un entreno de 4 pasos con ellos
     tA1: 'Acércate a la Campeona y toca Ala.', tA2: 'Ahora toca Semilla: la lanza de lejos.', tA3: 'Toca Poder para usar tu poder:', tA4: 'Combo: toca Ala dos veces seguidas.',
@@ -104,7 +125,10 @@ window.AVV18Combate = function (G) {
     // V18.1 §9 («entiende por qué ganó»): al terminar, una línea que explica el resultado y, si pierdes, qué probar
     porGana: 'Le quitaste todas sus plumas.', porGanaPoder: 'Le quitaste todas sus plumas y tu poder ayudó:',
     tPoder: 'Consejo: usa tu poder (G):', tPoderT: 'Consejo: usa tu poder (mantén Impulso):',
-    tCerca: 'Consejo: de cerca, aletazo; de lejos, semilla.', tEsquiva: 'Consejo: cuando veas «!» sobre la Campeona, apártate de lado.'
+    tCerca: 'Consejo: de cerca, aletazo; de lejos, semilla.', tEsquiva: 'Consejo: cuando veas «!» sobre la Campeona, ¡da un Brinco!',
+    // F1 · cambio 2 y 3: Brinco (nombre provisional) y asaltos
+    brinco: 'Brinco', teclaEsp: 'Espacio', dGolpeT: '¡Te dieron! Cuando veas «!», toca Brinco.',
+    asalto2: '¡Asalto 2!', asalto3: '¡Asalto final!', tiempo: '¡Tiempo!', empate: '¡Empate! La próxima pluma gana.'
   };
   // Generador con semilla: la IA decide igual en cada prueba
   let semilla = 1;
@@ -275,7 +299,8 @@ window.AVV18Combate = function (G) {
 
   // ---------- Contexto para las habilidades ----------
   function golpear(de, blanco, g) {
-    if (C.fase !== 'lucha' || !blanco) return false;
+    if (C.fase !== 'lucha' || !blanco || C.pausa > 0) return false;
+    if (blanco.brinco > 0) { esquiveATiempo(blanco, de); return false; } // F1 · cambio 2: Brinco (antes que las hojas y el escudo)
     if (blanco.escudo > 0 && g.rompeEscudo) { quitarEscudo(blanco); flotante(TXT.rompe, 1.2); } // Ala fuerte: rompe el escudo y el golpe entra entero
     // Hojas que envuelven: el siguiente golpe que quitaría una pluma solo marea (el escudo y la inmunidad van antes)
     if (blanco.hojas > 0 && (g.plumas || 0) > 0 && !(blanco.escudo > 0) && !(blanco.inv > 0 && !g.forzar)) {
@@ -302,6 +327,7 @@ window.AVV18Combate = function (G) {
     // ante el «!» hay que apartarse o escudarse; solo lo que interrumpe (el Grito y compañía) la corta.
     if (blanco.ia && blanco.prep === 'golpe_ala' && !g.interrumpe && blanco.plumas > 0) { rc.mareo = 0; blanco.mareo = 0; rc.empuje *= 0.25; blanco.kb.x *= 0.25; blanco.kb.z *= 0.25; C.stats.aguanta = (C.stats.aguanta || 0) + 1; }
     const n = rc.n, empuje = rc.empuje, mareo = rc.mareo, parcial = rc.parcial;
+    if (n > 0 && (C.nAsaltos || 1) > 1 && RITMO.respiro > 0) blanco.inv = (blanco.inv || 0) + RITMO.respiro; // F1 · cambio 3: respiro tras la pluma
     if (g.interrumpe) interrumpir(blanco, mareo, parcial);
     if (blanco.lift && empuje > 0) { blanco.lift.alto = n > 0 ? 0.45 : 0.25; blanco.lift.t = 0; blanco.lift.dura = 0.32; C.stats.reacciones++; } // saltito de sorpresa
     if (n > 0) feelPluma(blanco, n, hud && hud.q(blanco === C.j ? 'plj' : 'plr').children, sonar); // F4-15
@@ -309,9 +335,10 @@ window.AVV18Combate = function (G) {
     if (de.ia) C.stats.aciertosIA = (C.stats.aciertosIA || 0) + 1;
     emitir({ tipo: 'hit', de: de.id, a: blanco.id, valor: n, reducido: parcial || undefined, interrumpe: !!g.interrumpe || undefined });
     if (n > 0) emitir({ tipo: 'damage', de: de.id, a: blanco.id, valor: blanco.plumas });
+    if (n > 0 && blanco === C.r) C.quitadas = (C.quitadas || 0) + n; // F1 · cambio 3: plumas quitadas en todo el duelo (todos los asaltos)
     C2.golpe(de, blanco, { n, directo: de === enUso, camara: de === C.j || blanco === C.j }); // Combate 2.0 (solo con la bandera): impacto, hit-stop visual, sacudida
     pintar();
-    if (blanco.plumas <= 0) terminar(blanco === C.r ? 'win' : 'loss');
+    if (blanco.plumas <= 0 || (C.empate && n > 0)) finAsalto(blanco === C.r ? 'win' : 'loss'); // F1 · cambio 3: fin del asalto (y, con 2 ganados, del duelo)
     return true;
   }
   // Interrumpir: corta lo que hacía (acometida, pensar, carga del poder) durante el mareo corto del grito
@@ -483,7 +510,7 @@ window.AVV18Combate = function (G) {
   let enUso = null; // Combate 2.0: quién está dentro de usar() (sus golpes cuerpo a cuerpo salen en ese mismo instante)
   const DEFENSAS = new Set(['escudo_plumas', 'quiebro', 'capa_palma', 'pluma_rebote', 'hojas_envuelven', 'remolino']);
   function usar(f, id) {
-    if (C.fase !== 'lucha' || !f) return { ok: false, motivo: 'fase' };
+    if (C.fase !== 'lucha' || !f || C.pausa > 0) return { ok: false, motivo: 'fase' }; // F1 · cambio 3: entre asaltos nadie ataca
     if (f === C.j && tarjetaAbierta()) return { ok: false, motivo: 'fase' }; // T57: con la tarjeta abierta no se ataca
     if (f.vista > 0 && !f.avisada && !DEFENSAS.has(id)) {
       const l = H.listo(f, id); if (!l.ok) return l;
@@ -509,6 +536,8 @@ window.AVV18Combate = function (G) {
       C.stats.esquivasJ = (C.stats.esquivasJ || 0) + 1; flotante(TXT.esquivado, 0.8);
       try { C2.accion(C.j, 'esquiva', { fam: 'esquiva', lado: C.stats.esquivasJ % 2 ? 1 : -1 }); } catch (e) { /* sin Combate 2.0 */ } // sin azar(): no cambia lo que decide la IA
     }
+    // F1 · cambio 2: su aletazo falla justo después de tu Brinco → esquive a tiempo (la rival queda abierta)
+    if (r.ok && f.ia && id === 'golpe_ala' && r.acierto === false && C.j && brincoReciente()) esquiveATiempo(C.j, f);
     // V18.2: desafío de las alianzas (usar el poder propio 2 veces)
     if (r.ok && !r.avisada && !f.ia && id === f.poder) C.stats.poderJ++;
     if (r.ok) pintar();
@@ -538,7 +567,7 @@ window.AVV18Combate = function (G) {
     for (const s of hud.tags.children) if (!s.hidden) return true;
     return false;
   }
-  let modo0 = null, sostener0 = null, sost = 0, enganchado = false;
+  let modo0 = null, sostener0 = null, sost = 0, enganchado = false, miSalto = null;
   function sostenerDuelo(on) {
     if (on) { sost = performance.now(); return; }
     if (!sost) return;
@@ -593,6 +622,7 @@ window.AVV18Combate = function (G) {
       try { pose(this, C.j, dt); if (c2On() && C.j && C.fase !== 'nada') V2 = C2.antes(this, C.j, oJugadora(), dt); } catch (e) { /* pose */ }
       const res = upd0.call(this, V2 ? C2.dtVis(dt) : dt);
       if (V2) try { C2.huesos(this, V2); } catch (e) { /* pose */ }
+      if (this.root) { const p = parpadea(C.j, performance.now() / 1000); if (p || this.root.userData.parpadeo) { this.root.visible = !p; this.root.userData.parpadeo = p; } } // F1: respiro
       return res;
     };
   }
@@ -601,6 +631,7 @@ window.AVV18Combate = function (G) {
   function oJugadora() { oJ.fin = C.fase === 'fin' ? (C.resultado === 'win' ? 'gana' : 'pierde') : ''; oJ.vel = Math.hypot(M.vx || 0, M.vz || 0); return oJ; }
   function soltarJugador() {
     if (!pl3d) return;
+    if (pl3d.root && pl3d.root.userData.parpadeo) { pl3d.root.visible = true; pl3d.root.userData.parpadeo = false; } // F1: sin parpadeo al salir
     if (C.j && C.j.wob && pl3d.root) { pl3d.root.rotation.z -= C.j.wob; C.j.wob = 0; }
     if (C.j) C2.soltar(pl3d, C.j, true);
     delete pl3d.update; if (pl3d.update !== upd0) pl3d.update = upd0; // la de la clase vuelve a mandar
@@ -694,6 +725,8 @@ window.AVV18Combate = function (G) {
     modo0 = G.interaccion.modo; G.interaccion.modo = modo;
     if (G.dones) { sostener0 = G.dones.sostener; G.dones.sostener = sostenerDuelo; }
     addEventListener('keydown', tecla, true); if (G.input && G.input.keys) G.input.keys.delete('g'); envolverJugador(); alejarCamara();
+    // F1 · cambio 2: Saltar (Espacio, o el botón Saltar en táctil sin el 2×2) es el Brinco mientras dura el duelo
+    if (F && typeof F.tryJump === 'function' && !F.tryJump.duelo) { const t0 = F.tryJump; miSalto = Object.assign(function () { if (miSalto && F.tryJump === miSalto && (C.fase === 'lucha' || C.fase === 'cuenta')) { brinco(); return false; } return t0.apply(this, arguments); }, { duelo: true, orig: t0 }); F.tryJump = miSalto; }
     document.body.classList.add('v18-duelo-on'); document.body.classList.toggle('v18-duelo-tt', TACTIL);
   }
   function soltar() {
@@ -701,6 +734,7 @@ window.AVV18Combate = function (G) {
     if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
     if (G.dones && G.dones.sostener === sostenerDuelo) G.dones.sostener = sostener0;
     removeEventListener('keydown', tecla, true); sost = 0; soltarJugador(); devolverCamara();
+    if (miSalto && F.tryJump === miSalto) F.tryJump = miSalto.orig; miSalto = null;
     document.body.classList.remove('v18-duelo-on'); document.body.classList.remove('v18-ext-on'); document.body.classList.remove('v18-duelo-fin-t', 'v18-duelo-tt'); document.documentElement.style.removeProperty('--vd-bajo');
   }
 
@@ -755,7 +789,8 @@ window.AVV18Combate = function (G) {
       // Al terminar, en táctil, el panel ya tiene «Otra vez» y «Salir»: fuera los botones grandes y el aviso repetidos
       'body.v18-duelo-fin-t :is(#acts,#prompt,#v18-duelo-tags){visibility:hidden!important}' +
       // y el aviso (#toast) baja, encima del 2×2: arriba tapaba a la Campeona al empezar
-      '@media (max-width:560px){body.v18-ext-on #toast{top:auto!important;bottom:calc(env(safe-area-inset-bottom,0px) + 214px)!important;margin-bottom:0!important}}' +
+      // F1 · cambio 2: 30 px más arriba (antes 214): encima del joystick va el botón Brinco
+      '@media (max-width:560px){body.v18-ext-on #toast{top:auto!important;bottom:calc(env(safe-area-inset-bottom,0px) + 244px)!important;margin-bottom:0!important}}' +
       '#v18-duelo.tactil .vd-ent{padding:6px 10px;margin-top:6px}#v18-duelo.tactil .vd-ent-cuerpo{margin:4px 0}#v18-duelo.tactil .vd-ent-txt{font-size:15px}' +
       '#v18-duelo.tactil .vd-ent button{min-height:44px;padding:2px 14px}' +
       // T57 (tapaba el centro de la pelea): en táctil, el entreno en dos filas cortas: paso y puntos; botón, texto y «Saltar»
@@ -823,7 +858,16 @@ window.AVV18Combate = function (G) {
       '#v18-duelo:not(.tactil) .vd-acc button.vd-como,#v18-duelo:not(.tactil) .vd-acc button.vd-combos-b{margin:0}' +
       '#v18-duelo:not(.tactil) .vd-centro{margin-top:0}' +
       '#v18-duelo:not(.tactil) .vd-pista{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 196px);margin:0 auto}' +
-      '#v18-duelo:not(.tactil) .vd-fin{position:fixed;left:0;right:0;margin:0 auto;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);width:min(460px,calc(100vw - 32px));box-sizing:border-box}';
+      '#v18-duelo:not(.tactil) .vd-fin{position:fixed;left:0;right:0;margin:0 auto;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);width:min(460px,calc(100vw - 32px));box-sizing:border-box}' +
+      // F1 · cambio 3: reloj del asalto y asaltos ganados (puntos: los tuyos a la izquierda, los de la rival a la derecha). En el
+      // escritorio, arriba al centro entre los dos paneles; en táctil, debajo de la franja.
+      '#v18-duelo .vd-reloj{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px auto 0;width:max-content;padding:2px 10px;border-radius:14px;background:rgba(30,40,30,.72);font-weight:700;font-size:18px;line-height:1.2}#v18-duelo .vd-reloj[hidden]{display:none}' +
+      '#v18-duelo .vd-reloj b{min-width:24px;text-align:center}#v18-duelo .vd-as{display:flex;gap:4px}#v18-duelo .vd-as i{width:11px;height:11px;border-radius:50%;border:2px solid #ffd27a;box-sizing:border-box;display:block}' +
+      '#v18-duelo .vd-as.r i{border-color:#7fd3ff}#v18-duelo .vd-as.j i.on{background:#ffd27a}#v18-duelo .vd-as.r i.on{background:#7fd3ff}#v18-duelo .vd-as i[hidden]{display:none}' +
+      '#v18-duelo:not(.tactil) .vd-reloj{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 14px)}#v18-duelo.tactil .vd-reloj{font-size:14px;padding:1px 8px}' +
+      // F1 · cambio 2: botón Brinco en táctil (junto al joystick; lo coloca pintarExt), ≥ 44 px
+      '#v18-duelo-brinco{position:fixed;z-index:42;width:64px;height:64px;border-radius:50%;border:3px solid #fff3d6;padding:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font:700 12px/1 Fredoka,system-ui,sans-serif;color:#fff;background:rgba(20,90,120,.86);box-shadow:0 3px 0 #0b2a3a,0 4px 12px #0007;text-shadow:0 1px 2px #000;--icon-size:24px;touch-action:none;-webkit-user-select:none;user-select:none;pointer-events:auto}' +
+      '#v18-duelo-brinco[hidden]{display:none}#v18-duelo-brinco::before{background:#fff}#v18-duelo-brinco.cd{opacity:.6}#v18-duelo-brinco:active,#v18-duelo-brinco.pulsa{transform:translateY(2px);box-shadow:0 1px 0 #0b2a3a}';
     document.head.appendChild(st);
   }
   function montarHud() {
@@ -835,18 +879,19 @@ window.AVV18Combate = function (G) {
     const chip = (a, ico, n, k) => `<button class="vd-chip" data-a="${a}" data-icon="${ico}" type="button"${a === 'alianza' ? ' hidden' : ''}><span data-k="cn-${a}">${n}</span><kbd>${k}</kbd><i class="vd-cdv"></i></button>`;
     el.innerHTML = `<div class="vd-fila"><div class="vd-lado j"><div class="vd-nom">${TXT.tu}</div><div class="vd-pod" data-k="pj"></div><div class="vd-nv" data-k="nv" hidden><span data-k="nvN"></span> · <span data-k="nvE"></span></div><div class="vd-xp" data-k="xp" hidden><b></b></div><div class="vd-pl" data-k="plj">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-j"><b></b></div><button class="vd-ali" data-a="alianza" type="button" hidden></button></div>` +
       `<div class="vd-lado r"><div class="vd-nom">${TXT.rival}</div><div class="vd-pod" data-k="pr"></div><div class="vd-pl" data-k="plr">${plumas()}</div><div class="vd-et">${TXT.energia}</div><div class="vd-en" data-k="en-r"><b></b></div><div class="vd-acc" data-k="acc"><button class="vd-como" data-a="como" data-k="como" type="button" data-icon="question" aria-label="${TXT.como}">${TXT.como}</button><button class="vd-como vd-salir-b" data-a="salirDuelo" data-k="salirB" type="button" data-icon="close" hidden>${TXT.salir}</button></div></div></div>` +
+      `<div class="vd-reloj" data-k="reloj" hidden><span class="vd-as j" data-k="asj"><i></i><i></i></span><b data-k="relojN"></b><span class="vd-as r" data-k="asr"><i></i><i></i></span></div>` +
       `<div class="vd-centro" data-k="centro"></div><div class="vd-apoyo" data-k="apoyo" hidden><img src="assets/retratos/v18/arausiaca.png" alt=""><span>${TXT.apoyo}</span></div>` +
       `<div class="vd-pista" data-k="pista" hidden><span data-k="pistaTxt"></span> <b data-k="pistaPod"></b></div>` +
       `<div class="vd-ent" data-k="ent" hidden><div class="vd-ent-cab"><span data-k="entPaso"></span><span class="vd-ent-pp" data-k="entPP"><i></i><i></i><i></i></span></div>` +
       `<div class="vd-ent-cuerpo"><kbd data-k="entK"></kbd><div class="vd-ent-txt"><span data-k="entTxt"></span> <b data-k="entPod"></b></div></div><button data-a="saltarEnt" type="button">${TACTIL ? TXT.saltar : TXT.saltarEnt}</button></div>` +
-      `<div class="vd-bot" data-k="bot">${chip('golpe_ala', 'wing', TXT.ala, 'E')}${chip('semilla', 'semilla', TXT.semilla, 'F')}${chip('poder', 'bolt', TXT.poder, 'G')}${chip('alianza', 'star', '', 'H')}</div>` +
+      `<div class="vd-bot" data-k="bot">${chip('golpe_ala', 'wing', TXT.ala, 'E')}${chip('semilla', 'semilla', TXT.semilla, 'F')}${chip('poder', 'bolt', TXT.poder, 'G')}${chip('brinco', 'jump', TXT.brinco, TXT.teclaEsp)}${chip('alianza', 'star', '', 'H')}</div>` +
       `<div class="vd-fin" data-k="fin" hidden><p class="vd-finxp" data-k="finXp"></p><p data-k="finTxt"></p><p class="vd-fintip" data-k="finTip"><span data-k="finTipTxt"></span> <b data-k="finTipPod"></b></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
     el.addEventListener('pointerdown', e => {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       e.preventDefault(); e.stopPropagation();
       const a = b.dataset.a;
       if (a === 'salirDuelo') { salir(); return; } // auditoría 10-nov: salir a mitad del duelo, también en táctil
-      if (a === 'controles') { if (G.botones) G.botones.abrir(); } else if (a === 'combos') abrirCombos(!cartaC); else if (a === 'cerrarCombos') abrirCombos(false); else if (a === 'como') abrirComo(); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (a === 'alianza') { if (C.j && C.j.alianza) usar(C.j, C.j.alianza); } else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
+      if (a === 'controles') { if (G.botones) G.botones.abrir(); } else if (a === 'combos') abrirCombos(!cartaC); else if (a === 'cerrarCombos') abrirCombos(false); else if (a === 'como') abrirComo(); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (a === 'alianza') { if (C.j && C.j.alianza) usar(C.j, C.j.alianza); } else if (a === 'brinco') brinco(); else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
     });
     const viejo = document.getElementById('v18-duelo'); if (viejo) viejo.remove(); // una instancia nueva del módulo (QA-163 en v18CombateTest) no deja dos #v18-duelo
     document.body.appendChild(el);
@@ -865,7 +910,7 @@ window.AVV18Combate = function (G) {
   function ponerBajo(el) {
     const w = el.ownerDocument.defaultView; let b = 0;
     for (const e of el.children) {
-      if (e.hidden || !e.matches('.vd-fila,.vd-centro,.vd-pista') || w.getComputedStyle(e).position === 'fixed') continue;
+      if (e.hidden || !e.matches('.vd-fila,.vd-reloj,.vd-centro,.vd-pista') || w.getComputedStyle(e).position === 'fixed') continue;
       const r = e.getBoundingClientRect(); if (r.height > 0 && r.bottom > b) b = r.bottom;
     }
     const px = Math.round(Math.min(b + 8, w.innerHeight * 0.5));
@@ -911,6 +956,12 @@ window.AVV18Combate = function (G) {
     for (const b of hud.q('bot').children) {
       const a = b.dataset.a, id = a === 'poder' ? C.j.poder : a === 'alianza' ? C.j.alianza : a;
       if (!id || b.hidden) continue;
+      if (a === 'brinco') { // F1: el Brinco no es una habilidad: su recarga es C.j.brincoCd
+        const cd = C.j.brincoCd || 0, pct = Math.round(Math.max(0, Math.min(1, cd / BRINCO.cd)) * 20) * 5, st = C.fase === 'lucha' && !cd && !(C.pausa > 0) ? 'listo' : cd > 0 ? 'cd' : 'sin';
+        if (b._pct !== pct) { b._pct = pct; b.style.setProperty('--cd', pct + '%'); }
+        if (b._st !== st) { b._st = st; b.classList.toggle('listo', st === 'listo'); b.classList.toggle('cd', st === 'cd'); b.classList.toggle('sin', st === 'sin'); }
+        continue;
+      }
       const h = H.ver(C.j, H.get(id)) || {}, cd = C.j.cd[id] || 0, l = H.listo(C.j, id);
       const pct = Math.round(Math.max(0, Math.min(1, cd / (h.cooldown || 1))) * 20) * 5;
       const st = C.fase === 'lucha' && l.ok ? 'listo' : cd > 0 ? 'cd' : 'sin';
@@ -1123,7 +1174,7 @@ window.AVV18Combate = function (G) {
       if (!(m & PISTA.defensa)) {
         dominar(PISTA.defensa);
         const def = DEFENSAS.has(C.j.poder);
-        mostrarPista(def ? (padOn() ? TXT.dEscudoP : TACTIL ? TXT.dEscudoT : TXT.dEscudo) : TXT.dGolpe, def ? nombrePoder() : ''); pista.vis = 3.2; pista.t = 4.5;
+        mostrarPista(def ? (padOn() ? TXT.dEscudoP : TACTIL ? TXT.dEscudoT : TXT.dEscudo) : TACTIL ? TXT.dGolpeT : TXT.dGolpe, def ? nombrePoder() : ''); pista.vis = 3.2; pista.t = 4.5;
       }
     }
     pista.plj = C.j.plumas;
@@ -1160,6 +1211,9 @@ window.AVV18Combate = function (G) {
     document.body.classList.remove('v18-duelo-fin-t');
     C.timers.length = 0; C.resultado = null; C.premio = false; C.sinExtIA = !!o.sinExtIA; cartaC = false; comboVis = 0; if (hud && hud.ext) hud.ext.nom.hidden = true;
     C.stats = nuevasStats();
+    // F1 · cambio 3: asaltos (iniciar({ asaltos: 1 }): un solo asalto, como antes)
+    C.nAsaltos = Math.max(1, o.asaltos || asaltosDef); C.asalto = 1; C.ganJ = C.ganR = 0; C.pausa = 0; C.tAsalto = 0; C.empate = false; C.quitadas = 0; C.tTotal = 0;
+    C.j.brinco = C.j.brincoCd = 0; C.r.abierta = 0;
     const conEntreno = !!o.entreno || (!o.sinCuenta && !o.sinEntreno && !espForzada && !entrenoVisto()); // el primer duelo empieza con el entreno
     // T57: la tarjeta «¿Cómo se pelea?» sale sola en el primer duelo (antes del entreno); luego, con su botón
     const conTarjeta = !o.entreno && !o.sinCuenta && !o.sinEntreno && !o.sinTarjeta && !espForzada && !(mundoN(TJ_CLAVE) > 0);
@@ -1195,7 +1249,8 @@ window.AVV18Combate = function (G) {
     if (gano) sumarEtapa();
     emitir({ tipo: res, de: gano ? 'jugador' : 'rival', a: gano ? 'rival' : 'jugador', valor: gano ? C.j.plumas : C.r.plumas,
       // V18.2: para la XP
-      especie: C.j.especie, dura: Math.round((C.tLucha || 0) * 10) / 10, interrupciones: C.stats.intJ, poderJ: C.stats.poderJ, quitadas: (C.r.plumasMax || PLUMAS) - C.r.plumas });
+      especie: C.j.especie, dura: Math.round((C.tLucha || 0) * 10) / 10, interrupciones: C.stats.intJ, poderJ: C.stats.poderJ, quitadas: C.quitadas || 0,
+      asaltos: [C.ganJ || 0, C.ganR || 0] }); // F1 · cambio 3: quitadas = las de todo el duelo; asaltos ganados [tú, rival]
     let txt;
     // La que se queda sin plumas se marea un rato, con estrellitas, y se sacude (nadie se hace daño)
     const perdedora = gano ? C.r : C.j; perdedora.finMareo = 2.2; perdedora.mareo = Math.max(perdedora.mareo, 2.2);
@@ -1211,7 +1266,75 @@ window.AVV18Combate = function (G) {
     if (G.ui && G.ui.toast) G.ui.toast(txt, 3200);
     if (hud) { hud.q('finTxt').textContent = txt; hud.q('fin').querySelector('[data-a="salir"]').textContent = alMenu() ? TXT.menu : TXT.salir; hud.q('fin').hidden = false; hud.q('bot').hidden = true; flotante(gano ? TXT.ganaste : TXT.perdiste, 1.6);
       try { hud.q('finXp').innerHTML = G.v18evo && G.v18evo.htmlFin ? G.v18evo.htmlFin() : ''; } catch (e) { /* sin evolución */ }
-      const c = consejo(gano, C.stats, (C.r.plumasMax || PLUMAS) - C.r.plumas); hud.q('finTipTxt').textContent = c.txt; hud.q('finTipPod').textContent = c.pod; }
+      const c = consejo(gano, C.stats, C.quitadas || 0); hud.q('finTipTxt').textContent = c.txt; hud.q('finTipPod').textContent = c.pod; }
+  }
+  // ---------- F1 · cambio 3: asaltos ----------
+  const ganaCon = () => Math.ceil((C.nAsaltos || 1) / 2);
+  function finAsalto(res) {
+    if (C.fase !== 'lucha' || C.pausa > 0) return;
+    if (res === 'win') C.ganJ++; else C.ganR++;
+    C.empate = false;
+    if (ent || C.ganJ >= ganaCon() || C.ganR >= ganaCon()) { pintarReloj(); terminar(C.ganJ >= C.ganR ? 'win' : 'loss'); return; }
+    // Respiro entre asaltos: nadie ataca, la que perdió el asalto se sacude un momento y las dos vuelven a su sitio al acabar
+    C.asalto++; C.pausa = ASALTO_PAUSA; C.tAsalto = 0; quitarBalas(); C.timers.length = 0; C.trampas.length = 0;
+    const perd = res === 'win' ? C.r : C.j; perd.mareo = Math.max(perd.mareo || 0, 1);
+    C.r.prep = ''; if (C.r.ext) C.r.ext.plan.length = 0; C.r.abierta = 0; C.r.mov.t = 0; C.r.kb.t = 0; C.j.kb.t = 0; C.j.brinco = 0; M.vx = M.vz = 0;
+    emitir({ tipo: 'asalto', de: res === 'win' ? 'jugador' : 'rival', asalto: C.asalto - 1, asaltos: [C.ganJ, C.ganR] });
+    flotante(C.asalto >= C.nAsaltos ? TXT.asalto3 : TXT.asalto2, ASALTO_PAUSA);
+    sonar('ring', res === 'win' ? 3 : 1); pintar(); pintarReloj();
+  }
+  // Al acabar el respiro: plumas llenas, cada una a su sitio y la rival con sus esperas de inicio (la energía se queda)
+  function nuevoAsalto() {
+    C.pausa = 0; C.tAsalto = 0;
+    for (const f of [C.j, C.r]) { f.plumas = f.plumasMax || PLUMAS; f.mareo = 0; f.inv = 0; f.kb.t = 0; f.cd = {}; if (f.ext) { f.ext.cad.length = 0; f.ext.rec = 0; f.ext.plan.length = 0; } }
+    const r = C.r; r.pensar = 0.4; r.golpeT = 1; r.tiroT = 1.5; r.esquivaT = 0; r.poderT = 2.5; r.prep = ''; r.abierta = 0; r.v.x = r.v.z = 0;
+    colocar(false); flotante(TXT.ya, 0.7); pintar(); pintarReloj();
+  }
+  // Tope de 45 s por asalto (sin tope en el modo relajado ni en el entreno)
+  function topeAsalto() {
+    if (ent || C.empate || (C.nAsaltos || 1) < 2) return; // el tope es del formato por asaltos (un duelo de un asalto, sin tope)
+    try { if (G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado()) return; } catch (e) { /* sin accesibilidad */ }
+    const pj = C.j.plumas / (C.j.plumasMax || PLUMAS), pr = C.r.plumas / (C.r.plumasMax || PLUMAS);
+    if (pj === pr) { C.empate = true; flotante(TXT.empate, 1.6); return; }
+    flotante(TXT.tiempo, 1); finAsalto(pj > pr ? 'win' : 'loss');
+  }
+  function pintarReloj() {
+    if (!hud) return; const el = hud.q('reloj'); if (!el) return;
+    const ver = !ent && C.fase !== 'nada'; if (el.hidden === ver) el.hidden = !ver; if (!ver) return;
+    const t = C.pausa > 0 || C.fase !== 'lucha' ? '' : C.empate ? '!' : String(Math.max(0, Math.ceil(ASALTO_TOPE - (C.tAsalto || 0))));
+    const n = hud.q('relojN'); if (n.textContent !== t) n.textContent = t;
+    const dots = (k, g) => Array.from(hud.q(k).children).forEach((i, x) => { const on = x < g; if (i.classList.contains('on') !== on) i.classList.toggle('on', on); i.hidden = x >= ganaCon(); });
+    dots('asj', C.ganJ || 0); dots('asr', C.ganR || 0);
+  }
+  // ---------- F1 · cambio 2: Brinco ----------
+  const brincoReciente = () => !!(C.j && C.j.brincoIni != null && (C.tLucha || 0) - C.j.brincoIni <= BRINCO.ventana && C.j.brincoIni >= 0);
+  let brincoLado = 1;
+  function brinco() {
+    const j = C.j;
+    if (C.fase !== 'lucha' || !j || C.pausa > 0 || tarjetaAbierta() || cartaC) return { ok: false, motivo: 'fase' };
+    if (j.mareo > 0 || j.remolino > 0) return { ok: false, motivo: 'mareo' };
+    if (j.brincoCd > 0) return { ok: false, motivo: 'espera' };
+    // Hacia donde vas; quieta, de lado respecto a la rival (alterna)
+    let dx = M.vx || 0, dz = M.vz || 0, n = Math.hypot(dx, dz);
+    if (n < 0.5) { const d = H.dirA(j, C.r); brincoLado = -brincoLado; dx = -d.z * brincoLado; dz = d.x * brincoLado; n = 1; }
+    dx /= n; dz /= n;
+    j.brinco = BRINCO.dura; j.brincoCd = BRINCO.cd; j.brincoIni = C.tLucha || 0; j.abrio = false;
+    j.kb.x = dx * BRINCO.empuje; j.kb.z = dz * BRINCO.empuje; j.kb.t = BRINCO.dura;
+    C.stats.brincos = (C.stats.brincos || 0) + 1;
+    try { C2.accion(j, 'esquiva', { fam: 'esquiva', lado: brincoLado }); } catch (e) { /* sin Combate 2.0 */ } // la pose de esquiva de T41
+    fx('dust', S.pos.x, S.pos.y + 0.1, S.pos.z); sonar('jump');
+    if (ent) { /* en el entreno también se puede probar */ }
+    pintarChips();
+    return { ok: true };
+  }
+  // Esquive a tiempo: la rival queda abierta 0,8 s y tú cargas 15 de energía (una vez por Brinco)
+  function esquiveATiempo(yo, otro) {
+    if (!yo || !otro || yo.abrio || C.fase !== 'lucha') return false;
+    yo.abrio = true; C.stats.esquivasB = (C.stats.esquivasB || 0) + 1;
+    yo.energia = Math.min(yo.energiaMax || 100, (yo.energia || 0) + BRINCO.energia);
+    if (otro.ia) { otro.abierta = BRINCO.abierta; otro.prep = ''; if (otro.ext) otro.ext.plan.length = 0; C.stats.abiertas = (C.stats.abiertas || 0) + 1; }
+    flotante(TXT.esquivado, 0.9); fx('stars', otro.pos.x, otro.pos.y + 1.8, otro.pos.z); sonar('ring', 3);
+    pintar(); return true;
   }
   // V18.1 §9: por qué ganaste o qué probar tras perder (cada texto es su nodo; el nombre del poder va aparte y se traduce solo)
   function consejo(gano, st, quitadas) {
@@ -1242,7 +1365,7 @@ window.AVV18Combate = function (G) {
     try { if (G.objetos && G.objetos.renderInv) G.objetos.renderInv(); } catch (e) { /* HUD */ }
     try { if (G.guardado && G.guardado.save) G.guardado.save(true); else if (G.guardado && G.guardado.autosave) G.guardado.autosave(); } catch (e) { /* guardado */ } // QA-162: al momento
   }
-  function otraVez() { return iniciar({ sinEntreno: true }); }
+  function otraVez() { return iniciar({ sinEntreno: true, asaltos: C.nAsaltos }); } // F1: otra vez al mismo formato (mejor de 3)
   function salir(motivo) {
     if (C.fase === 'nada') return false;
     C.fase = 'nada'; quitarBalas(); C.timers.length = 0; soltar(); ent = null; cartaC = false; comboVis = 0; if (tj && tj.modo === 'uno') cerrarTarjeta('salir');
@@ -1256,6 +1379,7 @@ window.AVV18Combate = function (G) {
   // ---------- IA de la rival ----------
   function pasoIA(dt) {
     const r = C.r, j = C.j, D = r.dif || CLASICA, pp = D.poder;
+    if (r.abierta > 0) { r.abierta = Math.max(0, r.abierta - dt); r.prep = ''; if (r.ext) r.ext.plan.length = 0; return; } // F1 · cambio 2: abierta tras tu Brinco: ni ataca ni se defiende
     if (r.mareo > 0) r.tocada = true;
     // Mareada, deslumbrada (Abanico de colores) o distraída (Cuento): no hace nada, y el ataque que anunciaba se pierde
     if (r.mareo > 0 || r.deslumbrada > 0 || r.distraida > 0) { r.prep = ''; if (r.ext) r.ext.plan.length = 0; return; }
@@ -1272,6 +1396,7 @@ window.AVV18Combate = function (G) {
       if (id.indexOf('ext:') === 0) { // Combate 2.0: una extremidad; si entra, a veces sigue con un combo (según su etapa)
         const k = id.slice(4), u = EXM.usar(r, k); r.avisoUsado = 0;
         if (u.ok) r.golpeAnim = 0.3;
+        if (u.ok && !u.acierto && !u.combo && brincoReciente()) { esquiveATiempo(j, r); return; } // F1: falló justo después de tu Brinco
         if (u.ok && u.acierto && azar() < (EXT_IA[D.id] || EXT_IA.clasica).combo) planCombo(r, k);
         return;
       }
@@ -1328,7 +1453,9 @@ window.AVV18Combate = function (G) {
     r.ext.plan = q.slice(1).map(x => ({ k: x, t: 0.24 }));
   }
   function preparar(r, id, t) {
+    t = Math.max(AVISO_MIN, t); // F1 · cambio 2: el aviso se ve siempre 0,45 s o más
     r.prep = id; r.prepT = r.prepDur = t; C.stats.avisosIA = (C.stats.avisosIA || 0) + 1;
+    sonar('aviso'); // F1 · cambio 2: tercera capa del aviso (pose + arco en el suelo + sonido; audio.js lo espacia solo)
     if (id === 'golpe_ala') fx('gold', r.pos.x, r.pos.y + 1.9, r.pos.z); // brillo sobre la cabeza al empezar el aviso
   }
   // Quiebro o salto atrás: un saltito con aleteo un poco más largo que el empujón (aterriza al acabar)
@@ -1350,7 +1477,7 @@ window.AVV18Combate = function (G) {
     if (r.mov.t > 0) { r.mov.t -= dt; vx += r.mov.x; vz += r.mov.z; V.x = r.mov.x * 0.25; V.z = r.mov.z * 0.25; } // sale del quiebro con algo de inercia
     else {
       let qx = 0, qz = 0; // velocidad que quiere
-      const libre = r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0) && !(r.distraida > 0);
+      const libre = r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0) && !(r.distraida > 0) && !(C.pausa > 0) && !(r.abierta > 0); // F1: quieta entre asaltos y abierta
       const selva = r.avisoSelva && C.timers.length ? r.avisoSelva : ''; // Ojo de selva: el ataque anunciado también la compromete
       if (libre && (r.prep === 'golpe_ala' || selva === 'golpe_ala') && d.d > 1.5) { qx = d.x * 1.6; qz = d.z * 1.6; } // agachada, se arrima despacio para el golpe
       else if (libre && ent && ent.ancla) { // entreno: se balancea de lado (±0,9 m) junto a su sitio, sin acercarse
@@ -2061,8 +2188,9 @@ window.AVV18Combate = function (G) {
   const COMBO = {}; COMBOS.forEach((c, i) => { c.n = i; COMBO[c.id] = c; });
   // Cuánto usa la Campeona sus extremidades según su etapa: usa = en vez del aletazo de siempre; combo = sigue con un combo
   // si la primera entra; aviso = su telegrafía (s). Aprendiz casi nunca; Maestro más.
-  const EXT_IA = { aprendiz: { usa: 0.12, combo: 0.08, aviso: 0.4 }, despertar: { usa: 0.22, combo: 0.18, aviso: 0.36 }, guardian: { usa: 0.32, combo: 0.32, aviso: 0.34 },
-    maestro: { usa: 0.42, combo: 0.45, aviso: 0.32 }, clasica: { usa: 0.2, combo: 0.15, aviso: 0.4 } };
+  // F1 · cambio 2: también se anuncian 0,6–0,45 s (antes 0,4–0,32 s): el aviso nunca baja de AVISO_MIN
+  const EXT_IA = { aprendiz: { usa: 0.12, combo: 0.08, aviso: 0.6 }, despertar: { usa: 0.22, combo: 0.18, aviso: 0.55 }, guardian: { usa: 0.32, combo: 0.32, aviso: 0.5 },
+    maestro: { usa: 0.42, combo: 0.45, aviso: 0.45 }, clasica: { usa: 0.2, combo: 0.15, aviso: 0.55 } };
   const VENTANA_CLAVE = 'av_combos_sin_prisa';
   const sinPrisa = () => { try { return localStorage.getItem(VENTANA_CLAVE) === '1'; } catch (e) { return false; } };
   const ventanaCombo = () => (sinPrisa() ? VENTANA_LENTA : VENTANA);
@@ -2079,7 +2207,7 @@ window.AVV18Combate = function (G) {
   // Motor de extremidades (uno por duelo: este y el de 2 jugadores). cfg: { lucha(), otro(f), golpear(de, blanco, g),
   // despues(s, fn), t(), anunciar(f, combo), fx, sonar, alUsar(f, k, r) }
   function crearExt(cfg) {
-    const st = f => f.ext || (f.ext = { cad: [], ultT: -9, bloq: 0, rec: 0, buf: '', bufT: 0, cd: {}, conecto: -9, combo: null, comboT: -9, usos: 0, combos: {}, remates: 0, plan: [], ultimo: '' });
+    const st = f => f.ext || (f.ext = { cad: [], cadOk: [], cadPl: [], ultT: -9, bloq: 0, rec: 0, buf: '', bufT: 0, cd: {}, conecto: -9, combo: null, comboT: -9, usos: 0, combos: {}, remates: 0, plan: [], ultimo: '' });
     const lado = d => ({ x: -d.z, z: d.x }); // la derecha de quien mira hacia d
     // Quien recupera de un combo no hace nada (ni ala, ni semilla), salvo su poder justo después (el remate)
     function bloquea(f, id) { const X = f && f.ext; return !!(X && X.rec > 0 && !(id && id === f.poder && X.combo)); }
@@ -2093,14 +2221,14 @@ window.AVV18Combate = function (G) {
     }
     function hacer(f, k, o) {
       const X = st(f), E = EXT[k], otro = cfg.otro(f), now = cfg.t(), W = cfg.ventana(f);
-      if (now - X.ultT > W) X.cad.length = 0;
-      X.cad.push(k); if (X.cad.length > 4) X.cad.shift();
+      if (now - X.ultT > W) X.cad.length = X.cadOk.length = X.cadPl.length = 0;
+      X.cad.push(k); if (X.cad.length > 4) { X.cad.shift(); X.cadOk.shift(); X.cadPl.shift(); }
       X.ultT = now; X.bloq = EXT_BLOQUEO; X.cd[k] = E.cd; X.usos++; X.ultimo = k;
       const m = buscarCombo(X.cad);
       if (m) return remate(f, k, m.c, otro, m.q);
       C2.accion(f, 'ext_' + E.tipo, { fam: 'ext_' + E.tipo, lado: E.lado });
       cfg.sonar(E.tipo === 'ala' ? 'duelo_ala' : 'duelo_pata', E.lado); // T45 (Suno; mientras carga, ext_ala / ext_pata)
-      const r = { ok: true, k, acierto: false, combo: null };
+      const r = { ok: true, k, acierto: false, combo: null }, p0 = otro ? otro.plumas : 0;
       if (otro && H.dist(f, otro) <= E.alcance) {
         const d = H.dirA(f, otro), l = lado(d), s = E.tipo === 'ala' ? E.lado : 0; // ala izquierda → empuja a su derecha
         const dir = { x: d.x * 0.55 + l.x * s * 0.85, z: d.z * 0.55 + l.z * s * 0.85 }, n = Math.hypot(dir.x, dir.z) || 1; dir.x /= n; dir.z /= n;
@@ -2108,6 +2236,7 @@ window.AVV18Combate = function (G) {
         r.acierto = !!cfg.golpear(f, otro, g); r.sujeta = !g.plumas;
         if (r.acierto) X.conecto = now;
       }
+      X.cadOk.push(!!r.acierto); X.cadPl.push(otro ? Math.max(0, p0 - otro.plumas) : 0); // F1 · cambio 3: qué entradas de la cadena entraron y cuánto quitaron
       if (cfg.alUsar) cfg.alUsar(f, k, r);
       return r;
     }
@@ -2117,9 +2246,13 @@ window.AVV18Combate = function (G) {
       if (!(otro.inv > 0)) return g;
       return { plumas: 0, empuje, mareo: Math.max(0, Math.min(g.mareo, otro.inv - ESCAPE)), forzar: true, dir: g.dir, combo: g.combo };
     }
+    // F1 · cambio 3 (combos que valen): un combo de 3 entradas (Revolú, Brinco Coquí) que entra entero (las dos primeras
+    // entradas y el remate) quita 2 plumas en total: el remate quita lo que falte, aunque la otra siga invulnerable por la
+    // primera entrada. Los de 2 entradas y los que no entran enteros, como siempre.
     function remate(f, k, cb, otro, q) {
-      const X = st(f), now = cfg.t();
-      X.cad.length = 0; X.rec = cb.rec; X.buf = ''; X.combo = cb; X.comboT = now; X.combos[cb.id] = (X.combos[cb.id] || 0) + 1;
+      const X = st(f), now = cfg.t(), n = q ? q.length - 1 : 0;
+      const entero = !!q && q.length >= 3 && X.cadOk.length >= n && X.cadOk.slice(-n).every(Boolean), ya = entero ? X.cadPl.slice(-n).reduce((a, b) => a + b, 0) : 0;
+      X.cad.length = X.cadOk.length = X.cadPl.length = 0; X.rec = cb.rec; X.buf = ''; X.combo = cb; X.comboT = now; X.combos[cb.id] = (X.combos[cb.id] || 0) + 1;
       f.energia = Math.min(f.energiaMax || 100, f.energia + (cb.energia || 0)); // el combo carga el poder
       // Hacia qué lado va la pose: el Cruzaíto y el Revolú siguen al ala con que empiezan (la izquierda es la pose; la derecha, su espejo)
       const lado = (cb.id === 'cruzaito' || cb.id === 'revolu') && q ? EXT[q[0]].lado : 1;
@@ -2134,7 +2267,8 @@ window.AVV18Combate = function (G) {
         if (!cfg.lucha() || f.mareo > 0) return; // la cortaron antes del golpe
         cfg.fxCombo(f, cb, 1);
         if (!otro || H.dist(f, otro) > cb.alcance) return;
-        const d = H.dirA(f, otro), g = conInv(otro, { plumas: 1, empuje: cb.empuje, mareo: cb.mareo, dir: { x: d.x, z: d.z }, combo: cb.id }, cb.empuje);
+        const d = H.dirA(f, otro), g = entero && ya < 2 ? { plumas: 2 - ya, empuje: cb.empuje, mareo: cb.mareo, dir: { x: d.x, z: d.z }, combo: cb.id, forzar: true, entero: true }
+          : conInv(otro, { plumas: 1, empuje: cb.empuje, mareo: cb.mareo, dir: { x: d.x, z: d.z }, combo: cb.id }, cb.empuje);
         if (cfg.golpear(f, otro, g)) { X.conecto = cfg.t(); X.remates = (X.remates || 0) + 1; }
       });
       const r = { ok: true, k, acierto: false, combo: cb.id };
@@ -2164,7 +2298,7 @@ window.AVV18Combate = function (G) {
   const EXT_TECLA = { alaIzq: 'u', alaDer: 'o', pataIzq: 'j', pataDer: 'l' }; // de fábrica (input.js las deja cambiar en «Teclas»)
   const teclaExt = a => { try { const m = G.input && G.input.mapa; if (m && m[a]) return m[a]; } catch (e) { /* sin mapa */ } return EXT_TECLA[a]; };
   const EXM = crearExt({
-    lucha: () => C.fase === 'lucha' && !combosAbierta(),
+    lucha: () => C.fase === 'lucha' && !combosAbierta() && !(C.pausa > 0),
     otro: f => (f === C.j ? C.r : C.j),
     golpear: (de, bl, g) => golpear(de, bl, g),
     despues: (s, fn) => C.timers.push({ t: s, fn }),
@@ -2305,8 +2439,14 @@ window.AVV18Combate = function (G) {
     });
     const viejo = document.getElementById('v18-duelo-ext'); if (viejo) viejo.remove();
     document.body.appendChild(pad);
+    // F1 · cambio 2: Brinco (el 2×2 de T38 no cambia): un botón propio junto al joystick, del lado de dentro
+    const bri = document.createElement('button'); bri.id = 'v18-duelo-brinco'; bri.type = 'button'; bri.hidden = true; bri.dataset.icon = 'jump'; bri.setAttribute('aria-label', TXT.brinco);
+    bri.innerHTML = `<span>${TXT.brinco}</span>`;
+    bri.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); bri.classList.add('pulsa'); setTimeout(() => bri.classList.remove('pulsa'), 120); brinco(); });
+    const vb = document.getElementById('v18-duelo-brinco'); if (vb) vb.remove();
+    document.body.appendChild(bri);
     el.addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('button[data-x]'); if (!b || !el.contains(b)) return; e.preventDefault(); e.stopPropagation(); usarExtJ(b.dataset.x); }, true);
-    hud.ext = { grupo, combosB: cb, gear, nom, carta, pad };
+    hud.ext = { grupo, combosB: cb, gear, nom, carta, pad, brinco: bri };
     if (G.botones && G.botones.aplicar) try { G.botones.aplicar(); } catch (e) { /* diseño propio */ }
     return hud.ext;
   }
@@ -2327,6 +2467,7 @@ window.AVV18Combate = function (G) {
     X.grupo.hidden = !on || TACTIL; X.combosB.hidden = !on || !!ent; X.gear.hidden = true; // T38: «Botones» sigue en la pausa (panel más bajo)
     if (!on && cartaC) abrirCombos(false);
     const verPad = on && TACTIL && !cartaC; X.pad.hidden = !verPad; document.body.classList.toggle('v18-ext-on', verPad);
+    const verB = verPad && !ent; if (X.brinco.hidden === verB) X.brinco.hidden = !verB; // en el entreno guiado no sale (no es uno de sus pasos)
     if (!on) { if (comboVis > 0) { comboVis = 0; X.nom.hidden = true; } return; }
     const f = C.j, E = f && f.ext;
     if (!TACTIL) for (const b of X.grupo.children) {
@@ -2344,7 +2485,11 @@ window.AVV18Combate = function (G) {
       if (r && r.width > 0) {
         const s = sitioPad(r, r.top, innerWidth, X.pad.offsetWidth || 160, X.pad.offsetHeight || 160);
         X.pad.style.left = s.left + 'px'; X.pad.style.top = s.top + 'px';
+        const st = document.getElementById('stick');
+        if (st && !st.classList.contains('flotando')) { const b = sitioBrinco(st.getBoundingClientRect(), { left: s.left, top: s.top, right: s.left + (X.pad.offsetWidth || 162), bottom: s.top + (X.pad.offsetHeight || 162) }, innerWidth, 64);
+          X.brinco.style.left = b.left + 'px'; X.brinco.style.top = b.top + 'px'; }
       }
+      const cdB = !!(f && f.brincoCd > 0); if (X.brinco._cd !== cdB) { X.brinco._cd = cdB; X.brinco.classList.toggle('cd', cdB); }
     }
   }
   // Dónde va el 2×2: encima de los botones grandes (#acts) y de la etiqueta de Impulso, pegado al borde de fuera (a la
@@ -2355,6 +2500,15 @@ window.AVV18Combate = function (G) {
     const zurdo = r.left + r.width / 2 < vw / 2;
     const left = zurdo ? Math.max(8, r.left) : Math.min(vw - 8 - w, r.right - w);
     return { left: Math.round(left), top: Math.round(Math.max(8, r.bottom - h)), zurdo };
+  }
+  // F1 · cambio 2: dónde va el Brinco táctil. Al lado de dentro del joystick (st), con su borde de abajo en el del joystick; si
+  // ahí pisaría el 2×2 (pad; en vertical no cabe), encima del joystick, centrado. w: lado del botón.
+  function sitioBrinco(st, pad, vw, w) {
+    const zurdo = st.left + st.width / 2 > vw / 2, G8 = 10;
+    let left = zurdo ? st.left - G8 - w : st.right + G8, top = st.bottom - w;
+    const pisa = left < pad.right + 6 && left + w > pad.left - 6 && top < pad.bottom && top + w > pad.top;
+    if (pisa || left < 8 || left + w > vw - 8) { left = st.left + st.width / 2 - w / 2; top = st.top - G8 - w; }
+    return { left: Math.round(left), top: Math.round(Math.max(8, top)) };
   }
   // Entreno (con la bandera): después del poder, dos combos (¡Abanicazo! y ¡Patita Sabrosa!)
   function alUsarExt(k, r) {
@@ -2370,7 +2524,7 @@ window.AVV18Combate = function (G) {
     const ch = C.ch; if (!ch) return;
     const r = C.r, root = ch.root, now = performance.now() / 1000, lucha = C.fase === 'lucha';
     const prep = lucha ? r.prep : '';
-    root.visible = true;
+    root.visible = !parpadea(r, now); // F1: parpadeo suave durante el respiro tras perder una pluma
     // Saltito de los quiebros (solo se ve: la posición de juego no sube)
     const salto = r.saltoDur > 0 ? 0.32 * Math.sin(Math.PI * Math.min(1, r.saltoT / r.saltoDur)) : 0;
     const fin = C.fase === 'fin' ? (C.resultado === 'win' ? 'pierde' : 'gana') : '';
@@ -2423,7 +2577,30 @@ window.AVV18Combate = function (G) {
   const sueloRival = (x, z) => G.terreno.height(x, z);
   // «!» a ~0,4 m sobre la coronilla (el hueso de la cabeza está en su base, ~0,8 m más abajo; du3: antes iba fijo a 2,25 m de los pies, muy por encima de la Campeona, y más aún agachada)
   const AGACHA_ALA = 0.1, AGACHA_SEMILLA = 0.03, AVISO_SOBRE = 0.9, cabezaV = new THREE.Vector3();
+  // F1 · cambio 2: segunda capa del aviso, en el suelo. Un arco que enseña el alcance del golpe (ancho para el ala y las
+  // extremidades; una línea para la semilla) y se va llenando hasta que sale. Dos mallas fijas por forma (borde tenue y
+  // relleno que crece con escala): sin geometrías ni materiales nuevos por cuadro.
+  let arco = null;
+  const ARCO_ALA = 1.1, ARCO_SEMILLA = 9; // medio ángulo del arco (rad) y largo de la línea (m)
+  function arcoSuelo() {
+    if (arco) return arco;
+    const g = new THREE.Group(); g.name = 'v18_aviso_arco'; g.visible = false; g.renderOrder = 4;
+    const mat = (c, o) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthWrite: false, side: THREE.DoubleSide });
+    const sector = new THREE.CircleGeometry(1, 28, -Math.PI / 2 - ARCO_ALA, ARCO_ALA * 2), linea = new THREE.PlaneGeometry(0.7, 1); linea.translate(0, -0.5, 0);
+    const malla = (geo, m) => { const x = new THREE.Mesh(geo, m); x.rotation.x = -Math.PI / 2; x.renderOrder = 4; x.frustumCulled = false; g.add(x); return x; };
+    arco = { g, fondoA: malla(sector, mat('#ff9d2e', 0.18)), llenoA: malla(sector, mat('#ff7a1a', 0.42)), fondoS: malla(linea, mat('#ffe066', 0.18)), llenoS: malla(linea, mat('#ffd21a', 0.45)) };
+    scene.add(g); return arco;
+  }
+  function ponerArco(prep, r) {
+    if (!prep) { if (arco) arco.g.visible = false; return; }
+    const A = arcoSuelo(), ala = prep !== 'semilla', k = r.prepDur > 0 ? Math.min(1, Math.max(0.05, 1 - r.prepT / r.prepDur)) : 1;
+    const alc = ala ? (prep.indexOf('ext:') === 0 ? ((EXT[prep.slice(4)] || {}).alcance || 2.3) : ALA_R()) : ARCO_SEMILLA;
+    A.fondoA.visible = A.llenoA.visible = ala; A.fondoS.visible = A.llenoS.visible = !ala;
+    if (ala) { A.fondoA.scale.set(alc, alc, 1); A.llenoA.scale.set(alc * k, alc * k, 1); } else { A.fondoS.scale.set(1, alc, 1); A.llenoS.scale.set(1, alc * k, 1); }
+    A.g.position.set(r.pos.x, ALTURA(r.pos) + 0.08, r.pos.z); A.g.rotation.y = r.yaw; A.g.visible = true;
+  }
   function ponerAviso(prep, now) {
+    if (C.r) ponerArco(prep, C.r);
     if (!prep && !marcaAviso) return;
     const m = avisoSprite(), r = C.r; m.visible = !!prep;
     if (!prep) return;
@@ -2485,7 +2662,7 @@ window.AVV18Combate = function (G) {
               vida: 0.8, radio: 0.9, golpe: { plumas: 1, empuje: 2.5, mareo: 0.4 } });
           }
         }
-        scene.remove(b.m); C.balas.splice(i, 1); if (C.fase !== 'lucha') return;
+        scene.remove(b.m); C.balas.splice(i, 1); if (C.fase !== 'lucha' || C.pausa > 0) return; // F1: o empezó el respiro entre asaltos
       }
     }
   }
@@ -2556,18 +2733,26 @@ window.AVV18Combate = function (G) {
     }
     if (comboVis > 0) { comboVis -= dt; if (comboVis <= 0 && hud && hud.ext) hud.ext.nom.hidden = true; }
     if (C.fase === 'lucha' && cartaC) { pintarExt(); if (C.ch) dibujarRival(dt, 0); return; } // la carta «Combos» abierta: el duelo espera (la Campeona respira)
+    if (C.fase === 'lucha' || C.fase === 'cuenta') C.tTotal = (C.tTotal || 0) + dt; // F1 · cambio 3: duración real (cuenta y respiros incluidos)
+    if (C.fase === 'lucha' && C.pausa > 0) { // F1 · cambio 3: respiro entre asaltos (nadie ataca ni se mueve; la que perdió se sacude)
+      M.vx = M.vz = 0; for (const f of [C.j, C.r]) f.mareo = Math.max(0, (f.mareo || 0) - dt);
+      C.pausa -= dt; if (C.pausa <= 0) nuevoAsalto();
+      pintarReloj(); pasoOndas(dt); dibujarRival(dt, moverRival(dt)); animaFresca = 1.5; return;
+    }
     if (C.fase === 'lucha') {
       C.tLucha = (C.tLucha || 0) + dt;
+      if (!ent) { C.tAsalto = (C.tAsalto || 0) + dt; if (C.tAsalto >= ASALTO_TOPE) topeAsalto(); if (C.fase !== 'lucha' || C.pausa > 0) return; }
       H.paso(C.j, dt); H.paso(C.r, dt); if (c2On()) { EXM.paso(C.j, dt); EXM.paso(C.r, dt); } pasoNuevos(C.j, dt); pasoNuevos(C.r, dt); pasoTrampas(dt);
-      for (let i = C.timers.length - 1; i >= 0; i--) { const t = C.timers[i]; t.t -= dt; if (t.t <= 0) { C.timers.splice(i, 1); t.fn(); if (C.fase !== 'lucha') break; } }
-      if (C.fase === 'lucha' && !ent) pasoIA(dt); // en el entreno la Campeona espera quieta
-      if (C.fase === 'lucha') pasoBalas(dt);
+      for (let i = C.timers.length - 1; i >= 0; i--) { const t = C.timers[i]; t.t -= dt; if (t.t <= 0) { C.timers.splice(i, 1); t.fn(); if (C.fase !== 'lucha' || C.pausa > 0) break; } }
+      if (C.fase === 'lucha' && !ent && !(C.pausa > 0)) pasoIA(dt); // en el entreno la Campeona espera quieta
+      if (C.fase === 'lucha' && !(C.pausa > 0)) pasoBalas(dt);
       pasoEscudo(C.j, dt); pasoEscudo(C.r, dt);
       pasoJugador(dt);
       if (C.fase === 'lucha' && Math.hypot(S.pos.x - sitio.x, S.pos.z - sitio.z) > SALIDA_R) { salir(TXT.lejos); return; }
       if (C.fase === 'lucha' && ent) pasoEntreno(dt);
       else if (C.fase === 'lucha') pasoPistas(dt);
       if (Math.random() < dt * 4) pintar(); else { pintarChips(); if (c2On()) pintarExt(); }
+      pintarReloj();
     } else if (C.fase === 'fin') {
       for (const f of [C.j, C.r]) if (f && f.finMareo > 0) { f.finMareo = Math.max(0, f.finMareo - dt); f.mareo = f.finMareo; }
       if (C.j && C.j.finMareo > 0) { M.vx *= 0.8; M.vz *= 0.8; if (azar() < dt * 5) fx('gold', S.pos.x, S.pos.y + 1.8, S.pos.z); }
@@ -2643,6 +2828,7 @@ window.AVV18Combate = function (G) {
   async function test() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     salir(); // la prueba empieza con la rival esperando, aunque hubiera un duelo abierto
+    asaltosDef = 1; // F1 · cambio 3: las pruebas de siempre miran un asalto; las de los asaltos los piden (iniciar({ asaltos: 3 }))
     const c2Prueba0 = G.combate2; G.combate2 = false; // lo de siempre se prueba sin Combate 2.0 (para todos; ?combate2=0 lo apaga); su parte va al final
     const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, fac0 = S.facing, fly0 = M.flying, inv0 = Object.assign({}, S.inv);
     const P = G.v18, crudo = (() => { try { return localStorage.getItem(P.clave()); } catch (e) { return null; } })();
@@ -2929,7 +3115,7 @@ window.AVV18Combate = function (G) {
         const pista0 = pista.t;
         C.j.inv = 0; C.j.plumas = PLUMAS - 1; ocultarPista(); paso(0.05); const pg = hud.q('pistaTxt').textContent;
         check('Pistas: «¡Cerca! Aletazo (E)», «Lejos: semilla (F)», «¡Poder listo! (G)» y, al recibir el primer golpe, cómo esquivar; una cada 4,5 s',
-          pc === (TACTIL ? TXT.pCercaT : TXT.pCerca) && pl === (TACTIL ? TXT.pLejosT : TXT.pLejos) && pp === (TACTIL ? TXT.pPoderT : TXT.pPoder) && pista0 >= 4 && pg === TXT.dGolpe && (P.mundo('pistas_duelo') & PISTA.defensa),
+          pc === (TACTIL ? TXT.pCercaT : TXT.pCerca) && pl === (TACTIL ? TXT.pLejosT : TXT.pLejos) && pp === (TACTIL ? TXT.pPoderT : TXT.pPoder) && pista0 >= 4 && pg === (TACTIL ? TXT.dGolpeT : TXT.dGolpe) && (P.mundo('pistas_duelo') & PISTA.defensa),
           JSON.stringify({ pc, pl, pp, pg }));
         pista.dom.cerca = 0; for (let i = 0; i < 2; i++) { C.j.cd = {}; C.r.inv = 0; C.r.escudo = 0; quieta(1.5); usar(C.j, 'golpe_ala'); }
         C.r.mareo = 0; C.j.energia = 50; const pc2 = pistaTras(() => { quieta(1.5); C.j.cd = {}; C.j.energia = 50; });
@@ -3092,18 +3278,18 @@ window.AVV18Combate = function (G) {
         }
         const aunNo = C.j.plumas === PLUMAS && C.r.prep === 'golpe_ala', vis = !!(C.marcaAviso && C.marcaAviso.visible), ag = !C.ch || C.ch.agachada > 0.04, alas = !C.ch || C.ch.wingMode === 'preflare';
         correr(0.4, fija);
-        check('Telegrafía: el golpe de ala se anuncia ~0,45 s (agachada, alas abiertas, «!») y luego llega', avisa && aunNo && vis && ag && alas && C.j.plumas === PLUMAS - 1 && !C.marcaAviso.visible,
+        check('Telegrafía: el golpe de ala se anuncia ~0,6 s (agachada, alas abiertas, «!») y luego llega', avisa && aunNo && vis && ag && alas && C.j.plumas === PLUMAS - 1 && !C.marcaAviso.visible,
           JSON.stringify({ avisa, aunNo, vis, ag, alas, plj: C.j.plumas }));
         prepara(); paso(0.05); correr(0.2, fija); S.pos.x = C.r.pos.x - 4.5; correr(0.5, fija);
         check('Telegrafía: si te apartas al ver el «!», el golpe falla', C.j.plumas === PLUMAS, C.j.plumas);
-        prepara(); paso(0.05); C.j.cd.golpe_ala = 0; const pg = usar(C.j, 'golpe_ala'); const sigue = C.r.prep === 'golpe_ala' && C.r.plumas === PLUMAS - 1; correr(0.6, fija);
+        prepara(); paso(0.05); C.j.cd.golpe_ala = 0; const pg = usar(C.j, 'golpe_ala'); const sigue = C.r.prep === 'golpe_ala' && C.r.plumas === PLUMAS - 1; correr(0.8, fija); // F1: el aviso de CLASICA pasa de 0,45 a 0,6 s
         check('Telegrafía: pegarle mientras avisa le quita una pluma pero el golpe sale igual (hay que apartarse o escudarse)', pg.acierto && sigue && C.j.plumas === PLUMAS - 1, JSON.stringify({ acierto: pg.acierto, sigue, plj: C.j.plumas }));
         prepara(); C.r.pos.x = S.pos.x + 8; C.r.golpeT = 99; C.r.tiroT = 0; C.r.energia = 100; paso(0.05);
         const apunta = C.r.prep === 'semilla' && !C.balas.some(b => b.de === C.r);
         correr(0.15, () => { M.vx = M.vz = 0; C.r.poderT = 99; });
         const ladea = !C.ch || C.ch.root.rotation.z > 0.05, sinBala = !C.balas.some(b => b.de === C.r);
-        correr(0.25, () => { M.vx = M.vz = 0; C.r.poderT = 99; });
-        check('Telegrafía: antes de la semilla apunta ~0,3 s (ladea la cabeza, «!» pequeño) y luego tira', apunta && ladea && sinBala && C.balas.some(b => b.de === C.r), JSON.stringify({ apunta, ladea, sinBala }));
+        correr(0.35, () => { M.vx = M.vz = 0; C.r.poderT = 99; }); // F1: el aviso de la semilla pasa de 0,3 a 0,45 s
+        check('Telegrafía: antes de la semilla apunta ~0,45 s (ladea la cabeza, «!» pequeño) y luego tira', apunta && ladea && sinBala && C.balas.some(b => b.de === C.r), JSON.stringify({ apunta, ladea, sinBala }));
         prepara(); C.r.golpeT = 99; C.r.pensar = 99; saltoAtras(C.r, H.dirA(C.r, C.j), 0.3); paso(0.05); paso(0.05);
         const yR = C.ch ? C.ch.root.position.y - C.r.pos.y : 1, enAire = !C.ch || C.ch.airborne;
         check('Movimiento: los quiebros y saltos atrás se ven como un saltito con aleteo', yR > 0.1 && enAire, JSON.stringify({ yR, enAire }));
@@ -3530,6 +3716,109 @@ window.AVV18Combate = function (G) {
       const dA = dps(false), dB = dps(true), rel = dB / dA - 1;
       check('C2 · equilibrio: con extremidades y combos, la mejor jugada quita plumas al mismo ritmo (±10 %) que con lo de siempre',
         Math.abs(rel) <= 0.1, JSON.stringify({ siempre: +dA.toFixed(3), conCombos: +dB.toFixed(3), cambio: Math.round(rel * 1000) / 10 + ' %' }));
+      // ---------- F1 · tanda B (16-nov): cambio 2 «leer, esquivar y castigar» y cambio 3 «ritmo» ----------
+      {
+        // 2a. Aviso por capas: de 0,7 s (Aprendiz) a 0,45 s (Maestro), nunca menos de 0,45 s (semilla y extremidades incluidas)
+        const av = DIFICULTAD.map(d => d.aviso), ap = DIFICULTAD.map(d => d.apunta), ex = Object.values(EXT_IA).map(x => x.aviso);
+        const r0 = { prep: '', prepT: 0, prepDur: 0, pos: C.r.pos }; preparar(r0, 'golpe_ala', 0.2); const minPrep = r0.prepDur;
+        check('F1 · aviso: dura de 0,7 s (Aprendiz) a 0,45 s (Maestro) y nunca menos de 0,45 s (ala, semilla, extremidades y CLASICA)',
+          av[0] === 0.7 && av[3] === 0.45 && av.every((x, i) => !i || x <= av[i - 1]) && [...av, ...ap, ...ex, AVISO_ALA, AVISO_SEMILLA].every(x => x >= AVISO_MIN) && minPrep >= AVISO_MIN, JSON.stringify({ av, ap, ex, minPrep }));
+        // pose (la de siempre) + arco en el suelo que crece con el aviso + sonido «aviso»
+        G.combate2 = true; iniciar({ sinCuenta: true, especie: 'vittata', dificultad: DIFICULTAD[0], sinExtIA: true }); quieta2(1.6);
+        const A = G.audio, play0 = A.play, oidos = []; A.play = function (n) { oidos.push(n); return play0.apply(this, arguments); };
+        let arcoK = [], vista = { ala: false, sem: false };
+        try {
+          const r = C.r; r.pensar = 0; r.golpeT = 0; r.esquivaT = 99; r.poderT = 99; r.tiroT = 99; C.j.inv = 9;
+          for (let t = 0; t < 1.2; t += 1 / 30) { paso(1 / 30); if (arco && arco.g.visible && arco.llenoA.visible) { vista.ala = true; arcoK.push(+(arco.llenoA.scale.x / arco.fondoA.scale.x).toFixed(2)); } if (!r.prep && arcoK.length) break; }
+          const oculto = !arco || !arco.g.visible;
+          r.pos.x = S.pos.x + 7; r.prep = ''; preparar(r, 'semilla', 0.5); r.prepT = 0.25; ponerAviso(r.prep, 0); vista.sem = arco.llenoS.visible && !arco.llenoA.visible && Math.abs(arco.llenoS.scale.y - ARCO_SEMILLA * 0.5) < 0.01;
+          r.prep = ''; ponerAviso('', 0);
+          check('F1 · aviso por capas: el «!» y la pose de siempre, un arco en el suelo que se llena hasta que sale el golpe (ancho para el ala, una línea para la semilla) y el sonido «aviso»',
+            vista.ala && vista.sem && oculto && arcoK.length >= 10 && arcoK[arcoK.length - 1] > arcoK[0] + 0.5 && oidos.includes('aviso') && arco.fondoA.scale.x >= ALA_R() - 0.01 && !arco.g.visible,
+            JSON.stringify({ vista, oculto, n: arcoK.length, k0: arcoK[0], k1: arcoK[arcoK.length - 1], sonidos: oidos.slice(0, 6) }));
+        } finally { A.play = play0; C.j.inv = 0; }
+        // 2b. Brinco: Espacio (Saltar) durante el duelo; 0,25 s sin daño y 0,9 s de recarga
+        iniciar({ sinCuenta: true, especie: 'vittata', dificultad: DIFICULTAD[0], sinExtIA: true }); quieta2(1.4);
+        const vy0 = S.vy, p0 = { x: S.pos.x, z: S.pos.z }, evB = tecla(' '); tecla(' ', 'keyup');
+        const tras = { brinco: C.j.brinco, cd: C.j.brincoCd, vy: S.vy, saltaFisica: S.vy > (vy0 || 0) + 0.5 };
+        paso(0.1); const mov = Math.hypot(S.pos.x - p0.x, S.pos.z - p0.z), otro = brinco();
+        check('F1 · Brinco: Espacio (Saltar) da un brinco de lado (no el salto de siempre) con 0,25 s sin daño y 0,9 s de recarga (no se encadena)',
+          Math.abs(tras.brinco - BRINCO.dura) < 1e-6 && Math.abs(tras.cd - BRINCO.cd) < 1e-6 && !tras.saltaFisica && mov > 0.3 && !otro.ok && otro.motivo === 'espera', JSON.stringify({ tras, mov: +mov.toFixed(2), otro }));
+        // machacar Espacio 3 s: como mucho un brinco cada 0,9 s
+        { quieta2(1.4); C.j.brincoCd = 0; const n0 = C.stats.brincos || 0; for (let t = 0; t < 3; t += 0.05) { brinco(); paso(0.05); quieta2(1.4); }
+          const n = (C.stats.brincos || 0) - n0; check('F1 · Brinco: machacarlo 3 s da como mucho 4 brincos (recarga de 0,9 s)', n >= 3 && n <= 4, n); }
+        // esquive a tiempo: su aletazo llega dentro del Brinco → no quita pluma, «¡Esquivado!», ella queda abierta 0,8 s y cargas 15 de energía
+        { quieta2(1.4); C.j.brincoCd = 0; C.j.inv = 0; C.j.energia = 50; C.r.cd = {}; C.r.mareo = 0; C.r.inv = 0; const pl = C.j.plumas;
+          brinco(); C.r.pos.x = S.pos.x + 1.2; C.r.pos.z = S.pos.z; const u = usar(C.r, 'golpe_ala');
+          const tras2 = { pl: C.j.plumas, ab: C.r.abierta, en: Math.round(C.j.energia), txt: hud.q('centro').textContent };
+          // abierta: 0,8 s sin atacar ni defenderse (con todo listo y la jugadora encima), luego vuelve a atacar
+          C.r.pensar = 0; C.r.golpeT = 0; C.r.esquivaT = 0; let prep08 = false, prepDespues = false;
+          for (let t = 0; t < 0.75; t += 0.05) { pasoIA(0.05); if (C.r.prep) prep08 = true; }
+          for (let t = 0; t < 0.5; t += 0.05) { pasoIA(0.05); if (C.r.prep) prepDespues = true; }
+          check('F1 · esquive a tiempo: el golpe dentro del Brinco no quita pluma, sale «¡Esquivado!», la rival queda abierta 0,8 s (ni ataca) y cargas 15 de energía',
+            u.ok && tras2.pl === pl && Math.abs(tras2.ab - BRINCO.abierta) < 1e-6 && tras2.en === 65 && tras2.txt === TXT.esquivado && !prep08 && prepDespues, JSON.stringify({ tras2, prep08, prepDespues })); }
+        // su aletazo falla justo después del Brinco (te apartaste) también cuenta; sin Brinco, no
+        { quieta2(1.4); C.j.brincoCd = 0; C.r.abierta = 0; C.r.cd = {}; brinco(); for (let t = 0; t < 0.3; t += 0.05) paso(0.05); C.r.pos.x = S.pos.x + ALA_R() + 0.4; C.r.pos.z = S.pos.z; C.r.cd = {}; usar(C.r, 'golpe_ala'); const conB = C.r.abierta > 0;
+          C.r.abierta = 0; C.j.brincoIni = -9; C.r.cd = {}; usar(C.r, 'golpe_ala'); const sinB = C.r.abierta > 0;
+          check('F1 · esquive a tiempo también si su aletazo falla justo después de tu Brinco (sin Brinco, solo el «¡Esquivado!» de T41)', conB && !sinB, JSON.stringify({ conB, sinB })); }
+        // chip con su tecla en el escritorio; en táctil, botón propio ≥ 44 px junto al joystick (la maqueta táctil lo mide)
+        pintar(); const chB = hud.el.querySelector('.vd-chip[data-a="brinco"]'), hx = hudExt();
+        const bs = hx && hx.brinco && getComputedStyle(hx.brinco);
+        check('F1 · Brinco a la vista: chip «Brinco · Espacio» en el escritorio y botón táctil propio de ≥ 44 px (el 2×2 de T38 sigue con 4)',
+          (TACTIL || (!!chB && chB.textContent.indexOf(TXT.brinco) >= 0 && chB.querySelector('kbd').textContent === TXT.teclaEsp)) && !!bs && parseFloat(bs.width) >= 44 && parseFloat(bs.height) >= 44 && hx.pad.querySelectorAll('button').length === 4,
+          JSON.stringify({ chip: chB && chB.textContent, bw: bs && bs.width }));
+        salir();
+        // 3a. Combos que valen: uno de 3 entradas entero quita 2 plumas; uno de 2, 1; uno de 3 que no entra entero, 1
+        const combo = (ks, d1) => { iniciar({ sinCuenta: true, especie: 'vittata', sinExtIA: true }); fresca(); quieta2(); ver(0.3, () => quieta2());
+          ks.forEach((k, i) => { if (!i && d1) C.r.pos.x = S.pos.x + d1; usarExtJ(k); ver(0.25, () => quieta2()); }); ver(0.6, () => quieta2()); return { q: C.r.plumasMax - C.r.plumas, c: Object.keys((C.j.ext && C.j.ext.combos) || {}).join(',') }; };
+        const rv = combo(['alaIzq', 'alaIzq', 'pataIzq']), cq = combo(['pataDer', 'pataDer', 'alaDer']), ab = combo(['alaIzq', 'alaDer']), fallo = combo(['alaIzq', 'alaIzq', 'pataIzq'], 3.2);
+        check('F1 · combos que valen: ¡Revolú! y ¡Brinco Coquí! enteros quitan 2 plumas; ¡Abanicazo! 1; un combo de 3 cuya primera entrada falla, 1',
+          rv.q === 2 && rv.c === 'revolu' && cq.q === 2 && cq.c === 'coqui' && ab.q === 1 && fallo.q <= 1, JSON.stringify({ rv, cq, ab, fallo }));
+        salir();
+        // 3b. Mejor de 3 asaltos de 5 plumas: respiro de 2 s, «¡Asalto 2!», plumas llenas y cada una a su sitio; win una vez
+        evs.length = 0; toasts.length = 0;
+        iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 3 }); pintar();
+        const golpeFinal = (aRival) => { if (aRival) { C.r.plumas = 1; C.r.escudo = 0; C.r.inv = 0; C.r.hojas = 0; quieta2(1.2); C.j.cd.golpe_ala = 0; C.j.mareo = 0; usar(C.j, 'golpe_ala'); }
+          else { C.j.plumas = 1; C.j.inv = 0; C.j.escudo = 0; C.j.brinco = 0; quieta2(1.2); C.r.cd = {}; C.r.mareo = 0; C.r.prep = ''; usar(C.r, 'golpe_ala'); } };
+        golpeFinal(true);
+        const a1 = { fase: C.fase, gj: C.ganJ, pausa: C.pausa > 0, txt: hud.q('centro').textContent, bloq: usar(C.j, 'golpe_ala').motivo, win: evs.filter(e => e.tipo === 'win').length, asalto: evs.filter(e => e.tipo === 'asalto').length, dots: hud.q('asj').querySelectorAll('i.on').length };
+        for (let t = 0; t < 2.2; t += 0.05) paso(0.05);
+        const a2 = { pausa: C.pausa, plj: C.j.plumas, plr: C.r.plumas, dj: +Math.hypot(S.pos.x - (sitio.x - 3.5), S.pos.z - sitio.z).toFixed(2), dr: +Math.hypot(C.r.pos.x - (sitio.x + 3.5), C.r.pos.z - sitio.z).toFixed(2), asalto: C.asalto };
+        check('F1 · asaltos: al quitarle sus 5 plumas gana el asalto (no el duelo): «¡Asalto 2!», 2 s de respiro sin ataques, sin win; luego plumas llenas y cada una a su sitio',
+          a1.fase === 'lucha' && a1.gj === 1 && a1.pausa && a1.txt === TXT.asalto2 && a1.bloq === 'fase' && a1.win === 0 && a1.asalto === 1 && a1.dots === 1 && a2.pausa === 0 && a2.plj === 5 && a2.plr === 5 && a2.dj < 0.3 && a2.dr < 0.6 && a2.asalto === 2,
+          JSON.stringify({ a1, a2 }));
+        golpeFinal(false); const a3 = { gr: C.ganR, txt: hud.q('centro').textContent, fase: C.fase }; for (let t = 0; t < 2.2; t += 0.05) paso(0.05);
+        const m0 = S.inv.madera || 0; golpeFinal(true);
+        const wins = evs.filter(e => e.tipo === 'win'), ev = wins[0] || {};
+        check('F1 · asaltos: 1–1 → «¡Asalto final!»; quien gana 2 gana el duelo: win una sola vez, con los asaltos [2, 1] y las plumas quitadas de todo el duelo',
+          a3.gr === 1 && a3.txt === TXT.asalto3 && a3.fase === 'lucha' && C.fase === 'fin' && C.resultado === 'win' && wins.length === 1 && !evs.some(e => e.tipo === 'loss') && ev.asaltos && ev.asaltos.join() === '2,1' && ev.quitadas === 2 && (S.inv.madera || 0) - m0 <= 2,
+          JSON.stringify({ a3, n: wins.length, asaltos: ev.asaltos, quitadas: ev.quitadas, fase: C.fase }));
+        await new Promise(r => setTimeout(r, FIN_PAUSA + 50)); otraVez(); const ov = { gj: C.ganJ, gr: C.ganR, asalto: C.asalto, n: C.nAsaltos, fase: C.fase };
+        check('F1 · asaltos: «Otra vez» empieza de nuevo al mejor de 3 (0–0, asalto 1)', ov.gj === 0 && ov.gr === 0 && ov.asalto === 1 && ov.n === 3, JSON.stringify(ov));
+        salir();
+        // 3b'. Respiro tras la pluma (solo al mejor de 3): la golpeada queda RITMO.respiro s más sin recibir y parpadea suave
+        { iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 3 }); quieta2(1.2); C.r.escudo = 0; C.r.inv = 0; C.r.hojas = 0; C.j.cd.golpe_ala = 0; usar(C.j, 'golpe_ala');
+          const inv3 = C.r.inv; let vistos = 0, ocultos = 0; C.r.mareo = 0; for (let k = 0; k < 24; k++) { if (parpadea(C.r, k / 24)) ocultos++; else vistos++; }
+          iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 1 }); quieta2(1.2); C.r.escudo = 0; C.r.inv = 0; C.r.hojas = 0; C.j.cd.golpe_ala = 0; usar(C.j, 'golpe_ala'); const inv1 = C.r.inv;
+          check('F1 · respiro: al mejor de 3, tras perder una pluma la golpeada queda ~' + RITMO.respiro + ' s más sin recibir y parpadea suave (en un asalto, como siempre)',
+            Math.abs(inv3 - inv1 - RITMO.respiro) < 0.01 && ocultos > 0 && vistos > ocultos, JSON.stringify({ inv3: +inv3.toFixed(2), inv1: +inv1.toFixed(2), vistos, ocultos })); salir(); }
+        // 3c. Tope de 45 s: gana el asalto quien tenga más plumas; con empate, la próxima pluma decide; en el modo relajado, sin tope
+        iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 3 }); quieta2(6); C.j.plumas = 4; C.r.plumas = 2; C.tAsalto = ASALTO_TOPE - 0.02; paso(0.05);
+        const t1 = { gj: C.ganJ, pausa: C.pausa > 0, txt: hud.q('centro').textContent };
+        iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 3 }); quieta2(6); C.j.plumas = 3; C.r.plumas = 3; C.tAsalto = ASALTO_TOPE - 0.02; paso(0.05);
+        const t2 = { emp: C.empate, gj: C.ganJ, gr: C.ganR, txt: hud.q('centro').textContent }; C.r.escudo = 0; C.r.inv = 0; quieta2(1.2); C.j.cd.golpe_ala = 0; usar(C.j, 'golpe_ala'); t2.tras = C.ganJ;
+        const acc = G.accesibilidad, rel0 = acc && acc.relajado; let t3 = null;
+        if (acc) { acc.relajado = () => true; try { iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 3 }); quieta2(6); C.j.plumas = 4; C.r.plumas = 2; C.tAsalto = ASALTO_TOPE + 5; paso(0.05); t3 = { gj: C.ganJ, pausa: C.pausa }; } finally { acc.relajado = rel0; } }
+        check('F1 · tope de 45 s por asalto: gana quien tenga más plumas; con empate, la próxima pluma decide; en el modo relajado no hay tope',
+          t1.gj === 1 && t1.pausa && t2.emp && t2.gj === 0 && t2.gr === 0 && t2.txt === TXT.empate && t2.tras === 1 && (!acc || (t3.gj === 0 && !(t3.pausa > 0))), JSON.stringify({ t1, t2, t3 }));
+        // reloj del asalto y puntos de asaltos a la vista (no en el entreno)
+        iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 3 }); quieta2(6); C.tAsalto = 10.2; pintarReloj(); const rl = hud.q('reloj'), rlv = !rl.hidden && rl.getBoundingClientRect().width > 0, rlt = hud.q('relojN').textContent;
+        iniciar({ entreno: true, especie: 'vittata' }); pintarReloj(); const rlEnt = hud.q('reloj').hidden; salir();
+        check('F1 · reloj del asalto (cuenta atrás desde 45) y puntos de asaltos ganados a la vista; en el entreno no sale', rlv && rlt === '35' && rlEnt, JSON.stringify({ rlv, rlt, rlEnt }));
+        // 2c + 3d. Equilibrio (leer y dar un Brinco frente a no esquivar) y ritmo (60–100 s por duelo): con la jugadora «media» de
+        // AV.v18EvolucionTest (36 duelos por etapa, al mejor de 3), que es la batería de equilibrio
+        salir();
+      }
       // 8b. Auditoría 10-nov: «Salir» a la vista durante la pelea y Esc sale del duelo (no solo abre la pausa)
       iniciar({ sinCuenta: true, especie: 'vittata', sinExtIA: true }); pintar();
       const sb = hud.q('salirB'), verSalir = !!sb && !sb.hidden && sb.getBoundingClientRect().width > 0;
@@ -3614,6 +3903,7 @@ window.AVV18Combate = function (G) {
     Object.assign(S.inv, inv0); try { if (G.objetos && G.objetos.renderInv) G.objetos.renderInv(); } catch (e) { /* HUD */ }
     try { if (crudo == null) localStorage.removeItem(P.clave()); else localStorage.setItem(P.clave(), crudo); } catch (e) { /* sin almacenamiento */ }
     P.recargar(); Object.assign(pista.dom, dom0);
+    asaltosDef = ASALTOS;
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
   // Maqueta táctil (pasada 14-nov, sobre T38): un iframe del tamaño del móvil con las hojas reales, el HUD del duelo en táctil, los
@@ -3662,11 +3952,11 @@ window.AVV18Combate = function (G) {
       fr.style.cssText = `position:fixed;left:-10000px;top:0;width:${vw}px;height:${vh}px;border:0`;
       fr.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${css}` +
         '<style>#acts{display:grid!important}#stick{display:block!important}#toast{display:block!important}</style></head>' + // en el escritorio ui.css los esconde
-        `<body class="v18-duelo-on v18-duelo-tt">${html('sys')}${html('minimapa')}${html('toast')}${html('stick')}${html('acts')}${hud.el.outerHTML}${hud.ext.pad.outerHTML}</body></html>`;
+        `<body class="v18-duelo-on v18-duelo-tt">${html('sys')}${html('minimapa')}${html('toast')}${html('stick')}${html('acts')}${hud.el.outerHTML}${hud.ext.pad.outerHTML}${hud.ext.brinco.outerHTML}</body></html>`;
       document.body.appendChild(fr);
       try {
         await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 15000); }); // con la máquina cargada el srcdoc tarda más de 5 s
-        const md = fr.contentDocument, mw = fr.contentWindow, el = md && md.getElementById('v18-duelo'), pad = md && md.getElementById('v18-duelo-ext');
+        const md = fr.contentDocument, mw = fr.contentWindow, el = md && md.getElementById('v18-duelo'), pad = md && md.getElementById('v18-duelo-ext'), bri = md && md.getElementById('v18-duelo-brinco');
         if (!el || !pad || !md.getElementById('acts')) { mal.push(vw + '×' + vh + ': la maqueta no cargó'); continue; }
         await new Promise(r => setTimeout(r, 300));
         el.hidden = false; el.classList.add('tactil');
@@ -3683,10 +3973,11 @@ window.AVV18Combate = function (G) {
           pad.hidden = !E.pad; md.body.classList.toggle('v18-ext-on', !!E.pad); md.body.classList.toggle('v18-duelo-fin-t', !!E.fin);
           const acts = md.getElementById('acts').getBoundingClientRect();
           const s = sitioPad(acts, acts.top, vw, pad.offsetWidth || 162, pad.offsetHeight || 162); pad.style.left = s.left + 'px'; pad.style.top = s.top + 'px';
+          if (bri) { bri.hidden = !E.pad || !!E.ent; const b = sitioBrinco(md.getElementById('stick').getBoundingClientRect(), { left: s.left, top: s.top, right: s.left + (pad.offsetWidth || 162), bottom: s.top + (pad.offsetHeight || 162) }, vw, 64); bri.style.left = b.left + 'px'; bri.style.top = b.top + 'px'; } // F1: Brinco
           bajoPx = 0; ponerBajo(el); bajoPx = 0;
           const ver = e => { if (!e || e.closest('[hidden]')) return false; const cs = mw.getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') return false; const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
           const nombre = e => (e.id ? '#' + e.id : '') + (e.dataset.a || e.dataset.x || e.className.split(' ')[0] || '');
-          const botones = [...el.querySelectorAll('button'), ...pad.querySelectorAll('button'), ...md.querySelectorAll('#acts > button, #b-diary, #b-menu')].filter(ver);
+          const botones = [...el.querySelectorAll('button'), ...pad.querySelectorAll('button'), ...(bri ? [bri] : []), ...md.querySelectorAll('#acts > button, #b-diary, #b-menu')].filter(ver);
           for (const b of botones) {
             const r = b.getBoundingClientRect();
             if (r.width < 44 || r.height < 44) mal.push(`${tag}: ${nombre(b)} mide ${Math.round(r.width)}×${Math.round(r.height)}`);
@@ -3725,13 +4016,15 @@ window.AVV18Combate = function (G) {
   function retirar() {
     try { salir(); } catch (e) { /* ya fuera */ }
     retirada = true; const i = G.interaccion.list.indexOf(it); if (i >= 0) G.interaccion.list.splice(i, 1);
-    scene.remove(marca); if (marcaAviso) scene.remove(marcaAviso); const quitar = ch => { if (ch && ch.root) scene.remove(ch.root); };
+    scene.remove(marca); if (marcaAviso) scene.remove(marcaAviso); if (arco) scene.remove(arco.g); const quitar = ch => { if (ch && ch.root) scene.remove(ch.root); };
     quitar(C.ch); Promise.resolve(C.listo).then(quitar, () => {});
     if (hud && hud.el) hud.el.remove();
     if (hud && hud.tags) hud.tags.remove();
     if (hud && hud.ext && hud.ext.pad) hud.ext.pad.remove();
+    if (hud && hud.ext && hud.ext.brinco) hud.ext.brinco.remove();
   }
   const tarjeta = { maqueta: maquetaTarjeta, abrir: abrirTarjeta, cerrar: cerrarTarjeta, abierta: tarjetaAbierta, modo: () => (tarjetaAbierta() ? tj.modo : ''), html: htmlTarjeta, css: cssTarjeta, el: () => tj && tj.el };
-  G.v18combate = { feel, sitio, camaraDos, iniciar, tarjeta, salir, otraVez, usar, paso, premioRopa, LENTES, vida: vidaApi, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
+  const asaltosPrueba = n => { asaltosDef = n || ASALTOS; return asaltosDef; }; // pruebas de otros módulos (evolucion.js): duelos de un asalto
+  G.v18combate = { feel, sitio, camaraDos, brinco, BRINCO, RITMO, ASALTOS, ASALTO_TOPE, asaltosPrueba, iniciar, tarjeta, salir, otraVez, usar, paso, premioRopa, LENTES, vida: vidaApi, estado: () => C, entreno: () => ent, saltarEntreno, mapa, test, retirar, DIFICULTAD, CLASICA, dificultadDe };
   return G.v18combate;
 };

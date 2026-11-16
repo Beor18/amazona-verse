@@ -3086,5 +3086,14 @@ window.AV_EN = {
  "Salir de la escuela de vuelo": "Exit the flight school",
  "Bajar (mantener)": "Go down (hold)",
  "Lecciones: {}/5": "Lessons: {}/5",
- "carrera de nubes": "cloud race"
+ "carrera de nubes": "cloud race",
+ // F1 · tanda B (duelo: Brinco —nombre provisional— y asaltos)
+ "Brinco": "Dodge",
+ "brinco": "dodge",
+ "Consejo: cuando veas «!» sobre la Campeona, ¡da un Brinco!": "Tip: when you see «!» over the Champion, dodge!",
+ "¡Te dieron! Cuando veas «!», da un Brinco (Espacio).": "You got hit! When you see «!», dodge (Space).",
+ "¡Te dieron! Cuando veas «!», toca Brinco.": "You got hit! When you see «!», tap Dodge.",
+ "¡Asalto 2!": "Round 2!",
+ "¡Asalto final!": "Final round!",
+ "¡Empate! La próxima pluma gana.": "Tie! The next feather wins."
 };
