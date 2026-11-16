@@ -295,6 +295,16 @@ AVE.module('diario', function (G) {
         check('F4-11: el botón «Diario n/13» salta (no con «Reducir movimiento» del menú) y muestra el número; al 13/13, pétalos y «panel_final» una vez, después del hallazgo o de la ropa; con G.quiet, nada',
           numero && (b.hidden || salto === 1) && saltoMenu === 0 && sinFin && fin.antes === 0 && fin.sonido === 1 && fin.petalos === 1 && conRopaPronto === 0 && conRopa === 1 && quieto,
           JSON.stringify({ numero, salto, saltoMenu, sinFin, fin, conRopaPronto, conRopa, quieto }));
+        // Revisión F4-11: el rebote CSS (.bump de ui.js) no se suma al salto por script (doble rebote). La guarda de ui.js
+        // (AV.reboteContador.saltaYa) dice «ya salta» durante el salto y no sin él; si el observador está puesto, sin .bump.
+        const RB = window.AV.reboteContador || {};
+        G.quiet = false; const txt0 = b.textContent; b.classList.remove('bump'); for (const a of b.getAnimations ? b.getAnimations() : []) a.cancel();
+        const quietoAntes = RB.saltaYa ? RB.saltaYa(b) : null;
+        b.textContent = txt0 + ' ·'; const s1 = feel.saltos; celebrarHallazgo(false, false); const salta = feel.saltos - s1;
+        const yaSalta = RB.saltaYa ? RB.saltaYa(b) : null; await espera(0);
+        const rebote = { activo: RB.activo, quietoAntes, salta, yaSalta, bump: b.classList.contains('bump') };
+        check('F4-11 (revisión): al saltar por script, el botón del Diario no lleva además el rebote CSS (.bump): un solo rebote',
+          quietoAntes === false && (b.hidden || (salta === 1 && yaSalta === true)) && !rebote.bump, JSON.stringify(rebote));
       } finally { G.quiet = q0; G.renderer.REDUCED = R0; A.reducido = red0; html.classList.toggle('mov-reducido', mov0); }
     }
     return { passed: out.filter(o => o.ok).length, total: out.length, results: out };

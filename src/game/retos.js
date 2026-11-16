@@ -1005,7 +1005,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     }
 
     const C = { fase: 'nada', t: 0, cuenta: 0, sig: 0, sJug: 0, objetos: [], corrientes: [], rivales: [], llegadas: [], boostT: 0, ultCorriente: null,
-      tiempo: 0, puesto: 0, finT: 0, q: {}, ya: false, tags: [], fan: null, grab: null, puestoAnt: 0, adelT: 0, adelantos: 0, adelSaltos: 0 };
+      tiempo: 0, puesto: 0, finT: 0, q: {}, ya: false, tags: [], fan: null, grab: null, puestoAnt: 0, adelT: 0, adelantos: 0, adelSaltos: 0, avisoT: 0, adelPend: null };
     const CARRERA = {
       iniciar() {
         mats();
@@ -1137,22 +1137,28 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     // F4-20 (docs/diseno/F4_GAME_FEEL.md): al mejorar de puesto, «r_punto» agudo, el número del PUESTO salta y aviso «¡Pasaste a
     // Mango!» (la rival que iba justo delante). Una vez cada ADEL.esperaS s como mucho (dos que van parejas no lo repiten sin parar).
     // «Reducir movimiento» (sistema o menú): sin salto; el sonido y el aviso se quedan. Solo en la carrera con rivales.
-    const ADEL = { esperaS: 1.5, tono: 9 };
+    // Revisión: si en ese momento suena otro aviso de la carrera (punto de control, «¡Impulso!»), el adelanto espera a que
+    // termine (avisoS s) en vez de doblar «r_punto» y pisar el texto; si al acabar la espera la rival vuelve a ir delante, se calla.
+    const ADEL = { esperaS: 1.5, tono: 9, avisoS: 0.9 };
     const KF_PUESTO = [{ transform: 'scale(1)' }, { transform: 'scale(1.5)', offset: 0.35 }, { transform: 'scale(0.94)', offset: 0.7 }, { transform: 'scale(1)' }];
     const OPT_PUESTO = { duration: 380, easing: 'cubic-bezier(.34,1.56,.64,1)' };
     function adelantar(p, dt) {
-      if (C.fase !== 'juego' || C.rio) { C.puestoAnt = p; C.adelT = 0; for (const r of C.rivales) r.delante = undefined; return; }
-      C.adelT = Math.max(0, C.adelT - (dt || 0));
+      if (C.fase !== 'juego' || C.rio) { C.puestoAnt = p; C.adelT = 0; C.avisoT = 0; C.adelPend = null; for (const r of C.rivales) r.delante = undefined; return; }
+      C.adelT = Math.max(0, C.adelT - (dt || 0)); C.avisoT = Math.max(0, C.avisoT - (dt || 0));
       const pj = progresoJugador(); let pasada = null, sp = Infinity;
       for (const r of C.rivales) {
         const pr = progresoRival(r), d = pr > pj;
         if (r.delante === true && !d && pr < sp) { pasada = r; sp = pr; } // de las que pasó, la que iba más cerca
         r.delante = d;
       }
-      if (pasada && C.puestoAnt && p < C.puestoAnt && C.adelT <= 0) {
+      if (pasada && C.puestoAnt && p < C.puestoAnt && C.adelT <= 0) C.adelPend = pasada;
+      const pend = C.adelPend;
+      if (pend && C.avisoT <= 0 && C.adelT <= 0) {
+        C.adelPend = null;
+        if (progresoRival(pend) >= pj) { C.puestoAnt = p; return; } // te la devolvió mientras esperaba: nada que celebrar
         C.adelT = ADEL.esperaS; C.adelantos++;
         sonar('r_punto', ADEL.tono);
-        aviso('¡Pasaste a ' + pasada.def.nombre + '!');
+        aviso('¡Pasaste a ' + pend.def.nombre + '!');
         if (!(REDUCED || (A && A.reducido === true)) && ui.pos.animate) { try { ui.pos.animate(KF_PUESTO, OPT_PUESTO); C.adelSaltos++; } catch (e) { /* sin animación */ } }
       }
       C.puestoAnt = p;
@@ -1192,7 +1198,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           C.ultCorriente = c; C.boostT = T_CARRERA.impulsoT;
           const v = Math.hypot(M.vx, M.vz) || 1, k = T_CARRERA.impulso;
           M.vx = M.vx * 0.5 + (c.tx * 0.5 + M.vx / v * 0.5) * (v + k); M.vz = M.vz * 0.5 + (c.tz * 0.5 + M.vz / v * 0.5) * (v + k); S.vy += 2.5;
-          sonar('r_impulso'); G.camara.shake(0.1, 0.25); efectos.fovExtra += 10; aviso('¡Impulso!');
+          sonar('r_impulso'); G.camara.shake(0.1, 0.25); efectos.fovExtra += 10; aviso('¡Impulso!'); C.avisoT = ADEL.avisoS;
           G.fx.burst(S.pos.x, S.pos.y + 0.8, S.pos.z, 'feathers', 10);
         }
       }
@@ -1215,7 +1221,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const Rr = ruta.R, o = C.objetos[C.sig], u = o.userData;
       u.flor.visible = u.halo.visible = u.haz.visible = false;
       G.fx.burst(u.x, u.y, u.z, 'petalos', 30); G.fx.burst(u.x, u.y + 0.5, u.z, 'gold', 14);
-      sonar('r_punto', C.sig);
+      sonar('r_punto', C.sig); C.avisoT = ADEL.avisoS; // el adelanto no se dobla con este sonido ni pisa el aviso
       C.sig++;
       if (C.sig >= Rr.puntos.length) { acabarCarrera(true); return; }
       aviso(C.sig === Rr.puntos.length - 1 ? '¡A la meta!' : 'Punto ' + C.sig + ' de ' + (Rr.puntos.length - 1));
@@ -1732,6 +1738,17 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           check('F4-20: al adelantar suena «r_punto» agudo una vez, el PUESTO salta y sale «¡Pasaste a …!» (la rival); con «Reducir movimiento» del menú, sin salto',
             ok1 && atras > 1 && vez.adel === 1 && vez.punto === 1 && (REDUCED ? vez.saltos === 0 : vez.saltos === 1) && /^¡Pasaste a (Mango|Cielo|Perla)!$/.test(vez.aviso) && red.adel === 1 && red.saltos === 0,
             JSON.stringify({ txt, atras, vez, red }));
+          // Revisión: con otro aviso de la carrera sonando (punto de control, corriente), el adelanto espera: ni «r_punto» doble ni
+          // texto pisado; al terminar ese aviso sale una vez
+          C.adelT = 0; C.avisoT = 0; C.sig = sig0; C.sJug = sj0; modo.render(0.016);
+          const a1 = C.adelantos, txt1 = 'Punto 2 de 5'; A.log.length = 0; C.avisoT = ADEL.avisoS; ui.aviso.textContent = txt1;
+          C.sig = 3; C.sJug = Rr.puntos[3].s - 1; modo.render(0.016);
+          const durante = { adel: C.adelantos - a1, punto: A.log.filter(n => n === 'r_punto').length, aviso: ui.aviso.textContent, pend: !!C.adelPend };
+          modo.render(ADEL.avisoS + 0.05);
+          const despues = { adel: C.adelantos - a1, punto: A.log.filter(n => n === 'r_punto').length, aviso: ui.aviso.textContent, pend: !!C.adelPend };
+          check('F4-20 (revisión): si suena otro aviso de la carrera, el adelanto espera (sin «r_punto» doble ni pisar el texto) y sale una vez al terminar',
+            durante.adel === 0 && durante.punto === 0 && durante.aviso === txt1 && durante.pend && despues.adel === 1 && despues.punto === 1 && /^¡Pasaste a (Mango|Cielo|Perla)!$/.test(despues.aviso) && !despues.pend,
+            JSON.stringify({ durante, despues }));
         }
         C.sig = sig0; C.sJug = sj0;
         // Corriente: impulso medible

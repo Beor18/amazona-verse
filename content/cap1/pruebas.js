@@ -753,14 +753,23 @@
           cadena.logro === 1 && cadena.n === ks.length && cadena.enSeguida === 1 && cadena.orden === ks.map(k => O.contador(k).id).join() && /¡Lo tienes todo!/.test(aviso) && MF.todo - m0.todo === 2 && saltosRed === 0,
           JSON.stringify({ cadena, saltosRed }));
         // 10 · refugio: polvo en tres puntos, sacudida suave (0,1) y alegría; con «Reducir movimiento» del menú, sin sacudida
-        const r0 = Object.assign({}, RS), p0 = J.polvo; CJ.amp = 0; CJ.shake = 0;
-        G.c.refugioFx(S.pos.x, S.pos.z); const sac = { amp: CJ.amp, seg: CJ.shake, polvo: J.polvo - p0, sacudidas: RS.sacudidas - r0.sacudidas };
-        CJ.amp = 0; CJ.shake = 0; A.reducido = true; G.c.refugioFx(S.pos.x, S.pos.z); A.reducido = false;
-        const red = { amp: CJ.amp, polvo: J.polvo - p0 - sac.polvo, sacudidas: RS.sacudidas - r0.sacudidas - sac.sacudidas, alegria: RS.alegria - r0.alegria };
-        G.quiet = true; const q0 = RS.polvo; G.c.refugioFx(S.pos.x, S.pos.z); const quieto = RS.polvo === q0 && RS.n - r0.n === 3; G.quiet = false;
-        check('F4-10: refugio construido: polvo en tres puntos de la base y sacudida suave (0,1 · 0,3 s); con «Reducir movimiento» del menú, polvo sin sacudida; con G.quiet, nada',
-          sac.polvo === 3 && Math.abs(sac.amp - 0.1) < 1e-6 && Math.abs(sac.seg - 0.3) < 1e-6 && sac.sacudidas === 1 && red.amp === 0 && red.polvo === 3 && red.sacudidas === 0 && red.alegria <= 1 && quieto,
-          JSON.stringify({ sac, red, quieto }));
+        // La alegría se espía en G.actores (playEmote / girarAlegre): se pide una vez, con un gesto que existe, y con «Reducir
+        // movimiento» no se pide. El espía devuelve true (Vittata libre) para que la cuenta no dependa de si está ocupada.
+        const AC = G.actores, pe0 = AC.playEmote, ga0 = AC.girarAlegre, pedidas = [];
+        AC.playEmote = n => { pedidas.push('gesto:' + n); return true; }; AC.girarAlegre = () => { pedidas.push('giro'); return true; };
+        let sac, red, alegria;
+        try {
+          const r0 = Object.assign({}, RS), p0 = J.polvo; CJ.amp = 0; CJ.shake = 0;
+          G.c.refugioFx(S.pos.x, S.pos.z); sac = { amp: CJ.amp, seg: CJ.shake, polvo: J.polvo - p0, sacudidas: RS.sacudidas - r0.sacudidas, alegria: RS.alegria - r0.alegria, pide: pedidas.slice() };
+          CJ.amp = 0; CJ.shake = 0; A.reducido = true; G.c.refugioFx(S.pos.x, S.pos.z); A.reducido = false;
+          red = { amp: CJ.amp, polvo: J.polvo - p0 - sac.polvo, sacudidas: RS.sacudidas - r0.sacudidas - sac.sacudidas, alegria: RS.alegria - r0.alegria - sac.alegria, pide: pedidas.length - sac.pide.length };
+          G.quiet = true; const q0 = RS.polvo; G.c.refugioFx(S.pos.x, S.pos.z); red.quieto = RS.polvo === q0 && RS.n - r0.n === 3 && pedidas.length === sac.pide.length; G.quiet = false;
+          const p = sac.pide[0] || '';
+          alegria = sac.pide.length === 1 && sac.alegria === 1 && (p === 'giro' || (p.startsWith('gesto:') && (AC.EMOTE_KEYS || []).includes(p.slice(6))));
+        } finally { AC.playEmote = pe0; AC.girarAlegre = ga0; G.quiet = false; }
+        check('F4-10: refugio construido: polvo en tres puntos de la base, sacudida suave (0,1 · 0,3 s) y alegría de Vittata (un gesto que existe o su giro); con «Reducir movimiento» del menú, polvo sin sacudida ni alegría; con G.quiet, nada',
+          sac.polvo === 3 && Math.abs(sac.amp - 0.1) < 1e-6 && Math.abs(sac.seg - 0.3) < 1e-6 && sac.sacudidas === 1 && alegria && red.amp === 0 && red.polvo === 3 && red.sacudidas === 0 && red.alegria === 0 && red.pide === 0 && red.quieto,
+          JSON.stringify({ sac, red, alegria }));
         CJ.amp = 0; CJ.shake = 0;
       } finally {
         G.fx.saltar = saltar0; G.renderer.REDUCED = R0; A.reducido = red0; html.classList.toggle('mov-reducido', mov0);
