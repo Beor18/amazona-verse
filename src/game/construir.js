@@ -1256,12 +1256,12 @@
           const unDeshacer = deshacer() && lista.length === 0;
           const enCuarto = (ctx = { id: 'x' }, !casita()); ctx = null;
           check('T50 · «Casita rápida»: dos pisos, tejado y tres paredes (y la maceta si cabe) de un toque; un Deshacer la quita; dentro de un cuarto no',
-            hizoC && (tiposC === 'maceta,pared,pared,pared,piso,piso,tejado' || tiposC === 'pared,pared,pared,piso,piso,tejado') && unDeshacer && enCuarto && !!(hudEl && hudEl.querySelector('[data-cl="casita"]')), JSON.stringify({ hizoC, nC, tiposC, unDeshacer, enCuarto }));
+            hizoC && (tiposC === 'maceta,pared,pared,pared,piso,piso,tejado' || tiposC === 'pared,pared,pared,piso,piso,tejado') && unDeshacer && enCuarto && !!(hudEl && hudEl.querySelector('[data-cl-pl="casita"]')), JSON.stringify({ hizoC, nC, tiposC, unDeshacer, enCuarto }));
           // C9 · cada pieza nueva lleva texturas del kit, icono y nombre, encaja con imán donde toca (piso en P, giro 0) y se coloca
           {
             aplicar(null); empezar(); giro = 0; S.pos.x = p0.x; S.pos.z = p0.z; S.facing = { x: 1, z: 0 }; elegir('piso'); actualizar();
             const P = { x: est.x, z: est.z }, conPiso = colocar(), mal = [];
-            const META = { escalera: [0, 1.4, 0], baranda: [0, 1, 0], dosaguas: [0, 0, 0], farolito: [1.2, 1.2, 0], valla: [0, -1, 0], banco: [1.3, 0, 2], huerto: [-1.5, 0, 6] };
+            const META = { escalera: [0, 1.4, 0], baranda: [0, 1, 0], dosaguas: [0, 0, 0], farolito: [1.2, 1.2, 0], valla: [0, 1, 0], banco: [1.3, 0, 2], huerto: [-1.5, 0, 6] };
             for (const t of KIT) {
               const [dx, dz, r] = META[t] || [9, 9, 0];
               S.pos.x = P.x + dx - DIST + 0.2; S.pos.z = P.z + dz + 0.15; elegir(t); actualizar();
@@ -1301,14 +1301,21 @@
             const bP = hudEl.querySelector('[data-cl="plantillas"]'), filaP = hudEl.querySelector('.cl-plantillas'), filaZ = hudEl.querySelector('.cl-piezas');
             bP.click();
             const abierta = hudEl.classList.contains('cl-pl-abierta') && bP.getAttribute('aria-expanded') === 'true' && getComputedStyle(filaP).display !== 'none' && getComputedStyle(filaZ).display === 'none' && filaP.querySelectorAll('button[data-cl-pl]').length === 5 && document.activeElement === filaP.querySelector('button');
-            dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-            const cerrada = !hudEl.classList.contains('cl-pl-abierta') && activo && getComputedStyle(filaZ).display !== 'none';
-            dispatchEvent(new KeyboardEvent('keydown', { key: 't', bubbles: true }));
-            const conT = hudEl.classList.contains('cl-pl-abierta');
+            // las teclas solo llegan sin nada encima (como la B de arriba): si quedó un diálogo de la isla, se cierra antes
+            const encimaK = { dlg: !!G.dialogo.open(), card: !!G.ui.cardOpen, busy: !!G.ui.busy(), pausa: !!(G.pausa && G.pausa.activa()), portada: !!($("title") && $("title").open) };
+            try { if (G.dialogo.open()) G.dialogo.clear(); if (G.ui.cardOpen) G.ui.hideCard(); } catch (e) { /* */ }
+            const portadaK = $('title'), libreK = !(portadaK && portadaK.open) && !G.ui.busy() && !(G.pausa && G.pausa.activa());
+            let cerrada = true, conT = true;
+            if (libreK) {
+              dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+              cerrada = !hudEl.classList.contains('cl-pl-abierta') && activo && getComputedStyle(filaZ).display !== 'none';
+              dispatchEvent(new KeyboardEvent('keydown', { key: 't', bubbles: true }));
+              conT = hudEl.classList.contains('cl-pl-abierta');
+            } else { if (!activo) empezar(); verPlantillas(false); verPlantillas(true); }
             S.pos.x = p0.x; S.pos.z = p0.z; S.facing = { x: 1, z: 0 }; actualizar();
             filaP.querySelector('[data-cl-pl="nidogrande"]').click();
             const toque = lista.length > 0 && lista.some(p => p.t === 'nido') && !hudEl.classList.contains('cl-pl-abierta');
-            check('C10 · el botón «Plantillas» cambia la fila de piezas por la de plantillas (T la abre, Esc la cierra sin salir) y un toque coloca y vuelve a las piezas', abierta && cerrada && conT && toque, JSON.stringify({ abierta, cerrada, conT, toque }));
+            check('C10 · el botón «Plantillas» cambia la fila de piezas por la de plantillas (T la abre, Esc la cierra sin salir) y un toque coloca y vuelve a las piezas', abierta && cerrada && conT && toque, JSON.stringify({ abierta, cerrada, conT, toque, teclas: libreK ? 'probadas' : 'pantalla encima: no se prueban', encimaK }));
             aplicar(null);
           }
           salir(); S.pos.x = pIni.x; S.pos.z = pIni.z; S.facing = f0; aplicar(null);
