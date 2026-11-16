@@ -418,6 +418,24 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos .rt-turbo .rt-hojas i.si { background: linear-gradient(160deg, #c8f59a, #3f9a4e); box-shadow: 0 0 6px rgba(200,245,154,.8); }
 #retos .rt-turbo .rt-tecla { color: #ffd27a; opacity: 1; }
 @media (max-width: 640px) { #retos .rt-turbo b { font-size: 15px; } }
+#retos .rt-tag.rt-rebufo { box-shadow: 0 0 0 3px rgba(200,245,154,.55), 0 0 14px rgba(200,245,154,.9); }
+/* F1-8 (revisión): teléfono en horizontal (poco alto). La cuenta, justo bajo el HUD y algo más pequeña (Vittata queda debajo);
+   mientras cuenta, la flecha (que estaría debajo del número) espera. Los resultados, compactos para que quepan sin cortar. */
+@media (max-height: 500px) and (orientation: landscape) {
+  #retos .rt-cuenta { padding-top: calc(env(safe-area-inset-top, 0px) + 62px); font-size: min(22vw, 17vh, 160px); -webkit-text-stroke-width: 6px; }
+  #retos.rt-contando .rt-flecha { visibility: hidden; }
+  #retos .rt-aviso { top: 39%; font-size: 26px; } /* bajo la etiqueta de la flecha y por encima de Vittata */
+  #retos .rt-tag { font-size: 11px; padding: 1px 6px; }
+  #retos .rt-fin .rt-panel { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 16px); padding: 12px 18px; }
+  #retos .rt-fin .rt-medalla { width: 52px; height: 52px; margin-bottom: 6px; font-size: 22px; box-shadow: 0 0 0 3px #fff, 0 4px 0 3px rgba(0,0,0,.18), 0 0 24px var(--m1); }
+  #retos .rt-fin .rt-medalla.sin { font-size: 15px; }
+  #retos .rt-fin .rt-medalla::before, #retos .rt-fin .rt-medalla::after { display: none; }
+  #retos .rt-fin h2 { font-size: var(--fs-xl, 22px); margin-bottom: 6px; }
+  #retos .rt-fin .rt-datos { grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
+  #retos .rt-fin .rt-dato { font-size: 17px; padding: 5px 6px; }
+  #retos .rt-fin .rt-meta, #retos .rt-fin .rt-descanso, #retos .rt-fin .rt-nuevo { margin-bottom: 6px; }
+  #retos .rt-fin .btn.xl { min-height: 48px; padding-block: 8px; font-size: var(--fs-lg, 18px); }
+}
 @media (max-width: 640px) and (orientation: portrait) { #retos .rt-turbo { left: auto; right: 12px; transform: none; bottom: calc(env(safe-area-inset-bottom, 0px) + 216px); } } /* teléfono en vertical: encima de Bajar e Impulso, lejos del joystick y de Subir */
 #retos-fx { position: fixed; inset: 0; pointer-events: none; z-index: var(--z-hud); }
 #retos-fx > div { position: absolute; inset: 0; opacity: 0; }
@@ -505,6 +523,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         tags: q('.rt-tags'), cuenta: q('.rt-cuenta'), aviso: q('.rt-aviso'), menu: q('.rt-menu'), fin: q('.rt-fin'), medalla: q('.rt-medalla'), finT: q('#rt-fin-t'),
         nuevo: q('.rt-nuevo'), datos: q('.rt-datos'), meta: q('.rt-meta'), rank: q('.rt-rank'), descanso: q('.rt-descanso'), chipPos: q('.rt-pos'), chipPts: q('.rt-pts'), chipVidas: q('.rt-vidas'), chipPuntos: q('.rt-puntos'), chipTiempo: q('.rt-tiempo'),
         lineas: fx.querySelector('.rt-lineas'), destello: fx.querySelector('.rt-destello'), oscuro: fx.querySelector('.rt-oscuro'), moja: fx.querySelector('.rt-moja'), turbo: q('.rt-turbo'), turboBtn: q('[data-turbo]'), hojasI: Array.from(el.querySelectorAll('.rt-hojas i')), otra: q('[data-otra]') };
+      teclaTurbo(); if (G.input.alCambiar) G.input.alCambiar(teclaTurbo); // F1-8: la pista sigue a la tecla de Acción que eligió el jugador
       ui.turboBtn.addEventListener('pointerdown', e => { e.preventDefault(); usarTurbo(); }); // sin foco: Espacio (subir) no lo vuelve a pulsar
       el.addEventListener('click', e => {
         const b = e.target.closest('button'); if (!b) return;
@@ -520,11 +539,19 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       });
       return ui;
     }
+    // Pista de la tecla del Aletazo turbo: la de Acción del jugador (Controles deja cambiarla); en táctil, sin pista
+    function teclaTurbo() {
+      if (!ui) return;
+      const I = G.input, k = I && I.mapa && I.mapa.accion ? (I.etiqueta ? I.etiqueta(I.mapa.accion) : I.mapa.accion.toUpperCase()) : 'E';
+      ui.turboBtn.setAttribute('aria-keyshortcuts', k);
+      const sp = ui.turboBtn.querySelector('.rt-tecla'); if (sp && !TACTIL) sp.textContent = k;
+    }
     function aviso(txt) {
       const a = ui.aviso; a.textContent = txt; a.classList.remove('ver'); void a.offsetWidth; a.classList.add('ver');
     }
     function mostrarCuenta(txt) {
       const c = ui.cuenta; c.textContent = txt; c.classList.remove('pop'); if (txt) { void c.offsetWidth; c.classList.add('pop'); }
+      ui.el.classList.toggle('rt-contando', /^\d$/.test(txt)); // F1-8: en el teléfono en horizontal, la flecha espera a que acabe la cuenta
     }
 
     // =================================================================================================================
@@ -579,6 +606,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       cerrarPaneles();
       if (modo) { modo.terminar(); modo = null; }
       st.fase = 'nada'; st.reto = null;
+      st.dos = null; C.nubes = false; C.nubeUsada = null; C.hojas = 0; C.turboT = C.rebufoT = C.rebufoAcc = 0; // F1-8: nada de la serie ni de las nubes se queda en memoria
       G.pausa.set('retos', false);
       const volverCreador = () => { if (st.creador && !(S.profile && S.profile.created)) G.creador.open(true); st.creador = false; };
       if (!st.activo) {
@@ -793,6 +821,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       ui.hud.hidden = true; ui.flecha.hidden = true; ui.turbo.hidden = true; ui.tags.textContent = '';
       ui.fin.hidden = false; st.fase = 'fin'; salirTxt();
       G.pausa.set('retos', true);
+      ponerOtra('Otra vez'); // F1-8 (revisión): «Para dos» lo cambia dentro de html(); ningún otro reto hereda su texto
       html(); pintarGanchos();
       const b = ui.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
     }
@@ -894,7 +923,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     // Bahía Bio, da la vuelta y regresa por dentro hasta el muelle (todo agua en mapa_cap1_altura, z de 226 a 256). Ningún edificio ni
     // árbol en el recorrido.
     const T_NUBES = { nubeImpulso: 6, nubeT: 0.9, nubeRx: 4.6, nubeRy: 3.2, hojaRadio: 2.4, hojasTurbo: 3, turboT: 1.6, turboEmpuje: 26, turboImpulso: 7,
-      rebufoS: 1, rebufoT: 1.2, rebufoEmpuje: 12, rebufoLargo: 10, rebufoMin: 1, rebufoAncho: 2.6, rebufoAlto: 2.5, nubes: 8, grupos: 6, limite: 150 };
+      rebufoS: 1, rebufoT: 1.2, rebufoEmpuje: 12, rebufoLargo: 10, rebufoMin: 1, rebufoAncho: 2.6, rebufoAlto: 2.5, estelaOp: 0.22, estelaOpDentro: 0.7, nubes: 8, grupos: 6, limite: 150 };
+    // Salida de las rivales en las nubes: todas del lado del mar (a la derecha están el muelle de Villa Raíz y la playa)
+    const LAT_NUBES = [-4.5, -9, -13.5];
     function datosNubes() {
       const ruta0 = MAPA && (MAPA.rutasVuelo || []).find(r => r.id === 'costa_sur');
       if (ruta0) {
@@ -925,8 +956,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     const _m4 = new THREE.Matrix4(), _o3 = new THREE.Object3D();
     const BOLAS_NUBE = [[0, 0, 0, 2.7, 2.0], [2.3, -0.3, 0.4, 2.0, 1.5], [-2.4, -0.2, -0.3, 2.1, 1.6], [0.9, 0.9, -1.4, 1.8, 1.5], [-1.0, 0.8, 1.5, 1.7, 1.4], [3.6, -0.6, -0.8, 1.3, 1.0], [-3.7, -0.7, 0.9, 1.3, 1.0]];
     function armarNubes(Rr) {
-      const geoN = new THREE.IcosahedronGeometry(1, 2);
-      const matN = lm(new THREE.MeshLambertMaterial({ color: '#ffffff', emissive: '#6d7f99' }));
+      const geoN = new THREE.IcosahedronGeometry(1, 3); // detalle 3: de cerca, el borde sigue redondo (sin caras planas)
+      // Transparente para poder aclararse cuando la cámara entra (Vittata no desaparece dentro); opaca y con profundidad el resto del tiempo
+      const matN = lm(new THREE.MeshLambertMaterial({ color: '#ffffff', emissive: '#6d7f99', transparent: true, opacity: 1 }));
       const nubes = [], hojas = [];
       // Nubes: en el 15–92 % de la ruta, alternando a un lado, al otro y en el centro, y algo más altas o más bajas (hay que ir a por ellas)
       for (let i = 0; i < T_NUBES.nubes; i++) {
@@ -943,6 +975,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         _o3.updateMatrix(); mallaN.setMatrixAt(k++, _o3.matrix);
       }
       mallaN.instanceMatrix.needsUpdate = true;
+      for (let i = 0; i < mallaN.count; i++) mallaN.setColorAt(i, COL_NUBE); // las usadas se apagan (colorNube)
+      mallaN.instanceColor.needsUpdate = true;
       // Hojas: grupos de 3 en fila (a 5 m), entre una nube y la siguiente, a un lado o al otro
       for (let g = 0; g < T_NUBES.grupos; g++) {
         const s0 = Rr.largo * (0.1 + 0.8 * (g + 0.5) / T_NUBES.grupos), lat = [3.5, -3.5, 0][g % 3];
@@ -952,9 +986,35 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       const matH = lm(new THREE.MeshLambertMaterial({ map: texHoja(), color: '#ffffff', emissive: '#3f8a34', side: THREE.DoubleSide, alphaTest: 0.35 }));
       const mallaH = new THREE.InstancedMesh(geoH, matH, hojas.length);
       mallaH.name = 'hojas-carrera'; mallaH.frustumCulled = false;
-      const K = { nubes, hojas, mallaN, mallaH };
+      // Estelas del rebufo: una por rival, una franja de viento detrás (de 1 a 10 m, la zona que da rebufo). Forma compartida
+      // (dos franjas en cruz) y un material; se encienden cuando vas dentro.
+      const texEstela = texViento().clone(); texEstela.needsUpdate = true; texEstela.wrapS = THREE.RepeatWrapping; texEstela.repeat.set(2, 1);
+      const pos = [], uv = [], idx = [], L0 = -T_NUBES.rebufoMin, L1 = -T_NUBES.rebufoLargo, aw = 1.5, ah = 1.1;
+      for (const [ax, ay] of [[aw, 0], [0, ah]]) {
+        const b = pos.length / 3;
+        pos.push(-ax, -ay, L0, ax, ay, L0, -ax, -ay, L1, ax, ay, L1); uv.push(0, 0, 0, 1, 1, 0, 1, 1); idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
+      }
+      const geoE = new THREE.BufferGeometry(); geoE.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geoE.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geoE.setIndex(idx);
+      const matE = bordeSuave(aditivo(texEstela, '#e6fbff', T_NUBES.estelaOp), 'techo');
+      const estelas = [];
+      for (let i = 0; i < RIVALES.length; i++) { const e = new THREE.Mesh(geoE, matE); e.name = 'estela-rebufo'; e.visible = false; e.frustumCulled = false; estelas.push(e); }
+      const matE2 = bordeSuave(aditivo(texEstela, '#f2ffd8', T_NUBES.estelaOpDentro), 'techo'); // la estela de quien sigues
+      const K = { nubes, hojas, mallaN, mallaH, estelas, texEstela, matE, matE2 };
       for (let i = 0; i < hojas.length; i++) ponerHoja(K, i, 0);
       return K;
+    }
+    const COL_NUBE = new THREE.Color('#ffffff'), COL_NUBE_USADA = new THREE.Color('#aeb8c6');
+    // Color de las 7 bolas de la nube i (blanca si aún da impulso; gris azulada si ya la cruzaste)
+    function colorNube(K, i, usada) {
+      const c = usada ? COL_NUBE_USADA : COL_NUBE;
+      for (let b = 0; b < BOLAS_NUBE.length; b++) K.mallaN.setColorAt(i * BOLAS_NUBE.length + b, c);
+      K.mallaN.instanceColor.needsUpdate = true;
+    }
+    // ¿Cuánto de dentro de una nube está (x, y, z)? < 1 dentro del volumen que se ve (más ancho que el de la colisión)
+    function hondoNube(N, x, y, z) {
+      let m = Infinity;
+      for (const n of N.nubes) { const dx = (x - n.x) / 6.2, dy = (y - n.y) / 3.6, dz = (z - n.z) / 6.2; m = Math.min(m, dx * dx + dy * dy + dz * dz); }
+      return Math.sqrt(m);
     }
     // Matriz de la hoja i (escala 0 = recogida); sin objetos nuevos: _o3 se reutiliza
     function ponerHoja(K, i, t) {
@@ -967,12 +1027,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     // Las texturas son las compartidas (TEX: banderines, flor, hoja, brillo) y se quedan.
     function liberarNubes() {
       const K = ESC.nubes; if (!K) return 0;
-      let n = 0;
+      let n = 0; const compartidos = new Set(Object.values(MAT));
+      if (K.N && K.N.texEstela) { K.N.texEstela.dispose(); K.N.matE.dispose(); K.N.matE2.dispose(); n += 3; } // estelas: textura clonada y sus 2 materiales
       if (K.grupo) {
         if (K.grupo.parent) K.grupo.parent.remove(K.grupo);
         K.grupo.traverse(o => {
           if (o.geometry && !o.geometry.userData.compartida) { o.geometry.dispose(); n++; }
-          if (o.material) for (const m of [].concat(o.material)) { m.dispose(); n++; }
+          if (o.material) for (const m of [].concat(o.material)) if (!compartidos.has(m)) { m.dispose(); n++; } // MAT (palo…) es de todos los retos
           if (o.isInstancedMesh && o.dispose) { o.dispose(); n++; }
         });
       }
@@ -1138,7 +1199,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 
     const C = { fase: 'nada', t: 0, cuenta: 0, sig: 0, sJug: 0, objetos: [], corrientes: [], rivales: [], llegadas: [], boostT: 0, ultCorriente: null,
       tiempo: 0, puesto: 0, finT: 0, q: {}, ya: false, tags: [], fan: null, grab: null, puestoAnt: 0, adelT: 0, adelantos: 0, adelSaltos: 0, avisoT: 0, adelPend: null,
-      nubes: false, N: null, nubeUsada: null, nubeImpulsos: 0, hojas: 0, hojasRecogidas: 0, turboT: 0, turbos: 0, rebufoAcc: 0, rebufoT: 0, rebufos: 0, hojasPint: -1, turboPint: null };
+      nubes: false, N: null, nubeUsada: null, nubeImpulsos: 0, hojas: 0, hojasRecogidas: 0, turboT: 0, turbos: 0, rebufoAcc: 0, rebufoT: 0, rebufos: 0, hojasPint: -1, turboPint: null, rebufoDe: -1, plumaT: 0, hondo: 9 };
     const CARRERA = {
       iniciar() {
         mats();
@@ -1154,15 +1215,16 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           K.objetos = Rr.puntos.map((p, i) => hacerPunto(p, i + 1, Rr.puntos.length)); K.corrientes = [];
           if (!C.rio && !C.nubes) { let s0 = 0; Rr.puntos.forEach((p, i) => { K.corrientes.push(hacerCorriente(s0 + (p.s - s0) * 0.55, i % 2 ? -1 : 1)); s0 = p.s; }); }
           K.grupo = new THREE.Group(); K.objetos.concat(K.corrientes.map(c => c.g)).forEach(o => K.grupo.add(o));
-          if (C.nubes) { K.N = armarNubes(Rr); K.grupo.add(K.N.mallaN, K.N.mallaH); }
+          if (C.nubes) { K.N = armarNubes(Rr); K.grupo.add(K.N.mallaN, K.N.mallaH, ...K.N.estelas); }
           sobreAgua(K.grupo);
         }
         C.objetos = K.objetos; C.corrientes = K.corrientes; C.grupo = K.grupo; C.N = K.N || null;
         if (C.N) { // cada carrera empieza con todas las hojas y ninguna nube usada
           C.nubeUsada = new Uint8Array(C.N.nubes.length);
+          for (let i = 0; i < C.N.nubes.length; i++) colorNube(C.N, i, false);
           for (let i = 0; i < C.N.hojas.length; i++) { C.N.hojas[i].activa = true; ponerHoja(C.N, i, 0); }
         }
-        Object.assign(C, { nubeImpulsos: 0, hojas: 0, hojasRecogidas: 0, turboT: 0, turbos: 0, rebufoAcc: 0, rebufoT: 0, rebufos: 0, hojasPint: -1, turboPint: null });
+        Object.assign(C, { nubeImpulsos: 0, hojas: 0, hojasRecogidas: 0, turboT: 0, turbos: 0, rebufoAcc: 0, rebufoT: 0, rebufos: 0, hojasPint: -1, turboPint: null, rebufoDe: -1, plumaT: 0 });
         raiz.add(C.grupo); C.grupo.visible = true;
         Object.assign(C, { fase: 'cuenta', t: 0, cuenta: T_CARRERA.cuentaPaso * 3, sig: 0, sJug: 0, llegadas: [], boostT: 0, ultCorriente: null, tiempo: 0, puesto: 0, finT: 0, ya: false, ultimoN: 4 });
         C.objetos.forEach(o => { o.visible = true; o.userData.flor.visible = o.userData.halo.visible = o.userData.haz.visible = true; });
@@ -1182,7 +1244,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           aviso('Turno del Jugador ' + j);
         } else if (C.rio) { C.rivales = []; C.tags = []; ui.tags.textContent = ''; montarFantasma(); } else crearRivales().then(lista => {
           if (modo !== CARRERA) return;
-          C.rivales = lista.map((ch, i) => ({ ch, def: RIVALES[i], s: 4, lat: [-4.5, 4.5, 9][i], v: 0, boostT: 0, llego: false, tLlegada: 0, ult: null, yaw: 0, latV: 0, nube: 0, px: null, py: 0, pz: 0 }));
+          C.rivales = lista.map((ch, i) => ({ ch, def: RIVALES[i], s: 4, lat: (C.nubes ? LAT_NUBES : [-4.5, 4.5, 9])[i], v: 0, boostT: 0, llego: false, tLlegada: 0, ult: null, yaw: 0, latV: 0, nube: 0, px: null, py: 0, pz: 0 }));
           for (const r of C.rivales) { raiz.add(r.ch.root); r.ch.root.visible = true; }
           ui.tags.innerHTML = C.rivales.map(r => `<span class="rt-tag" style="--c:${r.def.color}">${r.def.nombre}</span>`).join('');
           C.tags = Array.from(ui.tags.children);
@@ -1267,8 +1329,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       if (f.tag) {
         const cam = R.camera, v3 = _v3.set(_qf.x, _qf.y + 2.3, _qf.z).project(cam), d = Math.hypot(_qf.x - S.pos.x, _qf.y - S.pos.y, _qf.z - S.pos.z);
         const ver = v3.z < 1 && d < 90 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1;
-        estilo(f.tag, 'display', ver ? '' : 'none');
-        if (ver) estilo(f.tag, 'transform', `translate(${((v3.x + 1) / 2 * window.innerWidth).toFixed(0)}px, ${((1 - v3.y) / 2 * window.innerHeight).toFixed(0)}px) translate(-50%, -100%)`);
+        marcarTag(f.tag, ver, (v3.x + 1) / 2 * window.innerWidth, (1 - v3.y) / 2 * window.innerHeight, d, C.rebufoDe === -2 && (C.rebufoAcc > 0 || C.rebufoT > 0));
       }
     }
     // Grabación: una muestra cada 0,1 s mientras corre el reloj de la carrera
@@ -1368,7 +1429,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       // Efectos de velocidad
       const v2 = Math.hypot(M.vx, M.vz);
       efectos.fovExtra += (clamp((v2 - 12) / 12, 0, 1) * 9 - efectos.fovExtra) * rate(efectos.fovExtra > 9 ? 1.5 : 3, dt);
-      efectos.lineas += ((C.boostT > 0 ? 0.55 * C.boostT / T_CARRERA.impulsoT : 0) + clamp((v2 - 17) / 10, 0, 0.25) - efectos.lineas) * rate(6, dt);
+      efectos.lineas += ((C.boostT > 0 ? 0.55 * C.boostT / T_CARRERA.impulsoT : 0) + clamp((v2 - 17) / 10, 0, 0.25)
+        + (C.turboT > 0 ? 0.35 + 0.45 * C.turboT / T_NUBES.turboT : 0) + (C.rebufoT > 0 ? 0.3 * C.rebufoT / T_NUBES.rebufoT : 0) - efectos.lineas) * rate(6, dt); // F1-8: turbo y rebufo, con líneas de velocidad
     }
     // ---------- Carrera de las nubes: nubes, hojas, aletazo turbo y rebufo (todo con números: nada nuevo por cuadro) ----------
     // ¿(x, y, z) está dentro de la nube n? Elipsoide (más ancha que alta), como el volumen que se ve
@@ -1392,7 +1454,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       // Nubes: cruzar cada una da un impulso corto, una sola vez por carrera
       for (let i = 0; i < N.nubes.length; i++) {
         if (C.nubeUsada[i] || !dentroNube(N.nubes[i], x, y, z)) continue;
-        C.nubeUsada[i] = 1; C.nubeImpulsos++;
+        C.nubeUsada[i] = 1; C.nubeImpulsos++; colorNube(N, i, true);
         C.boostT = Math.max(C.boostT, T_NUBES.nubeT); impulsar(T_NUBES.nubeImpulso); S.vy += 1.2;
         sonar('r_nube'); aviso('¡Nube!'); C.avisoT = ADEL.avisoS;
         if (!calma) { efectos.fovExtra += 6; G.fx.burst(x, y + 0.2, z, 'feathers', 6); }
@@ -1406,14 +1468,19 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         if (C.hojas >= T_NUBES.hojasTurbo) { aviso('¡Aletazo turbo listo!'); C.avisoT = ADEL.avisoS; break; }
       }
       // Rebufo: 1 s seguido detrás y cerca de una rival (o del fantasma) da un empujón; si sigues detrás, otro al segundo siguiente
-      let detras = false;
-      for (let i = 0; i < C.rivales.length && !detras; i++) { const r = C.rivales[i]; if (r.px != null && !r.llego) detras = rebufoDetras(S.pos.x, S.pos.y, S.pos.z, r.px, r.py, r.pz, Math.sin(r.ch.root.rotation.y), Math.cos(r.ch.root.rotation.y)); }
-      if (!detras && C.fan && C.fan.ch.root.visible) { const o = C.fan.ch.root; detras = rebufoDetras(S.pos.x, S.pos.y, S.pos.z, o.position.x, o.position.y, o.position.z, Math.sin(o.rotation.y), Math.cos(o.rotation.y)); }
+      // C.rebufoDe: a quién sigues (índice de la rival, -2 el fantasma, -1 nadie); su estela y su etiqueta se encienden
+      let detras = false, de = -1;
+      for (let i = 0; i < C.rivales.length && !detras; i++) { const r = C.rivales[i]; if (r.px != null && !r.llego) { detras = rebufoDetras(S.pos.x, S.pos.y, S.pos.z, r.px, r.py, r.pz, Math.sin(r.ch.root.rotation.y), Math.cos(r.ch.root.rotation.y)); if (detras) de = i; } }
+      if (!detras && C.fan && C.fan.ch.root.visible) { const o = C.fan.ch.root; detras = rebufoDetras(S.pos.x, S.pos.y, S.pos.z, o.position.x, o.position.y, o.position.z, Math.sin(o.rotation.y), Math.cos(o.rotation.y)); if (detras) de = -2; }
       C.rebufoAcc = detras ? C.rebufoAcc + dt : 0;
+      if (detras || C.rebufoT <= 0) C.rebufoDe = de;
       if (C.rebufoAcc >= T_NUBES.rebufoS) {
         C.rebufoAcc = 0; C.rebufoT = T_NUBES.rebufoT; C.rebufos++;
-        sonar('r_rebufo'); if (C.avisoT <= 0) { aviso('¡Rebufo!'); C.avisoT = ADEL.avisoS; }
+        sonar('r_rebufo'); aviso('¡Rebufo!'); C.avisoT = ADEL.avisoS; // siempre se ve: si había otro aviso, este lo sustituye
+        if (!calma) { efectos.fovExtra += 5; G.fx.burst(x, y, z, 'feathers', 5); }
       }
+      // Aletazo turbo: estela de plumas mientras dura (se ve que vas más rápido)
+      if (C.turboT > 0 && !calma) { C.plumaT -= dt; if (C.plumaT <= 0) { C.plumaT = 0.12; G.fx.burst(x, y, z, 'feathers', 3); } }
     }
     // Aletazo turbo (tecla de Acción o el botón): solo con 3 hojas y durante la carrera
     function usarTurbo() {
@@ -1528,7 +1595,6 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     }
     function mostrarResultadosCarrera() {
       if (C.nubes && st.dos) return mostrarResultadosDos();
-      ponerOtra('Otra vez');
       if (C.rio) return mostrarResultadosRio();
       resultados(() => {
         const p = C.puesto, md = ui.medalla;
@@ -1561,6 +1627,47 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         }
       }
     }
+    // ---------- Etiquetas de nombre (rivales y fantasma): sin montarse unas sobre otras ni sobre el HUD ----------
+    // marcarTag guarda dónde caería cada una; colocarTags las coloca: la más cercana primero; si una choca con otra ya puesta o
+    // con el HUD (chips, flecha, pausa, minimapa, turbo), baja justo debajo. Zonas del HUD: se releen una vez por segundo.
+    function marcarTag(tag, ver, x, y, d, rebufo) {
+      tag._ver = ver; tag._x = x; tag._y = y; tag._d = d;
+      if (tag._rb !== rebufo) { tag._rb = rebufo; tag.classList.toggle('rt-rebufo', rebufo); }
+    }
+    const TAGS = [], ZONAS = new Float32Array(4 * 12), _caja = new Float32Array(4 * 6);
+    let zonasN = 0, zonasT = 0;
+    function leerZonas() {
+      zonasN = 0;
+      const add = el => { if (!el || el.hidden || zonasN >= 12) return; const r = el.getBoundingClientRect(); if (r.width < 1 || r.height < 1) return; ZONAS.set([r.left - 4, r.top - 4, r.right + 4, r.bottom + 4], zonasN * 4); zonasN++; };
+      if (!ui.hud.hidden) for (const c of ui.hud.children) add(c);
+      add(ui.flecha); add(ui.turbo.hidden ? null : ui.turboBtn); add(document.getElementById('b-menu')); add(document.getElementById('minimapa'));
+    }
+    function choca(l, t, r, b, arr, n) { for (let k = 0; k < n; k++) { const o = k * 4; if (l < arr[o + 2] && r > arr[o] && t < arr[o + 3] && b > arr[o + 1]) return k; } return -1; }
+    function colocarTags(dt) {
+      TAGS.length = 0;
+      for (const t of C.tags) TAGS.push(t);
+      if (C.fan && C.fan.tag) TAGS.push(C.fan.tag);
+      for (let i = 1; i < TAGS.length; i++) { const t = TAGS[i]; let j = i - 1; while (j >= 0 && (TAGS[j]._d || 0) > (t._d || 0)) { TAGS[j + 1] = TAGS[j]; j--; } TAGS[j + 1] = t; }
+      zonasT -= dt || 0; if (zonasT <= 0) { zonasT = 1; leerZonas(); }
+      const W = window.innerWidth; let n = 0;
+      for (const t of TAGS) {
+        estilo(t, 'display', t._ver ? '' : 'none');
+        if (!t._ver || n >= 6) continue;
+        if (!t._w) { t._w = t.offsetWidth; t._h = t.offsetHeight; } // se mide una vez (ya visible)
+        const w = t._w || 60, h = t._h || 20;
+        let x = clamp(t._x, w / 2 + 4, W - w / 2 - 4), y = t._y;
+        for (let k = 0; k < 6; k++) {
+          const l = x - w / 2, r = x + w / 2, tp = y - h;
+          let c = choca(l, tp, r, y, _caja, n);
+          if (c >= 0) { y = _caja[c * 4 + 3] + h + 2; continue; }
+          c = choca(l, tp, r, y, ZONAS, zonasN);
+          if (c >= 0) { y = ZONAS[c * 4 + 3] + h + 2; continue; }
+          break;
+        }
+        _caja[n * 4] = x - w / 2; _caja[n * 4 + 1] = y - h; _caja[n * 4 + 2] = x + w / 2; _caja[n * 4 + 3] = y; n++;
+        estilo(t, 'transform', 'translate(' + x.toFixed(0) + 'px, ' + y.toFixed(0) + 'px) translate(-50%, -100%)');
+      }
+    }
     const _q = {};
     function dibujarCarrera(dt) {
       const Rr = ruta.R; if (!Rr || C.fase === 'nada') return;
@@ -1582,6 +1689,20 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       if (C.N) { // F1-8: las hojas giran y flotan (con «Reducir movimiento», quietas) y el HUD del turbo
         if (!quieto()) for (let i = 0; i < C.N.hojas.length; i++) if (C.N.hojas[i].activa) ponerHoja(C.N, i, now);
         pintarTurbo();
+        // Nubes: si la cámara (o lo que hay entre ella y Vittata) entra en una, se aclara para no tapar a Vittata
+        const cp = R.camera.position, mN = C.N.mallaN.material;
+        C.hondo = Math.min(hondoNube(C.N, cp.x, cp.y, cp.z), hondoNube(C.N, (cp.x + S.pos.x) / 2, (cp.y + S.pos.y + 0.6) / 2, (cp.z + S.pos.z) / 2));
+        const op = clamp((C.hondo - 0.55) / 0.6, 0.18, 1);
+        if (Math.abs(mN.opacity - op) > 0.004) mN.opacity = op;
+        const dw = op > 0.97; if (mN.depthWrite !== dw) mN.depthWrite = dw;
+        // Estelas del rebufo: detrás de cada rival en carrera; la que sigues brilla más
+        const E = C.N.estelas;
+        if (!quieto()) C.N.texEstela.offset.x = (C.N.texEstela.offset.x + dt * 2.4) % 1;
+        for (let i = 0; i < E.length; i++) {
+          const r = C.rivales[i], e = E[i], ver = !!(r && r.px != null && !r.llego && C.fase === 'juego');
+          if (e.visible !== ver) e.visible = ver;
+          if (ver) { e.position.set(r.px, r.py, r.pz); e.rotation.y = r.ch.root.rotation.y; const m = C.rebufoDe === i ? C.N.matE2 : C.N.matE; if (e.material !== m) e.material = m; }
+        }
       }
       dibujarFantasma(dt);
       // Rivales
@@ -1612,10 +1733,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         if (tag) {
           v3.set(x, y + 2.3, z).project(cam);
           const d = Math.hypot(x - S.pos.x, y - S.pos.y, z - S.pos.z), ver = v3.z < 1 && d < 90 && Math.abs(v3.x) < 1.1 && Math.abs(v3.y) < 1.1;
-          estilo(tag, 'display', ver ? '' : 'none');
-          if (ver) estilo(tag, 'transform', `translate(${((v3.x + 1) / 2 * w).toFixed(0)}px, ${((1 - v3.y) / 2 * h).toFixed(0)}px) translate(-50%, -100%)`);
+          marcarTag(tag, ver, (v3.x + 1) / 2 * w, (1 - v3.y) / 2 * h, d, C.rebufoDe === i && (C.rebufoAcc > 0 || C.rebufoT > 0));
         }
       }
+      colocarTags(dt);
       // HUD
       {
         const p = C.fase === 'fin' ? C.puesto : puestoActual();
@@ -2180,17 +2301,31 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           for (let s = 0; s < Rn.largo; s += 3) { const q = enRuta(s, {}); if (nivelAgua(q.x, q.z) === -Infinity) fueraN++; minN = Math.min(minN, q.y - superficie(q.x, q.z)); if (alto(q.x, q.z) > -Infinity) solidos++; }
           check('F1-8 · Ruta propia de 4 banderines y la meta, de 300 a 700 m', Rn !== ESC.carrera.R && Rn.puntos.length === 5 && Rn.puntos[4].meta && Rn.largo > 300 && Rn.largo < 700, Rn.puntos.length + ' · ' + Rn.largo);
           check('F1-8 · Toda sobre el mar, a más de 5 m, sin sólidos (edificios ni copas) en el recorrido', fueraN === 0 && minN > 5 && solidos === 0, fueraN + ' / ' + minN.toFixed(1) + ' / ' + solidos);
+          { const q0 = enRuta(4, {}), malas = LAT_NUBES.filter(l => { const x = q0.x - q0.tz * l, z = q0.z + q0.tx * l; return !(l < 0) || nivelAgua(x, z) === -Infinity || alto(x, z) > -Infinity; });
+            check('F1-8 · En la salida, las rivales esperan del lado del mar (no sobre el muelle ni la playa)', !malas.length, malas.join(',')); }
           let inst = 0, anillosN = 0; C.grupo.traverse(o => { if (o.isInstancedMesh) inst++; if (o.geometry && /Ring|Torus/.test(o.geometry.type)) anillosN++; });
           const mN = C.N.mallaN, e0 = new THREE.Matrix4(), sc = new THREE.Vector3(); mN.getMatrixAt(0, e0); sc.setFromMatrixScale(e0);
           check('F1-8 · Nubes y hojas instanciadas: solo 2 mallas nuevas, sin anillos', inst === 2 && !anillosN && mN.count === T_NUBES.nubes * BOLAS_NUBE.length && C.N.mallaH.count === C.N.hojas.length, inst + ' / ' + anillosN);
           check('F1-8 · Las nubes son volumen (bolas suaves, no aros ni puertas)', mN.geometry.type === 'IcosahedronGeometry' && sc.y > 1 && sc.x > 1, mN.geometry.type + ' ' + sc.toArray().map(v => v.toFixed(1)).join(','));
+          check('F1-8 · Nubes de detalle 3 (sin caras planas de cerca)', mN.geometry.parameters.detail === 3, mN.geometry.parameters.detail);
+          { let regla = null; for (const r of document.getElementById('retos-css').sheet.cssRules) if (r.media && /max-height:\s*500px/.test(r.media.mediaText)) regla = r;
+            const txt = regla ? Array.from(regla.cssRules).map(x => x.cssText).join(' ') : '';
+            check('F1-8 · Teléfono en horizontal: cuenta bajo el HUD, flecha en espera y resultados compactos', /\.rt-cuenta/.test(txt) && /rt-contando \.rt-flecha/.test(txt) && /\.rt-fin \.rt-datos/.test(txt) && ui.el.classList.contains('rt-contando'), regla ? regla.media.mediaText : 'sin regla'); }
           const rg = document.createRange(); rg.selectNodeContents(ui.cuenta); const rc = rg.getBoundingClientRect();
           check('F1-8 · La cuenta 3-2-1 sube: queda en la mitad de arriba (no tapa a Vittata)', ui.cuenta.textContent === '3' && rc.height > 0 && rc.bottom < innerHeight * 0.5, Math.round(rc.top) + '–' + Math.round(rc.bottom) + ' de ' + innerHeight);
           const bt = ui.turboBtn.getBoundingClientRect();
           check('F1-8 · Botón «Aletazo turbo» a la vista, de 44 px o más, aún sin cargar', !ui.turbo.hidden && bt.width >= 44 && bt.height >= 44 && ui.turboBtn.getAttribute('aria-disabled') === 'true' && usarTurbo() === false, Math.round(bt.width) + '×' + Math.round(bt.height));
           await crearRivales(); await esperar(30);
           tick(3);
-          check('F1-8 · Tras 3-2-1 corre, con 3 rivales', C.fase === 'juego' && C.rivales.length === 3);
+          check('F1-8 · Tras 3-2-1 corre, con 3 rivales', C.fase === 'juego' && C.rivales.length === 3 && !ui.el.classList.contains('rt-contando'));
+          { // Etiquetas: tres en el mismo sitio y una encima del botón de pausa → ninguna se monta ni tapa el HUD
+            const bm = document.getElementById('b-menu').getBoundingClientRect();
+            C.tags.forEach((t, i) => marcarTag(t, true, 300, 300, 10 + i, false)); zonasT = 0; colocarTags(0);
+            const rs = C.tags.map(t => t.getBoundingClientRect()), sol = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+            const monta = rs.some((a, i) => rs.some((b, j) => j > i && sol(a, b)));
+            marcarTag(C.tags[0], true, (bm.left + bm.right) / 2, bm.bottom - 2, 5, false); colocarTags(0);
+            const r0 = C.tags[0].getBoundingClientRect();
+            check('F1-8 · Las etiquetas de las rivales no se montan unas sobre otras ni sobre la pausa', !monta && !(bm.width && sol(r0, bm)), rs.map(r => Math.round(r.top)).join(',') + ' · pausa ' + Math.round(bm.bottom) + ' → ' + Math.round(r0.top)); }
           // Hojas: 3 llenan el turbo; con el turbo lleno no se recogen más
           const g0 = C.N.hojas.filter(h => h.g === 0), cuenta = [];
           for (const h of g0) { colocarJugador(h.x, h.y - 0.6, h.z, 1, 0); C.sJug = proyectar(h.x, h.z, C.sJug); tick(0.05); cuenta.push(C.hojas); }
@@ -2199,7 +2334,18 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           check('F1-8 · 3 hojas llenan el «Aletazo turbo» (y con él lleno no se gastan más hojas)', cuenta.join(',') === '1,2,3' && C.hojas === 3 && ui.turboBtn.classList.contains('lleno') && ui.turboBtn.getAttribute('aria-disabled') === 'false' && ui.hojasI.every(i => i.classList.contains('si')) && h4.activa, cuenta.join(','));
           { const q = enRuta(C.sJug, {}); M.vx = q.tx * 12; M.vz = q.tz * 12; const v0 = Math.hypot(M.vx, M.vz), t0 = C.turbos;
             dispatchEvent(new KeyboardEvent('keydown', { key: 'e', code: 'KeyE' })); dispatchEvent(new KeyboardEvent('keyup', { key: 'e', code: 'KeyE' }));
-            check('F1-8 · Tú eliges cuándo: la tecla de Acción gasta el turbo (más velocidad) y vacía las hojas', C.turbos === t0 + 1 && C.turboT > 0 && C.hojas === 0 && Math.hypot(M.vx, M.vz) > v0 + 5 && usarTurbo() === false, v0.toFixed(1) + ' → ' + Math.hypot(M.vx, M.vz).toFixed(1)); }
+            check('F1-8 · Tú eliges cuándo: la tecla de Acción gasta el turbo (más velocidad) y vacía las hojas', C.turbos === t0 + 1 && C.turboT > 0 && C.hojas === 0 && Math.hypot(M.vx, M.vz) > v0 + 5 && usarTurbo() === false, v0.toFixed(1) + ' → ' + Math.hypot(M.vx, M.vz).toFixed(1));
+            tick(0.3);
+            check('F1-8 · El turbo se ve: líneas de velocidad fuertes mientras dura', C.turboT > 0 && efectos.lineas > 0.4, efectos.lineas.toFixed(2)); }
+          { const antes = G.input.mapa.accion, sp = ui.turboBtn.querySelector('.rt-tecla');
+            try {
+              G.input.asignar('accion', 'k'); C.hojas = 3; const t1 = C.turbos;
+              dispatchEvent(new KeyboardEvent('keydown', { key: 'e', code: 'KeyE' })); dispatchEvent(new KeyboardEvent('keyup', { key: 'e', code: 'KeyE' }));
+              const conE = C.turbos;
+              dispatchEvent(new KeyboardEvent('keydown', { key: 'k', code: 'KeyK' })); dispatchEvent(new KeyboardEvent('keyup', { key: 'k', code: 'KeyK' }));
+              check('F1-8 · Si cambias la tecla de Acción, el botón del turbo la anuncia y es la que lo lanza', ui.turboBtn.getAttribute('aria-keyshortcuts') === 'K' && (TACTIL || sp.textContent === 'K') && conE === t1 && C.turbos === t1 + 1, ui.turboBtn.getAttribute('aria-keyshortcuts') + ' · ' + sp.textContent + ' · ' + (conE - t1) + '/' + (C.turbos - t1));
+            } finally { G.input.asignar('accion', antes); }
+            check('F1-8 · Al volver a la tecla de siempre, la pista vuelve', ui.turboBtn.getAttribute('aria-keyshortcuts') === G.input.etiqueta(antes)); }
           // Nube: cruzarla da un impulso, una sola vez
           const cruzarNube = n => {
             // Vuela recto hacia la nube con «adelante» pulsado (como quien juega): la velocidad de crucero antes y la máxima al cruzarla
@@ -2210,12 +2356,22 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           };
           const nb = C.N.nubes[2], i0 = C.nubeImpulsos, [vn0, vnMax] = cruzarNube(nb), i1 = C.nubeImpulsos;
           colocarJugador(nb.x, nb.y - 0.6, nb.z, 1, 0); C.sJug = proyectar(nb.x, nb.z, nb.s); tick(0.3);
+          { const c0 = new THREE.Color(), c1 = new THREE.Color(); C.N.mallaN.getColorAt(2 * BOLAS_NUBE.length, c0); C.N.mallaN.getColorAt(3 * BOLAS_NUBE.length, c1);
+            colocarJugador(C.N.nubes[3].x, C.N.nubes[3].y - 0.6, C.N.nubes[3].z, 1, 0); G.camara.place(true); C.nubeUsada[3] = 1; // dentro de la 3 (sin impulso: ya «usada»)
+            modo.render(0.016); const opDentro = C.N.mallaN.material.opacity, dwDentro = C.N.mallaN.material.depthWrite;
+            const lejos = enRuta(5, {}); colocarJugador(lejos.x, lejos.y, lejos.z, lejos.tx, lejos.tz); G.camara.place(true); modo.render(0.016);
+            check('F1-8 · La nube cruzada se apaga; dentro de una nube se aclara (Vittata se ve) y fuera vuelve a ser opaca', c0.r < 0.9 && c1.r === 1 && opDentro < 0.6 && !dwDentro && C.N.mallaN.material.opacity === 1 && C.N.mallaN.material.depthWrite, c0.r.toFixed(2) + ' · ' + opDentro.toFixed(2) + ' → ' + C.N.mallaN.material.opacity.toFixed(2) + ' · hondo ' + C.hondo.toFixed(2));
+            C.nubeUsada[3] = 0; }
           check('F1-8 · Cruzar una nube da un impulso, una sola vez (aunque vuelvas a entrar)', i1 === i0 + 1 && C.nubeImpulsos === i1 && C.nubeUsada[2] === 1 && vnMax > vn0 + 3, (i1 - i0) + ' · ' + vn0.toFixed(1) + ' → ' + vnMax.toFixed(1));
           // Rebufo: solo detrás y cerca
           check('F1-8 · Rebufo: cuenta detrás y cerca; delante, lejos, al lado o arriba, no', rebufoDetras(0, 0, -4, 0, 0, 0, 0, 1) && rebufoDetras(0.5, 1, -8, 0, 0, 0, 0, 1) && !rebufoDetras(0, 0, 4, 0, 0, 0, 0, 1) && !rebufoDetras(0, 0, -15, 0, 0, 0, 0, 1) && !rebufoDetras(4, 0, -4, 0, 0, 0, 0, 1) && !rebufoDetras(0, 4, -4, 0, 0, 0, 0, 1) && !rebufoDetras(0, 0, -0.3, 0, 0, 0, 0, 1));
           const seguir = (k, pasos) => { const r0 = C.rivales[0]; for (let i = 0; i < pasos; i++) { modo.render(0.016); const y = r0.ch.root.rotation.y, fx = Math.sin(y), fz = Math.cos(y); colocarJugador(r0.px + fx * k, r0.py, r0.pz + fz * k, fx, fz); M.vx = fx * r0.v; M.vz = fz * r0.v; C.sJug = proyectar(S.pos.x, S.pos.z, r0.s); tick(0.05); } };
           C.rivales.forEach(r => { r.s = Math.max(r.s, 40); });
-          const rb0 = C.rebufos; seguir(-5, 12); const rbCorto = C.rebufos; seguir(-5, 14); const rbDetras = C.rebufos; seguir(5, 30); const rbDelante = C.rebufos;
+          const rb0 = C.rebufos; seguir(-5, 12); const rbCorto = C.rebufos;
+          aviso('¡Nube!'); C.avisoT = 5; seguir(-5, 14); const rbDetras = C.rebufos;
+          { const e0 = C.N.estelas[0];
+            check('F1-8 · Rebufo visible: «¡Rebufo!» aunque hubiera otro aviso; la estela y la etiqueta de quien sigues se encienden', ui.aviso.textContent === '¡Rebufo!' && C.rebufoDe === 0 && e0.visible && e0.material === C.N.matE2 && C.N.estelas[1].material === C.N.matE && C.tags[0].classList.contains('rt-rebufo'), ui.aviso.textContent + ' · ' + C.rebufoDe); }
+          seguir(5, 30); const rbDelante = C.rebufos;
           check('F1-8 · Rebufo en la carrera: 1 s detrás de una rival da velocidad; menos de 1 s o delante, no', rbCorto === rb0 && rbDetras === rb0 + 1 && rbDelante === rbDetras, rb0 + ' / ' + rbCorto + ' / ' + rbDetras + ' / ' + rbDelante);
           // Robot medio: sigue la ruta con algo de zigzag, usa el turbo en cuanto lo tiene y no busca las nubes ni el rebufo
           otraVez(); for (let i = 0; i < 80 && C.rivales.length < 3; i++) await esperar(25);
@@ -2260,7 +2416,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
           check('F1-8 · Acaba el turno 1: «¡Ahora el Jugador 2!» y el botón lo dice', C.fase === 'fin' && st.fase === 'fin' && ui.finT.textContent === '¡Ahora el Jugador 2!' && /^Empieza el Jugador 2/.test(ui.otra.textContent) && st.dos.fantasma && st.dos.fantasma.n >= 30, ui.finT.textContent);
           otraVez(); for (let i = 0; i < 80 && !C.fan; i++) await esperar(25);
           check('F1-8 · Turno 2: vuela contra el fantasma del Jugador 1 (el mismo fantasma de la carrera)', st.dos.paso === 1 && C.fan && C.fan.ch.root.visible && C.fan.tag.textContent === 'Jugador 1' && C.fan.n === st.dos.fantasma.n && !C.rivales.length);
-          tick(3); meta(1); tick(2);
+          tick(3);
+          { const rf = C.rebufos; for (let i = 0; i < 26; i++) { modo.render(0.016); const o = C.fan.ch.root, fx = Math.sin(o.rotation.y), fz = Math.cos(o.rotation.y); colocarJugador(o.position.x - fx * 4, o.position.y, o.position.z - fz * 4, fx, fz); C.sJug = proyectar(S.pos.x, S.pos.z, C.sJug); tick(0.05); }
+            check('F1-8 · Turno 2: detrás del fantasma del Jugador 1 también hay rebufo', C.rebufos > rf, (C.rebufos - rf) + ' · ' + C.rebufoDe); }
+          meta(1); tick(2);
           const recDos = JSON.parse(leer(claveRec) || 'null') || {};
           check('F1-8 · Gana quien tarda menos; marcador de la serie; «Otra ronda»; los récords no cambian', st.dos.ganador === 2 && st.dos.serie.join('-') === '0-1' && ui.finT.textContent === '¡Gana el Jugador 2!' && /^Otra ronda/.test(ui.otra.textContent) && recDos.nubes.jugadas === jugN, ui.finT.textContent + ' · ' + st.dos.serie.join('-'));
           otraVez();
@@ -2318,11 +2477,16 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
         tick(2);
         const rec3 = JSON.parse(leer(claveRec) || 'null');
         check('Resultados y récord de puntos', st.fase === 'fin' && !ui.fin.hidden && rec3.tormenta.mejor === TM.total && TM.total >= TM.puntos + 200, TM.total);
+        check('F1-8 · Tras «Para dos», otro reto vuelve a decir «Otra vez» (no «Otra ronda»)', /^Otra vez/.test(ui.otra.textContent), ui.otra.textContent);
         // ---------- Salir ----------
-        const KN = ESC.nubes; let liberados = 0;
+        const KN = ESC.nubes; let liberados = 0, paloLib = 0; const lPalo = () => paloLib++; if (MAT.palo) MAT.palo.addEventListener('dispose', lPalo);
+        st.dos = nuevaSerieDos(); C.nubes = true;
         if (KN && KN.N) for (const m of [KN.N.mallaN, KN.N.mallaH]) { m.addEventListener('dispose', () => liberados++); m.geometry.addEventListener('dispose', () => liberados++); m.material.addEventListener('dispose', () => liberados++); }
         salir();
         check('F1-8 · Al salir se liberan las nubes y las hojas (geometrías, materiales e InstancedMesh)', KN && liberados === 6 && !ESC.nubes && !C.N, liberados);
+        if (MAT.palo) MAT.palo.removeEventListener('dispose', lPalo);
+        check('F1-8 · …pero no los materiales compartidos de los otros retos (MAT.palo de los banderines)', paloLib === 0, paloLib);
+        check('F1-8 · Al salir no queda la serie de «Para dos» ni el estado de las nubes', st.dos === null && C.nubes === false && C.nubeUsada === null && C.hojas === 0);
         check('Al salir se quitan las envolturas', G.ui.busy === busy0 && F.step === step0 && !document.body.classList.contains('retos-on'));
         check('Al salir el mar vuelve a su agua', G.agua.uniforms.uTormenta.value === 0);
         check('Al salir G.quiet vuelve a como estaba', G.quiet === quiet0);
