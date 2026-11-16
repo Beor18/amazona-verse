@@ -65,11 +65,14 @@ window.AVRendimientoModulos = function (G) {
     // lo que el recorte puede apagar: instancias (≤ 4000) y cuerpos con esqueleto sin recorte de three; con sol, no lo que da sombra
     const candidato = o => (o.isInstancedMesh ? o.count > 0 && o.count <= 4000 : o.isSkinnedMesh && o.frustumCulled === false) && !(sombra() && o.castShadow) && !o.userData.sinCulling;
     const cuadro = activo => {
-      const rr = R.renderer, orig = rr.renderBufferDirect, dib = new Set(); let n = 0, nFuera = 0;
+      // QA-nuevo-t54-2: solo el dibujo real (por renderer.render); el precalentado dentro de R.render va por el render crudo
+      // (sinCuenta) y también usa la cámara principal: no es del recorte y cae en cuadros sueltos (mismo arreglo que streamingTest)
+      const rr = R.renderer, orig = rr.renderBufferDirect, origR = rr.render, dib = new Set(); let n = 0, nFuera = 0, dentro = 0;
       FC.activo = activo;
-      rr.renderBufferDirect = function (c, sc, geo, mat, obj) { if (c === cam) { n++; dib.add(obj); if (candidato(obj) && fuera(obj)) nFuera++; } return orig.apply(this, arguments); };
+      rr.renderBufferDirect = function (c, sc, geo, mat, obj) { if (c === cam && dentro) { n++; dib.add(obj); if (candidato(obj) && fuera(obj)) nFuera++; } return orig.apply(this, arguments); };
+      rr.render = function () { dentro++; try { return origR.apply(this, arguments); } finally { dentro--; } };
       try { if (G.camara.place) G.camara.place(true); cam.updateMatrixWorld(); fr.setFromProjectionMatrix(mm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse)); R.render(1 / 60, false); }
-      finally { rr.renderBufferDirect = orig; FC.activo = true; }
+      finally { rr.renderBufferDirect = orig; rr.render = origR; FC.activo = true; }
       return { n, nFuera, dib, apagados: FC.ultimo };
     };
     const yaw0 = G.camara.yaw;
@@ -93,7 +96,7 @@ window.AVRendimientoModulos = function (G) {
         filas.push('giro ' + yaw.toFixed(1) + ': ' + a.n + '→' + d.n + ' calls, fuera ' + a.nFuera + '→' + d.nFuera + ', apagadas ' + d.apagados);
       }
       ok('T46 · lo que deja de dibujarse estaba de verdad fuera de cámara (nada visible desaparece)', malos === 0, malos + ' a la vista sin dibujar' + (malos ? ' (' + nombresMalos.slice(0, 5).join(', ') + ')' : '') + ' · ' + filas.join(' · '));
-      ok('T46 · fuera de cámara se dibuja menos que sin el recorte (y nunca más draw calls)', (antes === 0 || despues < antes) && callsD <= callsA,
+      ok('T46 · fuera de cámara se dibuja menos que sin el recorte (y nunca más draw calls)', callsA > 0 && (antes === 0 || despues < antes) && callsD <= callsA,
         'fuera ' + antes + '→' + despues + ' · calls ' + callsA + '→' + callsD + ' · ' + (G.renderer.calidad && G.renderer.calidad.nivel) + (sombra() ? ' con sombras' : ' sin sombras'));
     } catch (e) { ok('T46 · recorte fuera de cámara sin excepciones', false, e && e.message); }
     finally { G.camara.yaw = yaw0; FC.activo = true; }

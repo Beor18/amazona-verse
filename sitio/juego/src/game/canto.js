@@ -50,7 +50,10 @@ window.AVCanto = function (G) {
       '#canto .c-ave.luz{background:var(--l);transform:scale(1.05);box-shadow:0 0 0 6px rgba(255,255,255,.65),0 0 30px var(--l)}#canto .c-ave[aria-disabled="true"]{cursor:default}' +
       '#canto .c-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}#canto .c-bots button{min-height:48px;padding:6px 18px;font:700 17px Fredoka,system-ui,sans-serif;border-radius:24px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer}' +
       '#canto .c-bots button[hidden]{display:none}#canto .c-bots .c-salir{background:#ffd0c4}' +
-      'body.canto-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir){visibility:hidden!important}' + // el juego tapa todo: sin HUD detrás
+      'body.canto-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir,#quest,#inv,#b-diary,#b-emotes,#b-menu,#b-construir,#b-nido,#minimapa,#marcador,#top,#sys){visibility:hidden!important}' + // el juego tapa todo: sin HUD detrás
+      // T51: en horizontal (teléfono tumbado) las cuatro en una fila, del tamaño que deja el alto; «Salir» siempre a la vista
+      '@media (orientation:landscape) and (max-height:560px){#canto .c-caja{width:min(900px,100%);gap:8px}#canto h2{font-size:24px}#canto .c-msg{font-size:17px;min-height:1.2em;margin:0}' +
+      '#canto .c-aves{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(100%,calc((100dvh - 170px) * 4 + 30px))}#canto .c-ave{border-radius:20px;font-size:15px}#canto .c-bots button{min-height:44px}}' +
       '@media (prefers-reduced-motion:reduce){#canto .c-ave{transition:none}#canto .c-ave.luz{transform:none}}';
     document.head.appendChild(st);
   }

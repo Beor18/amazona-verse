@@ -267,6 +267,30 @@
         P.push(parte(new C.BoxGeometry(1.84, 0.08, 0.1), '#b08a5c', { p: [0, 0.26, 0], m: 'tablas', uv: [2, 0.1] }));
         return P;
       } },
+      // T59 · Pared con puerta: horcones, viga, tablas a los lados y arriba, y el hueco de la puerta en el centro (con su marco)
+      puerta: { r: 1.0, sobre: true, iman: 'pared', hacer() {
+        const P = [];
+        for (const x of [-0.94, 0.94]) P.push(parte(new C.BoxGeometry(0.14, 1.9, 0.14), '#d2b48c', { p: [x, 0.95, 0], m: 'tablas', uv: [0.15, 1.8] }));
+        P.push(parte(new C.BoxGeometry(2.04, 0.12, 0.16), '#c9a77c', { p: [0, 1.86, 0], m: 'tablas', uv: [2, 0.12] }));
+        for (const sg of [-1, 1]) P.push(parte(new C.BoxGeometry(0.5, 1.5, 0.08), '#ead7b8', { p: [sg * 0.62, 0.97, 0], m: 'tablas', uv: [0.5, 1.5] }));
+        P.push(parte(new C.BoxGeometry(0.74, 0.3, 0.08), '#ead7b8', { p: [0, 1.57, 0], m: 'tablas', uv: [0.74, 0.3] }));
+        for (const sg of [-1, 1]) P.push(parte(new C.BoxGeometry(0.08, 1.3, 0.12), '#8a6236', { p: [sg * 0.37, 0.72, 0], m: 'tablas', uv: [0.1, 1.3] }));
+        P.push(parte(new C.BoxGeometry(0.82, 0.08, 0.12), '#8a6236', { p: [0, 1.4, 0], m: 'tablas', uv: [0.8, 0.1] }));
+        return P;
+      } },
+      // T59 · Pared con ventana: como la pared, con una ventana con su marco y dos postigos abiertos
+      ventana: { r: 1.0, sobre: true, iman: 'pared', hacer() {
+        const P = [];
+        for (const x of [-0.94, 0.94]) P.push(parte(new C.BoxGeometry(0.14, 1.9, 0.14), '#d2b48c', { p: [x, 0.95, 0], m: 'tablas', uv: [0.15, 1.8] }));
+        P.push(parte(new C.BoxGeometry(2.04, 0.12, 0.16), '#c9a77c', { p: [0, 1.86, 0], m: 'tablas', uv: [2, 0.12] }));
+        P.push(parte(new C.BoxGeometry(1.84, 0.62, 0.08), '#ead7b8', { p: [0, 0.53, 0], m: 'tablas', uv: [1.8, 0.6] }));
+        P.push(parte(new C.BoxGeometry(1.84, 0.36, 0.08), '#ead7b8', { p: [0, 1.54, 0], m: 'tablas', uv: [1.8, 0.36] }));
+        for (const sg of [-1, 1]) P.push(parte(new C.BoxGeometry(0.42, 0.52, 0.08), '#ead7b8', { p: [sg * 0.71, 1.1, 0], m: 'tablas', uv: [0.42, 0.52] }));
+        for (const sg of [-1, 1]) P.push(parte(new C.BoxGeometry(0.06, 0.6, 0.12), '#8a6236', { p: [sg * 0.5, 1.1, 0], m: 'tablas', uv: [0.06, 0.6] }));
+        for (const y of [0.84, 1.36]) P.push(parte(new C.BoxGeometry(1.06, 0.06, 0.12), '#8a6236', { p: [0, y, 0], m: 'tablas', uv: [1, 0.06] }));
+        for (const sg of [-1, 1]) P.push(parte(new C.BoxGeometry(0.3, 0.5, 0.04), '#3f8f6a', { p: [sg * 0.66, 1.1, 0.16], r: [0, sg * 0.9, 0] }));
+        return P;
+      } },
       // Muro de piedra: bloques de piedra con su remate
       muro: { r: 1.0, sobre: true, iman: 'pared', hacer() {
         return [parte(new C.BoxGeometry(2.0, 0.95, 0.34), '#f2ebe0', { p: [0, 0.48, 0], m: 'piedra', uv: [2, 1] }),
@@ -297,11 +321,11 @@
     };
     // BASE: las 7 de siempre, de todos desde el principio. EXTRA: las del Mercadito del río (pack.tienda.construir), solo cuando se compran.
     const BASE = ['nido', 'techo', 'bromelia', 'flores', 'piedra', 'tronco', 'banderines'];
-    const CASA = ['piso', 'pared', 'muro', 'tejado', 'maceta']; // T39: de todos desde el principio, detrás de las 7 de siempre
+    const CASA = ['piso', 'pared', 'puerta', 'ventana', 'muro', 'tejado', 'maceta']; // T39: de todos desde el principio, detrás de las 7 de siempre
     const EXTRA = ['helecho', 'cerca', 'farol', 'comedero', 'domino', 'hamaca'];
     const ORDEN = BASE.concat(CASA, EXTRA);
     const NOMBRE = { nido: 'Nido de ramitas', techo: 'Techo de hojas', bromelia: 'Bromelia', flores: 'Flores', piedra: 'Piedras', tronco: 'Tronco', banderines: 'Banderines',
-      piso: 'Piso de tablas', pared: 'Pared de tablas', muro: 'Muro de piedra', tejado: 'Tejado de paja', maceta: 'Maceta con heliconia',
+      piso: 'Piso de tablas', pared: 'Pared de tablas', puerta: 'Pared con puerta', ventana: 'Pared con ventana', muro: 'Muro de piedra', tejado: 'Tejado de paja', maceta: 'Maceta con heliconia',
       helecho: 'Helecho', cerca: 'Cerca de bambú', farol: 'Farol', comedero: 'Comedero de aves', domino: 'Mesa de dominó', hamaca: 'Hamaca' };
     // Una pieza del Mercadito es tuya si está en S.tienda.compras (src/game/tienda.js la valida al cargar; aquí solo se lee)
     const compradas = () => { try { if (G.tienda && G.tienda.compradas) return G.tienda.compradas(); const t = S.tienda; return esObj(t) && Array.isArray(t.compras) ? t.compras : []; } catch (e) { return []; } };
@@ -696,6 +720,8 @@
       // T39
       piso: '<path d="M2 20l14-7 14 7-14 7z" fill="#c9a77c"/><path d="M6 18l14 7M10 16l14 7M14 14l14 7" stroke="#8a6236" stroke-width="1.2"/><path d="M2 20v3l14 7 14-7v-3" fill="none" stroke="#6b4a2b" stroke-width="2"/>',
       pared: '<rect x="5" y="8" width="22" height="18" fill="#d9bc8f"/><path d="M5 13h22M5 18h22M5 23h22" stroke="#8a6236" stroke-width="1.2"/><path d="M5 5v24M27 5v24" stroke="#6b4a2b" stroke-width="3"/><path d="M3 6h26" stroke="#8a6236" stroke-width="2.6"/>',
+      puerta: '<rect x="5" y="8" width="22" height="18" fill="#d9bc8f"/><rect x="12" y="13" width="8" height="13" fill="#5a3a22"/><path d="M12 13h8v13" stroke="#8a6236" stroke-width="1.6" fill="none"/><path d="M5 5v24M27 5v24" stroke="#6b4a2b" stroke-width="3"/><path d="M3 6h26" stroke="#8a6236" stroke-width="2.6"/>',
+      ventana: '<rect x="5" y="8" width="22" height="18" fill="#d9bc8f"/><rect x="11" y="12" width="10" height="8" fill="#9ed0ff"/><path d="M11 12h10v8H11zM16 12v8" stroke="#8a6236" stroke-width="1.4" fill="none"/><path d="M7 12l4 1v6l-4 1zM25 12l-4 1v6l4 1z" fill="#3f8f6a"/><path d="M5 5v24M27 5v24" stroke="#6b4a2b" stroke-width="3"/><path d="M3 6h26" stroke="#8a6236" stroke-width="2.6"/>',
       muro: '<path d="M3 14h26v14H3z" fill="#cfc4b2"/><path d="M3 21h26M10 14v7M20 14v7M6 21v7M15 21v7M24 21v7" stroke="#8d8577" stroke-width="1.4"/><path d="M2 12h28v3H2z" fill="#b5ab9b"/>',
       tejado: '<path d="M2 16L16 5l14 11z" fill="#d9c48a"/><path d="M6 13l3 3M12 9l3 4M18 9l2 4M24 12l2 3" stroke="#a88e4f" stroke-width="1.4"/><path d="M7 16v13M25 16v13" stroke="#6b4a2b" stroke-width="2.4"/><path d="M2 16h28" stroke="#8a6236" stroke-width="1.6"/>',
       maceta: '<path d="M9 19h14l-2 10H11z" fill="#b5562f"/><path d="M8 18h16v2H8z" fill="#c96a3d"/><path d="M16 18V6M16 18l-6-9M16 18l6-10" stroke="#3f8a35" stroke-width="2.4" stroke-linecap="round"/><path d="M14 8l4-2-1 4zM10 12l3-1v3zM19 11l3 1-2 2z" fill="#e2363b"/>',
@@ -877,7 +903,7 @@
         // 2. Encendida a la fuerza (solo la prueba): escena, entradas y modo
         forzar(true);
         S.construir = null; aplicar(null);
-        check('Encendida: 7 piezas de siempre, 5 de la casita (T39) y 6 del Mercadito, un InstancedMesh por tipo (solo se dibujan los que tienen piezas)', BASE.length === 7 && CASA.length === 5 && EXTRA.length === 6 && ORDEN.every(t => mallas[t] && mallas[t].isInstancedMesh) && grupo.children.filter(o => o.isInstancedMesh).length === ORDEN.length && ORDEN.every(t => !mallas[t].visible));
+        check('Encendida: 7 piezas de siempre, 7 de la casita (T39 y T59: puerta y ventana) y 6 del Mercadito, un InstancedMesh por tipo (solo se dibujan los que tienen piezas)', BASE.length === 7 && CASA.length === 7 && EXTRA.length === 6 && ORDEN.every(t => mallas[t] && mallas[t].isInstancedMesh) && grupo.children.filter(o => o.isInstancedMesh).length === ORDEN.length && ORDEN.every(t => !mallas[t].visible));
         check('Encendida: botón del HUD y tarjeta del menú', !!$('b-construir') && !!$('b-construir-menu'));
         {
           const cl = document.body.classList, tenia = cl.contains('duelo-on');
@@ -1034,6 +1060,8 @@
             puso && puso2 && puso3 && imanPiso.iman && Math.abs(imanPiso.dx - 2) < 1e-3 && Math.abs(imanPiso.dz) < 1e-3 && imanPiso.dorado &&
             imanPared.iman && Math.abs(imanPared.dx) < 1e-3 && Math.abs(imanPared.dz - 1) < 1e-3 && imanPared.r === 0 && imanTejado.iman && Math.abs(imanTejado.dx) < 1e-3 && Math.abs(imanTejado.dz) < 1e-3 && sinIman,
             JSON.stringify({ puso, motivo0, puso2, puso3, imanPiso, imanPared, imanTejado, sinIman, motivo: est.motivo }));
+          S.pos.x = p0.x + 0.3; S.pos.z = p0.z - 0.75; elegir('puerta'); actualizar();
+          check('T59 · la pared con puerta y la de ventana encajan como la pared (borde del piso) y llevan tablas', est.iman && Math.abs(est.z - (c0.z - 1)) < 1e-3 && geos.puerta.userData.mats.includes('tablas') && geos.ventana.userData.mats.includes('tablas') && imanes('ventana').length > 0, JSON.stringify({ iman: est.iman, dz: +(est.z - c0.z).toFixed(3) }));
           const g = geos.pared, gp = geos.piso, ms = mallas.piso.material;
           check('T39 · las piezas de la casita llevan texturas del kit (tablas, piedra, paja), un grupo por material, y se piden al usarlas',
             Array.isArray(ms) && gp.groups.length === 2 && g.groups.length === 1 && geos.muro.userData.mats.includes('piedra') && geos.tejado.userData.mats.includes('paja') && !!cargadas.tablas &&

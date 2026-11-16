@@ -531,7 +531,7 @@ window.AVTienda = function (G) {
       const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => `<link rel="stylesheet" href="${l.href}">`).join('');
       fr.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${estilo.outerHTML}<style>#card{animation:none!important}</style></head><body><div id="card" class="hud panel" role="dialog">${$('card').innerHTML}</div></body></html>`;
       document.body.appendChild(fr);
-      await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+      await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 15000); }); // T64: hasta 15 s con la máquina cargada (QA-nuevo-t54-1)
       const md = fr.contentDocument, mal = [];
       if (!md || !md.getElementById('tienda')) mal.push('la maqueta no cargó');
       else {

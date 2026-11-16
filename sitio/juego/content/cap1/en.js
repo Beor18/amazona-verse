@@ -3017,5 +3017,12 @@ window.AV_EN = {
  "¡Casita lista! Cámbiala a tu gusto o toca Deshacer.": "House ready! Change it as you like or tap Undo.",
  "Puse lo que cabía. Cámbialo a tu gusto o toca Deshacer.": "I placed what fit. Change it as you like or tap Undo.",
  "Deshacer · {}": "Undo · {}",
- "Supr": "Delete"
+ "Supr": "Delete",
+ "Encuentra a los 3 pichones": "Find the 3 chicks",
+ "River Rush, la tormenta, el banquete, el canto y el escondite": "River Rush, the storm, the feast, the song and hide-and-seek",
+ "¡Escondite! Encuentra a los pichones. El pío se oye más fuerte cerca.": "Hide-and-seek! Find the chicks. The peep gets louder when you are close.",
+ "¡Los encontraste!": "You found them!",
+ "Se escondieron otra vez. Cuando quieras, otra ronda.": "They hid again. Another round whenever you want.",
+ "Pared con puerta": "Wall with door",
+ "Pared con ventana": "Wall with window"
 };

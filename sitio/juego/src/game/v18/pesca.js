@@ -937,7 +937,10 @@ window.AVV18Pesca = function (G) {
         const hojas = [...document.querySelectorAll('link[rel="stylesheet"]')].map(l => `<link rel="stylesheet" href="${l.href}">`).join('');
         fr.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${document.getElementById('v18-pesca-css').outerHTML}</head><body class="v18-pesca-on">${hud.el.outerHTML}</body></html>`;
         document.body.appendChild(fr);
-        await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+        // QA-nuevo-t54-1: con la máquina cargada (dos Chrome y GPU por software) el srcdoc tardaba más de 4 s y la prueba medía
+        // el about:blank inicial («la maqueta no cargó»); mismo arreglo que la maqueta del duelo (combate.js): hasta 15 s
+        let cargo = false;
+        await new Promise(r => { fr.addEventListener('load', () => { cargo = true; r(); }, { once: true }); setTimeout(r, 15000); });
         const md = fr.contentDocument, mal = [];
         const panel = vis => {
           const e = md.getElementById('v18-pesca'); e.hidden = false;
@@ -946,7 +949,7 @@ window.AVV18Pesca = function (G) {
           for (const b of bs) { const r = b.getBoundingClientRect(); if (r.width < 44 || r.height < 44 || r.left < 0 || r.right > 390 || r.bottom > 844 || r.top < 0) mal.push(`${vis} «${b.textContent.trim()}» ${Math.round(r.width)}×${Math.round(r.height)}`); }
           if (md.documentElement.scrollWidth > 390) mal.push(vis + ': scroll horizontal');
         };
-        if (!md || !md.getElementById('v18-pesca')) mal.push('la maqueta no cargó'); else { panel('juego'); panel('ficha'); panel('fin'); }
+        if (!md || !md.getElementById('v18-pesca')) mal.push('la maqueta no cargó' + (cargo ? ' (load llegó)' : ' (sin load en 15 s)')); else { panel('juego'); panel('ficha'); panel('fin'); }
         fr.remove();
         check('Móvil (390 × 844): todos los botones (pescar, ficha y resultados) miden ≥ 44 px y caben en la pantalla', !mal.length, mal.join(' · '));
         { const bo = bot('otra'); toque(bo, 'pointerdown', 48); toque(bo, 'pointerup', 48); }
