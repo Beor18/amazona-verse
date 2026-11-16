@@ -3099,6 +3099,12 @@ window.AV_EN = {
  "¡Asalto 2!": "Round 2!",
  "¡Asalto final!": "Final round!",
  "¡Empate! La próxima pluma gana.": "Tie! The next feather wins.",
+ // F1 · cambio 7 (Duelo de 2: revancha y hándicap)
+ "Ventaja": "Head start",
+ "(7 plumas en cada asalto):": "(7 feathers every round):",
+ "Ventaja: Jugador 1": "Head start: Player 1",
+ "Ventaja: Jugador 2": "Head start: Player 2",
+ "J1 {} · {} J2": "P1 {} · {} P2",
  "Alas al compás": "Wings on the Beat",
  "Aletea con el tambor y sube al cielo": "Flap with the drum and climb to the sky",
  "River Rush, la tormenta, el banquete, el canto, el escondite, las semillas, la escuela de vuelo y Alas al compás": "River Rush, the storm, the feast, the song, hide-and-seek, the seeds, the flight school and Wings on the Beat",
