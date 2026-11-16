@@ -865,7 +865,7 @@ window.AVV18Combate = function (G) {
       '#vd-como .vdc-tit{margin:0;display:flex;align-items:center;justify-content:center;gap:8px;font:700 24px/1.15 Fredoka,system-ui,sans-serif;color:#7a3b00;--icon-size:26px}' +
       '#vd-como .vdc-sub{margin:-4px 0 0;text-align:center;font-size:15px;font-weight:600;opacity:.85}' +
       '#vd-como .vdc-js{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}#vd-como .vdc-js span{display:inline-flex;gap:5px;align-items:center;padding:4px 10px;border-radius:12px;font-size:14px;font-weight:600;background:#fff;border:3px solid #ffd27a}#vd-como .vdc-js span.j2{border-color:#7fd3ff}' +
-      '#vd-como .vdc-lista{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}' +
+      '#vd-como .vdc-caja>*{flex:none}#vd-como .vdc-lista{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}' +
       '#vd-como .vdc-mov{display:flex;align-items:center;gap:12px;min-width:0;background:#fff;border-radius:16px;padding:8px 10px;box-shadow:0 1px 4px #0002}' +
       '#vd-como .vdc-txt{display:flex;flex-direction:column;gap:3px;min-width:0}#vd-como .vdc-txt>b{font-size:17px;line-height:1.1}#vd-como .vdc-f{font-size:14px;line-height:1.2}#vd-como .vdc-f b{color:#7a3b00}' +
       '#vd-como .vdc-k{display:flex;flex-wrap:wrap;gap:4px;align-items:center}#vd-como .vdc-k kbd{font:700 14px/1 Fredoka,system-ui,sans-serif;min-width:22px;padding:5px 7px;border-radius:7px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center;box-sizing:border-box}' +
@@ -981,7 +981,8 @@ window.AVV18Combate = function (G) {
     const L = pasosEnt(), i = Math.min(ent.paso, L.length - 1), P = L[i];
     const pon = (k, t) => { const e = hud.q(k); if (e.dataset.t !== t) { e.dataset.t = t; e.textContent = t; } };
     pon('entPaso', TXT.entPaso(i + 1, L.length)); pon('entK', TACTIL ? P.kt : typeof P.k === 'function' ? P.k() : P.k);
-    if (padOn()) { const ico = { golpe_ala: 'wing', semilla: 'semilla', poder: 'bolt' }[P.id] || 'wing', k = hud.q('entK'); if (k.dataset.icon !== ico) k.dataset.icon = ico; } // T57: el icono del botón que toca pon('entTxt', TACTIL ? P.txtT : P.txt); pon('entPod', P.id === 'poder' ? nombrePoder() : P.nom || '');
+    if (padOn()) { const ico = { golpe_ala: 'wing', semilla: 'semilla', poder: 'bolt' }[P.id] || 'wing', k = hud.q('entK'); if (k.dataset.icon !== ico) k.dataset.icon = ico; } // T57: el icono del botón que toca
+    pon('entTxt', TACTIL ? P.txtT : P.txt); pon('entPod', P.id === 'poder' ? nombrePoder() : P.nom || '');
     const pp = hud.q('entPP'); while (pp.children.length < L.length) pp.appendChild(document.createElement('i')); while (pp.children.length > L.length) pp.lastChild.remove();
     Array.from(pp.children).forEach((d, n) => { d.classList.toggle('ya', n < ent.paso); d.classList.toggle('ahora', n === ent.paso); });
   }
@@ -3448,7 +3449,8 @@ window.AVV18Combate = function (G) {
             const a = cajas[i], b = cajas[j]; if (a.contains(b) || b.contains(a)) continue;
             const ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
             const ox = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left), oy = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
-            if (ox > 1 && oy > 1) mal.push(`${tag}: ${nombre(a)} pisa ${nombre(b)} (${Math.round(ox)}×${Math.round(oy)})`);
+            const caja = r => [r.left, r.top, r.right, r.bottom].map(Math.round).join(',');
+            if (ox > 1 && oy > 1) mal.push(`${tag}: ${nombre(a)} pisa ${nombre(b)} (${Math.round(ox)}×${Math.round(oy)}; ${caja(ra)} / ${caja(rb)})`);
           }
           if (md.documentElement.scrollWidth > vw) mal.push(tag + ': scroll horizontal');
           // T57: «¿Cómo se pelea?» y «Salir» no pisan ningún panel (barras de plumas y energía); el nombre de la rival cabe entero;
