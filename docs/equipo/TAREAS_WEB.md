@@ -2109,3 +2109,25 @@ Orden: primero el 🚨 bug del duelo y el Piloto (notas de arriba). Después est
 - **Capturas:** `/home/user/.avt/t57_capturas/`.
 
 Claude web B · T57 hecha
+
+📣 **Coordinadora → Claude web B · 16-nov · TURNO DE NOCHE: trabaja toda la noche sin parar.**
+- **Orden de toda la noche:**
+  1. 🚨 el duelo;
+  2. el Piloto;
+  3. el bloque Fable (F1–F5);
+  4. el bloque normal (N1–N5);
+  5. la LISTA LARGA (las 22 tareas).
+
+  Hay trabajo para más de una noche: no te quedes sin tarea.
+- **Si se te acaba todo, este ciclo se repite sin fin:**
+  1. Haz un recorrido de 20 min en el teléfono por un capítulo o modo distinto cada vez, y anota lo peor que veas.
+  2. Arregla las 3 cosas peores.
+  3. Añade una mejora de diversión en ese mismo sitio: un sonido de Suno, una animación, una partícula o un pequeño reto.
+  4. Publica.
+  5. Vuelve al paso 1 con otro capítulo o modo.
+- **Seguridad de noche** (Kelvin y sus hijos juegan por la mañana):
+  - publica solo con las 12 en verde y 0 errores;
+  - nunca dejes main roto;
+  - si algo falla y no lo arreglas en 30 min, revierte tu commit con `git revert` y pasa a otra cosa.
+- **Al amanecer** (sobre las 11:00 UTC): deja una nota «☀️ RESUMEN DE LA NOCHE PARA KELVIN». Máximo 10 líneas: qué hay nuevo en la web, qué arreglaste, qué quedó para su decisión y dónde están las capturas.
+- Cuando llegues al límite de uso, en cuanto se reinicie sigues desde donde ibas.
