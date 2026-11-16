@@ -48,7 +48,7 @@
     // (src/game/v18/progreso.js): aquí solo se lee
     const CLAVE = { retos: ALM + '.retos', criadero: ALM + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero'), casa: ALM + '.records',
       trucos: ALM + '.trucos', escondite: ALM + '.escondite', ciudad: ALM + '.ciudadVisitas', marana: ALM + '.marana', vecinos: ALM + '.vecinos', humor: ALM + '.humor',
-      v18: ALM + '.v18', canto: ALM + '.canto', semillas: ALM + '.semillas', piloto: ALM + '.piloto', compas: ALM + '.compas' }; // piloto: lecciones e insignia de la Escuela de vuelo (src/game/v18/piloto.js) // canto: récord de «Sigue el canto» (src/game/canto.js, T43)
+      v18: ALM + '.v18', canto: ALM + '.canto', semillas: ALM + '.semillas', piloto: ALM + '.piloto', compas: ALM + '.compas', sigueme: ALM + '.sigueme' }; // piloto: lecciones e insignia de la Escuela de vuelo (src/game/v18/piloto.js) // canto: récord de «Sigue el canto» (src/game/canto.js, T43)
     const MAX_CASA = 24; // cotorras distintas en el libro
     const PARTICIPANTES_MAX = 9;
     const esObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -86,6 +86,7 @@
       canto: ['Sigue el canto', 'Follow the song'], cantoRec: ['Récord: {} cantos', 'Best: {} songs'], sinCanto: ['Aún sin jugar (en «Más juegos»)', 'Not played yet (in «More games»)'],
       semillas: ['Semillas al vuelo', 'Seeds on the wing'], semillasRec: ['Récord: {} semillas', 'Best: {} seeds'], // D13 (src/game/semillas.js)
       compas: ['Alas al compás', 'Wings on the Beat'], compasRec: ['Récord: {} m · racha de {r}', 'Best: {} m · streak of {r}'], // F2-3 (src/game/compas.js)
+      sigueme: ['¡Sígueme, bandada!', 'Follow Me, Flock!'], siguemeRec: ['Récord: {} puntos · fila de {f}', 'Best: {} points · line of {f}'], // F2-1 (src/game/sigueme.js)
       p_rafaga: ['Ráfaga de viento', 'Wind gust'], p_ojo: ['Ojo de cotorra', 'Parrot eye'], p_planeo: ['Planeo largo', 'Long glide'], ganado: ['¡Ganado!', 'Earned!'],
       como_rafaga: ['Haz un «¡Remonte!»: pica y nivela volando', 'Do a «Swoop!»: dive and level out while flying'], como_ojo: ['Encuentra 3 cosas del Diario', 'Find 3 Journal entries'],
       como_planeo: ['Haz 2 aterrizajes perfectos', 'Make 2 perfect landings'],
@@ -261,9 +262,11 @@
       const ca = leerJSON(CLAVE.canto), v = leerJSON(CLAVE.v18), mu = esObj(v) && esObj(v.mundo) ? v.mundo : {};
       const se = leerJSON(CLAVE.semillas); // D13: récord de «Semillas al vuelo»
       const co = leerJSON(CLAVE.compas); // F2-3: récord de «Alas al compás» (metros y racha más larga)
+      const sg = leerJSON(CLAVE.sigueme); // F2-1: récord de «¡Sígueme, bandada!» (puntos y fila más larga)
       return { canto: ca && Number.isInteger(ca.mejor) && ca.mejor > 0 ? Math.min(ca.mejor, 999) : 0,
         semillas: se && Number.isInteger(se.mejor) && se.mejor > 0 ? Math.min(se.mejor, 9999) : 0,
         compas: co && Number.isInteger(co.mejor) && co.mejor > 0 ? Math.min(co.mejor, 99999) : 0, compasRacha: co ? ent(co.racha, 9999) : 0,
+        sigueme: sg && Number.isInteger(sg.mejor) && sg.mejor > 0 ? Math.min(sg.mejor, 99999) : 0, siguemeFila: sg ? ent(sg.fila, 999) : 0,
         poderes: ['rafaga', 'ojo', 'planeo'].map(id => ({ id, ganado: Number(mu['poder_' + id]) > 0 })) };
     }
     function descubrimientosDe() {
@@ -642,6 +645,7 @@
         ins(u.canto / 10, u.canto ? String(u.canto) : '·', tx('canto'), cantoTxt) +
         ins((u.semillas || 0) / 60, u.semillas ? String(u.semillas) : '·', tx('semillas'), u.semillas ? tx('semillasRec').replace('{}', u.semillas) : tx('sinCanto')) +
         ins((u.compas || 0) / 250, u.compas ? String(u.compas) : '·', tx('compas'), u.compas ? tx('compasRec').replace('{}', u.compas).replace('{r}', u.compasRacha || 0) : tx('sinCanto')) +
+        ins((u.sigueme || 0) / 120, u.sigueme ? String(u.sigueme) : '·', tx('sigueme'), u.sigueme ? tx('siguemeRec').replace('{}', u.sigueme).replace('{f}', u.siguemeFila || 0) : tx('sinCanto')) +
         u.poderes.map(p => ins(p.ganado ? 1 : 0, p.ganado ? '✓' : '·', tx('p_' + p.id), p.ganado ? tx('ganado') : tx('como_' + p.id))).join('') + '</ul></section>';
     }
     function htmlDescubrimientos(d) {
@@ -1146,7 +1150,7 @@
       const antes = claves.map(raw), sAntes = comparable();
       const orig = Object.assign({}, CLAVE), idiomaAntes = G.aula && G.aula.aj ? G.aula.aj.idioma : null;
       const pruebas = { retos: orig.retos + '.prueba', criadero: orig.criadero + '.prueba', casa: orig.casa + '.prueba',
-        trucos: orig.trucos + '.prueba', escondite: orig.escondite + '.prueba', canto: orig.canto + '.prueba', semillas: orig.semillas + '.prueba', ciudad: orig.ciudad + '.prueba', marana: orig.marana + '.prueba', vecinos: orig.vecinos + '.prueba', humor: orig.humor + '.prueba', piloto: orig.piloto + '.prueba', compas: orig.compas + '.prueba', v18: orig.v18 + '.prueba' };
+        trucos: orig.trucos + '.prueba', escondite: orig.escondite + '.prueba', canto: orig.canto + '.prueba', semillas: orig.semillas + '.prueba', ciudad: orig.ciudad + '.prueba', marana: orig.marana + '.prueba', vecinos: orig.vecinos + '.prueba', humor: orig.humor + '.prueba', piloto: orig.piloto + '.prueba', compas: orig.compas + '.prueba', sigueme: orig.sigueme + '.prueba', v18: orig.v18 + '.prueba' };
       const quitar = () => { for (const k of Object.values(pruebas)) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } delete mem[k]; } };
       const cerrarTodo = () => { if (puertaAbierta) cerrarPuerta(false); if (abierto) cerrar(); };
       const nuevoS = (nombre, extra) => Object.assign({ profile: { created: true, name: nombre, look: { species: 'oratrix' } }, complete: false, step: 2, clock: 600, events: [], field: [] }, extra);
@@ -1217,13 +1221,15 @@
           localStorage.setItem(pruebas.canto, JSON.stringify({ v: 1, mejor: 7 }));
           localStorage.setItem(pruebas.semillas, JSON.stringify({ v: 1, mejor: 23 }));
           localStorage.setItem(pruebas.compas, JSON.stringify({ v: 1, mejor: 142, racha: 19, jugadas: 3 }));
+          localStorage.setItem(pruebas.sigueme, JSON.stringify({ v: 1, mejor: 58, fila: 9, jugadas: 2 }));
           localStorage.setItem(pruebas.v18, JSON.stringify({ v: 2, especies: {}, inv: {}, otorgados: {}, mundo: { poder_ojo: 1 }, sel: null, evo: {} }));
           pintar();
           const nu = root.querySelector('#rec-nuevo'), n1 = nu ? nu.textContent.replace(/\s+/g, ' ') : '';
-          check('T47 · «Juegos y poderes nuevos»: récord de Sigue el canto, el poder ganado y cómo se ganan los otros', /Aún sin jugar/.test(n0) && /Haz un «¡Remonte!»/.test(n0) && /Récord: 7 cantos/.test(n1) && /Ojo de cotorra\s*¡Ganado!/.test(n1) && /Haz 2 aterrizajes perfectos/.test(n1) && nu.querySelectorAll('.rec-ins').length === 6 && !/compra|tienda/i.test(n1), n1.slice(0, 200));
+          check('T47 · «Juegos y poderes nuevos»: récord de Sigue el canto, el poder ganado y cómo se ganan los otros', /Aún sin jugar/.test(n0) && /Haz un «¡Remonte!»/.test(n0) && /Récord: 7 cantos/.test(n1) && /Ojo de cotorra\s*¡Ganado!/.test(n1) && /Haz 2 aterrizajes perfectos/.test(n1) && nu.querySelectorAll('.rec-ins').length === 7 && !/compra|tienda/i.test(n1), n1.slice(0, 200));
           check('D13 · «Semillas al vuelo» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 23 semillas»', /Semillas al vuelo\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Semillas al vuelo\s*Récord: 23 semillas/.test(n1), n1.slice(0, 240));
           check('F2-3 · «Alas al compás» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 142 m · racha de 19»', /Alas al compás\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Alas al compás\s*Récord: 142 m · racha de 19/.test(n1), n1.slice(0, 300));
-          localStorage.removeItem(pruebas.compas); localStorage.removeItem(pruebas.semillas); localStorage.removeItem(pruebas.canto); localStorage.removeItem(pruebas.v18); pintar();
+          check('F2-1 · «¡Sígueme, bandada!» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 58 puntos · fila de 9»', /¡Sígueme, bandada!\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /¡Sígueme, bandada!\s*Récord: 58 puntos · fila de 9/.test(n1), n1.slice(0, 360));
+          localStorage.removeItem(pruebas.sigueme); localStorage.removeItem(pruebas.compas); localStorage.removeItem(pruebas.semillas); localStorage.removeItem(pruebas.canto); localStorage.removeItem(pruebas.v18); pintar();
         }
         if (G.aula && G.aula.aj) {
           G.aula.aj.idioma = 'en'; pintar();
