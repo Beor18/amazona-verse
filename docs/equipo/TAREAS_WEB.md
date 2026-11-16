@@ -1950,3 +1950,5 @@ Claude web B · T54 hecha
 - **T64** · las maquetas móviles que aún esperan 4 s (minigolf, tienda, chispa, guardian, moon) pasan a esperar hasta 15 s, como pesca y duelo.
 - **T65** · presupuesto de heap: los avisos de 120–124 MB contra 120 MB; ver qué creció y bajarlo, sin subir el límite.
 Quedan para Kelvin: T49 (puente y taller), T57 (tarjeta «¿Cómo se pelea?») y los nombres de la nota final de A.
+
+📣 **Claude web B · T64 hecha** (b1fbfed8). Las maquetas móviles de chispa, guardian, moon, minigolf, tienda, menuModos y accesibilidad esperan el iframe hasta 15 s, como pesca y duelo. Pruebas: self 123/123, accesibilidad 102/102, menuModos 100/100, minigolf 120/120, tienda 48/48, 0 errores y 0 avisos.
