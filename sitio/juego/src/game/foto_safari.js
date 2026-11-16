@@ -541,7 +541,7 @@ window.AVFotoSafari = function (G) {
     const m = MV(), mv0 = { speed: m.speed, flying: m.flying }, vy0 = S.vy;
     const C = G.camara && G.camara.CAM, camD0 = C ? [C.dist, C.distFly] : null;
     const cam = R.camera, fwd = new THREE.Vector3();
-    const tecla = k => { const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(ev); return ev; };
+    const tecla = k => { const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(ev); dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true })); return ev; }; // con su keyup: que input.js no se quede con teclas pulsadas para las pruebas siguientes
     // Un animal de prueba delante de la cámara, a d m de Vittata (y otro al lado para «dos en el marco»)
     const sitio = { x: 0, y: 0, z: 0, oc: false, hay: true, dos: false, nove: false, sin: null, solo: null };
     const K = G.camara, yaw0 = K ? K.yaw : 0, fovB0 = K ? K.fovBonus : 0;
@@ -629,11 +629,11 @@ window.AVFotoSafari = function (G) {
       if (K) {
         E.recarga = 0; quieta(); ponerDelante(4); abrirCam();
         const ang = Math.atan2(-(sitio.x - S.pos.x), -(sitio.z - S.pos.z)), dif = () => Math.abs(((ang - K.yaw) % TAU + TAU * 1.5) % TAU - Math.PI);
-        sitio.y += 2.5; // en una rama, más alto que Vittata
+        sitio.y = S.pos.y + 2.5; // en una rama, 2,5 m más alto que Vittata (medido desde ella, no desde la línea de la cámara: si otra prueba deja la cámara mirando abajo, el animal quedaba por debajo)
         K.yaw = ang + 0.7; const d0 = dif(), i0 = K.inclina; for (let i = 0; i < 30; i++) asistir(1 / 30);
         const giro = dif() < d0 * 0.2, sube = K.inclina > i0 + 0.05;
         K.yaw = ang + 2.6; const y0 = K.yaw; asistir(0.1); const espalda = K.yaw === y0;
-        sitio.y -= 2.5; K.yaw = ang; cerrarCam();
+        K.yaw = ang; cerrarCam();
         check('Encuadre asistido: con el animal más o menos delante, la vista gira hacia él y sube a la rama; a la espalda, nada', giro && sube && espalda && (!C || C.dist === camD0[0]), `giro ${d0.toFixed(2)}→${(+dif()).toFixed(2)} · inclina ${i0.toFixed(2)}→${(+K.inclina).toFixed(2)}`);
       }
       // Foto pedida mientras la cámara se abre: no se pierde, sale en cuanto está lista

@@ -468,7 +468,7 @@ window.AVSigueme = function (G) {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const q0 = G.quiet, rec0 = (() => { try { return localStorage.getItem(ALM); } catch (e) { return null; } })(), pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z };
     const C = G.camara && G.camara.CAM, camD0 = C ? [C.dist, C.distFly] : null;
-    const tecla = k => { const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(ev); return ev; };
+    const tecla = k => { const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(ev); dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true })); return ev; }; // con su keyup: que input.js no se quede con teclas pulsadas para las pruebas siguientes
     const lejos = () => { S.pos.x = pos0.x + 900; S.pos.z = pos0.z + 900; };
     const ir = (x, y, z) => { S.pos.x = x; S.pos.y = y - 0.6; S.pos.z = z; };
     const vivas = t => pool.filter(p => p.on && (!t || p.tipo === t));

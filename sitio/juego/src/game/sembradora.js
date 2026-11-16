@@ -1,0 +1,867 @@
+/* Juego · F2-4 · «Sembradora del cielo» (minijuego corto de «Más juegos», 90 segundos). Diseño: docs/diseno/F2_MINIJUEGOS.md §4.
+   Vuela sobre el claro y suelta cada semilla (Acción: «Soltar») cuando la sombra-diana pise un parche de tierra oscura: la semilla
+   cae en arco (la línea fina que va de Vittata a la sombra es su camino de verdad) y brota un árbol en 1 s. Centro del parche: +3 y
+   brote grande · borde: +1 y brote mediano · fuera: rebota y se pierde (solo se va la racha). Soltar a más de 8 m/s suma +1.
+   Racha de parches seguidos: ×2 desde 3, ×3 desde 6. Se llevan 5 semillas; sin semillas, se recargan pasando por encima del saco (en el centro del claro).
+   Machacar no sirve: cada toque gasta una semilla, hay 0,35 s entre una y otra y fallar rompe la racha.
+   Dificultad: 0–30 s parches grandes y sin viento · 30–60 s medianos y viento lateral (la sombra ya lo lleva: lo que se ve es lo que
+   pasa) · 60–90 s pequeños, en ladera si la hay, y parches que se secan (se achican en 8 s).
+   Zona: un claro que ya existe (parada_claro, el de las mariposas; si no hay sitio, la plaza o donde esté Vittata), siempre el mismo.
+   Vittata empieza en el aire junto al saco. Los parches nunca caen en el agua (ni medio parche), bajo una copa (también la flora) ni
+   en un edificio: sin sitio bueno no salen y se reintentan. Jugando, la cámara va más alta y mira por debajo de Vittata (en el teléfono
+   de pie, aún más) para que la sombra-diana no quede bajo los botones. Al final Vittata se pone al borde de lo plantado y la cámara
+   sube mirando al claro reverdecido; los árboles del minijuego se van al salir (no cambian el mapa ni el canon).
+   Naturaleza: el juego NO dice que las cotorras siembren semillas (no hay fuente): es fantasía de juego. Los árboles se llaman como
+   en banquete.js (palma de sierra y tabonuco). Dato real opcional, una sola vez en el panel final (USFWS, docs/equipo/DATOS_VERIFICADOS.md).
+   Mallas: 4 instanciadas (parches, semillas en el aire, palmas y tabonucos) + la diana, el arco y el saco (mallas sueltas); grupos fijos
+   y vectores reutilizados: nada se crea por cuadro. Al salir se suelta todo (dispose de geometrías, materiales e InstancedMesh).
+   Mientras se juega la música del mundo calla (musica.js lee body.sembradora-on) y los avisos de la historia esperan
+   (G.menuModos.ocupado()). El panel final es modal: congela el mundo (G.pausa 'sembradora') y no deja pasar teclas.
+   «Reducir movimiento»: sin hojas volando, sin crecer animado y sin la subida de la cámara; los avisos importantes también suenan.
+   Sonidos que ya existen: lanzar, semilla, encaje, frenada, pieza, aviso, boton, panel_final, logro.
+   Récord en este dispositivo (localStorage, <almacen>.sembradora = { v: 1, mejor (puntos), arboles, racha, jugadas, dato }); el panel y el HUD lo dan en árboles.
+   API: window.AVSembradora(G) → G.sembradoraApi = { jugar, salir, activo, soltar, paso, estado, objetivo, test }. Prueba: AV.sembradoraTest(). */
+window.AVSembradora = function (G) {
+  'use strict';
+  if (G.sembradoraApi) return G.sembradoraApi;
+  const S = G.S, R = G.renderer;
+  const H = (x, z) => G.terreno.height(x, z);
+  const nivelAgua = (x, z) => { const w = G.agua && G.agua.levelAt ? G.agua.levelAt(x, z) : -1e9; return w > -1e8 ? w : -Infinity; };
+  const superficie = (x, z) => Math.max(H(x, z), nivelAgua(x, z));
+  const MV = () => (G.fisica && G.fisica.MOVE) || {};
+  const ALM = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.sembradora';
+  const DUR = 90, LLEVA = 5, NP = 4, NA = 64, NV = 5, NARCO = 18, NC = 4000, CERCA_R = 60;
+  const GRAV = 9, K_H = 0.6, ALTO_MIN = 2.5, ESPERA = 0.35, SACO_R = 4, VEL_BONO = 8, SECO_T = 8, VISTA_T = 1.8, CENTRO = 0.4, VIENTO = 2.4;
+  const RADIO = [3.2, 2.3, 1.6], TAM = [1, 0.7, 0.48];
+  const D_MIN = 7, D_MAX = 26, ALTO_INI = 7, SACO_ALTO = 40, CLARO_MIN = 12, CLARO_BUSCA = 160, CLAROS = ['parada_claro', 'plaza', 'terrenoB'];
+  const en = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
+  const L = (es, eng) => (en() ? eng : es);
+  const html = document.documentElement;
+  const reducido = () => html.classList.contains('mov-reducido') || !!(R && R.REDUCED);
+  const reloj = s => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+  const leerRec = () => { try { const d = JSON.parse(localStorage.getItem(ALM) || 'null'); return d && d.v === 1 && Number.isInteger(d.mejor) && d.mejor >= 0 && d.mejor < 100000 ? d : null; } catch (e) { return null; } };
+  const guardarRec = () => { try { localStorage.setItem(ALM, JSON.stringify({ v: 1, mejor: E.mejor, arboles: E.mejorArb, racha: E.mejorRachaRec, jugadas: E.jugadas, dato: E.datoVisto })); } catch (e) { /* sin almacén */ } };
+  const sonar = (n, a) => { try { if (!G.quiet && G.audio && G.audio.play) G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  const hojas = (x, y, z, n) => { if (reducido()) return; try { if (G.fx && G.fx.burst) G.fx.burst(x, y, z, 'leaves', n); } catch (e) { /* sin fx */ } };
+  let azarS = 0; const azar = () => { if (!azarS) return Math.random(); azarS = (azarS * 16807) % 2147483647; return (azarS - 1) / 2147483646; };
+  const rnd = (a, b) => a + azar() * (b - a);
+  const mult = n => (n >= 6 ? 3 : n >= 3 ? 2 : 1);
+
+  // ---------- Estado (grupos fijos, sin asignaciones por cuadro) ----------
+  const parches = []; for (let i = 0; i < NP; i++) parches.push({ on: false, x: 0, y: 0, z: 0, r: 0, r0: 0, nx: 0, ny: 1, nz: 0, seco: false, t: 0 });
+  const arboles = []; for (let i = 0; i < NA; i++) arboles.push({ on: false, x: 0, y: 0, z: 0, esp: 0, tam: 1, t: 0, yaw: 0 });
+  const vuelo = []; for (let i = 0; i < NV; i++) vuelo.push({ on: false, x0: 0, y0: 0, z0: 0, hx: 0, hz: 0, T: 0, t: 0, lx: 0, ly: 0, lz: 0, vel: 0, rebote: 0, giro: 0 });
+  const cerca = []; for (let i = 0; i < NC; i++) cerca.push({ x: 0, z: 0, r: 0 });
+  let nCerca = 0;
+  const saco = { x: 0, y: 0, z: 0 };
+  const guia = { x: 0, y: 0, z: 0, ok: false };
+  const P = { x0: 0, y0: 0, z0: 0, hx: 0, hz: 0, T: 0, lx: 0, ly: 0, lz: 0, alto: 0, zona: 0 }; // la predicción de este cuadro
+  const E = { fase: 'nada', t: 0, puntos: 0, arboles: 0, semillas: LLEVA, racha: 0, mejorRacha: 0, centros: 0, rapidas: 0, fallos: 0, ultSoltar: -9, sinT: -9,
+    vientoX: 0, vientoZ: 0, vientoA: 0, vientoOn: false, msgT: 0, avisos: 0, vistaT: 0, finP: 0, nuevo: false, datoVisto: false, datoAhora: false,
+    mejor: 0, mejorArb: 0, mejorRachaRec: 0, jugadas: 0, claroN: 0, reT: 0, fijoT: 0, colaTxt: '', colaCls: '' };
+  const restante = () => Math.max(0, DUR - E.t);
+  const etapa = () => (E.t < 30 ? 0 : E.t < 60 ? 1 : 2);
+
+  // ---------- Geometría: piezas con color por vértice, unidas en una sola malla (como semillas.js, sin tocarlo) ----------
+  const lin = c => new THREE.Color(c).convertSRGBToLinear();
+  function unir(partes) {
+    const pos = [], nor = [], col = [], idx = []; let off = 0;
+    for (const [g, c] of partes) {
+      if (!g.index) { const n = g.attributes.position.count, a = []; for (let i = 0; i < n; i++) a.push(i); g.setIndex(a); }
+      const k = lin(c), n = g.attributes.position.count;
+      pos.push(...g.attributes.position.array); nor.push(...g.attributes.normal.array);
+      for (let i = 0; i < n; i++) col.push(k.r, k.g, k.b);
+      for (const i of g.index.array) idx.push(i + off);
+      off += n; g.dispose();
+    }
+    const m = new THREE.BufferGeometry();
+    m.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    m.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+    m.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    m.setIndex(idx); m.computeBoundingSphere();
+    return m;
+  }
+  const plano = g => { g.rotateX(-Math.PI / 2); return g; };
+  function geoParche() { // tierra oscura con el centro marcado (anillos sin solaparse: nada parpadea)
+    return unir([[plano(new THREE.CircleGeometry(0.36, 28)), '#3a2312'], [plano(new THREE.RingGeometry(0.36, 0.44, 28)), '#e0c184'],
+      [plano(new THREE.RingGeometry(0.44, 0.9, 28)), '#4a2e18'], [plano(new THREE.RingGeometry(0.9, 1, 28)), '#7a5532']]);
+  }
+  function geoDiana() { return unir([[plano(new THREE.CircleGeometry(0.78, 24)), '#16240f'], [plano(new THREE.RingGeometry(0.78, 1, 24)), '#ffffff']]); }
+  function geoSemilla() {
+    const c = new THREE.SphereGeometry(0.2, 12, 8); c.scale(0.86, 1.12, 0.86);
+    const raya = new THREE.SphereGeometry(0.2, 12, 8, 0, Math.PI * 2, Math.PI * 0.44, Math.PI * 0.12); raya.scale(0.88, 1.14, 0.88);
+    return unir([[c, '#93602e'], [raya, '#5e3a1a']]);
+  }
+  function geoPalma() { // palma de sierra: tronco fino y anillado, capitel verde y frondas largas que cuelgan (~5 m)
+    const t = new THREE.CylinderGeometry(0.09, 0.15, 3.6, 7); t.translate(0, 1.8, 0);
+    const cap = new THREE.CylinderGeometry(0.13, 0.1, 0.7, 7); cap.translate(0, 3.95, 0);
+    const p = [[t, '#8b8170'], [cap, '#6c9a3e']];
+    for (let i = 0; i < 9; i++) {
+      const f = new THREE.SphereGeometry(0.5, 8, 5); f.scale(2.5, 0.1, 0.42); f.translate(1.15, 0, 0); f.rotateZ(i % 2 ? -0.42 : -0.18); f.rotateY(i * Math.PI * 2 / 9); f.translate(0, 4.25, 0);
+      p.push([f, i % 2 ? '#3d8a38' : '#4f9e42']);
+    }
+    return unir(p);
+  }
+  function geoTabonuco() { // tabonuco: tronco claro y copa redonda de varias bolas (~5,5 m)
+    const t = new THREE.CylinderGeometry(0.16, 0.27, 3.2, 8); t.translate(0, 1.6, 0);
+    const p = [[t, '#cbc2ae']];
+    const bolas = [[0, 4.3, 0, 1.45, '#2f6f33'], [1.0, 3.9, 0.3, 1.0, '#3c8239'], [-0.9, 3.95, -0.4, 1.05, '#357a36'], [0.2, 3.8, -1.0, 0.95, '#3c8239'], [-0.3, 3.85, 1.0, 0.95, '#2f6f33']];
+    for (const [x, y, z, r, c] of bolas) { const b = new THREE.SphereGeometry(r, 10, 7); b.translate(x, y, z); p.push([b, c]); }
+    return unir(p);
+  }
+  function geoSaco() { // saco de arpillera con semillas asomando
+    const cuerpo = new THREE.SphereGeometry(0.55, 14, 10); cuerpo.scale(1, 1.1, 1); cuerpo.translate(0, 0.58, 0);
+    const cuello = new THREE.CylinderGeometry(0.2, 0.32, 0.32, 12); cuello.translate(0, 1.2, 0);
+    const lazo = new THREE.TorusGeometry(0.21, 0.05, 6, 14); lazo.rotateX(Math.PI / 2); lazo.translate(0, 1.16, 0);
+    const boca = new THREE.CylinderGeometry(0.3, 0.2, 0.14, 12); boca.translate(0, 1.42, 0);
+    const p = [[cuerpo, '#b48c58'], [cuello, '#a27c4a'], [lazo, '#6b3f1e'], [boca, '#b48c58']];
+    for (const [x, z] of [[0.08, 0.05], [-0.1, 0.02], [0.01, -0.1]]) { const s = new THREE.SphereGeometry(0.09, 8, 6); s.scale(0.86, 1.1, 0.86); s.translate(x, 1.5, z); p.push([s, '#93602e']); }
+    return unir(p);
+  }
+
+  // ---------- Mallas (se crean al jugar y se sueltan al salir) ----------
+  let M = null;
+  const dummy = new THREE.Object3D(), ARRIBA = new THREE.Vector3(0, 1, 0), nrm = new THREE.Vector3();
+  function crearMallas() {
+    if (M) return;
+    const lam = o => R.linMat(new THREE.MeshLambertMaterial(Object.assign({ vertexColors: true }, o)));
+    const inst = (geo, mat, n, nombre) => { const m = new THREE.InstancedMesh(geo, mat, n); m.count = 0; m.visible = false; m.frustumCulled = false; m.castShadow = false; m.receiveShadow = false; m.userData.sinCulling = true; m.name = 'sembradora:' + nombre; m.instanceMatrix.setUsage(THREE.DynamicDrawUsage); R.scene.add(m); return m; };
+    M = {};
+    M.parches = inst(geoParche(), lam({ polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), NP, 'parches');
+    M.semillas = inst(geoSemilla(), lam({ emissive: '#2a1808', emissiveIntensity: 0.5 }), NV, 'semillas');
+    M.palma = inst(geoPalma(), lam(), NA, 'palmas');
+    M.tabonuco = inst(geoTabonuco(), lam(), NA, 'tabonucos');
+    M.diana = new THREE.Mesh(geoDiana(), new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.78, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
+    M.diana.renderOrder = 2; M.diana.name = 'sembradora:diana';
+    const ga = new THREE.BufferGeometry(); ga.setAttribute('position', new THREE.BufferAttribute(new Float32Array(NARCO * 3), 3).setUsage(THREE.DynamicDrawUsage));
+    M.arco = new THREE.Line(ga, new THREE.LineBasicMaterial({ color: '#fff8e6', transparent: true, opacity: 0.6, depthWrite: false }));
+    M.arco.name = 'sembradora:arco'; M.arco.renderOrder = 2;
+    M.saco = new THREE.Mesh(geoSaco(), lam({ emissive: '#ffd23f', emissiveIntensity: 0 }));
+    M.saco.name = 'sembradora:saco'; M.saco.scale.setScalar(1.6);
+    for (const k of ['diana', 'arco', 'saco']) { const m = M[k]; m.visible = false; m.frustumCulled = false; m.castShadow = false; R.scene.add(m); }
+  }
+  function soltarMallas() {
+    if (!M) return;
+    for (const k in M) { const m = M[k]; R.scene.remove(m); if (m.isInstancedMesh) m.dispose(); m.geometry.dispose(); m.material.dispose(); } // InstancedMesh.dispose(): sus búferes de la GPU
+    M = null;
+  }
+  function inclinar(nx, ny, nz) { nrm.set(nx, ny, nz); dummy.quaternion.setFromUnitVectors(ARRIBA, nrm); }
+  function normal(x, z, o) { // normal del suelo (diferencias finitas), sin crear objetos
+    const e = 0.8, dx = H(x + e, z) - H(x - e, z), dz = H(x, z + e) - H(x, z - e), l = Math.hypot(dx, 2 * e, dz) || 1;
+    o.nx = -dx / l; o.ny = 2 * e / l; o.nz = -dz / l; return o;
+  }
+  const nTmp = { nx: 0, ny: 1, nz: 0 };
+  const crecer = t => { if (reducido() || t >= 1) return 1; const k = Math.max(0, t), c = 1.7; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); }; // brota con un pequeño rebote
+  function pintar() {
+    if (!M) return;
+    const juego = E.fase === 'juego', ver = E.fase !== 'nada';
+    let n = 0;
+    if (juego) for (const p of parches) {
+      if (!p.on) continue;
+      dummy.position.set(p.x, p.y + 0.05, p.z); inclinar(p.nx, p.ny, p.nz); dummy.scale.set(p.r, 1, p.r); dummy.updateMatrix();
+      M.parches.setMatrixAt(n++, dummy.matrix);
+    }
+    M.parches.count = n; M.parches.visible = n > 0; M.parches.instanceMatrix.needsUpdate = true;
+    let np = 0, nt = 0;
+    if (ver) for (const a of arboles) {
+      if (!a.on) continue;
+      const k = a.tam * crecer(a.t);
+      dummy.position.set(a.x, a.y - 0.05, a.z); dummy.rotation.set(0, a.yaw, 0); dummy.scale.setScalar(Math.max(0.001, k)); dummy.updateMatrix();
+      if (a.esp === 0) M.palma.setMatrixAt(np++, dummy.matrix); else M.tabonuco.setMatrixAt(nt++, dummy.matrix);
+    }
+    M.palma.count = np; M.palma.visible = np > 0; M.palma.instanceMatrix.needsUpdate = true;
+    M.tabonuco.count = nt; M.tabonuco.visible = nt > 0; M.tabonuco.instanceMatrix.needsUpdate = true;
+    let ns = 0;
+    if (juego) for (const s of vuelo) {
+      if (!s.on) continue;
+      if (s.rebote > 0) { // fuera: rebota una vez y se va
+        const k = 1 - s.rebote / 0.7; dummy.position.set(s.lx + s.hx * 0.15 * k, s.ly + 0.2 + Math.sin(k * Math.PI) * 0.7, s.lz + s.hz * 0.15 * k); dummy.scale.setScalar(1.6 * (1 - k * 0.8));
+      } else { const t = Math.min(s.t, s.T); dummy.position.set(s.x0 + s.hx * t, s.y0 - 0.5 * GRAV * t * t, s.z0 + s.hz * t); dummy.scale.setScalar(1.6); }
+      dummy.rotation.set(s.giro * 0.7, s.giro, 0); dummy.updateMatrix();
+      M.semillas.setMatrixAt(ns++, dummy.matrix);
+    }
+    M.semillas.count = ns; M.semillas.visible = ns > 0; M.semillas.instanceMatrix.needsUpdate = true;
+    // diana y arco: dónde caería una semilla soltada ahora mismo
+    const apunta = juego && E.semillas > 0 && P.alto >= ALTO_MIN;
+    M.diana.visible = apunta; M.arco.visible = apunta;
+    if (apunta) {
+      normal(P.lx, P.lz, nTmp);
+      dummy.position.set(P.lx, P.ly + 0.09, P.lz); inclinar(nTmp.nx, nTmp.ny, nTmp.nz); dummy.scale.setScalar(0.95); dummy.updateMatrix();
+      M.diana.matrix.copy(dummy.matrix); M.diana.matrixAutoUpdate = false; M.diana.matrixWorldNeedsUpdate = true;
+      M.diana.material.color.setHex(P.zona === 2 ? 0xffd23f : P.zona === 1 ? 0x9df07a : 0xffffff);
+      const a = M.arco.geometry.attributes.position, arr = a.array;
+      for (let i = 0; i < NARCO; i++) { const t = P.T * i / (NARCO - 1); arr[i * 3] = P.x0 + P.hx * t; arr[i * 3 + 1] = Math.max(P.ly + 0.1, P.y0 - 0.5 * GRAV * t * t); arr[i * 3 + 2] = P.z0 + P.hz * t; }
+      a.needsUpdate = true;
+    }
+    M.saco.visible = juego;
+    if (juego) { M.saco.position.set(saco.x, saco.y, saco.z); M.saco.material.emissiveIntensity = E.semillas === 0 ? (reducido() ? 0.35 : 0.25 + 0.2 * Math.sin(E.t * 5)) : 0; }
+  }
+
+  // ---------- Predicción balística (posición + velocidad de Vittata + viento) ----------
+  function predecir(o) {
+    const m = MV(), x0 = S.pos.x, y0 = S.pos.y + 0.3, z0 = S.pos.z;
+    const hx = (m.vx || 0) * K_H + E.vientoX, hz = (m.vz || 0) * K_H + E.vientoZ;
+    let T = Math.sqrt(2 * Math.max(0.01, y0 - superficie(x0, z0)) / GRAV), lx = x0, lz = z0, g = 0;
+    for (let i = 0; i < 4; i++) { lx = x0 + hx * T; lz = z0 + hz * T; g = superficie(lx, lz); T = Math.sqrt(2 * Math.max(0.01, y0 - g) / GRAV); }
+    o.x0 = x0; o.y0 = y0; o.z0 = z0; o.hx = hx; o.hz = hz; o.T = T; o.lx = x0 + hx * T; o.lz = z0 + hz * T; o.ly = y0 - 0.5 * GRAV * T * T;
+    o.alto = y0 - 0.3 - superficie(x0, z0); o.zona = zonaEn(o.lx, o.lz).zona;
+    return o;
+  }
+  const zTmp = { p: null, zona: 0 };
+  function zonaEn(x, z) { // 2 centro · 1 borde · 0 fuera
+    zTmp.p = null; zTmp.zona = 0; let bd = Infinity;
+    for (const p of parches) { if (!p.on) continue; const d = Math.hypot(x - p.x, z - p.z); if (d < p.r && d < bd) { bd = d; zTmp.p = p; zTmp.zona = d < p.r * CENTRO ? 2 : 1; } }
+    return zTmp;
+  }
+
+  // ---------- Claro: un sitio abierto que ya existe (el de la parada del yagrumo y las mariposas) y parches sin agua, copas ni edificios ----------
+  // Las copas de la flora (G.vegetacion.instancias) se miran todas: sus colliders solo existen a 40 m de Vittata.
+  function cadaObstaculo(fn) { // fn(x, z, radio): edificios y colliders del mundo, y la copa de cada árbol de la flora
+    const cs = G.fisica && G.fisica.colliders;
+    if (cs) for (let i = 0; i < cs.length; i++) { const c = cs[i]; if (c.kind === 'arbol') continue; /* troncos de la flora cerca de Vittata: ya van abajo con su copa (y así el claro no cambia según dónde esté ella) */ fn(c.x, c.z, c.kind === 'tree' ? Math.max(1.2, Math.min(4.5, c.r * 4)) : (c.hx ? Math.hypot(c.hx, c.hz) : c.r || 0) + 0.5); }
+    const Vg = G.vegetacion, inst = Vg && Vg.instancias, info = (Vg && Vg.info) || {};
+    if (inst) for (const m in inst) {
+      const I = inst[m], inf = info[m]; if (!I || !I.pos || !inf || !(inf.alto > 2)) continue;
+      const n = I.n != null ? I.n : I.pos.length / 4, rc = Math.min(6.2, Math.max(1.5, (inf.ancho || 3) * 0.5));
+      for (let i = 0; i < n; i++) { const s = I.pos[i * 4 + 3]; if (s > 0) fn(I.pos[i * 4], I.pos[i * 4 + 2], rc * s); }
+    }
+  }
+  let rcx = 0, rcz = 0, rcr = 0;
+  const meterCerca = (x, z, r) => { if (nCerca >= NC) return; const dx = x - rcx, dz = z - rcz; if (dx * dx + dz * dz > rcr * rcr) return; const e = cerca[nCerca++]; e.x = x; e.z = z; e.r = r; };
+  function renovarCerca(cx, cz, rad) { nCerca = 0; rcx = cx; rcz = cz; rcr = rad || CERCA_R; cadaObstaculo(meterCerca); }
+  function libreEn(x, z, r) {
+    for (let i = 0; i < nCerca; i++) { const c = cerca[i]; if (Math.hypot(x - c.x, z - c.z) < c.r + r + 0.6) return false; }
+    for (const p of parches) if (p.on && Math.hypot(x - p.x, z - p.z) < p.r + r + 4) return false;
+    for (const a of arboles) if (a.on && Math.hypot(x - a.x, z - a.z) < r + 1.6) return false;
+    if (Math.hypot(x - saco.x, z - saco.z) < r + 4) return false;
+    return true;
+  }
+  const mojado = (x, z) => nivelAgua(x, z) > H(x, z) - 0.05;
+  function sitioOk(x, z, r) { // todo el parche en tierra (centro y borde), sin copa ni edificio encima y sin barranco (~37°)
+    const g = H(x, z);
+    if (!(g > -1e8) || Math.abs(g - saco.y) > 22 || mojado(x, z) || !libreEn(x, z, r)) return false;
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; if (mojado(x + Math.cos(a) * (r + 0.4), z + Math.sin(a) * (r + 0.4))) return false; }
+    normal(x, z, nTmp); return nTmp.ny >= 0.8;
+  }
+  function nuevoParche(p) { // si no hay sitio bueno, el parche no sale (paso() lo reintenta): nunca un sitio cualquiera
+    const et = etapa(), r = RADIO[et];
+    p.on = false; p.r = p.r0 = r; p.t = 0; p.seco = false;
+    let bx = 0, bz = 0, bs = -1;
+    for (let k = 0; k < 40; k++) {
+      const a = rnd(0, Math.PI * 2), d = rnd(D_MIN, k < 20 ? D_MAX : D_MAX + 10), x = saco.x + Math.cos(a) * d, z = saco.z + Math.sin(a) * d;
+      if (!sitioOk(x, z, r)) continue;
+      const s = et === 2 ? 1 - nTmp.ny : 1; // al final, mejor en ladera si la hay
+      if (s > bs) { bs = s; bx = x; bz = z; }
+      if (et < 2 || k >= 15) break;
+    }
+    if (bs < 0) return p;
+    normal(bx, bz, nTmp);
+    p.on = true; p.x = bx; p.z = bz; p.y = H(bx, bz); p.nx = nTmp.nx; p.ny = nTmp.ny; p.nz = nTmp.nz;
+    p.seco = et === 2 && azar() < 0.5;
+    return p;
+  }
+  function puntuar(cx, cz) { // cuántos de 36 puestos alrededor sirven para un parche grande (el saco va en el centro, fuera de copas)
+    const g = H(cx, cz); if (!(g > -1e8) || mojado(cx, cz)) return -1;
+    for (let i = 0; i < nCerca; i++) { const c = cerca[i]; if (Math.hypot(cx - c.x, cz - c.z) < c.r + 1.5) return -1; }
+    saco.x = cx; saco.z = cz; saco.y = superficie(cx, cz);
+    let n = 0;
+    for (let i = 0; i < 36; i++) { const a = i * 2.39996, d = D_MIN + (D_MAX - D_MIN) * ((i * 0.618034) % 1); if (sitioOk(cx + Math.cos(a) * d, cz + Math.sin(a) * d, RADIO[0])) n++; }
+    return n;
+  }
+  // El bosque de Villa Raíz es denso: el claro se busca en un mapa de 2 m alrededor del claro de la parada (rejilla reutilizada,
+  // solo al empezar): cada celda vale 1 si cabe un parche grande sin copa, edificio ni agua; gana el centro con más sitio alrededor.
+  const RC = 2;
+  let ras = null, rasW = null, rasN = 0, rasX = 0, rasZ = 0;
+  const marcarCopa = (x, z, r) => {
+    const R = r + RADIO[0] + 0.6, n = rasN, i0 = Math.max(0, Math.floor((x - R - rasX) / RC)), i1 = Math.min(n - 1, Math.floor((x + R - rasX) / RC)), j0 = Math.max(0, Math.floor((z - R - rasZ) / RC)), j1 = Math.min(n - 1, Math.floor((z + R - rasZ) / RC));
+    for (let j = j0; j <= j1; j++) { const dz = rasZ + (j + 0.5) * RC - z; for (let i = i0; i <= i1; i++) { const dx = rasX + (i + 0.5) * RC - x; if (dx * dx + dz * dz < R * R) ras[i + j * n] = 0; } }
+  };
+  function rasterAbierto(x0, z0, half) {
+    const n = Math.ceil(2 * half / RC), N = n * n;
+    if (!ras || ras.length < N) { ras = new Uint8Array(N); rasW = new Uint8Array(N); }
+    ras.fill(1, 0, N); rasN = n; rasX = x0 - half; rasZ = z0 - half;
+    cadaObstaculo(marcarCopa);
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) rasW[i + j * n] = mojado(rasX + (i + 0.5) * RC, rasZ + (j + 0.5) * RC) ? 1 : 0;
+    const k = Math.ceil((RADIO[0] + 0.4) / RC); // nada de medio parche en el agua
+    for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+      if (!ras[i + j * n]) continue;
+      let w = 0; for (let b = Math.max(0, j - k); b <= Math.min(n - 1, j + k) && !w; b++) for (let a = Math.max(0, i - k); a <= Math.min(n - 1, i + k); a++) if (rasW[a + b * n]) { w = 1; break; }
+      if (w) ras[i + j * n] = 0;
+    }
+  }
+  const rasEn = (x, z) => { const i = Math.floor((x - rasX) / RC), j = Math.floor((z - rasZ) / RC); return i >= 0 && j >= 0 && i < rasN && j < rasN ? ras[i + j * rasN] : 0; };
+  function puntuarRas(cx, cz) { if (!rasEn(cx, cz)) return -1; let n = 0; for (let i = 0; i < 36; i++) { const a = i * 2.39996, d = D_MIN + (D_MAX - D_MIN) * ((i * 0.618034) % 1); n += rasEn(cx + Math.cos(a) * d, cz + Math.sin(a) * d); } return n; }
+  const claro = { x: 0, z: 0, n: -2, ancla: '' };
+  function elegirClaro() { // cerca del claro de la parada (o de la plaza, o de Vittata): el sitio más abierto; a igualdad, el más cercano
+    const T = G.terreno, poi = id => { try { return T && T.poi ? T.poi(id) : null; } catch (e) { return null; } };
+    let a = null; claro.ancla = 'vittata';
+    for (const id of CLAROS) { a = poi(id); if (a) { claro.ancla = id; break; } }
+    const ax = a ? a.x : S.pos.x, az = a ? a.z : S.pos.z;
+    rasterAbierto(ax, az, CLARO_BUSCA + D_MAX + 6);
+    let bn = -2, bx = ax, bz = az, bd = Infinity;
+    for (let ix = -CLARO_BUSCA; ix <= CLARO_BUSCA; ix += 6) for (let iz = -CLARO_BUSCA; iz <= CLARO_BUSCA; iz += 6) {
+      const d = Math.hypot(ix, iz); if (d > CLARO_BUSCA) continue;
+      const n = puntuarRas(ax + ix, az + iz);
+      if (n > bn || (n === bn && d < bd)) { bn = n; bx = ax + ix; bz = az + iz; bd = d; }
+    }
+    const basta = Math.max(CLARO_MIN, bn - 3); bd = Infinity; // el más cercano con casi tanto sitio como el mejor
+    for (let ix = -CLARO_BUSCA; ix <= CLARO_BUSCA; ix += 6) for (let iz = -CLARO_BUSCA; iz <= CLARO_BUSCA; iz += 6) {
+      const d = Math.hypot(ix, iz); if (d > CLARO_BUSCA || d >= bd) continue;
+      if (puntuarRas(ax + ix, az + iz) >= basta) { bx = ax + ix; bz = az + iz; bd = d; }
+    }
+    claro.x = bx; claro.z = bz; claro.n = puntuarRas(bx, bz);
+    renovarCerca(bx, bz); E.claroN = puntuar(bx, bz);
+    return bn;
+  }
+  function colocarVittata() { // en el aire junto al saco, mirando al parche más cercano: la sombra-diana se ve desde el principio
+    let fx = 0, fz = 1, bd = Infinity;
+    for (const p of parches) { if (!p.on) continue; const d = Math.hypot(p.x - saco.x, p.z - saco.z); if (d < bd) { bd = d; fx = (p.x - saco.x) / d; fz = (p.z - saco.z) / d; } }
+    const x = saco.x - fx * 4, z = saco.z - fz * 4, Mv = G.fisica && G.fisica.MOVE;
+    S.pos.x = x; S.pos.z = z; S.pos.y = superficie(x, z) + ALTO_INI; S.vy = 0;
+    S.facing = { x: fx, z: fz };
+    if (Mv) { Mv.vx = Mv.vz = 0; Mv.swimming = false; Mv.landing = false; Mv.jumping = false; Mv.grounded = false; Mv.takeoff = 0; if (!Mv.flying) { Mv.flying = true; try { G.emit('vuelo', true); } catch (e) { /* */ } } }
+    try { if (G.camara) { G.camara.yaw = Math.atan2(-fx, -fz); if (G.camara.manual) G.camara.manual(); } } catch (e) { /* sin cámara */ }
+  }
+  function ponerParche(i, x, z, r, seco) { // solo para la prueba
+    const p = parches[i]; normal(x, z, nTmp);
+    p.on = true; p.x = x; p.z = z; p.y = H(x, z); p.nx = nTmp.nx; p.ny = nTmp.ny; p.nz = nTmp.nz; p.r = p.r0 = r; p.t = 0; p.seco = !!seco; return p;
+  }
+
+  // ---------- Soltar, caer y brotar ----------
+  function soltar() {
+    if (E.fase !== 'juego') return false;
+    if (E.t - E.ultSoltar < ESPERA) return false;
+    if (E.semillas <= 0) { // aviso importante: también suena (no a cada toque)
+      if (E.t - E.sinT > 1.5) { E.sinT = E.t; sonar('aviso'); aviso(L('Sin semillas: pasa por el saco', 'Out of seeds: fly over the sack'), 'malo'); }
+      return false;
+    }
+    predecir(P);
+    if (P.alto < ALTO_MIN) { if (E.t - E.sinT > 1.2) { E.sinT = E.t; aviso(L('Vuela más alto para soltar', 'Fly higher to drop'), 'malo'); } return false; }
+    let s = null; for (const v of vuelo) if (!v.on) { s = v; break; }
+    if (!s) return false;
+    const m = MV();
+    s.on = true; s.x0 = P.x0; s.y0 = P.y0; s.z0 = P.z0; s.hx = P.hx; s.hz = P.hz; s.T = P.T; s.t = 0; s.lx = P.lx; s.ly = P.ly; s.lz = P.lz; s.rebote = 0; s.giro = rnd(0, 6.28);
+    s.vel = Math.hypot(m.vx || 0, m.vz || 0);
+    E.semillas--; E.ultSoltar = E.t;
+    sonar('lanzar');
+    if (E.semillas === 0) { E.sinT = E.t; aviso(L('Sin semillas: pasa por el saco', 'Out of seeds: fly over the sack'), 'malo'); sonar('aviso'); }
+    pintarHud();
+    return true;
+  }
+  function plantar(x, y, z, tam) {
+    let a = null, viejo = null;
+    for (const b of arboles) { if (!b.on) { a = b; break; } if (!viejo || b.t > viejo.t) viejo = b; }
+    a = a || viejo;
+    a.on = true; a.x = x; a.y = y; a.z = z; a.tam = tam; a.t = 0; a.yaw = rnd(0, 6.28); a.esp = azar() < 0.5 ? 0 : 1;
+    return a;
+  }
+  function aterrizar(s) {
+    const z = zonaEn(s.lx, s.lz), p = z.p;
+    if (!p) { // fuera: rebota y se pierde; solo se va la racha
+      s.rebote = 0.7; E.racha = 0; E.fallos++;
+      sonar('frenada'); aviso(L('Rebotó fuera', 'Bounced away'), 'malo');
+      pintarHud(); return;
+    }
+    s.on = false;
+    const centro = z.zona === 2, rapida = s.vel > VEL_BONO;
+    E.racha++; if (E.racha > E.mejorRacha) E.mejorRacha = E.racha;
+    const mu = mult(E.racha), pts = ((centro ? 3 : 1) + (rapida ? 1 : 0)) * mu;
+    E.puntos += pts; E.arboles++; if (centro) E.centros++; if (rapida) E.rapidas++;
+    const tam = TAM[Math.min(2, (centro ? 0 : 1) + (p.seco && p.r < p.r0 * 0.75 ? 1 : 0))];
+    plantar(s.lx, H(s.lx, s.lz), s.lz, tam);
+    hojas(s.lx, s.ly + 1.2, s.lz, centro ? 18 : 10);
+    sonar('semilla', Math.min(12, E.racha)); if (centro) sonar('encaje');
+    p.on = false; nuevoParche(p);
+    if (mu > 1 && (E.racha === 3 || E.racha === 6)) { aviso(L(`¡Racha ×${mu}!`, `Streak ×${mu}!`) + ' +' + pts, 'oro'); sonar('ring', mu); }
+    else aviso((centro ? L('¡En el centro!', 'Bullseye!') : L('¡Brotó!', 'It sprouted!')) + ' +' + pts, centro ? 'oro' : 'bien');
+    pintarHud();
+  }
+
+  // ---------- Paso ----------
+  function paso(dt) {
+    if (!(dt > 0)) return;
+    if (E.fase === 'vista') { E.vistaT -= dt; for (const a of arboles) if (a.on) a.t += dt; pintar(); if (E.vistaT <= 0) mostrarFin(); return; }
+    if (E.fase !== 'juego') return;
+    E.t += dt;
+    if (E.fijoT > 0) E.fijoT -= dt;
+    if (E.msgT > 0 && (E.msgT -= dt) <= 0 && hudEl) { const m = q(hudEl, 'msg'); if (E.colaTxt) { m.textContent = E.colaTxt; m.className = E.colaCls; E.colaTxt = ''; E.msgT = 1.6; } else { m.textContent = ''; m.className = ''; } }
+    // un parche que no encontró sitio se reintenta cada 0,5 s (nunca cae en el agua ni bajo una copa)
+    if ((E.reT -= dt) <= 0) { E.reT = 0.5; for (const p of parches) if (!p.on) nuevoParche(p); }
+    // viento lateral desde los 30 s: gira despacio; la sombra lo incluye
+    if (etapa() >= 1) {
+      if (!E.vientoOn) {
+        E.vientoOn = true; E.vientoA = rnd(0, Math.PI * 2); sonar('aviso'); aviso(L('¡Viento! La sombra se mueve con él', 'Wind! The shadow drifts with it'), 'malo'); E.msgT = 2.4; E.fijoT = 2.4; // no lo pisa el siguiente aviso: ese espera
+        hojas(S.pos.x + Math.cos(E.vientoA) * 3, S.pos.y + 1.5, S.pos.z + Math.sin(E.vientoA) * 3, 16);
+      }
+      E.vientoA += dt * 0.12; E.vientoX = Math.cos(E.vientoA) * VIENTO; E.vientoZ = Math.sin(E.vientoA) * VIENTO;
+    } else { E.vientoX = 0; E.vientoZ = 0; }
+    // parches que se secan
+    for (const p of parches) {
+      if (!p.on) continue;
+      p.t += dt;
+      if (p.seco) { p.r = p.r0 * Math.max(0, 1 - p.t / SECO_T); if (p.r < 0.45) { p.on = false; nuevoParche(p); } }
+    }
+    // semillas en el aire: siguen exactamente el arco que se dibujó al soltar
+    for (const s of vuelo) {
+      if (!s.on) continue;
+      s.giro += dt * 3;
+      if (s.rebote > 0) { if ((s.rebote -= dt) <= 0) s.on = false; continue; }
+      s.t += dt; if (s.t >= s.T) aterrizar(s);
+    }
+    for (const a of arboles) if (a.on) a.t += dt;
+    // el saco recarga: pasar por encima basta, hasta SACO_ALTO m (en el táctil, volando no se baja poco a poco)
+    const dS = Math.hypot(S.pos.x - saco.x, S.pos.z - saco.z);
+    if (E.semillas < LLEVA && dS < SACO_R && S.pos.y - saco.y < SACO_ALTO) { E.semillas = LLEVA; sonar('pieza'); aviso(L('¡Semillas listas!', 'Seeds ready!'), 'bien'); pintarHud(); }
+    // guía: el saco sin semillas; si no, el parche más cercano
+    apuntarGuia();
+    const r = restante();
+    if (E.avisos === 0 && r <= 10) { E.avisos = 1; sonar('aviso'); }
+    if (E.avisos === 1 && r <= 5) { E.avisos = 2; sonar('aviso'); }
+    predecir(P);
+    pintar();
+    if (r <= 0) { fin(); return; }
+    if (hudEl && Math.floor((E.t - dt) * 4) !== Math.floor(E.t * 4)) pintarHud();
+  }
+  function enVuelo() { for (const s of vuelo) if (s.on && !s.rebote) return true; return false; }
+  function apuntarGuia() {
+    guia.ok = false;
+    if (E.fase !== 'juego') return;
+    if (E.semillas === 0 && !enVuelo()) { guia.x = saco.x; guia.z = saco.z; guia.y = saco.y + 3; guia.ok = true; return; }
+    let bd = Infinity;
+    for (const p of parches) { if (!p.on) continue; const d = Math.hypot(p.x - S.pos.x, p.z - S.pos.z); if (d < bd) { bd = d; guia.x = p.x; guia.z = p.z; guia.y = p.y + 3; guia.ok = true; } }
+  }
+  G.on('update', (dt, busy) => { if (!G.quiet && !busy) paso(Math.min(0.05, dt || 0)); });
+  const guiar = () => { // vista final y panel: sin la flecha de la historia (solo el claro y el resultado)
+    verHud(); if (!G.fx || !G.fx.guide) return;
+    if (E.fase === 'juego' && guia.ok) G.fx.guide(guia, performance.now() / 1000); else if (E.fase === 'vista' || E.fase === 'fin') G.fx.guide(null, performance.now() / 1000);
+  };
+  G.on('render', guiar, 61); // después de misiones.js (60): la flecha va al parche (o al saco)
+  G.on('pausa', () => verHud()); // al terminar la carga sale el HUD
+
+  // ---------- Acción = «Soltar» (G.interaccion.modo, como el rescate y la foto) ----------
+  const MODO = { activo: () => E.fase === 'juego', accion: () => soltar(), aviso: () => '', get verbo() { return L('Soltar', 'Drop'); } };
+  let modo0 = null;
+
+  // ---------- Cámara (solo los ajustes de siempre: distancia, altura y a qué altura mira) ----------
+  // Jugando, más alta y mirando por debajo de Vittata: la sombra-diana queda en el centro de la pantalla, no bajo ella ni bajo
+  // los botones táctiles (en el teléfono de pie, aún más). Al final sube y mira al claro reverdecido.
+  const CAMK = ['dist', 'distFly', 'heightFly', 'look'];
+  const AJ_J = { heightFly: 6, look: -4 }, AJ_JV = { distFly: 1.5, heightFly: 9, look: -4.5 }, AJ_F = { dist: 6, distFly: 9, heightFly: 9, look: -2 };
+  const vertical = () => innerWidth < innerHeight && innerWidth < 700;
+  let cam0 = null, camAj = null;
+  function camara(nivel) {
+    const C = G.camara && G.camara.CAM; if (!C) return;
+    const aj = !nivel ? null : nivel === 1 ? (vertical() ? AJ_JV : AJ_J) : AJ_F;
+    if (aj === camAj) return;
+    if (!cam0) { cam0 = {}; for (const k of CAMK) cam0[k] = C[k]; }
+    for (const k of CAMK) if (C[k] === cam0[k] + ((camAj && camAj[k]) || 0)) C[k] = cam0[k] + ((aj && aj[k]) || 0); // si otro módulo la cambió mientras tanto, no se pisa
+    camAj = aj; if (!aj) cam0 = null;
+  }
+  function encuadrarFinal() { // Vittata, en el aire al borde del claro, mirando al centro de lo plantado: la cámara (detrás y arriba) lo ve todo
+    let cx = 0, cz = 0, n = 0;
+    for (const a of arboles) if (a.on) { cx += a.x; cz += a.z; n++; }
+    if (!n) { cx = saco.x; cz = saco.z; } else { cx /= n; cz /= n; }
+    let ex = 6; for (const a of arboles) if (a.on) ex = Math.max(ex, Math.hypot(a.x - cx, a.z - cz));
+    let dx = S.pos.x - cx, dz = S.pos.z - cz, d = Math.hypot(dx, dz);
+    if (d < 0.5) { const f = S.facing || { x: 0, z: 1 }; dx = -f.x; dz = -f.z; d = Math.hypot(dx, dz) || 1; }
+    dx /= d; dz /= d;
+    const k = Math.min(30, ex * 0.5 + 6), x = cx + dx * k, z = cz + dz * k, Mv = G.fisica && G.fisica.MOVE;
+    S.pos.x = x; S.pos.z = z; S.pos.y = Math.max(superficie(x, z), superficie(cx, cz)) + 9; S.vy = 0; S.facing = { x: -dx, z: -dz };
+    if (Mv) { Mv.vx = Mv.vz = 0; Mv.landing = false; Mv.grounded = false; Mv.swimming = false; if (!Mv.flying) { Mv.flying = true; try { G.emit('vuelo', true); } catch (e) { /* */ } } }
+    try { if (G.camara) { G.camara.yaw = Math.atan2(dx, dz); if (G.camara.manual) G.camara.manual(); } } catch (e) { /* sin cámara */ }
+  }
+
+  // ---------- HUD y panel final ----------
+  let hudEl = null, finEl = null;
+  const ARBOL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 13h2v9h-2z" fill="#8b6a46"/><circle cx="12" cy="9" r="6.5" fill="#3c8a3a"/><circle cx="9" cy="7.5" r="2.4" fill="#5fae4a"/></svg>';
+  function css() {
+    if (document.getElementById('sdc-css')) return;
+    const st = document.createElement('style'); st.id = 'sdc-css';
+    st.textContent = '#sdc-hud{position:fixed;left:12px;right:12px;margin-inline:auto;width:fit-content;max-width:calc(100vw - 24px);top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;justify-content:center;box-sizing:border-box;padding:6px 8px 6px 14px;border-radius:20px;background:rgba(16,36,28,.86);color:#fff8e6;font:600 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}#sdc-hud[hidden],#sdc-fin[hidden]{display:none}' +
+      '#sdc-hud .sdc-tit:empty{display:none}#sdc-hud .sdc-t{font-variant-numeric:tabular-nums;font-size:18px;font-weight:700;min-width:3.2ch;text-align:center}#sdc-hud .sdc-t.poco{color:#ffb4a2}#sdc-hud .sdc-a{display:flex;align-items:center;gap:3px;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}#sdc-hud .sdc-a svg{width:22px;height:22px}' +
+      '#sdc-hud .sdc-s{display:flex;gap:3px;align-items:center}#sdc-hud .sdc-s i{width:10px;height:13px;border-radius:50%;background:rgba(255,248,230,.22);box-shadow:inset 0 0 0 1.5px rgba(255,248,230,.45)}#sdc-hud .sdc-s i.on{background:#c98a45;box-shadow:inset 0 -3px 0 #6e4520}#sdc-hud .sdc-s.vacio i{box-shadow:inset 0 0 0 1.5px #ffb4a2}' +
+      '#sdc-hud .sdc-x{font-size:15px;font-weight:700;color:#ffd23f}#sdc-hud .sdc-x:empty,#sdc-hud .sdc-r:empty{display:none}#sdc-hud .sdc-r{opacity:.85;font-size:14px}' +
+      '#sdc-hud [data-k="msg"]{position:absolute;left:50%;top:calc(100% + 72px);transform:translateX(-50%);width:max-content;max-width:min(560px,calc(100vw - 24px));box-sizing:border-box;text-align:center;line-height:1.25;padding:4px 12px;border-radius:999px;font-weight:700;pointer-events:none;background:#fff3d6;color:#3b2a14}#sdc-hud [data-k="msg"]:empty{display:none}#sdc-hud [data-k="msg"].oro{background:#ffd23f}#sdc-hud [data-k="msg"].malo{background:#ffd0c4;color:#5a1e10}#sdc-hud [data-k="msg"].bien{background:#c8f0c0;color:#173d12}' +
+      '#sdc-hud button,#sdc-fin button{min-height:44px;min-width:44px;padding:4px 16px;border-radius:22px;border:0;font:700 16px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer;touch-action:manipulation}#sdc-fin button{min-height:54px;padding:4px 22px;font-size:18px}#sdc-hud button.salir,#sdc-fin button.salir{background:#ffd0c4}#sdc-hud button:focus-visible,#sdc-fin button:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}' +
+      '#sdc-fin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:24px;background:rgba(16,36,28,.93);color:#fff8e6;font-family:Fredoka,system-ui,sans-serif;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;gap:8px}#sdc-fin:focus{outline:none}' +
+      '#sdc-fin h2{margin:0;font-size:26px}#sdc-fin .sdc-gran{display:flex;align-items:center;gap:8px;font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#sdc-fin .sdc-gran svg{width:44px;height:44px}#sdc-fin p{margin:0;font-size:17px;font-weight:600}#sdc-fin .sdc-det{font-size:15px;opacity:.85;font-weight:500}' +
+      '#sdc-fin .sdc-dato{font-size:14px;font-weight:500;line-height:1.3;padding:6px 10px;border-radius:12px;background:rgba(255,248,230,.1)}#sdc-fin .sdc-dato:empty{display:none}#sdc-fin .sdc-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}' +
+      // el aviso va bajo la fila de botones de arriba (Diario, Gestos, Nido…: hasta ~130 px); en el teléfono de pie esa fila va al lado, así que sube
+      '@media (max-width:600px){#sdc-hud [data-k="msg"]{top:calc(100% + 8px)}}' +
+      // teléfono de lado: el aviso va abajo, entre el joystick y los botones (arriba tapaba Diario y Gestos)
+      '@media (orientation:landscape) and (max-height:500px){#sdc-hud [data-k="msg"]{position:fixed;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);max-width:min(440px,calc(100vw - 380px))}}' +
+      '@media (orientation:landscape) and (max-height:500px){#sdc-fin{padding:12px 16px;gap:4px}#sdc-fin h2{font-size:21px}#sdc-fin .sdc-gran{font-size:34px}#sdc-fin .sdc-gran svg{width:34px;height:34px}#sdc-fin .sdc-dato{font-size:13px;padding:4px 8px}}' +
+      // la historia no se mezcla con el minijuego (sus avisos esperan: G.menuModos.ocupado() cuenta este juego como actividad en marcha)
+      'body.sembradora-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
+      // con la vista final y el panel, tampoco las pistas de vuelo ni el minimapa: solo el claro y el resultado
+      'body.sembradora-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#sys,#sys button,#b-diary,#b-emotes,#b-nido,#b-menu,#v18-exp-poder){visibility:hidden!important}' +
+      // el botón Acción lleva el icono de una semilla mientras dice «Soltar»
+      'body.sembradora-on #b-act{--icon:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Cellipse cx=%2712%27 cy=%2714%27 rx=%275.5%27 ry=%277%27/%3E%3Cpath d=%27M12 7V3M12 3c-2 0-3.5 1-4 2.5M12 3c2 0 3.5 1 4 2.5%27 stroke=%27black%27 stroke-width=%271.6%27 fill=%27none%27/%3E%3C/svg%3E")}';
+    document.head.appendChild(st);
+  }
+  function montar() {
+    if (hudEl) return;
+    css();
+    hudEl = document.createElement('div'); hudEl.id = 'sdc-hud'; hudEl.hidden = true; // sin role="status": el reloj cambia cada segundo y no se anuncia; solo el aviso (aria-live) habla
+    hudEl.innerHTML = '<b class="sdc-tit" data-k="tit"></b><span class="sdc-t" data-k="r"></span><span class="sdc-a" data-k="aw">' + ARBOL + '<span data-k="a"></span></span><span class="sdc-s" data-k="s">' + '<i></i>'.repeat(LLEVA) + '</span><span class="sdc-x" data-k="x"></span><span class="sdc-r" data-k="rec"></span><span data-k="msg" aria-live="polite"></span><button type="button" class="salir" data-a="salir"></button>';
+    finEl = document.createElement('div'); finEl.id = 'sdc-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'sdc-fin-t');
+    finEl.innerHTML = '<h2 id="sdc-fin-t" data-k="ft"></h2><div class="sdc-gran">' + ARBOL + '<span data-k="fn"></span></div><p data-k="fmsg" aria-live="polite"></p><p class="sdc-det" data-k="fdet"></p><p class="sdc-dato" data-k="fdato"></p><div class="sdc-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div>';
+    const clic = e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; e.preventDefault(); if (b.dataset.a === 'otra') jugar(); else salir(); };
+    hudEl.addEventListener('click', clic); finEl.addEventListener('click', clic);
+    document.body.appendChild(hudEl); document.body.appendChild(finEl);
+  }
+  const q = (el, k) => el.querySelector('[data-k="' + k + '"]');
+  const ancho = () => innerWidth >= 700 && innerHeight >= 500;
+  function pintarHud() {
+    if (!hudEl) return;
+    q(hudEl, 'tit').textContent = ancho() ? L('Sembradora del cielo', 'Sky Planter') : ''; // en el teléfono el título sobra: una sola franja
+    const r = q(hudEl, 'r'); r.textContent = reloj(restante()); r.classList.toggle('poco', restante() <= 10);
+    q(hudEl, 'a').textContent = String(E.arboles); q(hudEl, 'aw').setAttribute('aria-label', L('Árboles: ', 'Trees: ') + E.arboles);
+    const s = q(hudEl, 's'), is = s.querySelectorAll('i');
+    for (let i = 0; i < is.length; i++) is[i].classList.toggle('on', i < E.semillas);
+    s.classList.toggle('vacio', E.semillas === 0); s.setAttribute('aria-label', L('Semillas: ', 'Seeds: ') + E.semillas);
+    q(hudEl, 'x').textContent = E.racha >= 3 ? '×' + mult(E.racha) : '';
+    const rq = q(hudEl, 'rec'); rq.textContent = E.mejorArb ? (ancho() ? L('Récord ', 'Best ') : '★') + E.mejorArb : ''; rq.setAttribute('aria-label', L('Récord de árboles: ', 'Tree record: ') + E.mejorArb); // en árboles, como el panel (también en el teléfono)
+    hudEl.querySelector('[data-a="salir"]').textContent = L('Salir', 'Exit');
+  }
+  function aviso(txt, cls) {
+    if (!hudEl) return;
+    if (E.fijoT > 0) { E.colaTxt = txt; E.colaCls = cls || ''; return; } // el aviso del viento se lee entero; este sale después
+    const m = q(hudEl, 'msg'); m.textContent = txt; m.className = cls || ''; E.msgT = 1.6;
+  }
+  function pintarFin() {
+    if (!finEl) return;
+    const n = E.puntos, a = E.arboles;
+    q(finEl, 'ft').textContent = L('¡Tiempo!', 'Time’s up!');
+    q(finEl, 'fn').textContent = String(a);
+    const arb = k => (k === 1 ? L('1 árbol', '1 tree') : L(`${k} árboles`, `${k} trees`));
+    q(finEl, 'fmsg').textContent = a === 0 ? L('¡Casi! Suelta la semilla cuando la sombra pise la tierra oscura', 'So close! Drop the seed when the shadow is on the dark soil')
+      : E.nuevo ? L(`¡Nuevo récord: ${arb(a)}!`, `New record: ${arb(a)}!`) : L(`Récord: ${arb(E.mejorArb)} · mejor racha ${E.mejorRachaRec}`, `Best: ${arb(E.mejorArb)} · best streak ${E.mejorRachaRec}`);
+    q(finEl, 'fdet').textContent = (a === 1 ? L('Sembraste 1 árbol', 'You planted 1 tree') : L(`Sembraste ${a} árboles`, `You planted ${a} trees`)) + L(` · Mejor racha: ${E.mejorRacha} · ${n} puntos`, ` · Best streak: ${E.mejorRacha} · ${n} points`);
+    q(finEl, 'fdato').textContent = E.datoAhora ? L('Dato real: la cotorra puertorriqueña se alimenta sobre todo de frutos silvestres, en especial de la palma de sierra (USFWS).', 'Real fact: the Puerto Rican parrot feeds mostly on wild fruits, especially from the sierra palm (USFWS).') : '';
+    finEl.querySelector('[data-a="otra"]').textContent = L('Otra vez', 'Play again');
+    finEl.querySelector('[data-a="salir"]').textContent = L('Salir', 'Exit');
+  }
+
+  // ---------- Partida ----------
+  function jugar(o) {
+    o = o || {};
+    azarS = o.semilla || 0;
+    montar(); crearMallas();
+    for (const p of parches) p.on = false; for (const a of arboles) a.on = false; for (const s of vuelo) s.on = false;
+    const rec = leerRec(), ent = v => (Number.isInteger(v) && v >= 0 ? v : 0);
+    Object.assign(E, { fase: 'juego', t: 0, puntos: 0, arboles: 0, semillas: LLEVA, racha: 0, mejorRacha: 0, centros: 0, rapidas: 0, fallos: 0, ultSoltar: -9, sinT: -9,
+      vientoX: 0, vientoZ: 0, vientoA: 0, vientoOn: false, msgT: 0, avisos: 0, vistaT: 0, finP: 0, nuevo: false, datoAhora: false,
+      mejor: rec ? rec.mejor : 0, mejorArb: rec ? ent(rec.arboles) : 0, mejorRachaRec: rec ? ent(rec.racha) : 0, jugadas: rec ? ent(rec.jugadas) : 0, datoVisto: !!(rec && rec.dato) });
+    Object.assign(E, { reT: 0.5, fijoT: 0, colaTxt: '', colaCls: '' });
+    try { if (G.pausa && G.pausa.set) G.pausa.set('sembradora', false); } catch (e) { /* sin pausa */ }
+    if (G.interaccion && G.interaccion.modo !== MODO) { modo0 = G.interaccion.modo; G.interaccion.modo = MODO; }
+    // el saco, en el centro de un claro que ya existe (siempre el mismo); los parches, alrededor; Vittata, en el aire junto al saco
+    elegirClaro();
+    for (const p of parches) nuevoParche(p);
+    colocarVittata();
+    camara(1);
+    finEl.hidden = true; q(hudEl, 'msg').textContent = '';
+    document.body.classList.add('sembradora-on'); document.body.classList.remove('sembradora-fin');
+    apuntarGuia(); predecir(P); pintarHud(); pintar(); verHud();
+    aviso(L('Vuela sobre la tierra oscura y suelta una semilla cuando la sombra la pise', 'Fly over the dark soil and drop a seed when the shadow is on it'), 'bien'); E.msgT = 4;
+    sonar('boton');
+    return true;
+  }
+  let logroId = 0;
+  function fin() { // el reloj llega a 0: la cámara sube y enseña el claro; luego el panel
+    if (E.fase !== 'juego') return;
+    for (const p of parches) p.on = false; for (const s of vuelo) s.on = false;
+    E.fase = 'vista'; E.vistaT = reducido() ? 0 : VISTA_T; guia.ok = false;
+    hudEl.hidden = true; q(hudEl, 'msg').textContent = ''; document.body.classList.add('sembradora-fin');
+    if (!reducido()) { encuadrarFinal(); camara(2); } // con «Reducir movimiento», sin subida ni cambio de vista: el panel sale ya
+    sonar('panel_final');
+    pintar();
+    if (E.vistaT <= 0) mostrarFin();
+  }
+  function mostrarFin() {
+    if (E.fase !== 'vista') return;
+    E.fase = 'fin'; E.finP = performance.now() / 1000;
+    E.jugadas++;
+    E.nuevo = E.arboles > E.mejorArb; if (E.nuevo) E.mejorArb = E.arboles; // el récord del panel son árboles (y la mejor racha); los puntos se guardan aparte
+    if (E.puntos > E.mejor) E.mejor = E.puntos;
+    if (E.mejorRacha > E.mejorRachaRec) E.mejorRachaRec = E.mejorRacha;
+    E.datoAhora = !E.datoVisto; E.datoVisto = true; // el dato real, una sola vez
+    guardarRec();
+    try { G.emit('record', { modo: 'sembradora', puntos: E.puntos, arboles: E.arboles, racha: E.mejorRacha }); } catch (e) { /* */ }
+    if (E.nuevo && E.arboles > 0) logroId = setTimeout(() => { logroId = 0; if (E.fase === 'fin') sonar('logro'); }, 500);
+    pintar(); pintarHud(); pintarFin(); finEl.hidden = false;
+    try { if (G.pausa && G.pausa.set) G.pausa.set('sembradora', true); } catch (e) { /* sin pausa */ } // panel modal: el mundo se congela detrás
+    // el foco va al panel (no a «Otra vez»): un toque de los últimos segundos no arranca otra partida sin ver el resultado
+    setTimeout(() => { try { if (E.fase === 'fin') finEl.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
+  }
+  const activo = () => E.fase !== 'nada';
+  // Durante la pantalla de carga (pausa 'carga') el HUD no sale encima: aparece cuando el mundo ya se ve
+  const cargando = () => { try { return !!(G.pausa && G.pausa.motivos && G.pausa.motivos.has('carga')); } catch (e) { return false; } };
+  // tampoco durante la apertura del capítulo («Saltar intro» a la vista, ui.css T23)
+  function verHud() { if (hudEl) { const v = E.fase === 'juego' && !cargando() && !document.getElementById('c1-saltar'); if (hudEl.hidden === v) hudEl.hidden = !v; } }
+  function salir() {
+    if (!activo()) return false;
+    E.fase = 'nada'; guia.ok = false;
+    for (const p of parches) p.on = false; for (const a of arboles) a.on = false; for (const s of vuelo) s.on = false; nCerca = 0; // los árboles del minijuego se van
+    if (logroId) { clearTimeout(logroId); logroId = 0; }
+    if (G.interaccion && G.interaccion.modo === MODO) G.interaccion.modo = modo0; modo0 = null;
+    camara(0); soltarMallas();
+    if (hudEl) { hudEl.hidden = true; finEl.hidden = true; [hudEl, finEl].forEach(el => el.querySelectorAll('[data-k]').forEach(x => { if (x.dataset.k !== 's' && x.dataset.k !== 'aw') x.textContent = ''; })); [hudEl, finEl].forEach(el => el.querySelectorAll('button').forEach(b => { b.textContent = ''; })); q(hudEl, 'a').textContent = ''; } // sin texto viejo (ni en otro idioma)
+    document.body.classList.remove('sembradora-on', 'sembradora-fin');
+    // el chip táctil del poder (explorar.js) estaba tapado por la clase; si se vuelve a la portada, explorar.js no corre y se quedaba encima: se oculta y explorar.js lo vuelve a enseñar cuando toque
+    const poder = document.getElementById('v18-exp-poder'); if (poder) poder.hidden = true;
+    try { if (G.pausa && G.pausa.set) G.pausa.set('sembradora', false); } catch (e) { /* sin pausa */ }
+    return true;
+  }
+  addEventListener('keydown', e => {
+    if (!activo()) return;
+    if (e.key === 'Escape') {
+      if (e.repeat || (G.ui && G.ui.cardOpen)) return; // una tarjeta abierta encima se cierra primero
+      e.preventDefault(); e.stopImmediatePropagation(); salir(); return;
+    }
+    if (E.fase === 'vista' || E.fase === 'fin') { // vista final y panel modales: las teclas del mundo (P, M, 1-7, vuelo…) no pasan; Tab, Enter y Espacio van a sus botones (no en el primer segundo)
+      if (e.key === 'Tab') { // el foco no sale del panel (ni va a Diario ni al menú): da la vuelta entre sus botones
+        e.preventDefault(); e.stopImmediatePropagation();
+        if (E.fase !== 'fin') return;
+        const bs = finEl.querySelectorAll('button'), i = Array.prototype.indexOf.call(bs, document.activeElement), n = bs.length;
+        const j = e.shiftKey ? (i <= 0 ? n - 1 : i - 1) : (i < 0 || i >= n - 1 ? 0 : i + 1);
+        try { bs[j].focus({ preventScroll: true }); } catch (er) { /* */ }
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const boton = E.fase === 'fin' && (e.key === 'Enter' || e.key === ' ') && performance.now() / 1000 - E.finP > 1 && e.target && e.target.closest && e.target.closest('#sdc-fin button');
+      e.stopImmediatePropagation(); if (!boton) e.preventDefault();
+    }
+  }, true);
+  addEventListener('resize', () => { if (!activo()) return; pintarHud(); if (E.fase === 'juego' && camAj && camAj !== AJ_F) camara(1); }); // girar el teléfono cambia la vista del juego
+
+  // ---------- Prueba ----------
+  async function test() {
+    const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
+    const q0 = G.quiet, rec0 = (() => { try { return localStorage.getItem(ALM); } catch (e) { return null; } })(), pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z };
+    const m = MV(), mv0 = { vx: m.vx, vz: m.vz, flying: m.flying }, yaw0 = G.camara ? G.camara.yaw : 0;
+    const C = G.camara && G.camara.CAM, camD0 = C ? CAMK.map(k => C[k]) : null;
+    const camEs = aj => !C || CAMK.every((k, i) => C[k] === camD0[i] + ((aj && aj[k]) || 0)); // la cámara tiene justo ese ajuste (null: la de siempre)
+    const v3 = new THREE.Vector3(), aPx = (x, y, z) => { v3.set(x, y, z).project(R.camera); return { x: (v3.x + 1) / 2 * innerWidth, y: (1 - v3.y) / 2 * innerHeight, z: v3.z }; };
+    const dentro = (p, id) => { if (!vis(id)) return false; const r = document.getElementById(id).getBoundingClientRect(); return p.x > r.left && p.x < r.right && p.y > r.top && p.y < r.bottom; };
+    const tecla = k => { const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(ev); dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true })); return ev; };
+    const vis = id => { const el = document.getElementById(id); return !!el && getComputedStyle(el).visibility !== 'hidden' && el.getClientRects().length > 0; };
+    // Vittata a «alto» m sobre (x, z), con velocidad (vx, vz)
+    const ir = (x, z, alto, vx, vz) => { S.pos.x = x; S.pos.z = z; S.pos.y = superficie(x, z) + alto; m.vx = vx || 0; m.vz = vz || 0; };
+    const lejos = () => { S.pos.x = saco.x + 300; S.pos.z = saco.z + 300; S.pos.y = superficie(S.pos.x, S.pos.z) + 10; m.vx = m.vz = 0; };
+    const caer = () => { const t0 = E.t; for (let i = 0; i < 200 && vuelo.some(s => s.on); i++) paso(0.05); E.t = t0; }; // el reloj de la partida no corre mientras cae
+    const listo = () => { E.ultSoltar = -9; E.sinT = -9; };
+    G.quiet = true;
+    try {
+      try { localStorage.removeItem(ALM); } catch (e) { /* */ }
+      { const sx = document.getElementById('c1-saltar'); if (sx) { sx.click(); for (let i = 0; i < 60 && document.getElementById('c1-saltar'); i++) await new Promise(r => setTimeout(r, 50)); } } // como accesibilidadTest: si la prueba corre durante la apertura del capítulo, se salta antes (el HUD espera a que acabe, a propósito)
+      jugar({ semilla: 5, callado: true });
+      const hb = hudEl.querySelector('[data-a="salir"]').getBoundingClientRect();
+      check('Se abre con el HUD (reloj 1:30, 0 árboles, 5 semillas y «Salir» de ≥ 44 px), 4 parches y el saco', activo() && !hudEl.hidden && finEl.hidden && q(hudEl, 'r').textContent === '1:30' && q(hudEl, 'a').textContent === '0' && q(hudEl, 's').querySelectorAll('i.on').length === 5 && hb.height >= 44 && hb.width >= 44 && parches.every(p => p.on) && M.saco.visible && document.body.classList.contains('sembradora-on'),
+        q(hudEl, 'r').textContent + ' · ' + Math.round(hb.height));
+      check('4 mallas instanciadas como mucho (parches, semillas, palmas y tabonucos), todas del minijuego', R.scene.children.filter(o => o.isInstancedMesh && /^sembradora:/.test(o.name)).length === 4 && M.parches.visible && M.parches.count === 4, R.scene.children.filter(o => /^sembradora:/.test(o.name)).map(o => o.name).join(','));
+      E.reT = Infinity; // la prueba pone sus parches a mano: sin reintentos por medio
+      // Todo el parche en tierra (16 puntos del borde) y sin tocar ninguna copa, edificio ni collider (distancia ≥ c.r + p.r), en las 3 etapas
+      const parcheBien = p => { for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8, x = p.x + Math.cos(a) * p.r, z = p.z + Math.sin(a) * p.r; if (nivelAgua(x, z) > H(x, z) - 0.05) return false; }
+        if (nivelAgua(p.x, p.z) >= p.y) return false; for (let i = 0; i < nCerca; i++) { const c = cerca[i]; if (Math.hypot(p.x - c.x, p.z - c.z) < c.r + p.r) return false; } return true; };
+      let nBien = 0, nPuestos = 0, malo = '';
+      for (const p of parches) { nPuestos++; if (p.on && parcheBien(p)) nBien++; else malo = malo || p.x.toFixed(1) + ',' + p.z.toFixed(1); }
+      const t0P = E.t;
+      for (const tt of [5, 45, 75]) { E.t = tt; for (let k = 0; k < 8; k++) { const p = parches[k % NP]; nuevoParche(p); if (p.on) { nPuestos++; if (parcheBien(p)) nBien++; else malo = malo || tt + '@' + p.x.toFixed(1) + ',' + p.z.toFixed(1); } } }
+      E.t = t0P;
+      const vegN = (() => { const I = G.vegetacion && G.vegetacion.instancias; if (!I) return -1; let n = 0; for (const k in I) n += I[k].n || 0; return n; })();
+      check('Los parches no caen en el agua (ni la mitad), ni bajo una copa (también la flora), ni en un edificio, en las 3 etapas', nBien === nPuestos && nPuestos >= 20, nBien + '/' + nPuestos + ' · ' + nCerca + ' obstáculos · flora ' + vegN + (malo ? ' · malo ' + malo : ''));
+      { // si no hay sitio, el parche no sale (no hay «uno cualquiera»), y se reintenta solo
+        const n0 = nCerca, c0 = { x: cerca[0].x, z: cerca[0].z, r: cerca[0].r };
+        cerca[0].x = saco.x; cerca[0].z = saco.z; cerca[0].r = 1000; nCerca = 1;
+        const pf = nuevoParche(parches[3]), sinSitio = !pf.on; E.reT = 0; paso(0.01); const sigue = !parches[3].on;
+        cerca[0].x = c0.x; cerca[0].z = c0.z; cerca[0].r = c0.r; nCerca = n0; E.reT = 0; paso(0.01); const vuelve = parches[3].on && parcheBien(parches[3]); E.reT = Infinity;
+        check('Sin ningún sitio bueno el parche no sale (nada de un sitio al azar) y luego se reintenta solo', sinSitio && sigue && vuelve, sinSitio + '/' + sigue + '/' + vuelve);
+      }
+      check('La zona de juego es un claro con sitio (≥ ' + CLARO_MIN + ' de 36 puestos buenos para un parche grande) y empieza en el aire: la sombra-diana ya se ve y el aviso dice que vueles', E.claroN >= CLARO_MIN && P.alto >= ALTO_MIN && M.diana.visible && /Vuela sobre la tierra oscura/.test(q(hudEl, 'msg').textContent),
+        'claro ' + E.claroN + ' · alto ' + P.alto.toFixed(1) + ' · ' + q(hudEl, 'msg').textContent + ' · cerca de ' + claro.ancla + ' → ' + Math.round(claro.x) + ',' + Math.round(claro.z) + ' ras ' + claro.n + ' vit ' + Math.round(pos0.x) + ',' + Math.round(pos0.z));
+      check('El HUD no es una región viva (el reloj no se anuncia cada segundo); solo su aviso habla', !hudEl.hasAttribute('role') && !hudEl.hasAttribute('aria-live') && !q(hudEl, 'r').closest('[aria-live],[role="status"]') && q(hudEl, 'msg').getAttribute('aria-live') === 'polite');
+      check('El botón Acción dice «Soltar» (con el icono de la semilla)', G.interaccion && G.interaccion.modo === MODO && MODO.verbo === 'Soltar' && (!G.input || !G.input.actBtn || /svg/.test(getComputedStyle(G.input.actBtn).getPropertyValue('--icon'))));
+      { const hr = hudEl.getBoundingClientRect(); const mr = q(hudEl, 'msg').getBoundingClientRect(), choca = (r, h) => h.width > 0 && r.left < h.right && r.right > h.left && r.top < h.bottom && r.bottom > h.top;
+        const tapa = ['b-act', 'stick', 'acts', 'minimapa', 'b-menu', 'b-diary', 'b-emotes'].filter(id => { if (!vis(id)) return false; const r = document.getElementById(id).getBoundingClientRect(); return choca(r, hr) || choca(r, mr); });
+        check('El HUD cabe en una franja arriba y ni él ni su aviso tapan los botones del juego', hr.left >= 0 && hr.right <= innerWidth && hr.top >= 0 && hr.height <= 64 && !tapa.length, `${innerWidth}×${innerHeight} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)} · aviso ${Math.round(mr.width)}×${Math.round(mr.height)}` + (tapa.length ? ' · tapa ' + tapa.map(id => { const r = document.getElementById(id).getBoundingClientRect(); return id + '@' + [r.left, r.top, r.right, r.bottom].map(Math.round).join(','); }).join(' ') + ' · hud ' + [hr.left, hr.top, hr.right, hr.bottom].map(Math.round).join(',') + ' · aviso ' + [mr.left, mr.top, mr.right, mr.bottom].map(Math.round).join(',') : '')); }
+      check('La historia no se mezcla: cuenta como actividad (los avisos esperan) y el letrero, el aviso y los bocadillos no se ven',
+        (!G.menuModos || !G.menuModos.ocupado || G.menuModos.ocupado()) && ['toast', 'prompt', 'quest', 'inv-cuenta', 'bocadillos'].every(id => !vis(id)));
+      apuntarGuia();
+      check('La flecha y el minimapa apuntan a lo mismo (el parche más cercano)', guia.ok && (!G.fx || !G.fx.guide || (() => { const g0 = G.fx.guide; let visto = null; G.fx.guide = t => { visto = t; }; try { guiar(); } finally { G.fx.guide = g0; } return visto === guia; })()) &&
+        (!G.minimapa || !G.minimapa.marcadores || G.minimapa.marcadores().some(k => k.tipo === 'obj' && k.x === guia.x && k.z === guia.z)), guia.x.toFixed(1) + ',' + guia.z.toFixed(1));
+      if (G.pausa && G.pausa.set && G.pausa.motivos) {
+        const yaCarga = G.pausa.motivos.has('carga');
+        G.pausa.set('carga', true); verHud(); const tapado = hudEl.hidden;
+        if (!yaCarga) G.pausa.set('carga', false); verHud();
+        check('Con la pantalla de carga el HUD espera y luego sale', tapado && (yaCarga || !hudEl.hidden), yaCarga + '/' + tapado + '/' + hudEl.hidden + '/' + E.fase + '/' + [...G.pausa.motivos].join(',') + '/' + !!document.getElementById('c1-saltar'));
+      }
+      { // Jugando, la cámara va más alta y mira por debajo de Vittata: la sombra-diana sale en pantalla, lejos del cuerpo de Vittata y sin botones encima
+        const p0 = parches.find(p => p.on), fl0 = m.flying; m.flying = true;
+        ir(p0.x, p0.z, 10, 0, 0); S.facing = { x: 0, z: 1 }; if (G.camara) G.camara.yaw = Math.atan2(0, -1);
+        predecir(P); let ok = true, info = '';
+        if (G.camara && G.camara.place) { G.camara.place(true); R.camera.updateMatrixWorld(); const d = aPx(P.lx, P.ly, P.lz), v = aPx(S.pos.x, S.pos.y + 0.4, S.pos.z);
+          const tapa = ['b-act', 'stick', 'acts', 'b-fly', 'b-jump', 'b-dash', 'b-land'].filter(id => dentro(d, id));
+          ok = d.z < 1 && d.x > 0 && d.x < innerWidth && d.y > 0 && d.y < innerHeight * 0.78 && Math.hypot(d.x - v.x, d.y - v.y) > innerHeight * 0.08 && !tapa.length;
+          info = `${innerWidth}×${innerHeight} · sombra ${Math.round(d.x)},${Math.round(d.y)} · Vittata ${Math.round(v.x)},${Math.round(v.y)}` + (tapa.length ? ' · tapa ' + tapa.join(',') : ''); }
+        m.flying = fl0;
+        check('Jugando, la cámara va más alta (' + (vertical() ? 'más aún con el teléfono de pie' : 'pantalla ancha') + ') y la sombra-diana sale en pantalla, por encima de los botones de abajo y lejos de Vittata', camEs(vertical() ? AJ_JV : AJ_J) && ok, info);
+      }
+      // Preparar un claro conocido: un parche grande en un sitio sin agua cerca del saco
+      for (const p of parches) p.on = false;
+      const px = saco.x + 20, pz = saco.z, pa = ponerParche(0, px, pz, 3.2);
+      // La sombra dice dónde cae: quieta a 12 m sobre el parche, cae justo debajo
+      ir(px, pz, 12, 0, 0); predecir(P);
+      check('Quieta en el aire, la sombra-diana cae justo debajo y marca el centro (dorada)', Math.hypot(P.lx - px, P.lz - pz) < 0.01 && P.zona === 2 && (pintar(), M.diana.visible && M.arco.visible && M.diana.material.color.getHex() === 0xffd23f), P.lx.toFixed(2));
+      // Soltar con teclado (Acción = E): la semilla sigue el arco y cae donde decía la sombra
+      let x0S = px - 8; ir(x0S, pz, 14, 10, 0); for (let k = 0; k < 3; k++) { predecir(P); x0S -= P.lx - (px + 1.6); ir(x0S, pz, 14, 10, 0); } // que caiga en el borde aunque el suelo no sea llano
+      predecir(P); const lx = P.lx, lz = P.lz, T0 = P.T;
+      const s0 = E.semillas; tecla('e');
+      const sv = vuelo.find(s => s.on);
+      check('Con el teclado (E) se suelta una semilla y se gasta una', E.semillas === s0 - 1 && !!sv && Math.abs(sv.lx - lx) < 1e-6, s0 + ' → ' + E.semillas);
+      lejos(); paso(T0 * 0.5); const mitad = sv.on && M.semillas.visible && M.semillas.count === 1;
+      caer();
+      const arb = arboles.find(a => a.on);
+      check('La semilla cae en arco donde marcaba la sombra (aunque Vittata ya se fue) y brota un árbol', mitad && !!arb && Math.hypot(arb.x - lx, arb.z - lz) < 0.01 && Math.abs(lx - x0S) > 0.5, arb ? Math.hypot(arb.x - lx, arb.z - lz).toFixed(3) + ' m' : 'sin árbol');
+      check('Soltar rápido (más de 8 m/s) suma +1: borde o centro, con su aviso', E.arboles === 1 && E.rapidas === 1 && (E.puntos === 4 || E.puntos === 2) && /\+(4|2)/.test(q(hudEl, 'msg').textContent), E.puntos + ' · ' + q(hudEl, 'msg').textContent);
+      check('El parche plantado se va y sale otro en el claro (siguen 1 + los nuevos)', !pa.on || Math.hypot(pa.x - px, pa.z - pz) > 1, pa.on);
+      for (let i = 0; i < 20; i++) paso(0.05);
+      check('El árbol brota (crece hasta su tamaño) y se dibuja con su malla instanciada', arb.t > 0.9 && (M.palma.count + M.tabonuco.count) === 1, M.palma.count + '/' + M.tabonuco.count);
+      // Centro, borde y fuera (quieta encima: sin bono de velocidad)
+      const prueba = (dx, alto) => { for (const p of parches) p.on = false; ponerParche(0, px, pz, 3.2); listo(); ir(px + dx, pz, alto || 10, 0, 0); const ok = soltar(); lejos(); caer(); return ok; };
+      E.racha = 0; let p0 = E.puntos; prueba(0);
+      check('En el centro: +3, «¡En el centro!» y brote grande', E.puntos - p0 === 3 && /En el centro! \+3/.test(q(hudEl, 'msg').textContent) && arboles.filter(a => a.on).some(a => a.tam === 1 && Math.hypot(a.x - px, a.z - pz) < 0.01), q(hudEl, 'msg').textContent);
+      E.racha = 0; p0 = E.puntos; prueba(2.5);
+      check('En el borde: +1, «¡Brotó!» y brote mediano', E.puntos - p0 === 1 && /Brotó! \+1/.test(q(hudEl, 'msg').textContent) && arboles.some(a => a.on && a.tam === 0.7), q(hudEl, 'msg').textContent);
+      E.racha = 2; p0 = E.puntos; const a0 = E.arboles; prueba(6);
+      check('Fuera: «Rebotó fuera», ni puntos ni árbol, y se pierde la racha', E.puntos === p0 && E.arboles === a0 && E.racha === 0 && /Rebotó fuera/.test(q(hudEl, 'msg').textContent), q(hudEl, 'msg').textContent);
+      // Racha: ×2 desde 3 seguidos
+      E.semillas = 5; E.racha = 0; prueba(0); prueba(0); p0 = E.puntos; prueba(0);
+      check('Tres seguidos: «¡Racha ×2!» y puntos dobles; el HUD lo enseña', E.puntos - p0 === 6 && /Racha ×2! \+6/.test(q(hudEl, 'msg').textContent) && q(hudEl, 'x').textContent === '×2', q(hudEl, 'msg').textContent);
+      // Muy bajo no se suelta
+      E.semillas = 5; listo(); ir(px, pz, 1, 0, 0);
+      check('A ras del suelo no se suelta: «Vuela más alto para soltar» (no gasta semilla)', !soltar() && E.semillas === 5 && /Vuela más alto/.test(q(hudEl, 'msg').textContent));
+      // Machacar no sirve: 20 toques seguidos en el mismo instante sueltan una sola; sin semillas, el aviso y el saco
+      for (const p of parches) p.on = false;
+      E.semillas = 5; listo(); ir(px, pz, 12, 0, 0); let sueltas = 0; for (let i = 0; i < 20; i++) if (soltar()) sueltas++;
+      check('Machacar no sirve: 20 toques seguidos sueltan una sola semilla', sueltas === 1 && E.semillas === 4, sueltas);
+      for (let i = 0; i < 40; i++) { paso(0.1); soltar(); }
+      lejos(); caer(); listo(); const sinOk = !soltar(); // tocar sin semillas: no suelta y avisa
+      check('Sin semillas: «Sin semillas: vuelve al saco», el HUD lo marca y la flecha va al saco', sinOk && E.semillas === 0 && /Sin semillas/.test(q(hudEl, 'msg').textContent) && q(hudEl, 's').classList.contains('vacio') && (apuntarGuia(), guia.ok && guia.x === saco.x && guia.z === saco.z), E.semillas);
+      ir(saco.x + 1, saco.z, 20, 0, 0); paso(0.05);
+      check('Pasando por encima del saco (a 20 m, sin aterrizar) se recargan las 5 semillas («¡Semillas listas!»)', E.semillas === 5 && /Semillas listas/.test(q(hudEl, 'msg').textContent) && q(hudEl, 's').querySelectorAll('i.on').length === 5);
+      // Táctil: el botón Acción también suelta
+      for (const p of parches) p.on = false; ponerParche(0, px, pz, 3.2);
+      listo(); ir(px, pz, 10, 0, 0);
+      if (G.input && G.input.actBtn) { const n0 = E.semillas; G.input.actBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }));
+        lejos(); caer(); check('Con el botón táctil también se suelta y se gana un punto', E.semillas === n0 - 1 && /En el centro/.test(q(hudEl, 'msg').textContent), n0 + ' → ' + E.semillas); }
+      // Viento (30–60 s): la sombra se desplaza y la semilla cae donde la sombra
+      E.t = 31; E.semillas = 5; lejos(); paso(0.05);
+      const avisoV = /Viento/.test(q(hudEl, 'msg').textContent);
+      { aviso('¡Brotó! +1', 'bien'); const sigueV = /Viento/.test(q(hudEl, 'msg').textContent); for (let i = 0; i < 52; i++) paso(0.05); E.t = 31.05;
+        check('El aviso del viento se lee entero: el siguiente espera y sale después', sigueV && /Brotó! \+1/.test(q(hudEl, 'msg').textContent), q(hudEl, 'msg').textContent); }
+      for (const p of parches) p.on = false; ponerParche(0, px, pz, 3.2);
+      listo(); ir(px, pz, 14, 0, 0); predecir(P); const dV = Math.hypot(P.lx - px, P.lz - pz), wx = P.lx, wz = P.lz;
+      for (const p of parches) p.on = false; ponerParche(0, wx, wz, 3.2); soltar(); lejos(); caer();
+      const aw = arboles.filter(a => a.on).sort((a, b) => a.t - b.t)[0];
+      check('Con viento lateral (aviso con sonido), la sombra se desplaza y la semilla cae justo en ella', avisoV && E.vientoOn && dV > 1.5 && aw && Math.hypot(aw.x - wx, aw.z - wz) < 0.01, dV.toFixed(2) + ' m');
+      // 60–90 s: parches pequeños que se secan
+      E.t = 61; const ps = nuevoParche(parches[1]); ps.seco = true; const r0 = ps.r;
+      for (let i = 0; i < 40; i++) paso(0.1);
+      check('Al final, parches pequeños; los que se secan se achican', r0 === RADIO[2] && (ps.r < r0 * 0.6 || ps.r0 !== r0 || !ps.seco), r0 + ' → ' + ps.r.toFixed(2));
+      { // «Reducir movimiento»: contadores (hojas que se lanzan y sonidos), no estilos
+        const fx = G.fx, b0 = fx && fx.burst, au = G.audio, pl0 = au && au.play; let nHojas = 0; const sonidos = [];
+        html.classList.add('mov-reducido');
+        try {
+          if (fx) fx.burst = () => { nHojas++; };
+          if (au) au.play = n => { sonidos.push(n); };
+          G.quiet = false;
+          E.t = 40; E.semillas = 5; for (const p of parches) p.on = false; ponerParche(0, px, pz, 3.2);
+          listo(); ir(px, pz, 10, 0, 0); E.vientoX = E.vientoZ = 0; E.vientoOn = true; // sin viento para esta caída
+          soltar(); lejos(); caer();
+          const nuevo = arboles.filter(a => a.on).sort((a, b) => a.t - b.t)[0];
+          E.semillas = 0; E.sinT = -9; E.ultSoltar = -9; soltar(); // sin semillas: el aviso suena
+          E.vientoOn = false; E.t = 31; paso(0.02); // el viento también se avisa con sonido
+          check('Con «Reducir movimiento»: ninguna ráfaga de hojas (al brotar ni con el viento), el árbol sale ya crecido y los avisos suenan', nHojas === 0 && nuevo && crecer(nuevo.t) === 1 && sonidos.filter(n => n === 'aviso').length >= 2, 'hojas ' + nHojas + ' · ' + sonidos.join(','));
+        } finally { G.quiet = true; if (fx) fx.burst = b0; if (au) au.play = pl0; html.classList.remove('mov-reducido'); }
+        // y sin «Reducir movimiento», las hojas sí salen (la prueba cuenta de verdad)
+        let nH2 = 0; const b1 = fx && fx.burst;
+        if (fx) { fx.burst = () => { nH2++; }; try { hojas(px, 0, pz, 5); } finally { fx.burst = b1; } check('Sin «Reducir movimiento» las hojas sí salen (el contador funciona)', nH2 === 1); }
+      }
+      // El reloj termina: la cámara sube a enseñar el claro y luego el panel modal
+      const arbFin = E.arboles, ptsFin = E.puntos; lejos();
+      E.t = DUR - 0.05; paso(0.1);
+      const enVista = E.fase === 'vista' && hudEl.hidden && finEl.hidden && (M.palma.count + M.tabonuco.count) > 0 && !M.parches.visible && camEs(AJ_F);
+      const tV = tecla('p');
+      check('Al terminar, la cámara sube y enseña el claro reverdecido (los árboles siguen; sin teclas del mundo)', enVista && tV.defaultPrevented, E.fase + ' · ' + (C && C.distFly));
+      { // y mira a los árboles plantados: casi todos salen en el cuadro; sin la flecha de la historia
+        let nA = 0, nV = 0;
+        if (G.camara && G.camara.place) { G.camara.place(true); R.camera.updateMatrixWorld(); for (const a of arboles) { if (!a.on) continue; nA++; const p = aPx(a.x, a.y + 2, a.z); if (p.z < 1 && p.x > 0 && p.x < innerWidth && p.y > 0 && p.y < innerHeight) nV++; } }
+        const fx = G.fx; if (fx && fx.guide) fx.guide({ x: S.pos.x + 20, y: S.pos.y, z: S.pos.z }, 0); guiar();
+        const sinFlecha = !fx || !fx.guideBeam || (!fx.guideBeam.visible && !(fx.guideArrow && fx.guideArrow.visible));
+        check('La vista final mira al claro: se ven los árboles plantados (≥ 70 %) y no queda la flecha de la historia', (!G.camara || !G.camara.place || (nA > 0 && nV >= nA * 0.7)) && sinFlecha, nV + '/' + nA + ' árboles en el cuadro · flecha ' + !sinFlecha);
+      }
+      for (let i = 0; i < 60 && E.fase === 'vista'; i++) paso(0.05);
+      const fr = finEl.getBoundingClientRect(), bots = [...finEl.querySelectorAll('button')].map(b => b.getBoundingClientRect());
+      check('Panel final en una sola medida: árboles grandes, «¡Nuevo récord: N árboles!», «Sembraste N árboles · Mejor racha · puntos», «Otra vez» y «Salir»', E.fase === 'fin' && !finEl.hidden && q(finEl, 'fn').textContent === String(arbFin) && new RegExp('Nuevo récord: ' + arbFin + ' árboles!').test(q(finEl, 'fmsg').textContent) && !/puntos/.test(q(finEl, 'fmsg').textContent) && new RegExp('Sembraste ' + arbFin + ' árboles · Mejor racha: 3 · ' + ptsFin + ' puntos').test(q(finEl, 'fdet').textContent), q(finEl, 'fmsg').textContent + ' · ' + q(finEl, 'fdet').textContent);
+      check('El dato real de la palma de sierra sale la primera vez (con su fuente)', /palma de sierra \(USFWS\)/.test(q(finEl, 'fdato').textContent) && !/siembr|dispers|plant/i.test(q(finEl, 'fdato').textContent));
+      check('El récord (puntos, árboles y racha) se guarda en este dispositivo', (() => { const r = leerRec(); return r && r.mejor === ptsFin && r.arboles === arbFin && r.racha === 3 && r.jugadas === 1 && r.dato === true; })(), JSON.stringify(leerRec()));
+      check('Cabe en la pantalla: panel dentro y botones del final ≥ 54 px', bots.every(b => b.height >= 54 && b.width >= 54) && fr.left >= 0 && fr.right <= innerWidth && fr.top >= 0 && fr.bottom <= innerHeight, `${innerWidth}×${innerHeight} · ${Math.round(fr.width)}×${Math.round(fr.height)}`);
+      await new Promise(r => setTimeout(r, 30));
+      const tP = tecla('p'), tE = tecla('e');
+      check('El panel es modal: el mundo en pausa, las teclas del mundo no pasan y el foco va al panel', (!G.pausa || !G.pausa.motivos || G.pausa.motivos.has('sembradora')) && tP.defaultPrevented && tE.defaultPrevented && E.fase === 'fin' && document.activeElement === finEl && ['minimapa', 'guia-hud', 'keyhint'].every(id => !vis(id)), document.activeElement && (document.activeElement.id || document.activeElement.tagName));
+      { // el foco no sale del panel con Tab (ni con Mayús+Tab) y Diario, Gestos y el menú no se ven ni se pueden tocar
+        const enPanel = []; for (const k of ['Tab', 'Tab', 'Tab']) { const t = tecla(k); enPanel.push(t.defaultPrevented && finEl.contains(document.activeElement) && document.activeElement !== finEl); }
+        const ev = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }); dispatchEvent(ev); enPanel.push(finEl.contains(document.activeElement));
+        const fuera = ['b-diary', 'b-menu', 'b-emotes', 'b-nido'].filter(id => vis(id));
+        check('El foco no sale del panel con Tab y Diario, Gestos y el menú no quedan encima', enPanel.every(Boolean) && !fuera.length, enPanel.join(',') + (fuera.length ? ' · se ve ' + fuera.join(',') : ''));
+        finEl.focus();
+      }
+      const ae = G.aula && G.aula.aj;
+      if (ae) {
+        const idi0 = ae.idioma; ae.idioma = 'en'; pintarHud(); pintarFin();
+        const txt = hudEl.textContent + ' ' + finEl.textContent + ' ' + MODO.verbo;
+        check('En inglés no queda texto en español (Time’s up!, You planted, Real fact, Play again, Exit, Drop)', /Time’s up!/.test(txt) && /You planted \d+ trees/.test(txt) && /Real fact/.test(txt) && /Play again/.test(txt) && /Exit/.test(txt) && /Drop/.test(txt) && !/[áéíóúñ¡]|Salir|Otra vez|Récord|Sembraste|puntos|Soltar/.test(txt), txt.slice(0, 200));
+        ae.idioma = idi0; pintarHud(); pintarFin();
+      }
+      const sacoFin = { x: saco.x, z: saco.z };
+      finEl.querySelector('[data-a="otra"]').click();
+      check('«Otra vez» empieza limpio en el mismo claro (1:30, 0 árboles, 5 semillas, sin árboles viejos, sin panel ni pausa y la cámara del juego)', E.fase === 'juego' && E.puntos === 0 && E.arboles === 0 && E.semillas === 5 && arboles.every(a => !a.on) && finEl.hidden && q(hudEl, 'r').textContent === '1:30' && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('sembradora')) && parches.every(p => p.on) && camEs(vertical() ? AJ_JV : AJ_J) && Math.hypot(saco.x - sacoFin.x, saco.z - sacoFin.z) < 0.01, Math.hypot(saco.x - sacoFin.x, saco.z - sacoFin.z).toFixed(2) + ' m · ' + [E.fase, E.puntos, E.arboles, E.semillas, arboles.filter(a => a.on).length, finEl.hidden, q(hudEl, 'r').textContent, G.pausa && G.pausa.motivos ? [...G.pausa.motivos].join('+') : '-', parches.filter(p => p.on).length, camEs(vertical() ? AJ_JV : AJ_J)].join('/'));
+      { // con «Reducir movimiento», al terminar ni sube la cámara ni se mueve Vittata: el panel sale ya
+        html.classList.add('mov-reducido');
+        try { lejos(); const vx0 = S.pos.x, vz0 = S.pos.z; E.t = DUR; paso(0.1);
+          check('Con «Reducir movimiento», al terminar no hay subida de cámara ni cambio de vista: el panel sale ya', E.fase === 'fin' && camEs(vertical() ? AJ_JV : AJ_J) && S.pos.x === vx0 && S.pos.z === vz0, E.fase + ' · ' + (C && C.distFly));
+        } finally { html.classList.remove('mov-reducido'); }
+      }
+      check('Sin árboles, nunca castiga: «¡Casi!», el récord sigue y el dato no se repite', /Casi/.test(q(finEl, 'fmsg').textContent) && leerRec().mejor === ptsFin && leerRec().arboles === arbFin && q(finEl, 'fdato').textContent === '', q(finEl, 'fmsg').textContent);
+      let soltadas = 0; for (const k of ['parches', 'semillas', 'palma', 'tabonuco']) M[k].addEventListener('dispose', () => { soltadas++; });
+      finEl.querySelector('[data-a="salir"]').click();
+      check('Al salir se sueltan las 4 mallas instanciadas (sus búferes de la GPU también)', soltadas === 4, soltadas);
+      check('«Salir» lo quita todo (HUD, panel, clases, pausa, árboles y mallas fuera de la escena, Acción y cámara de siempre)', !activo() && hudEl.hidden && finEl.hidden && !/sembradora-(on|fin)/.test(document.body.className) && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('sembradora')) && !M && !R.scene.children.some(o => /^sembradora:/.test(o.name)) && arboles.every(a => !a.on) && (!G.interaccion || G.interaccion.modo !== MODO) && camEs(null));
+      jugar({ semilla: 3, callado: true });
+      { // al salir a media partida, el chip táctil del poder no se queda encima de la portada
+        let chip = document.getElementById('v18-exp-poder'), puesto = false;
+        if (!chip) { chip = document.createElement('button'); chip.id = 'v18-exp-poder'; document.body.appendChild(chip); puesto = true; }
+        const h0 = chip.hidden; chip.hidden = false; hudEl.querySelector('[data-a="salir"]').click(); const oculto = chip.hidden;
+        if (puesto) chip.remove(); else chip.hidden = h0;
+        check('Al salir a media partida, el chip «Tu poder» no se queda encima de la portada', oculto && !activo());
+      }
+      jugar({ semilla: 3, callado: true });
+      const ev = tecla('Escape');
+      check('Esc en plena partida también sale', !activo() && ev.defaultPrevented && hudEl.hidden);
+      check('Sonidos que ya existen (lanzar, semilla, encaje, frenada, pieza, aviso, panel_final, logro)', !G.audio || !G.audio.has || ['lanzar', 'semilla', 'encaje', 'frenada', 'pieza', 'aviso', 'panel_final', 'logro'].every(n => G.audio.has(n)));
+    } catch (e) { check('Sin errores', false, e && (e.stack || e.message)); }
+    finally {
+      salir(); G.quiet = q0; azarS = 0; S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; m.vx = mv0.vx; m.vz = mv0.vz; m.flying = mv0.flying; if (G.camara) G.camara.yaw = yaw0;
+      try { if (rec0 == null) localStorage.removeItem(ALM); else localStorage.setItem(ALM, rec0); } catch (e) { /* */ }
+    }
+    return { results: out, passed: out.filter(x => x.ok).length, total: out.length };
+  }
+
+  const objetivo = () => (E.fase === 'juego' && guia.ok ? guia : null); // lo lee el minimapa (minimapa.js objetivo()): la estrella marca lo mismo que la flecha
+  G.sembradoraApi = { jugar, salir, activo, soltar, paso, test, objetivo,
+    estado: () => ({ fase: E.fase, puntos: E.puntos, arboles: E.arboles, semillas: E.semillas, racha: E.racha, restante: restante(), mejor: E.mejor, viento: E.vientoOn }),
+    _dev: { E, parches, arboles, vuelo, saco, P, ponerParche, predecir } };
+  return G.sembradoraApi;
+};
