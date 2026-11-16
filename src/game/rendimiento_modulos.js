@@ -61,34 +61,40 @@ window.AVRendimientoModulos = function (G) {
       if (o.isInstancedMesh) { for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, mi); sp.copy(g.boundingSphere).applyMatrix4(mi).applyMatrix4(o.matrixWorld); if (fr.intersectsSphere(sp)) return false; } return true; }
       sp.copy(g.boundingSphere).applyMatrix4(o.matrixWorld); sp.radius += 0.5; return !fr.intersectsSphere(sp);
     };
+    // T62: fuera incluso con el margen del recorte (×1,25 + 2 m por instancia, por el viento del shader): lo que el recorte debe apagar
+    const fueraMargen = o => {
+      const g = o.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
+      for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, mi); sp.copy(g.boundingSphere).applyMatrix4(mi); sp.radius = sp.radius * 1.25 + 2; sp.applyMatrix4(o.matrixWorld); if (fr.intersectsSphere(sp)) return false; }
+      return true;
+    };
     const sombra = () => !!(R.sun && R.sun.castShadow);
     // lo que el recorte puede apagar: instancias (≤ 4000) y cuerpos con esqueleto sin recorte de three; con sol, no lo que da sombra
     const candidato = o => (o.isInstancedMesh ? o.count > 0 && o.count <= 4000 : o.isSkinnedMesh && o.frustumCulled === false) && !(sombra() && o.castShadow) && !o.userData.sinCulling;
     const cuadro = activo => {
       // QA-nuevo-t54-2: solo el dibujo real (por renderer.render); el precalentado dentro de R.render va por el render crudo
       // (sinCuenta) y también usa la cámara principal: no es del recorte y cae en cuadros sueltos (mismo arreglo que streamingTest)
-      const rr = R.renderer, orig = rr.renderBufferDirect, origR = rr.render, dib = new Set(); let n = 0, nFuera = 0, dentro = 0, nFlora = 0;
+      const rr = R.renderer, orig = rr.renderBufferDirect, origR = rr.render, dib = new Set(); let n = 0, nFuera = 0, dentro = 0, nFlora = 0, nMargen = 0;
       const floraFuera = [];
       FC.activo = activo;
       rr.renderBufferDirect = function (c, sc, geo, mat, obj) {
         if (c === cam && dentro) {
           n++; dib.add(obj);
           const esFlora = obj.isInstancedMesh && /^flora:/.test(obj.name || ''); if (esFlora) nFlora++;
-          if (candidato(obj) && fuera(obj)) { nFuera++; if (esFlora) floraFuera.push(obj.name + ' (' + obj.count + ')'); }
+          if (candidato(obj) && fuera(obj)) { nFuera++; if (esFlora) { if (fueraMargen(obj)) floraFuera.push(obj.name + ' (' + obj.count + ')'); else nMargen++; } }
         }
         return orig.apply(this, arguments);
       };
       rr.render = function () { dentro++; try { return origR.apply(this, arguments); } finally { dentro--; } };
       try { if (G.camara.place) G.camara.place(true); cam.updateMatrixWorld(); fr.setFromProjectionMatrix(mm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse)); R.render(1 / 60, false); }
       finally { rr.renderBufferDirect = orig; rr.render = origR; FC.activo = true; }
-      return { n, nFuera, dib, apagados: FC.ultimo, nFlora, floraFuera, porInstancia: FC.porInstancia || 0 };
+      return { n, nFuera, dib, apagados: FC.ultimo, nFlora, floraFuera, nMargen, porInstancia: FC.porInstancia || 0 };
     };
     const yaw0 = G.camara.yaw, vuelo0 = M.flying;
     try {
       const sp0 = (G.terreno.mapa || {}).spawn; if (sp0) { S.pos.x = sp0.x; S.pos.z = sp0.z; S.pos.y = G.terreno.height(sp0.x, sp0.z); }
       const filas = [], filasFlora = [];
       let malos = 0, antes = 0, despues = 0, callsA = 0, callsD = 0; const nombresMalos = [];
-      let floraA = 0, floraD = 0, floraFueraN = 0, porInst = 0; const floraFueraNom = [];
+      let floraA = 0, floraD = 0, floraFueraN = 0, porInst = 0, margenN = 0; const floraFueraNom = [];
       // T62: además de la aparición (de frente y de espaldas), en vuelo a 28 m sobre el bosque (40, 110), como en T46
       const vistas = [[0, false], [Math.PI, false], [0, true], [Math.PI, true]];
       for (const [yaw, enVuelo] of vistas) {
@@ -101,7 +107,7 @@ window.AVRendimientoModulos = function (G) {
           const x = cuadro(act);
           if (act) {
             d.n += x.n; d.nFuera += x.nFuera; d.apagados = Math.max(d.apagados, x.apagados); for (const o of x.dib) alguna.add(o);
-            floraD += x.nFlora; floraFueraN += x.floraFuera.length; porInst = Math.max(porInst, x.porInstancia);
+            floraD += x.nFlora; floraFueraN += x.floraFuera.length; margenN += x.nMargen; porInst = Math.max(porInst, x.porInstancia);
             for (const nm of x.floraFuera) if (floraFueraNom.length < 5 && !floraFueraNom.includes(nm)) floraFueraNom.push(nm);
           }
           else { a.n += x.n; a.nFuera += x.nFuera; floraA += x.nFlora; siempre = siempre ? new Set([...siempre].filter(o => x.dib.has(o))) : new Set(x.dib); }
@@ -114,7 +120,7 @@ window.AVRendimientoModulos = function (G) {
       }
       floraA = Math.round(floraA / 4); floraD = Math.round(floraD / 4);
       ok('T62 · la vegetación entera fuera de cámara no se dibuja (instancia a instancia, sin sombra del sol)', floraFueraN === 0 && floraD <= floraA,
-        'draw calls de flora (suma de las 4 vistas, media de 4 cuadros) ' + floraA + ' → ' + floraD + ' · hasta ' + porInst + ' mallas apagadas instancia a instancia en un cuadro · ' + floraFueraN + ' dibujadas enteras fuera' + (floraFueraNom.length ? ' (' + floraFueraNom.join(', ') + ')' : '') + ' · vistas: ' + filasFlora.join(', '));
+        'draw calls de flora (suma de las 4 vistas, media de 4 cuadros) ' + floraA + ' → ' + floraD + ' · hasta ' + porInst + ' mallas apagadas instancia a instancia en un cuadro · ' + floraFueraN + ' dibujadas enteras fuera' + (floraFueraNom.length ? ' (' + floraFueraNom.join(', ') + ')' : '') + ' · ' + Math.round(margenN / 4) + ' por cuadro siguen por tener alguna instancia en el margen del viento · vistas: ' + filasFlora.join(', '));
       ok('T46 · lo que deja de dibujarse estaba de verdad fuera de cámara (nada visible desaparece)', malos === 0, malos + ' a la vista sin dibujar' + (malos ? ' (' + nombresMalos.slice(0, 5).join(', ') + ')' : '') + ' · ' + filas.join(' · '));
       ok('T46 · fuera de cámara se dibuja menos que sin el recorte (y nunca más draw calls)', callsA > 0 && (antes === 0 || despues < antes) && callsD <= callsA,
         'fuera ' + antes + '→' + despues + ' · calls ' + callsA + '→' + callsD + ' · ' + (G.renderer.calidad && G.renderer.calidad.nivel) + (sombra() ? ' con sombras' : ' sin sombras'));
