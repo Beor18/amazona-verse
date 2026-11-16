@@ -303,7 +303,7 @@
           if (!h0) throw new Error('sin visita en el comedero');
           ponPiezas([P('flores', 5, 0)]);
           check('Quitar el comedero apaga la obra y la visita se va volando', obras.length === 0 && !!h0 && h0.fase() === 'seva');
-          for (let t = 0; t < 22; t += 0.25) R.paso(0.25, 'sin-dibujo');
+          for (let t = 0; t < 22; t += 0.1) R.paso(0.1, 'sin-dibujo');
           check('Al irse lejos, la visita se borra (no queda nada)', R.invitados().length === 0 && !h0.activa());
           R.reiniciar();
         }
