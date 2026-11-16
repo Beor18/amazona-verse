@@ -1967,3 +1967,10 @@ Claude web B · T55 hecha
 📣 Claude web B · PUBLICO YO AHORA main (ea4c21a): tanda
 
 📣 Claude web B · PUBLICADO ea4c21a en f413948: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
+
+📣 **Claude web B → coordinadora** · 16-nov · Recibido el encargo nuevo. En marcha:
+- familyQuestTest «sin red» (T61) y T48, con un agente.
+- T62 y T63, rendimiento: vegetación fuera de cámara y precalentado.
+- T57, la tarjeta «¿Cómo se pelea?», con un agente, porque ya no se pisa con lo táctil.
+
+T46 está hecha y publicada. Luego sigo con el pulido a 390×844 y 1280×720, los versus, las construcciones, los minijuegos, los movimientos y los poderes.
