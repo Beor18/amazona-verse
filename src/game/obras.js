@@ -265,7 +265,7 @@
           for (const c of R.colonias()) {
             Object.assign(S.pos, { x: c.x + 2, z: c.z }); R.reiniciar();
             for (let k = 0; k < 6; k++) {
-              const h = R.invitar({ x: c.x, z: c.z, perchas: [] });
+              const h = R.invitar({ x: c.x, z: c.z, perchas: [{ x: c.x, z: c.z, y: H(c.x, c.z) + 1.3, tipo: 'copa' }] });
               if (!h) { malas.push(c.id + ' sin visita'); break; }
               const pc = R.poolDe(c);
               if (R.EXTINTAS.includes(h.sp) || !(pc.includes(h.sp) || (pc.length === 0 && h.sp === 'vittata'))) malas.push(c.id + ':' + h.sp);
@@ -289,7 +289,7 @@
           // llegan, comen, se apuntan en el Libro y en el Álbum (verlas a menos de 8 m durante 2 s), y se van
           S.album = (Array.isArray(S.album) ? S.album : []).slice(); S.pos.y = H(S.pos.x, S.pos.z);
           ponPiezas([P('comedero', 3, 0), P('flores', 5, 0)]);
-          const ob = obras[0]; ob.espera = 0; paso(CADA);
+          const ob = obras[0]; ob.visita = null; ob.espera = 0; paso(CADA);
           const sp = ob.visita && ob.visita.sp;
           S.album = S.album.filter(id => id !== sp); R.olvidar();
           let llego = false;
@@ -300,6 +300,7 @@
           check('Verla de cerca la apunta en el Álbum como a cualquier residente', !!sp && G.album && G.album.visto(sp), sp);
           // 4. Quitar la pieza apaga la obra: las aves se van volando
           const h0 = ob.visita;
+          if (!h0) throw new Error('sin visita en el comedero');
           ponPiezas([P('flores', 5, 0)]);
           check('Quitar el comedero apaga la obra y la visita se va volando', obras.length === 0 && !!h0 && h0.fase() === 'seva');
           for (let t = 0; t < 22; t += 0.25) R.paso(0.25, 'sin-dibujo');
@@ -330,7 +331,7 @@
         G.F3PIEZAS = true; C.refrescar(); recalcular('guardar'); C.aplicar(S.construir);
         check('Bandera encendida: la caja nido sale, es obra «Caja nido» y el Merendero está entre las plantillas', C.tiene('cajanido') && C.piezas().some(p => p.t === 'cajanido') && tipos() === 'cajanido' && C.PLANTILLAS_F3.includes('merendero') && ultimoAviso === '¡Obra lista: Caja nido!', tipos() + ' ' + ultimoAviso);
         if (R && R.invitar) {
-          R.reiniciar(); const o = obras[0]; o.espera = 0; paso(CADA);
+          R.reiniciar(); const o = obras[0]; o.visita = null; o.espera = 0; paso(CADA);
           const iv = R.invitados();
           check('Caja nido: viene una pareja del hábitat a posarse', iv.length === 1 && R.especiesEn(o.x, o.z).includes(iv[0].sp) && !R.EXTINTAS.includes(iv[0].sp));
           ponPiezas([]);
