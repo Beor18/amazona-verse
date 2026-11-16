@@ -3136,5 +3136,5 @@ window.AV_EN = {
  "Hiciste {} puntos. Récord: {}": "You scored {} points. Best: {}",
  "¡Casi! Junta cotorras y llévalas al árbol que brilla": "So close! Gather parrots and lead them to the glowing tree",
  "Récord: {} puntos · fila de {}": "Best: {} points · line of {}",
- "¡Sígueme, bandada! Junta cotorras y llévalas al dormidero: el árbol que brilla. Gira abierto para que la fila no se rompa.": "Follow Me, Flock! Gather parrots and lead them to the roost: the glowing tree. Turn wide so the line doesn’t break."
+ "Junta cotorras y llévalas al árbol que brilla": "Gather parrots and lead them to the glowing tree"
 };

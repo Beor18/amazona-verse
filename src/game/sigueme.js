@@ -325,7 +325,7 @@ window.AVSigueme = function (G) {
   function css() {
     if (document.getElementById('sig-css')) return;
     const st = document.createElement('style'); st.id = 'sig-css';
-    st.textContent = '#sig-hud{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);box-sizing:border-box;padding:6px 8px 6px 14px;border-radius:20px;background:rgba(16,36,28,.86);color:#fff8e6;font:600 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}#sig-hud[hidden],#sig-fin[hidden]{display:none}' +
+    st.textContent = '#sig-hud{position:fixed;left:12px;right:12px;margin-inline:auto;width:fit-content;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;justify-content:center;box-sizing:border-box;padding:6px 8px 6px 14px;border-radius:20px;background:rgba(16,36,28,.86);color:#fff8e6;font:600 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}#sig-hud[hidden],#sig-fin[hidden]{display:none}' +
       '#sig-hud .sig-t{font-variant-numeric:tabular-nums;font-size:18px;font-weight:700;min-width:3.2ch;text-align:center}#sig-hud .sig-t.poco{color:#ffb4a2}#sig-hud .sig-p{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}#sig-hud .sig-r{opacity:.85;font-size:14px}' +
       '#sig-hud .sig-fila{display:flex;align-items:center;gap:1px;min-height:22px}#sig-hud .sig-fila svg{width:17px;height:17px;display:none}#sig-hud .sig-fila svg.on{display:block}#sig-hud .sig-fila svg:first-child{display:block;opacity:.45}#sig-hud .sig-fila svg.on:first-child{opacity:1}#sig-hud .sig-mas{font-size:14px;font-weight:700;margin-left:2px}#sig-hud .sig-x{font-size:14px;font-weight:700;color:#ffd23f;margin-left:4px}' +
       '#sig-hud [data-k="msg"]{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);white-space:nowrap;max-width:calc(100vw - 24px);overflow:hidden;text-overflow:ellipsis;padding:4px 12px;border-radius:999px;font-weight:700;pointer-events:none;background:#fff3d6;color:#3b2a14}#sig-hud [data-k="msg"]:empty{display:none}#sig-hud [data-k="msg"].oro{background:#ffd23f;color:#3b2a14}#sig-hud [data-k="msg"].malo{background:#ffd0c4;color:#5a1e10}#sig-hud [data-k="msg"].bien{background:#c8f0c0;color:#173d12}' +
@@ -392,7 +392,7 @@ window.AVSigueme = function (G) {
     hudEl.hidden = false; finEl.hidden = true; q(hudEl, 'msg').textContent = '';
     document.body.classList.add('sigueme-on');
     camara(); pintarHud(); pintar();
-    if (!o.callado && G.ui && G.ui.toast) G.ui.toast(L('¡Sígueme, bandada! Junta cotorras y llévalas al dormidero: el árbol que brilla. Gira abierto para que la fila no se rompa.', 'Follow Me, Flock! Gather parrots and lead them to the roost: the glowing tree. Turn wide so the line doesn’t break.'), 3600);
+    aviso(L('Junta cotorras y llévalas al árbol que brilla', 'Gather parrots and lead them to the glowing tree'), 'bien'); E.msgT = 4; // en su franja, no en un aviso grande que tape el HUD
     sonar('boton');
     return true;
   }
@@ -407,7 +407,7 @@ window.AVSigueme = function (G) {
     guardarRec(E.mejor, E.mejorFila, E.jugadas);
     try { G.emit('record', { modo: 'sigueme', puntos: E.puntos, fila: E.filaMax }); } catch (e) { /* */ }
     sonar('panel_final'); if (E.nuevo && E.puntos > 0) logroId = setTimeout(() => { logroId = 0; if (E.fase === 'fin') sonar('logro'); }, 700);
-    camara(); pintar(); pintarHud(); pintarFin(); finEl.hidden = false; q(hudEl, 'msg').textContent = '';
+    camara(); pintar(); pintarHud(); pintarFin(); finEl.hidden = false; hudEl.hidden = true; q(hudEl, 'msg').textContent = ''; // un solo «Salir»: el del panel
     try { if (G.pausa && G.pausa.set) G.pausa.set('sigueme', true); } catch (e) { /* sin pausa */ } // panel modal: el mundo se congela detrás
     // el foco va al panel (no a «Otra vez»): una tecla de vuelo de los últimos segundos no arranca otra partida sin ver el resultado
     setTimeout(() => { try { if (E.fase === 'fin') finEl.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
@@ -455,6 +455,7 @@ window.AVSigueme = function (G) {
       check('Se abre con el HUD (reloj 2:00, puntos, fila y «Salir» de ≥ 44 px), cotorras sueltas con «?» y un dormidero', activo() && !hudEl.hidden && finEl.hidden && q(hudEl, 'r').textContent === '2:00' && /^0 pts$/.test(q(hudEl, 'p').textContent) && hb.height >= 44 && vivas('suelta').length === 3 && dorm.ok && document.body.classList.contains('sigueme-on'),
         q(hudEl, 'r').textContent + ' · ' + vivas().length + ' · ' + Math.round(hb.height));
       check('Se dibujan con 3 mallas instanciadas como mucho (cotorras, «?» y «Zz»)', malla && malla.visible && malla.count === 3 && cartelQ.visible && cartelQ.count === 3 && R.scene.children.filter(m => /^sigueme:/.test(m.name)).length === 3, malla && malla.count);
+      { const hr = hudEl.getBoundingClientRect(); check('El HUD cabe en una sola franja arriba', hr.left >= 0 && hr.right <= innerWidth && hr.top >= 0 && hr.height <= 64, `${innerWidth}×${innerHeight} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)}`); }
       check('La geometría y el aleteo son los de la bandada (o la de reserva sin ella)', !G.bandada || !G.bandada.meshes || malla.material === G.bandada.meshes[0].material, G.bandada ? 'bandada' : 'reserva');
       const ae = G.aula && G.aula.aj;
       let llegan = 0; const oye = () => { llegan++; }; addEventListener('keydown', oye); tecla('w'); tecla('ArrowLeft'); removeEventListener('keydown', oye);
@@ -548,6 +549,6 @@ window.AVSigueme = function (G) {
     return { results: out, passed: out.filter(x => x.ok).length, total: out.length };
   }
 
-  G.siguemeApi = { jugar, salir, activo, paso, test, estado: () => ({ fase: E.fase, puntos: E.puntos, fila: E.n, filaMax: E.filaMax, restante: restante(), mejor: E.mejor, sueltas: sueltasVivas(), dormidero: dorm.ok ? { x: dorm.x, z: dorm.z } : null }) };
+  G.siguemeApi = { jugar, salir, activo, paso, test, estado: () => ({ fase: E.fase, puntos: E.puntos, fila: E.n, filaMax: E.filaMax, restante: restante(), mejor: E.mejor, sueltas: sueltasVivas(), dormidero: dorm.ok ? { x: dorm.x, z: dorm.z } : null }), _dev: { E, pool, fila } };
   return G.siguemeApi;
 };
