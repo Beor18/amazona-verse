@@ -587,8 +587,8 @@ window.AVSembradora = function (G) {
       E.semillas = 5; listo(); ir(px, pz, 12, 0, 0); let sueltas = 0; for (let i = 0; i < 20; i++) if (soltar()) sueltas++;
       check('Machacar no sirve: 20 toques seguidos sueltan una sola semilla', sueltas === 1 && E.semillas === 4, sueltas);
       for (let i = 0; i < 40; i++) { paso(0.1); soltar(); }
-      lejos(); caer();
-      check('Sin semillas: «Sin semillas: vuelve al saco», el HUD lo marca y la flecha va al saco', E.semillas === 0 && /Sin semillas/.test(q(hudEl, 'msg').textContent) && q(hudEl, 's').classList.contains('vacio') && (apuntarGuia(), guia.ok && guia.x === saco.x && guia.z === saco.z), E.semillas);
+      lejos(); caer(); listo(); const sinOk = !soltar(); // tocar sin semillas: no suelta y avisa
+      check('Sin semillas: «Sin semillas: vuelve al saco», el HUD lo marca y la flecha va al saco', sinOk && E.semillas === 0 && /Sin semillas/.test(q(hudEl, 'msg').textContent) && q(hudEl, 's').classList.contains('vacio') && (apuntarGuia(), guia.ok && guia.x === saco.x && guia.z === saco.z), E.semillas);
       ir(saco.x + 1, saco.z, 2, 0, 0); paso(0.05);
       check('En el saco se recargan las 5 semillas («¡Semillas listas!»)', E.semillas === 5 && /Semillas listas/.test(q(hudEl, 'msg').textContent) && q(hudEl, 's').querySelectorAll('i.on').length === 5);
       // Táctil: el botón Acción también suelta
