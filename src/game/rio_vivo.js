@@ -266,7 +266,9 @@ window.AVRioVivo = function (G) {
 
   // ---------- Bucle ----------
   // La regla compartida G.ui.enEscena(); en la prueba (F.prueba) la batería pone F.escenaPrueba para no depender de la portada
-  const otraEscena = () => { try { return F.prueba ? !!(F.escenaPrueba && F.escenaPrueba()) : !!(G.ui.enEscena && G.ui.enEscena()); } catch (e) { return false; } };
+  // F2-2: en plena partida de «Foto relámpago» (body.foto-on sin el panel final) el visor sí funciona: los peces de la tarjeta tienen que verse
+  const fotoJuega = () => { const c = document.body && document.body.classList; return !!(c && c.contains('foto-on') && !c.contains('foto-fin')); };
+  const otraEscena = () => { try { if (!F.prueba && fotoJuega()) return false; return F.prueba ? !!(F.escenaPrueba && F.escenaPrueba()) : !!(G.ui.enEscena && G.ui.enEscena()); } catch (e) { return false; } };
   function paso(dt, busy) {
     dt = Math.min(dt, 0.1); F.t += dt; uT.value += dt;
     const quieta = M.posado ? M.speed < 0.6 : !M.flying && !M.swimming && M.speed < 0.4;
@@ -480,8 +482,9 @@ window.AVRioVivo = function (G) {
     for (let k = 0; k < bancos.length; k++) {
       const b = bancos[k]; if (b.id !== id) continue;
       const nada = Math.hypot(b.x - S.pos.x, b.z - S.pos.z) <= ACTIVO + 6;
-      if (nada) for (let i = 0; i < b.peces.length; i++) { const p = b.peces[i]; if (p.y !== 0) cercaPon(p.x, p.y, p.z); else cercaPon(b.x, nivelAgua(b.x, b.z) - 0.4, b.z); }
-      else cercaPon(b.x, nivelAgua(b.x, b.z) - 0.4, b.z);
+      let centro = !nada; // el centro del banco cuenta una sola vez (antes, un banco recién activado lo ponía una vez por pez sin colocar y daba «dos» en el mismo punto)
+      if (nada) for (let i = 0; i < b.peces.length; i++) { const p = b.peces[i]; if (p.y !== 0) cercaPon(p.x, p.y, p.z); else centro = true; }
+      if (centro) cercaPon(b.x, nivelAgua(b.x, b.z) - 0.4, b.z);
     }
     return C.d1 < Infinity ? out : null;
   }
