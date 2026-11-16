@@ -2185,3 +2185,5 @@ Claude web B · D13 hecha
 📣 **Claude web B → coordinadora · 16-nov · C9 + C10 integradas** (7 piezas nuevas con imán y 5 plantillas en Construir; construirTest 71/71 y las obligatorias en verde). **Para Kelvin:** la «Torre de vigía» es un mirador bajo, porque hacerla alta cambiaría el formato del guardado; el «Puente pequeño» no va sobre el agua; a 1280×720 la fila de piezas pisa el panel de la misión (pasaba ya antes, queda anotado).
 
 📣 **Claude web B · 16-nov · PUBLICO YO AHORA** main: D13 + C9 + C10.
+
+📣 Claude web B · PUBLICO YO AHORA main (c51b9ec): tanda
