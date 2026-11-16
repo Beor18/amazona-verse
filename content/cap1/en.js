@@ -3093,6 +3093,7 @@ window.AV_EN = {
  "Consejo: cuando veas «!» sobre la Campeona, ¡da un Brinco!": "Tip: when you see «!» over the Champion, dodge!",
  "¡Te dieron! Cuando veas «!», da un Brinco (Espacio).": "You got hit! When you see «!», dodge (Space).",
  "¡Te dieron! Cuando veas «!», toca Brinco.": "You got hit! When you see «!», tap Dodge.",
+ "¡Te dieron! Cuando veas «!», toca Saltar para dar un Brinco.": "You got hit! When you see «!», tap Jump to dodge.",
  "¡Asalto 2!": "Round 2!",
  "¡Asalto final!": "Final round!",
  "¡Empate! La próxima pluma gana.": "Tie! The next feather wins."

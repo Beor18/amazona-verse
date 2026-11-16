@@ -55,7 +55,7 @@ window.AVV18Combate = function (G) {
   // Medido con la jugadora «media» de AV.v18EvolucionTest (36 duelos por etapa): sin respiro, asaltos de ~13 s y duelos de ~35 s;
   // con 3 s, duelos de 60–80 s (mediana). Mientras dura, la golpeada parpadea suave (sin «Reducir movimiento»).
   const RITMO = { respiro: 3.0 };
-  const parpadea = (f, now) => !!(f && C.fase === 'lucha' && (C.nAsaltos || 1) > 1 && f.inv > 0 && !(f.mareo > 0) && !(R && R.REDUCED) && Math.floor(now * 8) % 3 === 2);
+  const parpadea = (f, now) => !!(f && C.fase === 'lucha' && !ent && (C.nAsaltos || 1) > 1 && f.inv > 0 && !(f.mareo > 0) && !(R && R.REDUCED) && Math.floor(now * 8) % 3 === 2);
   // La Campeona según la etapa del jugador. pensar: segundos entre decisiones; esquiva y escudo: probabilidad de reaccionar a
   // una semilla (ve: a cuántos metros la ve venir; calma: espera entre reacciones); ala y tiro: espera entre golpes y semillas;
   // poder: probabilidad de usarlo cuando puede; vel: velocidad al acercarse; plumas: las que trae (hoy, las 5 en todas).
@@ -127,7 +127,7 @@ window.AVV18Combate = function (G) {
     tPoder: 'Consejo: usa tu poder (G):', tPoderT: 'Consejo: usa tu poder (mantén Impulso):',
     tCerca: 'Consejo: de cerca, aletazo; de lejos, semilla.', tEsquiva: 'Consejo: cuando veas «!» sobre la Campeona, ¡da un Brinco!',
     // F1 · cambio 2 y 3: Brinco (nombre provisional) y asaltos
-    brinco: 'Brinco', teclaEsp: 'Espacio', dGolpeT: '¡Te dieron! Cuando veas «!», toca Brinco.',
+    brinco: 'Brinco', teclaEsp: 'Espacio', dGolpeT: '¡Te dieron! Cuando veas «!», toca Brinco.', dGolpeS: '¡Te dieron! Cuando veas «!», toca Saltar para dar un Brinco.',
     asalto2: '¡Asalto 2!', asalto3: '¡Asalto final!', tiempo: '¡Tiempo!', empate: '¡Empate! La próxima pluma gana.'
   };
   // Generador con semilla: la IA decide igual en cada prueba
@@ -327,7 +327,7 @@ window.AVV18Combate = function (G) {
     // ante el «!» hay que apartarse o escudarse; solo lo que interrumpe (el Grito y compañía) la corta.
     if (blanco.ia && blanco.prep === 'golpe_ala' && !g.interrumpe && blanco.plumas > 0) { rc.mareo = 0; blanco.mareo = 0; rc.empuje *= 0.25; blanco.kb.x *= 0.25; blanco.kb.z *= 0.25; C.stats.aguanta = (C.stats.aguanta || 0) + 1; }
     const n = rc.n, empuje = rc.empuje, mareo = rc.mareo, parcial = rc.parcial;
-    if (n > 0 && (C.nAsaltos || 1) > 1 && RITMO.respiro > 0) blanco.inv = (blanco.inv || 0) + RITMO.respiro; // F1 · cambio 3: respiro tras la pluma
+    if (n > 0 && !ent && (C.nAsaltos || 1) > 1 && RITMO.respiro > 0) blanco.inv = (blanco.inv || 0) + RITMO.respiro; // F1 · cambio 3: respiro tras la pluma
     if (g.interrumpe) interrumpir(blanco, mareo, parcial);
     if (blanco.lift && empuje > 0) { blanco.lift.alto = n > 0 ? 0.45 : 0.25; blanco.lift.t = 0; blanco.lift.dura = 0.32; C.stats.reacciones++; } // saltito de sorpresa
     if (n > 0) feelPluma(blanco, n, hud && hud.q(blanco === C.j ? 'plj' : 'plr').children, sonar); // F4-15
@@ -1166,6 +1166,8 @@ window.AVV18Combate = function (G) {
   }
   function ocultarPista() { pista.vis = 0; if (hud) hud.q('pista').hidden = true; }
   // Una pista como mucho cada 4,5 s; solo las que aún no se dominan. La del primer golpe recibido, una vez por partida.
+  // Sin poder defensivo: cómo dar un Brinco (en táctil sin Combate 2.0 no hay botón Brinco: es el Saltar de siempre)
+  const txtGolpe = () => (padOn() ? TXT.dGolpeT : TACTIL ? TXT.dGolpeS : TXT.dGolpe);
   function pasoPistas(dt) {
     if (pista.vis > 0) { pista.vis -= dt; if (pista.vis <= 0) ocultarPista(); }
     const m = mundoN('pistas_duelo');
@@ -1174,7 +1176,7 @@ window.AVV18Combate = function (G) {
       if (!(m & PISTA.defensa)) {
         dominar(PISTA.defensa);
         const def = DEFENSAS.has(C.j.poder);
-        mostrarPista(def ? (padOn() ? TXT.dEscudoP : TACTIL ? TXT.dEscudoT : TXT.dEscudo) : TACTIL ? TXT.dGolpeT : TXT.dGolpe, def ? nombrePoder() : ''); pista.vis = 3.2; pista.t = 4.5;
+        mostrarPista(def ? (padOn() ? TXT.dEscudoP : TACTIL ? TXT.dEscudoT : TXT.dEscudo) : txtGolpe(), def ? nombrePoder() : ''); pista.vis = 3.2; pista.t = 4.5;
       }
     }
     pista.plj = C.j.plumas;
@@ -1291,9 +1293,14 @@ window.AVV18Combate = function (G) {
     colocar(false); flotante(TXT.ya, 0.7); pintar(); pintarReloj();
   }
   // Tope de 45 s por asalto (sin tope en el modo relajado ni en el entreno)
+  // ¿Corre el tope? Solo al mejor de 3 (un duelo de un asalto, sin tope), fuera del entreno y sin el modo relajado. El reloj solo cuenta si lo hay
+  function hayTope() {
+    if (ent || (C.nAsaltos || 1) < 2) return false;
+    try { if (G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado()) return false; } catch (e) { /* sin accesibilidad */ }
+    return true;
+  }
   function topeAsalto() {
-    if (ent || C.empate || (C.nAsaltos || 1) < 2) return; // el tope es del formato por asaltos (un duelo de un asalto, sin tope)
-    try { if (G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado()) return; } catch (e) { /* sin accesibilidad */ }
+    if (C.empate || !hayTope()) return;
     const pj = C.j.plumas / (C.j.plumasMax || PLUMAS), pr = C.r.plumas / (C.r.plumasMax || PLUMAS);
     if (pj === pr) { C.empate = true; flotante(TXT.empate, 1.6); return; }
     flotante(TXT.tiempo, 1); finAsalto(pj > pr ? 'win' : 'loss');
@@ -1301,10 +1308,13 @@ window.AVV18Combate = function (G) {
   function pintarReloj() {
     if (!hud) return; const el = hud.q('reloj'); if (!el) return;
     const ver = !ent && C.fase !== 'nada'; if (el.hidden === ver) el.hidden = !ver; if (!ver) return;
-    const t = C.pausa > 0 || C.fase !== 'lucha' ? '' : C.empate ? '!' : String(Math.max(0, Math.ceil(ASALTO_TOPE - (C.tAsalto || 0))));
+    const t = C.pausa > 0 || C.fase !== 'lucha' || !hayTope() ? '' : C.empate ? '!' : String(Math.max(0, Math.ceil(ASALTO_TOPE - (C.tAsalto || 0)))); // sin tope, sin cuenta atrás
     const n = hud.q('relojN'); if (n.textContent !== t) n.textContent = t;
-    const dots = (k, g) => Array.from(hud.q(k).children).forEach((i, x) => { const on = x < g; if (i.classList.contains('on') !== on) i.classList.toggle('on', on); i.hidden = x >= ganaCon(); });
-    dots('asj', C.ganJ || 0); dots('asr', C.ganR || 0);
+    puntosAsalto(hud.q('asj'), C.ganJ || 0); puntosAsalto(hud.q('asr'), C.ganR || 0);
+  }
+  function puntosAsalto(el, g) { // sin closures ni arrays nuevos: corre en cada cuadro de la pelea
+    const c = el.children, gc = ganaCon();
+    for (let x = 0; x < c.length; x++) { const i = c[x], on = x < g, oc = x >= gc; if (i.classList.contains('on') !== on) i.classList.toggle('on', on); if (i.hidden !== oc) i.hidden = oc; }
   }
   // ---------- F1 · cambio 2: Brinco ----------
   const brincoReciente = () => !!(C.j && C.j.brincoIni != null && (C.tLucha || 0) - C.j.brincoIni <= BRINCO.ventana && C.j.brincoIni >= 0);
@@ -3115,7 +3125,7 @@ window.AVV18Combate = function (G) {
         const pista0 = pista.t;
         C.j.inv = 0; C.j.plumas = PLUMAS - 1; ocultarPista(); paso(0.05); const pg = hud.q('pistaTxt').textContent;
         check('Pistas: «¡Cerca! Aletazo (E)», «Lejos: semilla (F)», «¡Poder listo! (G)» y, al recibir el primer golpe, cómo esquivar; una cada 4,5 s',
-          pc === (TACTIL ? TXT.pCercaT : TXT.pCerca) && pl === (TACTIL ? TXT.pLejosT : TXT.pLejos) && pp === (TACTIL ? TXT.pPoderT : TXT.pPoder) && pista0 >= 4 && pg === (TACTIL ? TXT.dGolpeT : TXT.dGolpe) && (P.mundo('pistas_duelo') & PISTA.defensa),
+          pc === (TACTIL ? TXT.pCercaT : TXT.pCerca) && pl === (TACTIL ? TXT.pLejosT : TXT.pLejos) && pp === (TACTIL ? TXT.pPoderT : TXT.pPoder) && pista0 >= 4 && pg === txtGolpe() && (P.mundo('pistas_duelo') & PISTA.defensa),
           JSON.stringify({ pc, pl, pp, pg }));
         pista.dom.cerca = 0; for (let i = 0; i < 2; i++) { C.j.cd = {}; C.r.inv = 0; C.r.escudo = 0; quieta(1.5); usar(C.j, 'golpe_ala'); }
         C.r.mareo = 0; C.j.energia = 50; const pc2 = pistaTras(() => { quieta(1.5); C.j.cd = {}; C.j.energia = 50; });
@@ -3802,6 +3812,12 @@ window.AVV18Combate = function (G) {
           iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 1 }); quieta2(1.2); C.r.escudo = 0; C.r.inv = 0; C.r.hojas = 0; C.j.cd.golpe_ala = 0; usar(C.j, 'golpe_ala'); const inv1 = C.r.inv;
           check('F1 · respiro: al mejor de 3, tras perder una pluma la golpeada queda ~' + RITMO.respiro + ' s más sin recibir y parpadea suave (en un asalto, como siempre)',
             Math.abs(inv3 - inv1 - RITMO.respiro) < 0.01 && ocultos > 0 && vistos > ocultos, JSON.stringify({ inv3: +inv3.toFixed(2), inv1: +inv1.toFixed(2), vistos, ocultos })); salir(); }
+        // Revisión: el entreno de verdad arranca al mejor de 3 (asaltosDef = ASALTOS); allí no hay respiro ni parpadeo
+        { const ad0 = asaltosDef; asaltosDef = ASALTOS; let e3 = null;
+          try { iniciar({ entreno: true, especie: 'vittata' }); quieta2(1.2); C.r.escudo = 0; C.r.inv = 0; C.r.hojas = 0; C.j.cd.golpe_ala = 0; const pl0 = C.r.plumas; usar(C.j, 'golpe_ala');
+            let ocu = 0; C.r.mareo = 0; for (let k = 0; k < 24; k++) if (parpadea(C.r, k / 24)) ocu++; e3 = { n: C.nAsaltos, quita: pl0 - C.r.plumas, inv: +(C.r.inv || 0).toFixed(2), ocu }; } finally { asaltosDef = ad0; salir(); }
+          check('F1 · respiro: en el entreno (aunque el duelo sea al mejor de 3) no hay respiro ni parpadeo tras la pluma',
+            e3 && e3.n > 1 && e3.inv < RITMO.respiro && e3.ocu === 0, JSON.stringify(e3)); }
         // 3c. Tope de 45 s: gana el asalto quien tenga más plumas; con empate, la próxima pluma decide; en el modo relajado, sin tope
         iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 3 }); quieta2(6); C.j.plumas = 4; C.r.plumas = 2; C.tAsalto = ASALTO_TOPE - 0.02; paso(0.05);
         const t1 = { gj: C.ganJ, pausa: C.pausa > 0, txt: hud.q('centro').textContent };
@@ -3813,8 +3829,12 @@ window.AVV18Combate = function (G) {
           t1.gj === 1 && t1.pausa && t2.emp && t2.gj === 0 && t2.gr === 0 && t2.txt === TXT.empate && t2.tras === 1 && (!acc || (t3.gj === 0 && !(t3.pausa > 0))), JSON.stringify({ t1, t2, t3 }));
         // reloj del asalto y puntos de asaltos a la vista (no en el entreno)
         iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 3 }); quieta2(6); C.tAsalto = 10.2; pintarReloj(); const rl = hud.q('reloj'), rlv = !rl.hidden && rl.getBoundingClientRect().width > 0, rlt = hud.q('relojN').textContent;
-        iniciar({ entreno: true, especie: 'vittata' }); pintarReloj(); const rlEnt = hud.q('reloj').hidden; salir();
-        check('F1 · reloj del asalto (cuenta atrás desde 45) y puntos de asaltos ganados a la vista; en el entreno no sale', rlv && rlt === '35' && rlEnt, JSON.stringify({ rlv, rlt, rlEnt }));
+        iniciar({ entreno: true, especie: 'vittata' }); pintarReloj(); const rlEnt = hud.q('reloj').hidden;
+        iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 1 }); quieta2(6); C.tAsalto = 10.2; pintarReloj(); const rl1 = hud.q('relojN').textContent; let rlRel = null;
+        if (acc) { acc.relajado = () => true; try { iniciar({ sinCuenta: true, especie: 'vittata', asaltos: 3 }); quieta2(6); C.tAsalto = 50; pintarReloj(); rlRel = hud.q('relojN').textContent; } finally { acc.relajado = rel0; } }
+        salir();
+        check('F1 · reloj del asalto (cuenta atrás desde 45) y puntos de asaltos ganados a la vista; en el entreno no sale; sin tope (un asalto o modo relajado) no cuenta',
+          rlv && rlt === '35' && rlEnt && rl1 === '' && (!acc || rlRel === ''), JSON.stringify({ rlv, rlt, rlEnt, rl1, rlRel }));
         // 2c + 3d. Equilibrio (leer y dar un Brinco frente a no esquivar) y ritmo (60–100 s por duelo): con la jugadora «media» de
         // AV.v18EvolucionTest (36 duelos por etapa, al mejor de 3), que es la batería de equilibrio
         salir();
