@@ -91,8 +91,38 @@ Hay capturas 1x de 3 vistas con el recorte apagado y encendido en el mismo cuadr
   - «T46 · fuera de cámara se dibuja menos que sin el recorte (y nunca más draw calls)»: en la aparición, mirando hacia delante y de espaldas. Se miden 8 cuadros en orden ABBA BAAB y se compara la media de cada lado: así una carga de streaming o un precalentado en curso cae igual en los dos lados.
 - **streamingTest:** «T46 · En la vista más cargada, lo que queda fuera de cámara no se dibuja (nunca suma draw calls)». Cuenta solo los draw calls de la cámara principal, en 8 cuadros ABBA BAAB. El tope de 150 draw calls no cambia.
 
+## T62 · la vegetación (Claude web B · 16-nov)
+
+**Qué pasaba.** `vegetacion.js` llena cada malla de flora (una por modelo y primitiva) con las instancias de las celdas de 32 m que tocan el cuadro. Esas celdas son cajas de 160 m de alto con 8 m de margen, así que traen árboles, plantas y rocas que quedan detrás o a un lado de la cámara. La esfera de T46 cubre todas las instancias de la malla y casi siempre toca el cuadro, aunque no se vea ninguna. Con el recorte de T46 encendido se seguían dibujando enteras fuera de cámara de 3 a 13 mallas por vista, 8–11 de ellas de flora (medido en el mismo build, sonda dentro de rendimientoModulosTest).
+
+**Qué se cambió** (`src/engine/renderer.js`, en el mismo `ocultarFuera` de T46, y una marca en `vegetacion.js`):
+- Las mallas de flora llevan `userData.recorteInstancias`.
+- Para ellas, el renderer guarda además una esfera por instancia, con el mismo margen de T46 (×1,25 + 2 m, por el viento del shader, que mueve hasta ~2,5 m). Se rehace solo cuando cambia `instanceMatrix.version`, en un arreglo que solo crece.
+- Si la esfera de todas toca el cuadro, se prueban las instancias una a una. La malla se apaga solo si ninguna toca el campo de visión.
+- Igual que en T46, no se recorta lo que da sombra con el sol encendido (la banda `:sombra` en `alto`).
+- Se hace en el dibujo, con la cámara de ese dibujo. No se quitan instancias al llenar las mallas: las fotos del cómic, los momentos y el manga dibujan con la cámara movida sin pasar por `drawScene`, y perderían los árboles de detrás.
+- **Interruptor:** el de T46 (`G.renderer.fueraCamara.activo`). `fueraCamara.porInstancia` da las mallas apagadas instancia a instancia en el cuadro.
+
+**Antes y después** (rendimientoModulosTest, `medio` sin sombras, mismo cuadro con el recorte apagado y encendido, media de 4 cuadros ABBA BAAB; solo el dibujo real, sin el precalentado, con el filtro de T54):
+
+| Vista | Draw calls (T46 + T62) | Fuera de cámara dibujadas | Apagadas |
+|---|---|---|---|
+| Aparición, de frente | 130 → **124** | 10 → 5 | 8 |
+| Aparición, de espaldas | 89 → **74** (−17 %) | 19 → 4 | 15 |
+| Vuelo (40, 110), de frente | 83 → **69** (−17 %) | 16 → 2 | 14 |
+| Vuelo, de espaldas | 63 → **57** | 10 → 5 | 5 |
+
+- **Solo flora,** suma de las 4 vistas: **127 → 101** draw calls (−20 %). Con T46 solo, las mismas vistas dejaban 3, 13, 12 y 9 mallas enteras fuera de cámara; ahora quedan 0 de flora fuera incluso con el margen.
+- **Lo que queda** (5 o menos por vista): unas 7 mallas de flora por cuadro con alguna instancia dentro del margen del viento, y lo que no es flora (faroles, vecinos, maraña, partículas, rocío).
+- **Se ve igual:** «nada visible desaparece» compara instancia por instancia en las 4 vistas: 0 a la vista sin dibujar.
+
+**Pruebas:**
+- **rendimientoModulosTest:** «T62 · la vegetación entera fuera de cámara no se dibuja (instancia a instancia, sin sombra del sol)»: 0 mallas de flora dibujadas con todas sus instancias fuera (con el margen) y nunca más draw calls de flora. Las comprobaciones de T46 suman las 2 vistas en vuelo.
+- **floraTest:** 19/19, sin cambios.
+
 ## Para otra tanda (no hecho)
 
-- **Restos fuera de cámara:** quedan de 15 a 25 draw calls por cuadro. Son `InstancedMesh` con instancias a los dos lados de la cámara (la flora por región) y mallas con `frustumCulled = false` que se mueven en el shader (nubes, partículas, rocío, impostores, decals del golf). Recortarlas pide partir las regiones de flora en celdas más pequeñas, que es un cambio de vegetacion.js.
+- **Restos fuera de cámara (tras T62):** quedan 2–5 draw calls por vista. Son mallas con `frustumCulled = false` que se mueven en el shader (nubes, partículas, rocío, impostores, decals del golf) y `InstancedMesh` repartidas que no son flora (faroles, vecinos, maraña). Se les podría poner `recorteInstancias` una a una, pero el margen de cada una depende de cuánto las mueve su shader (la bandada vuela en el shader).
+- **Pasto y manchas:** el pasto rodea al jugador (siempre hay algo en el cuadro) y las manchas bajo los árboles son 7 330 instancias en 1 draw call. Recortarlas solo bajaría triángulos.
 - **NPC V18 (Chispa: 29 mallas, 13 materiales):** sus piezas cuelgan de nodos que anima el `AnimationMixer` y que encienden las apariencias por nombre. Fundirlas rompería la animación sin un pase en Blender (decisión de arte).
 - **Rival y Arausiaca:** se dibujan con 28 k triángulos hasta 60 m. Un LOD a distancia sería un cambio del modelo de la cotorra, y el modelo de Vittata no se toca.

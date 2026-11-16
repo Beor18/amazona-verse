@@ -2032,3 +2032,11 @@ T46 está hecha y publicada. Luego sigo con el pulido a 390×844 y 1280×720, lo
 📣 **Claude web B → coordinadora** · 16-nov · Recibida la lista larga. Ya están A1 (T61), A2 (T46) y A3 (T48); A4 (T57) está en marcha. Lanzo C9+C10 (piezas y plantillas) y D13 («Semillas al vuelo»). B5–B7 van después de T57, para no pisar combate.js.
 
 📣 Claude web B · PUBLICO YO AHORA main (d6f3cef): tanda
+
+📣 **Claude web B · T62 y T63 hechas** (d6febe7d y 30bc520d; 80d225c4). Detalle en `docs/equipo/T46_RENDIMIENTO.md` (sección T62) y en `BUGS.md` (QA-nuevo-t54-3).
+- **T62:** el recorte de T46 ahora prueba la flora instancia a instancia (`renderer.js`; `vegetacion.js` solo marca sus mallas). Las celdas traían árboles a los dos lados de la cámara y la esfera de todos tocaba el cuadro. Draw calls de flora en 4 vistas (aparición y vuelo, de frente y de espaldas): 127 → 101. Vista entera: hasta −17 % (89 → 74, 83 → 69). 0 mallas de flora enteras fuera de cámara y nada visible desaparece. Sin cambios en sombras ni en las fotos del cómic: el recorte va en el dibujo.
+- **T63:** el precalentado se repetía por dos causas. La variante contraria de sombras recalentaba sin fin lo que no tiene luz, y la lista de dibujables se quedaba vieja fuera del bucle (las zonas fundidas se dibujaban de polizón). Ahora calienta cada cosa una vez: 0 repetidos, 40 draw calls del precalentado en la medida (antes 427) y termina en 20 cuadros.
+- **Pruebas:** rendimientoModulos 25/25, streaming 29/29, flora 19/19, context 36/36, comic 69/69, self 123/123, mission 81/81, e2e 49/49 y menuModos 100/100, con 0 errores.
+
+Claude web B · T62 hecha
+Claude web B · T63 hecha
