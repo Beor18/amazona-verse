@@ -6,8 +6,13 @@
    el animal «se escapó» y sale otra (nunca castiga).
    Decisión: foto rápida de 1 estrella o acercarse despacio por las 3 (el lagartijo se esconde detrás del tronco si llegas
    deprisa: lo hace fauna.js; escondido, la foto es de 1 estrella).
-   Dificultad: tarjetas 1–2 animales grandes y quietos (cotorras residentes, la boa) · 3–5 los que reaccionan (lagartijo,
-   mariposas, peces del río, el coquí) · 6 en adelante, foto con condición (en vuelo, desde el suelo o con dos en el marco).
+   Dificultad: tarjetas 1–2 animales grandes y quietos (cotorras residentes, la boa); si no hay ninguno en la zona, los más fáciles
+   que haya (la mariposa antes que los peces, y el lagartijo, que se esconde, nunca primero), con estrellas más generosas ·
+   3–5 los que reaccionan (lagartijo, mariposas, peces del río, el coquí) · 6 en adelante, foto con condición (en vuelo, desde el
+   suelo de verdad o con dos en el marco; nunca una imposible: los peces solo se ven volando bajo, así que «desde el suelo» no).
+   Encuadre asistido: con la cámara abierta y el animal más o menos delante, la vista gira y sube o baja poco a poco hacia él
+   (G.camara.yaw / inclina) y se acerca un poco (zoom con fovBonus, más para los pequeños). Los peces solo cuentan si se ven
+   (el visor del río encendido); si no, el visor dice «vuela bajo sobre el agua».
    No se gana machacando: el disparo pide la cámara abierta un momento y, tras una foto fallida, 1,4 s de recarga.
    Animales: solo los que ya tienen ficha con fuente en el juego (fauna.js, rio_vivo.js, el Álbum de las 36 vía residentes.js);
    el minijuego no añade ningún dato. La primera foto de uno lo apunta en su sección del Diario (fauna.observar, rioVivo.observar,
@@ -39,17 +44,18 @@ window.AVFotoSafari = function (G) {
   let azarS = 0; const azar = () => { if (!azarS) return Math.random(); azarS = (azarS * 16807) % 2147483647; return (azarS - 1) / 2147483646; };
 
   // ---------- Animales (los que ya viven en el mundo y tienen ficha con fuente) ----------
-  // nivel 1: grandes y quietos · nivel 2: reaccionan. dBien/dMax: a qué distancia de Vittata la foto sale «cerca» del todo / todavía vale.
+  // nivel 1: grandes y quietos · nivel 2: reaccionan. facil: orden para las primeras tarjetas si no hay de nivel 1 (0 el más fácil).
+  // zoom: cuántos grados se cierra el campo de visión con la cámara abierta (más para los pequeños). dBien/dMax: a qué distancia de Vittata la foto sale «cerca» del todo / todavía vale.
   // grupo: puede haber dos en el marco (foto con condición «dos»).
   const TIPOS = [
-    { id: 'cotorra', fuente: 'residentes', nivel: 1, dBien: 5, dMax: 22, grupo: true, sil: 'cotorra' },
-    { id: 'boa', fuente: 'fauna', nivel: 1, dBien: 5, dMax: 20, grupo: false, sil: 'boa' },
-    { id: 'lagartijo', fuente: 'fauna', nivel: 2, dBien: 3, dMax: 12, grupo: false, sil: 'lagartijo' },
-    { id: 'mariposa', fuente: 'fauna', nivel: 2, dBien: 3, dMax: 12, grupo: true, sil: 'mariposa' },
-    { id: 'coqui', fuente: 'fauna', nivel: 2, dBien: 2.5, dMax: 9, grupo: false, sil: 'coqui' },
-    { id: 'sirajo', fuente: 'rio', nivel: 2, dBien: 3, dMax: 10, grupo: true, sil: 'pez' },
-    { id: 'dajao', fuente: 'rio', nivel: 2, dBien: 3, dMax: 10, grupo: true, sil: 'pez' },
-    { id: 'guabina', fuente: 'rio', nivel: 2, dBien: 3, dMax: 10, grupo: true, sil: 'pez' },
+    { id: 'cotorra', fuente: 'residentes', nivel: 1, facil: 0, zoom: 6, dBien: 5, dMax: 22, grupo: true, sil: 'cotorra' },
+    { id: 'boa', fuente: 'fauna', nivel: 1, facil: 0, zoom: 6, dBien: 5, dMax: 20, grupo: false, sil: 'boa' },
+    { id: 'lagartijo', fuente: 'fauna', nivel: 2, facil: 3, zoom: 16, dBien: 3, dMax: 12, grupo: false, sil: 'lagartijo' },
+    { id: 'mariposa', fuente: 'fauna', nivel: 2, facil: 1, zoom: 16, dBien: 3, dMax: 12, grupo: true, sil: 'mariposa' },
+    { id: 'coqui', fuente: 'fauna', nivel: 2, facil: 1, zoom: 16, dBien: 2.5, dMax: 9, grupo: false, sil: 'coqui' },
+    { id: 'sirajo', fuente: 'rio', nivel: 2, facil: 2, zoom: 10, dBien: 3, dMax: 10, grupo: true, sil: 'pez' },
+    { id: 'dajao', fuente: 'rio', nivel: 2, facil: 2, zoom: 10, dBien: 3, dMax: 10, grupo: true, sil: 'pez' },
+    { id: 'guabina', fuente: 'rio', nivel: 2, facil: 2, zoom: 10, dBien: 3, dMax: 10, grupo: true, sil: 'pez' },
   ];
   const SIL = {
     cotorra: '<path d="M5 15q2-7 9-8 4 0 6 3l-3 1q2 3-1 6-5 3-11-2z" fill="#4caf50"/><path d="M14 7q4 0 6 3l-3 1z" fill="#e53935"/><circle cx="16.5" cy="9.5" r="1.2" fill="#fff"/><path d="M20 10l3 1.2-3 .8z" fill="#f2d16b"/><path d="M5 15l-3 4 5-2z" fill="#2e7d32"/><path d="M8 13q3-3 7-1" stroke="#1565c0" stroke-width="1.6" fill="none"/>',
@@ -76,25 +82,32 @@ window.AVFotoSafari = function (G) {
     try { const P = G.terreno && G.terreno.pois; if (P) for (const k in P) { const p = P[k]; if (!p || !p.nombre) continue; const d = (p.x - x) * (p.x - x) + (p.z - z) * (p.z - z); if (d < bd) { bd = d; mejor = p; } } } catch (e) { /* sin mapa */ }
     const nom = mejor ? (en() && window.AV_EN && window.AV_EN[mejor.nombre]) || mejor.nombre : '';
     const extra = t.fuente === 'rio' ? L(' · vuela bajo sobre el agua', ' · fly low over the water') : t.id === 'lagartijo' ? L(' · en un tronco', ' · on a tree trunk') : t.id === 'boa' ? L(' · en una rama', ' · on a branch') : '';
-    return (nom ? L('Pista: cerca de ', 'Hint: near ') + nom : L('Pista: sigue la flecha', 'Hint: follow the arrow')) + extra;
+    // lo importante primero («vuela bajo sobre el agua», «en un tronco»): si la línea se corta, se corta el lugar
+    if (extra) return L('Pista: ', 'Hint: ') + extra.slice(3) + (nom ? L(' · cerca de ', ' · near ') + nom : '');
+    return nom ? L('Pista: cerca de ', 'Hint: near ') + nom : L('Pista: sigue la flecha', 'Hint: follow the arrow');
   }
 
   // ---------- Estado (objetos fijos: nada se crea por cuadro) ----------
-  const o1 = { x: 0, y: 0, z: 0, sp: '', oculto: false, ok: false }, o2 = { x: 0, y: 0, z: 0, sp: '', oculto: false, ok: false };
+  const o1 = { x: 0, y: 0, z: 0, sp: '', oculto: false, ok: false, nove: false }, o2 = { x: 0, y: 0, z: 0, sp: '', oculto: false, ok: false, nove: false }; // nove: el pez no se ve (visor del río apagado)
   const guia = { x: 0, y: 0, z: 0 };
   const _v = new THREE.Vector3();
-  const MED = { centro: 0, cerca: 0, quieta: 0, d: 0, enMarco: false, cond: true };
+  const MED = { centro: 0, cerca: 0, quieta: 0, d: 0, enMarco: false, cond: true, s0: 0 }; // s0: estrellas sin mirar la condición
   const ROLLO = 14; const rollo = []; for (let i = 0; i < ROLLO; i++) rollo.push({ sil: '', s: 0 });
-  const carta = { tipo: null, sp: '', t: 0, cond: '', nombre: '', pista: '', vivo: false };
+  const carta = { tipo: null, sp: '', t: 0, cond: '', nombre: '', pista: '', vivo: false, facil: false };
   const E = { fase: 'nada', t: 0, reloj: DUR, k: 0, estrellas: 0, fotos: 0, tres: 0, nr: 0, cam: false, camT: 0, recarga: 0, msgT: 0, estT: 0, avisos: 0, medirT: 0, buscarT: 0,
-    vivo: -1, vcode: -1, x0: 0, z0: 0, ux: 1e9, uz: 1e9, ultimo: '', mejor: 0, perfecto: 0, jugadas: 0, nuevo: false, finP: 0, fichas: 0 };
+    vivo: -1, vcode: -1, x0: 0, z0: 0, ux: 1e9, uz: 1e9, ultimo: '', mejor: 0, perfecto: 0, jugadas: 0, nuevo: false, finP: 0, fichas: 0, pend: false, nopT: 0 }; // pend: foto pedida mientras la cámara se abre · nopT: «Un momento…» tras tocar en la recarga
   let prueba = null; // la prueba pone aquí su propio «dónde hay uno»
   function donde(t, sp, a, b) {
+    a.nove = false; if (b) b.nove = false;
     if (prueba) return prueba(t, sp, a, b);
     const x = S.pos.x, z = S.pos.z;
     try {
       if (t.fuente === 'fauna') return G.fauna && G.fauna.cerca ? G.fauna.cerca(t.id, x, z, a, b) : null;
-      if (t.fuente === 'rio') return G.rioVivo && G.rioVivo.cerca ? G.rioVivo.cerca(t.id, x, z, a, b) : null;
+      if (t.fuente === 'rio') { // los peces solo se ven con el visor del río encendido (volando bajo o quieta en la orilla)
+        const r = G.rioVivo && G.rioVivo.cerca ? G.rioVivo.cerca(t.id, x, z, a, b) : null;
+        if (r && !G.rioVivo.visor) { a.nove = true; if (b) b.ok = false; }
+        return r;
+      }
       if (t.fuente === 'residentes') return G.residentes && G.residentes.cerca ? G.residentes.cerca(x, z, a, b, sp || null) : null;
     } catch (e) { return null; }
     return null;
@@ -115,18 +128,28 @@ window.AVFotoSafari = function (G) {
     MED.d = Math.hypot(o1.x - S.pos.x, o1.y - (S.pos.y + 0.6), o1.z - S.pos.z);
     MED.cerca = clamp((t.dMax - MED.d) / (t.dMax - t.dBien));
     const vel = Math.hypot(m.speed || 0, S.vy || 0); MED.quieta = clamp((5 - vel) / 3.8);
-    MED.cond = carta.cond === 'vuela' ? !!m.flying : carta.cond === 'suelo' ? !m.flying : carta.cond === 'dos' ? !!(o2.ok && enMarco(o2) >= 0) : true;
-    if (!MED.enMarco || MED.d > t.dMax) return 0;
+    MED.cond = carta.cond === 'vuela' ? !!m.flying : carta.cond === 'suelo' ? enSuelo() : carta.cond === 'dos' ? !!(o2.ok && enMarco(o2) >= 0) : true;
+    MED.s0 = 0;
+    if (o1.nove || !MED.enMarco || MED.d > t.dMax) return 0; // un pez que no se ve no da foto
     let s = 1;
-    if (!o1.oculto && MED.centro >= 0.45 && MED.cerca >= 0.45 && MED.quieta >= 0.4) s = 2;
-    if (s === 2 && MED.centro >= 0.72 && MED.cerca >= 0.85 && MED.quieta >= 0.8) s = 3;
-    return s;
+    const c2 = carta.facil ? 0.35 : 0.45, c3 = carta.facil ? 0.6 : 0.72, k3 = carta.facil ? 0.7 : 0.85; // las primeras tarjetas, más generosas
+    if (!o1.oculto && MED.centro >= c2 && MED.cerca >= c2 && MED.quieta >= 0.4) s = 2;
+    if (s === 2 && MED.centro >= c3 && MED.cerca >= k3 && MED.quieta >= 0.8) s = 3;
+    MED.s0 = s;
+    return MED.cond ? s : 0; // sin la condición, las estrellas en vivo no se encienden (el visor dice qué falta)
+  }
+
+  // «Desde el suelo» de verdad: ni volando ni posada en una rama, y con las patas cerca del terreno
+  function enSuelo() {
+    const m = MV(); if (m.flying || m.posado) return false;
+    try { return !G.terreno || !G.terreno.height || S.pos.y - G.terreno.height(S.pos.x, S.pos.z) < 1.2; } catch (e) { return true; }
   }
 
   // ---------- Tarjetas ----------
   function nuevaCarta() {
     carta.tipo = null; carta.vivo = false;
     const k = E.k, nivelQ = k < 2 ? 1 : 2;
+    // las 2 primeras: el nivel 1 si lo hay en la zona; si no, el más fácil que haya (el lagartijo, que se esconde, el último)
     let mejor = null, mejorP = -1e9, sp = '';
     for (let i = 0; i < TIPOS.length; i++) {
       const t = TIPOS[i];
@@ -134,7 +157,8 @@ window.AVFotoSafari = function (G) {
       if (Math.hypot(o1.x - E.x0, o1.z - E.z0) > ZONA) continue; // solo la zona ya cargada alrededor del punto de salida
       const dV = Math.hypot(o1.x - S.pos.x, o1.z - S.pos.z), dU = Math.hypot(o1.x - E.ux, o1.z - E.uz);
       let p = azar() * 3 - dV * 0.02;
-      if (t.nivel === nivelQ) p += 10; // el nivel que toca
+      if (k < 2) p += t.nivel === 1 ? 14 : 10 - 3 * t.facil; // el nivel que toca o, sin él, el más fácil
+      else if (t.nivel === nivelQ) p += 10; // el nivel que toca
       if (t.id === E.ultimo) p -= 20; // no el mismo dos veces seguidas
       if (dU > OTRA_ZONA) p += 5; // en otra zona
       if (p > mejorP) { mejorP = p; mejor = t; sp = o1.sp || ''; }
@@ -142,7 +166,9 @@ window.AVFotoSafari = function (G) {
     if (!mejor) { pintarCarta(); return false; }
     donde(mejor, sp, o1, o2);
     carta.tipo = mejor; carta.sp = mejor.fuente === 'residentes' ? sp : ''; carta.t = CARTA; carta.vivo = true;
-    carta.cond = k >= 5 ? (mejor.grupo && o2.ok && k % 3 === 2 ? 'dos' : k % 2 ? 'vuela' : 'suelo') : '';
+    carta.facil = k < 2;
+    // nunca una condición imposible: los peces solo se ven volando bajo (nada de «desde el suelo»)
+    carta.cond = k >= 5 ? (mejor.grupo && o2.ok && k % 3 === 2 ? 'dos' : k % 2 || mejor.fuente === 'rio' ? 'vuela' : 'suelo') : '';
     carta.nombre = nombreDe(mejor, carta.sp); carta.pista = pistaDe(mejor, o1.x, o1.z);
     E.ultimo = mejor.id; E.ux = o1.x; E.uz = o1.z; E.k = k + 1; E.vivo = -1; E.vcode = -1;
     guia.x = o1.x; guia.y = o1.y + 1.6; guia.z = o1.z;
@@ -154,52 +180,90 @@ window.AVFotoSafari = function (G) {
     sonar('aviso'); aviso(L('¡Se escapó! Otra tarjeta', 'It got away! Next card'), 'malo');
     cerrarCam(); nuevaCarta();
   }
-  // La primera foto de un animal lo apunta en su sección del Diario (la ficha que ya existe)
+  // La primera foto de un animal lo apunta en su sección del Diario (la ficha que ya existe). Devuelve el nombre de la sección
+  // donde el niño la va a encontrar, o '' si no hay ficha nueva que ver (también si la ficha está oculta: fauna.js solo publica
+  // las 'verificado'; el lagartijo y la mariposa siguen en 'parcial' y no salen en el Diario).
+  let apuntarPrueba = null;
+  const fichaVisible = id => { const e = ((G.pack && G.pack.fauna && G.pack.fauna.especies) || []).find(x => x.id === id); return !!(e && e.estado === 'verificado'); };
   function apuntar(t, sp) {
-    if (prueba) return false;
+    if (apuntarPrueba) return apuntarPrueba(t, sp);
+    if (prueba) return '';
     try {
-      if (t.fuente === 'fauna' && G.fauna && G.fauna.observar) return G.fauna.observar(t.id);
-      if (t.fuente === 'rio' && G.rioVivo && G.rioVivo.observar) return G.rioVivo.observar(t.id);
-      if (t.fuente === 'residentes' && G.album && G.album.ver && sp) return G.album.ver(sp, 'foto');
+      if (t.fuente === 'fauna' && G.fauna && G.fauna.observar) {
+        const A = (G.pack && G.pack.fauna && G.pack.fauna.album) || {};
+        return G.fauna.observar(t.id) && fichaVisible(t.id) ? L(A.titulo || 'Fauna de El Yunque', A.tituloEn || 'Wildlife of El Yunque') : '';
+      }
+      if (t.fuente === 'rio' && G.rioVivo && G.rioVivo.observar) return G.rioVivo.observar(t.id) ? L('Peces del río', 'River fish') : '';
+      if (t.fuente === 'residentes' && G.album && G.album.ver && sp) return G.album.ver(sp, 'foto') ? L('el Álbum', 'the Album') : '';
     } catch (e) { /* sin Diario */ }
-    return false;
+    return '';
   }
 
   // ---------- Cámara (el marco y las estrellas en vivo; la vista se acerca un poco) ----------
   let cam0 = null;
-  const CAM_D = 3, CAM_F = 4;
+  const CAM_D = 3, CAM_F = 4, TAU = Math.PI * 2, ASIST_ANG = 1.3, ASIST_K = 3;
   function camara(on) {
-    const C = G.camara && G.camara.CAM; if (!C) return;
-    if (on && !cam0) { cam0 = { dist: C.dist, distFly: C.distFly }; C.dist = Math.max(2.6, C.dist - CAM_D); C.distFly = Math.max(3, C.distFly - CAM_F); cam0.d = C.dist; cam0.f = C.distFly; }
-    else if (!on && cam0) { if (C.dist === cam0.d) C.dist = cam0.dist; if (C.distFly === cam0.f) C.distFly = cam0.distFly; cam0 = null; } // si otro módulo la cambió mientras tanto, no se pisa
+    const K = G.camara, C = K && K.CAM; if (!C) return;
+    if (on && !cam0) {
+      cam0 = { dist: C.dist, distFly: C.distFly, inc: K.inclina || 0, zoom: 0 }; C.dist = Math.max(2.6, C.dist - CAM_D); C.distFly = Math.max(3, C.distFly - CAM_F); cam0.d = C.dist; cam0.f = C.distFly;
+      cam0.zoom = carta.tipo && carta.tipo.zoom ? carta.tipo.zoom : 0; if (cam0.zoom && typeof K.fovBonus === 'number') K.fovBonus -= cam0.zoom; // zoom: el animal se ve más grande
+    } else if (!on && cam0) {
+      if (C.dist === cam0.d) C.dist = cam0.dist; if (C.distFly === cam0.f) C.distFly = cam0.distFly; // si otro módulo la cambió mientras tanto, no se pisa
+      if (cam0.zoom && typeof K.fovBonus === 'number') K.fovBonus += cam0.zoom;
+      try { K.inclina = cam0.inc; } catch (e) { /* */ }
+      cam0 = null;
+    }
+  }
+  // Encuadre asistido: con el animal más o menos delante (a menos de ~75° de donde mira la cámara), la vista gira y sube o baja
+  // poco a poco hasta tenerlo en el marco. El niño solo tiene que mirar hacia él y acercarse; la cámara de siempre hace el resto.
+  function asistir(dt) {
+    const K = G.camara, C = K && K.CAM, t = carta.tipo;
+    if (!C || !t || !carta.vivo || o1.nove || !(dt > 0)) return false;
+    const dx = o1.x - S.pos.x, dz = o1.z - S.pos.z, dh = Math.hypot(dx, dz);
+    if (dh < 0.4 || dh > t.dMax * 1.5) return false;
+    let dy = Math.atan2(-dx, -dz) - K.yaw; dy = ((dy % TAU) + TAU * 1.5) % TAU - Math.PI; // la cámara al otro lado de Vittata
+    if (Math.abs(dy) > ASIST_ANG) return false;
+    const k = 1 - Math.exp(-ASIST_K * dt), fly = !!MV().flying;
+    K.yaw += dy * k;
+    const e0 = Math.atan2((fly ? C.heightFly : C.height) - C.look, typeof K.dist === 'function' ? K.dist() : (fly ? C.distFly : C.dist));
+    const e = Math.atan2(S.pos.y + C.look - o1.y, dh); // la línea cámara → cabeza de Vittata llega a la altura del animal
+    const i0 = K.inclina || 0; K.inclina = i0 + (e0 - e - i0) * k;
+    return true;
   }
   // Mirando por la cámara, Vittata no tapa el marco: su modelo se oculta mientras (como en el vuelo libre) y vuelve al cerrar
-  let ocultaV = null;
+  // (y su sombra, G.actores.pShadow). Se repite en cada dibujo: el vuelo libre la vuelve a mostrar al despegar o aterrizar.
+  let ocultaV = null, ocultaS = null;
   function verVittata(on) {
     try {
-      const r = G.actores && G.actores.player3D && G.actores.player3D.root;
-      if (!on && r && r.visible && !ocultaV) { r.visible = false; ocultaV = r; }
-      else if (on && ocultaV) { ocultaV.visible = true; ocultaV = null; }
+      const A = G.actores, r = A && A.player3D && A.player3D.root, sh = A && A.pShadow;
+      if (!on) {
+        if (r && (r.visible || ocultaV)) { r.visible = false; ocultaV = r; }
+        if (sh && (sh.visible || ocultaS)) { sh.visible = false; ocultaS = sh; }
+      } else {
+        if (ocultaV) { ocultaV.visible = true; ocultaV = null; }
+        if (ocultaS) { ocultaS.visible = true; ocultaS = null; }
+      }
     } catch (e) { /* sin modelo */ }
   }
   function abrirCam() {
     if (E.cam || E.fase !== 'juego' || !carta.tipo) return;
-    E.cam = true; E.camT = 0; E.vivo = -1; E.vcode = -1; camara(true); verVittata(false); sonar('boton');
+    E.cam = true; E.camT = 0; E.vivo = -1; E.vcode = -1; E.pend = false; camara(true); verVittata(false); sonar('boton');
     document.body.classList.add('foto-cam'); pintarVisor();
   }
   function cerrarCam() {
     if (!E.cam) return;
-    E.cam = false; camara(false); verVittata(true); document.body.classList.remove('foto-cam'); pintarVisor();
+    E.cam = false; E.pend = false; camara(false); verVittata(true); document.body.classList.remove('foto-cam'); pintarVisor();
   }
   function disparar() {
     if (E.fase !== 'juego' || !carta.tipo) return;
     if (!E.cam) { abrirCam(); return; }
-    if (E.camT < ESPERA || E.recarga > 0) return; // machacar no sirve
+    if (E.camT < ESPERA) { E.pend = true; return; } // la cámara aún se abre: la foto sale en cuanto esté lista (no se pierde el toque)
+    if (E.recarga > 0) { E.nopT = 0.6; pintarVisor(); return; } // machacar no sirve, pero el visor dice «Un momento…»
     carta.vivo = !!donde(carta.tipo, carta.sp, o1, o2);
     const s = carta.vivo ? medir() : 0;
     sonar('clic'); flash();
-    if (!s) { E.recarga = RECARGA_FALLO; aviso(carta.vivo && MED.enMarco && MED.d > carta.tipo.dMax ? L('Acércate despacio…', 'Get closer, slowly…') : L('¡Casi! Ponlo dentro del marco', 'So close! Get it inside the frame'), 'malo'); return; }
-    if (!MED.cond) { E.recarga = RECARGA_FALLO; aviso(L('Falta: ', 'Needed: ') + textoCond(carta.cond), 'malo'); return; }
+    if (!s && carta.vivo && MED.s0 && !MED.cond) { E.recarga = RECARGA_FALLO; aviso(L('Falta: ', 'Needed: ') + textoCond(carta.cond), 'malo'); return; }
+    if (!s) { E.recarga = RECARGA_FALLO; aviso(carta.vivo && o1.nove ? L('No se ve: vuela bajo sobre el agua', "Can't see it: fly low over the water") : carta.vivo && MED.enMarco && MED.d > carta.tipo.dMax ? L('Acércate despacio…', 'Get closer, slowly…') : L('¡Casi! Ponlo dentro del marco', 'So close! Get it inside the frame'), 'malo'); return; }
     E.recarga = RECARGA; acierto(s);
   }
   function acierto(s) {
@@ -207,9 +271,11 @@ window.AVFotoSafari = function (G) {
     E.estrellas += s; E.fotos++; if (s === 3) E.tres++; E.reloj += BONO;
     if (E.nr < ROLLO) { rollo[E.nr].sil = t.sil; rollo[E.nr].s = s; E.nr++; }
     const nueva = apuntar(t, carta.sp); if (nueva) E.fichas++;
-    sonar(s === 3 ? 'logro' : 'encaje'); if (nueva) sonar('descubrir');
+    sonar(s === 3 ? 'logro' : 'encaje'); if (nueva && t.fuente !== 'residentes') sonar('descubrir'); // el Álbum ya suena 'descubrir' al apuntarla
     if (s === 3 && !reducido()) { try { if (G.fx && G.fx.burst) G.fx.burst(o1.x, o1.y + 0.4, o1.z, 'gold', 14); } catch (e) { /* sin fx */ } }
-    aviso((s === 3 ? L('¡Fotaza!', 'Great shot!') : s === 2 ? L('Buena foto', 'Nice photo') : L('Salió movida', 'A bit blurry')) + ' +' + s + '★ · +' + BONO + ' s' + (nueva ? L(' · ¡Ficha nueva en el Diario!', ' · New card in the Journal!') : ''), s === 3 ? 'oro' : 'bien');
+    // la de 1 estrella dice qué mejorar (movida, escondido, lejos o descentrada); la ficha nueva, en qué sección del Diario está
+    const una = MED.quieta < 0.4 ? L('Salió movida', 'A bit blurry') : o1.oculto ? L('Se escondía', 'It was hiding') : MED.cerca < 0.45 ? L('Un poco lejos', 'A bit far') : L('Un poco descentrada', 'A bit off-center');
+    aviso((s === 3 ? L('¡Fotaza!', 'Great shot!') : s === 2 ? L('Buena foto', 'Nice photo') : una) + ' +' + s + '★ · +' + BONO + ' s' + (nueva ? L(' · ¡Nueva en ', ' · New in ') + nueva + '!' : ''), s === 3 ? 'oro' : 'bien');
     estampa(t, s);
     cerrarCam(); nuevaCarta(); pintarHud();
   }
@@ -221,6 +287,7 @@ window.AVFotoSafari = function (G) {
     if (E.msgT > 0 && (E.msgT -= dt) <= 0 && hudEl) { const m = q(hudEl, 'msg'); m.textContent = ''; m.className = ''; }
     if (E.estT > 0 && (E.estT -= dt) <= 0 && estEl) estEl.hidden = true;
     if (E.recarga > 0) E.recarga -= dt;
+    if (E.nopT > 0 && (E.nopT -= dt) <= 0) pintarVisor();
     if (!carta.tipo) { if ((E.buscarT -= dt) <= 0) { E.buscarT = 1; if (!nuevaCarta()) aviso(L('Buscando animales… vuela un poco por aquí', 'Looking for animals… fly around here'), ''); } }
     else {
       carta.t -= dt;
@@ -231,6 +298,9 @@ window.AVFotoSafari = function (G) {
       }
       if (E.cam) {
         E.camT += dt;
+        verVittata(false);
+        asistir(dt);
+        if (E.pend && E.camT >= ESPERA) { E.pend = false; disparar(); if (!E.cam || !carta.tipo) return; }
         const s = carta.vivo ? medir() : 0;
         const c = s * 10 + vtxIdx(s);
         if (c !== E.vcode) { E.vcode = c; E.vivo = s; pintarVisor(); }
@@ -244,7 +314,12 @@ window.AVFotoSafari = function (G) {
     if (hudEl && Math.floor((E.t - dt) * 4) !== Math.floor(E.t * 4)) pintarHud();
   }
   G.on('update', (dt, busy) => { if (!G.quiet && !busy) paso(Math.min(0.05, dt || 0)); });
-  const guiar = () => { verHud(); if (E.fase === 'juego' && carta.tipo && carta.vivo && G.fx && G.fx.guide) G.fx.guide(guia, performance.now() / 1000); };
+  // con la cámara abierta la flecha no entra en el marco, y con el panel final no queda detrás (misiones.js la pone en 60)
+  const guiar = () => {
+    verHud(); if (E.fase === 'nada' || !G.fx || !G.fx.guide) return;
+    if (E.cam) verVittata(false);
+    G.fx.guide(E.fase === 'juego' && !E.cam && carta.tipo && carta.vivo ? guia : null, performance.now() / 1000);
+  };
   G.on('render', guiar, 61); // después de misiones.js (60): la flecha va al animal de la tarjeta
   G.on('pausa', () => verHud()); // al terminar la carga sale el HUD
 
@@ -278,13 +353,19 @@ window.AVFotoSafari = function (G) {
       '#fs-flash{position:fixed;inset:0;z-index:61;background:#fff;opacity:0;pointer-events:none;transition:opacity .4s ease-out}' +
       '#fs-est{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-4deg);z-index:61;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 14px 8px;border-radius:8px;background:#fffdf4;color:#3b2a14;box-shadow:0 8px 24px rgba(0,0,0,.4);font:700 15px Fredoka,system-ui,sans-serif;pointer-events:none;animation:fs-pop .35s ease-out}#fs-est svg{width:64px;height:64px}#fs-est .fs-es{display:flex}#fs-est .fs-es svg{width:20px;height:20px;fill:#e0a400}' +
       '@keyframes fs-pop{from{transform:translate(-50%,-50%) rotate(-4deg) scale(1.5);opacity:0}}html.mov-reducido #fs-est{animation:none}@media (prefers-reduced-motion:reduce){#fs-est{animation:none}#fs-flash{transition:none}}' +
-      '#fs-fin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:18px 18px 16px;border-radius:24px;' + caja + 'text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}#fs-fin:focus{outline:none}' +
+      '#fs-fin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:18px 18px 16px;border-radius:24px;' + caja + 'background:rgba(16,36,28,.97);text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}#fs-fin:focus{outline:none}' +
       '#fs-fin h2{margin:0;font-size:26px}#fs-fin .fs-gran{display:flex;align-items:center;gap:8px;font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#fs-fin .fs-gran svg{width:42px;height:42px;fill:#ffd23f}#fs-fin p{margin:0;font-size:17px;font-weight:600}#fs-fin .fs-med{font-size:16px;padding:3px 12px;border-radius:999px;background:#fff3d6;color:#3b2a14}#fs-fin .fs-med:empty{display:none}#fs-fin .fs-det{font-size:15px;opacity:.85;font-weight:500}' +
       '#fs-fin .fs-rollo{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}#fs-fin .fs-rollo:empty{display:none}#fs-fin .fs-rollo span{display:flex;flex-direction:column;align-items:center;padding:3px 4px 1px;border-radius:6px;background:#fffdf4;color:#e0a400;font-size:11px;line-height:1}#fs-fin .fs-rollo svg{width:26px;height:26px}#fs-fin .fs-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}#fs-fin button{min-height:54px;padding:4px 22px;font-size:18px}' +
-      '@media (orientation:landscape) and (max-height:500px){#fs-carta{left:12px;right:auto;margin:0;top:calc(env(safe-area-inset-top,0px) + 10px);max-width:min(330px,calc(50vw - 24px))}#fs-hud{right:12px;left:auto;margin:0}#fs-hud [data-k="msg"]{top:calc(100% + 8px);left:auto;right:0;transform:none}#fs-fin{padding:12px 16px;gap:4px}#fs-fin h2{font-size:21px}#fs-fin .fs-gran{font-size:34px}}' +
+      // teléfono en vertical: la pista puede ir en 2 líneas, el aviso va debajo de la tarjeta y el minimapa baja un poco (no se tapan)
+      '@media (max-width:560px) and (orientation:portrait){#fs-carta small[data-k="pista"]{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}#fs-hud [data-k="msg"]{position:fixed;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 24px - var(--mm,96px) - 68px);left:12px;transform:none;white-space:normal;text-align:center}body.foto-on #minimapa{top:max(var(--mm-top,0px),calc(env(safe-area-inset-top,0px) + 152px))!important}}' +
+      // horizontal bajo: el aviso, debajo de la tarjeta a la izquierda (a la derecha tapaba Diario y Gestos)
+      '@media (orientation:landscape) and (max-height:500px){#fs-carta{left:12px;right:auto;margin:0;top:calc(env(safe-area-inset-top,0px) + 10px);max-width:min(330px,calc(50vw - 24px))}#fs-hud{right:12px;left:auto;margin:0}#fs-hud [data-k="msg"]{position:fixed;top:calc(env(safe-area-inset-top,0px) + 80px);left:12px;right:auto;transform:none;max-width:min(330px,calc(50vw - 24px))}#fs-fin{padding:12px 16px;gap:4px}#fs-fin h2{font-size:21px}#fs-fin .fs-gran{font-size:34px}}' +
       // la historia no se mezcla con el minijuego: fuera el letrero, los avisos y bocadillos, la pista de Acción, los contadores
       'body.foto-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
-      'body.foto-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#fs-foto){visibility:hidden!important}';
+      'body.foto-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#fs-foto,#sys){visibility:hidden!important}' + // ni los botones redondos del lateral detrás del panel
+      'body.foto-on #rio-visor{display:none!important}' + // el visor del río sí se enciende (los peces se ven), pero sin su letrero: manda el de la cámara
+      // en táctil el botón Acción dice «Foto» y lleva el icono de la cámara (no los destellos)
+      'body.foto-on #b-act{--icon:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Cpath d=%27M4 7h3l2-2h6l2 2h3v12H4zm8 2.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2z%27 fill-rule=%27evenodd%27/%3E%3C/svg%3E")}';
     document.head.appendChild(st);
   }
   function montar() {
@@ -318,7 +399,11 @@ window.AVFotoSafari = function (G) {
     q(hudEl, 'rec').textContent = E.mejor && innerWidth >= 600 ? L('Récord ', 'Best ') + E.mejor : '';
     hudEl.querySelector('[data-a="salir"]').textContent = L('Salir', 'Exit');
     if (cartaEl && carta.tipo) { const b = q(cartaEl, 'barra'), f = clamp(carta.t / CARTA); b.style.transform = 'scaleX(' + f.toFixed(3) + ')'; b.classList.toggle('poco', carta.t <= 6); }
-    if (fotoEl) fotoEl.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l2-2h6l2 2h3v12H4z" fill="#3b2a14"/><circle cx="12" cy="13" r="3.6" fill="#ffd23f"/></svg>' + (E.cam ? L('¡Foto!', 'Snap!') : L('Cámara', 'Camera'));
+    if (fotoEl) { // solo cambia el texto, y solo si cambia (antes se rehacía el SVG 4 veces por segundo y un clic lento podía perderse)
+      const tx = E.cam ? L('¡Foto!', 'Snap!') : L('Cámara', 'Camera');
+      if (!fotoEl.firstChild) fotoEl.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3l2-2h6l2 2h3v12H4z" fill="#3b2a14"/><circle cx="12" cy="13" r="3.6" fill="#ffd23f"/></svg><span></span>';
+      if (fotoEl.lastChild.textContent !== tx) fotoEl.lastChild.textContent = tx;
+    }
   }
   function pintarCarta() {
     if (!cartaEl) return;
@@ -337,16 +422,19 @@ window.AVFotoSafari = function (G) {
     q(visorEl, 'est').setAttribute('aria-label', L(`${s} de 3 estrellas`, `${s} of 3 stars`));
     const t = carta.tipo;
     const i = vtxIdx(s);
-    q(visorEl, 'vtx').textContent = i === 0 ? '' : i === 1 ? L('Busca al animal en el marco', 'Find the animal in the frame') : i === 2 ? L('Acércate despacio…', 'Get closer, slowly…') : i === 3 ? L('Quieta…', 'Hold still…') : i === 4 ? L('Se escondió: espera quieta', 'It hid: wait, keep still') : i === 5 ? L('¡Ahora!', 'Now!') : L('Al centro…', 'To the center…');
+    q(visorEl, 'vtx').textContent = i === 0 ? '' : i === 1 ? L('Mira hacia el animal: la cámara te ayuda', 'Face the animal: the camera helps you') : i === 2 ? L('Acércate despacio…', 'Get closer, slowly…') : i === 3 ? L('Quieta…', 'Hold still…') : i === 4 ? L('Se escondió: espera quieta', 'It hid: wait, keep still') : i === 5 ? L('¡Ahora!', 'Now!')
+      : i === 7 ? L('No se ve: vuela bajo sobre el agua', "Can't see it: fly low over the water") : i === 8 ? L('Falta: ', 'Needed: ') + textoCond(carta.cond) : i === 9 ? L('Un momento…', 'One moment…') : L('Al centro…', 'To the center…');
     const bc = visorEl.querySelector('[data-a="cerrar"]'); bc.textContent = '✕'; bc.setAttribute('aria-label', L('Cerrar la cámara', 'Close the camera'));
     pintarHud();
   }
-  // qué dice el visor (0 nada · 1 busca · 2 acércate · 3 quieta · 4 escondido · 5 ¡ahora! · 6 al centro); solo se repinta si cambia
-  function vtxIdx(s) { const t = carta.tipo; return !E.cam || !t ? 0 : !carta.vivo || !MED.enMarco ? 1 : MED.d > t.dMax || MED.cerca < 0.45 ? 2 : MED.quieta < 0.8 ? 3 : o1.oculto ? 4 : s === 3 ? 5 : 6; }
+  // qué dice el visor (0 nada · 1 busca · 2 acércate · 3 quieta · 4 escondido · 5 ¡ahora! · 6 al centro · 7 el pez no se ve ·
+  // 8 falta la condición · 9 un momento, recargando); solo se repinta si cambia
+  function vtxIdx(s) { const t = carta.tipo; return !E.cam || !t ? 0 : E.nopT > 0 ? 9 : carta.vivo && o1.nove ? 7 : !carta.vivo || !MED.enMarco ? 1 : MED.d > t.dMax || MED.cerca < 0.45 ? 2 : MED.s0 && !MED.cond ? 8 : MED.quieta < 0.8 ? 3 : o1.oculto ? 4 : s === 3 ? 5 : 6; }
   function aviso(txt, cls) { if (!hudEl) return; const m = q(hudEl, 'msg'); m.textContent = txt; m.className = cls || ''; E.msgT = 2; }
+  let flashN = 0; // cuántos destellos van (lo lee la prueba)
   function flash() {
     if (!flashEl || G.quiet || reducido()) return; // con «Reducir movimiento», solo el clic
-    flashEl.style.transition = 'none'; flashEl.style.opacity = '0.7'; void flashEl.offsetWidth; flashEl.style.transition = ''; flashEl.style.opacity = '0';
+    flashN++; flashEl.style.transition = 'none'; flashEl.style.opacity = '0.7'; void flashEl.offsetWidth; flashEl.style.transition = ''; flashEl.style.opacity = '0';
   }
   function estampa(t, s) {
     if (!estEl) return;
@@ -436,7 +524,7 @@ window.AVFotoSafari = function (G) {
     if (!activo()) return;
     if (e.key === 'Escape') {
       if (e.repeat || (G.ui && G.ui.cardOpen)) return; // una tarjeta abierta encima se cierra primero
-      e.preventDefault(); e.stopImmediatePropagation(); salir(); return;
+      e.preventDefault(); e.stopImmediatePropagation(); if (E.cam) cerrarCam(); else salir(); return; // con la cámara abierta, Esc solo la cierra
     }
     if (E.fase === 'fin') { // el panel final es modal: las teclas del mundo no pasan; Tab, Enter y Espacio van a sus botones (no en el primer segundo)
       if (e.key === 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -455,7 +543,8 @@ window.AVFotoSafari = function (G) {
     const cam = R.camera, fwd = new THREE.Vector3();
     const tecla = k => { const ev = new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(ev); return ev; };
     // Un animal de prueba delante de la cámara, a d m de Vittata (y otro al lado para «dos en el marco»)
-    const sitio = { x: 0, y: 0, z: 0, oc: false, hay: true, dos: false };
+    const sitio = { x: 0, y: 0, z: 0, oc: false, hay: true, dos: false, nove: false, sin: null, solo: null };
+    const K = G.camara, yaw0 = K ? K.yaw : 0, fovB0 = K ? K.fovBonus : 0;
     const ponerDelante = (d, lado) => {
       cam.updateMatrixWorld(); cam.matrixWorldInverse.copy(cam.matrixWorld).invert(); cam.getWorldDirection(fwd);
       S.pos.x = cam.position.x + fwd.x * 4; S.pos.y = cam.position.y + fwd.y * 4 - 0.6; S.pos.z = cam.position.z + fwd.z * 4;
@@ -469,18 +558,31 @@ window.AVFotoSafari = function (G) {
         (!G.rioVivo || (typeof G.rioVivo.cerca === 'function' && [null, o1].includes(G.rioVivo.cerca('dajao', S.pos.x, S.pos.z, o1, o2)))) &&
         (!G.residentes || (typeof G.residentes.cerca === 'function' && [null, o1].includes(G.residentes.cerca(S.pos.x, S.pos.z, o1, o2)))), [!!G.fauna, !!G.rioVivo, !!G.residentes].join(','));
       prueba = (t, sp, a, b) => {
-        if (!sitio.hay) return null;
-        a.x = sitio.x; a.y = sitio.y; a.z = sitio.z; a.oculto = sitio.oc; a.sp = 'vittata';
+        if (!sitio.hay || (sitio.sin && sitio.sin.includes(t.id)) || (sitio.solo && !sitio.solo.includes(t.id))) return null;
+        a.x = sitio.x; a.y = sitio.y; a.z = sitio.z; a.oculto = sitio.oc; a.sp = 'vittata'; a.nove = sitio.nove;
         if (b) { b.ok = sitio.dos; b.x = sitio.x + 0.6; b.y = sitio.y; b.z = sitio.z; }
         return a;
       };
       ponerDelante(4);
+      // En el mundo de verdad, cerca del punto de salida no suele haber cotorras residentes ni la boa: la primera tarjeta es
+      // entonces la más fácil que haya (nunca el lagartijo, que se esconde) y con estrellas generosas
+      sitio.sin = ['cotorra', 'boa'];
+      { const ids = []; for (const sem of [5, 7, 11, 13, 17]) { jugar({ semilla: sem }); ids.push(carta.tipo && carta.tipo.id); salir(); }
+        check('Sin cotorras ni boa en la zona, la primera tarjeta es de las más fáciles (nunca el lagartijo) y más generosa', ids.every(id => id === 'mariposa' || id === 'coqui') && (jugar({ semilla: 5 }), carta.facil), ids.join(','));
+        salir(); }
+      sitio.sin = ['cotorra', 'boa', 'mariposa', 'coqui']; jugar({ semilla: 5 });
+      check('…y los peces del río antes que el lagartijo', carta.tipo && carta.tipo.fuente === 'rio', carta.tipo && carta.tipo.id); salir();
+      sitio.sin = null;
       jugar({ semilla: 5 });
       const hb = hudEl.querySelector('[data-a="salir"]').getBoundingClientRect(), cr = cartaEl.getBoundingClientRect();
       check('Se abre con el reloj (2:00), las estrellas, «Salir» de ≥ 44 px y la tarjeta «Busca: …» con su pista', activo() && !hudEl.hidden && !cartaEl.hidden && finEl.hidden && q(hudEl, 'r').textContent === '2:00' && q(hudEl, 'p').textContent === '0' && hb.height >= 44 && /^Busca: \S/.test(q(cartaEl, 'busca').textContent) && /^Pista: /.test(q(cartaEl, 'pista').textContent) && document.body.classList.contains('foto-on'),
         q(cartaEl, 'busca').textContent + ' · ' + q(cartaEl, 'pista').textContent);
       check('Las primeras tarjetas son de animales grandes y quietos (cotorras o la boa)', carta.tipo && carta.tipo.nivel === 1, carta.tipo && carta.tipo.id);
       { const hr = hudEl.getBoundingClientRect(); check('El HUD y la tarjeta caben arriba (la tarjeta, 2 líneas como mucho)', hr.left >= 0 && hr.right <= innerWidth && hr.top >= 0 && hr.height <= 64 && cr.left >= 0 && cr.right <= innerWidth && cr.height <= 64, `${innerWidth}×${innerHeight} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)} · tarjeta ${Math.round(cr.width)}×${Math.round(cr.height)}`); }
+      { const mr = q(hudEl, 'msg').getBoundingClientRect(), choca = (a, b) => a.width > 0 && b.width > 0 && a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
+        const otros = ['minimapa', 'sys'].map(id => document.getElementById(id)).filter(el => el && getComputedStyle(el).visibility !== 'hidden' && getComputedStyle(el).display !== 'none').map(el => el.getBoundingClientRect());
+        const mm = document.getElementById('minimapa'), mmr = mm && getComputedStyle(mm).display !== 'none' ? mm.getBoundingClientRect() : null;
+        check('El aviso no tapa la tarjeta, el minimapa ni los botones del lateral, y la tarjeta no tapa el minimapa', !choca(mr, cr) && otros.every(r => !choca(mr, r)) && (!mmr || !choca(cr, mmr)), `${innerWidth}×${innerHeight} · aviso ${Math.round(mr.left)},${Math.round(mr.top)} ${Math.round(mr.width)}×${Math.round(mr.height)}`); }
       check('La historia no se mezcla: cuenta como actividad (los avisos esperan) y el aviso, la pista de Acción, la misión y los bocadillos no se ven',
         (!G.menuModos || !G.menuModos.ocupado || G.menuModos.ocupado()) && ['toast', 'prompt', 'quest', 'inv-cuenta', 'bocadillos'].every(id => { const el = document.getElementById(id); return !el || getComputedStyle(el).visibility === 'hidden'; }));
       check('La flecha y la estrella del minimapa señalan al mismo animal', (() => { const g0 = G.fx && G.fx.guide; let visto = null; if (g0) { G.fx.guide = t => { visto = t; }; try { guiar(); } finally { G.fx.guide = g0; } } return (!g0 || (visto && visto.x === sitio.x && visto.z === sitio.z)) && (!G.minimapa || !G.minimapa.marcadores || G.minimapa.marcadores().some(k => k.tipo === 'obj' && k.x === guia.x && k.z === guia.z)); })());
@@ -490,18 +592,20 @@ window.AVFotoSafari = function (G) {
         if (!yaCarga) G.pausa.set('carga', false); verHud();
         check('Con la pantalla de carga el HUD espera y luego sale', tapado && (yaCarga || !hudEl.hidden));
       }
-      check('El botón Acción pasa a decir «Foto»', G.interaccion && G.interaccion.modo === MODO && MODO.verbo === 'Foto');
+      check('El botón Acción pasa a decir «Foto», con el icono de la cámara', G.interaccion && G.interaccion.modo === MODO && MODO.verbo === 'Foto' && (!G.input || !G.input.actBtn || /svg/.test(getComputedStyle(G.input.actBtn).getPropertyValue('--icon'))));
+      { const sv = fotoEl.firstChild; pintarHud(); pintarHud(); check('El botón «Cámara» no se rehace en cada repintado (el clic no se pierde)', !!sv && fotoEl.firstChild === sv && /Cámara/.test(fotoEl.textContent)); }
       // Teclado: Acción (E) abre la cámara y, un momento después, dispara
       quieta(); ponerDelante(4); const t0 = carta.tipo, rel0 = E.reloj;
       tecla('e');
       const abierta = E.cam && !visorEl.hidden && document.body.classList.contains('foto-cam');
-      const pv = G.actores && G.actores.player3D && G.actores.player3D.root;
-      check('Con teclado: Acción abre la cámara (marco y estrellas en vivo), la vista se acerca y Vittata no tapa el marco', abierta && (!C || C.distFly < camD0[1]) && (!pv || !pv.visible), E.cam);
+      const pv = G.actores && G.actores.player3D && G.actores.player3D.root, psh = G.actores && G.actores.pShadow;
+      check('Con teclado: Acción abre la cámara (marco y estrellas en vivo), la vista se acerca (y hace zoom) y Vittata no tapa el marco, ni su sombra', abierta && (!C || C.distFly < camD0[1]) && (!pv || !pv.visible) && (!psh || !psh.visible) && (!K || K.fovBonus === fovB0 - carta.tipo.zoom), E.cam + ' · fovBonus ' + (K && K.fovBonus));
+      check('Con la cámara abierta, la flecha de guía no entra en el marco', (() => { const g0 = G.fx && G.fx.guide; if (!g0) return true; let visto = 1; G.fx.guide = t => { visto = t; }; try { guiar(); } finally { G.fx.guide = g0; } return visto === null; })());
       quieta(); paso(0.02); quieta(); paso(0.4);
       const vivas = q(visorEl, 'est').querySelectorAll('svg.on').length;
       check('Centrado, cerca y quieta: se encienden las 3 estrellas en vivo', E.vivo === 3 && vivas === 3, E.vivo + ' · centro ' + MED.centro.toFixed(2) + ' cerca ' + MED.cerca.toFixed(2) + ' quieta ' + MED.quieta.toFixed(2));
       quieta(); tecla('e');
-      check('…y otra vez Acción: «¡Fotaza!», +3 estrellas, +10 s, sale la siguiente tarjeta y Vittata vuelve a verse', (!pv || pv.visible) && E.estrellas === 3 && E.fotos === 1 && /Fotaza/.test(q(hudEl, 'msg').textContent) && Math.abs(E.reloj - rel0 - BONO) < 0.5 && E.k === 2 && !E.cam && !estEl.hidden, q(hudEl, 'msg').textContent + ' · ' + t0.id + ' → ' + (carta.tipo && carta.tipo.id));
+      check('…y otra vez Acción: «¡Fotaza!», +3 estrellas, +10 s, sale la siguiente tarjeta y Vittata vuelve a verse (con su sombra y sin zoom)', (!pv || pv.visible) && (!psh || psh.visible) && (!K || K.fovBonus === fovB0) && E.estrellas === 3 && E.fotos === 1 && /Fotaza/.test(q(hudEl, 'msg').textContent) && Math.abs(E.reloj - rel0 - BONO) < 0.5 && E.k === 2 && !E.cam && !estEl.hidden, q(hudEl, 'msg').textContent + ' · ' + t0.id + ' → ' + (carta.tipo && carta.tipo.id));
       // Táctil: el botón Acción de siempre
       const act = G.input && G.input.actBtn;
       if (act) {
@@ -511,12 +615,34 @@ window.AVFotoSafari = function (G) {
       }
       // Machacar no sirve: fuera del marco, 20 toques seguidos son una sola foto fallida
       E.recarga = 0; quieta(); ponerDelante(4, 60); disparar(); paso(0.4);
-      const f0 = E.fotos; let clics = 0; const p0 = G.audio && G.audio.play; G.quiet = false; if (G.audio) G.audio.play = n => { if (n === 'clic') clics++; };
-      try { for (let i = 0; i < 20; i++) { disparar(); paso(0.016); } } finally { if (G.audio) G.audio.play = p0; G.quiet = true; }
-      check('Machacar no sirve: con el animal fuera del marco no suma, «¡Casi!», y la recarga deja una sola foto en 20 toques', E.fotos === f0 && (!G.audio || clics === 1) && /Casi/.test(q(hudEl, 'msg').textContent), clics + ' · ' + q(hudEl, 'msg').textContent);
+      const f0 = E.fotos, fl0 = flashN; let clics = 0, momento = false; const p0 = G.audio && G.audio.play; G.quiet = false; if (G.audio) G.audio.play = n => { if (n === 'clic') clics++; };
+      try { for (let i = 0; i < 20; i++) { disparar(); paso(0.016); if (/Un momento/.test(q(visorEl, 'vtx').textContent)) momento = true; } } finally { if (G.audio) G.audio.play = p0; G.quiet = true; }
+      check('Machacar no sirve: con el animal fuera del marco no suma, «¡Casi!», y la recarga deja una sola foto (y un flash) en 20 toques', E.fotos === f0 && (!G.audio || clics === 1) && flashN === fl0 + 1 && /Casi/.test(q(hudEl, 'msg').textContent), clics + ' · flash ' + (flashN - fl0) + ' · ' + q(hudEl, 'msg').textContent);
+      check('…y tocar durante la recarga no queda mudo: el visor dice «Un momento…»', momento);
       // Lejos: «Acércate despacio…»
       E.recarga = 0; quieta(); ponerDelante(carta.tipo.dMax + 6); paso(0.02);
       check('Muy lejos el visor pide «Acércate despacio…» y no hay estrellas', E.vivo === 0 && /Acércate despacio/.test(q(visorEl, 'vtx').textContent), q(visorEl, 'vtx').textContent);
+      // Quieta pero lejos (no movida): 1 estrella y el aviso dice qué mejorar
+      E.recarga = 0; quieta(); ponerDelante(carta.tipo.dMax - 0.5); paso(0.02); quieta(); disparar();
+      check('Quieta pero lejos: 1 estrella y «Un poco lejos» (no «Salió movida»)', /Un poco lejos/.test(q(hudEl, 'msg').textContent) && rollo[E.nr - 1].s === 1, q(hudEl, 'msg').textContent);
+      // Encuadre asistido: el animal a 40° de la vista → la cámara gira hacia él y sube la vista; a la espalda, no hace nada
+      if (K) {
+        E.recarga = 0; quieta(); ponerDelante(4); abrirCam();
+        const ang = Math.atan2(-(sitio.x - S.pos.x), -(sitio.z - S.pos.z)), dif = () => Math.abs(((ang - K.yaw) % TAU + TAU * 1.5) % TAU - Math.PI);
+        sitio.y += 2.5; // en una rama, más alto que Vittata
+        K.yaw = ang + 0.7; const d0 = dif(), i0 = K.inclina; for (let i = 0; i < 30; i++) asistir(1 / 30);
+        const giro = dif() < d0 * 0.2, sube = K.inclina > i0 + 0.05;
+        K.yaw = ang + 2.6; const y0 = K.yaw; asistir(0.1); const espalda = K.yaw === y0;
+        sitio.y -= 2.5; K.yaw = ang; cerrarCam();
+        check('Encuadre asistido: con el animal más o menos delante, la vista gira hacia él y sube a la rama; a la espalda, nada', giro && sube && espalda && (!C || C.dist === camD0[0]), `giro ${d0.toFixed(2)}→${(+dif()).toFixed(2)} · inclina ${i0.toFixed(2)}→${(+K.inclina).toFixed(2)}`);
+      }
+      // Foto pedida mientras la cámara se abre: no se pierde, sale en cuanto está lista
+      E.recarga = 0; quieta(); ponerDelante(4); const fP = E.fotos; disparar(); disparar(); quieta(); paso(0.2); quieta(); const aun = E.fotos === fP; paso(0.2);
+      check('Pulsar Foto justo al abrir la cámara no se pierde: la foto sale en cuanto está lista', aun && E.fotos === fP + 1, E.fotos - fP);
+      // Un pez que no se ve (visor del río apagado) no da foto y el visor dice cómo verlo
+      E.recarga = 0; quieta(); ponerDelante(4); sitio.nove = true; abrirCam(); quieta(); paso(0.4); quieta(); const fN = E.fotos, vtxN = q(visorEl, 'vtx').textContent; disparar();
+      check('Un pez que no se ve no da foto: 0 estrellas y «No se ve: vuela bajo sobre el agua»', E.vivo === 0 && E.fotos === fN && /vuela bajo sobre el agua/.test(vtxN) && /No se ve/.test(q(hudEl, 'msg').textContent), vtxN + ' · ' + q(hudEl, 'msg').textContent);
+      sitio.nove = false;
       // Foto rápida y movida: 1 estrella
       E.recarga = 0; ponerDelante(carta.tipo.dMax - 1); m.speed = 7; paso(0.02); m.speed = 7; disparar();
       check('Rápida y de lejos: 1 estrella, «Salió movida»', /Salió movida/.test(q(hudEl, 'msg').textContent) && rollo[E.nr - 1].s === 1, q(hudEl, 'msg').textContent);
@@ -537,6 +663,28 @@ window.AVFotoSafari = function (G) {
       E.k = 7; nuevaCarta(); carta.cond = 'dos'; sitio.dos = false; E.recarga = 0; quieta(); ponerDelante(4); disparar(); quieta(); paso(0.4); quieta(); const fD = E.fotos; disparar();
       const sinDos = E.fotos === fD; E.recarga = 0; sitio.dos = true; quieta(); paso(0.02); disparar(); sitio.dos = false;
       check('«Dos en el marco» pide dos animales dentro del marco', sinDos && E.fotos === fD + 1, E.fotos);
+      // Nunca una condición imposible; sin la condición no se encienden las estrellas en vivo
+      sitio.solo = ['dajao']; E.k = 6; nuevaCarta(); const condRio = carta.cond; sitio.solo = null;
+      check('Con un pez, nunca «Desde el suelo» (solo se ve volando bajo)', carta.tipo && carta.tipo.id === 'dajao' && condRio === 'vuela', condRio);
+      E.recarga = 0; quieta(); ponerDelante(4); abrirCam(); quieta(); paso(0.4); quieta();
+      check('Sin la condición, el visor no enciende estrellas y dice «Falta: En vuelo»', E.vivo === 0 && /Falta: En vuelo/.test(q(visorEl, 'vtx').textContent), q(visorEl, 'vtx').textContent);
+      cerrarCam();
+      { const ps0 = m.posado; m.posado = true; const enRama = enSuelo(); m.posado = ps0; check('«Desde el suelo» no vale posada en una rama', !enRama); }
+      // La ficha nueva dice en qué sección está, y solo si se puede ver; la cotorra suena «descubrir» una sola vez (la pone el Álbum)
+      { const au = G.audio, p2 = au && au.play, sons = [];
+        apuntarPrueba = t => (t.fuente === 'residentes' ? L('el Álbum', 'the Album') : '');
+        sitio.solo = ['cotorra']; E.k = 3; nuevaCarta(); sitio.solo = null; carta.cond = '';
+        try { if (au) au.play = n => { sons.push(n); }; G.quiet = false; E.recarga = 0; quieta(); ponerDelante(4); abrirCam(); quieta(); paso(0.4); quieta(); disparar(); }
+        finally { G.quiet = true; if (au) au.play = p2; apuntarPrueba = null; }
+        check('Primera foto de una cotorra: «¡Nueva en el Álbum!» y el minijuego no repite «descubrir» (ya lo suena el Álbum)', /Nueva en el Álbum/.test(q(hudEl, 'msg').textContent) && !sons.includes('descubrir') && E.fichas >= 1, q(hudEl, 'msg').textContent + ' · ' + sons.join(','));
+        const esp = (G.pack && G.pack.fauna && G.pack.fauna.especies) || [];
+        check('Las fichas ocultas del Diario (las «parcial», como el lagartijo y la mariposa) no se anuncian como nuevas', esp.every(e => fichaVisible(e.id) === (e.estado === 'verificado')) && esp.filter(e => e.estado !== 'verificado').every(e => !fichaVisible(e.id)), esp.map(e => e.id + ':' + e.estado).join(','));
+      }
+      if (G.rioVivo && G.rioVivo.bancos && G.rioVivo.cerca) { // ríos: un banco recién activado (peces sin colocar) da su centro una sola vez
+        const B = G.rioVivo.bancos, fb = { id: 'dajao', x: S.pos.x, z: S.pos.z, peces: [{ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }] }, a = {}, b = {}; let r = null;
+        B.push(fb); try { r = G.rioVivo.cerca('dajao', S.pos.x, S.pos.z, a, b); } finally { B.splice(B.indexOf(fb), 1); }
+        check('Ríos: un banco con los peces sin colocar no cuenta como «dos en el marco» en el mismo punto', r === a && !(b.ok && b.x === a.x && b.z === a.z), JSON.stringify(b));
+      }
       // Sin animal cerca: espera y busca, sin romperse
       sitio.hay = false; carta.t = 0.01; paso(0.05);
       check('Sin animales a la vista no se rompe: «Buscando animales…»', !carta.tipo && /Buscando animales/.test(q(cartaEl, 'busca').textContent));
@@ -548,8 +696,9 @@ window.AVFotoSafari = function (G) {
         try {
           if (fx) fx.burst = () => { chispas++; }; if (au) au.play = n => { sonidos.push(n); };
           G.quiet = false; carta.cond = '';
+          const fl1 = flashN;
           E.recarga = 0; quieta(); ponerDelante(4); disparar(); quieta(); paso(0.4); quieta(); disparar();
-          const op = flashEl.style.opacity;
+          const op = flashN === fl1 ? '0' : '0.7';
           carta.t = 0.01; paso(0.05);
           const rr = E.reloj; E.reloj = 10.01; E.avisos = 0; paso(0.05);
           E.reloj = rr;
@@ -560,7 +709,7 @@ window.AVFotoSafari = function (G) {
       const total = E.estrellas, fotos = E.fotos; E.reloj = 0.01; paso(0.05);
       const fr = finEl.getBoundingClientRect(), bots = [...finEl.querySelectorAll('button')].map(b => b.getBoundingClientRect());
       check('El reloj termina: panel con estrellas, «¡Nuevo récord!», el rollo de fotos, «Otra vez» y «Salir»', E.fase === 'fin' && !finEl.hidden && hudEl.hidden && cartaEl.hidden && q(finEl, 'fn').textContent === String(total) && new RegExp('Nuevo récord: ' + total + ' estrellas').test(q(finEl, 'fmsg').textContent) && q(finEl, 'frollo').children.length === fotos && new RegExp('Fotos: ' + fotos).test(q(finEl, 'fdet').textContent), q(finEl, 'fmsg').textContent + ' · ' + q(finEl, 'fdet').textContent);
-      check('Con el panel final no quedan pistas del mundo detrás (minimapa ni pistas de vuelo)', document.body.classList.contains('foto-fin') && ['minimapa', 'guia-hud', 'keyhint'].every(id => { const el = document.getElementById(id); return !el || getComputedStyle(el).visibility === 'hidden'; }));
+      check('Con el panel final no quedan pistas del mundo detrás (minimapa, pistas de vuelo ni los botones del lateral), ni la flecha', (() => { const g0 = G.fx && G.fx.guide; if (!g0) return true; let visto = 1; G.fx.guide = t => { visto = t; }; try { guiar(); } finally { G.fx.guide = g0; } return visto === null; })() && document.body.classList.contains('foto-fin') && ['minimapa', 'guia-hud', 'keyhint', 'sys'].every(id => { const el = document.getElementById(id); return !el || getComputedStyle(el).visibility === 'hidden'; }));
       check('El récord se guarda en este dispositivo', (() => { const r = leerRec(); return r && r.mejor === total && r.jugadas === 1; })(), JSON.stringify(leerRec()));
       check('Cabe en la pantalla: panel dentro y botones del final ≥ 54 px', bots.every(b => b.height >= 54 && b.width >= 54) && fr.left >= 0 && fr.right <= innerWidth && fr.top >= 0 && fr.bottom <= innerHeight, `${innerWidth}×${innerHeight} · ${Math.round(fr.width)}×${Math.round(fr.height)}`);
       await new Promise(r => setTimeout(r, 30));
@@ -581,12 +730,13 @@ window.AVFotoSafari = function (G) {
       check('«Salir» lo quita todo (HUD, tarjeta, visor, panel, clases, pausa, Acción de siempre y cámara de siempre)', !activo() && hudEl.hidden && cartaEl.hidden && visorEl.hidden && finEl.hidden && !/foto-(on|fin|cam)/.test(document.body.className) && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('foto')) && (!G.interaccion || G.interaccion.modo !== MODO) && (!C || (C.dist === camD0[0] && C.distFly === camD0[1])));
       check('Sin mallas ni texturas nuevas en la escena', !R.scene.children.some(k => /^foto/.test(k.name || '')));
       jugar({ semilla: 3 }); disparar();
-      const ev = tecla('Escape');
-      check('Esc en plena partida (con la cámara abierta) también sale y devuelve la cámara', !activo() && ev.defaultPrevented && hudEl.hidden && visorEl.hidden && (!C || (C.dist === camD0[0] && C.distFly === camD0[1])));
+      const ev = tecla('Escape'), soloCam = activo() && !E.cam && visorEl.hidden && !hudEl.hidden && ev.defaultPrevented;
+      const ev2 = tecla('Escape');
+      check('Esc con la cámara abierta solo cierra la cámara (sigue la partida); otro Esc sale y devuelve la cámara', soloCam && !activo() && ev2.defaultPrevented && hudEl.hidden && visorEl.hidden && (!C || (C.dist === camD0[0] && C.distFly === camD0[1])));
       check('Sonidos que ya existen (clic, encaje, logro, aviso, flecha, descubrir, panel_final, boton)', !G.audio || !G.audio.has || ['clic', 'encaje', 'logro', 'aviso', 'flecha', 'descubrir', 'panel_final', 'boton'].every(n => G.audio.has(n)));
     } catch (e) { check('Sin errores', false, e && (e.stack || e.message)); }
     finally {
-      salir(); prueba = null; G.quiet = q0; azarS = 0; S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; m.speed = mv0.speed; m.flying = mv0.flying; S.vy = vy0;
+      salir(); prueba = null; apuntarPrueba = null; G.quiet = q0; if (K) { K.yaw = yaw0; K.fovBonus = fovB0; } azarS = 0; S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; m.speed = mv0.speed; m.flying = mv0.flying; S.vy = vy0;
       try { if (rec0 == null) localStorage.removeItem(ALM); else localStorage.setItem(ALM, rec0); } catch (e) { /* */ }
     }
     return { results: out, passed: out.filter(x => x.ok).length, total: out.length };
