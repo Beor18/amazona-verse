@@ -996,7 +996,10 @@ window.AVV18Combate = function (G) {
   function saltarEntreno() { if (!ent) return false; ponerMundo('entreno_duelo', 1); ent = null; return iniciar({ sinEntreno: true }); }
   function pasoEntreno(dt) {
     C.r.plumas = C.r.plumasMax; C.j.plumas = C.j.plumasMax; C.j.energia = C.j.energiaMax;
-    C.r.mov.t = 1; C.r.mov.x = C.r.mov.z = 0; // quieta (un «movimiento» de velocidad 0: no se acerca; los empujones sí cuentan) y sin perder nada
+    // Bug urgente (16-nov, Kelvin: «la otra cotorra ni se mueve»): antes se la paraba con un «movimiento» de velocidad 0
+    // (mov.t = 1) y dibujarRival lo leía como quiebro en el aire: alas abiertas y congelada todo el entreno. Ahora no se
+    // acerca ni ataca, pero está viva: bota en guardia y se balancea de lado junto a su sitio (ver moverRival).
+    if (!ent.ancla) ent.ancla = { x: C.r.pos.x, z: C.r.pos.z };
     if (ent.fin > 0) { ent.fin -= dt; if (ent.fin <= 0) { ent = null; iniciar({ sinEntreno: true }); } }
   }
   function alUsar(id, r) {
@@ -1254,6 +1257,11 @@ window.AVV18Combate = function (G) {
       const libre = r.mareo <= 0 && C.fase === 'lucha' && !(r.remolino > 0) && !(r.distraida > 0);
       const selva = r.avisoSelva && C.timers.length ? r.avisoSelva : ''; // Ojo de selva: el ataque anunciado también la compromete
       if (libre && (r.prep === 'golpe_ala' || selva === 'golpe_ala') && d.d > 1.5) { qx = d.x * 1.6; qz = d.z * 1.6; } // agachada, se arrima despacio para el golpe
+      else if (libre && ent && ent.ancla) { // entreno: se balancea de lado (±0,9 m) junto a su sitio, sin acercarse
+        if (Math.hypot(ent.ancla.x - r.pos.x, ent.ancla.z - r.pos.z) > 2) ent.ancla = { x: r.pos.x, z: r.pos.z }; // la colocaron en otro sitio
+        const s = Math.sin((C.tLucha || 0) * 1.3), tx = -d.z, tz = d.x;
+        qx = tx * s * 0.8 + (ent.ancla.x - r.pos.x) * 1.5; qz = tz * s * 0.8 + (ent.ancla.z - r.pos.z) * 1.5;
+      }
       else if (libre && !r.prep && !selva) {
         const ve = D.vel * (r.pesada > 0 ? 0.45 : 1); // Plumas de manglar: pisar una pluma la deja más lenta
         const ox = r.pos.x - sitio.x, oz = r.pos.z - sitio.z, od = Math.hypot(ox, oz);
@@ -2423,7 +2431,7 @@ window.AVV18Combate = function (G) {
     if (C.fase === 'nada') { if (C.ch) dibujarQuieta(dt, moverRivalQuieta(dt)); return; }
     if (TACTIL && hud && HORIZ && HORIZ.matches && performance.now() - bajoT > 400) { bajoT = performance.now(); ponerBajo(hud.el); } // el aviso sigue al HUD
     if (apoyoT > 0) { apoyoT -= dt; if (apoyoT <= 0 && hud) hud.q('apoyo').hidden = true; }
-    if (tarjetaAbierta() && tj.modo === 'uno') return; // T57: la tarjeta «¿Cómo se pelea?» abierta: el duelo espera
+    if (tarjetaAbierta() && tj.modo === 'uno') { if (C.ch) dibujarRival(dt, 0); return; } // T57: la tarjeta abierta: el duelo espera (la Campeona respira; bug urgente 16-nov)
     if (centroT > 0) { centroT -= dt; if (centroT <= 0 && hud && C.fase !== 'cuenta') hud.q('centro').textContent = ''; }
     if (C.fase === 'cuenta') {
       C.cuenta -= dt;
@@ -2432,7 +2440,7 @@ window.AVV18Combate = function (G) {
       if (C.cuenta <= 0) { C.fase = 'lucha'; centroT = 0.7; }
     }
     if (comboVis > 0) { comboVis -= dt; if (comboVis <= 0 && hud && hud.ext) hud.ext.nom.hidden = true; }
-    if (C.fase === 'lucha' && cartaC) { pintarExt(); return; } // la carta «Combos» abierta: el duelo espera
+    if (C.fase === 'lucha' && cartaC) { pintarExt(); if (C.ch) dibujarRival(dt, 0); return; } // la carta «Combos» abierta: el duelo espera (la Campeona respira)
     if (C.fase === 'lucha') {
       C.tLucha = (C.tLucha || 0) + dt;
       H.paso(C.j, dt); H.paso(C.r, dt); if (c2On()) { EXM.paso(C.j, dt); EXM.paso(C.r, dt); } pasoNuevos(C.j, dt); pasoNuevos(C.r, dt); pasoTrampas(dt);
@@ -2684,9 +2692,20 @@ window.AVV18Combate = function (G) {
           hud.q('entK').textContent === (TACTIL ? TXT.accion : 'E') && hud.q('entTxt').textContent === (TACTIL ? TXT.t1 : TXT.e1) && hud.q('entPaso').textContent === TXT.entPaso(1) && hud.q('como').hidden,
           JSON.stringify({ ent, fase: C.fase, k: hud.q('entK').textContent }));
         salir(); iniciar({ entreno: true, especie: 'vittata' });
-        const r0 = { x: C.r.pos.x, z: C.r.pos.z }; correr(2);
-        check('Entreno: la Campeona se queda quieta y no ataca; nadie pierde plumas', Math.hypot(C.r.pos.x - r0.x, C.r.pos.z - r0.z) < 0.01 && C.stats.ataques === 0 && C.j.plumas === PLUMAS && C.r.plumas === C.r.plumasMax,
-          JSON.stringify({ d: Math.hypot(C.r.pos.x - r0.x, C.r.pos.z - r0.z), at: C.stats.ataques }));
+        if (tarjetaAbierta()) cerrarTarjeta('ok');
+        const r0 = { x: C.r.pos.x, z: C.r.pos.z }, dj0 = Math.hypot(C.r.pos.x - S.pos.x, C.r.pos.z - S.pos.z);
+        // Bug urgente (16-nov, Kelvin: «la otra cotorra ni se mueve», congelada con las alas abiertas): viva en el entreno
+        const hb = C.ch && C.ch.bones || {}, hs = ['espalda1', 'cabeza', 'armL1', 'armL1001'].filter(k => hb[k]), q0 = hs.map(k => hb[k].quaternion.clone());
+        let maxD = 0, maxHueso = 0, enAireN = 0, n = 0;
+        for (let t = 0; t < 3; t += 1 / 30) {
+          paso(1 / 30); n++; maxD = Math.max(maxD, Math.hypot(C.r.pos.x - r0.x, C.r.pos.z - r0.z)); if (C.ch && C.ch.airborne) enAireN++;
+          hs.forEach((k, i) => { maxHueso = Math.max(maxHueso, 2 * Math.acos(Math.min(1, Math.abs(q0[i].dot(hb[k].quaternion)))) * 180 / Math.PI); });
+        }
+        const dj1 = Math.hypot(C.r.pos.x - S.pos.x, C.r.pos.z - S.pos.z);
+        check('Bug urgente: en el entreno la Campeona está viva (cambia de pose en 3 s, se balancea de lado y no se queda en el aire con las alas abiertas)',
+          !C.ch || (maxHueso > 3 && maxD > 0.15 && enAireN < n * 0.2), JSON.stringify({ maxHueso: +maxHueso.toFixed(1), maxD: +maxD.toFixed(2), enAire: enAireN + '/' + n }));
+        check('Entreno: la Campeona no se acerca ni ataca (se queda junto a su sitio); nadie pierde plumas', maxD < 1.3 && dj1 > dj0 - 1.3 && C.stats.ataques === 0 && C.j.plumas === PLUMAS && C.r.plumas === C.r.plumasMax,
+          JSON.stringify({ maxD, dj0, dj1, at: C.stats.ataques }));
         cara(1); C.r.pos.x = S.pos.x + 7; C.r.pos.z = S.pos.z; usar(C.j, 'golpe_ala');
         const lejosOk = ent.paso === 0 && hud.q('centro').textContent === TXT.masCerca;
         C.j.cd = {}; C.r.inv = 0; C.r.escudo = 0; C.r.pos.x = S.pos.x + 1.5; usar(C.j, 'golpe_ala');
