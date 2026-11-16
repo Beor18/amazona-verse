@@ -427,6 +427,23 @@
         ghost.position.set(gx, H(gx, gz), gz);
         ghost.traverse(m => { if (m.material && m.material.color) m.material.color.set(build.valid ? '#7fd38f' : '#d6403a').convertSRGBToLinear(); });
       }
+      // F4-10 (docs/diseno/F4_GAME_FEEL.md): al levantar el refugio, además del martilleo y las plumas, una sacudida suave (0,1 · 0,3 s),
+      // polvo en tres puntos de la base y la alegría de Vittata (volando, su giro alegre; en el suelo, el gesto Celebrar). Con «Reducir
+      // movimiento» (sistema o menú) sin sacudida ni giro; el polvo y el sonido se quedan. Con G.quiet (baterías) no hace nada.
+      const refugioStats = { n: 0, sacudidas: 0, polvo: 0, alegria: 0 };
+      C.refugioStats = refugioStats;
+      const BASE_REFUGIO = [[1.6, 0], [-0.8, 1.4], [-0.8, -1.4]]; // tres puntos alrededor de la base (m)
+      function refugioFx(x, z) {
+        refugioStats.n++;
+        if (G.quiet) return;
+        for (const [dx, dz] of BASE_REFUGIO) { G.fx.polvo(x + dx, H(x + dx, z + dz), z + dz, 0.8); refugioStats.polvo++; }
+        const red = !!(G.renderer.REDUCED || (G.audio && G.audio.reducido === true));
+        if (red) return;
+        G.camara.shake(0.1, 0.3); refugioStats.sacudidas++;
+        const A = G.actores, alegre = G.fisica.MOVE.flying ? A.girarAlegre && A.girarAlegre() : A.playEmote && A.playEmote('celebrar');
+        if (alegre) refugioStats.alegria++;
+      }
+      C.refugioFx = refugioFx;
       function placeRefuge() {
         if (!build || !build.valid) { toast(build ? build.reason : 'No hay nada que colocar'); return false; }
         if (!has(REFUGE_COST)) { toast('Te falta ' + missingText(REFUGE_COST)); return false; }
@@ -439,6 +456,7 @@
         build = null; ghost.visible = false; hideToast();
         C.placeRefugeMesh(); syncRefugeInteractable();
         G.audio.play('construir'); G.fx.burst(S.refuge.x, H(S.refuge.x, S.refuge.z) + 2, S.refuge.z, 'feathers', 24); // golpes de martillo y un acorde corto
+        refugioFx(S.refuge.x, S.refuge.z); // F4-10
         // SCRIPT p.8: el Guardián sostiene una pieza mientras Vittata ajusta el mecanismo (si no se había presentado, se presenta ahora)
         const p8 = [...(S.guardianIntro ? [] : presentacionGuardian(false)),
           { who: 'Guardián', img: IMG.G, text: '¿Segura de que funcionará?' }, { who: 'Vittata', img: IMG.V, text: 'No completamente.' },

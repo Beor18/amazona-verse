@@ -54,7 +54,38 @@ AVE.module('objetos', function (G) {
   function syncVisible() { for (const r of recursos) meshes[r.id].visible = available(r); }
   // La cifra que cambia salta (fx.js, ficha 26-I)
   const visto = {};
-  function renderInv() { for (const k of Object.keys(tipos)) { const el = $(tipos[k].hud || 'i-' + k); if (!el) continue; if (visto[k] != null && S.inv[k] > visto[k]) G.fx.saltar(el); visto[k] = S.inv[k]; el.textContent = S.inv[k]; } }
+  // F4-8 (docs/diseno/F4_GAME_FEEL.md): al completar un material de la meta (p. ej. 4/4 de madera), su contador da un destello
+  // dorado y suena «encaje». La meta es el «tiene» del paso de juntar materiales (misiones), mientras se junta o justo al
+  // terminarlo. renderInv(true) calla el «encaje» (misiones.js: en ese mismo momento suena el «logro» de tenerlo todo, F4-9).
+  // «Reducir movimiento» (sistema o menú): sin destello; el sonido se queda. G.quiet (baterías): nada (feel.llenos sí cuenta).
+  const KF_LLENO = [{ color: '#ffd24a', textShadow: '0 0 12px rgba(255, 210, 74, 0.95)', offset: 0.3 }]; // de su color al dorado y vuelta
+  const OPT_LLENO = { duration: 700, easing: 'ease-out' };
+  const feel = { llenos: 0, destellos: 0, encajes: 0 };
+  const movReducido = () => !!(G.renderer.REDUCED || (G.audio && G.audio.reducido === true) || document.documentElement.classList.contains('mov-reducido'));
+  let pasoMeta = -2;
+  function meta() {
+    const M = G.misiones; if (!M || !M.steps) return null;
+    if (pasoMeta === -2) pasoMeta = M.steps.findIndex(st => st.hasta && st.hasta.tiene);
+    return pasoMeta >= 0 && S.step <= pasoMeta + 1 ? M.steps[pasoMeta].hasta.tiene : null;
+  }
+  function lleno(el, callar) {
+    feel.llenos++;
+    if (G.quiet) return;
+    if (!callar) { G.audio.play('encaje'); feel.encajes++; }
+    if (!movReducido() && el.animate) { try { el.animate(KF_LLENO, OPT_LLENO); feel.destellos++; } catch (e) { /* sin animación */ } }
+  }
+  function renderInv(callar) {
+    const m = meta();
+    for (const k of Object.keys(tipos)) {
+      const el = $(tipos[k].hud || 'i-' + k); if (!el) continue;
+      if (visto[k] != null && S.inv[k] > visto[k]) {
+        G.fx.saltar(el);
+        if (m && m[k] && visto[k] < m[k] && S.inv[k] >= m[k]) lleno(el, callar === true); // F4-8
+      }
+      visto[k] = S.inv[k]; el.textContent = S.inv[k];
+    }
+  }
+  const contador = k => $((tipos[k] && tipos[k].hud) || 'i-' + k);
 
   // Recoger al pasar por encima (también funciona E / Acción desde más lejos)
   G.on('moved', busy => {
@@ -76,5 +107,5 @@ AVE.module('objetos', function (G) {
   G.on('apply', syncVisible, 10);
   G.on('apply', () => { for (const k in visto) delete visto[k]; renderInv(); }, 91); // al cargar no salta
 
-  return { tipos, recursos, meshes, label, available, reachUnder, has, pay, missingText, collect, syncVisible, renderInv, find: id => recursos.find(r => r.id === id) };
+  return { feel, contador, tipos, recursos, meshes, label, available, reachUnder, has, pay, missingText, collect, syncVisible, renderInv, find: id => recursos.find(r => r.id === id) };
 });

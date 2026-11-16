@@ -111,8 +111,11 @@
     await esperaFoto(G, T, 'workshop'); // CG-64: la foto se codifica 1–2 cuadros después
     check('Taller revisado: foto, evento y paso «Recolectar»', S.step === 2 && had('WorkshopExplored') && !!S.captures.workshop, 'paso ' + S.step);
     // Iguaca aporta 3 tablas: bastan 4 recogidas (1 madera, 2 piedras y la pieza de la poza)
+    const llenos0 = G.objetos.feel.llenos, todo0 = G.misiones.feel.todo;
     for (const id of ['m1', 'p1', 'p2', 'c1']) useAt(id);
     check('Recursos recolectados', S.step === 3 && had('ResourcesCollected'), JSON.stringify(S.inv));
+    check('F4-8 y F4-9: al juntar, cada material que llega a su meta cuenta como completo (3) y tenerlo todo se celebra una vez (en las baterías, sin sonido)',
+      G.objetos.feel.llenos - llenos0 === 3 && G.misiones.feel.todo - todo0 === 1, JSON.stringify({ llenos: G.objetos.feel.llenos - llenos0, todo: G.misiones.feel.todo - todo0 }));
     drain(); // escena evento:ResourcesCollected
     useAt('postA', 1, 1); $('c-close').click(); drain();
     useAt('postB', 1, 1); $('c-close').click(); drain();
@@ -129,7 +132,8 @@
     check('Construcción fuera del terreno rechazada', build() && !build().valid, build() && build().reason);
     teleport(PLACES.A.x, PLACES.A.z - 1.5, 0, 1); tick(0.1);
     check('Construcción dentro del terreno válida', build() && build().valid, build() && build().reason);
-    action(); const p8 = oidos();
+    const refugio0 = C.refugioStats.n; action(); const p8 = oidos();
+    check('F4-10: levantar el refugio pasa por su celebración (polvo, sacudida suave y alegría; en las baterías, nada)', C.refugioStats.n - refugio0 === 1, C.refugioStats.n - refugio0);
     check('Guardián · p.8 al levantar el refugio: «¿Segura de que funcionará?» / «No completamente.» / «Bien. Entonces vamos a comprobarlo.»', ['¿Segura de que funcionará?', 'No completamente.', 'Bien. Entonces vamos a comprobarlo.'].every(t => p8.includes(t)), p8.slice(0, 4).join(' | '));
     check('Refugio construido y materiales consumidos', S.refuge && S.inv.madera === 1 && S.inv.piedra === 0, JSON.stringify(S.inv));
     // Mejora 4: la crecida dura 20 s y arrastra tres cosas que se agarran en vuelo y se sueltan a salvo (el agarre real se prueba en el E2E)
@@ -715,6 +719,53 @@
           A.log.filter(n => n === 'encaje').length === 3 && rafagas.filter(r => r === 'stars:10').length === 3 && ES.n - e0.n === 3 && ES.paradas - e0.paradas === 1 &&
           Math.abs(parada - 0.05) < 1e-6 && paradaR === 0 && S.examined.maquina === true, JSON.stringify({ log: A.log.join(), rafagas, parada, paradaR }));
       } finally { G.fx.burst = burst0; G.renderer.REDUCED = R0; G.camara.juice.hitStop = 0; G.quiet = true; if (ex0) S.examined.maquina = true; drain(); }
+    }
+    // F4-8, F4-9 y F4-10 (docs/diseno/F4_GAME_FEEL.md): material completo, todos los materiales y refugio construido
+    {
+      const A = G.audio, O = G.objetos, M = G.misiones, OF = O.feel, MF = M.feel, RS = G.c.refugioStats, J = G.fx.juicy, CJ = G.camara.juice;
+      const html = document.documentElement, R0 = G.renderer.REDUCED, red0 = A.reducido, mov0 = html.classList.contains('mov-reducido');
+      const st0 = S.step, inv0 = Object.assign({}, S.inv), saltar0 = G.fx.saltar, saltos = [];
+      const TODO_MS = 120; // misiones.js: un contador cada 120 ms
+      const espera = ms => new Promise(r => setTimeout(r, ms)), veces = n => A.log.filter(x => x === n).length;
+      try {
+        G.quiet = false; G.renderer.REDUCED = false; A.reducido = false; html.classList.remove('mov-reducido');
+        const gi = M.steps.findIndex(st => st.hasta && st.hasta.tiene), need = M.steps[gi].hasta.tiene, ks = Object.keys(need);
+        // 8 · el contador que llega a la meta: destello dorado y «encaje»; con «Reducir movimiento» del menú, sin destello
+        S.step = gi; for (const k of ks) S.inv[k] = need[k] - 1; O.renderInv();
+        const o0 = Object.assign({}, OF); A.log.length = 0;
+        S.inv[ks[0]]++; O.renderInv(); const uno = { encaje: veces('encaje'), destellos: OF.destellos - o0.destellos, llenos: OF.llenos - o0.llenos };
+        S.inv[ks[0]]++; O.renderInv(); const pasado = OF.llenos - o0.llenos; // ya estaba completo: no repite
+        A.reducido = true; S.inv[ks[1]]++; O.renderInv(); A.reducido = false;
+        const menu = { encaje: veces('encaje'), destellos: OF.destellos - o0.destellos };
+        S.inv[ks[2]]++; O.renderInv(true); const callado = { encaje: veces('encaje'), llenos: OF.llenos - o0.llenos };
+        check('F4-8: material completo: su contador da un destello dorado y suena «encaje» una vez; con «Reducir movimiento» del menú sin destello; callado cuando suena el de tenerlo todo',
+          uno.encaje === 1 && uno.destellos === 1 && uno.llenos === 1 && pasado === 1 && menu.encaje === 2 && menu.destellos === 1 && callado.encaje === 2 && callado.llenos === 3,
+          JSON.stringify({ uno, pasado, menu, callado }));
+        // 9 · todos los materiales: «logro» (uno), los contadores saltan en cadena cada 120 ms y aviso «¡Lo tienes todo!»
+        await espera(1600); A.log.length = 0; const m0 = Object.assign({}, MF);
+        G.fx.saltar = function (el) { saltos.push(el && el.id); return saltar0.apply(this, arguments); };
+        MF.celebrarTodo(need); const enSeguida = saltos.length; const cq = G.ui.colaTest(), aviso = [cq.actual].concat(cq.cola).join(' | ');
+        await espera(TODO_MS * ks.length + 120);
+        const cadena = { n: MF.cadena - m0.cadena, orden: saltos.join(), enSeguida, logro: veces('logro'), aviso };
+        A.reducido = true; saltos.length = 0; MF.celebrarTodo(need); await espera(TODO_MS * ks.length + 120); A.reducido = false; const saltosRed = saltos.length;
+        G.fx.saltar = saltar0;
+        check('F4-9: todos los materiales: «logro» una vez, los contadores saltan en cadena (uno cada 120 ms) y aviso «¡Lo tienes todo!»; con «Reducir movimiento» del menú, sin saltos',
+          cadena.logro === 1 && cadena.n === ks.length && cadena.enSeguida === 1 && cadena.orden === ks.map(k => O.contador(k).id).join() && /¡Lo tienes todo!/.test(aviso) && MF.todo - m0.todo === 2 && saltosRed === 0,
+          JSON.stringify({ cadena, saltosRed }));
+        // 10 · refugio: polvo en tres puntos, sacudida suave (0,1) y alegría; con «Reducir movimiento» del menú, sin sacudida
+        const r0 = Object.assign({}, RS), p0 = J.polvo; CJ.amp = 0; CJ.shake = 0;
+        G.c.refugioFx(S.pos.x, S.pos.z); const sac = { amp: CJ.amp, seg: CJ.shake, polvo: J.polvo - p0, sacudidas: RS.sacudidas - r0.sacudidas };
+        CJ.amp = 0; CJ.shake = 0; A.reducido = true; G.c.refugioFx(S.pos.x, S.pos.z); A.reducido = false;
+        const red = { amp: CJ.amp, polvo: J.polvo - p0 - sac.polvo, sacudidas: RS.sacudidas - r0.sacudidas - sac.sacudidas, alegria: RS.alegria - r0.alegria };
+        G.quiet = true; const q0 = RS.polvo; G.c.refugioFx(S.pos.x, S.pos.z); const quieto = RS.polvo === q0 && RS.n - r0.n === 3; G.quiet = false;
+        check('F4-10: refugio construido: polvo en tres puntos de la base y sacudida suave (0,1 · 0,3 s); con «Reducir movimiento» del menú, polvo sin sacudida; con G.quiet, nada',
+          sac.polvo === 3 && Math.abs(sac.amp - 0.1) < 1e-6 && Math.abs(sac.seg - 0.3) < 1e-6 && sac.sacudidas === 1 && red.amp === 0 && red.polvo === 3 && red.sacudidas === 0 && red.alegria <= 1 && quieto,
+          JSON.stringify({ sac, red, quieto }));
+        CJ.amp = 0; CJ.shake = 0;
+      } finally {
+        G.fx.saltar = saltar0; G.renderer.REDUCED = R0; A.reducido = red0; html.classList.toggle('mov-reducido', mov0);
+        G.quiet = true; S.step = st0; Object.assign(S.inv, inv0); O.renderInv(); M.renderQuest(); if (G.actores.stopEmote) G.actores.stopEmote(); G.ui.vaciarAvisos();
+      }
     }
     posarseLuma(G, T);
     check('interact:luma_inicio: Iguaca llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
