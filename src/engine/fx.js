@@ -289,7 +289,8 @@ AVE.module('fx', function (G) {
     if (padre) padre.appendChild(el); lineas.capas++;
     return el;
   }
-  function lineasOpacidad(el, v) { if (!el) return; const t = v > 0.005 ? String(+v.toFixed(3)) : '0'; if (el.style.opacity !== t) el.style.opacity = t; }
+  // (revisión F4: se compara el número redondeado, guardado en el elemento; la cadena solo se crea cuando cambia, no en cada cuadro)
+  function lineasOpacidad(el, v) { if (!el) return; const q = v > 0.005 ? Math.round(v * 1000) / 1000 : 0; if (el._fxOpacidad === q) return; el._fxOpacidad = q; el.style.opacity = String(q); }
   return { list: fx, juicy, polvo, hojas, petalos, lineas, lineasVel, lineasOpacidad, ringFx, drops, burst, rewardChest, update, rain, guide, guideBeam, guideArrow, PALETTE, MAX_PARTICLES, get live() { return liveParticles; },
     ATLAS, sprite, luzSube, recoger, saltar, descubrimiento };
 });

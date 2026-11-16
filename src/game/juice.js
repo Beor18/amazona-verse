@@ -364,6 +364,10 @@ window.AVJuice = function (G) {
         ok('F4-13: vuelo a tope: líneas finas en los bordes desde el 90 % de la velocidad máxima (más con el impulso), se apagan al frenar; con «Reducir movimiento», ninguna',
           capa && bajo.lin === 0 && bajo.op === 0 && tope.lin > 0.05 && tope.op > 0.05 && tope.n === 1 && imp.lin > tope.lin && imp.lin <= J.lineasMax + 1e-6 && imp.n === 1 && frena.lin === 0 && frena.op === 0 && red13.lin === 0 && red13.op === 0 && red13.n === 0,
           JSON.stringify({ capa, bajo, tope, imp, frena, red13 }));
+        // (revisión F4) la opacidad se compara redondeada sin crear cadenas: con el mismo valor (o uno que redondea igual) no se escribe
+        const d = document.createElement('div'); G.fx.lineasOpacidad(d, 0.4); const w1 = d.style.opacity; d.style.opacity = '0.9';
+        G.fx.lineasOpacidad(d, 0.4); G.fx.lineasOpacidad(d, 0.40004); const igual = d.style.opacity; G.fx.lineasOpacidad(d, 0.5); const cambia = d.style.opacity; G.fx.lineasOpacidad(d, 0.001);
+        ok('F4-13 (revisión): lineasOpacidad solo escribe el estilo cuando cambia el valor redondeado', w1 === '0.4' && igual === '0.9' && cambia === '0.5' && d.style.opacity === '0', JSON.stringify({ w1, igual, cambia, cero: d.style.opacity }));
         reset();
       }
       // 10. Baterías y minijuegos: nada
