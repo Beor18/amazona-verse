@@ -555,6 +555,6 @@ window.AVCompas = function (G) {
     return { results: out, passed: out.filter(x => x.ok).length, total: out.length };
   }
 
-  G.compasApi = { jugar, salir, activo, tocar, paso, test, estado: () => ({ fase: E.fase, metros: E.metros, racha: E.racha, mejorRacha: E.mejorRacha, capa: E.capaVis, bpm: bpm(), mejor: E.mejor, offset: E.offset, fuente: E.fuente, t: ahora() }) };
+  G.compasApi = { jugar, salir, activo, tocar, paso, test, _dev: { notas, E }, estado: () => ({ fase: E.fase, metros: E.metros, racha: E.racha, mejorRacha: E.mejorRacha, capa: E.capaVis, bpm: bpm(), mejor: E.mejor, offset: E.offset, fuente: E.fuente, t: ahora() }) };
   return G.compasApi;
 };
