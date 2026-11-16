@@ -34,6 +34,7 @@
 
   async function vuelta(cfg, idioma, opts) {
     const out = [], tramos = [], atascos = [], faltanEN = new Set();
+    const vuelosAgotados = []; // T48: vuelos con el pulgar que gastan su `max` cernidos sin llegar
     const pre = idioma.toUpperCase() + ' · ';
     const log = (...a) => { if (window.AV_E2E_LOG) console.info('[CG3] ' + cfg.pack + ' ' + idioma + ' · ' + a.map(s).join(' ').slice(0, 400)); }; // traza opcional
     const check = (name, ok, extra) => { out.push({ name: pre + name, ok: ok === true, extra: s(extra == null ? '' : extra).slice(0, 500) }); if (!ok) log('✗', name, extra); };
@@ -355,11 +356,12 @@
       }
       soltarPalo();
       await jugar(0.3);
+      if (window.AV_E2E_LOG) { const nb = G.interaccion.nearest(); log('a pie', [r1(x), r1(z), id || '-', 'tol', r1(tol), 'llegó', llego, 'd', r1(Math.hypot(x - S.pos.x, z - S.pos.z)), 'nb', nb ? nb.id + ' r ' + nb.r : '-', 'queda', r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), 'vuela', MV().flying, 'nada', MV().swimming].join(' ')); }
       return llego;
     }
     // Vuela hasta (x,z): V despega, Espacio sube hasta pasar lo que tapa, W avanza; al llegar baja con C y se posa con X
-    async function volarA(x, z, max, tol, alto, yMin) {
-      if (tacto) return volarTacto(x, z, max, tol, alto, yMin);
+    async function volarA(x, z, max, tol, alto, yMin, id) {
+      if (tacto) return volarTacto(x, z, max, tol, alto, yMin, id);
       if (!MV().flying) { await pulsar('v'); await jugar(0.6); }
       if (!MV().flying) return false;
       if (tr) tr.vuelo = true;
@@ -388,7 +390,12 @@
       await jugar(0.5);
       return llego && !MV().flying;
     }
-    async function volarTacto(x, z, max, tol, alto, yMin) { // yMin (W17, con pulgar): la guía da una altura: no bajar de ella
+    // T48 · id: lo que se quiere usar (no una percha). Llegar es lo mismo que a pie (haciaTacto): Acción apunta a eso y se está dentro
+    // de su radio. Antes solo contaba quedar a menos de `tol` del centro, y en el mapa real (a 97 m) no se cumplía: la mesa del
+    // transmisor (cap. 5) tiene un sólido de 0,7 m y Vittata se cernía a 1,2 m, en el borde de tol 1,2, hasta gastar los 120 s; y hacia
+    // «grupos» (cap. 6) el vuelo se quedaba a 13 m sin acercarse. Ahora, si en 15 s no se acerca medio metro, se posa y la vuelta
+    // de a pie (W9, en el bucle principal) hace el tramo que falte, como un niño.
+    async function volarTacto(x, z, max, tol, alto, yMin, id) { // yMin (W17, con pulgar): la guía da una altura: no bajar de ella
       // QA-156b: nadando no sale Volar (en su sitio está Bucear, src/engine/input.js): como un niño, Saltar saca del agua y en
       // el aire ya sale Volar (antes volarTacto devolvía false sin intentarlo y la roca de la crecida, en la orilla, no se alcanzaba)
       if (!MV().flying && MV().swimming) { await boton('b-jump'); await jugar(0.15); }
@@ -396,14 +403,17 @@
       if (!MV().flying) return false;
       if (tr) tr.vuelo = true;
       await sostener('b-jump', alto || 1.2);
-      let llego = false, yCerca = null;
-      for (let t = 0; t < max; t += 0.25) {
+      let llego = false, yCerca = null, mejor = Infinity, sinMejora = 0, corte = 'tiempo', t = 0;
+      for (; t < max; t += 0.25) {
         const dx = x - S.pos.x, dz = z - S.pos.z, d = Math.hypot(dx, dz);
+        const nb = id && G.interaccion.nearest();
+        if (nb && nb.id === id && d < nb.r - 0.3) { llego = true; corte = 'Acción'; break; }
+        if (d < mejor - 0.5) { mejor = d; sinMejora = 0; } else if (!ocupado() && ++sinMejora > 60) { corte = 'sin acercarse'; break; }
         if (d < 7 && yCerca == null) yCerca = r1(S.pos.y - G.terreno.height(x, z)) + (window.AV_E2E_LOG ? ' ocupado ' + ocupado() + ' ' + s(S.edu && S.edu.vistos) + ' ' + s(G.c && G.c.edu && G.c.edu.L && [G.c.edu.L.A, G.c.edu.L.B]) : '');
         if (d < tol) {
           soltarPalo();
           await jugar(0.6);
-          if (Math.hypot(x - S.pos.x, z - S.pos.z) < tol) { llego = true; break; }
+          if (Math.hypot(x - S.pos.x, z - S.pos.z) < tol) { llego = true; corte = 'encima'; break; }
           continue;
         }
         if (ocupado()) { soltarPalo(); await resolver(); continue; }
@@ -421,7 +431,8 @@
       if (MV().flying) await sostener('b-dive', 2);
       for (let i = 0; i < 40 && MV().flying; i++) await sostener('b-dive', 0.25);
       await jugar(0.5);
-      log('vuelo', [r1(x), r1(z), 'yMin', yMin == null ? '-' : r1(yMin), 'llegó', llego, 'a 7 m sobre el suelo', yCerca, 'queda', r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), 'vuela', MV().flying, 'paso', S.step].join(' '));
+      if (opts.pulgar && corte === 'tiempo') vuelosAgotados.push([r1(x), r1(z), id || '-'].join(' '));
+      log('vuelo', [r1(x), r1(z), id || '-', 'corte', corte, 'en', r1(t), 'de', max, 'yMin', yMin == null ? '-' : r1(yMin), 'llegó', llego, 'a 7 m sobre el suelo', yCerca, 'queda', r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), 'vuela', MV().flying, 'paso', S.step].join(' '));
       return llego && !MV().flying;
     }
     // W17 (pulgar): seguir en vuelo algo que se mueve (el vapor, la gota): el pulgar empuja hacia lo que señala la guía y el otro
@@ -577,7 +588,7 @@
           // W9 (QA-99): tras posarse (a veces en un borde, cerca pero no encima) se vuelve a caminar el tramo que falte; si no
           // basta, otro vuelo más alto y otra vez a pie. Hasta 3 vueltas.
           for (let k = 0; k < 3 && !llego && !S.complete; k++) {
-            llego = await volarA(g.x, g.z, 120, porAire ? 0.5 : 1.2, (porAire ? 2.5 : 1.2) + k * 1.2, g.y);
+            llego = await volarA(g.x, g.z, 120, porAire ? 0.5 : 1.2, (porAire ? 2.5 : 1.2) + k * 1.2, g.y, porAire ? null : it && it.id);
             if (window.AV_E2E_LOG && it && /^percha_/.test(it.id)) log('percha-vuelo', [it.id, 'k' + k, 'llego', llego, 'pos', r1(S.pos.x), r1(S.pos.y), r1(S.pos.z), 'vuela', MV().flying, 'dxz', r1(Math.hypot(S.pos.x - g.x, S.pos.z - g.z)), 'dy', r1(S.pos.y - (g.y == null ? S.pos.y : g.y))].join(' '));
             if (!llego && it) { const nb = G.interaccion.nearest(); llego = !!(nb && nb.id === it.id); }
             if (!llego && !porAire && !ocupado()) {
@@ -636,6 +647,7 @@
       if (fallo) check(fallo, false, (atascos[atascos.length - 1] || {}).extra);
       else if (!S.complete) check('La historia llega al final en ' + (cfg.maxIter || 260) + ' acciones', false, 'paso ' + S.step);
       else check('Toda la historia jugada sin teleport (' + pasos.length + ' pasos)', true, atascos.map(a => a.que).join('; '));
+      if (opts.pulgar) check('Con el pulgar, ningún vuelo gasta su tiempo cernido sin llegar (T48)', !vuelosAgotados.length, vuelosAgotados.join(' · '));
       // ---------- Final ----------
       // K32 B (cap. 6): al terminar se abre solo el cómic de cierre; un niño lo mira y toca «Cerrar», y vuelve el panel final
       const cerrarComic = async () => { const cm = $('comic'), x = $('c-close'); if (cm && !cm.hidden && x) { await clic(x); return true; } return false; };
