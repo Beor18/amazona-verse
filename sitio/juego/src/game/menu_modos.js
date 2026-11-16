@@ -29,7 +29,7 @@
     const S = G.S, $ = G.util.$, P = G.pack, raiz = document.documentElement;
     const ALMACEN = ((P.meta && P.meta.almacen) || P.id) + '.menu';
     const portada = $('title'), form = $('modos'), creador = $('creator');
-    const MODOS = ['aventura', 'golf', 'pesca', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'canto', 'escondite', 'semillas', 'piloto', 'maze', 'libre', 'nido', 'records'];
+    const MODOS = ['aventura', 'golf', 'pesca', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'canto', 'escondite', 'semillas', 'piloto', 'compas', 'sigueme', 'maze', 'libre', 'nido', 'records'];
     // V18 (Kelvin 8-nov: «¿dónde está lo divertido?»): cada actividad de la V18 con su tarjeta. «Retos con amigos» abre una tarjeta con
     // las tres de los amigos (SUB); Mis cotorras, el Álbum y Retos con amigos se abren encima del menú, como Mi nido (ENCIMA).
     const SUB = ['chispa', 'moon', 'guardian'], ENCIMA = ['nido', 'records', 'cotorras', 'album', 'amigos'];
@@ -62,6 +62,8 @@
       escondite: [L('Escondite', 'Hide-and-seek'), L('Encuentra a los 3 pichones', 'Find the 3 chicks')], // src/game/escondite.js (T56)
       semillas: [L('Semillas al vuelo', 'Seeds on the wing'), L('Atrapa las semillas que caen del cielo', 'Catch the seeds falling from the sky')], // src/game/semillas.js (D13)
       piloto: [L('Escuela de vuelo', 'Flight school'), L('Cinco lecciones con nubes y hojas', 'Five lessons with clouds and leaves')], // src/game/v18/piloto.js (Piloto, 16-nov)
+      compas: [L('Alas al compás', 'Wings on the Beat'), L('Aletea con el tambor y sube al cielo', 'Flap with the drum and climb to the sky')], // src/game/compas.js (F2-3)
+      sigueme: [L('¡Sígueme, bandada!', 'Follow Me, Flock!'), L('Junta cotorras y llévalas al dormidero', 'Gather parrots and lead them to the roost')], // src/game/sigueme.js (F2-1)
       maze: [L('Amazona Maze', 'Amazona Maze'), L('Frutos en el laberinto y guardianes', 'Fruit in the maze and guardians')], // src/game/maze.js (AB1, BI2)
       libre: [L('Vuelo libre', 'Free flight'), L('Explora a tu aire, sin misiones', 'Explore on your own, with no missions')],
       nido: [L('Mi nido', 'My nest'), L('Tus huevos y crías', 'Your eggs and chicks')],
@@ -135,11 +137,11 @@
       const st = document.createElement('style'); st.id = 'menu-recorte-css';
       st.textContent = '#modos .recorte-fuera{display:none!important}#title .title-episodios.episodios-arriba{margin:0 0 12px}'
         // «Más juegos» abierto: solo sus juegos (River Rush, Tormenta, Banquete y Sigue el canto) y «Volver», en ese orden (también fuera las tarjetas que añaden otros módulos)
-        + '#modos.modos-mas-abierto .modos-grid>:not([data-mas-juegos]):not([data-modo="river"]):not([data-modo="tormenta"]):not([data-modo="banquete"]):not([data-modo="canto"]):not([data-modo="escondite"]):not([data-modo="semillas"]):not([data-modo="piloto"]){display:none!important}'
-        + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-modo="canto"]{order:4}#modos.modos-mas-abierto [data-modo="escondite"]{order:5}#modos.modos-mas-abierto [data-modo="semillas"]{order:6}#modos.modos-mas-abierto [data-modo="piloto"]{order:7}#modos.modos-mas-abierto [data-mas-juegos]{order:8}';
+        + '#modos.modos-mas-abierto .modos-grid>:not([data-mas-juegos]):not([data-modo="river"]):not([data-modo="tormenta"]):not([data-modo="banquete"]):not([data-modo="canto"]):not([data-modo="escondite"]):not([data-modo="semillas"]):not([data-modo="piloto"]):not([data-modo="compas"]):not([data-modo="sigueme"]){display:none!important}'
+        + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-modo="canto"]{order:4}#modos.modos-mas-abierto [data-modo="escondite"]{order:5}#modos.modos-mas-abierto [data-modo="semillas"]{order:6}#modos.modos-mas-abierto [data-modo="piloto"]{order:7}#modos.modos-mas-abierto [data-modo="compas"]{order:8}#modos.modos-mas-abierto [data-modo="sigueme"]{order:9}#modos.modos-mas-abierto [data-mas-juegos]{order:10}';
       document.head.appendChild(st);
     }
-    const FUERA = [], MAS = ['river', 'tormenta', 'banquete', 'canto', 'escondite', 'semillas', 'piloto']; // T38: el Duelo y el Duelo de 2 vuelven a la portada (Kelvin, 15-nov)
+    const FUERA = [], MAS = ['river', 'tormenta', 'banquete', 'canto', 'escondite', 'semillas', 'piloto', 'compas', 'sigueme']; // T38: el Duelo y el Duelo de 2 vuelven a la portada (Kelvin, 15-nov)
     const seVe = m => seVe0(m) && !(RECORTE() && FUERA.includes(m));
     let masAbierto = false;
     function masJuegos() {
@@ -193,7 +195,7 @@
       if (bMas) {
         bMas.hidden = !RECORTE(); bMas.style.display = RECORTE() ? '' : 'none';
         bMas.querySelector('b').textContent = masAbierto ? L('Volver', 'Back') : L('Más juegos', 'More games');
-        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta, el banquete, el canto, el escondite, las semillas y la escuela de vuelo', 'River Rush, the storm, the feast, the song, hide-and-seek, the seeds and the flight school');
+        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta, el banquete, el canto, el escondite, las semillas, la escuela de vuelo, Alas al compás y ¡Sígueme, bandada!', 'River Rush, the storm, the feast, the song, hide-and-seek, the seeds, the flight school, Wings on the Beat and Follow Me, Flock!');
         bMas.setAttribute('aria-expanded', String(masAbierto));
         bMas.setAttribute('aria-label', bMas.querySelector('b').textContent + '. ' + bMas.querySelector('small').textContent);
       }
@@ -441,6 +443,8 @@
       escondite: () => document.body.classList.contains('escondite-on'),
       semillas: () => document.body.classList.contains('semillas-on'), // D13
       piloto: () => document.body.classList.contains('piloto-on'),
+      compas: () => document.body.classList.contains('compas-on'), // F2-3
+      sigueme: () => document.body.classList.contains('sigueme-on'), // F2-1
       tren: () => document.body.classList.contains('tren-on'),
       maze: () => document.body.classList.contains('maze-on'),
       carreras: () => !!(G.retosApi && G.retosApi.activo) || document.body.classList.contains('retos-on'),
@@ -487,6 +491,8 @@
       else if (modo === 'escondite') p = listo().then(() => (window.AV && window.AV.escondite ? window.AV.escondite() : false)); // T56
       else if (modo === 'semillas') p = listo().then(() => (window.AV && window.AV.semillas ? window.AV.semillas() : false)); // D13: Semillas al vuelo
       else if (modo === 'piloto') p = listo().then(() => (window.AV && window.AV.piloto ? window.AV.piloto() : false)); // Escuela de vuelo (src/game/v18/piloto.js)
+      else if (modo === 'compas') p = window.AV && window.AV.compas ? window.AV.compas() : Promise.resolve(false); // F2-3: Alas al compás (encima del mundo en pausa, como el canto)
+      else if (modo === 'sigueme') p = listo().then(() => (window.AV && window.AV.sigueme ? window.AV.sigueme() : false)); // F2-1: ¡Sígueme, bandada! (en el mundo, como las semillas)
       else if (modo === 'maze') p = listo().then(() => (window.AV && window.AV.maze ? window.AV.maze() : false)); // Amazona Maze (src/game/maze.js, BI2)
       else if (modo === 'libre') { entrarLibre(); p = Promise.resolve(true); }
       else if (modo === 'nido') p = G.criadero && G.criadero.abrir ? G.criadero.abrir() : Promise.resolve(false);
@@ -546,6 +552,8 @@
       if (G.escondite && G.escondite.salir) { try { G.escondite.salir(); } catch (e) { /* ya fuera */ } } // T56
       if (G.semillasApi) { try { G.semillasApi.salir(); } catch (e) { /* ya fuera */ } } // D13
       if (G.v18piloto && G.v18piloto.salir) { try { G.v18piloto.salir(); } catch (e) { /* ya fuera */ } } // Escuela de vuelo
+      if (G.compasApi) { try { G.compasApi.salir(); } catch (e) { /* ya fuera */ } } // F2-3
+      if (G.siguemeApi) { try { G.siguemeApi.salir(); } catch (e) { /* ya fuera */ } } // F2-1
       const mz = G.mazeApi; if (mz) { try { mz.salir(); } catch (e) { /* ya fuera */ } } // src/game/maze.js (BI2)
       if (G.criadero && G.criadero.abierto && G.criadero.abierto()) G.criadero.cerrar();
       salir18();
@@ -739,6 +747,32 @@
         const okPi = await hasta(() => G.v18piloto && G.v18piloto.activo && G.v18piloto.activo(), 15000);
         check('Piloto · Escuela de vuelo: la tarjeta abre la lección (con su «Salir») y cierra la portada', okPi && !portada.open && !!document.querySelector('#pil-hud [data-a="salir"]'));
         volver(); check('Piloto · Vuelve al menú desde la Escuela de vuelo', portada.open && !G.v18piloto.activo() && !document.body.classList.contains('piloto-on'));
+        { // F2-3: Alas al compás, desde «Más juegos»: entra (mundo en pausa), su «Salir» y Esc vuelven al menú sin pausa colgada
+          await elegir('compas');
+          const okA = await hasta(() => G.compasApi && G.compasApi.activo(), 15000);
+          check('F2-3 · Alas al compás: la tarjeta abre el juego (con su «Salir») y cierra la portada', okA && !portada.open && !!document.querySelector('#compas .cp-hud [data-a="salir"]') && document.body.classList.contains('compas-on'));
+          document.querySelector('#compas .cp-hud [data-a="salir"]').click();
+          const alMenuA = await hasta(() => portada.open, 8000);
+          check('F2-3 · su «Salir» vuelve al menú (sin la pausa del juego)', alMenuA && !G.compasApi.activo() && !document.body.classList.contains('compas-on') && desdeMenu === null && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('compas')), 'portada ' + portada.open + ', marca ' + desdeMenu);
+          await elegir('compas'); await hasta(() => G.compasApi.activo(), 15000);
+          dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+          const alMenuEA = await hasta(() => portada.open, 8000);
+          check('F2-3 · Esc en el juego también vuelve al menú', alMenuEA && !G.compasApi.activo() && !document.body.classList.contains('compas-on'));
+          if (!portada.open) volver();
+        }
+        { // F2-1: ¡Sígueme, bandada!, desde «Más juegos»: entra, su «Salir» y Esc vuelven al menú sin pausa colgada
+          await elegir('sigueme');
+          const okG = await hasta(() => G.siguemeApi && G.siguemeApi.activo(), 15000);
+          check('F2-1 · ¡Sígueme, bandada!: la tarjeta abre el juego (con su «Salir») y cierra la portada', okG && !portada.open && !!document.querySelector('#sig-hud [data-a="salir"]') && document.body.classList.contains('sigueme-on'));
+          if (okG) document.querySelector('#sig-hud [data-a="salir"]').click();
+          const alMenuG = await hasta(() => portada.open, 8000);
+          check('F2-1 · su «Salir» vuelve al menú (sin pausa colgada)', alMenuG && G.siguemeApi && !G.siguemeApi.activo() && !document.body.classList.contains('sigueme-on') && desdeMenu === null && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('sigueme')), 'portada ' + portada.open + ', marca ' + desdeMenu);
+          await elegir('sigueme'); await hasta(() => G.siguemeApi && G.siguemeApi.activo(), 15000);
+          dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+          const alMenuEG = await hasta(() => portada.open, 8000);
+          check('F2-1 · Esc en el juego también vuelve al menú', alMenuEG && !G.siguemeApi.activo() && !document.body.classList.contains('sigueme-on'));
+          if (!portada.open) volver();
+        }
         await elegir('canto'); // T43
         const okC = await hasta(() => G.cantoApi && G.cantoApi.activo(), 15000);
         check('T43 · Sigue el canto: la tarjeta abre el juego (con su «Salir») y cierra la portada', okC && !portada.open && !!document.querySelector('#canto [data-a="salir"]'));
@@ -967,7 +1001,7 @@
     }
 
     // QA-212: ocupado() = hay una actividad V18 en marcha (duelo, minigolf, carreras…); lo miran las pistas de descubrir.js y ciclo.js
-    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18(), get libre() { return libre; }, get pendiente() { return pendiente; } };
+    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18() || document.body.classList.contains('sigueme-on'), /* F2-1: ¡Sígueme, bandada! se juega en el mundo: los avisos de la historia esperan */ get libre() { return libre; }, get pendiente() { return pendiente; } };
     api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir, aplazarIntro: () => { aplazar = true; } });
     if (window.AVQueHacer) window.AVQueHacer(G);
     return api;
