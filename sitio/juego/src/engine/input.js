@@ -122,7 +122,7 @@ AVE.module('input', function (G) {
     if (paused()) { if (e.key === ' ') e.preventDefault(); return; }
     if (e.key === ' ') { jumpHeld = true; if (!e.repeat) G.fisica.tryJump(); e.preventDefault(); }
     if (es('poder', e) && !e.repeat) { G.fisica.tryDash(); if (G.dones && G.dones.sostener) G.dones.sostener(true); }
-    if (es('volar', e) && !e.repeat) G.fisica.toggleFly();
+    if (es('volar', e) && !e.repeat) volar();
     if (es('aterrizar', e) && !e.repeat) G.fisica.land();
     if (/^[1-7]$/.test(e.key) && !e.repeat) G.actores.playEmote(G.actores.EMOTE_KEYS[+e.key - 1]);
     if (es('accion', e)) G.interaccion.action();
@@ -301,7 +301,7 @@ AVE.module('input', function (G) {
   dashBtn.addEventListener('pointerup', dashUp);
   dashBtn.addEventListener('pointerleave', dashUp);
   dashBtn.addEventListener('pointercancel', dashUp);
-  $('b-fly').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.fisica.toggleFly(); });
+  $('b-fly').addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) volar(); });
   const actBtn = $('b-act');
   // pointerdown como los demás botones: en iOS el 'click' de un segundo dedo (con el joystick agarrado) no llega
   actBtn.addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) G.interaccion.action(); });
@@ -317,6 +317,7 @@ AVE.module('input', function (G) {
       if (!swimming && diveHeld) { keys.delete('c'); diveHeld = false; }
     }
     const M = G.fisica.MOVE, land = M.flying && !M.landing, label = land ? 'Aterrizar' : 'Volar';
+    if (M.flying && M.landing) return; // CG-122: aterrizando, interaccion.js pinta «Aterrizando…» (bloqueado); aquí no se pisa
     if (flyBtn.textContent !== label) {
       flyBtn.textContent = label; flyBtn.dataset.icon = land ? 'dive' : 'wing';
       flyBtn.setAttribute('aria-label', land ? 'Aterrizar: bajar suave hasta el suelo' : 'Volar');
@@ -492,7 +493,13 @@ AVE.module('input', function (G) {
     return { passed: results.filter(r => r.ok).length, total: results.length, results };
   }
 
-  return { keys, stick, get jumpHeld() { return jumpHeld; }, set jumpHeld(v) { jumpHeld = v; }, actBtn, syncSwimButtons,
+  // Piloto (16-nov): Volar (botón o V) no relanza justo después de posarse con Aterrizar (doble toque); la gracia, en fisica.js
+  function volar() {
+    const F = G.fisica, M = F.MOVE, T = F.TUNING || {};
+    if (!M.flying && M.posadoT && performance.now() - M.posadoT < (T.graciaPosado || 0.45) * 1000) return false;
+    F.toggleFly(); return true;
+  }
+  return { volar, keys, stick, get jumpHeld() { return jumpHeld; }, set jumpHeld(v) { jumpHeld = v; }, actBtn, syncSwimButtons,
     ACCIONES, DEFECTO, NOMBRES, CLAVE, releer: leerMapa, get mapa() { return Object.assign({}, mapa); }, get ultimoCambio() { return ultimoCambio; },
     etiqueta, alCambiar: f => { if (typeof f === 'function') oyentes.push(f); }, asignar, restablecer, es, test, tactil, mirarRecogido };
 });

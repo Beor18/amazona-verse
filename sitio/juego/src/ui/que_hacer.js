@@ -1,6 +1,6 @@
 /* CG-120 · «¿Qué hay para hacer?» en la Pausa y en la portada.
    Cada fila dice el estado y tiene Ir. Ir reutiliza elegir / lanzar18 / llevar de menu_modos.js.
-   La casa del bohío está encendida (CG-126). El piloto sigue con bandera. */
+   La casa del bohío está encendida (CG-126). La escuela de vuelo sale sin bandera (Piloto, 16-nov). */
 (function () {
   'use strict';
   window.AVQueHacer = function (G) {
@@ -16,7 +16,7 @@
     };
     const listo = () => L('Listo', 'Ready');
     const CASA_D = 2.5;
-    const RECORTE_QH = ['casa', 'piloto']; // T38: los duelos vuelven (Kelvin, 15-nov)
+    const RECORTE_QH = ['casa']; // Piloto (16-nov): la escuela de vuelo vuelve, sin bandera // T38: los duelos vuelven (Kelvin, 15-nov)
     function irModo(modo) {
       cerrar();
       const pausa = $('pause');
@@ -51,12 +51,8 @@
     ];
     function irPiloto() {
       cerrar();
-      const ir = () => {
-        const p = G.v18piloto && G.v18piloto.sitio && G.v18piloto.sitio();
-        if (p && p.puente) irLlevar(p.puente.x, p.puente.z);
-        if (G.v18piloto && G.v18piloto.empezar) G.v18piloto.empezar();
-      };
-      if (G.v18piloto && G.v18piloto.empezar) return ir();
+      const ir = () => { if (G.v18piloto && G.v18piloto.jugar) G.v18piloto.jugar(); }; // jugar() lleva a la cotorra al sitio de la escuela
+      if (G.v18piloto && G.v18piloto.jugar) return ir();
       if (window.AV && AV.pilotoCargar) return AV.pilotoCargar().then(ir);
       return false;
     }
@@ -140,7 +136,7 @@
         // T3: con el recorte, ni la casa, ni la escuela, ni los duelos
         G.menuRecorte = true; abrir();
         const conR = [...dlg.querySelectorAll('[data-qh]')].map(el => el.dataset.qh);
-        ok('T3 · con el recorte no salen la casa ni la escuela de vuelo (T38: los duelos, sí)', RECORTE_QH.every(id => !conR.includes(id)) && conR.includes('tuerca') && conR.includes('taller'), conR.join(','));
+        ok('T3 · con el recorte no sale la casa (T38: los duelos, sí; Piloto: la escuela de vuelo, también)', RECORTE_QH.every(id => !conR.includes(id)) && conR.includes('piloto') && conR.includes('tuerca') && conR.includes('taller'), conR.join(','));
         G.menuRecorte = false; // lo de abajo prueba el panel completo (?menu=completo)
         abrir();
         ok('El panel se abre desde la portada y desde la pausa', !!($('b-que-hacer') && $('b-que-hacer-title') && dlg.open));

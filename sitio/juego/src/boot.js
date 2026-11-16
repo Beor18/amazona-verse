@@ -124,6 +124,7 @@
     const cargarPiloto = aDemanda('src/game/v18/piloto.js', 'AVV18Piloto');
     AV.pilotoTest = o => cargarPiloto().then(p => p.test(o));
     AV.pilotoCargar = cargarPiloto;
+    AV.piloto = () => cargarPiloto().then(p => p.jugar()); // «Más juegos» (menu_modos.js)
     // CG-126: la escuela sale al jugar. ?piloto=0 la apaga; ?piloto=1 sigue encendiéndola.
     if (G.piloto == null) G.piloto = !/[?&]piloto=0\b/.test(location.search);
     if (G.piloto !== false) alPrimerGesto(cargarPiloto);

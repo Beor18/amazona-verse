@@ -56,6 +56,22 @@ AVE.module('dialogo', function (G) {
     if (src) { if (el.getAttribute('src') !== src) el.src = src; el.alt = who || ''; el.hidden = false; }
     else { el.removeAttribute('src'); el.alt = ''; el.hidden = true; }
   }
+  // F4-4 (docs/diseno/F4_GAME_FEEL.md): al pasar de línea (la jugadora la pasa: botón, tecla o toque; no el reloj de los
+  // bocadillos), tic suave («boton», volumen bajo de su muestra) y rebote de 120 ms del retrato. Sin tic si la línea anterior
+  // estuvo menos de 150 ms (pasar rápido no cansa). «Reducir movimiento»: sin rebote. G.quiet (baterías): nada.
+  const PASO = { minMs: 150, ms: 120 };
+  const KF_REBOTE = [{ transform: 'scale(1)' }, { transform: 'scale(1.1) translateY(-3px)', offset: 0.45 }, { transform: 'scale(1)' }];
+  const OPT_REBOTE = { duration: PASO.ms, easing: 'ease-out' };
+  const feel = { tics: 0, rebotes: 0 };
+  let lineaT = 0;
+  function pasoLinea(imgEl) {
+    const t = performance.now(), rapida = t - lineaT < PASO.minMs; lineaT = t;
+    if (G.quiet) return;
+    if (!rapida) { try { G.audio.play('boton'); } catch (e) { /* sin audio */ } feel.tics++; }
+    const r = G.renderer && G.renderer.REDUCED;
+    const el = imgEl && (imgEl.closest && imgEl.closest('.d-portrait')) || imgEl;
+    if (!r && el && !el.hidden && el.animate) { try { el.animate(KF_REBOTE, OPT_REBOTE); feel.rebotes++; } catch (e) { /* sin animación */ } }
+  }
   const EXPO = new Set(['Narrador', 'Guardián', 'Voz']);
   let segJuego = 0, segCaja = 0;
   function say(lines, done, opts) {
@@ -86,9 +102,11 @@ AVE.module('dialogo', function (G) {
   function nextCaja() {
     const l = queue.shift();
     if (!l) { $('dialog').hidden = true; const d = onDone; onDone = null; if (d) d(); return; }
-    if ($('dialog').hidden && !G.quiet) try { G.audio.play('aviso'); } catch (e) { /* sin audio */ } // T45: aparece un diálogo nuevo
+    const yaAbierta = !$('dialog').hidden;
+    if (!yaAbierta && !G.quiet) try { G.audio.play('aviso'); } catch (e) { /* sin audio */ } // T45: aparece un diálogo nuevo
     $('d-who').textContent = l.who; $('d-text').lang = l.lang || ''; $('d-text').textContent = l.text; retrato($('d-img'), l.img || img(l.who), l.who);
     $('dialog').hidden = false;
+    if (yaAbierta) pasoLinea($('d-img')); else lineaT = performance.now(); // F4-4: la caja ya estaba: se pasó de línea
     hablar(l);
     if (l.onShow) l.onShow(G);
   }
@@ -127,7 +145,7 @@ AVE.module('dialogo', function (G) {
     c.setAttribute('aria-live', 'polite');
     c.innerHTML = '<div class="bocadillo" id="bocadillo" role="status"><img id="bl-img" alt=""><div class="bl-txt"><b id="bl-who"></b><span id="bl-text"></span></div></div>';
     document.body.appendChild(c);
-    c.firstElementChild.addEventListener('click', () => { if (libreCur) nextLibre(); });
+    c.firstElementChild.addEventListener('click', () => { if (libreCur) nextLibre(true); });
     return (caja = c);
   }
   function sayLibre(lines, done, f) {
@@ -136,14 +154,15 @@ AVE.module('dialogo', function (G) {
     libreQ.push(...lines); if (done) libreDone = prev ? () => { prev(); done(); } : done;
     if (!libreCur) nextLibre();
   }
-  function nextLibre() {
+  function nextLibre(jugadora) {
     const c = bocadillo();
-    const l = libreQ.shift();
+    const l = libreQ.shift(), habia = !!libreCur;
     if (!l) { libreCur = null; c.hidden = true; firmas.clear(); const d = libreDone; libreDone = null; if (d) d(); return; }
     libreCur = l; libreT = Math.min(LIBRE.max, Math.max(LIBRE.min, LIBRE.base + l.text.length * LIBRE.porCar));
     $('bl-who').textContent = l.who; const t = $('bl-text'); t.lang = l.lang || ''; t.textContent = l.text;
     retrato($('bl-img'), l.img || img(l.who), l.who);
     c.hidden = false;
+    if (jugadora && habia) pasoLinea($('bl-img')); else lineaT = performance.now(); // F4-4: solo cuando la jugadora pasa el bocadillo
     hablar(l);
     if (l.onShow) l.onShow(G);
   }
@@ -163,7 +182,7 @@ AVE.module('dialogo', function (G) {
     return { juego: segJuego, caja: segCaja, parte: segJuego > 0.5 ? segCaja / segJuego : 0 };
   }
 
-  function next() { if (open()) nextCaja(); else if (libreCur) nextLibre(); else nextCaja(); }
+  function next() { if (open()) nextCaja(); else if (libreCur) nextLibre(true); else nextCaja(); }
   function libre() { return libreCur; }
   function activo() { return open() || !!libreCur; }
   function actual() {
@@ -187,6 +206,6 @@ AVE.module('dialogo', function (G) {
   }
   G.on('apply', () => { G.ui.hideCard(); clear(); }, 45);
 
-  return { L, say, next, open, libre, activo, actual, cancelarLibre, clear, choose, talk, moodOf, img, LIBRE, ocupacion,
+  return { feel, PASO, L, say, next, open, libre, activo, actual, cancelarLibre, clear, choose, talk, moodOf, img, LIBRE, ocupacion,
     get queue() { return open() ? queue : libreCur ? libreQ : queue; }, escenas: data.escenas || [] };
 });
