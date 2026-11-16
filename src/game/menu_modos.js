@@ -1209,7 +1209,7 @@
           const copia = dlg.cloneNode(true); copia.setAttribute('open', '');
           f.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}<style>*{animation:none!important;transition:none!important}</style></head><body>${copia.outerHTML}</body></html>`;
           document.body.appendChild(f);
-          await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+          await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 15000); }); // T64: hasta 15 s con la máquina cargada (QA-nuevo-t54-1)
           try {
             const d = f.contentDocument, malos = [];
             try { await Promise.race([d.fonts.ready, h.espera(2500)]); } catch (e) { /* sin fuentes */ }

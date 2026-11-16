@@ -1776,7 +1776,7 @@ window.AVV18Minigolf = function (G) {
           const css = document.getElementById('v18-golf-css'), sysEl = document.getElementById('sys'), sysH = sysEl ? sysEl.outerHTML : ''; // tmg: con Diario/Gestos/Construir/Pausa de verdad
           fr.srcdoc = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${hojas}${css ? css.outerHTML : ''}</head><body class="v18-golf-on">${hud.el.outerHTML}${sysH}</body></html>`;
           document.body.appendChild(fr);
-          await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+          await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 15000); }); // T64: hasta 15 s con la máquina cargada (QA-nuevo-t54-1)
           const md = fr.contentDocument, mal = [], solapes = [];
           let MW = 390, MH = 844;
           const panel = (nombreP, lado, vis) => {

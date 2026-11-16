@@ -286,7 +286,7 @@ AVE.module('accesibilidad', function (G) {
       '<style>*, *::before, *::after { animation: none !important; transition: none !important; } @media (hover: hover) and (pointer: fine) { #stick { display: block !important; } #acts { display: grid !important; } }</style></head>' +
       `<body>${copia(['top', 'sys', 'toast', 'prompt', 'card', 'dialog', 'stick', 'emotes', 'acts', 'subtitulos'])}</body></html>`;
     document.body.appendChild(f);
-    await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+    await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 15000); }); // T64: hasta 15 s con la máquina cargada (QA-nuevo-t54-1)
     const d = f.contentDocument;
     try { await Promise.race([d.fonts.ready, espera(2500)]); } catch (e) { /* sin fuentes */ }
     // Contenido de ejemplo largo: el peor caso para el desborde
@@ -340,7 +340,7 @@ AVE.module('accesibilidad', function (G) {
       '<style>*, *::before, *::after { animation: none !important; transition: none !important; }</style></head>' +
       `<body>${creator}<div id="card" class="hud paper"></div>${retos}</body></html>`;
     document.body.appendChild(f);
-    await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+    await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 15000); }); // T64: hasta 15 s con la máquina cargada (QA-nuevo-t54-1)
     const d = f.contentDocument;
     try { await Promise.race([d.fonts.ready, espera(2500)]); } catch (e) { /* sin fuentes */ }
     const q = id => d.getElementById(id);
@@ -416,7 +416,7 @@ AVE.module('accesibilidad', function (G) {
       '<style>*, *::before, *::after { animation: none !important; transition: none !important; }</style></head>' +
       `<body>${hay.map(id => copias.get(id)).join('')}</body></html>`;
     document.body.appendChild(f);
-    await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+    await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 15000); }); // T64: hasta 15 s con la máquina cargada (QA-nuevo-t54-1)
     const d = f.contentDocument;
     if (!d) return { f, d: null, w: f.contentWindow, hay, cerrar: () => f.remove() };
     try { await Promise.race([d.fonts.ready, espera(2500)]); } catch (e) { /* sin fuentes */ }
@@ -1151,7 +1151,7 @@ AVE.module('accesibilidad', function (G) {
               '<style>*, *::before, *::after { animation: none !important; transition: none !important; }</style></head><body></body></html>';
             document.body.appendChild(f);
             try {
-              await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+              await new Promise(r => { f.addEventListener('load', r, { once: true }); setTimeout(r, 15000); }); // T64: hasta 15 s con la máquina cargada (QA-nuevo-t54-1)
               const d = f.contentDocument; if (!d) continue;
               try { await Promise.race([d.fonts.ready, espera(2500)]); } catch (e) { /* sin fuentes */ }
               for (const p of piezas) {

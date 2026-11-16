@@ -421,7 +421,7 @@ window.AVV18Moon = function (G) {
       `<body class="v18-moon-on">${hud.el.outerHTML}${html('top')}${html('sys')}${html('stick')}${html('acts')}${html('minimapa')}</body></html>`;
     document.body.appendChild(fr);
     try {
-      await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 4000); });
+      await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 15000); }); // T64: hasta 15 s con la máquina cargada (QA-nuevo-t54-1)
       const md = fr.contentDocument, p = md && md.getElementById('v18-moon');
       if (!p) mal.push('la maqueta no cargó');
       else {
