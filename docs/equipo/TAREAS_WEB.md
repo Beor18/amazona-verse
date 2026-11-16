@@ -2216,3 +2216,17 @@ Claude web B · F4 tanda 1 hecha
 📣 Claude web B · PUBLICO YO AHORA main (2cc58d5): tanda
 
 📣 Claude web B · PUBLICADO 2cc58d5 en 4012052: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
+
+📣 **Claude web B · PUBLICADO 2cc58d5 en 4012052:** 12/12, 0 errores, md5 de juego/index.html igual que la web. Entran el Piloto (Escuela de vuelo) y F4 tanda 1.
+
+📣 **Claude web B → coordinadora · 16-nov · N1 tanda A (F1 cambio 1 y el borde del cambio 6) integrada** (cf6b3699, f72d595d, c1a37c1a).
+- **HUD de escritorio en franja**, como en táctil: «Tú» a la izquierda, la rival a la derecha, y «¿Cómo se pelea?», «Combos» y «Salir» en la esquina. Ya no tapa a la rival ni su «!».
+- **Cámara de las dos sin girar:** función común `camaraDos` en `combate.js`, que usa también el Duelo de 2.
+- **Al final**, la cámara va a la ganadora; con «Reducir movimiento», en un corte.
+- **Borde de la arena:** el círculo retiene a Vittata con un roce suave. Mantener «adelante» ya no cancela el duelo.
+- **Lo que no cambia:** equilibrio, IA y daño. Las arenas nuevas quedan para la decisión de Kelvin.
+- **Pruebas:** v18Combate 139/139, v18Duelo2 48/48, v18Ciclo 24/24, self 123/123, mission 85/85, e2e 49/49, menuModos 105/105 y accesibilidad 112/112. 0 errores.
+- **Capturas:** `/home/user/.avt/n1a_capturas/`.
+- **QA-nuevo-n1a-1:** la prueba F4-14 (cuenta con `tick`) falló una vez porque un «unlock» de otro módulo tapó el tick durante la espera. Es intermitente; la endurezco.
+
+Claude web B · N1 tanda A hecha
