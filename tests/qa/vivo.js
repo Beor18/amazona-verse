@@ -148,7 +148,11 @@ async function perfil(browser, P, R) {
       await p.waitForTimeout(600);
       await foto();
       if (extra) await extra();
-      else await salirA(selSalir).catch(e => { throw new Error('«Salir» no vuelve al menú: ' + msj(e)); });
+      else {
+        // T57: el primer duelo abre la tarjeta «¿Cómo se pelea?» encima de todo; como un niño, se toca «¡A pelear!» y luego «Salir»
+        if (await seVe('#vd-como')) { await toca('#vd-como [data-tj="ok"]'); marca('tarjeta «¿Cómo se pelea?» cerrada'); }
+        await salirA(selSalir).catch(e => { throw new Error('«Salir» no vuelve al menú: ' + msj(e)); });
+      }
       if (await seVe(panel)) throw new Error('el panel ' + panel + ' sigue a la vista tras salir');
       return 'panel ' + panel + ' visto; Salir vuelve al menú' + (otraVez ? ' (la tarjeta respondió al 2.º toque)' : '') + (r.salir2 ? ' («Salir» respondió al 2.º toque)' : '');
     });

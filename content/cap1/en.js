@@ -3024,5 +3024,22 @@ window.AV_EN = {
  "¡Los encontraste!": "You found them!",
  "Se escondieron otra vez. Cuando quieras, otra ronda.": "They hid again. Another round whenever you want.",
  "Pared con puerta": "Wall with door",
- "Pared con ventana": "Wall with window"
+ "Pared con ventana": "Wall with window",
+ "Quítale las 5 plumas a tu rival.": "Take all 5 of your rival's feathers.",
+ "Gana quien le quite las 5 plumas a la otra.": "Whoever takes all 5 of the other one's feathers wins.",
+ "Moverse": "Move",
+ "Muévete de lado para esquivar.": "Step to the side to dodge.",
+ "De cerca: ¡un aletazo!": "Up close: a wing slap!",
+ "Bien pegadita: una patada rápida.": "Really close: a quick kick.",
+ "De lejos: lanza una semilla.": "From far away: throw a seed.",
+ "Cuando brille, ¡usa tu poder!": "When it glows, use your power!",
+ "Mantén Impulso: ¡tu poder!": "Hold Boost: your power!",
+ "Combo": "Combo",
+ "Dos golpes seguidos: ¡combo!": "Two hits in a row: combo!",
+ "Practicar": "Practice",
+ "Omitir": "Skip",
+ "mitad izquierda": "left half",
+ "mitad derecha": "right half",
+ "J1": "P1",
+ "J2": "P2"
 };
