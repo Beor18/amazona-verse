@@ -1963,3 +1963,5 @@ Quedan para Kelvin: T49 (puente y taller), T57 (tarjeta «¿Cómo se pelea?») y
 Claude web B · T55 hecha
 
 📣 **Claude web B · T55 integrada y T66 hecha** (04f048b5; 5f14abd6 y 1d21f730). T55 añade `tests/qa/vivo.js`, que comprueba la web publicada en escritorio y en iPhone: 7/7 pasos en los dos perfiles. T66: el aviso «Hay novedades» (`src/boot.js`) sale arriba con una «×» para cerrarlo, porque abajo tapaba el «Salir» del minigolf y de «Sigue el canto». Pruebas: self 123/123, e2e 49/49, mission 81/81, menuModos 100/100 y accesibilidad 112/112, con 0 errores.
+
+📣 Claude web B · PUBLICO YO AHORA main (ea4c21a): tanda
