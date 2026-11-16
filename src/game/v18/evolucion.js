@@ -725,7 +725,9 @@ window.AVV18Evolucion = function (G) {
       }
     } else if (ev.tipo === 'loss' && ev.a === 'jugador') {
       ultimo = { xp: 0, sube: 0 };
-      if ((ev.quitadas || 0) >= TOPE.pierdeQuitadas && (ev.dura || 0) >= TOPE.pierdeDura) ultimo.xp = dar(sp, XP.pierde, 'duelo', { repetible: true, duelo: true });
+      // F1 · tanda B: quitadas y dura suman todos los asaltos jugados; la compuerta contra el farmeo se pide por asalto
+      const nAs = Math.max(1, ev.asaltos ? (ev.asaltos[0] || 0) + (ev.asaltos[1] || 0) : 1);
+      if ((ev.quitadas || 0) >= TOPE.pierdeQuitadas * nAs && (ev.dura || 0) >= TOPE.pierdeDura * nAs) ultimo.xp = dar(sp, XP.pierde, 'duelo', { repetible: true, duelo: true });
       const a = ALIANZAS.find(x => x.lider === sp && estadoAli(x.id) === 'disponible');
       if (a) ultimo.reto = { nombre: a.nombre, n: Math.min(2, (a.reto === 'interrupciones' ? ev.interrupciones : ev.poderJ) || 0) };
     } else return;
@@ -813,7 +815,7 @@ window.AVV18Evolucion = function (G) {
         else if (d.d > 3.5 && j.energia >= 50 && H.listo(j, 'semilla').ok && rnd() < 0.5) u = 'semilla';
         if (u) { const ru = Cb.usar(j, u); if (ru.ok) { prox = t + 0.6; jug[u] = (jug[u] || 0) + 1; if (ru.acierto) jug[u + '+'] = (jug[u + '+'] || 0) + 1; } }
       });
-      const c = C(); return { gana: c.resultado === 'win', s: c.tLucha || 0, total: (c.tTotal || 0) + 3, quitadas: (c.r.plumasMax || 5) - c.r.plumas, perdidas: 5 - c.j.plumas, st: Object.assign({}, c.stats, jug) };
+      const c = C(); return { gana: c.resultado === 'win', s: c.tLucha || 0, total: (c.tTotal || 0) + 3, quitadas: c.quitadas != null ? c.quitadas : (c.r.plumasMax || 5) - c.r.plumas, perdidas: 5 - c.j.plumas, st: Object.assign({}, c.stats, jug) };
     }
     function medirEquilibrio(q) {
       q = q || {}; const N = q.n || 36, res = {};
@@ -892,6 +894,11 @@ window.AVV18Evolucion = function (G) {
       check('20 victorias en un día dan como máximo 160 XP de duelo (40 ×2, luego la mitad)', info('arausiaca').xp === 160 && xs[0] === 40 && xs[1] === 40 && xs[2] === 20 && xs[19] === 0, xs.join(','));
       hoyFijo = 'prueba-2'; let a4 = info('arausiaca').xp;
       loss({ quitadas: 0 }); const l0 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
+      // F1 · tanda B: al mejor de 3 la compuerta va por asalto (0-2 con 1 pluma o con 30 s en total, sin XP; 1-2 con 3 plumas y 60 s, sí)
+      loss({ asaltos: [0, 2], quitadas: 1, dura: 45 }); const lA = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
+      loss({ asaltos: [0, 2], quitadas: 3, dura: 30 }); const lB = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
+      loss({ asaltos: [1, 2], quitadas: 3, dura: 60 }); const lC = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
+      check('F1 · XP por perder al mejor de 3: la compuerta (1 pluma y 20 s) se pide por asalto jugado', lA === 0 && lB === 0 && lC > 0, JSON.stringify({ lA, lB, lC }));
       loss({ dura: 12 }); const l1 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
       loss(); const l2 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
       G.emit('v18combate', { tipo: 'win', de: 'jugador', duelo: 2, especie: 'arausiaca' }); const d2 = info('arausiaca').xp - a4; a4 = info('arausiaca').xp;
