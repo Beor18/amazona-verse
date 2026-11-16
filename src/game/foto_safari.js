@@ -620,7 +620,7 @@ window.AVFotoSafari = function (G) {
       check('Machacar no sirve: con el animal fuera del marco no suma, «¡Casi!», y la recarga deja una sola foto (y un flash) en 20 toques', E.fotos === f0 && (!G.audio || clics === 1) && flashN === fl0 + 1 && /Casi/.test(q(hudEl, 'msg').textContent), clics + ' · flash ' + (flashN - fl0) + ' · ' + q(hudEl, 'msg').textContent);
       check('…y tocar durante la recarga no queda mudo: el visor dice «Un momento…»', momento);
       // Lejos: «Acércate despacio…»
-      E.recarga = 0; quieta(); ponerDelante(carta.tipo.dMax + 6); paso(0.02);
+      E.recarga = 0; E.nopT = 0; quieta(); ponerDelante(carta.tipo.dMax + 6); paso(0.02);
       check('Muy lejos el visor pide «Acércate despacio…» y no hay estrellas', E.vivo === 0 && /Acércate despacio/.test(q(visorEl, 'vtx').textContent), q(visorEl, 'vtx').textContent);
       // Quieta pero lejos (no movida): 1 estrella y el aviso dice qué mejorar
       E.recarga = 0; quieta(); ponerDelante(carta.tipo.dMax - 0.5); paso(0.02); quieta(); disparar();
@@ -647,7 +647,7 @@ window.AVFotoSafari = function (G) {
       E.recarga = 0; ponerDelante(carta.tipo.dMax - 1); m.speed = 7; paso(0.02); m.speed = 7; disparar();
       check('Rápida y de lejos: 1 estrella, «Salió movida»', /Salió movida/.test(q(hudEl, 'msg').textContent) && rollo[E.nr - 1].s === 1, q(hudEl, 'msg').textContent);
       // El lagartijo escondido detrás del tronco: como mucho 1 estrella
-      E.recarga = 0; quieta(); ponerDelante(2); sitio.oc = true; abrirCam(); quieta(); paso(0.4); quieta();
+      E.recarga = 0; carta.cond = ''; quieta(); ponerDelante(2); sitio.oc = true; abrirCam(); quieta(); paso(0.4); quieta();
       check('Escondido (el lagartijo detrás del tronco) no da más de 1 estrella', E.vivo === 1, E.vivo);
       sitio.oc = false; cerrarCam();
       // La tarjeta se acaba: «¡Se escapó!» y otra, sin castigo
