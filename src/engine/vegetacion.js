@@ -521,6 +521,7 @@ AVE.module('vegetacion', function (G) {
         im.count = 0; im.visible = false; im.frustumCulled = false; im.receiveShadow = true; im.castShadow = sombra;
         if (sombra) im.customDepthMaterial = depthMaterial(base.src, own, base.tipo === 'hoja');
         im.name = 'flora:' + m + ':' + base.tipo + (sombra ? ':sombra' : lod ? ':lod' : '');
+        im.userData.recorteInstancias = true; // T62: renderer.js la apaga en el dibujo si ninguna instancia se ve (las celdas traen instancias a los dos lados de la cámara)
         scene.add(im);
         return im;
       };

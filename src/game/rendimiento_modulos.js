@@ -67,39 +67,59 @@ window.AVRendimientoModulos = function (G) {
     const cuadro = activo => {
       // QA-nuevo-t54-2: solo el dibujo real (por renderer.render); el precalentado dentro de R.render va por el render crudo
       // (sinCuenta) y también usa la cámara principal: no es del recorte y cae en cuadros sueltos (mismo arreglo que streamingTest)
-      const rr = R.renderer, orig = rr.renderBufferDirect, origR = rr.render, dib = new Set(); let n = 0, nFuera = 0, dentro = 0;
+      const rr = R.renderer, orig = rr.renderBufferDirect, origR = rr.render, dib = new Set(); let n = 0, nFuera = 0, dentro = 0, nFlora = 0;
+      const floraFuera = [];
       FC.activo = activo;
-      rr.renderBufferDirect = function (c, sc, geo, mat, obj) { if (c === cam && dentro) { n++; dib.add(obj); if (candidato(obj) && fuera(obj)) nFuera++; } return orig.apply(this, arguments); };
+      rr.renderBufferDirect = function (c, sc, geo, mat, obj) {
+        if (c === cam && dentro) {
+          n++; dib.add(obj);
+          const esFlora = obj.isInstancedMesh && /^flora:/.test(obj.name || ''); if (esFlora) nFlora++;
+          if (candidato(obj) && fuera(obj)) { nFuera++; if (esFlora) floraFuera.push(obj.name + ' (' + obj.count + ')'); }
+        }
+        return orig.apply(this, arguments);
+      };
       rr.render = function () { dentro++; try { return origR.apply(this, arguments); } finally { dentro--; } };
       try { if (G.camara.place) G.camara.place(true); cam.updateMatrixWorld(); fr.setFromProjectionMatrix(mm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse)); R.render(1 / 60, false); }
       finally { rr.renderBufferDirect = orig; rr.render = origR; FC.activo = true; }
-      return { n, nFuera, dib, apagados: FC.ultimo };
+      return { n, nFuera, dib, apagados: FC.ultimo, nFlora, floraFuera, porInstancia: FC.porInstancia || 0 };
     };
-    const yaw0 = G.camara.yaw;
+    const yaw0 = G.camara.yaw, vuelo0 = M.flying;
     try {
       const sp0 = (G.terreno.mapa || {}).spawn; if (sp0) { S.pos.x = sp0.x; S.pos.z = sp0.z; S.pos.y = G.terreno.height(sp0.x, sp0.z); }
-      const filas = [];
+      const filas = [], filasFlora = [];
       let malos = 0, antes = 0, despues = 0, callsA = 0, callsD = 0; const nombresMalos = [];
-      for (const yaw of [0, Math.PI]) {
+      let floraA = 0, floraD = 0, floraFueraN = 0, porInst = 0; const floraFueraNom = [];
+      // T62: además de la aparición (de frente y de espaldas), en vuelo a 28 m sobre el bosque (40, 110), como en T46
+      const vistas = [[0, false], [Math.PI, false], [0, true], [Math.PI, true]];
+      for (const [yaw, enVuelo] of vistas) {
+        if (enVuelo) { S.pos.x = 40; S.pos.z = 110; S.pos.y = G.terreno.height(40, 110) + 28; M.flying = true; }
         G.camara.yaw = yaw;
         // «desaparece» = se dibuja en todos los cuadros sin recorte y en ninguno con recorte (hay piezas que parpadean solas).
         // Orden ABBA BAAB y suma de 4 cuadros por lado: una carga o un precalentado en curso cae igual en los dos lados.
         const a = { n: 0, nFuera: 0 }, d = { n: 0, nFuera: 0, apagados: 0 }; let siempre = null; const alguna = new Set();
         for (const act of [false, true, true, false, true, false, false, true]) {
           const x = cuadro(act);
-          if (act) { d.n += x.n; d.nFuera += x.nFuera; d.apagados = Math.max(d.apagados, x.apagados); for (const o of x.dib) alguna.add(o); }
-          else { a.n += x.n; a.nFuera += x.nFuera; siempre = siempre ? new Set([...siempre].filter(o => x.dib.has(o))) : new Set(x.dib); }
+          if (act) {
+            d.n += x.n; d.nFuera += x.nFuera; d.apagados = Math.max(d.apagados, x.apagados); for (const o of x.dib) alguna.add(o);
+            floraD += x.nFlora; floraFueraN += x.floraFuera.length; porInst = Math.max(porInst, x.porInstancia);
+            for (const nm of x.floraFuera) if (floraFueraNom.length < 5 && !floraFueraNom.includes(nm)) floraFueraNom.push(nm);
+          }
+          else { a.n += x.n; a.nFuera += x.nFuera; floraA += x.nFlora; siempre = siempre ? new Set([...siempre].filter(o => x.dib.has(o))) : new Set(x.dib); }
         }
         for (const o of siempre) if (!alguna.has(o) && !fuera(o)) { malos++; nombresMalos.push(o.name || o.type); }
         a.n = Math.round(a.n / 4); d.n = Math.round(d.n / 4); a.nFuera = Math.round(a.nFuera / 4); d.nFuera = Math.round(d.nFuera / 4);
-        antes += a.nFuera; despues += d.nFuera; callsA += a.n; callsD += d.n;
-        filas.push('giro ' + yaw.toFixed(1) + ': ' + a.n + '→' + d.n + ' calls, fuera ' + a.nFuera + '→' + d.nFuera + ', apagadas ' + d.apagados);
+        if (!enVuelo) { antes += a.nFuera; despues += d.nFuera; callsA += a.n; callsD += d.n; } // el tope de calls, como en T46: la aparición
+        filas.push((enVuelo ? 'vuelo ' : '') + 'giro ' + yaw.toFixed(1) + ': ' + a.n + '→' + d.n + ' calls, fuera ' + a.nFuera + '→' + d.nFuera + ', apagadas ' + d.apagados);
+        filasFlora.push((enVuelo ? 'vuelo ' : 'aparición ') + yaw.toFixed(1));
       }
+      floraA = Math.round(floraA / 4); floraD = Math.round(floraD / 4);
+      ok('T62 · la vegetación entera fuera de cámara no se dibuja (instancia a instancia, sin sombra del sol)', floraFueraN === 0 && floraD <= floraA,
+        'draw calls de flora (suma de las 4 vistas, media de 4 cuadros) ' + floraA + ' → ' + floraD + ' · hasta ' + porInst + ' mallas apagadas instancia a instancia en un cuadro · ' + floraFueraN + ' dibujadas enteras fuera' + (floraFueraNom.length ? ' (' + floraFueraNom.join(', ') + ')' : '') + ' · vistas: ' + filasFlora.join(', '));
       ok('T46 · lo que deja de dibujarse estaba de verdad fuera de cámara (nada visible desaparece)', malos === 0, malos + ' a la vista sin dibujar' + (malos ? ' (' + nombresMalos.slice(0, 5).join(', ') + ')' : '') + ' · ' + filas.join(' · '));
       ok('T46 · fuera de cámara se dibuja menos que sin el recorte (y nunca más draw calls)', callsA > 0 && (antes === 0 || despues < antes) && callsD <= callsA,
         'fuera ' + antes + '→' + despues + ' · calls ' + callsA + '→' + callsD + ' · ' + (G.renderer.calidad && G.renderer.calidad.nivel) + (sombra() ? ' con sombras' : ' sin sombras'));
     } catch (e) { ok('T46 · recorte fuera de cámara sin excepciones', false, e && e.message); }
-    finally { G.camara.yaw = yaw0; FC.activo = true; }
+    finally { G.camara.yaw = yaw0; M.flying = vuelo0; FC.activo = true; }
   }
   G.rendimientoModulos = { test };
   return G.rendimientoModulos;

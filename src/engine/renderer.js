@@ -589,28 +589,49 @@ AVE.module('renderer', function (G) {
   // lo que proyecta sombra con el sol encendido (su sombra puede caer dentro del cuadro), lo que se recorta solo (sinCulling),
   // ni los InstancedMesh muy grandes (más de 4000 instancias: recalcular la esfera costaría más que el draw call).
   const fueraFr = new THREE.Frustum(), fueraM = new THREE.Matrix4(), fueraIM = new THREE.Matrix4(), fueraS = new THREE.Sphere(), fueraV = new THREE.Vector3();
-  const fueraBox = new THREE.Box3(), esferasInst = new WeakMap(), FUERA = { ultimo: 0, activo: true }; // activo=false solo para medir antes/después (T46)
+  // activo=false solo para medir antes/después (T46); porInstancia: de las apagadas, las que solo se ven fuera instancia a instancia (T62)
+  const fueraBox = new THREE.Box3(), esferasInst = new WeakMap(), FUERA = { ultimo: 0, activo: true, porInstancia: 0 };
+  // T62 · vegetación: la esfera que cubre todas las instancias no basta para la flora. vegetacion.js llena cada malla con las
+  // instancias de las celdas de 32 m que tocan el cuadro, repartidas a los dos lados de la cámara: la esfera de todas casi siempre
+  // toca el campo de visión aunque ninguna instancia se vea (medido en T62: 8-11 mallas de flora por vista dibujadas enteras fuera
+  // de cámara, con el recorte de T46 encendido). Las mallas con userData.recorteInstancias (las de vegetacion.js) guardan además
+  // una esfera por instancia (centro y radio locales, mismo margen que T46 por el viento del shader) y, si la esfera de todas toca
+  // el cuadro, se prueban una a una: la malla se apaga solo si ninguna toca el campo de visión. Se hace aquí, en el dibujo y con
+  // la cámara de ese dibujo, y no al llenar las mallas en vegetacion.js: las fotos del cómic, los momentos y el manga dibujan con
+  // la cámara movida y sin pasar por drawScene, y con un recorte al llenar perderían los árboles de detrás de la cámara del juego.
   function esferaInstancias(o) {   // esfera local (espacio del objeto) que cubre todas sus instancias; se rehace al cambiar las matrices
-    const v = o.instanceMatrix.version, g = o.geometry;
+    const v = o.instanceMatrix.version, g = o.geometry, porInst = o.userData.recorteInstancias === true;
     let c = esferasInst.get(o);
-    if (c && c.v === v && c.n === o.count && c.g === g) return c.s;
+    if (c && c.v === v && c.n === o.count && c.g === g && (!porInst || c.pts)) return c;
     if (!g.boundingSphere) g.computeBoundingSphere();
     const bs = g.boundingSphere, e = o.instanceMatrix.array;
+    if (!c) esferasInst.set(o, c = { s: new THREE.Sphere(), pts: null });
+    if (porInst && (!c.pts || c.pts.length < o.count * 4)) c.pts = new Float32Array(Math.max(16, o.count) * 4); // solo crece (sin basura por cuadro)
+    if (!porInst) c.pts = null;
     fueraBox.makeEmpty(); let rMax = 0;
     for (let i = 0; i < o.count; i++) {
       fueraIM.fromArray(e, i * 16);
       fueraV.copy(bs.center).applyMatrix4(fueraIM); fueraBox.expandByPoint(fueraV);
-      rMax = Math.max(rMax, bs.radius * fueraIM.getMaxScaleOnAxis());
+      const r = bs.radius * fueraIM.getMaxScaleOnAxis();
+      rMax = Math.max(rMax, r);
+      if (porInst) { const k = i * 4; c.pts[k] = fueraV.x; c.pts[k + 1] = fueraV.y; c.pts[k + 2] = fueraV.z; c.pts[k + 3] = r * 1.25 + 2; } // T62: mismo margen que la de todas
     }
-    if (!c) esferasInst.set(o, c = { s: new THREE.Sphere() });
     fueraBox.getBoundingSphere(c.s); c.s.radius = (c.s.radius + rMax) * 1.25 + 2; // margen: el viento, las alas y el bote van en el shader
     c.v = v; c.n = o.count; c.g = g;
-    return c.s;
+    return c;
+  }
+  function algunaInstanciaDentro(o, c) { // T62: ¿alguna instancia (con su margen) toca el campo de visión?
+    const p = c.pts, mw = o.matrixWorld, k = mw.getMaxScaleOnAxis();
+    for (let i = 0, n = o.count * 4; i < n; i += 4) {
+      fueraS.center.set(p[i], p[i + 1], p[i + 2]).applyMatrix4(mw); fueraS.radius = p[i + 3] * k;
+      if (fueraFr.intersectsSphere(fueraS)) return true;
+    }
+    return false;
   }
   function delJugador(o) { for (let x = o; x; x = x.parent) { if (x.parent === scene) return x.name === 'personaje'; } return false; }
   function ocultarFuera(cam, guard) {
-    let n = 0;
-    if (!FUERA.activo) { FUERA.ultimo = 0; return; }
+    let n = 0, nInst = 0;
+    if (!FUERA.activo) { FUERA.ultimo = 0; FUERA.porInstancia = 0; return; }
     cam.updateMatrixWorld();
     fueraFr.setFromProjectionMatrix(fueraM.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse));
     const conSombra = sun.castShadow;
@@ -618,7 +639,13 @@ AVE.module('renderer', function (G) {
       if (!o.visible || (conSombra && o.castShadow) || o.userData.sinCulling) continue;
       if (o.isInstancedMesh) {
         if (o.count <= 0 || o.count > 4000) continue;
-        fueraS.copy(esferaInstancias(o)).applyMatrix4(o.matrixWorld);
+        const c = esferaInstancias(o);
+        fueraS.copy(c.s).applyMatrix4(o.matrixWorld);
+        if (fueraFr.intersectsSphere(fueraS)) {
+          if (!c.pts || algunaInstanciaDentro(o, c)) continue; // T62: la flora, instancia a instancia
+          guard.push([o, true]); o.visible = false; n++; nInst++;
+          continue;
+        }
       } else if (o.isSkinnedMesh && o.frustumCulled === false) {
         if (delJugador(o)) continue;
         const g = o.geometry; if (!g.boundingSphere) g.computeBoundingSphere();
@@ -627,7 +654,7 @@ AVE.module('renderer', function (G) {
       if (fueraFr.intersectsSphere(fueraS)) continue;
       guard.push([o, true]); o.visible = false; n++;
     }
-    FUERA.ultimo = n;
+    FUERA.ultimo = n; FUERA.porInstancia = nInst;
   }
   function drawScene(cam) {
     nubesU.uTime.value = t;
