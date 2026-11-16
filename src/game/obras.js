@@ -199,9 +199,10 @@
     function html() {
       const L = datos.libro;
       if (!L.length) return '<span class="lbl">Libro de visitas</span><p class="note">Aún no ha venido nadie. Construye un comedero o un jardín de flores y espera un ratito cerca.</p>';
+      // La ficha del Diario (.diary li) reserva una columna de 44 px para un icono: aquí no hay icono, el texto usa todo el ancho (390 px)
       const filas = L.map(e => {
         const veces = e.n === 1 ? T('Vino 1 vez') : T('Vino {} veces').replace('{}', String(e.n));
-        return `<li class="found"><div data-no-tr><b>${esc(nombreDe(e.q))}</b><small>${esc(T('Lo trajo: {}').replace('{}', T(OBRAS[e.o].nombre)))} · ${esc(veces)}</small></div></li>`;
+        return `<li class="found" style="grid-template-columns: minmax(0, 1fr)"><div data-no-tr><b>${esc(nombreDe(e.q))}</b><small>${esc(T('Lo trajo: {}').replace('{}', T(OBRAS[e.o].nombre)))} · ${esc(veces)}</small></div></li>`;
       }).join('');
       return '<span class="lbl">Libro de visitas</span>' +
         `<p class="note" data-no-tr>${esc(T('Hoy vino: {}').replace('{}', nombreDe(L[0].q)))}</p><ul class="diary libro-visitas">${filas}</ul>`;
