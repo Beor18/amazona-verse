@@ -649,12 +649,12 @@
         // 2 · misión cumplida sin ropa (la de m1 ya ganada): «logro», ráfaga dorada y el chip salta
         // (complete() en silencio, para no dar XP de misión; la celebración, aparte y con sonido)
         await espera(1600); const u0 = S.unlocked.slice(), ev0 = S.events.length, m0 = M.feel.misiones, s0 = M.feel.saltos;
-        if (!S.unlocked.includes('botas')) S.unlocked.push('botas');
-        const yaM1 = !!S.missions.m1; delete S.missions.m1; G.quiet = true; A.log.length = 0; M.complete('m1'); const logQ = A.log.join(), porComplete = M.feel.misiones - m0 === 1 && !A.log.includes('unlock') && !A.log.includes('logro'); G.quiet = false;
+        for (const u of M.unlocks) if (u.hito === 'm1' && !S.unlocked.includes(u.clave)) S.unlocked.push(u.clave); // toda la ropa de m1 ya ganada
+        const yaM1 = !!S.missions.m1; delete S.missions.m1; G.quiet = true; A.log.length = 0; M.complete('m1'); const logQ = A.log.join(), dm = M.feel.misiones - m0, porComplete = dm === 1 && !A.log.includes('unlock') && !A.log.includes('logro'); G.quiet = false;
         G.fx.burst = function (x, y, z, k, n) { rafagas.push(k + ':' + n); return burst0.apply(this, arguments); };
         A.log.length = 0; M.feel.celebrar(M.missions.find(m => m.id === 'm1')); G.fx.burst = burst0;
         check('F4-2: misión cumplida sin ropa: «logro», ráfaga dorada sobre Vittata y su chip salta (sin cofre; con G.quiet, nada)',
-          porComplete && veces('logro') === 1 && rafagas.includes('gold:20') && M.feel.saltos - s0 === 1, JSON.stringify({ porComplete, yaM1, logQ, dm: M.feel.misiones - m0, log: A.log.join(), rafagas, saltos: M.feel.saltos - s0 }));
+          porComplete && veces('logro') === 1 && rafagas.includes('gold:20') && M.feel.saltos - s0 === 1, JSON.stringify({ porComplete, yaM1, logQ, dm, log: A.log.join(), rafagas, saltos: M.feel.saltos - s0 }));
         if (yaM1) S.missions.m1 = true; else delete S.missions.m1; S.unlocked = u0; S.events.length = ev0; M.renderQuest();
       } finally { G.fx.burst = burst0; G.renderer.REDUCED = R0; html.classList.toggle('mov-reducido', mov0); G.quiet = true; D.clear(); }
     }

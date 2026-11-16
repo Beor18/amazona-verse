@@ -903,8 +903,8 @@ window.AVV18Duelo2 = function (G) {
       if (FL) {
         const A = G.audio, R0 = R.REDUCED, ar0 = A.reducido, FS = FL.stats, espera = ms => new Promise(r => setTimeout(r, ms)), veces = n => A.log.filter(x => x === n).length;
         try {
-          R.REDUCED = false; A.reducido = false; cerca(4); await espera(300); D.fase = 'cuenta'; D.cuenta = 3; cuentaVista = -1; A.log.length = 0; // el bucle del juego también corre la cuenta mientras se espera
-          const f0 = Object.assign({}, FS), vistos = [];
+          R.REDUCED = false; A.reducido = false; cerca(4); await espera(300);
+          D.fase = 'cuenta'; D.cuenta = 3; cuentaVista = -1; A.log.length = 0; const f0 = Object.assign({}, FS), vistos = []; await espera(300); // el bucle también corre la cuenta
           for (let i = 0; i < 4; i++) { paso(i ? 1 : 0.05); vistos.push(hud.q('centro').textContent); if (i < 3) await espera(300); }
           paso(0.05);
           check('F4-14 · Duelo de 2: la cuenta suena «tick» en 3, 2 y 1 y «lanzar» en «¡Ya!», con pop (sin «encaje» al empezar)',

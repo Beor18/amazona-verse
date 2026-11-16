@@ -3110,8 +3110,9 @@ window.AVV18Combate = function (G) {
         try {
           R.REDUCED = false; A.reducido = false;
           // 14 · cuenta atrás
-          iniciar({ especie: 'vittata' }); quieta(3); await espera(300); C.cuenta = 3; cuentaVista = -1; A.log.length = 0; // el bucle del juego también corre la cuenta mientras se espera
-          const f0 = Object.assign({}, FS), vistos = [];
+          iniciar({ especie: 'vittata' }); quieta(3); await espera(300);
+          // el bucle del juego también corre la cuenta: se vuelve a empezar y se espera (el «3» lo puede sonar el bucle o este paso, una vez)
+          C.cuenta = 3; cuentaVista = -1; A.log.length = 0; const f0 = Object.assign({}, FS), vistos = []; await espera(300);
           for (let i = 0; i < 4; i++) { paso(i ? 1 : 0.05); vistos.push(hud.q('centro').textContent); if (i < 3) await espera(300); }
           paso(0.05);
           check('F4-14: la cuenta suena «tick» en 3, 2 y 1 y «lanzar» en «¡Ya!», cada número con su pop (y el poder ya cargado no suena al empezar)',
