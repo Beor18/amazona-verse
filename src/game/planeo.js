@@ -206,6 +206,7 @@ window.AVPlaneo = function (G) {
     // nada de aterrizar, impulso ni subir: solo planear (cada cuadro, por si otro módulo lo cambió mientras tanto)
     const T = TU(); if (T) for (const k in AJ_FIS) if (T[k] !== AJ_FIS[k]) T[k] = AJ_FIS[k];
     if (m.landing) m.landing = false;
+    if (!m.picando && S.vy < 0) S.vy = 0; // la bajada la pone este juego (salvo la picada): un toque de aterrizar no la hunde
     m.dashCd = Math.max(m.dashCd || 0, 0.5); m.dashT = 0;
     if (!m.flying && !m.swimming && E.alto > TOCA + 0.5) { m.flying = true; m.takeoff = 0; } // algo la bajó del vuelo en el aire: sigue planeando
     // siempre avanza: un planeador no se queda cernido (en picada, más rápido)
@@ -448,11 +449,12 @@ window.AVPlaneo = function (G) {
     const T = TU(), fisAntes = T ? Object.keys(AJ_FIS).map(k => T[k]) : null, fisIgual = () => !T || Object.keys(AJ_FIS).every((k, i) => T[k] === fisAntes[i]);
     const tecla = (k, tipo) => { const ev = new KeyboardEvent(tipo || 'keydown', { key: k, bubbles: true, cancelable: true }); dispatchEvent(ev); if (!tipo) dispatchEvent(new KeyboardEvent('keyup', { key: k, bubbles: true })); return ev; };
     const vis = id => { const el = document.getElementById(id); return !!el && getComputedStyle(el).visibility !== 'hidden' && el.getClientRects().length > 0; };
-    const lejosDeTodo = () => { // un sitio del recorrido sin nubes ni corrientes cerca, a 25 m del suelo
+    const lejosDeTodo = alto => { // un sitio del recorrido sin nubes ni corrientes cerca, a «alto» m del suelo (25 si no se dice)
+      alto = alto || 25;
       for (let k = 0; k < 60; k++) {
         const a = k * 0.7, d = 30 + k * 6, x = salida.x + Math.cos(a) * d, z = salida.z + Math.sin(a) * d;
         if (nubes.some(n => n.on && Math.hypot(n.x - x, n.z - z) < 25) || terms.some(t => t.on && Math.hypot(t.x - x, t.z - z) < 25)) continue;
-        const g = superficie(x, z, 400); if (!(g > -1e8)) continue; return { x, z, y: g + 25 };
+        const g = techoEn(x, z, 12); if (!(g > -1e8)) continue; return { x, z, y: g + alto };
       }
       return { x: salida.x, z: salida.z, y: salida.y };
     };
@@ -490,28 +492,29 @@ window.AVPlaneo = function (G) {
       check('La flecha y el minimapa apuntan a lo mismo (una ayuda de delante que se alcanza)', guia.ok && (!G.fx || !G.fx.guide || (() => { const g0 = G.fx.guide; let visto = null; G.fx.guide = t => { visto = t; }; try { guiar(); } finally { G.fx.guide = g0; } return visto === guia; })()) &&
         (!G.minimapa || !G.minimapa.marcadores || G.minimapa.marcadores().some(k => k.tipo === 'obj' && k.x === guia.x && k.z === guia.z)), guia.ok ? guia.x.toFixed(1) + ',' + guia.z.toFixed(1) : 'sin guía');
       // Una nube: empujón hacia arriba una sola vez y se queda gris
-      const n0 = nubes.find(n => n.on); ir({ x: n0.x, y: n0.y, z: n0.z }, 0.01, 0); const y0n = S.pos.y; paso(0.05); const usada = n0.usada, k0 = nubes.indexOf(n0) * BOLAS_NUBE.length;
+      const n0 = nubes.find(n => n.on); ir({ x: n0.x, y: n0.y, z: n0.z }, 0.01, 0); const y0n = S.pos.y; paso(0.05); const usada = n0.usada, k0 = nubes.filter(n => n.on).indexOf(n0) * BOLAS_NUBE.length;
       const cG = new THREE.Color(); M.nubes.getColorAt(k0, cG); const gris = cG.r < 0.9;
       pasos(17); const subeN = S.pos.y - y0n;
       check('Cruzar una nube da altura (+' + (NUBE_V * NUBE_T - HUNDE * NUBE_T).toFixed(1) + ' m en ' + NUBE_T + ' s), con su aviso, y la nube se queda gris', usada && gris && subeN > 5 && E.nubesN === 1 && /Nube/.test(q(hudEl, 'msg').textContent), subeN.toFixed(2) + ' m · ' + q(hudEl, 'msg').textContent);
       ir({ x: n0.x, y: n0.y, z: n0.z }, 0.01, 0); const y1n = S.pos.y; pasos(18);
       check('La misma nube no vuelve a empujar (una vez por nube)', S.pos.y < y1n && E.nubesN === 1, (S.pos.y - y1n).toFixed(2));
       // Una corriente: sube mientras le queda fuerza; luego se apaga
-      const t0 = terms.find(t => t.on); ir({ x: t0.x, y: t0.y + 20, z: t0.z }, 0.01, 0); const y0t = S.pos.y; pasos(20); const subeT1 = S.pos.y - y0t;
+      const t0 = terms.find(t => t.on); ir({ x: t0.x, y: t0.y + 20, z: t0.z }, 0.01, 0); const y0t = S.pos.y; pasos(20); const subeT1 = S.pos.y - y0t, msgT = q(hudEl, 'msg').textContent;
       pasos(60); const yAg = S.pos.y; pasos(20); const bajaT = yAg - S.pos.y;
-      check('Dentro de una corriente sube (' + (TERM_V - HUNDE).toFixed(1) + ' m/s) y, gastada su fuerza (' + TERM_CARGA + ' s), ya no', E.termsN === 1 && Math.abs(subeT1 - (TERM_V - HUNDE)) < 0.1 && t0.carga === 0 && Math.abs(bajaT - HUNDE) < 0.1 && /Corriente/.test(q(hudEl, 'msg').textContent), subeT1.toFixed(2) + ' / −' + bajaT.toFixed(2) + ' · ' + q(hudEl, 'msg').textContent);
+      check('Dentro de una corriente sube (' + (TERM_V - HUNDE).toFixed(1) + ' m/s) y, gastada su fuerza (' + TERM_CARGA + ' s), ya no', E.termsN === 1 && Math.abs(subeT1 - (TERM_V - HUNDE)) < 0.1 && t0.carga === 0 && Math.abs(bajaT - HUNDE) < 0.1 && /Corriente/.test(msgT), subeT1.toFixed(2) + ' / −' + bajaT.toFixed(2) + ' · ' + msgT);
       // Distancia: la mayor en línea recta desde la salida (dar vueltas no suma)
       E.lejos = 0; ir({ x: salida.x + 150, y: superficie(salida.x + 150, salida.z, 400) + 30, z: salida.z }, 12, 0); paso(0.05); const d150 = E.lejos;
       ir({ x: salida.x + 20, y: superficie(salida.x + 20, salida.z, 400) + 30, z: salida.z }, 12, 0); paso(0.05); pintarHud();
       check('El récord es la distancia más lejana en línea recta desde la salida (volver no la baja) y el HUD la enseña', d150 > 149 && d150 < 152 && E.lejos === d150 && q(hudEl, 'd').textContent === Math.floor(d150) + ' m', d150.toFixed(1) + ' · ' + q(hudEl, 'd').textContent);
       // Machacar no sirve: con la física de verdad, 40 toques de subir, impulso y Acción no alargan el vuelo
       if (G.fisica && G.fisica.step) {
-        const p2 = lejosDeTodo(), vuelo = toques => { ir(p2, 12, 0); S.facing = { x: 1, z: 0 }; m.dashCd = 0; for (let i = 0; i < 40 && E.fase === 'juego'; i++) { if (toques) { tecla(' ', 'keydown'); tecla('Shift'); tecla('e'); tecla('f'); tecla('v'); tecla('x'); } G.fisica.step(0.05, false); paso(0.05); if (toques) tecla(' ', 'keyup'); } return { y: S.pos.y, x: S.pos.x }; };
+        const p2 = lejosDeTodo(45), vuelo = toques => { ir(p2, 12, 0); S.facing = { x: 1, z: 0 }; m.dashCd = 0; for (let i = 0; i < 40 && E.fase === 'juego'; i++) { if (toques) { tecla(' ', 'keydown'); tecla('Shift'); tecla('e'); tecla('f'); tecla('v'); tecla('x'); } G.fisica.step(0.05, false); paso(0.05); if (toques) tecla(' ', 'keyup'); } return { y: S.pos.y, x: S.pos.x }; };
         const a = vuelo(false), b = vuelo(true);
         check('Machacar no sirve: 40 toques de subir, impulso, Acción y aterrizar no dan altura ni distancia y no la bajan del vuelo', b.y <= a.y + 0.05 && b.x <= a.x + 0.5 && m.flying && !m.landing && E.fase === 'juego', 'sin ' + a.y.toFixed(2) + ' · con ' + b.y.toFixed(2) + ' · x ' + (b.x - a.x).toFixed(2));
         // en picada baja más deprisa y va más rápido
-        ir(p2, 12, 0); const yp = S.pos.y; tecla('c', 'keydown'); for (let i = 0; i < 10; i++) { G.fisica.step(0.05, false); paso(0.05); } tecla('c', 'keyup'); G.fisica.step(0.05, false);
-        check('Picada (C): baja más deprisa y va más rápido (sin alargar el vuelo)', yp - S.pos.y > HUNDE * 0.5 * 1.5 && Math.hypot(m.vx, m.vz) >= VPICADA - 0.5, (yp - S.pos.y).toFixed(2) + ' m · ' + Math.hypot(m.vx, m.vz).toFixed(1) + ' m/s');
+        ir(p2, 12, 0); const yp = S.pos.y; tecla('c', 'keydown'); for (let i = 0; i < 10; i++) { G.fisica.step(0.05, false); paso(0.05); } tecla('c', 'keyup');
+        const vP = Math.hypot(m.vx, m.vz);
+        check('Picada (C): baja más deprisa y va más rápido (sin alargar el vuelo)', yp - S.pos.y > HUNDE * 0.5 * 1.5 && vP >= VPICADA - 0.5 && E.fase === 'juego', (yp - S.pos.y).toFixed(2) + ' m · ' + vP.toFixed(1) + ' m/s · ' + E.fase);
       }
       // Táctil: el joystick mueve como siempre; los botones que se ven son solo los que sirven (Bajar)
       check('En táctil no hay botones que no sirvan (subir, impulso, aterrizar, Acción) y «Bajar» sigue (≥ 44 px si se ve)', ['b-act', 'b-jump', 'b-dash', 'b-fly'].every(id => !vis(id)) && (!vis('b-dive') || document.getElementById('b-dive').getBoundingClientRect().height >= 44));
@@ -566,8 +569,12 @@ window.AVPlaneo = function (G) {
       // Al agua (si hay agua en el recorrido) y «¡Casi!» sin distancia
       { let wx = null, wz = null; for (let k = 0; k < 400 && wx == null; k++) { const a = k * 0.37, d = 20 + k * 1.2, x = salida.x + Math.cos(a) * d, z = salida.z + Math.sin(a) * d; if (mojado(x, z)) { wx = x; wz = z; } }
         if (wx != null) { E.lejos = 3; ir({ x: wx, y: nivelAgua(wx, wz) + 0.1, z: wz }, 12, 0); paso(0.05); for (let i = 0; i < 30 && E.fase === 'toque'; i++) paso(0.05);
-          check('Tocar el agua también termina («¡Al agua!») y, sin distancia, nunca castiga: «¡Casi!» y el récord sigue', E.motivo === 'agua' && /Al agua/.test(q(finEl, 'ft').textContent) && /Casi/.test(q(finEl, 'fmsg').textContent) && leerRec().mejor === lejosFin, q(finEl, 'ft').textContent + ' · ' + q(finEl, 'fmsg').textContent);
+          check('Tocar el agua también termina («¡Al agua!») y el récord sigue', E.motivo === 'agua' && /Al agua/.test(q(finEl, 'ft').textContent) && leerRec().mejor === lejosFin, q(finEl, 'ft').textContent + ' · ' + q(finEl, 'fmsg').textContent);
           finEl.querySelector('[data-a="otra"]').click(); } }
+      { // sin distancia, nunca castiga: «¡Casi!» con una pista y el récord sigue
+        ir({ x: salida.x, y: superficie(salida.x, salida.z, salida.y) + 0.1, z: salida.z }, 12, 0); paso(0.05); for (let i = 0; i < 30 && E.fase === 'toque'; i++) paso(0.05);
+        check('Sin distancia, nunca castiga: «¡Casi! Busca las nubes…» y el récord sigue', E.fase === 'fin' && /Casi! Busca las nubes/.test(q(finEl, 'fmsg').textContent) && leerRec().mejor === lejosFin, q(finEl, 'fmsg').textContent);
+        finEl.querySelector('[data-a="otra"]').click(); }
       // A los 2 minutos se acaba («¡Tiempo!»), con el récord de antes si no se supera
       { E.lejos = 100; ir(lejosDeTodo(), 12, 0); E.t = DUR - 0.01; paso(0.05);
         check('A los 2 minutos se acaba: «¡Tiempo!» y el panel ya (sin superar el récord: «Récord: N m»)', E.fase === 'fin' && /Tiempo/.test(q(finEl, 'ft').textContent) && new RegExp('Récord: ' + lejosFin + ' m').test(q(finEl, 'fmsg').textContent) && leerRec().jugadas >= 2, q(finEl, 'ft').textContent + ' · ' + q(finEl, 'fmsg').textContent); }
