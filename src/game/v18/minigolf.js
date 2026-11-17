@@ -660,7 +660,7 @@ window.AVV18Minigolf = function (G) {
     A.resultado = { hoyo: HOYO.n, golpes: n, medalla: med, nuevo, mejor: r.mejor, premios: dados.map(p => p.clave), abre: seAbre ? sig : 0, conchas };
     const y = H(P_NIDO.x, P_NIDO.z);
     A.enUno = n === 1;
-    fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 14); fx('feathers', P_NIDO.x, y + 0.8, P_NIDO.z, 10); finSon('victoria'); if (nuevo) finSon('record'); // PULIR 4: tabla común (antes unlock)
+    fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 14); fx('feathers', P_NIDO.x, y + 0.8, P_NIDO.z, 10); finSon('victoria'); if (nuevo) finSon('record', () => A.fase === 'nido'); // PULIR 4: tabla común (antes unlock)
     if (A.enUno) { fx('stars', P_NIDO.x, y + 1.4, P_NIDO.z, 18); fx('gold', P_NIDO.x, y + 1.6, P_NIDO.z, 10); }
     toast(nidoTxt(n), 3200);
     const avisos = dados.map(p => tx(p.txt)); if (seAbre) avisos.push(abreTxt(HOYOS[sig - 1]));

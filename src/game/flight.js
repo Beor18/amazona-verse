@@ -396,7 +396,7 @@
       J.mejor = f.mejor || 0;
       guardarRec(rec);
       G.emit('retosResultado', { modo: 'flight', puntos: J.puntos, nuevo: J.nuevo, prueba: claveRec !== ALMACEN });
-      finSon(J.nuevo ? 'victoria' : 'casi'); if (J.nuevo) finSon('record'); // PULIR 4: tabla común (antes solo unlock con récord)
+      finSon(J.nuevo ? 'victoria' : 'casi'); if (J.nuevo) finSon('record', () => st.fase === 'fin'); // PULIR 4: tabla común (antes solo unlock con récord)
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 350);
     }
     // Lo que actores.js lee para animar a Vittata (nada más: el rig no se toca)

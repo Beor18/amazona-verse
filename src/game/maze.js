@@ -441,7 +441,7 @@
       J.mejor = m.mejor || 0;
       guardarRec(rec);
       G.emit('retosResultado', { modo: 'maze', puntos: J.puntos, frutos: J.recogidos, plumas: J.plumas, ms: Math.round(J.t * 1000), prueba: claveRec !== ALMACEN });
-      finSon('victoria'); if (J.nuevo) finSon('record'); // PULIR 4: tabla común (antes unlock o mz_fin); siempre se completa el laberinto
+      finSon('victoria'); if (J.nuevo) finSon('record', () => st.fase === 'fin'); // PULIR 4: tabla común (antes unlock o mz_fin); siempre se completa el laberinto
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 500);
     }
 

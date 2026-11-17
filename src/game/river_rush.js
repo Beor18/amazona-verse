@@ -395,8 +395,9 @@
       J.mejor = f.mejor || 0; J.medalla = medallaPuntos(J.puntos);
       guardarRec(rec);
       G.emit('retosResultado', { modo: 'rio_rush', puntos: J.puntos, metros: Math.round(J.metros), racimos: J.racimos, llego: como === 'meta', nuevo: J.nuevo, medalla: J.medalla, prueba: claveRec !== ALMACEN });
-      finSon(como === 'meta' || J.nuevo ? 'victoria' : 'casi'); if (J.nuevo) finSon('record'); // PULIR 4: tabla común (antes, al llegar a la meta no sonaba nada)
-      setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 450);
+      // PULIR 4: tabla común (antes unlock en la meta o con récord), al salir el resultado: tras el choque («land») y no a la vez
+      const tipo = como === 'meta' || J.nuevo ? 'victoria' : 'casi';
+      setTimeout(() => { if (st.activo && st.fase === 'fin') { finSon(tipo); if (J.nuevo) finSon('record', () => st.fase === 'fin'); resultados(); } }, REDUCED ? 0 : 450);
     }
     // Contrarreloj y fantasma: solo se termina llegando al mar. Mejor tiempo, medalla y, si es tu mejor bajada, el nuevo fantasma
     function finReloj() {
@@ -411,9 +412,8 @@
       guardarRec(rec);
       if (J.nuevo && st.grab && st.grab.m.length >= 6) { st.grab.m.push(J.s, J.lado, 0); guardarFantasma(st.grab.m, J.ms); }
       st.grab = null;
-      finSon('victoria'); if (J.nuevo) finSon('record'); // PULIR 4: contrarreloj y fantasma: siempre se llega al mar
       G.emit('retosResultado', { modo: 'rio_rush', reloj: true, ms: J.ms, medalla: m, choques: J.choques, racimos: J.racimos, llego: true, fantasma: st.modo === 'fantasma', nuevo: J.nuevo, prueba: claveRec !== ALMACEN });
-      setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 450);
+      setTimeout(() => { if (st.activo && st.fase === 'fin') { finSon('victoria'); if (J.nuevo) finSon('record', () => st.fase === 'fin'); resultados(); } }, REDUCED ? 0 : 450); // PULIR 4: contrarreloj y fantasma: siempre se llega al mar
     }
 
     // ---------- Colocar todo en el mundo (cada cuadro) ----------
@@ -651,6 +651,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 #riverrush .rr-chip.pop { animation: rr-pop .25s ease-out; } @keyframes rr-pop { 0% { transform: scale(1.16); } 100% { transform: scale(1); } }
 #riverrush .rr-barra { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 58px); left: 50%; transform: translateX(-50%); width: min(60vw, 260px); height: 6px; border-radius: 3px; background: rgba(0,0,0,.35); overflow: hidden; }
 #riverrush .rr-barra i { display: block; height: 100%; width: 0; background: var(--gold, #ffd84a); }
+#riverrush:has(.rr-fin:not([hidden])) .rr-salir { display: none; } /* PULIR 4 (revisión): un solo «Salir» mientras se ve el resultado (el del panel) */
 #riverrush .rr-salir { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: calc(env(safe-area-inset-right, 0px) + 12px); pointer-events: auto; }
 #riverrush .rr-pista { position: absolute; left: 50%; bottom: 18%; transform: translateX(-50%); width: min(90vw, 520px); text-align: center; font: 700 clamp(20px, 4vw, 30px)/1.2 var(--font-display, system-ui); text-shadow: 0 2px 10px rgba(0,0,0,.65); animation: rr-late 1.4s ease-in-out infinite; }
 #riverrush .rr-pista small { display: block; font-size: .6em; font-weight: 600; opacity: .92; margin-top: 4px; }
@@ -698,14 +699,14 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 <button class="btn ghost secondary rr-salir" type="button" data-salir data-icon="close" aria-label="Salir de River Rush">Salir</button>
 <div class="rr-aviso" aria-hidden="true" hidden>¡Uy!</div>
 <div class="rr-pista"><span class="rr-pista-t"></span><small class="rr-pista-s"></small><span class="rr-mano" data-icon="hand" aria-hidden="true"></span></div>
-<div class="rr-fin" hidden><div class="rr-panel av-fin" role="dialog" aria-labelledby="rr-fin-t">
+<div class="rr-fin" hidden><div class="rr-panel av-fin" role="dialog" tabindex="-1" aria-labelledby="rr-fin-t">
   <h2 id="rr-fin-t">¡Uy!</h2>
   <p class="rr-como"></p>
   <p class="rr-dato"></p>
   <div class="rr-num av-num">0</div>
   <div class="rr-nuevo" hidden>¡Nuevo récord!</div>
   <p class="rr-medalla" hidden></p>
-  <p class="rr-rec"></p>
+  <p class="rr-rec av-msg"></p>
   <p class="rr-meta" hidden></p>
   <div class="rr-rank" hidden><button class="btn" type="button" data-ranking data-icon="trophy">Publicar en el ranking</button></div>
   <div class="rr-fila av-bots">
@@ -825,7 +826,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
       pintarModos();
       u.fin.querySelector('[data-salir]').textContent = alMenu() ? 'Volver al menú' : 'Volver a la historia'; /* entró desde «¿Cómo quieres jugar?»: el botón lleva al menú */
       u.fin.hidden = false;
-      const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
+      const pn = u.fin.querySelector('.rr-panel'); if (pn) pn.focus({ preventScroll: true }); // PULIR 4 (revisión): el foco va al panel, como en los demás (Enter sigue siendo «Otra vez»)
     }
     // Ranking global (panel y envío en records.js). Una partida de prueba nunca publica
     function publicar(btn, fetchSim) {

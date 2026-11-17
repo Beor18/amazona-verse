@@ -102,7 +102,7 @@
       '¡Uy, qué tambaleo! Frena en las curvas.': 'Whoa, wobbly! Slow down on the curves.',
       'Fin del turno': 'End of the shift', 'puntos': 'points', 'punto': 'point', 'entregas': 'deliveries', 'entrega': 'delivery',
       'a tiempo': 'on time', 'cajas caídas': 'boxes dropped', 'tu mejor': 'your best', 'Récord': 'Best',
-      '¡Nuevo récord!': 'New record!', 'Otra vez': 'Again', 'Volver a la historia': 'Back to the story', 'Volver al menú': 'Back to menu',
+      '¡Nuevo récord!': 'New record!', 'Otra vez': 'Play again', 'Volver a la historia': 'Back to the story', 'Volver al menú': 'Back to menu',
       'Haz una entrega para tener tu primer récord.': 'Make a delivery to get your first record.',
       '¡Tienes todas las medallas! Intenta superar tu récord.': 'You have every medal! Try to beat your record.',
       'Te faltan {} puntos para {}': 'You need {} more points for {}', 'el bronce': 'bronze', 'la plata': 'silver', 'el oro': 'gold',
@@ -483,7 +483,7 @@
       J.mejor = f.mejor || 0;
       guardarRec(rec);
       G.emit('retosResultado', { modo: 'tren', puntos: J.puntos, nuevo: J.nuevo, prueba: claveRec !== ALMACEN });
-      finSon(J.puntos > 0 ? 'victoria' : 'casi'); if (J.nuevo) finSon('record'); // PULIR 4: tabla común (antes unlock o tick)
+      finSon(J.puntos > 0 ? 'victoria' : 'casi'); if (J.nuevo) finSon('record', () => st.fase === 'fin'); // PULIR 4: tabla común (antes unlock o tick)
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : P.finPanel * 1000);
     }
     // Lo que actores.js lee para animar a Vittata (posada en el techo de la locomotora; el rig no se toca)
