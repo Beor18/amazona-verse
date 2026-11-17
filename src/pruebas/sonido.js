@@ -53,11 +53,11 @@ window.AVSonidoTest = function (G) {
 
       // ---------- 2. Vuelo con la física real ----------
       G.quiet = true;
-      const ui = G.ui, dlg = G.dialogo, ov0 = ui.overlayOpen, open0 = dlg.open, card0 = ui.cardOpen;
+      const ui = G.ui, dlg = G.dialogo, ov0 = ui.overlayOpen, open0 = dlg.open;
       const x = S.pos.x, z = S.pos.z, suelo = F.suelo(x, z, G.terreno.height(x, z) + 0.5);
       const pasos = n => { for (let i = 0; i < n; i++) F.step(DT, false); };
       try {
-        ui.overlayOpen = () => false; dlg.open = () => false; ui.cardOpen = false;
+        ui.overlayOpen = () => false; dlg.open = () => false; if (ui.cardOpen && ui.hideCard) ui.hideCard(); // una ficha abierta frenaría el despegue
         F.endFlight(); Object.assign(M, { flying: false, landing: false, takeoff: 0, swimming: false, vx: 0, vz: 0, dashT: 0, dashCd: 0, grounded: true });
         S.pos.y = suelo; S.vy = 0;
         espia(); F.startFlying();
@@ -74,7 +74,7 @@ window.AVSonidoTest = function (G) {
         for (let i = 0; i < 300 && M.flying; i++) pasos(1);
         pasos(2);
         ok('F21 · Aterrizar suena (golpe en el suelo, techo o rama)', nombres().some(n => n === 'land' || n === 'aterrizar_techo' || n === 'posarse_rama') && !M.flying, nombres().join());
-      } finally { suelta(); ui.overlayOpen = ov0; dlg.open = open0; ui.cardOpen = card0; }
+      } finally { suelta(); ui.overlayOpen = ov0; dlg.open = open0; }
 
       // ---------- 3. Recoger un objeto del mundo ----------
       const O = G.objetos;
