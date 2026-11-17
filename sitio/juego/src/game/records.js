@@ -48,7 +48,7 @@
     // (src/game/v18/progreso.js): aquí solo se lee
     const CLAVE = { retos: ALM + '.retos', criadero: ALM + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero'), casa: ALM + '.records',
       trucos: ALM + '.trucos', escondite: ALM + '.escondite', ciudad: ALM + '.ciudadVisitas', marana: ALM + '.marana', vecinos: ALM + '.vecinos', humor: ALM + '.humor',
-      v18: ALM + '.v18', canto: ALM + '.canto', semillas: ALM + '.semillas', piloto: ALM + '.piloto', compas: ALM + '.compas', sigueme: ALM + '.sigueme', foto: ALM + '.foto', sembradora: ALM + '.sembradora', planeo: ALM + '.planeo' }; // planeo: récord de «Planeo entre nubes» (src/game/planeo.js, D14) // sembradora: récord de «Sembradora del cielo» (src/game/sembradora.js, F2-4) // foto: récord de «Foto relámpago» (src/game/foto_safari.js, F2-2) // piloto: lecciones e insignia de la Escuela de vuelo (src/game/v18/piloto.js) // canto: récord de «Sigue el canto» (src/game/canto.js, T43)
+      v18: ALM + '.v18', canto: ALM + '.canto', semillas: ALM + '.semillas', piloto: ALM + '.piloto', compas: ALM + '.compas', sigueme: ALM + '.sigueme', foto: ALM + '.foto', sembradora: ALM + '.sembradora', planeo: ALM + '.planeo', pichones: ALM + '.pichones' }; // pichones: récord de «Rescate rápido» (src/game/rescate_rapido.js, D16) // planeo: récord de «Planeo entre nubes» (src/game/planeo.js, D14) // sembradora: récord de «Sembradora del cielo» (src/game/sembradora.js, F2-4) // foto: récord de «Foto relámpago» (src/game/foto_safari.js, F2-2) // piloto: lecciones e insignia de la Escuela de vuelo (src/game/v18/piloto.js) // canto: récord de «Sigue el canto» (src/game/canto.js, T43)
     const MAX_CASA = 24; // cotorras distintas en el libro
     const PARTICIPANTES_MAX = 9;
     const esObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -90,6 +90,7 @@
       foto: ['Foto relámpago', 'Snap Safari'], fotoRec: ['Récord: {} estrellas', 'Best: {} stars'], fotoPerf: [' · rollo perfecto', ' · perfect roll'], // F2-2 (src/game/foto_safari.js)
       sembradora: ['Sembradora del cielo', 'Sky Planter'], sembradoraRec: ['Récord: {} puntos · {a} árboles', 'Best: {} points · {a} trees'], // F2-4 (src/game/sembradora.js)
       planeo: ['Planeo entre nubes', 'Cloud Glide'], planeoRec: ['Récord: {} m', 'Best: {} m'], // D14 (src/game/planeo.js)
+      pichones: ['Rescate rápido', 'Quick Rescue'], pichonesRec: ['Récord: {} de 3 pichones a salvo', 'Best: {} of 3 chicks safe'], pichonesT: ['Récord: 3 pichones a salvo en {}', 'Best: 3 chicks safe in {}'], // D16 (src/game/rescate_rapido.js)
       p_rafaga: ['Ráfaga de viento', 'Wind gust'], p_ojo: ['Ojo de cotorra', 'Parrot eye'], p_planeo: ['Planeo largo', 'Long glide'], ganado: ['¡Ganado!', 'Earned!'],
       como_rafaga: ['Haz un «¡Remonte!»: pica y nivela volando', 'Do a «Swoop!»: dive and level out while flying'], como_ojo: ['Encuentra 3 cosas del Diario', 'Find 3 Journal entries'],
       como_planeo: ['Haz 2 aterrizajes perfectos', 'Make 2 perfect landings'],
@@ -273,6 +274,7 @@
       const sg = leerJSON(CLAVE.sigueme); // F2-1: récord de «¡Sígueme, bandada!» (puntos y fila más larga)
       const sd = leerJSON(CLAVE.sembradora); // F2-4: récord de «Sembradora del cielo» (puntos y árboles)
       const pl = leerJSON(CLAVE.planeo); // D14: récord de «Planeo entre nubes» (metros)
+      const rr = leerJSON(CLAVE.pichones); // D16: récord de «Rescate rápido» (pichones a salvo y mejor tiempo con los 3)
       const fo = leerJSON(CLAVE.foto); // F2-2: récord de «Foto relámpago» (estrellas y rollos perfectos)
       return { canto: ca && Number.isInteger(ca.mejor) && ca.mejor > 0 ? Math.min(ca.mejor, 999) : 0,
         semillas: se && Number.isInteger(se.mejor) && se.mejor > 0 ? Math.min(se.mejor, 9999) : 0,
@@ -281,6 +283,7 @@
         foto: fo && Number.isInteger(fo.mejor) && fo.mejor > 0 ? Math.min(fo.mejor, 99999) : 0, fotoPerfecto: fo ? ent(fo.perfecto, 9999) : 0,
         sembradora: sd && Number.isInteger(sd.mejor) && sd.mejor > 0 ? Math.min(sd.mejor, 99999) : 0, sembradoraArb: sd ? ent(sd.arboles, 9999) : 0,
         planeo: pl && Number.isInteger(pl.mejor) && pl.mejor > 0 ? Math.min(pl.mejor, 99999) : 0,
+        pichones: rr && Number.isInteger(rr.mejor) && rr.mejor > 0 ? Math.min(rr.mejor, 3) : 0, pichonesT: rr ? ent(rr.tiempo, 999) : 0, pichonesJ: rr ? ent(rr.jugadas, 99999) : 0,
         poderes: ['rafaga', 'ojo', 'planeo'].map(id => ({ id, ganado: Number(mu['poder_' + id]) > 0 })) };
     }
     function descubrimientosDe() {
@@ -563,6 +566,11 @@
 @media (prefers-reduced-motion: reduce) { #records .rec-box, #rec-puerta .rp-box, #rec-puerta .rp-box.mal { animation: none; } }
 `;
     if (!document.getElementById('records-css')) { const st = document.createElement('style'); st.id = 'records-css'; st.textContent = CSS; document.head.appendChild(st); }
+    // E19: «Mis logros» (src/game/logros.js; boot.js lo carga antes que este archivo). Sin el módulo, la sección no sale
+    const LOG = window.AVLogros ? window.AVLogros(G) : null;
+    if (LOG && !document.getElementById('logros-css')) { const st = document.createElement('style'); st.id = 'logros-css'; st.textContent = LOG.CSS; document.head.appendChild(st); }
+    const trLogro = s => (idioma() === 'en' ? (window.AV_EN && typeof window.AV_EN[s] === 'string' ? window.AV_EN[s] : G.idioma && G.idioma.tr ? G.idioma.tr(s) : s) : s);
+    const htmlLogros = () => (LOG ? LOG.html({ S: fuenteS(), tr: trLogro }) : '');
 
     // =================================================================================================================
     // Panel «Mis récords»
@@ -674,6 +682,7 @@
         ins((u.foto || 0) / 24, u.foto ? String(u.foto) : '·', tx('foto'), u.foto ? tx('fotoRec').replace('{}', u.foto) + (u.fotoPerfecto ? tx('fotoPerf') : '') : tx('sinCanto')) +
         ins((u.sembradora || 0) / 60, u.sembradora ? String(u.sembradora) : '·', tx('sembradora'), u.sembradora ? tx('sembradoraRec').replace('{}', u.sembradora).replace('{a}', u.sembradoraArb || 0) : tx('sinCanto')) +
         ins((u.planeo || 0) / 600, u.planeo ? String(u.planeo) : '·', tx('planeo'), u.planeo ? tx('planeoRec').replace('{}', u.planeo) : tx('sinCanto')) +
+        ins((u.pichones || 0) / 3, u.pichones >= 3 && u.pichonesT ? Math.floor(u.pichonesT / 60) + ':' + String(u.pichonesT % 60).padStart(2, '0') : u.pichones || u.pichonesJ ? (u.pichones || 0) + '/3' : '·', tx('pichones'), u.pichones >= 3 && u.pichonesT ? tx('pichonesT').replace('{}', Math.floor(u.pichonesT / 60) + ':' + String(u.pichonesT % 60).padStart(2, '0')) : u.pichones || u.pichonesJ ? tx('pichonesRec').replace('{}', u.pichones || 0) : tx('sinCanto')) + // jugado sin salvar ninguno: «0 de 3», no «Aún sin jugar»
         u.poderes.map(p => ins(p.ganado ? 1 : 0, p.ganado ? '✓' : '·', tx('p_' + p.id), p.ganado ? tx('ganado') : tx('como_' + p.id))).join('') + '</ul></section>';
     }
     function htmlDescubrimientos(d) {
@@ -750,7 +759,7 @@
       const d = leer(), hay = !!d.retos.carrera.mejor;
       root.querySelector('#rec-titulo').textContent = tx('titulo');
       root.querySelectorAll('[data-rec-cerrar]').forEach(b => { b.textContent = tx('cerrar'); });
-      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlDescubrimientos(d)}${htmlNuevo(d)}${G.retosDia ? G.retosDia.htmlRecords() : ''}${htmlRetos(d)}${htmlV18(d)}${htmlHistoria(d)}${G.marcador ? G.marcador.htmlRecords() : ''}${htmlCasa(d)}`;
+      root.querySelector('.rec-body').innerHTML = `<p class="rec-nota">${esc(tx('local'))}</p>${htmlDescubrimientos(d)}${htmlLogros()}${htmlNuevo(d)}${G.retosDia ? G.retosDia.htmlRecords() : ''}${htmlRetos(d)}${htmlV18(d)}${htmlHistoria(d)}${G.marcador ? G.marcador.htmlRecords() : ''}${htmlCasa(d)}`;
       const b = root.querySelector('#rec-compartir');
       b.textContent = tx('compartirRecord'); b.setAttribute('aria-disabled', String(!hay));
       b.title = hay ? '' : tx('sinCarrera');
@@ -1176,9 +1185,10 @@
       const raw = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
       const claves = [G.guardado.KEY, G.guardado.KEY + '.tmp', G.guardado.KEY + '.prev', CLAVE.retos, CLAVE.criadero, CLAVE.casa, CLAVE.trucos, CLAVE.escondite, CLAVE.ciudad, CLAVE.marana, CLAVE.vecinos, CLAVE.humor, CLAVE.piloto, G.pack.aula && G.pack.aula.clave].filter(Boolean);
       const antes = claves.map(raw), sAntes = comparable();
+      const logOrig = LOG ? Object.assign({}, LOG.CLAVE) : {}, logReal = LOG ? raw(LOG.CLAVE.logros) : null;
       const orig = Object.assign({}, CLAVE), idiomaAntes = G.aula && G.aula.aj ? G.aula.aj.idioma : null;
       const pruebas = { retos: orig.retos + '.prueba', criadero: orig.criadero + '.prueba', casa: orig.casa + '.prueba',
-        trucos: orig.trucos + '.prueba', escondite: orig.escondite + '.prueba', canto: orig.canto + '.prueba', semillas: orig.semillas + '.prueba', ciudad: orig.ciudad + '.prueba', marana: orig.marana + '.prueba', vecinos: orig.vecinos + '.prueba', humor: orig.humor + '.prueba', piloto: orig.piloto + '.prueba', compas: orig.compas + '.prueba', sigueme: orig.sigueme + '.prueba', foto: orig.foto + '.prueba', sembradora: orig.sembradora + '.prueba', planeo: orig.planeo + '.prueba', v18: orig.v18 + '.prueba' };
+        trucos: orig.trucos + '.prueba', escondite: orig.escondite + '.prueba', canto: orig.canto + '.prueba', semillas: orig.semillas + '.prueba', ciudad: orig.ciudad + '.prueba', marana: orig.marana + '.prueba', vecinos: orig.vecinos + '.prueba', humor: orig.humor + '.prueba', piloto: orig.piloto + '.prueba', compas: orig.compas + '.prueba', sigueme: orig.sigueme + '.prueba', foto: orig.foto + '.prueba', sembradora: orig.sembradora + '.prueba', planeo: orig.planeo + '.prueba', pichones: orig.pichones + '.prueba', v18: orig.v18 + '.prueba' };
       const quitar = () => { for (const k of Object.values(pruebas)) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } delete mem[k]; } };
       const cerrarTodo = () => { if (puertaAbierta) cerrarPuerta(false); if (abierto) cerrar(); };
       const nuevoS = (nombre, extra) => Object.assign({ profile: { created: true, name: nombre, look: { species: 'oratrix' } }, complete: false, step: 2, clock: 600, events: [], field: [] }, extra);
@@ -1199,6 +1209,7 @@
       try {
         quitar(); simulada = { S: sFin };
         Object.assign(CLAVE, pruebas);
+        if (LOG) for (const k of Object.keys(logOrig)) LOG.CLAVE[k] = logOrig[k] + '.prueba'; // E19: los logros leen las mismas claves de prueba
         // ---------- Lectura de récords de ejemplo ----------
         localStorage.setItem(pruebas.retos, JSON.stringify({ v: 1, carrera: { mejor: 65300, puesto: 1, oros: 2, jugadas: 5 }, tormenta: { mejor: 1620, tiempo: 90, jugadas: 3 } }));
         localStorage.setItem(pruebas.criadero, JSON.stringify({ v: 1, capsulas: { clasico: { estado: 'nacida', xp: 200 }, tropical: { estado: 'incubando', xp: 30 }, playa: { estado: 'disponible', xp: 0 }, bosque: { estado: 'liberada', xp: 1500 } }, fuentes: { aprender: 0, explorar: 0, cuidar: 0 } }));
@@ -1253,17 +1264,42 @@
           localStorage.setItem(pruebas.foto, JSON.stringify({ v: 1, mejor: 17, perfecto: 1, jugadas: 4 }));
           localStorage.setItem(pruebas.sembradora, JSON.stringify({ v: 1, mejor: 41, arboles: 15, racha: 6, jugadas: 2 }));
           localStorage.setItem(pruebas.planeo, JSON.stringify({ v: 1, mejor: 437, nubes: 6, jugadas: 3 }));
+          localStorage.setItem(pruebas.pichones, JSON.stringify({ v: 1, mejor: 3, tiempo: 64, jugadas: 3 }));
           localStorage.setItem(pruebas.v18, JSON.stringify({ v: 2, especies: {}, inv: {}, otorgados: {}, mundo: { poder_ojo: 1 }, sel: null, evo: {} }));
           pintar();
           const nu = root.querySelector('#rec-nuevo'), n1 = nu ? nu.textContent.replace(/\s+/g, ' ') : '';
-          check('T47 · «Juegos y poderes nuevos»: récord de Sigue el canto, el poder ganado y cómo se ganan los otros', /Aún sin jugar/.test(n0) && /Haz un «¡Remonte!»/.test(n0) && /Récord: 7 cantos/.test(n1) && /Ojo de cotorra\s*¡Ganado!/.test(n1) && /Haz 2 aterrizajes perfectos/.test(n1) && nu.querySelectorAll('.rec-ins').length === 10 && !/compra|tienda/i.test(n1), n1.slice(0, 200));
+          check('T47 · «Juegos y poderes nuevos»: récord de Sigue el canto, el poder ganado y cómo se ganan los otros', /Aún sin jugar/.test(n0) && /Haz un «¡Remonte!»/.test(n0) && /Récord: 7 cantos/.test(n1) && /Ojo de cotorra\s*¡Ganado!/.test(n1) && /Haz 2 aterrizajes perfectos/.test(n1) && nu.querySelectorAll('.rec-ins').length === 11 && !/compra|tienda/i.test(n1), n1.slice(0, 200));
           check('D13 · «Semillas al vuelo» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 23 semillas»', /Semillas al vuelo\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Semillas al vuelo\s*Récord: 23 semillas/.test(n1), n1.slice(0, 240));
           check('F2-3 · «Alas al compás» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 142 m · racha de 19»', /Alas al compás\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Alas al compás\s*Récord: 142 m · racha de 19/.test(n1), n1.slice(0, 300));
           check('F2-1 · «¡Sígueme, bandada!» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 58 puntos · fila de 9»', /¡Sígueme, bandada!\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /¡Sígueme, bandada!\s*Récord: 58 puntos · fila de 9/.test(n1), n1.slice(0, 360));
           check('F2-2 · «Foto relámpago» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 17 estrellas · rollo perfecto»', /Foto relámpago\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Foto relámpago\s*Récord: 17 estrellas · rollo perfecto/.test(n1), n1.slice(0, 420));
           check('F2-4 · «Sembradora del cielo» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 41 puntos · 15 árboles»', /Sembradora del cielo\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Sembradora del cielo\s*Récord: 41 puntos · 15 árboles/.test(n1), n1.slice(0, 480));
           check('D14 · «Planeo entre nubes» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 437 m»', /Planeo entre nubes\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Planeo entre nubes\s*Récord: 437 m/.test(n1), n1.slice(0, 520));
-          localStorage.removeItem(pruebas.sembradora); localStorage.removeItem(pruebas.planeo); localStorage.removeItem(pruebas.foto); localStorage.removeItem(pruebas.sigueme); localStorage.removeItem(pruebas.compas); localStorage.removeItem(pruebas.semillas); localStorage.removeItem(pruebas.canto); localStorage.removeItem(pruebas.v18); pintar();
+          check('D16 · «Rescate rápido» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 3 pichones a salvo en 1:04»', /Rescate rápido\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Rescate rápido\s*Récord: 3 pichones a salvo en 1:04/.test(n1), n1.slice(0, 560));
+          localStorage.setItem(pruebas.pichones, JSON.stringify({ v: 1, mejor: 0, tiempo: 0, jugadas: 1 })); pintar();
+          { const n2 = (root.querySelector('#rec-nuevo') || {}).textContent || ''; check('D16 · «Rescate rápido» jugado sin salvar ninguno: «Récord: 0 de 3», no «Aún sin jugar»', /Rescate rápido\s*Récord: 0 de 3 pichones a salvo/.test(n2.replace(/\s+/g, ' ')), n2.replace(/\s+/g, ' ').slice(0, 600)); }
+          localStorage.removeItem(pruebas.pichones); localStorage.removeItem(pruebas.sembradora); localStorage.removeItem(pruebas.planeo); localStorage.removeItem(pruebas.foto); localStorage.removeItem(pruebas.sigueme); localStorage.removeItem(pruebas.compas); localStorage.removeItem(pruebas.semillas); localStorage.removeItem(pruebas.canto); localStorage.removeItem(pruebas.v18); pintar();
+        }
+        { // E19 · «Mis logros»: 10 con icono, ganados (de lo jugado) y pendientes con su pista
+          const sec0 = root.querySelector('#rec-logros');
+          localStorage.setItem(pruebas.v18, JSON.stringify({ v: 2, especies: {}, inv: {}, otorgados: {}, mundo: { poder_rafaga: 1, poder_ojo: 1, poder_planeo: 1, superplaneo: 1 }, sel: null, evo: {} }));
+          pintar();
+          const sec = root.querySelector('#rec-logros'), lt = sec ? sec.textContent.replace(/\s+/g, ' ') : '', items = sec ? [...sec.querySelectorAll('.rec-logro')] : [];
+          const gan = items.filter(li => li.classList.contains('ganado')).map(li => li.dataset.logro);
+          check('E19 · «Mis logros» sale en Mis récords: 10 logros, cada uno con su icono SVG', !!LOG && !!sec0 && items.length === 10 && items.every(li => li.querySelector('.rl-ico svg')), items.length);
+          check('E19 · Ganados de lo jugado (Tres poderes y Súper planeo) y pendientes con su pista', gan.join() === 'poderes,super' && /2 de 10/.test(lt) && /Tres poderes\s*Gana la Ráfaga/.test(lt) && !/¡Ganado!/.test(lt) && items.slice(0, 2).every(li => li.classList.contains('ganado')) && /Pon 10 piezas en tu rincón de Construir/.test(lt) && (lt.match(/Pendiente/g) || []).length === 8 && !/compra|tienda/i.test(lt), lt.slice(0, 220));
+          const ico = sec && sec.querySelector('.rec-logro.ganado .rl-ico'), icoP = sec && sec.querySelector('.rec-logro:not(.ganado) .rl-ico');
+          check('E19 · Ganado y pendiente se distinguen a simple vista (color del icono)', !!ico && !!icoP && getComputedStyle(ico).backgroundImage !== getComputedStyle(icoP).backgroundImage);
+          const anchos = items.filter(li => li.getBoundingClientRect().right > sec.getBoundingClientRect().right + 1);
+          check('E19 · Ningún logro se sale de la sección', !anchos.length && sec.scrollWidth <= sec.clientWidth + 1, anchos.length);
+          if (G.aula && G.aula.aj && await cargarEN()) {
+            G.aula.aj.idioma = 'en'; pintar(); const le = (root.querySelector('#rec-logros') || {}).textContent || '';
+            const faltan = LOG.DEF.flatMap(l => [l.nombre, l.pista]).concat(['Mis logros', 'Se ganan jugando.', 'Ganado', 'Pendiente', '{} de {}', '¡Logro: {}! Míralo en «Mis récords».', '¡{} logros nuevos! Míralos en «Mis récords».',
+              '¡Súper planeo!', '¡Súper planeo! Ráfaga + Planeo largo: vuelas mucho más lejos.', 'Ahora pulsa Ráfaga: ¡súper planeo!', 'Ahora pulsa Ráfaga (H): ¡súper planeo!']).filter(t => typeof window.AV_EN[t] !== 'string');
+            check('E19 · «Mis logros» en inglés, con todos los textos nuevos (logros y súper planeo) en content/cap1/en.js', /My achievements/.test(le) && /2 of 10/.test(le) && /Three powers/.test(le) && !faltan.length, faltan.join(' | ') || le.slice(0, 160));
+            G.aula.aj.idioma = idiomaAntes; pintar();
+          }
+          localStorage.removeItem(pruebas.v18); pintar();
         }
         if (G.aula && G.aula.aj) {
           G.aula.aj.idioma = 'en'; pintar();
@@ -1443,11 +1479,15 @@
         check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 400));
       } finally {
         cerrarTodo();
-        Object.assign(CLAVE, orig); simulada = null; quitar();
+        Object.assign(CLAVE, orig); simulada = null; quitar(); if (LOG) Object.assign(LOG.CLAVE, logOrig);
         if (enCargado) { delete window.AV_EN; document.querySelectorAll('script[data-rec-prueba]').forEach(el => el.remove()); }
         G.guardado.suspender(false); G.quiet = quieta;
         if (G.aula && G.aula.aj && idiomaAntes) G.aula.aj.idioma = idiomaAntes;
         etiquetas();
+      }
+      if (LOG) { // E19: la prueba propia de los logros (cada uno por su camino, guardado dañado, el aviso)
+        const rl = await LOG.test(); for (const x of rl.results) out.push(x);
+        check('E19 · El libro real de logros queda intacto tras la prueba de Mis récords', raw(LOG.CLAVE.logros) === logReal);
       }
       const cambiadas = claves.filter((k, i) => raw(k) !== antes[i]);
       check('La partida (G.S), el cómic y los almacenes reales quedan intactos', !cambiadas.length && comparable() === sAntes, cambiadas.length ? 'cambió ' + cambiadas.join(', ') : comparable() === sAntes ? '' : 'G.S cambió');
