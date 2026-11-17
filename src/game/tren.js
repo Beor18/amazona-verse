@@ -43,7 +43,7 @@
     const nivelAgua = (x, z) => { const w = G.agua.levelAt(x, z); return w > -1e8 ? w : -Infinity; };
     const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
     // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
-    const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'tren', sigue); F.sonar(G, 'tren', tipo); return 0; };
+    const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'tren', sigue, st.quiet); F.sonar(G, 'tren', tipo, st.quiet); return 0; }; // st.quiet: el G.quiet de antes de entrar (aquí G.quiet se pone toda la partida)
     const ingles = () => !!(G.idioma && G.idioma.actual && G.idioma.actual() === 'en');
     const alMenu = () => !!(G.menuModos && G.menuModos.desdeMenu && G.menuModos.desdeMenu()); /* se entró desde «¿Cómo quieres jugar?»: «Salir» lleva al menú */
     // Sonidos propios (sintéticos, por G.audio.define): silbato de dos notas, retumbe con eco del túnel y traqueteo del puente de hierro

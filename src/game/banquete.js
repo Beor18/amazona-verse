@@ -374,7 +374,7 @@ window.AVBanquete = function (G) {
   }
   function acabarJuego() {
     J.fase = 'fin'; J.finT = 0; J.total = J.puntos;
-    { const F = window.AVFinJuego; if (F) F.sonar(G, 'banquete', 'victoria'); else sonar('bq_entrega'); } ctx.aviso('¡Banquete terminado!'); G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 36); // PULIR 4: tabla común del final
+    { const F = window.AVFinJuego; if (F) F.sonar(G, 'banquete', 'victoria', ctx && ctx.st ? ctx.st.quiet : undefined); else sonar('bq_entrega'); } ctx.aviso('¡Banquete terminado!'); G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 36); // PULIR 4: tabla común del final
     const rec = ctx.leerRec(), r = rec.banquete || (rec.banquete = {});
     J.nuevo = J.total > 0 && (!r.mejor || J.total > r.mejor);
     r.jugadas = (r.jugadas || 0) + 1; if (J.nuevo) r.mejor = J.total; r.frutos = Math.max(r.frutos || 0, J.frutos);

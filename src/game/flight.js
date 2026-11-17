@@ -50,7 +50,7 @@
     const superficie = (x, z) => Math.max(H(x, z), nivelAgua(x, z));
     const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
     // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
-    const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'flight', sigue); F.sonar(G, 'flight', tipo); return 0; };
+    const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'flight', sigue, st.quiet); F.sonar(G, 'flight', tipo, st.quiet); return 0; }; // st.quiet: el G.quiet de antes de entrar (aquí G.quiet se pone toda la partida)
 
     // ---------- Declaración del minijuego (lo que leería un menú o Retos para montarlo sin saber nada más) ----------
     const DECL = {

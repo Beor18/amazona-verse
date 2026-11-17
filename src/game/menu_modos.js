@@ -27,19 +27,21 @@
      victoria → panel_final al salir el resultado · casi → el mismo panel_final (fallar no castiga: lo dice el texto «¡Casi!», F2_MINIJUEGOS.md)
      récord nuevo → además «logro» RECORD_MS después (el temporizador se devuelve para cancelarlo al salir).
    Los duelos (combate.js, duelo2.js) guardan duelo_victoria/duelo_derrota grabados: allí sí hay un ganador y un perdedor.
-   Suena aunque G.quiet esté puesto (varios juegos lo ponen durante toda la partida para callar el mundo, no su propio final).
+   Por defecto calla con G.quiet; los juegos que lo ponen durante toda la partida (para callar el mundo) pasan `mudo` = el G.quiet de antes de entrar.
    log: las últimas llamadas (juego, tipo), para las pruebas. */
 (function () {
   'use strict';
   const SFX = Object.freeze({ victoria: 'panel_final', casi: 'panel_final', record: 'logro' }), RECORD_MS = 500, log = [];
-  const tocar = (G, n) => { try { if (G.audio && G.audio.play) G.audio.play(n); } catch (e) { /* sin audio */ } }; // sin mirar G.quiet: River Rush, Retos, Maze, Flight y Tren lo ponen durante toda la partida (callan el mundo, no su final)
+  // mudo: si se calla. Sin darlo, G.quiet; River Rush, Retos/Banquete, Maze, Flight y Tren ponen G.quiet toda la partida (callan el mundo, no su
+  // final) y dan el G.quiet que había al entrar (st.quiet: falso al jugar, verdadero en las baterías)
+  const tocar = (G, n, mudo) => { try { if (!(mudo === undefined ? G.quiet : mudo) && G.audio && G.audio.play) G.audio.play(n); } catch (e) { /* sin audio */ } };
   const anotar = (juego, tipo) => { log.push({ juego, tipo }); if (log.length > 60) log.shift(); };
   window.AVFinJuego = {
     SFX, RECORD_MS, log,
     // victoria o casi (cualquier otro tipo cuenta como victoria)
-    sonar(G, juego, tipo) { tipo = tipo === 'casi' ? 'casi' : 'victoria'; anotar(juego, tipo); tocar(G, SFX[tipo]); },
+    sonar(G, juego, tipo, mudo) { tipo = tipo === 'casi' ? 'casi' : 'victoria'; anotar(juego, tipo); tocar(G, SFX[tipo], mudo); },
     // récord nuevo: «logro» a los RECORD_MS si sigue() (opcional) aún vale. Devuelve el id del temporizador
-    record(G, juego, sigue) { anotar(juego, 'record'); return setTimeout(() => { if (!sigue || sigue()) tocar(G, SFX.record); }, RECORD_MS); },
+    record(G, juego, sigue, mudo) { anotar(juego, 'record'); return setTimeout(() => { if (!sigue || sigue()) tocar(G, SFX.record, mudo); }, RECORD_MS); },
   };
 })();
 (function () {
@@ -1131,14 +1133,14 @@
           const F = window.AVFinJuego, malos = [];
           if (!F || F.SFX.victoria !== 'panel_final' || F.SFX.casi !== 'panel_final' || F.SFX.record !== 'logro' || F.RECORD_MS !== 500) malos.push('tabla de sonidos');
           if (G.audio && G.audio.has && !['panel_final', 'logro'].every(n => G.audio.has(n))) malos.push('faltan panel_final o logro');
-          // revisión: suena también con G.quiet (River Rush, Retos, Maze, Flight y Tren lo ponen durante toda la partida) y el «logro» espera a sigue()
+          // revisión: con mudo = false suena aunque G.quiet esté puesto (River Rush, Retos, Maze, Flight y Tren lo ponen toda la partida); sin mudo, calla con G.quiet; el «logro» espera a sigue()
           if (F && G.audio) {
             const play0 = G.audio.play, q0 = G.quiet, oidos = [];
             G.audio.play = n => { oidos.push(n); };
             try {
-              G.quiet = true; F.sonar(G, 'prueba', 'victoria'); F.sonar(G, 'prueba', 'casi');
-              const tNo = F.record(G, 'prueba', () => false), tSi = F.record(G, 'prueba', () => true);
-              await new Promise(r => setTimeout(r, F.RECORD_MS + 120)); clearTimeout(tNo); clearTimeout(tSi);
+              G.quiet = true; F.sonar(G, 'prueba', 'victoria', false); F.sonar(G, 'prueba', 'casi', false); F.sonar(G, 'prueba', 'victoria'); F.sonar(G, 'prueba', 'casi', true);
+              const tNo = F.record(G, 'prueba', () => false, false), tSi = F.record(G, 'prueba', () => true, false), tQ = F.record(G, 'prueba', () => true);
+              await new Promise(r => setTimeout(r, F.RECORD_MS + 120)); clearTimeout(tNo); clearTimeout(tSi); clearTimeout(tQ);
               if (oidos.join() !== 'panel_final,panel_final,logro') malos.push('con G.quiet suena ' + (oidos.join() || 'nada') + ' (se esperaba panel_final,panel_final,logro)');
             } finally { G.audio.play = play0; G.quiet = q0; }
           }

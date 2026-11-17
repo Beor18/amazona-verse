@@ -176,7 +176,7 @@
     }
     const sonar = (n, a) => { try { A.play(n, a); } catch (e) { /* sin audio */ } };
     // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego). El «logro» del récord ya suena con el sello nuevo de Mis récords
-    const finSon = tipo => { const F = window.AVFinJuego; if (F) F.sonar(G, 'retos', tipo); };
+    const finSon = tipo => { const F = window.AVFinJuego; if (F) F.sonar(G, 'retos', tipo, st.quiet); }; // st.quiet: el G.quiet de antes de entrar (aquí G.quiet se pone toda la partida)
     // «Reducir movimiento»: el del sistema (G.renderer.REDUCED) o el del menú (G.audio.reducido, como en F4-20)
     const quieto = () => REDUCED || !!(A && A.reducido === true);
 

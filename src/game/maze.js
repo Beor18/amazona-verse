@@ -50,7 +50,7 @@
     const alMenu = () => !!(G.menuModos && G.menuModos.desdeMenu && G.menuModos.desdeMenu()); /* se entró desde «¿Cómo quieres jugar?»: «Salir» lleva al menú */
     const sonar = (n, a) => { try { if (A_ && (!A_.has || A_.has(n) || /^(tick|land|unlock|splash|jump)$/.test(n))) A_.play(n, a); else A_.play('tick', a); } catch (e) { /* sin audio */ } };
     // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
-    const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'maze', sigue); F.sonar(G, 'maze', tipo); return 0; };
+    const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'maze', sigue, st.quiet); F.sonar(G, 'maze', tipo, st.quiet); return 0; }; // st.quiet: el G.quiet de antes de entrar (aquí G.quiet se pone toda la partida)
 
     // ---------- Declaración del minijuego (docs/equipo/MINIJUEGOS.md §4) ----------
     const DECL = {
