@@ -33,7 +33,7 @@ window.AVPlaneo = function (G) {
   const TU = () => (G.fisica && G.fisica.TUNING) || null;
   const ALM = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.planeo';
   const DUR = 120, HUNDE = 3.6, VMIN = 10, VPICADA = 16, ALTO_INI = 22, TOCA = 0.35, CERCA_SUELO = 5, LEJOS_SUELO = 9, TOQUE_T = 0.9;
-  const NNUB = 16, NUBE_V = 14, NUBE_T = 1.2, NUBE_RX = 5, NUBE_RY = 3.4, NUBE_SEP = 16;
+  const NNUB = 16, NUBE_V = 14, NUBE_T = 1.2, NUBE_RX = 6, NUBE_RY = 4, NUBE_SEP = 16;
   const NTER = 10, TERM_R = 11, TERM_ALTO = 55, TERM_V = 8, TERM_CARGA = 5, NMOTA = 8;
   const AJ_FIS = { climbV: 0, glideSink: 0, flyCeil: 60 }; // subir no sube y el hundimiento lo pone este juego; techo más alto (las corrientes suben)
   const SALIDAS = ['cumbre', 'picachos', 'mirador'], HACIA = ['plaza', 'villa'];
@@ -156,7 +156,7 @@ window.AVPlaneo = function (G) {
         if (!sep) continue;
         const suelo = techoEn(x, z, 6); if (!(suelo > -1e8)) continue;
         // a la altura del planeo recto, más un poco por cada nube anterior (cogiendo algunas, se llega a las siguientes)
-        let y = salida.y - d / 12 * HUNDE + i * 1.2 + rnd(-3, 2);
+        let y = salida.y - d / 12 * HUNDE - 2 + i * 0.8 + rnd(-3, 1); // un poco por debajo: con una picada se alcanza
         y = Math.min(Math.max(y, suelo + 9), suelo + 45);
         n.on = true; n.x = x; n.y = y; n.z = z; k++;
       }
