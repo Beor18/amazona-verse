@@ -6,6 +6,9 @@ AVE.module('creador', function (G) {
   'use strict';
   const S = G.S, $ = G.util.$;
   const C3 = window.AVCharacter;
+  // PULIR 5: a qué control va el foco al abrir el creador (también lo usa src/ui/ui.js al cerrar la portada)
+  const tactilCreador = () => { try { return matchMedia('(hover: none), (pointer: coarse)').matches; } catch (e) { return false; } };
+  const focoCreador = () => (tactilCreador() && $('p-save')) || $('p-name-libre') || $('p-name-a');
   // Perfiles 2D heredados (renders oficiales de especies): se siguen aceptando al cargar partidas y en las pruebas
   const PRESETS = [
     { id: 'agilis', name: 'Pico negro (agilis)' }, { id: 'albifrons', name: 'Frente blanca (albifrons)' },
@@ -434,7 +437,9 @@ AVE.module('creador', function (G) {
     bc.hidden = primera && !haciaPortada;
     // Foco al primer campo (si la portada está encima, src/ui/ui.js lo pone al cerrarla)
     const portada = $('title');
-    if (!portada || !portada.open) setTimeout(() => { const f = $('p-name-libre') || $('p-name-a'); if (f && !$('creator').hidden) f.focus(); }, 0);
+    // PULIR 5 (17-nov): en pantalla táctil el foco va a «¡A jugar!» y no al nombre: el campo abría solo el teclado del móvil, que
+    // tapaba el botón y a Vittata (el nombre al azar ya está puesto). Con teclado y ratón, al nombre como siempre.
+    if (!portada || !portada.open) setTimeout(() => { const f = focoCreador(); if (f && !$('creator').hidden) f.focus({ preventScroll: true }); }, 0);
     $('creator').hidden = false;
     renderSlots();
     if (window.AVShowcase) {
@@ -542,6 +547,10 @@ AVE.module('creador', function (G) {
         close(); primera = false;
         if (!abiertaP && portada.open) { portada.returnValue = ''; portada.close(); }
       }
+      { // PULIR 5: el foco al abrir es «¡A jugar!» en táctil (sin teclado del móvil que tape) y el nombre con teclado y ratón
+        const f = focoCreador(), tactil = tactilCreador();
+        ok('PULIR 5 · Foco al abrir: «¡A jugar!» en táctil, el nombre con teclado', !!f && (tactil ? f.id === 'p-save' : /^p-name/.test(f.id)), (tactil ? 'táctil' : 'teclado') + ' → ' + (f && f.id));
+      }
     } finally {
       S.profile = antes;
       G.quiet = quiet;
@@ -553,5 +562,5 @@ AVE.module('creador', function (G) {
     return { ok: R.every(r => r.ok), passed: R.filter(r => r.ok).length, total: R.length, results: R };
   }
 
-  return { PRESETS, OUTFITS, NAME_OK, profileLook, legacyFields, drawPortrait, open, close, saveCharacter, portraitCanvasFor, renderSlots, accessoryThumb, textoSeguro, NOMBRES, esNombreDeLista, nombreAzar, nombreElegido, pintarNombre, filtroNombreLibre, debeReemplazarNombre, opcionesEspecie, test };
+  return { focoCreador, PRESETS, OUTFITS, NAME_OK, profileLook, legacyFields, drawPortrait, open, close, saveCharacter, portraitCanvasFor, renderSlots, accessoryThumb, textoSeguro, NOMBRES, esNombreDeLista, nombreAzar, nombreElegido, pintarNombre, filtroNombreLibre, debeReemplazarNombre, opcionesEspecie, test };
 });
