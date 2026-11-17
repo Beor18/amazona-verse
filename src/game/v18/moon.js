@@ -355,6 +355,8 @@ window.AVV18Moon = function (G) {
     if (!activa()) return null;
     return { x: SITIO.x, z: SITIO.z, nombre: TXT.nombre };
   };
+  // PULIR 7: durante el entreno el objetivo del minimapa es el sitio de Moon (no la misión del capítulo); fuera de él, nada
+  const objetivo = () => (activa() && (A.fase === 'cuenta' || A.fase === 'entreno')) ? { x: SITIO.x, z: SITIO.z, reto: true } : null;
   const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.quedan, TXT.toques, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.alto, TXT.salir, TXT.esquiva, TXT.esquivaA,
     TXT.metaTxt, TXT.kMover, TXT.kImpulso, TXT.pViene, TXT.pToque, TXT.pToqueT, TXT.fGana, TXT.fPierde, TXT.fToques, TXT.fOtra].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
@@ -558,6 +560,12 @@ window.AVV18Moon = function (G) {
       // 6 · minimapa
       const mm = mapa();
       check('6 · Marcador del minimapa en Moon, con nombre', mm && mm.nombre === TXT.nombre && Math.hypot(mm.x - SITIO.x, mm.z - SITIO.z) < 0.1);
+      { // PULIR 7: durante el entreno la estrella del minimapa (objetivo) es el sitio de Moon, no la misión del capítulo; fuera de él, null
+        const ob0 = objetivo();
+        ir(SITIO.x, SITIO.z); const empezo = empezar({ forzar: true }); correr(0.1);
+        const obE = objetivo(); cancelar('sale'); correr(0.1); cerrar();
+        check('6b · PULIR 7: en el entreno objetivo() es el sitio de Moon; antes y después, null', ob0 === null && (!empezo || (obE && Math.hypot(obE.x - SITIO.x, obE.z - SITIO.z) < 0.1)) && objetivo() === null, JSON.stringify({ ob0, empezo: !!empezo, obE }));
+      }
       // 7 · ganar esquivando (órbita lenta a 9 m)
       ir(SITIO.x, SITIO.z);
       const it = N.instancia(NPC) && G.interaccion.nearest && G.interaccion.nearest();
@@ -666,6 +674,6 @@ window.AVV18Moon = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18moon = { ID, SITIO, DUR_S, MAX_TOQUES, XP_GANAR, empezar, cancelar, invitar, paso, record, pagarXP, mapa, textos, teclado, estado: () => A, test };
+  G.v18moon = { ID, SITIO, DUR_S, MAX_TOQUES, XP_GANAR, empezar, cancelar, invitar, paso, record, pagarXP, mapa, objetivo, textos, teclado, estado: () => A, test };
   return G.v18moon;
 };
