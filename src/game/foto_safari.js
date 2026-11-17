@@ -471,6 +471,7 @@ window.AVFotoSafari = function (G) {
     camara(false); document.body.classList.remove('foto-cam');
     try { if (G.pausa && G.pausa.set) G.pausa.set('foto', false); } catch (e) { /* sin pausa */ }
     if (G.interaccion && G.interaccion.modo !== MODO) { modo0 = G.interaccion.modo; G.interaccion.modo = MODO; }
+    if (finEl.contains(document.activeElement)) try { document.activeElement.blur(); } catch (e) { /* */ } // F22: «Otra vez» con el teclado: el foco no se queda en un botón escondido
     finEl.hidden = true; estEl.hidden = true; q(hudEl, 'msg').textContent = '';
     document.body.classList.add('foto-on'); document.body.classList.remove('foto-fin');
     try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: la cámara no sale metida en la ladera
@@ -728,7 +729,7 @@ window.AVFotoSafari = function (G) {
       { // F22: después de «Salir», Tab vuelve a «Otra vez» (no se va a la barra del navegador)
         const enPanel = []; for (let i = 0; i < 3; i++) { const t = tecla('Tab'); enPanel.push(t.defaultPrevented && finEl.contains(document.activeElement) && document.activeElement !== finEl); }
         const tS = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }); dispatchEvent(tS); enPanel.push(finEl.contains(document.activeElement));
-        check('El foco no sale del panel final con Tab ni con Mayús+Tab', enPanel.every(Boolean), enPanel.join(',')); try { finEl.focus({ preventScroll: true }); } catch (e) { /* */ } }
+        check('El foco no sale del panel final con Tab ni con Mayús+Tab', enPanel.every(Boolean), enPanel.join(',')); }
       const ae = G.aula && G.aula.aj;
       if (ae) {
         const idi0 = ae.idioma; ae.idioma = 'en'; pintarHud(); pintarFin(); pintarCarta(); E.cam = true; pintarVisor(); E.cam = false;
