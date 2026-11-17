@@ -204,7 +204,7 @@
         check('E19 · Jugando, la revisión de cada 4 s da el logro y su aviso', !!libro().ganados.constructor && avisos.length === 1 && espera > 3.9, avisos.join('|'));
         // HTML de la sección
         const h = html(sim);
-        check('E19 · La sección «Mis logros» pinta 10 logros con icono y estado', (h.match(/class="rec-logro/g) || []).length === 10 && (h.match(/<svg /g) || []).length === 10 && /Mis logros/.test(h) && /1 de 10/.test(h) && /¡Ganado!/.test(h) && /Pendiente/.test(h), h.length);
+        check('E19 · La sección «Mis logros» pinta 10 logros con icono y estado', (h.match(/<li class="rec-logro/g) || []).length === 10 && (h.match(/<svg /g) || []).length === 10 && /Mis logros/.test(h) && /1 de 10/.test(h) && /¡Ganado!/.test(h) && /Pendiente/.test(h), h.length);
       } catch (e) { check('E19 · La prueba de logros terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300)); }
       finally {
         Object.assign(CLAVE, orig); quitar(); G.quiet = q0; if (ui0) G.ui.toast = ui0; if (au && play0) au.play = play0; enPrueba = false; simS = null; espera = CADA;
