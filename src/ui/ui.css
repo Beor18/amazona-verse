@@ -1199,6 +1199,7 @@ body:is(.canto-on, .escondite-on, .semillas-on, .piloto-on, .compas-on) #bocadil
    «¡Casi!» + pista), el detalle .av-det y la fila .av-bots con «Otra vez» y «Salir» (.av-bot, «Salir» con .salir). Mismo tamaño de letra
    y mismos botones en todos (los paneles de pantalla completa con .btn del design system también: .av-bot gana a .btn.xl). */
 .av-fin { font-family: var(--font-display); }
+.av-fin[tabindex="-1"]:focus, [tabindex="-1"]:focus > .av-fin { outline: none; } /* el foco va al panel al salir (Tab ×1 hasta «Otra vez»); el anillo es de los botones */
 .av-fin h2 { font-size: 26px; }
 .av-fin .av-num { font-size: 44px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .av-fin .av-msg { font-size: 17px; font-weight: 600; }
