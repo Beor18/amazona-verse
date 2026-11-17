@@ -13,7 +13,7 @@
    - Gags del pichón (DIVERSION_CAP1 mejoras 5 y 9): src/game/gags.js emite G.emit('criadero', 'gag', { gag, clave, foto() }) y
      src/game/momentos.js lo anota una vez por partida (ChickTumbled, ChickChasedButterfly, ChickNappedOnFind, ChickCopiedGesture)
      con su foto. Aquí, sin foto ni lienzo, cada gag tiene su ilustración (ilustracion: 'pichon_…'). Sin el gag, no hay viñeta.
-   - «Foto» (actores.js: Gestos → Foto → un gesto; src/game/momentos.js la pone en el cómic): con Foto activa, las teclas 1–7
+   - «Foto» (actores.js: Gestos → Foto → un gesto; src/game/momentos.js la pone en el cómic): con Foto activa, las teclas 1–9 y 0
      (que ya hacen el gesto, input.js) también toman la foto.
    - Texto elegido de una lista (sin texto libre: seguridad infantil): S.comic.captions[id] = índice de la opción elegida
      (0 = el texto de la historia); S.comic.title = uno de los títulos.
@@ -397,11 +397,12 @@ AVE.module('comic', function (G) {
     }
   });
 
-  // Teclado: con «Foto» activa en Gestos, las teclas 1–7 hacen el gesto (input.js) y aquí, además, toman la foto
+  // Teclado: con «Foto» activa en Gestos, las teclas 1–9 y 0 hacen el gesto (input.js) y aquí, además, toman la foto
   function alTeclaFoto(e) {
     const A = G.actores;
-    if (!A || !A.fotoModo || e.repeat || !/^[1-7]$/.test(e.key) || !A.EMOTE_KEYS) return false;
-    const gesto = A.EMOTE_KEYS[+e.key - 1];
+    if (!A || !A.fotoModo || e.repeat || !/^[0-9]$/.test(e.key) || !A.EMOTE_KEYS) return false;
+    const gesto = A.gestoDeTecla ? A.gestoDeTecla(e.key) : A.EMOTE_KEYS[+e.key - 1];
+    if (!gesto) return false;
     setTimeout(() => {
       if (!A.fotoModo) return;
       A.modoFoto(false); const m = $('emotes'); if (m) m.hidden = true;
@@ -1278,7 +1279,7 @@ AVE.module('comic', function (G) {
         // «Foto»: con Foto activa en Gestos, la tecla de un gesto (1–7) hace el gesto y pide la foto; momentos.js la pone en el cómic
         const A = G.actores, M = G.momentos;
         if (A && A.modoFoto && A.EMOTE_KEYS && M && M.tomarFoto) {
-          check('Gestos: 7 gestos y el botón «Foto»', A.EMOTE_KEYS.length === 7 && document.querySelectorAll('#emotes [data-emote]').length === 7 && !!document.querySelector('#emotes [data-foto]'));
+          check('Gestos: 10 gestos (E17) y el botón «Foto»', A.EMOTE_KEYS.length === 10 && document.querySelectorAll('#emotes [data-emote]').length === 10 && !!document.querySelector('#emotes [data-foto]'));
           // La tecla la recibe input.js (hace el gesto si Vittata puede posar en el suelo y quieta) y luego este módulo. Aquí se
           // simula lo de input.js con un playEmote de prueba y se llama al manejador de este módulo, sin tocar la pausa (el
           // cronómetro del marcador correría) ni depender de dónde está Vittata.
@@ -1289,7 +1290,7 @@ AVE.module('comic', function (G) {
             A.modoFoto(!!foto);
             const pulsado = !foto || document.querySelector('#emotes [data-foto]').getAttribute('aria-pressed') === 'true';
             const ev = new KeyboardEvent('keydown', { key: k });
-            A.playEmote(A.EMOTE_KEYS[+k - 1]); // lo que hace input.js con la tecla
+            A.playEmote(A.gestoDeTecla(k)); // lo que hace input.js con la tecla
             const atendida = alTeclaFoto(ev);
             await new Promise(r => setTimeout(r, 30));
             const r = { pulsado, atendida, sigue: A.fotoModo, pedida };
@@ -1302,7 +1303,9 @@ AVE.module('comic', function (G) {
             const r2 = await tecla('1', false, true);
             check('Si no puede posar (volando o en el aire), no pide la foto y Foto se cierra', r2.pulsado && !r2.sigue && !r2.pedida, JSON.stringify(r2));
             const r3 = await tecla('2', true, false);
-            check('Sin Foto activa, las teclas 1–7 solo hacen el gesto (sin foto)', !r3.atendida && !r3.pedida, JSON.stringify(r3));
+            check('Sin Foto activa, las teclas 1–9 y 0 solo hacen el gesto (sin foto)', !r3.atendida && !r3.pedida, JSON.stringify(r3));
+            const g0 = A.EMOTE_KEYS[9], r4 = await tecla('0', true, true);
+            check('E17: Foto activa + tecla 0: el décimo gesto («Dormir») y su foto', !!g0 && r4.atendida && !!r4.pedida && r4.pedida.gesto === g0, r4.pedida ? r4.pedida.gesto : JSON.stringify(r4));
           } finally { G.emit = emit; A.playEmote = jugar; A.modoFoto(false); if (A.stopEmote) A.stopEmote(); }
           S.events = S.events.filter(e => e.key !== 'PhotoTaken'); delete vin().foto; delete S.captures.foto;
           G.quiet = false;

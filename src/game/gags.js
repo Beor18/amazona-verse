@@ -7,7 +7,7 @@
                le posa en la cabeza (ojos de sorpresa) y se va; el pichón se despide con el ala
      siesta    si Vittata lleva 6 s cerca (3,5–12 m) de un hallazgo del Diario que aún no encontró, el pichón va hasta él, bosteza
                y se duerme encima (zetas); así lo señala. Se despierta de un brinco cuando Vittata llega o lo recoge
-     imitar    cuando Vittata hace un gesto (teclas 1–7 o el menú Gestos), el pichón lo copia medio segundo tarde; el bebé termina
+     imitar    cuando Vittata hace un gesto (teclas 1–9 y 0 o el menú Gestos), el pichón lo copia medio segundo tarde; el bebé termina
                sentado de sopetón, los mayores con un saltito orgulloso
    - Cada gag es un hecho para el cómic, una vez por gag (comic.js y el pack no se tocan aquí):
        G.emit('criadero', 'gag', { gag, clave, id, etapa, gesto?, hallazgo?, foto() })
@@ -538,7 +538,7 @@
         est.manual = true; if (est.gag) limpiar(); est.reducido = false; est.libreForzado = true;
         check('Gags: cuatro tipos con su clave de evento', TIPOS.length === 4 && TIPOS.every(t => /^Chick[A-Z]\w+$/.test(CLAVES[t])), TIPOS.map(t => CLAVES[t]).join(','));
         const E = (A && A.EMOTES) || {}, K = (A && A.EMOTE_KEYS) || [];
-        check('Imitar: los 7 gestos tienen clip o pose que el pichón puede copiar', K.length === 7 && K.every(n => E[n].clip || E[n].pose), K.join(','));
+        check('Imitar: los 10 gestos tienen clip o pose que el pichón puede copiar', K.length === 10 && K.every(n => E[n].clip || E[n].pose), K.join(','));
         if (!A || !A.companion3D) { check('Compañero 3D cargado', false, A && A.failed3D ? 'sin modelo 3D' : 'sin actores'); return fin(); }
         if (!api.conCria) { check('El criadero presta una cría para la prueba', false); return fin(); }
         cria = await api.conCria('bebe');

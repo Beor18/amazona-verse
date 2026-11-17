@@ -1,5 +1,5 @@
 /* AVE · entrada
-   Teclado (WASD/flechas, Espacio, F, V, C, E/Enter, Q/R, T/G mirar arriba/abajo (los lee camara.js), 1–7, Esc), joystick táctil, botones de acción y arrastre para girar la cámara.
+   Teclado (WASD/flechas, Espacio, F, V, C, E/Enter, Q/R, T/G mirar arriba/abajo (los lee camara.js), 1–9 y 0 (gestos), Esc), joystick táctil, botones de acción y arrastre para girar la cámara.
    CG-40: en el móvil el joystick nace bajo el dedo (mitad del pulgar; a la derecha si el modo es zurdo), con zona muerta y una curva que acelera al empujar más. El otro dedo gira la cámara y no suelta el palo. Un latigazo vertical en el lado de los botones despega (arriba) o pide aterrizar (abajo). Al tocar suelo o recoger una cosa, una vibración corta.
    Solo traduce entrada a llamadas: G.fisica (saltar, soltar el salto, impulso, volar/aterrizar), G.actores (gestos), G.interaccion (acción).
    Volar y dejar de volar: V (o el botón Volar) despega; volando, V (o el botón, que pasa a decir "Aterrizar") baja suave hasta el
@@ -9,7 +9,7 @@
    Remapeo (sección «Teclas» del menú de pausa, solo con teclado): mover (W A S D), volar (V, alterna como siempre),
    aterrizar (X, solo baja), acción (E), impulso y poder (F, mantenerlo usa el don) y mapa (M, lo lee minimapa.js con es('mapa'))
    se pueden cambiar. Choque: asignar una tecla que ya usa otra acción las intercambia, lo avisa en la nota y marca un momento
-   la otra fila (.tecla-cambiada). Las flechas, Enter (acción), Espacio, C, P (pausa), Q/R, T/G (cámara y poder V18), H y 1–7 quedan fijas.
+   la otra fila (.tecla-cambiada). Las flechas, Enter (acción), Espacio, C, P (pausa), Q/R, T/G (cámara y poder V18), H y los gestos 1–9 y 0 quedan fijas.
    Se guarda en este dispositivo, aparte de la partida: localStorage `<almacen>.teclas` = { v: 1, mapa: { arriba, abajo,
    izquierda, derecha, volar, aterrizar, accion, poder, mapa } } (sin la clave = teclas de fábrica; un guardado viejo sin
    poder o mapa los completa con los de fábrica o una tecla libre). `keys` sigue usando las teclas canónicas ('w' 'a' 's' 'd'
@@ -39,9 +39,9 @@ AVE.module('input', function (G) {
     volar: 'Volar (otra vez: aterrizar)', aterrizar: 'Aterrizar', accion: 'Acción: hablar, examinar, usar',
     poder: 'Impulso (mantenlo: tu poder)', mapa: 'Abrir el mapa',
     alaIzq: 'Duelo: ala izquierda', alaDer: 'Duelo: ala derecha', pataIzq: 'Duelo: pata izquierda', pataDer: 'Duelo: pata derecha' };
-  // Fijas: Espacio, C, P (pausa, ui.js), Q, R, T, G, H y los gestos 1–7 ya tienen función (G y H son el poder y la alianza de
+  // Fijas: Espacio, C, P (pausa, ui.js), Q, R, T, G, H y los gestos 1–9 y 0 (E17: diez gestos) ya tienen función (G y H son el poder y la alianza de
   // los duelos V18); las teclas con nombre (flechas, Enter, Shift, Esc…) tampoco
-  const RESERVADAS = new Set([' ', 'c', 'p', 'q', 'r', 't', 'g', 'h', '1', '2', '3', '4', '5', '6', '7']);
+  const RESERVADAS = new Set([' ', 'c', 'p', 'q', 'r', 't', 'g', 'h', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0']);
   const asignable = k => typeof k === 'string' && [...k].length === 1 && k.trim() !== '' && !RESERVADAS.has(k);
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.teclas';
   function valido(m) {
@@ -124,7 +124,7 @@ AVE.module('input', function (G) {
     if (es('poder', e) && !e.repeat) { G.fisica.tryDash(); if (G.dones && G.dones.sostener) G.dones.sostener(true); }
     if (es('volar', e) && !e.repeat) volar();
     if (es('aterrizar', e) && !e.repeat) G.fisica.land();
-    if (/^[1-7]$/.test(e.key) && !e.repeat) G.actores.playEmote(G.actores.EMOTE_KEYS[+e.key - 1]);
+    if (/^[0-9]$/.test(e.key) && !e.repeat) { const g = G.actores.gestoDeTecla(e.key); if (g) G.actores.playEmote(g); }
     if (es('accion', e)) G.interaccion.action();
     if (e.key === 'Escape') { G.emit('escape'); G.ui.hideCard(); }
   });

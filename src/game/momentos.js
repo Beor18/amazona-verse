@@ -6,7 +6,7 @@
      ChickJumped           la primera vez que el niño toca a su cotorrita y brinca (criadero.js: G.emit('criadero', 'brinco'))
      FirstChallengeRecord  el primer «¡Nuevo récord!» del Modo Retos (G.emit('retosResultado')); se anota al volver a la
                            partida, porque el reto restaura la instantánea de G.S al salir
-     PhotoTaken            «Foto»: uno de los 7 gestos y la foto de frente al cómic (actores.js: G.emit('foto', { gesto }));
+     PhotoTaken            «Foto»: uno de los 10 gestos y la foto de frente al cómic (actores.js: G.emit('foto', { gesto }));
                            cada foto nueva reemplaza la imagen de la misma viñeta y queda registrada como evento
      ChickTumbled, ChickChasedButterfly, ChickNappedOnFind, ChickCopiedGesture
                            los gags del pichón en el mundo (src/game/gags.js: G.emit('criadero', 'gag', { gag: 'caida' |
