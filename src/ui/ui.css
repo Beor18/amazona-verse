@@ -1193,3 +1193,23 @@ body:has(#records:not([hidden])) :is(#v18-exp-poder, #modo-salir) { display: non
 body:is(.canto-on, .escondite-on, .semillas-on, .piloto-on, .compas-on) #bocadillos { visibility: hidden !important; }
 /* F20 (390 px): durante la cuenta 3-2-1 de Tormenta y Banquete el minimapa espera; el número grande quedaba pegado a él */
 @media (max-width: 560px) { body:has(#retos .rt-cuenta:not(:empty)) #minimapa { visibility: hidden; } }
+
+/* PULIR 4 · Panel final común de los minijuegos (la tabla de sonidos está en src/game/menu_modos.js, window.AVFinJuego).
+   Cada panel final lleva .av-fin; dentro, el título h2, el número grande .av-num, el mensaje .av-msg («¡Nuevo récord!», «Récord: …» o
+   «¡Casi!» + pista), el detalle .av-det y la fila .av-bots con «Otra vez» y «Salir» (.av-bot, «Salir» con .salir). Mismo tamaño de letra
+   y mismos botones en todos (los paneles de pantalla completa con .btn del design system también: .av-bot gana a .btn.xl). */
+.av-fin { font-family: var(--font-display); }
+.av-fin h2 { font-size: 26px; }
+.av-fin .av-num { font-size: 44px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.av-fin .av-msg { font-size: 17px; font-weight: 600; }
+.av-fin .av-det { font-size: 15px; font-weight: 500; }
+.av-fin .av-bots { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.av-fin .av-bot, .av-fin .btn.av-bot {
+  --btn-bg: #fff3d6; --btn-ink: #3b2a14; --btn-lip: rgba(0, 0, 0, 0.25); --btn-shine: transparent; --btn-border: transparent; --lip: 3px; --icon-size: 20px;
+  min-height: 54px; min-width: 54px; padding: 4px 22px; border: 0; border-radius: 22px;
+  font: 700 18px/1.1 var(--font-display); background: #fff3d6; color: #3b2a14; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+  cursor: pointer; touch-action: manipulation;
+}
+.av-fin .av-bot.salir, .av-fin .btn.av-bot.salir { --btn-bg: #ffd0c4; background: #ffd0c4; }
+.av-fin .av-bot:focus-visible, .av-fin .btn.av-bot:focus-visible { outline: 4px solid #ffd27a; outline-offset: 2px; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25); }
+@media (orientation: landscape) and (max-height: 500px) { .av-fin h2 { font-size: 21px; } .av-fin .av-num { font-size: 34px; } }

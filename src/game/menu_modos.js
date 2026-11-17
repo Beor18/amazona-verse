@@ -22,6 +22,25 @@
    - ES y EN según G.aula.aj.idioma; teclado (Tab/Enter, flechas entre tarjetas) y táctil; respeta prefers-reduced-motion (CSS).
    boot.js: window.AVMenuModos(G, { retos, records }) con las cargas perezosas. API: elegir(modo), mostrar(), volver(), ultimo(), test().
    Prueba: AV.menuModosTest(). */
+/* PULIR 4 · Coherencia de los minijuegos: la tabla común del sonido del final (los estilos comunes del panel están en src/ui/ui.css:
+   .av-fin, .av-num, .av-msg, .av-det, .av-bots y .av-bot). Todos los minijuegos con panel final suenan igual:
+     victoria → panel_final al salir el resultado · casi → el mismo panel_final (fallar no castiga: lo dice el texto «¡Casi!», F2_MINIJUEGOS.md)
+     récord nuevo → además «logro» RECORD_MS después (el temporizador se devuelve para cancelarlo al salir).
+   Los duelos (combate.js, duelo2.js) guardan duelo_victoria/duelo_derrota grabados: allí sí hay un ganador y un perdedor.
+   log: las últimas llamadas (juego, tipo), también con G.quiet (sin sonar), para las pruebas. */
+(function () {
+  'use strict';
+  const SFX = Object.freeze({ victoria: 'panel_final', casi: 'panel_final', record: 'logro' }), RECORD_MS = 500, log = [];
+  const tocar = (G, n) => { try { if (!G.quiet && G.audio && G.audio.play) G.audio.play(n); } catch (e) { /* sin audio */ } };
+  const anotar = (juego, tipo) => { log.push({ juego, tipo }); if (log.length > 60) log.shift(); };
+  window.AVFinJuego = {
+    SFX, RECORD_MS, log,
+    // victoria o casi (cualquier otro tipo cuenta como victoria)
+    sonar(G, juego, tipo) { tipo = tipo === 'casi' ? 'casi' : 'victoria'; anotar(juego, tipo); tocar(G, SFX[tipo]); },
+    // récord nuevo: «logro» a los RECORD_MS si sigue() (opcional) aún vale. Devuelve el id del temporizador
+    record(G, juego, sigue) { anotar(juego, 'record'); return setTimeout(() => { if (!sigue || sigue()) tocar(G, SFX.record); }, RECORD_MS); },
+  };
+})();
 (function () {
   'use strict';
   window.AVMenuModos = function (G, cargar) {
@@ -1106,6 +1125,39 @@
             }
             check(`Maqueta ${w}×${h}: nada desborda, tarjetas ≥ 44 px y sin solapes`, !malos.length, malos.join('; '));
           } finally { m.cerrar(); }
+        }
+        { // PULIR 4 · coherencia de los minijuegos: todos los paneles finales usan las clases comunes (.av-fin, ui.css) y la tabla de sonidos común
+          const F = window.AVFinJuego, malos = [];
+          if (!F || F.SFX.victoria !== 'panel_final' || F.SFX.casi !== 'panel_final' || F.SFX.record !== 'logro' || F.RECORD_MS !== 500) malos.push('tabla de sonidos');
+          if (G.audio && G.audio.has && !['panel_final', 'logro'].every(n => G.audio.has(n))) malos.push('faltan panel_final o logro');
+          // con panel: clases comunes + «Otra vez» y «Salir» comunes + sonido de la tabla; sin panel propio (pesca, minigolf, banquete): solo el sonido
+          const PANEL = ['sembradora', 'planeo', 'rescate_rapido', 'sigueme', 'foto_safari', 'compas', 'semillas', 'canto', 'escondite', 'river_rush', 'maze', 'flight', 'tren', 'retos'], SOLO = ['banquete', 'v18/pesca', 'v18/minigolf'];
+          await Promise.all(PANEL.concat(SOLO).map(async f => {
+            let src = ''; try { src = await (await fetch('src/game/' + f + '.js', { cache: 'no-store' })).text(); } catch (e) { /* sin red */ }
+            if (!/AVFinJuego/.test(src)) malos.push(f + ': sin la tabla de sonidos');
+            if (/sonar\('(unlock|wrong|mz_fin|r_fin_mal|panel_final)'\)/.test(src) && /sonar\((J\.nuevo|E\.nuevo) \? 'unlock'|sonar\('panel_final'\)|sonar\('r_fin_mal'\)|'mz_fin'\)/.test(src)) malos.push(f + ': sonido de final propio');
+            if (PANEL.includes(f) && !(/av-fin/.test(src) && /av-bots/.test(src) && /av-bot[ "]/.test(src) && /av-bot salir/.test(src))) malos.push(f + ': panel sin las clases comunes');
+          }));
+          // las clases comunes por sí solas (sin el CSS de cada juego): botón simple y botón .btn xl del design system, 54 px y 18 px; título 26 px
+          const caja = document.createElement('div'); caja.className = 'av-fin'; caja.style.cssText = 'position:fixed;left:0;top:0;z-index:-1;visibility:hidden';
+          caja.innerHTML = '<h2>¡Tiempo!</h2><div class="av-num">12</div><p class="av-msg">¡Casi!</p><div class="av-bots"><button type="button" class="av-bot">Otra vez</button><button type="button" class="btn xl av-bot">Otra vez</button><button type="button" class="btn ghost secondary av-bot salir">Salir</button></div>';
+          document.body.appendChild(caja);
+          try {
+            const bs = [...caja.querySelectorAll('.av-bot')], cs = bs.map(b => getComputedStyle(b));
+            const bajo = matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+            if (!bs.every(b => b.getBoundingClientRect().height >= 54)) malos.push('botones de ' + bs.map(b => Math.round(b.getBoundingClientRect().height)).join('/') + ' px');
+            if (!cs.every(c => c.fontSize === '18px' && c.borderTopLeftRadius === '22px')) malos.push('letra de botones ' + cs.map(c => c.fontSize + ' r' + c.borderTopLeftRadius).join('/'));
+            if (cs[0].backgroundColor !== cs[1].backgroundColor || cs[2].backgroundColor === cs[0].backgroundColor) malos.push('colores de botón ' + cs.map(c => c.backgroundColor).join('/'));
+            if (getComputedStyle(caja.querySelector('h2')).fontSize !== (bajo ? '21px' : '26px') || getComputedStyle(caja.querySelector('.av-num')).fontSize !== (bajo ? '34px' : '44px') || getComputedStyle(caja.querySelector('.av-msg')).fontSize !== '17px') malos.push('tamaños de letra');
+          } finally { caja.remove(); }
+          // los paneles finales ya montados (los juegos abiertos en esta prueba), con la hoja común: «Otra vez» y «Salir» de ≥ 44 px
+          let vistos = 0;
+          for (const p of [...document.querySelectorAll('.av-fin')]) {
+            const c = p.cloneNode(true); c.removeAttribute('id'); c.hidden = false; c.style.cssText = 'position:fixed;left:0;top:0;z-index:-1;visibility:hidden;display:block';
+            c.querySelectorAll('[hidden]').forEach(x => { x.hidden = false; }); document.body.appendChild(c);
+            try { const bs = [...c.querySelectorAll('.av-bots .av-bot')]; vistos++; if (bs.length < 2 || !bs.every(b => b.getBoundingClientRect().height >= 44)) malos.push((p.id || p.className) + ': botones < 44 px'); } finally { c.remove(); }
+          }
+          check(`PULIR 4 · Minijuegos coherentes: ${PANEL.length} paneles finales con las clases comunes (.av-fin; «Otra vez» y «Salir» de 54 px y 18 px), la misma letra y la tabla común de sonidos (victoria y «casi» = panel_final, récord = logro a los 500 ms); ${vistos} paneles montados medidos`, !malos.length, malos.join('; '));
         }
         const nuevos = (window.__aveErrores || []).slice(errores0);
         check('Sin errores de consola', !errores.length && !nuevos.length, errores.concat(nuevos).slice(0, 3).join(' | '));
