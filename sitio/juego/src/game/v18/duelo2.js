@@ -658,6 +658,14 @@ window.AVV18Duelo2 = function (G) {
   function abrirTarjeta() {
     if (!disponible()) return false;
     crearJ2();
+    // F20 r2: los estilos de la tarjeta iban con los del HUD (montarHud, al empezar): al abrirla desde la portada aún no estaban y los
+    // botones salían sueltos a la izquierda («Jugador 2» solo en su fila). Ahora se ponen aquí (tarjeta más ancha y filas centradas).
+    if (!document.getElementById('v18-d2-card-css')) {
+      const st = document.createElement('style'); st.id = 'v18-d2-card-css';
+      st.textContent = '#card:has(.v18-d2){width:min(680px,calc(100vw - 32px))}.v18-d2 .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.v18-d2 .d2-vent{margin:4px 0 6px}.v18-d2 .d2-vent .btn{min-height:44px}' +
+        '.v18-d2 .d2-teclas{font-size:14px;line-height:1.4;margin:4px 0 0}.v18-d2 .d2-fila{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:4px 0}.v18-d2 .d2-k{white-space:nowrap}.v18-d2 .d2-k kbd{margin-right:2px}';
+      document.head.appendChild(st);
+    }
     const bot = ESPECIES.map(e => `<button class="btn${e.id === D.esp2 ? '' : ' ghost'}" type="button" data-d2sp="${e.id}" aria-pressed="${e.id === D.esp2}">${esc(e.nombre)}<small style="display:block;opacity:.8">${esc((H.get(H.poderDe(e.id)) || {}).nombre || '')}</small></button>`).join('');
     G.ui.showCard(`<div class="v18-d2"><h2>${esc(TXT.titulo)}</h2><p>${esc(TXT.nota)}</p><p><b>${esc(TXT.elige)}</b></p><div class="row">${bot}</div>` +
       (tactil() ? `<p class="note" data-d2tactil>${esc(TT.tarjetaT)}</p>` : '') +

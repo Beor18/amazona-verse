@@ -17,7 +17,7 @@
 .modos { margin: 0; width: 100%; max-width: 780px; }
 .modos-t { margin: 0 0 var(--sp-3); font: 700 var(--fs-2xl)/1.1 var(--font-display); color: #fff; text-shadow: 0 2px 0 rgba(27, 21, 80, 0.6), 0 6px 18px rgba(27, 21, 80, 0.5); }
 .modos-pistas { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: var(--sp-3) 0 0; width: 100%; }
-.modos-pista-lead { flex: 1 0 100%; margin: 0; text-align: center; color: #fff; font: 700 var(--fs-md)/1.3 var(--font-display); text-shadow: 0 2px 0 rgba(27, 21, 80, 0.55); }
+.modos-pista-lead { flex: 1 0 100%; margin: 0; text-align: center; color: #fff; font: 700 var(--fs-md)/1.3 var(--font-display); text-shadow: 0 2px 0 rgba(27, 21, 80, 0.55), 0 0 6px rgba(20, 12, 60, 0.9), 0 0 12px rgba(20, 12, 60, 0.6); } /* F20 r2: halo oscuro, sobre el cielo claro del atardecer casi no se leía */
 .modos-pista-i {
   display: inline-flex; align-items: center; gap: 6px; box-sizing: border-box; max-width: 100%;
   min-height: 36px; padding: 4px 12px; border-radius: var(--r-pill, 999px);
@@ -126,7 +126,7 @@ html.modo-libre :is(#quest, #keyhint) { display: none !important; }
 /* Humo en iPhone (8-nov): el Álbum (34 fichas) y Mis cotorras (con «Por conseguir (33)» abierto la primera vez) abiertos desde el menú
    dejaban «Cerrar» / «Listo» al final, varias pantallas más abajo; la fila del botón se queda pegada abajo de la tarjeta */
 #card .mm-album > .row:last-child, #card.mm-encima .row:has(> #v18-elegir-ok) { position: sticky; bottom: calc(-1 * var(--sp-6)); z-index: 1; margin: 0 calc(-1 * var(--sp-6)) calc(-1 * var(--sp-6));
-  padding: var(--sp-4) var(--sp-6) var(--sp-6); background: linear-gradient(to bottom, transparent, var(--c-paper) 40%); }
+  padding: var(--sp-3) var(--sp-6) var(--sp-6); background: var(--c-paper); box-shadow: 0 -16px 14px -8px var(--c-paper); } /* F20 r2: fondo opaco (con el degradado, el texto de detrás se veía junto a «Listo») y un fundido corto por encima */
 /* Humo en iPhone (8-nov): en Amazona Flight, River Rush, Maze y el tren la capa de toque (inset 0, z-card) tapaba el botón de Pausa, y la
    pausa de esos modos y de los Retos escondía «Cambiar de juego»: no se podía volver al menú. La Pausa sube sobre la capa (no sobre el
    panel final, que ya trae sus botones) y «Cambiar de juego» se queda (menu_modos.js volver() sale del modo activo) */

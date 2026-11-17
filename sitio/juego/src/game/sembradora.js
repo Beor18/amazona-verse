@@ -507,7 +507,20 @@ window.AVSembradora = function (G) {
     let dx = S.pos.x - cx, dz = S.pos.z - cz, d = Math.hypot(dx, dz);
     if (d < 0.5) { const f = S.facing || { x: 0, z: 1 }; dx = -f.x; dz = -f.z; d = Math.hypot(dx, dz) || 1; }
     dx /= d; dz /= d;
-    const k = Math.min(30, ex * 0.5 + 6), x = cx + dx * k, z = cz + dz * k, Mv = G.fisica && G.fisica.MOVE;
+    const k = Math.min(30, ex * 0.5 + 6);
+    // F20 r2: si por ese lado hay un cerro entre Vittata y la cámara (que va AJ_F.distFly más afuera y AJ_F.heightFly más arriba),
+    // se gira alrededor del claro hasta el lado más cercano que deja la vista libre (antes terminaba con la cámara dentro del cerro)
+    let mejor = -Infinity, bx = dx, bz = dz;
+    for (let i = 0; i < 16; i++) {
+      const a = (i % 2 ? -1 : 1) * Math.ceil(i / 2) * Math.PI / 8, ca = Math.cos(a), sa = Math.sin(a);
+      const rx = dx * ca - dz * sa, rz = dx * sa + dz * ca, px = cx + rx * k, pz = cz + rz * k, py = Math.max(superficie(px, pz), superficie(cx, cz)) + 9;
+      let hol = Infinity;
+      for (let j = 1; j <= 4; j++) { const t = j / 4, qx = px + rx * AJ_F.distFly * t, qz = pz + rz * AJ_F.distFly * t; hol = Math.min(hol, py + AJ_F.heightFly * t - superficie(qx, qz)); }
+      const v = Math.min(hol, 3) - Math.abs(a) * 0.15;
+      if (v > mejor) { mejor = v; bx = rx; bz = rz; }
+    }
+    dx = bx; dz = bz;
+    const x = cx + dx * k, z = cz + dz * k, Mv = G.fisica && G.fisica.MOVE;
     S.pos.x = x; S.pos.z = z; S.pos.y = Math.max(superficie(x, z), superficie(cx, cz)) + 9; S.vy = 0; S.facing = { x: -dx, z: -dz };
     if (Mv) { Mv.vx = Mv.vz = 0; Mv.landing = false; Mv.grounded = false; Mv.swimming = false; if (!Mv.flying) { Mv.flying = true; try { G.emit('vuelo', true); } catch (e) { /* */ } } }
     try { if (G.camara) { G.camara.yaw = Math.atan2(dx, dz); if (G.camara.manual) G.camara.manual(); } } catch (e) { /* sin cámara */ }

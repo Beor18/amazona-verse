@@ -46,7 +46,7 @@ AVE.module('objetos', function (G) {
     // Combo: recoger seguido sube la nota del arpegio
     const juice = G.camara.juice;
     juice.combo = S.clock - juice.comboT < 3 ? juice.combo + 1 : 0; juice.comboT = S.clock;
-    G.audio.play('pickup', juice.combo); G.camara.hitStop(0.06);
+    G.audio.play('semilla', juice.combo); G.camara.hitStop(0.06); // F21: recoger suena «semilla» (Suno; el combo sube el tono; mientras carga, «pickup»)
     G.fx.recoger(r.x, H(r.x, r.z) + 0.6, r.z, r.fondo ? 'bubbles' : 'feathers', r.fondo ? 20 : 16, r.fondo ? S.water : null);
     G.ui.toast('+1 ' + label(r.tipo) + (juice.combo > 0 ? '  ·  combo x' + (juice.combo + 1) : ''));
     G.misiones.check();

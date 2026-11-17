@@ -563,6 +563,10 @@
 @keyframes rec-tiembla { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
 @media (max-width: 560px) { #records .rec-head { padding: var(--sp-3) var(--sp-4) var(--sp-2); } #records h2 { font-size: var(--fs-xl); } #records .rec-body { padding: var(--sp-3) var(--sp-4); }
   #records .rec-pie { padding-left: var(--sp-4); padding-right: var(--sp-4); } #records .rec-pie .btn { flex: 1 1 140px; } #records .rec-casa li { grid-template-columns: 1fr 1fr; } #records .rec-casa li > :first-child { grid-column: 1 / -1; font-weight: 700; } }
+/* F20 r2: teléfono en horizontal: la zona con desplazamiento medía unos 200 px entre cabecera y pie, con «Cerrar» repetido arriba y abajo.
+   Cabecera y pie compactos y un solo «Cerrar» (el del pie, junto a «Compartir mi récord»). */
+@media (max-height: 520px) and (orientation: landscape) { #records .rec-head { padding: 6px var(--sp-4); } #records h2 { font-size: var(--fs-lg); } #records h2::before { width: 22px; height: 22px; }
+  #records .rec-head [data-rec-cerrar] { display: none; } #records .rec-body { padding: var(--sp-2) var(--sp-4); } #records .rec-pie { padding-top: 6px; padding-bottom: max(6px, env(safe-area-inset-bottom, 0px)); } }
 @media (prefers-reduced-motion: reduce) { #records .rec-box, #rec-puerta .rp-box, #rec-puerta .rp-box.mal { animation: none; } }
 `;
     if (!document.getElementById('records-css')) { const st = document.createElement('style'); st.id = 'records-css'; st.textContent = CSS; document.head.appendChild(st); }

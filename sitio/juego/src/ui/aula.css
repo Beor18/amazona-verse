@@ -125,6 +125,7 @@ body:has(#dialog:not([hidden])) #edu-vuelo { display: none; } /* auditoría 7-no
 .maestro-body thead th { background: var(--c-paper-2); white-space: nowrap; }
 .maestro-body tbody th small { display: block; font-weight: 400; color: var(--c-ink-muted); }
 .maestro-tabla td { white-space: nowrap; }
+.maestro-tabla td.maestro-largo { white-space: normal; min-width: 16em; } /* F20 r2: «Cómo se gana» (criadero) envuelve; se cortaba a media palabra en el borde */
 .maestro-fuentes { list-style: none; padding: 0 !important; }
 .maestro-fuentes li { padding: var(--sp-2) 0; border-bottom: 1px dashed var(--c-paper-2); }
 .maestro-fuentes code { font-size: 12px; word-break: break-all; color: var(--c-ink-muted); }
@@ -136,6 +137,14 @@ body:has(#dialog:not([hidden])) #edu-vuelo { display: none; } /* auditoría 7-no
 
 /* W31: el botón «Poder» (V18, z-index 70) se quedaba encima del Modo Maestro y tapaba sus tarjetas */
 body:has(#maestro:not([hidden])) #v18-exp-poder { display: none !important; }
+/* F20 r2: teléfono en horizontal: la cabecera (título, aviso y 7 pestañas en dos filas) se comía 230 de 390 px. Más compacta y las
+   pestañas en una fila que se desliza de lado */
+@media (max-height: 520px) and (orientation: landscape) {
+  #maestro { padding: var(--sp-2); }
+  .maestro-box { padding: var(--sp-3) var(--sp-4); max-height: calc(100dvh - 16px); }
+  .maestro-tabs { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; margin-bottom: var(--sp-2); padding-bottom: 4px; scrollbar-width: thin; }
+  .maestro-tabs .chip { flex: none; }
+}
 
 /* «Emparejar» (q3 del cap. 1): dos columnas que caben en un teléfono de 320–390 px; cada par lleva el número de su elemento
    de la izquierda (no depende solo del color) */

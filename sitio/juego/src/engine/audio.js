@@ -42,49 +42,71 @@ AVE.module('audio', function (G) {
     setTimeout(() => precargarEnCalma(PRECARGA), PRECARGA_MS); // vuelo e interfaz: fuera de la carga inicial
     return ctx;
   }
+  // F21 · volúmenes equilibrados. lu: sonoridad momentánea máxima de cada archivo (EBU R128, ventana de 400 ms, en LUFS), medida el
+  // 17-nov sobre el .ogg con ffmpeg -af "apad=pad_dur=1,ebur128" (el .mp3 queda a ±0,3). La ganancia no se pone a ojo: sale del nivel al
+  // que debe sonar su tipo, gain = min(1, 10^((NIVEL[nivel] − lu) / 20)) redondeada a 0,01, y ninguno destaca ni se pierde:
+  //   suave −28 (suenan a cada rato: aleteo, boton) · corto −25 (golpes de construir y del duelo) · accion −23 (vuelo, recoger, pesca,
+  //   avisos) · poder −22 (poderes y el poder del duelo) · premio −21 (logros, finales, el pez sacado, el huevo).
+  // Antes (ganancias a ojo) iban de −29,8 (aleteo) a −18,5 (poder_rafaga): 11 dB entre el más flojo y el más fuerte; ahora 7, por tipo.
+  //   archivo          lu     nivel   antes → ahora   (efectivo antes → ahora, LUFS)
+  //   aterrizar_techo −23,8  accion  0,90 → 1,00   (−24,7 → −23,8; no se sube más de 1)   posarse_rama  −22,9 accion 0,90 → 0,99 (−23,8 → −23,0)
+  //   despegar        −19,9  accion  0,80 → 0,70   (−21,8 → −23,0)   nido_chispa −18,2 premio 0,80 → 0,72   eclosion_huevo −18,0 premio 0,90 → 0,71
+  //   aleteo          −23,8  suave   0,50 → 0,62   (−29,8 → −28,0)   boton  −22,6 suave 0,60 → 0,54   (−27,0 → −28,0)
+  //   planeo −18,3 accion 0,55 → 0,58 · picada −17,4 accion 0,60 → 0,52 · frenada −17,9 accion 0,60 → 0,56 · semilla −18,5 accion 0,70 → 0,60
+  //   aviso −19,0 accion 0,60 → 0,63 · flecha −18,2 accion 0,65 → 0,58 · lanzar −19,7 accion 0,75 → 0,68 · pica −17,2 accion 0,80 → 0,51
+  //   pieza −19,1 corto 0,80 → 0,51 · encaje −18,8 corto 0,70 → 0,49 · duelo_ala −17,9 corto 0,70 → 0,44 · duelo_pata −19,5 corto 0,70 → 0,53
+  //   duelo_semilla −17,8 corto 0,70 → 0,44 · duelo_poder −19,7 poder 0,80 → 0,77 · poder_grito −17,6 poder 0,85 → 0,60
+  //   poder_rafaga −16,6 poder 0,80 → 0,54 · poder_ojo −18,0 poder 0,80 → 0,63 · poder_planeo −17,7 poder 0,80 → 0,61
+  //   logro −18,3 premio 0,80 → 0,73 · panel_final −17,7 premio 0,85 → 0,68 · clavado −19,0 premio 0,85 → 0,79
+  //   puente_reparado −19,9 premio 0,90 → 0,88 · duelo_victoria −18,1 premio 0,85 → 0,72 · duelo_derrota −18,1 premio 0,80 → 0,72
+  // Los ambientes en bucle (bosque_yunque, noche_coquis, lluvia, rio) los equilibra src/game/musica.js (BUCLES) con su sonoridad integrada.
+  // Un archivo nuevo: mide su lu igual y elige su nivel; sin lu, gain explícita (G.audio.sample) o 1.
+  const NIVEL = { suave: -28, corto: -25, accion: -23, poder: -22, premio: -21 };
+  const ganancia = m => (m.lu != null && NIVEL[m.nivel] != null ? Math.min(1, Math.round(Math.pow(10, (NIVEL[m.nivel] - m.lu) / 20) * 100) / 100) : m.gain == null ? 1 : m.gain);
   // Muestras en archivo: bus de efectos, mismo silencio y volumen que los sintéticos
   const MUESTRAS = {
-    aterrizar_techo: { gain: 0.9, respaldo: 'land' },
-    posarse_rama: { gain: 0.9, respaldo: 'land' },
-    despegar: { gain: 0.8, respaldo: 'jump' },
-    nido_chispa: { gain: 0.8, respaldo: 'tick' },
-    eclosion_huevo: { gain: 0.9, respaldo: 'unlock' },
+    aterrizar_techo: { lu: -23.8, nivel: 'accion', respaldo: 'land' },
+    posarse_rama: { lu: -22.9, nivel: 'accion', respaldo: 'land' },
+    despegar: { lu: -19.9, nivel: 'accion', respaldo: 'jump' },
+    nido_chispa: { lu: -18.2, nivel: 'premio', respaldo: 'tick' },
+    eclosion_huevo: { lu: -18.0, nivel: 'premio', respaldo: 'unlock' },
   };
   // T45: efectos de Suno (assets/audio/sfx/, ficha en sonidos.json; −20 LUFS como los de arriba). respaldo: lista de sintéticos (el primero
   // que exista); minMs y pronto: sin spam; tono(arg): velocidad de reproducción; bucle: ambiente que pone musica.js (no se toca con play).
   const SFX = {
-    aleteo: { gain: 0.5, respaldo: 'aleteo_sint', minMs: 380, pronto: 'aleteo_sint' }, // entre dos aletazos de archivo, el sintético suave
-    planeo: { gain: 0.55, respaldo: 'dash', minMs: 2500 },
-    picada: { gain: 0.6, respaldo: ['picado', 'dash'], minMs: 2000 },
-    frenada: { gain: 0.6, respaldo: 'land', minMs: 1500 },
-    semilla: { gain: 0.7, respaldo: ['r_semilla', 'pickup'], tono: c => 1 + Math.min(c || 0, 9) * 0.03 }, // el combo sube un poco el tono
-    logro: { gain: 0.8, respaldo: 'unlock', minMs: 1500 },
-    boton: { gain: 0.6, respaldo: 'clic', minMs: 90 },
-    aviso: { gain: 0.6, respaldo: 'tick', minMs: 1500 },
-    flecha: { gain: 0.65, respaldo: 'tick', minMs: 1500, pronto: 'tick' },
-    panel_final: { gain: 0.85, respaldo: 'unlock', minMs: 3000 },
-    pieza: { gain: 0.8, respaldo: 'tac', minMs: 120, pronto: 'tac' },
-    encaje: { gain: 0.7, respaldo: 'tick', minMs: 250 },
-    puente_reparado: { gain: 0.9, respaldo: 'unlock', minMs: 3000 },
-    lanzar: { gain: 0.75, respaldo: 'dash', minMs: 600 },
-    pica: { gain: 0.8, respaldo: 'splash', minMs: 600 },
-    clavado: { gain: 0.85, respaldo: 'unlock', minMs: 1000 },
-    duelo_ala: { gain: 0.7, respaldo: ['ext_ala', 'dash'], minMs: 300, pronto: 'ext_ala' },
-    duelo_pata: { gain: 0.7, respaldo: ['ext_pata', 'tac'], minMs: 250, pronto: 'ext_pata', tono: a => (a > 1 && a <= 1.5 ? a : 1) }, // F4-15: la pluma quitada lo sube (1,06–1,3); el lado de la patada (±1) no
-    duelo_semilla: { gain: 0.7, respaldo: 'dash', minMs: 300, pronto: 'dash' },
-    duelo_poder: { gain: 0.8, respaldo: 'dash', minMs: 800 },
-    duelo_victoria: { gain: 0.85, respaldo: 'unlock', minMs: 3000 },
-    duelo_derrota: { gain: 0.8, respaldo: 'wrong', minMs: 3000 },
-    poder_grito: { gain: 0.85, respaldo: 'grito', minMs: 800 },
-    poder_rafaga: { gain: 0.8, respaldo: 'dash', minMs: 800 }, // T42 le dará su momento
-    poder_ojo: { gain: 0.8, respaldo: 'descubrir', minMs: 800 }, // T42
-    poder_planeo: { gain: 0.8, respaldo: 'dash', minMs: 800 }, // T42
+    aleteo: { lu: -23.8, nivel: 'suave', respaldo: 'aleteo_sint', minMs: 380, pronto: 'aleteo_sint' }, // entre dos aletazos de archivo, el sintético suave
+    planeo: { lu: -18.3, nivel: 'accion', respaldo: 'dash', minMs: 2500 },
+    picada: { lu: -17.4, nivel: 'accion', respaldo: ['picado', 'dash'], minMs: 2000 },
+    frenada: { lu: -17.9, nivel: 'accion', respaldo: 'land', minMs: 1500 },
+    semilla: { lu: -18.5, nivel: 'accion', respaldo: ['r_semilla', 'pickup'], tono: c => 1 + Math.min(c || 0, 9) * 0.03 }, // el combo sube un poco el tono (F21: también al recoger un objeto del mundo). Sin minMs: dos semillas seguidas en Semillas, Sembradora, ¡Sígueme! o Retos suenan las dos (cada una con su nota del combo)
+    logro: { lu: -18.3, nivel: 'premio', respaldo: 'unlock', minMs: 1500 },
+    boton: { lu: -22.6, nivel: 'suave', respaldo: 'clic', minMs: 90 },
+    aviso: { lu: -19.0, nivel: 'accion', respaldo: 'tick', minMs: 1500 },
+    flecha: { lu: -18.2, nivel: 'accion', respaldo: 'tick', minMs: 1500, pronto: 'tick' },
+    panel_final: { lu: -17.7, nivel: 'premio', respaldo: 'unlock', minMs: 3000 },
+    pieza: { lu: -19.1, nivel: 'corto', respaldo: 'tac', minMs: 120, pronto: 'tac', tono: a => (a >= 0.7 && a < 1 ? a : 1) }, // F21: quitar una pieza la toca más grave (0,85)
+    encaje: { lu: -18.8, nivel: 'corto', respaldo: 'tick', minMs: 250 },
+    puente_reparado: { lu: -19.9, nivel: 'premio', respaldo: 'unlock', minMs: 3000 },
+    lanzar: { lu: -19.7, nivel: 'accion', respaldo: 'dash', minMs: 600 },
+    pica: { lu: -17.2, nivel: 'accion', respaldo: 'splash', minMs: 600 },
+    clavado: { lu: -19.0, nivel: 'premio', respaldo: 'unlock', minMs: 1000 },
+    duelo_ala: { lu: -17.9, nivel: 'corto', respaldo: ['ext_ala', 'dash'], minMs: 300, pronto: 'ext_ala' },
+    duelo_pata: { lu: -19.5, nivel: 'corto', respaldo: ['ext_pata', 'tac'], minMs: 250, pronto: 'ext_pata', tono: a => (a > 1 && a <= 1.5 ? a : 1) }, // F4-15: la pluma quitada lo sube (1,06–1,3); el lado de la patada (±1) no
+    duelo_semilla: { lu: -17.8, nivel: 'corto', respaldo: 'dash', minMs: 300, pronto: 'dash' },
+    duelo_poder: { lu: -19.7, nivel: 'poder', respaldo: 'dash', minMs: 800 },
+    duelo_victoria: { lu: -18.1, nivel: 'premio', respaldo: 'unlock', minMs: 3000 },
+    duelo_derrota: { lu: -18.1, nivel: 'premio', respaldo: 'wrong', minMs: 3000 },
+    poder_grito: { lu: -17.6, nivel: 'poder', respaldo: 'grito', minMs: 800 },
+    poder_rafaga: { lu: -16.6, nivel: 'poder', respaldo: 'dash', minMs: 800 }, // T42 le dará su momento
+    poder_ojo: { lu: -18.0, nivel: 'poder', respaldo: 'descubrir', minMs: 800 }, // T42
+    poder_planeo: { lu: -17.7, nivel: 'poder', respaldo: 'dash', minMs: 800 }, // T42
     bosque_yunque: { bucle: true },
     lluvia: { bucle: true, respaldo: 'lluvia_sint' },
     rio: { bucle: true },
     noche_coquis: { bucle: true },
   };
-  for (const n of Object.keys(SFX)) MUESTRAS[n] = Object.assign({ gain: 1, url: 'assets/audio/sfx/' + n + '.', perezosa: true }, SFX[n]);
+  for (const n of Object.keys(SFX)) MUESTRAS[n] = Object.assign({ url: 'assets/audio/sfx/' + n + '.', perezosa: true }, SFX[n]);
+  for (const n of Object.keys(MUESTRAS)) MUESTRAS[n].gain = ganancia(MUESTRAS[n]);
   // Los de vuelo e interfaz (y los finales de una sola vez) se piden PRECARGA_MS después del primer gesto, de uno en uno y en calma
   const PRECARGA = ['aleteo', 'planeo', 'picada', 'frenada', 'boton', 'aviso', 'flecha', 'semilla', 'logro', 'panel_final', 'puente_reparado', 'poder_grito'], PRECARGA_MS = 20000;
   const quiere = new Set(); // pedidas con precargar() antes de que exista el AudioContext
@@ -113,13 +135,15 @@ AVE.module('audio', function (G) {
       return u.buffer;
     });
   }
+  let midiendo = false; // medir() cambia ctx por uno sin conexión: entonces no se pide ningún archivo (se decodificaría en el contexto prestado)
   function cargar(n) {
-    if (!ctx || bufs[n] || pedidas[n]) return;
+    if (!ctx || midiendo || bufs[n] || pedidas[n]) return;
     const m = MUESTRAS[n];
+    const c = ctx; // F21: se decodifica en el contexto que la pidió (si medir() presta uno sin conexión mientras llega, no se usa ese)
     pedidas[n] = fetch((m.url || 'assets/audio/' + n + '.') + formato())
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
       .catch(() => desdeB64(n))
-      .then(ab => new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(() => {}); }))
+      .then(ab => new Promise((res, rej) => { const p = c.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(() => {}); }))
       .then(b => { bufs[n] = b; }, () => { /* se queda el respaldo sintético */ });
   }
   function respaldoDe(m) { for (const r of [].concat(m.respaldo || [])) if (SOUNDS[r]) return SOUNDS[r]; return null; }
@@ -238,6 +262,12 @@ AVE.module('audio', function (G) {
     muestras: () => Object.keys(MUESTRAS),
     ficha: n => MUESTRAS[n] ? Object.assign({}, MUESTRAS[n], { url: (MUESTRAS[n].url || 'assets/audio/' + n + '.') + formato() }) : null,
     has: name => !!SOUNDS[name],
+    // F21: por qué play() no sonaría ahora: 'silencio' (el jugador lo apagó: se mira primero), 'bloqueado' (aún sin gesto: sin
+    // AudioContext o suspendido), 'midiendo' (medir() tiene prestado el contexto) o '' si puede sonar. Para las pruebas y play().
+    callado: () => (vol.muted ? 'silencio' : midiendo ? 'midiendo' : !ctx || ctx.state !== 'running' ? 'bloqueado' : ''),
+    // F21: marca del enfriamiento de un efecto (ms de performance.now() de la última vez); con v la pone (las pruebas la devuelven)
+    enfriamiento(n, v) { const m = MUESTRAS[n]; if (!m) return null; if (v !== undefined) { if (v == null) delete m.ult; else m.ult = v; } return m.ult == null ? null : m.ult; },
+    NIVEL, efectivo: n => (MUESTRAS[n] && MUESTRAS[n].lu != null ? MUESTRAS[n].lu + 20 * Math.log10(MUESTRAS[n].gain) : null), // F21: LUFS con su ganancia (pruebas)
     reducido: null, // null: lo decide el sistema (G.renderer.REDUCED); true o false lo fuerza (pruebas o ajuste del menú)
     esSuave: name => FUERTES.has(name) && (api.reducido != null ? !!api.reducido : !!(G.renderer && G.renderer.REDUCED)),
     save() { try { localStorage.setItem(STORE, JSON.stringify(vol)); } catch (e) { /* sin almacenamiento */ } },
@@ -259,7 +289,7 @@ AVE.module('audio', function (G) {
       sfxBus = off.createGain(); sfxBus.gain.value = 1; sfxBus.connect(master);
       suaveBus = off.createGain(); suaveBus.gain.value = SUAVE; suaveBus.connect(sfxBus);
       voiceBus = off.createGain(); voiceBus.gain.value = 1; voiceBus.connect(master);
-      salida = sfxBus;
+      salida = sfxBus; midiendo = true;
       try {
         SOUNDS[name](0.02, name === 'grito' ? 1 : 0);
         const buf = await off.startRendering(), d = buf.getChannelData(0);
@@ -274,7 +304,7 @@ AVE.module('audio', function (G) {
         return { pico, rms };
       } finally {
         ctx = prev.ctx; master = prev.master; sfxBus = prev.sfxBus; voiceBus = prev.voiceBus;
-        suaveBus = prev.suaveBus; salida = prev.salida; noiseBuf = prev.noiseBuf;
+        suaveBus = prev.suaveBus; salida = prev.salida; noiseBuf = prev.noiseBuf; midiendo = false;
       }
     },
     // Devuelve true si sonó; el registro sirve para probar sin altavoces
@@ -285,7 +315,7 @@ AVE.module('audio', function (G) {
       if (name === 'tick' && now - lastAt < 250) return false; // el aviso no tapa otro sonido
       lastAt = now; api.log.push(name); if (api.log.length > 40) api.log.shift();
       for (const f of oyentes) { try { f(name, arg); } catch (e) { /* un oyente no frena el sonido */ } }
-      if (!ctx || ctx.state !== 'running' || vol.muted) return false;
+      if (api.callado()) return false; // apagado, sin gesto aún o midiendo (no suena en el contexto prestado de medir())
       salida = api.esSuave(name) ? suaveBus : sfxBus;
       try { SOUNDS[name](ctx.currentTime + 0.01, arg); } catch (e) { return false; } finally { salida = sfxBus; }
       return true;

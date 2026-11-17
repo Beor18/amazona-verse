@@ -186,7 +186,10 @@ AVE.module('fisica', function (G) {
   }
   // Piloto (16-nov): posadoT = cuándo terminó un aterrizaje (performance.now). input.js no deja que Volar (botón o V) relance
   // en los T.graciaPosado s siguientes: el segundo toque de un niño en Aterrizar llegaba justo al tocar suelo y volvía a volar.
-  function endFlight() { if (!MOVE.flying) return; if (MOVE.landing) MOVE.posadoT = performance.now(); MOVE.flying = false; MOVE.landing = false; MOVE.takeoff = 0; G.emit('vuelo', false); }
+  // F21 · MOVE.finEnPaso: el vuelo terminó dentro de step() (tocó el suelo o el agua) y no porque un modo la llevara a otro sitio
+  // (menuModos, duelo, pesca…): juice, trucos y humor solo celebran el aterrizaje de verdad (antes, entrar a un duelo sonaba tres efectos)
+  let dentroPaso = false;
+  function endFlight() { if (!MOVE.flying) return; if (MOVE.landing) MOVE.posadoT = performance.now(); MOVE.flying = false; MOVE.landing = false; MOVE.takeoff = 0; MOVE.finEnPaso = dentroPaso; G.emit('vuelo', false); }
   function tryDash() {
     if (MOVE.dashCd > 0 || busyNow()) return;
     const air = !onGroundNow();
@@ -364,7 +367,8 @@ AVE.module('fisica', function (G) {
   }
 
   // ---------- Un paso de simulación del jugador; devuelve si se está moviendo ----------
-  function step(dt, busy) {
+  function step(dt, busy) { dentroPaso = true; try { return pasoJugador(dt, busy); } finally { dentroPaso = false; } }
+  function pasoJugador(dt, busy) {
     const keys = G.input.keys, stick = G.input.stick, cam = G.camara;
     if (!MOVE.flying) { MOVE.landing = false; MOVE.takeoff = 0; } // por si un pack o una prueba cambia flying a mano
     let ix = 0, iz = 0;
@@ -591,7 +595,8 @@ AVE.module('fisica', function (G) {
     // Volando, rozar el suelo o un tejado a velocidad de crucero (o subiendo) no termina el vuelo: sigue rasante.
     // Se posa al aterrizar (V, X), al bajar con C hasta el suelo o al tocarlo despacio sin pedir subir.
     const rasante = MOVE.flying && S.pos.y <= ground && !(S.vy <= 0 && MOVE.takeoff <= 0 && (MOVE.landing || dive || (!jumpHeld && hSpeed < 2.5)));
-    if (rasante) { S.pos.y = ground; S.vy = Math.max(S.vy, 0); MOVE.grounded = false; }
+    // F21: rasante sigue en el aire (wasAir): al posarse con V o X desde un vuelo bajo suena el golpe de aterrizaje, como desde alto
+    if (rasante) { S.pos.y = ground; S.vy = Math.max(S.vy, 0); MOVE.grounded = false; MOVE.wasAir = true; }
     else if (S.pos.y <= ground) {
       if (MOVE.wasAir) {
         const fall = -S.vy;

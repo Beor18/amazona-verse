@@ -93,6 +93,7 @@
     AV.movementTest = o => movimiento().then(m => m.test(o));
     const fugas = aDemanda('src/pruebas/fugas.js', 'AVFugasTest'); AV.fugasTest = o => fugas().then(m => m.test(o)); // W20: abrir y cerrar modos no deja basura
     const gestos = aDemanda('src/pruebas/gestos.js', 'AVGestosTest'); AV.gestosTest = o => gestos().then(m => m.test(o)); // E17: gestos (pose, sonido, sin acumular)
+    const sonido = aDemanda('src/pruebas/sonido.js', 'AVSonidoTest'); AV.sonidoTest = o => sonido().then(m => m.test(o)); // F21: cada acción con su efecto, ambiente día/noche, volúmenes y silencio
     const memoria = aDemanda('src/pruebas/memoria.js', 'AVMemoriaLargaTest'); AV.memoriaLargaTest = o => memoria().then(m => m.test(o)); // hito 1: memoria estable en sesión larga en móvil (?memlarga=1: 30 min)
     if (AVE.pieles) { const pieles = aDemanda('src/pruebas/pieles.js', 'AVPielesTest'); AV.pielesTest = o => pieles().then(m => m.test(o)); } // src/personaje/pieles.js
     if (P.faunaDatos) { const fauna = aDemanda('src/game/fauna.js', 'AVFauna'); AV.faunaTest = o => fauna().then(f => f.test(o)); AV.fauna = fauna; alPrimerGesto(fauna); } // src/game/fauna.js

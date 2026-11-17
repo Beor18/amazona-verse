@@ -97,7 +97,8 @@ AVE.module('criadero', function (G) {
     if (c.inicio) return true;
     if (c.mision) return misionesHechas().has(c.mision);
     if (c.misiones) return misionesHechas().size >= c.misiones;
-    if (c.hallazgos) return hallazgos(c.hallazgos.cat) >= c.hallazgos.min;
+    // F20 r2: «todos» = todas las entradas del Diario del pack (el del cap. 1 pasó de 12 a 13 y la regla seguía en 12)
+    if (c.hallazgos) { const tot = ((G.pack.diario && G.pack.diario.entradas) || []).length; return hallazgos(c.hallazgos.cat) >= (c.hallazgos.todos && tot ? tot : c.hallazgos.min); }
     if (c.fichas) return otorgados('ficha').length >= c.fichas;
     if (c.preguntas) return otorgados('pregunta').length >= c.preguntas;
     if (c.liberadas) return st.liberadas >= c.liberadas;
@@ -1517,7 +1518,7 @@ AVE.module('criadero', function (G) {
     if (!D()) return '<p class="note">Cargando…</p>';
     const F = st.fuentes, tot = F.aprender + F.explorar + F.cuidar || 1, pc = v => Math.round(v / tot * 100);
     const filas = D().huevos.map(h => { const c = st.capsulas[h.id]; const et = etapaDe(c);
-      return `<tr><td>${esc(t(h.nombre))}</td><td>${esc(t(D().rarezas[h.rareza]))}</td><td>${c ? esc(c.estado === 'liberada' ? u('libre') : t(etapaDef(et).nombre)) : '·'}</td><td>${c && et !== 'huevo' ? nivelDe(c.xp) : c ? diasDe(c) + '/' + D().incubacion.dias + ' d' : ''}</td><td>${esc(t(h.obtener.texto))}</td></tr>`; }).join('');
+      return `<tr><td>${esc(t(h.nombre))}</td><td>${esc(t(D().rarezas[h.rareza]))}</td><td>${c ? esc(c.estado === 'liberada' ? u('libre') : t(etapaDef(et).nombre)) : '·'}</td><td>${c && et !== 'huevo' ? nivelDe(c.xp) : c ? diasDe(c) + '/' + D().incubacion.dias + ' d' : ''}</td><td class="maestro-largo">${esc(t(h.obtener.texto))}</td></tr>`; }).join('');
     const reales = D().real.map(f => `<li><b>${esc(f.estado)}</b> · ${esc(t(f.texto))}<br><small>${esc(f.fuente)}${f.url ? ` · <code>${esc(f.url)}</code>` : ''}${f.nota ? ' · ' + esc(f.nota) : ''}</small></li>`).join('');
     return `<p class="note">${esc(t({ es: 'La cotorra crece con lo que el niño aprende y explora. Cuidarla da poco y nunca castiga. Nada baja con el tiempo y nada se compra. Solo se guarda en este teléfono o computadora.', en: 'The parrot grows with what the child learns and explores. Caring gives a little and never punishes. Nothing goes down over time and nothing is bought. It is saved only on this phone or computer.' }))}</p>
       <h3>${esc(t({ es: 'De dónde salen los puntos', en: 'Where the points come from' }))}</h3>

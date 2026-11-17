@@ -29,6 +29,12 @@
     const S = G.S, $ = G.util.$, P = G.pack, raiz = document.documentElement;
     const ALMACEN = ((P.meta && P.meta.almacen) || P.id) + '.menu';
     const portada = $('title'), form = $('modos'), creador = $('creator');
+    // F20 r2: el «autofocus» de Aventura bajaba la portada al cargar (en horizontal 45 px: el logo salía cortado, «VERSE» solo).
+    // Al abrir, si nadie ha tocado aún, la portada vuelve arriba (el foco se queda en Aventura).
+    { let tocado = false; const marca = () => { tocado = true; };
+      for (const t of ['pointerdown', 'wheel', 'keydown', 'touchstart']) addEventListener(t, marca, { once: true, passive: true, capture: true });
+      const arriba = () => { if (tocado || !portada || !portada.open) return; for (const el of [portada, portada.querySelector('.title-main'), document.scrollingElement]) if (el && el.scrollTop) el.scrollTop = 0; };
+      requestAnimationFrame(arriba); setTimeout(arriba, 300); addEventListener('load', arriba, { once: true }); }
     const MODOS = ['aventura', 'golf', 'pesca', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'canto', 'escondite', 'semillas', 'piloto', 'compas', 'sigueme', 'foto', 'sembradora', 'planeo', 'pichones', 'maze', 'libre', 'nido', 'records'];
     // V18 (Kelvin 8-nov: «¿dónde está lo divertido?»): cada actividad de la V18 con su tarjeta. «Retos con amigos» abre una tarjeta con
     // las tres de los amigos (SUB); Mis cotorras, el Álbum y Retos con amigos se abren encima del menú, como Mi nido (ENCIMA).
@@ -310,6 +316,31 @@
         S.facing = { x: dx / d, z: dz / d }; if (G.camara) G.camara.yaw = Math.atan2(-dx / d, -dz / d);
       }
       try { if (G.camara && G.camara.place) G.camara.place(true); } catch (e) { /* cámara */ }
+    }
+    // F20 r2: encuadre de salida de los minijuegos del mundo (Escuela de vuelo, Sígueme, Foto relámpago): la cámara va al lado abierto,
+    // sin ladera ni muro entre ella y Vittata (antes salía metida en la loma del Guardián o en la orilla del puente y solo se veía hierba).
+    // Prueba 16 giros desde el preferido y se queda con el más cercano que deja la línea Vittata→cámara libre. No toca el motor de cámara.
+    const OFF_ENC = [0.35, 0.6, 0.85, 1];
+    function encuadrar(pref) {
+      const C = G.camara, T = G.terreno; if (!C || !T || !T.height) return null;
+      const M = G.fisica && G.fisica.MOVE, fly = !!(M && M.flying), K = C.CAM || {};
+      const d = (fly ? K.distFly : K.dist) || (fly ? 9.5 : 7.5), h = (fly ? K.heightFly : K.height) || (fly ? 5.8 : 4.2);
+      const base = Number.isFinite(pref) ? pref : C.yaw, sol = G.solidos && G.solidos.activo && G.solidos.dentro ? G.solidos : null;
+      let mejor = base, mejorV = -Infinity;
+      for (let i = 0; i < 16; i++) {
+        const off = (i % 2 ? -1 : 1) * Math.ceil(i / 2) * Math.PI / 8, yw = base + off, sx = Math.sin(yw), cz = Math.cos(yw);
+        let hol = Infinity;
+        for (const k of OFF_ENC) {
+          const x = S.pos.x + sx * d * k, z = S.pos.z + cz * d * k, y = S.pos.y + 1.2 + (h - 1.2) * k;
+          hol = Math.min(hol, y - T.height(x, z));
+          if (sol && sol.dentro(x, z, y) > -Infinity) hol = Math.min(hol, -1);
+        }
+        const v = Math.min(hol, 2.5) - Math.abs(off) * 0.12;
+        if (v > mejorV) { mejorV = v; mejor = yw; }
+      }
+      C.yaw = mejor;
+      try { if (C.manual) C.manual(); if (C.place) C.place(true); } catch (e) { /* cámara */ }
+      return mejor;
     }
     const IR18 = {
       golf: a => a.irYJugar(),
@@ -677,6 +708,14 @@
         // 1. Markup y contrato de la portada (config.json preparar_js y e2e.js tocan el primer botón del formulario)
         const ts = tarjetas();
         check('Una tarjeta por modo (con Amazona Flight, el tren, River Rush, Amazona Maze y las de la V18)', ts.length === MODOS.length && ['tren', 'river', 'maze', 'golf', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album'].every(m => !!form.querySelector(`[data-modo="${m}"]`)) && form.querySelector('[data-modo="flight"] b').textContent === 'Amazona Flight' && MODOS.every(m => ts.some(b => b.dataset.modo === m)), ts.map(b => b.dataset.modo).join(','));
+        { // F20 r2: el encuadre de salida (Escuela de vuelo, Sígueme, Foto…) gira la cámara al lado abierto y no la deja en la ladera
+          const C = G.camara, K = C.CAM, M = G.fisica.MOVE, y0 = C.yaw, d = M.flying ? K.distFly : K.dist, h = M.flying ? K.heightFly : K.height, sol = G.solidos && G.solidos.activo ? G.solidos : null;
+          const hol = yw => { let m = Infinity; for (const k of OFF_ENC) { const x = S.pos.x + Math.sin(yw) * d * k, z = S.pos.z + Math.cos(yw) * d * k, y = S.pos.y + 1.2 + (h - 1.2) * k; m = Math.min(m, y - G.terreno.height(x, z)); if (sol && sol.dentro(x, z, y) > -Infinity) m = Math.min(m, -1); } return m; };
+          let peor = null; for (let i = 0; i < 8; i++) { const yw = i * Math.PI / 4, hh = hol(yw); if (!peor || hh < peor.h) peor = { yw, h: hh }; }
+          const r = encuadrar(peor.yw);
+          check('F20 r2 · El encuadre de salida deja la línea Vittata→cámara al menos tan libre como la de partida (y sin cambiar el motor de cámara)', Number.isFinite(r) && Math.abs(C.yaw - r) < 1e-9 && hol(r) >= Math.min(peor.h, 2.5) - 1e-6, JSON.stringify({ r, peor, hr: Number.isFinite(r) ? hol(r) : null }));
+          C.yaw = y0;
+        }
         const primero = form.querySelector('button');
         check('La primera tarjeta es Aventura y es submit del form method=dialog', primero && primero.dataset.modo === 'aventura' && primero.type === 'submit' && form.method === 'dialog');
         check('Nido, récords, Mis cotorras, Álbum y Retos con amigos no cierran la portada (type=button)', ENCIMA.every(m => form.querySelector(`[data-modo="${m}"]`).type === 'button'));
@@ -1073,7 +1112,7 @@
     }
 
     // QA-212: ocupado() = hay una actividad V18 en marcha (duelo, minigolf, carreras…); lo miran las pistas de descubrir.js y ciclo.js
-    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18() || /(?:^|\s)(?:escondite|semillas)-on(?:\s|$)/.test(document.body.className) /* F20: Escondite y Semillas, igual (el aviso de la historia salía encima del Escondite) */ || document.body.classList.contains('sigueme-on') || document.body.classList.contains('foto-on') || document.body.classList.contains('sembradora-on') || document.body.classList.contains('planeo-on') || document.body.classList.contains('pichones-on'), /* D16: «Rescate rápido», igual */ /* D14: «Planeo entre nubes», igual */ /* F2-4: «Sembradora del cielo», igual */ /* F2-2: «Foto relámpago», igual */ /* F2-1: ¡Sígueme, bandada! se juega en el mundo: los avisos de la historia esperan */ get libre() { return libre; }, get pendiente() { return pendiente; } };
+    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, encuadrar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18() || /(?:^|\s)(?:escondite|semillas)-on(?:\s|$)/.test(document.body.className) /* F20: Escondite y Semillas, igual (el aviso de la historia salía encima del Escondite) */ || document.body.classList.contains('sigueme-on') || document.body.classList.contains('foto-on') || document.body.classList.contains('sembradora-on') || document.body.classList.contains('planeo-on') || document.body.classList.contains('pichones-on'), /* D16: «Rescate rápido», igual */ /* D14: «Planeo entre nubes», igual */ /* F2-4: «Sembradora del cielo», igual */ /* F2-2: «Foto relámpago», igual */ /* F2-1: ¡Sígueme, bandada! se juega en el mundo: los avisos de la historia esperan */ get libre() { return libre; }, get pendiente() { return pendiente; } };
     api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir, aplazarIntro: () => { aplazar = true; } });
     if (window.AVQueHacer) window.AVQueHacer(G);
     return api;

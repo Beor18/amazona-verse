@@ -43,7 +43,7 @@ window.AVHumor = function (G) {
   }
   G.on('truco', id => { if (id === 'looping') { loops++; if (loops >= 3) { loops = 0; hacer('mareo'); } } });
   G.on('vuelo', on => {
-    if (on || !G.vecinos) return;
+    if (on || !G.vecinos || (M && M.finEnPaso === false)) return; // F21: solo al posarse de verdad, no al entrar a un modo
     const est = G.vecinos.estado && G.vecinos.estado();
     if (est && est.n) hacer('risa');
   });

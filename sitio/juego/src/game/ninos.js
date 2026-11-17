@@ -22,7 +22,11 @@ AVE.module('ninos', function (G) {
   const css = document.createElement('style');
   css.textContent = 'html.ninos-grande :is(#b-fly,#b-dash,#b-jump,#b-action,#b-dive){min-width:84px;min-height:84px}html.ninos-grande #stick{width:168px;height:168px}#pause-ninos{display:grid;gap:8px;margin:0}#pause-ninos label{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;font:400 var(--fs-sm,15px)/1.3 var(--font-body,sans-serif)}#pause-ninos input[type=range]{flex:0 1 140px;width:140px}' +
     // F20: las casillas con el color de la pausa (antes cuadrados grises sin estilo); la sección va en tarjeta como «Opciones»
-    '#pause-ninos input[type=checkbox]{flex:none;width:24px;height:24px;margin:0;accent-color:var(--beak,#f2a03d);cursor:pointer}';
+    // F20 r2: casilla propia (la regla de 44 px de ui.css ganaba y salía el cuadrado gris del navegador). El área táctil sigue siendo de
+    // 44 px (y la etiqueta entera); se dibuja un cuadro de 30 px con el naranja de la pausa y la palomita al marcar.
+    '#pause #pause-ninos input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;box-sizing:border-box;width:44px;height:44px;min-width:44px;min-height:44px;margin:0;padding:0;border:0;border-radius:12px;cursor:pointer;background:transparent url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 30 30\'%3E%3Crect x=\'2\' y=\'2\' width=\'26\' height=\'26\' rx=\'7\' fill=\'%23f4f7f114\' stroke=\'%23f4f7f1\' stroke-opacity=\'.8\' stroke-width=\'2.4\'/%3E%3C/svg%3E") center/30px 30px no-repeat}' +
+    '#pause #pause-ninos input[type=checkbox]:checked{background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 30 30\'%3E%3Crect x=\'1\' y=\'1\' width=\'28\' height=\'28\' rx=\'8\' fill=\'%23f2a03d\'/%3E%3Cpath d=\'M8 15.5l4.6 4.6L22.5 10\' fill=\'none\' stroke=\'%231b2b1f\' stroke-width=\'3.6\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E")}' +
+    '#pause #pause-ninos input[type=checkbox]:focus-visible{outline:3px solid var(--beak,#f2a03d);outline-offset:0}#pause-ninos label{cursor:pointer}';
   document.head.appendChild(css);
 
   function seccion() {
@@ -81,6 +85,8 @@ AVE.module('ninos', function (G) {
       guardar(); pintarClase();
       ok('Se guarda en el dispositivo', JSON.parse(localStorage.getItem(CLAVE)).sensibilidad === 1.4, localStorage.getItem(CLAVE));
       ok('La pausa tiene los cuatro ajustes', !!document.getElementById('ninos-vuelo') && !!document.getElementById('ninos-sens') && !!document.getElementById('ninos-inv') && !!document.getElementById('ninos-btn'));
+      { const cb = document.getElementById('ninos-vuelo'), cs = cb && getComputedStyle(cb); // F20 r2
+        ok('F20 r2 · Las casillas llevan su dibujo (no el cuadrado gris del navegador) y siguen midiendo 44 px', !!cs && (cs.appearance === 'none' || cs.webkitAppearance === 'none') && cs.width === '44px' && cs.height === '44px' && /url\(/.test(cs.backgroundImage), cs ? [cs.appearance, cs.width, cs.height, cs.backgroundImage.slice(0, 40)].join(' ') : 'sin casilla'); }
       ok('Los botones grandes encienden la clase', document.documentElement.classList.contains('ninos-grande'));
       ok('La cámara lee la sensibilidad y el eje invertido', G.ninos.camara.sensibilidad === 1.4 && G.ninos.camara.invertir === -1, JSON.stringify(G.ninos.camara));
       const suelo = G.terreno.height(S.pos.x, S.pos.z);

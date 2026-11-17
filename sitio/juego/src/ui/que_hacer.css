@@ -21,9 +21,14 @@
 #que-hacer .qh-ir, #que-hacer .qh-cerrar {
   min-width: 44px; min-height: 44px; padding: .4rem .7rem;
 }
-#que-hacer .qh-pie { display: flex; justify-content: flex-end; margin-top: .75rem; }
+/* F20 r2: «Cerrar» queda fijo abajo (en horizontal solo se veían 4-5 filas de más de 20 y no había forma visible de cerrar) */
+#que-hacer .qh-pie {
+  display: flex; justify-content: flex-end; position: sticky; bottom: -1rem; z-index: 1;
+  margin: .75rem -1rem -1rem; padding: .5rem 1rem 1rem; background: #10241c; box-shadow: 0 -10px 12px -10px rgba(0,0,0,.6);
+}
 @media (max-width: 420px) {
   #que-hacer { width: calc(100vw - 1rem); padding: .75rem; }
   #que-hacer .qh-fila { flex-wrap: wrap; }
   #que-hacer .qh-ir { margin-left: auto; }
+  #que-hacer .qh-pie { bottom: -.75rem; margin: .75rem -.75rem -.75rem; padding: .5rem .75rem .75rem; }
 }

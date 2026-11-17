@@ -76,7 +76,7 @@ window.AVTrucos = function (G) {
     if (teclas.giro > 0.4) { teclas.giro = -2; anotar('barrena'); }
   }
   G.on('update', paso);
-  G.on('vuelo', on => { if (!on && aire > 0 && aire < 2.2) anotar('perfecto'); if (!on) aire = 0; });
+  G.on('vuelo', on => { if (!on && aire > 0 && aire < 2.2 && M.finEnPaso !== false) anotar('perfecto'); if (!on) aire = 0; }); // F21: entrar a un modo no es truco
 
   function test() {
     const results = [], ok = (name, pass, extra) => results.push({ name, ok: !!pass, extra: extra == null ? '' : String(extra) });
