@@ -248,17 +248,19 @@ window.AVPlaneo = function (G) {
     if (r <= 0) { fin('tiempo'); return; }
     if (hudEl && Math.floor((E.t - dt) * 4) !== Math.floor(E.t * 4)) pintarHud();
   }
-  // La ayuda más cercana por delante que todavía se puede alcanzar planeando (la misma para la flecha y el minimapa)
+  // La ayuda de delante que se puede alcanzar planeando y más acerca a la meta (alejarse de la salida): la misma para la flecha y el minimapa
   function apuntarGuia() {
     guia.ok = false;
     if (E.fase !== 'juego') return;
-    const m = MV(), v = Math.hypot(m.vx || 0, m.vz || 0) || 1, ux = (m.vx || 0) / v, uz = (m.vz || 0) / v;
-    let bd = 170;
+    const m = MV(), v = Math.hypot(m.vx || 0, m.vz || 0) || 1, ux = (m.vx || 0) / v, uz = (m.vz || 0) / v, r0 = Math.hypot(S.pos.x - salida.x, S.pos.z - salida.z);
+    let bs = Infinity;
     const mira = (x, y, z, ok) => {
       const dx = x - S.pos.x, dz = z - S.pos.z, d = Math.hypot(dx, dz);
-      if (d < 4 || d > bd || (dx * ux + dz * uz) / d < 0.25) return;
+      if (d < 4 || d > 170 || (dx * ux + dz * uz) / d < 0.25) return;
+      const gana = Math.hypot(x - salida.x, z - salida.z) - r0; if (gana < 5) return; // hacia atrás, no
       if (S.pos.y - d / VMIN * HUNDE < ok) return; // no se llega planeando
-      bd = d; guia.x = x; guia.y = y; guia.z = z; guia.ok = true;
+      const s = d - 0.8 * gana; if (s >= bs) return;
+      bs = s; guia.x = x; guia.y = y; guia.z = z; guia.ok = true;
     };
     for (const n of nubes) if (n.on && !n.usada) mira(n.x, n.y, n.z, n.y - NUBE_RY);
     for (const t of terms) if (t.on && t.carga > TERM_CARGA * 0.3) mira(t.x, Math.min(S.pos.y, t.y + TERM_ALTO * 0.5), t.z, t.y + 2);
