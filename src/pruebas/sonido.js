@@ -156,7 +156,7 @@ window.AVSonidoTest = function (G) {
       if (antes === 'bloqueado') {
         const n0 = A.log.slice(-1)[0], sonoB = play0.call(A, 'despegar');
         ok('F21 · Audio aún no desbloqueado (sin gesto): play() no suena, pero se anota en el registro', !sonoB && A.log.slice(-1)[0] === 'despegar' && (A.log.length > log0 || n0 !== 'despegar'), 'ctx ' + (A.ctx ? A.ctx.state : 'sin'));
-      } else ok('F21 · Con el audio desbloqueado y sin silencio, play() puede sonar (callado vacío)', antes === '' && A.master.gain.value === A.vol.master, antes + ' · master ' + (A.master ? A.master.gain.value : '-'));
+      } else ok('F21 · Con el audio desbloqueado y sin silencio, play() puede sonar (callado vacío)', antes === '' && Math.abs(A.master.gain.value - A.vol.master) < 1e-3, antes + ' · master ' + (A.master ? A.master.gain.value : '-'));
       A.vol.muted = true; A.apply();
       const motivo = A.callado();
       const sono = play0.call(A, 'semilla', 0) || play0.call(A, 'despegar') || play0.call(A, 'bosque_yunque');
@@ -164,7 +164,7 @@ window.AVSonidoTest = function (G) {
       let musCalla = true, det = '';
       if (mus) { mus.tick(); const e = mus.estado(); musCalla = e.silencio && !e.audible && (!e.buses || (!e.buses.m && !e.buses.a)); det = JSON.stringify({ silencio: e.silencio, audible: e.audible, buses: e.buses }); }
       ok('F21 · Con el sonido apagado no suena nada por el ajuste (callado = silencio): efectos, master, música y ambiente', motivo === 'silencio' && antes !== 'silencio' && !sono && masterCero && musCalla, 'antes ' + antes + ' · ahora ' + motivo + ' · ctx ' + (A.ctx ? A.ctx.state : 'sin') + ' ' + det);
-      if (A.ctx) { A.vol.muted = false; A.apply(); ok('F21 · Al quitar el silencio el master vuelve a su volumen', A.master.gain.value === A.vol.master && A.callado() !== 'silencio', A.master.gain.value); }
+      if (A.ctx) { A.vol.muted = false; A.apply(); ok('F21 · Al quitar el silencio el master vuelve a su volumen', Math.abs(A.master.gain.value - A.vol.master) < 1e-3 && A.callado() !== 'silencio', A.master.gain.value); }
     } catch (e) {
       ok('Sin excepciones', false, String(e && e.stack || e).slice(0, 300));
     } finally {
