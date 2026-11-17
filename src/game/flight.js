@@ -816,7 +816,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           const rec1 = leerRec();
           check('Récord en el almacén de Retos (clave flight: mejor y jugadas) y nuevo récord avisado', rec1.flight.mejor === J.puntos && rec1.flight.jugadas >= 1 && J.nuevo === true, JSON.stringify(rec1.flight));
           check('«Mis récords» recibe retosResultado { modo: flight, puntos, prueba }', emitido && emitido.modo === 'flight' && emitido.puntos === J.puntos && emitido.prueba === true, JSON.stringify(emitido));
-          await new Promise(r => setTimeout(r, 420));
+          await new Promise(r => setTimeout(r, 620)); // PULIR 4: también ha sonado ya el «logro» del récord (500 ms; su sonido puede cargarse por red y no es del ranking)
           check('Resultados a la vista con «Otra vez»', !st.ui.fin.hidden && st.ui.num.textContent === String(J.puntos));
           check('Resultados: botón «Compartir» a la vista con récord', !st.ui.fin.querySelector('[data-compartir]').hidden);
           { const f0 = window.fetch; let net = 0; window.fetch = function () { net++; return f0.apply(this, arguments); }; let rp; try { rp = await publicar(null); } finally { window.fetch = f0; }
