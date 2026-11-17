@@ -1999,7 +1999,7 @@ T46 está hecha y publicada. Luego sigo con el pulido a 390×844 y 1280×720, lo
 **D. Minijuegos para que los niños se queden** (1–3 min, con récord, «Otra vez» y «Salir», en «Más juegos», con su prueba y en inglés)
 
 13. **«Semillas al vuelo»:** recoger semillas que caen, contra reloj.
-14. **«Planeo entre nubes»:** llegar lo más lejos posible sin tocar el suelo, sin anillos.
+14. **«Planeo entre nubes»:** llegar lo más lejos posible sin tocar el suelo, sin anillos. ✅ 17-nov · Claude web (D14): `src/game/planeo.js` en «Más juegos», récord en metros, «Otra vez»/«Salir», inglés y `AV.planeoTest` (parches_d14, revisada por dos revisores).
 15. **«¿Quién canta?»:** escuchar un canto y elegir el ave. Solo con aves y cantos que ya estén en el juego y tengan fuente.
 16. **«Rescate rápido»:** llevar 3 pichones a su nido antes de que llueva.
 
@@ -2325,3 +2325,5 @@ Claude web B · F4 tanda 2 hecha
 ✅ Claude web B · PUBLICADO F4 tanda final + F3 fase 1 «Obras que traen vida» (801667f en 1403e3a, 12/12, 0 errores, md5 de juego/index.html igual en la web).
 
 ✅ Claude web B · Sembradora: claro con el capítulo avanzado. El claro se elige con lo que no cambia (huellas del kit de todos los edificios, flora, agua y pendiente), así que sale el mismo en una página recién cargada y tras recorrer el mapa: (212,-33), 17 de 36 puestos. Todos los edificios cuentan siempre por su huella, también los ya colocados que no tienen collider (complejo_ruinas, canoa, los de piso del mapa). La búsqueda se hace una vez por página y solo hasta el anillo que haga falta: unos 100 ms en la primera partida (antes, 555 ms en cadena) y 0 ms en «Otra vez». Prueba nueva con todos los edificios de alrededor colocados de verdad (15/15): mismo claro y cabe. Arreglo de fotoTest (encuadre asistido): fallaba según dónde dejara a Vittata la prueba anterior. **Para Kelvin:** el claro queda a unos 200 m de parada_claro y a unos 40 m de la ciudad de templos. Si algún día la flora se despeja cerca antes de la primera partida, el claro puede salir en otro sitio dentro de esa página. sembradora 51/51 · mission 93 + e2e 49 + sembradora 51 · sembradora 51 + menuModos 117 + records 75 + retos 159 + foto 51/51; 0 errores.
+
+✅ Claude web B · D14 Planeo entre nubes hecha (parches_d14, con la revisión de dos revisores). Arreglado: la salida sobre la cumbre ya no cae entre los muros de las ruinas (se mide alrededor y en un pasillo de 72 m por delante con los sólidos, y se vuelve a medir cuando terminan de cargar); en el teléfono se ve «Bajar» (la picada) y en escritorio la barra de teclas dice Dirigir · C Picada · Esc Salir; al salir, la cámara vuelve con Vittata y, si estaba posada, deja de «volar». Descartado: el reloj no corre con la pantalla de carga (es una pausa: dt = 0; ahora lo comprueba la prueba). Para Kelvin: en la simulación se llega a unos 270-300 m, pero los bots casi no cogen nubes; si se quiere que las nubes cuenten más, hay que ajustar su sitio.
