@@ -74,14 +74,12 @@ window.AVPlaneo = function (G) {
   }
   function crearMallas() {
     if (M) return;
-    const inst = (geo, mat, n, nombre) => { const m = new THREE.InstancedMesh(geo, mat, n); m.count = 0; m.visible = false; m.frustumCulled = false; m.castShadow = false; m.receiveShadow = false; m.userData.sinCulling = true; m.name = 'planeo:' + nombre; R.scene.add(m); return m; };
+    const inst = (geo, mat, n, nombre, color) => { const m = new THREE.InstancedMesh(geo, mat, n); if (color) m.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(n * 3).fill(1), 3); /* de su tamaño entero (setColorAt lo crearía del tamaño de count) */ m.count = 0; m.visible = false; m.frustumCulled = false; m.castShadow = false; m.receiveShadow = false; m.userData.sinCulling = true; m.name = 'planeo:' + nombre; R.scene.add(m); return m; };
     M = {};
     const matN = R.linMat(new THREE.MeshLambertMaterial({ color: '#ffffff', emissive: '#6d7f99', transparent: true, opacity: 1 }));
-    M.nubes = inst(new THREE.IcosahedronGeometry(1, 3), matN, NNUB * BOLAS_NUBE.length, 'nubes');
-    M.nubes.setColorAt(0, COL_NUBE); // crea instanceColor
+    M.nubes = inst(new THREE.IcosahedronGeometry(1, 3), matN, NNUB * BOLAS_NUBE.length, 'nubes', true); // blancas; grises las usadas
     const matC = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: true });
-    M.columnas = inst(geoColumna(), matC, NTER, 'columnas'); M.columnas.renderOrder = 3;
-    M.columnas.setColorAt(0, COL_TERM);
+    M.columnas = inst(geoColumna(), matC, NTER, 'columnas', true); M.columnas.renderOrder = 3; // más tenue al gastarse
     const matM = R.linMat(new THREE.MeshLambertMaterial({ color: '#fff1c4', emissive: '#c99a3a', emissiveIntensity: 0.6 }));
     M.motas = inst(new THREE.OctahedronGeometry(0.22, 0), matM, NTER * NMOTA, 'motas');
     M.motas.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
