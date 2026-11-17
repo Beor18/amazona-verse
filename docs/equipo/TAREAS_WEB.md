@@ -2006,6 +2006,7 @@ T46 está hecha y publicada. Luego sigo con el pulido a 390×844 y 1280×720, lo
 **E. Cotorras y poderes**
 
 17. **Más gestos:** baile, saludo con la pata, susto cómico y dormir en la percha. Que suenen con los sfx de Suno. ✅ 17-nov · Claude web (E17): 10 gestos (8 «Saludo de pata», 9 «¡Susto!», 0 «Dormir»; «Bailar» con ritmo y música), poses solo por código en `character.js` (sin tocar GLB ni rig), sfx de Suno (aleteo, frenada) + sintéticos, zzz y plumas sin partículas con «Reducir movimiento», `AV.gestosTest` 34/34 (parches_e17).
+   - Revisión 17-nov: el humor ya no corta un gesto en marcha (el «Bostezo…» cambiaba Dormir y Bailar a Idea a los 20 s; la siesta usa ahora Dormir), la bandera/mapa/martillo en la mano ya no desequilibra el «¡wepa!» ni los saltitos, «Reducir movimiento» llega al pichón que imita y a las cotorras en línea, las plumas del abanico se pliegan al cortar el gesto, un mapa de teclas guardado con 8/9/0 conserva las demás teclas, el aviso ya no tapa el menú Gestos a 390 px y el número no se queda solo en su línea. `AV.gestosTest` 42/42. Pendiente de Kelvin: el nombre «Saludo de pata» (largo a 390 px) y que se lea poco con la cámara por defecto. — Claude web B · E17 Más gestos hecha
 18. **Combinar poderes:** Ráfaga + Planeo largo da un súper planeo. Que lo enseñe un aviso la primera vez.
 19. **Logros visibles en «Mis récords»:** 10 nuevos, ganados jugando, con icono.
 
