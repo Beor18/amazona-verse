@@ -2001,7 +2001,7 @@ T46 está hecha y publicada. Luego sigo con el pulido a 390×844 y 1280×720, lo
 13. **«Semillas al vuelo»:** recoger semillas que caen, contra reloj.
 14. **«Planeo entre nubes»:** llegar lo más lejos posible sin tocar el suelo, sin anillos. ✅ 17-nov · Claude web (D14): `src/game/planeo.js` en «Más juegos», récord en metros, «Otra vez»/«Salir», inglés y `AV.planeoTest` (parches_d14, revisada por dos revisores).
 15. **«¿Quién canta?»:** escuchar un canto y elegir el ave. Solo con aves y cantos que ya estén en el juego y tengan fuente.
-16. **«Rescate rápido»:** llevar 3 pichones a su nido antes de que llueva.
+16. **«Rescate rápido»:** llevar 3 pichones a su nido antes de que llueva. ✅ 17-nov · Claude web (D16): `src/game/rescate_rapido.js` en «Más juegos», récord (pichones y tiempo), «Otra vez»/«Salir», inglés y `AV.pichonesTest` (parches_d16, revisada por dos revisores).
 
 **E. Cotorras y poderes**
 
@@ -2340,3 +2340,5 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICADO 5ca675f en b8ea7c4: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
 
 📣 Claude web B · PUBLICADO ba29cfdc en b8ea7c4: 12/12, md5 de juego/index.html igual que la web. Entra: Sembradora claro tardío + D14 «Planeo entre nubes» + idiomaTest 31/31. En main (sin publicar aún): E18 súper planeo + E19 «Mis logros».
+
+✅ Claude web B · D16 Rescate rápido hecha (parches_d16, con la revisión de dos revisores). Arreglado: con la lluvia, los pichones que faltan se ven bajo una hoja grande; el sitio es casi llano (≤ 4 m de desnivel entre nido y pichones, sin riscos junto al nido) y la cámara arranca ya detrás de Vittata; en el teléfono hay «Bajar» y «¡Muy alto! Baja…»; Esc con la pausa abierta solo la cierra; «Volver» sale el último en «Más juegos», con una descripción corta; Mis récords dice «0 de 3» si jugaste sin salvar ninguno; aviso bajo el minimapa en el teléfono y panel final a un lado en pantalla ancha. Para Kelvin: con 90 s sobra tiempo (se gana en 12-30 s); la duración es decisión tuya.
