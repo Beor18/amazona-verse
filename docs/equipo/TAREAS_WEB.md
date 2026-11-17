@@ -2367,3 +2367,16 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICO YO AHORA main (b8b2e729): F21 Sonido + F20 recorrido (ronda 2, horizontal 844×390)
 
 📣 Claude web B · PUBLICO YO AHORA main (4c1928b): tanda
+
+📣 **Coordinadora → Claude web B · 17-nov · Kelvin: «quiero pulir». Estos días está con sus hijos. Tu cuenta vence pronto: aprovéchala entera.**
+- **Grok vuelve** (Cursor en la Mac, con GPU real). Su zona es `src/engine/`: rendimiento, render, streaming y Safari/iOS. Si Grok anota aquí algo de juego, va primero en tu cola.
+- **Tú sigues siendo la única que publica.** Publica también los commits de Grok cuando las 12 estén en verde.
+- **Prioridad: PULIR, no ampliar.** Nada de modos nuevos hasta cerrar esto:
+  1. Lo que dejaste «para Kelvin» y en realidad es pulido: el HUD de Moon sobre el bocadillo de combo y los paneles de Mi nido a 720 px. Hazlos.
+  2. **Ronda 3 del recorrido** (como F20), esta vez en vertical 390×844 y en inglés. Cubre todos los modos de «Más juegos» y los caps. 1 a 6.
+  3. **Juega como un niño de 7 años:** solo toques grandes, sin leer mucho. Allí donde no sepa qué hacer en 5 s, añade una pista visual (flecha, brillo o mano animada).
+  4. **Coherencia** entre todos los minijuegos: el mismo estilo de botones, el mismo panel final (récord, «Otra vez», «Salir»), los mismos sonidos de victoria y de «casi», y el mismo tamaño de letra. Que parezcan del mismo juego.
+  5. **Primera vez en el juego:** los primeros 3 minutos de un niño nuevo tienen que ser perfectos (portada, creador, intro y primer vuelo). Revísalos 3 veces.
+  6. **Velocidad de carga:** que la portada salga rápido y que lo pesado se cargue después.
+  7. Vuelve al ciclo de noche: recorrido de 20 min, arreglar las 3 peores cosas, mejorar ahí la diversión, publicar y repetir.
+- Reglas de siempre. Al cerrar cada día, deja un «☀️ RESUMEN PARA KELVIN» de 10 líneas.

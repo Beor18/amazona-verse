@@ -328,3 +328,31 @@ Cada tarea: las 12 en verde, 0 errores, y una nota 📣 aquí. Yo publico por ta
 📣 Coordinadora · 11-nov · PUBLICADO 58f2ba9 (sitio e875f4c): 12/12 baterías en verde, 0 errores. En vivo y verificado en www.amazonaverse.com y kelving1.sg-host.com (SiteGround; www ya no es Vercel). Incluye botones movibles 05970c7, CG-120 a CG-126, QA-240 a QA-247 y GT-13.
 
 📣 Coordinadora → Grok · 11-nov · QA-239 hecha por mi lado (`7ed39e0`, streaming.js; en «alto» de 66,2 a 28,5 MB en la nube); la Terminal la verifica con GPU real (GT-16) antes de publicar. Ya pueden tocar la carga de edificios otra vez. Tu cola sigue igual: QA-248, las 17 baterías extra con rojo, los videos y el playtest de niño nuevo.
+
+---
+## 📣 Coordinadora → Grok · 17-nov · VUELVES: pulir Amazona con la GPU real de la Mac
+**Situación:** el juego está en la web (www.amazonaverse.com/juego/). Claude web B trabaja en la nube y publica. Kelvin juega estos días con sus hijos: **no se rompe nada**.
+**Tu ventaja:** la Mac tiene GPU real y Safari; la nube solo tiene SwiftShader. Haz lo que la nube no puede ver.
+**Tu zona:** `src/engine/` (render, streaming, terreno, cámara en cuanto a rendimiento), shaders, luces y optimización de assets.
+- No toques `src/game/`, `src/ui/` ni `content/`: son de Claude web B.
+- Si te hace falta tocarlos, déjalo primero anotado en `docs/equipo/TAREAS_WEB.md`.
+**No publicas:** publica Claude web B. Deja tus commits en main con las 12 pruebas en verde y avisa en `TAREAS_WEB.md`.
+**Reglas de CLAUDE.md:**
+- `taskpolicy`, el Python de Blender y carpeta de salida propia;
+- Vittata no se toca;
+- nada de descargas ni compras.
+
+**Tareas, en orden (una cada vez, con commit pequeño):**
+1. **GT-16 / QA-239 con GPU real.** Verifica que el diferido de modelos `_hd` (commit 7ed39e0 en `streaming.js`) carga bien:
+   - sin parpadeos ni edificios sin textura al acercarse;
+   - mide la descarga inicial en el perfil «alto» (antes, 45 MB frente a un límite de 28).
+2. **FPS reales con `?fps=1`** en la Mac (Chrome y Safari) y, si puedes, en el iPhone o iPad de Kelvin:
+   - en Villa Raíz, el vuelo libre, el duelo, la Carrera de las nubes y la Sembradora;
+   - lista los 5 sitios más lentos y optimízalos (draw calls, instancias, LOD, texturas) sin bajar la calidad visible.
+3. **bohiosTest intermitente** (QA-nuevo-br1-1): confirma con GPU real si es solo de SwiftShader y deja la prueba estable.
+4. **Calidad visual con GPU real.** Recorre los caps. 1 a 6 en «alto» y anota lo que se vea feo: sombras que parpadean, z-fighting, texturas borrosas, agua o cielo con cortes, popping de árboles. Arregla lo que sea motor.
+5. **Safari e iOS:** que el audio (los 30 sfx de Suno y la música), el táctil y la orientación horizontal funcionen. Arregla lo que sea motor y anota lo que sea juego para Claude web B.
+6. **Cámara en sitios cerrados** (motor): techos de bohío que tapan la vista cerca de la casa.
+   - Propón 2 opciones: transparentar el techo cercano o un fundido.
+   - Implementa la que no cambie arte ni mapa. Si las dos lo cambian, solo anótalo para Kelvin.
+7. **Cuando termines:** sigue con rendimiento y visuales en los minijuegos nuevos, que hizo la nube sin GPU. Al acabar cada tarea, una línea en `REGISTRO_TAREAS.md`.
