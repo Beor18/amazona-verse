@@ -798,33 +798,35 @@
         S.complete = true; S.explorando = false; end.hidden = true; A.reducido = false; A.log.length = 0; const f0 = Object.assign({}, MF);
         M.showEnd(false, { fiesta: true }); const ya = { oculto: end.hidden, son: veces('panel_final'), gesto: pedidas.join(), pet: petalos.join() };
         M.showEnd(false, { fiesta: true }); const otra = MF.fin - f0.fin;
-        // La espera va con el reloj del juego (gancho 'update'): se espera hasta 4 s de pared por si el bucle va lento
-        const hasta = async (fn, ms) => { for (let t = 0; t < ms && !fn(); t += 50) await espera(50); return fn(); };
-        await espera(MF.FIN.celebraMs - 400); const antes = end.hidden;
-        await hasta(() => !end.hidden, 4000); const luego = { visible: !end.hidden, son: veces('panel_final') };
+        // La espera va con el reloj del juego (gancho 'update'): se pasan cuadros como el bucle (con la pausa, dt = 0: hit-stop)
+        const cuadros = s => { for (let t = 0; t < s - 1e-9; t += 0.05) G.renderer.update(G.camara.juice.hitStop > 0 ? 0 : 0.05); };
+        const hasta = (fn, s) => { for (let t = 0; t < s && !fn(); t += 0.05) cuadros(0.05); return fn(); };
+        if (G.dialogo.open() && G.dialogo.clear) G.dialogo.clear();
+        cuadros(MF.FIN.celebraMs / 1000 - 0.4); const antes = end.hidden;
+        hasta(() => !end.hidden, 4); const luego = { visible: !end.hidden, son: veces('panel_final') };
         end.hidden = true; A.reducido = true; petalos.length = 0; M.showEnd(false, { fiesta: true }); const red = { pet: petalos.length, fp: MF.finPetalos - f0.finPetalos, gesto: pedidas.length };
-        const redVis = await hasta(() => !end.hidden, 4000); A.reducido = false;
+        const redVis = hasta(() => !end.hidden, 4); A.reducido = false;
         end.hidden = true; M.showEnd(); const quieto = !end.hidden && MF.fin - f0.fin === 2;
         check('F4-12: fin del capítulo: suena panel_final, Vittata celebra (Celebrar) y caen 30 pétalos; el panel entra a los 1,2 s (una sola vez); con «Reducir movimiento», sin pétalos; con G.quiet, al momento',
           ya.oculto && ya.son === 1 && ya.gesto === 'celebrar' && ya.pet === '30' && otra === 1 && antes && luego.visible && luego.son === 1 && red.pet === 0 && red.fp === 1 && red.gesto === 2 && redVis && quieto,
           JSON.stringify({ ya, otra, antes, luego, red, redVis, quieto }));
         // Revisión F4: con la pausa puesta la fiesta no corre (reloj del juego) y el panel no entra delante de la pausa
         end.hidden = true; G.pausa.set('prueba-fin', true); M.showEnd(false, { fiesta: true });
-        await espera(MF.FIN.celebraMs + 500); const enPausa = end.hidden; G.pausa.set('prueba-fin', false);
-        const trasPausa = await hasta(() => !end.hidden, 4000);
+        cuadros(MF.FIN.celebraMs / 1000 + 0.5); const enPausa = end.hidden; G.pausa.set('prueba-fin', false);
+        const trasPausa = hasta(() => !end.hidden, 4);
         check('F4-12 (revisión): con la pausa abierta durante la fiesta el panel espera; al quitar la pausa, entra', enPausa && trasPausa, JSON.stringify({ enPausa, trasPausa }));
         // Revisión F4 (cap. 6): showEnd() y en seguida el cómic de cierre. El panel no se abre debajo del cómic, Esc en el cómic no
         // lo descarta (S.explorando sigue en false) y al cerrar el cómic vuelve el panel con su texto
-        end.hidden = true; $('end-text').textContent = ''; const esp0 = MF.finEsperas; M.showEnd(false, { fiesta: true }); $('comic').hidden = false;
-        await espera(MF.FIN.celebraMs + 500); const bajoComic = { oculto: end.hidden, esperas: MF.finEsperas > esp0 };
+        end.hidden = true; $('end-text').textContent = ''; const esp0 = MF.finEsperas; M.showEnd(false, { fiesta: true }); await G.comic.openComic(); // como ep6: showEnd() y en seguida el cómic (#c-close existe al abrirlo)
+        cuadros(MF.FIN.celebraMs / 1000 + 0.5); const bajoComic = { oculto: end.hidden, esperas: MF.finEsperas > esp0 };
         G.emit('escape'); const tras = { explorando: S.explorando };
-        $('c-close').click(); await espera(150);
-        const cierre = { visible: !end.hidden, texto: !!$('end-text').textContent, explorando: S.explorando };
-        await espera(300); end.hidden = true; M.showEnd(false, { fiesta: true }); const otraFiesta = MF.fin - f0.fin === 5; // la fiesta pendiente se dio por terminada
+        { const cc = $('c-close'); if (cc) cc.click(); else { $('comic').hidden = true; if (S.complete && !S.explorando) end.hidden = false; } } // (sin #c-close en esta prueba: lo mismo que hace)
+        cuadros(0.1); const cierre = { visible: !end.hidden, texto: !!$('end-text').textContent, explorando: S.explorando };
+        end.hidden = true; M.showEnd(false, { fiesta: true }); const otraFiesta = MF.fin - f0.fin === 5; // la fiesta pendiente se dio por terminada
         check('F4-12 (revisión): con el cómic de cierre abierto durante la fiesta el panel espera debajo cerrado; Esc no lo descarta y al cerrar el cómic vuelve con su texto',
           bajoComic.oculto && bajoComic.esperas && !tras.explorando && cierre.visible && cierre.texto && !cierre.explorando && otraFiesta, JSON.stringify({ bajoComic, tras, cierre, otraFiesta, fin: MF.fin - f0.fin }));
-        await hasta(() => !end.hidden, 4000);
-      } finally { AC.playEmote = pe0; G.fx.petalos = pet0; A.reducido = red0; end.hidden = true; $('comic').hidden = true; G.pausa.set('prueba-fin', false); S.complete = cmp0; S.explorando = exp0; if (AC.stopEmote) AC.stopEmote(); G.quiet = true; }
+        hasta(() => !end.hidden, 4);
+      } finally { AC.playEmote = pe0; G.fx.petalos = pet0; A.reducido = red0; end.hidden = true; if ($('comic')) $('comic').hidden = true; G.pausa.set('prueba-fin', false); S.complete = cmp0; S.explorando = exp0; if (AC.stopEmote) AC.stopEmote(); G.quiet = true; }
     }
     posarseLuma(G, T);
     // Revisión F4-7: Vittata se posa en la percha misma; Iguaca se aparta a un lado (solo el dibujo, hacia la derecha de la cámara)

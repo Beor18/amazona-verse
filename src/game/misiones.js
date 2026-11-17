@@ -217,7 +217,7 @@ AVE.module('misiones', function (G) {
   // Sin espera con G.quiet (baterías) ni al cargar una partida ya terminada ('apply': la repetición). «Reducir movimiento»: sin
   // pétalos (el gesto, el sonido y la espera se quedan). Llamar otra vez durante la fiesta no la repite.
   // La espera va con el reloj del juego (gancho 'update': con la pausa dt = 0 y en segundo plano no corre) y, si al acabar hay otra
-  // pantalla delante (el cómic de cierre del cap. 6, la pausa, la portada, un diálogo o una tarjeta), el panel espera a que se cierre.
+  // pantalla delante (el cómic de cierre del cap. 6, un diálogo o una tarjeta; con la pausa el reloj no corre), el panel espera a que se cierre.
   // Si otra pantalla lo abre antes (c-close del cómic), el texto ya está puesto y la fiesta se da por terminada.
   const FIN = { celebraMs: 1200, petalos: 30 };
   feel.fin = 0; feel.finPetalos = 0; feel.finEsperas = 0; feel.FIN = FIN;
@@ -236,7 +236,8 @@ AVE.module('misiones', function (G) {
     }
   }
   function cancelarFiesta() { finEspera = 0; finFiesta = false; finForzada = false; }
-  const tapado = () => { try { return G.ui.busy() || !!(G.pausa && G.pausa.activa()) || !!($('title') && $('title').open); } catch (e) { return false; } };
+  // (la pausa y la portada no hace falta mirarlas: con ellas el bucle pasa dt = 0 y la fiesta no avanza)
+  const tapado = () => { try { return G.ui.busy(); } catch (e) { return false; } };
   G.on('update', dt => {
     if (!finEspera) return;
     if (!$('end').hidden) { if (S.complete || finForzada) showEnd(true); else cancelarFiesta(); return; } // otra pantalla ya lo abrió
