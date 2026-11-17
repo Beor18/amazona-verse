@@ -66,6 +66,11 @@ window.AVJuice = function (G) {
   let popT = 0;
   function mostrarPop(texto, chico) {
     pop.textContent = texto; pop.className = chico ? 'chico' : ''; pop.hidden = false; popT = chico ? 1.1 : 1.6;
+    // PULIR 1 (17-nov): con el panel de un reto con amigos (Moon, Chispa, el Guardián: z 40, arriba al centro) el pop quedaba
+    // debajo de él; entonces sale justo bajo el panel. Sin panel, a su altura de siempre (la del CSS)
+    let y = 0;
+    for (const id of ['v18-moon', 'v18-chispa', 'v18-guardian']) { const p = document.getElementById(id); if (p && !p.hidden) { const r = p.getBoundingClientRect(); if (r.height) y = Math.max(y, r.bottom); } }
+    pop.style.top = y ? Math.round(Math.min(y + 12, innerHeight * 0.55)) + 'px' : '';
     if (!reducido()) { void pop.offsetWidth; pop.classList.add('anim'); }
   }
   // Si el juego se pausa (menú, Diario, una tarjeta) el bucle 'update' no corre: el chip y el pop no se quedan encima de esa pantalla
