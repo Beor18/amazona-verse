@@ -1,7 +1,8 @@
 /* Juego · D14 · «Planeo entre nubes» (minijuego corto de «Más juegos», hasta 2 minutos). Lista larga D14 (docs/equipo/TAREAS_WEB.md).
    Llega lo más lejos posible planeando, sin tocar el suelo ni el agua. Sin anillos, sin rivales y sin ruta: distancia libre.
    Salida: en el aire sobre la cumbre de El Yunque (POI «cumbre», el punto más alto del mapa; si no está, lo más alto cerca de Vittata),
-   mirando hacia Villa Raíz. Vittata planea sola (no se queda cernida: siempre lleva al menos VMIN m/s) y pierde HUNDE m por segundo.
+   mirando hacia Villa Raíz, por encima de todo lo de alrededor y de delante (las ruinas de la cumbre, rocas: despeje(); se vuelve a
+   medir al empezar de verdad y en los primeros segundos, porque los sólidos terminan de cargar después). Vittata planea sola (no se queda cernida: siempre lleva al menos VMIN m/s) y pierde HUNDE m por segundo.
    Dirección: el joystick o las flechas, como siempre. Picada (C o el botón Bajar): baja deprisa y va más rápido (para alcanzar una
    nube de abajo); gasta altura, así que no alarga el vuelo. Subir, el impulso, aterrizar y Acción no hacen nada aquí: machacar no sirve.
    Dan altura:
@@ -54,10 +55,10 @@ window.AVPlaneo = function (G) {
   const terms = []; for (let i = 0; i < NTER; i++) terms.push({ on: false, x: 0, y: 0, z: 0, carga: TERM_CARGA, pint: -1, dentro: false, contada: false });
   const salida = { x: 0, y: 0, z: 0, fx: 0, fz: 1, ancla: '' };
   const guia = { x: 0, y: 0, z: 0, ok: false };
-  const vuelta = { x: 0, y: 0, z: 0, fx: 0, fz: 1, ok: false }; // dónde estaba Vittata antes de jugar (vuelve al salir)
+  const vuelta = { x: 0, y: 0, z: 0, fx: 0, fz: 1, volando: false, yaw: 0, ok: false }; // dónde y cómo estaba Vittata antes de jugar (vuelve así al salir), y la cámara
   let fis0 = null; // la física de antes (se devuelve al salir)
   const E = { fase: 'nada', t: 0, lejos: 0, dist: 0, alto: 0, subeT: 0, nubesN: 0, termsN: 0, motivo: '', toqueT: 0, msgT: 0, avisos: 0, cerca: false, centena: 0,
-    guiaT: 0, primeraTerm: true, mejor: 0, mejorNubes: 0, jugadas: 0, nuevo: false, finP: 0, motasPint: 0, hondo: 9 };
+    guiaT: 0, primeraTerm: true, ayuda: false, reT: 0, remedidas: 0, alzar: 0, semilla: 0, mejor: 0, mejorNubes: 0, jugadas: 0, nuevo: false, finP: 0, motasPint: 0, hondo: 9 };
   const restante = () => Math.max(0, DUR - E.t);
 
   // ---------- Mallas (se crean al jugar y se sueltan al salir) ----------
@@ -143,7 +144,34 @@ window.AVPlaneo = function (G) {
     let h = null; for (const id of HACIA) { h = poi(id); if (h) break; }
     let fx = h ? h.x - x : 0, fz = h ? h.z - z : 1, d = Math.hypot(fx, fz);
     if (d < 1) { const f = S.facing || { x: 0, z: 1 }; fx = f.x; fz = f.z; d = Math.hypot(fx, fz) || 1; }
-    salida.x = x; salida.z = z; salida.fx = fx / d; salida.fz = fz / d; salida.y = techoEn(x, z, 8) + ALTO_INI;
+    salida.x = x; salida.z = z; salida.fx = fx / d; salida.fz = fz / d; salida.y = despeje();
+  }
+  // Altura de salida que deja libre todo lo de alrededor y lo de delante: muros y tejados (las ruinas de la cumbre), rocas y ramas.
+  // Alrededor (hasta DESP_R m): ALTO_INI m por encima de lo más alto. Por delante (un pasillo de DESP_L m de largo y ±DESP_A m de
+  // ancho, cada DESP_PASO m): planeando recto a la velocidad mínima pasa DESP_HOLGURA m por encima de todo. Sin pasar del techo de vuelo.
+  const DESP_R = 14, DESP_L = 72, DESP_A = 12, DESP_PASO = 3, DESP_HOLGURA = 6;
+  function despeje() {
+    const x = salida.x, z = salida.z, fx = salida.fx, fz = salida.fz;
+    let y = techoEn(x, z, 8) + ALTO_INI;
+    for (let rr = DESP_PASO; rr <= DESP_R; rr += DESP_PASO) for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; y = Math.max(y, superficie(x + Math.cos(a) * rr, z + Math.sin(a) * rr, 400) + ALTO_INI); }
+    for (let dd = DESP_PASO; dd <= DESP_L; dd += DESP_PASO) for (let w = -DESP_A; w <= DESP_A; w += DESP_PASO) {
+      const top = superficie(x + fx * dd - fz * w, z + fz * dd + fx * w, 400);
+      if (top > -1e8) y = Math.max(y, top + DESP_HOLGURA + dd * HUNDE / VMIN);
+    }
+    try { const lim = G.fisica && G.fisica.techoVuelo ? G.fisica.techoVuelo(x, z) - 3 : Infinity; if (lim > -1e8 && y > lim) y = Math.max(lim, techoEn(x, z, 8) + ALTO_INI); } catch (e) { /* sin techo */ }
+    return y;
+  }
+  // Los sólidos (muros, rocas) se terminan de sacar de la geometría después de cargar el mundo y al acercarse: al empezar a jugar de
+  // verdad (tras la pantalla de carga) y durante los primeros RE_T s se vuelve a medir; si ahora hay algo más alto, Vittata sube.
+  const RE_T = 2.5, RE_CADA = 0.25, ALZAR_V = 18;
+  function remedir(primera) {
+    const y0 = salida.y, y1 = despeje(); if (!(y1 > y0 + 0.3)) return false;
+    salida.y = y1;
+    const cerca = Math.hypot(S.pos.x - salida.x, S.pos.z - salida.z) < DESP_R + 20; // sigue por la salida (lejos ya no hace falta)
+    if (primera) { azarS = E.semilla; ponerNubes(); ponerCorrientes(); pintarNubes(); pintarColumnas(); if (cerca) { S.pos.y = salida.y; S.vy = 0; try { if (G.camara && G.camara.place) G.camara.place(true); } catch (e) { /* */ } } } // aún nada se ha movido: todo como si saliera de aquí (con semilla, las mismas nubes, solo más altas)
+    else if (cerca) E.alzar += y1 - y0; // ya en el aire: sube lo que falta, deprisa pero sin salto (ALZAR_V m/s)
+    E.remedidas++;
+    return true;
   }
   function ponerNubes() {
     const ang0 = Math.atan2(salida.fz, salida.fx);
@@ -200,8 +228,12 @@ window.AVPlaneo = function (G) {
     if (E.fase === 'toque') { if ((E.toqueT -= dt) <= 0) mostrarFin(); return; }
     if (E.fase !== 'juego') return;
     const m = MV();
+    if (E.t === 0) { remedir(true); E.reT = RE_CADA; } else if (E.t < RE_T && (E.reT -= dt) <= 0) { E.reT = RE_CADA; remedir(false); }
     E.t += dt;
-    if (E.msgT > 0 && (E.msgT -= dt) <= 0 && hudEl) { const q0 = q(hudEl, 'msg'); q0.textContent = ''; q0.className = ''; }
+    if (E.msgT > 0 && (E.msgT -= dt) <= 0 && hudEl) {
+      const q0 = q(hudEl, 'msg'); q0.textContent = ''; q0.className = '';
+      if (E.ayuda) { E.ayuda = false; aviso(tactil() ? L('Dirige con el joystick · «Bajar»: picada', 'Steer with the joystick · “Dive”: swoop down') : L('Dirige con WASD o las flechas · C: picada', 'Steer with WASD or the arrow keys · C: swoop down')); E.msgT = 3.5; }
+    }
     // nada de aterrizar, impulso ni subir: solo planear (cada cuadro, por si otro módulo lo cambió mientras tanto)
     const T = TU(); if (T) for (const k in AJ_FIS) if (T[k] !== AJ_FIS[k]) T[k] = AJ_FIS[k];
     if (m.landing) m.landing = false;
@@ -210,7 +242,7 @@ window.AVPlaneo = function (G) {
     if (!m.flying && !m.swimming && E.alto > TOCA + 0.5) { m.flying = true; m.takeoff = 0; } // algo la bajó del vuelo en el aire: sigue planeando
     // siempre avanza: un planeador no se queda cernido (en picada, más rápido)
     const vmin = m.picando ? VPICADA : VMIN, hs = Math.hypot(m.vx || 0, m.vz || 0);
-    if (hs < vmin) { if (hs > 0.5) { m.vx *= vmin / hs; m.vz *= vmin / hs; } else { const f = S.facing || salida; m.vx = f.x * vmin; m.vz = f.z * vmin; } }
+    if (hs < vmin) { if (hs > 0.5) { m.vx *= vmin / hs; m.vz *= vmin / hs; } else { const f = S.facing, fx = f ? f.x : salida.fx, fz = f ? f.z : salida.fz; m.vx = fx * vmin; m.vz = fz * vmin; } }
     // altura: pierde HUNDE m/s; las nubes y las corrientes la devuelven
     let sube = -HUNDE;
     if (E.subeT > 0) { E.subeT -= dt; sube += NUBE_V; }
@@ -232,6 +264,7 @@ window.AVPlaneo = function (G) {
       if (dentro) { enTerm = true; sube += TERM_V; t.carga = Math.max(0, t.carga - dt); const p = Math.ceil(t.carga / TERM_CARGA * 8); if (p !== t.pint) { t.pint = p; pintarColumnas(); } }
     }
     S.pos.y += sube * dt;
+    if (E.alzar > 0) { const k = Math.min(E.alzar, ALZAR_V * dt); S.pos.y += k; E.alzar -= k; } // remedir(): algo más alto que terminó de cargar
     // ¿toca? suelo, tejado o agua
     const sup = superficie(S.pos.x, S.pos.z, S.pos.y + 0.3);
     if (!(sup > -1e8)) { fin('agua'); return; } // fuera del mapa: mar abierto
@@ -302,6 +335,8 @@ window.AVPlaneo = function (G) {
       'body.planeo-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
       // aquí no hay subir, impulso, aterrizar (ni su pastilla «Dejar de volar») ni Acción: solo el joystick y «Bajar» (picada)
       'body.planeo-on :is(#b-act,#b-jump,#b-dash,#b-fly,#guia-volando){visibility:hidden!important}' +
+      // «Bajar» (la picada) sí se ve en el teléfono: fuera del agua input.js lo deja hidden, aquí se muestra (como en retos.js)
+      'body.planeo-on:not(.planeo-fin) #acts #b-dive{display:inline-flex!important}' +
       // con el panel, tampoco las pistas de vuelo ni el minimapa: solo el resultado
       'body.planeo-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#sys,#sys button,#b-diary,#b-emotes,#b-nido,#b-menu,#b-dive,#v18-exp-poder){visibility:hidden!important}';
     document.head.appendChild(st);
@@ -347,14 +382,32 @@ window.AVPlaneo = function (G) {
     finEl.querySelector('[data-a="salir"]').textContent = L('Salir', 'Exit');
   }
 
+  // ---------- Controles de este juego: «Bajar» en el teléfono y la barra de teclas del escritorio (se devuelven al salir) ----------
+  let ctl0 = null;
+  function ponerControles() {
+    if (ctl0) return;
+    const dive = document.getElementById('b-dive'), kh = document.getElementById('keyhint');
+    ctl0 = { diveTxt: dive ? dive.textContent : null, diveAria: dive ? dive.getAttribute('aria-label') : null, kh: kh ? kh.innerHTML : null };
+    if (dive) { dive.textContent = L('Bajar', 'Dive'); dive.setAttribute('aria-label', L('Bajar en picada', 'Dive down')); }
+    if (kh) { const k0 = kh.querySelector('kbd'), mover = (k0 && k0.textContent) || 'WASD'; kh.innerHTML = '<span><kbd></kbd> </span><span><kbd>C</kbd> </span><span><kbd>Esc</kbd> </span>'; const ks = kh.querySelectorAll('span'); ks[0].firstChild.textContent = mover; ks[0].lastChild.textContent = ' ' + L('Dirigir', 'Steer'); ks[1].lastChild.textContent = ' ' + L('Picada', 'Dive'); ks[2].lastChild.textContent = ' ' + L('Salir', 'Exit'); } // ni Saltar, ni Volar, ni Acción: aquí no hacen nada
+  }
+  function quitarControles() {
+    if (!ctl0) return;
+    const dive = document.getElementById('b-dive'), kh = document.getElementById('keyhint');
+    if (dive && ctl0.diveTxt != null) { dive.textContent = ctl0.diveTxt; if (ctl0.diveAria == null) dive.removeAttribute('aria-label'); else dive.setAttribute('aria-label', ctl0.diveAria); }
+    if (kh && ctl0.kh != null) kh.innerHTML = ctl0.kh;
+    ctl0 = null;
+  }
+  const tactil = () => { try { return matchMedia('(hover: none), (pointer: coarse)').matches; } catch (e) { return false; } };
+
   // ---------- Partida ----------
   function jugar(o) {
     o = o || {};
-    azarS = o.semilla || 0;
-    if (E.fase === 'nada') { vuelta.x = S.pos.x; vuelta.y = S.pos.y; vuelta.z = S.pos.z; const f = S.facing || { x: 0, z: 1 }; vuelta.fx = f.x; vuelta.fz = f.z; vuelta.ok = true; }
+    azarS = o.semilla || 0; E.semilla = azarS;
+    if (E.fase === 'nada') { vuelta.x = S.pos.x; vuelta.y = S.pos.y; vuelta.z = S.pos.z; const f = S.facing || { x: 0, z: 1 }; vuelta.fx = f.x; vuelta.fz = f.z; vuelta.volando = !!MV().flying; vuelta.yaw = G.camara ? G.camara.yaw : 0; vuelta.ok = true; }
     montar(); crearMallas();
     const rec = leerRec(), ent = v => (Number.isInteger(v) && v >= 0 ? v : 0);
-    Object.assign(E, { fase: 'juego', t: 0, lejos: 0, dist: 0, alto: ALTO_INI, subeT: 0, nubesN: 0, termsN: 0, motivo: '', toqueT: 0, msgT: 0, avisos: 0, cerca: false, centena: 0, guiaT: 0, primeraTerm: true,
+    Object.assign(E, { fase: 'juego', t: 0, lejos: 0, dist: 0, alto: ALTO_INI, subeT: 0, nubesN: 0, termsN: 0, motivo: '', toqueT: 0, msgT: 0, avisos: 0, cerca: false, centena: 0, guiaT: 0, primeraTerm: true, reT: 0, remedidas: 0, alzar: 0,
       mejor: rec ? rec.mejor : 0, mejorNubes: rec ? ent(rec.nubes) : 0, jugadas: rec ? ent(rec.jugadas) : 0, nuevo: false, finP: 0, hondo: 9 });
     if (logroId) { clearTimeout(logroId); logroId = 0; }
     try { if (G.pausa && G.pausa.set) G.pausa.set('planeo', false); } catch (e) { /* sin pausa */ }
@@ -365,9 +418,9 @@ window.AVPlaneo = function (G) {
     if (M) M.nubes.material.opacity = 1;
     pintarNubes(); pintarColumnas(); pintarMotas();
     finEl.hidden = true; q(hudEl, 'msg').textContent = '';
-    document.body.classList.add('planeo-on'); document.body.classList.remove('planeo-fin');
+    document.body.classList.add('planeo-on'); document.body.classList.remove('planeo-fin'); ponerControles();
     apuntarGuia(); pintarHud(); verHud();
-    aviso(L('Planea lejos: las nubes y las corrientes que suben te dan altura', 'Glide far: clouds and updrafts give you height'), 'bien'); E.msgT = 4;
+    aviso(L('Planea lejos: las nubes y las corrientes que suben te dan altura', 'Glide far: clouds and updrafts give you height'), 'bien'); E.msgT = 4; E.ayuda = true; // luego, cómo se dirige y cómo se pica
     sonar('boton');
     return true;
   }
@@ -411,11 +464,12 @@ window.AVPlaneo = function (G) {
     if (vuelta.ok) { // Vittata vuelve a donde estaba (la cumbre no es parte de la historia)
       const Mv = G.fisica && G.fisica.MOVE;
       S.pos.x = vuelta.x; S.pos.y = vuelta.y; S.pos.z = vuelta.z; S.vy = 0; S.facing = { x: vuelta.fx, z: vuelta.fz };
-      if (Mv) { Mv.vx = Mv.vz = 0; Mv.landing = false; Mv.dashT = 0; }
+      if (Mv) { Mv.vx = Mv.vz = 0; Mv.landing = false; Mv.dashT = 0; if (Mv.flying && !vuelta.volando) { Mv.flying = false; Mv.takeoff = 0; try { G.emit('vuelo', false); } catch (e) { /* */ } } } // posada o en el suelo, como estaba (no «volando» a ras de suelo)
+      try { if (G.camara) { G.camara.yaw = vuelta.yaw; if (G.camara.place) G.camara.place(true); } } catch (e) { /* sin cámara */ } // la cámara salta de vuelta con ella (no cruza la isla volando desde la cumbre)
       vuelta.ok = false;
     }
     if (hudEl) { hudEl.hidden = true; finEl.hidden = true; [hudEl, finEl].forEach(el => el.querySelectorAll('[data-k]').forEach(x => { if (x.dataset.k !== 'dw' && x.dataset.k !== 'hw') x.textContent = ''; })); [hudEl, finEl].forEach(el => el.querySelectorAll('button').forEach(b => { b.textContent = ''; })); q(hudEl, 'd').textContent = ''; q(hudEl, 'h').textContent = ''; } // sin texto viejo (ni en otro idioma)
-    document.body.classList.remove('planeo-on', 'planeo-fin');
+    document.body.classList.remove('planeo-on', 'planeo-fin'); quitarControles();
     const poder = document.getElementById('v18-exp-poder'); if (poder) poder.hidden = true; // el chip táctil del poder estaba tapado por la clase (como en sembradora.js)
     try { if (G.pausa && G.pausa.set) G.pausa.set('planeo', false); } catch (e) { /* sin pausa */ }
     return true;
@@ -462,15 +516,29 @@ window.AVPlaneo = function (G) {
     const aRas = (p, h) => ({ x: p.x, z: p.z, y: superficie(p.x, p.z, 400) + h }); // a h m de lo que hay justo debajo
     const ir = (p, vx, vz) => { S.pos.x = p.x; S.pos.y = p.y; S.pos.z = p.z; m.vx = vx == null ? 12 : vx; m.vz = vz || 0; m.flying = true; m.landing = false; m.swimming = false; E.subeT = 0; };
     const pasos = (n, dt) => { for (let i = 0; i < n && E.fase === 'juego'; i++) paso(dt || 0.05); };
+    const dive0 = document.getElementById('b-dive') ? document.getElementById('b-dive').textContent : null, kh0 = document.getElementById('keyhint') ? document.getElementById('keyhint').innerHTML : null;
     G.quiet = true;
     try {
       try { localStorage.removeItem(ALM); } catch (e) { /* */ }
       { const sx = document.getElementById('c1-saltar'); if (sx) { sx.click(); for (let i = 0; i < 60 && document.getElementById('c1-saltar'); i++) await new Promise(r => setTimeout(r, 50)); } } // como sembradora.js: durante la apertura del capítulo, se salta antes
+      if (!G.minimapa && window.AVE && AVE.assets && AVE.assets.script) { try { await AVE.assets.script('src/game/minimapa.js'); if (window.AVMinimapa) window.AVMinimapa(G); } catch (e) { /* lo dirá su comprobación */ } } // el minimapa se carga al primer gesto: aquí se carga ya, para comprobar su estrella de verdad
       jugar({ semilla: 7 });
       const hb = hudEl.querySelector('[data-a="salir"]').getBoundingClientRect();
       check('Se abre con el HUD (reloj 2:00, 0 m, la altura y «Salir» de ≥ 44 px) y la clase del juego', activo() && !hudEl.hidden && finEl.hidden && q(hudEl, 'r').textContent === '2:00' && q(hudEl, 'd').textContent === '0 m' && /\d+ m/.test(q(hudEl, 'h').textContent) && hb.height >= 44 && hb.width >= 44 && document.body.classList.contains('planeo-on'), q(hudEl, 'r').textContent + ' · ' + q(hudEl, 'd').textContent + ' · ' + Math.round(hb.height));
       { const gv = document.getElementById('guia-volando'); check('Sin la pastilla «Dejar de volar» del mundo (aquí no se aterriza)', !gv || getComputedStyle(gv).visibility === 'hidden', gv ? getComputedStyle(gv).visibility : 'sin pastilla'); }
       check('Sale en el aire desde un punto alto que ya existe (la cumbre), volando y bien por encima del suelo', salida.ancla === 'cumbre' && m.flying && S.pos.y - superficie(S.pos.x, S.pos.z, S.pos.y) >= ALTO_INI - 0.5 && Math.abs(S.pos.x - salida.x) < 1e-6, salida.ancla + ' · ' + Math.round(salida.x) + ',' + Math.round(salida.z) + ' · ' + Math.round(salida.y) + ' m');
+      { // La salida deja libre lo de delante (muros y tejados de las ruinas de la cumbre, rocas): medido más fino que despeje()
+        let peor = Infinity, donde = '';
+        for (let dd = 1.5; dd <= DESP_L; dd += 1.5) for (let w = -DESP_A + 1.5; w <= DESP_A - 1.5; w += 1.5) {
+          const top = superficie(salida.x + salida.fx * dd - salida.fz * w, salida.z + salida.fz * dd + salida.fx * w, 400); if (!(top > -1e8)) continue;
+          const holg = salida.y - dd * HUNDE / VMIN - top; if (holg < peor) { peor = holg; donde = dd + ' m, ' + w + ' m al lado'; }
+        }
+        check('La salida pasa por encima de todo lo que hay por delante (muros, tejados y rocas), planeando recto', peor >= 3, peor.toFixed(1) + ' m de holgura en ' + donde + ' · salida a ' + Math.round(salida.y - superficie(salida.x, salida.z, 400)) + ' m'); }
+      { // Con la física de verdad (choques con muros incluidos): 5 s recto sin tocar nada y sigue en el aire, alejándose
+        const st = G.fisica && G.fisica.step, k0 = new Set(G.input && G.input.keys ? G.input.keys : []);
+        if (st) { if (G.input && G.input.keys) G.input.keys.clear(); for (let i = 0; i < 100 && E.fase === 'juego'; i++) { st(0.05, false); paso(0.05); } if (G.input && G.input.keys) for (const k of k0) G.input.keys.add(k); }
+        check('Con la física de verdad, 5 s recto desde la salida y sigue en el aire (no choca con las ruinas)', !st || (E.fase === 'juego' && E.lejos > 40), E.fase + ' · ' + Math.round(E.lejos) + ' m · ' + E.alto.toFixed(1) + ' m de altura · remedidas ' + E.remedidas);
+        jugar({ semilla: 7 }); }
       check('3 mallas instanciadas (nubes, columnas y motas), todas del juego, y ningún aro', R.scene.children.filter(o => o.isInstancedMesh && /^planeo:/.test(o.name)).length === 3 && !R.scene.children.some(o => /^planeo:/.test(o.name) && o.geometry && /Torus|Ring/.test(o.geometry.type)), R.scene.children.filter(o => /^planeo:/.test(o.name)).map(o => o.name + ':' + o.geometry.type).join(','));
       const nN = nubes.filter(n => n.on).length, nT = terms.filter(t => t.on).length;
       check('Nubes en el aire, separadas y nunca dentro del suelo; corrientes solo sobre tierra', nN >= 12 && nT >= 6 && nubes.every(n => !n.on || n.y - techoEn(n.x, n.z, 6) >= 8.9) && terms.every(t => !t.on || !mojado(t.x, t.z)) && M.nubes.count === nN * BOLAS_NUBE.length && M.columnas.count === nT, nN + ' nubes · ' + nT + ' corrientes');
@@ -483,8 +551,10 @@ window.AVPlaneo = function (G) {
       if (G.pausa && G.pausa.set && G.pausa.motivos) {
         const yaCarga = G.pausa.motivos.has('carga');
         G.pausa.set('carga', true); verHud(); const tapado = hudEl.hidden;
+        const t0c = E.t, y0c = S.pos.y; G.quiet = false; await new Promise(r => setTimeout(r, 400)); G.quiet = true; const quieto = E.t === t0c && E.fase === 'juego'; // con la carga (una pausa: dt = 0) el reloj no corre
+        S.pos.y = y0c;
         if (!yaCarga) G.pausa.set('carga', false); verHud();
-        check('Con la pantalla de carga el HUD espera y luego sale', tapado && (yaCarga || !hudEl.hidden), yaCarga + '/' + tapado + '/' + hudEl.hidden);
+        check('Con la pantalla de carga el HUD espera (y el reloj no corre) y luego sale', tapado && quieto && (yaCarga || !hudEl.hidden), yaCarga + '/' + tapado + '/' + hudEl.hidden + ' · reloj ' + t0c.toFixed(2) + '→' + E.t.toFixed(2));
       }
       // Pierde altura poco a poco y siempre avanza (no se queda cernida)
       const p1 = lejosDeTodo(); ir(p1, 0, 0); pasos(20);
@@ -492,8 +562,8 @@ window.AVPlaneo = function (G) {
       check('Sin ayudas pierde ' + HUNDE + ' m por segundo y nunca se queda cernida (≥ ' + VMIN + ' m/s)', Math.abs(bajo1 - HUNDE) < 0.05 && vel1 >= VMIN - 1e-6 && E.fase === 'juego', bajo1.toFixed(2) + ' m · ' + vel1.toFixed(1) + ' m/s');
       // La flecha y el minimapa apuntan a lo mismo
       ir({ x: salida.x, y: salida.y, z: salida.z }, salida.fx * 12, salida.fz * 12); apuntarGuia();
-      check('La flecha y el minimapa apuntan a lo mismo (una ayuda de delante que se alcanza)', guia.ok && (!G.fx || !G.fx.guide || (() => { const g0 = G.fx.guide; let visto = null; G.fx.guide = t => { visto = t; }; try { guiar(); } finally { G.fx.guide = g0; } return visto === guia; })()) &&
-        (!G.minimapa || !G.minimapa.marcadores || G.minimapa.marcadores().some(k => k.tipo === 'obj' && k.x === guia.x && k.z === guia.z)), guia.ok ? guia.x.toFixed(1) + ',' + guia.z.toFixed(1) : 'sin guía');
+      check('La flecha y el minimapa apuntan a lo mismo (una ayuda de delante que se alcanza)', guia.ok && !!(G.fx && G.fx.guide) && (() => { const g0 = G.fx.guide; let visto = null; G.fx.guide = t => { visto = t; }; try { guiar(); } finally { G.fx.guide = g0; } return visto === guia; })() &&
+        !!(G.minimapa && G.minimapa.marcadores) && G.minimapa.marcadores().some(k => k.tipo === 'obj' && k.x === guia.x && k.z === guia.z), (guia.ok ? guia.x.toFixed(1) + ',' + guia.z.toFixed(1) : 'sin guía') + (G.minimapa ? '' : ' · sin minimapa'));
       // Una nube: empujón hacia arriba una sola vez y se queda gris
       const n0 = nubes.find(n => n.on); ir({ x: n0.x, y: n0.y, z: n0.z }, 0.01, 0); const y0n = S.pos.y; paso(0.05); const usada = n0.usada, k0 = nubes.filter(n => n.on).indexOf(n0) * BOLAS_NUBE.length;
       const cG = new THREE.Color(); M.nubes.getColorAt(k0, cG); const gris = cG.r < 0.9;
@@ -522,6 +592,8 @@ window.AVPlaneo = function (G) {
       }
       // Táctil: el joystick mueve como siempre; los botones que se ven son solo los que sirven (Bajar)
       check('En táctil no hay botones que no sirvan (subir, impulso, aterrizar, Acción) y «Bajar» sigue (≥ 44 px si se ve)', ['b-act', 'b-jump', 'b-dash', 'b-fly'].every(id => !vis(id)) && (!vis('b-dive') || document.getElementById('b-dive').getBoundingClientRect().height >= 44));
+      { const dv = document.getElementById('b-dive'), kh = document.getElementById('keyhint');
+        check('La picada se ve: «Bajar» en los botones táctiles (fuera del agua también) y C en la barra de teclas, sin Saltar, Volar ni Acción', (!dv || (dv.textContent === 'Bajar' && (!vis('acts') || vis('b-dive')))) && (!kh || (/Picada/.test(kh.textContent) && /Dirigir/.test(kh.textContent) && !/Saltar|Volar|Acción/.test(kh.textContent))), (dv ? dv.textContent + (vis('acts') ? ' · acts ' + vis('b-dive') : '') : '-') + ' · ' + (kh ? kh.textContent : '-')); }
       // Aviso de suelo cerca (suena)
       { const p3 = lejosDeTodo(); E.cerca = false; ir(aRas(p3, 4), 12, 0); paso(0.05);
         check('Cerca del suelo, aviso «¡Cuidado, el suelo!» y la altura en rojo', E.cerca && /Cuidado, el suelo/.test(q(hudEl, 'msg').textContent) && (pintarHud(), q(hudEl, 'hw').classList.contains('bajo')), q(hudEl, 'msg').textContent); }
@@ -587,12 +659,23 @@ window.AVPlaneo = function (G) {
       check('Al salir se sueltan las 3 mallas instanciadas (sus búferes de la GPU también)', soltadas === 3, soltadas);
       check('«Salir» lo quita todo (HUD, panel, clases, pausa, mallas, Acción) y devuelve la física de siempre y a Vittata a donde estaba', !activo() && hudEl.hidden && finEl.hidden && !/planeo-(on|fin)/.test(document.body.className) && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('planeo')) && !M && !R.scene.children.some(o => /^planeo:/.test(o.name)) && (!G.interaccion || G.interaccion.modo !== MODO) && fisIgual() && Math.hypot(S.pos.x - pos0.x, S.pos.z - pos0.z) < 0.01,
         fisIgual() + ' · ' + Math.round(S.pos.x) + ',' + Math.round(S.pos.z));
+      { const dv = document.getElementById('b-dive'), kh = document.getElementById('keyhint');
+        check('Al salir, «Bucear» y la barra de teclas del mundo vuelven como estaban', (!dv || dv.textContent === dive0) && (!kh || kh.innerHTML === kh0), (dv ? dv.textContent : '-') + ' · ' + (kh ? kh.textContent : '-')); }
       jugar({ semilla: 3 });
       { let chip = document.getElementById('v18-exp-poder'), puesto = false;
         if (!chip) { chip = document.createElement('button'); chip.id = 'v18-exp-poder'; document.body.appendChild(chip); puesto = true; }
         const h0 = chip.hidden; chip.hidden = false; hudEl.querySelector('[data-a="salir"]').click(); const oculto = chip.hidden;
         if (puesto) chip.remove(); else chip.hidden = h0;
         check('Al salir a media partida, la física vuelve y el chip «Tu poder» no se queda encima de la portada', oculto && !activo() && fisIgual()); }
+      { // Al salir vuelve como estaba: posada (no «volando» a ras de suelo, y se avisa con 'vuelo' false) y la cámara salta con ella, con su giro de antes
+        m.flying = false; const yawA = 0.7; if (G.camara) G.camara.yaw = yawA; let vueloNo = 0; const oyeV = v => { if (v === false) vueloNo++; }; G.on('vuelo', oyeV);
+        try { jugar({ semilla: 3 }); pasos(10); salir(); } finally { G.off('vuelo', oyeV); }
+        const cp = R.camera.position, dc = Math.hypot(cp.x - S.pos.x, cp.z - S.pos.z);
+        check('Al salir, Vittata vuelve posada si lo estaba (y se avisa) y la cámara salta con ella, con el giro de antes', !m.flying && vueloNo === 1 && (!G.camara || Math.abs(G.camara.yaw - yawA) < 1e-9) && dc < 20, 'volando ' + m.flying + ' · avisos ' + vueloNo + ' · cámara a ' + dc.toFixed(1) + ' m · yaw ' + (G.camara ? G.camara.yaw.toFixed(2) : '-')); }
+      { // sin S.facing, el recurso de «siempre avanza» usa el rumbo de la salida (no NaN)
+        jugar({ semilla: 3 }); const f0 = S.facing; S.facing = null; ir(lejosDeTodo(), 0, 0); paso(0.05);
+        check('Sin rumbo guardado, sigue avanzando por el de la salida (sin NaN)', Number.isFinite(m.vx) && Number.isFinite(m.vz) && Math.hypot(m.vx, m.vz) >= VMIN - 1e-6 && Number.isFinite(S.pos.y), m.vx + ',' + m.vz);
+        S.facing = f0 || { x: salida.fx, z: salida.fz }; salir(); }
       jugar({ semilla: 3 });
       const ev = tecla('Escape');
       check('Esc en plena partida también sale', !activo() && ev.defaultPrevented && hudEl.hidden && fisIgual());
