@@ -2,15 +2,20 @@
    Se carga al pedir la prueba (boot.js), no en la descarga inicial. Comprueba, con un espía en G.audio.play (sin altavoces):
    - Tabla de volúmenes (src/engine/audio.js NIVEL y src/game/musica.js BUCLES): cada efecto en archivo tiene su sonoridad medida y su
      nivel, y suena a ±0,6 LU de él; entre el más flojo y el más fuerte no hay más de 7,5 LU; el bosque de día y los coquíes de noche
-     suenan igual (±0,5) y todos los ambientes quedan 4 LU o más por debajo del efecto más suave.
-   - Vuelo con la física real (G.fisica): despegar, aletear, planear, frenar y aterrizar suenan; planear 60 cuadros seguidos suena una vez.
+     suenan igual (±0,5) y, en la tabla, ningún bucle pasa de NIVEL.suave − 4 (es una comprobación de tabla: integrada del bucle antes
+     de los buses frente a momentánea máxima de los efectos; no mide la mezcla final).
+   - Vuelo con la física real (G.fisica): despegar, aletear, planear, frenar y aterrizar suenan; planear 60 cuadros seguidos suena una vez;
+     posarse con X desde un vuelo rasante (a ras del suelo) también suena el golpe; terminar el vuelo desde fuera de la física (entrar a
+     un modo) no cuenta como aterrizaje (ni «aterrizaje_perfecto» ni truco ni humor).
    - Recoger un objeto del mundo suena «semilla» (y el combo sube el tono).
-   - Construir, pesca, duelo y poderes: cada acción llama a su efecto en el código de su módulo (sus baterías lo prueban en vivo).
+   - Construir, pesca, duelo y poderes: cada acción llama a su efecto en el código de su módulo, sin contar comentarios (es una
+     comprobación estática: no ve código muerto; en vivo lo prueban v18PescaTest, v18CombateTest, construirTest…).
    - Enfriamiento: el mismo efecto dos veces seguidas dentro de su minMs no se repite (G.audio.medir, sin conexión).
    - Ambiente: de día bosque y aves, de noche coquíes, con un fundido al atardecer; la hora sale de S.hora. En los minijuegos que callan
      la música el ambiente baja a 0,4.
-   - Silencio: con el sonido apagado G.audio.play no suena nada, el master queda a 0 y la música y el ambiente no se oyen.
-   Deja el sonido, la física, la hora y la partida como estaban. Devuelve { passed, total, results }. */
+   - Silencio: G.audio.callado() da 'silencio' por el ajuste (con o sin AudioContext), play() no suena, el master queda a 0 y vuelve a
+     su volumen al quitarlo, y la música y el ambiente no se oyen. Sin gesto todavía ('bloqueado'), play() no suena pero se anota.
+   Deja el sonido (y las marcas de enfriamiento), la física, la hora, la partida y las clases de body como estaban. Devuelve { passed, total, results }. */
 window.AVSonidoTest = function (G) {
   'use strict';
   const DT = 1 / 60;
@@ -33,6 +38,7 @@ window.AVSonidoTest = function (G) {
     const espia = () => { oidos.length = 0; A.play = function (n, a) { oidos.push({ n, a }); return false; }; };
     const suelta = () => { A.play = play0; };
     const nombres = () => oidos.map(o => o.n);
+    const ENF = ['puente_reparado', 'aleteo'], enf0 = ENF.map(n => A.enfriamiento ? A.enfriamiento(n) : null);
     const guarda = { quiet: G.quiet, pos: Object.assign({}, S.pos), vy: S.vy, move: Object.assign({}, M), hora: S.hora, teniaHora: Object.prototype.hasOwnProperty.call(S, 'hora'), muted: A.vol.muted };
     try {
       // ---------- 1. Tabla de volúmenes ----------
@@ -73,28 +79,47 @@ window.AVSonidoTest = function (G) {
         ok('F21 · Frenar para posarse suena «frenada»', nombres().includes('frenada'), nombres().join());
         for (let i = 0; i < 300 && M.flying; i++) pasos(1);
         pasos(2);
-        ok('F21 · Aterrizar suena (golpe en el suelo, techo o rama)', nombres().some(n => n === 'land' || n === 'aterrizar_techo' || n === 'posarse_rama') && !M.flying, nombres().join());
+        const golpe = () => nombres().some(n => n === 'land' || n === 'aterrizar_techo' || n === 'posarse_rama');
+        ok('F21 · Aterrizar suena (golpe en el suelo, techo o rama)', golpe() && !M.flying, nombres().join());
+        ok('F21 · Ese aterrizaje lo termina la física (MOVE.finEnPaso)', M.finEnPaso === true, M.finEnPaso);
+        // Vuelo rasante (a ras del suelo, sin haber subido: wasAir quedaba en false) y X: también golpe al posarse
+        F.endFlight(); S.pos.y = F.suelo(S.pos.x, S.pos.z, G.terreno.height(S.pos.x, S.pos.z) + 0.5); S.vy = 0;
+        Object.assign(M, { flying: true, landing: false, takeoff: 0, grounded: false, wasAir: false, vx: 6, vz: 0, dashT: 0 });
+        espia(); pasos(1);
+        const raso = M.flying && !M.grounded && M.wasAir;
+        F.land(); M.vx = M.vz = 0;
+        for (let i = 0; i < 300 && M.flying; i++) pasos(1);
+        pasos(2);
+        ok('F21 · Posarse con X desde un vuelo rasante suena el golpe (no solo «frenada»)', raso && golpe() && !M.flying, 'rasante ' + raso + ' · ' + nombres().join());
+        // Terminar el vuelo desde fuera (un modo la lleva al duelo): no es aterrizaje
+        Object.assign(M, { flying: true, landing: false, takeoff: 0, grounded: false, vx: 0, vz: 0 }); S.vy = 0;
+        espia(); F.endFlight();
+        ok('F21 · Entrar a un modo volando no suena como aterrizaje (ni perfecto, ni truco, ni humor)', M.finEnPaso === false && !nombres().some(n => n === 'aterrizaje_perfecto' || n === 'truco' || n === 'humor' || n === 'land'), M.finEnPaso + ' · ' + nombres().join());
       } finally { suelta(); ui.overlayOpen = ov0; dlg.open = open0; }
 
       // ---------- 3. Recoger un objeto del mundo ----------
       const O = G.objetos;
       if (O && O.recursos && O.recursos.length && O.collect) {
         const r = O.recursos[0], inv0 = Object.assign({}, S.inv), col0 = S.collected.slice(), check0 = G.misiones.check, toast0 = ui.toast, juice = G.camara.juice, j0 = { combo: juice.combo, comboT: juice.comboT };
+        const hit0 = G.camara.hitStop, rec0 = G.fx && G.fx.recoger; // sin parón ni partículas que nadie limpia
         try {
-          G.misiones.check = () => {}; ui.toast = () => {};
+          G.misiones.check = () => {}; ui.toast = () => {}; G.camara.hitStop = () => {}; if (rec0) G.fx.recoger = () => {};
           espia(); O.collect(r); O.collect(r);
           const s = oidos.filter(o => o.n === 'semilla');
           ok('F21 · Recoger un objeto suena «semilla» (no el «pickup» genérico) y el combo sube el tono', s.length === 2 && !nombres().includes('pickup') && s[1].a > s[0].a, oidos.map(o => o.n + ':' + o.a).join());
         } finally {
-          suelta(); G.misiones.check = check0; ui.toast = toast0; S.inv = inv0; S.collected = col0; juice.combo = j0.combo; juice.comboT = j0.comboT; O.syncVisible();
+          suelta(); G.misiones.check = check0; ui.toast = toast0; G.camara.hitStop = hit0; if (rec0) G.fx.recoger = rec0; S.inv = inv0; S.collected = col0; juice.combo = j0.combo; juice.comboT = j0.comboT; O.syncVisible();
         }
       } else ok('Recoger: G.objetos con recursos', true, 'este pack no tiene recursos');
 
       // ---------- 4. Construir, pesca, duelo y poderes: cada acción llama a su efecto ----------
       const textos = {};
-      for (const [, , f] of EN_CODIGO) if (!(f in textos)) { try { textos[f] = await fetch(f).then(r => (r.ok ? r.text() : '')); } catch (e) { textos[f] = ''; } }
+      // Sin comentarios: /* … */ y // hasta el final de la línea (un «// sonar('pica')» detrás de otra línea ya no cuenta)
+      const sinComentarios = t => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"\\])\/\/.*$/gm, '$1');
+      for (const [, , f] of EN_CODIGO) if (!(f in textos)) { try { textos[f] = sinComentarios(await fetch(f).then(r => (r.ok ? r.text() : ''))); } catch (e) { textos[f] = ''; } }
+      ok('F21 · El filtro de comentarios quita una llamada comentada al final de una línea', !/pica/.test(sinComentarios("x(); // sonar('pica')")) && /pica/.test(sinComentarios("sonar('pica'); // ok")));
       const faltan = EN_CODIGO.filter(([, n, f]) => {
-        const re = new RegExp('(sonar|play|son|s0)\\([^\\n]*[\'"]' + n + '[\'"]');
+        const re = new RegExp('\\b(son\\w*|play|s0)\\([^\\n]*[\'"]' + n + '[\'"]');
         return !A.has(n) || !(textos[f] || '').split('\n').some(l => !/precargar/.test(l) && re.test(l));
       }).map(([q, n]) => q + ' → ' + n);
       ok('F21 · Construir, pesca, duelo y poderes: cada acción toca su efecto de assets/audio/sfx/ (' + EN_CODIGO.length + ')', !faltan.length, faltan.join(' · '));
@@ -117,23 +142,34 @@ window.AVSonidoTest = function (G) {
         ok('F21 · bosque_yunque sigue a las aves (día) y noche_coquis a los coquíes (noche)', /bosque_yunque:aves/.test(bs) && /noche_coquis:coquies/.test(bs), bs);
         S.hora = 20; const hNoche = mus.hora(null); delete S.hora; const hSin = mus.hora(null);
         ok('F21 · La hora del ambiente es la del juego (S.hora); sin S.hora, de día', hNoche === 20 && hSin === 12, hNoche + ' / ' + hSin);
-        const cl = document.body.classList, tenia = cl.contains('compas-on');
-        cl.add('compas-on'); mus.tick(); const enMini = mus.minijuego() && mus.duckAmbiente() === 0.4;
-        if (!tenia) cl.remove('compas-on'); mus.tick(); const fuera2 = !mus.minijuego() && mus.duckAmbiente() === (G.dialogo.activo && G.dialogo.activo() ? 0.4 : 1);
-        ok('F21 · En los minijuegos que callan la música el ambiente baja a 0,4 y vuelve al salir', enMini && fuera2);
+        let enMini = false, fuera2 = false;
+        try { enMini = mus.forzarMinijuego(true) && mus.duckAmbiente() === 0.4; mus.forzarMinijuego(false); fuera2 = !mus.minijuego() && mus.duckAmbiente() === (G.dialogo.activo && G.dialogo.activo() ? 0.4 : 1); } finally { mus.forzarMinijuego(null); }
+        ok('F21 · En los minijuegos que callan la música el ambiente baja a 0,4 y vuelve al salir (sin tocar las clases de body)', enMini && fuera2);
+        const sm = mus.sinMusica();
+        ok('F21 · «Sigue el canto» también calla la música y baja el ambiente (como Sembradora y Alas al compás)', ['canto-on', 'sembradora-on', 'compas-on'].every(c => sm.includes(c)), sm.join());
       }
 
       // ---------- 7. Silencio ----------
+      // Sin el ajuste, la razón de callar es otra ('bloqueado' sin gesto, '' con el contexto en marcha): así se ve que lo apaga vol.muted
+      A.vol.muted = false; A.apply();
+      const antes = A.callado(), log0 = A.log.length;
+      if (antes === 'bloqueado') {
+        const n0 = A.log.slice(-1)[0], sonoB = play0.call(A, 'despegar');
+        ok('F21 · Audio aún no desbloqueado (sin gesto): play() no suena, pero se anota en el registro', !sonoB && A.log.slice(-1)[0] === 'despegar' && (A.log.length > log0 || n0 !== 'despegar'), 'ctx ' + (A.ctx ? A.ctx.state : 'sin'));
+      } else ok('F21 · Con el audio desbloqueado y sin silencio, play() puede sonar (callado vacío)', antes === '' && A.master.gain.value === A.vol.master, antes + ' · master ' + (A.master ? A.master.gain.value : '-'));
       A.vol.muted = true; A.apply();
+      const motivo = A.callado();
       const sono = play0.call(A, 'semilla', 0) || play0.call(A, 'despegar') || play0.call(A, 'bosque_yunque');
-      const masterCero = !A.ctx || A.master.gain.value === 0;
+      const masterCero = A.ctx ? A.master.gain.value === 0 : true; // sin contexto no hay master; lo cubre callado() === 'silencio'
       let musCalla = true, det = '';
       if (mus) { mus.tick(); const e = mus.estado(); musCalla = e.silencio && !e.audible && (!e.buses || (!e.buses.m && !e.buses.a)); det = JSON.stringify({ silencio: e.silencio, audible: e.audible, buses: e.buses }); }
-      ok('F21 · Con el sonido apagado no suena nada: efectos, master, música y ambiente', !sono && masterCero && musCalla, 'ctx ' + (A.ctx ? A.ctx.state : 'sin') + ' ' + det);
+      ok('F21 · Con el sonido apagado no suena nada por el ajuste (callado = silencio): efectos, master, música y ambiente', motivo === 'silencio' && antes !== 'silencio' && !sono && masterCero && musCalla, 'antes ' + antes + ' · ahora ' + motivo + ' · ctx ' + (A.ctx ? A.ctx.state : 'sin') + ' ' + det);
+      if (A.ctx) { A.vol.muted = false; A.apply(); ok('F21 · Al quitar el silencio el master vuelve a su volumen', A.master.gain.value === A.vol.master && A.callado() !== 'silencio', A.master.gain.value); }
     } catch (e) {
       ok('Sin excepciones', false, String(e && e.stack || e).slice(0, 300));
     } finally {
       suelta(); A.vol.muted = guarda.muted; A.apply(); if (G.musicaApi) G.musicaApi.tick();
+      if (A.enfriamiento) ENF.forEach((n, i) => A.enfriamiento(n, enf0[i])); // medir() dejó su marca: el juego no se queda callado luego
       F.endFlight(); Object.assign(M, guarda.move); Object.assign(S.pos, guarda.pos); S.vy = guarda.vy;
       if (guarda.teniaHora) S.hora = guarda.hora; else delete S.hora;
       G.quiet = guarda.quiet;

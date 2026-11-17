@@ -231,7 +231,7 @@ window.AVJuice = function (G) {
     G.emit('aterrizajePerfecto', { vel: +vel.toFixed(2) });
     return true;
   }
-  G.on('vuelo', on => { if (!on) alAterrizar(); });
+  G.on('vuelo', on => { if (!on && M.finEnPaso !== false) alAterrizar(); }); // F21: un modo que la lleva a otro sitio no es aterrizaje
   G.on('impulso', alImpulso);
   G.on('update', dt => paso(dt), 88);
   const limpiar = () => { E.ras = false; E.picando = false; E.picT = 0; E.pulso = 0; E.fov = 0; cam.fovPicado = 0; E.imp = -1; cam.fovImpulso = 0; E.lin = 0; E.linOn = false; if (G.fx.lineasOpacidad) G.fx.lineasOpacidad(lineasEl, 0); chip.hidden = true; pop.hidden = true; popT = 0; edadA.fill(9); estela.visible = false; espera.clear(); };

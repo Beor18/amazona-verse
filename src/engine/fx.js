@@ -162,6 +162,8 @@ AVE.module('fx', function (G) {
   const enV18 = () => (G.lugares && G.lugares.enV18) ? G.lugares.enV18() : /\bv18-(duelo|amenaza|golf)-on\b/.test(document.body.className);
   const libreDescubre = () => !G.ui.busy() && !(G.dialogo && G.dialogo.activo && G.dialogo.activo())
     && !document.getElementById('c1-fade') && !document.getElementById('c1-saltar') && !enV18();
+  let hallazgoT = -1e9;
+  G.on('aprendizaje', d => { if (d && d.tipo === 'hallazgo') hallazgoT = performance.now(); });
   function descubrimiento(nombre) {
     if (!capa) {
       capa = document.createElement('div'); capa.id = 'fx-descubre'; capa.setAttribute('aria-hidden', 'true');
@@ -180,7 +182,8 @@ AVE.module('fx', function (G) {
       capa.animate([{ opacity: 0 }, { opacity: 1, offset: 0.12 }, { opacity: 1, offset: 0.75 }, { opacity: 0 }], { duration: 1500, easing: 'ease-out' });
       capa.firstChild.animate([{ transform: 'translateY(12px) scale(.92)' }, { transform: 'translateY(0) scale(1)', offset: 0.2 }, { transform: 'translateY(0) scale(1)' }], { duration: 1500, easing: 'cubic-bezier(.34,1.56,.64,1)' });
     }
-    if (G.audio && G.audio.has && G.audio.has('descubrir')) G.audio.play('descubrir');
+    // F21: si el Diario acaba de sonar su hallazgo en el mismo sitio (mismo cuadro), no se le suma el acorde: una campanada, no dos
+    if (G.audio && G.audio.has && G.audio.has('descubrir') && !(performance.now() - hallazgoT < 400)) G.audio.play('descubrir');
     return capa;
   }
   G.on('lugar', d => {

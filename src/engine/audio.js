@@ -78,7 +78,7 @@ AVE.module('audio', function (G) {
     planeo: { lu: -18.3, nivel: 'accion', respaldo: 'dash', minMs: 2500 },
     picada: { lu: -17.4, nivel: 'accion', respaldo: ['picado', 'dash'], minMs: 2000 },
     frenada: { lu: -17.9, nivel: 'accion', respaldo: 'land', minMs: 1500 },
-    semilla: { lu: -18.5, nivel: 'accion', respaldo: ['r_semilla', 'pickup'], minMs: 70, tono: c => 1 + Math.min(c || 0, 9) * 0.03 }, // el combo sube un poco el tono (F21: también al recoger un objeto del mundo)
+    semilla: { lu: -18.5, nivel: 'accion', respaldo: ['r_semilla', 'pickup'], tono: c => 1 + Math.min(c || 0, 9) * 0.03 }, // el combo sube un poco el tono (F21: también al recoger un objeto del mundo). Sin minMs: dos semillas seguidas en Semillas, Sembradora, ¡Sígueme! o Retos suenan las dos (cada una con su nota del combo)
     logro: { lu: -18.3, nivel: 'premio', respaldo: 'unlock', minMs: 1500 },
     boton: { lu: -22.6, nivel: 'suave', respaldo: 'clic', minMs: 90 },
     aviso: { lu: -19.0, nivel: 'accion', respaldo: 'tick', minMs: 1500 },
@@ -139,10 +139,11 @@ AVE.module('audio', function (G) {
   function cargar(n) {
     if (!ctx || midiendo || bufs[n] || pedidas[n]) return;
     const m = MUESTRAS[n];
+    const c = ctx; // F21: se decodifica en el contexto que la pidió (si medir() presta uno sin conexión mientras llega, no se usa ese)
     pedidas[n] = fetch((m.url || 'assets/audio/' + n + '.') + formato())
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
       .catch(() => desdeB64(n))
-      .then(ab => new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(() => {}); }))
+      .then(ab => new Promise((res, rej) => { const p = c.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(() => {}); }))
       .then(b => { bufs[n] = b; }, () => { /* se queda el respaldo sintético */ });
   }
   function respaldoDe(m) { for (const r of [].concat(m.respaldo || [])) if (SOUNDS[r]) return SOUNDS[r]; return null; }
@@ -261,6 +262,11 @@ AVE.module('audio', function (G) {
     muestras: () => Object.keys(MUESTRAS),
     ficha: n => MUESTRAS[n] ? Object.assign({}, MUESTRAS[n], { url: (MUESTRAS[n].url || 'assets/audio/' + n + '.') + formato() }) : null,
     has: name => !!SOUNDS[name],
+    // F21: por qué play() no sonaría ahora: 'silencio' (el jugador lo apagó: se mira primero), 'bloqueado' (aún sin gesto: sin
+    // AudioContext o suspendido), 'midiendo' (medir() tiene prestado el contexto) o '' si puede sonar. Para las pruebas y play().
+    callado: () => (vol.muted ? 'silencio' : midiendo ? 'midiendo' : !ctx || ctx.state !== 'running' ? 'bloqueado' : ''),
+    // F21: marca del enfriamiento de un efecto (ms de performance.now() de la última vez); con v la pone (las pruebas la devuelven)
+    enfriamiento(n, v) { const m = MUESTRAS[n]; if (!m) return null; if (v !== undefined) { if (v == null) delete m.ult; else m.ult = v; } return m.ult == null ? null : m.ult; },
     NIVEL, efectivo: n => (MUESTRAS[n] && MUESTRAS[n].lu != null ? MUESTRAS[n].lu + 20 * Math.log10(MUESTRAS[n].gain) : null), // F21: LUFS con su ganancia (pruebas)
     reducido: null, // null: lo decide el sistema (G.renderer.REDUCED); true o false lo fuerza (pruebas o ajuste del menú)
     esSuave: name => FUERTES.has(name) && (api.reducido != null ? !!api.reducido : !!(G.renderer && G.renderer.REDUCED)),
@@ -309,7 +315,7 @@ AVE.module('audio', function (G) {
       if (name === 'tick' && now - lastAt < 250) return false; // el aviso no tapa otro sonido
       lastAt = now; api.log.push(name); if (api.log.length > 40) api.log.shift();
       for (const f of oyentes) { try { f(name, arg); } catch (e) { /* un oyente no frena el sonido */ } }
-      if (!ctx || ctx.state !== 'running' || vol.muted) return false;
+      if (api.callado()) return false; // apagado, sin gesto aún o midiendo (no suena en el contexto prestado de medir())
       salida = api.esSuave(name) ? suaveBus : sfxBus;
       try { SOUNDS[name](ctx.currentTime + 0.01, arg); } catch (e) { return false; } finally { salida = sfxBus; }
       return true;
