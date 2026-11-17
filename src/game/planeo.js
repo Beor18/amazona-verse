@@ -458,6 +458,7 @@ window.AVPlaneo = function (G) {
       }
       return { x: salida.x, z: salida.z, y: salida.y };
     };
+    const aRas = (p, h) => ({ x: p.x, z: p.z, y: superficie(p.x, p.z, 400) + h }); // a h m de lo que hay justo debajo
     const ir = (p, vx, vz) => { S.pos.x = p.x; S.pos.y = p.y; S.pos.z = p.z; m.vx = vx == null ? 12 : vx; m.vz = vz || 0; m.flying = true; m.landing = false; m.swimming = false; E.subeT = 0; };
     const pasos = (n, dt) => { for (let i = 0; i < n && E.fase === 'juego'; i++) paso(dt || 0.05); };
     G.quiet = true;
@@ -495,7 +496,7 @@ window.AVPlaneo = function (G) {
       const n0 = nubes.find(n => n.on); ir({ x: n0.x, y: n0.y, z: n0.z }, 0.01, 0); const y0n = S.pos.y; paso(0.05); const usada = n0.usada, k0 = nubes.filter(n => n.on).indexOf(n0) * BOLAS_NUBE.length;
       const cG = new THREE.Color(); M.nubes.getColorAt(k0, cG); const gris = cG.r < 0.9;
       pasos(17); const subeN = S.pos.y - y0n;
-      check('Cruzar una nube da altura (+' + (NUBE_V * NUBE_T - HUNDE * NUBE_T).toFixed(1) + ' m en ' + NUBE_T + ' s), con su aviso, y la nube se queda gris', usada && gris && subeN > 5 && E.nubesN === 1 && /Nube/.test(q(hudEl, 'msg').textContent), subeN.toFixed(2) + ' m · ' + q(hudEl, 'msg').textContent);
+      check('Cruzar una nube da altura (+' + (NUBE_V * NUBE_T - HUNDE * NUBE_T).toFixed(1) + ' m en ' + NUBE_T + ' s), con su aviso, y la nube se queda gris', usada && gris && subeN > 5 && E.nubesN === 1 && /Nube/.test(q(hudEl, 'msg').textContent), subeN.toFixed(2) + ' m · ' + q(hudEl, 'msg').textContent + ' · ' + [usada, gris, E.nubesN, cG.r.toFixed(2)].join('/'));
       ir({ x: n0.x, y: n0.y, z: n0.z }, 0.01, 0); const y1n = S.pos.y; pasos(18);
       check('La misma nube no vuelve a empujar (una vez por nube)', S.pos.y < y1n && E.nubesN === 1, (S.pos.y - y1n).toFixed(2));
       // Una corriente: sube mientras le queda fuerza; luego se apaga
@@ -508,7 +509,7 @@ window.AVPlaneo = function (G) {
       check('El récord es la distancia más lejana en línea recta desde la salida (volver no la baja) y el HUD la enseña', d150 > 149 && d150 < 152 && E.lejos === d150 && q(hudEl, 'd').textContent === Math.floor(d150) + ' m', d150.toFixed(1) + ' · ' + q(hudEl, 'd').textContent);
       // Machacar no sirve: con la física de verdad, 40 toques de subir, impulso y Acción no alargan el vuelo
       if (G.fisica && G.fisica.step) {
-        const p2 = lejosDeTodo(45), vuelo = toques => { ir(p2, 12, 0); S.facing = { x: 1, z: 0 }; m.dashCd = 0; for (let i = 0; i < 40 && E.fase === 'juego'; i++) { if (toques) { tecla(' ', 'keydown'); tecla('Shift'); tecla('e'); tecla('f'); tecla('v'); tecla('x'); } G.fisica.step(0.05, false); paso(0.05); if (toques) tecla(' ', 'keyup'); } return { y: S.pos.y, x: S.pos.x }; };
+        const p2 = lejosDeTodo(45), vuelo = toques => { ir(p2, 12, 0); S.facing = { x: 1, z: 0 }; for (let i = 0; i < 40 && E.fase === 'juego'; i++) { if (toques) { tecla(' ', 'keydown'); tecla('Shift'); tecla('e'); tecla('f'); tecla('v'); tecla('x'); } G.fisica.step(0.05, false); paso(0.05); if (toques) tecla(' ', 'keyup'); } return { y: S.pos.y, x: S.pos.x }; };
         const a = vuelo(false), b = vuelo(true);
         check('Machacar no sirve: 40 toques de subir, impulso, Acción y aterrizar no dan altura ni distancia y no la bajan del vuelo', b.y <= a.y + 0.05 && b.x <= a.x + 0.5 && m.flying && !m.landing && E.fase === 'juego', 'sin ' + a.y.toFixed(2) + ' · con ' + b.y.toFixed(2) + ' · x ' + (b.x - a.x).toFixed(2));
         // en picada baja más deprisa y va más rápido
@@ -519,7 +520,7 @@ window.AVPlaneo = function (G) {
       // Táctil: el joystick mueve como siempre; los botones que se ven son solo los que sirven (Bajar)
       check('En táctil no hay botones que no sirvan (subir, impulso, aterrizar, Acción) y «Bajar» sigue (≥ 44 px si se ve)', ['b-act', 'b-jump', 'b-dash', 'b-fly'].every(id => !vis(id)) && (!vis('b-dive') || document.getElementById('b-dive').getBoundingClientRect().height >= 44));
       // Aviso de suelo cerca (suena)
-      { const p3 = lejosDeTodo(); E.cerca = false; ir({ x: p3.x, y: p3.y - 25 + 4, z: p3.z }, 12, 0); paso(0.05);
+      { const p3 = lejosDeTodo(); E.cerca = false; ir(aRas(p3, 4), 12, 0); paso(0.05);
         check('Cerca del suelo, aviso «¡Cuidado, el suelo!» y la altura en rojo', E.cerca && /Cuidado, el suelo/.test(q(hudEl, 'msg').textContent) && (pintarHud(), q(hudEl, 'hw').classList.contains('bajo')), q(hudEl, 'msg').textContent); }
       { // «Reducir movimiento»: contadores (motas pintadas y sonidos), no estilos
         const au = G.audio, pl0 = au && au.play, sonidos = []; let motasRed = -1;
@@ -528,7 +529,7 @@ window.AVPlaneo = function (G) {
           if (au) au.play = n => { sonidos.push(n); };
           G.quiet = false;
           const c0 = E.motasPint; const p4 = lejosDeTodo(); ir(p4, 12, 0); pasos(10); motasRed = E.motasPint - c0;
-          E.cerca = false; ir({ x: p4.x, y: p4.y - 25 + 4, z: p4.z }, 12, 0); paso(0.05);
+          E.cerca = false; ir(aRas(p4, 4), 12, 0); paso(0.05);
           const t9 = E.t; E.t = DUR - 9.9; E.avisos = 0; ir(p4, 12, 0); paso(0.05); E.t = t9;
           check('Con «Reducir movimiento»: ninguna mota y los avisos importantes suenan (suelo cerca y tiempo)', motasRed === 0 && M.motas.count === 0 && sonidos.filter(n => n === 'aviso').length >= 2, 'motas ' + motasRed + ' · ' + sonidos.join(','));
         } finally { G.quiet = true; if (au) au.play = pl0; html.classList.remove('mov-reducido'); }
@@ -538,7 +539,7 @@ window.AVPlaneo = function (G) {
       check('Aterrizar está desactivado: no se baja del vuelo con el botón ni con V', (() => { ir(lejosDeTodo(), 12, 0); m.landing = true; paso(0.05); return !m.landing && E.fase === 'juego'; })());
       // Tocar el suelo termina: un momento y el panel modal
       const lejosFin = 260; E.lejos = lejosFin; E.mejor = 0;
-      { const p6 = lejosDeTodo(); ir({ x: p6.x, y: p6.y - 25 + 0.1, z: p6.z }, 12, 0); paso(0.05); }
+      { const p6 = lejosDeTodo(); ir(aRas(p6, 0.1), 12, 0); paso(0.05); }
       const enToque = E.fase === 'toque' && hudEl.hidden && finEl.hidden;
       const tV = tecla('p');
       check('Tocar el suelo termina: un momento para verlo (sin teclas del mundo) y luego el panel', enToque && tV.defaultPrevented && E.motivo === 'suelo', E.fase + ' · ' + E.motivo);
