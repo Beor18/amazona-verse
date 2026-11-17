@@ -32,9 +32,9 @@ window.AVPlaneo = function (G) {
   const MV = () => (G.fisica && G.fisica.MOVE) || {};
   const TU = () => (G.fisica && G.fisica.TUNING) || null;
   const ALM = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.planeo';
-  const DUR = 120, HUNDE = 2.4, VMIN = 10, VPICADA = 16, ALTO_INI = 16, TOCA = 0.35, CERCA_SUELO = 5, LEJOS_SUELO = 9, TOQUE_T = 0.9;
-  const NNUB = 16, NUBE_V = 9, NUBE_T = 0.9, NUBE_RX = 5, NUBE_RY = 3.4, NUBE_SEP = 16;
-  const NTER = 10, TERM_R = 6, TERM_ALTO = 55, TERM_V = 5.2, TERM_CARGA = 3.5, NMOTA = 8;
+  const DUR = 120, HUNDE = 3, VMIN = 10, VPICADA = 16, ALTO_INI = 22, TOCA = 0.35, CERCA_SUELO = 5, LEJOS_SUELO = 9, TOQUE_T = 0.9;
+  const NNUB = 16, NUBE_V = 9, NUBE_T = 1.1, NUBE_RX = 5, NUBE_RY = 3.4, NUBE_SEP = 16;
+  const NTER = 10, TERM_R = 6, TERM_ALTO = 55, TERM_V = 6.5, TERM_CARGA = 3.5, NMOTA = 8;
   const AJ_FIS = { climbV: 0, glideSink: 0, flyCeil: 60 }; // subir no sube y el hundimiento lo pone este juego; techo más alto (las corrientes suben)
   const SALIDAS = ['cumbre', 'picachos', 'mirador'], HACIA = ['plaza', 'villa'];
   const en = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
@@ -155,8 +155,8 @@ window.AVPlaneo = function (G) {
         let sep = true; for (let j = 0; j < i; j++) { const o = nubes[j]; if (o.on && Math.hypot(o.x - x, o.z - z) < NUBE_SEP) { sep = false; break; } }
         if (!sep) continue;
         const suelo = techoEn(x, z, 6); if (!(suelo > -1e8)) continue;
-        // a la altura del planeo recto, más un poco por cada nube anterior (si se cogen la mitad, se llega a las siguientes)
-        let y = salida.y - d / 12 * HUNDE + i * 0.5 * NUBE_V * NUBE_T + rnd(-2, 2);
+        // a la altura del planeo recto, más un poco por cada nube anterior (cogiendo algunas, se llega a las siguientes)
+        let y = salida.y - d / 12 * HUNDE + i * 1.2 + rnd(-3, 2);
         y = Math.min(Math.max(y, suelo + 9), suelo + 45);
         n.on = true; n.x = x; n.y = y; n.z = z; k++;
       }
@@ -494,7 +494,8 @@ window.AVPlaneo = function (G) {
       const n0 = nubes.find(n => n.on); ir({ x: n0.x, y: n0.y, z: n0.z }, 0.01, 0); const y0n = S.pos.y; paso(0.05); const usada = n0.usada, k0 = nubes.filter(n => n.on).indexOf(n0) * BOLAS_NUBE.length;
       const cG = new THREE.Color(); M.nubes.getColorAt(k0, cG); const gris = cG.r < 0.9;
       pasos(17); const subeN = S.pos.y - y0n;
-      check('Cruzar una nube da altura (+' + (NUBE_V * NUBE_T - HUNDE * NUBE_T).toFixed(1) + ' m en ' + NUBE_T + ' s), con su aviso, y la nube se queda gris', usada && gris && subeN > 5 && E.nubesN === 1 && /Nube/.test(q(hudEl, 'msg').textContent), subeN.toFixed(2) + ' m · ' + q(hudEl, 'msg').textContent + ' · ' + [usada, gris, E.nubesN, cG.r.toFixed(2)].join('/'));
+      const espN = Math.min(0.85, NUBE_T) * NUBE_V - 0.9 * HUNDE;
+      check('Cruzar una nube da altura (+' + espN.toFixed(1) + ' m en 0,9 s), con su aviso, y la nube se queda gris', usada && gris && Math.abs(subeN - espN) < 0.2 && subeN > 3 && E.nubesN === 1 && /Nube/.test(q(hudEl, 'msg').textContent), subeN.toFixed(2) + ' m · ' + q(hudEl, 'msg').textContent + ' · ' + [usada, gris, E.nubesN, cG.r.toFixed(2)].join('/'));
       ir({ x: n0.x, y: n0.y, z: n0.z }, 0.01, 0); const y1n = S.pos.y; pasos(18);
       check('La misma nube no vuelve a empujar (una vez por nube)', S.pos.y < y1n && E.nubesN === 1, (S.pos.y - y1n).toFixed(2));
       // Una corriente: sube mientras le queda fuerza; luego se apaga
