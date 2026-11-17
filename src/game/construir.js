@@ -1253,9 +1253,13 @@
         const camF = G.camara, yawF = camF && camF.yaw, rzF = G.actores && G.actores.player3D && G.actores.player3D.root, visF = rzF && rzF.visible;
         let yawDentro = null, ocultaDentro = null; const snap0 = G.renderer.snapshot;
         G.renderer.snapshot = function () { yawDentro = camF ? camF.yaw : null; ocultaDentro = rzF ? !rzF.visible : null; return snap0.apply(this, arguments); };
-        let urlFoto; try { urlFoto = await foto(); } finally { G.renderer.snapshot = snap0; }
+        // Lo que «vuelve como estaba» se mide al volver (la última colocación de la cámara en foto()): mientras se pasa a PNG corren
+        // cuadros y la cámara sigue a Vittata como siempre, así que comparar al final daba rojos de cadena (también antes de F3)
+        const place0 = camF && camF.place; let yawTras = null, visTras = null;
+        if (place0) camF.place = function () { yawTras = camF.yaw; visTras = rzF ? rzF.visible : null; return place0.apply(this, arguments); };
+        let urlFoto; try { urlFoto = await foto(); } finally { G.renderer.snapshot = snap0; if (place0) camF.place = place0; }
         check('T40 · la foto pone la cámara detrás, mirando al rincón, sin Vittata delante, y luego todo vuelve como estaba',
-          (!camF || (yawDentro === 0 && camF.yaw === yawF)) && (!rzF || (ocultaDentro === true && rzF.visible === visF)), JSON.stringify({ yawDentro, yawF, ocultaDentro }));
+          (!camF || (yawDentro === 0 && yawTras === yawF)) && (!rzF || (ocultaDentro === true && rzF.visible === visF && (!place0 || visTras === visF))), JSON.stringify({ yawDentro, yawF, yawTras, ocultaDentro }));
         check('La foto del rincón es un PNG local y no deja un enlace para subirlo', typeof urlFoto === 'string' && urlFoto.indexOf('data:image/png') === 0 && urlFoto.length > 200 && !document.querySelector('a[download="rincon-vittata.png"]'), urlFoto ? urlFoto.slice(0, 22) + '… ' + urlFoto.length : 'sin foto');
         // 3b. Piezas del Mercadito del río: sin comprarlas no salen en la barra ni se eligen; compradas, sí (teclas 1–9 en el orden de la barra)
         S.tienda = { v: 1, conchitas: 0, ganadas: 0, compras: [] }; refrescar();
