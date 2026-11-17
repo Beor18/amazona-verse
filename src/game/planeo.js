@@ -10,6 +10,7 @@
    - Corrientes térmicas sobre tierra (una columna dorada suave y motas que suben): dentro, sube TERM_V m/s mientras le quede fuerza
      (TERM_CARGA s por corriente; se apaga al gastarse). Se aprovecha dando vueltas dentro.
    Tocar suelo, tejado o agua termina; a los 2 minutos también. El récord es la distancia en línea recta desde la salida (m).
+   Planeando recto se llega más o menos a la costa; las nubes siguen sobre el mar, así que encadenarlas lleva mucho más lejos.
    La flecha y el minimapa (minimapa.js objetivo()) señalan la ayuda más cercana que se puede alcanzar por delante.
    Física: solo se ajusta mientras se juega y se devuelve al salir (TUNING.climbV, glideSink y flyCeil; nada de retos.js ni del vuelo
    del mundo). El hundimiento, las nubes y las corrientes se aplican aquí, después de G.fisica.step (renderer.js: step y luego 'update').
@@ -33,7 +34,7 @@ window.AVPlaneo = function (G) {
   const TU = () => (G.fisica && G.fisica.TUNING) || null;
   const ALM = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.planeo';
   const DUR = 120, HUNDE = 3.6, VMIN = 10, VPICADA = 16, ALTO_INI = 22, TOCA = 0.35, CERCA_SUELO = 5, LEJOS_SUELO = 9, TOQUE_T = 0.9;
-  const NNUB = 16, NUBE_V = 14, NUBE_T = 1.2, NUBE_RX = 6, NUBE_RY = 4, NUBE_SEP = 16;
+  const NNUB = 18, NUBE_V = 14, NUBE_T = 1.2, NUBE_RX = 6, NUBE_RY = 4, NUBE_SEP = 16;
   const NTER = 10, TERM_R = 11, TERM_ALTO = 55, TERM_V = 8, TERM_CARGA = 5, NMOTA = 8;
   const AJ_FIS = { climbV: 0, glideSink: 0, flyCeil: 60 }; // subir no sube y el hundimiento lo pone este juego; techo más alto (las corrientes suben)
   const SALIDAS = ['cumbre', 'picachos', 'mirador'], HACIA = ['plaza', 'villa'];
@@ -150,13 +151,13 @@ window.AVPlaneo = function (G) {
     for (let i = 0; i < NNUB; i++) {
       const n = nubes[i]; n.on = false; n.usada = false; n.giro = i * 1.7;
       for (let r = 0; r < 12 && !n.on; r++) {
-        const d = 45 + i * 26 + rnd(-6, 6), lado = i % 2 ? 1 : -1, a = ang0 + lado * rnd(0.08, r < 6 ? 0.6 : 1.1); // casi de frente: ir a por una nube no cuesta mucha distancia
+        const d = 45 + i * 30 + rnd(-6, 6), lado = i % 2 ? 1 : -1, a = ang0 + lado * rnd(0.08, r < 6 ? 0.6 : 1.1); // casi de frente: ir a por una nube no cuesta mucha distancia
         const x = salida.x + Math.cos(a) * d, z = salida.z + Math.sin(a) * d;
         let sep = true; for (let j = 0; j < i; j++) { const o = nubes[j]; if (o.on && Math.hypot(o.x - x, o.z - z) < NUBE_SEP) { sep = false; break; } }
         if (!sep) continue;
         const suelo = techoEn(x, z, 6); if (!(suelo > -1e8)) continue;
-        // a la altura del planeo recto, más un poco por cada nube anterior (cogiendo algunas, se llega a las siguientes)
-        let y = salida.y - d / 12 * HUNDE - 2 + i * 0.8 + rnd(-3, 1); // un poco por debajo: con una picada se alcanza
+        // cerca, a la altura del planeo recto; lejos (más allá de la costa), en una línea que solo se alcanza encadenando nubes y corrientes
+        let y = salida.y - d * (HUNDE / 12) * 0.55 - 4 + rnd(-3, 1);
         y = Math.min(Math.max(y, suelo + 9), suelo + 45);
         n.on = true; n.x = x; n.y = y; n.z = z; k++;
       }
