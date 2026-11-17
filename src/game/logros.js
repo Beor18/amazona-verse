@@ -83,8 +83,8 @@
     }
     // El libro de logros (dañado = vacío; solo ids conocidos con fecha válida)
     function libro() {
-      const d = leer(CLAVE.logros), ok = !!d && d.v === 1 && esObj(d.ganados), ganados = {};
-      if (ok) for (const id of IDS) { const t = Number(d.ganados[id]); if (Number.isFinite(t) && t > 0) ganados[id] = t; }
+      const d = leer(CLAVE.logros), ok = !!d && d.v === 1 && esObj(d.ganados), ganados = Object.create(null); // sin prototipo: «constructor» es un id
+      if (ok) for (const id of IDS) { const t = Object.prototype.hasOwnProperty.call(d.ganados, id) ? Number(d.ganados[id]) : 0; if (Number.isFinite(t) && t > 0) ganados[id] = t; }
       return { valido: ok, ganados };
     }
     // Cada logro con su estado para «Mis récords»: ganado si está en el libro o si ya se cumple
@@ -169,7 +169,7 @@
             () => pon('v18', { v: 2, mundo: { duelos_ganados: 3 }, otorgados: { duelo_gana_vittata: true, duelo_gana_oratrix: true, duelo_gana_agilis: true } })],
           ['constructor', () => { sim.S.construir = { v: 1, piezas: new Array(9).fill({ t: 'piso', x: 0, z: 0, r: 0 }) }; }, () => { sim.S.construir.piezas.push({ t: 'techo', x: 0, z: 0, r: 0 }); }],
           ['obra', () => pon('obras', { v: 1, explicadas: [], libro: [] }), () => pon('obras', { v: 1, explicadas: ['comedero'], libro: [] })],
-          ['album', () => { sim.S.album = ['vittata', 'oratrix', 'agilis', 'martinicana', 'violacea', 'oratrix']; }, () => { sim.S.album.push('leucocephala'); }],
+          ['album', () => { sim.S.album = ['vittata', 'oratrix', 'agilis', 'martinicana', 'violacea', 'oratrix']; }, () => { sim.S.album.push('leucocephala', 'ventralis'); }],
           ['poderes', () => pon('v18', Object.assign(leer(CLAVE.v18), { mundo: { duelos_ganados: 3, poder_rafaga: 1, poder_ojo: 1 } })),
             () => { const v = leer(CLAVE.v18); v.mundo.poder_planeo = 1; pon('v18', v); }],
           ['super', null, () => { const v = leer(CLAVE.v18); v.mundo.superplaneo = 1; pon('v18', v); }],
