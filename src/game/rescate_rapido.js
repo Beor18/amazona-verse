@@ -53,7 +53,7 @@ window.AVRescateRapido = function (G) {
   const nido = { x: 0, y: 0, z: 0, top: 0 };
   const guia = { x: 0, y: 0, z: 0, ok: false };
   const E = { fase: 'nada', t: 0, salvados: 0, lleva: -1, ultAccion: -9, pistaT: -9, msgT: 0, avisos: 0, cerca: -1, enNido: false, vistaT: 0, finP: 0,
-    nuevo: false, todos: false, tiempo: 0, mejor: 0, mejorT: 0, jugadas: 0, gotasOn: false, sitioN: 0, zona: '' };
+    nuevo: false, todos: false, tiempo: 0, mejor: 0, mejorT: 0, jugadas: 0, gotasOn: false, sitioN: 0, zona: '', hudS: -1 };
   const restante = () => Math.max(0, DUR - E.t);
 
   // ---------- Geometría: piezas con color por vértice, unidas en una sola malla (como sembradora.js) ----------
@@ -318,7 +318,7 @@ window.AVRescateRapido = function (G) {
     apuntarGuia();
     pintar();
     if (r <= 0) { fin(); return; }
-    if (hudEl && Math.floor((E.t - dt) * 4) !== Math.floor(E.t * 4)) pintarHud();
+    if (hudEl && Math.ceil(r) !== E.hudS) pintarHud(); // cada segundo del reloj (también si el tiempo salta)
   }
   function apuntarGuia() { // llevando un pichón, el nido; si no, el pichón del suelo más cercano
     guia.ok = false;
@@ -382,6 +382,7 @@ window.AVRescateRapido = function (G) {
   function pintarHud() {
     if (!hudEl) return;
     q(hudEl, 'tit').textContent = ancho() ? L('Rescate rápido', 'Quick Rescue') : ''; // en el teléfono el título sobra: una sola franja
+    E.hudS = Math.ceil(restante());
     const r = q(hudEl, 'r'); q(hudEl, 'rt').textContent = reloj(restante()); r.classList.toggle('poco', restante() <= GOTAS_T);
     r.setAttribute('aria-label', L('Lluvia en ', 'Rain in ') + reloj(restante()));
     const k = Math.min(1, E.t / DUR); r.style.setProperty('--rr-nube', 'rgb(' + [255, 255, 255].map((v, i) => Math.round(v + ([141, 151, 166][i] - v) * k)).join(',') + ')'); // la nubecita se agrisa como la del cielo
@@ -576,7 +577,7 @@ window.AVRescateRapido = function (G) {
       // Reloj de lluvia: la nube se agrisa y, en los últimos 15 s, gotas y aviso con sonido
       const c0 = M.nube.material.color.r;
       E.t = DUR - GOTAS_T - 0.05; lejos(); paso(0.1);
-      check('Reloj de lluvia: la nube se pone gris (no negra) y en los últimos 15 s caen gotas finas con aviso', M.nube.material.color.r < c0 && M.nube.material.color.r > 0.2 && E.gotasOn && M.gotas.count === NG && /primeras gotas/.test(q(hudEl, 'msg').textContent) && q(hudEl, 'r').classList.contains('poco'), c0.toFixed(2) + ' → ' + M.nube.material.color.r.toFixed(2) + ' · gotas ' + M.gotas.count);
+      check('Reloj de lluvia: la nube se pone gris (no negra) y en los últimos 15 s caen gotas finas con aviso (y el reloj lo marca aunque el tiempo salte)', q(hudEl, 'rt').textContent === reloj(restante()) && q(hudEl, 'rt').textContent !== '1:30' && M.nube.material.color.r < c0 && M.nube.material.color.r > 0.2 && E.gotasOn && M.gotas.count === NG && /primeras gotas/.test(q(hudEl, 'msg').textContent) && q(hudEl, 'r').classList.contains('poco'), q(hudEl, 'rt').textContent + ' · ' + c0.toFixed(2) + ' → ' + M.nube.material.color.r.toFixed(2) + ' · gotas ' + M.gotas.count);
       { // «Reducir movimiento»: contadores (chispas lanzadas, gotas dibujadas y sonidos), no estilos
         const fx = G.fx, b0 = fx && fx.burst, au = G.audio, pl0 = au && au.play; let nChispas = 0; const sonidos = [];
         html.classList.add('mov-reducido');
