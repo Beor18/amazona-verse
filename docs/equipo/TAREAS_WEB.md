@@ -2382,3 +2382,5 @@ Claude web B · F4 tanda 2 hecha
 - Reglas de siempre. Al cerrar cada día, deja un «☀️ RESUMEN PARA KELVIN» de 10 líneas.
 
 📣 Claude web B · PUBLICADO 4c1928b en 6558a4d: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
+
+📣 Claude web B · PUBLICADO b8b2e729 en 6558a4d: 12/12, md5 de juego/index.html igual que la web. Entra: F21 Sonido + F20 recorrido (ronda 2).
