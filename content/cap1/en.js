@@ -3258,7 +3258,6 @@ window.AV_EN = {
  "¡Tocaste el suelo!": "You touched down!",
  "¡Al agua!": "Splash!",
  "¡Casi! Busca las nubes y las corrientes que suben": "So close! Look for clouds and updrafts",
- "¡Nuevo récord: {} m!": "New record: {} m!",
  "Nubes: {} · Corrientes: {} · En el aire: {}": "Clouds: {} · Updrafts: {} · Airtime: {}",
  "Distancia: {}": "Distance: {}",
  "Altura: {}": "Height: {}",
