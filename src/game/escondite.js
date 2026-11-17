@@ -202,12 +202,12 @@ window.AVEscondite = function (G) {
       ok('T56 · Escondite en «Más juegos»: 3 pichones en sitios separados, HUD con tiempo, n/3 y «Salir»', modo && jugando && sitios.length === 3 && sep && !!hudEl && !hudEl.hidden && /0\/3/.test(hudEl.textContent) && !!hudEl.querySelector('[data-a="salir"]') && document.body.classList.contains('escondite-on'), hudEl && hudEl.textContent);
       sitios.forEach(s0 => { s0.hallado = true; }); paso(0.1);
       ok('T56 · al encontrarlos, el HUD dice el tiempo', !jugando && /¡Los 3 en/.test(hudEl.textContent), hudEl.textContent);
-      { const bs = [...finEl.querySelectorAll('.av-bots .av-bot')], lg = (window.AVFinJuego ? window.AVFinJuego.log : []).filter(x => x.juego === 'escondite').slice(-1).map(x => x.tipo).join();
+      { const bs = [...finEl.querySelectorAll('.av-bots .av-bot')], lg = (window.AVFinJuego ? window.AVFinJuego.log : []).filter(x => x.juego === 'escondite' && x.tipo !== 'record').slice(-1).map(x => x.tipo).join();
         ok('PULIR 4 · panel final común: tiempo, récord, «Otra vez» y «Salir» de ≥ 44 px (54 px, 18 px) y el sonido de victoria de la tabla común', !finEl.hidden && finEl.classList.contains('av-fin') && /\d:\d\d/.test(finEl.querySelector('[data-k="fn"]').textContent) && /récord/i.test(finEl.querySelector('[data-k="fmsg"]').textContent) && bs.length === 2 && bs.every(b => b.getBoundingClientRect().height >= 54 && getComputedStyle(b).fontSize === '18px') && lg === 'victoria' && hudEl.querySelector('[data-a="otra"]').hidden, finEl.textContent + ' · ' + lg); }
       finEl.querySelector('[data-a="otra"]').click();
       ok('PULIR 4 · «Otra vez» del panel empieza otra ronda (sin panel)', modo && jugando && finEl.hidden && /0\/3/.test(hudEl.textContent));
       t = LIMITE; paso(0.1);
-      ok('PULIR 4 · sin encontrarlos a tiempo: «¡Casi!» con pista (sin castigo) y el sonido «casi» de la tabla común', !jugando && !finEl.hidden && /^¡Casi! /.test(finEl.querySelector('[data-k="fmsg"]').textContent) && (window.AVFinJuego ? window.AVFinJuego.log.slice(-1)[0].tipo === 'casi' : true), finEl.textContent);
+      ok('PULIR 4 · sin encontrarlos a tiempo: «¡Casi!» con pista (sin castigo) y el sonido «casi» de la tabla común', !jugando && !finEl.hidden && /^¡Casi! /.test(finEl.querySelector('[data-k="fmsg"]').textContent) && (window.AVFinJuego ? window.AVFinJuego.log.filter(x => x.juego === 'escondite').slice(-1)[0].tipo === 'casi' : true), finEl.textContent);
       salir();
       ok('T56 · «Salir» lo quita todo (HUD, panel, clase, pichones)', !modo && hudEl.hidden && finEl.hidden && !logroId && !document.body.classList.contains('escondite-on') && pich.chs.every(ch => !ch.root.visible));
       mejor = mejor0;
