@@ -417,7 +417,7 @@ AVE.module('creador', function (G) {
     // F20: con la partida ya empezada, el ropero no habla de alta: «Mi personaje», «Guardar» y sin la nota de aprendiz
     const ya = !!p.created, ps = $('p-save'), h2 = document.querySelector('#creator .stage-title h2'), nota = document.querySelector('#creator .creator-side > .note');
     const tPs = ya ? 'Guardar' : 'Empezar la aventura', tH2 = ya ? 'Mi personaje' : 'Crea tu aventurero'; // en ES: el diccionario EN los traduce
-    if (ps.textContent !== tPs) ps.textContent = tPs;
+    if (!$('creator').classList.contains('creator-corto') && ps.textContent !== tPs) ps.textContent = tPs; // corto (primera vez desde la portada): menu_modos pone «¡A jugar!»
     if (h2 && h2.textContent !== tH2) h2.textContent = tH2;
     if (nota) nota.hidden = ya;
     const ops = opcionesEspecie();
