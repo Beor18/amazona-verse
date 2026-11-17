@@ -186,7 +186,7 @@ window.AVPlaneo = function (G) {
     S.pos.x = salida.x; S.pos.z = salida.z; S.pos.y = salida.y; S.vy = 0;
     S.facing = { x: salida.fx, z: salida.fz };
     if (Mv) { Mv.vx = salida.fx * 12; Mv.vz = salida.fz * 12; Mv.swimming = false; Mv.landing = false; Mv.jumping = false; Mv.grounded = false; Mv.takeoff = 0; if (!Mv.flying) { Mv.flying = true; try { G.emit('vuelo', true); } catch (e) { /* */ } } }
-    try { if (G.camara) { G.camara.yaw = Math.atan2(-salida.fx, -salida.fz); if (G.camara.manual) G.camara.manual(); } } catch (e) { /* sin cámara */ }
+    try { if (G.camara) { G.camara.yaw = Math.atan2(-salida.fx, -salida.fz); if (G.camara.manual) G.camara.manual(); if (G.camara.place) G.camara.place(true); } } catch (e) { /* sin cámara */ } // la cámara salta a la salida (no cruza la isla volando hasta allí)
   }
   function ajustarFisica(on) { // solo mientras se juega; al salir, lo de antes
     const T = TU(); if (!T) return;
@@ -300,8 +300,8 @@ window.AVPlaneo = function (G) {
       '@media (orientation:landscape) and (max-height:500px){#pln-fin{padding:12px 16px;gap:4px}#pln-fin h2{font-size:21px}#pln-fin .pln-gran{font-size:34px}#pln-fin .pln-gran svg{width:34px;height:34px}}' +
       // la historia no se mezcla con el minijuego (sus avisos esperan: G.menuModos.ocupado() cuenta este juego como actividad en marcha)
       'body.planeo-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
-      // aquí no hay subir, impulso, aterrizar ni Acción: solo el joystick y «Bajar» (picada)
-      'body.planeo-on :is(#b-act,#b-jump,#b-dash,#b-fly){visibility:hidden!important}' +
+      // aquí no hay subir, impulso, aterrizar (ni su pastilla «Dejar de volar») ni Acción: solo el joystick y «Bajar» (picada)
+      'body.planeo-on :is(#b-act,#b-jump,#b-dash,#b-fly,#guia-volando){visibility:hidden!important}' +
       // con el panel, tampoco las pistas de vuelo ni el minimapa: solo el resultado
       'body.planeo-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#sys,#sys button,#b-diary,#b-emotes,#b-nido,#b-menu,#b-dive,#v18-exp-poder){visibility:hidden!important}';
     document.head.appendChild(st);
@@ -469,6 +469,7 @@ window.AVPlaneo = function (G) {
       jugar({ semilla: 7 });
       const hb = hudEl.querySelector('[data-a="salir"]').getBoundingClientRect();
       check('Se abre con el HUD (reloj 2:00, 0 m, la altura y «Salir» de ≥ 44 px) y la clase del juego', activo() && !hudEl.hidden && finEl.hidden && q(hudEl, 'r').textContent === '2:00' && q(hudEl, 'd').textContent === '0 m' && /\d+ m/.test(q(hudEl, 'h').textContent) && hb.height >= 44 && hb.width >= 44 && document.body.classList.contains('planeo-on'), q(hudEl, 'r').textContent + ' · ' + q(hudEl, 'd').textContent + ' · ' + Math.round(hb.height));
+      { const gv = document.getElementById('guia-volando'); check('Sin la pastilla «Dejar de volar» del mundo (aquí no se aterriza)', !gv || getComputedStyle(gv).visibility === 'hidden', gv ? getComputedStyle(gv).visibility : 'sin pastilla'); }
       check('Sale en el aire desde un punto alto que ya existe (la cumbre), volando y bien por encima del suelo', salida.ancla === 'cumbre' && m.flying && S.pos.y - superficie(S.pos.x, S.pos.z, S.pos.y) >= ALTO_INI - 0.5 && Math.abs(S.pos.x - salida.x) < 1e-6, salida.ancla + ' · ' + Math.round(salida.x) + ',' + Math.round(salida.z) + ' · ' + Math.round(salida.y) + ' m');
       check('3 mallas instanciadas (nubes, columnas y motas), todas del juego, y ningún aro', R.scene.children.filter(o => o.isInstancedMesh && /^planeo:/.test(o.name)).length === 3 && !R.scene.children.some(o => /^planeo:/.test(o.name) && o.geometry && /Torus|Ring/.test(o.geometry.type)), R.scene.children.filter(o => /^planeo:/.test(o.name)).map(o => o.name + ':' + o.geometry.type).join(','));
       const nN = nubes.filter(n => n.on).length, nT = terms.filter(t => t.on).length;
