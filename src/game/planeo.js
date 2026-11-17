@@ -280,7 +280,7 @@ window.AVPlaneo = function (G) {
 
   // ---------- HUD y panel final ----------
   let hudEl = null, finEl = null;
-  const FLECHA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15c5-1 9-4 13-9l-1 5 6-2-8 9-1-4c-3 2-6 2-9 1z" fill="#ffd98a"/></svg>';
+  const FLECHA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 19q7-12 17-10" stroke="#ffd98a" stroke-width="2.6" stroke-linecap="round" stroke-dasharray=".1 4.2" fill="none"/><path d="M16.5 5.2l6 3.6-6.4 2.9z" fill="#ffd98a"/></svg>'; // la trayectoria del planeo
   const ALTO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l5 6h-3v6h-4V9H7z" fill="#bfe7ff"/><path d="M3 20q4-4 9-2t9-1v3H3z" fill="#5fae4a"/></svg>';
   function css() {
     if (document.getElementById('pln-css')) return;
