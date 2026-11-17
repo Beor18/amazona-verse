@@ -156,7 +156,8 @@
       { id: 'dorado', cria: { es: 'Sol', en: 'Sun' }, rareza: 'coleccion', nombre: { es: 'Cápsula dorada', en: 'Golden capsule' },
         lema: { es: 'Para quien completa su Diario de Campo.', en: 'For those who complete their field journal.' },
         aspecto: { patron: 'grabado', a: '#e6b422', b: '#fff1b0', brillo: 1 },
-        obtener: { texto: { es: 'Completa el Diario de Campo (12/12) y 3 misiones.', en: 'Complete the field journal (12/12) and 3 missions.' }, cap1: { todas: [{ hallazgos: { min: 12 } }, { misiones: 3 }] }, defecto: { xpAprender: 900 } },
+        // F20 r2: la dorada pide todo el Diario (13 entradas en el cap. 1; la regla y el texto seguían en 12/12)
+        obtener: { texto: { es: 'Completa el Diario de Campo y 3 misiones.', en: 'Complete the Field Journal and 3 missions.' }, cap1: { todas: [{ hallazgos: { min: 12, todos: true } }, { misiones: 3 }] }, defecto: { xpAprender: 900 } },
         traits: {
           bebe: [{ nuevo: 'cascaron_gorro' }, { slot: 'chest', id: 'brujula', color: '#c9a227' }],
           juvenil: [{ slot: 'wings', id: 'brazaletes', color: '#c9a227' }],

@@ -158,6 +158,7 @@ window.AVV18Piloto = function (G) {
     const lugar = sitio().inicio;
     if (o.llevar !== false && lugar && G.menuModos && G.menuModos.llevar) { try { G.menuModos.llevar(lugar.x, lugar.z, lugar.x + lugar.fx * 10, lugar.z + lugar.fz * 10); } catch (e) { /* sin menú */ } }
     hud().hidden = false; document.body.classList.add('piloto-on');
+    try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: la cámara no sale metida en la ladera
     const sin = LEC.findIndex(l => !(D.mejor[l.id] > 0));
     leccion(o.leccion != null ? o.leccion : sin < 0 ? 0 : sin);
     return true;

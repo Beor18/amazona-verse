@@ -473,6 +473,7 @@ window.AVFotoSafari = function (G) {
     if (G.interaccion && G.interaccion.modo !== MODO) { modo0 = G.interaccion.modo; G.interaccion.modo = MODO; }
     finEl.hidden = true; estEl.hidden = true; q(hudEl, 'msg').textContent = '';
     document.body.classList.add('foto-on'); document.body.classList.remove('foto-fin');
+    try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: la cámara no sale metida en la ladera
     nuevaCarta(); pintarCarta(); pintarHud(); verHud();
     aviso(L('Encuentra al animal y sácale su mejor foto', 'Find the animal and take its best photo'), 'bien'); E.msgT = 4;
     sonar('boton');

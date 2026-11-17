@@ -162,7 +162,10 @@ window.AVSemillas = function (G) {
       '#sem-fin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(380px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:24px;background:rgba(16,36,28,.94);color:#fff8e6;font-family:Fredoka,system-ui,sans-serif;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;gap:8px}' +
       '#sem-fin h2{margin:0;font-size:26px}#sem-fin .sem-gran{display:flex;align-items:center;gap:8px;font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#sem-fin .sem-gran svg{width:40px;height:40px}#sem-fin p{margin:0;font-size:17px;font-weight:600}#sem-fin .sem-det{font-size:15px;opacity:.85;font-weight:500}#sem-fin .sem-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}' +
       '@media (orientation:landscape) and (max-height:500px){#sem-fin{padding:12px 16px;gap:4px}#sem-fin h2{font-size:21px}#sem-fin .sem-gran{font-size:34px}}' +
-      'body.semillas-on :is(#quest,#inv,#modo-salir){visibility:hidden!important}';
+      'body.semillas-on :is(#quest,#inv,#modo-salir){visibility:hidden!important}' +
+      // F20 r2: el aviso de las instrucciones va debajo de la barra del juego (se cruzaban y no se leía ninguno) y se esconde con el panel final
+      '@media (orientation:landscape){body.semillas-on #toast{top:calc(env(safe-area-inset-top,0px) + 74px)!important;bottom:auto!important}}' +
+      'body.semillas-on:has(#sem-fin:not([hidden])) #toast{visibility:hidden!important}';
     document.head.appendChild(st);
   }
   function montar() {
@@ -210,6 +213,7 @@ window.AVSemillas = function (G) {
     for (let i = 0; i < 4; i++) { const s = soltar(i === 3 ? 'dorada' : 'semilla'); if (s) s.y -= i * 1.6; } // que no empiece con el cielo vacío
     hudEl.hidden = false; finEl.hidden = true; q(hudEl, 'msg').textContent = '';
     document.body.classList.add('semillas-on');
+    try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: sin ladera ni techo delante de la cámara
     pintarHud(); pintar();
     if (!o.callado && G.ui && G.ui.toast) G.ui.toast(L('¡Semillas al vuelo! Atrápalas antes de que lleguen al suelo. Las doradas valen 5 y las hojas secas te quitan 1 segundo.', 'Seeds on the wing! Catch them before they reach the ground. Golden ones are worth 5, and dry leaves take 1 second off.'), 3200);
     sonar('boton');

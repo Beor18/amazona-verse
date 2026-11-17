@@ -550,7 +550,7 @@ window.AVV18Evolucion = function (G) {
         '.v18-evo-guia{margin:6px 0 8px;padding:8px 10px;border-radius:12px;background:#fff3c4;color:#3b2a14;text-align:left;font-size:calc(14px * var(--fs-k,1));line-height:1.35}' +
         '.v18-evo-guia p{margin:3px 0}.v18-evo-guia .meta{font-weight:700}.v18-evo-guia .v18-evo-chip{display:inline-block;padding:2px 8px;margin:2px 2px 0 0;border-radius:9px;background:#ffe39a;font-size:calc(13px * var(--fs-k,1))}' +
         '.v18-evo-guia kbd{display:inline-block;vertical-align:middle;height:auto;font:700 calc(13px * var(--fs-k,1))/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 5px;margin:0 3px 0 6px;border-radius:6px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center}' +
-        '.v18-evo-sig .v18-evo-falta{flex-basis:100%;order:-1}' +
+        '.v18-evo-sig .v18-evo-falta{flex-basis:100%;order:-1}.v18-evo-sig .v18-evo-sn{font-weight:700}' +
         '.v18-evo-sig,.v18-evo-logros{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px}.v18-evo-sig img,.v18-evo-logro img{width:28px;height:28px;border-radius:50%;background:#fff8}' +
         '.v18-evo-logro{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 2px;border-radius:14px;background:#ffe39a;color:#3b2a14}' +
         ':root.a11y-contraste .v18-evo-guia{background:#000;color:#fff;border:2px solid #fff}:root.a11y-contraste .v18-evo-guia .v18-evo-chip{background:#333;color:#fff}' +
@@ -603,7 +603,8 @@ window.AVV18Evolucion = function (G) {
     h += `<span class="v18-evo-sig" data-v18-siguiente>${imgLogro(sp)}`;
     // F20: lo que falta va primero y en su línea; la etapa dice «se gana en el nivel 10» (antes «Eco Amplificado · Nivel 10 · Faltan
     // 20 XP para el nivel 2» parecía decir que ya ibas por el nivel 10)
-    h += sigEt ? `<span class="v18-evo-falta">${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span><span>${esc(sigEt.nombre)}</span> · <span>${esc(con(TXT.seGana, sigEt.desde))}</span>` : `<span>${esc(TXT.max)}</span>`;
+    // F20 r2: sin «·» entre la etapa y «Se gana…» (son piezas flex: a 320–390 px el punto quedaba suelto en su línea); la etapa va en negrita
+    h += sigEt ? `<span class="v18-evo-falta">${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span><b class="v18-evo-sn">${esc(sigEt.nombre)}</b><span>${esc(con(TXT.seGana, sigEt.desde))}</span>` : `<span>${esc(TXT.max)}</span>`;
     h += '</span>';
     // T40: con siguiente etapa, lo que falta ya va en su línea (salía dos veces); sin ella, aquí (o «Nivel máximo», si no lo dijo ya)
     if (!sigEt && r.sig != null) h += `<span class="v18-evo-m"><span>${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span></span>`;
@@ -1299,6 +1300,8 @@ window.AVV18Evolucion = function (G) {
         P.cambiarEvo(e => { e.marcas = {}; });
         vacio.innerHTML = htmlLogros();
         P.cambiarEvo(e => { for (const h of hitos()) e.marcas[h[0]] = true; });
+        // F20 r2: sin «·» suelto entre las piezas de la línea de la etapa (son piezas flex: a 320–390 px el punto quedaba solo en su línea)
+        check('F20 r2 · La línea de la etapa no tiene un «·» suelto entre piezas (la etapa va en negrita)', !!sig && ![...sig.childNodes].some(n => n.nodeType === 3 && /·/.test(n.textContent)) && !!sig.querySelector('.v18-evo-sn'), sig ? sig.innerHTML.slice(0, 200) : 'sin ficha');
         check('CG-83: la siguiente etapa sale con retrato y lo que falta, y los logros llevan imagen (si no hay, una frase, nunca una pantalla vacía)',
           !!sig && !!sig.querySelector('img, svg') && /Maestro/.test(sig.textContent) && /Se gana en el nivel 30/.test(sig.textContent) && /Faltan \d+ XP/.test(sig.textContent) &&
           !!logs && logs.querySelectorAll('img, svg').length >= 1 && logs.textContent.trim().length > 4 &&

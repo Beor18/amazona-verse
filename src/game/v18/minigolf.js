@@ -926,7 +926,7 @@ window.AVV18Minigolf = function (G) {
       '#v18-golf .vg-meta b{color:#ffe39a}#v18-golf .vg-meta b::before{content:"";display:inline-block;width:0;height:0;margin-right:6px;border:7px solid transparent;border-top:11px solid #ff6a2b;border-bottom:0;vertical-align:middle}' +
       '#v18-golf .vg-meta span{opacity:.85;font-size:13px}' +
       '#v18-golf button{display:inline-flex;align-items:center;justify-content:center}#v18-golf button[hidden]{display:none}' +
-      '#v18-golf button kbd{display:inline-block;margin-left:8px;font:700 13px/1 Fredoka,system-ui,sans-serif;min-width:22px;padding:4px 6px;border-radius:7px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center;vertical-align:middle}' +
+      '#v18-golf button kbd{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;margin-left:8px;font:700 13px/1 Fredoka,system-ui,sans-serif;min-width:22px;padding:4px 6px;border-radius:7px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center;vertical-align:middle}' +
       '#v18-golf.tactil button kbd{display:none}' +
       '#v18-golf .vg-guia{margin:8px auto 0;width:max-content;max-width:100%;min-height:1.4em;background:rgba(255,227,154,.95);color:#3b2a14;text-shadow:none;font-weight:600;font-size:15px;padding:5px 14px;border-radius:16px;box-shadow:0 2px 8px #0005;text-align:center;box-sizing:border-box}' +
       '#v18-golf .vg-guia:empty{visibility:hidden}#v18-golf .vg-guia.nueva{animation:vgPista .25s ease-out}@keyframes vgPista{from{transform:scale(.88);opacity:0}to{transform:none;opacity:1}}' +

@@ -300,6 +300,8 @@ AVE.module('idioma', function (G) {
       const f20 = ['Madera', 'Piedra', 'Piezas', 'Guardar copia', 'Cargar copia', 'Moverte (o flechas)', 'Cerrar ventanas', 'Accesorios', 'Fauna', 'Cultura', '¿Qué hay para hacer?', 'Más juegos', 'Entreno · paso 2 de 4', 'Probar la prenda: Chaleco explorador', 'USFWS (historia de 2001 y comunicado de 1975)', 'Se gana en el nivel 10'];
       const sin = f20.filter(k => tr(k) === k);
       ok('F20 · Recursos, copia, teclas, ropero, Diario, Mercadito, duelo, portada y Aula tienen EN', !sin.length, sin.join(' | '));
+      // F20 r2: el botón del Diario de los cap. 3, 4 y 6 con su contador y la camisa del Diario completo (salían en español)
+      ok('F20 r2 · «Carta 0/6», «Cuaderno 1/6» y «Camisa Deportiva 787» tienen EN', tr('Carta 0/6') === 'Chart 0/6' && tr('Cuaderno 1/6') === 'Notebook 1/6' && tr('Camisa Deportiva 787') === '787 Sports Shirt', [tr('Carta 0/6'), tr('Cuaderno 1/6'), tr('Camisa Deportiva 787')].join(' / '));
       ok('F20 · El nombre de equipo sale entero en inglés y «Probar» es «Try on»', tr('Bandada del Coquí Valiente') === 'Flock of the Brave Coquí' && tr('Probar') === 'Try on', tr('Bandada del Coquí Valiente') + ' / ' + tr('Probar'));
       const comillas = claves.filter(k => /[«»]/.test(String(dic[k])));
       ok('F20 · Las traducciones usan comillas inglesas (“ ”), no « »', !comillas.length, comillas.slice(0, 5).join(' | '));

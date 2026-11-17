@@ -413,7 +413,8 @@ window.AVSigueme = function (G) {
     for (let i = 0; i < 3; i++) nacer('suelta'); // que no empiece con el cielo vacío
     finEl.hidden = true; q(hudEl, 'msg').textContent = '';
     document.body.classList.add('sigueme-on'); document.body.classList.remove('sigueme-fin');
-    camara(); pintarHud(); pintar(); verHud();
+    camara(); try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: la cámara no sale metida en la ladera
+    pintarHud(); pintar(); verHud();
     aviso(L('Junta cotorras y llévalas al árbol que brilla', 'Gather parrots and lead them to the glowing tree'), 'bien'); E.msgT = 4; // en su franja, no en un aviso grande que tape el HUD
     sonar('boton');
     return true;

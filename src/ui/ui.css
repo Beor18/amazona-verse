@@ -190,6 +190,9 @@ kbd {
 /* QA móvil: el enlace «← Página de inicio» medía 20 px de alto; zona de toque de 44 px sin mover el texto */
 .title-web { margin: 0; }
 .title-web a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--sp-3); }
+/* F20 r2: el enlace iba con el azul subrayado del navegador sobre el brillo del sol y casi no se leía: blanco sobre la píldora oscura de la portada */
+.title-web a { color: #fff; font: 600 var(--fs-sm)/1.2 var(--font-body); text-decoration: none; background: rgba(20, 12, 60, 0.55); border-radius: var(--r-pill); }
+.title-web a:hover, .title-web a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
 .title-actions .btn { animation: ring 2.4s ease-out 1s infinite; }
 .title-actions .btn:focus-visible { animation: none; }
 .title-hint { margin: 0; font-size: var(--fs-sm); color: #fff; background: rgba(20, 12, 60, 0.5); padding: var(--sp-1) var(--sp-3); border-radius: var(--r-pill); }
@@ -542,6 +545,9 @@ html.mov-reducido *, html.mov-reducido *::before, html.mov-reducido *::after { a
 #b-dash { grid-area: dash; --btn-bg: var(--c-info); --btn-ink: var(--c-info-ink); --btn-lip: var(--c-info-lip); }
 #acts #b-jump { grid-area: jump; --sz: 78px; --btn-bg: var(--c-success); --btn-ink: var(--c-success-ink); --btn-lip: var(--c-success-lip); --icon-size: 30px; }
 #acts #b-act { grid-area: act; --sz: var(--tap-xl); font-size: 13px; --icon-size: 34px; --lip: 6px; padding: 0 6px; }
+/* F20 r2: volando, el botón dice «Aterrizar» («Aterrizando…» al bajar) y no cabía en el círculo de 58 px del teléfono en horizontal
+   (se leía «\terriza'»): se ensancha a lo que mide su columna (píldora) y la letra baja un punto. El área táctil no baja. */
+#acts #b-fly[data-icon="dive"] { width: max(var(--sz), 100%); border-radius: 999px; font-size: 11px; padding: 0 3px; letter-spacing: -0.01em; }
 @media (hover: hover) and (pointer: fine) { #stick, #acts { display: none; } }
 /* Con conversación, tarjeta o pantallas encima, los controles se apartan */
 body:has(#dialog:not([hidden])) :is(#stick, #acts),
@@ -783,6 +789,22 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   .title-main { padding-bottom: var(--sp-6); gap: var(--sp-2); }
   .logo svg { width: min(460px, 60vw); }
   .title-hero { width: 38vh; }
+  /* F20 r2: los 10 gestos y Foto no cabían en 2 columnas desde 140 px (9, 0 y Foto quedaban fuera) y Volar, Impulso, Saltar y Acción
+     se pintaban encima de sus filas. En horizontal bajo: 4 columnas (Foto en su fila), alto máximo con desplazamiento,
+     por encima de los controles, y los botones táctiles se esconden mientras el menú está abierto (se cierra con el mismo «Gestos»). */
+  #emotes { top: calc(env(safe-area-inset-top, 0px) + 136px); transform: none; right: max(var(--sp-3), env(safe-area-inset-right, 0px)); grid-template-columns: repeat(4, minmax(0, 1fr)); width: min(640px, calc(100vw - 2 * var(--sp-3))); max-height: calc(100vh - env(safe-area-inset-top, 0px) - 144px); max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 144px); overflow-y: auto; gap: 6px; padding: var(--sp-2); z-index: calc(var(--z-controls) + 1); }
+  #emotes .btn { min-height: 44px; font-size: 14px; padding: 0 var(--sp-2); }
+  body:has(#emotes:not([hidden])) #acts { visibility: hidden; }
+  /* F20 r2: el aviso de arriba (3 líneas, centrado) tapaba el título del objetivo y los contadores: el hueco entre ellos es estrecho y
+     ui.js lo centraba. En horizontal bajo va a la derecha del objetivo (300 px), más compacto (2 líneas), y como mucho pasa un momento sobre
+     los contadores; sin objetivo (Vuelo libre) sigue el hueco que mide ui.js. «Salir» del Vuelo libre baja bajo el aviso. */
+  #toast { min-height: 0; padding: 8px 14px 8px 52px; font-size: calc(14px * var(--fs-k, 1)); line-height: 1.3; }
+  #toast::before { left: 10px; width: 32px; height: 32px; margin-top: -16px; background-size: 18px, auto; }
+  body:has(#quest:not([hidden])) #toast { left: calc(max(var(--sp-3), env(safe-area-inset-left, 0px)) + 308px); right: max(var(--sp-3), var(--hud-r, 0px), env(safe-area-inset-right, 0px)); margin-inline: 0; width: fit-content; max-width: none; }
+  #modo-salir { top: calc(env(safe-area-inset-top, 0px) + 92px) !important; }
+  /* F20 r2: en los minijuegos del mundo, la barra del juego, su panel final y sus pistas tapaban «Diario» y «Gestos» (se veía «iario 0/13»).
+     Mientras dura el minijuego no hacen falta: se quedan Pausa y los controles. */
+  body:is(.semillas-on, .escondite-on, .piloto-on, .sigueme-on, .foto-on, .sembradora-on, .planeo-on, .pichones-on) :is(#b-diary, #b-emotes) { visibility: hidden; }
 }
 
 /* ---------- 6. Animaciones ---------- */

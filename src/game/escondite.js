@@ -56,7 +56,9 @@ window.AVEscondite = function (G) {
       const st = document.createElement('style'); st.id = 'esc-css';
       st.textContent = '#esc-hud{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);z-index:60;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);padding:8px 12px;border-radius:18px;background:rgba(16,36,28,.86);color:#fff8e6;font:600 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}#esc-hud[hidden]{display:none}' +
         '#esc-hud b{font-size:16px}#esc-hud button{min-height:44px;padding:4px 16px;border-radius:22px;border:0;font:700 15px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;cursor:pointer}#esc-hud button.salir{background:#ffd0c4}#esc-hud button[hidden]{display:none}' +
-        'body.escondite-on :is(#quest,#inv,#modo-salir){visibility:hidden!important}';
+        'body.escondite-on :is(#quest,#inv,#modo-salir){visibility:hidden!important}' +
+        // F20 r2: el aviso de inicio va debajo de la barra (se cruzaban); al terminar, el resultado lo dice la barra (sin aviso detrás)
+        '@media (orientation:landscape){body.escondite-on #toast{top:calc(env(safe-area-inset-top,0px) + 80px)!important;bottom:auto!important}}';
       document.head.appendChild(st);
       hudEl = document.createElement('div'); hudEl.id = 'esc-hud'; hudEl.hidden = true; hudEl.setAttribute('role', 'status');
       hudEl.innerHTML = '<b data-k="t"></b><span data-k="n"></span><span data-k="r"></span><button type="button" data-a="otra" hidden></button><button type="button" class="salir" data-a="salir"></button>';
@@ -78,6 +80,7 @@ window.AVEscondite = function (G) {
     modo = true; resultado = ''; crearPichones();
     empezar(S.pos.x, S.pos.z, { reales: true });
     hud().hidden = false; document.body.classList.add('escondite-on'); pintarHud();
+    try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: sin ladera ni techo delante de la cámara
     return true;
   }
   function salir() {
@@ -137,11 +140,11 @@ window.AVEscondite = function (G) {
       jugando = false; malla.visible = false;
       if (mejor == null || t < mejor) { mejor = t; try { localStorage.setItem(CLAVE, JSON.stringify({ v: 1, mejor })); } catch (e) { /* */ } }
       G.emit('record', { modo: 'escondite', segundos: t });
-      if (G.ui && G.ui.toast) G.ui.toast(en() ? 'You found them!' : '¡Los encontraste!', 2000);
+      if (!modo && G.ui && G.ui.toast) G.ui.toast(en() ? 'You found them!' : '¡Los encontraste!', 2000);
       if (modo) { resultado = txt('¡Los 3 en ' + reloj(t) + '!', 'All 3 in ' + reloj(t) + '!'); ponerPichones(); pintarHud(); }
     } else if (t >= LIMITE) {
       jugando = false; malla.visible = false;
-      if (G.ui && G.ui.toast) G.ui.toast(en() ? 'They hid again. Another round whenever you want.' : 'Se escondieron otra vez. Cuando quieras, otra ronda.', 2200);
+      if (!modo && G.ui && G.ui.toast) G.ui.toast(en() ? 'They hid again. Another round whenever you want.' : 'Se escondieron otra vez. Cuando quieras, otra ronda.', 2200);
       if (modo) { resultado = txt('Se escondieron otra vez', 'They hid again'); ponerPichones(); pintarHud(); }
     }
   }

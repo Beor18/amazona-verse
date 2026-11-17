@@ -674,6 +674,8 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 #riverrush .rr-rank { margin: 0 0 10px; }
 #riverrush .rr-panel .rr-modos { margin-top: 12px; }
 @media (max-height: 520px) { #riverrush .rr-modos-hud { top: calc(env(safe-area-inset-top, 0px) + 66px); } #riverrush .rr-panel { padding: 14px 18px; } #riverrush .rr-num { font-size: 48px; } }
+/* F20 r2: teléfono en horizontal: la ayuda caía encima de Vittata y la canoa; sube bajo los botones de modo */
+@media (orientation: landscape) and (max-height: 520px) { #riverrush .rr-pista { bottom: auto; top: 31%; font-size: 22px; } }
 @media (prefers-reduced-motion: reduce) { #riverrush .rr-pista, #riverrush .rr-chip.pop, #riverrush .rr-aviso.pop { animation: none; } }`;
     function montarUI() {
       if (st.ui) return st.ui;

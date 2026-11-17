@@ -585,7 +585,7 @@ window.AVV18Pesca = function (G) {
       '#v18-pesca button{pointer-events:auto;font:inherit;font-size:16px;font-weight:600;min-height:52px;padding:6px 10px;border-radius:26px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 2px 6px #0005;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;display:inline-flex;align-items:center;justify-content:center}' +
       '#v18-pesca button[hidden]{display:none}#v18-pesca button:focus-visible{outline:4px solid var(--c-focus,#ffe066);outline-offset:2px}' +
       '#v18-pesca button.vp-principal{background:#ffd27a;font-size:19px}#v18-pesca button.vp-principal.pica{background:#ff7a4a;color:#fff;animation:vpLate .35s ease-in-out infinite alternate}#v18-pesca button.on{outline:3px solid #8fe08a}' +
-      '#v18-pesca button kbd{display:inline-block;margin-left:8px;font:700 13px/1 Fredoka,system-ui,sans-serif;min-width:22px;padding:4px 6px;border-radius:7px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007}' +
+      '#v18-pesca button kbd{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;margin-left:8px;font:700 13px/1 Fredoka,system-ui,sans-serif;min-width:22px;padding:4px 6px;border-radius:7px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007}' +
       '#v18-pesca.tactil button kbd{display:none}' +
       '#v18-pesca .vp-guia{margin:8px auto 0;width:max-content;max-width:100%;min-height:1.4em;background:rgba(255,227,154,.95);color:#3b2a14;text-shadow:none;font-weight:600;font-size:15px;padding:5px 14px;border-radius:16px;text-align:center;box-sizing:border-box}' +
       '#v18-pesca .vp-guia:empty{visibility:hidden}' +
@@ -602,7 +602,14 @@ window.AVV18Pesca = function (G) {
       '@media (prefers-reduced-motion:reduce){#v18-pesca .vp-flash.on,#v18-pesca button.vp-principal.pica{animation:none}}' +
       // móvil: el panel deja libre la columna de Diario / Gestos / Pausa de la derecha (tapaba la fila de tiempo y la ficha)
       '@media (max-width:760px){#v18-pesca{margin-inline:16px auto;width:calc(100vw - 96px)}#v18-pesca .vp-info{font-size:14px;gap:2px 10px}#v18-pesca button kbd{display:none}body.v18-pesca-on #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto}body.v18-pesca-on #minimapa{visibility:hidden}#v18-pesca .vp-ficha .vp-d{font-size:14px}}' +
-      '@media (min-width:761px) and (pointer:fine){#v18-pesca{bottom:16px}}';
+      '@media (min-width:761px) and (pointer:fine){#v18-pesca{bottom:16px}}' +
+      // F20 r2: teléfono en horizontal (≤ 520 px de alto): el panel ocupaba todo el centro y tapaba a Vittata, la caña y el agua.
+      // Ahora va pegado abajo y compacto: ◀ Lanzar ▶ y Salir en una sola fila, botones de 44 px y la pista más pequeña.
+      '@media (max-height:520px) and (orientation:landscape){#v18-pesca{bottom:calc(env(safe-area-inset-bottom,0px) + 6px);width:min(600px,calc(100vw - 32px));margin-inline:auto}' +
+      '#v18-pesca .vp-caja{padding:5px 10px 6px;border-radius:14px}#v18-pesca .vp-info{font-size:14px;gap:0 10px}#v18-pesca .vp-barra{height:9px;margin:4px 0 1px}#v18-pesca .vp-et{font-size:11px;line-height:1.1}' +
+      '#v18-pesca [data-k="juego"]{display:grid;grid-template-columns:3fr 1fr;column-gap:8px;align-items:end}#v18-pesca [data-k="juego"]>:not(.vp-bot):not(.vp-bot2){grid-column:1/-1}' +
+      '#v18-pesca .vp-bot,#v18-pesca .vp-bot2{margin-top:4px}#v18-pesca button{min-height:44px;font-size:15px;padding:4px 8px}#v18-pesca button.vp-principal{font-size:17px}#v18-pesca button kbd{display:none}' +
+      '#v18-pesca .vp-tira{height:24px;margin:4px 0 3px}#v18-pesca .vp-guia{margin-top:4px;font-size:13px;padding:3px 12px}#v18-pesca .vp-ficha .vp-d{font-size:14px}#v18-pesca .vp-ficha p,#v18-pesca .vp-fin p{margin:1px 0}}';
     document.head.appendChild(st);
   }
   function montarHud() {
