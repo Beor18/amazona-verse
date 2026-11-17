@@ -178,13 +178,14 @@ AVE.module('dialogo', function (G) {
   // Tiempo del juego (se puede probar con tick()); con la caja o una tarjeta abiertas, espera
   // PULIR 5 (17-nov): el bocadillo corre con el mayor del dt del juego y el tiempo real entre cuadros (tope LIBRE_REAL s). El dt va
   // limitado por cuadro: en un móvil muy lento la intro se quedaba minutos en la primera línea sobre negro. Con la pausa o en
-  // segundo plano no hay 'update', y al volver el tope evita que se salten líneas.
+  // segundo plano no hay 'update', y al volver el tope evita que se salten líneas. Con la pausa o un hit-stop (dt = 0) no corre.
   const LIBRE_REAL = 0.5; let libreUlt = 0;
   G.on('update', dt => {
     segJuego += dt; if (open()) segCaja += dt;
     const ahora = performance.now(), real = libreUlt ? Math.min(LIBRE_REAL, (ahora - libreUlt) / 1000) : 0; libreUlt = ahora;
     if (!libreCur || open() || G.ui.cardOpen) return;
-    libreT -= Math.max(dt, G.quiet ? 0 : real); if (libreT <= 0) nextLibre();
+    const parado = !(dt > 0); // pausa o hit-stop: dt = 0 y el bocadillo espera
+    libreT -= parado ? 0 : Math.max(dt, G.quiet ? 0 : real); if (libreT <= 0) nextLibre();
   }, 84);
   function ocupacion() {
     return { juego: segJuego, caja: segCaja, parte: segJuego > 0.5 ? segCaja / segJuego : 0 };
