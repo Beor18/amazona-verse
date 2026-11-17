@@ -17,7 +17,8 @@
    dura 4 s más (tope 12 s) y deja una estela de chispas doradas y plumas. Sin poderes nuevos: son los dos que ya existen, con sus
    sonidos (poder_rafaga / poder_planeo). La primera vez que se usa el Planeo teniendo la Ráfaga sale una pista corta («Ahora,
    Ráfaga…», mundo.superplaneo_pista) y el primer súper planeo lo explica (mundo.superplaneo = veces). En el teléfono, el botón de
-   la Ráfaga brilla mientras dura un Planeo largo. Con «Reducir movimiento», la estela es más rala y sin onda. Textos EN en en.js. */
+   la Ráfaga brilla mientras dura un Planeo largo. Con «Reducir movimiento», la estela es más rala y sin onda. Textos EN en en.js.
+   Revisión: un solo súper planeo por Planeo largo (est.superUsado); la pista solo con la Ráfaga lista; pista y aviso con { ya: true }. */
 window.AVV18PoderesExtra = function (G) {
   'use strict';
   if (G.v18extra) return G.v18extra;
@@ -35,13 +36,14 @@ window.AVV18PoderesExtra = function (G) {
   };
   const IDS = Object.keys(P);
   const cd = { rafaga: 0, ojo: 0, planeo: 0 };
-  const est = { empuje: null, planeoT: 0, sink0: null, n: { rafaga: 0, ojo: 0, planeo: 0 }, ultimoOjo: 0, superT: 0, estelaT: 0, nSuper: 0 };
+  const est = { empuje: null, planeoT: 0, sink0: null, n: { rafaga: 0, ojo: 0, planeo: 0 }, ultimoOjo: 0, superT: 0, estelaT: 0, nSuper: 0, superUsado: false }; // superUsado: un súper planeo por Planeo largo (sin encadenarlos)
   // E18: el súper planeo (Ráfaga + Planeo largo)
   const SUPER = { dura: 6, sink: 0.12, empuje: 14, empujeT: 1.2, extra: 4, tope: 12, estela: 0.12, estelaRed: 0.35 };
   const T = s => { try { return G.idioma && G.idioma.tr ? G.idioma.tr(s) : s; } catch (e) { return s; } }; // inglés en content/cap1/en.js
   const reducido = () => !!(G.renderer && G.renderer.REDUCED);
   const sonar = n => { try { if (!G.quiet && G.audio && G.audio.has && G.audio.has(n)) G.audio.play(n); } catch (e) { /* sin audio */ } };
-  const toast = (t, ms) => { try { if (!G.quiet && G.ui && G.ui.toast) G.ui.toast(t, ms || 3600); } catch (e) { /* sin ui */ } };
+  const toast = (t, ms, o) => { try { if (!G.quiet && G.ui && G.ui.toast) G.ui.toast(t, ms || 3600, o); } catch (e) { /* sin ui */ } };
+  const YA = { ya: true }; // E18 (revisión): la pista y el aviso del súper planeo pasan delante de la cola (son de «lo que acabas de hacer»)
   const mundo = k => { try { return Number(G.v18 && G.v18.mundo && G.v18.mundo(k)) || 0; } catch (e) { return 0; } };
   const tiene = id => mundo(P[id].clave) > 0;
   function ganar(id, callado) {
@@ -71,7 +73,7 @@ window.AVV18PoderesExtra = function (G) {
       G.fx.ringFx(S.pos.x, S.pos.y + 0.6, S.pos.z, 2.2, 0.4, 0.5);
       if (M.flying) est.empuje = { x: d.x * 10, z: d.z * 10, t: 0.6 };
       sonar('poder_rafaga');
-      if (M.flying && est.planeoT > 0 && est.superT <= 0) superPlaneo(); // E18: Ráfaga durante un Planeo largo
+      if (M.flying && est.planeoT > 0 && !est.superUsado) superPlaneo(); // E18: Ráfaga durante un Planeo largo
       return true;
     },
     ojo() {
@@ -92,10 +94,10 @@ window.AVV18PoderesExtra = function (G) {
       const T = G.fisica.TUNING;
       if (!G.fisica.MOVE.flying) { toast(L('El Planeo largo se usa volando.', 'Use the Long glide while flying.'), 2400); return false; }
       if (est.sink0 == null) est.sink0 = T.glideSink;
-      T.glideSink = est.sink0 * 0.3; est.planeoT = P.planeo.dura;
+      T.glideSink = est.sink0 * 0.3; est.planeoT = P.planeo.dura; est.superUsado = false;
       G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'feathers', 12);
       sonar('poder_planeo');
-      if (est.empuje && est.empuje.t > 0 && est.superT <= 0) superPlaneo(); // E18: el Planeo justo en el empujón de una Ráfaga
+      if (est.empuje && est.empuje.t > 0 && !est.superUsado) superPlaneo(); // E18: el Planeo justo en el empujón de una Ráfaga
       else pista();
       return true;
     }
@@ -107,21 +109,21 @@ window.AVV18PoderesExtra = function (G) {
     if (est.sink0 == null) est.sink0 = TU.glideSink;
     TU.glideSink = est.sink0 * SUPER.sink;
     est.planeoT = Math.min(Math.max(est.planeoT, 0) + SUPER.extra, SUPER.tope);
-    est.superT = SUPER.dura; est.estelaT = 0; est.nSuper++;
+    est.superT = SUPER.dura; est.estelaT = 0; est.nSuper++; est.superUsado = true;
     if (est.empuje) { est.empuje.x = d.x * SUPER.empuje; est.empuje.z = d.z * SUPER.empuje; est.empuje.t = SUPER.empujeT; }
     else est.empuje = { x: d.x * SUPER.empuje, z: d.z * SUPER.empuje, t: SUPER.empujeT };
     try { G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', red ? 6 : 16); if (!red) G.fx.ringFx(S.pos.x, S.pos.y + 0.8, S.pos.z, 3.2, 0.6, 0.6); } catch (e) { /* sin fx */ }
     const veces = mundo('superplaneo');
     try { if (G.v18 && G.v18.cambiarMundo) G.v18.cambiarMundo('superplaneo', Math.min(veces + 1, 9999)); } catch (e) { /* sin progreso */ }
-    toast(veces ? T('¡Súper planeo!') : T('¡Súper planeo! Ráfaga + Planeo largo: vuelas mucho más lejos.'), veces ? 1800 : 5200);
+    toast(veces ? T('¡Súper planeo!') : T('¡Súper planeo! Ráfaga + Planeo largo: vuelas mucho más lejos.'), veces ? 1800 : 5200, YA);
     try { G.emit('v18superplaneo', { veces: veces + 1 }); } catch (e) { /* */ }
     return true;
   }
-  // La pista, una sola vez: el primer Planeo largo teniendo la Ráfaga, si aún no se ha hecho ningún súper planeo
+  // La pista, una sola vez: el primer Planeo largo teniendo la Ráfaga lista (no en recarga), si aún no se ha hecho ningún súper planeo
   function pista() {
-    if (!tiene('rafaga') || mundo('superplaneo') > 0 || mundo('superplaneo_pista') > 0 || !G.v18 || !G.v18.cambiarMundo) return false;
+    if (!tiene('rafaga') || cd.rafaga > 0 || mundo('superplaneo') > 0 || mundo('superplaneo_pista') > 0 || !G.v18 || !G.v18.cambiarMundo) return false;
     G.v18.cambiarMundo('superplaneo_pista', 1);
-    toast(TACTIL ? T('Ahora pulsa Ráfaga: ¡súper planeo!') : T('Ahora pulsa Ráfaga (H): ¡súper planeo!'), 3600);
+    toast(TACTIL ? T('Ahora pulsa Ráfaga: ¡súper planeo!') : T('Ahora pulsa Ráfaga (H): ¡súper planeo!'), 3600, YA);
     return true;
   }
   function usar(id, forzar) {
@@ -131,7 +133,7 @@ window.AVV18PoderesExtra = function (G) {
     pintar(true);
     return r;
   }
-  function terminarPlaneo() { if (est.sink0 != null) { G.fisica.TUNING.glideSink = est.sink0; est.sink0 = null; } est.planeoT = 0; est.superT = 0; }
+  function terminarPlaneo() { if (est.sink0 != null) { G.fisica.TUNING.glideSink = est.sink0; est.sink0 = null; } est.planeoT = 0; est.superT = 0; est.superUsado = false; }
 
   // ---------- Se ganan jugando ----------
   function revisar() {
@@ -160,7 +162,7 @@ window.AVV18PoderesExtra = function (G) {
     // En fila, a la izquierda de «Tu poder» y a su altura: en columna tapaban Diario, Gestos y la Pausa
     st.textContent = '#v18-extra{position:fixed;z-index:70;display:flex;flex-direction:row-reverse;gap:6px;align-items:flex-end;pointer-events:none}#v18-extra[hidden]{display:none}' +
       '#v18-extra button{pointer-events:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:56px;height:56px;padding:2px;border-radius:18px;border:2px solid #fff3d6;background:rgba(18,44,32,.82);color:#fff;font:700 11px/1 Fredoka,system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.35);touch-action:none}' +
-      '#v18-extra button{--icon-size:22px}#v18-extra button.cd{opacity:.5}#v18-extra button.activo{box-shadow:0 0 0 3px #ffd27a,0 2px 8px rgba(0,0,0,.35)}' +
+      '#v18-extra button{--icon-size:22px}#v18-extra button.cd{opacity:.5}#v18-extra button.activo{opacity:1;box-shadow:0 0 0 3px #ffd27a,0 0 12px #ffd27a,0 2px 8px rgba(0,0,0,.35)}' +
       '#v18-extra button.combo{opacity:1;box-shadow:0 0 0 3px #8fe3ff,0 0 14px #8fe3ff;animation:v18-combo 0.9s ease-in-out infinite alternate}' + // E18: «¡ahora, Ráfaga!»
       '@keyframes v18-combo{to{box-shadow:0 0 0 3px #8fe3ff,0 0 4px #8fe3ff}}@media (prefers-reduced-motion: reduce){#v18-extra button.combo{animation:none}}';
     document.head.appendChild(st);
@@ -214,7 +216,7 @@ window.AVV18PoderesExtra = function (G) {
         if (ver) {
           const bo = Math.round(window.innerHeight - rp.bottom) + 'px', de = Math.round(window.innerWidth - rp.left + 8) + 'px';
           if (caja.style.bottom !== bo) caja.style.bottom = bo; if (caja.style.right !== de) caja.style.right = de;
-          const combo = est.planeoT > 0 && est.superT <= 0 && cd.rafaga <= 0; // E18: la Ráfaga brilla mientras dura un Planeo largo
+          const combo = est.planeoT > 0 && !est.superUsado && cd.rafaga <= 0; // E18: la Ráfaga brilla mientras dura un Planeo largo
           for (const b of caja.children) { const id = b.dataset.extra; b.classList.toggle('cd', cd[id] > 0); b.classList.toggle('activo', id === 'planeo' && est.planeoT > 0); b.classList.toggle('combo', id === 'rafaga' && combo); }
         }
       }
@@ -268,12 +270,12 @@ window.AVV18PoderesExtra = function (G) {
           oidos.join() === ['poder_rafaga', 'poder_ojo', 'poder_planeo'].filter(has).join() && ['poder_rafaga', 'poder_ojo', 'poder_planeo'].every(has), oidos.join());
       }
       { // E18 · Súper planeo: Ráfaga + Planeo largo (con la pista y el aviso de la primera vez, alcance, estela y «Reducir movimiento»)
-        const avisos = [], ui0 = G.ui && G.ui.toast, burst0 = G.fx.burst, ring0 = G.fx.ringFx, play0 = G.audio && G.audio.play, R = G.renderer;
+        const avisos = [], opciones = [], ui0 = G.ui && G.ui.toast, burst0 = G.fx.burst, ring0 = G.fx.ringFx, play0 = G.audio && G.audio.play, R = G.renderer;
         let chispas = 0, ondas = 0;
         const limpio = () => { terminarPlaneo(); est.empuje = null; for (const id of IDS) cd[id] = 0; };
         const correr = sg => { for (let i = 0; i < Math.round(sg * 10); i++) paso(0.1); };
         try {
-          G.quiet = false; if (G.ui) G.ui.toast = t => { avisos.push(String(t)); }; if (play0) G.audio.play = () => {};
+          G.quiet = false; if (G.ui) G.ui.toast = (t, ms, o) => { avisos.push(String(t)); opciones.push(o); }; if (play0) G.audio.play = () => {};
           G.fx.burst = function (x, y, z, k, n) { if (k === 'gold') chispas += n || 0; return burst0.apply(this, arguments); };
           G.fx.ringFx = function (x, y, z, size) { if (size === 3.2) ondas++; return ring0.apply(this, arguments); };
           if (R) R.REDUCED = false;
@@ -305,6 +307,19 @@ window.AVV18PoderesExtra = function (G) {
           // Reducir movimiento: estela rala y sin onda
           limpio(); if (R) R.REDUCED = true; ondas = 0; usar('planeo', true); usar('rafaga', true); chispas = 0; correr(1); const rala = chispas;
           check('E18 · Con «Reducir movimiento»: sin onda y la estela es más rala', !R || (ondas === 0 && rala < estela && rala >= 1 && est.superT > 0), 'onda ' + ondas + ' · chispas ' + rala + ' (normal ' + estela + ')');
+          if (R) R.REDUCED = false;
+          // Revisión: un solo súper planeo por Planeo largo (antes se encadenaban ~24 s: la Ráfaga recarga justo al acabar)
+          limpio(); usar('planeo', true); usar('rafaga', true); const nS = mundo('superplaneo'); correr(6.1);
+          const pt1 = est.planeoT, otra = (cd.rafaga <= 0) && usar('rafaga', true);
+          check('E18 · Revisión: un solo súper planeo por Planeo largo (otra Ráfaga al acabar no lo encadena)', otra && est.superT === 0 && mundo('superplaneo') === nS && est.planeoT <= pt1 && Math.abs(T.glideSink - guard.sink * 0.3) < 1e-9, JSON.stringify({ superT: est.superT, pt1, pt: est.planeoT, veces: mundo('superplaneo') - nS }));
+          correr(13); limpio(); usar('planeo', true); usar('rafaga', true);
+          check('E18 · Revisión: el siguiente Planeo largo vuelve a permitir un súper planeo', est.superT > 5.9 && mundo('superplaneo') === nS + 1, est.superT);
+          // Revisión: la pista no pide una Ráfaga en recarga, y la pista y el aviso pasan delante de la cola de avisos ({ ya: true })
+          V.cambiarMundo('superplaneo', 0); V.cambiarMundo('superplaneo_pista', 0); limpio(); cd.rafaga = 3; avisos.length = 0; opciones.length = 0;
+          usar('planeo', true); const sinPista = avisos.length === 0 && mundo('superplaneo_pista') === 0;
+          limpio(); usar('planeo', true); const pOpc = opciones[0]; usar('rafaga', true); const sOpc = opciones[1];
+          check('E18 · Revisión: sin pista si la Ráfaga está en recarga; luego pista y aviso salen delante ({ ya: true })', sinPista && avisos.length === 2 && !!pOpc && pOpc.ya === true && !!sOpc && sOpc.ya === true, avisos.join(' | '));
+          limpio();
           // En el teléfono, la Ráfaga brilla mientras dura el Planeo largo
           if (TACTIL) {
             limpio(); usar('planeo', true); pintar(true); const pod = document.getElementById('v18-exp-poder');

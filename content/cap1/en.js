@@ -3281,7 +3281,7 @@ window.AV_EN = {
  "¡{} logros nuevos! Míralos en «Mis récords».": "{} new achievements! See them in «My records».",
  "Probador de juegos": "Game tester",
  "Consigue récord en 3 juegos de «Más juegos»": "Set a record in 3 games from «More games»",
- "Atrapa 25 semillas en «Semillas al vuelo»": "Catch 25 seeds in «Seeds on the wing»",
+ "Consigue 25 puntos en «Semillas al vuelo»": "Score 25 points in «Seeds on the wing»",
  "Haz un rollo perfecto en «Foto relámpago»": "Get a perfect roll in «Snap Safari»",
  "Primera victoria": "First win",
  "Gana tu primer duelo": "Win your first duel",
@@ -3296,5 +3296,5 @@ window.AV_EN = {
  "Tres poderes": "Three powers",
  "Gana la Ráfaga, el Ojo de cotorra y el Planeo largo": "Earn the Wind gust, the Parrot eye and the Long glide",
  "Súper planeo": "Super glide",
- "Usa la Ráfaga durante un Planeo largo": "Use the Gust during a Long glide",
+ "Durante un Planeo largo, usa la Ráfaga (teclado: N y luego H)": "During a Long glide, use the Gust (keyboard: N, then H)",
 };

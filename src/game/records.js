@@ -1279,7 +1279,7 @@
           const sec = root.querySelector('#rec-logros'), lt = sec ? sec.textContent.replace(/\s+/g, ' ') : '', items = sec ? [...sec.querySelectorAll('.rec-logro')] : [];
           const gan = items.filter(li => li.classList.contains('ganado')).map(li => li.dataset.logro);
           check('E19 · «Mis logros» sale en Mis récords: 10 logros, cada uno con su icono SVG', !!LOG && !!sec0 && items.length === 10 && items.every(li => li.querySelector('.rl-ico svg')), items.length);
-          check('E19 · Ganados de lo jugado (Tres poderes y Súper planeo) y pendientes con su pista', gan.join() === 'poderes,super' && /2 de 10/.test(lt) && /Tres poderes\s*¡Ganado!/.test(lt) && /Pon 10 piezas en tu rincón de Construir/.test(lt) && (lt.match(/Pendiente/g) || []).length === 8 && !/compra|tienda/i.test(lt), lt.slice(0, 220));
+          check('E19 · Ganados de lo jugado (Tres poderes y Súper planeo) y pendientes con su pista', gan.join() === 'poderes,super' && /2 de 10/.test(lt) && /Tres poderes\s*Gana la Ráfaga/.test(lt) && !/¡Ganado!/.test(lt) && items.slice(0, 2).every(li => li.classList.contains('ganado')) && /Pon 10 piezas en tu rincón de Construir/.test(lt) && (lt.match(/Pendiente/g) || []).length === 8 && !/compra|tienda/i.test(lt), lt.slice(0, 220));
           const ico = sec && sec.querySelector('.rec-logro.ganado .rl-ico'), icoP = sec && sec.querySelector('.rec-logro:not(.ganado) .rl-ico');
           check('E19 · Ganado y pendiente se distinguen a simple vista (color del icono)', !!ico && !!icoP && getComputedStyle(ico).backgroundImage !== getComputedStyle(icoP).backgroundImage);
           const anchos = items.filter(li => li.getBoundingClientRect().right > sec.getBoundingClientRect().right + 1);

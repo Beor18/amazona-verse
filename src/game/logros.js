@@ -2,14 +2,17 @@
    Diez logros que se ganan jugando (nunca comprando), cada uno con su icono (SVG en la página, sin descargas), su estado
    (ganado o pendiente) y una pista de cómo conseguirlo. Nada de relojes, rachas ni presión: se ganan cuando se ganan.
    - Solo leen datos que ya existen (no cambian ningún formato):
-     · «Más juegos»: <almacen>.canto / .semillas / .compas / .sigueme / .foto / .sembradora ({ mejor, perfecto… }).
+     · «Más juegos»: <almacen>.canto / .semillas / .compas / .sigueme / .foto / .sembradora ({ mejor, perfecto… }). Ojo: en .semillas
+       «mejor» son puntos (semilla 1, dorada 5), así que «Lluvia de semillas» pide 25 puntos.
      · Duelos: progreso V18 (<almacen>.v18: mundo.duelos_ganados, otorgados.combate_1 y otorgados.duelo_gana_<especie>).
      · Construir y obras: G.S.construir.piezas (la partida) y <almacen>.obras ({ explicadas, libro }, obras.js).
      · Álbum de las 36: G.S.album (sin las 2 extintas, que no se «ven»).
      · Poderes: mundo.poder_rafaga / poder_ojo / poder_planeo y mundo.superplaneo (E18, poderes_extra.js).
    - Guardado aparte, en el dispositivo: <almacen>.logros = { v: 1, ganados: { <id>: fecha (ms) } }. Uno dañado se lee como vacío.
      Lo ganado queda ganado aunque luego cambien los datos. La primera vez (sin clave, o dañada) se apuntan en silencio los que ya
-     se tenían, para no llenar la pantalla de avisos. «Nuevo estudiante» borra la clave (boot.js).
+     se tenían, para no llenar la pantalla de avisos. «Nuevo estudiante» borra la clave (boot.js),
+     y también los récords de «Más juegos» y las obras, para que el niño nuevo no herede los logros del anterior.
+   - En «Mis logros» van primero los ganados, luego los empezados y al final los pendientes.
    - Aviso al ganar uno: «¡Logro: {}! Míralo en «Mis récords».» con el sonido «logro» (ya existe). Varios a la vez: un solo aviso.
    - Sin trabajo por cuadro: se revisa cada 4 s (y enseguida tras los eventos v18poder, v18superplaneo, album, construirCambio y
      retosResultado); con G.quiet (las baterías) no se revisa.
@@ -31,7 +34,8 @@
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const T = s => { try { return G.idioma && G.idioma.tr ? G.idioma.tr(s) : s; } catch (e) { return s; } };
     const mem = {};
-    function leerRaw(k) { try { const v = localStorage.getItem(k); if (v != null) return v; } catch (e) { /* sin almacén */ } return mem[k] == null ? null : mem[k]; }
+    // Lo que no se pudo guardar (cuota llena) manda sobre el valor viejo del almacén: si no, un logro saldría como nuevo cada 4 s
+    function leerRaw(k) { if (mem[k] != null) return mem[k]; try { return localStorage.getItem(k); } catch (e) { return null; } }
     function escribir(k, v) { try { localStorage.setItem(k, v); delete mem[k]; } catch (e) { mem[k] = v; } }
     function leer(k) { try { const d = JSON.parse(leerRaw(k) || 'null'); return esObj(d) ? d : null; } catch (e) { return null; } }
 
@@ -40,7 +44,7 @@
     const DEF = [
       { id: 'juegos', meta: 3, nombre: 'Probador de juegos', pista: 'Consigue récord en 3 juegos de «Más juegos»', v: d => d.juegos,
         icono: svg('<rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 10.5v4M5 12.5h4"/><circle cx="15.5" cy="11.5" r="1"/><circle cx="18" cy="14" r="1"/>') },
-      { id: 'semillas', meta: 25, nombre: 'Lluvia de semillas', pista: 'Atrapa 25 semillas en «Semillas al vuelo»', v: d => d.semillas,
+      { id: 'semillas', meta: 25, nombre: 'Lluvia de semillas', pista: 'Consigue 25 puntos en «Semillas al vuelo»', v: d => d.semillas, // el récord guarda puntos (semilla 1, dorada 5), no semillas
         icono: svg('<path d="M12 3c4 4 6 7.5 6 10.5a6 6 0 0 1-12 0C6 10.5 8 7 12 3z"/><path d="M12 9.5v7"/>') },
       { id: 'foto', meta: 1, nombre: 'Rollo perfecto', pista: 'Haz un rollo perfecto en «Foto relámpago»', v: d => d.fotoPerfecto,
         icono: svg('<rect x="3" y="7" width="18" height="13" rx="3"/><path d="M8 7l1.5-3h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/>') },
@@ -56,7 +60,7 @@
         icono: svg('<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21V5M9 8h6M9 12h6"/>') },
       { id: 'poderes', meta: 3, nombre: 'Tres poderes', pista: 'Gana la Ráfaga, el Ojo de cotorra y el Planeo largo', v: d => d.poderes,
         icono: svg('<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>') },
-      { id: 'super', meta: 1, nombre: 'Súper planeo', pista: 'Usa la Ráfaga durante un Planeo largo', v: d => d.superplaneo,
+      { id: 'super', meta: 1, nombre: 'Súper planeo', pista: 'Durante un Planeo largo, usa la Ráfaga (teclado: N y luego H)', v: d => d.superplaneo,
         icono: svg('<path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7"/>') },
     ];
     const IDS = DEF.map(l => l.id);
@@ -111,9 +115,12 @@
     }
     // La sección de «Mis récords» (tr: el traductor de records.js, t18)
     function html(o) {
-      const tr = (o && o.tr) || T, lista = estado(o), n = lista.filter(l => l.ganado).length;
+      // Orden: ganados primero (la recompensa se ve al abrir), luego los que van en camino y al final los pendientes sin empezar
+      const rango = l => (l.ganado ? 0 : l.valor > 0 ? 1 : 2);
+      const tr = (o && o.tr) || T, lista = estado(o).map((l, i) => ({ l, i })).sort((a, b) => rango(a.l) - rango(b.l) || a.i - b.i).map(x => x.l), n = lista.filter(l => l.ganado).length;
+      // Ganado: el texto pequeño dice qué se hizo (la pista) y la etiqueta verde dice «Ganado» (sin repetirlo dos veces)
       const item = l => `<li class="rec-logro${l.ganado ? ' ganado' : ''}" data-logro="${l.id}"><span class="rl-ico">${l.icono}</span><span class="rl-txt"><b>${esc(tr(l.nombre))}</b>` +
-        `<small>${l.ganado ? esc(tr('¡Ganado!')) : esc(tr(l.pista)) + (l.meta > 1 ? ` <span class="rl-n">${l.valor}/${l.meta}</span>` : '')}</small></span>` +
+        `<small>${esc(tr(l.pista)) + (!l.ganado && l.meta > 1 ? ` <span class="rl-n">${l.valor}/${l.meta}</span>` : '')}</small></span>` +
         `<span class="rl-estado">${esc(tr(l.ganado ? 'Ganado' : 'Pendiente'))}</span></li>`;
       return `<section class="rec-sec" id="rec-logros" aria-labelledby="rec-h-logros"><h3 id="rec-h-logros">${esc(tr('Mis logros'))} <small>${esc(tr('{} de {}').replace('{}', n).replace('{}', lista.length))} · ${esc(tr('Se ganan jugando.'))}</small></h3>` +
         `<ul class="rec-logros">${lista.map(item).join('')}</ul></section>`;
@@ -126,7 +133,7 @@
 #records .rec-logro .rl-estado { font: 700 var(--fs-xs)/1 var(--font-display); color: var(--c-ink); border: 1px solid #cfc7b4; padding: 4px 8px; border-radius: var(--r-pill); background: #fff; white-space: nowrap; }
 #records .rec-logro.ganado { background: #fff8e0; border: 2px solid #e2b84a; } #records .rec-logro.ganado .rl-ico { background: radial-gradient(circle at 35% 30%, #fff8d8, #ffd24a 50%, #c98a10); color: #4a2a05; box-shadow: 0 0 0 3px #fff; }
 #records .rec-logro.ganado .rl-estado { color: #fff; background: #17572a; border-color: #17572a; }
-@media (max-width: 400px) { #records .rec-logro { grid-template-columns: 44px minmax(0, 1fr); } #records .rec-logro .rl-ico { width: 44px; height: 44px; } #records .rec-logro .rl-estado { grid-column: 2; justify-self: start; } }`;
+@media (max-width: 400px) { #records .rec-logro { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 6px; padding: var(--sp-2); } #records .rec-logro .rl-ico { width: 44px; height: 44px; } #records .rec-logro .rl-estado { padding: 3px 6px; } }`;
 
     // Revisión cada CADA s (sin asignaciones por cuadro) y enseguida tras los eventos que pueden dar un logro
     let espera = CADA, enPrueba = false, simS = null; // simS: partida simulada solo durante la prueba
@@ -204,7 +211,20 @@
         check('E19 · Jugando, la revisión de cada 4 s da el logro y su aviso', !!libro().ganados.constructor && avisos.length === 1 && espera > 3.9, avisos.join('|'));
         // HTML de la sección
         const h = html(sim);
-        check('E19 · La sección «Mis logros» pinta 10 logros con icono y estado', (h.match(/<li class="rec-logro/g) || []).length === 10 && (h.match(/<svg /g) || []).length === 10 && /Mis logros/.test(h) && /1 de 10/.test(h) && /¡Ganado!/.test(h) && /Pendiente/.test(h), h.length);
+        check('E19 · La sección «Mis logros» pinta 10 logros con icono y estado', (h.match(/<li class="rec-logro/g) || []).length === 10 && (h.match(/<svg /g) || []).length === 10 && /Mis logros/.test(h) && /1 de 10/.test(h) && (h.match(/>Ganado</g) || []).length === 1 && !/¡Ganado!/.test(h) && /Pendiente/.test(h), h.length);
+        // Revisión: ganados primero, luego los que van en camino, luego los pendientes sin empezar
+        const orden = (h.match(/data-logro="([a-z]+)"/g) || []).map(x => x.slice(12, -1)), est0 = estado(sim), rg = id => { const l = est0.find(x => x.id === id); return l.ganado ? 0 : l.valor > 0 ? 1 : 2; };
+        check('E19 · Revisión: en «Mis logros» los ganados van primero, luego los empezados y al final los pendientes', orden[0] === 'constructor' && orden.every((id, i) => !i || rg(orden[i - 1]) <= rg(id)), orden.join());
+        // Revisión: «Lluvia de semillas» lee el récord, que son puntos (semilla 1, dorada 5): la pista habla de puntos, no de semillas
+        const lsem = DEF.find(l => l.id === 'semillas');
+        check('E19 · Revisión: «Lluvia de semillas» pide 25 puntos (el récord guarda puntos, no semillas)', /25 puntos/.test(lsem.pista) && !/semillas en/.test(lsem.pista), lsem.pista);
+        // Revisión: si el almacén está lleno y el libro viejo sigue ahí, lo nuevo (en memoria) manda y el logro no se repite cada 4 s
+        pon('logros', { v: 1, ganados: {} }); pon('v18', { v: 2, mundo: { poder_rafaga: 1, poder_ojo: 1, poder_planeo: 1 }, otorgados: {} }); sim.S = { construir: null, album: [] };
+        for (const k of JUEGOS) pon(k, '{}'); pon('obras', 'x');
+        const set0 = Storage.prototype.setItem, kLleno = CLAVE.logros; avisos.length = 0; let lleno1 = [], lleno2 = ['?'];
+        Storage.prototype.setItem = function (k) { if (k === kLleno) throw new Error('QuotaExceededError'); return set0.apply(this, arguments); };
+        try { lleno1 = revisar(sim); lleno2 = revisar(sim); } finally { Storage.prototype.setItem = set0; }
+        check('E19 · Revisión: con el almacén lleno, el logro sale una sola vez (no se repite el aviso cada 4 s)', lleno1.join() === 'poderes' && !lleno2.length && avisos.length === 1, lleno1.join() + ' / ' + lleno2.join() + ' · ' + avisos.length);
       } catch (e) { check('E19 · La prueba de logros terminó sin excepciones', false, String(e && e.stack || e).slice(0, 300)); }
       finally {
         Object.assign(CLAVE, orig); quitar(); G.quiet = q0; if (ui0) G.ui.toast = ui0; if (au && play0) au.play = play0; enPrueba = false; simS = null; espera = CADA;
