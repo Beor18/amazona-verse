@@ -34,7 +34,7 @@ window.AVPlaneo = function (G) {
   const ALM = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.planeo';
   const DUR = 120, HUNDE = 3.6, VMIN = 10, VPICADA = 16, ALTO_INI = 22, TOCA = 0.35, CERCA_SUELO = 5, LEJOS_SUELO = 9, TOQUE_T = 0.9;
   const NNUB = 16, NUBE_V = 14, NUBE_T = 1.2, NUBE_RX = 5, NUBE_RY = 3.4, NUBE_SEP = 16;
-  const NTER = 10, TERM_R = 6, TERM_ALTO = 55, TERM_V = 8, TERM_CARGA = 5, NMOTA = 8;
+  const NTER = 10, TERM_R = 11, TERM_ALTO = 55, TERM_V = 8, TERM_CARGA = 5, NMOTA = 8;
   const AJ_FIS = { climbV: 0, glideSink: 0, flyCeil: 60 }; // subir no sube y el hundimiento lo pone este juego; techo más alto (las corrientes suben)
   const SALIDAS = ['cumbre', 'picachos', 'mirador'], HACIA = ['plaza', 'villa'];
   const en = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
@@ -50,7 +50,7 @@ window.AVPlaneo = function (G) {
 
   // ---------- Estado (grupos fijos, sin asignaciones por cuadro) ----------
   const nubes = []; for (let i = 0; i < NNUB; i++) nubes.push({ on: false, x: 0, y: 0, z: 0, giro: 0, usada: false });
-  const terms = []; for (let i = 0; i < NTER; i++) terms.push({ on: false, x: 0, y: 0, z: 0, carga: TERM_CARGA, pint: -1, dentro: false });
+  const terms = []; for (let i = 0; i < NTER; i++) terms.push({ on: false, x: 0, y: 0, z: 0, carga: TERM_CARGA, pint: -1, dentro: false, contada: false });
   const salida = { x: 0, y: 0, z: 0, fx: 0, fz: 1, ancla: '' };
   const guia = { x: 0, y: 0, z: 0, ok: false };
   const vuelta = { x: 0, y: 0, z: 0, fx: 0, fz: 1, ok: false }; // dónde estaba Vittata antes de jugar (vuelve al salir)
@@ -167,13 +167,13 @@ window.AVPlaneo = function (G) {
     const ang0 = Math.atan2(salida.fz, salida.fx);
     let k = 0;
     for (let i = 0; i < NTER; i++) {
-      const t = terms[i]; t.on = false; t.carga = TERM_CARGA; t.pint = -1; t.dentro = false;
+      const t = terms[i]; t.on = false; t.carga = TERM_CARGA; t.pint = -1; t.dentro = false; t.contada = false;
       for (let r = 0; r < 14 && !t.on; r++) {
         const d = 70 + i * 40 + rnd(-10, 10), a = ang0 + rnd(-0.9, 0.9), x = salida.x + Math.cos(a) * d, z = salida.z + Math.sin(a) * d;
         const g = H(x, z); if (!(g > -1e8) || mojado(x, z)) continue; // solo sobre tierra
         let seco = true; for (let j = 0; j < 6; j++) { const b = j * Math.PI / 3; if (mojado(x + Math.cos(b) * TERM_R, z + Math.sin(b) * TERM_R)) { seco = false; break; } }
         if (!seco) continue;
-        let sep = true; for (let j = 0; j < i; j++) { const o = terms[j]; if (o.on && Math.hypot(o.x - x, o.z - z) < 30) { sep = false; break; } }
+        let sep = true; for (let j = 0; j < i; j++) { const o = terms[j]; if (o.on && Math.hypot(o.x - x, o.z - z) < 40) { sep = false; break; } }
         if (!sep) continue;
         t.on = true; t.x = x; t.z = z; t.y = g; k++;
       }
@@ -226,7 +226,7 @@ window.AVPlaneo = function (G) {
     for (const t of terms) {
       if (!t.on) continue;
       const dentro = Math.hypot(S.pos.x - t.x, S.pos.z - t.z) < TERM_R && S.pos.y < t.y + TERM_ALTO && t.carga > 0;
-      if (dentro && !t.dentro) { E.termsN++; sonar('aleteo'); aviso(E.primeraTerm ? L('¡Corriente! Da vueltas dentro para subir', 'Updraft! Circle inside to rise') : L('¡Corriente!', 'Updraft!'), 'bien'); E.primeraTerm = false; pintarHud(); }
+      if (dentro && !t.dentro && !t.contada) { t.contada = true; E.termsN++; sonar('aleteo'); aviso(E.primeraTerm ? L('¡Corriente! Da vueltas dentro para subir', 'Updraft! Circle inside to rise') : L('¡Corriente!', 'Updraft!'), 'bien'); E.primeraTerm = false; pintarHud(); }
       t.dentro = dentro;
       if (dentro) { enTerm = true; sube += TERM_V; t.carga = Math.max(0, t.carga - dt); const p = Math.ceil(t.carga / TERM_CARGA * 8); if (p !== t.pint) { t.pint = p; pintarColumnas(); } }
     }
