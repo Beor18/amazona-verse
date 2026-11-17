@@ -29,7 +29,7 @@
     const S = G.S, $ = G.util.$, P = G.pack, raiz = document.documentElement;
     const ALMACEN = ((P.meta && P.meta.almacen) || P.id) + '.menu';
     const portada = $('title'), form = $('modos'), creador = $('creator');
-    const MODOS = ['aventura', 'golf', 'pesca', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'canto', 'escondite', 'semillas', 'piloto', 'compas', 'sigueme', 'foto', 'sembradora', 'planeo', 'maze', 'libre', 'nido', 'records'];
+    const MODOS = ['aventura', 'golf', 'pesca', 'duelo', 'duelo2', 'amigos', 'cotorras', 'album', 'carreras', 'tormenta', 'banquete', 'flight', 'tren', 'river', 'canto', 'escondite', 'semillas', 'piloto', 'compas', 'sigueme', 'foto', 'sembradora', 'planeo', 'pichones', 'maze', 'libre', 'nido', 'records'];
     // V18 (Kelvin 8-nov: «¿dónde está lo divertido?»): cada actividad de la V18 con su tarjeta. «Retos con amigos» abre una tarjeta con
     // las tres de los amigos (SUB); Mis cotorras, el Álbum y Retos con amigos se abren encima del menú, como Mi nido (ENCIMA).
     const SUB = ['chispa', 'moon', 'guardian'], ENCIMA = ['nido', 'records', 'cotorras', 'album', 'amigos'];
@@ -67,6 +67,7 @@
       foto: [L('Foto relámpago', 'Snap Safari'), L('Encuentra al animal y sácale su mejor foto', 'Find the animal and take its best photo')], // src/game/foto_safari.js (F2-2)
       sembradora: [L('Sembradora del cielo', 'Sky Planter'), L('Suelta semillas desde el aire y reverdece el claro', 'Drop seeds from the air and green the clearing')], // src/game/sembradora.js (F2-4)
       planeo: [L('Planeo entre nubes', 'Cloud Glide'), L('Planea lo más lejos que puedas sin tocar el suelo', 'Glide as far as you can without touching the ground')], // src/game/planeo.js (D14)
+      pichones: [L('Rescate rápido', 'Quick Rescue'), L('Lleva los 3 pichones al nido antes de que llueva', 'Take the 3 chicks to the nest before it rains')], // src/game/rescate_rapido.js (D16)
       maze: [L('Amazona Maze', 'Amazona Maze'), L('Frutos en el laberinto y guardianes', 'Fruit in the maze and guardians')], // src/game/maze.js (AB1, BI2)
       libre: [L('Vuelo libre', 'Free flight'), L('Explora a tu aire, sin misiones', 'Explore on your own, with no missions')],
       nido: [L('Mi nido', 'My nest'), L('Tus huevos y crías', 'Your eggs and chicks')],
@@ -140,11 +141,11 @@
       const st = document.createElement('style'); st.id = 'menu-recorte-css';
       st.textContent = '#modos .recorte-fuera{display:none!important}#title .title-episodios.episodios-arriba{margin:0 0 12px}'
         // «Más juegos» abierto: solo sus juegos (River Rush, Tormenta, Banquete y Sigue el canto) y «Volver», en ese orden (también fuera las tarjetas que añaden otros módulos)
-        + '#modos.modos-mas-abierto .modos-grid>:not([data-mas-juegos]):not([data-modo="river"]):not([data-modo="tormenta"]):not([data-modo="banquete"]):not([data-modo="canto"]):not([data-modo="escondite"]):not([data-modo="semillas"]):not([data-modo="piloto"]):not([data-modo="compas"]):not([data-modo="sigueme"]):not([data-modo="foto"]):not([data-modo="sembradora"]):not([data-modo="planeo"]){display:none!important}'
-        + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-modo="canto"]{order:4}#modos.modos-mas-abierto [data-modo="escondite"]{order:5}#modos.modos-mas-abierto [data-modo="semillas"]{order:6}#modos.modos-mas-abierto [data-modo="piloto"]{order:7}#modos.modos-mas-abierto [data-modo="compas"]{order:8}#modos.modos-mas-abierto [data-modo="sigueme"]{order:9}#modos.modos-mas-abierto [data-modo="foto"]{order:10}#modos.modos-mas-abierto [data-modo="sembradora"]{order:11}#modos.modos-mas-abierto [data-modo="planeo"]{order:12}#modos.modos-mas-abierto [data-mas-juegos]{order:13}';
+        + '#modos.modos-mas-abierto .modos-grid>:not([data-mas-juegos]):not([data-modo="river"]):not([data-modo="tormenta"]):not([data-modo="banquete"]):not([data-modo="canto"]):not([data-modo="escondite"]):not([data-modo="semillas"]):not([data-modo="piloto"]):not([data-modo="compas"]):not([data-modo="sigueme"]):not([data-modo="foto"]):not([data-modo="sembradora"]):not([data-modo="planeo"]):not([data-modo="pichones"]){display:none!important}'
+        + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-modo="canto"]{order:4}#modos.modos-mas-abierto [data-modo="escondite"]{order:5}#modos.modos-mas-abierto [data-modo="semillas"]{order:6}#modos.modos-mas-abierto [data-modo="piloto"]{order:7}#modos.modos-mas-abierto [data-modo="compas"]{order:8}#modos.modos-mas-abierto [data-modo="sigueme"]{order:9}#modos.modos-mas-abierto [data-modo="foto"]{order:10}#modos.modos-mas-abierto [data-modo="sembradora"]{order:11}#modos.modos-mas-abierto [data-modo="planeo"]{order:12}#modos.modos-mas-abierto [data-modo="pichones"]{order:13}#modos.modos-mas-abierto [data-mas-juegos]{order:13}';
       document.head.appendChild(st);
     }
-    const FUERA = [], MAS = ['river', 'tormenta', 'banquete', 'canto', 'escondite', 'semillas', 'piloto', 'compas', 'sigueme', 'foto', 'sembradora', 'planeo']; // T38: el Duelo y el Duelo de 2 vuelven a la portada (Kelvin, 15-nov)
+    const FUERA = [], MAS = ['river', 'tormenta', 'banquete', 'canto', 'escondite', 'semillas', 'piloto', 'compas', 'sigueme', 'foto', 'sembradora', 'planeo', 'pichones']; // T38: el Duelo y el Duelo de 2 vuelven a la portada (Kelvin, 15-nov)
     const seVe = m => seVe0(m) && !(RECORTE() && FUERA.includes(m));
     let masAbierto = false;
     function masJuegos() {
@@ -198,7 +199,7 @@
       if (bMas) {
         bMas.hidden = !RECORTE(); bMas.style.display = RECORTE() ? '' : 'none';
         bMas.querySelector('b').textContent = masAbierto ? L('Volver', 'Back') : L('Más juegos', 'More games');
-        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta, el banquete, el canto, el escondite, las semillas, la escuela de vuelo, Alas al compás, ¡Sígueme, bandada!, Foto relámpago, la Sembradora del cielo y el Planeo entre nubes', 'River Rush, the storm, the feast, the song, hide-and-seek, the seeds, the flight school, Wings on the Beat, Follow Me, Flock!, Snap Safari, Sky Planter and Cloud Glide');
+        bMas.querySelector('small').textContent = masAbierto ? L('A todas las tarjetas', 'To all the cards') : L('River Rush, la tormenta, el banquete, el canto, el escondite, las semillas, la escuela de vuelo, Alas al compás, ¡Sígueme, bandada!, Foto relámpago, la Sembradora del cielo, el Planeo entre nubes y el Rescate rápido', 'River Rush, the storm, the feast, the song, hide-and-seek, the seeds, the flight school, Wings on the Beat, Follow Me, Flock!, Snap Safari, Sky Planter, Cloud Glide and Quick Rescue');
         bMas.setAttribute('aria-expanded', String(masAbierto));
         bMas.setAttribute('aria-label', bMas.querySelector('b').textContent + '. ' + bMas.querySelector('small').textContent);
       }
@@ -451,6 +452,7 @@
       foto: () => document.body.classList.contains('foto-on'), // F2-2
       sembradora: () => document.body.classList.contains('sembradora-on'), // F2-4
       planeo: () => document.body.classList.contains('planeo-on'), // D14
+      pichones: () => document.body.classList.contains('pichones-on'), // D16
       tren: () => document.body.classList.contains('tren-on'),
       maze: () => document.body.classList.contains('maze-on'),
       carreras: () => !!(G.retosApi && G.retosApi.activo) || document.body.classList.contains('retos-on'),
@@ -502,6 +504,7 @@
       else if (modo === 'foto') p = listo().then(() => (window.AV && window.AV.foto ? window.AV.foto() : false)); // F2-2: Foto relámpago (en el mundo)
       else if (modo === 'sembradora') p = listo().then(() => (window.AV && window.AV.sembradora ? window.AV.sembradora() : false)); // F2-4: Sembradora del cielo (en el mundo)
       else if (modo === 'planeo') p = listo().then(() => (window.AV && window.AV.planeo ? window.AV.planeo() : false)); // D14: Planeo entre nubes (en el mundo)
+      else if (modo === 'pichones') p = listo().then(() => (window.AV && window.AV.pichones ? window.AV.pichones() : false)); // D16: Rescate rápido (en el mundo)
       else if (modo === 'maze') p = listo().then(() => (window.AV && window.AV.maze ? window.AV.maze() : false)); // Amazona Maze (src/game/maze.js, BI2)
       else if (modo === 'libre') { entrarLibre(); p = Promise.resolve(true); }
       else if (modo === 'nido') p = G.criadero && G.criadero.abrir ? G.criadero.abrir() : Promise.resolve(false);
@@ -566,6 +569,7 @@
       if (G.fotoApi) { try { G.fotoApi.salir(); } catch (e) { /* ya fuera */ } } // F2-2
       if (G.sembradoraApi) { try { G.sembradoraApi.salir(); } catch (e) { /* ya fuera */ } } // F2-4
       if (G.planeoApi) { try { G.planeoApi.salir(); } catch (e) { /* ya fuera */ } } // D14
+      if (G.pichonesApi) { try { G.pichonesApi.salir(); } catch (e) { /* ya fuera */ } } // D16
       const mz = G.mazeApi; if (mz) { try { mz.salir(); } catch (e) { /* ya fuera */ } } // src/game/maze.js (BI2)
       if (G.criadero && G.criadero.abierto && G.criadero.abierto()) G.criadero.cerrar();
       salir18();
@@ -824,6 +828,19 @@
           check('D14 · Esc en el juego también vuelve al menú', alMenuEP && !G.planeoApi.activo() && !document.body.classList.contains('planeo-on'));
           if (!portada.open) volver();
         }
+        { // D16: Rescate rápido, desde «Más juegos»: entra, su «Salir» y Esc vuelven al menú sin pausa colgada
+          await elegir('pichones');
+          const okR = await hasta(() => G.pichonesApi && G.pichonesApi.activo(), 15000);
+          check('D16 · Rescate rápido: la tarjeta abre el juego (con su «Salir») y cierra la portada', okR && !portada.open && !!document.querySelector('#rr-hud [data-a="salir"]') && document.body.classList.contains('pichones-on'));
+          if (okR) document.querySelector('#rr-hud [data-a="salir"]').click();
+          const alMenuR = await hasta(() => portada.open, 8000);
+          check('D16 · su «Salir» vuelve al menú (sin pausa colgada)', alMenuR && G.pichonesApi && !G.pichonesApi.activo() && !document.body.classList.contains('pichones-on') && desdeMenu === null && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('pichones')), 'portada ' + portada.open + ', marca ' + desdeMenu);
+          await elegir('pichones'); await hasta(() => G.pichonesApi && G.pichonesApi.activo(), 15000);
+          dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+          const alMenuER = await hasta(() => portada.open, 8000);
+          check('D16 · Esc en el juego también vuelve al menú', alMenuER && !G.pichonesApi.activo() && !document.body.classList.contains('pichones-on'));
+          if (!portada.open) volver();
+        }
         await elegir('canto'); // T43
         const okC = await hasta(() => G.cantoApi && G.cantoApi.activo(), 15000);
         check('T43 · Sigue el canto: la tarjeta abre el juego (con su «Salir») y cierra la portada', okC && !portada.open && !!document.querySelector('#canto [data-a="salir"]'));
@@ -1052,7 +1069,7 @@
     }
 
     // QA-212: ocupado() = hay una actividad V18 en marcha (duelo, minigolf, carreras…); lo miran las pistas de descubrir.js y ciclo.js
-    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18() || document.body.classList.contains('sigueme-on') || document.body.classList.contains('foto-on') || document.body.classList.contains('sembradora-on') || document.body.classList.contains('planeo-on'), /* D14: «Planeo entre nubes», igual */ /* F2-4: «Sembradora del cielo», igual */ /* F2-2: «Foto relámpago», igual */ /* F2-1: ¡Sígueme, bandada! se juega en el mundo: los avisos de la historia esperan */ get libre() { return libre; }, get pendiente() { return pendiente; } };
+    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18() || document.body.classList.contains('sigueme-on') || document.body.classList.contains('foto-on') || document.body.classList.contains('sembradora-on') || document.body.classList.contains('planeo-on') || document.body.classList.contains('pichones-on'), /* D16: «Rescate rápido», igual */ /* D14: «Planeo entre nubes», igual */ /* F2-4: «Sembradora del cielo», igual */ /* F2-2: «Foto relámpago», igual */ /* F2-1: ¡Sígueme, bandada! se juega en el mundo: los avisos de la historia esperan */ get libre() { return libre; }, get pendiente() { return pendiente; } };
     api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir, aplazarIntro: () => { aplazar = true; } });
     if (window.AVQueHacer) window.AVQueHacer(G);
     return api;
