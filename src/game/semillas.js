@@ -177,7 +177,7 @@ window.AVSemillas = function (G) {
     css();
     hudEl = document.createElement('div'); hudEl.id = 'sem-hud'; hudEl.hidden = true; hudEl.setAttribute('role', 'status');
     hudEl.innerHTML = '<b data-k="t" class="sem-tit"></b><span class="sem-n">' + ICONO + '<span data-k="n"></span></span><span class="sem-t" data-k="r"></span><span class="sem-r" data-k="rec"></span><span data-k="msg" aria-live="polite"></span><button type="button" class="salir" data-a="salir"></button>';
-    finEl = document.createElement('div'); finEl.id = 'sem-fin'; finEl.className = 'av-fin'; finEl.hidden = true; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'sem-fin-t');
+    finEl = document.createElement('div'); finEl.id = 'sem-fin'; finEl.className = 'av-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'sem-fin-t');
     finEl.innerHTML = '<h2 id="sem-fin-t" data-k="ft"></h2><div class="sem-gran av-num">' + ICONO + '<span data-k="fn"></span></div><p class="av-msg" data-k="fmsg" aria-live="polite"></p><p class="sem-det av-det" data-k="fdet"></p><div class="sem-bots av-bots"><button type="button" class="av-bot" data-a="otra"></button><button type="button" class="av-bot salir" data-a="salir"></button></div>';
     const clic = e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; e.preventDefault(); if (b.dataset.a === 'otra') jugar(); else salir(); };
     hudEl.addEventListener('click', clic); finEl.addEventListener('click', clic);
@@ -231,7 +231,7 @@ window.AVSemillas = function (G) {
     try { G.emit('record', { modo: 'semillas', puntos: E.puntos }); } catch (e) { /* */ }
     finSon(E.puntos > 0 ? 'victoria' : 'casi'); if (E.nuevo && E.puntos > 0) logroId = finSon('record', () => E.fase === 'fin'); // PULIR 4: tabla común; el logro se cancela al salir
     pintarHud(); pintarFin(); finEl.hidden = false; document.body.classList.add('semillas-fin');
-    const otra = finEl.querySelector('[data-a="otra"]'); setTimeout(() => { try { if (!finEl.hidden) otra.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
+    setTimeout(() => { try { if (!finEl.hidden) finEl.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0); // PULIR 4 (revisión): el foco va al panel, como en los demás (Tab ×1 hasta «Otra vez»): un Enter suelto no reinicia sin leer el resultado
   }
   const activo = () => E.fase !== 'nada';
   function salir() {

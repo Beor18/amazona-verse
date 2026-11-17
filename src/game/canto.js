@@ -44,8 +44,8 @@ window.AVCanto = function (G) {
     const st = document.createElement('style'); st.id = 'canto-css';
     st.textContent = '#canto{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,rgba(16,48,32,.55),rgba(8,20,14,.85));font-family:Fredoka,system-ui,sans-serif;color:#fff8ea;padding:16px;box-sizing:border-box}' +
       '#canto[hidden]{display:none}#canto .c-caja{width:min(440px,100%);display:flex;flex-direction:column;align-items:center;gap:14px}' +
-      '#canto h2{margin:0;font-size:clamp(26px,7vw,34px);text-shadow:0 2px 6px #0008}#canto .c-info{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-weight:600;font-size:16px}' +
-      '#canto .c-info span{background:rgba(255,255,255,.14);border-radius:999px;padding:4px 12px}#canto .c-msg{min-height:1.4em;font-size:19px;font-weight:600;text-align:center}' +
+      '#canto h2{margin:0;font-size:26px;text-shadow:0 2px 6px #0008}#canto .c-info{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;font-weight:600;font-size:16px}' +
+      '#canto .c-info span{background:rgba(255,255,255,.14);border-radius:999px;padding:4px 12px}#canto .c-msg{min-height:1.4em;font-size:17px;font-weight:600;text-align:center}' +
       '#canto .c-aves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;width:100%}' +
       '#canto .c-ave{all:unset;box-sizing:border-box;aspect-ratio:1;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;background:var(--c);border:4px solid rgba(255,255,255,.35);box-shadow:0 6px 0 rgba(0,0,0,.25),0 8px 18px rgba(0,0,0,.35);transition:transform .08s,filter .08s;touch-action:manipulation;color:#fff;font-weight:700;font-size:18px;text-shadow:0 1px 3px #0009}' +
       '#canto .c-ave img{width:62%;height:auto;border-radius:50%;background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 3px rgba(255,255,255,.35);pointer-events:none}#canto .c-ave:focus-visible{outline:4px solid #ffd27a;outline-offset:3px}' +
@@ -57,16 +57,18 @@ window.AVCanto = function (G) {
       '@keyframes c-respira{50%{transform:scale(1.06)}}@media (prefers-reduced-motion:reduce){#canto .c-bots [data-a="otra"]{animation:none}}' +
       'body.canto-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir,#quest,#inv,#b-diary,#b-emotes,#b-menu,#b-construir,#b-nido,#minimapa,#marcador,#top,#sys,#guia-hud){visibility:hidden!important}' + // el juego tapa todo: sin HUD detrás (F22: tampoco «Controles»)
       // T51: en horizontal (teléfono tumbado) las cuatro en una fila, del tamaño que deja el alto; «Salir» siempre a la vista
-      '@media (orientation:landscape) and (max-height:560px){#canto .c-caja{width:min(900px,100%);gap:8px}#canto h2{font-size:24px}#canto .c-msg{font-size:17px;min-height:1.2em;margin:0}' +
+      '@media (orientation:landscape) and (max-height:560px){#canto .c-caja{width:min(900px,100%);gap:8px}#canto h2{font-size:21px}#canto .c-msg{min-height:1.2em;margin:0}' +
       '#canto .c-aves{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(100%,calc((100dvh - 170px) * 4 + 30px))}#canto .c-ave{border-radius:20px;font-size:15px}#canto .c-bots button{min-height:44px}}' +
-      '@media (prefers-reduced-motion:reduce){#canto .c-ave{transition:none}#canto .c-ave.luz{transform:none}}';
+      '@media (prefers-reduced-motion:reduce){#canto .c-ave{transition:none}#canto .c-ave.luz{transform:none}}' +
+      // PULIR 4 (revisión): título 26 px (21 en horizontal bajo) y mensaje 17 px como el panel común; al terminar, número grande, botones de 54 px y sin las cuatro aves debajo
+      '#canto .c-caja:focus{outline:none}#canto.c-fin .c-aves{display:none}#canto.c-fin .c-bots button{min-height:54px}';
     document.head.appendChild(st);
   }
   function montar() {
     if (el) return el;
     css();
     el = document.createElement('div'); el.id = 'canto'; el.hidden = true; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'canto-t'); // F22: el lector dice «Sigue el canto»
-    el.innerHTML = '<div class="c-caja av-fin"><h2 id="canto-t" data-k="t"></h2><div class="c-info"><span data-k="ronda"></span><span data-k="mejor"></span></div><p class="c-msg av-msg" data-k="msg" aria-live="polite"></p>' +
+    el.innerHTML = '<div class="c-caja av-fin" tabindex="-1"><h2 id="canto-t" data-k="t"></h2><div class="av-num" data-k="num" hidden></div><div class="c-info"><span data-k="ronda"></span><span data-k="mejor"></span></div><p class="c-msg av-msg" data-k="msg" aria-live="polite"></p>' +
       '<div class="c-aves">' + AVES.map((a, i) => `<button type="button" class="c-ave" data-i="${i}" style="--c:${a.col};--l:${a.luz}"><img src="assets/retratos/v18/${a.r}.png" alt="" width="128" height="128" draggable="false"><span data-k="n${i}"></span></button>`).join('') + '</div>' +
       '<div class="c-bots av-bots"><button type="button" class="av-bot" data-a="otra" hidden></button><button type="button" class="c-salir av-bot salir" data-a="salir"></button></div></div>';
     el.addEventListener('pointerdown', e => {
@@ -86,7 +88,8 @@ window.AVCanto = function (G) {
     if (!el) return;
     q('t').textContent = L('Sigue el canto', 'Follow the song');
     q('ronda').textContent = L('Ronda ', 'Round ') + Math.max(1, E.ronda);
-    q('mejor').textContent = L('Récord: ', 'Best: ') + E.mejor;
+    q('mejor').textContent = L('Récord: ', 'Best: ') + E.mejor; q('mejor').hidden = !E.mejor; // sin «Récord: 0» antes del primer récord (como los demás)
+    el.classList.toggle('c-fin', E.fase === 'fin'); q('num').hidden = E.fase !== 'fin'; q('num').textContent = E.fase === 'fin' ? String(Math.max(0, E.ronda - 1)) : '';
     AVES.forEach((a, i) => { q('n' + i).textContent = L(a.n[0], a.n[1]); });
     if (msg != null) q('msg').textContent = msg;
     const turno = E.fase === 'turno';
@@ -126,7 +129,7 @@ window.AVCanto = function (G) {
     E.nuevo = hechas > E.mejor; if (E.nuevo) { E.mejor = hechas; guardarRec(hechas); }
     finSon(E.nuevo ? 'victoria' : 'casi'); if (E.nuevo) E.timers.push(finSon('record', () => E.fase === 'fin')); // PULIR 4: tabla común (antes unlock/wrong); limpiar() cancela el logro
     pintar(E.nuevo ? L(`¡Nuevo récord: ${hechas}!`, `New record: ${hechas}!`) : L(`¡Casi! Repetiste ${hechas} ${hechas === 1 ? 'canto' : 'cantos'}.`, `So close! You repeated ${hechas} ${hechas === 1 ? 'song' : 'songs'}.`));
-    const otra = el && el.querySelector('[data-a="otra"]'); if (otra) setTimeout(() => { try { otra.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
+    const caja = el && el.querySelector('.c-caja'); if (caja) setTimeout(() => { try { if (E.fase === 'fin') caja.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0); // PULIR 4 (revisión): el foco va al panel, como en los demás
   }
   function tecla(e) {
     if (!activo() || e.repeat) return;
