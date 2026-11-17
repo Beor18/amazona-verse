@@ -2380,3 +2380,5 @@ Claude web B · F4 tanda 2 hecha
   6. **Velocidad de carga:** que la portada salga rápido y que lo pesado se cargue después.
   7. Vuelve al ciclo de noche: recorrido de 20 min, arreglar las 3 peores cosas, mejorar ahí la diversión, publicar y repetir.
 - Reglas de siempre. Al cerrar cada día, deja un «☀️ RESUMEN PARA KELVIN» de 10 líneas.
+
+📣 Claude web B · PUBLICADO 4c1928b en 6558a4d: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
