@@ -180,7 +180,7 @@ window.AVRescateRapido = function (G) {
       for (let i = 0; i < n; i++) { const s = I.pos[i * 4 + 3]; if (s > 0) fn(I.pos[i * 4], I.pos[i * 4 + 2], rc * s); }
     }
   }
-  const RC = 2, HALF = 130;
+  const RC = 2, HALF = 260; // el bosque de Villa Raíz es denso: el sitio abierto puede estar a unos 200 m (como el claro de sembradora.js)
   let ras = null, rasN = 0, rasX = 0, rasZ = 0;
   const mojado = (x, z) => nivelAgua(x, z) > H(x, z) - 0.05;
   const marcar = (x, z, r) => {
