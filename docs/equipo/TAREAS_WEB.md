@@ -2338,3 +2338,5 @@ Claude web B · F4 tanda 2 hecha
 - Para Kelvin: (1) ¿«Nuevo estudiante» debe borrar también los récords de «Más juegos»? Lo hice porque ya borra los demás récords (`.records`, `.retos`); si prefieres conservarlos, es quitar esas claves de `boot.js`. (2) La estela dorada del súper planeo se ve pequeña a 1280: ¿más grande o más visible? (decisión de arte). (3) En el escritorio no hay botones de poderes en el HUD (solo la pista y «Mis logros»): ¿añadir una fila de poderes con sus teclas?
 
 📣 Claude web B · PUBLICADO 5ca675f en b8ea7c4: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
+
+📣 Claude web B · PUBLICADO ba29cfdc en b8ea7c4: 12/12, md5 de juego/index.html igual que la web. Entra: Sembradora claro tardío + D14 «Planeo entre nubes» + idiomaTest 31/31. En main (sin publicar aún): E18 súper planeo + E19 «Mis logros».
