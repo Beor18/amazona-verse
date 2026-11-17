@@ -218,8 +218,8 @@ window.AVSembradora = function (G) {
 
   // ---------- Claro: un sitio abierto que ya existe (el de la parada del yagrumo y las mariposas) y parches sin agua, copas ni edificios ----------
   // Las copas de la flora (G.vegetacion.instancias) se miran todas: sus colliders solo existen a 40 m de Vittata.
-  // Los edificios de Kelvin solo tienen colliders cuando el streaming los coloca (al pasar cerca): los que aún no, van con su
-  // huella del kit: radio y alto se miden desde el centro de la base, así que en planta llega a √(radio² − alto²) (y nunca menos
+  // Los edificios de Kelvin solo tienen colliders cuando el streaming los coloca (al pasar cerca), y no todos (mundo.js no se
+  // lo da a complejo_ruinas, canoa, los de piso del mapa ni los no erguidos): todos van siempre con su huella del kit: radio y alto se miden desde el centro de la base, así que en planta llega a √(radio² − alto²) (y nunca menos
   // de 0,4 × radio). fijo = true (elegir el claro): todos los edificios por su huella y solo los colliders que existen desde el
   // principio, para que el claro no cambie según por dónde haya volado Vittata (antes del arreglo, en una página recién
   // cargada salía un «claro» dentro de la ciudad de templos del este, que aún no tenía colliders).
@@ -229,7 +229,7 @@ window.AVSembradora = function (G) {
     const cs = G.fisica && G.fisica.colliders;
     if (cs) for (let i = 0; i < cs.length; i++) { const c = cs[i]; if (c.kind === 'arbol' || (fijo && !KIND_FIJO[c.kind])) continue; /* troncos de la flora cerca de Vittata: ya van abajo con su copa (y así el claro no cambia según dónde esté ella) */ fn(c.x, c.z, c.kind === 'tree' ? Math.max(1.2, Math.min(4.5, c.r * 4)) : (c.hx ? Math.hypot(c.hx, c.hz) : c.r || 0) + 0.5); }
     const gs = G.streaming && G.streaming.gestor, ins = gs && gs.instancias;
-    if (ins) for (let i = 0; i < ins.length; i++) { const I = ins[i]; if (I.pos && (fijo || !I.colocado)) fn(I.pos[0], I.pos[2], huella(I)); }
+    if (ins) for (let i = 0; i < ins.length; i++) { const I = ins[i]; if (I.pos) fn(I.pos[0], I.pos[2], huella(I)); } // también los ya colocados: no todos tienen collider (complejo_ruinas, canoa, los de piso del mapa, los no erguidos)
     const Vg = G.vegetacion, inst = Vg && Vg.instancias, info = (Vg && Vg.info) || {};
     if (inst) for (const m in inst) {
       const I = inst[m], inf = info[m]; if (!I || !I.pos || !inf || !(inf.alto > 2)) continue;
@@ -307,39 +307,52 @@ window.AVSembradora = function (G) {
   }
   const rasEn = (x, z) => { const i = Math.floor((x - rasX) / RC), j = Math.floor((z - rasZ) / RC); return i >= 0 && j >= 0 && i < rasN && j < rasN ? ras[i + j * rasN] : 0; };
   function puntuarRas(cx, cz) { if (!rasEn(cx, cz)) return -1; let n = 0; for (let i = 0; i < 36; i++) { const a = i * 2.39996, d = D_MIN + (D_MAX - D_MIN) * ((i * 0.618034) % 1); n += rasEn(cx + Math.cos(a) * d, cz + Math.sin(a) * d); } return n; }
-  const claro = { x: 0, z: 0, n: -2, ancla: '', busca: 0, ms: 0 };
-  // Puestos de la búsqueda (cada 6 m hasta el radio mayor): se reservan una vez y se reutilizan
-  const PASO_C = 3, NBC = Math.floor(CLARO_BUSCA[CLARO_BUSCA.length - 1] / PASO_C), cand = { n: 0, x: null, z: null, d: null, s: null, o: null };
-  function elegirClaro() { // cerca del claro de la parada (o de la plaza, o de Vittata): el más cercano con casi tanto sitio como el mejor
+  const claro = { x: 0, z: 0, n: -2, ancla: '', busca: 0, ms: 0, mem: false, msBusca: 0 };
+  // El claro se busca una vez por página: con lo que no cambia sale siempre el mismo, así que «Otra vez» solo comprueba que sigue
+  // cabiendo (60 m de obstáculos y 36 puestos). Si ya no cabe, o con nuevo = true, se busca otra vez.
+  const claroMem = { ok: false, ax: 0, az: 0, x: 0, z: 0, n: 0, busca: 0 };
+  // Puestos de la búsqueda (cada 3 m hasta el radio mayor), del centro hacia fuera: se ordenan una vez y se reutilizan
+  const PASO_C = 3, NBC = Math.floor(CLARO_BUSCA[CLARO_BUSCA.length - 1] / PASO_C), cand = { n: 0, ix: null, iz: null, d: null, s: null };
+  function prepararPuestos() {
+    const M = (2 * NBC + 1) * (2 * NBC + 1), RMAX = CLARO_BUSCA[CLARO_BUSCA.length - 1], ix = new Int16Array(M), iz = new Int16Array(M), d = new Float32Array(M);
+    let n = 0;
+    for (let i = -NBC; i <= NBC; i++) for (let j = -NBC; j <= NBC; j++) { const dd = Math.hypot(i, j) * PASO_C; if (dd > RMAX) continue; ix[n] = i; iz[n] = j; d[n] = dd; n++; }
+    const o = new Int32Array(n); for (let k = 0; k < n; k++) o[k] = k; o.sort((p, q) => d[p] - d[q] || p - q); // orden fijo
+    cand.n = n; cand.ix = new Int16Array(n); cand.iz = new Int16Array(n); cand.d = new Float32Array(n); cand.s = new Int8Array(n);
+    for (let k = 0; k < n; k++) { cand.ix[k] = ix[o[k]]; cand.iz[k] = iz[o[k]]; cand.d[k] = d[o[k]]; }
+  }
+  function elegirClaro(nuevo) { // cerca del claro de la parada (o de la plaza, o de Vittata): el más cercano con casi tanto sitio como el mejor
     const t0 = performance.now(), T = G.terreno, poi = id => { try { return T && T.poi ? T.poi(id) : null; } catch (e) { return null; } };
     let a = null; claro.ancla = 'vittata';
     for (const id of CLAROS) { a = poi(id); if (a) { claro.ancla = id; break; } }
-    const ax = a ? a.x : S.pos.x, az = a ? a.z : S.pos.z, RMAX = CLARO_BUSCA[CLARO_BUSCA.length - 1];
-    rasterAbierto(ax, az, RMAX + D_MAX + 6);
-    if (!cand.x) { const M = (2 * NBC + 1) * (2 * NBC + 1); cand.x = new Float32Array(M); cand.z = new Float32Array(M); cand.d = new Float32Array(M); cand.s = new Int8Array(M); cand.o = new Int32Array(M); }
-    cand.n = 0;
-    for (let ix = -NBC; ix <= NBC; ix++) for (let iz = -NBC; iz <= NBC; iz++) {
-      const d = Math.hypot(ix, iz) * PASO_C; if (d > RMAX) continue;
-      const x = ax + ix * PASO_C, z = az + iz * PASO_C, k = cand.n++;
-      cand.x[k] = x; cand.z[k] = z; cand.d[k] = d; cand.s[k] = puntuarRas(x, z); cand.o[k] = k;
+    const ax = a ? a.x : S.pos.x, az = a ? a.z : S.pos.z;
+    if (!nuevo && claroMem.ok && claroMem.ax === ax && claroMem.az === az) {
+      renovarCerca(claroMem.x, claroMem.z); const n = puntuar(claroMem.x, claroMem.z);
+      if (n >= CLARO_MIN) { claro.x = claroMem.x; claro.z = claroMem.z; claro.n = claroMem.n; claro.busca = claroMem.busca; claro.mem = true; E.claroN = n; claro.ms = Math.round(performance.now() - t0); return claro.n; }
     }
-    const o = cand.o.subarray(0, cand.n); o.sort((p, q) => cand.d[p] - cand.d[q] || p - q); // del centro hacia fuera (orden fijo)
-    let bx = ax, bz = az, bs = -2, ok = false;
-    for (let r = 0; r < CLARO_BUSCA.length && !ok; r++) { // primero cerca; si no hay sitio, un poco más lejos
+    claro.mem = false;
+    if (!cand.ix) prepararPuestos();
+    let bx = ax, bz = az, bs = -2, ok = false, hecho = 0, rx = 0, rz = 0, rn = -2;
+    for (let r = 0; r < CLARO_BUSCA.length && !ok; r++) { // primero cerca; si no hay sitio, un poco más lejos (el mapa solo crece si hace falta)
       const R = CLARO_BUSCA[r]; let bn = -2;
-      for (let i = 0; i < cand.n && cand.d[o[i]] <= R; i++) { const k = o[i]; bn = Math.max(bn, cand.s[k]); if (cand.s[k] > bs) { bs = cand.s[k]; bx = cand.x[k]; bz = cand.z[k]; } }
+      rasterAbierto(ax, az, R + D_MAX + 6); // mismas celdas que con el radio mayor (desplazamientos pares): los puestos ya puntuados no cambian
+      for (; hecho < cand.n && cand.d[hecho] <= R; hecho++) cand.s[hecho] = puntuarRas(ax + cand.ix[hecho] * PASO_C, az + cand.iz[hecho] * PASO_C);
+      for (let k = 0; k < hecho; k++) { const v = cand.s[k]; if (v > bn) bn = v; if (v > bs) { bs = v; bx = ax + cand.ix[k] * PASO_C; bz = az + cand.iz[k] * PASO_C; } }
       if (bn < CLARO_RAS) continue;
       const basta = Math.max(CLARO_RAS, bn - 3);
-      for (let i = 0, prob = 0; i < cand.n && cand.d[o[i]] <= R && prob < 12; i++) { // y con sitio de verdad (también lo que se mueve: personajes, matas)
-        const k = o[i]; if (cand.s[k] < basta) continue; prob++;
-        renovarCerca(cand.x[k], cand.z[k]);
-        if (puntuar(cand.x[k], cand.z[k]) >= CLARO_MIN) { bx = cand.x[k]; bz = cand.z[k]; claro.busca = R; ok = true; break; }
+      for (let k = 0, prob = 0; k < hecho && prob < 12; k++) { // y con sitio de verdad (también lo que se mueve: personajes, matas)
+        if (cand.s[k] < basta) continue; prob++;
+        const x = ax + cand.ix[k] * PASO_C, z = az + cand.iz[k] * PASO_C;
+        renovarCerca(x, z); const n = puntuar(x, z);
+        if (n >= CLARO_MIN) { bx = x; bz = z; claro.busca = R; ok = true; break; }
+        if (n > rn) { rn = n; rx = x; rz = z; }
       }
     }
-    if (!ok) claro.busca = -1;
+    if (!ok) { claro.busca = -1; if (rn >= 0) { bx = rx; bz = rz; } } // sin claro que quepa: el probado con más sitio de verdad
     claro.x = bx; claro.z = bz; claro.n = puntuarRas(bx, bz);
     renovarCerca(bx, bz); E.claroN = puntuar(bx, bz);
-    claro.ms = Math.round(performance.now() - t0);
+    Object.assign(claroMem, { ok, ax, az, x: bx, z: bz, n: claro.n, busca: claro.busca });
+    claro.ms = claro.msBusca = Math.round(performance.now() - t0);
     return claro.n;
   }
   function colocarVittata() { // en el aire junto al saco, mirando al parche más cercano: la sombra-diana se ve desde el principio
@@ -709,24 +722,30 @@ window.AVSembradora = function (G) {
         check('Sin ningún sitio bueno el parche no sale (nada de un sitio al azar) y luego se reintenta solo', sinSitio && sigue && vuelve, sinSitio + '/' + sigue + '/' + vuelve);
       }
       check('La zona de juego es un claro con sitio (≥ ' + CLARO_MIN + ' de 36 puestos buenos para un parche grande) y empieza en el aire: la sombra-diana ya se ve y el aviso dice que vueles', E.claroN >= CLARO_MIN && P.alto >= ALTO_MIN && M.diana.visible && /Vuela sobre la tierra oscura/.test(q(hudEl, 'msg').textContent),
-        'claro ' + E.claroN + ' · alto ' + P.alto.toFixed(1) + ' · ' + q(hudEl, 'msg').textContent + ' · cerca de ' + claro.ancla + ' → ' + Math.round(claro.x) + ',' + Math.round(claro.z) + ' ras ' + claro.n + ' (busca ' + claro.busca + ' m, ' + claro.ms + ' ms) vit ' + Math.round(pos0.x) + ',' + Math.round(pos0.z));
-      { // El claro no depende de qué edificios haya colocado ya el streaming (antes, en una página recién cargada, salía dentro de la
-        // ciudad de templos del este, aún sin colliders; tras recorrer el mapa ya no cabía): sin ningún edificio colocado, sale el mismo
-        const gs = G.streaming && G.streaming.gestor, ins = (gs && gs.instancias) || [], cs = (G.fisica && G.fisica.colliders) || [];
-        const x0 = claro.x, z0 = claro.z, n0 = E.claroN, col0 = ins.map(I => I.colocado), on0 = parches.map(p => p.on), eds = cs.filter(c => c.kind === 'edificio');
-        let x1 = NaN, z1 = NaN, n1 = -9;
-        try {
-          for (const p of parches) p.on = false;
-          for (const I of ins) I.colocado = false;
-          for (const c of eds) cs.splice(cs.indexOf(c), 1);
-          elegirClaro(); x1 = claro.x; z1 = claro.z; n1 = E.claroN;
-        } finally {
-          for (const c of eds) cs.push(c);
-          ins.forEach((I, i) => { I.colocado = col0[i]; });
-          elegirClaro(); parches.forEach((p, i) => { p.on = on0[i]; });
-        }
-        check('El claro es el mismo aunque el streaming aún no haya colocado ningún edificio (sus huellas del kit cuentan igual) y también ahí cabe', x1 === x0 && z1 === z0 && n1 >= CLARO_MIN && claro.x === x0 && claro.z === z0 && E.claroN === n0,
-          Math.round(x0) + ',' + Math.round(z0) + ' → ' + Math.round(x1) + ',' + Math.round(z1) + ' · claro ' + n0 + ' / sin edificios colocados ' + n1 + ' · ' + eds.length + ' colliders de edificio · ' + ins.length + ' edificios');
+        'claro ' + E.claroN + ' · alto ' + P.alto.toFixed(1) + ' · ' + q(hudEl, 'msg').textContent + ' · cerca de ' + claro.ancla + ' → ' + Math.round(claro.x) + ',' + Math.round(claro.z) + ' ras ' + claro.n + ' (busca ' + claro.busca + ' m, ' + claro.ms + ' ms' + (claro.mem ? ', guardado' : '') + ') vit ' + Math.round(pos0.x) + ',' + Math.round(pos0.z));
+      { // El claro se busca una vez por página y sale el mismo al buscarlo de nuevo («Otra vez» solo comprueba que sigue cabiendo)
+        const x0 = claro.x, z0 = claro.z, on0 = parches.map(p => p.on);
+        for (const p of parches) p.on = false;
+        elegirClaro(true); const x1 = claro.x, z1 = claro.z, ms1 = claro.msBusca, b1 = claro.busca;
+        elegirClaro(); const mem = claro.mem, ms2 = claro.ms;
+        parches.forEach((p, i) => { p.on = on0[i]; });
+        check('El claro se busca una vez y al buscarlo de nuevo sale el mismo; «Otra vez» no repite la búsqueda', x1 === x0 && z1 === z0 && b1 > 0 && mem && claro.x === x0 && claro.z === z0 && ms2 <= ms1,
+          Math.round(x0) + ',' + Math.round(z0) + ' → ' + Math.round(x1) + ',' + Math.round(z1) + ' · busca ' + b1 + ' m en ' + ms1 + ' ms · otra vez ' + ms2 + ' ms' + (mem ? ' (guardado)' : ''));
+      }
+      { // Capítulo avanzado: con todos los edificios de alrededor ya colocados por el streaming (sus colliders de verdad), el claro
+        // es el mismo y sigue cabiendo (antes, tras recorrer el mapa, el claro de la página recién cargada ya no cabía: 6 < 12)
+        const ST = G.streaming && G.streaming.gestor, ins = (ST && ST.instancias) || [], cs = (G.fisica && G.fisica.colliders) || [];
+        const x0 = claro.x, z0 = claro.z, cerc = () => ins.filter(I => I.pos && Math.hypot(I.pos[0] - x0, I.pos[2] - z0) < CERCA_R + D_MAX);
+        const antes = cerc().filter(I => I.colocado).length, eds0 = cs.filter(c => c.kind === 'edificio').length;
+        let zona = null, listo = false; const tz = performance.now();
+        try { zona = ST && ST.precargarZona ? ST.precargarZona(x0, z0, { radio: CERCA_R + D_MAX }) : null; } catch (e) { zona = null; }
+        if (zona) { for (let i = 0; i < 600 && !(listo = zona.hecho()); i++) await new Promise(r => setTimeout(r, 50)); zona.terminar(); }
+        const near = cerc(), coloc = near.filter(I => I.colocado).length, eds1 = cs.filter(c => c.kind === 'edificio').length, on0 = parches.map(p => p.on);
+        for (const p of parches) p.on = false;
+        elegirClaro(true); const x1 = claro.x, z1 = claro.z, n1 = E.claroN, b1 = claro.busca;
+        parches.forEach((p, i) => { p.on = on0[i]; });
+        check('Con el capítulo avanzado (todos los edificios de alrededor colocados, con sus colliders) el claro es el mismo y cabe', !!zona && listo && x1 === x0 && z1 === z0 && n1 >= CLARO_MIN && b1 > 0,
+          Math.round(x0) + ',' + Math.round(z0) + ' → ' + Math.round(x1) + ',' + Math.round(z1) + ' · claro ' + n1 + ' · a ' + (CERCA_R + D_MAX) + ' m: ' + antes + ' → ' + coloc + '/' + near.length + ' colocados · colliders de edificio ' + eds0 + ' → ' + eds1 + ' · ' + Math.round(performance.now() - tz) + ' ms' + (zona ? '' : ' · sin precarga'));
       }
       check('El HUD no es una región viva (el reloj no se anuncia cada segundo); solo su aviso habla', !hudEl.hasAttribute('role') && !hudEl.hasAttribute('aria-live') && !q(hudEl, 'r').closest('[aria-live],[role="status"]') && q(hudEl, 'msg').getAttribute('aria-live') === 'polite');
       check('El botón Acción dice «Soltar» (con el icono de la semilla)', G.interaccion && G.interaccion.modo === MODO && MODO.verbo === 'Soltar' && (!G.input || !G.input.actBtn || /svg/.test(getComputedStyle(G.input.actBtn).getPropertyValue('--icon'))));
