@@ -822,7 +822,7 @@
       lista.forEach((p, i) => { const d = Math.hypot(p.x - x, p.z - z); if (d < bd) { bd = d; mejor = i; } });
       if (mejor < 0) { aviso('No hay ninguna pieza cerca para quitar'); return false; }
       const p = lista.splice(mejor, 1)[0]; anotar({ op: '-', p, i: mejor });
-      pintar(); guardar(); pintarHud(); sonar('pickup', 1); actualizar();
+      pintar(); guardar(); pintarHud(); sonar('pieza', 0.85); actualizar();
       return true;
     }
     function empezar() {
@@ -1225,7 +1225,12 @@
         check('El tronco queda al ras del suelo', Math.abs(new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().fromArray(mallas.tronco.instanceMatrix.array, 0)).y - H(lista[1].x, lista[1].z)) < 1e-3);
         check('Deshacer quita el último (Z)', (dispatchEvent(new KeyboardEvent('keydown', { key: 'z', bubbles: true })), lista.length === 1 && mallas.tronco.count === 0 && !mallas.tronco.visible));
         S.facing = { x: -S.facing.x, z: -S.facing.z }; actualizar();
-        check('Quitar borra la pieza bajo el fantasma', quitar() && lista.length === 0 && !mallas.nido.visible);
+        {
+          const oidos = [], play0 = G.audio && G.audio.play, q0 = G.quiet; let quito = false;
+          try { if (play0) G.audio.play = (n, a) => { oidos.push(n + ':' + a); return false; }; G.quiet = false; quito = quitar(); } finally { if (play0) G.audio.play = play0; G.quiet = q0; }
+          check('Quitar borra la pieza bajo el fantasma', quito && lista.length === 0 && !mallas.nido.visible);
+          check('F21: quitar suena «pieza» más grave (0,85), una vez y sin el «pickup» de antes', oidos.join() === 'pieza:0.85', oidos.join());
+        }
         check('Deshacer devuelve la pieza quitada', deshacer() && lista.length === 1 && lista[0].t === 'nido');
         check('No se puede poner otra pieza encima del nido', (actualizar(), !est.valido && /cerca/.test(est.motivo)), est.motivo);
         elegir('techo'); actualizar();

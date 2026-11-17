@@ -586,11 +586,18 @@
   // su archivo ya suena, sustituye a la capa sintética que hace lo mismo (sin doblar): los dos cambian con el mismo fundido largo
   // (cruce suave). Van bajitos en el bus del ambiente (deslizador «Ambiente», silencio y diálogo) y aún más bajos con música.
   // Se piden solo cuando su capa suena (arch.buffer: G.audio, pasados unos segundos de juego); en «simple» no hay archivos.
+  // F21 · k equilibrado por sonoridad integrada (EBU R128, ffmpeg ebur128 sobre el .ogg, 17-nov), con la capa a 1 y antes del bus:
+  //   bucle          integrada  k antes → ahora  efectivo antes → ahora (LUFS)
+  //   bosque_yunque    −25,3     0,32 → 0,37     −35,2 → −34,0   (el día)
+  //   noche_coquis     −20,4     0,30 → 0,21     −30,9 → −34,0   (la noche: antes 4 dB más fuerte que el día; ahora igual)
+  //   lluvia           −20,0     0,34 → 0,25     −29,4 → −32,0   (el tiempo: un poco por encima del fondo, sin tapar los efectos)
+  //   rio              −26,3     0,36 → 0,46     −35,2 → −33,0   (junto al agua se nota el río; lejos, su capa es 0)
+  // Los efectos (src/engine/audio.js, NIVEL) suenan de −28 a −21: el ambiente queda siempre 4 dB o más por debajo del efecto más suave.
   const BUCLES = [
-    { n: 'bosque_yunque', capa: 'aves', k: 0.32, quita: { bosque: 0.5 }, sinEventos: 'aves' },
-    { n: 'noche_coquis', capa: 'coquies', k: 0.3, quita: { grillos: 0.3 }, sinEventos: 'coquies' },
-    { n: 'lluvia', capa: 'lluvia', k: 0.34, quita: { lluvia: 0 } },
-    { n: 'rio', capa: 'rio', k: 0.36, quita: { rio: 0 } },
+    { n: 'bosque_yunque', capa: 'aves', k: 0.37, lufs: -25.3, quita: { bosque: 0.5 }, sinEventos: 'aves' },
+    { n: 'noche_coquis', capa: 'coquies', k: 0.21, lufs: -20.4, quita: { grillos: 0.3 }, sinEventos: 'coquies' },
+    { n: 'lluvia', capa: 'lluvia', k: 0.25, lufs: -20.0, quita: { lluvia: 0 } },
+    { n: 'rio', capa: 'rio', k: 0.46, lufs: -26.3, quita: { rio: 0 } },
   ];
   const AMB_CON_MUSICA = 0.7, AMB_FUNDIDO = 1.2, AMB_SUELTA_S = 20;
   function crearAmbiente(c, dest, modo, arch) {
@@ -844,7 +851,11 @@
     // Diálogo (caja o bocadillo de G.dialogo): la música baja a 0,6 para que se lea tranquilo; vuelve suave al cerrarlo
     const enDialogo = () => { try { return !!(G.dialogo && G.dialogo.activo && G.dialogo.activo()); } catch (e) { return false; } };
     const duck = () => Math.min(hablaHasta > performance.now() ? 0.45 : 1, eclosionAhora ? BANDA_SONORA.eclosion : 1, enDialogo() ? DIALOGO_DUCK : 1);
-    const duckAmb = () => enDialogo() ? AMB_DIALOGO : 1;
+    // F21: en los minijuegos que callan la música (compás, ¡Sígueme!, foto, sembradora, planeo, rescate rápido) el ambiente baja a 0,4:
+    // se sigue oyendo dónde estás, pero los pájaros y las ranas no tapan el pulso ni los silbidos del juego
+    const AMB_MINIJUEGO = 0.4;
+    let minijuegoAhora = false;
+    const duckAmb = () => Math.min(enDialogo() ? AMB_DIALOGO : 1, minijuegoAhora ? AMB_MINIJUEGO : 1);
     let gM = -1, gA = -1;
     function aplicarVolumen() { // solo escribe en el bus si el valor cambió: menos eventos de automatización
       if (!eng) return;
@@ -859,10 +870,11 @@
       try {
         const e = leerEntradas(), ahora = performance.now();
         evaluar(e, ahora); eclosionAhora = !!e.eclosion;
+        const minijuegoRitmo = document.body.classList.contains('compas-on') || document.body.classList.contains('sigueme-on') || document.body.classList.contains('foto-on') || document.body.classList.contains('sembradora-on') || document.body.classList.contains('planeo-on') || document.body.classList.contains('pichones-on'); // D16: en «Rescate rápido» tampoco // D14: en «Planeo entre nubes» tampoco // F2-4: en «Sembradora del cielo» tampoco // F2-2: en «Foto relámpago» tampoco (se oye el clic de la cámara); «Alas al compás» lleva su propia percusión: la música del mundo calla para no tapar el pulso; en «¡Sígueme, bandada!» se oyen los silbidos de la fila
+        minijuegoAhora = minijuegoRitmo; // F21: el ambiente baja en esos minijuegos (duckAmb)
         if (!preparar()) return; // sin AudioContext (aún no hubo gesto): no hay nada que sonar
         const c = eng.c, m = leer();
         const sonable = c.state === 'running' && !A.vol.muted && !document.hidden && !G.quiet; // G.quiet: en las baterías no suena nada
-        const minijuegoRitmo = document.body.classList.contains('compas-on') || document.body.classList.contains('sigueme-on') || document.body.classList.contains('foto-on') || document.body.classList.contains('sembradora-on') || document.body.classList.contains('planeo-on') || document.body.classList.contains('pichones-on'); // D16: en «Rescate rápido» tampoco // D14: en «Planeo entre nubes» tampoco // F2-4: en «Sembradora del cielo» tampoco // F2-2: en «Foto relámpago» tampoco (se oye el clic de la cámara); «Alas al compás» lleva su propia percusión: la música del mundo calla para no tapar el pulso; en «¡Sígueme, bandada!» se oyen los silbidos de la fila
         const quiereMusica = sonable && m.musica > 0 && eng.modo !== 'simple' && !minijuegoRitmo, quiereAmb = sonable && m.ambiente > 0;
         conectar(eng.musicaBus, 'm', quiereMusica); conectar(eng.ambBus, 'a', quiereAmb);
         if (!quiereMusica) eng.rep.pausar(); // con el sonido apagado, la música a 0 o la pestaña oculta, los temas en archivo se pausan (no bajan datos)
@@ -1410,6 +1422,8 @@
       estado, leer, set, elegir, momentoDe, banda: BANDA_SONORA, evaluar: (e, ms) => evaluar(Object.assign({}, BASE_E, e), ms == null ? performance.now() : ms),
       simular(e) { sim = e || null; tick(); return estado(); }, hora(h) { horaForzada = h == null ? null : h; return horaActual(); },
       calcularAmbiente, renderizar, renderizarAmbiente, tick, test,
+      bucles: () => BUCLES.map(b => ({ n: b.n, capa: b.capa, k: b.k, lufs: b.lufs })), // F21: tabla de los ambientes (AV.sonidoTest)
+      duckAmbiente: () => duckAmb(), minijuego: () => minijuegoAhora,
     };
     return api;
   };
