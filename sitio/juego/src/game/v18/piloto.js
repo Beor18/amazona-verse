@@ -281,8 +281,10 @@ window.AVV18Piloto = function (G) {
   function colocarBajar() {
     if (!bBajar) return;
     const fly = document.getElementById('b-fly'), r = fly && fly.getBoundingClientRect();
-    const ver = F.modo && tactil() && !!r && r.width > 0;
-    bBajar.hidden = !ver;
+    // PULIR 3 (niño de 7 años): en el suelo «Bajar» no hace nada y se juntaban tres botones de subir y bajar: solo sale volando
+    const M = G.fisica && G.fisica.MOVE, ver = F.modo && tactil() && !!r && r.width > 0 && !!(M && M.flying);
+    if (!ver && bajando) bajar(false);
+    if (bBajar.hidden !== !ver) bBajar.hidden = !ver;
     if (!ver) return;
     // Encima de Volar, centrado (a la izquierda chocaba con el aro del joystick)
     const x = Math.max(8, Math.min(innerWidth - 72, r.left + r.width / 2 - 32)), y = Math.max(8, r.top - 64 - 10);
@@ -319,6 +321,7 @@ window.AVV18Piloto = function (G) {
     pintarTiempo(); colocarBajar();
   }
   G.on('aula', k => { if (k === 'idioma' && F.modo) pintarHud(); });
+  G.on('vuelo', () => { if (F.modo) colocarBajar(); }); // PULIR 3: «Bajar» sale al despegar y se va al posarse
   // Esc sale (y no abre la Pausa: ui.js mira defaultPrevented)
   addEventListener('keydown', e => {
     if (!F.modo || e.key !== 'Escape' || e.repeat) return;
@@ -417,6 +420,9 @@ window.AVV18Piloto = function (G) {
       // «Bajar» en táctil = mantener C, y se suelta al salir
       leccion(2, { mismoSitio: true }); bajar(true);
       ok('«Bajar» mantiene C y baja sin aterrizar', G.input.keys.has('c') && !M.landing);
+      { const fl0 = M.flying; M.flying = false; colocarBajar(); const enSuelo = bBajar.hidden; M.flying = fl0; colocarBajar();
+        ok('PULIR 3 · En el suelo no sale «Bajar» (solo volando)', enSuelo); }
+      bajar(true);
       // Inglés
       if (ae) {
         ae.idioma = 'en'; pintarHud();

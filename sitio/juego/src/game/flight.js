@@ -49,6 +49,8 @@
     const nivelAgua = (x, z) => { const w = G.agua.levelAt(x, z); return w > -1e8 ? w : -Infinity; };
     const superficie = (x, z) => Math.max(H(x, z), nivelAgua(x, z));
     const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+    // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+    const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'flight', sigue, st.quiet); F.sonar(G, 'flight', tipo, st.quiet); return 0; }; // st.quiet: el G.quiet de antes de entrar (aquí G.quiet se pone toda la partida)
 
     // ---------- Declaración del minijuego (lo que leería un menú o Retos para montarlo sin saber nada más) ----------
     const DECL = {
@@ -394,7 +396,7 @@
       J.mejor = f.mejor || 0;
       guardarRec(rec);
       G.emit('retosResultado', { modo: 'flight', puntos: J.puntos, nuevo: J.nuevo, prueba: claveRec !== ALMACEN });
-      if (J.nuevo) sonar('unlock');
+      finSon(J.nuevo ? 'victoria' : 'casi'); if (J.nuevo) finSon('record', () => st.fase === 'fin'); // PULIR 4: tabla común (antes solo unlock con récord)
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 350);
     }
     // Lo que actores.js lee para animar a Vittata (nada más: el rig no se toca)
@@ -488,11 +490,14 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
 #flight .fl-chip.pop { animation: fl-pop .25s ease-out; } @keyframes fl-pop { 0% { transform: scale(1.18); } 100% { transform: scale(1); } }
 #flight .fl-pista { position: absolute; left: 50%; bottom: 22%; transform: translateX(-50%); text-align: center; font: 700 clamp(20px, 4vw, 30px)/1.2 var(--font-display, system-ui); text-shadow: 0 2px 10px rgba(0,0,0,.6); animation: fl-late 1.4s ease-in-out infinite; }
 #flight .fl-pista small { display: block; font-size: .6em; font-weight: 600; opacity: .9; margin-top: 4px; }
+#flight .fl-pista { box-sizing: border-box; max-width: min(90vw, 520px); padding: 10px 16px; border-radius: 18px; background: rgba(8, 22, 32, .62); } /* PULIR 2: legible sobre el agua clara */
 @keyframes fl-late { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.06); } }
 #flight .fl-fin { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(5, 18, 12, .35); }
 #flight .fl-panel { pointer-events: auto; background: var(--c-surface, rgba(10,30,20,.92)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-lg, 18px); padding: 22px 26px; width: min(92vw, 420px); text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
-#flight .fl-panel h2 { margin: 0 0 6px; font-size: 30px; } #flight .fl-panel p { margin: 4px 0 12px; color: var(--c-text-muted, #b8c7bd); }
-#flight .fl-num { font: 800 64px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 6px 0; }
+#flight .fl-panel h2 { margin: 0 0 6px; font-size: 26px; } #flight .fl-panel p { margin: 4px 0 12px; color: var(--c-text-muted, #b8c7bd); }
+#flight .fl-num { font: 800 44px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 6px 0; }
+/* PULIR 4: misma letra que el panel final común (.av-fin, ui.css): título 26 px y número 44 px; en horizontal bajo, 21 y 34 */
+@media (orientation: landscape) and (max-height: 500px) { #flight .fl-panel h2 { font-size: 21px; } #flight .fl-num { font-size: 34px; } }
 #flight .fl-meta { margin: 0 0 10px; display: grid; gap: 4px; font-weight: 700; color: var(--gold, #ffd84a); }
 #flight .fl-rank { margin: 0 0 10px; }
 #flight .fl-nuevo { color: var(--gold, #ffd84a); font-weight: 800; margin-bottom: 8px; }
@@ -508,19 +513,19 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
 <div class="fl-hud"><div class="fl-chip"><span class="fl-puntos">0</span><small class="fl-mejor"></small></div></div>
 <button class="btn ghost secondary fl-salir" type="button" data-salir data-icon="close" aria-label="Salir de Amazona Flight">Salir</button>
 <div class="fl-pista">¡Toca para volar!<small>Cada toque es un aleteo; sin tocar, Vittata baja.</small></div>
-<div class="fl-fin" hidden><div class="fl-panel" role="dialog" aria-labelledby="fl-fin-t">
+<div class="fl-fin" hidden><div class="fl-panel av-fin" role="dialog" aria-labelledby="fl-fin-t">
   <h2 id="fl-fin-t">¡Uy!</h2>
   <p class="fl-causa"></p>
   <p class="fl-como"></p>
-  <div class="fl-num">0</div>
+  <div class="fl-num av-num">0</div>
   <div class="fl-nuevo" hidden>¡Nuevo récord!</div>
   <p class="fl-rec"></p>
   <p class="fl-meta" hidden></p>
   <div class="fl-rank" hidden><button class="btn" type="button" data-ranking data-icon="trophy">Publicar en el ranking</button></div>
-  <div class="fl-fila">
-    <button class="btn xl" type="button" data-otra data-icon="reset">Otra vez<span class="fl-tecla">${TACTIL ? '' : 'Enter'}</span></button>
+  <div class="fl-fila av-bots">
+    <button class="btn xl av-bot" type="button" data-otra data-icon="reset">Otra vez<span class="fl-tecla">${TACTIL ? '' : 'Enter'}</span></button>
     <button class="btn ghost secondary" type="button" data-compartir data-icon="share" hidden>Compartir</button>
-    <button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button>
+    <button class="btn ghost secondary av-bot salir" type="button" data-salir data-icon="close">Volver a la historia</button>
   </div>
 </div></div>`;
       document.body.appendChild(el);
@@ -811,7 +816,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
           const rec1 = leerRec();
           check('Récord en el almacén de Retos (clave flight: mejor y jugadas) y nuevo récord avisado', rec1.flight.mejor === J.puntos && rec1.flight.jugadas >= 1 && J.nuevo === true, JSON.stringify(rec1.flight));
           check('«Mis récords» recibe retosResultado { modo: flight, puntos, prueba }', emitido && emitido.modo === 'flight' && emitido.puntos === J.puntos && emitido.prueba === true, JSON.stringify(emitido));
-          await new Promise(r => setTimeout(r, 420));
+          await new Promise(r => setTimeout(r, 620)); // PULIR 4: también ha sonado ya el «logro» del récord (500 ms; su sonido puede cargarse por red y no es del ranking)
           check('Resultados a la vista con «Otra vez»', !st.ui.fin.hidden && st.ui.num.textContent === String(J.puntos));
           check('Resultados: botón «Compartir» a la vista con récord', !st.ui.fin.querySelector('[data-compartir]').hidden);
           { const f0 = window.fetch; let net = 0; window.fetch = function () { net++; return f0.apply(this, arguments); }; let rp; try { rp = await publicar(null); } finally { window.fetch = f0; }

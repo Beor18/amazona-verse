@@ -85,7 +85,10 @@ AVE.module('lugares', function (G) {
     '@media (max-width:560px){#rotulo-lugar{top:max(calc(env(safe-area-inset-top,0px) + 30vh), calc(var(--mm-top, calc(env(safe-area-inset-top,0px) + 134px)) + var(--mm,96px) + 12px));padding:8px 16px 10px}#rotulo-lugar b{font-size:calc(20px * var(--fs-k,1))}}' +
     '@keyframes rotulo-lugar{0%{opacity:0;transform:translate(-50%,8px)}10%,82%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,0)}}' +
     '@media (prefers-reduced-motion:reduce){#rotulo-lugar{animation:rotulo-lugar-quieto 3.6s linear forwards}@keyframes rotulo-lugar-quieto{0%,85%{opacity:1}100%{opacity:0}}}' +
-    ':root.a11y-contraste #rotulo-lugar{background:#000;border-color:#fff;border-width:3px}';
+    ':root.a11y-contraste #rotulo-lugar{background:#000;border-color:#fff;border-width:3px}' +
+    // PULIR 2 (p23): la primera vez, el «DESCUBRISTE …» grande (fx.js, 1,5 s) y este rótulo salían a la vez, uno encima del otro, en
+    // medio de la pantalla y sobre Vittata: el rótulo espera a que termine
+    '#rotulo-lugar.tras-fx{animation-delay:1.4s;animation-fill-mode:both}';
   let elR = null, tR = 0;
   function rotulo(a, nuevo, extra) {
     if (!elR) {
@@ -95,8 +98,9 @@ AVE.module('lugares', function (G) {
     }
     elR.innerHTML = (nuevo ? `<small class="nuevo">${esc(L('¡Lugar descubierto!', 'Place discovered!'))}</small>` : '') +
       `<small>${esc(L('Bienvenido a', 'Welcome to'))}</small><b>${esc(L(a.nombre, a.en))}</b>` + (extra || '');
+    elR.classList.toggle('tras-fx', !!nuevo);
     elR.hidden = true; void elR.offsetWidth; elR.hidden = false; // reinicia la animación
-    tR = 3.6;
+    tR = nuevo ? 5 : 3.6;
   }
   const ocultarRotulo = () => { tR = 0; if (elR) elR.hidden = true; };
 

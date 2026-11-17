@@ -44,6 +44,8 @@
     const H = (x, z) => G.terreno.height(x, z);
     const nivelAgua = (x, z) => { const w = G.agua.levelAt(x, z); return w > -1e8 ? w : -Infinity; };
     const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+    // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+    const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'river', sigue, st.quiet); F.sonar(G, 'river', tipo, st.quiet); return 0; }; // st.quiet: el G.quiet de antes de entrar (aquí G.quiet se pone toda la partida)
 
     // ---------- Declaración del minijuego (docs/equipo/MINIJUEGOS.md §4) ----------
     const DECL = {
@@ -384,7 +386,7 @@
         J.rv = 1.6; st.hitStop = REDUCED ? 0 : 0.15; st.golpe = { o: J.golpeado, t: 0 }; sonar('land');
         if (!REDUCED && !st.sinFx && G.agua && G.agua.spray) { try { G.agua.spray(S.pos.x, S.pos.y + 0.3, S.pos.z); } catch (e) { /* sin agua */ } }
         if (!REDUCED) G.camara.shake && G.camara.shake(0.12, 0.25);
-      } else { J.rv = 0; sonar('unlock'); }
+      } else { J.rv = 0; }
       if (esReloj()) { finReloj(); return; }
       const rec = leerRec(), f = rec.rio_rush; J.antes = f.mejor || 0;
       f.jugadas = (f.jugadas || 0) + 1;
@@ -393,8 +395,9 @@
       J.mejor = f.mejor || 0; J.medalla = medallaPuntos(J.puntos);
       guardarRec(rec);
       G.emit('retosResultado', { modo: 'rio_rush', puntos: J.puntos, metros: Math.round(J.metros), racimos: J.racimos, llego: como === 'meta', nuevo: J.nuevo, medalla: J.medalla, prueba: claveRec !== ALMACEN });
-      if (J.nuevo && como !== 'meta') sonar('unlock');
-      setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 450);
+      // PULIR 4: tabla común (antes unlock en la meta o con récord), al salir el resultado: tras el choque («land») y no a la vez
+      const tipo = como === 'meta' || J.nuevo ? 'victoria' : 'casi';
+      setTimeout(() => { if (st.activo && st.fase === 'fin') { finSon(tipo); if (J.nuevo) finSon('record', () => st.fase === 'fin'); resultados(); } }, REDUCED ? 0 : 450);
     }
     // Contrarreloj y fantasma: solo se termina llegando al mar. Mejor tiempo, medalla y, si es tu mejor bajada, el nuevo fantasma
     function finReloj() {
@@ -410,7 +413,7 @@
       if (J.nuevo && st.grab && st.grab.m.length >= 6) { st.grab.m.push(J.s, J.lado, 0); guardarFantasma(st.grab.m, J.ms); }
       st.grab = null;
       G.emit('retosResultado', { modo: 'rio_rush', reloj: true, ms: J.ms, medalla: m, choques: J.choques, racimos: J.racimos, llego: true, fantasma: st.modo === 'fantasma', nuevo: J.nuevo, prueba: claveRec !== ALMACEN });
-      setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 450);
+      setTimeout(() => { if (st.activo && st.fase === 'fin') { finSon('victoria'); if (J.nuevo) finSon('record', () => st.fase === 'fin'); resultados(); } }, REDUCED ? 0 : 450); // PULIR 4: contrarreloj y fantasma: siempre se llega al mar
     }
 
     // ---------- Colocar todo en el mundo (cada cuadro) ----------
@@ -648,14 +651,21 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 #riverrush .rr-chip.pop { animation: rr-pop .25s ease-out; } @keyframes rr-pop { 0% { transform: scale(1.16); } 100% { transform: scale(1); } }
 #riverrush .rr-barra { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 58px); left: 50%; transform: translateX(-50%); width: min(60vw, 260px); height: 6px; border-radius: 3px; background: rgba(0,0,0,.35); overflow: hidden; }
 #riverrush .rr-barra i { display: block; height: 100%; width: 0; background: var(--gold, #ffd84a); }
+#riverrush:has(.rr-fin:not([hidden])) .rr-salir { display: none; } /* PULIR 4 (revisión): un solo «Salir» mientras se ve el resultado (el del panel) */
 #riverrush .rr-salir { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: calc(env(safe-area-inset-right, 0px) + 12px); pointer-events: auto; }
 #riverrush .rr-pista { position: absolute; left: 50%; bottom: 18%; transform: translateX(-50%); width: min(90vw, 520px); text-align: center; font: 700 clamp(20px, 4vw, 30px)/1.2 var(--font-display, system-ui); text-shadow: 0 2px 10px rgba(0,0,0,.65); animation: rr-late 1.4s ease-in-out infinite; }
 #riverrush .rr-pista small { display: block; font-size: .6em; font-weight: 600; opacity: .92; margin-top: 4px; }
+#riverrush .rr-pista { box-sizing: border-box; padding: 10px 16px; border-radius: 18px; background: rgba(8, 22, 32, .62); }
+#riverrush .rr-mano { display: none; width: 44px; height: 44px; margin: 6px auto 0; --icon-size: 44px; color: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,.5)); animation: rr-mano 1.3s ease-in-out infinite alternate; }
+@media (pointer: coarse) { #riverrush .rr-mano { display: block; } }
+@keyframes rr-mano { from { transform: translateX(-46px) rotate(-8deg); } to { transform: translateX(46px) rotate(8deg); } }
 @keyframes rr-late { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } }
 #riverrush .rr-fin { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(5, 18, 12, .35); }
 #riverrush .rr-panel { pointer-events: auto; background: var(--c-surface, rgba(10,30,20,.92)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-lg, 18px); padding: 22px 26px; width: min(92vw, 420px); text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
-#riverrush .rr-panel h2 { margin: 0 0 6px; font-size: 30px; } #riverrush .rr-panel p { margin: 4px 0 12px; color: var(--c-text-muted, #b8c7bd); }
-#riverrush .rr-num { font: 800 64px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 6px 0; }
+#riverrush .rr-panel h2 { margin: 0 0 6px; font-size: 26px; } #riverrush .rr-panel p { margin: 4px 0 12px; color: var(--c-text-muted, #b8c7bd); }
+#riverrush .rr-num { font: 800 44px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 6px 0; }
+/* PULIR 4: misma letra que el panel final común (.av-fin, ui.css): título 26 px y número 44 px; en horizontal bajo, 21 y 34 */
+@media (orientation: landscape) and (max-height: 500px) { #riverrush .rr-panel h2 { font-size: 21px; } #riverrush .rr-num { font-size: 34px; } }
 #riverrush .rr-nuevo { color: var(--gold, #ffd84a); font-weight: 800; margin-bottom: 8px; }
 #riverrush .rr-fila { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
 #riverrush .rr-tecla { font-size: 12px; opacity: .75; margin-left: 6px; }
@@ -673,10 +683,10 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 #riverrush .rr-meta { margin: 0 0 10px; display: grid; gap: 4px; font-weight: 700; color: var(--gold, #ffd84a); }
 #riverrush .rr-rank { margin: 0 0 10px; }
 #riverrush .rr-panel .rr-modos { margin-top: 12px; }
-@media (max-height: 520px) { #riverrush .rr-modos-hud { top: calc(env(safe-area-inset-top, 0px) + 66px); } #riverrush .rr-panel { padding: 14px 18px; } #riverrush .rr-num { font-size: 48px; } }
+@media (max-height: 520px) { #riverrush .rr-modos-hud { top: calc(env(safe-area-inset-top, 0px) + 66px); } #riverrush .rr-panel { padding: 14px 18px; } #riverrush .rr-num { font-size: 34px; } }
 /* F20 r2: teléfono en horizontal: la ayuda caía encima de Vittata y la canoa; sube bajo los botones de modo */
 @media (orientation: landscape) and (max-height: 520px) { #riverrush .rr-pista { bottom: auto; top: 31%; font-size: 22px; } }
-@media (prefers-reduced-motion: reduce) { #riverrush .rr-pista, #riverrush .rr-chip.pop, #riverrush .rr-aviso.pop { animation: none; } }`;
+@media (prefers-reduced-motion: reduce) { #riverrush .rr-pista, #riverrush .rr-mano, #riverrush .rr-chip.pop, #riverrush .rr-aviso.pop { animation: none; } }`;
     function montarUI() {
       if (st.ui) return st.ui;
       const css = document.createElement('style'); css.id = 'riverrush-css'; css.textContent = CSS; document.head.appendChild(css);
@@ -688,20 +698,20 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 <div class="rr-modos rr-modos-hud" role="group" aria-label="Modalidad">${botonesModo()}</div>
 <button class="btn ghost secondary rr-salir" type="button" data-salir data-icon="close" aria-label="Salir de River Rush">Salir</button>
 <div class="rr-aviso" aria-hidden="true" hidden>¡Uy!</div>
-<div class="rr-pista"><span class="rr-pista-t"></span><small class="rr-pista-s"></small></div>
-<div class="rr-fin" hidden><div class="rr-panel" role="dialog" aria-labelledby="rr-fin-t">
+<div class="rr-pista"><span class="rr-pista-t"></span><small class="rr-pista-s"></small><span class="rr-mano" data-icon="hand" aria-hidden="true"></span></div>
+<div class="rr-fin" hidden><div class="rr-panel av-fin" role="dialog" tabindex="-1" aria-labelledby="rr-fin-t">
   <h2 id="rr-fin-t">¡Uy!</h2>
   <p class="rr-como"></p>
   <p class="rr-dato"></p>
-  <div class="rr-num">0</div>
+  <div class="rr-num av-num">0</div>
   <div class="rr-nuevo" hidden>¡Nuevo récord!</div>
   <p class="rr-medalla" hidden></p>
-  <p class="rr-rec"></p>
+  <p class="rr-rec av-msg"></p>
   <p class="rr-meta" hidden></p>
   <div class="rr-rank" hidden><button class="btn" type="button" data-ranking data-icon="trophy">Publicar en el ranking</button></div>
-  <div class="rr-fila">
-    <button class="btn xl" type="button" data-otra data-icon="reset">Otra vez<span class="rr-tecla">${TACTIL ? '' : 'Enter'}</span></button>
-    <button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button>
+  <div class="rr-fila av-bots">
+    <button class="btn xl av-bot" type="button" data-otra data-icon="reset">Otra vez<span class="rr-tecla">${TACTIL ? '' : 'Enter'}</span></button>
+    <button class="btn ghost secondary av-bot salir" type="button" data-salir data-icon="close">Volver a la historia</button>
   </div>
   <div class="rr-modos" role="group" aria-label="Modalidad">${botonesModo()}</div>
 </div></div>`;
@@ -816,7 +826,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
       pintarModos();
       u.fin.querySelector('[data-salir]').textContent = alMenu() ? 'Volver al menú' : 'Volver a la historia'; /* entró desde «¿Cómo quieres jugar?»: el botón lleva al menú */
       u.fin.hidden = false;
-      const b = u.fin.querySelector('[data-otra]'); if (b) b.focus({ preventScroll: true });
+      const pn = u.fin.querySelector('.rr-panel'); if (pn) pn.focus({ preventScroll: true }); // PULIR 4 (revisión): el foco va al panel, como en los demás (Enter sigue siendo «Otra vez»)
     }
     // Ranking global (panel y envío en records.js). Una partida de prueba nunca publica
     function publicar(btn, fetchSim) {

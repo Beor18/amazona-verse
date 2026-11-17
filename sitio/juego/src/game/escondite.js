@@ -48,7 +48,9 @@ window.AVEscondite = function (G) {
     if (!pich.listos) return;
     pich.chs.forEach((ch, i) => { const st = sitios[i], ver = modo && jugando && !!st && !st.hallado; ch.root.visible = ver; if (ver) ch.root.position.set(st.x, st.y, st.z); });
   }
-  let modo = false, hudEl = null, resultado = '';
+  let modo = false, hudEl = null, finEl = null, resultado = '', fin = null, logroId = 0; // fin: { todos, t, nuevo, n } del panel final (PULIR 4)
+  const PICHON = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><ellipse cx="12" cy="14" rx="7" ry="6.5" fill="#5fce5a"/><circle cx="12" cy="8" r="4.6" fill="#6bd965"/><path d="M15.6 8.4l3 1-3 1z" fill="#f2b13a"/><circle cx="13.4" cy="7.4" r="1" fill="#1b2a1a"/><path d="M8 12q-3 2-1 5" stroke="#3f9a3c" stroke-width="1.6" fill="none"/></svg>';
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'escondite', sigue); F.sonar(G, 'escondite', tipo); return 0; }; // PULIR 4: tabla común (menu_modos.js)
   const txt = (es, eng) => (en() ? eng : es);
   const reloj = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
   function hud() {
@@ -56,14 +58,24 @@ window.AVEscondite = function (G) {
       const st = document.createElement('style'); st.id = 'esc-css';
       st.textContent = '#esc-hud{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 12px);z-index:60;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);padding:8px 12px;border-radius:18px;background:rgba(16,36,28,.86);color:#fff8e6;font:600 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}#esc-hud[hidden]{display:none}' +
         '#esc-hud b{font-size:16px}#esc-hud button{min-height:44px;padding:4px 16px;border-radius:22px;border:0;font:700 15px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;cursor:pointer}#esc-hud button.salir{background:#ffd0c4}#esc-hud button[hidden]{display:none}' +
+        // PULIR 4: panel final como el de los demás minijuegos (tiempo, récord, «Otra vez» y «Salir»; letra y botones de .av-fin, ui.css)
+        '#esc-fin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(400px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:24px;background:rgba(16,36,28,.93);color:#fff8e6;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;gap:8px}#esc-fin[hidden]{display:none}#esc-fin:focus{outline:none}' +
+        '#esc-fin h2,#esc-fin p{margin:0}#esc-fin .esc-gran{display:flex;align-items:center;gap:8px}#esc-fin .esc-gran svg{width:44px;height:44px}#esc-fin .av-det{opacity:.85}#esc-fin .av-bots{margin-top:6px}' +
+        '@media (orientation:landscape) and (max-height:500px){#esc-fin{padding:12px 16px;gap:4px}#esc-fin .esc-gran svg{width:34px;height:34px}}' +
+        'body.escondite-on:has(#esc-fin:not([hidden])) #toast{visibility:hidden!important}' +
         'body.escondite-on :is(#quest,#inv,#modo-salir){visibility:hidden!important}' +
+        'body.escondite-on:has(#esc-fin:not([hidden])) :is(#stick,#acts,#minimapa,#marcador){visibility:hidden!important}' + // PULIR 4 (revisión): con el panel final, sin joystick ni botones de vuelo detrás (como los demás)
         // F20 r2: el aviso de inicio va debajo de la barra (se cruzaban); al terminar, el resultado lo dice la barra (sin aviso detrás)
         '@media (orientation:landscape){body.escondite-on #toast{top:calc(env(safe-area-inset-top,0px) + 80px)!important;bottom:auto!important}}';
       document.head.appendChild(st);
       hudEl = document.createElement('div'); hudEl.id = 'esc-hud'; hudEl.hidden = true; hudEl.setAttribute('role', 'status');
       hudEl.innerHTML = '<b data-k="t"></b><span data-k="n"></span><span data-k="r"></span><button type="button" data-a="otra" hidden></button><button type="button" class="salir" data-a="salir"></button>';
-      hudEl.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; if (b.dataset.a === 'otra') jugar(); else salir(); });
-      document.body.appendChild(hudEl);
+      const clic = e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; if (b.dataset.a === 'otra') jugar(); else salir(); };
+      hudEl.addEventListener('click', clic);
+      finEl = document.createElement('div'); finEl.id = 'esc-fin'; finEl.className = 'av-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'esc-fin-t');
+      finEl.innerHTML = '<h2 id="esc-fin-t" data-k="ft"></h2><div class="esc-gran av-num">' + PICHON + '<span data-k="fn"></span></div><p class="av-msg" data-k="fmsg" aria-live="polite"></p><p class="av-det" data-k="fdet"></p><div class="av-bots"><button type="button" class="av-bot" data-a="otra"></button><button type="button" class="av-bot salir" data-a="salir"></button></div>';
+      finEl.addEventListener('click', clic);
+      document.body.appendChild(hudEl); document.body.appendChild(finEl);
     }
     return hudEl;
   }
@@ -73,11 +85,34 @@ window.AVEscondite = function (G) {
     q('t').textContent = txt('Escondite', 'Hide-and-seek');
     q('n').textContent = resultado || txt(`Pichones: ${n}/3`, `Chicks: ${n}/3`);
     q('r').textContent = resultado ? '' : reloj(Math.max(0, LIMITE - t)) + (mejor != null ? txt(' · récord ', ' · best ') + reloj(mejor) : '');
-    const otra = hudEl.querySelector('[data-a="otra"]'); otra.hidden = jugando; otra.textContent = txt('Otra vez', 'Play again');
+    const otra = hudEl.querySelector('[data-a="otra"]'); otra.hidden = jugando || !!fin; otra.textContent = txt('Otra vez', 'Play again'); // con el panel final, «Otra vez» va en el panel
     hudEl.querySelector('[data-a="salir"]').textContent = txt('Salir', 'Exit');
+    pintarFin();
   }
+  function pintarFin() {
+    if (!finEl) return;
+    finEl.hidden = !fin; if (!fin) return;
+    const qf = k => finEl.querySelector('[data-k="' + k + '"]');
+    qf('ft').textContent = fin.todos ? txt('¡Los encontraste!', 'You found them!') : txt('¡Se escondieron!', 'They hid again!');
+    qf('fn').textContent = fin.todos ? reloj(fin.t) : fin.n + '/3';
+    qf('fmsg').textContent = fin.todos ? (fin.nuevo ? txt('¡Nuevo récord: los 3 en ' + reloj(fin.t) + '!', 'New record: all 3 in ' + reloj(fin.t) + '!') : txt('Los 3 en ' + reloj(fin.t) + '. Récord: ' + reloj(mejor), 'All 3 in ' + reloj(fin.t) + '. Best: ' + reloj(mejor)))
+      : txt('¡Casi! Sigue el pío: cuanto más fuerte, más cerca están', 'So close! Follow the peep: the louder it gets, the closer they are');
+    qf('fdet').textContent = fin.todos ? '' : (mejor != null ? txt('Récord: ', 'Best: ') + reloj(mejor) : '');
+    finEl.querySelector('[data-a="otra"]').textContent = txt('Otra vez', 'Play again');
+    finEl.querySelector('[data-a="salir"]').textContent = txt('Salir', 'Exit');
+  }
+  // PULIR 4: el final del modo de «Más juegos» sale en el panel común. Revisión: modal como los demás paneles F2 (F22): aria-modal, el mundo en
+  // pausa detrás y Tab da la vuelta entre «Otra vez» y «Salir»; el foco va al panel, no a «Otra vez»
+  function mostrarFin(todos, nuevo) {
+    fin = { todos, t, nuevo, n: sitios.filter(s0 => s0.hallado).length };
+    finSon(todos ? 'victoria' : 'casi'); if (nuevo) logroId = finSon('record', () => !!fin);
+    pintarHud(); if (hudEl) hudEl.hidden = true; // un solo «Salir»: el del panel (como ¡Sígueme! y Foto relámpago)
+    try { if (G.pausa && G.pausa.set) G.pausa.set('escondite', true); } catch (e) { /* sin pausa */ }
+    setTimeout(() => { try { if (fin && finEl && !finEl.hidden) finEl.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
+  }
+  function quitarFin() { fin = null; if (logroId) { clearTimeout(logroId); logroId = 0; } try { if (G.pausa && G.pausa.set) G.pausa.set('escondite', false); } catch (e) { /* sin pausa */ } if (finEl) { finEl.hidden = true; finEl.querySelectorAll('[data-k]').forEach(e => { e.textContent = ''; }); } }
   function jugar() {
-    modo = true; resultado = ''; crearPichones();
+    modo = true; resultado = ''; quitarFin(); crearPichones();
     empezar(S.pos.x, S.pos.z, { reales: true });
     hud().hidden = false; document.body.classList.add('escondite-on'); pintarHud();
     try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: sin ladera ni techo delante de la cámara
@@ -85,12 +120,19 @@ window.AVEscondite = function (G) {
   }
   function salir() {
     if (!modo) return false;
-    modo = false; jugando = false; resultado = ''; malla.visible = false; ponerPichones();
+    modo = false; jugando = false; resultado = ''; quitarFin(); malla.visible = false; ponerPichones();
     if (hudEl) { hudEl.hidden = true; hudEl.querySelectorAll('[data-k]').forEach(e => { e.textContent = ''; }); } // sin texto viejo (ni en otro idioma) mientras no se juega
     document.body.classList.remove('escondite-on');
     return true;
   }
   const activo = () => modo;
+  addEventListener('keydown', e => { // PULIR 4 (revisión): con el panel final, Tab no sale de él (da la vuelta entre sus botones)
+    if (!modo || !fin || e.key !== 'Tab' || !finEl || finEl.hidden || (G.ui && G.ui.cardOpen)) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    const bs = [...finEl.querySelectorAll('button')], i = bs.indexOf(document.activeElement), n = bs.length;
+    const j = e.shiftKey ? (i <= 0 ? n - 1 : i - 1) : (i < 0 || i >= n - 1 ? 0 : i + 1);
+    try { bs[j].focus({ preventScroll: true }); } catch (er) { /* */ }
+  }, true);
   function gag() {
     try {
       if (G.gags && G.gags.forzar) { if (G.gags.forzar('imitar', { gesto: 'celebrar', forzado: true })) return 'gag'; }
@@ -138,14 +180,15 @@ window.AVEscondite = function (G) {
     for (const s of sitios) if (!s.hallado) { todos = false; break; }
     if (todos) {
       jugando = false; malla.visible = false;
-      if (mejor == null || t < mejor) { mejor = t; try { localStorage.setItem(CLAVE, JSON.stringify({ v: 1, mejor })); } catch (e) { /* */ } }
+      const nuevo = mejor == null || t < mejor;
+      if (nuevo) { mejor = t; try { localStorage.setItem(CLAVE, JSON.stringify({ v: 1, mejor })); } catch (e) { /* */ } }
       G.emit('record', { modo: 'escondite', segundos: t });
       if (!modo && G.ui && G.ui.toast) G.ui.toast(en() ? 'You found them!' : '¡Los encontraste!', 2000);
-      if (modo) { resultado = txt('¡Los 3 en ' + reloj(t) + '!', 'All 3 in ' + reloj(t) + '!'); ponerPichones(); pintarHud(); }
+      if (modo) { resultado = txt('¡Los 3 en ' + reloj(t) + '!', 'All 3 in ' + reloj(t) + '!'); ponerPichones(); mostrarFin(true, nuevo); }
     } else if (t >= LIMITE) {
       jugando = false; malla.visible = false;
       if (!modo && G.ui && G.ui.toast) G.ui.toast(en() ? 'They hid again. Another round whenever you want.' : 'Se escondieron otra vez. Cuando quieras, otra ronda.', 2200);
-      if (modo) { resultado = txt('Se escondieron otra vez', 'They hid again'); ponerPichones(); pintarHud(); }
+      if (modo) { resultado = txt('Se escondieron otra vez', 'They hid again'); ponerPichones(); mostrarFin(false, false); }
     }
   }
   G.on('update', dt => { if (!G.quiet) paso(Math.min(0.05, dt || 0)); });
@@ -168,9 +211,18 @@ window.AVEscondite = function (G) {
       const sep = sitios.every((a, i) => sitios.every((b, j) => i === j || Math.hypot(a.x - b.x, a.z - b.z) > 5));
       ok('T56 · Escondite en «Más juegos»: 3 pichones en sitios separados, HUD con tiempo, n/3 y «Salir»', modo && jugando && sitios.length === 3 && sep && !!hudEl && !hudEl.hidden && /0\/3/.test(hudEl.textContent) && !!hudEl.querySelector('[data-a="salir"]') && document.body.classList.contains('escondite-on'), hudEl && hudEl.textContent);
       sitios.forEach(s0 => { s0.hallado = true; }); paso(0.1);
-      ok('T56 · al encontrarlos, el HUD dice el tiempo y ofrece «Otra vez»', !jugando && /¡Los 3 en/.test(hudEl.textContent) && !hudEl.querySelector('[data-a="otra"]').hidden, hudEl.textContent);
+      ok('T56 · al encontrarlos, el panel final dice el tiempo (la barra se oculta: un solo «Salir»)', !jugando && hudEl.hidden && !finEl.hidden && /\d:\d\d/.test(finEl.querySelector('[data-k="fn"]').textContent), finEl.textContent);
+      { const enPanel = []; finEl.focus(); for (let i = 0; i < 3; i++) { const t2 = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }); dispatchEvent(t2); enPanel.push(t2.defaultPrevented && finEl.contains(document.activeElement) && document.activeElement !== finEl); }
+        const tapa = ['stick', 'acts', 'minimapa'].filter(id => { const x = document.getElementById(id); return !!x && x.getClientRects().length > 0 && getComputedStyle(x).visibility !== 'hidden'; });
+        ok('PULIR 4 · el panel final es modal: aria-modal, mundo en pausa, Tab no sale de «Otra vez»/«Salir» y sin joystick ni botones detrás', finEl.getAttribute('aria-modal') === 'true' && (!G.pausa || !G.pausa.motivos || G.pausa.motivos.has('escondite')) && enPanel.every(Boolean) && !tapa.length, enPanel.join() + ' · se ve ' + tapa.join()); }
+      { const bs = [...finEl.querySelectorAll('.av-bots .av-bot')], lg = (window.AVFinJuego ? window.AVFinJuego.log : []).filter(x => x.juego === 'escondite' && x.tipo !== 'record').slice(-1).map(x => x.tipo).join();
+        ok('PULIR 4 · panel final común: tiempo, récord, «Otra vez» y «Salir» de ≥ 44 px (54 px, 18 px) y el sonido de victoria de la tabla común', !finEl.hidden && finEl.classList.contains('av-fin') && /\d:\d\d/.test(finEl.querySelector('[data-k="fn"]').textContent) && /récord/i.test(finEl.querySelector('[data-k="fmsg"]').textContent) && bs.length === 2 && bs.every(b => b.getBoundingClientRect().height >= 54 && getComputedStyle(b).fontSize === '18px') && lg === 'victoria' && hudEl.querySelector('[data-a="otra"]').hidden, finEl.textContent + ' · ' + lg); }
+      finEl.querySelector('[data-a="otra"]').click();
+      ok('PULIR 4 · «Otra vez» del panel empieza otra ronda (sin panel)', modo && jugando && finEl.hidden && /0\/3/.test(hudEl.textContent));
+      t = LIMITE; paso(0.1);
+      ok('PULIR 4 · sin encontrarlos a tiempo: «¡Casi!» con pista (sin castigo) y el sonido «casi» de la tabla común', !jugando && !finEl.hidden && /^¡Casi! /.test(finEl.querySelector('[data-k="fmsg"]').textContent) && (window.AVFinJuego ? window.AVFinJuego.log.filter(x => x.juego === 'escondite').slice(-1)[0].tipo === 'casi' : true), finEl.textContent);
       salir();
-      ok('T56 · «Salir» lo quita todo (HUD, clase, pichones)', !modo && hudEl.hidden && !document.body.classList.contains('escondite-on') && pich.chs.every(ch => !ch.root.visible));
+      ok('T56 · «Salir» lo quita todo (HUD, panel, clase, pichones)', !modo && hudEl.hidden && finEl.hidden && !logroId && !document.body.classList.contains('escondite-on') && pich.chs.every(ch => !ch.root.visible));
       mejor = mejor0;
     } catch (e) { ok('sin excepciones', false, e && e.message); }
     jugando = false; malla.visible = false; malla.count = 0; G.quiet = q; S.pos.x = px; S.pos.z = pz;

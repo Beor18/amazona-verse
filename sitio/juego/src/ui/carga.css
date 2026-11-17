@@ -90,3 +90,6 @@
   .carga-nube, .carga-pluma { display: none; }
   .carga-main > * { transform: none; }
 }
+/* PULIR 3 (p23, niño de 7 años): mientras dura la carga no se ve el HUD de un minijuego (en Escondite y Semillas salían el reloj y
+   «Salir» encima de la carga: parecía que ya se podía jugar, o se tocaba «Salir», lo único rosa) */
+body:has(#carga:not([hidden]):not(.carga-sale)) :is(#esc-hud, #sem-hud, #sig-hud, #fs-hud, #sdc-hud, #pln-hud, #rs-hud, #pil-hud, #fq-hud) { visibility: hidden; }

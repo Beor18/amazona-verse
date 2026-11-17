@@ -24,6 +24,8 @@ window.AVSemillas = function (G) {
   const leerRec = () => { try { const d = JSON.parse(localStorage.getItem(ALM) || 'null'); return d && d.v === 1 && Number.isInteger(d.mejor) && d.mejor >= 0 && d.mejor < 10000 ? d.mejor : 0; } catch (e) { return 0; } };
   const guardarRec = n => { try { localStorage.setItem(ALM, JSON.stringify({ v: 1, mejor: n })); } catch (e) { /* sin almacén */ } };
   const sonar = (n, a) => { try { if (!G.quiet && G.audio && G.audio.play) G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'semillas', sigue); F.sonar(G, 'semillas', tipo); return 0; };
   let azarS = 0; const azar = () => { if (!azarS) return Math.random(); azarS = (azarS * 16807) % 2147483647; return (azarS - 1) / 2147483646; };
   const rnd = (a, b) => a + azar() * (b - a);
 
@@ -158,7 +160,7 @@ window.AVSemillas = function (G) {
     st.textContent = '#sem-hud{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);box-sizing:border-box;padding:6px 8px 6px 14px;border-radius:20px;background:rgba(16,36,28,.86);color:#fff8e6;font:600 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}#sem-hud[hidden],#sem-fin[hidden]{display:none}' +
       '#sem-hud .sem-n{display:flex;align-items:center;gap:4px;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}#sem-hud .sem-t{font-variant-numeric:tabular-nums;font-size:18px;font-weight:700;min-width:3.2ch;text-align:center}#sem-hud .sem-t.poco{color:#ffb4a2}#sem-hud .sem-r{opacity:.85;font-size:14px}' +
       '#sem-hud [data-k="msg"]{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);white-space:nowrap;padding:4px 12px;border-radius:999px;font-weight:700;pointer-events:none}#sem-hud [data-k="msg"]:empty{display:none}#sem-hud [data-k="msg"].oro{background:#ffd23f;color:#3b2a14}#sem-hud [data-k="msg"].malo{background:#ffd0c4;color:#5a1e10}' +
-      '#sem-hud button,#sem-fin button{min-height:44px;min-width:44px;padding:4px 16px;border-radius:22px;border:0;font:700 16px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer;touch-action:manipulation}#sem-hud button.salir,#sem-fin button.salir{background:#ffd0c4}#sem-hud button:focus-visible,#sem-fin button:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}' +
+      '#sem-hud button,#sem-fin button{min-height:44px;min-width:44px;padding:4px 16px;border-radius:22px;border:0;font:700 16px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer;touch-action:manipulation}#sem-hud button.salir,#sem-fin button.salir{background:#ffd0c4}#sem-hud button:focus-visible,#sem-fin button:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}#sem-fin button{min-height:54px;padding:4px 22px;font-size:18px}' + // PULIR 4: en el panel, 54 px y 18 px como los demás (.av-bot, ui.css)
       '#sem-fin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(380px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:24px;background:rgba(16,36,28,.94);color:#fff8e6;font-family:Fredoka,system-ui,sans-serif;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;gap:8px}' +
       '#sem-fin h2{margin:0;font-size:26px}#sem-fin .sem-gran{display:flex;align-items:center;gap:8px;font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#sem-fin .sem-gran svg{width:40px;height:40px}#sem-fin p{margin:0;font-size:17px;font-weight:600}#sem-fin .sem-det{font-size:15px;opacity:.85;font-weight:500}#sem-fin .sem-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}' +
       '@media (orientation:landscape) and (max-height:500px){#sem-fin{padding:12px 16px;gap:4px}#sem-fin h2{font-size:21px}#sem-fin .sem-gran{font-size:34px}}' +
@@ -175,8 +177,8 @@ window.AVSemillas = function (G) {
     css();
     hudEl = document.createElement('div'); hudEl.id = 'sem-hud'; hudEl.hidden = true; hudEl.setAttribute('role', 'status');
     hudEl.innerHTML = '<b data-k="t" class="sem-tit"></b><span class="sem-n">' + ICONO + '<span data-k="n"></span></span><span class="sem-t" data-k="r"></span><span class="sem-r" data-k="rec"></span><span data-k="msg" aria-live="polite"></span><button type="button" class="salir" data-a="salir"></button>';
-    finEl = document.createElement('div'); finEl.id = 'sem-fin'; finEl.hidden = true; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'sem-fin-t');
-    finEl.innerHTML = '<h2 id="sem-fin-t" data-k="ft"></h2><div class="sem-gran">' + ICONO + '<span data-k="fn"></span></div><p data-k="fmsg" aria-live="polite"></p><p class="sem-det" data-k="fdet"></p><div class="sem-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div>';
+    finEl = document.createElement('div'); finEl.id = 'sem-fin'; finEl.className = 'av-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'sem-fin-t');
+    finEl.innerHTML = '<h2 id="sem-fin-t" data-k="ft"></h2><div class="sem-gran av-num">' + ICONO + '<span data-k="fn"></span></div><p class="av-msg" data-k="fmsg" aria-live="polite"></p><p class="sem-det av-det" data-k="fdet"></p><div class="sem-bots av-bots"><button type="button" class="av-bot" data-a="otra"></button><button type="button" class="av-bot salir" data-a="salir"></button></div>';
     const clic = e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; e.preventDefault(); if (b.dataset.a === 'otra') jugar(); else salir(); };
     hudEl.addEventListener('click', clic); finEl.addEventListener('click', clic);
     document.body.appendChild(hudEl); document.body.appendChild(finEl);
@@ -199,6 +201,7 @@ window.AVSemillas = function (G) {
     q(finEl, 'ft').textContent = L('¡Tiempo!', 'Time’s up!');
     q(finEl, 'fn').textContent = String(n);
     q(finEl, 'fmsg').textContent = E.nuevo ? L(`¡Nuevo récord: ${n} ${n === 1 ? 'semilla' : 'semillas'}!`, `New record: ${n} ${n === 1 ? 'seed' : 'seeds'}!`)
+      : n === 0 ? L('¡Casi! Vuela justo debajo de las semillas antes de que lleguen al suelo', 'So close! Fly right under the seeds before they hit the ground') // PULIR 4: sin castigo, con pista, como los demás
       : L(`Atrapaste ${n} ${n === 1 ? 'semilla' : 'semillas'}. Récord: ${E.mejor}`, `You caught ${n} ${n === 1 ? 'seed' : 'seeds'}. Best: ${E.mejor}`);
     q(finEl, 'fdet').textContent = L(`Doradas: ${E.doradas} · Hojas secas: ${E.hojas}`, `Golden: ${E.doradas} · Dry leaves: ${E.hojas}`);
     finEl.querySelector('[data-a="otra"]').textContent = L('Otra vez', 'Play again');
@@ -221,18 +224,20 @@ window.AVSemillas = function (G) {
     sonar('boton');
     return true;
   }
+  let logroId = 0;
   function fin() {
     E.fase = 'fin'; vaciar();
     E.nuevo = E.puntos > E.mejor; if (E.nuevo) { E.mejor = E.puntos; guardarRec(E.puntos); }
     try { G.emit('record', { modo: 'semillas', puntos: E.puntos }); } catch (e) { /* */ }
-    sonar('panel_final'); if (E.nuevo && E.puntos > 0) setTimeout(() => sonar('logro'), 700);
+    finSon(E.puntos > 0 ? 'victoria' : 'casi'); if (E.nuevo && E.puntos > 0) logroId = finSon('record', () => E.fase === 'fin'); // PULIR 4: tabla común; el logro se cancela al salir
     pintarHud(); pintarFin(); finEl.hidden = false; document.body.classList.add('semillas-fin');
-    const otra = finEl.querySelector('[data-a="otra"]'); setTimeout(() => { try { if (!finEl.hidden) otra.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
+    setTimeout(() => { try { if (!finEl.hidden) finEl.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0); // PULIR 4 (revisión): el foco va al panel, como en los demás (Tab ×1 hasta «Otra vez»): un Enter suelto no reinicia sin leer el resultado
   }
   const activo = () => E.fase !== 'nada';
   function salir() {
     if (!activo()) return false;
     E.fase = 'nada'; vaciar();
+    if (logroId) { clearTimeout(logroId); logroId = 0; }
     if (hudEl) { hudEl.hidden = true; finEl.hidden = true; [hudEl, finEl].forEach(el => el.querySelectorAll('[data-k]').forEach(x => { x.textContent = ''; })); } // sin texto viejo (ni en otro idioma)
     document.body.classList.remove('semillas-on', 'semillas-fin');
     return true;
@@ -282,6 +287,9 @@ window.AVSemillas = function (G) {
       lejos(); E.t = DUR - E.penal - 0.1; paso(0.2);
       check('El reloj termina: panel final con semillas, «¡Nuevo récord!», «Otra vez» y «Salir»', E.fase === 'fin' && !finEl.hidden && q(finEl, 'fn').textContent === '6' && /Nuevo récord: 6 semillas/.test(q(finEl, 'fmsg').textContent) && !!finEl.querySelector('[data-a="otra"]') && !!finEl.querySelector('[data-a="salir"]') && !MALLAS.semilla.visible, q(finEl, 'fmsg').textContent);
       check('El récord se guarda en este dispositivo', leerRec() === 6);
+      { const lg = (window.AVFinJuego ? window.AVFinJuego.log : []).filter(x => x.juego === 'semillas').slice(-2).map(x => x.tipo).join(',');
+        const bs = [...finEl.querySelectorAll('.av-bots .av-bot')];
+        check('PULIR 4 · panel común (.av-fin, «Otra vez» y «Salir» de 54 px y 18 px) y sonido de la tabla común (victoria y récord)', finEl.classList.contains('av-fin') && bs.length === 2 && bs.every(b => b.getBoundingClientRect().height >= 54 && getComputedStyle(b).fontSize === '18px') && lg === 'victoria,record', lg); }
       const bots = [...finEl.querySelectorAll('button'), hudEl.querySelector('button')].map(b => b.getBoundingClientRect());
       const fr = finEl.getBoundingClientRect(), hr = hudEl.getBoundingClientRect();
       check('Cabe en la pantalla: panel y HUD dentro, botones ≥ 44 px', bots.every(b => b.height >= 44 && b.width >= 44) && fr.left >= 0 && fr.right <= innerWidth && fr.top >= 0 && fr.bottom <= innerHeight && hr.left >= 0 && hr.right <= innerWidth && hr.bottom < innerHeight * 0.3, `${innerWidth}×${innerHeight} · panel ${Math.round(fr.width)}×${Math.round(fr.height)} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)}`);
@@ -295,9 +303,9 @@ window.AVSemillas = function (G) {
       finEl.querySelector('[data-a="otra"]').click();
       check('«Otra vez» empieza de nuevo (0 semillas, 1:15, sin panel)', E.fase === 'juego' && E.puntos === 0 && finEl.hidden && q(hudEl, 'r').textContent === '1:15' && /Récord 6/.test(q(hudEl, 'rec').textContent), q(hudEl, 'rec').textContent);
       lejos(); E.t = DUR; paso(0.1);
-      check('Sin superar el récord: «Atrapaste 0 semillas. Récord: 6»', /Atrapaste 0 semillas\. Récord: 6/.test(q(finEl, 'fmsg').textContent) && leerRec() === 6, q(finEl, 'fmsg').textContent);
+      check('Sin semillas: «¡Casi!» con una pista (sin castigo) y el récord sigue en 6', /^¡Casi! /.test(q(finEl, 'fmsg').textContent) && leerRec() === 6, q(finEl, 'fmsg').textContent);
       const ae = G.aula && G.aula.aj, idi0 = ae ? ae.idioma : null;
-      if (ae) { ae.idioma = 'en'; pintarHud(); pintarFin(); check('En inglés: «Time’s up!», «Play again», «Exit» y «Best»', q(finEl, 'ft').textContent === 'Time’s up!' && finEl.querySelector('[data-a="otra"]').textContent === 'Play again' && hudEl.querySelector('[data-a="salir"]').textContent === 'Exit' && /You caught 0 seeds\. Best: 6/.test(q(finEl, 'fmsg').textContent)); ae.idioma = idi0; pintarHud(); pintarFin(); }
+      if (ae) { ae.idioma = 'en'; pintarHud(); pintarFin(); check('En inglés: «Time’s up!», «Play again», «Exit» y «Best»', q(finEl, 'ft').textContent === 'Time’s up!' && finEl.querySelector('[data-a="otra"]').textContent === 'Play again' && hudEl.querySelector('[data-a="salir"]').textContent === 'Exit' && /^So close! /.test(q(finEl, 'fmsg').textContent)); ae.idioma = idi0; pintarHud(); pintarFin(); }
       finEl.querySelector('[data-a="salir"]').click();
       check('«Salir» lo quita todo (HUD, panel, clase y semillas)', !activo() && hudEl.hidden && finEl.hidden && !document.body.classList.contains('semillas-on') && pool.every(s => !s.on) && Object.values(MALLAS).every(m => !m.visible));
       jugar({ semilla: 3, callado: true });

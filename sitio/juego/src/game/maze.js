@@ -49,6 +49,8 @@
     const tx = (es, en) => (ingles() ? en : es); // textos nuevos de AO2 en ES y EN
     const alMenu = () => !!(G.menuModos && G.menuModos.desdeMenu && G.menuModos.desdeMenu()); /* se entró desde «¿Cómo quieres jugar?»: «Salir» lleva al menú */
     const sonar = (n, a) => { try { if (A_ && (!A_.has || A_.has(n) || /^(tick|land|unlock|splash|jump)$/.test(n))) A_.play(n, a); else A_.play('tick', a); } catch (e) { /* sin audio */ } };
+    // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+    const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'maze', sigue, st.quiet); F.sonar(G, 'maze', tipo, st.quiet); return 0; }; // st.quiet: el G.quiet de antes de entrar (aquí G.quiet se pone toda la partida)
 
     // ---------- Declaración del minijuego (docs/equipo/MINIJUEGOS.md §4) ----------
     const DECL = {
@@ -439,7 +441,7 @@
       J.mejor = m.mejor || 0;
       guardarRec(rec);
       G.emit('retosResultado', { modo: 'maze', puntos: J.puntos, frutos: J.recogidos, plumas: J.plumas, ms: Math.round(J.t * 1000), prueba: claveRec !== ALMACEN });
-      sonar(J.nuevo ? 'unlock' : 'mz_fin');
+      finSon('victoria'); if (J.nuevo) finSon('record', () => st.fase === 'fin'); // PULIR 4: tabla común (antes unlock o mz_fin); siempre se completa el laberinto
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 500);
     }
 
@@ -558,8 +560,10 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
 #maze .mz-extra { color: var(--c-text, #f4f7f1) !important; } #maze .mz-meta { color: var(--gold, #ffd84a) !important; font-weight: 700; }
 #maze .mz-fin { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(5, 18, 12, .35); }
 #maze .mz-panel { pointer-events: auto; background: var(--c-surface, rgba(10,30,20,.92)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-lg, 18px); padding: 22px 26px; width: min(92vw, 420px); text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
-#maze .mz-panel h2 { margin: 0 0 6px; font-size: 28px; } #maze .mz-panel p { margin: 4px 0 10px; color: var(--c-text-muted, #b8c7bd); }
-#maze .mz-num { font: 800 60px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 6px 0; }
+#maze .mz-panel h2 { margin: 0 0 6px; font-size: 26px; } #maze .mz-panel p { margin: 4px 0 10px; color: var(--c-text-muted, #b8c7bd); }
+#maze .mz-num { font: 800 44px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 6px 0; }
+/* PULIR 4: misma letra que el panel final común (.av-fin, ui.css): título 26 px y número 44 px; en horizontal bajo, 21 y 34 */
+@media (orientation: landscape) and (max-height: 500px) { #maze .mz-panel h2 { font-size: 21px; } #maze .mz-num { font-size: 34px; } }
 #maze .mz-nuevo { color: var(--gold, #ffd84a); font-weight: 800; margin-bottom: 8px; }
 #maze .mz-fila { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
 #maze .mz-tecla { font-size: 12px; opacity: .75; margin-left: 6px; }
@@ -576,17 +580,17 @@ html body.maze-on #pause .pause-grid > :not(#b-sound) { display: none !important
 <div class="mz-pista" aria-live="polite"><span class="mz-pt"></span><small class="mz-ps"></small><i class="mz-barra" hidden></i></div>
 <div class="mz-ayuda" aria-live="polite" hidden>${tx('Pista: sigue las huellas brillantes hasta un fruto', 'Hint: follow the glowing tracks to a fruit')}</div>
 <div class="mz-msg" role="status" hidden>${tx('¡Te encontraron!', 'They found you!')}<small>${tx('El combo vuelve a x1. ¡Sigue buscando frutos!', 'Your combo goes back to x1. Keep looking for fruit!')}</small></div>
-<div class="mz-fin" hidden><div class="mz-panel" role="dialog" aria-labelledby="mz-fin-t">
+<div class="mz-fin" hidden><div class="mz-panel av-fin" role="dialog" aria-labelledby="mz-fin-t">
   <h2 id="mz-fin-t">${tx('¡Laberinto completo!', 'Maze complete!')}</h2>
   <p class="mz-resumen"></p>
-  <div class="mz-num">0</div>
+  <div class="mz-num av-num">0</div>
   <div class="mz-nuevo" hidden>${tx('¡Nuevo récord!', 'New record!')}</div>
   <p class="mz-rec"></p>
   <p class="mz-extra"></p>
   <p class="mz-meta"></p>
-  <div class="mz-fila">
-    <button class="btn xl" type="button" data-otra data-icon="reset">${tx('Otra vez', 'Play again')}<span class="mz-tecla">${TACTIL ? '' : 'Enter'}</span></button>
-    <button class="btn ghost secondary" type="button" data-salir data-icon="close">${tx('Volver a la historia', 'Back to the story')}</button>
+  <div class="mz-fila av-bots">
+    <button class="btn xl av-bot" type="button" data-otra data-icon="reset">${tx('Otra vez', 'Play again')}<span class="mz-tecla">${TACTIL ? '' : 'Enter'}</span></button>
+    <button class="btn ghost secondary av-bot salir" type="button" data-salir data-icon="close">${tx('Volver a la historia', 'Back to the story')}</button>
   </div>
 </div></div>`;
       document.body.appendChild(el);

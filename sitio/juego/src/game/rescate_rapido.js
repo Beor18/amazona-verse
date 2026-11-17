@@ -43,6 +43,8 @@ window.AVRescateRapido = function (G) {
   const leerRec = () => { try { const d = JSON.parse(localStorage.getItem(ALM) || 'null'); return d && d.v === 1 && Number.isInteger(d.mejor) && d.mejor >= 0 && d.mejor <= N ? d : null; } catch (e) { return null; } };
   const guardarRec = () => { try { localStorage.setItem(ALM, JSON.stringify({ v: 1, mejor: E.mejor, tiempo: E.mejorT, jugadas: E.jugadas })); } catch (e) { /* sin almacén */ } };
   const sonar = (n, a) => { try { if (!G.quiet && G.audio && G.audio.play) G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'pichones', sigue); F.sonar(G, 'pichones', tipo); return 0; };
   const pio = () => sonar(G.audio && G.audio.has && G.audio.has('pio') ? 'pio' : 'pickup', 2); // el pío de rescate.js si ya está; si no, el de recoger
   const chispas = (x, y, z, tipo, n) => { if (reducido()) return; try { if (G.fx && G.fx.burst) G.fx.burst(x, y, z, tipo, n); } catch (e) { /* sin fx */ } };
   let azarS = 0; const azar = () => { if (!azarS) return Math.random(); azarS = (azarS * 16807) % 2147483647; return (azarS - 1) / 2147483646; };
@@ -291,7 +293,7 @@ window.AVRescateRapido = function (G) {
     }
     const i = cercano();
     if (i < 0) {
-      if (E.t - E.pistaT > 1.2) { E.pistaT = E.t; aviso(encima() ? L('¡Muy alto! Baja hasta el pichón (botón «Bajar» o C)', 'Too high! Fly down to the chick («Dive» button or C)') : L('Acércate a un pichón para recogerlo', 'Get close to a chick to pick it up'), 'malo'); }
+      if (E.t - E.pistaT > 1.2) { E.pistaT = E.t; aviso(encima() ? L('¡Muy alto! Baja hasta el pichón (botón «Bajar» o C)', 'Too high! Fly down to the chick (“Dive” button or C)') : L('Acércate a un pichón para recogerlo', 'Get close to a chick to pick it up'), 'malo'); }
       return false;
     }
     E.ultAccion = E.t; E.lleva = i; pich[i].estado = 'lleva';
@@ -329,8 +331,8 @@ window.AVRescateRapido = function (G) {
     if (E.gotasOn && !reducido()) for (const g of gotas) { g.y -= g.v * dt; if (g.y < S.pos.y - 4 || Math.abs(g.x - S.pos.x) > 10 || Math.abs(g.z - S.pos.z) > 10) nuevaGota(g, true); }
     // a tiro de un pichón o del nido: el aviso lo dice una vez por llegada
     const c = E.lleva < 0 ? cercano() : -1, jn = E.lleva >= 0 && junto();
-    if (c >= 0 && c !== E.cerca) aviso(L('¡Pío! Pulsa «Recoger»', 'Peep! Press «Pick up»'), 'bien');
-    if (jn && !E.enNido) aviso(L('¡El nido! Pulsa «Dejar»', 'The nest! Press «Drop off»'), 'bien');
+    if (c >= 0 && c !== E.cerca) aviso(L('¡Pío! Pulsa «Recoger»', 'Peep! Press “Pick up”'), 'bien');
+    if (jn && !E.enNido) aviso(L('¡El nido! Pulsa «Dejar»', 'The nest! Press “Drop off”'), 'bien');
     E.cerca = c; E.enNido = jn;
     apuntarGuia();
     pintar();
@@ -386,6 +388,10 @@ window.AVRescateRapido = function (G) {
       'body.pichones-on:not(.pichones-fin) #acts #b-dive{display:inline-flex!important}' +
       // F22: aquí «Aterrizar» (#b-fly) sigue a la vista y ocupa la misma celda: «Bajar» sube encima del grupo para no quedar tapado
       'body.pichones-on:not(.pichones-fin) #acts #b-dive{position:absolute;left:0;bottom:calc(100% + 10px)}' +
+      // PULIR 3 (niño de 7 años): en el suelo se veían a la vez «Bajar», «Volar» y «Saltar»; «Bajar» solo sale volando
+      'body.pichones-on:not(.pichones-fin):not(.vittata-vuela) #acts #b-dive{display:none!important}' +
+      // y con su propio icono (flecha abajo): compartía el de «Aterrizar» y los dos parecían el mismo botón
+      'body.pichones-on #acts #b-dive{--icon:var(--i-jump)}body.pichones-on #acts #b-dive::before{transform:rotate(180deg)}' +
       'body.pichones-on #b-act{--icon:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Cellipse cx=%2712%27 cy=%2715.5%27 rx=%276%27 ry=%276.6%27/%3E%3Ccircle cx=%2712%27 cy=%277.6%27 r=%274.4%27/%3E%3C/svg%3E")}';
     document.head.appendChild(st);
   }
@@ -394,8 +400,8 @@ window.AVRescateRapido = function (G) {
     css();
     hudEl = document.createElement('div'); hudEl.id = 'rr-hud'; hudEl.hidden = true; // sin role="status": el reloj cambia cada segundo y no se anuncia; solo el aviso (aria-live) habla
     hudEl.innerHTML = '<b class="rr-tit" data-k="tit"></b><span class="rr-t" data-k="r">' + NUBE + '<span data-k="rt"></span></span><span class="rr-p" data-k="p">' + PICH.repeat(N) + '</span><span class="rr-r" data-k="rec"></span><span data-k="msg" aria-live="polite"></span><button type="button" class="salir" data-a="salir"></button>';
-    finEl = document.createElement('div'); finEl.id = 'rr-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'rr-fin-t');
-    finEl.innerHTML = '<h2 id="rr-fin-t" data-k="ft"></h2><div class="rr-gran">' + PICH + '<span data-k="fn"></span></div><p data-k="fmsg" aria-live="polite"></p><p class="rr-det" data-k="fdet"></p><div class="rr-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div>';
+    finEl = document.createElement('div'); finEl.id = 'rr-fin'; finEl.className = 'av-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'rq-fin-t');
+    finEl.innerHTML = '<h2 id="rq-fin-t" data-k="ft"></h2><div class="rr-gran av-num">' + PICH + '<span data-k="fn"></span></div><p class="av-msg" data-k="fmsg" aria-live="polite"></p><p class="rr-det av-det" data-k="fdet"></p><div class="rr-bots av-bots"><button type="button" class="av-bot" data-a="otra"></button><button type="button" class="av-bot salir" data-a="salir"></button></div>';
     const clic = e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; e.preventDefault(); if (b.dataset.a === 'otra') jugar(); else salir(); };
     hudEl.addEventListener('click', clic); finEl.addEventListener('click', clic);
     document.body.appendChild(hudEl); document.body.appendChild(finEl);
@@ -425,7 +431,7 @@ window.AVRescateRapido = function (G) {
     const n = E.salvados;
     q(finEl, 'ft').textContent = E.todos ? L('¡Todos a salvo!', 'All safe!') : L('¡Llegó la lluvia!', 'Here comes the rain!');
     q(finEl, 'fn').textContent = n + '/' + N;
-    q(finEl, 'fmsg').textContent = n === 0 ? L('¡Casi! Baja junto a un pichón y pulsa «Recoger»', 'So close! Fly down next to a chick and press «Pick up»')
+    q(finEl, 'fmsg').textContent = n === 0 ? L('¡Casi! Baja junto a un pichón y pulsa «Recoger»', 'So close! Fly down next to a chick and press “Pick up”')
       : E.nuevo ? (E.todos ? L(`¡Nuevo récord: ${reloj(E.tiempo)}!`, `New record: ${reloj(E.tiempo)}!`) : L(`¡Nuevo récord: ${n} de ${N}!`, `New record: ${n} of ${N}!`))
         : L('Récord: ', 'Best: ') + recTxt();
     q(finEl, 'fdet').textContent = E.todos ? L(`Los ${N} pichones, secos y felices en ${reloj(E.tiempo)}`, `All ${N} chicks, dry and happy in ${reloj(E.tiempo)}`)
@@ -460,7 +466,7 @@ window.AVRescateRapido = function (G) {
     if (E.lleva >= 0) { pich[E.lleva].estado = 'suelo'; E.lleva = -1; } // el que llevaba se tapa con la hoja como los demás
     E.fase = 'vista'; E.vistaT = reducido() ? 0 : VISTA_T; guia.ok = false;
     hudEl.hidden = true; q(hudEl, 'msg').textContent = ''; document.body.classList.add('pichones-fin');
-    sonar('panel_final');
+    finSon(E.salvados > 0 ? 'victoria' : 'casi');
     pintar();
     if (E.vistaT <= 0) mostrarFin();
   }
@@ -473,7 +479,7 @@ window.AVRescateRapido = function (G) {
     if (E.todos && (!E.mejorT || E.tiempo < E.mejorT)) E.mejorT = E.tiempo;
     guardarRec();
     try { G.emit('record', { modo: 'pichones', salvados: E.salvados, tiempo: E.todos ? E.tiempo : 0 }); } catch (e) { /* */ }
-    if ((E.nuevo && E.salvados > 0) || E.todos) logroId = setTimeout(() => { logroId = 0; if (E.fase === 'fin') sonar('logro'); }, 500);
+    if ((E.nuevo && E.salvados > 0) || E.todos) logroId = finSon('record', () => E.fase === 'fin');
     pintar(); pintarHud(); pintarFin(); finEl.hidden = false;
     try { if (G.pausa && G.pausa.set) G.pausa.set('pichones', true); } catch (e) { /* sin pausa */ } // panel modal: el mundo se congela detrás
     setTimeout(() => { try { if (E.fase === 'fin') finEl.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0); // el foco al panel, no a «Otra vez»
@@ -597,13 +603,17 @@ window.AVRescateRapido = function (G) {
       check('Lejos de los pichones, Acción no recoge nada: «Acércate a un pichón»', !accion() && E.lleva < 0 && /Acércate a un pichón/.test(q(hudEl, 'msg').textContent), q(hudEl, 'msg').textContent);
       listo(); ir(pich[0].x, pich[0].z, 14);
       check('Justo encima de un pichón pero muy alto, Acción dice que bajes («¡Muy alto! Baja…»)', !accion() && E.lleva < 0 && /Muy alto! Baja/.test(q(hudEl, 'msg').textContent), q(hudEl, 'msg').textContent);
-      { const d = document.getElementById('b-dive'); check('En táctil está «Bajar» (el botón de picada, siempre a mano mientras se juega)', !d || (getComputedStyle(d).display !== 'none' && d.textContent === 'Bajar'), d && (d.textContent + ' · ' + getComputedStyle(d).display)); }
+      { const d = document.getElementById('b-dive'), bc = document.body.classList, vu0 = bc.contains('vittata-vuela');
+        bc.add('vittata-vuela'); const enAire = d && getComputedStyle(d).display; bc.remove('vittata-vuela'); const enSuelo = d && getComputedStyle(d).display; bc.toggle('vittata-vuela', vu0);
+        check('En táctil está «Bajar» volando (el botón de picada) y no en el suelo (PULIR 3)', !d || (enAire !== 'none' && enSuelo === 'none' && d.textContent === 'Bajar'), d && (d.textContent + ' · ' + enAire + '/' + enSuelo)); }
+      const vuelaAntes = document.body.classList.contains('vittata-vuela'); document.body.classList.add('vittata-vuela'); // la medida de abajo es la de volando
       { const d = document.getElementById('b-dive'), f = document.getElementById('b-fly'), cs = d && getComputedStyle(d);
         // F22: en el teléfono «Bajar» no puede quedar debajo de «Aterrizar» (se medía la misma celda): ni solapados ni tapados
         const r = d && d.getBoundingClientRect(), rf = f && vis('b-fly') ? f.getBoundingClientRect() : null;
         const solapa = r && rf && r.width > 0 && r.left < rf.right && r.right > rf.left && r.top < rf.bottom && r.bottom > rf.top;
         const enc = r && r.width > 0 ? document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) : null;
         check('«Bajar» no queda debajo de «Aterrizar»: va en su sitio propio y el dedo lo alcanza', !d || (cs.position === 'absolute' && !solapa && (!vis('b-dive') || !enc || enc === d || d.contains(enc))), r ? `${Math.round(r.left)},${Math.round(r.top)} · ${enc ? enc.id || enc.tagName : '-'}` : '-'); }
+      document.body.classList.toggle('vittata-vuela', vuelaAntes);
       // Teclado (E) junto al pichón 0
       listo(); aPichon(0); paso(0.02);
       const avisoCerca = /Pulsa «Recoger»/.test(q(hudEl, 'msg').textContent);

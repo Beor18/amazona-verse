@@ -22,6 +22,28 @@
    - ES y EN según G.aula.aj.idioma; teclado (Tab/Enter, flechas entre tarjetas) y táctil; respeta prefers-reduced-motion (CSS).
    boot.js: window.AVMenuModos(G, { retos, records }) con las cargas perezosas. API: elegir(modo), mostrar(), volver(), ultimo(), test().
    Prueba: AV.menuModosTest(). */
+/* PULIR 4 · Coherencia de los minijuegos: la tabla común del sonido del final (los estilos comunes del panel están en src/ui/ui.css:
+   .av-fin, .av-num, .av-msg, .av-det, .av-bots y .av-bot). Todos los minijuegos con panel final suenan igual:
+     victoria → panel_final al salir el resultado · casi → el mismo panel_final (fallar no castiga: lo dice el texto «¡Casi!», F2_MINIJUEGOS.md)
+     récord nuevo → además «logro» RECORD_MS después (el temporizador se devuelve para cancelarlo al salir).
+   Los duelos (combate.js, duelo2.js) guardan duelo_victoria/duelo_derrota grabados: allí sí hay un ganador y un perdedor.
+   Por defecto calla con G.quiet; los juegos que lo ponen durante toda la partida (para callar el mundo) pasan `mudo` = el G.quiet de antes de entrar.
+   log: las últimas llamadas (juego, tipo), para las pruebas. */
+(function () {
+  'use strict';
+  const SFX = Object.freeze({ victoria: 'panel_final', casi: 'panel_final', record: 'logro' }), RECORD_MS = 500, log = [];
+  // mudo: si se calla. Sin darlo, G.quiet; River Rush, Retos/Banquete, Maze, Flight y Tren ponen G.quiet toda la partida (callan el mundo, no su
+  // final) y dan el G.quiet que había al entrar (st.quiet: falso al jugar, verdadero en las baterías)
+  const tocar = (G, n, mudo) => { try { if (!(mudo === undefined ? G.quiet : mudo) && G.audio && G.audio.play) G.audio.play(n); } catch (e) { /* sin audio */ } };
+  const anotar = (juego, tipo) => { log.push({ juego, tipo }); if (log.length > 60) log.shift(); };
+  window.AVFinJuego = {
+    SFX, RECORD_MS, log,
+    // victoria o casi (cualquier otro tipo cuenta como victoria)
+    sonar(G, juego, tipo, mudo) { tipo = tipo === 'casi' ? 'casi' : 'victoria'; anotar(juego, tipo); tocar(G, SFX[tipo], mudo); },
+    // récord nuevo: «logro» a los RECORD_MS si sigue() (opcional) aún vale. Devuelve el id del temporizador
+    record(G, juego, sigue, mudo) { anotar(juego, 'record'); return setTimeout(() => { if (!sigue || sigue()) tocar(G, SFX.record, mudo); }, RECORD_MS); },
+  };
+})();
 (function () {
   'use strict';
   window.AVMenuModos = function (G, cargar) {
@@ -149,6 +171,9 @@
     if (!document.getElementById('menu-recorte-css')) {
       const st = document.createElement('style'); st.id = 'menu-recorte-css';
       st.textContent = '#modos .recorte-fuera{display:none!important}#title .title-episodios.episodios-arriba{margin:0 0 12px}'
+        // PULIR 3 (niño de 7 años): dentro de «Más juegos», «Volver» tenía la forma de un juego más: ahora es una píldora clara con «←»
+        + '#modos.modos-mas-abierto [data-mas-juegos]{grid-column:1/-1;justify-self:center;min-height:56px;min-width:min(240px,100%);flex-direction:row;gap:6px;padding:8px 28px;border-radius:999px;--btn-bg:#fff3d6;--btn-ink:#3b2a14;--btn-border:#fff;--btn-lip:#c9a96a}'
+        + '#modos.modos-mas-abierto [data-mas-juegos] .modo-img,#modos.modos-mas-abierto [data-mas-juegos] small{display:none}#modos.modos-mas-abierto [data-mas-juegos] b{color:#3b2a14}#modos.modos-mas-abierto [data-mas-juegos] b::before{content:"\\2190\\00a0" / "";font-weight:800}'
         // «Más juegos» abierto: solo sus juegos (River Rush, Tormenta, Banquete y Sigue el canto) y «Volver», en ese orden («Volver», order:99: siempre el último aunque se añadan juegos) (también fuera las tarjetas que añaden otros módulos)
         + '#modos.modos-mas-abierto .modos-grid>:not([data-mas-juegos]):not([data-modo="river"]):not([data-modo="tormenta"]):not([data-modo="banquete"]):not([data-modo="canto"]):not([data-modo="escondite"]):not([data-modo="semillas"]):not([data-modo="piloto"]):not([data-modo="compas"]):not([data-modo="sigueme"]):not([data-modo="foto"]):not([data-modo="sembradora"]):not([data-modo="planeo"]):not([data-modo="pichones"]){display:none!important}'
         + '#modos.modos-mas-abierto [data-modo="river"]{order:1}#modos.modos-mas-abierto [data-modo="tormenta"]{order:2}#modos.modos-mas-abierto [data-modo="banquete"]{order:3}#modos.modos-mas-abierto [data-modo="canto"]{order:4}#modos.modos-mas-abierto [data-modo="escondite"]{order:5}#modos.modos-mas-abierto [data-modo="semillas"]{order:6}#modos.modos-mas-abierto [data-modo="piloto"]{order:7}#modos.modos-mas-abierto [data-modo="compas"]{order:8}#modos.modos-mas-abierto [data-modo="sigueme"]{order:9}#modos.modos-mas-abierto [data-modo="foto"]{order:10}#modos.modos-mas-abierto [data-modo="sembradora"]{order:11}#modos.modos-mas-abierto [data-modo="planeo"]{order:12}#modos.modos-mas-abierto [data-modo="pichones"]{order:13}#modos.modos-mas-abierto [data-mas-juegos]{order:99}';
@@ -1104,6 +1129,71 @@
             check(`Maqueta ${w}×${h}: nada desborda, tarjetas ≥ 44 px y sin solapes`, !malos.length, malos.join('; '));
           } finally { m.cerrar(); }
         }
+        { // PULIR 4 · coherencia de los minijuegos: todos los paneles finales usan las clases comunes (.av-fin, ui.css) y la tabla de sonidos común
+          const F = window.AVFinJuego, malos = [];
+          if (!F || F.SFX.victoria !== 'panel_final' || F.SFX.casi !== 'panel_final' || F.SFX.record !== 'logro' || F.RECORD_MS !== 500) malos.push('tabla de sonidos');
+          if (G.audio && G.audio.has && !['panel_final', 'logro'].every(n => G.audio.has(n))) malos.push('faltan panel_final o logro');
+          // revisión: con mudo = false suena aunque G.quiet esté puesto (River Rush, Retos, Maze, Flight y Tren lo ponen toda la partida); sin mudo, calla con G.quiet; el «logro» espera a sigue()
+          if (F && G.audio) {
+            const play0 = G.audio.play, q0 = G.quiet, oidos = [];
+            G.audio.play = n => { oidos.push(n); };
+            try {
+              G.quiet = true; F.sonar(G, 'prueba', 'victoria', false); F.sonar(G, 'prueba', 'casi', false); F.sonar(G, 'prueba', 'victoria'); F.sonar(G, 'prueba', 'casi', true);
+              const tNo = F.record(G, 'prueba', () => false, false), tSi = F.record(G, 'prueba', () => true, false), tQ = F.record(G, 'prueba', () => true);
+              await new Promise(r => setTimeout(r, F.RECORD_MS + 120)); clearTimeout(tNo); clearTimeout(tSi); clearTimeout(tQ);
+              if (oidos.join() !== 'panel_final,panel_final,logro') malos.push('con G.quiet suena ' + (oidos.join() || 'nada') + ' (se esperaba panel_final,panel_final,logro)');
+            } finally { G.audio.play = play0; G.quiet = q0; }
+          }
+          // con panel: clases comunes + «Otra vez» y «Salir» comunes + sonido de la tabla; sin panel propio (pesca, minigolf, banquete): solo el sonido
+          const PANEL = ['sembradora', 'planeo', 'rescate_rapido', 'sigueme', 'foto_safari', 'compas', 'semillas', 'canto', 'escondite', 'river_rush', 'maze', 'flight', 'tren', 'retos'], SOLO = ['banquete', 'v18/pesca', 'v18/minigolf'];
+          await Promise.all(PANEL.concat(SOLO).map(async f => {
+            let src = ''; try { src = await (await fetch('src/game/' + f + '.js', { cache: 'no-store' })).text(); } catch (e) { /* sin red */ }
+            // revisión: sin comentarios (un «AVFinJuego» en un comentario no cuenta); la tabla se llama de verdad (finSon('victoria'|'casi') o F.sonar)
+            const cod = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"\\])\/\/.*$/gm, '$1');
+            if (!/AVFinJuego/.test(cod) || !/(finSon\((?:[^()]*\? *)?'(victoria|casi)'|F\.sonar\(G, '\w+', '(victoria|casi)'[,)])/.test(cod)) malos.push(f + ': sin la tabla de sonidos');
+            // los sonidos que solo eran de final (y el «unlock» del récord o de los peces) ya no salen fuera de la tabla
+            const propio = cod.match(/(?:sonar|play)\((?:[^()]*\? *)?'(panel_final|mz_fin|r_fin_mal|r_meta|r_bien)'|(?:nuevo|peces)\) sonar\('unlock'\)|(?:nuevo|peces) \? 'unlock'/);
+            if (propio) malos.push(f + ': sonido de final propio (' + propio[0] + ')');
+            if (PANEL.includes(f) && !(/av-fin/.test(src) && /av-bots/.test(src) && /av-bot[ "]/.test(src) && /av-bot salir/.test(src))) malos.push(f + ': panel sin las clases comunes');
+          }));
+          // las clases comunes por sí solas (sin el CSS de cada juego): botón simple y botón .btn xl del design system, 54 px y 18 px; título 26 px
+          const caja = document.createElement('div'); caja.className = 'av-fin'; caja.style.cssText = 'position:fixed;left:0;top:0;z-index:-1;visibility:hidden';
+          caja.innerHTML = '<h2>¡Tiempo!</h2><div class="av-num">12</div><p class="av-msg">¡Casi!</p><div class="av-bots"><button type="button" class="av-bot">Otra vez</button><button type="button" class="btn xl av-bot">Otra vez</button><button type="button" class="btn ghost secondary av-bot salir">Salir</button></div>';
+          document.body.appendChild(caja);
+          try {
+            const bs = [...caja.querySelectorAll('.av-bot')], cs = bs.map(b => getComputedStyle(b));
+            const bajo = matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+            if (!bs.every(b => b.getBoundingClientRect().height >= 54)) malos.push('botones de ' + bs.map(b => Math.round(b.getBoundingClientRect().height)).join('/') + ' px');
+            if (!cs.every(c => c.fontSize === '18px' && c.borderTopLeftRadius === '22px')) malos.push('letra de botones ' + cs.map(c => c.fontSize + ' r' + c.borderTopLeftRadius).join('/'));
+            if (cs[0].backgroundColor !== cs[1].backgroundColor || cs[2].backgroundColor === cs[0].backgroundColor) malos.push('colores de botón ' + cs.map(c => c.backgroundColor).join('/'));
+            if (getComputedStyle(caja.querySelector('h2')).fontSize !== (bajo ? '21px' : '26px') || getComputedStyle(caja.querySelector('.av-num')).fontSize !== (bajo ? '34px' : '44px') || getComputedStyle(caja.querySelector('.av-msg')).fontSize !== '17px') malos.push('tamaños de letra');
+          } finally { caja.remove(); }
+          // los paneles finales ya montados (los juegos abiertos en esta prueba), medidos CON la CSS de cada juego (revisión: las reglas con id, como
+          // #retos … o #canto …, ganan a .av-fin): se muestran un momento en su sitio, invisibles, y se vuelve a dejar todo como estaba
+          let vistos = 0;
+          const bajo2 = matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+          for (const p of [...document.querySelectorAll('.av-fin')]) {
+            const cambios = [];
+            const poner = (el, k, v) => { cambios.push([el, k, el[k]]); el[k] = v; };
+            for (let a = p; a && a !== document.body; a = a.parentElement) if (a.hidden) poner(a, 'hidden', false);
+            p.querySelectorAll('[hidden]').forEach(x => poner(x, 'hidden', false));
+            const vis0 = p.style.visibility; p.style.visibility = 'hidden';
+            try {
+              const bs = [...p.querySelectorAll('.av-bots .av-bot')].filter(b => !b.closest('[data-a="otra"][hidden]')), nom = p.id || (p.parentElement && p.parentElement.id) || p.className;
+              if (!p.getClientRects().length) continue;
+              vistos++;
+              const alto = b => b.offsetHeight; // offsetHeight: sin la escala de la animación de entrada
+              if (bs.length < 2 || !bs.every(b => alto(b) >= 54)) malos.push(nom + ': botones de ' + bs.map(b => alto(b)).join('/') + ' px');
+              if (!bs.every(b => parseFloat(getComputedStyle(b).fontSize) >= 18)) malos.push(nom + ': letra de botones ' + bs.map(b => getComputedStyle(b).fontSize).join('/')); // al menos 18 px: el «Otra vez» de Sigue el canto es más grande y naranja a propósito (PULIR 3)
+              const fs = s => { const e = p.querySelector(s); return e ? getComputedStyle(e).fontSize : null; };
+              const h2 = fs('h2'), num = fs('.av-num'), msg = fs('.av-msg');
+              if (h2 && h2 !== (bajo2 ? '21px' : '26px')) malos.push(nom + ': título de ' + h2);
+              if (num && num !== (bajo2 ? '34px' : '44px')) malos.push(nom + ': número de ' + num);
+              if (msg && msg !== '17px') malos.push(nom + ': mensaje de ' + msg);
+            } finally { p.style.visibility = vis0; for (let i = cambios.length - 1; i >= 0; i--) { const [el, k, v] = cambios[i]; el[k] = v; } }
+          }
+          check(`PULIR 4 · Minijuegos coherentes: ${PANEL.length} paneles finales con las clases comunes (.av-fin; «Otra vez» y «Salir» de 54 px y 18 px), la misma letra y la tabla común de sonidos (victoria y «casi» = panel_final, récord = logro a los 500 ms, también con G.quiet); ${vistos} paneles montados medidos con su propia CSS`, !malos.length, malos.join('; '));
+        }
         const nuevos = (window.__aveErrores || []).slice(errores0);
         check('Sin errores de consola', !errores.length && !nuevos.length, errores.concat(nuevos).slice(0, 3).join(' | '));
       } catch (e) {
@@ -1282,9 +1372,11 @@
         const li = document.createElement('li');
         li.className = 'cap-item' + (aqui ? ' es-actual' : ''); li.dataset.cap = c.n; li.dataset.estado = e;
         li.style.setProperty('--cap-a', c.c[0]); li.style.setProperty('--cap-b', c.c[1]);
-        const boton = aqui ? L('Seguir aquí', 'Keep playing') : e === 'terminado' ? L('Volver a jugar', 'Play again') : e === 'en curso' ? L('Continuar', 'Continue') : L('Jugar', 'Play');
+        // PULIR 2 (p23): con perfil nuevo el cap. 1 decía a la vez «Nuevo», «estás aquí» y «Seguir aquí»: si aún no se ha jugado, «Jugar»
+        const aquiJugado = aqui && e !== 'nuevo';
+        const boton = aquiJugado ? L('Seguir aquí', 'Keep playing') : e === 'terminado' ? L('Volver a jugar', 'Play again') : e === 'en curso' ? L('Continuar', 'Continue') : L('Jugar', 'Play');
         li.innerHTML = `<div class="cap-portada" aria-hidden="true"><svg viewBox="0 0 64 64">${c.img}</svg><span>${c.n}</span></div>` +
-          `<div class="cap-info"><small>${rot}${aqui ? ' · ' + L('estás aquí', 'you are here') : ''}</small><b></b><span class="cap-estado"></span></div>` +
+          `<div class="cap-info"><small>${rot}${aquiJugado ? ' · ' + L('estás aquí', 'you are here') : ''}</small><b></b><span class="cap-estado"></span></div>` +
           `<button class="btn cap-jugar" type="button" data-icon="play"></button>`;
         li.querySelector('b').textContent = tit;
         li.querySelector('.cap-estado').textContent = L(...ESTADO_TX[e]);
@@ -1358,6 +1450,7 @@
         check('Desde la pausa: se abre con los 6, portada, estado y botón', dlg.open && items.length === 6 && items.every(li => li.querySelector('.cap-portada svg') && li.querySelector('.cap-estado').textContent && li.querySelector('.cap-jugar')));
         check('Los estados se ven: terminado, en curso y nuevo', items[3].dataset.estado === 'terminado' && items[3].querySelector('.cap-estado').textContent === 'Terminado' && items[otro - 1].querySelector('.cap-estado').textContent === 'En curso' && items.some(li => li.querySelector('.cap-estado').textContent === 'Nuevo'));
         check('Rótulos «Capítulo N» en orden y el actual marcado', items.every((li, i) => li.querySelector('small').textContent.startsWith('Capítulo ' + (i + 1))) && lista.querySelectorAll('.es-actual').length === 1 && items[actual - 1].classList.contains('es-actual'));
+        { const ia = items[actual - 1]; check('PULIR 2 · El capítulo actual sin jugar no dice a la vez «Nuevo» y «Seguir aquí»/«estás aquí»', ia.dataset.estado !== 'nuevo' || !/Seguir aquí|estás aquí|Keep playing|you are here/.test(ia.textContent), ia.dataset.estado + ' · ' + ia.textContent.slice(0, 80)); }
         fueA = null; items[otro - 1].querySelector('.cap-jugar').click();
         check('Jugar abre el pack de ese capítulo', fueA && (otro === 1 ? !new URL(fueA, location.href).searchParams.get('pack') : new URL(fueA, location.href).searchParams.get('pack') === cap(otro).id), fueA);
         fueA = null; items[actual - 1].querySelector('.cap-jugar').click();

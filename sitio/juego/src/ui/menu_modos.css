@@ -55,6 +55,12 @@
   padding: 4px 6px; border-radius: var(--r-pill); box-shadow: 0 2px 0 #b8903a;
 }
 .modo .modo-ultimo[hidden] { display: none; }
+/* PULIR 2 (p23): la chapa tapaba lo alto del dibujo de la tarjeta (el sol y la bandera de Aventura): ahora cuelga del borde de arriba */
+.modo.es-ultimo { padding-top: calc(var(--sp-3) + 8px); }
+.modo .modo-ultimo { top: -11px; left: 10px; right: 10px; }
+/* PULIR 3 (niño de 7 años): con perfil nuevo (sin «lo último») lo más brillante eran «Capítulos» y «¿Qué hay para hacer?»: Aventura respira */
+.modos-grid:not(:has(.es-ultimo)) .modo[data-modo="aventura"] { --btn-border: var(--gold); animation: modo-in var(--dur-3) var(--ease-out) both, modo-respira 2.2s ease-in-out 1s infinite; }
+@keyframes modo-respira { 50% { transform: scale(1.04); } }
 @keyframes modo-in { from { opacity: 0; transform: translateY(16px) scale(0.92); } }
 @media (max-width: 400px) {
   .modos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-2); }

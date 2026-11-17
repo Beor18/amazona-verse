@@ -22,7 +22,7 @@
        5 Foto y soltar: la ficha del pez (nombre, nombre científico, un dato y su fuente) y «Soltarlo» (vuelve al río). Las invasoras
          (tilapia, pleco) no se sueltan: «Reportar al DRNA» (sin matar a nadie; aviso G.emit('expansion:invasora') por si el módulo de
          invasoras escucha).
-     Computadora: Espacio / E / Intro (mantener y soltar) · ← → apuntar · Esc salir · R otra ronda (al final).
+     Computadora: Espacio / E / Intro (mantener y soltar) · ← → apuntar · Esc salir · R otra vez (al final).
      Táctil: botón grande (Lanzar / ¡Clava! / ¡Recoge! / Soltarlo), ◀ ▶ y Salir (≥ 44 px).
    - Peces de río (datos verificables, ver FUENTES): dajao, guavina, olivo y anguila americana (nativos de los ríos de Puerto Rico) y
      tilapia de Mozambique y pleco (invasores). Cerca de la orilla pican más el olivo, la anguila y el pleco; en medio del río, el dajao
@@ -93,13 +93,13 @@ window.AVV18Pesca = function (G) {
     pPica: '¡Pica! ¡Ahora!', pTira: 'Mantén apretado para subir el anzuelo y suelta para bajarlo. Quédate en lo verde.', pCansado: '¡Ya se cansa! Casi lo tienes.',
     escapo: 'Se llevó la carnada… ¡lanza otra vez!', seFue: '¡Se escapó! Ya vuelve. Lanza otra vez.', tierra: 'Cayó en la orilla. Lanza hacia el agua.',
     lanzar: 'Lanzar', soltarB: 'Soltar', recoger: '¡Recoge!', clavar: '¡Clava!', esperarB: 'Esperar', soltarPez: 'Soltarlo', reportar: 'Avisar al DRNA',
-    salir: 'Salir', otra: 'Otra ronda', menu: 'Volver al menú', seguir: 'Seguir explorando', izq: 'Apuntar a la izquierda', der: 'Apuntar a la derecha',
+    salir: 'Salir', otra: 'Otra vez', /* PULIR 4: como en todos los minijuegos */ menu: 'Volver al menú', seguir: 'Seguir explorando', izq: 'Apuntar a la izquierda', der: 'Apuntar a la derecha',
     fuerza: 'Fuerza', tiempo: 'Tiempo', peces: 'Peces', puntos: 'Puntos', record: 'Récord',
     foto: '¡Foto para tu álbum!', fuente: 'Fuente', nativo: 'De aquí, de Puerto Rico', invasora: 'No es de aquí',
     consejo: 'La foto, rapidito, con el pez cerquita del agua.',
     alAgua: '¡Al río! Nada feliz otra vez.', reportado: '¡Gracias! Este pez no vuelve al río: avisar al DRNA cuida a los peces de aquí.',
     invasoraNo: 'Este pez no es de aquí y no vuelve al río. Avísale al DRNA.',
-    fin: '¡Se acabó el tiempo!', nuevo: '¡Nuevo récord!', album: 'Tu álbum de hoy', nada: 'Hoy no picó nada. ¡Otra ronda!',
+    fin: '¡Se acabó el tiempo!', nuevo: '¡Nuevo récord!', album: 'Tu álbum de hoy', nada: 'Hoy no picó nada. ¡Prueba otra vez!',
     sale: '¡Hasta luego! El río te espera cerca de Villa Raíz.', cerrado: 'La pesca todavía no está.',
     tienda: 'Mercadito', tiendaL: 'Abrir el Mercadito del río'
   };
@@ -116,6 +116,8 @@ window.AVV18Pesca = function (G) {
 
   // ---------- Utilidades ----------
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'pesca', sigue); F.sonar(G, 'pesca', tipo); return 0; };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2400); } catch (e) { /* sin interfaz */ } };
   const fx = (k, x, y, z, n) => { if (barato()) return; try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
   const emitir = ev => { try { G.emit('v18pesca', ev); } catch (e) { /* sin oyentes */ } };
@@ -401,7 +403,7 @@ window.AVV18Pesca = function (G) {
     A.nuevo = A.puntos > 0 && A.puntos > prev;
     recordSesion = Math.max(recordSesion, A.puntos); if (A.puntos > 0) guardarRecord(A.puntos);
     A.record = recordVer(); A.ultimo = A.resultado = { peces: A.peces, puntos: A.puntos, conchitas: A.conchitas, nuevo: A.nuevo, album: Object.assign({}, A.album) };
-    sonar(A.peces ? 'unlock' : 'tick'); toast(TXT.fin, 2400);
+    finSon(A.peces ? 'victoria' : 'casi'); if (A.nuevo) finSon('record', () => A.fase === 'fin'); toast(TXT.fin, 2400); // PULIR 4: tabla común (antes unlock o tick)
     if (A.nuevo) { celebrar(); toast('¡Récord!', 2800); }
     emitir({ tipo: 'fin', peces: A.peces, puntos: A.puntos, nuevo: A.nuevo }); hud.vista = null; paneles(); pintar(true);
     return true;
@@ -524,7 +526,7 @@ window.AVV18Pesca = function (G) {
   function teclaAbajo(e) {
     if (!enganchado || pausa() || (G.ui && G.ui.cardOpen) || (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName))) return;
     const k = (e.key || '').toLowerCase(); if (!TRAGAR.has(k)) return;
-    // Enter o Espacio sobre un botón del panel con el foco (Otra ronda, Salir, Soltar…) lo pulsa como cualquier botón
+    // Enter o Espacio sobre un botón del panel con el foco (Otra vez, Salir, Soltar…) lo pulsa como cualquier botón
     const bf = e.target && e.target.closest && hud && hud.el.contains(e.target) ? e.target.closest('button[data-a]') : null;
     if (bf && (k === 'enter' || k === ' ') && !/^(accion|izq|der)$/.test(bf.dataset.a)) { e.stopImmediatePropagation(); return; }
     e.stopImmediatePropagation(); e.preventDefault();
@@ -912,7 +914,7 @@ window.AVV18Pesca = function (G) {
       check('T (o el botón) abre el Mercadito encima de los resultados; con él abierto la pesca no se queda las teclas y al cerrarlo sigue en los resultados', tAbre && sigueFin && A.fase === 'fin' && !G.ui.cardOpen);
       check('El récord queda en la sesión y en el progreso (pesca_rio: mejor y especies vistas)', recordVer() === pts && (!v || (g && g.mejor === pts && g.vistos.includes('tilapia'))), JSON.stringify(g));
       tecla('keydown', 'r'); tecla('keyup', 'r');
-      check('Teclado: R empieza otra ronda (2:30, 0 peces, récord a la vista)', A.fase === 'listo' && A.tiempo === RONDA && A.peces === 0 && hud.q('record').textContent === recordTxt(pts));
+      check('Teclado: R empieza otra vez (2:30, 0 peces, récord a la vista)', A.fase === 'listo' && A.tiempo === RONDA && A.peces === 0 && hud.q('record').textContent === recordTxt(pts));
       tecla('keydown', 'Escape');
       check('Teclado: Esc sale de la pesca', A.fase === 'nada' && hud.el.hidden);
       // 8. Ronda táctil completa
@@ -960,7 +962,7 @@ window.AVV18Pesca = function (G) {
         fr.remove();
         check('Móvil (390 × 844): todos los botones (pescar, ficha y resultados) miden ≥ 44 px y caben en la pantalla', !mal.length, mal.join(' · '));
         { const bo = bot('otra'); toque(bo, 'pointerdown', 48); toque(bo, 'pointerup', 48); }
-        check('Táctil: «Otra ronda» empieza de nuevo', A.fase === 'listo' && A.peces === 0);
+        check('Táctil: «Otra vez» empieza de nuevo', A.fase === 'listo' && A.peces === 0);
         { const bs = bot('salir'); toque(bs, 'pointerdown', 49); if (bs.isConnected) toque(bs, 'pointerup', 49); }
         check('Táctil: «Salir» deja la pesca', A.fase === 'nada');
       } catch (e) { check('Táctil: sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }

@@ -546,6 +546,10 @@ html.mov-reducido *, html.mov-reducido *::before, html.mov-reducido *::after { a
 #b-dash { grid-area: dash; --btn-bg: var(--c-info); --btn-ink: var(--c-info-ink); --btn-lip: var(--c-info-lip); }
 #acts #b-jump { grid-area: jump; --sz: 78px; --btn-bg: var(--c-success); --btn-ink: var(--c-success-ink); --btn-lip: var(--c-success-lip); --icon-size: 30px; }
 #acts #b-act { grid-area: act; --sz: var(--tap-xl); font-size: 13px; --icon-size: 34px; --lip: 6px; padding: 0 6px; }
+/* PULIR 3 (niño de 7 años): sin nada cerca, Acción se ve gris (antes, naranja atenuado, parecía pedir un toque); al acercarse a
+   algo se enciende con dos latidos del anillo dorado (la regla de «Reducir movimiento» de la sección 7 los apaga) */
+#acts #b-act.sin-objetivo { filter: saturate(0.15); }
+#acts #b-act:not(.sin-objetivo) { animation: ring 1.1s ease-out 2; }
 /* F20 r2: volando, el botón dice «Aterrizar» («Aterrizando…» al bajar) y no cabía en el círculo de 58 px del teléfono en horizontal
    (se leía «\terriza'»): se ensancha a lo que mide su columna (píldora) y la letra baja un punto. El área táctil no baja. */
 #acts #b-fly[data-icon="dive"] { width: max(var(--sz), 100%); border-radius: 999px; font-size: 11px; padding: 0 3px; letter-spacing: -0.01em; }
@@ -731,7 +735,9 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #emotes .btn { padding: 0 var(--sp-2); } /* E17: el número va pegado al nombre («5 · Enojarse» no se parte): 8 px más de sitio */
   #prompt { bottom: calc(env(safe-area-inset-bottom, 0px) + 206px); font-size: 15px; }
   /* El aviso se alinea a la izquierda y deja libre la columna de botones de la derecha (Diario, Gestos, Pausa) */
-  #toast { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 262px); left: max(var(--sp-3), env(safe-area-inset-left, 0px)); margin-inline: 0; max-width: calc(100vw - 2 * var(--sp-3) - 56px); }
+  /* PULIR 2 (p23): abajo (a 262 px del borde) el aviso crecía hacia arriba y tapaba el cuerpo de Vittata en medio de la pantalla
+     (390×844, cap. 1 a 6): ahora va arriba, bajo el objetivo y el minimapa, como con el diálogo; Vittata y el camino quedan libres */
+  #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; left: max(var(--sp-3), env(safe-area-inset-left, 0px)); margin-inline: 0; max-width: calc(100vw - 2 * var(--sp-3) - 56px); }
   /* CG-125: con el 2×2 del duelo (alas y patas) el aviso quedaba debajo. Sube, y los botones siguen tocables. */
   body.v18-ext-on #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; max-height: min(28vh, 160px); } /* T22: debajo del minimapa */
   /* CG-4 (QA-86, QA-87): con el diálogo abierto, el aviso sube bajo el objetivo; abajo tapaba el nombre y la
@@ -753,7 +759,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
      termina donde empiezan los controles (#acts arranca a ~198 px del borde inferior; el bocadillo, a 262 + ~84 px) y, donde
      el hueco es corto (con diálogo, bocadillo o gestos), usa letra y relleno compactos y sin el icono para que quepa el texto
      entero. Si aun así no cabe, se recorta por abajo en vez de tapar los botones. */
-  #toast { --tt: 118px; max-height: calc(100vh - 262px - env(safe-area-inset-bottom, 0px) - 130px); max-height: calc(100dvh - 262px - env(safe-area-inset-bottom, 0px) - 130px); overflow: hidden; }
+  #toast { --tt: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); max-height: min(32vh, 260px); max-height: min(32dvh, 260px); overflow: hidden; }
   body:has(#dialog:not([hidden])) #toast, body:has(#bocadillos:not([hidden])) #toast { --tt: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); }
   body:has(#emotes:not([hidden])) #toast { --tt: calc(env(safe-area-inset-top, 0px) + 118px); }
   body:has(#end:not([hidden])) #toast { --tt: calc(env(safe-area-inset-top, 0px) + var(--sp-3)); }
@@ -1161,6 +1167,9 @@ html.a11y-unamano.a11y-zurdo #toast {
 /* T23: durante la apertura del capítulo («Saltar intro» a la vista) no se ve el HUD: solo la escena, el narrador y «Saltar intro»
    (antes se veía todo el HUD mientras salía Vittata y «Saltar intro» quedaba encima de los contadores) */
 body:has(#c1-saltar) :is(#stick, #acts, #prompt, #sys, #top, #emotes, #keyhint, #tag, #minimapa, #v18-exp-poder, #modo-salir, #pm-pista) { visibility: hidden; }
+/* PULIR 3 (niño de 7 años): «Saltar intro» era una píldora oscura y discreta sobre el negro de la intro: ahora dorada, más grande y con ⏭ */
+#c1-saltar.btn { min-height: 56px; padding: 0 var(--sp-5); font-size: var(--fs-lg); --btn-bg: var(--gold); --btn-ink: var(--c-ink); --btn-border: #fff; --btn-lip: #c9962e; }
+#c1-saltar.btn::after { content: "\23ED" / ""; margin-left: 8px; font-size: 1.15em; line-height: 1; }
 
 /* T24: pescando, fuera Diario, Gestos, Nido y Construir (la Pesca tiene sus propios botones); y si se abre una tarjeta
    encima (el Diario con el teclado, el Mercadito), el panel de la Pesca no la tapa (antes tapaba su «Cerrar» en el teléfono) */
@@ -1184,3 +1193,24 @@ body:has(#records:not([hidden])) :is(#v18-exp-poder, #modo-salir) { display: non
 body:is(.canto-on, .escondite-on, .semillas-on, .piloto-on, .compas-on) #bocadillos { visibility: hidden !important; }
 /* F20 (390 px): durante la cuenta 3-2-1 de Tormenta y Banquete el minimapa espera; el número grande quedaba pegado a él */
 @media (max-width: 560px) { body:has(#retos .rt-cuenta:not(:empty)) #minimapa { visibility: hidden; } }
+
+/* PULIR 4 · Panel final común de los minijuegos (la tabla de sonidos está en src/game/menu_modos.js, window.AVFinJuego).
+   Cada panel final lleva .av-fin; dentro, el título h2, el número grande .av-num, el mensaje .av-msg («¡Nuevo récord!», «Récord: …» o
+   «¡Casi!» + pista), el detalle .av-det y la fila .av-bots con «Otra vez» y «Salir» (.av-bot, «Salir» con .salir). Mismo tamaño de letra
+   y mismos botones en todos (los paneles de pantalla completa con .btn del design system también: .av-bot gana a .btn.xl). */
+.av-fin { font-family: var(--font-display); }
+.av-fin[tabindex="-1"]:focus, [tabindex="-1"]:focus > .av-fin { outline: none; } /* el foco va al panel al salir (Tab ×1 hasta «Otra vez»); el anillo es de los botones */
+.av-fin h2 { font-size: 26px; }
+.av-fin .av-num { font-size: 44px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.av-fin .av-msg { font-size: 17px; font-weight: 600; }
+.av-fin .av-det { font-size: 15px; font-weight: 500; }
+.av-fin .av-bots { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.av-fin .av-bot, .av-fin .btn.av-bot {
+  --btn-bg: #fff3d6; --btn-ink: #3b2a14; --btn-lip: rgba(0, 0, 0, 0.25); --btn-shine: transparent; --btn-border: transparent; --lip: 3px; --icon-size: 20px;
+  min-height: 54px; min-width: 54px; padding: 4px 22px; border: 0; border-radius: 22px;
+  font: 700 18px/1.1 var(--font-display); background: #fff3d6; color: #3b2a14; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+  cursor: pointer; touch-action: manipulation;
+}
+.av-fin .av-bot.salir, .av-fin .btn.av-bot.salir { --btn-bg: #ffd0c4; background: #ffd0c4; }
+.av-fin .av-bot:focus-visible, .av-fin .btn.av-bot:focus-visible { outline: 4px solid #ffd27a; outline-offset: 2px; box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25); }
+@media (orientation: landscape) and (max-height: 500px) { .av-fin h2 { font-size: 21px; } .av-fin .av-num { font-size: 34px; } }
