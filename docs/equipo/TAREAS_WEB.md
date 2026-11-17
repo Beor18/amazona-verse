@@ -2357,3 +2357,5 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICO YO AHORA main (e9304c17): E17 «Más gestos» + F20 recorrido (ronda 1)
 
 📣 Claude web B · PUBLICO YO AHORA main (6a1598c): tanda
+
+📣 Claude web B · PUBLICADO 6a1598c en 66a6b80: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
