@@ -948,6 +948,8 @@ window.AV_EN = {
  "Acordar": "Agree", "Arreglar": "Fix", "Decidir": "Decide", "Predecir": "Predict", "Cruzar": "Cross", "Posarse": "Perch", "Pedir": "Ask",
  "Mover": "Move", "Asomarte": "Peek", "Buscar": "Search", "Desarmar": "Take apart", "Examinar": "Examine", "Inspeccionar": "Inspect",
  "Reparar": "Fix", "Visitar": "Visit", "Retar": "Challenge",
+ // Verbos del botón Acción (primera palabra de la etiqueta)
+ "Echar": "Toss", "Encender": "Light", "Apagar": "Turn off", "Atrapar": "Catch", "Sembrar": "Plant", "Pescar": "Fish", "Remar": "Paddle", "Limpiar": "Clean", "Amarrar": "Tie", "Atar": "Tie", "Colgar": "Hang", "Levantar": "Lift", "Revisar": "Check", "Empezar": "Start", "Comenzar": "Start", "Cambiar": "Change", "Comprar": "Buy", "Crear": "Create", "Editar": "Edit", "Entrenar": "Train", "Fotografiar": "Photograph", "Replantar": "Replant", "Retirar": "Remove", "Sellar": "Seal", "Sentar": "Sit", "Silbar": "Whistle", "Sobrevolar": "Fly over", "Sostener": "Hold", "Terminar": "Finish", "Vaciar": "Empty", "Achicar": "Bail", "Acomodar": "Arrange", "Apuntar": "Aim", "Avisar": "Tell", "Descubrir": "Discover", "Dispersar": "Scatter", "Enderezar": "Straighten", "Enseñar": "Show", "Explicar": "Explain", "Hacer": "Do", "Marcar": "Mark", "Pulsar": "Press", "Reforzar": "Reinforce", "Repetir": "Repeat", "Plegar": "Fold", "Caminar": "Walk", "Ganar": "Win", "Mantener": "Hold", "Codificar": "Code", "Emparejar": "Match", "Personalizar": "Customize", "Proponer": "Propose", "Atravesar": "Cross", "Ladear": "Tilt", "Flotar": "Float", "Acertar": "Guess", "Machacar": "Mash",
  "Recoger madera": "Pick up wood",
  "Contarle": "Tell",
  "Llevar": "Carry",
