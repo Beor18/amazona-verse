@@ -384,6 +384,8 @@ window.AVRescateRapido = function (G) {
       // el botón Acción lleva el icono de un pichón mientras dice «Recoger» o «Dejar»
       // en táctil, «Bajar» (mantener = C) para llegar hasta un pichón sin esperar a «Aterrizar», como en planeo.js
       'body.pichones-on:not(.pichones-fin) #acts #b-dive{display:inline-flex!important}' +
+      // F22: aquí «Aterrizar» (#b-fly) sigue a la vista y ocupa la misma celda: «Bajar» sube encima del grupo para no quedar tapado
+      'body.pichones-on:not(.pichones-fin) #acts #b-dive{position:absolute;left:0;bottom:calc(100% + 10px)}' +
       'body.pichones-on #b-act{--icon:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Cellipse cx=%2712%27 cy=%2715.5%27 rx=%276%27 ry=%276.6%27/%3E%3Ccircle cx=%2712%27 cy=%277.6%27 r=%274.4%27/%3E%3C/svg%3E")}';
     document.head.appendChild(st);
   }
@@ -596,6 +598,12 @@ window.AVRescateRapido = function (G) {
       listo(); ir(pich[0].x, pich[0].z, 14);
       check('Justo encima de un pichón pero muy alto, Acción dice que bajes («¡Muy alto! Baja…»)', !accion() && E.lleva < 0 && /Muy alto! Baja/.test(q(hudEl, 'msg').textContent), q(hudEl, 'msg').textContent);
       { const d = document.getElementById('b-dive'); check('En táctil está «Bajar» (el botón de picada, siempre a mano mientras se juega)', !d || (getComputedStyle(d).display !== 'none' && d.textContent === 'Bajar'), d && (d.textContent + ' · ' + getComputedStyle(d).display)); }
+      { const d = document.getElementById('b-dive'), f = document.getElementById('b-fly'), cs = d && getComputedStyle(d);
+        // F22: en el teléfono «Bajar» no puede quedar debajo de «Aterrizar» (se medía la misma celda): ni solapados ni tapados
+        const r = d && d.getBoundingClientRect(), rf = f && vis('b-fly') ? f.getBoundingClientRect() : null;
+        const solapa = r && rf && r.width > 0 && r.left < rf.right && r.right > rf.left && r.top < rf.bottom && r.bottom > rf.top;
+        const enc = r && r.width > 0 ? document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) : null;
+        check('«Bajar» no queda debajo de «Aterrizar»: va en su sitio propio y el dedo lo alcanza', !d || (cs.position === 'absolute' && !solapa && (!vis('b-dive') || !enc || enc === d || d.contains(enc))), r ? `${Math.round(r.left)},${Math.round(r.top)} · ${enc ? enc.id || enc.tagName : '-'}` : '-'); }
       // Teclado (E) junto al pichón 0
       listo(); aPichon(0); paso(0.02);
       const avisoCerca = /Pulsa «Recoger»/.test(q(hudEl, 'msg').textContent);

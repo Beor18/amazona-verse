@@ -165,7 +165,9 @@ window.AVSemillas = function (G) {
       'body.semillas-on :is(#quest,#inv,#modo-salir){visibility:hidden!important}' +
       // F20 r2: el aviso de las instrucciones va debajo de la barra del juego (se cruzaban y no se leía ninguno) y se esconde con el panel final
       '@media (orientation:landscape){body.semillas-on #toast{top:calc(env(safe-area-inset-top,0px) + 74px)!important;bottom:auto!important}}' +
-      'body.semillas-on:has(#sem-fin:not([hidden])) #toast{visibility:hidden!important}';
+      'body.semillas-on:has(#sem-fin:not([hidden])) #toast{visibility:hidden!important}' +
+      // F22: el panel final es modal: el HUD del mundo y el del juego se apartan (como en Planeo y Rescate rápido)
+      'body.semillas-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#sys,#sys button,#b-diary,#b-emotes,#b-nido,#b-menu,#b-dive,#v18-exp-poder,#sem-hud){visibility:hidden!important}';
     document.head.appendChild(st);
   }
   function montar() {
@@ -173,7 +175,7 @@ window.AVSemillas = function (G) {
     css();
     hudEl = document.createElement('div'); hudEl.id = 'sem-hud'; hudEl.hidden = true; hudEl.setAttribute('role', 'status');
     hudEl.innerHTML = '<b data-k="t" class="sem-tit"></b><span class="sem-n">' + ICONO + '<span data-k="n"></span></span><span class="sem-t" data-k="r"></span><span class="sem-r" data-k="rec"></span><span data-k="msg" aria-live="polite"></span><button type="button" class="salir" data-a="salir"></button>';
-    finEl = document.createElement('div'); finEl.id = 'sem-fin'; finEl.hidden = true; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-labelledby', 'sem-fin-t');
+    finEl = document.createElement('div'); finEl.id = 'sem-fin'; finEl.hidden = true; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'sem-fin-t');
     finEl.innerHTML = '<h2 id="sem-fin-t" data-k="ft"></h2><div class="sem-gran">' + ICONO + '<span data-k="fn"></span></div><p data-k="fmsg" aria-live="polite"></p><p class="sem-det" data-k="fdet"></p><div class="sem-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div>';
     const clic = e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; e.preventDefault(); if (b.dataset.a === 'otra') jugar(); else salir(); };
     hudEl.addEventListener('click', clic); finEl.addEventListener('click', clic);
@@ -212,7 +214,7 @@ window.AVSemillas = function (G) {
     E.mejor = leerRec();
     for (let i = 0; i < 4; i++) { const s = soltar(i === 3 ? 'dorada' : 'semilla'); if (s) s.y -= i * 1.6; } // que no empiece con el cielo vacío
     hudEl.hidden = false; finEl.hidden = true; q(hudEl, 'msg').textContent = '';
-    document.body.classList.add('semillas-on');
+    document.body.classList.add('semillas-on'); document.body.classList.remove('semillas-fin');
     try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: sin ladera ni techo delante de la cámara
     pintarHud(); pintar();
     if (!o.callado && G.ui && G.ui.toast) G.ui.toast(L('¡Semillas al vuelo! Atrápalas antes de que lleguen al suelo. Las doradas valen 5 y las hojas secas te quitan 1 segundo.', 'Seeds on the wing! Catch them before they reach the ground. Golden ones are worth 5, and dry leaves take 1 second off.'), 3200);
@@ -224,7 +226,7 @@ window.AVSemillas = function (G) {
     E.nuevo = E.puntos > E.mejor; if (E.nuevo) { E.mejor = E.puntos; guardarRec(E.puntos); }
     try { G.emit('record', { modo: 'semillas', puntos: E.puntos }); } catch (e) { /* */ }
     sonar('panel_final'); if (E.nuevo && E.puntos > 0) setTimeout(() => sonar('logro'), 700);
-    pintarHud(); pintarFin(); finEl.hidden = false;
+    pintarHud(); pintarFin(); finEl.hidden = false; document.body.classList.add('semillas-fin');
     const otra = finEl.querySelector('[data-a="otra"]'); setTimeout(() => { try { if (!finEl.hidden) otra.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
   }
   const activo = () => E.fase !== 'nada';
@@ -232,10 +234,17 @@ window.AVSemillas = function (G) {
     if (!activo()) return false;
     E.fase = 'nada'; vaciar();
     if (hudEl) { hudEl.hidden = true; finEl.hidden = true; [hudEl, finEl].forEach(el => el.querySelectorAll('[data-k]').forEach(x => { x.textContent = ''; })); } // sin texto viejo (ni en otro idioma)
-    document.body.classList.remove('semillas-on');
+    document.body.classList.remove('semillas-on', 'semillas-fin');
     return true;
   }
   addEventListener('keydown', e => {
+    if (activo() && E.fase === 'fin' && e.key === 'Tab' && finEl && !finEl.hidden && !(G.ui && G.ui.cardOpen)) { // F22: el foco no sale del panel, da la vuelta entre sus botones
+      e.preventDefault(); e.stopImmediatePropagation();
+      const bs = [...finEl.querySelectorAll('button')], i = bs.indexOf(document.activeElement), n = bs.length;
+      const j = e.shiftKey ? (i <= 0 ? n - 1 : i - 1) : (i < 0 || i >= n - 1 ? 0 : i + 1);
+      try { bs[j].focus({ preventScroll: true }); } catch (er) { /* */ }
+      return;
+    }
     if (!activo() || e.key !== 'Escape' || e.repeat) return;
     if (G.ui && G.ui.cardOpen) return; // una tarjeta abierta encima se cierra primero
     e.preventDefault(); e.stopImmediatePropagation(); salir();
@@ -276,6 +285,13 @@ window.AVSemillas = function (G) {
       const bots = [...finEl.querySelectorAll('button'), hudEl.querySelector('button')].map(b => b.getBoundingClientRect());
       const fr = finEl.getBoundingClientRect(), hr = hudEl.getBoundingClientRect();
       check('Cabe en la pantalla: panel y HUD dentro, botones ≥ 44 px', bots.every(b => b.height >= 44 && b.width >= 44) && fr.left >= 0 && fr.right <= innerWidth && fr.top >= 0 && fr.bottom <= innerHeight && hr.left >= 0 && hr.right <= innerWidth && hr.bottom < innerHeight * 0.3, `${innerWidth}×${innerHeight} · panel ${Math.round(fr.width)}×${Math.round(fr.height)} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)}`);
+      { // F22: el panel final es modal (aria-modal, el foco da la vuelta entre sus dos botones y el HUD de detrás no se ve)
+        const vis = id => { const el = document.getElementById(id); return !!el && getComputedStyle(el).visibility !== 'hidden' && el.getClientRects().length > 0; };
+        finEl.querySelector('[data-a="otra"]').focus(); const enPanel = [];
+        for (let i = 0; i < 3; i++) { const t = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }); dispatchEvent(t); enPanel.push(t.defaultPrevented && finEl.contains(document.activeElement)); }
+        const tS = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }); dispatchEvent(tS); enPanel.push(finEl.contains(document.activeElement));
+        const fuera = ['b-diary', 'b-menu', 'b-emotes', 'minimapa', 'sem-hud', 'acts', 'stick'].filter(vis);
+        check('El panel final es modal: aria-modal, Tab no sale de «Otra vez»/«Salir» y el HUD de detrás no se ve', finEl.getAttribute('aria-modal') === 'true' && enPanel.every(Boolean) && !fuera.length && document.body.classList.contains('semillas-fin'), enPanel.join(',') + (fuera.length ? ' · se ve ' + fuera.join(',') : '')); }
       finEl.querySelector('[data-a="otra"]').click();
       check('«Otra vez» empieza de nuevo (0 semillas, 1:15, sin panel)', E.fase === 'juego' && E.puntos === 0 && finEl.hidden && q(hudEl, 'r').textContent === '1:15' && /Récord 6/.test(q(hudEl, 'rec').textContent), q(hudEl, 'rec').textContent);
       lejos(); E.t = DUR; paso(0.1);

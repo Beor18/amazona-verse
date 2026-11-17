@@ -50,7 +50,7 @@ window.AVCanto = function (G) {
       '#canto .c-ave.luz{background:var(--l);transform:scale(1.05);box-shadow:0 0 0 6px rgba(255,255,255,.65),0 0 30px var(--l)}#canto .c-ave[aria-disabled="true"]{cursor:default}' +
       '#canto .c-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}#canto .c-bots button{min-height:48px;padding:6px 18px;font:700 17px Fredoka,system-ui,sans-serif;border-radius:24px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer}' +
       '#canto .c-bots button[hidden]{display:none}#canto .c-bots .c-salir{background:#ffd0c4}' +
-      'body.canto-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir,#quest,#inv,#b-diary,#b-emotes,#b-menu,#b-construir,#b-nido,#minimapa,#marcador,#top,#sys){visibility:hidden!important}' + // el juego tapa todo: sin HUD detrás
+      'body.canto-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir,#quest,#inv,#b-diary,#b-emotes,#b-menu,#b-construir,#b-nido,#minimapa,#marcador,#top,#sys,#guia-hud){visibility:hidden!important}' + // el juego tapa todo: sin HUD detrás (F22: tampoco «Controles»)
       // T51: en horizontal (teléfono tumbado) las cuatro en una fila, del tamaño que deja el alto; «Salir» siempre a la vista
       '@media (orientation:landscape) and (max-height:560px){#canto .c-caja{width:min(900px,100%);gap:8px}#canto h2{font-size:24px}#canto .c-msg{font-size:17px;min-height:1.2em;margin:0}' +
       '#canto .c-aves{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(100%,calc((100dvh - 170px) * 4 + 30px))}#canto .c-ave{border-radius:20px;font-size:15px}#canto .c-bots button{min-height:44px}}' +
@@ -60,8 +60,8 @@ window.AVCanto = function (G) {
   function montar() {
     if (el) return el;
     css();
-    el = document.createElement('div'); el.id = 'canto'; el.hidden = true; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
-    el.innerHTML = '<div class="c-caja"><h2 data-k="t"></h2><div class="c-info"><span data-k="ronda"></span><span data-k="mejor"></span></div><p class="c-msg" data-k="msg" aria-live="polite"></p>' +
+    el = document.createElement('div'); el.id = 'canto'; el.hidden = true; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'canto-t'); // F22: el lector dice «Sigue el canto»
+    el.innerHTML = '<div class="c-caja"><h2 id="canto-t" data-k="t"></h2><div class="c-info"><span data-k="ronda"></span><span data-k="mejor"></span></div><p class="c-msg" data-k="msg" aria-live="polite"></p>' +
       '<div class="c-aves">' + AVES.map((a, i) => `<button type="button" class="c-ave" data-i="${i}" style="--c:${a.col};--l:${a.luz}"><img src="assets/retratos/v18/${a.r}.png" alt="" width="128" height="128" draggable="false"><span data-k="n${i}"></span></button>`).join('') + '</div>' +
       '<div class="c-bots"><button type="button" data-a="otra" hidden></button><button type="button" class="c-salir" data-a="salir"></button></div></div>';
     el.addEventListener('pointerdown', e => {
@@ -69,7 +69,10 @@ window.AVCanto = function (G) {
       e.preventDefault();
       if (b.dataset.i != null) pulsar(+b.dataset.i); else if (b.dataset.a === 'otra') nueva(); else if (b.dataset.a === 'salir') salir();
     });
-    el.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (b && e.detail === 0) { if (b.dataset.a === 'otra') nueva(); else salir(); } }); // Enter/Espacio con el foco
+    el.addEventListener('click', e => { // Enter/Espacio con el foco (F22: también sobre una cotorra)
+      const b = e.target.closest && e.target.closest('button'); if (!b || e.detail !== 0) return;
+      if (b.dataset.i != null) pulsar(+b.dataset.i); else if (b.dataset.a === 'otra') nueva(); else if (b.dataset.a === 'salir') salir();
+    });
     document.body.appendChild(el);
     return el;
   }
@@ -125,7 +128,14 @@ window.AVCanto = function (G) {
     const k = e.key;
     const i = { 1: 0, 2: 1, 3: 2, 4: 3, ArrowUp: 0, ArrowRight: 1, ArrowDown: 2, ArrowLeft: 3 }[k];
     if (i != null) { e.preventDefault(); e.stopImmediatePropagation(); pulsar(i); return; }
-    if (k === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); salir(); }
+    if (k === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); salir(); return; }
+    if (k === 'Tab' && el && !el.hidden) { // F22: el diálogo es modal: el foco da la vuelta entre sus botones a la vista
+      e.preventDefault(); e.stopImmediatePropagation();
+      const bs = [...el.querySelectorAll('button')].filter(b => !b.hidden && b.getClientRects().length), j0 = bs.indexOf(document.activeElement), n = bs.length;
+      if (!n) return;
+      const j = e.shiftKey ? (j0 <= 0 ? n - 1 : j0 - 1) : (j0 < 0 || j0 >= n - 1 ? 0 : j0 + 1);
+      try { bs[j].focus({ preventScroll: true }); } catch (er) { /* */ }
+    }
   }
   addEventListener('keydown', tecla, true);
   const activo = () => E.fase !== 'nada';
@@ -171,6 +181,15 @@ window.AVCanto = function (G) {
       await hasta(() => E.fase === 'turno', 3000);
       dispatchEvent(new KeyboardEvent('keydown', { key: String(E.sec[0] + 1), bubbles: true }));
       check('Con el teclado (1-4) también se juega', await hasta(() => E.ronda === 2, 3000));
+      { // F22: con el foco en la cotorra correcta, Enter (un click de teclado, detail 0) también juega
+        await hasta(() => E.fase === 'turno', 3000); const r0 = E.ronda, b = el.querySelector(`.c-ave[data-i="${E.sec[0]}"]`);
+        b.focus(); b.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 0 }));
+        check('Enter o Espacio sobre la cotorra enfocada también juegan (no solo 1-4 y flechas)', await hasta(() => E.ronda === r0 + 1 || E.pos > 0, 3000), E.ronda + '/' + E.pos); }
+      { // F22: nombre accesible y foco atrapado en el diálogo
+        const tit = document.getElementById(el.getAttribute('aria-labelledby') || '-'), sal = [];
+        for (let i = 0; i < 6; i++) { const t = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }); dispatchEvent(t); sal.push(t.defaultPrevented && el.contains(document.activeElement)); }
+        const tS = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }); dispatchEvent(tS); sal.push(el.contains(document.activeElement));
+        check('El diálogo se llama «Sigue el canto» y Tab no saca el foco de él', !!tit && /Sigue el canto|Follow the song/.test(tit.textContent) && sal.every(Boolean), (tit ? tit.textContent : '-') + ' · ' + sal.join(',')); }
       const ae = G.aula && G.aula.aj, idi0 = ae ? ae.idioma : null;
       if (ae) { ae.idioma = 'en'; pintar(); check('En inglés: «Follow the song», «Round», «Best» y «Exit»', q('t').textContent === 'Follow the song' && /Round/.test(q('ronda').textContent) && /Best/.test(q('mejor').textContent) && el.querySelector('[data-a="salir"]').textContent === 'Exit'); ae.idioma = idi0; pintar(); }
       dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));

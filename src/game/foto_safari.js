@@ -528,7 +528,16 @@ window.AVFotoSafari = function (G) {
       e.preventDefault(); e.stopImmediatePropagation(); if (E.cam) cerrarCam(); else salir(); return; // con la cámara abierta, Esc solo la cierra
     }
     if (E.fase === 'fin') { // el panel final es modal: las teclas del mundo no pasan; Tab, Enter y Espacio van a sus botones (no en el primer segundo)
-      if (e.key === 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'Tab') { // F22: el foco no sale del panel (aria-modal): da la vuelta entre sus botones
+        if (G.ui && G.ui.cardOpen) return;
+        e.preventDefault(); e.stopImmediatePropagation();
+        const bs = [...finEl.querySelectorAll('button')].filter(b => b.getClientRects().length), i = bs.indexOf(document.activeElement), n = bs.length;
+        if (!n) return;
+        const j = e.shiftKey ? (i <= 0 ? n - 1 : i - 1) : (i < 0 || i >= n - 1 ? 0 : i + 1);
+        try { bs[j].focus({ preventScroll: true }); } catch (er) { /* */ }
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       const boton = (e.key === 'Enter' || e.key === ' ') && performance.now() / 1000 - E.finP > 1 && e.target && e.target.closest && e.target.closest('#fs-fin button');
       e.stopImmediatePropagation(); if (!boton) e.preventDefault();
     }
@@ -716,6 +725,10 @@ window.AVFotoSafari = function (G) {
       await new Promise(r => setTimeout(r, 30));
       const tP = tecla('p'), tE = tecla('e');
       check('El panel es modal: el mundo queda en pausa, las teclas del mundo no pasan y el foco va al panel', (!G.pausa || !G.pausa.motivos || G.pausa.motivos.has('foto')) && tP.defaultPrevented && tE.defaultPrevented && E.fase === 'fin' && document.activeElement === finEl, document.activeElement && (document.activeElement.id || document.activeElement.tagName));
+      { // F22: después de «Salir», Tab vuelve a «Otra vez» (no se va a la barra del navegador)
+        const enPanel = []; for (let i = 0; i < 3; i++) { const t = tecla('Tab'); enPanel.push(t.defaultPrevented && finEl.contains(document.activeElement) && document.activeElement !== finEl); }
+        const tS = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }); dispatchEvent(tS); enPanel.push(finEl.contains(document.activeElement));
+        check('El foco no sale del panel final con Tab ni con Mayús+Tab', enPanel.every(Boolean), enPanel.join(',')); }
       const ae = G.aula && G.aula.aj;
       if (ae) {
         const idi0 = ae.idioma; ae.idioma = 'en'; pintarHud(); pintarFin(); pintarCarta(); E.cam = true; pintarVisor(); E.cam = false;
