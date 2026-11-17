@@ -47,6 +47,8 @@ window.AVPlaneo = function (G) {
   const leerRec = () => { try { const d = JSON.parse(localStorage.getItem(ALM) || 'null'); return d && d.v === 1 && Number.isInteger(d.mejor) && d.mejor >= 0 && d.mejor < 100000 ? d : null; } catch (e) { return null; } };
   const guardarRec = () => { try { localStorage.setItem(ALM, JSON.stringify({ v: 1, mejor: E.mejor, nubes: E.mejorNubes, jugadas: E.jugadas })); } catch (e) { /* sin almacén */ } };
   const sonar = (n, a) => { try { if (!G.quiet && G.audio && G.audio.play) G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'planeo', sigue); F.sonar(G, 'planeo', tipo); return 0; };
   let azarS = 0; const azar = () => { if (!azarS) return Math.random(); azarS = (azarS * 16807) % 2147483647; return (azarS - 1) / 2147483646; };
   const rnd = (a, b) => a + azar() * (b - a);
 
@@ -346,8 +348,8 @@ window.AVPlaneo = function (G) {
     css();
     hudEl = document.createElement('div'); hudEl.id = 'pln-hud'; hudEl.hidden = true; // sin role="status": el reloj cambia cada segundo y no se anuncia; solo el aviso (aria-live) habla
     hudEl.innerHTML = '<b class="pln-tit" data-k="tit"></b><span class="pln-t" data-k="r"></span><span class="pln-d" data-k="dw">' + FLECHA + '<span data-k="d"></span></span><span class="pln-h" data-k="hw">' + ALTO + '<span data-k="h"></span></span><span class="pln-r" data-k="rec"></span><span data-k="msg" aria-live="polite"></span><button type="button" class="salir" data-a="salir"></button>';
-    finEl = document.createElement('div'); finEl.id = 'pln-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'pln-fin-t');
-    finEl.innerHTML = '<h2 id="pln-fin-t" data-k="ft"></h2><div class="pln-gran">' + FLECHA + '<span data-k="fn"></span></div><p data-k="fmsg" aria-live="polite"></p><p class="pln-det" data-k="fdet"></p><div class="pln-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div>';
+    finEl = document.createElement('div'); finEl.id = 'pln-fin'; finEl.className = 'av-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'pln-fin-t');
+    finEl.innerHTML = '<h2 id="pln-fin-t" data-k="ft"></h2><div class="pln-gran av-num">' + FLECHA + '<span data-k="fn"></span></div><p class="av-msg" data-k="fmsg" aria-live="polite"></p><p class="pln-det av-det" data-k="fdet"></p><div class="pln-bots av-bots"><button type="button" class="av-bot" data-a="otra"></button><button type="button" class="av-bot salir" data-a="salir"></button></div>';
     const clic = e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; e.preventDefault(); if (b.dataset.a === 'otra') jugar(); else salir(); };
     hudEl.addEventListener('click', clic); finEl.addEventListener('click', clic);
     document.body.appendChild(hudEl); document.body.appendChild(finEl);
@@ -430,7 +432,7 @@ window.AVPlaneo = function (G) {
     E.motivo = motivo; guia.ok = false;
     E.fase = 'toque'; E.toqueT = motivo === 'tiempo' ? 0 : TOQUE_T;
     hudEl.hidden = true; q(hudEl, 'msg').textContent = ''; document.body.classList.add('planeo-fin');
-    sonar(motivo === 'tiempo' ? 'panel_final' : 'frenada');
+    if (motivo === 'tiempo') finSon(Math.floor(E.lejos) < 25 ? 'casi' : 'victoria'); else sonar('frenada');
     pintarMotas();
     if (E.toqueT <= 0) mostrarFin();
   }
@@ -443,8 +445,8 @@ window.AVPlaneo = function (G) {
     if (E.nubesN > E.mejorNubes) E.mejorNubes = E.nubesN;
     guardarRec();
     try { G.emit('record', { modo: 'planeo', metros: d, nubes: E.nubesN }); } catch (e) { /* */ }
-    if (E.motivo !== 'tiempo') sonar('panel_final');
-    if (E.nuevo) logroId = setTimeout(() => { logroId = 0; if (E.fase === 'fin') sonar('logro'); }, 500);
+    if (E.motivo !== 'tiempo') finSon(d < 25 ? 'casi' : 'victoria');
+    if (E.nuevo) logroId = finSon('record', () => E.fase === 'fin');
     pintarMotas(); pintarHud(); pintarFin(); finEl.hidden = false;
     try { if (G.pausa && G.pausa.set) G.pausa.set('planeo', true); } catch (e) { /* sin pausa */ } // panel modal: el mundo se congela detrás
     // el foco va al panel (no a «Otra vez»): un toque de los últimos segundos no arranca otra partida sin ver el resultado

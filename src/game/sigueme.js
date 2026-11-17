@@ -33,6 +33,8 @@ window.AVSigueme = function (G) {
   const leerRec = () => { try { const d = JSON.parse(localStorage.getItem(ALM) || 'null'); return d && d.v === 1 && Number.isInteger(d.mejor) && d.mejor >= 0 && d.mejor < 100000 ? d : null; } catch (e) { return null; } };
   const guardarRec = (mejor, fila, jugadas) => { try { localStorage.setItem(ALM, JSON.stringify({ v: 1, mejor, fila, jugadas })); } catch (e) { /* sin almacén */ } };
   const sonar = (n, a) => { try { if (!G.quiet && G.audio && G.audio.play) G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'sigueme', sigue); F.sonar(G, 'sigueme', tipo); return 0; };
   let azarS = 0; const azar = () => { if (!azarS) return Math.random(); azarS = (azarS * 16807) % 2147483647; return (azarS - 1) / 2147483646; };
   const rnd = (a, b) => a + azar() * (b - a);
   const mult = n => (n >= 10 ? 4 : n >= 7 ? 3 : n >= 4 ? 2 : 1);
@@ -363,8 +365,8 @@ window.AVSigueme = function (G) {
     css();
     hudEl = document.createElement('div'); hudEl.id = 'sig-hud'; hudEl.hidden = true; hudEl.setAttribute('role', 'status');
     hudEl.innerHTML = '<span class="sig-t" data-k="r"></span><span class="sig-p" data-k="p"></span><span class="sig-fila" data-k="fila">' + ICONO.repeat(VIS) + '<span class="sig-mas" data-k="mas"></span><span class="sig-x" data-k="x"></span></span><span class="sig-r" data-k="rec"></span><span data-k="msg" aria-live="polite"></span><button type="button" class="salir" data-a="salir"></button>';
-    finEl = document.createElement('div'); finEl.id = 'sig-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'sig-fin-t');
-    finEl.innerHTML = '<h2 id="sig-fin-t" data-k="ft"></h2><div class="sig-gran">' + ICONO + '<span data-k="fn"></span></div><p data-k="fmsg" aria-live="polite"></p><p class="sig-med" data-k="fmed"></p><p class="sig-det" data-k="fdet"></p><div class="sig-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div>';
+    finEl = document.createElement('div'); finEl.id = 'sig-fin'; finEl.className = 'av-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'sig-fin-t');
+    finEl.innerHTML = '<h2 id="sig-fin-t" data-k="ft"></h2><div class="sig-gran av-num">' + ICONO + '<span data-k="fn"></span></div><p class="av-msg" data-k="fmsg" aria-live="polite"></p><p class="sig-med" data-k="fmed"></p><p class="sig-det av-det" data-k="fdet"></p><div class="sig-bots av-bots"><button type="button" class="av-bot" data-a="otra"></button><button type="button" class="av-bot salir" data-a="salir"></button></div>';
     const clic = e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; e.preventDefault(); if (b.dataset.a === 'otra') jugar(); else salir(); };
     hudEl.addEventListener('click', clic); finEl.addEventListener('click', clic);
     document.body.appendChild(hudEl); document.body.appendChild(finEl);
@@ -429,7 +431,7 @@ window.AVSigueme = function (G) {
     if (E.filaMax > E.mejorFila) E.mejorFila = E.filaMax;
     guardarRec(E.mejor, E.mejorFila, E.jugadas);
     try { G.emit('record', { modo: 'sigueme', puntos: E.puntos, fila: E.filaMax }); } catch (e) { /* */ }
-    sonar('panel_final'); if (E.nuevo && E.puntos > 0) logroId = setTimeout(() => { logroId = 0; if (E.fase === 'fin') sonar('logro'); }, 700);
+    finSon(E.puntos > 0 ? 'victoria' : 'casi'); if (E.nuevo && E.puntos > 0) logroId = finSon('record', () => E.fase === 'fin');
     camara(); pintar(); pintarHud(); pintarFin(); finEl.hidden = false; hudEl.hidden = true; q(hudEl, 'msg').textContent = ''; document.body.classList.add('sigueme-fin'); // un solo «Salir»: el del panel
     try { if (G.pausa && G.pausa.set) G.pausa.set('sigueme', true); } catch (e) { /* sin pausa */ } // panel modal: el mundo se congela detrás
     // el foco va al panel (no a «Otra vez»): una tecla de vuelo de los últimos segundos no arranca otra partida sin ver el resultado

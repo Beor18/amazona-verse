@@ -41,6 +41,8 @@ window.AVFotoSafari = function (G) {
   const leerRec = () => { try { const d = JSON.parse(localStorage.getItem(ALM) || 'null'); return d && d.v === 1 && Number.isInteger(d.mejor) && d.mejor >= 0 && d.mejor < 100000 ? d : null; } catch (e) { return null; } };
   const guardarRec = (mejor, perfecto, jugadas) => { try { localStorage.setItem(ALM, JSON.stringify({ v: 1, mejor, perfecto, jugadas })); } catch (e) { /* sin almacén */ } };
   const sonar = (n, a) => { try { if (!G.quiet && G.audio && G.audio.play) G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'foto', sigue); F.sonar(G, 'foto', tipo); return 0; };
   let azarS = 0; const azar = () => { if (!azarS) return Math.random(); azarS = (azarS * 16807) % 2147483647; return (azarS - 1) / 2147483646; };
 
   // ---------- Animales (los que ya viven en el mundo y tienen ficha con fuente) ----------
@@ -380,8 +382,8 @@ window.AVFotoSafari = function (G) {
     fotoEl = document.createElement('button'); fotoEl.type = 'button'; fotoEl.id = 'fs-foto'; fotoEl.hidden = true; fotoEl.dataset.a = 'foto';
     flashEl = document.createElement('div'); flashEl.id = 'fs-flash'; flashEl.setAttribute('aria-hidden', 'true');
     estEl = document.createElement('div'); estEl.id = 'fs-est'; estEl.hidden = true; estEl.setAttribute('aria-hidden', 'true');
-    finEl = document.createElement('div'); finEl.id = 'fs-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'fs-fin-t');
-    finEl.innerHTML = '<h2 id="fs-fin-t" data-k="ft"></h2><div class="fs-gran">' + ESTRELLA + '<span data-k="fn"></span></div><p data-k="fmsg" aria-live="polite"></p><p class="fs-med" data-k="fmed"></p><div class="fs-rollo" data-k="frollo"></div><p class="fs-det" data-k="fdet"></p><div class="fs-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div>';
+    finEl = document.createElement('div'); finEl.id = 'fs-fin'; finEl.className = 'av-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'fs-fin-t');
+    finEl.innerHTML = '<h2 id="fs-fin-t" data-k="ft"></h2><div class="fs-gran av-num">' + ESTRELLA + '<span data-k="fn"></span></div><p class="av-msg" data-k="fmsg" aria-live="polite"></p><p class="fs-med" data-k="fmed"></p><div class="fs-rollo" data-k="frollo"></div><p class="fs-det av-det" data-k="fdet"></p><div class="fs-bots av-bots"><button type="button" class="av-bot" data-a="otra"></button><button type="button" class="av-bot salir" data-a="salir"></button></div>';
     const clic = e => {
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; e.preventDefault();
       const a = b.dataset.a; if (a === 'otra') jugar(); else if (a === 'salir') salir(); else if (a === 'cerrar') cerrarCam(); else if (a === 'foto') { disparar(); b.blur(); }
@@ -490,7 +492,7 @@ window.AVFotoSafari = function (G) {
     if (perfecto()) E.perfecto++;
     guardarRec(E.mejor, E.perfecto, E.jugadas);
     try { G.emit('record', { modo: 'foto', puntos: E.estrellas, fotos: E.fotos, perfecto: perfecto() }); } catch (e) { /* */ }
-    sonar('panel_final'); if (E.nuevo && E.estrellas > 0) logroId = setTimeout(() => { logroId = 0; if (E.fase === 'fin') sonar('logro'); }, 700);
+    finSon(E.estrellas > 0 ? 'victoria' : 'casi'); if (E.nuevo && E.estrellas > 0) logroId = finSon('record', () => E.fase === 'fin');
     pintarHud(); pintarFin(); finEl.hidden = false; hudEl.hidden = true; cartaEl.hidden = true; estEl.hidden = true; fotoEl.hidden = true; q(hudEl, 'msg').textContent = '';
     document.body.classList.add('foto-fin');
     try { if (G.pausa && G.pausa.set) G.pausa.set('foto', true); } catch (e) { /* sin pausa */ } // panel modal: el mundo se congela detrás

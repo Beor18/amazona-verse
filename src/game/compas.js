@@ -29,6 +29,8 @@ window.AVCompas = function (G) {
   const guardarRec = (mejor, racha, jugadas) => { try { localStorage.setItem(ALM, JSON.stringify({ v: 1, mejor, racha, jugadas })); } catch (e) { /* sin almacén */ } };
   const A = G.audio;
   const sonar = (n, a) => { try { if (!G.quiet && A && A.play) A.play(n, a); } catch (e) { /* sin audio */ } };
+  // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'compas', sigue); F.sonar(G, 'compas', tipo); return 0; };
   let azarS = 0; const azar = () => { if (!azarS) return Math.random(); azarS = (azarS * 16807) % 2147483647; return (azarS - 1) / 2147483646; };
 
   // ---------- Percusión sintetizada (arg = instante exacto en el reloj del audio) ----------
@@ -394,8 +396,8 @@ window.AVCompas = function (G) {
       '#compas .cp-cuenta{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-size:min(22vw,120px);font-weight:700;text-shadow:0 4px 18px rgba(0,0,0,.45);pointer-events:none}#compas .cp-cuenta:empty{display:none}' +
       '#compas .cp-pista{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;text-align:center;padding:8px 16px;border-radius:18px;background:rgba(16,36,28,.8);font-size:16px;font-weight:600;pointer-events:none;transition:opacity .4s}#compas .cp-pista.cp-oculta{opacity:0}' +
       '#compas .cp-fin{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(380px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:24px;background:rgba(16,36,28,.98);text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;gap:8px;touch-action:manipulation}' +
-      '#compas .cp-fin h2{margin:0;font-size:26px}#compas .cp-gran{font-size:46px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#compas .cp-fin p{margin:0;font-size:17px;font-weight:600}#compas .cp-det{font-size:15px!important;opacity:.85;font-weight:500!important}#compas .cp-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}#compas .cp-bots button{min-height:54px;padding:6px 22px;font-size:17px;border-radius:27px}' +
-      '@media (orientation:landscape) and (max-height:500px){#compas .cp-fin{padding:12px 16px;gap:4px}#compas .cp-fin h2{font-size:21px}#compas .cp-gran{font-size:36px}#compas .cp-pista{font-size:14px;padding:6px 12px}}' +
+      '#compas .cp-fin h2{margin:0;font-size:26px}#compas .cp-gran{font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#compas .cp-fin p{margin:0;font-size:17px;font-weight:600}#compas .cp-det{font-size:15px!important;opacity:.85;font-weight:500!important}#compas .cp-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}#compas .cp-bots button{min-height:54px;padding:4px 22px;font-size:18px;border-radius:22px}' + // PULIR 4: como los demás paneles (.av-bot, ui.css)
+      '@media (orientation:landscape) and (max-height:500px){#compas .cp-fin{padding:12px 16px;gap:4px}#compas .cp-fin h2{font-size:21px}#compas .cp-gran{font-size:34px}#compas .cp-pista{font-size:14px;padding:6px 12px}}' +
       '@media (prefers-reduced-motion:reduce){#compas .cp-fb.pop{animation:none}#compas .cp-pista{transition:none}}.mov-reducido #compas .cp-fb.pop{animation:none}.mov-reducido #compas .cp-pista{transition:none}' +
       'body.compas-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir,#quest,#inv,#b-diary,#b-emotes,#b-menu,#b-construir,#b-nido,#minimapa,#marcador,#top,#sys,#guia-hud,#c1-saltar){visibility:hidden!important}'; // F22: tampoco «Controles» ni «Saltar intro» (el foco se perdía detrás del lienzo)
     document.head.appendChild(st);
@@ -407,7 +409,7 @@ window.AVCompas = function (G) {
     el.innerHTML = '<canvas aria-hidden="true"></canvas>' +
       '<div class="cp-hud"><b id="cp-tit" data-k="tit"></b><span class="cp-alt" data-k="alt"></span><span class="cp-racha" data-k="racha"></span><span class="cp-rec" data-k="rec"></span><button type="button" class="salir" data-a="salir"></button></div>' +
       '<div class="cp-fb" data-k="fb" aria-live="polite"></div><div class="cp-cuenta" data-k="cuenta" aria-hidden="true"></div><div class="cp-pista" data-k="pista"></div>' +
-      '<div class="cp-fin" data-k="fin" role="group" aria-labelledby="cp-fin-t" tabindex="-1" hidden><h2 id="cp-fin-t" data-k="ft"></h2><div class="cp-gran" data-k="fn"></div><p data-k="fmsg" aria-live="polite"></p><p class="cp-det" data-k="fdet"></p><div class="cp-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div></div>';
+      '<div class="cp-fin av-fin" data-k="fin" role="group" aria-labelledby="cp-fin-t" tabindex="-1" hidden><h2 id="cp-fin-t" data-k="ft"></h2><div class="cp-gran av-num" data-k="fn"></div><p class="av-msg" data-k="fmsg" aria-live="polite"></p><p class="cp-det av-det" data-k="fdet"></p><div class="cp-bots av-bots"><button type="button" class="av-bot" data-a="otra"></button><button type="button" class="av-bot salir" data-a="salir"></button></div></div>';
     cv = el.querySelector('canvas'); cx = cv.getContext('2d');
     img = new Image(); img.decoding = 'async'; img.src = 'assets/vittata.png';
     el.addEventListener('pointerdown', e => {
@@ -445,7 +447,7 @@ window.AVCompas = function (G) {
     const m = E.metros;
     q('ft').textContent = L('¡Qué vuelo!', 'What a flight!');
     q('fn').textContent = m + ' m';
-    q('fmsg').textContent = E.nuevo ? L(`¡Nuevo récord: ${m} m!`, `New record: ${m} m!`) : L(`Llegaste a ${m} m. Récord: ${E.mejor} m`, `You reached ${m} m. Best: ${E.mejor} m`);
+    q('fmsg').textContent = E.nuevo ? L(`¡Nuevo récord: ${m} m!`, `New record: ${m} m!`) : m === 0 ? L('¡Casi! Toca justo cuando la hoja llegue al círculo', 'So close! Tap right when the leaf reaches the circle') : L(`Llegaste a ${m} m. Récord: ${E.mejor} m`, `You reached ${m} m. Best: ${E.mejor} m`);
     q('fdet').textContent = L(`Racha más larga: ${E.mejorRacha} · Perfectos: ${E.perfectos}`, `Longest streak: ${E.mejorRacha} · Perfect: ${E.perfectos}`);
     el.querySelector('[data-a="otra"]').textContent = L('Otra vez', 'Play again');
     el.querySelector('.cp-fin [data-a="salir"]').textContent = L('Salir', 'Exit');
@@ -485,7 +487,7 @@ window.AVCompas = function (G) {
     if (E.mejorRacha > E.mejorRachaRec) E.mejorRachaRec = E.mejorRacha;
     guardarRec(E.mejor, E.mejorRachaRec, E.jugadas);
     try { G.emit('record', { modo: 'compas', puntos: E.metros, racha: E.mejorRacha }); } catch (e) { /* */ }
-    sonar('panel_final'); if (E.nuevo && E.metros > 0) logroId = setTimeout(() => { logroId = 0; if (E.fase === 'fin') sonar('logro'); }, 700);
+    finSon(E.metros > 0 ? 'victoria' : 'casi'); if (E.nuevo && E.metros > 0) logroId = finSon('record', () => E.fase === 'fin'); // PULIR 4: tabla común
     q('fb').textContent = ''; q('cuenta').textContent = ''; q('pista').classList.add('cp-oculta');
     pintarHud(); pintarFin(); q('fin').hidden = false; el.querySelector('.cp-hud').hidden = true;
     // el foco va al panel (no a «Otra vez»): un Espacio de los últimos compases no arranca otra partida sin ver el resultado; Tab lleva a los botones
@@ -613,7 +615,7 @@ window.AVCompas = function (G) {
       el.querySelector('[data-a="otra"]').click();
       check('«Otra vez» empieza limpio (0 m, racha 0, capa 1, sin panel, récord a la vista)', E.fase === 'juego' && E.metros === 0 && E.racha === 0 && E.capaMeta === 0 && E.capaVis === 0 && E.calN === 0 && q('fin').hidden && new RegExp('Récord ' + metros + ' m').test(q('rec').textContent) && !notas.some(n => n.on && n.res), q('rec').textContent);
       let nG = 0; while (E.fase === 'juego' && nG++ < 200) paso(1);
-      check('Sin superar el récord: «Llegaste a 0 m. Récord: …»', new RegExp('Llegaste a 0 m\\. Récord: ' + metros + ' m').test(q('fmsg').textContent) && leerRec().mejor === metros && leerRec().jugadas === 2, q('fmsg').textContent);
+      check('Sin metros: «¡Casi!» con una pista (PULIR 4: sin castigo, como los demás) y el récord sigue', /^¡Casi! /.test(q('fmsg').textContent) && (window.AVFinJuego ? window.AVFinJuego.log.filter(x => x.juego === 'compas').slice(-1)[0].tipo === 'casi' : true) && leerRec().mejor === metros && leerRec().jugadas === 2, q('fmsg').textContent);
       const ae = G.aula && G.aula.aj, idi0 = ae ? ae.idioma : null;
       if (ae) {
         ae.idioma = 'en'; pintarHud(); pintarFin();

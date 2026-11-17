@@ -44,6 +44,8 @@ window.AVSembradora = function (G) {
   const leerRec = () => { try { const d = JSON.parse(localStorage.getItem(ALM) || 'null'); return d && d.v === 1 && Number.isInteger(d.mejor) && d.mejor >= 0 && d.mejor < 100000 ? d : null; } catch (e) { return null; } };
   const guardarRec = () => { try { localStorage.setItem(ALM, JSON.stringify({ v: 1, mejor: E.mejor, arboles: E.mejorArb, racha: E.mejorRachaRec, jugadas: E.jugadas, dato: E.datoVisto })); } catch (e) { /* sin almacén */ } };
   const sonar = (n, a) => { try { if (!G.quiet && G.audio && G.audio.play) G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'sembradora', sigue); F.sonar(G, 'sembradora', tipo); return 0; };
   const hojas = (x, y, z, n) => { if (reducido()) return; try { if (G.fx && G.fx.burst) G.fx.burst(x, y, z, 'leaves', n); } catch (e) { /* sin fx */ } };
   let azarS = 0; const azar = () => { if (!azarS) return Math.random(); azarS = (azarS * 16807) % 2147483647; return (azarS - 1) / 2147483646; };
   const rnd = (a, b) => a + azar() * (b - a);
@@ -559,8 +561,8 @@ window.AVSembradora = function (G) {
     css();
     hudEl = document.createElement('div'); hudEl.id = 'sdc-hud'; hudEl.hidden = true; // sin role="status": el reloj cambia cada segundo y no se anuncia; solo el aviso (aria-live) habla
     hudEl.innerHTML = '<b class="sdc-tit" data-k="tit"></b><span class="sdc-t" data-k="r"></span><span class="sdc-a" data-k="aw">' + ARBOL + '<span data-k="a"></span></span><span class="sdc-s" data-k="s">' + '<i></i>'.repeat(LLEVA) + '</span><span class="sdc-x" data-k="x"></span><span class="sdc-r" data-k="rec"></span><span data-k="msg" aria-live="polite"></span><button type="button" class="salir" data-a="salir"></button>';
-    finEl = document.createElement('div'); finEl.id = 'sdc-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'sdc-fin-t');
-    finEl.innerHTML = '<h2 id="sdc-fin-t" data-k="ft"></h2><div class="sdc-gran">' + ARBOL + '<span data-k="fn"></span></div><p data-k="fmsg" aria-live="polite"></p><p class="sdc-det" data-k="fdet"></p><p class="sdc-dato" data-k="fdato"></p><div class="sdc-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div>';
+    finEl = document.createElement('div'); finEl.id = 'sdc-fin'; finEl.className = 'av-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'sdc-fin-t');
+    finEl.innerHTML = '<h2 id="sdc-fin-t" data-k="ft"></h2><div class="sdc-gran av-num">' + ARBOL + '<span data-k="fn"></span></div><p class="av-msg" data-k="fmsg" aria-live="polite"></p><p class="sdc-det av-det" data-k="fdet"></p><p class="sdc-dato" data-k="fdato"></p><div class="sdc-bots av-bots"><button type="button" class="av-bot" data-a="otra"></button><button type="button" class="av-bot salir" data-a="salir"></button></div>';
     const clic = e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; e.preventDefault(); if (b.dataset.a === 'otra') jugar(); else salir(); };
     hudEl.addEventListener('click', clic); finEl.addEventListener('click', clic);
     document.body.appendChild(hudEl); document.body.appendChild(finEl);
@@ -630,7 +632,7 @@ window.AVSembradora = function (G) {
     E.fase = 'vista'; E.vistaT = reducido() ? 0 : VISTA_T; guia.ok = false;
     hudEl.hidden = true; q(hudEl, 'msg').textContent = ''; document.body.classList.add('sembradora-fin');
     if (!reducido()) { encuadrarFinal(); camara(2); } // con «Reducir movimiento», sin subida ni cambio de vista: el panel sale ya
-    sonar('panel_final');
+    finSon(E.arboles > 0 ? 'victoria' : 'casi');
     pintar();
     if (E.vistaT <= 0) mostrarFin();
   }
@@ -644,7 +646,7 @@ window.AVSembradora = function (G) {
     E.datoAhora = !E.datoVisto; E.datoVisto = true; // el dato real, una sola vez
     guardarRec();
     try { G.emit('record', { modo: 'sembradora', puntos: E.puntos, arboles: E.arboles, racha: E.mejorRacha }); } catch (e) { /* */ }
-    if (E.nuevo && E.arboles > 0) logroId = setTimeout(() => { logroId = 0; if (E.fase === 'fin') sonar('logro'); }, 500);
+    if (E.nuevo && E.arboles > 0) logroId = finSon('record', () => E.fase === 'fin');
     pintar(); pintarHud(); pintarFin(); finEl.hidden = false;
     try { if (G.pausa && G.pausa.set) G.pausa.set('sembradora', true); } catch (e) { /* sin pausa */ } // panel modal: el mundo se congela detrás
     // el foco va al panel (no a «Otra vez»): un toque de los últimos segundos no arranca otra partida sin ver el resultado

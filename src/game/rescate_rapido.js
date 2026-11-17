@@ -43,6 +43,8 @@ window.AVRescateRapido = function (G) {
   const leerRec = () => { try { const d = JSON.parse(localStorage.getItem(ALM) || 'null'); return d && d.v === 1 && Number.isInteger(d.mejor) && d.mejor >= 0 && d.mejor <= N ? d : null; } catch (e) { return null; } };
   const guardarRec = () => { try { localStorage.setItem(ALM, JSON.stringify({ v: 1, mejor: E.mejor, tiempo: E.mejorT, jugadas: E.jugadas })); } catch (e) { /* sin almacén */ } };
   const sonar = (n, a) => { try { if (!G.quiet && G.audio && G.audio.play) G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'pichones', sigue); F.sonar(G, 'pichones', tipo); return 0; };
   const pio = () => sonar(G.audio && G.audio.has && G.audio.has('pio') ? 'pio' : 'pickup', 2); // el pío de rescate.js si ya está; si no, el de recoger
   const chispas = (x, y, z, tipo, n) => { if (reducido()) return; try { if (G.fx && G.fx.burst) G.fx.burst(x, y, z, tipo, n); } catch (e) { /* sin fx */ } };
   let azarS = 0; const azar = () => { if (!azarS) return Math.random(); azarS = (azarS * 16807) % 2147483647; return (azarS - 1) / 2147483646; };
@@ -398,8 +400,8 @@ window.AVRescateRapido = function (G) {
     css();
     hudEl = document.createElement('div'); hudEl.id = 'rr-hud'; hudEl.hidden = true; // sin role="status": el reloj cambia cada segundo y no se anuncia; solo el aviso (aria-live) habla
     hudEl.innerHTML = '<b class="rr-tit" data-k="tit"></b><span class="rr-t" data-k="r">' + NUBE + '<span data-k="rt"></span></span><span class="rr-p" data-k="p">' + PICH.repeat(N) + '</span><span class="rr-r" data-k="rec"></span><span data-k="msg" aria-live="polite"></span><button type="button" class="salir" data-a="salir"></button>';
-    finEl = document.createElement('div'); finEl.id = 'rr-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'rr-fin-t');
-    finEl.innerHTML = '<h2 id="rr-fin-t" data-k="ft"></h2><div class="rr-gran">' + PICH + '<span data-k="fn"></span></div><p data-k="fmsg" aria-live="polite"></p><p class="rr-det" data-k="fdet"></p><div class="rr-bots"><button type="button" data-a="otra"></button><button type="button" class="salir" data-a="salir"></button></div>';
+    finEl = document.createElement('div'); finEl.id = 'rr-fin'; finEl.className = 'av-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'rq-fin-t');
+    finEl.innerHTML = '<h2 id="rq-fin-t" data-k="ft"></h2><div class="rr-gran av-num">' + PICH + '<span data-k="fn"></span></div><p class="av-msg" data-k="fmsg" aria-live="polite"></p><p class="rr-det av-det" data-k="fdet"></p><div class="rr-bots av-bots"><button type="button" class="av-bot" data-a="otra"></button><button type="button" class="av-bot salir" data-a="salir"></button></div>';
     const clic = e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; e.preventDefault(); if (b.dataset.a === 'otra') jugar(); else salir(); };
     hudEl.addEventListener('click', clic); finEl.addEventListener('click', clic);
     document.body.appendChild(hudEl); document.body.appendChild(finEl);
@@ -464,7 +466,7 @@ window.AVRescateRapido = function (G) {
     if (E.lleva >= 0) { pich[E.lleva].estado = 'suelo'; E.lleva = -1; } // el que llevaba se tapa con la hoja como los demás
     E.fase = 'vista'; E.vistaT = reducido() ? 0 : VISTA_T; guia.ok = false;
     hudEl.hidden = true; q(hudEl, 'msg').textContent = ''; document.body.classList.add('pichones-fin');
-    sonar('panel_final');
+    finSon(E.salvados > 0 ? 'victoria' : 'casi');
     pintar();
     if (E.vistaT <= 0) mostrarFin();
   }
@@ -477,7 +479,7 @@ window.AVRescateRapido = function (G) {
     if (E.todos && (!E.mejorT || E.tiempo < E.mejorT)) E.mejorT = E.tiempo;
     guardarRec();
     try { G.emit('record', { modo: 'pichones', salvados: E.salvados, tiempo: E.todos ? E.tiempo : 0 }); } catch (e) { /* */ }
-    if ((E.nuevo && E.salvados > 0) || E.todos) logroId = setTimeout(() => { logroId = 0; if (E.fase === 'fin') sonar('logro'); }, 500);
+    if ((E.nuevo && E.salvados > 0) || E.todos) logroId = finSon('record', () => E.fase === 'fin');
     pintar(); pintarHud(); pintarFin(); finEl.hidden = false;
     try { if (G.pausa && G.pausa.set) G.pausa.set('pichones', true); } catch (e) { /* sin pausa */ } // panel modal: el mundo se congela detrás
     setTimeout(() => { try { if (E.fase === 'fin') finEl.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0); // el foco al panel, no a «Otra vez»
