@@ -214,8 +214,12 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   G.on('desatasco', e => { if (S.clock - libreT < 4) return; libreT = S.clock; if (e && e.como === 'seguro') aviso('desatasco', 'Vittata vuelve a su lugar seguro.'); else aviso('desatasco', '¡Listo! Vittata se había atascado y ya está libre.'); });
   G.on('vuelo', on => { if (on) hecho('volar'); });
   // CG-48: los primeros minutos. Una pista visual (anillo), sin ventana de texto. Se apaga al hacerlo.
-  const PM_ORDEN = ['mover', 'despegar', 'posar', 'impulso', 'truco'];
-  const pmE = { hecho: {}, t: 0, volaba: false };
+  // PULIR 5 (17-nov): primero «despegar» (el objetivo del cap. 1 dice «Vuela…»; antes el anillo marcaba la palanca y el objetivo
+  // pedía volar). «Posar» (el anillo en Aterrizar) espera PM_POSAR_S s de vuelo: antes saltaba a Aterrizar nada más despegar,
+  // con Iguaca aún a 25 m, y el niño que seguía el anillo aterrizaba enseguida. Mientras espera no se adelanta otro paso.
+  const PM_ORDEN = ['despegar', 'mover', 'posar', 'impulso', 'truco'];
+  const PM_POSAR_S = 10;
+  const pmE = { hecho: {}, t: 0, volaba: false, aire: 0 };
   let pmForzar = false;
   // QA-181 (KIMI-142): leer aquí el layout (getClientRects) forzaba un reflow del HUD entero en cada
   // refresco (~8 % del hilo a ×6 en Chromebook). La visibilidad de estos controles solo cambia por
@@ -258,7 +262,15 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   const pmCache = { id: '', t: -1e9 };
   const pmPaso = (forzar) => {
     const ahora = performance.now();
-    if (forzar || pmForzar || ahora - pmCache.t > 250) { pmCache.id = PM_ORDEN.find(k => !pmE.hecho[k] && pmPuede(k)) || ''; pmCache.t = ahora; }
+    if (forzar || pmForzar || ahora - pmCache.t > 250) {
+      let id = '';
+      for (const k of PM_ORDEN) {
+        if (pmE.hecho[k]) continue;
+        if (k === 'posar' && pmE.volaba && pmE.aire < PM_POSAR_S) break; // aún volando hacia el objetivo: sin anillo
+        if (pmPuede(k)) { id = k; break; }
+      }
+      pmCache.id = id; pmCache.t = ahora;
+    }
     return pmCache.id;
   };
   function pmMarcar(k) {
@@ -350,7 +362,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       return;
     }
     if ((M.speed || 0) > 0.8 || Math.hypot(G.input.stick.x, G.input.stick.y) > 0.35) pmMarcar('mover');
-    if (M.flying) { pmMarcar('despegar'); pmE.volaba = true; }
+    if (M.flying) { pmMarcar('despegar'); if (!pmE.volaba) pmCache.t = -1e9; pmE.volaba = true; pmE.aire += dt || 0; }
     if (pmE.volaba && !M.flying && M.grounded) pmMarcar('posar');
     if ((M.dashT || 0) > 0 || (G.input.keys && G.input.keys.has('f'))) pmMarcar('impulso');
     const cambioHud = hudVis.sucio; // pmPaso/pmPuede puede consumirlo antes de pintarPm
@@ -383,7 +395,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     const v = Math.hypot(M.vx, M.vz), ux = v > 0.5 ? M.vx / v : S.facing.x, uz = v > 0.5 ? M.vz / v : S.facing.z;
     for (const d of [1, 1.8, AJ.cerca]) { const t = SO.altoEn(S.pos.x + ux * d, S.pos.z + uz * d, S.pos.y + 50); if (t > S.pos.y + AJ.alto) { altoDelante = true; return; } }
   }
-  let listoT = 0, sueloT = 0, sinVolarT = 0, vueloT = 0, nadoT = 0, subirT = 0, movT = 0, volando = null;
+  let listoT = 0, sueloT = 0, sinVolarT = 0, vueloT = 0, nadoT = 0, subirT = 0, movT = 0, volando = null, jumpSubir = false;
   function actualizar(dt) {
     marcarModo();
     pmTick(dt || 0);
@@ -402,7 +414,9 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if (hudVis.sucio) hudVisRevisar();
     const conBotones = !forzado && (tactil() || hudVis.tactil);
     if (conBotones && panelAbierto) cerrar();
-    if (!panelAbierto && !conBotones && listoT > AJ.listo && !enSesion.panel && (!est.vistas.panel || !est.hecho.volar)) { enSesion.panel = 1; mostrar(false); }
+    // PULIR 5: tampoco a mitad de vuelo (se abría al pulsar V o Espacio, antes de que 'vuelo' marcara hecho('volar'), tapaba el 70 %
+    // de la pantalla y se cerraba solo al segundo)
+    if (!panelAbierto && !conBotones && listoT > AJ.listo && !enSesion.panel && !M.flying && (!est.vistas.panel || !est.hecho.volar)) { enSesion.panel = 1; mostrar(false); }
     if (panelAbierto) {
       panelT += dt;
       if (panelT > AJ.gracia && (pidiendoMover() || M.flying) && (panelMov += dt) > AJ.cierre) cerrar();
@@ -417,8 +431,18 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       if (quiere) pastilla.innerHTML = `${kbd(quiere)} Dejar de volar`;
       boton.classList.toggle('volando', !!quiere);
     }
+    // PULIR 5 (17-nov): en táctil no había pista de cómo subir (las pistas son de teclado). Volando, el botón Saltar dice «Subir»
+    // (mantenerlo sube, como en retos.js); al posarse vuelve a «Saltar». Solo cambia el rótulo que puso el juego, no el de un modo.
+    const bj = $('b-jump'), quiereSubir = !!bj && tactil() && M.flying && !M.landing;
+    if (bj && quiereSubir !== jumpSubir) {
+      const txt = bj.textContent.trim();
+      if (quiereSubir) { if (/^(Saltar|Jump)$/.test(txt)) { bj.textContent = 'Subir'; jumpSubir = true; } }
+      else { if (/^(Subir|Go up)$/.test(txt)) bj.textContent = 'Saltar'; jumpSubir = false; }
+    }
     // Pistas (no con el panel abierto ni fuera del juego)
     if (pistaT > 0 && (pistaT -= dt) <= 0) ocultarPista();
+    // PULIR 5: una pista que ya no vale se quita: «Mantén Espacio para subir» tras aterrizar, o «Pulsa V para volar» ya volando
+    if (pistaT > 0 && (((pistaId === 'subir' || pistaId === 'aterrizar') && !M.flying) || ((pistaId === 'volar' || (pistaId === 'alto' && /^¿Quieres/.test(pistaHtml))) && M.flying))) ocultarPista();
     if (!jugando || panelAbierto || tactil()) return;
     if ((altoT -= dt) <= 0) { altoT = 0.25; mirarAlto(); }
     if (M.flying) { vueloT += dt; sueloT = 0; } else { vueloT = 0; if (M.grounded) { sueloT += dt; if (!est.hecho.volar) sinVolarT += dt; } }
@@ -452,15 +476,17 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     const tenia = teclas0.filter(k => K.has(k));
     try {
       pmForzar = true; G.quiet = false;
-      pmE.hecho = {}; pmE.t = 0; pmE.volaba = false;
+      pmE.hecho = {}; pmE.t = 0; pmE.volaba = false; pmE.aire = 0;
       forzado = 'teclado';
       M.speed = 0; M.flying = false; M.grounded = true; M.dashT = 0; st.x = st.y = 0;
       pmTick(0.1);
-      ok('Al empezar la pista visual es moverse, sin ventana de texto', pm.dataset.paso === 'mover' && !pm.hidden && !pm.querySelector('p'), pm.dataset.paso);
+      ok('Al empezar la pista visual es despegar (lo que pide el objetivo), sin ventana de texto', pm.dataset.paso === 'despegar' && !pm.hidden && !pm.querySelector('p'), pm.dataset.paso);
       K.add('w'); M.speed = 2; pmTick(0.2);
-      ok('Con la tecla de caminar la pista de moverse se apaga', pm.dataset.paso !== 'mover', pm.dataset.paso);
+      ok('Caminar no apaga la pista de despegar', pm.dataset.paso === 'despegar' && pmE.hecho.mover === true, pm.dataset.paso);
       M.flying = true; M.grounded = false; pmTick(0.1);
-      ok('Al despegar la pista pasa a posarse', pm.dataset.paso === 'posar', pm.dataset.paso);
+      ok('PULIR 5 · Recién despegada no hay anillo en Aterrizar (Iguaca aún lejos)', pm.hidden && pm.dataset.paso !== 'impulso', (pm.hidden ? 'oculto ' : '') + pm.dataset.paso);
+      pmTick(PM_POSAR_S + 0.5);
+      ok('Tras ' + PM_POSAR_S + ' s de vuelo la pista pasa a posarse', pm.dataset.paso === 'posar' && !pm.hidden, pm.dataset.paso);
       M.flying = false; M.grounded = true; pmTick(0.1);
       ok('Al posarse la pista pasa al impulso', pm.dataset.paso === 'impulso', pm.dataset.paso);
       M.dashT = 0.1; pmTick(0.05);
@@ -473,6 +499,14 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       forzado = 'tactil'; pmE.hecho = {}; pmE.t = 0; pmE.volaba = false; st.x = 0.6; st.y = 0;
       pmTick(0.2);
       ok('En táctil, mover el joystick apaga la pista de moverse', pmE.hecho.mover === true && pm.dataset.paso !== 'mover', pm.dataset.paso);
+      { // PULIR 5: en táctil, volando, Saltar dice «Subir»; al posarse vuelve a «Saltar»
+        const bjT = document.getElementById('b-jump'), t0 = bjT ? bjT.textContent.trim() : '';
+        if (bjT && /^(Saltar|Jump)$/.test(t0)) {
+          M.flying = true; M.landing = false; actualizar(0.05); const enVuelo = bjT.textContent.trim();
+          M.flying = false; M.grounded = true; actualizar(0.05); const enSuelo = bjT.textContent.trim();
+          ok('PULIR 5 · En táctil, volando, el botón Saltar dice «Subir» y al posarse vuelve', /^(Subir|Go up)$/.test(enVuelo) && /^(Saltar|Jump)$/.test(enSuelo), enVuelo + ' → ' + enSuelo);
+        }
+      }
       const acts = document.getElementById('acts'), dash = document.getElementById('b-dash');
       const disp = acts ? acts.style.display : '';
       if (acts) acts.style.display = 'grid';

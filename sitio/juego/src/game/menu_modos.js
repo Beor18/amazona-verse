@@ -174,8 +174,11 @@
     function abrirMas(on) {
       masAbierto = !!on && RECORTE();
       if (form) form.classList.toggle('modos-mas-abierto', masAbierto);
+      // F22: el orden del DOM sigue al visual (CSS order): Tab y las flechas recorren River, Tormenta… y «Volver» al final
+      const bM = form && form.querySelector('[data-mas-juegos]');
+      if (masAbierto && bM) MAS.forEach(m => { const t = bM.parentNode.querySelector(`:scope > [data-modo="${m}"]`); if (t) bM.before(t); });
       mostrar();
-      const primero = masAbierto ? tarjetas().find(b => MAS.includes(b.dataset.modo) && seVeT(b)) : form && form.querySelector('[data-mas-juegos]');
+      const u = ultimo(), primero = masAbierto ? (tarjetas().find(b => b.dataset.modo === u && MAS.includes(u) && seVeT(b)) || tarjetas().find(b => MAS.includes(b.dataset.modo) && seVeT(b))) : form && form.querySelector('[data-mas-juegos]');
       if (primero && portada && portada.open) setTimeout(() => primero.focus({ preventScroll: true }), 0);
     }
     // Esc con «Más juegos» abierto vuelve a la lista (no cierra la portada)
@@ -197,6 +200,7 @@
       const nav = document.querySelector('#title .title-episodios'), dlgForm = form;
       if (!nav || !dlgForm) return;
       if (RECORTE()) { if (nav.nextElementSibling !== dlgForm) dlgForm.insertAdjacentElement('beforebegin', nav); nav.classList.add('episodios-arriba'); }
+      else if (nav.classList.contains('episodios-arriba')) { dlgForm.insertAdjacentElement('afterend', nav); nav.classList.remove('episodios-arriba'); } // ?menu=completo: debajo, como antes
     }
     function mostrar() {
       if (!form) return;
@@ -227,7 +231,9 @@
         if (chapa) { chapa.textContent = T.ultimo; chapa.hidden = !es; }
         b.setAttribute('aria-label', tx[0] + '. ' + tx[1] + (es ? '. ' + T.ultimo : ''));
       });
-      const foco = tarjetas().find(b => b.dataset.modo === u && seVeT(b)) || tarjetas().find(seVeT) || tarjetas()[0];
+      // F22: al volver de un juego de «Más juegos» (la lista se cierra con la portada), el foco va a «Más juegos» y no a «Aventura»
+      const bMasF = !masAbierto && RECORTE() && MAS.includes(u) && bMas && !bMas.hidden ? bMas : null;
+      const foco = bMasF || tarjetas().find(b => b.dataset.modo === u && seVeT(b)) || tarjetas().find(seVeT) || tarjetas()[0];
       if (foco && portada && portada.open) setTimeout(() => { if (portada.open && !portada.inert) foco.focus({ preventScroll: true }); }, 0);
       pintarAyuda(T);
     }
@@ -729,6 +735,13 @@
           bMas.click();
           const aVista = [...form.querySelector('.modos-grid').children].filter(el => getComputedStyle(el).display !== 'none');
           check('T3 · «Más juegos» enseña solo sus juegos (T43: con Sigue el canto, 4) y «Volver»', masAbierto && MAS.every(vis) && !vis('aventura') && /Volver|Back/.test(bMas.textContent) && aVista.length === MAS.length + 1, aVista.map(el => el.dataset.modo || el.textContent.trim().slice(0, 12)).join(','));
+          { const ords = aVista.map(el => +getComputedStyle(el).order); // F22: Tab y las flechas siguen el orden que se ve
+            check('F22 · En «Más juegos» el orden del DOM (Tab) es el que se ve: River primero y «Volver» el último', ords.every((o, i) => i === 0 || o >= ords[i - 1]) && aVista[0].dataset.modo === 'river' && aVista[aVista.length - 1] === bMas, ords.join(',')); }
+          { const ab0 = portada.open; if (!ab0) portada.show(); const u0 = leer().ultimo; abrirMas(false); guardar({ ultimo: 'semillas' }); mostrar(); await espera(10);
+            const sinFoco = () => !document.hasFocus() || portada.inert, enMas = document.activeElement === bMas || sinFoco(); abrirMas(true); await espera(10);
+            const enTarjeta = document.activeElement === form.querySelector('[data-modo="semillas"]') || sinFoco();
+            check('F22 · Al volver de un juego de «Más juegos», el foco va a «Más juegos» y, al abrirla, a la tarjeta de ese juego', enMas && enTarjeta, document.activeElement && (document.activeElement.dataset.modo || document.activeElement.id || document.activeElement.tagName));
+            guardar({ ultimo: u0 }); if (!ab0) { portada.returnValue = ''; portada.close(); } if (!masAbierto) abrirMas(true); }
           const aj = G.aula && G.aula.aj, idi0 = aj ? aj.idioma : null;
           if (aj) { aj.idioma = 'en'; mostrar(); check('T12 · en inglés, «Back» y «To all the cards»; cerrado, «More games»', /Back/.test(bMas.textContent) && /To all the cards/.test(bMas.textContent) && (abrirMas(false), /More games/.test(bMas.textContent)), bMas.textContent); aj.idioma = idi0; abrirMas(true); }
           const abiertaP = portada.open; if (!abiertaP) portada.show();

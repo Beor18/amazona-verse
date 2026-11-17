@@ -430,13 +430,13 @@ window.AVV18Duelo2 = function (G) {
         '#v18-duelo2 .vd-chip .vd-cdv{position:absolute;left:0;right:0;bottom:0;height:var(--cd,0%);background:rgba(40,30,20,.45)}' +
         '#v18-duelo2 .vd-chip.listo{box-shadow:0 0 0 2px #8fe08a,0 0 10px #8fe08a99}#v18-duelo2 .vd-chip.sin{opacity:.55}' +
         '#v18-duelo2 .vd-pista{margin-top:5px;display:inline-block;background:rgba(255,227,154,.95);color:#3b2a14;text-shadow:none;font-weight:600;font-size:13px;padding:3px 10px;border-radius:12px}#v18-duelo2 .vd-pista[hidden]{display:none}' +
-        '#v18-duelo2 button.vd-como{display:flex;align-items:center;gap:5px;margin:6px auto 0;min-height:36px;padding:4px 12px;font-size:13px;background:#ffe39a;--icon-size:16px}#v18-duelo2 button.vd-como[hidden]{display:none}' +
+        '#v18-duelo2 button.vd-como{display:flex;align-items:center;gap:5px;margin:6px auto 0;min-height:44px;padding:4px 12px;font-size:13px;background:#ffe39a;--icon-size:16px}#v18-duelo2 button.vd-como[hidden]{display:none}' +
         '#v18-duelo2 .vd-ent{margin:8px auto 0;max-width:420px;background:rgba(255,248,234,.96);color:#3b2a14;text-shadow:none;border-radius:16px;padding:10px 12px;box-shadow:0 4px 14px #0006;text-align:center}#v18-duelo2 .vd-ent[hidden]{display:none}' +
         '#v18-duelo2 .vd-ent-cab{font-size:13px;font-weight:600;opacity:.8}#v18-duelo2 .vd-ent-txt{font-size:18px;font-weight:600;margin:6px 0}' +
         '#v18-duelo2 .vd-ent-js{display:flex;gap:10px;justify-content:center;margin-bottom:8px}#v18-duelo2 .vd-ent-j{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:12px;background:#3b2a1414;font-weight:600}' +
         '#v18-duelo2 .vd-ent-j kbd{font:700 22px/1 Fredoka,system-ui,sans-serif;min-width:36px;padding:6px 8px;border-radius:9px;background:#3b2a14;color:#fff3d6;box-shadow:0 3px 0 #000a}' +
         '#v18-duelo2 .vd-ent-j i{font-style:normal;color:#2e8b3e;font-size:20px;visibility:hidden}#v18-duelo2 .vd-ent-j.ya{background:#8fe08a66}#v18-duelo2 .vd-ent-j.ya i{visibility:visible}' +
-        '#v18-duelo2 .vd-ent button{min-height:40px;font-size:14px;background:#3b2a14;color:#fff3d6}' +
+        '#v18-duelo2 .vd-ent button{min-height:44px;min-width:44px;font-size:14px;background:#3b2a14;color:#fff3d6}' +
         // F1 · cambio 3: reloj del asalto y asaltos ganados (oro = Jugador 1, azul = Jugador 2), debajo de los paneles
         '#v18-duelo2 .vd-reloj{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px auto 0;width:max-content;padding:2px 10px;border-radius:14px;background:rgba(30,40,30,.72);font-weight:700;font-size:16px;line-height:1.2}#v18-duelo2 .vd-reloj[hidden]{display:none}' +
         '#v18-duelo2 .vd-reloj b{min-width:24px;text-align:center}#v18-duelo2 .vd-as{display:flex;gap:4px}#v18-duelo2 .vd-as i{width:11px;height:11px;border-radius:50%;border:2px solid #ffd27a;box-sizing:border-box;display:block}' +
@@ -458,12 +458,14 @@ window.AVV18Duelo2 = function (G) {
       `<div class="vd-ent" data-k="ent" hidden><div class="vd-ent-cab" data-k="entPaso"></div><div class="vd-ent-txt" data-k="entTxt"></div><div class="vd-ent-js">${fj(1)}${fj(2)}</div><button data-a="saltarEnt" type="button">${TXT.saltarEnt}</button></div>` +
       `<button class="vd-como" data-a="como" data-k="como" type="button" data-icon="question">${TXT.como}</button>` +
       `<div class="vd-fin" data-k="fin" hidden><p data-k="finTxt"></p><p class="vd-fin-serie" data-k="finSerie" hidden></p><button data-a="otra" data-k="otraB">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
-    el.addEventListener('pointerdown', e => {
+    const hudBoton = e => { // F22: un solo manejador para el dedo/ratón (pointerdown) y el teclado (click con detail 0: Enter o Espacio con el foco)
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
+      if (e.type === 'click' && e.detail !== 0) return; // el click del ratón o del dedo ya entró por pointerdown
       e.preventDefault(); e.stopPropagation();
       const a = b.dataset.a;
       if (a === 'como') abrirComo(!ent); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else salir();
-    });
+    };
+    el.addEventListener('pointerdown', hudBoton); el.addEventListener('click', hudBoton);
     document.body.appendChild(el);
     hud = { el, q: k => el.querySelector('[data-k="' + k + '"]') };
     return hud;
@@ -684,6 +686,7 @@ window.AVV18Duelo2 = function (G) {
     G.ui.$('v18-d2-ok').onclick = () => { G.ui.hideCard(); iniciar({}); };
     G.ui.$('v18-d2-no').onclick = () => G.ui.hideCard();
     const bc = G.ui.$('v18-d2-como'); if (bc) bc.onclick = () => abrirComo(false, () => { G.ui.hideCard(); iniciar({ sinTarjeta: true }); }); // T57: encima de la elección; «¡A pelear!» empieza (Esc vuelve a la elección)
+    try { G.ui.$('v18-d2-ok').focus({ preventScroll: true }); } catch (e) { /* sin foco */ } // F22: el teclado empieza en «¡A jugar!» (antes, 10 Tab desde BODY)
     return true;
   }
 
@@ -1035,6 +1038,11 @@ window.AVV18Duelo2 = function (G) {
       const card = G.ui.$('card');
       const bv = card.querySelector('[data-d2sp="ventralis"]'); if (bv) bv.onclick();
       check('La tarjeta deja elegir la cotorra del Jugador 2 y enseña las teclas', G.ui.cardOpen && card.querySelectorAll('[data-d2sp]').length === ESPECIES.length && D.esp2 === 'ventralis' && /Jugador 2/.test(card.textContent));
+      { // F22: la tarjeta de elección recibe el foco en «¡A jugar!», se nombra por su título y Tab no sale de ella
+        const okB = G.ui.$('v18-d2-ok'), foco0 = document.activeElement === okB || !document.hasFocus(), dentro = [];
+        for (let i = 0; i < 3; i++) { const t = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }); document.body.dispatchEvent(t); dentro.push(t.defaultPrevented && card.contains(document.activeElement)); }
+        check('F22 · Duelo de 2: la tarjeta de elección enfoca «¡A jugar!», se llama como su título y Tab no sale de ella', foco0 && card.getAttribute('aria-label') === TXT.titulo && card.getAttribute('aria-modal') === 'true' && dentro.every(Boolean),
+          JSON.stringify({ foco0, nombre: card.getAttribute('aria-label'), dentro })); okB.focus(); }
       // T57: «¿Cómo se pelea?» también en la elección de cotorras: la tarjeta sale encima, con las teclas de los dos; Esc vuelve a la elección
       {
         const bc = G.ui.$('v18-d2-como'); if (bc) bc.onclick();
@@ -1102,6 +1110,10 @@ window.AVV18Duelo2 = function (G) {
         salir(); iniciar({ forzar: true });
         check('Entreno de 2: no se repite solo', !ent && D.fase === 'cuenta' && !hud.q('como').hidden);
         check('T57 · Duelo de 2: la tarjeta no sale sola la segunda vez', !tjAbierta());
+        { const mh = el => el ? parseFloat(getComputedStyle(el).minHeight) || 0 : 99, se = hud.el.querySelector('[data-a="saltarEnt"]');
+          check('F22 · Duelo de 2: «¿Cómo se pelea?» y «Saltar entreno» miden al menos 44 px de alto (antes 36 y 40)', mh(hud.q('como')) >= 44 && mh(se) >= 44, mh(hud.q('como')) + ' / ' + mh(se)); }
+        { const bc = hud.q('como'); bc.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 0 })); const ab = tjAbierta(); if (ab) TJ.cerrar('esc');
+          check('F22 · Duelo de 2: los botones del HUD responden al teclado (Enter en «¿Cómo se pelea?» la abre; antes solo el dedo)', ab && !tjAbierta() && D.fase === 'cuenta', JSON.stringify({ ab, fase: D.fase })); }
         pd(hud.q('como')); const c0 = D.cuenta, conPr = tjAbierta() && !!TJ.el().querySelector('[data-tj="entrenar"]'); paso(0.4);
         const ev = tecla('keydown', 'Escape', 'Escape');
         check('T57 · Duelo de 2: el botón «¿Cómo se pelea?» abre la tarjeta (con «Practicar»), la cuenta espera y Esc la cierra sin salir', conPr && D.cuenta === c0 && ev.defaultPrevented && !tjAbierta() && D.fase === 'cuenta', JSON.stringify({ conPr, c0, c: D.cuenta, fase: D.fase }));

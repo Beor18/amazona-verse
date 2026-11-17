@@ -132,10 +132,13 @@ AVE.module('dialogo', function (G) {
         'box-shadow:0 4px 0 var(--c-paper-edge,#d9c7a3),0 8px 24px rgba(0,0,0,.28);font:400 17px/1.3 var(--font-body,sans-serif);cursor:pointer;animation:bl-in .25s ease-out both;text-wrap:pretty}' +
         '.bocadillo img{width:46px;height:46px;border-radius:50%;object-fit:cover;object-position:50% 20%;background:#e9dcc2;flex:none}' +
         '.bocadillo img[hidden]{display:none}' +
+        // PULIR 5: un «▸» que late a la derecha dice que el bocadillo se toca para seguir (antes nada lo indicaba)
+        '.bocadillo::after{content:"\\25B8";content:"\\25B8" / "";flex:none;align-self:center;margin-left:-4px;font:700 18px/1 var(--font-display,sans-serif);color:#b5803f;animation:bl-sigue 1.2s ease-in-out infinite}' +
+        '@keyframes bl-sigue{0%,100%{transform:translateX(0);opacity:.55}50%{transform:translateX(3px);opacity:1}}' +
         '.bocadillo b{display:block;font:700 12px/1.2 var(--font-display,sans-serif);text-transform:uppercase;letter-spacing:.06em;color:#7a5634}' + // marrón sobre papel (5,7:1); --c-eyebrow es dorado, para paneles oscuros (1,2:1 aquí)
         'body:has(#dialog:not([hidden])) #bocadillos,body:has(#card:not([hidden])) #bocadillos{visibility:hidden}' +
         '@keyframes bl-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}' +
-        '@media (prefers-reduced-motion:reduce){.bocadillo{animation:none}}' +
+        '@media (prefers-reduced-motion:reduce){.bocadillo,.bocadillo::after{animation:none}}' +
         '@media (hover:none),(pointer:coarse){#bocadillos{max-width:min(560px,calc(100vw - 320px))}}' +
         '@media (max-width:560px){#bocadillos{left:max(12px,env(safe-area-inset-left,0px));right:auto;margin-inline:0;bottom:calc(env(safe-area-inset-bottom,0px) + 262px);max-width:calc(100vw - 24px - 56px)}.bocadillo{font-size:15px;border-radius:18px}.bocadillo img{width:38px;height:38px}}' +
         '@media (max-height:520px) and (orientation:landscape){#bocadillos{bottom:calc(env(safe-area-inset-bottom,0px) + 70px);max-width:min(480px,calc(100vw - 360px))}}';
@@ -173,10 +176,16 @@ AVE.module('dialogo', function (G) {
     return rest;
   }
   // Tiempo del juego (se puede probar con tick()); con la caja o una tarjeta abiertas, espera
+  // PULIR 5 (17-nov): el bocadillo corre con el mayor del dt del juego y el tiempo real entre cuadros (tope LIBRE_REAL s). El dt va
+  // limitado por cuadro: en un móvil muy lento la intro se quedaba minutos en la primera línea sobre negro. Con la pausa o en
+  // segundo plano no hay 'update', y al volver el tope evita que se salten líneas. Con la pausa o un hit-stop (dt = 0) no corre.
+  const LIBRE_REAL = 0.5; let libreUlt = 0;
   G.on('update', dt => {
     segJuego += dt; if (open()) segCaja += dt;
+    const ahora = performance.now(), real = libreUlt ? Math.min(LIBRE_REAL, (ahora - libreUlt) / 1000) : 0; libreUlt = ahora;
     if (!libreCur || open() || G.ui.cardOpen) return;
-    libreT -= dt; if (libreT <= 0) nextLibre();
+    const parado = !(dt > 0); // pausa o hit-stop: dt = 0 y el bocadillo espera
+    libreT -= parado ? 0 : Math.max(dt, G.quiet ? 0 : real); if (libreT <= 0) nextLibre();
   }, 84);
   function ocupacion() {
     return { juego: segJuego, caja: segCaja, parte: segJuego > 0.5 ? segCaja / segJuego : 0 };

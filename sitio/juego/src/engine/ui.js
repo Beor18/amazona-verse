@@ -12,8 +12,27 @@ AVE.module('ui', function (G) {
   // pregunta y las opciones; se aparta y vuelve al cerrarla, como los que llegan con la tarjeta abierta (QA-93).
   function showCard(html) {
     $('card').innerHTML = html; $('card').hidden = false; cardOpen = true;
+    // F22: el lector la nombra por su título («Diario», «Duelo de 2»…) y no «Tarjeta»; y es modal (el foco no sale con Tab, abajo)
+    const c = $('card'), h = c.querySelector('h1, h2, h3'), nom = h && h.textContent.trim();
+    c.setAttribute('aria-label', nom ? nom.slice(0, 80) : 'Tarjeta'); c.setAttribute('aria-modal', 'true');
     if (window.innerWidth <= 560) apartar();
   }
+  // F22: con la tarjeta abierta, Tab da la vuelta entre lo suyo (antes salía a Controles, Diario, Gestos y el menú, detrás).
+  // En burbuja y solo si nadie lo atendió antes (el Mercadito ya atrapa el foco a su manera). No se mete si el foco está en
+  // otra capa modal encima (un <dialog> modal o un role="dialog" que no es la tarjeta).
+  const ENFOCABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  addEventListener('keydown', e => {
+    if (e.key !== 'Tab' || e.defaultPrevented || !cardOpen || e.ctrlKey || e.altKey || e.metaKey) return;
+    const c = $('card'); if (!c || c.hidden || c.closest('[inert]')) return;
+    const ae = document.activeElement;
+    if (ae && ae !== document.body && !c.contains(ae) && ae.closest && ae.closest('dialog[open], [role="dialog"]:not([hidden])')) return;
+    try { if (document.querySelector('dialog:modal')) return; } catch (er) { /* sin :modal */ }
+    const l = [...c.querySelectorAll(ENFOCABLE)].filter(x => !x.disabled && x.getClientRects().length && getComputedStyle(x).visibility !== 'hidden');
+    if (!l.length) return;
+    e.preventDefault();
+    const i = l.indexOf(ae), n = l.length, j = e.shiftKey ? (i <= 0 ? n - 1 : i - 1) : (i < 0 || i >= n - 1 ? 0 : i + 1);
+    try { l[j].focus({ preventScroll: true }); } catch (er) { /* */ }
+  });
   function hideCard() { $('card').hidden = true; cardOpen = false; G.emit('cardHidden'); }
   let toastTimer = 0, visto = 0;
   // QA-93 (W3): un aviso que salta con una pantalla que lo taparía (la tarjeta en un teléfono, ≤ 560 px, como el Diario o

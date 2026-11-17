@@ -180,6 +180,9 @@ AVE.module('misiones', function (G) {
     } else el.textContent = '';
     return u;
   }
+  // PULIR 5: ¿el niño está en el primer objetivo del cap. 1 (despegar y posarse junto a Iguaca)? Mientras, lo secundario espera
+  // (misiones de la isla en el panel, Patrulla, pista del puerto, ficha del poder). En el Vuelo libre no cuenta.
+  function primerObjetivo() { return !!(G.pack && G.pack.id === 'cap1' && (S.step || 0) < 1 && !S.complete && !document.documentElement.classList.contains('modo-libre')); }
   function renderQuest() {
     // Número de pasos para la barra del HUD (variables CSS --n y --n-label de src/ui/ui.css)
     const el = $('steps'); el.style.setProperty('--n', steps.length); el.style.setProperty('--n-label', '"' + steps.length + '"');
@@ -196,6 +199,9 @@ AVE.module('misiones', function (G) {
     const d = G.diario.hud();
     if (d) parts.push(mk(d.ok, d.text));
     $('missions').innerHTML = parts.join('');
+    // PULIR 5 (17-nov): durante el primer objetivo del cap. 1 (despegar y posarse junto a Iguaca) el panel solo dice eso: las
+    // misiones de la isla (río, gota, coquíes, Diario) salen al cumplirlo. Antes eran 4 líneas más en los primeros 10 s.
+    if (document.body) document.body.classList.toggle('av-primer-objetivo', primerObjetivo());
     G.diario.renderButton();
     $('indicators').innerHTML = HIST.indicadores ? HIST.indicadores(S, G) : '';
   }
@@ -327,5 +333,6 @@ AVE.module('misiones', function (G) {
     return ver;
   }
   G.on('update', dt => { if ((vuelaT -= dt) > 0) return; vuelaT = 0.5; pistaVuela(); });
-  return { feel, steps, DONE, missions, unlocks, cumple, progreso, done, complete, check, advanceTo, grant, lockOf, guideTarget, at, closest, needItems, renderQuest, proximoPremio, renderProximo, showEnd, seguirExplorando, pistaVuela };
+  G.on('vuelo', () => { vuelaT = 0; }); // PULIR 5: al despegar se mira en el cuadro siguiente («↑ Vuela» no se queda volando)
+  return { primerObjetivo, feel, steps, DONE, missions, unlocks, cumple, progreso, done, complete, check, advanceTo, grant, lockOf, guideTarget, at, closest, needItems, renderQuest, proximoPremio, renderProximo, showEnd, seguirExplorando, pistaVuela };
 });

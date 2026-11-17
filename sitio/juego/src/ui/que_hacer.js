@@ -108,6 +108,7 @@
         ir.type = 'button';
         ir.className = 'btn qh-ir';
         ir.textContent = L('Ir', 'Go');
+        ir.setAttribute('aria-label', L('Ir', 'Go') + ': ' + f.nombre); // F22: en la lista del lector, «Ir: Family Quest» y no «Ir, Ir, Ir…»
         ir.disabled = !puede;
         ir.addEventListener('click', () => { if (puede) f.ir(); });
         li.appendChild(ir);
@@ -144,6 +145,7 @@
         ok('CG-126 · está la casa del bohío', ids.includes('casa'));
         ok('CG-126 · están la escuela de vuelo y el taller de Tuerca', ids.includes('piloto') && ids.includes('taller') && !dlg.querySelector('[data-qh="piloto"] .qh-ir').disabled && !dlg.querySelector('[data-qh="taller"] .qh-ir').disabled);
         const filasEl = [...dlg.querySelectorAll('.qh-fila')];
+        ok('F22 · Cada «Ir» dice adónde va (aria-label con el nombre de su fila)', filasEl.length > 0 && filasEl.every(el => { const b = el.querySelector('.qh-ir'), n = el.querySelector('b'); return b && n && b.getAttribute('aria-label').endsWith(': ' + n.textContent); }));
         ok('Cada fila tiene estado e Ir', filasEl.length > 0 && filasEl.every(el => el.querySelector('small') && el.querySelector('small').textContent && el.querySelector('.qh-ir')));
         const tu = dlg.querySelector('[data-qh="tuerca"] small');
         ok('Sin el puente, Tuerca dice que se abre al repararlo', !!(tu && /puente|bridge/i.test(tu.textContent)) && dlg.querySelector('[data-qh="tuerca"] .qh-ir').disabled);

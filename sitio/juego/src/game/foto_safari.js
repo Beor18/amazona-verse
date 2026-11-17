@@ -471,6 +471,7 @@ window.AVFotoSafari = function (G) {
     camara(false); document.body.classList.remove('foto-cam');
     try { if (G.pausa && G.pausa.set) G.pausa.set('foto', false); } catch (e) { /* sin pausa */ }
     if (G.interaccion && G.interaccion.modo !== MODO) { modo0 = G.interaccion.modo; G.interaccion.modo = MODO; }
+    if (finEl.contains(document.activeElement)) try { document.activeElement.blur(); } catch (e) { /* */ } // F22: «Otra vez» con el teclado: el foco no se queda en un botón escondido
     finEl.hidden = true; estEl.hidden = true; q(hudEl, 'msg').textContent = '';
     document.body.classList.add('foto-on'); document.body.classList.remove('foto-fin');
     try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: la cámara no sale metida en la ladera
@@ -528,7 +529,16 @@ window.AVFotoSafari = function (G) {
       e.preventDefault(); e.stopImmediatePropagation(); if (E.cam) cerrarCam(); else salir(); return; // con la cámara abierta, Esc solo la cierra
     }
     if (E.fase === 'fin') { // el panel final es modal: las teclas del mundo no pasan; Tab, Enter y Espacio van a sus botones (no en el primer segundo)
-      if (e.key === 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'Tab') { // F22: el foco no sale del panel (aria-modal): da la vuelta entre sus botones
+        if (G.ui && G.ui.cardOpen) return;
+        e.preventDefault(); e.stopImmediatePropagation();
+        const bs = [...finEl.querySelectorAll('button')].filter(b => b.getClientRects().length), i = bs.indexOf(document.activeElement), n = bs.length;
+        if (!n) return;
+        const j = e.shiftKey ? (i <= 0 ? n - 1 : i - 1) : (i < 0 || i >= n - 1 ? 0 : i + 1);
+        try { bs[j].focus({ preventScroll: true }); } catch (er) { /* */ }
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       const boton = (e.key === 'Enter' || e.key === ' ') && performance.now() / 1000 - E.finP > 1 && e.target && e.target.closest && e.target.closest('#fs-fin button');
       e.stopImmediatePropagation(); if (!boton) e.preventDefault();
     }
@@ -716,6 +726,10 @@ window.AVFotoSafari = function (G) {
       await new Promise(r => setTimeout(r, 30));
       const tP = tecla('p'), tE = tecla('e');
       check('El panel es modal: el mundo queda en pausa, las teclas del mundo no pasan y el foco va al panel', (!G.pausa || !G.pausa.motivos || G.pausa.motivos.has('foto')) && tP.defaultPrevented && tE.defaultPrevented && E.fase === 'fin' && document.activeElement === finEl, document.activeElement && (document.activeElement.id || document.activeElement.tagName));
+      { // F22: después de «Salir», Tab vuelve a «Otra vez» (no se va a la barra del navegador)
+        const enPanel = []; for (let i = 0; i < 3; i++) { const t = tecla('Tab'); enPanel.push(t.defaultPrevented && finEl.contains(document.activeElement) && document.activeElement !== finEl); }
+        const tS = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }); dispatchEvent(tS); enPanel.push(finEl.contains(document.activeElement));
+        check('El foco no sale del panel final con Tab ni con Mayús+Tab', enPanel.every(Boolean), enPanel.join(',')); }
       const ae = G.aula && G.aula.aj;
       if (ae) {
         const idi0 = ae.idioma; ae.idioma = 'en'; pintarHud(); pintarFin(); pintarCarta(); E.cam = true; pintarVisor(); E.cam = false;
@@ -723,14 +737,15 @@ window.AVFotoSafari = function (G) {
         check('En inglés no queda texto en español (Roll finished!, Play again, Exit, Photos)', /Roll finished!|Perfect roll!/.test(txt) && /Play again/.test(txt) && /Exit/.test(txt) && /Photos: \d/.test(txt) && !/[áéíóúñ¡]|Salir|Otra vez|Récord|Fotos|estrellas/.test(txt), txt.slice(0, 200));
         ae.idioma = idi0; pintarHud(); pintarFin(); pintarCarta(); pintarVisor();
       }
+      ponerDelante(4); // el animal de prueba, otra vez delante (tras una cadena larga de baterías Vittata podía quedar lejos de él: tarjeta vacía)
       finEl.querySelector('[data-a="otra"]').click();
-      check('«Otra vez» empieza limpio (2:00, 0 estrellas, tarjeta nueva, sin panel, cámara ni pausa)', E.fase === 'juego' && E.estrellas === 0 && E.fotos === 0 && E.nr === 0 && E.k === 1 && finEl.hidden && !E.cam && q(hudEl, 'r').textContent === '2:00' && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('foto')));
+      check('«Otra vez» empieza limpio (2:00, 0 estrellas, tarjeta nueva, sin panel, cámara ni pausa)', E.fase === 'juego' && E.estrellas === 0 && E.fotos === 0 && E.nr === 0 && E.k === 1 && finEl.hidden && !E.cam && q(hudEl, 'r').textContent === '2:00' && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('foto')), JSON.stringify({ fase: E.fase, est: E.estrellas, fotos: E.fotos, nr: E.nr, k: E.k, fin: finEl.hidden, cam: E.cam, r: q(hudEl, 'r').textContent, pausa: G.pausa && G.pausa.motivos ? [...G.pausa.motivos].join(',') : '-', d: Math.round(Math.hypot(sitio.x - E.x0, sitio.z - E.z0)) }));
       E.reloj = 0.01; paso(0.05);
       check('Sin estrellas, nunca castiga: «¡Casi!» y el récord sigue', /Casi/.test(q(finEl, 'fmsg').textContent) && leerRec().mejor === total && q(finEl, 'fmed').textContent === '', q(finEl, 'fmsg').textContent);
       finEl.querySelector('[data-a="salir"]').click();
       check('«Salir» lo quita todo (HUD, tarjeta, visor, panel, clases, pausa, Acción de siempre y cámara de siempre)', !activo() && hudEl.hidden && cartaEl.hidden && visorEl.hidden && finEl.hidden && !/foto-(on|fin|cam)/.test(document.body.className) && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('foto')) && (!G.interaccion || G.interaccion.modo !== MODO) && (!C || (C.dist === camD0[0] && C.distFly === camD0[1])));
       check('Sin mallas ni texturas nuevas en la escena', !R.scene.children.some(k => /^foto/.test(k.name || '')));
-      jugar({ semilla: 3 }); disparar();
+      ponerDelante(4); jugar({ semilla: 3 }); disparar();
       const ev = tecla('Escape'), soloCam = activo() && !E.cam && visorEl.hidden && !hudEl.hidden && ev.defaultPrevented;
       const ev2 = tecla('Escape');
       check('Esc con la cámara abierta solo cierra la cámara (sigue la partida); otro Esc sale y devuelve la cámara', soloCam && !activo() && ev2.defaultPrevented && hudEl.hidden && visorEl.hidden && (!C || (C.dist === camD0[0] && C.distFly === camD0[1])));

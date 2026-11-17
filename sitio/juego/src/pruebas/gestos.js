@@ -36,6 +36,20 @@ window.AVGestosTest = function (G) {
     // A 390 px: el número no se queda solo en su línea (espacio duro entre número y nombre)
     ok('El número del gesto va pegado a su nombre (no se queda solo en una línea)', bs.every(b => /^\d\u00a0·\u00a0/.test(b.textContent)), bs.map(b => JSON.stringify(b.textContent.slice(0, 4))).join(' '));
     menu.hidden = oculto;
+    { // F22: el menú con teclado: aria-expanded/aria-controls en «Gestos», nombre del menú, Enter lo abre con el foco en el primer gesto y Esc lo cierra
+      const bE = document.getElementById('b-emotes'), f0 = document.activeElement;
+      menu.hidden = true; await new Promise(r => setTimeout(r, 0));
+      const aria0 = bE.getAttribute('aria-controls') === 'emotes' && bE.getAttribute('aria-expanded') === 'false' && menu.getAttribute('role') === 'group' && !!menu.getAttribute('aria-label');
+      bE.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 0 }));
+      const abierto = !menu.hidden && bE.getAttribute('aria-expanded') === 'true', seVe = menu.getClientRects().length > 0 && getComputedStyle(menu).visibility !== 'hidden';
+      const foco1 = document.activeElement === menu.querySelector('button') || !seVe;
+      const ev = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); if (seVe) dispatchEvent(ev); else menu.hidden = true;
+      const cerrado = !seVe || (menu.hidden && ev.defaultPrevented && document.activeElement === bE);
+      await new Promise(r => setTimeout(r, 0));
+      ok('F22 · Menú de gestos con teclado: «Gestos» dice si está abierto, Enter lo abre con el foco en el primer gesto y Esc lo cierra (el foco vuelve)', aria0 && abierto && foco1 && cerrado && bE.getAttribute('aria-expanded') === 'false',
+        JSON.stringify({ aria0, abierto, seVe, foco1, cerrado, exp: bE.getAttribute('aria-expanded') }));
+      menu.hidden = oculto; try { if (f0 && f0.focus) f0.focus({ preventScroll: true }); } catch (e) { /* */ }
+    }
 
     // ---------- 2. Gemelas: la pose cambia de verdad y al terminar todo vuelve exacto ----------
     if (!window.AVCharacter || A.failed3D) ok('Modelo 3D de Vittata', false, 'sin AVCharacter');

@@ -104,7 +104,7 @@
         // T30: ya no se repite a los 2,6 s. Con la cola de avisos (T2) el de «Lugares descubiertos» espera detrás y no la tapa,
         // y repetirla la dejaba muchos segundos en pantalla
       };
-      function alTeclear(e) { if (btn && !btn.isConnected) { soltar(); return; } /* W35: si otro quitó «Saltar intro» (apertura.fin() al cargar partida o al abrir el minigolf), la escucha se suelta y la tecla sigue su camino */ if (e.repeat || ['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return; if (G.pausa && G.pausa.activa && G.pausa.activa()) return; e.preventDefault(); e.stopPropagation(); terminar(true); }
+      function alTeclear(e) { if (btn && !btn.isConnected) { soltar(); return; } /* W35: si otro quitó «Saltar intro» (apertura.fin() al cargar partida o al abrir el minigolf), la escucha se suelta y la tecla sigue su camino */ if (e.repeat || ['Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(e.key)) return; /* F22: Tab no salta la intro: lleva el foco a «Saltar intro» */ if (G.pausa && G.pausa.activa && G.pausa.activa()) return; e.preventDefault(); e.stopPropagation(); terminar(true); }
       if (!G.quiet) {
         addEventListener('keydown', alTeclear, true);
         btn = document.createElement('button'); btn.type = 'button'; btn.id = 'c1-saltar'; btn.className = 'btn ghost'; btn.textContent = 'Saltar intro'; // «Saltar» a secas es el botón de saltar (Jump)
@@ -167,7 +167,8 @@
         negro(ms) {
           estilos(); clearTimeout(tFade);
           let f = document.getElementById('c1-fade');
-          if (!f) { f = document.createElement('div'); f.id = 'c1-fade'; f.setAttribute('aria-hidden', 'true'); document.body.appendChild(f); }
+          // PULIR 5: antes del botón «Saltar intro» (mismo z 9): añadida al final, la capa nueva del último negro lo tapaba
+          if (!f) { f = document.createElement('div'); f.id = 'c1-fade'; f.setAttribute('aria-hidden', 'true'); document.body.insertBefore(f, document.getElementById('c1-saltar')); }
           f.style.transition = ms ? 'opacity ' + dur(ms) + 'ms ease' : 'none';
           void f.offsetWidth; // reflow: la transición arranca desde el valor actual
           f.style.opacity = '1';

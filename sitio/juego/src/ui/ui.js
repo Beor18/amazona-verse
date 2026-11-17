@@ -58,7 +58,7 @@
   if (pause && pause.showPopover) {
     const isOpen = el => { try { return el.matches(':popover-open'); } catch (e) { return false; } };
     const somethingOpen = () => ['dialog', 'card', 'creator', 'comic', 'end', 'mapa-grande'].some(id => $(id) && !$(id).hidden) ||
-      ($('title') && $('title').open) || !!$('t-cancel');
+      ($('title') && $('title').open) || !!$('t-cancel') || !!$('c1-saltar'); // F22: Esc en la intro solo la salta (no abre además la Pausa)
     let atDown = null; // estado ANTES de que el juego procese la tecla (Esc también cierra tarjetas)
     addEventListener('keydown', e => {
       if (e.repeat || (e.target.closest && e.target.closest('input, select, textarea'))) return;
@@ -167,7 +167,8 @@
       const ab = !!portada.open;
       if (ab === antes) return; antes = ab;
       for (const el of atras) el.inert = ab;
-      if (!ab) { const c = $('creator'), f = $('p-name-libre') || $('p-name-a'); if (c && !c.hidden && f) f.focus(); }
+      // PULIR 5: en táctil el foco va a «¡A jugar!» (AV.G.creador.focoCreador): el campo del nombre abría solo el teclado del móvil
+      if (!ab) { const c = $('creator'), Gc = window.AV && window.AV.G && window.AV.G.creador, f = (Gc && Gc.focoCreador && Gc.focoCreador()) || $('p-name-libre') || $('p-name-a'); if (c && !c.hidden && f) f.focus({ preventScroll: true }); }
     };
     // El atributo open cambia al instante (el evento close puede llegar tarde en una pestaña en segundo plano)
     new MutationObserver(sync).observe(portada, { attributes: true, attributeFilter: ['open'] });

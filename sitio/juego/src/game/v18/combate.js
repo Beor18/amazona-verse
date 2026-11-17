@@ -959,13 +959,15 @@ window.AVV18Combate = function (G) {
       `<div class="vd-ent-cuerpo"><kbd data-k="entK"></kbd><div class="vd-ent-txt"><span data-k="entTxt"></span> <b data-k="entPod"></b></div></div><button data-a="saltarEnt" type="button">${TACTIL ? TXT.saltar : TXT.saltarEnt}</button></div>` +
       `<div class="vd-bot" data-k="bot">${chip('golpe_ala', 'wing', TXT.ala, 'E')}${chip('semilla', 'semilla', TXT.semilla, 'F')}${chip('poder', 'bolt', TXT.poder, 'G')}${chip('brinco', 'jump', TXT.brinco, TXT.teclaEsp)}${chip('alianza', 'star', '', 'H')}</div>` +
       `<div class="vd-fin vd-fin2" data-k="fin" hidden><p class="vd-fin-tit" data-k="finTit"></p><p class="vd-finxp" data-k="finXp"></p><p data-k="finTxt"></p><p class="vd-fintip" data-k="finTip"><span data-k="finTipTxt"></span> <b data-k="finTipPod"></b></p><button data-a="otra">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
-    el.addEventListener('pointerdown', e => {
+    const hudBoton = e => { // F22: un solo manejador para el dedo/ratón (pointerdown) y el teclado (click con detail 0: Enter o Espacio con el foco)
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
+      if (e.type === 'click' && e.detail !== 0) return; // el click del ratón o del dedo ya entró por pointerdown
       e.preventDefault(); e.stopPropagation();
       const a = b.dataset.a;
       if (a === 'salirDuelo') { salir(); return; } // auditoría 10-nov: salir a mitad del duelo, también en táctil
       if (a === 'controles') { if (G.botones) G.botones.abrir(); } else if (a === 'combos') abrirCombos(!cartaC); else if (a === 'cerrarCombos') abrirCombos(false); else if (a === 'como') abrirComo(); else if (a === 'saltarEnt') saltarEntreno(); else if (a === 'otra') otraVezSiListo(); else if (a === 'salir') { if (finListo()) salir(); } else if (a === 'alianza') { if (C.j && C.j.alianza) usar(C.j, C.j.alianza); } else if (a === 'brinco') brinco(); else if (C.j) usar(C.j, a === 'poder' ? C.j.poder : a);
-    });
+    };
+    el.addEventListener('pointerdown', hudBoton); el.addEventListener('click', hudBoton);
     const viejo = document.getElementById('v18-duelo'); if (viejo) viejo.remove(); // una instancia nueva del módulo (QA-163 en v18CombateTest) no deja dos #v18-duelo
     document.body.appendChild(el);
     // Táctil: etiquetas sobre los botones grandes que ya existen (Acción = Ala, Impulso = Semilla y, mantenido, el poder)
@@ -1145,22 +1147,32 @@ window.AVV18Combate = function (G) {
     tj.modo = modo; tj.alCerrar = o.alCerrar || null; tj.entrenar = o.entrenar || null;
     tj.el.innerHTML = htmlTarjeta(modo, o.tactil != null ? !!o.tactil : TACTIL, c2On(), !!o.entrenar);
     const yaAbierta = !tj.el.hidden; tj.el.hidden = false;
-    if (!yaAbierta) addEventListener('keydown', teclaTarjeta, true);
+    if (!yaAbierta) { addEventListener('keydown', teclaTarjeta, true); const ae = document.activeElement; tj.prev = ae && ae !== document.body && !tj.el.contains(ae) ? ae : null; } // F22: al cerrar, el foco vuelve donde estaba
     try { tj.el.querySelector('[data-tj="ok"]').focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
     return true;
   }
   // como: 'ok' («¡A pelear!» o Enter: llama a alCerrar), 'esc' (Esc: solo cierra), 'entrenar' («Practicar») o 'salir' (el duelo se cierra)
   function cerrarTarjeta(como) {
     if (!tj || tj.el.hidden) return false;
+    const enTj = tj.el.contains(document.activeElement);
     tj.el.hidden = true; removeEventListener('keydown', teclaTarjeta, true);
     const fn = como === 'entrenar' ? tj.entrenar : como === 'ok' ? tj.alCerrar : null; tj.alCerrar = tj.entrenar = null;
     if (fn) try { fn(); } catch (e) { /* el duelo ya no está */ }
+    // F22: el foco no se queda en BODY: vuelve a lo que lo tenía (p. ej. «¿Cómo se pelea?») si sigue a la vista
+    const pv = tj.prev; tj.prev = null;
+    if (enTj || document.activeElement === document.body) try { if (pv && pv.isConnected && pv.getClientRects().length && getComputedStyle(pv).visibility !== 'hidden') pv.focus({ preventScroll: true }); } catch (e) { /* */ }
     return true;
   }
   // Duelo contra la Campeona: «Practicar» solo si no está ya el entreno
   const abrirComo = () => abrirTarjeta('uno', ent ? {} : { entrenar: () => iniciar({ entreno: true }) });
   function teclaTarjeta(e) {
     if (!tarjetaAbierta()) return;
+    if (e.key === 'Tab') { // F22: la tarjeta es modal: el foco da la vuelta entre sus botones
+      e.preventDefault(); e.stopImmediatePropagation();
+      const bs = [...tj.el.querySelectorAll('button')].filter(b => b.getClientRects().length), i = bs.indexOf(document.activeElement), n = bs.length;
+      if (n) try { bs[e.shiftKey ? (i <= 0 ? n - 1 : i - 1) : (i < 0 || i >= n - 1 ? 0 : i + 1)].focus({ preventScroll: true }); } catch (er) { /* */ }
+      return;
+    }
     const enPracticar = e.target && e.target.closest && e.target.closest('#vd-como [data-tj="entrenar"]');
     if (e.key === 'Escape' || (e.key === 'Enter' && !enPracticar)) { e.preventDefault(); e.stopImmediatePropagation(); cerrarTarjeta(e.key === 'Escape' ? 'esc' : 'ok'); }
   }
@@ -3126,6 +3138,15 @@ window.AVV18Combate = function (G) {
             abierta && espera && ev.defaultPrevented && !tarjetaAbierta() && C.fase === 'cuenta', JSON.stringify({ abierta, espera, fase: C.fase }));
           pd(hud.q('como')); const ev2 = new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }); document.body.dispatchEvent(ev2);
           check('T57 · Enter también la cierra', !tarjetaAbierta() && C.fase === 'cuenta');
+          { // F22: con el teclado, Enter/Espacio sobre «¿Cómo se pelea?» (click con detail 0) la abre; Tab no sale de ella y al cerrar el foco vuelve
+            const bc = hud.q('como'); bc.focus(); bc.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 0 }));
+            const porTecla = tarjetaAbierta(), dentro = [];
+            for (let i = 0; i < 4; i++) { const t = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }); document.body.dispatchEvent(t); dentro.push(t.defaultPrevented && tj.el.contains(document.activeElement)); }
+            const tS = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }); document.body.dispatchEvent(tS); dentro.push(tj.el.contains(document.activeElement));
+            cerrarTarjeta('esc');
+            check('F22 · Los botones del HUD del duelo responden al teclado («¿Cómo se pelea?» con Enter), la tarjeta atrapa el foco y al cerrarla vuelve al botón',
+              porTecla && dentro.every(Boolean) && !tarjetaAbierta() && document.activeElement === bc, JSON.stringify({ porTecla, dentro, foco: document.activeElement && (document.activeElement.dataset.a || document.activeElement.tagName) }));
+          }
           pd(hud.q('como'));
         }
         tj.el.querySelector('[data-tj="entrenar"]').click();

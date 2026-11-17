@@ -309,6 +309,9 @@ AVE.module('idioma', function (G) {
     lang = dd.d;
     // En pantalla: con EN puesto, ningún texto español visible
     const aula = G.aula && G.aula.setAjuste ? G.aula : null, idAntes = aula ? aula.aj.idioma : null;
+    // PULIR 5: el chip EN de la portada cambia el idioma (antes solo se podía desde la pausa)
+    const chipEn = document.querySelector('#title [data-t-idioma="en"]');
+    if (aula && chipEn) { chipEn.click(); ok('PULIR 5 · El chip EN de la portada pone el inglés y queda marcado', aula.aj.idioma === 'en' && chipEn.getAttribute('aria-pressed') === 'true', aula.aj.idioma + ' ' + chipEn.getAttribute('aria-pressed')); }
     if (aula) aula.setAjuste('idioma', 'en'); else poner('en');
     await tmp.listo; await new Promise(r => setTimeout(r, 150));
     const vis = textosVisibles();

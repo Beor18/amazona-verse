@@ -226,6 +226,7 @@ AVE.module('aula', function (G) {
     const set = (sel, txt) => { const el = menu.querySelector(sel); if (el) el.textContent = txt; };
     set('#aula-titulo', u('aula')); set('#aula-lbl-idioma', u('idioma'));
     for (const b of menu.querySelectorAll('[data-aula-idioma]')) b.setAttribute('aria-pressed', String(aj.idioma === b.dataset.aulaIdioma));
+    pintarIdiomaPortada();
     for (const b of menu.querySelectorAll('[data-aula-op]')) {
       const k = b.dataset.aulaOp, off = k === 'voz' && !vozDisponible();
       b.textContent = off ? u('sinVoz') : u(k); b.disabled = off;
@@ -772,6 +773,15 @@ AVE.module('aula', function (G) {
     if (b && b.focus) b.focus();
   }
   const maestroAbierto = () => !!(panel && !panel.hidden);
+
+  // PULIR 5 (17-nov): ES/EN también en la portada (index.html, .title-idioma): un niño que solo habla inglés no llegaba al
+  // selector hasta la pausa, ya dentro de la partida. Mismo ajuste que el de la pausa (setAjuste: se guarda y avisa a todos).
+  function pintarIdiomaPortada() {
+    for (const b of document.querySelectorAll('#title [data-t-idioma]')) b.setAttribute('aria-pressed', String((aj.idioma === 'en' ? 'en' : 'es') === b.dataset.tIdioma));
+  }
+  { const g = document.querySelector('#title .title-idioma');
+    if (g && !g.dataset.enlazado) { g.dataset.enlazado = '1'; g.addEventListener('click', e => { const b = e.target.closest('[data-t-idioma]'); if (b) setAjuste('idioma', b.dataset.tIdioma); }); }
+    pintarIdiomaPortada(); }
 
   montarPausa();
 

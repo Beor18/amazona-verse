@@ -33,6 +33,7 @@ window.AVCarga = function (G) {
     ['Calentando las alas…', 'Warming up the wings…'],
     ['Regando El Yunque…', 'Watering El Yunque…'],
   ];
+  const CASI = ['¡Ya casi! Abriendo las alas…', 'Almost there! Spreading the wings…'];
   const AVISOS = {
     empieza: ['Preparando la isla…', 'Getting the island ready…'],
     paso: ['Preparando la isla: {} %', 'Getting the island ready: {} %'],
@@ -63,6 +64,8 @@ window.AVCarga = function (G) {
     el = doc.createElement('div');
     el.id = 'carga'; el.hidden = true; el.tabIndex = -1; el.setAttribute('data-no-tr', '');
     el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-busy', 'true');
+    // F22: mientras se ve, Tab no lleva el foco a lo que queda debajo («Controles», «Saltar intro»…): se queda en la pantalla de carga
+    addEventListener('keydown', e => { if (e.key !== 'Tab' || !estado.activa || el.hidden) return; e.preventDefault(); e.stopImmediatePropagation(); try { el.focus({ preventScroll: true }); } catch (er) { /* */ } }, true);
     const nubes = [[10, 160, 70, -20], [22, 280, 110, -70], [36, 210, 90, -40]]
       .map(([y, w, t, d]) => `<span class="carga-nube" style="--y:${y}%;--w:${w}px;--t:${t}s;--d:${d}s"></span>`).join('');
     const plumas = [[9, 15, -3], [27, 19, -11, 16, 'var(--gold)'], [48, 17, -7, 18], [68, 21, -15, 26, 'var(--crest)'], [88, 16, -1, 18, 'var(--gold)']]
@@ -205,7 +208,10 @@ window.AVCarga = function (G) {
         const { listo, now } = medir();
         C.muestras.push(Math.round(mostrado * 1000) / 1000);
         pintar();
-        if (now - tFrase > FRASE_MS) { tFrase = now; iFrase = (iFrase + 1) % FRASES.length; ponerFrase(iFrase); }
+        // PULIR 5 (17-nov): con la barra casi llena el final (programas y GPU) puede tardar varios segundos y parecía colgada:
+        // la frase pasa a «¡Ya casi!» y se queda; la barra sigue con su brillo
+        if (mostrado >= 0.9) { if (iFrase !== -1) { iFrase = -1; frase.innerHTML = ''; const sp = doc.createElement('span'); sp.textContent = L(CASI[0], CASI[1]); frase.appendChild(sp); } }
+        else if (now - tFrase > FRASE_MS) { tFrase = now; iFrase = (iFrase + 1) % FRASES.length; ponerFrase(iFrase); }
         // Con todo cargado, los dos primeros cuadros de verdad se dibujan debajo de la pantalla (opaca): ahí se crean los búferes
         // a pantalla completa y el mapa de sombras. Luego se espera a que la GPU termine lo enviado (marca, sin bloquear). Así el
         // primer cuadro que ve el jugador no paga la cola de subidas (en la nube, 6 s de cuadro al destapar).
@@ -290,7 +296,10 @@ window.AVCarga = function (G) {
       check('Al terminar se devuelve el control: sin pausa de carga, el mundo se dibuja y la pantalla se va',
         !(G.pausa && G.pausa.motivos.has('carga')) && !ocultar && !estado.activa && el.hidden, 'pausa ' + (G.pausa ? [...G.pausa.motivos].join(',') : '-') + ', oculto ' + (G.ui.worldHidden && G.ui.worldHidden()));
       // 3. El tope: con algo que no termina nunca, entra igual a su hora
-      const c3 = await correr({ forzar: true, rapido: true, tope: 600, simularPendiente: true });
+      const p3 = correr({ forzar: true, rapido: true, tope: 600, simularPendiente: true });
+      { const t = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }); dispatchEvent(t);
+        check('F22 · Con la pantalla de carga a la vista, Tab no se va a lo de debajo (el foco se queda en ella)', t.defaultPrevented && document.activeElement === el, document.activeElement && (document.activeElement.id || document.activeElement.tagName)); }
+      const c3 = await p3;
       const m3 = c3.muestras;
       check('Respeta el tope: entra igual al llegar (aquí 600 ms en vez de 20 s)', c3.motivo === 'tope' && c3.ms >= 590 && c3.ms < 1000 + holgura, c3.ms + ' ms, ' + c3.motivo);
       check('En el tope la barra tampoco retrocede y se llena al entrar', sube(m3) && m3[m3.length - 2] <= 0.97 && m3[m3.length - 1] === 1, m3.slice(-3).join(' → '));
@@ -300,7 +309,7 @@ window.AVCarga = function (G) {
       check('Accesible: barra con role=progressbar y aviso aria-live', barra.getAttribute('role') === 'progressbar' && barra.getAttribute('aria-valuenow') === '100' && aviso.getAttribute('aria-live') === 'polite' && !!aviso.textContent.trim(),
         'aria-valuenow ' + barra.getAttribute('aria-valuenow') + ', aviso «' + aviso.textContent + '»');
       check('Sin porcentajes a la vista: la cifra solo va para el lector de pantalla', !/\d\s*%/.test(el.querySelector('.carga-main').innerText.replace(aviso.innerText, '')));
-      check('Logo, Vittata y frases en ES y EN', !!el.querySelector('.carga-logo svg') && !!el.querySelector('.carga-ave img') && FRASES.every(f => f[0] && f[1] && f[0] !== f[1]), FRASES.length + ' frases');
+      check('Logo, Vittata y frases en ES y EN', !!el.querySelector('.carga-logo svg') && !!el.querySelector('.carga-ave img') && FRASES.concat([CASI]).every(f => f[0] && f[1] && f[0] !== f[1]), FRASES.length + ' frases y «¡Ya casi!»');
       check('En el móvil o en «bajo», tandas cortas (1 descarga, 2 texturas por cuadro)', !ligero() || (estado.corridas.every(c => c.ligero)), ligero() ? 'ligero' : 'escritorio: 3 descargas, 6 texturas');
       const nuevos = (window.__aveErrores || []).slice(e0);
       check('Sin errores de consola', !errores.length && !nuevos.length, errores.concat(nuevos).slice(0, 3).join(' | '));

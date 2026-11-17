@@ -77,6 +77,10 @@
 }
 /* Capítulos (AV1): botón bajo las tarjetas que abre la pantalla «Capítulos» (#capitulos) */
 .title-episodios { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-2); margin: var(--sp-2) 0 0; }
+#title .title-episodios.episodios-arriba { margin: 0 0 12px; } /* PULIR 5: ya viene así en index.html (sin salto al cargar) */
+/* PULIR 5: ES/EN en la portada (antes solo en la pausa, ya dentro de la partida); aula.js los enlaza */
+.title-idioma { display: inline-flex; gap: var(--sp-1); align-items: center; }
+.title-idioma .chip { min-width: 44px; min-height: 44px; justify-content: center; padding: 0 var(--sp-3); }
 .title-episodios .btn { min-height: 44px; }
 /* Pantalla «Capítulos»: los 6 de la temporada con portada (SVG y color del capítulo), estado y Jugar; cabe en 320 px y se desplaza */
 dialog.capitulos {

@@ -10,6 +10,7 @@ window.AVTrucos = function (G) {
   const CLAVE = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.trucos';
   const NOMBRE = { tonel: '¡Tonel!', looping: '¡Looping!', barrena: '¡Barrena!', rasante: '¡Rasante!', perfecto: '¡Perfecto!' };
   const VENTANA = 4;
+  const PANELES = ['v18-moon', 'v18-chispa', 'v18-guardian']; // retos con amigos: su panel va arriba al centro
   let combo = 0, ultimo = 0, mejor = 0, ultimoId = '', aire = 0;
   try { const d = JSON.parse(localStorage.getItem(CLAVE) || 'null'); if (d && d.mejor) mejor = d.mejor; } catch (e) { /* sin almacén */ }
   if (G.audio && G.audio.define) {
@@ -28,6 +29,13 @@ window.AVTrucos = function (G) {
     const eng = { tonel: 'Barrel roll!', looping: 'Loop!', barrena: 'Spin dive!', rasante: 'Skim!', perfecto: 'Perfect landing!' };
     return (en() ? eng : es)[id] || NOMBRE[id] || id;
   }
+  // PULIR 1 (17-nov): el panel de un reto con amigos (Moon, Chispa, el Guardián; z 40, arriba al centro) tapaba el chip
+  // («¡Rasante! ×1» quedaba debajo). Con uno a la vista, el chip sale justo bajo él; si no, a su altura de siempre (18 %).
+  function bajoPanel() {
+    let y = 0;
+    for (const id of PANELES) { const p = document.getElementById(id); if (p && !p.hidden) { const r = p.getBoundingClientRect(); if (r.height) y = Math.max(y, r.bottom); } }
+    return y ? Math.round(Math.min(y + 10, innerHeight * 0.55)) + 'px' : '18%';
+  }
   function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify({ v: 1, mejor })); } catch (e) { /* sin almacén */ } }
   function anotar(id) {
     if (!id || !NOMBRE[id]) return combo;
@@ -36,7 +44,7 @@ window.AVTrucos = function (G) {
     ultimo = ahora; ultimoId = id;
     if (combo > mejor) { mejor = combo; guardar(); G.emit('record', { modo: 'trucos', combo, nombre: titulo(combo, id) }); }
     G.emit('truco', id);
-    chip.textContent = titulo(combo, id) + '  ×' + combo; chip.hidden = false; chipT = 1.6;
+    chip.textContent = titulo(combo, id) + '  ×' + combo; chip.style.top = bajoPanel(); chip.hidden = false; chipT = 1.6;
     if (G.audio && G.audio.play) { try { G.audio.play('truco', combo); } catch (e) { /* sin audio */ } }
     if (G.fx && G.fx.burst) G.fx.burst(S.pos.x, S.pos.y + 0.4, S.pos.z, 'feathers', 8 + combo);
     return combo;
@@ -99,6 +107,19 @@ window.AVTrucos = function (G) {
       ok('El récord se guarda y avisa', mejor >= 3 && records.some(r => r.modo === 'trucos' && r.combo >= 3), String(mejor));
       S.clock = 200; anotar('rasante');
       ok('Pasados 4 s el combo vuelve a 1', combo === 1, String(combo));
+      { // PULIR 1: con el panel de un reto con amigos arriba al centro, el chip sale debajo y no tapado
+        const libreId = PANELES.find(id => !document.getElementById(id));
+        if (libreId) {
+          const f = document.createElement('div'); f.id = libreId;
+          f.style.cssText = 'position:fixed;top:92px;left:0;right:0;margin:auto;width:300px;height:200px;z-index:40';
+          document.body.appendChild(f);
+          S.clock = 210; anotar('tonel');
+          const rc = chip.getBoundingClientRect(), rp = f.getBoundingClientRect(); f.remove();
+          ok('Con el panel de Moon (o Chispa, o el Guardián) a la vista, el chip sale debajo', rc.top >= rp.bottom, Math.round(rc.top) + ' ≥ ' + Math.round(rp.bottom));
+          S.clock = 220; anotar('tonel');
+          ok('Sin panel, el chip vuelve a su sitio (18 %)', chip.style.top === '18%', chip.style.top);
+        }
+      }
       M.flying = true;
       canvas.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 31, pointerType: 'touch', clientX: 200, clientY: 300, bubbles: true }));
       canvas.dispatchEvent(new PointerEvent('pointerup', { pointerId: 31, pointerType: 'touch', clientX: 320, clientY: 310, bubbles: true }));

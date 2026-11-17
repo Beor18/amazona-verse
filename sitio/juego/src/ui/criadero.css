@@ -29,7 +29,9 @@
 
 /* ---------- Columnas de tarjetas ---------- */
 .cr-col {
-  position: absolute; top: 84px; bottom: calc(var(--cr-dock-h) + var(--sp-2)); width: var(--cr-col);
+  /* PULIR 1 (17-nov): las columnas llegan hasta abajo. El dock (Comida, Agua…) va centrado y su ancho máximo ya deja libres las
+     dos columnas, así que reservarle 156 px aquí solo cortaba las tarjetas a 720 px de alto (la del aviario y «Crece aprendiendo») */
+  position: absolute; top: 84px; bottom: max(var(--sp-3), env(safe-area-inset-bottom)); width: var(--cr-col);
   display: flex; flex-direction: column; gap: var(--sp-3); overflow-y: auto; overscroll-behavior: contain;
   padding: 2px 2px var(--sp-2); scrollbar-width: thin;
 }

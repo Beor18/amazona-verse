@@ -393,7 +393,7 @@ window.AVCompas = function (G) {
       '#compas .cp-fin h2{margin:0;font-size:26px}#compas .cp-gran{font-size:46px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#compas .cp-fin p{margin:0;font-size:17px;font-weight:600}#compas .cp-det{font-size:15px!important;opacity:.85;font-weight:500!important}#compas .cp-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}#compas .cp-bots button{min-height:54px;padding:6px 22px;font-size:17px;border-radius:27px}' +
       '@media (orientation:landscape) and (max-height:500px){#compas .cp-fin{padding:12px 16px;gap:4px}#compas .cp-fin h2{font-size:21px}#compas .cp-gran{font-size:36px}#compas .cp-pista{font-size:14px;padding:6px 12px}}' +
       '@media (prefers-reduced-motion:reduce){#compas .cp-fb.pop{animation:none}#compas .cp-pista{transition:none}}.mov-reducido #compas .cp-fb.pop{animation:none}.mov-reducido #compas .cp-pista{transition:none}' +
-      'body.compas-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir,#quest,#inv,#b-diary,#b-emotes,#b-menu,#b-construir,#b-nido,#minimapa,#marcador,#top,#sys){visibility:hidden!important}';
+      'body.compas-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir,#quest,#inv,#b-diary,#b-emotes,#b-menu,#b-construir,#b-nido,#minimapa,#marcador,#top,#sys,#guia-hud,#c1-saltar){visibility:hidden!important}'; // F22: tampoco «Controles» ni «Saltar intro» (el foco se perdía detrás del lienzo)
     document.head.appendChild(st);
   }
   function montar() {
@@ -506,9 +506,16 @@ window.AVCompas = function (G) {
   addEventListener('keydown', e => {
     if (!activo()) return;
     if (e.key === 'Escape') { if (e.repeat) return; e.preventDefault(); e.stopImmediatePropagation(); salir(); return; }
+    if (e.key === 'Tab') { // F22: el diálogo es modal: el foco da la vuelta entre sus botones a la vista (Salir al jugar; Otra vez y Salir al final)
+      e.preventDefault(); e.stopImmediatePropagation();
+      const bs = [...el.querySelectorAll('button')].filter(b => !b.disabled && b.getClientRects().length), i = bs.indexOf(document.activeElement), n = bs.length;
+      if (!n) return;
+      const j = e.shiftKey ? (i <= 0 ? n - 1 : i - 1) : (i < 0 || i >= n - 1 ? 0 : i + 1);
+      try { bs[j].focus({ preventScroll: true }); } catch (er) { /* */ }
+      return;
+    }
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (E.fase === 'fin') { // el panel final es modal: las teclas del mundo (P, M, 1-7…) no pasan; Tab, Enter y Espacio van a los botones (no en el primer segundo)
-      if (e.key === 'Tab') return;
       const boton = (e.key === 'Enter' || e.key === ' ') && performance.now() / 1000 - E.finP > 1 && e.target && e.target.closest && e.target.closest('#compas button');
       e.stopImmediatePropagation(); if (!boton) e.preventDefault();
       return;
@@ -591,6 +598,11 @@ window.AVCompas = function (G) {
       await new Promise(r => setTimeout(r, 30));
       { const fe = document.activeElement, tP = tecla('p'), tE = tecla(' ');
         check('Con el panel final, las teclas del mundo no pasan (P, M…) y un Espacio no arranca otra partida; el foco va al panel', tP.defaultPrevented && tE.defaultPrevented && E.fase === 'fin' && fe === q('fin') && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('menu')), (fe && (fe.dataset.k || fe.tagName)) + ' · ' + E.fase); }
+      { // F22: Tab no sale del diálogo (aria-modal) y «Controles» / «Saltar intro» no quedan detrás con foco
+        const enPanel = []; for (let i = 0; i < 3; i++) { const t = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }); dispatchEvent(t); enPanel.push(t.defaultPrevented && q('fin').contains(document.activeElement) && document.activeElement.tagName === 'BUTTON'); }
+        const tS = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }); dispatchEvent(tS); enPanel.push(el.contains(document.activeElement));
+        const gb = document.getElementById('guia-hud');
+        check('El foco no sale del diálogo con Tab (ni en juego ni en el panel final) y «Controles» no queda detrás', enPanel.every(Boolean) && (!gb || getComputedStyle(gb).visibility === 'hidden'), enPanel.join(',')); }
       const rg = leerRec(); check('El récord (metros, racha más larga y jugadas) se guarda en este dispositivo', rg && rg.mejor === metros && rg.racha === E.mejorRacha && rg.jugadas === 1, JSON.stringify(rg));
       const bots = [...q('fin').querySelectorAll('button')].map(b => b.getBoundingClientRect()), fr = q('fin').getBoundingClientRect();
       check('Cabe en la pantalla: panel dentro, sin el HUD encima; «Otra vez» y «Salir» ≥ 54 px', bots.every(b => b.height >= 54 && b.width >= 54) && fr.left >= 0 && fr.right <= innerWidth && fr.top >= 0 && fr.bottom <= innerHeight && el.querySelector('.cp-hud').hidden && hr.left >= 0 && hr.right <= innerWidth && hr.bottom < innerHeight * 0.3 && hr.height <= 72 && lay.laneY + lay.r < innerHeight && lay.vy - lay.S / 2 > hr.bottom - 30 && (fbr.top >= hr.bottom || fbr.left >= hr.right || fbr.right <= hr.left) && ladoOk, `${innerWidth}×${innerHeight} · panel ${Math.round(fr.width)}×${Math.round(fr.height)} · HUD ${Math.round(hr.width)}×${Math.round(hr.height)} · aviso ${Math.round(fbr.left)},${Math.round(fbr.top)}`);

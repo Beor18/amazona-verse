@@ -355,7 +355,7 @@ window.AVSigueme = function (G) {
       // de la Patrulla, los combos y el poder (sus avisos esperan: G.menuModos.ocupado() cuenta este juego como actividad en marcha)
       'body.sigueme-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela){visibility:hidden!important}' +
       // con el panel final, tampoco las pistas de vuelo ni el minimapa: solo el resultado
-      'body.sigueme-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag){visibility:hidden!important}';
+      'body.sigueme-fin :is(#minimapa,#guia-hud,#keyhint,#acts,#stick,#emotes,#tag,#sys,#sys button,#b-diary,#b-emotes,#b-nido,#b-menu,#b-dive,#v18-exp-poder){visibility:hidden!important}';
     document.head.appendChild(st);
   }
   function montar() {
@@ -457,7 +457,15 @@ window.AVSigueme = function (G) {
       e.preventDefault(); e.stopImmediatePropagation(); salir(); return;
     }
     if (E.fase === 'fin') { // el panel final es modal: las teclas del mundo (P, M, 1-7, vuelo…) no pasan; Tab, Enter y Espacio van a sus botones (no en el primer segundo)
-      if (e.key === 'Tab' || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'Tab') { // F22: el foco no sale del panel (aria-modal): da la vuelta entre sus botones
+        if (G.ui && G.ui.cardOpen) return;
+        e.preventDefault(); e.stopImmediatePropagation();
+        const bs = [...finEl.querySelectorAll('button')], i = bs.indexOf(document.activeElement), n = bs.length;
+        const j = e.shiftKey ? (i <= 0 ? n - 1 : i - 1) : (i < 0 || i >= n - 1 ? 0 : i + 1);
+        try { bs[j].focus({ preventScroll: true }); } catch (er) { /* */ }
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       const boton = (e.key === 'Enter' || e.key === ' ') && performance.now() / 1000 - E.finP > 1 && e.target && e.target.closest && e.target.closest('#sig-fin button');
       e.stopImmediatePropagation(); if (!boton) e.preventDefault();
     }
@@ -600,6 +608,12 @@ window.AVSigueme = function (G) {
       await new Promise(r => setTimeout(r, 30));
       const tP = tecla('p'), tE = tecla(' ');
       check('El panel es modal: el mundo queda en pausa, las teclas del mundo no pasan y el foco va al panel', (!G.pausa || !G.pausa.motivos || G.pausa.motivos.has('sigueme')) && tP.defaultPrevented && tE.defaultPrevented && E.fase === 'fin' && document.activeElement === finEl, (document.activeElement && (document.activeElement.id || document.activeElement.tagName)));
+      { // F22: el foco no se escapa del panel con Tab y Diario, Gestos y el menú no quedan detrás tocables
+        const vis = id => { const el = document.getElementById(id); return !!el && getComputedStyle(el).visibility !== 'hidden' && el.getClientRects().length > 0; };
+        const enPanel = []; for (let i = 0; i < 3; i++) { const t = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }); dispatchEvent(t); enPanel.push(t.defaultPrevented && finEl.contains(document.activeElement) && document.activeElement !== finEl); }
+        const tS = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }); dispatchEvent(tS); enPanel.push(finEl.contains(document.activeElement));
+        const fuera = ['b-diary', 'b-menu', 'b-emotes', 'b-nido', 'sys'].filter(vis);
+        check('El foco no sale del panel con Tab y Diario, Gestos y el menú no quedan detrás', enPanel.every(Boolean) && !fuera.length, enPanel.join(',') + (fuera.length ? ' · se ve ' + fuera.join(',') : '')); }
       if (ae) {
         const idi0 = ae.idioma; ae.idioma = 'en'; pintarHud(); pintarFin();
         const txt = hudEl.textContent + ' ' + finEl.textContent;

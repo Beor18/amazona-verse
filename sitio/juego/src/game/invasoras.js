@@ -556,13 +556,16 @@
       const padre = document.getElementById('top') || document.body;
       padre.appendChild(d); return (F.cuenta = d);
     }
+    // PULIR 5 (17-nov): durante el primer objetivo del cap. 1 (despegar y posarse junto a Iguaca) ni la presentación de la
+    // Patrulla ni su contador «0/4»: llegaban en pleno primer vuelo, sin nada que ver con lo que el niño tenía que hacer
+    const primerObjetivo = () => !F.prueba && !!(G.misiones && G.misiones.primerObjetivo && G.misiones.primerObjetivo());
     function pintarCuenta() {
       const el = cuentaEl(), n = mem.vistos.length, t = especies().length || 4;
       const txt = L(`Patrulla ${n}/${t}`, `Patrol ${n}/${t}`);
       if (el.textContent !== txt) el.innerHTML = `<i aria-hidden="true"></i><span class="inv-c-txt">${esc(L('Patrulla', 'Patrol'))} </span>${n}/${t}`;
       // T1: fila propia pero del tamaño del texto (con flex-grow cruzaba toda la pantalla); fuera mientras hay un minijuego,
       // un diálogo, una tarjeta o un panel en marcha (vuelve sola al terminar)
-      el.hidden = !(activo() && (!G.quiet || F.prueba) && !(!F.prueba && enEscena()));
+      el.hidden = !(activo() && (!G.quiet || F.prueba) && !(!F.prueba && enEscena()) && !(n === 0 && primerObjetivo()));
     }
     function animarReporte(n, total) {
       if (G.quiet && !F.prueba) return;
@@ -602,6 +605,7 @@
       const presentar = () => {
         if (G.quiet || mem.vistos.length || !activo()) return;
         if (enEscena()) { if (++intentos < 60) setTimeout(presentar, 2000); return; }
+        if (primerObjetivo()) { setTimeout(presentar, 2000); return; } // PULIR 5: no en el primer vuelo (sale al posarse junto a Iguaca)
         avisar(L(`${D.album.titulo}: ${D.album.intro}`, `${D.album.tituloEn}: ${D.album.introEn}`), 5200, true);
       };
       setTimeout(presentar, 2500);
