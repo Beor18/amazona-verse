@@ -273,8 +273,9 @@ AVE.module('criadero', function (G) {
     }
     else {
       const chips = ['huevo', 'bebe', 'juvenil', 'adulto'].map(id => {
+        // F20: si el nombre real es el mismo («Adulto / adulto»), no se repite
         const e = etapaDef(id), on = id === et, done = ['huevo', 'bebe', 'juvenil', 'adulto'].indexOf(id) < ['huevo', 'bebe', 'juvenil', 'adulto'].indexOf(et);
-        return `<li class="${on ? 'on' : done ? 'done' : ''}"><b>${esc(t(e.nombre))}</b>${e.real && id !== 'huevo' ? `<small>${esc(t(e.real))}</small>` : ''}</li>`;
+        return `<li class="${on ? 'on' : done ? 'done' : ''}"><b>${esc(t(e.nombre))}</b>${e.real && id !== 'huevo' && t(e.real).toLowerCase() !== t(e.nombre).toLowerCase() ? `<small>${esc(t(e.real))}</small>` : ''}</li>`;
       }).join('');
       let cuerpo;
       if (et === 'huevo') {

@@ -8,7 +8,6 @@
     const $ = id => document.getElementById(id);
     const L = (es, en) => (G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? en : es);
     const puente = () => !!(G.v18 && G.v18.mundo && G.v18.mundo('puente_villa') === 'reparado');
-    const tactil = () => !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
     const patrulla = () => {
       const e = G.invasoras && G.invasoras.estado && G.invasoras.estado();
       const n = e && e.vistos ? e.vistos.length : 0;
@@ -35,7 +34,7 @@
       { id: 'golf', nombre: L('Minigolf', 'Mini golf'), estado: listo, puede: () => true, ir: () => irModo('golf') },
       { id: 'pesca', nombre: L('Pesca', 'Fishing'), estado: listo, puede: () => G.PESCA !== false, ir: () => irModo('pesca') },
       { id: 'duelo', nombre: L('Duelo', 'Duel'), estado: listo, puede: () => true, ir: () => irModo('duelo') },
-      { id: 'duelo2', nombre: L('Duelo de 2', '2-player duel'), estado: () => tactil() ? L('Solo en computadora', 'Computer only') : listo(), puede: () => !tactil(), ir: () => irModo('duelo2') },
+      { id: 'duelo2', nombre: L('Duelo de 2', '2-player duel'), estado: listo, puede: () => true, ir: () => irModo('duelo2') }, // F20: desde T44 el Duelo de 2 también va en táctil (en horizontal), como dice la portada
       { id: 'chispa', nombre: L('Carrera con Chispa', 'Race with Chispa'), estado: listo, puede: () => true, ir: () => irModo('chispa') },
       { id: 'moon', nombre: L('Entrenamiento con Moon', 'Training with Moon'), estado: listo, puede: () => true, ir: () => irModo('moon') },
       { id: 'guardian', nombre: L('Circuito del Primer Vuelo', 'First Flight Circuit'), estado: listo, puede: () => true, ir: () => irModo('guardian') },

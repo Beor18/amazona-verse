@@ -934,6 +934,9 @@
         '#cl-hud svg{width:30px;height:30px}#cl-hud .cl-cuenta{color:#fff8e6;font:700 13px system-ui,sans-serif;padding:0 8px;white-space:nowrap}' +
         '#cl-hud kbd{font:600 10px system-ui,sans-serif;opacity:.7}' +
         '#cl-hud .cl-herr button{flex-direction:row;font-size:13px;padding:4px 10px;white-space:nowrap}' +
+        // F20: los botones de herramientas no se encogen por debajo de su texto (en inglés «Quick builds T» se montaba sobre el
+        // siguiente): la fila salta a otra línea; y tienen forma de botón (antes parecían texto suelto)
+        '#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-herr button{flex:0 0 auto;background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 1px rgba(255,248,230,.3)}' +
         '#cl-hud .cl-plantillas{display:none}#cl-hud.cl-pl-abierta .cl-plantillas{display:flex}#cl-hud.cl-pl-abierta .cl-piezas{display:none}' +
         '#cl-hud .cl-plantillas button{width:74px;flex:0 0 auto}#cl-hud .cl-plantillas small{font-size:11px;line-height:1.1}' +
         '#cl-hud [data-cl="plantillas"][aria-expanded="true"]{background:#ffd27a;color:#10241c}' +

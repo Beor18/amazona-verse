@@ -126,7 +126,7 @@ window.AVV18Evolucion = function (G) {
     aliLider: 'Líder', aliApoyo: 'Compañera', aliBloq: 'Bloqueada', aliDispE: 'Disponible', aliDesb: 'Desbloqueada',
     aliTit: 'Alianza', aliOn: 'Activada', aliOff: 'Desactivada', varTit: 'Variante del grito',
     apoyo: '¡Tu compañera de alianza te ayuda!', apoyoEco: '¡La cotorra de Dominica te cubre!',
-    falta: 'Faltan {} XP para el nivel {}', max: 'Nivel máximo', mejora: 'Mejora:', maestroFx: 'destellos dorados',
+    falta: 'Faltan {} XP para el nivel {}', seGana: 'Se gana en el nivel {}', max: 'Nivel máximo', mejora: 'Mejora:', maestroFx: 'destellos dorados',
     k_alcance: 'Alcance', k_dura: 'Duración', k_vel: 'Velocidad', k_vida: 'Recorrido de la semilla', k_empuje: 'Empuje', k_devuelve: 'Energía que devuelve',
     k_quita: 'Energía que quita', k_gorda: 'Tamaño de la semilla', k_mareo: 'Mareo', k_cooldown: 'Espera',
     sec_pico: 'Además, deshace las semillas de la rival que vienen de frente.', sec_ojos: 'Además, marca a la rival 1,5 s: no puede esquivar y tus semillas la siguen.',
@@ -541,7 +541,7 @@ window.AVV18Evolucion = function (G) {
         '#v18-evo-carta img{width:44px;height:44px;border-radius:50%;float:left;margin-right:8px;background:#fff8}' +
         '.v18-evo-f{display:block;font-size:calc(12px * var(--fs-k,1));margin-top:3px}.v18-evo-bar{display:block;height:4px;border-radius:2px;background:#0003;overflow:hidden;margin:2px 6px}.v18-evo-bar b{display:block;height:100%;background:#e0a526}' +
         '.v18-evo-m{display:block;font-size:calc(12px * var(--fs-k,1));line-height:1.25;margin:1px 2px;opacity:.9}' +
-        '.v18-evo-et{display:inline-block;font-size:calc(12px * var(--fs-k,1));padding:2px 7px;border-radius:9px;background:#ffe39a;color:#3b2a14;margin:2px 1px}.v18-evo-et.no{background:#0003;color:inherit}' +
+        '.v18-evo-et{display:inline-block;font-size:calc(13px * var(--fs-k,1));padding:2px 7px;border-radius:9px;background:#ffe39a;color:#3b2a14;margin:2px 1px}.v18-evo-et.no{background:#0003;color:inherit}' +
         '.v18-evo-x{margin-top:8px;font-size:calc(14px * var(--fs-k,1))}.v18-evo-x .btn{min-height:44px}' +
         '#v18-evo-carta.mini{width:min(260px,calc(100vw - 32px));padding:6px 12px;border-radius:12px}#v18-evo-carta.mini h3{font-size:calc(16px * var(--fs-k,1));letter-spacing:0;text-transform:none;color:#7a4a10}' +
         '#v18-evo-carta.mini b{font-size:calc(14px * var(--fs-k,1));margin:0 0 2px}#v18-evo-carta.mini p{font-size:calc(12px * var(--fs-k,1))}' +
@@ -550,6 +550,7 @@ window.AVV18Evolucion = function (G) {
         '.v18-evo-guia{margin:6px 0 8px;padding:8px 10px;border-radius:12px;background:#fff3c4;color:#3b2a14;text-align:left;font-size:calc(14px * var(--fs-k,1));line-height:1.35}' +
         '.v18-evo-guia p{margin:3px 0}.v18-evo-guia .meta{font-weight:700}.v18-evo-guia .v18-evo-chip{display:inline-block;padding:2px 8px;margin:2px 2px 0 0;border-radius:9px;background:#ffe39a;font-size:calc(13px * var(--fs-k,1))}' +
         '.v18-evo-guia kbd{display:inline-block;vertical-align:middle;height:auto;font:700 calc(13px * var(--fs-k,1))/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 5px;margin:0 3px 0 6px;border-radius:6px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center}' +
+        '.v18-evo-sig .v18-evo-falta{flex-basis:100%;order:-1}' +
         '.v18-evo-sig,.v18-evo-logros{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px}.v18-evo-sig img,.v18-evo-logro img{width:28px;height:28px;border-radius:50%;background:#fff8}' +
         '.v18-evo-logro{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 2px;border-radius:14px;background:#ffe39a;color:#3b2a14}' +
         ':root.a11y-contraste .v18-evo-guia{background:#000;color:#fff;border:2px solid #fff}:root.a11y-contraste .v18-evo-guia .v18-evo-chip{background:#333;color:#fff}' +
@@ -600,7 +601,9 @@ window.AVV18Evolucion = function (G) {
     let h = `<span class="v18-evo-f"><span>${esc(L.nivel)}</span> · <span>${esc(L.etapa)}</span></span><i class="v18-evo-bar"><b style="width:${Math.round(L.frac * 100)}%"></b></i>`;
     const etapas = sp === 'vittata' ? ETAPAS : ETAPAS_ESP, sigEt = etapas.find(et => et.desde > r.nivel);
     h += `<span class="v18-evo-sig" data-v18-siguiente>${imgLogro(sp)}`;
-    h += sigEt ? `<span>${esc(sigEt.nombre)}</span> · <span>${esc(con(TXT.nivel, sigEt.desde))}</span> · <span>${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span>` : `<span>${esc(TXT.max)}</span>`;
+    // F20: lo que falta va primero y en su línea; la etapa dice «se gana en el nivel 10» (antes «Eco Amplificado · Nivel 10 · Faltan
+    // 20 XP para el nivel 2» parecía decir que ya ibas por el nivel 10)
+    h += sigEt ? `<span class="v18-evo-falta">${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span><span>${esc(sigEt.nombre)}</span> · <span>${esc(con(TXT.seGana, sigEt.desde))}</span>` : `<span>${esc(TXT.max)}</span>`;
     h += '</span>';
     // T40: con siguiente etapa, lo que falta ya va en su línea (salía dos veces); sin ella, aquí (o «Nivel máximo», si no lo dijo ya)
     if (!sigEt && r.sig != null) h += `<span class="v18-evo-m"><span>${esc(con(con(TXT.falta, r.falta), r.nivel + 1))}</span></span>`;
@@ -1297,7 +1300,7 @@ window.AVV18Evolucion = function (G) {
         vacio.innerHTML = htmlLogros();
         P.cambiarEvo(e => { for (const h of hitos()) e.marcas[h[0]] = true; });
         check('CG-83: la siguiente etapa sale con retrato y lo que falta, y los logros llevan imagen (si no hay, una frase, nunca una pantalla vacía)',
-          !!sig && !!sig.querySelector('img, svg') && /Maestro/.test(sig.textContent) && /Nivel 30/.test(sig.textContent) && /Faltan \d+ XP/.test(sig.textContent) &&
+          !!sig && !!sig.querySelector('img, svg') && /Maestro/.test(sig.textContent) && /Se gana en el nivel 30/.test(sig.textContent) && /Faltan \d+ XP/.test(sig.textContent) &&
           !!logs && logs.querySelectorAll('img, svg').length >= 1 && logs.textContent.trim().length > 4 &&
           !!vacio.querySelector('svg') && vacio.textContent.indexOf(TXT.guiaExplora) >= 0 && vacio.textContent.trim().length > 8,
           (sig && sig.textContent || '') + ' | ' + (vacio.textContent || '').slice(0, 80)); }

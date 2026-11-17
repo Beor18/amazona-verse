@@ -311,7 +311,7 @@
         const suelo = G.terreno && G.terreno.height ? G.terreno.height(m.x, m.z) : m.y, enAire = m.v || m.y > suelo + 0.25, v = q.vel;
         Object.assign(ch, { speed: v, gait: enAire ? 0 : v > 4 ? 2 : v > 0.3 ? 1 : 0, airborne: enAire, flying: !!m.v, legsDown: m.v ? 0 : 1, swimming: false, diving: false,
           wingMode: m.v ? (v > 6 ? 'fly' : 'hover') : enAire ? 'flap' : v > 0.3 ? 'walk' : 'idle', expression: (em && em.face) || 'happy', mouth: null, lookAt: null,
-          emote: (em && em.pose) || null, posado: '', agachada: 0, groundY: suelo, groundAt: null });
+          emote: (em && em.pose) || null, emoteSuave: !!(G.actores && G.actores.reducido && G.actores.reducido()), posado: '', agachada: 0, groundY: suelo, groundAt: null });
         // Cara de la otra cotorra: pico, sílabas al hablar y abanico de alas (con la API de character.js)
         try { if (ch.pico) { ch.pico(m.pk || 0); ch.hablar(!!m.h); ch.alas(m.al || 0); if (m.pk > 0) ch.expression = 'fight'; } } catch (e) { /* cara */ }
         try { ch.update(dta); } catch (e) { /* animación */ }
@@ -331,6 +331,8 @@
         '#en-linea[hidden]{display:none}#en-linea .el-caja{background:var(--c-surface-solid,#132b21);color:var(--paper,#f4f7f1);border:2px solid var(--c-line,rgba(127,211,143,.4));border-radius:20px;padding:22px;max-width:420px;width:100%;display:grid;gap:12px;box-shadow:0 18px 50px rgba(0,0,0,.45)}' +
         '#en-linea h2{margin:0;font-size:1.4rem}#en-linea p{margin:0;color:var(--muted,#a9c2b1);line-height:1.4}#en-linea .el-fila{display:flex;gap:8px;flex-wrap:wrap}' +
         '#en-linea input{flex:1;min-width:0;font:inherit;font-size:1.4rem;letter-spacing:.3em;text-transform:uppercase;text-align:center;padding:10px;border-radius:12px;border:2px solid var(--c-line,#7fd38f);background:rgba(0,0,0,.25);color:inherit}' +
+        // F20: el texto de ejemplo («Código de sala») va sin espaciado ni mayúsculas y más pequeño: antes se cortaba en «CÓDIGO DE»
+        '#en-linea input::placeholder{letter-spacing:0;text-transform:none;font-size:1rem;opacity:.75}' +
         '#en-linea button:focus-visible,#en-linea input:focus-visible{outline:3px solid #ffd27a;outline-offset:2px}' +
         '@media (prefers-reduced-motion:reduce){#en-linea,#en-linea *{animation:none;transition:none}}' +
         '#en-linea .el-codigo{font-size:2.4rem;font-weight:800;letter-spacing:.3em;text-align:center;color:var(--gold,#ffd27a)}#en-linea .el-n{text-align:center}';

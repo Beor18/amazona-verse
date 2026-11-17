@@ -751,20 +751,29 @@
       // Objeto largo en la mano izquierda (bandera, mapa, martillo): al bailar, ese brazo deja de barrer por delante de la cara
       // (se anula su vaivén) y se queda en alto y abierto, agitando la bandera; así el asta no cruza el pico
       // (docs/equipo/TRAITS_PEDIDOS.md). Pelear no lo necesita: el objeto queda a más de 20 cm de la cabeza.
+      // E17: el baile tiene partes (emoteSA: mecerse, emoteSB: «¡wepa!» con las dos alas arriba). El vaivén solo se anula donde
+      // lo hay (mecerse) y en el «¡wepa!» no se abre más: las dos alas suben igual.
       if (f.longHand && this.emoteName === 'dance' && this.eW > 0.01 && B.armL1 && B.armL2) {
         const w = (this.longHandOpen != null ? this.longHandOpen : 1) * this.eW, b = (this.emoteT || 0) * Math.PI * 4, h = Math.sin(b / 2);
-        this.rot(B.armL1, 'x', 0.4 * h * w); this.rot(B.armL1, 'z', (LONG_HAND_DANCE - 0.5 * h) * w); this.rot(B.armL2, 'x', -0.4 * Math.sin(b) * w);
+        const sA = this.emoteSA != null ? this.emoteSA : 1, sB = this.emoteSB || 0;
+        this.rot(B.armL1, 'x', 0.4 * h * sA * w); this.rot(B.armL1, 'z', (LONG_HAND_DANCE * (1 - sB) - 0.5 * h * sA) * w); this.rot(B.armL2, 'x', -0.4 * Math.sin(b) * sA * w);
       }
     }
-    // Gestos de cuerpo entero (emote: 'dance' | 'fight' | 'angry' | 'annoyed' | 'idea'), con transición suave.
+    // Gestos de cuerpo entero (emote: 'dance' | 'wave' | 'scare' | 'sleep' | 'fight' | 'angry' | 'annoyed' | 'idea'), con transición suave.
+    // Todo va con rot() (se deshace solo al empezar el cuadro siguiente): nada se acumula y al terminar los huesos vuelven exactos.
     // Hombro: -X adelanta; abrir hacia arriba/afuera es +Z en el izquierdo y -Z en el derecho. Codo +X dobla.
     emotePose(dt) {
       const B = this.bones;
-      if (this.emote !== this.emoteLast) { if (this.emote) { this.emoteT = 0; this.emoteName = this.emote; } this.emoteLast = this.emote; }
+      // emoteN (actores.js): cuenta los gestos empezados; repetir el mismo gesto lo empieza otra vez desde 0
+      if (this.emote !== this.emoteLast || this.emoteN !== this.emoteNLast) { if (this.emote) { this.emoteT = 0; this.emoteName = this.emote; this.emoteGolpe = 0; } this.emoteLast = this.emote; this.emoteNLast = this.emoteN; }
       this.eW = (this.eW || 0) + ((this.emote ? 1 : 0) - (this.eW || 0)) * (1 - Math.exp(-dt * 8));
       const w = this.eW;
+      this.emoteAlas = 0; // abanico de plumas que pide el gesto (lo suma _alasPose; 0..1)
       if (w < 0.01 || !this.emoteName) return;
       const t = this.emoteT = (this.emoteT || 0) + dt, P = Math.PI * 2;
+      // emoteSuave (actores.js con «Reducir movimiento»): sin saltos ni temblores y los vaivenes a la mitad
+      const su = this.emoteSuave ? 1 : 0, am = su ? 0.5 : 1;
+      const suaveE = x => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
       const arm = (side, x, zOut, elbow) => {
         const sh = B[side === 'L' ? 'armL1' : 'armL1001'], el = B[side === 'L' ? 'armL2' : 'armL2001'];
         if (!sh || !el) return;
@@ -781,13 +790,68 @@
       const lift = v => { this.root.position.y += v * w * this.root.scale.y; };
       switch (this.emoteName) {
         case 'dance': {
-          const b = t * P * 2, h = Math.sin(b / 2);
-          body(0.05, h * 0.22, h * 0.28); lift((1 - Math.cos(b)) * 0.03);
-          arm('L', -0.4 * h, 0.9 + 0.5 * h, 0.7 + 0.4 * Math.sin(b));
-          arm('R', 0.4 * h, 0.9 - 0.5 * h, 0.7 - 0.4 * Math.sin(b));
-          leg('L', -0.2 * Math.max(0, h), -0.6 * Math.max(0, h), 0.3 * Math.max(0, h));
-          leg('R', -0.2 * Math.max(0, -h), -0.6 * Math.max(0, -h), 0.3 * Math.max(0, -h));
-          head(Math.sin(b) * 0.08, 0, h * 0.18); beak(0.12 * Math.max(0, Math.sin(b * 1.5)));
+          // E17: a 120 golpes por minuto (un golpe cada 0,5 s, el mismo ritmo que la música de actores.js). Frase de 8 golpes:
+          // 1-4 se mece de lado a lado cabeceando en cada golpe (como las cotorras con música), 5-6 alas arriba («¡wepa!»)
+          // y 7-8 dos saltitos. Las partes se funden entre sí; con «Reducir movimiento» (emoteSuave) todo va a la mitad y sin saltos.
+          const b = t * P * 2, h = Math.sin(b / 2), g = t * 2, fr = g - Math.floor(g), ph = Math.floor(g) % 8 + fr;
+          const ven = (a, z) => clamp(Math.min((ph - a) / 0.35, (z - ph) / 0.35), 0, 1);
+          const sB = ven(4, 6), sC = ven(6, 8) * (1 - su), sA = 1 - Math.max(sB, sC);
+          this.emoteSA = sA; this.emoteSB = sB; // para clothes() (objeto largo en la mano)
+          const nod = Math.exp(-fr * 7) * 0.24 * am; // cabeceo seco en el golpe
+          const hop = Math.sin(fr * Math.PI) * sC;
+          body(0.05 + 0.06 * sB, h * 0.22 * am * sA, h * 0.32 * am * (sA + sC));
+          lift(((1 - Math.cos(b)) * 0.03 * sA + hop * 0.12) * am);
+          arm('L', -0.4 * h * sA - 0.2 * sB, 0.9 + 0.5 * h * sA + (0.75 + 0.25 * Math.sin(b)) * sB, 0.7 + 0.4 * Math.sin(b) * sA - 0.4 * sB);
+          arm('R', 0.4 * h * sA - 0.2 * sB, 0.9 - 0.5 * h * sA + (0.75 + 0.25 * Math.sin(b)) * sB, 0.7 - 0.4 * Math.sin(b) * sA - 0.4 * sB);
+          this.emoteAlas = Math.max(this.emoteAlas, (0.5 + 0.35 * Math.sin(b)) * sB * w);
+          const pL = Math.max(0, h) * sA + hop * 0.6, pR = Math.max(0, -h) * sA + hop * 0.6;
+          leg('L', -0.2 * pL, -0.6 * pL, 0.3 * pL);
+          leg('R', -0.2 * pR, -0.6 * pR, 0.3 * pR);
+          head(Math.sin(b) * 0.05 + nod * (sA + sC) - 0.12 * sB, 0, h * 0.2 * sA);
+          beak(0.1 * Math.max(0, Math.sin(b * 1.5)) + 0.18 * sB + nod * 0.4);
+          if (Math.floor(g) !== this.emoteGolpe) { this.emoteGolpe = Math.floor(g); if (!su) this.colaImpulso(0.25 * sC, (this.emoteGolpe % 2 ? 0.5 : -0.5) * sA); }
+          break;
+        }
+        case 'wave': {
+          // E17 «Saludo con la pata»: carga el peso en la pata derecha, sube la izquierda delante del pecho con los dedos
+          // abiertos y la agita tres veces; el ala contraria se abre un poco para equilibrarse. Pico abierto: «¡hola!».
+          const up = suaveE(t / 0.35) * (1 - suaveE((t - 2.05) / 0.4)), ag = Math.sin((t - 0.35) * P * 2.4) * (t > 0.35 && t < 2.1 ? 1 : 0) * am;
+          body(-0.04 * up, -0.14 * up, 0.12 * up); lift(-0.015 * up);
+          // Medido: cadera -X y rodilla +X llevan el pie arriba y adelante (-1 / +1,3: el pie a la altura del pecho, delante)
+          leg('L', -1.0 * up, 1.3 * up, (-0.15 + 0.3 * ag) * up);
+          leg('R', -0.1 * up, -0.15 * up, 0.12 * up);
+          if (B.pieL1) this.rot(B.pieL1, 'z', (0.12 + 0.22 * ag) * up * w); // agita el pie de lado a lado
+          if (!(this.fitAdj && this.fitAdj.toes)) for (const n of TOES) if (/^pieL[4-8]$|^pieL8002$/.test(n) && B[n]) this.rot(B[n], 'x', (-0.35 - 0.15 * ag) * up * w);
+          arm('L', -0.15 * up, 0.25 * up, 0.4 * up); arm('R', 0.05 * up, 0.75 * up, 0.15 * up);
+          head(-0.08 * up, 0.12 * up, (0.22 + 0.06 * ag) * up); beak((0.2 + 0.12 * Math.max(0, ag)) * up);
+          break;
+        }
+        case 'scare': {
+          // E17 «¡Susto!»: se agacha (anticipa), da un brinco con las alas abiertas en abanico, la cola arriba, la cabeza
+          // atrás, ojos bien abiertos (cara 'scared') y pico abierto; aterriza tiesa temblando y al final suspira aliviada.
+          const ant = t < 0.12 ? Math.sin(t / 0.12 * Math.PI / 2) : Math.max(0, 1 - (t - 0.12) / 0.1);
+          const salto = t > 0.12 && t < 0.62 ? Math.sin((t - 0.12) / 0.5 * Math.PI) : 0;
+          const tieso = suaveE((t - 0.1) / 0.15) * (1 - suaveE((t - 1.55) / 0.35)), alivio = suaveE((t - 1.6) / 0.3);
+          const tiembla = su ? 0 : Math.sin(t * 52) * 0.035 * (t > 0.6 && t < 1.6 ? 1 : 0);
+          body(0.12 * ant - 0.16 * tieso + 0.12 * alivio, 0, tiembla); lift(-0.05 * ant + salto * (su ? 0.1 : 0.3));
+          arm('L', -0.3 * tieso, 2.1 * tieso + 0.1 * alivio, -0.15 * tieso); arm('R', -0.3 * tieso, 2.1 * tieso + 0.1 * alivio, -0.15 * tieso); // alas arriba
+          this.emoteAlas = Math.max(this.emoteAlas, tieso * w); // con el peso: al cortar el gesto se pliega con el cuerpo
+          const ag = salto * 0.8 + 0.25 * ant;
+          leg('L', 0.25 * ag, -0.7 * ag, 0.35 * ag); leg('R', 0.25 * ag, -0.7 * ag, 0.35 * ag);
+          head(-0.28 * tieso + 0.2 * alivio, tiembla * 1.4, 0); beak(0.45 * tieso);
+          if (t > 0.12 && !this.emoteGolpe) { this.emoteGolpe = 1; this.colaImpulso(su ? 0.5 : 1.2, 0); }
+          break;
+        }
+        case 'sleep': {
+          // E17 «Dormir»: se acurruca (patas flexionadas; posada en una percha, perchPose ya la agacha), se esponja, esconde
+          // la cabeza de lado sobre el hombro y cierra los ojos (cara 'sleep'); respira despacio, un ciclo cada 3,2 s.
+          const s = suaveE(t / 1.2), resp = Math.sin(t * P / 3.2) * am, Ag = ANIM.agachada, pata = 1.05 * (1 - 0.75 * (this.pW || 0));
+          for (const sd of ['L', 'R']) leg(sd, -Ag.cadera * pata * s, -Ag.rodilla * pata * s, Ag.tobillo * pata * s);
+          lift(-Ag.bajar * pata * s + resp * 0.008 * s);
+          body((0.1 + 0.025 * resp) * s, 0, 0);
+          if (B.espalda2) this.rot(B.espalda2, 'x', -0.02 * resp * s * w);
+          arm('L', 0.05 * s, -0.1 * s, 0.25 * s); arm('R', 0.05 * s, -0.1 * s, 0.25 * s);
+          head((0.34 + 0.03 * resp) * s, 0.6 * s, 0.28 * s); // pico abajo y de lado, sobre el hombro (la cara dormida se ve)
           break;
         }
         case 'fight': {
@@ -833,6 +897,7 @@
         neutral: [0.05, 0, 0, 0], happy: [0.42, 0.12, -0.06, 0.14], surprised: [0, 0.3, -0.16, 0],
         sad: [0.55, 0, 0.22, -0.1], curious: [0.22, 0.05, 0.04, 0.26], angry: [0.48, 0.06, 0.12, 0],
         idea: [0, 0.18, -0.2, 0], fight: [0.38, 0.05, 0.14, 0], annoyed: [0.52, 0, 0.04, 0.16],
+        scared: [0, 0.4, -0.22, 0], sleep: [1, 0, 0.12, 0.08], // E17: ojos bien abiertos / cerrados del todo
       };
       const e = EX[this.expression] || EX.neutral;
       const ex = this.ex || (this.ex = e.slice());
@@ -858,7 +923,7 @@
       // Mirar a alguien (lookAt: quien habla, lo que va a agarrar) o, quieta, mirar alrededor
       this.lookIn = (this.lookIn || 0) - dt;
       if (this.lookIn <= 0) { this.lookIn = 1.5 + Math.random() * 3; this.lookGoal = [(Math.random() - 0.5) * 0.9, (Math.random() - 0.5) * 0.25]; }
-      const still = !(this.gW > 0.1) && !this.talking;
+      const still = !(this.gW > 0.1) && !this.talking && this.expression !== 'sleep'; // dormida no mira alrededor
       let g = still ? (this.lookGoal || [0, 0]) : [0, 0];
       const mo = this.mirarObj, mira = mo ? (mo.isObject3D ? mo.getWorldPosition(_v2) : mo) : this.lookAt;
       if (mira && this.anchors && this.anchors.pico) {
@@ -916,7 +981,7 @@
         const k = 1 - Math.exp(-dt * A.rapidez);
         for (let i = 0; i < 2; i++) {
           const ex = this.alasT ? this.alasT[i] : 0;
-          const tg = Math.max(auto, ex, quieto && this.ruL === i ? ru : 0);
+          const tg = Math.max(auto, ex, quieto && this.ruL === i ? ru : 0, this.emoteAlas || 0);
           v[i] += (tg - v[i]) * k; b[i] += (ex - b[i]) * k;
         }
       }

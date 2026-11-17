@@ -890,8 +890,9 @@ window.AVV18Combate = function (G) {
       // El entreno, a la izquierda en el escritorio: el centro queda libre para ver a la Campeona y acercarse
       '#v18-duelo:not(.tactil) .vd-ent{position:fixed;left:16px;top:calc(env(safe-area-inset-top,0px) + 270px);width:min(300px,calc(50vw - 210px));min-width:220px;margin:0}' +
       '#v18-duelo:not(.tactil) .vd-bot{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 132px);margin:0;flex-wrap:nowrap;gap:8px}' +
-      '#v18-duelo button.vd-como{display:flex;align-items:center;gap:5px;margin:6px 0 0 auto;min-height:36px;padding:4px 10px;font-size:13px;background:#ffe39a;--icon-size:16px}#v18-duelo.tactil button.vd-como{min-height:56px;font-size:14px}' +
-      '#v18-duelo button.vd-como[hidden]{display:none!important}#v18-duelo button.vd-salir-b{background:#ffd0c4}' +
+      // F20: «Salir», «¿Cómo se pelea?» y «Saltar entreno» miden 44 px de alto también con teclado (antes 36 y 40); «Salir» se separa del bloque «Tú»
+      '#v18-duelo button.vd-como{display:flex;align-items:center;gap:5px;margin:6px 0 0 auto;min-height:44px;padding:4px 10px;font-size:13px;background:#ffe39a;--icon-size:16px}#v18-duelo.tactil button.vd-como{min-height:56px;font-size:14px}' +
+      '#v18-duelo button.vd-como[hidden]{display:none!important}#v18-duelo button.vd-salir-b{background:#ffd0c4;margin-top:10px}' +
       '#v18-duelo .vd-pista{margin:6px auto 0;width:max-content;max-width:100%;background:rgba(255,227,154,.95);color:#3b2a14;text-shadow:none;font-weight:600;font-size:16px;padding:6px 14px;border-radius:18px;box-shadow:0 2px 8px #0005;text-align:center;animation:vdPista .25s ease-out}' +
       '#v18-duelo .vd-pista[hidden]{display:none}#v18-duelo .vd-pista b:empty{display:none}@keyframes vdPista{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}' +
       '#v18-duelo .vd-ent{margin-top:8px;background:rgba(255,248,234,.96);color:#3b2a14;text-shadow:none;border-radius:16px;padding:10px 12px;box-shadow:0 4px 14px #0006;text-align:center}' +
@@ -901,7 +902,7 @@ window.AVV18Combate = function (G) {
       '#v18-duelo .vd-ent kbd{font:700 26px/1 Fredoka,system-ui,sans-serif;min-width:46px;padding:8px 10px;border-radius:10px;background:#3b2a14;color:#fff3d6;box-shadow:0 3px 0 #000a;animation:vdTecla 1s ease-in-out infinite}' +
       '#v18-duelo.tactil .vd-ent kbd{font-size:16px}@keyframes vdTecla{50%{transform:translateY(2px);box-shadow:0 1px 0 #000a}}' +
       '#v18-duelo .vd-ent-txt{font-size:17px;font-weight:600;text-align:left;line-height:1.25}#v18-duelo .vd-ent-txt b{color:#1f6f3a}' +
-      '#v18-duelo .vd-ent button{min-height:40px;font-size:14px;background:#3b2a14;color:#fff3d6}#v18-duelo.tactil .vd-ent button{min-height:56px}' +
+      '#v18-duelo .vd-ent button{min-height:44px;font-size:14px;background:#3b2a14;color:#fff3d6}#v18-duelo.tactil .vd-ent button{min-height:56px}' +
       '#v18-duelo-tags{position:fixed;inset:0;pointer-events:none;z-index:39}#v18-duelo-tags[hidden]{display:none}' +
       '#v18-duelo-tags span{position:absolute;transform:translate(-50%,-100%);background:#3b2a14;color:#fff3d6;font:700 13px/1.15 Fredoka,system-ui,sans-serif;padding:4px 8px;border-radius:10px;white-space:nowrap;text-align:center;box-shadow:0 2px 6px #0006}' +
       '#v18-duelo-tags span[hidden]{display:none}#v18-duelo-tags small{display:block;font-size:11px;font-weight:600;opacity:.85}' +

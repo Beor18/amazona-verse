@@ -64,7 +64,7 @@ AVE.module('idioma', function (G) {
       if (r !== resto) return en + r;
     }
     { // gestos «1 · Saludar» (QA-95): número y punto delante
-      const m = /^(\d+ · )(.+)$/.exec(t);
+      const m = /^(\d+\s·\s)(.+)$/.exec(t); // \s: el menú usa espacios duros (el número no se queda solo en su línea)
       if (m) { const r = traducir(m[2]); if (r !== m[2]) return m[1] + r; }
     }
     for (const p of patrones) {
@@ -296,6 +296,14 @@ AVE.module('idioma', function (G) {
     ok('Un texto con datos se traduce («Coquíes 1/3»)', tr('Coquíes 1/3') === 'Coquís 1/3', tr('Coquíes 1/3'));
     ok('Un texto sin entrada se queda igual', tr('Zzz qué cosa rara') === 'Zzz qué cosa rara');
     ok('Iguaca se queda como «Iguaca»', tr('Hablar con Iguaca') === 'Talk to Iguaca', tr('Hablar con Iguaca'));
+    { // F20: lo que el recorrido encontró en español con EN puesto (HUD, pausa, ropero, Diario, Mercadito, duelo, equipos, Aula)
+      const f20 = ['Madera', 'Piedra', 'Piezas', 'Guardar copia', 'Cargar copia', 'Moverte (o flechas)', 'Cerrar ventanas', 'Accesorios', 'Fauna', 'Cultura', '¿Qué hay para hacer?', 'Más juegos', 'Entreno · paso 2 de 4', 'Probar la prenda: Chaleco explorador', 'USFWS (historia de 2001 y comunicado de 1975)', 'Se gana en el nivel 10'];
+      const sin = f20.filter(k => tr(k) === k);
+      ok('F20 · Recursos, copia, teclas, ropero, Diario, Mercadito, duelo, portada y Aula tienen EN', !sin.length, sin.join(' | '));
+      ok('F20 · El nombre de equipo sale entero en inglés y «Probar» es «Try on»', tr('Bandada del Coquí Valiente') === 'Flock of the Brave Coquí' && tr('Probar') === 'Try on', tr('Bandada del Coquí Valiente') + ' / ' + tr('Probar'));
+      const comillas = claves.filter(k => /[«»]/.test(String(dic[k])));
+      ok('F20 · Las traducciones usan comillas inglesas (“ ”), no « »', !comillas.length, comillas.slice(0, 5).join(' | '));
+    }
     lang = dd.d;
     // En pantalla: con EN puesto, ningún texto español visible
     const aula = G.aula && G.aula.setAjuste ? G.aula : null, idAntes = aula ? aula.aj.idioma : null;

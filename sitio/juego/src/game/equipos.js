@@ -544,7 +544,7 @@
         const p0 = perchas()[0];
         if (pos0) { G.S.pos.x = p0.x; G.S.pos.y = p0.y; G.S.pos.z = p0.z; }
         if (G.fisica && G.fisica.MOVE) G.fisica.MOVE.flying = false;
-        tVirtual = 1000; sostener(true);
+        sostener(false); tVirtual = 1000; sostener(true); // F20: sin un Acción pulsado que dejó otra batería (un keydown sin su keyup)
         tVirtual = 2400; check('Mantener Acción menos de 1,5 s no libera la percha', pasoSostener() === false && leer().marana.perchas === 0);
         tVirtual = 2500; check('A los 1,5 s, posada, usa el gesto y suma una percha', pasoSostener() === true && usoLlamadas >= 1 && leer().marana.perchas === 1, String(usoLlamadas));
         check('Llevar una semilla al claro suma, y sin estar allí no', semilla({ forzar: true }) && leer().marana.semillas === 1 && semilla() === false);

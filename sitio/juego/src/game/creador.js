@@ -410,8 +410,16 @@ AVE.module('creador', function (G) {
   async function open(first) {
     const p = S.profile;
     draftLook = profileLook(p);
-    if (p.created && p.name && !filtroNombreLibre(p.name)) pintarNombre(p.name);
+    // F20: el nombre guardado sale tal cual, también si es de las listas (dos palabras: el filtro libre lo rechazaba y se veía
+    // otro al azar; al pulsar el botón se perdía el nombre)
+    if (p.created && p.name && !debeReemplazarNombre(p)) pintarNombre(p.name);
     else pintarNombre(nombreAzar());
+    // F20: con la partida ya empezada, el ropero no habla de alta: «Mi personaje», «Guardar» y sin la nota de aprendiz
+    const ya = !!p.created, ps = $('p-save'), h2 = document.querySelector('#creator .stage-title h2'), nota = document.querySelector('#creator .creator-side > .note');
+    const tPs = ya ? 'Guardar' : 'Empezar la aventura', tH2 = ya ? 'Mi personaje' : 'Crea tu aventurero'; // en ES: el diccionario EN los traduce
+    if (!$('creator').classList.contains('creator-corto') && ps.textContent !== tPs) ps.textContent = tPs; // corto (primera vez desde la portada): menu_modos pone «¡A jugar!»
+    if (h2 && h2.textContent !== tH2) h2.textContent = tH2;
+    if (nota) nota.hidden = ya;
     const ops = opcionesEspecie();
     $('p-species').innerHTML = ops.map(o => `<option value="${escHtml(o.id)}">${escHtml(o.nombre)}</option>`).join('');
     $('p-species').value = ops.some(o => o.id === draftLook.species) ? draftLook.species : 'vittata';

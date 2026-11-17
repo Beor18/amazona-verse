@@ -1,6 +1,6 @@
 /* AVE · actores
    Jugador (modelo 3D de src/personaje/character.js o sprite de respaldo), aprendiz que lo sigue (el personaje del niño),
-   NPC como sprites con sombra y collider, gestos (teclas 1–7 o menú Gestos) y la sincronía cuerpo/animación de cada cuadro.
+   NPC como sprites con sombra y collider, gestos (teclas 1–9 y 0 o menú Gestos) y la sincronía cuerpo/animación de cada cuadro.
    Datos del pack: jugador { nombre, sprite, especie, altura, acompanante: { altura } }, npcs [{ id, nombre, sprite, x, z, escala, flota }]. */
 AVE.module('actores', function (G) {
   'use strict';
@@ -74,27 +74,90 @@ AVE.module('actores', function (G) {
   // Ropa puesta en el protagonista (S.wear)
   function applyWear() { if (player3D) player3D.applyLook({ species: J.especie, accessories: Object.assign({}, S.wear) }); }
 
-  // Gestos (teclas 1–7 o botón Gestos): clips del modelo o poses procedurales de character.js
+  // Gestos (teclas 1–9 y 0 o botón Gestos): clips del modelo o poses procedurales de character.js (emotePose)
+  // E17: «Bailar» con ritmo y música, y tres nuevos: «Saludo de pata» (saludo con la pata), «¡Susto!» y «Dormir» (se despierta al moverse).
+  // sfx: muestras de Suno (assets/audio/sfx) que suenan al empezar; ritmo: el baile toca un golpe cada 0,5 s; zzz: dormida.
   const EMOTES = G.pack.gestos || {
     saludar: { label: 'Saludar', clip: 'Welcome', face: 'happy', secs: 2 },
     celebrar: { label: 'Celebrar', clip: 'Celebrate', face: 'happy', secs: 1.6 },
-    bailar: { label: 'Bailar', pose: 'dance', face: 'happy', secs: 8 },
+    bailar: { label: 'Bailar', pose: 'dance', face: 'happy', secs: 8, ritmo: true },
     idea: { label: 'Idea', pose: 'idea', face: 'idea', secs: 2.2 },
     enojo: { label: 'Enojarse', pose: 'angry', face: 'angry', secs: 2.6 },
     pelea: { label: 'Pelear', pose: 'fight', face: 'fight', secs: 6 },
     molestia: { label: 'Molestia', pose: 'annoyed', face: 'annoyed', secs: 4 },
+    saludo_pata: { label: 'Saludo de pata', pose: 'wave', face: 'happy', secs: 2.5, sfx: ['aleteo', 'gesto_pio'] },
+    susto: { label: '¡Susto!', pose: 'scare', face: 'scared', secs: 2.3, sfx: ['frenada', 'gesto_susto'], plumas: true },
+    dormir: { label: 'Dormir', pose: 'sleep', face: 'sleep', secs: 300, sfx: ['aleteo'], zzz: true, despierta: 'aleteo' },
   };
   const EMOTE_KEYS = Object.keys(EMOTES);
-  const emote = { name: '', until: 0 };
+  const emote = { name: '', until: 0, t: 0, golpe: -1, zzz: -1, n: 0 }; // n: gestos empezados (repetir uno lo reinicia)
+  // Tecla → gesto: 1..9 y el 0 para el décimo (null si no hay)
+  const gestoDeTecla = k => (/^[0-9]$/.test(k) && EMOTE_KEYS[k === '0' ? 9 : +k - 1]) || null;
+  // Sonidos sintéticos de los gestos (sin archivos): se definen la primera vez. Energía en 300 Hz–3 kHz y flojos (menos que «ring»).
+  function definirSonidos() {
+    const AU = G.audio; if (!AU || !AU.define || AU.has('gesto_ritmo')) return;
+    const MEL = [0, 2, 4, 2, 5, 4, 7, 4]; // marimba en pentatónica, una frase de 8 golpes
+    AU.define('gesto_ritmo', (t, i, A) => {
+      i = i | 0; const f = A.pent(MEL[i % 8], 392);
+      A.tone(f, t, 0.22, { type: 'sine', gain: 0.09 }); A.tone(f * 4, t, 0.04, { type: 'sine', gain: 0.018 }); // mazo
+      if (i % 2 === 0) A.tone(150, t, 0.11, { type: 'sine', to: 70, gain: 0.08 }); // bombo suave
+      A.noise(t + 0.25, 0.05, { type: 'highpass', freq: 5200, gain: 0.035 }); // maraca a contratiempo
+    });
+    AU.define('gesto_pio', (t, x, A) => { A.tone(1500, t, 0.09, { type: 'sine', to: 2300, gain: 0.08 }); A.tone(2300, t + 0.13, 0.14, { type: 'sine', to: 1700, gain: 0.07 }); });
+    AU.define('gesto_susto', (t, x, A) => {
+      A.tone(480, t, 0.2, { type: 'triangle', to: 1500, gain: 0.12 }); A.tone(1400, t + 0.02, 0.15, { type: 'square', to: 2100, gain: 0.025 });
+      A.noise(t, 0.08, { freq: 2600, q: 1.2, gain: 0.06 });
+    });
+    AU.define('gesto_zzz', (t, x, A) => { A.noise(t, 0.9, { type: 'lowpass', freq: 420, to: 260, gain: 0.05 }); A.tone(900, t + 1.0, 0.5, { type: 'sine', to: 1300, gain: 0.022 }); });
+  }
+  const sonar = (n, arg) => { if (!G.quiet && G.audio && G.audio.play) try { G.audio.play(n, arg); } catch (e) { /* sin audio */ } };
+  const reducido = () => !!(G.renderer && G.renderer.REDUCED) || !!(G.audio && G.audio.reducido);
   // → true si el gesto empezó (en el suelo, sin volar ni diálogo)
   function playEmote(name) {
     if (!EMOTES[name] || G.ui.busy() || G.fisica.MOVE.flying) return false;
     if (S.pos.y > G.fisica.suelo(S.pos.x, S.pos.z, S.pos.y) + 0.01) return false;
-    emote.name = name; emote.until = performance.now() + EMOTES[name].secs * 1000;
-    if (player3D && EMOTES[name].clip) { player3D.play(EMOTES[name].clip, true); anim3D.player = 'emote'; }
+    const E = EMOTES[name];
+    emote.name = name; emote.until = performance.now() + E.secs * 1000; emote.t = 0; emote.golpe = -1; emote.zzz = -1; emote.n++;
+    if (player3D && E.clip) { player3D.play(E.clip, true); anim3D.player = 'emote'; }
+    definirSonidos();
+    for (const n of E.sfx || []) sonar(n);
+    if (E.plumas && !reducido() && G.fx && G.fx.burst) try { G.fx.burst(S.pos.x, S.pos.y + J.altura * 0.6, S.pos.z, 'feathers', 7); } catch (e) { /* sin fx */ }
     return true;
   }
   function stopEmote() { emote.name = ''; anim3D.player = ''; }
+  // Cada cuadro, con el gesto en marcha: el ritmo del baile (un golpe cada 0,5 s, el mismo que la pose) y los zzz de la siesta
+  function emoteCuadro(dt) {
+    const E = emote.name && EMOTES[emote.name]; if (!E) return;
+    emote.t += dt;
+    if (E.ritmo) { const g = Math.floor(emote.t * 2); if (g !== emote.golpe) { emote.golpe = g; sonar('gesto_ritmo', g); if (g % 8 === 4 || g % 8 === 5) sonar('aleteo'); } }
+    if (E.zzz) { const z = Math.floor((emote.t - 1.2) / 3.2); if (emote.t > 1.2 && z !== emote.zzz) { emote.zzz = z; sonar('gesto_zzz'); } }
+  }
+  // Zzz de la siesta: tres letras que suben del pico, crecen y se desvanecen (con «Reducir movimiento» no salen: sin partículas)
+  const zzz = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+    g.font = '700 104px "Fredoka", "Trebuchet MS", system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+    g.lineWidth = 14; g.strokeStyle = 'rgba(20,48,74,0.9)'; g.strokeText('Z', 64, 68);
+    const grd = g.createLinearGradient(0, 20, 0, 110); grd.addColorStop(0, '#ffffff'); grd.addColorStop(1, '#cfe8ff');
+    g.fillStyle = grd; g.fillText('Z', 64, 68);
+    const tex = new THREE.CanvasTexture(c);
+    return [0, 1, 2].map(() => {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0 }));
+      s.visible = false; s.renderOrder = 5; s.userData.sinCulling = true; s.name = 'zzz_siesta'; scene.add(s); return s; // pequeñas: sin culling
+    });
+  })();
+  const zPos = new THREE.Vector3(), zDer = new THREE.Vector3();
+  function zzzCuadro() {
+    const on = emote.name === 'dormir' && emote.t > 1 && !reducido() && player3D && player3D.anchors && player3D.anchors.pico;
+    if (!on) { for (const s of zzz) s.visible = false; return; }
+    player3D.anchors.pico.getWorldPosition(zPos);
+    zDer.setFromMatrixColumn(G.renderer.camera.matrixWorld, 0); // a la derecha de la cámara: nunca detrás de la cabeza
+    zzz.forEach((s, i) => {
+      const u = ((emote.t - 1) / 2.4 + i / 3) % 1, k = J.altura / 1.75, lado = (0.22 + u * 0.3 + Math.sin(u * 5 + i) * 0.06) * k;
+      s.visible = true; s.material.opacity = Math.sin(u * Math.PI) * 0.95;
+      const e = (0.2 + 0.28 * u) * k; s.scale.set(e, e, 1);
+      s.position.set(zPos.x + zDer.x * lado, zPos.y + (0.25 + u * 0.8) * k, zPos.z + zDer.z * lado);
+    });
+  }
   // Foco de "idea" sobre la cabeza
   const ideaBulb = (() => {
     const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
@@ -115,7 +178,7 @@ AVE.module('actores', function (G) {
   // cuando la letra grande pone los gestos en una columna) se limita su alto y se desplaza por dentro. El <style> va dentro
   // de #emotes para que la maqueta móvil de accesibilidad.js (copia #emotes con sus hojas enlazadas) lo lleve.
   const ESTILO_EMOTES = CON_FOTO ? '<style id="estilo-emotes">@media (max-width:560px){#emotes{max-height:calc(100vh - 440px);max-height:calc(100dvh - 440px);overflow-y:auto;overscroll-behavior:contain}}</style>' : '';
-  emoteMenu.innerHTML = ESTILO_EMOTES + EMOTE_KEYS.map((k, i) => `<button class="btn" type="button" data-emote="${k}">${i + 1} · ${EMOTES[k].label}</button>`).join('') +
+  emoteMenu.innerHTML = ESTILO_EMOTES + EMOTE_KEYS.map((k, i) => `<button class="btn" type="button" data-emote="${k}">${(i + 1) % 10}\u00a0·\u00a0${EMOTES[k].label}</button>`).join('') +
     (CON_FOTO ? '<button class="btn" type="button" data-foto="1" data-icon="sparkle" aria-pressed="false">Foto</button>' : '');
   const fotoBtn = emoteMenu.querySelector('[data-foto]');
   let fotoModo = false;
@@ -135,7 +198,10 @@ AVE.module('actores', function (G) {
     const ok = playEmote(b.dataset.emote);
     if (conFoto) { if (ok) G.emit('foto', { gesto: b.dataset.emote }); else G.ui.toast('Para la foto, posa en el suelo y quieta.', 2600); }
   });
-  $('b-emotes').addEventListener('click', () => { emoteMenu.hidden = !emoteMenu.hidden; if (emoteMenu.hidden) modoFoto(false); });
+  $('b-emotes').addEventListener('click', () => {
+    emoteMenu.hidden = !emoteMenu.hidden; if (emoteMenu.hidden) modoFoto(false);
+    else if (G.audio && G.audio.precargar) G.audio.precargar(['aleteo', 'frenada']); // E17: los sfx de los gestos, al abrir el menú
+  });
 
   // ---------- Pico sincronizado con el diálogo ----------
   // Fuente de la boca, por orden: la voz que lee la línea (speechSynthesis), la máquina de escribir de src/ui/ui.js (#d-type) o nada.
@@ -333,9 +399,12 @@ AVE.module('actores', function (G) {
       else { P.mouth = mine ? m : null; P.talking = mine && mouth.src !== ''; }
       P.lookAt = inDialog ? speakerPos(mine ? null : talk.who) : (G.agarre && G.agarre.mira) || null;
       // Un gesto se cancela al moverse, saltar, volar o abrir un diálogo
-      if (emote.name && (moving || air || inDialog)) stopEmote();
+      // E17: «Dormir» se despierta al moverse con un aleteo (se sacude el sueño)
+      if (emote.name && (moving || air || inDialog)) { const d = EMOTES[emote.name].despierta; stopEmote(); if (d && (moving || air)) sonar(d); }
       if (emote.name && performance.now() > emote.until) stopEmote();
+      emoteCuadro(dt); zzzCuadro();
       P.emote = emote.name && EMOTES[emote.name].pose || null;
+      P.emoteSuave = reducido(); P.emoteN = emote.n;
       // Alegría al recoger: saltito, cara feliz y un aleteo corto
       const nCol = (S.collected || []).length;
       if (joy.n < 0 || snap) joy.n = nCol;
@@ -585,7 +654,7 @@ AVE.module('actores', function (G) {
   return {
     player, pShadow, companion, cShadow, companionPos, npcs, npc: id => npcs[id], spawnNpc, spriteFrom, blob,
     get player3D() { return player3D; }, get companion3D() { return companion3D; }, get failed3D() { return failed3D; },
-    init3D, applyWear, refreshCompanion, POSAR, girarAlegre, get giro() { return Object.assign({}, giro); }, get posa() { return Object.assign({}, posa); }, EMOTES, EMOTE_KEYS, emote, playEmote, stopEmote, modoFoto, get fotoModo() { return fotoModo; }, sync3D,
+    init3D, applyWear, refreshCompanion, POSAR, girarAlegre, get giro() { return Object.assign({}, giro); }, get posa() { return Object.assign({}, posa); }, EMOTES, EMOTE_KEYS, gestoDeTecla, emote, playEmote, reducido, stopEmote, modoFoto, get fotoModo() { return fotoModo; }, sync3D,
     placePlayerSprite, snapCompanionSprite, flipSprite, rim, nombre: J.nombre, sprite: J.sprite, especie: J.especie, ikCerca, IK_LEJOS_ESC,
   };
 });

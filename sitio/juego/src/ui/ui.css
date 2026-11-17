@@ -329,12 +329,16 @@ html.mov-reducido *, html.mov-reducido *::before, html.mov-reducido *::after { a
 #emotes .btn::before { content: ""; width: 22px; height: 22px; flex: none; background: var(--c-primary); -webkit-mask: var(--icon, var(--i-smile)) center / contain no-repeat; mask: var(--icon, var(--i-smile)) center / contain no-repeat; }
 [data-emote="saludar"] { --icon: var(--i-hand); } [data-emote="celebrar"] { --icon: var(--i-star); } [data-emote="bailar"] { --icon: var(--i-music); }
 [data-emote="idea"] { --icon: var(--i-bulb); } [data-emote="enojo"] { --icon: var(--i-angry); } [data-emote="pelea"] { --icon: var(--i-bolt); } [data-emote="molestia"] { --icon: var(--i-meh); }
+/* E17: saludo con la pata, susto (plumas erizadas) y dormir (luna) */
+[data-emote="saludo_pata"] { --icon: var(--i-paw); } [data-emote="susto"] { --icon: var(--i-feather); } [data-emote="dormir"] { --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M14.5 2.5a9.5 9.5 0 1 0 7 15.9A8 8 0 0 1 14.5 2.5z'/%3E%3C/svg%3E"); }
 /* «Foto» (DIVERSION_CAP1 mejora 5): botón caramelo de color, con cámara; pulsado (elige la pose) late y cambia a verde */
 #emotes [data-foto] {
   --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' fill-rule='evenodd' d='M9.2 4h5.6l1.6 2.2H20a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8.2a2 2 0 0 1 2-2h3.6zM12 17.2a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4zm0-2a2.2 2.2 0 1 1 0-4.4 2.2 2.2 0 0 1 0 4.4z'/%3E%3C/svg%3E");
   --btn-bg: var(--c-primary); --btn-ink: var(--c-primary-ink); --btn-lip: var(--c-primary-lip); --btn-shine: rgba(255, 255, 255, 0.32); font-weight: 700;
 }
 #emotes [data-foto]::before { background: currentColor; }
+#emotes .btn { text-align: left; } /* E17: una etiqueta de 2 líneas («Saludo de pata») va a la izquierda como las demás */
+#emotes [data-foto] { grid-column: 1 / -1; justify-content: center; text-align: center; } /* E17: con 10 gestos, Foto ocupa la última fila entera */
 #emotes [data-foto][aria-pressed="true"] { --btn-bg: var(--c-success); --btn-ink: var(--c-success-ink); --btn-lip: var(--c-success-lip); animation: foto-late 1.1s var(--ease-pop, ease) infinite; }
 @keyframes foto-late { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 :root.a11y-contraste #emotes [data-foto] { --btn-bg: #ffe08a; --btn-ink: #000; --btn-lip: #000; }
@@ -452,6 +456,7 @@ html.mov-reducido *, html.mov-reducido *::before, html.mov-reducido *::after { a
   background: transparent; border: 2px dashed rgba(107, 82, 54, 0.4); border-radius: var(--r-md); color: var(--c-ink-muted);
 }
 .diary li::after { content: "N.º " counter(entry, decimal-leading-zero); position: absolute; right: 10px; top: 8px; font: 700 10px/1 var(--font-body); letter-spacing: 0.06em; color: var(--c-ink-muted); }
+:lang(en) .diary li::after { content: "No. " counter(entry, decimal-leading-zero); } /* F20: en inglés, «No.» (antes «N.º» también en EN) */
 .diary li b { display: block; padding-right: 36px; font: 700 var(--fs-md)/1.2 var(--font-display); color: var(--c-ink-muted); }
 .diary li small { display: block; margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--c-ink-muted); }
 .diary li.found {
@@ -716,6 +721,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #sys { top: 50%; transform: translateY(-50%); flex-direction: column; }
   .hud-btn { width: var(--tap); padding: 0; font-size: 0; gap: 0; --icon-size: 22px; }
   #emotes { top: 50%; right: calc(max(var(--sp-3), env(safe-area-inset-right, 0px)) + 60px); transform: translateY(-50%); width: min(280px, calc(100vw - 96px)); }
+  #emotes .btn { padding: 0 var(--sp-2); } /* E17: el número va pegado al nombre («5 · Enojarse» no se parte): 8 px más de sitio */
   #prompt { bottom: calc(env(safe-area-inset-bottom, 0px) + 206px); font-size: 15px; }
   /* El aviso se alinea a la izquierda y deja libre la columna de botones de la derecha (Diario, Gestos, Pausa) */
   #toast { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 262px); left: max(var(--sp-3), env(safe-area-inset-left, 0px)); margin-inline: 0; max-width: calc(100vw - 2 * var(--sp-3) - 56px); }
@@ -727,7 +733,10 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
      bajo el minimapa y se recortaban (QA-195, W28). Con los gestos NO aplica: el minimapa se oculta con
      #emotes abiertos (minimapa.js), así que el aviso sigue a 118px y no tapa sus filas (QA-86). */
   body:has(#dialog:not([hidden])) #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; }
-  body:has(#emotes:not([hidden])) #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; } /* T22: debajo del minimapa */
+  /* E17: con los gestos el minimapa está oculto (minimapa.js), pero --mm-top seguía bajando el aviso a ~238 px, encima de la
+     primera fila del menú (10 gestos, 390×844). Va a 118 px, como dice --tt; y la ficha del poder se esconde mientras tanto. */
+  body:has(#emotes:not([hidden])) #toast { top: calc(env(safe-area-inset-top, 0px) + 118px); bottom: auto; }
+  body:has(#emotes:not([hidden])) #v18-exp-poder { visibility: hidden; }
   /* QA-188 (W28): con un bocadillo de historia visible (el narrador y los diálogos de los packs van en bocadillos libres, no
      en #dialog), el aviso sube igual que con la caja de diálogo; abajo quedaba debajo del bocadillo y los dos ilegibles (ep2) */
   body:has(#bocadillos:not([hidden])) #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; }
@@ -1141,3 +1150,14 @@ body.v18-pesca-on:has(#card:not([hidden])) #v18-pesca { visibility: hidden; }
   body.vittata-posada:not(:has(#dialog:not([hidden]))):not(:has(#end:not([hidden]))) #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; }
   body:not(.vittata-posada):has(#v18-exp-poder:not([hidden])) #toast { margin-bottom: 64px; }
 }
+
+/* F20 (recorrido 390×844): con Mis récords / Mis logros abiertos desde la pausa, la ficha del poder (z 70) y «Salir» de
+   Vuelo libre o Construir (z 60) quedaban encima del panel y tapaban el título y «Pendiente». Igual que con #maestro y #familia. */
+body:has(#records:not([hidden])) :is(#v18-exp-poder, #modo-salir) { display: none !important; }
+/* F20: en el Diario, los títulos y notas de las secciones de abajo (Fauna de El Yunque, Peces del río…) ya no van pegados a la línea roja */
+#card .diario-sec > :not(ul) { padding-left: 8px; }
+/* F20: con Sigue el canto, Escondite, Semillas al vuelo, Escuela de vuelo o Alas al compás en marcha, un bocadillo que ya estaba
+   (el Guardián del Primer Vuelo comentando al pasar) no queda encima del juego ni de su panel final (npc.js ya no abre otros) */
+body:is(.canto-on, .escondite-on, .semillas-on, .piloto-on, .compas-on) #bocadillos { visibility: hidden !important; }
+/* F20 (390 px): durante la cuenta 3-2-1 de Tormenta y Banquete el minimapa espera; el número grande quedaba pegado a él */
+@media (max-width: 560px) { body:has(#retos .rt-cuenta:not(:empty)) #minimapa { visibility: hidden; } }

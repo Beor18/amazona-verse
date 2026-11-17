@@ -328,12 +328,25 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
 
   // Altura del minimapa: justo bajo el objetivo y el inventario (móvil) o bajo el inventario y los botones del sistema (≥ 561 px).
   // Crecen con la letra grande, así que se mide; solo pone --mm-top (sin medida, vale el sitio fijo del CSS).
+  const MINI_HUD = ['esc-hud', 'sdc-hud', 'pln-hud', 'sem-hud', 'rr-hud', 'sig-hud', 'fs-hud'];
+  const MINI_ON = /(?:^|\s)(?:escondite|sembradora|planeo|semillas|pichones|sigueme|foto)-on(?:\s|$)/;
   function colocar(d) {
     d = d || doc;
     const c = d.getElementById('minimapa'), w = d.defaultView; if (!c || !w) return;
     const ids = w.innerWidth <= 560 ? ['quest', 'inv'] : ['inv', 'sys'];
     let fondo = 0;
-    for (const id of ids) { const e = d.getElementById(id); if (e && !e.hidden && w.getComputedStyle(e).display !== 'none') fondo = Math.max(fondo, e.getBoundingClientRect().bottom); }
+    // F20: también se salta lo que está con visibility:hidden (los minijuegos esconden el objetivo así y el minimapa se quedaba
+    // a su altura, encima de la píldora del juego)
+    const seVe = e => { if (!e || e.hidden) return false; const cs = w.getComputedStyle(e); return cs.display !== 'none' && cs.visibility !== 'hidden'; };
+    for (const id of ids) { const e = d.getElementById(id); if (seVe(e)) fondo = Math.max(fondo, e.getBoundingClientRect().bottom); }
+    // F20 (390 px): con un juego de «Más juegos» en marcha, el minimapa baja bajo su panel de arriba y su píldora de objetivo
+    // (Escondite, Sembradora, Planeo…); antes los pisaba y tapaba «Salir» y «Otra vez»
+    if (w.innerWidth <= 560) for (const id of MINI_HUD) {
+      const e = d.getElementById(id); if (!seVe(e)) continue;
+      const r = e.getBoundingClientRect(); if (r.height) fondo = Math.max(fondo, r.bottom);
+      const m = e.querySelector('[data-k="msg"]'), rm = m && m.textContent.trim() && seVe(m) && m.getBoundingClientRect();
+      if (rm && rm.height) fondo = Math.max(fondo, rm.bottom);
+    }
     if (fondo) { const v = Math.ceil(fondo + 4) + 'px'; c.style.setProperty('--mm-top', v); d.documentElement.style.setProperty('--mm-top', v); } // QA-195: el toast subido lo lee para no quedar bajo el minimapa
     else { c.style.removeProperty('--mm-top'); d.documentElement.style.removeProperty('--mm-top'); }
   }
@@ -521,7 +534,8 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
     const juego = !!(S.profile && S.profile.created) && !(doc.getElementById('title') || {}).open && !(G.ui.worldHidden && G.ui.worldHidden());
     if (elC && elC.hidden !== !juego) elC.hidden = !juego;
     // Con observador se recoloca cuando el objetivo o el inventario cambian de tamaño y, por si acaso, cada 5 s; sin él, cada 0,7 s
-    if (juego && (porColocar || ahora - tColoca > (anchoC >= 0 ? 5000 : 700))) { porColocar = false; tColoca = ahora; colocar(); }
+    const mini = MINI_ON.test(doc.body.className); if (mini !== tick.mini) { tick.mini = mini; porColocar = true; } // F20: al entrar o salir de un juego se recoloca ya
+    if (juego && (porColocar || ahora - tColoca > (anchoC >= 0 && !mini ? 5000 : 500))) { porColocar = false; tColoca = ahora; colocar(); }
     if (!juego || (G.quiet && !tick.forzar && !hayRetos())) return false;
     pintar(); return true;
   }
