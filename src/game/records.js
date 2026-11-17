@@ -283,7 +283,7 @@
         foto: fo && Number.isInteger(fo.mejor) && fo.mejor > 0 ? Math.min(fo.mejor, 99999) : 0, fotoPerfecto: fo ? ent(fo.perfecto, 9999) : 0,
         sembradora: sd && Number.isInteger(sd.mejor) && sd.mejor > 0 ? Math.min(sd.mejor, 99999) : 0, sembradoraArb: sd ? ent(sd.arboles, 9999) : 0,
         planeo: pl && Number.isInteger(pl.mejor) && pl.mejor > 0 ? Math.min(pl.mejor, 99999) : 0,
-        pichones: rr && Number.isInteger(rr.mejor) && rr.mejor > 0 ? Math.min(rr.mejor, 3) : 0, pichonesT: rr ? ent(rr.tiempo, 999) : 0,
+        pichones: rr && Number.isInteger(rr.mejor) && rr.mejor > 0 ? Math.min(rr.mejor, 3) : 0, pichonesT: rr ? ent(rr.tiempo, 999) : 0, pichonesJ: rr ? ent(rr.jugadas, 99999) : 0,
         poderes: ['rafaga', 'ojo', 'planeo'].map(id => ({ id, ganado: Number(mu['poder_' + id]) > 0 })) };
     }
     function descubrimientosDe() {
@@ -682,7 +682,7 @@
         ins((u.foto || 0) / 24, u.foto ? String(u.foto) : '·', tx('foto'), u.foto ? tx('fotoRec').replace('{}', u.foto) + (u.fotoPerfecto ? tx('fotoPerf') : '') : tx('sinCanto')) +
         ins((u.sembradora || 0) / 60, u.sembradora ? String(u.sembradora) : '·', tx('sembradora'), u.sembradora ? tx('sembradoraRec').replace('{}', u.sembradora).replace('{a}', u.sembradoraArb || 0) : tx('sinCanto')) +
         ins((u.planeo || 0) / 600, u.planeo ? String(u.planeo) : '·', tx('planeo'), u.planeo ? tx('planeoRec').replace('{}', u.planeo) : tx('sinCanto')) +
-        ins((u.pichones || 0) / 3, u.pichones >= 3 && u.pichonesT ? Math.floor(u.pichonesT / 60) + ':' + String(u.pichonesT % 60).padStart(2, '0') : u.pichones ? u.pichones + '/3' : '·', tx('pichones'), u.pichones >= 3 && u.pichonesT ? tx('pichonesT').replace('{}', Math.floor(u.pichonesT / 60) + ':' + String(u.pichonesT % 60).padStart(2, '0')) : u.pichones ? tx('pichonesRec').replace('{}', u.pichones) : tx('sinCanto')) +
+        ins((u.pichones || 0) / 3, u.pichones >= 3 && u.pichonesT ? Math.floor(u.pichonesT / 60) + ':' + String(u.pichonesT % 60).padStart(2, '0') : u.pichones || u.pichonesJ ? (u.pichones || 0) + '/3' : '·', tx('pichones'), u.pichones >= 3 && u.pichonesT ? tx('pichonesT').replace('{}', Math.floor(u.pichonesT / 60) + ':' + String(u.pichonesT % 60).padStart(2, '0')) : u.pichones || u.pichonesJ ? tx('pichonesRec').replace('{}', u.pichones || 0) : tx('sinCanto')) + // jugado sin salvar ninguno: «0 de 3», no «Aún sin jugar»
         u.poderes.map(p => ins(p.ganado ? 1 : 0, p.ganado ? '✓' : '·', tx('p_' + p.id), p.ganado ? tx('ganado') : tx('como_' + p.id))).join('') + '</ul></section>';
     }
     function htmlDescubrimientos(d) {
@@ -1276,6 +1276,8 @@
           check('F2-4 · «Sembradora del cielo» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 41 puntos · 15 árboles»', /Sembradora del cielo\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Sembradora del cielo\s*Récord: 41 puntos · 15 árboles/.test(n1), n1.slice(0, 480));
           check('D14 · «Planeo entre nubes» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 437 m»', /Planeo entre nubes\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Planeo entre nubes\s*Récord: 437 m/.test(n1), n1.slice(0, 520));
           check('D16 · «Rescate rápido» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 3 pichones a salvo en 1:04»', /Rescate rápido\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Rescate rápido\s*Récord: 3 pichones a salvo en 1:04/.test(n1), n1.slice(0, 560));
+          localStorage.setItem(pruebas.pichones, JSON.stringify({ v: 1, mejor: 0, tiempo: 0, jugadas: 1 })); pintar();
+          { const n2 = (root.querySelector('#rec-nuevo') || {}).textContent || ''; check('D16 · «Rescate rápido» jugado sin salvar ninguno: «Récord: 0 de 3», no «Aún sin jugar»', /Rescate rápido\s*Récord: 0 de 3 pichones a salvo/.test(n2.replace(/\s+/g, ' ')), n2.replace(/\s+/g, ' ').slice(0, 600)); }
           localStorage.removeItem(pruebas.pichones); localStorage.removeItem(pruebas.sembradora); localStorage.removeItem(pruebas.planeo); localStorage.removeItem(pruebas.foto); localStorage.removeItem(pruebas.sigueme); localStorage.removeItem(pruebas.compas); localStorage.removeItem(pruebas.semillas); localStorage.removeItem(pruebas.canto); localStorage.removeItem(pruebas.v18); pintar();
         }
         { // E19 · «Mis logros»: 10 con icono, ganados (de lo jugado) y pendientes con su pista
