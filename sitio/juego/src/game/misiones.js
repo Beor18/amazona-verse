@@ -212,12 +212,56 @@ AVE.module('misiones', function (G) {
     for (const id of FIN_PRINCIPAL) { const el = $(id); if (el) el.hidden = !!on; }
     if (foco !== false && !$('end').hidden) { const b = $(on ? 'b-again-no' : 'b-again'); if (b) b.focus({ preventScroll: true }); }
   }
-  function showEnd() {
-    $('end-text').textContent = HIST.fin ? HIST.fin(S, G) : '';
+  // F4-12 (docs/diseno/F4_GAME_FEEL.md): fin del capítulo. Antes del panel, 1,2 s de fiesta: suena panel_final, Vittata celebra
+  // (el gesto Celebrar, clip Celebrate; volando o si no puede, el clip directamente) y caen 30 pétalos; luego entra el panel.
+  // Sin espera con G.quiet (baterías) ni al cargar una partida ya terminada ('apply': la repetición). «Reducir movimiento»: sin
+  // pétalos (el gesto, el sonido y la espera se quedan). Llamar otra vez durante la fiesta no la repite.
+  // La espera va con el reloj del juego (gancho 'update': con la pausa dt = 0 y en segundo plano no corre) y, si al acabar hay otra
+  // pantalla delante (el cómic de cierre del cap. 6, un diálogo o una tarjeta; con la pausa el reloj no corre), el panel espera a que se cierre.
+  // Si otra pantalla lo abre antes (c-close del cómic), el texto ya está puesto y la fiesta se da por terminada.
+  const FIN = { celebraMs: 1200, petalos: 30 };
+  feel.fin = 0; feel.finPetalos = 0; feel.finEsperas = 0; feel.FIN = FIN;
+  let finEspera = 0, finFiesta = false, finForzada = false;
+  function celebrarFin() {
+    feel.fin++;
+    try { G.audio.play('panel_final'); } catch (e) { /* sin audio */ } // T45: capítulo completado (una vez: el panel ya no lo repite)
+    const A = G.actores;
+    try { if (!(A.playEmote && A.playEmote('celebrar')) && A.player3D && A.player3D.play) A.player3D.play('Celebrate', true); } catch (e) { /* sin modelo */ }
+    // Los pétalos, sobre la cabeza y 1,2 m hacia la cámara: delante de Vittata, no en un racimo contra el techo de detrás
+    if (!movReducido()) {
+      try {
+        const c = G.renderer.camera.position, dx = c.x - S.pos.x, dz = c.z - S.pos.z, d = Math.hypot(dx, dz) || 1, k = Math.min(1.2, d * 0.4) / d;
+        G.fx.petalos(S.pos.x + dx * k, S.pos.y + 1.6, S.pos.z + dz * k, FIN.petalos); feel.finPetalos++;
+      } catch (e) { /* sin efectos */ }
+    }
+  }
+  function cancelarFiesta() { finEspera = 0; finFiesta = false; finForzada = false; }
+  // (la pausa y la portada no hace falta mirarlas: con ellas el bucle pasa dt = 0 y la fiesta no avanza)
+  const tapado = () => { try { return G.ui.busy(); } catch (e) { return false; } };
+  G.on('update', dt => {
+    if (!finEspera) return;
+    if (!$('end').hidden) { if (S.complete || finForzada) showEnd(true); else cancelarFiesta(); return; } // otra pantalla ya lo abrió
+    if (finEspera > 0) { finEspera = Math.max(0, finEspera - dt * 1000) || -1; return; }
+    if (!(S.complete || finForzada)) { cancelarFiesta(); return; }
+    if (tapado()) { feel.finEsperas++; return; } // termina la fiesta con otra pantalla delante: espera a que se cierre
+    showEnd(true);
+  }, 62);
+  function rellenarFin() { $('end-text').textContent = HIST.fin ? HIST.fin(S, G) : ''; }
+  function showEnd(ya, o) {
+    const fiesta = ya !== true && $('end').hidden && (!G.quiet || (o && o.fiesta));
+    if (fiesta && finEspera) return; // ya está celebrando: el panel llega solo
+    if (fiesta) {
+      celebrarFin(); finFiesta = true; finForzada = !!(o && o.fiesta);
+      rellenarFin(); // por si otra pantalla (el cómic) lo abre antes de que acabe la fiesta
+      finEspera = FIN.celebraMs;
+      return;
+    }
+    const sonado = finFiesta; cancelarFiesta();
+    rellenarFin();
     verConfirmacion(false, false);
     // T2: el aviso que estaba en pantalla se va y no vuelve; los que lleguen con el panel abierto esperan a que se cierre (G.ui)
     try { G.ui.hideToast(); } catch (e) { /* sin HUD */ }
-    if ($('end').hidden && !G.quiet) try { G.audio.play('panel_final'); } catch (e) { /* sin audio */ } // T45: capítulo completado
+    if ($('end').hidden && !G.quiet && !sonado) try { G.audio.play('panel_final'); } catch (e) { /* sin audio */ } // T45: capítulo completado
     $('end').hidden = false;
   }
   function seguirExplorando() {
@@ -238,7 +282,7 @@ AVE.module('misiones', function (G) {
   G.on('escape', () => { if ($('end').hidden) return; if (confirmando()) verConfirmacion(false); else seguirExplorando(); });
 
   G.on('render', () => { G.fx.guide(G.ui.busy() ? null : guideTarget(), performance.now() / 1000); }, 60);
-  G.on('apply', () => { verConfirmacion(false, false); if (S.complete && !S.explorando) showEnd(); else $('end').hidden = true; }, 70);
+  G.on('apply', () => { verConfirmacion(false, false); cancelarFiesta(); if (S.complete && !S.explorando) showEnd(true); else $('end').hidden = true; }, 70);
   G.on('apply', renderQuest, 90);
 
   // ---------- T8 · Pista «vuela» ----------

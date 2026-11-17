@@ -776,7 +776,73 @@
         G.quiet = true; S.step = st0; Object.assign(S.inv, inv0); O.renderInv(); M.renderQuest(); if (G.actores.stopEmote) G.actores.stopEmote(); G.ui.vaciarAvisos();
       }
     }
+    // F4-7 (docs/diseno/F4_GAME_FEEL.md): al empezar la charla posada junto a Iguaca, saluda, caen 6 hojas y suena posarse_rama
+    {
+      const A = G.audio, LU = G.c.luma, SS = LU.saludoStats, J = G.fx.juicy, burst0 = G.fx.burst, rafagas = [], R0 = G.renderer.REDUCED, red0 = A.reducido;
+      try {
+        G.quiet = false; G.renderer.REDUCED = false; A.reducido = false; A.log.length = 0; const s0 = Object.assign({}, SS), h0 = J.hojas;
+        const hoj0 = G.fx.hojas; G.fx.hojas = function (x, y, z, n) { rafagas.push('leaves:' + n); return hoj0.apply(this, arguments); };
+        try { LU.saludo(); } finally { G.fx.hojas = hoj0; } const uno = { son: A.log.filter(n => n === 'posarse_rama').length, hojas: J.hojas - h0, saludando: LU.saludando, raf: rafagas.join() };
+        A.reducido = true; LU.saludo(); A.reducido = false; const red = { son: A.log.filter(n => n === 'posarse_rama').length, hojas: J.hojas - h0 - uno.hojas, saltos: SS.saltos - s0.saltos };
+        G.quiet = true; LU.saludo(); const quieto = A.log.filter(n => n === 'posarse_rama').length === 2 && SS.n - s0.n === 3;
+        check('F4-7: posada junto a Iguaca: saluda (saltitos), caen 6 hojas de la copa y suena posarse_rama; con «Reducir movimiento», solo el sonido; con G.quiet, nada',
+          uno.son === 1 && uno.hojas === 1 && uno.saludando && /leaves:6/.test(uno.raf) && red.son === 2 && red.hojas === 0 && red.saltos === 1 && quieto, JSON.stringify({ uno, red, quieto }));
+      } finally { G.fx.burst = burst0; G.renderer.REDUCED = R0; A.reducido = red0; G.quiet = true; }
+    }
+    // F4-12: fin del capítulo: 1,2 s de fiesta (panel_final, Celebrar y 30 pétalos) antes del panel; con G.quiet o al cargar, al momento
+    {
+      const A = G.audio, M = G.misiones, MF = M.feel, AC = G.actores, pe0 = AC.playEmote, pet0 = G.fx.petalos, pedidas = [], petalos = [], end = $('end'), red0 = A.reducido, cmp0 = S.complete, exp0 = S.explorando;
+      const espera = ms => new Promise(r => setTimeout(r, ms)), veces = n => A.log.filter(x => x === n).length;
+      try {
+        AC.playEmote = n => { pedidas.push(n); return true; }; G.fx.petalos = function (x, y, z, n) { petalos.push(n); return pet0.apply(this, arguments); };
+        S.complete = true; S.explorando = false; end.hidden = true; A.reducido = false; A.log.length = 0; const f0 = Object.assign({}, MF);
+        M.showEnd(false, { fiesta: true }); const ya = { oculto: end.hidden, son: veces('panel_final'), gesto: pedidas.join(), pet: petalos.join() };
+        M.showEnd(false, { fiesta: true }); const otra = MF.fin - f0.fin;
+        // La espera va con el reloj del juego (gancho 'update'): se pasan cuadros como el bucle (con la pausa, dt = 0: hit-stop)
+        const cuadros = s => { for (let t = 0; t < s - 1e-9; t += 0.05) G.renderer.update(G.camara.juice.hitStop > 0 ? 0 : 0.05); };
+        const hasta = (fn, s) => { for (let t = 0; t < s && !fn(); t += 0.05) cuadros(0.05); return fn(); };
+        if (G.dialogo.open() && G.dialogo.clear) G.dialogo.clear();
+        cuadros(MF.FIN.celebraMs / 1000 - 0.4); const antes = end.hidden;
+        hasta(() => !end.hidden, 4); const luego = { visible: !end.hidden, son: veces('panel_final') };
+        end.hidden = true; A.reducido = true; petalos.length = 0; M.showEnd(false, { fiesta: true }); const red = { pet: petalos.length, fp: MF.finPetalos - f0.finPetalos, gesto: pedidas.length };
+        const redVis = hasta(() => !end.hidden, 4); A.reducido = false;
+        end.hidden = true; M.showEnd(); const quieto = !end.hidden && MF.fin - f0.fin === 2;
+        check('F4-12: fin del capítulo: suena panel_final, Vittata celebra (Celebrar) y caen 30 pétalos; el panel entra a los 1,2 s (una sola vez); con «Reducir movimiento», sin pétalos; con G.quiet, al momento',
+          ya.oculto && ya.son === 1 && ya.gesto === 'celebrar' && ya.pet === '30' && otra === 1 && antes && luego.visible && luego.son === 1 && red.pet === 0 && red.fp === 1 && red.gesto === 2 && redVis && quieto,
+          JSON.stringify({ ya, otra, antes, luego, red, redVis, quieto }));
+        // Revisión F4: con la pausa puesta la fiesta no corre (reloj del juego) y el panel no entra delante de la pausa
+        end.hidden = true; G.pausa.set('prueba-fin', true); M.showEnd(false, { fiesta: true });
+        cuadros(MF.FIN.celebraMs / 1000 + 0.5); const enPausa = end.hidden; G.pausa.set('prueba-fin', false);
+        const trasPausa = hasta(() => !end.hidden, 4);
+        check('F4-12 (revisión): con la pausa abierta durante la fiesta el panel espera; al quitar la pausa, entra', enPausa && trasPausa, JSON.stringify({ enPausa, trasPausa }));
+        // Revisión F4 (cap. 6): showEnd() y en seguida el cómic de cierre. El panel no se abre debajo del cómic, Esc en el cómic no
+        // lo descarta (S.explorando sigue en false) y al cerrar el cómic vuelve el panel con su texto
+        end.hidden = true; $('end-text').textContent = ''; const esp0 = MF.finEsperas; M.showEnd(false, { fiesta: true }); await G.comic.openComic(); // como ep6: showEnd() y en seguida el cómic (#c-close existe al abrirlo)
+        cuadros(MF.FIN.celebraMs / 1000 + 0.5); const bajoComic = { oculto: end.hidden, esperas: MF.finEsperas > esp0 };
+        G.emit('escape'); const tras = { explorando: S.explorando };
+        { const cc = $('c-close'); if (cc) cc.click(); else { $('comic').hidden = true; if (S.complete && !S.explorando) end.hidden = false; } } // (sin #c-close en esta prueba: lo mismo que hace)
+        cuadros(0.1); const cierre = { visible: !end.hidden, texto: !!$('end-text').textContent, explorando: S.explorando };
+        end.hidden = true; M.showEnd(false, { fiesta: true }); const otraFiesta = MF.fin - f0.fin === 5; // la fiesta pendiente se dio por terminada
+        check('F4-12 (revisión): con el cómic de cierre abierto durante la fiesta el panel espera debajo cerrado; Esc no lo descarta y al cerrar el cómic vuelve con su texto',
+          bajoComic.oculto && bajoComic.esperas && !tras.explorando && cierre.visible && cierre.texto && !cierre.explorando && otraFiesta, JSON.stringify({ bajoComic, tras, cierre, otraFiesta, fin: MF.fin - f0.fin }));
+        hasta(() => !end.hidden, 4);
+      } finally { AC.playEmote = pe0; G.fx.petalos = pet0; A.reducido = red0; end.hidden = true; if ($('comic')) $('comic').hidden = true; G.pausa.set('prueba-fin', false); S.complete = cmp0; S.explorando = exp0; if (AC.stopEmote) AC.stopEmote(); G.quiet = true; }
+    }
     posarseLuma(G, T);
+    // Revisión F4-7: Vittata se posa en la percha misma; Iguaca se aparta a un lado (solo el dibujo, hacia la derecha de la cámara)
+    // para que su saludo se vea, y las 6 hojas caen sobre ella, a la vista (no 2,4 m más arriba)
+    {
+      const LU = G.c.luma, p = LU.percha, hoj0 = G.fx.hojas, R0 = G.renderer.REDUCED, red0 = G.audio.reducido; let hy = null, hd = null;
+      try {
+        for (let i = 0; i < 12; i++) G.emit('render', 0.05, i * 0.05);
+        const sp = LU.dibujo, aparte = +Math.hypot(sp.x - p.x, sp.z - p.z).toFixed(2), k = +LU.aparte.toFixed(2);
+        G.quiet = false; G.renderer.REDUCED = false; G.audio.reducido = false;
+        G.fx.hojas = function (x, y, z, n) { hy = +(y - p.y).toFixed(2); hd = +Math.hypot(x - p.x, z - p.z).toFixed(2); return hoj0.apply(this, arguments); };
+        LU.saludo();
+        check('F4-7 (revisión): con Vittata posada en la percha, Iguaca se aparta a un lado (no queda tapada) y las hojas caen sobre ella, a la vista',
+          LU.junto() && k > 0.9 && Math.abs(aparte - LU.SALUDO.aparte) < 0.15 && hy === LU.SALUDO.hojasAlto && Math.abs(hd - LU.SALUDO.aparte) < 0.01, JSON.stringify({ junto: LU.junto(), k, aparte, hy, hd }));
+      } finally { G.fx.hojas = hoj0; G.renderer.REDUCED = R0; G.audio.reducido = red0; G.quiet = true; }
+    }
     check('interact:luma_inicio: Iguaca llama desde la copa (bocadillo) y, al hablarle, la charla sigue desde ahí', !!G.dialogo.libre() && G.dialogo.actual().who === 'Iguaca' && G.dialogo.actual().text.startsWith('¡Vittata!'), JSON.stringify(G.dialogo.actual()));
     soltarCapas(G);
     if (!G.c.luma.junto()) posarseLuma(G, T);

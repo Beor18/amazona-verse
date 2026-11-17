@@ -175,6 +175,23 @@
     // sin bandera de expansión. Bandera propia G.CONSTRUIR: encendida por defecto,
     // ?construir=0 la apaga. Se carga al arrancar porque pone su tarjeta en «¿Cómo quieres jugar?», el botón junto a Pausa y la tecla B.
     if (G.CONSTRUIR == null) G.CONSTRUIR = !/[?&]construir=0\b/.test(location.search);
+    // F3 · «Obras que traen vida» (src/game/obras.js, docs/diseno/F3_CONSTRUIR_2.md fase 1): se baja solo cuando el rincón tiene una pieza
+    // que puede formar una obra (aviso G.emit('construirCambio') de construir.js) o para su prueba. G.F3PIEZAS: piezas y plantilla nuevas de
+    // Construir 2.0 (caja nido, Merendero), apagadas hasta que Kelvin las apruebe por foto; ?f3piezas=1 las enciende.
+    if (G.F3PIEZAS == null) G.F3PIEZAS = /[?&]f3piezas=1\b/.test(location.search);
+    const cargarObras = aDemanda('src/game/obras.js', 'AVObras');
+    AV.obrasTest = o => cargarConstruir().then(() => cargarObras()).then(m => m.test(o));
+    const OBRA_PIEZAS = ['comedero', 'flores', 'bromelia', 'maceta', 'cajanido'];
+    G.on('construirCambio', ev => {
+      if (G.obras) return;
+      const d = G.S && G.S.construir, ps = d && Array.isArray(d.piezas) ? d.piezas : [];
+      const libro = () => { try { return !!localStorage.getItem(((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.obras'); } catch (e) { return false; } }; // el Libro de visitas sigue en el Diario
+      if (!(ps.some(p => p && OBRA_PIEZAS.includes(p.t)) || libro())) return;
+      // Revisión F3: si lo que la baja es una pieza recién puesta fuera (no la partida al cargar), obras.js lo sabe al llegar (ese aviso
+      // ya habrá pasado) y anuncia la obra. Antes no había ninguna pieza de obra: si la hubiera, el 'cargar' ya lo habría bajado.
+      if (ev && ev.motivo === 'guardar' && !ev.interior) G.obrasMotivo = 'guardar';
+      cargarObras().catch(e => { delete G.obrasMotivo; console.warn('obras', e); });
+    });
     const cargarConstruir = aDemanda('src/game/construir.js', 'AVConstruir'); AV.construir = () => cargarConstruir().then(c => c.empezar()); AV.construirTest = o => cargarConstruir().then(c => c.test(o));
     if (G.CONSTRUIR) cargarConstruir().catch(e => console.warn('construir', e));
     // CG-111: kit de interior. No se baja hasta la prueba o hasta ?interiores=1. No pone nada en el mundo por sí solo.

@@ -439,14 +439,12 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 @media (max-width: 640px) and (orientation: portrait) { #retos .rt-turbo { left: auto; right: 12px; transform: none; bottom: calc(env(safe-area-inset-bottom, 0px) + 216px); } } /* teléfono en vertical: encima de Bajar e Impulso, lejos del joystick y de Subir */
 #retos-fx { position: fixed; inset: 0; pointer-events: none; z-index: var(--z-hud); }
 #retos-fx > div { position: absolute; inset: 0; opacity: 0; }
-#retos-fx .rt-lineas { inset: -20%; background: repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,0) 0deg 5deg, rgba(255,255,255,.6) 5deg 5.5deg, rgba(255,255,255,0) 5.5deg 11deg);
-  -webkit-mask: radial-gradient(circle at 50% 50%, transparent 30%, #000 72%); mask: radial-gradient(circle at 50% 50%, transparent 30%, #000 72%); animation: rt-girar .5s steps(4) infinite; }
+#retos-fx .rt-lineas { inset: -20%; } /* F4-13: el dibujo y el giro de las líneas son los comunes de G.fx.lineasVel (fx.js), también los del vuelo a tope */
 #retos-fx .rt-destello { background: #f4f8ff; }
 #retos-fx .rt-oscuro { background: radial-gradient(ellipse at 50% 45%, rgba(12,18,40,0) 30%, rgba(8,12,30,.72) 100%), rgba(22,30,58,.42); }
 #retos-fx .rt-moja { background: radial-gradient(ellipse at 50% 50%, rgba(60,90,160,0) 45%, rgba(40,70,150,.55) 100%); }
 @keyframes rt-pop { 0% { transform: scale(1.8); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes rt-aviso { 0% { opacity: 0; transform: translate(-50%, 12px) scale(.8); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.05); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -16px); } }
-@keyframes rt-girar { to { transform: rotate(11deg); } }
 @keyframes rt-latido { 50% { transform: scale(1.08); } }
 @media (prefers-reduced-motion: reduce) { #retos .rt-cuenta.pop, #retos .rt-aviso.ver, #retos .rt-panel, #retos .rt-nuevo, #retos-fx .rt-lineas { animation-duration: .01s; animation-iteration-count: 1; } }
 @media (max-width: 640px) { #retos .rt-chip { font-size: 17px; padding: 5px 10px; } #retos .rt-pos b { font-size: 21px; } #retos .rt-lbl { display: none; } #retos .rt-aviso { font-size: 24px; } }
@@ -457,7 +455,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       if (ui) return ui;
       const st = document.createElement('style'); st.id = 'retos-css'; st.textContent = CSS; document.head.appendChild(st);
       const fx = document.createElement('div'); fx.id = 'retos-fx'; fx.setAttribute('aria-hidden', 'true');
-      fx.innerHTML = '<div class="rt-oscuro"></div><div class="rt-moja"></div><div class="rt-lineas"></div><div class="rt-destello"></div>';
+      fx.innerHTML = '<div class="rt-oscuro"></div><div class="rt-moja"></div><div class="rt-destello"></div>';
+      { // F4-13: la capa de líneas es la común (fx.js), en el mismo sitio de siempre (debajo del destello)
+        const lin = G.fx.lineasVel ? G.fx.lineasVel(null) : document.createElement('div'); lin.classList.add('rt-lineas'); fx.insertBefore(lin, fx.querySelector('.rt-destello')); }
       document.body.appendChild(fx);
       const el = document.createElement('div'); el.id = 'retos'; el.className = 'hud'; el.hidden = true;
       el.innerHTML = `
@@ -857,7 +857,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     function chispasFx(dt) {
       const k = rate(5, dt);
       efectos.destello = Math.max(0, efectos.destello - dt * 3.2);
-      estilo(ui.lineas, 'opacity', REDUCED ? 0 : efectos.lineas.toFixed(3));
+      G.fx.lineasOpacidad(ui.lineas, REDUCED ? 0 : efectos.lineas); // F4-13: la función común (fx.js)
       estilo(ui.destello, 'opacity', (efectos.destello * (REDUCED ? 0.25 : 0.75)).toFixed(3));
       estilo(ui.oscuro, 'opacity', efectos.oscuro.toFixed(3));
       estilo(ui.moja, 'opacity', efectos.moja.toFixed(3));
@@ -2336,7 +2336,9 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
             dispatchEvent(new KeyboardEvent('keydown', { key: 'e', code: 'KeyE' })); dispatchEvent(new KeyboardEvent('keyup', { key: 'e', code: 'KeyE' }));
             check('F1-8 · Tú eliges cuándo: la tecla de Acción gasta el turbo (más velocidad) y vacía las hojas', C.turbos === t0 + 1 && C.turboT > 0 && C.hojas === 0 && Math.hypot(M.vx, M.vz) > v0 + 5 && usarTurbo() === false, v0.toFixed(1) + ' → ' + Math.hypot(M.vx, M.vz).toFixed(1));
             tick(0.3);
-            check('F1-8 · El turbo se ve: líneas de velocidad fuertes mientras dura', C.turboT > 0 && efectos.lineas > 0.4, efectos.lineas.toFixed(2)); }
+            check('F1-8 · El turbo se ve: líneas de velocidad fuertes mientras dura', C.turboT > 0 && efectos.lineas > 0.4, efectos.lineas.toFixed(2));
+            { if (typeof chispasFx === 'function') chispasFx(0); const op = +(ui.lineas.style.opacity || 0), cs = getComputedStyle(ui.lineas), comun = ui.lineas.classList.contains('fx-lineas') && !ui.lineas.classList.contains('finas') && /conic/.test(cs.backgroundImage) && ui.lineas.parentNode && ui.lineas.parentNode.id === 'retos-fx';
+              check('F4-13 · Las líneas de la carrera son la capa común (fx.js): mismo dibujo, a pantalla y con la opacidad del turbo', comun && (REDUCED ? op === 0 : Math.abs(op - efectos.lineas) < 0.08) && cs.position === 'absolute', JSON.stringify({ comun, op, lin: +efectos.lineas.toFixed(3), pos: cs.position })); } }
           { const antes = G.input.mapa.accion, sp = ui.turboBtn.querySelector('.rt-tecla');
             try {
               G.input.asignar('accion', 'k'); C.hojas = 3; const t1 = C.turbos;

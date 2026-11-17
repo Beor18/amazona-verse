@@ -28,7 +28,8 @@
     const bajo = () => { const c = G.renderer && G.renderer.calidad; return !!c && (c.nivel === 'bajo' || c.escuela === true); };
     const presupuesto = () => {
       if (ctx) { const tope = bajo() ? 8 : 12; return Math.min(tope, ctx.tope || tope); }
-      return bajo() ? PRESUPUESTO_BAJO : CAPACIDAD;
+      // F3: las piezas apartadas por la bandera apagada (caja nido) siguen siendo tuyas y ocupan su sitio: así nunca se pierden al guardar
+      return Math.max(0, (bajo() ? PRESUPUESTO_BAJO : CAPACIDAD) - apartadas.length);
     };
     let forzado = false, ctx = null;
     const habilitado = () => G.CONSTRUIR !== false || forzado;
@@ -429,35 +430,55 @@
         P.push(parte(new C.BoxGeometry(0.22, 0.14, 0.03), '#e6d2b4', { p: [0.95, 0.56, 0.32], m: 'tablas', uv: [0.22, 0.14] }));
         return P;
       } },
+      // ---- F3 · Pieza nueva (detrás de la bandera G.F3PIEZAS, apagada: Kelvin la aprueba por foto antes de encenderla) ----
+      // Caja nido en poste: la misma forma que la del cartel del Rescate (src/game/rescate.js): poste, caja de tablas con su agujero
+      // redondo, techito inclinado y una perchita delante del agujero. Es una pieza de juego: no añade ningún dato (F3_CONSTRUIR_2 § 3).
+      cajanido: { r: 0.4, sobre: false, hacer() {
+        return [parte(new C.CylinderGeometry(0.09, 0.11, 2.6, 8), '#6b4a2e', { p: [0, 1.3, 0] }),
+          parte(new C.BoxGeometry(0.62, 0.7, 0.62), '#e6c79a', { p: [0, 2.95, 0], m: 'tablas', uv: [0.62, 0.7] }),
+          parte(new C.BoxGeometry(0.66, 0.06, 0.66), '#8a6236', { p: [0, 2.62, 0], m: 'tablas', uv: [0.66, 0.06] }),
+          parte(new C.BoxGeometry(0.78, 0.07, 0.78), '#6b4a2e', { p: [0, 3.34, 0], r: [0.12, 0, 0], m: 'tablas', uv: [0.78, 0.78] }),
+          parte(new C.CircleGeometry(0.15, 16), '#1d140b', { p: [0, 3.02, 0.312] }),
+          parte(new C.TorusGeometry(0.155, 0.02, 5, 16), '#8a6236', { p: [0, 3.02, 0.312] }),
+          parte(new C.CylinderGeometry(0.025, 0.025, 0.7, 6), '#6b4a2e', { p: [0, 2.72, 0.42], r: [0, 0, Math.PI / 2] }),
+          parte(new C.CylinderGeometry(0.02, 0.02, 0.14, 5), '#6b4a2e', { p: [0, 2.68, 0.36], r: [Math.PI / 2, 0, 0] })];
+      } },
     };
     // BASE: las 7 de siempre, de todos desde el principio. EXTRA: las del Mercadito del río (pack.tienda.construir), solo cuando se compran.
     const BASE = ['nido', 'techo', 'bromelia', 'flores', 'piedra', 'tronco', 'banderines'];
     const CASA = ['piso', 'pared', 'puerta', 'ventana', 'muro', 'tejado', 'maceta']; // T39: de todos desde el principio, detrás de las 7 de siempre
     const KIT = ['escalera', 'baranda', 'dosaguas', 'farolito', 'valla', 'banco', 'huerto']; // C9: de todos desde el principio, detrás de la casita
     const EXTRA = ['helecho', 'cerca', 'farol', 'comedero', 'domino', 'hamaca'];
-    const ORDEN = BASE.concat(CASA, KIT, EXTRA);
+    // F3 · Piezas nuevas de «Construir 2.0» (docs/diseno/F3_CONSTRUIR_2.md § 4): solo con la bandera G.F3PIEZAS (boot.js, ?f3piezas=1),
+    // apagada por defecto hasta que Kelvin las apruebe por foto. Apagada: no salen en la barra ni en las plantillas, y las que hubiera en
+    // una partida se apartan sin dibujarse y se vuelven a guardar tal cual (nada se pierde).
+    const NUEVAS = ['cajanido'];
+    const nuevas = () => G.F3PIEZAS === true;
+    const ORDEN = BASE.concat(CASA, KIT, EXTRA, NUEVAS);
     const NOMBRE = { nido: 'Nido de ramitas', techo: 'Techo de hojas', bromelia: 'Bromelia', flores: 'Flores', piedra: 'Piedras', tronco: 'Tronco', banderines: 'Banderines',
       piso: 'Piso de tablas', pared: 'Pared de tablas', puerta: 'Pared con puerta', ventana: 'Pared con ventana', muro: 'Muro de piedra', tejado: 'Tejado de paja', maceta: 'Maceta con heliconia',
       escalera: 'Escalera', baranda: 'Baranda', dosaguas: 'Techo a dos aguas', farolito: 'Farol de piedra', valla: 'Cerca de tablas', banco: 'Banco', huerto: 'Huerto',
-      helecho: 'Helecho', cerca: 'Cerca de bambú', farol: 'Farol', comedero: 'Comedero de aves', domino: 'Mesa de dominó', hamaca: 'Hamaca' };
+      helecho: 'Helecho', cerca: 'Cerca de bambú', farol: 'Farol', comedero: 'Comedero de aves', domino: 'Mesa de dominó', hamaca: 'Hamaca',
+      cajanido: 'Caja nido' };
     // Una pieza del Mercadito es tuya si está en S.tienda.compras (src/game/tienda.js la valida al cargar; aquí solo se lee)
     const compradas = () => { try { if (G.tienda && G.tienda.compradas) return G.tienda.compradas(); const t = S.tienda; return esObj(t) && Array.isArray(t.compras) ? t.compras : []; } catch (e) { return []; } };
-    const tiene = t => BASE.includes(t) || CASA.includes(t) || KIT.includes(t) || (EXTRA.includes(t) && compradas().includes(t));
+    const tiene = t => BASE.includes(t) || CASA.includes(t) || KIT.includes(t) || (EXTRA.includes(t) && compradas().includes(t)) || (NUEVAS.includes(t) && nuevas());
     const disponibles = () => ORDEN.filter(tiene);
 
     // ---------- Datos: leer (tolerante) y guardar ----------
-    function leer(d) {
+    function leer(d, ap) {
       if (!esObj(d) || d.v !== 1 || !Array.isArray(d.piezas)) return [];
       const out = [];
       for (const p of d.piezas) {
-        if (out.length >= CAPACIDAD) break;
+        if (out.length + (ap ? ap.length : 0) >= CAPACIDAD) break;
         if (!esObj(p) || !TIPOS[p.t] || typeof p.x !== 'number' || typeof p.z !== 'number' || !isFinite(p.x) || !isFinite(p.z) || Math.abs(p.x) > 5000 || Math.abs(p.z) > 5000) continue;
         const r = Number.isInteger(p.r) && p.r >= 0 && p.r < 8 ? p.r : 0;
+        if (NUEVAS.includes(p.t) && !nuevas()) { if (ap) ap.push({ t: p.t, x: p.x, z: p.z, r }); continue; } // F3: bandera apagada
         out.push({ t: p.t, x: p.x, z: p.z, r });
       }
       return out;
     }
-    let lista = [];
+    let lista = [], apartadas = [];
     const r2 = v => Math.round(v * 100) / 100;
     const piezasDe = () => lista.map(p => ({ t: p.t, x: r2(p.x), z: r2(p.z), r: p.r }));
     function guardar() {
@@ -468,9 +489,12 @@
         edificios[ctx.id] = { piezas: piezasDe(), estado: antes.estado || null };
         const alguno = Object.keys(edificios).some(id => { const e = edificios[id]; return e && ((e.piezas && e.piezas.length) || e.estado); });
         S.interiores = alguno ? { v: 1, edificios } : null;
-      } else S.construir = lista.length ? { v: 1, piezas: piezasDe() } : null;
+      } else S.construir = lista.length || apartadas.length ? { v: 1, piezas: apartadas.concat(piezasDe()) } : null;
       if (G.guardado && G.guardado.autosave) G.guardado.autosave();
+      avisarCambio('guardar');
     }
+    // F3 · «Obras que traen vida» (src/game/obras.js) escucha este aviso: al guardar, colocar o quitar (y al cargar una partida)
+    function avisarCambio(motivo) { try { if (G.emit) G.emit('construirCambio', { motivo, interior: !!(ctx && ctx.id) }); } catch (e) { console.warn('construirCambio', e); } }
     function mundoDe(p) {
       if (!ctx) return { x: p.x, z: p.z, y: H(p.x, p.z) };
       return { x: (ctx.ox || 0) + p.x, z: (ctx.oz || 0) + p.z, y: ctx.piso };
@@ -548,14 +572,14 @@
       const sombra = !bajo();
       for (const t of ORDEN) { const m = mallas[t]; m.visible = m.count > 0; m.castShadow = sombra; m.instanceMatrix.needsUpdate = true; if (m.count) texturaDe(t); }
     }
-    function aplicar(d) { lista = leer(d); historial.length = 0; rehacerPila.length = 0; if (habilitado()) { asegurarEscena(); pintar(); } return lista.length; }
+    function aplicar(d) { apartadas = []; lista = leer(d, apartadas); historial.length = 0; rehacerPila.length = 0; if (habilitado()) { asegurarEscena(); pintar(); } avisarCambio('cargar'); return lista.length; }
     const HABITACIONES = {
       descanso: [{ t: 'nido', x: -0.6, z: 0.4, r: 1 }, { t: 'flores', x: 0.8, z: -0.3, r: 0 }],
     };
     function contexto(c) {
       guardar();
       historial.length = 0; rehacerPila.length = 0;
-      if (!c) { ctx = null; lista = leer(S.construir); if (habilitado()) { asegurarEscena(); pintar(); } return null; }
+      if (!c) { ctx = null; apartadas = []; lista = leer(S.construir, apartadas); if (habilitado()) { asegurarEscena(); pintar(); } avisarCambio('cargar'); return null; }
       ctx = {
         id: String(c.id || 'cuarto'),
         zona: c.zona || null,
@@ -585,9 +609,17 @@
       puente: [['piso', -2, 1, 0], ['piso', 0, 1, 0], ['piso', 2, 1, 0], ['baranda', -2, 0, 0], ['baranda', 0, 0, 0], ['baranda', 2, 0, 0], ['baranda', -2, 2, 0], ['baranda', 0, 2, 0], ['baranda', 2, 2, 0], ['escalera', -3.4, 1, 6], ['escalera', 3.4, 1, 2]],
       nidogrande: [['nido', 0, 1, 0], ['techo', 0, 1, 0], ['bromelia', -1.35, 0.3, 0], ['flores', 1.35, 0.3, 0], ['flores', -1.35, 1.7, 0], ['bromelia', 1.35, 1.7, 0], ['tronco', 0, -0.4, 0], ['farolito', 0, 2.15, 0]],
     };
-    const NOMBRE_PL = { casita: 'Casita rápida', bohio: 'Bohío', torre: 'Torre de vigía', puente: 'Puente pequeño', nidogrande: 'Nido grande' };
+    // F3 · Plantilla nueva «Merendero» (F3_CONSTRUIR_2 § 5), detrás de la misma bandera que las piezas nuevas (G.F3PIEZAS): el comedero
+    // en el centro, dos matas de flores y una bromelia alrededor (a menos de 3 m: comedero «mejor» y Jardín de mariposas) y un tronco
+    // para sentarse. Aún no hay percha ni bebedero (fases siguientes): van flores en su lugar. El comedero es del Mercadito: sin él,
+    // pone lo demás (como todas las plantillas, solo lo que es tuyo).
+    const PLANTILLAS_F3 = {
+      merendero: [['comedero', 0, 1.2, 0], ['flores', -1.2, 0.7, 0], ['flores', 1.2, 0.7, 0], ['bromelia', 0, 2.4, 0], ['tronco', 0, -0.4, 0]],
+    };
+    const plantillasVer = () => Object.keys(PLANTILLAS).concat(nuevas() ? Object.keys(PLANTILLAS_F3) : []);
+    const NOMBRE_PL = { casita: 'Casita rápida', bohio: 'Bohío', torre: 'Torre de vigía', puente: 'Puente pequeño', nidogrande: 'Nido grande', merendero: 'Merendero' };
     function plantilla(nombre) {
-      const receta = PLANTILLAS[nombre]; if (!receta) return false;
+      const receta = PLANTILLAS[nombre] || (nuevas() && PLANTILLAS_F3[nombre]); if (!receta) return false;
       const casa = nombre === 'casita';
       if (ctx) { aviso(casa ? 'Aquí dentro ya hay paredes: la casita va fuera.' : 'Las plantillas van fuera, no dentro de un cuarto.'); return false; }
       if (lista.length >= presupuesto()) { aviso('Ya usaste todas tus piezas. Quita alguna para seguir.'); sonar('wrong'); return false; }
@@ -818,7 +850,7 @@
       return true;
     }
     G.on('update', (dt, busy) => { if (activo && fantasma) { fantasma.visible = !busy; if (!busy) actualizar(); } }, 89);
-    G.on('escape', () => { if (activo) salir(); });
+    G.on('escape', () => { if (activo && !(G.ui && G.ui.busy && G.ui.busy())) salir(); }); // con una tarjeta abierta (el Mercadito), Esc solo la cierra
     G.on('apply', () => { if (activo) salir(); if (ctx && ctx.id) { lista = leer({ v: 1, piezas: (S.interiores && S.interiores.edificios && S.interiores.edificios[ctx.id] && S.interiores.edificios[ctx.id].piezas) || [] }); historial.length = 0; rehacerPila.length = 0; pintar(); } else aplicar(S.construir); }, 60);
 
     // ---------- Teclado (captura: mientras se construye, estas teclas no hacen su otra función) ----------
@@ -841,6 +873,7 @@
       else if (k === 'delete' || k === 'backspace') quitar();
       else if (k === 't') verPlantillas();
       else if (k === 'escape' && hudEl && hudEl.classList.contains('cl-pl-abierta')) verPlantillas();
+      else if (k === 'escape' && !e.repeat) salir(); // revisión F3: preventDefault, así ui.js no abre además la Pausa (con la Pausa abierta no llegan visitas)
       else hecho = false;
       if (hecho) { e.preventDefault(); e.stopImmediatePropagation(); }
     }, true);
@@ -875,6 +908,7 @@
       valla: '<path d="M2 13h28M2 22h28" stroke="#b08a5c" stroke-width="2"/><path d="M6 28V9l2-3 2 3v19zM14 28V9l2-3 2 3v19zM22 28V9l2-3 2 3v19z" fill="#f6f1e6" stroke="#a8916a" stroke-width=".8"/><path d="M3 28V10M29 28V10" stroke="#8a6236" stroke-width="2.6"/>',
       banco: '<path d="M4 17h24v3H4z" fill="#d9bc8f"/><path d="M5 9h22v2.6H5zM5 13h22v2.4H5z" fill="#c9a77c"/><path d="M8 9l-1 8M24 9l1 8" stroke="#8a6236" stroke-width="2"/><rect x="6" y="20" width="5" height="8" fill="#cfc4b2"/><rect x="21" y="20" width="5" height="8" fill="#cfc4b2"/>',
       huerto: '<path d="M3 20h26v8H3z" fill="#c9a77c"/><path d="M3 24h26" stroke="#8a6236" stroke-width="1.2"/><path d="M4 20h24v-1H4z" fill="#4a3220"/><circle cx="8" cy="16" r="3.2" fill="#5ea83c"/><circle cx="8" cy="15.4" r="1.6" fill="#a8db7a"/><circle cx="16" cy="16" r="3.2" fill="#7cc24f"/><circle cx="16" cy="15.4" r="1.6" fill="#a8db7a"/><path d="M24 19V11M24 14l-3-2M24 13l3-2" stroke="#3f7d2c" stroke-width="1.6" stroke-linecap="round"/><path d="M21 13l1 3.5 1-3z" fill="#e2363b"/><path d="M26 12l1 3.5 1-3z" fill="#f4c430"/>',
+      cajanido: '<path d="M16 29V19" stroke="#6b4a2e" stroke-width="3" stroke-linecap="round"/><rect x="9" y="8" width="14" height="12" fill="#d9b27a"/><path d="M9 12h14M9 16h14" stroke="#a8783f" stroke-width="1"/><path d="M7 8.5l18-3v3L7 11z" fill="#6b4a2e"/><circle cx="16" cy="13" r="2.8" fill="#1d140b"/><path d="M11 18.5h10" stroke="#6b4a2e" stroke-width="1.6" stroke-linecap="round"/>',
       banderines: '<path d="M3 6v22M29 6v22" stroke="#7b5430" stroke-width="2.4"/><path d="M3 8q13 8 26 0" stroke="#f5f0e0" stroke-width="1.4" fill="none"/><path d="M6 10l3 7 3-5z" fill="#f4c430"/><path d="M13 12l3 7 3-6z" fill="#2fb5a8"/><path d="M20 12l3 6 3-7z" fill="#e85d8f"/>',
     };
     // C10 · iconos de las plantillas
@@ -884,13 +918,15 @@
       torre: '<path d="M16 3L4 12h24z" fill="#d0745a"/><path d="M8 12h16" stroke="#8a6236" stroke-width="1.6"/><path d="M8 12v8M24 12v8" stroke="#8a6236" stroke-width="2"/><path d="M5 19h22v10H5z" fill="#cfc4b2"/><path d="M5 23h22M11 19v4M21 19v4M8 23v6M16 23v6M24 23v6" stroke="#8d8577" stroke-width="1"/><path d="M4 18h24v2H4z" fill="#b5ab9b"/><rect x="1" y="21" width="3" height="4" rx=".8" fill="#ffd27a" stroke="#2a2420" stroke-width=".8"/><rect x="28" y="21" width="3" height="4" rx=".8" fill="#ffd27a" stroke="#2a2420" stroke-width=".8"/>',
       puente: '<path d="M1 26l4-3h22l4 3z" fill="#c9a77c"/><path d="M5 23h22v2H5z" fill="#d9bc8f"/><path d="M5 23v-8M12 23v-8M20 23v-8M27 23v-8" stroke="#8a6236" stroke-width="2.2"/><path d="M4 15h24" stroke="#c9a77c" stroke-width="2.4" stroke-linecap="round"/><path d="M8.5 16v7M16 16v7M23.5 16v7" stroke="#e6d2b4" stroke-width="1.4"/><path d="M2 29q14-4 28 0" stroke="#4a90e2" stroke-width="2" fill="none" opacity=".8"/>',
       nidogrande: '<path d="M2 12L16 3l14 9z" fill="#5a8a36"/><path d="M4 12l-2 3M10 12l-1 3M22 12l1 3M28 12l2 3" stroke="#7db54c" stroke-width="2" stroke-linecap="round"/><path d="M7 12v16M25 12v16" stroke="#6b4a2b" stroke-width="2"/><ellipse cx="16" cy="24" rx="8" ry="4" fill="#c9a25a"/><path d="M8 22q8 6 16 0M9 25l14-3" stroke="#7b5430" stroke-width="1.6" fill="none" stroke-linecap="round"/><circle cx="3" cy="25" r="2" fill="#e2363b"/><circle cx="29" cy="25" r="2" fill="#f4c430"/><path d="M3 27v2M29 27v2" stroke="#3f7d2c" stroke-width="1.4"/>',
+      merendero: '<path d="M7 29V17" stroke="#6b4a2b" stroke-width="2.2"/><path d="M2 17h10" stroke="#8a5a32" stroke-width="2"/><rect x="4" y="11" width="6" height="5" fill="#d9a35a"/><path d="M2.5 12L7 8l4.5 4" stroke="#a4472f" stroke-width="2" fill="none"/><path d="M19 29v-6M25 29v-7" stroke="#3f7d2c" stroke-width="1.6"/><circle cx="19" cy="21" r="3" fill="#e2363b"/><circle cx="25" cy="20" r="3" fill="#f4c430"/><circle cx="19" cy="21" r="1.1" fill="#ffe08a"/><circle cx="25" cy="20" r="1.1" fill="#fff3c4"/><rect x="12" y="25" width="10" height="4" rx="2" fill="#6b4a2b"/>',
     };
     const ICONO_HUD = 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#000" d="M3 20.5 13.6 9.9l1.5 1.5L4.5 22zM12.4 4.2l3-1.7 6.1 6.1-1.7 3-2.1-2.1-1.6 1.6-3.8-3.8 1.6-1.6z"/></svg>') + '")';
     let hudEl = null, estilo = null;
     function css() {
       if (estilo) return;
       estilo = document.createElement('style'); estilo.id = 'cl-estilo';
-      estilo.textContent = '#cl-hud{left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 142px);display:flex;flex-direction:column;align-items:center;gap:6px;max-width:calc(100vw - 32px)}' +
+      estilo.textContent = '#cl-hud{left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 142px);display:flex;flex-direction:column;align-items:center;gap:6px;max-width:clamp(320px,calc(100vw - 720px),calc(100vw - 32px))}' +
+        '#cl-hud .cl-piezas,#cl-hud .cl-plantillas{flex-wrap:wrap;justify-content:center}#cl-hud .cl-piezas small{display:none}' +
         '#cl-hud .cl-fila{display:flex;gap:6px;align-items:center;background:rgba(16,36,28,.82);border-radius:16px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.35);max-width:100%;overflow-x:auto;scrollbar-width:none}' +
         '#cl-hud button{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:44px;padding:4px 6px;border-radius:12px;color:#fff8e6;font:600 12px/1.1 system-ui,sans-serif;cursor:pointer;text-align:center;background:rgba(255,255,255,.08);touch-action:manipulation}' +
         '#cl-hud button:hover{background:rgba(255,255,255,.18)}#cl-hud button:focus-visible{outline:3px solid #ffd27a;outline-offset:1px}' +
@@ -907,11 +943,11 @@
         '@media (max-width:700px),(pointer:coarse){#cl-hud{left:12px;transform:none;align-items:flex-start;top:calc(env(safe-area-inset-top,0px) + 226px);max-width:calc(100vw - 84px)}' +
         '#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{min-width:44px;min-height:44px;padding:2px}#cl-hud svg{width:26px;height:26px}' +
         '#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-cuenta{font-size:12px;padding:0 4px}' +
-        '#cl-hud .cl-herr{flex-wrap:wrap;overflow:visible}' +
+        '#cl-hud .cl-herr{flex-wrap:wrap;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}' +
         '#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
         'body:has(#emotes:not([hidden])) #cl-hud{top:calc(env(safe-area-inset-top,0px) + 72px);max-width:calc(100vw - 24px)}}' +
         // C10: teléfono en horizontal (844×390): la barra va al centro, entre el joystick y los botones de acción, bajo el HUD de arriba
-        '@media (orientation:landscape) and (max-height:500px){#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}}' +
+        '@media (orientation:landscape) and (max-height:500px){#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}}' +
         '@media (prefers-reduced-motion:reduce){#cl-hud,#cl-hud *{animation:none;transition:none}}';
       document.head.appendChild(estilo);
     }
@@ -922,7 +958,7 @@
         hudEl = document.createElement('div'); hudEl.id = 'cl-hud'; hudEl.className = 'hud'; hudEl.setAttribute('role', 'toolbar'); hudEl.setAttribute('aria-label', 'Para construir');
         const tecla = window.matchMedia && matchMedia('(pointer: coarse)').matches ? () => '' : k => `<kbd>${k}</kbd>`;
         hudEl.innerHTML = '<div class="cl-fila cl-piezas">' + filaPiezas() + '</div>' +
-          '<div class="cl-fila cl-plantillas" id="cl-plantillas" role="group" aria-label="Plantillas">' + Object.keys(PLANTILLAS).map(k => `<button type="button" data-cl-pl="${k}" aria-label="${NOMBRE_PL[k]}"><svg viewBox="0 0 32 32" aria-hidden="true">${SVG_PL[k]}</svg><small>${NOMBRE_PL[k]}</small></button>`).join('') + '</div>' +
+          '<div class="cl-fila cl-plantillas" id="cl-plantillas" role="group" aria-label="Plantillas">' + filaPlantillas() + '</div>' +
           `<div class="cl-fila cl-herr"><span class="cl-cuenta" aria-live="polite"></span><button type="button" class="cl-deshacer" data-cl="deshacer" aria-disabled="true" aria-label="Deshacer" aria-keyshortcuts="Z"><span class="cl-etiq">Deshacer</span> ${tecla('Z')}</button><button type="button" data-cl="girar" aria-label="Girar" aria-keyshortcuts="R">Girar ${tecla('R')}</button>` +
           `<button type="button" data-cl="rejilla" aria-pressed="false" aria-label="Cuadritos">Cuadritos</button><button type="button" data-cl="plantillas" aria-expanded="false" aria-controls="cl-plantillas" aria-label="Plantillas" aria-keyshortcuts="T">Plantillas ${tecla('T')}</button><button type="button" data-cl="foto" aria-label="Foto">Foto</button>` +
           `<button type="button" data-cl="quitar" aria-label="Quitar" aria-keyshortcuts="Delete">Quitar ${tecla('Supr')}</button><button type="button" data-cl="listo" aria-label="Listo" aria-keyshortcuts="Escape">Listo ${tecla('Esc')}</button>` +
@@ -976,9 +1012,16 @@
       return abre;
     }
     // La fila de piezas: las 7 de siempre y las del Mercadito que ya son tuyas (teclas 1–9 en ese orden)
-    function filaPiezas() { return disponibles().map((t, i) => `<button type="button" data-cl-tipo="${t}" aria-pressed="${t === tipo}" aria-label="${NOMBRE[t]}"${i < 9 ? ` aria-keyshortcuts="${i + 1}"` : ''}><svg viewBox="0 0 32 32" aria-hidden="true">${SVG[t]}</svg><small>${NOMBRE[t]}</small></button>`).join(''); }
+    function filaPiezas() { return disponibles().map((t, i) => `<button type="button" data-cl-tipo="${t}" aria-pressed="${t === tipo}" aria-label="${NOMBRE[t]}" title="${NOMBRE[t]}"${i < 9 ? ` aria-keyshortcuts="${i + 1}"` : ''}><svg viewBox="0 0 32 32" aria-hidden="true">${SVG[t]}</svg><small>${NOMBRE[t]}</small></button>`).join(''); }
     // Tras una compra en el Mercadito (src/game/tienda.js) la barra se rehace con la pieza nueva
-    function refrescar() { if (!hudEl) return; const f = hudEl.querySelector('.cl-piezas'); if (f) f.innerHTML = filaPiezas(); if (!tiene(tipo)) tipo = 'nido'; pintarHud(); }
+    function filaPlantillas() { return plantillasVer().map(k => `<button type="button" data-cl-pl="${k}" aria-label="${NOMBRE_PL[k]}"><svg viewBox="0 0 32 32" aria-hidden="true">${SVG_PL[k]}</svg><small>${NOMBRE_PL[k]}</small></button>`).join(''); }
+    function refrescar() {
+      if (!tiene(tipo)) tipo = 'nido';
+      if (!hudEl) return;
+      const f = hudEl.querySelector('.cl-piezas'); if (f) f.innerHTML = filaPiezas();
+      const fp = hudEl.querySelector('.cl-plantillas'); if (fp && fp.children.length !== plantillasVer().length) fp.innerHTML = filaPlantillas(); // F3: con la bandera, el Merendero
+      pintarHud();
+    }
     let cuentaTxt = '';
     function pintarHud() {
       if (!hudEl || hudEl.hidden) return;
@@ -1210,9 +1253,13 @@
         const camF = G.camara, yawF = camF && camF.yaw, rzF = G.actores && G.actores.player3D && G.actores.player3D.root, visF = rzF && rzF.visible;
         let yawDentro = null, ocultaDentro = null; const snap0 = G.renderer.snapshot;
         G.renderer.snapshot = function () { yawDentro = camF ? camF.yaw : null; ocultaDentro = rzF ? !rzF.visible : null; return snap0.apply(this, arguments); };
-        let urlFoto; try { urlFoto = await foto(); } finally { G.renderer.snapshot = snap0; }
+        // Lo que «vuelve como estaba» se mide al volver (la última colocación de la cámara en foto()): mientras se pasa a PNG corren
+        // cuadros y la cámara sigue a Vittata como siempre, así que comparar al final daba rojos de cadena (también antes de F3)
+        const place0 = camF && camF.place; let yawTras = null, visTras = null;
+        if (place0) camF.place = function () { yawTras = camF.yaw; visTras = rzF ? rzF.visible : null; return place0.apply(this, arguments); };
+        let urlFoto; try { urlFoto = await foto(); } finally { G.renderer.snapshot = snap0; if (place0) camF.place = place0; }
         check('T40 · la foto pone la cámara detrás, mirando al rincón, sin Vittata delante, y luego todo vuelve como estaba',
-          (!camF || (yawDentro === 0 && camF.yaw === yawF)) && (!rzF || (ocultaDentro === true && rzF.visible === visF)), JSON.stringify({ yawDentro, yawF, ocultaDentro }));
+          (!camF || (yawDentro === 0 && yawTras === yawF)) && (!rzF || (ocultaDentro === true && rzF.visible === visF && (!place0 || visTras === visF))), JSON.stringify({ yawDentro, yawF, yawTras, ocultaDentro }));
         check('La foto del rincón es un PNG local y no deja un enlace para subirlo', typeof urlFoto === 'string' && urlFoto.indexOf('data:image/png') === 0 && urlFoto.length > 200 && !document.querySelector('a[download="rincon-vittata.png"]'), urlFoto ? urlFoto.slice(0, 22) + '… ' + urlFoto.length : 'sin foto');
         // 3b. Piezas del Mercadito del río: sin comprarlas no salen en la barra ni se eligen; compradas, sí (teclas 1–9 en el orden de la barra)
         S.tienda = { v: 1, conchitas: 0, ganadas: 0, compras: [] }; refrescar();
@@ -1337,6 +1384,10 @@
             filaP.querySelector('[data-cl-pl="nidogrande"]').click();
             const toque = lista.length > 0 && lista.some(p => p.t === 'nido') && !hudEl.classList.contains('cl-pl-abierta');
             check('C10 · el botón «Plantillas» cambia la fila de piezas por la de plantillas (T la abre, Esc la cierra sin salir) y un toque coloca y vuelve a las piezas', abierta && cerrada && conT && toque, JSON.stringify({ abierta, cerrada, conT, toque, teclas: libreK ? 'probadas' : 'pantalla encima: no se prueban', encimaK }));
+            // Revisión F3 · Esc sale de Construir y se queda la tecla (preventDefault): ui.js ya no abre además la Pausa
+            let escSale = 'no se prueba';
+            if (libreK && activo && !G.ui.busy()) { const ev = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); (document.activeElement || document.body).dispatchEvent(ev); escSale = !activo && ev.defaultPrevented; }
+            check('Esc sale de Construir sin abrir la Pausa (la tecla queda tomada)', escSale !== false, String(escSale));
             aplicar(null);
           }
           salir(); S.pos.x = pIni.x; S.pos.z = pIni.z; S.facing = f0; aplicar(null);
@@ -1392,7 +1443,7 @@
     }
 
     const api = { empezar, salir, activo: () => activo, elegir, girar, colocar, deshacer, rehacer, quitar, cuadrícula, foto, casita, plantilla, verPlantillas, PLANTILLAS: Object.keys(PLANTILLAS), rejilla: () => rejilla, piezas: () => lista.map(p => Object.assign({}, p)), aplicar, presupuesto, contexto, habitacion,
-      forzar, test, TIPOS: ORDEN.slice(), BASE: BASE.slice(), EXTRA: EXTRA.slice(), KIT: KIT.slice(), SVG, NOMBRE, tiene, disponibles, refrescar, CAPACIDAD, _escena: () => ({ grupo, fantasma, est: Object.assign({}, est) }) };
+      forzar, test, TIPOS: ORDEN.slice(), BASE: BASE.slice(), EXTRA: EXTRA.slice(), KIT: KIT.slice(), NUEVAS: NUEVAS.slice(), nuevas, PLANTILLAS_F3: Object.keys(PLANTILLAS_F3), NOMBRE_PL, SVG, NOMBRE, tiene, disponibles, refrescar, CAPACIDAD, _escena: () => ({ grupo, fantasma, est: Object.assign({}, est) }) };
     G.construir = api;
     return api;
   };

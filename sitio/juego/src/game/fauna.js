@@ -187,7 +187,9 @@
     })();
     const trozoAla = 'float ax = abs(position.x); if (ax > 0.006) { float a = sin(uT * 16.0 + iFase) * 0.9; transformed.x = sign(position.x) * ax * cos(a); transformed.y = ax * sin(a); }';
     const matMar = material(['iFase'], trozoAla);
-    const marCerca = instanciada(geoMarCerca, matMar, 36, 'mariposas', ['iFase']), marLejos = instanciada(geoMarLejos, matMar, 36, 'mariposas-lejos', ['iFase']);
+    // F3: 3 nubes del mundo + hasta NUBE_OBRAS de los jardines de Construir (nube(x, z)), 12 mariposas cada una, en las mismas 2 mallas
+    const NUBE_OBRAS = 2, MAR_MAX = 36 + NUBE_OBRAS * 12;
+    const marCerca = instanciada(geoMarCerca, matMar, MAR_MAX, 'mariposas', ['iFase']), marLejos = instanciada(geoMarLejos, matMar, MAR_MAX, 'mariposas-lejos', ['iFase']);
     const MAR = { nubes: [] };
     function lugar(id) {
       const p = id && G.terreno.poi ? G.terreno.poi(id) : null;
@@ -212,6 +214,19 @@
           dir: hash(k, i, 9) * 6.28, hb: 1 + hash(k, i, 10) * 2, x: c.x, y: 0, z: c.z });
         return { id, x: c.x, z: c.z, aves, disp: 0, dispT: 0, pico: null };
       });
+    }
+    // F3 «Jardín de mariposas» (src/game/obras.js): una nube más junto a las flores del rincón. Llegan dispersas y se juntan en sus
+    // ochos; si Vittata se queda quieta al lado, una se le posa en el pico, como en las de siempre. Como mucho NUBE_OBRAS a la vez.
+    // Devuelve { x, z, activa(), quitar() } o null. quitar() la saca de la lista (no hay mallas propias que liberar).
+    function nube(x, z) {
+      if (typeof x !== 'number' || typeof z !== 'number' || !isFinite(x) || !isFinite(z)) return null;
+      if (MAR.nubes.filter(n => n.obra).length >= NUBE_OBRAS) return null;
+      const k = 20 + Math.floor(Math.abs(x * 7 + z * 13)) % 1000, aves = [];
+      for (let i = 0; i < 12; i++) aves.push({ fase: hash(k, i, 5) * 6.28, w: 0.35 + hash(k, i, 6) * 0.25, A: 1.0 + hash(k, i, 7) * 1.2, rot: hash(k, i, 8) * 6.28,
+        dir: hash(k, i, 9) * 6.28, hb: 0.7 + hash(k, i, 10) * 1.4, x, y: 0, z });
+      const nb = { id: 'obra', obra: true, x, z, aves, disp: 1, dispT: 0, pico: null };
+      MAR.nubes.push(nb);
+      return { x, z, activa: () => MAR.nubes.includes(nb), quitar: () => { const i = MAR.nubes.indexOf(nb); if (i >= 0) MAR.nubes.splice(i, 1); return i >= 0; } };
     }
     function picoMundo(out) {
       const p3 = G.actores && G.actores.player3D, a = p3 && p3.anchors && p3.anchors.pico;
@@ -648,6 +663,6 @@
       return { passed: results.filter(r => r.ok).length, total: results.length, results };
     }
 
-    return (G.fauna = { estado, observar, cerca, paso, test, F, LAG, MAR, COQ, BOA, get meshes() { return [lagMesh, marCerca, marLejos, coqMesh, BOA.mesh].filter(Boolean); } }); // G.fauna: lo lee foto_safari.js (F2-2)
+    return (G.fauna = { estado, observar, cerca, paso, test, nube, NUBE_OBRAS, F, LAG, MAR, COQ, BOA, get meshes() { return [lagMesh, marCerca, marLejos, coqMesh, BOA.mesh].filter(Boolean); } }); // G.fauna: lo lee foto_safari.js (F2-2)
   }
 })();

@@ -270,9 +270,27 @@ AVE.module('fx', function (G) {
   // BM22, feedback «juicy»: polvo al aterrizar en tierra y hojas al atravesar una copa. juicy cuenta cada disparo (para pruebas)
   const juicy = { polvo: 0, hojas: 0, salpicadura: 0, sacudida: 0, aleteo: 0, petalos: 0 };
   function polvo(x, y, z, fuerza) { juicy.polvo++; burst(x, y + 0.1, z, 'dust', Math.round(6 + 8 * Math.min(1, fuerza || 0.5))); }
-  function hojas(x, y, z) { juicy.hojas++; burst(x, y, z, 'leaves', 6); }
+  function hojas(x, y, z, n) { juicy.hojas++; burst(x, y, z, 'leaves', n || 6); } // n: F4-18 (semilla que falla, 4)
   // Pétalos del flamboyán al cruzar su copa volando (src/game/juice.js); quien llama ya respeta «Reducir movimiento»
   function petalos(x, y, z, n) { juicy.petalos++; burst(x, y, z, 'petals', n || 16); }
-  return { list: fx, juicy, polvo, hojas, petalos, ringFx, drops, burst, rewardChest, update, rain, guide, guideBeam, guideArrow, PALETTE, MAX_PARTICLES, get live() { return liveParticles; },
+  // F4-13 (docs/diseno/F4_GAME_FEEL.md): líneas de velocidad, una sola receta para la carrera (retos.js, «Efectos de velocidad»)
+  // y el vuelo a tope (juice.js, finas: solo en los bordes). lineasVel(padre, finas) crea la capa (un <div> que gira a saltos);
+  // quien la usa pone su opacidad con lineasOpacidad(el, v) (solo escribe si cambia; con «Reducir movimiento», quien llama pone 0).
+  // La regla del sistema (prefers-reduced-motion) para el giro va en el CSS común.
+  const LINEAS_CSS = '.fx-lineas{position:absolute;inset:-20%;opacity:0;pointer-events:none;background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,255,255,0) 0deg 5deg,rgba(255,255,255,.6) 5deg 5.5deg,rgba(255,255,255,0) 5.5deg 11deg);' +
+    '-webkit-mask:radial-gradient(circle at 50% 50%,transparent 30%,#000 72%);mask:radial-gradient(circle at 50% 50%,transparent 30%,#000 72%);animation:fx-lineas-girar .5s steps(4) infinite}' +
+    '.fx-lineas.finas{background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,255,255,0) 0deg 4.2deg,rgba(255,255,255,.9) 4.2deg 4.8deg,rgba(255,255,255,0) 4.8deg 9deg);' +
+    '-webkit-mask:radial-gradient(ellipse at 50% 50%,transparent 40%,#000 70%);mask:radial-gradient(ellipse at 50% 50%,transparent 40%,#000 70%);animation-duration:.42s}' +
+    '@keyframes fx-lineas-girar{to{transform:rotate(11deg)}}@media (prefers-reduced-motion: reduce){.fx-lineas{animation-duration:.01s;animation-iteration-count:1}}';
+  const lineas = { capas: 0 };
+  function lineasVel(padre, finas) {
+    if (!document.getElementById('fx-lineas-css')) { const st = document.createElement('style'); st.id = 'fx-lineas-css'; st.textContent = LINEAS_CSS; document.head.appendChild(st); }
+    const el = document.createElement('div'); el.className = finas ? 'fx-lineas finas' : 'fx-lineas'; el.setAttribute('aria-hidden', 'true');
+    if (padre) padre.appendChild(el); lineas.capas++;
+    return el;
+  }
+  // (revisión F4: se compara el número redondeado, guardado en el elemento; la cadena solo se crea cuando cambia, no en cada cuadro)
+  function lineasOpacidad(el, v) { if (!el) return; const q = v > 0.005 ? Math.round(v * 1000) / 1000 : 0; if (el._fxOpacidad === q) return; el._fxOpacidad = q; el.style.opacity = String(q); }
+  return { list: fx, juicy, polvo, hojas, petalos, lineas, lineasVel, lineasOpacidad, ringFx, drops, burst, rewardChest, update, rain, guide, guideBeam, guideArrow, PALETTE, MAX_PARTICLES, get live() { return liveParticles; },
     ATLAS, sprite, luzSube, recoger, saltar, descubrimiento };
 });

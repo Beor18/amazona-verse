@@ -24,6 +24,10 @@
      alto 6 por colonia, más una bandadita (medio 4–5, alto 6–8; bajo ninguna). CPU: unas cuentas por ave y cuadro.
    - Nada en las baterías (G.quiet) ni antes de crear el personaje; la prueba lo enciende con prueba(true).
    - Sonido: una llamada corta sintetizada ('cotorra', G.audio.define), más suave con la distancia; nunca en G.quiet.
+   - F3 «Obras que traen vida» (src/game/obras.js): invitar({ x, z, perchas, dur }) trae una pareja de UNA especie del hábitat del
+     lugar más cercano (especiesEn; nunca las 2 extintas), que llega volando, se posa en las perchas de la obra (comedero, caja nido),
+     come o mira un rato y se va. Son aves como las demás: se dibujan en las mismas 2 mallas y verlas de cerca las apunta en el Álbum.
+     Tope: 2 visitas a la vez a menos de 20 m (1 en calidad «bajo» y Modo Escuela), 3 en todo el mapa, y nada a más de 130 m de Vittata.
    Se carga desde bandada.js: window.AVResidentes(G, B) → G.residentes. Prueba: AV.vivoTest() (src/game/album.js). */
 window.AVResidentes = function (G, B) {
   'use strict';
@@ -153,8 +157,11 @@ window.AVResidentes = function (G, B) {
     if (col.aves.length > n) col.aves.length = n;
     else if (col.aves.length < n) { const sp = elegirEspecies(col, n).slice(col.aves.length); for (const s of sp) col.aves.push(nuevaAve(col, s, col.aves.length, true)); }
   }
-  function reiniciar() { for (const c of colonias()) { c.aves = []; c.P = null; } R.vis = null; R.visEn = R.t + rnd(VIS_CADA[0], VIS_CADA[1]); R.acum = {}; B.EXTRA.length = 0; }
-  function alCalidad() { const n = porColonia(); for (const c of colonias()) if (c.aves.length) { if (n === 0) c.aves = []; else ajustar(c, n); } if (n === 0) R.vis = null; }
+  function reiniciar() { R.inv.length = 0; for (const c of colonias()) { c.aves = []; c.P = null; } R.vis = null; R.visEn = R.t + rnd(VIS_CADA[0], VIS_CADA[1]); R.acum = {}; B.EXTRA.length = 0; }
+  function alCalidad() {
+    const n = porColonia(); for (const c of colonias()) if (c.aves.length) { if (n === 0) c.aves = []; else ajustar(c, n); } if (n === 0) R.vis = null;
+    for (let i = R.inv.length - 1; i >= 0; i--) { const V = R.inv[i]; if (V.fase !== 'seva' && cuentaInv(V.x, V.z, V) >= topeInv()) irse(V); } // F3: con menos calidad, menos visitas
+  }
   G.on('calidad', alCalidad);
   G.on('apply', () => reiniciar(), 91);
 
@@ -381,6 +388,68 @@ window.AVResidentes = function (G, B) {
     }
   }
 
+  // ---------- F3 · Visitas a una obra del rincón (src/game/obras.js; docs/diseno/F3_CONSTRUIR_2.md § 3) ----------
+  const EXTINTAS = ['martinicana', 'violacea'], INV_R = 20, INV_MAX = 3, INV_LEJOS = 48;
+  R.inv = []; R.invN = 0;
+  const topeInv = () => { const c = G.renderer && G.renderer.calidad; return c && (c.nivel === 'bajo' || c.escuela === true) ? 1 : 2; };
+  function cuentaInv(x, z, salvo) { let n = 0; for (const V of R.inv) if (V !== salvo && V.fase !== 'seva' && Math.hypot(V.x - x, V.z - z) < INV_R) n++; return n; }
+  const finito = v => typeof v === 'number' && isFinite(v);
+  function invitar(o) {
+    o = o || {};
+    const x = o.x, z = o.z;
+    if (!finito(x) || !finito(z) || !permitido()) return null;
+    if (Math.hypot(S.pos.x - x, S.pos.z - z) > ACTIVA) return null; // el rincón está lejos: nada
+    if (cuentaInv(x, z) >= topeInv() || R.inv.filter(V => V.fase !== 'seva').length >= INV_MAX) return null;
+    const pool = especiesEn(x, z).filter(id => !EXTINTAS.includes(id));
+    if (!pool.length) return null;
+    const sp = o.sp && pool.includes(o.sp) ? o.sp : elegirDe(pool, 1, null, false, null)[0];
+    const A = G.agua, P = [];
+    for (const p of Array.isArray(o.perchas) ? o.perchas : []) if (p && finito(p.x) && finito(p.z)) P.push({ x: p.x, z: p.z, y: finito(p.y) ? p.y : H(p.x, p.z), tipo: p.tipo || 'rama' });
+    for (let i = 0; i < 3; i++) { // un poco de suelo alrededor, para bajar a picotear
+      const a = i / 3 * 6.2832 + 0.5, x2 = x + Math.cos(a) * 1.6, z2 = z + Math.sin(a) * 1.6, h = H(x2, z2);
+      if (!(A && A.levelAt && A.levelAt(x2, z2) > h - 0.05)) P.push({ x: x2, z: z2, y: h, tipo: 'suelo' });
+    }
+    if (!P.length) return null;
+    const col = { id: 'obra', x, z, r: 3, hab: 'casa', pacto: false, fijas: [], aves: [], P, obra: true };
+    const V = { id: ++R.invN, x, z, sp, col, fase: 'llega', t: 0, dur: Math.max(8, Math.min(90, finito(o.dur) ? o.dur : 25)), obra: String(o.obra || ''), alLlegar: typeof o.alLlegar === 'function' ? o.alLlegar : null };
+    const ang = rnd(0, 6.2832);
+    for (let i = 0; i < 2; i++) {
+      const a = nuevaAve(col, sp, i, false), p = P[i % P.length], aa = ang + i * 0.25;
+      a.x = x + Math.cos(aa) * INV_LEJOS; a.z = z + Math.sin(aa) * INV_LEJOS; a.y = H(a.x, a.z) + 18 + i;
+      volarA(a, { x: p.x, y: p.y, z: p.z, tipo: p.tipo }, p.tipo === 'copa' || p.tipo === 'suelo' ? 'come' : 'mira');
+      col.aves.push(a);
+    }
+    R.inv.push(V);
+    return { id: V.id, sp, obra: V.obra, fase: () => V.fase, activa: () => R.inv.includes(V), irse: () => irse(V) };
+  }
+  function irse(V) {
+    if (!V || V.fase === 'seva' || !R.inv.includes(V)) return false;
+    V.fase = 'seva'; V.t = 0;
+    const ang = rnd(0, 6.2832);
+    V.col.aves.forEach((a, i) => {
+      if (a.compa) { a.compa.compa = null; a.compa = null; } a.espera = 0; a.pend = null;
+      const x = V.x + Math.cos(ang + i * 0.2) * 70, z = V.z + Math.sin(ang + i * 0.2) * 70;
+      volarA(a, { x, z, y: H(x, z) + 22, tipo: 'aire' });
+    });
+    return true;
+  }
+  function pasoInvitados(dt) {
+    for (let i = R.inv.length - 1; i >= 0; i--) {
+      const V = R.inv[i]; V.t += dt;
+      if (Math.hypot(S.pos.x - V.x, S.pos.z - V.z) > ACTIVA + 20) { R.inv.splice(i, 1); continue; }
+      let enVuelo = 0; for (const a of V.col.aves) if (a.est === 'vuela') enVuelo++;
+      if (V.fase === 'llega' && (enVuelo === 0 || V.t > 25)) {
+        V.fase = 'posada'; V.t = 0;
+        if (V.alLlegar) { try { V.alLlegar(V.sp); } catch (e) { console.warn('residentes invitar', e); } }
+      } else if (V.fase === 'posada' && V.t > V.dur) irse(V);
+      else if (V.fase === 'seva') { // se apaga al llegar lejos (o si tarda, a los 20 s)
+        let lejos = true; for (const a of V.col.aves) if (a.est === 'vuela' && a.prog < 1) lejos = false;
+        if (lejos || V.t > 20) { R.inv.splice(i, 1); continue; }
+      }
+    }
+  }
+  function invitados() { return R.inv.map(V => ({ id: V.id, sp: V.sp, x: V.x, z: V.z, fase: V.fase, obra: V.obra, aves: V.col.aves.length })); }
+
   // ---------- Paso: colonias cercanas, aves, álbum y dibujo ----------
   const lista = [];
   function paso(dt, busy) {
@@ -401,6 +470,8 @@ window.AVResidentes = function (G, B) {
     lista.length = 0;
     for (const c of cols) for (const a of c.aves) { pasoAve(a, dt); lista.push(a); }
     if (R.vis) for (const a of R.vis.aves) { pasoAve(a, dt); lista.push(a); }
+    if (!ok) R.inv.length = 0;
+    else if (R.inv.length) { pasoInvitados(dt); for (const V of R.inv) for (const a of V.col.aves) { if (V.fase !== 'seva' || a.est === 'vuela') pasoAve(a, dt); lista.push(a); } } // F3
     // Álbum: una especie a menos de VER_R durante VER_T segundos (residentes y bandada)
     R.verT += dt;
     if (R.verT >= 0.25 && G.album && (ok || R.prueba)) {
@@ -439,10 +510,10 @@ window.AVResidentes = function (G, B) {
     if (!a1) return null;
     out.x = a1.x; out.y = a1.y; out.z = a1.z; out.sp = a1.sp; out.oculto = false; return out;
   }
-  function aves() { const o = []; for (const c of colonias()) o.push(...c.aves); if (R.vis) o.push(...R.vis.aves); return o; }
+  function aves() { const o = []; for (const c of colonias()) o.push(...c.aves); if (R.vis) o.push(...R.vis.aves); for (const V of R.inv) o.push(...V.col.aves); return o; }
   const giroHacia = (a, p) => angDif(a.yaw + a.gir, Math.atan2(p.x - a.x, p.z - a.z));
   G.residentes = { N, VIS_N, HAB, colonias, aves, cerca, paso, reiniciar, forzar, giroHacia, alCalidad, reducido, saludo, visitar, especiesEn, poolDe, habitatDe, pacto,
-    poblar: (col, n) => activar(col, n), visita: () => R.vis,
+    poblar: (col, n) => activar(col, n), visita: () => R.vis, invitar, invitados, topeInv, EXTINTAS,
     prueba: on => { R.prueba = !!on; if (!on) { R.pactoPrueba = null; R.terminadosPrueba = null; } }, pactoPrueba: v => { R.pactoPrueba = v; }, terminadosPrueba: t => { R.terminadosPrueba = t || null; }, llegadas,
     olvidar: () => { R.acum = {}; R.verT = 0; }, estado: () => ({ aves: aves().length, colonias: colonias().filter(c => c.aves.length).map(c => c.id), visita: R.vis ? R.vis.de.id + '→' + R.vis.a.id + ' ' + R.vis.fase : null }) };
   return G.residentes;

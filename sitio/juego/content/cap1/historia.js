@@ -355,6 +355,7 @@
           // interact:luma_inicio → evento:LumaHelped (Vittata acepta ayuda) → interact:materiales → las tres tablas
           const inicio = C.luma.llamo() ? G.dialogo.cancelarLibre() : LLAMADA();
           C.luma.llamado();
+          if (C.luma.saludo) C.luma.saludo(); // F4-7: Iguaca saluda al tenerte al lado
           say([
             ...inicio,
             ...L('evento:LumaHelped', [{ who: 'Vittata', img: IMG.V, text: 'Entonces tendremos que construir algo nuevo.' }]),
@@ -700,16 +701,42 @@
         if (M.vx != null) M.vx = 0;
         if (M.vz != null) M.vz = 0;
       }, 8);
+      // F4-7 (docs/diseno/F4_GAME_FEEL.md): posada junto a Iguaca, al empezar la charla, Iguaca saluda, caen 6 hojas de la copa y
+      // suena posarse_rama. Iguaca es un retrato plano (no tiene esqueleto ni el clip Welcome, que es del modelo de las cotorras
+      // 3D): su saludo es el del clip hecho a mano en el sprite, tres saltitos con un vaivén de alas en 1,2 s. «Reducir
+      // movimiento» (sistema o menú): solo el sonido. Con G.quiet (baterías), nada (saludoStats.n sí cuenta).
+      // Revisión F4: Vittata se posa justo en la percha y tapaba a Iguaca; con Vittata al lado, Iguaca se aparta (solo el dibujo)
+      // SALUDO.aparte m hacia la derecha de la cámara, y las hojas caen sobre ella, a la vista (no 2,4 m más arriba, en el cielo).
+      const SALUDO = { seg: 1.2, hojas: 6, aparte: 0.85, hojasAlto: 1.7 }, saludoStats = { n: 0, sonidos: 0, hojas: 0, saltos: 0 };
+      let saludoT = -1, aparteK = 0;
+      // la x y la z del lado derecho de la cámara (unitario), sin crear vectores
+      const camLuma = () => (G.renderer && G.renderer.camera ? G.renderer.camera.position : percha);
+      const derX = () => { const c = camLuma(), dx = percha.x - c.x, dz = percha.z - c.z, n = Math.hypot(dx, dz); return n > 1e-3 ? -dz / n : 1; };
+      const derZ = () => { const c = camLuma(), dx = percha.x - c.x, dz = percha.z - c.z, n = Math.hypot(dx, dz); return n > 1e-3 ? dx / n : 0; };
+      function saludoIguaca() {
+        saludoStats.n++;
+        if (G.quiet) return false;
+        try { G.audio.play('posarse_rama'); saludoStats.sonidos++; } catch (e) { /* sin audio */ }
+        if (G.renderer.REDUCED || (G.audio && G.audio.reducido === true)) return true;
+        const k = juntoALuma() ? SALUDO.aparte : 0;
+        G.fx.hojas(percha.x + derX() * k, percha.y + SALUDO.hojasAlto, percha.z + derZ() * k, SALUDO.hojas); saludoStats.hojas++;
+        saludoT = 0; saludoStats.saltos++;
+        return true;
+      }
       G.on('render', (dt, t) => {
+        let brinco = 0, vaiven = 0;
+        if (saludoT >= 0) { saludoT += dt || 0; const u = saludoT / SALUDO.seg; if (u >= 1) saludoT = -1; else { brinco = Math.abs(Math.sin(u * Math.PI * 3)) * 0.3 * (1 - u * 0.4); vaiven = Math.sin(u * Math.PI * 8) * 0.2; } }
         const e = lumaPos(0), x = lumaIt.x, z = lumaIt.z;
         const gy = H(LUMA_SUELO.x, LUMA_SUELO.z), y = percha.y + (gy - percha.y) * e;
         const volando = lumaK > 0 && lumaK < 1;
         const arco = volando ? Math.sin(e * Math.PI) * 2.4 : 0;
         const lado = volando ? Math.sin(e * Math.PI) * 1.6 : 0;
         const aleteo = volando ? Math.sin(t * 18) * 0.22 : 0; // 18: ANIM.flap del rig, sin tocar el rig
-        if (lumaN.sp.material) lumaN.sp.material.rotation = aleteo;
-        if (lumaK >= 1) { lumaN.sp.position.x = x; lumaN.sp.position.z = z; lumaN.sh.position.set(x, gy + 0.03, z); return; } // la altura la pone actores (flota)
-        lumaN.sp.position.set(x + lado, y + 1.0 + arco + (volando ? 0 : Math.sin(t * 2) * 0.05), z); lumaN.sh.position.set(x, y + 0.03, z);
+        if (lumaN.sp.material) lumaN.sp.material.rotation = aleteo + vaiven;
+        if (lumaK >= 1) { aparteK = 0; lumaN.sp.position.x = x; lumaN.sp.position.z = z; lumaN.sh.position.set(x, gy + 0.03, z); return; } // la altura la pone actores (flota)
+        aparteK += ((lumaK === 0 && juntoALuma() ? 1 : 0) - aparteK) * Math.min(1, (dt || 0) * 6); // se aparta en ~0,3 s
+        const ax = aparteK > 0.001 ? derX() * SALUDO.aparte * aparteK : 0, az = aparteK > 0.001 ? derZ() * SALUDO.aparte * aparteK : 0;
+        lumaN.sp.position.set(x + lado + ax, y + 1.0 + arco + brinco + (volando ? 0 : Math.sin(t * 2) * 0.05), z + az); lumaN.sh.position.set(x + ax, y + 0.03, z + az);
       }, 12);
       // La llamada: al acercarse a la copa (18 m; desde el taller no se oye) con Iguaca arriba y sin otra cosa en pantalla, en bocadillos
       G.on('update', (dt, busy) => {
@@ -718,7 +745,7 @@
       }, 46);
       G.on('apply', () => { llamo = false; lumaK = lumaArriba() ? 0 : 1; lumaPos(0); }, 36);
       const lumaAPI = {
-        percha, arriba: lumaArriba, junto: juntoALuma, llamo: () => llamo, llamado: () => { llamo = true; }, donde: () => percha.nombre,
+        percha, arriba: lumaArriba, junto: juntoALuma, saludo: saludoIguaca, saludoStats, SALUDO, get saludando() { return saludoT >= 0; }, get aparte() { return aparteK; }, get dibujo() { return lumaN.sp.position; }, llamo: () => llamo, llamado: () => { llamo = true; }, donde: () => percha.nombre,
         guia: () => (lumaArriba() ? { x: percha.x, z: percha.z, y: percha.y + 0.6 } : { x: lumaIt.x, z: lumaIt.z }),
       };
 
