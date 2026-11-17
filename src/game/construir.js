@@ -949,12 +949,20 @@
         '#cl-hud .cl-herr{flex-wrap:wrap;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}' +
         '#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
         'body:has(#emotes:not([hidden])) #cl-hud{top:calc(env(safe-area-inset-top,0px) + 72px);max-width:calc(100vw - 24px)}' +
-        // PULIR 2 (p23): construyendo en el teléfono, el aviso va arriba del todo (sobre el objetivo, un momento) y no entre la barra y Vittata
-        '@media (max-width:560px){body:has(#cl-hud:not([hidden])) #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;max-height:200px}}' +
+        // PULIR 2 (p23): construyendo en el teléfono, el aviso no va entre la barra y Vittata.
+        // PULIR 6: tampoco encima del objetivo ni de los contadores (madera, piedra… hacen falta para construir): va en el hueco entre
+        // ellos y la barra, a lo ancho y compacto (--cl-av-top y --cl-av-max los mide avisoSitio() con la pantalla real)
+        '@media (max-width:560px){body:has(#cl-hud:not([hidden])) #toast{top:var(--cl-av-top,calc(env(safe-area-inset-top,0px) + 136px));bottom:auto;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));margin-inline:0;width:auto;max-width:none;min-height:0;max-height:var(--cl-av-max,84px);padding:6px 12px;font-size:calc(13px * var(--fs-k,1));line-height:1.3;overflow:hidden}' +
+        'body:has(#cl-hud:not([hidden])) #toast::before{display:none}body:has(#cl-hud:not([hidden])) #toast b{font-size:calc(14px * var(--fs-k,1));line-height:1.2}}' +
         // PULIR 2 (p23): la última pieza quedaba cortada en el borde sin señal de que la fila se desliza: el borde derecho se desvanece
         '#cl-hud .cl-piezas{padding-right:28px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 30px),rgba(0,0,0,.15));mask-image:linear-gradient(90deg,#000 calc(100% - 30px),rgba(0,0,0,.15))}}' +
         // C10: teléfono en horizontal (844×390): la barra va al centro, entre el joystick y los botones de acción, bajo el HUD de arriba
-        '@media (orientation:landscape) and (max-height:500px){#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}}' +
+        '@media (orientation:landscape) and (max-height:500px){#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
+        // PULIR 6: en horizontal el aviso tapaba los contadores (arriba a la derecha; no hay hueco entre el objetivo, los botones y la
+        // barra). Construyendo va abajo, entre el palo y los botones de acción, bajo la barra, en el sitio de la línea «Acción: …»
+        // (que se esconde mientras el aviso está a la vista: el botón «Colocar» dice lo mismo)
+        'body:has(#cl-hud:not([hidden])) #toast{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);left:max(160px,calc(env(safe-area-inset-left,0px) + 160px));right:max(210px,calc(env(safe-area-inset-right,0px) + 210px));margin-inline:auto;width:fit-content;max-width:none;max-height:var(--cl-av-max,64px);padding:6px 12px;font-size:calc(13px * var(--fs-k,1));line-height:1.3;overflow:hidden}' +
+        'body:has(#cl-hud:not([hidden])) #toast::before{display:none}body:has(#cl-hud:not([hidden])):has(#toast:not([hidden])) #prompt{visibility:hidden}}' +
         '@media (prefers-reduced-motion:reduce){#cl-hud,#cl-hud *{animation:none;transition:none}}';
       document.head.appendChild(estilo);
     }
@@ -1002,8 +1010,25 @@
           if (b.blur) b.blur(); // que Espacio y Enter vuelvan al juego
         });
         document.body.appendChild(hudEl);
+        if (window.ResizeObserver) { const ro = new ResizeObserver(avisoSitio); ro.observe(hudEl); if (document.getElementById('top')) ro.observe(document.getElementById('top')); }
+        const tt = document.getElementById('toast'); if (tt) new MutationObserver(avisoSitio).observe(tt, { attributes: true, attributeFilter: ['hidden'] });
+        addEventListener('resize', avisoSitio);
       }
       hudEl.hidden = false;
+      avisoSitio();
+    }
+    // PULIR 6: dónde cabe el aviso mientras se construye en el teléfono (ver css()): en vertical, del borde de abajo del objetivo y los
+    // contadores (#top) hasta la barra; en horizontal, del borde de abajo de la barra hasta el pie de la pantalla
+    function avisoSitio() {
+      if (!hudEl || hudEl.hidden) return;
+      const raiz = document.documentElement, top = document.getElementById('top'), h = hudEl.getBoundingClientRect();
+      if (!h.height) return;
+      let tb = 0; // el borde de abajo de lo que se ve en #top (el objetivo, los contadores y lo que se les añada)
+      if (top && top.getClientRects().length) for (const e of [top, ...top.children]) { const r = e.getBoundingClientRect(); if (r.height && getComputedStyle(e).visibility !== 'hidden') tb = Math.max(tb, Math.ceil(r.bottom)); }
+      const arriba = Math.max(tb + 6, 0), hueco = innerWidth <= 560 ? Math.floor(h.top) - 6 - arriba : innerHeight - Math.ceil(h.bottom) - 14;
+      const a = arriba + 'px', m = Math.max(40, hueco) + 'px';
+      if (raiz.style.getPropertyValue('--cl-av-top') !== a) raiz.style.setProperty('--cl-av-top', a);
+      if (raiz.style.getPropertyValue('--cl-av-max') !== m) raiz.style.setProperty('--cl-av-max', m);
     }
     // C10 · El botón «Plantillas» cambia la fila de piezas por la de plantillas (en el mismo sitio: no tapa más pantalla) y al revés
     function verPlantillas(on) {
@@ -1149,6 +1174,12 @@
         }
         check('Hay un sitio libre en tierra para probar', ok, `${S.pos.x.toFixed(1)}, ${S.pos.z.toFixed(1)}`);
         check('empezar() entra y toma la acción («Colocar»)', empezar() && activo && G.interaccion.modo === modo && modo.verbo === 'Colocar');
+        { // PULIR 6: el aviso tiene su hueco medido (en el teléfono, entre el objetivo/contadores y la barra, o bajo la barra en horizontal)
+          await espera(50); avisoSitio();
+          const rz = document.documentElement.style, tA = parseFloat(rz.getPropertyValue('--cl-av-top')), mA = parseFloat(rz.getPropertyValue('--cl-av-max'));
+          const tb = $('top') && $('top').getClientRects().length ? $('top').getBoundingClientRect().bottom : 0, txt = (estilo && estilo.textContent) || '';
+          check('PULIR 6 · Construyendo, el aviso tiene su sitio bajo el objetivo y los contadores (y no arriba del todo, tapándolos)', tA >= tb && mA >= 40 && txt.indexOf('top:var(--cl-av-top') >= 0 && txt.indexOf('top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;max-height:200px') < 0, JSON.stringify({ tA, mA, tb: Math.round(tb) }));
+        }
         check('Al abrir, el foco entra en la primera pieza y no queda en body', !!hudEl && document.activeElement === hudEl.querySelector('button[data-cl-tipo]'));
         await espera(60);
         check('La barra de piezas se ve con las 7 de siempre (y las compradas) y la cuenta', !!hudEl && !hudEl.hidden && BASE.every(t => hudEl.querySelector('[data-cl-tipo="' + t + '"]')) && hudEl.querySelectorAll('[data-cl-tipo]').length === disponibles().length && /Piezas: 0\/\d+/.test(hudEl.querySelector('.cl-cuenta').textContent), hudEl && hudEl.querySelector('.cl-cuenta').textContent);
