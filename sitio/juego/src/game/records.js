@@ -48,7 +48,7 @@
     // (src/game/v18/progreso.js): aquí solo se lee
     const CLAVE = { retos: ALM + '.retos', criadero: ALM + '.' + ((window.AV_HUEVOS && window.AV_HUEVOS.sufijo) || 'criadero'), casa: ALM + '.records',
       trucos: ALM + '.trucos', escondite: ALM + '.escondite', ciudad: ALM + '.ciudadVisitas', marana: ALM + '.marana', vecinos: ALM + '.vecinos', humor: ALM + '.humor',
-      v18: ALM + '.v18', canto: ALM + '.canto', semillas: ALM + '.semillas', piloto: ALM + '.piloto', compas: ALM + '.compas', sigueme: ALM + '.sigueme', foto: ALM + '.foto', sembradora: ALM + '.sembradora' }; // sembradora: récord de «Sembradora del cielo» (src/game/sembradora.js, F2-4) // foto: récord de «Foto relámpago» (src/game/foto_safari.js, F2-2) // piloto: lecciones e insignia de la Escuela de vuelo (src/game/v18/piloto.js) // canto: récord de «Sigue el canto» (src/game/canto.js, T43)
+      v18: ALM + '.v18', canto: ALM + '.canto', semillas: ALM + '.semillas', piloto: ALM + '.piloto', compas: ALM + '.compas', sigueme: ALM + '.sigueme', foto: ALM + '.foto', sembradora: ALM + '.sembradora', planeo: ALM + '.planeo' }; // planeo: récord de «Planeo entre nubes» (src/game/planeo.js, D14) // sembradora: récord de «Sembradora del cielo» (src/game/sembradora.js, F2-4) // foto: récord de «Foto relámpago» (src/game/foto_safari.js, F2-2) // piloto: lecciones e insignia de la Escuela de vuelo (src/game/v18/piloto.js) // canto: récord de «Sigue el canto» (src/game/canto.js, T43)
     const MAX_CASA = 24; // cotorras distintas en el libro
     const PARTICIPANTES_MAX = 9;
     const esObj = x => !!x && typeof x === 'object' && !Array.isArray(x);
@@ -89,6 +89,7 @@
       sigueme: ['¡Sígueme, bandada!', 'Follow Me, Flock!'], siguemeRec: ['Récord: {} puntos · fila de {f}', 'Best: {} points · line of {f}'], // F2-1 (src/game/sigueme.js)
       foto: ['Foto relámpago', 'Snap Safari'], fotoRec: ['Récord: {} estrellas', 'Best: {} stars'], fotoPerf: [' · rollo perfecto', ' · perfect roll'], // F2-2 (src/game/foto_safari.js)
       sembradora: ['Sembradora del cielo', 'Sky Planter'], sembradoraRec: ['Récord: {} puntos · {a} árboles', 'Best: {} points · {a} trees'], // F2-4 (src/game/sembradora.js)
+      planeo: ['Planeo entre nubes', 'Cloud Glide'], planeoRec: ['Récord: {} m', 'Best: {} m'], // D14 (src/game/planeo.js)
       p_rafaga: ['Ráfaga de viento', 'Wind gust'], p_ojo: ['Ojo de cotorra', 'Parrot eye'], p_planeo: ['Planeo largo', 'Long glide'], ganado: ['¡Ganado!', 'Earned!'],
       como_rafaga: ['Haz un «¡Remonte!»: pica y nivela volando', 'Do a «Swoop!»: dive and level out while flying'], como_ojo: ['Encuentra 3 cosas del Diario', 'Find 3 Journal entries'],
       como_planeo: ['Haz 2 aterrizajes perfectos', 'Make 2 perfect landings'],
@@ -271,6 +272,7 @@
       const co = leerJSON(CLAVE.compas); // F2-3: récord de «Alas al compás» (metros y racha más larga)
       const sg = leerJSON(CLAVE.sigueme); // F2-1: récord de «¡Sígueme, bandada!» (puntos y fila más larga)
       const sd = leerJSON(CLAVE.sembradora); // F2-4: récord de «Sembradora del cielo» (puntos y árboles)
+      const pl = leerJSON(CLAVE.planeo); // D14: récord de «Planeo entre nubes» (metros)
       const fo = leerJSON(CLAVE.foto); // F2-2: récord de «Foto relámpago» (estrellas y rollos perfectos)
       return { canto: ca && Number.isInteger(ca.mejor) && ca.mejor > 0 ? Math.min(ca.mejor, 999) : 0,
         semillas: se && Number.isInteger(se.mejor) && se.mejor > 0 ? Math.min(se.mejor, 9999) : 0,
@@ -278,6 +280,7 @@
         sigueme: sg && Number.isInteger(sg.mejor) && sg.mejor > 0 ? Math.min(sg.mejor, 99999) : 0, siguemeFila: sg ? ent(sg.fila, 999) : 0,
         foto: fo && Number.isInteger(fo.mejor) && fo.mejor > 0 ? Math.min(fo.mejor, 99999) : 0, fotoPerfecto: fo ? ent(fo.perfecto, 9999) : 0,
         sembradora: sd && Number.isInteger(sd.mejor) && sd.mejor > 0 ? Math.min(sd.mejor, 99999) : 0, sembradoraArb: sd ? ent(sd.arboles, 9999) : 0,
+        planeo: pl && Number.isInteger(pl.mejor) && pl.mejor > 0 ? Math.min(pl.mejor, 99999) : 0,
         poderes: ['rafaga', 'ojo', 'planeo'].map(id => ({ id, ganado: Number(mu['poder_' + id]) > 0 })) };
     }
     function descubrimientosDe() {
@@ -670,6 +673,7 @@
         ins((u.sigueme || 0) / 120, u.sigueme ? String(u.sigueme) : '·', tx('sigueme'), u.sigueme ? tx('siguemeRec').replace('{}', u.sigueme).replace('{f}', u.siguemeFila || 0) : tx('sinCanto')) +
         ins((u.foto || 0) / 24, u.foto ? String(u.foto) : '·', tx('foto'), u.foto ? tx('fotoRec').replace('{}', u.foto) + (u.fotoPerfecto ? tx('fotoPerf') : '') : tx('sinCanto')) +
         ins((u.sembradora || 0) / 60, u.sembradora ? String(u.sembradora) : '·', tx('sembradora'), u.sembradora ? tx('sembradoraRec').replace('{}', u.sembradora).replace('{a}', u.sembradoraArb || 0) : tx('sinCanto')) +
+        ins((u.planeo || 0) / 600, u.planeo ? String(u.planeo) : '·', tx('planeo'), u.planeo ? tx('planeoRec').replace('{}', u.planeo) : tx('sinCanto')) +
         u.poderes.map(p => ins(p.ganado ? 1 : 0, p.ganado ? '✓' : '·', tx('p_' + p.id), p.ganado ? tx('ganado') : tx('como_' + p.id))).join('') + '</ul></section>';
     }
     function htmlDescubrimientos(d) {
@@ -1174,7 +1178,7 @@
       const antes = claves.map(raw), sAntes = comparable();
       const orig = Object.assign({}, CLAVE), idiomaAntes = G.aula && G.aula.aj ? G.aula.aj.idioma : null;
       const pruebas = { retos: orig.retos + '.prueba', criadero: orig.criadero + '.prueba', casa: orig.casa + '.prueba',
-        trucos: orig.trucos + '.prueba', escondite: orig.escondite + '.prueba', canto: orig.canto + '.prueba', semillas: orig.semillas + '.prueba', ciudad: orig.ciudad + '.prueba', marana: orig.marana + '.prueba', vecinos: orig.vecinos + '.prueba', humor: orig.humor + '.prueba', piloto: orig.piloto + '.prueba', compas: orig.compas + '.prueba', sigueme: orig.sigueme + '.prueba', foto: orig.foto + '.prueba', sembradora: orig.sembradora + '.prueba', v18: orig.v18 + '.prueba' };
+        trucos: orig.trucos + '.prueba', escondite: orig.escondite + '.prueba', canto: orig.canto + '.prueba', semillas: orig.semillas + '.prueba', ciudad: orig.ciudad + '.prueba', marana: orig.marana + '.prueba', vecinos: orig.vecinos + '.prueba', humor: orig.humor + '.prueba', piloto: orig.piloto + '.prueba', compas: orig.compas + '.prueba', sigueme: orig.sigueme + '.prueba', foto: orig.foto + '.prueba', sembradora: orig.sembradora + '.prueba', planeo: orig.planeo + '.prueba', v18: orig.v18 + '.prueba' };
       const quitar = () => { for (const k of Object.values(pruebas)) { try { localStorage.removeItem(k); } catch (e) { /* sin almacén */ } delete mem[k]; } };
       const cerrarTodo = () => { if (puertaAbierta) cerrarPuerta(false); if (abierto) cerrar(); };
       const nuevoS = (nombre, extra) => Object.assign({ profile: { created: true, name: nombre, look: { species: 'oratrix' } }, complete: false, step: 2, clock: 600, events: [], field: [] }, extra);
@@ -1248,16 +1252,18 @@
           localStorage.setItem(pruebas.sigueme, JSON.stringify({ v: 1, mejor: 58, fila: 9, jugadas: 2 }));
           localStorage.setItem(pruebas.foto, JSON.stringify({ v: 1, mejor: 17, perfecto: 1, jugadas: 4 }));
           localStorage.setItem(pruebas.sembradora, JSON.stringify({ v: 1, mejor: 41, arboles: 15, racha: 6, jugadas: 2 }));
+          localStorage.setItem(pruebas.planeo, JSON.stringify({ v: 1, mejor: 437, nubes: 6, jugadas: 3 }));
           localStorage.setItem(pruebas.v18, JSON.stringify({ v: 2, especies: {}, inv: {}, otorgados: {}, mundo: { poder_ojo: 1 }, sel: null, evo: {} }));
           pintar();
           const nu = root.querySelector('#rec-nuevo'), n1 = nu ? nu.textContent.replace(/\s+/g, ' ') : '';
-          check('T47 · «Juegos y poderes nuevos»: récord de Sigue el canto, el poder ganado y cómo se ganan los otros', /Aún sin jugar/.test(n0) && /Haz un «¡Remonte!»/.test(n0) && /Récord: 7 cantos/.test(n1) && /Ojo de cotorra\s*¡Ganado!/.test(n1) && /Haz 2 aterrizajes perfectos/.test(n1) && nu.querySelectorAll('.rec-ins').length === 9 && !/compra|tienda/i.test(n1), n1.slice(0, 200));
+          check('T47 · «Juegos y poderes nuevos»: récord de Sigue el canto, el poder ganado y cómo se ganan los otros', /Aún sin jugar/.test(n0) && /Haz un «¡Remonte!»/.test(n0) && /Récord: 7 cantos/.test(n1) && /Ojo de cotorra\s*¡Ganado!/.test(n1) && /Haz 2 aterrizajes perfectos/.test(n1) && nu.querySelectorAll('.rec-ins').length === 10 && !/compra|tienda/i.test(n1), n1.slice(0, 200));
           check('D13 · «Semillas al vuelo» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 23 semillas»', /Semillas al vuelo\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Semillas al vuelo\s*Récord: 23 semillas/.test(n1), n1.slice(0, 240));
           check('F2-3 · «Alas al compás» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 142 m · racha de 19»', /Alas al compás\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Alas al compás\s*Récord: 142 m · racha de 19/.test(n1), n1.slice(0, 300));
           check('F2-1 · «¡Sígueme, bandada!» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 58 puntos · fila de 9»', /¡Sígueme, bandada!\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /¡Sígueme, bandada!\s*Récord: 58 puntos · fila de 9/.test(n1), n1.slice(0, 360));
           check('F2-2 · «Foto relámpago» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 17 estrellas · rollo perfecto»', /Foto relámpago\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Foto relámpago\s*Récord: 17 estrellas · rollo perfecto/.test(n1), n1.slice(0, 420));
           check('F2-4 · «Sembradora del cielo» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 41 puntos · 15 árboles»', /Sembradora del cielo\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Sembradora del cielo\s*Récord: 41 puntos · 15 árboles/.test(n1), n1.slice(0, 480));
-          localStorage.removeItem(pruebas.sembradora); localStorage.removeItem(pruebas.foto); localStorage.removeItem(pruebas.sigueme); localStorage.removeItem(pruebas.compas); localStorage.removeItem(pruebas.semillas); localStorage.removeItem(pruebas.canto); localStorage.removeItem(pruebas.v18); pintar();
+          check('D14 · «Planeo entre nubes» en Mis récords: sin jugar, en «Más juegos»; con récord, «Récord: 437 m»', /Planeo entre nubes\s*Aún sin jugar/.test(n0.replace(/\s+/g, ' ')) && /Planeo entre nubes\s*Récord: 437 m/.test(n1), n1.slice(0, 520));
+          localStorage.removeItem(pruebas.sembradora); localStorage.removeItem(pruebas.planeo); localStorage.removeItem(pruebas.foto); localStorage.removeItem(pruebas.sigueme); localStorage.removeItem(pruebas.compas); localStorage.removeItem(pruebas.semillas); localStorage.removeItem(pruebas.canto); localStorage.removeItem(pruebas.v18); pintar();
         }
         if (G.aula && G.aula.aj) {
           G.aula.aj.idioma = 'en'; pintar();
