@@ -104,7 +104,7 @@ window.AVEscondite = function (G) {
   function mostrarFin(todos, nuevo) {
     fin = { todos, t, nuevo, n: sitios.filter(s0 => s0.hallado).length };
     finSon(todos ? 'victoria' : 'casi'); if (nuevo) logroId = finSon('record', () => !!fin);
-    pintarHud();
+    pintarHud(); if (hudEl) hudEl.hidden = true; // un solo «Salir»: el del panel (como ¡Sígueme! y Foto relámpago)
     setTimeout(() => { try { if (fin && finEl && !finEl.hidden) finEl.focus({ preventScroll: true }); } catch (e) { /* */ } }, 0);
   }
   function quitarFin() { fin = null; if (logroId) { clearTimeout(logroId); logroId = 0; } if (finEl) { finEl.hidden = true; finEl.querySelectorAll('[data-k]').forEach(e => { e.textContent = ''; }); } }
