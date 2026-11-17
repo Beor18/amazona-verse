@@ -629,7 +629,7 @@ window.AVFotoSafari = function (G) {
       if (K) {
         E.recarga = 0; quieta(); ponerDelante(4); abrirCam();
         const ang = Math.atan2(-(sitio.x - S.pos.x), -(sitio.z - S.pos.z)), dif = () => Math.abs(((ang - K.yaw) % TAU + TAU * 1.5) % TAU - Math.PI);
-        sitio.y = S.pos.y + 2.5; // en una rama, 2,5 m más alto que Vittata (medido desde ella, no desde la línea de la cámara: si otra prueba deja la cámara mirando abajo, el animal quedaba por debajo)
+        sitio.y = o1.y = S.pos.y + 2.5; // asistir() mira o1 (sin paso() no se copia de sitio: se quedaba en la línea de la cámara y la inclinación pedida era 0) · en una rama, 2,5 m más alto que Vittata (medido desde ella, no desde la línea de la cámara: si otra prueba deja la cámara mirando abajo, el animal quedaba por debajo)
         K.yaw = ang + 0.7; const d0 = dif(), i0 = K.inclina; for (let i = 0; i < 30; i++) asistir(1 / 30);
         const giro = dif() < d0 * 0.2, sube = K.inclina > i0 + 0.05;
         K.yaw = ang + 2.6; const y0 = K.yaw; asistir(0.1); const espalda = K.yaw === y0;
