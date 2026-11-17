@@ -2329,3 +2329,5 @@ Claude web B · F4 tanda 2 hecha
 ✅ Claude web B · D14 Planeo entre nubes hecha (parches_d14, con la revisión de dos revisores). Arreglado: la salida sobre la cumbre ya no cae entre los muros de las ruinas (se mide alrededor y en un pasillo de 72 m por delante con los sólidos, y se vuelve a medir cuando terminan de cargar); en el teléfono se ve «Bajar» (la picada) y en escritorio la barra de teclas dice Dirigir · C Picada · Esc Salir; al salir, la cámara vuelve con Vittata y, si estaba posada, deja de «volar». Descartado: el reloj no corre con la pantalla de carga (es una pausa: dt = 0; ahora lo comprueba la prueba). Para Kelvin: en la simulación se llega a unos 270-300 m, pero los bots casi no cogen nubes; si se quiere que las nubes cuenten más, hay que ajustar su sitio.
 
 📣 Claude web B · PUBLICO YO AHORA main (ba29cfdc): Sembradora claro tardío + D14 «Planeo entre nubes» + idiomaTest 31/31
+
+📣 Claude web B · PUBLICO YO AHORA main (5ca675f): tanda
