@@ -198,10 +198,25 @@ AVE.module('actores', function (G) {
     const ok = playEmote(b.dataset.emote);
     if (conFoto) { if (ok) G.emit('foto', { gesto: b.dataset.emote }); else G.ui.toast('Para la foto, posa en el suelo y quieta.', 2600); }
   });
-  $('b-emotes').addEventListener('click', () => {
+  // F22: el botón dice si el menú está abierto (aria-expanded/aria-controls), el menú tiene nombre, al abrirlo con el teclado el foco
+  // va al primer gesto y Esc lo cierra (el foco vuelve a «Gestos»). Lo que cierre el menú desde otro sitio también pone aria-expanded.
+  const bEmotes = $('b-emotes');
+  emoteMenu.setAttribute('role', 'group'); emoteMenu.setAttribute('aria-label', 'Gestos');
+  bEmotes.setAttribute('aria-controls', 'emotes'); bEmotes.setAttribute('aria-expanded', String(!emoteMenu.hidden));
+  new MutationObserver(() => bEmotes.setAttribute('aria-expanded', String(!emoteMenu.hidden))).observe(emoteMenu, { attributes: true, attributeFilter: ['hidden'] });
+  bEmotes.addEventListener('click', e => {
     emoteMenu.hidden = !emoteMenu.hidden; if (emoteMenu.hidden) modoFoto(false);
     else if (G.audio && G.audio.precargar) G.audio.precargar(['aleteo', 'frenada']); // E17: los sfx de los gestos, al abrir el menú
+    bEmotes.setAttribute('aria-expanded', String(!emoteMenu.hidden));
+    if (!emoteMenu.hidden && e.detail === 0) { const b0 = emoteMenu.querySelector('button'); if (b0) try { b0.focus({ preventScroll: true }); } catch (er) { /* */ } } // con el teclado (Enter/Espacio)
   });
+  addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || e.repeat || emoteMenu.hidden || (G.ui && G.ui.cardOpen) || !emoteMenu.getClientRects().length || getComputedStyle(emoteMenu).visibility === 'hidden') return; // solo si se ve y no hay nada encima
+    e.preventDefault(); e.stopImmediatePropagation(); // solo cierra el menú: no abre también la Pausa
+    const dentro = emoteMenu.contains(document.activeElement);
+    emoteMenu.hidden = true; modoFoto(false);
+    if (dentro || document.activeElement === document.body) try { bEmotes.focus({ preventScroll: true }); } catch (er) { /* */ }
+  }, true);
 
   // ---------- Pico sincronizado con el diálogo ----------
   // Fuente de la boca, por orden: la voz que lee la línea (speechSynthesis), la máquina de escribir de src/ui/ui.js (#d-type) o nada.

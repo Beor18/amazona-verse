@@ -64,6 +64,8 @@ window.AVCarga = function (G) {
     el = doc.createElement('div');
     el.id = 'carga'; el.hidden = true; el.tabIndex = -1; el.setAttribute('data-no-tr', '');
     el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-busy', 'true');
+    // F22: mientras se ve, Tab no lleva el foco a lo que queda debajo («Controles», «Saltar intro»…): se queda en la pantalla de carga
+    addEventListener('keydown', e => { if (e.key !== 'Tab' || !estado.activa || el.hidden) return; e.preventDefault(); e.stopImmediatePropagation(); try { el.focus({ preventScroll: true }); } catch (er) { /* */ } }, true);
     const nubes = [[10, 160, 70, -20], [22, 280, 110, -70], [36, 210, 90, -40]]
       .map(([y, w, t, d]) => `<span class="carga-nube" style="--y:${y}%;--w:${w}px;--t:${t}s;--d:${d}s"></span>`).join('');
     const plumas = [[9, 15, -3], [27, 19, -11, 16, 'var(--gold)'], [48, 17, -7, 18], [68, 21, -15, 26, 'var(--crest)'], [88, 16, -1, 18, 'var(--gold)']]
@@ -294,7 +296,10 @@ window.AVCarga = function (G) {
       check('Al terminar se devuelve el control: sin pausa de carga, el mundo se dibuja y la pantalla se va',
         !(G.pausa && G.pausa.motivos.has('carga')) && !ocultar && !estado.activa && el.hidden, 'pausa ' + (G.pausa ? [...G.pausa.motivos].join(',') : '-') + ', oculto ' + (G.ui.worldHidden && G.ui.worldHidden()));
       // 3. El tope: con algo que no termina nunca, entra igual a su hora
-      const c3 = await correr({ forzar: true, rapido: true, tope: 600, simularPendiente: true });
+      const p3 = correr({ forzar: true, rapido: true, tope: 600, simularPendiente: true });
+      { const t = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }); dispatchEvent(t);
+        check('F22 · Con la pantalla de carga a la vista, Tab no se va a lo de debajo (el foco se queda en ella)', t.defaultPrevented && document.activeElement === el, document.activeElement && (document.activeElement.id || document.activeElement.tagName)); }
+      const c3 = await p3;
       const m3 = c3.muestras;
       check('Respeta el tope: entra igual al llegar (aquí 600 ms en vez de 20 s)', c3.motivo === 'tope' && c3.ms >= 590 && c3.ms < 1000 + holgura, c3.ms + ' ms, ' + c3.motivo);
       check('En el tope la barra tampoco retrocede y se llena al entrar', sube(m3) && m3[m3.length - 2] <= 0.97 && m3[m3.length - 1] === 1, m3.slice(-3).join(' → '));

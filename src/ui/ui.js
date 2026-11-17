@@ -58,7 +58,7 @@
   if (pause && pause.showPopover) {
     const isOpen = el => { try { return el.matches(':popover-open'); } catch (e) { return false; } };
     const somethingOpen = () => ['dialog', 'card', 'creator', 'comic', 'end', 'mapa-grande'].some(id => $(id) && !$(id).hidden) ||
-      ($('title') && $('title').open) || !!$('t-cancel');
+      ($('title') && $('title').open) || !!$('t-cancel') || !!$('c1-saltar'); // F22: Esc en la intro solo la salta (no abre además la Pausa)
     let atDown = null; // estado ANTES de que el juego procese la tecla (Esc también cierra tarjetas)
     addEventListener('keydown', e => {
       if (e.repeat || (e.target.closest && e.target.closest('input, select, textarea'))) return;
