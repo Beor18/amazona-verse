@@ -44,6 +44,8 @@
     const H = (x, z) => G.terreno.height(x, z);
     const nivelAgua = (x, z) => { const w = G.agua.levelAt(x, z); return w > -1e8 ? w : -Infinity; };
     const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+    // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+    const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'river', sigue); F.sonar(G, 'river', tipo); return 0; };
 
     // ---------- Declaración del minijuego (docs/equipo/MINIJUEGOS.md §4) ----------
     const DECL = {
@@ -384,7 +386,7 @@
         J.rv = 1.6; st.hitStop = REDUCED ? 0 : 0.15; st.golpe = { o: J.golpeado, t: 0 }; sonar('land');
         if (!REDUCED && !st.sinFx && G.agua && G.agua.spray) { try { G.agua.spray(S.pos.x, S.pos.y + 0.3, S.pos.z); } catch (e) { /* sin agua */ } }
         if (!REDUCED) G.camara.shake && G.camara.shake(0.12, 0.25);
-      } else { J.rv = 0; sonar('unlock'); }
+      } else { J.rv = 0; }
       if (esReloj()) { finReloj(); return; }
       const rec = leerRec(), f = rec.rio_rush; J.antes = f.mejor || 0;
       f.jugadas = (f.jugadas || 0) + 1;
@@ -393,7 +395,7 @@
       J.mejor = f.mejor || 0; J.medalla = medallaPuntos(J.puntos);
       guardarRec(rec);
       G.emit('retosResultado', { modo: 'rio_rush', puntos: J.puntos, metros: Math.round(J.metros), racimos: J.racimos, llego: como === 'meta', nuevo: J.nuevo, medalla: J.medalla, prueba: claveRec !== ALMACEN });
-      if (J.nuevo && como !== 'meta') sonar('unlock');
+      finSon(como === 'meta' || J.nuevo ? 'victoria' : 'casi'); if (J.nuevo) finSon('record'); // PULIR 4: tabla común (antes, al llegar a la meta no sonaba nada)
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 450);
     }
     // Contrarreloj y fantasma: solo se termina llegando al mar. Mejor tiempo, medalla y, si es tu mejor bajada, el nuevo fantasma
@@ -409,6 +411,7 @@
       guardarRec(rec);
       if (J.nuevo && st.grab && st.grab.m.length >= 6) { st.grab.m.push(J.s, J.lado, 0); guardarFantasma(st.grab.m, J.ms); }
       st.grab = null;
+      finSon('victoria'); if (J.nuevo) finSon('record'); // PULIR 4: contrarreloj y fantasma: siempre se llega al mar
       G.emit('retosResultado', { modo: 'rio_rush', reloj: true, ms: J.ms, medalla: m, choques: J.choques, racimos: J.racimos, llego: true, fantasma: st.modo === 'fantasma', nuevo: J.nuevo, prueba: claveRec !== ALMACEN });
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : 450);
     }
@@ -658,8 +661,10 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 @keyframes rr-late { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } }
 #riverrush .rr-fin { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(5, 18, 12, .35); }
 #riverrush .rr-panel { pointer-events: auto; background: var(--c-surface, rgba(10,30,20,.92)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-lg, 18px); padding: 22px 26px; width: min(92vw, 420px); text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
-#riverrush .rr-panel h2 { margin: 0 0 6px; font-size: 30px; } #riverrush .rr-panel p { margin: 4px 0 12px; color: var(--c-text-muted, #b8c7bd); }
-#riverrush .rr-num { font: 800 64px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 6px 0; }
+#riverrush .rr-panel h2 { margin: 0 0 6px; font-size: 26px; } #riverrush .rr-panel p { margin: 4px 0 12px; color: var(--c-text-muted, #b8c7bd); }
+#riverrush .rr-num { font: 800 44px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 6px 0; }
+/* PULIR 4: misma letra que el panel final común (.av-fin, ui.css): título 26 px y número 44 px; en horizontal bajo, 21 y 34 */
+@media (orientation: landscape) and (max-height: 500px) { #riverrush .rr-panel h2 { font-size: 21px; } #riverrush .rr-num { font-size: 34px; } }
 #riverrush .rr-nuevo { color: var(--gold, #ffd84a); font-weight: 800; margin-bottom: 8px; }
 #riverrush .rr-fila { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
 #riverrush .rr-tecla { font-size: 12px; opacity: .75; margin-left: 6px; }
@@ -677,7 +682,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 #riverrush .rr-meta { margin: 0 0 10px; display: grid; gap: 4px; font-weight: 700; color: var(--gold, #ffd84a); }
 #riverrush .rr-rank { margin: 0 0 10px; }
 #riverrush .rr-panel .rr-modos { margin-top: 12px; }
-@media (max-height: 520px) { #riverrush .rr-modos-hud { top: calc(env(safe-area-inset-top, 0px) + 66px); } #riverrush .rr-panel { padding: 14px 18px; } #riverrush .rr-num { font-size: 48px; } }
+@media (max-height: 520px) { #riverrush .rr-modos-hud { top: calc(env(safe-area-inset-top, 0px) + 66px); } #riverrush .rr-panel { padding: 14px 18px; } #riverrush .rr-num { font-size: 34px; } }
 /* F20 r2: teléfono en horizontal: la ayuda caía encima de Vittata y la canoa; sube bajo los botones de modo */
 @media (orientation: landscape) and (max-height: 520px) { #riverrush .rr-pista { bottom: auto; top: 31%; font-size: 22px; } }
 @media (prefers-reduced-motion: reduce) { #riverrush .rr-pista, #riverrush .rr-mano, #riverrush .rr-chip.pop, #riverrush .rr-aviso.pop { animation: none; } }`;
@@ -693,19 +698,19 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 <button class="btn ghost secondary rr-salir" type="button" data-salir data-icon="close" aria-label="Salir de River Rush">Salir</button>
 <div class="rr-aviso" aria-hidden="true" hidden>¡Uy!</div>
 <div class="rr-pista"><span class="rr-pista-t"></span><small class="rr-pista-s"></small><span class="rr-mano" data-icon="hand" aria-hidden="true"></span></div>
-<div class="rr-fin" hidden><div class="rr-panel" role="dialog" aria-labelledby="rr-fin-t">
+<div class="rr-fin" hidden><div class="rr-panel av-fin" role="dialog" aria-labelledby="rr-fin-t">
   <h2 id="rr-fin-t">¡Uy!</h2>
   <p class="rr-como"></p>
   <p class="rr-dato"></p>
-  <div class="rr-num">0</div>
+  <div class="rr-num av-num">0</div>
   <div class="rr-nuevo" hidden>¡Nuevo récord!</div>
   <p class="rr-medalla" hidden></p>
   <p class="rr-rec"></p>
   <p class="rr-meta" hidden></p>
   <div class="rr-rank" hidden><button class="btn" type="button" data-ranking data-icon="trophy">Publicar en el ranking</button></div>
-  <div class="rr-fila">
-    <button class="btn xl" type="button" data-otra data-icon="reset">Otra vez<span class="rr-tecla">${TACTIL ? '' : 'Enter'}</span></button>
-    <button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button>
+  <div class="rr-fila av-bots">
+    <button class="btn xl av-bot" type="button" data-otra data-icon="reset">Otra vez<span class="rr-tecla">${TACTIL ? '' : 'Enter'}</span></button>
+    <button class="btn ghost secondary av-bot salir" type="button" data-salir data-icon="close">Volver a la historia</button>
   </div>
   <div class="rr-modos" role="group" aria-label="Modalidad">${botonesModo()}</div>
 </div></div>`;

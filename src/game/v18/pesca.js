@@ -93,7 +93,7 @@ window.AVV18Pesca = function (G) {
     pPica: '¡Pica! ¡Ahora!', pTira: 'Mantén apretado para subir el anzuelo y suelta para bajarlo. Quédate en lo verde.', pCansado: '¡Ya se cansa! Casi lo tienes.',
     escapo: 'Se llevó la carnada… ¡lanza otra vez!', seFue: '¡Se escapó! Ya vuelve. Lanza otra vez.', tierra: 'Cayó en la orilla. Lanza hacia el agua.',
     lanzar: 'Lanzar', soltarB: 'Soltar', recoger: '¡Recoge!', clavar: '¡Clava!', esperarB: 'Esperar', soltarPez: 'Soltarlo', reportar: 'Avisar al DRNA',
-    salir: 'Salir', otra: 'Otra ronda', menu: 'Volver al menú', seguir: 'Seguir explorando', izq: 'Apuntar a la izquierda', der: 'Apuntar a la derecha',
+    salir: 'Salir', otra: 'Otra vez', /* PULIR 4: como en todos los minijuegos */ menu: 'Volver al menú', seguir: 'Seguir explorando', izq: 'Apuntar a la izquierda', der: 'Apuntar a la derecha',
     fuerza: 'Fuerza', tiempo: 'Tiempo', peces: 'Peces', puntos: 'Puntos', record: 'Récord',
     foto: '¡Foto para tu álbum!', fuente: 'Fuente', nativo: 'De aquí, de Puerto Rico', invasora: 'No es de aquí',
     consejo: 'La foto, rapidito, con el pez cerquita del agua.',
@@ -116,6 +116,8 @@ window.AVV18Pesca = function (G) {
 
   // ---------- Utilidades ----------
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'pesca', sigue); F.sonar(G, 'pesca', tipo); return 0; };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2400); } catch (e) { /* sin interfaz */ } };
   const fx = (k, x, y, z, n) => { if (barato()) return; try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
   const emitir = ev => { try { G.emit('v18pesca', ev); } catch (e) { /* sin oyentes */ } };
@@ -401,7 +403,7 @@ window.AVV18Pesca = function (G) {
     A.nuevo = A.puntos > 0 && A.puntos > prev;
     recordSesion = Math.max(recordSesion, A.puntos); if (A.puntos > 0) guardarRecord(A.puntos);
     A.record = recordVer(); A.ultimo = A.resultado = { peces: A.peces, puntos: A.puntos, conchitas: A.conchitas, nuevo: A.nuevo, album: Object.assign({}, A.album) };
-    sonar(A.peces ? 'unlock' : 'tick'); toast(TXT.fin, 2400);
+    finSon(A.peces ? 'victoria' : 'casi'); if (A.nuevo) finSon('record'); toast(TXT.fin, 2400); // PULIR 4: tabla común (antes unlock o tick)
     if (A.nuevo) { celebrar(); toast('¡Récord!', 2800); }
     emitir({ tipo: 'fin', peces: A.peces, puntos: A.puntos, nuevo: A.nuevo }); hud.vista = null; paneles(); pintar(true);
     return true;
@@ -960,7 +962,7 @@ window.AVV18Pesca = function (G) {
         fr.remove();
         check('Móvil (390 × 844): todos los botones (pescar, ficha y resultados) miden ≥ 44 px y caben en la pantalla', !mal.length, mal.join(' · '));
         { const bo = bot('otra'); toque(bo, 'pointerdown', 48); toque(bo, 'pointerup', 48); }
-        check('Táctil: «Otra ronda» empieza de nuevo', A.fase === 'listo' && A.peces === 0);
+        check('Táctil: «Otra vez» empieza de nuevo', A.fase === 'listo' && A.peces === 0);
         { const bs = bot('salir'); toque(bs, 'pointerdown', 49); if (bs.isConnected) toque(bs, 'pointerup', 49); }
         check('Táctil: «Salir» deja la pesca', A.fase === 'nada');
       } catch (e) { check('Táctil: sin excepciones', false, e && e.stack ? e.stack.split('\n').slice(0, 3).join(' ') : e); }

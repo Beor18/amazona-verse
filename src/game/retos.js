@@ -175,6 +175,8 @@
       A.define('r_rebufo', (t, a, X) => X.noise(t, 0.6, { freq: 500, to: 1400, q: 0.8, gain: 0.12 }));
     }
     const sonar = (n, a) => { try { A.play(n, a); } catch (e) { /* sin audio */ } };
+    // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego). El «logro» del récord ya suena con el sello nuevo de Mis récords
+    const finSon = tipo => { const F = window.AVFinJuego; if (F) F.sonar(G, 'retos', tipo); };
     // «Reducir movimiento»: el del sistema (G.renderer.REDUCED) o el del menú (G.audio.reducido, como en F4-20)
     const quieto = () => REDUCED || !!(A && A.reducido === true);
 
@@ -376,6 +378,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
 #retos .rt-panel { pointer-events: auto; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto;
   background: var(--c-paper); color: var(--c-ink); border-radius: var(--r-lg); padding: 24px; box-shadow: 0 6px 0 var(--c-paper-edge), 0 18px 50px rgba(0,0,0,.45); text-align: center; animation: pop-in .45s var(--ease-pop) both; }
 #retos .rt-panel h2 { margin: 0 0 6px; font: 700 var(--fs-2xl)/1.15 var(--font-display); }
+#retos .rt-fin .rt-panel h2 { font-size: 26px; } /* PULIR 4: misma letra que el panel final común (.av-fin, ui.css) */
 #retos .rt-panel p { margin: 0 0 14px; font: 400 var(--fs-md)/1.4 var(--font-body); color: var(--c-ink-muted); }
 #retos .rt-menu .rt-panel { width: min(780px, calc(100vw - 32px)); }
 #retos .rt-menu .rt-x { position: sticky; top: 0; float: right; z-index: 1; margin: -10px -10px 12px 8px; } /* QA-42: salida siempre a la vista; en el móvil «Volver a la historia» queda bajo 7 tarjetas */
@@ -430,7 +433,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
   #retos .rt-fin .rt-medalla { width: 52px; height: 52px; margin-bottom: 6px; font-size: 22px; box-shadow: 0 0 0 3px #fff, 0 4px 0 3px rgba(0,0,0,.18), 0 0 24px var(--m1); }
   #retos .rt-fin .rt-medalla.sin { font-size: 15px; }
   #retos .rt-fin .rt-medalla::before, #retos .rt-fin .rt-medalla::after { display: none; }
-  #retos .rt-fin h2 { font-size: var(--fs-xl, 22px); margin-bottom: 6px; }
+  #retos .rt-fin .rt-panel h2 { font-size: 21px; margin-bottom: 6px; }
   #retos .rt-fin .rt-datos { grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
   #retos .rt-fin .rt-dato { font-size: 17px; padding: 5px 6px; }
   #retos .rt-fin .rt-meta, #retos .rt-fin .rt-descanso, #retos .rt-fin .rt-nuevo { margin-bottom: 6px; }
@@ -502,7 +505,7 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
   <p class="rt-nota" hidden>Modo relajado: las carreras no tienen tiempo límite y la tormenta es de práctica.</p>
   <div class="rt-fila"><button class="btn ghost secondary" type="button" data-fantasma aria-pressed="true"></button><button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button></div>
 </div></div>
-<div class="rt-fin" hidden><div class="rt-panel" role="dialog" aria-labelledby="rt-fin-t">
+<div class="rt-fin" hidden><div class="rt-panel av-fin" role="dialog" aria-labelledby="rt-fin-t">
   <div class="rt-medalla"></div>
   <h2 id="rt-fin-t"></h2>
   <div class="rt-nuevo" hidden>¡Nuevo récord!</div>
@@ -510,10 +513,10 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
   <p class="rt-meta" hidden></p>
   <div class="rt-rank" hidden><button class="btn" type="button" data-ranking data-icon="trophy">Publicar en el ranking</button></div>
   <p class="rt-descanso" hidden>Llevas un buen rato jugando. ¿Un descanso para estirar las alas? Aquí te esperamos cuando quieras.</p>
-  <div class="rt-fila">
-    <button class="btn xl" type="button" data-otra data-icon="reset">Otra vez<span class="rt-tecla">${TACTIL ? '' : 'Enter'}</span></button>
-    <button class="btn ghost secondary" type="button" data-menu data-icon="trophy">Otro reto</button>
-    <button class="btn ghost secondary" type="button" data-salir data-icon="close">Volver a la historia</button>
+  <div class="rt-fila av-bots">
+    <button class="btn xl av-bot" type="button" data-otra data-icon="reset">Otra vez<span class="rt-tecla">${TACTIL ? '' : 'Enter'}</span></button>
+    <button class="btn ghost secondary av-bot" type="button" data-menu data-icon="trophy">Otro reto</button>
+    <button class="btn ghost secondary av-bot salir" type="button" data-salir data-icon="close">Volver a la historia</button>
   </div>
 </div></div>`;
       document.body.appendChild(el);
@@ -1539,13 +1542,13 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
       C.puesto = C.rio ? 1 : llego ? 1 + C.llegadas.length : puestoActual();
       C.turboT = C.rebufoT = 0;
       if (C.nubes && st.dos) { // «Para dos»: ni récords ni fantasma guardado (dos personas en el mismo equipo); el turno se apunta aparte
-        if (llego) { sonar('r_meta'); if (!quieto()) G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 30); aviso('¡Meta!'); } else { sonar('r_fin_mal'); aviso('¡Se acabó el tiempo!'); }
+        if (llego) { finSon('victoria'); if (!quieto()) G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 30); aviso('¡Meta!'); } else { finSon('casi'); aviso('¡Se acabó el tiempo!'); }
         acabarTurnoDos(llego); C.nuevo = false; C.grab = null; C.rec = {};
         return;
       }
       if (C.rio) C.medalla = llego ? medallaRio(C.tiempo) : null;
-      if (llego) { sonar(C.rio ? (C.medalla ? 'r_meta' : 'r_bien') : C.puesto <= 3 ? 'r_meta' : 'r_bien'); if (!(C.nubes && quieto())) { G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 40); G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'petalos', 30); } aviso(C.rio ? '¡Meta!' : C.puesto === 1 ? '¡Primera!' : '¡Meta!'); }
-      else { sonar('r_fin_mal'); aviso('¡Se acabó el tiempo!'); }
+      if (llego) { finSon('victoria'); /* PULIR 4: tabla común (antes r_meta o r_bien; r_fin_mal → casi) */ if (!(C.nubes && quieto())) { G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 40); G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'petalos', 30); } aviso(C.rio ? '¡Meta!' : C.puesto === 1 ? '¡Primera!' : '¡Meta!'); }
+      else { finSon('casi'); aviso('¡Se acabó el tiempo!'); }
       // Récord (solo si llegó)
       const rec = leerRec(), r = C.rio ? rec.rio : C.nubes ? (rec.nubes || (rec.nubes = {})) : rec.carrera, ms = Math.round(C.tiempo * 1000);
       C.nuevo = llego && (!r.mejor || ms < r.mejor);
@@ -1985,8 +1988,8 @@ body.retos-on #acts #b-dive { display: inline-flex !important; }
     function acabarTormenta(sobrevivio) {
       TM.fase = 'fin'; TM.finT = 0; TM.sobrevivio = sobrevivio;
       TM.bonus = sobrevivio ? 200 + 100 * TM.vidas : 0; TM.total = TM.puntos + TM.bonus;
-      if (sobrevivio) { sonar('r_meta'); aviso('¡Escapaste!'); G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 40); efectos.oscuro = 0.2; }
-      else { sonar('r_fin_mal'); }
+      if (sobrevivio) { finSon('victoria'); aviso('¡Escapaste!'); G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', 40); efectos.oscuro = 0.2; }
+      else { finSon('casi'); }
       for (const z of TM.peligros) { soltar(z.sombra); soltar(z.rama); soltar(z.brillo); soltar(z.rayo); } TM.peligros = [];
       const rec = leerRec(), r = rec.tormenta;
       TM.nuevo = TM.total > 0 && (!r.mejor || TM.total > r.mejor);

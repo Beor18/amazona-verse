@@ -172,6 +172,8 @@ window.AVV18Minigolf = function (G) {
   let _mmF = null, _mm = null; // la consulta se guarda (su .matches está vivo); se rehace si cambian window.matchMedia (las pruebas lo simulan)
   const tactil = () => { const f = window.matchMedia; if (!f) return false; if (f !== _mmF) { _mmF = f; _mm = matchMedia('(pointer: coarse)'); } return !!(_mm && _mm.matches); };
   const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+  // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+  const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'minigolf', sigue); F.sonar(G, 'minigolf', tipo); return 0; };
   const toast = (t, ms) => { try { G.ui.toast(t, ms || 2400); } catch (e) { /* sin interfaz */ } };
   const fx = (k, x, y, z, n) => { try { G.fx.burst(x, y, z, k, n || 8); } catch (e) { /* sin fx */ } };
   const emitir = ev => { try { G.emit('v18minigolf', ev); } catch (e) { /* sin oyentes */ } };
@@ -529,7 +531,7 @@ window.AVV18Minigolf = function (G) {
     const seAbre = J.some(j => j.dentro) && sig <= HOYOS.length && !abierto(sig) && abrir(sig);
     A.resultado = { multi: true, hoyo: HOYO.n, jugadores: c.filas.map(r => Object.assign({}, r)), ganador: c.ganador, empate: c.empate, premios: [], nuevo: false, abre: seAbre ? sig : 0 };
     if (seAbre) setTimeout(() => toast(abreTxt(HOYOS[sig - 1]), 3600), G.quiet ? 0 : 1600);
-    const y = H(P_NIDO.x, P_NIDO.z); fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 18); sonar('unlock'); toast(c.txt, 3200);
+    const y = H(P_NIDO.x, P_NIDO.z); fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 18); finSon('victoria'); toast(c.txt, 3200); // PULIR 4: tabla común (antes unlock)
     if (hud) {
       const f1 = hud.q('fin1'); f1.textContent = c.txt; f1.style.color = c.empate ? '' : COLORES[c.ganador];
       hud.q('tabla').innerHTML = c.filas.map(r => `<div class="vg-fila"><b>${r.puesto}.</b><span style="color:${COLORES[r.i]}">${nombre(r.i)}</span>` +
@@ -658,7 +660,7 @@ window.AVV18Minigolf = function (G) {
     A.resultado = { hoyo: HOYO.n, golpes: n, medalla: med, nuevo, mejor: r.mejor, premios: dados.map(p => p.clave), abre: seAbre ? sig : 0, conchas };
     const y = H(P_NIDO.x, P_NIDO.z);
     A.enUno = n === 1;
-    fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 14); fx('feathers', P_NIDO.x, y + 0.8, P_NIDO.z, 10); sonar('unlock');
+    fx('gold', P_NIDO.x, y + 0.6, P_NIDO.z, 14); fx('feathers', P_NIDO.x, y + 0.8, P_NIDO.z, 10); finSon('victoria'); if (nuevo) finSon('record'); // PULIR 4: tabla común (antes unlock)
     if (A.enUno) { fx('stars', P_NIDO.x, y + 1.4, P_NIDO.z, 18); fx('gold', P_NIDO.x, y + 1.6, P_NIDO.z, 10); }
     toast(nidoTxt(n), 3200);
     const avisos = dados.map(p => tx(p.txt)); if (seAbre) avisos.push(abreTxt(HOYOS[sig - 1]));

@@ -42,6 +42,8 @@
     const H = (x, z) => G.terreno.height(x, z);
     const nivelAgua = (x, z) => { const w = G.agua.levelAt(x, z); return w > -1e8 ? w : -Infinity; };
     const sonar = (n, a) => { try { G.audio.play(n, a); } catch (e) { /* sin audio */ } };
+    // PULIR 4: el sonido del final sale de la tabla común (src/game/menu_modos.js, window.AVFinJuego): victoria, casi o récord (logro a los 500 ms)
+    const finSon = (tipo, sigue) => { const F = window.AVFinJuego; if (!F) return 0; if (tipo === 'record') return F.record(G, 'tren', sigue); F.sonar(G, 'tren', tipo); return 0; };
     const ingles = () => !!(G.idioma && G.idioma.actual && G.idioma.actual() === 'en');
     const alMenu = () => !!(G.menuModos && G.menuModos.desdeMenu && G.menuModos.desdeMenu()); /* se entró desde «¿Cómo quieres jugar?»: «Salir» lleva al menú */
     // Sonidos propios (sintéticos, por G.audio.define): silbato de dos notas, retumbe con eco del túnel y traqueteo del puente de hierro
@@ -481,7 +483,7 @@
       J.mejor = f.mejor || 0;
       guardarRec(rec);
       G.emit('retosResultado', { modo: 'tren', puntos: J.puntos, nuevo: J.nuevo, prueba: claveRec !== ALMACEN });
-      sonar(J.nuevo ? 'unlock' : 'tick');
+      finSon(J.puntos > 0 ? 'victoria' : 'casi'); if (J.nuevo) finSon('record'); // PULIR 4: tabla común (antes unlock o tick)
       setTimeout(() => { if (st.activo && st.fase === 'fin') resultados(); }, REDUCED ? 0 : P.finPanel * 1000);
     }
     // Lo que actores.js lee para animar a Vittata (posada en el techo de la locomotora; el rig no se toca)
@@ -588,8 +590,10 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
 #tren .tr-desvio button.pista { --btn-ink: #2a1d10; --btn-bg: #ffe08a; color: #2a1d10; background: #ffe08a; border-color: #8a5a12; }
 #tren .tr-fin { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(5, 18, 12, .35); overflow: auto; }
 #tren .tr-panel { pointer-events: auto; background: var(--c-surface, rgba(10,30,20,.92)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-lg, 18px); padding: 18px 22px; width: min(92vw, 440px); text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
-#tren .tr-panel h2 { margin: 0 0 4px; font-size: 28px; } #tren .tr-panel p { margin: 4px 0 10px; color: var(--c-text-muted, #b8c7bd); }
-#tren .tr-num { font: 800 58px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 4px 0; }
+#tren .tr-panel h2 { margin: 0 0 4px; font-size: 26px; } #tren .tr-panel p { margin: 4px 0 10px; color: var(--c-text-muted, #b8c7bd); }
+#tren .tr-num { font: 800 44px/1 var(--font-display, system-ui); color: var(--gold, #ffd84a); margin: 4px 0; }
+/* PULIR 4: misma letra que el panel final común (.av-fin, ui.css): título 26 px y número 44 px; en horizontal bajo, 21 y 34 */
+@media (orientation: landscape) and (max-height: 500px) { #tren .tr-panel h2 { font-size: 21px; } #tren .tr-num { font-size: 34px; } }
 #tren .tr-meta { margin: 0 0 8px; display: grid; gap: 4px; font-weight: 700; color: var(--gold, #ffd84a); }
 #tren .tr-medalla { display: inline-block; padding: 4px 12px; border-radius: 999px; font-weight: 800; margin-bottom: 6px; background: rgba(255,255,255,.1); }
 #tren .tr-medalla.oro { background: #d4a017; color: #2b1d00; } #tren .tr-medalla.plata { background: #c0c7cf; color: #1d2328; } #tren .tr-medalla.bronce { background: #b87333; color: #2b1400; }
@@ -615,17 +619,17 @@ html body.tren-on #pause .pause-grid > :not(#b-sound) { display: none !important
   <div class="tr-desvio" hidden><button class="btn secondary" type="button" data-via="0">◀ <span class="tr-izq"></span></button><span class="tr-dlabel"></span><button class="btn secondary" type="button" data-via="1"><span class="tr-der"></span> ▶</button></div>
   <div class="tr-fila"><button class="btn secondary tr-btn" type="button" data-freno></button><button class="btn tr-btn" type="button" data-gas></button></div>
 </div>
-<div class="tr-fin" hidden><div class="tr-panel" role="dialog" aria-labelledby="tr-fin-t">
+<div class="tr-fin" hidden><div class="tr-panel av-fin" role="dialog" aria-labelledby="tr-fin-t">
   <h2 id="tr-fin-t"></h2>
   <div class="tr-medalla" hidden></div>
-  <div class="tr-num">0</div>
+  <div class="tr-num av-num">0</div>
   <div class="tr-nuevo" hidden></div>
   <p class="tr-rec"></p>
   <p class="tr-meta" hidden></p>
   <div class="tr-sabias"><b></b><span></span></div>
-  <div class="tr-botones">
-    <button class="btn xl" type="button" data-otra data-icon="reset"></button>
-    <button class="btn ghost secondary" type="button" data-salir data-icon="close"></button>
+  <div class="tr-botones av-bots">
+    <button class="btn xl av-bot" type="button" data-otra data-icon="reset"></button>
+    <button class="btn ghost secondary av-bot salir" type="button" data-salir data-icon="close"></button>
   </div>
 </div></div>`;
       document.body.appendChild(el);

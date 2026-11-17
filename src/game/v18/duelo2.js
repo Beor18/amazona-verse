@@ -457,7 +457,7 @@ window.AVV18Duelo2 = function (G) {
       `<div class="vd-centro" data-k="centro"></div><div class="vd-uy" data-k="uy" hidden aria-hidden="true"></div>` +
       `<div class="vd-ent" data-k="ent" hidden><div class="vd-ent-cab" data-k="entPaso"></div><div class="vd-ent-txt" data-k="entTxt"></div><div class="vd-ent-js">${fj(1)}${fj(2)}</div><button data-a="saltarEnt" type="button">${TXT.saltarEnt}</button></div>` +
       `<button class="vd-como" data-a="como" data-k="como" type="button" data-icon="question">${TXT.como}</button>` +
-      `<div class="vd-fin" data-k="fin" hidden><p data-k="finTxt"></p><p class="vd-fin-serie" data-k="finSerie" hidden></p><button data-a="otra" data-k="otraB">${TXT.otra}</button> <button data-a="salir">${TXT.salir}</button></div>`;
+      `<div class="vd-fin" data-k="fin" hidden><p data-k="finTxt"></p><p class="vd-fin-serie" data-k="finSerie" hidden></p><button type="button" data-a="otra" data-k="otraB">${TXT.otra}</button> <button type="button" data-a="salir">${TXT.salir}</button></div>`;
     const hudBoton = e => { // F22: un solo manejador para el dedo/ratón (pointerdown) y el teclado (click con detail 0: Enter o Espacio con el foco)
       const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return;
       if (e.type === 'click' && e.detail !== 0) return; // el click del ratón o del dedo ya entró por pointerdown
