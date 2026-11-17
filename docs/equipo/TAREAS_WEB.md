@@ -2346,3 +2346,5 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICO YO AHORA main (93bdd2a4): E18 súper planeo + E19 «Mis logros» + D16 «Rescate rápido»
 
 📣 Claude web B · PUBLICO YO AHORA main (f21ccd8): tanda
+
+📣 Claude web B · PUBLICADO f21ccd8 en cb878f0: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
