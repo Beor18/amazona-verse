@@ -123,9 +123,9 @@
 #records .rec-logro .rl-ico { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #e6e0d2; color: #8a8270; }
 #records .rec-logro .rl-txt { display: grid; gap: 2px; min-width: 0; } #records .rec-logro b { font: 700 var(--fs-sm)/1.2 var(--font-display); color: var(--c-ink); overflow-wrap: anywhere; }
 #records .rec-logro small { font: 500 var(--fs-xs)/1.3 var(--font-body); color: var(--c-ink-muted); overflow-wrap: anywhere; } #records .rec-logro .rl-n { font-weight: 700; font-variant-numeric: tabular-nums; }
-#records .rec-logro .rl-estado { font: 700 var(--fs-xs)/1 var(--font-display); color: #8a8270; padding: 4px 8px; border-radius: var(--r-pill); background: #fff; white-space: nowrap; }
+#records .rec-logro .rl-estado { font: 700 var(--fs-xs)/1 var(--font-display); color: var(--c-ink); border: 1px solid #cfc7b4; padding: 4px 8px; border-radius: var(--r-pill); background: #fff; white-space: nowrap; }
 #records .rec-logro.ganado { background: #fff8e0; border: 2px solid #e2b84a; } #records .rec-logro.ganado .rl-ico { background: radial-gradient(circle at 35% 30%, #fff8d8, #ffd24a 50%, #c98a10); color: #4a2a05; box-shadow: 0 0 0 3px #fff; }
-#records .rec-logro.ganado .rl-estado { color: #fff; background: #3f9a55; }
+#records .rec-logro.ganado .rl-estado { color: #fff; background: #17572a; border-color: #17572a; }
 @media (max-width: 400px) { #records .rec-logro { grid-template-columns: 44px minmax(0, 1fr); } #records .rec-logro .rl-ico { width: 44px; height: 44px; } #records .rec-logro .rl-estado { grid-column: 2; justify-self: start; } }`;
 
     // Revisión cada CADA s (sin asignaciones por cuadro) y enseguida tras los eventos que pueden dar un logro
