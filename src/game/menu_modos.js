@@ -1184,7 +1184,7 @@
               vistos++;
               const alto = b => b.offsetHeight; // offsetHeight: sin la escala de la animación de entrada
               if (bs.length < 2 || !bs.every(b => alto(b) >= 54)) malos.push(nom + ': botones de ' + bs.map(b => alto(b)).join('/') + ' px');
-              if (!bs.every(b => getComputedStyle(b).fontSize === '18px')) malos.push(nom + ': letra de botones ' + bs.map(b => getComputedStyle(b).fontSize).join('/'));
+              if (!bs.every(b => parseFloat(getComputedStyle(b).fontSize) >= 18)) malos.push(nom + ': letra de botones ' + bs.map(b => getComputedStyle(b).fontSize).join('/')); // al menos 18 px: el «Otra vez» de Sigue el canto es más grande y naranja a propósito (PULIR 3)
               const fs = s => { const e = p.querySelector(s); return e ? getComputedStyle(e).fontSize : null; };
               const h2 = fs('h2'), num = fs('.av-num'), msg = fs('.av-msg');
               if (h2 && h2 !== (bajo2 ? '21px' : '26px')) malos.push(nom + ': título de ' + h2);

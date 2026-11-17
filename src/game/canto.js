@@ -185,7 +185,7 @@ window.AVCanto = function (G) {
       check('Un fallo termina sin castigo: «¡Nuevo récord: 1!», «Otra vez» y «Salir»', E.fase === 'fin' && E.mejor === 1 && /récord: 1/i.test(q('msg').textContent) && !el.querySelector('[data-a="otra"]').hidden, q('msg').textContent);
       check('El récord se guarda en este dispositivo', leerRec() === 1);
       { const lg = (window.AVFinJuego ? window.AVFinJuego.log : []).filter(x => x.juego === 'canto').slice(-2).map(x => x.tipo).join(','), bs = [...el.querySelectorAll('.av-bots .av-bot')];
-        check('PULIR 4 · «Otra vez» y «Salir» como el panel común (54 px y 18 px) y sonido de la tabla común (victoria y récord)', bs.length === 2 && bs.every(b => b.getBoundingClientRect().height >= 54 && getComputedStyle(b).fontSize === '18px') && lg === 'victoria,record', lg); }
+        check('PULIR 4 · «Otra vez» y «Salir» como mínimo como el panel común (54 px y 18 px; «Otra vez», más grande y naranja por PULIR 3) y sonido de la tabla común (victoria y récord)', bs.length === 2 && bs.every(b => b.offsetHeight >= 54 && parseFloat(getComputedStyle(b).fontSize) >= 18) && lg === 'victoria,record', lg); }
       nueva();
       check('«Otra vez» empieza de nuevo en la ronda 1', E.ronda === 1 && E.sec.length === 1 && E.fase === 'escucha');
       await hasta(() => E.fase === 'turno', 3000);
