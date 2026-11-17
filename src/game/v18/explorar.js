@@ -345,7 +345,9 @@ window.AVV18Explorar = function (G) {
       const hud = !!(ra && ra.height && getComputedStyle(acts).visibility !== 'hidden');
       const tp = document.getElementById('title');
       const rv = document.getElementById('rio-visor'); // T20: tampoco con el visor del río encendido (pisaba «Visor · busca peces…»)
-      const ver = libre() && hud && !(tp && tp.open) && !(G.ui && G.ui.cardOpen) && !(rv && rv.classList.contains('on')); // T10: no encima de la portada ni de una tarjeta
+      // PULIR 5: tampoco en el primer objetivo del cap. 1 (despegar y posarse junto a Iguaca): era un botón más, sin explicar, junto a Volar
+      const primerObj = !G.quiet && !!(G.misiones && G.misiones.primerObjetivo && G.misiones.primerObjetivo());
+      const ver = libre() && hud && !primerObj && !(tp && tp.open) && !(G.ui && G.ui.cardOpen) && !(rv && rv.classList.contains('on')); // T10: no encima de la portada ni de una tarjeta
       if (b.hidden === ver) b.hidden = !ver;
       if (ver) {
         // QA-191 (móvil): si el aviso de Acción (#prompt) queda a la altura del botón, el botón sube por encima y no tapa el nombre

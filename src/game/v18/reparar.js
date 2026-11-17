@@ -424,7 +424,9 @@ window.AVV18Reparar = function (G) {
   G.on('apply', () => setTimeout(aplicar, 0), 95);
   G.on('v18', ev => { if (ev && ev.tipo === 'mundo' && ev.id === ID) aplicar(); else if (ev && ev.tipo === 'recompensa') sincronizar(); });
   G.on('update', (dt, busy) => { if (!busy) paso(dt); }, 46);
-  G.on('update', () => { avisarPuerto(); }, 47);
+  // PULIR 5 (17-nov): la pista del puerto espera a que el niño cumpla el primer objetivo (posarse junto a Iguaca): en el primer
+  // vuelo era un aviso más, de algo que aún no puede hacer
+  G.on('update', () => { if (!(G.misiones && G.misiones.primerObjetivo && G.misiones.primerObjetivo())) avisarPuerto(); }, 47);
 
   // ---------- Cruce a pie con el motor de movimiento (para la prueba; no teletransporta por el camino) ----------
   // Pone a Vittata en la orilla, a `desde` m de la cabecera A por el eje (negativo: hacia Villa Raíz), y camina con W y la
