@@ -311,7 +311,9 @@
     // Mis récords y Compartir (src/game/records.js): se carga al pedirlo (pausa, portada o «Compartir» del cómic) y junto con los retos,
     // para anotar cada resultado a nombre de la cotorra que jugó. Todo local; la partida no se toca
     let records = null;
-    const cargarRecords = () => records || (records = AVE.assets.script('src/game/records.js').then(() => window.AVRecords(G), e => { records = null; throw e; }));
+    // E19: los logros (src/game/logros.js) vigilan desde el primer gesto (aviso al ganar uno) y «Mis récords» los muestra
+    const cargarLogros = aDemanda('src/game/logros.js', 'AVLogros'); alPrimerGesto(cargarLogros); AV.logrosTest = o => cargarLogros().then(l => l.test(o));
+    const cargarRecords = () => records || (records = cargarLogros().catch(() => null).then(() => AVE.assets.script('src/game/records.js')).then(() => window.AVRecords(G), e => { records = null; throw e; }));
     // Bandada de la casa (src/game/equipos.js): local, sin red. Se carga con «Mis récords», no en la descarga inicial.
     let equipos = null;
     const cargarEquipos = () => equipos || (equipos = AVE.assets.script('src/game/equipos.js').then(() => window.AVEquipos(G), e => { equipos = null; throw e; }));
@@ -412,7 +414,7 @@
     if (portada && window.AVMenuModos) { const menu = window.AVMenuModos(G, { retos: cargarRetos, records: () => cargarRecords().then(r => conBandada(r)),
       v18: { golf: cargarV18Golf, pesca: cargarV18Pesca, combate: cargarCombate, duelo2: cargarV18Duelo2, chispa: cargarV18Chispa, moon: cargarV18Moon, guardian: cargarV18Guardian, cotorras: () => Promise.all([cargarCombate(), cargarV18Descubrir(), cargarV18Evo(), cargarV18Nuevas()]) } }); AV.menuModos = menu; AV.menuModosTest = o => menu.test(o); AV.temporada = menu.temporada; AV.temporadaTest = o => menu.temporada.test(o); AV.capituloElegidoTest = o => menu.temporada.capituloTest(o); }
     const recAlm = (P.meta && P.meta.almacen) || P.id, recRetos = recAlm + '.retos', recCasa = recAlm + '.records', recEquipos = recAlm + '.equipos', recDones = recRetos + '.dones'; // récords aparte de la partida; «Nuevo estudiante» los borra (también el libro, la bandada, Retos «Con dones» y los descubrimientos)
-    const recDesc = [recAlm + '.trucos', recAlm + '.escondite', recAlm + '.ciudadVisitas', recAlm + '.marana', recAlm + '.vecinos', recAlm + '.humor', recAlm + '.retosDia'];
+    const recDesc = [recAlm + '.trucos', recAlm + '.escondite', recAlm + '.ciudadVisitas', recAlm + '.marana', recAlm + '.vecinos', recAlm + '.humor', recAlm + '.retosDia', recAlm + '.logros'];
     AV.retosDiaTest = o => Promise.resolve(G.retosDia.test(o)); // CG-52
     const cargarMaze = aDemanda('src/game/maze.js', 'AVMaze'); AV.maze = () => cargarMaze().then(m => m.abrir()); AV.mazeTest = o => cargarMaze().then(m => m.test(o)); if (/[?&]mini=maze\b/.test(location.search)) { const ir = () => setTimeout(() => AV.maze().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // Amazona Maze (AB1, src/game/maze.js): prototipo oculto; ?mini=maze o AV.maze(); AV.mazeTest()
     const cargarRiver = aDemanda('src/game/river_rush.js', 'AVRiverRush'); AV.riverRush = () => cargarRiver().then(r => r.abrir()); AV.riverTest = o => cargarRiver().then(r => r.test(o)); if (/[?&]mini=river\b/.test(location.search)) { const ir = () => setTimeout(() => AV.riverRush().catch(() => {}), 400); if (portada && portada.open) portada.addEventListener('close', ir, { once: true }); else ir(); } // River Rush (AC1, src/game/river_rush.js): prototipo oculto; ?mini=river o AV.riverRush(); AV.riverTest()

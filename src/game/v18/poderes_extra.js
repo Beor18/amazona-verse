@@ -11,7 +11,13 @@
    Entrada: teclado H (Ráfaga), Y (Ojo) y N (Planeo), solo explorando y si esa tecla no está asignada a otra acción
    (src/engine/input.js); táctil: un botón redondo por poder ganado, encima del botón «Tu poder» (explorar.js).
    No es canon nuevo: son poderes de juego de Vittata; los dones de mentora (Lilacina, Oratrix) siguen siendo de Kelvin.
-   Solo con la bandera V18 (boot.js lo carga tras explorar.js). Prueba: AV.v18PoderesExtraTest(). */
+   Solo con la bandera V18 (boot.js lo carga tras explorar.js). Prueba: AV.v18PoderesExtraTest().
+   E18 · Súper planeo (combinar poderes, TAREAS_WEB E18): la Ráfaga durante un Planeo largo (o el Planeo justo en el empujón de
+   una Ráfaga) da un súper planeo: empujón más largo (14 m/s durante 1,2 s), el hundimiento baja al 12 % durante 6 s, el planeo
+   dura 4 s más (tope 12 s) y deja una estela de chispas doradas y plumas. Sin poderes nuevos: son los dos que ya existen, con sus
+   sonidos (poder_rafaga / poder_planeo). La primera vez que se usa el Planeo teniendo la Ráfaga sale una pista corta («Ahora,
+   Ráfaga…», mundo.superplaneo_pista) y el primer súper planeo lo explica (mundo.superplaneo = veces). En el teléfono, el botón de
+   la Ráfaga brilla mientras dura un Planeo largo. Con «Reducir movimiento», la estela es más rala y sin onda. Textos EN en en.js. */
 window.AVV18PoderesExtra = function (G) {
   'use strict';
   if (G.v18extra) return G.v18extra;
@@ -29,7 +35,11 @@ window.AVV18PoderesExtra = function (G) {
   };
   const IDS = Object.keys(P);
   const cd = { rafaga: 0, ojo: 0, planeo: 0 };
-  const est = { empuje: null, planeoT: 0, sink0: null, n: { rafaga: 0, ojo: 0, planeo: 0 }, ultimoOjo: 0 };
+  const est = { empuje: null, planeoT: 0, sink0: null, n: { rafaga: 0, ojo: 0, planeo: 0 }, ultimoOjo: 0, superT: 0, estelaT: 0, nSuper: 0 };
+  // E18: el súper planeo (Ráfaga + Planeo largo)
+  const SUPER = { dura: 6, sink: 0.12, empuje: 14, empujeT: 1.2, extra: 4, tope: 12, estela: 0.12, estelaRed: 0.35 };
+  const T = s => { try { return G.idioma && G.idioma.tr ? G.idioma.tr(s) : s; } catch (e) { return s; } }; // inglés en content/cap1/en.js
+  const reducido = () => !!(G.renderer && G.renderer.REDUCED);
   const sonar = n => { try { if (!G.quiet && G.audio && G.audio.has && G.audio.has(n)) G.audio.play(n); } catch (e) { /* sin audio */ } };
   const toast = (t, ms) => { try { if (!G.quiet && G.ui && G.ui.toast) G.ui.toast(t, ms || 3600); } catch (e) { /* sin ui */ } };
   const mundo = k => { try { return Number(G.v18 && G.v18.mundo && G.v18.mundo(k)) || 0; } catch (e) { return 0; } };
@@ -61,6 +71,7 @@ window.AVV18PoderesExtra = function (G) {
       G.fx.ringFx(S.pos.x, S.pos.y + 0.6, S.pos.z, 2.2, 0.4, 0.5);
       if (M.flying) est.empuje = { x: d.x * 10, z: d.z * 10, t: 0.6 };
       sonar('poder_rafaga');
+      if (M.flying && est.planeoT > 0 && est.superT <= 0) superPlaneo(); // E18: Ráfaga durante un Planeo largo
       return true;
     },
     ojo() {
@@ -84,10 +95,35 @@ window.AVV18PoderesExtra = function (G) {
       T.glideSink = est.sink0 * 0.3; est.planeoT = P.planeo.dura;
       G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'feathers', 12);
       sonar('poder_planeo');
+      if (est.empuje && est.empuje.t > 0 && est.superT <= 0) superPlaneo(); // E18: el Planeo justo en el empujón de una Ráfaga
+      else pista();
       return true;
     }
   };
   const pulsos = [];
+  // E18 · Súper planeo: los dos poderes juntos (no es un poder nuevo). Más alcance, estela y su aviso la primera vez
+  function superPlaneo() {
+    const TU = G.fisica.TUNING, d = mirada(), red = reducido();
+    if (est.sink0 == null) est.sink0 = TU.glideSink;
+    TU.glideSink = est.sink0 * SUPER.sink;
+    est.planeoT = Math.min(Math.max(est.planeoT, 0) + SUPER.extra, SUPER.tope);
+    est.superT = SUPER.dura; est.estelaT = 0; est.nSuper++;
+    if (est.empuje) { est.empuje.x = d.x * SUPER.empuje; est.empuje.z = d.z * SUPER.empuje; est.empuje.t = SUPER.empujeT; }
+    else est.empuje = { x: d.x * SUPER.empuje, z: d.z * SUPER.empuje, t: SUPER.empujeT };
+    try { G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'gold', red ? 6 : 16); if (!red) G.fx.ringFx(S.pos.x, S.pos.y + 0.8, S.pos.z, 3.2, 0.6, 0.6); } catch (e) { /* sin fx */ }
+    const veces = mundo('superplaneo');
+    try { if (G.v18 && G.v18.cambiarMundo) G.v18.cambiarMundo('superplaneo', Math.min(veces + 1, 9999)); } catch (e) { /* sin progreso */ }
+    toast(veces ? T('¡Súper planeo!') : T('¡Súper planeo! Ráfaga + Planeo largo: vuelas mucho más lejos.'), veces ? 1800 : 5200);
+    try { G.emit('v18superplaneo', { veces: veces + 1 }); } catch (e) { /* */ }
+    return true;
+  }
+  // La pista, una sola vez: el primer Planeo largo teniendo la Ráfaga, si aún no se ha hecho ningún súper planeo
+  function pista() {
+    if (!tiene('rafaga') || mundo('superplaneo') > 0 || mundo('superplaneo_pista') > 0 || !G.v18 || !G.v18.cambiarMundo) return false;
+    G.v18.cambiarMundo('superplaneo_pista', 1);
+    toast(TACTIL ? T('Ahora pulsa Ráfaga: ¡súper planeo!') : T('Ahora pulsa Ráfaga (H): ¡súper planeo!'), 3600);
+    return true;
+  }
   function usar(id, forzar) {
     if (!P[id] || (!forzar && (!tiene(id) || !libre() || cd[id] > 0))) return false;
     const r = FX[id]();
@@ -95,7 +131,7 @@ window.AVV18PoderesExtra = function (G) {
     pintar(true);
     return r;
   }
-  function terminarPlaneo() { if (est.sink0 != null) { G.fisica.TUNING.glideSink = est.sink0; est.sink0 = null; } est.planeoT = 0; }
+  function terminarPlaneo() { if (est.sink0 != null) { G.fisica.TUNING.glideSink = est.sink0; est.sink0 = null; } est.planeoT = 0; est.superT = 0; }
 
   // ---------- Se ganan jugando ----------
   function revisar() {
@@ -124,7 +160,9 @@ window.AVV18PoderesExtra = function (G) {
     // En fila, a la izquierda de «Tu poder» y a su altura: en columna tapaban Diario, Gestos y la Pausa
     st.textContent = '#v18-extra{position:fixed;z-index:70;display:flex;flex-direction:row-reverse;gap:6px;align-items:flex-end;pointer-events:none}#v18-extra[hidden]{display:none}' +
       '#v18-extra button{pointer-events:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:56px;height:56px;padding:2px;border-radius:18px;border:2px solid #fff3d6;background:rgba(18,44,32,.82);color:#fff;font:700 11px/1 Fredoka,system-ui,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.35);touch-action:none}' +
-      '#v18-extra button{--icon-size:22px}#v18-extra button.cd{opacity:.5}#v18-extra button.activo{box-shadow:0 0 0 3px #ffd27a,0 2px 8px rgba(0,0,0,.35)}';
+      '#v18-extra button{--icon-size:22px}#v18-extra button.cd{opacity:.5}#v18-extra button.activo{box-shadow:0 0 0 3px #ffd27a,0 2px 8px rgba(0,0,0,.35)}' +
+      '#v18-extra button.combo{opacity:1;box-shadow:0 0 0 3px #8fe3ff,0 0 14px #8fe3ff;animation:v18-combo 0.9s ease-in-out infinite alternate}' + // E18: «¡ahora, Ráfaga!»
+      '@keyframes v18-combo{to{box-shadow:0 0 0 3px #8fe3ff,0 0 4px #8fe3ff}}@media (prefers-reduced-motion: reduce){#v18-extra button.combo{animation:none}}';
     document.head.appendChild(st);
   }
   function pintar(forzar) {
@@ -150,6 +188,15 @@ window.AVV18PoderesExtra = function (G) {
     if (est.planeoT > 0) {
       est.planeoT -= dt;
       if (Math.random() < dt * 6) try { G.fx.burst(S.pos.x, S.pos.y + 0.8, S.pos.z, 'feathers', 1); } catch (e) { /* */ }
+      if (est.superT > 0) { // E18: estela del súper planeo (a ritmo fijo, no por cuadro); al acabar, vuelve al Planeo largo normal
+        est.superT -= dt; est.estelaT -= dt;
+        if (est.estelaT <= 0) {
+          const red = reducido(); est.estelaT = red ? SUPER.estelaRed : SUPER.estela;
+          const f = mirada(), x = S.pos.x - f.x * 0.8, z = S.pos.z - f.z * 0.8;
+          try { G.fx.burst(x, S.pos.y + 0.7, z, 'gold', red ? 1 : 3); if (!red) G.fx.burst(x, S.pos.y + 0.7, z, 'feathers', 1); } catch (e) { /* */ }
+        }
+        if (est.superT <= 0) { est.superT = 0; if (est.sink0 != null) G.fisica.TUNING.glideSink = est.sink0 * 0.3; }
+      }
       if (est.planeoT <= 0 || !G.fisica.MOVE.flying) terminarPlaneo();
     }
     for (let i = pulsos.length - 1; i >= 0; i--) {
@@ -167,7 +214,8 @@ window.AVV18PoderesExtra = function (G) {
         if (ver) {
           const bo = Math.round(window.innerHeight - rp.bottom) + 'px', de = Math.round(window.innerWidth - rp.left + 8) + 'px';
           if (caja.style.bottom !== bo) caja.style.bottom = bo; if (caja.style.right !== de) caja.style.right = de;
-          for (const b of caja.children) { const id = b.dataset.extra; b.classList.toggle('cd', cd[id] > 0); b.classList.toggle('activo', id === 'planeo' && est.planeoT > 0); }
+          const combo = est.planeoT > 0 && est.superT <= 0 && cd.rafaga <= 0; // E18: la Ráfaga brilla mientras dura un Planeo largo
+          for (const b of caja.children) { const id = b.dataset.extra; b.classList.toggle('cd', cd[id] > 0); b.classList.toggle('activo', id === 'planeo' && est.planeoT > 0); b.classList.toggle('combo', id === 'rafaga' && combo); }
         }
       }
     }
@@ -178,7 +226,8 @@ window.AVV18PoderesExtra = function (G) {
   async function test() {
     const out = [], check = (name, ok, extra) => out.push({ name, ok: !!ok, extra: extra == null ? '' : String(extra) });
     const V = G.v18, M = G.fisica.MOVE, T = G.fisica.TUNING;
-    const guard = { pos: { x: S.pos.x, y: S.pos.y, z: S.pos.z }, facing: S.facing, flying: M.flying, sink: T.glideSink, quiet: G.quiet, field: S.field, mundo: IDS.map(id => mundo(P[id].clave)), juice: G.juice };
+    const guard = { pos: { x: S.pos.x, y: S.pos.y, z: S.pos.z }, facing: S.facing, flying: M.flying, sink: T.glideSink, quiet: G.quiet, field: S.field, mundo: IDS.map(id => mundo(P[id].clave)), juice: G.juice,
+      superMundo: [mundo('superplaneo'), mundo('superplaneo_pista')], reducido: G.renderer ? G.renderer.REDUCED : null };
     G.quiet = true;
     try {
       if (!V || !V.cambiarMundo) { check('Sin progreso V18 no hay poderes extra (se cargan con la bandera)', true); return { results: out }; }
@@ -218,6 +267,54 @@ window.AVV18PoderesExtra = function (G) {
         check('T52: usar Ráfaga, Ojo y Planeo suena poder_rafaga, poder_ojo y poder_planeo (uno cada uno, sin otro sonido encima)',
           oidos.join() === ['poder_rafaga', 'poder_ojo', 'poder_planeo'].filter(has).join() && ['poder_rafaga', 'poder_ojo', 'poder_planeo'].every(has), oidos.join());
       }
+      { // E18 · Súper planeo: Ráfaga + Planeo largo (con la pista y el aviso de la primera vez, alcance, estela y «Reducir movimiento»)
+        const avisos = [], ui0 = G.ui && G.ui.toast, burst0 = G.fx.burst, ring0 = G.fx.ringFx, play0 = G.audio && G.audio.play, R = G.renderer;
+        let chispas = 0, ondas = 0;
+        const limpio = () => { terminarPlaneo(); est.empuje = null; for (const id of IDS) cd[id] = 0; };
+        const correr = sg => { for (let i = 0; i < Math.round(sg * 10); i++) paso(0.1); };
+        try {
+          G.quiet = false; if (G.ui) G.ui.toast = t => { avisos.push(String(t)); }; if (play0) G.audio.play = () => {};
+          G.fx.burst = function (x, y, z, k, n) { if (k === 'gold') chispas += n || 0; return burst0.apply(this, arguments); };
+          G.fx.ringFx = function (x, y, z, size) { if (size === 3.2) ondas++; return ring0.apply(this, arguments); };
+          if (R) R.REDUCED = false;
+          V.cambiarMundo('superplaneo', 0); V.cambiarMundo('superplaneo_pista', 0); limpio();
+          S.facing = { x: 1, z: 0 }; M.flying = true; S.pos.x = guard.pos.x; S.pos.z = guard.pos.z;
+          // La pista: el primer Planeo largo teniendo la Ráfaga, una sola vez
+          usar('planeo', true); const pista1 = avisos.slice(); limpio(); usar('planeo', true); const pista2 = avisos.length;
+          check('E18 · La primera vez que planeas teniendo la Ráfaga sale una pista corta, y solo esa vez', pista1.length === 1 && /Ráfaga/.test(pista1[0]) && /súper planeo/.test(pista1[0]) && pista1[0].length < 60 && pista2 === 1 && mundo('superplaneo_pista') === 1, pista1.join(' | '));
+          // Ráfaga durante un Planeo largo → súper planeo
+          avisos.length = 0; const x0 = S.pos.x, pt0 = est.planeoT, sinkPlaneo = T.glideSink;
+          const ok1 = usar('rafaga', true);
+          const enSuper = { superT: est.superT, sink: T.glideSink, planeoT: est.planeoT, veces: mundo('superplaneo'), onda: ondas };
+          check('E18 · Ráfaga durante un Planeo largo da un súper planeo: hunde menos (12 %), dura 4 s más y se apunta', ok1 && enSuper.superT > 5.9 && Math.abs(enSuper.sink - guard.sink * 0.12) < 1e-9 && enSuper.sink < sinkPlaneo && enSuper.planeoT > pt0 + 3.9 && enSuper.veces === 1 && enSuper.onda === 1, JSON.stringify(enSuper));
+          check('E18 · El primer súper planeo lo explica con un aviso', avisos.length === 1 && /¡Súper planeo! Ráfaga \+ Planeo largo/.test(avisos[0]), avisos.join(' | '));
+          correr(1.5); const avance = S.pos.x - x0;
+          check('E18 · Más alcance: el empujón del súper planeo lleva mucho más lejos que la Ráfaga sola (unos 6 m)', avance > 14 && avance < 20, avance.toFixed(2));
+          chispas = 0; correr(1); const estela = chispas;
+          check('E18 · Deja una estela de chispas mientras dura (a ritmo fijo, no por cuadro)', estela >= 12 && estela <= 20, estela);
+          correr(4); const fin = { superT: est.superT, sink: T.glideSink, planeoT: est.planeoT };
+          check('E18 · Al acabar el súper planeo sigue el Planeo largo normal (30 %) hasta su final, y luego todo vuelve', fin.superT === 0 && Math.abs(fin.sink - guard.sink * 0.3) < 1e-9 && fin.planeoT > 0 && (correr(7), T.glideSink === guard.sink && est.planeoT <= 0), JSON.stringify(fin));
+          // Las siguientes veces: aviso corto, sin pista
+          limpio(); avisos.length = 0; usar('planeo', true); usar('rafaga', true);
+          check('E18 · Las siguientes veces el aviso es corto y no vuelve la pista', mundo('superplaneo') === 2 && avisos.join('|') === '¡Súper planeo!', avisos.join(' | '));
+          // El Planeo justo en el empujón de una Ráfaga también vale (los dos a la vez)
+          limpio(); usar('rafaga', true); usar('planeo', true);
+          check('E18 · Activarlos juntos (Planeo en el empujón de la Ráfaga) también da el súper planeo', est.superT > 5.9 && mundo('superplaneo') === 3 && Math.abs(T.glideSink - guard.sink * 0.12) < 1e-9, est.superT);
+          limpio(); usar('rafaga', true); correr(1); usar('planeo', true);
+          check('E18 · Sin la Ráfaga reciente, el Planeo largo es el normal', est.superT === 0 && Math.abs(T.glideSink - guard.sink * 0.3) < 1e-9 && mundo('superplaneo') === 3);
+          // Reducir movimiento: estela rala y sin onda
+          limpio(); if (R) R.REDUCED = true; ondas = 0; usar('planeo', true); usar('rafaga', true); chispas = 0; correr(1); const rala = chispas;
+          check('E18 · Con «Reducir movimiento»: sin onda y la estela es más rala', !R || (ondas === 0 && rala < estela && rala >= 1 && est.superT > 0), 'onda ' + ondas + ' · chispas ' + rala + ' (normal ' + estela + ')');
+          // En el teléfono, la Ráfaga brilla mientras dura el Planeo largo
+          if (TACTIL) {
+            limpio(); usar('planeo', true); pintar(true); const pod = document.getElementById('v18-exp-poder');
+            if (caja && pod && !pod.hidden) { pintT = 0; paso(0.01); const br = caja.querySelector('[data-extra="rafaga"]'); check('E18 · Táctil: el botón de la Ráfaga brilla durante el Planeo largo', !!br && br.classList.contains('combo')); }
+          }
+        } finally {
+          limpio(); G.fx.burst = burst0; G.fx.ringFx = ring0; if (play0) G.audio.play = play0; if (ui0) G.ui.toast = ui0; G.quiet = true;
+          if (R) R.REDUCED = guard.reducido; S.pos.x = guard.pos.x; S.pos.z = guard.pos.z;
+        }
+      }
       // Teclas
       { // T60: con el Escondite en marcha, el Ojo hace brillar primero a los pichones que faltan
         const E0 = G.escondite, px = S.pos.x + 12, pz = S.pos.z + 3;
@@ -234,7 +331,8 @@ window.AVV18PoderesExtra = function (G) {
       terminarPlaneo(); est.empuje = null; pulsos.length = 0;
       S.pos.x = guard.pos.x; S.pos.y = guard.pos.y; S.pos.z = guard.pos.z; S.facing = guard.facing; M.flying = guard.flying; T.glideSink = guard.sink;
       S.field = guard.field; G.juice = guard.juice; G.quiet = guard.quiet;
-      if (V && V.cambiarMundo) IDS.forEach((id, i) => V.cambiarMundo(P[id].clave, guard.mundo[i]));
+      if (V && V.cambiarMundo) { IDS.forEach((id, i) => V.cambiarMundo(P[id].clave, guard.mundo[i])); V.cambiarMundo('superplaneo', guard.superMundo[0]); V.cambiarMundo('superplaneo_pista', guard.superMundo[1]); }
+      if (G.renderer && guard.reducido != null) G.renderer.REDUCED = guard.reducido;
       for (const id of IDS) cd[id] = 0;
       if (caja) { caja.remove(); caja = null; }
     }
