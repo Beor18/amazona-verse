@@ -74,7 +74,10 @@
       records: [L('Mis récords', 'My records'), L('Medallas y tiempos', 'Medals and times')],
       ayuda: L('¿Cómo se juega?', 'How do I play?'),
       elige: L('Elige una tarjeta', 'Pick a card'),
-      pista: L('Teclado: WASD te mueve. Con Espacio despegas y te posas. E es la acción. En el teléfono, el joystick mueve y el botón grande es la acción.', 'Keyboard: WASD moves you. With Space you take off and you land. E is the action. On the phone, the joystick moves you and the big button is the action.'),
+      // F20: en táctil la ayuda empieza por el teléfono (antes abría con las teclas del computador)
+      pista: window.matchMedia && matchMedia('(pointer: coarse)').matches
+        ? L('En el teléfono, el joystick te mueve y el botón grande es la acción. Con teclado: WASD te mueve, con Espacio despegas y te posas, y E es la acción.', 'On the phone, the joystick moves you and the big button is the action. With a keyboard: WASD moves you, Space takes off and lands, and E is the action.')
+        : L('Teclado: WASD te mueve. Con Espacio despegas y te posas. E es la acción. En el teléfono, el joystick mueve y el botón grande es la acción.', 'Keyboard: WASD moves you. With Space you take off and you land. E is the action. On the phone, the joystick moves you and the big button is the action.'),
     });
     function subAventura() {
       const pasos = (G.misiones && G.misiones.steps) || [];
@@ -264,6 +267,7 @@
           if (!p) return;
           p.hidden = !p.hidden;
           b.setAttribute('aria-expanded', p.hidden ? 'false' : 'true');
+          if (!p.hidden && p.scrollIntoView) { try { p.scrollIntoView({ block: 'nearest' }); } catch (e) { /* sin desplazamiento */ } } // F20: el texto ya no queda bajo el borde
         });
         form.appendChild(b);
       }
@@ -1069,7 +1073,7 @@
     }
 
     // QA-212: ocupado() = hay una actividad V18 en marcha (duelo, minigolf, carreras…); lo miran las pistas de descubrir.js y ciclo.js
-    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18() || document.body.classList.contains('sigueme-on') || document.body.classList.contains('foto-on') || document.body.classList.contains('sembradora-on') || document.body.classList.contains('planeo-on') || document.body.classList.contains('pichones-on'), /* D16: «Rescate rápido», igual */ /* D14: «Planeo entre nubes», igual */ /* F2-4: «Sembradora del cielo», igual */ /* F2-2: «Foto relámpago», igual */ /* F2-1: ¡Sígueme, bandada! se juega en el mundo: los avisos de la historia esperan */ get libre() { return libre; }, get pendiente() { return pendiente; } };
+    const api = G.menuModos = { elegir, mostrar, volver, ultimo, test, lanzar18, llevar, desdeMenu: () => desdeMenu, ocupado: () => ocupado18() || /(?:^|\s)(?:escondite|semillas|canto|piloto|compas)-on(?:\s|$)/.test(document.body.className) /* F20: los demás de «Más juegos», igual (el aviso de la historia salía encima del Escondite) */ || document.body.classList.contains('sigueme-on') || document.body.classList.contains('foto-on') || document.body.classList.contains('sembradora-on') || document.body.classList.contains('planeo-on') || document.body.classList.contains('pichones-on'), /* D16: «Rescate rápido», igual */ /* D14: «Planeo entre nubes», igual */ /* F2-4: «Sembradora del cielo», igual */ /* F2-2: «Foto relámpago», igual */ /* F2-1: ¡Sígueme, bandada! se juega en el mundo: los avisos de la historia esperan */ get libre() { return libre; }, get pendiente() { return pendiente; } };
     api.temporada = G.temporada = temporada(G, { L, espera, hasta, elegir, aplazarIntro: () => { aplazar = true; } });
     if (window.AVQueHacer) window.AVQueHacer(G);
     return api;

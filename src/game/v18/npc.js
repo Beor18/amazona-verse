@@ -105,6 +105,10 @@ window.AVV18Npc = function (G) {
   const INST = new Map(); // id → instancia viva
   const COL = new Map();  // id → colocación { x, z, rotY, aparece, comenta, meta }
   const USO = new Map();  // id → { label, use, visible } de la misión
+  // F20: con un juego de «Más juegos» en marcha (Escondite, Semillas, Sigue el canto, Escuela de vuelo…) los personajes no
+  // comentan al pasar ni ofrecen su Acción: el bocadillo del Guardián salía encima del juego y el botón decía «Volar»
+  const MINI_ON = /(?:^|\s)(?:canto|escondite|semillas|piloto|compas|sigueme|foto|sembradora|planeo|pichones|tren|maze|river|flight|retos)-on(?:\s|$)/;
+  const enMinijuego = () => MINI_ON.test(document.body.className) || !!(G.retosApi && G.retosApi.activo);
   const its = new Map();  // id → interactuable (uno por personaje, para siempre: visible() decide)
 
   async function instanciar(id) {
@@ -213,7 +217,7 @@ window.AVV18Npc = function (G) {
     }
     if (!its.has(id)) {
       its.set(id, G.interaccion.add({ id: 'v18npc_' + id, x: c.x, z: c.z, r: 2.6,
-        visible: () => { const i = instancia(id), u = USO.get(id); return !!i && (!u || !u.visible || u.visible()); },
+        visible: () => { const i = instancia(id), u = USO.get(id); return !!i && !enMinijuego() && (!u || !u.visible || u.visible()); },
         label: () => { const u = USO.get(id); return u && u.label ? u.label() : 'Hablar con ' + nombre(id).replace(/^El /, 'el ').replace(/^La /, 'la '); },
         use: () => { const u = USO.get(id); if (u && u.use) return u.use(); return decir(id, (d.porEstado[estado(id)] || {}).dialogo || []); } }));
     }
@@ -289,7 +293,7 @@ window.AVV18Npc = function (G) {
       if (inst.mixer && !bajo) inst.mixer.update(dt);
       // comentario al pasar (bocadillo, cada 20 s como mucho; nunca encima de otra charla)
       const c = COL.get(inst.id);
-      if (!busy && c && c.comenta && d < 5 && (performance.now() - (comentado[inst.id] || -1e9)) > 20000 && G.dialogo && !(G.dialogo.activo && G.dialogo.activo())) {
+      if (!busy && c && c.comenta && d < 5 && !enMinijuego() && (performance.now() - (comentado[inst.id] || -1e9)) > 20000 && G.dialogo && !(G.dialogo.activo && G.dialogo.activo())) {
         comentado[inst.id] = performance.now();
         const tx = ((def(inst.id).porEstado[estado(inst.id)] || {}).dialogo || [])[0];
         if (tx) decir(inst.id, [tx], null, { libre: true, caja: false });

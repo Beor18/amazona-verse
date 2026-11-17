@@ -456,6 +456,7 @@ html.mov-reducido *, html.mov-reducido *::before, html.mov-reducido *::after { a
   background: transparent; border: 2px dashed rgba(107, 82, 54, 0.4); border-radius: var(--r-md); color: var(--c-ink-muted);
 }
 .diary li::after { content: "N.º " counter(entry, decimal-leading-zero); position: absolute; right: 10px; top: 8px; font: 700 10px/1 var(--font-body); letter-spacing: 0.06em; color: var(--c-ink-muted); }
+:lang(en) .diary li::after { content: "No. " counter(entry, decimal-leading-zero); } /* F20: en inglés, «No.» (antes «N.º» también en EN) */
 .diary li b { display: block; padding-right: 36px; font: 700 var(--fs-md)/1.2 var(--font-display); color: var(--c-ink-muted); }
 .diary li small { display: block; margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--c-ink-muted); }
 .diary li.found {
@@ -1149,3 +1150,14 @@ body.v18-pesca-on:has(#card:not([hidden])) #v18-pesca { visibility: hidden; }
   body.vittata-posada:not(:has(#dialog:not([hidden]))):not(:has(#end:not([hidden]))) #toast { top: max(calc(env(safe-area-inset-top, 0px) + 118px), calc(var(--mm-top, calc(env(safe-area-inset-top, 0px) + 134px)) + var(--mm, 96px) + 8px)); bottom: auto; }
   body:not(.vittata-posada):has(#v18-exp-poder:not([hidden])) #toast { margin-bottom: 64px; }
 }
+
+/* F20 (recorrido 390×844): con Mis récords / Mis logros abiertos desde la pausa, la ficha del poder (z 70) y «Salir» de
+   Vuelo libre o Construir (z 60) quedaban encima del panel y tapaban el título y «Pendiente». Igual que con #maestro y #familia. */
+body:has(#records:not([hidden])) :is(#v18-exp-poder, #modo-salir) { display: none !important; }
+/* F20: en el Diario, los títulos y notas de las secciones de abajo (Fauna de El Yunque, Peces del río…) ya no van pegados a la línea roja */
+#card .diario-sec > :not(ul) { padding-left: 8px; }
+/* F20: con Sigue el canto, Escondite, Semillas al vuelo, Escuela de vuelo o Alas al compás en marcha, un bocadillo que ya estaba
+   (el Guardián del Primer Vuelo comentando al pasar) no queda encima del juego ni de su panel final (npc.js ya no abre otros) */
+body:is(.canto-on, .escondite-on, .semillas-on, .piloto-on, .compas-on) #bocadillos { visibility: hidden !important; }
+/* F20 (390 px): durante la cuenta 3-2-1 de Tormenta y Banquete el minimapa espera; el número grande quedaba pegado a él */
+@media (max-width: 560px) { body:has(#retos .rt-cuenta:not(:empty)) #minimapa { visibility: hidden; } }
