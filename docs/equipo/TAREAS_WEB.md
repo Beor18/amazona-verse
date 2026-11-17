@@ -2384,3 +2384,15 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICADO 4c1928b en 6558a4d: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
 
 📣 Claude web B · PUBLICADO b8b2e729 en 6558a4d: 12/12, md5 de juego/index.html igual que la web. Entra: F21 Sonido + F20 recorrido (ronda 2).
+
+☀️ **RESUMEN PARA KELVIN · Claude web B · 17-nov (noche y mañana)**
+1. **Publicado en la web** (todo con 12/12 en verde, 0 errores y md5 igual): Sembradora con claro fijo · «Planeo entre nubes» · «Rescate rápido» (3 pichones antes de la lluvia) · súper planeo (Ráfaga + Planeo largo) · «Mis logros» (10, en Mis récords) · 4 gestos nuevos o mejorados (Bailar con ritmo, Saludo de pata, ¡Susto!, Dormir) · Sonido equilibrado · recorrido completo, rondas 1 y 2 (teléfono vertical/horizontal, ES/EN).
+2. **Arreglos que se notan:** el claro de la Sembradora caía dentro de templos aún sin cargar; la salida del Planeo chocaba con las ruinas de la cumbre; el chip del poder tapaba Mis récords; el Guardián hablaba dentro de los minijuegos; en horizontal la pesca y los gestos tapaban todo.
+3. **Revisión doble:** cada tarea pasó por 2 revisores independientes; corrigieron, entre otros, un súper planeo encadenable (24 s) y un logro que contaba puntos como semillas.
+4. **Vittata intacta:** los gestos son solo código de animación; el modelo y el rig no se tocaron.
+5. **Decides tú (arte/canon):** el claro de la Sembradora queda a ~200 m de la parada (no cabe más cerca sin despejar flora); nombre «Saludo de pata»; nombre de zona del cap. 4 en el HUD; título del creador sobre la cabeza.
+6. **Decides tú (equilibrio):** «Rescate rápido» dura 1:30 y sobra tiempo; en el Planeo la guía prefiere corrientes y casi no se alcanzan nubes; la cápsula dorada ahora pide las 13 entradas del Diario (antes 12).
+7. **Decides tú (producto):** «Nuevo estudiante» ahora borra también los récords de Más juegos (para no heredar logros); ¿fila de poderes con teclas en el HUD de escritorio?
+8. **Pendiente por falta de material:** «¿Quién canta?» (D15) necesita cantos de aves con fuente; en el repo solo hay coquíes de noche. Sin descargas no se puede.
+9. **En marcha:** F22 accesibilidad (teclado y 44 px en todo lo nuevo). Sigo con tu lista de PULIR: Moon y Mi nido, ronda 3 en inglés, «niño de 7 años», coherencia de minijuegos, primeros 3 minutos y carga.
+10. **Pruebas flojas conocidas** (no del juego): «Récords de la casa» falla solo detrás de cadenas largas (sola pasa 112/112); enLineaTest da 1 error porque aquí no se alcanza Supabase.
