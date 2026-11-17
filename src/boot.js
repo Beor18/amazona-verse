@@ -284,6 +284,8 @@
     const fotoF2 = aDemanda('src/game/foto_safari.js', 'AVFotoSafari'), cargarFoto = () => Promise.all([AV.fauna ? AV.fauna() : null, G.terreno.mapa && G.terreno.mapa.agua ? cargarRioVivo() : null, cargarBandada()].map(p => Promise.resolve(p).catch(() => null))).then(() => fotoF2()); AV.foto = () => cargarFoto().then(f => f.jugar()); AV.fotoTest = o => cargarFoto().then(f => f.test(o));
     // F2-4: «Sembradora del cielo» (Más juegos), se carga al elegirlo
     const sembradoraF2 = aDemanda('src/game/sembradora.js', 'AVSembradora'); AV.sembradora = () => sembradoraF2().then(s => s.jugar()); AV.sembradoraTest = o => sembradoraF2().then(s => s.test(o));
+    // D14: «Planeo entre nubes» (Más juegos), se carga al elegirlo
+    const planeoD14 = aDemanda('src/game/planeo.js', 'AVPlaneo'); AV.planeo = () => planeoD14().then(s => s.jugar()); AV.planeoTest = o => planeoD14().then(s => s.test(o));
     const cargarSorpresas = aDemanda('src/game/sorpresas.js', 'AVSorpresas'); AV.sorpresasTest = o => cargarSorpresas().then(s => s.test(o)); alPrimerGesto(cargarSorpresas); // CG-45, sin tocar ciudad_viva.js
     if (G.terreno.mapa && ((G.terreno.mapa.agua && G.terreno.mapa.agua.bahiaBio) || (G.terreno.mapa.lugares && G.terreno.mapa.lugares.bahiaBio))) { const maravillas = aDemanda('src/game/maravillas.js', 'AVMaravillas'); AV.maravillasTest = o => maravillas().then(m => m.test(o)); alPrimerGesto(maravillas); } // src/game/maravillas.js
     if (G.terreno.mapa && G.terreno.mapa.escenaKelvin) { const guineo = aDemanda('src/game/guineo.js', 'AVGuineo'); AV.guineo = guineo; AV.guineoTest = o => guineo().then(g => g.test(o)); alPrimerGesto(guineo); } // src/game/guineo.js (huertos de guineo, C12)
