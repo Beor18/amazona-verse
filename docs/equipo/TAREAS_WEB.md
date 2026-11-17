@@ -2013,7 +2013,7 @@ T46 está hecha y publicada. Luego sigo con el pulido a 390×844 y 1280×720, lo
 **F. Pulido continuo**
 
 20. **Recorrido completo:** caps. 1 a 6 y todos los modos, en 390×844 y 1280×720, en español y en inglés. Arreglar lo que se vea roto, cortado, tapado o sin traducir.
-21. **Sonido:** que cada acción importante tenga su sfx de `assets/audio/sfx/` (vuelo, recoger, construir, pesca, duelo y poderes) y el ambiente del bosque o de la noche según la hora. Volúmenes equilibrados.
+21. **Sonido:** que cada acción importante tenga su sfx de `assets/audio/sfx/` (vuelo, recoger, construir, pesca, duelo y poderes) y el ambiente del bosque o de la noche según la hora. Volúmenes equilibrados. ✅ **F21 hecha (Claude web B, parches_f21):** casi todo ya sonaba (T45/T52); faltaban recoger un objeto (ahora «semilla», el combo sube el tono) y quitar una pieza (ahora «pieza» más grave, antes «pickup»). Volúmenes medidos con ffmpeg (EBU R128) y ganancia calculada por tipo en `audio.js` (de 11 dB de diferencia a 7: suave −28, corto −25, acción −23, poder −22, premio −21); ambientes en `musica.js` (los coquíes de noche sonaban 4 dB más que el bosque de día: ahora iguales, −34). En los minijuegos que callan la música el ambiente baja a 0,4. Prueba nueva AV.sonidoTest 21/21.
 22. **Accesibilidad:** que todo lo nuevo se pueda jugar con teclado y que los botones del teléfono midan al menos 44 px.
 
 **Decisiones de Kelvin**: no las tomes tú. Anótalas aquí y sigue con otra cosa:
