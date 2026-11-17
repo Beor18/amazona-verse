@@ -167,7 +167,8 @@
         negro(ms) {
           estilos(); clearTimeout(tFade);
           let f = document.getElementById('c1-fade');
-          if (!f) { f = document.createElement('div'); f.id = 'c1-fade'; f.setAttribute('aria-hidden', 'true'); document.body.appendChild(f); }
+          // PULIR 5: antes del botón «Saltar intro» (mismo z 9): añadida al final, la capa nueva del último negro lo tapaba
+          if (!f) { f = document.createElement('div'); f.id = 'c1-fade'; f.setAttribute('aria-hidden', 'true'); document.body.insertBefore(f, document.getElementById('c1-saltar')); }
           f.style.transition = ms ? 'opacity ' + dur(ms) + 'ms ease' : 'none';
           void f.offsetWidth; // reflow: la transición arranca desde el valor actual
           f.style.opacity = '1';
