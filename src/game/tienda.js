@@ -312,7 +312,7 @@ window.AVTienda = function (G) {
       foco = (desde && desde.nodeType === 1) ? desde : (act && act !== document.body && act !== document.documentElement ? act : null);
       msg = ''; msgFalta = null; probando = ''; recien = '';
       anclar(true);
-      if (o === 'construir') cat = 'piezas'; // desde Construir se abre en «Piezas de Construir» (revisión F3)
+      cat = o === 'construir' ? 'piezas' : 'ropa'; // desde Construir se abre en «Piezas de Construir»; desde la Pausa o Mi personaje, en Ropa (revisión F3)
     }
     origen = o || 'pausa'; abiertaYa = true;
     G.ui.showCard(html());
