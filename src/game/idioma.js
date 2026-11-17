@@ -303,6 +303,11 @@ AVE.module('idioma', function (G) {
       // F20 r2: el botón del Diario de los cap. 3, 4 y 6 con su contador y la camisa del Diario completo (salían en español)
       ok('F20 r2 · «Carta 0/6», «Cuaderno 1/6» y «Camisa Deportiva 787» tienen EN', tr('Carta 0/6') === 'Chart 0/6' && tr('Cuaderno 1/6') === 'Notebook 1/6' && tr('Camisa Deportiva 787') === '787 Sports Shirt', [tr('Carta 0/6'), tr('Cuaderno 1/6'), tr('Camisa Deportiva 787')].join(' / '));
       ok('F20 · El nombre de equipo sale entero en inglés y «Probar» es «Try on»', tr('Bandada del Coquí Valiente') === 'Flock of the Brave Coquí' && tr('Probar') === 'Try on', tr('Bandada del Coquí Valiente') + ' / ' + tr('Probar'));
+      // PULIR 3 (p23): el botón Acción toma la primera palabra de la etiqueta (interaccion.js); «Recibir» y «Recoger madera» salían en ES
+      ok('PULIR 3 · Verbos del botón Acción y «Recoger madera» tienen EN', tr('Recibir') === 'Welcome' && tr('Invitar') === 'Invite' && tr('Recoger madera') === 'Pick up wood', [tr('Recibir'), tr('Invitar'), tr('Recoger madera')].join(' / '));
+      { const it = (G.interaccion && Array.isArray(G.interaccion.list)) ? G.interaccion.list : [], sinV = [];
+        for (const x of it) { let l = ''; try { l = typeof x.label === 'function' ? x.label() : x.label; } catch (e) { l = ''; } const v = String(l || '').split(' ')[0].replace(/[:,;.…·]+$/, ''); if (v && /^[A-ZÁÉÍÓÚ¿¡]/.test(v) && /[a-záéíóúñ]/.test(v) && tr(v) === v && !exactas.has(v) && !sinV.includes(v)) sinV.push(v); }
+        ok('PULIR 3 · El verbo de cada interacción de este capítulo tiene EN (' + it.length + ')', !sinV.length, sinV.join(' | ')); }
       const comillas = claves.filter(k => /[«»]/.test(String(dic[k])));
       ok('F20 · Las traducciones usan comillas inglesas (“ ”), no « »', !comillas.length, comillas.slice(0, 5).join(' | '));
     }

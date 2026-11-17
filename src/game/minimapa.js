@@ -251,7 +251,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
 #mapa-grande .mg-head button[aria-pressed="true"]{background:#2fc15a;border-color:#fff;color:#08210f}
 #mapa-grande .mg-head button[hidden]{display:none}
 #mapa-grande .mg-head button:focus-visible{outline:3px solid var(--c-focus,#ffd23f);outline-offset:2px}
-#mapa-grande .mg-head .mg-cerrar{order:9;width:56px;min-width:56px;height:56px;min-height:56px;padding:0;border-radius:50%;border:3px solid #fff;background:#e2574c;font:800 calc(26px * var(--fs-k,1))/1 var(--font-body,sans-serif);box-shadow:0 4px 0 #9c2f27;animation:mg-respira 1.8s ease-in-out infinite}
+#mapa-grande .mg-head .mg-cerrar{width:56px;min-width:56px;height:56px;min-height:56px;margin:-6px 0;padding:0;border-radius:50%;border:3px solid #fff;background:#e2574c;font:800 calc(26px * var(--fs-k,1))/1 var(--font-body,sans-serif);box-shadow:0 4px 0 #9c2f27;animation:mg-respira 1.8s ease-in-out infinite}
 @keyframes mg-respira{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
 body:is(.escondite-on,.semillas-on,.sigueme-on,.foto-on,.sembradora-on,.planeo-on,.pichones-on) #minimapa .mm-btn{cursor:default}
 #mapa-grande canvas{display:block;width:var(--lado);height:var(--lado);max-width:100%;margin:0 auto;border-radius:12px;background:#2a6f9a;touch-action:manipulation}

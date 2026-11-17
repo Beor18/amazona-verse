@@ -392,11 +392,11 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   // PULIR 3 (p23): la flecha 3D de la guía (G.fx.guideArrow, motor) flota 2,75 m sobre Vittata; con la cámara metida en el techo del
   // taller o en el follaje quedaba a un palmo y se veía como una cuña enorme que tapaba media pantalla (cap. 6, Escondite, Foto…).
   // Aquí, después de todos los G.fx.guide() del cuadro (prioridad 60-61), se esconde si la cámara está a menos de 2,4 m. Y hasta el
-  // primer «posarse» (el objetivo «Vuela y pósate junto a Iguaca»), haz y flecha brillan como en el modo relajado, para que se vean.
+  // primer «posarse» (el objetivo «Vuela y pósate junto a Iguaca»), el haz sobre el objetivo brilla como en el modo relajado.
   G.on('render', () => {
     const fx = G.fx, fl = fx && fx.guideArrow, haz = fx && fx.guideBeam; if (!fl || !G.renderer || !G.renderer.camera) return;
     const relajado = !!(G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado());
-    if (fl.visible && !relajado && !pmE.hecho.posar && enJuego()) { fl.scale.setScalar(1.4); if (haz && haz.visible) haz.material.opacity = Math.min(0.45, haz.material.opacity * 1.8); }
+    if (haz && haz.visible && !relajado && !pmE.hecho.posar && enJuego()) haz.material.opacity = Math.min(0.45, haz.material.opacity * 1.8);
     if (fl.visible && G.renderer.camera.position.distanceTo(fl.position) < 2.4) fl.visible = false;
   }, 62);
 

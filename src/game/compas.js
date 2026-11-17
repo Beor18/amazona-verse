@@ -319,7 +319,11 @@ window.AVCompas = function (G) {
     }
     let latido = 0;
     if (E.fase === 'juego' && !red && t >= E.tCuenta) { const ph = ((t - E.compasT) / E.compasB) % 1; latido = ph >= 0 ? Math.max(0, 1 - ph * 4) : 0; }
-    cx.lineWidth = 5; cx.strokeStyle = '#fff8e6';
+    // PULIR 3 (niño de 7 años): el círculo se enciende en dorado justo cuando hay que tocar (una hoja dentro de ±0,14 s); solo color,
+    // así que también con «Reducir movimiento»
+    let ahoraToca = false;
+    if (E.fase === 'juego') for (const n of notas) { if (n.on && !n.res && n.tipo !== 'silencio' && Math.abs(n.t - t) < 0.14) { ahoraToca = true; break; } }
+    cx.lineWidth = ahoraToca ? 8 : 5; cx.strokeStyle = ahoraToca ? '#ffd23f' : '#fff8e6';
     cx.beginPath(); cx.arc(vx, y, r * (1 + latido * 0.12), 0, Math.PI * 2);
     if (E.flash > 0) { cx.globalAlpha = 0.25 + 0.6 * E.flash; cx.fillStyle = COL_CHIS[E.flashC === 1 ? 1 : E.flashC === 2 ? 2 : 0]; } else cx.fillStyle = 'rgba(255,248,230,.18)';
     cx.fill(); cx.globalAlpha = 1; cx.stroke();

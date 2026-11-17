@@ -388,6 +388,8 @@ window.AVRescateRapido = function (G) {
       'body.pichones-on:not(.pichones-fin) #acts #b-dive{position:absolute;left:0;bottom:calc(100% + 10px)}' +
       // PULIR 3 (niño de 7 años): en el suelo se veían a la vez «Bajar», «Volar» y «Saltar»; «Bajar» solo sale volando
       'body.pichones-on:not(.pichones-fin):not(.vittata-vuela) #acts #b-dive{display:none!important}' +
+      // y con su propio icono (flecha abajo): compartía el de «Aterrizar» y los dos parecían el mismo botón
+      'body.pichones-on #acts #b-dive{--icon:var(--i-jump)}body.pichones-on #acts #b-dive::before{transform:rotate(180deg)}' +
       'body.pichones-on #b-act{--icon:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Cellipse cx=%2712%27 cy=%2715.5%27 rx=%276%27 ry=%276.6%27/%3E%3Ccircle cx=%2712%27 cy=%277.6%27 r=%274.4%27/%3E%3C/svg%3E")}';
     document.head.appendChild(st);
   }

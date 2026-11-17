@@ -1167,6 +1167,9 @@ html.a11y-unamano.a11y-zurdo #toast {
 /* T23: durante la apertura del capítulo («Saltar intro» a la vista) no se ve el HUD: solo la escena, el narrador y «Saltar intro»
    (antes se veía todo el HUD mientras salía Vittata y «Saltar intro» quedaba encima de los contadores) */
 body:has(#c1-saltar) :is(#stick, #acts, #prompt, #sys, #top, #emotes, #keyhint, #tag, #minimapa, #v18-exp-poder, #modo-salir, #pm-pista) { visibility: hidden; }
+/* PULIR 3 (niño de 7 años): «Saltar intro» era una píldora oscura y discreta sobre el negro de la intro: ahora dorada, más grande y con ⏭ */
+#c1-saltar.btn { min-height: 56px; padding: 0 var(--sp-5); font-size: var(--fs-lg); --btn-bg: var(--gold); --btn-ink: var(--c-ink); --btn-border: #fff; --btn-lip: #c9962e; }
+#c1-saltar.btn::after { content: "\23ED" / ""; margin-left: 8px; font-size: 1.15em; line-height: 1; }
 
 /* T24: pescando, fuera Diario, Gestos, Nido y Construir (la Pesca tiene sus propios botones); y si se abre una tarjeta
    encima (el Diario con el teclado, el Mercadito), el panel de la Pesca no la tapa (antes tapaba su «Cerrar» en el teléfono) */
