@@ -737,14 +737,15 @@ window.AVFotoSafari = function (G) {
         check('En inglés no queda texto en español (Roll finished!, Play again, Exit, Photos)', /Roll finished!|Perfect roll!/.test(txt) && /Play again/.test(txt) && /Exit/.test(txt) && /Photos: \d/.test(txt) && !/[áéíóúñ¡]|Salir|Otra vez|Récord|Fotos|estrellas/.test(txt), txt.slice(0, 200));
         ae.idioma = idi0; pintarHud(); pintarFin(); pintarCarta(); pintarVisor();
       }
+      ponerDelante(4); // el animal de prueba, otra vez delante (tras una cadena larga de baterías Vittata podía quedar lejos de él: tarjeta vacía)
       finEl.querySelector('[data-a="otra"]').click();
-      check('«Otra vez» empieza limpio (2:00, 0 estrellas, tarjeta nueva, sin panel, cámara ni pausa)', E.fase === 'juego' && E.estrellas === 0 && E.fotos === 0 && E.nr === 0 && E.k === 1 && finEl.hidden && !E.cam && q(hudEl, 'r').textContent === '2:00' && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('foto')), JSON.stringify({ fase: E.fase, est: E.estrellas, fotos: E.fotos, nr: E.nr, k: E.k, fin: finEl.hidden, cam: E.cam, r: q(hudEl, 'r').textContent, pausa: G.pausa && G.pausa.motivos ? [...G.pausa.motivos].join(',') : '-' }));
+      check('«Otra vez» empieza limpio (2:00, 0 estrellas, tarjeta nueva, sin panel, cámara ni pausa)', E.fase === 'juego' && E.estrellas === 0 && E.fotos === 0 && E.nr === 0 && E.k === 1 && finEl.hidden && !E.cam && q(hudEl, 'r').textContent === '2:00' && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('foto')), JSON.stringify({ fase: E.fase, est: E.estrellas, fotos: E.fotos, nr: E.nr, k: E.k, fin: finEl.hidden, cam: E.cam, r: q(hudEl, 'r').textContent, pausa: G.pausa && G.pausa.motivos ? [...G.pausa.motivos].join(',') : '-', d: Math.round(Math.hypot(sitio.x - E.x0, sitio.z - E.z0)) }));
       E.reloj = 0.01; paso(0.05);
       check('Sin estrellas, nunca castiga: «¡Casi!» y el récord sigue', /Casi/.test(q(finEl, 'fmsg').textContent) && leerRec().mejor === total && q(finEl, 'fmed').textContent === '', q(finEl, 'fmsg').textContent);
       finEl.querySelector('[data-a="salir"]').click();
       check('«Salir» lo quita todo (HUD, tarjeta, visor, panel, clases, pausa, Acción de siempre y cámara de siempre)', !activo() && hudEl.hidden && cartaEl.hidden && visorEl.hidden && finEl.hidden && !/foto-(on|fin|cam)/.test(document.body.className) && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('foto')) && (!G.interaccion || G.interaccion.modo !== MODO) && (!C || (C.dist === camD0[0] && C.distFly === camD0[1])));
       check('Sin mallas ni texturas nuevas en la escena', !R.scene.children.some(k => /^foto/.test(k.name || '')));
-      jugar({ semilla: 3 }); disparar();
+      ponerDelante(4); jugar({ semilla: 3 }); disparar();
       const ev = tecla('Escape'), soloCam = activo() && !E.cam && visorEl.hidden && !hudEl.hidden && ev.defaultPrevented;
       const ev2 = tecla('Escape');
       check('Esc con la cámara abierta solo cierra la cámara (sigue la partida); otro Esc sale y devuelve la cámara', soloCam && !activo() && ev2.defaultPrevented && hudEl.hidden && visorEl.hidden && (!C || (C.dist === camD0[0] && C.distFly === camD0[1])));
