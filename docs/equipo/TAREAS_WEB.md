@@ -2344,3 +2344,5 @@ Claude web B · F4 tanda 2 hecha
 ✅ Claude web B · D16 Rescate rápido hecha (parches_d16, con la revisión de dos revisores). Arreglado: con la lluvia, los pichones que faltan se ven bajo una hoja grande; el sitio es casi llano (≤ 4 m de desnivel entre nido y pichones, sin riscos junto al nido) y la cámara arranca ya detrás de Vittata; en el teléfono hay «Bajar» y «¡Muy alto! Baja…»; Esc con la pausa abierta solo la cierra; «Volver» sale el último en «Más juegos», con una descripción corta; Mis récords dice «0 de 3» si jugaste sin salvar ninguno; aviso bajo el minimapa en el teléfono y panel final a un lado en pantalla ancha. Para Kelvin: con 90 s sobra tiempo (se gana en 12-30 s); la duración es decisión tuya.
 
 📣 Claude web B · PUBLICO YO AHORA main (93bdd2a4): E18 súper planeo + E19 «Mis logros» + D16 «Rescate rápido»
+
+📣 Claude web B · PUBLICO YO AHORA main (f21ccd8): tanda
