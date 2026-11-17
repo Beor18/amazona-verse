@@ -178,7 +178,7 @@ AVE.module('actores', function (G) {
   // cuando la letra grande pone los gestos en una columna) se limita su alto y se desplaza por dentro. El <style> va dentro
   // de #emotes para que la maqueta móvil de accesibilidad.js (copia #emotes con sus hojas enlazadas) lo lleve.
   const ESTILO_EMOTES = CON_FOTO ? '<style id="estilo-emotes">@media (max-width:560px){#emotes{max-height:calc(100vh - 440px);max-height:calc(100dvh - 440px);overflow-y:auto;overscroll-behavior:contain}}</style>' : '';
-  emoteMenu.innerHTML = ESTILO_EMOTES + EMOTE_KEYS.map((k, i) => `<button class="btn" type="button" data-emote="${k}">${(i + 1) % 10} · ${EMOTES[k].label}</button>`).join('') +
+  emoteMenu.innerHTML = ESTILO_EMOTES + EMOTE_KEYS.map((k, i) => `<button class="btn" type="button" data-emote="${k}">${(i + 1) % 10}\u00a0·\u00a0${EMOTES[k].label}</button>`).join('') +
     (CON_FOTO ? '<button class="btn" type="button" data-foto="1" data-icon="sparkle" aria-pressed="false">Foto</button>' : '');
   const fotoBtn = emoteMenu.querySelector('[data-foto]');
   let fotoModo = false;
@@ -654,7 +654,7 @@ AVE.module('actores', function (G) {
   return {
     player, pShadow, companion, cShadow, companionPos, npcs, npc: id => npcs[id], spawnNpc, spriteFrom, blob,
     get player3D() { return player3D; }, get companion3D() { return companion3D; }, get failed3D() { return failed3D; },
-    init3D, applyWear, refreshCompanion, POSAR, girarAlegre, get giro() { return Object.assign({}, giro); }, get posa() { return Object.assign({}, posa); }, EMOTES, EMOTE_KEYS, gestoDeTecla, emote, playEmote, stopEmote, modoFoto, get fotoModo() { return fotoModo; }, sync3D,
+    init3D, applyWear, refreshCompanion, POSAR, girarAlegre, get giro() { return Object.assign({}, giro); }, get posa() { return Object.assign({}, posa); }, EMOTES, EMOTE_KEYS, gestoDeTecla, emote, playEmote, reducido, stopEmote, modoFoto, get fotoModo() { return fotoModo; }, sync3D,
     placePlayerSprite, snapCompanionSprite, flipSprite, rim, nombre: J.nombre, sprite: J.sprite, especie: J.especie, ikCerca, IK_LEJOS_ESC,
   };
 });

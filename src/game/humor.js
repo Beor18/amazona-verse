@@ -18,7 +18,8 @@ window.AVHumor = function (G) {
     sacudida: ['¡Sacudida de plumas!', 'Feather shake!'], bostezo: ['Bostezo…', 'Yawn…'], siesta: ['Se quedó dormida.', 'She fell asleep.'], risa: ['¡Ja, ja!', 'Ha, ha!'],
   };
   const sonar = () => { try { if (G.audio && G.audio.play) G.audio.play('humor'); } catch (e) { /* sin audio */ } };
-  const gesto = n => { try { if (G.actores && G.actores.playEmote) G.actores.playEmote(n); } catch (e) { /* sin gesto */ } };
+  // E17: no corta un gesto que el jugador ya tiene en marcha (bailar 8 s, dormir…)
+  const gesto = n => { try { if (G.actores && G.actores.playEmote && !(G.actores.emote && G.actores.emote.name)) G.actores.playEmote(n); } catch (e) { /* sin gesto */ } };
   // Juego en familia (5-nov): en un duelo, frente a la Sombra o siguiendo a la cotorra, un «Bostezo…» o «¡Ja, ja!» tapaba el
   // aviso que importa. Ahí no hay humor físico (solo se anota, para que no se repita al salir).
   const fase = m => { try { const e = m && m.estado && m.estado(); return !!(e && e.fase && e.fase !== 'nada'); } catch (er) { return false; } };
@@ -31,7 +32,8 @@ window.AVHumor = function (G) {
     else if (id === 'mareo') gesto('molestia');
     else if (id === 'resbalon') { if (G.fx && G.fx.polvo) G.fx.polvo(S.pos.x, S.pos.y, S.pos.z, 0.6); }
     else if (id === 'sacudida') { if (G.fx && G.fx.drops) G.fx.drops(S.pos.x, S.pos.y + 0.4, S.pos.z, 1, G.terreno.height(S.pos.x, S.pos.z)); }
-    else if (id === 'bostezo' || id === 'siesta') { gesto('idea'); if (id === 'siesta' && siestas < 999) { siestas++; try { localStorage.setItem(CLAVE_H, JSON.stringify({ v: 1, siestas })); } catch (e) { /* sin almacén */ } } }
+    // E17: la siesta usa el gesto Dormir (se despierta al moverse)
+    else if (id === 'bostezo' || id === 'siesta') { gesto(id === 'siesta' ? 'dormir' : 'idea'); if (id === 'siesta' && siestas < 999) { siestas++; try { localStorage.setItem(CLAVE_H, JSON.stringify({ v: 1, siestas })); } catch (e) { /* sin almacén */ } } }
     else if (id === 'risa') gesto('celebrar');
     if (G.ui && G.ui.toast && !G.quiet) {
       const t = AVISOS[id];
@@ -53,7 +55,9 @@ window.AVHumor = function (G) {
     if (cercaFlor && ultimo !== 'estornudo') hacer('estornudo');
     if (M.swimming) nadaba = true;
     else if (nadaba) { nadaba = false; hacer('sacudida'); }
-    if (M.grounded && !M.flying && (M.speed || 0) < 0.08) {
+    // E17: con un gesto en marcha (bailar, dormir…) no cuenta como «quieta»: el bostezo cortaba el gesto a los 20 s
+    const enGesto = !!(G.actores && G.actores.emote && G.actores.emote.name);
+    if (M.grounded && !M.flying && (M.speed || 0) < 0.08 && !enGesto) {
       quieta += d;
       if (quieta > 20 && quieta < 20.2) hacer('bostezo');
       if (quieta > 28 && quieta < 28.2) hacer('siesta');
@@ -70,9 +74,11 @@ window.AVHumor = function (G) {
       G.emit('truco', 'looping'); G.emit('truco', 'looping'); G.emit('truco', 'looping');
       ok('Tres loopings marean', ultimo === 'mareo', ultimo);
       ok('La sacudida y la risa también', hacer('sacudida') === 'sacudida' && hacer('risa') === 'risa');
+      if (G.actores && G.actores.stopEmote) G.actores.stopEmote(); // el mareo de arriba puso un gesto: con gesto no cuenta lo quieta
       quieta = 28; M.grounded = true; M.flying = false; M.speed = 0; M.swimming = false;
       paso(0.05, true);
       ok('Quieta un rato, se duerme', ultimo === 'siesta', ultimo + ' ' + quieta.toFixed(2));
+      if (G.actores && G.actores.stopEmote) G.actores.stopEmote(); // la siesta (gesto Dormir) no se queda puesta tras la prueba
       const cb0 = G.v18combate, t0 = G.ui.toast; let avisos = 0;
       G.v18combate = { estado: () => ({ fase: 'lucha' }) }; G.ui.toast = () => { avisos++; };
       try { ok('En pleno duelo no hay avisos de humor', hacer('risa') === null && avisos === 0, avisos); } finally { G.ui.toast = t0; if (cb0) G.v18combate = cb0; else delete G.v18combate; }

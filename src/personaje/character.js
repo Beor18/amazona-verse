@@ -751,9 +751,12 @@
       // Objeto largo en la mano izquierda (bandera, mapa, martillo): al bailar, ese brazo deja de barrer por delante de la cara
       // (se anula su vaivén) y se queda en alto y abierto, agitando la bandera; así el asta no cruza el pico
       // (docs/equipo/TRAITS_PEDIDOS.md). Pelear no lo necesita: el objeto queda a más de 20 cm de la cabeza.
+      // E17: el baile tiene partes (emoteSA: mecerse, emoteSB: «¡wepa!» con las dos alas arriba). El vaivén solo se anula donde
+      // lo hay (mecerse) y en el «¡wepa!» no se abre más: las dos alas suben igual.
       if (f.longHand && this.emoteName === 'dance' && this.eW > 0.01 && B.armL1 && B.armL2) {
         const w = (this.longHandOpen != null ? this.longHandOpen : 1) * this.eW, b = (this.emoteT || 0) * Math.PI * 4, h = Math.sin(b / 2);
-        this.rot(B.armL1, 'x', 0.4 * h * w); this.rot(B.armL1, 'z', (LONG_HAND_DANCE - 0.5 * h) * w); this.rot(B.armL2, 'x', -0.4 * Math.sin(b) * w);
+        const sA = this.emoteSA != null ? this.emoteSA : 1, sB = this.emoteSB || 0;
+        this.rot(B.armL1, 'x', 0.4 * h * sA * w); this.rot(B.armL1, 'z', (LONG_HAND_DANCE * (1 - sB) - 0.5 * h * sA) * w); this.rot(B.armL2, 'x', -0.4 * Math.sin(b) * sA * w);
       }
     }
     // Gestos de cuerpo entero (emote: 'dance' | 'wave' | 'scare' | 'sleep' | 'fight' | 'angry' | 'annoyed' | 'idea'), con transición suave.
@@ -793,13 +796,14 @@
           const b = t * P * 2, h = Math.sin(b / 2), g = t * 2, fr = g - Math.floor(g), ph = Math.floor(g) % 8 + fr;
           const ven = (a, z) => clamp(Math.min((ph - a) / 0.35, (z - ph) / 0.35), 0, 1);
           const sB = ven(4, 6), sC = ven(6, 8) * (1 - su), sA = 1 - Math.max(sB, sC);
+          this.emoteSA = sA; this.emoteSB = sB; // para clothes() (objeto largo en la mano)
           const nod = Math.exp(-fr * 7) * 0.24 * am; // cabeceo seco en el golpe
           const hop = Math.sin(fr * Math.PI) * sC;
           body(0.05 + 0.06 * sB, h * 0.22 * am * sA, h * 0.32 * am * (sA + sC));
           lift(((1 - Math.cos(b)) * 0.03 * sA + hop * 0.12) * am);
           arm('L', -0.4 * h * sA - 0.2 * sB, 0.9 + 0.5 * h * sA + (0.75 + 0.25 * Math.sin(b)) * sB, 0.7 + 0.4 * Math.sin(b) * sA - 0.4 * sB);
           arm('R', 0.4 * h * sA - 0.2 * sB, 0.9 - 0.5 * h * sA + (0.75 + 0.25 * Math.sin(b)) * sB, 0.7 - 0.4 * Math.sin(b) * sA - 0.4 * sB);
-          this.emoteAlas = Math.max(this.emoteAlas, (0.5 + 0.35 * Math.sin(b)) * sB);
+          this.emoteAlas = Math.max(this.emoteAlas, (0.5 + 0.35 * Math.sin(b)) * sB * w);
           const pL = Math.max(0, h) * sA + hop * 0.6, pR = Math.max(0, -h) * sA + hop * 0.6;
           leg('L', -0.2 * pL, -0.6 * pL, 0.3 * pL);
           leg('R', -0.2 * pR, -0.6 * pR, 0.3 * pR);
@@ -831,7 +835,7 @@
           const tiembla = su ? 0 : Math.sin(t * 52) * 0.035 * (t > 0.6 && t < 1.6 ? 1 : 0);
           body(0.12 * ant - 0.16 * tieso + 0.12 * alivio, 0, tiembla); lift(-0.05 * ant + salto * (su ? 0.1 : 0.3));
           arm('L', -0.3 * tieso, 2.1 * tieso + 0.1 * alivio, -0.15 * tieso); arm('R', -0.3 * tieso, 2.1 * tieso + 0.1 * alivio, -0.15 * tieso); // alas arriba
-          this.emoteAlas = Math.max(this.emoteAlas, tieso);
+          this.emoteAlas = Math.max(this.emoteAlas, tieso * w); // con el peso: al cortar el gesto se pliega con el cuerpo
           const ag = salto * 0.8 + 0.25 * ant;
           leg('L', 0.25 * ag, -0.7 * ag, 0.35 * ag); leg('R', 0.25 * ag, -0.7 * ag, 0.35 * ag);
           head(-0.28 * tieso + 0.2 * alivio, tiembla * 1.4, 0); beak(0.45 * tieso);

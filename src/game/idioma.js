@@ -64,7 +64,7 @@ AVE.module('idioma', function (G) {
       if (r !== resto) return en + r;
     }
     { // gestos «1 · Saludar» (QA-95): número y punto delante
-      const m = /^(\d+ · )(.+)$/.exec(t);
+      const m = /^(\d+\s·\s)(.+)$/.exec(t); // \s: el menú usa espacios duros (el número no se queda solo en su línea)
       if (m) { const r = traducir(m[2]); if (r !== m[2]) return m[1] + r; }
     }
     for (const p of patrones) {

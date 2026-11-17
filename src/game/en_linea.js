@@ -311,7 +311,7 @@
         const suelo = G.terreno && G.terreno.height ? G.terreno.height(m.x, m.z) : m.y, enAire = m.v || m.y > suelo + 0.25, v = q.vel;
         Object.assign(ch, { speed: v, gait: enAire ? 0 : v > 4 ? 2 : v > 0.3 ? 1 : 0, airborne: enAire, flying: !!m.v, legsDown: m.v ? 0 : 1, swimming: false, diving: false,
           wingMode: m.v ? (v > 6 ? 'fly' : 'hover') : enAire ? 'flap' : v > 0.3 ? 'walk' : 'idle', expression: (em && em.face) || 'happy', mouth: null, lookAt: null,
-          emote: (em && em.pose) || null, posado: '', agachada: 0, groundY: suelo, groundAt: null });
+          emote: (em && em.pose) || null, emoteSuave: !!(G.actores && G.actores.reducido && G.actores.reducido()), posado: '', agachada: 0, groundY: suelo, groundAt: null });
         // Cara de la otra cotorra: pico, sílabas al hablar y abanico de alas (con la API de character.js)
         try { if (ch.pico) { ch.pico(m.pk || 0); ch.hablar(!!m.h); ch.alas(m.al || 0); if (m.pk > 0) ch.expression = 'fight'; } } catch (e) { /* cara */ }
         try { ch.update(dta); } catch (e) { /* animación */ }

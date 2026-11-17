@@ -62,8 +62,11 @@ AVE.module('input', function (G) {
     }
     return r;
   }
+  // E17: una tecla que ahora es fija (los gestos 8, 9 y 0) se quita del guardado y esa acción toma la de fábrica o una libre;
+  // el resto de las teclas elegidas se conserva (antes se perdía el mapa entero)
+  const sinFijas = m => { if (!m || typeof m !== 'object') return m; const r = {}; for (const a of Object.keys(m)) if (!RESERVADAS.has(m[a])) r[a] = m[a]; return r; };
   function leerMapa() {
-    try { const d = JSON.parse(localStorage.getItem(CLAVE) || 'null'); const m = d && completar(d.mapa); if (valido(m)) return m; } catch (e) { /* sin almacenamiento o dañado */ }
+    try { const d = JSON.parse(localStorage.getItem(CLAVE) || 'null'); const m = d && completar(sinFijas(d.mapa)); if (valido(m)) return m; } catch (e) { /* sin almacenamiento o dañado */ }
     return Object.assign({}, DEFECTO);
   }
   function guardarMapa() {

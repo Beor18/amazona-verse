@@ -455,7 +455,7 @@
       ch.wingMode = est.ala || (est.vel > 0.3 ? 'walk' : 'idle');
       if (est.expr) ch.expression = est.expr;
       if (est.mira) ch.lookAt = est.mira;
-      ch.emote = est.pose || null;
+      ch.emote = est.pose || null; ch.emoteSuave = reducido(); // E17: con «Reducir movimiento» el pichón copia los gestos sin saltos ni temblores
       if (est.sq) ch.root.scale.set(s0 * (1 + est.sq * 0.5), s0 * (1 - est.sq), s0 * (1 + est.sq * 0.5));
       else if (Math.abs(ch.root.scale.y - s0) > 1e-6) ch.root.scale.setScalar(s0);
     }
