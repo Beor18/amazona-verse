@@ -91,7 +91,9 @@
       </svg>
     </h1>
     <p class="title-sub">Capítulo 1 · <b>El día que el cielo se rompió</b></p>
-    <p class="title-web"><a href="../" id="t-web">← Página de inicio</a></p>
+    <!-- PULIR 5: «Capítulos» y «¿Qué hay para hacer?» ya van aquí, encima de las tarjetas (antes menu_modos.js las subía al cargar y
+         toda la cuadrícula bajaba ~70 px bajo el dedo) -->
+    <nav class="title-episodios episodios-arriba" aria-label="Capítulos"><button class="btn" id="b-capitulos-title" type="button" data-no-tr data-icon="book">Capítulos</button><button class="btn" id="b-que-hacer-title" type="button">¿Qué hay para hacer?</button><span class="title-idioma" role="group" aria-label="Idioma · Language" data-no-tr><button class="chip" type="button" data-t-idioma="es" lang="es" aria-pressed="true">ES</button><button class="chip" type="button" data-t-idioma="en" lang="en" aria-pressed="false">EN</button></span></nav>
     <!-- «¿Cómo quieres jugar?» (src/game/menu_modos.js + src/ui/menu_modos.css): cada tarjeta submit cierra la portada con su
          valor y menu_modos.js abre ese modo; Mi nido y Mis récords son type=button (se abren encima y el menú sigue detrás). -->
     <form method="dialog" class="modos" id="modos" aria-labelledby="modos-t">
@@ -128,8 +130,9 @@
       </div>
     </form>
     <!-- Capítulos de la temporada (AV1): cada uno es un content pack (?pack=<id>, boot.js lo carga solo); el botón abre #capitulos -->
-    <nav class="title-episodios" aria-label="Capítulos"><button class="btn" id="b-capitulos-title" type="button" data-no-tr data-icon="book">Capítulos</button><button class="btn" id="b-que-hacer-title" type="button">¿Qué hay para hacer?</button></nav>
     <p class="title-hint">Tu progreso se guarda solo · Teclado, ratón o pantalla táctil</p>
+    <!-- PULIR 5: el enlace para salir del juego va al pie de la portada, no encima de las tarjetas (un toque al azar sacaba al niño) -->
+    <p class="title-web"><a href="../" id="t-web">← Página de inicio</a></p>
   </div>
   <img class="title-hero" src="assets/vittata.png" alt="" width="512" height="512">
   <p class="title-foot">Villa Raíz, Puerto Rico</p>

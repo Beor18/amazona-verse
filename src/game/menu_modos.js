@@ -197,6 +197,7 @@
       const nav = document.querySelector('#title .title-episodios'), dlgForm = form;
       if (!nav || !dlgForm) return;
       if (RECORTE()) { if (nav.nextElementSibling !== dlgForm) dlgForm.insertAdjacentElement('beforebegin', nav); nav.classList.add('episodios-arriba'); }
+      else if (nav.classList.contains('episodios-arriba')) { dlgForm.insertAdjacentElement('afterend', nav); nav.classList.remove('episodios-arriba'); } // ?menu=completo: debajo, como antes
     }
     function mostrar() {
       if (!form) return;
