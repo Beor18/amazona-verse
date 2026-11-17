@@ -294,8 +294,43 @@ AVE.module('creador', function (G) {
     thumbCache[key] = cv.toDataURL('image/png');
     return thumbCache[key];
   }
+  // PULIR 6 (carga): las ranuras salen ya, con un hueco transparente donde va cada miniatura que no está en caché, y las
+  // miniaturas se dibujan después, una por tarea, y solo con las ranuras a la vista. Antes se renderizaban las ~17 seguidas
+  // (WebGL + toDataURL) en cuanto arrancaba una partida nueva, con el creador corto (sin ranuras) detrás de la portada: un
+  // bloqueo de ~23 s de CPU en un móvil lento. La imagen es la misma (accessoryThumb no cambia).
+  const HUECO = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  let slotsGen = 0, pendientes = [], obsSlots = null, rellenando = null;
+  let oyePortada = false;
+  const slotsVisibles = () => {
+    const el = $('p-slots'), portada = $('title');
+    return !!el && !$('creator').hidden && el.getClientRects().length > 0 && !(portada && portada.open);
+  };
+  const ceder = () => new Promise(r => (window.requestIdleCallback ? requestIdleCallback(() => r(), { timeout: 120 }) : setTimeout(r, 0)));
+  // Una sola tanda a la vez: si llega otra renderSlots mientras tanto, la tanda en marcha sigue con las ranuras nuevas y la promesa
+  // que se devuelve es la suya (se cumple cuando no queda ninguna miniatura, o cuando se pausa porque las ranuras no se ven)
+  function rellenarMiniaturas() {
+    if (rellenando) return rellenando;
+    rellenando = (async () => {
+      while (pendientes.length) {
+        if (!slotsVisibles()) { // se sigue cuando las ranuras se vean (ResizeObserver: display:none → visible)
+          const sigue = () => { if (pendientes.length && slotsVisibles()) rellenarMiniaturas(); };
+          if (!obsSlots && window.ResizeObserver) { obsSlots = new ResizeObserver(sigue); obsSlots.observe($('p-slots')); }
+          if (!oyePortada && $('title')) { oyePortada = true; $('title').addEventListener('close', () => setTimeout(sigue, 0)); }
+          return;
+        }
+        await ceder();
+        const t = pendientes.shift();
+        if (!t || t.gen !== slotsGen) continue;
+        let src = null;
+        try { src = await accessoryThumb(t.id, t.color, t.style); } catch (e) { src = null; }
+        if (src && t.gen === slotsGen && t.img.isConnected) t.img.src = src;
+      }
+    })().finally(() => { rellenando = null; }); // .finally corre después de esta asignación aunque la tanda acabe al momento
+    return rellenando;
+  }
   // Una fila por ranura: "Nada" + una miniatura por pieza; la pieza elegida muestra sus estilos y colores
   async function renderSlots() {
+    const gen = ++slotsGen, faltan = [];
     const look = draftLook, lockOf = G.misiones.lockOf;
     const rows = [];
     for (const slot of C3.SLOTS) {
@@ -308,8 +343,10 @@ AVE.module('creador', function (G) {
       for (const d of defs) {
         const mine = cur && cur.id === d.id;
         const lk = lockOf(d.id);
-        const img = await accessoryThumb(d.id, mine ? cur.color : d.colors[0], mine ? cur.style : d.styles && d.styles[0][0]);
-        thumbs.push(`<button class="thumb${lk ? ' locked' : ''}" type="button" data-id="${d.id}" aria-pressed="${!!mine}" aria-label="${d.name}${lk ? ' (bloqueado)' : ''}" title="${d.name}"${lockAttr(lk)}><img src="${img}" alt="">${lk ? '<span class="lock">Bloq.</span>' : ''}</button>`);
+        const color = mine ? cur.color : d.colors[0], style = mine ? cur.style : d.styles && d.styles[0][0];
+        const enCache = thumbCache[d.id + color + (style || '')];
+        if (!enCache) faltan.push({ id: d.id, color, style });
+        thumbs.push(`<button class="thumb${lk ? ' locked' : ''}" type="button" data-id="${d.id}" aria-pressed="${!!mine}" aria-label="${d.name}${lk ? ' (bloqueado)' : ''}" title="${d.name}"${lockAttr(lk)}><img src="${enCache || HUECO}" alt=""${enCache ? '' : ' data-mini="' + (faltan.length - 1) + '"'}>${lk ? '<span class="lock">Bloq.</span>' : ''}</button>`);
       }
       const styles = curDef && curDef.styles ? `<div class="styles">${curDef.styles.map(([s, n]) => { const lk = lockOf(curDef.id, s); return `<button class="chip${lk ? ' locked' : ''}" type="button" data-style="${s}" aria-pressed="${cur.style === s}"${lockAttr(lk)}>${n}${lk ? ' (bloq.)' : ''}</button>`; }).join('')}</div>` : '';
       const swatches = curDef ? `<div class="swatches">${curDef.colors.map(c => { const lk = lockOf(curDef.id, undefined, c); return `<button class="swatch${lk ? ' locked' : ''}" type="button" data-color="${c}" aria-pressed="${cur.color === c}" aria-label="Color ${c}${lk ? ' (bloqueado)' : ''}" style="background:${c}"${lockAttr(lk)}></button>`; }).join('')}</div>` : '';
@@ -321,6 +358,9 @@ AVE.module('creador', function (G) {
         </div></div>`);
     }
     $('p-slots').innerHTML = rows.join('');
+    const imgs = $('p-slots').querySelectorAll('img[data-mini]');
+    pendientes = Array.from(imgs, img => Object.assign({ gen, img }, faltan[+img.dataset.mini]));
+    return rellenarMiniaturas();
   }
   function changeLook(mutator) {
     mutator(draftLook);
@@ -546,6 +586,21 @@ AVE.module('creador', function (G) {
         ok('T17 · Desde el juego, el botón vuelve a ser «Cancelar»', !bc.hidden && bc.textContent !== 'Volver', bc.textContent);
         close(); primera = false;
         if (!abiertaP && portada.open) { portada.returnValue = ''; portada.close(); }
+      }
+      { // PULIR 6: las ranuras salen sin esperar a las miniaturas; las miniaturas llegan después, una por tarea
+        const cr = $('creator'), corto = cr.classList.contains('creator-corto'), oculto = cr.hidden, portada = $('title');
+        const abiertaP = !!(portada && portada.open); if (abiertaP) { portada.returnValue = ''; portada.close(); }
+        cr.classList.remove('creator-corto'); cr.hidden = false;
+        if (!draftLook) draftLook = profileLook(S.profile);
+        const t0 = performance.now(), pr = renderSlots(), dt = performance.now() - t0;
+        const botones = $('p-slots').querySelectorAll('button.thumb[data-id]').length;
+        ok('PULIR 6 · Las ranuras de ropa salen ya, sin esperar a las miniaturas', botones > 0 && dt < 400, botones + ' piezas en ' + Math.round(dt) + ' ms');
+        await Promise.race([pr, new Promise(r => setTimeout(r, 90000))]);
+        const imgs = [...$('p-slots').querySelectorAll('button.thumb[data-id] img')], llenas = imgs.filter(i => i.getAttribute('src') !== HUECO).length;
+        ok('PULIR 6 · Después se dibuja cada miniatura (la misma imagen de la caché)', G.actores.failed3D || (imgs.length > 0 && llenas === imgs.length && imgs.every(i => Object.values(thumbCache).includes(i.getAttribute('src')))), llenas + '/' + imgs.length + (llenas < imgs.length ? ' · visibles ' + slotsVisibles() + ', pendientes ' + pendientes.length : ''));
+        if (corto) cr.classList.add('creator-corto');
+        cr.hidden = oculto;
+        if (abiertaP && portada && !portada.open) portada.show();
       }
       { // PULIR 5: el foco al abrir es «¡A jugar!» en táctil (sin teclado del móvil que tape) y el nombre con teclado y ratón
         const f = focoCreador(), tactil = tactilCreador();
