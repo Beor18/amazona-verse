@@ -20,14 +20,16 @@ AVE.module('ninos', function (G) {
   function pintarClase() { document.documentElement.classList.toggle('ninos-grande', !!aj.botones); }
   pintarClase();
   const css = document.createElement('style');
-  css.textContent = 'html.ninos-grande :is(#b-fly,#b-dash,#b-jump,#b-action,#b-dive){min-width:84px;min-height:84px}html.ninos-grande #stick{width:168px;height:168px}#pause-ninos{display:grid;gap:8px;margin:0}#pause-ninos label{display:flex;align-items:center;justify-content:space-between;gap:12px;font:700 16px/1.3 var(--font-display,sans-serif)}#pause-ninos input[type=range]{width:140px}';
+  css.textContent = 'html.ninos-grande :is(#b-fly,#b-dash,#b-jump,#b-action,#b-dive){min-width:84px;min-height:84px}html.ninos-grande #stick{width:168px;height:168px}#pause-ninos{display:grid;gap:8px;margin:0}#pause-ninos label{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;font:400 var(--fs-sm,15px)/1.3 var(--font-body,sans-serif)}#pause-ninos input[type=range]{flex:0 1 140px;width:140px}' +
+    // F20: las casillas con el color de la pausa (antes cuadrados grises sin estilo); la sección va en tarjeta como «Opciones»
+    '#pause-ninos input[type=checkbox]{flex:none;width:24px;height:24px;margin:0;accent-color:var(--beak,#f2a03d);cursor:pointer}';
   document.head.appendChild(css);
 
   function seccion() {
     const menu = $('pause');
     if (!menu || menu.querySelector('#pause-ninos')) return;
     const sec = document.createElement('section');
-    sec.id = 'pause-ninos';
+    sec.id = 'pause-ninos'; sec.className = 'pause-opciones'; // F20: misma tarjeta, letra y deslizador naranja que las demás secciones
     sec.innerHTML = '<h3>Para los más pequeños</h3>' +
       '<label>Vuelo fácil<input id="ninos-vuelo" type="checkbox"></label>' +
       '<label>Sensibilidad de la cámara<input id="ninos-sens" type="range" min="0.6" max="1.8" step="0.1"></label>' +
