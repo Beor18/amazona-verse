@@ -86,7 +86,7 @@ window.AVSonidoTest = function (G) {
         F.endFlight(); S.pos.y = F.suelo(S.pos.x, S.pos.z, G.terreno.height(S.pos.x, S.pos.z) + 0.5); S.vy = 0;
         Object.assign(M, { flying: true, landing: false, takeoff: 0, grounded: false, wasAir: false, vx: 6, vz: 0, dashT: 0 });
         espia(); pasos(1);
-        const raso = M.flying && !M.grounded && M.wasAir;
+        const raso = M.flying && !M.grounded && S.pos.y - F.suelo(S.pos.x, S.pos.z, S.pos.y + 0.3) < 0.05; // a ras del suelo y aún volando
         F.land(); M.vx = M.vz = 0;
         for (let i = 0; i < 300 && M.flying; i++) pasos(1);
         pasos(2);
