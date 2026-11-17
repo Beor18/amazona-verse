@@ -3060,7 +3060,7 @@ window.AV_EN = {
  "Banco": "Bench",
  "Huerto": "Veggie patch",
  "Plantillas": "Quick builds",
- "Bohío": "Bohío hut",
+ "Bohío": "Bohio hut",
  "Torre de vigía": "Lookout tower",
  "Puente pequeño": "Little bridge",
  "Nido grande": "Big nest",
