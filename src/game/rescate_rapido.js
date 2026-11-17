@@ -246,7 +246,9 @@ window.AVRescateRapido = function (G) {
     let fx = 0, fz = 1, bd = Infinity;
     for (const p of pich) { const d = Math.hypot(p.x - nido.x, p.z - nido.z); if (d < bd) { bd = d; fx = (p.x - nido.x) / d; fz = (p.z - nido.z) / d; } }
     const x = nido.x - fx * 5, z = nido.z - fz * 5, Mv = G.fisica && G.fisica.MOVE;
-    S.pos.x = x; S.pos.z = z; S.pos.y = Math.max(H(x, z), nivelAgua(x, z)) + 7; S.vy = 0;
+    let alto = Math.max(H(x, z), nivelAgua(x, z)); // la cámara va detrás: si allí el suelo sube (ladera), más alto, para que no quede dentro del monte
+    for (let d = 3; d <= 12; d += 3) alto = Math.max(alto, H(x - fx * d, z - fz * d) - 2);
+    S.pos.x = x; S.pos.z = z; S.pos.y = alto + 7; S.vy = 0;
     S.facing = { x: fx, z: fz };
     if (Mv) { Mv.vx = Mv.vz = 0; Mv.swimming = false; Mv.landing = false; Mv.jumping = false; Mv.grounded = false; Mv.takeoff = 0; if (!Mv.flying) { Mv.flying = true; try { G.emit('vuelo', true); } catch (e) { /* */ } } }
     try { if (G.camara) { G.camara.yaw = Math.atan2(-fx, -fz); if (G.camara.manual) G.camara.manual(); } } catch (e) { /* sin cámara */ }
