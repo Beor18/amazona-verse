@@ -159,7 +159,7 @@ window.AVCanto = function (G) {
   function salir() {
     if (!activo()) return false;
     limpiar(); E.fase = 'nada';
-    if (el) el.hidden = true; document.body.classList.remove('canto-on');
+    if (el) { el.hidden = true; q('msg').textContent = ''; } document.body.classList.remove('canto-on'); // sin texto viejo (ni en otro idioma) mientras no se juega
     try { if (G.pausa && G.pausa.set) G.pausa.set('canto', false); } catch (e) { /* sin pausa */ }
     return true;
   }

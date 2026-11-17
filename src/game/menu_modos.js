@@ -1150,7 +1150,7 @@
             let src = ''; try { src = await (await fetch('src/game/' + f + '.js', { cache: 'no-store' })).text(); } catch (e) { /* sin red */ }
             // revisión: sin comentarios (un «AVFinJuego» en un comentario no cuenta); la tabla se llama de verdad (finSon('victoria'|'casi') o F.sonar)
             const cod = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"\\])\/\/.*$/gm, '$1');
-            if (!/AVFinJuego/.test(cod) || !/(finSon\((?:[^()]*\? *)?'(victoria|casi)'|F\.sonar\(G, '\w+', '(victoria|casi)'\))/.test(cod)) malos.push(f + ': sin la tabla de sonidos');
+            if (!/AVFinJuego/.test(cod) || !/(finSon\((?:[^()]*\? *)?'(victoria|casi)'|F\.sonar\(G, '\w+', '(victoria|casi)'[,)])/.test(cod)) malos.push(f + ': sin la tabla de sonidos');
             // los sonidos que solo eran de final (y el «unlock» del récord o de los peces) ya no salen fuera de la tabla
             const propio = cod.match(/(?:sonar|play)\((?:[^()]*\? *)?'(panel_final|mz_fin|r_fin_mal|r_meta|r_bien)'|(?:nuevo|peces)\) sonar\('unlock'\)|(?:nuevo|peces) \? 'unlock'/);
             if (propio) malos.push(f + ': sonido de final propio (' + propio[0] + ')');
