@@ -214,7 +214,7 @@ window.AVRescateRapido = function (G) {
     medir(ax, az);
     let bx = ax, bz = az, bs = -2;
     const RMAX = HALF - D_MAX - 4;
-    for (let r = 0; r <= RMAX && bs < 48; r += 4) { // del centro hacia fuera: el primero con sitio de sobra (48 de 72), o el mejor
+    for (let r = 0; r <= RMAX && bs < 18; r += 4) { // del centro hacia fuera: el primero con sitio de sobra (18 de 72 puestos libres: los 3 pichones caben en sus sectores), o el mejor
       const pasos = Math.max(1, Math.round(2 * Math.PI * r / 4));
       for (let k = 0; k < pasos; k++) {
         const an = k * 2 * Math.PI / pasos, x = ax + Math.cos(an) * r, z = az + Math.sin(an) * r, s = puntuar(x, z);
@@ -515,7 +515,7 @@ window.AVRescateRapido = function (G) {
         const seco = (x, z) => !mojado(x, z), sinNada = (x, z) => obst.every(([ox, oz, r]) => Math.hypot(x - ox, z - oz) >= r);
         const ds = pich.map(p => Math.hypot(p.x - nido.x, p.z - nido.z)), sep = Math.min(Math.hypot(pich[0].x - pich[1].x, pich[0].z - pich[1].z), Math.hypot(pich[0].x - pich[2].x, pich[0].z - pich[2].z), Math.hypot(pich[1].x - pich[2].x, pich[1].z - pich[2].z));
         const malos = pich.filter(p => !seco(p.x, p.z) || !sinNada(p.x, p.z)).length;
-        check('Zona abierta: el nido y los 3 pichones en seco, sin copa, collider ni edificio encima, a 12–28 m del nido y separados (≥ 8 m)', seco(nido.x, nido.z) && sinNada(nido.x, nido.z) && !malos && ds.every(d => d >= D_MIN - 0.01 && d <= D_MAX + 0.01) && sep >= SEP - 0.01 && E.sitioN >= 24,
+        check('Zona abierta: el nido y los 3 pichones en seco, sin copa, collider ni edificio encima, a 12–28 m del nido y separados (≥ 8 m)', seco(nido.x, nido.z) && sinNada(nido.x, nido.z) && !malos && ds.every(d => d >= D_MIN - 0.01 && d <= D_MAX + 0.01) && sep >= SEP - 0.01 && E.sitioN >= 12,
           'cerca de ' + E.zona + ' → ' + Math.round(nido.x) + ',' + Math.round(nido.z) + ' · sitio ' + E.sitioN + '/72 · d ' + ds.map(Math.round).join(',') + ' · sep ' + sep.toFixed(1) + ' · ' + obst.length + ' obstáculos · malos ' + malos);
       }
       check('El HUD no es una región viva (el reloj no se anuncia cada segundo); solo su aviso habla', !hudEl.hasAttribute('role') && !hudEl.hasAttribute('aria-live') && !q(hudEl, 'r').closest('[aria-live],[role="status"]') && q(hudEl, 'msg').getAttribute('aria-live') === 'polite');
