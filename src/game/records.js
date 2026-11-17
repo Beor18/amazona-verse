@@ -644,7 +644,7 @@
       const hist = h.terminada
         ? `<p><b>✓ ${esc(tx('terminado'))}</b></p><dl>${h.tiempo ? dato(tx('tiempoFin'), esc(duracion(h.tiempo))) : ''}</dl>`
         : `<p><b>${esc(tx('enCamino'))}</b>${h.pasos ? ` · ${esc(tx('paso'))} ${Math.min(h.paso + 1, h.pasos)} ${esc(tx('de'))} ${h.pasos}` : ''}</p><dl>${h.jugado ? dato(tx('tiempoJuego'), esc(duracion(h.jugado))) : ''}</dl>`;
-      const cats = di.cats.map(c => `${esc(c.nombre)} ${c.n}/${c.total}`).join(' · ');
+      const cats = di.cats.map(c => `<span>${esc(c.nombre)}</span> ${c.n}/${c.total}`) /* F20: el nombre en su nodo, así el diccionario EN lo traduce */.join(' · ');
       const diario = `<div class="rec-grande"><b class="rec-num">${di.n}/${di.total}</b><small>${esc(tx('hallazgos'))}</small></div><div class="progress" style="--value:${di.total ? di.n / di.total : 0}" role="progressbar" aria-valuemin="0" aria-valuemax="${di.total}" aria-valuenow="${di.n}" aria-label="${esc(tx('diario'))}"></div>${cats ? `<p>${cats}</p>` : ''}`;
       const especies = `<div class="rec-grande"><b class="rec-num">${es.vistas.length} <small>${esc(tx('de'))} ${es.total}</small></b></div>${es.vistas.length
         ? `<ul class="rec-chips">${es.vistas.map(e => `<li>${esc(e.nombre)}</li>`).join('')}</ul>` : `<p>${esc(tx('sinEspecies'))}</p>`}`;
@@ -1230,6 +1230,12 @@
         check('El mundo queda en pausa y el foco entra al panel', (!G.pausa || enPausa()) && root.contains(document.activeElement));
         const grande = [...root.querySelectorAll('button')].filter(b => b.getClientRects().length && b.offsetHeight < 44);
         check('Los botones del panel miden 44 px o más', grande.length === 0, grande.length + ' pequeños');
+        { // F20: con el panel abierto, la ficha del poder y «Salir» de Vuelo libre / Construir no quedan encima (ui.css)
+          const tmpB = ['v18-exp-poder', 'modo-salir'].filter(id => !document.getElementById(id)).map(id => { const b = document.createElement('button'); b.id = id; b.style.cssText = 'position:fixed;top:60px;right:14px;z-index:70'; document.body.appendChild(b); return b; });
+          const tapan = ['v18-exp-poder', 'modo-salir'].filter(id => { const b = document.getElementById(id); return b && !b.hidden && getComputedStyle(b).display !== 'none'; });
+          tmpB.forEach(b => b.remove());
+          check('F20 · Con Mis récords abierto no quedan encima la ficha del poder ni «Salir»', !tapan.length, tapan.join(','));
+        }
         const rb = root.querySelector('.rec-box'), cuerpo = root.querySelector('.rec-body');
         check('Nada se desborda a lo ancho', rb.scrollWidth <= rb.clientWidth + 1 && cuerpo.scrollWidth <= cuerpo.clientWidth + 1 && rb.getBoundingClientRect().right <= window.innerWidth + 1, `${cuerpo.scrollWidth}/${cuerpo.clientWidth} en ${window.innerWidth}`);
         const nIns = G.menuRecorte === false ? 6 : 4;

@@ -503,9 +503,10 @@ AVE.module('guardado', function (G) {
   }
   (function botonesCopia() {
     const base = $('b-save'); if (!base || !base.parentNode || $('b-copia-guardar')) return;
-    const poner = (id, texto, fn) => {
+    const poner = (id, texto, fn, icono) => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = base.className; b.id = id; b.textContent = texto; b.onclick = fn;
+      if (icono) b.dataset.icon = icono; // F20: con icono, como el resto de la rejilla de la pausa
       base.parentNode.insertBefore(b, base.nextSibling);
     };
     const entrada = document.createElement('input');
@@ -519,8 +520,8 @@ AVE.module('guardado', function (G) {
       lector.readAsText(f);
     });
     document.body.appendChild(entrada);
-    poner('b-copia-cargar', L('Cargar copia', 'Load a copy'), () => entrada.click());
-    poner('b-copia-guardar', L('Guardar copia', 'Save a copy'), () => descargarCopia());
+    poner('b-copia-cargar', L('Cargar copia', 'Load a copy'), () => entrada.click(), 'load');
+    poner('b-copia-guardar', L('Guardar copia', 'Save a copy'), () => descargarCopia(), 'save');
   })();
   // «Comenzar de cero»: la partida y el cómic solo se borran por esta elección explícita (menú de pausa, panel final, o
   // «Nuevo estudiante» del Modo Maestro). Menú: con popover el botón solo se alcanza dentro de la pregunta #confirm-reset;

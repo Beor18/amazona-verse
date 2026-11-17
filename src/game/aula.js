@@ -40,7 +40,11 @@ AVE.module('aula', function (G) {
   }
   let data = cargar();
   const aj = data.ajustes;
-  function persistir() { try { localStorage.setItem(KEY, JSON.stringify(data)); return true; } catch (e) { return false; } }
+  // F20: el idioma es del dispositivo, no del capítulo. Cada pack guarda su aula en su clave (amazonaverse.aula, .cap2, .ep3…) y
+  // al cambiar de capítulo el juego volvía a español. Ahora el último idioma elegido en cualquier capítulo vale para todos.
+  const KEY_IDIOMA = 'amazonaverse.idioma';
+  try { const li = localStorage.getItem(KEY_IDIOMA); if (li === 'es' || li === 'en') aj.idioma = li; } catch (e) { /* sin almacén */ }
+  function persistir() { try { localStorage.setItem(KEY, JSON.stringify(data)); localStorage.setItem(KEY_IDIOMA, aj.idioma === 'en' ? 'en' : 'es'); return true; } catch (e) { return false; } }
 
   // ---------- Idioma y texto corto ----------
   const t = v => (v == null ? '' : typeof v === 'string' ? v : v[aj.idioma] != null ? v[aj.idioma] : tx0(v));

@@ -210,7 +210,7 @@ window.AVTienda = function (G) {
   function filaItem(it, e) {
     const mia = e.compras.includes(it.id);
     const esRopa = it.tipo === 'ropa' || (it.tipo !== 'construir' && !!it.viste);
-    const probar = esRopa && !mia ? `<button class="btn secondary tn-b" type="button" data-tn="probar" data-id="${it.id}" aria-pressed="${probando === it.id}" aria-label="${esc('Probar: ' + it.nombre)}">${esc('Probar')}</button>` : '';
+    const probar = esRopa && !mia ? `<button class="btn secondary tn-b" type="button" data-tn="probar" data-id="${it.id}" aria-pressed="${probando === it.id}" aria-label="${esc('Probar la prenda: ' + it.nombre)}">${esc('Probar')}</button>` : '';
     let accion;
     if (!mia) {
       const pago = e.conchitas >= it.precio

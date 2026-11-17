@@ -162,7 +162,7 @@ AVE.module('diario', function (G) {
       ? `<li class="found"><span class="ico ${f.cat}" aria-hidden="true"></span><div><b>${f.nombre}</b><small>${f.texto}</small></div></li>`
       : `<li><span class="ico" aria-hidden="true"></span><div><b>???</b><small>${(cats[f.cat] || {}).desconocido || 'Algo'} por descubrir</small></div></li>`).join('');
     const ropa = htmlRopa(G.misiones.unlocks, k => S.unlocked.includes(k));
-    const byCat = Object.keys(cats).map(c => ` · ${cats[c].nombre} ${count(c)}/${entries.filter(x => x.cat === c).length}`).join('');
+    const byCat = Object.keys(cats).map(c => ` · <span>${cats[c].nombre}</span> ${count(c)}/${entries.filter(x => x.cat === c).length}`).join('');
     const notasCiudad = (G.sorpresas && G.sorpresas.estado) ? G.sorpresas.estado().notas : [];
     const bloqueCiudad = notasCiudad.length ? `<span class="lbl">${esc(G.aula && G.aula.aj && G.aula.aj.idioma === 'en' ? 'The city' : 'La ciudad')}</span><ul class="diary">${notasCiudad.map(n => `<li class="found"><div><small>${esc(n)}</small></div></li>`).join('')}</ul>` : '';
     const orden = ['fauna', 'peces', 'invasoras'];
