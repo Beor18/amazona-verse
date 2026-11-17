@@ -2319,3 +2319,5 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICO YO AHORA main (afd186f9): F4 game feel tanda final (7, 12, 13, 16, 18, 19) + F3 Construir 2.0 fase 1 «Obras que traen vida» (caja nido y Merendero siguen tras ?f3piezas=1 hasta que Kelvin los apruebe por foto). Cadena en verde: obras 38, construir 72, tienda 48, fauna 29, diario 22, vivo 67, self 125, mission 93, e2e 49, menuModos 117, accesibilidad 112; antes F4: combate 160, duelo2 68, retos 159, juice 38. Ojo inestables de cadena (no se repiten al reintentar): vivoTest «A menos de 10 m la miran» y tiendaTest «la flecha cambia de Piezas a Ropa». sembradoraTest falla tras missionTest+e2eTest (claro sin sitio con el capítulo avanzado): en arreglo aparte.
 
 📣 Claude web B · PUBLICO YO AHORA main (d2319b2): tanda
+
+📣 Claude web B · PUBLICADO d2319b2 en 1403e3a: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
