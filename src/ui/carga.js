@@ -33,6 +33,7 @@ window.AVCarga = function (G) {
     ['Calentando las alas…', 'Warming up the wings…'],
     ['Regando El Yunque…', 'Watering El Yunque…'],
   ];
+  const CASI = ['¡Ya casi! Abriendo las alas…', 'Almost there! Spreading the wings…'];
   const AVISOS = {
     empieza: ['Preparando la isla…', 'Getting the island ready…'],
     paso: ['Preparando la isla: {} %', 'Getting the island ready: {} %'],
@@ -205,7 +206,10 @@ window.AVCarga = function (G) {
         const { listo, now } = medir();
         C.muestras.push(Math.round(mostrado * 1000) / 1000);
         pintar();
-        if (now - tFrase > FRASE_MS) { tFrase = now; iFrase = (iFrase + 1) % FRASES.length; ponerFrase(iFrase); }
+        // PULIR 5 (17-nov): con la barra casi llena el final (programas y GPU) puede tardar varios segundos y parecía colgada:
+        // la frase pasa a «¡Ya casi!» y se queda; la barra sigue con su brillo
+        if (mostrado >= 0.9) { if (iFrase !== -1) { iFrase = -1; frase.innerHTML = ''; const sp = doc.createElement('span'); sp.textContent = L(CASI[0], CASI[1]); frase.appendChild(sp); } }
+        else if (now - tFrase > FRASE_MS) { tFrase = now; iFrase = (iFrase + 1) % FRASES.length; ponerFrase(iFrase); }
         // Con todo cargado, los dos primeros cuadros de verdad se dibujan debajo de la pantalla (opaca): ahí se crean los búferes
         // a pantalla completa y el mapa de sombras. Luego se espera a que la GPU termine lo enviado (marca, sin bloquear). Así el
         // primer cuadro que ve el jugador no paga la cola de subidas (en la nube, 6 s de cuadro al destapar).
@@ -300,7 +304,7 @@ window.AVCarga = function (G) {
       check('Accesible: barra con role=progressbar y aviso aria-live', barra.getAttribute('role') === 'progressbar' && barra.getAttribute('aria-valuenow') === '100' && aviso.getAttribute('aria-live') === 'polite' && !!aviso.textContent.trim(),
         'aria-valuenow ' + barra.getAttribute('aria-valuenow') + ', aviso «' + aviso.textContent + '»');
       check('Sin porcentajes a la vista: la cifra solo va para el lector de pantalla', !/\d\s*%/.test(el.querySelector('.carga-main').innerText.replace(aviso.innerText, '')));
-      check('Logo, Vittata y frases en ES y EN', !!el.querySelector('.carga-logo svg') && !!el.querySelector('.carga-ave img') && FRASES.every(f => f[0] && f[1] && f[0] !== f[1]), FRASES.length + ' frases');
+      check('Logo, Vittata y frases en ES y EN', !!el.querySelector('.carga-logo svg') && !!el.querySelector('.carga-ave img') && FRASES.concat([CASI]).every(f => f[0] && f[1] && f[0] !== f[1]), FRASES.length + ' frases y «¡Ya casi!»');
       check('En el móvil o en «bajo», tandas cortas (1 descarga, 2 texturas por cuadro)', !ligero() || (estado.corridas.every(c => c.ligero)), ligero() ? 'ligero' : 'escritorio: 3 descargas, 6 texturas');
       const nuevos = (window.__aveErrores || []).slice(e0);
       check('Sin errores de consola', !errores.length && !nuevos.length, errores.concat(nuevos).slice(0, 3).join(' | '));
