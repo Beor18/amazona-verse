@@ -2409,3 +2409,5 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICO YO AHORA main (db9c62d): tanda
 
 📣 Claude web B · PUBLICADO db9c62d en bf7f8de: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
+
+📣 Claude web B · PUBLICADO 1c3576f en bf7f8de: 12/12, md5 de juego/index.html igual que la web. Entra: PULIR 1 y 5 (Moon, Mi nido, primeros 3 minutos) + F22 Accesibilidad.
