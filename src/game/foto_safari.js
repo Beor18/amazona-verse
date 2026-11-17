@@ -728,7 +728,7 @@ window.AVFotoSafari = function (G) {
       { // F22: después de «Salir», Tab vuelve a «Otra vez» (no se va a la barra del navegador)
         const enPanel = []; for (let i = 0; i < 3; i++) { const t = tecla('Tab'); enPanel.push(t.defaultPrevented && finEl.contains(document.activeElement) && document.activeElement !== finEl); }
         const tS = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }); dispatchEvent(tS); enPanel.push(finEl.contains(document.activeElement));
-        check('El foco no sale del panel final con Tab ni con Mayús+Tab', enPanel.every(Boolean), enPanel.join(',')); }
+        check('El foco no sale del panel final con Tab ni con Mayús+Tab', enPanel.every(Boolean), enPanel.join(',')); try { finEl.focus({ preventScroll: true }); } catch (e) { /* */ } }
       const ae = G.aula && G.aula.aj;
       if (ae) {
         const idi0 = ae.idioma; ae.idioma = 'en'; pintarHud(); pintarFin(); pintarCarta(); E.cam = true; pintarVisor(); E.cam = false;
@@ -737,7 +737,7 @@ window.AVFotoSafari = function (G) {
         ae.idioma = idi0; pintarHud(); pintarFin(); pintarCarta(); pintarVisor();
       }
       finEl.querySelector('[data-a="otra"]').click();
-      check('«Otra vez» empieza limpio (2:00, 0 estrellas, tarjeta nueva, sin panel, cámara ni pausa)', E.fase === 'juego' && E.estrellas === 0 && E.fotos === 0 && E.nr === 0 && E.k === 1 && finEl.hidden && !E.cam && q(hudEl, 'r').textContent === '2:00' && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('foto')));
+      check('«Otra vez» empieza limpio (2:00, 0 estrellas, tarjeta nueva, sin panel, cámara ni pausa)', E.fase === 'juego' && E.estrellas === 0 && E.fotos === 0 && E.nr === 0 && E.k === 1 && finEl.hidden && !E.cam && q(hudEl, 'r').textContent === '2:00' && !(G.pausa && G.pausa.motivos && G.pausa.motivos.has('foto')), JSON.stringify({ fase: E.fase, est: E.estrellas, fotos: E.fotos, nr: E.nr, k: E.k, fin: finEl.hidden, cam: E.cam, r: q(hudEl, 'r').textContent, pausa: G.pausa && G.pausa.motivos ? [...G.pausa.motivos].join(',') : '-' }));
       E.reloj = 0.01; paso(0.05);
       check('Sin estrellas, nunca castiga: «¡Casi!» y el récord sigue', /Casi/.test(q(finEl, 'fmsg').textContent) && leerRec().mejor === total && q(finEl, 'fmed').textContent === '', q(finEl, 'fmsg').textContent);
       finEl.querySelector('[data-a="salir"]').click();
