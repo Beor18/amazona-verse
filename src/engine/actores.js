@@ -211,7 +211,7 @@ AVE.module('actores', function (G) {
     if (!emoteMenu.hidden && e.detail === 0) { const b0 = emoteMenu.querySelector('button'); if (b0) try { b0.focus({ preventScroll: true }); } catch (er) { /* */ } } // con el teclado (Enter/Espacio)
   });
   addEventListener('keydown', e => {
-    if (e.key !== 'Escape' || e.repeat || emoteMenu.hidden || (G.ui && G.ui.cardOpen) || !emoteMenu.getClientRects().length || getComputedStyle(emoteMenu).visibility === 'hidden') return; // solo si se ve y no hay nada encima
+    if (e.key !== 'Escape' || e.repeat || emoteMenu.hidden || (G.ui && G.ui.cardOpen) || (() => { try { return document.querySelector(":popover-open, dialog[open]:modal"); } catch (_) { return document.querySelector("dialog[open]"); } })() || (G.pausa && G.pausa.activa && G.pausa.activa()) || !emoteMenu.getClientRects().length || getComputedStyle(emoteMenu).visibility === 'hidden') return; // solo si se ve y no hay nada encima
     e.preventDefault(); e.stopImmediatePropagation(); // solo cierra el menú: no abre también la Pausa
     const dentro = emoteMenu.contains(document.activeElement);
     emoteMenu.hidden = true; modoFoto(false);
