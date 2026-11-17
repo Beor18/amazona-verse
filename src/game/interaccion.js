@@ -64,7 +64,9 @@ AVE.module('interaccion', function (G) {
     else if (it) poner('Acción: ' + it.label());
     else ocultar();
     // T27: el verbo sin la puntuación del final («Observar: Suelo» daba «Observar:» y se veía cortado)
-    const verb = modo && !busy ? api.modo.verbo : it ? it.label().split(' ')[0].replace(/[:,;.…·]+$/, '') : G.dialogo.open() ? 'Seguir' : !busy && lleva() ? 'Soltar' : 'Acción';
+    // Primera palabra de la etiqueta; si es un artículo («El muelle…») no es un verbo: «Acción»
+    const verboDe = l => { const v = String(l || '').split(' ')[0].replace(/[:,;.…·]+$/, ''); return /^(El|La|Los|Las|Un|Una)$/.test(v) ? 'Acción' : v; };
+    const verb = modo && !busy ? api.modo.verbo : it ? verboDe(it.label()) : G.dialogo.open() ? 'Seguir' : !busy && lleva() ? 'Soltar' : 'Acción';
     const actBtn = G.input.actBtn;
     if (actBtn.textContent !== verb) actBtn.textContent = verb;
     // Atenuado cuando no hay nada que hacer; con algo cerca se ve pleno y dice el verbo

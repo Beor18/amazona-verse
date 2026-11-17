@@ -947,7 +947,7 @@ window.AV_EN = {
  "Recibir": "Welcome", "Invitar": "Invite", "Presentar": "Introduce", "Elegir": "Choose", "Escribir": "Write", "Renovar": "Renew", "Dar": "Give",
  "Acordar": "Agree", "Arreglar": "Fix", "Decidir": "Decide", "Predecir": "Predict", "Cruzar": "Cross", "Posarse": "Perch", "Pedir": "Ask",
  "Mover": "Move", "Asomarte": "Peek", "Buscar": "Search", "Desarmar": "Take apart", "Examinar": "Examine", "Inspeccionar": "Inspect",
- "Reparar": "Fix", "Visitar": "Visit",
+ "Reparar": "Fix", "Visitar": "Visit", "Retar": "Challenge",
  "Recoger madera": "Pick up wood",
  "Contarle": "Tell",
  "Llevar": "Carry",

@@ -306,7 +306,7 @@ AVE.module('idioma', function (G) {
       // PULIR 3 (p23): el botón Acción toma la primera palabra de la etiqueta (interaccion.js); «Recibir» y «Recoger madera» salían en ES
       ok('PULIR 3 · Verbos del botón Acción y «Recoger madera» tienen EN', tr('Recibir') === 'Welcome' && tr('Invitar') === 'Invite' && tr('Recoger madera') === 'Pick up wood', [tr('Recibir'), tr('Invitar'), tr('Recoger madera')].join(' / '));
       { const it = (G.interaccion && Array.isArray(G.interaccion.list)) ? G.interaccion.list : [], sinV = [];
-        for (const x of it) { let l = ''; try { l = typeof x.label === 'function' ? x.label() : x.label; } catch (e) { l = ''; } const v = String(l || '').split(' ')[0].replace(/[:,;.…·]+$/, ''); if (v && /^[A-ZÁÉÍÓÚ¿¡]/.test(v) && /[a-záéíóúñ]/.test(v) && tr(v) === v && !exactas.has(v) && !sinV.includes(v)) sinV.push(v); }
+        for (const x of it) { let l = ''; try { l = typeof x.label === 'function' ? x.label() : x.label; } catch (e) { l = ''; } let v = String(l || '').split(' ')[0].replace(/[:,;.…·]+$/, ''); if (/^(El|La|Los|Las|Un|Una)$/.test(v)) v = 'Acción'; if (v && /^[A-ZÁÉÍÓÚ¿¡]/.test(v) && /[a-záéíóúñ]/.test(v) && tr(v) === v && !exactas.has(v) && !sinV.includes(v)) sinV.push(v); }
         ok('PULIR 3 · El verbo de cada interacción de este capítulo tiene EN (' + it.length + ')', !sinV.length, sinV.join(' | ')); }
       const comillas = claves.filter(k => /[«»]/.test(String(dic[k])));
       ok('F20 · Las traducciones usan comillas inglesas (“ ”), no « »', !comillas.length, comillas.slice(0, 5).join(' | '));
