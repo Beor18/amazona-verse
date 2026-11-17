@@ -50,6 +50,9 @@ window.AVCanto = function (G) {
       '#canto .c-ave.luz{background:var(--l);transform:scale(1.05);box-shadow:0 0 0 6px rgba(255,255,255,.65),0 0 30px var(--l)}#canto .c-ave[aria-disabled="true"]{cursor:default}' +
       '#canto .c-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}#canto .c-bots button{min-height:48px;padding:6px 18px;font:700 17px Fredoka,system-ui,sans-serif;border-radius:24px;border:0;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer}' +
       '#canto .c-bots button[hidden]{display:none}#canto .c-bots .c-salir{background:#ffd0c4}' +
+      // PULIR 3 (niño de 7 años): tras fallar, «Otra vez» era una píldora crema igual de visible que «Salir»: ahora grande, naranja y respira
+      '#canto .c-bots [data-a="otra"]{min-height:60px;padding:8px 28px;font-size:21px;background:#f2a03d;color:#2b1a05;box-shadow:0 4px 0 #b86f1c;animation:c-respira 1.6s ease-in-out infinite}#canto .c-bots [data-a="otra"]::before{content:"\\21BB\\00a0" / "";font-weight:800}' +
+      '@keyframes c-respira{50%{transform:scale(1.06)}}@media (prefers-reduced-motion:reduce){#canto .c-bots [data-a="otra"]{animation:none}}' +
       'body.canto-on :is(#stick,#acts,#v18-exp-poder,#v18-extra,#prompt,#toast,#modo-salir,#quest,#inv,#b-diary,#b-emotes,#b-menu,#b-construir,#b-nido,#minimapa,#marcador,#top,#sys,#guia-hud){visibility:hidden!important}' + // el juego tapa todo: sin HUD detrás (F22: tampoco «Controles»)
       // T51: en horizontal (teléfono tumbado) las cuatro en una fila, del tamaño que deja el alto; «Salir» siempre a la vista
       '@media (orientation:landscape) and (max-height:560px){#canto .c-caja{width:min(900px,100%);gap:8px}#canto h2{font-size:24px}#canto .c-msg{font-size:17px;min-height:1.2em;margin:0}' +

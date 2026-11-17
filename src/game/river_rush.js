@@ -651,6 +651,10 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 #riverrush .rr-salir { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: calc(env(safe-area-inset-right, 0px) + 12px); pointer-events: auto; }
 #riverrush .rr-pista { position: absolute; left: 50%; bottom: 18%; transform: translateX(-50%); width: min(90vw, 520px); text-align: center; font: 700 clamp(20px, 4vw, 30px)/1.2 var(--font-display, system-ui); text-shadow: 0 2px 10px rgba(0,0,0,.65); animation: rr-late 1.4s ease-in-out infinite; }
 #riverrush .rr-pista small { display: block; font-size: .6em; font-weight: 600; opacity: .92; margin-top: 4px; }
+#riverrush .rr-pista { box-sizing: border-box; padding: 10px 16px; border-radius: 18px; background: rgba(8, 22, 32, .62); }
+#riverrush .rr-mano { display: none; width: 44px; height: 44px; margin: 6px auto 0; --icon-size: 44px; color: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,.5)); animation: rr-mano 1.3s ease-in-out infinite alternate; }
+@media (pointer: coarse) { #riverrush .rr-mano { display: block; } }
+@keyframes rr-mano { from { transform: translateX(-46px) rotate(-8deg); } to { transform: translateX(46px) rotate(8deg); } }
 @keyframes rr-late { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } }
 #riverrush .rr-fin { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(5, 18, 12, .35); }
 #riverrush .rr-panel { pointer-events: auto; background: var(--c-surface, rgba(10,30,20,.92)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-lg, 18px); padding: 22px 26px; width: min(92vw, 420px); text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
@@ -676,7 +680,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 @media (max-height: 520px) { #riverrush .rr-modos-hud { top: calc(env(safe-area-inset-top, 0px) + 66px); } #riverrush .rr-panel { padding: 14px 18px; } #riverrush .rr-num { font-size: 48px; } }
 /* F20 r2: teléfono en horizontal: la ayuda caía encima de Vittata y la canoa; sube bajo los botones de modo */
 @media (orientation: landscape) and (max-height: 520px) { #riverrush .rr-pista { bottom: auto; top: 31%; font-size: 22px; } }
-@media (prefers-reduced-motion: reduce) { #riverrush .rr-pista, #riverrush .rr-chip.pop, #riverrush .rr-aviso.pop { animation: none; } }`;
+@media (prefers-reduced-motion: reduce) { #riverrush .rr-pista, #riverrush .rr-mano, #riverrush .rr-chip.pop, #riverrush .rr-aviso.pop { animation: none; } }`;
     function montarUI() {
       if (st.ui) return st.ui;
       const css = document.createElement('style'); css.id = 'riverrush-css'; css.textContent = CSS; document.head.appendChild(css);
@@ -688,7 +692,7 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 <div class="rr-modos rr-modos-hud" role="group" aria-label="Modalidad">${botonesModo()}</div>
 <button class="btn ghost secondary rr-salir" type="button" data-salir data-icon="close" aria-label="Salir de River Rush">Salir</button>
 <div class="rr-aviso" aria-hidden="true" hidden>¡Uy!</div>
-<div class="rr-pista"><span class="rr-pista-t"></span><small class="rr-pista-s"></small></div>
+<div class="rr-pista"><span class="rr-pista-t"></span><small class="rr-pista-s"></small><span class="rr-mano" data-icon="hand" aria-hidden="true"></span></div>
 <div class="rr-fin" hidden><div class="rr-panel" role="dialog" aria-labelledby="rr-fin-t">
   <h2 id="rr-fin-t">¡Uy!</h2>
   <p class="rr-como"></p>

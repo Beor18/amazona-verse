@@ -488,6 +488,7 @@ html body.flight-on #pause .pause-grid > :not(#b-sound) { display: none !importa
 #flight .fl-chip.pop { animation: fl-pop .25s ease-out; } @keyframes fl-pop { 0% { transform: scale(1.18); } 100% { transform: scale(1); } }
 #flight .fl-pista { position: absolute; left: 50%; bottom: 22%; transform: translateX(-50%); text-align: center; font: 700 clamp(20px, 4vw, 30px)/1.2 var(--font-display, system-ui); text-shadow: 0 2px 10px rgba(0,0,0,.6); animation: fl-late 1.4s ease-in-out infinite; }
 #flight .fl-pista small { display: block; font-size: .6em; font-weight: 600; opacity: .9; margin-top: 4px; }
+#flight .fl-pista { box-sizing: border-box; max-width: min(90vw, 520px); padding: 10px 16px; border-radius: 18px; background: rgba(8, 22, 32, .62); } /* PULIR 2: legible sobre el agua clara */
 @keyframes fl-late { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.06); } }
 #flight .fl-fin { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(5, 18, 12, .35); }
 #flight .fl-panel { pointer-events: auto; background: var(--c-surface, rgba(10,30,20,.92)); border: 1px solid var(--c-line, rgba(255,255,255,.2)); border-radius: var(--r-lg, 18px); padding: 22px 26px; width: min(92vw, 420px); text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.45); }

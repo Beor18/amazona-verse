@@ -120,6 +120,11 @@ body:has(#dialog:not([hidden])) #edu-vuelo { display: none; } /* auditoría 7-no
 .maestro-pregunta .eyebrow { display: block; color: var(--c-ink); opacity: 0.85; }
 .maestro-obj small { display: block; color: var(--c-ink-muted); }
 .maestro-scroll { overflow-x: auto; margin: var(--sp-2) 0; }
+/* PULIR 2 (p23): en el teléfono la tabla ancha (Mis huevos) se cortaba en el borde sin señal de que se desliza: el borde derecho
+   se desvanece y la barra de desplazamiento se ve (solo en la de Mis huevos: en el ranking, el último hueco es un botón) */
+@media (max-width: 560px) {
+  .maestro-scroll.maestro-ancha { padding-bottom: 6px; scrollbar-width: thin; scrollbar-color: var(--c-paper-edge) transparent; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), rgba(0, 0, 0, 0.35)); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), rgba(0, 0, 0, 0.35)); }
+}
 .maestro-body table { border-collapse: collapse; width: 100%; font-size: 13px; }
 .maestro-body th, .maestro-body td { padding: 6px 8px; border: 1px solid var(--c-paper-2); vertical-align: top; text-align: left; }
 .maestro-body thead th { background: var(--c-paper-2); white-space: nowrap; }

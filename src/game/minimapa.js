@@ -251,6 +251,9 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
 #mapa-grande .mg-head button[aria-pressed="true"]{background:#2fc15a;border-color:#fff;color:#08210f}
 #mapa-grande .mg-head button[hidden]{display:none}
 #mapa-grande .mg-head button:focus-visible{outline:3px solid var(--c-focus,#ffd23f);outline-offset:2px}
+#mapa-grande .mg-head .mg-cerrar{order:9;width:56px;min-width:56px;height:56px;min-height:56px;padding:0;border-radius:50%;border:3px solid #fff;background:#e2574c;font:800 calc(26px * var(--fs-k,1))/1 var(--font-body,sans-serif);box-shadow:0 4px 0 #9c2f27;animation:mg-respira 1.8s ease-in-out infinite}
+@keyframes mg-respira{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+body:is(.escondite-on,.semillas-on,.sigueme-on,.foto-on,.sembradora-on,.planeo-on,.pichones-on) #minimapa .mm-btn{cursor:default}
 #mapa-grande canvas{display:block;width:var(--lado);height:var(--lado);max-width:100%;margin:0 auto;border-radius:12px;background:#2a6f9a;touch-action:manipulation}
 #mapa-grande .mg-info{margin:6px 4px 2px;min-height:1.3em}
 #mapa-grande .mg-ley{display:flex;flex-wrap:wrap;gap:4px 10px;margin:4px 4px 2px;padding:0;list-style:none;font-size:calc(11px * var(--fs-k,1));font-weight:600;opacity:.92}
@@ -275,7 +278,7 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
   const HTML_COMPACTO = '<button type="button" class="mm-btn" aria-haspopup="dialog" aria-label="Minimapa. Tocar para ampliar (tecla M)"><canvas class="mm-c" width="124" height="124"></canvas>' +
     '<span class="mm-txt" aria-hidden="true"><i class="mm-dot off"></i><span class="mm-d"></span></span></button>';
   const HTML_GRANDE = '<div class="mg-panel"><div class="mg-head"><h2 id="mg-titulo">Mapa</h2>' +
-    '<button type="button" class="mg-ruta" aria-pressed="false">Ruta</button><button type="button" class="mg-quitar" hidden>Quitar destino</button><button type="button" class="mg-cerrar" aria-label="Cerrar el mapa (M)">Cerrar</button></div>' +
+    '<button type="button" class="mg-ruta" aria-pressed="false">Ruta</button><button type="button" class="mg-quitar" hidden>Quitar destino</button><button type="button" class="mg-cerrar" aria-label="Cerrar el mapa (M)" title="Cerrar"><span aria-hidden="true">✕</span></button></div>' +
     '<canvas class="mg-c" width="400" height="400" aria-label="Mapa de la isla. Toca para fijar un destino"></canvas><p class="mg-info" aria-live="polite"></p>' +
     '<ul class="mg-ley"><li><i class="l-obj"></i>Objetivo</li><li><i class="l-mision"></i>Misión</li><li><i class="l-parada"></i>Parada</li><li><i class="l-reto"></i>Reto</li><li><i class="l-fruto"></i>Fruto</li><li><i class="l-lugar"></i>Lugar</li><li><i class="l-pueblo"></i>Asentamiento</li><li><i class="l-dest"></i>Destino</li>' +
     '<li><i class="l-pesca"></i>Pesca</li><li><i class="l-patrulla"></i>Patrulla</li><li><i class="l-candado"></i>Aún cerrado</li>' +
@@ -543,9 +546,13 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
 
   // ---------- Abrir y cerrar ----------
   const puede = () => !G.ui.busy() && !(doc.getElementById('title') || {}).open && !(G.ui.worldHidden && G.ui.worldHidden()) && !(G.pausa && G.pausa.motivos.has('menu'));
+  // PULIR 3 (p23, niño de 7 años): en los minijuegos de «Más juegos» el minimapa solo guía; tocarlo abría el mapa de la Aventura
+  // (con su objetivo, no el del juego), congelaba el reloj y el niño creía que el juego se había roto
+  const MINI_SIN_MAPA = /(?:^|\s)(?:escondite|semillas|sigueme|foto|sembradora|planeo|pichones)-on(?:\s|$)/;
+  const enMinijuego = () => MINI_SIN_MAPA.test(doc.body.className);
   function abrir() {
     if (abierto) return true;
-    if (!elC || !puede() || !(S.profile && S.profile.created)) return false;
+    if (!elC || !puede() || enMinijuego() || !(S.profile && S.profile.created)) return false;
     abierto = true; elG.hidden = false; G.pausa.set('mapa', true); empezarBase(); refrescarGrande();
     const c = elG.querySelector('.mg-cerrar'); c.setAttribute('aria-label', 'Cerrar el mapa (' + teclaMapa() + ')');
     try { c.focus({ preventScroll: true }); } catch (e) { /* sin foco */ }
@@ -692,6 +699,12 @@ body:has(#title[open]) #minimapa,body:has(#emotes:not([hidden])) #minimapa,body:
       check('Esc con el mapa abierto no abre también la Pausa', !pausaAbierta);
       elC.querySelector('.mm-btn').click(); const porClic = abierto; elG.querySelector('.mg-cerrar').click();
       check('El toque en el minimapa abre y «Cerrar» cierra', porClic && !abierto);
+      { // PULIR 3 (p23): en un minijuego el toque no abre el mapa; la X del mapa mide 56 px o más
+        doc.body.classList.add('escondite-on'); elC.querySelector('.mm-btn').click(); const enMini = abierto; if (abierto) cerrar(); doc.body.classList.remove('escondite-on');
+        check('PULIR 3 · En un minijuego (Escondite) tocar el minimapa no abre el mapa ni congela el reloj', !enMini && !G.pausa.motivos.has('mapa'));
+        abrir(); const rx = elG.querySelector('.mg-cerrar').getBoundingClientRect(); cerrar();
+        check('PULIR 3 · La X de cerrar el mapa es grande (≥ 56 px)', rx.width >= 55 && rx.height >= 55, Math.round(rx.width) + '×' + Math.round(rx.height));
+      }
       // Destino por toque: fijar y quitar
       abrir(); quitarDestino();
       const r = cvG.getBoundingClientRect(), vg = vistaGrande(r.width);

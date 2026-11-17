@@ -143,7 +143,7 @@ window.AVV18Evolucion = function (G) {
     // Guía corta de Mis cotorras (Kelvin 8-nov: «que se entienda solo en 20 segundos»): meta, cómo se sube y con qué tecla
     guiaVacia: 'Aún no tienes cotorras aquí. Empieza la Aventura con Vittata y vuelve para ver su nivel.',
     guiaElige: 'Toca una cotorra: su poder será el tuyo en el duelo.', guiaUna: 'Gana duelos y explora: llegarán más cotorras con otros poderes.',
-    guiaSube: 'Sube de nivel:', guiaDuelo: 'Gana un duelo +{} XP', guiaGolf: 'Minigolf +{} XP', guiaExplora: 'Explora y ayuda a la isla',
+    guiaSube: 'Sube de nivel:', guiaDuelo: 'Gana un duelo +{} XP', guiaGolf: 'Minigolf +{} XP', guiaExplora: 'Explora y ayuda a la isla', logrosTit: 'Tus logros:',
     guiaEtapas: 'En los niveles 10, 20 y 30 tu poder mejora.', guiaTeclas: 'En el duelo:', guiaPoder: 'Poder', guiaAli: 'Alianza',
     guiaTactil: 'En el duelo: toca el botón Poder (y el de la alianza, si la tienes).',
     aliQue: 'Dos cotorras que se ayudan con un poder especial. Empieza con una cotorra en el nivel 10.'
@@ -551,7 +551,7 @@ window.AVV18Evolucion = function (G) {
         '.v18-evo-guia p{margin:3px 0}.v18-evo-guia .meta{font-weight:700}.v18-evo-guia .v18-evo-chip{display:inline-block;padding:2px 8px;margin:2px 2px 0 0;border-radius:9px;background:#ffe39a;font-size:calc(13px * var(--fs-k,1))}' +
         '.v18-evo-guia kbd{display:inline-block;vertical-align:middle;height:auto;font:700 calc(13px * var(--fs-k,1))/1 Fredoka,system-ui,sans-serif;min-width:20px;padding:3px 5px;margin:0 3px 0 6px;border-radius:6px;background:#3b2a14;color:#fff3d6;box-shadow:0 2px 0 #0007;text-align:center}' +
         '.v18-evo-sig .v18-evo-falta{flex-basis:100%;order:-1}.v18-evo-sig .v18-evo-sn{font-weight:700}' +
-        '.v18-evo-sig,.v18-evo-logros{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px}.v18-evo-sig img,.v18-evo-logro img{width:28px;height:28px;border-radius:50%;background:#fff8}' +
+        '.v18-evo-sig,.v18-evo-logros{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px}.v18-evo-logros{padding:6px 10px;border-radius:12px;border:2px dashed rgba(120,80,20,.3)}.v18-evo-lt{width:100%;font-size:calc(13px * var(--fs-k,1))}.v18-evo-sig img,.v18-evo-logro img{width:28px;height:28px;border-radius:50%;background:#fff8}' +
         '.v18-evo-logro{display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 2px;border-radius:14px;background:#ffe39a;color:#3b2a14}' +
         ':root.a11y-contraste .v18-evo-guia{background:#000;color:#fff;border:2px solid #fff}:root.a11y-contraste .v18-evo-guia .v18-evo-chip{background:#333;color:#fff}' +
         '@media (min-width:761px){#v18-evo-carta{top:calc(env(safe-area-inset-top,0px) + 96px)}}' + // en la computadora el aviso (#toast, capa superior) ocupa el borde de arriba
@@ -598,7 +598,9 @@ window.AVV18Evolucion = function (G) {
   function htmlFicha(sp) {
     try { css(); } catch (e) { /* sin documento */ }
     const r = info(sp), L = lineaHud({ especie: sp, nivel: r.nivel, variante: r.variante, poder: H.poderDe(sp) });
-    let h = `<span class="v18-evo-f"><span>${esc(L.nivel)}</span> · <span>${esc(L.etapa)}</span></span><i class="v18-evo-bar"><b style="width:${Math.round(L.frac * 100)}%"></b></i>`;
+    // PULIR 2 (p23): en la etapa de base el nombre de la etapa es el del poder, que la ficha ya dice en «Poder: …» (salía dos veces)
+    const etBase = etapaIdx(r.nivel) === 0 && !r.variante;
+    let h = `<span class="v18-evo-f"><span>${esc(L.nivel)}</span>${etBase ? '' : ` · <span>${esc(L.etapa)}</span>`}</span><i class="v18-evo-bar"><b style="width:${Math.round(L.frac * 100)}%"></b></i>`;
     const etapas = sp === 'vittata' ? ETAPAS : ETAPAS_ESP, sigEt = etapas.find(et => et.desde > r.nivel);
     h += `<span class="v18-evo-sig" data-v18-siguiente>${imgLogro(sp)}`;
     // F20: lo que falta va primero y en su línea; la etapa dice «se gana en el nivel 10» (antes «Eco Amplificado · Nivel 10 · Faltan
@@ -656,7 +658,8 @@ window.AVV18Evolucion = function (G) {
     const etiq = k => (k.indexOf('esp:') === 0 ? nombre(k.slice(4)) : k.indexOf('gana:') === 0 ? nombre(k.slice(5)) : TXT.guiaExplora);
     const foto = k => (k.indexOf('esp:') === 0 || k.indexOf('gana:') === 0) ? k.slice(k.indexOf(':') + 1) : '';
     let h = '<div class="v18-evo-logros" data-v18logros>';
-    if (!hechos.length) h += imgLogro('') + `<span>${esc(TXT.guiaExplora)}</span>`;
+    // PULIR 2 (p23): vacío, la medalla suelta bajo la caja parecía un botón de radio sin función: va con su rótulo y en su recuadro
+    if (!hechos.length) h += `<b class="v18-evo-lt">${esc(TXT.logrosTit)}</b>` + imgLogro('') + `<span>${esc(TXT.guiaExplora)}</span>`;
     else h += hechos.map(k => `<span class="v18-evo-logro">${imgLogro(foto(k))}<span>${esc(etiq(k))}</span></span>`).join('');
     return h + '</div>';
   }

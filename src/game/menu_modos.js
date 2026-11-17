@@ -1282,9 +1282,11 @@
         const li = document.createElement('li');
         li.className = 'cap-item' + (aqui ? ' es-actual' : ''); li.dataset.cap = c.n; li.dataset.estado = e;
         li.style.setProperty('--cap-a', c.c[0]); li.style.setProperty('--cap-b', c.c[1]);
-        const boton = aqui ? L('Seguir aquí', 'Keep playing') : e === 'terminado' ? L('Volver a jugar', 'Play again') : e === 'en curso' ? L('Continuar', 'Continue') : L('Jugar', 'Play');
+        // PULIR 2 (p23): con perfil nuevo el cap. 1 decía a la vez «Nuevo», «estás aquí» y «Seguir aquí»: si aún no se ha jugado, «Jugar»
+        const aquiJugado = aqui && e !== 'nuevo';
+        const boton = aquiJugado ? L('Seguir aquí', 'Keep playing') : e === 'terminado' ? L('Volver a jugar', 'Play again') : e === 'en curso' ? L('Continuar', 'Continue') : L('Jugar', 'Play');
         li.innerHTML = `<div class="cap-portada" aria-hidden="true"><svg viewBox="0 0 64 64">${c.img}</svg><span>${c.n}</span></div>` +
-          `<div class="cap-info"><small>${rot}${aqui ? ' · ' + L('estás aquí', 'you are here') : ''}</small><b></b><span class="cap-estado"></span></div>` +
+          `<div class="cap-info"><small>${rot}${aquiJugado ? ' · ' + L('estás aquí', 'you are here') : ''}</small><b></b><span class="cap-estado"></span></div>` +
           `<button class="btn cap-jugar" type="button" data-icon="play"></button>`;
         li.querySelector('b').textContent = tit;
         li.querySelector('.cap-estado').textContent = L(...ESTADO_TX[e]);
@@ -1358,6 +1360,7 @@
         check('Desde la pausa: se abre con los 6, portada, estado y botón', dlg.open && items.length === 6 && items.every(li => li.querySelector('.cap-portada svg') && li.querySelector('.cap-estado').textContent && li.querySelector('.cap-jugar')));
         check('Los estados se ven: terminado, en curso y nuevo', items[3].dataset.estado === 'terminado' && items[3].querySelector('.cap-estado').textContent === 'Terminado' && items[otro - 1].querySelector('.cap-estado').textContent === 'En curso' && items.some(li => li.querySelector('.cap-estado').textContent === 'Nuevo'));
         check('Rótulos «Capítulo N» en orden y el actual marcado', items.every((li, i) => li.querySelector('small').textContent.startsWith('Capítulo ' + (i + 1))) && lista.querySelectorAll('.es-actual').length === 1 && items[actual - 1].classList.contains('es-actual'));
+        { const ia = items[actual - 1]; check('PULIR 2 · El capítulo actual sin jugar no dice a la vez «Nuevo» y «Seguir aquí»/«estás aquí»', ia.dataset.estado !== 'nuevo' || !/Seguir aquí|estás aquí|Keep playing|you are here/.test(ia.textContent), ia.dataset.estado + ' · ' + ia.textContent.slice(0, 80)); }
         fueA = null; items[otro - 1].querySelector('.cap-jugar').click();
         check('Jugar abre el pack de ese capítulo', fueA && (otro === 1 ? !new URL(fueA, location.href).searchParams.get('pack') : new URL(fueA, location.href).searchParams.get('pack') === cap(otro).id), fueA);
         fueA = null; items[actual - 1].querySelector('.cap-jugar').click();

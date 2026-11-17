@@ -291,7 +291,7 @@ window.AVRescateRapido = function (G) {
     }
     const i = cercano();
     if (i < 0) {
-      if (E.t - E.pistaT > 1.2) { E.pistaT = E.t; aviso(encima() ? L('¡Muy alto! Baja hasta el pichón (botón «Bajar» o C)', 'Too high! Fly down to the chick («Dive» button or C)') : L('Acércate a un pichón para recogerlo', 'Get close to a chick to pick it up'), 'malo'); }
+      if (E.t - E.pistaT > 1.2) { E.pistaT = E.t; aviso(encima() ? L('¡Muy alto! Baja hasta el pichón (botón «Bajar» o C)', 'Too high! Fly down to the chick (“Dive” button or C)') : L('Acércate a un pichón para recogerlo', 'Get close to a chick to pick it up'), 'malo'); }
       return false;
     }
     E.ultAccion = E.t; E.lleva = i; pich[i].estado = 'lleva';
@@ -329,8 +329,8 @@ window.AVRescateRapido = function (G) {
     if (E.gotasOn && !reducido()) for (const g of gotas) { g.y -= g.v * dt; if (g.y < S.pos.y - 4 || Math.abs(g.x - S.pos.x) > 10 || Math.abs(g.z - S.pos.z) > 10) nuevaGota(g, true); }
     // a tiro de un pichón o del nido: el aviso lo dice una vez por llegada
     const c = E.lleva < 0 ? cercano() : -1, jn = E.lleva >= 0 && junto();
-    if (c >= 0 && c !== E.cerca) aviso(L('¡Pío! Pulsa «Recoger»', 'Peep! Press «Pick up»'), 'bien');
-    if (jn && !E.enNido) aviso(L('¡El nido! Pulsa «Dejar»', 'The nest! Press «Drop off»'), 'bien');
+    if (c >= 0 && c !== E.cerca) aviso(L('¡Pío! Pulsa «Recoger»', 'Peep! Press “Pick up”'), 'bien');
+    if (jn && !E.enNido) aviso(L('¡El nido! Pulsa «Dejar»', 'The nest! Press “Drop off”'), 'bien');
     E.cerca = c; E.enNido = jn;
     apuntarGuia();
     pintar();
@@ -386,6 +386,8 @@ window.AVRescateRapido = function (G) {
       'body.pichones-on:not(.pichones-fin) #acts #b-dive{display:inline-flex!important}' +
       // F22: aquí «Aterrizar» (#b-fly) sigue a la vista y ocupa la misma celda: «Bajar» sube encima del grupo para no quedar tapado
       'body.pichones-on:not(.pichones-fin) #acts #b-dive{position:absolute;left:0;bottom:calc(100% + 10px)}' +
+      // PULIR 3 (niño de 7 años): en el suelo se veían a la vez «Bajar», «Volar» y «Saltar»; «Bajar» solo sale volando
+      'body.pichones-on:not(.pichones-fin):not(.vittata-vuela) #acts #b-dive{display:none!important}' +
       'body.pichones-on #b-act{--icon:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Cellipse cx=%2712%27 cy=%2715.5%27 rx=%276%27 ry=%276.6%27/%3E%3Ccircle cx=%2712%27 cy=%277.6%27 r=%274.4%27/%3E%3C/svg%3E")}';
     document.head.appendChild(st);
   }
@@ -425,7 +427,7 @@ window.AVRescateRapido = function (G) {
     const n = E.salvados;
     q(finEl, 'ft').textContent = E.todos ? L('¡Todos a salvo!', 'All safe!') : L('¡Llegó la lluvia!', 'Here comes the rain!');
     q(finEl, 'fn').textContent = n + '/' + N;
-    q(finEl, 'fmsg').textContent = n === 0 ? L('¡Casi! Baja junto a un pichón y pulsa «Recoger»', 'So close! Fly down next to a chick and press «Pick up»')
+    q(finEl, 'fmsg').textContent = n === 0 ? L('¡Casi! Baja junto a un pichón y pulsa «Recoger»', 'So close! Fly down next to a chick and press “Pick up”')
       : E.nuevo ? (E.todos ? L(`¡Nuevo récord: ${reloj(E.tiempo)}!`, `New record: ${reloj(E.tiempo)}!`) : L(`¡Nuevo récord: ${n} de ${N}!`, `New record: ${n} of ${N}!`))
         : L('Récord: ', 'Best: ') + recTxt();
     q(finEl, 'fdet').textContent = E.todos ? L(`Los ${N} pichones, secos y felices en ${reloj(E.tiempo)}`, `All ${N} chicks, dry and happy in ${reloj(E.tiempo)}`)
@@ -597,13 +599,17 @@ window.AVRescateRapido = function (G) {
       check('Lejos de los pichones, Acción no recoge nada: «Acércate a un pichón»', !accion() && E.lleva < 0 && /Acércate a un pichón/.test(q(hudEl, 'msg').textContent), q(hudEl, 'msg').textContent);
       listo(); ir(pich[0].x, pich[0].z, 14);
       check('Justo encima de un pichón pero muy alto, Acción dice que bajes («¡Muy alto! Baja…»)', !accion() && E.lleva < 0 && /Muy alto! Baja/.test(q(hudEl, 'msg').textContent), q(hudEl, 'msg').textContent);
-      { const d = document.getElementById('b-dive'); check('En táctil está «Bajar» (el botón de picada, siempre a mano mientras se juega)', !d || (getComputedStyle(d).display !== 'none' && d.textContent === 'Bajar'), d && (d.textContent + ' · ' + getComputedStyle(d).display)); }
+      { const d = document.getElementById('b-dive'), bc = document.body.classList, vu0 = bc.contains('vittata-vuela');
+        bc.add('vittata-vuela'); const enAire = d && getComputedStyle(d).display; bc.remove('vittata-vuela'); const enSuelo = d && getComputedStyle(d).display; bc.toggle('vittata-vuela', vu0);
+        check('En táctil está «Bajar» volando (el botón de picada) y no en el suelo (PULIR 3)', !d || (enAire !== 'none' && enSuelo === 'none' && d.textContent === 'Bajar'), d && (d.textContent + ' · ' + enAire + '/' + enSuelo)); }
+      const vuelaAntes = document.body.classList.contains('vittata-vuela'); document.body.classList.add('vittata-vuela'); // la medida de abajo es la de volando
       { const d = document.getElementById('b-dive'), f = document.getElementById('b-fly'), cs = d && getComputedStyle(d);
         // F22: en el teléfono «Bajar» no puede quedar debajo de «Aterrizar» (se medía la misma celda): ni solapados ni tapados
         const r = d && d.getBoundingClientRect(), rf = f && vis('b-fly') ? f.getBoundingClientRect() : null;
         const solapa = r && rf && r.width > 0 && r.left < rf.right && r.right > rf.left && r.top < rf.bottom && r.bottom > rf.top;
         const enc = r && r.width > 0 ? document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) : null;
         check('«Bajar» no queda debajo de «Aterrizar»: va en su sitio propio y el dedo lo alcanza', !d || (cs.position === 'absolute' && !solapa && (!vis('b-dive') || !enc || enc === d || d.contains(enc))), r ? `${Math.round(r.left)},${Math.round(r.top)} · ${enc ? enc.id || enc.tagName : '-'}` : '-'); }
+      document.body.classList.toggle('vittata-vuela', vuelaAntes);
       // Teclado (E) junto al pichón 0
       listo(); aPichon(0); paso(0.02);
       const avisoCerca = /Pulsa «Recoger»/.test(q(hudEl, 'msg').textContent);

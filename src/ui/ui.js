@@ -132,7 +132,7 @@
       if (!mirar()) { const mo = new MutationObserver(() => { if (mirar()) mo.disconnect(); }); mo.observe(quest, { childList: true }); }
     }
     // T30: posada (en una percha, una rama o el suelo de una percha), en el teléfono el aviso sube para no taparla (ui.css)
-    { const Gp = window.AV && window.AV.G; let posada = null; if (Gp && Gp.on) Gp.on('update', () => { const M = Gp.fisica && Gp.fisica.MOVE, v = !!(M && M.posado && !M.flying); if (v !== posada) { posada = v; document.body.classList.toggle('vittata-posada', v); } }); }
+    { const Gp = window.AV && window.AV.G; let posada = null, vuela = null; if (Gp && Gp.on) Gp.on('update', () => { const M = Gp.fisica && Gp.fisica.MOVE, v = !!(M && M.posado && !M.flying); if (v !== posada) { posada = v; document.body.classList.toggle('vittata-posada', v); } const vu = !!(M && M.flying); if (vu !== vuela) { vuela = vu; document.body.classList.toggle('vittata-vuela', vu); } }); } // PULIR 3: vittata-vuela, para esconder «Bajar» en el suelo
     // T18: en el escritorio el aviso de arriba (#toast) va en el hueco entre el objetivo y los contadores (tapaba «Madera»):
     // --hud-l y --hud-r con sus bordes, al cuadro siguiente y solo si cambian (ui.css los usa a partir de 561 px)
     const inv = $('inv');

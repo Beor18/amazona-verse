@@ -221,6 +221,18 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
   const PM_POSAR_S = 10;
   const pmE = { hecho: {}, t: 0, volaba: false, aire: 0 };
   let pmForzar = false;
+  // PULIR 3 (p23, niño de 7 años): tras 10 s de vuelo el anillo iba a Aterrizar aunque Iguaca siguiera lejos y «en lo alto»: el niño
+  // tocaba lo que brillaba y volvía al suelo. Ahora, volando hacia un objetivo lejano, el anillo va a «Subir» (Saltar) si el objetivo
+  // está más alto, o no sale (la palanca y la flecha guían); a Aterrizar solo cuando el objetivo está cerca. Sin objetivo, como antes.
+  const PM_CERCA = 14, PM_MAS_ALTO = 3;
+  let pmObjForzado; // pruebas: { h, dy } o null (sin objetivo)
+  function pmObjetivo() {
+    if (pmObjForzado !== undefined) return pmObjForzado;
+    let t = null; try { t = G.misiones && G.misiones.guideTarget ? G.misiones.guideTarget() : null; } catch (e) { t = null; }
+    if (!t || typeof t.x !== 'number') return null;
+    const y = t.y != null ? t.y : (G.terreno && G.terreno.height ? G.terreno.height(t.x, t.z) : S.pos.y);
+    return { h: Math.hypot(t.x - S.pos.x, t.z - S.pos.z), dy: y - S.pos.y };
+  }
   // QA-181 (KIMI-142): leer aquí el layout (getClientRects) forzaba un reflow del HUD entero en cada
   // refresco (~8 % del hilo a ×6 en Chromebook). La visibilidad de estos controles solo cambia por
   // atributos (hidden/class/style), por hijos añadidos o borrados en #acts, por la raíz (tamaño de
@@ -266,7 +278,11 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       let id = '';
       for (const k of PM_ORDEN) {
         if (pmE.hecho[k]) continue;
-        if (k === 'posar' && pmE.volaba && pmE.aire < PM_POSAR_S) break; // aún volando hacia el objetivo: sin anillo
+        if (k === 'posar' && pmE.volaba) {
+          const ob = pmObjetivo();
+          if (ob && ob.h > PM_CERCA) { if (ob.dy > PM_MAS_ALTO && pmPuede('subir')) id = 'subir'; break; } // lejos: Subir o nada
+          if (!ob && pmE.aire < PM_POSAR_S) break; // sin objetivo: espera como antes
+        }
         if (pmPuede(k)) { id = k; break; }
       }
       pmCache.id = id; pmCache.t = ahora;
@@ -277,7 +293,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     if (!k || pmE.hecho[k]) return;
     pmE.hecho[k] = true; pmE.t = 0; pmCache.t = -1e9;
   }
-  const PM_BLANCO = { mover: 'stick', despegar: 'b-fly', posar: 'b-fly', impulso: 'b-dash' };
+  const PM_BLANCO = { mover: 'stick', despegar: 'b-fly', posar: 'b-fly', subir: 'b-jump', impulso: 'b-dash' };
   const PM_BORDE = 6, PM_BORDE_MIN = 2, PM_SOMBRA = 2, PM_AIRE = 6;
   const huecoPm = (a, b) => {
     const dx = Math.max(b.left - a.right, a.left - b.right);
@@ -373,6 +389,16 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     pintarPm(false, cambioHud);
   }
   G.on('truco', () => { pmMarcar('truco'); pintarPm(true); });
+  // PULIR 3 (p23): la flecha 3D de la guía (G.fx.guideArrow, motor) flota 2,75 m sobre Vittata; con la cámara metida en el techo del
+  // taller o en el follaje quedaba a un palmo y se veía como una cuña enorme que tapaba media pantalla (cap. 6, Escondite, Foto…).
+  // Aquí, después de todos los G.fx.guide() del cuadro (prioridad 60-61), se esconde si la cámara está a menos de 2,4 m. Y hasta el
+  // primer «posarse» (el objetivo «Vuela y pósate junto a Iguaca»), haz y flecha brillan como en el modo relajado, para que se vean.
+  G.on('render', () => {
+    const fx = G.fx, fl = fx && fx.guideArrow, haz = fx && fx.guideBeam; if (!fl || !G.renderer || !G.renderer.camera) return;
+    const relajado = !!(G.accesibilidad && G.accesibilidad.relajado && G.accesibilidad.relajado());
+    if (fl.visible && !relajado && !pmE.hecho.posar && enJuego()) { fl.scale.setScalar(1.4); if (haz && haz.visible) haz.material.opacity = Math.min(0.45, haz.material.opacity * 1.8); }
+    if (fl.visible && G.renderer.camera.position.distanceTo(fl.position) < 2.4) fl.visible = false;
+  }, 62);
 
   // ---------- Cada cuadro ----------
   // Minigolf V18 (minigolf.js): tiene sus propios controles; ni el panel «Así se juega» ni las pistas de explorar salen encima
@@ -483,10 +509,17 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
       ok('Al empezar la pista visual es despegar (lo que pide el objetivo), sin ventana de texto', pm.dataset.paso === 'despegar' && !pm.hidden && !pm.querySelector('p'), pm.dataset.paso);
       K.add('w'); M.speed = 2; pmTick(0.2);
       ok('Caminar no apaga la pista de despegar', pm.dataset.paso === 'despegar' && pmE.hecho.mover === true, pm.dataset.paso);
+      pmObjForzado = { h: 40, dy: 0 };
       M.flying = true; M.grounded = false; pmTick(0.1);
       ok('PULIR 5 · Recién despegada no hay anillo en Aterrizar (Iguaca aún lejos)', pm.hidden && pm.dataset.paso !== 'impulso', (pm.hidden ? 'oculto ' : '') + pm.dataset.paso);
       pmTick(PM_POSAR_S + 0.5);
-      ok('Tras ' + PM_POSAR_S + ' s de vuelo la pista pasa a posarse', pm.dataset.paso === 'posar' && !pm.hidden, pm.dataset.paso);
+      ok('PULIR 3 · Con el objetivo lejos, ni tras ' + PM_POSAR_S + ' s el anillo va a Aterrizar', pm.dataset.paso !== 'posar' || pm.hidden, (pm.hidden ? 'oculto ' : '') + pm.dataset.paso);
+      pmObjForzado = { h: 40, dy: 12 }; pmCache.t = -1e9; pmTick(0.1);
+      ok('PULIR 3 · Con el objetivo lejos y más alto, el anillo va a Subir (no a Aterrizar)', pm.dataset.paso === 'subir' && !pm.hidden, pm.dataset.paso);
+      pmObjForzado = { h: 6, dy: 0 }; pmCache.t = -1e9; pmTick(0.1);
+      ok('Con el objetivo cerca la pista pasa a posarse', pm.dataset.paso === 'posar' && !pm.hidden, pm.dataset.paso);
+      pmObjForzado = null; pmCache.t = -1e9; pmTick(0.1);
+      ok('Sin objetivo, tras ' + PM_POSAR_S + ' s de vuelo la pista pasa a posarse', pm.dataset.paso === 'posar' && !pm.hidden, pm.dataset.paso);
       M.flying = false; M.grounded = true; pmTick(0.1);
       ok('Al posarse la pista pasa al impulso', pm.dataset.paso === 'impulso', pm.dataset.paso);
       M.dashT = 0.1; pmTick(0.05);
@@ -595,7 +628,7 @@ body:has(#dialog:not([hidden])) #guia-hud { visibility: hidden; }
     G.quiet = guarda.quiet; st.x = guarda.sx; st.y = guarda.sy;
     tenia.forEach(k => K.add(k)); teclas0.forEach(k => { if (!tenia.includes(k)) K.delete(k); });
     const q = document.getElementById('quest'); if (q) q.classList.remove('pm-senala');
-    pmForzar = false; forzado = null; pmE.hecho = {}; pmE.t = 0; pmE.visto = ''; hudVis.sucio = true; pintarPm();
+    pmForzar = false; forzado = null; pmObjForzado = undefined; pmE.hecho = {}; pmE.t = 0; pmE.visto = ''; hudVis.sucio = true; pintarPm();
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
   setTimeout(() => { const AV = window.AV; if (AV && AV.G === G && !AV.primerosMinutosTest) AV.primerosMinutosTest = primerosMinutosTest; }, 0);
