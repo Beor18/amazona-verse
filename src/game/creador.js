@@ -30,7 +30,17 @@ AVE.module('creador', function (G) {
     b: ['Azul', 'Verde', 'Veloz', 'Valiente', 'Feliz', 'Alegre', 'Brillante', 'Gentil', 'Tropical', 'Solar', 'del Río', 'del Monte', 'del Yunque', 'de la Bahía', 'del Mar'],
   }, G.pack.nombres);
   const nombreDe = (a, b) => a + ' ' + b;
-  const esNombreDeLista = n => typeof n === 'string' && NOMBRES.a.some(a => n.startsWith(a + ' ') && NOMBRES.b.includes(n.slice(a.length + 1)));
+  // PULIR 7: los nombres de la lista se reconocen sin tildes ni mayúsculas («coral del rio» = «Coral del Río»)
+  const sinTilde = t => String(t == null ? '' : t).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const canonDeLista = n => {
+    if (typeof n !== 'string') return null;
+    const k = sinTilde(n);
+    for (const a of NOMBRES.a) for (const b of NOMBRES.b) if (sinTilde(nombreDe(a, b)) === k) return nombreDe(a, b);
+    return null;
+  };
+  const esNombreDeLista = n => !!canonDeLista(n);
+  // Palabras de aventura de las listas (sin «de», «del», «la»): con una de ellas, un nombre de 2 o 3 palabras no es un apellido
+  const PALABRAS_AVENTURA = new Set(NOMBRES.a.concat(NOMBRES.b).join(' ').split(' ').map(sinTilde).filter(w => w.length > 3));
   const nombreAzar = (semilla) => {
     const R = semilla != null ? G.util.rng(semilla) : Math.random;
     return nombreDe(NOMBRES.a[Math.floor(R() * NOMBRES.a.length)], NOMBRES.b[Math.floor(R() * NOMBRES.b.length)]);
@@ -57,11 +67,15 @@ AVE.module('creador', function (G) {
     const t = String(raw || '').trim();
     if (/\b(me llamo|mi nombre|my name is|my name|i am called)\b/i.test(t)) return 'No escribas «me llamo». ' + propuesta();
     const palabras = t.split(/[\s'-]+/).filter(p => /\p{L}/u.test(p));
-    if (palabras.length >= 2) return 'Un solo nombre, sin apellido. ' + propuesta();
+    // PULIR 7: de 1 a 3 palabras («Coqui Veloz», «Ola de la Bahía»). Para no dejar pasar nombre y apellido (DECISION_LOG
+    // 28-oct, datos personales), con 2 o 3 palabras una tiene que ser de aventura (de las listas del dado).
+    if (palabras.length > 3) return 'Hasta 3 palabras. ' + propuesta();
+    if (palabras.length >= 2 && !palabras.some(w => PALABRAS_AVENTURA.has(sinTilde(w)))) return 'Sin apellidos: junta tu nombre con una palabra de aventura, como «Veloz». ' + propuesta();
     const norm = letrasDe(t);
-    if (contiene(norm, MALAS)) return 'Ese nombre no suena bien por aquí. ' + propuesta();
-    if (contiene(norm, MARCAS)) return 'Ese nombre es de una marca. ' + propuesta();
-    if (!/^[\p{L}]{3,14}$/u.test(t)) return 'De 3 a 14 letras, sin números. ' + propuesta();
+    const trozos = palabras.map(letrasDe);
+    if (contiene(norm, MALAS) || trozos.some(w => contiene(w, MALAS))) return 'Ese nombre no suena bien por aquí. ' + propuesta();
+    if (contiene(norm, MARCAS) || trozos.some(w => contiene(w, MARCAS))) return 'Ese nombre es de una marca. ' + propuesta();
+    if (palabras.length === 1 ? !/^[\p{L}]{3,14}$/u.test(t) : !(/^[\p{L}]+( [\p{L}]+){1,2}$/u.test(t.replace(/\s+/g, ' ')) && t.replace(/\s+/g, '').length <= 20)) return 'De 3 a 14 letras, sin números. ' + propuesta();
     return null;
   }
   function debeReemplazarNombre(p) {
@@ -394,7 +408,9 @@ AVE.module('creador', function (G) {
         + '#creator .name-pick select{display:none !important}'
         + '#creator #p-name{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0}'
         + '#creator #p-name-azar{grid-column:1;width:100%;min-height:var(--tap);height:auto;padding:0 var(--sp-4);border-radius:var(--r-md);white-space:nowrap}'
-        + '#creator #p-name-libre{width:100%;min-height:var(--tap);margin-top:0;font:700 var(--fs-xl)/1.2 var(--font-display)}';
+        + '#creator #p-name-libre{width:100%;min-height:var(--tap);margin-top:0;font:700 var(--fs-xl)/1.2 var(--font-display)}'
+        // PULIR 7: el aviso del nombre, grande y amable (antes era rojo y pequeño y no se veía)
+        + '#creator #p-error{font:700 var(--fs-md)/1.35 var(--font-display);color:#3a2408;background:#ffe7a8;border:3px solid #c98a1c;border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);margin:var(--sp-2) 0}';
       document.head.appendChild(st);
     }
     for (const id of ['p-name-a', 'p-name-b']) {
@@ -494,8 +510,11 @@ AVE.module('creador', function (G) {
   function close() { $('creator').hidden = true; if (window.AVShowcase) window.AVShowcase.unmount(); }
   // Devuelve null si se guardó, o el texto del error
   function saveCharacter(draft) {
-    const d = draft || { name: nombreEnPantalla(), look: draftLook };
-    if (esNombreDeLista(d.name)) {
+    const d = Object.assign({}, draft || { name: nombreEnPantalla(), look: draftLook });
+    d.name = String(d.name == null ? '' : d.name).replace(/\s+/g, ' ').trim();
+    const canon = canonDeLista(d.name);
+    if (canon) d.name = canon; // «trueno azul» se guarda como «Trueno Azul»
+    if (canon) {
       if (!NAME_OK.test(d.name) || textoSeguro(d.name)) return 'Elige un nombre de aventurero de las listas.';
     } else {
       const mot = filtroNombreLibre(d.name);
@@ -514,6 +533,17 @@ AVE.module('creador', function (G) {
     return null;
   }
   $('p-save').onclick = () => { const err = saveCharacter(); if (err) { $('p-error').textContent = err; $('p-error').hidden = false; } };
+  // PULIR 7: al escribir o tirar el dado el aviso se va; Enter en el nombre es como pulsar «¡A jugar!»
+  const borrarAviso = () => { if (!$('p-error').hidden) { $('p-error').hidden = true; $('p-error').textContent = ''; } };
+  if ($('p-name-libre')) {
+    $('p-name-libre').addEventListener('input', borrarAviso);
+    $('p-name-libre').addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || e.isComposing) return;
+      e.preventDefault();
+      $('p-save').click();
+    });
+  }
+  $('p-name-azar').addEventListener('click', borrarAviso);
   $('p-cancel').onclick = () => { if (primera && G.menuModos && G.menuModos.volver && $('title')) G.menuModos.volver(); else close(); };
   $('b-char').onclick = () => open(false);
 
@@ -553,6 +583,17 @@ AVE.module('creador', function (G) {
       ok('Un nombre libre que pasó el filtro no se reemplaza al cargar', debeReemplazarNombre({ created: true, name: 'Coralito' }) === false);
       ok('Un nombre de la lista tampoco se reemplaza', debeReemplazarNombre({ created: true, name: nombreAzar(1) }) === false);
       ok('Un apellido suelto sí se reemplazaría', debeReemplazarNombre({ created: true, name: 'Ana Pérez' }) === true);
+      // PULIR 7: de 1 a 3 palabras, sin tildes ni mayúsculas; nombre y apellido siguen sin pasar
+      ok('PULIR 7 · «Coqui Veloz» escrito a mano se acepta', saveCharacter({ name: 'Coqui Veloz', look: C3.defaultLook() }) === null && S.profile.name === 'Coqui Veloz', S.profile.name);
+      ok('PULIR 7 · «trueno azul» (sin mayúsculas) se guarda como «Trueno Azul»', saveCharacter({ name: '  trueno   azul ', look: C3.defaultLook() }) === null && S.profile.name === 'Trueno Azul', S.profile.name);
+      ok('PULIR 7 · «Coral del Rio» sin tilde es de la lista', esNombreDeLista('Coral del Rio') && saveCharacter({ name: 'Coral del Rio', look: C3.defaultLook() }) === null && S.profile.name === 'Coral del Río', S.profile.name);
+      ok('PULIR 7 · Tres palabras de la sugerencia se aceptan', filtroNombreLibre('Ola de la Bahia') === null || esNombreDeLista('Ola de la Bahia'));
+      const cuatro = filtroNombreLibre('Rayo Azul Veloz Feliz');
+      ok('PULIR 7 · Cuatro palabras no', typeof cuatro === 'string' && /Hasta 3/.test(cuatro), cuatro);
+      const ap = filtroNombreLibre('Ana Pérez');
+      ok('PULIR 7 · Nombre y apellido siguen sin pasar (con un aviso que explica qué hacer)', typeof ap === 'string' && /Sin apellidos/.test(ap), ap);
+      const mala2 = filtroNombreLibre('Rayo p3ndej0');
+      ok('PULIR 7 · Una mala palabra dentro de dos palabras se rechaza', typeof mala2 === 'string' && /no suena bien/.test(mala2), mala2);
       const ops = opcionesEspecie(), ids = new Set(ops.map(o => o.id));
       const ES = window.AV_ESPECIES;
       const conPiel = ES ? ES.especies.concat(ES.extintas || []).filter(e => e.piel && AVE.pieles.tiene(e.id)) : [];
@@ -572,6 +613,23 @@ AVE.module('creador', function (G) {
         ok('Los desplegables no se ven', $('p-name-a').hidden && $('p-name-b').hidden);
         $('p-name-azar').click();
         ok('El dado escribe un nombre de la lista en el campo', esNombreDeLista($('p-name-libre').value) && $('p-name').textContent === $('p-name-libre').value, $('p-name-libre').value);
+        // PULIR 7: el aviso se borra al escribir y Enter equivale a «¡A jugar!»
+        const err = $('p-error'), errOculto = err.hidden;
+        err.textContent = 'aviso de prueba'; err.hidden = false;
+        $('p-name-libre').value = 'Coralit';
+        $('p-name-libre').dispatchEvent(new Event('input', { bubbles: true }));
+        ok('PULIR 7 · El aviso se borra al escribir', err.hidden, err.textContent);
+        err.hidden = false; err.textContent = 'x';
+        const fsV = parseFloat(getComputedStyle(err).fontSize) || 0;
+        err.hidden = errOculto; err.textContent = '';
+        ok('PULIR 7 · El aviso se lee grande (16 px o más)', fsV >= 16, fsV + ' px');
+        const guardar = $('p-save').onclick; let pulsado = 0;
+        $('p-save').onclick = () => { pulsado++; };
+        try {
+          $('p-name-libre').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+          $('p-name-libre').dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true }));
+        } finally { $('p-save').onclick = guardar; }
+        ok('PULIR 7 · Enter en el nombre pulsa «¡A jugar!» (y otra tecla no)', pulsado === 1, pulsado);
       }
       // T17: la primera vez el creador tiene «Volver», que lleva a la portada (y el creador sigue detrás)
       const portada = $('title');
