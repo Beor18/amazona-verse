@@ -72,6 +72,8 @@ window.AVControlesTest = function (G) {
         ok('En el suelo sin despegar, pista «Pulsa V para volar»', mostrado(E.pista) && X.pistaId === 'volar' && /para volar/.test(E.pista.textContent) && E.pista.querySelector('kbd').textContent === nombre(mapa0.volar), E.pista.textContent);
         X.ocultarPista(); X.est.hecho.volar = true; M.flying = true; M.landing = false; ciclo(20, 0.1);
         ok('Al volar la primera vez, pista «Mantén Espacio para subir»', mostrado(E.pista) && X.pistaId === 'subir' && /Espacio/.test(E.pista.textContent), E.pista.textContent);
+        M.flying = false; M.grounded = true; ciclo(1, 0.1);
+        ok('PULIR 5 · Al dejar de volar, «Mantén Espacio para subir» se quita', !(mostrado(E.pista) && X.pistaId === 'subir'), X.pistaId + ' ' + E.pista.textContent);
         X.ocultarPista(); M.flying = false; ciclo(2);
         // En el agua sin bucear: pista «Mantén C para bucear»; al mantener C queda aprendido
         X.ocultarPista(); M.swimming = true; M.grounded = false; ciclo(Math.ceil(AJ.nadoSinBucear * 10) + 5, 0.1);
