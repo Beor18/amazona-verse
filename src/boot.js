@@ -182,11 +182,15 @@
     const cargarObras = aDemanda('src/game/obras.js', 'AVObras');
     AV.obrasTest = o => cargarConstruir().then(() => cargarObras()).then(m => m.test(o));
     const OBRA_PIEZAS = ['comedero', 'flores', 'bromelia', 'maceta', 'cajanido'];
-    G.on('construirCambio', () => {
-      if (window.AVObras) return;
+    G.on('construirCambio', ev => {
+      if (G.obras) return;
       const d = G.S && G.S.construir, ps = d && Array.isArray(d.piezas) ? d.piezas : [];
       const libro = () => { try { return !!localStorage.getItem(((G.pack.meta && G.pack.meta.almacen) || G.pack.id) + '.obras'); } catch (e) { return false; } }; // el Libro de visitas sigue en el Diario
-      if (ps.some(p => p && OBRA_PIEZAS.includes(p.t)) || libro()) cargarObras().catch(e => console.warn('obras', e));
+      if (!(ps.some(p => p && OBRA_PIEZAS.includes(p.t)) || libro())) return;
+      // Revisión F3: si lo que la baja es una pieza recién puesta fuera (no la partida al cargar), obras.js lo sabe al llegar (ese aviso
+      // ya habrá pasado) y anuncia la obra. Antes no había ninguna pieza de obra: si la hubiera, el 'cargar' ya lo habría bajado.
+      if (ev && ev.motivo === 'guardar' && !ev.interior) G.obrasMotivo = 'guardar';
+      cargarObras().catch(e => { delete G.obrasMotivo; console.warn('obras', e); });
     });
     const cargarConstruir = aDemanda('src/game/construir.js', 'AVConstruir'); AV.construir = () => cargarConstruir().then(c => c.empezar()); AV.construirTest = o => cargarConstruir().then(c => c.test(o));
     if (G.CONSTRUIR) cargarConstruir().catch(e => console.warn('construir', e));

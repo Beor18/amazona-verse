@@ -74,7 +74,10 @@
       if (i >= 0) { e = datos.libro.splice(i, 1)[0]; e.n++; } else { e = { q, o, n: 1 }; if (datos.libro.length >= LIBRO_MAX) datos.libro.pop(); }
       datos.libro.unshift(e); // la última visita, primero
       guardar();
+      // Revisión F3: quien viene por primera vez se anuncia (el Libro está al final del Diario y nadie lo encontraba)
+      if (i < 0) { ultimaNueva = T('Nuevo en tu Libro de visitas: {}').replace('{}', nombreDe(q)); if (!G.quiet && G.ui && G.ui.toast) G.ui.toast(ultimaNueva, 3200, { ya: true }); }
     }
+    let ultimaNueva = '';
     cargar();
 
     // ---------- Detector: las piezas del rincón de fuera → obras ----------
@@ -139,14 +142,18 @@
       if (primera) { datos.explicadas.push(o.tipo); guardar(); }
       if (G.quiet) return;
       try { if (G.audio) G.audio.play('descubrir'); } catch (e) { /* sin audio */ }
-      if (G.ui && G.ui.toastHTML) G.ui.toastHTML(`<span data-no-tr><b>${esc(ultimoAviso)}</b>${ultimaFrase ? '<br>' + esc(ultimaFrase) : ''}</span>`, primera ? 4600 : 2600);
+      // { ya: true }: lo que el niño acaba de hacer sale al momento, no detrás de los avisos de la historia (revisión F3)
+      if (G.ui && G.ui.toastHTML) G.ui.toastHTML(`<span data-no-tr><b>${esc(ultimoAviso)}</b>${ultimaFrase ? '<br>' + esc(ultimaFrase) : ''}</span>`, primera ? 4600 : 2600, { ya: true });
     }
 
     // ---------- Visitas (dos veces por segundo; nada por cuadro) ----------
+    const COMEDERO_PERCHAS = [[-0.1, 0.19], [0.1, -0.19]];
     const ROT = (r, lx, lz) => { const a = r * PASO, c = Math.cos(a), s = Math.sin(a); return { x: lx * c + lz * s, z: -lx * s + lz * c }; };
     function perchasDe(o) {
       const y0 = H(o.x, o.z), P = [];
-      if (o.tipo === 'comedero') for (const lx of [-0.13, 0.13]) { const d = ROT(o.r, lx, 0); P.push({ x: o.x + d.x, z: o.z + d.z, y: y0 + 1.29, tipo: 'copa' }); }
+      // Comedero (construir.js): tolva 0.28×0.26×0.22 en el centro, bandeja 0.46×0.36 con listones en z ±0.17. Las perchas van en
+      // el listón de delante y el de detrás, junto a las semillas, fuera de la tolva (revisión F3: antes quedaban dentro de la caja)
+      if (o.tipo === 'comedero') for (const [lx, lz] of COMEDERO_PERCHAS) { const d = ROT(o.r, lx, lz); P.push({ x: o.x + d.x, z: o.z + d.z, y: y0 + 1.32, tipo: 'copa' }); }
       else if (o.tipo === 'cajanido') {
         const d = ROT(o.r, 0, 0.42), d2 = ROT(o.r, 0.18, 0.42);
         P.push({ x: o.x + d.x, z: o.z + d.z, y: y0 + 2.75, tipo: 'rama' }, { x: o.x + d2.x, z: o.z + d2.z, y: y0 + 2.75, tipo: 'rama' }, { x: o.x, z: o.z - 0.1, y: y0 + 3.4, tipo: 'techo' });
@@ -186,7 +193,15 @@
     }, 86);
     G.on('construirCambio', d => recalcular(d && d.motivo));
     G.on('apply', () => { cargar(); recalcular('cargar'); }, 61);
-    recalcular('cargar');
+    // Revisión F3: boot.js baja este archivo con el 'guardar' de la primera pieza que puede formar obra; ese aviso ya pasó cuando
+    // llegamos. boot deja G.obrasMotivo = 'guardar' y entonces lo que haya es nuevo (antes no había ninguna pieza de obra: si la
+    // hubiera, el 'cargar' de la partida ya habría bajado este archivo) y se anuncia como al construir.
+    function arranque() {
+      const motivo0 = G.obrasMotivo === 'guardar' ? 'guardar' : 'cargar';
+      delete G.obrasMotivo;
+      return recalcular(motivo0);
+    }
+    arranque();
 
     // ---------- Libro de visitas (sección del Diario) ----------
     function nombreDe(q) {
@@ -198,15 +213,19 @@
     }
     function html() {
       const L = datos.libro;
-      if (!L.length) return '<span class="lbl">Libro de visitas</span><p class="note">Aún no ha venido nadie. Construye un comedero o un jardín de flores y espera un ratito cerca.</p>';
+      if (!L.length) return `<span class="lbl">Libro de visitas</span><p class="note" data-no-tr>${esc(T(VACIO))}</p>`;
+      // Lo que aún no ha traído a nadie (la caja nido solo con la bandera): da ganas de probar otra obra
+      const faltan = Object.keys(OBRAS).filter(t => (t !== 'cajanido' || nuevas()) && !L.some(e => e.o === t)).map(t => T(OBRAS[t].nombre));
       // La ficha del Diario (.diary li) reserva una columna de 44 px para un icono: aquí no hay icono, el texto usa todo el ancho (390 px)
       const filas = L.map(e => {
         const veces = e.n === 1 ? T('Vino 1 vez') : T('Vino {} veces').replace('{}', String(e.n));
         return `<li class="found" style="grid-template-columns: minmax(0, 1fr)"><div data-no-tr><b>${esc(nombreDe(e.q))}</b><small>${esc(T('Lo trajo: {}').replace('{}', T(OBRAS[e.o].nombre)))} · ${esc(veces)}</small></div></li>`;
       }).join('');
       return '<span class="lbl">Libro de visitas</span>' +
-        `<p class="note" data-no-tr>${esc(T('Hoy vino: {}').replace('{}', nombreDe(L[0].q)))}</p><ul class="diary libro-visitas">${filas}</ul>`;
+        `<p class="note" data-no-tr>${esc(T('La última visita: {}').replace('{}', nombreDe(L[0].q)))}</p><ul class="diary libro-visitas">${filas}</ul>` +
+        (faltan.length ? `<p class="note" data-no-tr>${esc(T('Aún puedes probar: {}').replace('{}', faltan.join(', ')))}</p>` : '');
     }
+    const VACIO = 'Aún no ha venido nadie. Pon tres flores juntas (un jardín) o un comedero y espera un ratito cerca.';
     if (G.diario && G.diario.seccion) G.diario.seccion({ id: 'libroVisitas', html });
 
     const estado = () => ({ obras: obras.map(o => ({ id: o.id, tipo: o.tipo, x: o.x, z: o.z, mejor: !!o.mejor, visita: !!o.visita, nube: !!o.nube })),
@@ -252,6 +271,35 @@
         check('La segunda vez el aviso sale sin la frase (ya se explicó)', ultimoAviso === '¡Obra lista: Comedero con visitas!' && ultimaFrase === '' && datos.explicadas.includes('comedero'));
         ultimoAviso = ''; C.aplicar(S.construir); recalcular('cargar');
         check('Al cargar la partida no hay aviso (solo al construir)', ultimoAviso === '');
+        // Revisión F3: la carga a demanda. boot.js baja este archivo con el 'guardar' de la primera pieza de obra y lo marca
+        const gO = G.obras;
+        G.obras = null; delete G.obrasMotivo; G.emit('construirCambio', { motivo: 'guardar', interior: false });
+        const marca = G.obrasMotivo;
+        G.obras = null; delete G.obrasMotivo; G.emit('construirCambio', { motivo: 'cargar', interior: false });
+        const marca2 = G.obrasMotivo;
+        G.obras = gO; delete G.obrasMotivo;
+        check('boot.js: si lo que baja obras.js es una pieza recién puesta, lo dice (G.obrasMotivo = «guardar»; al cargar, no)', marca === 'guardar' && marca2 === undefined, JSON.stringify({ marca, marca2 }));
+        for (const o of obras) apagar(o);
+        obras = []; datos = leerDatos(null); ultimoAviso = ''; G.obrasMotivo = 'guardar'; arranque();
+        const a1 = ultimoAviso, f1 = ultimaFrase, borrada = !('obrasMotivo' in G), apuntada = datos.explicadas.includes('comedero');
+        obras = []; ultimoAviso = ''; arranque();
+        check('La primera obra que baja obras.js a demanda se anuncia con su frase y queda explicada (al cargar la partida, no)', a1 === '¡Obra lista: Comedero con visitas!' && f1 === OBRAS.comedero.frase && borrada && apuntada && ultimoAviso === '' && obras.length === 1, JSON.stringify({ a1, borrada, apuntada, otra: ultimoAviso }));
+        // El aviso sale al momento ({ ya: true }), no en la cola detrás de los de la historia
+        const toastH = G.ui.toastHTML, play = G.audio && G.audio.play; let opts = null;
+        G.ui.toastHTML = (h, ms, o) => { opts = o || null; };
+        if (G.audio) G.audio.play = () => {};
+        G.quiet = false;
+        try { ponPiezas([]); ponPiezas([P('comedero', 3, 0)]); } finally { G.quiet = true; G.ui.toastHTML = toastH; if (G.audio) G.audio.play = play; }
+        check('«¡Obra lista!» sale al momento ({ ya: true }), no detrás de los avisos de la historia', !!opts && opts.ya === true, JSON.stringify(opts));
+        // Las perchas del comedero, fuera de la tolva y sobre el borde de la bandeja (construir.js: tolva ±0.14 × ±0.11, bandeja ±0.23 × ±0.18)
+        const pcs = [0, 2, 5].map(r => ({ r, P: perchasDe({ tipo: 'comedero', x: 0, z: 0, r }) }));
+        const malP = [];
+        for (const { r, P: ps } of pcs) for (const p of ps) {
+          const a = -r * PASO, l = { x: p.x * Math.cos(a) + p.z * Math.sin(a), z: -p.x * Math.sin(a) + p.z * Math.cos(a) }; // vuelta a ejes de la pieza
+          const enTolva = Math.abs(l.x) < 0.14 + 0.05 && Math.abs(l.z) < 0.11 + 0.05, enBandeja = Math.abs(l.x) <= 0.23 && Math.abs(l.z) <= 0.21;
+          if (enTolva || !enBandeja) malP.push(r + ':' + l.x.toFixed(2) + ',' + l.z.toFixed(2));
+        }
+        check('Las 2 perchas del comedero quedan fuera de la tolva, en el borde de la bandeja (gire como gire)', !malP.length && pcs.every(c => c.P.length === 2), malP.join(' '));
         // 3. Visitas reales: residentes.js invita a una pareja del hábitat
         const okR = !!(R && R.invitar);
         check('residentes.js tiene invitar({ x, z })', okR);
@@ -316,7 +364,7 @@
           const conNube = obras[0] && obras[0].nube && G.fauna.MAR.nubes.some(n => n.obra);
           ponPiezas([P('flores', -3, 0)]);
           check('Jardín: llega una nube de mariposas cebra (fauna.js) y se va al quitar las flores', conNube && !G.fauna.MAR.nubes.some(n => n.obra), JSON.stringify({ conNube }));
-          check('Las mariposas quedan en el Libro de visitas', datos.libro.some(e => e.q === 'mariposa' && e.o === 'jardin'));
+          check('Las mariposas quedan en el Libro de visitas y, como es la primera vez, se avisa', datos.libro.some(e => e.q === 'mariposa' && e.o === 'jardin') && ultimaNueva === 'Nuevo en tu Libro de visitas: Mariposas cebra', ultimaNueva);
           const n1 = G.fauna.nube(1e4, 1e4), n2 = G.fauna.nube(1e4 + 50, 1e4), n3 = G.fauna.nube(1e4 + 90, 1e4);
           check('fauna.nube: como mucho 2 nubes de jardín a la vez', !!n1 && !!n2 && !n3);
           if (n1) n1.quitar(); if (n2) n2.quitar();
@@ -329,14 +377,25 @@
         C.contexto(null); // guarda (con la apartada) y vuelve a leer
         const sigue = !!S.construir && S.construir.piezas.some(p => p.t === 'cajanido');
         check('Bandera apagada (por defecto): sin caja nido ni Merendero, la caja nido no es obra y la de la partida se guarda tal cual', antes.f3 !== true && apagada && sigue, JSON.stringify({ f3: antes.f3, apagada, sigue }));
+        // Con el rincón lleno y la bandera apagada, la caja nido apartada ocupa su sitio y no se pierde al guardar
+        const llenas = [P('cajanido', 0, 4)]; for (let k = 0; k < 45; k++) llenas.push(P('piedra', 6 + (k % 9) * 1.5, -6 + Math.floor(k / 9) * 1.5));
+        S.construir = { v: 1, piezas: llenas }; C.aplicar(S.construir);
+        const tope = C.presupuesto(), puestas = C.piezas().length;
+        C.contexto(null);
+        const guardadas = S.construir ? S.construir.piezas : [];
+        check('Bandera apagada con el rincón lleno: la caja nido apartada cuenta en el tope y sigue guardada', guardadas.some(p => p.t === 'cajanido') && guardadas.length <= 40 && puestas === tope && tope === 39,
+          JSON.stringify({ tope, puestas, guardadas: guardadas.length }));
+        S.construir = { v: 1, piezas: [P('cajanido', 0, 4)] }; C.aplicar(S.construir);
         G.F3PIEZAS = true; C.refrescar(); recalcular('guardar'); C.aplicar(S.construir);
         check('Bandera encendida: la caja nido sale, es obra «Caja nido» y el Merendero está entre las plantillas', C.tiene('cajanido') && C.piezas().some(p => p.t === 'cajanido') && tipos() === 'cajanido' && C.PLANTILLAS_F3.includes('merendero') && ultimoAviso === '¡Obra lista: Caja nido!', tipos() + ' ' + ultimoAviso);
         if (R && R.invitar) {
           R.reiniciar(); const o = obras[0]; o.visita = null; o.espera = 0; paso(CADA);
           const iv = R.invitados();
-          check('Caja nido: viene una pareja del hábitat a posarse', iv.length === 1 && R.especiesEn(o.x, o.z).includes(iv[0].sp) && !R.EXTINTAS.includes(iv[0].sp));
+          const vino = iv.length === 1 && R.especiesEn(o.x, o.z).includes(iv[0].sp) && !R.EXTINTAS.includes(iv[0].sp);
+          check('Caja nido: viene una pareja del hábitat a posarse', vino);
           ponPiezas([]);
-          check('Quitar la caja nido la apaga', obras.length === 0 && R.invitados().every(v => v.fase === 'seva'));
+          const iv2 = R.invitados();
+          check('Quitar la caja nido la apaga y la pareja se va volando', vino && obras.length === 0 && iv2.length === 1 && iv2[0].fase === 'seva', JSON.stringify(iv2));
           R.reiniciar();
         }
         G.F3PIEZAS = antes.f3; C.refrescar();
@@ -352,17 +411,16 @@
         datos = leerDatos({ v: 1, explicadas: [], libro: [{ q: 'mariposa', o: 'jardin', n: 3 }, { q: 'vittata', o: 'comedero', n: 1 }] });
         const div = document.createElement('div'); div.innerHTML = html();
         const txt = div.textContent;
-        check('Libro de visitas: quién vino y qué lo trajo', /Libro de visitas/.test(txt) && /Mariposas cebra/.test(txt) && /Lo trajo: Jardín de mariposas/.test(txt) && /Lo trajo: Comedero con visitas/.test(txt) && /Hoy vino: Mariposas cebra/.test(txt), txt.slice(0, 200));
-        check('Sin puntos, sin relojes, sin «vuelve mañana»', !/punto|\d{1,2}:\d{2}|mañana|reloj|vuelve/i.test(txt));
+        check('Libro de visitas: quién vino y qué lo trajo', /Libro de visitas/.test(txt) && /Mariposas cebra/.test(txt) && /Lo trajo: Jardín de mariposas/.test(txt) && /Lo trajo: Comedero con visitas/.test(txt) && /La última visita: Mariposas cebra/.test(txt) && /Aún puedes probar/.test(txt) === nuevas(), txt.slice(0, 200));
+        check('Sin puntos, sin relojes, sin «hoy» ni «vuelve mañana»', !/punto|\d{1,2}:\d{2}|mañana|reloj|vuelve|\bhoy\b/i.test(txt));
         datos = leerDatos(null); div.innerHTML = html();
         check('Libro vacío: dice cómo traer la primera visita', /Aún no ha venido nadie/.test(div.textContent));
         // 9. Inglés: cada texto nuevo tiene su entrada en content/cap1/en.js
         const EN = window.AV_EN;
-        const textos = ['¡Obra lista: {}!', 'Libro de visitas', 'Hoy vino: {}', 'Lo trajo: {}', 'Vino 1 vez', 'Vino {} veces', 'Mariposas cebra', 'Una cotorra que aún no has visto de cerca', 'Merendero', 'Caja nido',
-          'Aún no ha venido nadie. Construye un comedero o un jardín de flores y espera un ratito cerca.'].concat(...Object.keys(OBRAS).map(k => [OBRAS[k].nombre, OBRAS[k].frase]));
+        const textos = ['¡Obra lista: {}!', 'Libro de visitas', 'La última visita: {}', 'Aún puedes probar: {}', 'Nuevo en tu Libro de visitas: {}', 'Lo trajo: {}', 'Vino 1 vez', 'Vino {} veces', 'Mariposas cebra', 'Una cotorra que aún no has visto de cerca', 'Merendero', 'Caja nido',
+          VACIO].concat(...Object.keys(OBRAS).map(k => [OBRAS[k].nombre, OBRAS[k].frase]));
         if (EN) { const faltan = textos.filter(t => !EN[t]); check('Cada texto nuevo tiene su inglés en content/cap1/en.js', !faltan.length, faltan.join(' | ')); }
         else check('Inglés (el diccionario solo se baja en EN: no se comprueba aquí)', true, 'sin AV_EN');
-        check('Sin mallas propias: las visitas usan las de residentes.js y fauna.js', !G.renderer.scene.getObjectByName('obras'));
       } catch (e) {
         check('La prueba terminó sin excepciones', false, String(e && e.stack || e).slice(0, 400));
       } finally {

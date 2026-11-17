@@ -28,7 +28,8 @@
     const bajo = () => { const c = G.renderer && G.renderer.calidad; return !!c && (c.nivel === 'bajo' || c.escuela === true); };
     const presupuesto = () => {
       if (ctx) { const tope = bajo() ? 8 : 12; return Math.min(tope, ctx.tope || tope); }
-      return bajo() ? PRESUPUESTO_BAJO : CAPACIDAD;
+      // F3: las piezas apartadas por la bandera apagada (caja nido) siguen siendo tuyas y ocupan su sitio: así nunca se pierden al guardar
+      return Math.max(0, (bajo() ? PRESUPUESTO_BAJO : CAPACIDAD) - apartadas.length);
     };
     let forzado = false, ctx = null;
     const habilitado = () => G.CONSTRUIR !== false || forzado;
@@ -469,7 +470,7 @@
       if (!esObj(d) || d.v !== 1 || !Array.isArray(d.piezas)) return [];
       const out = [];
       for (const p of d.piezas) {
-        if (out.length >= CAPACIDAD) break;
+        if (out.length + (ap ? ap.length : 0) >= CAPACIDAD) break;
         if (!esObj(p) || !TIPOS[p.t] || typeof p.x !== 'number' || typeof p.z !== 'number' || !isFinite(p.x) || !isFinite(p.z) || Math.abs(p.x) > 5000 || Math.abs(p.z) > 5000) continue;
         const r = Number.isInteger(p.r) && p.r >= 0 && p.r < 8 ? p.r : 0;
         if (NUEVAS.includes(p.t) && !nuevas()) { if (ap) ap.push({ t: p.t, x: p.x, z: p.z, r }); continue; } // F3: bandera apagada
@@ -488,7 +489,7 @@
         edificios[ctx.id] = { piezas: piezasDe(), estado: antes.estado || null };
         const alguno = Object.keys(edificios).some(id => { const e = edificios[id]; return e && ((e.piezas && e.piezas.length) || e.estado); });
         S.interiores = alguno ? { v: 1, edificios } : null;
-      } else S.construir = lista.length || apartadas.length ? { v: 1, piezas: piezasDe().concat(apartadas.slice(0, Math.max(0, CAPACIDAD - lista.length))) } : null;
+      } else S.construir = lista.length || apartadas.length ? { v: 1, piezas: apartadas.concat(piezasDe()) } : null;
       if (G.guardado && G.guardado.autosave) G.guardado.autosave();
       avisarCambio('guardar');
     }
@@ -849,7 +850,7 @@
       return true;
     }
     G.on('update', (dt, busy) => { if (activo && fantasma) { fantasma.visible = !busy; if (!busy) actualizar(); } }, 89);
-    G.on('escape', () => { if (activo) salir(); });
+    G.on('escape', () => { if (activo && !(G.ui && G.ui.busy && G.ui.busy())) salir(); }); // con una tarjeta abierta (el Mercadito), Esc solo la cierra
     G.on('apply', () => { if (activo) salir(); if (ctx && ctx.id) { lista = leer({ v: 1, piezas: (S.interiores && S.interiores.edificios && S.interiores.edificios[ctx.id] && S.interiores.edificios[ctx.id].piezas) || [] }); historial.length = 0; rehacerPila.length = 0; pintar(); } else aplicar(S.construir); }, 60);
 
     // ---------- Teclado (captura: mientras se construye, estas teclas no hacen su otra función) ----------
@@ -872,6 +873,7 @@
       else if (k === 'delete' || k === 'backspace') quitar();
       else if (k === 't') verPlantillas();
       else if (k === 'escape' && hudEl && hudEl.classList.contains('cl-pl-abierta')) verPlantillas();
+      else if (k === 'escape' && !e.repeat) salir(); // revisión F3: preventDefault, así ui.js no abre además la Pausa (con la Pausa abierta no llegan visitas)
       else hecho = false;
       if (hecho) { e.preventDefault(); e.stopImmediatePropagation(); }
     }, true);
@@ -923,7 +925,8 @@
     function css() {
       if (estilo) return;
       estilo = document.createElement('style'); estilo.id = 'cl-estilo';
-      estilo.textContent = '#cl-hud{left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 142px);display:flex;flex-direction:column;align-items:center;gap:6px;max-width:calc(100vw - 32px)}' +
+      estilo.textContent = '#cl-hud{left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 142px);display:flex;flex-direction:column;align-items:center;gap:6px;max-width:clamp(320px,calc(100vw - 720px),calc(100vw - 32px))}' +
+        '#cl-hud .cl-piezas,#cl-hud .cl-plantillas{flex-wrap:wrap;justify-content:center}#cl-hud .cl-piezas small{display:none}' +
         '#cl-hud .cl-fila{display:flex;gap:6px;align-items:center;background:rgba(16,36,28,.82);border-radius:16px;padding:6px;box-shadow:0 4px 14px rgba(0,0,0,.35);max-width:100%;overflow-x:auto;scrollbar-width:none}' +
         '#cl-hud button{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:44px;padding:4px 6px;border-radius:12px;color:#fff8e6;font:600 12px/1.1 system-ui,sans-serif;cursor:pointer;text-align:center;background:rgba(255,255,255,.08);touch-action:manipulation}' +
         '#cl-hud button:hover{background:rgba(255,255,255,.18)}#cl-hud button:focus-visible{outline:3px solid #ffd27a;outline-offset:1px}' +
@@ -940,11 +943,11 @@
         '@media (max-width:700px),(pointer:coarse){#cl-hud{left:12px;transform:none;align-items:flex-start;top:calc(env(safe-area-inset-top,0px) + 226px);max-width:calc(100vw - 84px)}' +
         '#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{min-width:44px;min-height:44px;padding:2px}#cl-hud svg{width:26px;height:26px}' +
         '#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-cuenta{font-size:12px;padding:0 4px}' +
-        '#cl-hud .cl-herr{flex-wrap:wrap;overflow:visible}' +
+        '#cl-hud .cl-herr{flex-wrap:wrap;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}' +
         '#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
         'body:has(#emotes:not([hidden])) #cl-hud{top:calc(env(safe-area-inset-top,0px) + 72px);max-width:calc(100vw - 24px)}}' +
         // C10: teléfono en horizontal (844×390): la barra va al centro, entre el joystick y los botones de acción, bajo el HUD de arriba
-        '@media (orientation:landscape) and (max-height:500px){#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}}' +
+        '@media (orientation:landscape) and (max-height:500px){#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}}' +
         '@media (prefers-reduced-motion:reduce){#cl-hud,#cl-hud *{animation:none;transition:none}}';
       document.head.appendChild(estilo);
     }
@@ -1009,7 +1012,7 @@
       return abre;
     }
     // La fila de piezas: las 7 de siempre y las del Mercadito que ya son tuyas (teclas 1–9 en ese orden)
-    function filaPiezas() { return disponibles().map((t, i) => `<button type="button" data-cl-tipo="${t}" aria-pressed="${t === tipo}" aria-label="${NOMBRE[t]}"${i < 9 ? ` aria-keyshortcuts="${i + 1}"` : ''}><svg viewBox="0 0 32 32" aria-hidden="true">${SVG[t]}</svg><small>${NOMBRE[t]}</small></button>`).join(''); }
+    function filaPiezas() { return disponibles().map((t, i) => `<button type="button" data-cl-tipo="${t}" aria-pressed="${t === tipo}" aria-label="${NOMBRE[t]}" title="${NOMBRE[t]}"${i < 9 ? ` aria-keyshortcuts="${i + 1}"` : ''}><svg viewBox="0 0 32 32" aria-hidden="true">${SVG[t]}</svg><small>${NOMBRE[t]}</small></button>`).join(''); }
     // Tras una compra en el Mercadito (src/game/tienda.js) la barra se rehace con la pieza nueva
     function filaPlantillas() { return plantillasVer().map(k => `<button type="button" data-cl-pl="${k}" aria-label="${NOMBRE_PL[k]}"><svg viewBox="0 0 32 32" aria-hidden="true">${SVG_PL[k]}</svg><small>${NOMBRE_PL[k]}</small></button>`).join(''); }
     function refrescar() {
@@ -1377,6 +1380,10 @@
             filaP.querySelector('[data-cl-pl="nidogrande"]').click();
             const toque = lista.length > 0 && lista.some(p => p.t === 'nido') && !hudEl.classList.contains('cl-pl-abierta');
             check('C10 · el botón «Plantillas» cambia la fila de piezas por la de plantillas (T la abre, Esc la cierra sin salir) y un toque coloca y vuelve a las piezas', abierta && cerrada && conT && toque, JSON.stringify({ abierta, cerrada, conT, toque, teclas: libreK ? 'probadas' : 'pantalla encima: no se prueban', encimaK }));
+            // Revisión F3 · Esc sale de Construir y se queda la tecla (preventDefault): ui.js ya no abre además la Pausa
+            let escSale = 'no se prueba';
+            if (libreK && activo && !G.ui.busy()) { const ev = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }); (document.activeElement || document.body).dispatchEvent(ev); escSale = !activo && ev.defaultPrevented; }
+            check('Esc sale de Construir sin abrir la Pausa (la tecla queda tomada)', escSale !== false, String(escSale));
             aplicar(null);
           }
           salir(); S.pos.x = pIni.x; S.pos.z = pIni.z; S.facing = f0; aplicar(null);
