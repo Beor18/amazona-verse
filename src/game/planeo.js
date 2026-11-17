@@ -33,8 +33,8 @@ window.AVPlaneo = function (G) {
   const TU = () => (G.fisica && G.fisica.TUNING) || null;
   const ALM = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.planeo';
   const DUR = 120, HUNDE = 3.6, VMIN = 10, VPICADA = 16, ALTO_INI = 22, TOCA = 0.35, CERCA_SUELO = 5, LEJOS_SUELO = 9, TOQUE_T = 0.9;
-  const NNUB = 16, NUBE_V = 11, NUBE_T = 1.1, NUBE_RX = 5, NUBE_RY = 3.4, NUBE_SEP = 16;
-  const NTER = 10, TERM_R = 6, TERM_ALTO = 55, TERM_V = 8, TERM_CARGA = 3.5, NMOTA = 8;
+  const NNUB = 16, NUBE_V = 14, NUBE_T = 1.2, NUBE_RX = 5, NUBE_RY = 3.4, NUBE_SEP = 16;
+  const NTER = 10, TERM_R = 6, TERM_ALTO = 55, TERM_V = 8, TERM_CARGA = 5, NMOTA = 8;
   const AJ_FIS = { climbV: 0, glideSink: 0, flyCeil: 60 }; // subir no sube y el hundimiento lo pone este juego; techo más alto (las corrientes suben)
   const SALIDAS = ['cumbre', 'picachos', 'mirador'], HACIA = ['plaza', 'villa'];
   const en = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
@@ -502,7 +502,7 @@ window.AVPlaneo = function (G) {
       check('La misma nube no vuelve a empujar (una vez por nube)', S.pos.y < y1n && E.nubesN === 1, (S.pos.y - y1n).toFixed(2));
       // Una corriente: sube mientras le queda fuerza; luego se apaga
       const t0 = terms.find(t => t.on); ir({ x: t0.x, y: t0.y + 20, z: t0.z }, 0.01, 0); const y0t = S.pos.y; pasos(20); const subeT1 = S.pos.y - y0t, msgT = q(hudEl, 'msg').textContent;
-      pasos(60); const yAg = S.pos.y; pasos(20); const bajaT = yAg - S.pos.y;
+      pasos(Math.ceil(TERM_CARGA / 0.05)); const yAg = S.pos.y; pasos(20); const bajaT = yAg - S.pos.y;
       check('Dentro de una corriente sube (' + (TERM_V - HUNDE).toFixed(1) + ' m/s) y, gastada su fuerza (' + TERM_CARGA + ' s), ya no', E.termsN === 1 && Math.abs(subeT1 - (TERM_V - HUNDE)) < 0.1 && t0.carga === 0 && Math.abs(bajaT - HUNDE) < 0.1 && /Corriente/.test(msgT), subeT1.toFixed(2) + ' / −' + bajaT.toFixed(2) + ' · ' + msgT);
       // Distancia: la mayor en línea recta desde la salida (dar vueltas no suma)
       E.lejos = 0; ir({ x: salida.x + 150, y: superficie(salida.x + 150, salida.z, 400) + 30, z: salida.z }, 12, 0); paso(0.05); const d150 = E.lejos;
