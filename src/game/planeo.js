@@ -32,9 +32,9 @@ window.AVPlaneo = function (G) {
   const MV = () => (G.fisica && G.fisica.MOVE) || {};
   const TU = () => (G.fisica && G.fisica.TUNING) || null;
   const ALM = ((G.pack && G.pack.meta && G.pack.meta.almacen) || 'amazonaverse') + '.planeo';
-  const DUR = 120, HUNDE = 3, VMIN = 10, VPICADA = 16, ALTO_INI = 22, TOCA = 0.35, CERCA_SUELO = 5, LEJOS_SUELO = 9, TOQUE_T = 0.9;
-  const NNUB = 16, NUBE_V = 9, NUBE_T = 1.1, NUBE_RX = 5, NUBE_RY = 3.4, NUBE_SEP = 16;
-  const NTER = 10, TERM_R = 6, TERM_ALTO = 55, TERM_V = 6.5, TERM_CARGA = 3.5, NMOTA = 8;
+  const DUR = 120, HUNDE = 3.6, VMIN = 10, VPICADA = 16, ALTO_INI = 22, TOCA = 0.35, CERCA_SUELO = 5, LEJOS_SUELO = 9, TOQUE_T = 0.9;
+  const NNUB = 16, NUBE_V = 11, NUBE_T = 1.1, NUBE_RX = 5, NUBE_RY = 3.4, NUBE_SEP = 16;
+  const NTER = 10, TERM_R = 6, TERM_ALTO = 55, TERM_V = 8, TERM_CARGA = 3.5, NMOTA = 8;
   const AJ_FIS = { climbV: 0, glideSink: 0, flyCeil: 60 }; // subir no sube y el hundimiento lo pone este juego; techo más alto (las corrientes suben)
   const SALIDAS = ['cumbre', 'picachos', 'mirador'], HACIA = ['plaza', 'villa'];
   const en = () => !!(G.aula && G.aula.aj && G.aula.aj.idioma === 'en');
@@ -150,7 +150,7 @@ window.AVPlaneo = function (G) {
     for (let i = 0; i < NNUB; i++) {
       const n = nubes[i]; n.on = false; n.usada = false; n.giro = i * 1.7;
       for (let r = 0; r < 12 && !n.on; r++) {
-        const d = 45 + i * 26 + rnd(-6, 6), lado = i % 2 ? 1 : -1, a = ang0 + lado * rnd(0.1, r < 6 ? 1.1 : 1.6);
+        const d = 45 + i * 26 + rnd(-6, 6), lado = i % 2 ? 1 : -1, a = ang0 + lado * rnd(0.08, r < 6 ? 0.6 : 1.1); // casi de frente: ir a por una nube no cuesta mucha distancia
         const x = salida.x + Math.cos(a) * d, z = salida.z + Math.sin(a) * d;
         let sep = true; for (let j = 0; j < i; j++) { const o = nubes[j]; if (o.on && Math.hypot(o.x - x, o.z - z) < NUBE_SEP) { sep = false; break; } }
         if (!sep) continue;
@@ -169,7 +169,7 @@ window.AVPlaneo = function (G) {
     for (let i = 0; i < NTER; i++) {
       const t = terms[i]; t.on = false; t.carga = TERM_CARGA; t.pint = -1; t.dentro = false;
       for (let r = 0; r < 14 && !t.on; r++) {
-        const d = 70 + i * 40 + rnd(-10, 10), a = ang0 + rnd(-1.4, 1.4), x = salida.x + Math.cos(a) * d, z = salida.z + Math.sin(a) * d;
+        const d = 70 + i * 40 + rnd(-10, 10), a = ang0 + rnd(-0.9, 0.9), x = salida.x + Math.cos(a) * d, z = salida.z + Math.sin(a) * d;
         const g = H(x, z); if (!(g > -1e8) || mojado(x, z)) continue; // solo sobre tierra
         let seco = true; for (let j = 0; j < 6; j++) { const b = j * Math.PI / 3; if (mojado(x + Math.cos(b) * TERM_R, z + Math.sin(b) * TERM_R)) { seco = false; break; } }
         if (!seco) continue;
