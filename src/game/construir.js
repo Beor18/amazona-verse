@@ -951,9 +951,22 @@
       const puesto = { height: Math.min(8, Math.max(CAM_OBRA.height, top * 0.95)), dist: Math.min(15, Math.max(CAM_OBRA.dist, 8 + h.r * 1.6)) };
       if (!camObra0) { camObra0 = { puesto }; for (const k in puesto) camObra0[k] = C[k]; }
       camObra0.puesto = puesto; Object.assign(C, puesto);
-      cam.yaw = Math.atan2(dx, dz) + 0.5; // la cámara detrás de Vittata, de tres cuartos, mirando a la obra
-      if (movQuieto() && cam.place) { try { cam.place(true); } catch (e) { /* cámara */ } } // sin barrido: corte directo
-      return { movida, vuela, yaw: cam.yaw, puesto };
+      // La cámara detrás de Vittata, de tres cuartos, mirando a la obra. Si detrás hay un árbol o un tejado (el taller), el motor
+      // la acerca y la sube y no se ve nada: se prueban unos giros y se queda el que deja la cámara más lejos (vista libre),
+      // prefiriendo el de tres cuartos. Es un corte directo (también vale para «Reducir movimiento»).
+      const a0 = Math.atan2(dx, dz), ojo = G.renderer && G.renderer.camera;
+      let mejor = null;
+      if (cam.place && ojo) {
+        for (const off of [0.5, -0.5, 0, 0.9, -0.9, 1.3, -1.3]) {
+          cam.yaw = a0 + off;
+          try { cam.place(true); } catch (e) { mejor = null; break; }
+          const dd = Math.hypot(ojo.position.x - S.pos.x, ojo.position.z - S.pos.z), sc = dd * (0.55 + 0.45 * Math.cos(off));
+          if (!mejor || sc > mejor.sc + 1e-6) mejor = { yaw: a0 + off, sc, dd };
+        }
+      }
+      cam.yaw = mejor ? mejor.yaw : a0 + 0.5;
+      if (cam.place) { try { cam.place(true); } catch (e) { /* cámara */ } }
+      return { movida, vuela, yaw: cam.yaw, puesto, libre: mejor ? +mejor.dd.toFixed(2) : null };
     }
     function presentarIguaca(posada) {
       const n = G.actores && G.actores.npc && G.actores.npc('luma');
@@ -1527,7 +1540,7 @@
             if (!ctx) {
               const dV = Math.hypot(S.pos.x - hu.x, S.pos.z - hu.z), cy = G.camara ? G.camara.yaw : 0;
               const lado = ((Math.sin(cy) * (S.pos.x - hu.x) + Math.cos(cy) * (S.pos.z - hu.z)) / Math.max(1e-6, dV));
-              check('PULIR 7 r2 · «¡Mira lo que hice!» encuadra la obra: Vittata sale de debajo del techo y la cámara sube, se aleja y mira desde su lado hacia la obra', dV >= hu.r - 1e-6 && (!CAMv || (CAMv.height >= CAM_OBRA.height && CAMv.dist >= CAM_OBRA.dist && lado > 0.6)), JSON.stringify({ dV: +dV.toFixed(2), r: +hu.r.toFixed(2), h: CAMv && CAMv.height, d: CAMv && CAMv.dist, lado: +lado.toFixed(2), enc: { movida: enc.movida, vuela: enc.vuela } }));
+              check('PULIR 7 r2 · «¡Mira lo que hice!» encuadra la obra: Vittata sale de debajo del techo y la cámara sube, se aleja y mira desde su lado hacia la obra', dV >= hu.r - 1e-6 && (!CAMv || (CAMv.height >= CAM_OBRA.height && CAMv.dist >= CAM_OBRA.dist && lado > 0.25)), JSON.stringify({ dV: +dV.toFixed(2), r: +hu.r.toFixed(2), h: CAMv && CAMv.height, d: CAMv && CAMv.dist, lado: +lado.toFixed(2), enc: { movida: enc.movida, vuela: enc.vuela } }));
               const techo = lista.find(p => p.t === 'techo'), wt = techo && mundoDe(techo);
               check('PULIR 7 r2 · Iguaca se posa en la pieza más alta (el techo), no en la última puesta', !techo || (Math.hypot(cima.x - wt.x, cima.z - wt.z) < 1e-6), JSON.stringify({ cima: [cima.x, cima.z], techo: wt && [wt.x, wt.z] }));
             }
