@@ -2448,3 +2448,5 @@ Si Grok anota aquí cosas de juego por ese cambio (minimapa, iconos, colores del
 Grok hace lo mismo con GPU real desde la Mac. Cruzad los datos en `MAPA_REFERENCIA.md`: tú los datos y la escena, Grok lo que se ve y el rendimiento.
 
 ✅ **Decisión de Kelvin (18-nov): DEJAR EL MAPA COMO ESTÁ Y AGREGAR LO QUE FALTA.** No se mueve el río, ni las ciudades, ni los caminos, ni los objetivos, y el estilo no cambia. Solo se añaden en sitios libres los puentes, edificios y estructuras que faltan o no se ven (mirando la referencia). Cada añadido lleva su captura de antes y después, sin bajar FPS en el teléfono.
+
+ℹ️ **Coordinadora · 18-nov:** la referencia del mapa es **arte propio de Amazona Verse** (la pieza de antes con las cotorras y el logo: `docs/img/referencia_logo_antes.jpg`). Úsala como guía para lo que falta: la ciudad de torres sobre el peñasco, las aldeas de techo rojo, los botes en el río y las aves.

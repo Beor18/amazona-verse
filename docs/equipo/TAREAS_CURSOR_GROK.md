@@ -403,3 +403,5 @@ Mira si falta porque no está en los datos, porque no carga (streaming, diferido
 - Lo que sea contenido (puentes que nunca se pusieron, edificios por colocar) anótalo en `MAPA_REFERENCIA.md` con su sitio, para que Claude web lo coloque o para que Kelvin lo apruebe.
 
 ✅ **Decisión de Kelvin (18-nov): DEJAR EL MAPA COMO ESTÁ Y AGREGAR LO QUE FALTA.** No se mueve el río, ni las ciudades, ni los caminos, ni los objetivos, y el estilo no cambia. Solo se añaden en sitios libres los puentes, edificios y estructuras que faltan o no se ven (mirando la referencia). Cada añadido lleva su captura de antes y después, sin bajar FPS en el teléfono.
+
+ℹ️ **18-nov:** la referencia del mapa es **arte propio de Amazona Verse**, del proyecto original. Kelvin enseñó la pieza de antes con el mismo mapa, las cotorras y el logo de frutas: `docs/img/referencia_logo_antes.jpg`. Se puede usar como guía con toda confianza.
