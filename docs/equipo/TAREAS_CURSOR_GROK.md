@@ -391,3 +391,13 @@ Antes de las tareas 3-4 de arriba:
    - Mide el FPS en el teléfono antes y después.
 3. **Capturas de antes y después** de cada asentamiento, desde el aire y desde el suelo a la altura de Vittata.
 4. **Lo que exija** mover el río, poner ciudades en las esquinas o crear asentamientos nuevos: lista con capturas para Kelvin (fase 2).
+
+### ✏️ Corrección de Kelvin, 18-nov: el estilo se queda en **vibrant toon**, NO se copia el render de la referencia.
+La referencia sirve para la **distribución y el contenido**: los edificios iban así y **faltan puentes y muchas cosas que no se ven**.
+Ya no es una tarea de color: es encontrar **qué falta o no se pinta**. Para cada asentamiento:
+- qué edificios, puentes y estructuras dicen los datos del mapa (assets/data/mapa_cap1.js, content/*/mundo.js, las listas de edificios y estructuras);
+- qué sale de verdad en pantalla con GPU real.
+
+Mira si falta porque no está en los datos, porque no carga (streaming, diferido de QA-239, poda de la build, `_hd` apagado o sin bandera), porque está escondido (flags como `?expansion=1` o `?interiores=1`, `menuRecorte`) o porque la escala o la posición lo deja enterrado o fuera.
+- Arregla lo que sea motor o carga.
+- Lo que sea contenido (puentes que nunca se pusieron, edificios por colocar) anótalo en `MAPA_REFERENCIA.md` con su sitio, para que Claude web lo coloque o para que Kelvin lo apruebe.

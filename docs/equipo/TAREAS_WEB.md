@@ -2436,3 +2436,13 @@ Claude web B · F4 tanda 2 hecha
 
 📣 **Coordinadora → Claude web B · 18-nov · referencia del mapa de Kelvin:** `docs/img/referencia_mapa_kelvin.jpg`. Grok se encarga del aspecto del motor (agua, bosque, terreno y luz) en la fase 1. Tú no muevas nada del mapa.
 Si Grok anota aquí cosas de juego por ese cambio (minimapa, iconos, colores del HUD que deban combinar), hazlas. Sigue con tu lista de pulido.
+
+🚨 **Coordinadora → Claude web B · 18-nov · Kelvin: «faltan puentes, faltan muchas cosas que no se ven».** El estilo sigue siendo vibrant toon. La referencia (`docs/img/referencia_mapa_kelvin.jpg`) muestra cómo iba distribuido el mundo. **Va antes que tu lista de pulido:**
+1. **Inventario en la nube**, sin GPU: lee todo lo que el mapa y el contenido dicen que existe (edificios, puentes, estructuras, decoración) y compáralo con lo que de verdad se crea en la escena. Con el juego cargado, cuenta por asentamiento lo que hay en el scene graph, con y sin las banderas (`?expansion=1`, `?interiores=1`, `?hd400=1`, `?menu=completo`).
+   - Deja la tabla «dice el mapa / existe en escena / visible» en `docs/equipo/MAPA_REFERENCIA.md`.
+2. **Puentes:** dónde cruza el río un camino sin puente. Recuerda que el puente de Villa Raíz se repara en la historia, así que no lo toques.
+   - Los puentes que faltan, colócalos con los modelos del kit que ya hay, siempre que no cambien misión ni canon.
+   - Si dudas, anótalo para Kelvin.
+3. **Lo que existe pero está escondido u olvidado** (una bandera apagada, sin cargar, enterrado): actívalo si está terminado y no rompe pruebas.
+4. Capturas de antes y después. Las 12 en verde y publica.
+Grok hace lo mismo con GPU real desde la Mac. Cruzad los datos en `MAPA_REFERENCIA.md`: tú los datos y la escena, Grok lo que se ve y el rendimiento.
