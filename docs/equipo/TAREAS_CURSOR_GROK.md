@@ -373,3 +373,21 @@ Imagen: `docs/img/referencia_mapa_kelvin.jpg`. Es una vista aérea isométrica:
 2. **Las diferencias.** Escribe en `docs/equipo/MAPA_REFERENCIA.md` las 10 diferencias de aspecto más grandes: color y brillo del agua, densidad y volumen del bosque, contraste del terreno, peñascos, luz y niebla.
 3. **Lo que es motor, hazlo.** Agua más azul y con brillo en la orilla, bosque más denso con instancias o LOD, colores del terreno, luz y niebla. Sin bajar FPS en el teléfono: mídelo con `?fps=1`. Antes y después en el mismo documento.
 4. **Lo que cambia el mapa, solo anótalo para Kelvin:** la forma del río, dónde van las ciudades o meter las aldeas de techo rojo. Es la fase 2 y la decide él.
+
+### ➕ Kelvin, 18-nov: «Los edificios». Lo que más quiere de la referencia son los EDIFICIOS.
+Antes de las tareas 3-4 de arriba:
+1. **Cada tipo de la imagen, con su modelo del repo.** Haz una tabla en `MAPA_REFERENCIA.md` con los modelos que ya tenemos (ver `docs/equipo/EDIFICIOS_INVENTARIO.md`, `AUDITORIA_EDIFICIOS.md`, `CIUDAD_TEPUY.md` y las variantes `_hd`):
+   - ciudad de torres color crema sobre peñasco (¿Ciudad de los 36 o tepuy?);
+   - aldea de techos rojos con torres de punta y puente;
+   - chozas redondas de paja (bohíos);
+   - fuerte de piedra oscura;
+   - casa rectangular de piedra con patio;
+   - templo o pagoda gris.
+   Para cada uno: qué modelo usar, si ya está en el mapa, dónde y a qué escala, y por qué hoy se ve distinto.
+2. **Que se vean como en la referencia** sin cambiar jugabilidad:
+   - usar siempre la variante `_hd` buena con textura en el perfil alto, y una ligera digna en el teléfono;
+   - materiales: piedra clara cálida, techos rojos saturados, sombras de contacto y oclusión, y nada de blanco plano ni gris sin textura;
+   - agrupar como en la imagen: ciudades densas sobre peñasco y aldeas en racimo con torres. Usa los sitios de asentamiento que ya existen en el mapa, sin mover objetivos de misión ni caminos.
+   - Mide el FPS en el teléfono antes y después.
+3. **Capturas de antes y después** de cada asentamiento, desde el aire y desde el suelo a la altura de Vittata.
+4. **Lo que exija** mover el río, poner ciudades en las esquinas o crear asentamientos nuevos: lista con capturas para Kelvin (fase 2).
