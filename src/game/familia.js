@@ -161,7 +161,7 @@ window.AVFamilia = function (G) {
   }
   let hudTxt = '';
   function pintarHud(forzar) {
-    if (!enJuego) { hudT.hidden = true; hudTxt = ''; return; }
+    if (!enJuego) { if (!hudT.hidden) for (const k of ['fam-hud-quien', 'fam-hud-que', 'fam-hud-marca']) $(k).textContent = ''; hudT.hidden = true; hudTxt = ''; return; } // vacío al ocultarse: sin texto en ES escondido con EN puesto
     const j = jugadores[turno], marca = puntosTxt(puntosAhora()) + ' · ' + tiempoTxt((performance.now() - t0) / 1000);
     const k = (j ? j.n : 0) + '|' + marca + '|' + (en() ? 'en' : 'es');
     hudT.hidden = false;
@@ -388,7 +388,7 @@ window.AVFamilia = function (G) {
       ok('PULIR 7 r2 · si nadie hizo puntos, nadie gana premio', nadie.every(m => !m.premio), JSON.stringify(nadie.map(m => m.premio)));
       G.quiet = quiet;
     } catch (e) { ok('sin excepciones', false, e && (e.stack || e.message || e)); }
-    cerrar(); raiz.hidden = antes; hudT.hidden = true;
+    cerrar(); raiz.hidden = antes; hudT.hidden = true; for (const k of ['fam-hud-quien', 'fam-hud-que', 'fam-hud-marca']) $(k).textContent = '';
     try { if (G.ui && G.ui.quitarAviso) G.ui.quitarAviso('Aviso viejo PULIR7'); } catch (e) { /* sin ui */ }
     try { if (G.ui && G.ui.hideToast) G.ui.hideToast(); } catch (e) { /* sin ui */ } // los avisos de la prueba (trucos, premios) no se quedan en pantalla
     { const chip = document.getElementById('truco-chip'); if (chip) chip.hidden = true; } // el contador de trucos del turno de prueba (se apaga solo con cuadros del juego)
