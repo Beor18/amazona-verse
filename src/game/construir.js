@@ -895,15 +895,11 @@
     const TXT_OBRA = { quien: 'Iguaca', foto: 'Foto de mi obra' };
     const VIS = { on: false, t: 0, sp: null, npc: null, vis0: true, de: new THREE.Vector3(), a: new THREE.Vector3(), va: new THREE.Vector3(), frase: '', dicho: false };
     const DUR = { llega: 1.6, posada: 3.4, va: 1.4 };
+    // Se posa encima de la última pieza puesta (la que acaba de hacer el niño, delante de Vittata y a la vista de la cámara)
     function cimaDeLaObra(out) {
-      let x = 0, z = 0, y = -Infinity;
-      for (const p of lista) {
-        const w = mundoDe(p), g = geos[p.t]; x += w.x; z += w.z;
-        if (g && !g.boundingBox) g.computeBoundingBox();
-        y = Math.max(y, w.y + (g && g.boundingBox ? g.boundingBox.max.y : 1));
-      }
-      x /= lista.length; z /= lista.length;
-      return out.set(x, (isFinite(y) ? y : H(x, z)) + 0.9, z);
+      const p = lista[lista.length - 1], w = mundoDe(p), g = geos[p.t];
+      if (g && !g.boundingBox) g.computeBoundingBox();
+      return out.set(w.x, w.y + (g && g.boundingBox ? g.boundingBox.max.y : 1) + 0.9, w.z);
     }
     function miraLoQueHice(forzar) {
       if ((G.quiet && !forzar) || !lista.length || !grupo) return false;
