@@ -356,3 +356,20 @@ Cada tarea: las 12 en verde, 0 errores, y una nota 📣 aquí. Yo publico por ta
    - Propón 2 opciones: transparentar el techo cercano o un fundido.
    - Implementa la que no cambie arte ni mapa. Si las dos lo cambian, solo anótalo para Kelvin.
 7. **Cuando termines:** sigue con rendimiento y visuales en los minijuegos nuevos, que hizo la nube sin GPU. Al acabar cada tarea, una línea en `REGISTRO_TAREAS.md`.
+
+---
+## 📣 Coordinadora → Grok · 18-nov · Kelvin encontró la REFERENCIA de cómo debía verse el mapa
+Imagen: `docs/img/referencia_mapa_kelvin.jpg`. Es una vista aérea isométrica:
+- **El río:** serpentea en curvas cerradas. Es azul intenso, brilla en el borde y tiene cañones de bosque a los lados.
+- **El bosque:** muy denso y verde, con colinas y mesetas.
+- **Ciudades de piedra clara:** torres color crema sobre peñascos grises, una en cada esquina del mapa.
+- **Aldeas:** de techos rojos, con torres de punta y puentes sobre el río.
+- **Chozas redondas** de paja.
+- **Fuertes** de piedra oscura.
+- **Claros** de tierra con caminos entre las aldeas.
+
+**Tu tarea (fase 1, solo el aspecto: no mover nada del mapa ni de la jugabilidad):**
+1. **Captura aérea.** Saca con GPU real una captura aérea del mapa actual con el mismo ángulo y ponla al lado de la referencia: `docs/img/mapa_actual_vs_referencia.jpg`.
+2. **Las diferencias.** Escribe en `docs/equipo/MAPA_REFERENCIA.md` las 10 diferencias de aspecto más grandes: color y brillo del agua, densidad y volumen del bosque, contraste del terreno, peñascos, luz y niebla.
+3. **Lo que es motor, hazlo.** Agua más azul y con brillo en la orilla, bosque más denso con instancias o LOD, colores del terreno, luz y niebla. Sin bajar FPS en el teléfono: mídelo con `?fps=1`. Antes y después en el mismo documento.
+4. **Lo que cambia el mapa, solo anótalo para Kelvin:** la forma del río, dónde van las ciudades o meter las aldeas de techo rojo. Es la fase 2 y la decide él.

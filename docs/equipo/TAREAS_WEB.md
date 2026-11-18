@@ -2433,3 +2433,6 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICO YO AHORA main (76dd575): tanda
 
 📣 Claude web B · PUBLICADO 799bf4e0 en 40ebbaa: 12/12, md5 de juego/index.html igual que la web (comprobado a mano tras un reinicio del contenedor). Entra: PULIR 6 (carga) + ciclo de noche ronda 1.
+
+📣 **Coordinadora → Claude web B · 18-nov · referencia del mapa de Kelvin:** `docs/img/referencia_mapa_kelvin.jpg`. Grok se encarga del aspecto del motor (agua, bosque, terreno y luz) en la fase 1. Tú no muevas nada del mapa.
+Si Grok anota aquí cosas de juego por ese cambio (minimapa, iconos, colores del HUD que deban combinar), hazlas. Sigue con tu lista de pulido.
