@@ -225,7 +225,9 @@ window.AVFamilia = function (G) {
     j.puntos = Math.max(0, Number(puntos) || 0);
     j.segundos = Math.max(0, Number(segundos) || 0);
     turno += 1;
+    const eraTurno = enJuego;
     enJuego = false; fin.hidden = true; raiz.hidden = false; pintarHud();
+    if (eraTurno) { try { if (G.ui && G.ui.quitarAviso) G.ui.quitarAviso(instruccion()); } catch (e) { /* sin ui */ } } // la instrucción no se queda encima de los resultados
     paso();
     return turno >= jugadores.length ? premioDe(jugadores) : null;
   }
@@ -374,7 +376,7 @@ window.AVFamilia = function (G) {
         G.S.clock += 1; G.trucos.anotar('tonel'); pintarHud();
         ok('PULIR 7 r2 · durante el turno se ve quién juega, qué hacer, los trucos y el tiempo', !hudT.hidden && /2/.test($('fam-hud-quien').textContent) && $('fam-hud-que').textContent === ins && /^\d+ trucos? · \d+:\d\d$/.test($('fam-hud-marca').textContent), $('fam-hud-marca').textContent);
         fin.click();
-        ok('PULIR 7 r2 · al terminar el turno el marcador se va', hudT.hidden);
+        ok('PULIR 7 r2 · al terminar el turno el marcador y la instrucción se van', hudT.hidden && (c2 => c2.actual !== ins && !c2.cola.includes(ins))(G.ui.colaTest()), JSON.stringify(G.ui.colaTest()).slice(0, 160));
       }
       empezar(3, 'trucos');
       anotar(0, 5); anotar(4, 30); const cero = anotar(2, 12);
