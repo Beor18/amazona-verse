@@ -937,10 +937,14 @@
       if (d < 0.3) { const yw = cam ? cam.yaw : 0; dx = Math.sin(yw); dz = Math.cos(yw); d = 1; }
       dx /= d; dz /= d;
       let movida = false;
-      if (!vuela && d < h.r + 0.6) { // debajo del techo o dentro de la obra: sale al borde, por su lado, si el sitio es seco y llano
-        const nx = h.x + dx * (h.r + 1.4), nz = h.z + dz * (h.r + 1.4), ny = H(nx, nz);
-        const seco = ny > agua(nx, nz) + 0.2 && (!G.terreno.waterBase || ny > G.terreno.waterBase + 0.2), llano = Math.abs(ny - H(S.pos.x, S.pos.z)) < 1.5;
-        if (seco && llano) { S.pos.x = nx; S.pos.z = nz; S.pos.y = ny + 0.05; if (S.vy != null) S.vy = 0; S.facing = { x: -dx, z: -dz }; movida = true; }
+      if (!vuela && d < h.r + 0.6) { // debajo del techo o dentro de la obra: sale al borde (primero por su lado; si no, prueba otros 7) a un sitio seco y llano
+        const y0 = H(S.pos.x, S.pos.z), a0 = Math.atan2(dx, dz);
+        for (let i = 0; i < 8 && !movida; i++) {
+          const a = a0 + (i % 2 ? 1 : -1) * Math.ceil(i / 2) * Math.PI / 4, ux = Math.sin(a), uz = Math.cos(a);
+          const nx = h.x + ux * (h.r + 1.4), nz = h.z + uz * (h.r + 1.4), ny = H(nx, nz);
+          const seco = ny > agua(nx, nz) + 0.2, llano = Math.abs(ny - y0) < 2.5;
+          if (seco && llano) { S.pos.x = nx; S.pos.z = nz; S.pos.y = ny + 0.05; if (S.vy != null) S.vy = 0; S.facing = { x: -ux, z: -uz }; dx = ux; dz = uz; movida = true; }
+        }
       }
       if (!C) return { movida };
       const top = cimaDeLaObra(new THREE.Vector3()).y - S.pos.y;
@@ -949,7 +953,7 @@
       camObra0.puesto = puesto; Object.assign(C, puesto);
       cam.yaw = Math.atan2(dx, dz) + 0.5; // la cámara detrás de Vittata, de tres cuartos, mirando a la obra
       if (movQuieto() && cam.place) { try { cam.place(true); } catch (e) { /* cámara */ } } // sin barrido: corte directo
-      return { movida, yaw: cam.yaw, puesto };
+      return { movida, vuela, yaw: cam.yaw, puesto };
     }
     function presentarIguaca(posada) {
       const n = G.actores && G.actores.npc && G.actores.npc('luma');
@@ -968,7 +972,7 @@
       if ((G.quiet && !forzar) || !lista.length || !grupo) return false;
       finVisita();
       VIS.frase = FRASES_IGUACA[Math.floor(Math.random() * FRASES_IGUACA.length)]; VIS.dicho = false; VIS.ofrecida = false; VIS.fotos = 0;
-      encuadrar(true);
+      VIS.enc = encuadrar(true);
       presentarIguaca(false);
       return true;
     }
@@ -1518,12 +1522,12 @@
             sesion.h0 = h0;
             // Ronda 2: Vittata debajo del techo (en el centro de la obra) → el encuadre la saca al borde y la cámara sube, se aleja y mira a la obra
             const hu = huellaObra(); S.pos.x = hu.x + 0.1; S.pos.z = hu.z + 0.1; S.pos.y = H(S.pos.x, S.pos.z);
-            const ok = miraLoQueHice(true), cima = cimaDeLaObra(new THREE.Vector3());
+            const ok = miraLoQueHice(true), cima = cimaDeLaObra(new THREE.Vector3()), enc = VIS.enc || {};
             const llega = !!VIS.sp && VIS.sp.parent === grupo && (!n || !n.sp.visible);
             if (!ctx) {
               const dV = Math.hypot(S.pos.x - hu.x, S.pos.z - hu.z), cy = G.camara ? G.camara.yaw : 0;
               const lado = ((Math.sin(cy) * (S.pos.x - hu.x) + Math.cos(cy) * (S.pos.z - hu.z)) / Math.max(1e-6, dV));
-              check('PULIR 7 r2 · «¡Mira lo que hice!» encuadra la obra: Vittata sale de debajo del techo y la cámara sube, se aleja y mira desde su lado hacia la obra', dV >= hu.r - 1e-6 && (!CAMv || (CAMv.height >= CAM_OBRA.height && CAMv.dist >= CAM_OBRA.dist && lado > 0.6)), JSON.stringify({ dV: +dV.toFixed(2), r: +hu.r.toFixed(2), h: CAMv && CAMv.height, d: CAMv && CAMv.dist, lado: +lado.toFixed(2) }));
+              check('PULIR 7 r2 · «¡Mira lo que hice!» encuadra la obra: Vittata sale de debajo del techo y la cámara sube, se aleja y mira desde su lado hacia la obra', dV >= hu.r - 1e-6 && (!CAMv || (CAMv.height >= CAM_OBRA.height && CAMv.dist >= CAM_OBRA.dist && lado > 0.6)), JSON.stringify({ dV: +dV.toFixed(2), r: +hu.r.toFixed(2), h: CAMv && CAMv.height, d: CAMv && CAMv.dist, lado: +lado.toFixed(2), enc: { movida: enc.movida, vuela: enc.vuela } }));
               const techo = lista.find(p => p.t === 'techo'), wt = techo && mundoDe(techo);
               check('PULIR 7 r2 · Iguaca se posa en la pieza más alta (el techo), no en la última puesta', !techo || (Math.hypot(cima.x - wt.x, cima.z - wt.z) < 1e-6), JSON.stringify({ cima: [cima.x, cima.z], techo: wt && [wt.x, wt.z] }));
             }
