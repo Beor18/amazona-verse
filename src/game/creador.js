@@ -436,7 +436,10 @@ AVE.module('creador', function (G) {
     libre.setAttribute('aria-label', 'Tu nombre, de 3 a 14 letras');
     $('p-name').insertAdjacentElement('beforebegin', libre);
   }
+  // PULIR 7: el aviso del nombre va justo debajo del campo (antes quedaba al final del panel, tapado por el botón fijo en el teléfono)
+  function avisoJuntoAlNombre() { const e = $('p-error'), n = $('p-name'); if (e && n && n.nextElementSibling !== e) n.insertAdjacentElement('afterend', e); }
   montarNombreLibre();
+  avisoJuntoAlNombre();
   function nombreElegido() { return nombreDe($('p-name-a').value, $('p-name-b').value); }
   function nombreEnPantalla() {
     const libre = $('p-name-libre') && $('p-name-libre').value.trim();
@@ -532,7 +535,11 @@ AVE.module('creador', function (G) {
     if (firstTime && !G.quiet && G.pack.inicio) setTimeout(() => G.pack.inicio(G), 300);
     return null;
   }
-  $('p-save').onclick = () => { const err = saveCharacter(); if (err) { $('p-error').textContent = err; $('p-error').hidden = false; } };
+  $('p-save').onclick = () => {
+    const err = saveCharacter(); if (!err) return;
+    $('p-error').textContent = err; $('p-error').hidden = false;
+    try { $('p-error').scrollIntoView({ block: 'nearest', behavior: 'auto' }); } catch (e) { /* sin scroll */ }
+  };
   // PULIR 7: al escribir o tirar el dado el aviso se va; Enter en el nombre es como pulsar «¡A jugar!»
   const borrarAviso = () => { if (!$('p-error').hidden) { $('p-error').hidden = true; $('p-error').textContent = ''; } };
   if ($('p-name-libre')) {
@@ -622,7 +629,7 @@ AVE.module('creador', function (G) {
         err.hidden = false; err.textContent = 'x';
         const fsV = parseFloat(getComputedStyle(err).fontSize) || 0;
         err.hidden = errOculto; err.textContent = '';
-        ok('PULIR 7 · El aviso se lee grande (16 px o más)', fsV >= 16, fsV + ' px');
+        ok('PULIR 7 · El aviso se lee grande (16 px o más) y va justo debajo del nombre', fsV >= 16 && $('p-name').nextElementSibling === err, fsV + ' px');
         const guardar = $('p-save').onclick; let pulsado = 0;
         $('p-save').onclick = () => { pulsado++; };
         try {
