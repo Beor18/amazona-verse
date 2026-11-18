@@ -2886,6 +2886,9 @@ window.AV_EN = {
  "Me quedo a vivir aquí. ¿Tiene hamaca?": "I'm moving in. Does it come with a hammock?",
  "¡Qué obra! Hasta las hormigas se quieren mudar.": "What a build! Even the ants want to move in.",
  "Lo miro de arriba, lo miro de abajo… ¡me encanta!": "I look at it from above, I look at it from below… I love it!",
+ // PULIR 7 r2 «¡Yo también salgo!» (Iguaca se cuela en la Foto de mi obra). Pendiente del visto bueno de Kelvin, como las de arriba.
+ "¡Yo también salgo!": "I'm in it too!",
+ "Esta vez sí, toda tuya": "Okay, this one's all yours",
  "Termina lo que estás haciendo y vuelve a probar.": "Finish what you are doing and try again.",
  "Modo construir": "Build mode",
  // Mercadito del río (src/game/tienda.js) y conchitas de la pesca

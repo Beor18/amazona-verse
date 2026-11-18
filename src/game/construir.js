@@ -772,8 +772,9 @@
       sonar('tick'); actualizar(); pintarHud();
       return rejilla;
     }
-    async function foto() {
+    async function foto(o) {
       if (!G.renderer || !G.renderer.snapshot) { aviso('Ahora no se puede sacar la foto'); return null; }
+      if (o && o.obra) return fotoObra();
       let x = S.pos.x, z = S.pos.z;
       if (lista.length) { x = 0; z = 0; for (const p of lista) { x += p.x; z += p.z; } x /= lista.length; z /= lista.length; }
       const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, f0 = { x: (S.facing && S.facing.x) || 0, z: (S.facing && S.facing.z) || 1 };
@@ -799,6 +800,9 @@
           cv.getContext('2d').drawImage(im, 0, 0); url = cv.toDataURL('image/png');
         } catch (e) { url = null; }
       }
+      return guardarFoto(url);
+    }
+    async function guardarFoto(url) {
       if (typeof url !== 'string' || url.indexOf('data:image/png') !== 0) { aviso('No se pudo sacar la foto'); return null; }
       if (!G.quiet) {
         const a = document.createElement('a');
@@ -881,7 +885,7 @@
     let cam0 = null;
     function camaraConstruir(on) {
       const C = G.camara && G.camara.CAM; if (!C) return;
-      if (on && !cam0 && !ctx) { cam0 = {}; for (const k in CAM_CONSTRUIR) cam0[k] = C[k]; Object.assign(C, CAM_CONSTRUIR); }
+      if (on && !cam0 && !ctx) { finVisita(); cam0 = {}; for (const k in CAM_CONSTRUIR) cam0[k] = C[k]; Object.assign(C, CAM_CONSTRUIR); }
       else if (!on && cam0) { for (const k in cam0) if (C[k] === CAM_CONSTRUIR[k]) C[k] = cam0[k]; cam0 = null; }
     }
     const sesion = { h0: 0 };
@@ -891,51 +895,154 @@
     // Vittata hace su gesto Celebrar (el clip del rig). Iguaca dice una frase al azar y el aviso ofrece la foto de la obra (la
     // Foto de siempre: se guarda en el dispositivo, no se sube). Con «Reducir movimiento» aparece ya posada y sin saltos.
     // Tono de las frases: pendiente del visto bueno de Kelvin (docs/equipo/TAREAS_WEB.md).
+    // Ronda 2 (ciclo de noche): un encuadre corto (sube, aleja y gira la cámara hacia la obra, con Vittata fuera del techo e Iguaca
+    // en la pieza más alta), la frase en un bocadillo con la cara de Iguaca (abajo, no la tapa) y, después, el aviso con la Foto.
+    // «¡Yo también salgo!»: en la Foto de mi obra Iguaca se cuela delante; si se repite, se aparta («Esta vez sí, toda tuya»).
     const FRASES_IGUACA = ['¡Wepa! Esto aguanta hasta un aguacero… creo.', 'Me quedo a vivir aquí. ¿Tiene hamaca?', '¡Qué obra! Hasta las hormigas se quieren mudar.', 'Lo miro de arriba, lo miro de abajo… ¡me encanta!'];
-    const TXT_OBRA = { quien: 'Iguaca', foto: 'Foto de mi obra' };
-    const VIS = { on: false, t: 0, sp: null, npc: null, vis0: true, de: new THREE.Vector3(), a: new THREE.Vector3(), va: new THREE.Vector3(), frase: '', dicho: false };
-    const DUR = { llega: 1.6, posada: 3.4, va: 1.4 };
-    // Se posa encima de la última pieza puesta (la que acaba de hacer el niño, delante de Vittata y a la vista de la cámara)
+    const TXT_OBRA = { quien: 'Iguaca', foto: 'Foto de mi obra', salgo: '¡Yo también salgo!', tuya: 'Esta vez sí, toda tuya' };
+    const VIS = { on: false, t: 0, sp: null, npc: null, vis0: true, de: new THREE.Vector3(), a: new THREE.Vector3(), va: new THREE.Vector3(), frase: '', dicho: false, ofrecida: false, fotos: 0, foto: false };
+    const DUR = { llega: 1.6, posada: 9, va: 1.4 };
+    const movQuieto = () => !!((G.renderer && G.renderer.REDUCED) || document.documentElement.classList.contains('mov-reducido'));
+    const imgIguaca = () => { try { return (G.c && G.c.IMG && G.c.IMG.L) || (G.dialogo && G.dialogo.img && G.dialogo.img('Iguaca')) || ''; } catch (e) { return ''; } };
+    const decir = texto => { try { if (G.dialogo && G.dialogo.say) { G.dialogo.say([{ who: TXT_OBRA.quien, img: imgIguaca(), text: texto }], null, { libre: true }); return true; } } catch (e) { /* sin diálogo */ } aviso(texto); return false; };
+    // Se posa encima de la pieza más alta de la obra (el techo, si hay: antes la última puesta, a veces fuera de cuadro)
     function cimaDeLaObra(out) {
-      const p = lista[lista.length - 1], w = mundoDe(p), g = geos[p.t];
-      if (g && !g.boundingBox) g.computeBoundingBox();
-      return out.set(w.x, w.y + (g && g.boundingBox ? g.boundingBox.max.y : 1) + 0.9, w.z);
+      let mejor = null, my = -Infinity;
+      for (const p of lista) {
+        const w = mundoDe(p), g = geos[p.t];
+        if (g && !g.boundingBox) g.computeBoundingBox();
+        const y = w.y + (g && g.boundingBox ? g.boundingBox.max.y : 1);
+        if (y > my + 1e-3) { my = y; mejor = w; }
+      }
+      if (!mejor) return out.set(S.pos.x, S.pos.y + 1, S.pos.z);
+      return out.set(mejor.x, my + 0.9, mejor.z);
+    }
+    // Centro y radio de la obra (sobre el suelo)
+    function huellaObra() {
+      let x = 0, z = 0; for (const p of lista) { const w = mundoDe(p); x += w.x; z += w.z; } x /= lista.length; z /= lista.length;
+      let r = 0; for (const p of lista) { const w = mundoDe(p); r = Math.max(r, Math.hypot(w.x - x, w.z - z) + ((TIPOS[p.t] && TIPOS[p.t].r) || 0.8)); }
+      return { x, z, r };
+    }
+    // Encuadre corto: la cámara del modo (G.camara.CAM, como camaraConstruir) sube y se aleja, y mira desde el lado de Vittata
+    // hacia la obra con un giro de tres cuartos (Vittata no tapa a Iguaca). Si Vittata quedó debajo del techo, sale al borde de la
+    // obra por su mismo lado. Vuelve al ajuste de antes al acabar la visita.
+    const CAM_OBRA = { height: 6.4, dist: 11 };
+    let camObra0 = null;
+    function encuadrar(on) {
+      const cam = G.camara, C = cam && cam.CAM;
+      if (!on) { if (camObra0 && C) { for (const k in camObra0) if (C[k] === camObra0.puesto[k]) C[k] = camObra0[k]; } camObra0 = null; return null; }
+      if (!lista.length || ctx) return null;
+      const h = huellaObra(), M = G.fisica && G.fisica.MOVE, vuela = !!(M && M.flying);
+      let dx = S.pos.x - h.x, dz = S.pos.z - h.z, d = Math.hypot(dx, dz);
+      if (d < 0.3) { const yw = cam ? cam.yaw : 0; dx = Math.sin(yw); dz = Math.cos(yw); d = 1; }
+      dx /= d; dz /= d;
+      let movida = false;
+      if (!vuela && d < h.r + 0.6) { // debajo del techo o dentro de la obra: sale al borde, por su lado, si el sitio es seco y llano
+        const nx = h.x + dx * (h.r + 1.4), nz = h.z + dz * (h.r + 1.4), ny = H(nx, nz);
+        const seco = ny > agua(nx, nz) + 0.2 && (!G.terreno.waterBase || ny > G.terreno.waterBase + 0.2), llano = Math.abs(ny - H(S.pos.x, S.pos.z)) < 1.5;
+        if (seco && llano) { S.pos.x = nx; S.pos.z = nz; S.pos.y = ny + 0.05; if (S.vy != null) S.vy = 0; S.facing = { x: -dx, z: -dz }; movida = true; }
+      }
+      if (!C) return { movida };
+      const top = cimaDeLaObra(new THREE.Vector3()).y - S.pos.y;
+      const puesto = { height: Math.min(8, Math.max(CAM_OBRA.height, top * 0.95)), dist: Math.min(15, Math.max(CAM_OBRA.dist, 8 + h.r * 1.6)) };
+      if (!camObra0) { camObra0 = { puesto }; for (const k in puesto) camObra0[k] = C[k]; }
+      camObra0.puesto = puesto; Object.assign(C, puesto);
+      cam.yaw = Math.atan2(dx, dz) + 0.5; // la cámara detrás de Vittata, de tres cuartos, mirando a la obra
+      if (movQuieto() && cam.place) { try { cam.place(true); } catch (e) { /* cámara */ } } // sin barrido: corte directo
+      return { movida, yaw: cam.yaw, puesto };
+    }
+    function presentarIguaca(posada) {
+      const n = G.actores && G.actores.npc && G.actores.npc('luma');
+      cimaDeLaObra(VIS.a);
+      if (n && n.sp && !VIS.sp) {
+        if (n.sp.userData.cargarMapa) { n.sp.userData.cargarMapa(); delete n.sp.userData.cargarMapa; } // su dibujo de siempre
+        VIS.sp = new THREE.Sprite(n.sp.material); VIS.sp.name = 'construir_iguaca'; VIS.sp.scale.copy(n.sp.scale).multiplyScalar(0.8); VIS.sp.renderOrder = 4; VIS.sp.frustumCulled = false;
+        VIS.npc = n; VIS.vis0 = n.sp.visible; n.sp.visible = false; if (n.sh) n.sh.visible = false; // una sola Iguaca a la vez
+        grupo.add(VIS.sp);
+      }
+      VIS.de.set(VIS.a.x - 10, VIS.a.y + 9, VIS.a.z - 6); VIS.va.set(VIS.a.x + 10, VIS.a.y + 11, VIS.a.z - 8);
+      if (VIS.sp) VIS.sp.position.copy(posada || movQuieto() ? VIS.a : VIS.de);
+      VIS.on = true; VIS.t = posada || movQuieto() || !VIS.sp ? DUR.llega : 0;
     }
     function miraLoQueHice(forzar) {
       if ((G.quiet && !forzar) || !lista.length || !grupo) return false;
       finVisita();
-      const n = G.actores && G.actores.npc && G.actores.npc('luma');
-      VIS.frase = FRASES_IGUACA[Math.floor(Math.random() * FRASES_IGUACA.length)]; VIS.dicho = false;
-      cimaDeLaObra(VIS.a);
-      if (n && n.sp) {
-        if (n.sp.userData.cargarMapa) { n.sp.userData.cargarMapa(); delete n.sp.userData.cargarMapa; } // su dibujo de siempre
-        VIS.sp = new THREE.Sprite(n.sp.material); VIS.sp.name = 'construir_iguaca'; VIS.sp.scale.copy(n.sp.scale).multiplyScalar(0.8); VIS.sp.renderOrder = 4; VIS.sp.frustumCulled = false;
-        VIS.npc = n; VIS.vis0 = n.sp.visible; n.sp.visible = false; if (n.sh) n.sh.visible = false; // una sola Iguaca a la vez
-        VIS.de.set(VIS.a.x - 10, VIS.a.y + 9, VIS.a.z - 6); VIS.va.set(VIS.a.x + 10, VIS.a.y + 11, VIS.a.z - 8);
-        VIS.sp.position.copy(G.renderer && G.renderer.REDUCED ? VIS.a : VIS.de);
-        grupo.add(VIS.sp);
-      }
-      VIS.on = true; VIS.t = (G.renderer && G.renderer.REDUCED) || !VIS.sp ? DUR.llega : 0;
+      VIS.frase = FRASES_IGUACA[Math.floor(Math.random() * FRASES_IGUACA.length)]; VIS.dicho = false; VIS.ofrecida = false; VIS.fotos = 0;
+      encuadrar(true);
+      presentarIguaca(false);
       return true;
     }
     function decirObra() {
       VIS.dicho = true;
       try { if (G.actores && G.actores.playEmote && !G.fisica.MOVE.flying) G.actores.playEmote('celebrar'); } catch (e) { /* sin gesto */ }
       sonar('unlock');
+      // La frase en un bocadillo con la cara de Iguaca (abajo, no tapa la obra ni el HUD); el aviso con la Foto sale al acabar
+      if (!decir(VIS.frase) || !(G.dialogo && G.dialogo.libre && G.dialogo.libre())) ofrecerFoto();
+    }
+    function ofrecerFoto() {
+      if (VIS.ofrecida) return; VIS.ofrecida = true;
       const e = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-      const html = `<b>${e(TXT_OBRA.quien)}</b> <span>${e(VIS.frase)}</span> <button type="button" class="btn" data-cl-mi-obra>${e(TXT_OBRA.foto)}</button>`;
-      if (G.ui && G.ui.toastHTML) G.ui.toastHTML(html, 6500, { ya: true }); else aviso(VIS.frase);
+      const html = `<button type="button" class="btn" data-cl-mi-obra>${e(TXT_OBRA.foto)}</button>`;
+      if (G.ui && G.ui.toastHTML) G.ui.toastHTML(html, 6500, { ya: true });
+    }
+    // «¡Yo también salgo!»: justo antes del flash Iguaca da sus dos saltitos, se pone delante de la cámara y sale en primer plano.
+    // La segunda vez (y las siguientes) se aparta a su sitio encima de la obra: «Esta vez sí, toda tuya». Con «Reducir movimiento»
+    // aparece ya en su sitio, sin saltos. La foto es la del encuadre (Vittata a la vista), en el dispositivo, sin subirla.
+    const SALTITOS_S = 0.9;
+    async function fotoObra() {
+      if (VIS.foto) return null; VIS.foto = true;
+      try {
+        if (!VIS.on && lista.length && grupo) { encuadrar(true); presentarIguaca(true); VIS.dicho = true; VIS.ofrecida = true; }
+        VIS.t = Math.min(VIS.t, DUR.llega + 0.01); // se queda posada mientras dura la foto
+        const cam = G.renderer && G.renderer.camera, sp = VIS.sp, primera = VIS.fotos === 0;
+        VIS.fotos++;
+        decir(primera ? TXT_OBRA.salgo : TXT_OBRA.tuya);
+        if (sp && cam && primera) {
+          sonar('unlock');
+          // delante: entre la cámara y Vittata, algo por debajo de la vista y a un lado (no tapa a Vittata)
+          const ojo = new THREE.Vector3(S.pos.x, S.pos.y + 1.2, S.pos.z), delante = new THREE.Vector3().lerpVectors(cam.position, ojo, 0.42);
+          const lado = new THREE.Vector3().subVectors(ojo, cam.position).cross(cam.up).normalize().multiplyScalar(-0.9);
+          delante.add(lado); delante.y -= 0.25;
+          VIS.delante = delante;
+          if (!movQuieto() && !G.quiet) {
+            const de = sp.position.clone(), t0 = performance.now();
+            await new Promise(res => {
+              const paso = () => {
+                const k = Math.min(1, (performance.now() - t0) / 1000 / SALTITOS_S);
+                sp.position.lerpVectors(de, delante, k); sp.position.y += Math.abs(Math.sin(k * Math.PI * 2)) * 0.35; // los dos saltitos de siempre
+                if (k < 1) requestAnimationFrame(paso); else res();
+              };
+              requestAnimationFrame(paso);
+            });
+          }
+          sp.position.copy(delante);
+        } else if (sp) { sp.position.copy(VIS.a); VIS.delante = null; }
+        let url = null;
+        try { const r = G.renderer.snapshot(960, 540, 0.8); url = r && typeof r.then === 'function' ? await r : r; } catch (e) { url = null; }
+        if (typeof url === 'string' && url.indexOf('data:image/jpeg') === 0) {
+          try {
+            const im = new Image(); im.src = url; await im.decode();
+            const cv = document.createElement('canvas'); cv.width = im.naturalWidth || 960; cv.height = im.naturalHeight || 540;
+            cv.getContext('2d').drawImage(im, 0, 0); url = cv.toDataURL('image/png');
+          } catch (e) { url = null; }
+        }
+        if (sp && VIS.sp === sp) sp.position.copy(VIS.a); // vuelve a su sitio encima de la obra
+        return await guardarFoto(url);
+      } finally { VIS.foto = false; }
     }
     function finVisita() {
       if (VIS.sp) { if (VIS.sp.parent) VIS.sp.parent.remove(VIS.sp); VIS.sp = null; } // el material es el de Iguaca: no se libera
       if (VIS.npc) { VIS.npc.sp.visible = VIS.vis0; if (VIS.npc.sh) VIS.npc.sh.visible = VIS.vis0; VIS.npc = null; }
+      if (VIS.on || camObra0) encuadrar(false);
       VIS.on = false;
     }
     function pasoVisita(dt) {
       if (!VIS.on) return;
+      if (VIS.foto) return; // mientras se saca la foto, Iguaca no se va
       VIS.t += Math.min(dt, 0.1);
-      const quieto = !!(G.renderer && G.renderer.REDUCED), t = VIS.t, sp = VIS.sp;
+      const quieto = movQuieto(), t = VIS.t, sp = VIS.sp;
       if (t >= DUR.llega && !VIS.dicho) decirObra();
+      if (VIS.dicho && !VIS.ofrecida && !(G.dialogo && G.dialogo.libre && G.dialogo.libre())) ofrecerFoto();
       if (sp) {
         if (t < DUR.llega) { const k = t / DUR.llega, e = 1 - (1 - k) * (1 - k); sp.position.lerpVectors(VIS.de, VIS.a, e); sp.position.y += Math.sin(k * Math.PI) * 1.2; }
         else if (t < DUR.llega + DUR.posada) { sp.position.copy(VIS.a); const u = t - DUR.llega; if (!quieto && u < 1.2) sp.position.y += Math.abs(Math.sin(u * Math.PI * 2 / 1.2 * 2)) * 0.35; }
@@ -945,8 +1052,8 @@
     }
     G.on('update', (dt, busy) => { if (VIS.on && !busy) pasoVisita(dt); }, 89);
     G.on('apply', () => finVisita(), 61);
-    // El botón del aviso hace la Foto de siempre (en el dispositivo; no se sube a ningún sitio)
-    document.addEventListener('click', e => { const b = e.target && e.target.closest && e.target.closest('#toast [data-cl-mi-obra]'); if (!b) return; e.preventDefault(); try { G.ui.hideToast(); } catch (er) { /* */ } foto(); });
+    // El botón del aviso hace la Foto de mi obra (con Iguaca colándose; en el dispositivo, no se sube a ningún sitio)
+    document.addEventListener('click', e => { const b = e.target && e.target.closest && e.target.closest('#toast [data-cl-mi-obra]'); if (!b) return; e.preventDefault(); try { G.ui.hideToast(); } catch (er) { /* */ } foto({ obra: true }); });
     G.on('update', (dt, busy) => { if (activo && fantasma) { fantasma.visible = !busy; if (!busy) actualizar(); } }, 89);
     G.on('escape', () => { if (activo && !(G.ui && G.ui.busy && G.ui.busy())) salir(); }); // con una tarjeta abierta (el Mercadito), Esc solo la cierra
     G.on('apply', () => { if (activo) salir(); if (ctx && ctx.id) { lista = leer({ v: 1, piezas: (S.interiores && S.interiores.edificios && S.interiores.edificios[ctx.id] && S.interiores.edificios[ctx.id].piezas) || [] }); historial.length = 0; rehacerPila.length = 0; pintar(); } else aplicar(S.construir); }, 60);
@@ -1396,7 +1503,9 @@
         check('El techo de hojas sí va sobre el nido', est.valido && colocar() && lista.length === 2, est.motivo);
         check('PULIR 7 · Sin choque, el aro rojo se va', (actualizar(), !aroC.visible));
         { // PULIR 7 · «¡Mira lo que hice!»: Iguaca llega, se posa encima de la obra, Vittata celebra y sale la frase con la Foto
-          const t0 = G.ui.toastHTML, e0 = G.actores && G.actores.playEmote, dichos = [], gestos = [];
+          const t0 = G.ui.toastHTML, e0 = G.actores && G.actores.playEmote, dichos = [], gestos = [], say0 = G.dialogo && G.dialogo.say, bocas = [];
+          const pos0 = { x: S.pos.x, y: S.pos.y, z: S.pos.z }, f0 = S.facing, CAMv = G.camara && G.camara.CAM, camV0 = CAMv ? { height: CAMv.height, dist: CAMv.dist } : null, yawV0 = G.camara ? G.camara.yaw : 0;
+          if (G.dialogo) G.dialogo.say = (ls, d, o) => { for (const l of ls) bocas.push({ who: l.who, text: l.text, img: l.img, libre: !!(o && o.libre) }); };
           const n = G.actores && G.actores.npc && G.actores.npc('luma'), vis0 = n ? n.sp.visible : null;
           G.ui.toastHTML = h => { dichos.push(String(h)); };
           if (G.actores) G.actores.playEmote = g => { gestos.push(g); return true; };
@@ -1407,20 +1516,47 @@
             const sinCambios = hayObra(true); sesion.h0 = Math.max(0, historial.length - 1);
             check('PULIR 7 · Con 3 piezas y algo hecho en esta vuelta, «Listo» (no otras salidas) llama a Iguaca', hayObra(true) === true && hayObra() === false && sinCambios === false);
             sesion.h0 = h0;
+            // Ronda 2: Vittata debajo del techo (en el centro de la obra) → el encuadre la saca al borde y la cámara sube, se aleja y mira a la obra
+            const hu = huellaObra(); S.pos.x = hu.x + 0.1; S.pos.z = hu.z + 0.1; S.pos.y = H(S.pos.x, S.pos.z);
             const ok = miraLoQueHice(true), cima = cimaDeLaObra(new THREE.Vector3());
             const llega = !!VIS.sp && VIS.sp.parent === grupo && (!n || !n.sp.visible);
+            if (!ctx) {
+              const dV = Math.hypot(S.pos.x - hu.x, S.pos.z - hu.z), cy = G.camara ? G.camara.yaw : 0;
+              const lado = ((Math.sin(cy) * (S.pos.x - hu.x) + Math.cos(cy) * (S.pos.z - hu.z)) / Math.max(1e-6, dV));
+              check('PULIR 7 r2 · «¡Mira lo que hice!» encuadra la obra: Vittata sale de debajo del techo y la cámara sube, se aleja y mira desde su lado hacia la obra', dV >= hu.r - 1e-6 && (!CAMv || (CAMv.height >= CAM_OBRA.height && CAMv.dist >= CAM_OBRA.dist && lado > 0.6)), JSON.stringify({ dV: +dV.toFixed(2), r: +hu.r.toFixed(2), h: CAMv && CAMv.height, d: CAMv && CAMv.dist, lado: +lado.toFixed(2) }));
+              const techo = lista.find(p => p.t === 'techo'), wt = techo && mundoDe(techo);
+              check('PULIR 7 r2 · Iguaca se posa en la pieza más alta (el techo), no en la última puesta', !techo || (Math.hypot(cima.x - wt.x, cima.z - wt.z) < 1e-6), JSON.stringify({ cima: [cima.x, cima.z], techo: wt && [wt.x, wt.z] }));
+            }
             let posada = false, maxY = -Infinity;
-            for (let i = 0; i < 80 && VIS.on; i++) { pasoVisita(0.1); if (VIS.sp && VIS.t > DUR.llega && VIS.t < DUR.llega + DUR.posada) { maxY = Math.max(maxY, VIS.sp.position.y); if (Math.hypot(VIS.sp.position.x - cima.x, VIS.sp.position.z - cima.z) < 1e-6) posada = true; } }
+            for (let i = 0; i < 160 && VIS.on; i++) { pasoVisita(0.1); if (VIS.sp && VIS.t > DUR.llega && VIS.t < DUR.llega + DUR.posada) { maxY = Math.max(maxY, VIS.sp.position.y); if (Math.hypot(VIS.sp.position.x - cima.x, VIS.sp.position.z - cima.z) < 1e-6) posada = true; } }
             const txt = dichos.join(' ');
             check('PULIR 7 · Iguaca llega volando y se posa encima de la obra (sin dos Iguacas a la vez)', ok && (!n || (llega && posada && maxY >= cima.y - 1e-6)), JSON.stringify({ ok, llega, posada, npc: !!n }));
-            check('PULIR 7 · Vittata hace su gesto Celebrar y sale una frase de Iguaca con el botón de la Foto', gestos.includes('celebrar') && FRASES_IGUACA.some(f => txt.indexOf(f.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))) >= 0) && /data-cl-mi-obra/.test(txt) && txt.indexOf(TXT_OBRA.foto) >= 0, txt.slice(0, 160));
+            check('PULIR 7 · Vittata hace su gesto Celebrar y sale una frase de Iguaca con el botón de la Foto', gestos.includes('celebrar') && bocas.some(b => FRASES_IGUACA.includes(b.text)) && /data-cl-mi-obra/.test(txt) && txt.indexOf(TXT_OBRA.foto) >= 0, txt.slice(0, 160));
+            check('PULIR 7 r2 · la frase de Iguaca va en un bocadillo con su cara (no en el aviso de la tuerca, que solo lleva la Foto)', bocas.some(b => b.who === 'Iguaca' && b.libre && FRASES_IGUACA.includes(b.text) && !!b.img) && !FRASES_IGUACA.some(f => txt.indexOf(f.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))) >= 0), JSON.stringify(bocas).slice(0, 160));
             check('PULIR 7 · Al terminar, Iguaca se va y vuelve a su sitio de siempre', !VIS.on && !VIS.sp && !grupo.children.some(o => o.name === 'construir_iguaca') && (!n || n.sp.visible === vis0));
+            check('PULIR 7 r2 · al irse Iguaca, la cámara vuelve a su ajuste de antes', !CAMv || (CAMv.height === camV0.height && CAMv.dist === camV0.dist), CAMv && JSON.stringify({ h: CAMv.height, d: CAMv.dist, antes: camV0 }));
+            { // «¡Yo también salgo!»: en la Foto de mi obra Iguaca se pone delante y sale en primer plano; repetida, se aparta
+              miraLoQueHice(true); for (let i = 0; i < 20; i++) pasoVisita(0.1);
+              bocas.length = 0;
+              const snapR = G.renderer.snapshot, camR = G.renderer.camera, rz = G.actores && G.actores.player3D && G.actores.player3D.root, medidas = [];
+              G.renderer.snapshot = function () { const sp = VIS.sp; medidas.push({ iguaca: sp && camR ? camR.position.distanceTo(sp.position) : null, vittata: camR ? camR.position.distanceTo(new THREE.Vector3(S.pos.x, S.pos.y + 1.2, S.pos.z)) : null, enObra: sp ? sp.position.distanceTo(VIS.a) < 1e-6 : null, vVisible: rz ? rz.visible : true }); return snapR.apply(this, arguments); };
+              let u1 = null, u2 = null;
+              try { u1 = await foto({ obra: true }); u2 = await foto({ obra: true }); } finally { G.renderer.snapshot = snapR; }
+              const [m1, m2] = medidas;
+              check('PULIR 7 r2 · «¡Yo también salgo!»: en la Foto de mi obra Iguaca se cuela delante de Vittata (primer plano), Vittata se ve y dice su frase', !!m1 && (!VIS.sp && !n || (m1.iguaca != null && m1.iguaca < m1.vittata && m1.enObra === false)) && m1.vVisible && bocas[0] && bocas[0].text === TXT_OBRA.salgo && typeof u1 === 'string' && u1.indexOf('data:image/png') === 0, JSON.stringify({ m1, b: bocas[0] }));
+              check('PULIR 7 r2 · repetida la foto, Iguaca se aparta a su sitio encima de la obra: «Esta vez sí, toda tuya»', !!m2 && (!n || m2.enObra === true) && bocas[1] && bocas[1].text === TXT_OBRA.tuya && typeof u2 === 'string', JSON.stringify({ m2, b: bocas[1] }));
+              check('PULIR 7 r2 · tras la foto Iguaca vuelve a su sitio encima de la obra', !VIS.sp || VIS.sp.position.distanceTo(VIS.a) < 1e-6);
+              finVisita();
+              document.documentElement.classList.add('mov-reducido');
+              try { miraLoQueHice(true); check('PULIR 7 r2 · con «Reducir movimiento» Iguaca aparece ya posada en el encuadre, sin vuelo ni saltos', VIS.t >= DUR.llega && (!VIS.sp || VIS.sp.position.distanceTo(VIS.a) < 1e-6)); } finally { document.documentElement.classList.remove('mov-reducido'); finVisita(); }
+            }
             if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
-            const D = window.AV_EN || {}, faltan = FRASES_IGUACA.concat([TXT_OBRA.foto, TXT_OBRA.quien]).filter(t => !D[t]);
+            const D = window.AV_EN || {}, faltan = FRASES_IGUACA.concat([TXT_OBRA.foto, TXT_OBRA.quien, TXT_OBRA.salgo, TXT_OBRA.tuya]).filter(t => !D[t]);
             check('PULIR 7 · Las frases de Iguaca y «Foto de mi obra» tienen su inglés en content/cap1/en.js', !faltan.length, faltan.join(' | '));
           } finally {
             lista.pop(); finVisita(); pintar();
-            G.ui.toastHTML = t0; if (G.actores) G.actores.playEmote = e0;
+            G.ui.toastHTML = t0; if (G.actores) G.actores.playEmote = e0; if (G.dialogo && say0) G.dialogo.say = say0;
+            S.pos.x = pos0.x; S.pos.y = pos0.y; S.pos.z = pos0.z; S.facing = f0; if (G.camara) G.camara.yaw = yawV0;
           }
         }
         // CG-78: cuadrícula suave, gesto de giro, foto local y Deshacer visible
