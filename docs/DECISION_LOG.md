@@ -530,3 +530,4 @@ Kelvin: «Necesito que pongan todo en el enlace principal para probar todo». De
   - El cap. 4 se queda corto: no queremos aburrir.
   - Prioridad nueva: que mejoren los juegos versus (duelos) y que las construcciones sean mejores y no tan sencillas.
   - Mejorar siempre un poco cada vez.
+- **18-nov-2026 · Kelvin:** el mapa se deja como está (estilo vibrant toon, sin mover el río, las ciudades ni la jugabilidad). Solo se **agrega lo que falta** según la referencia `docs/img/referencia_mapa_kelvin.jpg`: puentes, edificios y estructuras que no están o no se ven.

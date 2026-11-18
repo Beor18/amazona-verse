@@ -401,3 +401,5 @@ Ya no es una tarea de color: es encontrar **qué falta o no se pinta**. Para cad
 Mira si falta porque no está en los datos, porque no carga (streaming, diferido de QA-239, poda de la build, `_hd` apagado o sin bandera), porque está escondido (flags como `?expansion=1` o `?interiores=1`, `menuRecorte`) o porque la escala o la posición lo deja enterrado o fuera.
 - Arregla lo que sea motor o carga.
 - Lo que sea contenido (puentes que nunca se pusieron, edificios por colocar) anótalo en `MAPA_REFERENCIA.md` con su sitio, para que Claude web lo coloque o para que Kelvin lo apruebe.
+
+✅ **Decisión de Kelvin (18-nov): DEJAR EL MAPA COMO ESTÁ Y AGREGAR LO QUE FALTA.** No se mueve el río, ni las ciudades, ni los caminos, ni los objetivos, y el estilo no cambia. Solo se añaden en sitios libres los puentes, edificios y estructuras que faltan o no se ven (mirando la referencia). Cada añadido lleva su captura de antes y después, sin bajar FPS en el teléfono.

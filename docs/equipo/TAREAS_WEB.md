@@ -2446,3 +2446,5 @@ Si Grok anota aquí cosas de juego por ese cambio (minimapa, iconos, colores del
 3. **Lo que existe pero está escondido u olvidado** (una bandera apagada, sin cargar, enterrado): actívalo si está terminado y no rompe pruebas.
 4. Capturas de antes y después. Las 12 en verde y publica.
 Grok hace lo mismo con GPU real desde la Mac. Cruzad los datos en `MAPA_REFERENCIA.md`: tú los datos y la escena, Grok lo que se ve y el rendimiento.
+
+✅ **Decisión de Kelvin (18-nov): DEJAR EL MAPA COMO ESTÁ Y AGREGAR LO QUE FALTA.** No se mueve el río, ni las ciudades, ni los caminos, ni los objetivos, y el estilo no cambia. Solo se añaden en sitios libres los puentes, edificios y estructuras que faltan o no se ven (mirando la referencia). Cada añadido lleva su captura de antes y después, sin bajar FPS en el teléfono.
