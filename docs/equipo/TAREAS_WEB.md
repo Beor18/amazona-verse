@@ -2456,3 +2456,5 @@ Grok hace lo mismo con GPU real desde la Mac. Cruzad los datos en `MAPA_REFERENC
 📣 Claude web B · PUBLICO YO AHORA main (32c8a871): PULIR 7 ronda de noche 2 (Ruptura, En familia, encuadre de «¡Mira lo que hice!», «¡Yo también salgo!»). Baterías en verde, 0 errores.
 
 📣 Claude web B · PUBLICO YO AHORA main (04947a9): tanda
+
+📣 Claude web B · PUBLICADO 04947a9 en 7f956b9: 12/12, md5 de juego/index.html igual que la web. Entra: tanda
