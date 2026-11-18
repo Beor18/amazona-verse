@@ -94,13 +94,18 @@
       al(rupt[0], () => { G.camara.shake(0.6, 1.2); G.audio.play('zzzt'); if (A) A.ruptura(); });
       al(rupt[1], () => { G.audio.play('onda'); if (A) A.negro(900); });
       // AP1: la apertura se salta con cualquier tecla o con el botón «Saltar» (táctil, 44 px); el final es el mismo en los dos casos
-      let hecho = false, btn = null, finVigia = null;
+      let hecho = false, btn = null, finVigia = null, avisoInicio = null;
       const soltar = () => { removeEventListener('keydown', alTeclear, true); if (finVigia) { finVigia(); finVigia = null; } if (btn) btn.remove(); btn = null; };
       const terminar = (saltada) => {
         if (hecho) return; hecho = true; soltar();
         if (saltada) { G.dialogo.cancelarLibre(); if (A) A.fin(); } else if (A) A.claro(2200);
         const llama = 'La Gran Ruptura dañó el taller. ¡Iguaca te llama desde ' + (G.c.luma ? G.c.luma.donde() : 'la copa del flamboyán') + '! Despega y pósate a su lado.';
         G.ui.toast(llama, 3200, { fijo: true }); // de una sola vez: la cola llena no lo tira
+        // PULIR 7 (ronda 2): es { fijo }, así que volvía a la cola cada vez que un diálogo lo apartaba y salía con el paso 0 ya hecho
+        // (tres veces más tras hablar con Iguaca, y tapaba las instrucciones de En familia). En cuanto el paso «luma» queda atrás
+        // (o la partida cargada ya lo tiene), se quita de la pantalla y de la cola.
+        avisoInicio = llama;
+        if (G.ui.quitarAviso) { const vigiaAviso = () => { if (G.S.step >= 1) { G.ui.quitarAviso(llama); G.off('update', vigiaAviso); } }; G.on('update', vigiaAviso, 83); }
         // T30: ya no se repite a los 2,6 s. Con la cola de avisos (T2) el de «Lugares descubiertos» espera detrás y no la tapa,
         // y repetirla la dejaba muchos segundos en pantalla
       };
@@ -118,7 +123,7 @@
         G.on('update', vigia, 87); finVigia = () => G.off('update', vigia);
       }
       G.dialogo.say([...cap, ...tal, ...rupt], () => terminar(false), { libre: true });
-      return { saltar: () => terminar(true) }; // para las pruebas
+      return { saltar: () => terminar(true), get aviso() { return avisoInicio; } }; // para las pruebas
     },
 
     preparar(G) {
