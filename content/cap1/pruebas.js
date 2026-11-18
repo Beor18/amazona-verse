@@ -699,6 +699,14 @@
     dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
     check('Apertura: cualquier tecla la salta: sin bocadillos, sin capas, sin botón y con el aviso de Iguaca', !G.dialogo.activo() && !fade() && !document.getElementById('c1-ruptura') && !document.getElementById('c1-saltar') && !!ap1 && /Iguaca te llama/.test($('toast').textContent));
     check('Revisión T2, ronda 4: el aviso «Iguaca te llama» es de una sola vez ({ fijo }: la cola llena no lo tira)', (c => (/Iguaca te llama/.test(c.actual || '') && c.fijo === true) || c.cola.some((t, i) => /Iguaca te llama/.test(t) && c.fijos[i]))(G.ui.colaTest()), JSON.stringify(G.ui.colaTest())); // en pantalla o esperando (apartado)
+    { // PULIR 7 (ronda 2): el aviso fijo del arranque no vuelve cuando el paso «luma» ya está hecho (salía tres veces más tras hablar con Iguaca)
+      const st0 = S.step, txt = ap1 && ap1.aviso, hay = () => { const c = G.ui.colaTest(); return (c.actual === txt) || c.cola.includes(txt); };
+      const antes = !!txt && hay();
+      S.step = 1; tick(0.05); tick(0.05);
+      const fuera = !hay(), tt = $('toast'), noSeVe = tt.hidden || tt.textContent !== txt;
+      S.step = st0;
+      check('PULIR 7 r2 · el aviso «Iguaca te llama» se quita de la pantalla y de la cola en cuanto el paso «luma» queda atrás', antes && fuera && noSeVe, JSON.stringify({ antes, fuera, noSeVe }));
+    }
     G.quiet = true; G.c.apertura.fin();
     G.quiet = true;
     useAt('transmisor');
