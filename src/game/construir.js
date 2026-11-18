@@ -924,7 +924,7 @@
       sonar('unlock');
       const e = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
       const html = `<b>${e(TXT_OBRA.quien)}</b> <span>${e(VIS.frase)}</span> <button type="button" class="btn" data-cl-mi-obra>${e(TXT_OBRA.foto)}</button>`;
-      if (G.ui && G.ui.toastHTML) G.ui.toastHTML(html, 6500); else aviso(VIS.frase);
+      if (G.ui && G.ui.toastHTML) G.ui.toastHTML(html, 6500, { ya: true }); else aviso(VIS.frase);
     }
     function finVisita() {
       if (VIS.sp) { if (VIS.sp.parent) VIS.sp.parent.remove(VIS.sp); VIS.sp = null; } // el material es el de Iguaca: no se libera
