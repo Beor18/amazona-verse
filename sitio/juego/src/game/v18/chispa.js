@@ -148,7 +148,10 @@ window.AVV18Chispa = function (G) {
         // tmg · teléfono en horizontal (390 px de alto): el panel centrado tapaba a Vittata y Diario/Gestos, y «Salir» caía encima de Diario.
         // Va arriba a la izquierda (columna libre sobre el joystick), compacto, y el aviso a su derecha
         '@media (orientation:landscape) and (max-height:520px){#v18-chispa{top:calc(env(safe-area-inset-top,0px) + 8px);left:max(12px,env(safe-area-inset-left,0px));right:auto;margin:0;width:min(300px,36vw);min-width:0;padding:6px 10px}#v18-chispa .vc-n{font-size:calc(30px * var(--fs-k,1));line-height:1}#v18-chispa .vc-l{font-size:calc(15px * var(--fs-k,1));flex-wrap:wrap;justify-content:center;column-gap:8px;row-gap:0}#v18-chispa .vc-m{font-size:calc(13px * var(--fs-k,1))}#v18-chispa .vc-k{margin-top:2px;row-gap:2px}#v18-chispa kbd{padding:2px 5px}#v18-chispa.fin .vc-n{font-size:calc(22px * var(--fs-k,1))}' +
-        'body.v18-chispa-on #toast{left:calc(max(12px,env(safe-area-inset-left,0px)) + min(300px,36vw) + 12px);right:max(12px,env(safe-area-inset-right,0px));max-width:none;top:calc(env(safe-area-inset-top,0px) + 8px);bottom:auto}}'; // W29a: más compacto, para que el aviso (bajo el minimapa) no tape la última fila
+        'body.v18-chispa-on #toast{left:calc(max(12px,env(safe-area-inset-left,0px)) + min(300px,36vw) + 12px);right:max(12px,env(safe-area-inset-right,0px));max-width:none;top:calc(env(safe-area-inset-top,0px) + 8px);bottom:auto}}' +
+        // PULIR 7: teléfono en vertical: el aviso de salida (bajo el minimapa) tapaba la cuenta 3-2-1 y «Banderín 1/4». Durante la carrera
+        // va justo debajo del panel (--vc-bajo lo mide un ResizeObserver, sin cálculo por cuadro); en el resultado, como antes
+        '@media (max-width:760px) and (orientation:portrait){body.v18-chispa-on:not(:has(#v18-chispa.fin)) #toast{top:calc(var(--vc-bajo,calc(env(safe-area-inset-top,0px) + 300px)) + 8px) !important;bottom:auto !important}}'; // W29a: más compacto, para que el aviso (bajo el minimapa) no tape la última fila
       document.head.appendChild(st);
     }
     const el = document.createElement('div'); el.id = 'v18-chispa'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
@@ -162,6 +165,9 @@ window.AVV18Chispa = function (G) {
     bx.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cancelar('sale'); });
     bx.addEventListener('click', e => { if (e.detail !== 0) return; e.preventDefault(); cancelar('sale'); });
     document.body.appendChild(el);
+    try { // PULIR 7: dónde acaba el panel, para poner el aviso debajo (solo cambia cuando el panel cambia de tamaño)
+      new ResizeObserver(() => { if (el.hidden) return; const y = Math.round(el.getBoundingClientRect().bottom); if (y > 0) document.body.style.setProperty('--vc-bajo', y + 'px'); }).observe(el);
+    } catch (e) { /* sin ResizeObserver: el aviso usa la altura por defecto */ }
     const q = c => el.querySelector(c);
     hud = { el, t: q('.vc-t'), m: q('.vc-m'), n: q('.vc-n'), p: q('.vc-p'), s: q('.vc-s'), c: q('.vc-c'), r: q('.vc-r'), k: q('.vc-k'), pi: q('.vc-pi'), cache: {} };
     hud.t.textContent = TXT.nombre;
@@ -354,6 +360,12 @@ window.AVV18Chispa = function (G) {
     if (!activa()) return null;
     if (A.fase === 'cuenta' || A.fase === 'carrera') { const p = RUTA[A.sig]; return { x: p.x, z: p.z, nombre: TXT.siguiente }; }
     return { x: SITIO.salida.x, z: SITIO.salida.z, nombre: TXT.nombre };
+  };
+  // PULIR 7: el objetivo del minimapa (estrella y distancia) durante la carrera es el banderín naranja; fuera de ella, nada
+  const objetivo = () => {
+    if (!activa() || (A.fase !== 'cuenta' && A.fase !== 'carrera')) return null;
+    const p = RUTA[Math.max(0, Math.min(RUTA.length - 1, A.sig | 0))];
+    return { x: p.x, z: p.z, reto: true };
   };
   const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.punto, TXT.meta, TXT.siguiente, TXT.tiempo, TXT.record, TXT.gag, TXT.nuevo, TXT.xp, TXT.lejos, TXT.salir,
     TXT.metaTxt, TXT.rival, TXT.rivalMeta, TXT.kCorrer, TXT.kRapido, TXT.kVolar, TXT.kAun, TXT.pDelante, TXT.pDelanteT, TXT.pMapa, TXT.fGana, TXT.fPierde, TXT.fTiempo, TXT.fOtra].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.pierde);
@@ -575,8 +587,13 @@ window.AVV18Chispa = function (G) {
       check('13 · Andando (sin Mayús) también se gana; la XP es una sola vez: otra victoria (y pagarXP tras recargar) no la repite', g2 && g2.ultimo && g2.ultimo.gana && pagarXP() === 0 && xpDado.length === 1 && record().ganadas === 2, JSON.stringify(xpDado) + ' · andando ' + (g2 && g2.ultimo && g2.ultimo.ms) + ' ms');
       // 14 · alejarse cancela; durante la carrera el minimapa marca el siguiente banderín
       ir(SITIO.salida.x, SITIO.salida.z); empezar({ forzar: true }); correr(CUENTA_S + 0.2);
-      const mmC = mapa();
+      const mmC = mapa(), obC = objetivo();
       ir(SITIO.salida.x + R_SALE + 10, SITIO.salida.z); correr(0.1);
+      const obF = objetivo();
+      // PULIR 7: la estrella del minimapa (objetivo) es el banderín naranja en la carrera y nada fuera de ella; el aviso va bajo el panel en el teléfono
+      const cssC = (document.getElementById('v18-chispa-css') || {}).textContent || '';
+      check('14b · PULIR 7: en carrera objetivo() es el banderín actual (la estrella y la distancia del minimapa) y fuera de ella null; en el teléfono el aviso va bajo el panel',
+        obC && Math.hypot(obC.x - RUTA[0].x, obC.z - RUTA[0].z) < 0.1 && obF === null && /--vc-bajo/.test(cssC) && /orientation:portrait/.test(cssC), JSON.stringify({ obC, obF }));
       check('14 · En carrera el minimapa marca el banderín siguiente; alejarse > 70 m cancela sin contar partida', mmC && mmC.nombre === TXT.siguiente && Math.hypot(mmC.x - RUTA[0].x, mmC.z - RUTA[0].z) < 0.1 && A.fase === 'nada' && record().jugadas === 3 && toasts.includes(TXT.lejos));
       cerrar();
       // 17 · pul3 (QA V18.3): también en escritorio el panel de misiones de la historia (#quest) se oculta durante la carrera y vuelve al
@@ -646,6 +663,6 @@ window.AVV18Chispa = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18chispa = { ID, SITIO, RUTA, V_CHISPA, XP_GANAR, empezar, cancelar, invitar, paso, record, pagarXP, mapa, textos, teclado, estado: () => A, test };
+  G.v18chispa = { ID, SITIO, RUTA, V_CHISPA, XP_GANAR, empezar, cancelar, invitar, paso, record, pagarXP, mapa, objetivo, textos, teclado, estado: () => A, test };
   return G.v18chispa;
 };

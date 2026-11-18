@@ -30,7 +30,17 @@ AVE.module('creador', function (G) {
     b: ['Azul', 'Verde', 'Veloz', 'Valiente', 'Feliz', 'Alegre', 'Brillante', 'Gentil', 'Tropical', 'Solar', 'del Río', 'del Monte', 'del Yunque', 'de la Bahía', 'del Mar'],
   }, G.pack.nombres);
   const nombreDe = (a, b) => a + ' ' + b;
-  const esNombreDeLista = n => typeof n === 'string' && NOMBRES.a.some(a => n.startsWith(a + ' ') && NOMBRES.b.includes(n.slice(a.length + 1)));
+  // PULIR 7: los nombres de la lista se reconocen sin tildes ni mayúsculas («coral del rio» = «Coral del Río»)
+  const sinTilde = t => String(t == null ? '' : t).normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const canonDeLista = n => {
+    if (typeof n !== 'string') return null;
+    const k = sinTilde(n);
+    for (const a of NOMBRES.a) for (const b of NOMBRES.b) if (sinTilde(nombreDe(a, b)) === k) return nombreDe(a, b);
+    return null;
+  };
+  const esNombreDeLista = n => !!canonDeLista(n);
+  // Palabras de aventura de las listas (sin «de», «del», «la»): con una de ellas, un nombre de 2 o 3 palabras no es un apellido
+  const PALABRAS_AVENTURA = new Set(NOMBRES.a.concat(NOMBRES.b).join(' ').split(' ').map(sinTilde).filter(w => w.length > 3));
   const nombreAzar = (semilla) => {
     const R = semilla != null ? G.util.rng(semilla) : Math.random;
     return nombreDe(NOMBRES.a[Math.floor(R() * NOMBRES.a.length)], NOMBRES.b[Math.floor(R() * NOMBRES.b.length)]);
@@ -57,11 +67,15 @@ AVE.module('creador', function (G) {
     const t = String(raw || '').trim();
     if (/\b(me llamo|mi nombre|my name is|my name|i am called)\b/i.test(t)) return 'No escribas «me llamo». ' + propuesta();
     const palabras = t.split(/[\s'-]+/).filter(p => /\p{L}/u.test(p));
-    if (palabras.length >= 2) return 'Un solo nombre, sin apellido. ' + propuesta();
+    // PULIR 7: de 1 a 3 palabras («Coqui Veloz», «Ola de la Bahía»). Para no dejar pasar nombre y apellido (DECISION_LOG
+    // 28-oct, datos personales), con 2 o 3 palabras una tiene que ser de aventura (de las listas del dado).
+    if (palabras.length > 3) return 'Hasta 3 palabras. ' + propuesta();
+    if (palabras.length >= 2 && !palabras.some(w => PALABRAS_AVENTURA.has(sinTilde(w)))) return 'Sin apellidos: junta tu nombre con una palabra de aventura, como «Veloz». ' + propuesta();
     const norm = letrasDe(t);
-    if (contiene(norm, MALAS)) return 'Ese nombre no suena bien por aquí. ' + propuesta();
-    if (contiene(norm, MARCAS)) return 'Ese nombre es de una marca. ' + propuesta();
-    if (!/^[\p{L}]{3,14}$/u.test(t)) return 'De 3 a 14 letras, sin números. ' + propuesta();
+    const trozos = palabras.map(letrasDe);
+    if (contiene(norm, MALAS) || trozos.some(w => contiene(w, MALAS))) return 'Ese nombre no suena bien por aquí. ' + propuesta();
+    if (contiene(norm, MARCAS) || trozos.some(w => contiene(w, MARCAS))) return 'Ese nombre es de una marca. ' + propuesta();
+    if (palabras.length === 1 ? !/^[\p{L}]{3,14}$/u.test(t) : !(/^[\p{L}]+( [\p{L}]+){1,2}$/u.test(t.replace(/\s+/g, ' ')) && t.replace(/\s+/g, '').length <= 20)) return 'De 3 a 14 letras, sin números. ' + propuesta();
     return null;
   }
   function debeReemplazarNombre(p) {
@@ -294,8 +308,43 @@ AVE.module('creador', function (G) {
     thumbCache[key] = cv.toDataURL('image/png');
     return thumbCache[key];
   }
+  // PULIR 6 (carga): las ranuras salen ya, con un hueco transparente donde va cada miniatura que no está en caché, y las
+  // miniaturas se dibujan después, una por tarea, y solo con las ranuras a la vista. Antes se renderizaban las ~17 seguidas
+  // (WebGL + toDataURL) en cuanto arrancaba una partida nueva, con el creador corto (sin ranuras) detrás de la portada: un
+  // bloqueo de ~23 s de CPU en un móvil lento. La imagen es la misma (accessoryThumb no cambia).
+  const HUECO = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  let slotsGen = 0, pendientes = [], obsSlots = null, rellenando = null;
+  let oyePortada = false;
+  const slotsVisibles = () => {
+    const el = $('p-slots'), portada = $('title');
+    return !!el && !$('creator').hidden && el.getClientRects().length > 0 && !(portada && portada.open);
+  };
+  const ceder = () => new Promise(r => (window.requestIdleCallback ? requestIdleCallback(() => r(), { timeout: 120 }) : setTimeout(r, 0)));
+  // Una sola tanda a la vez: si llega otra renderSlots mientras tanto, la tanda en marcha sigue con las ranuras nuevas y la promesa
+  // que se devuelve es la suya (se cumple cuando no queda ninguna miniatura, o cuando se pausa porque las ranuras no se ven)
+  function rellenarMiniaturas() {
+    if (rellenando) return rellenando;
+    rellenando = (async () => {
+      while (pendientes.length) {
+        if (!slotsVisibles()) { // se sigue cuando las ranuras se vean (ResizeObserver: display:none → visible)
+          const sigue = () => { if (pendientes.length && slotsVisibles()) rellenarMiniaturas(); };
+          if (!obsSlots && window.ResizeObserver) { obsSlots = new ResizeObserver(sigue); obsSlots.observe($('p-slots')); }
+          if (!oyePortada && $('title')) { oyePortada = true; $('title').addEventListener('close', () => setTimeout(sigue, 0)); }
+          return;
+        }
+        await ceder();
+        const t = pendientes.shift();
+        if (!t || t.gen !== slotsGen) continue;
+        let src = null;
+        try { src = await accessoryThumb(t.id, t.color, t.style); } catch (e) { src = null; }
+        if (src && t.gen === slotsGen && t.img.isConnected) t.img.src = src;
+      }
+    })().finally(() => { rellenando = null; }); // .finally corre después de esta asignación aunque la tanda acabe al momento
+    return rellenando;
+  }
   // Una fila por ranura: "Nada" + una miniatura por pieza; la pieza elegida muestra sus estilos y colores
   async function renderSlots() {
+    const gen = ++slotsGen, faltan = [];
     const look = draftLook, lockOf = G.misiones.lockOf;
     const rows = [];
     for (const slot of C3.SLOTS) {
@@ -308,8 +357,10 @@ AVE.module('creador', function (G) {
       for (const d of defs) {
         const mine = cur && cur.id === d.id;
         const lk = lockOf(d.id);
-        const img = await accessoryThumb(d.id, mine ? cur.color : d.colors[0], mine ? cur.style : d.styles && d.styles[0][0]);
-        thumbs.push(`<button class="thumb${lk ? ' locked' : ''}" type="button" data-id="${d.id}" aria-pressed="${!!mine}" aria-label="${d.name}${lk ? ' (bloqueado)' : ''}" title="${d.name}"${lockAttr(lk)}><img src="${img}" alt="">${lk ? '<span class="lock">Bloq.</span>' : ''}</button>`);
+        const color = mine ? cur.color : d.colors[0], style = mine ? cur.style : d.styles && d.styles[0][0];
+        const enCache = thumbCache[d.id + color + (style || '')];
+        if (!enCache) faltan.push({ id: d.id, color, style });
+        thumbs.push(`<button class="thumb${lk ? ' locked' : ''}" type="button" data-id="${d.id}" aria-pressed="${!!mine}" aria-label="${d.name}${lk ? ' (bloqueado)' : ''}" title="${d.name}"${lockAttr(lk)}><img src="${enCache || HUECO}" alt=""${enCache ? '' : ' data-mini="' + (faltan.length - 1) + '"'}>${lk ? '<span class="lock">Bloq.</span>' : ''}</button>`);
       }
       const styles = curDef && curDef.styles ? `<div class="styles">${curDef.styles.map(([s, n]) => { const lk = lockOf(curDef.id, s); return `<button class="chip${lk ? ' locked' : ''}" type="button" data-style="${s}" aria-pressed="${cur.style === s}"${lockAttr(lk)}>${n}${lk ? ' (bloq.)' : ''}</button>`; }).join('')}</div>` : '';
       const swatches = curDef ? `<div class="swatches">${curDef.colors.map(c => { const lk = lockOf(curDef.id, undefined, c); return `<button class="swatch${lk ? ' locked' : ''}" type="button" data-color="${c}" aria-pressed="${cur.color === c}" aria-label="Color ${c}${lk ? ' (bloqueado)' : ''}" style="background:${c}"${lockAttr(lk)}></button>`; }).join('')}</div>` : '';
@@ -321,6 +372,9 @@ AVE.module('creador', function (G) {
         </div></div>`);
     }
     $('p-slots').innerHTML = rows.join('');
+    const imgs = $('p-slots').querySelectorAll('img[data-mini]');
+    pendientes = Array.from(imgs, img => Object.assign({ gen, img }, faltan[+img.dataset.mini]));
+    return rellenarMiniaturas();
   }
   function changeLook(mutator) {
     mutator(draftLook);
@@ -354,7 +408,9 @@ AVE.module('creador', function (G) {
         + '#creator .name-pick select{display:none !important}'
         + '#creator #p-name{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);border:0}'
         + '#creator #p-name-azar{grid-column:1;width:100%;min-height:var(--tap);height:auto;padding:0 var(--sp-4);border-radius:var(--r-md);white-space:nowrap}'
-        + '#creator #p-name-libre{width:100%;min-height:var(--tap);margin-top:0;font:700 var(--fs-xl)/1.2 var(--font-display)}';
+        + '#creator #p-name-libre{width:100%;min-height:var(--tap);margin-top:0;font:700 var(--fs-xl)/1.2 var(--font-display)}'
+        // PULIR 7: el aviso del nombre, grande y amable (antes era rojo y pequeño y no se veía)
+        + '#creator #p-error{font:700 var(--fs-md)/1.35 var(--font-display);color:#3a2408;background:#ffe7a8;border:3px solid #c98a1c;border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);margin:var(--sp-2) 0}';
       document.head.appendChild(st);
     }
     for (const id of ['p-name-a', 'p-name-b']) {
@@ -380,7 +436,10 @@ AVE.module('creador', function (G) {
     libre.setAttribute('aria-label', 'Tu nombre, de 3 a 14 letras');
     $('p-name').insertAdjacentElement('beforebegin', libre);
   }
+  // PULIR 7: el aviso del nombre va justo debajo del campo (antes quedaba al final del panel, tapado por el botón fijo en el teléfono)
+  function avisoJuntoAlNombre() { const e = $('p-error'), n = $('p-name'); if (e && n && n.nextElementSibling !== e) n.insertAdjacentElement('afterend', e); }
   montarNombreLibre();
+  avisoJuntoAlNombre();
   function nombreElegido() { return nombreDe($('p-name-a').value, $('p-name-b').value); }
   function nombreEnPantalla() {
     const libre = $('p-name-libre') && $('p-name-libre').value.trim();
@@ -454,8 +513,11 @@ AVE.module('creador', function (G) {
   function close() { $('creator').hidden = true; if (window.AVShowcase) window.AVShowcase.unmount(); }
   // Devuelve null si se guardó, o el texto del error
   function saveCharacter(draft) {
-    const d = draft || { name: nombreEnPantalla(), look: draftLook };
-    if (esNombreDeLista(d.name)) {
+    const d = Object.assign({}, draft || { name: nombreEnPantalla(), look: draftLook });
+    d.name = String(d.name == null ? '' : d.name).replace(/\s+/g, ' ').trim();
+    const canon = canonDeLista(d.name);
+    if (canon) d.name = canon; // «trueno azul» se guarda como «Trueno Azul»
+    if (canon) {
       if (!NAME_OK.test(d.name) || textoSeguro(d.name)) return 'Elige un nombre de aventurero de las listas.';
     } else {
       const mot = filtroNombreLibre(d.name);
@@ -473,7 +535,22 @@ AVE.module('creador', function (G) {
     if (firstTime && !G.quiet && G.pack.inicio) setTimeout(() => G.pack.inicio(G), 300);
     return null;
   }
-  $('p-save').onclick = () => { const err = saveCharacter(); if (err) { $('p-error').textContent = err; $('p-error').hidden = false; } };
+  $('p-save').onclick = () => {
+    const err = saveCharacter(); if (!err) return;
+    $('p-error').textContent = err; $('p-error').hidden = false;
+    try { $('p-error').scrollIntoView({ block: 'nearest', behavior: 'auto' }); } catch (e) { /* sin scroll */ }
+  };
+  // PULIR 7: al escribir o tirar el dado el aviso se va; Enter en el nombre es como pulsar «¡A jugar!»
+  const borrarAviso = () => { if (!$('p-error').hidden) { $('p-error').hidden = true; $('p-error').textContent = ''; } };
+  if ($('p-name-libre')) {
+    $('p-name-libre').addEventListener('input', borrarAviso);
+    $('p-name-libre').addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || e.isComposing) return;
+      e.preventDefault();
+      $('p-save').click();
+    });
+  }
+  $('p-name-azar').addEventListener('click', borrarAviso);
   $('p-cancel').onclick = () => { if (primera && G.menuModos && G.menuModos.volver && $('title')) G.menuModos.volver(); else close(); };
   $('b-char').onclick = () => open(false);
 
@@ -513,6 +590,17 @@ AVE.module('creador', function (G) {
       ok('Un nombre libre que pasó el filtro no se reemplaza al cargar', debeReemplazarNombre({ created: true, name: 'Coralito' }) === false);
       ok('Un nombre de la lista tampoco se reemplaza', debeReemplazarNombre({ created: true, name: nombreAzar(1) }) === false);
       ok('Un apellido suelto sí se reemplazaría', debeReemplazarNombre({ created: true, name: 'Ana Pérez' }) === true);
+      // PULIR 7: de 1 a 3 palabras, sin tildes ni mayúsculas; nombre y apellido siguen sin pasar
+      ok('PULIR 7 · «Coqui Veloz» escrito a mano se acepta', saveCharacter({ name: 'Coqui Veloz', look: C3.defaultLook() }) === null && S.profile.name === 'Coqui Veloz', S.profile.name);
+      ok('PULIR 7 · «trueno azul» (sin mayúsculas) se guarda como «Trueno Azul»', saveCharacter({ name: '  trueno   azul ', look: C3.defaultLook() }) === null && S.profile.name === 'Trueno Azul', S.profile.name);
+      ok('PULIR 7 · «Coral del Rio» sin tilde es de la lista', esNombreDeLista('Coral del Rio') && saveCharacter({ name: 'Coral del Rio', look: C3.defaultLook() }) === null && S.profile.name === 'Coral del Río', S.profile.name);
+      ok('PULIR 7 · Tres palabras de la sugerencia se aceptan', filtroNombreLibre('Ola de la Bahia') === null || esNombreDeLista('Ola de la Bahia'));
+      const cuatro = filtroNombreLibre('Rayo Azul Veloz Feliz');
+      ok('PULIR 7 · Cuatro palabras no', typeof cuatro === 'string' && /Hasta 3/.test(cuatro), cuatro);
+      const ap = filtroNombreLibre('Ana Pérez');
+      ok('PULIR 7 · Nombre y apellido siguen sin pasar (con un aviso que explica qué hacer)', typeof ap === 'string' && /Sin apellidos/.test(ap), ap);
+      const mala2 = filtroNombreLibre('Rayo p3ndej0');
+      ok('PULIR 7 · Una mala palabra dentro de dos palabras se rechaza', typeof mala2 === 'string' && /no suena bien/.test(mala2), mala2);
       const ops = opcionesEspecie(), ids = new Set(ops.map(o => o.id));
       const ES = window.AV_ESPECIES;
       const conPiel = ES ? ES.especies.concat(ES.extintas || []).filter(e => e.piel && AVE.pieles.tiene(e.id)) : [];
@@ -532,6 +620,23 @@ AVE.module('creador', function (G) {
         ok('Los desplegables no se ven', $('p-name-a').hidden && $('p-name-b').hidden);
         $('p-name-azar').click();
         ok('El dado escribe un nombre de la lista en el campo', esNombreDeLista($('p-name-libre').value) && $('p-name').textContent === $('p-name-libre').value, $('p-name-libre').value);
+        // PULIR 7: el aviso se borra al escribir y Enter equivale a «¡A jugar!»
+        const err = $('p-error'), errOculto = err.hidden;
+        err.textContent = 'aviso de prueba'; err.hidden = false;
+        $('p-name-libre').value = 'Coralit';
+        $('p-name-libre').dispatchEvent(new Event('input', { bubbles: true }));
+        ok('PULIR 7 · El aviso se borra al escribir', err.hidden, err.textContent);
+        err.hidden = false; err.textContent = 'x';
+        const fsV = parseFloat(getComputedStyle(err).fontSize) || 0;
+        err.hidden = errOculto; err.textContent = '';
+        ok('PULIR 7 · El aviso se lee grande (16 px o más) y va justo debajo del nombre', fsV >= 16 && $('p-name').nextElementSibling === err, fsV + ' px');
+        const guardar = $('p-save').onclick; let pulsado = 0;
+        $('p-save').onclick = () => { pulsado++; };
+        try {
+          $('p-name-libre').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+          $('p-name-libre').dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true, cancelable: true }));
+        } finally { $('p-save').onclick = guardar; }
+        ok('PULIR 7 · Enter en el nombre pulsa «¡A jugar!» (y otra tecla no)', pulsado === 1, pulsado);
       }
       // T17: la primera vez el creador tiene «Volver», que lleva a la portada (y el creador sigue detrás)
       const portada = $('title');
@@ -546,6 +651,21 @@ AVE.module('creador', function (G) {
         ok('T17 · Desde el juego, el botón vuelve a ser «Cancelar»', !bc.hidden && bc.textContent !== 'Volver', bc.textContent);
         close(); primera = false;
         if (!abiertaP && portada.open) { portada.returnValue = ''; portada.close(); }
+      }
+      { // PULIR 6: las ranuras salen sin esperar a las miniaturas; las miniaturas llegan después, una por tarea
+        const cr = $('creator'), corto = cr.classList.contains('creator-corto'), oculto = cr.hidden, portada = $('title');
+        const abiertaP = !!(portada && portada.open); if (abiertaP) { portada.returnValue = ''; portada.close(); }
+        cr.classList.remove('creator-corto'); cr.hidden = false;
+        if (!draftLook) draftLook = profileLook(S.profile);
+        const t0 = performance.now(), pr = renderSlots(), dt = performance.now() - t0;
+        const botones = $('p-slots').querySelectorAll('button.thumb[data-id]').length;
+        ok('PULIR 6 · Las ranuras de ropa salen ya, sin esperar a las miniaturas', botones > 0 && dt < 400, botones + ' piezas en ' + Math.round(dt) + ' ms');
+        await Promise.race([pr, new Promise(r => setTimeout(r, 90000))]);
+        const imgs = [...$('p-slots').querySelectorAll('button.thumb[data-id] img')], llenas = imgs.filter(i => i.getAttribute('src') !== HUECO).length;
+        ok('PULIR 6 · Después se dibuja cada miniatura (la misma imagen de la caché)', G.actores.failed3D || (imgs.length > 0 && llenas === imgs.length && imgs.every(i => Object.values(thumbCache).includes(i.getAttribute('src')))), llenas + '/' + imgs.length + (llenas < imgs.length ? ' · visibles ' + slotsVisibles() + ', pendientes ' + pendientes.length : ''));
+        if (corto) cr.classList.add('creator-corto');
+        cr.hidden = oculto;
+        if (abiertaP && portada && !portada.open) portada.show();
       }
       { // PULIR 5: el foco al abrir es «¡A jugar!» en táctil (sin teclado del móvil que tape) y el nombre con teclado y ratón
         const f = focoCreador(), tactil = tactilCreador();

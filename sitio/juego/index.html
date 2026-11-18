@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="ave:ktx2" content="assets/models/edificios/tex_hd/hd_ancient_lq.jpg assets/models/edificios/tex_hd/hd_savage_lq.jpg assets/models/edificios/tex_hd/hd_ancient_lq1024.jpg assets/models/edificios/tex_hd/hd_savage_lq1024.jpg">
 <meta name="ave:sin-glb" content="1">
-<meta name="ave:build" content="HEAD f36f2fff7cb7">
+<meta name="ave:build" content="HEAD 52386b64a560">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Amazona Verse</title>
 <link rel="icon" type="image/png" href="assets/vittata.png">
@@ -23,10 +23,13 @@
 <link rel="stylesheet" href="assets/vendor/fonts/fuentes.css">
 <link rel="stylesheet" href="src/ui/tokens.css">
 <link rel="stylesheet" href="src/ui/ui.css">
-<link rel="stylesheet" href="src/ui/criadero.css" data-criadero>
 <link rel="stylesheet" href="src/ui/menu_modos.css">
-<link rel="stylesheet" href="src/ui/que_hacer.css">
-<link rel="stylesheet" href="src/ui/retos_dia.css">
+<!-- PULIR 6 (carga): la imagen de Vittata de la portada baja con prioridad desde aquí (antes empezaba tras los 78 scripts),
+     y las hojas que la portada no usa (criadero, qué hacer, retos del día) ya no frenan el primer pintado -->
+<link rel="preload" as="image" href="assets/vittata.webp" type="image/webp" fetchpriority="high">
+<link rel="stylesheet" href="src/ui/criadero.css" data-criadero media="print" onload="this.media='all'">
+<link rel="stylesheet" href="src/ui/que_hacer.css" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="src/ui/retos_dia.css" media="print" onload="this.media='all'">
 
 <canvas id="game" aria-label="Mundo de Amazona Verse"></canvas>
 
@@ -137,7 +140,7 @@
     <!-- PULIR 5: el enlace para salir del juego va al pie de la portada, no encima de las tarjetas (un toque al azar sacaba al niño) -->
     <p class="title-web"><a href="../" id="t-web">← Página de inicio</a></p>
   </div>
-  <img class="title-hero" src="assets/vittata.png" alt="" width="512" height="512">
+  <picture style="display:contents"><source srcset="assets/vittata.webp" type="image/webp"><img class="title-hero" src="assets/vittata.png" alt="" width="512" height="512" fetchpriority="high" decoding="async"></picture>
   <p class="title-foot">Villa Raíz, Puerto Rico</p>
 </dialog>
 

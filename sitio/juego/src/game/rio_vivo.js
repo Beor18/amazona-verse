@@ -276,8 +276,10 @@ window.AVRioVivo = function (G) {
     const n = nadar(dt);
     // T4a: mientras se pesca (v18/pesca.js) el visor no sale: tapaba el corcho y el río con sus peces de observación
     const pescando = !!(document.body && document.body.classList.contains('v18-pesca-on'));
+    // PULIR 7: construyendo, la píldora del visor se montaba sobre «Acción: colocar» y las piezas: no sale mientras se construye
+    let construyendo = false; try { construyendo = !!(G.construir && G.construir.activo && G.construir.activo()); } catch (e) { /* sin construir */ }
     // Revisión T2: con otra escena en marcha (rescate del pichón, un minijuego, un diálogo…) el visor entero se apaga, no solo su pista
-    const escena = otraEscena(), quiere = !busy && !pescando && !escena && visorPosible();
+    const escena = otraEscena(), quiere = !busy && !pescando && !construyendo && !escena && visorPosible();
     F.visor = escena ? 0 : Math.max(0, Math.min(1, F.visor + (quiere ? dt : -dt) * 3)); // con escena se apaga en el acto (sin fundido)
     F.visorOn = F.visor > 0.5;
     mat.opacity = 0.5 + F.visor * 0.5; mat.depthWrite = F.visorOn;
@@ -409,6 +411,13 @@ window.AVRioVivo = function (G) {
         document.body.classList.add('v18-pesca-on'); ponEn(b.x, lvl + 1.8, b.z, { flying: true, speed: 4 }); simular(0.6); const conPesca = F.visorOn;
         document.body.classList.toggle('v18-pesca-on', pesca0); simular(0.6);
         ok('Pescando, el visor del río no sale (y vuelve al terminar)', !conPesca && F.visorOn, 'pescando ' + conPesca + ' · después ' + F.visorOn);
+      }
+      { // PULIR 7: construyendo, el visor no sale (tapaba «Acción: colocar»); vuelve al dejar de construir
+        const c0 = G.construir; let en = true;
+        G.construir = Object.assign(Object.create(c0 || null), { activo: () => en });
+        try { ponEn(b.x, lvl + 1.8, b.z, { flying: true, speed: 4 }); simular(0.6); const conC = F.visorOn; en = false; simular(0.6);
+          ok('PULIR 7 · Construyendo, el visor del río no sale (y vuelve al terminar)', !conC && F.visorOn, 'construyendo ' + conC + ' · después ' + F.visorOn);
+        } finally { if (c0 === undefined) delete G.construir; else G.construir = c0; }
       }
       { // Revisión T2: con el rescate del pichón (u otro minijuego) en marcha, ni visor ni su aviso «quédate cerca del pez»
         const r0 = G.rescate, av0 = F.avisado, dichos = [], t0 = G.ui.toast;

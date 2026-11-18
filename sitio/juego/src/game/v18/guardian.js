@@ -409,6 +409,12 @@ window.AVV18Guardian = function (G) {
     if (A.fase === 'cuenta' || A.fase === 'circuito') { const p = puertaActual(); return { x: p.x, z: p.z, nombre: TXT.siguiente }; }
     return { x: SITIO.salida.x, z: SITIO.salida.z, nombre: TXT.nombre };
   };
+  // PULIR 7: el objetivo del minimapa durante el circuito es la puerta siguiente; fuera de él, nada
+  const objetivo = () => {
+    if (!activa() || (A.fase !== 'cuenta' && A.fase !== 'circuito')) return null;
+    const p = puertaActual();
+    return p ? { x: p.x, z: p.z, reto: true } : null;
+  };
   const textos = () => { const d = N.def(NPC) || {}, l = [TXT.nombre, TXT.label, TXT.cuenta, TXT.ya, TXT.puerta, TXT.meta, TXT.siguiente, TXT.tiempo, TXT.record, TXT.nuevo, TXT.xp, TXT.lejos, TXT.mirar, TXT.mirarA,
     TXT.metaFin, TXT.kVolar, TXT.kSubir, TXT.kBajar, TXT.tSaltar, TXT.tSubir, TXT.pVolar, TXT.pVolarT, TXT.pAlto, TXT.pAltoT, TXT.pBajo, TXT.pBajoT, TXT.fGana, TXT.fTiempo].concat(TXT.reto, TXT.revancha, TXT.gana, TXT.metaCol);
     for (const e in d.porEstado || {}) l.push(...(d.porEstado[e].dialogo || []));
@@ -652,8 +658,10 @@ window.AVV18Guardian = function (G) {
       check('13 · Otra vuelta completada no repite la XP: pagarXP tras recargar no da nada', g2 && g2.ultimo && g2.ultimo.gana && pagarXP() === 0 && xpDado.length === 1 && record().vueltas === 3, JSON.stringify(xpDado));
       // 14 · alejarse cancela; durante el circuito el minimapa marca la puerta siguiente
       ir(SITIO.salida.x, SITIO.salida.z); empezar({ forzar: true }); correr(CUENTA_S + 0.2);
-      const mmC = mapa();
+      const mmC = mapa(), obC = objetivo();
       volarA({ x: SITIO.puertas[0].x + R_SALE + 12, z: SITIO.puertas[0].z, alt: 4 }); correr(0.1);
+      check('14b · PULIR 7: en circuito objetivo() (estrella y distancia del minimapa) es la puerta siguiente; fuera de él, null',
+        obC && Math.hypot(obC.x - SITIO.puertas[0].x, obC.z - SITIO.puertas[0].z) < 0.1 && objetivo() === null, JSON.stringify(obC));
       check('14 · En circuito el minimapa marca la puerta siguiente; alejarse > 80 m cancela sin contar la vuelta', mmC && mmC.nombre === TXT.siguiente && Math.hypot(mmC.x - SITIO.puertas[0].x, mmC.z - SITIO.puertas[0].z) < 0.1 && A.fase === 'nada' && record().jugadas === 3 && toasts.includes(TXT.lejos));
       cerrar();
       // 17-18 · QA V18.3 (coordinadora): durante el circuito salía a la vez el panel de misiones de la historia (#quest, con su
@@ -726,6 +734,6 @@ window.AVV18Guardian = function (G) {
     return { passed: out.filter(r => r.ok).length, total: out.length, results: out };
   }
 
-  G.v18guardian = { ID, SITIO, RUTA: SITIO.puertas, XP_GANAR, empezar, cancelar, invitar, paso, record, pagarXP, mapa, textos, teclado, estado: () => A, test };
+  G.v18guardian = { ID, SITIO, RUTA: SITIO.puertas, XP_GANAR, empezar, cancelar, invitar, paso, record, pagarXP, mapa, objetivo, textos, teclado, estado: () => A, test };
   return G.v18guardian;
 };

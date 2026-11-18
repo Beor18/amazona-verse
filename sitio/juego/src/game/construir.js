@@ -513,6 +513,8 @@
 
     // ---------- Escena: un InstancedMesh por tipo (se crea solo si la bandera está encendida) ----------
     let grupo = null, mat = null, fantasma = null, matF = null, anillo = null, matsT = null;
+    // PULIR 7: el aro del fantasma (más opaco que la pieza: se distingue de las ya colocadas) y el aro rojo que parpadea en la pieza que choca
+    let matA = null, aroC = null, matC = null;
     const cargadas = {};
     function texturaDe(t) {
       if (!matsT || !geos[t]) return;
@@ -546,18 +548,22 @@
       }
       matF = new THREE.MeshBasicMaterial({ color: lin('#7fd38f'), transparent: true, opacity: 0.5, depthWrite: false });
       fantasma = new THREE.Mesh(geos.nido, matF); fantasma.name = 'construir_fantasma'; fantasma.visible = false; fantasma.renderOrder = 2;
-      anillo = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 24), matF); anillo.rotation.x = -Math.PI / 2; anillo.position.y = 0.04; fantasma.add(anillo);
+      matA = new THREE.MeshBasicMaterial({ color: lin('#7fd38f'), transparent: true, opacity: 0.95, depthWrite: false, depthTest: false });
+      anillo = new THREE.Mesh(new THREE.RingGeometry(0.8, 1.06, 32), matA); anillo.rotation.x = -Math.PI / 2; anillo.position.y = 0.05; anillo.renderOrder = 3; fantasma.add(anillo);
       grupo.add(fantasma);
+      matC = new THREE.MeshBasicMaterial({ color: lin('#ff4a3a'), transparent: true, opacity: 0.9, depthWrite: false, depthTest: false });
+      aroC = new THREE.Mesh(new THREE.RingGeometry(0.85, 1.2, 32), matC); aroC.name = 'construir_choque'; aroC.rotation.x = -Math.PI / 2; aroC.renderOrder = 3; aroC.visible = false; aroC.frustumCulled = false;
+      grupo.add(aroC);
       G.renderer.scene.add(grupo);
     }
     function quitarEscena() {
       if (!grupo) return;
       G.renderer.scene.remove(grupo);
       for (const t of ORDEN) { geos[t].dispose(); delete geos[t]; delete mallas[t]; }
-      anillo.geometry.dispose(); mat.dispose(); matF.dispose();
+      anillo.geometry.dispose(); mat.dispose(); matF.dispose(); matA.dispose(); aroC.geometry.dispose(); matC.dispose();
       for (const m of matsT) if (m !== mat) { if (m.map) m.map.dispose(); m.dispose(); }
       for (const k in cargadas) delete cargadas[k];
-      grupo = mat = matF = fantasma = anillo = matsT = null;
+      grupo = mat = matF = fantasma = anillo = matsT = matA = aroC = matC = null;
     }
     const _o = new THREE.Object3D();
     function pintar() {
@@ -662,12 +668,15 @@
     // ---------- Modo construir: toma la acción mientras está activo (como el del refugio) ----------
     let activo = false, tipo = 'nido', giro = 0, modo0 = null, rejilla = false;
     const historial = [], rehacerPila = [];
+    const COL_F = { bien: lin('#7fd38f'), iman: lin('#ffd27a'), mal: lin('#d6403a') }; // PULIR 7: sin un color nuevo por cuadro
     const vista = { x: 0, z: 0, listo: false };
     const REJ = 1;
     const est = { x: 0, z: 0, r: 0, iman: false, valido: false, motivo: '' };
     const modo = { activo: () => activo, accion: () => colocar(), aviso: () => (est.valido ? 'Acción: colocar la pieza' : est.motivo), verbo: 'Colocar' };
+    let choque = null; // PULIR 7: la pieza con la que choca la última validación («Muy cerca de otra pieza»), para señalarla
     function validar(t, x, z) {
       const T = TIPOS[t];
+      choque = null;
       if (lista.length >= presupuesto()) return 'Ya usaste todas tus piezas. Quita alguna para seguir.';
       if (ctx) {
         if (!enZona(x, z)) return 'Aquí no';
@@ -678,7 +687,7 @@
       }
       const col = (G.fisica && G.fisica.colliders) || [];
       if (col.some(c => c.r > 0 && Math.hypot(x - c.x, z - c.z) < c.r + T.r * 0.5)) return 'Aquí no cabe: choca con algo';
-      if (!T.sobre && lista.some(p => { const w = mundoDe(p); return !TIPOS[p.t].sobre && Math.hypot(x - w.x, z - w.z) < (T.r + TIPOS[p.t].r) * 0.6; })) return 'Muy cerca de otra pieza';
+      if (!T.sobre) { const p = lista.find(q => { const w = mundoDe(q); return !TIPOS[q.t].sobre && Math.hypot(x - w.x, z - w.z) < (T.r + TIPOS[q.t].r) * 0.6; }); if (p) { choque = p; return 'Muy cerca de otra pieza'; } }
       return '';
     }
     // T39 · Encaje con imán: cerca (≤ IMAN m) de un sitio donde la pieza encaja, el fantasma salta ahí, toma el giro que toca y se
@@ -726,7 +735,18 @@
       fantasma.geometry = geos[tipo];
       fantasma.position.set(est.x, ctx ? ctx.piso : H(est.x, est.z), est.z); fantasma.rotation.set(0, est.r * PASO, 0);
       anillo.scale.setScalar(TIPOS[tipo].r);
-      matF.color.copy(lin(!est.valido ? '#d6403a' : est.iman ? '#ffd27a' : '#7fd38f')); // dorado: encaja con imán
+      const col = !est.valido ? COL_F.mal : est.iman ? COL_F.iman : COL_F.bien; // dorado: encaja con imán
+      matF.color.copy(col); matA.color.copy(col);
+      // PULIR 7: el fantasma late un poco (se distingue de las piezas puestas); con «Reducir movimiento», quieto y algo más opaco
+      const quieto = !!(G.renderer && G.renderer.REDUCED), tt = performance.now() / 1000;
+      matF.opacity = quieto ? 0.62 : 0.5 + 0.16 * (0.5 + 0.5 * Math.sin(tt * 5));
+      const pc = !est.valido && choque;
+      aroC.visible = !!pc;
+      if (pc) { // la pieza que estorba: aro rojo que parpadea a sus pies (fijo con «Reducir movimiento»)
+        const w = mundoDe(pc);
+        aroC.position.set(w.x, w.y + 0.06, w.z); aroC.scale.setScalar(TIPOS[pc.t].r);
+        matC.opacity = quieto ? 0.9 : 0.3 + 0.65 * (Math.sin(tt * 9) > 0 ? 1 : 0.25);
+      }
       texturaDe(tipo);
     }
     function colocar() {
@@ -833,6 +853,8 @@
       asegurarEscena(); pintar();
       modo0 = G.interaccion.modo; G.interaccion.modo = modo;
       activo = true; fantasma.visible = true; vista.listo = false;
+      sesion.h0 = historial.length; finVisita();
+      camaraConstruir(true);
       hud(true); actualizar(); pintarHud();
       const primero = hudEl && hudEl.querySelector('button[data-cl-tipo]');
       const enfocarPieza = () => { if (activo && primero && primero.isConnected) try { primero.focus({ preventScroll: true }); } catch (e) { /* */ } };
@@ -840,15 +862,91 @@
       aviso('¡Arma tu rincón! Elige una pieza, gírala y toca Acción para ponerla.', 4200);
       return true;
     }
-    function salir() {
+    function salir(listo) {
       if (!activo) return false;
       activo = false;
       if (fantasma) fantasma.visible = false;
+      if (aroC) aroC.visible = false;
+      camaraConstruir(false);
+      // PULIR 7 · «¡Mira lo que hice!»: al tocar Listo con 3 piezas o más y algo hecho en esta vuelta, Iguaca viene a verlo
+      const obra = hayObra(listo);
       if (G.interaccion.modo === modo) G.interaccion.modo = modo0;
       modo0 = null; verPlantillas(false); hud(false);
-      if (lista.length) aviso('Tu rincón quedó guardado.');
+      if (obra) miraLoQueHice(); else if (lista.length) aviso('Tu rincón quedó guardado.');
       return true;
     }
+    // PULIR 7: cámara del modo (no del motor): más alta y un poco más atrás, para ver a Vittata, el fantasma y la obra a la vez.
+    // Solo cambia el ajuste de siempre (G.camara.CAM, como la pesca y el minigolf); su seguimiento suave hace la transición.
+    const CAM_CONSTRUIR = { height: 5.9, dist: 8.9 };
+    let cam0 = null;
+    function camaraConstruir(on) {
+      const C = G.camara && G.camara.CAM; if (!C) return;
+      if (on && !cam0 && !ctx) { cam0 = {}; for (const k in CAM_CONSTRUIR) cam0[k] = C[k]; Object.assign(C, CAM_CONSTRUIR); }
+      else if (!on && cam0) { for (const k in cam0) if (C[k] === CAM_CONSTRUIR[k]) C[k] = cam0[k]; cam0 = null; }
+    }
+    const sesion = { h0: 0 };
+    const hayObra = listo => listo === true && lista.length >= 3 && historial.length > sesion.h0 && !ctx;
+    // ---------- PULIR 7 · «¡Mira lo que hice!» ----------
+    // Iguaca (su mismo dibujo del mundo, sin arte nuevo) llega volando, se posa encima de la obra y da dos saltitos de alegría;
+    // Vittata hace su gesto Celebrar (el clip del rig). Iguaca dice una frase al azar y el aviso ofrece la foto de la obra (la
+    // Foto de siempre: se guarda en el dispositivo, no se sube). Con «Reducir movimiento» aparece ya posada y sin saltos.
+    // Tono de las frases: pendiente del visto bueno de Kelvin (docs/equipo/TAREAS_WEB.md).
+    const FRASES_IGUACA = ['¡Wepa! Esto aguanta hasta un aguacero… creo.', 'Me quedo a vivir aquí. ¿Tiene hamaca?', '¡Qué obra! Hasta las hormigas se quieren mudar.', 'Lo miro de arriba, lo miro de abajo… ¡me encanta!'];
+    const TXT_OBRA = { quien: 'Iguaca', foto: 'Foto de mi obra' };
+    const VIS = { on: false, t: 0, sp: null, npc: null, vis0: true, de: new THREE.Vector3(), a: new THREE.Vector3(), va: new THREE.Vector3(), frase: '', dicho: false };
+    const DUR = { llega: 1.6, posada: 3.4, va: 1.4 };
+    // Se posa encima de la última pieza puesta (la que acaba de hacer el niño, delante de Vittata y a la vista de la cámara)
+    function cimaDeLaObra(out) {
+      const p = lista[lista.length - 1], w = mundoDe(p), g = geos[p.t];
+      if (g && !g.boundingBox) g.computeBoundingBox();
+      return out.set(w.x, w.y + (g && g.boundingBox ? g.boundingBox.max.y : 1) + 0.9, w.z);
+    }
+    function miraLoQueHice(forzar) {
+      if ((G.quiet && !forzar) || !lista.length || !grupo) return false;
+      finVisita();
+      const n = G.actores && G.actores.npc && G.actores.npc('luma');
+      VIS.frase = FRASES_IGUACA[Math.floor(Math.random() * FRASES_IGUACA.length)]; VIS.dicho = false;
+      cimaDeLaObra(VIS.a);
+      if (n && n.sp) {
+        if (n.sp.userData.cargarMapa) { n.sp.userData.cargarMapa(); delete n.sp.userData.cargarMapa; } // su dibujo de siempre
+        VIS.sp = new THREE.Sprite(n.sp.material); VIS.sp.name = 'construir_iguaca'; VIS.sp.scale.copy(n.sp.scale).multiplyScalar(0.8); VIS.sp.renderOrder = 4; VIS.sp.frustumCulled = false;
+        VIS.npc = n; VIS.vis0 = n.sp.visible; n.sp.visible = false; if (n.sh) n.sh.visible = false; // una sola Iguaca a la vez
+        VIS.de.set(VIS.a.x - 10, VIS.a.y + 9, VIS.a.z - 6); VIS.va.set(VIS.a.x + 10, VIS.a.y + 11, VIS.a.z - 8);
+        VIS.sp.position.copy(G.renderer && G.renderer.REDUCED ? VIS.a : VIS.de);
+        grupo.add(VIS.sp);
+      }
+      VIS.on = true; VIS.t = (G.renderer && G.renderer.REDUCED) || !VIS.sp ? DUR.llega : 0;
+      return true;
+    }
+    function decirObra() {
+      VIS.dicho = true;
+      try { if (G.actores && G.actores.playEmote && !G.fisica.MOVE.flying) G.actores.playEmote('celebrar'); } catch (e) { /* sin gesto */ }
+      sonar('unlock');
+      const e = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const html = `<b>${e(TXT_OBRA.quien)}</b> <span>${e(VIS.frase)}</span> <button type="button" class="btn" data-cl-mi-obra>${e(TXT_OBRA.foto)}</button>`;
+      if (G.ui && G.ui.toastHTML) G.ui.toastHTML(html, 6500, { ya: true }); else aviso(VIS.frase);
+    }
+    function finVisita() {
+      if (VIS.sp) { if (VIS.sp.parent) VIS.sp.parent.remove(VIS.sp); VIS.sp = null; } // el material es el de Iguaca: no se libera
+      if (VIS.npc) { VIS.npc.sp.visible = VIS.vis0; if (VIS.npc.sh) VIS.npc.sh.visible = VIS.vis0; VIS.npc = null; }
+      VIS.on = false;
+    }
+    function pasoVisita(dt) {
+      if (!VIS.on) return;
+      VIS.t += Math.min(dt, 0.1);
+      const quieto = !!(G.renderer && G.renderer.REDUCED), t = VIS.t, sp = VIS.sp;
+      if (t >= DUR.llega && !VIS.dicho) decirObra();
+      if (sp) {
+        if (t < DUR.llega) { const k = t / DUR.llega, e = 1 - (1 - k) * (1 - k); sp.position.lerpVectors(VIS.de, VIS.a, e); sp.position.y += Math.sin(k * Math.PI) * 1.2; }
+        else if (t < DUR.llega + DUR.posada) { sp.position.copy(VIS.a); const u = t - DUR.llega; if (!quieto && u < 1.2) sp.position.y += Math.abs(Math.sin(u * Math.PI * 2 / 1.2 * 2)) * 0.35; }
+        else if (t < DUR.llega + DUR.posada + DUR.va && !quieto) { const k = (t - DUR.llega - DUR.posada) / DUR.va; sp.position.lerpVectors(VIS.a, VIS.va, k * k); }
+        else { finVisita(); return; }
+      } else if (t >= DUR.llega + DUR.posada) finVisita();
+    }
+    G.on('update', (dt, busy) => { if (VIS.on && !busy) pasoVisita(dt); }, 89);
+    G.on('apply', () => finVisita(), 61);
+    // El botón del aviso hace la Foto de siempre (en el dispositivo; no se sube a ningún sitio)
+    document.addEventListener('click', e => { const b = e.target && e.target.closest && e.target.closest('#toast [data-cl-mi-obra]'); if (!b) return; e.preventDefault(); try { G.ui.hideToast(); } catch (er) { /* */ } foto(); });
     G.on('update', (dt, busy) => { if (activo && fantasma) { fantasma.visible = !busy; if (!busy) actualizar(); } }, 89);
     G.on('escape', () => { if (activo && !(G.ui && G.ui.busy && G.ui.busy())) salir(); }); // con una tarjeta abierta (el Mercadito), Esc solo la cierra
     G.on('apply', () => { if (activo) salir(); if (ctx && ctx.id) { lista = leer({ v: 1, piezas: (S.interiores && S.interiores.edificios && S.interiores.edificios[ctx.id] && S.interiores.edificios[ctx.id].piezas) || [] }); historial.length = 0; rehacerPila.length = 0; pintar(); } else aplicar(S.construir); }, 60);
@@ -863,7 +961,7 @@
       const portada = $('title'); if (portada && portada.open) return;
       const k = e.key.toLowerCase();
       let hecho = true;
-      if (k === 'b' && !e.repeat && !bOcupada()) { if (activo) salir(); else empezar(); }
+      if (k === 'b' && !e.repeat && !bOcupada()) { if (activo) salir(true); else empezar(); }
       else if (!activo) hecho = false;
       else if (/^[1-9]$/.test(k)) { const d = disponibles(); if (d[+k - 1]) elegir(d[+k - 1]); }
       else if (k === 'r') girar(1);
@@ -873,7 +971,7 @@
       else if (k === 'delete' || k === 'backspace') quitar();
       else if (k === 't') verPlantillas();
       else if (k === 'escape' && hudEl && hudEl.classList.contains('cl-pl-abierta')) verPlantillas();
-      else if (k === 'escape' && !e.repeat) salir(); // revisión F3: preventDefault, así ui.js no abre además la Pausa (con la Pausa abierta no llegan visitas)
+      else if (k === 'escape' && !e.repeat) salir(true); // revisión F3: preventDefault, así ui.js no abre además la Pausa (con la Pausa abierta no llegan visitas)
       else hecho = false;
       if (hecho) { e.preventDefault(); e.stopImmediatePropagation(); }
     }, true);
@@ -949,12 +1047,28 @@
         '#cl-hud .cl-herr{flex-wrap:wrap;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}' +
         '#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
         'body:has(#emotes:not([hidden])) #cl-hud{top:calc(env(safe-area-inset-top,0px) + 72px);max-width:calc(100vw - 24px)}' +
-        // PULIR 2 (p23): construyendo en el teléfono, el aviso va arriba del todo (sobre el objetivo, un momento) y no entre la barra y Vittata
-        '@media (max-width:560px){body:has(#cl-hud:not([hidden])) #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;max-height:200px}}' +
+        // PULIR 2 (p23): construyendo en el teléfono, el aviso no va entre la barra y Vittata.
+        // PULIR 6: tampoco encima del objetivo ni de los contadores (madera, piedra… hacen falta para construir): va en el hueco entre
+        // ellos y la barra, a lo ancho y compacto (--cl-av-top y --cl-av-max los mide avisoSitio() con la pantalla real)
+        // PULIR 7: ese hueco a veces no existía (el aviso de «Descubriste…» quedaba encima de las piezas): el aviso va abajo, en el sitio de
+        // la línea «Acción: …» (que se esconde mientras el aviso se ve; el botón «Colocar» dice lo mismo), entre la barra y los botones
+        '@media (max-width:560px){body:has(#cl-hud:not([hidden])) #toast{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 206px);left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));margin-inline:0;width:auto;max-width:none;min-height:0;max-height:var(--cl-av-max,84px);padding:6px 12px;font-size:calc(13px * var(--fs-k,1));line-height:1.3;overflow:hidden}' +
+        'body:has(#cl-hud:not([hidden])) #toast::before{display:none}body:has(#cl-hud:not([hidden])) #toast b{font-size:calc(14px * var(--fs-k,1));line-height:1.2}body:has(#cl-hud:not([hidden])):has(#toast:not([hidden])) #prompt{visibility:hidden}}' +
         // PULIR 2 (p23): la última pieza quedaba cortada en el borde sin señal de que la fila se desliza: el borde derecho se desvanece
         '#cl-hud .cl-piezas{padding-right:28px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 30px),rgba(0,0,0,.15));mask-image:linear-gradient(90deg,#000 calc(100% - 30px),rgba(0,0,0,.15))}}' +
         // C10: teléfono en horizontal (844×390): la barra va al centro, entre el joystick y los botones de acción, bajo el HUD de arriba
-        '@media (orientation:landscape) and (max-height:500px){#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}}' +
+        '@media (orientation:landscape) and (max-height:500px){#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
+        // PULIR 6: en horizontal el aviso tapaba los contadores (arriba a la derecha; no hay hueco entre el objetivo, los botones y la
+        // barra). Construyendo va abajo, entre el palo y los botones de acción, bajo la barra, en el sitio de la línea «Acción: …»
+        // (que se esconde mientras el aviso está a la vista: el botón «Colocar» dice lo mismo)
+        'body:has(#cl-hud:not([hidden])) #toast{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);left:max(160px,calc(env(safe-area-inset-left,0px) + 160px));right:max(210px,calc(env(safe-area-inset-right,0px) + 210px));margin-inline:auto;width:fit-content;max-width:none;max-height:var(--cl-av-max,64px);padding:6px 12px;font-size:calc(13px * var(--fs-k,1));line-height:1.3;overflow:hidden}' +
+        'body:has(#cl-hud:not([hidden])) #toast::before{display:none}body:has(#cl-hud:not([hidden])):has(#toast:not([hidden])) #prompt{visibility:hidden}}' +
+        // PULIR 7 · escritorio (1280×720): la barra iba arriba en el centro y tapaba a Vittata y el sitio de la pieza. Va abajo, compacta
+        // (las piezas en una fila que se desliza), entre la ayuda de teclas y «Controles»; la línea «Acción: …» sube encima de la barra
+        // (--cl-hud-alto lo mide avisoSitio) y la ayuda de teclas se esconde mientras (la barra ya lleva sus teclas)
+        '@media (min-width:701px) and (min-height:501px) and (pointer:fine){#cl-hud{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);max-width:min(980px,calc(100vw - 340px))}' +
+        '#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start;padding-right:28px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 30px),rgba(0,0,0,.15));mask-image:linear-gradient(90deg,#000 calc(100% - 30px),rgba(0,0,0,.15))}' +
+        'body:has(#cl-hud:not([hidden])) #keyhint{visibility:hidden}body:has(#cl-hud:not([hidden])) #prompt{bottom:calc(env(safe-area-inset-bottom,0px) + var(--cl-hud-alto,140px) + 28px)}}' +
         '@media (prefers-reduced-motion:reduce){#cl-hud,#cl-hud *{animation:none;transition:none}}';
       document.head.appendChild(estilo);
     }
@@ -997,13 +1111,32 @@
           else if (b.dataset.cl === 'plantillas') { verPlantillas(); return; }
           else if (b.dataset.clPl) { verPlantillas(false); plantilla(b.dataset.clPl); }
           else if (b.dataset.cl === 'quitar') quitar();
-          else if (b.dataset.cl === 'listo') salir();
+          else if (b.dataset.cl === 'listo') salir(true);
           else if (b.dataset.cl === 'tienda') { if (G.tienda) G.tienda.abrir('construir', b); return; }
           if (b.blur) b.blur(); // que Espacio y Enter vuelvan al juego
         });
         document.body.appendChild(hudEl);
+        if (window.ResizeObserver) { const ro = new ResizeObserver(avisoSitio); ro.observe(hudEl); if (document.getElementById('top')) ro.observe(document.getElementById('top')); }
+        const tt = document.getElementById('toast'); if (tt) new MutationObserver(avisoSitio).observe(tt, { attributes: true, attributeFilter: ['hidden'] });
+        addEventListener('resize', avisoSitio);
       }
       hudEl.hidden = false;
+      avisoSitio();
+    }
+    // PULIR 6: dónde cabe el aviso mientras se construye en el teléfono (ver css()): en vertical, del borde de abajo del objetivo y los
+    // contadores (#top) hasta la barra; en horizontal, del borde de abajo de la barra hasta el pie de la pantalla
+    function avisoSitio() {
+      if (!hudEl || hudEl.hidden) return;
+      const raiz = document.documentElement, top = document.getElementById('top'), h = hudEl.getBoundingClientRect();
+      if (!h.height) return;
+      let tb = 0; // el borde de abajo de lo que se ve en #top (el objetivo, los contadores y lo que se les añada)
+      if (top && top.getClientRects().length) for (const e of [top, ...top.children]) { const r = e.getBoundingClientRect(); if (r.height && getComputedStyle(e).visibility !== 'hidden') tb = Math.max(tb, Math.ceil(r.bottom)); }
+      // PULIR 7: en vertical el aviso va abajo (a 206 px del borde, el sitio de «Acción: …»): su alto, hasta la barra y como mucho 96 px
+      const arriba = Math.max(tb + 6, 0), hueco = innerWidth <= 560 ? Math.min(96, innerHeight - 206 - Math.ceil(h.bottom) - 8) : innerHeight - Math.ceil(h.bottom) - 14;
+      const a = arriba + 'px', m = Math.max(40, hueco) + 'px', al = Math.ceil(h.height) + 'px';
+      if (raiz.style.getPropertyValue('--cl-av-top') !== a) raiz.style.setProperty('--cl-av-top', a);
+      if (raiz.style.getPropertyValue('--cl-av-max') !== m) raiz.style.setProperty('--cl-av-max', m);
+      if (raiz.style.getPropertyValue('--cl-hud-alto') !== al) raiz.style.setProperty('--cl-hud-alto', al);
     }
     // C10 · El botón «Plantillas» cambia la fila de piezas por la de plantillas (en el mismo sitio: no tapa más pantalla) y al revés
     function verPlantillas(on) {
@@ -1149,6 +1282,24 @@
         }
         check('Hay un sitio libre en tierra para probar', ok, `${S.pos.x.toFixed(1)}, ${S.pos.z.toFixed(1)}`);
         check('empezar() entra y toma la acción («Colocar»)', empezar() && activo && G.interaccion.modo === modo && modo.verbo === 'Colocar');
+        check('PULIR 7 · La cámara de construir sube y se aleja un poco (ajuste del modo, no del motor)', !G.camara || !G.camara.CAM || (G.camara.CAM.height === CAM_CONSTRUIR.height && G.camara.CAM.dist === CAM_CONSTRUIR.dist && !!cam0 && cam0.height < CAM_CONSTRUIR.height), G.camara && G.camara.CAM && [G.camara.CAM.height, G.camara.CAM.dist].join('/'));
+        { // PULIR 7 · escritorio 1280×720: la barra va abajo y compacta, sin tapar el centro (Vittata y el sitio de la pieza)
+          const fino = !!(window.matchMedia && matchMedia('(pointer:fine)').matches);
+          const fr = document.createElement('iframe'); fr.setAttribute('aria-hidden', 'true'); fr.tabIndex = -1;
+          fr.style.cssText = 'position:fixed;left:-10000px;top:0;width:1280px;height:720px;border:0';
+          fr.srcdoc = `<!doctype html><html><head><style>${(estilo && estilo.textContent) || ''}body{margin:0}#cl-hud{position:fixed}</style></head><body>${hudEl.outerHTML}</body></html>`;
+          document.body.appendChild(fr);
+          await new Promise(r => { fr.addEventListener('load', r, { once: true }); setTimeout(r, 2500); });
+          const raiz = fr.contentDocument && fr.contentDocument.getElementById('cl-hud'), c = raiz ? raiz.getBoundingClientRect() : null;
+          fr.remove();
+          check('PULIR 7 · En 1280×720 la barra va abajo (sin tapar el centro de la pantalla) y compacta, entre la ayuda de teclas y «Controles»', !fino || (!!c && c.top > 720 * 0.6 && c.bottom <= 720 - 8 && c.height <= 200 && c.left >= 160 && c.right <= 1120), c ? [Math.round(c.left), Math.round(c.top), Math.round(c.right), Math.round(c.bottom)].join(',') : (fino ? 'sin barra' : 'puntero táctil: no aplica'));
+        }
+        { // PULIR 6: el aviso tiene su hueco medido (en el teléfono, entre el objetivo/contadores y la barra, o bajo la barra en horizontal)
+          await espera(50); avisoSitio();
+          const rz = document.documentElement.style, tA = parseFloat(rz.getPropertyValue('--cl-av-top')), mA = parseFloat(rz.getPropertyValue('--cl-av-max'));
+          const tb = $('top') && $('top').getClientRects().length ? $('top').getBoundingClientRect().bottom : 0, txt = (estilo && estilo.textContent) || '';
+          check('PULIR 6/7 · Construyendo, el aviso tiene su sitio medido (en el teléfono, abajo en el sitio de «Acción: …», y nunca arriba del todo tapando los contadores)', tA >= tb && mA >= 40 && mA <= Math.max(96, innerHeight) && txt.indexOf('bottom:calc(env(safe-area-inset-bottom,0px) + 206px)') >= 0 && txt.indexOf('top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto;max-height:200px') < 0, JSON.stringify({ tA, mA, tb: Math.round(tb) }));
+        }
         check('Al abrir, el foco entra en la primera pieza y no queda en body', !!hudEl && document.activeElement === hudEl.querySelector('button[data-cl-tipo]'));
         await espera(60);
         check('La barra de piezas se ve con las 7 de siempre (y las compradas) y la cuenta', !!hudEl && !hudEl.hidden && BASE.every(t => hudEl.querySelector('[data-cl-tipo="' + t + '"]')) && hudEl.querySelectorAll('[data-cl-tipo]').length === disponibles().length && /Piezas: 0\/\d+/.test(hudEl.querySelector('.cl-cuenta').textContent), hudEl && hudEl.querySelector('.cl-cuenta').textContent);
@@ -1237,8 +1388,41 @@
         }
         check('Deshacer devuelve la pieza quitada', deshacer() && lista.length === 1 && lista[0].t === 'nido');
         check('No se puede poner otra pieza encima del nido', (actualizar(), !est.valido && /cerca/.test(est.motivo)), est.motivo);
+        { // PULIR 7: «Muy cerca de otra pieza» señala cuál: un aro rojo que parpadea a sus pies; el fantasma lleva su aro opaco
+          const w = choque && mundoDe(choque);
+          check('PULIR 7 · La pieza que estorba se señala con un aro rojo (y el fantasma se distingue: aro opaco, pieza translúcida)', !!aroC && aroC.visible && !!w && Math.hypot(aroC.position.x - w.x, aroC.position.z - w.z) < 1e-6 && choque.t === 'nido' && matA.opacity > matF.opacity && anillo.material === matA, choque && choque.t);
+        }
         elegir('techo'); actualizar();
         check('El techo de hojas sí va sobre el nido', est.valido && colocar() && lista.length === 2, est.motivo);
+        check('PULIR 7 · Sin choque, el aro rojo se va', (actualizar(), !aroC.visible));
+        { // PULIR 7 · «¡Mira lo que hice!»: Iguaca llega, se posa encima de la obra, Vittata celebra y sale la frase con la Foto
+          const t0 = G.ui.toastHTML, e0 = G.actores && G.actores.playEmote, dichos = [], gestos = [];
+          const n = G.actores && G.actores.npc && G.actores.npc('luma'), vis0 = n ? n.sp.visible : null;
+          G.ui.toastHTML = h => { dichos.push(String(h)); };
+          if (G.actores) G.actores.playEmote = g => { gestos.push(g); return true; };
+          try {
+            check('PULIR 7 · Listo con menos de 3 piezas no llama a Iguaca', hayObra(true) === false);
+            lista.push({ t: 'piedra', x: est.x + 4, z: est.z + 4, r: 0 });
+            const h0 = sesion.h0; sesion.h0 = historial.length;
+            const sinCambios = hayObra(true); sesion.h0 = Math.max(0, historial.length - 1);
+            check('PULIR 7 · Con 3 piezas y algo hecho en esta vuelta, «Listo» (no otras salidas) llama a Iguaca', hayObra(true) === true && hayObra() === false && sinCambios === false);
+            sesion.h0 = h0;
+            const ok = miraLoQueHice(true), cima = cimaDeLaObra(new THREE.Vector3());
+            const llega = !!VIS.sp && VIS.sp.parent === grupo && (!n || !n.sp.visible);
+            let posada = false, maxY = -Infinity;
+            for (let i = 0; i < 80 && VIS.on; i++) { pasoVisita(0.1); if (VIS.sp && VIS.t > DUR.llega && VIS.t < DUR.llega + DUR.posada) { maxY = Math.max(maxY, VIS.sp.position.y); if (Math.hypot(VIS.sp.position.x - cima.x, VIS.sp.position.z - cima.z) < 1e-6) posada = true; } }
+            const txt = dichos.join(' ');
+            check('PULIR 7 · Iguaca llega volando y se posa encima de la obra (sin dos Iguacas a la vez)', ok && (!n || (llega && posada && maxY >= cima.y - 1e-6)), JSON.stringify({ ok, llega, posada, npc: !!n }));
+            check('PULIR 7 · Vittata hace su gesto Celebrar y sale una frase de Iguaca con el botón de la Foto', gestos.includes('celebrar') && FRASES_IGUACA.some(f => txt.indexOf(f.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))) >= 0) && /data-cl-mi-obra/.test(txt) && txt.indexOf(TXT_OBRA.foto) >= 0, txt.slice(0, 160));
+            check('PULIR 7 · Al terminar, Iguaca se va y vuelve a su sitio de siempre', !VIS.on && !VIS.sp && !grupo.children.some(o => o.name === 'construir_iguaca') && (!n || n.sp.visible === vis0));
+            if (!window.AV_EN) { try { await AVE.assets.script('content/cap1/en.js'); } catch (e) { /* sin diccionario */ } }
+            const D = window.AV_EN || {}, faltan = FRASES_IGUACA.concat([TXT_OBRA.foto, TXT_OBRA.quien]).filter(t => !D[t]);
+            check('PULIR 7 · Las frases de Iguaca y «Foto de mi obra» tienen su inglés en content/cap1/en.js', !faltan.length, faltan.join(' | '));
+          } finally {
+            lista.pop(); finVisita(); pintar();
+            G.ui.toastHTML = t0; if (G.actores) G.actores.playEmote = e0;
+          }
+        }
         // CG-78: cuadrícula suave, gesto de giro, foto local y Deshacer visible
         const btnDes = hudEl.querySelector('[data-cl="deshacer"]');
         check('Deshacer se marca cuando hay algo que deshacer', !!btnDes && btnDes.classList.contains('cl-hay') && btnDes.getAttribute('aria-disabled') === 'false' && /Deshacer · [1-9]/.test(btnDes.textContent), btnDes && btnDes.textContent);

@@ -138,6 +138,11 @@ window.AVMinimapa = function (G) {
     try { const sd = G.sembradoraApi && G.sembradoraApi.objetivo && G.sembradoraApi.objetivo(); if (sd) return sd; } catch (e) { /* sin minijuego */ } // F2-4: en «Sembradora del cielo», el parche (o el saco), como la flecha
     try { const pl = G.planeoApi && G.planeoApi.objetivo && G.planeoApi.objetivo(); if (pl) return pl; } catch (e) { /* sin minijuego */ } // D14: en «Planeo entre nubes», la nube o la corriente de delante, como la flecha
     try { const rr = G.pichonesApi && G.pichonesApi.objetivo && G.pichonesApi.objetivo(); if (rr) return rr; } catch (e) { /* sin minijuego */ } // D16: en «Rescate rápido», el pichón más cercano (o el nido), como la flecha
+    // PULIR 7: en la carrera con Chispa, el circuito del Guardián y el entreno con Moon, la estrella y la distancia van al banderín, la
+    // puerta o el sitio del entreno (antes seguían en la misión del capítulo, a 120 m, y el niño corría en dirección contraria)
+    for (const k of ['v18chispa', 'v18guardian', 'v18moon']) {
+      try { const m = G[k], o = m && m.objetivo && m.objetivo(); if (o && typeof o.x === 'number') return o; } catch (e) { /* sin módulo */ }
+    }
     const rt = datosReto();
     if (rt && rt.puntos) return { x: rt.puntos[rt.sig].x, z: rt.puntos[rt.sig].z, reto: true };
     if (rt && rt.arena) return { x: rt.arena.x, z: rt.arena.z, reto: true };
@@ -659,6 +664,27 @@ body:is(.escondite-on,.semillas-on,.sigueme-on,.foto-on,.sembradora-on,.planeo-o
       const guardianBk = G.v18guardian; G.v18guardian = { mapa: () => ({ x: S.pos.x + 18, z: S.pos.z + 18, nombre: 'Circuito del Primer Vuelo' }) };
       msV = marcadores();
       check('KIMI-172: el Circuito del Guardián sale como marcador propio (ala) con nombre', msV.some(m => m.tipo === 'v18guardian' && m.nombre === 'Circuito del Primer Vuelo') && typeof COL.v18guardian === 'string');
+      { // PULIR 7: en la carrera con Chispa (y el Guardián y Moon) la estrella y la distancia van al banderín, no a la misión del capítulo
+        const extBk = ext.objetivo; ext.objetivo = undefined;
+        const ban = { x: S.pos.x + 9, z: S.pos.z + 12, reto: true };
+        G.v18chispa = { mapa: () => ({ x: ban.x, z: ban.z, nombre: 'Siguiente banderín' }), objetivo: () => ban };
+        const o1 = objetivo(), d1 = o1 ? Math.round(Math.hypot(o1.x - S.pos.x, o1.z - S.pos.z)) : -1;
+        check('PULIR 7 · En la carrera con Chispa la estrella marca el banderín (15 m), no la misión', !!o1 && o1.x === ban.x && o1.z === ban.z && d1 === 15 && marcadores().some(m => m.tipo === 'obj' && m.x === ban.x && m.z === ban.z), d1 + ' m');
+        G.v18chispa = { mapa: () => null, objetivo: () => null };
+        const pu = { x: S.pos.x - 6, z: S.pos.z + 8, reto: true };
+        G.v18guardian = { mapa: () => null, objetivo: () => pu };
+        const o2 = objetivo();
+        check('PULIR 7 · En el circuito del Guardián la estrella marca la puerta', !!o2 && o2.x === pu.x && o2.z === pu.z);
+        G.v18guardian = { mapa: () => null, objetivo: () => null };
+        const ms = { x: S.pos.x + 3, z: S.pos.z - 4, reto: true };
+        G.v18moon = { mapa: () => null, objetivo: () => ms };
+        const o3 = objetivo();
+        check('PULIR 7 · En el entreno con Moon la estrella marca el sitio de Moon', !!o3 && o3.x === ms.x && o3.z === ms.z);
+        G.v18moon = { mapa: () => null, objetivo: () => null };
+        const o4 = objetivo();
+        check('PULIR 7 · Sin carrera, la estrella vuelve a la misión (no se queda en el banderín)', !o4 || (o4.x !== ban.x && o4.x !== pu.x && o4.x !== ms.x));
+        ext.objetivo = extBk;
+      }
       G.V18 = false; G.v18minigolf = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18puerto = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18chispa = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18moon = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) }; G.v18guardian = { mapa: () => ({ x: S.pos.x, z: S.pos.z, nombre: 'x' }) };
       check('Sin la bandera V18 los marcadores V18 no salen (la versión estable no cambia)', !marcadores().some(m => /^v18(golf|puerto|chispa|moon|guardian)/.test(m.tipo)));
       G.V18 = v18bk; if (minBk === undefined) delete G.v18minigolf; else G.v18minigolf = minBk; if (pueBk === undefined) delete G.v18puerto; else G.v18puerto = pueBk; if (chiBk === undefined) delete G.v18chispa; else G.v18chispa = chiBk; if (moonBk === undefined) delete G.v18moon; else G.v18moon = moonBk; if (guardianBk === undefined) delete G.v18guardian; else G.v18guardian = guardianBk;
