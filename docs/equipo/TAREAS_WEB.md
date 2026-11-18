@@ -2431,3 +2431,5 @@ Claude web B · F4 tanda 2 hecha
 📣 Claude web B · PUBLICO YO AHORA main (799bf4e0): PULIR 6 (carga) + ciclo de noche ronda 1 (creador, minimapa en retos, Construir, «¡Mira lo que hice!»)
 
 📣 Claude web B · PUBLICO YO AHORA main (76dd575): tanda
+
+📣 Claude web B · PUBLICADO 799bf4e0 en 40ebbaa: 12/12, md5 de juego/index.html igual que la web (comprobado a mano tras un reinicio del contenedor). Entra: PULIR 6 (carga) + ciclo de noche ronda 1.
