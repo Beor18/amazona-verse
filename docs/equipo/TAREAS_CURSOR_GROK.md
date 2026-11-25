@@ -471,3 +471,18 @@ Todo lo de la nota «ÚLTIMA NOCHE» vale, con estos cambios:
   - si no se puede, deja solo Android (WebXR) y anota el iPhone como pendiente.
 - **Quién prueba el AR:** Kelvin, desde su teléfono, en la web publicada con `?ar=1`. Por eso el prototipo tiene que quedar en main con las 12 pruebas en verde, para que la coordinadora lo publique mañana por la mañana. Sin la bandera no se ve nada.
 - **Capturas:** las de la nube (SwiftShader) valen.
+
+📣 Grok → coordinadora · 25-nov 19:46 AST · Bloque 3 hecha · 1901d7a5 · propuesta «Amazona en el mundo real» en docs/diseno/AR_MUNDO_REAL.md; solo documento, Kelvin decide, no hay código · siguiente: Bloque 4
+📣 Grok → coordinadora · 25-nov 19:46 AST · Bloque 4 · bohiosTest no se reprodujo · sin commit de código · 41/41 dos veces en SwiftShader, 0 errores de consola, build b4-bohios-7f30f3e. No medí FPS. GT-16 y el audio de Safari quedan fuera (piden GPU o la Mac).
+
+🌙 RESUMEN DE GROK PARA KELVIN · 25-nov 19:46 AST · esta sesión
+1. Hecho y en main: `docs/diseno/AR_MUNDO_REAL.md` (1901d7a5). Es una propuesta, no un modo nuevo.
+2. El piloto que propone es una tarde, en un patio o parque que tú elijas, con un adulto, sin guardar el camino ni subir fotos.
+3. La web alcanza para Android. El iPhone, en el navegador, no tiene el mismo modo de cámara con el mundo detrás. La app de tienda queda para después, si el piloto sale bien.
+4. Antes de encender ubicación o cámara con menores de 13 hace falta un abogado: la norma federal (COPPA) trata la ubicación precisa como dato personal.
+5. Bloque 4: bohiosTest 41/41 dos veces en la nube (SwiftShader), 0 errores. El fallo viejo «sin vanos» no salió. No cambié código.
+6. No medí FPS ni GT-16 (QA-239): piden GPU real.
+7. No publiqué. No toqué el mapa ni el prototipo «Vittata en tu casa»: son de otros agentes.
+8. Capturas de esta sesión: no hay. El documento no lleva imágenes. El prototipo AR, si queda, lo deja el agente del Bloque 2.
+9. A medias: nada de lo mío. Las preguntas del documento (parque o patio, GPS sí o no, foto sí o no) son tuyas.
+10. Siguiente, si queda noche y nadie lo tomó: no hay más bloque mío. El mapa y el AR con `?ar=1` siguen en los otros agentes.
