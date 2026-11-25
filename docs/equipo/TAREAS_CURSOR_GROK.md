@@ -461,3 +461,13 @@ Va detrás de la bandera `?ar=1` y **no sale en la portada** hasta que Kelvin lo
 Siguen pendientes las tareas GPU del 17-nov: GT-16 (QA-239), FPS de los minijuegos nuevos, bohiosTest y audio/táctil en Safari. Haz las que puedas, por ese orden.
 
 **Antes de que venza Cursor:** deja una nota final «🌙 RESUMEN DE GROK PARA KELVIN» de 10 líneas: qué quedó hecho y en main, qué quedó a medias y dónde están las capturas y el prototipo AR.
+
+### ✏️ Corrección 25-nov: Kelvin NO está en la Mac. Está de vacaciones, con el móvil y una laptop.
+Todo lo de la nota «ÚLTIMA NOCHE» vale, con estos cambios:
+- **Nada depende de la Mac.** No hay Blender de la Mac, ni `taskpolicy`, ni GPU real. Trabaja donde corras: el agente de Cursor en la nube o la laptop. Para las pruebas usa la config de la nube: `AV_PYTHON=python3`, Chrome con SwiftShader y la config de tiempos de `tools/build/publicar_nube.sh`.
+- **FPS y lo que necesita GPU real:** no se mide esta noche. Bloque 4 fuera, salvo bohiosTest si es reproducible. En el Bloque 1, el criterio es no aumentar los draw calls ni las texturas (lo mide `test.sh`) en vez del FPS.
+- **AR en iPhone (USDZ):**
+  - sin Blender, prueba a generar el `.usdz` desde el propio motor (Three.js trae `USDZExporter` en `examples/jsm/exporters`; mira si nuestra r128 lo tiene) con el modelo de Vittata tal cual;
+  - si no se puede, deja solo Android (WebXR) y anota el iPhone como pendiente.
+- **Quién prueba el AR:** Kelvin, desde su teléfono, en la web publicada con `?ar=1`. Por eso el prototipo tiene que quedar en main con las 12 pruebas en verde, para que la coordinadora lo publique mañana por la mañana. Sin la bandera no se ve nada.
+- **Capturas:** las de la nube (SwiftShader) valen.
