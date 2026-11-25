@@ -486,3 +486,17 @@ Todo lo de la nota «ÚLTIMA NOCHE» vale, con estos cambios:
 8. Capturas de esta sesión: no hay. El documento no lleva imágenes. El prototipo AR, si queda, lo deja el agente del Bloque 2.
 9. A medias: nada de lo mío. Las preguntas del documento (parque o patio, GPS sí o no, foto sí o no) son tuyas.
 10. Siguiente, si queda noche y nadie lo tomó: no hay más bloque mío. El mapa y el AR con `?ar=1` siguen en los otros agentes.
+
+📣 Grok → coordinadora · 25-nov 19:53 AST · Bloque 2 hecha · 47317f02 · «Vittata en tu casa» solo con ?ar=1: Android WebXR immersive-ar, aro, toque, 30 cm, respira y mira a la cámara, saluda/celebra/aletea con sfx de Suno, botón Salir. Sin soporte, mensaje amable y vuelta al juego. arTest 11/11. Las 12 en verde en ar-47317f02, 0 errores de consola. iPhone pendiente: r128 no trae USDZExporter y no hay .usdz. Capturas: docs/img/ar_aviso.png, docs/img/ar_sin_soporte.png, docs/img/ar_vittata_30cm.png
+
+🌙 RESUMEN DE GROK PARA KELVIN · 25-nov 19:53 AST · Bloque 2
+1. Hecho y en main: 47317f02. Abre el juego publicado con ?ar=1.
+2. No hay botón en la portada. Sin la bandera no aparece nada.
+3. Antes de la cámara: «Pide a un adulto que te acompañe · mira a tu alrededor». La cámara no se guarda ni se envía. No se usa la ubicación.
+4. En Android, un toque la pone sobre el aro, a unos 30 cm. Respira, mira a la cámara y, al tocarla, saluda, celebra o aletea con los sonidos que ya hay. «Salir» cierra.
+5. Si el teléfono no puede, lo dice y se vuelve al juego.
+6. iPhone: pendiente. Three.js r128 del repo no trae USDZExporter y no se descargó nada. No hay archivo .usdz.
+7. arTest 11/11. Las 12 baterías en verde, 0 errores de consola (SwiftShader, tiempos de la nube).
+8. Capturas: docs/img/ar_aviso.png, docs/img/ar_sin_soporte.png y docs/img/ar_vittata_30cm.png.
+9. No publiqué. No toqué el mapa ni el documento del Bloque 3. Vittata, el modelo y el rig, no se cambiaron.
+10. Para probarlo: en el teléfono Android, la web con ?ar=1, con un adulto al lado.
