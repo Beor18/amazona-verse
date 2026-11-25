@@ -405,3 +405,59 @@ Mira si falta porque no está en los datos, porque no carga (streaming, diferido
 ✅ **Decisión de Kelvin (18-nov): DEJAR EL MAPA COMO ESTÁ Y AGREGAR LO QUE FALTA.** No se mueve el río, ni las ciudades, ni los caminos, ni los objetivos, y el estilo no cambia. Solo se añaden en sitios libres los puentes, edificios y estructuras que faltan o no se ven (mirando la referencia). Cada añadido lleva su captura de antes y después, sin bajar FPS en el teléfono.
 
 ℹ️ **18-nov:** la referencia del mapa es **arte propio de Amazona Verse**, del proyecto original. Kelvin enseñó la pieza de antes con el mismo mapa, las cotorras y el logo de frutas: `docs/img/referencia_logo_antes.jpg`. Se puede usar como guía con toda confianza.
+
+---
+## 🌙 Coordinadora → Grok · 25-nov · ÚLTIMA NOCHE (Cursor vence mañana): sácale todo el jugo
+**Situación real:** en main no entra nada desde el 18-nov a las 09:37 UTC. Claude web B ya no trabaja y las tareas del mapa del 18-nov siguen sin hacer: no existe `docs/equipo/MAPA_REFERENCIA.md`. Esta noche quedas tú solo.
+**Reglas:**
+- Trabaja sin parar y en orden.
+- Commits pequeños, con las 12 pruebas en verde, y push en cada uno. Al terminar cada tarea, una línea en `docs/equipo/REGISTRO_TAREAS.md`.
+- **No publicas:** publica la coordinadora mañana por la mañana con lo que dejes en verde.
+- Si algo no queda en verde en 30 min, `git revert` de lo tuyo y pasas a la siguiente tarea.
+- Vittata no se toca (ni el modelo ni el rig). Nada de descargas ni compras.
+
+### BLOQUE 1 · Terminar el mapa (las tareas del 18-nov)
+**Decisión de Kelvin:** el mapa se queda como está, en vibrant toon. Solo se **agrega lo que falta**, mirando `docs/img/referencia_mapa_kelvin.jpg` y `docs/img/referencia_logo_antes.jpg` (arte propio).
+1. **Inventario.** Crea `docs/equipo/MAPA_REFERENCIA.md` con una tabla por asentamiento: «lo que dicen los datos / lo que hay en escena / lo que se ve con GPU». Revisa las banderas `?expansion=1`, `?interiores=1`, `?hd400=1` y `?menu=completo`.
+2. **Puentes.** Donde un camino cruza el río sin puente, pon uno con los modelos del kit que ya hay.
+   - No toques el puente de Villa Raíz: se repara en la historia.
+   - No muevas caminos ni objetivos.
+3. **Edificios.**
+   - Lo que existe pero no se ve (no carga, está enterrado o tiene la bandera apagada): arréglalo.
+   - Lo que falta según la referencia: ponlo en sitios libres de los asentamientos que ya hay (aldea de techos rojos con torres de punta, chozas redondas, fuerte de piedra, ciudad de torres sobre el peñasco).
+   - Botes en el río y bandadas de aves, si es barato.
+4. **FPS** con `?fps=1` antes y después en la Mac (Chrome y Safari) y, si puedes, en el iPhone. No puede bajar.
+5. **Capturas de antes y después** de cada sitio, desde el aire y a la altura de Vittata, en `docs/img/mapa_*`.
+
+### BLOQUE 2 · Prototipo de REALIDAD AUMENTADA: «Vittata en tu casa» (idea de Kelvin)
+Va detrás de la bandera `?ar=1` y **no sale en la portada** hasta que Kelvin lo vea. Usa el motor que ya tenemos (Three.js r128 trae WebXR) y no metas librerías nuevas.
+1. **Android (Chrome):** WebXR `immersive-ar` con hit-test.
+   - Un aro en el suelo o la mesa; un toque y Vittata aparece, a escala real de cotorra (unos 30 cm).
+   - Respira y mira a la cámara.
+   - Al tocarla, saluda, celebra o aletea, con los sfx de Suno.
+   - Botón «Salir».
+2. **iPhone/iPad:** Safari no tiene WebXR AR, así que usa **AR Quick Look**: un enlace `rel="ar"` a un `vittata.usdz`.
+   - Exporta el USDZ desde el pipeline de Blender de la Mac, con el mismo modelo y la misma textura. Solo cambia el formato; si puede llevar la animación de idle o aleteo, mejor.
+   - Pésalo y que no pase de 5 MB.
+3. **Seguridad y privacidad (es para niños):**
+   - Antes de abrir la cámara: «Pide a un adulto que te acompañe · mira a tu alrededor».
+   - No se usa la ubicación.
+   - La imagen de la cámara no sale del teléfono: nada se sube ni se guarda en el servidor.
+4. **Detección:** si el aparato no soporta AR, un mensaje amable y vuelta al juego.
+5. **Pruebas:**
+   - `arTest`, que comprueba que con `?ar=1` sin soporte no rompe nada y que sin la bandera no aparece nada.
+   - Las 12 en verde.
+   - Un vídeo o capturas de tu teléfono para Kelvin.
+
+### BLOQUE 3 · Propuesta «Amazona en el mundo real», solo documento y para Kelvin
+`docs/diseno/AR_MUNDO_REAL.md`, inspirado en el género de juegos de ubicación con RA, sin copiar ningún juego:
+- Qué se podría hacer: encontrar cotorras y especies de la isla en el parque o en la escuela, «misiones al aire libre» del programa Amazona STEAM y fotos con Vittata.
+- Qué es posible en web y qué pide una app nativa.
+- Privacidad de menores: ubicación, COPPA y consentimiento de los padres.
+- Costos, riesgos y un piloto pequeño.
+- Lo deciden Kelvin y el equipo. No construyas nada de esto.
+
+### BLOQUE 4 · Si te queda noche
+Siguen pendientes las tareas GPU del 17-nov: GT-16 (QA-239), FPS de los minijuegos nuevos, bohiosTest y audio/táctil en Safari. Haz las que puedas, por ese orden.
+
+**Antes de que venza Cursor:** deja una nota final «🌙 RESUMEN DE GROK PARA KELVIN» de 10 líneas: qué quedó hecho y en main, qué quedó a medias y dónde están las capturas y el prototipo AR.
