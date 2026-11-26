@@ -76,7 +76,10 @@
     const pon = (el, v) => { if (el.textContent !== v) el.textContent = v; };
     const estilo = (el, k, v) => { v = k === 'opacity' ? String(+v) : v; if (el.style[k] !== v) el.style[k] = v; };
     const reloj = t => { const d = Math.max(0, Math.round(t * 10)); return Math.floor(d / 600) + ':' + String(Math.floor(d / 10) % 60).padStart(2, '0') + '.' + (d % 10); };
-    const ordinal = n => n + (n === 1 || n === 3 ? '.er' : '.º');
+    const ordinal = n => {
+      const es = n + (n === 1 || n === 3 ? '.er' : '.º');
+      return (G.idioma && G.idioma.tr) ? G.idioma.tr(es) : es;
+    };
     const MAPA = window.AV_MAPA_CAP1 || null;
 
     // =================================================================================================================
@@ -455,8 +458,17 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
 @keyframes rt-pop { 0% { transform: scale(1.8); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes rt-aviso { 0% { opacity: 0; transform: translate(-50%, 12px) scale(.8); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.05); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -16px); } }
 @keyframes rt-latido { 50% { transform: scale(1.08); } }
-@media (prefers-reduced-motion: reduce) { #retos .rt-cuenta.pop, #retos .rt-aviso.ver, #retos .rt-panel, #retos .rt-nuevo, #retos-fx .rt-lineas { animation-duration: .01s; animation-iteration-count: 1; } }
+@media (prefers-reduced-motion: reduce) { #retos .rt-cuenta.pop, #retos .rt-aviso.ver, #retos .rt-panel, #retos .rt-nuevo, #retos-fx .rt-lineas, #retos .rt-turbo button.lleno, #retos .rt-turbo .rt-hojas i.si { animation-duration: .01s; animation-iteration-count: 1; } }
 @media (max-width: 640px) { #retos .rt-chip { font-size: 17px; padding: 5px 10px; } #retos .rt-pos b { font-size: 21px; } #retos .rt-lbl { display: none; } #retos .rt-aviso { font-size: 24px; } }
+/* 390×844: el panel se iba a la derecha (For two y la X quedaban fuera) y el turbo no avisaba al llenarse */
+@media (max-width: 420px) {
+  #retos .rt-menu .rt-panel { position: fixed; left: 12px; right: 12px; top: 12px; width: auto; max-width: none; transform: none; max-height: calc(100dvh - 24px); }
+  #retos .rt-retos { grid-template-columns: 1fr; }
+  #retos .rt-reto .rt-fila .btn { min-width: 0; }
+  #retos .rt-aviso { white-space: normal; text-align: center; max-width: calc(100vw - 32px); }
+}
+#retos .rt-turbo .rt-hojas i.si { animation: rt-latido .45s var(--ease-pop); }
+#retos .rt-turbo button.lleno { animation: rt-latido .7s ease-in-out 3; }
 `;
     const FLECHA = '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" fill="rgba(12,30,22,.78)" stroke="#ffd27a" stroke-width="3"/><path d="M32 9 L48 38 L36 34 L36 52 L28 52 L28 34 L16 38 Z" fill="#ffd27a" stroke="#2b1a05" stroke-width="2.5" stroke-linejoin="round"/></svg>';
     let ui = null;
@@ -1749,7 +1761,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
       // HUD
       {
         const p = C.fase === 'fin' ? C.puesto : puestoActual();
-        pon(ui.pos, p + (p === 1 || p === 3 ? '.er' : '.º'));
+        pon(ui.pos, ordinal(p));
         adelantar(p, dt); // F4-20
         pon(ui.tiempo, reloj(C.fase === 'fin' ? C.tiempo : C.t));
         pon(ui.pts, Math.min(C.sig, Rr.puntos.length - 1) + '/' + (Rr.puntos.length - 1));

@@ -152,6 +152,16 @@
       EK.k187 = true;
       EK.compacto.push({ grupo: 'kelvin_aldea_mina', modelo: 'monumento_c', inst: [[94.28, 12.58, -68.5, 2.991, 0.98]], orientar: false, yExacta: true, escalaPack: false });
     }
+    // Muralla y templo gris (26-nov), con modelos que ya están en esa zona.
+    // La muralla cierra el claro de la puerta del Yunque, lejos del sendero.
+    // El templo mediano va en el llano de las ruinas, dentro del radio que ya tenía la zona.
+    // Ninguna de las dos entra en el cerca del arranque.
+    if (EK && EK.compacto && !EK.murallaB1) {
+      EK.murallaB1 = true;
+      const poner = (grupo, modelo, inst) => EK.compacto.push({ grupo, modelo, inst, orientar: false, yExacta: false, escalaPack: false });
+      poner('kelvin_aldea_yunque', 'muralla_atalaya_a', [[-54, 80, -76, 1.75, 0.8366], [-51.2, 80, -73.4, 1.75, 0.8366]]);
+      poner('kelvin_ruinas_yunque', 'templo_mediano_h', [[-38, 80, -122, 0.9, 0.8366]]);
+    }
   }
 
   // Materiales compartidos de los objetos (se crean al primer uso, cuando THREE ya está)
@@ -838,6 +848,47 @@
         G.on('apply', () => { L.apagar(); if (S.boatPlan) L.reposo(); }, 36);
         return L;
       })();
+
+      // Bandadas baratas (26-nov): 3 grupos de 4 que cruzan el cielo del río y de las aldeas.
+      // Se dibujan en las 2 mallas de bandada.js (EXTRA), después de residentes y comunidades
+      // (prioridad 87.6, antes del dibujo en 88). Si esas mallas no están ya en pantalla, no se
+      // encienden: el arranque no gana draw calls ni texturas. No son colonias del álbum.
+      const CRUCES = [
+        { pts: [[-70, 40], [-20, 18], [30, 22], [10, 48]], alt: 34, vel: 11 },
+        { pts: [[60, -80], [95, -55], [120, -35], [80, -60]], alt: 30, vel: 10 },
+        { pts: [[-150, 30], [-110, 80], [-70, 100], [-130, 55]], alt: 32, vel: 12 },
+      ];
+      const largo = pts => { let L = 0; for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length]; L += Math.hypot(b[0] - a[0], b[1] - a[1]); } return L; };
+      const enRuta = (pts, s) => {
+        const L = largo(pts); let u = ((s % L) + L) % L;
+        for (let i = 0; i < pts.length; i++) {
+          const a = pts[i], b = pts[(i + 1) % pts.length], d = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+          if (u <= d) { const t = u / d; return { x: a[0] + (b[0] - a[0]) * t, z: a[1] + (b[1] - a[1]) * t, dx: b[0] - a[0], dz: b[1] - a[1] }; }
+          u -= d;
+        }
+        return { x: pts[0][0], z: pts[0][1], dx: 1, dz: 0 };
+      };
+      const verde = new THREE.Color('#3c9a45').convertSRGBToLinear(), cabeza = new THREE.Color('#c9a227').convertSRGBToLinear();
+      let crucesYa = false; // se arma cuando otra bandada ya encendió las mallas (el arranque no las enciende)
+      G.on('update', () => {
+        const B = G.bandada;
+        if (!B || !B.EXTRA || G.quiet || !(S.profile && S.profile.created)) return;
+        if (!crucesYa) { if (!B.EXTRA.length) return; crucesYa = true; }
+        const t = S.clock;
+        for (let r = 0; r < CRUCES.length; r++) {
+          const C = CRUCES[r], L = largo(C.pts);
+          for (let i = 0; i < 4; i++) {
+            const p = enRuta(C.pts, t * C.vel + r * 40 + i * 3.2);
+            const h = Math.hypot(p.dx, p.dz) || 1, yaw = Math.atan2(p.dx, p.dz);
+            const lado = (i % 2 ? 1 : -1) * (1 + Math.floor(i / 2)) * 1.6;
+            B.EXTRA.push({
+              x: p.x - p.dz / h * lado, y: H(p.x, p.z) + C.alt + (i - 1.5) * 0.8, z: p.z + p.dx / h * lado,
+              yaw, pitch: -0.08, roll: 0, esc: 1.35, c: verde, a: cabeza, cob: 0.35,
+              fase: i * 1.4 + r, ala: 1, cab: 0, gir: 0,
+            });
+          }
+        }
+      }, 87.6);
 
       Object.assign(G.c, { aplicarEngranaje, engMaquina, maquina, trx, PLACES, T, MAQ, TRX, MIRADOR, mirador, bench, ghost, applyTallerLook, placeRefugeMesh, refugeMesh: () => refugeMesh, luzMirador });
     },

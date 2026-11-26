@@ -58,14 +58,17 @@
   const PR = (x, z) => ({ x: RX(x), z: RZ(z) }); // el río y el puente
   const PC = { x: -40, z: -131 }; // centro de la plaza en la Ciudad de los 36
   const CI = (x, z) => (REAL ? { x: PC.x + x, z: PC.z + z } : { x, z }); // la plaza y lo que la rodea
-  const PLAZA = CI(0, 0), TALLER = EN({ x: -7, z: 7 }, { x: 47, z: -62 }), MESA = EN({ x: -6, z: 4.5 }, { x: 45, z: -60 }), IGUACA = CI(-3, -5), GUARDIAN = CI(3.5, -6);
+  // En el mapa real el taller y la mesa no pueden nacer junto al arranque (44, −62): el techo
+  // (cono de 2,6 m) y la tabla llenaban la cámara a 390×844 y tapaban los botones. Siguen
+  // junto al río, a unos 10 m, sin pisar a Brote (42, −53) ni el radio de Acción de la mesa.
+  const PLAZA = CI(0, 0), TALLER = EN({ x: -7, z: 7 }, { x: 53, z: -57 }), MESA = EN({ x: -6, z: 4.5 }, { x: 51, z: -55 }), IGUACA = CI(-3, -5), GUARDIAN = CI(3.5, -6);
   const IGUACA_RIO = EN(IGUACA, { x: 42, z: -60.5 }); // en el real, Iguaca espera junto al taller hasta subir a la Ciudad
   const MIRADOR = EN({ x: -20, z: -20 }, { x: -40, z: -117 }), TRANSMISOR = CI(6, 5);
   const MUELLE_N = EN({ x: 15.2, z: -8 }, { x: 29, z: -58 }), MUELLE_S = EN({ x: 15.2, z: 8 }, { x: 27.5, z: -42 }), PUENTE = PR(20, 0), PUENTE_W = PR(15.5, 0);
   const TABLA_LARGA = EN({ x: 11, z: -3 }, { x: 35, z: -49 });
   const INICIO = EN({ x: -16, z: -16 }, { x: 44, z: -62 });
   // KELVIN-1 · resuelto (Kelvin 2-nov). Los 6 visitantes: lo que saben hacer (2) y lo que necesitan (1) son del personaje; la especie solo da la ficha (especies.js)
-  // En el real, Brote no va junto a la mesa (45, −60): a 1 m, su radio de Acción (2,4) quedaba dentro del de la mesa y, al
+  // En el real, Brote no va junto a la mesa (51, −55; antes 45, −60): a 1 m, su radio de Acción (2,4) quedaba dentro del de la mesa y, al
   // llegar desde los otros visitantes (del oeste), Acción apuntaba a la mesa y el paso 2 no avanzaba (BM129).
   const VISITANTES = [
     { id: 'mira', nombre: 'Mira', especie: 'versicolor', sprite: 'assets/mira.png', ...EN({ x: 13.5, z: -10.5 }, { x: 39, z: -60 }), sabe: ['ver lejos', 'volar alto'], necesita: 'sombra', dice: false, observa: 'Se queda en la sombra del árbol y no se mueve de ahí.',
@@ -328,7 +331,17 @@
     },
 
     lineasInicio, llegan, // D32: la línea de quién llega según el registro de temporada (la de siempre sin dato)
-    inicio(G) { G.eventos.log('GuestsArrived'); G.dialogo.say(lineasInicio(G), () => G.ui.toast('Baja a los muelles y recibe a quien llega', 3000)); },
+    inicio(G) {
+      G.eventos.log('GuestsArrived');
+      G.dialogo.say(lineasInicio(G), () => G.ui.toast('Baja a los muelles y recibe a quien llega', 3000));
+      // Las luces del horizonte saludan al empezar: estrellas lejos de la cámara y el aviso de Suno.
+      try {
+        const quieto = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+        const x = INICIO.x + (REAL ? 16 : 8), z = INICIO.z + (REAL ? 6 : 4);
+        if (!quieto && G.fx && G.fx.burst && G.terreno) G.fx.burst(x, G.terreno.height(x, z) + 7, z, 'stars', 10);
+        if (G.audio && G.audio.play) G.audio.play('aviso');
+      } catch (e) { /* el terreno aún no está */ }
+    },
 
     preparar(G) {
       const S = G.S, H = G.terreno.height, L = G.dialogo.L, scene = G.renderer.scene;
@@ -869,6 +882,7 @@
           G.quiet = true; G.guardado.reset(true);
           check('Crea el personaje', G.creador.saveCharacter({ name: 'Prueba', preset: 'agilis', outfit: 'azul', accessory: 'ninguno' }) === null);
           check('Empieza en el paso 1 de 6', S.step === 0 && $('steps').children.length === 6);
+          check('El taller y la mesa quedan lejos del arranque (el techo no tapa la cámara)', Math.hypot(TALLER.x - INICIO.x, TALLER.z - INICIO.z) > 8 && Math.hypot(MESA.x - INICIO.x, MESA.z - INICIO.z) > 8, Math.hypot(TALLER.x - INICIO.x, TALLER.z - INICIO.z).toFixed(1) + ' / ' + Math.hypot(MESA.x - INICIO.x, MESA.z - INICIO.z).toFixed(1));
           check('Lo provisional del canon va marcado [KELVIN] en notas y comentarios, no en el texto del jugador', G.pack.dialogos.datos().escenas.some(e => /\[KELVIN|^Kelvin /.test(e.nota || '')) && !JSON.stringify(G.pack.dialogos.datos().escenas.map(e => e.lineas)).includes('[KELVIN'));
           check('6 visitantes inspirados en especies vivas con ficha en especies.js; sus habilidades son del personaje', G.ep6.VISITANTES.length === 6 && G.ep6.VISITANTES.every(v => (window.AV_ESPECIES.especies || []).some(e => e.id === v.especie && e.uicn && e.uicn.categoria !== 'EX') && v.sabe.length === 2 && v.necesita));
           // M1 · Cada quien con lo suyo

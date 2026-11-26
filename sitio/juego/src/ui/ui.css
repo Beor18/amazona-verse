@@ -730,6 +730,10 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #prompt .prompt-txt { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; }
   /* Botones de sistema: columna de iconos al borde derecho */
   #sys { top: 50%; transform: translateY(-50%); flex-direction: column; }
+  /* Con el diálogo, la columna sube: a media altura tapaba la cara (abuela del cap. 3, 390×844). */
+  body:has(#dialog:not([hidden])) #sys { top: calc(env(safe-area-inset-top, 0px) + 96px); transform: none; }
+  /* El «descubriste» cabe en dos líneas cortas y no tapa a Vittata bajo el minimapa. */
+  #toast:has(.desc-titulo) { min-height: 0; padding-top: 6px; padding-bottom: 6px; }
   .hud-btn { width: var(--tap); padding: 0; font-size: 0; gap: 0; --icon-size: 22px; }
   #emotes { top: 50%; right: calc(max(var(--sp-3), env(safe-area-inset-right, 0px)) + 60px); transform: translateY(-50%); width: min(280px, calc(100vw - 96px)); }
   #emotes .btn { padding: 0 var(--sp-2); } /* E17: el número va pegado al nombre («5 · Enojarse» no se parte): 8 px más de sitio */
