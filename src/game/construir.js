@@ -1206,6 +1206,7 @@
         // (que se esconde mientras el aviso está a la vista: el botón «Colocar» dice lo mismo)
         'body:has(#cl-hud:not([hidden])) #toast{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);left:max(160px,calc(env(safe-area-inset-left,0px) + 160px));right:max(210px,calc(env(safe-area-inset-right,0px) + 210px));margin-inline:auto;width:fit-content;max-width:none;max-height:var(--cl-av-max,64px);padding:6px 12px;font-size:calc(13px * var(--fs-k,1));line-height:1.3;overflow:hidden}' +
         'body:has(#cl-hud:not([hidden])) #toast::before{display:none}body:has(#cl-hud:not([hidden])):has(#toast:not([hidden])) #prompt{visibility:hidden}}' +
+        '@media (orientation:landscape) and (max-height:500px){#cl-hud .cl-piezas button[aria-pressed="true"] small{display:none}#cl-hud .cl-ahora{display:inline;max-width:11em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#cl-hud .cl-ahora{animation:cl-nombre .45s ease}}@keyframes cl-nombre{from{opacity:.2}to{opacity:1}}' +
         // PULIR 7 · escritorio (1280×720): la barra iba arriba en el centro y tapaba a Vittata y el sitio de la pieza. Va abajo, compacta
         // (las piezas en una fila que se desliza), entre la ayuda de teclas y «Controles»; la línea «Acción: …» sube encima de la barra
         // (--cl-hud-alto lo mide avisoSitio) y la ayuda de teclas se esconde mientras (la barra ya lleva sus teclas)
