@@ -77,7 +77,8 @@ window.AVV18Piloto = function (G) {
     texNube = tex(g => {
       const halo = g.createRadialGradient(128, 136, 40, 128, 136, 128); halo.addColorStop(0, 'rgba(255,226,122,.55)'); halo.addColorStop(1, 'rgba(255,226,122,0)');
       g.fillStyle = halo; g.fillRect(0, 0, 256, 256);
-      const bolas = [[84, 146, 46], [128, 118, 58], [176, 140, 48], [108, 160, 40], [154, 164, 40]];
+      // Centradas: antes el bulto quedaba abajo del lienzo y, a 390, la marca se leía como una mancha en la arena.
+      const bolas = [[78, 128, 48], [128, 108, 62], [178, 126, 50], [104, 150, 42], [156, 152, 44]];
       g.save(); g.shadowColor = 'rgba(255,255,255,.9)'; g.shadowBlur = 14;
       for (const [x, y, r] of bolas) { const gr = g.createRadialGradient(x - r * 0.3, y - r * 0.4, r * 0.2, x, y, r); gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.7, '#f4f8ff'); gr.addColorStop(1, '#d6e4f5'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
       g.restore();
@@ -116,7 +117,7 @@ window.AVV18Piloto = function (G) {
         const mat = sp.material, bob = Math.sin(now * 2 + i) * 0.25;
         if (m.tipo === 'nube') {
           if (mat.map !== texNube) { mat.map = texNube; mat.needsUpdate = true; }
-          const esc = (act ? 5 : 3) * (1 + Math.sin(now * 2.5 + i) * 0.04);
+          const esc = (act ? 5.4 : 3.2) * (1 + Math.sin(now * 2.5 + i) * 0.08);
           sp.position.set(m.x, m.y + bob, m.z); sp.scale.set(esc, esc, 1);
           mat.opacity = act ? 1 : 0.45; mat.color.setHex(0xffffff); // con halo dorado: no se confunde con las nubes del cielo
         } else {
@@ -148,6 +149,10 @@ window.AVV18Piloto = function (G) {
     if (!(o && o.mismoSitio)) origen();
     F.marcas = LEC[F.lec].marcas(F.origen);
     prepararMarcas(); pintarHud();
+    try {
+      const m0 = F.marcas[0];
+      if (m0 && m0.tipo === 'nube' && !G.quiet && G.fx && G.fx.burst) G.fx.burst(m0.x, m0.y, m0.z, 'stars', 8);
+    } catch (e) { /* sin fx */ }
     return true;
   }
   const miraEsc = { x: 0, z: 1 };
@@ -184,7 +189,7 @@ window.AVV18Piloto = function (G) {
     if (grupo) grupo.visible = false;
     if (hudEl) { hudEl.hidden = true; }
     bajar(false); if (bBajar) bBajar.hidden = true;
-    document.body.classList.remove('piloto-on');
+    document.body.classList.remove('piloto-on', 'piloto-lec0');
     return estaba;
   }
   const activo = () => F.modo;
@@ -227,6 +232,7 @@ window.AVV18Piloto = function (G) {
   function paso(dt) {
     if (!F.modo) return;
     if (!encendido()) { salir(); return; }
+    document.body.classList.toggle('piloto-lec0', !!(F.modo && !F.res && F.lec === 0));
     dt = Math.min(0.1, dt || 0.05);
     if (F.res) {
       F.resT += dt;
@@ -275,7 +281,8 @@ window.AVV18Piloto = function (G) {
       '#pil-hud button.pil-salir{background:#ffd0c4;padding:4px 16px}#pil-hud button:focus-visible{outline:3px solid #fff;outline-offset:2px}' +
       '#pil-bajar{position:fixed;z-index:8;width:64px;height:64px;border-radius:50%;border:0;background:rgba(255,243,214,.92);color:#3b2a14;font:700 14px Fredoka,system-ui,sans-serif;box-shadow:0 3px 10px rgba(0,0,0,.3);touch-action:none;user-select:none;-webkit-user-select:none}#pil-bajar[hidden]{display:none}#pil-bajar.on{background:#ffe27a}' +
       'body.piloto-on :is(#quest,#inv,#inv-cuenta,#modo-salir,#b-construir,#toast,#prompt,#minimapa,#v18-exp-poder,#v18-extra,#rio-visor,#fx-descubre,#rotulo-lugar){visibility:hidden!important}' +
-      '@media (max-width:560px){#pil-hud{left:max(12px,env(safe-area-inset-left,0px));transform:none;width:min(560px,calc(100vw - 84px))}}'; // 390×844: la columna de Diario y Pausa no tapa «Salir»
+      '@media (max-width:560px){#pil-hud{left:max(12px,env(safe-area-inset-left,0px));transform:none;width:min(560px,calc(100vw - 84px))}#pil-hud .pil-t b{font-size:14px;line-height:1.15}#pil-hud .pil-pista{font-size:14px}}' + // 390×844: la columna de Diario y Pausa no tapa «Salir»; el título no empuja el reloj
+      'body.piloto-lec0 #b-fly,body.piloto-lec0 #b-jump{animation:pil-invita 1.1s ease-in-out infinite}@keyframes pil-invita{0%,100%{box-shadow:0 0 0 0 rgba(255,226,122,.2)}50%{box-shadow:0 0 0 6px rgba(255,226,122,.85)}}';
     document.head.appendChild(st);
     hudEl = document.createElement('div'); hudEl.id = 'pil-hud'; hudEl.hidden = true; hudEl.setAttribute('role', 'region');
     hudEl.innerHTML = '<div class="pil-t"><b data-k="t"></b><span class="pil-reloj" data-k="reloj"></span></div><div class="pil-pista" data-k="pista" role="status" aria-live="polite"></div><div class="pil-bots">' +
