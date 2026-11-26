@@ -34,6 +34,7 @@ window.AVCarga = function (G) {
     ['Regando El Yunque…', 'Watering El Yunque…'],
   ];
   const CASI = ['¡Ya casi! Abriendo las alas…', 'Almost there! Spreading the wings…'];
+  const SINRED = ['Se cortó la conexión. Seguimos con lo que ya bajó.', 'The connection dropped. We will keep what already loaded.'];
   const AVISOS = {
     empieza: ['Preparando la isla…', 'Getting the island ready…'],
     paso: ['Preparando la isla: {} %', 'Getting the island ready: {} %'],
@@ -210,7 +211,10 @@ window.AVCarga = function (G) {
         pintar();
         // PULIR 5 (17-nov): con la barra casi llena el final (programas y GPU) puede tardar varios segundos y parecía colgada:
         // la frase pasa a «¡Ya casi!» y se queda; la barra sigue con su brillo
-        if (mostrado >= 0.9) { if (iFrase !== -1) { iFrase = -1; frase.innerHTML = ''; const sp = doc.createElement('span'); sp.textContent = L(CASI[0], CASI[1]); frase.appendChild(sp); } }
+        const sinRed = typeof navigator !== 'undefined' && navigator.onLine === false;
+        if (sinRed) { if (iFrase !== -2) { iFrase = -2; frase.innerHTML = ''; const sp = doc.createElement('span'); sp.textContent = L(SINRED[0], SINRED[1]); frase.appendChild(sp); } }
+        else if (iFrase === -2) { iFrase = 0; tFrase = now; ponerFrase(0); }
+        else if (mostrado >= 0.9) { if (iFrase !== -1) { iFrase = -1; frase.innerHTML = ''; const sp = doc.createElement('span'); sp.textContent = L(CASI[0], CASI[1]); frase.appendChild(sp); } }
         else if (now - tFrase > FRASE_MS) { tFrase = now; iFrase = (iFrase + 1) % FRASES.length; ponerFrase(iFrase); }
         // Con todo cargado, los dos primeros cuadros de verdad se dibujan debajo de la pantalla (opaca): ahí se crean los búferes
         // a pantalla completa y el mapa de sombras. Luego se espera a que la GPU termine lo enviado (marca, sin bloquear). Así el
