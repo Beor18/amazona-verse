@@ -853,6 +853,7 @@ window.AV_EN = {
  "Pulsa {} para volar": "Press {} to fly",
  "Punto": "Point",
  "Punto {} de": "Point {} of",
+ "Punto {} de {}": "Point {} of {}",
  "Puntos": "Points",
  "Pétalos de flor de bosque.": "Forest flower petals.",
  "Pío": "Pío",

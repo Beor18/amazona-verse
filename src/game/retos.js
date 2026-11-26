@@ -80,6 +80,8 @@
       const es = n + (n === 1 || n === 3 ? '.er' : '.º');
       return (G.idioma && G.idioma.tr) ? G.idioma.tr(es) : es;
     };
+    // El observador de idioma reescribe el texto después: si lo comparamos con el español, «¡Ya!» se queda en «Go!».
+    const decir = t => (t && G.idioma && G.idioma.tr) ? G.idioma.tr(t) : t;
     const MAPA = window.AV_MAPA_CAP1 || null;
 
     // =================================================================================================================
@@ -427,8 +429,12 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
   border: 3px solid rgba(255,255,255,.35); background: rgba(12,30,22,.78); color: #fff; font: 700 18px/1.1 var(--font-display); box-shadow: 0 4px 14px rgba(0,0,0,.35); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #retos .rt-turbo button.lleno { border-color: #ffd27a; background: linear-gradient(180deg, #3f9a4e, #23683a); box-shadow: 0 0 0 3px rgba(255,210,122,.45), 0 4px 14px rgba(0,0,0,.35); }
 #retos .rt-turbo .rt-hojas { display: flex; gap: 3px; }
-#retos .rt-turbo .rt-hojas i { width: 20px; height: 26px; display: inline-block; border-radius: 50% 0 50% 0; transform: rotate(-35deg); background: rgba(255,255,255,.2); }
+#retos .rt-turbo .rt-hojas i { width: 20px; height: 26px; display: inline-block; border-radius: 50% 0 50% 0; transform: rotate(-35deg); background: rgba(200,245,154,.38); box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.7); }
 #retos .rt-turbo .rt-hojas i.si { background: linear-gradient(160deg, #c8f59a, #3f9a4e); box-shadow: 0 0 6px rgba(200,245,154,.8); }
+#retos .rt-nhojas { font: 700 16px/1 var(--font-display); color: #ffd27a; font-variant-numeric: tabular-nums; }
+@keyframes rt-brillo { 50% { filter: drop-shadow(0 0 7px #ffd27a); } }
+#retos .rt-flecha.rt-cerca svg { animation: rt-brillo .55s ease-in-out infinite; } /* sin transform: el giro de la flecha vive ahí */
+#retos .rt-pts.rt-salto { animation: rt-latido .4s var(--ease-pop); }
 #retos .rt-turbo .rt-tecla { color: #ffd27a; opacity: 1; }
 @media (max-width: 640px) { #retos .rt-turbo b { font-size: 15px; } }
 #retos .rt-tag.rt-rebufo { box-shadow: 0 0 0 3px rgba(200,245,154,.55), 0 0 14px rgba(200,245,154,.9); }
@@ -458,7 +464,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
 @keyframes rt-pop { 0% { transform: scale(1.8); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes rt-aviso { 0% { opacity: 0; transform: translate(-50%, 12px) scale(.8); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.05); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -16px); } }
 @keyframes rt-latido { 50% { transform: scale(1.08); } }
-@media (prefers-reduced-motion: reduce) { #retos .rt-cuenta.pop, #retos .rt-aviso.ver, #retos .rt-panel, #retos .rt-nuevo, #retos-fx .rt-lineas, #retos .rt-turbo button.lleno, #retos .rt-turbo .rt-hojas i.si { animation-duration: .01s; animation-iteration-count: 1; } }
+@media (prefers-reduced-motion: reduce) { #retos .rt-cuenta.pop, #retos .rt-aviso.ver, #retos .rt-panel, #retos .rt-nuevo, #retos-fx .rt-lineas, #retos .rt-turbo button.lleno, #retos .rt-turbo .rt-hojas i.si, #retos .rt-flecha.rt-cerca svg, #retos .rt-pts.rt-salto { animation-duration: .01s; animation-iteration-count: 1; } }
 @media (max-width: 640px) { #retos .rt-chip { font-size: 17px; padding: 5px 10px; } #retos .rt-pos b { font-size: 21px; } #retos .rt-lbl { display: none; } #retos .rt-aviso { font-size: 24px; } }
 /* 390×844: el panel se iba a la derecha (For two y la X quedaban fuera) y el turbo no avisaba al llenarse */
 @media (max-width: 420px) {
@@ -466,6 +472,10 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
   #retos .rt-retos { grid-template-columns: 1fr; }
   #retos .rt-reto .rt-fila .btn { min-width: 0; }
   #retos .rt-aviso { white-space: normal; text-align: center; max-width: calc(100vw - 32px); }
+  /* El 3-2-1 grande tapaba la flor. El nombre del turbo (224 px) cruzaba el mar, encima de Bajar. */
+  #retos .rt-cuenta { padding-top: calc(env(safe-area-inset-top, 0px) + 156px); font-size: 64px; -webkit-text-stroke-width: 5px; }
+  #retos .rt-turbo button { position: relative; padding: 6px 14px 6px 10px; gap: 8px; }
+  #retos .rt-turbo button b { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
 #retos .rt-turbo .rt-hojas i.si { animation: rt-latido .45s var(--ease-pop); }
 #retos .rt-turbo button.lleno { animation: rt-latido .7s ease-in-out 3; }
@@ -491,7 +501,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
 </div>
 <div class="rt-flecha" hidden>${FLECHA}<span>0 m</span></div>
 <div class="rt-tags"></div>
-<div class="rt-turbo" hidden><button type="button" data-turbo tabindex="-1" aria-disabled="true" aria-keyshortcuts="E" aria-label="Aletazo turbo"><span class="rt-hojas" aria-hidden="true"><i></i><i></i><i></i></span><b>Aletazo turbo</b><span class="rt-tecla">${TACTIL ? '' : 'E'}</span></button></div>
+<div class="rt-turbo" hidden><button type="button" data-turbo tabindex="-1" aria-disabled="true" aria-keyshortcuts="E" aria-label="Aletazo turbo"><span class="rt-hojas" aria-hidden="true"><i></i><i></i><i></i></span><b>Aletazo turbo</b><span class="rt-nhojas" aria-hidden="true">0/3</span><span class="rt-tecla">${TACTIL ? '' : 'E'}</span></button></div>
 <div class="rt-cuenta" aria-live="assertive"></div>
 <div class="rt-aviso" aria-live="polite"></div>
 <div class="rt-menu" hidden><div class="rt-panel" role="dialog" aria-labelledby="rt-menu-t">
@@ -568,11 +578,22 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
       const sp = ui.turboBtn.querySelector('.rt-tecla'); if (sp && !TACTIL) sp.textContent = k;
     }
     function aviso(txt) {
-      const a = ui.aviso; a.textContent = txt; a.classList.remove('ver'); void a.offsetWidth; a.classList.add('ver');
+      const a = ui.aviso; a.textContent = decir(txt); a.classList.remove('ver'); void a.offsetWidth; a.classList.add('ver');
     }
+    let cuentaN = 0;
     function mostrarCuenta(txt) {
-      const c = ui.cuenta; c.textContent = txt; c.classList.remove('pop'); if (txt) { void c.offsetWidth; c.classList.add('pop'); }
-      ui.el.classList.toggle('rt-contando', /^\d$/.test(txt)); // F1-8: en el teléfono en horizontal, la flecha espera a que acabe la cuenta
+      const c = ui.cuenta; c.textContent = decir(txt); c.classList.remove('pop');
+      if (txt) { void c.offsetWidth; c.classList.add('pop'); c.dataset.n = String(++cuentaN); }
+      else delete c.dataset.n;
+      ui.el.classList.toggle('rt-contando', /^\d$/.test(String(txt || ''))); // F1-8: en el teléfono en horizontal, la flecha espera a que acabe la cuenta
+    }
+    // Quita «¡Ya!» o «¡Vuela!» aunque el idioma ya lo haya pasado a «Go!» o «Fly!».
+    function soltarCuenta(ms, sigueEnCuenta) {
+      const n = ui.cuenta.dataset.n;
+      setTimeout(() => {
+        if (!ui || ui.cuenta.dataset.n !== n || sigueEnCuenta()) return;
+        mostrarCuenta('');
+      }, ms);
     }
 
     // =================================================================================================================
@@ -1405,7 +1426,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
         const n = Math.ceil(C.cuenta / T_CARRERA.cuentaPaso);
         if (n !== C.ultimoN && n > 0 && n < 3) { C.ultimoN = n; mostrarCuenta(String(n)); sonar('r_cuenta'); }
         if (n === 3) C.ultimoN = 3;
-        if (C.cuenta <= 0) { C.fase = 'juego'; mostrarCuenta('¡Ya!'); sonar('r_ya'); setTimeout(() => { if (C.fase !== 'cuenta' && ui.cuenta.textContent === '¡Ya!') mostrarCuenta(''); }, 700); }
+        if (C.cuenta <= 0) { C.fase = 'juego'; mostrarCuenta('¡Ya!'); sonar('r_ya'); soltarCuenta(700, () => C.fase === 'cuenta'); }
         rivalesIA(0);
         return;
       }
@@ -1486,7 +1507,12 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
         if (Math.hypot(h.x - x, h.y - y, h.z - z) > T_NUBES.hojaRadio) continue;
         h.activa = false; ponerHoja(N, i, 0); C.hojas++; C.hojasRecogidas++;
         sonar('r_hoja', C.hojas);
-        if (C.hojas >= T_NUBES.hojasTurbo) { aviso('¡Aletazo turbo listo!'); C.avisoT = ADEL.avisoS; break; }
+        if (C.hojas >= T_NUBES.hojasTurbo) {
+          aviso('¡Aletazo turbo listo!'); C.avisoT = ADEL.avisoS;
+          sonar('nido_chispa'); // premio que ya existe: la 3.ª hoja llena el turbo
+          if (!calma) G.fx.burst(x, y + 0.4, z, 'gold', 16);
+          break;
+        }
       }
       // Rebufo: 1 s seguido detrás y cerca de una rival (o del fantasma) da un empujón; si sigues detrás, otro al segundo siguiente
       // C.rebufoDe: a quién sigues (índice de la rival, -2 el fantasma, -1 nadie); su estela y su etiqueta se encienden
@@ -1526,6 +1552,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
       const lleno = C.hojas >= T_NUBES.hojasTurbo;
       ui.turboBtn.classList.toggle('lleno', lleno); ui.turboBtn.setAttribute('aria-disabled', String(!lleno));
       ui.turboBtn.setAttribute('aria-label', lleno ? 'Aletazo turbo: listo' : 'Aletazo turbo: ' + C.hojas + ' de 3 hojas');
+      const nhojas = ui.turboBtn.querySelector('.rt-nhojas'); if (nhojas && nhojas.textContent !== C.hojas + '/3') nhojas.textContent = C.hojas + '/3';
     }
     // «Para dos» por turnos: cada ronda vuela uno y luego el otro contra su fantasma; en la ronda siguiente empieza el otro
     function nuevaSerieDos() { return { serie: [0, 0], ronda: 1, orden: [1, 2], paso: 0, fantasma: null, tiempos: [null, null], ganador: null }; }
@@ -1551,6 +1578,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
       u.flor.visible = u.halo.visible = u.haz.visible = false;
       if (!(C.nubes && quieto())) { G.fx.burst(u.x, u.y, u.z, 'petalos', 30); G.fx.burst(u.x, u.y + 0.5, u.z, 'gold', 14); } // F1-8: las nubes, sin partículas con «Reducir movimiento»
       sonar('r_punto', C.sig); C.avisoT = ADEL.avisoS; // el adelanto no se dobla con este sonido ni pisa el aviso
+      if (ui.chipPts) { ui.chipPts.classList.remove('rt-salto'); void ui.chipPts.offsetWidth; ui.chipPts.classList.add('rt-salto'); }
       C.sig++;
       if (C.sig >= Rr.puntos.length) { acabarCarrera(true); return; }
       aviso(C.sig === Rr.puntos.length - 1 ? '¡A la meta!' : 'Punto ' + C.sig + ' de ' + (Rr.puntos.length - 1));
@@ -1770,7 +1798,9 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
         const ang = Math.atan2(dx * Math.cos(yaw) - dz * Math.sin(yaw), -dx * Math.sin(yaw) - dz * Math.cos(yaw));
         estilo(ui.flechaSvg, 'transform', 'rotate(' + ang.toFixed(2) + 'rad)');
         const pt = Rr.puntos[Math.min(C.sig, Rr.puntos.length - 1)];
-        pon(ui.flechaTxt, C.fase === 'fin' ? '¡Meta!' : pt.nombre + ' · ' + Math.round(Math.hypot(dx, dz)) + ' m');
+        const metros = Math.round(Math.hypot(dx, dz));
+        ui.flecha.classList.toggle('rt-cerca', C.fase === 'juego' && metros < 45);
+        pon(ui.flechaTxt, decir(C.fase === 'fin' ? '¡Meta!' : pt.nombre + ' · ' + metros + ' m'));
       }
       chispasFx(dt);
     }
@@ -1926,7 +1956,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
         TM.cuenta -= dt;
         const n = Math.ceil(TM.cuenta / T_CARRERA.cuentaPaso);
         if (n !== TM.ultimoN && n > 0 && n < 3) { TM.ultimoN = n; mostrarCuenta(String(n)); sonar('r_cuenta'); }
-        if (TM.cuenta <= 0) { TM.fase = 'juego'; mostrarCuenta('¡Vuela!'); sonar('r_ya'); setTimeout(() => { if (ui.cuenta.textContent === '¡Vuela!') mostrarCuenta(''); }, 700); }
+        if (TM.cuenta <= 0) { TM.fase = 'juego'; mostrarCuenta('¡Vuela!'); sonar('r_ya'); soltarCuenta(700, () => TM.fase === 'cuenta'); }
         TM.frente = -T_TORMENTA.radio - 14;
         return;
       }
