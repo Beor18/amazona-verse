@@ -475,17 +475,17 @@ Todo lo de la nota «ÚLTIMA NOCHE» vale, con estos cambios:
 📣 Grok → coordinadora · 25-nov 19:46 AST · Bloque 3 hecha · 1901d7a5 · propuesta «Amazona en el mundo real» en docs/diseno/AR_MUNDO_REAL.md; solo documento, Kelvin decide, no hay código · siguiente: Bloque 4
 📣 Grok → coordinadora · 25-nov 19:46 AST · Bloque 4 · bohiosTest no se reprodujo · sin commit de código · 41/41 dos veces en SwiftShader, 0 errores de consola, build b4-bohios-7f30f3e. No medí FPS. GT-16 y el audio de Safari quedan fuera (piden GPU o la Mac).
 
-🌙 RESUMEN DE GROK PARA KELVIN · 25-nov 19:46 AST · esta sesión
-1. Hecho y en main: `docs/diseno/AR_MUNDO_REAL.md` (1901d7a5). Es una propuesta, no un modo nuevo.
-2. El piloto que propone es una tarde, en un patio o parque que tú elijas, con un adulto, sin guardar el camino ni subir fotos.
-3. La web alcanza para Android. El iPhone, en el navegador, no tiene el mismo modo de cámara con el mundo detrás. La app de tienda queda para después, si el piloto sale bien.
-4. Antes de encender ubicación o cámara con menores de 13 hace falta un abogado: la norma federal (COPPA) trata la ubicación precisa como dato personal.
-5. Bloque 4: bohiosTest 41/41 dos veces en la nube (SwiftShader), 0 errores. El fallo viejo «sin vanos» no salió. No cambié código.
-6. No medí FPS ni GT-16 (QA-239): piden GPU real.
-7. No publiqué. No toqué el mapa ni el prototipo «Vittata en tu casa»: son de otros agentes.
-8. Capturas de esta sesión: no hay. El documento no lleva imágenes. El prototipo AR, si queda, lo deja el agente del Bloque 2.
-9. A medias: nada de lo mío. Las preguntas del documento (parque o patio, GPS sí o no, foto sí o no) son tuyas.
-10. Siguiente, si queda noche y nadie lo tomó: no hay más bloque mío. El mapa y el AR con `?ar=1` siguen en los otros agentes.
+🌙 RESUMEN DE GROK PARA KELVIN · 25-nov
+1. Bloque 1, mapa: d822c594 deja el inventario en docs/equipo/MAPA_REFERENCIA.md.
+2. 03b9d9f6 añade dos puentes de madera, dos canoas, bohíos y una torre de vigía.
+3. beca0fe7 deja las capturas en docs/img/mapa_antes_* y docs/img/mapa_despues_*.
+4. Al arrancar siguen 112 draw calls y 48,9 MB.
+5. A medias: k187 monumento_c en La Mina sigue oculto porque taparía el camino, y no se añadieron bandada, murallas ni templos.
+6. Bloque 2, AR: 47317f02 y 45d313ca, con ?ar=1, solo Android, arTest 11/11 y capturas en docs/img/ar_*.png.
+7. El iPhone queda pendiente, porque r128 no trae USDZExporter.
+8. Bloque 3: 1901d7a5, docs/diseno/AR_MUNDO_REAL.md.
+9. Bloque 4: bohiosTest 41/41, sin código. FPS y QA-239 esperan una GPU real.
+10. Todo está en main con las 12 en verde y no se publicó nada.
 
 📣 Grok → coordinadora · 25-nov 19:53 AST · Bloque 2 hecha · 47317f02 · «Vittata en tu casa» solo con ?ar=1: Android WebXR immersive-ar, aro, toque, 30 cm, respira y mira a la cámara, saluda/celebra/aletea con sfx de Suno, botón Salir. Sin soporte, mensaje amable y vuelta al juego. arTest 11/11. Las 12 en verde en ar-47317f02, 0 errores de consola. iPhone pendiente: r128 no trae USDZExporter y no hay .usdz. Capturas: docs/img/ar_aviso.png, docs/img/ar_sin_soporte.png, docs/img/ar_vittata_30cm.png
 
