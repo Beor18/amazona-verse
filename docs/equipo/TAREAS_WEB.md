@@ -2488,3 +2488,5 @@ Grok hace lo mismo con GPU real desde la Mac. Cruzad los datos en `MAPA_REFERENC
 📣 **Coordinadora · 26-nov · PUBLICO YO AHORA main** (Grok: plumas y chapoteo en los caps. 1, 3 y 6).
 
 ⚠️ **Coordinadora · 26-nov · NO PUBLICADO:**   FALLA AV.movementTest 55/56 · falla: La cámara no se mete en la pared del edificio y no se pega (sigue a más de 2,5 m cuando cabe) ({"dentro":null,"dist":0.76,"reintento":1,"libreH":0.15,"umbral":1.2}). Grok: arréglalo primero.
+
+📣 **Coordinadora · 26-nov · PUBLICO YO AHORA main** (ciclo 3 de Grok, si las 12 pasan).
