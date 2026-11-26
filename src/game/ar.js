@@ -1,7 +1,7 @@
 /* Amazona Verse · prototipo «Vittata en tu casa» (25-nov). Solo con ?ar=1.
    Android: WebXR immersive-ar + hit-test (la API del navegador; three r128 tiene la sesión, no el hit-test).
-   iPhone: three r128 del repo no trae USDZExporter (examples/jsm/exporters no está). No se descarga.
-   Queda pendiente y aquí solo sale el aviso. La cámara no se lee, no se guarda y no se sube.
+   iPhone: AR Quick Look con assets/ar/vittata.usdz (USDZExporter de Three.js r128, MIT, en src/vendor/).
+   La cámara no se lee, no se guarda y no se sube.
    Vittata se usa tal cual (AVCharacter.create): ni el modelo ni el rig se tocan. */
 (function () {
   const ALTO = 0.30; // metros: una cotorra de verdad, de pie
@@ -33,6 +33,7 @@
         '#ar-casa .ar-aviso{font-weight:700;color:#ffd27a}#ar-casa .ar-fila{display:flex;flex-wrap:wrap;gap:8px}' +
         '#ar-casa button{min-height:44px;padding:10px 16px;border-radius:999px;border:0;font:700 1rem/1.2 system-ui,sans-serif;cursor:pointer}' +
         '#ar-casa [data-ar="entrar"]{background:#f0a202;color:#1a1204}#ar-casa [data-ar="seguir"],#ar-casa [data-ar="ok"]{background:transparent;color:#f4f7f1;border:2px solid rgba(244,247,241,.45)}' +
+        '#ar-casa a[rel="ar"]{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 16px 8px 8px;border-radius:999px;background:#1c6e8c;color:#fff;text-decoration:none;font:700 1rem/1.2 system-ui,sans-serif}#ar-casa a[rel="ar"] img{width:36px;height:36px;border-radius:8px;object-fit:cover}' +
         '#ar-overlay{position:fixed;inset:0;z-index:5;pointer-events:none}#ar-salir{pointer-events:auto;position:fixed;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));min-height:44px;min-width:44px;padding:10px 18px;border:0;border-radius:999px;background:#1d5e33;color:#fff;font:700 1rem/1 system-ui,sans-serif}' +
         '@media (prefers-reduced-motion:reduce){#ar-casa{animation:none}}';
       document.head.appendChild(s);
@@ -46,12 +47,11 @@
       estilo();
       if (dlg && document.contains(dlg)) return dlg;
       dlg = document.createElement('dialog'); dlg.id = 'ar-casa'; dlg.setAttribute('aria-labelledby', 'ar-t');
-      const ios = iphone() && !usdz();
       dlg.innerHTML = '<div class="ar-caja"><h2 id="ar-t">' + L('Vittata en tu casa', 'Vittata in your home') + '</h2>' +
         '<p class="ar-aviso">' + L('Pide a un adulto que te acompañe · mira a tu alrededor', 'Ask a grown-up to stay with you · look around you') + '</p>' +
         '<p>' + L('La cámara no se guarda ni se envía. No usamos dónde estás.', 'The camera is not saved or sent. We do not use where you are.') + '</p>' +
-        (ios ? '<p data-ar="iphone">' + L('En el iPhone todavía no está listo.', 'On iPhone it is not ready yet.') + '</p>' : '') +
         '<div class="ar-fila"><button type="button" data-ar="entrar">' + L('Ver a Vittata aquí', 'See Vittata here') + '</button>' +
+        '<a rel="ar" href="assets/ar/vittata.usdz"><img alt="" src="assets/ar/vittata_poster.jpg">' + L('Ver en tu casa', 'See her at home') + '</a>' +
         '<button type="button" data-ar="seguir">' + L('Seguir en el juego', 'Keep playing') + '</button></div>' +
         '<p data-ar="msg" hidden></p></div>';
       dlg.addEventListener('click', e => {
@@ -82,8 +82,10 @@
     }
 
     async function entrar(xrForzado) {
-      if (iphone() && !usdz()) return fallo(L('En el iPhone todavía no está listo. Seguimos en el juego.', 'On iPhone it is not ready yet. We will keep playing.'));
-      if (!(await soporta(xrForzado))) return fallo(L('Este aparato todavía no puede mostrar a Vittata en tu casa. Seguimos en el juego.', 'This device cannot show Vittata in your home yet. We will keep playing.'));
+      if (!(await soporta(xrForzado))) {
+        if (iphone()) return fallo(L('Toca «Ver en tu casa». Si no se abre, seguimos en el juego.', 'Tap “See her at home”. If it does not open, we will keep playing.'));
+        return fallo(L('Este aparato todavía no puede mostrar a Vittata en tu casa. Seguimos en el juego.', 'This device cannot show Vittata in your home yet. We will keep playing.'));
+      }
       try { await sesionAR(); } catch (e) { return fallo(L('No se pudo abrir la cámara. Seguimos en el juego.', 'The camera could not open. We will keep playing.')); }
       return '';
     }
@@ -241,7 +243,11 @@
         check('La cámara no se guarda ni se envía, y no hay ubicación', privacidad.ubicacion === false && privacidad.subeCamara === false && privacidad.guardaFoto === false && !/geolocation|getCurrentPosition/.test(entrar.toString() + sesionAR.toString()));
         check('Vittata queda a 30 cm', Math.abs(escalaDe(1) - 0.3) < 1e-9 && Math.abs(escalaDe(1.2) * 1.2 - 0.3) < 1e-9);
         check('Los gestos son saludar, celebrar y aletear, con sfx de Suno', GESTOS.map(g => g.id).join(',') === 'saluda,celebra,aletea' && GESTOS.every(g => G.audio && G.audio.has && G.audio.has(g.sfx)), GESTOS.map(g => g.sfx).join(','));
-        check('r128 no trae USDZExporter: el iPhone queda pendiente', !usdz());
+        const enlace = d.querySelector('a[rel="ar"]');
+        check('«Ver en tu casa» es un enlace rel=ar y no está en la portada', !!enlace && enlace.getAttribute('href') === 'assets/ar/vittata.usdz' && enlace.textContent.indexOf('Ver en tu casa') >= 0 && !enlace.closest('#title'));
+        const archivo = await fetch('assets/ar/vittata.usdz');
+        const bytes = new Uint8Array(await archivo.arrayBuffer());
+        check('El USDZ pesa 5 MB como mucho y es un zip', archivo.ok && bytes.length > 32 && bytes.length <= 5 * 1024 * 1024 && bytes[0] === 0x50 && bytes[1] === 0x4b, bytes.length);
         const msg = await entrar(null);
         check('Sin soporte: un mensaje amable y se vuelve al juego', /Seguimos en el juego/.test(msg) && !document.getElementById('ar-overlay'), msg);
         check('Sin soporte no guarda la cámara', !localStorage.getItem('amazonaverse.ar') && !localStorage.getItem('amazonaverse.ar.foto'));
@@ -254,7 +260,7 @@
         quitarAviso();
         if (antes && bandera()) abrir();
       }
-      return { passed: res.filter(r => r.ok).length, total: res.length, results: res, iphone: usdz() ? 'usdz' : 'pendiente' };
+      return { passed: res.filter(r => r.ok).length, total: res.length, results: res, iphone: 'usdz' };
     }
 
     const api = { abrir, entrar, salir: () => { try { if (sesion) sesion.end(); } catch (e) { limpiar(); } quitarAviso(); }, test, retrato, escalaDe, GESTOS, privacidad, bandera, usdz, ALTO };
