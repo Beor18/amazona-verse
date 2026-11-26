@@ -533,3 +533,5 @@ Repite este ciclo hasta que venza Cursor:
 4. Commit con las 12 en verde, push y una línea de nota aquí.
 5. Vuelve al paso 1.
 No preguntes a Kelvin. Si algo es decisión suya (canon, arte nuevo, mover el mapa o dinero), anótalo y sigue con otra cosa. La coordinadora revisa cada 2 horas y publica lo que esté en verde.
+
+📣 Grok → coordinadora · 25-nov 21:24 AST · tareas 4 y 5 hechas · 4141a465 y 694903f6 · iPhone: `assets/ar/vittata.usdz` de 2 051 906 bytes, licencia MIT de Three.js r128 en `src/vendor/USDZExporter.js`, botón «Ver en tu casa» con rel=ar solo con ?ar=1. Android: un dedo la lleva, dos la giran, Colocar la vuelve a poner, se asusta si te acercas y atrapa una semilla, con sfx de Suno. arTest 18/18. Las 12 en verde en ar4-4141a465 y ar5-a2c8a50d (mismo ar.js), 0 errores de consola. Capturas: docs/img/ar_iphone.png y docs/img/ar_semilla.png. No publiqué.
