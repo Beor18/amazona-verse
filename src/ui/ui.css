@@ -712,7 +712,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #steps { margin: 0; padding-top: 10px; }
   #steps li::before { height: 4px; }
   /* T6: el objetivo en 2 líneas como mucho (antes 1 línea cortada con «…») */
-  #steps li.now { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 15px; line-height: 1.25; white-space: normal; overflow: hidden; }
+  #steps li.now { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 14px; line-height: 1.25; white-space: normal; overflow: hidden; }
   /* T6: los contadores juntos: el inventario va pegado al reloj del marcador (ui.js pone --mc-w con su ancho) */
   /* A 390 el objetivo son 2 líneas: los recursos compartían la fila y tapaban «está en lo alto». Van debajo. */
   #quest { flex: 1 1 100%; }
@@ -731,6 +731,8 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   .quest-toggle::after { content: ""; position: absolute; right: 12px; top: 15px; border: 6px solid transparent; border-top-color: var(--c-text-muted); transform-origin: 50% 25%; transition: transform var(--dur-2) var(--ease-out); }
   #quest.abierto .quest-toggle::after { transform: rotate(180deg); }
   #inv { padding: 3px; }
+  /* Ciclo 6 · 390: sin madera ni piedra el inventario era un punto verde de 10 px. */
+  #inv:not(:has(.res:not([hidden]))) { display: none; }
   #inv .res { gap: 4px; padding-right: var(--sp-2); }
   #inv small { display: none; }
   /* Aviso de acción: hasta 2 líneas en vez de cortar */
@@ -780,7 +782,7 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   body:is(:has(#dialog:not([hidden])), :has(#bocadillos:not([hidden])), :has(#emotes:not([hidden]))) #toast { min-height: 0; padding: var(--sp-2) var(--sp-3); font-size: calc(12.5px * var(--fs-k, 1)); line-height: 1.28; }
   body:is(:has(#dialog:not([hidden])), :has(#bocadillos:not([hidden])), :has(#emotes:not([hidden]))) #toast::before { display: none; }
   body:is(:has(#dialog:not([hidden])), :has(#bocadillos:not([hidden])), :has(#emotes:not([hidden]))) #toast b { font-size: calc(13px * var(--fs-k, 1)); line-height: 1.2; }
-  #dialog { bottom: calc(env(safe-area-inset-bottom, 0px) + var(--sp-3)); gap: 0 var(--sp-3); padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3); }
+  #dialog { bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); gap: 0 var(--sp-3); padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-3); }
   .d-portrait { width: 76px; height: 76px; margin-top: -36px; border-width: 4px; }
   #dialog .who { font-size: var(--fs-md); margin-top: -30px; }
   #dialog p#d-text, #d-type { font-size: 17px; }

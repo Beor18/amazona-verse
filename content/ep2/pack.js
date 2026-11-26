@@ -287,7 +287,15 @@
         try { if (G.fx && G.fx.burst) G.fx.burst(CHARCA.x, yA + 0.2, CHARCA.z, 'bubbles', 10); } catch (e) { /* sin efectos */ }
         try { if (G.audio && G.audio.has && G.audio.has('splash')) G.audio.play('splash'); } catch (e) { /* sin audio */ }
       }
-      G.dialogo.say(G.dialogo.L('inicio:ep2'), () => { mirar(LUMA); G.ui.toast('Habla con Iguaca', 3000); });
+      G.dialogo.say(G.dialogo.L('inicio:ep2'), () => {
+        mirar(LUMA); G.ui.toast('Habla con Iguaca', 3000);
+        // Ciclo 6 · al terminar el saludo, plumas junto a Iguaca (partículas que ya están).
+        if (!G.quiet && !G.c._ciclo6Ep2) {
+          G.c._ciclo6Ep2 = true;
+          const y = G.terreno ? G.terreno.height(LUMA.x, LUMA.z) : 0;
+          try { if (G.fx && G.fx.burst) G.fx.burst(LUMA.x, y + 1, LUMA.z, 'feathers', 8); } catch (e) { /* sin efectos */ }
+        }
+      });
     },
 
     preparar(G) {
