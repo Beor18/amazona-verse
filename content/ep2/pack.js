@@ -485,12 +485,48 @@
       charca(CHARCA.x, CHARCA.z, CHARCA.r, 11); // «La abuela está junto al agua»
       charca(SITIOS.a.x + 1.6, SITIOS.a.z + 1.4, 1.1, 7); // el llano se encharca: se ve antes de leerlo
       for (const [dx, dz, r] of [[1.4, 1.2, 0.35], [-1.2, 1.8, 0.25], [2, -0.6, 0.3]]) { const x = SITIOS.b.x + dx, z = SITIOS.b.z + dz; pieza(new THREE.DodecahedronGeometry(r, 0), '#8d8a82', x, H(x, z) + r * 0.4, z); } // piedras sueltas de la loma
-      // El refugio de ahora, el que no aguanta: cuatro horcones torcidos y un techo de palma que se cae de un lado
+      // El refugio de ahora, el que no aguanta: cuatro horcones torcidos y un techo de palma que se cae de un lado.
+      // El techo se lee como un letrero de madera: el rótulo es de la interfaz (ES/EN), no una línea nueva de la historia.
       { const { x, z } = REFUGIO, y = H(x, z);
         for (const [dx, dz, h] of [[-0.9, -0.7, 1.6], [0.9, -0.7, 1.5], [-0.9, 0.7, 1.1], [0.9, 0.7, 0.9]]) pieza(new THREE.CylinderGeometry(0.06, 0.08, h, 6), '#6b4a2a', x + dx, H(x + dx, z + dz) + h / 2, z + dz).rotation.z = dx * 0.06;
-        const t = pieza(new THREE.BoxGeometry(2.2, 0.12, 1.9), '#8f7a3e', x, y + 1.3, z); t.rotation.set(0.32, 0.6, 0.1);
+        const ROTULO = 'Refugio viejo';
+        let tex = null;
+        const matSign = new THREE.MeshLambertMaterial({ color: '#ffffff', side: THREE.DoubleSide });
+        function lienzo(txt) {
+          const cv = document.createElement('canvas'); cv.width = 512; cv.height = 256; const g = cv.getContext('2d');
+          g.fillStyle = '#c9954a'; g.fillRect(0, 0, 512, 256);
+          g.strokeStyle = 'rgba(90,48,16,.35)'; g.lineWidth = 3;
+          for (let i = 0; i < 16; i++) { g.beginPath(); g.moveTo(0, 16 * i + 4); g.bezierCurveTo(160, 16 * i, 320, 16 * i + 14, 512, 16 * i + 6); g.stroke(); }
+          g.strokeStyle = '#6b3e16'; g.lineWidth = 14; g.strokeRect(8, 8, 496, 240);
+          g.fillStyle = '#3a220e'; g.font = '700 78px Fredoka, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+          g.fillText(txt, 256, 128, 460);
+          if (tex) tex.dispose();
+          tex = new THREE.CanvasTexture(cv);
+          if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+          tex.anisotropy = 4; tex.needsUpdate = true;
+          matSign.map = tex; matSign.needsUpdate = true;
+        }
+        function pintar() { lienzo((G.idioma && G.idioma.tr) ? G.idioma.tr(ROTULO) : ROTULO); }
+        pintar();
+        const t = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.78), matSign);
+        t.name = 'letrero_ep2'; t.castShadow = true;
+        const dx = INICIO.x - x, dz = INICIO.z - z, len = Math.hypot(dx, dz) || 1;
+        const sx = x + dx / len * 0.7, sz = z + dz / len * 0.7, sy = y + 2.2;
+        t.position.set(sx, sy, sz);
+        t.lookAt(INICIO.x, sy, INICIO.z); // de frente al arranque, por encima del aviso de Acción
+        G.renderer.scene.add(t);
+        const posteL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 2.05, 6), new THREE.MeshLambertMaterial({ color: '#6b4a2a' }));
+        posteL.position.set(sx, y + 1.02, sz); G.renderer.scene.add(posteL);
         pieza(new THREE.BoxGeometry(0.9, 0.08, 0.7), '#8f7a3e', x + 1.1, y + 0.05, z + 1).rotation.y = 0.9; // un trozo de techo ya caído
-        G.fisica.colliders.push({ x, z, r: 1, h: 1.4, kind: 'obj' }); }
+        G.fisica.colliders.push({ x, z, r: 1, h: 1.4, kind: 'obj' });
+        G.on('aula', (k) => { if (k === 'idioma') pintar(); });
+        G.on('apply', pintar, 76);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(pintar);
+        if (G.idioma && G.idioma.poner) {
+          const poner = G.idioma.poner;
+          G.idioma.poner = function (l) { const r = poner.apply(this, arguments); Promise.resolve(r).then(pintar); return r; };
+        }
+      }
       // La rama del papá: un tronco seco con una rama larga, donde se va volando al ver el plano
       { const { x, z } = RAMA, y = H(x, z);
         pieza(new THREE.CylinderGeometry(0.22, 0.32, 3.4, 8), '#6b4a2a', x, y + 1.7, z);
