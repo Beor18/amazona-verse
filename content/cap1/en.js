@@ -3229,6 +3229,7 @@ window.AV_EN = {
  "¡Aletazo turbo listo!": "Turbo Flap ready!",
  "¡Aletazo turbo!": "Turbo Flap!",
  "¡Nube!": "Cloud!",
+ "Cruza las nubes y junta 3 hojas": "Fly through the clouds and grab 3 leaves",
  "¡Rebufo!": "Slipstream!",
  "Turno del Jugador {}": "Player {}'s turn",
  "¡Ahora el Jugador {}!": "Now it's Player {}'s turn!",

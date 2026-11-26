@@ -473,9 +473,9 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
   #retos .rt-reto .rt-fila .btn { min-width: 0; }
   #retos .rt-aviso { white-space: normal; text-align: center; max-width: calc(100vw - 32px); }
   /* El 3-2-1 grande tapaba la flor. El nombre del turbo (224 px) cruzaba el mar, encima de Bajar. */
-  #retos .rt-cuenta { padding-top: calc(env(safe-area-inset-top, 0px) + 156px); font-size: 64px; -webkit-text-stroke-width: 5px; }
-  #retos .rt-turbo button { position: relative; padding: 6px 14px 6px 10px; gap: 8px; }
-  #retos .rt-turbo button b { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* El 3-2-1 iba en el centro y tapaba la flor. Queda a la izquierda, bajo los números. */
+  #retos .rt-cuenta { place-items: start start; padding-top: calc(env(safe-area-inset-top, 0px) + 58px); padding-left: 8px; font-size: 52px; -webkit-text-stroke-width: 4px; }
+  #retos .rt-turbo button b { font-size: 14px; }
 }
 #retos .rt-turbo .rt-hojas i.si { animation: rt-latido .45s var(--ease-pop); }
 #retos .rt-turbo button.lleno { animation: rt-latido .7s ease-in-out 3; }
@@ -501,7 +501,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
 </div>
 <div class="rt-flecha" hidden>${FLECHA}<span>0 m</span></div>
 <div class="rt-tags"></div>
-<div class="rt-turbo" hidden><button type="button" data-turbo tabindex="-1" aria-disabled="true" aria-keyshortcuts="E" aria-label="Aletazo turbo"><span class="rt-hojas" aria-hidden="true"><i></i><i></i><i></i></span><b>Aletazo turbo</b><span class="rt-nhojas" aria-hidden="true">0/3</span><span class="rt-tecla">${TACTIL ? '' : 'E'}</span></button></div>
+<div class="rt-turbo" hidden><button type="button" data-turbo tabindex="-1" aria-disabled="true" aria-keyshortcuts="E" aria-label="Aletazo turbo"><span class="rt-hojas" aria-hidden="true"><i></i><i></i><i></i></span><b>Turbo</b><span class="rt-nhojas" aria-hidden="true">0/3</span><span class="rt-tecla">${TACTIL ? '' : 'E'}</span></button></div>
 <div class="rt-cuenta" aria-live="assertive"></div>
 <div class="rt-aviso" aria-live="polite"></div>
 <div class="rt-menu" hidden><div class="rt-panel" role="dialog" aria-labelledby="rt-menu-t">
@@ -1426,7 +1426,13 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
         const n = Math.ceil(C.cuenta / T_CARRERA.cuentaPaso);
         if (n !== C.ultimoN && n > 0 && n < 3) { C.ultimoN = n; mostrarCuenta(String(n)); sonar('r_cuenta'); }
         if (n === 3) C.ultimoN = 3;
-        if (C.cuenta <= 0) { C.fase = 'juego'; mostrarCuenta('¡Ya!'); sonar('r_ya'); soltarCuenta(700, () => C.fase === 'cuenta'); }
+        if (C.cuenta <= 0) {
+          C.fase = 'juego'; mostrarCuenta('¡Ya!'); sonar('r_ya'); soltarCuenta(700, () => C.fase === 'cuenta');
+          if (C.nubes) {
+            aviso('Cruza las nubes y junta 3 hojas'); C.avisoT = ADEL.avisoS;
+            if (!quieto()) G.fx.burst(S.pos.x, S.pos.y + 1, S.pos.z, 'feathers', 14);
+          }
+        }
         rivalesIA(0);
         return;
       }
