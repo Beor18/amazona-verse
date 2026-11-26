@@ -190,7 +190,7 @@ window.AVSembradora = function (G) {
     M.diana.visible = apunta; M.arco.visible = apunta;
     if (apunta) {
       normal(P.lx, P.lz, nTmp);
-      dummy.position.set(P.lx, P.ly + 0.09, P.lz); inclinar(nTmp.nx, nTmp.ny, nTmp.nz); dummy.scale.setScalar(0.95); dummy.updateMatrix();
+      dummy.position.set(P.lx, P.ly + 0.09, P.lz); inclinar(nTmp.nx, nTmp.ny, nTmp.nz); dummy.scale.setScalar(1.55); dummy.updateMatrix();
       M.diana.matrix.copy(dummy.matrix); M.diana.matrixAutoUpdate = false; M.diana.matrixWorldNeedsUpdate = true;
       M.diana.material.color.setHex(P.zona === 2 ? 0xffd23f : P.zona === 1 ? 0x9df07a : 0xffffff);
       const a = M.arco.geometry.attributes.position, arr = a.array;
@@ -536,7 +536,7 @@ window.AVSembradora = function (G) {
     const st = document.createElement('style'); st.id = 'sdc-css';
     st.textContent = '#sdc-hud{position:fixed;left:12px;right:12px;margin-inline:auto;width:fit-content;max-width:calc(100vw - 24px);top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;justify-content:center;box-sizing:border-box;padding:6px 8px 6px 14px;border-radius:20px;background:rgba(16,36,28,.86);color:#fff8e6;font:600 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}#sdc-hud[hidden],#sdc-fin[hidden]{display:none}' +
       '#sdc-hud .sdc-tit:empty{display:none}#sdc-hud .sdc-t{font-variant-numeric:tabular-nums;font-size:18px;font-weight:700;min-width:3.2ch;text-align:center}#sdc-hud .sdc-t.poco{color:#ffb4a2}#sdc-hud .sdc-a{display:flex;align-items:center;gap:3px;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}#sdc-hud .sdc-a svg{width:22px;height:22px}' +
-      '#sdc-hud .sdc-s{display:flex;gap:3px;align-items:center}#sdc-hud .sdc-s i{width:10px;height:13px;border-radius:50%;background:rgba(255,248,230,.22);box-shadow:inset 0 0 0 1.5px rgba(255,248,230,.45)}#sdc-hud .sdc-s i.on{background:#c98a45;box-shadow:inset 0 -3px 0 #6e4520}#sdc-hud .sdc-s.vacio i{box-shadow:inset 0 0 0 1.5px #ffb4a2}' +
+      '#sdc-hud .sdc-s{display:flex;gap:3px;align-items:center}#sdc-hud .sdc-n{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;min-width:1ch}#sdc-hud .sdc-s i{width:10px;height:13px;border-radius:50%;background:rgba(255,248,230,.22);box-shadow:inset 0 0 0 1.5px rgba(255,248,230,.45)}#sdc-hud .sdc-s i.on{background:#c98a45;box-shadow:inset 0 -3px 0 #6e4520}#sdc-hud .sdc-s.vacio i{box-shadow:inset 0 0 0 1.5px #ffb4a2}' +
       '#sdc-hud .sdc-x{font-size:15px;font-weight:700;color:#ffd23f}#sdc-hud .sdc-x:empty,#sdc-hud .sdc-r:empty{display:none}#sdc-hud .sdc-r{opacity:.85;font-size:14px}' +
       '#sdc-hud [data-k="msg"]{position:absolute;left:50%;top:calc(100% + 72px);transform:translateX(-50%);width:max-content;max-width:min(560px,calc(100vw - 24px));box-sizing:border-box;text-align:center;line-height:1.25;padding:4px 12px;border-radius:999px;font-weight:700;pointer-events:none;background:#fff3d6;color:#3b2a14}#sdc-hud [data-k="msg"]:empty{display:none}#sdc-hud [data-k="msg"].oro{background:#ffd23f}#sdc-hud [data-k="msg"].malo{background:#ffd0c4;color:#5a1e10}#sdc-hud [data-k="msg"].bien{background:#c8f0c0;color:#173d12}' +
       '#sdc-hud button,#sdc-fin button{min-height:44px;min-width:44px;padding:4px 16px;border-radius:22px;border:0;font:700 16px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer;touch-action:manipulation}#sdc-fin button{min-height:54px;padding:4px 22px;font-size:18px}#sdc-hud button.salir,#sdc-fin button.salir{background:#ffd0c4}#sdc-hud button:focus-visible,#sdc-fin button:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}' +
@@ -545,6 +545,8 @@ window.AVSembradora = function (G) {
       '#sdc-fin .sdc-dato{font-size:14px;font-weight:500;line-height:1.3;padding:6px 10px;border-radius:12px;background:rgba(255,248,230,.1)}#sdc-fin .sdc-dato:empty{display:none}#sdc-fin .sdc-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}' +
       // el aviso va bajo la fila de botones de arriba (Diario, Gestos, Nido…: hasta ~130 px); en el teléfono de pie esa fila va al lado, así que sube
       '@media (max-width:600px){#sdc-hud [data-k="msg"]{top:calc(100% + 8px)}}' +
+      '@media (max-width:420px){#sdc-hud [data-k="msg"]{max-width:calc(100vw - 40px);font-size:14px;line-height:1.3}#sdc-fin .sdc-bots{flex-direction:column;align-items:stretch;width:100%}#sdc-fin .sdc-bots button{width:100%}}' +
+      '@keyframes sdc-pop{0%{transform:scale(1)}40%{transform:scale(1.45)}100%{transform:scale(1)}}#sdc-hud [data-k="a"].sdc-pop{display:inline-block;animation:sdc-pop .45s ease-out}@media (prefers-reduced-motion:reduce){#sdc-hud [data-k="a"].sdc-pop{animation:none}}' +
       // teléfono de lado: el aviso va abajo, entre el joystick y los botones (arriba tapaba Diario y Gestos)
       '@media (orientation:landscape) and (max-height:500px){#sdc-hud [data-k="msg"]{position:fixed;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);max-width:min(440px,calc(100vw - 380px))}}' +
       '@media (orientation:landscape) and (max-height:500px){#sdc-fin{padding:12px 16px;gap:4px}#sdc-fin h2{font-size:21px}#sdc-fin .sdc-gran{font-size:34px}#sdc-fin .sdc-gran svg{width:34px;height:34px}#sdc-fin .sdc-dato{font-size:13px;padding:4px 8px}}' +
@@ -560,7 +562,7 @@ window.AVSembradora = function (G) {
     if (hudEl) return;
     css();
     hudEl = document.createElement('div'); hudEl.id = 'sdc-hud'; hudEl.hidden = true; // sin role="status": el reloj cambia cada segundo y no se anuncia; solo el aviso (aria-live) habla
-    hudEl.innerHTML = '<b class="sdc-tit" data-k="tit"></b><span class="sdc-t" data-k="r"></span><span class="sdc-a" data-k="aw">' + ARBOL + '<span data-k="a"></span></span><span class="sdc-s" data-k="s">' + '<i></i>'.repeat(LLEVA) + '</span><span class="sdc-x" data-k="x"></span><span class="sdc-r" data-k="rec"></span><span data-k="msg" aria-live="polite"></span><button type="button" class="salir" data-a="salir"></button>';
+    hudEl.innerHTML = '<b class="sdc-tit" data-k="tit"></b><span class="sdc-t" data-k="r"></span><span class="sdc-a" data-k="aw">' + ARBOL + '<span data-k="a"></span></span><span class="sdc-s" data-k="s"><span class="sdc-n" data-k="sn"></span>' + '<i></i>'.repeat(LLEVA) + '</span><span class="sdc-x" data-k="x"></span><span class="sdc-r" data-k="rec"></span><span data-k="msg" aria-live="polite"></span><button type="button" class="salir" data-a="salir"></button>';
     finEl = document.createElement('div'); finEl.id = 'sdc-fin'; finEl.className = 'av-fin'; finEl.hidden = true; finEl.tabIndex = -1; finEl.setAttribute('role', 'dialog'); finEl.setAttribute('aria-modal', 'true'); finEl.setAttribute('aria-labelledby', 'sdc-fin-t');
     finEl.innerHTML = '<h2 id="sdc-fin-t" data-k="ft"></h2><div class="sdc-gran av-num">' + ARBOL + '<span data-k="fn"></span></div><p class="av-msg" data-k="fmsg" aria-live="polite"></p><p class="sdc-det av-det" data-k="fdet"></p><p class="sdc-dato" data-k="fdato"></p><div class="sdc-bots av-bots"><button type="button" class="av-bot" data-a="otra"></button><button type="button" class="av-bot salir" data-a="salir"></button></div>';
     const clic = e => { const b = e.target.closest && e.target.closest('button[data-a]'); if (!b) return; e.preventDefault(); if (b.dataset.a === 'otra') jugar(); else salir(); };
@@ -573,8 +575,11 @@ window.AVSembradora = function (G) {
     if (!hudEl) return;
     q(hudEl, 'tit').textContent = ancho() ? L('Sembradora del cielo', 'Sky Planter') : ''; // en el teléfono el título sobra: una sola franja
     const r = q(hudEl, 'r'); r.textContent = reloj(restante()); r.classList.toggle('poco', restante() <= 10);
-    q(hudEl, 'a').textContent = String(E.arboles); q(hudEl, 'aw').setAttribute('aria-label', L('Árboles: ', 'Trees: ') + E.arboles);
+    const na = q(hudEl, 'a'), nArb = String(E.arboles);
+    if (na.textContent && na.textContent !== nArb) { na.classList.remove('sdc-pop'); void na.offsetWidth; na.classList.add('sdc-pop'); }
+    na.textContent = nArb; q(hudEl, 'aw').setAttribute('aria-label', L('Árboles: ', 'Trees: ') + E.arboles);
     const s = q(hudEl, 's'), is = s.querySelectorAll('i');
+    q(hudEl, 'sn').textContent = String(E.semillas);
     for (let i = 0; i < is.length; i++) is[i].classList.toggle('on', i < E.semillas);
     s.classList.toggle('vacio', E.semillas === 0); s.setAttribute('aria-label', L('Semillas: ', 'Seeds: ') + E.semillas);
     q(hudEl, 'x').textContent = E.racha >= 3 ? '×' + mult(E.racha) : '';
