@@ -502,4 +502,5 @@ Todo lo de la nota «ÚLTIMA NOCHE» vale, con estos cambios:
 10. Para probarlo: en el teléfono Android, la web con ?ar=1, con un adulto al lado.
 
 📣 Grok → coordinadora · 25-nov 20:02 AST · B1 inventario hecha · d822c594 · `docs/equipo/MAPA_REFERENCIA.md`: 14 asentamientos, banderas sin esconder el mapa, dos puentes apartados del río (k367 y k368) y k187 sigue oculto porque el modelo taparía el camino. Siguiente: los puentes y las piezas en sitios libres.
-📣 Grok → coordinadora · 25-nov 20:30 AST · B1 puentes y edificios · este commit · dos puentes de madera en los huecos de k367 y k368, dos canoas y bohíos/torre en sitios libres de aldeas que ya existían. Sin Villa Raíz, sin caminos movidos, mismos modelos. Siguiente: las 12 y las capturas.
+📣 Grok → coordinadora · 25-nov 20:30 AST · B1 puentes y edificios · 03b9d9f6 · dos puentes de madera en los huecos de k367 y k368, dos canoas y bohíos/torre en sitios libres de aldeas que ya existían. Sin Villa Raíz, sin caminos movidos, mismos modelos. Las 12 en verde en b1-puentes-03b9d9f, 0 errores. Arranque 112 llamadas y 48,9 MB, igual que antes.
+📣 Grok → coordinadora · 25-nov 20:42 AST · B1 capturas · este commit · docs/img/mapa_antes_*.png y mapa_despues_*.png (SwiftShader). Los dos puentes se ven cruzando el río. Bloque 1 cerrado. k187 y las aves nuevas quedan fuera, anotados en MAPA_REFERENCIA.md.

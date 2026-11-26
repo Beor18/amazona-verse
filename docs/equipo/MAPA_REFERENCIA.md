@@ -78,6 +78,17 @@ Entra en `reubicar` de `content/cap1/mundo.js` (`faltanB1`), una vez, como las p
 
 Las zonas no crecen de radio (cada pieza cabe en el radio que ya tenía), así que el cerca del arranque no pide un modelo nuevo. El criterio de la noche es la vista de arranque de `test.sh` (draw calls y MB de texturas), no el FPS.
 
+Medido en SwiftShader, misma config de nube, dpr 0,5:
+
+| | Draw calls | Texturas |
+|---|---:|---:|
+| Antes (`d822c594`, solo la medida) | 112 | 48,9 MB |
+| Después (`03b9d9f6`, las 12) | 112 | 48,9 MB |
+
+En las vistas del río, al mirar el puente nuevo, las llamadas no suben (92 y 60, igual que antes) y las texturas siguen en 378,9 MB. En la aldea de meandros 2, con el bohío de punta y la torre a la vista, suben 3 llamadas (74→77 en el aire, 114→117 en el suelo): son lotes de modelos que esa vista no tenía cerca. Las texturas no cambian.
+
+Capturas SwiftShader, mismo encuadre: `docs/img/mapa_antes_*.png` y `docs/img/mapa_despues_*.png` (aire y suelo del cruce del este, aire del meandro y suelo de meandros 2).
+
 ## Lo que no se agrega
 
 - Aves nuevas: las colonias ya vuelan en las 2 mallas de `bandada.js` (mismo draw call). `album.js` exige exactamente esos 9 lugares. Una colonia más rompería la prueba y sería canon.
