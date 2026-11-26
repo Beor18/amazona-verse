@@ -40,7 +40,7 @@ Ningún asentamiento del capítulo 1 está apagado por una de estas banderas.
 | Río del oeste | 35: 8 canoas, bohíos, murallas, carpas | 35 | 35 | Canoas ya en el agua. Sin choza de punta. |
 | Río del oeste 2 | 18, casi todo campamento; 1 canoa | 18 | 18 | Sin bohío redondo. |
 | Lomas del Oeste | 34: 11 torres de vigía y carpas | 34 | 34 | Sin choza redonda. |
-| La Mina | 25 en el JSON, 24 en `compacto` | 25 | 24 | `k187` (`monumento_c`) está `oculto`: chocaba con agua o sendero (`mapa_kelvin.py`). El modelo mide ~16 m: a 6 m del sitio original seguiría tapando el camino. Se queda fuera. |
+| La Mina | 25 en el JSON, 24 en `compacto` | 25 | 25 | `k187` (`monumento_c`) ya no está oculto: va al lado del sendero `la_mina`, en 94,28 , −68,5 (27,5 m al norte del sitio original). La huella queda a 3,7 m del eje y fuera de la quebrada. |
 | La Mina 2 | 23: torres, canoas, muralla, 1 casa | 23 | 23 | Canoas en el río. |
 | Meandros | 25: 10 bohíos, 9 canoas, 1 de punta, casas | 25 | 25 | Aldea de techos junto al río. |
 | Meandros 2 | 11 y 1 `puente_madera` | 11 | 11 | `k368` nació en el río (−85,9, −46,8) y quedó en seco. Casi no hay casas. |
@@ -92,6 +92,6 @@ Capturas SwiftShader, mismo encuadre: `docs/img/mapa_antes_*.png` y `docs/img/ma
 ## Lo que no se agrega
 
 - Aves nuevas: las colonias ya vuelan en las 2 mallas de `bandada.js` (mismo draw call). `album.js` exige exactamente esos 9 lugares. Una colonia más rompería la prueba y sería canon.
-- El monumento `k187`, por el motivo de arriba.
+- El monumento `k187` ya está al lado del camino (26-nov). Capturas: `docs/img/mapa_antes_k187_aire.png`, `mapa_antes_k187_suelo.png`, `mapa_despues_k187_aire.png`, `mapa_despues_k187_suelo.png`.
 - Murallas o templos nuevos: el modelo es grande y el fuerte y la ciudad ya están.
 - Nada en `kelvin_aldea_rio_este` (Villa Raíz): esa zona entra en el cerca del arranque y el puente de la historia es de ahí.

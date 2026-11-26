@@ -144,6 +144,14 @@
       casa('kelvin_aldea_colina', 'bohio_redondo', -8.4, 148.6, 1.1);
       casa('kelvin_aldea_yunque', 'bohio_puntiagudo', -13.0, -70.3, 2.4);
     }
+    // k187 (monumento_c): el layout lo dejó oculto porque la huella (16,9 × 15,8 m) pisaba el
+    // final del sendero la_mina y la quebrada. El sitio libre más cercano queda 27,5 m al norte,
+    // de cara al sendero: las esquinas quedan a 3,7 m del eje (el camino sigue libre) y fuera del agua.
+    // La Mina no entra en el cerca del arranque. Misma escala que la matriz original (~0,98).
+    if (EK && EK.compacto && !EK.k187) {
+      EK.k187 = true;
+      EK.compacto.push({ grupo: 'kelvin_aldea_mina', modelo: 'monumento_c', inst: [[94.28, 12.58, -68.5, 2.991, 0.98]], orientar: false, yExacta: true, escalaPack: false });
+    }
   }
 
   // Materiales compartidos de los objetos (se crean al primer uso, cuando THREE ya está)
