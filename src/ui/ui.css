@@ -789,6 +789,13 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   .creator-side { padding: var(--sp-4) var(--sp-4) 0; }
   .creator-side .row.center:last-child { margin-inline: calc(var(--sp-4) * -1); }
   #p-save { width: 100%; padding: 0 var(--sp-4); font-size: var(--fs-lg); white-space: nowrap; }
+  /* En el creador corto, «¡A jugar!» al 100 % empujaba «Cancelar» bajo el pliegue */
+  #creator.creator-corto .creator-side .row.center:last-child { flex-wrap: nowrap; }
+  #creator.creator-corto #p-save { width: auto; flex: 1 1 auto; min-width: 0; }
+  #creator.creator-corto #p-cancel { flex: 0 0 auto; min-height: 48px; }
+  #creator.creator-corto .stage-wrap { max-height: 38vh; }
+  @keyframes name-brillo { 50% { transform: scale(1.14); } }
+  #creator.creator-corto #p-name-azar { animation: name-brillo 1.6s ease-in-out infinite; }
   .slot { grid-template-columns: 1fr; gap: var(--sp-2); }
   .pause-grid { gap: var(--sp-2); }
   #pause { padding: var(--sp-5) var(--sp-4); }
@@ -806,11 +813,12 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   .logo svg { width: min(460px, 60vw); }
   .title-hero { width: 38vh; }
   /* El botón de empezar se pegaba bajo el borde: en horizontal queda a la vista */
-  .creator-box { gap: 10px; }
-  .stage-wrap { aspect-ratio: 3 / 4; max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); }
-  .creator-side { max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); overflow: auto; padding: 10px 12px 0; }
-  .creator-side .row.center:last-child { bottom: 0; padding-bottom: 10px; }
-  #p-save { min-height: 48px; }
+  #creator { display: flex; align-items: center; justify-content: center; }
+  .creator-box { gap: 10px; height: calc(100dvh - 16px); max-height: calc(100dvh - 16px); align-items: stretch; overflow: hidden; }
+  .stage-wrap { aspect-ratio: 3 / 4; max-height: 100%; }
+  .creator-side { max-height: 100%; overflow: auto; padding: 10px 12px 0; }
+  .creator-side .row.center:last-child { bottom: 0; padding-bottom: 4px; }
+  #p-save { min-height: 44px; }
   .stage-hint { animation: nudge 1.4s ease-in-out infinite; }
   /* F20 r2: los 10 gestos y Foto no cabían en 2 columnas desde 140 px (9, 0 y Foto quedaban fuera) y Volar, Impulso, Saltar y Acción
      se pintaban encima de sus filas. En horizontal bajo: 4 columnas (Foto en su fila), alto máximo con desplazamiento,
