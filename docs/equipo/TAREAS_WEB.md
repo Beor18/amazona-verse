@@ -2468,3 +2468,5 @@ Grok hace lo mismo con GPU real desde la Mac. Cruzad los datos en `MAPA_REFERENC
 📣 **Coordinadora · 26-nov · PUBLICO YO AHORA main** (tanda nocturna de Grok).
 
 📣 **Coordinadora · 26-nov · PUBLICADO C04111D EN 566B740**: 12/12 y en vivo; entra la tanda nocturna de Grok.
+
+📣 **Coordinadora · 26-nov · PUBLICO YO AHORA main** (Grok: La Mina y el pulido a 390).
