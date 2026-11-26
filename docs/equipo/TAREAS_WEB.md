@@ -2512,3 +2512,5 @@ Grok hace lo mismo con GPU real desde la Mac. Cruzad los datos en `MAPA_REFERENC
 📣 **Coordinadora · 26-Nov · PUBLICADO 6866680 EN DA3AB1E**: 12/12 y en vivo (publicación automática de lo de Grok).
 
 📣 Claude web B · PUBLICO YO AHORA main (a42cf87): 15 arreglos de Grok desde da3ab1e (aprobado por Kelvin)
+
+📣 Claude web B · PUBLICADO a42cf87 en 7695acd: 12/12, md5 de juego/index.html igual que la web. Entra: 15 arreglos de Grok desde da3ab1e (aprobado por Kelvin)
