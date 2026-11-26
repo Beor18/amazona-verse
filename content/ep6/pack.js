@@ -333,7 +333,16 @@
     lineasInicio, llegan, // D32: la línea de quién llega según el registro de temporada (la de siempre sin dato)
     inicio(G) {
       G.eventos.log('GuestsArrived');
-      G.dialogo.say(lineasInicio(G), () => G.ui.toast('Baja a los muelles y recibe a quien llega', 3000));
+      const centro = { x: VISITANTES.reduce((s, v) => s + v.x, 0) / VISITANTES.length, z: VISITANTES.reduce((s, v) => s + v.z, 0) / VISITANTES.length };
+      const mirar = p => {
+        if (G.quiet || !p || !G.camara || !G.S) return;
+        const dx = p.x - G.S.pos.x, dz = p.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
+        if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
+        G.camara.yaw = Math.atan2(-dx, -dz);
+        try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
+      };
+      mirar(centro); // los seis quedaban a la espalda: la cámara miraba el agua vacía
+      G.dialogo.say(lineasInicio(G), () => { mirar(centro); G.ui.toast('Baja a los muelles y recibe a quien llega', 3000); });
       // Las luces del horizonte saludan al empezar: estrellas lejos de la cámara y el aviso de Suno.
       try {
         const quieto = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -537,7 +546,12 @@
         if (S.step === 4 && G.eventos.had('CircleFormed') && !tiene('sentado_' + v.id)) { sentar(v.id); return; }
         if (!tiene('conocido_' + v.id)) {
           if (S.step === 0) { E().inicio = S.clock; if (!G.eventos.had('GuestsArrived')) G.eventos.log('GuestsArrived'); }
-          poner('conocido_' + v.id); G.audio.play('pickup'); colocarNpcs(); G.misiones.check();
+          poner('conocido_' + v.id);
+          if (!G.quiet && conocidos().length === 1) {
+            try { G.audio.play('logro'); } catch (e) { /* sin audio */ }
+            try { if (G.fx && G.fx.burst) G.fx.burst(v.x, H(v.x, v.z) + 1.2, v.z, 'stars', 10); } catch (e) { /* sin efectos */ }
+          }
+          G.audio.play('pickup'); colocarNpcs(); G.misiones.check();
           const ls = [di(v.nombre, v.presenta)];
           if (!v.dice) ls.push(di(v.nombre, SI_NO_DICE));
           ls.push(Lu(v.dice ? 'Lo apunto en su tarjeta: dos cosas que sabe hacer y una que necesita.' : 'Apunto lo que sabe hacer. Lo que necesita, lo tendrás que observar.'));
