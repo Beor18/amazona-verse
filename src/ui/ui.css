@@ -853,6 +853,14 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #toast { min-height: 0; padding: 8px 14px 8px 52px; font-size: calc(14px * var(--fs-k, 1)); line-height: 1.3; }
   #toast::before { left: 10px; width: 32px; height: 32px; margin-top: -16px; background-size: 18px, auto; }
   body:has(#quest:not([hidden])) #toast { left: calc(max(var(--sp-3), env(safe-area-inset-left, 0px)) + 308px); right: auto; margin-inline: 0; width: fit-content; max-width: min(280px, calc(100vw - 520px)); }
+  /* Ciclo 5b · 844×390, inglés: ese aviso (Iguaca, varias líneas, 280 px) nacía en el hueco y tapaba el contador de madera. Baja bajo el objetivo, en su columna. */
+  body.av-aviso-copa:has(#inv .res:not([hidden])) #toast {
+    top: calc(env(safe-area-inset-top, 0px) + 172px);
+    left: max(var(--sp-3), env(safe-area-inset-left, 0px));
+    right: auto; margin-inline: 0;
+    width: min(300px, calc(100vw - 360px));
+    max-width: min(300px, calc(100vw - 360px));
+  }
   #modo-salir { top: calc(env(safe-area-inset-top, 0px) + 92px) !important; }
   /* F20 r2: en los minijuegos del mundo, la barra del juego, su panel final y sus pistas tapaban «Diario» y «Gestos» (se veía «iario 0/13»).
      Mientras dura el minijuego no hacen falta: se quedan Pausa y los controles. */
