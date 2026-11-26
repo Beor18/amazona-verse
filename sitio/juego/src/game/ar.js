@@ -58,7 +58,9 @@
         '#ar-salir{top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));background:#1d5e33}' +
         '#ar-colocar{top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));background:#245c4a}' +
         '#ar-semilla{bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#f0a202;color:#1a1204}' +
-        '@media (prefers-reduced-motion:reduce){#ar-casa,#ar-casa .ar-caja{animation:none}}';
+        '@keyframes ar-salto{0%,100%{transform:translateY(0)}40%{transform:translateY(-4px)}}#ar-casa a[rel="ar"] img{animation:ar-salto 1.6s ease-in-out infinite}' +
+        '@media (max-height:520px){#ar-casa{max-height:calc(100vh - 12px);margin:auto}#ar-casa .ar-caja{padding:10px 14px;gap:6px;max-height:calc(100vh - 16px);overflow:auto}#ar-casa h2{font-size:1.15rem}#ar-casa p{font-size:.92rem;line-height:1.25}#ar-casa a[rel="ar"] img{width:40px;height:40px}#ar-casa button{padding:6px 12px}}' +
+        '@media (prefers-reduced-motion:reduce){#ar-casa,#ar-casa .ar-caja,#ar-casa a[rel="ar"] img{animation:none}}';
       document.head.appendChild(s);
     }
 

@@ -280,6 +280,13 @@
         try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
       };
       mirar(LUMA); // Iguaca quedaba al borde izquierdo, debajo del aviso
+      // La charca saluda: un chapoteo y unas burbujas (sfx y partículas que ya están). El techo que se mece sigue aparte.
+      if (!G.quiet && !G.c._ciclo4Charca) {
+        G.c._ciclo4Charca = true;
+        const yA = G.terreno ? G.terreno.height(CHARCA.x, CHARCA.z) : 0;
+        try { if (G.fx && G.fx.burst) G.fx.burst(CHARCA.x, yA + 0.2, CHARCA.z, 'bubbles', 10); } catch (e) { /* sin efectos */ }
+        try { if (G.audio && G.audio.has && G.audio.has('splash')) G.audio.play('splash'); } catch (e) { /* sin audio */ }
+      }
       G.dialogo.say(G.dialogo.L('inicio:ep2'), () => { mirar(LUMA); G.ui.toast('Habla con Iguaca', 3000); });
     },
 

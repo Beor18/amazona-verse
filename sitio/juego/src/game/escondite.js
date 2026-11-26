@@ -66,7 +66,8 @@ window.AVEscondite = function (G) {
         '#esc-fin h2,#esc-fin p{margin:0}#esc-fin .esc-gran{display:flex;align-items:center;gap:8px}#esc-fin .esc-gran svg{width:44px;height:44px}#esc-fin .av-det{opacity:.85}#esc-fin .av-bots{margin-top:6px}' +
         '@media (orientation:landscape) and (max-height:500px){#esc-fin{padding:12px 16px;gap:4px}#esc-fin .esc-gran svg{width:34px;height:34px}}' +
         'body.escondite-on:has(#esc-fin:not([hidden])) #toast{visibility:hidden!important}' +
-        'body.escondite-on :is(#quest,#inv,#modo-salir,#toast,#prompt,#bocadillos,#b-diary,#b-emotes){visibility:hidden!important}' +
+        'body.escondite-on :is(#quest,#inv,#modo-salir,#toast,#prompt,#bocadillos,#b-diary,#b-emotes,#b-act,#b-dash){visibility:hidden!important}' +
+        '#esc-hud .esc-pista.tibio{color:#ffe7b0}' +
         'body.escondite-on:has(#esc-fin:not([hidden])) :is(#stick,#acts,#minimapa,#marcador){visibility:hidden!important}' + // PULIR 4 (revisión): con el panel final, sin joystick ni botones de vuelo detrás (como los demás)
         // F20 r2: el aviso de inicio va debajo de la barra (se cruzaban); al terminar, el resultado lo dice la barra (sin aviso detrás)
         '@media (orientation:landscape){body.escondite-on #toast{top:calc(env(safe-area-inset-top,0px) + 80px)!important;bottom:auto!important}}';
@@ -91,7 +92,8 @@ window.AVEscondite = function (G) {
     if (nn.textContent && nn.textContent !== linea) { nn.classList.remove('esc-pop'); void nn.offsetWidth; nn.classList.add('esc-pop'); }
     nn.textContent = linea;
     q('r').textContent = resultado ? '' : reloj(Math.max(0, LIMITE - t)) + (mejor != null ? txt(' · récord ', ' · best ') + reloj(mejor) : '');
-    q('h').textContent = !jugando || resultado ? '' : n === 0 ? txt('Si el pío suena más fuerte, estás más cerca', 'If the peep gets louder, you are closer') : txt('Quedan ' + (3 - n), (3 - n) + ' still hiding');
+    const pista = !jugando || resultado ? ['', ''] : n > 0 ? ['Quedan ' + (3 - n), (3 - n) + ' still hiding'] : (calor >= 2 ? ['¡Ya casi!', 'Almost there!'] : calor === 1 ? ['Más fuerte', 'Louder'] : ['Sigue el pío', 'Follow the peep']);
+    q('h').textContent = txt(pista[0], pista[1]);
     const otra = hudEl.querySelector('[data-a="otra"]'); otra.hidden = jugando || !!fin; otra.textContent = txt('Otra vez', 'Play again'); // con el panel final, «Otra vez» va en el panel
     hudEl.querySelector('[data-a="salir"]').textContent = txt('Salir', 'Exit');
     pintarFin();
@@ -160,10 +162,11 @@ window.AVEscondite = function (G) {
   }
   function empezar(x, z, o) {
     if (o && o.reales) sitiosReales(x == null ? S.pos.x : x, z == null ? S.pos.z : z); else armar(x == null ? S.pos.x : x, z == null ? S.pos.z : z);
-    jugando = true; t = 0; pintar();
+    jugando = true; t = 0; calor = 0; calorId = ''; pintar();
     if (G.ui && G.ui.toast) G.ui.toast(en() ? 'Hide-and-seek! Find the chicks. The peep gets louder when you are close.' : '¡Escondite! Encuentra a los pichones. El pío se oye más fuerte cerca.', 2800);
     return sitios;
   }
+  let calor = 0, calorId = '';
   function cerca() {
     let mejorD = 1e9, quien = null;
     for (const s of sitios) if (!s.hallado) { const d = Math.hypot(S.pos.x - s.x, S.pos.z - s.z); if (d < mejorD) { mejorD = d; quien = s; } }
@@ -183,7 +186,17 @@ window.AVEscondite = function (G) {
       }
       if (mejorD < 2.4) { quien.hallado = true; gag(); try { G.fx.burst(quien.x, quien.y + 0.5, quien.z, 'gold', 10); G.fx.burst(quien.x, quien.y + 0.8, quien.z, 'leaves', 12); } catch (e) { /* */ } try { if (!G.quiet && G.audio && G.audio.play) G.audio.play('encaje'); } catch (e) { /* el mismo «encaje» de cuando algo encaja */ } pintar(); if (modo) pintarHud(); }
     }
-    if (modo && hudEl) { const h = hudEl.querySelector('[data-k="h"]'); if (h) h.classList.toggle('cerca', jugando && !!quien && mejorD < 14); }
+    const c = jugando && quien ? (mejorD < 14 ? 2 : mejorD < 24 ? 1 : 0) : 0;
+    if (c !== calor) {
+      calor = c;
+      if (c === 2 && quien && calorId !== quien.id) {
+        calorId = quien.id;
+        try { if (G.audio && G.audio.play) G.audio.play('nido_chispa'); } catch (e) { /* */ }
+        try { G.fx.burst(S.pos.x, S.pos.y + 0.6, S.pos.z, 'feathers', 8); } catch (e) { /* */ }
+      }
+    }
+    if (modo && pich.listos && quien) pich.chs.forEach((ch, i) => { const s0 = sitios[i]; if (!s0 || !ch.root.visible) return; ch.root.position.y = s0 === quien && mejorD < 16 ? s0.y + Math.sin(t * 8) * 0.16 : s0.y; });
+    if (modo && hudEl) { const h = hudEl.querySelector('[data-k="h"]'); if (h) { h.classList.toggle('cerca', c === 2); h.classList.toggle('tibio', c === 1); } }
     let todos = true;
     for (const s of sitios) if (!s.hallado) { todos = false; break; }
     if (todos) {

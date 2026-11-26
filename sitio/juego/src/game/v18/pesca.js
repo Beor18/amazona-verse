@@ -603,7 +603,8 @@ window.AVV18Pesca = function (G) {
       '@keyframes vpFlash{from{opacity:.75}to{opacity:0}}@keyframes vpLate{from{transform:scale(1)}to{transform:scale(1.06)}}' +
       '@keyframes vpSuma{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}#v18-pesca .vp-info [data-k="puntos"].vp-suma{display:inline-block;animation:vpSuma .35s ease;color:#ffd84a}' +
       '@keyframes vpCarga{50%{filter:brightness(1.35)}}#v18-pesca .vp-cargando .vp-barra>b{animation:vpCarga .45s ease-in-out infinite}' +
-      '@media (prefers-reduced-motion:reduce){#v18-pesca .vp-flash.on,#v18-pesca button.vp-principal.pica,#v18-pesca .vp-info [data-k="puntos"].vp-suma,#v18-pesca .vp-cargando .vp-barra>b{animation:none}}' +
+      '#v18-pesca button.vp-invita{animation:vpLate 1.3s ease-in-out infinite}' +
+      '@media (prefers-reduced-motion:reduce){#v18-pesca .vp-flash.on,#v18-pesca button.vp-principal.pica,#v18-pesca button.vp-invita,#v18-pesca .vp-info [data-k="puntos"].vp-suma,#v18-pesca .vp-cargando .vp-barra>b{animation:none}}' +
       // móvil: el panel deja libre la columna de Diario / Gestos / Pausa de la derecha (tapaba la fila de tiempo y la ficha)
       '@media (max-width:760px){#v18-pesca{margin-inline:16px auto;width:calc(100vw - 96px)}#v18-pesca .vp-caja{padding:6px 10px}#v18-pesca .vp-info{display:grid;grid-template-columns:1fr 1fr;font-size:14px;gap:2px 10px}#v18-pesca .vp-barra{height:18px}#v18-pesca .vp-et{font-size:13px;font-weight:700}#v18-pesca button{min-height:44px;padding:4px 8px}#v18-pesca .vp-guia{width:100%;font-size:13px;line-height:1.25;padding:4px 10px;margin-top:6px}#v18-pesca button kbd{display:none}body.v18-pesca-on #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto}body.v18-pesca-on #minimapa{visibility:hidden}#v18-pesca .vp-ficha .vp-d{font-size:14px}}' +
       '@media (min-width:761px) and (pointer:fine){#v18-pesca{bottom:16px}}' +
@@ -611,9 +612,9 @@ window.AVV18Pesca = function (G) {
       // Ahora va pegado abajo y compacto: ◀ Lanzar ▶ y Salir en una sola fila, botones de 44 px y la pista más pequeña.
       '@media (max-height:520px) and (orientation:landscape){#v18-pesca{bottom:calc(env(safe-area-inset-bottom,0px) + 6px);width:min(600px,calc(100vw - 32px));margin-inline:auto}' +
       '#v18-pesca .vp-caja{padding:5px 10px 6px;border-radius:14px}#v18-pesca .vp-info{font-size:14px;gap:0 10px}#v18-pesca .vp-barra{height:9px;margin:4px 0 1px}#v18-pesca .vp-et{font-size:11px;line-height:1.1}' +
-      '#v18-pesca [data-k="juego"]{display:grid;grid-template-columns:3fr 1fr;column-gap:8px;align-items:end}#v18-pesca [data-k="juego"]>:not(.vp-bot):not(.vp-bot2){grid-column:1/-1}' +
-      '#v18-pesca .vp-bot,#v18-pesca .vp-bot2{margin-top:4px}#v18-pesca button{min-height:44px;font-size:15px;padding:4px 8px}#v18-pesca button.vp-principal{font-size:17px}#v18-pesca button kbd{display:none}' +
-      '#v18-pesca .vp-tira{height:24px;margin:4px 0 3px}#v18-pesca .vp-guia{margin-top:4px;font-size:13px;padding:3px 12px}#v18-pesca .vp-ficha .vp-d{font-size:14px}#v18-pesca .vp-ficha p,#v18-pesca .vp-fin p{margin:1px 0}}';
+      '#v18-pesca [data-k="juego"]{display:grid;grid-template-columns:3fr 1fr;column-gap:8px;row-gap:6px;align-items:end}#v18-pesca [data-k="juego"]>:not(.vp-bot):not(.vp-bot2){grid-column:1/-1}' +
+      '#v18-pesca .vp-bot{grid-column:1;grid-row:2;margin-top:0}#v18-pesca .vp-bot2{grid-column:2;grid-row:2;margin-top:0}#v18-pesca button{min-height:44px;font-size:15px;padding:4px 8px}#v18-pesca button.vp-principal{font-size:17px}#v18-pesca button kbd{display:none}' +
+      '#v18-pesca .vp-tira{height:24px;margin:4px 0 3px}#v18-pesca .vp-guia{grid-column:1/-1;grid-row:3;margin-top:0;width:100%;font-size:13px;padding:3px 12px}#v18-pesca .vp-barra{height:14px}#v18-pesca .vp-ficha .vp-d{font-size:14px}#v18-pesca .vp-ficha p,#v18-pesca .vp-fin p{margin:1px 0}}';
     document.head.appendChild(st);
   }
   function montarHud() {
@@ -751,7 +752,7 @@ window.AVV18Pesca = function (G) {
     } else hud.q('carga').style.width = (A.carga * 100).toFixed(1) + '%';
     const cw = hud.q('cargaW'); if (cw) cw.classList.toggle('vp-cargando', A.fase === 'carga' && A.carga > 0.02);
     const verbo = verboPrincipal(); texto('t-accion', verbo);
-    const pr = hud.el.querySelector('button[data-a="accion"]'); if (pr) { pr.classList.toggle('pica', A.fase === 'pica'); if (pr.getAttribute('aria-label') !== verbo) pr.setAttribute('aria-label', verbo); }
+    const pr = hud.el.querySelector('button[data-a="accion"]'); if (pr) { pr.classList.toggle('pica', A.fase === 'pica'); pr.classList.toggle('vp-invita', A.fase === 'listo'); if (pr.getAttribute('aria-label') !== verbo) pr.setAttribute('aria-label', verbo); }
     const apunta = A.fase === 'listo' || A.fase === 'carga';
     for (const a of ['izq', 'der']) { const bb = hud.el.querySelector('button[data-a="' + a + '"]'); if (bb) bb.style.visibility = apunta ? '' : 'hidden'; }
     const guiaMovil = tt || (typeof innerWidth === 'number' && innerWidth <= 760);

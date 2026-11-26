@@ -305,12 +305,25 @@
       G.eventos.log('BlueprintShared');
       const mirar = p => {
         if (G.quiet || !p || !G.camara || !G.S) return;
-        const dx = p.x - G.S.pos.x, dz = p.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
+        let dx = p.x - G.S.pos.x, dz = p.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
+        // A 390 el papá quedaba cortado por la derecha: un paso atrás y un pelo de giro lo dejan entero.
+        if (n < 8) {
+          const back = 8 - n;
+          G.S.pos.x -= dx / n * back; G.S.pos.z -= dz / n * back;
+          if (G.terreno) G.S.pos.y = G.terreno.height(G.S.pos.x, G.S.pos.z);
+          dx = p.x - G.S.pos.x; dz = p.z - G.S.pos.z; n = Math.hypot(dx, dz) || 1;
+        }
         if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
-        G.camara.yaw = Math.atan2(-dx, -dz);
+        G.camara.yaw = Math.atan2(-dx, -dz) - 0.35;
         try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
       };
       mirar(PAPA); // el papá y el astillero quedaban fuera del encuadre
+      if (!G.quiet && !G.c._ciclo4Papa) {
+        G.c._ciclo4Papa = true;
+        const y = G.terreno ? G.terreno.height(PAPA.x, PAPA.z) : 0;
+        try { if (G.fx && G.fx.burst) G.fx.burst(PAPA.x, y + 1.4, PAPA.z, 'stars', 8); } catch (e) { /* sin efectos */ }
+        try { if (G.audio && G.audio.has && G.audio.has('aviso')) G.audio.play('aviso'); } catch (e) { /* sin audio */ }
+      }
       G.dialogo.say(G.dialogo.L('inicio:ep3').concat(continuidad()), () => { mirar(PAPA); G.ui.toast('Baja al astillero y habla con el papá', 3000); });
     },
 
