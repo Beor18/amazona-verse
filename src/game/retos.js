@@ -2399,7 +2399,12 @@ body.retos-on:has(#retos.rt-banquete) #modo-salir { transition: none; }
           check('F1-8 · Nubes y hojas instanciadas: solo 2 mallas nuevas, sin anillos', inst === 2 && !anillosN && mN.count === T_NUBES.nubes * BOLAS_NUBE.length && C.N.mallaH.count === C.N.hojas.length, inst + ' / ' + anillosN);
           check('F1-8 · Las nubes son volumen (bolas suaves, no aros ni puertas)', mN.geometry.type === 'IcosahedronGeometry' && sc.y > 1 && sc.x > 1, mN.geometry.type + ' ' + sc.toArray().map(v => v.toFixed(1)).join(','));
           check('F1-8 · Nubes de detalle 3 (sin caras planas de cerca)', mN.geometry.parameters.detail === 3, mN.geometry.parameters.detail);
-          { let regla = null; for (const r of document.getElementById('retos-css').sheet.cssRules) if (r.media && /max-height:\s*500px/.test(r.media.mediaText)) regla = r;
+          { let regla = null; // hay dos @media de 500 px: la carrera (cuenta, flecha y resultados) y la tormenta. Se mira la de la carrera.
+            for (const r of document.getElementById('retos-css').sheet.cssRules) {
+              if (!r.media || !/max-height:\s*500px/.test(r.media.mediaText) || !r.cssRules) continue;
+              const cuerpo = Array.from(r.cssRules).map(x => x.cssText).join(' ');
+              if (/rt-contando \.rt-flecha/.test(cuerpo) && /\.rt-fin \.rt-datos/.test(cuerpo)) regla = r;
+            }
             const txt = regla ? Array.from(regla.cssRules).map(x => x.cssText).join(' ') : '';
             check('F1-8 · Teléfono en horizontal: cuenta bajo el HUD, flecha en espera y resultados compactos', /\.rt-cuenta/.test(txt) && /rt-contando \.rt-flecha/.test(txt) && /\.rt-fin \.rt-datos/.test(txt) && ui.el.classList.contains('rt-contando'), regla ? regla.media.mediaText : 'sin regla'); }
           const rg = document.createRange(); rg.selectNodeContents(ui.cuenta); const rc = rg.getBoundingClientRect();
