@@ -441,7 +441,8 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
 /* F1-8 (revisión): teléfono en horizontal (poco alto). La cuenta, justo bajo el HUD y algo más pequeña (Vittata queda debajo);
    mientras cuenta, la flecha (que estaría debajo del número) espera. Los resultados, compactos para que quepan sin cortar. */
 @media (max-height: 500px) and (orientation: landscape) {
-  #retos .rt-cuenta { padding-top: calc(env(safe-area-inset-top, 0px) + 62px); font-size: min(22vw, 17vh, 160px); -webkit-text-stroke-width: 6px; }
+  #retos .rt-cuenta { place-items: start start; padding-top: calc(env(safe-area-inset-top, 0px) + 58px); padding-left: 12px; font-size: 44px; -webkit-text-stroke-width: 4px; }
+  #retos .rt-turbo { left: 16px; right: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 156px); transform: none; }
   #retos.rt-contando .rt-flecha { visibility: hidden; }
   #retos .rt-aviso { top: 39%; font-size: 26px; } /* bajo la etiqueta de la flecha y por encima de Vittata */
   #retos .rt-tag { font-size: 11px; padding: 1px 6px; }
@@ -464,7 +465,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
 @keyframes rt-pop { 0% { transform: scale(1.8); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes rt-aviso { 0% { opacity: 0; transform: translate(-50%, 12px) scale(.8); } 15% { opacity: 1; transform: translate(-50%, 0) scale(1.05); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -16px); } }
 @keyframes rt-latido { 50% { transform: scale(1.08); } }
-@media (prefers-reduced-motion: reduce) { #retos .rt-cuenta.pop, #retos .rt-aviso.ver, #retos .rt-panel, #retos .rt-nuevo, #retos-fx .rt-lineas, #retos .rt-turbo button.lleno, #retos .rt-turbo .rt-hojas i.si, #retos .rt-flecha.rt-cerca svg, #retos .rt-pts.rt-salto { animation-duration: .01s; animation-iteration-count: 1; } }
+@media (prefers-reduced-motion: reduce) { #retos .rt-cuenta.pop, #retos .rt-aviso.ver, #retos .rt-panel, #retos .rt-nuevo, #retos-fx .rt-lineas, #retos .rt-turbo button.lleno, #retos .rt-turbo .rt-hojas i, #retos .rt-turbo .rt-hojas i.si, #retos .rt-flecha.rt-cerca svg, #retos .rt-pts.rt-salto { animation-duration: .01s; animation-iteration-count: 1; } }
 @media (max-width: 640px) { #retos .rt-chip { font-size: 17px; padding: 5px 10px; } #retos .rt-pos b { font-size: 21px; } #retos .rt-lbl { display: none; } #retos .rt-aviso { font-size: 24px; } }
 /* 390×844: el panel se iba a la derecha (For two y la X quedaban fuera) y el turbo no avisaba al llenarse */
 @media (max-width: 420px) {
@@ -477,6 +478,10 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
   #retos .rt-cuenta { place-items: start start; padding-top: calc(env(safe-area-inset-top, 0px) + 58px); padding-left: 8px; font-size: 52px; -webkit-text-stroke-width: 4px; }
   #retos .rt-turbo button b { font-size: 14px; }
 }
+@keyframes rt-espera { 40% { filter: drop-shadow(0 0 5px #c8f59a); } }
+#retos .rt-turbo .rt-hojas i:nth-child(1) { animation: rt-espera 1.8s ease-in-out infinite; }
+#retos .rt-turbo .rt-hojas i:nth-child(2) { animation: rt-espera 1.8s ease-in-out .25s infinite; }
+#retos .rt-turbo .rt-hojas i:nth-child(3) { animation: rt-espera 1.8s ease-in-out .5s infinite; }
 #retos .rt-turbo .rt-hojas i.si { animation: rt-latido .45s var(--ease-pop); }
 #retos .rt-turbo button.lleno { animation: rt-latido .7s ease-in-out 3; }
 `;

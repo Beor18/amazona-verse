@@ -560,7 +560,7 @@ window.AVSembradora = function (G) {
       '@media (max-width:420px){#sdc-hud [data-k="msg"]{position:fixed;left:16px;right:16px;top:78px;width:auto;max-width:none;transform:none;font-size:15px;line-height:1.3}#sdc-fin .sdc-bots{flex-direction:column;align-items:stretch;width:100%}#sdc-fin .sdc-bots button{width:100%}}' +
       '@keyframes sdc-pop{0%{transform:scale(1)}40%{transform:scale(1.45)}100%{transform:scale(1)}}#sdc-hud [data-k="a"].sdc-pop{display:inline-block;animation:sdc-pop .45s ease-out}@media (prefers-reduced-motion:reduce){#sdc-hud [data-k="a"].sdc-pop,body.sembradora-centro #b-act{animation:none}}' +
       // teléfono de lado: el aviso va abajo, entre el joystick y los botones (arriba tapaba Diario y Gestos)
-      '@media (orientation:landscape) and (max-height:500px){#sdc-hud [data-k="msg"]{position:fixed;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);max-width:min(440px,calc(100vw - 380px))}}' +
+      '@media (orientation:landscape) and (max-height:500px){#sdc-hud [data-k="msg"]{position:fixed;left:16px;right:72px;top:74px;bottom:auto;width:auto;max-width:none;transform:none;font-size:15px}}' +
       '@media (orientation:landscape) and (max-height:500px){#sdc-fin{padding:12px 16px;gap:4px}#sdc-fin h2{font-size:21px}#sdc-fin .sdc-gran{font-size:34px}#sdc-fin .sdc-gran svg{width:34px;height:34px}#sdc-fin .sdc-dato{font-size:13px;padding:4px 8px}}' +
       // la historia no se mezcla con el minijuego (sus avisos esperan: G.menuModos.ocupado() cuenta este juego como actividad en marcha)
       'body.sembradora-on :is(#quest,#inv,#inv-cuenta,#inv-reporte,#modo-salir,#toast,#prompt,#bocadillos,#juice-chip,#juice-pop,#truco-chip,#fx-descubre,#v18-exp-poder,#v18-extra,#b-construir,#b-nido,#marcador,#retos,#pista-vuela,#b-diary,#b-emotes,#b-fly,#b-dash){visibility:hidden!important}' +
@@ -645,6 +645,7 @@ window.AVSembradora = function (G) {
     document.body.classList.add('sembradora-on'); document.body.classList.remove('sembradora-fin');
     apuntarGuia(); predecir(P); pintarHud(); pintar(); verHud();
     avisoL('Vuela sobre la tierra oscura y suelta una semilla cuando el aro blanco la pise', 'Fly over the dark soil and drop a seed when the white ring is on it', 'bien'); E.msgT = 4;
+    hojas(S.pos.x, S.pos.y + 0.4, S.pos.z, 12);
     sonar('boton');
     return true;
   }
