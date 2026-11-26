@@ -196,7 +196,8 @@
           hasta: { evento: 'ShoreSurveyed' },
           guia: G => {
             const S = G.S;
-            if (!(S.edu && S.edu.inicio) || S.missions.orilla) return G.misiones.at('iguaca');
+            // El haz, al lado de Iguaca: en el centro del teléfono era una columna blanca encima de ella.
+            if (!(S.edu && S.edu.inicio) || S.missions.orilla) { const p = G.misiones.at('iguaca'); return p ? { x: p.x + 1.6, z: p.z } : null; }
             const k = OBS.find(o => !S.collected.includes(o)); const id = k === 'obs_bosque' ? 'bosque' : 'tramo_' + (k ? k.slice(4) : 'a');
             const p = G.misiones.at(id); return p ? { id: id, x: p.x, z: p.z } : null;
           } },
@@ -283,11 +284,26 @@
         if (G.quiet || !p || !G.camara || !G.S) return;
         const dx = p.x - G.S.pos.x, dz = p.z - G.S.pos.z, n = Math.hypot(dx, dz) || 1;
         if (G.S.facing) { G.S.facing.x = dx / n; G.S.facing.z = dz / n; }
-        G.camara.yaw = Math.atan2(-dx, -dz);
+        // De frente, la cabeza de Vittata tapa a Iguaca. Un poco al lado: ella queda a la derecha y el río sigue en cuadro.
+        G.camara.yaw = Math.atan2(-dx, -dz) - 0.58;
+        G.camara.inclina = 0.06;
         try { G.camara.manual(); G.camara.place(true); } catch (e) { /* sin cámara */ }
       };
+      if (!document.getElementById('ep4-ciclo4')) {
+        const st = document.createElement('style'); st.id = 'ep4-ciclo4';
+        // El aviso nacía a media altura (el hueco del minimapa) y tapaba a Iguaca. Queda bajo el objetivo.
+        st.textContent = '@media (max-width:560px){body.av-ep4 #toast{top:calc(env(safe-area-inset-top, 0px) + 86px)}}';
+        document.head.appendChild(st);
+      }
+      document.body.classList.add('av-ep4');
       mirar(LUMA);
-      G.dialogo.say(G.dialogo.L('inicio:ep4').concat(continuidad()), () => { mirar(LUMA); G.ui.toast('Habla con Iguaca', 3000); });
+      G.dialogo.say(G.dialogo.L('inicio:ep4').concat(continuidad()), () => {
+        mirar(LUMA);
+        G.ui.toast('Habla con Iguaca', 3000);
+        // Saludo: plumas y el aleteo que ya existe. El chapoteo de la orilla se queda en el tramo.
+        try { if (G.audio && G.audio.play) G.audio.play('aleteo'); } catch (e) { /* sin audio */ }
+        try { if (G.fx && G.fx.burst && G.terreno) G.fx.burst(LUMA.x, G.terreno.height(LUMA.x, LUMA.z) + 1.5, LUMA.z, 'feathers', 12); } catch (e) { /* sin fx */ }
+      });
     },
 
     preparar(G) {
@@ -568,6 +584,8 @@
       // La maqueta sobre la mesa: un río de juguete y la opción que se está mirando, a escala
       const maq = new THREE.Group(); maq.position.set(MESA.x, H(MESA.x, MESA.z) + 0.81, MESA.z); scene.add(maq);
       const rioMaq = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.02, 1.3), mat('#4a8ab8')); maq.add(rioMaq);
+      rioMaq.visible = false; // el río de juguete sale al probar la maqueta, no como una mancha azul en la mesa del arranque
+      G.on('update', () => { const ver = S.step >= 2; if (rioMaq.visible !== ver) rioMaq.visible = ver; }, 42);
       const piezaMaq = new THREE.Group(); maq.add(piezaMaq);
       function vaciar(g) { while (g.children.length) { const m = g.children.pop(); if (m.geometry) m.geometry.dispose(); if (m.material) m.material.dispose(); } }
       function maquetaVer(o) {

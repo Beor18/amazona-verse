@@ -755,8 +755,9 @@ window.AVV18Pesca = function (G) {
     const pr = hud.el.querySelector('button[data-a="accion"]'); if (pr) { pr.classList.toggle('pica', A.fase === 'pica'); pr.classList.toggle('vp-invita', A.fase === 'listo'); if (pr.getAttribute('aria-label') !== verbo) pr.setAttribute('aria-label', verbo); }
     const apunta = A.fase === 'listo' || A.fase === 'carga';
     for (const a of ['izq', 'der']) { const bb = hud.el.querySelector('button[data-a="' + a + '"]'); if (bb) bb.style.visibility = apunta ? '' : 'hidden'; }
-    const guiaMovil = tt || (typeof innerWidth === 'number' && innerWidth <= 760);
-    if (forzar || !A.pistaTxt) { if (A.fase === 'listo' && (!A.pistaTxt || forzar && ![TXT.tierra, TXT.escapo, TXT.seFue].includes(A.pistaTxt))) A.pistaTxt = guiaMovil ? TXT.guiaT : TXT.guia; texto('guia', A.pistaTxt || ''); }
+    const guiaMovil = tt || (typeof innerWidth === 'number' && (innerWidth <= 1000 || innerHeight <= 520));
+    if (A.fase === 'listo' && (!A.pistaTxt || A.pistaTxt === TXT.guia || A.pistaTxt === TXT.guiaT)) A.pistaTxt = guiaMovil ? TXT.guiaT : TXT.guia;
+    texto('guia', A.pistaTxt || '');
   }
 
   // Mercadito del río desde los resultados (botón o T): la tarjeta va encima del panel; al cerrarla se vuelve a los resultados
