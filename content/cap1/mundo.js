@@ -152,6 +152,16 @@
       EK.k187 = true;
       EK.compacto.push({ grupo: 'kelvin_aldea_mina', modelo: 'monumento_c', inst: [[94.28, 12.58, -68.5, 2.991, 0.98]], orientar: false, yExacta: true, escalaPack: false });
     }
+    // Muralla y templo gris (26-nov), con modelos que ya están en esa zona.
+    // La muralla cierra el claro de la puerta del Yunque, lejos del sendero.
+    // El templo mediano va en el llano de las ruinas, dentro del radio que ya tenía la zona.
+    // Ninguna de las dos entra en el cerca del arranque.
+    if (EK && EK.compacto && !EK.murallaB1) {
+      EK.murallaB1 = true;
+      const poner = (grupo, modelo, inst) => EK.compacto.push({ grupo, modelo, inst, orientar: false, yExacta: false, escalaPack: false });
+      poner('kelvin_aldea_yunque', 'muralla_atalaya_a', [[-54, 80, -76, 1.75, 0.8366], [-51.2, 80, -73.4, 1.75, 0.8366]]);
+      poner('kelvin_ruinas_yunque', 'templo_mediano_h', [[-38, 80, -122, 0.9, 0.8366]]);
+    }
   }
 
   // Materiales compartidos de los objetos (se crean al primer uso, cuando THREE ya está)

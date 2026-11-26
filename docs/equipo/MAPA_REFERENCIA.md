@@ -93,5 +93,5 @@ Capturas SwiftShader, mismo encuadre: `docs/img/mapa_antes_*.png` y `docs/img/ma
 
 - Aves nuevas como colonia del álbum: `album.js` exige exactamente esos 9 lugares. El 26-nov se añadieron 3 cruces de 4 aves en las mismas 2 mallas (`EXTRA`), sin colonia nueva. Capturas: `docs/img/mapa_antes_aves_rio.png` y `docs/img/mapa_despues_aves_rio.png`.
 - El monumento `k187` ya está al lado del camino (26-nov). Capturas: `docs/img/mapa_antes_k187_aire.png`, `mapa_antes_k187_suelo.png`, `mapa_despues_k187_aire.png`, `mapa_despues_k187_suelo.png`.
-- Murallas o templos nuevos: el modelo es grande y el fuerte y la ciudad ya están.
+- Murallas o templos nuevos en Villa Raíz: esa zona entra en el cerca del arranque. El 26-nov se añadieron dos `muralla_atalaya_a` en el claro de la puerta del Yunque (−54, −76 y −51,2, −73,4) y un `templo_mediano_h` en el llano de las ruinas (−38, −122). Mismos modelos de esas zonas. Capturas: `docs/img/mapa_antes_muralla_yunque.png`, `mapa_despues_muralla_yunque.png`, `mapa_antes_templo_ruinas.png`, `mapa_despues_templo_ruinas.png`.
 - Nada en `kelvin_aldea_rio_este` (Villa Raíz): esa zona entra en el cerca del arranque y el puente de la historia es de ahí.
