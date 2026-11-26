@@ -191,8 +191,14 @@ window.AVTienda = function (G) {
       '#tienda .tn-pie{position:sticky;bottom:0;display:flex;flex-wrap:wrap;gap:var(--sp-3,12px);justify-content:flex-end;margin:var(--sp-2,8px) calc(var(--sp-5,20px) * -1) 0;padding:var(--sp-3,12px) var(--sp-5,20px) var(--sp-4,16px);background:linear-gradient(180deg,rgba(251,241,220,0),var(--c-paper,#fbf1dc) 30%)}' +
       '#tienda .tn-pie .btn{min-height:var(--tap,48px)}' +
       '@media (min-width:561px){#tienda ul{grid-template-columns:1fr}}' +
-      '@media (max-width:560px){#card:has(#tienda){padding:var(--sp-4,16px) var(--sp-4,16px) 0}#tienda li{grid-template-columns:48px 1fr;row-gap:8px}#tienda .tn-img,#tienda .tn-img img{width:48px;height:48px}' +
-      '#tienda li>:last-child{grid-column:1 / -1;justify-self:stretch;text-align:center}#tienda .tn-b{width:100%}#tienda .tn-pie{margin:var(--sp-2,8px) calc(var(--sp-4,16px) * -1) 0;padding:var(--sp-3,12px) var(--sp-4,16px) var(--sp-4,16px)}#tienda .tn-pie .btn{flex:1 1 40%}}' +
+      '@media (max-width:560px){#card:has(#tienda){display:flex;flex-direction:column;overflow:hidden;height:calc(100dvh - 24px);max-height:calc(100dvh - 24px);padding:var(--sp-4,16px) var(--sp-4,16px) 0}' +
+      '#tienda{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;overflow:hidden}' +
+      '#tienda .tn-cuerpo{overflow-y:auto;min-height:0;flex:1 1 auto;-webkit-overflow-scrolling:touch}' +
+      '#tienda li{grid-template-columns:48px 1fr;row-gap:8px}#tienda .tn-img,#tienda .tn-img img{width:48px;height:48px}' +
+      '#tienda .tn-nota{font-size:13px;line-height:1.25;margin-bottom:4px}#tienda h3{margin-top:8px}' +
+      '#tienda li>:last-child{grid-column:1 / -1;justify-self:stretch;text-align:center}#tienda .tn-b{width:100%}' +
+      '#tienda .tn-acc{flex-direction:row;align-items:stretch}#tienda .tn-acc>.tn-b,#tienda .tn-acc>.tn-falta{flex:1 1 0;width:auto;min-width:0}' +
+      '#tienda .tn-pie{position:static;flex:none;margin:0 calc(var(--sp-4,16px) * -1) 0;padding:var(--sp-3,12px) var(--sp-4,16px) var(--sp-4,16px);background:var(--c-paper,#fbf1dc)}#tienda .tn-pie .btn{flex:1 1 40%}}' +
       '#p-tienda{width:100%;margin:0 0 var(--sp-3,12px);min-height:var(--tap,48px)}#p-tienda::before{--icon:' + ICONO + '}';
     document.head.appendChild(estilo);
   }
@@ -238,11 +244,11 @@ window.AVTienda = function (G) {
     const pescar = origen !== 'pesca' && G.PESCA !== false && G.pescaBotonPausa ? `<button class="btn" type="button" data-tn="pescar" aria-label="${esc(TXT.pescar)}">${esc(TXT.pescar)}</button>` : '';
     const cats = `<div class="tn-cats" role="tablist" aria-label="${esc(TXT.titulo)}"><button class="btn secondary tn-cat" type="button" role="tab" data-tn="cat" data-id="ropa" aria-controls="tn-ropa" aria-pressed="${cat === 'ropa'}" aria-label="${esc(TXT.ropa)}">${esc(TXT.ropa)}</button><button class="btn secondary tn-cat" type="button" role="tab" data-tn="cat" data-id="piezas" aria-controls="tn-piezas" aria-pressed="${cat === 'piezas'}" aria-label="${esc(TXT.piezas)}">${esc(TXT.piezas)}</button></div>`;
     const aviso = msgFalta != null ? `<p class="tn-msg" role="status" aria-live="polite">${faltanHtml(msgFalta)}</p>` : `<p class="tn-msg" role="status" aria-live="polite">${esc(msg)}</p>`;
-    return `<div id="tienda" data-origen="${esc(origen)}"><h2>${esc(TXT.titulo)}</h2>` +
+    return `<div id="tienda" data-origen="${esc(origen)}"><div class="tn-cuerpo"><h2>${esc(TXT.titulo)}</h2>` +
       `<p class="tn-saldo" data-tn-saldo>${CONCHA}<span>${esc(tienesTxt(e.conchitas))}</span></p><p class="tn-nota">${esc(TXT.nota)}</p>` +
       cats + `<h3 id="tn-ropa">${esc(TXT.ropa)}</h3>${ropa}<h3 id="tn-piezas">${esc(TXT.piezas)}</h3>${piezas}` +
       aviso +
-      `<div class="tn-pie">${pescar}<button class="btn ghost" type="button" data-tn="cerrar" aria-label="${esc(TXT.cerrar)}">${esc(TXT.cerrar)}</button></div></div>`;
+      `</div><div class="tn-pie">${pescar}<button class="btn ghost" type="button" data-tn="cerrar" aria-label="${esc(TXT.cerrar)}">${esc(TXT.cerrar)}</button></div></div>`;
   }
   // Miniaturas reales de la ropa (el mismo render que Mi personaje, G.creador.accessoryThumb); si no hay WebGL, queda el color
   async function miniaturas() {
