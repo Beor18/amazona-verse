@@ -442,6 +442,7 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
    mientras cuenta, la flecha (que estaría debajo del número) espera. Los resultados, compactos para que quepan sin cortar. */
 @media (max-height: 500px) and (orientation: landscape) {
   #retos .rt-cuenta { place-items: start start; padding-top: calc(env(safe-area-inset-top, 0px) + 58px); padding-left: 12px; font-size: 44px; -webkit-text-stroke-width: 4px; }
+  #retos.rt-nubes .rt-cuenta { place-items: start center; padding-left: 0; } /* la carrera: el 3 queda bajo el marcador, no en la esquina */
   #retos .rt-turbo { left: 16px; right: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 156px); transform: none; }
   #retos.rt-contando .rt-flecha { visibility: hidden; }
   #retos .rt-aviso { top: 39%; font-size: 26px; } /* bajo la etiqueta de la flecha y por encima de Vittata */
@@ -676,7 +677,7 @@ body.retos-on:has(#retos.rt-banquete) #modo-salir { transition: none; }
       cerrarPaneles();
       if (modo) { modo.terminar(); modo = null; }
       st.fase = 'nada'; st.reto = null;
-      if (ui) ui.el.classList.remove('rt-tormenta', 'rt-banquete');
+      if (ui) ui.el.classList.remove('rt-tormenta', 'rt-banquete', 'rt-nubes');
       st.dos = null; C.nubes = false; C.nubeUsada = null; C.hojas = 0; C.turboT = C.rebufoT = C.rebufoAcc = 0; // F1-8: nada de la serie ni de las nubes se queda en memoria
       G.pausa.set('retos', false);
       const volverCreador = () => { if (st.creador && !(S.profile && S.profile.created)) G.creador.open(true); st.creador = false; };
@@ -791,6 +792,7 @@ body.retos-on:has(#retos.rt-banquete) #modo-salir { transition: none; }
       ui.el.hidden = false;
       ui.el.classList.toggle('rt-tormenta', reto === 'tormenta');
       ui.el.classList.toggle('rt-banquete', reto === 'banquete');
+      ui.el.classList.toggle('rt-nubes', reto === 'nubes');
       if (modo) modo.terminar();
       st.reto = reto; C.rio = reto === 'rio'; C.nubes = reto === 'nubes'; modo = reto === 'tormenta' ? TORMENTA : reto === 'banquete' ? G.banquete.modoRetos(compartido) : CARRERA;
       G.pausa.set('retos', false);
@@ -1544,6 +1546,7 @@ body.retos-on:has(#retos.rt-banquete) #modo-salir { transition: none; }
         if (Math.hypot(h.x - x, h.y - y, h.z - z) > T_NUBES.hojaRadio) continue;
         h.activa = false; ponerHoja(N, i, 0); C.hojas++; C.hojasRecogidas++;
         sonar('r_hoja', C.hojas);
+        if (!calma) G.fx.burst(x, y + 0.35, z, 'leaves', 5); // cada hoja suelta unas hojas: se ve que la cogiste
         if (C.hojas >= T_NUBES.hojasTurbo) {
           aviso('¡Aletazo turbo listo!'); C.avisoT = ADEL.avisoS;
           sonar('nido_chispa'); // premio que ya existe: la 3.ª hoja llena el turbo
