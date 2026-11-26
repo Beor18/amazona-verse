@@ -469,11 +469,23 @@ body:has(#retos .rt-fin:not([hidden])) #modo-salir { display: none !important; }
 /* Solo ¡Escapa de la tormenta! y ¡Banquete!: el 3 no tapa Salir, y en el teléfono se lee qué número es */
 #retos.rt-tormenta .rt-lbl, #retos.rt-banquete .rt-lbl { display: inline; }
 @media (max-width: 640px) { #retos.rt-tormenta .rt-chip, #retos.rt-banquete .rt-chip { font-size: 15px; padding: 4px 8px; } #retos.rt-tormenta .rt-lbl, #retos.rt-banquete .rt-lbl { font-size: 10px; letter-spacing: 0; } }
+/* Al girar el teléfono, .btn anima transform: si Salir iba centrado con translateX(-50%),
+   left salta a 12 px y el resto del translate lo saca por la izquierda un instante. Sin transición no se sale. */
+body.retos-on:has(#retos.rt-tormenta) #modo-salir,
+body.retos-on:has(#retos.rt-banquete) #modo-salir { transition: none; }
 @media (max-height: 500px) and (orientation: landscape) {
   #retos.rt-tormenta .rt-cuenta, #retos.rt-banquete .rt-cuenta { padding-top: calc(env(safe-area-inset-top, 0px) + 118px); font-size: 36px; }
+  body.retos-on:has(#retos.rt-tormenta) #modo-salir,
+  body.retos-on:has(#retos.rt-banquete) #modo-salir {
+    left: max(12px, env(safe-area-inset-left, 0px)) !important; right: auto !important; width: auto; margin-inline: 0;
+    top: calc(env(safe-area-inset-top, 0px) + 92px) !important; bottom: auto !important; transform: none !important;
+  }
 }
 @media (max-width: 700px) and (orientation: portrait) {
-  body.retos-on:has(#retos.rt-tormenta) #modo-salir { left: 50% !important; right: auto !important; top: auto !important; bottom: calc(env(safe-area-inset-bottom, 0px) + 210px); transform: translateX(-50%); }
+  body.retos-on:has(#retos.rt-tormenta) #modo-salir {
+    left: 0 !important; right: 0 !important; width: max-content; margin-inline: auto;
+    top: auto !important; bottom: calc(env(safe-area-inset-bottom, 0px) + 210px); transform: none !important;
+  }
 }
 @keyframes rt-pluma { 50% { filter: brightness(1.3); } }
 #retos.rt-tormenta .rt-vidas i:not(.off) { animation: rt-pluma 1.4s ease-in-out infinite; }
