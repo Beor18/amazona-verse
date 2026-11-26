@@ -668,6 +668,7 @@
         use: () => {
           if (Math.abs(S.pos.y - perchaV.y) > 0.5) { G.ui.toast('Pósate en la percha vacía (vuela hasta el poste) y da la señal', 2600); return; }
           poner('levantada'); subiendo = 0; encuadrar(PUENTE.x, PUENTE.z); G.audio.play('unlock'); G.misiones.check(); registrar();
+          if (G.fx && G.fx.burst) G.fx.burst(PERCHAS.v.x, perchaV.y + 0.5, PERCHAS.v.z, 'feathers', 16);
           G.dialogo.say([Vi('¡Ahora!'), Vi('Sube. Entre tres, sube.')], () => G.ui.toast('Lleva la tabla larga al puente entre dos', 3000));
         } });
       // La tabla larga: solo se mueve si hay alguien en cada punta (Vittata y quien carga fuerte por el plan)
