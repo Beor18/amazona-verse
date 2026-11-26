@@ -500,6 +500,10 @@
       }).catch(() => {});
       setTimeout(() => { revisar(); setInterval(revisar, 120000); }, 120000);
     }
+    // Prototipo «Vittata en tu casa» (25-nov). Solo con ?ar=1: no hay botón en la portada.
+    const cargarAR = aDemanda('src/game/ar.js', 'AVAr');
+    AV.arTest = o => cargarAR().then(m => m.test(o));
+    if (/[?&]ar=1\b/.test(location.search)) cargarAR().then(m => m.abrir()).catch(e => console.warn('ar', e));
     window.AV = AV;
   }
   function start(id) { expose(AVE.boot(id)); }
