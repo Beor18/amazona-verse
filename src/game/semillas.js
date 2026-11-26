@@ -118,7 +118,7 @@ window.AVSemillas = function (G) {
     try { if (G.fx && G.fx.burst) G.fx.burst(s.x, s.y, s.z, s.tipo === 'hoja' ? 'leaves' : 'gold', s.tipo === 'dorada' ? 20 : 8); } catch (e) { /* sin fx */ }
     if (s.tipo === 'hoja') { E.hojas++; E.penal += 1; E.racha = 0; sonar('frenada'); aviso(L('Hoja seca: −1 s', 'Dry leaf: −1 s'), 'malo'); }
     else {
-      E.puntos += PTS[s.tipo]; if (s.tipo === 'dorada') { E.doradas++; sonar('encaje'); sonar('semilla', 9); aviso(L('¡Dorada! +5', 'Golden! +5'), 'oro'); } else { E.semillas++; sonar('semilla', E.racha); }
+      E.puntos += PTS[s.tipo]; if (s.tipo === 'dorada') { E.doradas++; sonar('encaje'); sonar('semilla', 9); aviso(L('¡Dorada! +5', 'Golden! +5'), 'oro'); } else { E.semillas++; sonar('semilla', E.racha); if (E.racha >= 2) sonar('nido_chispa'); }
     }
     pintarHud();
   }
@@ -157,14 +157,16 @@ window.AVSemillas = function (G) {
   function css() {
     if (document.getElementById('sem-css')) return;
     const st = document.createElement('style'); st.id = 'sem-css';
-    st.textContent = '#sem-hud{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);box-sizing:border-box;padding:6px 8px 6px 14px;border-radius:20px;background:rgba(16,36,28,.86);color:#fff8e6;font:600 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}#sem-hud[hidden],#sem-fin[hidden]{display:none}' +
+    st.textContent = '#sem-hud{position:fixed;left:0;right:0;margin-inline:auto;width:fit-content;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;justify-content:center;max-width:calc(100vw - 24px);box-sizing:border-box;padding:6px 8px 6px 14px;border-radius:20px;background:rgba(16,36,28,.86);color:#fff8e6;font:600 15px Fredoka,system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.35)}#sem-hud[hidden],#sem-fin[hidden]{display:none}' +
       '#sem-hud .sem-n{display:flex;align-items:center;gap:4px;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}#sem-hud .sem-t{font-variant-numeric:tabular-nums;font-size:18px;font-weight:700;min-width:3.2ch;text-align:center}#sem-hud .sem-t.poco{color:#ffb4a2}#sem-hud .sem-r{opacity:.85;font-size:14px}' +
-      '#sem-hud [data-k="msg"]{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);white-space:nowrap;padding:4px 12px;border-radius:999px;font-weight:700;pointer-events:none}#sem-hud [data-k="msg"]:empty{display:none}#sem-hud [data-k="msg"].oro{background:#ffd23f;color:#3b2a14}#sem-hud [data-k="msg"].malo{background:#ffd0c4;color:#5a1e10}' +
+      '#sem-hud [data-k="msg"]{position:fixed;left:16px;top:74px;width:calc(100vw - 32px);transform:none;box-sizing:border-box;text-align:center;line-height:1.25;white-space:normal;padding:4px 12px;border-radius:999px;font-weight:700;pointer-events:none}#sem-hud [data-k="msg"]:empty{display:none}#sem-hud [data-k="msg"].oro{background:#ffd23f;color:#3b2a14}#sem-hud [data-k="msg"].malo{background:#ffd0c4;color:#5a1e10}' +
+      '@media (orientation:landscape) and (max-height:500px){#sem-hud [data-k="msg"]{top:72px;width:calc(100vw - 88px)}}' +
       '#sem-hud button,#sem-fin button{min-height:44px;min-width:44px;padding:4px 16px;border-radius:22px;border:0;font:700 16px Fredoka,system-ui,sans-serif;background:#fff3d6;color:#3b2a14;box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer;touch-action:manipulation}#sem-hud button.salir,#sem-fin button.salir{background:#ffd0c4}#sem-hud button:focus-visible,#sem-fin button:focus-visible{outline:4px solid #ffd27a;outline-offset:2px}#sem-fin button{min-height:54px;padding:4px 22px;font-size:18px}' + // PULIR 4: en el panel, 54 px y 18 px como los demás (.av-bot, ui.css)
       '#sem-fin{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:61;width:min(380px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:24px;background:rgba(16,36,28,.94);color:#fff8e6;font-family:Fredoka,system-ui,sans-serif;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;gap:8px}' +
       '#sem-fin h2{margin:0;font-size:26px}#sem-fin .sem-gran{display:flex;align-items:center;gap:8px;font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}#sem-fin .sem-gran svg{width:40px;height:40px}#sem-fin p{margin:0;font-size:17px;font-weight:600}#sem-fin .sem-det{font-size:15px;opacity:.85;font-weight:500}#sem-fin .sem-bots{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px}' +
       '@media (orientation:landscape) and (max-height:500px){#sem-fin{padding:12px 16px;gap:4px}#sem-fin h2{font-size:21px}#sem-fin .sem-gran{font-size:34px}}' +
-      'body.semillas-on :is(#quest,#inv,#modo-salir){visibility:hidden!important}' +
+      'body.semillas-on :is(#quest,#inv,#modo-salir,#b-diary,#b-emotes,#b-act,#b-dash){visibility:hidden!important}' +
+      '@keyframes sem-pop{40%{transform:scale(1.35)}}#sem-hud .sem-n.sem-pop{display:inline-flex;animation:sem-pop .4s ease-out}@media (prefers-reduced-motion:reduce){#sem-hud .sem-n.sem-pop{animation:none}}' +
       // F20 r2: el aviso de las instrucciones va debajo de la barra del juego (se cruzaban y no se leía ninguno) y se esconde con el panel final
       '@media (orientation:landscape){body.semillas-on #toast{top:calc(env(safe-area-inset-top,0px) + 74px)!important;bottom:auto!important}}' +
       'body.semillas-on:has(#sem-fin:not([hidden])) #toast{visibility:hidden!important}' +
@@ -189,7 +191,9 @@ window.AVSemillas = function (G) {
   function pintarHud() {
     if (!hudEl) return;
     const t = q(hudEl, 't'); t.textContent = L('Semillas al vuelo', 'Seeds on the wing'); t.hidden = estrecho();
-    q(hudEl, 'n').textContent = String(E.puntos); q(hudEl, 'n').parentNode.setAttribute('aria-label', L('Semillas: ', 'Seeds: ') + E.puntos);
+    const nn = q(hudEl, 'n'), sig = String(E.puntos);
+    if (nn.textContent && nn.textContent !== sig) { const caja = nn.parentNode; caja.classList.remove('sem-pop'); void caja.offsetWidth; caja.classList.add('sem-pop'); }
+    nn.textContent = sig; nn.parentNode.setAttribute('aria-label', L('Semillas: ', 'Seeds: ') + E.puntos);
     const r = q(hudEl, 'r'); r.textContent = reloj(restante()); r.classList.toggle('poco', restante() <= 10);
     q(hudEl, 'rec').textContent = E.mejor ? L('Récord ', 'Best ') + E.mejor : '';
     hudEl.querySelector('[data-a="salir"]').textContent = L('Salir', 'Exit');
@@ -220,7 +224,7 @@ window.AVSemillas = function (G) {
     document.body.classList.add('semillas-on'); document.body.classList.remove('semillas-fin');
     try { if (G.menuModos && G.menuModos.encuadrar) G.menuModos.encuadrar(); } catch (e) { /* sin menú */ } // F20 r2: sin ladera ni techo delante de la cámara
     pintarHud(); pintar();
-    if (!o.callado && G.ui && G.ui.toast) G.ui.toast(L('¡Semillas al vuelo! Atrápalas antes de que lleguen al suelo. Las doradas valen 5 y las hojas secas te quitan 1 segundo.', 'Seeds on the wing! Catch them before they reach the ground. Golden ones are worth 5, and dry leaves take 1 second off.'), 3200);
+    aviso(L('Atrapa las que caen. Dorada +5', 'Catch the falling ones. Golden +5'), 'oro'); E.msgT = 3.4;
     sonar('boton');
     return true;
   }
