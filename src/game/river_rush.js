@@ -339,7 +339,12 @@
     }
 
     // ---------- Simulación (paso determinista de dt s) ----------
-    function arrancar() { if (st.fase === 'listo') { st.fase = 'juego'; J.t = 0; ocultarPista(); if (st.ui) st.ui.modos.hidden = true; return true; } return false; }
+    function arrancar() {
+      if (st.fase !== 'listo') return false;
+      st.fase = 'juego'; J.t = 0; ocultarPista(); if (st.ui) st.ui.modos.hidden = true;
+      if (!G.quiet && G.fx && G.fx.burst) { try { G.fx.burst(S.pos.x, S.pos.y + 0.5, S.pos.z, 'feathers', 8); } catch (e) { /* sin fx */ } }
+      return true;
+    }
     function paso(dt) {
       const q = enCauce(J.s, st.q || (st.q = {}));
       if (st.fase === 'listo') { J.t += dt; return; }
@@ -692,6 +697,10 @@ html body.river-on #pause .pause-grid > :not(#b-sound) { display: none !importan
 }
 @media (orientation: landscape) and (max-height: 520px) {
   #riverrush .rr-pista { bottom: auto; top: calc(env(safe-area-inset-top, 0px) + 118px); width: min(520px, calc(100vw - 160px)); font-size: 16px; }
+}
+/* Tableta (768 y 1024): la ayuda de abajo tapaba la canoa. Sube, como en el teléfono. */
+@media (min-width: 421px) and (max-width: 1100px) {
+  #riverrush .rr-pista { bottom: auto; top: calc(env(safe-area-inset-top, 0px) + 132px); width: min(480px, calc(100vw - 48px)); font-size: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { #riverrush .rr-pista, #riverrush .rr-mano, #riverrush .rr-chip.pop, #riverrush .rr-aviso.pop { animation: none; } }`;
     function montarUI() {
