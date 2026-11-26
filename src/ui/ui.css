@@ -690,7 +690,8 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   .hud-btn { width: var(--tap); padding: 0; font-size: 0; gap: 0; --icon-size: 22px; }
   .creator-box { grid-template-columns: 1fr; }
   .stage-wrap { position: relative; aspect-ratio: 1 / 1; max-height: 48vh; margin-inline: auto; width: 100%; }
-  .stage-title h2 { font-size: var(--fs-2xl); }
+  #creator.creator-corto #p-save { animation: jugar-invita 1.6s ease-in-out infinite; }
+  @keyframes jugar-invita { 50% { transform: scale(1.035); } }
   .comic-body { grid-template-columns: 1fr; }
   .title-hero { width: min(30vh, 46vw); }
 }
@@ -799,6 +800,14 @@ body:has(#dialog:not([hidden])) :is(#keyhint, #tag) { visibility: hidden; }
   #creator.creator-corto #p-save { width: auto; flex: 1 1 auto; min-width: 0; }
   #creator.creator-corto #p-cancel { flex: 0 0 auto; min-height: 48px; }
   #creator.creator-corto .stage-wrap { max-height: 38vh; }
+  /* Teléfono alto (390×844): el título iba encima de los ojos. Queda en la tarjeta, encima del lienzo. */
+  @media (min-height: 701px) {
+    #creator .stage-wrap { display: flex; flex-direction: column; aspect-ratio: auto; max-height: none; }
+    #creator .stage-title { position: static; margin: 10px 12px 0; }
+    #creator .stage-title h2 { font-size: 26px; line-height: 1.05; }
+    #creator #p-stage { width: 100%; height: 240px; flex: none; }
+    #creator .stage-hint { position: static; margin: 8px auto 10px; }
+  }
   @keyframes name-brillo { 50% { transform: scale(1.14); } }
   #creator.creator-corto #p-name-azar { animation: name-brillo 1.6s ease-in-out infinite; }
   /* 360×640: el escenario se comía la pantalla y «Guardar» partía el nombre. */

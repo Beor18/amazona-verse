@@ -585,6 +585,9 @@
       if (!creador) return;
       creador.classList.add('creator-corto');
       const b = $('p-save'); if (b) { if (!b.dataset.txt0) b.dataset.txt0 = b.textContent; b.textContent = '¡A jugar!'; }
+      // El creador se abre en el arranque, antes de que exista este menú: «Volver» quedaba oculto y no había salida.
+      const bc = $('p-cancel');
+      if (bc && $('title')) { bc.hidden = false; bc.textContent = 'Volver'; }
       if (creador.hidden) G.creador.open(true);
     }
     function soltarCreador() {
