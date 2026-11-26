@@ -1166,10 +1166,12 @@
         '#cl-hud button:hover{background:rgba(255,255,255,.18)}#cl-hud button:focus-visible{outline:3px solid #ffd27a;outline-offset:1px}' +
         '#cl-hud button[aria-pressed="true"]{background:#ffd27a;color:#10241c;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18)}' +
         '#cl-hud svg{width:30px;height:30px}#cl-hud .cl-cuenta{color:#fff8e6;font:700 13px system-ui,sans-serif;padding:0 8px;white-space:nowrap}' +
-        '#cl-hud .cl-ahora{color:#ffd27a;font:800 13px system-ui,sans-serif;padding:0 6px;white-space:nowrap;max-width:9.5em;overflow:hidden;text-overflow:ellipsis}' +
-        '#cl-hud .cl-carril{position:relative;max-width:100%;min-width:0}' +
-        '#cl-hud [data-cl="mas"]{position:absolute;right:2px;top:50%;transform:translateY(-50%);z-index:2;background:#ffd27a;color:#10241c;font:800 22px/1 system-ui,sans-serif;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.35)}' +
+        '#cl-hud .cl-ahora{color:#ffd27a;font:800 13px system-ui,sans-serif;padding:0 6px;white-space:nowrap;max-width:6.2em;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}' +
+        '#cl-hud .cl-carril{position:relative;max-width:100%;min-width:0;display:flex;align-items:center;gap:4px}' +
+        '#cl-hud .cl-carril .cl-piezas{flex:1 1 auto;min-width:0;scroll-padding-inline-end:12px}' +
+        '#cl-hud [data-cl="mas"]{position:static;transform:none;flex:0 0 auto;background:#ffd27a;color:#10241c;font:800 22px/1 system-ui,sans-serif;border-radius:999px;box-shadow:0 2px 8px rgba(0,0,0,.35)}' +
         '@keyframes cl-pop{0%{transform:scale(1)}40%{transform:scale(1.16)}100%{transform:scale(1)}}#cl-hud button.cl-pop{animation:cl-pop .28s ease}' +
+        '@keyframes cl-brillo{50%{box-shadow:0 0 0 4px rgba(255,210,122,.9)}}#cl-hud .cl-piezas button[aria-pressed="true"]{animation:cl-brillo 1.5s ease-in-out infinite}' +
         '#cl-hud kbd{font:600 10px system-ui,sans-serif;opacity:.7}' +
         '#cl-hud .cl-herr button{flex-direction:row;font-size:13px;padding:4px 10px;white-space:nowrap}' +
         // F20: los botones de herramientas no se encogen por debajo de su texto (en inglés «Quick builds T» se montaba sobre el
@@ -1181,8 +1183,8 @@
         '#cl-hud .cl-deshacer.cl-hay{background:#ffd27a;color:#10241c;box-shadow:0 0 0 3px rgba(255,210,122,.7);min-width:84px;font-weight:800}' +
         '#cl-hud .cl-deshacer[aria-disabled="true"]{opacity:.5;box-shadow:none}' +
         'body:has(#title[open]) #cl-hud,body:has(#creator:not([hidden])) #cl-hud{visibility:hidden}' +
-        '@media (max-width:700px),(pointer:coarse){#cl-hud{left:12px;transform:none;align-items:flex-start;top:calc(env(safe-area-inset-top,0px) + 226px);max-width:calc(100vw - 84px)}' +
-        '#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{min-width:44px;min-height:44px;padding:2px}#cl-hud svg{width:26px;height:26px}' +
+        '@media (max-width:700px),(pointer:coarse){#cl-hud .cl-ahora{display:none}#cl-hud{left:12px;transform:none;align-items:flex-start;top:calc(env(safe-area-inset-top,0px) + 226px);max-width:calc(100vw - 84px)}' +
+        '#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud .cl-piezas button[aria-pressed="true"] small{display:block;font-size:10px;line-height:1.05;max-width:64px;white-space:normal}#cl-hud button{min-width:44px;min-height:44px;padding:2px}#cl-hud svg{width:26px;height:26px}' +
         '#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-cuenta{font-size:12px;padding:0 4px}' +
         '#cl-hud .cl-herr{flex-wrap:wrap;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}' +
         '#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
@@ -1197,7 +1199,7 @@
         // PULIR 2 (p23): la última pieza quedaba cortada en el borde sin señal de que la fila se desliza: el borde derecho se desvanece
         '#cl-hud .cl-piezas{padding-right:28px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 30px),rgba(0,0,0,.15));mask-image:linear-gradient(90deg,#000 calc(100% - 30px),rgba(0,0,0,.15))}}' +
         // C10: teléfono en horizontal (844×390): la barra va al centro, entre el joystick y los botones de acción, bajo el HUD de arriba
-        '@media (orientation:landscape) and (max-height:500px){#cl-hud .cl-ahora{display:none}#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
+        '@media (orientation:landscape) and (max-height:500px){#cl-hud .cl-ahora{display:none}#cl-hud .cl-piezas button[aria-pressed="true"] small{display:none}#cl-hud,body:has(#emotes:not([hidden])) #cl-hud{left:50%;transform:translateX(-50%);align-items:center;top:calc(env(safe-area-inset-top,0px) + 150px);max-width:calc(100vw - 400px)}#cl-hud .cl-herr{flex-wrap:wrap;justify-content:center;overflow:visible}#cl-hud .cl-piezas{flex-wrap:nowrap;justify-content:flex-start}#cl-hud .cl-plantillas{overflow:visible}#cl-hud .cl-fila{gap:4px;padding:4px}#cl-hud .cl-piezas small,#cl-hud kbd{display:none}#cl-hud button{padding:2px}#cl-hud svg{width:26px;height:26px}#cl-hud .cl-herr button{padding:2px 7px;font-size:12px}#cl-hud .cl-plantillas button{width:56px;padding:2px 1px;gap:1px}#cl-hud .cl-plantillas svg{width:18px;height:18px}#cl-hud .cl-plantillas small{font-size:10px;line-height:1}' +
         // PULIR 6: en horizontal el aviso tapaba los contadores (arriba a la derecha; no hay hueco entre el objetivo, los botones y la
         // barra). Construyendo va abajo, entre el palo y los botones de acción, bajo la barra, en el sitio de la línea «Acción: …»
         // (que se esconde mientras el aviso está a la vista: el botón «Colocar» dice lo mismo)
