@@ -602,9 +602,10 @@ window.AVV18Pesca = function (G) {
       '#v18-pesca .vp-flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none}#v18-pesca .vp-flash.on{animation:vpFlash .45s ease-out}' +
       '@keyframes vpFlash{from{opacity:.75}to{opacity:0}}@keyframes vpLate{from{transform:scale(1)}to{transform:scale(1.06)}}' +
       '@keyframes vpSuma{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}#v18-pesca .vp-info [data-k="puntos"].vp-suma{display:inline-block;animation:vpSuma .35s ease;color:#ffd84a}' +
-      '@media (prefers-reduced-motion:reduce){#v18-pesca .vp-flash.on,#v18-pesca button.vp-principal.pica,#v18-pesca .vp-info [data-k="puntos"].vp-suma{animation:none}}' +
+      '@keyframes vpCarga{50%{filter:brightness(1.35)}}#v18-pesca .vp-cargando .vp-barra>b{animation:vpCarga .45s ease-in-out infinite}' +
+      '@media (prefers-reduced-motion:reduce){#v18-pesca .vp-flash.on,#v18-pesca button.vp-principal.pica,#v18-pesca .vp-info [data-k="puntos"].vp-suma,#v18-pesca .vp-cargando .vp-barra>b{animation:none}}' +
       // móvil: el panel deja libre la columna de Diario / Gestos / Pausa de la derecha (tapaba la fila de tiempo y la ficha)
-      '@media (max-width:760px){#v18-pesca{margin-inline:16px auto;width:calc(100vw - 96px)}#v18-pesca .vp-info{display:grid;grid-template-columns:1fr 1fr;font-size:14px;gap:2px 10px}#v18-pesca button kbd{display:none}body.v18-pesca-on #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto}body.v18-pesca-on #minimapa{visibility:hidden}#v18-pesca .vp-ficha .vp-d{font-size:14px}}' +
+      '@media (max-width:760px){#v18-pesca{margin-inline:16px auto;width:calc(100vw - 96px)}#v18-pesca .vp-caja{padding:6px 10px}#v18-pesca .vp-info{display:grid;grid-template-columns:1fr 1fr;font-size:14px;gap:2px 10px}#v18-pesca .vp-barra{height:18px}#v18-pesca .vp-et{font-size:13px;font-weight:700}#v18-pesca button{min-height:44px;padding:4px 8px}#v18-pesca .vp-guia{width:100%;font-size:13px;line-height:1.25;padding:4px 10px;margin-top:6px}#v18-pesca button kbd{display:none}body.v18-pesca-on #toast{top:calc(env(safe-area-inset-top,0px) + 12px);bottom:auto}body.v18-pesca-on #minimapa{visibility:hidden}#v18-pesca .vp-ficha .vp-d{font-size:14px}}' +
       '@media (min-width:761px) and (pointer:fine){#v18-pesca{bottom:16px}}' +
       // F20 r2: teléfono en horizontal (≤ 520 px de alto): el panel ocupaba todo el centro y tapaba a Vittata, la caña y el agua.
       // Ahora va pegado abajo y compacto: ◀ Lanzar ▶ y Salir en una sola fila, botones de 44 px y la pista más pequeña.
@@ -748,6 +749,7 @@ window.AVV18Pesca = function (G) {
       hud.q('prog').style.width = (avance * 100).toFixed(1) + '%';
       const metro = hud.q('metro'); if (metro) metro.setAttribute('aria-valuenow', String(Math.round(avance * 100)));
     } else hud.q('carga').style.width = (A.carga * 100).toFixed(1) + '%';
+    const cw = hud.q('cargaW'); if (cw) cw.classList.toggle('vp-cargando', A.fase === 'carga' && A.carga > 0.02);
     const verbo = verboPrincipal(); texto('t-accion', verbo);
     const pr = hud.el.querySelector('button[data-a="accion"]'); if (pr) { pr.classList.toggle('pica', A.fase === 'pica'); if (pr.getAttribute('aria-label') !== verbo) pr.setAttribute('aria-label', verbo); }
     const apunta = A.fase === 'listo' || A.fase === 'carga';
