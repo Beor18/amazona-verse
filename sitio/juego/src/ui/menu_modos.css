@@ -42,8 +42,8 @@
   transition: transform var(--dur-2) var(--ease-pop), filter var(--dur-2);
 }
 .modo .modo-img { width: 56px; height: 56px; flex: none; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35)); transition: transform var(--dur-2) var(--ease-pop); }
-.modo b { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lg); }
-.modo small { font-size: var(--fs-sm); line-height: 1.2; color: var(--c-text-muted); font-weight: 500; }
+.modo b { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-lg); flex-shrink: 0; }
+.modo small { font-size: var(--fs-sm); line-height: 1.2; color: var(--c-text-muted); font-weight: 500; flex-shrink: 0; }
 .modo:hover, .modo:focus-visible { transform: translateY(-4px) scale(1.03); filter: brightness(1.08); }
 .modo:hover .modo-img, .modo:focus-visible .modo-img { transform: scale(1.12) rotate(-4deg); }
 .modo:active { transform: translateY(2px) scale(0.98); }
@@ -88,6 +88,15 @@
 .title-idioma { display: inline-flex; gap: var(--sp-1); align-items: center; }
 .title-idioma .chip { min-width: 44px; min-height: 44px; justify-content: center; padding: 0 var(--sp-3); }
 .title-episodios .btn { min-height: 44px; }
+/* 390×844, EN: «What is there to do?» ensanchaba el botón y el borde de la portada lo cortaba */
+@media (max-width: 420px) {
+  #title .title-episodios.episodios-arriba { width: 100%; }
+  #title .title-episodios .btn {
+    flex: 1 1 0; min-width: 0; max-width: 100%; white-space: normal; line-height: 1.15;
+    padding-left: 10px; padding-right: 10px;
+  }
+  #title .title-idioma { flex: 1 0 100%; justify-content: center; }
+}
 /* Pantalla «Capítulos»: los 6 de la temporada con portada (SVG y color del capítulo), estado y Jugar; cabe en 320 px y se desplaza */
 dialog.capitulos {
   box-sizing: border-box; width: min(640px, calc(100vw - 2 * var(--sp-3))); max-height: calc(100dvh - 2 * var(--sp-3));

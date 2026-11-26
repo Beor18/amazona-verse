@@ -1,7 +1,7 @@
 /* Amazona Verse · prototipo «Vittata en tu casa» (25-nov). Solo con ?ar=1.
    Android: WebXR immersive-ar + hit-test (la API del navegador; three r128 tiene la sesión, no el hit-test).
-   iPhone: three r128 del repo no trae USDZExporter (examples/jsm/exporters no está). No se descarga.
-   Queda pendiente y aquí solo sale el aviso. La cámara no se lee, no se guarda y no se sube.
+   iPhone: AR Quick Look con assets/ar/vittata.usdz (USDZExporter de Three.js r128, MIT, en src/vendor/).
+   La cámara no se lee, no se guarda y no se sube.
    Vittata se usa tal cual (AVCharacter.create): ni el modelo ni el rig se tocan. */
 (function () {
   const ALTO = 0.30; // metros: una cotorra de verdad, de pie
@@ -23,6 +23,22 @@
     const escalaDe = h => ALTO / (h > 0.05 ? h : 1);
 
     let dlg = null, overlay = null, renderer = null, sesion = null, hit = null, puesta = false, ch = null, grupo = null, aro = null, baseY = 0, gesto = 0, aleteoHasta = 0;
+    let suya = false, asustada = false, escenaAR = null, semilla = null, mallaSemilla = null, gestoHecho = 0;
+    const CERCA = 0.42;
+    const llevarEn = (obj, dx, dy, yaw) => {
+      const paso = 0.002, c = Math.cos(yaw), s = Math.sin(yaw);
+      obj.position.x += (dx * c + dy * s) * paso;
+      obj.position.z += (-dx * s + dy * c) * paso;
+      return obj.position;
+    };
+    const girarEn = (y, d) => y + d;
+    const miedoDe = (dist, ya) => {
+      if (dist == null || !isFinite(dist) || dist >= CERCA) return { asustada: false, nuevo: false };
+      if (ya) return { asustada: true, nuevo: false };
+      return { asustada: true, nuevo: true, sfx: 'aviso', alas: 'flap' };
+    };
+    const nuevaSemilla = () => ({ t: 0, dur: 0.55, viva: true, atrapada: false, sfx: 'semilla', sfxLanzar: 'lanzar' });
+    const avanzarSemilla = (s, dt) => { if (s.viva) { s.t += dt; if (s.t >= s.dur) { s.viva = false; s.atrapada = true; } } return s; };
 
     function estilo() {
       if ($('ar-css')) return;
@@ -33,7 +49,12 @@
         '#ar-casa .ar-aviso{font-weight:700;color:#ffd27a}#ar-casa .ar-fila{display:flex;flex-wrap:wrap;gap:8px}' +
         '#ar-casa button{min-height:44px;padding:10px 16px;border-radius:999px;border:0;font:700 1rem/1.2 system-ui,sans-serif;cursor:pointer}' +
         '#ar-casa [data-ar="entrar"]{background:#f0a202;color:#1a1204}#ar-casa [data-ar="seguir"],#ar-casa [data-ar="ok"]{background:transparent;color:#f4f7f1;border:2px solid rgba(244,247,241,.45)}' +
-        '#ar-overlay{position:fixed;inset:0;z-index:5;pointer-events:none}#ar-salir{pointer-events:auto;position:fixed;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));min-height:44px;min-width:44px;padding:10px 18px;border:0;border-radius:999px;background:#1d5e33;color:#fff;font:700 1rem/1 system-ui,sans-serif}' +
+        '#ar-casa a[rel="ar"]{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 16px 8px 8px;border-radius:999px;background:#1c6e8c;color:#fff;text-decoration:none;font:700 1rem/1.2 system-ui,sans-serif}#ar-casa a[rel="ar"] img{width:36px;height:36px;border-radius:8px;object-fit:cover}' +
+        '#ar-overlay{position:fixed;inset:0;z-index:5;pointer-events:none}#ar-dedos{position:absolute;inset:0;pointer-events:auto;touch-action:none}' +
+        '#ar-salir,#ar-colocar,#ar-semilla{pointer-events:auto;position:fixed;z-index:6;min-height:44px;padding:10px 16px;border:0;border-radius:999px;color:#fff;font:700 1rem/1 system-ui,sans-serif}' +
+        '#ar-salir{top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));background:#1d5e33}' +
+        '#ar-colocar{top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));background:#245c4a}' +
+        '#ar-semilla{bottom:max(12px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#f0a202;color:#1a1204}' +
         '@media (prefers-reduced-motion:reduce){#ar-casa{animation:none}}';
       document.head.appendChild(s);
     }
@@ -46,12 +67,11 @@
       estilo();
       if (dlg && document.contains(dlg)) return dlg;
       dlg = document.createElement('dialog'); dlg.id = 'ar-casa'; dlg.setAttribute('aria-labelledby', 'ar-t');
-      const ios = iphone() && !usdz();
       dlg.innerHTML = '<div class="ar-caja"><h2 id="ar-t">' + L('Vittata en tu casa', 'Vittata in your home') + '</h2>' +
         '<p class="ar-aviso">' + L('Pide a un adulto que te acompañe · mira a tu alrededor', 'Ask a grown-up to stay with you · look around you') + '</p>' +
         '<p>' + L('La cámara no se guarda ni se envía. No usamos dónde estás.', 'The camera is not saved or sent. We do not use where you are.') + '</p>' +
-        (ios ? '<p data-ar="iphone">' + L('En el iPhone todavía no está listo.', 'On iPhone it is not ready yet.') + '</p>' : '') +
         '<div class="ar-fila"><button type="button" data-ar="entrar">' + L('Ver a Vittata aquí', 'See Vittata here') + '</button>' +
+        '<a rel="ar" href="assets/ar/vittata.usdz"><img alt="" src="assets/ar/vittata_poster.jpg">' + L('Ver en tu casa', 'See her at home') + '</a>' +
         '<button type="button" data-ar="seguir">' + L('Seguir en el juego', 'Keep playing') + '</button></div>' +
         '<p data-ar="msg" hidden></p></div>';
       dlg.addEventListener('click', e => {
@@ -82,8 +102,10 @@
     }
 
     async function entrar(xrForzado) {
-      if (iphone() && !usdz()) return fallo(L('En el iPhone todavía no está listo. Seguimos en el juego.', 'On iPhone it is not ready yet. We will keep playing.'));
-      if (!(await soporta(xrForzado))) return fallo(L('Este aparato todavía no puede mostrar a Vittata en tu casa. Seguimos en el juego.', 'This device cannot show Vittata in your home yet. We will keep playing.'));
+      if (!(await soporta(xrForzado))) {
+        if (iphone()) return fallo(L('Toca «Ver en tu casa». Si no se abre, seguimos en el juego.', 'Tap “See her at home”. If it does not open, we will keep playing.'));
+        return fallo(L('Este aparato todavía no puede mostrar a Vittata en tu casa. Seguimos en el juego.', 'This device cannot show Vittata in your home yet. We will keep playing.'));
+      }
       try { await sesionAR(); } catch (e) { return fallo(L('No se pudo abrir la cámara. Seguimos en el juego.', 'The camera could not open. We will keep playing.')); }
       return '';
     }
@@ -124,9 +146,55 @@
     }
 
     function mirar(cam) {
-      if (!grupo || !puesta || !cam) return;
+      if (!grupo || !puesta || !cam || suya) return;
       const v = new THREE.Vector3(); cam.getWorldPosition(v);
       grupo.rotation.y = Math.atan2(v.x - grupo.position.x, v.z - grupo.position.z);
+    }
+    function recolocar() {
+      puesta = false; suya = false; asustada = false;
+      if (grupo) grupo.visible = false;
+      if (aro) aro.visible = false;
+    }
+    function asegurarSemilla() {
+      if (mallaSemilla || !escenaAR) return;
+      mallaSemilla = new THREE.Mesh(new THREE.SphereGeometry(0.012, 10, 8), new THREE.MeshBasicMaterial({ color: 0xf0a202 }));
+      mallaSemilla.name = 'ar-semilla'; mallaSemilla.visible = false; escenaAR.scene.add(mallaSemilla);
+    }
+    function lanzarDesdeCamara() {
+      if (!puesta || !grupo || !renderer || !escenaAR) return;
+      asegurarSemilla();
+      const cam = renderer.xr.getCamera(escenaAR.cam);
+      const o = new THREE.Vector3(); cam.getWorldPosition(o);
+      const d = grupo.position.clone(); d.y = baseY + 0.12;
+      semilla = nuevaSemilla(); semilla.o = o; semilla.d = d; mallaSemilla.visible = true;
+      try { if (G.audio && !G.quiet) G.audio.play('lanzar'); } catch (e) { /* sin sonido */ }
+    }
+    function pasoSemilla(dt) {
+      if (!semilla || !semilla.viva || !mallaSemilla) return;
+      avanzarSemilla(semilla, dt);
+      const k = Math.min(1, semilla.t / semilla.dur);
+      mallaSemilla.position.lerpVectors(semilla.o, semilla.d, k);
+      mallaSemilla.position.y += Math.sin(k * Math.PI) * 0.12;
+      if (!semilla.atrapada) return;
+      mallaSemilla.visible = false;
+      if (ch) { if (ch.clips && ch.clips.Celebrate) ch.play('Celebrate', true); ch.wingMode = 'flap'; aleteoHasta = performance.now() + 700; }
+      try { if (G.audio && !G.quiet) G.audio.play('semilla'); } catch (e) { /* sin sonido */ }
+    }
+    function pasoMiedo(cam) {
+      if (!puesta || !grupo || !cam) return;
+      const ojo = new THREE.Vector3(); cam.getWorldPosition(ojo);
+      const dist = ojo.distanceTo(grupo.position);
+      const m = miedoDe(dist, asustada);
+      if (!m.asustada) { asustada = false; return; }
+      if (!m.nuevo) return;
+      asustada = true;
+      const lejos = grupo.position.clone().sub(ojo); lejos.y = 0;
+      if (lejos.lengthSq() < 1e-6) lejos.set(0, 0, 1);
+      grupo.position.add(lejos.normalize().multiplyScalar(reducido() ? 0.02 : 0.08));
+      baseY = grupo.position.y;
+      if (ch) ch.wingMode = 'flap';
+      aleteoHasta = performance.now() + 800;
+      try { if (G.audio && !G.quiet) G.audio.play(m.sfx); } catch (e) { /* sin sonido */ }
     }
 
     function respirar(t) {
@@ -156,12 +224,14 @@
     async function sesionAR() {
       const xr = navigator.xr;
       overlay = document.createElement('div'); overlay.id = 'ar-overlay';
-      overlay.innerHTML = '<button type="button" id="ar-salir">' + L('Salir', 'Exit') + '</button>';
+      overlay.innerHTML = '<div id="ar-dedos"></div><button type="button" id="ar-salir">' + L('Salir', 'Exit') + '</button>' +
+        '<button type="button" id="ar-colocar">' + L('Colocar', 'Place') + '</button>' +
+        '<button type="button" id="ar-semilla">' + L('Semilla', 'Seed') + '</button>';
       document.body.appendChild(overlay);
       const opts = { requiredFeatures: ['hit-test'], optionalFeatures: ['local-floor', 'dom-overlay'] };
       opts.domOverlay = { root: overlay };
       sesion = await xr.requestSession('immersive-ar', opts);
-      const escena = prepararEscena(); renderer = escena.R;
+      const escena = prepararEscena(); renderer = escena.R; escenaAR = escena;
       document.body.appendChild(escena.R.domElement);
       await renderer.xr.setSession(sesion);
       const visor = await sesion.requestReferenceSpace('viewer');
@@ -172,13 +242,43 @@
       if (ch.clips && ch.clips.Idle) ch.play('Idle');
       grupo.add(ch.root);
       const alSelect = () => {
+        if (performance.now() - gestoHecho < 400) return;
         const cam = renderer.xr.getCamera(escena.cam);
         if (puesta && enEllas(cam)) { tocar(); return; }
         if (!aro || !aro.visible) return;
-        colocar(aro.matrix.elements);
+        suya = false; colocar(aro.matrix.elements);
       };
       sesion.addEventListener('select', alSelect);
+      const dedos = overlay.querySelector('#ar-dedos');
+      const pts = new Map();
+      let movido = 0, angPrev = null;
+      dedos.addEventListener('pointerdown', e => { try { dedos.setPointerCapture(e.pointerId); } catch (err) { /* sin captura */ } pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (pts.size === 1) movido = 0; });
+      dedos.addEventListener('pointermove', e => {
+        const p = pts.get(e.pointerId); if (!p || !puesta) return;
+        const dx = e.clientX - p.x, dy = e.clientY - p.y;
+        if (pts.size === 1) { movido += Math.hypot(dx, dy); llevarEn(grupo, dx, dy, grupo.rotation.y); baseY = grupo.position.y; suya = true; }
+        else {
+          const otro = [...pts.entries()].find(([id]) => id !== e.pointerId);
+          if (otro) {
+            const ang = Math.atan2(e.clientY - otro[1].y, e.clientX - otro[1].x);
+            if (angPrev != null) { let d = ang - angPrev; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; grupo.rotation.y = girarEn(grupo.rotation.y, d); suya = true; }
+            angPrev = ang;
+          }
+        }
+        p.x = e.clientX; p.y = e.clientY;
+      });
+      dedos.addEventListener('pointerup', e => {
+        pts.delete(e.pointerId);
+        if (pts.size < 2) angPrev = null;
+        if (pts.size === 0 && movido < 14 && puesta) {
+          gestoHecho = performance.now();
+          const cam = renderer.xr.getCamera(escena.cam);
+          if (enEllas(cam)) tocar(); else lanzarDesdeCamara();
+        }
+      });
       overlay.querySelector('#ar-salir').addEventListener('click', () => { try { sesion.end(); } catch (e) { limpiar(); } });
+      overlay.querySelector('#ar-colocar').addEventListener('click', () => recolocar());
+      overlay.querySelector('#ar-semilla').addEventListener('click', () => lanzarDesdeCamara());
       sesion.addEventListener('end', limpiar);
       quitarAviso();
       renderer.setAnimationLoop((t, frame) => {
@@ -187,7 +287,7 @@
         const cam = renderer.xr.getCamera(escena.cam);
         if (ch && performance.now() > aleteoHasta) ch.wingMode = 'idle';
         try { if (ch && ch.update) ch.update(1 / 60); } catch (e) { if (ch && ch.mixer) ch.mixer.update(1 / 60); }
-        respirar(t); mirar(cam);
+        respirar(t); mirar(cam); pasoSemilla(1 / 60); pasoMiedo(cam);
         renderer.render(escena.scene, escena.cam);
       });
     }
@@ -195,7 +295,8 @@
     function limpiar() {
       try { if (renderer) renderer.setAnimationLoop(null); } catch (e) { /* ya parado */ }
       try { if (hit && hit.cancel) hit.cancel(); } catch (e) { /* nada */ }
-      hit = null; sesion = null; puesta = false; ch = null;
+      hit = null; sesion = null; puesta = false; ch = null; semilla = null; suya = false; asustada = false; escenaAR = null;
+      if (mallaSemilla) { if (mallaSemilla.parent) mallaSemilla.parent.remove(mallaSemilla); mallaSemilla = null; }
       if (renderer) { const c = renderer.domElement; try { renderer.dispose(); } catch (e) { /* contexto */ } if (c && c.parentNode) c.remove(); renderer = null; }
       if (overlay) { overlay.remove(); overlay = null; }
       grupo = null; aro = null;
@@ -241,20 +342,34 @@
         check('La cámara no se guarda ni se envía, y no hay ubicación', privacidad.ubicacion === false && privacidad.subeCamara === false && privacidad.guardaFoto === false && !/geolocation|getCurrentPosition/.test(entrar.toString() + sesionAR.toString()));
         check('Vittata queda a 30 cm', Math.abs(escalaDe(1) - 0.3) < 1e-9 && Math.abs(escalaDe(1.2) * 1.2 - 0.3) < 1e-9);
         check('Los gestos son saludar, celebrar y aletear, con sfx de Suno', GESTOS.map(g => g.id).join(',') === 'saluda,celebra,aletea' && GESTOS.every(g => G.audio && G.audio.has && G.audio.has(g.sfx)), GESTOS.map(g => g.sfx).join(','));
-        check('r128 no trae USDZExporter: el iPhone queda pendiente', !usdz());
+        const enlace = d.querySelector('a[rel="ar"]');
+        check('«Ver en tu casa» es un enlace rel=ar y no está en la portada', !!enlace && enlace.getAttribute('href') === 'assets/ar/vittata.usdz' && enlace.textContent.indexOf('Ver en tu casa') >= 0 && !enlace.closest('#title'));
+        const archivo = await fetch('assets/ar/vittata.usdz');
+        const bytes = new Uint8Array(await archivo.arrayBuffer());
+        check('El USDZ pesa 5 MB como mucho y es un zip', archivo.ok && bytes.length > 32 && bytes.length <= 5 * 1024 * 1024 && bytes[0] === 0x50 && bytes[1] === 0x4b, bytes.length);
         const msg = await entrar(null);
         check('Sin soporte: un mensaje amable y se vuelve al juego', /Seguimos en el juego/.test(msg) && !document.getElementById('ar-overlay'), msg);
         check('Sin soporte no guarda la cámara', !localStorage.getItem('amazonaverse.ar') && !localStorage.getItem('amazonaverse.ar.foto'));
         const seguir = d.querySelector('[data-ar="seguir"]'); if (seguir) seguir.click();
         check('Cerrar el aviso lo quita', !$('ar-casa'));
         check('Hay botón Salir en la capa de la sesión', /id="ar-salir"/.test(sesionAR.toString()) && sesionAR.toString().indexOf('Salir') >= 0);
+        const llevada = llevarEn({ position: { x: 0, y: 0, z: 0 } }, 100, 0, 0);
+        check('Un dedo la lleva por el suelo', Math.abs(llevada.x - 0.2) < 1e-6 && llevada.z === 0, llevada.x);
+        check('Dos dedos la giran', Math.abs(girarEn(0, Math.PI / 2) - Math.PI / 2) < 1e-6);
+        const antesPuesta = puesta; recolocar();
+        check('Se puede volver a colocar', puesta === false); puesta = antesPuesta;
+        const miedo = miedoDe(0.2, false);
+        check('Si el niño se acerca, se asusta con un sfx de Suno', miedo.nuevo === true && miedo.sfx === 'aviso' && G.audio.has('aviso') && miedoDe(1, true).asustada === false);
+        const sem = avanzarSemilla(nuevaSemilla(), 0.6);
+        check('Una semilla lanzada se atrapa con sfx de Suno', sem.atrapada && sem.sfx === 'semilla' && G.audio.has('semilla') && G.audio.has('lanzar'));
+        check('La sesión ofrece Colocar y Semilla', sesionAR.toString().indexOf('ar-colocar') >= 0 && sesionAR.toString().indexOf('ar-semilla') >= 0);
       } catch (e) {
         check('Sin excepciones', false, e && e.message);
       } finally {
         quitarAviso();
         if (antes && bandera()) abrir();
       }
-      return { passed: res.filter(r => r.ok).length, total: res.length, results: res, iphone: usdz() ? 'usdz' : 'pendiente' };
+      return { passed: res.filter(r => r.ok).length, total: res.length, results: res, iphone: 'usdz' };
     }
 
     const api = { abrir, entrar, salir: () => { try { if (sesion) sesion.end(); } catch (e) { limpiar(); } quitarAviso(); }, test, retrato, escalaDe, GESTOS, privacidad, bandera, usdz, ALTO };
